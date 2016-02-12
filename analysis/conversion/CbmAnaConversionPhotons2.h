@@ -20,7 +20,7 @@
 #include "CbmMCTrack.h"
 #include "CbmVertex.h"
 #include "CbmKFVertex.h"
-#include "../../littrack/cbm/elid/CbmLitGlobalElectronId.h"
+#include "CbmLitGlobalElectronId.h"
 
 
 

@@ -12,7 +12,7 @@
 
 #include "FairTask.h"
 #include "CbmMCTrack.h"
-#include "../dielectron/CbmLmvmKinematicParams.h"
+#include "CbmLmvmKinematicParams.h"
 #include "CbmKFVertex.h"
 
 //#include "KFParticleTopoReconstructor.h"

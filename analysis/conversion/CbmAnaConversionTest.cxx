@@ -16,7 +16,7 @@
 #include "CbmTrackMatchNew.h"
 #include "CbmL1PFFitter.h"
 #include "L1Field.h"
-#include "../../littrack/cbm/elid/CbmLitGlobalElectronId.h"
+#include "CbmLitGlobalElectronId.h"
 #include "CbmAnaConversionKinematicParams.h"
 #include "CbmAnaConversionCutSettings.h"
 

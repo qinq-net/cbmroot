@@ -21,7 +21,7 @@
 #include "CbmL1PFFitter.h"
 #include "L1Field.h"
 //#include "CbmStsKFTrackFitter.h"
-#include "../../littrack/cbm/elid/CbmLitGlobalElectronId.h"
+#include "CbmLitGlobalElectronId.h"
 
 #include <algorithm>
 #include <map>

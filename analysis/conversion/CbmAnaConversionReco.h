@@ -19,8 +19,8 @@
 // included from CbmRoot
 #include "CbmMCTrack.h"
 #include "CbmVertex.h"
-#include "../../littrack/cbm/elid/CbmLitGlobalElectronId.h"
-#include "../dielectron/CbmLmvmKinematicParams.h"
+#include "CbmLitGlobalElectronId.h"
+#include "CbmLmvmKinematicParams.h"
 #include "CbmRichElectronIdAnn.h"
 
 

@@ -1,5 +1,6 @@
 Set(INCLUDE_DIRECTORIES
 ${CBMROOT_SOURCE_DIR}/analysis/conversion
+${CBMROOT_SOURCE_DIR}/analysis/dielectron
 
 ${CBMROOT_SOURCE_DIR}/base 
 ${CBMROOT_SOURCE_DIR}/base/draw
@@ -18,6 +19,8 @@ ${CBMROOT_SOURCE_DIR}/KF/KFParticlePerformance
 ${CBMROOT_SOURCE_DIR}/L1
 ${CBMROOT_SOURCE_DIR}/L1/L1Algo
 ${CBMROOT_SOURCE_DIR}/L1/ParticleFinder 
+
+${CBMROOT_SOURCE_DIR}/littrack/cbm/elid
 
 ${CBMROOT_SOURCE_DIR}/rich
 )

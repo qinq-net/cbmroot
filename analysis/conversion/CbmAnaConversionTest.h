@@ -20,9 +20,9 @@
 #include "CbmMCTrack.h"
 #include "CbmVertex.h"
 #include "CbmKFVertex.h"
-#include "../dielectron/CbmLmvmKinematicParams.h"
+#include "CbmLmvmKinematicParams.h"
 #include "CbmGlobalTrack.h"
-#include "../../littrack/cbm/elid/CbmLitGlobalElectronId.h"
+#include "CbmLitGlobalElectronId.h"
 
 
 

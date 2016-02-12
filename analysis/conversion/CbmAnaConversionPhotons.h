@@ -19,7 +19,7 @@
 // included from CbmRoot
 #include "CbmMCTrack.h"
 #include "CbmVertex.h"
-#include "../dielectron/CbmLmvmKinematicParams.h"
+#include "CbmLmvmKinematicParams.h"
 #include "CbmKFVertex.h"
 
 
