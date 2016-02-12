@@ -24,13 +24,14 @@ ClassImp(TMbsMappingTofPar)
 // TODO: To be defined somewhere else later!! FIXME 
 //                                                     HD   BUC  PLA CRPC Ref  BHD  newBUC
 //const Int_t TMbsMappingTofPar::fgkiNbChDetType[7] = { 32,  72,   1,   8,  10,  56,     8 }; 
-const Int_t TMbsMappingTofPar::fgkiNbChDetType[fgkiNbDetType] =
+Int_t TMbsMappingTofPar::fgkiNbChDetType[fgkiNbDetType] =
 // Feb2015           P3   Ref   PLA    P2    P5   Dia  2013  USTC   PAD   ThuStr 2012  
 //                    |     |     |     |     |     |     |     |     |     |     |
 //               {   56,   72,    1,   32,   16,   16,   64,   16,   8,    24,    8 };
 // Nov2015           P3   Ref   PLA    P2    P5   Dia  2015  2012   PAD   Star  ThuStr   
 //                    |     |     |     |     |     |     |     |     |     |     |
-                 {    1,   72,    1,   32,   16,   16,   40,   40,   8,    32,   24 };  
+//               {    1,   72,    1,   32,   16,   16,   40,   40,   8,    32,   24 };  
+                 {    1,   72,    1,   32,   16,   16,   64,   40,   8,    32,   24 };  
 // This information should be collected from the DigiPar file (nh, Nov. 2015)
 
 TMbsMappingTofPar::TMbsMappingTofPar() :

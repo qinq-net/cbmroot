@@ -64,7 +64,7 @@ class TMbsMappingTofPar : public FairParGenericSet
       
       // TODO: To be defined somewhere else later!!
       static const Int_t fgkiNbDetType = 11;
-      static const Int_t fgkiNbChDetType[fgkiNbDetType];
+      static Int_t fgkiNbChDetType[fgkiNbDetType];
       
       TMbsMappingTofPar(const TMbsMappingTofPar&);
       TMbsMappingTofPar& operator=(const TMbsMappingTofPar&);
