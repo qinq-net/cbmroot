@@ -44,6 +44,8 @@ class CbmTrdTimeCorrel : public FairTask
 
   void CreateHistograms();
 
+  Int_t GetChannelOnPadPlane(Int_t SpadicChannel);
+
   CbmTrdTimeCorrel(const CbmTrdTimeCorrel&);
   CbmTrdTimeCorrel operator=(const CbmTrdTimeCorrel&);
 
