@@ -817,15 +817,15 @@ Bool_t CbmTofHitFinderQa::CreateHistos()
    Double_t xrange=750.;
    Double_t yrange=500.;
    Double_t zmin  = fdWallPosZ -  50.;
-   Double_t zmax  = fdWallPosZ + 100.;
+   Double_t zmax  = fdWallPosZ + 150.;
 
    // angular densities for overlap check
    Int_t iNbBinThetaX  = 1200;
    Double_t dThetaXMin = -  60.0;
    Double_t dThetaXMax =    60.0;
-   Int_t iNbBinThetaY  = 800;
-   Double_t dThetaYMin = -  40.0;
-   Double_t dThetaYMax =    40.0;
+   Int_t iNbBinThetaY  = 900;
+   Double_t dThetaYMin = -  45.0;
+   Double_t dThetaYMax =    45.0;
 
    Int_t iNbBinTheta   = 180;
    Double_t dThetaMin  =   0;
@@ -1732,14 +1732,38 @@ Bool_t CbmTofHitFinderQa::FillHistos()
       fvulIdxSecTracksWithPntGaps[uNbGaps].clear();
       fvulIdxSecTracksWithHitGaps[uNbGaps].clear();
    } // for( UInt_t uNbGaps = 0; uNbGaps < fuMaxCrossedGaps; uNbGaps++)
-    
+          
    // Tracks Info
    Int_t iNbTofTracks     = 0;
    Int_t iNbTofTracksPrim = 0;
    std::vector<Bool_t> vbTrackHasHit(iNbTracks, kFALSE);
+      // Are MC tracks reconstructable in STS?
+//   std::vector< Bool_t > vbTrackStsRecOk( iNbTracks kFALSE);
    for(Int_t iTrkInd = 0; iTrkInd < iNbTracks; iTrkInd++)
    {
       pMcTrk = (CbmMCTrack*) fMcTracksColl->At( iTrkInd );
+      
+      // Is track reconstructable in STS
+      /*
+      UInt_t uNbStsPnts = pMcTrk->GetNPoints(kSTS);
+       
+         // True criterium is whether enough STS stations are crossed
+         // but if already less STS points, can escape looping
+      if( kiMinNbStsPntAcc <= uNbStsPnts )
+      {
+         std::vector< UInt_t > vStsStationsId();
+         for( UInt_t uStsPntIdx = 0; uStsPntIdx < uNbStsPnts; uStsPntIdx++)
+         {
+            UInt_t uStation = CbmStsAddress::GetElementId(
+               (dynamic_cast<CbmStsPoint*>fStsPointsColl->At( uStsPntIdx ))->GetDetectorID(), 1);
+            if( kiMinNbStsPntAcc <= vStsStationsId.size() )
+            {
+               vbTrackStsRecOk[iTrkInd] = kTRUE;
+               break;
+            }
+         } // for( UInt_t uStsPntIdx = 0; uStsPntIdx < uNbStsPnts; uStsPntIdx++)
+      } // if( kiMinNbStsPntAcc <= pMcTrk->GetNPoints(kSTS) )
+       */
 
       if( 0 < pMcTrk->GetNPoints(kTOF) )
       {

@@ -90,6 +90,7 @@ class CbmTofHitFinderQa : public FairTask {
       CbmTofDigiPar    * fDigiPar;
       CbmTofDigiBdfPar * fDigiBdfPar;
 
+//      TClonesArray          * fStsPointsColl; // STS MC points
       TClonesArray          * fTofPointsColl; // TOF MC points
       TClonesArray          * fMcTracksColl;  // MC tracks
       TClonesArray          * fTofDigisColl;  // TOF Digis
