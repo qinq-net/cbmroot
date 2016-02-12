@@ -78,6 +78,10 @@ void run_digi(Int_t nEvents = 2,
   	parFileList->Add(&tofFile);
     std::cout << "-I- " << myName << ": Using parameter file "
     		      << tofFile.GetString() << std::endl;
+  	TObjString tofBdfFile(srcDir + "/parameters/tof/tof_" + geoTag + ".digibdf.par");
+  	parFileList->Add(&tofBdfFile);
+    std::cout << "-I- " << myName << ": Using parameter file "
+    		      << tofBdfFile.GetString() << std::endl;
   }
   // ------------------------------------------------------------------------
 
