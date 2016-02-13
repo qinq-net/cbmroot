@@ -1,6 +1,7 @@
 # start of test CBM setups from geometry/setup
-GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/run_sim.C)
+GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/run_mc.C)
 GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/run_digi_tb.C)
+GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/run_digi.C)
 GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/run_reco.C)
 GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/run_qa.C)
 GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/check_overlaps.C)
@@ -21,19 +22,19 @@ EndIf()
 
 ForEach(setup IN LISTS cbm_setup)
 
-  Set(testname run_sim_${setup})
-  Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_sim.sh ${NumEvents} \"${setup}\")
+  Set(testname run_mc_${setup})
+  Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_mc.sh ${NumEvents} \"${setup}\")
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   
-  Set(dep_sim ${testname})
+  Set(dep_mc ${testname})
 
   Set(testname run_reco_${setup})
   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_reco.sh ${NumEvents} \"${setup}\")
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-  Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_sim})
-  Set(_FileName_Dependency data/run_sim_${setup}_ok)
+  Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_mc})
+  Set(_FileName_Dependency data/run_mc_${setup}_ok)
   Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
 
   Set(dep_reco ${testname})
@@ -42,8 +43,16 @@ ForEach(setup IN LISTS cbm_setup)
   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_digi_tb.sh ${NumEvents} \"${setup}\")
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "300")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-  Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_sim})
-  Set(_FileName_Dependency data/run_sim_${setup}_ok)
+  Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_mc})
+  Set(_FileName_Dependency data/run_mc_${setup}_ok)
+  Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
+
+  Set(testname run_digi_${setup})
+  Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_digi.sh ${NumEvents} \"${setup}\")
+  Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "300")
+  Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
+  Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_mc})
+  Set(_FileName_Dependency data/run_mc_${setup}_ok)
   Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
 
   Set(testname run_qa_${setup})
@@ -58,8 +67,8 @@ ForEach(setup IN LISTS cbm_setup)
   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/check_overlaps.sh \"${setup}\")
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-  Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_sim})
-  Set(_FileName_Dependency data/run_sim_${setup}_ok)
+  Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_mc})
+  Set(_FileName_Dependency data/run_mc_${setup}_ok)
   Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
 
 EndForEach(setup IN LISTS cbm_setup)
@@ -82,8 +91,8 @@ GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/checkFieldSym.C)
 add_test(run_checkFieldSym ${CBMROOT_BINARY_DIR}/macro/run/checkFieldSym.sh)
 SET_TESTS_PROPERTIES(run_checkFieldSym PROPERTIES TIMEOUT "60")
 
-Install(FILES .rootrc run_sim.C run_digi_tb.C run_reco.C run_qa.C check_overlaps.C 
-              run.C checkFields.C checkFieldMap.C checkFieldSym.C
+Install(FILES .rootrc run_mc.C run_digi_tb.C run_reco.C run_qa.C check_overlaps.C 
+              run_digi.C run.C checkFields.C checkFieldMap.C checkFieldSym.C
         DESTINATION share/cbmroot/macro/run
        )
 INSTALL(CODE "FILE(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/share/cbmroot/macro/run/data)")

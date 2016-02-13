@@ -103,7 +103,7 @@ void run_mc(Int_t nEvents = 2,
 
   
   // -----   Remove old CTest runtime dependency file   ---------------------
-  TString depFile = Remove_CTest_Dependency_File(outDir, "run_sim" , setupName);
+  TString depFile = Remove_CTest_Dependency_File(outDir, "run_mc" , setupName);
   // ------------------------------------------------------------------------
 
 
