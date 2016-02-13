@@ -158,7 +158,9 @@ public:
     kMVDhasEntr,             // weather track enters first MVD station
     kMVDHits,                // number of MVD hits
     kMVDFirstHitPosZ,        // position of the first hit in the MVD (cm)
-    //    kImpactParZ,             // Impact parameter of track at target z, in units of its error  
+    kMVDFirstExtX,           // x-position of the extrapolated track at the first MVD station (cm) 
+    kMVDFirstExtY,           // y-position of the extrapolated track at the first MVD station (cm)
+   //    kImpactParZ,             // Impact parameter of track at target z, in units of its error  
     kSTSHits,                // number of STS hits
     kSTSChi2NDF,             // chi2/ndf STS
     kSTSPin,                 // first point STS momentum (GeV/c)
@@ -627,7 +629,9 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisTrack(const PairAnalysisT
     values[kRICHhasProj] = (TMath::Abs(param->GetX() + param->GetY()) > 0.);
   }
   if( (param = track->GetMvdEntrance()) ) {  // MVD
-    Double_t innerLimit=0.5; //cm
+    values[kMVDFirstExtX] = param->GetX();
+    values[kMVDFirstExtY] = param->GetY();
+    Double_t innerLimit=0.5; //cm, TODO: no hardcoding
     Double_t outerLimit=2.5; //cm
     values[kMVDhasEntr] = ( (TMath::Abs(param->GetX()) > innerLimit && TMath::Abs(param->GetX()) < outerLimit && TMath::Abs(param->GetY()) < outerLimit)
 			    ||

@@ -98,6 +98,8 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"MVDhasEntr",             "station^{MVD}_{first} entrance status",              ""},
   {"MVDHits",                "N_{hit}^{MVD}",                                      ""},
   {"MVDFirstHitPosZ",        "z_{first hit}^{MVD}",                                "(cm)"},
+  {"MVDFirstExtX",           "x_{first station}^{MVD}",                            "(cm)"},
+  {"MVDFirstExtY",           "y_{first station}^{MVD}",                            "(cm)"},
   //  {"ImpactParZ",             "#it{dca}_{z}/#Delta#it{dca}_{z}",                    "#sigma"},
   {"STSHits",                "N_{hit}^{STS}",                                      ""},
   {"STSChi2NDF",             "#chi^{2}/^{}N_{df}^{STS}",                           ""},
