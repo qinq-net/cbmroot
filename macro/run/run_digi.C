@@ -105,7 +105,7 @@ void run_digi(Int_t nEvents = 2,
   // -----   Input file   ---------------------------------------------------
   std::cout << std::endl;
   TString defaultInputFile = "data/";
-  TString defaultInputFile = defaultInputFile + setupName + "_test.mc.root";
+  defaultInputFile = defaultInputFile + setupName + "_test.mc.root";
   if ( inFile.IsNull() ) {  // Not defined in the macro explicitly
   	if ( strcmp(inputFile, "") == 0 ) {  // not given as argument to the macro
   		inFile = defaultInputFile;
