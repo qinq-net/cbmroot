@@ -102,7 +102,8 @@ void digitize()
 
   // -----   TOF Digitiser   -------------------------------------------------
 	if ( setup->IsActive(kTof) ) {
-      FairTask* tofDigi = new CbmTofDigitizerBDF("TOF Digitizer BDF",iVerbose, kFALSE);
+      Int_t iVerbose = 0;
+      CbmTofDigitizerBDF* tofDigi = new CbmTofDigitizerBDF("TOF Digitizer BDF",iVerbose, kFALSE);
       tofDigi->SetInputFileName( paramDir + "tof/test_bdf_input.root"); // Required as input file name not read anymore by param class
 //      tofDigi->SetHistoFileName( digiOutFile ); // Uncomment to save control histograms
       run->AddTask(tofDigi);
