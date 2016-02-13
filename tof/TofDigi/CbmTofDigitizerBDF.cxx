@@ -250,7 +250,7 @@ void CbmTofDigitizerBDF::SetParContainers()
    LOG(INFO)<<" CbmTofDigitizerBDF => Get the digi parameters for tof"<<FairLogger::endl;
 
    // Get Base Container
-   FairRunAna* ana = FairRunAna::Instance();
+   FairRun* ana = FairRun::Instance();
    FairRuntimeDb* rtdb=ana->GetRuntimeDb();
 
    fDigiPar = (CbmTofDigiPar*)
