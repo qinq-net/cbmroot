@@ -110,7 +110,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     eqID = raw->GetEquipmentID();
     sourceA = raw->GetSourceAddress();
     groupId=raw->GetGroupId();
-    chID = GetChannelOnPadPlane(raw->GetChannelID());// Remapping from ASIC to pad-plane channel numbers. 
+    chID = raw->GetChannelID();
     //Int_t nrSamples=raw->GetNrSamples();
 
     time = raw->GetFullTime();
@@ -125,13 +125,14 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     TString spadic  = GetSpadic(sourceA);
     spaID     = GetSpadicID(sourceA);
     if(spaID%2) chID+=16;
+    chID = GetChannelOnPadPlane(chID);// Remapping from ASIC to pad-plane channel numbers.
     TString channelId=Form("_Ch%02d", chID);
     TString stopName = GetStopName(stopType);
     // add raw message to map sorted by timestamps, syscore and spadic
     timeBuffer[TString(syscore+spadic)][time].push_back(raw);
 
     // print single spadic message coordinates .. hey, use this for a fancy fast-running output
-    //    if(stopType == 0) LOG(INFO) << "SpadicMessage: " << iSpadicMessage << " sourceA: " << sourceA << " chID: " << chID << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << FairLogger::endl;
+    //    if(stopType == 0) LOG(INFO) << "SpadicMessage: " << iSpadicMessage << " sourceA: " << sourceA << " chID: " << chID << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " is Info: " << isInfo << FairLogger::endl;
 
     if(spadic=="Spadic0") {
       nSpadicMessages0++;
