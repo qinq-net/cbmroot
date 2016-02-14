@@ -66,22 +66,22 @@ void run_digi(Int_t nEvents = 2,
 
   // - TRD digitisation parameters
   if ( setup->GetGeoTag(kTrd, geoTag) ) {
-  	TObjString trdFile(srcDir + "/parameters/trd/trd_" + geoTag + ".digi.par");
-  	parFileList->Add(&trdFile);
+  	TObjString* trdFile = new TObjString(srcDir + "/parameters/trd/trd_" + geoTag + ".digi.par");
+  	parFileList->Add(trdFile);
     std::cout << "-I- " << myName << ": Using parameter file "
-    		      << trdFile.GetString() << std::endl;
+    		      << trdFile->GetString() << std::endl;
   }
 
   // - TOF digitisation parameters
   if ( setup->GetGeoTag(kTof, geoTag) ) {
-  	TObjString tofFile(srcDir + "/parameters/tof/tof_" + geoTag + ".digi.par");
-  	parFileList->Add(&tofFile);
+  	TObjString* tofFile = new TObjString(srcDir + "/parameters/tof/tof_" + geoTag + ".digi.par");
+  	parFileList->Add(tofFile);
     std::cout << "-I- " << myName << ": Using parameter file "
-    		      << tofFile.GetString() << std::endl;
-  	TObjString tofBdfFile(srcDir + "/parameters/tof/tof_" + geoTag + ".digibdf.par");
-  	parFileList->Add(&tofBdfFile);
+    		      << tofFile->GetString() << std::endl;
+  	TObjString* tofBdfFile = new TObjString(srcDir + "/parameters/tof/tof_" + geoTag + ".digibdf.par");
+  	parFileList->Add(tofBdfFile);
     std::cout << "-I- " << myName << ": Using parameter file "
-    		      << tofBdfFile.GetString() << std::endl;
+    		      << tofBdfFile->GetString() << std::endl;
   }
   // ------------------------------------------------------------------------
 
