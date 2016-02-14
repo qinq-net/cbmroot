@@ -177,6 +177,7 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
 	fhPhotons_invmass_vs_pt_4(NULL),
 	fhElectrons_nofPerEvent_new(),
 	fhPhotons_nofPerEvent_new(),
+	fhPhotons_nofPerEventAfter_new(),
 	fhPhotons_invmass_new(),
 	fhPhotons_invmass_ptBin1_new(),
 	fhPhotons_invmass_ptBin2_new(),
@@ -530,6 +531,8 @@ void CbmAnaConversionRecoFull::InitHistos()
 		fHistoList_recofull_new[i].push_back(fhElectrons_nofPerEvent_new[i]);
 		fhPhotons_nofPerEvent_new[i] = new TH1D(Form("fhPhotons_nofPerEvent_new_%i",i), Form("fhPhotons_nofPerEvent_new_%i; nof photons per event; #",i), 31, -0.5, 30.5);
 		fHistoList_recofull_new[i].push_back(fhPhotons_nofPerEvent_new[i]);
+		fhPhotons_nofPerEventAfter_new[i] = new TH1D(Form("fhPhotons_nofPerEventAfter_new_%i",i), Form("fhPhotons_nofPerEventAfter_new_%i; nof photons per event; #",i), 31, -0.5, 30.5);
+		fHistoList_recofull_new[i].push_back(fhPhotons_nofPerEventAfter_new[i]);
 		fhPi0_nofPerEvent_new[i] = new TH1D(Form("fhPi0_nofPerEvent_new_%i",i), Form("fhPi0_nofPerEvent_new_%i; nof pi0 per event; #",i), 31, -0.5, 30.5);
 		fHistoList_recofull_new[i].push_back(fhPi0_nofPerEvent_new[i]);
 
@@ -1103,11 +1106,11 @@ void CbmAnaConversionRecoFull::CombineElectrons(vector<CbmGlobalTrack*> gtrack, 
 				
 				CbmAnaConversionKinematicParams paramsTest = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(momenta[a], momenta[b]);
 				
-				Double_t openingAngleCut = 1.8 - 0.6 * params1.fPt;
+				Double_t openingAngleCut = 1.8 - 0.6 * paramsTest.fPt;
 				Double_t invMassCut = 0.03;
 				
-				Int_t IsPhoton_openingAngle1	= (params1.fAngle < openingAngleCut);
-				Int_t IsPhoton_invMass1			= (params1.fMinv < invMassCut);
+				Int_t IsPhoton_openingAngle1	= (paramsTest.fAngle < openingAngleCut);
+				Int_t IsPhoton_invMass1			= (paramsTest.fMinv < invMassCut);
 				
 /*
 				Double_t tXa = gtrack[a]->GetParamLast()->GetTx();
@@ -1203,10 +1206,10 @@ void CbmAnaConversionRecoFull::CombineElectrons(vector<CbmGlobalTrack*> gtrack, 
 			}
 		}
 	}
-	if(index == 1) fhPhotons_nofPerEvent_1->Fill(nofPhotons);
-	if(index == 2) fhPhotons_nofPerEvent_2->Fill(nofPhotons);
-	if(index == 3) fhPhotons_nofPerEvent_3->Fill(nofPhotons);
-	if(index == 4) fhPhotons_nofPerEvent_4->Fill(nofPhotons);
+	//if(index == 1) fhPhotons_nofPerEvent_1->Fill(nofPhotons);
+	//if(index == 2) fhPhotons_nofPerEvent_2->Fill(nofPhotons);
+	//if(index == 3) fhPhotons_nofPerEvent_3->Fill(nofPhotons);
+	//if(index == 4) fhPhotons_nofPerEvent_4->Fill(nofPhotons);
 	fhPhotons_nofPerEvent_new[index]->Fill(nofPhotons);
 	//fhPhotons_nofPerEvent->Fill(nofPhotons);
 	cout << "CbmAnaConversionRecoFull: CombineElectrons: Crosscheck - nof reconstructed photons: " << nofPhotons << endl;
@@ -1376,6 +1379,7 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 	Int_t nofPi0 = 0;
 	
 	Int_t nof = reconstructedPhotons.size();
+	fhPhotons_nofPerEventAfter_new[index]->Fill(nof);
 	cout << "CbmAnaConversionRecoFull: " << index << ": CombinePhotons, nof - " << nof << endl;
 	if(nof >= 2) {
 		for(int a=0; a<nof-1; a++) {
@@ -1618,30 +1622,33 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 						if(TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 22) {
 							fhPhotons_invmass_MCcutAll_new[index]->Fill(2, invmass);
 						}
-						if( (TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 111) || (TMath::Abs(motherpdg11) == 111 && TMath::Abs(motherpdg21) == 22) ) {
+						if(TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 22 && grandmotherId11 == grandmotherId21 && grandmotherId11 > 0) {
 							fhPhotons_invmass_MCcutAll_new[index]->Fill(3, invmass);
 						}
-						if(TMath::Abs(motherpdg11) == 111 && TMath::Abs(motherpdg21) == 111) {
+						if(TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 22 && grandmotherId11 != grandmotherId21) {
 							fhPhotons_invmass_MCcutAll_new[index]->Fill(4, invmass);
 						}
-						if( (TMath::Abs(motherpdg11) != 22 && TMath::Abs(motherpdg11) != 111) || (TMath::Abs(motherpdg21) != 22 && TMath::Abs(motherpdg21) != 111) ) {
+						if( (TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 111) || (TMath::Abs(motherpdg11) == 111 && TMath::Abs(motherpdg21) == 22) ) {
 							fhPhotons_invmass_MCcutAll_new[index]->Fill(5, invmass);
 						}
-						if(TMath::Abs(motherpdg11) != 22 && TMath::Abs(motherpdg11) != 111 && TMath::Abs(motherpdg21) != 22 && TMath::Abs(motherpdg21) != 111) {
+						if(TMath::Abs(motherpdg11) == 111 && TMath::Abs(motherpdg21) == 111) {
 							fhPhotons_invmass_MCcutAll_new[index]->Fill(6, invmass);
 						}
-						if(grandmotherId11 == grandmotherId21) {
+						if( (TMath::Abs(motherpdg11) != 22 && TMath::Abs(motherpdg11) != 111) || (TMath::Abs(motherpdg21) != 22 && TMath::Abs(motherpdg21) != 111) ) {
 							fhPhotons_invmass_MCcutAll_new[index]->Fill(7, invmass);
 						}
-						if(grandmotherId11 == grandmotherId21 && TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 22) {
+						if(TMath::Abs(motherpdg11) != 22 && TMath::Abs(motherpdg11) != 111 && TMath::Abs(motherpdg21) != 22 && TMath::Abs(motherpdg21) != 111) {
 							fhPhotons_invmass_MCcutAll_new[index]->Fill(8, invmass);
+						}
+						if(grandmotherId11 == grandmotherId21) {
+							fhPhotons_invmass_MCcutAll_new[index]->Fill(9, invmass);
 						}
 					}
 					if( (motherId11 == motherId12 && motherId21 != motherId22) || (motherId11 != motherId12 && motherId21 == motherId22) ) {
-						fhPhotons_invmass_MCcutAll_new[index]->Fill(9, invmass);
+						fhPhotons_invmass_MCcutAll_new[index]->Fill(10, invmass);
 					}
 					if(motherId11 != motherId12 && motherId21 != motherId22) {
-						fhPhotons_invmass_MCcutAll_new[index]->Fill(10, invmass);
+						fhPhotons_invmass_MCcutAll_new[index]->Fill(11, invmass);
 					}
 					
 					

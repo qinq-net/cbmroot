@@ -61,16 +61,19 @@ CbmAnaConversionTest::CbmAnaConversionTest()
 	fhTest_invmass_RICHindex2(NULL),
 	fhTest_invmass_RICHindex3(NULL),
 	fhTest_invmass_RICHindex4(NULL),
+	fhTest_invmass_MCcutAll(NULL),
 	fVector_AllMomenta(),
 	fVector_gt(),
 	fVector_momenta(),
 	fVector_chi(),
 	fVector_gtIndex(),
 	fVector_richIndex(),
+	fVector_mcIndex(),
 	fVector_withRichSignal(),
 	fVector_reconstructedPhotons_FromSTSandRICH(),
 	fVector_electronRICH_gt(),
 	fVector_electronRICH_gtIndex(),
+	fVector_electronRICH_mcIndex(),
 	fVector_electronRICH_momenta(),
 	fVector_electronRICH_reconstructedPhotons(),
 	fVector_reconstructedPhotons_STSonly(),
@@ -175,6 +178,10 @@ void CbmAnaConversionTest::InitHistos()
 	fHistoList_test.push_back(fhTest_invmass_RICHindex3);
 	fhTest_invmass_RICHindex4 = new TH1D("fhTest_invmass_RICHindex4", "fhTest_invmass_RICHindex4; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_test.push_back(fhTest_invmass_RICHindex4);
+
+	fhTest_invmass_MCcutAll = new TH2D("fhTest_invmass_MCcutAll", "fhTest_invmass_MCcutAll; case; invariant mass", 15, 0, 15, invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fHistoList_test.push_back(fhTest_invmass_MCcutAll);
+	
 
 
 	fhTest_eventMixing_STSonly_2p2 = new TH1D("fhTest_eventMixing_STSonly_2p2", "fhTest_eventMixing_STSonly_2p2; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
@@ -375,12 +382,14 @@ void CbmAnaConversionTest::DoSTSonlyAnalysis()
 	fVector_chi.clear();
 	fVector_gtIndex.clear();
 	fVector_richIndex.clear();
+	fVector_mcIndex.clear();
 	fVector_withRichSignal.clear();
 	fVector_reconstructedPhotons_FromSTSandRICH.clear();
 	
 	fVector_electronRICH_momenta.clear();
 	fVector_electronRICH_gt.clear();
 	fVector_electronRICH_gtIndex.clear();
+	fVector_electronRICH_mcIndex.clear();
 	fVector_electronRICH_reconstructedPhotons.clear();
 	
 	fVector_reconstructedPhotons_STSonly.clear();
@@ -480,6 +489,7 @@ void CbmAnaConversionTest::DoSTSonlyAnalysis()
 			fVector_gtIndex.push_back(i);
 			fVector_gt.push_back(gTrack);
 			fVector_richIndex.push_back(richInd);
+			fVector_mcIndex.push_back(stsMcTrackId);
 		//}
 
 		Bool_t WithRichSignal = false;
@@ -515,6 +525,7 @@ void CbmAnaConversionTest::DoSTSonlyAnalysis()
 							fVector_electronRICH_momenta.push_back(refittedMomentum_electron);
 							fVector_electronRICH_gt.push_back(gTrack);
 							fVector_electronRICH_gtIndex.push_back(i);
+							fVector_electronRICH_mcIndex.push_back(stsMcTrackId);
 							nofRICHelectrons++;
 							WithRichSignal = true;
 						}
@@ -553,6 +564,7 @@ void CbmAnaConversionTest::CombineElectrons_FromSTSandRICH()
 				Int_t test = check1 + check2;
 				if(test != 1) continue;		// need one electron and one positron
 				if(fVector_gtIndex[a] == fVector_electronRICH_gtIndex[b]) continue;
+				if(fVector_richIndex[a] >= 0) continue;		// 4th lepton should have no signal in RICH, only in STS
 				
 				//CbmLmvmKinematicParams params1 = CalculateKinematicParamsReco(fVector_momenta[a], fVector_electronRICH_momenta[b]);
 				CbmAnaConversionKinematicParams paramsTest = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(fVector_momenta[a], fVector_electronRICH_momenta[b]);
@@ -696,6 +708,87 @@ void CbmAnaConversionTest::CombinePhotons()
 				
 				cout << "CbmAnaConversionTest: CombinePhotons, photon combined! " << invmass << "/" << gtIndex11 << "/" << gtIndex12 << "/" << gtIndex21 << "/" << gtIndex22 << endl;
 				nofPi0++;
+				
+				
+				// MC-TRUE crosschecks
+				CbmMCTrack* mctrack11 = (CbmMCTrack*)fMcTracks->At(fVector_mcIndex[electron11]);				// mctracks of four leptons
+				CbmMCTrack* mctrack12 = (CbmMCTrack*)fMcTracks->At(fVector_electronRICH_mcIndex[electron12]);
+				CbmMCTrack* mctrack21 = (CbmMCTrack*)fMcTracks->At(fVector_electronRICH_mcIndex[electron21]);
+				CbmMCTrack* mctrack22 = (CbmMCTrack*)fMcTracks->At(fVector_electronRICH_mcIndex[electron22]);
+					
+				Int_t pdg11 = mctrack11->GetPdgCode();	// pdg codes of four leptons
+				Int_t pdg12 = mctrack12->GetPdgCode();
+				Int_t pdg21 = mctrack21->GetPdgCode();
+				Int_t pdg22 = mctrack22->GetPdgCode();
+					
+				Int_t motherId11 = mctrack11->GetMotherId();	// motherIDs of four leptons
+				Int_t motherId12 = mctrack12->GetMotherId();
+				Int_t motherId21 = mctrack21->GetMotherId();
+				Int_t motherId22 = mctrack22->GetMotherId();
+					
+				CbmMCTrack* mothermctrack11 = NULL;	// mctracks of mother particles of the four leptons
+				CbmMCTrack* mothermctrack12 = NULL;
+				CbmMCTrack* mothermctrack21 = NULL;
+				CbmMCTrack* mothermctrack22 = NULL;
+				if(motherId11 > 0) mothermctrack11 = (CbmMCTrack*)fMcTracks->At(motherId11);
+				if(motherId11 > 0) mothermctrack12 = (CbmMCTrack*)fMcTracks->At(motherId12);
+				if(motherId11 > 0) mothermctrack21 = (CbmMCTrack*)fMcTracks->At(motherId21);
+				if(motherId11 > 0) mothermctrack22 = (CbmMCTrack*)fMcTracks->At(motherId22);
+					
+				Int_t motherpdg11 = -2;		// pdg codes of the mother particles
+			//	Int_t motherpdg12 = -2;
+				Int_t motherpdg21 = -2;
+			//	Int_t motherpdg22 = -2;
+				if(mothermctrack11 != NULL) motherpdg11 = mothermctrack11->GetPdgCode();
+			//	if(mothermctrack12 != NULL) motherpdg12 = mothermctrack12->GetPdgCode();
+				if(mothermctrack21 != NULL) motherpdg21 = mothermctrack21->GetPdgCode();
+			//	if(mothermctrack22 != NULL) motherpdg22 = mothermctrack22->GetPdgCode();
+				
+				Int_t grandmotherId11 = -2;		// grandmotherIDs of four leptons
+				Int_t grandmotherId12 = -2;
+				Int_t grandmotherId21 = -2;
+				Int_t grandmotherId22 = -2;
+				if(mothermctrack11 != NULL) grandmotherId11 = mothermctrack11->GetMotherId();
+				if(mothermctrack12 != NULL) grandmotherId12 = mothermctrack12->GetMotherId();
+				if(mothermctrack21 != NULL) grandmotherId21 = mothermctrack21->GetMotherId();
+				if(mothermctrack22 != NULL) grandmotherId22 = mothermctrack22->GetMotherId();
+				
+				
+				
+				
+				if(motherId11 == motherId12 && motherId21 == motherId22) {		// both combined e+e- pairs come from the same mother (which can be gamma, pi0, or whatever)
+					fhTest_invmass_MCcutAll->Fill(1, invmass);
+					if(TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 22) {
+						fhTest_invmass_MCcutAll->Fill(2, invmass);
+					}
+					if(TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 22 && grandmotherId11 == grandmotherId21 && grandmotherId11 > 0) {
+						fhTest_invmass_MCcutAll->Fill(3, invmass);
+					}
+					if(TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 22 && grandmotherId11 != grandmotherId21) {
+						fhTest_invmass_MCcutAll->Fill(4, invmass);
+					}
+					if( (TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 111) || (TMath::Abs(motherpdg11) == 111 && TMath::Abs(motherpdg21) == 22) ) {
+						fhTest_invmass_MCcutAll->Fill(5, invmass);
+					}
+					if(TMath::Abs(motherpdg11) == 111 && TMath::Abs(motherpdg21) == 111) {
+						fhTest_invmass_MCcutAll->Fill(6, invmass);
+					}
+					if( (TMath::Abs(motherpdg11) != 22 && TMath::Abs(motherpdg11) != 111) || (TMath::Abs(motherpdg21) != 22 && TMath::Abs(motherpdg21) != 111) ) {
+						fhTest_invmass_MCcutAll->Fill(7, invmass);
+					}
+					if(TMath::Abs(motherpdg11) != 22 && TMath::Abs(motherpdg11) != 111 && TMath::Abs(motherpdg21) != 22 && TMath::Abs(motherpdg21) != 111) {
+						fhTest_invmass_MCcutAll->Fill(8, invmass);
+					}
+					if(grandmotherId11 == grandmotherId21) {
+						fhTest_invmass_MCcutAll->Fill(9, invmass);
+					}
+				}
+				if( (motherId11 == motherId12 && motherId21 != motherId22) || (motherId11 != motherId12 && motherId21 == motherId22) ) {
+					fhTest_invmass_MCcutAll->Fill(10, invmass);
+				}
+				if(motherId11 != motherId12 && motherId21 != motherId22) {
+					fhTest_invmass_MCcutAll->Fill(11, invmass);
+				}
 			}
 		}
 	}

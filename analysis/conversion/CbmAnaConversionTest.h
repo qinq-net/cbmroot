@@ -106,6 +106,7 @@ private:
 	TH1D * fhTest_invmass_RICHindex3;
 	TH1D * fhTest_invmass_RICHindex4;
 
+	TH2D * fhTest_invmass_MCcutAll;
 
 	// array with all refitted momenta
 	vector<TVector3>	fVector_AllMomenta;
@@ -117,12 +118,14 @@ private:
 	vector<double>			fVector_chi;
 	vector<int>				fVector_gtIndex;
 	vector<int>				fVector_richIndex;
+	vector<int>				fVector_mcIndex;
 	vector<bool>			fVector_withRichSignal;
 	vector< vector<int> >	fVector_reconstructedPhotons_FromSTSandRICH;
 
 	// arrays for electrons, that have been identified in RICH as electrons
 	vector<CbmGlobalTrack*>	fVector_electronRICH_gt;
 	vector<int>				fVector_electronRICH_gtIndex;
+	vector<int>				fVector_electronRICH_mcIndex;
 	vector<TVector3>		fVector_electronRICH_momenta;
 	vector< vector<int> >	fVector_electronRICH_reconstructedPhotons;
 	

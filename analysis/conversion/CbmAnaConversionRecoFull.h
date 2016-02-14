@@ -243,6 +243,7 @@ private:
 
 	TH1D * fhElectrons_nofPerEvent_new[5];
 	TH1D * fhPhotons_nofPerEvent_new[5];
+	TH1D * fhPhotons_nofPerEventAfter_new[5];
 	TH1D * fhPi0_nofPerEvent_new[5];
 	TH1D * fhPhotons_invmass_new[5];
 	TH1D * fhPhotons_invmass_ptBin1_new[5];
