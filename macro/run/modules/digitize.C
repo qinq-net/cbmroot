@@ -68,9 +68,9 @@ void digitize()
 		// --- Parameter file name
 		TString geoTag;
 		setup->GetGeoTag(kMuch, geoTag);
-		std::cout << geoTag(6,4) << std::endl;
+		std::cout << geoTag(0,4) << std::endl;
 		TString parFile = gSystem->Getenv("VMCWORKDIR");
-		parFile = parFile + "/parameters/much/much_" + geoTag(6,4)
+		parFile = parFile + "/parameters/much/much_" + geoTag(0,4)
 				    + "_digi_sector.root";
 		std::cout << "Using parameter file " << parFile << std::endl;
 
