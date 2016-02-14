@@ -90,7 +90,7 @@ void CbmLitFitTracks::DoFit()
    static Bool_t firstTime = true;
    static TrackFitterPtr fitter;
    if (firstTime) {
-      fitter = CbmLitToolFactory::Instance()->CreateTrackFitter("lit_kalman");
+      fitter = CbmLitToolFactory::CreateTrackFitter("lit_kalman");
       firstTime = false;
    }
 

@@ -48,8 +48,7 @@ InitStatus CbmLitFindMvdTracks::Init()
 {
    ReadAndCreateDataBranches();
 
-   CbmLitToolFactory* factory = CbmLitToolFactory::Instance();
-   fFinder = factory->CreateTrackFinder("mvd_nn");
+   fFinder = CbmLitToolFactory::CreateTrackFinder("mvd_nn");
 
    return kSUCCESS;
 }

@@ -42,12 +42,6 @@ CbmLitToolFactory::~CbmLitToolFactory()
 {
 }
 
-CbmLitToolFactory* CbmLitToolFactory::Instance()
-{
-   static CbmLitToolFactory instance;
-   return &instance;
-}
-
 TrackExtrapolatorPtr CbmLitToolFactory::CreateTrackExtrapolator(
    const std::string& name)
 {

@@ -122,7 +122,7 @@ PairAnalysisTrack::PairAnalysisTrack(CbmKFVertex *vtx,
 
   /// check mvd entrance
   Double_t zMvd = 5.; // z-position of the first mvd station, TODO: how to get that for different geometries
-  TrackExtrapolatorPtr fExtrapolator = CbmLitToolFactory::Instance()->CreateTrackExtrapolator("rk4");
+  TrackExtrapolatorPtr fExtrapolator = CbmLitToolFactory::CreateTrackExtrapolator("rk4");
   CbmLitTrackParam litParamIn;
   CbmLitConverterFairTrackParam::FairTrackParamToCbmLitTrackParam( ststrk->GetParamFirst(), &litParamIn);
   CbmLitTrackParam litParamOut;

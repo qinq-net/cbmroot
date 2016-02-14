@@ -765,8 +765,7 @@ void LxSpace::JoinExtTracks()
 {
   Double_t cutCoeff = 5.0;
 
-  CbmLitToolFactory* factory = CbmLitToolFactory::Instance();
-  TrackPropagatorPtr fPropagator = factory->CreateTrackPropagator("lit");
+  TrackPropagatorPtr fPropagator = CbmLitToolFactory::CreateTrackPropagator("lit");
 
   for (list<LxTrack*>::iterator i = tracks.begin(); i != tracks.end(); ++i)
   {

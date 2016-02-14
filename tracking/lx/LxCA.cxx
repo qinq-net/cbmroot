@@ -2147,8 +2147,7 @@ void LxSpace::JoinExtTracks()
   scaltype sigmaTy2 = muchStsBreakTy * muchStsBreakTy;
 #endif//USE_OLD_STS_LINKING_RULE
 
-  CbmLitToolFactory* factory = CbmLitToolFactory::Instance();
-  TrackPropagatorPtr fPropagator = factory->CreateTrackPropagator("lit");
+  TrackPropagatorPtr fPropagator = CbmLitToolFactory::CreateTrackPropagator("lit");
 
   for (list<LxTrack*>::iterator i = tracks.begin(); i != tracks.end(); ++i)
   {

@@ -21,9 +21,8 @@ const litfloat lit::CbmLitDefaultSettings::MAXIMUM_TGEO_NAVIGATION_DISTANCE = 25
 
 CbmLitCleverTrackExtrapolator::CbmLitCleverTrackExtrapolator()
 {
-   CbmLitToolFactory* factory = CbmLitToolFactory::Instance();
-   fLineExtrapolator = factory->CreateTrackExtrapolator("line");
-   fRK4Extrapolator = factory->CreateTrackExtrapolator("rk4");
+   fLineExtrapolator = CbmLitToolFactory::CreateTrackExtrapolator("line");
+   fRK4Extrapolator = CbmLitToolFactory::CreateTrackExtrapolator("rk4");
 }
 
 CbmLitCleverTrackExtrapolator::~CbmLitCleverTrackExtrapolator()

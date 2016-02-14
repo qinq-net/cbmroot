@@ -18,18 +18,13 @@ using std::string;
 class CbmLitToolFactory
 {
 public:
-   /**
-    * \brief Return pointer to the singleton object instance.
-    * \return Singleton instance.
-    */
-   static CbmLitToolFactory* Instance();
 
    /**
     * \brief Create track extrapolation tool by name.
     * \param[in] name Tool name.
     * \return Created track extrapolation tool.
     */
-   TrackExtrapolatorPtr CreateTrackExtrapolator(
+   static TrackExtrapolatorPtr CreateTrackExtrapolator(
       const string& name);
 
    /**
@@ -37,7 +32,7 @@ public:
     * \param[in] name Tool name.
     * \return Created track propagation tool.
     */
-   TrackPropagatorPtr CreateTrackPropagator(
+   static TrackPropagatorPtr CreateTrackPropagator(
       const string& name);
 
    /**
@@ -45,7 +40,7 @@ public:
     * \param[in] name Tool name.
     * \return Created track update tool.
     */
-   TrackUpdatePtr CreateTrackUpdate(
+   static TrackUpdatePtr CreateTrackUpdate(
       const string& name);
 
    /**
@@ -53,7 +48,7 @@ public:
     * \param[in] name Tool name.
     * \return Created track fit tool.
     */
-   TrackFitterPtr CreateTrackFitter(
+   static TrackFitterPtr CreateTrackFitter(
       const string& name);
 
    /**
@@ -61,7 +56,7 @@ public:
     * \param[in] name Tool name.
     * \return Created track selection tool.
     */
-   TrackSelectionPtr CreateTrackSelection(
+   static TrackSelectionPtr CreateTrackSelection(
       const string& name);
 
    /**
@@ -69,7 +64,7 @@ public:
     * \param[in] name Tool name.
     * \return Created track selection tool.
     */
-   TrackFinderPtr CreateTrackFinder(
+   static TrackFinderPtr CreateTrackFinder(
       const string& name);
 
    /**
@@ -77,7 +72,7 @@ public:
     * \param[in] name Tool name.
     * \return Created hit to track merge tool.
     */
-   HitToTrackMergerPtr CreateHitToTrackMerger(
+   static HitToTrackMergerPtr CreateHitToTrackMerger(
       const string& name);
 
 private:

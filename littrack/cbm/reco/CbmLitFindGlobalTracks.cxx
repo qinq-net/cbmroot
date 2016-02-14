@@ -193,12 +193,11 @@ void CbmLitFindGlobalTracks::ReadAndCreateDataBranches()
 
 void CbmLitFindGlobalTracks::InitTrackReconstruction()
 {
-   CbmLitToolFactory* factory = CbmLitToolFactory::Instance();
    if (fDet.GetElectronSetup()) {
       if (fTrackingType == "branch" || fTrackingType == "nn" || fTrackingType == "nn_parallel") {
          std::string st("e_");
          st += fTrackingType;
-         fFinder = factory->CreateTrackFinder(st);
+         fFinder = CbmLitToolFactory::CreateTrackFinder(st);
       } else {
          TObject::Fatal("CbmLitFindGlobalTracks","Tracking type not found");
       }
@@ -206,7 +205,7 @@ void CbmLitFindGlobalTracks::InitTrackReconstruction()
       if (fTrackingType == "branch" || fTrackingType == "nn" || fTrackingType == "nn_parallel") {
          std::string st("mu_");
          st += fTrackingType;
-         fFinder = factory->CreateTrackFinder(st);
+         fFinder = CbmLitToolFactory::CreateTrackFinder(st);
       } else {
          TObject::Fatal("CbmLitFindGlobalTracks","Tracking type not found");
       }
@@ -214,19 +213,19 @@ void CbmLitFindGlobalTracks::InitTrackReconstruction()
 
    if (fDet.GetDet(kTOF)) {
       if (fMergerType == "nearest_hit" || fMergerType == "all_hits") {
-         fMerger = factory->CreateHitToTrackMerger("tof_" + fMergerType);
+         fMerger = CbmLitToolFactory::CreateHitToTrackMerger("tof_" + fMergerType);
       } else {
          TObject::Fatal("CbmLitFindGlobalTracks","Merger type not found");
       }
    }
 
    if (fFitterType == "lit_kalman") {
-      fFitter = factory->CreateTrackFitter("lit_kalman");
+      fFitter = CbmLitToolFactory::CreateTrackFitter("lit_kalman");
    } else {
       TObject::Fatal("CbmLitFindGlobalTracks","Fitter type not found");
    }
 
-   fPropagator = factory->CreateTrackPropagator("lit");
+   fPropagator = CbmLitToolFactory::CreateTrackPropagator("lit");
 }
 
 void CbmLitFindGlobalTracks::ConvertInputData()

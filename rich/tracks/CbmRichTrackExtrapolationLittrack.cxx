@@ -40,7 +40,7 @@ void CbmRichTrackExtrapolationLittrack::Init()
     fStsTracks = (TClonesArray*) ioman->GetObject("StsTrack");
     if ( NULL == fStsTracks) {Fatal("CbmRichTrackExtrapolationLittrack::Init", "No StsTrack array!");}
     
-    fLitPropagator = CbmLitToolFactory::Instance()->CreateTrackPropagator("lit");
+    fLitPropagator = CbmLitToolFactory::CreateTrackPropagator("lit");
 }
 
 void CbmRichTrackExtrapolationLittrack::DoExtrapolation(
