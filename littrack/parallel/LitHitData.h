@@ -77,7 +77,7 @@ public:
    void AddHit(
       LitScalPixelHit* hit) {
       unsigned char station = hit->stationId;
-      assert(station > -1 && station < fNofStations);
+      assert(station < fNofStations);
       fHits[station].push_back(hit);
       fZPosSet[station].insert(hit->Z); // Find different Z positions of hits
       fMaxErrX[station] = max(hit->Dx, fMaxErrX[station]);
