@@ -1598,13 +1598,13 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 					if(motherId11 > 0) mothermctrack22 = (CbmMCTrack*)fMcTracks->At(motherId22);
 					
 					Int_t motherpdg11 = -2;		// pdg codes of the mother particles
-				//	Int_t motherpdg12 = -2;
+					Int_t motherpdg12 = -2;
 					Int_t motherpdg21 = -2;
-				//	Int_t motherpdg22 = -2;
+					Int_t motherpdg22 = -2;
 					if(mothermctrack11 != NULL) motherpdg11 = mothermctrack11->GetPdgCode();
-				//	if(mothermctrack12 != NULL) motherpdg12 = mothermctrack12->GetPdgCode();
+					if(mothermctrack12 != NULL) motherpdg12 = mothermctrack12->GetPdgCode();
 					if(mothermctrack21 != NULL) motherpdg21 = mothermctrack21->GetPdgCode();
-				//	if(mothermctrack22 != NULL) motherpdg22 = mothermctrack22->GetPdgCode();
+					if(mothermctrack22 != NULL) motherpdg22 = mothermctrack22->GetPdgCode();
 					
 					Int_t grandmotherId11 = -2;		// grandmotherIDs of four leptons
 					Int_t grandmotherId12 = -2;
@@ -1649,6 +1649,7 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 					}
 					if(motherId11 != motherId12 && motherId21 != motherId22) {
 						fhPhotons_invmass_MCcutAll_new[index]->Fill(11, invmass);
+						cout << "CbmAnaConversionRecoFull: MC-Crosscheck: " << electron11 << "/" << electron12 << "/" << electron21 << "/" << electron22 << " - " << pdg11 << "/" << pdg12 << "/" << pdg21 << "/" << pdg22 << " - " << motherId11 << "/" << motherId12 << "/" << motherId21 << "/" << motherId22 << " - " << motherpdg11 << "/" << motherpdg12 << "/" << motherpdg21 << "/" << motherpdg22 << endl;
 					}
 					
 					
