@@ -150,6 +150,7 @@ ForEach(_file RANGE 0 ${_length})
         #CbmGenerators 
         #Field 
         CbmSts
+        Littrack
         )
 
     GENERATE_EXECUTABLE()
