@@ -21,7 +21,7 @@ CbmRichHit::CbmRichHit()
 
 CbmRichHit::CbmRichHit(Double_t x, Double_t y)
 		  : CbmPixelHit(),
-		  //  fPmtId(0),
+		    fPmtId(0),
 		  //  fNPhotons(0),
 		  //  fAmplitude(0.),
 		    fTimestamp(0.),
@@ -34,7 +34,7 @@ CbmRichHit::CbmRichHit(Double_t x, Double_t y)
 
 CbmRichHit::CbmRichHit(Double_t x, Double_t y, Double_t ts, Double_t tot)
 		  : CbmPixelHit(),
-		//    fPmtId(0),
+		    fPmtId(0),
 		//    fNPhotons(0),
 		//    fAmplitude(0.),
 		    fTimestamp(ts),
