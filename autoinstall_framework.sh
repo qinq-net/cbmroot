@@ -26,7 +26,7 @@
 export ROOTVER=5
 
 # put your desired variants here:
-export FSOFTDEV=nov15p1
+export FSOFTDEV=nov15p2
 export FROOTDEV=v-15.11a
 
 export FSOFTPRO=jul15p3
