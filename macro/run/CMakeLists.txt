@@ -95,4 +95,5 @@ Install(FILES .rootrc run_mc.C run_digi_tb.C run_reco.C run_qa.C check_overlaps.
               run_digi.C run.C checkFields.C checkFieldMap.C checkFieldSym.C
         DESTINATION share/cbmroot/macro/run
        )
-INSTALL(CODE "FILE(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/share/cbmroot/macro/run/data)")
+Install(DIRECTORY modules DESTINATION share/cbmroot/macro/run)
+Install(CODE "FILE(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/share/cbmroot/macro/run/data)")
