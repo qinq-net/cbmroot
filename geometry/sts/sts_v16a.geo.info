@@ -133,26 +133,26 @@ HalfLadder23u: size  6.2092 x 40.3200 x  0.2300, assembly
 Contains: HalfLadder23u_Module02 HalfLadder23u_Module03 HalfLadder23u_Module03 HalfLadder23u_Module04 HalfLadder23u_Module04 
 
 Stations: Station01: size 47.5736 x 44.0000 x  9.0000, medium air
-Contains: Ladder10 Ladder09 Ladder09 Ladder01 Ladder01 Ladder09 Ladder09 Ladder10 Cone Cone 
+Contains: Ladder10 Ladder09 Ladder09 Ladder01 Ladder01 Ladder09 Ladder09 Ladder10 
 Position z = 30
 Station02: size 71.2104 x 44.0000 x  9.0000, medium air
-Contains: Ladder11 Ladder10 Ladder10 Ladder09 Ladder09 Ladder02 Ladder02 Ladder09 Ladder09 Ladder10 Ladder10 Ladder11 Cone Cone 
+Contains: Ladder11 Ladder10 Ladder10 Ladder09 Ladder09 Ladder02 Ladder02 Ladder09 Ladder09 Ladder10 Ladder10 Ladder11 
 Position z = 40
 Station03: size 71.2104 x 64.0000 x  9.0000, medium air
-Contains: Ladder14 Ladder13 Ladder12 Ladder12 Ladder12 Ladder03 Ladder03 Ladder12 Ladder12 Ladder12 Ladder13 Ladder14 Cone Cone 
+Contains: Ladder14 Ladder13 Ladder12 Ladder12 Ladder12 Ladder03 Ladder03 Ladder12 Ladder12 Ladder12 Ladder13 Ladder14 
 Position z = 50
 Station04: size 83.0288 x 64.0000 x  9.0000, medium air
-Contains: Ladder15 Ladder14 Ladder13 Ladder12 Ladder12 Ladder12 Ladder04 Ladder04 Ladder12 Ladder12 Ladder12 Ladder13 Ladder14 Ladder15 ConeBig ConeBig 
+Contains: Ladder15 Ladder14 Ladder13 Ladder12 Ladder12 Ladder12 Ladder04 Ladder04 Ladder12 Ladder12 Ladder12 Ladder13 Ladder14 Ladder15 
 Position z = 60
 Station05: size 83.0288 x 80.0000 x  9.0000, medium air
-Contains: Ladder19 Ladder18 Ladder17 Ladder17 Ladder16 Ladder16 Ladder05 Ladder05 Ladder16 Ladder16 Ladder17 Ladder17 Ladder18 Ladder19 ConeBig ConeBig 
+Contains: Ladder19 Ladder18 Ladder17 Ladder17 Ladder16 Ladder16 Ladder05 Ladder05 Ladder16 Ladder16 Ladder17 Ladder17 Ladder18 Ladder19 
 Position z = 70
 Station06: size 83.0288 x 80.0000 x  9.0000, medium air
-Contains: Ladder19 Ladder18 Ladder17 Ladder17 Ladder16 Ladder16 Ladder06 Ladder06 Ladder16 Ladder16 Ladder17 Ladder17 Ladder18 Ladder19 ConeBig ConeBig 
+Contains: Ladder19 Ladder18 Ladder17 Ladder17 Ladder16 Ladder16 Ladder06 Ladder06 Ladder16 Ladder16 Ladder17 Ladder17 Ladder18 Ladder19 
 Position z = 80
 Station07: size 94.8472 x 88.0000 x  9.0000, medium air
-Contains: Ladder21 Ladder19 Ladder18 Ladder20 Ladder20 Ladder20 Ladder20 Ladder07 Ladder07 Ladder20 Ladder20 Ladder20 Ladder20 Ladder18 Ladder19 Ladder21 ConeBig ConeBig 
+Contains: Ladder21 Ladder19 Ladder18 Ladder20 Ladder20 Ladder20 Ladder20 Ladder07 Ladder07 Ladder20 Ladder20 Ladder20 Ladder20 Ladder18 Ladder19 Ladder21 
 Position z = 90
 Station08: size 94.8472 x 96.0000 x  9.0000, medium air
-Contains: Ladder19 Ladder17 Ladder23 Ladder22 Ladder22 Ladder22 Ladder22 Ladder08 Ladder08 Ladder22 Ladder22 Ladder22 Ladder22 Ladder23 Ladder17 Ladder19 ConeBig ConeBig 
+Contains: Ladder19 Ladder17 Ladder23 Ladder22 Ladder22 Ladder22 Ladder22 Ladder08 Ladder08 Ladder22 Ladder22 Ladder22 Ladder22 Ladder23 Ladder17 Ladder19 
 Position z = 100

@@ -1,7 +1,7 @@
 /******************************************************************************
  ** Creation of STS geometry in ROOT format (TGeo).
  **
- ** @file create_stsgeo_v15b.C
+ ** @file create_stsgeo_v16b.C
  ** @author Volker Friese <v.friese@gsi.de>
  ** @since 15 June 2012
  ** @date 09.05.2014
@@ -10,7 +10,7 @@
  ** v16c: like v16b, but senors of ladders beampipe next to beampipe
  **       shifted closer to the pipe, like in the CAD model
  ** v16b: like v16a, but yellow sensors removed
- ** v16a: derived from v15b, but with sensor types renamed:
+ ** v16a: derived from v15c (no cones), but with sensor types renamed:
  ** 2 -> 1, 3 -> 2, 4 -> 3, 5 -> 4, 1 -> 5
  **
  ** v15b: introduce modified carbon ladders from v13z
@@ -155,8 +155,8 @@ const Double_t gkSectorGapZFrame = 0.10;
 const Bool_t   gkConstructCables = kTRUE;
 
 // ---> Switch to construct / not to construct frames
-const Bool_t   gkConstructCones       = kTRUE;  // kFALSE;  // switch this false for v15a
-const Bool_t   gkConstructFrames      = kTRUE;  // kFALSE;  // switch this false for v15a
+const Bool_t   gkConstructCones       = kFALSE; // kTRUE;   // switch this false by default for v15c and v16x
+const Bool_t   gkConstructFrames      = kTRUE;  // kFALSE;  // switch this true  by default for v15c and v16x
 const Bool_t   gkConstructSmallFrames = kTRUE;  // kFALSE;
 const Bool_t   gkCylindricalFrames    = kTRUE;  // kFALSE;
 
