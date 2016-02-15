@@ -635,3 +635,82 @@ void CbmL1PFFitter::CalculateFieldRegion(vector<CbmStsTrack> &Tracks, vector<L1F
     field.push_back(fld);
   }
 }
+
+void CbmL1PFFitter::CalculateFieldRegionAtLastPoint(vector<CbmStsTrack> &Tracks, vector<L1FieldRegion> &field)
+{
+  field.reserve(Tracks.size());
+
+  L1FieldRegion fld _fvecalignment;
+
+  FairRootManager *fManger = FairRootManager::Instance();
+  TClonesArray *listStsHits = (TClonesArray *)  fManger->GetObject("StsHit");
+  TClonesArray *listMvdHits=0;
+  int NMvdStations = CbmL1::Instance()->algo->NMvdStations;
+  if(NMvdStations>0.)
+    listMvdHits = (TClonesArray *)  fManger->GetObject("MvdHit");
+
+  int nTracks_SIMD = fvecLen;
+  L1TrackPar T; // fitting parametr coresponding to current track
+
+  CbmStsTrack *t[fvecLen];
+
+  int ista;
+  L1Station *sta = CbmL1::Instance()->algo->vStations;
+  L1FieldValue fB[3], fB_temp _fvecalignment;
+  fvec zField[3];
+
+  unsigned short N_vTracks = Tracks.size();
+
+  for(unsigned short itrack = 0; itrack < N_vTracks; itrack+=fvecLen)
+  {
+    if(N_vTracks - itrack < static_cast<unsigned short>(fvecLen))
+      nTracks_SIMD = N_vTracks - itrack;
+
+    for(int i=0; i<nTracks_SIMD; i++)
+      t[i] = & Tracks[itrack+i]; // current track
+
+    for(int iVec=0; iVec<nTracks_SIMD; iVec++)
+    {
+      int nHitsTrackMvd = t[iVec]->GetNofMvdHits();
+      int nHits         = t[iVec]->GetNofHits();
+      for(int iH = 0; iH < 3; iH++ )
+      {
+        float posx = 0.f, posy = 0.f, posz = 0.f;
+
+        int hitNumber = nHits - iH - 1;
+        if(hitNumber<nHitsTrackMvd)
+        {
+          if(!listMvdHits) continue;
+          int hitIndex = t[iVec]->GetMvdHitIndex(hitNumber);
+          CbmMvdHit *hit = L1_DYNAMIC_CAST<CbmMvdHit*>(listMvdHits->At(hitIndex));
+
+          posx = hit->GetX();
+          posy = hit->GetY();
+          posz = hit->GetZ();
+          ista = hit->GetStationNr();
+        }
+        else
+        {
+          if(!listStsHits) continue;
+          int hitIndex = t[iVec]->GetHitIndex(hitNumber - nHitsTrackMvd);
+          CbmStsHit *hit = L1_DYNAMIC_CAST<CbmStsHit*>(listStsHits->At(hitIndex));
+
+          posx = hit->GetX();
+          posy = hit->GetY();
+          posz = hit->GetZ();
+          ista = CbmStsAddress::GetElementId(hit->GetAddress(), kStsStation)  + NMvdStations;//hit->GetStationNr()-1+NMvdStations;
+        }
+
+        sta[ista].fieldSlice.GetFieldValue( posx, posy, fB_temp );
+        
+        fB[iH].x[iVec] = fB_temp.x[iVec];
+        fB[iH].y[iVec] = fB_temp.y[iVec];
+        fB[iH].z[iVec] = fB_temp.z[iVec];
+        zField[iH][iVec] = posz;
+      }
+    }
+
+    fld.Set( fB[0], zField[0], fB[1], zField[1], fB[2], zField[2] );
+    field.push_back(fld);
+  }
+}
