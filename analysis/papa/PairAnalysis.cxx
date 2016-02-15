@@ -706,7 +706,7 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 
 	  // get hit array
 	  TClonesArray *hits = ev->GetHits(static_cast<DetectorId>(idet));
-	  if(!hits) continue;
+	  if(!hits || hits->GetSize()<1) continue;
 
 	  // get matched track and mc track index/id
 	  CbmTrackMatchNew *tmtch = track->GetTrackMatch(static_cast<DetectorId>(idet));
@@ -1547,11 +1547,12 @@ void PairAnalysis::FillMCHistograms(Int_t label1, Int_t label2, Int_t nSignal) {
   //
   // fill QA MC TRUTH histograms for pairs and legs of all added mc signals
   //
+  PairAnalysisSignalMC* sigMC = (PairAnalysisSignalMC*)fSignalsMC->At(nSignal);
 
   TString className,className2,className3;
-  className.Form("Pair_%s_MCtruth",       fSignalsMC->At(nSignal)->GetName());
-  className2.Form("Track.Legs_%s_MCtruth",fSignalsMC->At(nSignal)->GetName());
-  className3.Form("Track.%s_%s_MCtruth",fgkPairClassNames[1],fSignalsMC->At(nSignal)->GetName());
+  className.Form("Pair_%s_MCtruth",       sigMC->GetName());
+  className2.Form("Track.Legs_%s_MCtruth",sigMC->GetName());
+  className3.Form("Track.%s_%s_MCtruth",fgkPairClassNames[1],sigMC->GetName());
   Bool_t pairClass=fHistos->HasHistClass(className.Data());
   Bool_t legClass =fHistos->HasHistClass(className2.Data());
   Bool_t trkClass =fHistos->HasHistClass(className3.Data());
@@ -1569,17 +1570,16 @@ void PairAnalysis::FillMCHistograms(Int_t label1, Int_t label2, Int_t nSignal) {
 
   Int_t mLabel1 = papaMC->GetMothersLabel(label1);
   Int_t mLabel2 = papaMC->GetMothersLabel(label2);
-  //  printf("leg/mother labels: %d/%d %d/%d \n",label1,mLabel1,label2,mLabel2);
+  //  printf("leg/mother labels: %d/%d %d/%d \t part %p,%p \n",label1,mLabel1,label2,mLabel2,part1,part2);
 
   // check the same mother option
-  PairAnalysisSignalMC* sigMC = (PairAnalysisSignalMC*)fSignalsMC->At(nSignal);
   if(sigMC->GetMothersRelation()==PairAnalysisSignalMC::kSame      && mLabel1!=mLabel2) return;
   if(sigMC->GetMothersRelation()==PairAnalysisSignalMC::kDifferent && mLabel1==mLabel2) return;
 
   // fill event values
   Double_t *values = PairAnalysisVarManager::GetData(); //NEW CHANGED
   PairAnalysisVarManager::SetFillMap(fUsedVars);
-  ///TODO:  PairAnalysisVarManager::Fill(papaMC->GetMCEvent(), values); // get event informations
+  ///TODO:    PairAnalysisVarManager::Fill(papaMC->GetMCEvent(), values); // get event informations
   // fill the leg variables
   if (legClass || trkClass) {
     if(part1) PairAnalysisVarManager::Fill(part1,values);
@@ -1590,6 +1590,39 @@ void PairAnalysis::FillMCHistograms(Int_t label1, Int_t label2, Int_t nSignal) {
     PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight(values));
     if(part2 && trkClass)          fHistos->FillClass(className3, values);
     if(part1 && part2 && legClass) fHistos->FillClass(className2, values);
+  }
+
+  /// loop over all detectors and fill point histograms
+  /// currently only first branch is checked (aka single particle signals)
+  FairMCPoint *pnt=NULL;
+  TString className4;
+  if(part1) {
+    for (Int_t idet=kREF; idet<kNOFDETS; ++idet){
+      className4="Hit." + PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet)) + "_" + sigMC->GetName() + "_MCtruth";
+      if(!fHistos->HasHistClass(className4)) continue;
+
+      Int_t npnts = part1->GetNPoints(static_cast<DetectorId>(idet));
+      //printf("track %p(%d) \t has %d %s mc points \n",part1,label1,npnts,PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet)).Data());
+      if(!npnts) continue;
+
+      TClonesArray *points = PairAnalysisVarManager::GetCurrentEvent()->GetPoints(static_cast<DetectorId>(idet));    // get point array
+      Int_t psize = points->GetSize();
+      if(!points || psize<1) continue;
+
+      Int_t nfnd=0;
+      for(Int_t idx=0; idx<psize; idx++) {
+	if(nfnd==npnts) break; // all points found
+
+	pnt = static_cast<FairMCPoint*>( points->At(idx));
+	if(pnt->GetTrackID() == label1) {
+	  // printf("det %s \t point index: %d/%d found! \n",PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet)).Data(),idx,psize);
+	  nfnd++;   // found point
+	  PairAnalysisVarManager::Fill(pnt,values);
+	  fHistos->FillClass(className4, values);
+	}
+      }
+
+    }
   }
 
   //fill pair information
