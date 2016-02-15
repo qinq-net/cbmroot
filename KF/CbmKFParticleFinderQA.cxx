@@ -186,7 +186,7 @@ void CbmKFParticleFinderQA::Exec(Option_t* opt)
         continue;
       }
       
-      if(TMath::Abs(mcTracks[mcTrackId].PDG()) > 2500 && 
+      if(TMath::Abs(mcTracks[mcTrackId].PDG()) > 4000 && 
         !(TMath::Abs(mcTracks[mcTrackId].PDG()) == 1000010020 || TMath::Abs(mcTracks[mcTrackId].PDG()) == 1000010030 ||
           TMath::Abs(mcTracks[mcTrackId].PDG()) == 1000020030 || TMath::Abs(mcTracks[mcTrackId].PDG()) == 1000020040 ) )
         continue;

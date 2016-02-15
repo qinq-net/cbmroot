@@ -182,13 +182,13 @@ void CbmKFParticleFinderPID::SetMCPID()
          TMath::Abs(cbmMCTrack->GetPdgCode()) == 211 ||
          TMath::Abs(cbmMCTrack->GetPdgCode()) == 321 ||
          TMath::Abs(cbmMCTrack->GetPdgCode()) == 2212 ||
-         TMath::Abs(cbmMCTrack->GetPdgCode()) == 3112 ||
          TMath::Abs(cbmMCTrack->GetPdgCode()) == 1000010020 ||
          TMath::Abs(cbmMCTrack->GetPdgCode()) == 1000010030 ||
          TMath::Abs(cbmMCTrack->GetPdgCode()) == 1000020030 ||
          TMath::Abs(cbmMCTrack->GetPdgCode()) == 1000020040 ) )
-      continue;
-    fPID[iTr] = cbmMCTrack->GetPdgCode();
+      fPID[iTr] = -1;
+    else
+      fPID[iTr] = cbmMCTrack->GetPdgCode();
   }
 }
 

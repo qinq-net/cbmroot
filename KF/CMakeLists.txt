@@ -148,7 +148,6 @@ CbmKFParticleFinder.cxx
 CbmKFParticleFinderPID.cxx
 CbmKFParticleFinderQA.cxx
 CbmKFParticleInterface.cxx
-CbmKFSigmaReconstructor.cxx
 )
 
 
@@ -224,7 +223,6 @@ CbmKFParticleFinder.h
 CbmKFParticleFinderPID.h
 CbmKFParticleFinderQA.h
 CbmKFParticleInterface.h
-CbmKFSigmaReconstructor.h
 )
 
 If (APPLE)

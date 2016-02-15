@@ -51,9 +51,11 @@ class CbmKFParticleFinder : public FairTask {
  private:
   
   double InversedChi2Prob(double p, int ndf) const;
-  void FillKFPTrackVector(KFPTrackVector* tracks, const std::vector<CbmStsTrack>& vRTracks, const std::vector<KFFieldVector>& vField, 
-                          const std::vector<int>& pdg, const std::vector<int>& trackId, const std::vector<float>& vChiToPrimVtx) const;
-                                             
+  void FillKFPTrackVector(KFPTrackVector* tracks, const std::vector<CbmStsTrack>& vRTracks,
+                          const std::vector<KFFieldVector>& vField, 
+                          const std::vector<int>& pdg, const std::vector<int>& trackId,
+                          const std::vector<float>& vChiToPrimVtx, bool atFirstPoint = 1) const;
+
   const CbmKFParticleFinder& operator = (const CbmKFParticleFinder&);
   CbmKFParticleFinder(const CbmKFParticleFinder&);
    

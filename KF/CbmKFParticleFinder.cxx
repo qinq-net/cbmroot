@@ -120,10 +120,11 @@ void CbmKFParticleFinder::Exec(Option_t* opt)
   if(fPrimVtx)
     kfVertex = CbmKFVertex(*fPrimVtx);
   
-  vector<L1FieldRegion> vField;
+  vector<L1FieldRegion> vField, vFieldAtLastPoint;
   fitter.Fit(vRTracks, pdg);
   fitter.GetChiToVertex(vRTracks, vField, vChiToPrimVtx, kfVertex, 3);
-  vector<KFFieldVector> vFieldVector(ntracks);
+  fitter.CalculateFieldRegionAtLastPoint(vRTracks, vFieldAtLastPoint);
+  vector<KFFieldVector> vFieldVector(ntracks), vFieldVectorAtLastPoint(ntracks);
   for(Int_t iTr=0; iTr<ntracks; iTr++)
   {
     int entrSIMD = iTr % fvecLen;
@@ -139,16 +140,33 @@ void CbmKFParticleFinder::Exec(Option_t* opt)
     vFieldVector[iTr].fField[8] = vField[entrVec].cz2[entrSIMD];
     vFieldVector[iTr].fField[9] = vField[entrVec].z0[entrSIMD];
   }
+  for(Int_t iTr=0; iTr<ntracks; iTr++)
+  {
+    int entrSIMD = iTr % fvecLen;
+    int entrVec  = iTr / fvecLen;
+    vFieldVectorAtLastPoint[iTr].fField[0] = vFieldAtLastPoint[entrVec].cx0[entrSIMD];
+    vFieldVectorAtLastPoint[iTr].fField[1] = vFieldAtLastPoint[entrVec].cx1[entrSIMD];
+    vFieldVectorAtLastPoint[iTr].fField[2] = vFieldAtLastPoint[entrVec].cx2[entrSIMD];
+    vFieldVectorAtLastPoint[iTr].fField[3] = vFieldAtLastPoint[entrVec].cy0[entrSIMD];
+    vFieldVectorAtLastPoint[iTr].fField[4] = vFieldAtLastPoint[entrVec].cy1[entrSIMD];
+    vFieldVectorAtLastPoint[iTr].fField[5] = vFieldAtLastPoint[entrVec].cy2[entrSIMD];
+    vFieldVectorAtLastPoint[iTr].fField[6] = vFieldAtLastPoint[entrVec].cz0[entrSIMD];
+    vFieldVectorAtLastPoint[iTr].fField[7] = vFieldAtLastPoint[entrVec].cz1[entrSIMD];
+    vFieldVectorAtLastPoint[iTr].fField[8] = vFieldAtLastPoint[entrVec].cz2[entrSIMD];
+    vFieldVectorAtLastPoint[iTr].fField[9] = vFieldAtLastPoint[entrVec].z0[entrSIMD];
+  }
   
   if(!fSuperEventAnalysis)
   {
     KFPTrackVector tracks;
     FillKFPTrackVector(&tracks, vRTracks, vFieldVector, pdg, trackId, vChiToPrimVtx);
-      
+    KFPTrackVector tracksAtLastPoint;
+    FillKFPTrackVector(&tracksAtLastPoint, vRTracks, vFieldVectorAtLastPoint, pdg, trackId, vChiToPrimVtx, 0);
+    
     TStopwatch timer;
     timer.Start();
     
-    fTopoReconstructor->Init(tracks);
+    fTopoReconstructor->Init(tracks, tracksAtLastPoint);
     if(fPVFindMode == 0)
     {
       KFPVertex primVtx_tmp;
@@ -224,12 +242,13 @@ void CbmKFParticleFinder::Finish()
   {
     KFPTrackVector tracks;
     FillKFPTrackVector(&tracks, fSETracks, fSEField, fSEpdg, fSETrackId, fSEChiPrim);
-      
+    KFPTrackVector tracksAtLastPoint;
+    
     std::cout << "CbmKFParticleFinder: Start SE analysis" << std::endl;
     TStopwatch timer;
     timer.Start();
 
-    fTopoReconstructor->Init(tracks);
+    fTopoReconstructor->Init(tracks, tracksAtLastPoint);
 
     KFPVertex primVtx_tmp;
     primVtx_tmp.SetXYZ(0,0,0);
@@ -250,14 +269,19 @@ void CbmKFParticleFinder::Finish()
 }
 
 void CbmKFParticleFinder::FillKFPTrackVector(KFPTrackVector* tracks, const vector<CbmStsTrack>& vRTracks, const vector<KFFieldVector>& vField, 
-                                             const vector<int>& pdg, const vector<int>& trackId, const vector<float>& vChiToPrimVtx) const
+                                             const vector<int>& pdg, const vector<int>& trackId, const vector<float>& vChiToPrimVtx, bool atFirstPoint) const
 {
   int ntracks = vRTracks.size();
   tracks->Resize(ntracks);
   //fill vector with tracks
   for(Int_t iTr=0; iTr<ntracks; iTr++)
   {
-    const FairTrackParam* parameters = vRTracks[iTr].GetParamFirst();
+    const FairTrackParam* parameters;
+    if(atFirstPoint)
+      parameters = vRTracks[iTr].GetParamFirst();
+    else
+      parameters = vRTracks[iTr].GetParamLast();
+    
     double par[6] = {0.f};
     
     double tx = parameters->GetTx(), ty = parameters->GetTy(), qp = parameters->GetQp();
