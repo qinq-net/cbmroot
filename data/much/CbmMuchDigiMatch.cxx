@@ -199,19 +199,17 @@ void CbmMuchDigiMatch::AddCharge(Int_t iPoint, UInt_t charge, Double_t t, TArray
   // initial time is set 100 ns before arrival of the first point 
   // since later points may contribute before if drift time is different for them
   // TODO  take from digitizer
-  if (n==0) fT0 = t-50;
+  if (n==0) fT0 = t-fDeadTime+1;
+  if (fT0<0) fT0 = 0; 
   Int_t bin0 = Int_t((t-fT0)/gkResponseBin);
   if (t<fT0) {
     printf("=====\n");
     printf("Warning t=%f < fT0=%f\n",t,fT0);
     printf("=====\n");
   }
-	// Placed below code under Else by VIKAS
-  else  
-  {Int_t nbins = bin0+shape.GetSize();
+  Int_t nbins = bin0+shape.GetSize();
   if (fSignalShape.GetSize()<nbins) fSignalShape.Set(nbins);
   for (Int_t j=0;j<shape.GetSize();j++)  fSignalShape[bin0 + j]+=charge*shape[j];
- }
 }
 // -------------------------------------------------------------------------
 
