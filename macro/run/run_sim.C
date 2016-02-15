@@ -75,21 +75,21 @@ void run_sim(Int_t nEvents = 2,
 
   // - TRD digitisation parameters
   if ( setup->GetGeoTag(kTrd, geoTag) ) {
-  	TObjString trdFile(srcDir + "/parameters/trd/trd_" + geoTag + ".digi.par");
-  	parFileList->Add(&trdFile);
+  	TObjString* trdFile = new TObjString(srcDir + "/parameters/trd/trd_" + geoTag + ".digi.par");
+  	parFileList->Add(trdFile);
     std::cout << "-I- " << myName << ": Using parameter file "
-    		      << trdFile.GetString() << std::endl;
+    		      << trdFile->GetString() << std::endl;
   }
 
   // - TOF digitisation parameters
   if ( setup->GetGeoTag(kTof, geoTag) ) {
-  	TObjString tofFile(srcDir + "/parameters/tof/tof_" + geoTag + ".digi.par");
-        parFileList->Add(&tofFile);
+  	TObjString* tofFile = new TObjString(srcDir + "/parameters/tof/tof_" + geoTag + ".digi.par");
+        parFileList->Add(tofFile);
     std::cout << "-I- " << myName << ": Using parameter file "
-    		      << tofFile.GetString() << std::endl;
+    		      << tofFile->GetString() << std::endl;
 
-        TObjString tofBdfFile(srcDir + "/parameters/tof/tof_" + geoTag + ".digibdf.par");
-	parFileList->Add(&tofBdfFile);
+        TObjString* tofBdfFile = new TObjString(srcDir + "/parameters/tof/tof_" + geoTag + ".digibdf.par");
+	parFileList->Add(tofBdfFile);
     std::cout << "-I- " << myName << ": Using parameter file "
 	      << tofBdfFile->GetString() << std::endl;
   }
@@ -160,6 +160,7 @@ void run_sim(Int_t nEvents = 2,
   // ------------------------------------------------------------------------
 
 
+/*
   // -----   Logger settings   ----------------------------------------------
   gLogger->SetLogScreenLevel(logLevel.Data());
   gLogger->SetLogVerbosityLevel(logVerbosity.Data());
@@ -168,14 +169,14 @@ void run_sim(Int_t nEvents = 2,
 
   // -----   Load the geometry setup   -------------------------------------
   std::cout << std::endl;
-  TString setupFile = srcDir + "/geometry/setup/setup_" + setupName + ".C";
-  TString setupFunct = "setup_";
+  setupFile = srcDir + "/geometry/setup/setup_" + setupName + ".C";
+  setupFunct = "setup_";
   setupFunct = setupFunct + setupName + "()";
   std::cout << "-I- " << myName << ": Loading macro " << setupFile << std::endl;
   gROOT->LoadMacro(setupFile);
   gROOT->ProcessLine(setupFunct);
   // ------------------------------------------------------------------------
-
+*/
 
   // -----   Input file   ---------------------------------------------------
   std::cout << std::endl;
@@ -267,7 +268,7 @@ void run_sim(Int_t nEvents = 2,
 
   // -----   Digitisers   ---------------------------------------------------
   std::cout << std::endl;
-  TString macroName = gSystem->Getenv("VMCWORKDIR");
+  macroName = gSystem->Getenv("VMCWORKDIR");
   macroName += "/macro/run/modules/digitize.C";
   std::cout << "Loading macro " << macroName << std::endl;
   gROOT->LoadMacro(macroName);
