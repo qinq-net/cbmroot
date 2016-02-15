@@ -472,9 +472,9 @@ void CbmMuchDigitizeGem::AddCharge(CbmMuchPad* pad, UInt_t charge, Int_t iPoint,
     digi->SetTime(time);
     match->SetDeadTime(fDeadTime);
   }
-  if (time>digi->GetTime()+match->GetDeadTime()) {
+  if ((time>digi->GetTime()+match->GetDeadTime())||(time<digi->GetTime()-match->GetDeadTime())) {
     AddDigi(pad);
-    digi->SetTime(time);
+    digi->SetTime(time);	
     match->SetDeadTime(fDeadTime);
   }
   match->AddCharge(iPoint,charge,time+driftTime,fgDeltaResponse,time);
@@ -518,7 +518,7 @@ Bool_t CbmMuchDigitizeGem::AddDigi(CbmMuchPad* pad) {
     new ((*fDigis)[fDigis->GetEntriesFast()]) CbmMuchDigi(digi);
     new ((*fDigiMatches)[fDigiMatches->GetEntriesFast()]) CbmMuchDigiMatch(match);
   }
-  //match->Reset();
+  match->Reset();
   fNdigis++;
   return kTRUE;
 }
