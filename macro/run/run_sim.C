@@ -84,9 +84,14 @@ void run_sim(Int_t nEvents = 2,
   // - TOF digitisation parameters
   if ( setup->GetGeoTag(kTof, geoTag) ) {
   	TObjString tofFile(srcDir + "/parameters/tof/tof_" + geoTag + ".digi.par");
-  	//parFileList->Add(&tofFile);
+        parFileList->Add(&tofFile);
     std::cout << "-I- " << myName << ": Using parameter file "
     		      << tofFile.GetString() << std::endl;
+
+        TObjString tofBdfFile(srcDir + "/parameters/tof/tof_" + geoTag + ".digibdf.par");
+	parFileList->Add(&tofBdfFile);
+    std::cout << "-I- " << myName << ": Using parameter file "
+	      << tofBdfFile->GetString() << std::endl;
   }
   // ------------------------------------------------------------------------
 
