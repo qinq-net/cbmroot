@@ -85,7 +85,7 @@ public:
   //  void SetDebugTree(PairAnalysisDebugTree * const tree) { fDebugTree=tree; }
   void SaveDebugTree();
   // outputs - cut detailed histos
-  THashList * GetCutStepHistogramList()     const { return fCutStepHistos; }
+  THashList * GetCutStepHistogramList()     const { return fCutStepHistos->GetSize()?fCutStepHistos:0x0; }
 
 
   Bool_t HasCandidates()   const { return GetPairArray( 1)?GetPairArray( 1)->GetEntriesFast()>0:0; }
