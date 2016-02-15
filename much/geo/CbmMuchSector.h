@@ -18,7 +18,7 @@ class CbmMuchPad;
 
 using std::vector;
 
-class CbmMuchSector: public TObject{
+class CbmMuchSector{
 public:
   CbmMuchSector();
   CbmMuchSector(UInt_t modAddress, UInt_t index, Int_t nChannels);

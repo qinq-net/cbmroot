@@ -5,8 +5,7 @@
 using std::vector;
 
 // -----   Default constructor   -------------------------------------------
-CbmMuchSector::CbmMuchSector()
-  : TObject(),
+CbmMuchSector::CbmMuchSector():
     fAddress(0),
     fNChannels(0),
     fPads()
@@ -15,8 +14,7 @@ CbmMuchSector::CbmMuchSector()
 // -------------------------------------------------------------------------
 
 // -----  Standard constructor  --------------------------------------------
-CbmMuchSector::CbmMuchSector(UInt_t modAddress, UInt_t index, Int_t nChannels)
-  : TObject(),  
+CbmMuchSector::CbmMuchSector(UInt_t modAddress, UInt_t index, Int_t nChannels):  
     fAddress(CbmMuchAddress::SetElementId(modAddress,kMuchSector,index)),
     fNChannels(nChannels),
     fPads()
@@ -27,7 +25,7 @@ CbmMuchSector::CbmMuchSector(UInt_t modAddress, UInt_t index, Int_t nChannels)
 
 CbmMuchPad* CbmMuchSector::GetPadByChannelIndex(Int_t iChannel) const { 
 //  gLogger->Debug(MESSAGE_ORIGIN,"iChannel=%i fPads.size()=%i fNChannels=%i",iChannel,fPads.size(),fNChannels);
-  if (iChannel>=static_cast<Int_t>(fPads.size()) || iChannel<0) {
+  if (iChannel>=fPads.size() || iChannel<0) {
     gLogger->Error(MESSAGE_ORIGIN,"iChannel=%i fPads.size()=%i",iChannel,fPads.size());
     gLogger->Error(MESSAGE_ORIGIN,"  station index=%i",CbmMuchAddress::GetStationIndex(fAddress));
     gLogger->Error(MESSAGE_ORIGIN,"  layer index=%i",CbmMuchAddress::GetLayerIndex(fAddress));
