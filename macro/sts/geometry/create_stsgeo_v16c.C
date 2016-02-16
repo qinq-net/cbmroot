@@ -13,6 +13,7 @@
  ** v16a: derived from v15c (no cones), but with sensor types renamed:
  ** 2 -> 1, 3 -> 2, 4 -> 3, 5 -> 4, 1 -> 5
  **
+ ** v15c: as v15b without cones
  ** v15b: introduce modified carbon ladders from v13z
  ** v15a: with flipped ladder orientation for stations 0,2,4,6 to match CAD design
  **
