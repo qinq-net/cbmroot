@@ -128,6 +128,9 @@
 
 // -------------   Steering variables       -----------------------------------
 
+// ---> Horizontal width of sensors [cm]
+const Double_t gkSensorSizeX = 6.2092;
+  
 // ---> Thickness of sensors [cm]
 const Double_t gkSensorThickness = 0.03;
 
@@ -742,7 +745,7 @@ Int_t CreateSensors() {
 
 
   // --- Sensor type 01: Small sensor (6.2 cm x 2.2 cm)
-  xSize = 6.2092;
+  xSize = gkSensorSizeX;
   ySize = 2.2;
   TGeoBBox* shape_sensor01 = new TGeoBBox("sensor01", 
 					  xSize/2., ySize/2., zSize/2.);
@@ -751,7 +754,7 @@ Int_t CreateSensors() {
 
 
   // --- Sensor type 02: Medium sensor (6.2 cm x 4.2 cm)
-  xSize = 6.2092;
+  xSize = gkSensorSizeX;
   ySize = 4.2;
   TGeoBBox* shape_sensor02 = new TGeoBBox("sensor02", 
 					  xSize/2., ySize/2., zSize/2.);
@@ -760,7 +763,7 @@ Int_t CreateSensors() {
 
 
   // ---  Sensor type 03: Big sensor (6.2 cm x 6.2 cm)
-  xSize = 6.2092;
+  xSize = gkSensorSizeX;
   ySize = 6.2;
   TGeoBBox* shape_sensor03 = new TGeoBBox("sensor03", 
 					  xSize/2., ySize/2., zSize/2.);
@@ -769,7 +772,7 @@ Int_t CreateSensors() {
 
 
   // ---  Sensor type 04: Big sensor (6.2 cm x 12.4 cm)
-  xSize = 6.2092;
+  xSize = gkSensorSizeX;
   ySize = 12.4;
   TGeoBBox* shape_sensor04 = new TGeoBBox("sensor04", 
 					  xSize/2., ySize/2., zSize/2.);
@@ -1466,7 +1469,7 @@ void AddCarbonLadder(Int_t LadderIndex,
       else statZodd = TMath::Max(statZodd, 2. * shape->GetDZ() );
     }
     else
-      statX += 6.2092;
+      statX += gkSensorSizeX;
   }
   statX -= Double_t(nLadders-1) * gkLadderOverlapX;
   statZ = statZeven + gkLadderGapZ + statZodd;
@@ -1557,7 +1560,7 @@ void AddCarbonLadder(Int_t LadderIndex,
       cout << "xPos3: " << xPos << endl;
     }
     else
-      xPos += 6.2092 - gkLadderOverlapX;
+      xPos += gkSensorSizeX - gkLadderOverlapX;
   }
 
   return station;
