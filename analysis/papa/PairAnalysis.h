@@ -216,7 +216,7 @@ private:
   PairAnalysis(const PairAnalysis &c);
   PairAnalysis &operator=(const PairAnalysis &c);
 
-  ClassDef(PairAnalysis,1);
+  ClassDef(PairAnalysis,1); //Steering class to process the data
 };
 
 inline Int_t PairAnalysis::GetPairIndex(Int_t arr1, Int_t arr2) const

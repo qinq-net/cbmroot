@@ -81,7 +81,7 @@ class PairAnalysisHn : public THnSparseF {
  private:
   PairAnalysisHn(const PairAnalysisHn &hist);
   PairAnalysisHn& operator = (const PairAnalysisHn &hist);
-  ClassDef(PairAnalysisHn,2)
+  ClassDef(PairAnalysisHn,2) // (temporary) class to hold functions in THnSparse
 };
 ClassImp(PairAnalysisHn)
 //// end temporary solution
@@ -263,7 +263,7 @@ private:
   PairAnalysisHistos(const PairAnalysisHistos &hist);
   PairAnalysisHistos& operator = (const PairAnalysisHistos &hist);
 
-  ClassDef(PairAnalysisHistos,3)
+  ClassDef(PairAnalysisHistos,3) // Histogram management
 };
 
 template <typename valX, typename valY, typename valZ, typename valP, typename valW>

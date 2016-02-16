@@ -49,7 +49,7 @@ private:
   PairAnalysisTrackRotator(const PairAnalysisTrackRotator &c);
   PairAnalysisTrackRotator &operator=(const PairAnalysisTrackRotator &c);
 
-  ClassDef(PairAnalysisTrackRotator,1)         // PairAnalysis TrackRotator
+  ClassDef(PairAnalysisTrackRotator,1)         // Track rotation configuration
 };
 
 

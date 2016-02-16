@@ -158,7 +158,7 @@ protected:
 
   Bool_t fKFUsage         = kFALSE; // Use KF for vertexing
 
-  ClassDef(PairAnalysisPair,1)
+  ClassDef(PairAnalysisPair,1) // Base class for pairs
 };
 
 #endif

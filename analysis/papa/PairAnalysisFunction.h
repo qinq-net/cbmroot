@@ -56,7 +56,7 @@ class PairAnalysisFunction : public TNamed {
   Int_t GetDof()                const { return fDof;               }
   Double_t GetChi2Dof()         const { return fChi2Dof;           }
   Double_t GetFitMin()          const { return fFitMin;            }
-    Double_t GetFitMax()        const { return fFitMax;            }
+  Double_t GetFitMax()          const { return fFitMax;            }
   
   //virtual void Draw(const Option_t* option = "");
   //  virtual void Print(Option_t *option="") const;
@@ -90,7 +90,7 @@ protected:
   PairAnalysisFunction(const PairAnalysisFunction &c);
   PairAnalysisFunction &operator=(const PairAnalysisFunction &c);
 
-  ClassDef(PairAnalysisFunction,1)         // class for signal extraction using a combined bgrd+signal fit
+  ClassDef(PairAnalysisFunction,1)         // Combine functions for e.g. signal extractions
 
 };
 

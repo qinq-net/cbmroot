@@ -1,15 +1,14 @@
-/*************************************************************************
-* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
-**************************************************************************/
-
-//
-// PairAnalysis helper functions wrapped in a namespace
+///////////////////////////////////////////////////////////////////////////
+//                                                                       //
+// helper functions wrapped in a namespace.
 //
 //
 // Authors: 
-//   Julian Book <Julian.Book@cern.ch>
-
-
+//  * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
+//  Julian Book <Julian.Book@cern.ch>
+//
+//                                                                       //
+///////////////////////////////////////////////////////////////////////////
 
 
 #include <TError.h>

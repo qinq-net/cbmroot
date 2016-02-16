@@ -58,7 +58,7 @@ private:
   PairAnalysisCutQA(const PairAnalysisCutQA &);
   PairAnalysisCutQA &operator=(const PairAnalysisCutQA &);
   
-  ClassDef(PairAnalysisCutQA,3) //Group of cuts
+  ClassDef(PairAnalysisCutQA,3) // Simple automatic cut QA 
 };
 
 #endif

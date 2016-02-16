@@ -6,7 +6,6 @@
 //#####################################################
 //#                                                   # 
 //#              Class PairAnalysisMC                   #
-//#       Cut Class for Jpsi->e+e- analysis           #
 //#                                                   #
 //#   by Julian Book, Uni Ffm, Julian.Book@cern.ch    #
 //#                                                   #
@@ -90,7 +89,7 @@ private:
   Bool_t CheckIsDalitz(Int_t label, const PairAnalysisSignalMC * const signalMC) const;
   Bool_t CheckDalitzDecision(Int_t mLabel, const PairAnalysisSignalMC * const signalMC) const;
 
-  ClassDef(PairAnalysisMC, 0)
+  ClassDef(PairAnalysisMC, 0) // MC signal finder
 };
 
 //

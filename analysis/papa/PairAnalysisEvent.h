@@ -108,7 +108,7 @@ private:
  PairAnalysisEvent(const PairAnalysisEvent& event);
  PairAnalysisEvent &operator=(const PairAnalysisEvent &c);
 
- ClassDef(PairAnalysisEvent,7)         // PairAnalysis Event
+ ClassDef(PairAnalysisEvent,7)         // Event structure
 };
 
 

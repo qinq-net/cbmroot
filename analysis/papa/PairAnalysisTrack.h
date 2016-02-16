@@ -126,7 +126,7 @@ private:
   Int_t          fMultiMatch         = 0;    // MC label for n-times matched tracks
 
   PairAnalysisTrack &operator=(const PairAnalysisTrack &c);
-  ClassDef(PairAnalysisTrack,5)         // PairAnalysis Track
+  ClassDef(PairAnalysisTrack,5)         // Track structure
 };
 
 

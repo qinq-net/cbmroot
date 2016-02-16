@@ -1,69 +1,14 @@
 #ifndef PAIRANALYSISSIGNALMC_H
 #define PAIRANALYSISSIGNALMC_H
 
+/* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 #include <TNamed.h>
 #include <TMCProcess.h>
 #include <TSpline.h>
 //#include <TGraph.h>
 //#include <TF1.h>
-/* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/*
-   Julian Book, jbook@ikf.uni-frankfurt.de
- */
-
-/*
-   Monte Carlo signal definition:
-      Leg #1  <-- Mother #1  <--  Grandmother #1
-                      |
-      Leg #2  <-- Mother #2  <--  Grandmother #2
-  
-   For every leg, mother or grand-mother, a PDG code and a source can be specified.
-
-   1.) For the PDG codes, the PYTHIA standard is used. 
-   A few non-existent PYTHIA codes are used to select more than one PYTHIA code. All these are described below
-   and implemented in PairAnalysisMC::ComparePDG() function:
-      0 - default, accepts all PYTHIA codes
-    100 - light unflavoured mesons in the code range 100-199
-    200 -        --"--                               200-299
-    300 - strange mesons in the code range           300-399
-    400 - charmed mesons in the code range           400-499
-    401 - open charm mesons (all D and D* mesons)    400-439
-    402 - open charm mesons and baryons together     400-439, 4000-4399
-    403 - all charm hadrons (mesons and baryons)     400-499, 4000-4999
-    500 - beauty mesons in the code range            500-599
-    501 - open beauty mesons                         500-549
-    502 - open beauty mesons and baryons             500-549, 5000-5499
-    503 - all beauty hadrons                         500-599, 5000-5999
-    902 - all open charm open beauty mesons+baryons  400-439, 500-549, 4000-4399, 5000-5499
-   1000 - light unflavoured baryons in the code range 1000-1999
-   2000 -        --"--                                2000-2999
-   3000 - strange baryons in the code range           3000-3999
-   4000 - charmed baryons in the code range           4000-4999
-   4001 - open charm baryons                          4000-4399
-   5000 - beauty baryons in the code range            5000-5999
-   5001 - open beauty baryons                         5000-5499
-
-   2.) If the exclusion flags are turned ON then the PDG codes required and the conventional codes described above
-       are used to exclude the selected particles. 
-
-   3.) If the selection of both charges is switched ON then the PDG codes act on both particles and anti-particles.
-
-   4.) Particles sources implemented:
-     1. Primary   - particle originating in the physics event
-     2. FinalState- stable(final state) particles which reach the detector -> according to AliStack::IsPhysicalPrimary() 
-     3. Direct    - primary particle which has no mother (e.g. J/psi's added to pythia MC events via generator cocktails,
-                    particles generated in a sudden freeze-out in thermal models, initial state particles)
-     4. Secondary - particle created during the GEANT propagation due to interaction of final state primaries with the material
-
-   5.) The 2 legs can originate from the same or different mother particles. This can be specified via the SetMotherRelation()
-       method call.
-
-   6.) The filling of the pure MC step can be switched on using SetFillPureMCStep() method call. This should be used
-       with care since at the pure MC information level there is no cut applied and for abundant particles the combinatorics
-       can be very high.
-*/
 
 
 //__________________________________________________________________
@@ -209,7 +154,7 @@ class PairAnalysisSignalMC : public TNamed {
   PairAnalysisSignalMC(const PairAnalysisSignalMC &c);
   PairAnalysisSignalMC &operator=(const PairAnalysisSignalMC &c);
   
-  ClassDef(PairAnalysisSignalMC,5);
+  ClassDef(PairAnalysisSignalMC,5); // MC signal defintions
 };
 
 #endif

@@ -1,8 +1,22 @@
-//
-// TObject bits are used to flag the MC matching between detector tracklets
-// bits used are >14 and used according to CbmDetectorList.h -> DetectorId
+///////////////////////////////////////////////////////////////////////////
 //
 //
+// Authors:
+//   Julian Book   <Julian.Book@cern.ch>
+/*
+
+  Analysis track that keep references to all tracklets of sub detectors and 
+  provides easy access to them via e.g. GetTrack(DetectorId det).
+
+  Two TLorentzVector hold information on the momentum components and
+  position. Further the SetMassHypo is calculated according to the 
+  setting of PairAnalysis::SetLegPdg(pdgLeg1, pdgLeg2) and the actual charge.
+
+  TObject bits are used to flag the matching between detector tracklets and MC tracks.
+  Bits used are >14 and correspond to CbmDetectorList.h -> DetectorId
+*/
+//                                                                       //
+///////////////////////////////////////////////////////////////////////////
 
 //#include <TObjArray.h>
 #include <vector>
@@ -159,9 +173,9 @@ PairAnalysisTrack::PairAnalysisTrack(CbmKFVertex *vtx,
 PairAnalysisTrack::PairAnalysisTrack(const PairAnalysisTrack& track) :
   TNamed(track.GetName(), track.GetTitle()),
   fGlblTrack(track.GetGlobalTrack()),
-  fStsTrack(track.GetStsTrack()),
-  fMuchTrack(track.GetMuchTrack()),
-  fTrdTrack(track.GetTrdTrack()),
+  fStsTrack(track.fStsTrack),
+  fMuchTrack(track.fMuchTrack),
+  fTrdTrack(track.fTrdTrack),
   fRichRing(track.GetRichRing()),
   fTofHit(track.GetTofHit()),
   fMCTrack(track.GetMCTrack()),

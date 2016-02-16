@@ -26,10 +26,9 @@ class AnalysisCuts : public TNamed
     virtual void   SetSelected(Bool_t dec)    {fSelected = dec;}
     virtual UInt_t Selected()        const    {return fSelected;}
 
-    // vvvvv NEEDED ?? vvvvv
-    virtual Long64_t Merge(TCollection* /* list */)      { return 0; }
-    virtual TList* GetOutput()                { return 0; }
-    virtual TObject *GetStatistics(Option_t *) const {return 0;} //TODO: maybe use to pass histogram with statistics
+    virtual Long64_t Merge(TCollection* /* list */)  { return 0; }
+    virtual TList* GetOutput()                       { return 0; }
+    virtual TObject *GetStatistics(Option_t *) const {return 0;}
  private:
     UInt_t fFilterMask;        // Mask to use one of the previous decisions inside a filter
     Bool_t fSelected;          // Final decision on selction

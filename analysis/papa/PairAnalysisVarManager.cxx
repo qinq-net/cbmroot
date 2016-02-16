@@ -1,10 +1,29 @@
-/* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
- * based on the ALICE-papa package                                  */
-
 ///////////////////////////////////////////////////////////////////////////
-//                PairAnalysis Variables Manager class                     //
-//                                                                       //
+//                Variables Manager class                     
+//                                                            
+// Authors:
+//   * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
+//   Julian Book   <Julian.Book@cern.ch>                                                
 /*
+
+  This static class holds all event, track, hit, pair information used in the 
+  analysis of reconstructed and MC generated data.
+
+  All variables are defined in the enumerator ValueTypes.
+  The corresponding names, labels, units are defined in fgkParticleNames and can be 
+  accesses via:
+
+   GetValueName(  Int_t i)
+   GetValueLabel( Int_t i)
+   GetValueUnit(  Int_t i)
+
+  A certain value can be obtained at runtime via:
+
+    GetValue(ValueTypes val)
+
+  For each variable a TFormula is defined in the array fgFormula that are used 
+  to calculate new variables using TMath functions (https://root.cern.ch/doc/master/classTFormula.html)
+  that can be used for histograms in PairAnalysisHistos and cuts in PairAnalysisVarCuts
 
 */
 //                                                                       //

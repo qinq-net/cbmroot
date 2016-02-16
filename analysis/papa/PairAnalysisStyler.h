@@ -88,6 +88,6 @@ namespace PairAnalysisStyler
 
   TH1* GetFirstHistogram();
   
-}
+} // Styling (static)
 
 #endif

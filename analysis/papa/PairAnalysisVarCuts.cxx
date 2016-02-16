@@ -1,15 +1,22 @@
-/*************************************************************************
-* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
-**************************************************************************/
-
 ///////////////////////////////////////////////////////////////////////////
-//   Cut class providing cuts to all infomation                          //
-//     available for the AliVParticle interface                          //
-// Authors:                                                              //
-//   Julian Book   <Julian.Book@cern.ch>                                 //
+//
+//
+// Authors:                                                              
+//   * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
+//   Julian Book   <Julian.Book@cern.ch>                                 
 /*
 
+  This class provides cuts for all variables and formulas managed by PairAnalysisVarManager.
+  Many cuts can be added to the same object and are processed consecutively according to
+  the cut logic/type SetCutType(CutType type). Further the arguments of AddCut allow to 
+  include or exclude a certain selection in the analysis.
 
+  It is recommmended to give the cut object a unique and meaning full name(+title), since 
+  they are used e.g. in PairAnalysisCutQA and PairAnalysis::GetCutStepHistogramList()
+  to monitor the cut impact.
+
+  Many objects can be combined in a PairAnalysisCutGroup with additional cut logics.
+  
 
 */
 //                                                                       //

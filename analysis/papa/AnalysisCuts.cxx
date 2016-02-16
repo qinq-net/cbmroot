@@ -1,17 +1,18 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- **************************************************************************/
-
+///////////////////////////////////////////////////////////////////////////
+//
 // Base class for analysis cuts
+//
+// Authors:
+//   * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+//
+//
+////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
 #include "AnalysisCuts.h"
 
-
 ClassImp(AnalysisCuts)
 
-
-////////////////////////////////////////////////////////////////////////
 
 AnalysisCuts::AnalysisCuts():
 TNamed("Cuts",""), fFilterMask(0), fSelected(kFALSE)

@@ -46,10 +46,10 @@ public:
 
   
 private:
-  TList  fCutGroupList;  //for saving the different cuts
-  Bool_t fCompOperator;  //determines whether the cuts are AND/OR compared
+  TList  fCutGroupList;  // List of the different cuts
+  Bool_t fCompOperator;  // Determines whether the cuts are AND/OR compared
   
-  ClassDef(PairAnalysisCutGroup,1) //Group of cuts
+  ClassDef(PairAnalysisCutGroup,1) // Collect cuts in groups with logical comparators
 };
 
 #endif

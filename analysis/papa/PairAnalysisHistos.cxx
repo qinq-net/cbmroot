@@ -1,7 +1,3 @@
-/*************************************************************************
- * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
- **************************************************************************/
-
 ///////////////////////////////////////////////////////////////////////////
 //
 // Generic Histogram container with support for groups and filling of groups
@@ -11,36 +7,49 @@
 //   Julian Book   <Julian.Book@cern.ch>
 /*
 
-  TOADD: reserved words, MC signals
+  TOADD: reserved words, MC signals, hist classes, MC weighting, plotting!
 
-  Histograms such as THxF, TProfile(2D,3D) and n-dimensonal objects such as
-  (THn, THnSparse) can be added via the various functions:
-  - UserHistogram
-  - UserProfile + different error option (Mean,Rms,.. see: TProfile::BuildOptions(..))
-  - UserSparse
+  Histograms such as THxF,D, TProfile,2D,3D and n-dimensonal objects such as
+  (THn, THnSparse) can be added via the various template functions:
+  - AddHistogram
+  - AddProfile + different error option (Mean,Rms,.. see: TProfile::BuildOptions(..))
+  - AddSparse
   In addition histograms can be filled with weights.
 
   Different kind of binnings can be passed (linear, arbitrary, logarithmic)
-  either via the PairAnalysisHelper functionalities (recommended):
-  - PairAnalysisHelper::MakeLinearBinning(nbins,low,high)
+  either via the PairAnalysisHelper functionalities:
+  - PairAnalysisHelper::MakeLinBinning(nbins,low,high)
   - PairAnalysisHelper::MakeLogBinning(nbins,low,high)
   - PairAnalysisHelper::MakeArbitraryBinning("1.,4.,10.,..")
-  or via one of the provided functions and switchers therein.
 
-  The 'name' and 'title;titleX;titleY;...' arguments of the objects are
-  recommended to be left free (i.e. ""), they are only kept for backward
-  compatibility. Then all axis labels, units and names and object names
-  are set in a consistent way and it is ensured that they are unique.
+  The 'name' and 'title;titleX;titleY;...' of the objects and all axis labels,
+  units and names and object names are set in a consistent way and
+  it is ensured that they are unique.
 
   Variables are added via the enumerator of PairAnalysisVarManager. Any
   computation of variables (max=10) are implemented according to TFormula
-  using the TMath functions and the passage of an array of variables, e.g.:
+  using the TMath functions.
 
-  UInt_t vars[]={ PairAnalysisVarManager::kRefMult, PairAnalysisVarManager::kRefMultTPConly };
-  histos->UserHistogram("Event","test","", PairAnalysisHelper::MakeLinBinning(100,1.e-1,1.e+1),
-  "[0]*[1]/TMath::Pi()+TMath::Cos([1])", varEpm);
+  
+  Examples:
 
+  // 1 dimensional
+  AddHistogram("Event", PairAnalysisHelper::MakeLinBinning(200,-1.,1.),  PairAnalysisVarManager::kXvPrim);
 
+  AddHistogram("Event", PairAnalysisHelper::MakeLinBinning(200,0.0,10.0), "VtxChi/VtxNDF");          // using formulas
+
+  AddHistogram("Track", PairAnalysisHelper::MakeLogBinning(400,0,4.),  PairAnalysisVarManager::kPt); // logarithmic
+
+  AddHistogram("Hit.TRD",PairAnalysisHelper::MakeLinBinning(105,-1.e+2,5.),  "ElossdEdx-ElossMC");   // use MC truth
+
+  // 2 dimensional
+  AddHistogram("Track", PairAnalysisHelper::MakeLinBinning(100,-0.5,3.), PairAnalysisVarManager::kY,
+                        PairAnalysisHelper::MakeLinBinning(125,0,5.), PairAnalysisVarManager::kPt);
+
+  AddProfile(  "Track", PairAnalysisHelper::MakeLogBinning(50,0.05,10.), PairAnalysisVarManager::kP,
+                        PairAnalysisVarManager::kTRDHits, "I"); // Y-average
+
+  ...
 
 */
 //                                                                       //

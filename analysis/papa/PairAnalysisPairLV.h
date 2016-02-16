@@ -107,7 +107,7 @@ private:
   TLorentzVector fD1;     // lorentz vector first daughter
   TLorentzVector fD2;     // lorentz vector second daughter
 
-  ClassDef(PairAnalysisPairLV,1)
+  ClassDef(PairAnalysisPairLV,1) // Lorentz vector pairs
 };
 
 #endif

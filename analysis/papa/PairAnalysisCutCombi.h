@@ -64,7 +64,7 @@ private:
   PairAnalysisCutCombi(const PairAnalysisCutCombi &c);
   PairAnalysisCutCombi &operator=(const PairAnalysisCutCombi &c);
 
-  ClassDef(PairAnalysisCutCombi,1)         // PairAnalysis CutCombi
+  ClassDef(PairAnalysisCutCombi,1)         // Apply cuts for certain conditions/ranges
 };
 
 #endif

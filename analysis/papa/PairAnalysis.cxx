@@ -1,27 +1,51 @@
-/*************************************************************************
-* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
-**************************************************************************/
-
 ///////////////////////////////////////////////////////////////////////////
-//                PairAnalysis Analysis Main class                         //
+//                PairAnalysis Main Analysis class                       //
 //                                                                       //
+// Authors:
+//   * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
+//   Julian Book   <Julian.Book@cern.ch>
 /*
-Framework to perform event selectoin, single track selection and track pair
-selection.
+
+Framework to perform event, single track and pair selections.
+
+Convention for the signs of the track in fTracks:
+The names are available via the function TrackClassName(Int_t i)
+
+  0: SE+ (same event +)
+  1: SE- (same event -)
+
 
 Convention for the signs of the pair in fPairCandidates:
 The names are available via the function PairClassName(Int_t i)
 
-0: SE+ SE+  (same event like sign +)
-1: SE+ SE-  (same event unlike sign)
-2: SE- SE-  (same event like sign -)
+  0: SE+ SE+  (same event like sign +)
+  1: SE+ SE-  (same event unlike sign)
+  2: SE- SE-  (same event like sign -)
 
-3: SE+ ME+  (mixed event like sign +)
-4: SE- ME+  (mixed event unlike sign -+)
-5: SE+ ME-  (mixed event unlike sign +-)
-6: SE- ME-  (mixed event like sign -)
+  3: SE+ ME+  (mixed event like sign +)
+  4: SE- ME+  (mixed event unlike sign -+)
+  5: SE+ ME-  (mixed event unlike sign +-)
+  6: SE- ME-  (mixed event like sign -)
 
-7: SE+ SE- (same event track rotation)
+  7: SE+ SE- (same event track rotation)
+
+
+Some options to configure your analysis instance:
+  SetLegPdg(Int_t pdgLeg1, Int_t pdgLeg2)  // define pair production of interest
+  SetNoPairing()                           // look only at track level
+  SetProcessLS(kFALSE)                     // switch off like-sign pair calculations
+ 
+
+Some options to configure the output:
+  SetHistogramManager(PairAnalysisHistos * const histos)  // default histogram manager
+  SetHistogramArray(PairAnalysisHF * const histoarray)    // histogram matrix
+  SetCutQA()                                              // switch on basic qa histograms
+
+  
+Some options to add background estimators:
+  SetMixingHandler(PairAnalysisMixingHandler *mix)        // event mixing
+  SetTrackRotator(PairAnalysisTrackRotator * const rot)   // track rotation
+
 
 */
 //                                                                       //

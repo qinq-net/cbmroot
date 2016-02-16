@@ -1,11 +1,17 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- **************************************************************************/
-
+///////////////////////////////////////////////////////////////////////////
 //
 // Manager class for filter decisions based on cuts
-// The filter contains a list of sets of cuts.
+// The filter contains a list of sets of cuts and controll histograms (optional).
 // A bit field is filled in order to store the decision of each cut-set. 
+//
+// Authors:
+//   * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+//   Julian Book   <Julian.Book@cern.ch>
+//
+// Add cut object to list via AnalysisFilter::AddCuts(AnalysisCuts* cuts)
+// Add control histograms via AnalysisFilter::AddHistos(PairAnalysisHistos* histos)
+//
+////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
 #include <TList.h>
@@ -14,13 +20,10 @@
 #include "PairAnalysisHistos.h"
 #include "AnalysisCuts.h"
 
-
 #include "PairAnalysisVarManager.h"
 
 ClassImp(AnalysisFilter)
 
-
-////////////////////////////////////////////////////////////////////////
 
 AnalysisFilter::AnalysisFilter():
     TNamed(),

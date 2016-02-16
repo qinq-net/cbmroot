@@ -1,6 +1,17 @@
-/*************************************************************************
-* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
-**************************************************************************/
+///////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                       //
+//                                                                                       //
+// Authors:                                                                              //
+//   * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
+//   Julian Book   <Julian.Book@cern.ch>                                                
+/*
+
+  Finds signal in the MC stack that are defined via PairAnalysisSignalMC
+
+ */
+//                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////
+
 
 #include <TClonesArray.h>
 #include <TParticle.h>

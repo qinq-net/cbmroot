@@ -59,6 +59,6 @@ namespace PairAnalysisHelper
   Double_t GetQuantile(TH1* h1, Double_t p=0.5);
 
   TObject* FindObjectByTitle(TObjArray *arrhist, TString ref);
-}
+} // Helper class (static)
 
 #endif

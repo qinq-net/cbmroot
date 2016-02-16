@@ -211,7 +211,7 @@ protected:
   PairAnalysisSignalExt(const PairAnalysisSignalExt &c);
   PairAnalysisSignalExt &operator=(const PairAnalysisSignalExt &c);
 
-  ClassDef(PairAnalysisSignalExt,3) // Ext and abstract class for signal extraction
+  ClassDef(PairAnalysisSignalExt,3) // Class for signal extraction
 };
 
 inline TObject* PairAnalysisSignalExt::FindObject(TObjArray *arrhist, PairAnalysis::EPairType type)

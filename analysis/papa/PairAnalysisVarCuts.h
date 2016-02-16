@@ -80,7 +80,7 @@ public:
   PairAnalysisVarCuts(const PairAnalysisVarCuts &c);
   PairAnalysisVarCuts &operator=(const PairAnalysisVarCuts &c);
 
-  ClassDef(PairAnalysisVarCuts,8)         //Cut class providing cuts to all infomation available for the AliVParticle interface
+  ClassDef(PairAnalysisVarCuts,8)         //Cut class providing cuts based on all kind of variables
 };
 
 

@@ -1,10 +1,28 @@
 ///////////////////////////////////////////////////////////////////////////
-//                PairAnalysis CutCombi                                //
 //                                                                       //
-//                                                                       //
+// Authors:
+//   Julian Book   <Julian.Book@cern.ch>
 /*
-Add Detailed description
+  
+  Advanced cut class.
 
+  Add cuts that are applied only for certain types of e.g. tracks or under 
+  some defined condition:   AddCut(AnalysisCuts *cuts, AnalysisCuts *range)
+
+  Example - apply TRD PID only for track with 3-4 reconstructed hits
+  
+    // TRD reconstruction cuts
+    PairAnalysisVarCuts   *recTRD = new PairAnalysisVarCuts("recTRD","recTRD");
+    recTRD->AddCut(PairAnalysisVarManager::kTRDHits,         3.,   4.);
+
+    // TRD Pid - 1-dimensional
+    PairAnalysisVarCuts  *pidTRD     = new PairAnalysisVarCuts("pidTRD","pidTRD");
+    pidTRD->AddCut(PairAnalysisVarManager::kTRDPidANN,       0.5,   1.5);
+
+    // build PID cut depending on track quality
+    PairAnalysisCutCombi *pidTRDavai = new PairAnalysisCutCombi("TRDPidAvai","TRDPidAvai");
+    pidTRDavai->AddCut(pidTRD, recTRD);
+  
 
 */
 //                                                                       //

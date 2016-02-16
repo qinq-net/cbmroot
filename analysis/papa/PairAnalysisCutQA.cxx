@@ -1,12 +1,17 @@
 //////////////////////////////////////////////////////////////////////////
-//                           CutQA                                      //
 //                                                                      //
+// Authors:
+//   Julian Book   <Julian.Book@cern.ch>
+//
 /*
-   Allow to monitor how many tracks,pair,events pass the selection criterion 
-   in any of the cuts added to the corresponding filters. All you need to 
-   add to your config is the following:
+   Allow to monitor how many tracks, pairs, events pass the selection criterion 
+   in any of the cuts added to the corresponding filters. Further it automatically
+   calculates the MC matching efficiency seperately for each detector and base PDG 
+   particle after each cut.
 
-   papa->SetCutQA();
+   All you need to add to your config is the following:
+
+     PairAnalysis::SetCutQA();
 
 
 */

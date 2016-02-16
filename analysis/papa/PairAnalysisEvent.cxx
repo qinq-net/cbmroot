@@ -1,10 +1,19 @@
 ///////////////////////////////////////////////////////////////////////////
-//                PairAnalysisEvent                                        //
 //                                                                       //
-//                                                                       //
+// Authors:
+//   Julian Book   <Julian.Book@cern.ch>
 /*
-Add Detailed description
 
+  Event that holds all information needed for the of analysis (including fast simulations). 
+  Init() the PairAnalysisTrack array fTracks and provides easy access to:
+
+    hits          GetHits(      DetectorId det)
+    hit matches   GetHitMatches(DetectorId det)
+    points        GetPoints(    DetectorId det)
+
+    clusters      GetCluster(   DetectorId det)
+
+  for each sub-detector.
 
 */
 //                                                                       //

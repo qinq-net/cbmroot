@@ -64,6 +64,6 @@ private:
   PairAnalysisMetaData(const PairAnalysisMetaData &hist);
   PairAnalysisMetaData& operator = (const PairAnalysisMetaData &hist);
 
-  ClassDef(PairAnalysisMetaData,1)
+  ClassDef(PairAnalysisMetaData,1) // Meta Data Manager
 };
 #endif

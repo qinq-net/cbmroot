@@ -1,11 +1,10 @@
 #ifndef PAIRANALYSISVARMANAGER_H
 #define PAIRANALYSISVARMANAGER_H
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
- * based on the ALICE-papa package                                  */
+ * based on the ALICE-dielectron package                                  */
 
 //#############################################################
 //#                                                           #
-//#         Class PairAnalysisVarManager                        #
 //#         Class for management of available variables       #
 //#                                                           #
 //#  Authors:                                                 #
@@ -430,7 +429,7 @@ private:
   PairAnalysisVarManager(const PairAnalysisVarManager &c);
   PairAnalysisVarManager &operator=(const PairAnalysisVarManager &c);
 
-  ClassDef(PairAnalysisVarManager,1);
+  ClassDef(PairAnalysisVarManager,1); // Variables management for event, pair, track, hit infos (static)
 };
 
 

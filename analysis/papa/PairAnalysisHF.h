@@ -63,7 +63,7 @@ private:
   PairAnalysisHF(const PairAnalysisHF &c);
   PairAnalysisHF &operator=(const PairAnalysisHF &c);
 
-  ClassDef(PairAnalysisHF,1)         // PairAnalysis HF
+  ClassDef(PairAnalysisHF,1)         // Histogram matrix
 };
 
 

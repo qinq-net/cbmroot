@@ -67,7 +67,7 @@ private:
 
   void AssignID(TObject *obj);
 
-  ClassDef(PairAnalysisMixedEvent,1)         // PairAnalysis Event
+  ClassDef(PairAnalysisMixedEvent,1)         // Small mixed event structure
 };
 
 

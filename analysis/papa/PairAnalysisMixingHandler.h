@@ -72,7 +72,7 @@ private:
   PairAnalysisMixingHandler &operator=(const PairAnalysisMixingHandler &c);
 
   
-  ClassDef(PairAnalysisMixingHandler,1)         // PairAnalysis MixingHandler
+  ClassDef(PairAnalysisMixingHandler,1)         // Mixed event handler
 };
 
 

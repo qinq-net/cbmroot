@@ -76,7 +76,7 @@ protected:
   Int_t    fNparPeak      = 0;       // number of parameters for peak function
   Int_t    fNparBgnd      = 0;       // number of parameters for background function
 
-  ClassDef(PairAnalysisFunction,1)         // class for signal extraction using a combined bgrd+signal fit
+  ClassDef(PairAnalysisFunction,1)         // Signal extraction using a combined bgrd+signal fit
 };
 
 #endif

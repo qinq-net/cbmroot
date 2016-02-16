@@ -1,10 +1,21 @@
-/*************************************************************************
-* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
-**************************************************************************/
-
 ///////////////////////////////////////////////////////////////////////////
 //                                                                       //
 //                        Basic Analysis Task                            //
+//
+// Authors:
+//   * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
+//   Julian Book   <Julian.Book@cern.ch>
+/*
+
+  This task can hold multiple instances of PairAnalysis and a common set 
+  of meta data PairAnalysisMetaData.
+
+  A.t.m. you have to provide the beam energy via SetBeamEnergy(Double_t beamEbyHand)
+  and can optionally add common event cuts for all PairAnalysis instances via
+  SetEventFilter(AnalysisCuts *const filter)
+  
+
+*/
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
@@ -35,7 +46,7 @@ AnalysisTaskMultiPairAnalysis::AnalysisTaskMultiPairAnalysis() :
   fPairArray(0x0),
   fListPairAnalysis(),
   fListHistos(),
-//  fListCF(),
+  //  fListCF(),
   fgRichElIdAnn(0x0),
   fBeamEnergy(0.),
   fWeight(1.),
