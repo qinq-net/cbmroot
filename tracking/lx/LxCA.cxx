@@ -43,15 +43,15 @@ int points_counts[LXSTATIONS][LXLAYERS];*/
 
 void LxSpace::InitGlobalCAArrays()
 {
-  memset(x_coords, 0, sizeof(x_coords));
-  memset(tx_vals, 0, sizeof(tx_vals));
-  memset(x_errs, 0, sizeof(x_errs));
-  memset(y_coords, 0, sizeof(y_coords));
-  memset(ty_vals, 0, sizeof(ty_vals));
-  memset(y_errs, 0, sizeof(y_errs));
-  memset(z_coords, 0, sizeof(z_coords));
-  memset(point_refs, 0, sizeof(point_refs));
-  memset(points_counts, 0, sizeof(points_counts));
+  memset(x_coords, 0, sizeof(scaltype) * LXSTATIONS * LXLAYERS * LXMAXPOINTSONSTATION);
+  memset(tx_vals, 0, sizeof(scaltype) * (LXSTATIONS - 1) * LXLAYERS * LXMAXPOINTSONSTATION);
+  memset(x_errs, 0, sizeof(scaltype) * LXSTATIONS * LXLAYERS * LXMAXPOINTSONSTATION);
+  memset(y_coords, 0, sizeof(scaltype) * LXSTATIONS * LXLAYERS * LXMAXPOINTSONSTATION);
+  memset(ty_vals, 0, sizeof(scaltype) * (LXSTATIONS - 1) * LXLAYERS * LXMAXPOINTSONSTATION);
+  memset(y_errs, 0, sizeof(scaltype) * LXSTATIONS * LXLAYERS * LXMAXPOINTSONSTATION);
+  memset(z_coords, 0, sizeof(scaltype) * LXSTATIONS * LXLAYERS * LXMAXPOINTSONSTATION);
+  memset(point_refs, 0, sizeof(LxPoint*) * LXSTATIONS * LXLAYERS * LXMAXPOINTSONSTATION);
+  memset(points_counts, 0, sizeof(int) * LXSTATIONS * LXLAYERS);
 
   for (int i = 0; i < stationsInAlgo - 2; ++i)
     memset(&use_points[i][0], 0, sizeof(use_points[i]));

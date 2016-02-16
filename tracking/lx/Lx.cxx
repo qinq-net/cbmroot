@@ -1709,5 +1709,5 @@ void LxFinder::SaveBackgroundChi2()
 
 bool LxFinder::ReadEvent(Int_t evNum)
 {
-  hitFile.ReadEvent(evNum);
+  return hitFile.ReadEvent(evNum);
 }
