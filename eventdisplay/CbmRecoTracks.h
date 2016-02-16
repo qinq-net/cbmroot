@@ -1,20 +1,20 @@
 /********************************************************************************
- *    Copyright (C) 2014 GSI Helmholtzzentrum fuer Schwerionenforschung GmbH    *
+ *    Copyright (C) 2016 GSI Helmholtzzentrum fuer Schwerionenforschung GmbH    *
  *                                                                              *
  *              This software is distributed under the terms of the             * 
  *         GNU Lesser General Public Licence version 3 (LGPL) version 3,        *  
  *                  copied verbatim in the file "LICENSE"                       *
  ********************************************************************************/
 // -------------------------------------------------------------------------
-// -----                      FairMCTracks header file                 -----
-// -----                Created 10/12/07  by M. Al-Turany              -----
+// -----                      CbmRecoTracks header file                -----
+// -----                Created 12/02/16  by T. Ablyazimov             -----
 // -------------------------------------------------------------------------
 
 
-/** FairMCTracks
- * @author M. Al-Turany
- * @since 10.12.07
- *   MVD event display object
+/** CbmRecoTracks
+ * @author T. Ablyazimov
+ * @since 12.02.16
+ *   CBM event display object
  **
  **/
 
@@ -30,6 +30,7 @@
 #include "TClonesArray.h"
 #include "CbmTrack.h"
 #include "CbmPixelHit.h"
+#include "CbmStsTrack.h"
 
 class FairEventManager;
 class TEveTrackList;
@@ -68,12 +69,15 @@ class CbmRecoTracks : public FairTask
 
   protected:
       void HandlePixelHit(TEveTrack* eveTrack, Int_t& n, const CbmPixelHit* hit, TEveVector* pMom);
-      void HandleTrack(TEveTrack* eveTrack, Int_t& n, TClonesArray* fHits, const CbmTrack* recoTrack, bool setMom);
+      void HandleTrack(TEveTrack* eveTrack, Int_t& n, TClonesArray* fHits, const CbmTrack* recoTrack);
+      void HandleStsTrack(TEveTrack* eveTrack, Int_t& n, const CbmStsTrack* stsTrack);
 
     TClonesArray* fGlobalTracks;
+    TClonesArray* fMvdHits;
     TClonesArray* fStsHits;
     TClonesArray* fStsTracks;
     TClonesArray* fRichRings;
+    TClonesArray* fRichHits;
     TClonesArray* fMuchPixelHits;
     TClonesArray* fMuchTracks;
     TClonesArray* fTrdHits;

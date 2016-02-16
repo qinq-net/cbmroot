@@ -1,13 +1,13 @@
 /********************************************************************************
- *    Copyright (C) 2014 GSI Helmholtzzentrum fuer Schwerionenforschung GmbH    *
+ *    Copyright (C) 2016 GSI Helmholtzzentrum fuer Schwerionenforschung GmbH    *
  *                                                                              *
  *              This software is distributed under the terms of the             * 
  *         GNU Lesser General Public Licence version 3 (LGPL) version 3,        *  
  *                  copied verbatim in the file "LICENSE"                       *
  ********************************************************************************/
 // -------------------------------------------------------------------------
-// -----                        FairMCTracks source file                  -----
-// -----                  Created 10/12/07  by M. Al-Turany            -----
+// -----                        CbmRecoTracks source file              -----
+// -----                  Created 12/02/16  by T. Ablyazimov           -----
 // -------------------------------------------------------------------------
 #include "CbmRecoTracks.h"
 
@@ -26,6 +26,8 @@
 #include "TObjArray.h"                  // for TObjArray
 #include "TParticle.h"                  // for TParticle
 #include "CbmGlobalTrack.h"
+#include "rich/CbmRichRing.h"
+#include "CbmStsTrack.h"
 
 #include <string.h>                     // for NULL, strcmp
 #include <iostream>                     // for operator<<, basic_ostream, etc
@@ -35,8 +37,10 @@
 CbmRecoTracks::CbmRecoTracks()
   : FairTask("FairMCTracks", 0),
     fStsTracks(NULL),
+    fMvdHits(NULL),
     fStsHits(NULL),
     fRichRings(NULL),
+    fRichHits(NULL),
     fMuchPixelHits(NULL),
     fMuchTracks(NULL),
     fTrdHits(NULL),
@@ -58,10 +62,12 @@ CbmRecoTracks::CbmRecoTracks()
 // -----   Standard constructor   ------------------------------------------
 CbmRecoTracks::CbmRecoTracks(const char* name, Int_t iVerbose)
   : FairTask(name, iVerbose),
+    fMvdHits(NULL),
     fStsTracks(NULL),
     fGlobalTracks(NULL),
     fStsHits(NULL),
     fRichRings(NULL),
+    fRichHits(NULL),
     fMuchPixelHits(NULL),
     fMuchTracks(NULL),
     fTrdHits(NULL),
@@ -84,8 +90,10 @@ InitStatus CbmRecoTracks::Init()
   FairRootManager* fManager = FairRootManager::Instance();
   fGlobalTracks = (TClonesArray*) fManager->GetObject("GlobalTrack");
   fStsTracks = (TClonesArray*)fManager->GetObject("StsTrack");
+  fMvdHits = (TClonesArray*) fManager->GetObject("MvdHit");
   fStsHits = (TClonesArray*) fManager->GetObject("StsHit");
   fRichRings = (TClonesArray*) fManager->GetObject("RichRing");
+  fRichHits = (TClonesArray*) fManager->GetObject("RichHit");
   fMuchPixelHits = (TClonesArray*) fManager->GetObject("MuchPixelHit");
   fMuchTracks = (TClonesArray*) fManager->GetObject("MuchTrack");
   fTrdHits = (TClonesArray*) fManager->GetObject("TrdHit");
@@ -124,16 +132,37 @@ void CbmRecoTracks::HandlePixelHit(TEveTrack* eveTrack, Int_t& n, const CbmPixel
     ++n;
 }
 
-void CbmRecoTracks::HandleTrack(TEveTrack* eveTrack, Int_t& n, TClonesArray* fHits, const CbmTrack* recoTrack, bool setMom = false)
+void CbmRecoTracks::HandleTrack(TEveTrack* eveTrack, Int_t& n, TClonesArray* fHits, const CbmTrack* recoTrack)
 {
     for (Int_t i = 0; i < recoTrack->GetNofHits(); ++i)
+        HandlePixelHit(eveTrack, n, static_cast<const CbmPixelHit*> (fHits->At(recoTrack->GetHitIndex(i))));
+}
+
+void CbmRecoTracks::HandleStsTrack(TEveTrack* eveTrack, Int_t& n, const CbmStsTrack* stsTrack)
+{
+    for (Int_t i = 0; i < stsTrack->GetNofMvdHits(); ++i)
     {
-        const CbmPixelHit* hit = static_cast<const CbmPixelHit*> (fHits->At(recoTrack->GetHitIndex(i)));
+        const CbmPixelHit* hit = static_cast<const CbmPixelHit*> (fMvdHits->At(stsTrack->GetMvdHitIndex(i)));
         
-        if (setMom && 0 == i)
+        if (0 == n)
         {
             TVector3 mom3;
-            recoTrack->GetParamFirst()->Momentum(mom3);
+            stsTrack->GetParamFirst()->Momentum(mom3);
+            TEveVector mom = TEveVector(mom3.X(), mom3.Y(), mom3.Z());
+            HandlePixelHit(eveTrack, n, hit, &mom);
+        }
+        else
+            HandlePixelHit(eveTrack, n, hit);
+    }
+    
+    for (Int_t i = 0; i < stsTrack->GetNofStsHits(); ++i)
+    {
+        const CbmPixelHit* hit = static_cast<const CbmPixelHit*> (fStsHits->At(stsTrack->GetStsHitIndex(i)));
+        
+        if (0 == n)
+        {
+            TVector3 mom3;
+            stsTrack->GetParamFirst()->Momentum(mom3);
             TEveVector mom = TEveVector(mom3.X(), mom3.Y(), mom3.Z());
             HandlePixelHit(eveTrack, n, hit, &mom);
         }
@@ -164,7 +193,7 @@ void CbmRecoTracks::Exec(Option_t* option)
         if (0 > stsId)
             continue;
         
-        const CbmTrack* stsTrack = static_cast<const CbmTrack*> (fStsTracks->At(stsId));
+        const CbmStsTrack* stsTrack = static_cast<const CbmStsTrack*> (fStsTracks->At(stsId));
         Int_t pdg = stsTrack->GetPidHypo();
         TParticle P;
         P.SetPdgCode(pdg);
@@ -172,15 +201,22 @@ void CbmRecoTracks::Exec(Option_t* option)
         TEveTrack* eveTrack = new TEveTrack(&P, pdg, fTrPr);
         eveTrack->SetLineColor(fEventManager->Color(pdg));
         Int_t n = 0;
-        HandleTrack(eveTrack, n, fStsHits, stsTrack, true);
+        HandleStsTrack(eveTrack, n, stsTrack);
         //LOG(INFO) << "GetPidHypo: " << stsTrack->GetPidHypo() << FairLogger::endl;
         
         if (-1 < richId)
-            ;//HandlePixelHit(eveTrack, n, static_cast<const CbmPixelHit*> (fTofHits->At(tofId)));
+        {
+            const CbmRichRing* r = static_cast<const CbmRichRing*> (fRichRings->At(richId));
+            const CbmPixelHit* rh = static_cast<const CbmPixelHit*> (fRichHits->At(r->GetHit(0)));
+            CbmPixelHit h(*rh);
+            h.SetX(r->GetCenterX());
+            h.SetY(r->GetCenterY());
+            HandlePixelHit(eveTrack, n, &h);
+        }
         else if (-1 < muchId)
             HandleTrack(eveTrack, n, fMuchPixelHits, static_cast<const CbmTrack*> (fMuchTracks->At(muchId)));
         
-        else if (-1 < trdId)
+        if (-1 < trdId)
             HandleTrack(eveTrack, n, fTrdHits, static_cast<const CbmTrack*> (fTrdTracks->At(trdId)));
         
         if (-1 < tofId)
