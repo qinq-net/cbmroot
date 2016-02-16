@@ -67,9 +67,11 @@ public:
     * \param[in] momentum Momentum of track.
     * \return true if track is identified as electron otherwise return false.
     */
+/*
 	Bool_t IsElectron(
 	      Int_t globalTrackIndex,
 	      Double_t momentum);
+*/
 
 	/**
 	 * \brief Set cut on TRD ANN output value.
