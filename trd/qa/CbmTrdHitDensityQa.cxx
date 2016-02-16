@@ -83,6 +83,37 @@ CbmTrdHitDensityQa::CbmTrdHitDensityQa()
    fModuleHitASICMapIt()
 {
 }
+CbmTrdHitDensityQa::CbmTrdHitDensityQa(Double_t TriggerThreshold, Double_t EventRate, Double_t ScaleCentral2mBias)
+  :FairTask("CbmTrdHitDensityQa",1),
+   myfile(),
+   fmin(1E3), 
+   fmax(2.5E5),
+   flogScale(false),
+   fBitPerHit(1.),
+   h1DataModule(NULL),
+   h1OptLinksModule(NULL),
+   fNeighbourTrigger(true),
+   fPlotResults(false),
+   fRatioTwoFiles(false),
+   fDigis(NULL),
+   fClusters(NULL),
+   fDigiPar(NULL),
+   fModuleInfo(NULL),
+   fGeoHandler(new CbmTrdGeoHandler()),
+   fStation(-1),
+   fLayer(-1), 
+   fModuleID(-1),
+   fEventCounter(NULL),
+   fTriggerThreshold(TriggerThreshold),
+   fEventRate(EventRate),
+   fScaleCentral2mBias(ScaleCentral2mBias),
+   fUsedDigiMap(),
+   fModuleHitMap(),
+   fModuleHitMapIt(),
+   fModuleHitASICMap(),
+   fModuleHitASICMapIt()
+{
+}
 
 // ---- Destructor ----------------------------------------------------
 CbmTrdHitDensityQa::~CbmTrdHitDensityQa()
@@ -467,7 +498,7 @@ void CbmTrdHitDensityQa::Finish()
       LayerMap[LayerId] = new TCanvas(name,title,1000,900);
       name.Form("hdH_S%d_L%d",fStation,fLayer);
       title.Form("hdH Station %d, Layer %d",fStation,fLayer);
-      TH2I *Layer = new TH2I(name,title,1,-6000,6000,1,-6000,6000);
+      TH2I *Layer = new TH2I(name,title,1,-4000,4000,1,-3500,3500);
       Layer->SetContour(99);
       Layer->SetXTitle("x-Coordinate [mm]");
       Layer->SetYTitle("y-Coordinate [mm]");

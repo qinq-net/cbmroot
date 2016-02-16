@@ -30,6 +30,7 @@ class CbmTrdHitDensityQa : public FairTask
  public:
   // ---- Default constructor -------------------------------------------
   CbmTrdHitDensityQa();
+  CbmTrdHitDensityQa(Double_t TriggerThreshold, Double_t EventRate, Double_t ScaleCentral2mBias);
   // ---- Destructor ----------------------------------------------------
   virtual ~CbmTrdHitDensityQa();
   /** Initialisation **/
@@ -90,9 +91,9 @@ class CbmTrdHitDensityQa : public FairTask
 
   TH1I *fEventCounter;
 
-  Double_t fTriggerThreshold;
-  Double_t fEventRate;
-  Double_t fScaleCentral2mBias;
+  Double_t fTriggerThreshold;// SIS300:1E-6
+  Double_t fEventRate;//SIS300:1E7
+  Double_t fScaleCentral2mBias;//SIS300:1/4
 
   std::map<Int_t, Int_t> fUsedDigiMap;
   std::map<Int_t, TH2I*> fModuleHitMap;
@@ -102,6 +103,6 @@ class CbmTrdHitDensityQa : public FairTask
   CbmTrdHitDensityQa(const CbmTrdHitDensityQa&);
   CbmTrdHitDensityQa& operator=(const CbmTrdHitDensityQa&);
 
-  ClassDef(CbmTrdHitDensityQa,2);
+  ClassDef(CbmTrdHitDensityQa,3);
 };
 #endif

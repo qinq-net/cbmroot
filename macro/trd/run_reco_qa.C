@@ -270,7 +270,9 @@ void run_reco_qa(Int_t nEvents = 100, const char* setup = "sis100_electron")
   //Double_t triggerThreshold = 0.5e-6;//SIS100
   Double_t triggerThreshold = 1.0e-6;//SIS300
   Double_t trdNoiseSigma_keV = 0.1; //default best matching to test beam PRF
-
+  Double_t eventRate=5.0E6;
+  Double_t scaleCentral2mBias=1.0;
+  Bool_t plotFromFile = false;
   CbmTrdDigitizerPRF* trdDigiPrf = new CbmTrdDigitizerPRF(radiator);
   trdDigiPrf->SetTriangularPads(triangularPads);
   trdDigiPrf->SetNoiseLevel(trdNoiseSigma_keV);
@@ -283,10 +285,15 @@ void run_reco_qa(Int_t nEvents = 100, const char* setup = "sis100_electron")
   trdCluster->SetPrimaryClusterRowMerger(true);
   trdCluster->SetTriangularPads(triangularPads);
   run->AddTask(trdCluster);
+  TString digipar = "trd_v15a_1e.digi.par";
   CbmTrdOccupancyQa* trdOccupancy = new CbmTrdOccupancyQa("TRD Occupancy", "TRD task", digipar);
   run->AddTask(trdOccupancy);
-  CbmTrdHitRateQa *trdRateTest = new CbmTrdHitRateQa("HitRateTest","Hit Rate Test",radiator);
-  run->AddTask(trdRateTest);
+  //CbmTrdHitRateQa *trdRateTest = new CbmTrdHitRateQa("HitRateTest","Hit Rate Test");
+  //run->AddTask(trdRateTest);
+
+  CbmTrdHitDensityQa* trdHitDensity = new CbmTrdHitDensityQa(triggerThreshold, eventRate, scaleCentral2mBias);
+  trdHitDensity->SetPlotResults(plotFromFile);
+  run->AddTask(trdHitDensity);
 
   CbmTrdHitProducerCluster* trdHit = new CbmTrdHitProducerCluster();
   trdHit->SetTriangularPads(triangularPads);

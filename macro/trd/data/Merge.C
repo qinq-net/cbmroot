@@ -45,7 +45,7 @@ void Merge(TString outfilename = "result.root") {
   Target = TFile::Open(outfilename, "RECREATE");
   TString filename;
   FileList = new TList();
-  for (Int_t iurqmd = 0; iurqmd < 200; iurqmd++){ 
+  for (Int_t iurqmd = 0; iurqmd < 500; iurqmd++){ 
     //if (iurqmd < 100) { //with 0100 pi0
     //if (iurqmd >= 100) { //with 0000 pi0
     /* 
@@ -94,7 +94,7 @@ void Merge(TString outfilename = "result.root") {
     //if (iurqmd == 00) 
       {
       //filename.Form("test.pa.trd_v12f.smearing.%04i.100events.root",iurqmd);
-      filename.Form("reco/test.hd_qa.%04i.root",iurqmd);
+      filename.Form("sis100_electron_test.hd_qa.%04i.root",iurqmd);
       //cout << "       " << filename;
       TFile test = TFile(filename,"READ");
       if (test.IsOpen()){

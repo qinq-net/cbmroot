@@ -21,8 +21,10 @@ void readResults(TString filename = "result.root", const Int_t detailLevel = 1){
   const Double_t SpadicDataMax = 500;
   const Double_t ChannelTriggerMax = 1E5;
   const Int_t nEvents = fHistoMap["fEventCounter"]->GetEntries();
-  const Double_t EventRate = 1e7;
-  const Double_t central2minBias = 1./4.;
+  //const Double_t EventRate = 1e7;//SIS300
+  const Double_t EventRate = 5.0e6;//SIS100
+  //const Double_t central2minBias = 1./4.;//if used central events
+  const Double_t central2minBias = 1.;//used minBias
   const Double_t BitPerHit = 112 / (15./16.);// * 1.5; // (112 + 4*16) * 10 / 8.;   // 6 time samples, 8b/10b encoding, CBMnet header 
   //  const Double_t BitPerHit = 220; // (112 + 4*16) * 10 / 8.;   // 6 time samples, 8b/10b encoding, CBMnet header 
   //  const Double_t BitPerHit = 112;  // 6 time samples 3 + (9 * 6 + 3) / 15 = 7 words = 7 * 16 bit = 112 bits 
