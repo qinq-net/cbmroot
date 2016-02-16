@@ -137,7 +137,7 @@ const Double_t gkChainGapY       = 0.00;
 const Double_t gkCableThickness  = 0.02;
 
 // ---> Vertical overlap of neighbouring sectors in a ladder [cm]
-const Double_t gkSectorOverlapY  = 0.27;
+const Double_t gkSectorOverlapY  = 0.0; // 0.27;
 
 // ---> Gap in z between neighbouring sectors in a ladder [cm]
 const Double_t gkSectorGapZ      = 0.02;
@@ -780,8 +780,8 @@ void create_stscosy_v16b(const char* geoTag="v16b")
   Double_t stsY = 0.;
   Double_t stsZ = 0.;
   Double_t stsBorder = 2*5.;  // 5 cm space for carbon ladders on each side
-  //  for (Int_t iStation = 1; iStation<=8; iStation++) {
-  for (Int_t iStation = 1; iStation<=2; iStation++) {
+  for (Int_t iStation = 1; iStation<=8; iStation++) {
+    //  for (Int_t iStation = 1; iStation<=2; iStation++) {
     TString statName = Form("Station%02d", iStation);
     TGeoVolume* station = gGeoMan->GetVolume(statName);
     TGeoBBox* shape = (TGeoBBox*) station->GetShape();
@@ -794,8 +794,8 @@ void create_stscosy_v16b(const char* geoTag="v16b")
   stsY += stsBorder; 
 //  stsZ = ( statPos[1] - statPos[0] ) + stsBorder;
 //  Double_t stsPosZ = 0.5 * ( statPos[1] + statPos[0] );
-  stsZ = ( statPos[4] - statPos[0] ) + stsBorder;
-  Double_t stsPosZ = 0.5 * ( statPos[4] + statPos[0] );
+  stsZ = ( statPos[7] - statPos[0] ) + stsBorder;
+  Double_t stsPosZ = 0.5 * ( statPos[7] + statPos[0] );
 
   // --- Create box  around the stations
   TGeoBBox* stsBox = new TGeoBBox("stsBox", stsX/2., stsY/2., stsZ/2.);
