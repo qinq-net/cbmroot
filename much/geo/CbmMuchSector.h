@@ -35,7 +35,7 @@ protected:
   Int_t      fNChannels;     //  Number of channels
   vector<CbmMuchPad*> fPads; //! Vector of pads
 
-  ClassDef(CbmMuchSector,1);
+  ClassDef(CbmMuchSector,2);
 
 };
 
