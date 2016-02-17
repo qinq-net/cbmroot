@@ -66,21 +66,30 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   
   std::map<TString, std::map<ULong_t, std::vector<CbmSpadicRawMessage*> > > timeBuffer;
   LOG(INFO) << "CbmTrdTimeCorrel: Number of current TimeSlice: " << fNrTimeSlices << FairLogger::endl;
-  Int_t nSpadicMessages = fRawSpadic->GetEntriesFast();//SPADIC messages per TimeSlice
+  Int_t nSpadicMessages = fRawSpadic->GetEntriesFast(); //SPADIC messages per TimeSlice
   Int_t nSpadicMessages0(0),nSpadicMessages1(0); //SPADIC messages per TimeSlice for single SPADICS
-  Int_t nSpadicMessagesHit0(0), nSpadicMessagesHit1(0), nSpadicMessagesInfo0(0), nSpadicMessagesInfo1(0), nSpadicMessagesEpoch0(0), nSpadicMessagesEpoch1(0),  nSpadicMessagesLost0(0), nSpadicMessagesLost1(0); // SPADIC message types per TimeSlice for single SPADICS 
+  Int_t nSpadicMessagesHit0(0), nSpadicMessagesHit1(0), nSpadicMessagesInfo0(0), nSpadicMessagesInfo1(0), nSpadicMessagesEpoch0(0), nSpadicMessagesEpoch1(0),  nSpadicMessagesLost0(0), nSpadicMessagesLost1(0); //SPADIC message types per TimeSlice for single SPADICS 
+
+  // Getting message type bools from Spadic raw message
   Bool_t isHit = false;
   Bool_t isInfo = false;
   Bool_t isEpoch = false;
-  Int_t eqID(-1), sourceA(-1), chID(0), triggerType(-1), stopType(-1), infoType(-1), groupId(-1), sysID(-1), spaID(-1);
+  // Initialise message coordinates to -1 to recognise unset variables
+  Int_t eqID(-1), sourceA(-1), triggerType(-1), stopType(-1), infoType(-1), groupId(-1), sysID(-1), spaID(-1);
+  // chID in ASIC. Take care, neighboured numbers are not neccessarily neighboured on the connected TRD cathode pad plane. Resorted lateron!
+  Int_t chID = 0;
   ULong_t time = 0;
+  // Time stamp and epoch are counted in the Spadic
   Int_t timeStamp(0), epoch(0), superEpoch(0);
   LOG(INFO) << "nSpadicMessages: " << nSpadicMessages << FairLogger::endl;
+
+  // Starting to loop over all Spadic messages in unpacked TimeSlice
   for (Int_t iSpadicMessage=0; iSpadicMessage < nSpadicMessages; ++iSpadicMessage) {
     CbmSpadicRawMessage* raw = static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(iSpadicMessage));
     isHit = raw->GetHit();
     isInfo = raw->GetInfo();
     isEpoch = raw->GetEpoch();
+    // Seriously guys, a message can only be of one type.
     if(Int_t(isHit+isInfo+isEpoch)!=1) LOG(ERROR) << "SpadicMessage " << iSpadicMessage << " is classified from CbmSpadicRawMessage to be: HIT " << Int_t(isHit) << " / INFO " << (Int_t)isInfo << " / EPOCH " << (Int_t)isEpoch << FairLogger::endl;
 
     // These are pure debuging histos to ensure that the unpacker is running without errors (C.B)
@@ -134,6 +143,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     // print single spadic message coordinates .. hey, use this for a fancy fast-running output
     //    if(stopType == 0) LOG(INFO) << "SpadicMessage: " << iSpadicMessage << " sourceA: " << sourceA << " chID: " << chID << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " is Info: " << isInfo << FairLogger::endl;
 
+    // Count total messages per ASIC and message-types per ASIC.
     if(spadic=="Spadic0") {
       nSpadicMessages0++;
       if(isHit) nSpadicMessagesHit0++;
@@ -152,6 +162,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       }
       else if(isEpoch) nSpadicMessagesEpoch1++;
     }
+    // Currently only expecting Spadic0 and Spadic1. Logging others, if appearing.
     else {
       LOG(INFO) << "SapdicMessage " << iSpadicMessage << " claims to be from " << spadic << " with spadicID " << spaID << FairLogger::endl;
     }
@@ -177,9 +188,8 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   }
   timeBuffer.clear();
 
-  //fill number of spadic-messages in tscounter-graph
-  //length of one timeslice: m * n * 8 ns, with e.g. n=1250 length of microslice and m=100 microslices in one timeslice at SPS2015
-
+  // Fill number of spadic-messages in tscounter-graph. Use TimeSlices (slices in processing time) here instead of physical full-time on the x-axis.
+  // Length of one timeslice: m * n * 8 ns, with e.g. n=1250 length of microslice and m=100 microslices in one timeslice at SPS2015
   fHM->G1("TsCounter")->SetPoint(fHM->G1("TsCounter")->GetN(),fNrTimeSlices+1,nSpadicMessages);
   fHM->G1("TsCounterHit0")->SetPoint(fHM->G1("TsCounterHit0")->GetN(),fNrTimeSlices+1,nSpadicMessagesHit0);
   fHM->G1("TsCounterHit1")->SetPoint(fHM->G1("TsCounterHit1")->GetN(),fNrTimeSlices+1,nSpadicMessagesHit1);
@@ -190,6 +200,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   fHM->G1("TsCounterLost0")->SetPoint(fHM->G1("TsCounterLost0")->GetN(),fNrTimeSlices+1,nSpadicMessagesLost0);
   fHM->G1("TsCounterLost1")->SetPoint(fHM->G1("TsCounterLost1")->GetN(),fNrTimeSlices+1,nSpadicMessagesLost1);
 
+  // Catch empty TimeSlices.
   if(fNrTimeSlices==0){
     if(fHM->G1("TsCounter")->GetN()==0){
       LOG(INFO ) << "Expected entries in TsCounter after finishinig first TimeSlice, but found none." << FairLogger::endl;
@@ -200,6 +211,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 // ---- Finish  -------------------------------------------------------
 void CbmTrdTimeCorrel::Finish()
 {
+  // Plot message counter histos to screen
   TCanvas *c1 = new TCanvas("c1","c1",3*400,3*300);
   c1->Divide(4,3);
   c1->cd(1);
@@ -296,8 +308,10 @@ void CbmTrdTimeCorrel::CreateHistograms()
   fHM->Add("MessageCount", new TH1F("MessageCount","MessageCount",16,0,16));
   for(Int_t spadic = 0; spadic < 2; ++spadic) {
     for(Int_t stopType = 0; stopType < 6; ++stopType) {
+      // Intransparent, but useful: setting labels on x-axis according to stop types of messages
       fHM->H1("MessageCount")->GetXaxis()->SetBinLabel(8*spadic+stopType+1,TString(spadicName[spadic]+"_"+stopTypes[stopType]));
     }
+    // In addition to different stop types, add a bin for info messages and epoch messages. Weight info message entries with nr of lost messages in the "n-fold" bin.
     fHM->H1("MessageCount")->GetXaxis()->SetBinLabel(8*spadic+6+1,TString(spadicName[spadic]+"_Info or epoch mess"));
     fHM->H1("MessageCount")->GetXaxis()->SetBinLabel(8*spadic+7+1,TString(spadicName[spadic]+"_Info or epoch mess n-fold"));
   }
