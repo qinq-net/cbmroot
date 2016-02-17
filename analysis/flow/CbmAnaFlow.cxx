@@ -1420,7 +1420,7 @@ bool CbmAnaFlow::CreateTreeKFPart(int mult)
 	    continue;
 	}
 
-	if (!mcPart.IsReconstructable()) continue;                   // reconstructable == all daughters in acceptance
+	if (!mcPart.IsReconstructable(2)) continue;                   // reconstructable == all daughters in acceptance
 
 	//cout << "Get PDG: " << partRec.GetPDG() << endl;
 	//partRec.GetMass(M,ErrM);
