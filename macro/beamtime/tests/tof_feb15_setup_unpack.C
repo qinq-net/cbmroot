@@ -6,12 +6,12 @@
 // -----------------------------------------------------------------------------
 
 // Max nEvents: 198999999999
-void setup_unpack(Int_t calMode=1, char *cFileDir="/data.local1/cdash/data", char *cFileId="CernSps05Mar0041", Int_t iSet=0) 
+void setup_unpack(Int_t calMode=1, TString sFileDir="/data.local1/cdash/data", TString sFileId="CernSps05Mar0041", Int_t iSet=0) 
 {
    // Verbosity level (0=quiet, 1=event level, 2=track level, 3=debug, 4=raw debug)
   Int_t iVerbose = 2;
   // Specify log level (INFO, DEBUG, DEBUG1, ...)
-  TString logLevel = "FATAL";
+  //TString logLevel = "FATAL";
   //TString logLevel = "ERROR";
   TString logLevel = "INFO";
   //TString logLevel = "DEBUG";
@@ -42,26 +42,26 @@ void setup_unpack(Int_t calMode=1, char *cFileDir="/data.local1/cdash/data", cha
 
    switch(iSet){
    case 0: 
-     calParFile = paramDir + "/parCalib_batch.txt";										
-     cOutfileId = Form("%s",cFileId);
+     calParFile = paramDir + "/parCalib_batch.txt";
+     cOutfileId = Form("%s",sFileId.Data());
      mapParFile = paramDir + "/parMapCernFeb2015.txt";
      break;
 
    case 1:
      calParFile = paramDir + "/parCalib_basic.txt";
-     cOutfileId = Form("%s%s",cFileId,"_up");
+     cOutfileId = Form("%s%s",sFileId.Data(),"_up");
      mapParFile = paramDir + "/parMapCernFeb2015_up.txt";
      break;
 
    case 2:
      calParFile = paramDir + "/parCalib_basic.txt";
-     cOutfileId = Form("%s%s",cFileId,"_do");
+     cOutfileId = Form("%s%s",sFileId.Data(),"_do");
      mapParFile = paramDir + "/parMapCernFeb2015_do.txt";
      break;
 
    case 10:
      calParFile = paramDir + "/parCalib_tsu.txt";
-     cOutfileId = Form("%s%s",cFileId,"_tsu");
+     cOutfileId = Form("%s%s",sFileId.Data(),"_tsu");
      TofGeo="v14b_tsu";
      break;
    default:
@@ -117,12 +117,13 @@ void setup_unpack(Int_t calMode=1, char *cFileDir="/data.local1/cdash/data", cha
    Int_t end_run  =100;
    for (Int_t irun=start_run; irun<end_run; irun++)
    {   
-     TString lmdfile = Form("%s/%s_%04d.lmd",cFileDir,cFileId,irun);   
-      if ( !gSystem->FindFile( cFileDir, Form("%s_%04d.lmd",cFileId,irun) ) )
+      TString lmdfile = Form("%s/%s_%04d.lmd",sFileDir.Data(),sFileId.Data(),irun);   
+      TString sTmpSearchFile = Form("%s_%04d.lmd",sFileId.Data(),irun);
+      if ( !gSystem->FindFile( sFileDir, sTmpSearchFile ) )
       {
          cout << "<W> Stop adding files after not finding " << lmdfile << endl;
          break; // Stop looping on first file not found
-      } // if ( !gSystem->FindFile( cFileDir, Form("%s_%04d.lmd",cFileId,irun) ) )
+      } // if ( !gSystem->FindFile( sFileDir, sTmpSearchFile ) )
          
      cout << "<I> Inputdata file(s) " << lmdfile << endl;
      source->AddFile(lmdfile); 

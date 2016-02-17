@@ -27,7 +27,8 @@ void StsCosyDec14(Int_t nEvents = -1, Int_t runID = 106, Int_t fileID = 0)
 
 	// --- Specify input file name (this is just an example)
 		
-	TString inDir = "/data.local1/cdash/data/";
+	TString inDir  = "/data.local1/cdash/data/";
+	TString inFile = "";
 	
 	TString setup = "";
 	if(runID > 0 && runID < 12)setup = "_hodo_only";
@@ -36,7 +37,7 @@ void StsCosyDec14(Int_t nEvents = -1, Int_t runID = 106, Int_t fileID = 0)
 	else if(runID == 16)setup = "_hodo_sts2";
 	else if(runID == 20)setup = "_nobeam";
 	else if(runID == 21)setup = "_nobeam_baselines_first";
-	else if(runID > 21 && runID < 32 || runID == 54 || runID == 78 || runID == 79 || runID == 81)setup = "";
+	else if( (runID > 21 && runID < 32) || runID == 54 || runID == 78 || runID == 79 || runID == 81)setup = "";
 	else if(runID == 32 || runID == 45)setup = "_0mm_0deg";
 	else if(runID == 33 || runID == 42)setup = "_0mm_30deg";
 	else if(runID == 34)setup = "_0mm_20deg";
@@ -157,17 +158,21 @@ void StsCosyDec14(Int_t nEvents = -1, Int_t runID = 106, Int_t fileID = 0)
   
    if(Version==2013){triggered_station = 1; RocNr1 = 10; RocNr2 = 11;}// Cosy 2013: first (0) - STS0, second (1) - STS2, third (2) - STS1
  
+  CbmDaqMapCosy2014* daqMap14 = NULL;
+  CbmDaqMapCosy2013* daqMap13 = NULL;
   // Create the correct mapping for the beamtime
   if(Version==2014)
   {
-      CbmDaqMapCosy2014* daqMap = new CbmDaqMapCosy2014(runID);
+      daqMap14 = new CbmDaqMapCosy2014(runID);
   }
-  else if(Version==2013)CbmDaqMapCosy2013* daqMap = new CbmDaqMapCosy2013();
+  else if(Version==2013) daqMap13 = new CbmDaqMapCosy2013();
 
   // --- Source task
   
   CbmSourceLmd* source = new CbmSourceLmd();
-  source->SetDaqMap(daqMap);
+  if(Version==2014)
+     source->SetDaqMap(daqMap14);
+     else if(Version==2013) source->SetDaqMap(daqMap13);
   source->SetTriggeredMode(trigger);
   source->SetTriggeredRocNumber(RocNr1,RocNr2); 
   source->AddFile(inFile);

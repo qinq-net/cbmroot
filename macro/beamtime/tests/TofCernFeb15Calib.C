@@ -1,3 +1,4 @@
+#include "tof_feb15_setup_unpack.C"
 
 void TofCernFeb15Calib( Int_t nEvents = 10000 )
 {
@@ -30,13 +31,15 @@ void TofCernFeb15Calib( Int_t nEvents = 10000 )
     FairMonitor::GetMonitor()->EnableMonitor(kTRUE);
    }
 
-   gROOT->LoadMacro( sMacroDir + "tof_feb15_setup_unpack.C");
+//   gROOT->LoadMacro( sMacroDir + "tof_feb15_setup_unpack.C");
+//   gROOT->ProcessLine( ".include "+ sMacroDir + "tof_feb15_setup_unpack.C" );
 
    cout << "Process FileId  "<< sDataDir << " " << sFileId <<endl;
 
-   TString sCom=Form("setup_unpack(0,\"%s\",\"%s\")", sDataDir.Data(), sFileId.Data() );
-   cout << "Processline "<<sCom<<endl;
-   gInterpreter->ProcessLine(sCom);
+//   TString sCom=Form("setup_unpack(0,\"%s\",\"%s\")", sDataDir.Data(), sFileId.Data() );
+//   cout << "Processline "<<sCom<<endl;
+//   gInterpreter->ProcessLine(sCom);
+   setup_unpack(0, sDataDir, sFileId );
    run->Run(nEvents);
    run->Finish();
 
