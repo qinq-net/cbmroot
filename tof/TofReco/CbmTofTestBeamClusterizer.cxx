@@ -1070,7 +1070,7 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
                  <<", dx "<<fChannelInfo->GetSizex()
                  <<", dy "<<fChannelInfo->GetSizey()
                  <<Form(" ChPoi: %p ",fChannelInfo)
-                  <<", nbCh "<<fMbsMappingPar->GetSmTypeNbCh(iSmType)
+                  <<", nbCh "<<fDigiBdfPar->GetNbChan( iSmType, 0 )
                  <<FairLogger::endl;
 
        // check access to all channel infos 
