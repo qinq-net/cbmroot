@@ -399,15 +399,14 @@ void create_stsgeo_v16e(const char* geoTag="v16e")
   Int_t angle = 0;
   Int_t nLadders = 0;
   Int_t ladderTypes[16];
-  TGeoBBox*        statShape = NULL;
   TGeoTranslation* statTrans = NULL;
 
   TGeoVolume *mystation[8];
 
   Int_t statPos[8]  = { 30, 40, 50, 60, 70, 80, 90, 100 };  // z positions of stations
 
-//Double_t rHole[8] = { 2.0, 2.0, 2.0, 2.9 , 3.7 , 3.7 , 4.2 , 4.2 };  // size of cutouts in stations
-  Double_t rHole[8] = { 2.0, 2.0, 2.0, 2.43, 3.04, 3.35, 3.96, 4.2 };  // size of cutouts in stations, derived from gapXYZ[x][1]/2
+////Double_t rHole[8] = { 2.0, 2.0, 2.0, 2.9 , 3.7 , 3.7 , 4.2 , 4.2 };  // size of cutouts in stations
+//  Double_t rHole[8] = { 2.0, 2.0, 2.0, 2.43, 3.04, 3.35, 3.96, 4.2 };  // size of cutouts in stations, derived from gapXYZ[x][1]/2
   
   Int_t cone_size[8]      = { 0, 0, 0, 1, 1, 1, 1, 1 };  // size of cones: 0 = small, 1 = large
 
@@ -483,7 +482,7 @@ void create_stsgeo_v16e(const char* geoTag="v16e")
        cout << "DE ladderTypes[" << nLadders << "] = " << allLadderTypes[iStation][i] << ";" << endl;
        nLadders++;
       }
-    mystation[iStation] = ConstructStation(iStation, nLadders, ladderTypes, rHole[iStation]);
+    mystation[iStation] = ConstructStation(iStation, nLadders, ladderTypes);
     
     if (gkConstructCones) {
       if (iStation%2 == 0)
@@ -1429,31 +1428,26 @@ void AddCarbonLadder(Int_t LadderIndex,
  **            name             volume name
  **            nLadders         number of ladders
  **            ladderTypes      array of ladder types
- **            rHole            radius of inner hole
  **/
 
  TGeoVolume* ConstructStation(Int_t iStation, 
                               Int_t nLadders,
-			      Int_t* ladderTypes, 
-                              Double_t rHole) {
+			      Int_t* ladderTypes) {
 
-  TString name;
-  name = Form("Station%02d", iStation+1);  // 1,2,3,4,5,6,7,8
-  //  name = Form("Station%02d", iStation);  // 0,1,2,3,4,5,6,7 - Station00 missing in output
+  // TString name = Form("Station%02d", iStation);  // 0,1,2,3,4,5,6,7 - Station00 missing in output
+  TString name = Form("Station%02d", iStation+1);  // 1,2,3,4,5,6,7,8
+  TGeoVolume* station = new TGeoVolumeAssembly(name);
 
   // --- Some local variables
-  TGeoShape* statShape  = NULL;
-  TGeoBBox* ladderShape = NULL;
+  //  TGeoBBox* ladderShape = NULL;
   TGeoVolume* ladder    = NULL;
   TString ladderName;
-
+  Double_t subtractedVal;
 
   // --- Determine size of station from ladders
   Double_t statX     = 0.;
-  Double_t statY     = 0.;
-  Double_t statZeven = 0.;
-  Double_t statZodd  = 0.;
-  Double_t statZ     = 0.;  
+  //  Double_t statY     = 0.;
+
   for (Int_t iLadder = 0; iLadder < nLadders; iLadder++) {
     Int_t ladderType = ladderTypes[iLadder]%100;
     if (ladderType > 0)
@@ -1464,36 +1458,12 @@ void AddCarbonLadder(Int_t LadderIndex,
   			  Form("Volume %s not found", ladderName.Data()));
       shape = (TGeoBBox*) ladder->GetShape();
       statX += 2. * shape->GetDX();
-      statY = TMath::Max(statY, 2. * shape->GetDY());
-      if ( iLadder % 2 ) statZeven = TMath::Max(statZeven, 2. * shape->GetDZ() );
-      else statZodd = TMath::Max(statZodd, 2. * shape->GetDZ() );
+      //      statY = TMath::Max(statY, 2. * shape->GetDY());
     }
     else
       statX += gkSensorSizeX;
   }
   statX -= Double_t(nLadders-1) * gkLadderOverlapX;
-  statZ = statZeven + gkLadderGapZ + statZodd;
-
-  // --- Create station volume
-  TString boxName(name);
-  boxName += "_box";
-
-  cout << "before   statZ/2.: " << statZ/2. << endl;
-  statZ = 2 * 4.5;  // changed Z size of the station for cone and gkLadderGapZ
-  cout << "fixed to statZ/2.: " << statZ/2. << endl;
-  TGeoBBox* statBox = new TGeoBBox(boxName, statX/2., statY/2., statZ/2.);
-
-  TString tubName(name);
-  tubName += "_tub";
-  TString expression = boxName + "-" + tubName;
-  //  TGeoTube* statTub = new TGeoTube(tubName, 0., rHole, statZ/2.);
-  //  TGeoBBox* statTub = new TGeoBBox(tubName, rHole, rHole, statZ/2.);
-  TGeoBBox* statTub = new TGeoBBox(tubName, rHole, rHole, statZ/2.+.1);  // .1 opens the hole in z direction
-  
-  statShape = new TGeoCompositeShape(name, expression.Data());
-  TGeoVolume* station = new TGeoVolume(name, statShape, gStsMedium);
-
-  Double_t subtractedVal;
   
   // --- Place ladders in station
   cout << "xPos0: " << statX << endl;
