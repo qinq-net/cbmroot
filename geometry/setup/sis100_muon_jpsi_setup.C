@@ -38,6 +38,7 @@ void sis100_muon_jpsi_setup()
   muchDigi     = "much/much_v15c_digi_sector.root";
   trdDigi      = "trd/trd_" + trdTag + ".digi.par";
   tofDigi      = "tof/tof_" + tofTag + ".digi.par";
+  tofDigiBdf   = "tof/tof_" + tofTag + ".digibdf.par";
 
   // -----  Material budget files -------------------------------------------
   stsMatBudget = "sts/sts_matbudget_" + stsTag + ".root";

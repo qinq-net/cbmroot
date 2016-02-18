@@ -41,6 +41,7 @@ void sis300_electron_setup()
   muchDigi     = "";
   trdDigi      = "trd/trd_" + trdTag + ".digi.par";
   tofDigi      = "tof/tof_" + tofTag + ".digi.par";
+  tofDigiBdf   = "tof/tof_" + tofTag + ".digibdf.par";
 
   // -----  Material budget files -------------------------------------------
   mvdMatBudget = "mvd/mvd_matbudget_" + mvdTag + ".root";

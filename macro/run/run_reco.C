@@ -42,6 +42,7 @@ TString stsDigi="";
 TString muchDigi="";
 TString trdDigi="";
 TString tofDigi="";
+TString tofDigiBdf="";
 
 TString mvdMatBudget="";
 TString stsMatBudget="";
@@ -105,6 +106,10 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis100_electron")
   TObjString tofDigiFile(paramDir + tofDigi);
   parFileList->Add(&tofDigiFile);
   cout << "macro/run/run_reco.C using: " << tofDigi << endl;
+
+  TObjString tofDigiBdfFile(paramDir + tofDigiBdf);
+  parFileList->Add(&tofDigiBdfFile);
+  cout << "macro/run/run_reco.C using: " << tofDigiBdf << endl;
 
   // In general, the following parts need not be touched
   // ========================================================================
@@ -179,6 +184,13 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis100_electron")
   stsDigi->SetProcesses(eLossModel, useLorentzShift, useDiffusion, useCrossTalk);
   stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution, deadTime, noise);
   run->AddTask(stsDigi);
+  // -------------------------------------------------------------------------
+
+  // -----   TOF digitizer   -------------------------------------------------
+  CbmTofDigitizerBDF* tofDigitizerBdf = new CbmTofDigitizerBDF("TOF Digitizer BDF", 0, kFALSE);
+  tofDigitizerBdf->SetInputFileName( paramDir + "tof/test_bdf_input.root"); // Required as input file name not read anymore by param class
+//  tofDigitizerBdf->SetHistoFileName( digiOutFile ); // Uncomment to save control histograms
+  run->AddTask(tofDigitizerBdf);
   // -------------------------------------------------------------------------
 
 
@@ -298,10 +310,10 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis100_electron")
   // =========================================================================
 
 
-  // ------   TOF hit producer   ---------------------------------------------
-  CbmTofHitProducerNew* tofHitProd = new CbmTofHitProducerNew("TOF HitProducerNew",iVerbose); 
-  tofHitProd->SetInitFromAscii(kFALSE);
-  run->AddTask(tofHitProd);
+  // ------   TOF Cluster/Hit builder   ---------------------------------------
+  CbmTofSimpClusterizer* tofSimpClust = new CbmTofSimpClusterizer("TOF Simple Clusterizer", 0, kFALSE);
+//  tofSimpClust->SetHistoFileName( clustOutFile ); // Uncomment to save control histograms
+  run->AddTask(tofSimpClust);
   // -------------------------------------------------------------------------
 
   // ===                   End of TOF local reconstruction                 ===
