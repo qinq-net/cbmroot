@@ -7,6 +7,7 @@
  ** @date 09.05.2014
  ** @author Tomas Balog <T.Balog@gsi.de>
  **
+ ** v16d: skip keeping volumes of sts and stations
  ** v16c: like v16b, but senors of ladders beampipe next to beampipe
  **       shifted closer to the pipe, like in the CAD model
  ** v16b: like v16a, but yellow sensors removed
@@ -298,11 +299,10 @@ void create_stsgeo_v16d(const char* geoTag="v16d")
 
   // --------------   Create geometry and top volume  -------------------------
   gGeoMan = (TGeoManager*)gROOT->FindObject("FAIRGeom");
-  //  gGeoMan->SetName("STSgeom");
-  //  TGeoVolume* top = new TGeoVolumeAssembly("TOP");
-  //  TGeoVolume* top = new TGeoVolumeAssembly("top");
-  TGeoBBox* topbox= new TGeoBBox("", 120., 120., 120.);
-  TGeoVolume* top = new TGeoVolume("top", topbox, gGeoMan->GetMedium("air"));
+//  gGeoMan->SetName("STSgeom");
+  TGeoVolume* top = new TGeoVolumeAssembly("top");
+//  TGeoBBox* topbox= new TGeoBBox("", 120., 120., 120.);
+//  TGeoVolume* top = new TGeoVolume("top", topbox, gGeoMan->GetMedium("air"));
   gGeoMan->SetTopVolume(top);
   // --------------------------------------------------------------------------
 
