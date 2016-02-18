@@ -70,14 +70,14 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
       counter++;
       Int_t link = ts.descriptor(component, 0).eq_id;
       Int_t address = addr;
-
+      /*
       if ( mp->is_valid() ){
 	LOG(DEBUG) << counter << " This message is valid" << FairLogger::endl; 
       } else {
 	LOG(ERROR) << counter <<  " This message is not valid" << FairLogger::endl; 
 	continue;
       }
-
+      */
       Bool_t isInfo(false), isHit(false), isEpoch(false);
       if ( mp->is_epoch_out_of_sync() ){
 	LOG(INFO) <<  counter << " This is an out of sync Epoch Marker" << FairLogger::endl; 
