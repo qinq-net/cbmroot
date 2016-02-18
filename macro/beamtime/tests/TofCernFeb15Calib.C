@@ -8,7 +8,6 @@ void TofCernFeb15Calib( Int_t nEvents = 10000 )
    TString depFile = Remove_CTest_Dependency_File(outDir, "TofCernFeb15Calib");
 
    TString sCalibDir  = "./";
-   TString testDir    = sCalibDir;
    TString sCalibFile = "TofTdcCalibHistos_batch.root";
    if (gSystem->FindFile(sCalibDir, sCalibFile)) {
       TString rmCommand = "rm " + sCalibFile;
@@ -31,16 +30,13 @@ void TofCernFeb15Calib( Int_t nEvents = 10000 )
     FairMonitor::GetMonitor()->EnableMonitor(kTRUE);
    }
 
-//   gROOT->LoadMacro( sMacroDir + "tof_feb15_setup_unpack.C");
-//   gROOT->ProcessLine( ".include "+ sMacroDir + "tof_feb15_setup_unpack.C" );
-
    cout << "Process FileId  "<< sDataDir << " " << sFileId <<endl;
 
 //   TString sCom=Form("setup_unpack(0,\"%s\",\"%s\")", sDataDir.Data(), sFileId.Data() );
 //   cout << "Processline "<<sCom<<endl;
 //   gInterpreter->ProcessLine(sCom);
    setup_unpack(0, sDataDir, sFileId );
-   run->Run(nEvents);
+   run->Run(nEvents, 0);
    run->Finish();
 
    

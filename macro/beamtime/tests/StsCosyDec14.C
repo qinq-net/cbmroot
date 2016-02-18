@@ -68,7 +68,7 @@ void StsCosyDec14(Int_t nEvents = -1, Int_t runID = 106, Int_t fileID = 0)
 	else if(runID == 62)setup = "_sts3exttrig";  
 	else if(runID == 63)setup = "_sts3exttrig_polswap";  
 	else if(runID > 63 && runID < 67)setup = "_0mm";  
-	else if(runID > 67 && runID < 72 || runID == 74)setup = "_0mm";  
+	else if( (runID > 67 && runID < 72) || runID == 74)setup = "_0mm";  
 	else if(runID == 72)setup = "_3mm";  
 	else if(runID == 73 || runID == 87)setup = "_2mm";  
 	else if(runID == 75)setup = "_sts3exttrig_0mm";  

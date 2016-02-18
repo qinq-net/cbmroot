@@ -1,3 +1,4 @@
+#include "tof_nov15_setup_unpack.C"
 
 void TofCernNov15Calib( Int_t nEvents = 10000 )
 {
@@ -29,14 +30,13 @@ void TofCernNov15Calib( Int_t nEvents = 10000 )
     FairMonitor::GetMonitor()->EnableMonitor(kTRUE);
    }
 
-   gROOT->LoadMacro(sMacroDir + "tof_nov15_setup_unpack.C");
-
    cout << "Process FileId  "<< sDataDir << " " << sFileId <<endl;
 
-   TString sCom=Form("setup_unpack(0,\"%s\",\"%s\")", sDataDir.Data(), sFileId.Data() );
-   cout << "Processline "<<sCom<<endl;
-   gInterpreter->ProcessLine(sCom);
-   run->Run(nEvents);
+//   TString sCom=Form("setup_unpack(0,\"%s\",\"%s\")", sDataDir.Data(), sFileId.Data() );
+//   cout << "Processline "<<sCom<<endl;
+//   gInterpreter->ProcessLine(sCom);
+   setup_unpack(0, sDataDir, sFileId );
+   run->Run(nEvents, 0);
    run->Finish();
 
    

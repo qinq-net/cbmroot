@@ -29,7 +29,7 @@ void TofCernNov15Run( Int_t nEvents = 2 )
    TString sCom=Form("setup_unpack(1,\"%s\",\"%s\")", sDataDir.Data(), sFileId.Data() );
    cout << "Processline "<<sCom<<endl;
    gInterpreter->ProcessLine(sCom);
-   run->Run(nEvents);
+   run->Run(nEvents, 0);
    run->Finish();
 
    

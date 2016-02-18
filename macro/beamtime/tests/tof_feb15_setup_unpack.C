@@ -11,13 +11,13 @@ void setup_unpack(Int_t calMode=1, TString sFileDir="/data.local1/cdash/data", T
    // Verbosity level (0=quiet, 1=event level, 2=track level, 3=debug, 4=raw debug)
   Int_t iVerbose = 2;
   // Specify log level (INFO, DEBUG, DEBUG1, ...)
-  //TString logLevel = "FATAL";
-  //TString logLevel = "ERROR";
-  TString logLevel = "INFO";
-  //TString logLevel = "DEBUG";
-  //TString logLevel = "DEBUG1";
-  //TString logLevel = "DEBUG2";
-  //TString logLevel = "DEBUG3";
+  TString logLevel = "FATAL";
+  //logLevel = "ERROR";
+  logLevel = "INFO";
+  //logLevel = "DEBUG";
+  //logLevel = "DEBUG1";
+  //logLevel = "DEBUG2";
+  //logLevel = "DEBUG3";
   FairLogger* log;  
 
    //  Parameter files.
@@ -31,55 +31,47 @@ void setup_unpack(Int_t calMode=1, TString sFileDir="/data.local1/cdash/data", T
    TString cbmDir = gSystem->Getenv("VMCWORKDIR");
    TString paramDir = cbmDir + "/macro/tof/beamtime/feb15";
 
-   TObjString unpParFile = paramDir + "/parUnpack_basic.txt";
-   parFileList->Add(&unpParFile);
+   TObjString*  unpParFile = new TObjString(paramDir + "/parUnpack_basic.txt");
+   parFileList->Add(unpParFile);
 
-   TObjString calParFile;
+   TObjString*  calParFile;
    TString cOutfileId;
    TString TofGeo="v15b";
-   TObjString mapParFile;
+   TObjString*  mapParFile;
 
 
    switch(iSet){
    case 0: 
-     calParFile = paramDir + "/parCalib_batch.txt";
+     calParFile = new TObjString(paramDir + "/parCalib_batch.txt");
      cOutfileId = Form("%s",sFileId.Data());
-     mapParFile = paramDir + "/parMapCernFeb2015.txt";
+     mapParFile = new TObjString(paramDir + "/parMapCernFeb2015.txt");
      break;
 
    case 1:
-     calParFile = paramDir + "/parCalib_basic.txt";
+     calParFile = new TObjString(paramDir + "/parCalib_basic.txt");
      cOutfileId = Form("%s%s",sFileId.Data(),"_up");
-     mapParFile = paramDir + "/parMapCernFeb2015_up.txt";
+     mapParFile = new TObjString(paramDir + "/parMapCernFeb2015_up.txt");
      break;
 
    case 2:
-     calParFile = paramDir + "/parCalib_basic.txt";
+     calParFile = new TObjString(paramDir + "/parCalib_basic.txt");
      cOutfileId = Form("%s%s",sFileId.Data(),"_do");
-     mapParFile = paramDir + "/parMapCernFeb2015_do.txt";
+     mapParFile = new TObjString(paramDir + "/parMapCernFeb2015_do.txt");
      break;
 
    case 10:
-     calParFile = paramDir + "/parCalib_tsu.txt";
+     calParFile = new TObjString(paramDir + "/parCalib_tsu.txt");
      cOutfileId = Form("%s%s",sFileId.Data(),"_tsu");
      TofGeo="v14b_tsu";
      break;
    default:
      ;
    }
-   parFileList->Add(&calParFile);
+   parFileList->Add(calParFile);
 
    cout << " Output File tag "<< cOutfileId << endl;
 
-   parFileList->Add(&mapParFile);
-   //TObjString convParFile = paramDir + "/parConvFeb2015.txt";
-   //parFileList->Add(&convParFile);
-
-   TObjString tofDigiFile = cbmDir + "/parameters/tof/tof_" + TofGeo + ".digi.par"; // TOF digi file
-   //   parFileList->Add(&tofDigiFile);   
-
-   TObjString tofDigiBdfFile =  paramDir + "/tof.digibdf.par";
-   //parFileList->Add(&tofDigiBdfFile);
+   parFileList->Add(mapParFile);
 
    TString geoDir  = gSystem->Getenv("VMCWORKDIR");
    TString geoFile = geoDir + "/geometry/tof/geofile_tof_" + TofGeo + ".root";
@@ -202,7 +194,7 @@ void setup_unpack(Int_t calMode=1, TString sFileDir="/data.local1/cdash/data", T
    tofTestBeamClust->SetTotMax(100000.);
    tofTestBeamClust->SetTotMin(1.); 
 
-   tofTestBeamClust->SetBeamRefType(4);    // Test case 
+   tofTestBeamClust->SetBeamRefId(4);    // Test case 
    tofTestBeamClust->SetBeamRefSm(0);
    tofTestBeamClust->SetBeamRefDet(0);
    tofTestBeamClust->SetBeamAddRefMul(-1);

@@ -6,18 +6,18 @@
 // -----------------------------------------------------------------------------
 
 // Max nEvents: 198999999999
-void setup_unpack(Int_t calMode=1, char *cFileDir="/data.local1/cdash/data", char *cFileId="CbmTofSps_01Dec0128", Int_t iSet=0) 
+void setup_unpack(Int_t calMode=1, TString sFileDir="/data.local1/cdash/data", TString sFileId="CbmTofSps_01Dec0128", Int_t iSet=0) 
 {
    // Verbosity level (0=quiet, 1=event level, 2=track level, 3=debug, 4=raw debug)
   Int_t iVerbose = 2;
   // Specify log level (INFO, DEBUG, DEBUG1, ...)
   TString logLevel = "FATAL";
-  //TString logLevel = "ERROR";
-  TString logLevel = "INFO";
-  //  TString logLevel = "DEBUG";
-  //TString logLevel = "DEBUG1";
-  //TString logLevel = "DEBUG2";
-  //TString logLevel = "DEBUG3";
+  //logLevel = "ERROR";
+  logLevel = "INFO";
+  //logLevel = "DEBUG";
+  //logLevel = "DEBUG1";
+  //logLevel = "DEBUG2";
+  //logLevel = "DEBUG3";
   FairLogger* log;  
 
    //  Parameter files.
@@ -30,30 +30,29 @@ void setup_unpack(Int_t calMode=1, char *cFileDir="/data.local1/cdash/data", cha
    TString workDir  = gSystem->Getenv("PWD");
    TString cbmDir = gSystem->Getenv("VMCWORKDIR");
    TString paramDir = cbmDir + "/macro/tof/beamtime/nov15";
+					
+   TObjString* unpParFile = new TObjString(paramDir + "/parUnpCernNov2015.txt");					
+   parFileList->Add(unpParFile);
 
-   //   TObjString unpParFile = paramDir + "/parUnpack_basic.txt";					
-   TObjString unpParFile = paramDir + "/parUnpCernNov2015.txt";					
-   parFileList->Add(&unpParFile);
-
-   TObjString calParFile;
+   TObjString* calParFile;
    TString cOutfileId;
    //TString TofGeo="v14b";
    TString TofGeo="v15c";
-   TObjString mapParFile;
+   TObjString* mapParFile;
 
 
    switch(iSet){
    case 0: 
-     calParFile = paramDir + "/parCalib_batch.txt";										
-     cOutfileId = Form("%s",cFileId);
-     mapParFile = paramDir + "/parMapCernNov2015.txt";						
+     calParFile = new TObjString(paramDir + "/parCalib_batch.txt");										
+     cOutfileId = Form("%s",sFileId.Data());
+     mapParFile = new TObjString(paramDir + "/parMapCernNov2015.txt");						
      break;
 
    case 1:
    /*
-     calParFile = paramDir + "/parCalib_basic.txt";
-     cOutfileId = Form("%s%s",cFileId,"_nopla");
-     mapParFile = paramDir + "/parMapCosmicsThuMay2015_nopla.txt";
+     calParFile = new TObjString(paramDir + "/parCalib_basic.txt");
+     cOutfileId = Form("%s%s",sFileId.Data(),"_nopla");
+     mapParFile = new TObjString(paramDir + "/parMapCosmicsThuMay2015_nopla.txt");
  	int mapping =1;   
  	*/  
 	break;
@@ -61,19 +60,11 @@ void setup_unpack(Int_t calMode=1, char *cFileDir="/data.local1/cdash/data", cha
    default:
      ; 
    }
-   parFileList->Add(&calParFile);
+   parFileList->Add(calParFile);
  
    cout << " Output File tag "<< cOutfileId << endl;
 
-   parFileList->Add(&mapParFile);
-   //TObjString convParFile = paramDir + "/parConvFeb2015.txt";
-   //parFileList->Add(&convParFile);
-
-   TObjString tofDigiFile = cbmDir + "/parameters/tof/tof_" + TofGeo + ".digi.par"; // TOF digi file
-   //   parFileList->Add(&tofDigiFile);   
-
-   TObjString tofDigiBdfFile =  paramDir + "/tof.digibdf.par";
-   //parFileList->Add(&tofDigiBdfFile);
+   parFileList->Add(mapParFile);
 
    TString geoDir  = gSystem->Getenv("VMCWORKDIR");
    TString geoFile = geoDir + "/geometry/tof/geofile_tof_" + TofGeo + ".root";
@@ -110,13 +101,13 @@ void setup_unpack(Int_t calMode=1, char *cFileDir="/data.local1/cdash/data", cha
    FairLmdSource* source = new FairLmdSource();
    for (Int_t irun=start_run; irun<end_run; irun++)
    {   
-     TString lmdfile = paramDir+Form("/LMD/%s_%04d.lmd",cFileId,irun);   
+     TString lmdfile = paramDir+Form("/LMD/%s_%04d.lmd",sFileId.Data(),irun);   
      cout << "<I> Inputdata file(s) " << lmdfile << endl;
      source->AddFile(lmdfile); 
    }
    */
    CbmHldSource* source = new CbmHldSource();
-   source->AddPath( cFileDir ,Form("%s*.hld",cFileId));
+   source->AddPath( sFileDir ,Form("%s*.hld",sFileId.Data()));
    /*   
    TTriglogUnpackTof* tofTriglogUnpacker = new TTriglogUnpackTof();
    //   tofTriglogUnpacker->SetSaveTriglog(kTRUE);
@@ -190,7 +181,7 @@ void setup_unpack(Int_t calMode=1, char *cFileDir="/data.local1/cdash/data", cha
    tofTestBeamClust->SetTotMax(100000.);
    tofTestBeamClust->SetTotMin(1.); 
 
-   tofTestBeamClust->SetBeamRefType(4);    // Test case 
+   tofTestBeamClust->SetBeamRefId(4);    // Test case 
    tofTestBeamClust->SetBeamRefSm(0);
    tofTestBeamClust->SetBeamRefDet(0);
    tofTestBeamClust->SetBeamAddRefMul(-1);
