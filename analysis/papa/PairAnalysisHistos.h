@@ -199,7 +199,8 @@ public:
   { return AddProfile(histClass,binsX,valTypeX,binsY,valTypeY,binsZ,valTypeZ, valTypeP,option, (UInt_t)kNoWeights);  }
 
   // functions to fill objects
-  void FillClass(const char* histClass, const Double_t *values);
+  //  void FillClass(const char* histClass, const Double_t *values);
+  void FillClass(TString histClass, const Double_t *values);
   static void FillValues(TObject *obj,  const Double_t *values);
   static void FillValues(TH1 *obj,      const Double_t *values);
   static void FillValues(THnBase *obj,  const Double_t *values);

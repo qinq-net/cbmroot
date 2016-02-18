@@ -498,13 +498,15 @@ TObject* PairAnalysisHelper::FindObjectByTitle(TObjArray *arrhist, TString ref)
   //
   // shortcut to find a certain pair type object in array
   //
-  //  return ( arrhist->FindObject(Form("Pair.%s",PairAnalysis::PairClassName(type))) );
-  //  TString ref=Form("Pair.%s",PairAnalysis::PairClassName(type));
   for(Int_t i=0; i<arrhist->GetEntriesFast(); i++) {
     if( !ref.CompareTo(arrhist->UncheckedAt(i)->GetTitle()) ) {
       return arrhist->UncheckedAt(i);
     }
   }
   return 0x0;
+
+  //  return ( arrhist->FindObject(Form("Pair.%s",PairAnalysis::PairClassName(type))) );
+  //  TString ref=Form("Pair.%s",PairAnalysis::PairClassName(type));
+
 }
 

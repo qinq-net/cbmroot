@@ -75,7 +75,6 @@ Some options to add background estimators:
 #include "PairAnalysisPair.h"
 #include "PairAnalysisPairLV.h"
 #include "PairAnalysisHistos.h"
-///#include "PairAnalysisCF.h"
 #include "PairAnalysisMC.h"
 #include "PairAnalysisVarManager.h"
 #include "PairAnalysisTrackRotator.h"
@@ -108,42 +107,7 @@ const char* PairAnalysis::fgkPairClassNames[8] = {
 
 //________________________________________________________________
 PairAnalysis::PairAnalysis() :
-  TNamed("PairAnalysis","PairAnalysis"),
-  fCutQA(kFALSE),
-  fQAmonitor(0x0),
-  fEventFilter("EventFilter"),
-  fTrackFilter("TrackFilter"),
-  fPairPreFilter("PairPreFilter"),
-  fFinalTrackFilter("FinalTrackFilter"),
-  fPairFilter("PairFilter"),
-  fEventPlanePreFilter("EventPlanePreFilter"),
-  fEventPlanePOIPreFilter("EventPlanePOIPreFilter"),
-  fTrackFilterMC("TrackFilterMC"),
-  fPairFilterMC("PairFilterMC"),
-  fPdgMother(443),
-  fPdgLeg1(11),
-  fPdgLeg2(11),
-  fSignalsMC(0x0),
-  fNoPairing(kFALSE),
-  fProcessLS(kTRUE),
-  fUseKF(kTRUE),
-  fCutStepHistos(0x0),
-  fHistoArray(0x0),
-  fHistos(0x0),
-  fUsedVars(new TBits(PairAnalysisVarManager::kNMaxValuesMC)),
-  fPairCandidates(new TObjArray(8)),
-  ///  fCfManagerPair(0x0),
-  fTrackRotator(0x0),
-  //  fDebugTree(0x0),
-  fMixing(0x0),
-  fPreFilterEventPlane(kFALSE),
-  fLikeSignSubEvents(kFALSE),
-  fPreFilterUnlikeOnly(kFALSE),
-  fPreFilterAllSigns(kFALSE),
-  fHasMC(kFALSE),
-  fStoreRotatedPairs(kFALSE),
-  fDontClearArrays(kFALSE),
-  fEventProcess(kTRUE)
+  PairAnalysis("PairAnalysis","PairAnalysis")
 {
   //
   // Default constructor
@@ -154,41 +118,15 @@ PairAnalysis::PairAnalysis() :
 //________________________________________________________________
 PairAnalysis::PairAnalysis(const char* name, const char* title) :
   TNamed(name,title),
-  fCutQA(kFALSE),
-  fQAmonitor(0x0),
   fEventFilter("EventFilter"),
   fTrackFilter("TrackFilter"),
   fPairPreFilter("PairPreFilter"),
   fFinalTrackFilter("FinalTrackFilter"),
   fPairFilter("PairFilter"),
-  fEventPlanePreFilter("EventPlanePreFilter"),
-  fEventPlanePOIPreFilter("EventPlanePOIPreFilter"),
   fTrackFilterMC("TrackFilterMC"),
   fPairFilterMC("PairFilterMC"),
-  fPdgMother(443),
-  fPdgLeg1(11),
-  fPdgLeg2(11),
-  fSignalsMC(0x0),
-  fNoPairing(kFALSE),
-  fProcessLS(kTRUE),
-  fUseKF(kTRUE),
-  fCutStepHistos(0x0),
-  fHistoArray(0x0),
-  fHistos(0x0),
   fUsedVars(new TBits(PairAnalysisVarManager::kNMaxValuesMC)),
-  fPairCandidates(new TObjArray(8)),
-  ///  fCfManagerPair(0x0),
-  fTrackRotator(0x0),
-  //  fDebugTree(0x0),
-  fMixing(0x0),
-  fPreFilterEventPlane(kFALSE),
-  fLikeSignSubEvents(kFALSE),
-  fPreFilterUnlikeOnly(kFALSE),
-  fPreFilterAllSigns(kFALSE),
-  fHasMC(kFALSE),
-  fStoreRotatedPairs(kFALSE),
-  fDontClearArrays(kFALSE),
-  fEventProcess(kTRUE)
+  fPairCandidates(new TObjArray(8))
 {
   //
   // Named constructor
@@ -206,10 +144,8 @@ PairAnalysis::~PairAnalysis()
   if (fHistos) delete fHistos;
   if (fUsedVars) delete fUsedVars;
   if (fPairCandidates && fEventProcess) delete fPairCandidates;
-  //  if (fDebugTree) delete fDebugTree;
   if (fMixing) delete fMixing;
   if (fSignalsMC) delete fSignalsMC;
-  //  if (fCfManagerPair) delete fCfManagerPair;
   if (fHistoArray) delete fHistoArray;
   if (fCutStepHistos) delete fCutStepHistos;
 
@@ -228,15 +164,6 @@ void PairAnalysis::Init()
 
   // compress the MC signal array
   if(fSignalsMC) fSignalsMC->Compress();
-
-  /*
-  if (fCfManagerPair) {
-    fCfManagerPair->SetSignalsMC(fSignalsMC);
-    fCfManagerPair->InitialiseContainer(fPairFilter);
-  }
-  */
-
-  //  if (fDebugTree) fDebugTree->SetPairAnalysis(this);
 
   if (fMixing) fMixing->Init(this);
   if (fHistoArray) {
@@ -282,7 +209,6 @@ void PairAnalysis::Init()
     fCutStepHistos       = fTrackFilter.     GetHistogramList();
     fCutStepHistos->AddAll(fFinalTrackFilter.GetHistogramList());
     fCutStepHistos->SetName(Form("CutSteps_%s",GetName()));
-
   }
 
 
@@ -326,13 +252,12 @@ Bool_t PairAnalysis::Process(PairAnalysisEvent *ev1)
   // set event
   PairAnalysisVarManager::SetFillMap(fUsedVars);
   PairAnalysisVarManager::SetEvent(ev1);
-  
+
   if (fMixing){
     //set mixing bin to event data
     Int_t bin=fMixing->FindBin(PairAnalysisVarManager::GetData());
     PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kMixingBin,bin);
   }
-  
 
   //in case we have MC load the MC event and process the MC particles
   // why do not apply the event cuts first ????
@@ -367,10 +292,6 @@ Bool_t PairAnalysis::Process(PairAnalysisEvent *ev1)
   // remove tracks from arrays that DO NOT pass 2nd cut iteration
   FilterTrackArrays(fTracks[0], fTracks[1]);
 
-  // event plane corrections
-  // if ( fPreFilterEventPlane && (fEventPlanePreFilter.GetCuts()->GetEntries()>0 || fEventPlanePOIPreFilter.GetCuts()->GetEntries()>0) )
-  //   EventPlanePreFilter(0, 1, fTracks[0], fTracks[1], ev1);
-
   // create SE pairs and fill pair candidate arrays
   if (!fNoPairing) {
     for (Int_t itrackArr1=0; itrackArr1<2; ++itrackArr1){
@@ -390,10 +311,6 @@ Bool_t PairAnalysis::Process(PairAnalysisEvent *ev1)
     fMixing->Fill(ev1,this);
     //     FillHistograms(0x0,kTRUE);
   }
-  
-
-  //fill debug tree if a manager is attached
-  //  if (fDebugTree) FillDebugTree();
 
   // fill candidate variables
   Double_t ntracks = fTracks[0].GetEntriesFast() + fTracks[1].GetEntriesFast();
@@ -433,9 +350,7 @@ void PairAnalysis::ProcessMC()
   if(!nSignals) return;
 
   //loop over all MC data and Fill the HF, CF containers and histograms if they exist
-  //  if(fCfManagerPair) fCfManagerPair->SetPdgMother(fPdgMother);
 
-  Bool_t bFillCF   = kFALSE;//(fCfManagerPair ? fCfManagerPair->GetStepForMCtruth()  : kFALSE);
   Bool_t bFillHF   = kFALSE;
   Bool_t bFillHist = kFALSE;
   for(Int_t isig=0;isig<nSignals;isig++) {
@@ -455,7 +370,7 @@ void PairAnalysis::ProcessMC()
   }
 
   // check if there is anything to fill
-  if(!bFillCF && !bFillHF && !bFillHist) return;
+  if(!bFillHF && !bFillHist) return;
 
   // initialize 2D arrays of labels for particles from each MC signal
   Int_t** labels1;      // labels for particles satisfying branch 1
@@ -566,7 +481,6 @@ void PairAnalysis::ProcessMC()
 	if (cutmask!=selectedMask) continue;
 	//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-	//if(bFillCF) fCfManagerPair->FillMC(labels1[isig][i1], labels2[isig][i2], isig);
 	if(bFillHF)  fHistoArray->Fill(labels1[isig][i1], labels2[isig][i2], isig);
 	if(bFillHist)FillMCHistograms(labels1[isig][i1], labels2[isig][i2], isig);
 
@@ -576,7 +490,6 @@ void PairAnalysis::ProcessMC()
     for(Int_t i1=0;i1<indexes12[isig];++i1) {
       for(Int_t i2=0; i2<i1; ++i2) {
 	// TODO: add pair cuts on mc truth level (SEE above)
-	//if(bFillCF) fCfManagerPair->FillMC(labels12[isig][i1], labels12[isig][i2], isig);
 	if(bFillHF) fHistoArray->Fill(labels12[isig][i1], labels12[isig][i2], isig);
 	FillMCHistograms(labels12[isig][i1], labels12[isig][i2], isig);
       }
@@ -649,7 +562,7 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
   //
   // Fill Histogram information for event, pairs, tracks, hits
   //
-  
+
   TString  className,className2,className3;
   TString  sigName;
   Double_t *values=PairAnalysisVarManager::GetData(); //NEW CHANGED
@@ -1433,9 +1346,6 @@ void PairAnalysis::FillPairArrays(Int_t arr1, Int_t arr2)
       //pair cuts
       UInt_t cutMask=fPairFilter.IsSelected(candidate);
 
-      //CF manager for the pair
-      //      if (fCfManagerPair) fCfManagerPair->Fill(cutMask,candidate);
-
       // cut qa
       if(pairIndex==kSEPM && fCutQA) {
 	fQAmonitor->FillAll(candidate);
@@ -1522,35 +1432,6 @@ void PairAnalysis::FillPairArrayTR()
 
 }
 
-
-//________________________________________________________________
-void PairAnalysis::FillDebugTree()
-{
-  //
-  // Fill Histogram information for tracks and pairs
-  //
-  return;
-  /*
-  //Fill Debug tree
-  for (Int_t i=0; i<7; ++i){
-    Int_t ntracks=PairArray(i)->GetEntriesFast();
-    for (Int_t ipair=0; ipair<ntracks; ++ipair){
-      fDebugTree->Fill(static_cast<PairAnalysisPair*>(PairArray(i)->UncheckedAt(ipair)));
-    }
-  }
-  */
-}
-
-//________________________________________________________________
-void PairAnalysis::SaveDebugTree()
-{
-  //
-  // delete the debug tree, this will also write the tree
-  //
-  //  if (fDebugTree) fDebugTree->DeleteStreamer();
-}
-
-
 //________________________________________________________________
 void PairAnalysis::AddSignalMC(PairAnalysisSignalMC* signal) {
   //
@@ -1573,10 +1454,9 @@ void PairAnalysis::FillMCHistograms(Int_t label1, Int_t label2, Int_t nSignal) {
   //
   PairAnalysisSignalMC* sigMC = (PairAnalysisSignalMC*)fSignalsMC->At(nSignal);
 
-  TString className,className2,className3;
-  className.Form("Pair_%s_MCtruth",       sigMC->GetName());
-  className2.Form("Track.Legs_%s_MCtruth",sigMC->GetName());
-  className3.Form("Track.%s_%s_MCtruth",fgkPairClassNames[1],sigMC->GetName());
+  TString className  = Form("Pair_%s_MCtruth",       sigMC->GetName());
+  TString className2 = Form("Track.Legs_%s_MCtruth",sigMC->GetName());
+  TString className3 = Form("Track.%s_%s_MCtruth",fgkPairClassNames[1],sigMC->GetName());
   Bool_t pairClass=fHistos->HasHistClass(className.Data());
   Bool_t legClass =fHistos->HasHistClass(className2.Data());
   Bool_t trkClass =fHistos->HasHistClass(className3.Data());
@@ -1701,9 +1581,6 @@ void PairAnalysis::FillHistogramsFromPairArray(Bool_t pairInfoOnly/*=kFALSE*/)
 	fQAmonitor->FillAll(pair);
 	fQAmonitor->Fill(cutMask,pair);
       }
-
-      //CF manager for the pair (todo: check steps and if they are properly filled)
-      //      if (fCfManagerPair) fCfManagerPair->Fill(cutMask,pair);
 
       //apply cut
       if (cutMask!=selectedMask) continue;

@@ -308,10 +308,10 @@ PairAnalysisTrack *PairAnalysisEvent::GetTrack(UInt_t pos)
   //
 
   // check intitialisation
-  if(fTracks->GetSize()<=pos || !fTracks->At(pos))
+  if(fTracks->GetSize()<=pos || !fTracks->UncheckedAt(pos))
     Fatal("PairAnalysisEvent::GetTrack","Event initialisation failed somehow !!!");
 
-  return static_cast<PairAnalysisTrack*>(fTracks->At(pos));
+  return static_cast<PairAnalysisTrack*>(fTracks->UncheckedAt(pos));
 
 }
 

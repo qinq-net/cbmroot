@@ -522,15 +522,14 @@ void PairAnalysisHistos::AddClass(const char* histClass)
 }
 
 //_____________________________________________________________________________
-void PairAnalysisHistos::FillClass(const char* histClass, const Double_t *values)
+void PairAnalysisHistos::FillClass(TString histClass, const Double_t *values)
 {
   //
   // Fill class 'histClass' (by name)
   //
-
-  THashList *classTable=(THashList*)fHistoList.FindObject(histClass);
+  THashList *classTable=(THashList*)fHistoList.FindObject(histClass.Data());
   if (!classTable){
-    //    Warning("FillClass","Cannot fill class '%s' its not defined.",histClass);
+    //    Warning("FillClass","Cannot fill class '%s' its not defined.",histClass.Data());
     return;
   }
 
@@ -1624,7 +1623,6 @@ void PairAnalysisHistos::FillValues(TH1 *obj, const Double_t *values)
   Int_t dim   = obj->GetDimension();
   Bool_t bprf = kFALSE;
   //  UInt_t nValues = (UInt_t) PairAnalysisVarManager::kNMaxValues;
-
   UInt_t valueTypes=obj->GetUniqueID();
   if (valueTypes==(UInt_t)PairAnalysisHistos::kNoAutoFill) return;
   Bool_t weight = (valueTypes!=kNoWeights);

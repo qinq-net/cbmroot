@@ -1,9 +1,17 @@
-
 ///////////////////////////////////////////////////////////////////////////
 //
 //
 // Authors:
 //   Julian Book   <Julian.Book@cern.ch>
+/*
+
+  Meta data container that stores basic information on the setup, system,
+  beam/c.m.s. energy, selected events, cbmroot revision, date, ...
+
+  The DrawSame(TString opt) provides an easy way to add a standardised
+  caption to a plot.
+
+ */
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
@@ -25,20 +33,15 @@ ClassImp(PairAnalysisMetaData)
 
 
 PairAnalysisMetaData::PairAnalysisMetaData() :
-//   TCollection(),
-  TNamed("PairAnalysisMetaData","PairAnalysis MetaData Container"),
-  fMetaList()
+  PairAnalysisMetaData("PairAnalysis_MetaData","PairAnalysis MetaData Container")
 {
   //
   // Default constructor
   //
-  fMetaList.SetOwner(kTRUE);
-  fMetaList.SetName("PairAnalysis_MetaData");
 }
 
 //_____________________________________________________________________________
 PairAnalysisMetaData::PairAnalysisMetaData(const char* name, const char* title) :
-  //   TCollection(),
   TNamed(name, title),
   fMetaList()
 {
@@ -56,7 +59,6 @@ PairAnalysisMetaData::~PairAnalysisMetaData()
   // Destructor
   //
   fMetaList.Clear();
-  //  if (fList) fList->Clear();
 }
 
 //_____________________________________________________________________________
@@ -65,7 +67,6 @@ void PairAnalysisMetaData::Init()
   //
   // Init meta data objects and add to list
   //
-
 
   TNamed *pSetup = new TNamed("setup", "undefined");
   //  pSetup->SetTitle(gSystem->Getenv("USER")); //e.g. sis100

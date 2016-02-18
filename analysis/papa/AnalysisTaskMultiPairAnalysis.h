@@ -1,11 +1,9 @@
 #ifndef ANALYSISTASKMULTIPAIRANALYSIS_H
 #define ANALYSISTASKMULTIPAIRANALYSIS_H
-/* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
 
 //#####################################################
-//#                                                   # 
-//#        Basic Analysis task for PairAnalysis         #
+//#                                                   #
+//#        Basic Analysis task for PairAnalysis       #
 //#          single event analysis                    #
 //#                                                   #
 //#     Julian Book, Uni Ffm / Julian.Book@cern.ch    #
@@ -26,10 +24,9 @@
 
 class PairAnalysis;
 class TH1D;
-//class AnalysisCuts;
 
 class AnalysisTaskMultiPairAnalysis : public FairTask {
-  
+
 public:
   AnalysisTaskMultiPairAnalysis();
   AnalysisTaskMultiPairAnalysis(const char *name);
@@ -43,33 +40,28 @@ public:
 
   void AddPairAnalysis(PairAnalysis * const papa) { fListPairAnalysis.Add((TObject*)papa); } //why cast to tobject????????
   void SetBeamEnergy(Double_t beamEbyHand=-1.)   { fBeamEnergy=beamEbyHand;  }
-  void SetWeight(    Double_t weightbyHand=-1.)  { fWeight=weightbyHand;     }
 
 protected:
-  enum {kAllEvents=0, kSelectedEvents, kV0andEvents, kFilteredEvents, kPileupEvents, kNbinsEvent};
 
-  PairAnalysisMetaData fMetaData;                     //! List of meta data in the framework classes
-  TObjArray *fPairArray;               //! output array
-  TList fListPairAnalysis;             //  List of papa framework instances
-  TList fListHistos;                   //! List of histogram manager lists in the framework classes
-  //  TList fListCF;                     //! List with CF Managers
+  PairAnalysisMetaData fMetaData;             //! List of meta data in the framework classes
+  TObjArray *fPairArray = NULL;               //! output array
+  TList fListPairAnalysis;                    //  List of papa framework instances
+  TList fListHistos;                          //! List of histogram manager lists in the framework classes
 
-  CbmRichElectronIdAnn *fgRichElIdAnn; // neural network for Rich electron ID
-  Double_t fBeamEnergy;              // beam energy in GeV (set by hand)
-  Double_t fWeight;                  // weight N*BR (set by hand)
+  CbmRichElectronIdAnn *fgRichElIdAnn = NULL; // neural network for Rich electron ID
+  Double_t fBeamEnergy  = 0.;                 // beam energy in GeV (set by hand)
 
-  AnalysisCuts *fEventFilter;        // event filter
+  AnalysisCuts      *fEventFilter = NULL;     // event filter
+  PairAnalysisEvent *fInputEvent  = NULL;     //! event handler
+  Int_t fEventsTotal    = 0;                  // total number of processed events
+  Int_t fEventsSelected = 0;                  // number of selcted events
 
-  TH1D *fEventStat;                  //! Histogram with event statistics
-
-  PairAnalysisEvent *fInputEvent; //! event handler
-
-  TStopwatch fTimer;                 //! stopwatch for cpu consumption
-  ProcInfo_t fProcInfo;              //! memory usage 
+  TStopwatch fTimer;                          //! stopwatch for cpu consumption
+  ProcInfo_t fProcInfo;                       //! memory usage
 
   AnalysisTaskMultiPairAnalysis(const AnalysisTaskMultiPairAnalysis &c);
   AnalysisTaskMultiPairAnalysis& operator= (const AnalysisTaskMultiPairAnalysis &c);
-  
-  ClassDef(AnalysisTaskMultiPairAnalysis, 3); //Analysis Task handling multiple instances of PairAnalysis
+
+  ClassDef(AnalysisTaskMultiPairAnalysis, 4); //Analysis Task handling multiple instances of PairAnalysis
 };
 #endif
