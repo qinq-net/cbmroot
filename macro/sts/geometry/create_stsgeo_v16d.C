@@ -128,6 +128,9 @@
 
 // -------------   Steering variables       -----------------------------------
 
+// ---> Horizontal width of sensors [cm]
+const Double_t gkSensorSizeX = 6.2092;
+  
 // ---> Thickness of sensors [cm]
 const Double_t gkSensorThickness = 0.03;
 
@@ -396,26 +399,25 @@ void create_stsgeo_v16d(const char* geoTag="v16d")
   Int_t angle = 0;
   Int_t nLadders = 0;
   Int_t ladderTypes[16];
-  TGeoBBox*        statShape = NULL;
   TGeoTranslation* statTrans = NULL;
 
   TGeoVolume *mystation[8];
 
   Int_t statPos[8]  = { 30, 40, 50, 60, 70, 80, 90, 100 };  // z positions of stations
 
-//Double_t rHole[8] = { 2.0, 2.0, 2.0, 2.9 , 3.7 , 3.7 , 4.2 , 4.2 };  // size of cutouts in stations
-  Double_t rHole[8] = { 2.0, 2.0, 2.0, 2.43, 3.04, 3.35, 3.96, 4.2 };  // size of cutouts in stations, derived from gapXYZ[x][1]/2
+////Double_t rHole[8] = { 2.0, 2.0, 2.0, 2.9 , 3.7 , 3.7 , 4.2 , 4.2 };  // size of cutouts in stations
+//  Double_t rHole[8] = { 2.0, 2.0, 2.0, 2.43, 3.04, 3.35, 3.96, 4.2 };  // size of cutouts in stations, derived from gapXYZ[x][1]/2
   
   Int_t cone_size[8]      = { 0, 0, 0, 1, 1, 1, 1, 1 };  // size of cones: 0 = small, 1 = large
 
   Double_t cone_offset[2] = { 0.305, 0.285 };
 
-  Int_t allLadderTypes[8][16]= { {   0,   0,   0,   0,  10, 109,   9, 101,   1, 109,   9, 110,   0,   0,   0,   0 },    // station 1
-                                 {   0,   0, 111,  10, 110,   9, 109,   2, 102,   9, 109,  10, 110,  11,   0,   0 },    // station 2
-                                 {   0,   0,  14, 113,  12, 112,  12, 103,   3, 112,  12, 112,  13, 114,   0,   0 },    // station 3
-                                 {   0,  15, 114,  13, 112,  12, 112,   4, 104,  12, 112,  12, 113,  14, 115,   0 },    // station 4
-                                 {   0, 119,  18, 117,  17, 116,  16, 105,   5, 116,  16, 117,  17, 118,  19,   0 },    // station 5
-                                 {   0,  19, 118,  17, 117,  16, 116,   6, 106,  16, 116,  17, 117,  18, 119,   0 },    // station 6
+  Int_t allLadderTypes[8][16]= { {  -1,  -1,  -1,  -1,  10,   0,   9,   0,   1,   0,   9,   0,  -1,  -1,  -1,  -1 },    // station 1
+                                 {  -1,  -1,   0,  10,   0,   9,   0,   2,   0,   9,   0,  10,   0,  11,  -1,  -1 },    // station 2
+                                 {  -1,  -1,  14, 113,  12, 112,  12, 103,   3, 112,  12, 112,  13, 114,  -1,  -1 },    // station 3
+                                 {  -1,  15, 114,  13, 112,  12, 112,   4, 104,  12, 112,  12, 113,  14, 115,  -1 },    // station 4
+                                 {  -1, 119,  18, 117,  17, 116,  16, 105,   5, 116,  16, 117,  17, 118,  19,  -1 },    // station 5
+                                 {  -1,  19, 118,  17, 117,  16, 116,   6, 106,  16, 116,  17, 117,  18, 119,  -1 },    // station 6
                                  {  21, 119,  18, 120,  20, 120,  20, 107,   7, 120,  20, 120,  20, 118,  19, 121 },    // station 7
                                  { 119,  17, 123,  22, 122,  22, 122,   8, 108,  22, 122,  22, 122,  23, 117,  19 } };  // station 8
 			 
@@ -474,13 +476,13 @@ void create_stsgeo_v16d(const char* geoTag="v16d")
   
     nLadders = 0;
     for (Int_t i=0; i < 16; i++)
-      if (allLadderTypes[iStation][i] != 0)
+      if (allLadderTypes[iStation][i] >= 0)
       {
        ladderTypes[nLadders] = allLadderTypes[iStation][i];
        cout << "DE ladderTypes[" << nLadders << "] = " << allLadderTypes[iStation][i] << ";" << endl;
        nLadders++;
       }
-    mystation[iStation] = ConstructStation(iStation, nLadders, ladderTypes, rHole[iStation]);
+    mystation[iStation] = ConstructStation(iStation, nLadders, ladderTypes);
     
     if (gkConstructCones) {
       if (iStation%2 == 0)
@@ -742,7 +744,7 @@ Int_t CreateSensors() {
 
 
   // --- Sensor type 01: Small sensor (6.2 cm x 2.2 cm)
-  xSize = 6.2092;
+  xSize = gkSensorSizeX;
   ySize = 2.2;
   TGeoBBox* shape_sensor01 = new TGeoBBox("sensor01", 
 					  xSize/2., ySize/2., zSize/2.);
@@ -751,7 +753,7 @@ Int_t CreateSensors() {
 
 
   // --- Sensor type 02: Medium sensor (6.2 cm x 4.2 cm)
-  xSize = 6.2092;
+  xSize = gkSensorSizeX;
   ySize = 4.2;
   TGeoBBox* shape_sensor02 = new TGeoBBox("sensor02", 
 					  xSize/2., ySize/2., zSize/2.);
@@ -760,7 +762,7 @@ Int_t CreateSensors() {
 
 
   // ---  Sensor type 03: Big sensor (6.2 cm x 6.2 cm)
-  xSize = 6.2092;
+  xSize = gkSensorSizeX;
   ySize = 6.2;
   TGeoBBox* shape_sensor03 = new TGeoBBox("sensor03", 
 					  xSize/2., ySize/2., zSize/2.);
@@ -769,7 +771,7 @@ Int_t CreateSensors() {
 
 
   // ---  Sensor type 04: Big sensor (6.2 cm x 12.4 cm)
-  xSize = 6.2092;
+  xSize = gkSensorSizeX;
   ySize = 12.4;
   TGeoBBox* shape_sensor04 = new TGeoBBox("sensor04", 
 					  xSize/2., ySize/2., zSize/2.);
@@ -1426,66 +1428,42 @@ void AddCarbonLadder(Int_t LadderIndex,
  **            name             volume name
  **            nLadders         number of ladders
  **            ladderTypes      array of ladder types
- **            rHole            radius of inner hole
  **/
 
  TGeoVolume* ConstructStation(Int_t iStation, 
                               Int_t nLadders,
-			      Int_t* ladderTypes, 
-                              Double_t rHole) {
+			      Int_t* ladderTypes) {
 
-  TString name;
-  name = Form("Station%02d", iStation+1);  // 1,2,3,4,5,6,7,8
-  //  name = Form("Station%02d", iStation);  // 0,1,2,3,4,5,6,7 - Station00 missing in output
+  // TString name = Form("Station%02d", iStation);  // 0,1,2,3,4,5,6,7 - Station00 missing in output
+  TString name = Form("Station%02d", iStation+1);  // 1,2,3,4,5,6,7,8
+  TGeoVolume* station = new TGeoVolumeAssembly(name);
 
   // --- Some local variables
-  TGeoShape* statShape  = NULL;
   TGeoBBox* ladderShape = NULL;
   TGeoVolume* ladder    = NULL;
   TString ladderName;
-
+  Double_t subtractedVal;
 
   // --- Determine size of station from ladders
   Double_t statX     = 0.;
-  Double_t statY     = 0.;
-  Double_t statZeven = 0.;
-  Double_t statZodd  = 0.;
-  Double_t statZ     = 0.;  
+  //  Double_t statY     = 0.;
+
   for (Int_t iLadder = 0; iLadder < nLadders; iLadder++) {
     Int_t ladderType = ladderTypes[iLadder]%100;
-    ladderName = Form("Ladder%02d", ladderType);
-    ladder = gGeoManager->GetVolume(ladderName);
-    if ( ! ladder ) Fatal("ConstructStation", 
-			  Form("Volume %s not found", ladderName.Data()));
-    shape = (TGeoBBox*) ladder->GetShape();
-    statX += 2. * shape->GetDX();
-    statY = TMath::Max(statY, 2. * shape->GetDY());
-    if ( iLadder % 2 ) statZeven = TMath::Max(statZeven, 2. * shape->GetDZ() );
-    else statZodd = TMath::Max(statZodd, 2. * shape->GetDZ() );
+    if (ladderType > 0)
+    {
+      ladderName = Form("Ladder%02d", ladderType);
+      ladder = gGeoManager->GetVolume(ladderName);
+      if ( ! ladder ) Fatal("ConstructStation", 
+  			  Form("Volume %s not found", ladderName.Data()));
+      ladderShape = (TGeoBBox*) ladder->GetShape();
+      statX += 2. * ladderShape->GetDX();
+      //      statY = TMath::Max(statY, 2. * ladderShape->GetDY());
+    }
+    else
+      statX += gkSensorSizeX;
   }
   statX -= Double_t(nLadders-1) * gkLadderOverlapX;
-  statZ = statZeven + gkLadderGapZ + statZodd;
-
-  // --- Create station volume
-  TString boxName(name);
-  boxName += "_box";
-
-  cout << "before   statZ/2.: " << statZ/2. << endl;
-  statZ = 2 * 4.5;  // changed Z size of the station for cone and gkLadderGapZ
-  cout << "fixed to statZ/2.: " << statZ/2. << endl;
-  TGeoBBox* statBox = new TGeoBBox(boxName, statX/2., statY/2., statZ/2.);
-
-  TString tubName(name);
-  tubName += "_tub";
-  TString expression = boxName + "-" + tubName;
-  //  TGeoTube* statTub = new TGeoTube(tubName, 0., rHole, statZ/2.);
-  //  TGeoBBox* statTub = new TGeoBBox(tubName, rHole, rHole, statZ/2.);
-  TGeoBBox* statTub = new TGeoBBox(tubName, rHole, rHole, statZ/2.+.1);  // .1 opens the hole in z direction
-  
-  statShape = new TGeoCompositeShape(name, expression.Data());
-  TGeoVolume* station = new TGeoVolume(name, statShape, gStsMedium);
-
-  Double_t subtractedVal;
   
   // --- Place ladders in station
   cout << "xPos0: " << statX << endl;
@@ -1497,54 +1475,62 @@ void AddCarbonLadder(Int_t LadderIndex,
   Double_t maxdz = 0.;
   for (Int_t iLadder = 0; iLadder < nLadders; iLadder++) {  // find maximum dz in this station
     Int_t ladderType = ladderTypes[iLadder]%100;
-    ladderName = Form("Ladder%02d", ladderType);
-    ladder = gGeoManager->GetVolume(ladderName);
-    shape = (TGeoBBox*) ladder->GetShape();
-    if (maxdz < shape->GetDZ())
-      maxdz = shape->GetDZ();
+    if (ladderType > 0)
+    {
+      ladderName = Form("Ladder%02d", ladderType);
+      ladder = gGeoManager->GetVolume(ladderName);
+      ladderShape = (TGeoBBox*) ladder->GetShape();
+      if (maxdz < ladderShape->GetDZ())
+        maxdz = ladderShape->GetDZ();
+    }
   }
  
   for (Int_t iLadder = 0; iLadder < nLadders; iLadder++) {
     Int_t ladderType = ladderTypes[iLadder]%100;
-    ladderName = Form("Ladder%02d", ladderType);
-    ladder = gGeoManager->GetVolume(ladderName);
-    shape = (TGeoBBox*) ladder->GetShape();
-    xPos += shape->GetDX();
-    cout << "xPos2: " << xPos << endl;
-    yPos = 0.;    // vertically centred  
-    TGeoRotation* rot = new TGeoRotation();
-
-    if (gkConstructFrames)
-      // DEDE
-      subtractedVal = sqrt(2.)*gkFrameThickness/2. + shape->GetDX();
-    //      subtractedVal = 2*gkSectorGapZFrame + sqrt(2.)*gkFrameThickness/2. + shape->GetDX();
+    if (ladderType > 0)
+    {
+      ladderName = Form("Ladder%02d", ladderType);
+      ladder = gGeoManager->GetVolume(ladderName);
+      ladderShape = (TGeoBBox*) ladder->GetShape();
+      xPos += ladderShape->GetDX();
+      cout << "xPos2: " << xPos << endl;
+      yPos = 0.;    // vertically centred  
+      TGeoRotation* rot = new TGeoRotation();
+  
+      if (gkConstructFrames)
+        // DEDE
+        subtractedVal = sqrt(2.)*gkFrameThickness/2. + ladderShape->GetDX();
+      //      subtractedVal = 2*gkSectorGapZFrame + sqrt(2.)*gkFrameThickness/2. + ladderShape->GetDX();
+      else
+        subtractedVal = 0.;
+  
+      //    zPos = 0.5 * gkLadderGapZ + (ladderShape->GetDZ()-subtractedVal/2.);  // non z-aligned ladders
+      zPos = 0.5 * gkLadderGapZ + (2*maxdz-ladderShape->GetDZ()-subtractedVal/2.);  // z-aligned ladders
+      
+      cout << "DE ladder" << ladderTypes[iLadder]%100
+  	 << "  dx: " << ladderShape->GetDX() 
+  	 << "  dy: " << ladderShape->GetDY() 
+  	 << "  dz: " << ladderShape->GetDZ() 
+  	 << "  max dz: " << maxdz << endl;
+  
+      cout << "DE ladder" << ladderTypes[iLadder]%100
+  	 << "  fra: " << gkFrameThickness/2.
+  	 << "  sub: " << subtractedVal
+  	 << "  zpo: " << zPos << endl << endl;
+  
+      if (ladderTypes[iLadder]/100 == 1) // flip some of the ladders to reproduce the CAD layout
+        rot->RotateY(180.);
+      else
+        zPos = -zPos;
+  
+      TGeoCombiTrans* trans = new TGeoCombiTrans(xPos, yPos, zPos, rot);
+      station->AddNode(ladder, iLadder+1, trans);
+      station->GetShape()->ComputeBBox();
+      xPos += ladderShape->GetDX() - gkLadderOverlapX;
+      cout << "xPos3: " << xPos << endl;
+    }
     else
-      subtractedVal = 0.;
-
-    //    zPos = 0.5 * gkLadderGapZ + (shape->GetDZ()-subtractedVal/2.);  // non z-aligned ladders
-    zPos = 0.5 * gkLadderGapZ + (2*maxdz-shape->GetDZ()-subtractedVal/2.);  // z-aligned ladders
-    
-    cout << "DE ladder" << ladderTypes[iLadder]%100
-	 << "  dx: " << shape->GetDX() 
-	 << "  dy: " << shape->GetDY() 
-	 << "  dz: " << shape->GetDZ() 
-	 << "  max dz: " << maxdz << endl;
-
-    cout << "DE ladder" << ladderTypes[iLadder]%100
-	 << "  fra: " << gkFrameThickness/2.
-	 << "  sub: " << subtractedVal
-	 << "  zpo: " << zPos << endl << endl;
-
-    if (ladderTypes[iLadder]/100 == 1) // flip some of the ladders to reproduce the CAD layout
-      rot->RotateY(180.);
-    else
-      zPos = -zPos;
-
-    TGeoCombiTrans* trans = new TGeoCombiTrans(xPos, yPos, zPos, rot);
-    station->AddNode(ladder, iLadder+1, trans);
-    station->GetShape()->ComputeBBox();
-    xPos += shape->GetDX() - gkLadderOverlapX;
-    cout << "xPos3: " << xPos << endl;
+      xPos += gkSensorSizeX - gkLadderOverlapX;
   }
 
   return station;
