@@ -92,6 +92,7 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
       } 
       else if ( mp->is_buffer_overflow() ){
 	LOG(DEBUG) <<  counter << " This is a buffer overflow message" << FairLogger::endl; 
+	isInfo = true;
 	GetEpochInfo(link, addr);
 	Int_t triggerType = -1;
         Int_t infoType = -1;
