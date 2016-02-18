@@ -121,7 +121,7 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
 	Int_t groupId = mp->group_id();
 	Int_t channel = mp->channel_id();
 	Int_t time = mp->timestamp();
-        Int_t bufferOverflowCounter = mp->buffer_overflow_count();// should be now obsolete
+        Int_t bufferOverflowCounter = 0;//mp->buffer_overflow_count();// should be now obsolete
 	Int_t samples = 1;
 	Int_t* sample_values = new Int_t[samples];
 	sample_values[0] = -256;
