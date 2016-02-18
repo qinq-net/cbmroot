@@ -53,6 +53,7 @@ Bool_t CbmTSUnpackSpadic::Init()
 Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
   // compare to: https://github.com/spadic/spadic10-software/blob/master/lib/message/message.h
+  // or fles/spadic/message/wrap/cpp/message.cpp
   LOG(DEBUG) << "Unpacking Spadic Data" << FairLogger::endl; 
 
   spadic::TimesliceReader r;
@@ -66,21 +67,34 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
       if(gLogger->IsLogNeeded(DEBUG)) {
 	print_message(*mp);
       }
-      
+      counter++;
       Int_t link = ts.descriptor(component, 0).eq_id;
       Int_t address = addr;
+
+      if ( mp->is_valid() ){
+	LOG(DEBUG) << counter << " This message is valid" << FairLogger::endl; 
+      } else {
+	LOG(ERROR) << counter <<  " This message is not valid" << FairLogger::endl; 
+	continue;
+      }
+
       Bool_t isInfo(false), isHit(false), isEpoch(false);
+      if ( mp->is_epoch_out_of_sync() ){
+	LOG(INFO) <<  counter << " This is an out of sync Epoch Marker" << FairLogger::endl; 
+	LOG(INFO) << "   TimeStamp: " << mp->timestamp()<< FairLogger::endl; 
+	LOG(INFO) << "   Channel:   " << mp->channel_id()<< FairLogger::endl; 
+	LOG(INFO) << "   Group:     " << mp->group_id()<< FairLogger::endl; 
+      }
       if ( mp->is_epoch_marker() ) { 
+	LOG(DEBUG) <<  counter << " This is an Epoch Marker" << FairLogger::endl; 
 	isEpoch = true;
         FillEpochInfo(link, addr, mp->epoch_count());
       } 
-      if ( mp->is_info() ){
-	//std::cout << "InfoMessage found" << std::endl;
-	isInfo = true;
+      else if ( mp->is_buffer_overflow() ){
+	LOG(DEBUG) <<  counter << " This is a buffer overflow message" << FairLogger::endl; 
 	GetEpochInfo(link, addr);
-
-        Int_t triggerType = -1;
-        Int_t infoType = static_cast<Int_t>(mp->info_type());
+	Int_t triggerType = -1;
+        Int_t infoType = -1;
         Int_t stopType = -1;
 	Int_t groupId = mp->group_id();
 	Int_t channel = mp->channel_id();
@@ -96,44 +110,83 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
 			      isHit, isInfo, isEpoch);
 	delete[] sample_values;
       }
-
-      if ( mp->is_hit() ) { 
-	isHit = true;
+      else if ( mp->is_info() ){
+	LOG(DEBUG) <<  counter << " This is a info message" << FairLogger::endl; 
+	isInfo = true;
 	GetEpochInfo(link, addr);
-	Int_t triggerType = -1;
-	Int_t stopType = -1;
-	Int_t time = -1;
-        Int_t infoType = -1;
-	Int_t groupId = -1;
-	Int_t bufferOverflowCounter = 0;
-	Int_t samples = 1;
-	Int_t* sample_values = NULL;
-	Int_t channel = mp->channel_id();
-	if ( mp->is_hit_aborted()){
-	  infoType = static_cast<Int_t>(mp->info_type());
-	  sample_values = new Int_t[samples];
-	  sample_values[0] = -256;
-	} else {
-	  groupId = mp->group_id();
 
-	  triggerType = static_cast<Int_t>(mp->hit_type());
-	  stopType = static_cast<Int_t>(mp->stop_type());
-	  time = mp->timestamp();
-	  samples = mp->samples().size();
-	  sample_values = new Int_t[samples];
-	  Int_t counter1=0;
-	  for (auto x : mp->samples()) {
-	    sample_values[counter1] = x;
-	    ++counter1;
-	  }
-	}
+        Int_t triggerType = -1;
+        Int_t infoType = static_cast<Int_t>(mp->info_type());
+        Int_t stopType = -1;
+	Int_t groupId = mp->group_id();
+	Int_t channel = mp->channel_id();
+	Int_t time = mp->timestamp();
+        Int_t bufferOverflowCounter = mp->buffer_overflow_count();// should be now obsolete
+	Int_t samples = 1;
+	Int_t* sample_values = new Int_t[samples];
+	sample_values[0] = -256;
 	new( (*fSpadicRaw)[fSpadicRaw->GetEntriesFast()] )
 	  CbmSpadicRawMessage(link, address, channel, fEpochMarker, time, 
 			      fSuperEpoch, triggerType, infoType, stopType, groupId,
 			      bufferOverflowCounter, samples, sample_values,
 			      isHit, isInfo, isEpoch);
-	++counter;
 	delete[] sample_values;
+      }
+      else if ( mp->is_hit() ) { 
+	LOG(DEBUG) <<  counter << " This is a hit message" << FairLogger::endl; 
+	isHit = true;
+	GetEpochInfo(link, addr);
+	Int_t triggerType =  static_cast<Int_t>(mp->hit_type());
+	Int_t stopType = static_cast<Int_t>(mp->stop_type());
+	Int_t time = mp->timestamp();
+        Int_t infoType = -1;
+	Int_t groupId = mp->group_id();
+	Int_t bufferOverflowCounter = 0;
+	Int_t samples = mp->samples().size();
+	Int_t* sample_values =  new Int_t[samples];
+	Int_t channel = mp->channel_id();
+	Int_t counter1=0;
+	for (auto x : mp->samples()) {
+	  sample_values[counter1] = x;
+	  ++counter1;
+	}
+	//}
+	new( (*fSpadicRaw)[fSpadicRaw->GetEntriesFast()] )
+	  CbmSpadicRawMessage(link, address, channel, fEpochMarker, time, 
+			      fSuperEpoch, triggerType, infoType, stopType, groupId,
+			      bufferOverflowCounter, samples, sample_values,
+			      isHit, isInfo, isEpoch);
+	//++counter;
+	delete[] sample_values;
+      } 
+      else if ( mp->is_hit_aborted()) {
+	LOG(DEBUG) <<  counter << " This is a hit message was aborted" << FairLogger::endl; 
+
+	GetEpochInfo(link, addr);
+	Int_t triggerType = -1;
+	Int_t stopType = -1;
+	Int_t time = mp->timestamp();
+        Int_t infoType = -1;
+	Int_t groupId = -1;//mp->group_id();//???
+	Int_t bufferOverflowCounter = 0;
+	Int_t samples = 1;
+	Int_t* sample_values = NULL;
+	Int_t channel = mp->channel_id();
+	infoType = static_cast<Int_t>(mp->info_type());// should here be stoptype instead???
+	sample_values = new Int_t[samples];
+	sample_values[0] = -256;
+	new( (*fSpadicRaw)[fSpadicRaw->GetEntriesFast()] )
+	  CbmSpadicRawMessage(link, address, channel, fEpochMarker, time, 
+			      fSuperEpoch, triggerType, infoType, stopType, groupId,
+			      bufferOverflowCounter, samples, sample_values,
+			      isHit, isInfo, isEpoch);
+	//++counter;
+	delete[] sample_values;
+
+      }
+      else {
+	LOG(INFO) <<  counter << " This message type is not hit, info, epoch or overflow and will not be stored in the TClonesArray" << FairLogger::endl; 
+	print_message(mp);
       }
     }
   }
@@ -142,7 +195,7 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
 
 void CbmTSUnpackSpadic::print_message(const spadic::Message& m)
 {
-  LOG(DEBUG) << "v: " << (m.is_valid() ? "o" : "x");
+  LOG(INFO) << "v: " << (m.is_valid() ? "o" : "x");
   LOG(DEBUG) << " / gid: " << static_cast<int>(m.group_id());
   LOG(DEBUG) << " / chid: " << static_cast<int>(m.channel_id());
   if ( m.is_hit() ) { 
@@ -158,7 +211,7 @@ void CbmTSUnpackSpadic::print_message(const spadic::Message& m)
     } else if ( m.is_epoch_out_of_sync() ) { 
       LOG(INFO) << " This is an out of sync Epoch Marker" << FairLogger::endl; 
     } else {
-      LOG(DEBUG) << " This is not known" << FairLogger::endl;
+      LOG(INFO) << " This is not known" << FairLogger::endl;
     }
   }
 }
