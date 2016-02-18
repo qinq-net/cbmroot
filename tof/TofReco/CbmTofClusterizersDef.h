@@ -52,9 +52,9 @@ Double_t dMaxTimeDist=0.;     // Should be class member!
 Double_t dMaxSpaceDist = 0.;  // Should be class member!
 */
 
-const Int_t nbClDelTofBinX=50;
-const Int_t nbClDelTofBinY=49;
-const Double_t DelTofMax=6000.;
+const Int_t nbClDelTofBinX=60;
+const Int_t nbClDelTofBinY=59;
+//const Double_t DelTofMax=60000.;
 
 const Int_t nbCldXdYBinX=49;
 const Int_t nbCldXdYBinY=49;

@@ -175,6 +175,7 @@ CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer():
    fTotMin(0.),
    fTotOff(0.),
    fTotMean(0.),
+   fdDelTofMax(60000.),
    fTotPreRange(0.),
    fMaxTimeDist(0.),
    fCalParFileName(""),
@@ -312,6 +313,7 @@ CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer(const char *name, Int_t ver
    fTotMin(0.),
    fTotOff(0.),
    fTotMean(0.),
+   fdDelTofMax(60000.),
    fTotPreRange(0.),
    fMaxTimeDist(0.),
    fCalParFileName(""),
@@ -1215,7 +1217,7 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
    for (Int_t iSel=0; iSel<iNSel; iSel++){
        fhSeldT[iSel] =  new TH2F(  Form("cl_dt_Sel%02d", iSel ),
                                    Form("Selector time %02d; dT [ps]",iSel ),
-                                   99, -DelTofMax*10., DelTofMax*10.,
+                                   99, -fdDelTofMax*10., fdDelTofMax*10.,
 				   16, -0.5, 15.5 ); 
    }
  
@@ -1304,7 +1306,7 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
        fhTRpcCluDelTof[iDetIndx][iSel] = new TH2F( 
           Form("cl_SmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof", iSmType, iSmId, iRpcId, iSel),
           Form("SmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof; TRef-TSel; T-TSel", iSmType, iSmId, iRpcId, iSel),
-          nbClDelTofBinX,-DelTofMax,DelTofMax,nbClDelTofBinY,-TSumMax,TSumMax);
+          nbClDelTofBinX,-fdDelTofMax,fdDelTofMax,nbClDelTofBinY,-TSumMax,TSumMax);
       
        // Position deviation histos  
        fhTRpcCludXdY[iDetIndx][iSel] = new TH2F( 
@@ -1742,7 +1744,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
                           << FairLogger::endl; 
             }
             LOG(DEBUG2)<<" Digi 0 "<<iDigInd0<<": Ch "<<pDig0->GetChannel()<<", Side "<<pDig0->GetSide()
-                     <<" Digi 1 "<<iDigInd1<<": Ch "<<pDig1->GetChannel()<<", Side "<<pDig1->GetSide()<<FairLogger::endl;
+                       <<" Digi 1 "<<iDigInd1<<": Ch "<<pDig1->GetChannel()<<", Side "<<pDig1->GetSide()<<FairLogger::endl;
 
             fhRpcCluTot[iDetIndx]->Fill((Double_t)iCh*2+pDig0->GetSide(),pDig0->GetTot());
             fhRpcCluTot[iDetIndx]->Fill((Double_t)iCh*2+pDig1->GetSide(),pDig1->GetTot());
@@ -1817,14 +1819,14 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
              || TMath::Sqrt(TMath::Power(Zref/pHit->GetZ()*pHit->GetX()-Zref/pTrig[iSel]->GetZ()*pTrig[iSel]->GetX(),2.)
                +TMath::Power(Zref/pHit->GetZ()*pHit->GetY()-Zref/pTrig[iSel]->GetZ()*pTrig[iSel]->GetY(),2.))<fdCaldXdYMax)
              {
-              if (dTRef !=0.  && TMath::Abs(dTRef-dTTrig[iSel])<DelTofMax) {  // correct times for DelTof - velocity spread 
+              if (dTRef !=0.  && TMath::Abs(dTRef-dTTrig[iSel])<fdDelTofMax) {  // correct times for DelTof - velocity spread 
 
                 if(iLink==0){   // do calculations only once (at 1. digi entry) // interpolate! FIXME!
-		 Double_t dTentry=dTRef-dTTrig[iSel]+DelTofMax;
-                 Int_t iBx = dTentry/2./DelTofMax*nbClDelTofBinX;
+		 Double_t dTentry=dTRef-dTTrig[iSel]+fdDelTofMax;
+                 Int_t iBx = dTentry/2./fdDelTofMax*nbClDelTofBinX;
                  if(iBx<0) iBx=0;
                  if(iBx>nbClDelTofBinX-1) iBx=nbClDelTofBinX-1;
-		 Double_t dBinWidth=2.*DelTofMax/nbClDelTofBinX;
+		 Double_t dBinWidth=2.*fdDelTofMax/nbClDelTofBinX;
 		 Double_t dDTentry=dTentry-((Double_t)iBx)*dBinWidth;
 		 Int_t iBx1=0;
 		 dTentry < 0 ? iBx1=iBx-1 : iBx1=iBx+1;
@@ -1887,7 +1889,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
                //                       << " in event " << XXX 
                        << FairLogger::endl;  
            }
-         } // digi loop end;
+         } // linked digi loop end;
          if (2<dNstrips){
            //           Double_t dVar=dMeanTimeSquared/dNstrips - TMath::Power(pHit->GetTime(),2);
            Double_t dVar=dMeanTimeSquared/(dNstrips-1);
@@ -2195,9 +2197,9 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
            || fCalSmAddr == iSmAddr)  // select detectors for determination of walk correction
 	{
         LOG(INFO)<<"CbmTofTestBeamClusterizer::WriteHistos: restore Offsets and Gains and update Walk for "
-                 <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc 
+                 <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc<<" with "<<fMbsMappingPar->GetSmTypeNbCh(iSmType)<<" channels"
                  <<FairLogger::endl;
-        for( Int_t iCh=0; iCh<fMbsMappingPar->GetSmTypeNbCh(iSmType); iCh++){
+        for( Int_t iCh=0; iCh< fDigiBdfPar->GetNbChan( iSmType, iRpc ); iCh++){
           TH2 *h2tmp0;
           TH2 *h2tmp1;
           if(-1<fCalSel){
@@ -2279,7 +2281,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
          }
 	}
         }else{  // preserve whatever is there for fCalSmAddr !
-         for( Int_t iCh = 0; iCh < fMbsMappingPar->GetSmTypeNbCh(iSmType); iCh++ ) // restore old values 
+         for( Int_t iCh = 0; iCh < fDigiBdfPar->GetNbChan( iSmType, iRpc ); iCh++ ) // restore old values 
          {
           TProfile *htmp0 = fhRpcCluWalk[iDetIndx][iCh][0]->ProfileX("_pfx",1,nbClWalkBinY);
           TProfile *htmp1 = fhRpcCluWalk[iDetIndx][iCh][1]->ProfileX("_pfx",1,nbClWalkBinY);

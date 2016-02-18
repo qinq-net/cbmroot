@@ -118,6 +118,7 @@ class CbmTofTestBeamClusterizer : public FairTask
       inline void SetTotMax     (Double_t val)          { fTotMax      = val;}
       inline void SetTotMin     (Double_t val)          { fTotMin      = val;}
       inline void SetTotMean    (Double_t val)          { fTotMean     = val;}
+      inline void SetDelTofMax  (Double_t val)          { fdDelTofMax  = val;}
       inline void SetTotPreRange(Double_t val)          { fTotPreRange = val;}
       inline void SetMaxTimeDist(Double_t val)          { fMaxTimeDist = val;}
       inline void SetSel2Id     (Int_t ival)            { fSel2Id = ival;}
@@ -329,6 +330,7 @@ class CbmTofTestBeamClusterizer : public FairTask
       Double_t fTotMin;
       Double_t fTotOff;
       Double_t fTotMean;
+      Double_t fdDelTofMax;
       Double_t fTotPreRange;
       Double_t fMaxTimeDist;
 
