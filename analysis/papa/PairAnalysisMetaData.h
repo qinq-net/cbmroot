@@ -33,17 +33,13 @@ public:
 
   void Init();
 
-  // functions to fill
+  // setter
   void FillMeta(const char *name, Double_t val);
   void FillMeta(const char *name, Int_t    val);
   void FillMeta(const char *name, const char *val);
 
-  // functions to get and draw histograms
   void GetMeta(const char *name, Int_t *val);
   void GetMeta(const char *name, Double_t *val);
-  //  void ReadFromFile(const char* file="metadata.root", const char *task="", const char *config="");
-  //  void SetList(TList * const list)          { fList=list; }
-  //  TList *GetList()                    const { return fList; }
 
   void SetMetaData(TList &list, Bool_t setOwner=kTRUE);
   void ResetMetaData()                 { fMetaList.Clear(); }
@@ -51,15 +47,11 @@ public:
 
   TObject* FindObject(const char *name) { return fMetaList.FindObject(name); }
 
-
-  //  virtual void Print(const Option_t* option = "") const;
   void DrawSame(TString opt="msb");
-  //  virtual void Draw(const Option_t* option = "");
 
 private:
 
   TList fMetaList;             //-> list of parameters
-  //  TList    *fList;                  //! List of list of histograms
 
   PairAnalysisMetaData(const PairAnalysisMetaData &hist);
   PairAnalysisMetaData& operator = (const PairAnalysisMetaData &hist);

@@ -1,10 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////
-//                PairAnalysis Mixed Event                               //
 //                                                                       //
 //                                                                       //
+// Authors:
+//   * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
+//   Julian Book   <Julian.Book@cern.ch>
 /*
-Detailed description
 
+  Small event keeping holding track arrays and the event data.
 
 */
 //                                                                       //
@@ -14,7 +16,6 @@ Detailed description
 #include <TExMap.h>
 #include <TProcessID.h>
 
-#include "CbmVertex.h"
 #include "PairAnalysisTrack.h"
 
 #include "PairAnalysisMixedEvent.h"
@@ -22,33 +23,18 @@ Detailed description
 ClassImp(PairAnalysisMixedEvent)
 
 PairAnalysisMixedEvent::PairAnalysisMixedEvent() :
-  TNamed(),
-  fArrTrackP(),
-  fArrTrackN(),
-  fArrVertex("CbmVertex",1),
-  fArrPairs("PairAnalysisPair",0),
-  fNTracksP(0),
-  fNTracksN(0),
-  fPID(0x0),
-  fPIDIndex(0)
+  PairAnalysisMixedEvent("mixedevent","mixed event")
 {
   //
   // Default Constructor
   //
-  for (Int_t i=0; i<PairAnalysisVarManager::kNMaxValuesMC;++i) fEventData[i]=0.;
 }
 
 //______________________________________________
 PairAnalysisMixedEvent::PairAnalysisMixedEvent(const char* name, const char* title) :
   TNamed(name, title),
   fArrTrackP(),
-  fArrTrackN(),
-  fArrVertex("CbmVertex",1),
-  fArrPairs("PairAnalysisPair",0),
-  fNTracksP(0),
-  fNTracksN(0),
-  fPID(0x0),
-  fPIDIndex(0)
+  fArrTrackN()
 {
   //
   // Named Constructor
@@ -64,12 +50,10 @@ PairAnalysisMixedEvent::~PairAnalysisMixedEvent()
   //
   fArrTrackP.Delete();
   fArrTrackN.Delete();
-  fArrVertex.Delete();
-  fArrPairs.Delete();
 }
 
 //______________________________________________
-void PairAnalysisMixedEvent::SetTracks(const TObjArray &arrP, const TObjArray &arrN, const TObjArray &/*arrPairs*/)
+void PairAnalysisMixedEvent::SetTracks(const TObjArray &arrP, const TObjArray &arrN)
 {
   //
   // Setup PairAnalysisPairs
@@ -78,6 +62,7 @@ void PairAnalysisMixedEvent::SetTracks(const TObjArray &arrP, const TObjArray &a
 
   //Clear out old entries before filling new ones
   Clear(); // check if this can be improved, by calling clear instead of removeat
+
   // we keep the tracks buffered to minimise new / delete operations
   fNTracksN=0;
   fNTracksP=0;
@@ -101,25 +86,8 @@ void PairAnalysisMixedEvent::SetTracks(const TObjArray &arrP, const TObjArray &a
     // buffer track
     PairAnalysisTrack   *ctrack = new (fArrTrackP[tracks]) PairAnalysisTrack(*track);
 
-    // buffer vertex, don't duplicate
-    // most particles will be assiciated to the primary vertex ...
-    /*
-      CbmVertex *vtx=track->GetProdVertex();
-      CbmVertex *cvertex = 0x0;
-      if (vtx){
-        cvertex = reinterpret_cast<CbmVertex*>(mapStoredVertices.GetValue(reinterpret_cast<ULong64_t>(vtx)));
-        if (!cvertex) {
-          if (mapStoredVertices.Capacity()<=mapStoredVertices.GetSize()) mapStoredVertices.Expand(2*mapStoredVertices.GetSize());
-          if (fArrVertex.GetSize()<=fArrVertex.GetEntriesFast()) fArrVertex.Expand(2*fArrVertex.GetSize());
-          cvertex = new (fArrVertex[fArrVertex.GetEntriesFast()]) CbmVertex(*vtx);
-          AssignID(cvertex);
-          mapStoredVertices.Add(reinterpret_cast<ULong64_t>(vtx),reinterpret_cast<ULong64_t>(cvertex));
-        }
-      }
-      ctrack->SetProdVertex(cvertex);
-    */
     ++tracks;
-    }
+  }
   fNTracksP=tracks;
 
   tracks=0;
@@ -130,28 +98,10 @@ void PairAnalysisMixedEvent::SetTracks(const TObjArray &arrP, const TObjArray &a
     //buffer track
     PairAnalysisTrack   *ctrack = new (fArrTrackN[tracks]) PairAnalysisTrack(*track);
 
-    // buffer vertex, don't duplicate
-    // most particles will be assiciated to the primary vertex ...
-    /*
-    CbmVertex *vtx=track->GetProdVertex();
-    CbmVertex *cvertex = 0x0;
-      if (vtx){
-        cvertex = reinterpret_cast<CbmVertex*>(mapStoredVertices.GetValue(reinterpret_cast<ULong64_t>(vtx)));
-        if (!cvertex) {
-          if (mapStoredVertices.Capacity()<=mapStoredVertices.GetSize()) mapStoredVertices.Expand(2*mapStoredVertices.GetSize());
-          if (fArrVertex.GetSize()<=fArrVertex.GetEntriesFast()) fArrVertex.Expand(2*fArrVertex.GetSize());
-          cvertex = new (fArrVertex[fArrVertex.GetEntriesFast()]) CbmVertex(*vtx);
-          AssignID(cvertex);
-          mapStoredVertices.Add(reinterpret_cast<ULong64_t>(vtx),reinterpret_cast<ULong64_t>(cvertex));
-        }
-      }
-      ctrack->SetProdVertex(cvertex);
-    */
     ++tracks;
   }
   fNTracksN=tracks;
 
-  //TODO: pair arrays
 }
 
 //______________________________________________
@@ -162,31 +112,16 @@ void PairAnalysisMixedEvent::Clear(Option_t *opt)
   //
   fArrTrackP.Clear(opt);
   fArrTrackN.Clear(opt);
-
-  // for (Int_t i=fArrTrackP.GetEntriesFast()-1; i>=0; --i){
-  //   delete fArrTrackP.RemoveAt(i);
-  // }
-
-  // for (Int_t i=fArrTrackN.GetEntriesFast()-1; i>=0; --i){
-  //   delete fArrTrackN.RemoveAt(i);
-  // }
-
-  // for (Int_t i=0; i<fArrVertex.GetEntriesFast(); ++i){
-  //   delete fArrVertex.RemoveAt(i);
-  // }
-  fArrPairs.Clear(opt);
 }
 
 //______________________________________________
-void PairAnalysisMixedEvent::Set(Int_t /*size*/)
+void PairAnalysisMixedEvent::Set(Int_t size)
 {
   //
   // set size of array
   //
-  // fArrTrackP.SetClass("PairAnalysisTrack",size);
-  // fArrTrackN.SetClass("PairAnalysisTrack",size);
-  fArrTrackP.SetClass("PairAnalysisTrack",1000);
-  fArrTrackN.SetClass("PairAnalysisTrack",1000);
+  fArrTrackP.SetClass("PairAnalysisTrack",size);
+  fArrTrackN.SetClass("PairAnalysisTrack",size);
 }
 
 //______________________________________________

@@ -127,7 +127,7 @@ void PairAnalysisMetaData::Init()
 void PairAnalysisMetaData::SetMetaData(TList &list, Bool_t setOwner/*=kTRUE*/)
 {
   //
-  // set histogram classes and histograms to this instance. It will take onwnership!
+  // set container classes to this instance. It will take onwnership!
   //
   ResetMetaData();
   TString name(GetName());

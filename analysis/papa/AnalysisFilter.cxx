@@ -8,8 +8,8 @@
 //   * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 //   Julian Book   <Julian.Book@cern.ch>
 //
-// Add cut object to list via AnalysisFilter::AddCuts(AnalysisCuts* cuts)
-// Add control histograms via AnalysisFilter::AddHistos(PairAnalysisHistos* histos)
+// Add cut object to list via AddCuts(AnalysisCuts* cuts)
+// Add control histograms via AddHistos(PairAnalysisHistos* histos)
 //
 ////////////////////////////////////////////////////////////////////////
 

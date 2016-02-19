@@ -28,15 +28,14 @@ public:
 
   virtual ~PairAnalysisMixedEvent();
 
-  void Set(Int_t size=1000);
+  void Set(Int_t size=100);
 
-  void SetTracks(const TObjArray &arrP, const TObjArray &arrN, const TObjArray &arrPairs);
+  void SetTracks(const TObjArray &arrP, const TObjArray &arrN);
   void SetEventData(const Double_t data[PairAnalysisVarManager::kNMaxValuesMC]);
   const Double_t* GetEventData() const {return fEventData;}
 
   const TClonesArray* GetTrackArrayP() const { return &fArrTrackP; }
   const TClonesArray* GetTrackArrayN() const { return &fArrTrackN; }
-  const TClonesArray* GetVertexArray() const { return &fArrVertex; }
 
   Int_t GetNTracksP() const { return fNTracksP; }
   Int_t GetNTracksN() const { return fNTracksN; }
@@ -50,24 +49,21 @@ public:
 private:
   TClonesArray fArrTrackP;      //positive tracks
   TClonesArray fArrTrackN;      //negative tracks
-  TClonesArray fArrVertex;      //track vertices
 
-  TClonesArray fArrPairs;       //Pair array
-
-  Int_t fNTracksP;              //number of positive tracks
-  Int_t fNTracksN;              //number of negative tracks
+  Int_t fNTracksP = 0;          //number of positive tracks
+  Int_t fNTracksN = 0;          //number of negative tracks
 
   Double_t fEventData[PairAnalysisVarManager::kNMaxValuesMC]; // event informaion from the var manager
 
-  TProcessID *fPID;             //! internal PID for references to buffered objects
-  UInt_t      fPIDIndex;        //! index of PID
+  TProcessID *fPID = NULL;      //! internal PID for references to buffered objects
+  UInt_t      fPIDIndex = 0;    //! index of PID
 
   PairAnalysisMixedEvent(const PairAnalysisMixedEvent &c);
   PairAnalysisMixedEvent &operator=(const PairAnalysisMixedEvent &c);
 
   void AssignID(TObject *obj);
 
-  ClassDef(PairAnalysisMixedEvent,1)         // Small mixed event structure
+  ClassDef(PairAnalysisMixedEvent,2)         // Small mixed event structure
 };
 
 

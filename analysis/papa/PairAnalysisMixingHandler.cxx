@@ -1,10 +1,20 @@
 ///////////////////////////////////////////////////////////////////////////
-//                PairAnalysis MixingHandler                                  //
 //                                                                       //
 //                                                                       //
+// Authors:
+//   * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
+//   Julian Book   <Julian.Book@cern.ch>
 /*
-Detailed description
 
+  Event mixing handler, that creates event pools of size fDepth. Events
+  are ring-buffered and mixing is started for events that are similar according
+  to the binnnings and variables specific via:
+
+    AddVariable(PairAnalysisVarManager::ValueTypes type, TVectorD* const bins)
+
+  You can specify with type of event mixing should be done (+-/-+,++,--) using:
+
+    SetMixType(EMixType type)
 
 */
 //                                                                       //
@@ -134,14 +144,15 @@ void PairAnalysisMixingHandler::Fill(const PairAnalysisEvent *ev, PairAnalysis *
   if (!event){
     //    Info("Fill",Form("new event at %d: %d",bin,index1));
     event = new(pool[index1]) PairAnalysisMixedEvent();
-    event->Set();//TMath::Max(papa->GetTrackArray(0)->GetEntriesFast(),papa->GetTrackArray(1)->GetEntriesFast()));
+    //    Int_t size = TMath::Max(papa->GetTrackArray(0)->GetEntriesFast(),papa->GetTrackArray(1)->GetEntriesFast()));
+    event->Set();
     event->SetProcessID(fPID);
   } else {
     //    Info("Fill",Form("use event at %d: %d",bin,index1));
   }
 
   // event->SetProcessID(fPID);
-  event->SetTracks(*papa->GetTrackArray(0), *papa->GetTrackArray(1), *papa->GetPairArray(1));
+  event->SetTracks(*papa->GetTrackArray(0), *papa->GetTrackArray(1));
   event->SetEventData(PairAnalysisVarManager::GetData());
 
   //set current event position in ring buffer

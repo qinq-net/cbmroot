@@ -1412,7 +1412,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	if(legOpt.Contains("col")) legOpt="";
 	legOpt.ReplaceAll("z","");
 	legOpt.ReplaceAll("e","");
-	if (optTask)                histClass.Prepend(Form("%s ",GetName()));
+	if (optTask) histClass.Prepend(Form("%s ",GetName()));
 	if (optTask && optCutStep && i) histClass.Prepend("+");
 	if (optDiv && !optOneOver)  histClass.ReplaceAll(GetName(),Form("%s/%s",GetName(),divName.Data()));
 	if (optDiv &&  optOneOver)  histClass.Prepend(Form("%s/",divName.Data()));
@@ -1430,7 +1430,6 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	histClass.ReplaceAll("e+00","");
 	// no entry for colored plots
 	if (leg /*&& !legOpt.Contains("col")*/) leg->AddEntry(h,histClass.Data(),legOpt.Data());
-
 	//      if (leg) leg->AddEntry(h,classTable->GetName(),(optString+"L").Data());
 	++i;
 
