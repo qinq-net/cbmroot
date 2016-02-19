@@ -13,6 +13,9 @@ CbmSpadicRawMessage::CbmSpadicRawMessage()
     fIsHit(false),
     fIsInfo(false),
     fIsEpoch(false),
+    fIsHitAborted(false),
+    fIsOverflow(false),
+    fIsStrange(false),
     fSuperEpoch(-1),  
     fTriggerType(-1),
     fInfoType(-1),
@@ -54,19 +57,22 @@ CbmSpadicRawMessage::CbmSpadicRawMessage(Int_t EquipmentID, Int_t SourceAddress,
 					 Int_t InfoType, Int_t StopType, 
 					 Int_t GroupId, Int_t BufferOverflowCounter, 
 					 Int_t NrSamples, Int_t* Samples,
-					 Bool_t isHit, Bool_t isInfo, Bool_t isEpoch)
+					 Bool_t isHit, Bool_t isInfo, Bool_t isEpoch, Bool_t isHitAborted, Bool_t isOverflow, Bool_t isStrange)
   : CbmRawMessage(EquipmentID, SourceAddress, ChannelId, EpochMarker, Time),
     fIsHit(isHit),
     fIsInfo(isInfo),
     fIsEpoch(isEpoch),
-    fSuperEpoch(SuperEpoch),
-    fTriggerType(TriggerType),
-    fInfoType(InfoType),
-    fStopType(StopType),
-    fGroupId(GroupId),
-    fBufferOverflowCount(BufferOverflowCounter),
-    fNrSamples(NrSamples),
-    fSamples()
+  fIsHitAborted(isHitAborted),
+  fIsOverflow(isOverflow),
+  fIsStrange(isStrange),
+  fSuperEpoch(SuperEpoch),
+  fTriggerType(TriggerType),
+  fInfoType(InfoType),
+  fStopType(StopType),
+  fGroupId(GroupId),
+  fBufferOverflowCount(BufferOverflowCounter),
+  fNrSamples(NrSamples),
+  fSamples()
 {
   for (Int_t i = 0; i < NrSamples; ++i) {
     fSamples[i] = Samples[i];
