@@ -1,6 +1,13 @@
 ///////////////////////////////////////////////////////////////////////////
-//                                                                       //
-//  PairAnalysis Pair Interface class.                                     //
+//
+//
+// Authors:
+//   Julian Book   <Julian.Book@cern.ch>
+/*
+
+  PairAnalysis pair interface class.
+
+*/
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 

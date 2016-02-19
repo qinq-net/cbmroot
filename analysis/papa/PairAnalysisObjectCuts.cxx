@@ -1,10 +1,14 @@
 ///////////////////////////////////////////////////////////////////////////
-//         Class PairAnalysisObjectCuts
-//         Provide cuts for using objects
-// Authors:                                                              //
-//   Julian Book   <Julian.Book@cern.ch>                                 //
+//
+//
+// Authors:
+//   Julian Book   <Julian.Book@cern.ch>
 /*
 
+  Advanced cut class.
+
+  Add cuts that depend on some variable or formula of them. The minimum and
+  maximum cut value can be expressed by a TForumla, TGraph or a THnBase.
 
 
 */
@@ -25,34 +29,17 @@ ClassImp(PairAnalysisObjectCuts)
 
 
 PairAnalysisObjectCuts::PairAnalysisObjectCuts() :
-  AnalysisCuts(),
-  fUsedVars(new TBits(PairAnalysisVarManager::kNMaxValuesMC)),
-  fNActiveCuts(0),
-  fActiveCutsMask(0),
-  fSelectedCutsMask(0),
-  fCutType(kAll)
+  PairAnalysisObjectCuts("objcuts","objcuts")
 {
   //
   // Default costructor
   //
-  for (Int_t i=0; i<PairAnalysisObjectCuts::kNMaxCuts; ++i){
-    fActiveCuts[i]=0;
-    fCutExclude[i]=kFALSE;
-    fCutMin[i]=0x0;
-    fCutMax[i]=0x0;
-    fVarFormula[i]=0x0;
-  }
-  PairAnalysisVarManager::InitFormulas();
 }
 
 //________________________________________________________________________
 PairAnalysisObjectCuts::PairAnalysisObjectCuts(const char* name, const char* title) :
   AnalysisCuts(name,title),
-  fUsedVars(new TBits(PairAnalysisVarManager::kNMaxValuesMC)),
-  fNActiveCuts(0),
-  fActiveCutsMask(0),
-  fSelectedCutsMask(0),
-  fCutType(kAll)
+  fUsedVars(new TBits(PairAnalysisVarManager::kNMaxValuesMC))
 {
   //
   // Named contructor

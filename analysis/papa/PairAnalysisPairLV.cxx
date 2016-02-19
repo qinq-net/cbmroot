@@ -1,6 +1,13 @@
 ///////////////////////////////////////////////////////////////////////////
-//                                                                       //
-//  PairAnalysis Pair class. Internally it makes use of TLorentzVector.    //
+//
+//
+// Authors:
+//   Julian Book   <Julian.Book@cern.ch>
+/*
+
+  PairAnalysisPair class that internally makes use of TLorentzVector.
+
+*/
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 

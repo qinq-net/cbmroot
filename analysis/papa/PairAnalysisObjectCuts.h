@@ -53,9 +53,6 @@ public:
   virtual Bool_t IsSelected(TObject* track);
   virtual Bool_t IsSelected(TList*   /* list */ ) {return kFALSE;}
 
-  //   virtual Bool_t IsSelected(TObject* track, TObject */*event*/=0);
-  //   virtual Long64_t Merge(TCollection* /* list */)      { return 0; }
-
   //
   // Cut information
   //
@@ -66,13 +63,13 @@ public:
 
  private:
 
-  TBits     *fUsedVars;            // list of used variables
+  TBits     *fUsedVars;                       // list of used variables
   UShort_t  fActiveCuts[PairAnalysisObjectCuts::kNMaxCuts];       // list of activated cuts
-  UShort_t  fNActiveCuts;                      // number of acive cuts
-  UInt_t    fActiveCutsMask;                   // mask of active cuts
+  UShort_t  fNActiveCuts = 0;                 // number of acive cuts
+  UInt_t    fActiveCutsMask = 0;              // mask of active cuts
 
-  UInt_t   fSelectedCutsMask;                 // Maks of selected cuts, is available after calling IsSelected
-  CutType  fCutType;                          // type of the cut: any, all
+  UInt_t   fSelectedCutsMask = 0;             // Maks of selected cuts, is available after calling IsSelected
+  CutType  fCutType = kAll;                   // type of the cut: any, all
 
   Bool_t fCutExclude[PairAnalysisObjectCuts::kNMaxCuts];        // inverse cut logic?
   TObject *fCutMin[PairAnalysisObjectCuts::kNMaxCuts];          // use object as lower cut
