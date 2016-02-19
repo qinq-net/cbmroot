@@ -47,6 +47,7 @@ public:
 	Double_t SmearValue(Double_t value);
 	Double_t Invmass_4particlesRECO(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4);
 	void InvariantMassTest_4epem();
+	void CutEfficiencyStudies(int e1, int e2, int e3, int e4, int motherE1, int motherE2, int motherE3, int motherE4);
 	Int_t NofDaughters(Int_t motherId);
 	Double_t CalculateOpeningAngleReco(TVector3 electron1, TVector3 electron2);
 	Double_t CalculateOpeningAngleMC(CbmMCTrack* mctrack1, CbmMCTrack* mctrack2);
@@ -141,6 +142,7 @@ private:
 	TH1D * fhPi0_pt_all;
 
 	TH1D * fhEPEM_efficiencyCuts;
+	TH1D * fhEPEM_efficiencyCuts2;
 
 	TH2D * fhEPEM_rap_vs_chi;
 	TH2D * fhEPEM_rap_vs_invmass;

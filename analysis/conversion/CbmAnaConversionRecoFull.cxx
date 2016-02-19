@@ -1630,6 +1630,9 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 						}
 						if( (TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 111) || (TMath::Abs(motherpdg11) == 111 && TMath::Abs(motherpdg21) == 22) ) {
 							fhPhotons_invmass_MCcutAll_new[index]->Fill(5, invmass);
+							if(grandmotherId11 == motherId21 || motherId11 == grandmotherId21) {
+								fhPhotons_invmass_MCcutAll_new[index]->Fill(12, invmass);
+							}
 						}
 						if(TMath::Abs(motherpdg11) == 111 && TMath::Abs(motherpdg21) == 111) {
 							fhPhotons_invmass_MCcutAll_new[index]->Fill(6, invmass);

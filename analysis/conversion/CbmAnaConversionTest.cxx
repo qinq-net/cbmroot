@@ -769,6 +769,9 @@ void CbmAnaConversionTest::CombinePhotons()
 					}
 					if( (TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 111) || (TMath::Abs(motherpdg11) == 111 && TMath::Abs(motherpdg21) == 22) ) {
 						fhTest_invmass_MCcutAll->Fill(5, invmass);
+							if(grandmotherId11 == motherId21 || motherId11 == grandmotherId21) {
+								fhTest_invmass_MCcutAll->Fill(12, invmass);
+							}
 					}
 					if(TMath::Abs(motherpdg11) == 111 && TMath::Abs(motherpdg21) == 111) {
 						fhTest_invmass_MCcutAll->Fill(6, invmass);
