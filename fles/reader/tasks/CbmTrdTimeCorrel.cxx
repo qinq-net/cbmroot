@@ -68,12 +68,15 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   LOG(INFO) << "CbmTrdTimeCorrel: Number of current TimeSlice: " << fNrTimeSlices << FairLogger::endl;
   Int_t nSpadicMessages = fRawSpadic->GetEntriesFast(); //SPADIC messages per TimeSlice
   Int_t nSpadicMessages0(0),nSpadicMessages1(0); //SPADIC messages per TimeSlice for single SPADICS
-  Int_t nSpadicMessagesHit0(0), nSpadicMessagesHit1(0), nSpadicMessagesInfo0(0), nSpadicMessagesInfo1(0), nSpadicMessagesEpoch0(0), nSpadicMessagesEpoch1(0),  nSpadicMessagesLost0(0), nSpadicMessagesLost1(0); //SPADIC message types per TimeSlice for single SPADICS 
+  Int_t nSpadicMessagesHit0(0), nSpadicMessagesHit1(0), nSpadicMessagesInfo0(0), nSpadicMessagesInfo1(0), nSpadicMessagesHitAbort0(0), nSpadicMessagesHitAbort1(0),  nSpadicMessagesLost0(0), nSpadicMessagesLost1(0); //SPADIC message types per TimeSlice for single SPADICS 
 
   // Getting message type bools from Spadic raw message
   Bool_t isHit = false;
   Bool_t isInfo = false;
-  Bool_t isEpoch = false;
+  Bool_t isHitAborted = false;
+  Bool_t isOverflow = false;
+  Bool_t isStrange = false;
+  
   // Initialise message coordinates to -1 to recognise unset variables
   Int_t eqID(-1), sourceA(-1), triggerType(-1), stopType(-1), infoType(-1), groupId(-1), sysID(-1), spaID(-1);
   // chID in ASIC. Take care, neighboured numbers are not neccessarily neighboured on the connected TRD cathode pad plane. Resorted lateron!
@@ -88,9 +91,11 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     CbmSpadicRawMessage* raw = static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(iSpadicMessage));
     isHit = raw->GetHit();
     isInfo = raw->GetInfo();
-    isEpoch = raw->GetEpoch();
+    isHitAborted = raw->GetHitAborted();
+    isOverflow = raw->GetOverFlow();
+    isStrange = raw->GetStrange();
     // Seriously guys, a message can only be of one type.
-    if(Int_t(isHit+isInfo+isEpoch)!=1) LOG(ERROR) << "SpadicMessage " << iSpadicMessage << " is classified from CbmSpadicRawMessage to be: HIT " << Int_t(isHit) << " / INFO " << (Int_t)isInfo << " / EPOCH " << (Int_t)isEpoch << FairLogger::endl;
+    if(Int_t(isHit+isInfo+isHitAborted+isOverflow+isStrange)!=1) LOG(ERROR) << "SpadicMessage " << iSpadicMessage << " is classified from CbmSpadicRawMessage to be: HIT " << Int_t(isHit) << " / INFO " << (Int_t)isInfo << " / HITaborted " << (Int_t)isHitAborted << " / OVERFLOW " << (Int_t)isOverflow << " / STRANGE " << (Int_t)isStrange << FairLogger::endl;
 
     // These are pure debuging histos to ensure that the unpacker is running without errors (C.B)
     fHM->H2("TriggerType_vs_InfoType")->Fill(raw->GetTriggerType(), raw->GetInfoType());
@@ -113,7 +118,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	infoType = 7;
       }
     }
-    else if(isEpoch) {
+    else if(isHitAborted) {
 
     }
     eqID = raw->GetEquipmentID();
@@ -151,7 +156,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	nSpadicMessagesInfo0++;
 	if (lostMessages > 0) nSpadicMessagesLost0 += lostMessages; //lostMessages might be -1 for hits or epochs, therefore one has to ensure that it is > 0
       }
-      else if(isEpoch) nSpadicMessagesEpoch0++;
+      else if(isHitAborted) nSpadicMessagesHitAbort0++;
     }
     else if(spadic=="Spadic1") {
       nSpadicMessages1++;
@@ -160,7 +165,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	nSpadicMessagesInfo1++;
 	if (lostMessages > 0) nSpadicMessagesLost1 += lostMessages; //lostMessages might be -1 for hits or epochs, therefore one has to ensure that it is > 0
       }
-      else if(isEpoch) nSpadicMessagesEpoch1++;
+      else if(isHitAborted) nSpadicMessagesHitAbort1++;
     }
     // Currently only expecting Spadic0 and Spadic1. Logging others, if appearing.
     else {
@@ -195,8 +200,8 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   fHM->G1("TsCounterHit1")->SetPoint(fHM->G1("TsCounterHit1")->GetN(),fNrTimeSlices+1,nSpadicMessagesHit1);
   fHM->G1("TsCounterInfo0")->SetPoint(fHM->G1("TsCounterInfo0")->GetN(),fNrTimeSlices+1,nSpadicMessagesInfo0);
   fHM->G1("TsCounterInfo1")->SetPoint(fHM->G1("TsCounterInfo1")->GetN(),fNrTimeSlices+1,nSpadicMessagesInfo1);
-  fHM->G1("TsCounterEpoch0")->SetPoint(fHM->G1("TsCounterEpoch0")->GetN(),fNrTimeSlices+1,nSpadicMessagesEpoch0);
-  fHM->G1("TsCounterEpoch1")->SetPoint(fHM->G1("TsCounterEpoch1")->GetN(),fNrTimeSlices+1,nSpadicMessagesEpoch1);
+  fHM->G1("TsCounterHitAbort0")->SetPoint(fHM->G1("TsCounterHitAbort0")->GetN(),fNrTimeSlices+1,nSpadicMessagesHitAbort0);
+  fHM->G1("TsCounterHitAbort1")->SetPoint(fHM->G1("TsCounterHitAbort1")->GetN(),fNrTimeSlices+1,nSpadicMessagesHitAbort1);
   fHM->G1("TsCounterLost0")->SetPoint(fHM->G1("TsCounterLost0")->GetN(),fNrTimeSlices+1,nSpadicMessagesLost0);
   fHM->G1("TsCounterLost1")->SetPoint(fHM->G1("TsCounterLost1")->GetN(),fNrTimeSlices+1,nSpadicMessagesLost1);
 
@@ -224,15 +229,15 @@ void CbmTrdTimeCorrel::Finish()
   fHM->G1("TsCounterHit0")->GetXaxis()->SetTitle("TS number");
   fHM->G1("TsCounterHit0")->GetYaxis()->SetTitle("SPADIC0 hit messages");
   c1->cd(6);
+  fHM->G1("TsCounterHitAbort0")->Draw("AL");
+  fHM->G1("TsCounterHitAbort0")->SetLineColor(kRed);
+  fHM->G1("TsCounterHitAbort0")->GetXaxis()->SetTitle("TS number");
+  fHM->G1("TsCounterHitAbort0")->GetYaxis()->SetTitle("SPADIC0 hit aborted messages");
+  c1->cd(7);
   fHM->G1("TsCounterInfo0")->Draw("AL");
   fHM->G1("TsCounterInfo0")->SetLineColor(kRed);
   fHM->G1("TsCounterInfo0")->GetXaxis()->SetTitle("TS number");
   fHM->G1("TsCounterInfo0")->GetYaxis()->SetTitle("SPADIC0 info messages");
-  c1->cd(7);
-  fHM->G1("TsCounterEpoch0")->Draw("AL");
-  fHM->G1("TsCounterEpoch0")->SetLineColor(kRed);
-  fHM->G1("TsCounterEpoch0")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounterEpoch0")->GetYaxis()->SetTitle("SPADIC0 epoch messages");
   c1->cd(8);
   fHM->G1("TsCounterLost0")->Draw("AL");
   fHM->G1("TsCounterLost0")->SetLineColor(kRed);
@@ -244,21 +249,31 @@ void CbmTrdTimeCorrel::Finish()
   fHM->G1("TsCounterHit1")->GetXaxis()->SetTitle("TS number");
   fHM->G1("TsCounterHit1")->GetYaxis()->SetTitle("SPADIC1 hit messages");
   c1->cd(10);
+  fHM->G1("TsCounterHitAbort1")->Draw("AL");
+  fHM->G1("TsCounterHitAbort1")->SetLineColor(kBlue);
+  fHM->G1("TsCounterHitAbort1")->GetXaxis()->SetTitle("TS number");
+  fHM->G1("TsCounterHitAbort1")->GetYaxis()->SetTitle("SPADIC1 hit aborted messages");
+  c1->cd(11);
   fHM->G1("TsCounterInfo1")->Draw("AL");
   fHM->G1("TsCounterInfo1")->SetLineColor(kBlue);
   fHM->G1("TsCounterInfo1")->GetXaxis()->SetTitle("TS number");
   fHM->G1("TsCounterInfo1")->GetYaxis()->SetTitle("SPADIC1 info messages");
-  c1->cd(11);
-  fHM->G1("TsCounterEpoch1")->Draw("AL");
-  fHM->G1("TsCounterEpoch1")->SetLineColor(kBlue);
-  fHM->G1("TsCounterEpoch1")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounterEpoch1")->GetYaxis()->SetTitle("SPADIC1 epoch messages");
   c1->cd(12);
   fHM->G1("TsCounterLost1")->Draw("AL");
   fHM->G1("TsCounterLost1")->SetLineColor(kBlue);
   fHM->G1("TsCounterLost1")->GetXaxis()->SetTitle("TS number");
   fHM->G1("TsCounterLost1")->GetYaxis()->SetTitle("SPADIC1 lost messages");
   c1->SaveAs("pics/TsCounter.png");
+  // use this to produce nice single plots
+  /*
+  TCanvas *c2 = new TCanvas("c2","c2",800,400); 
+  c2->cd();
+  fHM->G1("TsCounterHit1")->Draw("AL");
+  fHM->G1("TsCounterHit1")->SetLineColor(kBlack);
+  fHM->G1("TsCounterHit1")->GetXaxis()->SetTitle("timeslice");
+  fHM->G1("TsCounterHit1")->GetXaxis()->SetRangeUser(0,2166);
+  fHM->G1("TsCounterHit1")->GetYaxis()->SetTitle("SPADIC1 hit messages");  
+  */
   //Buffer (map) or multi SPADIC data streams based analyis have to be done here!!
   LOG(DEBUG) << "Finish of CbmTrdTimeCorrel" << FairLogger::endl;
   LOG(INFO) << "Write histo list to " << FairRootManager::Instance()->GetOutFile()->GetName() << FairLogger::endl;
@@ -305,7 +320,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
       fHM->H1("Trigger")->GetXaxis()->SetBinLabel(3*syscore+spadic+1,TString(syscoreName[syscore]+"_"+spadicName[spadic]));
     }
   }
-  fHM->Add("MessageCount", new TH1F("MessageCount","MessageCount",16,0,16));
+  fHM->Add("MessageCount", new TH1I("MessageCount","MessageCount",16,0,16));
   for(Int_t spadic = 0; spadic < 2; ++spadic) {
     for(Int_t stopType = 0; stopType < 6; ++stopType) {
       // Intransparent, but useful: setting labels on x-axis according to stop types of messages
@@ -320,8 +335,8 @@ void CbmTrdTimeCorrel::CreateHistograms()
   fHM->Add("TsCounterHit1", new TGraph());
   fHM->Add("TsCounterInfo0", new TGraph());
   fHM->Add("TsCounterInfo1", new TGraph());
-  fHM->Add("TsCounterEpoch0", new TGraph());
-  fHM->Add("TsCounterEpoch1", new TGraph());
+  fHM->Add("TsCounterHitAbort0", new TGraph());
+  fHM->Add("TsCounterHitAbort1", new TGraph());
   fHM->Add("TsCounterLost0", new TGraph());
   fHM->Add("TsCounterLost1", new TGraph());
 
