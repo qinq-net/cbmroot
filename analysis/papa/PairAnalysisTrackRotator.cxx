@@ -1,12 +1,15 @@
-
 ///////////////////////////////////////////////////////////////////////////
-//                PairAnalysis TrackRotator                              //
 //                                                                       //
 //                                                                       //
+// Authors:
+//   * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
+//   Julian Book   <Julian.Book@cern.ch>
 /*
-Detailed description:
-this class keeps only the configuration of the TrackRotator, the
-actual track rotation is done in PairAnalysisPair::RotateTrack
+
+  This class keeps the configuration of the TrackRotator, the
+  actual track rotation is done in PairAnalysisPair::RotateTrack
+
+  Angles and charges used in the track rotation are provided.
 
 */
 //                                                                       //
@@ -20,25 +23,16 @@ actual track rotation is done in PairAnalysisPair::RotateTrack
 ClassImp(PairAnalysisTrackRotator)
 
 PairAnalysisTrackRotator::PairAnalysisTrackRotator() :
-  TNamed(),
-  fIterations(1),
-  fRotationType(kRotateBothRandom),
-  fStartAnglePhi(TMath::Pi()),
-  fConeAnglePhi(TMath::Pi()/6.)
+  PairAnalysisTrackRotator("TR","TR")
 {
   //
   // Default Constructor
   //
-  gRandom->SetSeed();
 }
 
 //______________________________________________
 PairAnalysisTrackRotator::PairAnalysisTrackRotator(const char* name, const char* title) :
-  TNamed(name, title),
-  fIterations(1),
-  fRotationType(kRotateBothRandom),
-  fStartAnglePhi(TMath::Pi()),
-  fConeAnglePhi(TMath::Pi()/6.)
+  TNamed(name, title)
 {
   //
   // Named Constructor

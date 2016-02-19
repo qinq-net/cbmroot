@@ -42,7 +42,7 @@ private:
   AnalysisFilter fFilterLeg1;     // Analysis Filter for leg1
   AnalysisFilter fFilterLeg2;     // Analysis Filter for leg2
 
-  CutType fCutType;                  // Type of the cut
+  CutType fCutType = kBothLegs;   // Type of the cut
 
   PairAnalysisPairLegCuts(const PairAnalysisPairLegCuts &c);
   PairAnalysisPairLegCuts &operator=(const PairAnalysisPairLegCuts &c);

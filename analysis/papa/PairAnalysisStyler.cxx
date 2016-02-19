@@ -1,9 +1,20 @@
-//
-// PairAnalysis styler functions wrapped in a namespace
-// 
-//
-// Authors: 
-//   Julian Book <Julian.Book@cern.ch>
+///////////////////////////////////////////////////////////////////////////
+//                                                                       //
+//                                                                       //
+// Authors:
+//   Julian Book   <Julian.Book@cern.ch>
+/*
+
+  This class provides a common TStyle for all PAPa plots including
+  usefull functions to automatically set (predefined) styles:
+   SetStyle(), SetForceLineStyle(), SetPalette(), SetLegendAttributes()
+  place legends SetLegendAlign().
+
+  The PAPa style can be replaced by the method call SetStyle(TStyle *userStyle).
+
+*/
+//                                                                       //
+///////////////////////////////////////////////////////////////////////////
 
 #include <TROOT.h>
 #include <TError.h>

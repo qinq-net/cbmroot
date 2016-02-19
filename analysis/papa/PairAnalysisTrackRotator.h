@@ -39,12 +39,11 @@ public:
   Double_t GetCharge() const            { return TMath::Nint(gRandom->Rndm()); }
 
 private:
-  UInt_t   fIterations;             // number of iterations
 
-  ERotationType fRotationType;      // which track to rotate
-
-  Double_t fStartAnglePhi;          // starting angle for rotation
-  Double_t fConeAnglePhi;           // opening angle in phi for multiple rotation
+  UInt_t   fIterations = 1;               // number of iterations
+  ERotationType fRotationType = kRotateBothRandom;  // which track to rotate
+  Double_t fStartAnglePhi = TMath::Pi();  // starting angle for rotation
+  Double_t fConeAnglePhi  = TMath::Pi();  // opening angle in phi for multiple rotation
 
   PairAnalysisTrackRotator(const PairAnalysisTrackRotator &c);
   PairAnalysisTrackRotator &operator=(const PairAnalysisTrackRotator &c);

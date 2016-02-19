@@ -1,15 +1,17 @@
-/*************************************************************************
-* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
-**************************************************************************/
-
 ///////////////////////////////////////////////////////////////////////////
-//   Cut class providing cuts for both legs in the PairAnalysisPair     //
 //                                                                       //
 //                                                                       //
+// Authors:
+//   * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
+//   Julian Book   <Julian.Book@cern.ch>
 /*
-Add any number of leg cuts using e.g. for leg 1
-GetFilterLeg1().AddCuts(mycut)
-where mycut has to inherit from AnalysisCuts
+  Cut class providing cuts for both legs in the PairAnalysisPair
+  Add any number of leg cuts using e.g. for leg 1
+    GetFilterLeg1().AddCuts(mycut)
+  where mycut has to inherit from AnalysisCuts.
+
+  the following cut types are defined and selected via SetCutType():
+    kBothLegs, kAnyLeg, kMixLegs, kOneLeg
 
 */
 //                                                                       //
@@ -26,10 +28,7 @@ ClassImp(PairAnalysisPairLegCuts)
 
 
 PairAnalysisPairLegCuts::PairAnalysisPairLegCuts() :
-  AnalysisCuts(),
-  fFilterLeg1("PairFilterLeg1","PairFilterLeg1"),
-  fFilterLeg2("PairFilterLeg2","PairFilterLeg2"),
-  fCutType(kBothLegs)
+  PairAnalysisPairLegCuts("pairlegcut","pairlegcut")
 {
   //
   // Default contructor
@@ -40,8 +39,7 @@ PairAnalysisPairLegCuts::PairAnalysisPairLegCuts() :
 PairAnalysisPairLegCuts::PairAnalysisPairLegCuts(const char* name, const char* title) :
   AnalysisCuts(name,title),
   fFilterLeg1("PairFilterLeg1","PairFilterLeg1"),
-  fFilterLeg2("PairFilterLeg2","PairFilterLeg2"),
-  fCutType(kBothLegs)
+  fFilterLeg2("PairFilterLeg2","PairFilterLeg2")
 {
   //
   // Named contructor
