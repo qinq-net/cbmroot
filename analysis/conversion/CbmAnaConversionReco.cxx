@@ -938,6 +938,7 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 						
 						
 								cout << "HURRAY! .-.-.-.-.-.-..-.-.-.-.-.-.-.-.-.-.-.-." << endl;
+								CutEfficiencyStudies(i, j, k, l, motherId1, motherId2, motherId3, motherId4);
 								fhInvariantMass_pi0epem->Fill(invmass1);
 								
 								fhEPEM_invmass_gee_mc->Fill(invmass1);
@@ -1022,6 +1023,7 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 						
 						
 								cout << "HURRAY! .-.-.-.-.-.-..-.-.-.-.-.-.-.-.-.-.-.-." << endl;
+								CutEfficiencyStudies(i, j, k, l, motherId1, motherId2, motherId3, motherId4);
 								fhInvariantMass_pi0epem->Fill(invmass1);
 								
 								fhEPEM_invmass_gee_mc->Fill(invmass1);
@@ -1106,6 +1108,7 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 						
 						
 								cout << "HURRAY! .-.-.-.-.-.-..-.-.-.-.-.-.-.-.-.-.-.-." << endl;
+								CutEfficiencyStudies(i, j, k, l, motherId1, motherId2, motherId3, motherId4);
 								fhInvariantMass_pi0epem->Fill(invmass1);
 								
 								fhEPEM_invmass_gee_mc->Fill(invmass1);
