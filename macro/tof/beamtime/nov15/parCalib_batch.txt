@@ -5,7 +5,7 @@
 [TMbsCalibTofPar]
 //----------------------------------------------------------------------------
 // Switch ON/OFF debug tests, output & histos in calibration
-CalibDebug: Int_t            1
+CalibDebug: Int_t            0
 //
 //* Scalers Calib params *//
 //... If 1, the calibrator will try to update the reference clock frequency using the reference counts
@@ -22,7 +22,7 @@ CalibScalRefClk: Int_t       0
 //...  40000 is the minimum for timing validity (100cnt/bin)
 //... 400000 to 1M is recommended! (>1000cnt/bin)
 //MinNbHitsCalib: Int_t        0
-MinNbHitsCalib: Int_t    10000
+MinNbHitsCalib: Int_t     100000
 //... Number of times the minimal number of hits after which corrections use only new data
 //... 0 desactivates it and uses always addition initial calibration + new data when it is available 
 FactMinNbOnlyNewCalib: Int_t 0
@@ -36,21 +36,21 @@ InitialCalibFilename: Text_t   ./TofTdcCalibHistos_batch.root
 //------ Nb of boards for which the calibration where measured, per TDC type (1)
 NbVftxCalib: Int_t           0
 NbCaenCalib: Int_t           0
-NbTrb3Calib: Int_t           8
+NbTrb3Calib: Int_t          38
 NbGet4Calib: Int_t           0
 //------ Tdc index of the initial calibration histograms for individual VFTX, per TDc type
 //------ (should allow board slot change if calibration stable over time)
 //------ Nb items has to match previous parameter value (1) !!!!
 //------ If previous value (1) is 0, please comment the corresponding line !!!!
-//0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31
+//0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36  37  38
 //InitialCalIndexVftx: Int_t \
 //  0   1
 //InitialCalIndexCaen: Int_t \
 InitialCalIndexTrb3: Int_t \
-0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31
+0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36  37  38
 //InitialCalIndexGet4: Int_t \
 //------ Save all bin to ns calibration histos to a root file with date/time as name
-EnableCalibOutput: Int_t     1
+EnableCalibOutput: Int_t     0
 //------ Enable use a one calibration file per channel in ./Calib/ folder
 //------ Name is built using tdc type + curr. board index + channel index
 //------ Replace the single root file from InitialCalibFilename & EnableCalibOutput!!!!!
@@ -122,15 +122,15 @@ MeanTotOffsetCaen: Double_t \
      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
 //ch:0      1      2      3      4      5      6      7      8      9     10     11     12     13     14     15     16     17     18     19     20     21     22     23     24     25     26     27     28     29     30     31
 MeanTotOffsetTrb3: Double_t \
-     0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+-10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000
+//     0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
 //-20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000
-//-10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000 -10000
 //-20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000 -20000
 //150000 150000 150000 150000 150000 150000 150000 150000 150000 150000 150000 150000 150000 150000 150000 150000 150000 150000 150000 150000 150000 150000 150000 150000 150000 150000 150000 150000 150000 150000 150000 150000
 //-100000 -100000 -100000 -100000 -100000 -100000 -100000 -100000 -100000 -100000 -100000 -100000 -100000 -100000 -100000 -100000 -100000 -100000 -100000 -100000 -100000 -100000 -100000 -100000 -100000 -100000 -100000 -100000 -100000 -100000 -100000 -100000
 MeanTotOffsetGet4: Double_t \
      0      0      0      0
-//------ TDC to TDC offsets, e.g. due to diff. clock cycle locking on reset
+//------ TDC to TDC offsets, e.g. due to diff. clock cycle locking on reset 
 //+++++++++ Enable a manual X clock TDC offset use
 ManualTdcOffsetEnable: Int_t 0
 //+++++++++ Offset to main TDC, per TDc type, in clock period
@@ -141,7 +141,7 @@ TdcToTdcOffsetVftx: Int_t \
   0   0
 //TdcToTdcOffsetCaen: Int_t \
 TdcToTdcOffsetTrb3: Int_t \
-  0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
+  0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
 //TdcToTdcOffsetGet4: Int_t \
 //+++++++++ Enable an automatic X clock TDC offset detection
 AutomaticOffsetEnable: Int_t 0
@@ -165,7 +165,7 @@ TotModeGet4: Int_t  0
 //... Nb of board for which inversion flags are provided, per TDC type (2)
 NbVftxTotInvFlag: Int_t          0
 NbCaenTotInvFlag: Int_t          0
-NbTrb3TotInvFlag: Int_t          8
+NbTrb3TotInvFlag: Int_t         38
 NbGet4TotInvFlag: Int_t          0
 //... Tot inversion flags ( default is signal not inverted), only allowed values are 0 and 1 !
 //... Nb items has to match parameter value of (2) * Nb of input channels per board !!!!
@@ -178,18 +178,46 @@ NbGet4TotInvFlag: Int_t          0
 //TotInversionFlagVftx: Int_t \
 //TotInversionFlagCaen: Int_t \
 TotInversionFlagTrb3: Int_t \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
    0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0 \
    0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0 \
    0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0 \
    0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
    0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0 \
-   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0 \
-   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0 \
-   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   
-//   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \
+   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1
 //   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0 \
-//   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0 \
-//   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   
+//   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1  
 //TotInversionFlagGet4: Int_t \
 //* Histos control *//
 //... Trigger time - calibrated time Histograms for every TDC channel
