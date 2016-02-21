@@ -129,6 +129,7 @@ void CbmAnaConversionTest::Init()
 	InitHistos();
 	electronidentifier = new CbmLitGlobalElectronId();
 	electronidentifier->Init();
+	electronidentifier->SetRichAnnCut(-0.5);
 
 	globalEventNo = 0;
 }

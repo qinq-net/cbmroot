@@ -50,6 +50,7 @@ CbmAnaConversionReco::CbmAnaConversionReco()
 	fHistoList_gee(),
 	fHistoList_eeee(),
 	fHistoList_all(),
+	fHistoList_eta(),
     fhInvariantMass_MC_all(NULL),
     fhInvariantMass_MC_pi0(NULL),
     fhInvariantMass_MC_pi0_epem(NULL),
@@ -128,6 +129,9 @@ CbmAnaConversionReco::CbmAnaConversionReco()
 	fhEPEM_InDetector_invmass_all_refitted(NULL),
 	fhEPEM_pt_vs_p_all_mc(NULL),
 	fhEPEM_pt_vs_p_all_refitted(NULL),
+    fhEPEM_invmass_eta_mc(NULL),
+    fhEPEM_invmass_eta_refitted(NULL),
+    fhEPEM_efficiencyCuts_eta(NULL),
     timer(),
     fTime(0.)
 {
@@ -172,6 +176,8 @@ void CbmAnaConversionReco::InitHistos()
 	fHistoList_gee.clear();
 	fHistoList_eeee.clear();
 	fHistoList_all.clear();
+
+	fHistoList_eta.clear();
 
 
 	Double_t invmassSpectra_nof = 800;
@@ -382,6 +388,30 @@ void CbmAnaConversionReco::InitHistos()
 	fhEPEM_pt_vs_p_all_refitted	= new TH2D("fhEPEM_pt_vs_p_all_refitted", "fhTest2_electrons_pt_vs_p;p_{t} in GeV/c; p in GeV/c", 240, -2., 10., 360, -2., 16.);
 	fHistoList_all.push_back(fhEPEM_pt_vs_p_all_refitted);
 
+
+
+
+	// histograms for eta analysis
+	fhEPEM_invmass_eta_mc = new TH1D("fhEPEM_invmass_eta_mc","fhEPEM_Iinvmass_eta_mc;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhEPEM_invmass_eta_refitted = new TH1D("fhEPEM_invmass_eta_refitted","fhEPEM_Iinvmass_eta_refitted;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fHistoList_eta.push_back(fhEPEM_invmass_eta_mc);
+	fHistoList_eta.push_back(fhEPEM_invmass_eta_refitted);
+
+	fhEPEM_efficiencyCuts_eta	= new TH1D("fhEPEM_efficiencyCuts_eta", "fhEPEM_efficiencyCuts_eta;;#", 13, 0., 13.);
+	fHistoList_eta.push_back(fhEPEM_efficiencyCuts_eta);
+	fhEPEM_efficiencyCuts_eta->GetXaxis()->SetBinLabel(1, "no cuts");
+	fhEPEM_efficiencyCuts_eta->GetXaxis()->SetBinLabel(2, "ANN: 4 rich electrons");
+	fhEPEM_efficiencyCuts_eta->GetXaxis()->SetBinLabel(3, "ANN: #chi^{2}-cut");
+	fhEPEM_efficiencyCuts_eta->GetXaxis()->SetBinLabel(4, "ANN: #theta of e^{+}e^{-} pairs");
+	fhEPEM_efficiencyCuts_eta->GetXaxis()->SetBinLabel(5, "ANN: m_{inv} of e^{+}e^{-} pairs");
+	fhEPEM_efficiencyCuts_eta->GetXaxis()->SetBinLabel(6, "Normal: 4 rich electrons");
+	fhEPEM_efficiencyCuts_eta->GetXaxis()->SetBinLabel(7, "Normal: #chi^{2}-cut");
+	fhEPEM_efficiencyCuts_eta->GetXaxis()->SetBinLabel(8, "Normal: #theta of e^{+}e^{-} pairs");
+	fhEPEM_efficiencyCuts_eta->GetXaxis()->SetBinLabel(9, "Normal: m_{inv} of e^{+}e^{-} pairs");
+	fhEPEM_efficiencyCuts_eta->GetXaxis()->SetBinLabel(10, "MC: 4 rich electrons");
+	fhEPEM_efficiencyCuts_eta->GetXaxis()->SetBinLabel(11, "MC: #chi^{2}-cut");
+	fhEPEM_efficiencyCuts_eta->GetXaxis()->SetBinLabel(12, "MC: #theta of e^{+}e^{-} pairs");
+	fhEPEM_efficiencyCuts_eta->GetXaxis()->SetBinLabel(13, "MC: m_{inv} of e^{+}e^{-} pairs");
 }
 
 
@@ -428,6 +458,13 @@ void CbmAnaConversionReco::Finish()
 	gDirectory->cd("pi0 -> all");
 	for (UInt_t i = 0; i < fHistoList_all.size(); i++){
 		fHistoList_all[i]->Write();
+	}
+	gDirectory->cd("..");
+	
+	gDirectory->mkdir("eta");
+	gDirectory->cd("eta");
+	for (UInt_t i = 0; i < fHistoList_eta.size(); i++){
+		fHistoList_eta[i]->Write();
 	}
 	gDirectory->cd("..");
 	
@@ -1176,6 +1213,18 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 					// HERE DECAY pi0 -> gamma gamma -> e+e- e+e-
 					if(grandmotherId1 == grandmotherId2 && grandmotherId1 == grandmotherId3 && grandmotherId1 == grandmotherId4) {
 				//		if(mcGrandmotherPdg1 != 111 && mcGrandmotherPdg1 != 221) continue; // 111 = pi0, 221 = eta
+				
+						if(mcGrandmotherPdg1 == 221) {
+							Double_t invmass_eta_mc		= Invmass_4particles(fRecoTracklistEPEM[i], fRecoTracklistEPEM[j], fRecoTracklistEPEM[k], fRecoTracklistEPEM[l]);
+							Double_t invmass_eta_reco	= Invmass_4particlesRECO(fRecoRefittedMomentum[i], fRecoRefittedMomentum[j], fRecoRefittedMomentum[k], fRecoRefittedMomentum[l]);
+							
+							fhEPEM_invmass_eta_mc->Fill(invmass_eta_mc);
+							fhEPEM_invmass_eta_refitted->Fill(invmass_eta_reco);
+							
+							CutEfficiencyStudies(i, j, k, l, motherId1, motherId2, motherId3, motherId4, 1);
+						}
+						
+						
 						if(mcGrandmotherPdg1 != 111) continue; // 111 = pi0, 221 = eta
 
 						TVector3 pi0start;
@@ -1514,7 +1563,7 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 
 
 
-void CbmAnaConversionReco::CutEfficiencyStudies(int e1, int e2, int e3, int e4, int motherE1, int motherE2, int motherE3, int motherE4)
+void CbmAnaConversionReco::CutEfficiencyStudies(int e1, int e2, int e3, int e4, int motherE1, int motherE2, int motherE3, int motherE4, int IsEta)
 {
 	// ####################################
 	// STUDIES: efficiency of cuts
@@ -1596,46 +1645,91 @@ void CbmAnaConversionReco::CutEfficiencyStudies(int e1, int e2, int e3, int e4, 
 	Bool_t InvariantMassCut2 = (paramsCut2.fMinv < Value_invariantMassCut);
 	
 	
+	if(IsEta == 0) {
+		fhEPEM_efficiencyCuts->Fill(0);		// no further cuts applied
+		// first ANN usage for electron identification
+		if( IsRichElectron1ann && IsRichElectron2ann && IsRichElectron3ann && IsRichElectron4ann ) {		// all 4 electrons correctly identified with the RICH via ANN
+			fhEPEM_efficiencyCuts->Fill(1);
+			if(AllWithinChiCut) {		// refitted momenta are within chi cut
+				fhEPEM_efficiencyCuts->Fill(2);
+				if( OpeningAngleCut1 && OpeningAngleCut2) {		// opening angle of e+e- pairs below x
+					fhEPEM_efficiencyCuts->Fill(3);
+					if(InvariantMassCut1 && InvariantMassCut2) {
+						fhEPEM_efficiencyCuts->Fill(4);
+					}
+				}
+			}
+		}
+		// then standard method for electron identification
+		if( IsRichElectron1normal && IsRichElectron2normal && IsRichElectron3normal && IsRichElectron4normal ) {		// all 4 electrons correctly identified with the RICH via "normal way"
+			fhEPEM_efficiencyCuts->Fill(5);
+			if(AllWithinChiCut) {		// refitted momenta are within chi cut
+				fhEPEM_efficiencyCuts->Fill(6);
+				if( OpeningAngleCut1 && OpeningAngleCut2) {		// opening angle of e+e- pairs below x
+					fhEPEM_efficiencyCuts->Fill(7);
+					if(InvariantMassCut1 && InvariantMassCut2) {
+						fhEPEM_efficiencyCuts->Fill(8);
+					}
+				}
+			}
+		}
+		// MC-true data for electron identification
+		if( IsRichElectron1MC && IsRichElectron2MC && IsRichElectron3MC && IsRichElectron4MC ) {		// all 4 electrons correctly identified with the RICH via MC-true data
+			fhEPEM_efficiencyCuts->Fill(9);
+			if(AllWithinChiCut) {		// refitted momenta are within chi cut
+				fhEPEM_efficiencyCuts->Fill(10);
+				if( OpeningAngleCut1 && OpeningAngleCut2) {		// opening angle of e+e- pairs below x
+					fhEPEM_efficiencyCuts->Fill(11);
+					if(InvariantMassCut1 && InvariantMassCut2) {
+						fhEPEM_efficiencyCuts->Fill(12);
+					}
+				}
+			}
+		}
+	}
 	
-	fhEPEM_efficiencyCuts->Fill(0);		// no further cuts applied
-	// first ANN usage for electron identification
-	if( IsRichElectron1ann && IsRichElectron2ann && IsRichElectron3ann && IsRichElectron4ann ) {		// all 4 electrons correctly identified with the RICH via ANN
-		fhEPEM_efficiencyCuts->Fill(1);
-		if(AllWithinChiCut) {		// refitted momenta are within chi cut
-			fhEPEM_efficiencyCuts->Fill(2);
-			if( OpeningAngleCut1 && OpeningAngleCut2) {		// opening angle of e+e- pairs below x
-				fhEPEM_efficiencyCuts->Fill(3);
-				if(InvariantMassCut1 && InvariantMassCut2) {
-					fhEPEM_efficiencyCuts->Fill(4);
+	if(IsEta == 1) {
+		fhEPEM_efficiencyCuts_eta->Fill(0);		// no further cuts applied
+		// first ANN usage for electron identification
+		if( IsRichElectron1ann && IsRichElectron2ann && IsRichElectron3ann && IsRichElectron4ann ) {		// all 4 electrons correctly identified with the RICH via ANN
+			fhEPEM_efficiencyCuts_eta->Fill(1);
+			if(AllWithinChiCut) {		// refitted momenta are within chi cut
+				fhEPEM_efficiencyCuts_eta->Fill(2);
+				if( OpeningAngleCut1 && OpeningAngleCut2) {		// opening angle of e+e- pairs below x
+					fhEPEM_efficiencyCuts_eta->Fill(3);
+					if(InvariantMassCut1 && InvariantMassCut2) {
+						fhEPEM_efficiencyCuts_eta->Fill(4);
+					}
 				}
 			}
 		}
-	}
-	// then standard method for electron identification
-	if( IsRichElectron1normal && IsRichElectron2normal && IsRichElectron3normal && IsRichElectron4normal ) {		// all 4 electrons correctly identified with the RICH via "normal way"
-		fhEPEM_efficiencyCuts->Fill(5);
-		if(AllWithinChiCut) {		// refitted momenta are within chi cut
-			fhEPEM_efficiencyCuts->Fill(6);
-			if( OpeningAngleCut1 && OpeningAngleCut2) {		// opening angle of e+e- pairs below x
-				fhEPEM_efficiencyCuts->Fill(7);
-				if(InvariantMassCut1 && InvariantMassCut2) {
-					fhEPEM_efficiencyCuts->Fill(8);
+		// then standard method for electron identification
+		if( IsRichElectron1normal && IsRichElectron2normal && IsRichElectron3normal && IsRichElectron4normal ) {		// all 4 electrons correctly identified with the RICH via "normal way"
+			fhEPEM_efficiencyCuts_eta->Fill(5);
+			if(AllWithinChiCut) {		// refitted momenta are within chi cut
+				fhEPEM_efficiencyCuts_eta->Fill(6);
+				if( OpeningAngleCut1 && OpeningAngleCut2) {		// opening angle of e+e- pairs below x
+					fhEPEM_efficiencyCuts_eta->Fill(7);
+					if(InvariantMassCut1 && InvariantMassCut2) {
+						fhEPEM_efficiencyCuts_eta->Fill(8);
+					}
 				}
 			}
 		}
-	}
-	// MC-true data for electron identification
-	if( IsRichElectron1MC && IsRichElectron2MC && IsRichElectron3MC && IsRichElectron4MC ) {		// all 4 electrons correctly identified with the RICH via MC-true data
-		fhEPEM_efficiencyCuts->Fill(9);
-		if(AllWithinChiCut) {		// refitted momenta are within chi cut
-			fhEPEM_efficiencyCuts->Fill(10);
-			if( OpeningAngleCut1 && OpeningAngleCut2) {		// opening angle of e+e- pairs below x
-				fhEPEM_efficiencyCuts->Fill(11);
-				if(InvariantMassCut1 && InvariantMassCut2) {
-					fhEPEM_efficiencyCuts->Fill(12);
+		// MC-true data for electron identification
+		if( IsRichElectron1MC && IsRichElectron2MC && IsRichElectron3MC && IsRichElectron4MC ) {		// all 4 electrons correctly identified with the RICH via MC-true data
+			fhEPEM_efficiencyCuts_eta->Fill(9);
+			if(AllWithinChiCut) {		// refitted momenta are within chi cut
+				fhEPEM_efficiencyCuts_eta->Fill(10);
+				if( OpeningAngleCut1 && OpeningAngleCut2) {		// opening angle of e+e- pairs below x
+					fhEPEM_efficiencyCuts_eta->Fill(11);
+					if(InvariantMassCut1 && InvariantMassCut2) {
+						fhEPEM_efficiencyCuts_eta->Fill(12);
+					}
 				}
 			}
 		}
+	
 	}
 }
 

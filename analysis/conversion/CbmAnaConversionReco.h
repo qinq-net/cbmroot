@@ -47,7 +47,7 @@ public:
 	Double_t SmearValue(Double_t value);
 	Double_t Invmass_4particlesRECO(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4);
 	void InvariantMassTest_4epem();
-	void CutEfficiencyStudies(int e1, int e2, int e3, int e4, int motherE1, int motherE2, int motherE3, int motherE4);
+	void CutEfficiencyStudies(int e1, int e2, int e3, int e4, int motherE1, int motherE2, int motherE3, int motherE4, int IsEta = 0);
 	Int_t NofDaughters(Int_t motherId);
 	Double_t CalculateOpeningAngleReco(TVector3 electron1, TVector3 electron2);
 	Double_t CalculateOpeningAngleMC(CbmMCTrack* mctrack1, CbmMCTrack* mctrack2);
@@ -91,6 +91,7 @@ private:
 	vector<TH1*> fHistoList_gee;
 	vector<TH1*> fHistoList_eeee;
 	vector<TH1*> fHistoList_all;
+	vector<TH1*> fHistoList_eta;
 
 
 	TH1D * fhInvariantMass_MC_all;
@@ -190,6 +191,12 @@ private:
 
 	TH2D * fhEPEM_pt_vs_p_all_mc;
 	TH2D * fhEPEM_pt_vs_p_all_refitted;
+	
+	
+	// histograms for eta analysis
+	TH1D * fhEPEM_invmass_eta_mc;
+	TH1D * fhEPEM_invmass_eta_refitted;
+	TH1D * fhEPEM_efficiencyCuts_eta;
 
 	// timer
 	TStopwatch timer;
