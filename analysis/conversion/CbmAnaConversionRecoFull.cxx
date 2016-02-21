@@ -266,6 +266,7 @@ void CbmAnaConversionRecoFull::Init()
 	InitHistos();
 	electronidentifier = new CbmLitGlobalElectronId();
 	electronidentifier->Init();
+	electronidentifier->SetRichAnnCut(-0.5);
 
 	globalEventNo = 0;
 }
@@ -870,13 +871,7 @@ void CbmAnaConversionRecoFull::Exec()
 		Bool_t electron_rich2 = electronidentifier->IsRichElectron(iG, refittedMomentum.Mag());
 		
 		
-		Double_t chiCut = 0;
-		if(refittedMomentum.Perp() < 0.4) {
-			chiCut = 31. - 70.*refittedMomentum.Perp();
-		}
-		if(refittedMomentum.Perp() >= 0.4) {
-			chiCut = 3;
-		}
+		Double_t chiCut = CbmAnaConversionCutSettings::CalcChiCut(refittedMomentum.Perp() );
 		
 		
 		if(electron_rich2) {	// electron identification without refit of momentum

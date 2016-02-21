@@ -23,6 +23,7 @@
 #include "CbmRichRing.h"
 #include "CbmRichElectronIdAnn.h"
 
+#include "CbmAnaConversionCutSettings.h"
 
 #define M2E 2.6112004954086e-7
 using namespace std;
@@ -264,20 +265,23 @@ void CbmAnaConversionReco::InitHistos()
 	fHistoList_gee.push_back(fhPi0_pt_gee);
 	fHistoList_all.push_back(fhPi0_pt_all);
 
-	fhEPEM_efficiencyCuts	= new TH1D("fhEPEM_efficiencyCuts", "fhEPEM_efficiencyCuts;cut;#", 10, 0., 10.);
+	fhEPEM_efficiencyCuts	= new TH1D("fhEPEM_efficiencyCuts", "fhEPEM_efficiencyCuts;;#", 13, 0., 13.);
 	fHistoList_all.push_back(fhEPEM_efficiencyCuts);
 	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(1, "no cuts");
 	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(2, "ANN: 4 rich electrons");
-	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(3, "ANN: opening angle of e+e- pairs");
-	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(4, "ANN: invariant mass of e+e- pairs");
-	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(5, "Normal: 4 rich electrons");
-	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(6, "Normal: opening angle of e+e- pairs");
-	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(7, "Normal: invariant mass of e+e- pairs");
-	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(8, "MC: 4 rich electrons");
-	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(9, "MC: opening angle of e+e- pairs");
-	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(10, "MC: invariant mass of e+e- pairs");
+	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(3, "ANN: #chi^{2}-cut");
+	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(4, "ANN: #theta of e^{+}e^{-} pairs");
+	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(5, "ANN: m_{inv} of e^{+}e^{-} pairs");
+	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(6, "Normal: 4 rich electrons");
+	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(7, "Normal: #chi^{2}-cut");
+	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(8, "Normal: #theta of e^{+}e^{-} pairs");
+	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(9, "Normal: m_{inv} of e^{+}e^{-} pairs");
+	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(10, "MC: 4 rich electrons");
+	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(11, "MC: #chi^{2}-cut");
+	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(12, "MC: #theta of e^{+}e^{-} pairs");
+	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(13, "MC: m_{inv} of e^{+}e^{-} pairs");
 
-	fhEPEM_efficiencyCuts2	= new TH1D("fhEPEM_efficiencyCuts2", "fhEPEM_efficiencyCuts2;cut;#", 10, 0., 10.);
+	fhEPEM_efficiencyCuts2	= new TH1D("fhEPEM_efficiencyCuts2", "fhEPEM_efficiencyCuts2;;#", 10, 0., 10.);
 	fHistoList_all.push_back(fhEPEM_efficiencyCuts2);
 
 	fhEPEM_rap_vs_chi		= new TH2D("fhEPEM_rap_vs_chi", "fhEPEM_rap_vs_chi; rap [GeV]; chi of electrons", 300, 0., 10., 100, 0., 100.);
@@ -1522,7 +1526,7 @@ void CbmAnaConversionReco::CutEfficiencyStudies(int e1, int e2, int e3, int e4, 
 	
 	Double_t opening_angle1_refitted = 0;
 	Double_t opening_angle2_refitted = 0;
-						
+	
 	if(motherE1 == motherE2) {
 		opening_angle1_refitted = CalculateOpeningAngleReco(fRecoRefittedMomentum[e1], fRecoRefittedMomentum[e2]);
 		opening_angle2_refitted = CalculateOpeningAngleReco(fRecoRefittedMomentum[e3], fRecoRefittedMomentum[e4]);
@@ -1535,6 +1539,15 @@ void CbmAnaConversionReco::CutEfficiencyStudies(int e1, int e2, int e3, int e4, 
 		opening_angle1_refitted = CalculateOpeningAngleReco(fRecoRefittedMomentum[e1], fRecoRefittedMomentum[e4]);
 		opening_angle2_refitted = CalculateOpeningAngleReco(fRecoRefittedMomentum[e2], fRecoRefittedMomentum[e3]);
 	}
+	
+	
+	Bool_t IsWithinChiCut1 = (fRecoTracklistEPEM_chi[e1] < CbmAnaConversionCutSettings::CalcChiCut(fRecoRefittedMomentum[e1].Perp() ) );
+	Bool_t IsWithinChiCut2 = (fRecoTracklistEPEM_chi[e2] < CbmAnaConversionCutSettings::CalcChiCut(fRecoRefittedMomentum[e2].Perp() ) );
+	Bool_t IsWithinChiCut3 = (fRecoTracklistEPEM_chi[e3] < CbmAnaConversionCutSettings::CalcChiCut(fRecoRefittedMomentum[e3].Perp() ) );
+	Bool_t IsWithinChiCut4 = (fRecoTracklistEPEM_chi[e4] < CbmAnaConversionCutSettings::CalcChiCut(fRecoRefittedMomentum[e4].Perp() ) );
+	
+	Bool_t AllWithinChiCut = (IsWithinChiCut1 && IsWithinChiCut2 && IsWithinChiCut3 && IsWithinChiCut4);
+	
 	
 	//Bool_t IsRichElectron1 = electronidentifier->IsRichElectron(fRecoTracklistEPEM_gtid[i], fRecoRefittedMomentum[i].Mag());
 	//Bool_t IsRichElectron2 = electronidentifier->IsRichElectron(fRecoTracklistEPEM_gtid[j], fRecoRefittedMomentum[j].Mag());
@@ -1588,30 +1601,39 @@ void CbmAnaConversionReco::CutEfficiencyStudies(int e1, int e2, int e3, int e4, 
 	// first ANN usage for electron identification
 	if( IsRichElectron1ann && IsRichElectron2ann && IsRichElectron3ann && IsRichElectron4ann ) {		// all 4 electrons correctly identified with the RICH via ANN
 		fhEPEM_efficiencyCuts->Fill(1);
-		if( OpeningAngleCut1 && OpeningAngleCut2) {		// opening angle of e+e- pairs below x
+		if(AllWithinChiCut) {		// refitted momenta are within chi cut
 			fhEPEM_efficiencyCuts->Fill(2);
-			if(InvariantMassCut1 && InvariantMassCut2) {
+			if( OpeningAngleCut1 && OpeningAngleCut2) {		// opening angle of e+e- pairs below x
 				fhEPEM_efficiencyCuts->Fill(3);
+				if(InvariantMassCut1 && InvariantMassCut2) {
+					fhEPEM_efficiencyCuts->Fill(4);
+				}
 			}
 		}
 	}
 	// then standard method for electron identification
 	if( IsRichElectron1normal && IsRichElectron2normal && IsRichElectron3normal && IsRichElectron4normal ) {		// all 4 electrons correctly identified with the RICH via "normal way"
-		fhEPEM_efficiencyCuts->Fill(4);
-		if( OpeningAngleCut1 && OpeningAngleCut2) {		// opening angle of e+e- pairs below x
-			fhEPEM_efficiencyCuts->Fill(5);
-			if(InvariantMassCut1 && InvariantMassCut2) {
-				fhEPEM_efficiencyCuts->Fill(6);
+		fhEPEM_efficiencyCuts->Fill(5);
+		if(AllWithinChiCut) {		// refitted momenta are within chi cut
+			fhEPEM_efficiencyCuts->Fill(6);
+			if( OpeningAngleCut1 && OpeningAngleCut2) {		// opening angle of e+e- pairs below x
+				fhEPEM_efficiencyCuts->Fill(7);
+				if(InvariantMassCut1 && InvariantMassCut2) {
+					fhEPEM_efficiencyCuts->Fill(8);
+				}
 			}
 		}
 	}
 	// MC-true data for electron identification
 	if( IsRichElectron1MC && IsRichElectron2MC && IsRichElectron3MC && IsRichElectron4MC ) {		// all 4 electrons correctly identified with the RICH via MC-true data
-		fhEPEM_efficiencyCuts->Fill(7);
-		if( OpeningAngleCut1 && OpeningAngleCut2) {		// opening angle of e+e- pairs below x
-			fhEPEM_efficiencyCuts->Fill(8);
-			if(InvariantMassCut1 && InvariantMassCut2) {
-				fhEPEM_efficiencyCuts->Fill(9);
+		fhEPEM_efficiencyCuts->Fill(9);
+		if(AllWithinChiCut) {		// refitted momenta are within chi cut
+			fhEPEM_efficiencyCuts->Fill(10);
+			if( OpeningAngleCut1 && OpeningAngleCut2) {		// opening angle of e+e- pairs below x
+				fhEPEM_efficiencyCuts->Fill(11);
+				if(InvariantMassCut1 && InvariantMassCut2) {
+					fhEPEM_efficiencyCuts->Fill(12);
+				}
 			}
 		}
 	}
@@ -1863,7 +1885,7 @@ Bool_t CbmAnaConversionReco::IsRichElectronANN(Int_t globalTrackIndex, Double_t 
    CbmRichRing* ring = static_cast<CbmRichRing*> (fRichRings->At(richId));
    if (NULL == ring) return false;
 
-   Double_t fRichAnnCut = 0.0;
+   Double_t fRichAnnCut = -0.5;
    Double_t ann = fRichElIdAnn->DoSelect(ring, momentum);
    if (ann > fRichAnnCut) return true;
    else return false;   
