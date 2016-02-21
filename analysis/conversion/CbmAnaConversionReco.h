@@ -144,6 +144,7 @@ private:
 
 	TH1D * fhEPEM_efficiencyCuts;
 	TH1D * fhEPEM_efficiencyCuts2;
+	TH1D * fhEPEM_pi0_nofLeptons_ann;
 
 	TH2D * fhEPEM_rap_vs_chi;
 	TH2D * fhEPEM_rap_vs_invmass;

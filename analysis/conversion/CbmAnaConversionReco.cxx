@@ -89,6 +89,7 @@ CbmAnaConversionReco::CbmAnaConversionReco()
 	fhPi0_pt_all(NULL),
 	fhEPEM_efficiencyCuts(NULL),
 	fhEPEM_efficiencyCuts2(NULL),
+	fhEPEM_pi0_nofLeptons_ann(NULL),
 	fhEPEM_rap_vs_chi(NULL),
 	fhEPEM_rap_vs_invmass(NULL),
     fhInvMass_EPEM_mc(NULL),
@@ -287,8 +288,11 @@ void CbmAnaConversionReco::InitHistos()
 	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(12, "MC: #theta of e^{+}e^{-} pairs");
 	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(13, "MC: m_{inv} of e^{+}e^{-} pairs");
 
-	fhEPEM_efficiencyCuts2	= new TH1D("fhEPEM_efficiencyCuts2", "fhEPEM_efficiencyCuts2;;#", 10, 0., 10.);
+	fhEPEM_efficiencyCuts2		= new TH1D("fhEPEM_efficiencyCuts2", "fhEPEM_efficiencyCuts2;;#", 10, 0., 10.);
 	fHistoList_all.push_back(fhEPEM_efficiencyCuts2);
+
+	fhEPEM_pi0_nofLeptons_ann	= new TH1D("fhEPEM_pi0_nofLeptons_ann", "fhEPEM_pi0_nofLeptons_ann;;#", 10, 0., 10.);
+	fHistoList_all.push_back(fhEPEM_pi0_nofLeptons_ann);
 
 	fhEPEM_rap_vs_chi		= new TH2D("fhEPEM_rap_vs_chi", "fhEPEM_rap_vs_chi; rap [GeV]; chi of electrons", 300, 0., 10., 100, 0., 100.);
 	fHistoList_all.push_back(fhEPEM_rap_vs_chi);
@@ -1646,6 +1650,8 @@ void CbmAnaConversionReco::CutEfficiencyStudies(int e1, int e2, int e3, int e4, 
 	
 	
 	if(IsEta == 0) {
+		fhEPEM_pi0_nofLeptons_ann->Fill(IsRichElectron1ann + IsRichElectron2ann + IsRichElectron3ann + IsRichElectron4ann);
+	
 		fhEPEM_efficiencyCuts->Fill(0);		// no further cuts applied
 		// first ANN usage for electron identification
 		if( IsRichElectron1ann && IsRichElectron2ann && IsRichElectron3ann && IsRichElectron4ann ) {		// all 4 electrons correctly identified with the RICH via ANN
