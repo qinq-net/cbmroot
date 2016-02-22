@@ -269,6 +269,7 @@ private:
 	TH1D * fhElectrons_openingAngle_sameSign_new[5];
 	TH1D * fhPhotons_stats[5];
 	TH1D * fhPhotons_MCtrue_pdgCodes;
+	TH1D * fhPhotons_peakCheck1;
 
 
 
@@ -301,6 +302,7 @@ private:
 	vector< vector<CbmMCTrack*> >	fMixedTest4_mctracks;
 	vector<int>					fMixedTest4_eventno;
 	TH1D *						fhMixedEventsTest4_invmass;
+	TH2D *						fhMixedEventsTest4_pt_vs_rap;
 	TH1D *						fhMixedEventsTest4_invmass_ptBin1;
 	TH1D *						fhMixedEventsTest4_invmass_ptBin2;
 	TH1D *						fhMixedEventsTest4_invmass_ptBin3;

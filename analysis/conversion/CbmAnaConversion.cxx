@@ -116,7 +116,7 @@ CbmAnaConversion::CbmAnaConversion()
     fhInvariantMassReco_test3(NULL),
     fhInvariantMassReco_pi0(NULL),
     fhMomentum_MCvsReco(NULL),     
-    fhMomentum_MCvsReco_diff(NULL),   
+    fhMomentum_MCvsReco_diff(NULL),
     fhSearchGammas(NULL),
     fPrimVertex(NULL),
     fKFVertex(),
@@ -127,6 +127,9 @@ CbmAnaConversion::CbmAnaConversion()
     fStsTracks(NULL),
     fStsTrackMatches(NULL),
     fGlobalTracks(NULL),
+    fRichElIdAnn(),
+    fhANN_output_electrons(NULL),
+    fhANN_output_else(NULL),
     fEventNum(0),
     test(0),
     testint(0),
@@ -283,6 +286,10 @@ InitStatus CbmAnaConversion::Init()
 	
 	fNofGeneratedPi0_allEvents = 0;
 	fNofPi0_kfparticle_allEvents = 0;
+	
+	
+	fRichElIdAnn = new CbmRichElectronIdAnn();
+	fRichElIdAnn->Init();
 	
 	
 	DoTomography = 1;
@@ -449,6 +456,12 @@ void CbmAnaConversion::InitHistograms()
 	
 	fhSearchGammas = new TH1D("fhSearchGammas","fhSearchGammas;mass;#", 100, -0.005, 0.995);
 	fHistoList.push_back(fhSearchGammas);
+
+
+	fhANN_output_electrons	= new TH1D("fhANN_output_electrons","fhANN_output_electrons;ann output", 200, -1, 1.); 
+	fhANN_output_else		= new TH1D("fhANN_output_else","fhANN_output_else;ann output", 200, -1, 1.); 
+	fHistoList.push_back(fhANN_output_electrons);
+	fHistoList.push_back(fhANN_output_else);
 	
 	
 	
@@ -964,6 +977,20 @@ void CbmAnaConversion::Exec(Option_t*)
 
 
 		if (richInd < 0) continue;
+
+		// ANN output for rings
+		Int_t pdg = mcTrack1->GetPdgCode();
+		CbmRichRing* ring = static_cast<CbmRichRing*> (fRichRings->At(richInd));
+		if (NULL != ring) {
+			Double_t ann = fRichElIdAnn->DoSelect(ring, refittedMomentum_electron.Mag() );
+			if(TMath::Abs(pdg) == 11) {
+				fhANN_output_electrons->Fill(ann);
+			}
+			if(TMath::Abs(pdg) != 11) {
+				fhANN_output_else->Fill(ann);
+			}
+		}
+
 
 
 		TVector3 stsMomentumVec;	// momenta as measured by STS

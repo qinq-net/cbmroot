@@ -192,6 +192,10 @@ private:
    TClonesArray* fStsTracks;
    TClonesArray* fStsTrackMatches;
    TClonesArray* fGlobalTracks;
+   
+	CbmRichElectronIdAnn* fRichElIdAnn;
+	TH1D * fhANN_output_electrons;
+	TH1D * fhANN_output_else;
 
    Int_t fEventNum;
    
