@@ -193,38 +193,38 @@ const Double_t gkPipeR3 =   5.5;
 //DE const Double_t gkPipeR2 =   3.25;
 // ----------------------------------------------------------------------------
 
-TString unitName[16] =    // names of units for v16e
- {            "Unit00D", 
-   "Unit01U", "Unit01D", 
-   "Unit02U", "Unit02D", 
-   "Unit03U", "Unit03D", 
-   "Unit04U", "Unit04D", 
-   "Unit05U", "Unit05D", 
-   "Unit06U", "Unit06D", 
-   "Unit07U", "Unit07D", 
-   "Unit08U"            };
+//TString unitName[16] =    // names of units for v16e
+// {            "Unit00D", 
+//   "Unit01U", "Unit01D", 
+//   "Unit02U", "Unit02D", 
+//   "Unit03U", "Unit03D", 
+//   "Unit04U", "Unit04D", 
+//   "Unit05U", "Unit05D", 
+//   "Unit06U", "Unit06D", 
+//   "Unit07U", "Unit07D", 
+//   "Unit08U"            };
 
-//TString unitName[18] =    // names of units for v16f
-// { "Unit00L", "Unit00R",  
-//   "Unit01L", "Unit01R", 
-//   "Unit02L", "Unit02R", 
-//   "Unit03L", "Unit03R", 
-//   "Unit04L", "Unit04R", 
-//   "Unit05L", "Unit05R", 
-//   "Unit06L", "Unit06R", 
-//   "Unit07L", "Unit07R", 
-//   "Unit08L", "Unit08R" };
+TString unitName[32] =    // names of units for v16f
+ {                         "Unit00DR", "Unit00DL",  
+   "Unit01UR", "Unit01UL", "Unit01DR", "Unit01DL", 
+   "Unit02UR", "Unit02UL", "Unit02DR", "Unit02DL", 
+   "Unit03UR", "Unit03UL", "Unit03DR", "Unit03DL", 
+   "Unit04UR", "Unit04UL", "Unit04DR", "Unit04DL", 
+   "Unit05UR", "Unit05UL", "Unit05DR", "Unit05DL", 
+   "Unit06UR", "Unit06UL", "Unit06DR", "Unit06DL", 
+   "Unit07UR", "Unit07UL", "Unit07DR", "Unit07DL", 
+   "Unit08UR", "Unit08UL" };
 
-//TString unitName[32] =    // names of units for v16f
-// {                         "Unit00DL", "Unit00DR",  
-//   "Unit01UL", "Unit01UR", "Unit01DL", "Unit01DR", 
-//   "Unit02UL", "Unit02UR", "Unit02DL", "Unit02DR", 
-//   "Unit03UL", "Unit03UR", "Unit03DL", "Unit03DR", 
-//   "Unit04UL", "Unit04UR", "Unit04DL", "Unit04DR", 
-//   "Unit05UL", "Unit05UR", "Unit05DL", "Unit05DR", 
-//   "Unit06UL", "Unit06UR", "Unit06DL", "Unit06DR", 
-//   "Unit07UL", "Unit07UR", "Unit07DL", "Unit07DR", 
-//   "Unit08UL", "Unit08UR" };
+//TString unitName[18] =    // names of units for v16g
+// { "Unit00R", "Unit00L",  
+//   "Unit01R", "Unit01L", 
+//   "Unit02R", "Unit02L", 
+//   "Unit03R", "Unit03L", 
+//   "Unit04R", "Unit04L", 
+//   "Unit05R", "Unit05L", 
+//   "Unit06R", "Unit06L", 
+//   "Unit07R", "Unit07L", 
+//   "Unit08R", "Unit08L" };
 
 // -------------   Other global variables   -----------------------------------
 // ---> STS medium (for every volume except silicon)
@@ -437,7 +437,8 @@ void create_stsgeo_v16f(const char* geoTag="v16f")
   TGeoTranslation* statTrans = NULL;
 
   //  TGeoVolume *mystation[8];  // stations
-  TGeoVolume *myunit[16];  // units
+  //  TGeoVolume *myunit[16];  // units
+  TGeoVolume *myunit[32];  // units
 
 //  Int_t statPos[8]  = { 30, 40, 50, 60, 70, 80, 90, 100 };  // z positions of stations
 //  Int_t statPos[16]  = { 28, 32, 38, 42, 48, 52, 58, 62,
@@ -541,7 +542,10 @@ void create_stsgeo_v16f(const char* geoTag="v16f")
        cout << "DE ladderTypes[" << nLadders << "] = " << allUnitTypes[iUnit][iLadder] << ";" << endl;
        nLadders++;
       }
-    myunit[iUnit] = ConstructUnit(iUnit, nLadders, ladderTypes);
+//    myunit[iUnit] = ConstructUnit(iUnit, nLadders, ladderTypes);
+//    myunit[iUnit] = ConstructUnit(iUnit*2+0, nLadders, ladderTypes);
+    myunit[iUnit*2+0] = ConstructUnit(0, iUnit*2+0, nLadders, ladderTypes);
+    myunit[iUnit*2+1] = ConstructUnit(1, iUnit*2+1, nLadders, ladderTypes);
     
 //    if (gkConstructCones) {
 //      if (iUnit%2 == 0)
@@ -665,9 +669,12 @@ void create_stsgeo_v16f(const char* geoTag="v16f")
   // --- Place stations in the STS
   Double_t stsPosZ = 0.5 * ( statPos[15] + statPos[0] );  // todo units: update statPos[7]
   //  cout << "stsPosZ " << stsPosZ << " " << statPos[15] << " " << statPos[0] << "*****" << endl;
-  for (Int_t iUnit = 0; iUnit < 16; iUnit++) {
+
+//  for (Int_t iUnit = 0; iUnit < 16; iUnit++) {
+  for (Int_t iUnit = 0; iUnit < 32; iUnit++) {
     TGeoVolume* station = gGeoMan->GetVolume(unitName[iUnit]);
-    Double_t posZ = statPos[iUnit] - stsPosZ;
+//    Double_t posZ = statPos[iUnit] - stsPosZ;
+    Double_t posZ = statPos[iUnit/2] - stsPosZ;
     TGeoTranslation* trans = new TGeoTranslation(0., 0., posZ);
     sts->AddNode(station, iUnit+1, trans);
     sts->GetShape()->ComputeBBox();
@@ -1492,7 +1499,8 @@ void AddCarbonLadder(Int_t LadderIndex,
  **            ladderTypes      array of ladder types
  **/
 
- TGeoVolume* ConstructUnit(Int_t iUnit, 
+ TGeoVolume* ConstructUnit(Int_t iSide, 
+                           Int_t iUnit, 
                            Int_t nLadders,
                            Int_t* ladderTypes) {
 
@@ -1586,10 +1594,20 @@ void AddCarbonLadder(Int_t LadderIndex,
         zPos = -zPos;
   
       TGeoCombiTrans* trans = new TGeoCombiTrans(xPos, yPos, zPos, rot);
-//  if (iLadder < nLadders/2)   // right side - only half unit -x
-//  if (iLadder => nLadders/2)  // left  side - only half unit +x
-	unit->AddNode(ladder, iLadder+1, trans);
+// start
+//      cout << "DEEE** iLadder " << iLadder << " " << nLadders/2 << " " << nLadders << endl;
+      if (iSide == 0)
+      {
+        if (iLadder < nLadders/2)   // right side - only half unit -x
+  	  unit->AddNode(ladder, iLadder+1, trans);
+      }
+      else
+      {
+        if (iLadder >= nLadders/2)  // left  side - only half unit +x
+          unit->AddNode(ladder, iLadder+1, trans);
+      }
       unit->GetShape()->ComputeBBox();
+// stop
       xPos += ladderShape->GetDX() - gkLadderOverlapX;
       cout << "xPos3: " << xPos << endl;
     }
