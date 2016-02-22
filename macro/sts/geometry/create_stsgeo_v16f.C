@@ -1586,7 +1586,9 @@ void AddCarbonLadder(Int_t LadderIndex,
         zPos = -zPos;
   
       TGeoCombiTrans* trans = new TGeoCombiTrans(xPos, yPos, zPos, rot);
-      unit->AddNode(ladder, iLadder+1, trans);
+//  if (iLadder < nLadders/2)   // right side - only half unit -x
+//  if (iLadder => nLadders/2)  // left  side - only half unit +x
+	unit->AddNode(ladder, iLadder+1, trans);
       unit->GetShape()->ComputeBBox();
       xPos += ladderShape->GetDX() - gkLadderOverlapX;
       cout << "xPos3: " << xPos << endl;
