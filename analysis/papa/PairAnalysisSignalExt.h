@@ -49,6 +49,11 @@ public:
     kUserFunc
   };
 
+  enum EScalingMethod {
+    kSclToRaw = 0,
+    kSclToLikeSign
+  };
+
   PairAnalysisSignalExt();
   PairAnalysisSignalExt(const char*name, const char* title);
   
@@ -70,8 +75,7 @@ public:
   // background
   void SetMethod(EBackgroundMethod method)                 { fMethod = method;}
   void SetNTrackRotations(Int_t iterations)                { fNiterTR =iterations; }
-  void SetScaleBackgroundToRaw(Double_t intMin, Double_t intMax) { fScaleMin=intMin; fScaleMax=intMax; }
-  void SetScaleBackgroundToRaw(Double_t intMin, Double_t intMax, Double_t intMin2, Double_t intMax2) { fScaleMin=intMin; fScaleMax=intMax; fScaleMin2=intMin2; fScaleMax2=intMax2; }
+  void SetScaleBackgroundTo(EScalingMethod method, Double_t intMin, Double_t intMax, Double_t intMin2=0., Double_t intMax2=0.) { fSclMethod=method; fScaleMin=intMin; fScaleMax=intMax; fScaleMin2=intMin2; fScaleMax2=intMax2;}
   void SetCocktailContribution(TObjArray *arr, Bool_t subtract=kTRUE)       { fArrCocktail=arr; fCocktailSubtr=subtract; }
 
   // Getter
@@ -146,6 +150,9 @@ public:
 
   void Draw(const Option_t* option = "");
 
+  TObject* FindObject(TObjArray *arrhist, PairAnalysis::EPairType type);
+  TObject* FindObjectByTitle(TObjArray *arrhist, TString ref);
+
 
 protected:
   TObjArray *fArrHists    = NULL; // array of input histograms
@@ -180,13 +187,15 @@ protected:
   Double_t fRebinStat     = 1.;   // rebin until bins have max. stat. error
   TArrayD *fBinLimits     = NULL; // bin limits from stat. rebinning
 
+  void ScaleBackground();
   EBackgroundMethod fMethod = kLikeSign; // method for background substraction
-  Double_t fScaleMin      = 0.;   // min for scaling of raw and background histogram
-  Double_t fScaleMax      = 0.;   // max for scaling of raw and background histogram
-  Double_t fScaleMin2     = 0.;   // min for scaling of raw and background histogram
-  Double_t fScaleMax2     = 0.;   // max for scaling of raw and background histogram
+  EScalingMethod fSclMethod = kSclToRaw; // method for background normalization
+  Double_t fScaleMin      = 0.;   // min for scaling
+  Double_t fScaleMax      = 0.;   // max for scaling
+  Double_t fScaleMin2     = 0.;   // min2 for scaling
+  Double_t fScaleMax2     = 0.;   // max2 for scaling
   Int_t    fNiterTR       = 1;    // track rotation scale factor according to number of rotations
-  Double_t fScaleFactor   = 1.;   // scale factor of raw to background histogram scaling
+  Double_t fScaleFactor   = 1.;   // scale factor of histogram scaling
   Bool_t fMixingCorr      = kFALSE; // switch for bin by bin correction with R factor
   Bool_t fCocktailSubtr   = kFALSE; // switch for cocktail subtraction
 
@@ -204,9 +213,6 @@ protected:
 
   static const char* fgkValueNames[7];             //value names
   static const char* fgkBackgroundMethodNames[11]; // background estimator names
-
-  TObject* FindObject(TObjArray *arrhist, PairAnalysis::EPairType type);
-  TObject* FindObjectByTitle(TObjArray *arrhist, TString ref);
 
   PairAnalysisSignalExt(const PairAnalysisSignalExt &c);
   PairAnalysisSignalExt &operator=(const PairAnalysisSignalExt &c);

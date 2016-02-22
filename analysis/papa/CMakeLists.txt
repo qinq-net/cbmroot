@@ -109,7 +109,7 @@ PairAnalysisMixingHandler.cxx
 PairAnalysisFunction.cxx
 PairAnalysisSignalExt.cxx
 #PairAnalysisSignalFit.cxx
-#PairAnalysisSpectrum.cxx
+PairAnalysisSpectrum.cxx
 )
 
 

@@ -1516,8 +1516,8 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
   gPad->RedrawAxis(); 
 
   // remove canvas
-  if(optGoff) delete c;
-
+  if(optGoff) { c->Close(); delete c; }
+  
   // // save as
   // if(optEps) c->SaveAs(Form("%s.eps",c->GetName()));
   // if(optPng) c->SaveAs(Form("%s.png",c->GetName()));

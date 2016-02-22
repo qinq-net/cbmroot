@@ -365,7 +365,7 @@ TObject* PairAnalysisSignalExt::DescribePeakShape(ESignalExtractionMethod method
   //PairAnalysisSignalFit *fExtrFunc = new PairAnalysisSignalFit();
   //  PairAnalysisSignalFunc fct;// = 0;//new PairAnalysisSignalFunc();
 
-  Printf("this is signal extraction method: %d",(Int_t)fPeakMethod);
+  Info("DescribePeakShape","Signal extraction method: %d",(Int_t)fPeakMethod);
 
   // do the scaling/fitting
   switch(method) {
@@ -794,8 +794,7 @@ void PairAnalysisSignalExt::ProcessLS()
     Float_t mme = fHistDataMM->GetBinError(ibin);
 
     Float_t background = 2*TMath::Sqrt(pp*mm);
-    // do not use it since LS could be weighted err!=sqrt(entries)
-    // Float_t ebackground = TMath::Sqrt(mm+pp);
+    // Float_t ebackground = TMath::Sqrt(mm+pp); // do not use it since LS could be weighted err!=sqrt(entries)
     Float_t ebackground = TMath::Sqrt(mm/pp*ppe*ppe + pp/mm*mme*mme);
     // Arithmetic mean instead of geometric
     if (fMethod==kLikeSignArithm || fMethod==kLikeSignArithmRcorr ){
@@ -851,14 +850,7 @@ void PairAnalysisSignalExt::ProcessLS()
 
   //scale histograms to match integral between fScaleMin and fScaleMax
   // or if fScaleMax <  fScaleMin use fScaleMin as scale factor
-  if (fScaleMax>fScaleMin && fScaleMax2>fScaleMin2)
-    fScaleFactor = ScaleHistograms(fHistDataPM,fHistBackground,fScaleMin,fScaleMax,fScaleMin2,fScaleMax2);
-  else if (fScaleMax>fScaleMin)
-    fScaleFactor = ScaleHistograms(fHistDataPM,fHistBackground,fScaleMin,fScaleMax);
-  else if (fScaleMin>0.){
-    fScaleFactor   = fScaleMin;
-    fHistBackground->Scale(fScaleFactor);
-  }
+  ScaleBackground();
 
   //subtract background
   fHistSignal->Add( fHistDataPM);
@@ -909,14 +901,7 @@ void PairAnalysisSignalExt::ProcessEM()
 
   //scale histograms to match integral between fScaleMin and fScaleMax
   // or if fScaleMax <  fScaleMin use fScaleMin as scale factor
-  if (fScaleMax>fScaleMin && fScaleMax2>fScaleMin2)
-    fScaleFactor = ScaleHistograms(fHistDataPM,fHistBackground,fScaleMin,fScaleMax,fScaleMin2,fScaleMax2);
-  else if (fScaleMax>fScaleMin)
-    fScaleFactor = ScaleHistograms(fHistDataPM,fHistBackground,fScaleMin,fScaleMax);
-  else if (fScaleMin>0.){
-    fScaleFactor=fScaleMin;
-    fHistBackground->Scale(fScaleFactor);
-  }
+  ScaleBackground();
 
   //subtract background
   fHistSignal->Add( fHistDataPM);
@@ -967,14 +952,7 @@ void PairAnalysisSignalExt::ProcessTR()
 
   //scale histograms to match integral between fScaleMin and fScaleMax
   // or if fScaleMax <  fScaleMin use fScaleMin as scale factor
-  if (fScaleMax>fScaleMin && fScaleMax2>fScaleMin2)
-    fScaleFactor = ScaleHistograms(fHistDataPM,fHistBackground,fScaleMin,fScaleMax,fScaleMin2,fScaleMax2);
-  else if (fScaleMax>fScaleMin)
-    fScaleFactor = ScaleHistograms(fHistDataPM,fHistBackground,fScaleMin,fScaleMax);
-  else if (fScaleMin>0.) {
-    fScaleFactor=fScaleMin;
-    fHistBackground->Scale(fScaleFactor);
-  }
+  ScaleBackground();
 
   //subtract background
   fHistSignal->Add( fHistDataPM);
@@ -1012,14 +990,7 @@ void PairAnalysisSignalExt::ProcessCocktail()
 
   //scale histograms to match integral between fScaleMin and fScaleMax
   // or if fScaleMax <  fScaleMin use fScaleMin as scale factor
-  if (fScaleMax>fScaleMin && fScaleMax2>fScaleMin2)
-    fScaleFactor = ScaleHistograms(fHistDataPM,fHistBackground,fScaleMin,fScaleMax,fScaleMin2,fScaleMax2);
-  else if (fScaleMax>fScaleMin)
-    fScaleFactor = ScaleHistograms(fHistDataPM,fHistBackground,fScaleMin,fScaleMax);
-  else if (fScaleMin>0.) {
-    fScaleFactor=fScaleMin;
-    fHistBackground->Scale(fScaleFactor);
-  }
+  ScaleBackground();
 
   //subtract background
   fHistSignal->Add( fHistDataPM);
@@ -1312,3 +1283,31 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
 
 }
 
+void PairAnalysisSignalExt::ScaleBackground()
+{
+  //
+  // scale histograms according to method and integral limits
+  //
+
+  TH1 *scalingRef;
+  //  scalingRef->Sumw2();
+  switch(fSclMethod) {
+  case kSclToRaw:      scalingRef = fHistDataPM; break;
+  case kSclToLikeSign:
+    scalingRef = (TH1*) fHistDataPP->Clone();
+    scalingRef->Add(fHistDataMM);
+    break; //arithmetic mean
+  }
+  if (fScaleMax>fScaleMin && fScaleMax2>fScaleMin2)
+    fScaleFactor = ScaleHistograms(scalingRef,fHistBackground,fScaleMin,fScaleMax,fScaleMin2,fScaleMax2);
+  else if (fScaleMax>fScaleMin)
+    fScaleFactor = ScaleHistograms(scalingRef,fHistBackground,fScaleMin,fScaleMax);
+  else if (fScaleMin>0.){
+    fScaleFactor   = fScaleMin;
+    fHistBackground->Scale(fScaleFactor);
+  }
+
+  // clean up
+  if(fSclMethod==kSclToLikeSign) delete scalingRef;
+
+}
