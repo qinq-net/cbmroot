@@ -7,7 +7,8 @@
  ** @date 09.05.2014
  ** @author Tomas Balog <T.Balog@gsi.de>
  **
- ** v16e: switch from stations to units
+ ** v16f: switch from stations to units - left / right ("Unit01L", "Unit01R")
+ ** v16e: switch from stations to units - upstream / downstream ("Unit01U", "Unit01D")
  ** v16d: skip keeping volumes of sts and stations
  ** v16c: like v16b, but senors of ladders beampipe next to beampipe
  **       shifted closer to the pipe, like in the CAD model
@@ -127,9 +128,11 @@
 #include <iostream>
 #include "TGeoManager.h"
 
-
 // -------------   Steering variables       -----------------------------------
 
+// ---> Horizontal width of sensors [cm]
+const Double_t gkSensorSizeX = 6.2092;
+  
 // ---> Thickness of sensors [cm]
 const Double_t gkSensorThickness = 0.03;
 
@@ -190,7 +193,38 @@ const Double_t gkPipeR3 =   5.5;
 //DE const Double_t gkPipeR2 =   3.25;
 // ----------------------------------------------------------------------------
 
+TString unitName[16] =    // names of units for v16e
+ {            "Unit00D", 
+   "Unit01U", "Unit01D", 
+   "Unit02U", "Unit02D", 
+   "Unit03U", "Unit03D", 
+   "Unit04U", "Unit04D", 
+   "Unit05U", "Unit05D", 
+   "Unit06U", "Unit06D", 
+   "Unit07U", "Unit07D", 
+   "Unit08U"            };
 
+//TString unitName[18] =    // names of units for v16f
+// { "Unit00L", "Unit00R",  
+//   "Unit01L", "Unit01R", 
+//   "Unit02L", "Unit02R", 
+//   "Unit03L", "Unit03R", 
+//   "Unit04L", "Unit04R", 
+//   "Unit05L", "Unit05R", 
+//   "Unit06L", "Unit06R", 
+//   "Unit07L", "Unit07R", 
+//   "Unit08L", "Unit08R" };
+
+//TString unitName[32] =    // names of units for v16f
+// {                         "Unit00DL", "Unit00DR",  
+//   "Unit01UL", "Unit01UR", "Unit01DL", "Unit01DR", 
+//   "Unit02UL", "Unit02UR", "Unit02DL", "Unit02DR", 
+//   "Unit03UL", "Unit03UR", "Unit03DL", "Unit03DR", 
+//   "Unit04UL", "Unit04UR", "Unit04DL", "Unit04DR", 
+//   "Unit05UL", "Unit05UR", "Unit05DL", "Unit05DR", 
+//   "Unit06UL", "Unit06UR", "Unit06DL", "Unit06DR", 
+//   "Unit07UL", "Unit07UR", "Unit07DL", "Unit07DR", 
+//   "Unit08UL", "Unit08UR" };
 
 // -------------   Other global variables   -----------------------------------
 // ---> STS medium (for every volume except silicon)
@@ -297,8 +331,10 @@ void create_stsgeo_v16f(const char* geoTag="v16f")
 
   // --------------   Create geometry and top volume  -------------------------
   gGeoMan = (TGeoManager*)gROOT->FindObject("FAIRGeom");
-  gGeoMan->SetName("STSgeom");
-  TGeoVolume* top = new TGeoVolumeAssembly("TOP");
+//  gGeoMan->SetName("STSgeom");
+  TGeoVolume* top = new TGeoVolumeAssembly("top");
+//  TGeoBBox* topbox= new TGeoBBox("", 120., 120., 120.);
+//  TGeoVolume* top = new TGeoVolume("top", topbox, gGeoMan->GetMedium("air"));
   gGeoMan->SetTopVolume(top);
   // --------------------------------------------------------------------------
 
@@ -373,7 +409,7 @@ void create_stsgeo_v16f(const char* geoTag="v16f")
   Int_t nLadders = CreateLadders();
   for (Int_t iLadder = 1; iLadder <= nLadders; iLadder++) {
     cout << endl;
-    TString name = Form("Ladder%02d", iLadder);
+    TString name = Form("LadderType%02d", iLadder);
     TGeoVolume* ladder = gGeoMan->GetVolume(name);
     CheckVolume(ladder);
     CheckVolume(ladder, infoFile);
@@ -398,77 +434,70 @@ void create_stsgeo_v16f(const char* geoTag="v16f")
   Int_t angle = 0;
   Int_t nLadders = 0;
   Int_t ladderTypes[16];
-  TGeoBBox*        statShape = NULL;
   TGeoTranslation* statTrans = NULL;
 
-  //  TGeoVolume *mystation[8];
-  TGeoVolume *mystation[16];
+  //  TGeoVolume *mystation[8];  // stations
+  TGeoVolume *myunit[16];  // units
 
-  //  Int_t statPos[8]  = { 30, 40, 50, 60, 70, 80, 90, 100 };  // z positions of stations
-  Int_t statPos[16]  = { 28, 32, 38, 42, 48, 52,  58,  62, 
-                         68, 72, 78, 82, 88, 92,  98, 102 };  // z positions of units
+//  Int_t statPos[8]  = { 30, 40, 50, 60, 70, 80, 90, 100 };  // z positions of stations
+//  Int_t statPos[16]  = { 28, 32, 38, 42, 48, 52, 58, 62,
+//                         68, 72, 78, 82, 88, 92, 98,102 };  // z positions of units
+  Int_t statPos[16]  = { 30, 30, 40, 40, 50, 50,  60,  60,
+                         70, 70, 80, 80, 90, 90, 100, 100 };  // z positions of units
 
-//Double_t rHole[8] = { 2.0, 2.0, 2.0, 2.9 , 3.7 , 3.7 , 4.2 , 4.2 };  // size of cutouts in stations
-//Double_t rHole[8] = { 2.0, 2.0, 2.0, 2.43, 3.04, 3.35, 3.96, 4.2 };  // size of cutouts in stations, derived from gapXYZ[x][1]/2
-  Double_t rHole[16] = { 2.0, 2.0, 2.0, 2.43, 3.04, 3.35, 3.96, 4.2,
-                         4.2, 4.2, 4.2, 4.2, 4.2, 4.2, 4.2, 4.2 };  // size of cutouts in stations, derived from gapXYZ[x][1]/2
+////Double_t rHole[8] = { 2.0, 2.0, 2.0, 2.9 , 3.7 , 3.7 , 4.2 , 4.2 };  // size of cutouts in stations
+//  Double_t rHole[8] = { 2.0, 2.0, 2.0, 2.43, 3.04, 3.35, 3.96, 4.2 };  // size of cutouts in stations, derived from gapXYZ[x][1]/2
   
   Int_t cone_size[8]      = { 0, 0, 0, 1, 1, 1, 1, 1 };  // size of cones: 0 = small, 1 = large
 
   Double_t cone_offset[2] = { 0.305, 0.285 };
 
-//  Int_t allLadderTypes[8][16]= 
-//  { {   0,   0,   0,   0,  10, 109,   9, 101,     1, 109,   9, 110,   0,   0,   0,   0 },    // station 1
-//    {   0,   0, 111,  10, 110,   9, 109,   2,   102,   9, 109,  10, 110,  11,   0,   0 },    // station 2
-//    {   0,   0,  14, 113,  12, 112,  12, 103,     3, 112,  12, 112,  13, 114,   0,   0 },    // station 3
-//    {   0,  15, 114,  13, 112,  12, 112,   4,   104,  12, 112,  12, 113,  14, 115,   0 },    // station 4
-//    {   0, 119,  18, 117,  17, 116,  16, 105,     5, 116,  16, 117,  17, 118,  19,   0 },    // station 5
-//    {   0,  19, 118,  17, 117,  16, 116,   6,   106,  16, 116,  17, 117,  18, 119,   0 },    // station 6
-//    {  21, 119,  18, 120,  20, 120,  20, 107,     7, 120,  20, 120,  20, 118,  19, 121 },    // station 7
-//    { 119,  17, 123,  22, 122,  22, 122,   8,   108,  22, 122,  22, 122,  23, 117,  19 } };  // station 8
-			 
+//  Int_t allLadderTypes[8][16]=
+//  { {  -1,  -1,  -1,  -1,  10, 109,   9, 101,   1, 109,   9, 110,  -1,  -1,  -1,  -1 },    // station 1
+//    {  -1,  -1, 111,  10, 110,   9, 109,   2, 102,   9, 109,  10, 110,  11,  -1,  -1 },    // station 2
+//    {  -1,  -1,  14, 113,  12, 112,  12, 103,   3, 112,  12, 112,  13, 114,  -1,  -1 },    // station 3
+//    {  -1,  15, 114,  13, 112,  12, 112,   4, 104,  12, 112,  12, 113,  14, 115,  -1 },    // station 4
+//    {  -1, 119,  18, 117,  17, 116,  16, 105,   5, 116,  16, 117,  17, 118,  19,  -1 },    // station 5
+//    {  -1,  19, 118,  17, 117,  16, 116,   6, 106,  16, 116,  17, 117,  18, 119,  -1 },    // station 6
+//    {  21, 119,  18, 120,  20, 120,  20, 107,   7, 120,  20, 120,  20, 118,  19, 121 },    // station 7
+//    { 119,  17, 123,  22, 122,  22, 122,   8, 108,  22, 122,  22, 122,  23, 117,  19 } };  // station 8
+
+
   Int_t allUnitTypes[16][16]=
-  { {  -1,  -1,  -1,  -1,  10,   0,   9,   0,     1,   0,   9,   0,  -1,  -1,  -1,  -1 },      // unit 0D
+  { {  -1,  -1,  -1,  -1,  10,   0,   9,   0,     1,   0,   9,   0,  -1,  -1,  -1,  -1 },    // unit00D
+    {  -1,  -1,  -1,  -1,   0, 109,   0, 101,     0, 109,   0, 110,  -1,  -1,  -1,  -1 },    // unit01U
+    {  -1,  -1,   0,  10,   0,   9,   0,   2,     0,   9,   0,  10,   0,  11,  -1,  -1 },    // unit01D
+    {  -1,  -1, 111,   0, 110,   0, 109,   0,   102,   0, 109,   0, 110,   0,  -1,  -1 },    // unit02U
+    {  -1,  -1,  14,   0,  12,   0,  12,   0,     3,   0,  12,   0,  13,   0,  -1,  -1 },    // unit02D
+    {  -1,  -1,   0, 113,   0, 112,   0, 103,     0, 112,   0, 112,   0, 114,  -1,  -1 },    // unit03U
+    {  -1,  15,   0,  13,   0,  12,   0,   4,     0,  12,   0,  12,   0,  14,   0,  -1 },    // unit03D
+    {  -1,   0, 114,   0, 112,   0, 112,   0,   104,   0, 112,   0, 113,   0, 115,  -1 },    // unit04U
+    {  -1,   0,  18,   0,  17,   0,  16,   0,     5,   0,  16,   0,  17,   0,  19,  -1 },    // unit04D
+    {  -1, 119,   0, 117,   0, 116,   0, 105,     0, 116,   0, 117,   0, 118,   0,  -1 },    // unit05U
+    {  -1,  19,   0,  17,   0,  16,   0,   6,     0,  16,   0,  17,   0,  18,   0,  -1 },    // unit05D
+    {  -1,   0, 118,   0, 117,   0, 116,   0,   106,   0, 116,   0, 117,   0, 119,  -1 },    // unit06U
+    {  21,   0,  18,   0,  20,   0,  20,   0,     7,   0,  20,   0,  20,   0,  19,   0 },    // unit06D
+    {   0, 119,   0, 120,   0, 120,   0, 107,     0, 120,   0, 120,   0, 118,   0, 121 },    // unit07U
+    {   0,  17,   0,  22,   0,  22,   0,   8,     0,  22,   0,  22,   0,  23,   0,  19 },    // unit07D
+    { 119,   0, 123,   0, 122,   0, 122,   0,   108,   0, 122,   0, 122,   0, 117,   0 } };  // unit08U
 
-    {  -1,  -1,  -1,  -1,   0, 109,   0, 101,     0, 109,   0, 110,  -1,  -1,  -1,  -1 },      // unit 1U
-    {  -1,  -1,   0,  10,   0,   9,   0,   2,     0,   9,   0,  10,   0,  11,  -1,  -1 },      // unit 1D
 
-    {  -1,  -1, 111,   0, 110,   0, 109,   0,   102,   0, 109,   0, 110,   0,  -1,  -1 },      // unit 2U
-    {  -1,  -1,  14,   0,  12,   0,  12,   0,     3,   0,  12,   0,  13,   0,  -1,  -1 },      // unit 2D
-
-    {  -1,  -1,   0, 113,   0, 112,   0, 103,     0, 112,   0, 112,   0, 114,  -1,  -1 },      // unit 3U
-    {  -1,  15,   0,  13,   0,  12,   0,   4,     0,  12,   0,  12,   0,  14,   0,  -1 },      // unit 3D
-
-    {  -1,   0, 114,   0, 112,   0, 112,   0,   104,   0, 112,   0, 113,   0, 115,  -1 },      // unit 4U
-    {  -1,   0,  18,   0,  17,   0,  16,   0,     5,   0,  16,   0,  17,   0,  19,  -1 },      // unit 4D
-
-    {  -1, 119,   0, 117,   0, 116,   0, 105,     0, 116,   0, 117,   0, 118,   0,  -1 },      // unit 5U
-    {  -1,  19,   0,  17,   0,  16,   0,   6,     0,  16,   0,  17,   0,  18,   0,  -1 },      // unit 5D
-
-    {  -1,   0, 118,   0, 117,   0, 116,   0,   106,   0, 116,   0, 117,   0, 119,  -1 },      // unit 6U
-    {  21,   0,  18,   0,  20,   0,  20,   0,     7,   0,  20,   0,  20,   0,  19,   0 },      // unit 6D
-
-    {   0, 119,   0, 120,   0, 120,   0, 107,     0, 120,   0, 120,   0, 118,   0, 121 },      // unit 7U
-    {   0,  17,   0,  22,   0,  22,   0,   8,     0,  22,   0,  22,   0,  23,   0,  19 },      // unit 7D
-
-    { 119,   0, 123,   0, 122,   0, 122,   0,   108,   0, 122,   0, 122,   0, 117,   0 } };    // unit 8U
-
-//  unitTypes[0]  = {   0,   0,   0,   0,  10,   0,   9,   0,     1,   0,   9,   0,   0,   0,   0,   0 };  // unit 0D
-//  unitTypes[1]  = {   0,   0,   0,   0,   0, 109,   0, 101,     0, 109,   0, 110,   0,   0,   0,   0 };	 // unit 1U
-//  unitTypes[2]  = {   0,   0,   0,  10,   0,   9,   0,   2,     0,   9,   0,  10,   0,  11,   0,   0 };	 // unit 1D
-//  unitTypes[3]  = {   0,   0, 111,   0, 110,   0, 109,   0,   102,   0, 109,   0, 110,   0,   0,   0 };	 // unit 2U
-//  unitTypes[4]  = {   0,   0,  14,   0,  12,   0,  12,   0,     3,   0,  12,   0,  13,   0,   0,   0 };  // unit 2D
-//  unitTypes[5]  = {   0,   0,   0, 113,   0, 112,   0, 103,     0, 112,   0, 112,   0, 114,   0,   0 };	 // unit 3U
-//  unitTypes[6]  = {   0,  15,   0,  13,   0,  12,   0,   4,     0,  12,   0,  12,   0,  14,   0,   0 };	 // unit 3D
-//  unitTypes[7]  = {   0,   0, 114,   0, 112,   0, 112,   0,   104,   0, 112,   0, 113,   0, 115,   0 };	 // unit 4U
-//  unitTypes[8]  = {   0,   0,  18,   0,  17,   0,  16,   0,     5,   0,  16,   0,  17,   0,  19,   0 };  // unit 4D
-//  unitTypes[9]  = {   0, 119,   0, 117,   0, 116,   0, 105,     0, 116,   0, 117,   0, 118,   0,   0 };	 // unit 5U
-//  unitTypes[10] = {   0,  19,   0,  17,   0,  16,   0,   6,     0,  16,   0,  17,   0,  18,   0,   0 };	 // unit 5D
-//  unitTypes[11] = {   0,   0, 118,   0, 117,   0, 116,   0,   106,   0, 116,   0, 117,   0, 119,   0 };	 // unit 6U
-//  unitTypes[12] = {  21,   0,  18,   0,  20,   0,  20,   0,     7,   0,  20,   0,  20,   0,  19,   0 };  // unit 6D
-//  unitTypes[13] = {   0, 119,   0, 120,   0, 120,   0, 107,     0, 120,   0, 120,   0, 118,   0, 121 };	 // unit 7U
-//  unitTypes[14] = {   0,  17,   0,  22,   0,  22,   0,   8,     0,  22,   0,  22,   0,  23,   0,  19 };	 // unit 7D
-//  unitTypes[15] = { 119,   0, 123,   0, 122,   0, 122,   0,   108,   0, 122,   0, 122,   0, 117,   0 };	 // unit 8U
+//  unitTypes[0]  = {   0,   0,   0,   0,  10,   0,   9,   0,   1,   0,   9,   0,   0,   0,   0,   0 };  // unit 0D
+//  unitTypes[1]  = {   0,   0,   0,   0,   0, 109,   0, 101,   0, 109,   0, 110,   0,   0,   0,   0 };	 // unit 1U
+//  unitTypes[2]  = {   0,   0,   0,  10,   0,   9,   0,   2,   0,   9,   0,  10,   0,  11,   0,   0 };	 // unit 1D
+//  unitTypes[3]  = {   0,   0, 111,   0, 110,   0, 109,   0, 102,   0, 109,   0, 110,   0,   0,   0 };	 // unit 2U
+//  unitTypes[4]  = {   0,   0,  14,   0,  12,   0,  12,   0,   3,   0,  12,   0,  13,   0,   0,   0 };  // unit 2D
+//  unitTypes[5]  = {   0,   0,   0, 113,   0, 112,   0, 103,   0, 112,   0, 112,   0, 114,   0,   0 };	 // unit 3U
+//  unitTypes[6]  = {   0,  15,   0,  13,   0,  12,   0,   4,   0,  12,   0,  12,   0,  14,   0,   0 };	 // unit 3D
+//  unitTypes[7]  = {   0,   0, 114,   0, 112,   0, 112,   0, 104,   0, 112,   0, 113,   0, 115,   0 };	 // unit 4U
+//  unitTypes[8]  = {   0,   0,  18,   0,  17,   0,  16,   0,   5,   0,  16,   0,  17,   0,  19,   0 };  // unit 4D
+//  unitTypes[9]  = {   0, 119,   0, 117,   0, 116,   0, 105,   0, 116,   0, 117,   0, 118,   0,   0 };	 // unit 5U
+//  unitTypes[10] = {   0,  19,   0,  17,   0,  16,   0,   6,   0,  16,   0,  17,   0,  18,   0,   0 };	 // unit 5D
+//  unitTypes[11] = {   0,   0, 118,   0, 117,   0, 116,   0, 106,   0, 116,   0, 117,   0, 119,   0 };	 // unit 6U
+//  unitTypes[12] = {  21,   0,  18,   0,  20,   0,  20,   0,   7,   0,  20,   0,  20,   0,  19,   0 };  // unit 6D
+//  unitTypes[13] = {   0, 119,   0, 120,   0, 120,   0, 107,   0, 120,   0, 120,   0, 118,   0, 121 };	 // unit 7U
+//  unitTypes[14] = {   0,  17,   0,  22,   0,  22,   0,   8,   0,  22,   0,  22,   0,  23,   0,  19 };	 // unit 7D
+//  unitTypes[15] = { 119,   0, 123,   0, 122,   0, 122,   0, 108,   0, 122,   0, 122,   0, 117,   0 };	 // unit 8U
 
 
 //  // generate unit
@@ -505,44 +534,17 @@ void create_stsgeo_v16f(const char* geoTag="v16f")
     cout << endl;
   
     nLadders = 0;
-
     for (Int_t iLadder = 0; iLadder < 16; iLadder++)
-      //      if (allUnitTypes[iUnit][iLadder] != 0)
       if (allUnitTypes[iUnit][iLadder] >= 0)
       {
-	//       ladderTypes[nLadders] = allUnitTypes[iUnit][iLadder];
-	ladderTypes[nLadders] = allUnitTypes[iUnit][iLadder]+1;  // shift + 1 for Ladder00
+       ladderTypes[nLadders] = allUnitTypes[iUnit][iLadder];
        cout << "DE ladderTypes[" << nLadders << "] = " << allUnitTypes[iUnit][iLadder] << ";" << endl;
        nLadders++;
       }
-    mystation[iUnit] = ConstructUnit(iUnit, nLadders, ladderTypes, rHole[iUnit]);
-    //    mystation[iUnit] = ConstructStation(iUnit, nLadders, ladderTypes, rHole[iUnit]);
+    myunit[iUnit] = ConstructUnit(iUnit, nLadders, ladderTypes);
     
-    CheckVolume(mystation[iUnit]);
-    CheckVolume(mystation[iUnit], infoFile);
-    infoFile << "Position z = " << statPos[iUnit] << endl;
-  }
-
-  // --------------------------------------------------------------------------
-
-
-//  // --- Stations 01 - 08
-//  for (Int_t iStation = 0; iStation < 8; iStation++)
-//  {
-//    cout << endl;
-//  
-//    nLadders = 0;
-//    for (Int_t i=0; i < 16; i++)
-//      if (allLadderTypes[iStation][i] != 0)
-//      {
-//       ladderTypes[nLadders] = allLadderTypes[iStation][i];
-//       cout << "DE ladderTypes[" << nLadders << "] = " << allLadderTypes[iStation][i] << ";" << endl;
-//       nLadders++;
-//      }
-//    mystation[iStation] = ConstructStation(iStation, nLadders, ladderTypes, rHole[iStation]);
-//    
 //    if (gkConstructCones) {
-//      if (iStation%2 == 0)
+//      if (iUnit%2 == 0)
 //        angle =  90;
 //      else 
 //        angle = -90;
@@ -551,29 +553,28 @@ void create_stsgeo_v16f(const char* geoTag="v16f")
 //      TGeoRotation* coneRot11 = new TGeoRotation;
 //      coneRot11->RotateZ(angle);
 //      coneRot11->RotateY(180);
-//      TGeoCombiTrans* conePosRot11 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-cone_offset[cone_size[iStation]]-gkLadderGapZ/2., coneRot11);
-//      if (cone_size[iStation] == 0)
-//        mystation[iStation]->AddNode(coneSmallVolum, 1, conePosRot11);
+//      TGeoCombiTrans* conePosRot11 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-cone_offset[cone_size[iUnit]]-gkLadderGapZ/2., coneRot11);
+//      if (cone_size[iUnit] == 0)
+//        myunit[iUnit]->AddNode(coneSmallVolum, 1, conePosRot11);
 //      else
-//        mystation[iStation]->AddNode(coneBigVolum, 1, conePosRot11);
+//        myunit[iUnit]->AddNode(coneBigVolum, 1, conePosRot11);
 //  
 //      // downstream
 //      TGeoRotation* coneRot12 = new TGeoRotation;
 //      coneRot12->RotateZ(angle);
-//      TGeoCombiTrans* conePosRot12 = new TGeoCombiTrans(name+"conePosRot1", 0., 0.,  coneDz+cone_offset[cone_size[iStation]]+gkLadderGapZ/2., coneRot12);
-//      if (cone_size[iStation] == 0)
-//        mystation[iStation]->AddNode(coneSmallVolum, 2, conePosRot12);
+//      TGeoCombiTrans* conePosRot12 = new TGeoCombiTrans(name+"conePosRot1", 0., 0.,  coneDz+cone_offset[cone_size[iUnit]]+gkLadderGapZ/2., coneRot12);
+//      if (cone_size[iUnit] == 0)
+//        myunit[iUnit]->AddNode(coneSmallVolum, 2, conePosRot12);
 //      else
-//        mystation[iStation]->AddNode(coneBigVolum, 2, conePosRot12);
+//        myunit[iUnit]->AddNode(coneBigVolum, 2, conePosRot12);
 //  
-//      mystation[iStation]->GetShape()->ComputeBBox();
+//      myunit[iUnit]->GetShape()->ComputeBBox();
 //    }
-//    
-//    CheckVolume(mystation[iStation]);
-//    CheckVolume(mystation[iStation], infoFile);
-//    infoFile << "Position z = " << statPos[iStation] << endl;
-//  }
-
+    
+    CheckVolume(myunit[iUnit]);
+    CheckVolume(myunit[iUnit], infoFile);
+    infoFile << "Position z = " << statPos[iUnit] << endl;
+  }
   // --------------------------------------------------------------------------
 
 
@@ -581,93 +582,94 @@ void create_stsgeo_v16f(const char* geoTag="v16f")
   cout << endl << endl;
   cout << "===> Creating STS...." << endl;
 
-  // --- Determine size of STS box
-  Double_t stsX = 0.;
-  Double_t stsY = 0.;
-  Double_t stsZ = 0.;
-  Double_t stsBorder = 2*5.;  // 5 cm space for carbon ladders on each side
-  for (Int_t iStation = 1; iStation<=8; iStation++) {
-    //    TString statName = Form("Station%02d", iStation);
-    TString statName = Form("Unit%02d", iStation);
-    TGeoVolume* station = gGeoMan->GetVolume(statName);
-    TGeoBBox* shape = (TGeoBBox*) station->GetShape();
-    stsX = TMath::Max(stsX, 2.* shape->GetDX() );
-    stsY = TMath::Max(stsY, 2.* shape->GetDY() );
-    cout << "Station " << iStation << ":  Y " << stsY << endl;
-  }
-  // --- Some border around the stations
-  stsX += stsBorder;  
-  stsY += stsBorder; 
-  stsZ = ( statPos[7] - statPos[0] ) + stsBorder;
-  Double_t stsPosZ = 0.5 * ( statPos[7] + statPos[0] );
-
-  // --- Create box  around the stations
-  new TGeoBBox("stsBox", stsX/2., stsY/2., stsZ/2.);
-  cout << "size of STS box: x " <<  stsX << " - y " << stsY << " - z " << stsZ << endl;
-
-  // --- Create cone hosting the beam pipe
-  // --- One straight section with constant radius followed by a cone
-  Double_t z1 = statPos[0] - 0.5 * stsBorder;  // start of STS box
-  Double_t z2 = gkPipeZ2;
-  Double_t z3 = statPos[7] + 0.5 * stsBorder;  // end of STS box
-  Double_t r1 = BeamPipeRadius(z1);
-  Double_t r2 = BeamPipeRadius(z2);
-  Double_t r3 = BeamPipeRadius(z3);
-  r1 += 0.01;    // safety margin
-  r2 += 0.01;    // safety margin
-  r3 += 0.01;    // safety margin
-
-  cout << endl;
-  cout << z1 << "  " << r1 << endl;
-  cout << z2 << "  " << r2 << endl;
-  cout << z3 << "  " << r3 << endl;
-
-  cout << endl;
-  cout << "station1 :  " << BeamPipeRadius(statPos[0]) << endl;
-  cout << "station2 :  " << BeamPipeRadius(statPos[1]) << endl;
-  cout << "station3 :  " << BeamPipeRadius(statPos[2]) << endl;
-  cout << "station4 :  " << BeamPipeRadius(statPos[3]) << endl;
-  cout << "station5 :  " << BeamPipeRadius(statPos[4]) << endl;
-  cout << "station6 :  " << BeamPipeRadius(statPos[5]) << endl;
-  cout << "station7 :  " << BeamPipeRadius(statPos[6]) << endl;
-  cout << "station8 :  " << BeamPipeRadius(statPos[7]) << endl;
-
-  cout << "aga " << endl;
-  //  TGeoPcon* cutout = new TGeoPcon("stsCone", 0., 360., 3); // 2.*TMath::Pi(), 3);
-  //  cutout->DefineSection(0, z1, 0., r1);
-  //  cutout->DefineSection(1, z2, 0., r2);
-  //  cutout->DefineSection(2, z3, 0., r3);
-  new TGeoTrd2("stsCone1", r1, r2, r1, r2, (z2-z1)/2.+.1);  // add .1 in z length for a clean cutout
-  TGeoTranslation *trans1 = new TGeoTranslation("trans1", 0., 0., -(z3-z1)/2.+(z2-z1)/2.);
-  trans1->RegisterYourself();
-  new TGeoTrd2("stsCone2", r2, r3, r2, r3, (z3-z2)/2.+.1);  // add .1 in z length for a clean cutout
-  TGeoTranslation *trans2 = new TGeoTranslation("trans2", 0., 0., +(z3-z1)/2.-(z3-z2)/2.);
-  trans2->RegisterYourself();
-  
-//DE   Double_t z1 = statPos[0] - 0.5 * stsBorder;  // start of STS box
-//DE   Double_t z2 = statPos[7] + 0.5 * stsBorder;  // end of STS box
-//DE   Double_t slope = (gkPipeR2 - gkPipeR1) / (gkPipeZ2 - gkPipeZ1);
-//DE   Double_t r1 = gkPipeR1 + slope * (z1 - gkPipeZ1); // at start of STS
-//DE   Double_t r2 = gkPipeR1 + slope * (z2 - gkPipeZ1); // at end of STS
-//DE   r1 += 0.1;    // safety margin
-//DE   r2 += 0.1;    // safety margin
-//DE   //  new TGeoCone("stsCone", stsZ/2., 0., r1, 0., r2);
-//DE   new TGeoTrd2("stsCone", r1, r2, r1, r2, stsZ/2.);
+//  // --- Determine size of STS box
+//  Double_t stsX = 0.;
+//  Double_t stsY = 0.;
+//  Double_t stsZ = 0.;
+//  Double_t stsBorder = 2*5.;  // 5 cm space for carbon ladders on each side
+//  for (Int_t iStation = 1; iStation<=8; iStation++) {
+//    TString statName = Form("Station%02d", iStation);
+//    TGeoVolume* station = gGeoMan->GetVolume(statName);
+//    TGeoBBox* shape = (TGeoBBox*) station->GetShape();
+//    stsX = TMath::Max(stsX, 2.* shape->GetDX() );
+//    stsY = TMath::Max(stsY, 2.* shape->GetDY() );
+//    cout << "Station " << iStation << ":  Y " << stsY << endl;
+//  }
+//  // --- Some border around the stations
+//  stsX += stsBorder;  
+//  stsY += stsBorder; 
+//  stsZ = ( statPos[7] - statPos[0] ) + stsBorder;
+//
+//  // --- Create box  around the stations
+//  new TGeoBBox("stsBox", stsX/2., stsY/2., stsZ/2.);
+//  cout << "size of STS box: x " <<  stsX << " - y " << stsY << " - z " << stsZ << endl;
+//
+//  // --- Create cone hosting the beam pipe
+//  // --- One straight section with constant radius followed by a cone
+//  Double_t z1 = statPos[0] - 0.5 * stsBorder;  // start of STS box
+//  Double_t z2 = gkPipeZ2;
+//  Double_t z3 = statPos[7] + 0.5 * stsBorder;  // end of STS box
+//  Double_t r1 = BeamPipeRadius(z1);
+//  Double_t r2 = BeamPipeRadius(z2);
+//  Double_t r3 = BeamPipeRadius(z3);
+//  r1 += 0.01;    // safety margin
+//  r2 += 0.01;    // safety margin
+//  r3 += 0.01;    // safety margin
+//
+//  cout << endl;
+//  cout << z1 << "  " << r1 << endl;
+//  cout << z2 << "  " << r2 << endl;
+//  cout << z3 << "  " << r3 << endl;
+//
+//  cout << endl;
+//  cout << "station1 :  " << BeamPipeRadius(statPos[0]) << endl;
+//  cout << "station2 :  " << BeamPipeRadius(statPos[1]) << endl;
+//  cout << "station3 :  " << BeamPipeRadius(statPos[2]) << endl;
+//  cout << "station4 :  " << BeamPipeRadius(statPos[3]) << endl;
+//  cout << "station5 :  " << BeamPipeRadius(statPos[4]) << endl;
+//  cout << "station6 :  " << BeamPipeRadius(statPos[5]) << endl;
+//  cout << "station7 :  " << BeamPipeRadius(statPos[6]) << endl;
+//  cout << "station8 :  " << BeamPipeRadius(statPos[7]) << endl;
+//
+//  //  TGeoPcon* cutout = new TGeoPcon("stsCone", 0., 360., 3); // 2.*TMath::Pi(), 3);
+//  //  cutout->DefineSection(0, z1, 0., r1);
+//  //  cutout->DefineSection(1, z2, 0., r2);
+//  //  cutout->DefineSection(2, z3, 0., r3);
+//  new TGeoTrd2("stsCone1", r1, r2, r1, r2, (z2-z1)/2.+.1);  // add .1 in z length for a clean cutout
+//  TGeoTranslation *trans1 = new TGeoTranslation("trans1", 0., 0., -(z3-z1)/2.+(z2-z1)/2.);
+//  trans1->RegisterYourself();
+//  new TGeoTrd2("stsCone2", r2, r3, r2, r3, (z3-z2)/2.+.1);  // add .1 in z length for a clean cutout
+//  TGeoTranslation *trans2 = new TGeoTranslation("trans2", 0., 0., +(z3-z1)/2.-(z3-z2)/2.);
+//  trans2->RegisterYourself();
+//  
+////DE   Double_t z1 = statPos[0] - 0.5 * stsBorder;  // start of STS box
+////DE   Double_t z2 = statPos[7] + 0.5 * stsBorder;  // end of STS box
+////DE   Double_t slope = (gkPipeR2 - gkPipeR1) / (gkPipeZ2 - gkPipeZ1);
+////DE   Double_t r1 = gkPipeR1 + slope * (z1 - gkPipeZ1); // at start of STS
+////DE   Double_t r2 = gkPipeR1 + slope * (z2 - gkPipeZ1); // at end of STS
+////DE   r1 += 0.1;    // safety margin
+////DE   r2 += 0.1;    // safety margin
+////DE   //  new TGeoCone("stsCone", stsZ/2., 0., r1, 0., r2);
+////DE   new TGeoTrd2("stsCone", r1, r2, r1, r2, stsZ/2.);
 
   // --- Create STS volume
   TString stsName = "sts_";  
   stsName += geoTag;
-  TGeoShape* stsShape = new TGeoCompositeShape("stsShape", 
-                                               "stsBox-stsCone1:trans1-stsCone2:trans2");
-  TGeoVolume* sts = new TGeoVolume(stsName.Data(), stsShape, gStsMedium);
+
+//  TGeoShape* stsShape = new TGeoCompositeShape("stsShape", 
+//                                               "stsBox-stsCone1:trans1-stsCone2:trans2");
+//  TGeoVolume* sts = new TGeoVolume(stsName.Data(), stsShape, gStsMedium);
+
+  TGeoVolume* sts = new TGeoVolumeAssembly(stsName.Data());
 
   // --- Place stations in the STS
-  for (Int_t iStation = 1; iStation <=8; iStation++) {
-    TString statName = Form("Station%02d", iStation);
-    TGeoVolume* station = gGeoMan->GetVolume(statName);
-    Double_t posZ = statPos[iStation-1] - stsPosZ;
+  Double_t stsPosZ = 0.5 * ( statPos[15] + statPos[0] );  // todo units: update statPos[7]
+  //  cout << "stsPosZ " << stsPosZ << " " << statPos[15] << " " << statPos[0] << "*****" << endl;
+  for (Int_t iUnit = 0; iUnit < 16; iUnit++) {
+    TGeoVolume* station = gGeoMan->GetVolume(unitName[iUnit]);
+    Double_t posZ = statPos[iUnit] - stsPosZ;
     TGeoTranslation* trans = new TGeoTranslation(0., 0., posZ);
-    sts->AddNode(station, iStation, trans);
+    sts->AddNode(station, iUnit+1, trans);
     sts->GetShape()->ComputeBBox();
   }
   cout << endl;
@@ -803,7 +805,7 @@ Int_t CreateSensors() {
 
 
   // --- Sensor type 01: Small sensor (6.2 cm x 2.2 cm)
-  xSize = 6.2092;
+  xSize = gkSensorSizeX;
   ySize = 2.2;
   TGeoBBox* shape_sensor01 = new TGeoBBox("sensor01", 
 					  xSize/2., ySize/2., zSize/2.);
@@ -812,7 +814,7 @@ Int_t CreateSensors() {
 
 
   // --- Sensor type 02: Medium sensor (6.2 cm x 4.2 cm)
-  xSize = 6.2092;
+  xSize = gkSensorSizeX;
   ySize = 4.2;
   TGeoBBox* shape_sensor02 = new TGeoBBox("sensor02", 
 					  xSize/2., ySize/2., zSize/2.);
@@ -821,7 +823,7 @@ Int_t CreateSensors() {
 
 
   // ---  Sensor type 03: Big sensor (6.2 cm x 6.2 cm)
-  xSize = 6.2092;
+  xSize = gkSensorSizeX;
   ySize = 6.2;
   TGeoBBox* shape_sensor03 = new TGeoBBox("sensor03", 
 					  xSize/2., ySize/2., zSize/2.);
@@ -830,7 +832,7 @@ Int_t CreateSensors() {
 
 
   // ---  Sensor type 04: Big sensor (6.2 cm x 12.4 cm)
-  xSize = 6.2092;
+  xSize = gkSensorSizeX;
   ySize = 12.4;
   TGeoBBox* shape_sensor04 = new TGeoBBox("sensor04", 
 					  xSize/2., ySize/2., zSize/2.);
@@ -985,9 +987,7 @@ Int_t CreateLadders() {
   TGeoVolume* halfLadderD = NULL;
 
   // --- Ladders 01-23
-  //  Int_t allSectorTypes[23][6] = { { 1, 2, 3, 3, 0, -1 },    // ladder 01 - 5 - last column defines alignment of small sensors
-  Int_t allSectorTypes[24][6] = { { 1, 0, 0, 0, 0,  0 },    // ladder 00 - dummy laddder
-                                  { 1, 2, 3, 3, 0, -1 },    // ladder 01 - 5 - last column defines alignment of small sensors
+  Int_t allSectorTypes[23][6] = { { 1, 2, 3, 3, 0, -1 },    // ladder 01 - 5 - last column defines alignment of small sensors
                                   { 1, 2, 3, 3, 0,  0 },    // ladder 02 - 5 - last column defines alignment of small sensors
                                   { 2, 2, 3, 4, 0, -1 },    // ladder 03 - 6 - last column defines alignment of small sensors
                                   { 2, 2, 3, 4, 0,  0 },    // ladder 04 - 6 - last column defines alignment of small sensors
@@ -1022,9 +1022,7 @@ Int_t CreateLadders() {
 //    07: 79.2mm
 //    08 (most downstream): 88.0mm
 
-//  Double_t gapXYZ[23][3]      = { { 0.,              4.13, 0. },     // ladder 01
-  Double_t gapXYZ[24][3]      = { { 0.,              4.13, 0. },     // ladder 00
-			          { 0.,              4.13, 0. },     // ladder 01
+  Double_t gapXYZ[23][3]      = { { 0.,              4.13, 0. },     // ladder 01
 			          { 0.,              4.13, 0. },     // ladder 02
 			          { 0.,              4.20, 0. },     // ladder 03
 			          { 0.,              4.86, 0. },     // ladder 04
@@ -1055,8 +1053,7 @@ Int_t CreateLadders() {
   s0vol  = gGeoMan->GetVolume(s0name);
   shape  = (TGeoBBox*) s0vol->GetShape();
 
-  //  for (Int_t iLadder = 0; iLadder < 23; iLadder++)
-  for (Int_t iLadder = 0; iLadder < 24; iLadder++)
+  for (Int_t iLadder = 0; iLadder < 23; iLadder++)
   {
     if (iLadder+1 <= 8)
 //    if ((iLadder+1 == 7) || (iLadder+1 == 8))  // not for ladders with gap
@@ -1067,8 +1064,7 @@ Int_t CreateLadders() {
   
 // ========================================================================
 
-//  for (Int_t iLadder = 0; iLadder < 23; iLadder++)
-  for (Int_t iLadder = 0; iLadder < 24; iLadder++)
+  for (Int_t iLadder = 0; iLadder < 23; iLadder++)
   {
     cout << endl;
     nSectors = 0;
@@ -1344,13 +1340,12 @@ void AddCarbonLadder(Int_t LadderIndex,
                      Double_t ladderY,
                      Double_t ladderZ) {
 
-  //  Int_t carbon_elem[23]= { 11, 11, 16, 16, 20, 20, 22, 24,
-  Int_t carbon_elem[24]= {  2, 11, 11, 16, 16, 20, 20, 22, 24,
+  Int_t carbon_elem[23]= { 11, 11, 16, 16, 20, 20, 22, 24,
 		  	   11, 10,  6, 16, 14, 12,  7, 20,
 		           18, 16, 13, 22,  7, 24, 21      };  // number of carbon elements in ladder types
 
   // --- Some variables
-  TString name = Form("Ladder%02d", LadderIndex);
+  TString name = Form("LadderType%02d", LadderIndex);
   Int_t i;
   Double_t j;
     
@@ -1366,13 +1361,14 @@ void AddCarbonLadder(Int_t LadderIndex,
   //      cout << "DE: lad " << LadderIndex << " inum " << YnumOfFrameBoxes << endl;
 
   // DEDE
-  TGeoBBox* fullFrameShp = new TGeoBBox (name+"_FullFrameBox_shp", xu/2., gkFrameStep/2., (xu/2.+sqrt(2.)*gkFrameThickness/2.)/2.);
-  //  TGeoBBox* fullFrameShp = new TGeoBBox (name+"_FullFrameBox_shp", xu/2., gkFrameStep/2., (gkSectorGapZFrame+xu/2.+sqrt(2.)*gkFrameThickness/2.)/2.);
-  TGeoVolume* fullFrameBoxVol = new TGeoVolume(name+"_FullFrameBox", fullFrameShp, gStsMedium);
+  TGeoBBox* fullFrameShp = new TGeoBBox (name+"_CarbonElement_shp", xu/2., gkFrameStep/2., (xu/2.+sqrt(2.)*gkFrameThickness/2.)/2.);
+  //  TGeoBBox* fullFrameShp = new TGeoBBox (name+"_CarbonElement_shp", xu/2., gkFrameStep/2., (gkSectorGapZFrame+xu/2.+sqrt(2.)*gkFrameThickness/2.)/2.);
+  TGeoVolume* fullFrameBoxVol = new TGeoVolume(name+"_CarbonElement", fullFrameShp, gStsMedium);
 
   //  cout << "DE: frame Z size " << (xu/2.+sqrt(2.)*gkFrameThickness/2.) << " cm" << endl;
 
-  ConstructFrameElement("FrameBox", fullFrameBoxVol, xu/2.);
+  //  ConstructFrameElement("FrameBox", fullFrameBoxVol, xu/2.);
+  ConstructFrameElement("CarbonElement", fullFrameBoxVol, xu/2.);
   TGeoRotation* fullFrameRot = new TGeoRotation;
   fullFrameRot->RotateY(180);
 
@@ -1396,8 +1392,8 @@ void AddCarbonLadder(Int_t LadderIndex,
     }
     
     // DEDE
-    ladder->AddNode(fullFrameBoxVol, i, new TGeoCombiTrans(name+"_FullFrameBox_posrot", 0., j*gkFrameStep, -ladderZ/2.-(xu/2.+sqrt(2.)*gkFrameThickness/2.)/2., fullFrameRot));
-    //    ladder->AddNode(fullFrameBoxVol, i, new TGeoCombiTrans(name+"_FullFrameBox_posrot", 0., j*gkFrameStep, -ladderZ/2.-(gkSectorGapZFrame+xu/2.+sqrt(2.)*gkFrameThickness/2.)/2., fullFrameRot));
+    ladder->AddNode(fullFrameBoxVol, i, new TGeoCombiTrans(name+"_CarbonElement_posrot", 0., j*gkFrameStep, -ladderZ/2.-(xu/2.+sqrt(2.)*gkFrameThickness/2.)/2., fullFrameRot));
+    //    ladder->AddNode(fullFrameBoxVol, i, new TGeoCombiTrans(name+"_CarbonElement_posrot", 0., j*gkFrameStep, -ladderZ/2.-(gkSectorGapZFrame+xu/2.+sqrt(2.)*gkFrameThickness/2.)/2., fullFrameRot));
   }
   //      cout << endl;
   ladder->GetShape()->ComputeBBox();
@@ -1442,7 +1438,7 @@ void AddCarbonLadder(Int_t LadderIndex,
   Double_t zd = 2. * shape->GetDZ();
 
   // --- Create ladder volume assembly
-  TString name = Form("Ladder%02d", LadderIndex);
+  TString name = Form("LadderType%02d", LadderIndex);
   TGeoVolumeAssembly* ladder = new TGeoVolumeAssembly(name);
   Double_t ladderX = TMath::Max(xu, xd);
   Double_t ladderY = yu + yd + gapY;
@@ -1494,66 +1490,42 @@ void AddCarbonLadder(Int_t LadderIndex,
  **            name             volume name
  **            nLadders         number of ladders
  **            ladderTypes      array of ladder types
- **            rHole            radius of inner hole
  **/
 
  TGeoVolume* ConstructUnit(Int_t iUnit, 
-                              Int_t nLadders,
-			      Int_t* ladderTypes, 
-                              Double_t rHole) {
+                           Int_t nLadders,
+                           Int_t* ladderTypes) {
 
-  TString name;
-  name = Form("Unit%02d", iUnit+1);  // 1,2,3,4,5,6,7,8
-  //  name = Form("Unit%02d", iUnit);  // 0,1,2,3,4,5,6,7 - Unit00 missing in output
+  //  TString name = Form("Unit%02d", iUnit);    // 0,1,2,3,4,5,6,7 - Unit00 missing in output
+  //  TString name = Form("Unit%02d", iUnit+1);  // 1,2,3,4,5,6,7,8
+  TGeoVolume* unit = new TGeoVolumeAssembly(unitName[iUnit]);
 
   // --- Some local variables
-  TGeoShape* statShape  = NULL;
   TGeoBBox* ladderShape = NULL;
   TGeoVolume* ladder    = NULL;
   TString ladderName;
-
+  Double_t subtractedVal;
 
   // --- Determine size of unit from ladders
   Double_t statX     = 0.;
-  Double_t statY     = 0.;
-  Double_t statZeven = 0.;
-  Double_t statZodd  = 0.;
-  Double_t statZ     = 0.;  
+  //  Double_t statY     = 0.;
+
   for (Int_t iLadder = 0; iLadder < nLadders; iLadder++) {
     Int_t ladderType = ladderTypes[iLadder]%100;
-    ladderName = Form("Ladder%02d", ladderType);
-    ladder = gGeoManager->GetVolume(ladderName);
-    if ( ! ladder ) Fatal("ConstructUnit", 
-			  Form("Volume %s not found", ladderName.Data()));
-    shape = (TGeoBBox*) ladder->GetShape();
-    statX += 2. * shape->GetDX();
-    statY = TMath::Max(statY, 2. * shape->GetDY());
-    if ( iLadder % 2 ) statZeven = TMath::Max(statZeven, 2. * shape->GetDZ() );
-    else statZodd = TMath::Max(statZodd, 2. * shape->GetDZ() );
+    if (ladderType > 0)
+    {
+      ladderName = Form("LadderType%02d", ladderType);
+      ladder = gGeoManager->GetVolume(ladderName);
+      if ( ! ladder ) Fatal("ConstructUnit", 
+  			  Form("Volume %s not found", ladderName.Data()));
+      ladderShape = (TGeoBBox*) ladder->GetShape();
+      statX += 2. * ladderShape->GetDX();
+      //      statY = TMath::Max(statY, 2. * ladderShape->GetDY());
+    }
+    else
+      statX += gkSensorSizeX;  // empty ladder in unit
   }
   statX -= Double_t(nLadders-1) * gkLadderOverlapX;
-  statZ = statZeven + gkLadderGapZ + statZodd;
-
-  // --- Create unit volume
-  TString boxName(name);
-  boxName += "_box";
-
-  cout << "before   statZ/2.: " << statZ/2. << endl;
-  statZ = 2 * 4.5;  // changed Z size of the unit for cone and gkLadderGapZ
-  cout << "fixed to statZ/2.: " << statZ/2. << endl;
-  TGeoBBox* statBox = new TGeoBBox(boxName, statX/2., statY/2., statZ/2.);
-
-  TString tubName(name);
-  tubName += "_tub";
-  TString expression = boxName + "-" + tubName;
-  //  TGeoTube* statTub = new TGeoTube(tubName, 0., rHole, statZ/2.);
-  //  TGeoBBox* statTub = new TGeoBBox(tubName, rHole, rHole, statZ/2.);
-  TGeoBBox* statTub = new TGeoBBox(tubName, rHole, rHole, statZ/2.+.1);  // .1 opens the hole in z direction
-  
-  statShape = new TGeoCompositeShape(name, expression.Data());
-  TGeoVolume* unit = new TGeoVolume(name, statShape, gStsMedium);
-
-  Double_t subtractedVal;
   
   // --- Place ladders in unit
   cout << "xPos0: " << statX << endl;
@@ -1565,201 +1537,65 @@ void AddCarbonLadder(Int_t LadderIndex,
   Double_t maxdz = 0.;
   for (Int_t iLadder = 0; iLadder < nLadders; iLadder++) {  // find maximum dz in this unit
     Int_t ladderType = ladderTypes[iLadder]%100;
-    ladderName = Form("Ladder%02d", ladderType);
-    ladder = gGeoManager->GetVolume(ladderName);
-    shape = (TGeoBBox*) ladder->GetShape();
-    if (maxdz < shape->GetDZ())
-      maxdz = shape->GetDZ();
+    if (ladderType > 0)
+    {
+      ladderName = Form("LadderType%02d", ladderType);
+      ladder = gGeoManager->GetVolume(ladderName);
+      ladderShape = (TGeoBBox*) ladder->GetShape();
+      if (maxdz < ladderShape->GetDZ())
+        maxdz = ladderShape->GetDZ();
+    }
   }
  
   for (Int_t iLadder = 0; iLadder < nLadders; iLadder++) {
     Int_t ladderType = ladderTypes[iLadder]%100;
-    ladderName = Form("Ladder%02d", ladderType);
-    ladder = gGeoManager->GetVolume(ladderName);
-    shape = (TGeoBBox*) ladder->GetShape();
-    xPos += shape->GetDX();
-    cout << "xPos2: " << xPos << endl;
-    yPos = 0.;    // vertically centred  
-    TGeoRotation* rot = new TGeoRotation();
-
-    if (gkConstructFrames)
-      // DEDE
-      subtractedVal = sqrt(2.)*gkFrameThickness/2. + shape->GetDX();
-    //      subtractedVal = 2*gkSectorGapZFrame + sqrt(2.)*gkFrameThickness/2. + shape->GetDX();
+    if (ladderType > 0)
+    {
+      ladderName = Form("LadderType%02d", ladderType);
+      ladder = gGeoManager->GetVolume(ladderName);
+      ladderShape = (TGeoBBox*) ladder->GetShape();
+      xPos += ladderShape->GetDX();
+      cout << "xPos2: " << xPos << endl;
+      yPos = 0.;    // vertically centred  
+      TGeoRotation* rot = new TGeoRotation();
+  
+      if (gkConstructFrames)
+        // DEDE
+        subtractedVal = sqrt(2.)*gkFrameThickness/2. + ladderShape->GetDX();
+      //      subtractedVal = 2*gkSectorGapZFrame + sqrt(2.)*gkFrameThickness/2. + ladderShape->GetDX();
+      else
+        subtractedVal = 0.;
+  
+      //    zPos = 0.5 * gkLadderGapZ + (ladderShape->GetDZ()-subtractedVal/2.);  // non z-aligned ladders
+      zPos = 0.5 * gkLadderGapZ + (2*maxdz-ladderShape->GetDZ()-subtractedVal/2.);  // z-aligned ladders
+      
+      cout << "DE ladder" << ladderTypes[iLadder]%100
+  	 << "  dx: " << ladderShape->GetDX() 
+  	 << "  dy: " << ladderShape->GetDY() 
+  	 << "  dz: " << ladderShape->GetDZ() 
+  	 << "  max dz: " << maxdz << endl;
+  
+      cout << "DE ladder" << ladderTypes[iLadder]%100
+  	 << "  fra: " << gkFrameThickness/2.
+  	 << "  sub: " << subtractedVal
+  	 << "  zpo: " << zPos << endl << endl;
+  
+      if (ladderTypes[iLadder]/100 == 1) // flip some of the ladders to reproduce the CAD layout
+        rot->RotateY(180.);
+      else
+        zPos = -zPos;
+  
+      TGeoCombiTrans* trans = new TGeoCombiTrans(xPos, yPos, zPos, rot);
+      unit->AddNode(ladder, iLadder+1, trans);
+      unit->GetShape()->ComputeBBox();
+      xPos += ladderShape->GetDX() - gkLadderOverlapX;
+      cout << "xPos3: " << xPos << endl;
+    }
     else
-      subtractedVal = 0.;
-
-    //    zPos = 0.5 * gkLadderGapZ + (shape->GetDZ()-subtractedVal/2.);  // non z-aligned ladders
-    zPos = 0.5 * gkLadderGapZ + (2*maxdz-shape->GetDZ()-subtractedVal/2.);  // z-aligned ladders
-    
-    cout << "DE ladder" << ladderTypes[iLadder]%100
-	 << "  dx: " << shape->GetDX() 
-	 << "  dy: " << shape->GetDY() 
-	 << "  dz: " << shape->GetDZ() 
-	 << "  max dz: " << maxdz << endl;
-
-    cout << "DE ladder" << ladderTypes[iLadder]%100
-	 << "  fra: " << gkFrameThickness/2.
-	 << "  sub: " << subtractedVal
-	 << "  zpo: " << zPos << endl << endl;
-
-    if (ladderTypes[iLadder]/100 == 1) // flip some of the ladders to reproduce the CAD layout
-      rot->RotateY(180.);
-    else
-      zPos = -zPos;
-
-    TGeoCombiTrans* trans = new TGeoCombiTrans(xPos, yPos, zPos, rot);
-    unit->AddNode(ladder, iLadder+1, trans);
-    unit->GetShape()->ComputeBBox();
-    xPos += shape->GetDX() - gkLadderOverlapX;
-    cout << "xPos3: " << xPos << endl;
+      xPos += gkSensorSizeX - gkLadderOverlapX;
   }
 
   return unit;
- }
-/** ======================================================================= **/
-
-
-
-
-/** ===========================================================================
- ** Construct a station
- **
- ** The station volume is the minimal box comprising all ladders
- ** minus a tube accomodating the beam pipe.
- **
- ** The ladders are arranged horizontally from left to right with
- ** a given overlap in x.
- ** Every second ladder is slightly displaced upstream from the centre
- ** z plane and facing downstream, the others are slightly displaced
- ** downstream and facing upstream (rotated around the y axis).
- **
- ** Arguments: 
- **            name             volume name
- **            nLadders         number of ladders
- **            ladderTypes      array of ladder types
- **            rHole            radius of inner hole
- **/
-
- TGeoVolume* ConstructStation(Int_t iStation, 
-                              Int_t nLadders,
-			      Int_t* ladderTypes, 
-                              Double_t rHole) {
-
-  TString name;
-  name = Form("Station%02d", iStation+1);  // 1,2,3,4,5,6,7,8
-  //  name = Form("Station%02d", iStation);  // 0,1,2,3,4,5,6,7 - Station00 missing in output
-
-  // --- Some local variables
-  TGeoShape* statShape  = NULL;
-  TGeoBBox* ladderShape = NULL;
-  TGeoVolume* ladder    = NULL;
-  TString ladderName;
-
-
-  // --- Determine size of station from ladders
-  Double_t statX     = 0.;
-  Double_t statY     = 0.;
-  Double_t statZeven = 0.;
-  Double_t statZodd  = 0.;
-  Double_t statZ     = 0.;  
-  for (Int_t iLadder = 0; iLadder < nLadders; iLadder++) {
-    Int_t ladderType = ladderTypes[iLadder]%100;
-    ladderName = Form("Ladder%02d", ladderType);
-    ladder = gGeoManager->GetVolume(ladderName);
-    if ( ! ladder ) Fatal("ConstructStation", 
-			  Form("Volume %s not found", ladderName.Data()));
-    shape = (TGeoBBox*) ladder->GetShape();
-    statX += 2. * shape->GetDX();
-    statY = TMath::Max(statY, 2. * shape->GetDY());
-    if ( iLadder % 2 ) statZeven = TMath::Max(statZeven, 2. * shape->GetDZ() );
-    else statZodd = TMath::Max(statZodd, 2. * shape->GetDZ() );
-  }
-  statX -= Double_t(nLadders-1) * gkLadderOverlapX;
-  statZ = statZeven + gkLadderGapZ + statZodd;
-
-  // --- Create station volume
-  TString boxName(name);
-  boxName += "_box";
-
-  cout << "before   statZ/2.: " << statZ/2. << endl;
-  statZ = 2 * 4.5;  // changed Z size of the station for cone and gkLadderGapZ
-  cout << "fixed to statZ/2.: " << statZ/2. << endl;
-  TGeoBBox* statBox = new TGeoBBox(boxName, statX/2., statY/2., statZ/2.);
-
-  TString tubName(name);
-  tubName += "_tub";
-  TString expression = boxName + "-" + tubName;
-  //  TGeoTube* statTub = new TGeoTube(tubName, 0., rHole, statZ/2.);
-  //  TGeoBBox* statTub = new TGeoBBox(tubName, rHole, rHole, statZ/2.);
-  TGeoBBox* statTub = new TGeoBBox(tubName, rHole, rHole, statZ/2.+.1);  // .1 opens the hole in z direction
-  
-  statShape = new TGeoCompositeShape(name, expression.Data());
-  TGeoVolume* station = new TGeoVolume(name, statShape, gStsMedium);
-
-  Double_t subtractedVal;
-  
-  // --- Place ladders in station
-  cout << "xPos0: " << statX << endl;
-  Double_t xPos = -0.5 * statX;
-  cout << "xPos1: " << xPos << endl;
-  Double_t yPos = 0.;
-  Double_t zPos = 0.;
-
-  Double_t maxdz = 0.;
-  for (Int_t iLadder = 0; iLadder < nLadders; iLadder++) {  // find maximum dz in this station
-    Int_t ladderType = ladderTypes[iLadder]%100;
-    ladderName = Form("Ladder%02d", ladderType);
-    ladder = gGeoManager->GetVolume(ladderName);
-    shape = (TGeoBBox*) ladder->GetShape();
-    if (maxdz < shape->GetDZ())
-      maxdz = shape->GetDZ();
-  }
- 
-  for (Int_t iLadder = 0; iLadder < nLadders; iLadder++) {
-    Int_t ladderType = ladderTypes[iLadder]%100;
-    ladderName = Form("Ladder%02d", ladderType);
-    ladder = gGeoManager->GetVolume(ladderName);
-    shape = (TGeoBBox*) ladder->GetShape();
-    xPos += shape->GetDX();
-    cout << "xPos2: " << xPos << endl;
-    yPos = 0.;    // vertically centred  
-    TGeoRotation* rot = new TGeoRotation();
-
-    if (gkConstructFrames)
-      // DEDE
-      subtractedVal = sqrt(2.)*gkFrameThickness/2. + shape->GetDX();
-    //      subtractedVal = 2*gkSectorGapZFrame + sqrt(2.)*gkFrameThickness/2. + shape->GetDX();
-    else
-      subtractedVal = 0.;
-
-    //    zPos = 0.5 * gkLadderGapZ + (shape->GetDZ()-subtractedVal/2.);  // non z-aligned ladders
-    zPos = 0.5 * gkLadderGapZ + (2*maxdz-shape->GetDZ()-subtractedVal/2.);  // z-aligned ladders
-    
-    cout << "DE ladder" << ladderTypes[iLadder]%100
-	 << "  dx: " << shape->GetDX() 
-	 << "  dy: " << shape->GetDY() 
-	 << "  dz: " << shape->GetDZ() 
-	 << "  max dz: " << maxdz << endl;
-
-    cout << "DE ladder" << ladderTypes[iLadder]%100
-	 << "  fra: " << gkFrameThickness/2.
-	 << "  sub: " << subtractedVal
-	 << "  zpo: " << zPos << endl << endl;
-
-    if (ladderTypes[iLadder]/100 == 1) // flip some of the ladders to reproduce the CAD layout
-      rot->RotateY(180.);
-    else
-      zPos = -zPos;
-
-    TGeoCombiTrans* trans = new TGeoCombiTrans(xPos, yPos, zPos, rot);
-    station->AddNode(ladder, iLadder+1, trans);
-    station->GetShape()->ComputeBBox();
-    xPos += shape->GetDX() - gkLadderOverlapX;
-    cout << "xPos3: " << xPos << endl;
-  }
-
-  return station;
  }
 /** ======================================================================= **/
 
