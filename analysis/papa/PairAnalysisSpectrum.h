@@ -30,19 +30,19 @@ class TH1F;
 
 class Extraction : public TObject {
 public:
-  TString  setup;   // indentifier key
-  Int_t    setupId; // identifier idx
-  Double_t var;  // value of variable
-  Double_t varE; // error of variable
-  Double_t s;   // raw signal
-  Double_t sE;  // raw signal error
-  Double_t b;  // background
-  Double_t bE; // background error
-  Double_t sb; //SB
-  Double_t sbE; //SBError
-  Double_t sgn; //Significance
-  Double_t sgnE; //SignificanceError
-  TH1F *HistSignal; //GetSignalHistogram
+  TString  setup   = ""; // indentifier key
+  Int_t    setupId = -1; // identifier idx
+  Double_t var     = 0.; // value of variable
+  Double_t varE    = 0.; // error of variable
+  Double_t s       = 0.; // raw signal
+  Double_t sE      = 0.; // raw signal error
+  Double_t b       = 0.; // background
+  Double_t bE      = 0.; // background error
+  Double_t sb      = 0.; //SB
+  Double_t sbE     = 0.; //SBError
+  Double_t sgn     = 0.; //Significance
+  Double_t sgnE    = 0.; //SignificanceError
+  TH1F *HistSignal = NULL; //SignalHistogram
   ClassDef(Extraction,1)
 };
 ClassImp(Extraction)
@@ -64,22 +64,15 @@ public:
   void SetSystMethod(ESystMethod mthd)  { fSystMthd=mthd; }
 
   // Input
-  //  void AddRawInput( PairAnalysisHF *h,     TString identifier) { fRawInput.Add(h); fMCInput.Add(h);  fInputKeys[fIdx]=identifier; fIdx++; }
-  //  void AddRawInput( PairAnalysisHistos *h, TString identifier) { fRawInput.Add(h); fMCInput.Add(h);  fInputKeys[fIdx]=identifier; fIdx++; }
   void AddInput( TObjArray *raw, TObjArray *mc,  TString identifier);
 
-
-  void AddCorrInput(PairAnalysisHF *hf)                     { fCorrInput.Add(hf);  }
-  void AddExtractor(PairAnalysisSignalExt *sig)            { fExtractor.Add((PairAnalysisSignalExt*)sig->Clone()); }
+  void AddCorrInput(PairAnalysisHF *hf)           { fCorrInput.Add(hf);  }
+  void AddExtractor(PairAnalysisSignalExt *sig)   { fExtractor.Add((PairAnalysisSignalExt*)sig->Clone()); }
 
   // Spectrum
   virtual void Draw(const char* varexp, const char* selection, Option_t* option = "");  // copy from ttree
   virtual void Draw(const Option_t* option)    { Draw(option, "", ""); }
   void DrawSystRawYields();
-  /* void DrawRawYields(); */
-  /* void DrawEfficiencies(); */
-  /* void DrawRawSpectrum(); */
-  /* void DrawCorrSpectrum(); */
 
   // Processing
   //  virtual void Print(Option_t *option="") const;

@@ -44,9 +44,6 @@ public:
   void SetMixType(EMixType type) { fMixType=type; }
   EMixType GetMixType() const    { return fMixType; }
 
-  void SetMoveToSameVertex(Bool_t move) { fMoveToSameVertex=move; }
-  Bool_t GetMoveToSameVertex() const { return fMoveToSameVertex; }
-
   Int_t GetNumberOfBins() const;
   Int_t FindBin(const Double_t values[], TString *dim=0x0);
   void Fill(const PairAnalysisEvent *ev, PairAnalysis *papa);
@@ -55,16 +52,12 @@ public:
   static void MoveToSameVertex(PairAnalysisTrack * const vtrack, const Double_t vFirst[3], const Double_t vMix[3]);
 
 private:
-  UShort_t     fDepth;     //Number of events per bin to start the merging
-  TClonesArray fArrPools; //Array of events in bins
-
-  UShort_t  fEventCuts[kMaxCuts]; //cut variables
-  TObjArray fAxes;        //Axis descriptions of the event binning
-
-  EMixType fMixType;      // which combinations to include in the mixing
-  Bool_t fMoveToSameVertex; //whether to move the mixed tracks to the same vertex position
-
-  TProcessID *fPID;             //! internal PID for references to buffered objects
+  UShort_t  fDepth   = 10;        // Number of events per bin to keep in the ring buffer
+  TClonesArray fArrPools;         // Array of events in bins
+  UShort_t  fEventCuts[kMaxCuts]; // cut variables
+  TObjArray fAxes;                // Axis descriptions of the event binning
+  EMixType  fMixType = kOSonly;   // which combinations to include in the mixing
+  TProcessID *fPID   = NULL;      //! internal PID for references to buffered objects
   
   void DoMixing(TClonesArray &pool, PairAnalysis *papa);
 

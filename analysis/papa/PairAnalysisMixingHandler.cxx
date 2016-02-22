@@ -36,32 +36,18 @@
 ClassImp(PairAnalysisMixingHandler)
 
 PairAnalysisMixingHandler::PairAnalysisMixingHandler() :
-  TNamed(),
-  fDepth(10),
-  fArrPools("TClonesArray"),
-  fAxes(kMaxCuts),
-  fMixType(kOSonly),
-  fMoveToSameVertex(kFALSE),
-  fPID(0x0)
+  PairAnalysisMixingHandler("ME","ME")
 {
   //
   // Default Constructor
   //
-  for (Int_t i=0; i<kMaxCuts; ++i){
-    fEventCuts[i]=0;
-  }
-  fAxes.SetOwner(kTRUE);
 }
 
 //______________________________________________
 PairAnalysisMixingHandler::PairAnalysisMixingHandler(const char* name, const char* title) :
   TNamed(name, title),
-  fDepth(10),
   fArrPools("TClonesArray"),
-  fAxes(kMaxCuts),
-  fMixType(kOSonly),
-  fMoveToSameVertex(kFALSE),
-  fPID(0x0)
+  fAxes(kMaxCuts)
 {
   //
   // Named Constructor
@@ -201,35 +187,6 @@ void PairAnalysisMixingHandler::DoMixing(TClonesArray &pool, PairAnalysis *papa)
     ev1N.Reset();
     TIter ev2P(ev2->GetTrackArrayP());
     TIter ev2N(ev2->GetTrackArrayN());
-    //
-    //move tracks to the same vertex (vertex of the first event), if requested
-    //
-    /*
-      if (fMoveToSameVertex){
-      const Double_t *varsFirst=values;
-      const Double_t *varsMix=ev2->GetEventData();
-
-      const Double_t vFirst[3]={varsFirst[AliDielectronVarManager::kXvPrim],
-				varsFirst[AliDielectronVarManager::kYvPrim],
-				varsFirst[AliDielectronVarManager::kZvPrim]};
-
-      const Double_t vMix[3]  ={varsMix[AliDielectronVarManager::kXvPrim],
-				varsMix[AliDielectronVarManager::kYvPrim],
-				varsMix[AliDielectronVarManager::kZvPrim]};
-
-      //loop over all tracks from the second event and move them to the vertex of the first
-      AliVTrack *vtrack=0x0;
-      while ( ( vtrack=(AliVTrack*)ev2P() ) ){
-	MoveToSameVertex(vtrack, vFirst, vMix);
-      }
-      while ( ( vtrack=(AliVTrack*)ev2N() ) ){
-	MoveToSameVertex(vtrack, vFirst, vMix);
-      }
-
-      ev2P.Reset();
-      ev2N.Reset();
-    }
-    */
 
     //mixing of ev1- ev2 (pair type4). This is common for all mixing types
     while ( (o=ev1N()) ) papa->fTracks[1].Add(o);

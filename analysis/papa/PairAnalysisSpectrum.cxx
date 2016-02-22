@@ -53,7 +53,11 @@ PairAnalysisSpectrum("spectrum","title")
 
 //______________________________________________
 PairAnalysisSpectrum::PairAnalysisSpectrum(const char* name, const char* title) :
-  PairAnalysisFunction(name,title)
+  PairAnalysisFunction(name,title),
+  fRawInput(0),
+  fMCInput(0),
+  fCorrInput(0),
+  fExtractor(0)
 {
   //
   // Named Constructor
