@@ -15,7 +15,7 @@ void run()
   TString pipeGeom   = "pipe/pipe_v14l.root";
   TString magnetGeom = "magnet/magnet_v15a.geo.root";
   TString stsGeom    = "sts/sts_v15c.geo.root";
-  TString richGeom   = "rich/rich_v16a_1e.root";
+  TString richGeom   = "rich/rich_v16a_1e.geo.root";
   TString trdGeom    = "trd/trd_v15a_1e.geo.root";
   TString tofGeom    = "tof/tof_v16a_1e.geo.root";
 
