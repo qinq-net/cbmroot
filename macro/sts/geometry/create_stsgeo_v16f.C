@@ -7,7 +7,10 @@
  ** @date 09.05.2014
  ** @author Tomas Balog <T.Balog@gsi.de>
  **
- ** v16f: switch from stations to units - left / right ("Unit01L", "Unit01R")
+ ** v16g: switch from stations to units - left / right ("Unit01L", "Unit01R")
+ ** v16f: switch from stations to units
+ **     - split in upstream / downstream and left / right parts
+ **     - named Unit0xUR, Unit0xUL, Unit0xDR, Unit0xDL
  ** v16e: switch from stations to units - upstream / downstream ("Unit01U", "Unit01D")
  ** v16d: skip keeping volumes of sts and stations
  ** v16c: like v16b, but senors of ladders beampipe next to beampipe
