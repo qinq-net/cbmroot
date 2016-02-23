@@ -906,8 +906,10 @@ void CbmAnaConversionTest::CombineElectrons_STSonly()
 					fMixedTest_STSonly_photons.push_back(pairmomenta);
 					fMixedTest_STSonly_eventno.push_back(globalEventNo);
 					vector<bool> pair_hasRichInd;
-					pair_hasRichInd.push_back(HasRichInd(fVector_gtIndex[a], a) );
-					pair_hasRichInd.push_back(HasRichInd(fVector_gtIndex[b], b) );
+					//pair_hasRichInd.push_back(HasRichInd(fVector_gtIndex[a], a) );
+					//pair_hasRichInd.push_back(HasRichInd(fVector_gtIndex[b], b) );
+					pair_hasRichInd.push_back(fVector_withRichSignal[a] );
+					pair_hasRichInd.push_back(fVector_withRichSignal[b] );
 					fMixedTest_STSonly_hasRichInd.push_back(pair_hasRichInd);
 				}
 			}
@@ -959,7 +961,8 @@ void CbmAnaConversionTest::CombinePhotons_STSonly()
 				Double_t invmass = paramsTest.fMinv;
 				
 				
-				Int_t nofRICHindices = (HasRichInd(gtIndex11, electron11)) + (HasRichInd(gtIndex12, electron12)) + (HasRichInd(gtIndex21, electron21)) + (HasRichInd(gtIndex22, electron22));
+				//Int_t nofRICHindices = (HasRichInd(gtIndex11, electron11)) + (HasRichInd(gtIndex12, electron12)) + (HasRichInd(gtIndex21, electron21)) + (HasRichInd(gtIndex22, electron22));
+				Int_t nofRICHindices = fVector_withRichSignal[electron11] + fVector_withRichSignal[electron12] + fVector_withRichSignal[electron21] + fVector_withRichSignal[electron22];
 				
 				if(nofRICHindices == 0) {
 					fhTest_invmass_RICHindex0->Fill(invmass);

@@ -870,7 +870,7 @@ void CbmAnaConversion::Exec(Option_t*)
 	
 	if(DoReconstruction) {
 		fAnaReco->SetTracklistMC(fMCTracklist_all);
-		fAnaReco->InvariantMassMC_all();
+		//fAnaReco->InvariantMassMC_all();
 	}
 
 	ReconstructGamma();

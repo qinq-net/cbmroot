@@ -520,6 +520,7 @@ void CbmAnaConversionReco::InvariantMassMC_all()
 	cout << "CbmAnaConversionReco: InvariantMassTestMC - Size of fTracklistMC_all:\t " << fMCTracklist_all.size() << endl;
 	if(fMCTracklist_all.size() >= 4) {
 		for(unsigned int i=0; i<fMCTracklist_all.size()-3; i++) {
+			if(i%10 == 0) cout << "CbmAnaConversionReco: InvariantMassTestMC - iteration i = " << i << endl;
 			for(unsigned int j=i+1; j<fMCTracklist_all.size()-2; j++) {
 				for(unsigned int k=j+1; k<fMCTracklist_all.size()-1; k++) {
 					for(unsigned int l=k+1; l<fMCTracklist_all.size(); l++) {
@@ -761,7 +762,7 @@ Double_t CbmAnaConversionReco::Invmass_4particles(const CbmMCTrack* mctrack1, co
     
     TLorentzVector sum;
     sum = lorVec1 + lorVec2 + lorVec3 + lorVec4;
-    cout << "mc: \t" << sum.Px() << " / " << sum.Py() << " / " << sum.Pz() << " / " << sum.E() << "\t => mag = " << sum.Mag() << endl;
+    //cout << "mc: \t" << sum.Px() << " / " << sum.Py() << " / " << sum.Pz() << " / " << sum.E() << "\t => mag = " << sum.Mag() << endl;
     
 
 	return sum.Mag();
@@ -829,6 +830,7 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 	int fill = 0;
 	if(fRecoTracklistEPEM.size() < 4) return;
 	for(unsigned int i=0; i<fRecoTracklistEPEM.size(); i++) {
+		if(i%10 == 0) cout << "CbmAnaConversionReco: InvariantMassTest_4epem - iteration i = " << i << endl;
 		for(unsigned int j=i+1; j<fRecoTracklistEPEM.size(); j++) {
 			for(unsigned int k=j+1; k<fRecoTracklistEPEM.size(); k++) {
 				for(unsigned int l=k+1; l<fRecoTracklistEPEM.size(); l++) {
