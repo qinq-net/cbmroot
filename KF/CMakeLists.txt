@@ -138,12 +138,12 @@ KFParticle/KFVertex.cxx
 KFParticle/KFParticlePVReconstructor.cxx
 KFParticle/KFParticleFinder.cxx
 KFParticle/KFParticleTopoReconstructor.cxx
-KFParticle/KFPHistogram/KFPHistogramSet.cxx
 KFParticlePerformance/KFPartEfficiencies.cxx
 KFParticlePerformance/KFMCVertex.cxx
 KFParticlePerformance/KFMCParticle.cxx
 KFParticlePerformance/KFParticlePerformanceBase.cxx
 KFParticlePerformance/KFTopoPerformance.cxx
+KFParticlePerformance/KFPHistogram/KFPHistogramSet.cxx
 CbmKFParticleFinder.cxx
 CbmKFParticleFinderPID.cxx
 CbmKFParticleFinderQA.cxx
