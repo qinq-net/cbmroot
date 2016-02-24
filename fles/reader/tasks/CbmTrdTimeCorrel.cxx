@@ -20,7 +20,9 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
   : FairTask("CbmTrdTimeCorrel"),
     fRawSpadic(NULL),
     fHM(new CbmHistManager()),
-    fNrTimeSlices(0)
+    fNrTimeSlices(0),
+    fRewriteSpadicName(true),
+    fSpadics(0)
 {
  LOG(DEBUG) << "Default constructor of CbmTrdTimeCorrel" << FairLogger::endl;
 }
@@ -97,39 +99,16 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     // Seriously guys, a message can only be of one type.
     if(Int_t(isHit+isInfo+isHitAborted+isOverflow+isStrange)!=1) LOG(ERROR) << "SpadicMessage " << iSpadicMessage << " is classified from CbmSpadicRawMessage to be: HIT " << Int_t(isHit) << " / INFO " << (Int_t)isInfo << " / HITaborted " << (Int_t)isHitAborted << " / OVERFLOW " << (Int_t)isOverflow << " / STRANGE " << (Int_t)isStrange << FairLogger::endl;
 
-    // These are pure debuging histos to ensure that the unpacker is running without errors (C.B)
-    fHM->H2("TriggerType_vs_InfoType")->Fill(raw->GetTriggerType(), raw->GetInfoType());
-    fHM->H2("TriggerType_vs_StopType")->Fill(raw->GetTriggerType(), raw->GetStopType());
-    fHM->H2("InfoType_vs_StopType")->Fill(raw->GetInfoType(), raw->GetStopType());
-    fHM->H2("NrSamples_vs_StopType")->Fill(raw->GetNrSamples(), raw->GetStopType());
-    fHM->H2("NrSamples_vs_InfoType")->Fill(raw->GetNrSamples(), raw->GetInfoType());
-    fHM->H2("NrSamples_vs_TriggerType")->Fill(raw->GetNrSamples(), raw->GetTriggerType());
-    //-------------------
-    Int_t lostMessages(0);// last variable has to be initialiced with 0 since it will be used as add-up-counter
-    if(isHit) {
-      stopType=raw->GetStopType();
-      triggerType=raw->GetTriggerType();
-    }
-    else if(isHitAborted) {
-    }
-    else if(isOverflow) {
-    }
-    else if(isInfo) {
-      lostMessages = raw->GetBufferOverflowCount();
-      infoType=raw->GetInfoType();
-      if (infoType > 6) {
-	LOG(ERROR) << " InfoType " << infoType << "is larger 6, set to 7!" << FairLogger::endl;
-	infoType = 7;
-      }
-    }
-    else if(isStrange) {
-    }
-
+    // Get SysCore & Spadic propertys
     eqID = raw->GetEquipmentID();
     sourceA = raw->GetSourceAddress();
     groupId=raw->GetGroupId();
     chID = raw->GetChannelID();
-    //Int_t nrSamples=raw->GetNrSamples();
+    spaID = GetSpadicID(sourceA);
+    if(spaID%2) chID+=16; // eqID ?
+    chID = GetChannelOnPadPlane(chID);// Remapping from ASIC to pad-plane channel numbers.
+
+    Int_t nrSamples=raw->GetNrSamples();
 
     time = raw->GetFullTime();
     timeStamp = raw->GetTime();
@@ -137,54 +116,77 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     epoch = raw->GetEpochMarker();// is copied to each SpadicRawMessage by the unpacker not only epoch messages
     superEpoch = raw->GetSuperEpoch();// is copied to each SpadicRawMessage by the unpacker not only epoch message
 
-    // get syscore, spadic and channel
-    TString syscore = GetSysCore(eqID);
-    sysID     = GetSysCoreID(eqID);
-    TString spadic  = GetSpadic(sourceA);
-    spaID     = GetSpadicID(sourceA);
-    if(spaID%2) chID+=16;
-    chID = GetChannelOnPadPlane(chID);// Remapping from ASIC to pad-plane channel numbers.
-    TString channelId=Form("_Ch%02d", chID);
+    stopType = raw->GetStopType();
     TString stopName = GetStopName(stopType);
+    infoType=raw->GetInfoType();
+    if (infoType > 6) {
+      LOG(ERROR) << " InfoType " << infoType << "is larger 6, set to 7!" << FairLogger::endl;
+      infoType = 7;
+    }
+    
+    TString spadicName = GetSpadicName(eqID,sourceA);
+
     // add raw message to map sorted by timestamps, syscore and spadic
-    timeBuffer[TString(syscore+spadic)][time].push_back(raw);
+    timeBuffer[TString(spadicName)][time].push_back(raw);
 
-    // print single spadic message coordinates .. hey, use this for a fancy fast-running output
-    //    if(stopType == 0) LOG(INFO) << "SpadicMessage: " << iSpadicMessage << " sourceA: " << sourceA << " chID: " << chID << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " is Info: " << isInfo << FairLogger::endl;
+    
 
-    // Count total messages per ASIC and message-types per ASIC.
-    if(spadic=="Spadic0") {
-      nSpadicMessages0++;
-      if(isHit) nSpadicMessagesHit0++;
-      else if(isHitAborted) nSpadicMessagesHitAborted0++;
-      else if(isOverflow) nSpadicMessagesOverflow0++;
-      else if(isInfo) {
-	nSpadicMessagesInfo0++;
-	if (lostMessages > 0) nSpadicMessagesLost0 += lostMessages; //lostMessages might be -1 for hits or epochs, therefore one has to ensure that it is > 0
+    if(spadicName!="") {
+
+      //
+      //  DEBUG PLOTS
+      //
+      
+      
+      // These are pure debuging histos to ensure that the unpacker is running without errors (C.B)
+      fHM->H2("TriggerType_vs_InfoType")->Fill(raw->GetTriggerType(), raw->GetInfoType());
+      fHM->H2("TriggerType_vs_StopType")->Fill(raw->GetTriggerType(), raw->GetStopType());
+      fHM->H2("InfoType_vs_StopType")->Fill(raw->GetInfoType(), raw->GetStopType());
+      fHM->H2("NrSamples_vs_StopType")->Fill(raw->GetNrSamples(), raw->GetStopType());
+      fHM->H2("NrSamples_vs_InfoType")->Fill(raw->GetNrSamples(), raw->GetInfoType());
+      fHM->H2("NrSamples_vs_TriggerType")->Fill(raw->GetNrSamples(), raw->GetTriggerType());
+      //-------------------
+      Int_t lostMessages(0);// last variable has to be initialiced with 0 since it will be used as add-up-counter
+
+      // Count total messages per ASIC and message-types per ASIC.
+      if(spadicName == RewriteSpadicName("SysCore0_Spadic0")) {
+        nSpadicMessages0++;
+        if(isHit) nSpadicMessagesHit0++;
+        else if(isHitAborted) nSpadicMessagesHitAborted0++;
+        else if(isOverflow) nSpadicMessagesOverflow0++;
+        else if(isInfo) {
+	       nSpadicMessagesInfo0++;
+	       if (lostMessages > 0) nSpadicMessagesLost0 += lostMessages; //lostMessages might be -1 for hits or epochs, therefore one has to ensure that it is > 0
+        }
+        else if(isStrange) nSpadicMessagesStrange0++;
       }
-      else if(isStrange) nSpadicMessagesStrange0++;
-    }
-    else if(spadic=="Spadic1") {
-      nSpadicMessages1++;
-      if(isHit) nSpadicMessagesHit1++;
-      else if(isHitAborted) nSpadicMessagesHitAborted1++;
-      else if(isOverflow) nSpadicMessagesOverflow1++;
-      else if(isInfo) {
-	nSpadicMessagesInfo1++;
-	if (lostMessages > 0) nSpadicMessagesLost1 += lostMessages; //lostMessages might be -1 for hits or epochs, therefore one has to ensure that it is > 0
+      
+      else if(spadicName == RewriteSpadicName("SysCore0_Spadic1")) {
+        nSpadicMessages1++;
+        if(isHit) nSpadicMessagesHit1++;
+        else if(isHitAborted) nSpadicMessagesHitAborted1++;
+        else if(isOverflow) nSpadicMessagesOverflow1++;
+        else if(isInfo) {
+	       nSpadicMessagesInfo1++;
+	       if (lostMessages > 0) nSpadicMessagesLost1 += lostMessages; //lostMessages might be -1 for hits or epochs, therefore one has to ensure that it is > 0
+        }
+        else if(isStrange) nSpadicMessagesStrange1++;
       }
-      else if(isStrange) nSpadicMessagesStrange1++;
-    }
-    // Currently only expecting Spadic0 and Spadic1. Logging others, if appearing.
-    else {
-      LOG(INFO) << "SapdicMessage " << iSpadicMessage << " claims to be from " << spadic << " with spadicID " << spaID << FairLogger::endl;
-    }
+      // Currently only expecting Spadic0 and Spadic1. Logging others, if appearing.
+      else {
+        LOG(INFO) << "SapdicMessage " << iSpadicMessage << " claims to be from " << spadicName << " with spadicID " << spaID << FairLogger::endl;
+      }
 
-    //Fill trigger-type histogram
-    fHM->H1("Trigger")->Fill(TString(syscore+spadic),1);
-    fHM->H1("MessageCount")->Fill(TString(spadic+"_"+stopName),1);
-    if(stopType==-1) fHM->H1("MessageCount")->Fill(TString(spadic+"_"+stopName+" n-fold"),1); // replace weight 1 with number of lost messages
+      //Fill trigger-type histogram
+      fHM->H1("Trigger")->Fill(spadicName,1);
+      fHM->H1("MessageCount")->Fill(TString(spadicName+"_"+stopName),1);
+      if(stopType==-1) fHM->H1("MessageCount")->Fill(TString(spadicName+"_"+stopName+" n-fold"),1); // replace weight 1 with number of lost messages
+    }
+  
   }
+  
+  
+  
   // complicated loop over sorted map of timestamps
   for(std::map<TString, std::map<ULong_t, std::vector<CbmSpadicRawMessage*> > >::iterator it = timeBuffer.begin() ; it != timeBuffer.end(); it++){
     // complicated loop over sorted map of raw messages
@@ -321,8 +323,9 @@ void CbmTrdTimeCorrel::FinishEvent()
 // ----              -------------------------------------------------------
 void CbmTrdTimeCorrel::CreateHistograms()
 {    
-  TString syscoreName[3] = { "SysCore0", "SysCore1", "SysCore2" };
-  TString spadicName[3]  = { "Spadic0",  "Spadic1",  "Spadic2" };
+
+  TString spadicName = "";
+
   TString channelName[32] = { "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", 
 			      "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", 
 			      "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", 
@@ -345,23 +348,48 @@ void CbmTrdTimeCorrel::CreateHistograms()
 			  "Empty word", 
 			  "Epoch out of sync", 
 			  "infoType out of array"}; //not official type, just to monitor overflows
-
+  
+  fSpadics = 0;
+  
+  for(Int_t syscore = 0; syscore < 3; ++syscore) {
+    for(Int_t spadic = 0; spadic < 3; ++spadic) {
+      spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
+      if(spadicName!="") fSpadics++;
+    }   
+  }
+  
+  
+  Int_t n = 0;
+  
   fHM->Add("Trigger", new TH1F("Trigger", "Trigger", 9,0,9));
   for(Int_t syscore = 0; syscore < 3; ++syscore) {
     for(Int_t spadic = 0; spadic < 3; ++spadic) {
-      fHM->H1("Trigger")->GetXaxis()->SetBinLabel(3*syscore+spadic+1,TString(syscoreName[syscore]+"_"+spadicName[spadic]));
+      spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
+      if(spadicName != "") {
+        n++;
+        fHM->H1("Trigger")->GetXaxis()->SetBinLabel(n,spadicName);
+      }
     }
   }
-  fHM->Add("MessageCount", new TH1I("MessageCount","MessageCount",16,0,16));
-  for(Int_t spadic = 0; spadic < 2; ++spadic) {
-    for(Int_t stopType = 0; stopType < 6; ++stopType) {
-      // Intransparent, but useful: setting labels on x-axis according to stop types of messages
-      fHM->H1("MessageCount")->GetXaxis()->SetBinLabel(8*spadic+stopType+1,TString(spadicName[spadic]+"_"+stopTypes[stopType]));
+
+  fHM->Add("MessageCount", new TH1D("MessageCount","MessageCount",fSpadics*8,0,fSpadics*8));
+  n = 0;
+  for(Int_t syscore = 0; syscore < 3; ++syscore) {
+    for(Int_t spadic = 0; spadic < 3; ++spadic) {
+      spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
+      if(spadicName != "") {
+        for(Int_t stopType = 0; stopType < 6; ++stopType) {
+          n++;
+          fHM->H1("MessageCount")->GetXaxis()->SetBinLabel(n,TString(spadicName+"_"+stopTypes[stopType]));
+        }
+        n++;
+        fHM->H1("MessageCount")->GetXaxis()->SetBinLabel(n,TString(spadicName+"_Info or epoch mess"));
+        n++;
+        fHM->H1("MessageCount")->GetXaxis()->SetBinLabel(n,TString(spadicName+"_Info or epoch mess n-fold"));
+      }
     }
-    // In addition to different stop types, add a bin for info messages and epoch messages. Weight info message entries with nr of lost messages in the "n-fold" bin.
-    fHM->H1("MessageCount")->GetXaxis()->SetBinLabel(8*spadic+6+1,TString(spadicName[spadic]+"_Info or epoch mess"));
-    fHM->H1("MessageCount")->GetXaxis()->SetBinLabel(8*spadic+7+1,TString(spadicName[spadic]+"_Info or epoch mess n-fold"));
   }
+  
   fHM->Add("TsCounter", new TGraph());
   fHM->Add("TsCounterHit0", new TGraph());
   fHM->Add("TsCounterHit1", new TGraph());
@@ -401,90 +429,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
   fHM->H2("NrSamples_vs_InfoType")->GetYaxis()->SetTitle("InfoType");
 
 }
-// ----              -------------------------------------------------------
-TString CbmTrdTimeCorrel::GetSysCore(Int_t eqID)
-{
-  TString syscore="";
-  //  Int_t SysId=-1;
-  switch (eqID) {
-  case kFlesMuenster:  // Muenster
-    syscore="SysCore0_";
-    //SysId = 0;
-    break;
-  case kFlesFrankfurt: // Frankfurt
-    syscore="SysCore1_";
-    //SysId = 1;
-    break;
-  case kFlesBucarest: // Bucarest
-    syscore="SysCore2_";
-    //SysId = 2;
-    break;
-  default:
-    LOG(ERROR) << "EquipmentID " << eqID << "not known." << FairLogger::endl;
-    break;
-  }
-  return syscore;
-}
-// ----              -------------------------------------------------------
-Int_t CbmTrdTimeCorrel::GetSysCoreID(Int_t eqID)
-{
-  //TString syscore="";
-  Int_t SysId=-1;
-  switch (eqID) {
-  case kFlesMuenster:  // Muenster
-    //syscore="SysCore0_";
-    SysId = 0;
-    break;
-  case kFlesFrankfurt: // Frankfurt
-    //syscore="SysCore1_";
-    SysId = 1;
-    break;
-  case kFlesBucarest: // Bucarest
-    //syscore="SysCore2_";
-    SysId = 2;
-    break;
-  default:
-    LOG(ERROR) << "EquipmentID " << eqID << "not known." << FairLogger::endl;
-    break;
-  }
-  return SysId;
-}
-// ----              -------------------------------------------------------
-TString CbmTrdTimeCorrel::GetSpadic(Int_t sourceA)
-{
-  TString spadic="";
-  //Int_t SpaId = -1;
-  switch (sourceA) {
-  case (SpadicBaseAddress+0):  // first spadic
-    spadic="Spadic0";
-    //SpaId = 0;
-    break;
-  case (SpadicBaseAddress+1):  // first spadic
-    spadic="Spadic0";
-    //SpaId = 1;
-    break;
-  case (SpadicBaseAddress+2):  // second spadic
-    spadic="Spadic1";
-    //SpaId = 2;
-    break;
-  case (SpadicBaseAddress+3):  // second spadic
-    spadic="Spadic1";
-    //SpaId = 3;
-    break;
-  case (SpadicBaseAddress+4):  // third spadic
-    spadic="Spadic2";
-    //SpaId = 4;
-    break;
-  case (SpadicBaseAddress+5):  // third spadic
-    spadic="Spadic2";
-    //SpaId = 5;
-    break;
-  default:
-    LOG(ERROR) << "Source Address " << sourceA << "not known." << FairLogger::endl;
-    break;
-  }
-  return spadic;
-}
+
 // ----              -------------------------------------------------------
 Int_t CbmTrdTimeCorrel::GetSpadicID(Int_t sourceA)
 {
@@ -548,21 +493,76 @@ TString CbmTrdTimeCorrel::GetStopName(Int_t stopType)
     stopName="Multi hit and ordering FIFO full";
     break;
   default:
-    LOG(ERROR) << "stopType " << stopType << "not known." << FairLogger::endl;
+    LOG(ERROR) << "stopType " << stopType << " not known." << FairLogger::endl;
     break;
   }
   return stopName;
 }
+
+TString CbmTrdTimeCorrel::GetSpadicName(Int_t eqID,Int_t sourceA)
+{
+  TString spadicName="";
+  
+  switch (eqID) {
+  case kFlesMuenster:
+    spadicName="SysCore0_";
+    break;
+  case kFlesFrankfurt:
+    spadicName="SysCore1_";
+    break;
+  case kFlesBucarest:
+    spadicName="SysCore2_";
+    break;
+  default:
+    LOG(ERROR) << "EquipmentID " << eqID << "not known." << FairLogger::endl;
+    break;
+  }
+  
+  switch (sourceA) {
+  case (SpadicBaseAddress+0):  // first spadic
+  case (SpadicBaseAddress+1):  // first spadic
+    spadicName+="Spadic0";
+    break;
+  case (SpadicBaseAddress+2):  // second spadic
+  case (SpadicBaseAddress+3):  // second spadic
+    spadicName+="Spadic1";
+    break;
+  case (SpadicBaseAddress+4):  // third spadic
+  case (SpadicBaseAddress+5):  // third spadic
+    spadicName+="Spadic2";
+    break;
+  default:
+    LOG(ERROR) << "Source Address " << sourceA << "not known." << FairLogger::endl;
+    break;
+  }
+  
+  spadicName = RewriteSpadicName(spadicName);
+  
+  return spadicName;
+}
+
+TString CbmTrdTimeCorrel::RewriteSpadicName(TString spadicName) 
+{
+  if(spadicName=="SysCore0_Spadic0") {
+    if(fRewriteSpadicName) spadicName="Frankfurt";
+  }else if(spadicName=="SysCore0_Spadic1"){
+    if(fRewriteSpadicName) spadicName="Muenster";
+  }else{
+    spadicName="";
+  }
+  
+  return spadicName;
+}
+
 // ----              -------------------------------------------------------
   Int_t CbmTrdTimeCorrel::GetChannelOnPadPlane(Int_t SpadicChannel)
   {
     Int_t channelMapping[32] = {31,15,30,14,29,13,28,12,27,11,26,10,25, 9,24, 8,
 				23, 7,22, 6,21, 5,20, 4,19, 3,18, 2,17, 1,16, 0};
     if (SpadicChannel < 0 || SpadicChannel > 31){
-      LOG(ERROR) << "CbmTrdTimeCorrel::GetChannelOnPadPlane ChId " << SpadicChannel << FairLogger::endl;
+      //LOG(ERROR) << "CbmTrdTestBeamAnalysis2015SPS::GetChannelOnPadPlane ChId " << SpadicChannel << FairLogger::endl;
       return -1;
     } else {
       return channelMapping[SpadicChannel];
     }
   }
-// ----              -------------------------------------------------------
