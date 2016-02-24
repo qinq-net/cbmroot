@@ -89,6 +89,7 @@ private:
 	TH1I * fhElectrons;
 
 	CbmLitGlobalElectronId* electronidentifier;
+	CbmLitGlobalElectronId* electronidentifier_ann0;
 	
 	TH1D * fhMomentumFits;
 	TH1D * fhMomentumFits_electronRich;
@@ -129,6 +130,7 @@ private:
 	vector<TVector3>		fElectrons_momenta_new[5];
 	vector<float>			fElectrons_momentaChi_new[5];
 	vector<int>				fElectrons_mctrackID_new[5];
+	vector<int>				fElectrons_globaltrackID_new[5];
 	vector< vector<int> >	fVector_photons_pairs_new[5];
 
 
@@ -246,6 +248,7 @@ private:
 	TH1D * fhPhotons_nofPerEventAfter_new[5];
 	TH1D * fhPi0_nofPerEvent_new[5];
 	TH1D * fhPhotons_invmass_new[5];
+	TH1D * fhPhotons_invmass_ann0_new[5];
 	TH1D * fhPhotons_invmass_ptBin1_new[5];
 	TH1D * fhPhotons_invmass_ptBin2_new[5];
 	TH1D * fhPhotons_invmass_ptBin3_new[5];
@@ -300,8 +303,10 @@ private:
 		// test4
 	vector< vector<TVector3> >	fMixedTest4_photons;
 	vector< vector<CbmMCTrack*> >	fMixedTest4_mctracks;
+	vector< vector<Bool_t> >	fMixedTest4_isRichElectronAnn0;
 	vector<int>					fMixedTest4_eventno;
 	TH1D *						fhMixedEventsTest4_invmass;
+	TH1D *						fhMixedEventsTest4_invmass_ann0;
 	TH2D *						fhMixedEventsTest4_pt_vs_rap;
 	TH1D *						fhMixedEventsTest4_invmass_ptBin1;
 	TH1D *						fhMixedEventsTest4_invmass_ptBin2;

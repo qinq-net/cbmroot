@@ -72,6 +72,7 @@ CbmAnaConversionTest2::CbmAnaConversionTest2()
 	fhTest2_2rich_pt_vs_rap_gg(NULL),
 	fhTest2_2rich_pt_vs_rap_all(NULL),
 	fhTest2_electrons_pt_vs_p(NULL),
+	fhTest2_electrons_pt_vs_p_withRICH(NULL),
 	fhTest2_3rich_electrons_theta_included(NULL),
 	fhTest2_3rich_electrons_theta_missing(NULL),
 	fhTest2_3rich_electrons_thetaVSp_included(NULL),
@@ -194,6 +195,8 @@ void CbmAnaConversionTest2::InitHistos()
 	// further tests
 	fhTest2_electrons_pt_vs_p	= new TH2D("fhTest2_electrons_pt_vs_p", "fhTest2_electrons_pt_vs_p;p_{t} in GeV/c; p in GeV/c", 240, -2., 10., 360, -2., 16.);
 	fHistoList_test2.push_back(fhTest2_electrons_pt_vs_p);
+	fhTest2_electrons_pt_vs_p_withRICH	= new TH2D("fhTest2_electrons_pt_vs_p_withRICH", "fhTest2_electrons_pt_vs_p_withRICH;p_{t} in GeV/c; p in GeV/c", 240, -2., 10., 360, -2., 16.);
+	fHistoList_test2.push_back(fhTest2_electrons_pt_vs_p_withRICH);
 	fhTest2_3rich_electrons_theta_included	= new TH1D("fhTest2_3rich_electrons_theta_included","fhTest2_3rich_electrons_theta_included;theta angle [deg];#", 90, 0, 90);
 	fHistoList_test2.push_back(fhTest2_3rich_electrons_theta_included);
 	fhTest2_3rich_electrons_theta_missing	= new TH1D("fhTest2_3rich_electrons_theta_missing","fhTest2_3rich_electrons_theta_missing;theta angle [deg];#", 90, 0, 90);
@@ -295,6 +298,9 @@ void CbmAnaConversionTest2::Exec()
 		
 		if(TMath::Abs(pdg) == 11) {
 			fhTest2_electrons_pt_vs_p->Fill(refittedMomentum_electron.Perp(), refittedMomentum_electron.Mag() );
+			if(richInd > 0) {
+				fhTest2_electrons_pt_vs_p_withRICH->Fill(refittedMomentum_electron.Perp(), refittedMomentum_electron.Mag() );
+			}
 		
 		
 		
@@ -337,11 +343,12 @@ void CbmAnaConversionTest2::Exec()
 void CbmAnaConversionTest2::InvariantMassTest_3RICH()
 // Calculating invariant mass of 4 ep/em, using MC data AND reconstructed momentum
 {
-	cout << "CbmAnaConversionTest2: InvariantMassTest_4epem - Start..." << endl;
-	cout << "CbmAnaConversionTest2: InvariantMassTest_4epem - " << fVector_mctrack.size() << endl;
+	cout << "CbmAnaConversionTest2: InvariantMassTest_3RICH - Start..." << endl;
+	cout << "CbmAnaConversionTest2: InvariantMassTest_3RICH - " << fVector_mctrack.size() << endl;
 	int fill = 0;
 	if(fVector_mctrack.size() < 4) return;
 	for(unsigned int i=0; i<fVector_mctrack.size()-3; i++) {
+		if(i%10 == 0) cout << "CbmAnaConversionTest2: InvariantMassTest_3RICH - iteration i = " << i << endl;
 		for(unsigned int j=i+1; j<fVector_mctrack.size()-2; j++) {
 			for(unsigned int k=j+1; k<fVector_mctrack.size()-1; k++) {
 				for(unsigned int l=k+1; l<fVector_mctrack.size(); l++) {
@@ -645,11 +652,12 @@ void CbmAnaConversionTest2::InvariantMassTest_3RICH()
 void CbmAnaConversionTest2::InvariantMassTest_2RICH()
 // Calculating invariant mass of 4 ep/em, using MC data AND reconstructed momentum
 {
-	cout << "CbmAnaConversionTest2: InvariantMassTest_4epem - Start..." << endl;
-	cout << "CbmAnaConversionTest2: InvariantMassTest_4epem - " << fVector_mctrack.size() << endl;
+	cout << "CbmAnaConversionTest2: InvariantMassTest_2RICH - Start..." << endl;
+	cout << "CbmAnaConversionTest2: InvariantMassTest_2RICH - " << fVector_mctrack.size() << endl;
 	int fill = 0;
 	if(fVector_mctrack.size() < 4) return;
 	for(unsigned int i=0; i<fVector_mctrack.size()-3; i++) {
+		if(i%10 == 0) cout << "CbmAnaConversionTest2: InvariantMassTest_2RICH - iteration i = " << i << endl;
 		for(unsigned int j=i+1; j<fVector_mctrack.size()-2; j++) {
 			for(unsigned int k=j+1; k<fVector_mctrack.size()-1; k++) {
 				for(unsigned int l=k+1; l<fVector_mctrack.size(); l++) {

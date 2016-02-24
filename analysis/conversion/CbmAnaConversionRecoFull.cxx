@@ -56,6 +56,7 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
     fHistoList_recofull_new(),
     fhElectrons(NULL),
     electronidentifier(NULL),
+    electronidentifier_ann0(NULL),
     fhMomentumFits(NULL),
 	fhMomentumFits_electronRich(NULL),
 	fhMomentumFits_pi0reco(NULL),
@@ -87,6 +88,7 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
 	fElectrons_momenta_new(),
 	fElectrons_momentaChi_new(),
 	fElectrons_mctrackID_new(),
+	fElectrons_globaltrackID_new(),
 	fVector_photons_pairs_new(),
     fhElectrons_invmass(NULL),
     fhElectrons_invmass_cut(NULL),
@@ -179,6 +181,7 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
 	fhPhotons_nofPerEvent_new(),
 	fhPhotons_nofPerEventAfter_new(),
 	fhPhotons_invmass_new(),
+	fhPhotons_invmass_ann0_new(),
 	fhPhotons_invmass_ptBin1_new(),
 	fhPhotons_invmass_ptBin2_new(),
 	fhPhotons_invmass_ptBin3_new(),
@@ -217,8 +220,10 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
 	fhMixedEventsTest3_invmass(NULL),
 	fMixedTest4_photons(),
 	fMixedTest4_mctracks(),
+	fMixedTest4_isRichElectronAnn0(),
 	fMixedTest4_eventno(),
 	fhMixedEventsTest4_invmass(NULL),
+	fhMixedEventsTest4_invmass_ann0(NULL),
 	fhMixedEventsTest4_pt_vs_rap(NULL),
 	fhMixedEventsTest4_invmass_ptBin1(NULL),
 	fhMixedEventsTest4_invmass_ptBin2(NULL),
@@ -269,6 +274,9 @@ void CbmAnaConversionRecoFull::Init()
 	electronidentifier = new CbmLitGlobalElectronId();
 	electronidentifier->Init();
 	electronidentifier->SetRichAnnCut(-0.5);
+	
+	electronidentifier_ann0 = new CbmLitGlobalElectronId();
+	electronidentifier_ann0->Init();
 
 	globalEventNo = 0;
 }
@@ -541,6 +549,8 @@ void CbmAnaConversionRecoFull::InitHistos()
 
 		fhPhotons_invmass_new[i] = new TH1D(Form("fhPhotons_invmass_new_%i",i), Form("fhPhotons_invmass_new_%i; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_new[i]);
+		fhPhotons_invmass_ann0_new[i] = new TH1D(Form("fhPhotons_invmass_ann0_new_%i",i), Form("fhPhotons_invmass_ann0_new_%i; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_ann0_new[i]);
 
 		fhPhotons_invmass_ptBin1_new[i] = new TH1D(Form("fhPhotons_invmass_ptBin1_new_%i",i), Form("fhPhotons_invmass_ptBin1_new_%i; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_ptBin1_new[i]);
@@ -557,6 +567,7 @@ void CbmAnaConversionRecoFull::InitHistos()
 	
 		fhElectrons_invmass_new[i] = new TH1D(Form("fhElectrons_invmass_new_%i",i), Form("fhElectrons_invmass_new_%i; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhElectrons_invmass_new[i]);
+		
 		fhPhotons_invmass_vs_pt_new[i] = new TH2D(Form("fhPhotons_invmass_vs_pt_new_%i",i), Form("fhPhotons_invmass_vs_pt_new_%i; invariant mass of 4 e^{#pm} in GeV/c^{2}; pt",i), 600, -0.0025, 2.9975, 100, 0., 10.);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_vs_pt_new[i]);
 
@@ -624,6 +635,9 @@ void CbmAnaConversionRecoFull::InitHistos()
 	fHistoList_recofull_new[4].push_back(fhPhotons_peakCheck1);
 
 
+
+	// EVENT MIXING HISTOGRAMS
+	// =======================
 	fhMixedEventsTest2_invmass = new TH1D(Form("fhMixedEventsTest2_invmass_%i",4), Form("fhMixedEventsTest2_invmass_%i; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",4), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull_new[4].push_back(fhMixedEventsTest2_invmass);
 	fhMixedEventsTest3_invmass = new TH1D(Form("fhMixedEventsTest3_invmass_%i",4), Form("fhMixedEventsTest3_invmass_%i; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",4), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
@@ -631,6 +645,9 @@ void CbmAnaConversionRecoFull::InitHistos()
 	
 	fhMixedEventsTest4_invmass = new TH1D(Form("fhMixedEventsTest4_invmass_%i",4), Form("fhMixedEventsTest4_invmass_%i; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",4), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull_new[4].push_back(fhMixedEventsTest4_invmass);
+	fhMixedEventsTest4_invmass_ann0 = new TH1D(Form("fhMixedEventsTest4_invmass_ann0_%i",4), Form("fhMixedEventsTest4_invmass_ann0_%i; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",4), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fHistoList_recofull_new[4].push_back(fhMixedEventsTest4_invmass_ann0);
+	
 	fhMixedEventsTest4_pt_vs_rap = new TH2D(Form("fhMixedEventsTest4_pt_vs_rap_%i",4), Form("fhMixedEventsTest4_pt_vs_rap_%i; p_{t} in GeV/c; rapidity y",4), 240, -2., 10., 270, -2., 7.);
 	fHistoList_recofull_new[4].push_back(fhMixedEventsTest4_pt_vs_rap);
 	
@@ -748,6 +765,7 @@ void CbmAnaConversionRecoFull::Exec()
 		fElectrons_momenta_new[i].clear();
 		fElectrons_momentaChi_new[i].clear();
 		fElectrons_mctrackID_new[i].clear();
+		fElectrons_globaltrackID_new[i].clear();
 		fVector_photons_pairs_new[i].clear();
 		
 		while(fMixedEventsElectrons[i].size() > 20) {
@@ -895,6 +913,7 @@ void CbmAnaConversionRecoFull::Exec()
 			fElectrons_momentaChi_new[1].push_back(result_chi);
 			//fElectrons_mctrackID_1.push_back(richMcTrackId);
 			fElectrons_mctrackID_new[1].push_back(stsMcTrackId);
+			fElectrons_globaltrackID_new[1].push_back(iG);
 			
 			if(FilledMixedEventElectron < 5) {
 				fMixedEventsElectrons[1].push_back(refittedMomentum);
@@ -922,6 +941,7 @@ void CbmAnaConversionRecoFull::Exec()
 				fElectrons_momentaChi_new[2].push_back(result_chi);
 				//fElectrons_mctrackID_1.push_back(richMcTrackId);
 				fElectrons_mctrackID_new[2].push_back(stsMcTrackId);
+				fElectrons_globaltrackID_new[2].push_back(iG);
 			
 				if(FilledMixedEventElectron < 5) {
 					fMixedEventsElectrons[2].push_back(refittedMomentum);
@@ -978,6 +998,7 @@ void CbmAnaConversionRecoFull::Exec()
 			fElectrons_momentaChi_new[3].push_back(result_chi);
 			//fElectrons_mctrackID_1.push_back(richMcTrackId);
 			fElectrons_mctrackID_new[3].push_back(stsMcTrackId);
+			fElectrons_globaltrackID_new[3].push_back(iG);
 			
 			if(FilledMixedEventElectron < 5) {
 				fMixedEventsElectrons[3].push_back(refittedMomentum);
@@ -997,6 +1018,7 @@ void CbmAnaConversionRecoFull::Exec()
 				fElectrons_momentaChi_new[4].push_back(result_chi);
 				//fElectrons_mctrackID_1.push_back(richMcTrackId);
 				fElectrons_mctrackID_new[4].push_back(stsMcTrackId);
+				fElectrons_globaltrackID_new[4].push_back(iG);
 			
 				// for event mixing technique
 				if(FilledMixedEventElectron < 5) {	// test1
@@ -1204,6 +1226,11 @@ void CbmAnaConversionRecoFull::CombineElectrons(vector<CbmGlobalTrack*> gtrack, 
 						fMixedTest4_photons.push_back(pairmomenta);
 						fMixedTest4_eventno.push_back(globalEventNo);
 						fMixedTest4_mctracks.push_back(pair_mctracks);
+						
+						vector<Bool_t> IsRichElectronAnn0;
+						IsRichElectronAnn0.push_back(electronidentifier_ann0->IsRichElectron(fElectrons_globaltrackID_new[index][a], momenta[a].Mag() ));
+						IsRichElectronAnn0.push_back(electronidentifier_ann0->IsRichElectron(fElectrons_globaltrackID_new[index][b], momenta[b].Mag() ));
+						fMixedTest4_isRichElectronAnn0.push_back(IsRichElectronAnn0);
 					}
 				}
 			}
@@ -1402,7 +1429,7 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 				nofPi0++;
 				
 				Int_t charge11 = (gtrack[electron11]->GetParamLast()->GetQp() > 0);
-				Int_t charge12 = (gtrack[electron12]->GetParamLast()->GetQp() > 0);
+				//Int_t charge12 = (gtrack[electron12]->GetParamLast()->GetQp() > 0);
 				Int_t charge21 = (gtrack[electron21]->GetParamLast()->GetQp() > 0);
 				Int_t charge22 = (gtrack[electron22]->GetParamLast()->GetQp() > 0);
 				if( (charge11 + charge21 == 2) || (charge11 + charge21 == 0) ) {
@@ -1439,7 +1466,14 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 				
 				CbmAnaConversionKinematicParams paramsTest = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(momenta[electron11], momenta[electron12], momenta[electron21], momenta[electron22]);
 				
+				Bool_t IsRichElectron_ann0_e11 = electronidentifier_ann0->IsRichElectron(fElectrons_globaltrackID_new[index][electron11], momenta[electron11].Mag() );
+				Bool_t IsRichElectron_ann0_e12 = electronidentifier_ann0->IsRichElectron(fElectrons_globaltrackID_new[index][electron12], momenta[electron12].Mag() );
+				Bool_t IsRichElectron_ann0_e21 = electronidentifier_ann0->IsRichElectron(fElectrons_globaltrackID_new[index][electron21], momenta[electron21].Mag() );
+				Bool_t IsRichElectron_ann0_e22 = electronidentifier_ann0->IsRichElectron(fElectrons_globaltrackID_new[index][electron22], momenta[electron22].Mag() );
 				
+				if(IsRichElectron_ann0_e11 && IsRichElectron_ann0_e12 && IsRichElectron_ann0_e21 && IsRichElectron_ann0_e22) {
+					fhPhotons_invmass_ann0_new[index]->Fill(invmass);
+				}
 				
 				cout << "CbmAnaConversionRecoFull: debug: (" << invmass << "/" << paramsTest.fMinv << ") - (" << pt << "/" << paramsTest.fPt << ") - (" << rap << "/" << paramsTest.fRapidity << ")" << endl;
 				
@@ -2595,6 +2629,17 @@ void CbmAnaConversionRecoFull::MixedEventTest4()
 			if(params.fPt > 0.5 && params.fPt <= 1) fhMixedEventsTest4_invmass_ptBin2->Fill(params.fMinv);
 			if(params.fPt > 1 && params.fPt <= 1.5) fhMixedEventsTest4_invmass_ptBin3->Fill(params.fMinv);
 			if(params.fPt > 1.5 && params.fPt <= 2) fhMixedEventsTest4_invmass_ptBin4->Fill(params.fMinv);
+			
+			
+			
+			Bool_t IsRichElectron_ann0_e11 = fMixedTest4_isRichElectronAnn0[a][0];
+			Bool_t IsRichElectron_ann0_e12 = fMixedTest4_isRichElectronAnn0[a][1];
+			Bool_t IsRichElectron_ann0_e21 = fMixedTest4_isRichElectronAnn0[b][0];
+			Bool_t IsRichElectron_ann0_e22 = fMixedTest4_isRichElectronAnn0[b][1];
+			
+			if(IsRichElectron_ann0_e11 && IsRichElectron_ann0_e12 && IsRichElectron_ann0_e21 && IsRichElectron_ann0_e22) {
+				fhMixedEventsTest4_invmass_ann0->Fill(params.fMinv);
+			}
 		}
 	}
 }

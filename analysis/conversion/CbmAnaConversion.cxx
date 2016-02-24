@@ -458,8 +458,8 @@ void CbmAnaConversion::InitHistograms()
 	fHistoList.push_back(fhSearchGammas);
 
 
-	fhANN_output_electrons	= new TH1D("fhANN_output_electrons","fhANN_output_electrons;ann output", 200, -1, 1.); 
-	fhANN_output_else		= new TH1D("fhANN_output_else","fhANN_output_else;ann output", 200, -1, 1.); 
+	fhANN_output_electrons	= new TH1D("fhANN_output_electrons","fhANN_output_electrons;ann output", 400, -2, 2.); 
+	fhANN_output_else		= new TH1D("fhANN_output_else","fhANN_output_else;ann output", 400, -2, 2.); 
 	fHistoList.push_back(fhANN_output_electrons);
 	fHistoList.push_back(fhANN_output_else);
 	
