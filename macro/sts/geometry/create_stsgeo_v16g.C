@@ -218,15 +218,26 @@ const Double_t gkPipeR3 =   5.5;
 //   "Unit07UR", "Unit07UL", "Unit07DR", "Unit07DL", 
 //   "Unit08UR", "Unit08UL" };
 
-TString unitName[18] =    // names of units for v16g
+TString unitName[32] =    // names of units for v16g - while merging D and U parts
+ {                       "Unit00R", "Unit00L",  
+   "Unit01R", "Unit01L", "Unit01R", "Unit01L", 
+   "Unit02R", "Unit02L", "Unit02R", "Unit02L", 
+   "Unit03R", "Unit03L", "Unit03R", "Unit03L", 
+   "Unit04R", "Unit04L", "Unit04R", "Unit04L", 
+   "Unit05R", "Unit05L", "Unit05R", "Unit05L", 
+   "Unit06R", "Unit06L", "Unit06R", "Unit06L", 
+   "Unit07R", "Unit07L", "Unit07R", "Unit07L", 
+   "Unit08R", "Unit08L" };
+
+TString unitName18[18] =    // names of units for v16g
  { "Unit00R", "Unit00L",  
-   "Unit01R", "Unit01L", 
-   "Unit02R", "Unit02L", 
-   "Unit03R", "Unit03L", 
-   "Unit04R", "Unit04L", 
-   "Unit05R", "Unit05L", 
-   "Unit06R", "Unit06L", 
-   "Unit07R", "Unit07L", 
+   "Unit01R", "Unit01L",
+   "Unit02R", "Unit02L",
+   "Unit03R", "Unit03L",
+   "Unit04R", "Unit04L",
+   "Unit05R", "Unit05L",
+   "Unit06R", "Unit06L",
+   "Unit07R", "Unit07L",
    "Unit08R", "Unit08L" };
 
 // -------------   Other global variables   -----------------------------------
@@ -446,8 +457,11 @@ void create_stsgeo_v16g(const char* geoTag="v16g")
 //  Int_t statPos[8]  = { 30, 40, 50, 60, 70, 80, 90, 100 };  // z positions of stations
 //  Int_t statPos[16]  = { 28, 32, 38, 42, 48, 52, 58, 62,
 //                         68, 72, 78, 82, 88, 92, 98,102 };  // z positions of units
-  Int_t statPos[16]  = { 30, 30, 40, 40, 50, 50,  60,  60,
-                         70, 70, 80, 80, 90, 90, 100, 100 };  // z positions of units
+  Int_t statPos[16]   = { 30, 30, 40, 40, 50, 50,  60,  60,
+                          70, 70, 80, 80, 90, 90, 100, 100 };  // z positions of units
+  Int_t statPos18[18] = { 30, 30,                              // expanded for placement of Unit00
+                          30, 30, 40, 40, 50, 50,  60,  60, 
+                          70, 70, 80, 80, 90, 90, 100, 100 };  // z positions of units
 
 ////Double_t rHole[8] = { 2.0, 2.0, 2.0, 2.9 , 3.7 , 3.7 , 4.2 , 4.2 };  // size of cutouts in stations
 //  Double_t rHole[8] = { 2.0, 2.0, 2.0, 2.43, 3.04, 3.35, 3.96, 4.2 };  // size of cutouts in stations, derived from gapXYZ[x][1]/2
@@ -674,10 +688,12 @@ void create_stsgeo_v16g(const char* geoTag="v16g")
   //  cout << "stsPosZ " << stsPosZ << " " << statPos[15] << " " << statPos[0] << "*****" << endl;
 
 //  for (Int_t iUnit = 0; iUnit < 16; iUnit++) {
-  for (Int_t iUnit = 0; iUnit < 32; iUnit++) {
-    TGeoVolume* station = gGeoMan->GetVolume(unitName[iUnit]);
+  for (Int_t iUnit = 0; iUnit < 18; iUnit++) {
+//  for (Int_t iUnit = 0; iUnit < 32; iUnit++) {
+    TGeoVolume* station = gGeoMan->GetVolume(unitName18[iUnit]);
 //    Double_t posZ = statPos[iUnit] - stsPosZ;
-    Double_t posZ = statPos[iUnit/2] - stsPosZ;
+    Double_t posZ = statPos18[iUnit] - stsPosZ;
+//    Double_t posZ = statPos[iUnit/2] - stsPosZ;
     TGeoTranslation* trans = new TGeoTranslation(0., 0., posZ);
     sts->AddNode(station, iUnit+1, trans);
     sts->GetShape()->ComputeBBox();
@@ -1507,9 +1523,17 @@ void AddCarbonLadder(Int_t LadderIndex,
                            Int_t nLadders,
                            Int_t* ladderTypes) {
 
+ Bool_t isFirstPartOfHalfUnit = kFALSE;
+
   //  TString name = Form("Unit%02d", iUnit);    // 0,1,2,3,4,5,6,7 - Unit00 missing in output
   //  TString name = Form("Unit%02d", iUnit+1);  // 1,2,3,4,5,6,7,8
-  TGeoVolume* unit = new TGeoVolumeAssembly(unitName[iUnit]);
+
+  TGeoVolume* unit = gGeoMan->GetVolume(unitName[iUnit]);
+  if ( ! unit )  // if it does not yet exist, create a new one
+  {
+    TGeoVolume* unit = new TGeoVolumeAssembly(unitName[iUnit]);
+    isFirstPartOfHalfUnit = kTRUE;
+  }
 
   // --- Some local variables
   TGeoBBox* ladderShape = NULL;
@@ -1596,6 +1620,9 @@ void AddCarbonLadder(Int_t LadderIndex,
       else
         zPos = -zPos;
   
+      if (!isFirstPartOfHalfUnit)
+        zPos += 10;
+
       TGeoCombiTrans* trans = new TGeoCombiTrans(xPos, yPos, zPos, rot);
 // start
 //      cout << "DEEE** iLadder " << iLadder << " " << nLadders/2 << " " << nLadders << endl;
