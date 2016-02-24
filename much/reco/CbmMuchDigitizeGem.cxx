@@ -76,9 +76,28 @@ CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName)
     fTimeBinWidth(1),
     fNTimeBins(200),
     fNdigis(0),
-  fTOT(0),
-    fTotalDriftTime(0.4/fDriftVelocity*10000) // 40 ns
+    fTOT(0),
+    fTotalDriftTime(0.4/fDriftVelocity*10000), // 40 ns
+    fSigma(),
+    fMPV() 
 {
+  fSigma[0] = new TF1("sigma_e","pol6",-5,10);
+  fSigma[0]->SetParameters(sigma_e);
+
+  fSigma[1] = new TF1("sigma_mu","pol6",-5,10);
+  fSigma[1]->SetParameters(sigma_mu);
+
+  fSigma[2] = new TF1("sigma_p","pol6",-5,10);
+  fSigma[2]->SetParameters(sigma_p);
+
+  fMPV[0]   = new TF1("mpv_e","pol6",-5,10);
+  fMPV[0]->SetParameters(mpv_e);
+
+  fMPV[1]   = new TF1("mpv_mu","pol6",-5,10);
+  fMPV[1]->SetParameters(mpv_mu);
+
+  fMPV[2]   = new TF1("mpv_p","pol6",-5,10);
+  fMPV[2]->SetParameters(mpv_p);
 }
 // -------------------------------------------------------------------------
 
@@ -211,11 +230,11 @@ void CbmMuchDigitizeGem::Exec(Option_t* opt) {
   }
   // Add remaining digis
   vector<CbmMuchModule*> modules = fGeoScheme->GetModules();
-  for (Int_t im=0;im<modules.size();im++){
+  for (UInt_t im=0;im<modules.size();im++){
     if (modules[im]->GetDetectorType()!=1 && modules[im]->GetDetectorType()!=3) continue;
     CbmMuchModuleGem* module = (CbmMuchModuleGem*) modules[im];
     vector<CbmMuchPad*> pads = module->GetPads();
-    for (Int_t ip=0;ip<pads.size();ip++) AddDigi(pads[ip]);
+    for (UInt_t ip=0;ip<pads.size();ip++) AddDigi(pads[ip]);
   }
 
   fTimer.Stop();
@@ -367,22 +386,21 @@ Int_t CbmMuchDigitizeGem::GasGain() {
 // -------------------------------------------------------------------------
 Double_t CbmMuchDigitizeGem::Sigma_n_e(Double_t Tkin, Double_t mass) {
   Double_t logT;
-  TF1 fPol6("fPol6","pol6",-5,10);
   if (mass < 0.1) {
     logT = log(Tkin * 0.511 / mass);
     if (logT > 9.21034)    logT = 9.21034;
     if (logT < min_logT_e) logT = min_logT_e;
-    return fPol6.EvalPar(&logT,sigma_e);
+    return fSigma[0]->Eval(logT);
   } else if (mass >= 0.1 && mass < 0.2) {
     logT = log(Tkin * 105.658 / mass);
     if (logT > 9.21034)    logT = 9.21034;
     if (logT < min_logT_mu) logT = min_logT_mu;
-    return fPol6.EvalPar(&logT,sigma_mu);
+    return fSigma[1]->Eval(logT);
   } else {
     logT = log(Tkin * 938.272 / mass);
     if (logT > 9.21034)    logT = 9.21034;
     if (logT < min_logT_p) logT = min_logT_p;
-    return fPol6.EvalPar(&logT,sigma_p);
+    return fSigma[2]->Eval(logT);
   }
 }
 // -------------------------------------------------------------------------
@@ -390,22 +408,21 @@ Double_t CbmMuchDigitizeGem::Sigma_n_e(Double_t Tkin, Double_t mass) {
 // -------------------------------------------------------------------------
 Double_t CbmMuchDigitizeGem::MPV_n_e(Double_t Tkin, Double_t mass) {
   Double_t logT;
-  TF1 fPol6("fPol6","pol6",-5,10);
   if (mass < 0.1) {
     logT = log(Tkin * 0.511 / mass);
     if (logT > 9.21034)    logT = 9.21034;
     if (logT < min_logT_e) logT = min_logT_e;
-    return fPol6.EvalPar(&logT,mpv_e);
+    return fMPV[0]->Eval(logT);
   } else if (mass >= 0.1 && mass < 0.2) {
     logT = log(Tkin * 105.658 / mass);
     if (logT > 9.21034)    logT = 9.21034;
     if (logT < min_logT_mu) logT = min_logT_mu;
-    return fPol6.EvalPar(&logT,mpv_mu);
+    return fMPV[1]->Eval(logT);
   } else {
     logT = log(Tkin * 938.272 / mass);
     if (logT > 9.21034)    logT = 9.21034;
     if (logT < min_logT_p) logT = min_logT_p;
-    return fPol6.EvalPar(&logT,mpv_p);
+    return fMPV[2]->Eval(logT);
   }
 }
 // -------------------------------------------------------------------------

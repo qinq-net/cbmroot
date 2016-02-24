@@ -120,13 +120,13 @@ class CbmMuchDigitizeGem : public FairTask{
      *@param logT Logarithm of electron kinetic energy (energy in [MeV]).
      *@param mass Mass of the particle [MeV/c^2].
      **/
-    static Double_t Sigma_n_e(Double_t Tkin, Double_t mass);
+    Double_t Sigma_n_e(Double_t Tkin, Double_t mass);
 
     /** Parameterization of most probable value for electrons for Landau distribution.
      *@param logT  Logarithm of electron kinetic energy (energy in [MeV]).
      *@param mass Mass of the particle [MeV/c^2].
      **/
-    static Double_t MPV_n_e(Double_t Tkin, Double_t mass);
+    Double_t MPV_n_e(Double_t Tkin, Double_t mass);
     
     void SetDaq(Bool_t daq) {fDaq = daq;}
     void SetMcChain(TChain* mcChain) {fMcChain=mcChain;}
@@ -170,6 +170,9 @@ class CbmMuchDigitizeGem : public FairTask{
     Int_t              fNdigis;        // Number of created digis
     Bool_t             fTOT;           // Flag to switch between time over threshold/direct amplitude measurement
     Double_t           fTotalDriftTime;// Total drift time (calculated from drift velocity and drift volume width)
+
+    TF1*               fSigma[3];
+    TF1*               fMPV[3];
 
     /** Initialization. **/
     virtual InitStatus Init();
