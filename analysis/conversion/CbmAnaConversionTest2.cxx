@@ -73,6 +73,7 @@ CbmAnaConversionTest2::CbmAnaConversionTest2()
 	fhTest2_2rich_pt_vs_rap_all(NULL),
 	fhTest2_electrons_pt_vs_p(NULL),
 	fhTest2_electrons_pt_vs_p_withRICH(NULL),
+	fhTest2_electrons_pt_vs_p_noRICH(NULL),
 	fhTest2_3rich_electrons_theta_included(NULL),
 	fhTest2_3rich_electrons_theta_missing(NULL),
 	fhTest2_3rich_electrons_thetaVSp_included(NULL),
@@ -197,6 +198,9 @@ void CbmAnaConversionTest2::InitHistos()
 	fHistoList_test2.push_back(fhTest2_electrons_pt_vs_p);
 	fhTest2_electrons_pt_vs_p_withRICH	= new TH2D("fhTest2_electrons_pt_vs_p_withRICH", "fhTest2_electrons_pt_vs_p_withRICH;p_{t} in GeV/c; p in GeV/c", 240, -2., 10., 360, -2., 16.);
 	fHistoList_test2.push_back(fhTest2_electrons_pt_vs_p_withRICH);
+	fhTest2_electrons_pt_vs_p_noRICH	= new TH2D("fhTest2_electrons_pt_vs_p_noRICH", "fhTest2_electrons_pt_vs_p_noRICH;p_{t} in GeV/c; p in GeV/c", 240, -2., 10., 360, -2., 16.);
+	fHistoList_test2.push_back(fhTest2_electrons_pt_vs_p_noRICH);
+	
 	fhTest2_3rich_electrons_theta_included	= new TH1D("fhTest2_3rich_electrons_theta_included","fhTest2_3rich_electrons_theta_included;theta angle [deg];#", 90, 0, 90);
 	fHistoList_test2.push_back(fhTest2_3rich_electrons_theta_included);
 	fhTest2_3rich_electrons_theta_missing	= new TH1D("fhTest2_3rich_electrons_theta_missing","fhTest2_3rich_electrons_theta_missing;theta angle [deg];#", 90, 0, 90);
@@ -300,6 +304,9 @@ void CbmAnaConversionTest2::Exec()
 			fhTest2_electrons_pt_vs_p->Fill(refittedMomentum_electron.Perp(), refittedMomentum_electron.Mag() );
 			if(richInd > 0) {
 				fhTest2_electrons_pt_vs_p_withRICH->Fill(refittedMomentum_electron.Perp(), refittedMomentum_electron.Mag() );
+			}
+			if(richInd < 0) {
+				fhTest2_electrons_pt_vs_p_noRICH->Fill(refittedMomentum_electron.Perp(), refittedMomentum_electron.Mag() );
 			}
 		
 		

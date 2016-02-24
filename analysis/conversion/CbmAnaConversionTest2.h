@@ -114,6 +114,7 @@ private:
 	// further tests
 	TH2D * fhTest2_electrons_pt_vs_p;
 	TH2D * fhTest2_electrons_pt_vs_p_withRICH;
+	TH2D * fhTest2_electrons_pt_vs_p_noRICH;
 	TH1D * fhTest2_3rich_electrons_theta_included;
 	TH1D * fhTest2_3rich_electrons_theta_missing;
 	TH2D * fhTest2_3rich_electrons_thetaVSp_included;
