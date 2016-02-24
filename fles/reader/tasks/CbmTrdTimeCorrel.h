@@ -26,13 +26,17 @@ class CbmTrdTimeCorrel : public FairTask
 
   virtual void FinishEvent();
 
+	void SetRewriteSpadicName(Bool_t rewrite)  { fRewriteSpadicName = rewrite; }
+
  private:
 
-  TString GetSysCore(Int_t eqID);
-  Int_t   GetSysCoreID(Int_t eqID);
+  Int_t   fSpadics;
+  Bool_t  fRewriteSpadicName;
 
-  TString GetSpadic(Int_t sourceA);
   Int_t   GetSpadicID(Int_t sourceA);
+
+  TString GetSpadicName(Int_t eqID,Int_t sourceA);
+  TString RewriteSpadicName(TString spadicName);
 
   TString GetStopName(Int_t stopType);
 
