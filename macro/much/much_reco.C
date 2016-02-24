@@ -18,11 +18,11 @@ void much_reco(
 
    // Digi files
    TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
-   TList* parFileList = new TList();
-   TObjString stsDigiFile(parDir + "/sts/sts_v13d_std.digi.par"); // STS digi file
-   TString muchDigiFile(parDir + "/much/much_v12b.digi.root"); // MUCH digi file
-   TString stsMatBudgetFile(parDir + "/sts/sts_matbudget_v13d.root");
-   parFileList->Add(&stsDigiFile);
+//   TList* parFileList = new TList();
+//   TObjString stsDigiFile(parDir + "/sts/sts_v13d_std.digi.par"); // STS digi file
+   TString muchDigiFile(parDir + "/much/much_v15b_digi_sector.root"); // MUCH digi file
+   TString stsMatBudgetFile(parDir + "/sts/sts_matbudget_v15a.root");
+//   parFileList->Add(&stsDigiFile);
 
 	Int_t iVerbose = 1;
 	TStopwatch timer;
@@ -46,9 +46,14 @@ void much_reco(
 
 
   // -----   STS digitizer   -------------------------------------------------
+
+  FairTask* stsDigi = new CbmStsDigitize();
+  run->AddTask(stsDigi);
+
   // -----   The parameters of the STS digitizer are set such as to match
   // -----   those in the old digitizer. Change them only if you know what you
   // -----   are doing.
+/*
   Double_t dynRange       =   40960.;  // Dynamic range [e]
   Double_t threshold      =    4000.;  // Digitisation threshold [e]
   Int_t nAdc              =    4096;   // Number of ADC channels (12 bit)
@@ -57,10 +62,13 @@ void much_reco(
   Double_t noise          =       0.;  // ENC [e]
   Int_t digiModel         =       1;   // Model: 1 = uniform charge distribution along track
 
+
+
   CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
   stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution,
   		                 deadTime, noise);
   run->AddTask(stsDigi);
+*/
   // -------------------------------------------------------------------------
 
 
@@ -118,11 +126,11 @@ void much_reco(
    // -----  Parameter database   --------------------------------------------
    FairRuntimeDb* rtdb = run->GetRuntimeDb();
    FairParRootFileIo* parIo1 = new FairParRootFileIo();
-   FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
+//   FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
    parIo1->open(parFile.Data());
-   parIo2->open(parFileList, "in");
+//   parIo2->open(parFileList, "in");
    rtdb->setFirstInput(parIo1);
-   rtdb->setSecondInput(parIo2);
+//   rtdb->setSecondInput(parIo2);
    rtdb->setOutput(parIo1);
    rtdb->saveOutput();
    // ------------------------------------------------------------------------
