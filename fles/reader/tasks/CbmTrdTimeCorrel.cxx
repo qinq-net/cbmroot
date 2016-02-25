@@ -108,7 +108,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     groupId=raw->GetGroupId();
     chID = raw->GetChannelID();
     spaID = GetSpadicID(sourceA);
-    if(spaID%2) chID+=16; // eqID ?
+    if(chID>-1 && chID <16 && spaID%2) chID+=16; // eqID ?
     padID = GetChannelOnPadPlane(chID);// Remapping from ASIC to pad-plane channel numbers.
 
     Int_t nrSamples=raw->GetNrSamples();
@@ -140,8 +140,12 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     timeBuffer[TString(spadicName)][time].push_back(raw);
 
 	if (isInfo){
-	  if(chID>=-1 && chID<=32)fHM->H2("InfoType_vs_Channel")->Fill(chID,infoType+1);
-	  else fHM->H2("InfoType_vs_Channel")->Fill(33,raw->GetInfoType()+1);
+	  if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,infoType+1);
+	  else fHM->H2("InfoType_vs_Channel")->Fill(33,infoType+1); // chIDs greater than 32 are quite strange and will be put into the last bin
+	}
+	if (isOverflow){   // fill overflow messages in the upper row of the histo
+	  if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,9);
+	  else fHM->H2("InfoType_vs_Channel")->Fill(33,9);
 	}
 
 
