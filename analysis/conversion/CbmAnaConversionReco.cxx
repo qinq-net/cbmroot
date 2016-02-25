@@ -92,6 +92,7 @@ CbmAnaConversionReco::CbmAnaConversionReco()
 	fhEPEM_pi0_nofLeptons_ann(NULL),
 	fhEPEM_pi0_ANNvalues_noCuts(NULL),
 	fhEPEM_pi0_ANNvalues_angleCut(NULL),
+	fhEPEM_pi0_ANNefficiencies(NULL),
 	fhEPEM_rap_vs_chi(NULL),
 	fhEPEM_rap_vs_invmass(NULL),
     fhInvMass_EPEM_mc(NULL),
@@ -293,12 +294,14 @@ void CbmAnaConversionReco::InitHistos()
 	fhEPEM_efficiencyCuts2		= new TH1D("fhEPEM_efficiencyCuts2", "fhEPEM_efficiencyCuts2;;#", 10, 0., 10.);
 	fHistoList_all.push_back(fhEPEM_efficiencyCuts2);
 
-	fhEPEM_pi0_nofLeptons_ann	= new TH1D("fhEPEM_pi0_nofLeptons_ann", "fhEPEM_pi0_nofLeptons_ann;;#", 5, -0.5, 4.5);
-	fHistoList_all.push_back(fhEPEM_pi0_nofLeptons_ann);
-	fhEPEM_pi0_ANNvalues_noCuts	= new TH1D("fhEPEM_pi0_ANNvalues_noCuts", "fhEPEM_pi0_ANNvalues_noCuts;;#", 400, -2, 2);
+	fhEPEM_pi0_nofLeptons_ann		= new TH1D("fhEPEM_pi0_nofLeptons_ann", "fhEPEM_pi0_nofLeptons_ann;;#", 5, -0.5, 4.5);
+	fhEPEM_pi0_ANNvalues_noCuts		= new TH1D("fhEPEM_pi0_ANNvalues_noCuts", "fhEPEM_pi0_ANNvalues_noCuts;;#", 400, -2, 2);
 	fhEPEM_pi0_ANNvalues_angleCut	= new TH1D("fhEPEM_pi0_ANNvalues_angleCut", "fhEPEM_pi0_ANNvalues_angleCut;;#", 400, -2, 2);
+	fhEPEM_pi0_ANNefficiencies		= new TH1D("fhEPEM_pi0_ANNefficiencies", "fhEPEM_pi0_ANNefficiencies;;#", 15, -0.5, 14.5);
 	fHistoList_all.push_back(fhEPEM_pi0_ANNvalues_noCuts);
 	fHistoList_all.push_back(fhEPEM_pi0_ANNvalues_angleCut);
+	fHistoList_all.push_back(fhEPEM_pi0_nofLeptons_ann);
+	fHistoList_all.push_back(fhEPEM_pi0_ANNefficiencies);
 
 	fhEPEM_rap_vs_chi		= new TH2D("fhEPEM_rap_vs_chi", "fhEPEM_rap_vs_chi; rap [GeV]; chi of electrons", 300, 0., 10., 100, 0., 100.);
 	fHistoList_all.push_back(fhEPEM_rap_vs_chi);
@@ -1675,6 +1678,41 @@ void CbmAnaConversionReco::CutEfficiencyStudies(int e1, int e2, int e3, int e4, 
 			fhEPEM_pi0_ANNvalues_angleCut->Fill(ANNvalueE3);
 			fhEPEM_pi0_ANNvalues_angleCut->Fill(ANNvalueE4);
 		
+		}
+		
+		
+		if(ANNvalueE1 > -1 && ANNvalueE2 > -1 && ANNvalueE3 > -1 && ANNvalueE4 > -1) {
+			fhEPEM_pi0_ANNefficiencies->Fill(1);
+		}
+		if(ANNvalueE1 > -0.9 && ANNvalueE2 > -0.9 && ANNvalueE3 > -0.9 && ANNvalueE4 > -0.9) {
+			fhEPEM_pi0_ANNefficiencies->Fill(2);
+		}
+		if(ANNvalueE1 > -0.8 && ANNvalueE2 > -0.8 && ANNvalueE3 > -0.8 && ANNvalueE4 > -0.8) {
+			fhEPEM_pi0_ANNefficiencies->Fill(3);
+		}
+		if(ANNvalueE1 > -0.7 && ANNvalueE2 > -0.7 && ANNvalueE3 > -0.7 && ANNvalueE4 > -0.7) {
+			fhEPEM_pi0_ANNefficiencies->Fill(4);
+		}
+		if(ANNvalueE1 > -0.6 && ANNvalueE2 > -0.6 && ANNvalueE3 > -0.6 && ANNvalueE4 > -0.6) {
+			fhEPEM_pi0_ANNefficiencies->Fill(5);
+		}
+		if(ANNvalueE1 > -0.5 && ANNvalueE2 > -0.5 && ANNvalueE3 > -0.5 && ANNvalueE4 > -0.5) {
+			fhEPEM_pi0_ANNefficiencies->Fill(6);
+		}
+		if(ANNvalueE1 > -0.4 && ANNvalueE2 > -0.4 && ANNvalueE3 > -0.4 && ANNvalueE4 > -0.4) {
+			fhEPEM_pi0_ANNefficiencies->Fill(7);
+		}
+		if(ANNvalueE1 > -0.3 && ANNvalueE2 > -0.3 && ANNvalueE3 > -0.3 && ANNvalueE4 > -0.3) {
+			fhEPEM_pi0_ANNefficiencies->Fill(8);
+		}
+		if(ANNvalueE1 > -0.2 && ANNvalueE2 > -0.2 && ANNvalueE3 > -0.2 && ANNvalueE4 > -0.2) {
+			fhEPEM_pi0_ANNefficiencies->Fill(9);
+		}
+		if(ANNvalueE1 > -0.1 && ANNvalueE2 > -0.1 && ANNvalueE3 > -0.1 && ANNvalueE4 > -0.1) {
+			fhEPEM_pi0_ANNefficiencies->Fill(10);
+		}
+		if(ANNvalueE1 > -0.0 && ANNvalueE2 > -0.0 && ANNvalueE3 > -0.0 && ANNvalueE4 > -0.0) {
+			fhEPEM_pi0_ANNefficiencies->Fill(11);
 		}
 	
 		fhEPEM_efficiencyCuts->Fill(0);		// no further cuts applied

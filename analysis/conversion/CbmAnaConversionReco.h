@@ -148,6 +148,7 @@ private:
 	TH1D * fhEPEM_pi0_nofLeptons_ann;
 	TH1D * fhEPEM_pi0_ANNvalues_noCuts;
 	TH1D * fhEPEM_pi0_ANNvalues_angleCut;
+	TH1D * fhEPEM_pi0_ANNefficiencies;
 
 	TH2D * fhEPEM_rap_vs_chi;
 	TH2D * fhEPEM_rap_vs_invmass;
