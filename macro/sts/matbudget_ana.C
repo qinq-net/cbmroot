@@ -62,10 +62,13 @@ Int_t matbudget_ana(Int_t nEvents=10000000, const char* stsGeo = "v16c")
     hStsRadLen = new TProfile2D(stsname, stsname, nBins,-rMax, rMax, nBins,-rMax, rMax);
 
   for ( int i = 0; i < nStations; ++i ) {
+    TString hisname = "Radiation Thickness [%],";
+    hisname += " Station";
+    hisname += i+1;
     TString name = "Material Budget x/X_{0} [%],";
     name += " Station ";
     name += i+1;
-    hStaRadLen[i] = new TProfile2D(name, name, nBins,-rMax, rMax, nBins,-rMax, rMax);
+    hStaRadLen[i] = new TProfile2D(hisname, name, nBins,-rMax, rMax, nBins,-rMax, rMax);
   }
   
   // Auxiliary variables
