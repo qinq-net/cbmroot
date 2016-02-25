@@ -71,6 +71,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   Int_t nSpadicMessages = fRawSpadic->GetEntriesFast(); //SPADIC messages per TimeSlice
   Int_t nSpadicMessages0(0),nSpadicMessages1(0); //SPADIC messages per TimeSlice for single SPADICS
   Int_t nSpadicMessagesHit0(0), nSpadicMessagesHit1(0), nSpadicMessagesHitAborted0(0), nSpadicMessagesHitAborted1(0), nSpadicMessagesOverflow0(0), nSpadicMessagesOverflow1(0), nSpadicMessagesInfo0(0), nSpadicMessagesInfo1(0), nSpadicMessagesLost0(0), nSpadicMessagesLost1(0), nSpadicMessagesStrange0(0), nSpadicMessagesStrange1(0); //SPADIC message types per TimeSlice for single SPADICS 
+  Int_t lostMessages(0);// this variable should be reset to 0 for every SPADIC message
 
   // Getting message type bools from Spadic raw message
   Bool_t isHit = false;
@@ -82,7 +83,8 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   // Initialise message coordinates to -1 to recognise unset variables
   Int_t eqID(-1), sourceA(-1), triggerType(-1), stopType(-1), infoType(-1), groupId(-1), sysID(-1), spaID(-1);
   // chID in ASIC. Take care, neighboured numbers are not neccessarily neighboured on the connected TRD cathode pad plane. Resorted lateron!
-  Int_t chID = 0;
+  // padID are sorted chIDs in the order as on the pad plane
+  Int_t chID(0),padID(0);
   ULong_t time = 0;
   // Time stamp and epoch are counted in the Spadic
   Int_t timeStamp(0), epoch(0), superEpoch(0);
@@ -91,6 +93,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   // Starting to loop over all Spadic messages in unpacked TimeSlice
   for (Int_t iSpadicMessage=0; iSpadicMessage < nSpadicMessages; ++iSpadicMessage) {
     CbmSpadicRawMessage* raw = static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(iSpadicMessage));
+    lostMessages = 0; // reset lost-counter for a new message
     isHit = raw->GetHit();
     isHitAborted = raw->GetHitAborted();
     isOverflow = raw->GetOverFlow();
@@ -106,10 +109,13 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     chID = raw->GetChannelID();
     spaID = GetSpadicID(sourceA);
     if(spaID%2) chID+=16; // eqID ?
-    chID = GetChannelOnPadPlane(chID);// Remapping from ASIC to pad-plane channel numbers.
+    padID = GetChannelOnPadPlane(chID);// Remapping from ASIC to pad-plane channel numbers.
 
     Int_t nrSamples=raw->GetNrSamples();
 
+    lostMessages = raw->GetBufferOverflowCount();
+    if (!isOverflow && lostMessages!=0) LOG(ERROR) << "SpadicMessage " << iSpadicMessage << " is HIT " << Int_t(isHit) << " / INFO " << (Int_t)isInfo << " / HITaborted " << (Int_t)isHitAborted << " / STRANGE " << (Int_t)isStrange << " but claims to have lost " << lostMessages << " messages" << FairLogger::endl;
+    
     time = raw->GetFullTime();
     timeStamp = raw->GetTime();
     
@@ -119,6 +125,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     stopType = raw->GetStopType();
     TString stopName = GetStopName(stopType);
     infoType=raw->GetInfoType();
+    
     if (infoType > 6) {
       LOG(ERROR) << " InfoType " << infoType << "is larger 6, set to 7!" << FairLogger::endl;
       infoType = 7;
@@ -146,18 +153,17 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       fHM->H2("NrSamples_vs_InfoType")->Fill(raw->GetNrSamples(), raw->GetInfoType());
       fHM->H2("NrSamples_vs_TriggerType")->Fill(raw->GetNrSamples(), raw->GetTriggerType());
       //-------------------
-      Int_t lostMessages(0);// last variable has to be initialiced with 0 since it will be used as add-up-counter
-
+      
       // Count total messages per ASIC and message-types per ASIC.
       if(spadicName == RewriteSpadicName("SysCore0_Spadic0")) {
         nSpadicMessages0++;
         if(isHit) nSpadicMessagesHit0++;
         else if(isHitAborted) nSpadicMessagesHitAborted0++;
-        else if(isOverflow) nSpadicMessagesOverflow0++;
-        else if(isInfo) {
-	       nSpadicMessagesInfo0++;
-	       if (lostMessages > 0) nSpadicMessagesLost0 += lostMessages; //lostMessages might be -1 for hits or epochs, therefore one has to ensure that it is > 0
-        }
+        else if(isOverflow) {
+	  nSpadicMessagesOverflow0++;
+	  if (lostMessages > 0) nSpadicMessagesLost0 += lostMessages; //lostMessages might be -1 for hits or epochs, therefore one has to ensure that it is > 0
+	}
+        else if(isInfo) nSpadicMessagesInfo0++;
         else if(isStrange) nSpadicMessagesStrange0++;
       }
       
@@ -165,11 +171,11 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
         nSpadicMessages1++;
         if(isHit) nSpadicMessagesHit1++;
         else if(isHitAborted) nSpadicMessagesHitAborted1++;
-        else if(isOverflow) nSpadicMessagesOverflow1++;
-        else if(isInfo) {
-	       nSpadicMessagesInfo1++;
-	       if (lostMessages > 0) nSpadicMessagesLost1 += lostMessages; //lostMessages might be -1 for hits or epochs, therefore one has to ensure that it is > 0
-        }
+        else if(isOverflow) {
+	  nSpadicMessagesOverflow1++;
+	  if (lostMessages > 0) nSpadicMessagesLost1 += lostMessages; //lostMessages might be -1 for hits or epochs, therefore one has to ensure that it is > 0
+	}
+        else if(isInfo) nSpadicMessagesInfo1++;
         else if(isStrange) nSpadicMessagesStrange1++;
       }
       // Currently only expecting Spadic0 and Spadic1. Logging others, if appearing.
@@ -212,13 +218,16 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   fHM->G1("TsCounterHitAborted1")->SetPoint(fHM->G1("TsCounterHitAborted1")->GetN(),fNrTimeSlices+1,nSpadicMessagesHitAborted1);
   fHM->G1("TsCounterOverflow0")->SetPoint(fHM->G1("TsCounterOverflow0")->GetN(),fNrTimeSlices+1,nSpadicMessagesOverflow0);
   fHM->G1("TsCounterOverflow1")->SetPoint(fHM->G1("TsCounterOverflow1")->GetN(),fNrTimeSlices+1,nSpadicMessagesOverflow1);
+  if(nSpadicMessagesOverflow0 > 0) fHM->G1("TsLost0")->SetPoint(fHM->G1("TsLost0")->GetN(),fNrTimeSlices+1,(Double_t(nSpadicMessagesLost0)/Double_t(nSpadicMessagesOverflow0)));
+  if(nSpadicMessagesOverflow1 > 0) fHM->G1("TsLost1")->SetPoint(fHM->G1("TsLost1")->GetN(),fNrTimeSlices+1,(Double_t(nSpadicMessagesLost1)/Double_t(nSpadicMessagesOverflow1)));
   fHM->G1("TsCounterInfo0")->SetPoint(fHM->G1("TsCounterInfo0")->GetN(),fNrTimeSlices+1,nSpadicMessagesInfo0);
   fHM->G1("TsCounterInfo1")->SetPoint(fHM->G1("TsCounterInfo1")->GetN(),fNrTimeSlices+1,nSpadicMessagesInfo1);
-  fHM->G1("TsCounterLost0")->SetPoint(fHM->G1("TsCounterLost0")->GetN(),fNrTimeSlices+1,nSpadicMessagesLost0);
-  fHM->G1("TsCounterLost1")->SetPoint(fHM->G1("TsCounterLost1")->GetN(),fNrTimeSlices+1,nSpadicMessagesLost1);
   fHM->G1("TsCounterStrange0")->SetPoint(fHM->G1("TsCounterStrange0")->GetN(),fNrTimeSlices+1,nSpadicMessagesStrange0);
   fHM->G1("TsCounterStrange1")->SetPoint(fHM->G1("TsCounterStrange1")->GetN(),fNrTimeSlices+1,nSpadicMessagesStrange1);
+  if(nSpadicMessages0 > 0) fHM->G1("TsStrangeness0")->SetPoint(fHM->G1("TsStrangeness0")->GetN(),fNrTimeSlices+1,(Double_t(nSpadicMessagesStrange0)/Double_t(nSpadicMessages0)));
+  if(nSpadicMessages1 > 0) fHM->G1("TsStrangeness1")->SetPoint(fHM->G1("TsStrangeness1")->GetN(),fNrTimeSlices+1,(Double_t(nSpadicMessagesStrange1)/Double_t(nSpadicMessages1)));
 
+  
   // Catch empty TimeSlices.
   if(fNrTimeSlices==0){
     if(fHM->G1("TsCounter")->GetN()==0){
@@ -242,61 +251,79 @@ void CbmTrdTimeCorrel::Finish()
   fHM->G1("TsCounterHit0")->SetLineColor(kRed);
   fHM->G1("TsCounterHit0")->GetXaxis()->SetTitle("TS number");
   fHM->G1("TsCounterHit0")->GetYaxis()->SetTitle("SPADIC0 hit messages");
+  /*
   c1->cd(8);
   fHM->G1("TsCounterHitAborted0")->Draw("AL");
   fHM->G1("TsCounterHitAborted0")->SetLineColor(kRed);
   fHM->G1("TsCounterHitAborted0")->GetXaxis()->SetTitle("TS number");
   fHM->G1("TsCounterHitAborted0")->GetYaxis()->SetTitle("SPADIC0 hit aborted messages");
-  c1->cd(9);
+  */
+  c1->cd(8);
   fHM->G1("TsCounterOverflow0")->Draw("AL");
   fHM->G1("TsCounterOverflow0")->SetLineColor(kRed);
   fHM->G1("TsCounterOverflow0")->GetXaxis()->SetTitle("TS number");
   fHM->G1("TsCounterOverflow0")->GetYaxis()->SetTitle("SPADIC0 overflow messages");
+  c1->cd(9);
+  fHM->G1("TsLost0")->Draw("AB");  // as bar chart, since there are free bins -- line would connect them by phantasy
+  fHM->G1("TsLost0")->SetLineColor(kRed);
+  fHM->G1("TsLost0")->SetFillColor(kRed);
+  fHM->G1("TsLost0")->GetXaxis()->SetTitle("TS number");
+  fHM->G1("TsLost0")->GetYaxis()->SetTitle("SPADIC0 lost per overflow");
   c1->cd(10);
   fHM->G1("TsCounterInfo0")->Draw("AL");
   fHM->G1("TsCounterInfo0")->SetLineColor(kRed);
   fHM->G1("TsCounterInfo0")->GetXaxis()->SetTitle("TS number");
   fHM->G1("TsCounterInfo0")->GetYaxis()->SetTitle("SPADIC0 info messages");
   c1->cd(11);
-  fHM->G1("TsCounterLost0")->Draw("AL");
-  fHM->G1("TsCounterLost0")->SetLineColor(kRed);
-  fHM->G1("TsCounterLost0")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounterLost0")->GetYaxis()->SetTitle("SPADIC0 lost messages");
-  c1->cd(12);
   fHM->G1("TsCounterStrange0")->Draw("AL");
   fHM->G1("TsCounterStrange0")->SetLineColor(kRed);
   fHM->G1("TsCounterStrange0")->GetXaxis()->SetTitle("TS number");
   fHM->G1("TsCounterStrange0")->GetYaxis()->SetTitle("SPADIC0 strange messages");
+  c1->cd(12);
+  fHM->G1("TsStrangeness0")->Draw("AB"); // as bar chart
+  fHM->G1("TsStrangeness0")->SetLineColor(kRed);
+  fHM->G1("TsStrangeness0")->SetFillColor(kRed);
+  fHM->G1("TsStrangeness0")->GetXaxis()->SetTitle("TS number");
+  fHM->G1("TsStrangeness0")->GetYaxis()->SetTitle("SPADIC0 strangeness");
   c1->cd(13);
   fHM->G1("TsCounterHit1")->Draw("AL");
   fHM->G1("TsCounterHit1")->SetLineColor(kBlue);
   fHM->G1("TsCounterHit1")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounterHit1")->GetYaxis()->SetTitle("SPADIC0 hit messages");
+  fHM->G1("TsCounterHit1")->GetYaxis()->SetTitle("SPADIC1 hit messages");
+  /*
   c1->cd(14);
   fHM->G1("TsCounterHitAborted1")->Draw("AL");
   fHM->G1("TsCounterHitAborted1")->SetLineColor(kBlue);
   fHM->G1("TsCounterHitAborted1")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounterHitAborted1")->GetYaxis()->SetTitle("SPADIC0 hit aborted messages");
-  c1->cd(15);
+  fHM->G1("TsCounterHitAborted1")->GetYaxis()->SetTitle("SPADIC1 hit aborted messages");
+  */
+  c1->cd(14);
   fHM->G1("TsCounterOverflow1")->Draw("AL");
   fHM->G1("TsCounterOverflow1")->SetLineColor(kBlue);
   fHM->G1("TsCounterOverflow1")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounterOverflow1")->GetYaxis()->SetTitle("SPADIC0 overflow messages");
+  fHM->G1("TsCounterOverflow1")->GetYaxis()->SetTitle("SPADIC1 overflow messages");
+  c1->cd(15);
+  fHM->G1("TsLost1")->Draw("AB"); // as bar chart
+  fHM->G1("TsLost1")->SetLineColor(kBlue);
+  fHM->G1("TsLost1")->SetFillColor(kBlue);
+  fHM->G1("TsLost1")->GetXaxis()->SetTitle("TS number");
+  fHM->G1("TsLost1")->GetYaxis()->SetTitle("SPADIC1 lost per overflow");
   c1->cd(16);
   fHM->G1("TsCounterInfo1")->Draw("AL");
   fHM->G1("TsCounterInfo1")->SetLineColor(kBlue);
   fHM->G1("TsCounterInfo1")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounterInfo1")->GetYaxis()->SetTitle("SPADIC0 info messages");
+  fHM->G1("TsCounterInfo1")->GetYaxis()->SetTitle("SPADIC1 info messages");
   c1->cd(17);
-  fHM->G1("TsCounterLost1")->Draw("AL");
-  fHM->G1("TsCounterLost1")->SetLineColor(kBlue);
-  fHM->G1("TsCounterLost1")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounterLost1")->GetYaxis()->SetTitle("SPADIC0 lost messages");
-  c1->cd(18);
   fHM->G1("TsCounterStrange1")->Draw("AL");
   fHM->G1("TsCounterStrange1")->SetLineColor(kBlue);
   fHM->G1("TsCounterStrange1")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounterStrange1")->GetYaxis()->SetTitle("SPADIC0 strange messages");
+  fHM->G1("TsCounterStrange1")->GetYaxis()->SetTitle("SPADIC1 strange messages");
+  c1->cd(18);
+  fHM->G1("TsStrangeness1")->Draw("AB"); // as bar chart
+  fHM->G1("TsStrangeness1")->SetLineColor(kBlue);
+  fHM->G1("TsStrangeness1")->SetFillColor(kBlue);
+  fHM->G1("TsStrangeness1")->GetXaxis()->SetTitle("TS number");
+  fHM->G1("TsStrangeness1")->GetYaxis()->SetTitle("SPADIC1 strangeness");
   c1->SaveAs("pics/TsCounter.png");
   // use this to produce nice single plots
   /*
@@ -397,13 +424,16 @@ void CbmTrdTimeCorrel::CreateHistograms()
   fHM->Add("TsCounterHitAborted1", new TGraph());
   fHM->Add("TsCounterOverflow0", new TGraph());
   fHM->Add("TsCounterOverflow1", new TGraph());
+  fHM->Add("TsLost0", new TGraph());
+  fHM->Add("TsLost1", new TGraph());
   fHM->Add("TsCounterInfo0", new TGraph());
   fHM->Add("TsCounterInfo1", new TGraph());
-  fHM->Add("TsCounterLost0", new TGraph());
-  fHM->Add("TsCounterLost1", new TGraph());
   fHM->Add("TsCounterStrange0", new TGraph());
   fHM->Add("TsCounterStrange1", new TGraph());
+  fHM->Add("TsStrangeness0", new TGraph()); // ratio of strange messages over all messages
+  fHM->Add("TsStrangeness1", new TGraph());
 
+  
   fHM->Add("TriggerType_vs_InfoType", new TH2I("TriggerType_vs_InfoType","TriggerType_vs_InfoType",5,-1.5,3.5,9,-1.5,7.5));
   fHM->H2("TriggerType_vs_InfoType")->GetYaxis()->SetTitle("InfoType");
   fHM->H2("TriggerType_vs_InfoType")->GetXaxis()->SetTitle("TriggerType");
