@@ -59,6 +59,7 @@ public:
 	CbmLmvmKinematicParams CalculateKinematicParams_4particles(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4);
 
 	Bool_t IsRichElectronANN(Int_t globalTrackIndex, Double_t momentum);
+	Double_t ElectronANNvalue(Int_t globalTrackIndex, Double_t momentum);
 	Bool_t IsRichElectronNormal(Int_t globalTrackIndex, Double_t momentum);
 
 
@@ -145,6 +146,8 @@ private:
 	TH1D * fhEPEM_efficiencyCuts;
 	TH1D * fhEPEM_efficiencyCuts2;
 	TH1D * fhEPEM_pi0_nofLeptons_ann;
+	TH1D * fhEPEM_pi0_ANNvalues_noCuts;
+	TH1D * fhEPEM_pi0_ANNvalues_angleCut;
 
 	TH2D * fhEPEM_rap_vs_chi;
 	TH2D * fhEPEM_rap_vs_invmass;

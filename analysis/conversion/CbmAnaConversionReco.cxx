@@ -90,6 +90,8 @@ CbmAnaConversionReco::CbmAnaConversionReco()
 	fhEPEM_efficiencyCuts(NULL),
 	fhEPEM_efficiencyCuts2(NULL),
 	fhEPEM_pi0_nofLeptons_ann(NULL),
+	fhEPEM_pi0_ANNvalues_noCuts(NULL),
+	fhEPEM_pi0_ANNvalues_angleCut(NULL),
 	fhEPEM_rap_vs_chi(NULL),
 	fhEPEM_rap_vs_invmass(NULL),
     fhInvMass_EPEM_mc(NULL),
@@ -291,8 +293,12 @@ void CbmAnaConversionReco::InitHistos()
 	fhEPEM_efficiencyCuts2		= new TH1D("fhEPEM_efficiencyCuts2", "fhEPEM_efficiencyCuts2;;#", 10, 0., 10.);
 	fHistoList_all.push_back(fhEPEM_efficiencyCuts2);
 
-	fhEPEM_pi0_nofLeptons_ann	= new TH1D("fhEPEM_pi0_nofLeptons_ann", "fhEPEM_pi0_nofLeptons_ann;;#", 10, 0., 10.);
+	fhEPEM_pi0_nofLeptons_ann	= new TH1D("fhEPEM_pi0_nofLeptons_ann", "fhEPEM_pi0_nofLeptons_ann;;#", 5, -0.5, 4.5);
 	fHistoList_all.push_back(fhEPEM_pi0_nofLeptons_ann);
+	fhEPEM_pi0_ANNvalues_noCuts	= new TH1D("fhEPEM_pi0_ANNvalues_noCuts", "fhEPEM_pi0_ANNvalues_noCuts;;#", 400, -2, 2);
+	fhEPEM_pi0_ANNvalues_angleCut	= new TH1D("fhEPEM_pi0_ANNvalues_angleCut", "fhEPEM_pi0_ANNvalues_angleCut;;#", 400, -2, 2);
+	fHistoList_all.push_back(fhEPEM_pi0_ANNvalues_noCuts);
+	fHistoList_all.push_back(fhEPEM_pi0_ANNvalues_angleCut);
 
 	fhEPEM_rap_vs_chi		= new TH2D("fhEPEM_rap_vs_chi", "fhEPEM_rap_vs_chi; rap [GeV]; chi of electrons", 300, 0., 10., 100, 0., 100.);
 	fHistoList_all.push_back(fhEPEM_rap_vs_chi);
@@ -1624,6 +1630,11 @@ void CbmAnaConversionReco::CutEfficiencyStudies(int e1, int e2, int e3, int e4, 
 	Bool_t IsRichElectron3MC = (TMath::Abs(fRecoTracklistEPEM[e3]->GetPdgCode()) == 11);
 	Bool_t IsRichElectron4MC = (TMath::Abs(fRecoTracklistEPEM[e4]->GetPdgCode()) == 11);
 	
+	Double_t ANNvalueE1 = ElectronANNvalue(fRecoTracklistEPEM_gtid[e1], fRecoRefittedMomentum[e1].Mag());
+	Double_t ANNvalueE2 = ElectronANNvalue(fRecoTracklistEPEM_gtid[e2], fRecoRefittedMomentum[e2].Mag());
+	Double_t ANNvalueE3 = ElectronANNvalue(fRecoTracklistEPEM_gtid[e3], fRecoRefittedMomentum[e3].Mag());
+	Double_t ANNvalueE4 = ElectronANNvalue(fRecoTracklistEPEM_gtid[e4], fRecoRefittedMomentum[e4].Mag());
+	
 	CbmLmvmKinematicParams paramsCut1;
 	CbmLmvmKinematicParams paramsCut2;
 	
@@ -1653,6 +1664,18 @@ void CbmAnaConversionReco::CutEfficiencyStudies(int e1, int e2, int e3, int e4, 
 	
 	if(IsEta == 0) {
 		fhEPEM_pi0_nofLeptons_ann->Fill(IsRichElectron1ann + IsRichElectron2ann + IsRichElectron3ann + IsRichElectron4ann);
+		
+		fhEPEM_pi0_ANNvalues_noCuts->Fill(ANNvalueE1);
+		fhEPEM_pi0_ANNvalues_noCuts->Fill(ANNvalueE2);
+		fhEPEM_pi0_ANNvalues_noCuts->Fill(ANNvalueE3);
+		fhEPEM_pi0_ANNvalues_noCuts->Fill(ANNvalueE4);
+		if(OpeningAngleCut1 && OpeningAngleCut2) {
+			fhEPEM_pi0_ANNvalues_angleCut->Fill(ANNvalueE1);
+			fhEPEM_pi0_ANNvalues_angleCut->Fill(ANNvalueE2);
+			fhEPEM_pi0_ANNvalues_angleCut->Fill(ANNvalueE3);
+			fhEPEM_pi0_ANNvalues_angleCut->Fill(ANNvalueE4);
+		
+		}
 	
 		fhEPEM_efficiencyCuts->Fill(0);		// no further cuts applied
 		// first ANN usage for electron identification
@@ -1992,6 +2015,23 @@ Bool_t CbmAnaConversionReco::IsRichElectronANN(Int_t globalTrackIndex, Double_t 
    if (ann > fRichAnnCut) return true;
    else return false;   
 }
+
+
+
+Double_t CbmAnaConversionReco::ElectronANNvalue(Int_t globalTrackIndex, Double_t momentum)
+{
+   if (NULL == fGlobalTracks || NULL == fRichRings) return -2;
+   //CbmGlobalTrack* globalTrack = (CbmGlobalTrack*) fGlobalTracks->At(globalTrackIndex);
+   const CbmGlobalTrack* globalTrack = static_cast<const CbmGlobalTrack*>(fGlobalTracks->At(globalTrackIndex));
+   Int_t richId = globalTrack->GetRichRingIndex();
+   if (richId < 0) return -2;
+   CbmRichRing* ring = static_cast<CbmRichRing*> (fRichRings->At(richId));
+   if (NULL == ring) return -2;
+
+   Double_t ann = fRichElIdAnn->DoSelect(ring, momentum);
+   return ann;
+}
+
 
 
 

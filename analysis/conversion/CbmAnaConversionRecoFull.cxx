@@ -203,7 +203,7 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
 	fhElectrons_openingAngle_sameSign_new(),
 	fhPhotons_stats(),
 	fhPhotons_MCtrue_pdgCodes(),
-	fhPhotons_peakCheck1(NULL),
+	fhPhotons_peakCheck1(),
 	fMixedEventsElectrons_list1(),
 	fMixedEventsElectrons_list2(),
 	fMixedEventsElectrons_list3(),
@@ -586,7 +586,7 @@ void CbmAnaConversionRecoFull::InitHistos()
 		fhPhotons_invmass_MCcut7_new[i] = new TH1D(Form("fhPhotons_invmass_MCcut7_new_%i",i), Form("fhPhotons_invmass_MCcut7_new_%i (MC-true cut: wrong combination of electrons); invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcut7_new[i]);
 		
-		fhPhotons_invmass_MCcutAll_new[i] = new TH2D(Form("fhPhotons_invmass_MCcutAll_new_%i",i), Form("fhPhotons_invmass_MCcutAll_new_%i; case; invmass",i), 15, 0., 15., invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+		fhPhotons_invmass_MCcutAll_new[i] = new TH2D(Form("fhPhotons_invmass_MCcutAll_new_%i",i), Form("fhPhotons_invmass_MCcutAll_new_%i; case; invmass",i), 18, 0., 18., invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcutAll_new[i]);
 		
 		fhPhotons_invmass_MCcutTest_new[i] = new TH1D(Form("fhPhotons_invmass_MCcutTest_new_%i",i), Form("fhPhotons_invmass_MCcutTest_new_%i (MC-true cut: test); invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
@@ -625,14 +625,14 @@ void CbmAnaConversionRecoFull::InitHistos()
 		fhPhotons_stats[i]->GetXaxis()->SetBinLabel(15, "mix_cut6");
 
 
+	fhPhotons_peakCheck1[i] = new TH1D(Form("fhPhotons_peakCheck1_%i",i), Form("fhPhotons_peakCheck1_%i; sum; #",i), 20, -0.5, 19.5);
+	fHistoList_recofull_new[i].push_back(fhPhotons_peakCheck1[i]);
 	}
 
 
 	fhPhotons_MCtrue_pdgCodes = new TH1D(Form("fhPhotons_MCtrue_pdgCodes_%i",4), Form("fhPhotons_MCtrue_pdgCodes_%i; pdg code; #",4), 1000, 0, 1000);
 	fHistoList_recofull_new[4].push_back(fhPhotons_MCtrue_pdgCodes);
 
-	fhPhotons_peakCheck1 = new TH1D(Form("fhPhotons_peakCheck1_%i",4), Form("fhPhotons_peakCheck1_%i; sum; #",4), 20, 0, 20);
-	fHistoList_recofull_new[4].push_back(fhPhotons_peakCheck1);
 
 
 
@@ -838,10 +838,12 @@ void CbmAnaConversionRecoFull::Exec()
 		int stsMcTrackId = 0;
 		CbmMCTrack* mcTrack1;
 		if (stsMatch != NULL) {
-			stsMcTrackId = stsMatch->GetMatchedLink().GetIndex();
-			if (stsMcTrackId >= 0) {
-				mcTrack1 = (CbmMCTrack*) fMcTracks->At(stsMcTrackId);
-				if (mcTrack1 == NULL) stsMcTrackId = 0;
+			if(stsMatch->GetNofLinks() > 0) {
+				stsMcTrackId = stsMatch->GetMatchedLink().GetIndex();
+				if (stsMcTrackId >= 0) {
+					mcTrack1 = (CbmMCTrack*) fMcTracks->At(stsMcTrackId);
+					if (mcTrack1 == NULL) stsMcTrackId = 0;
+				}
 			}
 		}
 
@@ -1033,9 +1035,9 @@ void CbmAnaConversionRecoFull::Exec()
 			}
 			
 			fhMomentumFits_electronRich->Fill(result_chi);
-			TVector3 startvertex;
-			mcTrack2->GetStartVertex(startvertex);
-			fhPhotons_startvertex_vs_chi->Fill(startvertex.Z(), result_chi);
+			//TVector3 startvertex;
+			//mcTrack2->GetStartVertex(startvertex);
+			//fhPhotons_startvertex_vs_chi->Fill(startvertex.Z(), result_chi);
 		}
 
 
@@ -1707,7 +1709,10 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 					}
 					if(motherId11 != motherId12 && motherId21 != motherId22) {
 						fhPhotons_invmass_MCcutAll_new[index]->Fill(11, invmass);
-						fhPhotons_peakCheck1->Fill(sameGrandmothersSum);
+						if(sameGrandmothersSum == 12) fhPhotons_invmass_MCcutAll_new[index]->Fill(13, invmass);
+						if(sameGrandmothersSum == 6) fhPhotons_invmass_MCcutAll_new[index]->Fill(14, invmass);
+						if(sameGrandmothersSum == 4) fhPhotons_invmass_MCcutAll_new[index]->Fill(15, invmass);
+						fhPhotons_peakCheck1[index]->Fill(sameGrandmothersSum);
 						cout << "CbmAnaConversionRecoFull: MC-Crosscheck: " << electron11 << "/" << electron12 << "/" << electron21 << "/" << electron22 << " - " << pdg11 << "/" << pdg12 << "/" << pdg21 << "/" << pdg22 << " - " << motherId11 << "/" << motherId12 << "/" << motherId21 << "/" << motherId22 << " - " << motherpdg11 << "/" << motherpdg12 << "/" << motherpdg21 << "/" << motherpdg22 << endl;
 					}
 					
