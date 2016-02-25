@@ -26,10 +26,10 @@
 export ROOTVER=5
 
 # put your desired variants here:
-export FSOFTDEV=nov15p2
+export FSOFTDEV=nov15p3
 export FROOTDEV=v-15.11a
 
-export FSOFTPRO=jul15p3
+export FSOFTPRO=jul15p4
 export FROOTPRO=v-15.07b 
 
 # former versions
