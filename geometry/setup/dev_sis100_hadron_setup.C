@@ -1,5 +1,8 @@
 //
 //   comments
+//
+
+// 2016-02-25 - DE - use STS v16c as new default
 // 2015-07-20 - FU - magnet v15a is v12b with correct keeping volume material
 // 2015-07-20 - FU - add material budget files
 // 2015-01-29 - DE - use chopped PIPE v14q as default
@@ -22,7 +25,7 @@ void dev_sis100_hadron_setup()
 
   // -----  Tags  -----------------------------------------------------------
   mvdTag       = "v15a";
-  stsTag       = "v13x";
+  stsTag       = "v16c";
   trdTag       = "v15a_1h";
   tofTag       = "v13-5a";
 

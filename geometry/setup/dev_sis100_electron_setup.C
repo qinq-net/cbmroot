@@ -2,11 +2,12 @@
 //   comments
 //
 
+// 2016-02-25 - DE - use STS v16c as new default
 // 2015-07-20 - FU - magnet v15a is v12b with correct keeping volume material
 // 2015-07-20 - FU - add material budget files
 // 2015-01-28 - DE - use STS v13x fitting with with PIPE v14l
 // 2015-01-22 - DE - use MVD v14b with PIPE v14l as default
-// 2015-01-19 - DE - use TRD v15a as new defaut
+// 2015-01-19 - DE - use TRD v15a as new default
 // 2014-07-05 - DE - use PIPE v14x as interim solution
 // 2014-07-01 - DE - use PIPE v14f -> overlap with STS
 // 2014-06-30 - DE - use PIPE v14d together with RICH v14a
@@ -30,7 +31,7 @@ void dev_sis100_electron_setup()
 
   // -----  Tags  -----------------------------------------------------------
   mvdTag       = "v15a";
-  stsTag       = "v13x";
+  stsTag       = "v16c";
   trdTag       = "v15a_1e";
   tofTag       = "v13-5b";
 

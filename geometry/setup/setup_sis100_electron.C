@@ -6,6 +6,7 @@
  **
  **/
 
+// 2016-02-25 - DE - use STS v16c as new default
 // 2016-02-05 - VF - Replaces former sis100_electron_setup.C,
 //                   now using the CbmSetup class.
 // 2016-01-29 - AL - Use RICH v16a_1e as new default
@@ -37,7 +38,7 @@ void setup_sis100_electron()
   TString magnetGeoTag    = "v15a";
   TString pipeGeoTag      = "v14l";
   TString mvdGeoTag       = "v15a";
-  TString stsGeoTag       = "v15c";
+  TString stsGeoTag       = "v16c";
   TString richGeoTag      = "v16a_1e";
   TString trdGeoTag       = "v15a_1e";
   TString tofGeoTag       = "v16a_1e";

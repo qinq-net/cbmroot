@@ -8,9 +8,10 @@
  **
  **/
 
+// 2016-02-25 - DE - use STS v16c as new default
 // 2016-02-05 - VF - Replaces former sis300_electron_setup.C,
 //                   now using the CbmSetup class.
-// 2015-12-11 - DE - use STS v15c as new defaut
+// 2015-12-11 - DE - use STS v15c as new default
 // 2015-07-20 - FU - magnet v15a is v12b with correct keeping volume material
 // 2015-07-20 - FU - add material budget files
 // 2015-03-13 - DE - use STS v13y with correct ladder orientation as new default
@@ -36,7 +37,7 @@ void setup_sis300_electron_flow()
   TString magnetGeoTag    = "v15a";
   TString pipeGeoTag      = "v14c";
   TString mvdGeoTag       = "v15a";
-  TString stsGeoTag       = "v15c";
+  TString stsGeoTag       = "v16c";
   TString richGeoTag      = "v16a_3e";
   TString trdGeoTag       = "v15a_3e";
   TString tofGeoTag       = "v16a_3e";

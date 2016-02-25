@@ -2,6 +2,7 @@
 //   comments
 //
 
+// 2016-02-25 - DE - use STS v16c as new default
 // 2015-07-20 - FU - magnet v15a is v12b with correct keeping volume material
 // 2015-07-20 - FU - add material budget files
 // 2015-01-28 - DE - use STS v13x fitting with with PIPE v14n
@@ -29,7 +30,7 @@ void dev_sis300_electron_setup()
 
   // -----  Tags  -----------------------------------------------------------
   mvdTag       = "v15a";
-  stsTag       = "v13x";
+  stsTag       = "v16c";
   trdTag       = "v15a_3e";
   tofTag       = "v13-5d";
 

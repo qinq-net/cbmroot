@@ -8,12 +8,13 @@
  **
  **/
 
+// 2016-02-25 - DE - use STS v16c as new default
 // 2016-02-05 - VF - Replaces former sis100_muon_lmvm_setup.C,
 //                   now using the CbmSetup class.
 // 2015-12-14 - DE - use TRD v15c starting at z = 490 cm for muon_jpsi setup
 // 2015-12-14 - DE - rename short SIS100 MUCH version to muon_LMVM setup
 // 2015-12-14 - DE - use TOF v16a
-// 2015-12-11 - DE - use STS v15c as new defaut
+// 2015-12-11 - DE - use STS v15c as new default
 // 2015-12-11 - DE - reproduce MUCH v15b setup from macro/much/much_sim.C
 // 2015-07-20 - FU - magnet v15a is v12b with correct keeping volume material
 // 2015-07-20 - FU - add material budget files
@@ -32,7 +33,7 @@ void setup_sis100_muon_lmvm()
   // -----  Geometry Tags  --------------------------------------------------
   TString magnetGeoTag    = "v15b_much";
   TString pipeGeoTag      = "much_v15b_125cm_no";
-  TString stsGeoTag       = "v15c";
+  TString stsGeoTag       = "v16c";
   TString muchGeoTag      = "v15b_STS100-B_125cm_no";
   TString trdGeoTag       = "v15c_1m";
   TString tofGeoTag       = "v16a_1m";
