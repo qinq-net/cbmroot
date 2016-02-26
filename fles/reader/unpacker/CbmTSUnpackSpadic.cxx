@@ -240,23 +240,23 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
 	//++counter;
 	delete[] sample_values;
 
-	LOG(INFO) <<  counter << " This message type is not hit, info, epoch or overflow and will not be stored in the TClonesArray" << FairLogger::endl; 
-	LOG(INFO) << " valide:" << mp->is_valid() << " epoch marker:" << fEpochMarker << " super epoch marker:" << fSuperEpoch << " time:" << time << " link:" << link << " address:" << address << FairLogger::endl;
-	LOG(INFO) << "Channel ID:" << mp->channel_id() << FairLogger::endl;
+	LOG(DEBUG) <<  counter << " This message type is not hit, info, epoch or overflow and will not be stored in the TClonesArray" << FairLogger::endl; 
+	LOG(DEBUG) << " valide:" << mp->is_valid() << " epoch marker:" << fEpochMarker << " super epoch marker:" << fSuperEpoch << " time:" << time << " link:" << link << " address:" << address << FairLogger::endl;
+	LOG(DEBUG) << "Channel ID:" << mp->channel_id() << FairLogger::endl;
 	//if ( mp->is_hit_aborted() )
 	//LOG(INFO) << "hit is aborted" << FairLogger::endl;
 	//if ( mp->is_hit() )
-	LOG(INFO) << "GroupID:" << mp->group_id() << "hit: triggerType:" << static_cast<Int_t>(mp->hit_type()) << " stopType:" << static_cast<Int_t>(mp->stop_type()) << " Nr.of samples:" << mp->samples().size() << FairLogger::endl;
+	LOG(DEBUG) << "GroupID:" << mp->group_id() << "hit: triggerType:" << static_cast<Int_t>(mp->hit_type()) << " stopType:" << static_cast<Int_t>(mp->stop_type()) << " Nr.of samples:" << mp->samples().size() << FairLogger::endl;
 
 	//if ()
 	for (auto x : mp->samples()) {
-	  LOG(INFO) << " " << x;
+	  LOG(DEBUG) << " " << x;
 	}
-	LOG(INFO) << FairLogger::endl;
+	LOG(DEBUG) << FairLogger::endl;
 	//if (mp->is_info())
-	LOG(INFO) << "InfoType:" << static_cast<Int_t>(mp->info_type()) << FairLogger::endl;
+	LOG(DEBUG) << "InfoType:" << static_cast<Int_t>(mp->info_type()) << FairLogger::endl;
 	//if ()
-	LOG(INFO) << "Nr. of overflows:" << static_cast<Int_t>(mp->buffer_overflow_count()) << FairLogger::endl;
+	LOG(DEBUG) << "Nr. of overflows:" << static_cast<Int_t>(mp->buffer_overflow_count()) << FairLogger::endl;
 	//print_message(mp);
       }
     }
