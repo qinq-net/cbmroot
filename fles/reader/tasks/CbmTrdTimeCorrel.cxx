@@ -22,6 +22,7 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
     fHM(new CbmHistManager()),
     fNrTimeSlices(0),
     fRewriteSpadicName(true),
+	fLastMessageTime({{0,0,0},{0,0,0},{0,0,0}}),
     fSpadics(0)
 {
  LOG(DEBUG) << "Default constructor of CbmTrdTimeCorrel" << FairLogger::endl;
@@ -154,6 +155,10 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	  if(chID < 32)fHM->H2("MultiType_vs_Channel")->Fill(padID,10);
 	  else fHM->H2("MultiType_vs_Channel")->Fill(33,10);
 	}
+//Compute Time Deltas, write them into a histogram and store timestamps in fLastMessageTime.
+// WORKAROUND: at Present SyscoreID is not extracted, therefore all Messages are stored as if coming from SysCore 0.
+	fHM->H1("Delta_t")->Fill(time-fLastMessageTime[0][static_cast<Int_t>(spaID/2)]);
+	fLastMessageTime[0][static_cast<Int_t>(spaID/2)]=time;
 
 
     if(spadicName!="") {
@@ -571,7 +576,9 @@ void CbmTrdTimeCorrel::CreateHistograms()
       }
     }
   }
-  
+
+  fHM->Add("Delta_t", new TH1I("Delta_t", "Timestamp differences", 256,-256,65536));
+
   fHM->Add("TsCounter", new TGraph());
   fHM->Add("TsCounterHit0", new TGraph());
   fHM->Add("TsCounterHit1", new TGraph());
@@ -619,9 +626,9 @@ void CbmTrdTimeCorrel::CreateHistograms()
   fHM->H2("MultiType_vs_Channel")->GetXaxis()->SetTitle("Channel");
   fHM->H2("MultiType_vs_Channel")->GetYaxis()->SetTitle("Info or Type");
   for (int i =0;i<8;i++)
-	fHM->H1("MultiType_vs_Channel")->GetYaxis()->SetBinLabel(i+1,infoTypes[i]);
-  fHM->H1("MultiType_vs_Channel")->GetYaxis()->SetBinLabel(9,"Epoch");
-  fHM->H1("MultiType_vs_Channel")->GetYaxis()->SetBinLabel(10,"Overflow");
+	fHM->H2("MultiType_vs_Channel")->GetYaxis()->SetBinLabel(i+1,infoTypes[i]);
+  fHM->H2("MultiType_vs_Channel")->GetYaxis()->SetBinLabel(9,"Epoch");
+  fHM->H2("MultiType_vs_Channel")->GetYaxis()->SetBinLabel(10,"Overflow");
 
 }
 
