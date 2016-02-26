@@ -577,29 +577,19 @@ void CbmRichGeoTest::CreateH2MeanRms(
 void CbmRichGeoTest::DrawH2MeanRms(
                                    TH2* hist,
                                    const string& canvasName)
-{
+{    
     TH1D* mean, *rms;
     CreateH2MeanRms((TH2D*)hist, &mean, &rms);
-    TCanvas *c = CreateCanvas(canvasName.c_str(), canvasName.c_str(), 1200, 1200);
-    c->Divide(2, 2);
+    TCanvas *c = CreateCanvas(canvasName.c_str(), canvasName.c_str(), 1200, 600);
+    c->Divide(2, 1);
     c->cd(1);
     DrawH2(hist);
+    DrawH1(mean, kLinear, kLinear, "same", kBlack, 4.);
     c->cd(2);
     TH1D* py = (TH1D*)hist->ProjectionY( (string(hist->GetName())+ "_py" ).c_str() )->Clone();
+    DrawH1andFitGauss(py);
     py->Scale(1./py->Integral());
     py->GetYaxis()->SetTitle("Yield");
-    DrawH1(py);
-    string txt1 = Cbm::NumberToString<Double_t>(py->GetMean(), 2) + " / "
-    + Cbm::NumberToString<Double_t>(py->GetRMS(), 2);
-    TLatex text;
-    text.SetTextAlign(21);
-    text.SetTextSize(0.05);
-    text.DrawTextNDC(0.5, 0.92, txt1.c_str());
-    gPad->SetLogy(true);
-    c->cd(3);
-    DrawH1(mean);
-    c->cd(4);
-    DrawH1(rms);
 }
 
 void CbmRichGeoTest::DrawHist()
