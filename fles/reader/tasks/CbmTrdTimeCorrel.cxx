@@ -67,6 +67,10 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     }
   }
   
+  TString spadicName = "";
+  TString histName="";
+  TString title="";
+  
   std::map<TString, std::map<ULong_t, std::vector<CbmSpadicRawMessage*> > > timeBuffer;
   LOG(INFO) << "CbmTrdTimeCorrel: Number of current TimeSlice: " << fNrTimeSlices << FairLogger::endl;
   Int_t nSpadicMessages = fRawSpadic->GetEntriesFast(); //SPADIC messages per TimeSlice
@@ -91,6 +95,8 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   // Time stamp and epoch are counted in the Spadic
   Int_t timeStamp(0), epoch(0), superEpoch(0);
   LOG(INFO) << "nSpadicMessages: " << nSpadicMessages << FairLogger::endl;
+
+  Int_t hitCounter[3][6]={{0}};
 
   // Starting to loop over all Spadic messages in unpacked TimeSlice
   for (Int_t iSpadicMessage=0; iSpadicMessage < nSpadicMessages; ++iSpadicMessage) {
@@ -128,6 +134,8 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     stopType = raw->GetStopType();
     TString stopName = GetStopName(stopType);
     infoType=raw->GetInfoType();
+    
+    if(isHit) hitCounter[sysID][spaID]++;
 
     if (raw->GetChannelID()>100) LOG(ERROR) << "SpadicMessage with strange chID: " << iSpadicMessage << " sourceA: " << sourceA << " chID: " << raw->GetChannelID() << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " isInfo: " << isInfo << " isEpoch: " << isEpoch << " Lost Messages: " << lostMessages << FairLogger::endl;
     if (raw->GetChannelID()>32 && !isInfo && !isStrange) LOG(FATAL) << "SpadicMessage: " << iSpadicMessage << " sourceA: " << sourceA << " chID: " << raw->GetChannelID() << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " isInfo: " << isInfo << " isEpoch: " << isEpoch << " Lost Messages: " << lostMessages << FairLogger::endl;
@@ -167,6 +175,10 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       //  DEBUG PLOTS
       //
       
+      if(isHit) {
+        histName = spadicName + "_Time_vs_TimeSlice";
+        fHM->H2(histName.Data())->Fill(fNrTimeSlices,time); //timeStamp(0), epoch(0), superEpoch(0);
+      }
       
       // These are pure debuging histos to ensure that the unpacker is running without errors (C.B)
       fHM->H2("TriggerType_vs_InfoType")->Fill(raw->GetTriggerType(), raw->GetInfoType());
@@ -289,6 +301,8 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     }
   }
   fNrTimeSlices++;
+  
+  
 }
 // ---- Finish  -------------------------------------------------------
 void CbmTrdTimeCorrel::Finish()
@@ -512,6 +526,8 @@ void CbmTrdTimeCorrel::CreateHistograms()
 {    
 
   TString spadicName = "";
+  TString histName="";
+  TString title="";
 
   TString channelName[32] = { "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", 
 			      "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", 
@@ -576,6 +592,18 @@ void CbmTrdTimeCorrel::CreateHistograms()
       }
     }
   }
+
+  for(Int_t syscore = 0; syscore < 3; ++syscore) {
+    for(Int_t spadic = 0; spadic < 3; ++spadic) {
+      spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
+      if(spadicName != "") {
+        histName = spadicName + "_Time_vs_TimeSlice";
+        title = histName + ";TimeSlice;Time";
+        fHM->Add(histName.Data(), new TH2F(histName, title, 1000, 0, 5000, 9000, 0, 90000000000));
+      }
+    }
+  }
+
 
   fHM->Add("Delta_t", new TH1I("Delta_t", "Timestamp differences", 256,-256,65536));
 
