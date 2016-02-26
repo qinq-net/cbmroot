@@ -412,6 +412,96 @@ void CbmTrdTimeCorrel::FinishEvent()
 {
   LOG(DEBUG) << "FinishEvent of CbmTrdTimeCorrel" << FairLogger::endl;
 }
+Int_t CbmTrdTimeCorrel::GetMessageType(CbmSpadicRawMessage* raw)
+{
+  Int_t messageType = -1;
+
+  if (raw->GetEpoch())
+    messageType = 0;
+  else if (raw->GetEpochOutOfSynch())
+    messageType = 1;
+  else if (raw->GetHit())
+    messageType = 2;
+  else if (raw->GetHitAborted())
+    messageType = 3;
+  else if (raw->GetOverFlow())
+    messageType = 5;
+  else if (raw->GetInfo())
+    messageType = 4;
+  else if (raw->GetStrange())
+    messageType = 6;
+
+  return messageType;
+}
+// ----              -------------------------------------------------------
+void CbmTrdTimeCorrel::ReLabelAxis(TAxis* axis, TString type, Bool_t underflow, Bool_t overflow)
+{
+  Int_t startBin(1), stopBin(axis->GetNbins());
+  if (underflow){
+    axis->SetBinLabel(1,"underflow -1");
+    startBin++;
+  }
+  if (overflow){
+    axis->SetBinLabel(axis->GetNbins(),"Type out of array");
+    stopBin--;
+  }
+  TString messageTypes[7] = {"Epoch",
+			     "Epoch out of synch",
+			     "Hit",
+			     "Hit aborted",
+			     "Info",
+			     "Overflow",
+			     "Strange"};
+  TString triggerTypes[4] = { "Global trigger",
+			      "Self triggered",
+			      "Neighbor triggered",
+			      "Self and neighbor triggered"};
+  TString stopTypes[6] = {"Normal end of message", 
+			  "Channel buffer full", 
+			  "Ordering FIFO full", 
+			  "Multi hit", 
+			  "Multi hit and channel buffer full", 
+			  "Multi hit and ordering FIFO full"};
+  TString infoTypes[7] = {"Channel disabled during message building", 
+			  "Next grant timeout", 
+			  "Next request timeout", 
+			  "New grant but channel empty", 
+			  "Corruption in message builder", 
+			  "Empty word", 
+			  "Epoch out of sync"};
+  if (type == "infoType") {
+    if (stopBin - startBin == 7){
+      for (Int_t iBin = startBin; iBin < stopBin; iBin++)
+	axis->SetBinLabel(iBin,infoTypes[iBin-startBin]);
+    } else {
+      LOG(ERROR) << "  axis could not be labeled with " << type << ". Wrong number of bins in histogram." << FairLogger::endl; 
+    }
+  } else if (type == "triggerType") {
+    if (stopBin - startBin == 4){
+      for (Int_t iBin = startBin; iBin < stopBin; iBin++)
+	axis->SetBinLabel(iBin,triggerTypes[iBin-startBin]); 
+    } else {
+      LOG(ERROR) << "  axis could not be labeled with " << type << ". Wrong number of bins in histogram." << FairLogger::endl; 
+    }
+  } else if (type == "stopType") {
+    if (stopBin - startBin == 6){
+      for (Int_t iBin = startBin; iBin < stopBin; iBin++)
+	axis->SetBinLabel(iBin,stopTypes[iBin-startBin]);
+    } else {
+      LOG(ERROR) << "  axis could not be labeled with " << type << ". Wrong number of bins in histogram." << FairLogger::endl; 
+    }
+  } else if (type == "messageType") {
+    if (stopBin - startBin == 7){
+      for (Int_t iBin = startBin; iBin < stopBin; iBin++)
+	axis->SetBinLabel(iBin,messageTypes[iBin-startBin]);
+    } else {
+      LOG(ERROR) << "  axis could not be labeled with " << type << ". Wrong number of bins in histogram." << FairLogger::endl; 
+    }
+  } else {
+    LOG(ERROR) << type << " not known " << FairLogger::endl;
+  }
+
+}
 // ----              -------------------------------------------------------
 void CbmTrdTimeCorrel::CreateHistograms()
 {    

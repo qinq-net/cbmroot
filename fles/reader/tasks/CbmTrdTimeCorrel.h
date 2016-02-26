@@ -6,6 +6,7 @@
 #include "CbmHistManager.h"
 
 #include "TClonesArray.h"
+#include "CbmSpadicRawMessage.h"
 
 class CbmTrdTimeCorrel : public FairTask
 {
@@ -47,6 +48,10 @@ class CbmTrdTimeCorrel : public FairTask
   Int_t fNrTimeSlices;
 
   void CreateHistograms();
+
+  void ReLabelAxis(TAxis* axis, TString type, Bool_t underflow, Bool_t overflow);
+
+  Int_t GetMessageType(CbmSpadicRawMessage* raw);
 
   Int_t GetChannelOnPadPlane(Int_t SpadicChannel);
 
