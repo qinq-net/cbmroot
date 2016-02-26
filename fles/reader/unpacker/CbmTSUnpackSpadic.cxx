@@ -21,6 +21,7 @@ CbmTSUnpackSpadic::CbmTSUnpackSpadic()
   : CbmTSUnpack(),
     fSpadicRaw(new TClonesArray("CbmSpadicRawMessage", 10)),
     fEpochMarkerArray(),
+	fPreviousEpochMarkerArray(),
     fSuperEpochArray(),
     fEpochMarker(0),
     fSuperEpoch(0)
@@ -28,6 +29,7 @@ CbmTSUnpackSpadic::CbmTSUnpackSpadic()
   for (Int_t i=0; i < NrOfSyscores; ++i) { 
     for (Int_t j=0; j < NrOfHalfSpadics; ++j) { 
       fEpochMarkerArray[i][j] = 0;
+	  fPreviousEpochMarkerArray[i][j] =0;
       fSuperEpochArray[i][j] = 0;
     }
   }
@@ -294,8 +296,19 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
       LOG(FATAL) << "Could not find an entry for equipment ID" << 
 	std::hex << link << std::dec << FairLogger::endl;
     } else {
-      if ( epoch_count < fEpochMarkerArray[it->second][addr] ) {
-	fSuperEpochArray[it->second][addr]++;
+/* Check for repeated Epoch Messages, as the repeated Microslices
+are not captured by the CbmTsUnpacker. This is to ensure the 
+linearity of the GetFullTime() method.
+*/
+	  if ( epoch_count < fEpochMarkerArray[it->second][addr] ) {
+		if ( epoch_count != fPreviousEpochMarkerArray[it->second][addr] ){
+		  fSuperEpochArray[it->second][addr]++;
+		} else {
+		  LOG(ERROR)<< "Duplicate EpochMessage at "
+		  << epoch_count << " for Syscore" 
+		  << it->second << "_Spadic"  
+		  << addr << FairLogger::endl;
+		}
 	LOG(DEBUG) << "Overflow of EpochCounter for Syscore" 
 		   << it->second << "_Spadic"  
 		   << addr << FairLogger::endl;
@@ -303,7 +316,12 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
 	LOG(INFO) << "Missed epoch counter for Syscore" 
 		  << it->second << "_Spadic"  
 		  << addr << FairLogger::endl;
-      }
+      } else if (epoch_count == fEpochMarkerArray[it->second][addr]){
+		LOG(ERROR) << "Identical Epoch Counters for Syscore" 
+		   << it->second << "_Spadic"  
+		   << addr << FairLogger::endl;
+	  }
+	  fPreviousEpochMarkerArray[it->second][addr] = fEpochMarkerArray[it->second][addr];
       fEpochMarkerArray[it->second][addr] = epoch_count; 
     }
 

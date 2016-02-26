@@ -42,6 +42,8 @@ class CbmTSUnpackSpadic : public CbmTSUnpack
   TClonesArray* fSpadicRaw;
 
   Int_t fEpochMarkerArray[NrOfSyscores][NrOfHalfSpadics];
+//Array to store the previous Epoch counter
+  Int_t fPreviousEpochMarkerArray[NrOfSyscores][NrOfHalfSpadics];
   Int_t fSuperEpochArray[NrOfSyscores][NrOfHalfSpadics];
 
   Int_t fEpochMarker;
