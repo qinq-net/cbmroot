@@ -39,7 +39,7 @@ class CbmSpadicRawMessage : public CbmRawMessage
   CbmSpadicRawMessage(Int_t EquipmentID, Int_t SourceAddress, Int_t ChannelId,
 		      Int_t EpochMarker, Int_t Time, Int_t SuperEpoch, Int_t TriggerType,
 		      Int_t InfoType, Int_t StopType, Int_t GroupId, Int_t BufferOverflowCounter, 
-		      Int_t NrSamples, Int_t* Samples, Bool_t isHit, Bool_t isInfo, Bool_t isEpoch, Bool_t isHitAborted, Bool_t isOverflow, Bool_t isStrange);
+		      Int_t NrSamples, Int_t* Samples, Bool_t isHit, Bool_t isInfo, Bool_t isEpoch, Bool_t isEpochOutOfSynch, Bool_t isHitAborted, Bool_t isOverflow, Bool_t isStrange);
 	
   /** Destructor  **/
   virtual ~CbmSpadicRawMessage() { };
@@ -62,6 +62,7 @@ class CbmSpadicRawMessage : public CbmRawMessage
   Bool_t GetHit() { return fIsHit; }
   Bool_t GetInfo() { return fIsInfo; }
   Bool_t GetEpoch() { return fIsEpoch; }
+  Bool_t GetEpochOutOfSynch() { return fIsEpochOutOfSynch; }
   Bool_t GetHitAborted() { return fIsHitAborted; }
   Bool_t GetOverFlow() { return fIsOverflow; }
   Bool_t GetStrange() { return fIsStrange; }
@@ -71,6 +72,7 @@ class CbmSpadicRawMessage : public CbmRawMessage
   Bool_t fIsHit;
   Bool_t fIsInfo;
   Bool_t fIsEpoch;
+  Bool_t fIsEpochOutOfSynch;
   Bool_t fIsHitAborted;
   Bool_t fIsOverflow;
   Bool_t fIsStrange;
@@ -84,7 +86,7 @@ class CbmSpadicRawMessage : public CbmRawMessage
   Int_t fNrSamples;
   Int_t fSamples[32];
 
-  ClassDef(CbmSpadicRawMessage,6);
+  ClassDef(CbmSpadicRawMessage,7);
 
 };
 

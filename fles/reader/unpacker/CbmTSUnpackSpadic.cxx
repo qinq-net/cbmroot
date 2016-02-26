@@ -78,18 +78,50 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
 	continue;
 	}
       */
-      Bool_t isInfo(false), isHit(false), isEpoch(false), isOverflow(false), isHitAborted(false), isStrange(false);
+      Bool_t isInfo(false), isHit(false), isEpoch(false), isEpochOutOfSynch(false), isOverflow(false), isHitAborted(false), isStrange(false);
       if ( mp->is_epoch_out_of_sync() ){
-	isEpoch = true;
-	LOG(INFO) <<  counter << " This is an out of sync Epoch Marker" << FairLogger::endl; 
-	LOG(INFO) << "   TimeStamp: " << mp->timestamp()<< FairLogger::endl; 
-	LOG(INFO) << "   Channel:   " << mp->channel_id()<< FairLogger::endl; 
-	LOG(INFO) << "   Group:     " << mp->group_id()<< FairLogger::endl; 
+	isEpochOutOfSynch = true;
+	Int_t triggerType = -1;
+        Int_t infoType = -1;
+        Int_t stopType = -1;
+	Int_t groupId = mp->group_id();
+	Int_t channel = mp->channel_id();
+	Int_t time = -1;
+	Int_t bufferOverflowCounter = 0;
+	Int_t samples = 1;
+	Int_t* sample_values = new Int_t[samples];
+	sample_values[0] = -256;
+	LOG(DEBUG) <<  counter << " This is an out of sync Epoch Marker" << FairLogger::endl; 
+	LOG(DEBUG) << "   TimeStamp: " << mp->timestamp()<< FairLogger::endl; 
+	LOG(DEBUG) << "   Channel:   " << mp->channel_id()<< FairLogger::endl; 
+	LOG(DEBUG) << "   Group:     " << mp->group_id()<< FairLogger::endl; 
+	new( (*fSpadicRaw)[fSpadicRaw->GetEntriesFast()] )
+	  CbmSpadicRawMessage(link, address, channel, fEpochMarker, time, 
+			      fSuperEpoch, triggerType, infoType, stopType, groupId,
+			      bufferOverflowCounter, samples, sample_values,
+			      isHit, isInfo, isEpoch, isEpochOutOfSynch, isHitAborted, isOverflow, isStrange);
+	delete[] sample_values;
       }
       else if ( mp->is_epoch_marker() ) { 
 	LOG(DEBUG) <<  counter << " This is an Epoch Marker" << FairLogger::endl; 
 	isEpoch = true;
         FillEpochInfo(link, addr, mp->epoch_count());
+	Int_t triggerType = -1;
+        Int_t infoType = -1;
+        Int_t stopType = -1;
+	Int_t groupId = mp->group_id();
+	Int_t channel = mp->channel_id();
+	Int_t time = -1;
+	Int_t bufferOverflowCounter = 0;
+	Int_t samples = 1;
+	Int_t* sample_values = new Int_t[samples];
+	sample_values[0] = -256;
+	new( (*fSpadicRaw)[fSpadicRaw->GetEntriesFast()] )
+	  CbmSpadicRawMessage(link, address, channel, fEpochMarker, time, 
+			      fSuperEpoch, triggerType, infoType, stopType, groupId,
+			      bufferOverflowCounter, samples, sample_values,
+			      isHit, isInfo, isEpoch, isEpochOutOfSynch, isHitAborted, isOverflow, isStrange);
+	delete[] sample_values;
       } 
       else if ( mp->is_buffer_overflow() ){
 	LOG(DEBUG) <<  counter << " This is a buffer overflow message" << FairLogger::endl; 
@@ -109,7 +141,7 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
 	  CbmSpadicRawMessage(link, address, channel, fEpochMarker, time, 
 			      fSuperEpoch, triggerType, infoType, stopType, groupId,
 			      bufferOverflowCounter, samples, sample_values,
-			      isHit, isInfo, isEpoch, isHitAborted, isOverflow, isStrange);
+			      isHit, isInfo, isEpoch, isEpochOutOfSynch, isHitAborted, isOverflow, isStrange);
 	delete[] sample_values;
       }
       else if ( mp->is_info() ){
@@ -131,7 +163,7 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
 	  CbmSpadicRawMessage(link, address, channel, fEpochMarker, time, 
 			      fSuperEpoch, triggerType, infoType, stopType, groupId,
 			      bufferOverflowCounter, samples, sample_values,
-			      isHit, isInfo, isEpoch, isHitAborted, isOverflow, isStrange);
+			      isHit, isInfo, isEpoch, isEpochOutOfSynch, isHitAborted, isOverflow, isStrange);
 	delete[] sample_values;
       }
       else if ( mp->is_hit() ) { 
@@ -157,7 +189,7 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
 	  CbmSpadicRawMessage(link, address, channel, fEpochMarker, time, 
 			      fSuperEpoch, triggerType, infoType, stopType, groupId,
 			      bufferOverflowCounter, samples, sample_values,
-			      isHit, isInfo, isEpoch, isHitAborted, isOverflow, isStrange);
+			      isHit, isInfo, isEpoch, isEpochOutOfSynch, isHitAborted, isOverflow, isStrange);
 	//++counter;
 	delete[] sample_values;
       } 
@@ -181,7 +213,7 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
 	  CbmSpadicRawMessage(link, address, channel, fEpochMarker, time, 
 			      fSuperEpoch, triggerType, infoType, stopType, groupId,
 			      bufferOverflowCounter, samples, sample_values,
-			      isHit, isInfo, isEpoch, isHitAborted, isOverflow, isStrange);
+			      isHit, isInfo, isEpoch, isEpochOutOfSynch, isHitAborted, isOverflow, isStrange);
 	//++counter;
 	delete[] sample_values;
 
@@ -204,7 +236,7 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
 	  CbmSpadicRawMessage(link, address, channel, fEpochMarker, time, 
 			      fSuperEpoch, triggerType, infoType, stopType, groupId,
 			      bufferOverflowCounter, samples, sample_values,
-			      isHit, isInfo, isEpoch, isHitAborted, isOverflow, isStrange);
+			      isHit, isInfo, isEpoch, isEpochOutOfSynch, isHitAborted, isOverflow, isStrange);
 	//++counter;
 	delete[] sample_values;
 
