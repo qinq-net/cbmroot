@@ -70,7 +70,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   LOG(INFO) << "CbmTrdTimeCorrel: Number of current TimeSlice: " << fNrTimeSlices << FairLogger::endl;
   Int_t nSpadicMessages = fRawSpadic->GetEntriesFast(); //SPADIC messages per TimeSlice
   Int_t nSpadicMessages0(0),nSpadicMessages1(0); //SPADIC messages per TimeSlice for single SPADICS
-  Int_t nSpadicMessagesHit0(0), nSpadicMessagesHit1(0), nSpadicMessagesHitAborted0(0), nSpadicMessagesHitAborted1(0), nSpadicMessagesOverflow0(0), nSpadicMessagesOverflow1(0), nSpadicMessagesInfo0(0), nSpadicMessagesInfo1(0), nSpadicMessagesLost0(0), nSpadicMessagesLost1(0), nSpadicMessagesStrange0(0), nSpadicMessagesStrange1(0); //SPADIC message types per TimeSlice for single SPADICS 
+  Int_t nSpadicMessagesHit0(0), nSpadicMessagesHit1(0), nSpadicMessagesHitAborted0(0), nSpadicMessagesHitAborted1(0), nSpadicMessagesOverflow0(0), nSpadicMessagesOverflow1(0), nSpadicMessagesInfo0(0), nSpadicMessagesEpoch0(0), nSpadicMessagesEpoch1(0), nSpadicMessagesInfo1(0), nSpadicMessagesLost0(0), nSpadicMessagesLost1(0), nSpadicMessagesStrange0(0), nSpadicMessagesStrange1(0); //SPADIC message types per TimeSlice for single SPADICS 
   Int_t lostMessages(0);// this variable should be reset to 0 for every SPADIC message
 
   // Getting message type bools from Spadic raw message
@@ -78,6 +78,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   Bool_t isHitAborted = false;
   Bool_t isOverflow = false;
   Bool_t isInfo = false;
+  Bool_t isEpoch = false;
   Bool_t isStrange = false;
   
   // Initialise message coordinates to -1 to recognise unset variables
@@ -98,9 +99,10 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     isHitAborted = raw->GetHitAborted();
     isOverflow = raw->GetOverFlow();
     isInfo = raw->GetInfo();
+    isEpoch = raw->GetEpoch();
     isStrange = raw->GetStrange();
     // Seriously guys, a message can only be of one type.
-    if(Int_t(isHit+isInfo+isHitAborted+isOverflow+isStrange)!=1) LOG(ERROR) << "SpadicMessage " << iSpadicMessage << " is classified from CbmSpadicRawMessage to be: HIT " << Int_t(isHit) << " / INFO " << (Int_t)isInfo << " / HITaborted " << (Int_t)isHitAborted << " / OVERFLOW " << (Int_t)isOverflow << " / STRANGE " << (Int_t)isStrange << FairLogger::endl;
+    if(Int_t(isHit+isInfo+isEpoch+isHitAborted+isOverflow+isStrange)!=1) LOG(ERROR) << "SpadicMessage " << iSpadicMessage << " is classified from CbmSpadicRawMessage to be: HIT " << Int_t(isHit) << " / INFO " << (Int_t)isInfo << " / EPOCH " << (Int_t)isEpoch << " / HITaborted " << (Int_t)isHitAborted << " / OVERFLOW " << (Int_t)isOverflow << " / STRANGE " << (Int_t)isStrange << FairLogger::endl;
 
     // Get SysCore & Spadic propertys
     eqID = raw->GetEquipmentID();
@@ -108,13 +110,13 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     groupId=raw->GetGroupId();
     chID = raw->GetChannelID();
     spaID = GetSpadicID(sourceA);
-    if(chID>-1 && chID <16 && spaID%2) chID+=16; // eqID ?
+    if(chID > -1 && chID < 16 && spaID%2) chID+=16; // eqID ?
     padID = GetChannelOnPadPlane(chID);// Remapping from ASIC to pad-plane channel numbers.
 
     Int_t nrSamples=raw->GetNrSamples();
 
     lostMessages = raw->GetBufferOverflowCount();
-    if (!isOverflow && lostMessages!=0) LOG(ERROR) << "SpadicMessage " << iSpadicMessage << " is HIT " << Int_t(isHit) << " / INFO " << (Int_t)isInfo << " / HITaborted " << (Int_t)isHitAborted << " / STRANGE " << (Int_t)isStrange << " but claims to have lost " << lostMessages << " messages" << FairLogger::endl;
+    if (!isOverflow && lostMessages!=0) LOG(ERROR) << "SpadicMessage " << iSpadicMessage << " is HIT " << Int_t(isHit) << " / INFO " << (Int_t)isInfo << " / EPOCH " << (Int_t)isEpoch << " / HITaborted " << (Int_t)isHitAborted << " / STRANGE " << (Int_t)isStrange << " but claims to have lost " << lostMessages << " messages" << FairLogger::endl;
     
     time = raw->GetFullTime();
     timeStamp = raw->GetTime();
@@ -125,8 +127,9 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     stopType = raw->GetStopType();
     TString stopName = GetStopName(stopType);
     infoType=raw->GetInfoType();
-    if (raw->GetChannelID()>100) LOG(ERROR) << "SpadicMessage with strange chID: " << iSpadicMessage << " sourceA: " << sourceA << " chID: " << raw->GetChannelID() << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " is Info: " << isInfo << " Lost Messages: " << lostMessages <<FairLogger::endl;
-    if (raw->GetChannelID()>32 && !isInfo && !isStrange) LOG(FATAL) << "SpadicMessage: " << iSpadicMessage << " sourceA: " << sourceA << " chID: " << raw->GetChannelID() << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " is Info: " << isInfo << " Lost Messages: " << lostMessages <<FairLogger::endl;
+
+    if (raw->GetChannelID()>100) LOG(ERROR) << "SpadicMessage with strange chID: " << iSpadicMessage << " sourceA: " << sourceA << " chID: " << raw->GetChannelID() << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " isInfo: " << isInfo << " isEpoch: " << isEpoch << " Lost Messages: " << lostMessages << FairLogger::endl;
+    if (raw->GetChannelID()>32 && !isInfo && !isStrange) LOG(FATAL) << "SpadicMessage: " << iSpadicMessage << " sourceA: " << sourceA << " chID: " << raw->GetChannelID() << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " isInfo: " << isInfo << " isEpoch: " << isEpoch << " Lost Messages: " << lostMessages << FairLogger::endl;
 
 
     if (infoType > 6) {
@@ -140,12 +143,16 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     timeBuffer[TString(spadicName)][time].push_back(raw);
 
 	if (isInfo){
-	  if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,infoType+1);
-	  else fHM->H2("InfoType_vs_Channel")->Fill(33,infoType+1); // chIDs greater than 32 are quite strange and will be put into the last bin
+	  if(chID < 32)fHM->H2("MultiType_vs_Channel")->Fill(padID,infoType+1);
+	  else fHM->H2("MultiType_vs_Channel")->Fill(33,infoType+1); // chIDs greater than 32 are quite strange and will be put into the last bin
 	}
-	if (isOverflow){   // fill overflow messages in the upper row of the histo
-	  if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,9);
-	  else fHM->H2("InfoType_vs_Channel")->Fill(33,9);
+ 	if (isEpoch){   // fill epoch messages in an additional row
+	  if(chID < 32)fHM->H2("MultiType_vs_Channel")->Fill(padID,9);
+	  else fHM->H2("MultiType_vs_Channel")->Fill(33,9);
+	}
+ 	if (isOverflow){   // fill overflow messages in an additional row
+	  if(chID < 32)fHM->H2("MultiType_vs_Channel")->Fill(padID,10);
+	  else fHM->H2("MultiType_vs_Channel")->Fill(33,10);
 	}
 
 
@@ -175,6 +182,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	  if (lostMessages > 0) nSpadicMessagesLost0 += lostMessages; //lostMessages might be -1 for hits or epochs, therefore one has to ensure that it is > 0
 	}
         else if(isInfo) nSpadicMessagesInfo0++;
+	else if(isEpoch) nSpadicMessagesEpoch0++;
         else if(isStrange) nSpadicMessagesStrange0++;
       }
       
@@ -187,6 +195,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	  if (lostMessages > 0) nSpadicMessagesLost1 += lostMessages; //lostMessages might be -1 for hits or epochs, therefore one has to ensure that it is > 0
 		}
       else if(isInfo) nSpadicMessagesInfo1++;
+      else if(isEpoch) nSpadicMessagesEpoch1++;
       else if(isStrange) nSpadicMessagesStrange1++;
       }
 // Currently only expecting Spadic0 and Spadic1. Logging others, if appearing.
@@ -259,6 +268,8 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   else fHM->G1("TsLost1")->SetPoint(fHM->G1("TsLost1")->GetN(),fNrTimeSlices+1,0);
   fHM->G1("TsCounterInfo0")->SetPoint(fHM->G1("TsCounterInfo0")->GetN(),fNrTimeSlices+1,nSpadicMessagesInfo0);
   fHM->G1("TsCounterInfo1")->SetPoint(fHM->G1("TsCounterInfo1")->GetN(),fNrTimeSlices+1,nSpadicMessagesInfo1);
+  fHM->G1("TsCounterEpoch0")->SetPoint(fHM->G1("TsCounterEpoch0")->GetN(),fNrTimeSlices+1,nSpadicMessagesEpoch0);
+  fHM->G1("TsCounterEpoch1")->SetPoint(fHM->G1("TsCounterEpoch1")->GetN(),fNrTimeSlices+1,nSpadicMessagesEpoch1);
   fHM->G1("TsCounterStrange0")->SetPoint(fHM->G1("TsCounterStrange0")->GetN(),fNrTimeSlices+1,nSpadicMessagesStrange0);
   fHM->G1("TsCounterStrange1")->SetPoint(fHM->G1("TsCounterStrange1")->GetN(),fNrTimeSlices+1,nSpadicMessagesStrange1);
   if(nSpadicMessages0 > 0) fHM->G1("TsStrangeness0")->SetPoint(fHM->G1("TsStrangeness0")->GetN(),fNrTimeSlices+1,(Double_t(nSpadicMessagesStrange0)/Double_t(nSpadicMessages0)));
@@ -278,13 +289,13 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 void CbmTrdTimeCorrel::Finish()
 {
   // Plot message counter histos to screen
-  TCanvas *c1 = new TCanvas("c1","c1",6*320,3*300);
-  c1->Divide(6,3);
+  TCanvas *c1 = new TCanvas("c1","histograms",5*320,3*300);
+  c1->Divide(5,3);
   c1->cd(1);
   fHM->G1("TsCounter")->Draw("AL");
   fHM->G1("TsCounter")->GetXaxis()->SetTitle("TS number");
   fHM->G1("TsCounter")->GetYaxis()->SetTitle("total SPADIC(all) messages");
-  c1->cd(7);
+  c1->cd(6);
   fHM->G1("TsCounterHit0")->Draw("AL");
   fHM->G1("TsCounterHit0")->SetLineColor(kRed);
   fHM->G1("TsCounterHit0")->GetXaxis()->SetTitle("TS number");
@@ -296,34 +307,27 @@ void CbmTrdTimeCorrel::Finish()
   fHM->G1("TsCounterHitAborted0")->GetXaxis()->SetTitle("TS number");
   fHM->G1("TsCounterHitAborted0")->GetYaxis()->SetTitle("SPADIC0 hit aborted messages");
   */
-  c1->cd(8);
+  c1->cd(7);
   fHM->G1("TsCounterOverflow0")->Draw("AL");
   fHM->G1("TsCounterOverflow0")->SetLineColor(kRed);
   fHM->G1("TsCounterOverflow0")->GetXaxis()->SetTitle("TS number");
   fHM->G1("TsCounterOverflow0")->GetYaxis()->SetTitle("SPADIC0 overflow messages");
-  c1->cd(9);
-  fHM->G1("TsLost0")->Draw("AB"); // use bar chart here, since we have a ratio
-  fHM->G1("TsLost0")->SetLineColor(kRed);
-  fHM->G1("TsLost0")->SetFillColor(kRed);
-  fHM->G1("TsLost0")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsLost0")->GetYaxis()->SetTitle("SPADIC0 lost per overflow");
-  c1->cd(10);
+  c1->cd(8);
   fHM->G1("TsCounterInfo0")->Draw("AL");
   fHM->G1("TsCounterInfo0")->SetLineColor(kRed);
   fHM->G1("TsCounterInfo0")->GetXaxis()->SetTitle("TS number");
   fHM->G1("TsCounterInfo0")->GetYaxis()->SetTitle("SPADIC0 info messages");
-  c1->cd(11);
+  c1->cd(9);
+  fHM->G1("TsCounterEpoch0")->Draw("AL");
+  fHM->G1("TsCounterEpoch0")->SetLineColor(kRed);
+  fHM->G1("TsCounterEpoch0")->GetXaxis()->SetTitle("TS number");
+  fHM->G1("TsCounterEpoch0")->GetYaxis()->SetTitle("SPADIC0 epoch messages");
+  c1->cd(10);
   fHM->G1("TsCounterStrange0")->Draw("AL");
   fHM->G1("TsCounterStrange0")->SetLineColor(kRed);
   fHM->G1("TsCounterStrange0")->GetXaxis()->SetTitle("TS number");
   fHM->G1("TsCounterStrange0")->GetYaxis()->SetTitle("SPADIC0 strange messages");
-  c1->cd(12);
-  fHM->G1("TsStrangeness0")->Draw("AB"); // bar chart
-  fHM->G1("TsStrangeness0")->SetLineColor(kRed);
-  fHM->G1("TsStrangeness0")->SetFillColor(kRed);
-  fHM->G1("TsStrangeness0")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsStrangeness0")->GetYaxis()->SetTitle("SPADIC0 strangeness");
-  c1->cd(13);
+  c1->cd(11);
   fHM->G1("TsCounterHit1")->Draw("AL");
   fHM->G1("TsCounterHit1")->SetLineColor(kBlue);
   fHM->G1("TsCounterHit1")->GetXaxis()->SetTitle("TS number");
@@ -335,39 +339,61 @@ void CbmTrdTimeCorrel::Finish()
   fHM->G1("TsCounterHitAborted1")->GetXaxis()->SetTitle("TS number");
   fHM->G1("TsCounterHitAborted1")->GetYaxis()->SetTitle("SPADIC1 hit aborted messages");
   */
-  c1->cd(14);
+  c1->cd(12);
   fHM->G1("TsCounterOverflow1")->Draw("AL");
   fHM->G1("TsCounterOverflow1")->SetLineColor(kBlue);
   fHM->G1("TsCounterOverflow1")->GetXaxis()->SetTitle("TS number");
   fHM->G1("TsCounterOverflow1")->GetYaxis()->SetTitle("SPADIC1 overflow messages");
+  c1->cd(13);
+  fHM->G1("TsCounterInfo1")->Draw("AL");
+  fHM->G1("TsCounterInfo1")->SetLineColor(kBlue);
+  fHM->G1("TsCounterInfo1")->GetXaxis()->SetTitle("TS number");
+  fHM->G1("TsCounterInfo1")->GetYaxis()->SetTitle("SPADIC1 info messages");
+  c1->cd(14);
+  fHM->G1("TsCounterEpoch1")->Draw("AL");
+  fHM->G1("TsCounterEpoch1")->SetLineColor(kBlue);
+  fHM->G1("TsCounterEpoch1")->GetXaxis()->SetTitle("TS number");
+  fHM->G1("TsCounterEpoch1")->GetYaxis()->SetTitle("SPADIC1 epoch messages");
   c1->cd(15);
+  fHM->G1("TsCounterStrange1")->Draw("AL");
+  fHM->G1("TsCounterStrange1")->SetLineColor(kBlue);
+  fHM->G1("TsCounterStrange1")->GetXaxis()->SetTitle("TS number");
+  fHM->G1("TsCounterStrange1")->GetYaxis()->SetTitle("SPADIC1 strange messages");
+  c1->SaveAs("pics/TsCounter.png");
+
+    // Plot message counter ratios to screen
+  TCanvas *c2 = new TCanvas("c2","ratios",3*320,2*300);
+  c2->Divide(3,2);
+  c2->cd(1);
+  fHM->G1("TsLost0")->Draw("AB"); // use bar chart here, since we have a ratio
+  fHM->G1("TsLost0")->SetLineColor(kRed);
+  fHM->G1("TsLost0")->SetFillColor(kRed);
+  fHM->G1("TsLost0")->GetXaxis()->SetTitle("TS number");
+  fHM->G1("TsLost0")->GetYaxis()->SetTitle("SPADIC0 lost per overflow");
+  c2->cd(4);
   fHM->G1("TsLost1")->Draw("AB"); // bar chart
   fHM->G1("TsLost1")->SetLineColor(kBlue);
   fHM->G1("TsLost1")->SetFillColor(kBlue);
   fHM->G1("TsLost1")->GetXaxis()->SetTitle("TS number");
   fHM->G1("TsLost1")->GetYaxis()->SetTitle("SPADIC1 lost per overflow");
-  c1->cd(16);
-  fHM->G1("TsCounterInfo1")->Draw("AL");
-  fHM->G1("TsCounterInfo1")->SetLineColor(kBlue);
-  fHM->G1("TsCounterInfo1")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounterInfo1")->GetYaxis()->SetTitle("SPADIC1 info messages");
-  c1->cd(17);
-  fHM->G1("TsCounterStrange1")->Draw("AL");
-  fHM->G1("TsCounterStrange1")->SetLineColor(kBlue);
-  fHM->G1("TsCounterStrange1")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounterStrange1")->GetYaxis()->SetTitle("SPADIC1 strange messages");
-  c1->cd(18);
+  c2->cd(2);
+  fHM->G1("TsStrangeness0")->Draw("AB"); // bar chart
+  fHM->G1("TsStrangeness0")->SetLineColor(kRed);
+  fHM->G1("TsStrangeness0")->SetFillColor(kRed);
+  fHM->G1("TsStrangeness0")->GetXaxis()->SetTitle("TS number");
+  fHM->G1("TsStrangeness0")->GetYaxis()->SetTitle("SPADIC0 strangeness");
+  c2->cd(5);
   fHM->G1("TsStrangeness1")->Draw("AB"); // bar chart
   fHM->G1("TsStrangeness1")->SetLineColor(kBlue);
   fHM->G1("TsStrangeness1")->SetFillColor(kBlue);
   fHM->G1("TsStrangeness1")->GetXaxis()->SetTitle("TS number");
   fHM->G1("TsStrangeness1")->GetYaxis()->SetTitle("SPADIC1 strangeness");
-
-  c1->SaveAs("pics/TsCounter.png");
+  c2->SaveAs("pics/TsCounterRatio.png");
+  
   // use this to produce nice single plots
   /*
-  TCanvas *c2 = new TCanvas("c2","c2",800,400); 
-  c2->cd();
+  TCanvas *cnice = new TCanvas("cnice","cnice",800,400); 
+  cnice->cd();
   fHM->G1("TsCounterHit1")->Draw("AL");
   fHM->G1("TsCounterHit1")->SetLineColor(kBlack);
   fHM->G1("TsCounterHit1")->GetXaxis()->SetTitle("timeslice");
@@ -467,6 +493,8 @@ void CbmTrdTimeCorrel::CreateHistograms()
   fHM->Add("TsLost1", new TGraph());
   fHM->Add("TsCounterInfo0", new TGraph());
   fHM->Add("TsCounterInfo1", new TGraph());
+  fHM->Add("TsCounterEpoch0", new TGraph());
+  fHM->Add("TsCounterEpoch1", new TGraph());
   fHM->Add("TsCounterStrange0", new TGraph());
   fHM->Add("TsCounterStrange1", new TGraph());
   fHM->Add("TsStrangeness0", new TGraph()); // ratio of strange messages over all messages
@@ -497,12 +525,13 @@ void CbmTrdTimeCorrel::CreateHistograms()
   fHM->H2("NrSamples_vs_InfoType")->GetXaxis()->SetTitle("Nr. of Samples per Message");
   fHM->H2("NrSamples_vs_InfoType")->GetYaxis()->SetTitle("InfoType");
 
-  fHM->Add("InfoType_vs_Channel", new TH2I("InfoType_vs_Channel","InfoType_vs_Channel",35,-1.5,33.5,9,0.5,9.5));
-  fHM->H2("InfoType_vs_Channel")->GetXaxis()->SetTitle("Channel");
-  fHM->H2("InfoType_vs_Channel")->GetYaxis()->SetTitle("InfoType");
+  fHM->Add("MultiType_vs_Channel", new TH2I("MultiType_vs_Channel","MultiType_vs_Channel",35,-1.5,33.5,10,0.5,10.5));
+  fHM->H2("MultiType_vs_Channel")->GetXaxis()->SetTitle("Channel");
+  fHM->H2("MultiType_vs_Channel")->GetYaxis()->SetTitle("Info or Type");
   for (int i =0;i<8;i++)
-	fHM->H1("InfoType_vs_Channel")->GetYaxis()->SetBinLabel(i+1,infoTypes[i]);
-  fHM->H1("InfoType_vs_Channel")->GetYaxis()->SetBinLabel(9,"Overflow");
+	fHM->H1("MultiType_vs_Channel")->GetYaxis()->SetBinLabel(i+1,infoTypes[i]);
+  fHM->H1("MultiType_vs_Channel")->GetYaxis()->SetBinLabel(9,"Epoch");
+  fHM->H1("MultiType_vs_Channel")->GetYaxis()->SetBinLabel(10,"Overflow");
 
 }
 
