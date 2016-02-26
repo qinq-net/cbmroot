@@ -22,7 +22,7 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
     fHM(new CbmHistManager()),
     fNrTimeSlices(0),
     fRewriteSpadicName(true),
-	fLastMessageTime({{0,0,0},{0,0,0},{0,0,0}}),
+    fLastMessageTime {{0,0,0},{0,0,0},{0,0,0}},
     fSpadics(0)
 {
  LOG(DEBUG) << "Default constructor of CbmTrdTimeCorrel" << FairLogger::endl;
