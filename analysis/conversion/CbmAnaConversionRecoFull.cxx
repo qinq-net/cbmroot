@@ -628,12 +628,13 @@ void CbmAnaConversionRecoFull::InitHistos()
 		fhPhotons_stats[i]->GetXaxis()->SetBinLabel(15, "mix_cut6");
 
 
-	fhPhotons_peakCheck1[i] = new TH1D(Form("fhPhotons_peakCheck1_%i",i), Form("fhPhotons_peakCheck1_%i; sum; #",i), 20, -0.5, 19.5);
-	fhPhotons_peakCheck2[i] = new TH1D(Form("fhPhotons_peakCheck2_%i",i), Form("fhPhotons_peakCheck2_%i; sum; #",i), 20, -0.5, 19.5);
-	fHistoList_recofull_new[i].push_back(fhPhotons_peakCheck1[i]);
-	fHistoList_recofull_new[i].push_back(fhPhotons_peakCheck2[i]);
+		fhPhotons_peakCheck1[i] = new TH1D(Form("fhPhotons_peakCheck1_%i",i), Form("fhPhotons_peakCheck1_%i; sum; #",i), 20, -0.5, 19.5);
+		fhPhotons_peakCheck2[i] = new TH1D(Form("fhPhotons_peakCheck2_%i",i), Form("fhPhotons_peakCheck2_%i; sum; #",i), 20, -0.5, 19.5);
+		fHistoList_recofull_new[i].push_back(fhPhotons_peakCheck1[i]);
+		fHistoList_recofull_new[i].push_back(fhPhotons_peakCheck2[i]);
 	
-	fhPhotons_invmass_ANNcuts_new[i] = new TH2D(Form("fhPhotons_invmass_ANNcuts_new_%i",i), Form("fhPhotons_invmass_ANNcuts_new_%i;ann;invariant mass of 4 e^{#pm} in GeV/c^{2}",i), 10, 0, 10, invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+		fhPhotons_invmass_ANNcuts_new[i] = new TH2D(Form("fhPhotons_invmass_ANNcuts_new_%i",i), Form("fhPhotons_invmass_ANNcuts_new_%i;ann;invariant mass of 4 e^{#pm} in GeV/c^{2}",i), 10, 0, 10, invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_ANNcuts_new[i]);
 	}
 
 
@@ -794,6 +795,7 @@ void CbmAnaConversionRecoFull::Exec()
 		fMixedTest4_photons.clear();
 		fMixedTest4_mctracks.clear();
 		fMixedTest4_eventno.clear();
+		fMixedTest4_isRichElectronAnn0.clear();
 	}
 
 	
@@ -2619,17 +2621,17 @@ void CbmAnaConversionRecoFull::MixedEventTest3()
 						if(angleCheck12 && angleCheck34) {
 							CbmAnaConversionKinematicParams params = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(e1, e2, e3, e4);
 							fhMixedEventsTest3_invmass->Fill(params.fMinv);
-							cout << "CbmAnaConversionRecoFull: MixedEventTest3(), event filled!, part" << endl;
+							//cout << "CbmAnaConversionRecoFull: MixedEventTest3(), event filled!, part" << endl;
 						}
 						if(angleCheck13 && angleCheck24) {
 							CbmAnaConversionKinematicParams params = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(e1, e2, e3, e4);
 							fhMixedEventsTest3_invmass->Fill(params.fMinv);
-							cout << "CbmAnaConversionRecoFull: MixedEventTest3(), event filled!, part" << endl;
+							//cout << "CbmAnaConversionRecoFull: MixedEventTest3(), event filled!, part" << endl;
 						}
 						if(angleCheck14 && angleCheck23) {
 							CbmAnaConversionKinematicParams params = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(e1, e2, e3, e4);
 							fhMixedEventsTest3_invmass->Fill(params.fMinv);
-							cout << "CbmAnaConversionRecoFull: MixedEventTest3(), event filled!, part" << endl;
+							//cout << "CbmAnaConversionRecoFull: MixedEventTest3(), event filled!, part" << endl;
 						}
 				
 				}
