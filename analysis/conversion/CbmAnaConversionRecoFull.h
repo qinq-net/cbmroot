@@ -274,6 +274,7 @@ private:
 	TH1D * fhPhotons_MCtrue_pdgCodes;
 	TH1D * fhPhotons_peakCheck1[5];
 	TH1D * fhPhotons_peakCheck2[5];
+	TH2D * fhPhotons_invmass_ANNcuts_new[5];
 
 
 

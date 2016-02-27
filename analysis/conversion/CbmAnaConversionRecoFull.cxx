@@ -31,6 +31,7 @@
 #include "CbmLitGlobalElectronId.h"
 #include "CbmAnaConversionKinematicParams.h"
 #include "CbmAnaConversionCutSettings.h"
+#include "CbmAnaConversionGlobalFunctions.h"
 
 
 #define M2E 2.6112004954086e-7
@@ -205,6 +206,7 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
 	fhPhotons_MCtrue_pdgCodes(),
 	fhPhotons_peakCheck1(),
 	fhPhotons_peakCheck2(),
+	fhPhotons_invmass_ANNcuts_new(),
 	fMixedEventsElectrons_list1(),
 	fMixedEventsElectrons_list2(),
 	fMixedEventsElectrons_list3(),
@@ -274,7 +276,7 @@ void CbmAnaConversionRecoFull::Init()
 	InitHistos();
 	electronidentifier = new CbmLitGlobalElectronId();
 	electronidentifier->Init();
-	electronidentifier->SetRichAnnCut(-0.5);
+	electronidentifier->SetRichAnnCut(-1.0);
 	
 	electronidentifier_ann0 = new CbmLitGlobalElectronId();
 	electronidentifier_ann0->Init();
@@ -630,6 +632,8 @@ void CbmAnaConversionRecoFull::InitHistos()
 	fhPhotons_peakCheck2[i] = new TH1D(Form("fhPhotons_peakCheck2_%i",i), Form("fhPhotons_peakCheck2_%i; sum; #",i), 20, -0.5, 19.5);
 	fHistoList_recofull_new[i].push_back(fhPhotons_peakCheck1[i]);
 	fHistoList_recofull_new[i].push_back(fhPhotons_peakCheck2[i]);
+	
+	fhPhotons_invmass_ANNcuts_new[i] = new TH2D(Form("fhPhotons_invmass_ANNcuts_new_%i",i), Form("fhPhotons_invmass_ANNcuts_new_%i;ann;invariant mass of 4 e^{#pm} in GeV/c^{2}",i), 10, 0, 10, invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	}
 
 
@@ -1476,9 +1480,21 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 				Bool_t IsRichElectron_ann0_e21 = electronidentifier_ann0->IsRichElectron(fElectrons_globaltrackID_new[index][electron21], momenta[electron21].Mag() );
 				Bool_t IsRichElectron_ann0_e22 = electronidentifier_ann0->IsRichElectron(fElectrons_globaltrackID_new[index][electron22], momenta[electron22].Mag() );
 				
+				Double_t ANNe11 = CbmAnaConversionGlobalFunctions::ElectronANNvalue(fElectrons_globaltrackID_new[index][electron11], momenta[electron11].Mag() );
+				Double_t ANNe12 = CbmAnaConversionGlobalFunctions::ElectronANNvalue(fElectrons_globaltrackID_new[index][electron12], momenta[electron12].Mag() );
+				Double_t ANNe21 = CbmAnaConversionGlobalFunctions::ElectronANNvalue(fElectrons_globaltrackID_new[index][electron21], momenta[electron21].Mag() );
+				Double_t ANNe22 = CbmAnaConversionGlobalFunctions::ElectronANNvalue(fElectrons_globaltrackID_new[index][electron22], momenta[electron22].Mag() );
+				
 				if(IsRichElectron_ann0_e11 && IsRichElectron_ann0_e12 && IsRichElectron_ann0_e21 && IsRichElectron_ann0_e22) {
 					fhPhotons_invmass_ann0_new[index]->Fill(invmass);
 				}
+				if(ANNe11 > -1 && ANNe12 > -1 && ANNe21 > -1 && ANNe22 > -1) fhPhotons_invmass_ANNcuts_new[index]->Fill(1, invmass);
+				if(ANNe11 > -0.9 && ANNe12 > -0.9 && ANNe21 > -0.9 && ANNe22 > -0.9) fhPhotons_invmass_ANNcuts_new[index]->Fill(2, invmass);
+				if(ANNe11 > -0.8 && ANNe12 > -0.8 && ANNe21 > -0.8 && ANNe22 > -0.8) fhPhotons_invmass_ANNcuts_new[index]->Fill(3, invmass);
+				if(ANNe11 > -0.7 && ANNe12 > -0.7 && ANNe21 > -0.7 && ANNe22 > -0.7) fhPhotons_invmass_ANNcuts_new[index]->Fill(4, invmass);
+				if(ANNe11 > -0.6 && ANNe12 > -0.6 && ANNe21 > -0.6 && ANNe22 > -0.6) fhPhotons_invmass_ANNcuts_new[index]->Fill(5, invmass);
+				if(ANNe11 > -0.5 && ANNe12 > -0.5 && ANNe21 > -0.5 && ANNe22 > -0.5) fhPhotons_invmass_ANNcuts_new[index]->Fill(6, invmass);
+				if(ANNe11 > -0.0 && ANNe12 > -0.0 && ANNe21 > -0.0 && ANNe22 > -0.0) fhPhotons_invmass_ANNcuts_new[index]->Fill(7, invmass);
 				
 				cout << "CbmAnaConversionRecoFull: debug: (" << invmass << "/" << paramsTest.fMinv << ") - (" << pt << "/" << paramsTest.fPt << ") - (" << rap << "/" << paramsTest.fRapidity << ")" << endl;
 				
@@ -1743,9 +1759,12 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 							if(grandmotherId11 != grandmotherId12) {
 								fhPhotons_invmass_MCcutAll_new[index]->Fill(18, invmass);
 							}
+							if( (motherId11 == motherId21 || motherId11 == motherId22) && (motherId12 == motherId21 || motherId11 == motherId22) ) {
+								fhPhotons_invmass_MCcutAll_new[index]->Fill(19, invmass);
+							}
 						}
-						if(sameGrandmothersSum == 2) fhPhotons_invmass_MCcutAll_new[index]->Fill(19, invmass);
-						if(sameGrandmothersSum == 0) fhPhotons_invmass_MCcutAll_new[index]->Fill(20, invmass);
+						if(sameGrandmothersSum == 2) fhPhotons_invmass_MCcutAll_new[index]->Fill(20, invmass);
+						if(sameGrandmothersSum == 0) fhPhotons_invmass_MCcutAll_new[index]->Fill(21, invmass);
 						fhPhotons_peakCheck1[index]->Fill(sameGrandmothersSum);
 						fhPhotons_peakCheck2[index]->Fill(sameMothersSum);
 						
