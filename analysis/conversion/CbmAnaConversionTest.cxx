@@ -62,6 +62,8 @@ CbmAnaConversionTest::CbmAnaConversionTest()
 	fhTest_invmass_RICHindex3(NULL),
 	fhTest_invmass_RICHindex4(NULL),
 	fhTest_invmass_MCcutAll(NULL),
+	fhTest_peakCheck1(NULL),
+	fhTest_peakCheck2(NULL),
 	fVector_AllMomenta(),
 	fVector_gt(),
 	fVector_momenta(),
@@ -180,8 +182,12 @@ void CbmAnaConversionTest::InitHistos()
 	fhTest_invmass_RICHindex4 = new TH1D("fhTest_invmass_RICHindex4", "fhTest_invmass_RICHindex4; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_test.push_back(fhTest_invmass_RICHindex4);
 
-	fhTest_invmass_MCcutAll = new TH2D("fhTest_invmass_MCcutAll", "fhTest_invmass_MCcutAll; case; invariant mass", 15, 0, 15, invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhTest_invmass_MCcutAll	= new TH2D("fhTest_invmass_MCcutAll", "fhTest_invmass_MCcutAll; case; invariant mass", 25, 0, 25, invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhTest_peakCheck1		= new TH1D("fhTest_peakCheck1", "fhTest_peakCheck1; sum; #", 15, -0.5, 14.5);
+	fhTest_peakCheck2		= new TH1D("fhTest_peakCheck2", "fhTest_peakCheck2; sum; #", 15, -0.5, 14.5);
 	fHistoList_test.push_back(fhTest_invmass_MCcutAll);
+	fHistoList_test.push_back(fhTest_peakCheck1);
+	fHistoList_test.push_back(fhTest_peakCheck2);
 	
 
 
@@ -753,6 +759,43 @@ void CbmAnaConversionTest::CombinePhotons()
 				if(mothermctrack12 != NULL) grandmotherId12 = mothermctrack12->GetMotherId();
 				if(mothermctrack21 != NULL) grandmotherId21 = mothermctrack21->GetMotherId();
 				if(mothermctrack22 != NULL) grandmotherId22 = mothermctrack22->GetMotherId();
+					
+					
+					Int_t sameGrandmothers1 = 0;
+					Int_t sameGrandmothers2 = 0;
+					Int_t sameGrandmothers3 = 0;
+					Int_t sameGrandmothers4 = 0;
+					if(grandmotherId11 == grandmotherId12) sameGrandmothers1++;
+					if(grandmotherId11 == grandmotherId21) sameGrandmothers1++;
+					if(grandmotherId11 == grandmotherId22) sameGrandmothers1++;
+					if(grandmotherId12 == grandmotherId11) sameGrandmothers2++;
+					if(grandmotherId12 == grandmotherId21) sameGrandmothers2++;
+					if(grandmotherId12 == grandmotherId22) sameGrandmothers2++;
+					if(grandmotherId21 == grandmotherId11) sameGrandmothers3++;
+					if(grandmotherId21 == grandmotherId12) sameGrandmothers3++;
+					if(grandmotherId21 == grandmotherId22) sameGrandmothers3++;
+					if(grandmotherId22 == grandmotherId11) sameGrandmothers4++;
+					if(grandmotherId22 == grandmotherId12) sameGrandmothers4++;
+					if(grandmotherId22 == grandmotherId21) sameGrandmothers4++;
+					Int_t sameGrandmothersSum = sameGrandmothers1 + sameGrandmothers2 + sameGrandmothers3 + sameGrandmothers4;
+					
+					Int_t sameMothers1 = 0;
+					Int_t sameMothers2 = 0;
+					Int_t sameMothers3 = 0;
+					Int_t sameMothers4 = 0;
+					if(motherId11 == motherId12) sameMothers1++;
+					if(motherId11 == motherId21) sameMothers1++;
+					if(motherId11 == motherId22) sameMothers1++;
+					if(motherId12 == motherId11) sameMothers2++;
+					if(motherId12 == motherId21) sameMothers2++;
+					if(motherId12 == motherId22) sameMothers2++;
+					if(motherId21 == motherId11) sameMothers3++;
+					if(motherId21 == motherId12) sameMothers3++;
+					if(motherId21 == motherId22) sameMothers3++;
+					if(motherId22 == motherId11) sameMothers4++;
+					if(motherId22 == motherId12) sameMothers4++;
+					if(motherId22 == motherId21) sameMothers4++;
+					Int_t sameMothersSum = sameMothers1 + sameMothers2 + sameMothers3 + sameMothers4;
 				
 				
 				
@@ -792,6 +835,24 @@ void CbmAnaConversionTest::CombinePhotons()
 				}
 				if(motherId11 != motherId12 && motherId21 != motherId22) {
 					fhTest_invmass_MCcutAll->Fill(11, invmass);
+					if(sameGrandmothersSum == 12) fhTest_invmass_MCcutAll->Fill(13, invmass);
+					if(sameGrandmothersSum == 6) fhTest_invmass_MCcutAll->Fill(14, invmass);
+					if(sameGrandmothersSum == 4) {
+						fhTest_invmass_MCcutAll->Fill(15, invmass);
+						if(grandmotherId11 < 0 || grandmotherId12 < 0 || grandmotherId21 < 0 || grandmotherId22 < 0) {
+							fhTest_invmass_MCcutAll->Fill(16, invmass);
+						}
+						if(grandmotherId11 == grandmotherId12) {
+							fhTest_invmass_MCcutAll->Fill(17, invmass);
+						}
+						if(grandmotherId11 != grandmotherId12) {
+							fhTest_invmass_MCcutAll->Fill(18, invmass);
+						}
+					}
+					if(sameGrandmothersSum == 2) fhTest_invmass_MCcutAll->Fill(19, invmass);
+					if(sameGrandmothersSum == 0) fhTest_invmass_MCcutAll->Fill(20, invmass);
+					fhTest_peakCheck1->Fill(sameGrandmothersSum);
+					fhTest_peakCheck2->Fill(sameMothersSum);
 				}
 			}
 		}

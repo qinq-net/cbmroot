@@ -107,6 +107,8 @@ private:
 	TH1D * fhTest_invmass_RICHindex4;
 
 	TH2D * fhTest_invmass_MCcutAll;
+	TH1D * fhTest_peakCheck1;
+	TH1D * fhTest_peakCheck2;
 
 	// array with all refitted momenta
 	vector<TVector3>	fVector_AllMomenta;
