@@ -58,6 +58,7 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
     fhElectrons(NULL),
     electronidentifier(NULL),
     electronidentifier_ann0(NULL),
+    fRichElIdAnn(NULL),
     fhMomentumFits(NULL),
 	fhMomentumFits_electronRich(NULL),
 	fhMomentumFits_pi0reco(NULL),
@@ -224,6 +225,7 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
 	fMixedTest4_photons(),
 	fMixedTest4_mctracks(),
 	fMixedTest4_isRichElectronAnn0(),
+	fMixedTest4_ElectronAnns(),
 	fMixedTest4_eventno(),
 	fhMixedEventsTest4_invmass(NULL),
 	fhMixedEventsTest4_invmass_ann0(NULL),
@@ -232,6 +234,7 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
 	fhMixedEventsTest4_invmass_ptBin2(NULL),
 	fhMixedEventsTest4_invmass_ptBin3(NULL),
 	fhMixedEventsTest4_invmass_ptBin4(NULL),
+	fhMixedEventsTest4_invmass_ANNcuts(NULL),
 	timer(),
 	fTime(0.)
 {
@@ -280,6 +283,9 @@ void CbmAnaConversionRecoFull::Init()
 	
 	electronidentifier_ann0 = new CbmLitGlobalElectronId();
 	electronidentifier_ann0->Init();
+	
+	fRichElIdAnn = new CbmRichElectronIdAnn();
+	fRichElIdAnn->Init();
 
 	globalEventNo = 0;
 }
@@ -667,6 +673,9 @@ void CbmAnaConversionRecoFull::InitHistos()
 	fHistoList_recofull_new[4].push_back(fhMixedEventsTest4_invmass_ptBin3);
 	fhMixedEventsTest4_invmass_ptBin4 = new TH1D(Form("fhMixedEventsTest4_invmass_%i_ptBin4",4), Form("fhMixedEventsTest4_invmass_%i_ptBin4; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",4), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull_new[4].push_back(fhMixedEventsTest4_invmass_ptBin4);
+	
+	fhMixedEventsTest4_invmass_ANNcuts = new TH2D(Form("fhMixedEventsTest4_invmass_ANNcuts_%i",4), Form("fhMixedEventsTest4_invmass_ANNcuts_%i;; invariant mass of 4 e^{#pm} in GeV/c^{2}",4), 10, 0, 10, invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fHistoList_recofull_new[4].push_back(fhMixedEventsTest4_invmass_ANNcuts);
 }
 
 
@@ -796,6 +805,7 @@ void CbmAnaConversionRecoFull::Exec()
 		fMixedTest4_mctracks.clear();
 		fMixedTest4_eventno.clear();
 		fMixedTest4_isRichElectronAnn0.clear();
+		fMixedTest4_ElectronAnns.clear();
 	}
 
 	
@@ -1242,6 +1252,11 @@ void CbmAnaConversionRecoFull::CombineElectrons(vector<CbmGlobalTrack*> gtrack, 
 						IsRichElectronAnn0.push_back(electronidentifier_ann0->IsRichElectron(fElectrons_globaltrackID_new[index][a], momenta[a].Mag() ));
 						IsRichElectronAnn0.push_back(electronidentifier_ann0->IsRichElectron(fElectrons_globaltrackID_new[index][b], momenta[b].Mag() ));
 						fMixedTest4_isRichElectronAnn0.push_back(IsRichElectronAnn0);
+						
+						vector<Double_t> electronANNs;
+						electronANNs.push_back(ElectronANNvalue(fElectrons_globaltrackID_new[index][a], momenta[a].Mag() ));
+						electronANNs.push_back(ElectronANNvalue(fElectrons_globaltrackID_new[index][b], momenta[b].Mag() ));
+						fMixedTest4_ElectronAnns.push_back(electronANNs);
 					}
 				}
 			}
@@ -1253,7 +1268,7 @@ void CbmAnaConversionRecoFull::CombineElectrons(vector<CbmGlobalTrack*> gtrack, 
 	//if(index == 4) fhPhotons_nofPerEvent_4->Fill(nofPhotons);
 	fhPhotons_nofPerEvent_new[index]->Fill(nofPhotons);
 	//fhPhotons_nofPerEvent->Fill(nofPhotons);
-	cout << "CbmAnaConversionRecoFull: CombineElectrons: Crosscheck - nof reconstructed photons: " << nofPhotons << endl;
+	cout << "CbmAnaConversionRecoFull: CombineElectrons: " << index << ": Crosscheck - nof reconstructed photons: " << nofPhotons << endl;
 }
 
 
@@ -2703,6 +2718,37 @@ void CbmAnaConversionRecoFull::MixedEventTest4()
 			if(IsRichElectron_ann0_e11 && IsRichElectron_ann0_e12 && IsRichElectron_ann0_e21 && IsRichElectron_ann0_e22) {
 				fhMixedEventsTest4_invmass_ann0->Fill(params.fMinv);
 			}
+			
+			
+			Double_t ANNe11 = fMixedTest4_ElectronAnns[a][0];
+			Double_t ANNe12 = fMixedTest4_ElectronAnns[a][1];
+			Double_t ANNe21 = fMixedTest4_ElectronAnns[b][0];
+			Double_t ANNe22 = fMixedTest4_ElectronAnns[b][1];
+			
+			if(ANNe11 > -1 && ANNe12 > -1 && ANNe21 > -1 && ANNe22 > -1) fhMixedEventsTest4_invmass_ANNcuts->Fill(1, params.fMinv);
+			if(ANNe11 > -0.9 && ANNe12 > -0.9 && ANNe21 > -0.9 && ANNe22 > -0.9) fhMixedEventsTest4_invmass_ANNcuts->Fill(2, params.fMinv);
+			if(ANNe11 > -0.8 && ANNe12 > -0.8 && ANNe21 > -0.8 && ANNe22 > -0.8) fhMixedEventsTest4_invmass_ANNcuts->Fill(3, params.fMinv);
+			if(ANNe11 > -0.7 && ANNe12 > -0.7 && ANNe21 > -0.7 && ANNe22 > -0.7) fhMixedEventsTest4_invmass_ANNcuts->Fill(4, params.fMinv);
+			if(ANNe11 > -0.6 && ANNe12 > -0.6 && ANNe21 > -0.6 && ANNe22 > -0.6) fhMixedEventsTest4_invmass_ANNcuts->Fill(5, params.fMinv);
+			if(ANNe11 > -0.5 && ANNe12 > -0.5 && ANNe21 > -0.5 && ANNe22 > -0.5) fhMixedEventsTest4_invmass_ANNcuts->Fill(6, params.fMinv);
+			if(ANNe11 > -0.0 && ANNe12 > -0.0 && ANNe21 > -0.0 && ANNe22 > -0.0) fhMixedEventsTest4_invmass_ANNcuts->Fill(7, params.fMinv);
 		}
 	}
 }
+
+
+Double_t CbmAnaConversionRecoFull::ElectronANNvalue(Int_t globalTrackIndex, Double_t momentum)
+{
+   if (NULL == fGlobalTracks || NULL == fRichRings) return -2;
+   //CbmGlobalTrack* globalTrack = (CbmGlobalTrack*) fGlobalTracks->At(globalTrackIndex);
+   const CbmGlobalTrack* globalTrack = static_cast<const CbmGlobalTrack*>(fGlobalTracks->At(globalTrackIndex));
+   Int_t richId = globalTrack->GetRichRingIndex();
+   if (richId < 0) return -2;
+   CbmRichRing* ring = static_cast<CbmRichRing*> (fRichRings->At(richId));
+   if (NULL == ring) return -2;
+
+   Double_t ann = fRichElIdAnn->DoSelect(ring, momentum);
+   return ann;
+}
+
+

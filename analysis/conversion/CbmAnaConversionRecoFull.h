@@ -68,6 +68,8 @@ public:
 	void MixedEventTest3();
 	void MixedEventTest4();
 
+	Double_t ElectronANNvalue(Int_t globalTrackIndex, Double_t momentum);
+
 private:
 	TClonesArray* fRichPoints;
 	TClonesArray* fRichRings;
@@ -90,6 +92,7 @@ private:
 
 	CbmLitGlobalElectronId* electronidentifier;
 	CbmLitGlobalElectronId* electronidentifier_ann0;
+	CbmRichElectronIdAnn* fRichElIdAnn;
 	
 	TH1D * fhMomentumFits;
 	TH1D * fhMomentumFits_electronRich;
@@ -306,6 +309,7 @@ private:
 	vector< vector<TVector3> >	fMixedTest4_photons;
 	vector< vector<CbmMCTrack*> >	fMixedTest4_mctracks;
 	vector< vector<Bool_t> >	fMixedTest4_isRichElectronAnn0;
+	vector< vector<Double_t> >	fMixedTest4_ElectronAnns;
 	vector<int>					fMixedTest4_eventno;
 	TH1D *						fhMixedEventsTest4_invmass;
 	TH1D *						fhMixedEventsTest4_invmass_ann0;
@@ -314,6 +318,7 @@ private:
 	TH1D *						fhMixedEventsTest4_invmass_ptBin2;
 	TH1D *						fhMixedEventsTest4_invmass_ptBin3;
 	TH1D *						fhMixedEventsTest4_invmass_ptBin4;
+	TH2D *						fhMixedEventsTest4_invmass_ANNcuts;
 
 	// timer
 	TStopwatch timer;
