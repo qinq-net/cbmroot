@@ -1044,7 +1044,7 @@ void CbmAnaConversion::Exec(Option_t*)
 		
 
 		if(stsMcTrackId == richMcTrackId) {
-			CbmRichRing* ring = static_cast<CbmRichRing*> (fRichRings->At(richInd));
+			//CbmRichRing* ring = static_cast<CbmRichRing*> (fRichRings->At(richInd));
 			if (NULL != ring) {
 				Double_t ann = fRichElIdAnn->DoSelect(ring, refittedMomentum_electron.Mag() );
 				if(TMath::Abs(pdg) == 11) {
