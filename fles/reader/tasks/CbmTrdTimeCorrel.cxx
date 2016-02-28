@@ -21,6 +21,7 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
     fRawSpadic(NULL),
     fHM(new CbmHistManager()),
     fNrTimeSlices(0),
+    fRun(NULL),
     fRewriteSpadicName(true),
     fLastMessageTime {{0,0,0},{0,0,0},{0,0,0}},
     fSpadics(0)
@@ -307,8 +308,12 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 // ---- Finish  -------------------------------------------------------
 void CbmTrdTimeCorrel::Finish()
 {
+
+  TString runName="";
+  if(fRun!=NULL) runName=Form(" (Run %d)",fRun);
+
   // Plot message counter histos to screen
-  TCanvas *c1 = new TCanvas("c1","histograms",5*320,3*300);
+  TCanvas *c1 = new TCanvas("c1","histograms"+runName,5*320,3*300);
   c1->Divide(5,3);
   c1->cd(1);
   fHM->G1("TsCounter")->Draw("AL");
@@ -381,7 +386,7 @@ void CbmTrdTimeCorrel::Finish()
   c1->SaveAs("pics/TsCounter.png");
 
     // Plot message counter ratios to screen
-  TCanvas *c2 = new TCanvas("c2","ratios",3*320,2*300);
+  TCanvas *c2 = new TCanvas("c2","ratios"+runName,3*320,2*300);
   c2->Divide(3,2);
   c2->cd(1);
   fHM->G1("TsLost0")->Draw("AB"); // use bar chart here, since we have a ratio
@@ -488,6 +493,7 @@ void CbmTrdTimeCorrel::ReLabelAxis(TAxis* axis, TString type, Bool_t underflow, 
 			  "Corruption in message builder", 
 			  "Empty word", 
 			  "Epoch out of sync"};
+			  
   if (type == "infoType") {
     if (stopBin - startBin == 7){
       for (Int_t iBin = startBin; iBin < stopBin; iBin++)
@@ -524,8 +530,10 @@ void CbmTrdTimeCorrel::ReLabelAxis(TAxis* axis, TString type, Bool_t underflow, 
 // ----              -------------------------------------------------------
 void CbmTrdTimeCorrel::CreateHistograms()
 {    
-
+  
   TString spadicName = "";
+  TString runName="";
+  if(fRun!=NULL) runName=Form(" (Run %d)",fRun);
   TString histName="";
   TString title="";
 
@@ -598,7 +606,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
       spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
       if(spadicName != "") {
         histName = spadicName + "_Time_vs_TimeSlice";
-        title = histName + ";TimeSlice;Time";
+        title = histName + runName + ";TimeSlice;Time";
         fHM->Add(histName.Data(), new TH2F(histName, title, 1000, 0, 5000, 9000, 0, 90000000000));
       }
     }
