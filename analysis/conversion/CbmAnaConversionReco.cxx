@@ -297,11 +297,24 @@ void CbmAnaConversionReco::InitHistos()
 	fhEPEM_pi0_nofLeptons_ann		= new TH1D("fhEPEM_pi0_nofLeptons_ann", "fhEPEM_pi0_nofLeptons_ann;;#", 5, -0.5, 4.5);
 	fhEPEM_pi0_ANNvalues_noCuts		= new TH1D("fhEPEM_pi0_ANNvalues_noCuts", "fhEPEM_pi0_ANNvalues_noCuts;;#", 400, -2, 2);
 	fhEPEM_pi0_ANNvalues_angleCut	= new TH1D("fhEPEM_pi0_ANNvalues_angleCut", "fhEPEM_pi0_ANNvalues_angleCut;;#", 400, -2, 2);
-	fhEPEM_pi0_ANNefficiencies		= new TH1D("fhEPEM_pi0_ANNefficiencies", "fhEPEM_pi0_ANNefficiencies;;#", 15, -0.5, 14.5);
+	fhEPEM_pi0_ANNefficiencies		= new TH1D("fhEPEM_pi0_ANNefficiencies", "fhEPEM_pi0_ANNefficiencies;;#", 15, 0, 15);
 	fHistoList_all.push_back(fhEPEM_pi0_ANNvalues_noCuts);
 	fHistoList_all.push_back(fhEPEM_pi0_ANNvalues_angleCut);
 	fHistoList_all.push_back(fhEPEM_pi0_nofLeptons_ann);
 	fHistoList_all.push_back(fhEPEM_pi0_ANNefficiencies);
+	
+	fhEPEM_pi0_ANNefficiencies->GetXaxis()->SetBinLabel(1, "no cuts");
+	fhEPEM_pi0_ANNefficiencies->GetXaxis()->SetBinLabel(2, "-1.0");
+	fhEPEM_pi0_ANNefficiencies->GetXaxis()->SetBinLabel(3, "-0.9");
+	fhEPEM_pi0_ANNefficiencies->GetXaxis()->SetBinLabel(4, "-0.8");
+	fhEPEM_pi0_ANNefficiencies->GetXaxis()->SetBinLabel(5, "-0.7");
+	fhEPEM_pi0_ANNefficiencies->GetXaxis()->SetBinLabel(6, "-0.6");
+	fhEPEM_pi0_ANNefficiencies->GetXaxis()->SetBinLabel(7, "-0.5");
+	fhEPEM_pi0_ANNefficiencies->GetXaxis()->SetBinLabel(8, "-0.4");
+	fhEPEM_pi0_ANNefficiencies->GetXaxis()->SetBinLabel(9, "-0.3");
+	fhEPEM_pi0_ANNefficiencies->GetXaxis()->SetBinLabel(10, "-0.2");
+	fhEPEM_pi0_ANNefficiencies->GetXaxis()->SetBinLabel(11, "-0.1");
+	fhEPEM_pi0_ANNefficiencies->GetXaxis()->SetBinLabel(12, "0.0");
 
 	fhEPEM_rap_vs_chi		= new TH2D("fhEPEM_rap_vs_chi", "fhEPEM_rap_vs_chi; rap [GeV]; chi of electrons", 300, 0., 10., 100, 0., 100.);
 	fHistoList_all.push_back(fhEPEM_rap_vs_chi);
@@ -1682,7 +1695,7 @@ void CbmAnaConversionReco::CutEfficiencyStudies(int e1, int e2, int e3, int e4, 
 		
 		}
 		
-		
+		fhEPEM_pi0_ANNefficiencies->Fill(0);
 		if(ANNvalueE1 > -1 && ANNvalueE2 > -1 && ANNvalueE3 > -1 && ANNvalueE4 > -1) {
 			fhEPEM_pi0_ANNefficiencies->Fill(1);
 		}
@@ -2050,7 +2063,7 @@ Bool_t CbmAnaConversionReco::IsRichElectronANN(Int_t globalTrackIndex, Double_t 
    CbmRichRing* ring = static_cast<CbmRichRing*> (fRichRings->At(richId));
    if (NULL == ring) return false;
 
-   Double_t fRichAnnCut = -0.5;
+   Double_t fRichAnnCut = -0.8;
    Double_t ann = fRichElIdAnn->DoSelect(ring, momentum);
    if (ann > fRichAnnCut) return true;
    else return false;   
