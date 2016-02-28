@@ -27,7 +27,8 @@ class CbmTrdTimeCorrel : public FairTask
 
   virtual void FinishEvent();
 
-	void SetRewriteSpadicName(Bool_t rewrite)  { fRewriteSpadicName = rewrite; }
+  void SetRun(Int_t run)               { fRun = run;}
+  void SetRewriteSpadicName(Bool_t rewrite)  { fRewriteSpadicName = rewrite; }
 
  private:
 
@@ -46,6 +47,8 @@ class CbmTrdTimeCorrel : public FairTask
   CbmHistManager* fHM;
 
   Int_t fNrTimeSlices;
+  
+  Int_t fRun;
 
   Int_t fLastMessageTime[3][3];
 /* Store the last message time.
