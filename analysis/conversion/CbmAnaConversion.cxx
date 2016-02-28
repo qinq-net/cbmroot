@@ -130,8 +130,10 @@ CbmAnaConversion::CbmAnaConversion()
     fGlobalTracks(NULL),
     fRichElIdAnn(),
     fhANN_output_electrons(NULL),
+    fhANN_output_electrons2(NULL),
     fhANN_output_electrons_chiCut(NULL),
     fhANN_output_else(NULL),
+    fhANN_output_else2(NULL),
     fhANN_output_else_chiCut(NULL),
     fEventNum(0),
     test(0),
@@ -462,12 +464,16 @@ void CbmAnaConversion::InitHistograms()
 
 
 	fhANN_output_electrons			= new TH1D("fhANN_output_electrons","fhANN_output_electrons;ann output", 400, -2, 2.); 
+	fhANN_output_electrons2			= new TH1D("fhANN_output_electrons2","fhANN_output_electrons2;ann output", 400, -2, 2.); 
 	fhANN_output_electrons_chiCut	= new TH1D("fhANN_output_electrons_chiCut","fhANN_output_electrons_chiCut;ann output", 400, -2, 2.); 
 	fhANN_output_else				= new TH1D("fhANN_output_else","fhANN_output_else;ann output", 400, -2, 2.); 
+	fhANN_output_else2				= new TH1D("fhANN_output_else2","fhANN_output_else2;ann output", 400, -2, 2.); 
 	fhANN_output_else_chiCut		= new TH1D("fhANN_output_else_chiCut","fhANN_output_else_chiCut;ann output", 400, -2, 2.); 
 	fHistoList.push_back(fhANN_output_electrons);
+	fHistoList.push_back(fhANN_output_electrons2);
 	fHistoList.push_back(fhANN_output_electrons_chiCut);
 	fHistoList.push_back(fhANN_output_else);
+	fHistoList.push_back(fhANN_output_else2);
 	fHistoList.push_back(fhANN_output_else_chiCut);
 	
 	
@@ -1036,6 +1042,21 @@ void CbmAnaConversion::Exec(Option_t*)
 
 		//if(stsMcTrackId != richMcTrackId) continue;
 		
+
+		if(stsMcTrackId == richMcTrackId) {
+			CbmRichRing* ring = static_cast<CbmRichRing*> (fRichRings->At(richInd));
+			if (NULL != ring) {
+				Double_t ann = fRichElIdAnn->DoSelect(ring, refittedMomentum_electron.Mag() );
+				if(TMath::Abs(pdg) == 11) {
+					fhANN_output_electrons2->Fill(ann);
+				}
+				if(TMath::Abs(pdg) != 11) {
+					fhANN_output_else2->Fill(ann);
+				}
+			}
+		}
+
+
 
 		//int pdg = TMath::Abs(mcTrack1->GetPdgCode());
 		//int motherId = mcTrack1->GetMotherId();

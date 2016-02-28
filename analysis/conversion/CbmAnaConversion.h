@@ -195,8 +195,10 @@ private:
    
 	CbmRichElectronIdAnn* fRichElIdAnn;
 	TH1D * fhANN_output_electrons;
+	TH1D * fhANN_output_electrons2;
 	TH1D * fhANN_output_electrons_chiCut;
 	TH1D * fhANN_output_else;
+	TH1D * fhANN_output_else2;
 	TH1D * fhANN_output_else_chiCut;
 
    Int_t fEventNum;

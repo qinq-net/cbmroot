@@ -1228,8 +1228,10 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 					// HERE DECAY pi0 -> gamma gamma -> e+e- e+e-
 					if(grandmotherId1 == grandmotherId2 && grandmotherId1 == grandmotherId3 && grandmotherId1 == grandmotherId4) {
 				//		if(mcGrandmotherPdg1 != 111 && mcGrandmotherPdg1 != 221) continue; // 111 = pi0, 221 = eta
-				
-						if(mcGrandmotherPdg1 == 221) {
+						
+						
+						
+						if(pi0start_i.Z() <= 1 && pi0start_j.Z() <= 1 && pi0start_k.Z() <= 1 && pi0start_l.Z() <= 1 && mcGrandmotherPdg1 == 221) {
 							Double_t invmass_eta_mc		= Invmass_4particles(fRecoTracklistEPEM[i], fRecoTracklistEPEM[j], fRecoTracklistEPEM[k], fRecoTracklistEPEM[l]);
 							Double_t invmass_eta_reco	= Invmass_4particlesRECO(fRecoRefittedMomentum[i], fRecoRefittedMomentum[j], fRecoRefittedMomentum[k], fRecoRefittedMomentum[l]);
 							
