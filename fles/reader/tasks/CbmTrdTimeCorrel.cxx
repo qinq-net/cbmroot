@@ -179,11 +179,11 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	}
 //Compute Time Deltas, write them into a histogram and store timestamps in fLastMessageTime.
 // WORKAROUND: at Present SyscoreID is not extracted, therefore all Messages are stored as if coming from SysCore 0.
-	fHM->H1("Delta_t")->Fill(time-fLastMessageTime[0][spaID]);
+	fHM->H1("Delta_t")->Fill(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID]));
 //Write delta_t into a TGraph
 	if(spaID!=-1){
 	  Int_t tGraphSize = fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID))->GetN();
-	  fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID))->SetPoint(tGraphSize,time,(time-fLastMessageTime[0][spaID]));
+	  fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID))->SetPoint(tGraphSize,time,(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID])));
 	}
 	fLastMessageTime[0][spaID]=time;
 
@@ -645,7 +645,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
   }
 
 
-  fHM->Add("Delta_t", new TH1I("Delta_t", "Timestamp differences", 256,-256,65536));
+  fHM->Add("Delta_t", new TH1I("Delta_t", "Timestamp differences", 4096,-700000000,700000000));
 
   fHM->Add("TsCounter", new TGraph());
   fHM->Add("TsCounterHit0", new TGraph());
