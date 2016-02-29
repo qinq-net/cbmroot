@@ -151,32 +151,34 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     /*TString*/ spadicName = GetSpadicName(eqID,sourceA);
 
     // add raw message to map sorted by timestamps, syscore and spadic
-    timeBuffer[TString(spadicName)][time].push_back(raw);
-    if (fMessageBuffer[TString(spadicName)][time].find(padID) == fMessageBuffer[TString(spadicName)][time].end()){
-    fMessageBuffer[TString(spadicName)][time][padID] = raw;
-    } else {  
-      LOG(INFO) << "Found Message already in fMessageBuffer. Potential overlapping MS container!" << FairLogger::endl;
-      raw->PrintMessage();
-      LOG(INFO) << "<---------------------------------->" << FairLogger::endl;
-      fMessageBuffer[TString(spadicName)][time][padID]->PrintMessage();
-      LOG(INFO) << ">----------------------------------<" << FairLogger::endl;
+    if (!isStrange) {
+      timeBuffer[TString(spadicName)][time].push_back(raw);
+      if (fMessageBuffer[TString(spadicName)][time].find(padID) == fMessageBuffer[TString(spadicName)][time].end()){
+	fMessageBuffer[TString(spadicName)][time][padID] = raw;
+      } else {  
+	LOG(INFO) << "Found Message already in fMessageBuffer. Potential overlapping MS container!" << FairLogger::endl;
+	raw->PrintMessage();
+	LOG(INFO) << "<---------------------------------->" << FairLogger::endl;
+	fMessageBuffer[TString(spadicName)][time][padID]->PrintMessage();
+	LOG(INFO) << ">----------------------------------<" << FairLogger::endl;
+      }
     }
-	if (isInfo){
-	  if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,infoType+1);
-	  else fHM->H2("InfoType_vs_Channel")->Fill(33,infoType+1); // chIDs greater than 32 are quite strange and will be put into the last bin
-	}
- 	if (isEpoch){   // fill epoch messages in an additional row
-	  if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,9);
-	  else fHM->H2("InfoType_vs_Channel")->Fill(33,9);
-	}
- 	if (isOverflow){   // fill overflow messages in an additional row
-	  if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,10);
-	  else fHM->H2("InfoType_vs_Channel")->Fill(33,10);
-	}
-//Compute Time Deltas, write them into a histogram and store timestamps in fLastMessageTime.
-// WORKAROUND: at Present SyscoreID is not extracted, therefore all Messages are stored as if coming from SysCore 0.
-	fHM->H1("Delta_t")->Fill(time-fLastMessageTime[0][static_cast<Int_t>(spaID)]);
-	fLastMessageTime[0][static_cast<Int_t>(spaID)]=time;
+    if (isInfo){
+      if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,infoType+1);
+      else fHM->H2("InfoType_vs_Channel")->Fill(33,infoType+1); // chIDs greater than 32 are quite strange and will be put into the last bin
+    }
+    if (isEpoch){   // fill epoch messages in an additional row
+      if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,9);
+      else fHM->H2("InfoType_vs_Channel")->Fill(33,9);
+    }
+    if (isOverflow){   // fill overflow messages in an additional row
+      if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,10);
+      else fHM->H2("InfoType_vs_Channel")->Fill(33,10);
+    }
+    //Compute Time Deltas, write them into a histogram and store timestamps in fLastMessageTime.
+    // WORKAROUND: at Present SyscoreID is not extracted, therefore all Messages are stored as if coming from SysCore 0.
+    fHM->H1("Delta_t")->Fill(time-fLastMessageTime[0][static_cast<Int_t>(spaID)]);
+    fLastMessageTime[0][static_cast<Int_t>(spaID)]=time;
 
 
     if(spadicName!="") {
@@ -220,35 +222,35 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
         else if(isOverflow) {
 	  nSpadicMessagesOverflow1++;
 	  if (lostMessages > 0) nSpadicMessagesLost1 += lostMessages; //lostMessages might be -1 for hits or epochs, therefore one has to ensure that it is > 0
-		}
-      else if(isInfo) nSpadicMessagesInfo1++;
-      else if(isEpoch) nSpadicMessagesEpoch1++;
-      else if(isStrange) nSpadicMessagesStrange1++;
+	}
+	else if(isInfo) nSpadicMessagesInfo1++;
+	else if(isEpoch) nSpadicMessagesEpoch1++;
+	else if(isStrange) nSpadicMessagesStrange1++;
       }
-// Currently only expecting Spadic0 and Spadic1. Logging others, if appearing.
+      // Currently only expecting Spadic0 and Spadic1. Logging others, if appearing.
       else {
         LOG(INFO) << "SapdicMessage " << iSpadicMessage << " claims to be from " << spadicName << " with spadicID " << spaID << FairLogger::endl;
       }
 
-/*Extended Message Debugging:
--Check for deformed Messages
--Check for empty Messages claiming to be normally stopped
+      /*Extended Message Debugging:
+	-Check for deformed Messages
+	-Check for empty Messages claiming to be normally stopped
 	->search for BufferOverflows
-*/
-	if(false){
-	  if(stopType == 0 && (chID <-1 || chID >32)) LOG(FATAL) << "SpadicMessage: " << iSpadicMessage << " sourceA: " << sourceA << " chID: " << chID << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " is Info: " << isInfo << FairLogger::endl;
-	  if(stopType == 0 && raw->GetNrSamples()==0 && iSpadicMessage < nSpadicMessages){
-		for ( Int_t i=iSpadicMessage;i<nSpadicMessages;i++){
-		  if ((static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(i)))->GetOverFlow()==true && GetSpadicID((static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(i)))->GetSourceAddress())==spaID){ 
-			lostMessages = (static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(i)))->GetBufferOverflowCount();
-		    break;
-		  }
-		  //LOG(INFO) << i << "Info not found " << FairLogger::endl;
-		}
-		LOG(INFO) << "SpadicMessages: " << nSpadicMessages << " Lost Messages " <<FairLogger::endl;
-	    LOG(ERROR) << "SpadicMessage: " << iSpadicMessage << " sourceA: " << sourceA << " chID: " << raw->GetChannelID() << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " is Info: " << isInfo << " Lost Messages: " << lostMessages <<FairLogger::endl;
+      */
+      if(false){
+	if(stopType == 0 && (chID <-1 || chID >32)) LOG(FATAL) << "SpadicMessage: " << iSpadicMessage << " sourceA: " << sourceA << " chID: " << chID << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " is Info: " << isInfo << FairLogger::endl;
+	if(stopType == 0 && raw->GetNrSamples()==0 && iSpadicMessage < nSpadicMessages){
+	  for ( Int_t i=iSpadicMessage;i<nSpadicMessages;i++){
+	    if ((static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(i)))->GetOverFlow()==true && GetSpadicID((static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(i)))->GetSourceAddress())==spaID){ 
+	      lostMessages = (static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(i)))->GetBufferOverflowCount();
+	      break;
+	    }
+	    //LOG(INFO) << i << "Info not found " << FairLogger::endl;
 	  }
+	  LOG(INFO) << "SpadicMessages: " << nSpadicMessages << " Lost Messages " <<FairLogger::endl;
+	  LOG(ERROR) << "SpadicMessage: " << iSpadicMessage << " sourceA: " << sourceA << " chID: " << raw->GetChannelID() << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " is Info: " << isInfo << " Lost Messages: " << lostMessages <<FairLogger::endl;
 	}
+      }
 
 
       //Fill trigger-type histogram
@@ -264,19 +266,19 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   // complicated loop over sorted map of timestamps, manually delete all elements in the nested maps
   // commented out, since obviuously the following outer clear command destructs all contained elements recursively
   /*
-  for(std::map<TString, std::map<ULong_t, std::vector<CbmSpadicRawMessage*> > >::iterator it = timeBuffer.begin() ; it != timeBuffer.end(); it++){
+    for(std::map<TString, std::map<ULong_t, std::vector<CbmSpadicRawMessage*> > >::iterator it = timeBuffer.begin() ; it != timeBuffer.end(); it++){
     // complicated loop over sorted map of raw messages
     for (std::map<ULong_t, std::vector<CbmSpadicRawMessage*> > ::iterator it2 = it->second.begin() ; it2 != it->second.end(); it2++) {
-      //      LOG(INFO) <<  "ClusterSize:" << Int_t(it2->second.size()) << FairLogger::endl;
-      //for (std::vector<CbmSpadicRawMessage*>::iterator it3 = it2->second.begin(); it3 != it2->second.end(); it3++) {
-      for(Int_t i = 0; i < Int_t(it2->second.size()); i++){
-	//delete it2->second[i];//it3->second;
-	// here: looping through the vector
-      }
-      //      it2->second.clear();
+    //      LOG(INFO) <<  "ClusterSize:" << Int_t(it2->second.size()) << FairLogger::endl;
+    //for (std::vector<CbmSpadicRawMessage*>::iterator it3 = it2->second.begin(); it3 != it2->second.end(); it3++) {
+    for(Int_t i = 0; i < Int_t(it2->second.size()); i++){
+    //delete it2->second[i];//it3->second;
+    // here: looping through the vector
+    }
+    //      it2->second.clear();
     }
     //    it->second.clear();
-  }
+    }
   */
   timeBuffer.clear();
 
