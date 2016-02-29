@@ -336,8 +336,8 @@ void CbmMatchRecoToMC::ReadAndCreateDataBranches()
       ioman->Register("MuchPixelHitMatch", "MUCH", fMuchPixelHitMatches, kTRUE);
    }
    if (fMuchStrawHits) {
-      fMuchStrawHits = new TClonesArray("CbmMatch", 100);
-      ioman->Register("MuchStrawHitMatch", "MUCH", fMuchStrawHits, kTRUE);
+      fMuchStrawHitMatches = new TClonesArray("CbmMatch", 100); //AZ
+      ioman->Register("MuchStrawHitMatch", "MUCH", fMuchStrawHitMatches, kTRUE); //AZ
    }
    if (fMuchTracks) {
       fMuchTrackMatches = new TClonesArray("CbmTrackMatchNew", 100);
@@ -603,6 +603,7 @@ void CbmMatchRecoToMC::MatchTracks(
                new ((*trackMatches)[iTrack]) CbmTrackMatchNew();
       Int_t nofHits = track->GetNofHits();
       for (Int_t iHit = 0; iHit < nofHits; iHit++) {
+	 if (track->GetHitType(iHit) == kMUCHPIXELHIT && hitMatches == fMuchStrawHitMatches || track->GetHitType(iHit) == kMUCHSTRAWHIT && hitMatches == fMuchPixelHitMatches) continue; //AZ
          const CbmMatch* hitMatch = static_cast<CbmMatch*>(hitMatches->At(track->GetHitIndex(iHit)));
          Int_t nofLinks = hitMatch->GetNofLinks();
          for (Int_t iLink = 0; iLink < nofLinks; iLink++) {
@@ -624,6 +625,7 @@ void CbmMatchRecoToMC::MatchTracks(
       Int_t trueCounter = trackMatch->GetNofTrueHits();
       Int_t wrongCounter = trackMatch->GetNofWrongHits();
       for (Int_t iHit = 0; iHit < nofHits; iHit++) {
+	 if (track->GetHitType(iHit) == kMUCHPIXELHIT && hitMatches == fMuchStrawHitMatches || track->GetHitType(iHit) == kMUCHSTRAWHIT && hitMatches == fMuchPixelHitMatches) continue; //AZ
          const CbmMatch* hitMatch = static_cast<CbmMatch*>(hitMatches->At(track->GetHitIndex(iHit)));
          Int_t nofLinks = hitMatch->GetNofLinks();
          Bool_t hasTrue = false;
