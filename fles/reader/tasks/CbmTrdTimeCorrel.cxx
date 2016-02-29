@@ -23,7 +23,7 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
     fNrTimeSlices(0),
     fRun(0),
     fRewriteSpadicName(true),
-    fLastMessageTime {{0,0,0},{0,0,0},{0,0,0}},
+    fLastMessageTime {{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}},
     fSpadics(0)
 {
  LOG(DEBUG) << "Default constructor of CbmTrdTimeCorrel" << FairLogger::endl;
@@ -166,8 +166,8 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	}
 //Compute Time Deltas, write them into a histogram and store timestamps in fLastMessageTime.
 // WORKAROUND: at Present SyscoreID is not extracted, therefore all Messages are stored as if coming from SysCore 0.
-	fHM->H1("Delta_t")->Fill(time-fLastMessageTime[0][static_cast<Int_t>(spaID/2)]);
-	fLastMessageTime[0][static_cast<Int_t>(spaID/2)]=time;
+	fHM->H1("Delta_t")->Fill(time-fLastMessageTime[0][static_cast<Int_t>(spaID)]);
+	fLastMessageTime[0][static_cast<Int_t>(spaID)]=time;
 
 
     if(spadicName!="") {
@@ -415,7 +415,7 @@ void CbmTrdTimeCorrel::Finish()
   c2->SaveAs("pics/TsCounterRatio.png");
   
   //Perform uniform relabeling of Axis
-  ReLabelAxis(fHM->H1("MultiType_vs_Channel")->GetXaxis(),"infoType",true,true);
+  ReLabelAxis(fHM->H1("MultiType_vs_Channel")->GetYaxis(),"infoType",true,true);
 
   // use this to produce nice single plots
   /*
