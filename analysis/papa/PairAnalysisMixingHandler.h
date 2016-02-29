@@ -49,7 +49,6 @@ public:
   void Fill(const PairAnalysisEvent *ev, PairAnalysis *papa);
 
   void Init(const PairAnalysis *papa=0x0);
-  static void MoveToSameVertex(PairAnalysisTrack * const vtrack, const Double_t vFirst[3], const Double_t vMix[3]);
 
 private:
   UShort_t  fDepth   = 10;        // Number of events per bin to keep in the ring buffer

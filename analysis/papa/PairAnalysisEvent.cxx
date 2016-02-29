@@ -291,12 +291,8 @@ void PairAnalysisEvent::Init()
     fTracks->AddAtAndExpand(new PairAnalysisTrack(ftrk, mcTrack),  i);
   }
 
-  // clean up
-  if(vtx) delete vtx;
-
   // number of multiple matched tracks
-  for(Int_t i=0; i<matches.GetSize(); i++)
-    fMultiMatch += (matches[i] > 1 ? matches[i] : 0);
+  fMultiMatch = (Int_t) matches.GetSum();
 
 }
 

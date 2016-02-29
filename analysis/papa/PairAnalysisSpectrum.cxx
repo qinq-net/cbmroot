@@ -278,6 +278,7 @@ void  PairAnalysisSpectrum::Draw(const char* varexp, const char* selection, Opti
   //  Bool_t optMeta     =optString.Contains("meta");      optString.ReplaceAll("meta","");
   Bool_t optNoMCtrue =optString.Contains("nomctrue");  optString.ReplaceAll("nomctrue","");
   Bool_t optMC       =optString.Contains("mc");        optString.ReplaceAll("mc","");
+  Bool_t optSyst     =optString.Contains("syst");      optString.ReplaceAll("syst","");
 
   // canvas key
   TString ckey(varexp);
@@ -385,6 +386,83 @@ void  PairAnalysisSpectrum::Draw(const char* varexp, const char* selection, Opti
     gr->SetName(Form("%s",selection));
 
     if(!gr) return;
+
+    // sort x-values
+    gr->Sort();
+    TGraphErrors *grE = NULL;
+    TGraphErrors *grS = NULL;
+    if(optSyst && fVarBinning) { //TODO: implement systematic calculation w/o binning
+      grE  = new TGraphErrors(); // statistical graph
+      grS  = new TGraphErrors(); // systemtics  graph
+      Double_t *gx  = gr->GetX();
+      Double_t *gy  = gr->GetY();
+      Double_t *gye = gr->GetEY();
+
+      // loop over all variable bins
+      Int_t first   = 0;//TMath::BinarySearch(gr->GetN(),gx,xLo); //first bin
+      Int_t ibin    = 0;
+      //TODO: add a 
+      while( first<gr->GetN() ) {
+	//      for(ibin=0; ibin<fVarBinning->GetNrows()-1; ibin++) {
+
+	Int_t nsys    = 0;   // counter #systematics
+	Double_t ysys = 0.;  // yvlaue of systematic = mean value
+	Double_t esys = 0.;  // uncertainty depends on method
+	// calculate mean
+	Double_t xvar = gx[first];
+	for(Int_t i=first; i<gr->GetN(); i++) {
+	  //	  printf("gx[i]:%f xvar:%f xLo:%f\n",gx[i],xvar,xLo);
+	  //	  if(TMath::Abs(gx[i]-xvar)>1.e-8) break;
+	  if((gx[i]-xvar)>1.e-8) break;
+	// printf("graph entry %d, found index first: %d with value %.3f \t y: %.3f+-%.3f \n",
+	//        i,first,xvar,gy[i],gye[i]);
+	  nsys++;
+	  ysys += gy[i];
+	}
+	ysys /= (nsys?nsys:1); // protect for zero division
+	//	printf("bin %d, found index first: %d, %.3f \t y:%3.f \t nsys:%d\n",ibin,first,xvar,ysys,nsys);
+
+	// y syst uncertainty
+	//	printf("syst %f , <y> %f\n",esys,ysys);
+	for(Int_t i=0; i<nsys; i++) {
+	  Int_t j = first + i;
+	  //	  if(gx[j]!=xLo) break; // check should not be needed
+	  Double_t uce = 0.;
+	  switch(fSystMthd) {
+	  case kBarlow:
+	    // I.  calc uncorr. stat. error from sub/superset w.r.t. first measurement
+	    uce = TMath::Sqrt( TMath::Abs( gye[j]*gye[j] - gye[first]*gye[first]) );
+	    // II. calc max. deviation w.r.t. mean y-value incl. 1sigma* 0.9 of I.
+	    // NOTE: 0.9 can be change to a max value of 1->1sigma, 0.9 is more consevative
+	    esys  = TMath::Max( esys, TMath::Abs( ysys-gy[j] ) - 0.9*uce );     break;
+	  case kSystMax:  esys  = TMath::Max( esys, TMath::Abs( ysys-gy[j] ) ); break;
+	  case kSystRMS:  esys += gy[j] * gy[j];                                break;
+	  }
+	  //	  printf("bin error %f \t  syst %f  from abs %f \n",gye[j],esys, TMath::Abs( gy[j] ));
+	}
+
+	// normalisation
+	switch(fSystMthd) {
+	case kBarlow:   /* nothing to be done */ break;
+	case kSystMax:  /* nothing to be done */ break;
+	case kSystRMS:  esys =  TMath::Sqrt(  TMath::Abs( esys/(nsys?nsys:1) - ysys*ysys )  ); break;
+	}
+
+	// fill statistical and systematic graph values and errors
+	grE->SetPoint(      ibin, xvar, ysys );       // mean
+	grE->SetPointError( ibin, 0.0,  gye[first] ); // stat.uncert. of first set
+
+	Double_t boxW  = (fVarBinning->Max()-fVarBinning->Min())/(fVarBinning->GetNrows()-1);
+	grS->SetPoint(      ibin, xvar,       ysys ); // mean
+	grS->SetPointError( ibin, boxW*0.35,  esys ); // systematic value
+
+	// increase index counter
+	first+=nsys;
+	ibin++;
+      } //next bin
+      //      grS->Print();
+    }
+
     //      gr->Print();
     Info("Draw"," Draw object with options: '%s'",optString.Data());
     if(!PairAnalysisStyler::GetFirstHistogram())   gr->Draw((optString+"A").Data());
@@ -406,7 +484,16 @@ void  PairAnalysisSpectrum::Draw(const char* varexp, const char* selection, Opti
       Double_t max = (val[idx[0]]+errmax)*1.1;
       Double_t tmpmax = PairAnalysisStyler::GetFirstHistogram()->GetMaximum();
       PairAnalysisStyler::GetFirstHistogram()->SetMaximum( (tmpmax > max ? tmpmax : max) );
-      //	PairAnalysisStyler::GetFirstHistogram()->SetMaximum( val[idx[0]]*1.1 );
+    }
+
+    // draw systemtaic graph ontop
+    if(grS) {
+      PairAnalysisStyler::Style(grE,nobj);
+      grE->Draw((optString+"A").Data());
+      PairAnalysisStyler::Style(grS,nobj);
+      grS->SetFillColor(grS->GetLineColor());
+      grS->SetFillStyle(kFEmpty);
+      grS->Draw("2same");
     }
 
     // legend

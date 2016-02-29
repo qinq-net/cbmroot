@@ -101,8 +101,9 @@ public:
   // mc specific
   void SetHasMC(Bool_t hasMC)                                { fHasMC = hasMC; }
   void AddSignalMC(PairAnalysisSignalMC* signal);
-  void  SetMotherPdg( Int_t pdgMother )                      { fPdgMother=pdgMother; }
-  void  SetLegPdg(Int_t pdgLeg1, Int_t pdgLeg2)              { fPdgLeg1=pdgLeg1; fPdgLeg2=pdgLeg2; }
+  void SetMotherPdg( Int_t pdgMother )                       { fPdgMother=pdgMother; }
+  void SetLegPdg(Int_t pdgLeg1, Int_t pdgLeg2)               { fPdgLeg1=pdgLeg1; fPdgLeg2=pdgLeg2; }
+  void SetRefitWithMassAssump(Bool_t setValue=kTRUE)         { fRefitMassAssump=setValue; }
   const TObjArray* GetMCSignals()                      const { return fSignalsMC; }
   Bool_t GetHasMC()                                    const { return fHasMC;  }
   Int_t GetMotherPdg()                                 const { return fPdgMother; }
@@ -130,9 +131,10 @@ private:
   AnalysisFilter fTrackFilterMC;          // MCtruth leg cuts
   AnalysisFilter fPairFilterMC;           // MCtruth pair cuts
 
-  Int_t fPdgMother = 443;                 // pdg code of mother tracks
-  Int_t fPdgLeg1   = 11;                  // pdg code leg1
-  Int_t fPdgLeg2   = 11;                  // pdg code leg2
+  Int_t  fPdgMother = 443;                // pdg code of mother tracks
+  Int_t  fPdgLeg1   = 11;                 // pdg code leg1
+  Int_t  fPdgLeg2   = 11;                 // pdg code leg2
+  Bool_t fRefitMassAssump = kFALSE;       // wether refit under pdgleg mass assumption should be done
 
   TObjArray* fSignalsMC = NULL;           // array of PairAnalysisSignalMC
 
@@ -194,7 +196,7 @@ private:
   PairAnalysis(const PairAnalysis &c);
   PairAnalysis &operator=(const PairAnalysis &c);
 
-  ClassDef(PairAnalysis,1); //Steering class to process the data
+  ClassDef(PairAnalysis,2); //Steering class to process the data
 };
 
 inline Int_t PairAnalysis::GetPairIndex(Int_t arr1, Int_t arr2) const

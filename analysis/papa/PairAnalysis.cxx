@@ -32,6 +32,7 @@ The names are available via the function PairClassName(Int_t i)
 
 Some options to configure your analysis instance:
   SetLegPdg(Int_t pdgLeg1, Int_t pdgLeg2)  // define pair production of interest
+  SetRefitWithMassAssump(kTRUE)            // whether tracks should be refitted accordingly
   SetNoPairing()                           // look only at track level
   SetProcessLS(kFALSE)                     // switch off like-sign pair calculations
  
@@ -992,7 +993,7 @@ void PairAnalysis::FillTrackArrays(PairAnalysisEvent * const ev)
     PairAnalysisTrack *particle=ev->GetTrack(itrack);
 
     // adapt mass hypothesis accordingly (they were initialized with PDG11)
-    particle->SetMassHypo(fPdgLeg1,fPdgLeg2);
+    particle->SetMassHypo(fPdgLeg1,fPdgLeg2, fRefitMassAssump);
 
     // fill variables
     PairAnalysisVarManager::Fill(particle, values);

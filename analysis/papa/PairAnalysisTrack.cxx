@@ -11,6 +11,8 @@
   Two TLorentzVector hold information on the momentum components and
   position. Further the SetMassHypo is calculated according to the 
   setting of PairAnalysis::SetLegPdg(pdgLeg1, pdgLeg2) and the actual charge.
+  In addition a track can be refitted using this mass assumption if enabled
+  using PairAnalysis::SetRefitWithMassAssump(kTRUE)
 
   TObject bits are used to flag the matching between detector tracklets and MC tracks.
   Bits used are >14 and correspond to CbmDetectorList.h -> DetectorId
@@ -32,6 +34,7 @@
 #include "CbmKFVertex.h"
 #include "CbmTrack.h"
 #include "CbmGlobalTrack.h"
+#include "CbmTrackParam.h"
 #include "CbmStsTrack.h"
 #include "CbmMuchTrack.h"
 #include "CbmTrdTrack.h"
@@ -135,6 +138,7 @@ PairAnalysisTrack::PairAnalysisTrack(CbmKFVertex *vtx,
   Double_t m2=TMath::Power(TDatabasePDG::Instance()->GetParticle(11)->Mass(), 2);
 
   /// check mvd entrance
+  /*
   Double_t zMvd = 5.; // z-position of the first mvd station, TODO: how to get that for different geometries
   TrackExtrapolatorPtr fExtrapolator = CbmLitToolFactory::CreateTrackExtrapolator("rk4");
   CbmLitTrackParam litParamIn;
@@ -142,29 +146,18 @@ PairAnalysisTrack::PairAnalysisTrack(CbmKFVertex *vtx,
   CbmLitTrackParam litParamOut;
   fExtrapolator->Extrapolate(&litParamIn, &litParamOut, zMvd, NULL);
   CbmLitConverterFairTrackParam::CbmLitTrackParamToFairTrackParam(&litParamOut, fMvdEntrance);
+  */
 
-  /// back extrapolation to vertex using CbmL1PFFitter
-  vector<CbmStsTrack> stsTracks;
-  stsTracks.resize(1);
-  stsTracks[0] = *ststrk;
-  vector<L1FieldRegion> vField;
-  vector<float> chiPrim;
-  CbmL1PFFitter fPFFitter;
-  fPFFitter.GetChiToVertex(stsTracks, vField, chiPrim, *fPrimVertex, 3e6);
-  fChi2Vtx = chiPrim[0];
+  /// get parameters at primary vertex
+  const CbmTrackParam *ppar = fGlblTrack->GetParamVertex();
+  if(ppar) {
+    fMomentum.SetPxPyPzE( ppar->GetPx(), ppar->GetPy(), ppar->GetPz(), 0. );
+    fMomentum.SetE( TMath::Sqrt(fMomentum.Vect().Mag2()+m2) );
+    fPosition.SetXYZM(    ppar->GetX(),  ppar->GetY(),  ppar->GetZ(),  TMath::Sqrt(m2) );
+    fCharge = (ppar->GetQp()>0. ? +1. : -1. );
+  }
+  //  fMomentum.Print();
 
-  const FairTrackParam* vtxTrack = stsTracks[0].GetParamFirst();
-
-  TVector3 mom;
-  vtxTrack->Momentum(mom);
-  fMomentum.SetVect(mom);
-  fMomentum.SetE( TMath::Sqrt(mom.Mag2()+m2) );
-
-  TVector3 pos;
-  vtxTrack->Position(pos);
-  fPosition.SetVect(pos);
-
-  fCharge  = (vtxTrack->GetQp()>0. ? +1. : -1. );
   if(mctrk) fPdgCode = mctrk->GetPdgCode();
 
 }
@@ -172,6 +165,7 @@ PairAnalysisTrack::PairAnalysisTrack(CbmKFVertex *vtx,
 //______________________________________________
 PairAnalysisTrack::PairAnalysisTrack(const PairAnalysisTrack& track) :
   TNamed(track.GetName(), track.GetTitle()),
+  fPrimVertex(track.fPrimVertex),
   fGlblTrack(track.GetGlobalTrack()),
   fStsTrack(track.fStsTrack),
   fMuchTrack(track.fMuchTrack),
@@ -202,17 +196,7 @@ PairAnalysisTrack::PairAnalysisTrack(const PairAnalysisTrack& track) :
   this->SetBit(BIT(14+kTRD),  track.TestBit(BIT(14+kTRD) ));
   this->SetBit(BIT(14+kSTS),  track.TestBit(BIT(14+kSTS) ));
   this->SetBit(BIT(14+kMUCH), track.TestBit(BIT(14+kMUCH)));
-  // TVector3 mom;
-  // ststrk->GetParamFirst()->Momentum(mom);
-  // fMomentum.SetVect(mom);
-  // Double_t m2=TMath::Power(TDatabasePDG::Instance()->GetParticle(11)->Mass(), 2);
-  // fMomentum.SetE( TMath::Sqrt(mom.Mag2()+m2) );
-  // TVector3 pos;
-  // ststrk->GetParamFirst()->Position(pos);
-  // fPosition.SetVect(pos);
 
-  // fCharge  = (ststrk->GetParamFirst()->GetQp()>0. ? +1. : -1. );
-  // if(mctrk) fPdgCode = mctrk->GetPdgCode(); 
 }
 
 //______________________________________________
@@ -221,7 +205,7 @@ PairAnalysisTrack::~PairAnalysisTrack()
   //
   // Default Destructor
   //
-
+  //  if(fPrimVertex) delete fPrimVertex;
 }
 
 //______________________________________________
@@ -259,7 +243,7 @@ CbmTrack* PairAnalysisTrack::GetTrack(DetectorId det) const
 }
 
 //______________________________________________
-void PairAnalysisTrack::SetMassHypo(Int_t pdg1, Int_t pdg2)
+void PairAnalysisTrack::SetMassHypo(Int_t pdg1, Int_t pdg2, Bool_t refitMassAssump)
 {
   //
   // use charge, time and track length information to assign
@@ -271,10 +255,11 @@ void PairAnalysisTrack::SetMassHypo(Int_t pdg1, Int_t pdg2)
   const Double_t cpdg2 = TDatabasePDG::Instance()->GetParticle(pdg2)->Charge()*3;
 
   Double_t m2 = 0.;
+  Int_t ppdg  = 0;   // prefered pdg
   // match STS charge of track to pid and set mass accordingly
-  if(fCharge*cpdg1 < 0)      m2=mpdg2*mpdg2;
-  else if(fCharge*cpdg2 < 0) m2=mpdg1*mpdg1;
-  else                       Printf("PairAnalysisTrack::SetMassHypo via STS charge went wrong!");
+  if(fCharge*cpdg1 < 0)      { m2=mpdg2*mpdg2; ppdg=pdg2; }
+  else if(fCharge*cpdg2 < 0) { m2=mpdg1*mpdg1; ppdg=pdg1; }
+  else                       Error("SetMassHypo","via STS charge went wrong!");
 
   // use TOF time(ns) and track length(cm) if available
   if(fTofHit && 0) { //TODO: switched OFF!!
@@ -282,7 +267,67 @@ void PairAnalysisTrack::SetMassHypo(Int_t pdg1, Int_t pdg2)
 					   fGlblTrack->GetLength()/100,           2)  - 1);
   }
 
-  // set mass hypo
-  fMomentum.SetE( TMath::Sqrt(fMomentum.Mag2() + m2) );
+  // refit (under pdg assumption if activated)
+  if(!refitMassAssump) {
+    /// get back parameters at primary vertex
+    const CbmTrackParam *ppar = fGlblTrack->GetParamVertex();
+    if(ppar) {
+      fMomentum.SetPxPyPzE( ppar->GetPx(), ppar->GetPy(), ppar->GetPz(), 0. );
+      fMomentum.SetE( TMath::Sqrt(fMomentum.Vect().Mag2()+m2) );
+      fPosition.SetXYZM(    ppar->GetX(),  ppar->GetY(),  ppar->GetZ(),  TMath::Sqrt(m2) );
+      fCharge = (ppar->GetQp()>0. ? +1. : -1. );
+    }
+  }
+  else {
+    Refit(ppdg);
+    //    fMomentum.Print();
+    /// set mass hypo
+    fMomentum.SetE( TMath::Sqrt(fMomentum.Vect().Mag2() + m2) );
+    //    fMomentum.Print();
+  }
 
+}
+
+//______________________________________________
+void PairAnalysisTrack::Refit(Int_t pidHypo)
+{
+  //
+  // refit the track under certain mass assumption using CbmL1PFFitter
+  // to the primary vertex
+  //
+
+  vector<CbmStsTrack> stsTracks;
+  stsTracks.resize(1);
+  stsTracks[0] = *fStsTrack;
+  vector<L1FieldRegion> vField;
+  vector<float> chiPrim;
+  vector<int> pidHypos;
+  pidHypos.push_back(pidHypo);
+
+  // printf("stst track: %p \t prim vertex: %p\n",fStsTrack,fPrimVertex);
+  // printf("  fit track with mass assumption, pdg: %d (default is: %d)\n",pidHypo,fStsTrack->GetPidHypo());
+
+  CbmL1PFFitter fPFFitter;
+  if(pidHypo) fPFFitter.Fit(stsTracks, pidHypos); // fit with mass hypo
+  //  printf("  fit done for mass hypo (%p)\n",&stsTracks[0]);
+
+  // NOTE: as an alternative to fPFFitter.Fit one can use fStsTrack->SetPidHypo(pidHypo);
+  fPFFitter.GetChiToVertex(stsTracks, vField, chiPrim, *fPrimVertex, 3.e6);
+  fChi2Vtx = chiPrim[0];
+  //  printf("  track refitted with chi2/ndf: %.3f , param %p \n",fChi2Vtx,stsTracks[0].GetParamFirst());
+
+  const FairTrackParam* vtxTrack = stsTracks[0].GetParamFirst();
+  if(!vtxTrack) Error("Refit","No track param found!");
+
+  // update position and momentum vectors
+  TVector3 mom;
+  vtxTrack->Momentum(mom);
+  fMomentum.SetVect(mom);
+
+  TVector3 pos;
+  vtxTrack->Position(pos);
+  fPosition.SetVect(pos);
+
+  // set charge based on fit
+  fCharge  = (vtxTrack->GetQp()>0. ? +1. : -1. );
 }

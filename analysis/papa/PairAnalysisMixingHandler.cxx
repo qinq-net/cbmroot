@@ -7,12 +7,12 @@
 /*
 
   Event mixing handler, that creates event pools of size fDepth. Events
-  are ring-buffered and mixing is started for events that are similar according
+  are ring-buffered and mixing is done for events that are similar according
   to the binnnings and variables specific via:
 
     AddVariable(PairAnalysisVarManager::ValueTypes type, TVectorD* const bins)
 
-  You can specify with type of event mixing should be done (+-/-+,++,--) using:
+  You can specify which type of event mixing should be done (+-/-+,++,--) using:
 
     SetMixType(EMixType type)
 
@@ -27,8 +27,6 @@
 #include "PairAnalysisTrack.h"
 
 #include "PairAnalysis.h"
-#include "PairAnalysisHelper.h"
-//#include "PairAnalysisHistos.h"
 #include "PairAnalysisMixedEvent.h"
 
 #include "PairAnalysisMixingHandler.h"
@@ -293,61 +291,4 @@ Int_t PairAnalysisMixingHandler::FindBin(const Double_t values[], TString *dim)
   }
 
   return bin;
-}
-
-//______________________________________________
-void PairAnalysisMixingHandler::MoveToSameVertex(PairAnalysisTrack * const vtrack, const Double_t *vFirst, const Double_t* vMix)
-{
-  //
-  // move 'track' which belongs to the vertex information of vMix to the vertex of vFirst
-  //
-  return;
-  /*
-  static Bool_t printed=kFALSE;
-  
-  if (vtrack->IsA()==AliESDtrack::Class()){
-    AliESDtrack *track=(AliESDtrack*)vtrack;
-
-    //get track information
-    Double_t x        = track->GetX();
-    Double_t alpha    = track->GetAlpha();
-    Double_t param[5] = {0};
-    Double_t cov[15]  = {0};
-
-    for (Int_t i=0; i<5;  ++i) param[i]=track->GetParameter()[i];
-    for (Int_t i=0; i<15; ++i) cov[i]  =track->GetCovariance()[i];
-
-    //translation
-    Double_t vt[3] = {vMix[0]-vFirst[0],vMix[1]-vFirst[1],vMix[2]-vFirst[2]};
-    //rotate to the track frame
-//     track->Global2LocalPosition(vt,track->GetAlpha());
-
-    //add to track position
-//     x        = x       -vt[0];
-//     param[0] = param[0]-vt[1];
-//     param[1] = param[1]-vt[2];
-    param[1] = param[1]-vt[2];
-    
-    //set updated track information
-    track->Set(x, alpha, param, cov);
-  } else {
-    //             AliAODTrack *track=(AliAODTrack*)vtrack;
-    //             Double_t pos[3]={0};
-    //             track->GetPosition(pos);
-    //             if (pos[0]>-999.){
-      //               pos[0]=pos[0]-vMix[PairAnalysisVarManager::kXvPrim]+vFirst[PairAnalysisVarManager::kXvPrim];
-      //               pos[1]=pos[1]-vMix[PairAnalysisVarManager::kYvPrim]+vFirst[PairAnalysisVarManager::kYvPrim];
-      //               pos[2]=pos[2]-vMix[PairAnalysisVarManager::kZvPrim]+vFirst[PairAnalysisVarManager::kZvPrim];
-      //               track->SetPosition(pos);
-//       AliError("Move To same vertex not yet implemented for AOD!");
-    if (!printed) {
-//       Error("PairAnalysisMixingHandler::MoveToSameVertex","Move To same vertex not yet implemented for AOD!");
-      printed=kTRUE;
-    }
-      //
-      // Not that clear how to do it. In AOD track there is fPosition, fPositionAtDCA and "TRef fProdVertex"
-      // where Xv(), Yv(), Zv() returns the position of fProdVertex
-      //
-    }
-  */
 }

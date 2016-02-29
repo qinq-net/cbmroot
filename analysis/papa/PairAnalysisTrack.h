@@ -53,7 +53,7 @@ public:
   void SetPdgCode(Int_t pdg)              { fPdgCode=pdg; }
   void SetLabel(Int_t lbl)                { fLabel=lbl; }
   void SetWeight(Double_t wght)            { fWeight=wght; }
-  void SetMassHypo(Int_t pdg1, Int_t pdg2);
+  void SetMassHypo(Int_t pdg1, Int_t pdg2, Bool_t refitMassAssump);
 
   // track getters
   TLorentzVector *GetMomentum()            { return  &fMomentum; }
@@ -99,6 +99,9 @@ public:
   Double_t GetWeight()  const { return fWeight;  }
 
 private:
+
+  void Refit(Int_t pidHypo);
+
   CbmKFVertex      *fPrimVertex      = NULL; // primary vertex
   CbmGlobalTrack   *fGlblTrack       = NULL; // global track
   CbmStsTrack      *fStsTrack        = NULL; // sts track

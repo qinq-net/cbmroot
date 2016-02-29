@@ -114,7 +114,7 @@ void PairAnalysisStyler::LoadStyle() {
     // defaultSty->SetLegoInnerR(Float_t rad = 0.5);
     defaultSty->SetHistMinimumZero();
     //    defaultSty->SetEndErrorSize(2);
-    defaultSty->SetErrorX(0.);
+    defaultSty->SetErrorX(0.0);
     defaultSty->SetLineColor(1);
     defaultSty->SetMarkerColor(1);
     defaultSty->SetMarkerStyle(kFullCircle); // Kind of dot used for points
