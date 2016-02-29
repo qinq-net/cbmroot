@@ -109,6 +109,7 @@ private:
 	TH2D * fhTest_invmass_MCcutAll;
 	TH1D * fhTest_peakCheck1;
 	TH1D * fhTest_peakCheck2;
+	TH2D * fhTest_invmass_ANNcuts;
 
 	// array with all refitted momenta
 	vector<TVector3>	fVector_AllMomenta;
@@ -155,8 +156,10 @@ private:
 	vector< vector<TVector3> >	fMixedTest_3p1_photons;
 	vector<int>					fMixedTest_3p1_eventno;
 	vector<int>					fMixedTest_3p1_combined;
+	vector< vector<Double_t> >	fMixedTest_3p1_ann;
 	TH1D * 						fhTest_eventMixing_3p1;
 	TH1D * 						fhTest_eventMixing_3p1_pCut;
+	TH2D * 						fhTest_eventMixing_3p1_ANNcuts;
 
 
 	CbmAnaConversionTest(const CbmAnaConversionTest&);

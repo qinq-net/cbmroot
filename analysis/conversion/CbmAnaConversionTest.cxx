@@ -19,6 +19,7 @@
 #include "CbmLitGlobalElectronId.h"
 #include "CbmAnaConversionKinematicParams.h"
 #include "CbmAnaConversionCutSettings.h"
+#include "CbmAnaConversionGlobalFunctions.h"
 
 #include <algorithm>
 #include <map>
@@ -64,6 +65,7 @@ CbmAnaConversionTest::CbmAnaConversionTest()
 	fhTest_invmass_MCcutAll(NULL),
 	fhTest_peakCheck1(NULL),
 	fhTest_peakCheck2(NULL),
+	fhTest_invmass_ANNcuts(NULL),
 	fVector_AllMomenta(),
 	fVector_gt(),
 	fVector_momenta(),
@@ -89,8 +91,10 @@ CbmAnaConversionTest::CbmAnaConversionTest()
 	fMixedTest_3p1_photons(),
 	fMixedTest_3p1_eventno(),
 	fMixedTest_3p1_combined(),
+	fMixedTest_3p1_ann(),
 	fhTest_eventMixing_3p1(NULL),
-	fhTest_eventMixing_3p1_pCut(NULL)
+	fhTest_eventMixing_3p1_pCut(NULL),
+	fhTest_eventMixing_3p1_ANNcuts(NULL)
 {
 }
 
@@ -131,7 +135,7 @@ void CbmAnaConversionTest::Init()
 	InitHistos();
 	electronidentifier = new CbmLitGlobalElectronId();
 	electronidentifier->Init();
-	electronidentifier->SetRichAnnCut(-0.5);
+	electronidentifier->SetRichAnnCut(-0.8);
 
 	globalEventNo = 0;
 }
@@ -188,7 +192,9 @@ void CbmAnaConversionTest::InitHistos()
 	fHistoList_test.push_back(fhTest_invmass_MCcutAll);
 	fHistoList_test.push_back(fhTest_peakCheck1);
 	fHistoList_test.push_back(fhTest_peakCheck2);
-	
+
+	fhTest_invmass_ANNcuts = new TH2D("fhTest_invmass_ANNcuts", "fhTest_invmass_ANNcuts;ann;invariant mass of 4 e^{#pm} in GeV/c^{2}", 10, 0, 10, invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fHistoList_test.push_back(fhTest_invmass_ANNcuts);
 
 
 	fhTest_eventMixing_STSonly_2p2 = new TH1D("fhTest_eventMixing_STSonly_2p2", "fhTest_eventMixing_STSonly_2p2; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
@@ -201,6 +207,9 @@ void CbmAnaConversionTest::InitHistos()
 	fHistoList_test.push_back(fhTest_eventMixing_3p1);
 	fhTest_eventMixing_3p1_pCut = new TH1D("fhTest_eventMixing_3p1_pCut", "fhTest_eventMixing_3p1_pCut; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_test.push_back(fhTest_eventMixing_3p1_pCut);
+	
+	fhTest_eventMixing_3p1_ANNcuts = new TH2D("fhTest_eventMixing_3p1_ANNcuts", "fhTest_eventMixing_3p1_ANNcuts;ann;invariant mass of 4 e^{#pm} in GeV/c^{2}", 10, 0, 10, invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fHistoList_test.push_back(fhTest_eventMixing_3p1_ANNcuts);
 }
 
 
@@ -408,6 +417,7 @@ void CbmAnaConversionTest::DoSTSonlyAnalysis()
 		fMixedTest_3p1_photons.clear();
 		fMixedTest_3p1_eventno.clear();
 		fMixedTest_3p1_combined.clear();
+		fMixedTest_3p1_ann.clear();
 	}
 
 	if(globalEventNo%20 == 0) {
@@ -597,9 +607,15 @@ void CbmAnaConversionTest::CombineElectrons_FromSTSandRICH()
 					vector<TVector3> pairmomenta;
 					pairmomenta.push_back(fVector_momenta[a]);
 					pairmomenta.push_back(fVector_electronRICH_momenta[b]);
+					
+					vector<Double_t> ann;
+					ann.push_back(CbmAnaConversionGlobalFunctions::ElectronANNvalue(fVector_gtIndex[a], fVector_momenta[a].Mag() ));
+					ann.push_back(CbmAnaConversionGlobalFunctions::ElectronANNvalue(fVector_electronRICH_gtIndex[b], fVector_electronRICH_momenta[b].Mag() ));
+					
 					fMixedTest_3p1_photons.push_back(pairmomenta);
 					fMixedTest_3p1_eventno.push_back(globalEventNo);
 					fMixedTest_3p1_combined.push_back(1);
+					fMixedTest_3p1_ann.push_back(ann);
 				}
 			}
 		}
@@ -652,9 +668,15 @@ void CbmAnaConversionTest::CombineElectrons_FromRICH()
 					vector<TVector3> pairmomenta;
 					pairmomenta.push_back(fVector_electronRICH_momenta[a]);
 					pairmomenta.push_back(fVector_electronRICH_momenta[b]);
+					
+					vector<Double_t> ann;
+					ann.push_back(CbmAnaConversionGlobalFunctions::ElectronANNvalue(fVector_electronRICH_gtIndex[a], fVector_electronRICH_momenta[a].Mag() ));
+					ann.push_back(CbmAnaConversionGlobalFunctions::ElectronANNvalue(fVector_electronRICH_gtIndex[b], fVector_electronRICH_momenta[b].Mag() ));
+					
 					fMixedTest_3p1_photons.push_back(pairmomenta);
 					fMixedTest_3p1_eventno.push_back(globalEventNo);
 					fMixedTest_3p1_combined.push_back(0);
+					fMixedTest_3p1_ann.push_back(ann);
 				}
 			}
 		}
@@ -712,6 +734,21 @@ void CbmAnaConversionTest::CombinePhotons()
 				
 				
 				//CbmLmvmKinematicParams params1 = CalculateKinematicParams_4particles(momenta[electron11], momenta[electron12], momenta[electron21], momenta[electron22]);
+				
+				
+				Double_t ANNe11 = CbmAnaConversionGlobalFunctions::ElectronANNvalue(gtIndex11, fVector_momenta[electron11].Mag() );
+				Double_t ANNe12 = CbmAnaConversionGlobalFunctions::ElectronANNvalue(gtIndex12, fVector_electronRICH_momenta[electron12].Mag() );
+				Double_t ANNe21 = CbmAnaConversionGlobalFunctions::ElectronANNvalue(gtIndex21, fVector_electronRICH_momenta[electron21].Mag() );
+				Double_t ANNe22 = CbmAnaConversionGlobalFunctions::ElectronANNvalue(gtIndex22, fVector_electronRICH_momenta[electron22].Mag() );
+				
+				if(ANNe11 > -1 && ANNe12 > -1 && ANNe21 > -1 && ANNe22 > -1) fhTest_invmass_ANNcuts->Fill(1, invmass);
+				if(ANNe11 > -0.9 && ANNe12 > -0.9 && ANNe21 > -0.9 && ANNe22 > -0.9) fhTest_invmass_ANNcuts->Fill(2, invmass);
+				if(ANNe11 > -0.8 && ANNe12 > -0.8 && ANNe21 > -0.8 && ANNe22 > -0.8) fhTest_invmass_ANNcuts->Fill(3, invmass);
+				if(ANNe11 > -0.7 && ANNe12 > -0.7 && ANNe21 > -0.7 && ANNe22 > -0.7) fhTest_invmass_ANNcuts->Fill(4, invmass);
+				if(ANNe11 > -0.6 && ANNe12 > -0.6 && ANNe21 > -0.6 && ANNe22 > -0.6) fhTest_invmass_ANNcuts->Fill(5, invmass);
+				if(ANNe11 > -0.5 && ANNe12 > -0.5 && ANNe21 > -0.5 && ANNe22 > -0.5) fhTest_invmass_ANNcuts->Fill(6, invmass);
+				if(ANNe11 > -0.0 && ANNe12 > -0.0 && ANNe21 > -0.0 && ANNe22 > -0.0) fhTest_invmass_ANNcuts->Fill(7, invmass);
+				
 				
 				cout << "CbmAnaConversionTest: CombinePhotons, photon combined! " << invmass << "/" << gtIndex11 << "/" << gtIndex12 << "/" << gtIndex21 << "/" << gtIndex22 << endl;
 				nofPi0++;
@@ -1152,6 +1189,19 @@ void CbmAnaConversionTest::MixedEventTest_3p1()
 			if( (fMixedTest_3p1_combined[a] == 1 && e11.Mag() < 0.6) || (fMixedTest_3p1_combined[b] == 1 && e21.Mag() < 0.6) ) {
 				fhTest_eventMixing_3p1_pCut->Fill(params.fMinv);
 			}
+			
+			Double_t ANNe11 = fMixedTest_3p1_ann[a][0];
+			Double_t ANNe12 = fMixedTest_3p1_ann[a][1];
+			Double_t ANNe21 = fMixedTest_3p1_ann[b][0];
+			Double_t ANNe22 = fMixedTest_3p1_ann[b][1];
+			
+			if(ANNe11 > -1 && ANNe12 > -1 && ANNe21 > -1 && ANNe22 > -1)			fhTest_eventMixing_3p1_ANNcuts->Fill(1, params.fMinv);
+			if(ANNe11 > -0.9 && ANNe12 > -0.9 && ANNe21 > -0.9 && ANNe22 > -0.9)	fhTest_eventMixing_3p1_ANNcuts->Fill(2, params.fMinv);
+			if(ANNe11 > -0.8 && ANNe12 > -0.8 && ANNe21 > -0.8 && ANNe22 > -0.8)	fhTest_eventMixing_3p1_ANNcuts->Fill(3, params.fMinv);
+			if(ANNe11 > -0.7 && ANNe12 > -0.7 && ANNe21 > -0.7 && ANNe22 > -0.7)	fhTest_eventMixing_3p1_ANNcuts->Fill(4, params.fMinv);
+			if(ANNe11 > -0.6 && ANNe12 > -0.6 && ANNe21 > -0.6 && ANNe22 > -0.6)	fhTest_eventMixing_3p1_ANNcuts->Fill(5, params.fMinv);
+			if(ANNe11 > -0.5 && ANNe12 > -0.5 && ANNe21 > -0.5 && ANNe22 > -0.5)	fhTest_eventMixing_3p1_ANNcuts->Fill(6, params.fMinv);
+			if(ANNe11 > -0.0 && ANNe12 > -0.0 && ANNe21 > -0.0 && ANNe22 > -0.0)	fhTest_eventMixing_3p1_ANNcuts->Fill(7, params.fMinv);
 		}
 	}
 }

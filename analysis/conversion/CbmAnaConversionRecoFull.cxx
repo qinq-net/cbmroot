@@ -279,7 +279,7 @@ void CbmAnaConversionRecoFull::Init()
 	InitHistos();
 	electronidentifier = new CbmLitGlobalElectronId();
 	electronidentifier->Init();
-	electronidentifier->SetRichAnnCut(-1.0);
+	electronidentifier->SetRichAnnCut(-0.8);
 	
 	electronidentifier_ann0 = new CbmLitGlobalElectronId();
 	electronidentifier_ann0->Init();
