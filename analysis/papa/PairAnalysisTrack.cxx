@@ -138,7 +138,6 @@ PairAnalysisTrack::PairAnalysisTrack(CbmKFVertex *vtx,
   Double_t m2=TMath::Power(TDatabasePDG::Instance()->GetParticle(11)->Mass(), 2);
 
   /// check mvd entrance
-  /*
   Double_t zMvd = 5.; // z-position of the first mvd station, TODO: how to get that for different geometries
   TrackExtrapolatorPtr fExtrapolator = CbmLitToolFactory::CreateTrackExtrapolator("rk4");
   CbmLitTrackParam litParamIn;
@@ -146,7 +145,6 @@ PairAnalysisTrack::PairAnalysisTrack(CbmKFVertex *vtx,
   CbmLitTrackParam litParamOut;
   fExtrapolator->Extrapolate(&litParamIn, &litParamOut, zMvd, NULL);
   CbmLitConverterFairTrackParam::CbmLitTrackParamToFairTrackParam(&litParamOut, fMvdEntrance);
-  */
 
   /// get parameters at primary vertex
   const CbmTrackParam *ppar = fGlblTrack->GetParamVertex();
