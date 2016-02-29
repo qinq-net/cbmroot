@@ -153,16 +153,16 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     timeBuffer[TString(spadicName)][time].push_back(raw);
 
 	if (isInfo){
-	  if(chID < 32)fHM->H2("MultiType_vs_Channel")->Fill(padID,infoType+1);
-	  else fHM->H2("MultiType_vs_Channel")->Fill(33,infoType+1); // chIDs greater than 32 are quite strange and will be put into the last bin
+	  if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,infoType+1);
+	  else fHM->H2("InfoType_vs_Channel")->Fill(33,infoType+1); // chIDs greater than 32 are quite strange and will be put into the last bin
 	}
  	if (isEpoch){   // fill epoch messages in an additional row
-	  if(chID < 32)fHM->H2("MultiType_vs_Channel")->Fill(padID,9);
-	  else fHM->H2("MultiType_vs_Channel")->Fill(33,9);
+	  if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,9);
+	  else fHM->H2("InfoType_vs_Channel")->Fill(33,9);
 	}
  	if (isOverflow){   // fill overflow messages in an additional row
-	  if(chID < 32)fHM->H2("MultiType_vs_Channel")->Fill(padID,10);
-	  else fHM->H2("MultiType_vs_Channel")->Fill(33,10);
+	  if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,10);
+	  else fHM->H2("InfoType_vs_Channel")->Fill(33,10);
 	}
 //Compute Time Deltas, write them into a histogram and store timestamps in fLastMessageTime.
 // WORKAROUND: at Present SyscoreID is not extracted, therefore all Messages are stored as if coming from SysCore 0.
@@ -415,7 +415,7 @@ void CbmTrdTimeCorrel::Finish()
   c2->SaveAs("pics/TsCounterRatio.png");
   
   //Perform uniform relabeling of Axis
-  ReLabelAxis(fHM->H1("MultiType_vs_Channel")->GetYaxis(),"infoType",true,true);
+  ReLabelAxis(fHM->H1("InfoType_vs_Channel")->GetYaxis(),"infoType",true,true);
 
   // use this to produce nice single plots
   /*
@@ -661,9 +661,9 @@ void CbmTrdTimeCorrel::CreateHistograms()
   fHM->H2("NrSamples_vs_InfoType")->GetXaxis()->SetTitle("Nr. of Samples per Message");
   fHM->H2("NrSamples_vs_InfoType")->GetYaxis()->SetTitle("InfoType");
 
-  fHM->Add("MultiType_vs_Channel", new TH2I("MultiType_vs_Channel","MultiType_vs_Channel",35,-1.5,33.5,10,0.5,10.5));
-  fHM->H2("MultiType_vs_Channel")->GetXaxis()->SetTitle("Channel");
-  fHM->H2("MultiType_vs_Channel")->GetYaxis()->SetTitle("Info or Type");
+  fHM->Add("InfoType_vs_Channel", new TH2I("InfoType_vs_Channel","InfoType_vs_Channel",35,-1.5,33.5,10,0.5,10.5));
+  fHM->H2("InfoType_vs_Channel")->GetXaxis()->SetTitle("Channel");
+  fHM->H2("InfoType_vs_Channel")->GetYaxis()->SetTitle("Info or Type");
 
 }
 
