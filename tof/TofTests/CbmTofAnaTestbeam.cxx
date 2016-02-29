@@ -1197,45 +1197,45 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 			    50, -5000., 5000., 100, -DTMAX, DTMAX); 
 
   // Dut histos
-
-    fhDutPullX=new TH1F(  Form("hDutPullX_Sm_%d",fiDut),
-			    Form("hDutPullX_Sm_%d;  #DeltaX",fiDut),
+     Int_t iDutId=fiDut*100+fiDutSm*10+fiDutRpc;
+    fhDutPullX=new TH1F(  Form("hDutPullX_Sm_%d",iDutId),
+			    Form("hDutPullX_Sm_%d;  #DeltaX",iDutId),
 			    100, -10., 10.);  
-    fhDutPullY=new TH1F(  Form("hDutPullY_Sm_%d",fiDut),
-			    Form("hDutPullY_Sm_%d;  #DeltaY",fiDut),
+    fhDutPullY=new TH1F(  Form("hDutPullY_Sm_%d",iDutId),
+			    Form("hDutPullY_Sm_%d;  #DeltaY",iDutId),
 			    100, -10., 10.);  
-    fhDutPullZ=new TH1F(  Form("hDutPullZ_Sm_%d",fiDut),
-			    Form("hDutPullZ_Sm_%d;  #DeltaZ",fiDut),
+    fhDutPullZ=new TH1F(  Form("hDutPullZ_Sm_%d",iDutId),
+			    Form("hDutPullZ_Sm_%d;  #DeltaZ",iDutId),
 			    100, -200., 200.);  
-    fhDutPullT=new TH1F(  Form("hDutPullT_Sm_%d",fiDut),
-			    Form("hDutPullT_Sm_%d;  #DeltaT",fiDut),
+    fhDutPullT=new TH1F(  Form("hDutPullT_Sm_%d",iDutId),
+			    Form("hDutPullT_Sm_%d;  #DeltaT",iDutId),
 			    100, -500., 500.); 
-    fhDutPullTB=new TH1F( Form("hDutPullTB_Sm_%d",fiDut),
-			    Form("hDutPullTB_Sm_%d;  #DeltaT",fiDut),
+    fhDutPullTB=new TH1F( Form("hDutPullTB_Sm_%d",iDutId),
+			    Form("hDutPullTB_Sm_%d;  #DeltaT",iDutId),
 			    150, -750., 750.); 
 
-    fhDutChiFound=new TH1F(  Form("hDutChi_Found_Sm_%d",fiDut),
-			    Form("hDutChi_Found_Sm_%d;  #chi",fiDut),
+    fhDutChiFound=new TH1F(  Form("hDutChi_Found_Sm_%d",iDutId),
+			    Form("hDutChi_Found_Sm_%d;  #chi",iDutId),
 			    50, 0., 10.);  
-    fhDutChiMissed=new TH1F(  Form("hDutChi_Missed_Sm_%d",fiDut),
-			    Form("hDutChi_Missed_Sm_%d;  #chi",fiDut),
+    fhDutChiMissed=new TH1F(  Form("hDutChi_Missed_Sm_%d",iDutId),
+			    Form("hDutChi_Missed_Sm_%d;  #chi",iDutId),
 			    50, 0., 10.);  
 
-    fhDutChiMatch=new TH1F(  Form("hDutChi_Match_Sm_%d",fiDut),
-			    Form("hDutChi_Match_Sm_%d;  #chi",fiDut),
+    fhDutChiMatch=new TH1F(  Form("hDutChi_Match_Sm_%d",iDutId),
+			    Form("hDutChi_Match_Sm_%d;  #chi",iDutId),
 			    50, 0., 10.);  
     Double_t XSIZ=20.; 
     Double_t DTSIZ=500;
     Int_t Nbins=40.;
-    fhDutXY_Found = new TH2F( Form("hDutXY_Found_%d",fiDut),
-			    Form("hDutXY_Found_%d;  x(cm); y (cm)",fiDut),
+    fhDutXY_Found = new TH2F( Form("hDutXY_Found_%d",iDutId),
+			    Form("hDutXY_Found_%d;  x(cm); y (cm)",iDutId),
 			    Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ); 
-    fhDutXY_Missed = new TH2F( Form("hDutXY_Missed_%d",fiDut),
-			    Form("hDutXY_Missed_%d;  x(cm); y (cm)",fiDut),
+    fhDutXY_Missed = new TH2F( Form("hDutXY_Missed_%d",iDutId),
+			    Form("hDutXY_Missed_%d;  x(cm); y (cm)",iDutId),
 			    Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ); 
 
-    fhDutXYDT      = new TH3F( Form("hDutXYDT_%d",fiDut), 
-			    Form("hDutXYDT_%d;  x(cm); y (cm); #Deltat (ps)",fiDut),
+    fhDutXYDT      = new TH3F( Form("hDutXYDT_%d",iDutId), 
+			    Form("hDutXYDT_%d;  x(cm); y (cm); #Deltat (ps)",iDutId),
 			    Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ, Nbins, -DTSIZ, DTSIZ); 
 
    gDirectory->cd( oldir->GetPath() ); // <= To prevent histos from being sucked in by the param file of the TRootManager!
@@ -1754,7 +1754,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 }
        }
        if (iM0 == iNbMatchedHits) {
-	 LOG(WARNING)<<" no valid match found "<< FairLogger::endl;
+	 LOG(WARNING)<<"CbmTofAnaTestbeam:FillHisto: no valid match for HitRef found "<< FairLogger::endl;
 	 return 0;
        }
      }
@@ -2106,7 +2106,8 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 Int_t iSm    =CbmTofAddress::GetSmId( iDetId );
 	 Int_t iRpc   =CbmTofAddress::GetRpcId(iDetId );
 
-	 if(iSmType == fiDut && iSm==fiDutSm && iRpc==fiDutRpc) {
+	 //	 if(iSmType == fiDut && iSm==fiDutSm && iRpc==fiDutRpc) {
+	 if(iDetId == fiDutAddr) {
 	   vDutHit.push_back(pHit);
 	 }
        }
@@ -2245,7 +2246,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	   Double_t dDX = pHit->GetX() - pTrk->GetFitX(pHit->GetZ());    // - tPar->GetX() - tPar->GetTx()*dDZ;
 	   Double_t dDY = pHit->GetY() - pTrk->GetFitY(pHit->GetZ());    // - tPar->GetTy()*dDZ;
 	   Double_t dDT = pHit->GetTime() - pTrk->GetFitT(pHit->GetR()); //pTrk->GetTdif(fStationType[iSt]);
-	   Double_t dDTB= pTrk->GetTdif(fiDut, pHit);                    // ignore pHit in calc of reference
+	   Double_t dDTB= pTrk->GetTdif(fiDutAddr, pHit);                // ignore pHit in calc of reference
 	   fhDutPullX->Fill(dDX);
 	   fhDutPullY->Fill(dDY);
 	   fhDutPullT->Fill(dDT);

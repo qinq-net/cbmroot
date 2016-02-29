@@ -21,6 +21,7 @@
 //#include "CbmTofTypes.h"
 #include <vector>
 #include <map>
+#include "TTimeStamp.h"
 
 class CbmTofTrackFinder;
 class CbmTofTrackFitter;
@@ -90,10 +91,10 @@ class CbmTofFindTracks : public FairTask
   void UseFinder(CbmTofTrackFinder* finder) { fFinder = finder; };
   void UseFitter(CbmTofTrackFitter* fitter) { fFitter = fitter; };
 
-  inline void SetMinNofHits (Int_t i)         { fMinNofHits = i;};
+  inline void SetMinNofHits (Int_t i)         { fMinNofHits = i-1;};
   inline void SetNStations (Int_t i)          { fNTofStations = i;};
 
-  inline Int_t GetMinNofHits() const   { return fMinNofHits;}
+  inline Int_t GetMinNofHits() const   { return fMinNofHits+1;}
   inline Int_t GetNStations() const    { return fNTofStations;}
 
   void SetStations (Int_t ival);
@@ -104,8 +105,9 @@ class CbmTofFindTracks : public FairTask
 
   inline Int_t GetStationType(Int_t i) { return fStationType[i]; }
   inline Int_t GetTypeStation(Int_t i) { return fTypeStation[i]; }
-  inline Int_t GetCorMode   () const   { return fiCorMode;}
+  inline Int_t GetCorMode   ()  const  { return fiCorMode;}
   inline Int_t GetBeamCounter() const  { return fiBeamCounter;}
+  inline Double_t  GetTtTarg()  const  { return fTtTarg; }
 
   inline void SetCorMode       (Int_t ival){ fiCorMode     = ival;}
   inline void SetBeamCounter   (Int_t ival){ fiBeamCounter = ival;}
@@ -139,8 +141,9 @@ class CbmTofFindTracks : public FairTask
   TH1* fhAllHitsSmTypes;
   TH1* fhUsedHitsStation;
 
+  TH2* fhTrackingTimeNhits;
   TH2* fhTrklMulNhits;
-  TH2* fhTrklMul34;
+  TH2* fhTrklMulMaxMM;
   TH3* fhTrklMul3D;
   TH2* fhTrklHMul;
   TH2* fhTrklZ0xHMul;
@@ -198,6 +201,10 @@ class CbmTofFindTracks : public FairTask
   CbmTofDetectorId      * fTofId;
   CbmTofDigiPar         * fDigiPar;
   CbmTofDigiBdfPar      * fDigiBdfPar;
+
+  TTimeStamp fStart;
+  TTimeStamp fStop;
+  Double_t   fdTrackingTime;
 
   ClassDef(CbmTofFindTracks,1);
 
