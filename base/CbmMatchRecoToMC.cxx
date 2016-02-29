@@ -105,7 +105,7 @@ CbmMatchRecoToMC::~CbmMatchRecoToMC()
       fStsTrackMatches->Delete();
       delete fStsTrackMatches;
    }
-    
+
    if (fRichTrackMatches) {
       fRichTrackMatches->Delete();
       delete fRichTrackMatches;
@@ -140,17 +140,17 @@ CbmMatchRecoToMC::~CbmMatchRecoToMC()
       fMuchTrackMatches->Delete();
       delete fMuchTrackMatches;
    }
-	
+
    if (fMvdClusterMatches != NULL)
       {
-      fMvdClusterMatches->Delete(); 
-      delete fMvdClusterMatches; 
+      fMvdClusterMatches->Delete();
+      delete fMvdClusterMatches;
       }
    if (fMvdHitMatches != NULL) {
       fMvdHitMatches->Delete();
       delete fMvdHitMatches;
    }
-   
+
    if (fTofHitMatches != NULL) {
       fTofHitMatches->Delete();
       delete fTofHitMatches;
@@ -204,7 +204,7 @@ void CbmMatchRecoToMC::Exec(
       MatchHitsSts(fStsClusterMatches, fStsHits, fStsHitMatches);
       MatchStsTracks(fMvdHitMatches, fStsHitMatches, fMvdPoints, fStsPoints, fStsTracks, fStsTrackMatches);
    }
-    
+
    //RICH
    if (fRichDigis && fRichHits && fRichMcPoints && fRichRings && fRichTrackMatches) {
        MatchRichRings(fRichRings, fRichHits, fRichDigis, fRichMcPoints, fMCTracksArray, fRichTrackMatches);
@@ -235,7 +235,7 @@ void CbmMatchRecoToMC::Exec(
    if (kTRUE == fbDigiExpUsed)
       MatchHitsTofDigiExp( fTofDigiMatchesPoints, fTofDigis, fTofDigiMatches, fTofHits, fTofHitMatches);
       else MatchHitsTof( fTofDigiMatchesPoints, fTofDigis, fTofDigiMatches, fTofHits, fTofHitMatches);
-      
+
    static Int_t eventNo = 0;
    LOG(INFO) << "CbmMatchRecoToMC::Exec eventNo=" << eventNo++ << FairLogger::endl;
 }
@@ -251,12 +251,12 @@ void CbmMatchRecoToMC::ReadAndCreateDataBranches()
    if (NULL == ioman) {
       LOG(FATAL) << "CbmMatchRecoToMC::ReadAndCreateDataBranches() NULL FairRootManager." << FairLogger::endl;
    }
-  
+
    CbmMCDataManager* mcManager=(CbmMCDataManager*)ioman->GetObject("MCDataManager");
    fMCTracks=mcManager->InitBranch("MCTrack");
-    
+
     fMCTracksArray= (TClonesArray*) ioman->GetObject("MCTrack");
-    
+
 
    // STS
    fStsPoints=mcManager->InitBranch("StsPoint");
@@ -277,7 +277,7 @@ void CbmMatchRecoToMC::ReadAndCreateDataBranches()
       fStsTrackMatches = new TClonesArray("CbmTrackMatchNew", 100);
       ioman->Register("StsTrackMatch", "STS", fStsTrackMatches, kTRUE);
    }
-    
+
    //RICH
    fRichDigis = (TClonesArray*) ioman->GetObject("RichDigi");
    fRichHits = (TClonesArray*) ioman->GetObject("RichHit");
@@ -358,7 +358,7 @@ void CbmMatchRecoToMC::ReadAndCreateDataBranches()
       fMvdHitMatches = new TClonesArray("CbmMatch", 100);
       ioman->Register("MvdHitMatch", "MVD", fMvdHitMatches, kTRUE);
    }
-   
+
    // TOF
    fTofPoints = (TClonesArray*) ioman->GetObject("TofPoint");
    fTofDigis  = (TClonesArray*) ioman->GetObject("TofDigi");
@@ -367,14 +367,14 @@ void CbmMatchRecoToMC::ReadAndCreateDataBranches()
          fbDigiExpUsed = kTRUE;
    }
    fTofHits   = (TClonesArray*) ioman->GetObject("TofHit");
-   
+
    fTofDigiMatchesPoints = (TClonesArray*) ioman->GetObject("TofDigiMatchPoints");
    fTofDigiMatches       = (TClonesArray*) ioman->GetObject("TofDigiMatch");
 
    if (NULL != fTofDigis && fTofHits != NULL) {
       fTofHitMatches = new TClonesArray("CbmMatch", 100);
       ioman->Register("TofHitMatch", "TOF", fTofHitMatches, kTRUE);
-   }   
+   }
 }
 
 
@@ -603,7 +603,7 @@ void CbmMatchRecoToMC::MatchTracks(
                new ((*trackMatches)[iTrack]) CbmTrackMatchNew();
       Int_t nofHits = track->GetNofHits();
       for (Int_t iHit = 0; iHit < nofHits; iHit++) {
-	 if (track->GetHitType(iHit) == kMUCHPIXELHIT && hitMatches == fMuchStrawHitMatches || track->GetHitType(iHit) == kMUCHSTRAWHIT && hitMatches == fMuchPixelHitMatches) continue; //AZ
+	if ((track->GetHitType(iHit) == kMUCHPIXELHIT && hitMatches == fMuchStrawHitMatches) || (track->GetHitType(iHit) == kMUCHSTRAWHIT && hitMatches == fMuchPixelHitMatches)) continue; //AZ
          const CbmMatch* hitMatch = static_cast<CbmMatch*>(hitMatches->At(track->GetHitIndex(iHit)));
          Int_t nofLinks = hitMatch->GetNofLinks();
          for (Int_t iLink = 0; iLink < nofLinks; iLink++) {
@@ -625,7 +625,7 @@ void CbmMatchRecoToMC::MatchTracks(
       Int_t trueCounter = trackMatch->GetNofTrueHits();
       Int_t wrongCounter = trackMatch->GetNofWrongHits();
       for (Int_t iHit = 0; iHit < nofHits; iHit++) {
-	 if (track->GetHitType(iHit) == kMUCHPIXELHIT && hitMatches == fMuchStrawHitMatches || track->GetHitType(iHit) == kMUCHSTRAWHIT && hitMatches == fMuchPixelHitMatches) continue; //AZ
+	 if ((track->GetHitType(iHit) == kMUCHPIXELHIT && hitMatches == fMuchStrawHitMatches) || (track->GetHitType(iHit) == kMUCHSTRAWHIT && hitMatches == fMuchPixelHitMatches)) continue; //AZ
          const CbmMatch* hitMatch = static_cast<CbmMatch*>(hitMatches->At(track->GetHitIndex(iHit)));
          Int_t nofLinks = hitMatch->GetNofLinks();
          Bool_t hasTrue = false;
@@ -756,22 +756,22 @@ void CbmMatchRecoToMC::MatchRichRings(
     for (Int_t iRing = 0; iRing < nRings; iRing++) {
         const CbmRichRing* ring = static_cast<const CbmRichRing*>(richRings->At(iRing));
         if (NULL == ring) continue;
-        
+
         CbmTrackMatchNew* ringMatch = new ((*ringMatches)[iRing]) CbmTrackMatchNew();
-        
+
         Int_t nofHits = ring->GetNofHits();
         for (Int_t iHit=0; iHit < nofHits; iHit++) {
             const CbmRichHit* hit = static_cast<const CbmRichHit*>(richHits->At(ring->GetHit(iHit)));
             if ( NULL == hit ) continue;
-            
+
             vector<Int_t> motherIds = GetMcTrackMotherIdsForRichHit(hit, richDigis, richMcPoints, mcTracks);
             for (Int_t i = 0; i < motherIds.size(); i++) {
                 ringMatch->AddLink(1., motherIds[i]);
             }
         }
-        
+
         Int_t bestTrackId = ringMatch->GetMatchedLink().GetIndex();
-        
+
         Int_t trueCounter = 0;
         Int_t wrongCounter = 0;
         for (Int_t iHit = 0; iHit < nofHits; iHit++) {
@@ -783,12 +783,12 @@ void CbmMatchRecoToMC::MatchRichRings(
             } else {
                 wrongCounter++;
             }
-            
+
         }
-        
+
         ringMatch->SetNofTrueHits(trueCounter);
         ringMatch->SetNofWrongHits(wrongCounter);
-        
+
     }// Ring loop
 }
 
@@ -806,12 +806,12 @@ vector<Int_t> CbmMatchRecoToMC::GetMcTrackMotherIdsForRichHit(
     const CbmRichDigi* digi = static_cast<const CbmRichDigi*>(richDigis->At(digiIndex));
     if (NULL == digi) return result;
     CbmMatch* digiMatch = digi->GetMatch();
-    
+
     vector<CbmLink> links = digiMatch->GetLinks();
     for (Int_t i = 0; i < links.size(); i++) {
         Int_t pointId = links[i].GetIndex();
         if (pointId < 0) continue; // noise hit
-        
+
         const CbmRichPoint* pMCpt = static_cast<const CbmRichPoint*>(richPoints->At(pointId));
         if ( NULL == pMCpt ) continue;
         Int_t mcTrackIndex = pMCpt->GetTrackID();
@@ -828,7 +828,7 @@ vector<Int_t> CbmMatchRecoToMC::GetMcTrackMotherIdsForRichHit(
             result.push_back(motherId);
         }
     }
-    
+
     return result;
 }
 
