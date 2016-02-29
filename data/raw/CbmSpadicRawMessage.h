@@ -67,6 +67,8 @@ class CbmSpadicRawMessage : public CbmRawMessage
   Bool_t GetOverFlow() { return fIsOverflow; }
   Bool_t GetStrange() { return fIsStrange; }
 
+  void PrintMessage();
+
  private:
 
   Bool_t fIsHit;
@@ -86,7 +88,7 @@ class CbmSpadicRawMessage : public CbmRawMessage
   Int_t fNrSamples;
   Int_t fSamples[32];
 
-  ClassDef(CbmSpadicRawMessage,7);
+  ClassDef(CbmSpadicRawMessage,8);
 
 };
 

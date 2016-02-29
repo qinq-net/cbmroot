@@ -84,6 +84,32 @@ CbmSpadicRawMessage::CbmSpadicRawMessage(Int_t EquipmentID, Int_t SourceAddress,
 }
 // -------------------------------------------------------------------------
 
+void CbmSpadicRawMessage::PrintMessage()
+{
+  LOG(INFO) << "CbmSpadicRawMessage::Print()" << FairLogger::endl;
+  LOG(INFO) << 
+    " fIsHit:" << Int_t(fIsHit) <<
+    " fIsInfo:" << Int_t(fIsInfo) <<
+    " fIsEpoch:" << Int_t(fIsEpoch) <<
+    " fIsEpochOutOfSynch:" << Int_t(fIsEpochOutOfSynch) <<
+    " fIsHitAborted:" << Int_t(fIsHitAborted) <<
+    " fIsOverflow:" << Int_t(fIsOverflow) <<
+    " fIsStrange:" << Int_t(fIsStrange) << 
+    FairLogger::endl;
+  LOG(INFO) << 
+    " fSuperEpoch:" << fSuperEpoch <<
+    " fTriggerType:" << fTriggerType <<
+    " fInfoType:" << fInfoType <<
+    " fStopType:" << fStopType <<
+    " fGroupId:" << fGroupId <<
+    " fBufferOverflowCount:" << fBufferOverflowCount <<
+    " fNrSamples:" << fNrSamples << 
+    FairLogger::endl;
+  for (Int_t i = 0; i < fNrSamples; i++)
+    LOG(INFO) << " " << fSamples[i];
+  FairLogger::endl;
+}
+
 ULong_t CbmSpadicRawMessage::GetFullTime() 
 {
   // Spadic time counter runs with 17.5 MHz => time between conters is
