@@ -42,6 +42,7 @@ CbmAnaConversionTest::CbmAnaConversionTest()
     fKFVertex(),
     fHistoList_test(),
     electronidentifier(NULL),
+    fRichElIdAnn(),
     fElectrons_gtid(),
 	fElectrons_mcid(),
 	fElectrons_richInd(),
@@ -136,6 +137,9 @@ void CbmAnaConversionTest::Init()
 	electronidentifier = new CbmLitGlobalElectronId();
 	electronidentifier->Init();
 	electronidentifier->SetRichAnnCut(-0.8);
+	
+	fRichElIdAnn = new CbmRichElectronIdAnn();
+	fRichElIdAnn->Init();
 
 	globalEventNo = 0;
 }
@@ -609,8 +613,8 @@ void CbmAnaConversionTest::CombineElectrons_FromSTSandRICH()
 					pairmomenta.push_back(fVector_electronRICH_momenta[b]);
 					
 					vector<Double_t> ann;
-					ann.push_back(CbmAnaConversionGlobalFunctions::ElectronANNvalue(fVector_gtIndex[a], fVector_momenta[a].Mag() ));
-					ann.push_back(CbmAnaConversionGlobalFunctions::ElectronANNvalue(fVector_electronRICH_gtIndex[b], fVector_electronRICH_momenta[b].Mag() ));
+					ann.push_back(ElectronANNvalue(fVector_gtIndex[a], fVector_momenta[a].Mag() ));
+					ann.push_back(ElectronANNvalue(fVector_electronRICH_gtIndex[b], fVector_electronRICH_momenta[b].Mag() ));
 					
 					fMixedTest_3p1_photons.push_back(pairmomenta);
 					fMixedTest_3p1_eventno.push_back(globalEventNo);
@@ -670,8 +674,8 @@ void CbmAnaConversionTest::CombineElectrons_FromRICH()
 					pairmomenta.push_back(fVector_electronRICH_momenta[b]);
 					
 					vector<Double_t> ann;
-					ann.push_back(CbmAnaConversionGlobalFunctions::ElectronANNvalue(fVector_electronRICH_gtIndex[a], fVector_electronRICH_momenta[a].Mag() ));
-					ann.push_back(CbmAnaConversionGlobalFunctions::ElectronANNvalue(fVector_electronRICH_gtIndex[b], fVector_electronRICH_momenta[b].Mag() ));
+					ann.push_back(ElectronANNvalue(fVector_electronRICH_gtIndex[a], fVector_electronRICH_momenta[a].Mag() ));
+					ann.push_back(ElectronANNvalue(fVector_electronRICH_gtIndex[b], fVector_electronRICH_momenta[b].Mag() ));
 					
 					fMixedTest_3p1_photons.push_back(pairmomenta);
 					fMixedTest_3p1_eventno.push_back(globalEventNo);
@@ -1240,6 +1244,19 @@ void CbmAnaConversionTest::MixedEventTest_STSonly()
 			}
 		}
 	}
+}
 
 
+Double_t CbmAnaConversionTest::ElectronANNvalue(Int_t globalTrackIndex, Double_t momentum)
+{
+   if (NULL == fGlobalTracks || NULL == fRichRings) return -2;
+   //CbmGlobalTrack* globalTrack = (CbmGlobalTrack*) fGlobalTracks->At(globalTrackIndex);
+   const CbmGlobalTrack* globalTrack = static_cast<const CbmGlobalTrack*>(fGlobalTracks->At(globalTrackIndex));
+   Int_t richId = globalTrack->GetRichRingIndex();
+   if (richId < 0) return -2;
+   CbmRichRing* ring = static_cast<CbmRichRing*> (fRichRings->At(richId));
+   if (NULL == ring) return -2;
+
+   Double_t ann = fRichElIdAnn->DoSelect(ring, momentum);
+   return ann;
 }

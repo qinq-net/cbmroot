@@ -60,6 +60,7 @@ public:
 
 	void MixedEventTest_3p1();
 	void MixedEventTest_STSonly();
+	Double_t ElectronANNvalue(Int_t globalTrackIndex, Double_t momentum);
 
 
 
@@ -77,6 +78,7 @@ private:
 	vector<TH1*> fHistoList_test;	// list of all histograms related to rich rings
 
 	CbmLitGlobalElectronId* electronidentifier;
+	CbmRichElectronIdAnn* fRichElIdAnn;
 
 	vector<int> fElectrons_gtid;
 	vector<int> fElectrons_mcid;
