@@ -147,7 +147,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       infoType = 7;
     }
     
-    TString spadicName = GetSpadicName(eqID,sourceA);
+    spadicName = GetSpadicName(eqID,sourceA);
 
     // add raw message to map sorted by timestamps, syscore and spadic
     timeBuffer[TString(spadicName)][time].push_back(raw);
@@ -414,6 +414,9 @@ void CbmTrdTimeCorrel::Finish()
   fHM->G1("TsStrangeness1")->GetYaxis()->SetTitle("SPADIC1 strangeness");
   c2->SaveAs("pics/TsCounterRatio.png");
   
+  //Perform uniform relabeling of Axis
+  ReLabelAxis(fHM->H1("MultiType_vs_Channel")->GetXaxis(),"infoType",true,true);
+
   // use this to produce nice single plots
   /*
   TCanvas *cnice = new TCanvas("cnice","cnice",800,400); 
@@ -661,10 +664,6 @@ void CbmTrdTimeCorrel::CreateHistograms()
   fHM->Add("MultiType_vs_Channel", new TH2I("MultiType_vs_Channel","MultiType_vs_Channel",35,-1.5,33.5,10,0.5,10.5));
   fHM->H2("MultiType_vs_Channel")->GetXaxis()->SetTitle("Channel");
   fHM->H2("MultiType_vs_Channel")->GetYaxis()->SetTitle("Info or Type");
-  for (int i =0;i<8;i++)
-	fHM->H2("MultiType_vs_Channel")->GetYaxis()->SetBinLabel(i+1,infoTypes[i]);
-  fHM->H2("MultiType_vs_Channel")->GetYaxis()->SetBinLabel(9,"Epoch");
-  fHM->H2("MultiType_vs_Channel")->GetYaxis()->SetBinLabel(10,"Overflow");
 
 }
 
