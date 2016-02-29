@@ -23,12 +23,12 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
     fNrTimeSlices(0),
     fRun(0),
     fRewriteSpadicName(true),
-    fLastMessageTime ({{0,0,0},{0,0,0},{0,0,0}}),
-  fSpadics(0),
-  fMessageBuffer()
-    {
-      LOG(DEBUG) << "Default constructor of CbmTrdTimeCorrel" << FairLogger::endl;
-    }
+    fLastMessageTime {{0,0,0,0,0,0},{0,0,0,0,0,0},{0,0,0,0,0,0}},
+    fSpadics(0),
+	fMessageBuffer()
+{
+ LOG(DEBUG) << "Default constructor of CbmTrdTimeCorrel" << FairLogger::endl;
+}
 // ----              -------------------------------------------------------
 CbmTrdTimeCorrel::~CbmTrdTimeCorrel()
 {
@@ -86,6 +86,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   Bool_t isOverflow = false;
   Bool_t isInfo = false;
   Bool_t isEpoch = false;
+  Bool_t isEpochOutOfSynch = false;
   Bool_t isStrange = false;
   
   // Initialise message coordinates to -1 to recognise unset variables
@@ -110,8 +111,9 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     isInfo = raw->GetInfo();
     isEpoch = raw->GetEpoch();
     isStrange = raw->GetStrange();
+	isEpochOutOfSynch = raw->GetEpochOutOfSynch();
     // Seriously guys, a message can only be of one type.
-    if(Int_t(isHit+isInfo+isEpoch+isHitAborted+isOverflow+isStrange)!=1) LOG(ERROR) << "SpadicMessage " << iSpadicMessage << " is classified from CbmSpadicRawMessage to be: HIT " << Int_t(isHit) << " / INFO " << (Int_t)isInfo << " / EPOCH " << (Int_t)isEpoch << " / HITaborted " << (Int_t)isHitAborted << " / OVERFLOW " << (Int_t)isOverflow << " / STRANGE " << (Int_t)isStrange << FairLogger::endl;
+    if(Int_t(isHit+isInfo+isEpoch+isHitAborted+isOverflow+isStrange+isEpochOutOfSynch)!=1) LOG(ERROR) << "SpadicMessage " << iSpadicMessage << " is classified from CbmSpadicRawMessage to be: HIT " << Int_t(isHit) << " / INFO " << (Int_t)isInfo << " / EPOCH " << (Int_t)isEpoch << " / HITaborted " << (Int_t)isHitAborted << " / OVERFLOW " << (Int_t)isOverflow << " / STRANGE " << (Int_t)isStrange << FairLogger::endl;
 
     // Get SysCore & Spadic propertys
     eqID = raw->GetEquipmentID();
@@ -163,23 +165,27 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	LOG(INFO) << ">----------------------------------<" << FairLogger::endl;
       }
     }
-    if (isInfo){
-      if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,infoType+1);
-      else fHM->H2("InfoType_vs_Channel")->Fill(33,infoType+1); // chIDs greater than 32 are quite strange and will be put into the last bin
-    }
-    if (isEpoch){   // fill epoch messages in an additional row
-      if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,9);
-      else fHM->H2("InfoType_vs_Channel")->Fill(33,9);
-    }
-    if (isOverflow){   // fill overflow messages in an additional row
-      if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,10);
-      else fHM->H2("InfoType_vs_Channel")->Fill(33,10);
-    }
-    //Compute Time Deltas, write them into a histogram and store timestamps in fLastMessageTime.
-    // WORKAROUND: at Present SyscoreID is not extracted, therefore all Messages are stored as if coming from SysCore 0.
-    fHM->H1("Delta_t")->Fill(time-fLastMessageTime[0][static_cast<Int_t>(spaID)]);
-    fLastMessageTime[0][static_cast<Int_t>(spaID)]=time;
-
+	if (isInfo){
+	  if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,infoType);
+	  else fHM->H2("InfoType_vs_Channel")->Fill(33,infoType); // chIDs greater than 32 are quite strange and will be put into the last bin
+	}
+ 	if (isEpoch){   // fill epoch messages in an additional row
+	  if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,9);
+	  else fHM->H2("InfoType_vs_Channel")->Fill(33,9);
+	}
+ 	if (isOverflow){   // fill overflow messages in an additional row
+	  if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,10);
+	  else fHM->H2("InfoType_vs_Channel")->Fill(33,10);
+	}
+//Compute Time Deltas, write them into a histogram and store timestamps in fLastMessageTime.
+// WORKAROUND: at Present SyscoreID is not extracted, therefore all Messages are stored as if coming from SysCore 0.
+	fHM->H1("Delta_t")->Fill(time-fLastMessageTime[0][spaID]);
+//Write delta_t into a TGraph
+	if(spaID!=-1){
+	  Int_t tGraphSize = fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID))->GetN();
+	  fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID))->SetPoint(tGraphSize,time,(time-fLastMessageTime[0][spaID]));
+	}
+	fLastMessageTime[0][spaID]=time;
 
     if(spadicName!="") {
 
@@ -370,7 +376,7 @@ void CbmTrdTimeCorrel::Finish()
   /*
   c1->cd(14);
   fHM->G1("TsCounterHitAborted1")->Draw("AL");
-  fHM->G1("TsCounterHitAborted1")->SetLineColor(kBlue);
+  fHM->G1("TsCounterHitAborted1")->SetLifNrTimeSlicesneColor(kBlue);
   fHM->G1("TsCounterHitAborted1")->GetXaxis()->SetTitle("TS number");
   fHM->G1("TsCounterHitAborted1")->GetYaxis()->SetTitle("SPADIC1 hit aborted messages");
   */
@@ -424,7 +430,19 @@ void CbmTrdTimeCorrel::Finish()
   fHM->G1("TsStrangeness1")->GetXaxis()->SetTitle("TS number");
   fHM->G1("TsStrangeness1")->GetYaxis()->SetTitle("SPADIC1 strangeness");
   c2->SaveAs("pics/TsCounterRatio.png");
-  
+
+  TCanvas *c3 = new TCanvas("c3","Delta_t"+runName,5*320,3*300);
+  c3->Divide(3,2);
+  for (Int_t i=0; i<6;++i){
+	c3->cd(i+1);
+	fHM->G1(("Delta_t_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(i)))->Draw("AL");
+	fHM->G1(("Delta_t_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(i)))->SetLineColor(kRed);
+	fHM->G1(("Delta_t_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(i)))->GetXaxis()->SetTitle("Fulltime()");
+	fHM->G1(("Delta_t_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(i)))->SetTitle("DeltaFulltime()");
+  }
+  c3->Update();
+  c3->SaveAs("pics/Delta_t_Graph.png");
+
   //Perform uniform relabeling of Axis
   ReLabelAxis(fHM->H1("InfoType_vs_Channel")->GetYaxis(),"infoType",true,true);
 
@@ -646,7 +664,9 @@ void CbmTrdTimeCorrel::CreateHistograms()
   fHM->Add("TsCounterStrange1", new TGraph());
   fHM->Add("TsStrangeness0", new TGraph()); // ratio of strange messages over all messages
   fHM->Add("TsStrangeness1", new TGraph());
-
+  for (Int_t j=0; j<3;++j)
+	for (Int_t i=0; i<6;++i)
+	  fHM->Add(("Delta_t_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(i)), new TGraph());
   
   fHM->Add("TriggerType_vs_InfoType", new TH2I("TriggerType_vs_InfoType","TriggerType_vs_InfoType",5,-1.5,3.5,9,-1.5,7.5));
   fHM->H2("TriggerType_vs_InfoType")->GetYaxis()->SetTitle("InfoType");

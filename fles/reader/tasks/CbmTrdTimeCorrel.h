@@ -50,7 +50,7 @@ class CbmTrdTimeCorrel : public FairTask
   
   Int_t fRun;
 
-  Int_t fLastMessageTime[3][6];
+  ULong_t fLastMessageTime[3][6];
 /* Store the last message time.
 Intended usage is for the first (outer) argument to be the SysCoreID 
 and the second (inner) to be the SPADICID. 
