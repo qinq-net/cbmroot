@@ -21,7 +21,7 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
     fRawSpadic(NULL),
     fHM(new CbmHistManager()),
     fNrTimeSlices(0),
-    fRun(NULL),
+    fRun(0),
     fRewriteSpadicName(true),
     fLastMessageTime {{0,0,0},{0,0,0},{0,0,0}},
     fSpadics(0)
@@ -310,7 +310,7 @@ void CbmTrdTimeCorrel::Finish()
 {
 
   TString runName="";
-  if(fRun!=NULL) runName=Form(" (Run %d)",fRun);
+  if(fRun!=0) runName=Form(" (Run %d)",fRun);
 
   // Plot message counter histos to screen
   TCanvas *c1 = new TCanvas("c1","histograms"+runName,5*320,3*300);
@@ -536,7 +536,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
   
   TString spadicName = "";
   TString runName="";
-  if(fRun!=NULL) runName=Form(" (Run %d)",fRun);
+  if(fRun!=0) runName=Form(" (Run %d)",fRun);
   TString histName="";
   TString title="";
 
