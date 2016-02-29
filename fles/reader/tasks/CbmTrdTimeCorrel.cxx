@@ -23,11 +23,12 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
     fNrTimeSlices(0),
     fRun(0),
     fRewriteSpadicName(true),
-    fLastMessageTime {{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}},
-    fSpadics(0)
-{
- LOG(DEBUG) << "Default constructor of CbmTrdTimeCorrel" << FairLogger::endl;
-}
+    fLastMessageTime ({{0,0,0},{0,0,0},{0,0,0}}),
+  fSpadics(0),
+  fMessageBuffer()
+    {
+      LOG(DEBUG) << "Default constructor of CbmTrdTimeCorrel" << FairLogger::endl;
+    }
 // ----              -------------------------------------------------------
 CbmTrdTimeCorrel::~CbmTrdTimeCorrel()
 {
@@ -147,11 +148,19 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       infoType = 7;
     }
     
-    spadicName = GetSpadicName(eqID,sourceA);
+    /*TString*/ spadicName = GetSpadicName(eqID,sourceA);
 
     // add raw message to map sorted by timestamps, syscore and spadic
     timeBuffer[TString(spadicName)][time].push_back(raw);
-
+    if (fMessageBuffer[TString(spadicName)][time].find(padID) == fMessageBuffer[TString(spadicName)][time].end()){
+    fMessageBuffer[TString(spadicName)][time][padID] = raw;
+    } else {  
+      LOG(INFO) << "Found Message already in fMessageBuffer. Potential overlapping MS container!" << FairLogger::endl;
+      raw->PrintMessage();
+      LOG(INFO) << "<---------------------------------->" << FairLogger::endl;
+      fMessageBuffer[TString(spadicName)][time][padID]->PrintMessage();
+      LOG(INFO) << ">----------------------------------<" << FairLogger::endl;
+    }
 	if (isInfo){
 	  if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,infoType+1);
 	  else fHM->H2("InfoType_vs_Channel")->Fill(33,infoType+1); // chIDs greater than 32 are quite strange and will be put into the last bin

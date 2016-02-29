@@ -31,7 +31,7 @@ class CbmTrdTimeCorrel : public FairTask
   void SetRewriteSpadicName(Bool_t rewrite)  { fRewriteSpadicName = rewrite; }
 
  private:
-
+  std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > > fMessageBuffer;
   Int_t   fSpadics;
   Bool_t  fRewriteSpadicName;
 
