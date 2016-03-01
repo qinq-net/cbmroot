@@ -613,8 +613,8 @@ void CbmAnaConversionTest::CombineElectrons_FromSTSandRICH()
 					pairmomenta.push_back(fVector_electronRICH_momenta[b]);
 					
 					vector<Double_t> ann;
-					ann.push_back(CbmAnaConversionGlobalFunctions::ElectronANNvalue(fVector_gtIndex[a], fVector_momenta[a].Mag() ));
-					ann.push_back(CbmAnaConversionGlobalFunctions::ElectronANNvalue(fVector_electronRICH_gtIndex[b], fVector_electronRICH_momenta[b].Mag() ));
+					ann.push_back(ElectronANNvalue(fVector_gtIndex[a], fVector_momenta[a].Mag() ));
+					ann.push_back(ElectronANNvalue(fVector_electronRICH_gtIndex[b], fVector_electronRICH_momenta[b].Mag() ));
 					
 					fMixedTest_3p1_photons.push_back(pairmomenta);
 					fMixedTest_3p1_eventno.push_back(globalEventNo);
@@ -674,8 +674,8 @@ void CbmAnaConversionTest::CombineElectrons_FromRICH()
 					pairmomenta.push_back(fVector_electronRICH_momenta[b]);
 					
 					vector<Double_t> ann;
-					ann.push_back(CbmAnaConversionGlobalFunctions::ElectronANNvalue(fVector_electronRICH_gtIndex[a], fVector_electronRICH_momenta[a].Mag() ));
-					ann.push_back(CbmAnaConversionGlobalFunctions::ElectronANNvalue(fVector_electronRICH_gtIndex[b], fVector_electronRICH_momenta[b].Mag() ));
+					ann.push_back(ElectronANNvalue(fVector_electronRICH_gtIndex[a], fVector_electronRICH_momenta[a].Mag() ));
+					ann.push_back(ElectronANNvalue(fVector_electronRICH_gtIndex[b], fVector_electronRICH_momenta[b].Mag() ));
 					
 					fMixedTest_3p1_photons.push_back(pairmomenta);
 					fMixedTest_3p1_eventno.push_back(globalEventNo);
@@ -740,10 +740,10 @@ void CbmAnaConversionTest::CombinePhotons()
 				//CbmLmvmKinematicParams params1 = CalculateKinematicParams_4particles(momenta[electron11], momenta[electron12], momenta[electron21], momenta[electron22]);
 				
 				
-				Double_t ANNe11 = CbmAnaConversionGlobalFunctions::ElectronANNvalue(gtIndex11, fVector_momenta[electron11].Mag() );
-				Double_t ANNe12 = CbmAnaConversionGlobalFunctions::ElectronANNvalue(gtIndex12, fVector_electronRICH_momenta[electron12].Mag() );
-				Double_t ANNe21 = CbmAnaConversionGlobalFunctions::ElectronANNvalue(gtIndex21, fVector_electronRICH_momenta[electron21].Mag() );
-				Double_t ANNe22 = CbmAnaConversionGlobalFunctions::ElectronANNvalue(gtIndex22, fVector_electronRICH_momenta[electron22].Mag() );
+				Double_t ANNe11 = ElectronANNvalue(gtIndex11, fVector_momenta[electron11].Mag() );
+				Double_t ANNe12 = ElectronANNvalue(gtIndex12, fVector_electronRICH_momenta[electron12].Mag() );
+				Double_t ANNe21 = ElectronANNvalue(gtIndex21, fVector_electronRICH_momenta[electron21].Mag() );
+				Double_t ANNe22 = ElectronANNvalue(gtIndex22, fVector_electronRICH_momenta[electron22].Mag() );
 				
 				
 				if(ANNe11 > -1 && ANNe12 > -1 && ANNe21 > -1 && ANNe22 > -1) fhTest_invmass_ANNcuts->Fill(1, invmass);
