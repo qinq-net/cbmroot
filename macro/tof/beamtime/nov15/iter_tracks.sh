@@ -1,36 +1,93 @@
 #!/bin/bash
 # shell script to iterate tracklet calibration histograms
-cRun='CbmTofSps_29Nov2103'
-iDut=921; iRef=920; iSel2=-300
-#iSel=94; iSet=943; iSel2=3
+#cRun='CbmTofSps_01Dec0206'
+#cRun='CbmTofSps_29Nov2103'
+#cRun='CbmTofSps_28Nov0041'
+cRun='CbmTofSps_28Nov0001'
+#iDut=921; iRef=920; iSel2=-300
+#iDut=400; iRef=300; iSel2=921
+iDut=900; iRef=921; iSel2=920
 
-iTraSetup=0;
+iTraSetup=2;
+
+
 # what should be done ?
 ((iSel=$iDut*1000+$iRef))
 #which file should be analyzed ?  
-cSet="921920_-300";
+#cSet="921920_-300";
+cSet="920921_000";
+#cSet="400300_921";
 
-dDTres=10000000
+nEvt=50000
+dDTres=200000
+dDTRMSres=200000
+iter=13;
+fRange2=50
+fRange1=16
 
+cd ${cRun}
+rm -v ${cRun}_tofFindTracks.hst.root
+
+if [[ $iter > 0 ]]; then
+ cp -v  ${cRun}_tofFindTracks.hst${iter}.root  ${cRun}_tofFindTracks.hst.root
+fi
+ 
 while [[ $dDTres > 0 ]]; do
 
-for iCal in 2  2  1  1 
-do
-root -b -q 'ana_hits.C(100000,'$iSel','$iCal',"'$cRun'","'$cSet'",'$iSel2','$iTraSetup')'
+((fRange2 /= 2))
+if((${fRange2}<5));then
+ ((fRange2=5))
+fi
 
+iCal=2
+nIt=2
+while [[ $nIt > 0 ]]; do
+((iter += 1))
+root -b -q '../ana_hits.C('$nEvt','$iSel','$iCal',"'$cRun'","'$cSet'",'$iSel2','$iTraSetup','$fRange2')'
 cp -v tofFindTracks.hst.root ${cRun}_tofFindTracks.hst.root
+cp -v tofFindTracks.hst.root ${cRun}_tofFindTracks.hst${iter}.root
+((nIt -= 1))
 done
 
-Tres=`cat TCalib.res`
+((fRange1 /= 2))
+if((${fRange1}<2));then
+ ((fRange1=2))
+fi
+
+iCal=1
+nIt=2
+while [[ $nIt > 0 ]]; do
+((iter += 1))
+root -b -q '../ana_hits.C('$nEvt','$iSel','$iCal',"'$cRun'","'$cSet'",'$iSel2','$iTraSetup','$fRange1')'
+cp -v tofFindTracks.hst.root ${cRun}_tofFindTracks.hst.root
+cp -v tofFindTracks.hst.root ${cRun}_tofFindTracks.hst${iter}.root
+((nIt -= 1))
+done
+
+iTres=`cat TCalib.res`
+if [[ $iTres = 0 ]]; then
+    echo All tracks lost, stop at iter = $iter
+    return
+fi
+
+((TRMSres=$iTres%100000))
+((iTres -= TRMSres ))
+((Tres   = iTres / 100000)) 
 dTdif=`echo "$dDTres - $Tres" | bc`
 compare_result=`echo "$Tres < $dDTres" | bc`
 
-echo got TOff = $Tres, compare to $dDTres, dTdif = $dTdif, compare_result = $compare_result
+dTRMSdif=`echo "$dDTRMSres - $TRMSres" | bc`
+compare_RMS=`echo "$TRMSres < $dDTRMSres" | bc`
+
+echo at iter=$iter got TOff = $Tres, compare to $dDTres, dTdif = $dTdif, result = $compare_result, TRMS = $TRMSres, old $dDTRMSres, dif = $dTRMSdif, result = $compare_RMS 
+((compare_result += $compare_RMS))
 
 if [[ $compare_result > 0 ]]; then
 dDTres=$Tres
+dDTRMSres=$TRMSres
 else
 dDTres=0
+cp -v  tofFindTracks.hst.root ../${cRun}_tofFindTracks.hst.root
 fi
 
 done

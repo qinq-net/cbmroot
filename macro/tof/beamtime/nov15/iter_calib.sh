@@ -6,24 +6,37 @@ cRun=$1
 #cRun='CbmTofSps_27Nov2115'
 #iDut=921; iRef=920; iSel2=-300
 #iDut=921; iRef=300; iSel2=920
-iDut=400; iRef=300; iSel2=921
+#iDut=400; iRef=300; iSel2=921
+#iDut=400; iRef=300; iSel2=0
+#iDut=921; iRef=300; iSel2=920
+#iDut=921; iRef=920; iSel2=0
 #iDut=3; iRef=9; iSel2=9
 ##iDut=9; iRef=9; iSel2=3
 #iDut=9; iRef=4; iSel2=-3
 #iDut=9; iRef=7; iSel2=-3
 #iDut=6; iRef=1;   iSel2=-8
-###iDut=6; iRef=1; iSel2=8;  
-c0='000000'
+###iDut=6; iRef=1; iSel2=8;
+#((iSet=$iDut*1000+$iRef))
+  
+c0='00000'
 
-((iSet=$iDut*1000+$iRef))
+iCalSet=$2
+((iTmp  = $iCalSet ))
+((iBRef = $iTmp % 1000))
+((iTmp  = $iTmp - $iBRef))
+((iSet  = $iTmp / 1000))
+((iRef  = $iTmp % 1000000))
+((iRef  = $iRef / 1000))
+((iTmp  = $iTmp - $iRef))
+((iDut  = $iTmp / 1000000))
+
+iSel2=$3
 
 if((${iSel2}<0));then
- ((iBRef=-iSel2))
- else
- iBRef=500
- fi
+ ((iBRef=-$iSel2))
+fi
 
-echo iDut=$iDut, iRef=$iRef, iSet=$iSet, iSel2=$iSel2, iBRef=$iBRef
+echo iter_calib with iDut=$iDut, iRef=$iRef, iSet=$iSet, iSel2=$iSel2, iBRef=$iBRef
 
 #mkdir ${cRun}
 #cp rootlogon.C ${cRun}
@@ -44,16 +57,16 @@ do
 
 case $mode in 
 1)
-nIter=4
-alist=`echo '1'$c0'0,93,1,'$iRef'' '1'$c0'0,44,1,'$iDut'' '1'$c0'0,44,1,'$iBRef'' '1'$c0'0,93,0,'$iDut'' '1'$c0'0,44,0,'$iRef'' '1'$c0'0,44,0,'$iBRef'' '1'$c0'00,41,1,-'$iRef'' '1'$c0'0,93,0,'$iRef'' '1'$c0'00,41,0,-'$iDut'' '1'$c0'0,93,1,'$iRef''`
+nIter=5
+alist=`echo '1'$c0'0,93,1,'$iRef'' '1'$c0'0,44,0,-'$iDut''  '1'$c0'0,93,0,'$iDut'' '1'$c0'0,44,1,-'$iRef'' '1'$c0'00,41,1,-'$iRef'' '1'$c0'0,93,0,'$iRef'' '1'$c0'00,41,0,-'$iDut'' '1'$c0'0,93,1,'$iRef''`
 ;;
 2)
 nIter=2
 alist=`echo '1'$c0'0,92,1,'$iRef'' '1'$c0'00,64,1,-'$iRef'' '1'$c0'00,64,1,'$iBRef'' '1'$c0'0,92,0,'$iDut'' '1'$c0'00,64,0,-'$iDut'' '1'$c0'00,64,0,'$iBRef'' '1'$c0'0,92,1,'$iRef''`
 ;;
 3)
-nIter=3
-alist=`echo '1'$c0',93,1,4' `
+nIter=5
+alist=`echo '1'$c0'0,44,0,-'$iDut'' '1'$c0'0,44,1,-'$iRef'' `
 ;;
 4)
 nIter=5
@@ -129,17 +142,26 @@ else
 fi
 fi 
 
+
+cSel2=$iSel2;
+if [[ $iSel2 = 0 ]]; then
+cSel2="000"
+fi
+cp -v  ../${cRun}_${iSet}${cSel2}_tofAnaTestBeam.hst.root .
+
 # generate new calibration file
 root -b -q '../../ana_digi.C('$inOpt',0,"'$cRun'",'$iSet',0,'$iSel2') '
 
 lastOpt=$inOpt
 
 #./screenshot.sh 
-cp -v tofTestBeamClust_${cRun}_set${iSet}.hst.root ../${cRun}_set${iSet}_${cMode}_${cSel}${mode}tofTestBeamClust.hst.root
+cp -v tofTestBeamClust_${cRun}_set${iSet}.hst.root ../${cRun}_set${iSet}_${cMode}_${cSel}tofTestBeamClust.hst.root
+
+cp -v tofAnaTestBeam.hst.root ../${cRun}_${iSet}${cSel2}_tofAnaTestBeam.hst.root
 cp *pdf ../
 cd .. 
-rm ../${cRun}_set${iSet}_${cMode}_${cSel}${mode}tofTestBeamClust.hst.root
-ln -s ./${cRun}/${cRun}_set${iSet}_${cMode}_${cSel}${mode}tofTestBeamClust.hst.root ../${cRun}_set${iSet}_${cMode}_${cSel}${mode}tofTestBeamClust.hst.root
+rm ../${cRun}_set${iSet}_${cMode}_${cSel}tofTestBeamClust.hst.root
+ln -s ./${cRun}/${cRun}_set${iSet}_${cMode}_${cSel}tofTestBeamClust.hst.root ../${cRun}_set${iSet}_${cMode}_${cSel}tofTestBeamClust.hst.root
 
 done
 (( nIter -= 1))
