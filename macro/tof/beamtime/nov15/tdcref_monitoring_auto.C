@@ -10,7 +10,7 @@
 FairRunOnline *run = new FairRunOnline ();
 
 // Max nEvents: 198999999999
-void tdcref_monitoring_auto(Int_t nEvents = 100000, Bool_t bCalibRun = kFALSE) 
+void tdcref_monitoring_auto(Int_t nEvents = 100000, char *cFileId="CbmTofSps_28Nov0041", Bool_t bCalibRun = kFALSE) 
 {
    // Specify log level (INFO, DEBUG, DEBUG1, ...)
    TString logLevel = "FATAL";
@@ -51,9 +51,10 @@ void tdcref_monitoring_auto(Int_t nEvents = 100000, Bool_t bCalibRun = kFALSE)
 //   source->AddFile("/home/cbmlyserv/DataTemp/CbmTofSps_24Nov2047_0001.lmd");
 //   source->AddFile("/home/cbmlyserv/DataTemp/CbmTofSps_26Nov0022_0000.lmd");
 //   source->AddFile("/home/cbmlyserv/DataTemp/CbmTofSps_26Nov0043_0065.lmd");
-   FairMbsStreamSource* source = new FairMbsStreamSource("trbdaq:21704");
+//   FairMbsStreamSource* source = new FairMbsStreamSource("trbdaq:21704");
 
-//   CbmHldSource* source = new CbmHldSource();
+   CbmHldSource* source = new CbmHldSource();
+   source->AddPath("/hera/cbm/users/tofGsiApr14/cern-nov15/production/",Form("%s*.hld",cFileId));
 //   source->AddFile("/home/cbmlyserv/DataTemp/CbmTofSps_26Nov1421_15330142142.hld");
 
    // = 1 TRB3: TTrbUnpackTof(0,0,31,0,0)
@@ -106,7 +107,7 @@ void tdcref_monitoring_auto(Int_t nEvents = 100000, Bool_t bCalibRun = kFALSE)
    display->MonitorTdcOccupancy(kTRUE);
    display->SetNumberOfTDC(38);
    display->SetNumberOfSEB(5);
-   display->SetUpdateInterval(10000);
+   display->SetUpdateInterval(50000);
    display->MonitorCts(kTRUE);
    display->MonitorSebStatus(kFALSE);
    display->MonitorTdcStatus(kFALSE);

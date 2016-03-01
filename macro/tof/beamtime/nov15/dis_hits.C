@@ -6,7 +6,7 @@ void dis_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    //TString logLevel = "ERROR";
    TString logLevel = "INFO";
    TString logLevel = "DEBUG"; 
-   TString logLevel = "DEBUG1";
+   //TString logLevel = "DEBUG1";
    //TString logLevel = "DEBUG2";
    //TString logLevel = "DEBUG3";
    FairLogger* log;  
@@ -89,8 +89,8 @@ void dis_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 
    CbmTofTrackFinder* tofTrackFinder= new CbmTofTrackFinderNN();
    tofTrackFinder->SetMaxTofTimeDifference(5000.);// in ps/cm 
-   tofTrackFinder->SetTxLIM(0.3);                  // max slope dx/dz
-   tofTrackFinder->SetTyLIM(0.2);                  // max dev from mean slope dy/dz
+   tofTrackFinder->SetTxLIM(0.3);                 // max slope dx/dz
+   tofTrackFinder->SetTyLIM(0.2);                 // max dev from mean slope dy/dz
    tofTrackFinder->SetTyMean(0.1);                // mean slope dy/dz
    tofTrackFinder->SetSIGLIM(4.);                 // max matching chi2
    tofTrackFinder->SetSIGT(100.);                // in ps
@@ -107,18 +107,18 @@ void dis_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    tofFindTracks->SetCalParFileName(cTrkFile);   // Tracker parameter value file name  
    switch (iTrackingSetup){
    case 0:                                       // calibration mode
-     tofFindTracks->SetMinNofHits(2);
-     tofFindTracks->SetNStations(9);
-     tofFindTracks->SetStation(0, 5, 2, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(1, 4, 0, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(2, 9, 0, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(3, 9, 0, 1);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(4, 9, 1, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(5, 9, 1, 1);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(6, 9, 2, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(7, 9, 2, 1);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(8, 3, 0, 0);           // upper part of Nov15 setup 
-     tofTrackFinder->SetSIGT(100000.);                 // in ps
+     tofFindTracks->SetMinNofHits(6);
+     tofFindTracks->SetNStations(8);
+     tofFindTracks->SetStation(0, 5, 0, 0);           // Diamond 
+     tofFindTracks->SetStation(1, 4, 0, 0);           // P5 
+     tofFindTracks->SetStation(2, 9, 2, 0);           // USTC 
+     tofFindTracks->SetStation(3, 9, 2, 1);           // USTC
+     tofFindTracks->SetStation(4, 9, 1, 0);           // 
+     //tofFindTracks->SetStation(4, 9, 1, 1);           // broken
+     tofFindTracks->SetStation(5, 9, 0, 0);           //  
+     tofFindTracks->SetStation(6, 9, 0, 1);           //  
+     tofFindTracks->SetStation(7, 3, 0, 0);           // P2 
+     tofTrackFinder->SetSIGT(200.);                 // in ps
      break;
 
    case 1:                                       // calibration mode
@@ -182,6 +182,8 @@ void dis_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      return;
      ;
    }
+   tofFindTracks->PrintSetup();
+
    run->AddTask(tofFindTracks);
    // =========================================================================
    // ===                       Analysis                                    ===
@@ -334,6 +336,7 @@ void dis_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
   CbmPixelHitSetDraw *TofHits = new CbmPixelHitSetDraw ("TofHit", kRed, kOpenCircle );// kFullSquare);
   fMan->AddTask(TofHits);   
   CbmEvDisTracks *Track =  new CbmEvDisTracks ("Tof Tracks",1);
+  Track->SetVerbose(2);
   fMan->AddTask(Track);
   TGeoVolume* top = gGeoManager->GetTopVolume();
   gGeoManager->SetVisOption(0);

@@ -6,7 +6,7 @@ void dis_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
   TString logLevel = "ERROR";
   TString logLevel = "INFO";
   TString logLevel = "DEBUG";
-  TString logLevel = "DEBUG1";
+  //TString logLevel = "DEBUG1";
   //TString logLevel = "DEBUG2";
   //TString logLevel = "DEBUG3";
   FairLogger* log;  
@@ -251,17 +251,45 @@ void dis_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
    tofFindTracks->SetCalParFileName(cTrkFile);   // Tracker parameter value file name  
    switch (iTrackingSetup){
    case 0:                                       // calibration mode
-     tofFindTracks->SetMinNofHits(2);
-     tofFindTracks->SetNStations(9);
-     tofFindTracks->SetStation(0, 5, 2, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(1, 4, 0, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(2, 9, 0, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(3, 9, 0, 1);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(4, 9, 1, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(5, 9, 1, 1);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(6, 9, 2, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(7, 9, 2, 1);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(8, 3, 0, 0);           // upper part of Nov15 setup 
+     tofFindTracks->SetMinNofHits(3);
+     tofFindTracks->SetNStations(8);
+     tofFindTracks->SetStation(0, 5, 0, 0);           // Diamond 
+     tofFindTracks->SetStation(1, 4, 0, 0);           // P5 
+     tofFindTracks->SetStation(2, 9, 2, 0);           // USTC 
+     tofFindTracks->SetStation(3, 9, 2, 1);           // USTC
+     //tofFindTracks->SetStation(4, 9, 1, 0);           // broken
+     tofFindTracks->SetStation(4, 9, 1, 1);           //
+     tofFindTracks->SetStation(5, 9, 0, 0);           //  
+     tofFindTracks->SetStation(6, 9, 0, 1);           //  
+     tofFindTracks->SetStation(7, 3, 0, 0);           // P2 
+     break;
+
+   case 10:                                       // full lower setup
+     tofFindTracks->SetMinNofHits(3);
+     tofFindTracks->SetNStations(14);
+     tofFindTracks->SetStation(0, 5, 0, 0);           // Diamond 
+     tofFindTracks->SetStation(1, 8, 0, 2);           // THUpad 
+     tofFindTracks->SetStation(2, 8, 0, 3);           // THUpad
+     tofFindTracks->SetStation(3, 8, 0, 0);           // THUpad
+     tofFindTracks->SetStation(4, 8, 0, 1);           // THUpad
+     tofFindTracks->SetStation(5, 8, 0, 4);           // THUpad
+     tofFindTracks->SetStation(6, 8, 0, 5);           // THUpad
+     tofFindTracks->SetStation(7, 6, 0, 0);           // Buc2015
+     tofFindTracks->SetStation(8, 6, 0, 1);           // Buc2015
+     tofFindTracks->SetStation(9, 7, 0, 0);           // Buc2012
+     tofFindTracks->SetStation(10, 7, 0, 1);           // Buc2012
+     tofFindTracks->SetStation(11, 7, 0, 2);           // Buc2012
+     tofFindTracks->SetStation(12, 7, 0, 3);           // Buc2012
+     tofFindTracks->SetStation(13, 1, 0, 0);           // BucRef  
+     break;
+
+   case 11:                                       // full lower setup
+     tofFindTracks->SetMinNofHits(3);
+     tofFindTracks->SetNStations(4);
+     tofFindTracks->SetStation(0, 5, 0, 0);           // Diamond 
+     tofFindTracks->SetStation(1, 6, 0, 0);           // Buc2015
+     tofFindTracks->SetStation(2, 6, 0, 1);           // Buc2015
+     tofFindTracks->SetStation(3, 1, 0, 0);           // BucRef  
      break;
 
    default:
@@ -269,7 +297,7 @@ void dis_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
      return;
      ;
    }
-   // run->AddTask(tofFindTracks);
+   run->AddTask(tofFindTracks);
    //
    // Analysis 
    //
@@ -304,7 +332,7 @@ void dis_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
    Int_t iRSelRpc=0;
    if(iSel2>=0){
      iRSel=5;   // use diamond
-     iRSelSm=2;
+     iRSelSm=0;
    }else{
      iSel2=-iSel2;
      iRSel=iSel2;
@@ -373,6 +401,7 @@ void dis_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
    case 921300:
    case 920300:
    case 921920:
+   case 920921:
      switch (iRSel){
          case 3:
 	   tofAnaTestbeam->SetTShift(-2000.);   // Shift DTD4 to 0
@@ -405,6 +434,18 @@ void dis_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
      break;
  
    case 300400:
+     switch (iRSel){
+         case 9:
+	   tofAnaTestbeam->SetTShift(-2000.);   // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
+	   break;
+         default:
+	   ;
+     }
+     break;
+
+   case 601600:
      switch (iRSel){
          case 9:
 	   tofAnaTestbeam->SetTShift(-2000.);   // Shift DTD4 to 0
@@ -461,7 +502,8 @@ void dis_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
   CbmPixelHitSetDraw *TofHits = new CbmPixelHitSetDraw ("TofHit", kRed, kOpenCircle );// kFullSquare);
   fMan->AddTask(TofHits);   
   CbmEvDisTracks *Track =  new CbmEvDisTracks ("Tof Tracks",1);
-  //  fMan->AddTask(Track);
+  fMan->AddTask(Track);
+
   TGeoVolume* top = gGeoManager->GetTopVolume();
   gGeoManager->SetVisOption(1);
   gGeoManager->SetVisLevel(5);
@@ -470,10 +512,24 @@ void dis_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
   for(Int_t i=0; i<allvolumes->GetEntries(); i++){
     TGeoVolume* vol     = (TGeoVolume*)allvolumes->At(i);
     TString name = vol->GetName();
-    //cout << " GeoVolume "<<i<<" Name: "<< name << endl;
-    if( name == "counter"){
-      //cout << " counter found " << i << " set transparent "<<endl;
+    //    cout << " GeoVolume "<<i<<" Name: "<< name << endl;
+    switch(name) {
+    case "counter":
       vol->SetTransparency(95);
+      break;
+
+    case "tof_glass":
+    case "Gap":
+    case "Cell":
+      vol->SetTransparency(99);
+      break;
+
+    case "pcb":
+      vol->SetTransparency(30);
+      break;
+
+    default:
+      vol->SetTransparency(96);
     }
   }
   //  gGeoManager->SetVisLevel(3);

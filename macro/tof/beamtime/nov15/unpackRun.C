@@ -6,6 +6,6 @@ void unpackRun(char* cFileId="CbmTofSps_01Dec0206")
   Char_t *cCom=Form("setup_unpack(1,\"%s\")",cFileId);
   cout << "Processline "<<cCom<<endl;
   gInterpreter->ProcessLine(cCom);
-  run->Run(100000000);
+  run->Run(1000000000);
   run->Finish();
 }

@@ -14,7 +14,7 @@ void setup_unpack(Int_t calMode=1, char *cFileId="CbmTofSps_01Dec0128", Int_t iS
   TString logLevel = "FATAL";
   //TString logLevel = "ERROR";
   TString logLevel = "INFO";
-  //  TString logLevel = "DEBUG";
+  //TString logLevel = "DEBUG";
   //TString logLevel = "DEBUG1";
   //TString logLevel = "DEBUG2";
   //TString logLevel = "DEBUG3";
@@ -71,8 +71,9 @@ void setup_unpack(Int_t calMode=1, char *cFileId="CbmTofSps_01Dec0128", Int_t iS
    TObjString tofDigiFile = workDir + "/parameters/tof/tof_" + TofGeo + ".digi.par"; // TOF digi file
    //   parFileList->Add(&tofDigiFile);   
 
-   TObjString tofDigiBdfFile =  paramDir + "/tof.digibdf.par";
-   //parFileList->Add(&tofDigiBdfFile);
+   TObjString tofDigiBdfFile = workDir  + "/parameters/tof/tof_" + TofGeo +".digibdf.par";
+   //   TObjString tofDigiBdfFile =  paramDir + "/tof.digibdf.par";
+   parFileList->Add(&tofDigiBdfFile);
 
    TString geoDir  = gSystem->Getenv("VMCWORKDIR");
    TString geoFile = geoDir + "/geometry/tof/geofile_tof_" + TofGeo + ".root";
@@ -102,6 +103,35 @@ void setup_unpack(Int_t calMode=1, char *cFileId="CbmTofSps_01Dec0128", Int_t iS
    timer.Start();
    // ------------------------------------------------------------------------
    
+ 
+   gLogger->SetLogScreenLevel(logLevel.Data());
+
+   // -----   Online/Offline MBS run   -----------------------------------
+
+   FairRunOnline *run = FairRunOnline::Instance();
+   run->SetOutputFile(outFile);
+   run->SetAutoFinish(kFALSE);
+
+   // -----  Parameter database   --------------------------------------------
+   FairRuntimeDb* rtdb = run->GetRuntimeDb();
+   
+   Bool_t kParameterMerged = kTRUE;
+   
+   FairParAsciiFileIo* parIo1 = new FairParAsciiFileIo();
+   parIo1->open(parFileList, "in");
+   parIo1->print();
+//   rtdb->setFirstInput(parIo1);
+
+   FairParRootFileIo* parIo2 = new FairParRootFileIo(kParameterMerged);
+   parIo2->open(parFile.Data(), "UPDATE");
+   parIo2->print();
+
+   rtdb->setFirstInput(parIo1);
+   rtdb->setSecondInput(parIo2);
+   
+   rtdb->print();
+   rtdb->printParamContexts();
+   // ------------------------------------------------------------------------
    // =========================================================================
    // ===                           Unpacker                                ===
    // =========================================================================
@@ -116,6 +146,7 @@ void setup_unpack(Int_t calMode=1, char *cFileId="CbmTofSps_01Dec0128", Int_t iS
    */
    CbmHldSource* source = new CbmHldSource();
    source->AddPath("/hera/cbm/users/tofGsiApr14/cern-nov15/production/",Form("%s*.hld",cFileId));
+   //source->AddPath("./LMD/",Form("%s*.hld",cFileId));
    /*   
    TTriglogUnpackTof* tofTriglogUnpacker = new TTriglogUnpackTof();
    //   tofTriglogUnpacker->SetSaveTriglog(kTRUE);
@@ -127,16 +158,7 @@ void setup_unpack(Int_t calMode=1, char *cFileId="CbmTofSps_01Dec0128", Int_t iS
    */
    TTrbUnpackTof* tofTrbDataUnpacker = new TTrbUnpackTof(10,1,31,0,0);
    source->AddUnpacker( tofTrbDataUnpacker );
-   
-   gLogger->SetLogScreenLevel(logLevel.Data());
-
-   // -----   Online/Offline MBS run   -----------------------------------
-
-   FairRunOnline *run = FairRunOnline::Instance();
    run->SetSource(source);
-   run->SetOutputFile(outFile);
-   run->SetAutoFinish(kFALSE);
-
    // --------------------------------------------------------------------
    // ===                        End of Unpacker                            ===
    // =========================================================================
@@ -189,7 +211,7 @@ void setup_unpack(Int_t calMode=1, char *cFileId="CbmTofSps_01Dec0128", Int_t iS
    tofTestBeamClust->SetTotMax(100000.);
    tofTestBeamClust->SetTotMin(1.); 
 
-   tofTestBeamClust->SetBeamRefType(4);    // Test case 
+   tofTestBeamClust->SetBeamRefId(5);    // define Beam reference counter 
    tofTestBeamClust->SetBeamRefSm(0);
    tofTestBeamClust->SetBeamRefDet(0);
    tofTestBeamClust->SetBeamAddRefMul(-1);
@@ -240,24 +262,6 @@ void setup_unpack(Int_t calMode=1, char *cFileId="CbmTofSps_01Dec0128", Int_t iS
    display->SetUpdateInterval(1000000);
    run->AddTask(display);   
 
-   // -----  Parameter database   --------------------------------------------
-   FairRuntimeDb* rtdb = run->GetRuntimeDb();
-   
-   Bool_t kParameterMerged = kTRUE;
-   FairParRootFileIo* parIo2 = new FairParRootFileIo(kParameterMerged);
-   parIo2->open(parFile.Data(), "UPDATE");
-   parIo2->print();
-   rtdb->setFirstInput(parIo2);
-   
-   FairParAsciiFileIo* parIo1 = new FairParAsciiFileIo();
-   parIo1->open(parFileList, "in");
-   parIo1->print();
-//   rtdb->setFirstInput(parIo1);
-   rtdb->setSecondInput(parIo1);
-   
-   rtdb->print();
-   rtdb->printParamContexts();
-   // ------------------------------------------------------------------------
 
    // -----   Intialise and run   --------------------------------------------
    run->Init();
