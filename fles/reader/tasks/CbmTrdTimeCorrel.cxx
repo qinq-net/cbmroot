@@ -167,7 +167,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	*/
 	fMessageBuffer[TString(spadicName)][time][padID] = raw;
       } else {  
-	LOG(INFO) << "Found Message already in fMessageBuffer at " << TString(spadicName).Data() << ", time:" << time ", padID:" << padID << ". Potential overlapping MS container!" << FairLogger::endl;
+	LOG(INFO) << "Found Message already in fMessageBuffer at " << TString(spadicName).Data() << ", time:" << time << ", padID:" << padID << ". Potential overlapping MS container!" << FairLogger::endl;
 	raw->PrintMessage();
 	LOG(INFO) << "<---------------------------------->" << FairLogger::endl;
 	fMessageBuffer[TString(spadicName)][time][padID]->PrintMessage();
