@@ -18,6 +18,7 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    TString InputDigiFile = paramDir + "/digi_" + cFileId + Form("_%s",cSet) + ".out.root";
    TString OutputFile    = paramDir + "/hits_" + cFileId + Form("_%s_%06d_%03d",cSet,iSel,iSel2) + ".out.root";
    TString cAnaFile=Form("%s_%s_%06d_%03d_tofAnaTestBeam.hst.root",cFileId,cSet,iSel,iSel2);
+   TString cHstFile=paramDir + Form("/hst/%s_%s_%06d_%03d_tofAna.hst.root",cFileId,cSet,iSel,iSel2);
    TString cTrkFile=Form("%s_tofFindTracks.hst.root",cFileId);
 
    cout << " InputDigiFile = "
@@ -93,16 +94,16 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    CbmKF* kalman = new CbmKF();
 
    CbmTofTrackFinder* tofTrackFinder= new CbmTofTrackFinderNN();
-   tofTrackFinder->SetMaxTofTimeDifference(5000.);// in ps/cm 
-   tofTrackFinder->SetTxLIM(0.3);                 // max slope dx/dz
-   tofTrackFinder->SetTyLIM(0.2);                 // max dev from mean slope dy/dz
-   tofTrackFinder->SetTyMean(0.1);                // mean slope dy/dz
-   tofTrackFinder->SetSIGLIM(2.);                 // max matching chi2
-   tofTrackFinder->SetSIGT(100.);                 // in ps
-   tofTrackFinder->SetSIGX(1.);                   // in cm
-   tofTrackFinder->SetSIGY(1.);                   // in cm
+   tofTrackFinder->SetMaxTofTimeDifference(5000.); // in ps/cm 
+   tofTrackFinder->SetTxLIM(0.05);                 // max slope dx/dz
+   tofTrackFinder->SetTyLIM(0.05);                  // max dev from mean slope dy/dz
+   tofTrackFinder->SetTyMean(0.1);                 // mean slope dy/dz
+   tofTrackFinder->SetSIGLIM(4.);                  // max matching chi2
+   tofTrackFinder->SetSIGT(100.);                  // in ps
+   tofTrackFinder->SetSIGX(0.5);                   // in cm
+   tofTrackFinder->SetSIGY(1.5);                   // in cm
    CbmTofTrackFitter* tofTrackFitter= new CbmTofTrackFitterKF(0,211);
-   TFitter *MyFit = new TFitter(1);              // initialize Minuit
+   TFitter *MyFit = new TFitter(1);                // initialize Minuit
    tofTrackFinder->SetFitter(tofTrackFitter);
    CbmTofFindTracks* tofFindTracks  = new CbmTofFindTracks("TOF Track Finder");
    tofFindTracks->UseFinder(tofTrackFinder);
@@ -111,63 +112,94 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    tofFindTracks->SetTtTarg(33.7);               // target value for inverse velocity, > 33.3 !
    tofFindTracks->SetCalParFileName(cTrkFile);   // Tracker parameter value file name
      
-   tofFindTracks->SetT0MAX(dScalFac*10000.);                 // in ps
+   tofFindTracks->SetT0MAX(dScalFac*1000.);      // in ps
   
    switch (iTrackingSetup){
    case 0:                                       // calibration mode
-     tofFindTracks->SetMinNofHits(2);
-     tofFindTracks->SetNStations(9);
-     tofFindTracks->SetStation(0, 5, 2, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(1, 4, 0, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(2, 9, 0, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(3, 9, 0, 1);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(4, 9, 1, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(5, 9, 1, 1);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(6, 9, 2, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(7, 9, 2, 1);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(8, 3, 0, 0);           // upper part of Nov15 setup 
-     tofTrackFinder->SetSIGT(1000.);                 // in ps
+     tofFindTracks->SetMinNofHits(6);
+     tofFindTracks->SetNStations(8);
+     tofFindTracks->SetStation(0, 5, 0, 0);           // Diamond 
+     tofFindTracks->SetStation(1, 4, 0, 0);           // P5 
+     tofFindTracks->SetStation(2, 9, 2, 0);           // USTC 
+     tofFindTracks->SetStation(3, 9, 2, 1);           // USTC
+     tofFindTracks->SetStation(4, 9, 1, 0);           // 
+     //tofFindTracks->SetStation(4, 9, 1, 1);         // broken
+     tofFindTracks->SetStation(5, 9, 0, 0);           //  
+     tofFindTracks->SetStation(6, 9, 0, 1);           //  
+     tofFindTracks->SetStation(7, 3, 0, 0);           // P2 
+     tofTrackFinder->SetSIGT(200.);                   // in ps
      break;
 
    case 1:                                       // calibration mode
-     tofFindTracks->SetMinNofHits(2);
-     tofFindTracks->SetNStations(4);
-     tofFindTracks->SetStation(0, 4, 0, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(1, 9, 0, 1);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(2, 9, 2, 1);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(3, 3, 0, 0);           // upper part of Nov15 setup 
+     tofFindTracks->SetMinNofHits(4);
+     tofFindTracks->SetNStations(6);
+     tofFindTracks->SetStation(0, 5, 0, 0);           // Diamond 
+     tofFindTracks->SetStation(1, 9, 2, 0);           // USTC 
+     tofFindTracks->SetStation(2, 9, 2, 1);           // USTC
+     tofFindTracks->SetStation(3, 9, 1, 0);           // 
+     tofFindTracks->SetStation(4, 9, 0, 0);           //  
+     tofFindTracks->SetStation(5, 9, 0, 1);           // 
+     tofTrackFinder->SetSIGT(150.);                  // in ps
      break;
 
    case 2:                                            // calibration mode
+     tofFindTracks->SetMinNofHits(4);
+     tofFindTracks->SetNStations(4);
+     tofFindTracks->SetStation(0, 9, 2, 0);           // USTC 
+     tofFindTracks->SetStation(1, 9, 2, 1);           // USTC
+     tofFindTracks->SetStation(2, 9, 0, 0);           //  
+     tofFindTracks->SetStation(3, 9, 0, 1);           // 
+     tofTrackFinder->SetSIGT(150.);                  // in ps
+     break;
+
+   case 3:                                            // calibration mode
      tofFindTracks->SetMinNofHits(3);
+     tofFindTracks->SetNStations(4);
+     tofFindTracks->SetStation(0, 9, 2, 0);           // USTC 
+     tofFindTracks->SetStation(1, 9, 2, 1);           // USTC
+     tofFindTracks->SetStation(2, 9, 0, 0);           //  
+     tofFindTracks->SetStation(3, 9, 0, 1);           // 
+     tofTrackFinder->SetSIGT(150.);                  // in ps
+     break;
+
+   case 4:                                            // calibration mode
+     tofFindTracks->SetMinNofHits(6);
      tofFindTracks->SetNStations(6);
-     tofFindTracks->SetStation(0, 5, 0, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(1, 4, 0, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(2, 9, 0, 1);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(3, 9, 2, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(4, 9, 2, 1);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(5, 3, 0, 0);           // upper part of Nov15 setup 
-     // tofTrackFinder->SetSIGT(dScalFac*1000.);                  // in ps
+     tofFindTracks->SetStation(0, 4, 0, 0);           // P5 
+     tofFindTracks->SetStation(1, 9, 2, 0);           // USTC 
+     tofFindTracks->SetStation(2, 9, 2, 1);           // USTC
+     tofFindTracks->SetStation(3, 9, 0, 0);           //  
+     tofFindTracks->SetStation(4, 9, 0, 1);           // 
+     tofFindTracks->SetStation(5, 3, 0, 0);           // P2 
+     tofTrackFinder->SetSIGT(150.);                  // in ps
      break;
 
-   case 3:                                       // calibration mode
-     tofFindTracks->SetMinNofHits(2);
-     tofFindTracks->SetNStations(3);
-     tofFindTracks->SetStation(0, 5, 0, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(1, 4, 0, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(2, 3, 0, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetT0MAX(50000.);                 // in ps
-     tofTrackFinder->SetSIGT(1000.);                 // in ps
+   case 10:                                       // full lower setup
+     tofFindTracks->SetMinNofHits(3);
+     tofFindTracks->SetNStations(14);
+     tofFindTracks->SetStation(0, 5, 0, 0);           // Diamond 
+     tofFindTracks->SetStation(1, 8, 0, 2);           // THUpad 
+     tofFindTracks->SetStation(2, 8, 0, 3);           // THUpad
+     tofFindTracks->SetStation(3, 8, 0, 0);           // THUpad
+     tofFindTracks->SetStation(4, 8, 0, 1);           // THUpad
+     tofFindTracks->SetStation(5, 8, 0, 4);           // THUpad
+     tofFindTracks->SetStation(6, 8, 0, 5);           // THUpad
+     tofFindTracks->SetStation(7, 6, 0, 0);           // Buc2015
+     tofFindTracks->SetStation(8, 6, 0, 1);           // Buc2015
+     tofFindTracks->SetStation(9, 7, 0, 0);           // Buc2012
+     tofFindTracks->SetStation(10, 7, 0, 1);           // Buc2012
+     tofFindTracks->SetStation(11, 7, 0, 2);           // Buc2012
+     tofFindTracks->SetStation(12, 7, 0, 3);           // Buc2012
+     tofFindTracks->SetStation(13, 1, 0, 0);           // BucRef  
      break;
 
-   case 4:                                       // calibration mode
-     tofFindTracks->SetMinNofHits(2);
-     tofFindTracks->SetNStations(3);
-     tofFindTracks->SetStation(0, 9, 2, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(1, 9, 2, 1);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(2, 3, 0, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetT0MAX(2000.);                 // in ps
-     tofTrackFinder->SetSIGT(200.);                  // in ps
+   case 11:                                       // full lower setup
+     tofFindTracks->SetMinNofHits(3);
+     tofFindTracks->SetNStations(4);
+     tofFindTracks->SetStation(0, 5, 0, 0);           // Diamond 
+     tofFindTracks->SetStation(1, 6, 0, 0);           // Buc2015
+     tofFindTracks->SetStation(2, 6, 0, 1);           // Buc2015
+     tofFindTracks->SetStation(3, 1, 0, 0);           // BucRef  
      break;
 
    default:
@@ -176,6 +208,7 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      ;
    }
    run->AddTask(tofFindTracks);
+
    // =========================================================================
    // ===                       Analysis                                    ===
    // =========================================================================
@@ -261,6 +294,88 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 
    switch (iSel) {
    case 0:                                 // upper part of setup: P2 - P5
+   case 400300:
+     cout << "Run with iRSel = "<<iRSel<<endl;
+     switch (iRSel){
+         case 4:
+	   tofAnaTestbeam->SetTShift(0.);   // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
+	   break;
+	   
+         case 5:
+           //tofTestBeamClust->SetBeamAddRefMul(1);
+	   tofAnaTestbeam->SetTShift(-3000.);     // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
+	   break;
+
+         case 9:
+	   tofAnaTestbeam->SetChi2Lim(100.);   // initialization of Chi2 selection limit  
+	   tofAnaTestbeam->SetMulDMax(3);      // Max Multiplicity in BeamRef // Diamond    
+           //tofTestBeamClust->SetBeamAddRefMul(1);
+	   tofAnaTestbeam->SetTShift(100.);   // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(500.);     // Shift Sel2 time peak to 0
+	   break;
+
+         default:
+	   ;
+     }
+
+     tofAnaTestbeam->SetChi2Lim(30.);     // initialization of Chi2 selection limit  
+     tofAnaTestbeam->SetDXWidth(1.5);
+     tofAnaTestbeam->SetDYWidth(1.5);
+     tofAnaTestbeam->SetDTWidth(120.);   // in ps
+     tofAnaTestbeam->SetCh4Sel(15);      // Center of channel selection window
+     tofAnaTestbeam->SetDCh4Sel(3);      // Width  of channel selection window
+     tofAnaTestbeam->SetPosY4Sel(0.25);  // Y Position selection in fraction of strip length
+     tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in Diamond    
+     tofAnaTestbeam->SetMul0Max(1);      // Max Multiplicity in dut 
+     tofAnaTestbeam->SetMul4Max(3);      // Max Multiplicity in Ref - RPC 
+     break;
+
+   case 921300:
+     cout << "Run with iRSel = "<<iRSel<<endl;
+     switch (iRSel){
+         case 4:
+	   tofAnaTestbeam->SetTShift(0.);   // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
+	   break;
+	   
+         case 5:
+           //tofTestBeamClust->SetBeamAddRefMul(1);
+	   tofAnaTestbeam->SetTShift(-3000.);     // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
+	   break;
+
+         case 9:
+	   tofAnaTestbeam->SetChi2Lim(100.);   // initialization of Chi2 selection limit  
+	   tofAnaTestbeam->SetMulDMax(3);      // Max Multiplicity in BeamRef // Diamond    
+           //tofTestBeamClust->SetBeamAddRefMul(1);
+	   tofAnaTestbeam->SetTShift(100.);   // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(500.);     // Shift Sel2 time peak to 0
+	   break;
+
+         default:
+	   ;
+     }
+
+     tofAnaTestbeam->SetChi2Lim(5.);     // initialization of Chi2 selection limit  
+     tofAnaTestbeam->SetDXWidth(1.5);
+     tofAnaTestbeam->SetDYWidth(1.5);
+     tofAnaTestbeam->SetDTWidth(120.);   // in ps
+     tofAnaTestbeam->SetCh4Sel(15);      // Center of channel selection window
+     tofAnaTestbeam->SetDCh4Sel(20);     // Width  of channel selection window
+     tofAnaTestbeam->SetPosY4Sel(10.5);   // Y Position selection in fraction of strip length
+     tofAnaTestbeam->SetMulDMax(10);      // Max Multiplicity in Diamond    
+     tofAnaTestbeam->SetMul0Max(3);      // Max Multiplicity in dut 
+     tofAnaTestbeam->SetMul4Max(300);      // Max Multiplicity in Ref - RPC 
+     break;
+
    case 921920:  
 	 tofAnaTestbeam->SetCh4Sel(16.5);    // Center of channel selection window
 	 tofAnaTestbeam->SetDCh4Sel(20.);   // Width  of channel selection window
@@ -305,13 +420,185 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	 }
 	 break;
 
+   case 300921:  
+	 tofAnaTestbeam->SetCh4Sel(16.5);    // Center of channel selection window
+	 tofAnaTestbeam->SetDCh4Sel(20.);   // Width  of channel selection window
+	 //tofAnaTestbeam->SetChi2Lim(6.);     // initialization of Chi2 selection limit  
+	 tofAnaTestbeam->SetTOffD4(13000.);  // initialization
+	 //	 tofAnaTestbeam->SetTShift(-2000.);  // initialization
+	 switch(iSel2){
+	 case 9:
+	   tofAnaTestbeam->SetChi2Lim(10.);     // initialization of Chi2 selection limit  
+	   tofAnaTestbeam->SetTShift(1600.);       // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(70.);  // Shift Sel2 time peak to 0
+	   break;
+
+	 case 5:
+	   break
+	     ;
+	 default:
+	   ;
+	 }
+	 break;
+
          default:
 	 ;
+
+
+   case 900921:  
+	 tofAnaTestbeam->SetCh4Sel(16.5);    // Center of channel selection window
+	 tofAnaTestbeam->SetDCh4Sel(20.);   // Width  of channel selection window
+	 //tofAnaTestbeam->SetChi2Lim(6.);     // initialization of Chi2 selection limit  
+	 tofAnaTestbeam->SetTShift(-15000.);  // initialization
+	 tofAnaTestbeam->SetTOffD4(13000.);  // initialization
+	 switch(iSel2){
+	 case 3:
+	   tofAnaTestbeam->SetChi2Lim(4.);     // initialization of Chi2 selection limit  
+	   tofAnaTestbeam->SetTShift(-600.);    // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(-170.);  // Shift Sel2 time peak to 0
+	   break;
+
+	 case 4:
+	   break;
+
+         case 5:
+           //tofTestBeamClust->SetBeamAddRefMul(1);
+	   tofAnaTestbeam->SetTShift(-16000.);     // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
+	   break;
+
+	 case 9:
+	   tofAnaTestbeam->SetChi2Lim(4.);      // initialization of Chi2 selection limit  
+	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(-170.);  // Shift Sel2 time peak to 0
+	   break;
+
+	 default:
+	   ;
+	 }
+	 break;
+
+   case 920921:  
+	 tofAnaTestbeam->SetCh4Sel(16.5);    // Center of channel selection window
+	 tofAnaTestbeam->SetDCh4Sel(20.);   // Width  of channel selection window
+	 //tofAnaTestbeam->SetChi2Lim(6.);     // initialization of Chi2 selection limit  
+	 tofAnaTestbeam->SetTShift(-15000.);  // initialization
+	 tofAnaTestbeam->SetTOffD4(13000.);  // initialization
+	 switch(iSel2){
+	 case 3:
+	   tofAnaTestbeam->SetChi2Lim(4.);     // initialization of Chi2 selection limit  
+	   tofAnaTestbeam->SetTShift(-600.);       // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(-170.);  // Shift Sel2 time peak to 0
+	   break;
+
+	 case 4:
+	   break;
+
+         case 5:
+           //tofTestBeamClust->SetBeamAddRefMul(1);
+	   tofAnaTestbeam->SetTShift(-16000.);     // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
+	   break;
+
+	 case 9:
+	   tofAnaTestbeam->SetChi2Lim(4.);      // initialization of Chi2 selection limit  
+	   tofAnaTestbeam->SetTShift(-600.);    // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(-170.);  // Shift Sel2 time peak to 0
+	   break;
+
+	 default:
+	   ;
+	 }
+	 break;
+
+   case 900400:
+   case 901400:
+   case 920400:
+   case 921400:
+     cout << "Run with iRSel = "<<iRSel<<endl;
+     switch (iRSel){
+         case 3:
+	   tofAnaTestbeam->SetTShift(0.);   // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
+	   break;
+	   
+         case 5:
+           //tofTestBeamClust->SetBeamAddRefMul(1);
+	   tofAnaTestbeam->SetTShift(-1900.);     // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(17000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
+	   break;
+
+         case 9:
+	   tofAnaTestbeam->SetChi2Lim(100.);   // initialization of Chi2 selection limit  
+	   tofAnaTestbeam->SetMulDMax(3);      // Max Multiplicity in BeamRef // Diamond    
+           //tofTestBeamClust->SetBeamAddRefMul(1);
+	   tofAnaTestbeam->SetTShift(100.);   // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(500.);     // Shift Sel2 time peak to 0
+	   break;
+
+         default:
+	   ;
+     }
+
+     tofAnaTestbeam->SetChi2Lim(5.);     // initialization of Chi2 selection limit  
+     tofAnaTestbeam->SetDXWidth(1.5);
+     tofAnaTestbeam->SetDYWidth(1.5);
+     tofAnaTestbeam->SetDTWidth(120.);   // in ps
+     tofAnaTestbeam->SetCh4Sel(8);      // Center of channel selection window
+     tofAnaTestbeam->SetDCh4Sel(10);     // Width  of channel selection window
+     tofAnaTestbeam->SetPosY4Sel(0.5);   // Y Position selection in fraction of strip length
+     tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in Diamond    
+     tofAnaTestbeam->SetMul0Max(3);      // Max Multiplicity in dut 
+     tofAnaTestbeam->SetMul4Max(3);      // Max Multiplicity in Ref - RPC 
+     break;
+
+   case 601600:
+     cout << "Run with iRSel = "<<iRSel<<endl;
+     switch (iRSel){	   
+         case 5:
+           //tofTestBeamClust->SetBeamAddRefMul(1);
+	   tofAnaTestbeam->SetTShift(-1900.);     // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(17000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
+	   break;
+
+         case 8:
+	   tofAnaTestbeam->SetChi2Lim(100.);   // initialization of Chi2 selection limit  
+	   tofAnaTestbeam->SetMulDMax(3);      // Max Multiplicity in BeamRef // Diamond    
+           //tofTestBeamClust->SetBeamAddRefMul(1);
+	   tofAnaTestbeam->SetTShift(100.);   // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(500.);     // Shift Sel2 time peak to 0
+	   break;
+
+         default:
+	   ;
+     }
+
+     tofAnaTestbeam->SetChi2Lim(5.);     // initialization of Chi2 selection limit  
+     tofAnaTestbeam->SetDXWidth(1.5);
+     tofAnaTestbeam->SetDYWidth(1.5);
+     tofAnaTestbeam->SetDTWidth(120.);   // in ps
+     //tofAnaTestbeam->SetCh4Sel(8);      // Center of channel selection window
+     //tofAnaTestbeam->SetDCh4Sel(10);     // Width  of channel selection window
+     //tofAnaTestbeam->SetPosY4Sel(0.5);   // Y Position selection in fraction of strip length
+     tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in Diamond    
+     //tofAnaTestbeam->SetMul0Max(3);      // Max Multiplicity in dut 
+     //tofAnaTestbeam->SetMul4Max(3);      // Max Multiplicity in Ref - RPC 
+     break;
    }  // end of different subsets
 
    switch(cFileId){
-     case "CernSps01Mar2203_hdref_200_hdp2_220_thupad_170_thustrip_23c_bucref_160_buc2013_160_ustc_220_diam_0c0_nb":
-
+     case "CernSps01Mar2203":
 	 break;
 
      default:
@@ -366,8 +653,11 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
   gROOT->LoadMacro("pl_over_MatD4sel.C");
   gROOT->LoadMacro("pl_over_trk.C");
   gROOT->LoadMacro("pl_calib_trk.C");
+  gROOT->LoadMacro("save_hst.C");
 
   gInterpreter->ProcessLine("pl_over_MatD4sel()");
   gInterpreter->ProcessLine("pl_over_trk(9)");
   gInterpreter->ProcessLine("pl_calib_trk()");
+  TString SaveToHstFile = "save_hst(\"" + cHstFile + "\")";
+  gInterpreter->ProcessLine(SaveToHstFile);
 }

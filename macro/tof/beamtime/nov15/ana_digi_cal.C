@@ -78,7 +78,7 @@ void ana_digi_cal(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
    tofTestBeamClust->SetCalMode(calMode);
    tofTestBeamClust->SetCalSel(calSel);
    tofTestBeamClust->SetCaldXdYMax(3.);         // geometrical matching window in cm 
-   tofTestBeamClust->SetCalCluMulMax(20.);       // Max Counter Cluster Multiplicity for filling calib histos  
+   tofTestBeamClust->SetCalCluMulMax(10.);       // Max Counter Cluster Multiplicity for filling calib histos  
    tofTestBeamClust->SetCalRpc(calSm);           // select detector for calibration update  
    tofTestBeamClust->SetTRefId(RefSel);          // reference trigger for offset calculation 
    tofTestBeamClust->SetTotMax(10000.);          // Tot upper limit for walk corection
@@ -86,7 +86,8 @@ void ana_digi_cal(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
    tofTestBeamClust->SetTotPreRange(5000.);      // effective lower Tot limit  in ps from peak position
    tofTestBeamClust->SetTotMean(2000.);          // Tot calibration target value in ps 
    tofTestBeamClust->SetMaxTimeDist(500.);       // default cluster range in ps 
-   //tofTestBeamClust->SetMaxTimeDist(0.);       //Deb// default cluster range in ps 
+   //tofTestBeamClust->SetMaxTimeDist(0.);       // Deb// default cluster range in ps 
+   tofTestBeamClust->SetDelTofMax(6000.);        // acceptance range for cluster correlation  
 
    Int_t calSelRead = calSel;
    if (calSel<0) calSelRead=0;
@@ -107,15 +108,15 @@ void ana_digi_cal(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
      break;
    case 1:                                      // save offsets, update walks 
      tofTestBeamClust->SetTRefDifMax(25000.);    // in ps 
-     tofTestBeamClust->PosYMaxScal(1.0);        // in % of length 
+     tofTestBeamClust->PosYMaxScal(50.0);        // in % of length 
      break;
    case 11:
      tofTestBeamClust->SetTRefDifMax(4000.);    // in ps 
-     tofTestBeamClust->PosYMaxScal(1.0);        // in % of length 
+     tofTestBeamClust->PosYMaxScal(2.0);        // in % of length 
      break;   
    case 21:
      tofTestBeamClust->SetTRefDifMax(3000.);    // in ps 
-     tofTestBeamClust->PosYMaxScal(1.0);        // in % of length 
+     tofTestBeamClust->PosYMaxScal(1.5);        // in % of length 
      break;
    case 31:
      tofTestBeamClust->SetTRefDifMax(2000.);    // in ps 
@@ -195,15 +196,19 @@ void ana_digi_cal(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
      break;
 
    case 4:                                      // velocity dependence (DelTOF)
-     tofTestBeamClust->SetTRefDifMax(6000.);    // in ps 
+     tofTestBeamClust->SetTRefDifMax(60000.);    // in ps 
      tofTestBeamClust->PosYMaxScal(1.5);        //in % of length
      break;
    case 14:
-     tofTestBeamClust->SetTRefDifMax(4000.);   // in ps 
-     tofTestBeamClust->PosYMaxScal(1.);        //in % of length
+     tofTestBeamClust->SetTRefDifMax(6000.);   // in ps 
+     tofTestBeamClust->PosYMaxScal(4.);        //in % of length
      break;
    case 24:
      tofTestBeamClust->SetTRefDifMax(2000.);   // in ps 
+     tofTestBeamClust->PosYMaxScal(1.0);        //in % of length
+     break;
+   case 34:
+     tofTestBeamClust->SetTRefDifMax(1000.);   // in ps 
      tofTestBeamClust->PosYMaxScal(0.8);        //in % of length
      break;
    case 54:
@@ -291,13 +296,31 @@ void ana_digi_cal(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
    case 3:                                 // upper part of setup: P2 - P5
    case 34:                                // upper part of setup: P2 - P5
    case 400300:
+   case 920300:
+   case 921300:
+   case 901900:
    case 921920:
+   case 920921:
+   case 400921:
+   case 300921:
          tofAnaTestbeam->SetTOffD4(13000.);   // Shift DTD4 to physical value
          tofAnaTestbeam->SetSel2TOff(-230.);  // Shift Sel2 time peak to 0
 	 tofAnaTestbeam->SetCh4Sel(16.);      // Center of channel selection window
 	 tofAnaTestbeam->SetDCh4Sel(20.);     // Width  of channel selection window
 	 break;
  
+   case 700600:
+   case 100600:
+   case 601600:
+   case 700601:
+   case 100601:
+   case 600601:
+         tofAnaTestbeam->SetTOffD4(13000.);   // Shift DTD4 to physical value
+         tofAnaTestbeam->SetSel2TOff(-230.);  // Shift Sel2 time peak to 0
+	 tofAnaTestbeam->SetCh4Sel(16.);      // Center of channel selection window
+	 tofAnaTestbeam->SetDCh4Sel(20.);     // Width  of channel selection window
+	 break;
+
          default:
 	   cout<<"<E> detector setup "<<iSet<<" unknown, stop!"<<endl;
 	   return;
@@ -366,6 +389,7 @@ void ana_digi_cal(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
   case 99:
   case 93:
   case 400300:
+  case 901900:
   case 921920:
   case 920921:
   case 920300:
@@ -413,6 +437,12 @@ void ana_digi_cal(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
   case 86:
   case 18:
   case 68:
+  case 601600:
+  case 100600:
+  case 700600:
+  case 600601:
+  case 100601:
+  case 700601:
     gInterpreter->ProcessLine("pl_over_clu(1)");
     gInterpreter->ProcessLine("pl_over_clu(6,0,0)");
     gInterpreter->ProcessLine("pl_over_clu(6,0,1)");

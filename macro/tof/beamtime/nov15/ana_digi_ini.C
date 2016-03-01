@@ -293,24 +293,6 @@ void ana_digi_ini(Int_t nEvents = 10000, Int_t calMode=0, Int_t calSel=-1, Int_t
 
    tofAnaTestbeam->SetChi2Lim(100.);             // initialization of Chi2 selection limit  
 
-   switch (iSet) {
-   case 0:                                 // upper part of setup: P2 - P5
-   case 3:                                 // upper part of setup: P2 - P5
-   case 34:                                // upper part of setup: P2 - P5
-   case 400300:
-   case 921920:
-         tofAnaTestbeam->SetTOffD4(13000.);   // Shift DTD4 to physical value
-         tofAnaTestbeam->SetSel2TOff(-230.);  // Shift Sel2 time peak to 0
-	 tofAnaTestbeam->SetCh4Sel(16.);      // Center of channel selection window
-	 tofAnaTestbeam->SetDCh4Sel(20.);     // Width  of channel selection window
-	 break;
- 
-         default:
-	   cout<<"<E> detector setup "<<iSet<<" unknown, stop!"<<endl;
-	   return;
-	 ;
-   }  // end of different subsets
-
    switch(cFileId){
      case " ":
 
@@ -374,6 +356,7 @@ void ana_digi_ini(Int_t nEvents = 10000, Int_t calMode=0, Int_t calSel=-1, Int_t
   case 99:
   case 93:
   case 400300:
+  case 901900:
   case 921920:
   case 920921:
   case 920300:
@@ -421,6 +404,12 @@ void ana_digi_ini(Int_t nEvents = 10000, Int_t calMode=0, Int_t calSel=-1, Int_t
   case 86:
   case 18:
   case 68:
+  case 601600:
+  case 100600:
+  case 700600:
+  case 600601:
+  case 100601:
+  case 700601:
     gInterpreter->ProcessLine("pl_over_clu(1)");
     gInterpreter->ProcessLine("pl_over_clu(6,0,0)");
     gInterpreter->ProcessLine("pl_over_clu(6,0,1)");
