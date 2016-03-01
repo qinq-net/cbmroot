@@ -111,7 +111,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     isInfo = raw->GetInfo();
     isEpoch = raw->GetEpoch();
     isStrange = raw->GetStrange();
-	isEpochOutOfSynch = raw->GetEpochOutOfSynch();
+    isEpochOutOfSynch = raw->GetEpochOutOfSynch();
     // Seriously guys, a message can only be of one type.
     if(Int_t(isHit+isInfo+isEpoch+isHitAborted+isOverflow+isStrange+isEpochOutOfSynch)!=1) LOG(ERROR) << "SpadicMessage " << iSpadicMessage << " is classified from CbmSpadicRawMessage to be: HIT " << Int_t(isHit) << " / INFO " << (Int_t)isInfo << " / EPOCH " << (Int_t)isEpoch << " / HITaborted " << (Int_t)isHitAborted << " / OVERFLOW " << (Int_t)isOverflow << " / STRANGE " << (Int_t)isStrange << FairLogger::endl;
 
@@ -153,39 +153,48 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     /*TString*/ spadicName = GetSpadicName(eqID,sourceA);
 
     // add raw message to map sorted by timestamps, syscore and spadic
-    if (!isStrange) {
+    if (!isStrange && !isEpoch && !isEpochOutOfSynch) {
       timeBuffer[TString(spadicName)][time].push_back(raw);
-      if (fMessageBuffer[TString(spadicName)][time].find(padID) == fMessageBuffer[TString(spadicName)][time].end()){
+      if (fMessageBuffer[TString(spadicName)][time].find(padID) == fMessageBuffer[TString(spadicName)][time].end()){ 
+	/*
+	  if there is no message found for spadicName at this time and the same padID (which should never be the case) the 
+	  processed message is added to the map. This avoids per definition the use of overlapping microslices. It is up to you to 
+	  define the time for spacial and time clusterization (after each timeSliceContainer or ad the end of the file. This will 
+	  be mainly a question of avainlable RAM. It might be a good idea to clusterize after each timeSliceContainer, write all 
+	  rawMessages inside of the buffer to a TClonesArray or TTree as well as all found CbmTrdClusters to a separate TClonesArray 
+	  or TTree. Afterwards one should erase the buffer partially (leaving a rest of messages at the end of the buffer to be able 
+	  to cluster messages at the beginning of the next TimeSliceContainer.
+	*/
 	fMessageBuffer[TString(spadicName)][time][padID] = raw;
       } else {  
-	LOG(INFO) << "Found Message already in fMessageBuffer. Potential overlapping MS container!" << FairLogger::endl;
+	LOG(INFO) << "Found Message already in fMessageBuffer at " << TString(spadicName).Data() << ", time:" << time ", padID:" << padID << ". Potential overlapping MS container!" << FairLogger::endl;
 	raw->PrintMessage();
 	LOG(INFO) << "<---------------------------------->" << FairLogger::endl;
 	fMessageBuffer[TString(spadicName)][time][padID]->PrintMessage();
 	LOG(INFO) << ">----------------------------------<" << FairLogger::endl;
       }
     }
-	if (isInfo){
-	  if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,infoType);
-	  else fHM->H2("InfoType_vs_Channel")->Fill(33,infoType); // chIDs greater than 32 are quite strange and will be put into the last bin
-	}
- 	if (isEpoch){   // fill epoch messages in an additional row
-	  if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,9);
-	  else fHM->H2("InfoType_vs_Channel")->Fill(33,9);
-	}
- 	if (isOverflow){   // fill overflow messages in an additional row
-	  if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,10);
-	  else fHM->H2("InfoType_vs_Channel")->Fill(33,10);
-	}
-//Compute Time Deltas, write them into a histogram and store timestamps in fLastMessageTime.
-// WORKAROUND: at Present SyscoreID is not extracted, therefore all Messages are stored as if coming from SysCore 0.
-	fHM->H1("Delta_t")->Fill(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID]));
-//Write delta_t into a TGraph
-	if(spaID!=-1){
-	  Int_t tGraphSize = fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID))->GetN();
-	  fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID))->SetPoint(tGraphSize,time,(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID])));
-	}
-	fLastMessageTime[0][spaID]=time;
+    if (isInfo){
+      if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,infoType);
+      else fHM->H2("InfoType_vs_Channel")->Fill(33,infoType); // chIDs greater than 32 are quite strange and will be put into the last bin
+    }
+    if (isEpoch){   // fill epoch messages in an additional row
+      if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,9);
+      else fHM->H2("InfoType_vs_Channel")->Fill(33,9);
+    }
+    if (isOverflow){   // fill overflow messages in an additional row
+      if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,10);
+      else fHM->H2("InfoType_vs_Channel")->Fill(33,10);
+    }
+    //Compute Time Deltas, write them into a histogram and store timestamps in fLastMessageTime.
+    // WORKAROUND: at Present SyscoreID is not extracted, therefore all Messages are stored as if coming from SysCore 0.
+    fHM->H1("Delta_t")->Fill(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID]));
+    //Write delta_t into a TGraph
+    if(spaID!=-1){
+      Int_t tGraphSize = fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID))->GetN();
+      fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID))->SetPoint(tGraphSize,time,(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID])));
+    }
+    fLastMessageTime[0][spaID]=time;
 
     if(spadicName!="") {
 
