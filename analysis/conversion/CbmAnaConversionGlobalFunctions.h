@@ -6,9 +6,12 @@
 #ifndef CBM_ANA_CONVERSION_GLOBAL_FUNCTIONS
 #define CBM_ANA_CONVERSION_GLOBAL_FUNCTIONS
 
-#include "TMath.h"
 #include "CbmMCTrack.h"
+#include "CbmGlobalTrack.h"
+#include "CbmRichRing.h"
+#include "TMath.h"
 #include "TLorentzVector.h"
+#include "TClonesArray.h"
 #include "CbmRichElectronIdAnn.h"
 
 #define M2E 2.6112004954086e-7

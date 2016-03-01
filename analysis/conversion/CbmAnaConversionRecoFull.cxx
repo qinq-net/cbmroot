@@ -1497,10 +1497,10 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 				Bool_t IsRichElectron_ann0_e21 = electronidentifier_ann0->IsRichElectron(fElectrons_globaltrackID_new[index][electron21], momenta[electron21].Mag() );
 				Bool_t IsRichElectron_ann0_e22 = electronidentifier_ann0->IsRichElectron(fElectrons_globaltrackID_new[index][electron22], momenta[electron22].Mag() );
 				
-				Double_t ANNe11 = CbmAnaConversionGlobalFunctions::ElectronANNvalue(fElectrons_globaltrackID_new[index][electron11], momenta[electron11].Mag() );
-				Double_t ANNe12 = CbmAnaConversionGlobalFunctions::ElectronANNvalue(fElectrons_globaltrackID_new[index][electron12], momenta[electron12].Mag() );
-				Double_t ANNe21 = CbmAnaConversionGlobalFunctions::ElectronANNvalue(fElectrons_globaltrackID_new[index][electron21], momenta[electron21].Mag() );
-				Double_t ANNe22 = CbmAnaConversionGlobalFunctions::ElectronANNvalue(fElectrons_globaltrackID_new[index][electron22], momenta[electron22].Mag() );
+				Double_t ANNe11 = ElectronANNvalue(fElectrons_globaltrackID_new[index][electron11], momenta[electron11].Mag() );
+				Double_t ANNe12 = ElectronANNvalue(fElectrons_globaltrackID_new[index][electron12], momenta[electron12].Mag() );
+				Double_t ANNe21 = ElectronANNvalue(fElectrons_globaltrackID_new[index][electron21], momenta[electron21].Mag() );
+				Double_t ANNe22 = ElectronANNvalue(fElectrons_globaltrackID_new[index][electron22], momenta[electron22].Mag() );
 				
 				if(IsRichElectron_ann0_e11 && IsRichElectron_ann0_e12 && IsRichElectron_ann0_e21 && IsRichElectron_ann0_e22) {
 					fhPhotons_invmass_ann0_new[index]->Fill(invmass);
@@ -2685,7 +2685,7 @@ void CbmAnaConversionRecoFull::MixedEventTest4()
 			CbmAnaConversionKinematicParams params = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(e11, e12, e21, e22);
 			fhMixedEventsTest4_invmass->Fill(params.fMinv);
 			fhMixedEventsTest4_pt_vs_rap->Fill(params.fPt, params.fRapidity);
-			cout << "CbmAnaConversionRecoFull: MixedEventTest4(), event filled!, part" << endl;
+			//cout << "CbmAnaConversionRecoFull: MixedEventTest4(), event filled!, part" << endl;
 			
 			fhPhotons_stats[4]->Fill(8);	// all combinations
 			if(motherId11 == motherId12 && motherId21 == motherId22 ) {
