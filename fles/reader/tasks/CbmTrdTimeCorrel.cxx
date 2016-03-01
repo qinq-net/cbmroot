@@ -28,8 +28,8 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
 {
  LOG(DEBUG) << "Default constructor of CbmTrdTimeCorrel" << FairLogger::endl;
  for (Int_t SysID =0; SysID<3;++SysID)
-  for (Int_t SpaID =0; SpaID<6;++SpaID)
-   for (Int_t ChID =0; ChID<16;++ChID)
+  for (Int_t SpaID =0; SpaID<3;++SpaID)
+   for (Int_t ChID =0; ChID<32;++ChID)
 	fLastMessageTime[SysID][SpaID][ChID]=0;
 }
 // ----              -------------------------------------------------------
@@ -189,17 +189,17 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	  if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,10);
 	  else fHM->H2("InfoType_vs_Channel")->Fill(33,10);
 	}
-   if (0<=chID && chID <=15){
-	if(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID][chID])<-1000)  LOG(INFO) << "SpadicMessage: " << iSpadicMessage << " has negative Delta Fulltime. sourceA: " << sourceA << " chID: " << raw->GetChannelID() << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " isInfo: " << isInfo << " isEpoch: " << isEpoch << " Lost Messages: " << lostMessages << FairLogger::endl;
+   if (0 <= chID && chID < 32){
+	if(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID/2][chID])<-1000)  LOG(INFO) << "SpadicMessage: " << iSpadicMessage << " has negative Delta Fulltime. sourceA: " << sourceA << " chID: " << raw->GetChannelID() << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " isInfo: " << isInfo << " isEpoch: " << isEpoch << " Lost Messages: " << lostMessages << FairLogger::endl;
 //Compute Time Deltas, write them into a histogram and store timestamps in fLastMessageTime.
 // WORKAROUND: at Present SyscoreID is not extracted, therefore all Messages are stored as if coming from SysCore 0.
-	fHM->H1("Delta_t")->Fill(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID][chID]));
+	fHM->H1("Delta_t")->Fill(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID/2][chID]));
 //Write delta_t into a TGraph
 	if(spaID!=-1){
-	  Int_t tGraphSize = fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID))->GetN();
-	  fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID))->SetPoint(tGraphSize,time,(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID][chID])));
+	  Int_t tGraphSize = fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID/2)+"_Channel_"+std::to_string(chID))->GetN();
+	  fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID/2)+"_Channel_"+std::to_string(chID))->SetPoint(tGraphSize,time,(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID/2][chID])));
 	}
-	fLastMessageTime[0][spaID][chID]=time;
+	fLastMessageTime[0][spaID/2][chID]=time;
    }
     if(spadicName!="") {
 
@@ -445,17 +445,25 @@ void CbmTrdTimeCorrel::Finish()
   fHM->G1("TsStrangeness1")->GetYaxis()->SetTitle("SPADIC1 strangeness");
   c2->SaveAs("pics/TsCounterRatio.png");
 
-  TCanvas *c3 = new TCanvas("c3","Delta_t"+runName,5*320,3*300);
-  c3->Divide(3,2);
-  for (Int_t i=0; i<6;++i){
-	c3->cd(i+1);
-	fHM->G1(("Delta_t_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(i)))->Draw("AL");
-	fHM->G1(("Delta_t_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(i)))->SetLineColor(kRed);
-	fHM->G1(("Delta_t_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(i)))->GetXaxis()->SetTitle("Fulltime()");
-	fHM->G1(("Delta_t_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(i)))->SetTitle("DeltaFulltime()");
-  }
-  c3->Update();
-  c3->SaveAs("pics/Delta_t_Graph.png");
+  TCanvas *c3 = nullptr;
+
+  for (Int_t SysID=0; SysID<1;++SysID)
+	for (Int_t SpaID=0; SpaID<4;++SpaID){
+	  if(SpaID%2 == 0){
+		c3 = new TCanvas("c3","Delta_t"+runName+"_Spadic_"+std::to_string(SpaID),5*320,3*300);
+	    c3->Divide(8,4);
+	  }
+	  for (Int_t ChID=0; ChID<32;++ChID)
+	  {
+		c3->cd(ChID+1);
+		fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID/2)+"_Channel_"+std::to_string(ChID)))->Draw("AL");
+		fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID/2)+"_Channel_"+std::to_string(ChID)))->SetLineColor(kRed);
+		fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID/2)+"_Channel_"+std::to_string(ChID)))->GetXaxis()->SetTitle("Fulltime()");
+		fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID/2)+"_Channel_"+std::to_string(ChID)))->SetTitle(TString("DeltaFulltime()_Spadic_"+std::to_string(SpaID)+"_Channel_"+std::to_string(ChID)));
+  	  }
+	  c3->Update();
+	  c3->SaveAs(TString("pics/Delta_t_Graph_Spadic_"+std::to_string(SpaID/2)+".png"));
+	};
 
   //Perform uniform relabeling of Axis
   ReLabelAxis(fHM->H1("InfoType_vs_Channel")->GetYaxis(),"infoType",true,true);
@@ -678,9 +686,10 @@ void CbmTrdTimeCorrel::CreateHistograms()
   fHM->Add("TsCounterStrange1", new TGraph());
   fHM->Add("TsStrangeness0", new TGraph()); // ratio of strange messages over all messages
   fHM->Add("TsStrangeness1", new TGraph());
-  for (Int_t j=0; j<3;++j)
-	for (Int_t i=0; i<6;++i)
-	  fHM->Add(("Delta_t_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(i)), new TGraph());
+  for (Int_t SysID=0; SysID<1;++SysID)
+	for (Int_t SpaID=0; SpaID<3;++SpaID)
+	  for (Int_t ChID=0; ChID<32;++ChID)
+	  fHM->Add(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID)+"_Channel_"+std::to_string(ChID)), new TGraph());
   
   fHM->Add("TriggerType_vs_InfoType", new TH2I("TriggerType_vs_InfoType","TriggerType_vs_InfoType",5,-1.5,3.5,9,-1.5,7.5));
   fHM->H2("TriggerType_vs_InfoType")->GetYaxis()->SetTitle("InfoType");

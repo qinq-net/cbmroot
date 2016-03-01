@@ -50,10 +50,10 @@ class CbmTrdTimeCorrel : public FairTask
   
   Int_t fRun;
 
-  ULong_t fLastMessageTime[3][6][16];
+  ULong_t fLastMessageTime[3][3][32];
 /* Store the last message time.
 Intended usage is for the first (outer) argument to be the SysCoreID 
-and the second (inner) to be the SPADICID.
+and the second (inner) to be the SPADICID of a full SPADIC.
 Third argument is the ChannelID.
 Timestamps are stored for a full spadic.
 */
