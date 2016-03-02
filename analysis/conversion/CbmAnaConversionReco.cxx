@@ -976,11 +976,11 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 							}
 						}
 
-						if(grandmotherId1 == -1) continue;
+						//if(grandmotherId1 == -1) continue;
 
 						if(motherId1 == motherId2 && motherId3 == motherId4) {
 							if(NofDaughters(motherId1) != 2 || NofDaughters(motherId3) != 2) continue;
-							if( (grandmotherId1 == motherId3 && mcGrandmotherPdg1 == 111) || (motherId1 == grandmotherId3 && mcMotherPdg1 == 111)) {
+							if( (grandmotherId1 == motherId3 && mcMotherPdg3 == 111) || (motherId1 == grandmotherId3 && mcMotherPdg1 == 111)) {
 							
 								fhPi0_startvertexElectrons_gee->Fill(pi0start_i.Z());
 								fhPi0_startvertexElectrons_gee->Fill(pi0start_j.Z());
@@ -1065,7 +1065,7 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 						}
 						if(motherId1 == motherId3 && motherId2 == motherId4) {
 							if(NofDaughters(motherId1) != 2 || NofDaughters(motherId2) != 2) continue;
-							if( (grandmotherId1 == motherId2 && mcGrandmotherPdg1 == 111) || (motherId1 == grandmotherId2 && mcMotherPdg1 == 111)) {
+							if( (grandmotherId1 == motherId2 && mcMotherPdg2 == 111) || (motherId1 == grandmotherId2 && mcMotherPdg1 == 111)) {
 							
 								fhPi0_startvertexElectrons_gee->Fill(pi0start_i.Z());
 								fhPi0_startvertexElectrons_gee->Fill(pi0start_j.Z());
@@ -1150,7 +1150,7 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 						}
 						if(motherId1 == motherId4 && motherId2 == motherId3) {
 							if(NofDaughters(motherId1) != 2 || NofDaughters(motherId2) != 2) continue;
-							if( (grandmotherId1 == motherId2 && mcGrandmotherPdg1 == 111) || (motherId1 == grandmotherId2 && mcMotherPdg1 == 111)) {
+							if( (grandmotherId1 == motherId2 && mcMotherPdg2 == 111) || (motherId1 == grandmotherId2 && mcMotherPdg1 == 111)) {
 							
 								fhPi0_startvertexElectrons_gee->Fill(pi0start_i.Z());
 								fhPi0_startvertexElectrons_gee->Fill(pi0start_j.Z());

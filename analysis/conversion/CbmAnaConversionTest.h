@@ -111,6 +111,7 @@ private:
 	TH2D * fhTest_invmass_MCcutAll;
 	TH1D * fhTest_peakCheck1;
 	TH1D * fhTest_peakCheck2;
+	TH1D * fhTest_peakCheck3;
 	TH2D * fhTest_invmass_ANNcuts;
 
 	// array with all refitted momenta
