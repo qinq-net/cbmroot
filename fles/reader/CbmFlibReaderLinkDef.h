@@ -10,6 +10,7 @@
 
 #pragma link C++ class CbmTSUnpack;
 #pragma link C++ class CbmTSUnpackSpadic;
+#pragma link C++ class CbmTSUnpackSpadicLegacy;
 #pragma link C++ class CbmTSUnpackNxyter;
 #pragma link C++ class CbmTSUnpackStsxyter;
 #pragma link C++ class CbmTSUnpackFiberHodo;
@@ -31,8 +32,9 @@
 
 #pragma link C++ class CbmDaqBuffer;
 #pragma link C++ class CbmFiberHodoMapping;
-
+#p
 #pragma link C++ class CbmTrdRawBeamProfile;
+#pragma link C++ class CbmTrdRawBuchData;
 #pragma link C++ class CbmTrdRawPulseMonitor;
 #pragma link C++ class CbmTrdOnlineDisplay;
 #pragma link C++ class CbmTrdEveOnlineDisplay;

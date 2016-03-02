@@ -72,6 +72,7 @@ Set(SRCS
 
   unpacker/CbmTSUnpack.cxx
   unpacker/CbmTSUnpackSpadic.cxx
+  unpacker/CbmTSUnpackSpadicLegacy.cxx
   unpacker/CbmTSUnpackNxyter.cxx
   unpacker/CbmTSUnpackStsxyter.cxx
   unpacker/CbmTSUnpackFiberHodo.cxx
@@ -86,6 +87,7 @@ Set(SRCS
   get4/CbmGet4EventBuffer.cxx
 
   tasks/CbmTrdRawBeamProfile.cxx
+  tasks/CbmTrdRawBuchData.cxx
   tasks/CbmTrdRawPulseMonitor.cxx
   tasks/CbmTrdOnlineDisplay.cxx
   tasks/CbmTrdEveOnlineDisplay.cxx
