@@ -77,10 +77,12 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   TString title="";
   
   std::map<TString, std::map<ULong_t, std::vector<CbmSpadicRawMessage*> > > timeBuffer;
+  EpochMap epochBuffer;
+
   LOG(INFO) << "CbmTrdTimeCorrel: Number of current TimeSlice: " << fNrTimeSlices << FairLogger::endl;
   Int_t nSpadicMessages = fRawSpadic->GetEntriesFast(); //SPADIC messages per TimeSlice
   Int_t nSpadicMessages0(0),nSpadicMessages1(0); //SPADIC messages per TimeSlice for single SPADICS
-  Int_t nSpadicMessagesHit0(0), nSpadicMessagesHit1(0), nSpadicMessagesHitAborted0(0), nSpadicMessagesHitAborted1(0), nSpadicMessagesOverflow0(0), nSpadicMessagesOverflow1(0), nSpadicMessagesInfo0(0), nSpadicMessagesEpoch0(0), nSpadicMessagesEpoch1(0), nSpadicMessagesInfo1(0), nSpadicMessagesLost0(0), nSpadicMessagesLost1(0), nSpadicMessagesStrange0(0), nSpadicMessagesStrange1(0); //SPADIC message types per TimeSlice for single SPADICS 
+  Int_t nSpadicMessagesHit0(0), nSpadicMessagesHtimeIt(0), nSpadicMessagesHitAborted0(0), nSpadicMessagesHitAborted1(0), nSpadicMessagesOverflow0(0), nSpadicMessagesOverflow1(0), nSpadicMessagesInfo0(0), nSpadicMessagesEpoch0(0), nSpadicMessagesEpoch1(0), nSpadicMessagesInfo1(0), nSpadicMessagesLost0(0), nSpadicMessagesLost1(0), nSpadicMessagesStrange0(0), nSpadicMessagesStrange1(0); //SPADIC message types per TimeSlice for single SPADICS
   Int_t lostMessages(0);// this variable should be reset to 0 for every SPADIC message
 
   // Getting message type bools from Spadic raw message
@@ -154,7 +156,8 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     }
     
     /*TString*/ spadicName = GetSpadicName(eqID,sourceA);
-
+    //buffer all Epoch Messages
+    if(isEpoch||isEpochOutOfSynch) epochBuffer[spaID][time] = raw;
     // add raw message to map sorted by timestamps, syscore and spadic
     if (!isStrange && !isEpoch && !isEpochOutOfSynch) {
       timeBuffer[TString(spadicName)][time].push_back(raw);
@@ -237,7 +240,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       
       else if(spadicName == RewriteSpadicName("SysCore0_Spadic1")) {
         nSpadicMessages1++;
-        if(isHit) nSpadicMessagesHit1++;
+        if(isHit) nSpadicMessagesHtimeIt++;
         else if(isHitAborted) nSpadicMessagesHitAborted1++;
         else if(isOverflow) {
 	  nSpadicMessagesOverflow1++;
@@ -280,8 +283,10 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     }
   
   }
-  
-  
+//Calculate correct Timestamps
+  OffsetMap timestampOffsets;
+  if(fNrTimeSlices!=0) timestampOffsets = CalcutlateTimestampOffsets(epochBuffer);
+  LOG(INFO)<< timestampOffsets.size() << FairLogger::endl;
   
   // complicated loop over sorted map of timestamps, manually delete all elements in the nested maps
   // commented out, since obviuously the following outer clear command destructs all contained elements recursively
@@ -306,7 +311,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   // Length of one timeslice: m * n * 8 ns, with e.g. n=1250 length of microslice and m=100 microslices in one timeslice at SPS2015
   fHM->G1("TsCounter")->SetPoint(fHM->G1("TsCounter")->GetN(),fNrTimeSlices+1,nSpadicMessages);
   fHM->G1("TsCounterHit0")->SetPoint(fHM->G1("TsCounterHit0")->GetN(),fNrTimeSlices+1,nSpadicMessagesHit0);
-  fHM->G1("TsCounterHit1")->SetPoint(fHM->G1("TsCounterHit1")->GetN(),fNrTimeSlices+1,nSpadicMessagesHit1);
+  fHM->G1("TsCounterHtimeIt")->SetPoint(fHM->G1("TsCounterHtimeIt")->GetN(),fNrTimeSlices+1,nSpadicMessagesHtimeIt);
   fHM->G1("TsCounterHitAborted0")->SetPoint(fHM->G1("TsCounterHitAborted0")->GetN(),fNrTimeSlices+1,nSpadicMessagesHitAborted0);
   fHM->G1("TsCounterHitAborted1")->SetPoint(fHM->G1("TsCounterHitAborted1")->GetN(),fNrTimeSlices+1,nSpadicMessagesHitAborted1);
   fHM->G1("TsCounterOverflow0")->SetPoint(fHM->G1("TsCounterOverflow0")->GetN(),fNrTimeSlices+1,nSpadicMessagesOverflow0);
@@ -383,10 +388,10 @@ void CbmTrdTimeCorrel::Finish()
   fHM->G1("TsCounterStrange0")->GetXaxis()->SetTitle("TS number");
   fHM->G1("TsCounterStrange0")->GetYaxis()->SetTitle("SPADIC0 strange messages");
   c1->cd(11);
-  fHM->G1("TsCounterHit1")->Draw("AL");
-  fHM->G1("TsCounterHit1")->SetLineColor(kBlue);
-  fHM->G1("TsCounterHit1")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounterHit1")->GetYaxis()->SetTitle("SPADIC1 hit messages");
+  fHM->G1("TsCounterHtimeIt")->Draw("AL");
+  fHM->G1("TsCounterHtimeIt")->SetLineColor(kBlue);
+  fHM->G1("TsCounterHtimeIt")->GetXaxis()->SetTitle("TS number");
+  fHM->G1("TsCounterHtimeIt")->GetYaxis()->SetTitle("SPADIC1 hit messages");
   /*
   c1->cd(14);
   fHM->G1("TsCounterHitAborted1")->Draw("AL");
@@ -472,11 +477,11 @@ void CbmTrdTimeCorrel::Finish()
   /*
   TCanvas *cnice = new TCanvas("cnice","cnice",800,400); 
   cnice->cd();
-  fHM->G1("TsCounterHit1")->Draw("AL");
-  fHM->G1("TsCounterHit1")->SetLineColor(kBlack);
-  fHM->G1("TsCounterHit1")->GetXaxis()->SetTitle("timeslice");
-  fHM->G1("TsCounterHit1")->GetXaxis()->SetRangeUser(0,2166);
-  fHM->G1("TsCounterHit1")->GetYaxis()->SetTitle("SPADIC1 hit messages");  
+  fHM->G1("TsCounterHtimeIt")->Draw("AL");
+  fHM->G1("TsCounterHtimeIt")->SetLineColor(kBlack);
+  fHM->G1("TsCounterHtimeIt")->GetXaxis()->SetTitle("timeslice");
+  fHM->G1("TsCounterHtimeIt")->GetXaxis()->SetRangeUser(0,2166);
+  fHM->G1("TsCounterHtimeIt")->GetYaxis()->SetTitle("SPADIC1 hit messages");
   */
   //Buffer (map) or multi SPADIC data streams based analyis have to be done here!!
   LOG(DEBUG) << "Finish of CbmTrdTimeCorrel" << FairLogger::endl;
@@ -671,7 +676,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
 
   fHM->Add("TsCounter", new TGraph());
   fHM->Add("TsCounterHit0", new TGraph());
-  fHM->Add("TsCounterHit1", new TGraph());
+  fHM->Add("TsCounterHtimeIt", new TGraph());
   fHM->Add("TsCounterHitAborted0", new TGraph());
   fHM->Add("TsCounterHitAborted1", new TGraph());
   fHM->Add("TsCounterOverflow0", new TGraph());
@@ -857,3 +862,44 @@ TString CbmTrdTimeCorrel::RewriteSpadicName(TString spadicName)
       return channelMapping[SpadicChannel];
     }
   }
+//---------------------------------------------------------------------------
+
+std::map<Int_t, std::map<Int_t,std::map<ULong_t, Long_t> > > CbmTrdTimeCorrel::CalcutlateTimestampOffsets(const EpochMap &epochBuffer)
+{
+	//Calculate time offsets between various Spadics
+	std::map<Int_t, std::map<Int_t,std::map<ULong_t, Long_t > > > epochOffsets;
+	//loop over all SpaIDs in the epochBuffer for base timestamps
+	for (auto baseSpaIDIt = epochBuffer.begin() ; baseSpaIDIt != epochBuffer.end(); ++baseSpaIDIt)
+		//loop over all SpaIDs in the epochBuffer for comparing timestamps
+		for (auto compSpaIDIt = epochBuffer.begin() ; compSpaIDIt != epochBuffer.end(); ++compSpaIDIt){
+			//Retrieve SpadicID's
+			Int_t baseSource = baseSpaIDIt->second.begin()->second->GetSourceAddress();
+			Int_t baseSpaID = GetSpadicID(baseSource);
+			Int_t compSource = compSpaIDIt->second.begin()->second->GetSourceAddress();
+			Int_t compSpaID = GetSpadicID(compSource);
+			//loop over all EpochMessages in the epochBuffer for comparing timestamps
+			auto baseTimestampIt = baseSpaIDIt->second.begin();
+			auto compTimestampIt = compSpaIDIt->second.begin();
+			for ((baseTimestampIt = baseSpaIDIt->second.begin(),compTimestampIt = compSpaIDIt->second.begin());baseTimestampIt != baseSpaIDIt->second.end(); ++baseTimestampIt, ++compTimestampIt)
+			{
+				//If there are no more messages in the comparing buffer set the difference to the last known value
+				if(compTimestampIt == compSpaIDIt->second.end())
+				{
+					for (auto innerIt = baseTimestampIt; innerIt != baseSpaIDIt->second.end(); ++innerIt)
+					{
+						innerIt--;
+						ULong_t previousTimestamp = (innerIt++)->second->GetFullTime();
+						ULong_t baseTimestamp = innerIt->second->GetFullTime();
+						epochOffsets[baseSpaID][compSpaID][baseTimestamp] = epochOffsets[baseSpaID][compSpaID][previousTimestamp];
+					}
+					break;
+				} else{
+					ULong_t baseTimestamp = baseTimestampIt->second->GetFullTime();
+					ULong_t compTimestamp = compTimestampIt->second->GetFullTime();
+					epochOffsets[baseSpaID][compSpaID][baseTimestamp]=static_cast<Long_t>(compTimestamp-baseTimestamp);
+				}
+			}
+		}
+	return epochOffsets;
+}
+

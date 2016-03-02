@@ -7,6 +7,8 @@
 
 #include "TClonesArray.h"
 #include "CbmSpadicRawMessage.h"
+typedef std::map<Int_t, std::map<ULong_t, CbmSpadicRawMessage* > > EpochMap;
+typedef std::map<Int_t, std::map<Int_t,std::map<ULong_t, Long_t> > > OffsetMap;
 
 class CbmTrdTimeCorrel : public FairTask
 {
@@ -68,6 +70,7 @@ Timestamps are stored for a full spadic.
 
   CbmTrdTimeCorrel(const CbmTrdTimeCorrel&);
   CbmTrdTimeCorrel operator=(const CbmTrdTimeCorrel&);
+  std::map<Int_t, std::map<Int_t,std::map<ULong_t, Long_t> > > CalcutlateTimestampOffsets(const EpochMap &epochBuffer);
 
   ClassDef(CbmTrdTimeCorrel,1);
 };
