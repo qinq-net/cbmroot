@@ -44,7 +44,14 @@ class CbmTrdTimeCorrel : public FairTask
 
   TString GetStopName(Int_t stopType);
 
-  TClonesArray* fRawSpadic;
+  TClonesArray* fRawSpadic;//input per timeSlice
+  TClonesArray* fRawMessages;//output without MS overlaps including all message types without isStrange, isEpoch, isEpochOutOfSynch
+  TClonesArray* fDigis;
+  TClonesArray* fClusters;
+
+  Int_t fiRawMessage;//counter for fRawMessages
+  Int_t fiDigi;//counter for fDigis
+  Int_t fiCluster;//counter for fClusters
 
   CbmHistManager* fHM;
 
@@ -67,6 +74,12 @@ Timestamps are stored for a full spadic.
   Int_t GetMessageType(CbmSpadicRawMessage* raw);
 
   Int_t GetChannelOnPadPlane(Int_t SpadicChannel);
+
+  // The followinfg block is used to generate TrdDigis
+  Int_t GetSectorID(CbmSpadicRawMessage* raw);
+  Int_t GetRowID(CbmSpadicRawMessage* raw);
+  Int_t GetLayerID(CbmSpadicRawMessage* raw);
+  Int_t GetColumnID(CbmSpadicRawMessage* raw);
 
   CbmTrdTimeCorrel(const CbmTrdTimeCorrel&);
   CbmTrdTimeCorrel operator=(const CbmTrdTimeCorrel&);

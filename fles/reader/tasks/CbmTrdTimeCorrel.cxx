@@ -24,7 +24,13 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
     fRun(0),
     fRewriteSpadicName(true),
     fSpadics(0),
-	fMessageBuffer()
+    fMessageBuffer(),
+    fRawMessages(NULL),
+    fDigis(NULL),
+    fClusters(NULL),
+    fiDigi(0),
+    fiCluster(0),
+    fiRawMessage(0)
 {
  LOG(DEBUG) << "Default constructor of CbmTrdTimeCorrel" << FairLogger::endl;
  for (Int_t SysID =0; SysID<3;++SysID)
@@ -45,13 +51,23 @@ void CbmTrdTimeCorrel::SetParContainers()
 // ----              -------------------------------------------------------
 InitStatus CbmTrdTimeCorrel::Init()
 {
- LOG(DEBUG) << "Initilization of CbmTrdTimeCorrel" << FairLogger::endl;
- FairRootManager* ioman = FairRootManager::Instance();
- fRawSpadic = static_cast<TClonesArray*>(ioman->GetObject("SpadicRawMessage"));
- if ( !fRawSpadic ) {
+  LOG(DEBUG) << "Initilization of CbmTrdTimeCorrel" << FairLogger::endl;
+  FairRootManager* ioman = FairRootManager::Instance();
+  fRawSpadic = static_cast<TClonesArray*>(ioman->GetObject("SpadicRawMessage"));
+  if ( !fRawSpadic ) {
     LOG(FATAL) << "No InputDataLevelName array!\n CbmTrdTimeCorrel will be inactive" << FairLogger::endl;
     return kERROR;
   }
+
+  fRawMessages = new TClonesArray("SpadicRawMessageOutput", 100);
+  ioman->Register("TrdRawMessage", "TRD Raw Messages", fRawMessages, kTRUE);
+
+  fDigis = new TClonesArray("CbmTrdDigi", 100);
+  ioman->Register("TrdDigi", "TRD Digis", fDigis, kTRUE);
+
+  fClusters = new TClonesArray("CbmTrdCluster",100);
+  ioman->Register("TrdCluster", "TRD Clusters", fClusters, kTRUE);
+
   CreateHistograms();
   return kSUCCESS;
 }
@@ -80,6 +96,9 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   EpochMap epochBuffer;
 
   LOG(INFO) << "CbmTrdTimeCorrel: Number of current TimeSlice: " << fNrTimeSlices << FairLogger::endl;
+  LOG(INFO) << "Digis in TClonesArray:                           " << fDigis->GetEntriesFast() << FairLogger::endl;
+  LOG(INFO) << "Clusters in TClonesArray:                        " << fClusters->GetEntriesFast() << FairLogger::endl;
+  LOG(INFO) << "rawMessages in TS:                               " << fRawSpadic->GetEntriesFast() << FairLogger::endl;
   Int_t nSpadicMessages = fRawSpadic->GetEntriesFast(); //SPADIC messages per TimeSlice
   Int_t nSpadicMessages0(0),nSpadicMessages1(0); //SPADIC messages per TimeSlice for single SPADICS
   Int_t nSpadicMessagesHit0(0), nSpadicMessagesHtimeIt(0), nSpadicMessagesHitAborted0(0), nSpadicMessagesHitAborted1(0), nSpadicMessagesOverflow0(0), nSpadicMessagesOverflow1(0), nSpadicMessagesInfo0(0), nSpadicMessagesEpoch0(0), nSpadicMessagesEpoch1(0), nSpadicMessagesInfo1(0), nSpadicMessagesLost0(0), nSpadicMessagesLost1(0), nSpadicMessagesStrange0(0), nSpadicMessagesStrange1(0); //SPADIC message types per TimeSlice for single SPADICS
@@ -143,7 +162,8 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     stopType = raw->GetStopType();
     TString stopName = GetStopName(stopType);
     infoType=raw->GetInfoType();
-    
+    triggerType = raw->GetTriggerType();
+
     if(isHit) hitCounter[sysID][spaID]++;
 
     if (raw->GetChannelID()>100) LOG(ERROR) << "SpadicMessage with strange chID: " << iSpadicMessage << " sourceA: " << sourceA << " chID: " << raw->GetChannelID() << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " isInfo: " << isInfo << " isEpoch: " << isEpoch << " Lost Messages: " << lostMessages << FairLogger::endl;
@@ -172,6 +192,18 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	  to cluster messages at the beginning of the next TimeSliceContainer.
 	*/
 	fMessageBuffer[TString(spadicName)][time][padID] = raw;
+	/*
+	  A new TClonesArray without MS overlaps is created for offline analysis
+	 */
+	new ((*fRawMessages)[fiRawMessage])CbmSpadicRawMessage(raw->GetEquipmentID(), raw->GetSourceAddress(), raw->GetChannelID(),
+							       raw->GetEpochMarker(), raw->GetTime(), 
+							       raw->GetSuperEpoch(), raw->GetTriggerType(),
+							       raw->GetInfoType(), raw->GetStopType(), 
+							       raw->GetGroupId(), raw->GetBufferOverflowCount(), 
+							       raw->GetNrSamples(), raw->GetSamples(),
+							       raw->GetHit(), raw->GetInfo(), raw->GetEpoch(), raw->GetEpochOutOfSynch(), raw->GetHitAborted(), raw->GetOverFlow(), raw->GetStrange());
+
+	fiRawMessage++;
       } else {  
 	LOG(INFO) << "Found Message already in fMessageBuffer at " << TString(spadicName).Data() << ", time:" << time << ", padID:" << padID << ". Potential overlapping MS container!" << FairLogger::endl;
 	raw->PrintMessage();
@@ -180,30 +212,30 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	LOG(INFO) << ">----------------------------------<" << FairLogger::endl;
       }
     }
-	if (isInfo){
-	  if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,infoType);
-	  else fHM->H2("InfoType_vs_Channel")->Fill(33,infoType); // chIDs greater than 32 are quite strange and will be put into the last bin
-	}
- 	if (isEpoch){   // fill epoch messages in an additional row
-	  if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,9);
-	  else fHM->H2("InfoType_vs_Channel")->Fill(33,9);
-	}
- 	if (isOverflow){   // fill overflow messages in an additional row
-	  if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,10);
-	  else fHM->H2("InfoType_vs_Channel")->Fill(33,10);
-	}
-   if (0 <= chID && chID < 32){
-	if(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID/2][chID])<-1000)  LOG(INFO) << "SpadicMessage: " << iSpadicMessage << " has negative Delta Fulltime. sourceA: " << sourceA << " chID: " << raw->GetChannelID() << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " isInfo: " << isInfo << " isEpoch: " << isEpoch << " Lost Messages: " << lostMessages << FairLogger::endl;
-//Compute Time Deltas, write them into a histogram and store timestamps in fLastMessageTime.
-// WORKAROUND: at Present SyscoreID is not extracted, therefore all Messages are stored as if coming from SysCore 0.
-	fHM->H1("Delta_t")->Fill(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID/2][chID]));
-//Write delta_t into a TGraph
-	if(spaID!=-1){
-	  Int_t tGraphSize = fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID/2)+"_Channel_"+std::to_string(chID))->GetN();
-	  fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID/2)+"_Channel_"+std::to_string(chID))->SetPoint(tGraphSize,time,(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID/2][chID])));
-	}
-	fLastMessageTime[0][spaID/2][chID]=time;
-   }
+    if (isInfo){
+      if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,infoType);
+      else fHM->H2("InfoType_vs_Channel")->Fill(33,infoType); // chIDs greater than 32 are quite strange and will be put into the last bin
+    }
+    if (isEpoch){   // fill epoch messages in an additional row
+      if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,9);
+      else fHM->H2("InfoType_vs_Channel")->Fill(33,9);
+    }
+    if (isOverflow){   // fill overflow messages in an additional row
+      if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,10);
+      else fHM->H2("InfoType_vs_Channel")->Fill(33,10);
+    }
+    if (0 <= chID && chID < 32){
+      if(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID/2][chID])<-1000)  LOG(INFO) << "SpadicMessage: " << iSpadicMessage << " has negative Delta Fulltime. sourceA: " << sourceA << " chID: " << raw->GetChannelID() << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " isInfo: " << isInfo << " isEpoch: " << isEpoch << " Lost Messages: " << lostMessages << FairLogger::endl;
+      //Compute Time Deltas, write them into a histogram and store timestamps in fLastMessageTime.
+      // WORKAROUND: at Present SyscoreID is not extracted, therefore all Messages are stored as if coming from SysCore 0.
+      fHM->H1("Delta_t")->Fill(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID/2][chID]));
+      //Write delta_t into a TGraph
+      if(spaID!=-1){
+	Int_t tGraphSize = fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID/2)+"_Channel_"+std::to_string(chID))->GetN();
+	fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID/2)+"_Channel_"+std::to_string(chID))->SetPoint(tGraphSize,time,(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID/2][chID])));
+      }
+      fLastMessageTime[0][spaID/2][chID]=time;
+    }
     if(spadicName!="") {
 
       //
@@ -283,13 +315,14 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     }
   
   }
-//Calculate correct Timestamps
+  //Calculate correct Timestamps
   OffsetMap timestampOffsets;
   if(fNrTimeSlices!=0) timestampOffsets = CalcutlateTimestampOffsets(epochBuffer);
   LOG(INFO)<< timestampOffsets.size() << FairLogger::endl;
   
   // complicated loop over sorted map of timestamps, manually delete all elements in the nested maps
   // commented out, since obviuously the following outer clear command destructs all contained elements recursively
+  // The objects correlated to the pointers stored in this map are deleted after each run of Exec. Therefore it is leading to seg.fa. if one tryies to delete the pointers here twice
   /*
     for(std::map<TString, std::map<ULong_t, std::vector<CbmSpadicRawMessage*> > >::iterator it = timeBuffer.begin() ; it != timeBuffer.end(); it++){
     // complicated loop over sorted map of raw messages
@@ -862,8 +895,50 @@ TString CbmTrdTimeCorrel::RewriteSpadicName(TString spadicName)
       return channelMapping[SpadicChannel];
     }
   }
-//---------------------------------------------------------------------------
 
+//---------------------------------------------------------------------------
+  Int_t  CbmTrdTimeCorrel::GetSectorID(CbmSpadicRawMessage* raw)// To be used to create CbmTrdDigis
+  {
+    return 0;
+  }
+//---------------------------------------------------------------------------
+Int_t  CbmTrdTimeCorrel::GetRowID(CbmSpadicRawMessage* raw)// To be used to create CbmTrdDigis
+{
+  Int_t sourceA = raw->GetSourceAddress();
+  Int_t chID = raw->GetChannelID();
+  Int_t spaID = GetSpadicID(sourceA);
+  if(chID > -1 && chID < 16 && spaID%2) chID+=16; // eqID ?
+  Int_t padID = GetChannelOnPadPlane(chID);// Remapping from ASIC to pad-plane channel numbers.
+  if (padID > 16) 
+    return 1;
+  else
+    return 0;
+}
+//---------------------------------------------------------------------------
+Int_t  CbmTrdTimeCorrel::GetLayerID(CbmSpadicRawMessage* raw)// To be used to create CbmTrdDigis
+{
+  TString name = GetSpadicName(raw->GetEquipmentID(), raw->GetSourceAddress());
+  if (name == "Frankfurt")
+    return 0;
+  else if (name == "Münster")
+    return 1;
+  else
+    return -1;
+}
+//---------------------------------------------------------------------------
+Int_t  CbmTrdTimeCorrel::GetColumnID(CbmSpadicRawMessage* raw)// To be used to create CbmTrdDigis
+{
+  Int_t sourceA = raw->GetSourceAddress();
+  Int_t chID = raw->GetChannelID();
+  Int_t spaID = GetSpadicID(sourceA);
+  if(chID > -1 && chID < 16 && spaID%2) chID+=16; // eqID ?
+ 
+  Int_t columnId = GetChannelOnPadPlane(chID);
+  if (columnId >= 16) 
+    columnId -= 16;
+  return columnId;
+}
+//---------------------------------------------------------------------------
 std::map<Int_t, std::map<Int_t,std::map<ULong_t, Long_t> > > CbmTrdTimeCorrel::CalcutlateTimestampOffsets(const EpochMap &epochBuffer)
 {
 	//Calculate time offsets between various Spadics
