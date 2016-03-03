@@ -4,6 +4,7 @@
 #include "CbmBeamDefaults.h"
 #include "CbmTrdCluster.h"
 #include "CbmTrdDigi.h"
+
 #include "FairLogger.h"
 #include "TCanvas.h"
 #include "TH1.h"
@@ -178,8 +179,13 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     
     /*TString*/ spadicName = GetSpadicName(eqID,sourceA);
     //buffer all Epoch Messages
-    if(isEpoch||isEpochOutOfSynch) epochBuffer[spaID][time] = raw;
+    if(isEpoch||isEpochOutOfSynch){
+    	epochBuffer[spaID][time] = raw;
+    	Int_t tempSize= fHM->G1(("Timestamps_Spadic"+std::to_string(spaID)))->GetN();
+    	fHM->G1(("Timestamps_Spadic"+std::to_string(spaID)))->SetPoint(tempSize,fNrTimeSlices,time);
+    }
     // add raw message to map sorted by timestamps, syscore and spadic
+    if (false)
     if (!isStrange && !isEpoch && !isEpochOutOfSynch) {
       timeBuffer[TString(spadicName)][time].push_back(raw);
       if (fMessageBuffer[TString(spadicName)][time].find(padID) == fMessageBuffer[TString(spadicName)][time].end()){ 
@@ -319,8 +325,28 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   //Calculate correct Timestamps
   OffsetMap timestampOffsets;
   if(fNrTimeSlices!=0) timestampOffsets = CalcutlateTimestampOffsets(epochBuffer);
+  epochBuffer.clear();
+#ifndef __CINT__
+  try{
+  if(fNrTimeSlices!=0)
+	  for (Int_t baseSpaID=0; baseSpaID<4;++baseSpaID)
+		for (Int_t compSpaID=0; compSpaID<4;++compSpaID)
+		{
+			const Int_t SysID =0;
+			auto iteratot = timestampOffsets.at(baseSpaID).at(compSpaID).begin();
+			for (; iteratot != timestampOffsets.at(baseSpaID).at(compSpaID).end(); ++iteratot){
+				Int_t tGraphSize = fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->GetN();
+				fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->SetPoint(tGraphSize,iteratot->first,iteratot->second);
+			}
+		}
+  }
+  catch(std::out_of_range)
+	{
+	  LOG(ERROR)<< "map::at() has thrown an exception " << FairLogger::endl;
+	}
+#endif //__CINT__
   LOG(INFO)<< timestampOffsets.size() << FairLogger::endl;
-  
+  timestampOffsets.clear();
   // complicated loop over sorted map of timestamps, manually delete all elements in the nested maps
   // commented out, since obviuously the following outer clear command destructs all contained elements recursively
   // The objects correlated to the pointers stored in this map are deleted after each run of Exec. Therefore it is leading to seg.fa. if one tryies to delete the pointers here twice
@@ -500,8 +526,21 @@ void CbmTrdTimeCorrel::Finish()
 		fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID/2)+"_Channel_"+std::to_string(ChID)))->GetXaxis()->SetTitle("Fulltime()");
   	  }
 	  c3->Update();
-	  c3->SaveAs(TString("pics/Delta_t_Graph_Spadic_"+std::to_string(SpaID/2)+".png"));
+	  c3->SaveAs(TString("pics/Delta_t_Graph_Spadic_"+std::to_string(SpaID/2)+".pdf"));
 	};
+  TCanvas *c4 = new TCanvas("c4","Time_Offsets"+runName,5*320,3*300);
+  c4->Divide(4,4);
+  Int_t i=1;
+  for (Int_t baseSpaID=0; baseSpaID<4;++baseSpaID)
+	for (Int_t compSpaID=0; compSpaID<4;++compSpaID)
+	{
+		c4->cd(i++);
+		fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->Draw("AL");
+		fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->SetLineColor(kRed);
+		fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->GetXaxis()->SetTitle("Fulltime()");
+	}
+  c4->Update();
+  c4->SaveAs(TString("pics/"+runName+"TimeOffsets"+".pdf"));
 
   //Perform uniform relabeling of Axis
   ReLabelAxis(fHM->H1("InfoType_vs_Channel")->GetYaxis(),"infoType",true,true);
@@ -728,8 +767,17 @@ void CbmTrdTimeCorrel::CreateHistograms()
 	for (Int_t SpaID=0; SpaID<3;++SpaID)
 	  for (Int_t ChID=0; ChID<32;++ChID){
 		  fHM->Add(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID)+"_Channel_"+std::to_string(ChID)), new TGraph());
-		  fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID)+"_Channel_"+std::to_string(ChID)))->SetNameTitle(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID)+"_Channel_"+std::to_string(ChID)).c_str(),("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID)+"_Channel_"+std::to_string(ChID)).c_str());
+		  fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID)+"_Channel_"+std::to_string(ChID)))->SetNameTitle(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID)).c_str(),("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID)).c_str());
 	  }
+  for (Int_t baseSpaID=0; baseSpaID<4;++baseSpaID){
+	fHM->Add(("Timestamps_Spadic"+std::to_string(baseSpaID)), new TGraph());
+	fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID)))->SetNameTitle(("Timestamps_Spadic"+std::to_string(baseSpaID)).c_str(),("Timestamps_Spadic"+std::to_string(baseSpaID)).c_str());
+	for (Int_t compSpaID=0; compSpaID<4;++compSpaID)
+	{
+		fHM->Add(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)), new TGraph());
+		fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->SetNameTitle(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)).c_str(),("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)).c_str());
+	}
+  }
   
   fHM->Add("TriggerType_vs_InfoType", new TH2I("TriggerType_vs_InfoType","TriggerType_vs_InfoType",5,-1.5,3.5,9,-1.5,7.5));
   fHM->H2("TriggerType_vs_InfoType")->GetYaxis()->SetTitle("InfoType");
