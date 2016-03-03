@@ -32,7 +32,6 @@
 
 #pragma link C++ class CbmDaqBuffer;
 #pragma link C++ class CbmFiberHodoMapping;
-#p
 #pragma link C++ class CbmTrdRawBeamProfile;
 #pragma link C++ class CbmTrdRawBuchData;
 #pragma link C++ class CbmTrdRawPulseMonitor;
