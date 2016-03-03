@@ -497,7 +497,6 @@ void CbmTrdTimeCorrel::Finish()
 		fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID/2)+"_Channel_"+std::to_string(ChID)))->Draw("AL");
 		fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID/2)+"_Channel_"+std::to_string(ChID)))->SetLineColor(kRed);
 		fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID/2)+"_Channel_"+std::to_string(ChID)))->GetXaxis()->SetTitle("Fulltime()");
-		fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID/2)+"_Channel_"+std::to_string(ChID)))->SetTitle(TString("DeltaFulltime()_Spadic_"+std::to_string(SpaID)+"_Channel_"+std::to_string(ChID)));
   	  }
 	  c3->Update();
 	  c3->SaveAs(TString("pics/Delta_t_Graph_Spadic_"+std::to_string(SpaID/2)+".png"));
@@ -726,8 +725,10 @@ void CbmTrdTimeCorrel::CreateHistograms()
   fHM->Add("TsStrangeness1", new TGraph());
   for (Int_t SysID=0; SysID<1;++SysID)
 	for (Int_t SpaID=0; SpaID<3;++SpaID)
-	  for (Int_t ChID=0; ChID<32;++ChID)
-	  fHM->Add(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID)+"_Channel_"+std::to_string(ChID)), new TGraph());
+	  for (Int_t ChID=0; ChID<32;++ChID){
+		  fHM->Add(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID)+"_Channel_"+std::to_string(ChID)), new TGraph());
+		  fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID)+"_Channel_"+std::to_string(ChID)))->SetNameTitle(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID)+"_Channel_"+std::to_string(ChID)).c_str(),("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID)+"_Channel_"+std::to_string(ChID)).c_str());
+	  }
   
   fHM->Add("TriggerType_vs_InfoType", new TH2I("TriggerType_vs_InfoType","TriggerType_vs_InfoType",5,-1.5,3.5,9,-1.5,7.5));
   fHM->H2("TriggerType_vs_InfoType")->GetYaxis()->SetTitle("InfoType");
