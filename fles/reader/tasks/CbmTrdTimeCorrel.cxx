@@ -2,7 +2,8 @@
 #include "CbmSpadicRawMessage.h"
 #include "CbmHistManager.h"
 #include "CbmBeamDefaults.h"
-
+#include "CbmTrdCluster.h"
+#include "CbmTrdDigi.h"
 #include "FairLogger.h"
 #include "TCanvas.h"
 #include "TH1.h"
@@ -51,7 +52,7 @@ void CbmTrdTimeCorrel::SetParContainers()
 // ----              -------------------------------------------------------
 InitStatus CbmTrdTimeCorrel::Init()
 {
-  LOG(DEBUG) << "Initilization of CbmTrdTimeCorrel" << FairLogger::endl;
+  LOG(INFO) << "Initilization of CbmTrdTimeCorrel" << FairLogger::endl;
   FairRootManager* ioman = FairRootManager::Instance();
   fRawSpadic = static_cast<TClonesArray*>(ioman->GetObject("SpadicRawMessage"));
   if ( !fRawSpadic ) {
@@ -59,7 +60,7 @@ InitStatus CbmTrdTimeCorrel::Init()
     return kERROR;
   }
 
-  fRawMessages = new TClonesArray("SpadicRawMessageOutput", 100);
+  fRawMessages = new TClonesArray("CbmSpadicRawMessage", 100);
   ioman->Register("TrdRawMessage", "TRD Raw Messages", fRawMessages, kTRUE);
 
   fDigis = new TClonesArray("CbmTrdDigi", 100);
