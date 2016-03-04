@@ -10,6 +10,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
+#include "TMultiGraph.h"
 #include "TNtuple.h"
 #include "TString.h"
 #include "TMath.h"
@@ -231,7 +232,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,10);
       else fHM->H2("InfoType_vs_Channel")->Fill(33,10);
     }
-    if (0 <= chID && chID < 32){
+    if (0 <= chID && chID < 32 && isEpoch){
       if(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID/2][chID])<-1000)  LOG(INFO) << "SpadicMessage: " << iSpadicMessage << " has negative Delta Fulltime. sourceA: " << sourceA << " chID: " << raw->GetChannelID() << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " isInfo: " << isInfo << " isEpoch: " << isEpoch << " Lost Messages: " << lostMessages << FairLogger::endl;
       //Compute Time Deltas, write them into a histogram and store timestamps in fLastMessageTime.
       // WORKAROUND: at Present SyscoreID is not extracted, therefore all Messages are stored as if coming from SysCore 0.
@@ -521,8 +522,9 @@ void CbmTrdTimeCorrel::Finish()
 	  for (Int_t ChID=0; ChID<32;++ChID)
 	  {
 		c3->cd(ChID+1);
-		fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID/2)+"_Channel_"+std::to_string(ChID)))->Draw("AL");
+		fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID/2)+"_Channel_"+std::to_string(ChID)))->Draw("AB");
 		fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID/2)+"_Channel_"+std::to_string(ChID)))->SetLineColor(kRed);
+		fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID/2)+"_Channel_"+std::to_string(ChID)))->SetFillColor(kRed);
 		fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID/2)+"_Channel_"+std::to_string(ChID)))->GetXaxis()->SetTitle("Fulltime()");
   	  }
 	  c3->Update();
@@ -535,12 +537,24 @@ void CbmTrdTimeCorrel::Finish()
 	for (Int_t compSpaID=0; compSpaID<4;++compSpaID)
 	{
 		c4->cd(i++);
-		fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->Draw("AL");
+		fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->Draw("AB");
 		fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->SetLineColor(kRed);
 		fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->GetXaxis()->SetTitle("Fulltime()");
 	}
   c4->Update();
   c4->SaveAs(TString("pics/"+runName+"TimeOffsets"+".pdf"));
+
+  TCanvas *c5 = new TCanvas("c4","Fulltime_vs_Timeslice"+runName,5*320,3*300);
+  TMultiGraph * mg = new TMultiGraph("Fulltime_vs_TimeSlice_all_Spadics","Fulltime_vs_TimeSlice_all_Spadics");
+  for (Int_t baseSpaID=0; baseSpaID<4;++baseSpaID){
+	fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID)))->SetMarkerStyle(20);
+	fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID)))->SetMarkerColor(baseSpaID+2);
+	mg->Add(fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID))));
+  }
+  mg->Draw("A");
+  mg->GetXaxis()->SetTitle("Timeslice");
+  mg->GetYaxis()->SetTitle("Fulltime");
+  fHM->Add("Fulltime_vs_TimeSlice_all_Spadic",mg);
 
   //Perform uniform relabeling of Axis
   ReLabelAxis(fHM->H1("InfoType_vs_Channel")->GetYaxis(),"infoType",true,true);
@@ -744,7 +758,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
   }
 
 
-  fHM->Add("Delta_t", new TH1I("Delta_t", "Timestamp differences", 4096,-700000000,700000000));
+  fHM->Add("Delta_t", new TH1I("Delta_t", "Timestamp differences", 4096,-700000,700000));
 
   fHM->Add("TsCounter", new TGraph());
   fHM->Add("TsCounterHit0", new TGraph());
