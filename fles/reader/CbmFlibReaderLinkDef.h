@@ -41,5 +41,6 @@
 //#pragma link C++ class CbmTrdDaqBuffer;
 #pragma link C++ class CbmTrdTestBeamAnalysis;
 #pragma link C++ class CbmTrdTimeCorrel;
+#pragma link C++ class CbmTrdTestBeamAnalysis2015SPS;
 
 #endif

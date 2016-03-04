@@ -95,6 +95,7 @@ Set(SRCS
   tasks/CbmTrdClusterAnalysis.cxx
   tasks/CbmTrdTestBeamAnalysis.cxx
   tasks/CbmTrdTimeCorrel.cxx
+  tasks/CbmTrdTestBeamAnalysis2015SPS.cxx
 
   ${FLES_TOF_BEAM_SOURCES}
 )
