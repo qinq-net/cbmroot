@@ -26,7 +26,7 @@ CbmTrdTestBeamAnalysis2015SPS::CbmTrdTestBeamAnalysis2015SPS()
     fTimeMax(0),
     fTimeMin(0),
     fSpadics(0),
-    fRewriteSpadicName(true),
+    fRewriteSpadicName(false),
     fPlotSignalShape(true),
     fTimeCounter(0),
     fBaseMethod(kLastTimeBins),
@@ -222,6 +222,17 @@ void CbmTrdTestBeamAnalysis2015SPS::Exec(Option_t* option)
       
       if(isHit) {
       
+        // Heat map
+        
+        
+        Int_t padID = GetChannelOnPadPlane(chID);
+        if(padID<16) {
+          fHM->H2(TString(spadicName + "_Heatmap").Data())->Fill(padID, 1);
+        }else{
+          fHM->H2(TString(spadicName + "_Heatmap").Data())->Fill(padID-15, 2);
+        }
+        
+      
         // Cluster finder
         // add raw message to map sorted by timestamps, syscore and spadic
         timeBuffer[TString(spadicName)][time].push_back(raw);
@@ -256,7 +267,7 @@ void CbmTrdTestBeamAnalysis2015SPS::Exec(Option_t* option)
       
       lastSpadicTime[sysID][spaID] = time;
       
-      /*
+      
       if(isHit && stopType == 0 && fPlotSignalShape) {
         Double_t adcInt = 0;
         for (Int_t bin = 0; bin < nrSamples; bin++) {
@@ -279,7 +290,7 @@ void CbmTrdTestBeamAnalysis2015SPS::Exec(Option_t* option)
           }
         }
       } 
-      //*/
+      
 
     }
 
@@ -875,6 +886,17 @@ void CbmTrdTestBeamAnalysis2015SPS::CreateHistograms()
           }
         }
         
+        // Heatmap
+        
+        //new TH2I("Debug_NrSamples_vs_StopType","Debug_NrSamples_vs_StopType",34,-1.5,32.5,7,-1.5,5.5));
+        
+        histName = spadicName + "_Heatmap";
+        title = histName + runName + ";X;Y";
+        fHM->Add(histName.Data(), new TH2F(histName, title, 16, -0.5, 15.5, 2, 0.5, 2.5));
+        
+        
+        //
+        
         histName = spadicName + "_Cluster_Types";
         title = histName + runName +";Types;counts";
         fHM->Add(histName.Data(), new TH1F(histName, title,5,0,5));
@@ -1000,8 +1022,18 @@ TString CbmTrdTestBeamAnalysis2015SPS::RewriteSpadicName(TString spadicName)
 // ----              -------------------------------------------------------
   Int_t CbmTrdTestBeamAnalysis2015SPS::GetChannelOnPadPlane(Int_t SpadicChannel)
   {
-    Int_t channelMapping[32] = {31,15,30,14,29,13,28,12,27,11,26,10,25, 9,24, 8,
-				23, 7,22, 6,21, 5,20, 4,19, 3,18, 2,17, 1,16, 0};
+    /*
+    
+    |
+    |00|02|04
+    |
+    
+    
+    
+    */
+  
+    //Int_t channelMapping[32] = {31,15,30,14,29,13,28,12,27,11,26,10,25, 9,24, 8, 23, 7,22, 6,21, 5,20, 4,19, 3,18, 2,17, 1,16, 0};
+    Int_t channelMapping[32] = {  0, 16,  1, 17,  2, 18,  3, 19,  4, 20,  5, 21,  6, 22,  7, 23,  8, 24,  9, 25, 10, 26, 11, 27, 12, 28, 13, 29, 14, 30, 15, 31};
     if (SpadicChannel < 0 || SpadicChannel > 31){
       LOG(ERROR) << "CbmTrdTestBeamAnalysis2015SPS::GetChannelOnPadPlane ChId " << SpadicChannel << FairLogger::endl;
       return -1;

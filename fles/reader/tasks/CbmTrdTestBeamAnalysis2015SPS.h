@@ -32,6 +32,7 @@ class CbmTrdTestBeamAnalysis2015SPS : public FairTask
   
   void SetRewriteSpadicName(Bool_t rewrite)  { fRewriteSpadicName = rewrite; }
   void SetPlotSignalShape(Bool_t plot)  { fPlotSignalShape = plot; }
+  void SetPlotClusterFinder(Bool_t plot)  { fPlotClusterFinder = plot; }
 
  private:
 
@@ -40,6 +41,7 @@ class CbmTrdTestBeamAnalysis2015SPS : public FairTask
   Int_t   fSpadics;
   Bool_t  fRewriteSpadicName;
   Bool_t  fPlotSignalShape;
+  Bool_t  fPlotClusterFinder;
 
   Int_t   GetSysCoreID(Int_t eqID);
   Int_t   GetSpadicID(Int_t sourceA);
