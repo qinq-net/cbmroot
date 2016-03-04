@@ -103,7 +103,8 @@ void digitize()
   // -----   TOF Digitiser   -------------------------------------------------
 	if ( setup->IsActive(kTof) ) {
       Int_t iVerbose = 0;
-      CbmTofDigitizerBDF* tofDigi = new CbmTofDigitizerBDF("TOF Digitizer BDF",iVerbose, kFALSE);
+      Bool_t bSaveTofDigisInOut = kFALSE;
+      CbmTofDigitizerBDF* tofDigi = new CbmTofDigitizerBDF("TOF Digitizer BDF",iVerbose, bSaveTofDigisInOut);
       TString paramDir = gSystem->Getenv("VMCWORKDIR");
       tofDigi->SetInputFileName( paramDir + "/parameters/tof/test_bdf_input.root"); // Required as input file name not read anymore by param class
 //      tofDigi->SetHistoFileName( digiOutFile ); // Uncomment to save control histograms
