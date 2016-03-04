@@ -224,7 +224,7 @@ void PairAnalysisEvent::Init()
     CbmMuchTrack *muchTrack=0x0;
     if(fMuchTracks && imuch>=0) muchTrack=static_cast<CbmMuchTrack*>(fMuchTracks->At(imuch));
 
-    // track matches
+    // track and TOFhit matches
     CbmTrackMatchNew *stsMatch = 0x0;
     if(stsTrack) stsMatch = static_cast<CbmTrackMatchNew*>( fStsMatches->At(ists) );
     Int_t istsMC = (stsMatch && stsMatch->GetNofHits()>0 ? stsMatch->GetMatchedLink().GetIndex() : -1 );
@@ -237,8 +237,10 @@ void PairAnalysisEvent::Init()
     CbmTrackMatchNew *richMatch = 0x0;
     if(richRing) richMatch = static_cast<CbmTrackMatchNew*>( fRichMatches->At(irich) );
     Int_t irichMC = (richMatch && richMatch->GetNofHits()>0 ? richMatch->GetMatchedLink().GetIndex() : -1 );
+    CbmMatch *tofMatch = 0x0;
+    if(tofHit)     tofMatch = static_cast<CbmMatch*>( fTofHitMatches->At(itof) );     //tofMatch = tofHit->GetMatch();
     FairMCPoint *tofPoint = 0x0;
-    if(tofHit && tofHit->GetRefId()>=0) tofPoint = static_cast<FairMCPoint*>( fTofPoints->At(tofHit->GetRefId()) );
+    if(tofMatch && tofMatch->GetNofLinks()>0) tofPoint = static_cast<FairMCPoint*>( fTofPoints->At(tofMatch->GetMatchedLink().GetIndex()) );
     Int_t itofMC = (tofPoint ? tofPoint->GetTrackID() : -1 );
 
     Int_t imvdMC = GetMvdMatchingIndex( stsTrack );
