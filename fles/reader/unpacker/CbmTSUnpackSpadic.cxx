@@ -304,7 +304,8 @@ linearity of the GetFullTime() method.
 		if ( epoch_count != fPreviousEpochMarkerArray[it->second][addr] ){
 		  fSuperEpochArray[it->second][addr]++;
 		} else {
-		  LOG(ERROR)<< "Duplicate EpochMessage at "
+		  LOG(ERROR)<< "Multiply repeated Epoch Messages at Super Epoch "
+		  << fSuperEpoch << " Epoch "
 		  << epoch_count << " for Syscore" 
 		  << it->second << "_Spadic"  
 		  << addr << FairLogger::endl;
