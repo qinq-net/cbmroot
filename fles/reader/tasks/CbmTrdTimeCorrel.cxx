@@ -236,7 +236,8 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       if(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID/2][chID])<-1000)  LOG(INFO) << "SpadicMessage: " << iSpadicMessage << " has negative Delta Fulltime. sourceA: " << sourceA << " chID: " << raw->GetChannelID() << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " isInfo: " << isInfo << " isEpoch: " << isEpoch << " Lost Messages: " << lostMessages << FairLogger::endl;
       //Compute Time Deltas, write them into a histogram and store timestamps in fLastMessageTime.
       // WORKAROUND: at Present SyscoreID is not extracted, therefore all Messages are stored as if coming from SysCore 0.
-      fHM->H1("Delta_t")->Fill(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID/2][chID]));
+      // NOTE: is it meaningful to compare Deltas in one total Spadic? Think we should change to Half-Spadics here!
+      fHM->H1("Delta_t_hist_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2))->Fill(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID/2][chID]));
       //Write delta_t into a TGraph
       if(spaID!=-1){
 	Int_t tGraphSize = fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID/2)+"_Channel_"+std::to_string(chID))->GetN();
@@ -757,8 +758,11 @@ void CbmTrdTimeCorrel::CreateHistograms()
     }
   }
 
-
-  fHM->Add("Delta_t", new TH1I("Delta_t", "Timestamp differences", 4096,-700000,700000));
+  for (Int_t syscore=0; syscore<1;++syscore) {
+    for (Int_t spadic=0; spadic<3;++spadic) {
+      fHM->Add("Delta_t_hist_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic), new TH1I(("Delta_t_hist_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic)).c_str(), "Timestamp differences", 4096,-70000,70000));
+    }
+  }
 
   fHM->Add("TsCounter", new TGraph());
   fHM->Add("TsCounterHit0", new TGraph());
