@@ -236,8 +236,8 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       if(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID/2][chID])<-1000)  LOG(INFO) << "SpadicMessage (isEpoch): " << iSpadicMessage << " has negative Delta Fulltime. sourceA: " << sourceA << " chID: " << raw->GetChannelID() << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " isInfo: " << isInfo << " isEpoch: " << isEpoch << " Lost Messages: " << lostMessages << FairLogger::endl;
       //Compute Time Deltas, write them into a histogram and store timestamps in fLastMessageTime.
       // WORKAROUND: at Present SyscoreID is not extracted, therefore all Messages are stored as if coming from SysCore 0.
-      // Epoch messages are sent with chID 0 or 16, i.e. rawChID 0 from the first or the second half-Spadic. Thus, the half-chip results as 0 or 1 by dividing the (chID+1)/16 and casting this to Int_t. Bit bloody but fast.
-      if(spaID != -1)fHM->H1("Delta_t_hist_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2)+"_Half_"+std::to_string((Int_t)(chID+1)/16))->Fill(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID/2][chID]));
+      // Epoch messages are sent with chID 0 or 16, i.e. rawChID 0 from the first or the second half-Spadic. Thus, the half-chip results as 0 or 1 by dividing the chID/16 and casting this to Int_t. Bit bloody but fast.
+      if(spaID != -1)fHM->H1("Delta_t_hist_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2)+"_Half_"+std::to_string((Int_t)(chID/16)))->Fill(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID/2][chID]));
       //Write delta_t into a TGraph
       if(spaID!=-1){
 	Int_t tGraphSize = fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID/2)+"_Channel_"+std::to_string(chID))->GetN();
@@ -251,9 +251,14 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       //  DEBUG PLOTS
       //
       
-      if(isHit) {
-        histName = spadicName + "_Time_vs_TimeSlice";
+      if(isHit && chID >= 0 && chID < 32) {
+        histName = spadicName + "_Half_" + std::to_string((Int_t)(chID/16)) + "_Time_vs_TimeSlice";
         fHM->H2(histName.Data())->Fill(fNrTimeSlices,time); //timeStamp(0), epoch(0), superEpoch(0);
+      }
+
+      if(isHit && chID >= 0 && chID < 32) {
+        histName = spadicName + "_Half_" + std::to_string((Int_t)(chID/16)) + "_Epoch_vs_TimeSlice";
+        fHM->H2(histName.Data())->Fill(fNrTimeSlices,epoch); //timeStamp(0), epoch(0), superEpoch(0);
       }
       
       // These are pure debuging histos to ensure that the unpacker is running without errors (C.B)
@@ -749,15 +754,30 @@ void CbmTrdTimeCorrel::CreateHistograms()
 
   for(Int_t syscore = 0; syscore < 3; ++syscore) {
     for(Int_t spadic = 0; spadic < 3; ++spadic) {
-      spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
-      if(spadicName != "") {
-        histName = spadicName + "_Time_vs_TimeSlice";
-        title = histName + runName + ";TimeSlice;Time";
-        fHM->Add(histName.Data(), new TH2F(histName, title, 1000, 0, 5000, 9000, 0, 90000000000));
+      for(Int_t halfchip = 0; halfchip < 2; ++halfchip) {
+	spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
+	if(spadicName != "") {
+	  histName = spadicName + "_Half_" + std::to_string(halfchip) + "_Time_vs_TimeSlice";
+	  title = histName + runName + ";TimeSlice;Time";
+	  fHM->Add(histName.Data(), new TH2F(histName, title, 1000, 0, 5000, 9000, 0, 90000000000));
+	}
       }
     }
   }
 
+  for(Int_t syscore = 0; syscore < 3; ++syscore) {
+    for(Int_t spadic = 0; spadic < 3; ++spadic) {
+      for(Int_t halfchip = 0; halfchip < 2; ++halfchip) {
+	spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
+	if(spadicName != "") {
+	  histName = spadicName + "_Half_" + std::to_string(halfchip) + "_Epoch_vs_TimeSlice";
+	  title = histName + runName + ";TimeSlice;Epoch";
+	  fHM->Add(histName.Data(), new TH2F(histName, title, 2001, 0, 2000, 4097, 0, 4096));
+	}
+      }
+    }
+  }
+  
   for (Int_t syscore=0; syscore<1;++syscore) {
     for (Int_t spadic=0; spadic<3;++spadic) {
       for (Int_t halfchip=0; halfchip<2;++halfchip) {
