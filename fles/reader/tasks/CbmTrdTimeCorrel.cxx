@@ -40,6 +40,9 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
   for (Int_t SpaID =0; SpaID<3;++SpaID)
    for (Int_t ChID =0; ChID<32;++ChID)
 	fLastMessageTime[SysID][SpaID][ChID]=0;
+ for (Int_t SysID =0; SysID<3;++SysID)
+  for (Int_t SpaID =0; SpaID<6;++SpaID)
+        fLastMessageTimeHS[SysID][SpaID]=0;
 }
 // ----              -------------------------------------------------------
 CbmTrdTimeCorrel::~CbmTrdTimeCorrel()
@@ -237,13 +240,14 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       //Compute Time Deltas, write them into a histogram and store timestamps in fLastMessageTime.
       // WORKAROUND: at Present SyscoreID is not extracted, therefore all Messages are stored as if coming from SysCore 0.
       // NOTE: is it meaningful to compare Deltas in one total Spadic? Think we should change to Half-Spadics here!
-      fHM->H1("Delta_t_hist_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2))->Fill(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID/2][chID]));
+      if(spaID != -1)fHM->H1("Delta_t_hist_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID))->Fill(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTimeHS[0][spaID]));
       //Write delta_t into a TGraph
       if(spaID!=-1){
 	Int_t tGraphSize = fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID/2)+"_Channel_"+std::to_string(chID))->GetN();
 	fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID/2)+"_Channel_"+std::to_string(chID))->SetPoint(tGraphSize,time,(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID/2][chID])));
       }
-      fLastMessageTime[0][spaID/2][chID]=time;
+      fLastMessageTime[0][spaID/2][chID] = time;
+      fLastMessageTimeHS[0][spaID] = time;
     }
     if(spadicName!="") {
 
@@ -759,7 +763,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
   }
 
   for (Int_t syscore=0; syscore<1;++syscore) {
-    for (Int_t spadic=0; spadic<3;++spadic) {
+    for (Int_t spadic=0; spadic<4;++spadic) {
       fHM->Add("Delta_t_hist_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic), new TH1I(("Delta_t_hist_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic)).c_str(), "Timestamp differences", 4096,-70000,70000));
     }
   }
