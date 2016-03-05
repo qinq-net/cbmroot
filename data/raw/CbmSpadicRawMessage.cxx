@@ -108,9 +108,10 @@ void CbmSpadicRawMessage::PrintMessage()
     " fBufferOverflowCount:" << fBufferOverflowCount <<
     " fNrSamples:" << fNrSamples << 
     FairLogger::endl;
-  for (Int_t i = 0; i < fNrSamples; i++)
+  for (Int_t i = 0; i < fNrSamples; i++) {
     LOG(INFO) << " " << fSamples[i];
-  FairLogger::endl;
+  }
+  LOG(INFO) << FairLogger::endl;
 }
 
 ULong_t CbmSpadicRawMessage::GetFullTime() 
