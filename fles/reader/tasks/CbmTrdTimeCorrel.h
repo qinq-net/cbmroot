@@ -66,11 +66,6 @@ and the second (inner) to be the SPADICID of a full SPADIC.
 Third argument is the ChannelID.
 Timestamps are stored for a full spadic.
 */
-  ULong_t fLastMessageTimeHS[3][6];
-/* Store the last epoch message time.
-Intended usage is for the first (outer) argument to be the SysCoreID 
-and the second (inner) to be the SPADICID of a half SPADIC.
-*/
 
   void CreateHistograms();
 

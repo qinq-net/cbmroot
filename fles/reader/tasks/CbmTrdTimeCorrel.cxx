@@ -40,9 +40,6 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
   for (Int_t SpaID =0; SpaID<3;++SpaID)
    for (Int_t ChID =0; ChID<32;++ChID)
 	fLastMessageTime[SysID][SpaID][ChID]=0;
- for (Int_t SysID =0; SysID<3;++SysID)
-  for (Int_t SpaID =0; SpaID<6;++SpaID)
-        fLastMessageTimeHS[SysID][SpaID]=0;
 }
 // ----              -------------------------------------------------------
 CbmTrdTimeCorrel::~CbmTrdTimeCorrel()
@@ -143,7 +140,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     isStrange = raw->GetStrange();
     isEpochOutOfSynch = raw->GetEpochOutOfSynch();
     // Seriously guys, a message can only be of one type.
-    if(Int_t(isHit+isInfo+isEpoch+isHitAborted+isOverflow+isStrange+isEpochOutOfSynch)!=1) LOG(ERROR) << "SpadicMessage " << iSpadicMessage << " is classified from CbmSpadicRawMessage to be: HIT " << Int_t(isHit) << " / INFO " << (Int_t)isInfo << " / EPOCH " << (Int_t)isEpoch << " / HITaborted " << (Int_t)isHitAborted << " / OVERFLOW " << (Int_t)isOverflow << " / STRANGE " << (Int_t)isStrange << FairLogger::endl;
+    if(Int_t(isHit+isInfo+isEpoch+isHitAborted+isOverflow+isStrange+isEpochOutOfSynch)!=1) LOG(ERROR) << "SpadicMessage " << iSpadicMessage << " is classified from CbmSpadicRawMessage to be: HIT " << (Int_t)isHit << " / INFO " << (Int_t)isInfo << " / EPOCH " << (Int_t)isEpoch << " / HITaborted " << (Int_t)isHitAborted << " / OVERFLOW " << (Int_t)isOverflow << " / STRANGE " << (Int_t)isStrange << FairLogger::endl;
 
     // Get SysCore & Spadic propertys
     eqID = raw->GetEquipmentID();
@@ -157,7 +154,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     Int_t nrSamples=raw->GetNrSamples();
 
     lostMessages = raw->GetBufferOverflowCount();
-    if (!isOverflow && lostMessages!=0) LOG(ERROR) << "SpadicMessage " << iSpadicMessage << " is HIT " << Int_t(isHit) << " / INFO " << (Int_t)isInfo << " / EPOCH " << (Int_t)isEpoch << " / HITaborted " << (Int_t)isHitAborted << " / STRANGE " << (Int_t)isStrange << " but claims to have lost " << lostMessages << " messages" << FairLogger::endl;
+    if (!isOverflow && lostMessages!=0) LOG(ERROR) << "SpadicMessage " << iSpadicMessage << " is HIT " << (Int_t)isHit << " / INFO " << (Int_t)isInfo << " / EPOCH " << (Int_t)isEpoch << " / HITaborted " << (Int_t)isHitAborted << " / STRANGE " << (Int_t)isStrange << " but claims to have lost " << lostMessages << " messages" << FairLogger::endl;
     
     time = raw->GetFullTime();
     timeStamp = raw->GetTime();
@@ -236,18 +233,17 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       else fHM->H2("InfoType_vs_Channel")->Fill(33,10);
     }
     if (0 <= chID && chID < 32 && isEpoch){
-      if(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID/2][chID])<-1000)  LOG(INFO) << "SpadicMessage: " << iSpadicMessage << " has negative Delta Fulltime. sourceA: " << sourceA << " chID: " << raw->GetChannelID() << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " isInfo: " << isInfo << " isEpoch: " << isEpoch << " Lost Messages: " << lostMessages << FairLogger::endl;
+      if(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID/2][chID])<-1000)  LOG(INFO) << "SpadicMessage (isEpoch): " << iSpadicMessage << " has negative Delta Fulltime. sourceA: " << sourceA << " chID: " << raw->GetChannelID() << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " isInfo: " << isInfo << " isEpoch: " << isEpoch << " Lost Messages: " << lostMessages << FairLogger::endl;
       //Compute Time Deltas, write them into a histogram and store timestamps in fLastMessageTime.
       // WORKAROUND: at Present SyscoreID is not extracted, therefore all Messages are stored as if coming from SysCore 0.
-      // NOTE: is it meaningful to compare Deltas in one total Spadic? Think we should change to Half-Spadics here!
-      if(spaID != -1)fHM->H1("Delta_t_hist_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID))->Fill(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTimeHS[0][spaID]));
+      // Epoch messages are sent with chID 0 or 16, i.e. rawChID 0 from the first or the second half-Spadic. Thus, the half-chip results as 0 or 1 by dividing the (chID+1)/16 and casting this to Int_t. Bit bloody but fast.
+      if(spaID != -1)fHM->H1("Delta_t_hist_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2)+"_Half_"+std::to_string((Int_t)(chID+1)/16))->Fill(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID/2][chID]));
       //Write delta_t into a TGraph
       if(spaID!=-1){
 	Int_t tGraphSize = fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID/2)+"_Channel_"+std::to_string(chID))->GetN();
 	fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID/2)+"_Channel_"+std::to_string(chID))->SetPoint(tGraphSize,time,(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID/2][chID])));
       }
       fLastMessageTime[0][spaID/2][chID] = time;
-      fLastMessageTimeHS[0][spaID] = time;
     }
     if(spadicName!="") {
 
@@ -763,8 +759,10 @@ void CbmTrdTimeCorrel::CreateHistograms()
   }
 
   for (Int_t syscore=0; syscore<1;++syscore) {
-    for (Int_t spadic=0; spadic<4;++spadic) {
-      fHM->Add("Delta_t_hist_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic), new TH1I(("Delta_t_hist_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic)).c_str(), "Timestamp differences", 4096,-70000,70000));
+    for (Int_t spadic=0; spadic<3;++spadic) {
+      for (Int_t halfchip=0; halfchip<2;++halfchip) {
+	fHM->Add("Delta_t_hist_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic)+"_Half_"+std::to_string(halfchip), new TH1I(("Delta_t_hist_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic)+"_Half_"+std::to_string(halfchip)).c_str(), "Timestamp differences", 4096,-70000,70000));
+      }
     }
   }
 
