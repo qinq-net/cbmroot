@@ -10,7 +10,7 @@ using std::endl;
 
 CbmRichHit::CbmRichHit()
   : CbmPixelHit(),
-   // fPmtId(0),
+    fPmtId(0),
    // fNPhotons(0),
    // fAmplitude(0.),
     fTimestamp(0.),
