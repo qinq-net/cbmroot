@@ -754,9 +754,9 @@ void CbmTrdTimeCorrel::CreateHistograms()
 
   for(Int_t syscore = 0; syscore < 3; ++syscore) {
     for(Int_t spadic = 0; spadic < 3; ++spadic) {
-      for(Int_t halfchip = 0; halfchip < 2; ++halfchip) {
-	spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
-	if(spadicName != "") {
+      spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
+      if(spadicName != "") {
+	for(Int_t halfchip = 0; halfchip < 2; ++halfchip) {
 	  histName = spadicName + "_Half_" + std::to_string(halfchip) + "_Time_vs_TimeSlice";
 	  title = histName + runName + ";TimeSlice;Time";
 	  fHM->Add(histName.Data(), new TH2F(histName, title, 1000, 0, 5000, 9000, 0, 90000000000));
