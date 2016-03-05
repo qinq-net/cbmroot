@@ -28,6 +28,7 @@ CbmTrdTestBeamAnalysis2015SPS::CbmTrdTestBeamAnalysis2015SPS()
     fSpadics(0),
     fRewriteSpadicName(false),
     fPlotSignalShape(true),
+    fPlotClusterFinder(true),
     fTimeCounter(0),
     fBaseMethod(kLastTimeBins),
     fBaselineBins(1),
@@ -361,13 +362,13 @@ void CbmTrdTestBeamAnalysis2015SPS::Exec(Option_t* option)
       // loop over all pads in the cluster
       for (Int_t iPad = 0; iPad < Clustersize; iPad++){
 	     CbmSpadicRawMessage* raw = static_cast<CbmSpadicRawMessage*>(it2->second.at(iPad));
-	     Int_t eqID = raw->GetEquipmentID();
-	     Int_t sourceA = raw->GetSourceAddress();
-	     Int_t chID = raw->GetChannelID();
+	     eqID = raw->GetEquipmentID();
+	     sourceA = raw->GetSourceAddress();
+	     chID = raw->GetChannelID();
 	     Int_t nrSamples=raw->GetNrSamples();
-	     Int_t triggerType=raw->GetTriggerType();
-        Int_t stopType=raw->GetStopType();
-	     Int_t infoType=raw->GetInfoType();
+	     triggerType=raw->GetTriggerType();
+             stopType=raw->GetStopType();
+	     infoType=raw->GetInfoType();
 	     
 	     spadicName = GetSpadicName(eqID,sourceA);
 	     
@@ -375,7 +376,7 @@ void CbmTrdTestBeamAnalysis2015SPS::Exec(Option_t* option)
 	     //	Int_t groupId=raw->GetGroupId();
 	     //	ULong_t time = raw->GetFullTime();
 
-	     Int_t spaID     = GetSpadicID(sourceA);
+	     spaID     = GetSpadicID(sourceA);
 	     if(spaID%2) chID+=16;
 	     TString channelId=Form("_Ch%02d", chID);
 
