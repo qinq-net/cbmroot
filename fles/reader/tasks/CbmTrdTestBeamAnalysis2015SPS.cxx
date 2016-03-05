@@ -22,7 +22,7 @@ CbmTrdTestBeamAnalysis2015SPS::CbmTrdTestBeamAnalysis2015SPS()
     fTimeBins(32),
     fHM(new CbmHistManager()),
     fNrTimeSlices(0),
-    fRun(NULL),
+    fRun(0),
     fTimeMax(0),
     fTimeMin(0),
     fSpadics(0),
@@ -759,7 +759,7 @@ void CbmTrdTestBeamAnalysis2015SPS::CreateHistograms()
   TString spadicName="";
   TString histName="";
   TString runName="";
-  if(fRun!=NULL) runName=Form(" (Run %d)",fRun);
+  if(0 != fRun) runName=Form(" (Run %d)",fRun);
   TString title="";
 
   fSpadics = 0;
