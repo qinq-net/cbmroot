@@ -674,7 +674,7 @@ Bool_t   CbmTofTestBeamClusterizer::InitCalibParameter()
                 Double_t YMean=((TProfile *)htempPos_pfx)->GetBinContent(iCh+1);  //nh +1 empirical(?)
                 Double_t TMean=((TProfile *)htempTOff_pfx)->GetBinContent(iCh+1);
                 //Double_t dTYOff=YMean/fDigiBdfPar->GetSignalSpeed() ;
-                Double_t dTYOff=YMean/fDigiBdfPar->GetSigVel(iSmType,iRpc) ;
+                Double_t dTYOff=YMean/fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc) ;
                 fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0] += -dTYOff + TMean ;
                 fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1] += +dTYOff + TMean ;
  
@@ -817,7 +817,7 @@ Bool_t   CbmTofTestBeamClusterizer::LoadGeometry()
        Int_t iRpcId    = CbmTofAddress::GetRpcId( iUniqueId );
        LOG(INFO) << " DetIndx "<<iDetIndx<<"("<<iNbDet<<"), SmType "<<iSmType<<", SmId "<<iSmId
                  << ", RpcId "<<iRpcId<<" => UniqueId "<<Form("0x%08x ",iUniqueId)
-                 << Form(" Svel %6.3f ",fDigiBdfPar->GetSigVel(iSmType,iRpcId))
+                 << Form(" Svel %6.6f ",fDigiBdfPar->GetSigVel(iSmType,iSmId,iRpcId))
                  <<FairLogger::endl;
        Int_t iCell=-1; 
        while (kTRUE){
@@ -1784,15 +1784,15 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
               fhRpcCluDelTOff[iDetIndx]->Fill(pDig0->GetChannel(),
                                               dCorWeigth*(0.5*(pDig0->GetTime()+pDig1->GetTime())-pHit->GetTime()));
 
-              Double_t dDelPos=0.5*(pDig0->GetTime()-pDig1->GetTime())*fDigiBdfPar->GetSigVel(iSmType,iRpc);
+              Double_t dDelPos=0.5*(pDig0->GetTime()-pDig1->GetTime())*fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc);
               if(0==pDig0->GetSide()) dDelPos *= -1.;
               fhRpcCluDelPos[iDetIndx]->Fill(pDig0->GetChannel(),dCorWeigth*(dDelPos-hitpos_local[1]));
 
               fhRpcCluWalk[iDetIndx][iCh0][iS0]->Fill(pDig0->GetTot(),
-              pDig0->GetTime()-(pHit->GetTime()-(1.-2.*pDig0->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iRpc)));
+	      pDig0->GetTime()-(pHit->GetTime()-(1.-2.*pDig0->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc)));
               
               fhRpcCluWalk[iDetIndx][iCh1][iS1]->Fill(pDig1->GetTot(),
-              pDig1->GetTime()-(pHit->GetTime()-(1.-2.*pDig1->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iRpc)));
+	      pDig1->GetTime()-(pHit->GetTime()-(1.-2.*pDig1->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc)));
 
             }
 
@@ -1850,9 +1850,9 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
                */
                
                fhTRpcCluWalk[iDetIndx][iSel][pDig0->GetChannel()][pDig0->GetSide()]->Fill(pDig0->GetTot(),pDig0->GetTime()
-                +((1.-2.*pDig0->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iRpc))-dDelTof-dTTrig[iSel]);
+	        +((1.-2.*pDig0->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc))-dDelTof-dTTrig[iSel]);
                fhTRpcCluWalk[iDetIndx][iSel][pDig1->GetChannel()][pDig1->GetSide()]->Fill(pDig1->GetTot(),pDig1->GetTime()
-                +((1.-2.*pDig1->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iRpc))-dDelTof-dTTrig[iSel]);
+		+((1.-2.*pDig1->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc))-dDelTof-dTTrig[iSel]);
                
                if(iLink==0){          // Fill histo only once (for 1. digi entry)
                  fhTRpcCluAvWalk[iDetIndx][iSel]->Fill(dAvTot,dTcor);
@@ -2151,7 +2151,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
         htempTot_Off->Reset();
         for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) 
         {
-         Double_t YMean=fDigiBdfPar->GetSigVel(iSmType,iRpc)*0.5
+	 Double_t YMean=fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc)*0.5
                            *(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]-fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
          Double_t TMean=0.5*(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]+fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
          htempPos_pfx->Fill(iCh,YMean);
@@ -2319,7 +2319,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
          Double_t YMean=((TProfile *)hAvPos_pfx)->GetBinContent(iB+1);  //nh +1 empirical(?)
          Double_t TMean=((TProfile *)hAvTOff_pfx)->GetBinContent(iB+1);
          Double_t TWidth=((TProfile *)hAvTOff_pfx)->GetBinError(iB+1);
-         Double_t dTYOff=YMean/fDigiBdfPar->GetSigVel(iSmType,iRpc) ;
+         Double_t dTYOff=YMean/fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc) ;
 
 
          if (fiBeamRefType == iSmType && fiBeamRefSm == iSm) TMean=0.; // don't shift reference counter
@@ -2349,7 +2349,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
         htempTot_Off->Reset();
         for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) // store new values 
         {
-          Double_t YMean=fDigiBdfPar->GetSigVel(iSmType,iRpc)*0.5
+          Double_t YMean=fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc)*0.5
           *(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]-fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
           Double_t TMean=0.5*(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]+fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
           htempPos_pfx->Fill(iCh,YMean);
@@ -2438,7 +2438,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
          {
           Double_t YMean=((TProfile *)htempPos_pfx)->GetBinContent(iCh+1);  //nh +1 empirical(?)
           Double_t TMean=((TProfile *)htempTOff_pfx)->GetBinContent(iCh+1);
-          Double_t dTYOff=YMean/fDigiBdfPar->GetSigVel(iSmType,iRpc) ;
+          Double_t dTYOff=YMean/fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc) ;
 
 	  // if (fiBeamRefType == iSmType && fiBeamRefSm == iSm && fiBeamRefDet == iRpc) {
           if (fiBeamRefType == iSmType && fiBeamRefSm == iSm) {
@@ -2509,7 +2509,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
         htempTot_Off->Reset();
         for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) // store new values 
         {
-         Double_t YMean=fDigiBdfPar->GetSigVel(iSmType,iRpc)*0.5
+	 Double_t YMean=fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc)*0.5
           *(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]-fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
          Double_t TMean=0.5*(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]+fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
          htempPos_pfx->Fill(iCh,YMean);
@@ -2596,7 +2596,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
         htempTot_Off->Reset();
         for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) 
         {
-         Double_t YMean=fDigiBdfPar->GetSigVel(iSmType,iRpc)*0.5
+	 Double_t YMean=fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc)*0.5
                            *(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]-fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
          Double_t TMean=0.5*(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]+fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
          htempPos_pfx->Fill(iCh,YMean);
@@ -2855,7 +2855,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
            LOG(WARNING)<<Form("BuildClusters: invalid ChannelInfo for 0x%08x",iChId)<<FairLogger::endl;
            continue;
          }
-         if(  fDigiBdfPar->GetSigVel(pDigi->GetType(),pDigi->GetRpc()) * dTDifMin * 0.5 
+         if(  fDigiBdfPar->GetSigVel(pDigi->GetType(),pDigi->GetSm(),pDigi->GetRpc()) * dTDifMin * 0.5 
             < fPosYMaxScal*fChannelInfo->GetSizey()) {
          //check consistency
            if(8==pDigi->GetType() || 5==pDigi->GetType()){
@@ -3225,16 +3225,16 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 
                               if( 1 == xDigiA->GetSide() )
                                  // 0 is the top side, 1 is the bottom side
-                                dPosY += fDigiBdfPar->GetSigVel(iSmType,iRpc) * dTimeDif * 0.5;
+                                dPosY += fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc) * dTimeDif * 0.5;
                               else                              
                                  // 0 is the bottom side, 1 is the top side
-                                dPosY += -fDigiBdfPar->GetSigVel(iSmType,iRpc) * dTimeDif * 0.5;
+                                dPosY += -fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc) * dTimeDif * 0.5;
 
                               LOG(DEBUG1)
                                    <<"CbmTofTestBeamClusterizer::BuildClusters: NbChanInHit  "
                                    << Form(" %3d %3d %3d %3d %3d 0x%p %1.0f Time %f PosX %f PosY %f Svel %f ",
                                            iNbChanInHit,iSmType,iRpc,iCh,iLastChan,xDigiA,xDigiA->GetSide(),
-                                           dTime,dPosX,dPosY,fDigiBdfPar->GetSigVel(iSmType,iRpc))
+                                           dTime,dPosX,dPosY,fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc))
                                 //  << Form( ", Offs %f, %f ",fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0],
                                 //                            fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1])
                                    <<FairLogger::endl;

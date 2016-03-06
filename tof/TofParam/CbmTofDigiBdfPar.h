@@ -58,7 +58,7 @@ class CbmTofDigiBdfPar : public FairParGenericSet
     Int_t    GetNbRpc( Int_t iSmType) const;
     Int_t    GetNbGaps( Int_t iSmType, Int_t iRpc) const;
     Double_t GetGapSize( Int_t iSmType, Int_t iRpc) const;
-    Double_t GetSigVel( Int_t iSmType, Int_t iRpc) const;
+    Double_t GetSigVel( Int_t iSmType, Int_t iSm, Int_t iRpc) const;
     Int_t    GetNbChan( Int_t iSmType, Int_t iRpc) const;
     Int_t    GetChanType( Int_t iSmType, Int_t iRpc) const;
     Int_t    GetChanOrient( Int_t iSmType, Int_t iRpc) const;
@@ -125,7 +125,7 @@ class CbmTofDigiBdfPar : public FairParGenericSet
     TArrayI                fiNbRpc;          // [fiNbSmTypes]
     std::vector< TArrayI > fiNbGaps;         // [fiNbSmTypes][fiNbRpc]
     std::vector< TArrayD > fdGapSize;        // [fiNbSmTypes][fiNbRpc]
-    std::vector< TArrayD > fdSigVel;         // [fiNbSmTypes][fiNbRpc]  // Signal velocity
+    std::vector< TArrayD > fdSigVel;         // [fiNbSmTypes][fiNbSm*fiNbRpc]  // Signal velocity
     std::vector< TArrayI > fiNbCh;           // [fiNbSmTypes][fiNbRpc]
     std::vector< TArrayI > fiChType;         // [fiNbSmTypes][fiNbRpc]
     std::vector< TArrayI > fiChOrientation;  // [fiNbSmTypes][fiNbRpc] -> in parameter? Possibility to Readout from geometry angles?

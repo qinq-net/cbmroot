@@ -176,7 +176,7 @@ Bool_t CbmTofDigiBdfPar::getParams(FairParamList* l)
    fdSigVel.resize(fiNbSmTypes);
    for( Int_t iSmType = 0; iSmType < fiNbSmTypes; iSmType ++)
    {
-      fdSigVel[iSmType].Set( fiNbRpc[iSmType] );
+      fdSigVel[iSmType].Set( fiNbSm[iSmType]*fiNbRpc[iSmType] );
       if ( ! l->fill( Form("SigVel%03d", iSmType), &(fdSigVel[iSmType]) ) ) 
       {
          LOG(WARNING)<<"CbmTofDigiBdfPar::getParams => parameter "
@@ -479,12 +479,12 @@ Double_t CbmTofDigiBdfPar::GetGapSize( Int_t iSmType, Int_t iRpc) const
    } // if( iSmType < fiNbSmTypes )
       else return 0.0;
 }
-Double_t CbmTofDigiBdfPar::GetSigVel( Int_t iSmType, Int_t iRpc) const
+Double_t CbmTofDigiBdfPar::GetSigVel( Int_t iSmType, Int_t iSm, Int_t iRpc) const
 {
    if( iSmType < fiNbSmTypes )
    {
-      if( iRpc < fiNbRpc[iSmType] )
-         return fdSigVel[iSmType][iRpc];
+      if( iSm < fiNbSm[iSmType] && iRpc < fiNbRpc[iSmType] )
+	return fdSigVel[iSmType][iSm*fiNbRpc[iSmType]+iRpc];
          else return 0.0;
    } // if( iSmType < fiNbSmTypes )
       else return 0.0;
@@ -639,7 +639,7 @@ void CbmTofDigiBdfPar::printParams()
       {
          sGapsNb[iSmType] += Form( "%3d  ", GetNbGaps( iSmType, iRpc) );
          sGapsSz[iSmType] += Form( "%3.2f ", GetGapSize( iSmType, iRpc) );
-         sSigVel[iSmType] += Form( "%4.3f ", GetSigVel( iSmType, iRpc) );
+         for(Int_t iSm=0; iSm<fiNbSm[iSmType]; iSm++) sSigVel[iSmType] += Form( "%4.3f ", GetSigVel( iSmType, iSm, iRpc) );
          sChNb[iSmType] += Form( "%3d  ", GetNbChan( iSmType, iRpc) );
          if( 1 == GetChanType( iSmType, iRpc) )
             sChType[iSmType] += "pad  ";

@@ -430,8 +430,9 @@ Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
       fvRpcChOffs[iSmType].resize( iNbSm );
 
       for( Int_t iRpc = 0; iRpc < iNbRpc; iRpc++ )
-         if( 0.0 < fDigiBdfPar->GetSigVel( iSmType, iRpc ) )
-            fvdSignalVelocityRpc[iSmType][iRpc]      = 1000.0 * fDigiBdfPar->GetSigVel( iSmType, iRpc ); // convert in cm/ns
+	for( Int_t iSm = 0; iSm < iNbSm; iSm++ )
+	  if( 0.0 < fDigiBdfPar->GetSigVel( iSmType, iSm, iRpc ) )
+            fvdSignalVelocityRpc[iSmType][iRpc]      = 1000.0 * fDigiBdfPar->GetSigVel( iSmType, iSm, iRpc ); // convert in cm/ns
             else fvdSignalVelocityRpc[iSmType][iRpc] = fdSignalPropSpeed;
          
       for( Int_t iSm = 0; iSm < iNbSm; iSm++ )

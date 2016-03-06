@@ -999,7 +999,7 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 
      fhDTD4DT04D4best = new TH2F( Form("hDTD4DT04D4best"),
 			    Form("Time - velocity correlation; #DeltaTD4 [ps]; #DeltaT04 [ps]"),
-			    100, -DTMAX*6., DTMAX*6., 100, -DTMAX*2., DTMAX*2.); 
+			    100, -DTMAX*6., DTMAX*6., 500, -DTMAX*5., DTMAX*5.); 
 
 /*     Double_t dXMAX=30.;*/
 /*     Double_t dYMAX=20.;*/
@@ -1433,7 +1433,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
              Double_t tof2 =pHit2->GetTime();
 	     Double_t dTcor=0.;
 	     if(fhDTD4DT04D4Off != NULL) 
-	        dTcor=(Double_t)fhDTD4DT04D4Off->GetBinContent(fhDTD4DT04D4Off->FindBin(dTDia-tof2));
+	        dTcor=(Double_t)fhDTD4DT04D4Off->GetBinContent(fhDTD4DT04D4Off->FindBin(dTDia-tof2-fdTShift));
 
              Double_t Chi2Match =TMath::Power((xPos1-xPos2-fdDXMean)/fdDXWidth,2.)
 	                        +TMath::Power((yPos1-yPos2-fdDYMean)/fdDYWidth,2.)
@@ -1462,8 +1462,8 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	     fhTT04->Fill(tof1,tof2);
 	     */
 	     fhDXDY04->Fill(xPos1-xPos2,yPos1-yPos2);
-	     fhDXDT04->Fill(xPos1-xPos2,tof1-tof2);
-	     fhDYDT04->Fill(yPos1-yPos2,tof1-tof2);
+	     fhDXDT04->Fill(xPos1-xPos2,tof1-tof2-dTcor-fdDTMean);
+	     fhDYDT04->Fill(yPos1-yPos2,tof1-tof2-dTcor-fdDTMean);
              fhChi04->Fill(Chi2Match);
 
 	     for(Int_t iM=0; iM<iNbMatchedHits; iM++)
