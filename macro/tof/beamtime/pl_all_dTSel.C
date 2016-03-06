@@ -1,7 +1,7 @@
-void pl_all_dTSel(Int_t iNSel=4)
+void pl_all_dTSel(Int_t iNSel=2)
 {
   //  TCanvas *can = new TCanvas("can22","can22");
-  //  can->Divide(2,2); 
+  //  can->Divide(2,2);  
   //  TCanvas *can = new TCanvas("can","can",48,55,700,900);
   TCanvas *can = new TCanvas("can","can",0,0,900,900);
   can->Divide(2,2,0.01,0.01); 

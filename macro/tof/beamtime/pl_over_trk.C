@@ -53,11 +53,11 @@ can->cd(3);
 
 can->cd(4);
  gROOT->cd();
- TString hname=Form("hTrklMul34");
+ TString hname=Form("hTrklMulMaxMax-1");
  h2=(TH2 *)gROOT->FindObjectAny(hname);
  if (h2!=NULL) {
   h2->Draw("colz");
-gPad->SetLogz();
+  gPad->SetLogz();
  }else 
    {
      cout << hname << " not found" << endl;

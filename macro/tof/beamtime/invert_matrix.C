@@ -1,15 +1,9 @@
-void pl_pull_trk(Int_t NSt=8, char* var="X", Int_t iFit=0){
+void invert_matrix(Int_t NSt=3, char* var="X", Int_t iFit=0){
   //  TCanvas *can = new TCanvas("can22","can22");
   //  can->Divide(2,2); 
   TCanvas *can = new TCanvas("can","can",50,0,800,800);
-  switch(NSt){
-  case 4:
-    can->Divide(3,3);
-    break; 
-  default:
-    can->Divide(4,4);
-    ; 
-  }
+  can->Divide(3,3); 
+
  gPad->SetFillColor(0);
  gStyle->SetPalette(1);
  gStyle->SetOptStat(kTRUE);
@@ -21,38 +15,16 @@ void pl_pull_trk(Int_t NSt=8, char* var="X", Int_t iFit=0){
  TH1 *h1;
  TH2 *h2;
 
- const Int_t MSt=10;
+ const Int_t MSt=5;
  Double_t vSt[MSt];
  Double_t vMean[MSt];
- Double_t vSig[MSt];
+ //Double_t vSig[MSt];
+ Double_t vSig[3]={125.9,122.6,185.6};
  Double_t vRes[MSt];
  // if (h!=NULL) h->Delete();
  Int_t iCan=1;
 
- for (Int_t iSt=0; iSt<NSt; iSt++) {
- can->cd(iCan++);
- gROOT->cd();
- TString hname=Form("hPull%s_Station_%d",var,iSt);
-  h1=(TH1 *)gROOT->FindObjectAny(hname);
-  if (h1!=NULL) {
-      h1->Draw("");
-      gPad->SetLogy();
-      gPad->SetGridx();
-      if (iFit>0){
-	Double_t dFMean=h1->GetMean();
-	Double_t dFLim=2.5*h1->GetRMS();
-	TFitResultPtr fRes=h1->Fit("gaus","S","",dFMean-dFLim,dFMean+dFLim);
-	vSt[iSt]=iSt;
-	vMean[iSt]=fRes->Parameter(1);
-	vSig[iSt]=fRes->Parameter(2);
-	//vSig[iSt]=TMath::Max(20.,vSig[iSt]);
-      }
-  }else 
-   {
-     cout << hname << " not found" << endl;
-   }
- }
- if(0==iFit) return;
+
  can->cd(iCan++);
  TGraph *grm = new TGraph(NSt, vSt, vMean);
  grm->GetXaxis()->SetTitle("Station number");
@@ -69,14 +41,12 @@ void pl_pull_trk(Int_t NSt=8, char* var="X", Int_t iFit=0){
 
  can->cd(iCan++);
  Double_t val=(NSt-1)*(NSt-1);
- TMatrixD a(NSt,NSt); 
+ TMatrixD a(NSt,NSt);
+ Double_t A[9]={1,1,0,0,1,1,1,0,1}; 
+ Int_t k=0;
  for(Int_t i=0; i<NSt; i++) for(Int_t j=0; j<NSt; j++) {
-     if (i==j) {
-       a[i][j]=1;
-     }else{
-       a[i][j]=1./val;
+       a[i][j]=A[k++];
      }
-   }
  a.Draw("colz");
  a.Print();
 

@@ -30,17 +30,25 @@ can->cd(1);
 
 can->cd(2);
  gROOT->cd();
- TString hname=Form("cl_SmT%d_sm%03d_rpc%03d_Pos",SmT,iSm,iRpc);
+ gROOT->LoadMacro("fit_ybox.C");
+ 
+TString hname=Form("cl_SmT%d_sm%03d_rpc%03d_Pos",SmT,iSm,iRpc);
  h2=(TH2 *)gROOT->FindObjectAny(hname);
  if (h2!=NULL) {
   h2->Draw("colz");
   gPad->SetLogz();
   h2->ProfileX()->Draw("same");
+
+  can->cd(3);
+  h2y=h2->ProjectionY();
+  fit_ybox(h2y->GetName());
+
  }else 
    {
      cout << hname << " not found" << endl;
    }
 
+ /*
 can->cd(3);
  gROOT->cd();
  TString hname=Form("cl_SmT%d_sm%03d_rpc%03d_TOff",SmT,iSm,iRpc);
@@ -53,6 +61,7 @@ can->cd(3);
    {
      cout << hname << " not found" << endl;
    }
+ */
 
 can->cd(4);
  gROOT->cd();
