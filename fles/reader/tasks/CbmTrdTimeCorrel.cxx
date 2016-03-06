@@ -486,7 +486,7 @@ void CbmTrdTimeCorrel::Finish()
   fHM->G1("TsCounterStrange1")->SetLineColor(kBlue);
   fHM->G1("TsCounterStrange1")->GetXaxis()->SetTitle("TS number");
   fHM->G1("TsCounterStrange1")->GetYaxis()->SetTitle("SPADIC1 strange messages");
-  c1->SaveAs("pics/TsCounter.png");
+  c1->SaveAs("pics/"+runName+"TsCounter.png");
 
     // Plot message counter ratios to screen
   TCanvas *c2 = new TCanvas("c2","ratios"+runName,3*320,2*300);
@@ -515,7 +515,7 @@ void CbmTrdTimeCorrel::Finish()
   fHM->G1("TsStrangeness1")->SetFillColor(kBlue);
   fHM->G1("TsStrangeness1")->GetXaxis()->SetTitle("TS number");
   fHM->G1("TsStrangeness1")->GetYaxis()->SetTitle("SPADIC1 strangeness");
-  c2->SaveAs("pics/TsCounterRatio.png");
+  c2->SaveAs("pics/"+runName+"TsCounterRatio.png");
 
   if (false) {
   TCanvas *c3 = nullptr;
@@ -550,7 +550,7 @@ void CbmTrdTimeCorrel::Finish()
 		fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->GetXaxis()->SetTitle("Fulltime()");
 	}
   c4->Update();
-  //  c4->SaveAs(TString("pics/"+runName+"TimeOffsets"+".pdf"));
+  c4->SaveAs(TString("pics/"+runName+"TimeOffsets"+".pdf"));
 
   TCanvas *c5 = new TCanvas("c5","Fulltime_vs_Timeslice"+runName,5*320,3*300);
   TMultiGraph * mg = new TMultiGraph("Fulltime_vs_TimeSlice_all_Spadics","Fulltime_vs_TimeSlice_all_Spadics");
