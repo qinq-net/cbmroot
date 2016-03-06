@@ -517,6 +517,7 @@ void CbmTrdTimeCorrel::Finish()
   fHM->G1("TsStrangeness1")->GetYaxis()->SetTitle("SPADIC1 strangeness");
   c2->SaveAs("pics/TsCounterRatio.png");
 
+  if (false) {
   TCanvas *c3 = nullptr;
 
   for (Int_t SysID=0; SysID<1;++SysID)
@@ -536,6 +537,7 @@ void CbmTrdTimeCorrel::Finish()
 	  c3->Update();
 	  c3->SaveAs(TString("pics/Delta_t_Graph_Spadic_"+std::to_string(SpaID/2)+".pdf"));
 	};
+  }
   TCanvas *c4 = new TCanvas("c4","Time_Offsets"+runName,5*320,3*300);
   c4->Divide(4,4);
   Int_t i=1;
@@ -548,9 +550,9 @@ void CbmTrdTimeCorrel::Finish()
 		fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->GetXaxis()->SetTitle("Fulltime()");
 	}
   c4->Update();
-  c4->SaveAs(TString("pics/"+runName+"TimeOffsets"+".pdf"));
+  //  c4->SaveAs(TString("pics/"+runName+"TimeOffsets"+".pdf"));
 
-  TCanvas *c5 = new TCanvas("c4","Fulltime_vs_Timeslice"+runName,5*320,3*300);
+  TCanvas *c5 = new TCanvas("c5","Fulltime_vs_Timeslice"+runName,5*320,3*300);
   TMultiGraph * mg = new TMultiGraph("Fulltime_vs_TimeSlice_all_Spadics","Fulltime_vs_TimeSlice_all_Spadics");
   for (Int_t baseSpaID=0; baseSpaID<4;++baseSpaID){
 	fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID)))->SetMarkerStyle(20);
