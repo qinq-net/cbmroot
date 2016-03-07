@@ -232,7 +232,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,10);
       else fHM->H2("InfoType_vs_Channel")->Fill(33,10);
     }
-    if (0 <= chID && chID < 32 && isEpoch){
+    if (0 <= chID && chID < 32 && !isEpoch){
       if(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID/2][chID])<-1000)  LOG(INFO) << "SpadicMessage (isEpoch): " << iSpadicMessage << " has negative Delta Fulltime. sourceA: " << sourceA << " chID: " << raw->GetChannelID() << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " isInfo: " << isInfo << " isEpoch: " << isEpoch << " Lost Messages: " << lostMessages << FairLogger::endl;
       //Compute Time Deltas, write them into a histogram and store timestamps in fLastMessageTime.
       // WORKAROUND: at Present SyscoreID is not extracted, therefore all Messages are stored as if coming from SysCore 0.
@@ -334,6 +334,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   if(fNrTimeSlices!=0) timestampOffsets = CalcutlateTimestampOffsets(epochBuffer);
   epochBuffer.clear();
 #ifndef __CINT__
+  try{
   if(fNrTimeSlices!=0)
 	  for (Int_t baseSpaID=0; baseSpaID<4;++baseSpaID)
 		for (Int_t compSpaID=0; compSpaID<4;++compSpaID)
@@ -341,18 +342,15 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 			const Int_t SysID =0;
 			auto iteratot = timestampOffsets.at(baseSpaID).at(compSpaID).begin();
 			for (; iteratot != timestampOffsets.at(baseSpaID).at(compSpaID).end(); ++iteratot){
-			  try{
 				Int_t tGraphSize = fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->GetN();
 				fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->SetPoint(tGraphSize,iteratot->first,iteratot->second);
-			  }
-			  catch(std::out_of_range)
-				{
-				  continue;
-				  //LOG(ERROR)<< "map::at() has thrown an exception " << FairLogger::endl;
-				}
 			}
 		}
-
+  }
+  catch(std::out_of_range)
+	{
+	  LOG(ERROR)<< "map::at() has thrown an exception " << FairLogger::endl;
+	}
 #endif //__CINT__
   LOG(INFO)<< timestampOffsets.size() << FairLogger::endl;
   timestampOffsets.clear();
