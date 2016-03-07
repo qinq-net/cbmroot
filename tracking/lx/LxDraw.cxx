@@ -75,7 +75,7 @@ void LxDraw::Ask()
         ask = false;
 
       if (symbol == 'q')
-        exit;
+        exit(1);
     } while (symbol != '\n');
 
     cout << endl;
@@ -84,7 +84,7 @@ void LxDraw::Ask()
 
 void LxDraw::DrawMCTracks()
 {
-  char buf[128];
+//  char buf[128];
   int NRegMCTracks = 0;
   LxFinder* finder = LxFinder::Instance();
   TPolyLine pline;
@@ -747,7 +747,7 @@ void LxDraw::DrawRecoTracks()
 {
   LxFinder* finder = LxFinder::Instance();
   LxSpace& caSpace = finder->caSpace;
-  int stationsNumber = caSpace.stations.size();
+//  int stationsNumber = caSpace.stations.size();
 
   for (list<LxTrack*>::iterator i = caSpace.tracks.begin(); i != caSpace.tracks.end(); ++i)
   {

@@ -613,8 +613,8 @@ void LxEff::CalcRecoEff(bool joinExt)
   Double_t result = 0;
   static Int_t signalRecoTracks = 0;
   static Int_t signalMCTracks = 0;
-  static Int_t bgrRecoTracks = 0;
-  static Int_t bgrMCTracks = 0;
+//  static Int_t bgrRecoTracks = 0;
+//  static Int_t bgrMCTracks = 0;
   static Int_t mc2recoZeroMatched = 0;
   static Int_t mc2recoIncomplete = 0;
 
@@ -812,8 +812,8 @@ void LxEff::CalcRecoEff(bool joinExt)
     LxPoint* secondPoint = secondTriplet->center;
     Double_t tx = (secondPoint->x - firstPoint->x) / (secondPoint->z - firstPoint->z);
     Double_t particleSign2 = tx - firstPoint->x / firstPoint->z;
-    Double_t yAtZ0 = firstPoint->y - firstTriplet->ty * firstPoint->z;
-    Double_t breakChi2 = RecoTrackChi2(recoTrack);
+//    Double_t yAtZ0 = firstPoint->y - firstTriplet->ty * firstPoint->z;
+//    Double_t breakChi2 = RecoTrackChi2(recoTrack);
 
     //if (-9 <= yAtZ0 && 9 >= yAtZ0)
     //if (breakChi2 <= 3)

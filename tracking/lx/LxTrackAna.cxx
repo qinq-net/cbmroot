@@ -120,11 +120,13 @@ void LxSimpleTrack::RebindMuchTrack()
   }
 }
 
-LxTrackAna::LxTrackAna() : listMCTracks(0), listStsPts(0), listMuchPts(0), listMuchPixelHits(0), listMuchClusters(0),
-    listMuchPixelDigiMatches(0), buildConnectStat(false), useHitsInStat(false), averagePoints(false), dontTouchNonPrimary(true),
-    useChargeSignInCuts(false), buildBgrInvMass(false), buildSigInvMass(false), joinData(false), superEventTracks(0),
-    superEventBrachTrack(0, 0, 0, 0, 0, 0, 0, 0), buildNearestHitDist(false), cropHits(false), segmentsAnalyzer(*this),
-    buildSegmentsStat(true), particleType("jpsi")
+LxTrackAna::LxTrackAna() 
+ : listMCTracks(0), listStsPts(0), listMuchPts(0), listMuchPixelHits(0), listMuchClusters(0),
+   listMuchPixelDigiMatches(0), allTracks(), posTracks(), negTracks(), superEventTracks(0),
+    superEventBrachTrack(0, 0, 0, 0, 0, 0, 0, 0), useHitsInStat(false), averagePoints(false), dontTouchNonPrimary(true),  
+    useChargeSignInCuts(false), buildConnectStat(false), buildBgrInvMass(false), buildSigInvMass(false), joinData(false),  
+    buildNearestHitDist(false), cropHits(false), buildSegmentsStat(true), 
+    particleType("jpsi"), segmentsAnalyzer(*this) 
 {
 }
 
@@ -323,7 +325,7 @@ static void BuildInvMass(list<LxSimpleTrack*>& pTracks, list<LxSimpleTrack*>& nT
   }
 }
 
-static void BuildInvMass2(list<CbmStsTrack*>& stsTracks, TH1* histo)
+static void BuildInvMass2(list<CbmStsTrack*>& stsTracks, TH1* /*histo*/)
 {
   for (list<CbmStsTrack*>::iterator i = stsTracks.begin(); i != stsTracks.end(); ++i)
   {
@@ -473,7 +475,7 @@ void LxTrackAna::FinishTask()
 // Our goal here is to investigate various properties of Monte Carlo tracks derivable from points of there intersections
 // with detector stations. At the same time in MUCH we use not the Monte Carlo points but hits corresponding to them.
 // -- This is done to make the statistical properties more realistic.
-void LxTrackAna::Exec(Option_t* opt)
+void LxTrackAna::Exec(Option_t*)
 {
   Clean();
 
@@ -544,8 +546,8 @@ void LxTrackAna::Exec(Option_t* opt)
     {
       CbmMuchPixelHit* mh = static_cast<CbmMuchPixelHit*> (listMuchPixelHits->At(i));
 
-      Int_t stationNumber = CbmMuchGeoScheme::GetStationIndex(mh->GetAddress());
-      Int_t layerNumber = CbmMuchGeoScheme::GetLayerIndex(mh->GetAddress());
+//      Int_t stationNumber = CbmMuchGeoScheme::GetStationIndex(mh->GetAddress());
+//      Int_t layerNumber = CbmMuchGeoScheme::GetLayerIndex(mh->GetAddress());
       TVector3 pos, err;
       mh->Position(pos);
       mh->PositionError(err);
@@ -664,11 +666,11 @@ void LxTrackAna::AveragePoints()
     ::AveragePoints(*i, useHitsInStat);
 }
 
-static Int_t maxTracks = 0;
-static Int_t maxMuchPts1 = 0;
-static Int_t maxMuchPts0 = 0;
-static Int_t maxStsPts7 = 0;
-static Int_t maxStsPts6 = 0;
+static UInt_t maxTracks = 0;
+static UInt_t maxMuchPts1 = 0;
+static UInt_t maxMuchPts0 = 0;
+static UInt_t maxStsPts7 = 0;
+static UInt_t maxStsPts6 = 0;
 
 static inline void BuildStatistics(LxSimpleTrack* track)
 {
@@ -952,7 +954,7 @@ void LxTrackAna::Connect(bool useCuts)
         LxSimplePoint muchPt0 = *k;
         scaltype diffZMuch = muchPt0.z - muchPt1.z;
         scaltype txMuch = (muchPt0.x - muchPt1.x) / diffZMuch;
-        scaltype txMuchVertex = muchPt0.x / muchPt0.z;
+//        scaltype txMuchVertex = muchPt0.x / muchPt0.z;
         scaltype tyMuch = (muchPt0.y - muchPt1.y) / diffZMuch;
         Connect(muchTrack, muchPt0, txMuch, tyMuch, useCuts);
       }// for (list<LxSimplePoint>::iterator k = muchTrack->muchPoints[0].begin(); k != muchTrack->muchPoints[0].end(); ++k)

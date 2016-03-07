@@ -19,7 +19,8 @@ void LxFinderTriplet::SaveEventTracks()
     else
       extFitter.DoFit(&t, 13);
 
-    Double_t chi2Prim = extFitter.GetChiToVertex(&t, fPrimVtx);
+//    Double_t chi2Prim = extFitter.GetChiToVertex(&t, fPrimVtx);
+    extFitter.GetChiToVertex(&t, fPrimVtx);
     FairTrackParam params;
     extFitter.Extrapolate(&t, fPrimVtx->GetZ(), &params);
 

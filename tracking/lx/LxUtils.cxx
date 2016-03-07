@@ -20,7 +20,8 @@ void LxFinder::SaveEventTracks()
     else
       extFitter.DoFit(&t, 13);
 
-    scaltype chi2Prim = extFitter.GetChiToVertex(&t, fPrimVtx);
+//    scaltype chi2Prim = extFitter.GetChiToVertex(&t, fPrimVtx);
+    extFitter.GetChiToVertex(&t, fPrimVtx);
     FairTrackParam params;
     extFitter.Extrapolate(&t, fPrimVtx->GetZ(), &params);
 

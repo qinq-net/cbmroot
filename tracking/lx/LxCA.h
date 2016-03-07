@@ -70,7 +70,7 @@ struct LxPoint
 #endif//REMEMBER_CLUSTERED_RAYS_IN_POINTS
 
   LxPoint(scaltype X, scaltype Y, scaltype Z, scaltype Dx, scaltype Dy, scaltype Dz, LxLayer* lay, int hId, bool isArtificial = false) :
-      x(X), y(Y), z(Z), dx(Dx), dy(Dy), dz(Dz), layer(lay), used(false), valid(true), track(0), hitId(hId), artificial(isArtificial)
+      x(X), y(Y), z(Z), dx(Dx), dy(Dy), dz(Dz), used(false), valid(true), artificial(isArtificial), track(NULL), rays(), layer(lay), hitId(hId)
 #ifdef REMEMBER_CLUSTERED_RAYS_IN_POINTS
       , leftClusteredRay(0), rightClusteredRay(0)
 #endif//REMEMBER_CLUSTERED_RAYS_IN_POINTS

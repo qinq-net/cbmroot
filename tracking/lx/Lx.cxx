@@ -257,19 +257,29 @@ LxFinder* LxFinder::Instance()
 
 LxFinder::LxFinder() : muchPixelHits(0), listMCTracks(0), listMuchPts(0), listMuchClusters(0),
     listMuchPixelDigiMatches(0), listStsTracks(0), listStsMatches(0), listStsPts(0), listRecoTracks(0),
-    superEventData(0),
+    superEventData(0), extFitter(), fPrimVtx(0), positiveTracks(), negativeTracks(),
+    generateInvMass(false), generateBackground(false), generateChi2(false),
+    linkWithSts(true), useMCPInsteadOfHits(false), calcMiddlePoints(true), cutCoeff(4.0), verbosity(1),
+    parallMode(false), hitFileName(""), fileSaveSuffix(""), particleType("jpsi"), pPtCut(true),
+    MCPoints(), MCTracks(), MCStsPoints()
+    , MCStsPointsByStations() 
+#ifdef MAKE_DISPERSE_2D_HISTOS
+    , MCPointsByStations(),
+    , zCoordsByStations(),
+#endif//MAKE_DISPERSE_2D_HISTOS
+    , caSpace()
 #ifdef MAKE_EFF_CALC
-    //effCounter(*this),
+    , incomplete_events()
+    , falseSignalTriggerings(0)
+    , trueSignalTriggerings(0)
+    , hasSignalInEvent(false)
+    , signalCounter(0)
 #endif//MAKE_EFF_CALC
-    fPrimVtx(0), generateInvMass(false), generateBackground(false), generateChi2(false),
-    eventNumber(0), linkWithSts(true), useMCPInsteadOfHits(false), calcMiddlePoints(true), cutCoeff(4.0), verbosity(1),
-    parallMode(false), particleType("jpsi"), pPtCut(true)
+    , eventNumber(0)
 #ifdef CALC_MUCH_DETECTORS_EFF
     , mcPointsCount(0), mcPointsTriggered(0)
 #endif//CALC_MUCH_DETECTORS_EFF
-#ifdef MAKE_EFF_CALC
-    , falseSignalTriggerings(0), trueSignalTriggerings(0), saveOnlyTriggeringTracks(true),  hasSignalInEvent(false), signalCounter(0)
-#endif//MAKE_EFF_CALC
+    , saveOnlyTriggeringTracks(true)
 {
   fInstance = this;
 }
@@ -550,7 +560,7 @@ InitStatus LxFinder::Init()
 #endif//MAKE_HISTOS
 
 #ifdef MAKE_HISTOS
-  char histoName[128];
+//  char histoName[128];
 
   for (int i = 0; i < 6; ++i)
   {
@@ -763,7 +773,7 @@ void LxFinder::Exec(Option_t* opt)
   Int_t* root2lxmcpointmap = new Int_t[nEnt];// Unfortunately we have to use this map because in the loop
                                              // below some iterations can not to produce a point.
   mapCnt = 0;
-  Int_t mcPtsCount = nEnt;
+//  Int_t mcPtsCount = nEnt;
   Int_t maxReferencedPtsIndex = 0;
 
   for (int i = 0; i < nEnt; ++i)
@@ -808,9 +818,11 @@ void LxFinder::Exec(Option_t* opt)
     MCPoints.push_back(mcPoint);
     Int_t ptId = root2lxmcpointmap[i];
 
+/*
 #ifdef MAKE_HISTOS
     scaltype trackPt2 = MCTracks[trackId].px * MCTracks[trackId].px + MCTracks[trackId].py * MCTracks[trackId].py;
 #endif//MAKE_HISTOS
+*/
 
     MCTracks[trackId].Points.push_back(&MCPoints[ptId]);
 #ifdef MAKE_DISPERSE_2D_HISTOS
@@ -1162,11 +1174,13 @@ void LxFinder::Exec(Option_t* opt)
       if (p2 < 3.0 * 3.0)
         continue;
 
+/*
       scaltype xDelta = 0.05;//5.0 * sqrt(params.GetCovariance(0, 0));
       scaltype yDelta = 0.05;//5.0 * sqrt(params.GetCovariance(1, 1));
 
-      //if (params.GetX() < -xDelta  || params.GetX() > xDelta || params.GetY() < -yDelta || params.GetY() > yDelta)
-        //continue;
+      if (params.GetX() < -xDelta  || params.GetX() > xDelta || params.GetY() < -yDelta || params.GetY() > yDelta)
+        continue;
+*/
 
       scaltype tx2 = params.GetTx() * params.GetTx();
       scaltype ty2 = params.GetTy() * params.GetTy();
@@ -1359,13 +1373,13 @@ void LxFinder::CalcInvMass()
 
     if (mcTrack1)
     {
-      Int_t pdg1 = mcTrack1 ? mcTrack1->pdg : 10000;
+//      Int_t pdg1 = mcTrack1 ? mcTrack1->pdg : 10000;
       //map<Int_t, map<Int_t, int> >::iterator j = particleCounts.find(pdg1);
 
       //if (j == particleCounts.end())
         //j = particleCounts.insert(pair<Int_t, map<Int_t, int> > (pdg1, map<Int_t, int> ())).first;
 
-      Int_t pdg2 = mcTrack2 ? mcTrack2->pdg : 10000;
+//      Int_t pdg2 = mcTrack2 ? mcTrack2->pdg : 10000;
 
       //map<Int_t, int>::iterator k = j->second.find(pdg2);
 
@@ -1507,19 +1521,19 @@ void LxFinder::FinishTask()
   }*/
   TFile* curFile = TFile::CurrentFile();
 #ifdef MAKE_HISTOS
+#ifdef MAKE_DISPERSE_2D_HISTOS
   char histoFileName[128];
 
   for (int i = 0; i < 6; ++i)
   {
-#ifdef MAKE_DISPERSE_2D_HISTOS
     sprintf(histoFileName, "disperseL_histo_%d.root", i);
     SaveHisto(disperseLHistos[i], histoFileName);
     sprintf(histoFileName, "disperseR_histo_%d.root", i);
     SaveHisto(disperseRHistos[i], histoFileName);
     sprintf(histoFileName, "disperseD_histo_%d.root", i);
     SaveHisto(disperseDHistos[i], histoFileName);
-#endif//MAKE_DISPERSE_2D_HISTOS
   }
+#endif//MAKE_DISPERSE_2D_HISTOS
 #endif//MAKE_HISTOS
 
 #ifdef MAKE_HISTOS

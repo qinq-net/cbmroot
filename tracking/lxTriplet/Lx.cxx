@@ -52,10 +52,52 @@ LxFinderTriplet* LxFinderTriplet::Instance()
   return fInstance;
 }
 
+  std::list<CbmStsTrack> positiveTracks;
+  std::list<CbmStsTrack> negativeTracks;
+  bool generateInvMass;
+  bool generateBackground;
+  bool generateChi2;
+  bool linkWithSts;
+  bool useMCPInsteadOfHits;
+  bool calcMiddlePoints;
+  Double_t cutCoeff;
+  bool pPtCut;
+  std::vector<LxMCPoint> MCPoints;// Points should lay here in the same order as in listMuchPts.
+  std::vector<LxMCTrack> MCTracks;// Tracks should lay here in the same order as in listMCTracks.
+  std::list<LxStsMCPoint> MCStsPoints;
+  std::list<LxStsMCPoint*> MCStsPointsByStations[8];
+#ifdef MAKE_DISPERSE_2D_HISTOS
+  std::list<LxMCPoint*> MCPointsByStations[LXSTATIONS][LXLAYERS];
+  Double_t zCoordsByStations[LXSTATIONS][LXLAYERS];
+#endif//MAKE_DISPERSE_2D_HISTOS
+  LxSpace caSpace;
+  std::map<Int_t, std::map<Int_t, int> > particleCounts;
+#ifdef MAKE_EFF_CALC
+  std::ofstream incomplete_events;// Events where not all tracks are reconstructed.
+#endif//MAKE_EFF_CALC
+  Int_t eventNumber;
+#ifdef CALC_MUCH_DETECTORS_EFF
+  Int_t mcPointsCount;
+  Int_t mcPointsTriggered;
+#endif//CALC_MUCH_DETECTORS_EFF
+
+
 LxFinderTriplet::LxFinderTriplet() : muchPixelHits(0), listMCTracks(0), listMuchPts(0), listMuchClusters(0),
     listMuchPixelDigiMatches(0), listStsTracks(0), listStsMatches(0), listStsPts(0), listRecoTracks(0),
-    effCounter(*this), fPrimVtx(0), generateInvMass(false), generateBackground(false), generateChi2(false),
-    eventNumber(0), linkWithSts(true), useMCPInsteadOfHits(false), calcMiddlePoints(true), cutCoeff(4.0), pPtCut(true)
+    effCounter(*this), extFitter(), fPrimVtx(0), positiveTracks(), negativeTracks(), generateInvMass(false), generateBackground(false), generateChi2(false),
+    linkWithSts(true), useMCPInsteadOfHits(false), calcMiddlePoints(true), cutCoeff(4.0), pPtCut(true), MCPoints(), MCTracks(),
+    MCStsPoints()
+    , MCStsPointsByStations()
+#ifdef MAKE_DISPERSE_2D_HISTOS
+    , MCPointsByStations()
+    , zCoordsByStations()
+#endif//MAKE_DISPERSE_2D_HISTOS
+    , caSpace()
+    , particleCounts()
+#ifdef MAKE_EFF_CALC
+    , incomplete_events()
+#endif//MAKE_EFF_CALC
+    , eventNumber(0)
 #ifdef CALC_MUCH_DETECTORS_EFF
     , mcPointsCount(0), mcPointsTriggered(0)
 #endif//CALC_MUCH_DETECTORS_EFF
@@ -339,7 +381,7 @@ InitStatus LxFinderTriplet::Init()
 
 static Int_t nTimes = 1;
 
-void LxFinderTriplet::Exec(Option_t* opt)
+void LxFinderTriplet::Exec(Option_t*)
 {
   cout << "LxFinderTriplet::Exec() called at " << nTimes++ << " time" << endl;
   timeval bTime, eTime;
@@ -447,7 +489,7 @@ void LxFinderTriplet::Exec(Option_t* opt)
   Int_t* root2lxmcpointmap = new Int_t[nEnt];// Unfortunately we have to use this map because in the loop
                                              // below some iterations can not to produce a point.
   mapCnt = 0;
-  Int_t mcPtsCount = nEnt;
+//  Int_t mcPtsCount = nEnt;
   Int_t maxReferencedPtsIndex = 0;
 
   for (int i = 0; i < nEnt; ++i)
@@ -492,9 +534,11 @@ void LxFinderTriplet::Exec(Option_t* opt)
     MCPoints.push_back(mcPoint);
     Int_t ptId = root2lxmcpointmap[i];
 
+/*
 #ifdef MAKE_HISTOS
     Double_t trackPt2 = MCTracks[trackId].px * MCTracks[trackId].px + MCTracks[trackId].py * MCTracks[trackId].py;
 #endif//MAKE_HISTOS
+*/
 
     MCTracks[trackId].Points.push_back(&MCPoints[ptId]);
 #ifdef MAKE_DISPERSE_2D_HISTOS
@@ -750,12 +794,13 @@ void LxFinderTriplet::Exec(Option_t* opt)
     if (p2 < 3.0 * 3.0)
       continue;
 
+/*
     Double_t xDelta = 0.05;//5.0 * sqrt(params.GetCovariance(0, 0));
     Double_t yDelta = 0.05;//5.0 * sqrt(params.GetCovariance(1, 1));
 
-    //if (params.GetX() < -xDelta  || params.GetX() > xDelta || params.GetY() < -yDelta || params.GetY() > yDelta)
-      //continue;
-
+    if (params.GetX() < -xDelta  || params.GetX() > xDelta || params.GetY() < -yDelta || params.GetY() > yDelta)
+      continue;
+*/
     Double_t tx2 = params.GetTx() * params.GetTx();
     Double_t ty2 = params.GetTy() * params.GetTy();
     Double_t pt2 = p2 * (tx2 + ty2) / (1 + tx2 + ty2);
@@ -931,7 +976,7 @@ void LxFinderTriplet::CalcInvMass()
 
     if (generateChi2)
     {
-      Double_t normalizedChi2 = firstTrack->chi2 / (LXSTATIONS * 4);// length * 4 == NDF.
+//      Double_t normalizedChi2 = firstTrack->chi2 / (LXSTATIONS * 4);// length * 4 == NDF.
 
       //if (mcTrack2 && (mcTrack2->pdg == 13 || mcTrack2->pdg == -13) && mcTrack2->mother_ID < 0)
         //signalChi2Histo->Fill(normalizedChi2);
