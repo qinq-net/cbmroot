@@ -41,7 +41,7 @@ CbmGlobalTrack::~CbmGlobalTrack() { }
 
 
 // -----   Public method Print   -------------------------------------------
-void CbmGlobalTrack::Print(Option_t* opt) const {
+void CbmGlobalTrack::Print(Option_t*) const {
   cout << endl << "StsTrack " << fStsTrack << ", TrdTrack " << fTrdTrack << ", MuchTrack " << fMuchTrack
        << ", RichRing " << fRichRing << ", TofHit " << fTofHit << endl;
 //  cout << "Parameters at first plane: " << endl;

@@ -201,9 +201,9 @@ Double_t CbmTofTracklet::GetTdif(Int_t iSmType, CbmTofHit* pHit){
   Double_t Nref=0;
   Double_t dTt=0.;
   Int_t iNt=0;
-  for (Int_t iHL=0; iHL<fpHit.size()-1; iHL++){
+  for (UInt_t iHL=0; iHL<fpHit.size()-1; iHL++){
      if (iSmType == fTofDet[iHL] || 0 == fTofDet[iHL]) continue;           // exclude faked hits 
-     for (Int_t iHH=iHL+1; iHH<fpHit.size(); iHH++){
+     for (UInt_t iHH=iHL+1; iHH<fpHit.size(); iHH++){
        if (iSmType == fTofDet[iHH] || 0 == fTofDet[iHH]) continue;           // exclude faked hits 
 	dTt+=(fpHit[iHH].GetTime()-fpHit[iHL].GetTime())/(fpHit[iHH].GetR()-fpHit[iHL].GetR());
 	iNt++;
@@ -265,7 +265,7 @@ Double_t CbmTofTracklet::GetFitT(Double_t dR){
   return GetT0() + fTt*dR;
 }
 
-void CbmTofTracklet::Clear(Option_t* option){
+void CbmTofTracklet::Clear(Option_t*){
 
   //  cout << "-D- Clear TofTracklet with option "<<*option<<endl; 
   fTofHit.clear();

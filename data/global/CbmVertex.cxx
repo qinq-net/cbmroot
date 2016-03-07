@@ -83,7 +83,7 @@ CbmVertex::~CbmVertex() { }
 
 
 // -----   Public method Print   -------------------------------------------
-void CbmVertex::Print(Option_t* opt) const {
+void CbmVertex::Print(Option_t*) const {
   Double_t chi2ndf;
   if (fNDF) chi2ndf = fChi2 / Double_t(fNDF);
   else chi2ndf = 0.;	       

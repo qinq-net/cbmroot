@@ -22,7 +22,7 @@ CbmMCEventList::~CbmMCEventList() {
 // ----------------------------------------------------------------------------
 
 // -----   Print to screen   --------------------------------------------------
-void CbmMCEventList::Print(Option_t* opt) const {
+void CbmMCEventList::Print(Option_t*) const {
   LOG(INFO) << "Number of MC events in list: " << fEvents.size()
 	       << FairLogger::endl;
   map<Int_t, map<Int_t, Double_t> >::const_iterator it1 = fEvents.begin();

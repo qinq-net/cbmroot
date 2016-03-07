@@ -35,7 +35,7 @@ class CbmMCEventList: public TNamed
     virtual ~CbmMCEventList();
 
     /** Delete all event entries **/
-    virtual void Clear(Option_t* opt = "") {
+    virtual void Clear(Option_t*) {
       fEvents.clear();
       fNofEvents = 0;
     }

@@ -79,7 +79,7 @@ void CbmDaq::CloseTimeSlice() {
   fCurrentStartTime += fDuration;
   fTimeSlice->Reset(fCurrentStartTime, fDuration);
   fEventRange.clear();
-  fEventsCurrent->Clear();
+  fEventsCurrent->Clear("");
 
 }
 // ===========================================================================
