@@ -96,7 +96,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   TString title="";
   
   std::map<TString, std::map<ULong_t, std::vector<CbmSpadicRawMessage*> > > timeBuffer;
-  EpochMap epochBuffer;
+
 
   LOG(INFO) << "CbmTrdTimeCorrel: Number of current TimeSlice: " << fNrTimeSlices << FairLogger::endl;
   LOG(INFO) << "Digis in TClonesArray:                           " << fDigis->GetEntriesFast() << FairLogger::endl;
@@ -127,6 +127,29 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   LOG(INFO) << "nSpadicMessages: " << nSpadicMessages << FairLogger::endl;
 
   Int_t hitCounter[3][6]={{0}};
+
+  LOG(INFO) <<"Begin Buffering Epoch Messages" << FairLogger::endl;
+{//Context to limit epochBuffers scope
+  EpochMap epochBuffer;
+  //Loop over all epoch messages to build Fulltime offsets.
+  for (Int_t iSpadicMessage=0; iSpadicMessage < nSpadicMessages; ++iSpadicMessage){
+	   CbmSpadicRawMessage* raw = static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(iSpadicMessage));
+	   lostMessages = 0; // reset lost-counter for a new message
+	   isEpoch = raw->GetEpoch();
+	   isEpochOutOfSynch = raw->GetEpochOutOfSynch();
+	   sourceA = raw->GetSourceAddress();
+	   spaID = GetSpadicID(sourceA);
+	   time = raw->GetFullTime();
+	   //buffer all Epoch Messages
+	   if(isEpoch||isEpochOutOfSynch){
+	    	epochBuffer[spaID][time] = raw;
+	    	Int_t tempSize= fHM->G1(("Timestamps_Spadic"+std::to_string(spaID)))->GetN();
+	    	fHM->G1(("Timestamps_Spadic"+std::to_string(spaID)))->SetPoint(tempSize,fNrTimeSlices,time);
+	    }
+  }
+  if(fNrTimeSlices!=0) timestampOffsets = CalculateTimestampOffsets(epochBuffer);
+}
+LOG(INFO) <<"Finish Buffering Epoch Messages" << FairLogger::endl;
 
   // Starting to loop over all Spadic messages in unpacked TimeSlice
   for (Int_t iSpadicMessage=0; iSpadicMessage < nSpadicMessages; ++iSpadicMessage) {
@@ -181,12 +204,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     }
     
     /*TString*/ spadicName = GetSpadicName(eqID,sourceA);
-    //buffer all Epoch Messages
-    if(isEpoch||isEpochOutOfSynch){
-    	epochBuffer[spaID][time] = raw;
-    	Int_t tempSize= fHM->G1(("Timestamps_Spadic"+std::to_string(spaID)))->GetN();
-    	fHM->G1(("Timestamps_Spadic"+std::to_string(spaID)))->SetPoint(tempSize,fNrTimeSlices,time);
-    }
+
     // add raw message to map sorted by timestamps, syscore and spadic
     if (false)
     if (!isStrange && !isEpoch && !isEpochOutOfSynch) {
@@ -234,7 +252,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,10);
       else fHM->H2("InfoType_vs_Channel")->Fill(33,10);
     }
-    if (0 <= chID && chID < 32 && !isEpoch){
+    if (0 <= chID && chID < 32 && isHit){
       if(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID/2][chID])<-1000)  LOG(INFO) << "SpadicMessage (isEpoch): " << iSpadicMessage << " has negative Delta Fulltime. sourceA: " << sourceA << " chID: " << raw->GetChannelID() << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " isInfo: " << isInfo << " isEpoch: " << isEpoch << " Lost Messages: " << lostMessages << FairLogger::endl;
       //Compute Time Deltas, write them into a histogram and store timestamps in fLastMessageTime.
       // WORKAROUND: at Present SyscoreID is not extracted, therefore all Messages are stored as if coming from SysCore 0.
@@ -332,26 +350,26 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   
   }
   //Calculate correct Timestamps
-  OffsetMap timestampOffsets;
-  if(fNrTimeSlices!=0) timestampOffsets = CalcutlateTimestampOffsets(epochBuffer);
-  epochBuffer.clear();
+
 #ifndef __CINT__
   try{
   if(fNrTimeSlices!=0)
+	if(timestampOffsets.size()!=0)
 	  for (Int_t baseSpaID=0; baseSpaID<4;++baseSpaID)
-		for (Int_t compSpaID=0; compSpaID<4;++compSpaID)
-		{
-			const Int_t SysID =0;
-			auto iteratot = timestampOffsets.at(baseSpaID).at(compSpaID).begin();
-			for (; iteratot != timestampOffsets.at(baseSpaID).at(compSpaID).end(); ++iteratot){
-				Int_t tGraphSize = fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->GetN();
-				fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->SetPoint(tGraphSize,iteratot->first,iteratot->second);
+		  if(timestampOffsets.at(baseSpaID).size()!=0)
+			for (Int_t compSpaID=0; compSpaID<4;++compSpaID)
+			{
+				const Int_t SysID =0;
+				auto iteratot = timestampOffsets.at(baseSpaID).at(compSpaID).begin();
+				for (; iteratot != timestampOffsets.at(baseSpaID).at(compSpaID).end(); ++iteratot){
+					Int_t tGraphSize = fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->GetN();
+					fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->SetPoint(tGraphSize,iteratot->first,iteratot->second);
+				}
 			}
-		}
   }
   catch(std::out_of_range)
 	{
-	  LOG(ERROR)<< "map::at() has thrown an exception " << FairLogger::endl;
+	  LOG(DEBUG)<< "map::at() has thrown an exception " << FairLogger::endl;
 	}
 #endif //__CINT__
   LOG(INFO)<< timestampOffsets.size() << FairLogger::endl;
@@ -519,7 +537,7 @@ void CbmTrdTimeCorrel::Finish()
   fHM->G1("TsStrangeness1")->GetYaxis()->SetTitle("SPADIC1 strangeness");
   c2->SaveAs("pics/"+runName+"TsCounterRatio.png");
 
-  if (false) {
+  if (true) {
   TCanvas *c3 = nullptr;
 
   for (Int_t SysID=0; SysID<1;++SysID)
@@ -1033,7 +1051,7 @@ Int_t  CbmTrdTimeCorrel::GetColumnID(CbmSpadicRawMessage* raw)// To be used to c
   return columnId;
 }
 //---------------------------------------------------------------------------
-std::map<Int_t, std::map<Int_t,std::map<ULong_t, Long_t> > > CbmTrdTimeCorrel::CalcutlateTimestampOffsets(const EpochMap &epochBuffer)
+std::map<Int_t, std::map<Int_t,std::map<ULong_t, Long_t> > > CbmTrdTimeCorrel::CalculateTimestampOffsets(const EpochMap &epochBuffer)
 {
 	//Calculate time offsets between various Spadics
 	std::map<Int_t, std::map<Int_t,std::map<ULong_t, Long_t > > > epochOffsets;

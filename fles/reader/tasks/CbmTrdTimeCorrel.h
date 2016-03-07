@@ -81,9 +81,12 @@ Timestamps are stored for a full spadic.
   Int_t GetLayerID(CbmSpadicRawMessage* raw);
   Int_t GetColumnID(CbmSpadicRawMessage* raw);
 
+  OffsetMap timestampOffsets;
+  OffsetMap CalculateTimestampOffsets(const EpochMap &epochBuffer);
+
+
   CbmTrdTimeCorrel(const CbmTrdTimeCorrel&);
   CbmTrdTimeCorrel operator=(const CbmTrdTimeCorrel&);
-  std::map<Int_t, std::map<Int_t,std::map<ULong_t, Long_t> > > CalcutlateTimestampOffsets(const EpochMap &epochBuffer);
 
   ClassDef(CbmTrdTimeCorrel,1);
 };
