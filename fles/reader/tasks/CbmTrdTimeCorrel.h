@@ -32,6 +32,10 @@ class CbmTrdTimeCorrel : public FairTask
   void SetRun(Int_t run)               { fRun = run;}
   void SetRewriteSpadicName(Bool_t rewrite)  { fRewriteSpadicName = rewrite; }
 
+  void Clusterizer();
+
+  void CleanUpBuffers();
+
  private:
   std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > > fMessageBuffer;
   Int_t   fSpadics;
@@ -60,12 +64,12 @@ class CbmTrdTimeCorrel : public FairTask
   Int_t fRun;
 
   ULong_t fLastMessageTime[3][3][32];
-/* Store the last message time.
-Intended usage is for the first (outer) argument to be the SysCoreID 
-and the second (inner) to be the SPADICID of a full SPADIC.
-Third argument is the ChannelID.
-Timestamps are stored for a full spadic.
-*/
+  /* Store the last message time.
+     Intended usage is for the first (outer) argument to be the SysCoreID 
+     and the second (inner) to be the SPADICID of a full SPADIC.
+     Third argument is the ChannelID.
+     Timestamps are stored for a full spadic.
+  */
 
   void CreateHistograms();
 
@@ -80,6 +84,7 @@ Timestamps are stored for a full spadic.
   Int_t GetRowID(CbmSpadicRawMessage* raw);
   Int_t GetLayerID(CbmSpadicRawMessage* raw);
   Int_t GetColumnID(CbmSpadicRawMessage* raw);
+  Int_t GetModuleID(CbmSpadicRawMessage* raw);
 
   OffsetMap timestampOffsets;
   OffsetMap CalculateTimestampOffsets(const EpochMap &epochBuffer);
