@@ -120,7 +120,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   Int_t eqID(-1), sourceA(-1), triggerType(-1), stopType(-1), infoType(-1), groupId(-1), sysID(-1), spaID(-1);
   // chID in ASIC. Take care, neighboured numbers are not neccessarily neighboured on the connected TRD cathode pad plane. Resorted lateron!
   // padID are sorted chIDs in the order as on the pad plane
-  Int_t chID(0),padID(0);
+  Int_t chID(-1),padID(-1);
   ULong_t time = 0;
   // Time stamp and epoch are counted in the Spadic
   Int_t timeStamp(0), epoch(0), superEpoch(0);
@@ -132,6 +132,8 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   for (Int_t iSpadicMessage=0; iSpadicMessage < nSpadicMessages; ++iSpadicMessage) {
     CbmSpadicRawMessage* raw = static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(iSpadicMessage));
     lostMessages = 0; // reset lost-counter for a new message
+    chID = -1; // reset to notice if set to a new ID
+    padID = -1;
     isHit = raw->GetHit();
     isHitAborted = raw->GetHitAborted();
     isOverflow = raw->GetOverFlow();
@@ -761,7 +763,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
 	for(Int_t halfchip = 0; halfchip < 2; ++halfchip) {
 	  histName = spadicName + "_Half_" + std::to_string(halfchip) + "_Time_vs_TimeSlice";
 	  title = histName + runName + ";TimeSlice;Time";
-	  fHM->Add(histName.Data(), new TH2F(histName, title, 1000, 0, 5000, 9000, 0, 90000000000));
+	  fHM->Add(histName.Data(), new TH2F(histName, title, 2001, -0.5, 2000.5, 9000, 0, 90000000000));
 	}
       }
     }
@@ -774,7 +776,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
 	if(spadicName != "") {
 	  histName = spadicName + "_Half_" + std::to_string(halfchip) + "_Epoch_vs_TimeSlice";
 	  title = histName + runName + ";TimeSlice;Epoch";
-	  fHM->Add(histName.Data(), new TH2F(histName, title, 2001, 0, 2000, 4097, 0, 4096));
+	  fHM->Add(histName.Data(), new TH2F(histName, title, 2001, -0.5, 2000.5, 4097, -0.5, 4096.5));
 	}
       }
     }
