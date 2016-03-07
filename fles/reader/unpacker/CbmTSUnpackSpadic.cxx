@@ -83,6 +83,8 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
       Bool_t isInfo(false), isHit(false), isEpoch(false), isEpochOutOfSynch(false), isOverflow(false), isHitAborted(false), isStrange(false);
       if ( mp->is_epoch_out_of_sync() ){
 	isEpochOutOfSynch = true;
+        FillEpochInfo(link, addr, mp->epoch_count());
+	GetEpochInfo(link, addr);
 	Int_t triggerType = -1;
         Int_t infoType = -1;
         Int_t stopType = -1;
@@ -108,6 +110,7 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
 	LOG(DEBUG) <<  counter << " This is an Epoch Marker" << FairLogger::endl; 
 	isEpoch = true;
         FillEpochInfo(link, addr, mp->epoch_count());
+	GetEpochInfo(link, addr);
 	Int_t triggerType = -1;
         Int_t infoType = -1;
         Int_t stopType = -1;
@@ -289,44 +292,44 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
     }
   }
 
-  void CbmTSUnpackSpadic::FillEpochInfo(Int_t link, Int_t addr, Int_t epoch_count) 
-  {
-    auto it=groupToExpMap.find(link);
-    if (it == groupToExpMap.end()) {
-      LOG(FATAL) << "Could not find an entry for equipment ID" << 
-	std::hex << link << std::dec << FairLogger::endl;
-    } else {
-/* Check for repeated Epoch Messages, as the repeated Microslices
-are not captured by the CbmTsUnpacker. This is to ensure the 
-linearity of the GetFullTime() method.
-*/
-	  if ( epoch_count < fEpochMarkerArray[it->second][addr] ) {
-		if ( epoch_count != fPreviousEpochMarkerArray[it->second][addr] ){
-		  fSuperEpochArray[it->second][addr]++;
-		} else {
-		  LOG(ERROR)<< "Multiply repeated Epoch Messages at Super Epoch "
+void CbmTSUnpackSpadic::FillEpochInfo(Int_t link, Int_t addr, Int_t epoch_count) 
+{
+  auto it=groupToExpMap.find(link);
+  if (it == groupToExpMap.end()) {
+    LOG(FATAL) << "Could not find an entry for equipment ID" << 
+      std::hex << link << std::dec << FairLogger::endl;
+  } else {
+    /* Check for repeated Epoch Messages, as the repeated Microslices
+       are not captured by the CbmTsUnpacker. This is to ensure the 
+       linearity of the GetFullTime() method.
+    */
+    if ( epoch_count < fEpochMarkerArray[it->second][addr] ) {
+      if ( epoch_count != fPreviousEpochMarkerArray[it->second][addr] ){
+	fSuperEpochArray[it->second][addr]++;
+      } else {
+	LOG(ERROR)<< "Multiply repeated Epoch Messages at Super Epoch "
 		  << fSuperEpoch << " Epoch "
 		  << epoch_count << " for Syscore" 
 		  << it->second << "_Spadic"  
 		  << addr << FairLogger::endl;
-		}
-	LOG(DEBUG) << "Overflow of EpochCounter for Syscore" 
-		   << it->second << "_Spadic"  
-		   << addr << FairLogger::endl;
-      } else if ((epoch_count - fEpochMarkerArray[it->second][addr]) !=1 ) {
-	LOG(INFO) << "Missed epoch counter for Syscore" 
-		  << it->second << "_Spadic"  
-		  << addr << FairLogger::endl;
-      } else if (epoch_count == fEpochMarkerArray[it->second][addr]){
-		LOG(ERROR) << "Identical Epoch Counters for Syscore" 
-		   << it->second << "_Spadic"  
-		   << addr << FairLogger::endl;
-	  }
-	  fPreviousEpochMarkerArray[it->second][addr] = fEpochMarkerArray[it->second][addr];
-      fEpochMarkerArray[it->second][addr] = epoch_count; 
+      }
+      LOG(DEBUG) << "Overflow of EpochCounter for Syscore" 
+		 << it->second << "_Spadic"  
+		 << addr << FairLogger::endl;
+    } else if ((epoch_count - fEpochMarkerArray[it->second][addr]) !=1 ) {
+      LOG(INFO) << "Missed epoch counter for Syscore" 
+		<< it->second << "_Spadic"  
+		<< addr << FairLogger::endl;
+    } else if (epoch_count == fEpochMarkerArray[it->second][addr]){
+      LOG(ERROR) << "Identical Epoch Counters for Syscore" 
+		 << it->second << "_Spadic"  
+		 << addr << FairLogger::endl;
     }
-
+    fPreviousEpochMarkerArray[it->second][addr] = fEpochMarkerArray[it->second][addr];
+    fEpochMarkerArray[it->second][addr] = epoch_count; 
   }
+
+}
 
   void CbmTSUnpackSpadic::GetEpochInfo(Int_t link, Int_t addr) 
   {
