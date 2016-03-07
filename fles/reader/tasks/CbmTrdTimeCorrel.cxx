@@ -128,6 +128,11 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 
   Int_t hitCounter[3][6]={{0}};
 
+  //Clear Offset Map
+  LOG(DEBUG)<< "Size of timestampOffsets: "<<timestampOffsets.size() << FairLogger::endl;
+  timestampOffsets.clear();
+
+  //Calculate Timestamp Offsets
   LOG(INFO) <<"Begin Buffering Epoch Messages" << FairLogger::endl;
 {//Context to limit epochBuffers scope
   EpochMap epochBuffer;
@@ -150,6 +155,33 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   if(fNrTimeSlices!=0) timestampOffsets = CalculateTimestampOffsets(epochBuffer);
 }
 LOG(INFO) <<"Finish Buffering Epoch Messages" << FairLogger::endl;
+
+//Fill Histograms with the Offsets
+#ifndef __CINT__
+try{
+if(fNrTimeSlices!=0)
+	if(timestampOffsets.size()!=0) //If there are no Epoch Messages, skip loop
+	  for (auto baseSpaIt = timestampOffsets.begin() ; baseSpaIt!= timestampOffsets.end() ; ++baseSpaIt) //Loop over all Base Spadics
+		  if(baseSpaIt->second.size()!=0) //If this Base Spadic is missing, skip to next Base Spadic
+			for (auto compSpaIt = baseSpaIt->second.begin(); compSpaIt != baseSpaIt->second.end(); ++compSpaIt) //For every Base Spadic, loop over all Spadics
+			{
+				int baseSpaID = baseSpaIt->first;
+				int compSpaID = compSpaIt->first;
+				const Int_t SysID =0;
+				auto FullTimeIt = timestampOffsets.at(baseSpaID).at(compSpaID).begin();
+				for (; FullTimeIt != timestampOffsets.at(baseSpaID).at(compSpaID).end(); ++FullTimeIt) //Loop over all timestamps and Fill Fulltime Offsets for Epoch Messages into Histograms
+				{
+					Int_t tGraphSize = fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->GetN();
+					fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->SetPoint(tGraphSize,FullTimeIt->first,FullTimeIt->second);
+				}
+			}
+}
+catch(std::out_of_range)
+	{
+	  LOG(ERROR)<< "map::at() has thrown an exception " << FairLogger::endl;
+	}
+#endif //__CINT__
+
 
   // Starting to loop over all Spadic messages in unpacked TimeSlice
   for (Int_t iSpadicMessage=0; iSpadicMessage < nSpadicMessages; ++iSpadicMessage) {
@@ -349,31 +381,7 @@ LOG(INFO) <<"Finish Buffering Epoch Messages" << FairLogger::endl;
     }
   
   }
-  //Calculate correct Timestamps
 
-#ifndef __CINT__
-  try{
-  if(fNrTimeSlices!=0)
-	if(timestampOffsets.size()!=0)
-	  for (Int_t baseSpaID=0; baseSpaID<4;++baseSpaID)
-		  if(timestampOffsets.at(baseSpaID).size()!=0)
-			for (Int_t compSpaID=0; compSpaID<4;++compSpaID)
-			{
-				const Int_t SysID =0;
-				auto iteratot = timestampOffsets.at(baseSpaID).at(compSpaID).begin();
-				for (; iteratot != timestampOffsets.at(baseSpaID).at(compSpaID).end(); ++iteratot){
-					Int_t tGraphSize = fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->GetN();
-					fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->SetPoint(tGraphSize,iteratot->first,iteratot->second);
-				}
-			}
-  }
-  catch(std::out_of_range)
-	{
-	  LOG(DEBUG)<< "map::at() has thrown an exception " << FairLogger::endl;
-	}
-#endif //__CINT__
-  LOG(INFO)<< timestampOffsets.size() << FairLogger::endl;
-  timestampOffsets.clear();
   // complicated loop over sorted map of timestamps, manually delete all elements in the nested maps
   // commented out, since obviuously the following outer clear command destructs all contained elements recursively
   // The objects correlated to the pointers stored in this map are deleted after each run of Exec. Therefore it is leading to seg.fa. if one tryies to delete the pointers here twice
