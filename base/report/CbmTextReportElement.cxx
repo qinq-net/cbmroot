@@ -101,7 +101,7 @@ string CbmTextReportElement::Title(
 string CbmTextReportElement::FormatCell(
       const string& cell) const
 {
-	if (cell.size() <= fColW) {
+	if (static_cast<Int_t>(cell.size()) <= fColW) {
 		stringstream ss;
 		ss << setw(fColW) << cell;
 		return ss.str();

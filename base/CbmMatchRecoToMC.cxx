@@ -765,7 +765,7 @@ void CbmMatchRecoToMC::MatchRichRings(
             if ( NULL == hit ) continue;
 
             vector<Int_t> motherIds = GetMcTrackMotherIdsForRichHit(hit, richDigis, richMcPoints, mcTracks);
-            for (Int_t i = 0; i < motherIds.size(); i++) {
+            for (UInt_t i = 0; i < motherIds.size(); i++) {
                 ringMatch->AddLink(1., motherIds[i]);
             }
         }
@@ -808,7 +808,7 @@ vector<Int_t> CbmMatchRecoToMC::GetMcTrackMotherIdsForRichHit(
     CbmMatch* digiMatch = digi->GetMatch();
 
     vector<CbmLink> links = digiMatch->GetLinks();
-    for (Int_t i = 0; i < links.size(); i++) {
+    for (UInt_t i = 0; i < links.size(); i++) {
         Int_t pointId = links[i].GetIndex();
         if (pointId < 0) continue; // noise hit
 

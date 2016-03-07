@@ -48,7 +48,7 @@ void CbmMCObject::SetEntry(FairMultiLinkedData* data, int index)
 
 void CbmMCObject::SetLink(FairLink link, int index)
 {
-	if (index < fStage.size()){
+	if (index < static_cast<Int_t>(fStage.size())){
 		fStage[index].Reset();
 	}
 	AddLink(link, index);
@@ -64,7 +64,7 @@ void CbmMCObject::AddLink(FairLink link, int index)
 
 void CbmMCObject::AdoptSize(int index){
 	int start = fStage.size();
-	while (fStage.size() < index+1){
+	while (static_cast<Int_t>(fStage.size()) < index+1){
 		CbmMCEntry myVec;
 		myVec.SetPos(fStage.size());
 		myVec.SetSource(GetStageId());
