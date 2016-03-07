@@ -334,7 +334,6 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   if(fNrTimeSlices!=0) timestampOffsets = CalcutlateTimestampOffsets(epochBuffer);
   epochBuffer.clear();
 #ifndef __CINT__
-  try{
   if(fNrTimeSlices!=0)
 	  for (Int_t baseSpaID=0; baseSpaID<4;++baseSpaID)
 		for (Int_t compSpaID=0; compSpaID<4;++compSpaID)
@@ -342,15 +341,18 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 			const Int_t SysID =0;
 			auto iteratot = timestampOffsets.at(baseSpaID).at(compSpaID).begin();
 			for (; iteratot != timestampOffsets.at(baseSpaID).at(compSpaID).end(); ++iteratot){
+			  try{
 				Int_t tGraphSize = fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->GetN();
 				fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->SetPoint(tGraphSize,iteratot->first,iteratot->second);
+			  }
+			  catch(std::out_of_range)
+				{
+				  continue;
+				  //LOG(ERROR)<< "map::at() has thrown an exception " << FairLogger::endl;
+				}
 			}
 		}
-  }
-  catch(std::out_of_range)
-	{
-	  LOG(ERROR)<< "map::at() has thrown an exception " << FairLogger::endl;
-	}
+
 #endif //__CINT__
   LOG(INFO)<< timestampOffsets.size() << FairLogger::endl;
   timestampOffsets.clear();
