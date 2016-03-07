@@ -16,7 +16,9 @@
 
 using namespace std;
 
-CbmRichGeoManager::CbmRichGeoManager() {
+CbmRichGeoManager::CbmRichGeoManager()
+ : fGP(NULL)
+{
     InitGeometry();
 }
 

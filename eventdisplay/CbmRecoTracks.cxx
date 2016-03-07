@@ -36,9 +36,10 @@
 // -----   Default constructor   -------------------------------------------
 CbmRecoTracks::CbmRecoTracks()
   : FairTask("FairMCTracks", 0),
-    fStsTracks(NULL),
+    fGlobalTracks(NULL),
     fMvdHits(NULL),
     fStsHits(NULL),
+    fStsTracks(NULL),
     fRichRings(NULL),
     fRichHits(NULL),
     fMuchPixelHits(NULL),
@@ -62,10 +63,10 @@ CbmRecoTracks::CbmRecoTracks()
 // -----   Standard constructor   ------------------------------------------
 CbmRecoTracks::CbmRecoTracks(const char* name, Int_t iVerbose)
   : FairTask(name, iVerbose),
-    fMvdHits(NULL),
-    fStsTracks(NULL),
     fGlobalTracks(NULL),
+    fMvdHits(NULL),
     fStsHits(NULL),
+    fStsTracks(NULL),
     fRichRings(NULL),
     fRichHits(NULL),
     fMuchPixelHits(NULL),

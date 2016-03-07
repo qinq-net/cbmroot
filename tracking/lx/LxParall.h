@@ -8,6 +8,8 @@ class LxParallFinder
 {
 public:
   LxParallFinder();
+  ~LxParallFinder() {;}
+  
   Double_t Reconstruct(Int_t numThreads);
 
   void SetGenInvMass(bool value)

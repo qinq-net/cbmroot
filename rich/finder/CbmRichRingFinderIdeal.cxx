@@ -28,9 +28,11 @@
 using namespace std;
 
 
-CbmRichRingFinderIdeal::CbmRichRingFinderIdeal():
-fRichPoints(NULL),
-fMcTracks(NULL)
+CbmRichRingFinderIdeal::CbmRichRingFinderIdeal()
+ : CbmRichRingFinder(),
+   fRichPoints(NULL),
+   fMcTracks(NULL),
+   fRichDigis(NULL)
 {
     
 }

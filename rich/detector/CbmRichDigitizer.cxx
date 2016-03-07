@@ -21,11 +21,16 @@
 
 using namespace std;
 
-CbmRichDigitizer::CbmRichDigitizer():
-FairTask("CbmRichDigitizer"),
-fCrossTalkProbability(0.02),
-fNofNoiseDigis(200),
-fEventNum(0)
+CbmRichDigitizer::CbmRichDigitizer()
+ : FairTask("CbmRichDigitizer"),
+   fEventNum(0),
+   fRichPoints(NULL),
+   fRichDigis(NULL),
+   fMcTracks(NULL),
+   fPmt(),
+   fCrossTalkProbability(0.02),
+   fNofNoiseDigis(200),
+   fDigisMap()
 {
 
 }

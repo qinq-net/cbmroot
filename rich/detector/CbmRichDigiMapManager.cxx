@@ -14,7 +14,11 @@
 
 using namespace std;
 
-CbmRichDigiMapManager::CbmRichDigiMapManager() {
+CbmRichDigiMapManager::CbmRichDigiMapManager() 
+ : fPathToAddressMap(),
+   fAddressToDataMap(),
+   fAddresses()
+{
 	Init();
 }
 

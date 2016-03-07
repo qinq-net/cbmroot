@@ -48,84 +48,88 @@ using namespace std;
 
 // -------------------------------------------------------------------------
 CbmD0TrackSelection::CbmD0TrackSelection()
- : FairTask(),
-   fNHitsOfLongTracks(),
-   fEventNumber(),
-   fMcPoints(),
-   fStsTrackArray(),
-   fGlobalTracks(),
-   fTrdTracks(),
-   fTofHits(),
-   fRichRings(),
-   fListMCTracks(),
-   fStsTrackArrayP(),
-   fStsTrackArrayN(),
-   fMCTrackArrayP(),
-   fMCTrackArrayN(),
-   fStsTrackMatches(),
-   fKaonParticleArray(),
-   fPionParticleArray(),
-   fMvdHitMatchArray(),
-   fKFParticleArray(),
-   kfpInterface(),
-   fPidMode(),
-    fFit(),
-   fPrimVtx(),
-   bUseMCInfo(),
-   fPVCutPassed(),
-   fPVCutNotPassed(),
-   fNoHPassed(),
-   fNoHNotPassed(),
-    fCutPt(),
-    fCutP(),
-    fCutChi2(),
-    fCutIP(),
-    fField()
+ : FairTask("CbmD0TrackSelection", 0),
+   fNHitsOfLongTracks(1),
+   fEventNumber(0),
+   fMcPoints(NULL),
+   fStsTrackArray(NULL),
+   fGlobalTracks(NULL),
+   fTrdTracks(NULL),
+   fTofHits(NULL),
+   fRichRings(NULL),
+   fStsTrackArrayP(NULL),
+   fStsTrackArrayN(NULL),
+   fMCTrackArrayP(NULL),
+   fMCTrackArrayN(NULL),
+   fInfoArray(NULL),
+   fStsTrackMatches(NULL),
+   fKaonParticleArray(NULL),
+   fPionParticleArray(NULL),
+   fListMCTracks(NULL),
+   fMvdHitMatchArray(NULL),
+   fKFParticleArray(NULL),
+   fvtx(),
+   kfpInterface(NULL),
+   fPidMode(""),
+   fFit(NULL),
+   fPrimVtx(NULL),
+   fField(),
+   bUseMCInfo(kFALSE),
+   fPVCutPassed(0),
+   fPVCutNotPassed(0),
+   fNoHPassed(0),
+   fNoHNotPassed(0),
+   fCutPt(0.),
+   fCutP(0.),
+   fCutChi2(0.),
+   fCutIP(0.)
 {
-    Fatal( "CbmD0TrackSelection: Do not use the standard constructor","Wrong constructor");
-    
-    }
+    Fatal( "CbmD0TrackSelection: Do not use the standard constructor","Wrong constructor"); 
+}
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
 CbmD0TrackSelection::CbmD0TrackSelection(char* name, Int_t iVerbose, Double_t cutP, Double_t cutPt, Double_t cutChi2, Double_t cutIP)
-: FairTask(name, iVerbose),
-  fNHitsOfLongTracks(),
-  fEventNumber(),
-  fMcPoints(),
-  fStsTrackArray(),
-  fGlobalTracks(),
-  fTrdTracks(),
-  fTofHits(),
-  fRichRings(),
-  fListMCTracks(),
-  fStsTrackArrayP(),
-  fStsTrackArrayN(),
-  fMCTrackArrayP(),
-  fMCTrackArrayN(),
-  fStsTrackMatches(),
-  fKaonParticleArray(),
-  fPionParticleArray(),
-  fMvdHitMatchArray(),
-  fKFParticleArray(),
-  kfpInterface(),
-  fPidMode(),
-  fFit(),
-  fPrimVtx(),
-  bUseMCInfo(),
-  fPVCutPassed(),
-  fPVCutNotPassed(),
-  fNoHPassed(),
-  fNoHNotPassed(),
-  fCutPt(),
-  fCutP(),
-  fCutChi2(),
-  fCutIP(),
-  fField()
+ : FairTask(name, iVerbose),
+   fNHitsOfLongTracks(1),
+   fEventNumber(0),
+   fMcPoints(NULL),
+   fStsTrackArray(NULL),
+   fGlobalTracks(NULL),
+   fTrdTracks(NULL),
+   fTofHits(NULL),
+   fRichRings(NULL),
+   fStsTrackArrayP(NULL),
+   fStsTrackArrayN(NULL),
+   fMCTrackArrayP(NULL),
+   fMCTrackArrayN(NULL),
+   fInfoArray(NULL),
+   fStsTrackMatches(NULL),
+   fKaonParticleArray(NULL),
+   fPionParticleArray(NULL),
+   fListMCTracks(NULL),
+   fMvdHitMatchArray(NULL),
+   fKFParticleArray(NULL),
+   fvtx(),
+   kfpInterface(NULL),
+   fPidMode(""),
+   fFit(NULL),
+   fPrimVtx(NULL),
+   fField(),
+   bUseMCInfo(kFALSE),
+   fPVCutPassed(0),
+   fPVCutNotPassed(0),
+   fNoHPassed(0),
+   fNoHNotPassed(0),
+   fCutPt(cutPt),
+   fCutP(cutP),
+   fCutChi2(cutChi2),
+   fCutIP(cutIP)
 {
-fEventNumber = 0;
-fPVCutPassed = 0;
-fPVCutNotPassed = 0;
+/*
+ fEventNumber = 0;
+ fPVCutPassed = 0;
+ fPVCutNotPassed = 0;
 fCutP  = cutP;
 fCutPt = cutPt;
 fCutChi2 = cutChi2;
@@ -133,6 +137,7 @@ fCutIP = cutIP;
 fNHitsOfLongTracks=1;
 fNoHPassed=0;
 fNoHNotPassed=0;
+*/
 }
 // -------------------------------------------------------------------------
 

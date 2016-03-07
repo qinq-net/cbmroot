@@ -105,7 +105,7 @@ private:
   //  TObjArray      fExtractor;            // list of input objects for signal extraction objects (Ext,Func)
 
   // output
-  TTree      *fTree;                // tree output
+  TTree      *fTree = NULL;         // tree output
   TList      *fResults = NULL;      // final list with spectra
   TObjArray  *fExtractions = NULL;  // final canvases
   Extraction *fExt = NULL;          // extraction

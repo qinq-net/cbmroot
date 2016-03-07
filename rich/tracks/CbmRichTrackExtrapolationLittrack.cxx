@@ -23,8 +23,10 @@
 using std::cout;
 using std::endl;
 
-CbmRichTrackExtrapolationLittrack::CbmRichTrackExtrapolationLittrack():
-fStsTracks(0)
+CbmRichTrackExtrapolationLittrack::CbmRichTrackExtrapolationLittrack()
+ : CbmRichTrackExtrapolationBase(),
+   fStsTracks(0),
+   fLitPropagator()
 {
 }
 

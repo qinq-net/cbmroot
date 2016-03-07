@@ -9,7 +9,8 @@ using namespace std;
 ClassImp(LxParallFinder)
 
 LxParallFinder::LxParallFinder() : generateInvMass(false), generateBackground(false), generateChi2(false),
-  linkWithSts(true), useMCPInsteadOfHits(false), calcMiddlePoints(true), cutCoeff(4.0), ev_start(0), ev_end(0)
+  linkWithSts(true), useMCPInsteadOfHits(false), calcMiddlePoints(true), cutCoeff(4.0), ev_start(0), ev_end(0),
+  hitFileName("")
 {
 }
 
@@ -29,6 +30,8 @@ public:
 
 private:
     LxFinder* finder;
+    FinderCapsule(const FinderCapsule&);
+    FinderCapsule& operator=(const FinderCapsule&);
 };
 
 //#define LXPARALL_SEPARATE_SINGLE

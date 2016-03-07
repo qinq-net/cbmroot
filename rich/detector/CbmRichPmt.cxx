@@ -15,10 +15,14 @@ const Double_t CbmRichPmt::c = 2.998E8; // speed of light
 const Double_t CbmRichPmt::h = 6.626E-34; // Planck constant
 const Double_t CbmRichPmt::e = 1.6022E-19; // elementary charge
 
-CbmRichPmt::CbmRichPmt():
-fDetectorType(6),
-fCollectionEfficiency(1.),
-fRefractiveIndex(-1.)
+CbmRichPmt::CbmRichPmt()
+ : fCollectionEfficiency(1.),
+   fDetectorType(6),
+   fLambdaMin(0.),
+   fLambdaMax(0.),
+   fLambdaStep(0.),
+   fEfficiency(),
+   fRefractiveIndex(-1.)
 {
     LOG(INFO) << "CbmRichPmt init QE" << FairLogger::endl;
 	InitQE();
