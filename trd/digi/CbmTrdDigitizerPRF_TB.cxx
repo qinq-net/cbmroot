@@ -112,7 +112,7 @@ void CbmTrdDigitizerPRF_TB::SetTriangularPads(Bool_t triangles)
 	fTrianglePads = triangles;
 }
 
-void CbmTrdDigitizerPRF_TB::Exec(Option_t *)
+void CbmTrdDigitizerPRF_TB::Exec(Option_t*)
 {
   fDigis->Delete();
   fDigiMatches->Delete();

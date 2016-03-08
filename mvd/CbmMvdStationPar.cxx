@@ -36,7 +36,7 @@ CbmMvdStationPar::~CbmMvdStationPar() {
 // -------------------------------------------------------------------------
 
 // -----   Public method Print   -------------------------------------------
-void CbmMvdStationPar::Print(Option_t* opt) const {
+void CbmMvdStationPar::Print(Option_t* /*opt*/) const {
 
 cout 	<< endl << "--I--" << GetName() << "--I--" << endl
 	<< endl << "Initialized ParameterFile with " << fZPositions.size() << " Stations" << endl

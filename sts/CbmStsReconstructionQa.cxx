@@ -459,7 +459,7 @@ InitStatus CbmStsReconstructionQa::ReInit() {
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmStsReconstructionQa::Exec(Option_t* opt) {
+void CbmStsReconstructionQa::Exec(Option_t* /*opt*/) {
 
 	// TODO: This method probably does not work since the STS geometry
 	// is not properly set becauses of changes in GetGeometry().

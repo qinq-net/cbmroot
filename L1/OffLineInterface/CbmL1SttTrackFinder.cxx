@@ -89,7 +89,7 @@ void CbmL1SttTrackFinder::Finish()
   Write();
 }
 
-void CbmL1SttTrackFinder::Exec(Option_t * option)
+void CbmL1SttTrackFinder::Exec(Option_t* /*option*/)
 {
   const int MaxBranches = 50;
 

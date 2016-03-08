@@ -132,7 +132,7 @@ InitStatus CbmTrdSimpleHitProducerCluster::Init()
 
 
 // ---- Exec ----------------------------------------------------------
-void CbmTrdSimpleHitProducerCluster::Exec(Option_t * option)
+void CbmTrdSimpleHitProducerCluster::Exec(Option_t* /*option*/)
 {
 
   fHitCollection->Clear();

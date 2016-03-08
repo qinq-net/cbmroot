@@ -232,7 +232,7 @@ InitStatus CbmKFTrackFitQA::Init()
   return kSUCCESS;
 }
 
-void CbmKFTrackFitQA::Exec(Option_t * option)
+void CbmKFTrackFitQA::Exec(Option_t* /*option*/)
 {
   FillHitHistos();
 

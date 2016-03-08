@@ -153,7 +153,7 @@ InitStatus StsCosyClusterFinder::Init()
 // --------------------------------------------------------------------
 
 // ---- Exec ----------------------------------------------------------
-void StsCosyClusterFinder::Exec(Option_t *)
+void StsCosyClusterFinder::Exec(Option_t*)
 {
   if(fEvent%100000 == 0)cout << "-I- StsCosyClusterFinder: ----- " << fEvent << endl;
   

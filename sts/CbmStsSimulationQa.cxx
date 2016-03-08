@@ -266,7 +266,7 @@ InitStatus CbmStsSimulationQa::ReInit() {
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmStsSimulationQa::Exec(Option_t* opt) {
+void CbmStsSimulationQa::Exec(Option_t* /*opt*/) {
 
 
 	//TODO: This method will not work in the way implemented. Have a look.

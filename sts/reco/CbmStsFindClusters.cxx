@@ -60,7 +60,7 @@ CbmStsFindClusters::~CbmStsFindClusters() {
 
 
 // -----   Task execution   ------------------------------------------------
-void CbmStsFindClusters::Exec(Option_t* opt) {
+void CbmStsFindClusters::Exec(Option_t* /*opt*/) {
 
 	// --- Event number
 	Int_t iEvent =

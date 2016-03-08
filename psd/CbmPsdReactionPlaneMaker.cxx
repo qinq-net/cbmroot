@@ -87,7 +87,7 @@ InitStatus CbmPsdReactionPlaneMaker::Init() {
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmPsdReactionPlaneMaker::Exec(Option_t* opt) {
+void CbmPsdReactionPlaneMaker::Exec(Option_t* /*opt*/) {
 
 
   // Reset output array

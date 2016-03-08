@@ -95,7 +95,7 @@ InitStatus CbmAnaAngularAcceptance::Init()
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmAnaAngularAcceptance::Exec(Option_t* opt){
+void CbmAnaAngularAcceptance::Exec(Option_t* /*opt*/){
   Int_t nMCTracks      = fMCTracks->GetEntriesFast();
   Int_t nStsPoints     = fStsPoints->GetEntriesFast();
   Int_t nMuchPoints    = fMuchPoints->GetEntriesFast();

@@ -260,7 +260,7 @@ void CbmTofDigitizerBDF::SetParContainers()
               (rtdb->getContainer("CbmTofDigiBdfPar"));
 }
 
-void CbmTofDigitizerBDF::Exec(Option_t * /*option*/)
+void CbmTofDigitizerBDF::Exec(Option_t* /*option*/)
 {
    fTofDigisColl->Clear("C");
 //   fTofDigiMatchPointsColl->Clear("C"); // Not enough => CbmMatch has no Clear functions!!

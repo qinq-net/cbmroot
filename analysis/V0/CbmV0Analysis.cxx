@@ -82,7 +82,7 @@ InitStatus CbmV0Analysis::Init(){
   return ReInit();
 }
 
-void CbmV0Analysis::Exec(Option_t * option){
+void CbmV0Analysis::Exec(Option_t* /*option*/){
   // generate primary vertex
   { 
       const Double_t  SigmaX = 1.e-4,  SigmaY = 1.e-4, SigmaZ = 5.e-4; 

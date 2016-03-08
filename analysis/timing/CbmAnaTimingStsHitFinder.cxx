@@ -68,7 +68,7 @@ InitStatus CbmAnaTimingStsHitFinder::Init(){
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmAnaTimingStsHitFinder::Exec(Option_t* opt){
+void CbmAnaTimingStsHitFinder::Exec(Option_t* /*opt*/){
   Int_t nHits = fHits->GetEntriesFast();
   printf("nHits=%i\n",nHits);
   for (Int_t i=0;i<nHits;i++){

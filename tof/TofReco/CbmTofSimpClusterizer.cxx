@@ -305,7 +305,7 @@ void CbmTofSimpClusterizer::SetParContainers()
               (rtdb->getContainer("CbmTofDigiBdfPar"));
 }
 
-void CbmTofSimpClusterizer::Exec(Option_t * /*option*/)
+void CbmTofSimpClusterizer::Exec(Option_t* /*option*/)
 {
    fTofHitsColl->Clear("C");
 //   fTofDigiMatchColl->Clear("C"); // Not enough => CbmMatch has no Clear functions!!

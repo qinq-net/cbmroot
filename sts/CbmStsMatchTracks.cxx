@@ -93,7 +93,7 @@ CbmStsMatchTracks::~CbmStsMatchTracks() { }
 
 
 // -----   Virtual public method Exec   ------------------------------------
-void CbmStsMatchTracks::Exec(Option_t* opt) {
+void CbmStsMatchTracks::Exec(Option_t* /*opt*/) {
 
   // Timer
   fTimer.Start();

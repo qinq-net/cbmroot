@@ -88,7 +88,7 @@ InitStatus CbmAnaHypRecCascade::Init(){
 
 
 // -------------------------------------------------------------------------
-void CbmAnaHypRecCascade::Exec(Option_t* option){
+void CbmAnaHypRecCascade::Exec(Option_t* /*option*/){
   printf("Event:%3i",fEvent);
   fListCascades->Clear();
   fCascades=0;

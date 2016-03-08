@@ -69,7 +69,7 @@ InitStatus CbmTrdTestBeamAnalysis2015SPS::ReInit()
   return kSUCCESS;
 }
 // ---- Exec  -------------------------------------------------------
-void CbmTrdTestBeamAnalysis2015SPS::Exec(Option_t* option)
+void CbmTrdTestBeamAnalysis2015SPS::Exec(Option_t* /*option*/)
 {
   // Analysis based on single SPADIC data streams can be done here!!!
 

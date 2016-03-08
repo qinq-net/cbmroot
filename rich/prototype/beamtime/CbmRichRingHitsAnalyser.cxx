@@ -203,7 +203,7 @@ InitStatus CbmRichRingHitsAnalyser::Init()
 	return kSUCCESS;
 }
 
-void CbmRichRingHitsAnalyser::Exec(Option_t* option)
+void CbmRichRingHitsAnalyser::Exec(Option_t* /*option*/)
 {
 	// Get the parameters object 
 	CbmRichTrbParam* param = CbmRichTrbParam::Instance();

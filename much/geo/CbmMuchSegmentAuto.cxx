@@ -149,7 +149,7 @@ InitStatus CbmMuchSegmentAuto::Init(){
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
-void CbmMuchSegmentAuto::Exec(Option_t *){
+void CbmMuchSegmentAuto::Exec(Option_t*){
   fEvents++;
   printf("Event: %i\n",fEvents);
 

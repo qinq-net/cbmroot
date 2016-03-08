@@ -92,7 +92,7 @@ InitStatus CbmRichProtPrepareExtrapolation::Init()
 
 
 // ----------------------------------------------------------------------------
-void CbmRichProtPrepareExtrapolation::Exec(Option_t *option)
+void CbmRichProtPrepareExtrapolation::Exec(Option_t* /*option*/)
 {
     if(NULL == fArrayMCTracks || NULL == fArrayStsTracks ||
        NULL == fArrayGlobalTracks) {

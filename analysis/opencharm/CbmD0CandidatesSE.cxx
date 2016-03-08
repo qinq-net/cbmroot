@@ -177,7 +177,7 @@ void CbmD0CandidatesSE::FillBuffer( CbmMapsFileManager* BackgroundFile, TObjArra
 
 
 // -------------------------------------------------------------------------
-void CbmD0CandidatesSE::Exec(Option_t* option){
+void CbmD0CandidatesSE::Exec(Option_t* /*option*/){
   
     fEventNumber++;
     Int_t nAcceptedD0 = 0;

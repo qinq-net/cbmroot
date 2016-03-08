@@ -56,7 +56,7 @@ CbmDigiManager::~CbmDigiManager() {}
 
 
 // -----   Virtual public method Exec   ------------------------------------
-void CbmDigiManager::Exec(Option_t* opt) {
+void CbmDigiManager::Exec(Option_t* /*opt*/) {
 
   // Clear map and timer
   fTimer.Start();

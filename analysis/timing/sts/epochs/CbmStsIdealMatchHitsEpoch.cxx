@@ -124,7 +124,7 @@ CbmStsIdealMatchHitsEpoch::~CbmStsIdealMatchHitsEpoch() {
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmStsIdealMatchHitsEpoch::Exec(Option_t* opt) {
+void CbmStsIdealMatchHitsEpoch::Exec(Option_t* /*opt*/) {
   fPoints = fMcEpoch->GetPoints(kSTS);
 
   // Timer

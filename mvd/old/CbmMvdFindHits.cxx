@@ -331,7 +331,7 @@ InitStatus CbmMvdFindHits::ReInit() {
 
 
 // -----   Virtual public method Exec   --------------
-void CbmMvdFindHits::Exec(Option_t* opt) {
+void CbmMvdFindHits::Exec(Option_t* /*opt*/) {
 
 
     if( fDigis->GetEntriesFast() == 0 ){

@@ -176,7 +176,7 @@ InitStatus CbmTofHitProducer::Init() {
 
 // ---- Exec ----------------------------------------------------------
 
-void CbmTofHitProducer::Exec(Option_t * /*option*/) {
+void CbmTofHitProducer::Exec(Option_t* /*option*/) {
    fTofHits->Clear();
    fNHits = -1; // Must start in -1
 

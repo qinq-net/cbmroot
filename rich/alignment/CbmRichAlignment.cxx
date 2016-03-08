@@ -119,7 +119,7 @@ void CbmRichAlignment::InitHist()
     fHM->Create2<TH2D>("fHCherenkovHitsDistribReduced", "fHCherenkovHitsDistribReduced;Phi_Ch [rad];Th_Ch-Th_0 [cm];Entries", 200, -3.4, 3.4, 500, -5., 5.);
 }
 
-void CbmRichAlignment::Exec(Option_t* option)
+void CbmRichAlignment::Exec(Option_t* /*option*/)
 {
     fEventNum++;
     LOG(DEBUG2) << "CbmRichAlignment : Event #" << fEventNum << FairLogger::endl;

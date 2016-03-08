@@ -144,7 +144,7 @@ InitStatus CbmAnaHypSecFinder::Init() {
 
 
 // -------------------------------------------------------------------------
-void CbmAnaHypSecFinder::Exec(Option_t* option){
+void CbmAnaHypSecFinder::Exec(Option_t* /*option*/){
   ReadHits();
   DoFind();
 }

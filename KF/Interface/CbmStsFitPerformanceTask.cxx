@@ -354,7 +354,7 @@ InitStatus CbmStsFitPerformanceTask::ReInit(){
 
 
 // -----   Exec CbmStsFitPerformanceTask task   -------------------------------
-void CbmStsFitPerformanceTask::Exec(Option_t * option){
+void CbmStsFitPerformanceTask::Exec(Option_t* /*option*/){
   cout << "Event: " << ++fEvent << " ";
 
   Int_t nTracks=fRecStsTrackArray->GetEntriesFast();

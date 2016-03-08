@@ -146,7 +146,7 @@ void CbmTofCreateDigiPar::FinishTask(){
 }
 
 // ---- Exec ----------------------------------------------------------
-void CbmTofCreateDigiPar::Exec(Option_t * /*option*/)
+void CbmTofCreateDigiPar::Exec(Option_t* /*option*/)
 {
 }
 

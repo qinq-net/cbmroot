@@ -151,7 +151,7 @@ InitStatus CbmTrdCreateDigiPar::Init(){
 
 
 // ---- Exec ----------------------------------------------------------
-void CbmTrdCreateDigiPar::Exec(Option_t * option){
+void CbmTrdCreateDigiPar::Exec(Option_t* /*option*/){
 
 }
 // --------------------------------------------------------------------

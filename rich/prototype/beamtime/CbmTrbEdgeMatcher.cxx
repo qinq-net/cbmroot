@@ -68,7 +68,7 @@ InitStatus CbmTrbEdgeMatcher::Init()
    return kSUCCESS;
 }
 
-void CbmTrbEdgeMatcher::Exec(Option_t* option)
+void CbmTrbEdgeMatcher::Exec(Option_t* /*option*/)
 {
    CbmRichTrbParam* param = CbmRichTrbParam::Instance();
 

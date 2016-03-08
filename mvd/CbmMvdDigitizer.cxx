@@ -91,7 +91,7 @@ if ( fDigis)
 // -----------------------------------------------------------------------------
 
 // -----   Exec   --------------------------------------------------------------
-void CbmMvdDigitizer::Exec(Option_t* opt){
+void CbmMvdDigitizer::Exec(Option_t* /*opt*/){
 // --- Start timer
 fTimer.Start();
 	

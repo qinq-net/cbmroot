@@ -65,7 +65,7 @@ InitStatus CbmStsHitProducerIdeal::Init() {
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmStsHitProducerIdeal::Exec(Option_t* opt) {
+void CbmStsHitProducerIdeal::Exec(Option_t* /*opt*/) {
 
   // Reset output array
   if ( ! fHitArray ) Fatal("Exec", "No StsHit array");

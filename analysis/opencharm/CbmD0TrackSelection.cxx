@@ -223,7 +223,7 @@ fPionParticleArray->Clear();
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
-void CbmD0TrackSelection::Exec(Option_t* option)
+void CbmD0TrackSelection::Exec(Option_t* /*option*/)
 {
 CbmGlobalTrack*      globalTrack;
 CbmStsTrack*         stsTrack;

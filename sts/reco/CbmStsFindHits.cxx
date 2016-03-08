@@ -48,7 +48,7 @@ CbmStsFindHits::~CbmStsFindHits() {
 
 
 // -----   Task execution   ------------------------------------------------
-void CbmStsFindHits::Exec(Option_t* opt) {
+void CbmStsFindHits::Exec(Option_t* /*opt*/) {
 
 	// --- Event number
 	Int_t iEvent =

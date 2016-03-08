@@ -148,7 +148,7 @@ InitStatus CbmD0CandidateSelection::Init() {
 
 
  // -------------------------------------------------------------------------
-void CbmD0CandidateSelection::Exec(Option_t* option){
+void CbmD0CandidateSelection::Exec(Option_t* /*option*/){
 
     fEventNumber++;
     Int_t D0counter;

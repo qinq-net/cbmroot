@@ -80,7 +80,7 @@ InitStatus CbmEvDisTracks::Init()
   else { return kERROR; }
 }
 // -------------------------------------------------------------------------
-void CbmEvDisTracks::Exec(Option_t* option)
+void CbmEvDisTracks::Exec(Option_t* /*option*/)
 {
 
   if (IsActive()) {

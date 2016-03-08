@@ -154,7 +154,7 @@ InitStatus CbmAnaTimingMuchDigitizer::Init(){
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmAnaTimingMuchDigitizer::Exec(Option_t* opt){
+void CbmAnaTimingMuchDigitizer::Exec(Option_t* /*opt*/){
 //  TimeDistributions();
 //  DetailedAnalysis();
   SignalShape();

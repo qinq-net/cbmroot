@@ -508,7 +508,7 @@ CbmMCTrack* trackPos = NULL;
 
 
 // ==================================================================
-void CbmDiLeptTask::Exec(Option_t *option)
+void CbmDiLeptTask::Exec(Option_t*)
 {
 
   Int_t nMCTrack = fArrayMCTrack->GetEntries();

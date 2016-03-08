@@ -242,7 +242,7 @@ InitStatus CbmDileptonAssignPid::Init(){
     return kSUCCESS;
 }
 //----------------------------------------------------------------------
-void CbmDileptonAssignPid::Exec(Option_t* opt){
+void CbmDileptonAssignPid::Exec(Option_t* /*opt*/){
 
     fTimer.Start();
 

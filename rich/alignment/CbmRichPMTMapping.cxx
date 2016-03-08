@@ -167,7 +167,7 @@ void CbmRichPMTMapping::InitHist()
 	fHM->Create1<TH1D>("fhDifferenceY", "fhDifferenceY;Difference in Y (fitted center - extrapolated track);Number of entries", 750, 0., 10.);
 }
 
-void CbmRichPMTMapping::Exec(Option_t* option)
+void CbmRichPMTMapping::Exec(Option_t* /*option*/)
 {
 	cout << endl << "//--------------------------------------------------------------------------------------------------------------//" << endl;
 	cout << "//---------------------------------------- EXEC Function - Defining the entries ----------------------------------------//" << endl;

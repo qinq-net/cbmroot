@@ -724,7 +724,7 @@ Int_t CbmMvdSensor::GetFrameNumber  (Int_t pixelNumberY, Double_t absoluteTime){
 
 
 // -----   Public method Print   -------------------------------------------
-void CbmMvdSensor::Print(Option_t* opt) const {
+void CbmMvdSensor::Print(Option_t* /*opt*/) const {
   cout << " --- " << GetName() << ", sensor name" << fVolName << endl;
   cout << " MC - ID: " << fVolumeId << endl;
   cout << "---------------------------------------------------------" << endl;

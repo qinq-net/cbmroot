@@ -84,7 +84,7 @@ InitStatus CbmTrdTimeCorrel::ReInit()
   return kSUCCESS;
 }
 // ---- Exec  -------------------------------------------------------
-void CbmTrdTimeCorrel::Exec(Option_t* option)
+void CbmTrdTimeCorrel::Exec(Option_t* /*option*/)
 {
   const Int_t maxNrColumns = 16; //max number of channels on a pad plane per asic and row
 

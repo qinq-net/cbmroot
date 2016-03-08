@@ -228,7 +228,7 @@ void CbmStsDigitize::CreateDigi(UInt_t address,
 
 
 // -----   Task execution   ------------------------------------------------
-void CbmStsDigitize::Exec(Option_t* opt) {
+void CbmStsDigitize::Exec(Option_t* /*opt*/) {
 
 	// --- Start timer and reset counters
 	fTimer.Start();

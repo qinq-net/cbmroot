@@ -563,7 +563,7 @@ InitStatus CbmL1::Init()
 }
 
 
-void CbmL1::Exec(Option_t * option)
+void CbmL1::Exec(Option_t* /*option*/)
 {
 }
 

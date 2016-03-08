@@ -55,7 +55,7 @@ CbmMvdStation::~CbmMvdStation() {
 
 
 // -----   Public method Print   -------------------------------------------
-void CbmMvdStation::Print(Option_t* opt) const {
+void CbmMvdStation::Print(Option_t* /*opt*/) const {
   cout << " --- " << GetName() << ", station no. " << fStationNr 
        << " , MC Id " << fVolumeId
        << ", z = " << fZ << " cm, d = " << fD << " cm, Rmin = "

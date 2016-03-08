@@ -128,7 +128,7 @@ void CbmMuchClusterAnalysis::SetParContainers() {
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
-void CbmMuchClusterAnalysis::Exec(Option_t * option){
+void CbmMuchClusterAnalysis::Exec(Option_t* /*option*/){
   ++fEvent;
   if(fEvent%50==0)
     gLogger->Info(MESSAGE_ORIGIN,"Event: %i",fEvent);

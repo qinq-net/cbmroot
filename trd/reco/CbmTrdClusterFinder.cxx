@@ -121,7 +121,7 @@ InitStatus CbmTrdClusterFinder::Init()
 // --------------------------------------------------------------------
 
 // ---- Exec ----------------------------------------------------------
-void CbmTrdClusterFinder::Exec(Option_t * option)
+void CbmTrdClusterFinder::Exec(Option_t* /*option*/)
 {
   //ChargeTH = 0.1;
   fClusters->Clear();

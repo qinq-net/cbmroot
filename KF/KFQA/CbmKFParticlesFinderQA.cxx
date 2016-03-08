@@ -443,7 +443,7 @@ InitStatus CbmKFParticlesFinderQA::Init()
   return kSUCCESS;
 }
 
-void CbmKFParticlesFinderQA::Exec(Option_t * option)
+void CbmKFParticlesFinderQA::Exec(Option_t* /*option*/)
 {
   if(fSaveParticles)
     fRecParticles->Delete();

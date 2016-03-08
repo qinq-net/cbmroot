@@ -105,7 +105,7 @@ InitStatus StsCosyTrack::Init() {
 }
 
 // -----   Public method Exec   --------------------------------------------
-void StsCosyTrack::Exec(Option_t* opt) {
+void StsCosyTrack::Exec(Option_t* /*opt*/) {
     
   Reset(); 
   CbmStsHit* hit = NULL;

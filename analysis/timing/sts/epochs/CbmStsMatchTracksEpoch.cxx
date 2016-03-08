@@ -90,7 +90,7 @@ CbmStsMatchTracksEpoch::~CbmStsMatchTracksEpoch() { }
 
 
 // -----   Virtual public method Exec   ------------------------------------
-void CbmStsMatchTracksEpoch::Exec(Option_t* opt) {
+void CbmStsMatchTracksEpoch::Exec(Option_t* /*opt*/) {
   fPoints = fMcEpoch->GetPoints(kSTS);
 
   // Timer

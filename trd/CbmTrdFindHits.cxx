@@ -150,7 +150,7 @@ InitStatus CbmTrdFindHits::Init()
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmTrdFindHits::Exec(Option_t* opt)
+void CbmTrdFindHits::Exec(Option_t* /*opt*/)
 {
   return;
 }

@@ -85,7 +85,7 @@ CbmMvdMatchTracks::~CbmMvdMatchTracks() { }
 
 
 // -----   Virtual public method Exec   ------------------------------------
-void CbmMvdMatchTracks::Exec(Option_t* opt) {
+void CbmMvdMatchTracks::Exec(Option_t* /*opt*/) {
 
     /*
 

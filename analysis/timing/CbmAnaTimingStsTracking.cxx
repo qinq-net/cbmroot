@@ -72,7 +72,7 @@ InitStatus CbmAnaTimingStsTracking::Init(){
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmAnaTimingStsTracking::Exec(Option_t* opt){
+void CbmAnaTimingStsTracking::Exec(Option_t* /*opt*/){
   Int_t nTracks = fStsTracks->GetEntriesFast();
   printf("nTracks=%i\n",nTracks);
   for (Int_t i=0;i<nTracks;i++){

@@ -85,7 +85,7 @@ InitStatus CbmAnaMuchBgd::Init(){
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmAnaMuchBgd::Exec(Option_t* opt){
+void CbmAnaMuchBgd::Exec(Option_t* /*opt*/){
   fMuon.fEvent = fEvent;
   fMuon.fChunk = 0;
   fMuon.fMuons = 0;

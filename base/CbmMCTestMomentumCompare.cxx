@@ -74,7 +74,7 @@ void CbmMCTestMomentumCompare::SetParContainers()
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmMCTestMomentumCompare::Exec(Option_t* opt)
+void CbmMCTestMomentumCompare::Exec(Option_t* /*opt*/)
 {
 // 	//fMCMatch->CreateArtificialStage(kMCTrack, "", "");
 // 

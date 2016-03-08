@@ -92,7 +92,7 @@ CbmStsFindTracks::~CbmStsFindTracks() {
 
 
 // -----   Virtual public method Exec   ------------------------------------
-void CbmStsFindTracks::Exec(Option_t* opt) {
+void CbmStsFindTracks::Exec(Option_t* /*opt*/) {
 
   fTimer.Start();
 

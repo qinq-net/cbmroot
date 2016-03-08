@@ -98,7 +98,7 @@ InitStatus CbmAnaTimingMuchHitFinder::Init(){
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmAnaTimingMuchHitFinder::Exec(Option_t* opt){
+void CbmAnaTimingMuchHitFinder::Exec(Option_t* /*opt*/){
 //  DrawSlices();
   AnalyseHitTimeDistributions();
 }

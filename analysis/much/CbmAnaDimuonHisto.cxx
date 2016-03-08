@@ -73,7 +73,7 @@ InitStatus CbmAnaDimuonHisto::Init()
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmAnaDimuonHisto::Exec(Option_t* opt){
+void CbmAnaDimuonHisto::Exec(Option_t* /*opt*/){
   Int_t nDimuons       = fDimuonCandidates->GetEntriesFast();
   Int_t nMuons         = fMuCandidates->GetEntriesFast();
   if (fVerbose>-1) printf(" Event: %4i",fEvent);

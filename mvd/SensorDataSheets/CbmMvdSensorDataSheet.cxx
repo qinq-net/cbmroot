@@ -57,7 +57,7 @@ CbmMvdSensorDataSheet::~CbmMvdSensorDataSheet() {
 
 
 // -----   Public method Print   -------------------------------------------
-void CbmMvdSensorDataSheet::Print(Option_t* opt) const {
+void CbmMvdSensorDataSheet::Print(Option_t* /*opt*/) const {
   cout << " --- " << GetName() << "--------------------------------" << endl;
   cout << " Technical Data:" << endl;
   cout << "--------------------------" << endl;

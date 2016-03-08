@@ -88,7 +88,7 @@ CbmStsFindTracksEpoch::~CbmStsFindTracksEpoch() {
 
 
 // -----   Virtual public method Exec   ------------------------------------
-void CbmStsFindTracksEpoch::Exec(Option_t* opt) {
+void CbmStsFindTracksEpoch::Exec(Option_t* /*opt*/) {
 
   fTimer.Start();
 

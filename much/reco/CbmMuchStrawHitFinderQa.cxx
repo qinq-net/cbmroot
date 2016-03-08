@@ -178,7 +178,7 @@ void CbmMuchStrawHitFinderQa::SetParContainers() {
 
 
 // -------------------------------------------------------------------------
-void CbmMuchStrawHitFinderQa::Exec(Option_t *)
+void CbmMuchStrawHitFinderQa::Exec(Option_t*)
 {
   Double_t diam[6] = {0.42, 0.42, 0.42, 0.42, 0.42, 0.42}; // tube diameters
 

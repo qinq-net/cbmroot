@@ -167,7 +167,7 @@ InitStatus CbmTrdRawToDigiSpadic03::Init()
 
 
 // ---- Exec ----------------------------------------------------------
-void CbmTrdRawToDigiSpadic03::Exec(Option_t * option)
+void CbmTrdRawToDigiSpadic03::Exec(Option_t* /*option*/)
 {
   fPrincipal = new TPrincipal(NUM_SPADIC_CHA,"ND");
   TString name;

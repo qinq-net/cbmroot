@@ -198,7 +198,7 @@ InitStatus CbmTrdDigitizerMathieson::Init()
 
 
 // ---- Exec ----------------------------------------------------------
-void CbmTrdDigitizerMathieson::Exec(Option_t * option)
+void CbmTrdDigitizerMathieson::Exec(Option_t* /*option*/)
 {
  // use lookup table or calculate realtime
   Bool_t lookup = true;

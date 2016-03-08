@@ -209,7 +209,7 @@ InitStatus CbmRichGeoOpt::Init()
    return kSUCCESS;
 }
 
-void CbmRichGeoOpt::Exec(Option_t* option)
+void CbmRichGeoOpt::Exec(Option_t* /*option*/)
 {
   fEventNum++;
   // cout << "#################### CbmRichGeoOpt, event No. " <<  fEventNum << endl;

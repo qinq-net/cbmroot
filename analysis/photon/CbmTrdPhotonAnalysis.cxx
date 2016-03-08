@@ -551,7 +551,7 @@ CbmTrdPhotonAnalysis::CbmTrdPhotonAnalysis(const char *name, const char *title, 
 
   }
 
-void CbmTrdPhotonAnalysis::Exec(Option_t * option)
+void CbmTrdPhotonAnalysis::Exec(Option_t* /*option*/)
 {
   TStopwatch timer;
   timer.Start();

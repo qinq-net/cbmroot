@@ -601,7 +601,7 @@ InitStatus CbmTrdTestEventsWithMom::Init() {
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmTrdTestEventsWithMom::Exec(Option_t* opt) { //CbmTrdTestEventsWithMom::Exec()
+void CbmTrdTestEventsWithMom::Exec(Option_t* /*opt*/) { //CbmTrdTestEventsWithMom::Exec()
 
   fCurrentEvent++;
 

@@ -478,7 +478,7 @@ Int_t CbmMvdDigitizeL::BuildEvent() {
 
 
 // -----   Virtual public method Exec   ------------------------------------
-void CbmMvdDigitizeL::Exec(Option_t* opt) {
+void CbmMvdDigitizeL::Exec(Option_t* /*opt*/) {
 
 
     // Clear output array and stations

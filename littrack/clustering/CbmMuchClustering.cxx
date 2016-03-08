@@ -93,7 +93,7 @@ InitStatus CbmMuchClustering::Init()
    return kSUCCESS;
 }
 
-void CbmMuchClustering::Exec(Option_t* opt)
+void CbmMuchClustering::Exec(Option_t* /*opt*/)
 {
 	//static Int_t eventNo = 0;
    TStopwatch timer;

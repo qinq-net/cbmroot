@@ -473,7 +473,7 @@ InitStatus CbmL1::Init()
 }
 
 
-void CbmL1::Exec(Option_t * option)
+void CbmL1::Exec(Option_t* /*option*/)
 {
   static int nevent=0;
   if( fVerbose>1 ) cout << endl << "CbmL1::Exec event " << ++nevent << " ..." << endl << endl;

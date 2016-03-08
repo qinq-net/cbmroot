@@ -90,7 +90,7 @@ InitStatus CbmAnaTimingAnalysis::Init()
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmAnaTimingAnalysis::Exec(Option_t* opt){
+void CbmAnaTimingAnalysis::Exec(Option_t* /*opt*/){
   Int_t nMCTracks      = fMCTracks ? fMCTracks->GetEntriesFast() : 0;
   Int_t nStsPoints     = fStsPoints ? fStsPoints->GetEntriesFast() : 0;
   Int_t nMuchPoints    = fMuchPoints ? fMuchPoints->GetEntriesFast() : 0;

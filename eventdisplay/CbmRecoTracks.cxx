@@ -172,7 +172,7 @@ void CbmRecoTracks::HandleStsTrack(TEveTrack* eveTrack, Int_t& n, const CbmStsTr
     }
 }
 
-void CbmRecoTracks::Exec(Option_t* option)
+void CbmRecoTracks::Exec(Option_t* /*option*/)
 {
 
   if (IsActive()) {

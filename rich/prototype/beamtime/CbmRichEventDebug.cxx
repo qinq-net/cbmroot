@@ -41,7 +41,7 @@ InitStatus CbmRichEventDebug::Init()
 	return kSUCCESS;
 }
 
-void CbmRichEventDebug::Exec(Option_t* option)
+void CbmRichEventDebug::Exec(Option_t* /*option*/)
 {
 	UInt_t numOfHits = fRichHits->GetEntriesFast();
 	if (numOfHits > 0) {

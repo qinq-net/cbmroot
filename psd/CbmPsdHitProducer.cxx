@@ -98,7 +98,7 @@ InitStatus CbmPsdHitProducer::Init() {
 // -----   Public method Exec   --------------------------------------------
 void CbmPsdHitProducer::Exec(Option_t* /*opt*/) {
 
-    cout<<" CbmPsdHitProducer::Exec(Option_t* opt) "<<endl;
+    cout<<" CbmPsdHitProducer::Exec(Option_t* /*opt*/) "<<endl;
     fhModXNewEn->Print();
 
     // Reset output array

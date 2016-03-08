@@ -153,7 +153,7 @@ InitStatus CbmFitM2::Init()
 
 
 // ------------------------------------------------------------------
-void CbmFitM2::Exec(Option_t *)
+void CbmFitM2::Exec(Option_t*)
 {
     // Task execution
 }

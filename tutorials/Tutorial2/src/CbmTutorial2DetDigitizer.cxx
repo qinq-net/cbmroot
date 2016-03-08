@@ -114,7 +114,7 @@ InitStatus CbmTutorial2DetDigitizer::Init()
 
 
 // ---- Exec ----------------------------------------------------------
-void CbmTutorial2DetDigitizer::Exec(Option_t * option)
+void CbmTutorial2DetDigitizer::Exec(Option_t* /*option*/)
 {
 
   // Here we print something

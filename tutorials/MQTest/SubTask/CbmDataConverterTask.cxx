@@ -55,7 +55,7 @@ CbmDataConverterTask::~CbmDataConverterTask()
 }
 
 /*
-void Exec(Option_t* opt)
+void Exec(Option_t* /*opt*/)
 {
 
 }

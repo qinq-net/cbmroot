@@ -223,7 +223,7 @@ InitStatus CbmTrdDigitizerPRF::Init()
 
 
 // ---- Exec ----------------------------------------------------------
-void CbmTrdDigitizerPRF::Exec(Option_t * option)
+void CbmTrdDigitizerPRF::Exec(Option_t* /*option*/)
 {
   TStopwatch timer;
   timer.Start();

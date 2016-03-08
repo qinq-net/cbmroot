@@ -382,7 +382,7 @@ void CbmTofTestBeamClusterizer::SetParContainers()
 }
 
 
-void CbmTofTestBeamClusterizer::Exec(Option_t * /*option*/)
+void CbmTofTestBeamClusterizer::Exec(Option_t* /*option*/)
 {
    fTofHitsColl->Clear("C");
    //for (Int_t i=0; i<fTofDigiMatchColl->GetEntries(); i++) ((CbmMatch *)(fTofDigiMatchColl->At(i)))->ClearLinks();  // FIXME, try to tamper memory leak (did not help)

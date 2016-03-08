@@ -133,7 +133,7 @@ InitStatus AnalysisTaskMultiPairAnalysis::Init()
 }
 
 //_________________________________________________________________________________
-void AnalysisTaskMultiPairAnalysis::Exec(Option_t *)
+void AnalysisTaskMultiPairAnalysis::Exec(Option_t*)
 {
   //
   // Main loop. Called for every event

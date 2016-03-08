@@ -321,7 +321,7 @@ InitStatus CbmStsFindTracksQa::ReInit() {
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmStsFindTracksQa::Exec(Option_t* opt) {
+void CbmStsFindTracksQa::Exec(Option_t* /*opt*/) {
 
   // Timer
   fTimer.Start();

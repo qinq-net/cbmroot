@@ -109,7 +109,7 @@ InitStatus CbmFiberHodoBLCalibrator::ReInit()
 
 
 
-void CbmFiberHodoBLCalibrator::Exec(Option_t* option)
+void CbmFiberHodoBLCalibrator::Exec(Option_t* /*option*/)
 {
 
 

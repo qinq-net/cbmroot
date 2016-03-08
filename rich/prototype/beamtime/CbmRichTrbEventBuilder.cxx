@@ -146,7 +146,7 @@ void CbmRichTrbEventBuilder::DrawHist()
 {
 }
 
-void CbmRichTrbEventBuilder::Exec(Option_t* option)
+void CbmRichTrbEventBuilder::Exec(Option_t* /*option*/)
 {
 	// Get the parameters object
 	CbmRichTrbParam* param = CbmRichTrbParam::Instance();

@@ -105,7 +105,7 @@ InitStatus StsClusterSet::Init()
 // --------------------------------------------------------------------
 
 // ---- Exec ----------------------------------------------------------
-void StsClusterSet::Exec(Option_t *)
+void StsClusterSet::Exec(Option_t*)
 {
   
   if(fEvent%100000 == 0)cout << "----- " << fEvent << endl;

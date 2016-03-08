@@ -87,7 +87,7 @@ InitStatus CbmAnaHypRecLambda::Init(){
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
-void CbmAnaHypRecLambda::Exec(Option_t* option){
+void CbmAnaHypRecLambda::Exec(Option_t* /*option*/){
   printf("Event:%i\n",fEvent++);
   fListV0Candidates->Clear();
   Int_t iV0Candidates=0;

@@ -73,7 +73,7 @@ CbmStsFitTracks::~CbmStsFitTracks() { }
 
 
 // -----   Virtual public method Exec   ------------------------------------
-void CbmStsFitTracks::Exec(Option_t* opt) {
+void CbmStsFitTracks::Exec(Option_t* /*opt*/) {
   fTimer.Start();
   
 

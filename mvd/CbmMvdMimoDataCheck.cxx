@@ -211,7 +211,7 @@ void CbmMvdMimoDataCheck::CompareDataWithStateMatch(){
 
 
 
-void CbmMvdMimoDataCheck::Exec(Option_t* opt){
+void CbmMvdMimoDataCheck::Exec(Option_t* /*opt*/){
  
   cout << "Hello World Exec " << endl;
   fEventNum++;

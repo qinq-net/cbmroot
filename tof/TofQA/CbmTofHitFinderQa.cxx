@@ -630,7 +630,7 @@ void CbmTofHitFinderQa::SetParContainers()
    fDigiBdfPar = (CbmTofDigiBdfPar*) (rtdb->getContainer("CbmTofDigiBdfPar"));
 }
 
-void CbmTofHitFinderQa::Exec(Option_t * /*option*/)
+void CbmTofHitFinderQa::Exec(Option_t* /*option*/)
 {
    // Task execution
 

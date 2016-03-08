@@ -17,7 +17,7 @@ CbmAnaHypMix::CbmAnaHypMix(Int_t nMixedEvents, Int_t iVerbose)
 }
 // -------------------------------------------------------------------------
 
-void CbmAnaHypMix::Exec(Option_t* option){
+void CbmAnaHypMix::Exec(Option_t* /*option*/){
   printf("Event:%i\n",fEvent);
   fListCascades->Clear();
   fCascades=0;

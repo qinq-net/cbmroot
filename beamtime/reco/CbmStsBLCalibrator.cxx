@@ -82,7 +82,7 @@ InitStatus CbmStsBLCalibrator::ReInit()
 
 
 
-void CbmStsBLCalibrator::Exec(Option_t* option)
+void CbmStsBLCalibrator::Exec(Option_t* /*option*/)
 {
 
   Int_t nBaselineEntries = fBaselineDigis->GetEntriesFast();

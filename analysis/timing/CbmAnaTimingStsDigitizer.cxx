@@ -90,7 +90,7 @@ InitStatus CbmAnaTimingStsDigitizer::Init(){
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmAnaTimingStsDigitizer::Exec(Option_t* opt){
+void CbmAnaTimingStsDigitizer::Exec(Option_t* /*opt*/){
   if (fEpoch) fStsPoints = fMcEpoch->GetPoints(kSTS);
   
   Int_t nStsPoints = fStsPoints ? fStsPoints->GetEntriesFast() : 0;

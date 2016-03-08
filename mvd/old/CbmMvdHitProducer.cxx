@@ -133,7 +133,7 @@ CbmMvdHitProducer::~CbmMvdHitProducer() {
 
 
 // -----   Virtual public method Exec   ------------------------------------
-void CbmMvdHitProducer::Exec(Option_t* opt) {
+void CbmMvdHitProducer::Exec(Option_t* /*opt*/) {
 
   if ( fMode == 0 ) ExecMaps();
   else              ExecIdeal();

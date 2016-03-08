@@ -94,7 +94,7 @@ InitStatus CbmAnaHypRecEff::Init() {
 
 
 // -------------------------------------------------------------------------
-void CbmAnaHypRecEff::Exec(Option_t* option){
+void CbmAnaHypRecEff::Exec(Option_t* /*option*/){
 
 
   printf("Event:%i\n",fEvent++);

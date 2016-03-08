@@ -395,7 +395,7 @@ Int_t CbmMvdDigitize::BuildEvent() {
 
 
 // -----   Virtual public method Exec   ------------------------------------
-void CbmMvdDigitize::Exec(Option_t* opt) {
+void CbmMvdDigitize::Exec(Option_t* /*opt*/) {
 
     // Clear output array and stations
     fDigis->Clear("C");

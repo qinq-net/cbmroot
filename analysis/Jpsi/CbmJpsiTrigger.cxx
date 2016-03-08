@@ -113,7 +113,7 @@ InitStatus CbmJpsiTrigger::Init()
     return kSUCCESS;
 }
 
-void  CbmJpsiTrigger::Exec(Option_t* option)
+void  CbmJpsiTrigger::Exec(Option_t* /*option*/)
 {
 
   fTimer.Start();

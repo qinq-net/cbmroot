@@ -91,7 +91,7 @@ InitStatus CbmAnaHypSelectLambda::Init(){
 
 
 // -----   Exec   ----------------------------------------------------------
-void CbmAnaHypSelectLambda::Exec(Option_t * option){
+void CbmAnaHypSelectLambda::Exec(Option_t* /*option*/){
   printf("Event:%3i",fEvent++);
   if (fVerbose>1) printf("\n");
   fListRCLambda->Clear();

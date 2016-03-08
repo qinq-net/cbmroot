@@ -194,7 +194,7 @@ void CbmStsMC::Reset() {
 
 
 // -----   Screen log   ----------------------------------------------------
-void CbmStsMC::Print(Option_t* opt) const {
+void CbmStsMC::Print(Option_t* /*opt*/) const {
   Int_t nHits = fStsPoints->GetEntriesFast();
   LOG(INFO) << fName << ": " << fStsPoints->GetEntriesFast()
             << " points registered in this event." << FairLogger::endl;

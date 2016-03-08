@@ -176,7 +176,7 @@ InitStatus CbmMuchDigitizeGem::Init() {
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmMuchDigitizeGem::Exec(Option_t* opt) {
+void CbmMuchDigitizeGem::Exec(Option_t* /*opt*/) {
   // get current event to revert back at the end of exec
   Int_t currentEvent = FairRootManager::Instance()->GetInTree()->GetBranch("MCTrack")->GetReadEntry();
   cout << "Event Number is "<< currentEvent << endl;

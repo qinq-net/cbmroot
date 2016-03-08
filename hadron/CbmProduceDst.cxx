@@ -175,7 +175,7 @@ void CbmProduceDst::SetParContainers()
 
 
 // ------------------------------------------------------------------
-void CbmProduceDst::Exec(Option_t *)
+void CbmProduceDst::Exec(Option_t*)
 {
     if(NULL == fArrayTofPoint || NULL == fArrayStsTrack ||
        NULL == fArrayTofHit || NULL == fArrayGlobalTrack) {

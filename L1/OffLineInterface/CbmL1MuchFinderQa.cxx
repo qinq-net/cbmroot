@@ -77,7 +77,7 @@ void CbmL1MuchFinderQa::Finish()
   Write();
 }
 
-void CbmL1MuchFinderQa::Exec(Option_t * option)
+void CbmL1MuchFinderQa::Exec(Option_t* /*option*/)
 {
   
   static int EventCounter = 0;  

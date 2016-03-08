@@ -395,7 +395,7 @@ void CbmAnaHypSecFinderQa::WriteHisto(TString fileName){
 
 
 // -------------------------------------------------------------------------
-void CbmAnaHypSecFinderQa::Exec(Option_t* option){
+void CbmAnaHypSecFinderQa::Exec(Option_t* /*option*/){
   printf("Event:%i\n",fEvent++);
 //  fTools->SetFlagsOnly();
 //  PrintEventStatistics();

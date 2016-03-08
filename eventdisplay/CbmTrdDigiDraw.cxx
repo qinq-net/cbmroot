@@ -103,7 +103,7 @@ InitStatus CbmTrdDigiDraw::Init()
    return kSUCCESS;
 }
 // -------------------------------------------------------------------------  
-void CbmTrdDigiDraw::Exec(Option_t* option)
+void CbmTrdDigiDraw::Exec(Option_t* /*option*/)
 {
   if (IsActive()){
     

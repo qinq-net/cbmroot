@@ -113,7 +113,7 @@ InitStatus CbmKFParticleFinderQA::Init()
   return kSUCCESS;
 }
 
-void CbmKFParticleFinderQA::Exec(Option_t* opt)
+void CbmKFParticleFinderQA::Exec(Option_t* /*opt*/)
 { 
   if(!fSuperEventAnalysis)
   {

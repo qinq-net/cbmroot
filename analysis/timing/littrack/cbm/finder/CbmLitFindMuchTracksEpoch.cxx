@@ -54,7 +54,7 @@ InitStatus CbmLitFindMuchTracksEpoch::Init(){
    return kSUCCESS;
 }
 
-void CbmLitFindMuchTracksEpoch::Exec(Option_t* opt){
+void CbmLitFindMuchTracksEpoch::Exec(Option_t* /*opt*/){
   fMuchTracks->Clear();
   fGlobalTracks->Clear();
   TClonesArray* fStsTracksSlice = new TClonesArray("CbmStsTrack",1000);

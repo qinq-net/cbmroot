@@ -108,7 +108,7 @@ InitStatus CbmMCStreamerQa::Init(){
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmMCStreamerQa::Exec(Option_t* opt){
+void CbmMCStreamerQa::Exec(Option_t* /*opt*/){
   fNepoch++;
   if (fVerbose>-1) printf("Epoch: %i",fNepoch);
   if (fVerbose>-1) printf("\n");

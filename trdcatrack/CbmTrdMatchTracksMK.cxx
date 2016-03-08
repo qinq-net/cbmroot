@@ -293,7 +293,7 @@ InitStatus CbmTrdMatchTracksMK::Init() {
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmTrdMatchTracksMK::Exec(Option_t* opt) {
+void CbmTrdMatchTracksMK::Exec(Option_t* /*opt*/) {
   //cout << "CbmTrdMatchTracksMK: executing...\n";
   cout << "-I- CbmTrdMatchTracksMK::Exec " << endl;
 

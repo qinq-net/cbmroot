@@ -63,7 +63,7 @@ InitStatus CbmKFParticleFinder::Init()
   return kSUCCESS;
 }
 
-void CbmKFParticleFinder::Exec(Option_t* opt)
+void CbmKFParticleFinder::Exec(Option_t* /*opt*/)
 {
   Int_t ntracks=0;//fTrackArray->GetEntriesFast();
 

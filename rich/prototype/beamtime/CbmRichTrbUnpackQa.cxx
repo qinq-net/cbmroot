@@ -197,7 +197,7 @@ void CbmRichTrbUnpackQa::DrawHist()
    }
 }
 
-void CbmRichTrbUnpackQa::Exec(Option_t* option)
+void CbmRichTrbUnpackQa::Exec(Option_t* /*option*/)
 {
    CbmRichTrbParam* param = CbmRichTrbParam::Instance();
 

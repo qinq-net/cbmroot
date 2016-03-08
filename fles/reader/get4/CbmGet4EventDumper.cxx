@@ -111,7 +111,7 @@ InitStatus CbmGet4EventDumper::Init()
    return kSUCCESS;
 }
 
-void CbmGet4EventDumper::Exec(Option_t * /*option*/)
+void CbmGet4EventDumper::Exec(Option_t* /*option*/)
 {
    // Task execution
    LOG(DEBUG)<<" CbmGet4EventDumper => New loop"<<FairLogger::endl;

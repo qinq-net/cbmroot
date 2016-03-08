@@ -106,7 +106,7 @@ CbmStsIdealFindHitsEpoch::~CbmStsIdealFindHitsEpoch() {
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmStsIdealFindHitsEpoch::Exec(Option_t* opt) {
+void CbmStsIdealFindHitsEpoch::Exec(Option_t* /*opt*/) {
   fTimer.Start();
 
   Bool_t warn = kFALSE;

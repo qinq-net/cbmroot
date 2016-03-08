@@ -65,7 +65,7 @@ if ( fHits)
 // -----------------------------------------------------------------------------
 
 // -----   Exec   --------------------------------------------------------------
-void CbmMvdHitfinder::Exec(Option_t* opt){
+void CbmMvdHitfinder::Exec(Option_t* /*opt*/){
 
 fHits->Clear();
 fTimer.Start();

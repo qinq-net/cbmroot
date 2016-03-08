@@ -145,7 +145,7 @@ CbmStsIdealDigitizeEpoch::~CbmStsIdealDigitizeEpoch() {
 // -------------------------------------------------------------------------
 
 // -----   Public method Exec   --------------------------------------------
-void CbmStsIdealDigitizeEpoch::Exec(Option_t* opt) {
+void CbmStsIdealDigitizeEpoch::Exec(Option_t* /*opt*/) {
 
   // Reset all eventwise counters
   fTimer.Start();

@@ -134,7 +134,7 @@ InitStatus CbmFiberHodoClusterFinder::Init()
 // --------------------------------------------------------------------
 
 // ---- Exec ----------------------------------------------------------
-void CbmFiberHodoClusterFinder::Exec(Option_t * /*option*/)
+void CbmFiberHodoClusterFinder::Exec(Option_t* /*option*/)
 {
 
   fClusters->Clear();

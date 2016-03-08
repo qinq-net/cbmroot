@@ -112,7 +112,7 @@ InitStatus CbmModelsQA::Init()
   return kSUCCESS;
 }
 
-void CbmModelsQA::Exec(Option_t * option)
+void CbmModelsQA::Exec(Option_t* /*option*/)
 {
    for(unsigned int i=0;i<Models.size();++i) {
 	if (Models[i]!=NULL) Models[i]->Exec();

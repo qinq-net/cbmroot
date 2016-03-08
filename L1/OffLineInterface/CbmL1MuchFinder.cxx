@@ -76,7 +76,7 @@ void CbmL1MuchFinder::Finish()
   Write();
 }
 
-void CbmL1MuchFinder::Exec(Option_t * option)
+void CbmL1MuchFinder::Exec(Option_t* /*option*/)
 {
   const int MaxBranches = 50;
 

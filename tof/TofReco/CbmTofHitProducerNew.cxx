@@ -750,7 +750,7 @@ void CbmTofHitProducerNew::InitParametersFromContainer()
 
 // ---- Exec ----------------------------------------------------------
 
-void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
+void CbmTofHitProducerNew::Exec(Option_t* /*option*/)
 {
   fHitCollection->Clear();
   fTofHitMatches->Delete();

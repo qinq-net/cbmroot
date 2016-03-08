@@ -132,7 +132,7 @@ CbmMvdFullRun::~CbmMvdFullRun() {
 
 
 // -----   Virtual public method Exec   ------------------------------------
-void CbmMvdFullRun::Exec(Option_t* opt) {
+void CbmMvdFullRun::Exec(Option_t* /*opt*/) {
 
 fHits->Clear("C");
 

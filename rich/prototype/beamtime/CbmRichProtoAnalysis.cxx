@@ -68,7 +68,7 @@ void CbmRichProtoAnalysis::DrawHist()
 {
 }
 
-void CbmRichProtoAnalysis::Exec(Option_t* option)
+void CbmRichProtoAnalysis::Exec(Option_t* /*option*/)
 {
 	// Get the parameters object
 	CbmRichTrbParam* param = CbmRichTrbParam::Instance();

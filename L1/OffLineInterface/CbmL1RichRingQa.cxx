@@ -272,7 +272,7 @@ void CbmL1RichRingQa::CirFit( list<pair<Double_t,Double_t> > &P, Double_t *X, Do
   *R = sqrt( R2 );
 }
 
-void CbmL1RichRingQa::Exec(Option_t* option)
+void CbmL1RichRingQa::Exec(Option_t* /*option*/)
 {
   // histogramms
 //anagai

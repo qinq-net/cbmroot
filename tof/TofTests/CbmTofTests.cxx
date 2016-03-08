@@ -262,7 +262,7 @@ void CbmTofTests::SetParContainers()
    fDigiBdfPar = (CbmTofDigiBdfPar*) (rtdb->getContainer("CbmTofDigiBdfPar"));
 }
 
-void CbmTofTests::Exec(Option_t * /*option*/)
+void CbmTofTests::Exec(Option_t* /*option*/)
 {
    // Task execution
 

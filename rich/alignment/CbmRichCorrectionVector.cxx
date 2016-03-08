@@ -185,7 +185,7 @@ void CbmRichCorrectionVector::InitHistAlignment()
 	fHM2->Create2<TH2D>("fHCherenkovHitsDistribReduced", "fHCherenkovHitsDistribReduced;Phi_Ch [rad];Th_Ch-Th_0 [cm];Entries", 200, -3.4, 3.4, 500, -5., 5.);
 }
 
-void CbmRichCorrectionVector::Exec(Option_t* option)
+void CbmRichCorrectionVector::Exec(Option_t* /*option*/)
 {
 	cout << endl << "//--------------------------------------------------------------------------------------------------------------//" << endl;
 	cout << "//---------------------------------------- EXEC Function - Defining the entries ----------------------------------------//" << endl;

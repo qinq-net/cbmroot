@@ -640,7 +640,7 @@ Bool_t   CbmTofAnaTestbeam::LoadGeometry()
    }
 }
 
-void CbmTofAnaTestbeam::Exec(Option_t * /*option*/)
+void CbmTofAnaTestbeam::Exec(Option_t* /*option*/)
 {
    // Task execution
 

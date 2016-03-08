@@ -145,7 +145,7 @@ InitStatus StsCosyHitFinder::Init()
 // --------------------------------------------------------------------
 
 // ---- Exec ----------------------------------------------------------
-void StsCosyHitFinder::Exec(Option_t *)
+void StsCosyHitFinder::Exec(Option_t*)
 {
   fHits->Clear();  
 //  if(fEvent%100000 == 0)cout << "-I- StsCosyHitFinder: ----- " << fEvent << endl; 

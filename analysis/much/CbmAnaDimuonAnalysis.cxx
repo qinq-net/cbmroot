@@ -145,7 +145,7 @@ InitStatus CbmAnaDimuonAnalysis::Init()
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmAnaDimuonAnalysis::Exec(Option_t* opt){
+void CbmAnaDimuonAnalysis::Exec(Option_t* /*opt*/){
   Int_t nMCTracks      = fMCTracks->GetEntriesFast();
   Int_t nStsTracks     = fStsTracks->GetEntriesFast();
   Int_t nMuchTracks    = fMuchTracks->GetEntriesFast();

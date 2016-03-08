@@ -578,7 +578,7 @@ Double_t CbmStsSensorTypeDssd::LorentzShift(Double_t z, Int_t chargeType,
 
 
 // -----   Print parameters   ----------------------------------------------
-void CbmStsSensorTypeDssd::Print(Option_t* opt) const {
+void CbmStsSensorTypeDssd::Print(Option_t* /*opt*/) const {
 
   LOG(INFO) << "Properties of sensor type " << GetName() << ": "
             << FairLogger::endl

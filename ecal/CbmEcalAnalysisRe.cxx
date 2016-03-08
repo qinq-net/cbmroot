@@ -15,7 +15,7 @@
 using namespace std;
 
 /** Loop procedure **/
-void CbmEcalAnalysisRe::Exec(Option_t* option)
+void CbmEcalAnalysisRe::Exec(Option_t* /*option*/)
 {
   Int_t n=fMCPoints->GetEntries();
   Int_t x;

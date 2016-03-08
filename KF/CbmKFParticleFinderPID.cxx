@@ -132,7 +132,7 @@ InitStatus CbmKFParticleFinderPID::Init()
   return kSUCCESS;
 }
 
-void CbmKFParticleFinderPID::Exec(Option_t* opt)
+void CbmKFParticleFinderPID::Exec(Option_t* /*opt*/)
 { 
   fPID.clear();
   

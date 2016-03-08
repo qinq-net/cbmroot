@@ -222,7 +222,7 @@ InitStatus CbmMvdClusterAna::Init()
 
 
 // -------------------------------------------------------------------------
-void CbmMvdClusterAna::Exec(Option_t* opt) 
+void CbmMvdClusterAna::Exec(Option_t* /*opt*/) 
 {
 	
 // 	if(fManager->GetObject("MvdPoint"))

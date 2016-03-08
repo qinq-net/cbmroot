@@ -65,7 +65,7 @@ if ( fCluster)
 // -----------------------------------------------------------------------------
 
 // -----   Exec   --------------------------------------------------------------
-void CbmMvdClusterfinder::Exec(Option_t* opt){
+void CbmMvdClusterfinder::Exec(Option_t* /*opt*/){
 // --- Start timer
 fTimer.Start();
 	

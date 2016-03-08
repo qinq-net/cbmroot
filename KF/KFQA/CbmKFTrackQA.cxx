@@ -212,7 +212,7 @@ InitStatus CbmKFTrackQA::Init()
   return kSUCCESS;
 }
 
-void CbmKFTrackQA::Exec(Option_t* opt)
+void CbmKFTrackQA::Exec(Option_t* /*opt*/)
 { 
   fNEvents++;
 

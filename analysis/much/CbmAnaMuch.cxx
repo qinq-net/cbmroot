@@ -173,7 +173,7 @@ InitStatus CbmAnaMuch::Init(){
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmAnaMuch::Exec(Option_t* opt){
+void CbmAnaMuch::Exec(Option_t* /*opt*/){
   Int_t nMCTracks   = fMCTracks->GetEntriesFast();
   Int_t nStsTracks  = fStsTracks->GetEntriesFast();
   Int_t nMuchTracks = fMuchTracks->GetEntriesFast();

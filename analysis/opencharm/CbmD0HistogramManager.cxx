@@ -265,7 +265,7 @@ void CbmD0HistogramManager::Register()
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
-void CbmD0HistogramManager::Exec(Option_t* option = "")
+void CbmD0HistogramManager::Exec(Option_t* /*option*/ = "")
 {
     if(fChois == SINGELTRACK) ExecSingel();
     if(fChois == RECO) ExecReco();

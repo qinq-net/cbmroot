@@ -439,7 +439,7 @@ InitStatus CbmStsDigitizeQa::Init() {
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmStsDigitizeQa::Exec(Option_t* opt) {
+void CbmStsDigitizeQa::Exec(Option_t* /*opt*/) {
 
     fTimer.Start();
 

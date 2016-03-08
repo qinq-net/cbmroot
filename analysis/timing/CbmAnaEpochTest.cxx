@@ -78,7 +78,7 @@ InitStatus CbmAnaEpochTest::Init()
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmAnaEpochTest::Exec(Option_t* opt){
+void CbmAnaEpochTest::Exec(Option_t* /*opt*/){
   fNepoch++;
 //  if (fNepoch>1) return;
   if (fVerbose>-1) printf("Epoch: %i",fNepoch);
