@@ -101,6 +101,7 @@ public:
 private:
 
   void Refit(Int_t pidHypo);
+  void CalculateChi2Vtx();
 
   CbmKFVertex      *fPrimVertex      = NULL; // primary vertex
   CbmGlobalTrack   *fGlblTrack       = NULL; // global track

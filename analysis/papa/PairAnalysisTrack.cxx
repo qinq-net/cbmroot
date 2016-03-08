@@ -153,8 +153,11 @@ PairAnalysisTrack::PairAnalysisTrack(CbmKFVertex *vtx,
     fMomentum.SetE( TMath::Sqrt(fMomentum.Vect().Mag2()+m2) );
     fPosition.SetXYZM(    ppar->GetX(),  ppar->GetY(),  ppar->GetZ(),  TMath::Sqrt(m2) );
     fCharge = (ppar->GetQp()>0. ? +1. : -1. );
+    CalculateChi2Vtx();
   }
-  //  fMomentum.Print();
+  else {
+    Refit(211);
+  }
 
   if(mctrk) fPdgCode = mctrk->GetPdgCode();
 
@@ -273,8 +276,11 @@ void PairAnalysisTrack::SetMassHypo(Int_t pdg1, Int_t pdg2, Bool_t refitMassAssu
       fMomentum.SetPxPyPzE( ppar->GetPx(), ppar->GetPy(), ppar->GetPz(), 0. );
       fMomentum.SetE( TMath::Sqrt(fMomentum.Vect().Mag2()+m2) );
       fPosition.SetXYZM(    ppar->GetX(),  ppar->GetY(),  ppar->GetZ(),  TMath::Sqrt(m2) );
-      fCharge = (ppar->GetQp()>0. ? +1. : -1. );
+      fCharge  = (ppar->GetQp()>0. ? +1. : -1. );
+      CalculateChi2Vtx();
     }
+    else
+      Refit(211);
   }
   else {
     Refit(ppdg);
@@ -328,4 +334,34 @@ void PairAnalysisTrack::Refit(Int_t pidHypo)
 
   // set charge based on fit
   fCharge  = (vtxTrack->GetQp()>0. ? +1. : -1. );
+}
+
+//______________________________________________
+void PairAnalysisTrack::CalculateChi2Vtx()
+{
+  //
+  // calculation according to CbmL1PFFitter::GetChiToVertex
+  //
+
+  // primary vertex
+  Double_t Cv[3] = { fPrimVertex->GetCovMatrix()[0], fPrimVertex->GetCovMatrix()[1], fPrimVertex->GetCovMatrix()[2] };
+
+  // track params at prim vertex
+  const CbmTrackParam *ppar = fGlblTrack->GetParamVertex();
+
+  // impact param
+  Double_t dx = ppar->GetX() - fPrimVertex->GetRefX();
+  Double_t dy = ppar->GetY()- fPrimVertex->GetRefY();
+
+
+  Double_t c[3] = { ppar->GetCovariance(0,0), ppar->GetCovariance(1,0), ppar->GetCovariance(1,1) };
+  c[0]+= Cv[0];  c[1]+= Cv[1];  c[2]+= Cv[2];
+
+  Double_t d = c[0]*c[2] - c[1]*c[1] ;
+  Double_t chi = TMath::Sqrt( TMath::Abs( 0.5*(dx*dx*c[0]-2*dx*dy*c[1]+dy*dy*c[2])/d ) );
+  Bool_t isNull = (TMath::Abs(d)<1.e-20);
+
+  if(isNull) fChi2Vtx = -1.;
+  else       fChi2Vtx = chi;
+
 }
