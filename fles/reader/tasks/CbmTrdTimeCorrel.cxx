@@ -45,9 +45,9 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
 CbmTrdTimeCorrel::~CbmTrdTimeCorrel()
 {
   LOG(DEBUG) << "Destructor of CbmTrdTimeCorrel" << FairLogger::endl;
-  fRawMessages->Clear();
-  fDigis->Clear();
-  fClusters->Clear();
+  fRawMessages->Clear("C");
+  fDigis->Clear("C");
+  fClusters->Clear("C");
 }
 // ----              -------------------------------------------------------
 void CbmTrdTimeCorrel::SetParContainers()
@@ -84,7 +84,7 @@ InitStatus CbmTrdTimeCorrel::ReInit()
   return kSUCCESS;
 }
 // ---- Exec  -------------------------------------------------------
-void CbmTrdTimeCorrel::Exec(Option_t* /*option*/)
+void CbmTrdTimeCorrel::Exec(Option_t* option)
 {
   const Int_t maxNrColumns = 16; //max number of channels on a pad plane per asic and row
 
@@ -138,13 +138,11 @@ void CbmTrdTimeCorrel::Exec(Option_t* /*option*/)
   timestampOffsets.clear();
 
   //Calculate Timestamp Offsets
-  LOG(INFO) << "Begin Buffering Epoch Messages" << FairLogger::endl;
-  {  //Context to limit epochBuffers scope
+  LOG(INFO) <<"Begin Buffering Epoch Messages" << FairLogger::endl;
+  {//Context to limit epochBuffers scope
     EpochMap epochBuffer;
     //Loop over all epoch messages to build Fulltime offsets.
-    for (Int_t iSpadicMessage = 0; iSpadicMessage < nSpadicMessages;
-        ++iSpadicMessage)
-    {
+    for (Int_t iSpadicMessage=0; iSpadicMessage < nSpadicMessages; ++iSpadicMessage){
       raw = static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(iSpadicMessage));
       lostMessages = 0; // reset lost-counter for a new message
       isEpoch = raw->GetEpoch();
@@ -153,52 +151,40 @@ void CbmTrdTimeCorrel::Exec(Option_t* /*option*/)
       spaID = GetSpadicID(sourceA);
       time = raw->GetFullTime();
       //buffer all Epoch Messages
-      if (isEpoch || isEpochOutOfSynch)
-      {
-        epochBuffer[spaID][time] = raw;
-        Int_t tempSize =
-            fHM->G1(("Timestamps_Spadic" + std::to_string(spaID)))->GetN();
-        fHM->G1(("Timestamps_Spadic" + std::to_string(spaID)))->SetPoint(
-            tempSize, fNrTimeSlices, time);
+      if(isEpoch||isEpochOutOfSynch){
+	epochBuffer[spaID][time] = raw;
+	Int_t tempSize= fHM->G1(("Timestamps_Spadic"+std::to_string(spaID)))->GetN();
+	fHM->G1(("Timestamps_Spadic"+std::to_string(spaID)))->SetPoint(tempSize,fNrTimeSlices,time);
       }
     }
-    if (fNrTimeSlices != 0) timestampOffsets = CalculateTimestampOffsets(
-        epochBuffer);
+    if(fNrTimeSlices!=0) timestampOffsets = CalculateTimestampOffsets(epochBuffer);
   }
-  LOG(INFO) << "Finish Buffering Epoch Messages" << FairLogger::endl;
+  LOG(INFO) <<"Finish Buffering Epoch Messages" << FairLogger::endl;
 
   //Fill Histograms with the Offsets
 #ifndef __CINT__
-  try
-  {
-    if (fNrTimeSlices != 0) if (timestampOffsets.size() != 0) //If there are no Epoch Messages, skip loop
-    for (auto baseSpaIt = timestampOffsets.begin();
-        baseSpaIt != timestampOffsets.end(); ++baseSpaIt) //Loop over all Base Spadics
-      if (baseSpaIt->second.size() != 0) //If this Base Spadic is missing, skip to next Base Spadic
-      for (auto compSpaIt = baseSpaIt->second.begin();
-          compSpaIt != baseSpaIt->second.end(); ++compSpaIt) //For every Base Spadic, loop over all Spadics
-      {
-        int baseSpaID = baseSpaIt->first;
-        int compSpaID = compSpaIt->first;
-        const Int_t SysID = 0;
-        auto FullTimeIt = timestampOffsets.at(baseSpaID).at(compSpaID).begin();
-        for (; FullTimeIt != timestampOffsets.at(baseSpaID).at(compSpaID).end();
-            ++FullTimeIt) //Loop over all timestamps and Fill Fulltime Offsets for Epoch Messages into Histograms
-        {
-          Int_t tGraphSize = fHM->G1(
-              ("Time_Offset_between_Spadic_" + std::to_string(baseSpaID)
-                  + "_and_Spadic_" + std::to_string(compSpaID)))->GetN();
-          fHM->G1(
-              ("Time_Offset_between_Spadic_" + std::to_string(baseSpaID)
-                  + "_and_Spadic_" + std::to_string(compSpaID)))->SetPoint(
-              tGraphSize, FullTimeIt->first, FullTimeIt->second);
-        }
-      }
+  try{
+    if(fNrTimeSlices!=0)
+      if(timestampOffsets.size()!=0) //If there are no Epoch Messages, skip loop
+	for (auto baseSpaIt = timestampOffsets.begin() ; baseSpaIt!= timestampOffsets.end() ; ++baseSpaIt) //Loop over all Base Spadics
+	  if(baseSpaIt->second.size()!=0) //If this Base Spadic is missing, skip to next Base Spadic
+	    for (auto compSpaIt = baseSpaIt->second.begin(); compSpaIt != baseSpaIt->second.end(); ++compSpaIt) //For every Base Spadic, loop over all Spadics
+	      {
+		int baseSpaID = baseSpaIt->first;
+		int compSpaID = compSpaIt->first;
+		const Int_t SysID =0;
+		auto FullTimeIt = timestampOffsets.at(baseSpaID).at(compSpaID).begin();
+		for (; FullTimeIt != timestampOffsets.at(baseSpaID).at(compSpaID).end(); ++FullTimeIt) //Loop over all timestamps and Fill Fulltime Offsets for Epoch Messages into Histograms
+		  {
+		    Int_t tGraphSize = fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->GetN();
+		    fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->SetPoint(tGraphSize,FullTimeIt->first,FullTimeIt->second);
+		  }
+	      }
   }
-  catch (std::out_of_range)
-  {
-    LOG(ERROR) << "map::at() has thrown an exception " << FairLogger::endl;
-  }
+  catch(std::out_of_range)
+    {
+      LOG(ERROR)<< "map::at() has thrown an exception " << FairLogger::endl;
+    }
 #endif //__CINT__
 
 
@@ -292,16 +278,18 @@ void CbmTrdTimeCorrel::Exec(Option_t* /*option*/)
 	      or TTree. Afterwards one should erase the buffer partially (leaving a rest of messages at the end of the buffer to be able 
 	      to cluster messages at the beginning of the next TimeSliceContainer.
 	    */
-	    fMessageBuffer[TString(spadicName)][time][combiID] = raw;
+	    //fMessageBuffer[TString(spadicName)][time][combiID] = raw;
 	    /*
-	      fMessageBuffer[TString(spadicName)][time][combiID] = new CbmSpadicRawMessage(raw->GetEquipmentID(), raw->GetSourceAddress(), raw->GetChannelID(),
-	      raw->GetEpochMarker(), raw->GetTime(), 
-	      raw->GetSuperEpoch(), raw->GetTriggerType(),
-	      raw->GetInfoType(), raw->GetStopType(), 
-	      raw->GetGroupId(), raw->GetBufferOverflowCount(), 
-	      raw->GetNrSamples(), raw->GetSamples(),
-	      raw->GetHit(), raw->GetInfo(), raw->GetEpoch(), raw->GetEpochOutOfSynch(), raw->GetHitAborted(), raw->GetOverFlow(), raw->GetStrange());
-	    */
+	      In order to not interfere with the clean up of the TClonesArray, we copy here the information and delete the stored objects in the clean up of the map
+	     */
+	    fMessageBuffer[TString(spadicName)][time][combiID] = new CbmSpadicRawMessage(raw->GetEquipmentID(), raw->GetSourceAddress(), raw->GetChannelID(),
+											 raw->GetEpochMarker(), raw->GetTime(), 
+											 raw->GetSuperEpoch(), raw->GetTriggerType(),
+											 raw->GetInfoType(), raw->GetStopType(), 
+											 raw->GetGroupId(), raw->GetBufferOverflowCount(), 
+											 raw->GetNrSamples(), raw->GetSamples(),
+											 raw->GetHit(), raw->GetInfo(), raw->GetEpoch(), raw->GetEpochOutOfSynch(), raw->GetHitAborted(), raw->GetOverFlow(), raw->GetStrange());
+	    
 	    /*
 	      A new TClonesArray without MS overlaps is created for offline analysis
 	    *//*
@@ -442,7 +430,6 @@ void CbmTrdTimeCorrel::Exec(Option_t* /*option*/)
     }
     //std::cout << "   tuut" << std::endl;
   }
-
   // complicated loop over sorted map of timestamps, manually delete all elements in the nested maps
   // commented out, since obviuously the following outer clear command destructs all contained elements recursively
   // The objects correlated to the pointers stored in this map are deleted after each run of Exec. Therefore it is leading to seg.fa. if one tryies to delete the pointers here twice
@@ -496,15 +483,15 @@ void CbmTrdTimeCorrel::Exec(Option_t* /*option*/)
   fNrTimeSlices++;
   
   Clusterizer();
-  
+  CleanUpBuffers();
 }
 // ---- Finish  -------------------------------------------------------
 void CbmTrdTimeCorrel::Finish()
 {
   //Clusterizer();
-  fRawMessages->Clear();
-  fDigis->Clear();
-  fClusters->Clear();
+  fRawMessages->Clear("C");
+  fDigis->Clear("C");
+  fClusters->Clear("C");
 
   TString runName="";
   if(fRun!=0) runName=Form(" (Run %d)",fRun);
@@ -522,11 +509,11 @@ void CbmTrdTimeCorrel::Finish()
   fHM->G1("TsCounterHit0")->GetXaxis()->SetTitle("TS number");
   fHM->G1("TsCounterHit0")->GetYaxis()->SetTitle("SPADIC0 hit messages");
   /*
-  c1->cd(8);
-  fHM->G1("TsCounterHitAborted0")->Draw("AL");
-  fHM->G1("TsCounterHitAborted0")->SetLineColor(kRed);
-  fHM->G1("TsCounterHitAborted0")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounterHitAborted0")->GetYaxis()->SetTitle("SPADIC0 hit aborted messages");
+    c1->cd(8);
+    fHM->G1("TsCounterHitAborted0")->Draw("AL");
+    fHM->G1("TsCounterHitAborted0")->SetLineColor(kRed);
+    fHM->G1("TsCounterHitAborted0")->GetXaxis()->SetTitle("TS number");
+    fHM->G1("TsCounterHitAborted0")->GetYaxis()->SetTitle("SPADIC0 hit aborted messages");
   */
   c1->cd(7);
   fHM->G1("TsCounterOverflow0")->Draw("AL");
@@ -554,11 +541,11 @@ void CbmTrdTimeCorrel::Finish()
   fHM->G1("TsCounterHtimeIt")->GetXaxis()->SetTitle("TS number");
   fHM->G1("TsCounterHtimeIt")->GetYaxis()->SetTitle("SPADIC1 hit messages");
   /*
-  c1->cd(14);
-  fHM->G1("TsCounterHitAborted1")->Draw("AL");
-  fHM->G1("TsCounterHitAborted1")->SetLifNrTimeSlicesneColor(kBlue);
-  fHM->G1("TsCounterHitAborted1")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounterHitAborted1")->GetYaxis()->SetTitle("SPADIC1 hit aborted messages");
+    c1->cd(14);
+    fHM->G1("TsCounterHitAborted1")->Draw("AL");
+    fHM->G1("TsCounterHitAborted1")->SetLifNrTimeSlicesneColor(kBlue);
+    fHM->G1("TsCounterHitAborted1")->GetXaxis()->SetTitle("TS number");
+    fHM->G1("TsCounterHitAborted1")->GetYaxis()->SetTitle("SPADIC1 hit aborted messages");
   */
   c1->cd(12);
   fHM->G1("TsCounterOverflow1")->Draw("AL");
@@ -582,7 +569,7 @@ void CbmTrdTimeCorrel::Finish()
   fHM->G1("TsCounterStrange1")->GetYaxis()->SetTitle("SPADIC1 strange messages");
   c1->SaveAs("pics/"+runName+"TsCounter.png");
 
-    // Plot message counter ratios to screen
+  // Plot message counter ratios to screen
   TCanvas *c2 = new TCanvas("c2","ratios"+runName,3*320,2*300);
   c2->Divide(3,2);
   c2->cd(1);
@@ -612,46 +599,46 @@ void CbmTrdTimeCorrel::Finish()
   c2->SaveAs("pics/"+runName+"TsCounterRatio.png");
 
   if (true) {
-  TCanvas *c3 = nullptr;
+    TCanvas *c3 = nullptr;
 
-  for (Int_t SysID=0; SysID<1;++SysID)
-	for (Int_t SpaID=0; SpaID<4;++SpaID){
-	  if(SpaID%2 == 0){
-		c3 = new TCanvas("c3","Delta_t"+runName+"_Spadic_"+std::to_string(SpaID),5*320,3*300);
-	    c3->Divide(8,4);
-	  }
-	  for (Int_t ChID=0; ChID<32;++ChID)
+    for (Int_t SysID=0; SysID<1;++SysID)
+      for (Int_t SpaID=0; SpaID<4;++SpaID){
+	if(SpaID%2 == 0){
+	  c3 = new TCanvas("c3","Delta_t"+runName+"_Spadic_"+std::to_string(SpaID),5*320,3*300);
+	  c3->Divide(8,4);
+	}
+	for (Int_t ChID=0; ChID<32;++ChID)
 	  {
-		c3->cd(ChID+1);
-		fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID/2)+"_Channel_"+std::to_string(ChID)))->Draw("AB");
-		fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID/2)+"_Channel_"+std::to_string(ChID)))->SetLineColor(kRed);
-		fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID/2)+"_Channel_"+std::to_string(ChID)))->SetFillColor(kRed);
-		fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID/2)+"_Channel_"+std::to_string(ChID)))->GetXaxis()->SetTitle("Fulltime()");
+	    c3->cd(ChID+1);
+	    fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID/2)+"_Channel_"+std::to_string(ChID)))->Draw("AB");
+	    fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID/2)+"_Channel_"+std::to_string(ChID)))->SetLineColor(kRed);
+	    fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID/2)+"_Channel_"+std::to_string(ChID)))->SetFillColor(kRed);
+	    fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID/2)+"_Channel_"+std::to_string(ChID)))->GetXaxis()->SetTitle("Fulltime()");
   	  }
-	  c3->Update();
-	  c3->SaveAs(TString("pics/Delta_t_Graph_Spadic_"+std::to_string(SpaID/2)+".pdf"));
-	};
+	c3->Update();
+	c3->SaveAs(TString("pics/Delta_t_Graph_Spadic_"+std::to_string(SpaID/2)+".pdf"));
+      };
   }
   TCanvas *c4 = new TCanvas("c4","Time_Offsets"+runName,5*320,3*300);
   c4->Divide(4,4);
   Int_t i=1;
   for (Int_t baseSpaID=0; baseSpaID<4;++baseSpaID)
-	for (Int_t compSpaID=0; compSpaID<4;++compSpaID)
-	{
-		c4->cd(i++);
-		fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->Draw("AB");
-		fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->SetLineColor(kRed);
-		fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->GetXaxis()->SetTitle("Fulltime()");
-	}
+    for (Int_t compSpaID=0; compSpaID<4;++compSpaID)
+      {
+	c4->cd(i++);
+	fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->Draw("AB");
+	fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->SetLineColor(kRed);
+	fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->GetXaxis()->SetTitle("Fulltime()");
+      }
   c4->Update();
   c4->SaveAs(TString("pics/"+runName+"TimeOffsets"+".pdf"));
 
   TCanvas *c5 = new TCanvas("c5","Fulltime_vs_Timeslice"+runName,5*320,3*300);
   TMultiGraph * mg = new TMultiGraph("Fulltime_vs_TimeSlice_all_Spadics","Fulltime_vs_TimeSlice_all_Spadics");
   for (Int_t baseSpaID=0; baseSpaID<4;++baseSpaID){
-	fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID)))->SetMarkerStyle(20);
-	fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID)))->SetMarkerColor(baseSpaID+2);
-	mg->Add(fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID))));
+    fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID)))->SetMarkerStyle(20);
+    fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID)))->SetMarkerColor(baseSpaID+2);
+    mg->Add(fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID))));
   }
   mg->Draw("A");
   mg->GetXaxis()->SetTitle("Timeslice");
@@ -663,13 +650,13 @@ void CbmTrdTimeCorrel::Finish()
 
   // use this to produce nice single plots
   /*
-  TCanvas *cnice = new TCanvas("cnice","cnice",800,400); 
-  cnice->cd();
-  fHM->G1("TsCounterHtimeIt")->Draw("AL");
-  fHM->G1("TsCounterHtimeIt")->SetLineColor(kBlack);
-  fHM->G1("TsCounterHtimeIt")->GetXaxis()->SetTitle("timeslice");
-  fHM->G1("TsCounterHtimeIt")->GetXaxis()->SetRangeUser(0,2166);
-  fHM->G1("TsCounterHtimeIt")->GetYaxis()->SetTitle("SPADIC1 hit messages");
+    TCanvas *cnice = new TCanvas("cnice","cnice",800,400); 
+    cnice->cd();
+    fHM->G1("TsCounterHtimeIt")->Draw("AL");
+    fHM->G1("TsCounterHtimeIt")->SetLineColor(kBlack);
+    fHM->G1("TsCounterHtimeIt")->GetXaxis()->SetTitle("timeslice");
+    fHM->G1("TsCounterHtimeIt")->GetXaxis()->SetRangeUser(0,2166);
+    fHM->G1("TsCounterHtimeIt")->GetYaxis()->SetTitle("SPADIC1 hit messages");
   */
   //Buffer (map) or multi SPADIC data streams based analyis have to be done here!!
   LOG(DEBUG) << "Finish of CbmTrdTimeCorrel" << FairLogger::endl;
@@ -689,8 +676,8 @@ void CbmTrdTimeCorrel::Clusterizer()
   LOG(INFO) <<  "Clusterizer"<< FairLogger::endl;
   Int_t mapDigiCounter = 0;
   CbmSpadicRawMessage* raw = NULL;
-  CbmTrdCluster* cluster = NULL;
-  Int_t  layerId(0), moduleId(0), sectorId(0), rowId(0), columnId(0), clusterSize(0);
+  //CbmTrdCluster* cluster = NULL;
+  Int_t  layerId(0), moduleId(0), sectorId(0), rowId(0), columnId(0), clusterSize(0), address(0);
   ULong_t lastClusterTime = 0;
   ULong_t fullTime = 0;
   TString SysSpaID = "";
@@ -731,26 +718,26 @@ void CbmTrdTimeCorrel::Clusterizer()
 	} else {
 	  // Use average baseline estimated for full message length
 	}
-	const Int_t nSamples = 32;//raw->GetNrSamples();
-	Float_t Samples[nSamples] = {0.};
+	const Int_t nSamples = raw->GetNrSamples();
+	//Float_t Samples[nSamples] = {0.};
+	Float_t* Samples = new Float_t[nSamples];
 	for (Int_t iBin = 0; iBin < raw->GetNrSamples(); iBin++){
 	  Samples[iBin] = raw->GetSamples()[iBin] - Baseline;
 	}
-	
-	new ((*fDigis)[fiDigi]) CbmTrdDigi(CbmTrdAddress::GetAddress(layerId,moduleId,sectorId,rowId,columnId),
+	address = CbmTrdAddress::GetAddress(layerId,moduleId,sectorId,rowId,columnId);
+	/*
+	new ((*fDigis)[fiDigi]) CbmTrdDigi(address,
 					   raw->GetFullTime(),//57,14 ns per timestamp
 					   raw->GetTriggerType(), raw->GetInfoType(), raw->GetStopType(),
 					   raw->GetNrSamples(), Samples);
-	
+	*/
+	delete[] Samples;
 	if (combiIt->first - lastCombiID != 1 && digiIndices.size() > 0){
-	  new ((*fClusters)[fiCluster]) CbmTrdCluster();
-	  cluster = (CbmTrdCluster*)fClusters->At(fiCluster);
-	  cluster->SetAddress(CbmTrdAddress::GetAddress(layerId,moduleId,sectorId,rowId,columnId));
-	  cluster->SetDigis(digiIndices);
+	  address = CbmTrdAddress::GetAddress(layerId,moduleId,sectorId,rowId,columnId);
+	  
+	  //new ((*fClusters)[fiCluster]) CbmTrdCluster(digiIndices,address);
 	  
 	  digiIndices.clear();
-	  if (fiCluster % 100 == 0){
-	  }
 	  fiCluster++;
 	}
 	digiIndices.push_back(fiDigi);
@@ -758,14 +745,11 @@ void CbmTrdTimeCorrel::Clusterizer()
 	fiDigi++;
       }
       if (digiIndices.size() > 0){
+	address = CbmTrdAddress::GetAddress(layerId,moduleId,sectorId,rowId,columnId);
 	
-	new ((*fClusters)[fiCluster]) CbmTrdCluster();
-	cluster = (CbmTrdCluster*)fClusters->At(fiCluster);
-	cluster->SetAddress(CbmTrdAddress::GetAddress(layerId,moduleId,sectorId,rowId,columnId));
-	cluster->SetDigis(digiIndices);
-	
-	digiIndices.clear();
-      
+	//new ((*fClusters)[fiCluster]) CbmTrdCluster(digiIndices,address);
+		
+	digiIndices.clear();      
 	fiCluster++;
       }
     }
@@ -776,12 +760,16 @@ void CbmTrdTimeCorrel::Clusterizer()
 // -------------------------------------------------------------------------
 void CbmTrdTimeCorrel::CleanUpBuffers()
 {  
-  LOG(INFO) <<  "CleanUpBuffers"<< FairLogger::endl;
+  LOG(INFO) <<  "CleanUpBuffers" << FairLogger::endl;
+  //LOG(INFO) <<  "fMessageBuffer.size() " << fMessageBuffer.size() << FairLogger::endl;
   for (std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > >::iterator SpaSysIt = fMessageBuffer.begin(); SpaSysIt != fMessageBuffer.end(); SpaSysIt++){
+    //LOG(INFO) <<  "  (SpaSysIt->second).size() " << (SpaSysIt->second).size() << FairLogger::endl;
     for (std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> >::iterator TimeIt = SpaSysIt->second.begin(); TimeIt != SpaSysIt->second.end(); TimeIt++){
+      //LOG(INFO) <<  "    (TimeIt->second).size() " << (TimeIt->second).size() << FairLogger::endl;
       for (std::map<Int_t, CbmSpadicRawMessage*> ::iterator CombiIt = TimeIt->second.begin(); CombiIt != TimeIt->second.end(); CombiIt++){
+	//LOG(INFO) <<  "      (CombiIt->second).size() " << (CombiIt->second).size() << FairLogger::endl;
 	if(CombiIt->second != NULL){
-	  //delete CombiIt->second;
+	  delete CombiIt->second;
 	}
       }
       TimeIt->second.clear();
@@ -789,6 +777,8 @@ void CbmTrdTimeCorrel::CleanUpBuffers()
     SpaSysIt->second.clear();
   }
   fMessageBuffer.clear();  
+  //fDigis->Clear("C");
+  //fClusters->Clear("C");
 }
 // -------------------------------------------------------------------------
 Int_t CbmTrdTimeCorrel::GetMessageType(CbmSpadicRawMessage* raw)
