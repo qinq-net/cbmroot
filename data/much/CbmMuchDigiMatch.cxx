@@ -59,6 +59,22 @@ CbmMuchDigiMatch::CbmMuchDigiMatch(CbmMuchDigiMatch* match)
 {
 }
 // -------------------------------------------------------------------------
+// -----   Light Weight constructor for storing light CbmMuchDigiMatch -----//
+CbmMuchDigiMatch::CbmMuchDigiMatch(CbmMuchDigiMatch* match, Bool_t IsLight)
+  : CbmMatch(*match),
+        fT0(match->fT0),
+        fDeadTime(match->fDeadTime)
+
+{
+    if(IsLight)	Reset(); //Clearing fSignalShape etc information for Light DigiMatch
+    else{
+    fMCtimePerPrimaryElectron=match->fMCtimePerPrimaryElectron;
+    fRefIndexPerPrimaryElectron=match->fRefIndexPerPrimaryElectron;
+    fChargePerPrimaryElectron=match->fChargePerPrimaryElectron;
+    fTimePerPrimaryElectron=match->fTimePerPrimaryElectron;
+    fSignalShape=match->fSignalShape;
+    }
+}
 
 
 // -----   Destructor   ----------------------------------------------------
@@ -196,9 +212,8 @@ void CbmMuchDigiMatch::AddCharge(Int_t iPoint, UInt_t charge, Double_t t, TArray
   fChargePerPrimaryElectron.AddAt(charge, n);
   fTimePerPrimaryElectron.AddAt(t, n);
   fMCtimePerPrimaryElectron.AddAt(mcTime,n);
-  // initial time is set 100 ns before arrival of the first point 
-  // since later points may contribute before if drift time is different for them
-  // TODO  take from digitizer
+  // initial time is set t-fDeadTime before arrival of the first point 
+  // since later points may contribute before this point 
   if (n==0) fT0 = t-fDeadTime+1;
   if (fT0<0) fT0 = 0; 
   Int_t bin0 = Int_t((t-fT0)/gkResponseBin);

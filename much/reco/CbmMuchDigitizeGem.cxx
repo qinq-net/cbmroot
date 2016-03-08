@@ -80,7 +80,7 @@ CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName)
     fTotalDriftTime(0.4/fDriftVelocity*10000), // 40 ns
     fSigma(),
     fMPV(),
-    fIsLight(1) // fIsLight = 1 (default) Store Light CbmMuchDigiMatch in output branch, fIsLight = 0 Create Heavy CbmMuchDigiMatch with fSignalShape info.  
+    fIsLight(kTRUE) // fIsLight = 1 (default) Store Light CbmMuchDigiMatch in output branch, fIsLight = 0 Create Heavy CbmMuchDigiMatch with fSignalShape info.  
 {
   fSigma[0] = new TF1("sigma_e","pol6",-5,10);
   fSigma[0]->SetParameters(sigma_e);
@@ -177,7 +177,7 @@ InitStatus CbmMuchDigitizeGem::Init() {
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmMuchDigitizeGem::Exec(Option_t* opt) {
+void CbmMuchDigitizeGem::Exec(Option_t* /*opt*/) {
   // get current event to revert back at the end of exec
   Int_t currentEvent = FairRootManager::Instance()->GetInTree()->GetBranch("MCTrack")->GetReadEntry();
   cout << "Event Number is "<< currentEvent << endl;

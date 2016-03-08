@@ -33,6 +33,9 @@ class CbmMuchDigiMatch : public CbmMatch
   /** Standard constructor. Initializes this CbmMuchDigiMatch object from the given one. **/
   CbmMuchDigiMatch(CbmMuchDigiMatch* match);
 
+ /** Constructor. Initializes this CbmMuchDigiMatch object from the given one and also decide on the IsLight that fSignalShape etc has to store or not **/
+  CbmMuchDigiMatch(CbmMuchDigiMatch* match, Bool_t IsLight);
+
   /** Destructor **/
   virtual ~CbmMuchDigiMatch();
 
