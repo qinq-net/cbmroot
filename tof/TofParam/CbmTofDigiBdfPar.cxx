@@ -189,6 +189,22 @@ Bool_t CbmTofDigiBdfPar::getParams(FairParamList* l)
             fdSigVel[iSmType].SetAt( 0.0, iRpc);    
          //return kFALSE;
       } // if ( ! l->fill( Form("SigVel%03d", iSmType), &(fdSigVel[iSmType]) ) ) 
+
+      if( (fdSigVel[iSmType]).GetSize() < fiNbSm[iSmType]*fiNbRpc[iSmType]){
+	LOG(INFO)<<Form("SigVel%03d Array size: %d < request %d, copy values to all modules ",iSmType, 
+			(Int_t)(fdSigVel[iSmType]).GetSize(),fiNbSm[iSmType]*fiNbRpc[iSmType])
+                 <<FairLogger::endl;
+
+	TArrayD temp ((fdSigVel[iSmType]).GetSize());  // temporary copy of data
+	for(Int_t i=0; i<(fdSigVel[iSmType]).GetSize(); i++) temp[i]=fdSigVel[iSmType][i];
+
+	fdSigVel[iSmType].Set( fiNbSm[iSmType]*fiNbRpc[iSmType] );
+	for(Int_t iSm=0; iSm<fiNbSm[iSmType]; iSm++) { // fill elements for all SMs
+	  for(Int_t iRpc=0; iRpc<fiNbRpc[iSmType]; iRpc++)
+	    fdSigVel[iSmType][iSm*fiNbRpc[iSmType]+iRpc]=temp[iRpc];
+	}
+      }
+
    } // for( Int_t iSmType = 0; iSmType < fiNbSmTypes; iSmType ++)
 
    fiNbCh.resize(fiNbSmTypes);
