@@ -138,7 +138,7 @@ class CbmMuchDigitizeGem : public FairTask{
     void SetAlgorithm(Int_t algorithm) {fAlgorithm = algorithm; }
     void SetTimeOverThreshold(Bool_t tot) {fTOT = tot; }
     TArrayD fgDeltaResponse; // Signal shape on delta function response
-
+    void SetLight(Bool_t islight){fIsLight = islight;}
   private:
     Int_t              fAlgorithm;     // Algorithm
     CbmMuchGeoScheme*  fGeoScheme;     // Main object responsible for geometry
@@ -173,6 +173,8 @@ class CbmMuchDigitizeGem : public FairTask{
 
     TF1*               fSigma[3];
     TF1*               fMPV[3];
+    Bool_t             fIsLight;       //Default fIsLight = 1
+
 
     /** Initialization. **/
     virtual InitStatus Init();
