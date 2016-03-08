@@ -191,18 +191,33 @@ Bool_t CbmTofDigiBdfPar::getParams(FairParamList* l)
       } // if ( ! l->fill( Form("SigVel%03d", iSmType), &(fdSigVel[iSmType]) ) ) 
 
       if( (fdSigVel[iSmType]).GetSize() < fiNbSm[iSmType]*fiNbRpc[iSmType]){
-	LOG(INFO)<<Form("SigVel%03d Array size: %d < request %d, copy values to all modules ",iSmType, 
-			(Int_t)(fdSigVel[iSmType]).GetSize(),fiNbSm[iSmType]*fiNbRpc[iSmType])
-                 <<FairLogger::endl;
+         if( (fdSigVel[iSmType]).GetSize() == fiNbRpc[iSmType] )
+         {
+            LOG(INFO)<<Form("SigVel%03d Array size: %d < request %d, copy values to all modules ",iSmType, 
+                            (Int_t)(fdSigVel[iSmType]).GetSize(),fiNbSm[iSmType]*fiNbRpc[iSmType])
+                     <<FairLogger::endl;
 
-	TArrayD temp ((fdSigVel[iSmType]).GetSize());  // temporary copy of data
-	for(Int_t i=0; i<(fdSigVel[iSmType]).GetSize(); i++) temp[i]=fdSigVel[iSmType][i];
+            TArrayD temp ((fdSigVel[iSmType]).GetSize());  // temporary copy of data
+            for(Int_t i=0; i<(fdSigVel[iSmType]).GetSize(); i++) temp[i]=fdSigVel[iSmType][i];
 
-	fdSigVel[iSmType].Set( fiNbSm[iSmType]*fiNbRpc[iSmType] );
-	for(Int_t iSm=0; iSm<fiNbSm[iSmType]; iSm++) { // fill elements for all SMs
-	  for(Int_t iRpc=0; iRpc<fiNbRpc[iSmType]; iRpc++)
-	    fdSigVel[iSmType][iSm*fiNbRpc[iSmType]+iRpc]=temp[iRpc];
-	}
+            fdSigVel[iSmType].Set( fiNbSm[iSmType]*fiNbRpc[iSmType] );
+            for(Int_t iSm=0; iSm<fiNbSm[iSmType]; iSm++) { // fill elements for all SMs
+               for(Int_t iRpc=0; iRpc<fiNbRpc[iSmType]; iRpc++)
+                  fdSigVel[iSmType][iSm*fiNbRpc[iSmType]+iRpc]=temp[iRpc];
+            }
+         } // if( (fdSigVel[iSmType]).GetSize() == fiNbRpc[iSmType] )
+         else
+         {
+            LOG(ERROR) << "CbmTofDigiBdfPar::getParams => parameter "
+                     << Form("SigVel%03d", iSmType) 
+                     << " has a not matching number of fields: "
+                     << (fdSigVel[iSmType]).GetSize()
+                     << " instead of "
+                     << fiNbRpc[iSmType] << " or "
+                     << fiNbSm[iSmType]*fiNbRpc[iSmType]
+                     <<FairLogger::endl;
+            return kFALSE;
+         } // else of if( (fdSigVel[iSmType]).GetSize() == fiNbRpc[iSmType] )
       }
 
    } // for( Int_t iSmType = 0; iSmType < fiNbSmTypes; iSmType ++)
@@ -675,6 +690,7 @@ void CbmTofDigiBdfPar::printParams()
    {
       LOG(INFO)<<sGapsNb[iSmType]<<FairLogger::endl;
       LOG(INFO)<<sGapsSz[iSmType]<<FairLogger::endl;
+      LOG(INFO)<<sSigVel[iSmType]<<FairLogger::endl;
       LOG(INFO)<<sChNb[iSmType]<<FairLogger::endl;
       LOG(INFO)<<sChType[iSmType]<<FairLogger::endl;
       LOG(INFO)<<sChOrient[iSmType]<<FairLogger::endl;
