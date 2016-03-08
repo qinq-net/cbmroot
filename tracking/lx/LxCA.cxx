@@ -733,21 +733,6 @@ void LxPoint::CreateRay(LxPoint* lPoint, scaltype tx, scaltype ty, scaltype dtx,
 // LxRay
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  scaltype tx, ty;
-  scaltype dtx, dty;
-  LxPoint* source;
-  LxPoint* end;
-  LxStation* station;
-  std::list<LxRay*> neighbours;  
-#ifdef CLUSTER_MODE
-  Int_t level;
-  bool used;
-  std::list<LxRay*> neighbourhood;
-  std::list<LxPoint*> clusterPoints;
-#endif//CLUSTER_MODE
-
-
-
 LxRay::LxRay(LxPoint* s, LxPoint* e
 #ifdef CLUSTER_MODE
     , Int_t l
