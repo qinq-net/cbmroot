@@ -216,6 +216,7 @@ void PairAnalysisCutQA::Init()
 
   // delete surplus
   delete binsPdg;
+  delete binsDet;
 
 }
 
