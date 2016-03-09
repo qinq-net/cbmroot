@@ -224,6 +224,8 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     Int_t nrSamples=raw->GetNrSamples();
 
     lostMessages = raw->GetBufferOverflowCount();
+
+
     if (!isOverflow && lostMessages!=0) LOG(ERROR) << "SpadicMessage " << iSpadicMessage << " is HIT " << (Int_t)isHit << " / INFO " << (Int_t)isInfo << " / EPOCH " << (Int_t)isEpoch << " / HITaborted " << (Int_t)isHitAborted << " / STRANGE " << (Int_t)isStrange << " but claims to have lost " << lostMessages << " messages" << FairLogger::endl;
     
     time = raw->GetFullTime();
@@ -250,7 +252,9 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     
     spadicName = GetSpadicName(eqID,sourceA);
     //printf("spadicName:%s:\n",spadicName.Data());
-
+    if ( isOverflow )
+      if (spadicName != "")
+	fHM->H2((spadicName + TString("_LostCount_vs_PadID")).Data())->Fill(lostMessages,padID);
     //buffer all Epoch Messages
     if(isEpoch||isEpochOutOfSynch){
       //epochBuffer[spaID][time] = raw;
@@ -282,7 +286,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	    //fMessageBuffer[TString(spadicName)][time][combiID] = raw;
 	    /*
 	      In order to not interfere with the clean up of the TClonesArray, we copy here the information and delete the stored objects in the clean up of the map
-	     */
+	    */
 	    fMessageBuffer[TString(spadicName)][time][combiID] = new CbmSpadicRawMessage(raw->GetEquipmentID(), raw->GetSourceAddress(), raw->GetChannelID(),
 											 raw->GetEpochMarker(), raw->GetTime(), 
 											 raw->GetSuperEpoch(), raw->GetTriggerType(),
@@ -304,14 +308,14 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	      */
 	    fiRawMessage++;
 	  } else {  
-	    /*
-	      LOG(DEBUG) << "Found Message already in fMessageBuffer at :" << TString(spadicName).Data() << ":, time:" << time << ", padID:" << padID << ". Potential overlapping MS container!" << FairLogger::endl;
+	    
+	    LOG(DEBUG) << "Found Message already in fMessageBuffer at :" << TString(spadicName).Data() << ":, time:" << time << ", padID:" << padID << ". Potential overlapping MS container!" << FairLogger::endl;
 
-	      if (fMessageBuffer[TString(spadicName)][time][combiID] != NULL)
+	    if (fMessageBuffer[TString(spadicName)][time][combiID] != NULL)
 	      fHM->H2("DoubleMessage_MessageType")->Fill(GetMessageType(fMessageBuffer[TString(spadicName)][time][combiID]),GetMessageType(raw));
-	      else 	  
+	    else 	  
 	      fHM->H2("DoubleMessage_MessageType")->Fill(-1,GetMessageType(raw));
-	  
+	    /*
 	      LOG(INFO) << "------------------------------------" << FairLogger::endl;
 	      raw->PrintMessage();
 	      LOG(INFO) << "<raw---------------------------->" << FairLogger::endl;
@@ -482,14 +486,14 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     }
   }
   fNrTimeSlices++;
-  
-  Clusterizer();
+  ClusterizerTime();
+  ClusterizerSpace();
   CleanUpBuffers();
 }
 // ---- Finish  -------------------------------------------------------
 void CbmTrdTimeCorrel::Finish()
 {
-  //Clusterizer();
+  //ClusterizerSpace();
   fRawMessages->Clear("C");
   fDigis->Clear("C");
   fClusters->Clear("C");
@@ -672,9 +676,14 @@ void CbmTrdTimeCorrel::FinishEvent()
   LOG(DEBUG) << "FinishEvent of CbmTrdTimeCorrel" << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
-void CbmTrdTimeCorrel::Clusterizer()
+void CbmTrdTimeCorrel::ClusterizerTime()
 {
-  LOG(INFO) <<  "Clusterizer"<< FairLogger::endl;
+
+}
+// -------------------------------------------------------------------------
+void CbmTrdTimeCorrel::ClusterizerSpace()
+{
+  LOG(INFO) <<  "ClusterizerSpace"<< FairLogger::endl;
   Int_t mapDigiCounter = 0;
   CbmSpadicRawMessage* raw = NULL;
   //CbmTrdCluster* cluster = NULL;
@@ -688,6 +697,9 @@ void CbmTrdTimeCorrel::Clusterizer()
     for (std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > ::iterator timeIt = (SpaSysIt->second).begin() ; timeIt != (SpaSysIt->second).end(); timeIt++){
       LOG(DEBUG) <<  "ClusterSize:" << Int_t((timeIt->second).size()) << FairLogger::endl;
       clusterSize = Int_t((timeIt->second).size());
+      if ( SysSpaID != "")
+	fHM->H1((SysSpaID + TString("_CluterSize")).Data())->Fill(clusterSize);
+
       fullTime = timeIt->first;
       lastClusterTime = fullTime;
 
@@ -727,10 +739,10 @@ void CbmTrdTimeCorrel::Clusterizer()
 	}
 	address = CbmTrdAddress::GetAddress(layerId,moduleId,sectorId,rowId,columnId);
 	/*
-	new ((*fDigis)[fiDigi]) CbmTrdDigi(address,
-					   raw->GetFullTime(),//57,14 ns per timestamp
-					   raw->GetTriggerType(), raw->GetInfoType(), raw->GetStopType(),
-					   raw->GetNrSamples(), Samples);
+	  new ((*fDigis)[fiDigi]) CbmTrdDigi(address,
+	  raw->GetFullTime(),//57,14 ns per timestamp
+	  raw->GetTriggerType(), raw->GetInfoType(), raw->GetStopType(),
+	  raw->GetNrSamples(), Samples);
 	*/
 	delete[] Samples;
 	if (combiIt->first - lastCombiID != 1 && digiIndices.size() > 0){
@@ -755,7 +767,7 @@ void CbmTrdTimeCorrel::Clusterizer()
       }
     }
   }
-  //LOG(INFO) << "CbmTrdTimeCorrel::Clusterizer Digis:" << mapDigiCounter << FairLogger::endl;
+  //LOG(INFO) << "CbmTrdTimeCorrel::ClusterizerSpace Digis:" << mapDigiCounter << FairLogger::endl;
   CleanUpBuffers();
 }
 // -------------------------------------------------------------------------
@@ -935,6 +947,10 @@ void CbmTrdTimeCorrel::CreateHistograms()
     for(Int_t spadic = 0; spadic < 3; ++spadic) {
       spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
       if(spadicName != "") {
+	fHM->Add((spadicName + TString("_LostCount_vs_PadID")).Data(), new TH2D((spadicName + TString("_LostCount_vs_PadID")).Data(),(spadicName + TString("_LostCount_vs_PadID")).Data(),257,-0.5,256.5,32,-0.5,31.5));
+	fHM->H2((spadicName + TString("_LostCount_vs_PadID")).Data())->GetXaxis()->SetTitle("LostMessages");
+	fHM->H2((spadicName + TString("_LostCount_vs_PadID")).Data())->GetYaxis()->SetTitle("PadID");
+	fHM->Add((spadicName + TString("_CluterSize")).Data(), new TH1D((spadicName + TString("_ClusterSize")).Data(),(spadicName + TString("_ClusterSize")).Data(),32,-0.5,31.5));
         for(Int_t stopType = 0; stopType < 6; ++stopType) {
           n++;
           fHM->H1("MessageCount")->GetXaxis()->SetBinLabel(n,TString(spadicName+"_"+stopTypes[stopType]));
@@ -998,22 +1014,26 @@ void CbmTrdTimeCorrel::CreateHistograms()
   fHM->Add("TsCounterStrange1", new TGraph());
   fHM->Add("TsStrangeness0", new TGraph()); // ratio of strange messages over all messages
   fHM->Add("TsStrangeness1", new TGraph());
-  for (Int_t SysID=0; SysID<1;++SysID)
-	for (Int_t SpaID=0; SpaID<3;++SpaID)
-	  for (Int_t ChID=0; ChID<32;++ChID){
-		  fHM->Add(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID)+"_Channel_"+std::to_string(ChID)), new TGraph());
-		  fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID)+"_Channel_"+std::to_string(ChID)))->SetNameTitle(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID)).c_str(),("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID)).c_str());
-	  }
+  for (Int_t SysID=0; SysID<1;++SysID){
+    for (Int_t SpaID=0; SpaID<3;++SpaID){
+      for (Int_t ChID=0; ChID<32;++ChID){
+	fHM->Add(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID)+"_Channel_"+std::to_string(ChID)), new TGraph());
+	fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID)+"_Channel_"+std::to_string(ChID)))->SetNameTitle(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID)).c_str(),("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID)).c_str());
+      }
+    }
+  }
   for (Int_t baseSpaID=0; baseSpaID<4;++baseSpaID){
-	fHM->Add(("Timestamps_Spadic"+std::to_string(baseSpaID)), new TGraph());
-	fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID)))->SetNameTitle(("Timestamps_Spadic"+std::to_string(baseSpaID)).c_str(),("Timestamps_Spadic"+std::to_string(baseSpaID)).c_str());
-	for (Int_t compSpaID=0; compSpaID<4;++compSpaID)
-	{
-		fHM->Add(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)), new TGraph());
-		fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->SetNameTitle(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)).c_str(),("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)).c_str());
-	}
+    fHM->Add(("Timestamps_Spadic"+std::to_string(baseSpaID)), new TGraph());
+    fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID)))->SetNameTitle(("Timestamps_Spadic"+std::to_string(baseSpaID)).c_str(),("Timestamps_Spadic"+std::to_string(baseSpaID)).c_str());
+    for (Int_t compSpaID=0; compSpaID<4;++compSpaID) {
+      fHM->Add(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)), new TGraph());
+      fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->SetNameTitle(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)).c_str(),("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)).c_str());
+    }
   }
   fHM->Add("DoubleMessage_MessageType", new TH2I("DoubleMessage_MessageType","DoubleMessage_MessageType",8,-1.5,6.5,8,-1.5,6.5));
+  fHM->H2("DoubleMessage_MessageType")->GetYaxis()->SetTitle("MessageType TClonesArray");
+  fHM->H2("DoubleMessage_MessageType")->GetXaxis()->SetTitle("MessageType Buffer Map");
+
   fHM->Add("TriggerType_vs_InfoType", new TH2I("TriggerType_vs_InfoType","TriggerType_vs_InfoType",5,-1.5,3.5,9,-1.5,7.5));
   fHM->H2("TriggerType_vs_InfoType")->GetYaxis()->SetTitle("InfoType");
   fHM->H2("TriggerType_vs_InfoType")->GetXaxis()->SetTitle("TriggerType");

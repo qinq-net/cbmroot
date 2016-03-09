@@ -32,7 +32,9 @@ class CbmTrdTimeCorrel : public FairTask
   void SetRun(Int_t run)               { fRun = run;}
   void SetRewriteSpadicName(Bool_t rewrite)  { fRewriteSpadicName = rewrite; }
 
-  void Clusterizer();
+  void ClusterizerSpace();
+
+ void ClusterizerTime();
 
   void CleanUpBuffers();
 
