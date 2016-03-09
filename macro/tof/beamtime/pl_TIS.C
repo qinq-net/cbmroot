@@ -2,7 +2,7 @@ pl_TIS(Double_t dFracMax=0.1){
   //  TCanvas *can = new TCanvas("can22","can22");
   //  can->Divide(2,2); 
   TCanvas *can = new TCanvas("can","can",48,55,700,700);
-  can->Divide(1,4); 
+  can->Divide(2,3); 
 
  gPad->SetFillColor(0);
  gStyle->SetPalette(1);
@@ -78,19 +78,20 @@ can->cd(3);
 
  // gPad->SetLogy();
 can->cd(4);
- if(1){
  TH1F *hselsel1frac = (TH1 *)hTIS_sel->Clone();
  hselsel1frac->SetName("hselsel1frac");
  hselsel1frac->SetTitle("selfraction(sel1)");
  hselsel1frac->Divide(hTIS_sel1, hTIS_sel, 1., 1., "B");
  hselsel1frac->Draw("");
  hselsel1frac->SetLineColor(hTIS_sel1->GetLineColor()); 
- } else{
+
+can->cd(5);
  gROOT->cd();
  TString hname="hTISDT04D4best";
  h2=(TH2 *)gROOT->FindObjectAny(hname);
  if (h2!=NULL) {
   h2->Draw("colz");
  }else  { cout << hname << " not found" << endl; }
- }
+
 }
+
