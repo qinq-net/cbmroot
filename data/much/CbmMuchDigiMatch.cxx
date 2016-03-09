@@ -30,9 +30,7 @@ using std::make_pair;
 // -----   Default  constructor   ------------------------------------------
 CbmMuchDigiMatch::CbmMuchDigiMatch() 
   : CbmMatch(),
-  //  fRefIndex(0),
     fMCtimePerPrimaryElectron(0),
-  //  fCharge(0),
     fRefIndexPerPrimaryElectron(0),
     fChargePerPrimaryElectron(0),
     fTimePerPrimaryElectron(0),
@@ -43,13 +41,10 @@ CbmMuchDigiMatch::CbmMuchDigiMatch()
 };
 // -------------------------------------------------------------------------
 
-
 // -----   Standard constructor   ------------------------------------------
 CbmMuchDigiMatch::CbmMuchDigiMatch(CbmMuchDigiMatch* match)
   : CbmMatch(*match),
-  //  fRefIndex(match->fRefIndex),
     fMCtimePerPrimaryElectron(match->fMCtimePerPrimaryElectron),
-  //  fCharge(match->fCharge),
     fRefIndexPerPrimaryElectron(match->fRefIndexPerPrimaryElectron),
     fChargePerPrimaryElectron(match->fChargePerPrimaryElectron),
     fTimePerPrimaryElectron(match->fTimePerPrimaryElectron),
@@ -59,22 +54,29 @@ CbmMuchDigiMatch::CbmMuchDigiMatch(CbmMuchDigiMatch* match)
 {
 }
 // -------------------------------------------------------------------------
+
 // -----   Light Weight constructor for storing light CbmMuchDigiMatch -----//
 CbmMuchDigiMatch::CbmMuchDigiMatch(CbmMuchDigiMatch* match, Bool_t IsLight)
   : CbmMatch(*match),
-        fT0(match->fT0),
-        fDeadTime(match->fDeadTime)
-
+    fMCtimePerPrimaryElectron(0),
+    fRefIndexPerPrimaryElectron(0),
+    fChargePerPrimaryElectron(0),
+    fTimePerPrimaryElectron(0),
+    fSignalShape(0),
+    fT0(match->fT0),
+    fDeadTime(match->fDeadTime)
 {
-    if(IsLight)	Reset(); //Clearing fSignalShape etc information for Light DigiMatch
-    else{
+  if(IsLight)	{
+    Reset(); //Clearing fSignalShape etc information for Light DigiMatch
+  } else {
     fMCtimePerPrimaryElectron=match->fMCtimePerPrimaryElectron;
     fRefIndexPerPrimaryElectron=match->fRefIndexPerPrimaryElectron;
     fChargePerPrimaryElectron=match->fChargePerPrimaryElectron;
     fTimePerPrimaryElectron=match->fTimePerPrimaryElectron;
     fSignalShape=match->fSignalShape;
-    }
+  }
 }
+
 
 
 // -----   Destructor   ----------------------------------------------------

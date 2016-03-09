@@ -33,7 +33,8 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
     fClusters(NULL),
     fiDigi(0),
     fiCluster(0),
-    fiRawMessage(0)
+    fiRawMessage(0),
+    timestampOffsets()
 {
  LOG(DEBUG) << "Default constructor of CbmTrdTimeCorrel" << FairLogger::endl;
  for (Int_t SysID =0; SysID<3;++SysID)
