@@ -357,7 +357,7 @@ TString PairAnalysisHistos::UserHistogram(const char* histClass, TObject* hist)
       //      UInt_t valTypeFromTitle = 0;
       if(!i)  valType[i] = PairAnalysisVarManager::GetValueType(((TH1*)hist)->GetXaxis()->GetName());
       else    valType[i] = PairAnalysisVarManager::GetValueType(((TH1*)hist)->GetYaxis()->GetName());
-      //  Printf("SWITCH TO MC: before: %d %s, (via axis name %d) ---->",valType[i],PairAnalysisVarManager::GetValueName(valType[i]),valTypeFromTitle);
+      //Printf("SWITCH TO MC: before: %d %s, (via axis name %d) ---->",valType[i],PairAnalysisVarManager::GetValueName(valType[i]),valTypeFromTitle);
       valType[i] = PairAnalysisVarManager::GetValueTypeMC(valType[i]);
       // if theres no corresponding MCtruth variable, skip adding this histogram
       //      if(valType[i] < PairAnalysisVarManager::kNMaxValues && valType[i]>0) return hist->GetName();
@@ -383,9 +383,7 @@ TString PairAnalysisHistos::UserHistogram(const char* histClass, TObject* hist)
 	}
       }
       // change histogram key according to mctruth information
-      //    Printf("SWITCH TO MC NAME: before: %s ---->",hist->GetName());
       AdaptNameTitle((TH1*)hist, histClass);
-      //    Printf("after:  %s",hist->GetName());
     }
   }
   else {

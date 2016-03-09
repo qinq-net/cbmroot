@@ -350,7 +350,7 @@ UInt_t PairAnalysisVarManager::GetValueType(const char* valname)
   for(UInt_t i=0; i<PairAnalysisVarManager::kNMaxValuesMC; i++) {
     if(!name.CompareTo(fgkParticleNames[i][0])) return i;
   }
-  return -1;
+  return 0; // alias none
 }
 
 //________________________________________________________________

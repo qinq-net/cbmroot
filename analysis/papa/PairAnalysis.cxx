@@ -446,6 +446,8 @@ void PairAnalysis::ProcessMC()
 
   // Do the pairing and fill the CF container with pure MC info
   // selection of MCtruth pairs
+  PairAnalysisPair* 	  pair = new PairAnalysisPairLV();
+
   UInt_t selectedMask=(1<<fPairFilterMC.GetCuts()->GetEntries())-1;
   // loop over signals
   for(Int_t isig=0; isig<nSignals; ++isig) {
@@ -457,13 +459,16 @@ void PairAnalysis::ProcessMC()
       Int_t mLabel1 = part1->GetMotherId();
       // (e.g. single electrons only, no pairs)
       if(!indexes2[isig]) FillMCHistograms(labels1[isig][i1], -1, isig);
+      //      PairAnalysisSignalMC *sigMC = (PairAnalysisSignalMC*)fSignalsMC->UncheckedAt(isig);
+      //      printf(" this %d is a single mc particle signal: %d \n",isig,sigMC->IsSingleParticle());
+      //      if(sigMC->IsSingleParticle()) continue;
+
       for(Int_t i2=0;i2<indexes2[isig];++i2) {
 
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 	// TODO: do pairing before filling anything, should be much faster
 	// CbmMCTrack* part1 = papaMC->GetMCTrackFromMCEvent(labels1[isig][i1]);
 	CbmMCTrack* part2 = papaMC->GetMCTrackFromMCEvent(labels2[isig][i2]);
-	PairAnalysisPair* pair=0x0;
 	CbmMCTrack*   mother=0x0;
 	//	Int_t mLabel1 = part1->GetMotherId();
 	Int_t mLabel2 = part2->GetMotherId();
@@ -473,10 +478,8 @@ void PairAnalysis::ProcessMC()
 	UInt_t cutmask=0;
 	if(mother)  cutmask=fPairFilterMC.IsSelected(mother);
 	else {
-	  pair = new PairAnalysisPairLV();
 	  pair->SetMCTracks(part1,part2);
 	  cutmask=fPairFilterMC.IsSelected(pair);
-	  delete pair;
 	}
 	//apply MC truth pair cuts
 	if (cutmask!=selectedMask) continue;
@@ -498,6 +501,7 @@ void PairAnalysis::ProcessMC()
   }    // end loop over signals
 
   // release the memory
+  delete pair;
   for(Int_t isig=0;isig<nSignals;++isig) {
     delete [] *(labels1+isig);
     delete [] *(labels2+isig);
