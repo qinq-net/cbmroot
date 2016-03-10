@@ -126,7 +126,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   Int_t eqID(-1), sourceA(-1), triggerType(-1), stopType(-1), infoType(-1), groupId(-1), sysID(-1), spaID(-1);
   // chID in ASIC. Take care, neighboured numbers are not neccessarily neighboured on the connected TRD cathode pad plane. Resorted lateron!
   // padID are sorted chIDs in the order as on the pad plane
-  Int_t chID(0), padID(0), columnID(0), rowID(0), combiID(0);
+  Int_t chID(-1), padID(-1), columnID(-1), rowID(-1), combiID(-1);
   ULong_t time = 0;
   // Time stamp and epoch are counted in the Spadic
   Int_t timeStamp(0), epoch(0), superEpoch(0);
@@ -148,11 +148,11 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       lostMessages = 0; // reset lost-counter for a new message
       isEpoch = raw->GetEpoch();
       isEpochOutOfSynch = raw->GetEpochOutOfSynch();
-      sourceA = raw->GetSourceAddress();
-      spaID = GetSpadicID(sourceA);
-      time = raw->GetFullTime();
-      //buffer all Epoch Messages
       if(isEpoch||isEpochOutOfSynch){
+	sourceA = raw->GetSourceAddress();
+	spaID = GetSpadicID(sourceA);
+	time = raw->GetFullTime();
+	//buffer all Epoch Messages
 	epochBuffer[spaID][time] = raw;
 	Int_t tempSize= fHM->G1(("Timestamps_Spadic"+std::to_string(spaID)))->GetN();
 	fHM->G1(("Timestamps_Spadic"+std::to_string(spaID)))->SetPoint(tempSize,fNrTimeSlices,time);
