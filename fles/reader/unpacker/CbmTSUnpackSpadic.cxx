@@ -302,17 +302,21 @@ void CbmTSUnpackSpadic::FillEpochInfo(Int_t link, Int_t addr, Int_t epoch_count)
     /* Check for repeated Epoch Messages, as the repeated Microslices
        are not captured by the CbmTsUnpacker. This is to ensure the 
        linearity of the GetFullTime() method.
-    */
-    if ( epoch_count < fEpochMarkerArray[it->second][addr] ) {
+     */
+    if ( epoch_count < fEpochMarkerArray[it->second][addr] )
+    {
+      if(SuppressMultipliedEpochMessages)
       if ( epoch_count != fPreviousEpochMarkerArray[it->second][addr] ){
-	fSuperEpochArray[it->second][addr]++;
+        fSuperEpochArray[it->second][addr]++;
       } else {
-	LOG(ERROR)<< "Multiply repeated Epoch Messages at Super Epoch "
-		  << fSuperEpoch << " Epoch "
-		  << epoch_count << " for Syscore" 
-		  << it->second << "_Spadic"  
-		  << addr << FairLogger::endl;
+        LOG(ERROR)<< "Multiply repeated Epoch Messages at Super Epoch "
+            << fSuperEpoch << " Epoch "
+            << epoch_count << " for Syscore"
+            << it->second << "_Spadic"
+            << addr << FairLogger::endl;
       }
+      else fSuperEpochArray[it->second][addr]++;
+
       LOG(DEBUG) << "Overflow of EpochCounter for Syscore" 
 		 << it->second << "_Spadic"  
 		 << addr << FairLogger::endl;

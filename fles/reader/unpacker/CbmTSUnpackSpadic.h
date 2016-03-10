@@ -44,6 +44,8 @@ class CbmTSUnpackSpadic : public CbmTSUnpack
   Int_t fEpochMarkerArray[NrOfSyscores][NrOfHalfSpadics];
 //Array to store the previous Epoch counter
   Int_t fPreviousEpochMarkerArray[NrOfSyscores][NrOfHalfSpadics];
+//Suppress multiple Epoch Messages in duplicated Microslices. NOTE:Currently Buggy
+  const Bool_t SuppressMultipliedEpochMessages = false;
   Int_t fSuperEpochArray[NrOfSyscores][NrOfHalfSpadics];
 
   Int_t fEpochMarker;
