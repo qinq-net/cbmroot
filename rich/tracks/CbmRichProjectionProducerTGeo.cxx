@@ -92,7 +92,8 @@ void CbmRichProjectionProducerTGeo::DoProjection(
         CbmRichNavigationUtil::GetDirCos(trackParam, nx, ny, nz);
         dirCos.SetXYZ(nx, ny, nz);
         
-        Bool_t mirrorIntersectionFound = CbmRichNavigationUtil::FindIntersection(trackParam, crossP, "mirror_tile_type");
+        string volumeName = CbmRichNavigationUtil::FindIntersection(trackParam, crossP, "mirror_tile_type");
+        Bool_t mirrorIntersectionFound = (volumeName != string(""));
         if (!mirrorIntersectionFound) continue;
         
         // mirror center
@@ -118,7 +119,8 @@ void CbmRichProjectionProducerTGeo::DoProjection(
         refl.Unit();
         
         TVector3 pmtIntersectionPoint;
-        Bool_t pmtIntersectionFound = CbmRichNavigationUtil::FindIntersection(refl, crossP, pmtIntersectionPoint, "pmt");
+        volumeName = CbmRichNavigationUtil::FindIntersection(refl, crossP, pmtIntersectionPoint, "pmt");
+        Bool_t pmtIntersectionFound = (volumeName != string(""));
         if (!pmtIntersectionFound) continue;
         
         

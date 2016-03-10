@@ -577,7 +577,7 @@ void CbmRichGeoTest::CreateH2MeanRms(
 void CbmRichGeoTest::DrawH2MeanRms(
                                    TH2* hist,
                                    const string& canvasName)
-{    
+{
     TH1D* mean, *rms;
     CreateH2MeanRms((TH2D*)hist, &mean, &rms);
     TCanvas *c = CreateCanvas(canvasName.c_str(), canvasName.c_str(), 1200, 600);

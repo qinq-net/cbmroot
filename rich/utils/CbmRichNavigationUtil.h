@@ -12,7 +12,7 @@ class CbmRichNavigationUtil {
     
 public:
     
-    static Bool_t FindIntersection(
+    static string FindIntersection(
                                    const FairTrackParam* par,
                                    TVector3& crossPoint,
                                    const string& volumeName)
@@ -26,7 +26,7 @@ public:
         return FindIntersection(dirCos, pos, crossPoint, volumeName);
     }
     
-    static Bool_t FindIntersection(
+    static string FindIntersection(
                                    const TVector3& dirCos,
                                    const TVector3& pos,
                                    TVector3& crossPoint,
@@ -35,7 +35,7 @@ public:
       //  if (volumeName == "pmt_pixel")cout << "InitTrack: " << pos.X() << " " <<  pos.Y() << " " << pos.Z() << " " << dirCos.X() << " " << dirCos.Y()<< " " << dirCos.Z() << endl;
         gGeoManager->InitTrack(pos.X(), pos.Y(), pos.Z(), dirCos.X(), dirCos.Y(), dirCos.Z());
         
-        if(gGeoManager->IsOutside()) { return false; }
+        if(gGeoManager->IsOutside()) { return string(""); }
         
         do {
             gGeoManager->PushPoint();
@@ -50,7 +50,7 @@ public:
               //  if (volumeName == "pmt_pixel")cout << "volumeName found" << endl;
                 crossPoint.SetXYZ(x, y, z);
                 gGeoManager->PopPoint();
-                return true;
+                return name;
             }
             
             
@@ -59,7 +59,7 @@ public:
             if(gGeoManager->IsOutside()) {
                 //if (volumeName == "pmt_pixel")std::cout << "Error! CbmRichNavigationUtil::FindIntersections: Outside geometry.\n";
                 gGeoManager->PopDummy();
-                return false;
+                return string("");
             }
             // Check for NaN values
             if (std::isnan(gGeoManager->GetCurrentPoint()[0]) ||
@@ -67,14 +67,14 @@ public:
                 std::isnan(gGeoManager->GetCurrentPoint()[2]) ) {
                // if (volumeName == "pmt_pixel")std::cout << "Error! CbmRichNavigationUtil::FindIntersections: NaN values.\n";
                 gGeoManager->PopDummy();
-                return false;
+                return string("");
             }
             
             gGeoManager->PopDummy();
             
         } while (true);
         
-        return false;
+        return string("");
     }
     
     static void GetDirCos(
