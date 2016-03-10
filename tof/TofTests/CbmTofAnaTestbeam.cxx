@@ -976,7 +976,7 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
      fhY0DT04D4best = new TH2F( Form("hY0DT04D4best"),Form("time - position correlation; #Delta y [cm]; #DeltaT [ps]"),
 			       100, -50., 50., 100, -DTMAX, DTMAX); 
 
-     fhTISDT04D4best = new TH2F( Form("hTISDT04D4best"),Form("time - TIS; time in spill  [ns]; #DeltaT [ps]"),
+     fhTISDT04D4best = new TH2F( Form("hTISDT04D4best"),Form("time - TIS; time in spill  [10ns]; #DeltaT [ps]"),
 			       TISnbins, 0., TISmax, 100, -DTMAX, DTMAX); 
 
      fhChi04D4best  =  new TH1F( Form("hChi04D4best"),Form("matching chi2; #chi; Nhits"),

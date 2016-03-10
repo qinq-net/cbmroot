@@ -595,18 +595,19 @@ void CbmTofFindTracks::Exec(Option_t* /*opt*/)
 	       <<FairLogger::endl; 
   }
 
-  fStart.Set();
-  //fTrackArray->Clear("C+C");
-  fTrackArray->Delete();
-  fNofTracks = fFinder->DoFind(fTofHitArray, fTrackArray);
-  //  fTrackArray->Compress();
-  fStop.Set();
-  fdTrackingTime = fStop.GetSec() - fStart.GetSec()
-                 +(fStop.GetNanoSec() - fStart.GetNanoSec())/1e9;
-  
+  if (fNTofStations >1){
+    fStart.Set();
+    //fTrackArray->Clear("C+C");
+    fTrackArray->Delete();
+    fNofTracks = fFinder->DoFind(fTofHitArray, fTrackArray);
+    //  fTrackArray->Compress();
+    fStop.Set();
+    fdTrackingTime = fStop.GetSec() - fStart.GetSec()
+                   +(fStop.GetNanoSec() - fStart.GetNanoSec())/1e9;
+  }
+
   LOG(DEBUG) << Form("CbmTofFindTracks::Exec found %d Tracklets in %f sec",
 		     fTrackArray->GetEntriesFast(),fdTrackingTime)
-
 	     <<FairLogger::endl;
 
   FindVertex();
