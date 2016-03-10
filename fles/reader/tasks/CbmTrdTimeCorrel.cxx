@@ -149,9 +149,9 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       isEpoch = raw->GetEpoch();
       isEpochOutOfSynch = raw->GetEpochOutOfSynch();
       if(isEpoch||isEpochOutOfSynch){
-	sourceA = raw->GetSourceAddress();
-	spaID = GetSpadicID(sourceA);
-	time = raw->GetFullTime();
+      sourceA = raw->GetSourceAddress();
+      spaID = GetSpadicID(sourceA);
+      time = raw->GetSuperEpoch();
 	//buffer all Epoch Messages
 	epochBuffer[spaID][time] = raw;
 	Int_t tempSize= fHM->G1(("Timestamps_Spadic"+std::to_string(spaID)))->GetN();
@@ -178,7 +178,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 		for (; FullTimeIt != timestampOffsets.at(baseSpaID).at(compSpaID).end(); ++FullTimeIt) //Loop over all timestamps and Fill Fulltime Offsets for Epoch Messages into Histograms
 		  {
 		    Int_t tGraphSize = fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->GetN();
-		    fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->SetPoint(tGraphSize,FullTimeIt->first,FullTimeIt->second);
+		    fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->SetPoint(tGraphSize,fNrTimeSlices,FullTimeIt->second);
 		  }
 	      }
   }
@@ -255,12 +255,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     if ( isOverflow )
       if (spadicName != "")
 	fHM->H2((spadicName + TString("_LostCount_vs_PadID")).Data())->Fill(lostMessages,padID);
-    //buffer all Epoch Messages
-    if(isEpoch||isEpochOutOfSynch){
-      //epochBuffer[spaID][time] = raw;
-      Int_t tempSize= fHM->G1(("Timestamps_Spadic"+std::to_string(spaID)))->GetN();
-      fHM->G1(("Timestamps_Spadic"+std::to_string(spaID)))->SetPoint(tempSize,fNrTimeSlices,time);
-    }
+
     // add raw message to map sorted by timestamps, syscore and spadic
     if(spadicName == ""){
       LOG(ERROR) << "eqID:" << eqID << " sourceA:" << sourceA << " spadicName:" << spadicName << FairLogger::endl;
@@ -633,7 +628,7 @@ void CbmTrdTimeCorrel::Finish()
 	c4->cd(i++);
 	fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->Draw("AB");
 	fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->SetLineColor(kRed);
-	fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->GetXaxis()->SetTitle("Fulltime()");
+	fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->GetXaxis()->SetTitle("Timeslice");
       }
   c4->Update();
   c4->SaveAs(TString("pics/"+runName+"TimeOffsets"+".pdf"));
@@ -645,10 +640,11 @@ void CbmTrdTimeCorrel::Finish()
     fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID)))->SetMarkerColor(baseSpaID+2);
     mg->Add(fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID))));
   }
-  mg->Draw("A");
+  mg->Draw("AB");
   mg->GetXaxis()->SetTitle("Timeslice");
-  mg->GetYaxis()->SetTitle("Fulltime");
+  mg->GetYaxis()->SetTitle("SuperEpoch");
   fHM->Add("Fulltime_vs_TimeSlice_all_Spadic",mg);
+  c5->SaveAs(TString("pics/"+runName+"SuperEpochs"+".png"));
 
   //Perform uniform relabeling of Axis
   ReLabelAxis(fHM->H1("InfoType_vs_Channel")->GetYaxis(),"infoType",true,true);
