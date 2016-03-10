@@ -24,7 +24,7 @@ fi
 
 for iCal in 1 2 3 4 1
 do
-root -b -q 'ana_hits.C(10000000,'$iSel','$iCal',"'$cRun'","'$cSet'",'$iSel2','$iTraSetup')'
+root -b -q 'ana_hits.C(1000000,'$iSel','$iCal',"'$cRun'","'$cSet'",'$iSel2','$iTraSetup')'
 
 cp -v tofAnaTestBeam.hst.root ${cRun}_${cSet}_${iSel}_${cSel2}_tofAnaTestBeam.hst.root
 done
