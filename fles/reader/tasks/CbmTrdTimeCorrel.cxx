@@ -709,7 +709,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
               return true;
         return false;
         };
-  const Int_t clusterWindow = 100;
+  const Int_t clusterWindow = 10; // size of time window in which two hits are called "correlated", unit is timestamps
   std::sort(fLinearHitBuffer.begin(),fLinearHitBuffer.end(),CompareSpadicMessagesSmaller);
   std::unique(fLinearHitBuffer.begin(),fLinearHitBuffer.end(),CompareSpadicMessages);
   std::multimap<ULong_t, CbmSpadicRawMessage*> tempmap;
@@ -722,16 +722,16 @@ void CbmTrdTimeCorrel::ClusterizerTime()
     if(tempmap.size()==0 && (range.first == tempmap.end())) continue;
     for (;range.first != range.second; ++(range.first)){
       if(it->second != nullptr && range.first->second!= nullptr)
-        if(range.first->second->GetTriggerType()>= 1 || range.first->second->GetTriggerType() ==3)
+        if(range.first->second->GetTriggerType()>= 1 || range.first->second->GetTriggerType() ==3) // exclude purely neighbour triggered hits -- attention, so ofar this is only done for one side of the groups to be correlated vs the other
         {
           Int_t ChID1 = it->second->GetChannelID();
           Int_t ChID2 = range.first->second->GetChannelID();
           Int_t SpaID1 = GetSpadicID(it->second->GetSourceAddress());
           Int_t SpaID2 = GetSpadicID(range.first->second->GetSourceAddress());
-          ChID1 += (SpaID1 %2 == 1)? 16 : 0;
+          ChID1 += (SpaID1 %2 == 1)? 16 : 0; // Remap the channel IDs of each second Half-Spadic to 16...31
           ChID2 += (SpaID2 %2 == 1)? 16 : 0;
-          Int_t SpaPad1 = SpaID1/2 * 32 + GetChannelOnPadPlane(ChID1);
-          Int_t SpaPad2 = SpaID2/2 * 32 + GetChannelOnPadPlane(ChID2);
+          Int_t SpaPad1 = (Int_t)(SpaID1/2) * 32 + ((SpaID1>1) ? 31-GetChannelOnPadPlane(ChID1) : GetChannelOnPadPlane(ChID1)); // special for SPS2015 data: the chamber with SpaID 2 and 3 was turned by 180 degree with respect to the first one. thus, turn the pad plane number here
+          Int_t SpaPad2 = (Int_t)(SpaID2/2) * 32 + ((SpaID2>1) ? 31-GetChannelOnPadPlane(ChID2) : GetChannelOnPadPlane(ChID2));
           if (it!=range.first) fHM->H2("Hit_Coincidences")->Fill(SpaPad1,SpaPad2);
         }
     }
@@ -1124,7 +1124,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
 
   fHM->Add("Hit_Coincidences", new TH2I("Hit_Coincidences","Hit_Coincidences",64,-0.5,63.5,64,-0.5,63.5));
   fHM->H2("Hit_Coincidences")->GetXaxis()->SetTitle("SpadicChannel");
-  fHM->H2("Hit_Coincidences")->GetYaxis()->SetTitle("SPadicChannel");
+  fHM->H2("Hit_Coincidences")->GetYaxis()->SetTitle("SpadicChannel");
 
 
 }
