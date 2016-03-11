@@ -7,8 +7,11 @@
 
 #include "TClonesArray.h"
 #include "CbmSpadicRawMessage.h"
+#include <deque>
+
 typedef std::map<Int_t, std::map<ULong_t, CbmSpadicRawMessage* > > EpochMap;
 typedef std::map<Int_t, std::map<Int_t,std::map<ULong_t, Long_t> > > OffsetMap;
+
 
 class CbmTrdTimeCorrel : public FairTask
 {
@@ -40,8 +43,11 @@ class CbmTrdTimeCorrel : public FairTask
 
  private:
   std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > > fMessageBuffer;
+  std::deque<CbmSpadicRawMessage*> fLinearHitBuffer;
   Int_t   fSpadics;
   Bool_t  fRewriteSpadicName;
+
+  const Bool_t fActivateClusterizer = true;
 
   Int_t   GetSpadicID(Int_t sourceA);
 

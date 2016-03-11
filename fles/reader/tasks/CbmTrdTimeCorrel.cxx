@@ -213,7 +213,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     groupId=raw->GetGroupId();
     chID = raw->GetChannelID();
     spaID = GetSpadicID(sourceA);
-    if(chID > -1 && chID < 16 && spaID%2==0) chID+=16; // eqID ?
+    if(chID > -1 && chID < 16 && spaID%2==1) chID+=16; // eqID ?
     padID = GetChannelOnPadPlane(chID);// Remapping from ASIC to pad-plane channel numbers.
 
     columnID = GetColumnID(raw);
@@ -302,6 +302,14 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 		raw->GetHit(), raw->GetInfo(), raw->GetEpoch(), raw->GetEpochOutOfSynch(), raw->GetHitAborted(), raw->GetOverFlow(), raw->GetStrange());
 	      */
 	    fiRawMessage++;
+	    if(fActivateClusterizer)
+	      if (isHit || isOverflow)
+	        if(fNrTimeSlices!=0){
+	          CbmSpadicRawMessage* tempPtr = new CbmSpadicRawMessage;
+	          *tempPtr = *raw;
+	          fLinearHitBuffer.push_back(tempPtr);
+	        }
+
 	  } else {  
 	    
 	    LOG(DEBUG) << "Found Message already in fMessageBuffer at :" << TString(spadicName).Data() << ":, time:" << time << ", padID:" << padID << ". Potential overlapping MS container!" << FairLogger::endl;
@@ -411,7 +419,8 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	if(stopType == 0 && (chID <-1 || chID >32)) LOG(FATAL) << "SpadicMessage: " << iSpadicMessage << " sourceA: " << sourceA << " chID: " << chID << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " is Info: " << isInfo << FairLogger::endl;
 	if(stopType == 0 && raw->GetNrSamples()==0 && iSpadicMessage < nSpadicMessages){
 	  for ( Int_t i=iSpadicMessage;i<nSpadicMessages;i++){
-	    if ((static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(i)))->GetOverFlow()==true && GetSpadicID((static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(i)))->GetSourceAddress())==spaID){ 
+	    if ((static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(i)))->GetOverFlow()==true && GetSpadicID((static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(i)))->GetSourceAddress())==spaID)
+	    {
 	      lostMessages = (static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(i)))->GetBufferOverflowCount();
 	      break;
 	    }
@@ -477,13 +486,19 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   // Catch empty TimeSlices.
   if(fNrTimeSlices==0){
     if(fHM->G1("TsCounter")->GetN()==0){
-      LOG(INFO ) << "Expected entries in TsCounter after finishinig first TimeSlice, but found none." << FairLogger::endl;
+      LOG(INFO) << "Expected entries in TsCounter after finishinig first TimeSlice, but found none." << FairLogger::endl;
     }
   }
   fNrTimeSlices++;
-  ClusterizerTime();
-  ClusterizerSpace();
-  CleanUpBuffers();
+
+  if(fNrTimeSlices % 10 ==0)
+  {
+    if (fActivateClusterizer){
+      ClusterizerTime();
+      ClusterizerSpace();
+    }
+    CleanUpBuffers();
+  }
 }
 // ---- Finish  -------------------------------------------------------
 void CbmTrdTimeCorrel::Finish()
@@ -674,6 +689,53 @@ void CbmTrdTimeCorrel::FinishEvent()
 // -------------------------------------------------------------------------
 void CbmTrdTimeCorrel::ClusterizerTime()
 {
+  auto CompareSpadicMessages=
+      [](CbmSpadicRawMessage* a,CbmSpadicRawMessage* b)
+      {
+      if(a->GetFullTime() == b->GetFullTime())
+        if (a->GetSourceAddress() == b->GetSourceAddress())
+          if(a->GetChannelID() == b->GetChannelID()){
+            delete b;
+            return true;
+          }
+      return false;
+      };
+  auto CompareSpadicMessagesSmaller=
+        [](CbmSpadicRawMessage* a,CbmSpadicRawMessage* b)
+        {
+        if(a->GetFullTime() < b->GetFullTime())
+          if (a->GetSourceAddress() < b->GetSourceAddress())
+            if(a->GetChannelID() < b->GetChannelID())
+              return true;
+        return false;
+        };
+  const Int_t clusterWindow = 100;
+  std::sort(fLinearHitBuffer.begin(),fLinearHitBuffer.end(),CompareSpadicMessagesSmaller);
+  std::unique(fLinearHitBuffer.begin(),fLinearHitBuffer.end(),CompareSpadicMessages);
+  std::multimap<ULong_t, CbmSpadicRawMessage*> tempmap;
+  for (auto x : fLinearHitBuffer){
+    long unsigned int temp = static_cast <long unsigned int>(x->GetFullTime());
+    tempmap.insert(std::make_pair(temp,x));
+  }
+  for (auto it=tempmap.begin(); it != tempmap.end(); ++it){
+    auto range = std::make_pair(tempmap.lower_bound(it->first - clusterWindow), tempmap.upper_bound(it->first + clusterWindow));
+    if(tempmap.size()==0 && (range.first == tempmap.end())) continue;
+    for (;range.first != range.second; ++(range.first)){
+      if(it->second != nullptr && range.first->second!= nullptr)
+        if(range.first->second->GetTriggerType()>= 1 || range.first->second->GetTriggerType() ==3)
+        {
+          Int_t ChID1 = it->second->GetChannelID();
+          Int_t ChID2 = range.first->second->GetChannelID();
+          Int_t SpaID1 = GetSpadicID(it->second->GetSourceAddress());
+          Int_t SpaID2 = GetSpadicID(range.first->second->GetSourceAddress());
+          ChID1 += (SpaID1 %2 == 1)? 16 : 0;
+          ChID2 += (SpaID2 %2 == 1)? 16 : 0;
+          Int_t SpaPad1 = SpaID1/2 * 32 + GetChannelOnPadPlane(ChID1);
+          Int_t SpaPad2 = SpaID2/2 * 32 + GetChannelOnPadPlane(ChID2);
+          if (it!=range.first) fHM->H2("Hit_Coincidences")->Fill(SpaPad1,SpaPad2);
+        }
+    }
+  }
 
 }
 // -------------------------------------------------------------------------
@@ -764,7 +826,7 @@ void CbmTrdTimeCorrel::ClusterizerSpace()
     }
   }
   //LOG(INFO) << "CbmTrdTimeCorrel::ClusterizerSpace Digis:" << mapDigiCounter << FairLogger::endl;
-  CleanUpBuffers();
+  //CleanUpBuffers();
 }
 // -------------------------------------------------------------------------
 void CbmTrdTimeCorrel::CleanUpBuffers()
@@ -776,16 +838,19 @@ void CbmTrdTimeCorrel::CleanUpBuffers()
     for (std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> >::iterator TimeIt = SpaSysIt->second.begin(); TimeIt != SpaSysIt->second.end(); TimeIt++){
       //LOG(INFO) <<  "    (TimeIt->second).size() " << (TimeIt->second).size() << FairLogger::endl;
       for (std::map<Int_t, CbmSpadicRawMessage*> ::iterator CombiIt = TimeIt->second.begin(); CombiIt != TimeIt->second.end(); CombiIt++){
-	//LOG(INFO) <<  "      (CombiIt->second).size() " << (CombiIt->second).size() << FairLogger::endl;
-	if(CombiIt->second != NULL){
-	  delete CombiIt->second;
-	}
+        //LOG(INFO) <<  "      (CombiIt->second).size() " << (CombiIt->second).size() << FairLogger::endl;
+        if(CombiIt->second != NULL){
+          delete CombiIt->second;
+        }
       }
       TimeIt->second.clear();
     }
     SpaSysIt->second.clear();
   }
   fMessageBuffer.clear();  
+  for (auto ptr :fLinearHitBuffer)
+    delete ptr;
+  fLinearHitBuffer.clear();
   //fDigis->Clear("C");
   //fClusters->Clear("C");
 }
@@ -847,7 +912,6 @@ void CbmTrdTimeCorrel::ReLabelAxis(TAxis* axis, TString type, Bool_t underflow, 
 			  "Corruption in message builder", 
 			  "Empty word", 
 			  "Epoch out of sync"};
-			  
   if (type == "infoType") {
     if (stopBin - startBin == 7){
       for (Int_t iBin = startBin; iBin < stopBin; iBin++)
@@ -1058,6 +1122,11 @@ void CbmTrdTimeCorrel::CreateHistograms()
   fHM->H2("InfoType_vs_Channel")->GetXaxis()->SetTitle("Channel");
   fHM->H2("InfoType_vs_Channel")->GetYaxis()->SetTitle("Info or Type");
 
+  fHM->Add("Hit_Coincidences", new TH2I("Hit_Coincidences","Hit_Coincidences",64,-0.5,63.5,64,-0.5,63.5));
+  fHM->H2("Hit_Coincidences")->GetXaxis()->SetTitle("SpadicChannel");
+  fHM->H2("Hit_Coincidences")->GetYaxis()->SetTitle("SPadicChannel");
+
+
 }
 // ----              -------------------------------------------------------
  Int_t CbmTrdTimeCorrel::GetModuleID(CbmSpadicRawMessage* raw)
@@ -1217,7 +1286,7 @@ Int_t  CbmTrdTimeCorrel::GetRowID(CbmSpadicRawMessage* raw)// To be used to crea
   Int_t sourceA = raw->GetSourceAddress();
   Int_t chID = raw->GetChannelID();
   Int_t spaID = GetSpadicID(sourceA);
-  if(chID > -1 && chID < 16 && spaID%2==0) chID+=16; // eqID ?
+  if(chID > -1 && chID < 16 && spaID%2==1) chID+=16; // eqID ?
   Int_t padID = GetChannelOnPadPlane(chID);// Remapping from ASIC to pad-plane channel numbers.
   if (padID > 16) 
     return 1;
@@ -1241,7 +1310,7 @@ Int_t  CbmTrdTimeCorrel::GetColumnID(CbmSpadicRawMessage* raw)// To be used to c
   Int_t sourceA = raw->GetSourceAddress();
   Int_t chID = raw->GetChannelID();
   Int_t spaID = GetSpadicID(sourceA);
-  if(chID > -1 && chID < 16 && spaID%2==0) chID+=16; // eqID ?
+  if(chID > -1 && chID < 16 && spaID%2==1) chID+=16; // eqID ?
  
   Int_t columnId = GetChannelOnPadPlane(chID);
   if (columnId >= 16) 
