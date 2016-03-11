@@ -46,9 +46,9 @@ public:
 		//out << "Source: " << link.GetSource() << " Position: " << link.GetPos() << std::endl;
 
 #ifdef HAVE_LOWERCASE_PRINT
-		((FairMultiLinkedData)link).print(out);
+	//	((FairMultiLinkedData)link).print(out);
 #else
-		((FairMultiLinkedData)link).Print(out);
+	//	((FairMultiLinkedData)link).Print(out);
 #endif
 
 		return out;
