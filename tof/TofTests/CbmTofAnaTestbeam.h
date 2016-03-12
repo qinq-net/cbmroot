@@ -105,7 +105,8 @@ class CbmTofAnaTestbeam : public FairTask {
       inline void SetHitDistMin(Double_t val)           { fdHitDistMin = val;}
       inline void SetTOffD4    (Double_t val)           { fdTOffD4 = val;}
       inline void SetTShift    (Double_t val)           { fdTShift = val;}
-      inline void SetChi2Lim   (Double_t val)           { fdChi2Lim = val;}
+      inline void SetChi2Lim   (Double_t val)           { fdChi2Lim  = val;}
+      inline void SetChi2Lim2  (Double_t val)           { fdChi2Lim2 = val;}
 
       inline void SetCorMode   (Int_t ival)             { fiCorMode = ival;}
       inline void SetDutAddr   (Int_t ival)             { fiDutAddr = ival;}
@@ -412,6 +413,7 @@ class CbmTofAnaTestbeam : public FairTask {
       Double_t        fdTOffD4;           // Offset to calibrate TD4 to time of flight 
       Double_t        fdTShift;           // general time shift of all hits  
       Double_t        fdChi2Lim;          // Chi2 Limit to accept selector coincidence
+      Double_t        fdChi2Lim2;         // Chi2 Limit for Mref - Sel2 to accept coincidence
 
       Int_t        fiCorMode; // Correction histogram generation mode
       Int_t        fiDutAddr; // Device under test Address

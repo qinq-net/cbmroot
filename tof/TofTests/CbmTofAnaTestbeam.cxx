@@ -266,6 +266,7 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam()
     fdTOffD4(0.),
     fdTShift(0.),
     fdChi2Lim(0.),
+    fdChi2Lim2(0.),
     fiCorMode(0),
     fiDutAddr(0),
     fiMrpcRefAddr(0),
@@ -506,6 +507,7 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fdTOffD4(0.),
     fdTShift(0.),
     fdChi2Lim(0.),
+    fdChi2Lim2(0.),
     fiCorMode(0),
     fiDutAddr(0),
     fiMrpcRefAddr(0),
@@ -771,7 +773,11 @@ Bool_t   CbmTofAnaTestbeam::InitParameters()
    }
    if( 0 == fdDTD4MAX) fdDTD4MAX=DTDMAX;   
 
-   if ( 0. == fdChi2Lim ) fdChi2Lim = 10.;
+   if ( 0. == fdChi2Lim )  fdChi2Lim = 10.;
+   if ( 0. == fdChi2Lim2 ) fdChi2Lim2 = fdChi2Lim;
+   LOG(INFO)<<"CbmTofAnaTestbeam::InitParameter: Chi2 limits initialized to "
+	    << fdChi2Lim <<" and "<<fdChi2Lim2
+	    <<FairLogger::endl;
    return kTRUE;
 }
 /************************************************************************************/
@@ -782,13 +788,16 @@ Bool_t   CbmTofAnaTestbeam::LoadCalParameter()
     fCalParFile = new TFile(fCalParFileName,"");
     if(NULL == fCalParFile) {
       LOG(ERROR) << "CbmTofAnaTestBeam::LoadCalParameter: "
-		 << "file " << fCalParFileName << " does not exist!" << FairLogger::endl;
+		 << "file " << fCalParFileName << " does not exist  " 
+		 << FairLogger::endl;
       return kTRUE;
     }
 
     TProfile *fhtmp=(TProfile *) gDirectory->FindObjectAny( Form("hDTD4DT04D4best_pfx_px"));
     if (NULL == fhtmp) {
-      LOG(INFO)<<" Histo " << Form("hDTD4DT04D4best_pfx_px") << " not found. "
+      fdChi2Lim=fdChi2Lim*1000.;
+      fdChi2Lim2=fdChi2Lim2*1000.;
+      LOG(INFO)<<" Histo " << Form("hDTD4DT04D4best_pfx_px") << " not found => Chi2Lim = " << fdChi2Lim 
              <<FairLogger::endl;
     }
 
@@ -907,7 +916,7 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
      fhChi04 =  new TH1F( Form("hChi04"),Form("Matching Chi2; #chi; Nhits"),
 			  100, 0., fdChi2Lim); 
      fhChiSel24 =  new TH1F( Form("hChiSel24"),Form("Matching Chi2S24; #chi; Nhits"),
-			  100, 0., fdChi2Lim); 
+			  100, 0., fdChi2Lim2); 
      fhDXSel24 =  new TH1F( Form("hDXSel24"),Form("Matching Sel24; #Delta x [cm]; Nhits"),
 			  100, -10., 10.); 
      fhDYSel24 =  new TH1F( Form("hDYSel24"),Form("Matching Sel24; #Delta y [cm]; Nhits"),
@@ -965,11 +974,11 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 	 			     Form("time - CluSize correlation; N_{strips} ; #DeltaT [ps]"),
 				     16, 0.5, 16.5, 100, -DTMAX, DTMAX);
      fhTot0DT04D4best = new TH2F( Form("hTot0DT04D4best"),
-	 			     Form("time - Tot correlation; TOT0 ; #DeltaT [ps]"),
-				     100, 0., 10000., 100, -DTMAX, DTMAX);  
+	 			     Form("time - Tot correlation; ln TOT0 ; #DeltaT [ps]"),
+				     100, 0., 12., 100, -DTMAX, DTMAX);  
      fhTot4DT04D4best = new TH2F( Form("hTot4DT04D4best"),
-	 			     Form("time - Tot correlation; TOT4 ; #DeltaT [ps]"),
-				     100, 0., 10000., 100, -DTMAX, DTMAX);  
+	 			     Form("time - Tot correlation; ln TOT4 ; #DeltaT [ps]"),
+				     100, 0., 12., 100, -DTMAX, DTMAX);  
 
      fhX0DT04D4best = new TH2F( Form("hX0DT04D4best"),Form("time - position correlation; #Delta x [cm]; #DeltaT [ps]"),
 			       100, -50., 50., 100, -DTMAX, DTMAX); 
@@ -1070,10 +1079,10 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 	 			     Form("time - CluSize correlation; N_{strips} ; #DeltaT [ps]"),
 				     16, 0.5, 16.5, 100, -DTMAX, DTMAX);
      fhTot0DT04D4sbest = new TH2F( Form("hTot0DT04D4sbest"),
-	 			     Form("time - Tot correlation; TOT0 ; #DeltaT [ps]"),
+	 			     Form("time - Tot correlation; ln TOT0 ; #DeltaT [ps]"),
 				     100, 0., 10000., 100, -DTMAX, DTMAX);  
      fhTot4DT04D4sbest = new TH2F( Form("hTot4DT04D4sbest"),
-	 			     Form("time - Tot correlation; TOT4 ; #DeltaT [ps]"),
+	 			     Form("time - Tot correlation; ln TOT4 ; #DeltaT [ps]"),
 				     100, 0., 10000., 100, -DTMAX, DTMAX); 
 
      fhChi04D4sbest  =  new TH1F( Form("hChi04D4sbest"),Form("matching chi2; #chi; Nhits"),
@@ -1599,7 +1608,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 		     //	 if(fhDTD4DT04D4Off != NULL) 
 		     //  dTcor=(Double_t)fhDTD4DT04D4Off->GetBinContent(fhDTD4DT04D4Off->FindBin(dTDia-tof2));
 		     
-		     Double_t Chi2Max = fdChi2Lim;
+		     Double_t Chi2Max = fdChi2Lim2;
 		     pHitSel2 = NULL;
 
 		     for( Int_t iHitInd3 = 0; iHitInd3 < iNbTofHits; iHitInd3++) 
@@ -1853,7 +1862,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 }
      } 
      dTot /= digiMatch2->GetNofLinks();  // average time over threshold
-     fhTot4DT04D4best->Fill(dTot,tof1-tof2-dTcor);
+     fhTot4DT04D4best->Fill(TMath::Log(dTot),tof1-tof2-dTcor);
 
      CbmMatch* digiMatch0=(CbmMatch *)fTofDigiMatchColl->At(pHit1->GetRefId());
      fhCluSize0DT04D4best->Fill(digiMatch0->GetNofLinks()/2.,tof1-tof2-dTcor);
@@ -1870,7 +1879,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 }
      } 
      dTot /= digiMatch0->GetNofLinks();  // average time over threshold
-     fhTot0DT04D4best->Fill(dTot,tof1-tof2-dTcor);
+     fhTot0DT04D4best->Fill(TMath::Log(dTot),tof1-tof2-dTcor);
 
      fhDTMul0D4best->Fill(dMul0,tof1-tof2-dTcor);
 
@@ -2008,7 +2017,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	   }
 	 } 
 	 dTot4 /= digiMatch4->GetNofLinks();  // average time over threshold
-	 fhTot4DT04D4sbest->Fill(dTot4,tof3-tof4-dTcor4);
+	 fhTot4DT04D4sbest->Fill(TMath::Log(dTot4),tof3-tof4-dTcor4);
 
 	 fhCluSize0DT04D4sbest->Fill(digiMatch3->GetNofLinks()/2.,tof3-tof4-dTcor4);
 
@@ -2024,7 +2033,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	   }
 	 } 
 	 dTot3 /= digiMatch3->GetNofLinks();  // average time over threshold
-	 fhTot0DT04D4sbest->Fill(dTot3,tof3-tof4-dTcor4);
+	 fhTot0DT04D4sbest->Fill(TMath::Log(dTot3),tof3-tof4-dTcor4);
 
 	 fhDTMul0D4sbest->Fill(dMul0,tof3-tof4-dTcor4);
 
