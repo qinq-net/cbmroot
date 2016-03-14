@@ -731,12 +731,15 @@ void CbmTrdTimeCorrel::ClusterizerTime()
 	    ChID1 += (SpaID1 %2 == 1)? 16 : 0; // Remap the channel IDs of each second Half-Spadic to 16...31
 	    ChID2 += (SpaID2 %2 == 1)? 16 : 0;
 	    // special for SPS2015 data: the chamber with SpaID 2 and 3 was turned by 180 degree with respect to the first one. thus, turn the pad plane number here
-	    Int_t SpaPad1 = (Int_t)(SpaID1/2) * 32 + ((SpaID1>1) ? 31-GetChannelOnPadPlane(ChID1) : GetChannelOnPadPlane(ChID1));
-	    Int_t SpaPad2 = (Int_t)(SpaID2/2) * 32 + ((SpaID2>1) ? 31-GetChannelOnPadPlane(ChID2) : GetChannelOnPadPlane(ChID2));
+	    //	    Int_t SpaPad1 = (Int_t)(SpaID1/2) * 32 + ((SpaID1>1) ? 31-GetChannelOnPadPlane(ChID1) : GetChannelOnPadPlane(ChID1));
+	    //	    Int_t SpaPad2 = (Int_t)(SpaID2/2) * 32 + ((SpaID2>1) ? 31-GetChannelOnPadPlane(ChID2) : GetChannelOnPadPlane(ChID2));
+	    Int_t SpaPad1 = (Int_t)(SpaID1/2) * 32 + (GetChannelOnPadPlane(ChID1));
+	    Int_t SpaPad2 = (Int_t)(SpaID2/2) * 32 + (GetChannelOnPadPlane(ChID2));
 	    if (it!=range.first) {
-	      fHM->H2("Hit_Coincidences")->Fill(SpaPad1,SpaPad2);
+	      if (((Int_t)(SpaID1/2) - (Int_t)(SpaID2/2)) != 0) fHM->H2("Hit_Coincidences")->Fill(SpaPad1,SpaPad2);
 	      // Fill for map of correlations following: require origin from variant TRD chambers to cut on physical correlations between two chambers, which is adressed for the moment just by requiring different SpaID/2
-	      if (((Int_t)(SpaID1/2) - (Int_t)(SpaID2/2)) != 0) fHM->H2("Correlation_Map")->Fill(ChID2-ChID1,((range.first->second->GetFullTime())-(it->second->GetFullTime())));
+	      // Furthermore, physical correlations coming from the target require a positve direction from Chamber 1 to Chamber 2, which means ascending SpaIDs  
+	      if (((Int_t)(SpaID2/2) - (Int_t)(SpaID1/2)) > 0) fHM->H2("Correlation_Map")->Fill(SpaPad2-SpaPad1-32,((range.first->second->GetFullTime())-(it->second->GetFullTime())));
 	    }
 	  }
         }
@@ -1134,7 +1137,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
 
   fHM->Add("Correlation_Map", new TH2I("Correlation_Map","Correlation_Map",63,-31,31,21,0,20));
   fHM->H2("Correlation_Map")->GetXaxis()->SetTitle("#Delta Channel");
-  fHM->H2("Correlation_Map")->GetYaxis()->SetTitle("#Delta Time");
+  fHM->H2("Correlation_Map")->GetYaxis()->SetTitle("#Delta Time (1 timestamp = 57 ns)");
 
 }
 // ----              -------------------------------------------------------
