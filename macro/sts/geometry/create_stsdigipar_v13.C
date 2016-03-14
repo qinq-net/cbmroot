@@ -43,7 +43,7 @@ Double_t gkStereoFront =  0.;
 Double_t gkStereoBack  =  7.5;
 
 // ---> Geometry and digitisation tags
-TString gkGeoTag  = "v13y"; // "v15a"; // "v15b"; // "v18e"; 
+TString gkGeoTag  = "v16c"; // "v13y"; // "v15a"; // "v15b"; // "v18e"; 
 TString gkDigiTag = "std";
 // ----------------------------------------------------------------------------
 
@@ -111,6 +111,7 @@ void create_stsdigipar_v13(const char* geoTag  = gkGeoTag,
        << ", stations: " << GetNofDaughters(sts, "Station") << endl;
 
 
+  Int_t stsModules = 0;
   // ---> Stations
   for (Int_t iCaveD = 0; iCaveD < sts->GetNdaughters(); iCaveD++) {
     geoMan->CdDown(iCaveD);
@@ -121,6 +122,7 @@ void create_stsdigipar_v13(const char* geoTag  = gkGeoTag,
     }
     Int_t statNr = station->GetNumber();
     Int_t nModules = GetNofModules(station);
+    stsModules += nModules;
     cout << "Station Nr. " << statNr << ", node " << station->GetName()
 	 << ", modules: " << nModules << endl;
     fprintf(parFile, "%d   %d   %d\n", statNr, 0, nModules);
@@ -196,8 +198,8 @@ void create_stsdigipar_v13(const char* geoTag  = gkGeoTag,
     }                        // ladder loop
     geoMan->CdUp();          // back to sts
   }                          // station loop               
-	  
 
+  cout << "STS total number of modules: " << stsModules << endl;
 
   delete geoMan;
   fclose(parFile);
