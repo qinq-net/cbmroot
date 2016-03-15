@@ -365,7 +365,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
         fHM->H2(histName.Data())->Fill(fNrTimeSlices,time); //timeStamp(0), epoch(0), superEpoch(0);
       }
 
-      if(isHit && chID >= 0 && chID < 32) {
+      if(isEpoch && chID >= 0 && chID < 32) {
         histName = spadicName + "_Half_" + std::to_string((Int_t)(chID/16)) + "_Epoch_vs_TimeSlice";
         fHM->H2(histName.Data())->Fill(fNrTimeSlices,epoch); //timeStamp(0), epoch(0), superEpoch(0);
       }
@@ -1136,7 +1136,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
   fHM->H2("Hit_Coincidences")->GetYaxis()->SetTitle("SpadicChannel");
 
   fHM->Add("Correlation_Map", new TH2I("Correlation_Map","Correlation_Map",63,-31.5,31.5,21,-0.5,20.5));
-  fHM->H2("Correlation_Map")->GetXaxis()->SetTitle("#Delta Channel");
+  fHM->H2("Correlation_Map")->GetXaxis()->SetTitle("#Delta Pad");
   fHM->H2("Correlation_Map")->GetYaxis()->SetTitle("#Delta Time (1 timestamp = 57 ns)");
 
 }
