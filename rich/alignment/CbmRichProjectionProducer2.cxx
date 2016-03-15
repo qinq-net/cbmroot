@@ -139,13 +139,14 @@ Double_t* CbmRichProjectionProducer2::ProjectionProducer(FairTrackParam* trackPa
 	cout << "Calculated normal vector to PMT plane = {" << normalPMT.at(0) << ", " << normalPMT.at(1) << ", " << normalPMT.at(2) << "} and constante d = " << constantePMT << endl << endl;
 
 	TVector3 mirrorPoint;
-	Bool_t mirrorIntersectionFound = CbmRichNavigationUtil::FindIntersection(trackParam, mirrorPoint, "mirror_tile_type");
+	TString mirrorIntersection = CbmRichNavigationUtil::FindIntersection(trackParam, mirrorPoint, "mirror_tile_type");
 	ptM.at(0) = mirrorPoint.x();
 	ptM.at(1) = mirrorPoint.y();
 	ptM.at(2) = mirrorPoint.z();
+	cout << "Mirror intersection: " << mirrorIntersection << endl;
 
-	if (mirrorIntersectionFound) {
-		//navi->cd(mirrorIntersectionFound);
+	if (mirrorIntersection) {
+		navi->cd(mirrorIntersection);
 		navi = gGeoManager->GetCurrentNavigator();
 		cout << "Navigator path: " << navi->GetPath() << endl;
 		cout << "Coordinates of sphere center: " << endl;
