@@ -33,7 +33,7 @@ void TimesliceReader::add_timeslice(const fles::Timeslice& ts)
 
 void TimesliceReader::add_component(const fles::Timeslice& ts, size_t component)
 {
-    for (size_t m {0}; m < ts.num_microslices(component); m++) {
+  for (size_t m {0}; m < ts.num_core_microslices(); m++) {  // num_microslices includes the overlapping slices, while num_core_microslices -- num_microslices needs "component"
         auto& desc = ts.descriptor(component, m);
         auto *content = ts.content(component, m);
 
