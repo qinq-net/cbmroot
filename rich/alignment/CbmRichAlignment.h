@@ -48,39 +48,30 @@ public:
     virtual void Finish();
 
     /*
-     * Histogram initialization.
+     * Histogram initialization for alignment method.
      */
-    void InitHist();
+    void InitHistAlignment();
 
     /*
-     * Get x and y positions on the PMT plane from the extrapolated track.
-     */
-    void GetTrackPosition(Double_t *x, Double_t *y);
-
-    /*
-     * Is the ring, whose index is given as a parameter, a ring from MC simulation (true) or not (false).
-     */
-    Bool_t IsRingMcElectron(Int_t ringIndex);
-
-    /*
-     * Calculate the mean ring center position, using the reference data set from CERN.
-     */
-    void CalculateMeanRingCenterPosition();
-
-    /*
-     * Calculate the distances between C and C', the Theta and Phi angles for a given event and draw the corresponding distributions.
+     * Calculate the distances between C and C', the Cherenkov distances and angles (Theta_Ch vs Phi_Ch) for each photon hit in a given event and draw the corresponding
+     * distributions.
      */
     void CalculateAnglesAndDrawDistrib();
 
     /*
-     * Draw histograms.
+     * Get x and y positions on the PMT plane from the extrapolated track.
      */
-    void DrawHist();
+    void GetTrackPosition(Double_t &x, Double_t &y);
 
     /*
-     * Fit each slices of the 2D histo, fit result with sinusoidal and draw.
+     * Draw histograms for alignment method.
      */
-    std::vector<Float_t> DrawFit();
+    void DrawHistAlignment();
+
+    /*
+     *
+     */
+    void DrawFit(vector<Double_t> &outputFit, Int_t thresh);
 
     /*
      * Draw histograms from root file.
@@ -105,22 +96,12 @@ public:
     /*
      * Set to TRUE if you want to draw histograms.
      */
-    void SetDrawHist(Bool_t b) {fDrawHist = b;}
+    void SetDrawAlignment(Bool_t b) {fDrawAlignment = b;}
 
     /*
-     * Set to TRUE if you want to analysis simulation data.
+     *
      */
-    void SetIsSimulationAna(Bool_t b) {fIsSimulationAna = b;}
-
-    /*
-     * Set to TRUE if you want to analysis simulation data.
-     */
-    void SetIsMeanPosition(Bool_t b) {fIsMeanPosition = b;}
-
-    /*
-     * Write the ring centers into a txt file, with name fileName.
-     */
-    void WriteToFile(TString fileName, Double_t Xposition, Double_t Yposition);
+    void SetNumb(TString s) {fNumb = s;}
 
 
 private:
@@ -131,22 +112,23 @@ private:
     TClonesArray* fMCTracks;
     TClonesArray* fRichRingMatches;
     TClonesArray* fRichMirrorPoints;
+//    TClonesArray* fRichRefPlanePoints;
+//    TClonesArray* fRichMCPoints;
+//    TClonesArray* fGlobalTracks;
     CbmHistManager* fHM;
 
     UInt_t fEventNum; // Event counter
-    UInt_t counter;
     Double_t XmeanCircle;
-    Double_t YmeanCircle;
-    Double_t XmeanEllipse;
-    Double_t YmeanEllipse;
-    Bool_t fDrawHist;
-    Bool_t fIsSimulationAna; // If true: simulation analysis; Else: analysis from beamtime data
-    Bool_t fIsMeanPosition;
-    vector<float> fPhi;
+	Double_t YmeanCircle;
+	Double_t XmeanEllipse;
+	Double_t YmeanEllipse;
+	TString fNumb;			// Misalignment applied on the geometry.
+    Bool_t fDrawAlignment;	// If TRUE, draws the alignment and fitting plots.
+    vector<Float_t> fPhi;
 
-    TString fOutputDir; // Output directory to store figures
-    TString fRunTitle; // Title of the run
-    TString fAxisRotTitle; // Rotation around which axis
+    TString fOutputDir;		// Output directory to store figures.
+    TString fRunTitle;		// Title of the run.
+    TString fAxisRotTitle;	// Rotation around which axis.
 
     CbmRichRingFitterCOP* fCopFit;
     CbmRichRingFitterEllipseTau* fTauFit;

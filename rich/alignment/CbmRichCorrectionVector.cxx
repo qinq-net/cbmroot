@@ -35,6 +35,7 @@
 //#include <stdio.h>
 #include "CbmRichHitProducer.h"
 #include "CbmGlobalTrack.h"
+#include "CbmRichGeoManager.h"
 
 //#include "TLorentzVector.h"
 #include "TVirtualMC.h"
@@ -45,33 +46,34 @@ class TGeoShape;
 class TGeoMatrix;
 
 CbmRichCorrectionVector::CbmRichCorrectionVector() :
-		FairTask(),
-		fRichHits(NULL),
-		fRichRings(NULL),
-		fRichProjections(NULL),
-		fRichMirrorPoints(NULL),
-		fRichMCPoints(NULL),
-		fMCTracks(NULL),
-		fRichRingMatches(NULL),
-		fRichRefPlanePoints(NULL),
-		fRichPoints(NULL),
-		fGlobalTracks(NULL),
-		fHM(NULL),
-		fHM2(NULL),
-		fGP(),
-		fEventNum(0),
-		fOutputDir(""),
-		fRunTitle(""),
-		fAxisRotTitle(""),
-		fDrawAlignment(kTRUE),
-		fDrawMapping(kFALSE),
-		fDrawProjection(kTRUE),
-		fIsMeanCenter(kFALSE),
-		fCopFit(NULL),
-		fTauFit(NULL),
-		fPathsMap(),
-		fPathsMapEllipse(),
-		fPhi()
+	FairTask(),
+	fRichHits(NULL),
+	fRichRings(NULL),
+	fRichProjections(NULL),
+	fRichMirrorPoints(NULL),
+	fRichMCPoints(NULL),
+	fMCTracks(NULL),
+	fRichRingMatches(NULL),
+	fRichRefPlanePoints(NULL),
+	fRichPoints(NULL),
+	fGlobalTracks(NULL),
+	fHM(NULL),
+	fHM2(NULL),
+	//fGP(),
+	fEventNum(0),
+	fOutputDir(""),
+	fRunTitle(""),
+	fAxisRotTitle(""),
+	fDrawAlignment(kTRUE),
+	fDrawMapping(kFALSE),
+	fDrawProjection(kTRUE),
+	fIsMeanCenter(kFALSE),
+	fIsReconstruction(kFALSE),
+	fCopFit(NULL),
+	fTauFit(NULL),
+	fPathsMap(),
+	fPathsMapEllipse(),
+	fPhi()
 {
 	fMirrCounter = 0.;
 	for (int i=0;i<3;i++) {
@@ -165,18 +167,20 @@ void CbmRichCorrectionVector::InitHistProjection()
 		fHM->Create2<TH2D>(name, name + ";X_Axis [];Y_Axis [];Entries", 2001, -100., 100.,2001, 60., 210.);
 	}
 
-	fHM->Create1<TH1D>("fhDistanceCenterToExtrapolatedTrack", "fhDistanceCenterToExtrapolatedTrack;Distance fitted center to extrapolated track;Number of entries", 750, 0., 20.);
-//	fHM->Create1<TH1D>("fhDistanceCenterToExtrapolatedTrackInPlane", "fhDistanceCenterToExtrapolatedTrack;Distance fitted center to extrapolated track;Number of entries", 400, 0., 50.);
-	fHM->Create1<TH1D>("fhDistanceCenterToExtrapolatedTrackInPlane", "fhDistanceCenterToExtrapolatedTrackInPlane;Distance fitted center to extrapolated track plane;Number of entries", 750, 0., 10.);
-	fHM->Create1<TH1D>("fhDifferenceX", "fhDifferenceX;Difference in X (fitted center - extrapolated track);Number of entries", 750, 0., 10.);
-	fHM->Create1<TH1D>("fhDifferenceY", "fhDifferenceY;Difference in Y (fitted center - extrapolated track);Number of entries", 750, 0., 10.);
+	fHM->Create1<TH1D>("fhDistanceCenterToExtrapolatedTrack", "fhDistanceCenterToExtrapolatedTrack;Distance fitted center to extrapolated track;Number of entries", 400, 0., 2.);
+	fHM->Create1<TH1D>("fhDistanceCenterToExtrapolatedTrackInPlane", "fhDistanceCenterToExtrapolatedTrackInPlane;Distance fitted center to extrapolated track in plane;Number of entries", 400, 0., 2.);
+	fHM->Create1<TH1D>("fhDifferenceX", "fhDifferenceX;Difference in X (fitted center - extrapolated track);Number of entries", 400, 0., 2.);
+	fHM->Create1<TH1D>("fhDifferenceY", "fhDifferenceY;Difference in Y (fitted center - extrapolated track);Number of entries", 400, 0., 2.);
+
+	fHM->Create1<TH1D>("fhDistanceCenterToExtrapolatedTrackInPlaneUncorrected", "fhDistanceCenterToExtrapolatedTrackInPlaneUncorrected;Distance fitted center to extrapolated track in plane;Number of entries", 300, 0., 3.);
+	fHM->Create1<TH1D>("fhDifferenceXUncorrected", "fhDifferenceXUncorrected;Difference in X (fitted center - extrapolated track);Number of entries", 300, 0., 3.);
+	fHM->Create1<TH1D>("fhDifferenceYUncorrected", "fhDifferenceYUncorrected;Difference in Y (fitted center - extrapolated track);Number of entries", 300, 0., 3.);
 }
 
 void CbmRichCorrectionVector::InitHistAlignment()
 {
 	fHM2 = new CbmHistManager();
 
-	fHM2->Create2<TH2D>("fHMeanCirclePosition", "fHMeanCirclePosition;X position [cm];Y position [cm];Entries", 128, 0., 15., 100, 5., 20.);
 	fHM2->Create1<TH1D>("fHCenterDistance", "fHCenterDistance;Distance C-C';Nb of entries", 100, -0.1, 5.);
 	fHM2->Create1<TH1D>("fHPhi", "fHPhi;Phi_Ch [rad];Nb of entries", 200, -3.4, 3.4);
 	fHM2->Create1<TH1D>("fHThetaDiff", "fHThetaDiff;Th_Ch-Th_0 [cm];Nb of entries", 252, -5., 5.);
@@ -202,21 +206,18 @@ void CbmRichCorrectionVector::Exec(Option_t* /*option*/)
 	cout << "Nb of rings in evt = " << nofRingsInEvent << ", nb of mirror points = " << nofMirrorPoints << ", nb of hits in evt = " << nofHitsInEvent << ", nb of Monte-Carlo points = " << NofMCPoints << " and nb of Monte-Carlo tracks = " << NofMCTracks << endl << endl;
 
 	cout << "//----------------------------------------------------------------------------------------------------------//" << endl;
-	cout << "//---------------------------------------- EXEC Function ---------------------------------------------------//" << endl;
-	cout << "//------------------------------ Mapping for mirror - PMT relations ----------------------------------------//" << endl;
+	cout << "//-------------------------------- EXEC Function - Correction Vector class ------------------------------------------//" << endl;
 	cout << "//----------------------------------------------------------------------------------------------------------//" << endl << endl;
 
-	vector<Double_t> outputFit;
 	TClonesArray* projectedPoint;
 
 	if (nofRingsInEvent == 0) { cout << "Error no rings registered in event." << endl << endl; }
 	else {
 		CalculateAnglesAndDrawDistrib();
-		DrawFit(outputFit);
-		//MatchFinder();
-		fGP = CbmRichHitProducer::InitGeometry();
-		fGP.Print();
-		ProjectionProducer(projectedPoint);
+		//MatchFinder(); // PMT Mapping
+		//fGP = CbmRichHitProducer::InitGeometry();
+		//fGP.Print();
+		//ProjectionProducer(projectedPoint);
 	}
 }
 
@@ -293,175 +294,6 @@ void CbmRichCorrectionVector::GetTrackPosition(Double_t &x, Double_t &y)
 		y = pr->GetY();
 		//cout << "Center X: " << *x << " and Center y: " << *y << endl;
     }
-}
-
-void CbmRichCorrectionVector::DrawFit(vector<Double_t> &outputFit)
-{
-	vector<Double_t> paramVect;
-	paramVect.reserve(5);
-
-	TCanvas* c3 = new TCanvas(fRunTitle + "_Fit_Slices_" + fAxisRotTitle, fRunTitle + "_Fit_Slices_" + fAxisRotTitle, 1100, 600);
-	c3->SetFillColor(42);
-	c3->Divide(4,2);
-	gPad->SetTopMargin(0.1);
-	gPad->SetFillColor(33);
-	c3->cd(1);
-	TH2D* CloneArr = (TH2D*)fHM2->H2("fHCherenkovHitsDistribReduced")->Clone();
-	CloneArr->GetXaxis()->SetLabelSize(0.03);
-	CloneArr->GetXaxis()->SetTitleSize(0.03);
-	CloneArr->GetXaxis()->CenterTitle();
-	CloneArr->GetXaxis()->SetNdivisions(612,kTRUE);
-	CloneArr->GetYaxis()->SetLabelSize(0.03);
-	CloneArr->GetYaxis()->SetTitleSize(0.03);
-	CloneArr->GetYaxis()->SetNdivisions(612, kTRUE);
-	CloneArr->GetYaxis()->CenterTitle();
-	//CloneArr->GetYaxis()->SetRangeUser(-2.5,2.5);
-	CloneArr->GetZaxis()->SetLabelSize(0.03);
-	CloneArr->GetZaxis()->SetTitleSize(0.03);
-	CloneArr->GetYaxis()->SetTitleOffset(1.0);
-	CloneArr->Draw("colz");
-	//Double_t ymax = CloneArr->GetYaxis()->GetXmax();
-	//Double_t ymin = CloneArr->GetYaxis()->GetXmin();
-	//TF1 *fgauss = TF1 fgauss("gauss", "[0]*exp(-0.5*((x-[1])/[2])**2)", 0, 100);
-
-	// ------------------------------ APPLY THRESHOLD TO 2D-HISTO ------------------------------ //
-	TH2D* CloneArr_2 = (TH2D*)fHM2->H2("fHCherenkovHitsDistribReduced")->Clone();
-	Int_t thresh = 5;
-	for (Int_t y_bin=1; y_bin<=500; y_bin++) {
-		for (Int_t x_bin=1; x_bin<=200; x_bin++) {
-			/*if (CloneArr_2->GetBinContent(x_bin, y_bin)!=0) {
-			cout << "Bin Content: " << CloneArr_2->GetBinContent(x_bin, y_bin) << endl;
-			sleep(1);
-			}
-			else;*/
-			if (CloneArr_2->GetBinContent(x_bin, y_bin) < thresh) {
-				CloneArr_2->SetBinContent(x_bin, y_bin, 0);
-			}
-		}
-	}
-	c3->cd(2);
-	CloneArr_2->GetXaxis()->SetLabelSize(0.03);
-	CloneArr_2->GetXaxis()->SetTitleSize(0.03);
-	CloneArr_2->GetXaxis()->CenterTitle();
-	CloneArr_2->GetXaxis()->SetNdivisions(612,kTRUE);
-	CloneArr_2->GetYaxis()->SetLabelSize(0.03);
-	CloneArr_2->GetYaxis()->SetTitleSize(0.03);
-	CloneArr_2->GetYaxis()->SetNdivisions(612, kTRUE);
-	CloneArr_2->GetYaxis()->CenterTitle();
-	//CloneArr_2->GetYaxis()->SetRangeUser(-2.5,2.5);
-	CloneArr_2->GetZaxis()->SetLabelSize(0.03);
-	CloneArr_2->GetZaxis()->SetTitleSize(0.03);
-	CloneArr_2->GetYaxis()->SetTitleOffset(1.0);
-	CloneArr_2->Draw("colz");
-
-	// -------------------- FIT SLICES AND FIT THE MEAN OF THE RESULT TO A SIN FUNCTION -------------------- //
-	CloneArr_2->FitSlicesY(0,0,-1,1);
-	c3->cd(3);
-	TH1D *histo_0 = (TH1D*)gDirectory->Get("fHCherenkovHitsDistribReduced_0");
-	histo_0->Draw();
-	c3->cd(4);
-	TH1D *histo_1 = (TH1D*)gDirectory->Get("fHCherenkovHitsDistribReduced_1");
-	//histo_1->GetYaxis()->SetRangeUser(-2.5, 2.5);
-	histo_1->Draw();
-	c3->cd(5);
-	TH1D* histo_2 = (TH1D*)gDirectory->Get("fHCherenkovHitsDistribReduced_2");
-	histo_2->Draw();
-	c3->cd(6);
-	TH1D* histo_chi2 = (TH1D*)gDirectory->Get("fHCherenkovHitsDistribReduced_chi2");
-	histo_chi2->Draw();
-
-	c3->cd(7);
-	TF1 *f1 = new TF1("f1", "[2]+[0]*cos(x)+[1]*sin(x)", -3.5, 3.5);
-	f1->SetParameters(0,0,0);
-	f1->SetParNames("Delta_phi", "Delta_lambda", "Offset");
-	histo_1->Fit("f1","","");
-	TF1 *fit = histo_1->GetFunction("f1");
-	Double_t p1 = fit->GetParameter("Delta_phi");
-	Double_t p2 = fit->GetParameter("Delta_lambda");
-	Double_t p3 = fit->GetParameter("Offset");
-	Double_t chi2 = fit->GetChisquare();
-	//cout << setprecision(6) << "Delta_phi = " << fit->GetParameter(0) << " and delta_lambda = " << fit->GetParameter(1) << endl;
-	//cout << "Delta_phi error = " << fit->GetParError(0) << " and delta_lambda error = " << fit->GetParError(1) << endl;
-	//cout << endl << "Chi2: " << chi2 << endl;
-
-	paramVect.push_back(fit->GetParameter("Delta_phi"));
-	paramVect.push_back(fit->GetParameter("Delta_lambda"));
-	paramVect.push_back(fit->GetParameter("Offset"));
-	paramVect.push_back(fit->GetChisquare());
-	//cout << "Vectors: Delta_phi = " << paramVect[0] << ", Delta_lambda = " << paramVect[1] << ", Offset = " << paramVect[2] << endl;
-
-	f1->SetParameters(fit->GetParameter(0), fit->GetParameter(1));
-	char leg[128];
-	f1->SetLineColor(2);
-	f1->Draw();
-
-	// ------------------------------ CALCULATION OF MISALIGNMENT ANGLE ------------------------------ //
-	Double_t Focal_length = 150., q=0., A=0., Alpha=0., mis_x=0., mis_y=0.;
-	q = TMath::ATan(fit->GetParameter(0)/fit->GetParameter(1));
-	//cout << endl << "fit_1 = " << fit->GetParameter(0) << " and fit_2 = " << fit->GetParameter(1) << endl;
-	//cout << "q = " << q << endl;
-	A = fit->GetParameter(1)/TMath::Cos(q);
-	//cout << "Parameter a = " << A << endl;
-	Alpha = TMath::ATan(A/1.5)*0.5*TMath::Power(10,3);                                  // *0.5, because a mirror rotation of alpha implies a rotation in the particle trajectory of 2*alpha ; 1.5 meters = Focal length = Radius_of_curvature/2
-	//cout << setprecision(6) << "Total angle of misalignment alpha = " << Alpha << endl;       // setprecision(#) gives the number of digits in the cout.
-	mis_x = TMath::ATan(fit->GetParameter(0)/Focal_length)*0.5*TMath::Power(10,3);
-	mis_y = TMath::ATan(fit->GetParameter(1)/Focal_length)*0.5*TMath::Power(10,3);
-
-	TLegend* LEG= new TLegend(0.30,0.7,0.72,0.85); // Set legend position
-	LEG->SetBorderSize(1);
-	LEG->SetFillColor(0);
-	LEG->SetMargin(0.2);
-	LEG->SetTextSize(0.03);
-	sprintf(leg, "Fitted sinusoid");
-	LEG->AddEntry(f1, leg, "l");
-	sprintf(leg, "Misalign in X = %f", mis_x);
-	LEG->AddEntry("", leg, "l");
-	sprintf(leg, "Misalign in Y = %f", mis_y);
-	LEG->AddEntry("", leg, "l");
-	sprintf(leg, "Offset = %f", fit->GetParameter(2));
-	LEG->AddEntry("", leg, "l");
-	LEG->Draw();
-	Cbm::SaveCanvasAsImage(c3, string(fOutputDir.Data()), "png");
-
-	// ------------------------------ APPLY SECOND FIT USING LOG-LIKELIHOOD METHOD ------------------------------ //
-	TCanvas* c4 = new TCanvas(fRunTitle + "_Second_Fit_" + fAxisRotTitle, fRunTitle + "_Second_Fit_" + fAxisRotTitle, 600, 600);
-	c4->SetFillColor(42);
-	gPad->SetTopMargin(0.1);
-	gPad->SetFillColor(33);
-	f1->SetParameters(fit->GetParameter(0), fit->GetParameter(1), fit->GetParameter(2));
-	histo_1->Fit("f1","L","");
-	TF1 *fit2 = histo_1->GetFunction("f1");
-	f1->SetParameters(fit2->GetParameter(0), fit2->GetParameter(1), fit2->GetParameter(2));
-	f1->Draw();
-
-	Double_t q_2 = TMath::ATan(fit2->GetParameter(0)/fit2->GetParameter(1));
-	//cout << endl << "fit2_1 = " << fit2->GetParameter(0) << " and fit2_2 = " << fit2->GetParameter(1) << endl;
-	//cout << "q_2 = " << q_2 << endl;
-	Double_t A_2 = fit2->GetParameter(1)/TMath::Cos(q_2);
-	//cout << "Parameter a_2 = " << A_2 << endl;
-	Double_t Alpha_2 = TMath::ATan(A_2/1.5)*0.5*TMath::Power(10,3);
-	//cout << setprecision(6) << "Total angle of misalignment alpha_2 = " << Alpha_2 << endl;
-	Double_t mis_x_2 = TMath::ATan(fit2->GetParameter(0)/Focal_length)*0.5*TMath::Power(10,3);
-	Double_t mis_y_2 = TMath::ATan(fit2->GetParameter(1)/Focal_length)*0.5*TMath::Power(10,3);
-
-	TLegend* LEG2= new TLegend(0.31,0.7,0.72,0.85); // Set legend position
-	LEG2->SetBorderSize(1);
-	LEG2->SetFillColor(0);
-	LEG2->SetMargin(0.2);
-	LEG2->SetTextSize(0.03);
-	sprintf(leg, "Fitted sinusoid");
-	LEG2->AddEntry(f1, leg, "l");
-	sprintf(leg, "Misalign in X = %f", mis_x_2);
-	LEG2->AddEntry("", leg, "l");
-	sprintf(leg, "Misalign in Y = %f", mis_y_2);
-	LEG2->AddEntry("", leg, "l");
-	sprintf(leg, "Offset = %f", fit2->GetParameter(2));
-	LEG2->AddEntry("", leg, "l");
-	LEG2->Draw();
-	Cbm::SaveCanvasAsImage(c4, string(fOutputDir.Data()), "png");
-
-	outputFit.at(0) = mis_x;
-	outputFit.at(1) = mis_y;
 }
 
 void CbmRichCorrectionVector::MatchFinder()
@@ -593,10 +425,12 @@ void CbmRichCorrectionVector::ProjectionProducer(TClonesArray* projectedPoint)
 	Int_t NofRefPlanePoints = fRichRefPlanePoints->GetEntriesFast();
 	Int_t NofPMTPoints = fRichPoints->GetEntriesFast();
 
-	projectedPoint->Clear();
+	if(fIsReconstruction) {
+		projectedPoint->Delete();
+	}
 	TMatrixFSym covMat(5);
 	for (Int_t iMatrix = 0; iMatrix < 5; iMatrix++) {
-		for (Int_t jMatrix = 0; jMatrix < 5; jMatrix++) {
+		for (Int_t jMatrix = 0; jMatrix <= iMatrix; jMatrix++) {
 			covMat(iMatrix,jMatrix) = 0;
 		}
 	}
@@ -605,7 +439,9 @@ void CbmRichCorrectionVector::ProjectionProducer(TClonesArray* projectedPoint)
 	// Declaration of points coordinates.
 	Double_t sphereRadius=300., constantePMT=0.;
 	vector<Double_t> ptM(3), ptC(3), ptR1(3), momR1(3), normalPMT(3), ptR2Mirr(3), ptR2Center(3), ptPMirr(3), ptPR2(3);
+	vector<Double_t> ptMUnCorr(3), ptCUnCorr(3), ptR2CenterUnCorr(3), ptR2MirrUnCorr(3), ptPMirrUnCorr(3), ptPR2UnCorr(3);
 	Double_t reflectedPtCooVectSphereUnity[] = {0., 0., 0.};
+	TVector3 outPos, outPosUnCorr;
 	// Declaration of ring parameters.
 	Double_t ringCenter[] = {0., 0., 0.}, distToExtrapTrackHit=0., distToExtrapTrackHitInPlane=0.;
 	//Declarations related to geometry.
@@ -614,6 +450,13 @@ void CbmRichCorrectionVector::ProjectionProducer(TClonesArray* projectedPoint)
 	TGeoNavigator *navi;
 	TGeoNode *mirrNode;
 	TGeoMatrix *mirrMatrix, *pmtMatrix, *richMatrix;
+
+	CbmRichRecGeoPar* gp = CbmRichGeoManager::GetInstance().fGP;
+	double mirrorX = gp->fMirrorX;
+	Double_t pmtPlaneX = gp->fPmtPlaneX;
+    double pmtPlaneY = gp->fPmtPlaneY;
+    double pmtWidth = gp->fPmtWidth;
+    double pmtHeight = gp->fPmtHeight;
 
 	GetPmtNormal(NofPMTPoints, normalPMT, constantePMT);
 	cout << "Calculated normal vector to PMT plane = {" << normalPMT.at(0) << ", " << normalPMT.at(1) << ", " << normalPMT.at(2) << "} and constante d = " << constantePMT << endl << endl;
@@ -633,6 +476,7 @@ void CbmRichCorrectionVector::ProjectionProducer(TClonesArray* projectedPoint)
 		if (motherID == -1) {
 			//cout << "Mirror motherID == -1 !!!" << endl << endl;
 			ptM.at(0) = mirrPoint->GetX(), ptM.at(1) = mirrPoint->GetY(), ptM.at(2) = mirrPoint->GetZ();
+			ptMUnCorr.at(0) = -70.6622238, ptMUnCorr.at(1) = 55.1816025, ptMUnCorr.at(2) = 335.3621216;
 			//cout << "Mirror Point coordinates; x = " << ptM.at(0) << ", y = " << ptM.at(1) << " and z = " << ptM.at(2) << endl;
 			mirrNode = gGeoManager->FindNode(ptM.at(0),ptM.at(1),ptM.at(2));
 			if (mirrNode) {
@@ -647,12 +491,13 @@ void CbmRichCorrectionVector::ProjectionProducer(TClonesArray* projectedPoint)
 					ptC.at(1) = navi->GetCurrentMatrix()->GetTranslation()[1];
 					ptC.at(2) = navi->GetCurrentMatrix()->GetTranslation()[2];
 				}
+				ptCUnCorr.at(0) = 0., ptCUnCorr.at(1) = 132.594000, ptCUnCorr.at(2) = 54.267226;
 				cout << "Coordinates of tile center: " << endl;
 				navi->GetMotherMatrix()->Print();
 				cout << endl << "Sphere center coordinates of the rotated mirror tile = {" << ptC.at(0) << ", " << ptC.at(1) << ", " << ptC.at(2) << "} and sphere inner radius = " << sphereRadius  << endl;
 
 				for (Int_t iRefl = 0; iRefl < NofRefPlanePoints; iRefl++) {
-					new((*projectedPoint)[iRefl]) FairTrackParam(0., 0., 0., 0., 0., 0., covMat);
+					//new((*projectedPoint)[iRefl]) FairTrackParam(0., 0., 0., 0., 0., 0., covMat);
 					CbmRichPoint *refPlanePoint = (CbmRichPoint*) fRichRefPlanePoints->At(iRefl);
 					refPlaneTrackID = refPlanePoint->GetTrackID();
 					//cout << "Reflective plane track ID = " << refPlaneTrackID << endl;
@@ -663,6 +508,7 @@ void CbmRichCorrectionVector::ProjectionProducer(TClonesArray* projectedPoint)
 						cout << "Reflective Plane Point coordinates = {" << ptR1.at(0) << ", " << ptR1.at(1) << ", " << ptR1.at(2) << "}" << endl;
 						cout << "And reflective Plane Point momenta = {" << momR1.at(0) << ", " << momR1.at(1) << ", " << momR1.at(2) << "}" << endl;
 						cout << "Mirror Point coordinates = {" << ptM.at(0) << ", " << ptM.at(1) << ", " << ptM.at(2) << "}" << endl << endl;
+						cout << "Mirror Point coordinates (Uncorrected) = {" << ptMUnCorr.at(0) << ", " << ptMUnCorr.at(1) << ", " << ptMUnCorr.at(2) << "}" << endl << endl;
 
 						if (fIsMeanCenter) {
 							GetMirrorIntersection(ptM, ptR1, momR1, ptC, sphereRadius);
@@ -671,14 +517,18 @@ void CbmRichCorrectionVector::ProjectionProducer(TClonesArray* projectedPoint)
 						}
 
 						ComputeR2(ptR2Center, ptR2Mirr, ptC, ptM, ptR1);
+						ComputeR2(ptR2CenterUnCorr, ptR2MirrUnCorr, ptCUnCorr, ptM, ptR1);
 
 						ComputeP(ptPMirr, ptPR2, normalPMT, ptM, ptR2Mirr, constantePMT);
+						ComputeP(ptPMirrUnCorr, ptPR2UnCorr, normalPMT, ptM, ptR2MirrUnCorr, constantePMT);
 
-						TVector3 pmtVector(ptPMirr.at(0), ptPMirr.at(1), ptPMirr.at(2));
-						TVector3 pmtVectorNew;
-						CbmRichHitProducer::TiltPoint(&pmtVector, &pmtVectorNew, fGP.fPmtPhi, fGP.fPmtTheta, fGP.fPmtZOrig);
-						cout << "New coordinates of point P on PMT plane, after PMT plane rotation = {" << pmtVectorNew.X() << ", " << pmtVectorNew.Y() << ", " << pmtVectorNew.Z() << "}" << endl << endl;
-						ptPMirr.at(0) = pmtVectorNew.X(), ptPMirr.at(1) = pmtVectorNew.Y(), ptPMirr.at(2) = pmtVectorNew.Z();
+						TVector3 inPos (ptPMirr.at(0), ptPMirr.at(1), ptPMirr.at(2));
+			            CbmRichGeoManager::GetInstance().RotatePoint(&inPos, &outPos);
+			            cout << "New mirror points coordinates = {" << outPos.x() << ", " << outPos.y() << ", " << outPos.z() << "}" << endl;
+
+			            TVector3 inPosUnCorr (ptPMirrUnCorr.at(0), ptPMirrUnCorr.at(1), ptPMirrUnCorr.at(2));
+			            CbmRichGeoManager::GetInstance().RotatePoint(&inPosUnCorr, &outPosUnCorr);
+			            cout << "New mirror points coordinates = {" << outPosUnCorr.x() << ", " << outPosUnCorr.y() << ", " << outPosUnCorr.z() << "}" << endl << endl;
 
 						/*for (Int_t iPmt = 0; iPmt < NofPMTPoints; iPmt++) {
 						CbmRichPoint *pmtPoint = (CbmRichPoint*) fRichPoints->At(iPmt);
@@ -693,12 +543,7 @@ void CbmRichCorrectionVector::ProjectionProducer(TClonesArray* projectedPoint)
 							}
 						}
 						cout << "Looking for PMT hits: end." << endl << endl;*/
-						if (ptPMirr.at(0) > (-fGP.fPmtXOrig-fGP.fPmtWidthX) && ptPMirr.at(0) < (fGP.fPmtXOrig+fGP.fPmtWidthX)) {
-							if (TMath::Abs(ptPMirr.at(1)) > (fGP.fPmtY-fGP.fPmtWidthY) && TMath::Abs(ptPMirr.at(1)) < (fGP.fPmtY+fGP.fPmtWidthY)) {
-								FairTrackParam richtrack(ptPMirr.at(0), ptPMirr.at(1), ptPMirr.at(2), 0., 0., 0., covMat);
-								*(FairTrackParam*)(projectedPoint->At(iRefl)) = richtrack;
-							}
-						}
+
 					}
 					//else { cout << "No identical track ID between mirror point and reflective plane point found ..." << endl << endl; }
 				}
@@ -713,41 +558,7 @@ void CbmRichCorrectionVector::ProjectionProducer(TClonesArray* projectedPoint)
 					cout << outputPoint.X() << "\t" << outputPoint.Y() << "\t" << outputPoint.Z() << endl;
 				}*/
 
-				for (Int_t iGlobalTrack = 0; iGlobalTrack < NofGTracks; iGlobalTrack++) {
-					//cout << "Nb of global tracks = " << NofGTracks << " and iGlobalTrack = " << iGlobalTrack << endl;
-					CbmGlobalTrack* gTrack  = (CbmGlobalTrack*) fGlobalTracks->At(iGlobalTrack);
-					if(NULL == gTrack) continue;
-					Int_t richInd = gTrack->GetRichRingIndex();
-					//cout << "Rich index = " << richInd << endl;
-					if (richInd < 0) { continue; }
-					CbmRichRing* ring = static_cast<CbmRichRing*>(fRichRings->At(richInd));
-					if (NULL == ring) { continue; }
-					Int_t ringTrackID = ring->GetTrackID();
-					track2 = (CbmMCTrack*) fMCTracks->At(ringTrackID);
-					Int_t ringMotherID = track2->GetMotherId();
-					//cout << "Ring mother ID = " << ringMotherID << ", ring track ID = " << ringTrackID << " and track2 pdg = " << track2->GetPdgCode() << endl;
-					CbmRichRingLight ringL;
-					CbmRichConverter::CopyHitsToRingLight(ring, &ringL);
-					//RotateAndCopyHitsToRingLight(ring, &ringL);
-					fCopFit->DoFit(&ringL);
-					fTauFit->DoFit(&ringL);
-					ringCenter[0] = ringL.GetCenterX();
-					ringCenter[1] = ringL.GetCenterY();
-					ringCenter[2] = -1*((normalPMT.at(0)*ringCenter[0] + normalPMT.at(1)*ringCenter[1] + constantePMT)/normalPMT.at(2));
-					cout << "Ring center coordinates = {" << ringCenter[0] << ", " << ringCenter[1] << ", " << ringCenter[2] << "}" << endl;
-					cout << "Difference in X = " << TMath::Abs(ringCenter[0] - ptPMirr.at(0)) << "\t" << "Difference in Y = " << TMath::Abs(ringCenter[1] - ptPMirr.at(1)) << "\t" << "Difference in Z = " << TMath::Abs(ringCenter[2] - ptPMirr.at(2)) << endl;
-					fHM->H1("fhDifferenceX")->Fill(TMath::Abs(ringCenter[0]-ptPMirr.at(0)));
-					fHM->H1("fhDifferenceY")->Fill(TMath::Abs(ringCenter[1]-ptPMirr.at(1)));
-					distToExtrapTrackHit = TMath::Sqrt(TMath::Power(ringCenter[0]-ptPMirr.at(0),2) + TMath::Power(ringCenter[1]-ptPMirr.at(1),2) + TMath::Power(ringCenter[2]-ptPMirr.at(2),2));
-					distToExtrapTrackHitInPlane = TMath::Sqrt(TMath::Power(ringCenter[0]-ptPMirr.at(0),2) + TMath::Power(ringCenter[1]-ptPMirr.at(1),2));
-					fHM->H1("fhDistanceCenterToExtrapolatedTrack")->Fill(distToExtrapTrackHit);
-					fHM->H1("fhDistanceCenterToExtrapolatedTrackInPlane")->Fill(distToExtrapTrackHitInPlane);
-					cout << "Distance between fitted ring center and extrapolated track hit = " << distToExtrapTrackHit << endl;
-					cout << "Distance between fitted ring center and extrapolated track hit in plane = " << distToExtrapTrackHitInPlane << endl << endl;
-					//}
-					//else { cout << "No identical ring mother ID and mirror track ID ..." << endl;}
-				}
-				cout << "End of loop on global tracks;" << endl;
+				FillHistProjection(outPos, outPosUnCorr, NofGTracks, normalPMT, constantePMT);
 			}
 			else { cout << "Not a mother particle ..." << endl; }
 			cout << "----------------------------------- " << "End of loop N°" << iMirr+1 << " on the mirror points." << " -----------------------------------" << endl << endl;
@@ -931,7 +742,7 @@ void CbmRichCorrectionVector::ComputeR2(vector<Double_t> &ptR2Center, vector<Dou
 	normalMirr.at(0) = (ptC.at(0) - ptM.at(0))/TMath::Sqrt(TMath::Power(ptC.at(0) - ptM.at(0),2)+TMath::Power(ptC.at(1) - ptM.at(1),2)+TMath::Power(ptC.at(2) - ptM.at(2),2));
 	normalMirr.at(1) = (ptC.at(1) - ptM.at(1))/TMath::Sqrt(TMath::Power(ptC.at(0) - ptM.at(0),2)+TMath::Power(ptC.at(1) - ptM.at(1),2)+TMath::Power(ptC.at(2) - ptM.at(2),2));
 	normalMirr.at(2) = (ptC.at(2) - ptM.at(2))/TMath::Sqrt(TMath::Power(ptC.at(0) - ptM.at(0),2)+TMath::Power(ptC.at(1) - ptM.at(1),2)+TMath::Power(ptC.at(2) - ptM.at(2),2));
-	cout << "Calculated and normalized normal of mirror tile = {" << normalMirr.at(0) << ", " << normalMirr.at(1) << ", " << normalMirr.at(2) << "}" << endl;
+	//cout << "Calculated and normalized normal of mirror tile = {" << normalMirr.at(0) << ", " << normalMirr.at(1) << ", " << normalMirr.at(2) << "}" << endl;
 
 	t1 = ((ptR1.at(0)-ptM.at(0))*(ptC.at(0)-ptM.at(0)) + (ptR1.at(1)-ptM.at(1))*(ptC.at(1)-ptM.at(1)) + (ptR1.at(2)-ptM.at(2))*(ptC.at(2)-ptM.at(2)))/(TMath::Power(ptC.at(0)-ptM.at(0),2) + TMath::Power(ptC.at(1)-ptM.at(1),2) + TMath::Power(ptC.at(2)-ptM.at(2),2));
 	ptR2Center.at(0) = 2*(ptM.at(0)+t1*(ptC.at(0)-ptM.at(0)))-ptR1.at(0);
@@ -947,7 +758,7 @@ void CbmRichCorrectionVector::ComputeR2(vector<Double_t> &ptR2Center, vector<Dou
 	reflectedPtCooVectSphereUnity[1] = 2*(ptC.at(1)+t3*(normalMirr.at(1)))-ptR1.at(1);
 	reflectedPtCooVectSphereUnity[2] = 2*(ptC.at(2)+t3*(normalMirr.at(2)))-ptR1.at(2);*/
 	cout << "Coordinates of point R2 on reflective plane after reflection on the mirror tile:" << endl;
-	cout << "* using mirror point M to define \U00000394: {" << ptR2Center.at(0) << ", " << ptR2Center.at(1) << ", " << ptR2Center.at(2) << "}" << endl;
+	//cout << "* using mirror point M to define \U00000394: {" << ptR2Center.at(0) << ", " << ptR2Center.at(1) << ", " << ptR2Center.at(2) << "}" << endl;
 	cout << "* using sphere center C to define \U00000394: {" << ptR2Mirr.at(0) << ", " << ptR2Mirr.at(1) << ", " << ptR2Mirr.at(2) << "}" << endl << endl;
 	//cout << "Ref Pt Coo using unity Mirror-Sphere vector & sphere pt = {" << reflectedPtCooVectSphereUnity[0] << ", " << reflectedPtCooVectSphereUnity[1] << ", " << reflectedPtCooVectSphereUnity[2] << "}" << endl << endl;
 	//cout << "NofPMTPoints = " << NofPMTPoints << endl;
@@ -967,12 +778,69 @@ void CbmRichCorrectionVector::ComputeP(vector<Double_t> &ptPMirr, vector<Double_
 	ptPR2.at(2) = ptR2Mirr.at(2) + k2*(ptR2Mirr.at(2) - ptM.at(2));
 	cout << "Coordinates of point P on PMT plane, after reflection on the mirror tile and extrapolation to the PMT plane:" << endl;
 	cout << "* using mirror point M to define \U0001D49F ': {" << ptPMirr.at(0) << ", " << ptPMirr.at(1) << ", " << ptPMirr.at(2) << "}" << endl;
-	cout << "* using reflected point R2 to define \U0001D49F ': {" << ptPR2.at(0) << ", " << ptPR2.at(1) << ", " << ptPR2.at(2) << "}" << endl;
+	//cout << "* using reflected point R2 to define \U0001D49F ': {" << ptPR2.at(0) << ", " << ptPR2.at(1) << ", " << ptPR2.at(2) << "}" << endl;
 	checkCalc1 = ptPMirr.at(0)*normalPMT.at(0) + ptPMirr.at(1)*normalPMT.at(1) + ptPMirr.at(2)*normalPMT.at(2) + constantePMT;
 	cout << "Check whether extrapolated track point on PMT plane verifies its equation (value should be 0.):" << endl;
 	cout << "* using mirror point M, checkCalc = " << checkCalc1 << endl;
 	checkCalc2 = ptPR2.at(0)*normalPMT.at(0) + ptPR2.at(1)*normalPMT.at(1) + ptPR2.at(2)*normalPMT.at(2) + constantePMT;
-	cout << "* using reflected point R2, checkCalc = " << checkCalc2 << endl;
+	//cout << "* using reflected point R2, checkCalc = " << checkCalc2 << endl << endl;
+}
+
+void CbmRichCorrectionVector::FillHistProjection(TVector3 outPos, TVector3 outPosUnCorr, Int_t NofGTracks, vector<Double_t> normalPMT, Double_t constantePMT)
+{
+	CbmMCTrack *track2=NULL;
+	Double_t ringCenter[] = {0, 0, 0}, distToExtrapTrackHit = 0, distToExtrapTrackHitInPlane = 0;
+	Double_t distToExtrapTrackHitInPlaneUnCorr = 0;
+
+	for (Int_t iGlobalTrack = 0; iGlobalTrack < NofGTracks; iGlobalTrack++) {
+		//cout << "Nb of global tracks = " << NofGTracks << " and iGlobalTrack = " << iGlobalTrack << endl;
+		CbmGlobalTrack* gTrack  = (CbmGlobalTrack*) fGlobalTracks->At(iGlobalTrack);
+		if(NULL == gTrack) continue;
+		Int_t richInd = gTrack->GetRichRingIndex();
+		//cout << "Rich index = " << richInd << endl;
+		if (richInd < 0) { continue; }
+		CbmRichRing* ring = static_cast<CbmRichRing*>(fRichRings->At(richInd));
+		if (NULL == ring) { continue; }
+		Int_t ringTrackID = ring->GetTrackID();
+		track2 = (CbmMCTrack*) fMCTracks->At(ringTrackID);
+		Int_t ringMotherID = track2->GetMotherId();
+		//cout << "Ring mother ID = " << ringMotherID << ", ring track ID = " << ringTrackID << " and track2 pdg = " << track2->GetPdgCode() << endl;
+		CbmRichRingLight ringL;
+		CbmRichConverter::CopyHitsToRingLight(ring, &ringL);
+		//RotateAndCopyHitsToRingLight(ring, &ringL);
+		fCopFit->DoFit(&ringL);
+		//fTauFit->DoFit(&ringL);
+		ringCenter[0] = ringL.GetCenterX();
+		ringCenter[1] = ringL.GetCenterY();
+		ringCenter[2] = -1*((normalPMT.at(0)*ringCenter[0] + normalPMT.at(1)*ringCenter[1] + constantePMT)/normalPMT.at(2));
+
+		vector<Double_t> r(3), p(3); // Absolute coordinates of fitted ring Center r and PMT extrapolated point p
+		r.at(0) = TMath::Abs(ringCenter[0]), r.at(1) = TMath::Abs(ringCenter[1]), r.at(2) = TMath::Abs(ringCenter[2]);
+		p.at(0) = TMath::Abs(outPos.x()), p.at(1) = TMath::Abs(outPos.y()), p.at(2) = TMath::Abs(outPos.z());
+		cout << "Ring center coordinates = {" << ringCenter[0] << ", " << ringCenter[1] << ", " << ringCenter[2] << "}" << endl;
+		cout << "Difference in X = " << TMath::Abs(r.at(0) - p.at(0)) << "\t ; \t" << "Difference in Y = " << TMath::Abs(r.at(1) - p.at(1)) << "\t ; \t" << "Difference in Z = " << TMath::Abs(r.at(2) - p.at(2)) << endl;
+		fHM->H1("fhDifferenceX")->Fill(TMath::Abs(r.at(0) - p.at(0)));
+		fHM->H1("fhDifferenceY")->Fill(TMath::Abs(r.at(1) - p.at(1)));
+		distToExtrapTrackHit = TMath::Sqrt(TMath::Power(r.at(0) - p.at(0),2) + TMath::Power(r.at(1) - p.at(1),2) + TMath::Power(r.at(2) - p.at(2),2));
+		distToExtrapTrackHitInPlane = TMath::Sqrt(TMath::Power(r.at(0) - p.at(0),2) + TMath::Power(r.at(1) - p.at(1),2));
+		fHM->H1("fhDistanceCenterToExtrapolatedTrack")->Fill(distToExtrapTrackHit);
+		fHM->H1("fhDistanceCenterToExtrapolatedTrackInPlane")->Fill(distToExtrapTrackHitInPlane);
+		cout << "Distance between fitted ring center and extrapolated track hit = " << distToExtrapTrackHit << endl;
+		cout << "Distance between fitted ring center and extrapolated track hit in plane = " << distToExtrapTrackHitInPlane << endl;
+
+		vector<Double_t> pUnCorr(3); // Absolute coordinates of fitted ring Center r and PMT extrapolated point p
+		pUnCorr.at(0) = TMath::Abs(outPosUnCorr.x()), pUnCorr.at(1) = TMath::Abs(outPosUnCorr.y()), pUnCorr.at(2) = TMath::Abs(outPosUnCorr.z());
+		//cout << "Ring center coordinates = {" << ringCenter[0] << ", " << ringCenter[1] << ", " << ringCenter[2] << "}" << endl;
+		cout << "Difference in X = " << TMath::Abs(r.at(0) - pUnCorr.at(0)) << "\t ; \t" << "Difference in Y = " << TMath::Abs(r.at(1) - pUnCorr.at(1)) << "\t ; \t" << "Difference in Z = " << TMath::Abs(r.at(2) - pUnCorr.at(2)) << endl;
+		fHM->H1("fhDifferenceXUncorrected")->Fill(TMath::Abs(r.at(0) - pUnCorr.at(0)));
+		fHM->H1("fhDifferenceYUncorrected")->Fill(TMath::Abs(r.at(1) - pUnCorr.at(1)));
+		distToExtrapTrackHitInPlaneUnCorr = TMath::Sqrt(TMath::Power(r.at(0) - pUnCorr.at(0),2) + TMath::Power(r.at(1) - pUnCorr.at(1),2));
+		fHM->H1("fhDistanceCenterToExtrapolatedTrackInPlaneUncorrected")->Fill(distToExtrapTrackHitInPlaneUnCorr);
+		cout << "Distance between fitted ring center and extrapolated track hit in plane = " << distToExtrapTrackHitInPlaneUnCorr << endl << endl;
+		//}
+		//else { cout << "No identical ring mother ID and mirror track ID ..." << endl;}
+	}
+	cout << "End of loop on global tracks;" << endl;
 }
 
 void CbmRichCorrectionVector::RotateAndCopyHitsToRingLight(const CbmRichRing* ring1, CbmRichRingLight* ring2)
@@ -984,8 +852,8 @@ void CbmRichCorrectionVector::RotateAndCopyHitsToRingLight(const CbmRichRing* ri
 		CbmRichHit* hit = (CbmRichHit*) fRichHits->At(hitInd);
 		if (NULL == hit) continue;
 		TVector3 inputHit(hit->GetX(), hit->GetY(), hit->GetZ());
-		TVector3 outputHit;
-		CbmRichHitProducer::TiltPoint(&inputHit, &outputHit, fGP.fPmtPhi, fGP.fPmtTheta, fGP.fPmtZOrig);
+		TVector3 outputHit(0, 0, 0);
+		//CbmRichHitProducer::TiltPoint(&inputHit, &outputHit, fGP.fPmtPhi, fGP.fPmtTheta, fGP.fPmtZOrig);
 		CbmRichHitLight hl(outputHit.X(), outputHit.Y());
 		ring2->AddHit(hl);
 	}
@@ -1018,10 +886,197 @@ void CbmRichCorrectionVector::DrawHistAlignment()
 	c1->cd(6);
 	DrawH2(fHM2->H2("fHCherenkovHitsDistribReduced"));
 	Cbm::SaveCanvasAsImage(c1, string(fOutputDir.Data()), "png");
+}
 
-	TCanvas* c2 = new TCanvas(fRunTitle + "_Mean_Circle_Position", fRunTitle + "_Mean_Circle_Position", 600, 600);
-	DrawH2(fHM2->H2("fHMeanCirclePosition"));
-	Cbm::SaveCanvasAsImage(c2, string(fOutputDir.Data()), "png");
+void CbmRichCorrectionVector::DrawFit(vector<Double_t> &outputFit, Int_t thresh)
+{
+	//vector<Double_t> paramVect;
+	//paramVect.reserve(5);
+
+	TCanvas* c3 = new TCanvas(fRunTitle + "_Fit_Slices_" + fAxisRotTitle, fRunTitle + "_Fit_Slices_" + fAxisRotTitle, 1100, 600);
+	c3->SetFillColor(42);
+	c3->Divide(4,2);
+	gPad->SetTopMargin(0.1);
+	gPad->SetFillColor(33);
+	c3->cd(1);
+	//	TH2D* CloneArr = (TH2D*)fHM2->H2("fHCherenkovHitsDistribThetaCh")->Clone();
+	TH2D* CloneArr = (TH2D*)fHM2->H2("fHCherenkovHitsDistribReduced")->Clone();
+	CloneArr->GetXaxis()->SetLabelSize(0.03);
+	CloneArr->GetXaxis()->SetTitleSize(0.03);
+	CloneArr->GetXaxis()->CenterTitle();
+	CloneArr->GetXaxis()->SetNdivisions(612,kTRUE);
+	CloneArr->GetYaxis()->SetLabelSize(0.03);
+	CloneArr->GetYaxis()->SetTitleSize(0.03);
+	CloneArr->GetYaxis()->SetNdivisions(612, kTRUE);
+	CloneArr->GetYaxis()->CenterTitle();
+	//CloneArr->GetYaxis()->SetRangeUser(-2.5,2.5);
+	CloneArr->GetZaxis()->SetLabelSize(0.03);
+	CloneArr->GetZaxis()->SetTitleSize(0.03);
+	CloneArr->GetYaxis()->SetTitleOffset(1.0);
+	CloneArr->Draw("colz");
+	//Double_t ymax = CloneArr->GetYaxis()->GetXmax();
+	//Double_t ymin = CloneArr->GetYaxis()->GetXmin();
+	//TF1 *fgauss = TF1 fgauss("gauss", "[0]*exp(-0.5*((x-[1])/[2])**2)", 0, 100);
+
+	// ------------------------------ APPLY THRESHOLD TO 2D-HISTO ------------------------------ //
+	//	TH2D* CloneArr_2 = (TH2D*)fHM2->H2("fHCherenkovHitsDistribThetaCh")->Clone();
+	TH2D* CloneArr_2 = (TH2D*)fHM2->H2("fHCherenkovHitsDistribReduced")->Clone();
+	for (Int_t y_bin=1; y_bin<=500; y_bin++) {
+		for (Int_t x_bin=1; x_bin<=200; x_bin++) {
+			/*if (CloneArr_2->GetBinContent(x_bin, y_bin)!=0) {
+			cout << "Bin Content: " << CloneArr_2->GetBinContent(x_bin, y_bin) << endl;
+			sleep(1);
+			}
+			else;*/
+			if (CloneArr_2->GetBinContent(x_bin, y_bin) < thresh) {
+				CloneArr_2->SetBinContent(x_bin, y_bin, 0);
+			}
+		}
+	}
+	c3->cd(2);
+	CloneArr_2->GetXaxis()->SetLabelSize(0.03);
+	CloneArr_2->GetXaxis()->SetTitleSize(0.03);
+	CloneArr_2->GetXaxis()->CenterTitle();
+	CloneArr_2->GetXaxis()->SetNdivisions(612,kTRUE);
+	CloneArr_2->GetYaxis()->SetLabelSize(0.03);
+	CloneArr_2->GetYaxis()->SetTitleSize(0.03);
+	CloneArr_2->GetYaxis()->SetNdivisions(612, kTRUE);
+	CloneArr_2->GetYaxis()->CenterTitle();
+	//CloneArr_2->GetYaxis()->SetRangeUser(-2.5,2.5);
+	CloneArr_2->GetZaxis()->SetLabelSize(0.03);
+	CloneArr_2->GetZaxis()->SetTitleSize(0.03);
+	CloneArr_2->GetYaxis()->SetTitleOffset(1.0);
+	CloneArr_2->Draw("colz");
+	CloneArr_2->Write();
+
+	// -------------------- FIT SLICES AND FIT THE MEAN OF THE RESULT TO A SIN FUNCTION -------------------- //
+	CloneArr_2->FitSlicesY(0,0,-1,1);
+	c3->cd(3);
+	TH1D *histo_0 = (TH1D*)gDirectory->Get("fHCherenkovHitsDistribReduced_0");
+	histo_0->Draw();
+	c3->cd(4);
+	TH1D *histo_1 = (TH1D*)gDirectory->Get("fHCherenkovHitsDistribReduced_1");
+	//histo_1->GetYaxis()->SetRangeUser(-2.5, 2.5);
+	histo_1->Draw();
+	c3->cd(5);
+	TH1D* histo_2 = (TH1D*)gDirectory->Get("fHCherenkovHitsDistribReduced_2");
+	histo_2->Draw();
+	c3->cd(6);
+	TH1D* histo_chi2 = (TH1D*)gDirectory->Get("fHCherenkovHitsDistribReduced_chi2");
+	histo_chi2->Draw();
+
+	c3->cd(7);
+	TF1 *f1 = new TF1("f1", "[2]+[0]*cos(x)+[1]*sin(x)", -3.5, 3.5);
+	f1->SetParameters(0,0,0);
+	f1->SetParNames("Delta_phi", "Delta_lambda", "Offset");
+	histo_1->Fit("f1","","");
+	TF1 *fit = histo_1->GetFunction("f1");
+	Double_t p1 = fit->GetParameter("Delta_phi");
+	Double_t p2 = fit->GetParameter("Delta_lambda");
+	Double_t p3 = fit->GetParameter("Offset");
+	Double_t chi2 = fit->GetChisquare();
+	//cout << setprecision(6) << "Delta_phi = " << fit->GetParameter(0) << " and delta_lambda = " << fit->GetParameter(1) << endl;
+	//cout << "Delta_phi error = " << fit->GetParError(0) << " and delta_lambda error = " << fit->GetParError(1) << endl;
+	//cout << endl << "Chi2: " << chi2 << endl;
+
+/*	paramVect.push_back(fit->GetParameter("Delta_phi"));
+	paramVect.push_back(fit->GetParameter("Delta_lambda"));
+	paramVect.push_back(fit->GetParameter("Offset"));
+	paramVect.push_back(fit->GetChisquare());
+	//cout << "Vectors: Delta_phi = " << paramVect[0] << ", Delta_lambda = " << paramVect[1] << ", Offset = " << paramVect[2] << endl;
+*/
+	f1->SetParameters(fit->GetParameter(0), fit->GetParameter(1));
+	char leg[128];
+	f1->SetLineColor(2);
+	f1->Draw();
+	f1->Write();
+
+	// ------------------------------ CALCULATION OF MISALIGNMENT ANGLE ------------------------------ //
+	Double_t Focal_length = 150., q=0., A=0., Alpha=0., mis_x=0., mis_y=0.;
+	q = TMath::ATan(fit->GetParameter(0)/fit->GetParameter(1));
+	cout << endl << "fit_1 = " << fit->GetParameter(0) << " and fit_2 = " << fit->GetParameter(1) << endl;
+	//cout << "q = " << q << endl;
+	A = fit->GetParameter(1)/TMath::Cos(q);
+	//cout << "Parameter a = " << A << endl;
+	Alpha = TMath::ATan(A/1.5)*0.5*TMath::Power(10,3);                                  // *0.5, because a mirror rotation of alpha implies a rotation in the particle trajectory of 2*alpha ; 1.5 meters = Focal length = Radius_of_curvature/2
+	//cout << setprecision(6) << "Total angle of misalignment alpha = " << Alpha << endl;       // setprecision(#) gives the number of digits in the cout.
+	mis_x = TMath::ATan(fit->GetParameter(0)/Focal_length)*0.5*TMath::Power(10,3);
+	mis_y = TMath::ATan(fit->GetParameter(1)/Focal_length)*0.5*TMath::Power(10,3);
+	//cout << "Horizontal displacement = " << outputFit[0] << " [mrad] and vertical displacement = " << outputFit[1] << " [mrad]." << endl;
+
+	TLegend* LEG= new TLegend(0.30,0.7,0.72,0.85); // Set legend position
+	LEG->SetBorderSize(1);
+	LEG->SetFillColor(0);
+	LEG->SetMargin(0.2);
+	LEG->SetTextSize(0.03);
+	sprintf(leg, "Fitted sinusoid");
+	LEG->AddEntry(f1, leg, "l");
+	sprintf(leg, "Misalign in X = %f", mis_x);
+	LEG->AddEntry("", leg, "l");
+	sprintf(leg, "Misalign in Y = %f", mis_y);
+	LEG->AddEntry("", leg, "l");
+	sprintf(leg, "Offset = %f", fit->GetParameter(2));
+	LEG->AddEntry("", leg, "l");
+	LEG->Draw();
+	Cbm::SaveCanvasAsImage(c3, string(fOutputDir.Data()), "png");
+
+	TCanvas* c4 = new TCanvas(fRunTitle + fAxisRotTitle, fRunTitle + fAxisRotTitle, 400, 400);
+	CloneArr_2->Draw("colz");
+	f1->Draw("same");
+	TLegend* LEG1 = new TLegend(0.30,0.7,0.72,0.85); // Set legend position
+	LEG1->SetBorderSize(1);
+	LEG1->SetFillColor(0);
+	LEG1->SetMargin(0.2);
+	LEG1->SetTextSize(0.03);
+	sprintf(leg, "Fitted sinusoid");
+	LEG1->AddEntry(f1, leg, "l");
+	sprintf(leg, "Misalign in X = %f", mis_x);
+	LEG1->AddEntry("", leg, "l");
+	sprintf(leg, "Misalign in Y = %f", mis_y);
+	LEG1->AddEntry("", leg, "l");
+	sprintf(leg, "Offset = %f", fit->GetParameter(2));
+	LEG1->AddEntry("", leg, "l");
+	LEG1->Draw();
+
+	// ------------------------------ APPLY SECOND FIT USING LOG-LIKELIHOOD METHOD ------------------------------ //
+/*	TCanvas* c4 = new TCanvas(fRunTitle + "_Second_Fit_" + fAxisRotTitle, fRunTitle + "_Second_Fit_" + fAxisRotTitle, 600, 600);
+	c4->SetFillColor(42);
+	gPad->SetTopMargin(0.1);
+	gPad->SetFillColor(33);
+	f1->SetParameters(fit->GetParameter(0), fit->GetParameter(1), fit->GetParameter(2));
+	histo_1->Fit("f1","L","");
+	TF1 *fit2 = histo_1->GetFunction("f1");
+	f1->SetParameters(fit2->GetParameter(0), fit2->GetParameter(1), fit2->GetParameter(2));
+	f1->Draw();
+
+	Double_t q_2 = TMath::ATan(fit2->GetParameter(0)/fit2->GetParameter(1));
+	//cout << endl << "fit2_1 = " << fit2->GetParameter(0) << " and fit2_2 = " << fit2->GetParameter(1) << endl;
+	//cout << "q_2 = " << q_2 << endl;
+	Double_t A_2 = fit2->GetParameter(1)/TMath::Cos(q_2);
+	//cout << "Parameter a_2 = " << A_2 << endl;
+	Double_t Alpha_2 = TMath::ATan(A_2/1.5)*0.5*TMath::Power(10,3);
+	//cout << setprecision(6) << "Total angle of misalignment alpha_2 = " << Alpha_2 << endl;
+	Double_t mis_x_2 = TMath::ATan(fit2->GetParameter(0)/Focal_length)*0.5*TMath::Power(10,3);
+	Double_t mis_y_2 = TMath::ATan(fit2->GetParameter(1)/Focal_length)*0.5*TMath::Power(10,3);
+
+	TLegend* LEG2= new TLegend(0.31,0.7,0.72,0.85); // Set legend position
+	LEG2->SetBorderSize(1);
+	LEG2->SetFillColor(0);
+	LEG2->SetMargin(0.2);
+	LEG2->SetTextSize(0.03);
+	sprintf(leg, "Fitted sinusoid");
+	LEG2->AddEntry(f1, leg, "l");
+	sprintf(leg, "Misalign in X = %f", mis_x_2);
+	LEG2->AddEntry("", leg, "l");
+	sprintf(leg, "Misalign in Y = %f", mis_y_2);
+	LEG2->AddEntry("", leg, "l");
+	sprintf(leg, "Offset = %f", fit2->GetParameter(2));
+	LEG2->AddEntry("", leg, "l");
+	LEG2->Draw();
+	Cbm::SaveCanvasAsImage(c4, string(fOutputDir.Data()), "png");*/
+
+	outputFit.at(0) = mis_x;
+	outputFit.at(1) = mis_y;
 }
 
 void CbmRichCorrectionVector::DrawHistMapping()
@@ -1089,16 +1144,27 @@ void CbmRichCorrectionVector::DrawHistMapping()
 
 void CbmRichCorrectionVector::DrawHistProjection()
 {
-	TCanvas* can3 = new TCanvas(fRunTitle + "_Projected_Points", fRunTitle + "_Projected_Points", 1500, 900);
+	TCanvas* can3 = new TCanvas(fRunTitle + "_Projected_Points_w/Corr_" + fAxisRotTitle, fRunTitle + "_Projected_Points_w/Corr_" + fAxisRotTitle, 1500, 900);
 	can3->Divide(2,2);
 	can3->cd(1);
 	DrawH1(fHM->H1("fhDifferenceX"));
 	can3->cd(2);
 	DrawH1(fHM->H1("fhDifferenceY"));
 	can3->cd(3);
-	DrawH1(fHM->H1("fhDistanceCenterToExtrapolatedTrack"));
-	can3->cd(4);
+/*	DrawH1(fHM->H1("fhDistanceCenterToExtrapolatedTrack"));
+	can3->cd(4);*/
 	DrawH1(fHM->H1("fhDistanceCenterToExtrapolatedTrackInPlane"));
+	Cbm::SaveCanvasAsImage(can3, string(fOutputDir.Data()), "png");
+
+	TCanvas* can4 = new TCanvas(fRunTitle + "_Projected_Points_w/oCorr_" + fAxisRotTitle, fRunTitle + "_Projected_Points_w/oCorr_" + fAxisRotTitle, 1500, 900);
+	can4->Divide(2,2);
+	can4->cd(1);
+	DrawH1(fHM->H1("fhDifferenceXUncorrected"));
+	can4->cd(2);
+	DrawH1(fHM->H1("fhDifferenceYUncorrected"));
+	can4->cd(3);
+	DrawH1(fHM->H1("fhDistanceCenterToExtrapolatedTrackInPlaneUncorrected"));
+	can4->SaveAs("Uncorrected_Histograms_" + fAxisRotTitle + ".png");
 }
 
 void CbmRichCorrectionVector::DrawHistFromFile(TString fileName)
@@ -1117,9 +1183,12 @@ void CbmRichCorrectionVector::Finish()
 
 	if (fDrawAlignment) {
 		DrawHistAlignment();
-		vector<Double_t> outputFit;
-		DrawFit(outputFit);
-		Double_t Focal_length = 150;
+		Int_t thresh = 5;
+		vector<Double_t> outputFit(2);
+		DrawFit(outputFit, thresh);
+		cout << setprecision(6) << endl;
+		cout << "Horizontal displacement = " << outputFit[0] << " [mrad] and vertical displacement = " << outputFit[1] << " [mrad]." << endl;
+		/*Double_t Focal_length = 150;
 		Double_t q = TMath::ATan(outputFit[0]/outputFit[1]);
 		//cout << endl << "fit_1 = " << fit->GetParameter(0) << " and fit_2 = " << fit->GetParameter(1) << endl;
 		//cout << "q = " << q << endl;
@@ -1129,14 +1198,25 @@ void CbmRichCorrectionVector::Finish()
 		cout << endl << setprecision(6) << "Angle of misalignment alpha [mrad] = " << Alpha << endl;       // setprecision(#) gives the number of digits in the cout.
 		Double_t mis_x = TMath::ATan(outputFit[0]/Focal_length)*0.5*TMath::Power(10,3);
 		Double_t mis_y = TMath::ATan(outputFit[1]/Focal_length)*0.5*TMath::Power(10,3);
-		cout << "Misalignment in X [mrad] = " << mis_x << " and misalignment in Y [mrad] = " << mis_y << endl;
+		cout << "Misalignment in X [mrad] = " << mis_x << " and misalignment in Y [mrad] = " << mis_y << endl;*/
+
+		fHM2->Create2<TH2D>("fHCherenkovHitsDistribReduced", "fHCherenkovHitsDistribReduced;Phi_Ch [rad];Th_Ch-Th_0 [cm];Entries", 200, -3.4, 3.4, 500, -5., 5.);
 	}
 
 	if (fDrawMapping) {DrawHistMapping();}
 
-	if (fDrawProjection) {DrawHistProjection();}
+	if (fDrawProjection) {
+		DrawHistProjection();
+		fHM->H1("fhDifferenceX")->Write();
+		fHM->H1("fhDifferenceY")->Write();
+		fHM->H1("fhDistanceCenterToExtrapolatedTrack")->Write();
+		fHM->H1("fhDistanceCenterToExtrapolatedTrackInPlane")->Write();
+		fHM->H1("fhDifferenceXUncorrected")->Write();
+		fHM->H1("fhDifferenceYUncorrected")->Write();
+		fHM->H1("fhDistanceCenterToExtrapolatedTrackInPlaneUncorrected")->Write();
+	}
 
-	cout << endl << "Mirror counter = " << fMirrCounter << endl;
+	//cout << endl << "Mirror counter = " << fMirrCounter << endl;
 	//cout << setprecision(6) << endl;
 }
 ClassImp(CbmRichCorrectionVector)

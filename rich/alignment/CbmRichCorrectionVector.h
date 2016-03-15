@@ -22,7 +22,7 @@ class TH1D;
 class TH2D;
 
 
-class CbmRichCorrectionVector : public FairTask
+class CbmRichCorrectionVector : public FairTask //CbmRichProjectionProducerBase
 {
 private:
     static const int kMAX_NOF_HITS = 100; // Maximum number of hits in ring
@@ -75,11 +75,6 @@ public:
     void GetTrackPosition(Double_t &x, Double_t &y);
 
     /*
-     *
-     */
-    void DrawFit(vector<Double_t> &outputFit);
-
-    /*
      * Fill the PMT plane with hits, ONLY for event with SEVERAL particles.
      */
     void MatchFinder();
@@ -128,12 +123,23 @@ public:
      */
     void ComputeP(vector<Double_t> &ptPMirr, vector<Double_t> &ptPR2, vector<Double_t> normalPMT, vector<Double_t> ptM, vector<Double_t> ptR2Mirr, Double_t normalCste);
 
+    /*
+     *
+     */
+    void FillHistProjection(TVector3 outPos, TVector3 outPosUnCorr, Int_t NofGlobalTracks, vector<Double_t> normalPMT, Double_t constantePMT);
+
     void RotateAndCopyHitsToRingLight(const CbmRichRing* ring1, CbmRichRingLight* ring2);
 
     /*
      * Draw histograms for alignment method.
      */
     void DrawHistAlignment();
+
+    /*
+     *
+     */
+    void DrawFit(vector<Double_t> &outputFit, Int_t thresh);
+
 
     /*
      * Draw histograms for mapping.
@@ -161,13 +167,18 @@ public:
     void SetRunTitle(TString title) {fRunTitle = title;}
 
     /*
+     * Set axis rotation title. It is also a part of the file name of image files.
+     */
+    void SetAxisRotTitle(TString title) {fAxisRotTitle = title;}
+
+    /*
      * Set to TRUE if you want to draw histograms.
      */
     void SetDrawAlignment(Bool_t b) {fDrawAlignment = b;}
-
     void SetDrawMapping(Bool_t b) {fDrawMapping = b;}
-
     void SetDrawProjection(Bool_t b) {fDrawProjection = b;}
+
+    void SetIsReconstruction(Bool_t b) {fIsReconstruction = b;}
 
 
 private:
@@ -183,7 +194,7 @@ private:
     TClonesArray* fGlobalTracks;
     CbmHistManager* fHM;
     CbmHistManager* fHM2;
-    CbmRichRecGeoPar fGP;
+    //CbmRichRecGeoPar* fGP;
     vector<Float_t> fPhi;
 
     UInt_t fEventNum; // Event counter
@@ -192,6 +203,7 @@ private:
     Bool_t fDrawMapping;
     Bool_t fDrawProjection;
     Bool_t fIsMeanCenter;
+    Bool_t fIsReconstruction;
     Double_t fArray[3];
 
     std::map<string,string> fPathsMap;
