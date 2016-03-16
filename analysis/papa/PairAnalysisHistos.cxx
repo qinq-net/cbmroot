@@ -879,26 +879,40 @@ void PairAnalysisHistos::ReadFromFile(const char* file, const char *task, const 
 void PairAnalysisHistos::DrawTaskSame(TString histName, TString opt, TString histClassDenom, TString taskDenom)
 {
 
+  ///
+  /// Draw histograms of different tasks into the same canvas
+  ///
+  /// additional plotting options to DrawSame:
+  /// 'selcfg':     option to (de-)select certain task/config specified in 'histClassDenom',
+  ///               delimiters ':;,' are recognized, exclusion done by prepending '!'
+  /// 'cutstep':    histograms of the cut steps are compared for a single task (see AnalysisFilter::AddHistos)
+  ///
+  /// if argument 'taskDenom' is provided histogram ratios to this task/config are calculated
+
+  TObjArray *selections = histClassDenom.Tokenize(":;,");
+
   opt.ToLower();
   TString optString(opt);
   Bool_t optEff     = optString.Contains("eff");
   Bool_t optCutStep = optString.Contains("cutstep");
-  //  fList->Print();
-  //  fHistoList.Print();
+  Bool_t optSelCfg  = optString.Contains("selcfg");    opt.ReplaceAll("selcfg","");
   fHistoList.SetOwner(kFALSE);
 
   TString legendname = GetName();
-  printf("DrawTaskSame: legendname %s\n",legendname.Data());
+  //  printf("DrawTaskSame: legendname %s\n",legendname.Data());
 
+  /// find cut step lists if option 'cutstep' is active
   if(optCutStep) {
     TString cutstepTask = fHistoList.GetName();
     THashList *listCutStep=dynamic_cast<THashList*>(fList->FindObject(cutstepTask));
     if(listCutStep) fList=listCutStep;
   }
 
+  /// find denominator list 'taskDenom'
   THashList *listDenom = dynamic_cast<THashList*>(fList->FindObject(taskDenom.Data()));
   if(listDenom) opt+="div";
 
+  /// iterate over all tasks and their lists in the file
   TIter nextCfg(fList);
   THashList *listCfg=0;
   while ( (listCfg=static_cast<THashList*>(nextCfg())) ){
@@ -907,17 +921,37 @@ void PairAnalysisHistos::DrawTaskSame(TString histName, TString opt, TString his
 
     /// exclude QAcuts
     if( lname.Contains("QAcuts_") ) continue;
+    Info("DrawTaskSame"," Task name %s ",lname.Data());
 
-    /// skip same cfg if ratio
+    /// skip same config if argument 'taskDenom' is set
     if(!optEff && listDenom && lname.EqualTo(taskDenom)) continue;
-    //if(listDenom && lname.EqualTo(taskDenom)) continue;
+
+    /// skip configs according to selection done via histClassDenom and option 'selcfg'
+    if(optSelCfg && selections->GetEntriesFast()) {
+      Bool_t pass = kFALSE;
+      for(Int_t is=0; is<selections->GetEntriesFast(); is++) {
+	TString raw        = ((TObjString*)selections->At(is))->GetString();
+	TString srch       = raw;   srch.ReplaceAll("!","");
+	Bool_t  optExclSel = !(srch.EqualTo(raw)); // exclude or not
+	// printf("selection %d/%d: raw '%s' \t search: '%s' exclude: %d compare to: '%s' \t pass %d \n",
+	//        is,selections->GetEntriesFast()-1,raw.Data(),srch.Data(),optExclSel,lname.Data(),pass);
+	// printf("\t decision !(%d^%d)=%d  \n",(!lname.EqualTo(srch)),(optExclSel),!(!lname.EqualTo(srch))^(optExclSel));
+	/// decision
+	if( !(!lname.EqualTo(srch))^(optExclSel) )   pass = kTRUE;
+	/// same config found - direct decision (skip other selections)
+	if( lname.EqualTo(srch) ) {
+	  pass = !(!lname.EqualTo(srch))^(optExclSel);
+	  //	  printf("\t same config found -> stop with pass: %d \n",pass);
+	  break;
+	}
+      }
+      if(!pass) continue;
+    }
 
     /// keep only legend name!=task name
     if(lname.EqualTo(legendname)) legendname="";
 
-    Info("DrawTaskSame"," Task name %s ",lname.Data());
-
-    // update histogram list
+    /// update current histogram list
     ResetHistogramList();
     TIter next(listCfg);
     Int_t idx=0;
@@ -925,17 +959,17 @@ void PairAnalysisHistos::DrawTaskSame(TString histName, TString opt, TString his
     while ( (o=next()) ){
       fHistoList.AddAt(o,idx++);
     }
-
-    // adapt name for legend
-    SetName(listCfg->GetName());
     //fHistoList.Print();
+
+    /// adapt name for legend
+    SetName(listCfg->GetName());
     DrawSame(histName,(opt+"task").Data(),histClassDenom, listDenom);
 
   }
 
-  // set legend name
+  /// set legend name
   if(optString.Contains("leg")) {
-    printf("DrawTaskSame: SET legendname %s\n",legendname.Data());
+    //    printf("DrawTaskSame: SET legendname %s\n",legendname.Data());
     legendname.ReplaceAll(".","");
     TList *prim = gPad->GetListOfPrimitives();
     TLegend *leg=(TLegend*)prim->FindObject("TPave");
@@ -954,56 +988,70 @@ void PairAnalysisHistos::DrawTaskSame(TString histName, TString opt, TString his
     leg->Draw();
   }
 
+  /// cleanup
+  if(selections) delete selections;
+
 }
 
 //_____________________________________________________________________________
-TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, TString histClassDenom, THashList *listDenom)
+TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TString histClassDenom, THashList *listDenom)
 {
-  //
-  // Draw all histograms with the same name into one canvas
-  // if option contains 'leg(f)' a ('filled') legend will be created with the class name as caption
-  // if option contains 'can' a new canvas is created
-  // if option contains 'rebinx' the objects are rebinned by x (for x<10)
-  // if option contains 'rebinstat' the objects are rebinned to have < 10% stat uncertainty per bin
-  // if option contains 'norm' the objects are normalized to 1
-  // if option contains 'events' use meta data to normalize
-  // if option contains 'logx,y,z' the axis are plotted in log
-  // if option contains 'meta' the meta data are plotted
-  // if option contains 'NoMc' mc signals are not plotted
-  // if option contains 'NoMcTrue' mc truth signals are not plotted
-  // if option contains 'OnlyMc' only mc signals are plotted
-  // if option contains 'Eff' efficiencies are plotted
-  // if option contains 'Ratio' the ratios of any histclass to 'histClassDenom' are plotted
-  // if option contains 'meanX,Y' quote the mean in the legend
-  // if option contains 'rmsX,Y' quote the rms in the legend
-  // if option contains 'task' histograms of different tasks are compared (see DrawTaskSame)
-  // if option contains 'div' histograms of different tasks are divided (see DrawTaskSame)
-  // if option contains 'goff' graphics off
-  // if option contains 'eps' save as eps file
-  // if option contains 'png' save as png file
-  // if option contains 'det' save as png file
+  ///
+  /// Draw histograms with the same histName into a canvas
+  ///
+  /// additional plotting options to TH1::Draw():
+  /// 'goff':       graphics are switched off & an array with the objects is returned
+  /// 'task':       histograms of different tasks are compared (see DrawTaskSame)
+  ///
+  /// 'div':        histograms of different tasks are divided (see DrawTaskSame) INTERNAL?
+  /// 'eff':        efficiencies are calculated
+  /// 'ratio':      ratios of any histclass to 'histClassDenom' are calculated
+  /// 'oneOver':    the histogram is rescaled by 1./contents
+  ///
+  /// 'noMc':       no mc signals are plotted
+  /// 'noMcTrue':   no mc truth signals are plotted
+  /// 'onlyMc':     only mc signals are plotted
+  /// 'onlyMc':     only mc signals are plotted
+  /// 'sel':        option to (de-)select certain histClasses specified in 'histClassDenom',
+  ///               delimiters ':;,' are recognized, exclusion done by prepending '!'
+  ///
+  /// 'can':        a new canvas is created with name: 'c'+'histName'
+  /// 'logx,y,z':   the axis are plotted in log-scale (labels are added automatically according to the range)
+  /// 'meta'        adds default meta data to the pad (see PairAnalysisMetaData::DrawSame)
+  /// 'leg(f)':     a ('filled') legend will be created with caption=className ,
+  ///               can be modified by PairAnalysisHistos::SetName("mycaption"),
+  ///               change of legend position: see PairAnalysisStyler::SetLegendAlign
+  /// 'meanX,Y':    quote the mean in the legend (Y only works for TProfile a.t.m.)
+  /// 'rmsX,Y':     quote the rms in the legend (Y only works for TProfile a.t.m.)
+  /// 'det':        adds the detector name to the legend for detector specific histograms (e.g. hit histograms)
+  ///
+  /// 'rebinstat':  the objects are rebinned to have <80% stat uncertainty in each bin (preliminary)
+  /// 'rebinX':     rebins the histogram along x-axis by factor 'X' (for X<10)
+  /// 'sclmax':     scale the histogram by 1./maximum
+  /// 'norm':       histogram is normalized to 1.
+  /// 'normY':      2D-histograms are normalized in x-axis slices to 1.
+  /// 'events':     use number of used events in meta data to normalize the histograms
+  ///
+  /// 'geant':      translate geantId to geant process names (see PairAnalysisHelper::SetGEANTBinLabels)
 
-  TString optString(opt);
+  TString optString(option);
   optString.ToLower();
   printf("Plot hist: '%s' class-denom/sel: '%s' \t listDenom: '%s' \t options: '%s' \n",
        histName.Data(), histClassDenom.Data(), (listDenom?listDenom->GetName():""), optString.Data());
   Bool_t optGoff     =optString.Contains("goff");      optString.ReplaceAll("goff","");
-  // Bool_t optEps      =optString.Contains("eps");       optString.ReplaceAll("eps","");
-  // Bool_t optPng      =optString.Contains("png");       optString.ReplaceAll("png","");
   Bool_t optTask     =optString.Contains("task");      optString.ReplaceAll("task","");
   Bool_t optCutStep = optString.Contains("cutstep");   optString.ReplaceAll("cutstep","");
-  // options - calulation
+  /// options - calulation
   Bool_t optDiv      =optString.Contains("div");       optString.ReplaceAll("div","");
   Bool_t optEff      =optString.Contains("eff");       optString.ReplaceAll("eff","");
   Bool_t optRatio    =optString.Contains("ratio");     optString.ReplaceAll("ratio","");
   Bool_t optOneOver  =optString.Contains("oneover");   optString.ReplaceAll("oneover","");
-  // options - selection
+  /// options - selection
   Bool_t optNoMCtrue =optString.Contains("nomctrue");  optString.ReplaceAll("nomctrue","");
   Bool_t optNoMC     =optString.Contains("nomc");      optString.ReplaceAll("nomc","");
   Bool_t optOnlyMC   =optString.Contains("onlymc");    optString.ReplaceAll("onlymc","");
   Bool_t optSel      =optString.Contains("sel");       optString.ReplaceAll("sel","");
-  Bool_t optExclSel  =histClassDenom.Contains("!");    histClassDenom.ReplaceAll("!","");
-  // options - representation
+  /// options - representation
   Bool_t optCan      =optString.Contains("can");       optString.ReplaceAll("can","");
   Bool_t optLegFull  =optString.Contains("legf");      optString.ReplaceAll("legf","");
   Bool_t optLeg      =optString.Contains("leg");       optString.ReplaceAll("leg","");
@@ -1015,14 +1063,14 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
   Bool_t optNormY    =optString.Contains("normy");      optString.ReplaceAll("normy","");
   Bool_t optNorm     =optString.Contains("norm");      optString.ReplaceAll("norm","");
   Bool_t optEvt      =optString.Contains("events");    optString.ReplaceAll("events","");
-  // options - information
+  /// options - information
   Bool_t optMeanX    =optString.Contains("meanx");     optString.ReplaceAll("meanx","");
   Bool_t optRmsX     =optString.Contains("rmsx");      optString.ReplaceAll("rmsx","");
   Bool_t optMeanY    =optString.Contains("meany");     optString.ReplaceAll("meany","");
   Bool_t optRmsY     =optString.Contains("rmsy");      optString.ReplaceAll("rmsy","");
   Bool_t optGeant    =optString.Contains("geant");     optString.ReplaceAll("geant","");
 
-  // set rebinning
+  /// set rebinning
   Int_t rbn = 2;
   if(optRbn) {
     TString rebin(optString(optString.Index("rebin",5,0,TString::kExact)+5));
@@ -1036,11 +1084,12 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
   // option dependencies
   if(optLegFull) optLeg=kTRUE;
 
-  // selection string
+  /// selection string
   TString select("");
-  if(optSel) { select=histClassDenom; histClassDenom=""; }
+  TObjArray *selections = (optSel ? histClassDenom.Tokenize(":;,") : NULL);
+  if(optSel) histClassDenom="";
 
-  // output array
+  /// output array
   TObjArray *arr=0x0;
   if(optGoff) {
     Info("DrawSame","graphics option off, collect an array");
@@ -1053,7 +1102,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
     arr->SetOwner(kFALSE);
   }
 
-  // add canvas
+  /// add canvas
   TCanvas *c=0;
   if (optCan){
     c=(TCanvas*)gROOT->FindObject(Form("c%s",histName.Data()));
@@ -1062,7 +1111,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
     c->cd();
   }
 
-  // count number of drawn objects in pad
+  /// count number of drawn objects in pad
   TObject *obj;
   Int_t nobj=0;
   TList *prim = gPad->GetListOfPrimitives();
@@ -1072,10 +1121,9 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
     if(obj->InheritsFrom(TH1::Class()) && obj!=prim->At(io+1)) nobj++;
   }
 
-  // add or get legend //TODO: change to (optLeg && !nobj) ????
+  /// add or get legend
   TLegend *leg=0;
   if( (optLeg && !nobj) ) {
-    //  if ( (optLeg && optTask && !nobj) || (optLeg && !optTask && !optDet) ) { 
     leg=new TLegend(0. + gPad->GetLeftMargin()  + gStyle->GetTickLength("Y"),
 		    0. + gPad->GetBottomMargin()+ gStyle->GetTickLength("X"),
 		    1. - gPad->GetRightMargin() + gStyle->GetTickLength("Y"),
@@ -1091,10 +1139,10 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
     // leg->SetY2(1. - gPad->GetTopMargin()   + gStyle->GetTickLength("X"));
     // leg->SetOption("nbNDC");
   }
-  
+
   Info("DrawSame","Basics: nobj: %d \t leg: %p",nobj,leg);
 
-  // logaritmic style
+  /// logaritmic axes
   if(optString.Contains("logx")) gPad->SetLogx();
   if(optString.Contains("logy")) gPad->SetLogy();
   if(optString.Contains("logz")) gPad->SetLogz();
@@ -1102,15 +1150,16 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
   optString.ReplaceAll("logy","");
   optString.ReplaceAll("logz","");
 
-  // meta data
+  /// meta data
   Int_t events = 1;
   if(fMetaData && optEvt)  fMetaData->GetMeta("events",&events);
 
-  Int_t i=nobj;//(nobj ? 10 : 0); // TOD0: obsolete?
+  Int_t i=nobj;
   if(optTask && nobj) i=nobj;
   TIter next(&fHistoList);
   THashList *classTable=0;
   TH1 *hFirst=0x0;
+  /// iterate over all histogram classes (events,pairs,tracks,hits)
   while ( (classTable=(THashList*)next()) ){
     TString histClass=classTable->GetName();
 
@@ -1118,41 +1167,51 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
     Info("DrawSame","Search for hist: '%s' class-denom: '%s' select: '%s' \t ndel: %d \t for class: '%s'",
 	 histName.Data(), histClassDenom.Data(), select.Data(), ndel, histClass.Data() );
 
-    // check MC options
+    /// check selections done via MC options 'onlyMC', 'noMC', 'noMCtrue', 'eff'
     if( (optNoMC && ndel>0) ||
 	(optEff && ndel<1)  ||
 	(optNoMCtrue && histClass.Contains("_MCtruth")) ||
 	(optOnlyMC && ndel<1)                      ) continue;
 
-    // histclass selection
-    if( optSel && (!histClass.Contains(select,TString::kIgnoreCase))^optExclSel ) continue;
-    //    if( optSel && (!histClass.Contains(histClassDenom))^optExclSel ) continue;
-    
-    // find the histogram in the class table
+    /// histclass selections done via option 'sel' and argument 'histClassDenom' -> into array selections
+    if(optSel && selections->GetEntriesFast()) {
+      Bool_t pass = kFALSE;
+      for(Int_t is=0; is<selections->GetEntriesFast(); is++) {
+	TString raw        = ((TObjString*)selections->At(is))->GetString();
+	TString srch       = raw;   srch.ReplaceAll("!","");
+	Bool_t  optExclSel = !(srch.EqualTo(raw)); // exclude or not
+	/// decision
+	if( !(!histClass.Contains(srch,TString::kIgnoreCase))^(optExclSel) )   pass = kTRUE;
+	/// exact string found - direct decision (ignore other selections)
+	if( histClass.EqualTo(srch,TString::kIgnoreCase) ) {
+	  pass = !(!histClass.EqualTo(srch,TString::kIgnoreCase))^(optExclSel);
+	  break;
+	}
+      }
+      if(!pass) continue;
+    }
+
+
+    /// find the histogram 'histName' in the class table
     if ( TH1 *h=(TH1*)classTable->FindObject(histName.Data()) ) {
 
-      // check if efficiency caluclation is possible
+      /// get histClassDenom for efficiency caluclation, e.g. the MCtruth (denominator)
       if(optEff && !histClass.Contains("_MCtruth")) histClassDenom = histClass + "_MCtruth";
-      //      if(optEff && (!fHistoList.FindObject( histClassName.Data() ) || histClass.Contains("_MCtruth")) ) continue;
-      //      if(optEff && (!fHistoList.FindObject( Form("%s_MCtruth",histClass.Data()) ) || histClass.Contains("_MCtruth")) ) continue;
       Info("DrawSame"," Hist found in histClass '%s' (search for denom '%s') ",histClass.Data(),histClassDenom.Data());
 
-      // check if ratio should be build
-      /// TODO: why  '!optTask' was needed?
-      if( (optEff || optRatio) /*&& !optTask*/ && (histClass.EqualTo(histClassDenom) || !fHistoList.FindObject(histClassDenom.Data())) ) continue;
+      /// check if 'ratio' or 'eff' should be build
+      if( (optEff || optRatio) /*&& !optTask*/ && (histClass.EqualTo(histClassDenom) || !fHistoList.FindObject(histClassDenom.Data())) ) continue;       /// TODO: why  '!optTask' was needed?
       else if(!histClassDenom.IsNull()) Info("DrawSame"," Denom histClass '%s' found ",histClassDenom.Data());
 
-      // set first histogram
+      /// set first histogram
       if (i==0) hFirst=h;
 
-      // set geant process labels
-      // if(!histName.CompareTo("GeantId")) PairAnalysisHelper::SetGEANTBinLabels(h);
-
-      // normalisation
+      /// print normalisation option
       if(optRbn||optRbnStat)        Info("DrawSame"," Rebin by %d, to <%.1f%% stat. uncertainty per bin",(optRbn?rbn:0),(optRbnStat?0.8*100:0));
       if(optNormY||optNorm||optEvt) Info("DrawSame"," Normalize in y-axis,2D's only(%d), by int.(%d), by #events(%d)",optNormY,optNorm,optEvt);
       if(optSclMax)                 Info("DrawSame"," Scale to maximum(%d)",optSclMax);
 
+      /// rebin, normalize and scale spectra according to options 'rebinX','rebinStat','norm','normY','events','sclMax'
       h->Sumw2();
       if(optRbn)                    h->Rebin(rbn);
       if(optNormY && h->GetDimension()==2 && !(h->GetSumOfWeights()==0)) {
@@ -1168,13 +1227,14 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	delete hsum;
       }
       if(optRbnStat) {
+	/// rebin until stat. uncertainty is lower than 80%
 	TArrayD* limits = PairAnalysisHelper::MakeStatBinLimits(h,0.8);
 	h=h->Rebin(limits->GetSize()-1,h->GetName(),limits->GetArray());
 	h->Scale(1.,"width");
 	delete limits;
       }
 
-      // set title
+      /// get default histogram titles
       TString ytitle = h->GetYaxis()->GetTitle();
       TString ztitle = h->GetZaxis()->GetTitle();
       if(ytitle.Contains("{evt}")) optEvt=kFALSE;
@@ -1183,9 +1243,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
       if(optEvt)                    h->Scale(1./events);
       if(optSclMax)                 h->Scale(1./h->GetBinContent(h->GetMaximumBin()));
 
-      // set title
-      // TString ytitle = h->GetYaxis()->GetTitle();
-      // TString ztitle = h->GetZaxis()->GetTitle();
+      /// modify titles according to options
       switch(h->GetDimension()) {
       case 1:
 	if(optEvt)    h->SetYTitle( (ytitle+"/N_{evt}").Data() );
@@ -1206,7 +1264,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	break;
       }
 
-      // ratio and drawing
+      /// Calculate ratios and Draw histograms
       if( (optEff || optRatio) && !optNorm && !optEvt && !optTask)  {
 	Info("DrawSame"," Calculate '%s' w/o normalisation and within the same task",(optEff?"efficiency":"ratio"));
 	//	TString    clMC     = histClass+"_MCtruth";
@@ -1299,7 +1357,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	else if(htden  && !h->Divide(htden))         { Warning("DrawSame(eff/ratio)","h & task-denom division failed!!!!"); continue; }
       }
 
-      // flip content values
+      /// flip bin contents of histograms to 1./content
       if(optOneOver){
 	Info("DrawSame"," Scale by 1/content");
 	TH1 *hOne = (TH1*) h->Clone("one");
@@ -1309,36 +1367,38 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	if(hOne->Divide(h)) h=hOne;
       }
 
-      // geant labels
+      /// set special geant labels
       if(optGeant) {
 	Info("DrawSame"," Set GEANT bin labels");
 	PairAnalysisHelper::SetGEANTBinLabels(h);
       }
 
-      // style
+      /// style histograms if not done before
       if(h->GetLineColor()==kBlack && !optString.Contains("col")) { // avoid color updates
 	h->UseCurrentStyle();
 	PairAnalysisStyler::Style(h,i);
       }
-      if(optString.Contains("scat")) h->SetMarkerStyle(kDot);
-      if(optString.Contains("e"))    h->SetLineStyle(kSolid);
+      /// some default styles for certain options
+      if(optString.Contains("scat"))   h->SetMarkerStyle(kDot);
+      if(optString.Contains("e"))      h->SetLineStyle(kSolid);
       if(optString.Contains("text")) { h->SetLineColor(1); h->SetMarkerColor(1); }
 
-      // change name
+      /// set histogram title to current histClass
       //      h->SetName(histClass.Data());
       h->SetTitle(histClass.Data());
-      if(optGoff) arr->Add(h);
 
-      // draw prepared histogram
-      if(!optGoff) {
+      /// add histograms to returned array if option 'goff' is active, otherwise
+      /// draw the histogram
+      if(optGoff)
+	arr->Add(h);
+      else {
 	optString.ReplaceAll(" ","");
 	Info("DrawSame"," Draw object with options: '%s'",optString.Data());
 	h->Draw(i>0?(optString+"same").Data():optString.Data());
       }
 
 
-
-      // protection e.g. normalization not possible TProfile
+      /// protection e.g. normalization not possible TProfile
       if(h && h->GetEntries()>0.) {
 
 	TString ratioName=histClassDenom;
@@ -1440,13 +1500,14 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
     }
   }
 
-  // legend
+  /// draw legend only once
+  /// set legend coordinates, margins, fillstyle, fontsize
   if (leg) {
-    PairAnalysisStyler::SetLegendAttributes(leg,optLegFull); // coordinates, margins, fillstyle, fontsize
-    if(!nobj) leg->Draw(); // only draw the legend once
+    PairAnalysisStyler::SetLegendAttributes(leg,optLegFull);
+    if(!nobj) leg->Draw();
   }
 
-  // axis maximum
+  /// automatic axis minimum and maximum
   Double_t max=-1e10;
   Double_t min=+1e10;
   TListIter nextObj(gPad->GetListOfPrimitives(),kIterBackward);
@@ -1477,7 +1538,8 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
       // if(!optEff) h1->SetMaximum(max*(gPad->GetLogy()?5.:1.1));
       // else        h1->SetMaximum(1.1);
       // if(!optEff) h1->SetMinimum( min*(min<0.?1.1:0.9) ); //TODO: doesnt work, why?? Negative values?
-      // automatically set log option
+
+      /// automatically set log option labels
       if(gPad->GetLogy() && (tmpmax/(tmpmin>0.?tmpmin:1.) > TMath::Power(10.,TGaxis::GetMaxDigits()) || tmpmin<TMath::Power(10.,-TGaxis::GetMaxDigits()))) {
 	//      if(gPad->GetLogy() && tmpmax/(tmpmin>0.?tmpmin:1.) > TMath::Power(10.,TGaxis::GetMaxDigits())) {
 	h1->GetYaxis()->SetMoreLogLabels(kFALSE);
@@ -1490,13 +1552,13 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
     }
   }
 
-  // draw meta data
+  /// draw only once the default metadata if option 'meta' is active
   if(!nobj && optMeta && fMetaData && !gPad->GetPrimitive("meta")) {
     fMetaData->DrawSame("");
   }
 
-  // force legend to be drawn always on top, remove multiple versions of it
-  // they show up when one uses the 'task' draw option
+  /// force legend to be drawn always on top, remove multiple versions of it
+  /// they show up when one uses the 'task' draw option
   if(!optTask && 0) {
     if(leg) leg->DrawClone();
     nextObj.Reset();
@@ -1509,16 +1571,15 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
     }
   }
 
-  // styling
-  // NOTE: this draws a copy of the first histogram
-  gPad->RedrawAxis(); 
+  /// styling
+  /// NOTE: this draws a copy of the first histogram
+  gPad->RedrawAxis();
 
-  // remove canvas
+  /// remove canvas if graphics are switched off ('goff')
   if(optGoff) { c->Close(); delete c; }
-  
-  // // save as
-  // if(optEps) c->SaveAs(Form("%s.eps",c->GetName()));
-  // if(optPng) c->SaveAs(Form("%s.png",c->GetName()));
+
+  /// clean up
+  if(selections) delete selections;
 
   return arr;
 }

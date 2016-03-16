@@ -226,7 +226,7 @@ public:
 
   virtual void Print(const Option_t* option = "") const;
   virtual void Draw(const Option_t* option = "");
-  virtual TObjArray *DrawSame(TString histName, const Option_t *opt="leg can", TString histClassDenom="", THashList *listDenom=0x0);
+  virtual TObjArray *DrawSame(TString histName,  TString option="leg can", TString histClassDenom="", THashList *listDenom=0x0);
   virtual void DrawTaskSame(TString histName, TString opt="leg can", TString histClassDenom="", TString taskDenom="");
 
   static Int_t GetPrecision(Double_t value);
