@@ -6,31 +6,10 @@
 // macro to reconstruct particles from signal events by KFParticleFinder
 //_________________________________________________________________________________
 
-void physSignal(int nEventsToRun = 10000;) {
+void physSignal(int nEventsToRun = 10000) {
 
   TStopwatch timer;
   timer.Start();
-
-    // ----  Load libraries   -------------------------------------------------
-  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-  basiclibs();
-  gSystem->Load("libGeoBase");
-  gSystem->Load("libParBase");
-  gSystem->Load("libBase");
-  gSystem->Load("libCbmBase");
-  gSystem->Load("libCbmData");
-  gSystem->Load("libField");
-  gSystem->Load("libGen");
-  gSystem->Load("libPassive");
-  gSystem->Load("libMvd");
-  gSystem->Load("libSts");
-  gSystem->Load("libTrd");
-  gSystem->Load("libTof");
-  gSystem->Load("libEcal");
-  gSystem->Load("libGlobal");
-  gSystem->Load("libKF");
-  gSystem->Load("libL1");
-  // ------------------------------------------------------------------------
 
   const int firstEventToRun = 0;
   const int lastEventToRun = firstEventToRun + nEventsToRun - 1;
@@ -98,16 +77,15 @@ void physSignal(int nEventsToRun = 10000;) {
   // ------------------------------------------------------------------------
 
   // -----   Intialise and run   --------------------------------------------
-//  run->LoadGeometry();
   run->Init();
   
   KFPartEfficiencies eff;
-  for(int jParticle=0; jParticle<93; jParticle++)
+  for(int jParticle=125; jParticle<133; jParticle++)
   {
     TDatabasePDG* pdgDB = TDatabasePDG::Instance();
 
     if(!pdgDB->GetParticle(eff.partPDG[jParticle])){
-        pdgDB->AddParticle(eff.partTitle[jParticle],eff.partTitle[jParticle], eff.partMass[jParticle], kTRUE,
+        pdgDB->AddParticle(eff.partTitle[jParticle].data(),eff.partTitle[jParticle].data(), eff.partMass[jParticle], kTRUE,
                            0, eff.partCharge[jParticle]*3,"Ion",eff.partPDG[jParticle]);
     }
   }

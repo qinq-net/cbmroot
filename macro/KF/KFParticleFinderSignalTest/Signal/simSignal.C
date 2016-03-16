@@ -10,27 +10,9 @@ void simSignal(Int_t iParticle = 0, Int_t nEvents = 10000, bool useMvd = 0)
 {
   // ========================================================================
   //          Adjust this part according to your requirements
-   // ----  Load libraries   -------------------------------------------------
-  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-  basiclibs();
-  gSystem->Load("libGeoBase");
-  gSystem->Load("libParBase");
-  gSystem->Load("libBase");
-  gSystem->Load("libCbmBase");
-  gSystem->Load("libCbmData");
-  gSystem->Load("libField");
-  gSystem->Load("libGen");
-  gSystem->Load("libPassive");
-  gSystem->Load("libMvd");
-  gSystem->Load("libSts");
-  gSystem->Load("libTrd");
-  gSystem->Load("libTof");
-  gSystem->Load("libEcal");
-  gSystem->Load("libKF");
-  gSystem->Load("libL1");
   
   //For charm particles MVD should be on
-  if(iParticle >= 46 && iParticle<=63)
+  if(iParticle >= 50 && iParticle<=67)
     useMvd = 1;
   
   const bool sameZ = 0;
@@ -48,7 +30,7 @@ void simSignal(Int_t iParticle = 0, Int_t nEvents = 10000, bool useMvd = 0)
 
     // -----  Geometries  -----------------------------------------------------
   TString caveGeom   = "cave.geo";
-  TString pipeGeom   = "pipe/pipe_v13b.geo.root"; //===>>>
+  TString pipeGeom   = "pipe/pipe_v14l.geo.root"; //===>>>
   TString magnetGeom = "magnet/magnet_v12b.geo.root";
   TString mvdGeom    = "mvd/mvd_v14b.geo.root";
 
@@ -149,19 +131,12 @@ void simSignal(Int_t iParticle = 0, Int_t nEvents = 10000, bool useMvd = 0)
     fRun->AddModule(ecal);
   }
 
-
   // -----   Create magnetic field   ----------------------------------------
   CbmFieldMap* magField = new CbmFieldMapSym3(fieldMap);
   magField->SetPosition(0., 0., fieldZ);
   magField->SetScale(fieldScale);
   fRun->SetField(magField);
   // ------------------------------------------------------------------------
-
-  // Use theexperiment specific MC Event header instead of the default one
-  // This one stores additional information about the reaction plane
-  CbmMCEventHeader* mcHeader = new CbmMCEventHeader();
-  fRun->SetMCEventHeader(mcHeader);
-
 
   // -----   Create PrimaryGenerator   --------------------------------------
   FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
@@ -171,12 +146,12 @@ void simSignal(Int_t iParticle = 0, Int_t nEvents = 10000, bool useMvd = 0)
   fRun->SetGenerator(primGen);
   
   KFPartEfficiencies eff;
-  for(int jParticle=85; jParticle<93; jParticle++)
+  for(int jParticle=125; jParticle<133; jParticle++)
   {
     TDatabasePDG* pdgDB = TDatabasePDG::Instance();
 
     if(!pdgDB->GetParticle(eff.partPDG[jParticle])){
-        pdgDB->AddParticle(eff.partTitle[jParticle],eff.partTitle[jParticle], eff.partMass[jParticle], kTRUE,
+        pdgDB->AddParticle(eff.partTitle[jParticle].data(),eff.partTitle[jParticle].data(), eff.partMass[jParticle], kTRUE,
                            0, eff.partCharge[jParticle]*3,"Ion",eff.partPDG[jParticle]);
     }
   }
@@ -186,28 +161,28 @@ void simSignal(Int_t iParticle = 0, Int_t nEvents = 10000, bool useMvd = 0)
   Int_t PDG = eff.partPDG[iParticle];
   Double_t charge = eff.partCharge[iParticle];
   
-  if(iParticle == 48 || iParticle ==49)
+  if(iParticle == 52 || iParticle == 53)
   {
-    for(int iPall=48; iPall<50; iPall++)
+    for(int iPall=52; iPall<54; iPall++)
     {
       Double_t lifetime = eff.partLifeTime[iPall]; // lifetime
       Double_t mass = eff.partMass[iPall];
       Int_t PDG = eff.partPDG[iPall];
       Double_t charge = eff.partCharge[iPall];
     
-      FairParticle* newParticle = new FairParticle(PDG, eff.partTitle[iPall], kPTHadron, mass, charge,
+      FairParticle* newParticle = new FairParticle(PDG, eff.partTitle[iPall].data(), kPTHadron, mass, charge,
               lifetime, "hadron", 0.0, 1, 1, 0, 1, 1, 0, 0, 1, kFALSE);
       fRun->AddNewParticle(newParticle);
     }
-    TString pythia6Config = "/u/mzyzak/cbmtrunk/macro/kf/KFParticleFinderSignalTest/Signal/DecayConfig.C()";
+    TString pythia6Config = "/u/mzyzak/cbmtrunk/macro/KF/KFParticleFinderSignalTest/Signal/DecayConfig.C()";
     fRun->SetPythiaDecayer(pythia6Config);
   }
 
   fRun->Init();
   
-  if(!(iParticle == 48 || iParticle ==49))
+  if(!(iParticle == 52 || iParticle == 53))
   {
-    gMC->DefineParticle(PDG, eff.partTitle[iParticle], kPTHadron, mass, charge,
+    gMC->DefineParticle(PDG, eff.partTitle[iParticle].data(), kPTHadron, mass, charge,
             lifetime, "hadron", 0.0, 1, 1, 0, 1, 1, 0, 0, 1, kFALSE);
     
     Int_t mode[6][3];

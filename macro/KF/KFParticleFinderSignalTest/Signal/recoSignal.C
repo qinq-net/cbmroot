@@ -232,8 +232,10 @@ void recoSignal(Int_t nEvents = 10000) {
   }
   
   // ---   STS track matching   ----------------------------------------------
-  CbmMatchRecoToMC* matchTask = new CbmMatchRecoToMC();
-  run->AddTask(matchTask);
+  CbmMatchRecoToMC* matchTask2 = new CbmMatchRecoToMC();
+  if(IsMvd(parFile))
+  matchTask2->SetIncludeMvdHitsInStsTrack(1);
+  run->AddTask(matchTask2);
   // -------------------------------------------------------------------------
 
   // -----  Parameter database   --------------------------------------------
@@ -253,12 +255,12 @@ void recoSignal(Int_t nEvents = 10000) {
   run->Init();
   //add ions to the TDatabasePDG
   KFPartEfficiencies eff;
-  for(int jParticle=85; jParticle<93; jParticle++)
+  for(int jParticle=125; jParticle<133; jParticle++)
   {
     TDatabasePDG* pdgDB = TDatabasePDG::Instance();
 
     if(!pdgDB->GetParticle(eff.partPDG[jParticle])){
-        pdgDB->AddParticle(eff.partTitle[jParticle],eff.partTitle[jParticle], eff.partMass[jParticle], kTRUE,
+        pdgDB->AddParticle(eff.partTitle[jParticle].data(),eff.partTitle[jParticle].data(), eff.partMass[jParticle], kTRUE,
                            0, eff.partCharge[jParticle]*3,"Ion",eff.partPDG[jParticle]);
     }
   }

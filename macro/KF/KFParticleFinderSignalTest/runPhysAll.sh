@@ -25,7 +25,7 @@ NOL=0
 
 
 PID=""
-for i in {0..74}
+for i in {0..78}
 do
   CURDIR="Signal"$i
   cd $CURDIR
@@ -36,12 +36,12 @@ do
   bash runphys.sh $NEVENTS >& runphys.log &
   PID=$PID" "$!
 
-  if [ $TASKS -eq $NNN ]
-  then
-    wait $PID
-    PID=""
-    TASKS=0
-  fi
+#   if [ $TASKS -eq $NNN ]
+#   then
+#     wait $PID
+#     PID=""
+#     TASKS=0
+#   fi
   
   TASKS=`expr $TASKS + $ONE`
   

@@ -26,7 +26,7 @@ ONE=1
 NOL=0
 
 PID=""
-for i in {0..74}
+for i in {0..78}
 do
   CURDIR="Signal"$i
   mkdir $CURDIR
@@ -40,12 +40,12 @@ do
   
   sleep 0.1
   
-  if [ $TASKS -eq $NNN ]
-  then
-    wait $PID
-    PID=""
-    TASKS=0
-  fi
+#   if [ $TASKS -eq $NNN ]
+#   then
+#     wait $PID
+#     PID=""
+#     TASKS=0
+#   fi
   
   TASKS=`expr $TASKS + $ONE`
   
