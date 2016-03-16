@@ -54,7 +54,7 @@ void CbmRichProjectionProducer2::Init()
 void CbmRichProjectionProducer2::DoProjection(TClonesArray* projectedPoint)
 {
 	cout << endl << "//--------------------------------------------------------------------------------------------------------------//" << endl;
-	cout << "//-------------------------------- CbmRichProjectionProducer2: Do Producer ---------------------------------//" << endl << endl;
+	cout << "//-------------------------------- CbmRichProjectionProducer2: Do Projection ---------------------------------//" << endl << endl;
 	cout << "//----------------------------------------------------------------------------------------------------------------------//" << endl;
 
 	fEventNum++;
@@ -134,7 +134,10 @@ Double_t* CbmRichProjectionProducer2::ProjectionProducer(FairTrackParam* trackPa
 	ptR1.at(0) = trackParam->GetX();
 	ptR1.at(1) = trackParam->GetY();
 	ptR1.at(2) = trackParam->GetZ();
-	CbmRichNavigationUtil::GetDirCos(trackParam, ptR1.at(3), ptR1.at(4), ptR1.at(5));
+	Double_t nx=0., ny=0., nz=0.;
+	CbmRichNavigationUtil::GetDirCos(trackParam, nx, ny, nz);
+	TVector3 dirCos;
+	dirCos.SetXYZ(nx, ny, nz);
 	GetPmtNormal(NofPMTPoints, normalPMT, constantePMT);
 	cout << "Calculated normal vector to PMT plane = {" << normalPMT.at(0) << ", " << normalPMT.at(1) << ", " << normalPMT.at(2) << "} and constante d = " << constantePMT << endl << endl;
 
@@ -144,6 +147,7 @@ Double_t* CbmRichProjectionProducer2::ProjectionProducer(FairTrackParam* trackPa
 	ptM.at(1) = mirrorPoint.y();
 	ptM.at(2) = mirrorPoint.z();
 	cout << "Mirror intersection: " << mirrorIntersection << endl;
+	cout << "Mirror point coordinates = {" << mirrorPoint.x() << ", " << mirrorPoint.y() << ", " << mirrorPoint.z() << "}" << endl;
 
 	if (mirrorIntersection) {
 		navi->cd(mirrorIntersection);
@@ -214,8 +218,8 @@ void CbmRichProjectionProducer2::GetPmtNormal(Int_t NofPMTPoints, vector<Double_
 		pmtTrackID = pmtPoint->GetTrackID();
 		track = (CbmMCTrack*) fMCTracks->At(pmtTrackID);
 		pmtMotherID = track->GetMotherId();
-		a[0] = pmtPoint->GetX(), a[1] = pmtPoint->GetY(), a[2] = pmtPoint->GetZ();
-		//cout << "a[0] = " << a[0] << ", a[1] = " << a[1] << " et a[2] = " << a[2] << endl;
+		//a[0] = pmtPoint->GetX(), a[1] = pmtPoint->GetY(), a[2] = pmtPoint->GetZ();
+		cout << "a[0] = " << a[0] << ", a[1] = " << a[1] << " et a[2] = " << a[2] << endl;
 		break;
 	}
 	for (Int_t iPmt = 0; iPmt < NofPMTPoints; iPmt++) {
@@ -225,8 +229,8 @@ void CbmRichProjectionProducer2::GetPmtNormal(Int_t NofPMTPoints, vector<Double_
 		pmtMotherID = track->GetMotherId();
 		//cout << "PMT Point coordinates; x = " << pmtPoint->GetX() << ", y = " << pmtPoint->GetY() << " and z = " << pmtPoint->GetZ() << endl;
 		if (TMath::Sqrt(TMath::Power(a[0]-pmtPoint->GetX(),2) + TMath::Power(a[1]-pmtPoint->GetY(),2) + TMath::Power(a[2]-pmtPoint->GetZ(),2)) > 7) {
-			b[0] = pmtPoint->GetX(), b[1] = pmtPoint->GetY(), b[2] = pmtPoint->GetZ();
-			//cout << "b[0] = " << b[0] << ", b[1] = " << b[1] << " et b[2] = " << b[2] << endl;
+			//b[0] = pmtPoint->GetX(), b[1] = pmtPoint->GetY(), b[2] = pmtPoint->GetZ();
+			cout << "b[0] = " << b[0] << ", b[1] = " << b[1] << " et b[2] = " << b[2] << endl;
 			break;
 		}
 	}
