@@ -111,7 +111,13 @@ void create_stsdigipar_v13(const char* geoTag  = gkGeoTag,
        << ", stations: " << GetNofDaughters(sts, "Station") << endl;
 
 
-  Int_t stsModules = 0;
+  Int_t stsModules   = 0;
+  Int_t stsModules01 = 0;
+  Int_t stsModules02 = 0;
+  Int_t stsModules03 = 0;
+  Int_t stsModules04 = 0;
+  Int_t stsLadders   = 0;
+
   // ---> Stations
   for (Int_t iCaveD = 0; iCaveD < sts->GetNdaughters(); iCaveD++) {
     geoMan->CdDown(iCaveD);
@@ -121,11 +127,31 @@ void create_stsdigipar_v13(const char* geoTag  = gkGeoTag,
       continue;
     }
     Int_t statNr = station->GetNumber();
-    Int_t nModules = GetNofModules(station);
+    Int_t nModules = GetNofModules(station, "Module");
     stsModules += nModules;
+
+    Int_t nModules01 = GetNofModules(station, "Module01");
+    Int_t nModules02 = GetNofModules(station, "Module02");
+    Int_t nModules03 = GetNofModules(station, "Module03");
+    Int_t nModules04 = GetNofModules(station, "Module04");
+    stsModules01 += nModules01;
+    stsModules02 += nModules02;
+    stsModules03 += nModules03;
+    stsModules04 += nModules04;
+    
+    Int_t nLadders   = GetNofDaughters(station, "Ladder");
+    stsLadders += nLadders;
+
     cout << "Station Nr. " << statNr << ", node " << station->GetName()
-	 << ", modules: " << nModules << endl;
+         << ", ladders: "      << nLadders
+	 << ", modules: "      << nModules 
+	 << ", module types: "<< nModules01
+	 << " " << nModules02
+	 << " " << nModules03
+	 << " " << nModules04
+	 << endl;
     fprintf(parFile, "%d   %d   %d\n", statNr, 0, nModules);
+
     Int_t moduleNr = 0;        // Running module number
 
     // ---> Ladders
@@ -199,7 +225,16 @@ void create_stsdigipar_v13(const char* geoTag  = gkGeoTag,
     geoMan->CdUp();          // back to sts
   }                          // station loop               
 
-  cout << "STS total number of modules: " << stsModules << endl;
+  cout << "STS total number of modules: " << stsModules
+       << "  total number of ladders: " << stsLadders
+       << endl;
+
+  cout << "STS total number of module types:"
+       << " 01/" << stsModules01
+       << " 02/" << stsModules02
+       << " 03/" << stsModules03
+       << " 04/" << stsModules04
+       << endl;
 
   delete geoMan;
   fclose(parFile);
@@ -274,7 +309,7 @@ Bool_t CreateGeoFromFile(const char* fileName) {
 
 
 
-Int_t GetNofModules(TGeoNode* station) {
+Int_t GetNofModules(TGeoNode* station, const char* name) {
 
   Int_t nModules = 0;
 
@@ -291,12 +326,47 @@ Int_t GetNofModules(TGeoNode* station) {
       // --- Modules
       for (Int_t iModule = 0; iModule < hladder->GetNdaughters(); iModule++) {
 	TGeoNode* module = hladder->GetDaughter(iModule);
-	if ( TString(module->GetName()).Contains("Module") ) nModules++;
+	if ( TString(module->GetName()).Contains(name) ) nModules++;
+	//	if ( TString(module->GetName()).Contains("Module") ) nModules++;
       }
     }
   }
 
   return nModules;
+}
+
+					    
+Int_t GetNofHalfLadders(TGeoNode* station) {
+
+  Int_t nHalfLadders = 0;
+
+  // --- Ladder
+  Int_t nLadders = station->GetNdaughters();
+  for (Int_t iLadder = 0; iLadder < nLadders; iLadder++) {
+    TGeoNode* ladder = station->GetDaughter(iLadder);
+
+    // --- Halfladder
+    Int_t nHladders = ladder->GetNdaughters();
+    for (Int_t iHladder = 0; iHladder < nHladders; iHladder++) {
+      TGeoNode* hladder = ladder->GetDaughter(iHladder);
+      if ( TString(hladder->GetName()).Contains("HalfLadder") ) nHalfLadders++;
+    }
+  }
+
+  return nHalfLadders;
+}
+					    
+
+Int_t GetNofLadders(TGeoNode* station) {
+
+  Int_t nLadders = 0;
+
+  // --- Ladder
+  Int_t nLadders = station->GetNdaughters();
+  for (Int_t iLadder = 0; iLadder < nLadders; iLadder++)
+    if ( TString(station->GetDaughter(iLadder)->GetName()).Contains("Ladder") ) nLadders++;
+
+  return nLadders;
 }
 					    
 
