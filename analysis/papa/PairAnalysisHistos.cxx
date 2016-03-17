@@ -30,6 +30,8 @@
   computation of variables (max=10) are implemented according to TFormula
   using the TMath functions.
 
+  The arguments and options in the function DrawSame and DrawTaskSame provide various and 
+  powerful possibilities to plot and post-process histograms. 
   
   Examples:
 
@@ -886,7 +888,7 @@ void PairAnalysisHistos::DrawTaskSame(TString histName, TString opt, TString his
   ///               delimiters ':;,' are recognized, exclusion done by prepending '!'
   /// "cutstep":    histograms of the cut steps are compared for a single task (see AnalysisFilter::AddHistos)
   ///
-  /// if argument 'taskDenom' is provided histogram ratios to this task/config are calculated
+  /// if argument "taskDenom" is provided histogram ratios to this task/config are calculated
 
   TObjArray *selections = histClassDenom.Tokenize(":;,");
 
@@ -999,39 +1001,39 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
   /// Draw histograms with the same histName into a canvas
   ///
   /// additional plotting options to TH1::Draw():
-  /// 'goff':       graphics are switched off & an array with the objects is returned
-  /// 'task':       histograms of different tasks are compared (see DrawTaskSame)
+  /// "goff":       graphics are switched off & an array with the objects is returned
+  /// "task":       histograms of different tasks are compared (see DrawTaskSame)
   ///
-  /// 'div':        histograms of different tasks are divided (see DrawTaskSame) INTERNAL?
-  /// 'eff':        efficiencies are calculated
-  /// 'ratio':      ratios of any histclass to 'histClassDenom' are calculated
-  /// 'oneOver':    the histogram is rescaled by 1./contents
+  /// "div":        histograms of different tasks are divided (see DrawTaskSame) INTERNAL?
+  /// "eff":        efficiencies are calculated
+  /// "ratio":      ratios of any histclass to "histClassDenom" are calculated
+  /// "oneOver":    the histogram is rescaled by 1./contents
   ///
-  /// 'noMc':       no mc signals are plotted
-  /// 'noMcTrue':   no mc truth signals are plotted
-  /// 'onlyMc':     only mc signals are plotted
-  /// 'onlyMc':     only mc signals are plotted
-  /// 'sel':        option to (de-)select certain histClasses specified in 'histClassDenom',
-  ///               delimiters ':;,' are recognized, exclusion done by prepending '!'
+  /// "noMc":       no mc signals are plotted
+  /// "noMcTrue":   no mc truth signals are plotted
+  /// "onlyMc":     only mc signals are plotted
+  /// "onlyMc":     only mc signals are plotted
+  /// "sel":        option to (de-)select certain histClasses specified in "histClassDenom",
+  ///               delimiters ":;," are recognized, exclusion done by prepending "!"
   ///
-  /// 'can':        a new canvas is created with name: 'c'+'histName'
-  /// 'logx,y,z':   the axis are plotted in log-scale (labels are added automatically according to the range)
-  /// 'meta'        adds default meta data to the pad (see PairAnalysisMetaData::DrawSame)
-  /// 'leg(f)':     a ('filled') legend will be created with caption=className ,
+  /// "can":        a new canvas is created with name: "c"+"histName"
+  /// "logx,y,z":   the axis are plotted in log-scale (labels are added automatically according to the range)
+  /// "meta"        adds default meta data to the pad (see PairAnalysisMetaData::DrawSame)
+  /// "leg(f)":     a ("filled") legend will be created with caption=className ,
   ///               can be modified by PairAnalysisHistos::SetName("mycaption"),
   ///               change of legend position: see PairAnalysisStyler::SetLegendAlign
-  /// 'meanX,Y':    quote the mean in the legend (Y only works for TProfile a.t.m.)
-  /// 'rmsX,Y':     quote the rms in the legend (Y only works for TProfile a.t.m.)
-  /// 'det':        adds the detector name to the legend for detector specific histograms (e.g. hit histograms)
+  /// "meanX,Y":    quote the mean in the legend (Y only works for TProfile a.t.m.)
+  /// "rmsX,Y":     quote the rms in the legend (Y only works for TProfile a.t.m.)
+  /// "det":        adds the detector name to the legend for detector specific histograms (e.g. hit histograms)
   ///
-  /// 'rebinstat':  the objects are rebinned to have <80% stat uncertainty in each bin (preliminary)
-  /// 'rebinX':     rebins the histogram along x-axis by factor 'X' (for X<10)
-  /// 'sclmax':     scale the histogram by 1./maximum
-  /// 'norm':       histogram is normalized to 1.
-  /// 'normY':      2D-histograms are normalized in x-axis slices to 1.
-  /// 'events':     use number of used events in meta data to normalize the histograms
+  /// "rebinstat":  the objects are rebinned to have <80% stat uncertainty in each bin (preliminary)
+  /// "rebinX":     rebins the histogram along x-axis by factor "X" (for X<10)
+  /// "sclmax":     scale the histogram by 1./maximum
+  /// "norm":       histogram is normalized to 1.
+  /// "normY":      2D-histograms are normalized in x-axis slices to 1.
+  /// "events":     use number of used events in meta data to normalize the histograms
   ///
-  /// 'geant':      translate geantId to geant process names (see PairAnalysisHelper::SetGEANTBinLabels)
+  /// "geant":      translate geantId to geant process names (see PairAnalysisHelper::SetGEANTBinLabels)
 
   TString optString(option);
   optString.ToLower();
