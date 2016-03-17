@@ -878,14 +878,13 @@ void PairAnalysisHistos::ReadFromFile(const char* file, const char *task, const 
 //_____________________________________________________________________________
 void PairAnalysisHistos::DrawTaskSame(TString histName, TString opt, TString histClassDenom, TString taskDenom)
 {
-
   ///
   /// Draw histograms of different tasks into the same canvas
   ///
   /// additional plotting options to DrawSame:
-  /// 'selcfg':     option to (de-)select certain task/config specified in 'histClassDenom',
+  /// "selcfg":     option to (de-)select certain task/config specified in "histClassDenom",
   ///               delimiters ':;,' are recognized, exclusion done by prepending '!'
-  /// 'cutstep':    histograms of the cut steps are compared for a single task (see AnalysisFilter::AddHistos)
+  /// "cutstep":    histograms of the cut steps are compared for a single task (see AnalysisFilter::AddHistos)
   ///
   /// if argument 'taskDenom' is provided histogram ratios to this task/config are calculated
 
@@ -1081,7 +1080,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
     optString.ReplaceAll("rebin","");
   }
 
-  // option dependencies
+  /// activate std option for legend
   if(optLegFull) optLeg=kTRUE;
 
   /// selection string

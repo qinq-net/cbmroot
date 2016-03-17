@@ -194,12 +194,14 @@ TArrayD *PairAnalysisHelper::MakeStatBinLimits(TH1* h, Double_t stat)
     err+=(h->GetBinError(i)*h->GetBinError(i));
     vBins->AddAt(to, vEle);
 
-    //    Printf("cont %f err %f(%f) sum of -> rel err %f%% (current: %f%%)",
-    //       h->GetBinContent(i), h->GetBinError(i), TMath::Sqrt(h->GetBinContent(i)),h->GetBinError(i)/h->GetBinContent(i)*100, TMath::Sqrt(err)/cont*100);
+    // Printf("cont %f/%f=%f err %f(%f) sum of -> rel err %f%% (current: %f%%)",
+    // 	   h->GetBinContent(i),h->Integral(),h->GetBinContent(i)/h->Integral(), h->GetBinError(i), TMath::Sqrt(h->GetBinContent(i)),h->GetBinError(i)/h->GetBinContent(i)*100, TMath::Sqrt(err)/cont*100);
 
-    // check for new bin                                                                                                                                                                                                                                            
-    if(TMath::Sqrt(err)/cont <= stat) {
-      //Printf("bin from %f to %f with err %f%%",from,to,TMath::Sqrt(err)/cont*100);
+    // check for new bin
+    if( TMath::Sqrt(err)/cont <= stat
+	//	||   (h->GetBinContent(i)/h->Integral()) < 0.01
+       ) {
+      //      Printf("bin from %f to %f with err %f%%",from,to,TMath::Sqrt(err)/cont*100);
       err=0.0;
       cont=0.0;
       vEle++;

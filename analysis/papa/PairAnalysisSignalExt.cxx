@@ -783,6 +783,10 @@ void PairAnalysisSignalExt::ProcessLS()
   // signal subtraction
   //
 
+  /// TODO: set bin error of empty bins to 0.5*TMath::ChisquareQuantile(0.6827,2) 
+  /// according to PDG and RooFit (http://pdg.lbl.gov/2011/reviews/rpp2011-rev-statistics.pdf)
+  /// The lower limit should of course be 0, use TGraphAsymmError of when fitting the distributions
+
   // protections
   if(!fHistDataPP || !fHistDataMM) return;
 
@@ -1011,21 +1015,39 @@ void PairAnalysisSignalExt::ProcessCocktail()
 //______________________________________________
 void PairAnalysisSignalExt::Draw(const Option_t* option)
 {
-  //
-  // Draw the fitted function
-  //
+  ///
+  /// Draw signal extraction histograms into a canvas
+  ///
+  /// additional plotting options to TH1::Draw():
+  ///
+  /// "noMc":       no mc signals are plotted
+  /// "onlyMc":     only mc signals are plotted
+  /// "onlySig":    only background subtracted signals are plotted
+  /// "onlyRaw":    only the raw unlike-sign spectra are plotted
+  /// "cocktail":   plot the sum of cocktail contributors added via SetCocktailContribution
+  ///
+  /// "can":        canvas is created with name: "cSignalExtraction" or re-used
+  /// "logx,y,z":   the axis are plotted in log-scale (labels are added automatically according to the range)
+  /// "leg(f)":     a ("filled") legend will be created with caption=className ,
+  ///               can be modified by PairAnalysisHistos::SetName("mycaption"),
+  ///               change of legend position: see PairAnalysisStyler::SetLegendAlign
+  ///
+  /// "line":      draws a dashed line at zero
+  /// "stat":      draws a statistics box with default entries at top-right position, see DrawStats
+  ///
+  /// "sb":        calculates and plots the signal-over-background ratio instead of counts
+  /// "sgn":       calculates and plots the significance instead of counts
+
   Info("Draw", "Signal extraction results for '%s'",fgkBackgroundMethodNames[fMethod]);
   TString optString(option);
   optString.ToLower();
   optString.ReplaceAll(" ","");
   Bool_t optTask     =optString.Contains("same");      optString.ReplaceAll("same","");
-  //  Bool_t optNoMCtrue =optString.Contains("nomctrue");  optString.ReplaceAll("nomctrue","");
   Bool_t optNoMC     =optString.Contains("nomc");      optString.ReplaceAll("nomc","");
+  Bool_t optLegFull  =optString.Contains("legf");      optString.ReplaceAll("legf","");
   Bool_t optLeg      =optString.Contains("leg");       optString.ReplaceAll("leg","");
   Bool_t optCan      =optString.Contains("can");       optString.ReplaceAll("can","");
-  //  Bool_t optMeta     =optString.Contains("meta");      optString.ReplaceAll("meta","");
-  //  Bool_t optEvt      =optString.Contains("events");    optString.ReplaceAll("events","");
-  //  Bool_t optSel      =optString.Contains("sel");       optString.ReplaceAll("sel","");
+  Bool_t optLine     =optString.Contains("line");      optString.ReplaceAll("line","");
   Bool_t optStat     =optString.Contains("stat");      optString.ReplaceAll("stat","");
   Bool_t optSB       =optString.Contains("sb");        optString.ReplaceAll("sb","");
   Bool_t optSgn      =optString.Contains("sgn");       optString.ReplaceAll("sgn","");
@@ -1034,10 +1056,13 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   Bool_t optOnlyMC   =optString.Contains("onlymc");    optString.ReplaceAll("onlymc","");
   Bool_t optCocktail =optString.Contains("cocktail");  optString.ReplaceAll("cocktail","");
 
-  // load style
+  /// load style
   PairAnalysisStyler::LoadStyle();
 
-  // add canvas
+  /// activate std option for legend
+  if(optLegFull) optLeg=kTRUE;
+
+  /// add canvas
   TCanvas *c=0;
   if (optCan){
     c=(TCanvas*)gROOT->FindObject(Form("cSignalExtraction"));
@@ -1048,7 +1073,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
 
   Int_t nobj=0;
   TObject *obj;
-  // count number of drawn objects in pad
+  /// count number of drawn objects in pad
   TList *prim = gPad->GetListOfPrimitives();
   for(Int_t io=0; io<prim->GetSize(); io++) {
     obj=prim->At(io);
@@ -1076,7 +1101,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   optString.ReplaceAll("logy","");
   optString.ReplaceAll("logz","");
 
-  Int_t i=nobj; // TOD: obsolete?
+  Int_t i=nobj; // TODO: obsolete?
 
   TString ytitle = fHistDataPM->GetYaxis()->GetTitle();
   // add bin width to y-axis title
@@ -1141,8 +1166,8 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
     else if(optOnlySig) { 
       drawOpt=(optString.IsNull()?"EP0":optString);
       fHistSignal->DrawCopy(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;
-      drawOpt=(optString.IsNull()?"L same":optString);
-      if(fPeakIsTF1) { static_cast<TF1*>(fgPeakShape)->DrawCopy(drawOpt); i++; }
+      drawOpt=(optString.IsNull()?"L same":optString+"same");
+      if(fPeakIsTF1) { static_cast<TF1*>(fgPeakShape)->DrawCopy(drawOpt.Data()); i++; }
     }
     else {
       fHistDataPM->DrawCopy(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;
@@ -1151,8 +1176,8 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
       if(!optOnlyRaw) {
 	drawOpt=(optString.IsNull()?"EP0":optString);
 	fHistSignal->DrawCopy(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;
-	drawOpt=(optString.IsNull()?"L same":optString);
-	if(fPeakIsTF1) { static_cast<TF1*>(fgPeakShape)->DrawCopy(drawOpt); i++; }
+	drawOpt=(optString.IsNull()?"L same":optString+"same");
+	if(fPeakIsTF1) { static_cast<TF1*>(fgPeakShape)->DrawCopy(drawOpt.Data()); i++; }
       }
     }
     // add cocktail
@@ -1195,7 +1220,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
     }
   }
 
-  // axis minimum and maximum
+  /// automatic axis minimum and maximum
   Double_t max=-1e10;
   Double_t min=+1e10;
   //TListIter nextObj(gPad->GetListOfPrimitives(),kIterForward);
@@ -1266,11 +1291,18 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
     }
   }
 
-  // legend
+  /// draw legend only once
+  /// set legend coordinates, margins, fillstyle, fontsize
   if (leg) {
-    PairAnalysisStyler::SetLegendAttributes(leg); // coordinates, margins, fillstyle, fontsize
-    leg->Draw();
+    PairAnalysisStyler::SetLegendAttributes(leg,optLegFull);
+    if(!nobj) leg->Draw(); // was w/o !nobj
   }
+
+  // baseline
+  TLine *line = new TLine();
+  line->SetLineColor(kBlack);
+  line->SetLineStyle(kDashed);
+  line->DrawLine(fPlotMin,0.,fPlotMax,0.);
 
   // draw statistics box
   if(optStat) DrawStats(0.7, gPad->GetBottomMargin()+gStyle->GetTickLength("Y"),
