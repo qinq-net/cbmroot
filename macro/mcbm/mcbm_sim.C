@@ -51,7 +51,7 @@ Int_t    fieldSymType=0;
 
 TString defaultInputFile="";
 
-void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
+void mcbm_sim(Int_t nEvents = 20, const char* setup = "sis18_mcbm")
 {
 
   // ========================================================================
@@ -97,13 +97,13 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   // created by the placement of the target.
   //
   TString  targetElement   = "Gold";
-  Double_t targetThickness = 0.25;  // full thickness in cm
-  Double_t targetDiameter  = 2.5;    // diameter in cm
+  Double_t targetThickness = 0.1;    // full thickness in cm
+  Double_t targetDiameter  = 0.5;    // diameter in cm
   Double_t targetPosX      = 0.;     // target x position in global c.s. [cm]
   Double_t targetPosY      = 0.;     // target y position in global c.s. [cm]
   Double_t targetPosZ      = 0.;     // target z position in global c.s. [cm]
   Double_t targetRotY      = 0.;     // target rotation angle around the y axis [deg]
-  Double_t beamRotY      = -30.;   // beam rotation angle around the y axis [deg]
+  Double_t beamRotY        = -20.;   // beam rotation angle around the y axis [deg]
   // ------------------------------------------------------------------------
 
 
@@ -117,8 +117,8 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   //
   Bool_t smearVertexXY = kTRUE;
   Bool_t smearVertexZ  = kTRUE;
-  Double_t beamWidthX  = 0.5;  // Gaussian sigma of the beam profile in x [cm]
-  Double_t beamWidthY  = 0.5;  // Gaussian sigma of the beam profile in y [cm]
+  Double_t beamWidthX  = 0.1;  // Gaussian sigma of the beam profile in x [cm]
+  Double_t beamWidthY  = 0.1;  // Gaussian sigma of the beam profile in y [cm]
   // ------------------------------------------------------------------------
   
 
