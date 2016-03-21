@@ -69,9 +69,7 @@ const char* PairAnalysisSignalExt::fgkBackgroundMethodNames[11] = {
   "cocktail" };
 
 PairAnalysisSignalExt::PairAnalysisSignalExt() :
-  PairAnalysisFunction(),
-  fValues(7),
-  fErrors(7)
+  PairAnalysisSignalExt("PairAnalysisSignalExt","title")
 {
   //
   // Default Constructor
@@ -115,8 +113,7 @@ PairAnalysisSignalExt::PairAnalysisSignalExt(const PairAnalysisSignalExt &c) :
   fScaleMin2(c.GetScaleMin2()),
   fScaleMax2(c.GetScaleMax2()),
   fScaleFactor(c.GetScaleFactor()),
-  fPeakMethod(c.GetExtractionMethod()),
-  fPOIpdg(c.GetParticleOfInterest())
+  fPeakMethod(c.GetExtractionMethod())
   // fExtrFunc(0x0) //TODO: needed
 {
   //
@@ -155,6 +152,7 @@ TPaveText* PairAnalysisSignalExt::DrawStats(Double_t x1/*=0.*/, Double_t y1/*=0.
 {
   //
   // Draw extracted values in a TPaveText
+  //
   // with the corners x1,y2,x2,y2
   // use option string to select information displayed:
   // p := Particle name using fPOIpdg
@@ -252,7 +250,7 @@ Double_t PairAnalysisSignalExt::ScaleHistograms(TH1* histRaw, TH1* histBackgroun
 Double_t PairAnalysisSignalExt::ScaleHistograms(TH1* histRaw, TH1* histBackground, Double_t intMin, Double_t intMax, Double_t intMin2, Double_t intMax2)
 {
   //
-  // scale histBackground to match the integral of histRaw in the interval intMin, intMax and intMin2, intMax2
+  // scale histBackground to match the integral of "histRaw" in the interval "intMin", "intMax" and "intMin2", "intMax2"
   //
 
   if(TMath::Abs(intMin2-intMax2)<0.00001) return (ScaleHistograms(histRaw, histBackground, intMin, intMax));
@@ -347,7 +345,7 @@ TH1* PairAnalysisSignalExt::MergeObjects(TH1* obj1, TH1* obj2, Double_t val) {
 //______________________________________________
 TObject* PairAnalysisSignalExt::DescribePeakShape(ESignalExtractionMethod method, Bool_t replaceValErr,  TH1F *mcShape) {
   //
-  // Describe the extracted peak by the selected method and overwrite signal etc if needed
+  // Describe the extracted peak by the selected "method" and overwrite signal etc if activated
   //
 
   if(replaceValErr) fPeakMethod=method;
@@ -526,7 +524,7 @@ TObject* PairAnalysisSignalExt::DescribePeakShape(ESignalExtractionMethod method
 void PairAnalysisSignalExt::Process(TObjArray* const arrhist)
 {
   //
-  // signal subtraction. support like-sign subtraction and event mixing method
+  // process signal subtraction
   //
   fArrHists = arrhist;
   fArrHists->SetOwner(kFALSE);
@@ -780,7 +778,7 @@ void PairAnalysisSignalExt::Process(TObjArray* const arrhist)
 void PairAnalysisSignalExt::ProcessLS()
 {
   //
-  // signal subtraction
+  // signal subtraction suing the like-sign method
   //
 
   /// TODO: set bin error of empty bins to 0.5*TMath::ChisquareQuantile(0.6827,2) 
@@ -880,7 +878,7 @@ void PairAnalysisSignalExt::ProcessLS()
 void PairAnalysisSignalExt::ProcessEM()
 {
   //
-  // event mixing of +- and -+
+  // signal subtraction using event mixing (+-,-+) method
   //
 
   if( !fHistMixPM ) {
@@ -930,7 +928,7 @@ void PairAnalysisSignalExt::ProcessEM()
 void PairAnalysisSignalExt::ProcessTR()
 {
   //
-  // signal subtraction
+  // signal subtraction using the track-rotation method
   //
 
   if (!fHistDataTR) {
@@ -981,7 +979,7 @@ void PairAnalysisSignalExt::ProcessTR()
 void PairAnalysisSignalExt::ProcessCocktail()
 {
   //
-  // signal subtraction
+  // signal subtraction using the cocktail method
   //
 
   if (!fArrCocktail) {

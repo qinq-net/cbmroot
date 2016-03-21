@@ -78,6 +78,7 @@ public:
     kMPI,                    // pdg mass of pions
     kMKA,                    // pdg mass of kaons
     kMPR,                    // pdg mass of protons
+    kMPair,                  // pdg mass of pair
     kConstMax,
 // Hit specific variables
     kPosX=kConstMax,         // X position [cm]
@@ -120,6 +121,7 @@ public:
     kE,                      // energy
     kM,                      // mass
     kCharge,                 // charge
+    kMt,                     // transverse mass sqrt(m^2+pt^2)
     kChi2NDFtoVtx,           // chi2/ndf impact parameter STS(+MVD) track to primary vertex in (sigmas)
     kImpactParXY,            // Impact parameter in XY plane
     kImpactParZ,             // Impact parameter in Z
@@ -738,6 +740,7 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisTrack(const PairAnalysisT
   values[kE]         = track->E();
   values[kM]         = track->M();
   values[kCharge]    = track->Charge();
+  values[kMt]        = TMath::Sqrt(values[kMPair]*values[kMPair] + values[kPtSq]);
   //  values[kPdgCode]   = track->PdgCode();
   values[kChi2NDFtoVtx] = track->ChiToVertex();
   values[kImpactParXY]  = TMath::Sqrt( TMath::Power(TMath::Abs(values[kXv]-values[kXvPrim]),2) + 
@@ -1117,6 +1120,7 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisPair(const PairAnalysisPa
   values[kE]         = pair->E();
   values[kM]         = pair->M();
   values[kCharge]    = pair->Charge();
+  values[kMt]        = TMath::Sqrt(values[kMPair]*values[kMPair] + values[kPtSq]);
 
   ///TODO: check
   /* values[kPdgCode]=-1; */
@@ -1143,32 +1147,32 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisPair(const PairAnalysisPa
     values[kCosTilPhiCS]  = (thetaCS>0)?(TMath::Cos(phiCS-TMath::Pi()/4.)):(TMath::Cos(phiCS-3*TMath::Pi()/4.));
   }
 
-  if(Req(kChi2NDF))          values[kChi2NDF]          = pair->GetChi2()/pair->GetNdf();
-  if(Req(kDecayLength))      values[kDecayLength]      = pair->GetDecayLength();
-  if(Req(kR))                values[kR]                = pair->GetR();
-  if(Req(kOpeningAngle))     values[kOpeningAngle]     = pair->OpeningAngle();
-  if(Req(kCosPointingAngle)) values[kCosPointingAngle] = fgEvent ? pair->GetCosPointingAngle(fgEvent->GetPrimaryVertex()) : -1;
+  values[kChi2NDF]          = pair->GetChi2()/pair->GetNdf();
+  values[kDecayLength]      = pair->GetDecayLength();
+  values[kR]                = pair->GetR();
+  values[kOpeningAngle]     = pair->OpeningAngle();
+  values[kCosPointingAngle] = fgEvent ? pair->GetCosPointingAngle(fgEvent->GetPrimaryVertex()) : -1;
 
-  if(Req(kLegDist))   values[kLegDist]      = pair->DistanceDaughters();
-  if(Req(kLegDistXY)) values[kLegDistXY]    = pair->DistanceDaughtersXY();
-  if(Req(kDeltaEta))  values[kDeltaEta]     = pair->DeltaEta();
-  if(Req(kDeltaPhi))  values[kDeltaPhi]     = pair->DeltaPhi();
-  if(Req(kLegsP))     values[kLegsP]        = TMath::Sqrt(pair->DaughtersP());
+  values[kLegDist]      = pair->DistanceDaughters();
+  values[kLegDistXY]    = pair->DistanceDaughtersXY();
+  values[kDeltaEta]     = pair->DeltaEta();
+  values[kDeltaPhi]     = pair->DeltaPhi();
+  values[kLegsP]        = TMath::Sqrt(pair->DaughtersP());
 
   // Armenteros-Podolanski quantities
-  if(Req(kArmAlpha)) values[kArmAlpha]     = pair->GetArmAlpha();
-  if(Req(kArmPt))    values[kArmPt]        = pair->GetArmPt();
+  values[kArmAlpha]     = pair->GetArmAlpha();
+  values[kArmPt]        = pair->GetArmPt();
 
   //if(Req(kPsiPair))  values[kPsiPair]      = fgEvent ? pair->PsiPair(fgEvent->GetMagneticField()) : -5;
-  //  if(Req(kPhivPair))  values[kPhivPair]      = pair->PhivPair(1.);
+  //if(Req(kPhivPair))  values[kPhivPair]      = pair->PhivPair(1.);
 
   // impact parameter
   Double_t d0z0[2]={-999., -999.};
-  if( (Req(kImpactParXY) || Req(kImpactParZ)) && fgEvent) pair->GetDCA(fgEvent->GetPrimaryVertex(), d0z0);
+  if(fgEvent) pair->GetDCA(fgEvent->GetPrimaryVertex(), d0z0);
   values[kImpactParXY]   = d0z0[0];
   values[kImpactParZ]    = d0z0[1];
 
-  if(Req(kRndmPair)) values[kRndmPair] = gRandom->Rndm();
+  values[kRndmPair] = gRandom->Rndm();
 
 }
 
@@ -1421,7 +1425,7 @@ inline void PairAnalysisVarManager::FillSumVarMCPoint(const FairMCPoint *hit, Do
 inline void PairAnalysisVarManager::FillVarConstants(Double_t * const values)
 {
   //
-  // Fill constnat information available into an array
+  // Fill constant information available into an array
   //
 
   // Set
@@ -1430,6 +1434,7 @@ inline void PairAnalysisVarManager::FillVarConstants(Double_t * const values)
   values[kMPI]          = TDatabasePDG::Instance()->GetParticle(kPI)->Mass();
   values[kMKA]          = TDatabasePDG::Instance()->GetParticle(kKA)->Mass();
   values[kMPR]          = TDatabasePDG::Instance()->GetParticle(kPR)->Mass();
+  values[kMPair]        = fgData[kMPair]; /// automaticaly filled in PairAnalysis::Process using PairAnalysis::fPdgMother
 }
 
 inline void PairAnalysisVarManager::SetEvent(PairAnalysisEvent * const ev)

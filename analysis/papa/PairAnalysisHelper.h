@@ -34,6 +34,7 @@ namespace PairAnalysisHelper
   TVectorD* MakeLinBinning(Int_t nbinsX, Double_t xmin, Double_t xmax);
   TVectorD* MakeArbitraryBinning(const char* bins);
   TVectorD* MakeGausBinning(Int_t nbinsX, Double_t mean, Double_t sigma);
+  TVectorD* CombineBinning(TVectorD *low, TVectorD *high);
 
   TArrayD* MakeStatBinLimits(TH1* h, Double_t stat);
 

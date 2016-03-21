@@ -80,14 +80,13 @@ namespace PairAnalysisStyler
 
   enum Epalette { kDefault=0, kGoodBad };
   void SetPalette(Epalette colors=kDefault, Bool_t reverse=kFALSE);
-  
 
   extern UInt_t fLegAlign;           // legend alignement (11,12,21,22)
   void SetLegendAlign(UInt_t align);
   void SetLegendAttributes(TLegend *leg, Bool_t fill=kFALSE);
 
   TH1* GetFirstHistogram();
-  
+
 } // Styling (static)
 
 #endif

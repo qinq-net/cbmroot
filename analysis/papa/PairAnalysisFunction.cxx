@@ -55,20 +55,7 @@ ClassImp(PairAnalysisFunction)
 TH1F* PairAnalysisFunction::fgHistSimPM=0x0;
 
 PairAnalysisFunction::PairAnalysisFunction() :
-  TNamed(),
-  fFuncSignal(0x0),
-  fFuncBackground(0x0),
-  fFuncSigBack(0x0),
-  fFitMin(0),
-  fFitMax(0),
-  fParMass(1),
-  fParMassWidth(2),
-  fFitOpt("SMNQE"),
-  fUseIntegral(kFALSE),
-  fDof(0),
-  fChi2Dof(0.0),
-  fNparPeak(0),
-  fNparBgnd(0)
+  PairAnalysisFunction("PairAnalysisFunction","fcttitle")
 {
   //
   // Default Constructor
@@ -78,26 +65,26 @@ PairAnalysisFunction::PairAnalysisFunction() :
 
 //______________________________________________
 PairAnalysisFunction::PairAnalysisFunction(const char* name, const char* title) :
-  TNamed(name, title),
-  fFuncSignal(0x0),
-  fFuncBackground(0x0),
-  fFuncSigBack(0x0),
-  fFitMin(0),
-  fFitMax(0),
-  fParMass(1),
-  fParMassWidth(2),
-  fFitOpt("SMNQE"),
-  fUseIntegral(kFALSE),
-  fDof(0),
-  fChi2Dof(0.0),
-  fNparPeak(0),
-  fNparBgnd(0)
+  TNamed(name, title)
 {
   //
   // Named Constructor
   //
 
 }
+
+//______________________________________________
+PairAnalysisFunction::PairAnalysisFunction(const PairAnalysisFunction &c) :
+  TNamed(c.GetName(), c.GetTitle()),
+  fPOIpdg(c.GetParticleOfInterest()),
+  fFitMin(c.GetFitMin()),
+  fFitMax(c.GetFitMax())
+{
+  //
+  // Copy Constructor
+  //
+}
+
 
 //______________________________________________
 PairAnalysisFunction::~PairAnalysisFunction()
@@ -279,3 +266,5 @@ Double_t PairAnalysisFunction::PeakBgndFun(const Double_t *x, const Double_t *pa
 //  printf("Fit int.  :  %.5g - %.5g \n",fFitMin,fFitMax);
 //  printf("Fit chi/%d:  %.5g \n",fDof,fChi2Dof);
 //}
+
+

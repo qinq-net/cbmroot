@@ -59,12 +59,12 @@ public:
   
   ~PairAnalysisSignalExt();
 
-  // Setter
+  //// Setter ////
   // signal
+
   void SetMCSignalShape(TH1F* hist)                        { fgHistSimPM=hist; fHistSignalMC=hist; }
   void SetParticleOfInterest(Int_t pdgcode)                { fPOIpdg=pdgcode; }
   void SetIntegralRange(Double_t min, Double_t max)        { fIntMin=min; fIntMax=max; }
-  //  void SetFitRange(Double_t min, Double_t max)             { fFitMin=min; fFitMax=max; }
   void SetPlotRange(Double_t min, Double_t max)            { fPlotMin=min; fPlotMax=max; }
   void SetRebin(Int_t factor)                              { fRebin=factor; }
   void SetStatRebin(Double_t stat)                         { fRebinStat=stat; }
@@ -72,19 +72,19 @@ public:
   void SetExtractionMethod(ESignalExtractionMethod method, PairAnalysisFunction *sigF=0x0) { 
     fPeakMethod=method; fExtrFunc=sigF;}
   void SetMixingCorrection(Bool_t mixcorr=kTRUE)           { fMixingCorr=mixcorr; }
+
   // background
+
   void SetMethod(EBackgroundMethod method)                 { fMethod = method;}
   void SetNTrackRotations(Int_t iterations)                { fNiterTR =iterations; }
   void SetScaleBackgroundTo(EScalingMethod method, Double_t intMin, Double_t intMax, Double_t intMin2=0., Double_t intMax2=0.) { fSclMethod=method; fScaleMin=intMin; fScaleMax=intMax; fScaleMin2=intMin2; fScaleMax2=intMax2;}
   void SetCocktailContribution(TObjArray *arr, Bool_t subtract=kTRUE)       { fArrCocktail=arr; fCocktailSubtr=subtract; }
 
   // Getter
+
   Bool_t IsCocktailSubtracted()      const { return fCocktailSubtr; }
-  Int_t GetParticleOfInterest()      const { return fPOIpdg; }
   Double_t GetIntegralMin()          const { return fIntMin; }
   Double_t GetIntegralMax()          const { return fIntMax; }
-  /* Double_t GetFitMin()               const { return fFitMin; } */
-  /* Double_t GetFitMax()               const { return fFitMax; } */
   Int_t GetRebin()                   const { return fRebin;  }
   TArrayD *GetRebinLimits()          const { return fBinLimits; }
   ESignalExtractionMethod GetExtractionMethod() const      { return fPeakMethod; }
@@ -93,7 +93,9 @@ public:
   Double_t GetScaleMax()             const { return fScaleMax;   }
   Double_t GetScaleMin2()            const { return fScaleMin2;  }
   Double_t GetScaleMax2()            const { return fScaleMax2;  }
+
   // values of results
+
   Double_t GetScaleFactor()          const { return fScaleFactor; }
   const TVectorD& GetValues()        const { return fValues; }
   const TVectorD& GetErrors()        const { return fErrors; }
@@ -112,7 +114,9 @@ public:
   Double_t GetMatchChi2NDF()         const { return fValues(6); }
   Double_t GetMatchChi2NDFError()    const { return fErrors(6); }
   static const char* GetValueName(Int_t i) { return (i>=0&&i<7)?fgkValueNames[i]:""; }
+
   // objects
+
   TH1* GetMCSignalShape()            const { return fHistSignalMC; }
   TH1* GetSignalHistogram()          const { return fHistSignal; }
   TH1* GetSoverBHistogram()          const { return fHistSB; }
@@ -122,7 +126,6 @@ public:
   TH1* GetCocktailHistogram()        const { return fHistCocktail; }
   TH1* GetRfactorHistogram()         const { return fHistRfactor; }
   TObject* GetPeakShape()            const { return fgPeakShape; }
-
 
 
   TObject* DescribePeakShape(ESignalExtractionMethod method=kMCFitted, Bool_t replaceValErr=kFALSE,  TH1F *mcShape=0x0);
@@ -205,7 +208,6 @@ protected:
   Bool_t fPeakIsTF1       = kFALSE; // flag
 
   Bool_t fProcessed       = kFALSE; // flag
-  Int_t  fPOIpdg          = 443;    // pdg code particle of interest
   static TH1F* fgHistSimPM;         // simulated peak shape
 
   void SetSignificanceAndSOB();      // calculate the significance and S/B
@@ -225,6 +227,7 @@ inline TObject* PairAnalysisSignalExt::FindObject(TObjArray *arrhist, PairAnalys
   //
   // shortcut to find a certain pair type object in array
   //
+
   //  return ( arrhist->FindObject(Form("Pair.%s",PairAnalysis::PairClassName(type))) );
   TString ref=Form("Pair.%s",PairAnalysis::PairClassName(type));
   for(Int_t i=0; i<arrhist->GetEntriesFast(); i++) {
@@ -255,6 +258,7 @@ inline void PairAnalysisSignalExt::SetSignificanceAndSOB()
   //
   // Calculate S/B and significance
   //
+
   // Signal/Background
   fValues(3) = (fValues(1)>0 ? fValues(0)/fValues(1) : 0);
   Float_t epsSig = (fValues(0)>0 ? fErrors(0)/fValues(0) : 0);
@@ -270,7 +274,10 @@ inline void PairAnalysisSignalExt::SetSignificanceAndSOB()
 
 inline void PairAnalysisSignalExt::SetFWHM()
 {
-  // calculate the fwhm
+  //
+  // calculate the full width at half maximum (fwhm)
+  //
+
   if(!fgPeakShape) return;
 
   // case for TF1

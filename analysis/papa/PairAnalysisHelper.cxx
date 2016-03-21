@@ -170,6 +170,27 @@ TVectorD* PairAnalysisHelper::MakeGausBinning(Int_t nbinsX, Double_t mean, Doubl
 }
 
 //_____________________________________________________________________________
+TVectorD* PairAnalysisHelper::CombineBinning(TVectorD *low, TVectorD *high)
+{
+  //
+  // Make a new combined binning of "low" and "high"
+  // the user has to delete the returned array afterwards!!!
+  //
+
+  // fill final vector
+  Int_t lastEqualsFirst = (Int_t)(  TMath::Abs( (*low)[low->GetNrows()-1] - (*high)[0] ) < 1.e-15 );
+  TVectorD *binLim  = new TVectorD(low->GetNrows()+high->GetNrows() - lastEqualsFirst);
+  for(Int_t i=0; i<low->GetNrows();  i++)                 (*binLim)[i]                  = (*low)[i];
+  for(Int_t i=0; i<high->GetNrows()-lastEqualsFirst; i++) (*binLim)[low->GetNrows()+i]  = (*high)[i+lastEqualsFirst];
+
+  // clean up
+  //  delete low;  delete high;
+  //  binLim->Print();
+  return binLim;
+
+}
+
+//_____________________________________________________________________________
 TArrayD *PairAnalysisHelper::MakeStatBinLimits(TH1* h, Double_t stat)
 {
   //

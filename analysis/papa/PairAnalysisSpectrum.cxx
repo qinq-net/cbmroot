@@ -158,7 +158,7 @@ void PairAnalysisSpectrum::Process()
 	if(!histArr && h) histArr = h->DrawSame("pM-wghtWeight","can nomc goff"); //NOTE w/o "can" it crashes
 	//	if(!histArr && h) histArr = h->DrawSame("pM","can nomc goff"); //NOTE w/o "can" it crashes
 
-	histArr->Print();
+	//	histArr->Print();
 
 	// process
 	sig->Process(histArr);
@@ -211,7 +211,8 @@ void PairAnalysisSpectrum::Process()
 	    // found bin limits
 	    Double_t fndLo = histPM->GetYaxis()->GetBinLowEdge(binLo);
 	    Double_t fndHi = histPM->GetYaxis()->GetBinLowEdge(binHi+1);
-	    //	    printf("binning requested, found of %s: %.3f-%.3f, %.3f-%.3f \n", fVar.Data(), xLo,xHi, fndLo,fndHi );
+	    //printf("binning requested, found of %s: %.3f-%.3f, %.3f-%.3f \n", fVar.Data(), xLo,xHi, fndLo,fndHi );
+	    TObject::Info("Process","Bin %d: %.3f < %s < %.3f", bin, fndLo, fVar.Data(), fndHi);
 
 	    // fill array for signal extraction
 	    for(Int_t ih=0; ih<histArr->GetEntriesFast(); ih++ ) {
@@ -225,7 +226,8 @@ void PairAnalysisSpectrum::Process()
 	    if(gErrorIgnoreLevel<kWarning) sig->Print("");
 
 	    // validate signal extraction
-	    //	    if(sig->GetSignal() < 0.) continue;
+	    if(sig->GetSignal() < 0.) continue;
+	    if(TMath::IsNaN(sig->GetSignalError())) continue;
 
 	    // fill the tree
 	    fExt->setup   = fInputKeys[i];
@@ -269,15 +271,21 @@ void  PairAnalysisSpectrum::Draw(const char* varexp, const char* selection, Opti
   //
   // TTree draw alias
   //
+  /// additional plotting options:
+  ///
+  /// "syst":       draw and calculate systematic uncertainties according to fSystMthd (central point=mean value)
+  ///
+  /// "logx,y,z":   the axis are plotted in log-scale (labels are added automatically according to the range)
+  /// "leg(f)":     a ("filled") legend will be created with caption=className ,
+  ///               can be modified by PairAnalysisHistos::SetName("mycaption"),
+  ///               change of legend position: see PairAnalysisStyler::SetLegendAlign
+  ///
 
   TString optString(option);
   optString.ToLower();
   printf("Plot spectrum: '%s' \t selection: '%s' \t options: '%s' \n", varexp, selection, optString.Data());
   Bool_t optLegFull  =optString.Contains("legf");      optString.ReplaceAll("legf","");
   Bool_t optLeg      =optString.Contains("leg");       optString.ReplaceAll("leg","");
-  //  Bool_t optMeta     =optString.Contains("meta");      optString.ReplaceAll("meta","");
-  Bool_t optNoMCtrue =optString.Contains("nomctrue");  optString.ReplaceAll("nomctrue","");
-  Bool_t optMC       =optString.Contains("mc");        optString.ReplaceAll("mc","");
   Bool_t optSyst     =optString.Contains("syst");      optString.ReplaceAll("syst","");
 
   // canvas key
@@ -368,7 +376,8 @@ void  PairAnalysisSpectrum::Draw(const char* varexp, const char* selection, Opti
     // get errors from tree
     if(ndim>1) varkey.ReplaceAll(ckey+":",ckey+":"+ckey+"E:");
     else       varkey.ReplaceAll(ckey,ckey+":"+ckey+"E");
-    // execute tree draw command with graphics off to get errors
+
+    // TTree:Draw command with graphics off to get errors
     //printf("execute collect/draw command for %s \n",varkey.Data());
     fTree->Draw(varkey, selection, "goff");
 
@@ -383,17 +392,28 @@ void  PairAnalysisSpectrum::Draw(const char* varexp, const char* selection, Opti
     delete xval;
 
     PairAnalysisStyler::Style(gr,nobj);
-    gr->SetName(Form("%s",selection));
+    TString sel(selection);
+    sel.ReplaceAll("setup==","");
+    sel.ReplaceAll("\"","");
+    gr->SetName(Form("%s",sel.Data()));
+    if(sel.Contains("setupId==") && sel.Length()<11) {
+      sel.ReplaceAll("setupId==","");
+      Int_t iId = sel.Atoi();
+      gr->SetName(Form("%s",fInputKeys[iId].Data()));
+    }
+    if(optSyst) gr->SetName(GetTitle());
 
     if(!gr) return;
 
     // sort x-values
     gr->Sort();
-    TGraphErrors *grE = NULL;
-    TGraphErrors *grS = NULL;
+    TGraphErrors *grE = NULL; // statistical
+    TGraphErrors *grS = NULL; // systematic
+    TGraphErrors *grC = NULL; // stat + syst
     if(optSyst && fVarBinning) { //TODO: implement systematic calculation w/o binning
       grE  = new TGraphErrors(); // statistical graph
-      grS  = new TGraphErrors(); // systemtics  graph
+      grS  = new TGraphErrors(); // systematics graph
+      grC  = new TGraphErrors(); // systematics graph
       Double_t *gx  = gr->GetX();
       Double_t *gy  = gr->GetY();
       Double_t *gye = gr->GetEY();
@@ -401,12 +421,11 @@ void  PairAnalysisSpectrum::Draw(const char* varexp, const char* selection, Opti
       // loop over all variable bins
       Int_t first   = 0;//TMath::BinarySearch(gr->GetN(),gx,xLo); //first bin
       Int_t ibin    = 0;
-      //TODO: add a 
       while( first<gr->GetN() ) {
 	//      for(ibin=0; ibin<fVarBinning->GetNrows()-1; ibin++) {
 
 	Int_t nsys    = 0;   // counter #systematics
-	Double_t ysys = 0.;  // yvlaue of systematic = mean value
+	Double_t ysys = 0.;  // y-vlaue of systematic = mean value
 	Double_t esys = 0.;  // uncertainty depends on method
 	// calculate mean
 	Double_t xvar = gx[first];
@@ -422,7 +441,7 @@ void  PairAnalysisSpectrum::Draw(const char* varexp, const char* selection, Opti
 	ysys /= (nsys?nsys:1); // protect for zero division
 	//	printf("bin %d, found index first: %d, %.3f \t y:%3.f \t nsys:%d\n",ibin,first,xvar,ysys,nsys);
 
-	// y syst uncertainty
+	// y-syst. uncertainty
 	//	printf("syst %f , <y> %f\n",esys,ysys);
 	for(Int_t i=0; i<nsys; i++) {
 	  Int_t j = first + i;
@@ -449,18 +468,25 @@ void  PairAnalysisSpectrum::Draw(const char* varexp, const char* selection, Opti
 	}
 
 	// fill statistical and systematic graph values and errors
-	grE->SetPoint(      ibin, xvar, ysys );       // mean
-	grE->SetPointError( ibin, 0.0,  gye[first] ); // stat.uncert. of first set
+	grE->SetPoint(      ibin, xvar,       ysys );       // mean
+	grE->SetPointError( ibin, 0.0,        gye[first] ); // stat.uncert. of first set
 
 	Double_t boxW  = (fVarBinning->Max()-fVarBinning->Min())/(fVarBinning->GetNrows()-1);
 	grS->SetPoint(      ibin, xvar,       ysys ); // mean
 	grS->SetPointError( ibin, boxW*0.35,  esys ); // systematic value
+
+	// calculate err = sqrt(stat.**2 + syst**2)
+	grC->SetPoint(      ibin, xvar,       ysys ); // mean
+	grC->SetPointError( ibin, boxW*0.35,  TMath::Sqrt(esys*esys + gye[first]*gye[first]) );
 
 	// increase index counter
 	first+=nsys;
 	ibin++;
       } //next bin
       //      grS->Print();
+    }
+    else {
+      grC = new TGraphErrors(*gr);
     }
 
     //      gr->Print();
@@ -506,6 +532,8 @@ void  PairAnalysisSpectrum::Draw(const char* varexp, const char* selection, Opti
 
     TString legkey = gr->GetName();
     if (leg) leg->AddEntry(gr,gr->GetName(),legOpt.Data());
+
+    fSignal = grC;
 
   }
   else {
@@ -562,6 +590,7 @@ void  PairAnalysisSpectrum::Draw(const char* varexp, const char* selection, Opti
   if (leg) {
     PairAnalysisStyler::SetLegendAttributes(leg,optLegFull); // coordinates, margins, fillstyle, fontsize
     if(!nobj) leg->Draw(); // only draw the legend once
+    ///    gPad->GetCanvas()->Update();
   }
 
   /// release eventlist
@@ -653,5 +682,64 @@ void PairAnalysisSpectrum::Write()
   fout->cd();
   fTree->Write();
   fout->Close();
+
+}
+
+void PairAnalysisSpectrum::Fit(TString drawoption) {
+  ///
+  /// Fit the spectrum according to the selected method
+  ///
+  /// additional plotting options:
+  ///
+  /// "leg":     add fit to legend if it exists
+  ///
+
+  drawoption.ToLower();
+  Bool_t optLeg      =drawoption.Contains("leg");       drawoption.ReplaceAll("leg","");
+
+  //  Double_t massPOI=TDatabasePDG::Instance()->GetParticle(fPOIpdg)->Mass();
+
+  //if(!fExtrFunc) fExtrFunc = new PairAnalysisFunction();
+  PairAnalysisFunction *fExtrFunc = new PairAnalysisFunction();
+  //  PairAnalysisSignalFunc fct;// = 0;//new PairAnalysisSignalFunc();
+
+  Info("Fit","Signal extraction method: %d",(Int_t)0);
+  fSignal->Print();
+
+  TF1 *fit = new TF1("Gaussisan","pol3",fFitMin,fFitMax);
+  //  TF1 *fit = new TF1("Gaussisan",fExtrFunc,&PairAnalysisFunction::PeakFunGaus,fFitMin,fFitMax,3);
+  //fit = new TF1("fitGaus","gaus",fFitMin,fFitMax);
+  //  fit->SetParNames("N","meanx","sigma");
+  // fit->SetParameters(1.3*nPOI, massPOI, sigPOI);
+  // fit->SetParLimits(0, 0.2*nPOI,      2.0*nPOI     );
+  // fit->SetParLimits(1, massPOI-sigPOI, massPOI+sigPOI);
+  // fit->SetParLimits(2, sigPOI/5,         5*sigPOI           );
+  //    fit->Print("V");
+  Int_t fitResult = fSignal->Fit(fit,(fFitOpt+"EX0").Data());
+
+  // warning in case of fit issues
+  if(fitResult!=0)   { Error("Fit","fit has error/issue (%d)",fitResult); return; }
+
+
+  PairAnalysisStyler::Style(fit, PairAnalysisStyler::kFit);
+  fit->Draw((drawoption+"same").Data());
+
+  /// store chi2/ndf of the fit
+  fDof     = fit->GetNDF();
+  if(fDof) fChi2Dof = fit->GetChisquare()/fit->GetNDF();
+
+  /// add fit to legend
+  if(optLeg) {
+    TList *prim    = gPad->GetListOfPrimitives();
+    TLegend *leg   = (TLegend*)prim->FindObject("TPave");
+    TString legkey = fit->GetName();
+      /// recalc legend coordinates, margins
+      if (leg) {
+	leg->AddEntry(fit,fit->GetName(),drawoption.Data());
+	PairAnalysisStyler::SetLegendAttributes(leg);
+	///leg->Draw(); // was w/o !nobj
+      }
+  }
+
 
 }

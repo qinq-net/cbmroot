@@ -41,6 +41,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"MPI",                    "m_{#pi}",                                            "(GeV/#it{c}^{2})"},
   {"MKA",                    "m_{K}",                                              "(GeV/#it{c}^{2})"},
   {"MPR",                    "m_{p}",                                              "(GeV/#it{c}^{2})"},
+  {"MPair",                  "m_{pair}",                                           "(GeV/#it{c}^{2})"},
 // Hit specific variables
   {"PosX",                   "x_{hit}",                                            "(cm)"},
   {"PosY",                   "y_{hit}",                                            "(cm)"},
@@ -81,6 +82,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"E",                      "E",                                                  "(GeV)"},
   {"M",                      "m_{inv}",                                            "(GeV/#it{c}^{2})"},
   {"Charge",                 "q",                                                  "(e)"},
+  {"Mt",                     "#it{m}_{T}",                                         "(GeV/#it{c}^{2})"},
   {"Chi2NDFtoVtx",           "#chi^{2}/^{}N_{df}^{track#leftrightarrowvtx}",      "(#sigma)"},
   {"ImpactParXY",            "#it{dca}_{xy}",                                      "(cm)"},
   {"ImpactParZ",             "#it{dca}_{z}",                                       "(cm)"},

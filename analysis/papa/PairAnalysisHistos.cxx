@@ -1026,6 +1026,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
   /// "rmsX,Y":     quote the rms in the legend (Y only works for TProfile a.t.m.)
   /// "det":        adds the detector name to the legend for detector specific histograms (e.g. hit histograms)
   ///
+  /// "width":      scale histograms by 1./bin width according to TH1::Scale
   /// "rebinstat":  the objects are rebinned to have <80% stat uncertainty in each bin (preliminary)
   /// "rebinX":     rebins the histogram along x-axis by factor "X" (for X<10)
   /// "sclmax":     scale the histogram by 1./maximum
@@ -1058,6 +1059,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
   Bool_t optLeg      =optString.Contains("leg");       optString.ReplaceAll("leg","");
   Bool_t optDet      =optString.Contains("det");       optString.ReplaceAll("det","");
   Bool_t optMeta     =optString.Contains("meta");      optString.ReplaceAll("meta","");
+  Bool_t optWdth     =optString.Contains("width");     optString.ReplaceAll("width","");
   Bool_t optRbnStat  =optString.Contains("rebinstat"); optString.ReplaceAll("rebinstat","");
   Bool_t optRbn      =optString.Contains("rebin");
   Bool_t optSclMax   =optString.Contains("sclmax");    optString.ReplaceAll("sclmax","");
@@ -1357,6 +1359,10 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
 	else if(optDiv && htnom &&!h->Divide(htnom)) { Warning("DrawSame(eff/ratio)","h & task-nom division failed!!!!"); continue; }
 	else if(htden  && !h->Divide(htden))         { Warning("DrawSame(eff/ratio)","h & task-denom division failed!!!!"); continue; }
       }
+
+      /// scale by 1./bin width, helpfull for arbitrary bin sizes
+      if(optWdth && !optRbnStat) h->Scale(1.,"width");
+
 
       /// flip bin contents of histograms to 1./content
       if(optOneOver){

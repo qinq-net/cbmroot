@@ -243,22 +243,26 @@ Bool_t PairAnalysis::Process(PairAnalysisEvent *ev1)
   // Process the events
   //
 
-  // event vertex is needed!
+  /// event vertex is needed!
   if (!ev1->GetPrimaryVertex() ){
     Fatal("PairAnalysis::Process","No vertex found!");
     //Error("PairAnalysis::Process","No vertex found!");
     return kFALSE;
   }
 
-  // set event
+  /// set reference mass for mt calculation
+  PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kMPair, TDatabasePDG::Instance()->GetParticle(fPdgMother)->Mass() );
+
+  /// set event
   PairAnalysisVarManager::SetFillMap(fUsedVars);
   PairAnalysisVarManager::SetEvent(ev1);
 
+  /// set mixing bin to event data
   if (fMixing){
-    //set mixing bin to event data
     Int_t bin=fMixing->FindBin(PairAnalysisVarManager::GetData());
     PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kMixingBin,bin);
   }
+
 
   //in case we have MC load the MC event and process the MC particles
   // why do not apply the event cuts first ????
@@ -267,23 +271,23 @@ Bool_t PairAnalysis::Process(PairAnalysisEvent *ev1)
     ProcessMC();
   }
 
-  //if candidate array doesn't exist, create it
+  /// if candidate array doesn't exist, create it
   if (!fPairCandidates->UncheckedAt(0)) {
     InitPairCandidateArrays();
   } else {
     ClearArrays();
   }
 
-  //mask used to require that all cuts are fulfilled
+  /// mask used to require that all cuts are fulfilled
   UInt_t selectedMask=(1<<fEventFilter.GetCuts()->GetEntries())-1;
 
-  //apply event cuts
+  /// apply event cuts
   UInt_t cutmask = fEventFilter.IsSelected(ev1);
   if (fCutQA) fQAmonitor->FillAll(ev1);
   if (fCutQA) fQAmonitor->Fill(cutmask,ev1);
   if (ev1 && cutmask!=selectedMask) return kFALSE;
 
-  // fill track arrays for tracks that pass cuts
+  /// fill track arrays for tracks that pass cuts
   FillTrackArrays(ev1);
 
   // prefilter track

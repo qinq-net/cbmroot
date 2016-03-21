@@ -374,6 +374,7 @@ void PairAnalysisStyler::SetLegendAttributes(TLegend *leg, Bool_t fill)
   Double_t charwdth  = 0.01;//0.01; // own defintion
   Double_t entrysep  = 1.25;//1.25;  //entry seperation
   leg->SetTextSize(txtsze); // this should switch off the autosize
+  leg->SetTextAlign(11);
 
   // calculate get legend width
   Double_t maxwdth=0.0;
