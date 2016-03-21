@@ -67,9 +67,16 @@ void CbmKFParticleFinder::Exec(Option_t* /*opt*/)
 {
   Int_t ntracks=0;//fTrackArray->GetEntriesFast();
 
-  vector<CbmStsTrack> vRTracks(fTrackArray->GetEntriesFast());
-  vector<int> pdg(fTrackArray->GetEntriesFast(), -1);
-  vector<int> trackId(fTrackArray->GetEntriesFast(), -1);
+  //calculate number of d-He4 candidates
+  int nCandidatesDHe4 = 0;
+  if(fPID)
+    for(int iTr=0; iTr<fTrackArray->GetEntriesFast(); iTr++)
+      if(TMath::Abs(fPID->GetPID()[iTr]) == 1000010029)
+        nCandidatesDHe4++;
+  
+  vector<CbmStsTrack> vRTracks(fTrackArray->GetEntriesFast() + nCandidatesDHe4);
+  vector<int> pdg(fTrackArray->GetEntriesFast() + nCandidatesDHe4, -1);
+  vector<int> trackId(fTrackArray->GetEntriesFast() + nCandidatesDHe4, -1);
     
   for(int iTr=0; iTr<fTrackArray->GetEntriesFast(); iTr++)
   {
@@ -102,7 +109,20 @@ void CbmKFParticleFinder::Exec(Option_t* /*opt*/)
     if(fPID)
     {
       if(fPID->GetPID()[iTr] == -2) continue; 
-      pdg[ntracks] = fPID->GetPID()[iTr];
+      
+      //not clear separation between d and He4
+      if(TMath::Abs(fPID->GetPID()[iTr]) == 1000010029)
+      {
+        int sgn = fPID->GetPID()[iTr]/TMath::Abs(fPID->GetPID()[iTr]);
+        pdg[ntracks] = sgn * 1000010020;
+        vRTracks[ntracks] = *stsTrack;
+        trackId[ntracks] = iTr;
+        ntracks++;
+        
+        pdg[ntracks] = sgn * 1000020040;
+      }
+      else
+        pdg[ntracks] = fPID->GetPID()[iTr];
     }
     vRTracks[ntracks] = *stsTrack;
     trackId[ntracks] = iTr;
@@ -214,7 +234,7 @@ void CbmKFParticleFinder::Exec(Option_t* /*opt*/)
       
       if(vChiToPrimVtx[iTr] < 3)
       {
-        if( (fabs(pdg[iTr]) == 11 && pt > 0.2f) || (fabs(pdg[iTr]) == 13) || (fabs(pdg[iTr]) == 19))
+        if( (fabs(pdg[iTr]) == 11 && pt > 0.2f) || (fabs(pdg[iTr]) == 13) || (fabs(pdg[iTr]) == 19) )
           save=1;
       }
       

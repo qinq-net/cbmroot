@@ -225,7 +225,7 @@ void CbmKFParticleFinderPID::SetRecoPID()
         sP[iSp][jSp] = sPLocal[iSp][jSp];
   }
 
-  const Int_t PdgHypo[9] = {2212, 321, 211, -11, 1000010020, 1000010030, 1000020030, -13, -19};
+  const Int_t PdgHypo[9] = {2212, 321, 211, -11, 1000010029, 1000010030, 1000020030, -13, -19};
 
   for (Int_t igt = 0; igt < fGlobalTrackArray->GetEntriesFast(); igt++)
   {
