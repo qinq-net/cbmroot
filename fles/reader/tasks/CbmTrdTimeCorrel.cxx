@@ -18,6 +18,7 @@
 #include <map>
 #include <vector>
 #include <iostream>
+#include <stdexcept>
 // ----              -------------------------------------------------------
 CbmTrdTimeCorrel::CbmTrdTimeCorrel()
   : FairTask("CbmTrdTimeCorrel"),
