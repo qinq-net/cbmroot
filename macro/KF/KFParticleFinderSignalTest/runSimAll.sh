@@ -26,7 +26,7 @@ ONE=1
 NOL=0
 
 PID=""
-for i in {0..78}
+for i in {0..85}
 do
   CURDIR="Signal"$i
   mkdir $CURDIR

@@ -32,13 +32,13 @@ void recoSignal(Int_t nEvents = 10000) {
   TString workDir = gSystem->Getenv("VMCWORKDIR");
   TString paramDir = workDir + "/parameters";
 
-  TObjString stsDigiFile = paramDir + "/sts/sts_v13d_std.digi.par";
-  parFileList->Add(&stsDigiFile);
+  TObjString stsDigiFile = paramDir + "/sts/sts_v15c_std.digi.par";
+//   parFileList->Add(&stsDigiFile);
 
   TObjString trdDigiFile =  paramDir + "/trd/trd_v13g.digi.par";
   parFileList->Add(&trdDigiFile);
 
-  TObjString tofDigiFile =  paramDir + "/tof/tof_v13b.digi.par";
+  TObjString tofDigiFile =  paramDir + "/tof/tof_v16a_1h.digi.par";
   parFileList->Add(&tofDigiFile);
 
 
@@ -155,7 +155,7 @@ void recoSignal(Int_t nEvents = 10000) {
   run->AddTask(kalman);
   CbmL1* l1 = new CbmL1("CbmL1",1, 3);
   TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
-  const TString stsMatBudgetFileName = parDir + "/sts/sts_matbudget_v13d.root";
+  const TString stsMatBudgetFileName = parDir + "/sts/sts_matbudget_v15c.root";
   const TString mvdMatBudgetFileName = parDir + "/mvd/mvd_matbudget_v14b.root";
   l1->SetStsMaterialBudgetFileName(stsMatBudgetFileName.Data());
   l1->SetMvdMaterialBudgetFileName(mvdMatBudgetFileName.Data());
@@ -255,7 +255,7 @@ void recoSignal(Int_t nEvents = 10000) {
   run->Init();
   //add ions to the TDatabasePDG
   KFPartEfficiencies eff;
-  for(int jParticle=125; jParticle<133; jParticle++)
+  for(int jParticle=eff.fFirstStableParticleIndex+10; jParticle<=eff.fLastStableParticleIndex; jParticle++)
   {
     TDatabasePDG* pdgDB = TDatabasePDG::Instance();
 

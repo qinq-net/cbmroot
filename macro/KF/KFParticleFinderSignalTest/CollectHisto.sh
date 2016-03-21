@@ -12,7 +12,7 @@ fi
 
 START=0
 
-NDIRS=74
+NDIRS=85
 for (( i=$START; i<=$NDIRS; i++ ))
 do
   TMPHISTOSNAMES[i]=""

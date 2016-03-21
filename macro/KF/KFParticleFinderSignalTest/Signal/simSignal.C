@@ -36,13 +36,13 @@ void simSignal(Int_t iParticle = 0, Int_t nEvents = 10000, bool useMvd = 0)
 
   TString stsGeom;
   if (sameZ) stsGeom    = "sts_same_z.geo";
-  else stsGeom    = "sts/sts_v13d.geo.root";
+  else stsGeom    = "sts/sts_v15c.geo.root";
 
   if (!useMvd) mvdGeom = "";
   if (!usePipe) pipeGeom = "";
   TString richGeom = "";
   TString trdGeom  = "";
-  TString tofGeom = "";
+  TString tofGeom = "tof/tof_v16a_1h.geo.root";
   TString ecalGeom = "";
 
   // -----   Magnetic field   -----------------------------------------------
@@ -146,7 +146,7 @@ void simSignal(Int_t iParticle = 0, Int_t nEvents = 10000, bool useMvd = 0)
   fRun->SetGenerator(primGen);
   
   KFPartEfficiencies eff;
-  for(int jParticle=125; jParticle<133; jParticle++)
+  for(int jParticle=eff.fFirstStableParticleIndex+10; jParticle<=eff.fLastStableParticleIndex; jParticle++)
   {
     TDatabasePDG* pdgDB = TDatabasePDG::Instance();
 
@@ -200,6 +200,35 @@ void simSignal(Int_t iParticle = 0, Int_t nEvents = 10000, bool useMvd = 0)
       if(iD>2)
         continue;
       mode[0][iD] = eff.GetDaughterPDG(iParticle, iD); //pi+
+    }
+    
+    gMC->SetDecayMode(PDG,bratio,mode);
+  }
+  for(int iP=eff.fFirstHypernucleusIndex; iP<=eff.fLastHypernucleusIndex; iP++)
+  {
+    Double_t lifetime = eff.partLifeTime[iP]; // lifetime
+    Double_t mass = eff.partMass[iP];
+    Int_t PDG = eff.partPDG[iP];
+    Double_t charge = eff.partCharge[iP];
+   
+    gMC->DefineParticle(PDG, eff.partTitle[iP].data(), kPTHadron, mass, charge,
+            lifetime, "hadron", 0.0, 1, 1, 0, 1, 1, 0, 0, 1, kFALSE);
+    
+    Int_t mode[6][3];
+    Float_t bratio[6];
+
+    for (Int_t kz = 0; kz < 6; kz++) {
+      bratio[kz] = 0.;
+      mode[kz][0] = 0;
+      mode[kz][1] = 0;
+      mode[kz][2] = 0;
+    }
+    bratio[0] = 100.;
+    for(int iD=0; iD<eff.GetNDaughters(iP); iD++)
+    {
+      if(iD>2)
+        continue;
+      mode[0][iD] = eff.GetDaughterPDG(iP, iD); //pi+
     }
     
     gMC->SetDecayMode(PDG,bratio,mode);

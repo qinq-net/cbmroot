@@ -50,6 +50,7 @@ void physSignal(int nEventsToRun = 10000) {
 
     // ----- PID for KF Particle Finder --------------------------------------------
   CbmKFParticleFinderPID* kfParticleFinderPID = new CbmKFParticleFinderPID();
+  kfParticleFinderPID->SetSIS100(); 
   kfParticleFinderPID->SetPIDMode(1);
   run->AddTask(kfParticleFinderPID);
   
@@ -80,7 +81,7 @@ void physSignal(int nEventsToRun = 10000) {
   run->Init();
   
   KFPartEfficiencies eff;
-  for(int jParticle=125; jParticle<133; jParticle++)
+  for(int jParticle=eff.fFirstStableParticleIndex+10; jParticle<=eff.fLastStableParticleIndex; jParticle++)
   {
     TDatabasePDG* pdgDB = TDatabasePDG::Instance();
 
