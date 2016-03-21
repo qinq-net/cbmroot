@@ -40,6 +40,7 @@ public:
         do {
             gGeoManager->PushPoint();
             string name = string(gGeoManager->GetCurrentNode()->GetName());
+            string fullPath = string(gGeoManager->GetPath());
             Double_t x = gGeoManager->GetCurrentPoint()[0];
             Double_t y = gGeoManager->GetCurrentPoint()[1];
             Double_t z = gGeoManager->GetCurrentPoint()[2];
@@ -50,7 +51,7 @@ public:
               //  if (volumeName == "pmt_pixel")cout << "volumeName found" << endl;
                 crossPoint.SetXYZ(x, y, z);
                 gGeoManager->PopPoint();
-                return name;
+                return fullPath;
             }
             
             
