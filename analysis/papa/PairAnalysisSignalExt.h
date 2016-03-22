@@ -63,7 +63,6 @@ public:
   // signal
 
   void SetMCSignalShape(TH1F* hist)                        { fgHistSimPM=hist; fHistSignalMC=hist; }
-  void SetParticleOfInterest(Int_t pdgcode)                { fPOIpdg=pdgcode; }
   void SetIntegralRange(Double_t min, Double_t max)        { fIntMin=min; fIntMax=max; }
   void SetPlotRange(Double_t min, Double_t max)            { fPlotMin=min; fPlotMax=max; }
   void SetRebin(Int_t factor)                              { fRebin=factor; }

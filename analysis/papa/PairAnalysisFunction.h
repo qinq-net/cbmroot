@@ -30,6 +30,7 @@ class PairAnalysisFunction : public TNamed {
   //  virtual void Fit(Option_t *opt);
 
   // Setter
+  void SetParticleOfInterest(Int_t pdgcode)      { fPOIpdg=pdgcode; }
   void SetFitRange(Double_t min, Double_t max)   { fFitMin=min; fFitMax=max;  }
   void SetUseIntegral(Bool_t flag=kTRUE)         { fUseIntegral = flag; }
   void SetFitOption(const char* opt) {

@@ -187,6 +187,7 @@ void PairAnalysisSpectrum::Process()
 	// fill the tree
 	fExt->setup= fInputKeys[i];
 	fExt->setupId = i;
+	fExt->poi  = sig->GetParticleOfInterest();
 	fExt->var  = 1.; //integrated
 	fExt->varE = 0.;
 	fExt->s    = sig->GetSignal();
@@ -273,6 +274,7 @@ void PairAnalysisSpectrum::Process()
 	    // fill the tree
 	    fExt->setup   = fInputKeys[i];
 	    fExt->setupId = i;
+	    fExt->poi  = sig->GetParticleOfInterest();
 	    fExt->var  = (fndHi-fndLo)/2+fndLo; // center of the found bin
 	    fExt->varE = (fndHi-fndLo)/2;       // found bin width
 	    fExt->s    = sig->GetSignal();

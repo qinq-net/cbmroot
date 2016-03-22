@@ -33,6 +33,7 @@ class Extraction : public TObject {
 public:
   TString  setup   = "";   // indentifier key
   Int_t    setupId = -1;   // identifier idx
+  Int_t poi        = 0;    // particle of interest
   Double_t var     = 0.;   // value of variable
   Double_t varE    = 0.;   // error of variable
   Double_t s       = 0.;   // raw signal
