@@ -1117,9 +1117,9 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
   /// count number of drawn objects in pad
   TObject *obj;
   Int_t nobj=0;
-  TList *prim = gPad->GetListOfPrimitives();
-  if(prim->GetSize()>1) prim->RemoveLast(); // remove redraw axis histogram
-  for(Int_t io=0; io<prim->GetSize(); io++) {
+  TList *prim = (gPad ? gPad->GetListOfPrimitives() : 0x0);
+  if(prim && prim->GetSize()>1) prim->RemoveLast(); // remove redraw axis histogram
+  for(Int_t io=0; io< (prim ? prim->GetSize() : 0); io++) {
     obj=prim->At(io);
     if(obj->InheritsFrom(TH1::Class()) && obj!=prim->At(io+1)) nobj++;
   }
@@ -1196,315 +1196,322 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
 
 
     /// find the histogram 'histName' in the class table
-    if ( TH1 *h=(TH1*)classTable->FindObject(histName.Data()) ) {
+    /// or the corressponding MC histogram
+    TH1 *h=(TH1*)classTable->FindObject(histName.Data());
+    if (!h && !optNoMC && !optNoMCtrue) {
+      /// TODO: improve for tprofiles, formulas and more dimensional histos
+      TString histdenomMC = histName+"MC";
+      h                   = (TH1*) classTable->FindObject( histdenomMC.Data() );
+    }
+    if (!h) continue;
 
-      /// get histClassDenom for efficiency caluclation, e.g. the MCtruth (denominator)
-      if(optEff && !histClass.Contains("_MCtruth")) histClassDenom = histClass + "_MCtruth";
-      Info("DrawSame"," Hist found in histClass '%s' (search for denom '%s') ",histClass.Data(),histClassDenom.Data());
+    /// get histClassDenom for efficiency caluclation, e.g. the MCtruth (denominator)
+    if(optEff && !histClass.Contains("_MCtruth")) histClassDenom = histClass + "_MCtruth";
+    Info("DrawSame"," Hist found in histClass '%s' (search for denom '%s') ",histClass.Data(),histClassDenom.Data());
 
-      /// check if 'ratio' or 'eff' should be build
-      if( (optEff || optRatio) /*&& !optTask*/ && (histClass.EqualTo(histClassDenom) || !fHistoList.FindObject(histClassDenom.Data())) ) continue;       /// TODO: why  '!optTask' was needed?
-      else if(!histClassDenom.IsNull()) Info("DrawSame"," Denom histClass '%s' found ",histClassDenom.Data());
+    /// check if 'ratio' or 'eff' should be build
+    if( (optEff || optRatio) /*&& !optTask*/ && (histClass.EqualTo(histClassDenom) || !fHistoList.FindObject(histClassDenom.Data())) ) continue;       /// TODO: why  '!optTask' was needed?
+    else if(!histClassDenom.IsNull()) Info("DrawSame"," Denom histClass '%s' found ",histClassDenom.Data());
 
-      /// set first histogram
-      if (i==0) hFirst=h;
+    /// set first histogram
+    if (i==0) hFirst=h;
 
-      /// print normalisation option
-      if(optRbn||optRbnStat)        Info("DrawSame"," Rebin by %d, to <%.1f%% stat. uncertainty per bin",(optRbn?rbn:0),(optRbnStat?0.8*100:0));
-      if(optNormY||optNorm||optEvt) Info("DrawSame"," Normalize in y-axis,2D's only(%d), by int.(%d), by #events(%d)",optNormY,optNorm,optEvt);
-      if(optSclMax)                 Info("DrawSame"," Scale to maximum(%d)",optSclMax);
+    /// print normalisation option
+    if(optRbn||optRbnStat)        Info("DrawSame"," Rebin by %d, to <%.1f%% stat. uncertainty per bin",(optRbn?rbn:0),(optRbnStat?0.8*100:0));
+    if(optNormY||optNorm||optEvt) Info("DrawSame"," Normalize in y-axis,2D's only(%d), by int.(%d), by #events(%d)",optNormY,optNorm,optEvt);
+    if(optSclMax)                 Info("DrawSame"," Scale to maximum(%d)",optSclMax);
 
-      /// rebin, normalize and scale spectra according to options 'rebinX','rebinStat','norm','normY','events','sclMax'
-      h->Sumw2();
-      if(optRbn)                    h->Rebin(rbn);
-      if(optNormY && h->GetDimension()==2 && !(h->GetSumOfWeights()==0)) {
-	TH2 *hsum = (TH2*) h->Clone("orig");
-	hsum->Reset("CE");
-	for(Int_t ix = 1; ix <= hsum->GetNbinsX(); ix++) {
-	  Double_t ysum = h->Integral(ix,ix);
-	  for(Int_t iy = 1; iy <= hsum->GetNbinsY(); iy++) {
-	    hsum->SetBinContent(ix,iy,ysum);
-	  }
+    /// rebin, normalize and scale spectra according to options 'rebinX','rebinStat','norm','normY','events','sclMax'
+    h->Sumw2();
+    if(optRbn)                    h->Rebin(rbn);
+    if(optNormY && h->GetDimension()==2 && !(h->GetSumOfWeights()==0)) {
+      TH2 *hsum = (TH2*) h->Clone("orig");
+      hsum->Reset("CE");
+      for(Int_t ix = 1; ix <= hsum->GetNbinsX(); ix++) {
+	Double_t ysum = h->Integral(ix,ix);
+	for(Int_t iy = 1; iy <= hsum->GetNbinsY(); iy++) {
+	  hsum->SetBinContent(ix,iy,ysum);
 	}
-	h->Divide(hsum);
-	delete hsum;
       }
-      if(optRbnStat) {
-	/// rebin until stat. uncertainty is lower than 80%
-	TArrayD* limits = PairAnalysisHelper::MakeStatBinLimits(h,0.8);
-	h=h->Rebin(limits->GetSize()-1,h->GetName(),limits->GetArray());
-	h->Scale(1.,"width");
-	delete limits;
-      }
+      h->Divide(hsum);
+      delete hsum;
+    }
+    if(optRbnStat) {
+      /// rebin until stat. uncertainty is lower than 80%
+      TArrayD* limits = PairAnalysisHelper::MakeStatBinLimits(h,0.8);
+      h=h->Rebin(limits->GetSize()-1,h->GetName(),limits->GetArray());
+      h->Scale(1.,"width");
+      delete limits;
+    }
 
-      /// get default histogram titles
-      TString ytitle = h->GetYaxis()->GetTitle();
-      TString ztitle = h->GetZaxis()->GetTitle();
-      if(ytitle.Contains("{evt}")) optEvt=kFALSE;
+    /// get default histogram titles
+    TString ytitle = h->GetYaxis()->GetTitle();
+    TString ztitle = h->GetZaxis()->GetTitle();
+    if(ytitle.Contains("{evt}")) optEvt=kFALSE;
 
-      if(optNorm && !(h->GetSumOfWeights()==0)) h=h->DrawNormalized(i>0?(optString+"same").Data():optString.Data());
-      if(optEvt)                    h->Scale(1./events);
-      if(optSclMax)                 h->Scale(1./h->GetBinContent(h->GetMaximumBin()));
+    if(optNorm && !(h->GetSumOfWeights()==0)) h=h->DrawNormalized(i>0?(optString+"same").Data():optString.Data());
+    if(optEvt)                    h->Scale(1./events);
+    if(optSclMax)                 h->Scale(1./h->GetBinContent(h->GetMaximumBin()));
 
-      /// modify titles according to options
-      switch(h->GetDimension()) {
-      case 1:
-	if(optEvt)    h->SetYTitle( (ytitle+"/N_{evt}").Data() );
-	if(optNorm)   h->SetYTitle( (ytitle.Append(" (normalized)")).Data() );
-	if(optRatio)  h->SetYTitle( "ratio" );
-	if(optDiv)    h->SetYTitle( "ratio" );
-	if(optEff)    h->SetYTitle( "efficiency" );
-	if(optSclMax) h->SetYTitle( (ytitle+"/N_{max}").Data() );
-	break;
-      case 2:
-	if(optEvt)    h->SetZTitle( (ztitle+"/N_{evt}").Data() );
-	//	if(optNormY)  h->SetYTitle( (ytitle.Append(" (normalized)")).Data() );
-	if(optNorm)   h->SetZTitle( (ztitle.Prepend("normalized ")).Data() );
-	if(optRatio)  h->SetZTitle( "ratio" );
-	if(optDiv)    h->SetZTitle( "ratio" );
-	if(optEff)    h->SetZTitle( "efficiency" );
-	if(optSclMax) h->SetZTitle( (ztitle+"/N_{max}").Data() );
-	break;
-      }
+    /// modify titles according to options
+    switch(h->GetDimension()) {
+    case 1:
+      if(optEvt)    h->SetYTitle( (ytitle+"/N_{evt}").Data() );
+      if(optNorm)   h->SetYTitle( (ytitle.Append(" (normalized)")).Data() );
+      if(optRatio)  h->SetYTitle( "ratio" );
+      if(optDiv)    h->SetYTitle( "ratio" );
+      if(optEff)    h->SetYTitle( "efficiency" );
+      if(optSclMax) h->SetYTitle( (ytitle+"/N_{max}").Data() );
+      break;
+    case 2:
+      if(optEvt)    h->SetZTitle( (ztitle+"/N_{evt}").Data() );
+      //	if(optNormY)  h->SetYTitle( (ytitle.Append(" (normalized)")).Data() );
+      if(optNorm)   h->SetZTitle( (ztitle.Prepend("normalized ")).Data() );
+      if(optRatio)  h->SetZTitle( "ratio" );
+      if(optDiv)    h->SetZTitle( "ratio" );
+      if(optEff)    h->SetZTitle( "efficiency" );
+      if(optSclMax) h->SetZTitle( (ztitle+"/N_{max}").Data() );
+      break;
+    }
 
-      /// Calculate ratios and Draw histograms
-      if( (optEff || optRatio) && !optNorm && !optEvt && !optTask)  {
-	Info("DrawSame"," Calculate '%s' w/o normalisation and within the same task",(optEff?"efficiency":"ratio"));
-	//	TString    clMC     = histClass+"_MCtruth";
+    /// Calculate ratios and Draw histograms
+    if( (optEff || optRatio) && !optNorm && !optEvt && !optTask)  {
+      Info("DrawSame"," Calculate '%s' w/o normalisation and within the same task",(optEff?"efficiency":"ratio"));
+      //	TString    clMC     = histClass+"_MCtruth";
+      THashList *clDenom  = (THashList*)fHistoList.FindObject( histClassDenom.Data() );
+      TH1 *hMC = (TH1*) h->Clone(); // needed to preserve the labeling of non-mc histogram
+      TString histdenomMC = UserHistogram(histClassDenom.Data(),hMC);
+      TH1 *hdenom         = (TH1*) clDenom->FindObject( histdenomMC.Data() );
+      if(!hdenom) { Error("DrawSame","Denominator object not found"); continue; }
+      Info("DrawSame"," Divide %s(#=%.3e) by %s(#=%.3e)",h->GetName(),h->GetEntries(),hdenom->GetName(),hdenom->GetEntries());
+      delete hMC; //delete the surplus object
+      // normalize and rebin only once
+      hdenom->Sumw2(); //why is it crashing here
+      if(optRbn && (optEff || !(i%10)) )       hdenom->Rebin(rbn);
+      if(optEvt && (optEff || !(i%10)) )       hdenom->Scale(1./events);
+      if(!hdenom || !h->Divide(hdenom))  { Warning("DrawSame(eff/ratio)","Division failed!!!!"); continue; }
+    }
+    else if( optTask && (optDiv || optEff || optRatio)) {
+      Info("DrawSame"," Calculate '%s' using different tasks",(optEff?"efficiency":(optRatio?"ratio":"divison")));
+      // denominators
+      TH1* hdenom=0x0; 
+      TH1* htden =0x0;
+      if(optEff || optRatio) {
 	THashList *clDenom  = (THashList*)fHistoList.FindObject( histClassDenom.Data() );
 	TH1 *hMC = (TH1*) h->Clone(); // needed to preserve the labeling of non-mc histogram
 	TString histdenomMC = UserHistogram(histClassDenom.Data(),hMC);
-	TH1 *hdenom         = (TH1*) clDenom->FindObject( histdenomMC.Data() );
-	if(!hdenom) { Error("DrawSame","Denominator object not found"); continue; }
-	Info("DrawSame"," Divide %s(#=%.3e) by %s(#=%.3e)",h->GetName(),h->GetEntries(),hdenom->GetName(),hdenom->GetEntries());
-	delete hMC; //delete the surplus object
-	// normalize and rebin only once
-	hdenom->Sumw2(); //why is it crashing here
-	if(optRbn && (optEff || !(i%10)) )       hdenom->Rebin(rbn);
-	if(optEvt && (optEff || !(i%10)) )       hdenom->Scale(1./events);
-	if(!hdenom || !h->Divide(hdenom))  { Warning("DrawSame(eff/ratio)","Division failed!!!!"); continue; }
-      }
-      else if( optTask && (optDiv || optEff || optRatio)) {
-	Info("DrawSame"," Calculate '%s' using different tasks",(optEff?"efficiency":(optRatio?"ratio":"divison")));
-	// denominators
-	TH1* hdenom=0x0; 
-	TH1* htden =0x0;
-	if(optEff || optRatio) {
-	  THashList *clDenom  = (THashList*)fHistoList.FindObject( histClassDenom.Data() );
-	  TH1 *hMC = (TH1*) h->Clone(); // needed to preserve the labeling of non-mc histogram
-	  TString histdenomMC = UserHistogram(histClassDenom.Data(),hMC);
-	  //delete the surplus object
-	  delete hMC;
+	//delete the surplus object
+	delete hMC;
 
-	  if(clDenom) {
-	    hdenom         = (TH1*) clDenom->FindObject( histdenomMC.Data() );
-	  }
-
-	  if(listDenom) {
-	    THashList *clTaskDen = (THashList*)listDenom->FindObject( histClassDenom.Data() );
-	    if(clTaskDen) {
-	      //	  htden=(TH1*)clTaskDen->FindObject(hdenom->GetName());
-	      htden=(TH1*)clTaskDen->FindObject( histdenomMC.Data() );
-	      Info("DrawSame","calculate eff/ratio using task-denom: '%s' class-denom: '%s' hist-denom: '%s'",
-		   listDenom->GetName(), histClassDenom.Data(), histdenomMC.Data());
-	      // keep only one of them, otherwise you might divide the same objects twice
-	      if(htden) hdenom=0x0;
-	    }
-	  }
-
+	if(clDenom) {
+	  hdenom         = (TH1*) clDenom->FindObject( histdenomMC.Data() );
 	}
 
-
-	// task ratio
-	TH1 *htnom=0x0;
-	if(optDiv && !optEff) {
-	  Info("DrawSame"," Search for '%s' in task '%s'",histClass.Data(),listDenom->GetName());
-	  THashList *clTaskNom = (THashList*)listDenom->FindObject( histClass.Data() );
-	  if(!clTaskNom) continue;
-	  htnom=(TH1*)clTaskNom->FindObject(histName.Data());
-	  if(!htnom) continue;
-	}
-
-	if(hdenom) hdenom->Sumw2();
-	if(htden)  htden->Sumw2();
-	if(htnom)  htnom->Sumw2();
-
-	// normalize and rebin only once
-	if(optRbn && !i) {
-	  // TODO: check for consistency if opttask, than htden is rebinned multiple times!
-	  //	  Printf(" rebin spectra");
-	  if(hdenom) hdenom->Rebin(rbn);
-	  if(htden)  htden->Rebin(rbn);
-	  if(htnom)  htnom->Rebin(rbn);
-	}
-	if(optEvt && !i ) {
-	  if(hdenom) hdenom->Scale(1./events);
-	  if(htden)  htden->Scale(1./events);
-	  if(htnom)  htnom->Scale(1./events);
-	}
-
-	Info("DrawSame","  Use nominator (%p,#=%.3e) and denominator 'same task & different class'(%p,#=%.3e), 'certain task & different class'(%p,#=%.3e), 'certain task & same class'(%p,#=%.3e)",
-	     h,h->GetEntries(),
-	     hdenom,(hdenom?hdenom->GetEntries():0),
-	     htden,(htden?htden->GetEntries():0),
-	     htnom,(htnom?htnom->GetEntries():0)
-	     );
-	// Printf("h %p (bins%d) \t hdenom %p (bins%d) \t htdenom %p (bins%d) \t htnom %p (bins%d)",
-	//        h,h->GetNbinsX(),hdenom,(hdenom?hdenom->GetNbinsX():0),
-	//        htden,(htden?htden->GetNbinsX():0),htnom,(htnom?htnom->GetNbinsX():0));
-
-	// standard ratio
-	if(hdenom && !h->Divide(hdenom))        { Warning("DrawSame(eff/ratio)","h & denom division failed!!!!"); continue; }
-	else if(htden  && htnom && !i && !htnom->Divide(htden)) { Warning("DrawSame(eff/ratio)","task-nom/task-denom division failed!!!!"); continue; }
-	else if(optDiv && htnom &&!h->Divide(htnom)) { Warning("DrawSame(eff/ratio)","h & task-nom division failed!!!!"); continue; }
-	else if(htden  && !h->Divide(htden))         { Warning("DrawSame(eff/ratio)","h & task-denom division failed!!!!"); continue; }
-      }
-
-      /// scale by 1./bin width, helpfull for arbitrary bin sizes
-      if(optWdth && !optRbnStat) h->Scale(1.,"width");
-
-
-      /// flip bin contents of histograms to 1./content
-      if(optOneOver){
-	Info("DrawSame"," Scale by 1/content");
-	TH1 *hOne = (TH1*) h->Clone("one");
-	hOne->Reset("ICSE");
-	for(Int_t ib=0;ib<(h->GetNbinsX()+2)*(h->GetNbinsY()+2)*(h->GetNbinsZ()+2);ib++)
-	  hOne->SetBinContent(ib,1.);
-	if(hOne->Divide(h)) h=hOne;
-      }
-
-      /// set special geant labels
-      if(optGeant) {
-	Info("DrawSame"," Set GEANT bin labels");
-	PairAnalysisHelper::SetGEANTBinLabels(h);
-      }
-
-      /// style histograms if not done before
-      if(h->GetLineColor()==kBlack && !optString.Contains("col")) { // avoid color updates
-	h->UseCurrentStyle();
-	PairAnalysisStyler::Style(h,i);
-      }
-      /// some default styles for certain options
-      if(optString.Contains("scat"))   h->SetMarkerStyle(kDot);
-      if(optString.Contains("e"))      h->SetLineStyle(kSolid);
-      if(optString.Contains("text")) { h->SetLineColor(1); h->SetMarkerColor(1); }
-
-      /// set histogram title to current histClass
-      //      h->SetName(histClass.Data());
-      h->SetTitle(histClass.Data());
-
-      /// add histograms to returned array if option 'goff' is active, otherwise
-      /// draw the histogram
-      if(optGoff)
-	arr->Add(h);
-      else {
-	optString.ReplaceAll(" ","");
-	Info("DrawSame"," Draw object with options: '%s'",optString.Data());
-	h->Draw(i>0?(optString+"same").Data():optString.Data());
-      }
-
-
-      /// protection e.g. normalization not possible TProfile
-      if(h && h->GetEntries()>0.) {
-
-	TString ratioName=histClassDenom;
-	TString divName=(listDenom?listDenom->GetName():"");
-	if(optEff) divName+=(listDenom?"(MC)":"");
-	// adapt legend name
-	// remove reserved words
-	TObjArray *reservedWords = fReservedWords->Tokenize(":;");
-	for(Int_t ir=0; ir<reservedWords->GetEntriesFast(); ir++) {
-	  //	  printf("histClass %s \t search for %s \n",histClass.Data(),((TObjString*)reservedWords->At(ir))->GetString().Data());
-	  histClass.ReplaceAll( ((TObjString*)reservedWords->At(ir))->GetString(), "");
-	  ratioName.ReplaceAll( ((TObjString*)reservedWords->At(ir))->GetString(), "");
-	  divName.ReplaceAll( ((TObjString*)reservedWords->At(ir))->GetString(), "");
-	}
-	// change default signal names to titles
-	for(Int_t isig=0; isig<PairAnalysisSignalMC::kNSignals; isig++) {
-	  TString src  = PairAnalysisSignalMC::fgkSignals[isig][0];
-	  TString rpl  = PairAnalysisSignalMC::fgkSignals[isig][1];
-	  // avoid mc signal in header AND leg-entry
-	  if(leg && (rpl.EqualTo(leg->GetHeader()) || src.EqualTo(leg->GetHeader()))) rpl="";
-	  histClass.ReplaceAll(src,rpl);
-	  ratioName.ReplaceAll(src,rpl);
-	  divName.ReplaceAll(src,rpl);
-	}
-	//	printf("histClass %s \n",histClass.Data());
-
-	// change MCtruth to MC
-	for(Int_t isig=0; isig<PairAnalysisSignalMC::kNSignals; isig++) {
-	  histClass.ReplaceAll("MCtruth","MC");
-	  ratioName.ReplaceAll("MCtruth","MC");
-	  divName.ReplaceAll("MCtruth","MC");
-	}
-	// remove pairing name if it is a MC
-	for(Int_t iptype=0; iptype<PairAnalysis::kPairTypes; iptype++) {
-	  if(ndel>0)                     histClass.ReplaceAll( PairAnalysis::PairClassName(iptype), "");
-	  if(ratioName.CountChar('_')>0) ratioName.ReplaceAll( PairAnalysis::PairClassName(iptype), "");
-	  if(divName.CountChar('_')>0)   divName.ReplaceAll( PairAnalysis::PairClassName(iptype), "");
-	}
-	// save Dalitz underscore
-	histClass.ReplaceAll("_{Dalitz}","#{Dalitz}");
-	ratioName.ReplaceAll("_{Dalitz}","#{Dalitz}");
-	divName.ReplaceAll("_{Dalitz}","#{Dalitz}");
-	// remove delimiters
-	histClass.ReplaceAll("_"," ");
-	ratioName.ReplaceAll("_"," ");
-	divName.ReplaceAll("_"," ");
-	histClass.ReplaceAll(".","");
-	ratioName.ReplaceAll(".","");
-	divName.ReplaceAll(".","");
-	// get Dalitz back
-	histClass.ReplaceAll("#{Dalitz}","_{Dalitz}");
-	ratioName.ReplaceAll("#{Dalitz}","_{Dalitz}");
-	divName.ReplaceAll("#{Dalitz}","_{Dalitz}");
-	// remove trailing and leading spaces
-	histClass.Remove(TString::kBoth,' ');
-	ratioName.Remove(TString::kBoth,' ');
-	divName.Remove(TString::kBoth,' ');
-
-	//build final ratio name
-	if(optRatio)  histClass+="/"+ratioName;
-
-	// delete the surplus
-	delete reservedWords;
-
-	// modify legend option
-	TString legOpt = optString+"L";
-	legOpt.ReplaceAll("hist","");
-	legOpt.ReplaceAll("scat","");
-	if(legOpt.Contains("col")) legOpt="";
-	legOpt.ReplaceAll("z","");
-	legOpt.ReplaceAll("e","");
-	if (optTask) histClass.Prepend(Form("%s ",GetName()));
-	if (optTask && optCutStep && i) histClass.Prepend("+");
-	if (optDiv && !optOneOver)  histClass.ReplaceAll(GetName(),Form("%s/%s",GetName(),divName.Data()));
-	if (optDiv &&  optOneOver)  histClass.Prepend(Form("%s/",divName.Data()));
-	if (optDet) {
-	  for (Int_t idet=kREF; idet<kNOFDETS; ++idet){
-	    if(histName.Contains(PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet))))
-	      histClass=PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet));
+	if(listDenom) {
+	  THashList *clTaskDen = (THashList*)listDenom->FindObject( histClassDenom.Data() );
+	  if(clTaskDen) {
+	    //	  htden=(TH1*)clTaskDen->FindObject(hdenom->GetName());
+	    htden=(TH1*)clTaskDen->FindObject( histdenomMC.Data() );
+	    Info("DrawSame","calculate eff/ratio using task-denom: '%s' class-denom: '%s' hist-denom: '%s'",
+		 listDenom->GetName(), histClassDenom.Data(), histdenomMC.Data());
+	    // keep only one of them, otherwise you might divide the same objects twice
+	    if(htden) hdenom=0x0;
 	  }
 	}
-	//	else if(nobj)     histClass="";
-	if(optMeanX) histClass+=Form(" #LTx#GT=%.1e",h->GetMean());
-	if(optRmsX)  histClass+=Form(" RMS(x)=%.1e",h->GetRMS());
-	if(optMeanY) histClass+=Form(" #LTy#GT=%.2e",h->GetMean(2));
-	if(optRmsY)  histClass+=Form(" RMS(y)=%.2e",h->GetRMS(2));
-	histClass.ReplaceAll("e+00","");
-	// no entry for colored plots
-	if (leg /*&& !legOpt.Contains("col")*/) leg->AddEntry(h,histClass.Data(),legOpt.Data());
-	//      if (leg) leg->AddEntry(h,classTable->GetName(),(optString+"L").Data());
-	++i;
 
       }
-      else if(nobj&&leg) leg->AddEntry(hFirst,"","");
 
-      //++i;
 
+      // task ratio
+      TH1 *htnom=0x0;
+      if(optDiv && !optEff) {
+	Info("DrawSame"," Search for '%s' in task '%s'",histClass.Data(),listDenom->GetName());
+	THashList *clTaskNom = (THashList*)listDenom->FindObject( histClass.Data() );
+	if(!clTaskNom) continue;
+	htnom=(TH1*)clTaskNom->FindObject(histName.Data());
+	if(!htnom) continue;
+      }
+
+      if(hdenom) hdenom->Sumw2();
+      if(htden)  htden->Sumw2();
+      if(htnom)  htnom->Sumw2();
+
+      // normalize and rebin only once
+      if(optRbn && !i) {
+	// TODO: check for consistency if opttask, than htden is rebinned multiple times!
+	//	  Printf(" rebin spectra");
+	if(hdenom) hdenom->Rebin(rbn);
+	if(htden)  htden->Rebin(rbn);
+	if(htnom)  htnom->Rebin(rbn);
+      }
+      if(optEvt && !i ) {
+	if(hdenom) hdenom->Scale(1./events);
+	if(htden)  htden->Scale(1./events);
+	if(htnom)  htnom->Scale(1./events);
+      }
+
+      Info("DrawSame","  Use nominator (%p,#=%.3e) and denominator 'same task & different class'(%p,#=%.3e), 'certain task & different class'(%p,#=%.3e), 'certain task & same class'(%p,#=%.3e)",
+	   h,h->GetEntries(),
+	   hdenom,(hdenom?hdenom->GetEntries():0),
+	   htden,(htden?htden->GetEntries():0),
+	   htnom,(htnom?htnom->GetEntries():0)
+	   );
+      // Printf("h %p (bins%d) \t hdenom %p (bins%d) \t htdenom %p (bins%d) \t htnom %p (bins%d)",
+      //        h,h->GetNbinsX(),hdenom,(hdenom?hdenom->GetNbinsX():0),
+      //        htden,(htden?htden->GetNbinsX():0),htnom,(htnom?htnom->GetNbinsX():0));
+
+      // standard ratio
+      if(hdenom && !h->Divide(hdenom))        { Warning("DrawSame(eff/ratio)","h & denom division failed!!!!"); continue; }
+      else if(htden  && htnom && !i && !htnom->Divide(htden)) { Warning("DrawSame(eff/ratio)","task-nom/task-denom division failed!!!!"); continue; }
+      else if(optDiv && htnom &&!h->Divide(htnom)) { Warning("DrawSame(eff/ratio)","h & task-nom division failed!!!!"); continue; }
+      else if(htden  && !h->Divide(htden))         { Warning("DrawSame(eff/ratio)","h & task-denom division failed!!!!"); continue; }
+    }
+
+    /// scale by 1./bin width, helpfull for arbitrary bin sizes
+    if(optWdth && !optRbnStat) h->Scale(1.,"width");
+
+
+    /// flip bin contents of histograms to 1./content
+    if(optOneOver){
+      Info("DrawSame"," Scale by 1/content");
+      TH1 *hOne = (TH1*) h->Clone("one");
+      hOne->Reset("ICSE");
+      for(Int_t ib=0;ib<(h->GetNbinsX()+2)*(h->GetNbinsY()+2)*(h->GetNbinsZ()+2);ib++)
+	hOne->SetBinContent(ib,1.);
+      if(hOne->Divide(h)) h=hOne;
+    }
+
+    /// set special geant labels
+    if(optGeant) {
+      Info("DrawSame"," Set GEANT bin labels");
+      PairAnalysisHelper::SetGEANTBinLabels(h);
+    }
+
+    /// style histograms if not done before
+    if(h->GetLineColor()==kBlack && !optString.Contains("col")) { // avoid color updates
+      h->UseCurrentStyle();
+      PairAnalysisStyler::Style(h,i);
+    }
+    /// some default styles for certain options
+    if(optString.Contains("scat"))   h->SetMarkerStyle(kDot);
+    if(optString.Contains("e"))      h->SetLineStyle(kSolid);
+    if(optString.Contains("text")) { h->SetLineColor(1); h->SetMarkerColor(1); }
+
+    /// set histogram title to current histClass
+    //      h->SetName(histClass.Data());
+    h->SetTitle(histClass.Data());
+
+    /// add histograms to returned array if option 'goff' is active, otherwise
+    /// draw the histogram
+    if(optGoff)
+      arr->Add(h);
+    else {
+      optString.ReplaceAll(" ","");
+      Info("DrawSame"," Draw object with options: '%s'",optString.Data());
+      h->Draw(i>0?(optString+"same").Data():optString.Data());
+    }
+
+
+    /// protection e.g. normalization not possible TProfile
+    if(h && h->GetEntries()>0.) {
+
+      TString ratioName=histClassDenom;
+      TString divName=(listDenom?listDenom->GetName():"");
+      if(optEff) divName+=(listDenom?"(MC)":"");
+      // adapt legend name
+      // remove reserved words
+      TObjArray *reservedWords = fReservedWords->Tokenize(":;");
+      for(Int_t ir=0; ir<reservedWords->GetEntriesFast(); ir++) {
+	//	  printf("histClass %s \t search for %s \n",histClass.Data(),((TObjString*)reservedWords->At(ir))->GetString().Data());
+	histClass.ReplaceAll( ((TObjString*)reservedWords->At(ir))->GetString(), "");
+	ratioName.ReplaceAll( ((TObjString*)reservedWords->At(ir))->GetString(), "");
+	divName.ReplaceAll( ((TObjString*)reservedWords->At(ir))->GetString(), "");
+      }
+      // change default signal names to titles
+      for(Int_t isig=0; isig<PairAnalysisSignalMC::kNSignals; isig++) {
+	TString src  = PairAnalysisSignalMC::fgkSignals[isig][0];
+	TString rpl  = PairAnalysisSignalMC::fgkSignals[isig][1];
+	// avoid mc signal in header AND leg-entry
+	if(leg && (rpl.EqualTo(leg->GetHeader()) || src.EqualTo(leg->GetHeader()))) rpl="";
+	histClass.ReplaceAll(src,rpl);
+	ratioName.ReplaceAll(src,rpl);
+	divName.ReplaceAll(src,rpl);
+      }
+      //	printf("histClass %s \n",histClass.Data());
+
+      // change MCtruth to MC
+      for(Int_t isig=0; isig<PairAnalysisSignalMC::kNSignals; isig++) {
+	histClass.ReplaceAll("MCtruth","MC");
+	ratioName.ReplaceAll("MCtruth","MC");
+	divName.ReplaceAll("MCtruth","MC");
+      }
+      // remove pairing name if it is a MC
+      for(Int_t iptype=0; iptype<PairAnalysis::kPairTypes; iptype++) {
+	if(ndel>0)                     histClass.ReplaceAll( PairAnalysis::PairClassName(iptype), "");
+	if(ratioName.CountChar('_')>0) ratioName.ReplaceAll( PairAnalysis::PairClassName(iptype), "");
+	if(divName.CountChar('_')>0)   divName.ReplaceAll( PairAnalysis::PairClassName(iptype), "");
+      }
+      // save Dalitz underscore
+      histClass.ReplaceAll("_{Dalitz}","#{Dalitz}");
+      ratioName.ReplaceAll("_{Dalitz}","#{Dalitz}");
+      divName.ReplaceAll("_{Dalitz}","#{Dalitz}");
+      // remove delimiters
+      histClass.ReplaceAll("_"," ");
+      ratioName.ReplaceAll("_"," ");
+      divName.ReplaceAll("_"," ");
+      histClass.ReplaceAll(".","");
+      ratioName.ReplaceAll(".","");
+      divName.ReplaceAll(".","");
+      // get Dalitz back
+      histClass.ReplaceAll("#{Dalitz}","_{Dalitz}");
+      ratioName.ReplaceAll("#{Dalitz}","_{Dalitz}");
+      divName.ReplaceAll("#{Dalitz}","_{Dalitz}");
+      // remove trailing and leading spaces
+      histClass.Remove(TString::kBoth,' ');
+      ratioName.Remove(TString::kBoth,' ');
+      divName.Remove(TString::kBoth,' ');
+
+      //build final ratio name
+      if(optRatio)  histClass+="/"+ratioName;
+
+      // delete the surplus
+      delete reservedWords;
+
+      // modify legend option
+      TString legOpt = optString+"L";
+      legOpt.ReplaceAll("hist","");
+      legOpt.ReplaceAll("scat","");
+      if(legOpt.Contains("col")) legOpt="";
+      legOpt.ReplaceAll("z","");
+      legOpt.ReplaceAll("e","");
+      if (optTask) histClass.Prepend(Form("%s ",GetName()));
+      if (optTask && optCutStep && i) histClass.Prepend("+");
+      if (optDiv && !optOneOver)  histClass.ReplaceAll(GetName(),Form("%s/%s",GetName(),divName.Data()));
+      if (optDiv &&  optOneOver)  histClass.Prepend(Form("%s/",divName.Data()));
+      if (optDet) {
+	for (Int_t idet=kREF; idet<kNOFDETS; ++idet){
+	  if(histName.Contains(PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet))))
+	    histClass=PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet));
+	}
+      }
+      //	else if(nobj)     histClass="";
+      if(optMeanX) histClass+=Form(" #LTx#GT=%.1e",h->GetMean());
+      if(optRmsX)  histClass+=Form(" RMS(x)=%.1e",h->GetRMS());
+      if(optMeanY) histClass+=Form(" #LTy#GT=%.2e",h->GetMean(2));
+      if(optRmsY)  histClass+=Form(" RMS(y)=%.2e",h->GetRMS(2));
+      histClass.ReplaceAll("e+00","");
+      // no entry for colored plots
+      if (leg /*&& !legOpt.Contains("col")*/) leg->AddEntry(h,histClass.Data(),legOpt.Data());
+      //      if (leg) leg->AddEntry(h,classTable->GetName(),(optString+"L").Data());
+      ++i;
 
     }
+    else if(nobj&&leg) leg->AddEntry(hFirst,"","");
+
+    //++i;
+
+
+    //    }
   }
 
   /// draw legend only once
@@ -1515,6 +1522,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
   }
 
   /// automatic axis minimum and maximum
+  if(gPad) {
   Double_t max=-1e10;
   Double_t min=+1e10;
   TListIter nextObj(gPad->GetListOfPrimitives(),kIterBackward);
@@ -1558,7 +1566,6 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
       }
     }
   }
-
   /// draw only once the default metadata if option 'meta' is active
   if(!nobj && optMeta && fMetaData && !gPad->GetPrimitive("meta")) {
     fMetaData->DrawSame("");
@@ -1578,12 +1585,14 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
     }
   }
 
+  }
+
   /// styling
   /// NOTE: this draws a copy of the first histogram
-  gPad->RedrawAxis();
+  if(gPad) gPad->RedrawAxis();
 
   /// remove canvas if graphics are switched off ('goff')
-  if(optGoff) { c->Close(); delete c; }
+  //  if(optGoff) { c->Close(); delete c; }
 
   /// clean up
   if(selections) delete selections;

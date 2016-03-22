@@ -44,6 +44,8 @@ public:
   Double_t sgn     = 0.;   // Significance
   Double_t sgnE    = 0.;   // SignificanceError
   TH1F *HistSignal = NULL; // SignalHistogram
+  Double_t eff     = 0.;   // efficiency
+  Double_t effE    = 0.;   // efficiency error
   ClassDef(Extraction,1)
 };
 ClassImp(Extraction)
@@ -62,24 +64,20 @@ public:
   // General Setter
 
   void SetVariable(    TString varType, TVectorD *const binLimits)  { fVar=varType; fVarBinning=binLimits; }
-  void SetSpectrumCalc(const char *form, Double_t *params=0x0, Double_t *paramsE=0x0);
-  void SetSystMethod(ESystMethod mthd)  { fSystMthd=mthd; }
+  void SetSystMethod(ESystMethod mthd)                              { fSystMthd=mthd; }
 
   // Input
   void AddInput( TObjArray *raw, TObjArray *mc,  TString identifier);
-
-  void AddCorrInput(PairAnalysisHF *hf)           { fCorrInput.Add(hf);  }
-  void AddExtractor(PairAnalysisSignalExt *sig)   { fExtractor.Add((PairAnalysisSignalExt*)sig->Clone()); }
+  void AddCorrInput(PairAnalysisHistos *hf)                         { fMCInput.Add(hf);  }
+  void AddExtractor(PairAnalysisSignalExt *sig)                     { fExtractor.Add((PairAnalysisSignalExt*)sig->Clone()); }
 
   // Spectrum
-  virtual void Draw(const char* varexp, const char* selection, Option_t* option = "");  // copy from ttree
-  virtual void Draw(const Option_t* option)    { Draw(option, "", ""); }
-  void DrawSystRawYields();
+  virtual void Draw(const char* varexp, const char* selection, Option_t* option = "");
+  virtual void Draw(const Option_t* option)                         { Draw(option, "", ""); }
 
   void Fit(TString drawoption="L");
 
   // Processing
-  //  virtual void Print(Option_t *option="") const;
   void Init();
   void Process();
 
@@ -89,16 +87,12 @@ public:
 private:
 
   // settings
-  Int_t     fIdx = 0;                // index
-  TString   fVar = "";               // variable looked at
-  TVectorD *fVarBinning = NULL;      // variable binning
-  //  Char_t    fDivision[10];            // test
+  Int_t     fIdx           = 0;     // index
+  TString   fVar           = "";    // variable looked at
+  TVectorD *fVarBinning    = NULL;  // variable binning
 
   // calculation
-  TFormula   *fCalculation = NULL;  // formula for scaling, etc.
-  Double_t   *fParams = NULL;       // parameters
-  Double_t   *fParamsE = NULL;      // parameter errors
-  ESystMethod fSystMthd = kSystMax; // systematic method TODO: implement
+  ESystMethod fSystMthd = kSystMax; // method for systematic uncertainty calculation
 
   // input
   TString    fInputKeys[100];       // keys to identify the extraction
@@ -106,16 +100,14 @@ private:
   TList      fMCInput;              // list of input objects for mc (HF, Ntuple, THnSparse)
   TList      fCorrInput;            // list of input objects for corrections (HF, Ntuple, THnSparse)
   TList      fExtractor;            // list of input objects for signal extraction objects (Ext,Func)
-  //  TObjArray      fExtractor;            // list of input objects for signal extraction objects (Ext,Func)
 
   // output
-  TTree      *fTree = NULL;         // tree output
-  TList      *fResults = NULL;      // final list with spectra
+  TTree      *fTree        = NULL;  // tree output
+  TList      *fResults     = NULL;  // final list of inv. mass spectra
   TObjArray  *fExtractions = NULL;  // final canvases
-  Extraction *fExt = NULL;          // extraction
-  Double_t   fTest = 0.;            // test
+  Extraction *fExt         = NULL;  // extraction
 
-  TGraphErrors *fSignal = NULL;     // signal graph
+  TGraphErrors *fSignal    = NULL;  // signal graph
 
   PairAnalysisSpectrum(const PairAnalysisSpectrum &c);
   PairAnalysisSpectrum &operator=(const PairAnalysisSpectrum &c);
