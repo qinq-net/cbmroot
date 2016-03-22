@@ -149,6 +149,7 @@ Double_t PairAnalysisFunction::PeakFunCB(const Double_t *x, const Double_t *par)
 //______________________________________________________________________________
 Double_t PairAnalysisFunction::PeakFunGaus(const Double_t *x, const Double_t *par) {
   // Gaussian fit function
+
   //printf("fNparBgrd %d \n",fNparBgnd);
   Double_t     n = par[0];
   Double_t  mean = par[1];
@@ -177,6 +178,23 @@ void PairAnalysisFunction::SetFunctions(TF1 * const combined, TF1 * const sig, T
   fFuncSigBack=combined;
   fParMass=parM;
   fParMassWidth=parMres;
+
+}
+
+//______________________________________________
+void PairAnalysisFunction::SetDefault(EFunction predefinedFunc)
+{
+  ///
+  /// use a predefined function, that internally sets the "fFuncSigBack"
+  ///
+  switch(predefinedFunc)
+    {
+    case kBoltzmann: GetBoltzmann(); break;
+    case kPtExp:     GetPtExp();     break;
+    case kHagedorn:  GetHagedorn();  break;
+    case kLevi:      GetLevi();      break;
+    default: Error("SetDefault","predefined function not yet implemented");
+    }
 
 }
 
@@ -268,3 +286,47 @@ Double_t PairAnalysisFunction::PeakBgndFun(const Double_t *x, const Double_t *pa
 //}
 
 
+//______________________________________________
+TF1 * PairAnalysisFunction::GetBoltzmann(){
+  // Boltzmann (exp in 1/mt*dNdmT times mt) as a function of dNdpt
+  fFuncSigBack=new TF1("Boltzmann","[1]*x*sqrt(x*x+[0]*[0])*exp(-sqrt(x*x+[0]*[0])/[2])",0.,10.);
+  //    fFuncSigBack->SetParameters(fPOI->Mass(), norm, temp);
+  if(fPOI) fFuncSigBack->FixParameter(0,fPOI->Mass());
+  fFuncSigBack->SetParLimits(2, 0.01, 10);
+  fFuncSigBack->SetParNames("mass","norm", "T");
+  return   fFuncSigBack;
+}
+
+//______________________________________________
+TF1 * PairAnalysisFunction::GetPtExp(){
+  // Simple exponential in 1/pt*dNdpT, as a function of dNdpt
+  fFuncSigBack=new TF1("Exponential","[0]*x*exp(-x/[1])",0.,10.);
+  //  fFuncSigBack->SetParameters(norm, temp);
+  fFuncSigBack->SetParLimits(1, 0.01, 10);
+  fFuncSigBack->SetParNames("norm", "T");
+  return fFuncSigBack;
+}
+
+//______________________________________________
+TF1 * PairAnalysisFunction::GetHagedorn(){
+  // PowerLaw function, dNdpt
+  // power law Nuclear Physics B, Vol. 335, No. 2. (7 May 1990), pp. 261-287.
+  // This is sometimes also called Hagedorn or modified Hagedorn
+  fFuncSigBack=new TF1("Hagedorn","x*[0]*( 1 + x/[1] )^(-[2])",0.,10.);
+  //  fFuncSigBack->SetParameters(norm, pt0, n);
+  fFuncSigBack->SetParLimits(1, 0.01, 10);
+  //fFuncSigBack->SetParLimits(2, 0.01, 50);
+  fFuncSigBack->SetParNames("norm", "pt0", "n");
+  return fFuncSigBack;
+}
+
+//______________________________________________
+TF1 * PairAnalysisFunction::GetLevi(){
+  // Levi function (aka Tsallis), dNdpt
+  fFuncSigBack=new TF1("Levi-Tsallis","( x*[0]*([1]-1)*([1]-2)  )/( [1]*[2]*( [1]*[2]+[3]*([1]-2) )  ) * ( 1 + (sqrt([3]*[3]+x*x) -[3])/([1]*[2])  )^(-[1])",0.,10.);
+  //  fFuncSigBack->SetParameters(norm, n, temp,mass);
+  if(fPOI) fFuncSigBack->FixParameter(3,fPOI->Mass());
+  fFuncSigBack->SetParLimits(2, 0.01, 10);
+  fFuncSigBack->SetParNames("norm (dN/dy)", "n", "T", "mass");
+  return fFuncSigBack;
+}

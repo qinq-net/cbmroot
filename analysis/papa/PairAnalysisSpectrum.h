@@ -47,7 +47,8 @@ public:
   TH1F *HistSignal = NULL; // SignalHistogram
   Double_t eff     = 0.;   // efficiency
   Double_t effE    = 0.;   // efficiency error
-  ClassDef(Extraction,1)
+  PairAnalysisSignalExt *signal = NULL; // Signal extraction
+  ClassDef(Extraction,1) // mini object that holds members of the PairAnalysisSpectrum TTree
 };
 ClassImp(Extraction)
 
@@ -73,8 +74,7 @@ public:
   void AddExtractor(PairAnalysisSignalExt *sig)                     { fExtractor.Add((PairAnalysisSignalExt*)sig->Clone()); }
 
   // Spectrum
-  virtual void Draw(const char* varexp, const char* selection, Option_t* option = "");
-  virtual void Draw(const Option_t* option)                         { Draw(option, "", ""); }
+  virtual void Draw(const char* varexp, const char* selection="", Option_t* option="");
 
   void Fit(TString drawoption="L");
 
@@ -113,7 +113,7 @@ private:
   PairAnalysisSpectrum(const PairAnalysisSpectrum &c);
   PairAnalysisSpectrum &operator=(const PairAnalysisSpectrum &c);
 
-  ClassDef(PairAnalysisSpectrum,1) // base and abstract class for signal extraction
+  ClassDef(PairAnalysisSpectrum,1) // Build spectra from many signal extractions
 };
 
 #endif

@@ -175,14 +175,14 @@ TPaveText* PairAnalysisSignalExt::DrawStats(Double_t x1/*=0.*/, Double_t y1/*=0.
   else       y1=y2-0.025*opt.Length();
 
   // particle of interest
-  TParticlePDG *p1 = TDatabasePDG::Instance()->GetParticle(fPOIpdg);
+  //  TParticlePDG *fPOI = TDatabasePDG::Instance()->GetParticle(fPOIpdg);
 
   TPaveText *t=new TPaveText(x1,y1,x2,y2,"brNDC");
   t->SetFillColor(0);
   t->SetFillStyle(kFEmpty);
   t->SetBorderSize(0);
   t->SetTextAlign(12);
-  if(opt.Contains("p"))  t->AddText(Form("#bf{%s}", (p1?p1->GetName():"particle not found")));
+  if(opt.Contains("p"))  t->AddText(Form("#bf{%s}", (fPOI?fPOI->GetName():"particle not found")));
   if(opt.Contains("R"))  t->AddText(Form("%.2f < %s < %.2f GeV/c^{2}", fIntMin, "m_{inv}", fIntMax));
   if(opt.Contains("n"))  t->AddText(Form("%s: %.4g #pm %.4g", fgkValueNames[0], fValues(0), fErrors(0)));
   if(opt.Contains("b"))  t->AddText(Form("%s: %.4g #pm %.4g", fgkValueNames[1],  fValues(1), fErrors(1)));

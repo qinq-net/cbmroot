@@ -1,13 +1,45 @@
 ///////////////////////////////////////////////////////////////////////////
-//                Dielectron Spectrum                                  //
+//                PairAnalysisSpectrum                                   //
 //                                                                       //
 //                                                                       //
 /*
 
   post-processing class to extract signals, efficiency, apply corrections,
-  calculate systematics and desribe the spectrum by some function.
+  calculate systematics and describe the spectra by some functions/models.
 
-  TODO: add some example
+  Example:
+
+  PairAnalysisSpectrum *spectrum = new PairAnalysisSpectrum("legend header","systematics");
+
+  spectrum->SetParticleOfInterest(pdgcode);
+  spectrum->SetVariable("Pt",PairAnalysisHelper::MakeLinBinning(20,0.,2.) );
+
+  spectrum->SetSystMethod( PairAnalysisSpectrum::kSystMax );
+
+  // add input spectra coming from PairAnalysisHistos
+  spectrum->AddInput( histos->DrawSame("pM_Pt","nomc goff"),           // raw invariant mass spectrum
+                      histos->DrawSame("pPt","onlymc goff sel","phi"), // optional: MC spectra for efficiency calculation
+		      "like-sign"                                      // unique string
+		     );
+  spectrum->AddExtractor( sig );                                       // signal extraction see PairAnalysisSignalExt
+
+  .... add more input as much as you want
+
+
+  // process all inputs
+  spectrum->Process();
+
+
+  // draw spectra using TTree::Draw command + some extra arguments (see Draw)
+  // see Extraction for content
+  spectrum->Draw("s/eff:var","","leg logY syst P");
+
+  // fit the spectrum by some predefined function (see PairAnalysisFunction)
+  spectrum->SetFitRange(0.,2.);
+  spectrum->SetDefault( PairAnalysisFunction::kBoltzmann );
+  spectrum->SetFitOption("RN0");
+  spectrum->Fit("leg L");
+
  */
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
@@ -201,6 +233,7 @@ void PairAnalysisSpectrum::Process()
 	fExt->HistSignal = NULL; //dynamic_cast<TH1F*>(sig->GetSignalHistogram());
 	fExt->eff  = 1.; //TODO: calculate this
 	fExt->effE = 0.; //TODO: calculate this
+	fExt->signal = sig;//NULL;
 
 	fTree->Fill();
       }
@@ -288,6 +321,7 @@ void PairAnalysisSpectrum::Process()
 	    fExt->HistSignal = NULL; //dynamic_cast<TH1F*>(sig->GetSignalHistogram());
 	    fExt->eff  = (histMC ? histMC->GetBinContent(bin+1) : 1.);
 	    fExt->effE = (histMC ? histMC->GetBinError(bin+1)   : 0.);
+	    fExt->signal = sig;
 
 	    fTree->Fill();
 
@@ -329,6 +363,8 @@ void  PairAnalysisSpectrum::Draw(const char* varexp, const char* selection, Opti
   ///               can be modified by PairAnalysisHistos::SetName("mycaption"),
   ///               change of legend position: see PairAnalysisStyler::SetLegendAlign
   ///
+  /// "print":      prints the data points to stdout
+  ///
 
   TString optString(option);
   optString.ToLower();
@@ -336,6 +372,7 @@ void  PairAnalysisSpectrum::Draw(const char* varexp, const char* selection, Opti
   Bool_t optLegFull  =optString.Contains("legf");      optString.ReplaceAll("legf","");
   Bool_t optLeg      =optString.Contains("leg");       optString.ReplaceAll("leg","");
   Bool_t optSyst     =optString.Contains("syst");      optString.ReplaceAll("syst","");
+  Bool_t optPrint    =optString.Contains("print");     optString.ReplaceAll("print","");
 
   /// counter
   Long64_t n =1;
@@ -400,7 +437,7 @@ void  PairAnalysisSpectrum::Draw(const char* varexp, const char* selection, Opti
   optString.ReplaceAll("logy","");
   optString.ReplaceAll("logz","");
 
-  if(ndim<3) {    // build own histogram with labels
+  if(ndim<3 && !ckey.Contains("signal->")) {    // build own histogram with labels
 
     //    printf("try to get errors for %d dimensional input \n",ndim);
     TString varkey(varexp);
@@ -440,9 +477,10 @@ void  PairAnalysisSpectrum::Draw(const char* varexp, const char* selection, Opti
     //    else       varkey.ReplaceAll(fkey,fkey+":"+fkey+"E");
     // if(ndim>1) varkey.ReplaceAll(fkey+":",fkey+":"+fkey+"E:");
     // else
-    varkey.Append(errkey.Prepend(":"));
-
-    Info("Draw"," Appended '%s' by '%s' for error caluclation",varkey.Data(),errkey.Data());
+    if(!fkey.Contains("E")) {
+      varkey.Append(errkey.Prepend(":"));
+      Info("Draw"," Appended '%s' by '%s' for error caluclation",varkey.Data(),errkey.Data());
+    }
 
     /// TTree:Draw command with graphics off to get errors
     //printf("execute collect/draw command for %s \n",varkey.Data());
@@ -463,6 +501,9 @@ void  PairAnalysisSpectrum::Draw(const char* varexp, const char* selection, Opti
     /// style and legend entry
     PairAnalysisStyler::Style(gr,nobj);
     TString sel(selection);
+    sel.ReplaceAll("setup.Contains","");
+    sel.ReplaceAll("(\"","*");
+    sel.ReplaceAll("\")","*");
     sel.ReplaceAll("setup==","");
     sel.ReplaceAll("\"","");
     gr->SetName(Form("%s",sel.Data()));
@@ -557,16 +598,17 @@ void  PairAnalysisSpectrum::Draw(const char* varexp, const char* selection, Opti
       grC = new TGraphErrors(*gr);
     }
 
-    //    gr->Print();
+    if(optPrint) grC->Print();
+
     Info("Draw"," Draw object with options: '%s'",optString.Data());
     if(!PairAnalysisStyler::GetFirstHistogram())   gr->Draw((optString+"A").Data());
     else {
       gr->Draw((optString+"same").Data());
 
       // set axis maximum
-      Double_t *valE = gr->GetEY();
-      Double_t *val  = gr->GetY();
-      Int_t npnts = gr->GetN();
+      Double_t *valE = grC->GetEY();
+      Double_t *val  = grC->GetY();
+      Int_t npnts = grC->GetN();
       Int_t idx[1000];
       TMath::Sort(npnts,val,idx,kTRUE); // kFALSE=increasing numbers
 
@@ -602,16 +644,20 @@ void  PairAnalysisSpectrum::Draw(const char* varexp, const char* selection, Opti
     if (leg) leg->AddEntry(gr,gr->GetName(),legOpt.Data());
 
     fSignal = grC;
+    PairAnalysisStyler::Style(fSignal,nobj);
 
   }
   else {
     // execute tree draw command
-    fTree->Draw(varexp, selection, option);
+    fTree->Draw(varexp, selection, optString.Data());
+    fprintf(stderr,"use plain TTree::Draw command \n");
+    return;
   }
 
 
   // modify axis and titles
   //  printf("modify axis titles \n");
+  UInt_t varx = PairAnalysisVarManager::GetValueType(fVar.Data());
   TString var(varexp);
   TObjArray *arr=var.Tokenize(":");
   arr->SetOwner();
@@ -622,9 +668,10 @@ void  PairAnalysisSpectrum::Draw(const char* varexp, const char* selection, Opti
   else if(xt.EqualTo("s"))   xt=PairAnalysisSignalExt::GetValueName(0);
   else if(xt.EqualTo("b"))   xt=PairAnalysisSignalExt::GetValueName(1);
   else if(xt.EqualTo("sgn")) xt=PairAnalysisSignalExt::GetValueName(2);
-  else if(xt.EqualTo("var")) {
-    UInt_t varx = PairAnalysisVarManager::GetValueType(fVar.Data());
-    xt=Form("%s %s",PairAnalysisVarManager::GetValueLabel(varx),PairAnalysisVarManager::GetValueUnit(varx));
+  else if(xt.EqualTo("var")) xt=Form("%s %s",PairAnalysisVarManager::GetValueLabel(varx),PairAnalysisVarManager::GetValueUnit(varx));
+  else if(xt.Contains("var")) {
+    xt.ReplaceAll("varE",Form("#Delta%s",PairAnalysisVarManager::GetValueLabel(varx)));
+    xt.ReplaceAll("var", PairAnalysisVarManager::GetValueLabel(varx));
   }
 
   if(arr->GetEntriesFast()<2)  {
@@ -638,16 +685,17 @@ void  PairAnalysisSpectrum::Draw(const char* varexp, const char* selection, Opti
     else if(xt.EqualTo("s"))   xt=PairAnalysisSignalExt::GetValueName(0);
     else if(xt.EqualTo("b"))   xt=PairAnalysisSignalExt::GetValueName(1);
     else if(xt.EqualTo("sgn")) xt=PairAnalysisSignalExt::GetValueName(2);
-    else if(xt.EqualTo("var")) {
-      UInt_t varx = PairAnalysisVarManager::GetValueType(fVar.Data());
-      xt=Form("%s %s",PairAnalysisVarManager::GetValueLabel(varx),PairAnalysisVarManager::GetValueUnit(varx));
+    else if(xt.EqualTo("var")) xt=Form("%s %s",PairAnalysisVarManager::GetValueLabel(varx),PairAnalysisVarManager::GetValueUnit(varx));
+    else if(xt.Contains("var")) {
+      xt.ReplaceAll("varE",Form("#Delta%s",PairAnalysisVarManager::GetValueLabel(varx)));
+      xt.ReplaceAll("var", PairAnalysisVarManager::GetValueLabel(varx));
     }
     PairAnalysisStyler::GetFirstHistogram()->SetXTitle(xt.Data());
   }
 
   // delete array
-  delete carr;
-  delete arr;
+  if(carr) delete carr;
+  if(arr)  delete arr;
 
   // set ndivisions
   if(fVarBinning)
@@ -695,45 +743,33 @@ void PairAnalysisSpectrum::Fit(TString drawoption) {
   drawoption.ToLower();
   Bool_t optLeg      =drawoption.Contains("leg");       drawoption.ReplaceAll("leg","");
 
-  //  Double_t massPOI=TDatabasePDG::Instance()->GetParticle(fPOIpdg)->Mass();
-
-  //if(!fExtrFunc) fExtrFunc = new PairAnalysisFunction();
-  PairAnalysisFunction *fExtrFunc = new PairAnalysisFunction();
-  //  PairAnalysisSignalFunc fct;// = 0;//new PairAnalysisSignalFunc();
-
-  Info("Fit","Signal extraction method: %d",(Int_t)0);
   //  fSignal->Print();
 
-  TF1 *fit = new TF1("Gaussisan","pol3",fFitMin,fFitMax);
-  //  TF1 *fit = new TF1("Gaussisan",fExtrFunc,&PairAnalysisFunction::PeakFunGaus,fFitMin,fFitMax,3);
-  //fit = new TF1("fitGaus","gaus",fFitMin,fFitMax);
-  //  fit->SetParNames("N","meanx","sigma");
-  // fit->SetParameters(1.3*nPOI, massPOI, sigPOI);
-  // fit->SetParLimits(0, 0.2*nPOI,      2.0*nPOI     );
-  // fit->SetParLimits(1, massPOI-sigPOI, massPOI+sigPOI);
-  // fit->SetParLimits(2, sigPOI/5,         5*sigPOI           );
-  //    fit->Print("V");
-  Int_t fitResult = fSignal->Fit(fit,(fFitOpt+"EX0").Data());
+  Info("Fit","Spectrum fit method: %s",fFuncSigBack->GetName());
+  Int_t fitResult = fSignal->Fit(fFuncSigBack,(fFitOpt+"EX0").Data());
 
   // warning in case of fit issues
   if(fitResult!=0)   { Error("Fit","fit has error/issue (%d)",fitResult); return; }
 
+  PairAnalysisStyler::Style(fFuncSigBack, PairAnalysisStyler::kFit);
+  fFuncSigBack->SetLineColor( fSignal->GetLineColor());
+  //  fFuncSigBack->SetLineStyle(kDashed);
 
-  PairAnalysisStyler::Style(fit, PairAnalysisStyler::kFit);
-  fit->Draw((drawoption+"same").Data());
+  //  PairAnalysisStyler::Style(fit, PairAnalysisStyler::kFit);
+  fFuncSigBack->Draw((drawoption+"same").Data());
 
   /// store chi2/ndf of the fit
-  fDof     = fit->GetNDF();
-  if(fDof) fChi2Dof = fit->GetChisquare()/fit->GetNDF();
+  fDof     = fFuncSigBack->GetNDF();
+  if(fDof) fChi2Dof = fFuncSigBack->GetChisquare()/fFuncSigBack->GetNDF();
 
   /// add fit to legend
   if(optLeg) {
     TList *prim    = gPad->GetListOfPrimitives();
     TLegend *leg   = (TLegend*)prim->FindObject("TPave");
-    TString legkey = fit->GetName();
+    TString legkey = fFuncSigBack->GetName();
       /// recalc legend coordinates, margins
       if (leg) {
-	leg->AddEntry(fit,fit->GetName(),drawoption.Data());
+	leg->AddEntry(fFuncSigBack,fFuncSigBack->GetName(),drawoption.Data());
 	PairAnalysisStyler::SetLegendAttributes(leg);
 	///leg->Draw(); // was w/o !nobj
       }

@@ -16,10 +16,15 @@
 #include <TMath.h>
 #include <TH1F.h>
 #include <TF1.h>
+#include <TParticlePDG.h>
+#include <TDatabasePDG.h>
 
 class PairAnalysisFunction : public TNamed {
 
  public:
+
+  enum EFunction { kBoltzmann=0, kPtExp, kHagedorn, kLevi };
+
   PairAnalysisFunction();
   PairAnalysisFunction(const char*name, const char* title);
   PairAnalysisFunction(const PairAnalysisFunction &c);
@@ -30,7 +35,7 @@ class PairAnalysisFunction : public TNamed {
   //  virtual void Fit(Option_t *opt);
 
   // Setter
-  void SetParticleOfInterest(Int_t pdgcode)      { fPOIpdg=pdgcode; }
+  void SetParticleOfInterest(Int_t pdgcode)      { fPOIpdg=pdgcode;  fPOI=TDatabasePDG::Instance()->GetParticle(fPOIpdg); }
   void SetFitRange(Double_t min, Double_t max)   { fFitMin=min; fFitMax=max;  }
   void SetUseIntegral(Bool_t flag=kTRUE)         { fUseIntegral = flag; }
   void SetFitOption(const char* opt) {
@@ -40,6 +45,7 @@ class PairAnalysisFunction : public TNamed {
 
   void SetMCSignalShape(TH1F* hist) { fgHistSimPM=hist; }
   void SetFunctions(TF1 * const combined, TF1 * const sig=0, TF1 * const back=0, Int_t parM=1, Int_t parMres=2);
+  void SetDefault(EFunction predefinedFunc);
   void SetDefaults(Int_t type);
 
   void CombineFunc(TF1 * const peak=0, TF1 * const bgnd=0);
@@ -49,7 +55,10 @@ class PairAnalysisFunction : public TNamed {
   Double_t PeakFunCB(const Double_t *x, const Double_t *par); // crystal ball function
   Double_t PeakFunGaus(const Double_t *x, const Double_t *par); // gaussian
   // TODO: predefined other functions (tsallis, boltzman, levi, powerlaw)
-  
+  TF1*  GetBoltzmann();
+  TF1*  GetPtExp();
+  TF1*  GetHagedorn();
+  TF1*  GetLevi();
 
   // Getter
   TF1*  GetSignalFunction()     const { return fFuncSignal;        }
@@ -79,6 +88,7 @@ protected:
   Double_t fFitMin        = 0.;      // fit range lowest inv. mass
   Double_t fFitMax        = 0.;      // fit range highest inv. mass
 
+  TParticlePDG *fPOI      = NULL;    // MC particle of interest
   Int_t  fPOIpdg          = 443;     // pdg code particle of interest
   Int_t fParMass          = 1;       // the index of the parameter corresponding to the resonance mass
   Int_t fParMassWidth     = 2;       // the index of the parameter corresponding to the resonance mass width
@@ -91,6 +101,9 @@ protected:
 
   Int_t    fNparPeak      = 0;       // number of parameters for peak function
   Int_t    fNparBgnd      = 0;       // number of parameters for background function
+
+
+
 
   //  PairAnalysisFunction(const PairAnalysisFunction &c);
   PairAnalysisFunction &operator=(const PairAnalysisFunction &c);
