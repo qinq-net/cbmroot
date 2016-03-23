@@ -667,7 +667,8 @@ Bool_t  TMbsMappingTof::MapTdcDataToDet()
                else new((*fCbmTofDigiCollection)[ fCbmTofDigiCollection->GetEntriesFast() ]) 
                         CbmTofDigi( iChanUId, dTime, dTot );
 
-            if (  ((iChanUId & 0x0000F00F) == 0x00005006)     // duplicate diamond, pad  entry  
+            if (  ((iChanUId & 0x0000F00F) == 0x00005006)     // duplicate diamond, pad  entry
+		||((iChanUId & 0x0000F00F) == 0x00002006)     // duplicate ceramics entry/interference wih Pla!?
 		||((iChanUId & 0x0000F00F) == 0x00008006)) {  // duplicate Pad entry  // FIXME
 	      iChanUId |= 0x00800000;
 	      Int_t Nent = fCbmTofDigiCollection->GetEntriesFast();
