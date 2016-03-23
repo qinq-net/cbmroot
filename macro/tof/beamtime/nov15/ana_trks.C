@@ -1,4 +1,4 @@
-void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Cern", char *cSet="345", Int_t iSel2=0, Int_t iTrackingSetup=0, Double_t dScalFac=10.) 
+void ana_trks(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Cern", char *cSet="345", Int_t iSel2=0, Int_t iTrackingSetup=0, Double_t dScalFac=10.) 
 {
    Int_t iVerbose = 1;
    // Specify log level (INFO, DEBUG, DEBUG1, ...)
@@ -98,7 +98,7 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    tofTrackFinder->SetTxLIM(0.05);                 // max slope dx/dz
    tofTrackFinder->SetTyLIM(0.05);                  // max dev from mean slope dy/dz
    tofTrackFinder->SetTyMean(0.1);                 // mean slope dy/dz
-   tofTrackFinder->SetSIGLIM(2.);                  // max matching chi2
+   tofTrackFinder->SetSIGLIM(3.);                  // max matching chi2
 
    CbmTofTrackFitter* tofTrackFitter= new CbmTofTrackFitterKF(0,211);
    TFitter *MyFit = new TFitter(1);                // initialize Minuit
@@ -170,7 +170,7 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      break;
 
    case 5:                                            // calibration mode
-     tofFindTracks->SetMinNofHits(4);
+     tofFindTracks->SetMinNofHits(5);
      tofFindTracks->SetNStations(5);
      tofFindTracks->SetStation(0, 9, 2, 0);           // USTC 
      tofFindTracks->SetStation(1, 9, 2, 1);           // USTC
@@ -554,11 +554,11 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	   case 0:
 	     break;
 	   case 1:
-	     tofAnaTestbeam->SetChi2Lim2(10.);   // initialization of Chi2 selection limit  
+	     tofAnaTestbeam->SetChi2Lim(10.);   // initialization of Chi2 selection limit  
 	     tofAnaTestbeam->SetSel2TOff(3000.);     // Shift Sel2 time peak to 0
 	     break;
 	   case 6:
-	     tofAnaTestbeam->SetChi2Lim2(10.);   // initialization of Chi2 selection limit  
+	     tofAnaTestbeam->SetChi2Lim(10.);   // initialization of Chi2 selection limit  
 	     tofAnaTestbeam->SetSel2TOff(85.);     // Shift Sel2 time peak to 0
 	     break;
 	   default:
@@ -757,7 +757,7 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
   // ------------------------------------------------------------------------
   // default display 
   TString Display_Status = "pl_over_Mat04D4best.C";
-  TString Display_Funct = "pl_over_Mat04D4best(1)";  
+  TString Display_Funct = "pl_over_Mat04D4best()";  
   gROOT->LoadMacro(Display_Status);
   gInterpreter->ProcessLine(Display_Funct);
 
@@ -767,8 +767,8 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
   gROOT->LoadMacro("save_hst.C");
 
   gInterpreter->ProcessLine("pl_over_MatD4sel()");
-  //gInterpreter->ProcessLine("pl_over_trk(9)");
-  //gInterpreter->ProcessLine("pl_calib_trk()");
+  gInterpreter->ProcessLine("pl_calib_trk()");
+  gInterpreter->ProcessLine("pl_over_trk(5)");
   TString SaveToHstFile = "save_hst(\"" + cHstFile + "\")";
-  //  gInterpreter->ProcessLine(SaveToHstFile);
+  gInterpreter->ProcessLine(SaveToHstFile);
 }
