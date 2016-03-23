@@ -756,7 +756,7 @@ void PairAnalysisSpectrum::Fit(TString drawoption) {
   //  fFuncSigBack->SetLineStyle(kDashed);
 
   //  PairAnalysisStyler::Style(fit, PairAnalysisStyler::kFit);
-  fFuncSigBack->Draw((drawoption+"same").Data());
+  TF1 *fit = fFuncSigBack->DrawCopy((drawoption+"same").Data());
 
   /// store chi2/ndf of the fit
   fDof     = fFuncSigBack->GetNDF();
@@ -769,7 +769,7 @@ void PairAnalysisSpectrum::Fit(TString drawoption) {
     TString legkey = fFuncSigBack->GetName();
       /// recalc legend coordinates, margins
       if (leg) {
-	leg->AddEntry(fFuncSigBack,fFuncSigBack->GetName(),drawoption.Data());
+	leg->AddEntry(fit,fFuncSigBack->GetName(),drawoption.Data());
 	PairAnalysisStyler::SetLegendAttributes(leg);
 	///leg->Draw(); // was w/o !nobj
       }

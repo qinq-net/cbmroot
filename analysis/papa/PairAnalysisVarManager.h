@@ -183,10 +183,10 @@ public:
     kRICHAxisB,              // minor semi-axis (ANN input)
     kRICHCenterX,            // ring center in x
     kRICHCenterY,            // ring center in y
-    kRICHAngle,              // ring rotation angle of ellipse (ANN input)
     kRICHDistance,           // distance between ring center and track (ANN input)
     kRICHRadialPos,          // radial psoition = sqrt(x**2+abs(y-110)**2), (ANN input)
     kRICHRadialAngle,        // radial angle (0||1||2)*pi +- atan( abs((+-100-y)/-x) ), (ANN input)
+    kRICHPhi,                // phi rotation angle of ellipse (ANN input)
     // tof track information
     kTOFHits,                // number of TOF hits
     // much track information
@@ -800,10 +800,11 @@ inline void PairAnalysisVarManager::FillVarRichRing(const CbmRichRing *track, Do
   values[kRICHAxisB]       = track->GetBaxis();
   values[kRICHCenterX]     = track->GetCenterX();
   values[kRICHCenterY]     = track->GetCenterY();
-  values[kRICHAngle]       = track->GetAngle();
   values[kRICHDistance]    = track->GetDistance();
   values[kRICHRadialPos]   = track->GetRadialPosition();
   values[kRICHRadialAngle] = track->GetRadialAngle();
+  values[kRICHPhi]         = track->GetPhi();
+
 }
 
 inline void PairAnalysisVarManager::FillVarTrdTrack(const CbmTrdTrack *track, Double_t * const values)

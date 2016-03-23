@@ -143,10 +143,10 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"RICHAxisB",              "b_{}^{RICH}",                                        "(cm)"},
   {"RICHCenterX",            "x_{}^{RICH}",                                        "(cm)"},
   {"RICHCenterY",            "y_{}^{RICH}",                                        "(cm)"},
-  {"RICHAngle",              "#phi_{rot.}^{RICH}",                                    "(?)"},
   {"RICHDistance",           "d_{ring#leftrightarrowtrack}^{RICH}",                "(cm)"},
   {"RICHRadialPos",          "pos_{rad.}^{RICH}",                                  "(cm)"},
   {"RICHRadialAngle",        "#phi_{rad.}^{RICH}",                                 "(rad.)"},
+  {"RICHPhi",                "#phi_{rot.}^{RICH}",                                 "(rad.)"},
   //TOF track specific information
   {"TOFHits",                "N_{hit}^{TOF}",                                      ""},
   // MUCH track information
