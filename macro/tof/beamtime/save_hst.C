@@ -13,6 +13,6 @@ void save_hst(TString cstr="hst/default.hst.root"){
       }
   }
  }
- fHist->ls();
+ // fHist->ls();
  fHist->Close();
 }

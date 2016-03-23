@@ -346,15 +346,13 @@ can->cd(29);
   gPad->SetLogy();
  }else  { cout << hname << " not found" << endl; }
 
- if (iLog != 0) {
-   .> "CalLog.out" ;
- }
  //report summary
  Double_t dEff=NFinalHits/NEvents;
  cout << Form("<IRes> Efficiency: %6.3f(%7.0f) of %7.0f events, mean Dt %6.1f ps, 1-sig time res: %6.1f ps, RMS: %6.1f ps, DX %5.2f, DY %5.2f, SigX %5.2f, SigY %5.2f, CluSize %4.1f,%4.1f ",
 	      dEff,NFinalHits,NEvents,dTMean,dTRes,dTRMS,dMeanX,dMeanY,dSigX,dSigY,dMeanCluSize0,dMeanCluSize4) <<endl; 
 
  // cout << Form("    D4best 1-sigma timing resolution at lower index %d: %6.1f ps, RMS: %6.1f ps from  %6.0f entries of %6.0f (%6.3f)",BL,BRes,Brms,BEntries,NSel,BEntries/NSel) <<endl; 
+ if (iLog != 0) 
  gROOT->ProcessLine(Form(".! echo %f  > Test.res", dTRes)); 
 
  can->SaveAs("pl_over_Mat04D4best.pdf");
