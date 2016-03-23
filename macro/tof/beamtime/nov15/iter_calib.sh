@@ -18,7 +18,8 @@ cRun=$1
 ###iDut=6; iRef=1; iSel2=8;
 #((iSet=$iDut*1000+$iRef))
   
-c0='00000'
+#c0='00000'
+c0='0000'
 
 iCalSet=$2
 ((iTmp  = $iCalSet ))
