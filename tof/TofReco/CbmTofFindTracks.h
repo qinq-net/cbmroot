@@ -100,6 +100,7 @@ class CbmTofFindTracks : public FairTask
   void SetStations (Int_t ival);
   void SetStation  (Int_t iVal, Int_t iModType, Int_t iModId, Int_t iRpcId);
   void PrintSetup();
+
   inline Int_t GetAddrOfStation(Int_t iVal) {return fMapStationRpcId[iVal]; } 
   Int_t GetStationOfAddr(Int_t iAddr);
 
@@ -109,11 +110,32 @@ class CbmTofFindTracks : public FairTask
   inline Int_t GetBeamCounter() const  { return fiBeamCounter;}
   inline Double_t  GetTtTarg()  const  { return fTtTarg; }
 
+  inline Double_t GetSigT() const  { return fSIGT;}
+  inline Double_t GetSigX() const  { return fSIGX;}
+  inline Double_t GetSigY() const  { return fSIGY;}
+  inline Double_t GetSigZ() const  { return fSIGZ;}
+  inline Bool_t InspectEvent() const  { return fInspectEvent;}
+
+  Double_t GetSigT(Int_t iAddr);
+  Double_t GetSigX(Int_t iAddr);
+  Double_t GetSigY(Int_t iAddr);
+  Double_t GetSigZ(Int_t iAddr);
+  Double_t GetTOff(Int_t iAddr);
+
+  inline void SetSIGT     (Double_t dval){ fSIGT = dval;}
+  inline void SetSIGX     (Double_t dval){ fSIGX = dval;}
+  inline void SetSIGY     (Double_t dval){ fSIGY = dval;}
+  inline void SetSIGZ     (Double_t dval){ fSIGZ = dval;}
+
   inline void SetCorMode       (Int_t ival){ fiCorMode     = ival;}
   inline void SetBeamCounter   (Int_t ival){ fiBeamCounter = ival;}
   inline void SetCalParFileName(TString CalParFileName) { fCalParFileName = CalParFileName; }
   inline void SetTtTarg(Double_t val){ fTtTarg=val; }
   inline void SetT0MAX(Double_t val){ fT0MAX=val; }
+
+  inline void MarkStationFired (Int_t iSt) {fStationHMul[iSt]++;}
+  Int_t GetNStationsFired();
+  void  ResetStationsFired();
 
  private:
 
@@ -126,8 +148,10 @@ class CbmTofFindTracks : public FairTask
   Int_t fMinNofHits;             // minimal number of Tof Hits for filling histos 
   Int_t fNofTracks;              // Number of tracks created
   Int_t fNTofStations;           // Number of Tof Stations
+  Bool_t fInspectEvent;          // analyse event flag 
 
   std::vector<Int_t> fStationType; // Station SM type 
+  std::vector<Int_t> fStationHMul; // Station Hit Multiplicity 
   std::map <Int_t, Int_t> fMapStationRpcId; 
   std::map <Int_t, Int_t> fMapRpcIdParInd; 
 
@@ -181,6 +205,16 @@ class CbmTofFindTracks : public FairTask
   TFile*        fCalParFile;          // pointer to Calibration Parameter file 
   TH2*          fhPullT_Smt;           // Time calibration histo
   TH1*          fhPullT_Smt_Off;       // Time calibration histo
+  TH2*          fhPullX_Smt;           // position calibration histo
+  TH1*          fhPullX_Smt_Off;       // position calibration histo
+  TH2*          fhPullY_Smt;           // position calibration histo
+  TH1*          fhPullY_Smt_Off;       // position calibration histo
+  TH2*          fhPullZ_Smt;           // position calibration histo
+  TH1*          fhPullZ_Smt_Off;       // position calibration histo
+  TH1*          fhPullT_Smt_Width;      // position calibration histo
+  TH1*          fhPullX_Smt_Width;      // position calibration histo
+  TH1*          fhPullY_Smt_Width;      // position calibration histo
+  TH1*          fhPullZ_Smt_Width;      // position calibration histo
   TH2*          fhTOff_Smt;              // Time calibration histo
   TH1*          fhTOff_Smt_Off;          // Time calibration histo
   TH2*          fhDeltaTt_Smt;           // Time calibration histo
@@ -201,6 +235,11 @@ class CbmTofFindTracks : public FairTask
   CbmTofDetectorId      * fTofId;
   CbmTofDigiPar         * fDigiPar;
   CbmTofDigiBdfPar      * fDigiBdfPar;
+
+  Double_t fSIGT;
+  Double_t fSIGX;
+  Double_t fSIGY;
+  Double_t fSIGZ;
 
   TTimeStamp fStart;
   TTimeStamp fStop;

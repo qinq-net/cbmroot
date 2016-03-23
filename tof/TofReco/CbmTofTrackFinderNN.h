@@ -56,14 +56,8 @@ public:
    inline void SetTyLIM  ( Double_t val ) { fTyLIM = val; }
    inline void SetTyMean ( Double_t val ) { fTyMean = val; }
    inline void SetSIGLIM ( Double_t val ) { fSIGLIM = val; }
-   inline void SetSIGT   ( Double_t val ) { fSIGT = val; }
-   inline void SetSIGX   ( Double_t val ) { fSIGX = val; }
-   inline void SetSIGY   ( Double_t val ) { fSIGY = val; }
 
    inline Double_t GetSIGLIM () { return fSIGLIM; }
-   inline Double_t GetSIGT () { return fSIGT; }
-   inline Double_t GetSIGX () { return fSIGX; }
-   inline Double_t GetSIGY () { return fSIGY; }
 
    void Line3Dfit(CbmTofTracklet*  pTrk);
    Bool_t  Active(CbmTofTracklet*  pTrk);
@@ -88,9 +82,6 @@ public:
    Double_t fTyLIM;
    Double_t fTyMean;
    Double_t fSIGLIM;
-   Double_t fSIGT;
-   Double_t fSIGX;
-   Double_t fSIGY;
    Double_t fPosYMaxScal;
    LKFMinuit fMinuit;
 

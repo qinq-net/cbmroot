@@ -1,7 +1,6 @@
 // -------------------------------------------------------------------------
 // -----                   CbmTrdFindTracks source file                -----
-// -----                  Created 25/04/15  by N. Herrmann             -----
-// -----                  initially following  CbmTrdFindTracks        -----
+// -----                  Created 25/04/15  by N. Herrmann             -----// -----                  initially following  CbmTrdFindTracks        -----
 // -------------------------------------------------------------------------
 
 #include "CbmTofAddress.h"    // in cbmdata/tof
@@ -61,7 +60,9 @@ CbmTofFindTracks::CbmTofFindTracks()  : FairTask(),
     fMinNofHits(-1),
     fNofTracks(-1),
     fNTofStations(-1),
+    fInspectEvent(kTRUE),
     fStationType(),
+    fStationHMul(),
     fMapStationRpcId(),
     fMapRpcIdParInd(),
     fhTrklMul(NULL),
@@ -102,6 +103,16 @@ CbmTofFindTracks::CbmTofFindTracks()  : FairTask(),
     fCalParFile(NULL),
     fhPullT_Smt(NULL),
     fhPullT_Smt_Off(NULL),
+    fhPullX_Smt(NULL),
+    fhPullX_Smt_Off(NULL),
+    fhPullY_Smt(NULL),
+    fhPullY_Smt_Off(NULL),
+    fhPullZ_Smt(NULL),
+    fhPullZ_Smt_Off(NULL),
+    fhPullT_Smt_Width(NULL),
+    fhPullX_Smt_Width(NULL),
+    fhPullY_Smt_Width(NULL),
+    fhPullZ_Smt_Width(NULL),
     fhTOff_Smt(NULL),
     fhTOff_Smt_Off(NULL),
     fhDeltaTt_Smt(NULL),
@@ -120,6 +131,10 @@ CbmTofFindTracks::CbmTofFindTracks()  : FairTask(),
     fTofId(NULL),
     fDigiPar(NULL),
     fDigiBdfPar(NULL),
+    fSIGT(100.),
+    fSIGX(1.),
+    fSIGY(1.),
+    fSIGZ(1.),
     fStart(),
     fStop(),
     fdTrackingTime(0.)
@@ -142,7 +157,9 @@ CbmTofFindTracks::CbmTofFindTracks(const char* name,
     fMinNofHits(-1),
     fNofTracks(-1),
     fNTofStations(-1),
+    fInspectEvent(kTRUE),
     fStationType(),
+    fStationHMul(),
     fMapStationRpcId(),
     fMapRpcIdParInd(),
     fhTrklMul(NULL),
@@ -183,6 +200,16 @@ CbmTofFindTracks::CbmTofFindTracks(const char* name,
     fCalParFile(NULL),
     fhPullT_Smt(NULL),
     fhPullT_Smt_Off(NULL),
+    fhPullX_Smt(NULL),
+    fhPullX_Smt_Off(NULL),
+    fhPullY_Smt(NULL),
+    fhPullY_Smt_Off(NULL),
+    fhPullZ_Smt(NULL),
+    fhPullZ_Smt_Off(NULL),
+    fhPullT_Smt_Width(NULL),
+    fhPullX_Smt_Width(NULL),
+    fhPullY_Smt_Width(NULL),
+    fhPullZ_Smt_Width(NULL),
     fhTOff_Smt(NULL),
     fhTOff_Smt_Off(NULL),
     fhDeltaTt_Smt(NULL),
@@ -201,6 +228,10 @@ CbmTofFindTracks::CbmTofFindTracks(const char* name,
     fTofId(NULL),
     fDigiPar(NULL),
     fDigiBdfPar(NULL),
+    fSIGT(100.),
+    fSIGX(1.),
+    fSIGY(1.),
+    fSIGZ(1.),
     fStart(),
     fStop(),
     fdTrackingTime(0.)
@@ -294,6 +325,8 @@ InitStatus CbmTofFindTracks::Init()
 	iRpc++;
       }
     }
+    fStationHMul.resize(fNTofStations+1);
+
 
   LoadCalParameter();
 
@@ -315,24 +348,81 @@ Bool_t   CbmTofFindTracks::LoadCalParameter()
       return kTRUE;
     }
 
-    TProfile *fhtmp=(TProfile *) gDirectory->FindObjectAny( Form("hPullT_Smt_pfx_px"));
-    if (NULL == fhtmp) {
-      LOG(INFO)<<" Histo " << Form("hPullT_Smt_pfx_px") << " not found. "
-             <<FairLogger::endl;
-    }
+    TH1D *fhtmp =(TH1D *) gDirectory->FindObjectAny( Form("hPullT_Smt_Off"));
+    TH1D *fhtmpX=(TH1D *) gDirectory->FindObjectAny( Form("hPullX_Smt_Off"));
+    TH1D *fhtmpY=(TH1D *) gDirectory->FindObjectAny( Form("hPullY_Smt_Off"));
+    TH1D *fhtmpZ=(TH1D *) gDirectory->FindObjectAny( Form("hPullZ_Smt_Off"));
+    TH1D *fhtmpW=(TH1D *) gDirectory->FindObjectAny( Form("hPullT_Smt_Width"));
+    TH1D *fhtmpWX=(TH1D *) gDirectory->FindObjectAny( Form("hPullX_Smt_Width"));
+    TH1D *fhtmpWY=(TH1D *) gDirectory->FindObjectAny( Form("hPullY_Smt_Width"));
+    TH1D *fhtmpWZ=(TH1D *) gDirectory->FindObjectAny( Form("hPullZ_Smt_Width"));
+
 
     gROOT->cd();
-    fhPullT_Smt_Off = NULL;
-    if(NULL != fhtmp) {
+    if (NULL == fhtmp) {
+      LOG(INFO)<<Form("CbmTofFindTracks::LoadCalParameter: hPullT_Smt_Off") << " not found. "
+             <<FairLogger::endl;
+    } else {
       fhPullT_Smt_Off = (TH1D *)fhtmp->Clone();
-      fhPullT_Smt_Off->SetName("hPullT_Smt_Off");
     }
+
+    if (NULL == fhtmpX) {
+      LOG(INFO)<<Form("CbmTofFindTracks::LoadCalParameter: hPullX_Smt_Off") << " not found. "
+             <<FairLogger::endl;
+    } else {
+      fhPullX_Smt_Off = (TH1D *)fhtmpX->Clone();
+    }
+
+    if (NULL == fhtmpY) {
+      LOG(INFO)<<Form("CbmTofFindTracks::LoadCalParameter: hPullY_Smt_Off") << " not found. "
+             <<FairLogger::endl;
+    } else {
+      fhPullY_Smt_Off = (TH1D *)fhtmpY->Clone();
+    }
+
+    if (NULL == fhtmpZ) {
+      LOG(INFO)<<Form("CbmTofFindTracks::LoadCalParameter: hPullZ_Smt_Off") << " not found. "
+             <<FairLogger::endl;
+    } else {
+      fhPullZ_Smt_Off = (TH1D *)fhtmpZ->Clone();
+    }
+
+    if (NULL == fhtmpW) {
+      LOG(INFO)<<Form("CbmTofFindTracks::LoadCalParameter: hPullT_Smt_Width") << " not found. "
+             <<FairLogger::endl;
+    } else {
+      fhPullT_Smt_Width = (TH1D *)fhtmpW->Clone();
+    }
+
+    if (NULL == fhtmpWX) {
+      LOG(INFO)<<Form("CbmTofFindTracks::LoadCalParameter: hPullX_Smt_Width") << " not found. "
+             <<FairLogger::endl;
+    } else {
+      fhPullX_Smt_Width = (TH1D *)fhtmpWX->Clone();
+    }
+
+    if (NULL == fhtmpWY) {
+      LOG(INFO)<<Form("CbmTofFindTracks::LoadCalParameter: hPullY_Smt_Width") << " not found. "
+             <<FairLogger::endl;
+    } else {
+      fhPullY_Smt_Width = (TH1D *)fhtmpWY->Clone();
+    }
+
+    if (NULL == fhtmpWZ) {
+      LOG(INFO)<<Form("CbmTofFindTracks::LoadCalParameter: hPullZ_Smt_Width") << " not found. "
+             <<FairLogger::endl;
+    } else {
+      fhPullZ_Smt_Width = (TH1D *)fhtmpWZ->Clone();
+    }
+
     fCalParFile->Close();
+
+    Double_t nSmt=fMapRpcIdParInd.size();
     if(NULL == fhPullT_Smt_Off) { // provide default TOffset histogram
-      Double_t nSmt=fMapRpcIdParInd.size();
       fhPullT_Smt_Off = new TH1F( Form("hPullT_Smt_Off"),
 				  Form("Tracklet PullT vs RpcInd ; RpcInd ; #DeltaT (ps)"),
 				  nSmt, 0, nSmt);
+
       // Initialize Parameter
       for (Int_t iDet=0; iDet<nSmt; iDet++) {
 	std::map<Int_t,Int_t>::iterator it;
@@ -354,7 +444,59 @@ Bool_t   CbmTofFindTracks::LoadCalParameter()
       }
     }
 
+    if(NULL == fhPullT_Smt_Width) { // provide default TWidth histogram
+      fhPullT_Smt_Width = new TH1F( Form("hPullT_Smt_Width"),
+				  Form("Tracklet PullT Width vs RpcInd ; RpcInd ; RMS(T) (ps)"),
+				  nSmt, 0, nSmt);
+
+      // Initialize Parameter
+      for (Int_t iDet=0; iDet<nSmt; iDet++) {
+  	fhPullT_Smt_Width->SetBinContent(iDet+1,fSIGT);
+      }
+    }
+
     LOG(INFO)<<"CbmTofFindTracks::LoadCalParameter: fhPullT_Smt_Off at "<<fhPullT_Smt_Off<<FairLogger::endl;
+
+    if(NULL == fhPullX_Smt_Off) { // provide default TOffset histogram
+      fhPullX_Smt_Off = new TH1F( Form("hPullX_Smt_Off"),
+				  Form("Tracklet PullX vs RpcInd ; RpcInd ; #DeltaX (cm)"),
+				  nSmt, 0, nSmt);
+      fhPullX_Smt_Width = new TH1F( Form("hPullX_Smt_Width"),
+				  Form("Tracklet PullX Width vs RpcInd ; RpcInd ; RMS(X) (cm)"),
+				  nSmt, 0, nSmt);
+      // Initialize Parameter
+      for (Int_t iDet=0; iDet<nSmt; iDet++) {
+  	  fhPullX_Smt_Width->SetBinContent(iDet+1,fSIGX);
+      }
+    }
+    
+    if(NULL == fhPullY_Smt_Off) { // provide default TOffset histogram
+      fhPullY_Smt_Off = new TH1F( Form("hPullY_Smt_Off"),
+				  Form("Tracklet PullY vs RpcInd ; RpcInd ; #DeltaY (cm)"),
+				  nSmt, 0, nSmt);
+      fhPullY_Smt_Width = new TH1F( Form("hPullY_Smt_Width"),
+				  Form("Tracklet PullY Width vs RpcInd ; RpcInd ; RMS(Y) (cm)"),
+				  nSmt, 0, nSmt);
+      // Initialize Parameter
+      for (Int_t iDet=0; iDet<nSmt; iDet++) {
+  	  fhPullY_Smt_Width->SetBinContent(iDet+1,fSIGY);
+      }
+    }
+    
+    if(NULL == fhPullZ_Smt_Off) { // provide default TOffset histogram
+      fhPullZ_Smt_Off = new TH1F( Form("hPullZ_Smt_Off"),
+				  Form("Tracklet PullZ vs RpcInd ; RpcInd ; #DeltaZ (cm)"),
+				  nSmt, 0, nSmt);
+      fhPullZ_Smt_Width = new TH1F( Form("hPullZ_Smt_Width"),
+				  Form("Tracklet PullZ Width vs RpcInd ; RpcInd ; RMS(Z) (cm)"),
+				  nSmt, 0, nSmt);
+      // Initialize Parameter
+      for (Int_t iDet=0; iDet<nSmt; iDet++) {
+  	  fhPullZ_Smt_Width->SetBinContent(iDet+1,fSIGZ);
+      }
+    }
+    
+
     return kTRUE;
 }
 //-------------------------------------------------------------------------------------------------
@@ -420,6 +562,7 @@ Bool_t CbmTofFindTracks::WriteHistos()
    TDirectory * oldir = gDirectory;
    TFile *fHist = new TFile("./tofFindTracks.hst.root","RECREATE");
    fHist->cd();
+   const Double_t RMSmin=60.;
 
    switch(fiCorMode){
    case 0 : 
@@ -454,13 +597,13 @@ Bool_t CbmTofFindTracks::WriteHistos()
 		<< hTOff1D->GetBinContent(ix+1)<<", FitMean "
 		<< dFMean
 		<< " -> " << dVal << FairLogger::endl;
-       htmp1D->SetBinContent(ix+1,dVal);
+       fhPullT_Smt_Off->SetBinContent(ix+1,dVal);
      }
-     htmp1D->Write();
      }
+
      break;
 
-   case 1 : // correct deviation from fit (Pull)
+   case 1 : // correct mean deviation from fit (Pull), extract width
     {
      TProfile *htmp=fhPullT_Smt->ProfileX();
      TH1D *htmp1D=htmp->ProjectionX();
@@ -476,16 +619,17 @@ Bool_t CbmTofFindTracks::WriteHistos()
 	 LOG(INFO)<<"Update hPullT_Smt_Off "<<ix<<": "
 		  << fhPullT_Smt_Off->GetBinContent(ix+1) <<" + "
 		  << htmp1D->GetBinContent(ix+1)<<" + "
-		  << hTOff1D->GetBinContent(ix+1) << " -> " << dVal << FairLogger::endl;
-	 htmp1D->SetBinContent(ix+1,dVal);
+		  << hTOff1D->GetBinContent(ix+1) << " -> " << dVal 
+		  << FairLogger::endl;
+	 fhPullT_Smt_Off->SetBinContent(ix+1,dVal);
        }
      }else
      {
        LOG(WARNING)<<"CbmTofFindTracks::WriteHistos: fhPullT_Smt_Off not found "
 		   << FairLogger::endl;
      }
-     htmp1D->Write();
      }
+
      break;
 
    case 2 : // correct deviation from DeltaTt=0 expectation
@@ -514,19 +658,18 @@ Bool_t CbmTofFindTracks::WriteHistos()
 	   dVal -= dFMean;
 	 }
 	 LOG(INFO)<<"Update hPullT_Smt_Off "<<ix<<": Old "
-		  << fhPullT_Smt_Off->GetBinContent(ix+1) <<", Pull"
+		  << fhPullT_Smt_Off->GetBinContent(ix+1) <<", Pull "
 		  << htmp1D->GetBinContent(ix+1)<<", Dev@Peak "
 		  << hTOff1D->GetBinContent(ix+1)<<", FitMean "
 		  << dFMean
 		  << " -> " << dVal << FairLogger::endl;
-	 htmp1D->SetBinContent(ix+1,dVal);
+	 fhPullT_Smt_Off->SetBinContent(ix+1,dVal);
        }
      }else
      {
        LOG(WARNING)<<"CbmTofFindTracks::WriteHistos: fhPullT_Smt_Off not found "
 		   << FairLogger::endl;
      }
-     htmp1D->Write();
      }
      break;
 
@@ -534,36 +677,153 @@ Bool_t CbmTofFindTracks::WriteHistos()
      {
      TProfile *htmp=fhPullT_Smt->ProfileX();
      TH1D *htmp1D=htmp->ProjectionX();
-     TProfile *hTOff=fhTOff_Smt->ProfileX();
-     TH1D *hTOff1D=hTOff->ProjectionX();
-
+     
      if(fhPullT_Smt_Off != NULL){
        Double_t nx=htmp1D->GetNbinsX();
        for (Int_t ix=1; ix<nx; ix++){
 	 Double_t dVal  = fhPullT_Smt_Off->GetBinContent(ix+1);
 	          dVal -= htmp1D->GetBinContent(ix+1);
-	          dVal -= hTOff1D->GetBinContent(ix+1);
+	 fhPullT_Smt_Off->SetBinContent(ix+1,dVal);
 
-	 LOG(INFO)<<"Update hPullT_Smt_Off "<<ix<<": "
-		  << fhPullT_Smt_Off->GetBinContent(ix+1) <<" + "
-		  << htmp1D->GetBinContent(ix+1)<<" + "
-		  << hTOff1D->GetBinContent(ix+1) << " -> " << dVal << FairLogger::endl;
-	 htmp1D->SetBinContent(ix+1,dVal);
+	 TH1D *hpy=fhPullT_Smt->ProjectionY("_py",ix+1,ix+1);
+	 if(hpy->GetEntries()>100.){
+	   Double_t dRMS = TMath::Abs( hpy->GetRMS() );
+	   LOG(INFO)<<"Update hPullT_Smt_Off "<<ix<<": "
+		    << fhPullT_Smt_Off->GetBinContent(ix+1) <<" + "
+		    << htmp1D->GetBinContent(ix+1)<<" -> " << dVal 
+		    <<", Width "<<dRMS
+		    << FairLogger::endl;
+	   if(dRMS<RMSmin) dRMS=RMSmin;
+	   fhPullT_Smt_Width->SetBinContent(ix+1,dRMS);
+	 }      
        }
      }else
      {
        LOG(WARNING)<<"CbmTofFindTracks::WriteHistos: fhPullT_Smt_Off not found "
 		   << FairLogger::endl;
      }
-     htmp1D->Write();
      }
+
+     break;
+
+   case 4 : // correct mean deviation from fit (Pull), extract width
+    {
+     TProfile *htmp=fhPullX_Smt->ProfileX();
+     TH1D *htmp1D=htmp->ProjectionX();
+     
+     if(fhPullX_Smt_Off != NULL){
+       Double_t nx=htmp1D->GetNbinsX();
+       for (Int_t ix=1; ix<nx; ix++){
+	 Double_t dVal  = fhPullX_Smt_Off->GetBinContent(ix+1);
+	          dVal -= htmp1D->GetBinContent(ix+1);
+	 fhPullX_Smt_Off->SetBinContent(ix+1,dVal);
+
+	 TH1D *hpy=fhPullX_Smt->ProjectionY("_py",ix+1,ix+1);
+	 if(hpy->GetEntries()>100.){
+	   Double_t dRMS = TMath::Abs( hpy->GetRMS() );
+	   if(dRMS<0.5) dRMS=0.5;
+	   fhPullX_Smt_Width->SetBinContent(ix+1,dRMS);
+
+	   LOG(INFO)<<"Update hPullX_Smt_Off "<<ix<<": "
+		    << fhPullX_Smt_Off->GetBinContent(ix+1) <<" + "
+		    << htmp1D->GetBinContent(ix+1)<<" -> " << dVal 
+		    <<", Width "<<dRMS
+		    << FairLogger::endl;
+	 }      
+       }
+     }else
+     {
+       LOG(WARNING)<<"CbmTofFindTracks::WriteHistos: fhPullX_Smt_Off not found "
+		   << FairLogger::endl;
+     }
+     }
+
+     break;
+
+   case 5 : // correct mean deviation from fit (Pull), extract width
+    {
+     TProfile *htmp=fhPullY_Smt->ProfileX();
+     TH1D *htmp1D=htmp->ProjectionX();
+     
+     if(fhPullY_Smt_Off != NULL){
+       Double_t nx=htmp1D->GetNbinsX();
+       for (Int_t ix=1; ix<nx; ix++){
+	 Double_t dVal  = fhPullY_Smt_Off->GetBinContent(ix+1);
+	          dVal -= htmp1D->GetBinContent(ix+1);
+	 fhPullY_Smt_Off->SetBinContent(ix+1,dVal);
+
+	 TH1D *hpy=fhPullY_Smt->ProjectionY("_py",ix+1,ix+1);
+	 if(hpy->GetEntries()>100.){
+	   Double_t dRMS = TMath::Abs( hpy->GetRMS() );
+	   if(dRMS<1.) dRMS=1.;
+	   fhPullY_Smt_Width->SetBinContent(ix+1,dRMS);
+
+	   LOG(INFO)<<"Update hPullY_Smt_Off "<<ix<<": "
+		    << fhPullY_Smt_Off->GetBinContent(ix+1) <<" + "
+		    << htmp1D->GetBinContent(ix+1)<<" -> " << dVal 
+		    <<", Width "<<dRMS
+		    << FairLogger::endl;
+	 }      
+       }
+     }else
+     {
+       LOG(WARNING)<<"CbmTofFindTracks::WriteHistos: fhPullY_Smt_Off not found "
+		   << FairLogger::endl;
+     }
+
+     }
+
+     break;
+
+   case 6 : // correct mean deviation from fit (Pull), extract width
+    {
+     TProfile *htmp=fhPullZ_Smt->ProfileX();
+     TH1D *htmp1D=htmp->ProjectionX();
+     
+     if(fhPullZ_Smt_Off != NULL){
+       Double_t nx=htmp1D->GetNbinsX();
+       for (Int_t ix=1; ix<nx; ix++){
+	 Double_t dVal  = fhPullZ_Smt_Off->GetBinContent(ix+1);
+	          dVal -= htmp1D->GetBinContent(ix+1);
+	 fhPullZ_Smt_Off->SetBinContent(ix+1,dVal);
+
+	 TH1D *hpy=fhPullZ_Smt->ProjectionY("_py",ix+1,ix+1);
+	 if(hpy->GetEntries()>100.){
+	   Double_t dRMS = TMath::Abs( hpy->GetRMS() );
+
+	   LOG(INFO)<<"Update hPullZ_Smt_Off "<<ix<<": "
+		    << fhPullZ_Smt_Off->GetBinContent(ix+1) <<" + "
+		    << htmp1D->GetBinContent(ix+1)<<" -> " << dVal 
+		    <<", Width "<<dRMS
+		    << FairLogger::endl;
+	   if(dRMS<1.5) dRMS=1.5;
+	   fhPullZ_Smt_Width->SetBinContent(ix+1,dRMS);
+	 }      
+       }
+     }else
+     {
+       LOG(WARNING)<<"CbmTofFindTracks::WriteHistos: fhPullZ_Smt_Off not found "
+		   << FairLogger::endl;
+     }
+
+     }
+
      break;
 
    default: 
      ;
    }
+   fhPullT_Smt_Off->Write();
+   fhPullX_Smt_Off->Write();
+   fhPullY_Smt_Off->Write();
+   fhPullZ_Smt_Off->Write();
+   fhPullT_Smt_Width->Write();
+   fhPullX_Smt_Width->Write();
+   fhPullY_Smt_Width->Write();
+   fhPullZ_Smt_Width->Write();
 
    gDirectory->cd( oldir->GetPath() );
+   fHist->Close();
 
    return kTRUE;
 }
@@ -573,7 +833,8 @@ Bool_t CbmTofFindTracks::WriteHistos()
 void CbmTofFindTracks::Exec(Option_t* /*opt*/)
 {
   fiEvent++;
-  // recalibrate hits  
+  ResetStationsFired();
+  // recalibrate hits and count trackable hits
   for (Int_t iHit=0; iHit<fTofHitArray->GetEntries(); iHit++){
     CbmTofHit* pHit = (CbmTofHit*) fTofHitArray->At(iHit);
     Int_t iDetId = (pHit->GetAddress() & DetMask);
@@ -581,6 +842,18 @@ void CbmTofFindTracks::Exec(Option_t* /*opt*/)
     if(fhPullT_Smt_Off != NULL) {
       Double_t dTcor=(Double_t)fhPullT_Smt_Off->GetBinContent( iRpcInd + 1 );
       pHit->SetTime(pHit->GetTime()+dTcor);
+    }
+    if(fhPullX_Smt_Off != NULL) {
+      Double_t dXcor=(Double_t)fhPullX_Smt_Off->GetBinContent( iRpcInd + 1 );
+      pHit->SetX(pHit->GetX()+dXcor);
+    }
+    if(fhPullY_Smt_Off != NULL) {
+      Double_t dYcor=(Double_t)fhPullY_Smt_Off->GetBinContent( iRpcInd + 1 );
+      pHit->SetY(pHit->GetY()+dYcor);
+    }
+    if(fhPullZ_Smt_Off != NULL) {
+      Double_t dZcor=(Double_t)fhPullZ_Smt_Off->GetBinContent( iRpcInd + 1 );
+      pHit->SetZ(pHit->GetZ()+dZcor);
     }
     // set diamond positions to (0,0,0) to allow inclusion in straight line fit
     if ( (iDetId & 0x0000F00F) == 0x00005006 )     // modify diamond position 
@@ -590,12 +863,20 @@ void CbmTofFindTracks::Exec(Option_t* /*opt*/)
       pHit->SetPosition(hitPos);
       pHit->SetPositionError(hitPosErr);
     }
+    Int_t iSt=GetStationOfAddr(iDetId);
+    MarkStationFired(iSt);
+
     LOG(DEBUG) << Form("CbmTofFindTracks::Exec found Hit %d, addr 0x%08x, sta %d, X %6.2f, Y %6.2f Z %6.2f T %6.2f",
 		 iHit,pHit->GetAddress(),GetStationOfAddr(iDetId),pHit->GetX(),pHit->GetY(),pHit->GetZ(),pHit->GetTime())
 	       <<FairLogger::endl; 
   }
 
-  if (fNTofStations >1){
+  if (GetNStationsFired()<GetMinNofHits()) {
+    fInspectEvent=kFALSE;          // mark event as non trackable
+    return;
+  } else fInspectEvent=kTRUE;
+
+  if (fNTofStations > 1){
     fStart.Set();
     //fTrackArray->Clear("C+C");
     fTrackArray->Delete();
@@ -604,24 +885,15 @@ void CbmTofFindTracks::Exec(Option_t* /*opt*/)
     fStop.Set();
     fdTrackingTime = fStop.GetSec() - fStart.GetSec()
                    +(fStop.GetNanoSec() - fStart.GetNanoSec())/1e9;
-  }
 
-  LOG(DEBUG) << Form("CbmTofFindTracks::Exec found %d Tracklets in %f sec",
+    LOG(DEBUG) << Form("CbmTofFindTracks::Exec found %d Tracklets in %f sec",
 		     fTrackArray->GetEntriesFast(),fdTrackingTime)
-	     <<FairLogger::endl;
+	       <<FairLogger::endl;
 
-  FindVertex();
-  /*
-  for (Int_t iTrack=0; iTrack<fTrackArray->GetEntriesFast(); iTrack++) {
-    CbmTofTracklet* track = (CbmTofTracklet*) fTrackArray->At(iTrack);
-    for (Int_t iTOF=0; iTOF < track->GetNofHits(); iTOF++){
-      Int_t TOFindex = track->GetHitIndex(iTOF);
-      CbmTofHit* tofHit = (CbmTofHit*) fTofHitArray->At(TOFindex);
-    }
+    FindVertex();
+
+    FillHistograms();
   }
-  */
-
-  FillHistograms();
 }
 // -------------------------------------------------------------------------
 
@@ -665,7 +937,7 @@ void CbmTofFindTracks::CreateHistograms(){
 			  100, 0, ((CbmTofTrackFinderNN *)fFinder)->GetSIGLIM());  
   
   fhTrackingTimeNhits  =  new TH2F(  Form("hTrackingTimeNhits"),
-			       Form("Tracking Time; NHits; #Deltat (ns)"),
+			       Form("Tracking Time; NHits; #Deltat (s)"),
 			       100, 0, 200, 50, 0, 0.1);
 
   fhTrklMulNhits =  new TH2F(  Form("hTrklMulNhits"),
@@ -734,6 +1006,18 @@ void CbmTofFindTracks::CreateHistograms(){
   fhPullT_Smt = new TH2F( Form("hPullT_Smt"),
 			  Form("Tracklet PullT vs RpcInd ; RpcInd ; #DeltaT (ps)"),
 			  nSmt, 0, nSmt, 100, -fT0MAX, fT0MAX);
+  Double_t DX0MAX=5.;
+  fhPullX_Smt = new TH2F( Form("hPullX_Smt"),
+			  Form("Tracklet PullX vs RpcInd ; RpcInd ; #DeltaX (cm)"),
+			  nSmt, 0, nSmt, 100, -DX0MAX, DX0MAX);
+  Double_t DY0MAX=5.;
+  fhPullY_Smt = new TH2F( Form("hPullY_Smt"),
+			  Form("Tracklet PullY vs RpcInd ; RpcInd ; #DeltaY (cm)"),
+			  nSmt, 0, nSmt, 100, -DY0MAX, DY0MAX);
+  Double_t DZ0MAX=5.;
+  fhPullZ_Smt = new TH2F( Form("hPullZ_Smt"),
+			  Form("Tracklet PullZ vs RpcInd ; RpcInd ; #DeltaZ (cm)"),
+			  nSmt, 0, nSmt, 100, -DZ0MAX, DZ0MAX);
 
   fhTOff_Smt = new TH2F( Form("hTOff_Smt"),
 			 Form("Tracklet TOff; RpcInd ; TOff (ps)"),
@@ -918,7 +1202,11 @@ void CbmTofFindTracks::FillHistograms(){
 	vhPullT[iSt]->Fill(dDT);
 	vhPullTB[iSt]->Fill(dDTB);
 
-	fhPullT_Smt->Fill((Double_t)fMapRpcIdParInd[fMapStationRpcId[iSt]],dDT);  //FIXME
+	fhPullT_Smt->Fill((Double_t)fMapRpcIdParInd[fMapStationRpcId[iSt]],dDT);  
+	fhPullX_Smt->Fill((Double_t)fMapRpcIdParInd[fMapStationRpcId[iSt]],dDX);  
+	fhPullY_Smt->Fill((Double_t)fMapRpcIdParInd[fMapStationRpcId[iSt]],dDY);  
+	fhPullZ_Smt->Fill((Double_t)fMapRpcIdParInd[fMapStationRpcId[iSt]],dZZ);  
+
 	Double_t dDeltaTt=dTt - fTtTarg;
 	fhDeltaTt_Smt->Fill((Double_t)fMapRpcIdParInd[fMapStationRpcId[iSt]], dDeltaTt );
 	Double_t dTOff = dDeltaTt*pHit->GetR(); 
@@ -1124,3 +1412,34 @@ void CbmTofFindTracks::PrintSetup(){
   }
 }
 
+Double_t CbmTofFindTracks::GetTOff(Int_t iAddr){
+  return (Double_t)fhPullT_Smt_Off->GetBinContent( fMapRpcIdParInd[iAddr] + 1);
+}
+
+Double_t CbmTofFindTracks::GetSigT(Int_t iAddr){
+  return (Double_t)fhPullT_Smt_Width->GetBinContent( fMapRpcIdParInd[iAddr] + 1);
+}
+
+Double_t CbmTofFindTracks::GetSigX(Int_t iAddr){
+  return (Double_t)fhPullX_Smt_Width->GetBinContent( fMapRpcIdParInd[iAddr] + 1);
+}
+
+Double_t CbmTofFindTracks::GetSigY(Int_t iAddr){
+  return (Double_t)fhPullY_Smt_Width->GetBinContent( fMapRpcIdParInd[iAddr] + 1);
+}
+
+Double_t CbmTofFindTracks::GetSigZ(Int_t iAddr){
+  return (Double_t)fhPullZ_Smt_Width->GetBinContent( fMapRpcIdParInd[iAddr] + 1);
+}
+
+Int_t CbmTofFindTracks::GetNStationsFired(){
+  Int_t iNSt=0;
+  for(Int_t iSt=0; iSt<fNTofStations; iSt++){
+    if (fStationHMul[iSt]>0) iNSt++;
+  }
+  return iNSt;
+}
+
+void CbmTofFindTracks::ResetStationsFired(){
+  for(Int_t iSt=0; iSt<fNTofStations; iSt++) fStationHMul[iSt]=0;
+}

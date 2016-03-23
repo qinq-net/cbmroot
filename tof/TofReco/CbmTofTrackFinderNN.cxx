@@ -57,9 +57,6 @@ CbmTofTrackFinderNN::CbmTofTrackFinderNN() :
   fTyLIM(0.),
   fTyMean(0.),
   fSIGLIM(0.),
-  fSIGT(0.5),
-  fSIGX(1.5),
-  fSIGY(1.5),
   fPosYMaxScal(0.55),
   fMinuit(),
   fTracks(),
@@ -84,9 +81,6 @@ CbmTofTrackFinderNN::CbmTofTrackFinderNN(const CbmTofTrackFinderNN &finder) :
   fTyLIM(0.),
   fTyMean(0.),
   fSIGLIM(0.),
-  fSIGT(0.5),
-  fSIGX(1.5),
-  fSIGY(1.5),
   fPosYMaxScal(0.55),
   fMinuit(),
   fTracks(),
@@ -358,15 +352,15 @@ Int_t CbmTofTrackFinderNN::DoFind(
 	  Double_t dTex = pHit0->GetTime() + (pHit1->GetTime()-pHit0->GetTime())/(pHit1->GetR()-pHit0->GetR())*dDr;
 	  // pTrk->GetFitT(pHit->GetR());
 
-	  Double_t dChi = TMath::Sqrt(TMath::Power(TMath::Abs(dTex-pHit->GetTime())/fSIGT,2)
-				     +TMath::Power(TMath::Abs(dXex-pHit->GetX())/fSIGX,2)
-				     +TMath::Power(TMath::Abs(dYex-pHit->GetY())/fSIGY,2))/3;
+	  Double_t dChi = TMath::Sqrt(TMath::Power(TMath::Abs(dTex-pHit->GetTime())/fFindTracks->GetSigT(iAddr),2)
+				     +TMath::Power(TMath::Abs(dXex-pHit->GetX())/fFindTracks->GetSigX(iAddr),2)
+				     +TMath::Power(TMath::Abs(dYex-pHit->GetY())/fFindTracks->GetSigY(iAddr),2))/3;
 
 	  LOG(DEBUG1)<<Form("<IP> TofTracklet %d, HMul %d, Hits %d, %d check %d, Station 0x%08x: DT %f, DX %f, DY %f, Chi %f",
 			    iTrk,pTrk->GetNofHits(),iHit0,iHit1,iHit,iAddr,
-			    (dTex-pHit->GetTime())/fSIGT, 
-			    (dXex-pHit->GetX())/fSIGX,
-			    (dYex-pHit->GetY())/fSIGY, dChi)
+			    (dTex-pHit->GetTime())/fFindTracks->GetSigT(iAddr), 
+			    (dXex-pHit->GetX())/fFindTracks->GetSigX(iAddr),
+			    (dYex-pHit->GetY())/fFindTracks->GetSigY(iAddr), dChi)
 	  		    <<FairLogger::endl; 
 
           if(   dChi < fSIGLIM )

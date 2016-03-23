@@ -570,7 +570,12 @@ InitStatus CbmTofAnaTestbeam::Init()
   if (NULL == fFindTracks) 
   LOG(WARNING) << Form("CbmTofAnaTestbeam::Init : no FindTracks instance found")
 	     << FairLogger::endl;
-
+  else{  // reinitialize Offsets 
+    fdTShift   = - fFindTracks->GetTOff(fiMrpcRefAddr) + fFindTracks->GetTOff(fiBeamRefAddr);
+    fdSel2TOff = - fFindTracks->GetTOff(fiMrpcRefAddr) + fFindTracks->GetTOff(fiMrpcSel2Addr);
+    LOG(INFO) << Form("CbmTofAnaTestbeam::Init : Set time offsets D4: %7.0f, Sel24:  %7.0f",fdTShift,fdSel2TOff)
+	      << FairLogger::endl;
+  }
    return kSUCCESS;
 }
 
@@ -644,9 +649,14 @@ Bool_t   CbmTofAnaTestbeam::LoadGeometry()
 
 void CbmTofAnaTestbeam::Exec(Option_t* /*option*/)
 {
-   // Task execution
+  // Task execution
+  if(NULL != fFindTracks)
+   if(!fFindTracks->InspectEvent()) return;
 
-   LOG(DEBUG)<<" CbmTofAnaTestbeam => New event"<<FairLogger::endl;
+   LOG(DEBUG)<<" CbmTofAnaTestbeam::Exec => New event with "
+	     <<fFindTracks->GetNStationsFired()<<" fired stations for "
+	     <<fFindTracks->GetMinNofHits()<<" requested hits"
+	     <<FairLogger::endl;
 
    fStart.Set();
    FillHistos();
