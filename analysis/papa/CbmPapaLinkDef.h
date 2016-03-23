@@ -22,9 +22,8 @@
 #pragma link C++ class PairAnalysisCutCombi+;
 
 
-#pragma link C++ class PairAnalysisHelper+;
-#pragma link C++ class PairAnalysisStyler+;
-
+#pragma link C++ namespace PairAnalysisHelper;
+#pragma link C++ namespace PairAnalysisStyler;
 
 #pragma link C++ class PairAnalysisVarManager+;
 

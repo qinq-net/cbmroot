@@ -397,7 +397,7 @@ void  PairAnalysisSpectrum::Draw(const char* varexp, const char* selection, Opti
   Bool_t optLeg      =optString.Contains("leg");       optString.ReplaceAll("leg","");
   Bool_t optSyst     =optString.Contains("syst");      optString.ReplaceAll("syst","");
   Bool_t optPrint    =optString.Contains("print");     optString.ReplaceAll("print","");
-  Bool_t optSamePad  =optString.Contains("samepad");
+  Bool_t optSamePad  =optString.Contains("samepad");   optString.ReplaceAll("samepad","");
 
   /// counter
   Long64_t n =1;
