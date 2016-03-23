@@ -5,7 +5,7 @@ void dis_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
   TString logLevel = "FATAL";
   TString logLevel = "ERROR";
   TString logLevel = "INFO";
-  TString logLevel = "DEBUG";
+  //TString logLevel = "DEBUG";
   //TString logLevel = "DEBUG1";
   //TString logLevel = "DEBUG2";
   //TString logLevel = "DEBUG3";
@@ -250,7 +250,7 @@ void dis_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
    tofFindTracks->SetTtTarg(33.7);               // target value for inverse velocity, > 33.3 !
    tofFindTracks->SetCalParFileName(cTrkFile);   // Tracker parameter value file name  
    switch (iTrackingSetup){
-   case 0:                                       // calibration mode
+   case 1:                                       // calibration mode
      tofFindTracks->SetMinNofHits(3);
      tofFindTracks->SetNStations(8);
      tofFindTracks->SetStation(0, 5, 0, 0);           // Diamond 

@@ -106,7 +106,10 @@ void dis_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    tofFindTracks->SetTtTarg(33.7);               // target value for inverse velocity, > 33.3 !
    tofFindTracks->SetCalParFileName(cTrkFile);   // Tracker parameter value file name  
    switch (iTrackingSetup){
-   case 0:                                       // calibration mode
+   case 0:
+     break;
+
+   case 1:                                       // full upper setup 
      tofFindTracks->SetMinNofHits(6);
      tofFindTracks->SetNStations(8);
      tofFindTracks->SetStation(0, 5, 0, 0);           // Diamond 
@@ -118,10 +121,10 @@ void dis_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      tofFindTracks->SetStation(5, 9, 0, 0);           //  
      tofFindTracks->SetStation(6, 9, 0, 1);           //  
      tofFindTracks->SetStation(7, 3, 0, 0);           // P2 
-     tofTrackFinder->SetSIGT(200.);                 // in ps
+     tofTrackFinder->SetSIGT(150.);                 // in ps
      break;
 
-   case 1:                                       // calibration mode
+   case 2:                                       // calibration mode
      tofFindTracks->SetMinNofHits(2);
      tofFindTracks->SetNStations(5);
      tofFindTracks->SetStation(0, 4, 0, 0);           // upper part of Nov15 setup 
@@ -133,8 +136,8 @@ void dis_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      tofTrackFinder->SetSIGT(10000.);                  // in ps
      break;
 
-   case 2:                                       // calibration mode
-     tofFindTracks->SetMinNofHits(2);
+   case 3:                                       // calibration mode
+     tofFindTracks->SetMinNofHits(4);
      tofFindTracks->SetNStations(5);
      tofFindTracks->SetStation(0, 5, 0, 0);           // upper part of Nov15 setup 
      tofFindTracks->SetStation(1, 4, 0, 0);           // upper part of Nov15 setup 
@@ -144,27 +147,28 @@ void dis_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      tofTrackFinder->SetSIGT(2000.);                 // in ps
      break;
 
-   case 3:                                       // calibration mode
-     tofFindTracks->SetMinNofHits(2);
-     tofFindTracks->SetNStations(3);
-     tofFindTracks->SetStation(0, 5, 0, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(1, 4, 0, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(2, 3, 0, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetT0MAX(50000.);                 // in ps
-     tofTrackFinder->SetSIGT(1000.);                 // in ps
+   case 4:                                            // calibration mode
+     tofFindTracks->SetMinNofHits(4);
+     tofFindTracks->SetNStations(4);
+     tofFindTracks->SetStation(0, 9, 2, 0);           // USTC 
+     tofFindTracks->SetStation(1, 9, 2, 1);           // USTC
+     tofFindTracks->SetStation(2, 9, 0, 0);           //  
+     tofFindTracks->SetStation(3, 9, 0, 1);           // 
+     tofTrackFinder->SetSIGT(150.);                  // in ps
      break;
 
-   case 4:                                       // calibration mode
-     tofFindTracks->SetMinNofHits(2);
-     tofFindTracks->SetNStations(3);
-     tofFindTracks->SetStation(0, 9, 2, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(1, 9, 2, 1);           // upper part of Nov15 setup 
-     tofFindTracks->SetStation(2, 3, 0, 0);           // upper part of Nov15 setup 
-     tofFindTracks->SetT0MAX(2000.);                 // in ps
-     tofTrackFinder->SetSIGT(200.);                  // in ps
+   case 5:                                            // calibration mode
+     tofFindTracks->SetMinNofHits(5);
+     tofFindTracks->SetNStations(5);
+     tofFindTracks->SetStation(0, 9, 2, 0);           // USTC 
+     tofFindTracks->SetStation(1, 9, 2, 1);           // USTC
+     tofFindTracks->SetStation(2, 9, 0, 0);           //  
+     tofFindTracks->SetStation(3, 9, 0, 1);           // 
+     tofFindTracks->SetStation(4, 3, 0, 0);           // P2 
+     tofTrackFinder->SetSIGT(150.);                  // in ps
      break;
 
-   case 5:                                       // calibration mode
+   case 6:                                       // calibration mode
      tofFindTracks->SetMinNofHits(2);
      tofFindTracks->SetNStations(7);
      tofFindTracks->SetStation(0, 4, 0, 0);           // upper part of Nov15 setup 
@@ -176,6 +180,55 @@ void dis_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      tofFindTracks->SetStation(6, 9, 2, 1);           // upper part of Nov15 setup 
      tofTrackFinder->SetSIGT(100000.);                 // in ps
      break;
+
+   case 10:                                       // full lower setup
+     tofFindTracks->SetMinNofHits(3);
+     tofFindTracks->SetNStations(14);
+     tofFindTracks->SetStation(0, 5, 0, 0);           // Diamond 
+     tofFindTracks->SetStation(1, 8, 0, 2);           // THUpad 
+     tofFindTracks->SetStation(2, 8, 0, 3);           // THUpad
+     tofFindTracks->SetStation(3, 8, 0, 0);           // THUpad
+     tofFindTracks->SetStation(4, 8, 0, 1);           // THUpad
+     tofFindTracks->SetStation(5, 8, 0, 4);           // THUpad
+     tofFindTracks->SetStation(6, 8, 0, 5);           // THUpad
+     tofFindTracks->SetStation(7, 6, 0, 0);           // Buc2015
+     tofFindTracks->SetStation(8, 6, 0, 1);           // Buc2015
+     tofFindTracks->SetStation(9, 7, 0, 0);           // Buc2012
+     tofFindTracks->SetStation(10, 7, 0, 1);           // Buc2012
+     tofFindTracks->SetStation(11, 7, 0, 2);           // Buc2012
+     tofFindTracks->SetStation(12, 7, 0, 3);           // Buc2012
+     tofFindTracks->SetStation(13, 1, 0, 0);           // BucRef  
+     break;
+
+   case 111:                                       // show case 
+     tofFindTracks->SetMinNofHits(6);
+     tofFindTracks->SetNStations(21);
+     tofFindTracks->SetStation(0, 5, 0, 0);           // Diamond 
+     tofFindTracks->SetStation(1, 4, 0, 0);           // P5 
+     tofFindTracks->SetStation(2, 9, 2, 0);           // USTC 
+     tofFindTracks->SetStation(3, 9, 2, 1);           // USTC
+     tofFindTracks->SetStation(4, 9, 1, 0);           // 
+     //tofFindTracks->SetStation(4, 9, 1, 1);           // broken
+     tofFindTracks->SetStation(5, 9, 0, 0);           //  
+     tofFindTracks->SetStation(6, 9, 0, 1);           //  
+     tofFindTracks->SetStation(7, 3, 0, 0);           // P2 
+
+     tofFindTracks->SetStation(8, 8, 0, 2);           // THUpad 
+     tofFindTracks->SetStation(9, 8, 0, 3);           // THUpad
+     tofFindTracks->SetStation(10, 8, 0, 0);           // THUpad
+     tofFindTracks->SetStation(11, 8, 0, 1);           // THUpad
+     tofFindTracks->SetStation(12, 8, 0, 4);           // THUpad
+     tofFindTracks->SetStation(13, 8, 0, 5);           // THUpad
+     tofFindTracks->SetStation(14, 6, 0, 0);           // Buc2015
+     tofFindTracks->SetStation(15, 6, 0, 1);           // Buc2015
+     tofFindTracks->SetStation(16, 7, 0, 0);           // Buc2012
+     tofFindTracks->SetStation(17, 7, 0, 1);           // Buc2012
+     tofFindTracks->SetStation(18, 7, 0, 2);           // Buc2012
+     tofFindTracks->SetStation(19, 7, 0, 3);           // Buc2012
+     tofFindTracks->SetStation(20, 1, 0, 0);           // BucRef      
+     tofTrackFinder->SetSIGT(150.);                 // in ps
+     break;
+
 
    default:
      cout << "Tracking setup "<<iTrackingSetup<<" not implemented "<<endl;
@@ -339,17 +392,31 @@ void dis_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
   Track->SetVerbose(2);
   fMan->AddTask(Track);
   TGeoVolume* top = gGeoManager->GetTopVolume();
-  gGeoManager->SetVisOption(0);
+  gGeoManager->SetVisOption(1);
   gGeoManager->SetVisLevel(5);
   TObjArray* allvolumes = gGeoManager->GetListOfVolumes();
   //cout<<"GeoVolumes  "  << gGeoManager->GetListOfVolumes()->GetEntries()<<endl;
   for(Int_t i=0; i<allvolumes->GetEntries(); i++){
     TGeoVolume* vol     = (TGeoVolume*)allvolumes->At(i);
     TString name = vol->GetName();
-    //cout << " GeoVolume "<<i<<" Name: "<< name << endl;
-    if( name == "counter"){
-      //cout << " counter found " << i << " set transparent "<<endl;
-      vol->SetTransparency(70);
+    //    cout << " GeoVolume "<<i<<" Name: "<< name << endl;
+    switch(name) {
+    case "counter":
+      vol->SetTransparency(95);
+      break;
+
+    case "tof_glass":
+    case "Gap":
+    case "Cell":
+      vol->SetTransparency(99);
+      break;
+
+    case "pcb":
+      vol->SetTransparency(30);
+      break;
+
+    default:
+      vol->SetTransparency(96);
     }
   }
   //  gGeoManager->SetVisLevel(3);
@@ -357,7 +424,7 @@ void dis_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
   //  top->Draw("ogl");
 
   //  fMan->Init(1,4,10000);                     
-  fMan->Init(1); 
+  fMan->Init(1,5); 
                     
   cout << "gEve "<< gEve << endl;
   gEve->GetDefaultGLViewer()->SetClearColor(kYellow-10);
