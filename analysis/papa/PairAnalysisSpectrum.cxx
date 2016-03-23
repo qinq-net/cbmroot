@@ -18,10 +18,10 @@
 
   // add input spectra coming from PairAnalysisHistos
   spectrum->AddInput( histos->DrawSame("pM_Pt","nomc goff"),           // raw invariant mass spectrum
-                      histos->DrawSame("pPt","onlymc goff sel","phi"), // optional: MC spectra for efficiency calculation
-		      "like-sign"                                      // unique string
+                      "like-sign",                                     // unique string
+		      histos->DrawSame("pPt","onlymc goff sel","phi")  // optional: MC spectra for efficiency
 		     );
-  spectrum->AddExtractor( sig );                                       // signal extraction see PairAnalysisSignalExt
+  spectrum->AddExtractor( sig );    // signal extraction (see PairAnalysisSignalExt)
 
   .... add more input as much as you want
 
@@ -89,7 +89,7 @@ PairAnalysisSpectrum::PairAnalysisSpectrum(const char* name, const char* title) 
   PairAnalysisFunction(name,title),
   fRawInput(0),
   fMCInput(0),
-  fCorrInput(0),
+  fMCTruth(0),
   fExtractor(0)
 {
   ///
@@ -112,14 +112,15 @@ PairAnalysisSpectrum::~PairAnalysisSpectrum()
 }
 
 //______________________________________________
-void PairAnalysisSpectrum::AddInput( TObjArray *raw, TObjArray *mc, TString identifier)
+void PairAnalysisSpectrum::AddInput( TObjArray *raw, TString identifier, TObjArray *mc,  TObjArray *truth)
 {
   ///
   /// add input array of histograms for signals extraction "raw" and
   /// efficiency calculation "mc" and unique "idetifier" string
   ///
   fRawInput.Add(raw);
-  if(mc) fMCInput.Add(mc);
+  if(mc)    fMCInput.Add(mc);
+  if(truth) fMCTruth.Add(truth);
   fInputKeys[fIdx]=identifier;
   fIdx++;
  }
@@ -152,6 +153,9 @@ void PairAnalysisSpectrum::Process()
   TObject *objMC               = NULL;
   PairAnalysisHF         *hfMC = NULL;
   PairAnalysisHistos     *hMC  = NULL;
+
+  TObject *objMCtruth          = NULL;
+
   /// iterate over all raw input arrays
   while( (obj = nextRaw()) )
     {
@@ -197,10 +201,18 @@ void PairAnalysisSpectrum::Process()
 	}
       }
 
+      /// look for MC truth objects
+      objMCtruth = fMCTruth.At(i);
+      TObjArray *histArrMCt = NULL;
+      if(objMCtruth) {
+	TObject::Info("Process","Input MC truth type: %s \n",objMCtruth->ClassName());
+	histArrMCt = dynamic_cast<TObjArray*>(objMCtruth);
+      }
 
 
-      // only integrated via histos
+      /// only integrated via histos
       if(!fVarBinning) {
+
 	// get raw input histograms
 	if(!histArr && h) histArr = h->DrawSame("pM-wghtWeight","nomc goff"); //NOTE w/o "can" it crashes
 	//	if(!histArr && h) histArr = h->DrawSame("pM","can nomc goff"); //NOTE w/o "can" it crashes
@@ -234,6 +246,8 @@ void PairAnalysisSpectrum::Process()
 	fExt->eff  = 1.; //TODO: calculate this
 	fExt->effE = 0.; //TODO: calculate this
 	fExt->signal = sig;//NULL;
+	fExt->sref = 1.; //TODO: calculate this
+	fExt->srefE= 0.; //TODO: calculate this
 
 	fTree->Fill();
       }
@@ -255,11 +269,6 @@ void PairAnalysisSpectrum::Process()
 	  histArrMC = hMC->DrawSame(Form("p%s",fVar.Data()),"goff sel","phi"); // TODO: add search using fPOIpdg
 	}
 	if(histArrMC){
-	  /// NOTE: this will gives you wrong effiency, they have to be rescaled
-	  ///       by the nof bins used in the rebinning process
-	  //	  TH1 *tmpMC  = (TH1*)histArrMC->At(0); // TODO: add search using fPOIpdg
-	  //	  histMC = tmpMC->Rebin(fVarBinning->GetNrows()-1,"effMC",fVarBinning->GetMatrixArray());
-
 	  TH1 *tmpMCnom  = (TH1*)histArrMC->At(0);
 	  if(histArrMC->GetEntriesFast()<2) return;
 	  TH1 *tmpMCden  = (TH1*)histArrMC->At(1);
@@ -271,6 +280,17 @@ void PairAnalysisSpectrum::Process()
 	}
 	/// debug
 	if(histMC) TObject::Info("Process","MC histogram found and rebinned");
+
+	/// MC
+	TH1 *histMCtruth = NULL;
+	if(histArrMCt){
+	  TH1 *tmpMCtrue  = (TH1*)histArrMCt->At(0);
+	  if(!tmpMCtrue) return;
+	  /// rebin and calculate efficiency
+	  histMCtruth = tmpMCtrue->Rebin(fVarBinning->GetNrows()-1,"sMCtrue",fVarBinning->GetMatrixArray());
+	}
+	/// debug
+	if(histMCtruth) TObject::Info("Process","MCtruth reference histogram found and rebinned");
 
 	// loop over all bins
 	for(Int_t bin=0;bin<fVarBinning->GetNrows()-1;bin++)
@@ -322,6 +342,8 @@ void PairAnalysisSpectrum::Process()
 	    fExt->eff  = (histMC ? histMC->GetBinContent(bin+1) : 1.);
 	    fExt->effE = (histMC ? histMC->GetBinError(bin+1)   : 0.);
 	    fExt->signal = sig;
+	    fExt->sref  = (histMCtruth ? histMCtruth->GetBinContent(bin+1) : 0.);
+	    fExt->srefE = (histMCtruth ? histMCtruth->GetBinError(bin+1)   : 0.);
 
 	    fTree->Fill();
 
@@ -338,7 +360,8 @@ void PairAnalysisSpectrum::Process()
 	} //end binning
 
 	/// clean up
-	if(histMC) delete histMC;
+	if(histMC)      delete histMC;
+	if(histMCtruth) delete histMCtruth;
 
       } // end 2D
 
@@ -357,6 +380,7 @@ void  PairAnalysisSpectrum::Draw(const char* varexp, const char* selection, Opti
   /// additional plotting options:
   ///
   /// "syst":       draw and calculate systematic uncertainties according to fSystMthd (central point=mean value)
+  /// "samepad":    draws spectrum into current pad
   ///
   /// "logx,y,z":   the axis are plotted in log-scale (labels are added automatically according to the range)
   /// "leg(f)":     a ("filled") legend will be created with caption=className ,
@@ -373,6 +397,7 @@ void  PairAnalysisSpectrum::Draw(const char* varexp, const char* selection, Opti
   Bool_t optLeg      =optString.Contains("leg");       optString.ReplaceAll("leg","");
   Bool_t optSyst     =optString.Contains("syst");      optString.ReplaceAll("syst","");
   Bool_t optPrint    =optString.Contains("print");     optString.ReplaceAll("print","");
+  Bool_t optSamePad  =optString.Contains("samepad");
 
   /// counter
   Long64_t n =1;
@@ -397,7 +422,9 @@ void  PairAnalysisSpectrum::Draw(const char* varexp, const char* selection, Opti
 
   /// canvas
   ckey.ReplaceAll("/","#");   /// canvas name does not allow '/'
-  TCanvas *c=(TCanvas*)gROOT->FindObject(ckey.Data());
+  TCanvas *c = NULL;
+  if(optSamePad) c = gPad->GetCanvas();
+  else           c = (TCanvas*)gROOT->FindObject(ckey.Data());
   if(!c) {
     TObject::Info("Draw","create new canvas: '%s'",ckey.Data());
     c=new TCanvas(ckey.Data(),ckey.Data());
@@ -513,6 +540,7 @@ void  PairAnalysisSpectrum::Draw(const char* varexp, const char* selection, Opti
       gr->SetName(Form("%s",fInputKeys[iId].Data()));
     }
     if(optSyst) gr->SetName(GetTitle());
+    if(fkey.Contains("ref")) gr->SetName("MC-truth");
 
     // sort x-values
     gr->Sort();
@@ -655,32 +683,16 @@ void  PairAnalysisSpectrum::Draw(const char* varexp, const char* selection, Opti
   }
 
 
-  // modify axis and titles
+  /// modify axis and titles
   //  printf("modify axis titles \n");
-  UInt_t varx = PairAnalysisVarManager::GetValueType(fVar.Data());
-  TString var(varexp);
-  TObjArray *arr=var.Tokenize(":");
-  arr->SetOwner();
-  TString xt="";
-  TString yt="Entries";
-  xt = ((TObjString*)arr->At(0))->GetString();
-  if(xt.EqualTo("sb"))       xt=PairAnalysisSignalExt::GetValueName(3);
-  else if(xt.EqualTo("s"))   xt=PairAnalysisSignalExt::GetValueName(0);
-  else if(xt.EqualTo("b"))   xt=PairAnalysisSignalExt::GetValueName(1);
-  else if(xt.EqualTo("sgn")) xt=PairAnalysisSignalExt::GetValueName(2);
-  else if(xt.EqualTo("var")) xt=Form("%s %s",PairAnalysisVarManager::GetValueLabel(varx),PairAnalysisVarManager::GetValueUnit(varx));
-  else if(xt.Contains("var")) {
-    xt.ReplaceAll("varE",Form("#Delta%s",PairAnalysisVarManager::GetValueLabel(varx)));
-    xt.ReplaceAll("var", PairAnalysisVarManager::GetValueLabel(varx));
-  }
-
-  if(arr->GetEntriesFast()<2)  {
-    PairAnalysisStyler::GetFirstHistogram()->SetXTitle(xt.Data());
-    PairAnalysisStyler::GetFirstHistogram()->SetYTitle(yt.Data());
-  }
-  else {
-    PairAnalysisStyler::GetFirstHistogram()->SetYTitle(xt.Data());
-    xt = ((TObjString*)arr->At(1))->GetString();
+  if(!optSamePad) {
+    UInt_t varx = PairAnalysisVarManager::GetValueType(fVar.Data());
+    TString var(varexp);
+    TObjArray *arr=var.Tokenize(":");
+    arr->SetOwner();
+    TString xt="";
+    TString yt="Entries";
+    xt = ((TObjString*)arr->At(0))->GetString();
     if(xt.EqualTo("sb"))       xt=PairAnalysisSignalExt::GetValueName(3);
     else if(xt.EqualTo("s"))   xt=PairAnalysisSignalExt::GetValueName(0);
     else if(xt.EqualTo("b"))   xt=PairAnalysisSignalExt::GetValueName(1);
@@ -690,14 +702,34 @@ void  PairAnalysisSpectrum::Draw(const char* varexp, const char* selection, Opti
       xt.ReplaceAll("varE",Form("#Delta%s",PairAnalysisVarManager::GetValueLabel(varx)));
       xt.ReplaceAll("var", PairAnalysisVarManager::GetValueLabel(varx));
     }
-    PairAnalysisStyler::GetFirstHistogram()->SetXTitle(xt.Data());
+
+    if(arr->GetEntriesFast()<2)  {
+      PairAnalysisStyler::GetFirstHistogram()->SetXTitle(xt.Data());
+      PairAnalysisStyler::GetFirstHistogram()->SetYTitle(yt.Data());
+    }
+    else {
+      PairAnalysisStyler::GetFirstHistogram()->SetYTitle(xt.Data());
+      xt = ((TObjString*)arr->At(1))->GetString();
+      if(xt.EqualTo("sb"))       xt=PairAnalysisSignalExt::GetValueName(3);
+      else if(xt.EqualTo("s"))   xt=PairAnalysisSignalExt::GetValueName(0);
+      else if(xt.EqualTo("b"))   xt=PairAnalysisSignalExt::GetValueName(1);
+      else if(xt.EqualTo("sgn")) xt=PairAnalysisSignalExt::GetValueName(2);
+      else if(xt.EqualTo("var")) xt=Form("%s %s",PairAnalysisVarManager::GetValueLabel(varx),PairAnalysisVarManager::GetValueUnit(varx));
+      else if(xt.Contains("var")) {
+	xt.ReplaceAll("varE",Form("#Delta%s",PairAnalysisVarManager::GetValueLabel(varx)));
+	xt.ReplaceAll("var", PairAnalysisVarManager::GetValueLabel(varx));
+      }
+      PairAnalysisStyler::GetFirstHistogram()->SetXTitle(xt.Data());
+    }
+
+    /// delete array
+    if(arr)  delete arr;
   }
 
-  // delete array
+  /// clean up
   if(carr) delete carr;
-  if(arr)  delete arr;
 
-  // set ndivisions
+  /// set ndivisions
   if(fVarBinning)
     PairAnalysisStyler::GetFirstHistogram()->SetAxisRange(fVarBinning->Min(),fVarBinning->Max(),"X");
   //    PairAnalysisStyler::GetFirstHistogram()->GetXaxis()->SetNdivisions(, 0, 0, kFALSE);
