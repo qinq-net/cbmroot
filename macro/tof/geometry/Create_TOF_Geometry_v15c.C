@@ -47,9 +47,10 @@ const Float_t Wall_Z_ReferenceSmPos = 200; // target distance of setup
 // Counters: 
 // 0 HD small
 // 1 HD big
-// 2 HD ref
+// 2 HD ref	<< ", strip length "<< res[1]<<" +/- "<< err[1]<<endl;
+
 // 3 Buc ref
-// 4 Pla 
+// 4 Ceramic
 // 5 Diamond 
 // 6 Buc 2015a
 // 7 Buc 2015b
@@ -57,18 +58,18 @@ const Float_t Wall_Z_ReferenceSmPos = 200; // target distance of setup
 // 9 THU strip 
 //
 const Int_t NumberOfDifferentCounterTypes = 10;
-const Float_t Glass_X[NumberOfDifferentCounterTypes] = {32.,  52., 15.04, 18.,  2.,   0.2,  30.0, 28.8, 17.4, 25.};
-const Float_t Glass_Y[NumberOfDifferentCounterTypes] = {26.9, 53.,  4.,    4.6, 10.,   0.2, 9.6,   9.6, 2.0, 26.7};
-const Float_t Glass_Z[NumberOfDifferentCounterTypes] = {0.1,   0.1, 0.1,   0.1, 0.01, 0.1, 0.05,  0.05, 0.07, 0.1};
+const Float_t Glass_X[NumberOfDifferentCounterTypes] = {32.,  52., 15.04, 18.,  2.,   0.2,  40.4, 28.8, 17.4, 25.};
+const Float_t Glass_Y[NumberOfDifferentCounterTypes] = {26.9, 53.,  4.,    4.6, 2.,  0.2,  9.6,   9.6,  2.0, 26.7};
+const Float_t Glass_Z[NumberOfDifferentCounterTypes] = {0.1,   0.1, 0.1,   0.1, 0.01, 0.1,  0.05,  0.05, 0.07, 0.1};
 
-const Float_t GasGap_X[NumberOfDifferentCounterTypes] = {32., 52., 15.04, 18.,   2.,  0.2,  30., 28.8,  17.4, 25.};
-const Float_t GasGap_Y[NumberOfDifferentCounterTypes] = {26.9,53.,  4.,    4.6,  10.,  0.2, 9.6,  9.6,   2.0, 26.7};
-const Float_t GasGap_Z[NumberOfDifferentCounterTypes] = {0.022,0.022,0.022,0.014,2.,  0.1, 0.014,0.014, 0.025, 0.025};
+const Float_t GasGap_X[NumberOfDifferentCounterTypes] = {32., 52., 15.04, 18.,   2.,  0.2,  40.4, 28.8,  17.4, 25.};
+const Float_t GasGap_Y[NumberOfDifferentCounterTypes] = {26.9,53.,  4.,    4.6,  2.,  0.2, 9.6,  9.6,   2.0, 26.7};
+const Float_t GasGap_Z[NumberOfDifferentCounterTypes] = {0.022,0.022,0.022,0.014,0.02,  0.1, 0.014,0.014, 0.025, 0.025};
 
-const Int_t NumberOfGaps[NumberOfDifferentCounterTypes] = {8,8,6,10,1,1,10,8,10,10};
+const Int_t NumberOfGaps[NumberOfDifferentCounterTypes] = {8,8,6,10,6,1,10,8,10,10};
 const Int_t NumberOfReadoutStrips[NumberOfDifferentCounterTypes] = {32,56,16,72,1,16,40,40,8,24};
 
-const Float_t SingleStackStartPosition_Z[NumberOfDifferentCounterTypes] = {-0.6,-0.6,-0.6,-0.6,-1.,-0.1,-0.6,-0.6,-1.,-0.6};
+const Float_t SingleStackStartPosition_Z[NumberOfDifferentCounterTypes] = {-0.6,-0.6,-0.6,-0.6,-0.5,-0.1,-0.6,-0.6,-1.,-0.6};
 
 const Float_t Electronics_X[NumberOfDifferentCounterTypes] = {34.0,53.0,15.5, 18.5, 2.,  0.3, 30.5, 30.5,  0.2, 26.};
 const Float_t Electronics_Y[NumberOfDifferentCounterTypes] = { 5.0, 5.0, 1.0,  1.,  2.,  0.1, 0.5,  0.5,  0.2,  5.};
@@ -78,7 +79,7 @@ const Int_t NofModuleTypes = 10;
 // Aluminum box for all supermodule types
 // 0 HDbig
 // 1 BucRef
-// 2 Pla 
+// 2 Ceramic
 // 3 HD small (P2) 
 // 4 HD ref   (P5)
 // 5 Diamond
@@ -87,9 +88,9 @@ const Int_t NofModuleTypes = 10;
 // 8 THU Pad
 // 9 Star 2-counter module 
 const Float_t Module_Size_X[NofModuleTypes] = {120.,35., 5., 50., 30., 8., 50., 60., 29., 100.};
-const Float_t Module_Size_Y[NofModuleTypes] = { 74.,18.,20., 49., 16., 5., 30., 40., 33.,  49.};
+const Float_t Module_Size_Y[NofModuleTypes] = { 74.,18., 5., 49., 16., 5., 30., 40., 33.,  49.};
 const Float_t Module_Over_Y[NofModuleTypes] = { 11.,11., 0.,  4.,  0., 0.,  0.,  0.,  0.,   0.};
-const Float_t Module_Size_Z[NofModuleTypes] = { 10.,10., 5., 10., 10., 1., 15., 20., 10.,  11.};
+const Float_t Module_Size_Z[NofModuleTypes] = { 10.,10., 2., 10., 10., 1., 15., 20., 10.,  11.};
 const Float_t Module_Thick_Alu_X_left = 5.;
 const Float_t Module_Thick_Alu_X_right = 1.;
 const Float_t Module_Thick_Alu_Y = 1.;
@@ -100,8 +101,8 @@ const Int_t CounterTypeInModule[NofModuleTypes] = {1,3,4,0,2,5,6,6,8,0};
 const Int_t NCounterInModule[NofModuleTypes]    = {1,1,1,1,1,1,2,4,6,2};
 
 // Placement of the counter inside the module
-const Float_t CounterXStartPosition[NofModuleTypes] = {-10.0,   0.0,   2.0,  0.0,  0.0,  0., 0., -15., 0.,  0.};
-const Float_t CounterXDistance[NofModuleTypes]      = {30.0,   30.6,   0.0, 30.0,  0.0,  0., 0.,  30., 0.,  0.};
+const Float_t CounterXStartPosition[NofModuleTypes] = {-10.0,   0.0,   0.0,  0.0,  0.0,  0., 0., -15., 0.,  0.};
+const Float_t CounterXDistance[NofModuleTypes]      = {30.0,   30.6,   0.0, 30.0,  0.0,  0.,3.4,  30., 0.,  0.};
 const Float_t CounterYStartPosition[NofModuleTypes] = {0.0,     0.0,   0.0,  0.0,  0.0,  0., 0., -4., -7.,  0.};
 const Float_t CounterYDistance[NofModuleTypes]      = {0.0,     0.0,   0.0,  0.0,  0.0,  0., 0.,  8.,  2.2, 0.};
 const Float_t CounterZStartPosition[NofModuleTypes] = {0.0,     0.0,   0.0,  2.5,  0.0,  0.,-2., -8.,  0., -2.};
@@ -155,17 +156,17 @@ const Float_t HDbig_NTypes = 1;
 const Float_t HDbig_Types[HDbig_NTypes]  = {0.};
 const Float_t HDbig_Number[HDbig_NTypes] = {1.}; //debugging, V14c
 
-const Float_t HDsmall_Z_Position=449.5;
-const Float_t HDsmall_First_Y_Position=57.9;  // HD - P2
-const Float_t HDsmall_X_Offset=0.;
+const Float_t HDsmall_Z_Position=445.5;
+const Float_t HDsmall_First_Y_Position=51;  // HD - P2
+const Float_t HDsmall_X_Offset=4.5;
 const Float_t HDsmall_rotate_Z=-90.;
 const Float_t HDsmall_NTypes = 1;
 const Float_t HDsmall_Types[HDsmall_NTypes]  = {3.};
 const Float_t HDsmall_Number[HDsmall_NTypes] = {1.}; //debugging, V14b
 
-const Float_t HDRef_Z_Position=361.;
-const Float_t HDRef_First_Y_Position=48.0;
-const Float_t HDRef_X_Offset=0.2;
+const Float_t HDRef_Z_Position=359.;
+const Float_t HDRef_First_Y_Position=39.7;
+const Float_t HDRef_X_Offset=0.7;
 const Float_t HDRef_rotate_Z=180.;
 const Float_t HDRef_NTypes = 1;
 const Float_t HDRef_Types[HDRef_NTypes]  = {4.}; // this is the SmType!
@@ -180,24 +181,24 @@ const Float_t Dia_NTypes = 3;
 const Float_t Dia_Types[Dia_NTypes]  = {5.,5.,5.};
 const Float_t Dia_Number[Dia_NTypes] = {1.,1.,1.};
 
-const Float_t BucRef_Z_Position=441.2;
-const Float_t BucRef_First_Y_Position=-20.;
-const Float_t BucRef_X_Offset=-0.;
+const Float_t BucRef_Z_Position=492.;
+const Float_t BucRef_First_Y_Position=-28.;
+const Float_t BucRef_X_Offset=-5.;
 const Float_t BucRef_rotate_Z=180.;
 const Float_t BucRef_NTypes = 1;
 const Float_t BucRef_Types[BucRef_NTypes]  = {1.};
 const Float_t BucRef_Number[BucRef_NTypes] = {1.}; //debugging, V14b
 
-const Float_t Buc2012_Z_Position=420.;
-const Float_t Buc2012_First_Y_Position=-20.;
-const Float_t Buc2012_X_Offset=0.; 
+const Float_t Buc2012_Z_Position=461.;
+const Float_t Buc2012_First_Y_Position=-24.2;//-26.;
+const Float_t Buc2012_X_Offset=4.2; 
 const Float_t Buc2012_rotate_Z=0.;
 const Float_t Buc2012_NTypes = 1;
 const Float_t Buc2012_Types[Buc2012_NTypes]  = {7.};
 const Float_t Buc2012_Number[Buc2012_NTypes] = {1.};
 
-const Float_t Buc2015_Z_Position=400.;
-const Float_t Buc2015_First_Y_Position=-15.;
+const Float_t Buc2015_Z_Position=403.;
+const Float_t Buc2015_First_Y_Position=-23.3.;
 const Float_t Buc2015_X_Offset=0.; 
 const Float_t Buc2015_rotate_Z=0.;
 const Float_t Buc2015_NTypes = 1;
@@ -212,20 +213,22 @@ const Float_t USTC_NTypes = 1;
 const Float_t USTC_Types[USTC_NTypes]  = {7.};
 const Float_t USTC_Number[USTC_NTypes] = {1.};
 
-const Float_t THU_Z_Position=380.;
-const Float_t THU_First_Y_Position=-15.0;
+const Float_t THU_Z_Position=360.;
+const Float_t THU_First_Y_Position=-19.0;
 const Float_t THU_X_Offset=0.;
 const Float_t THU_rotate_Z=90.;
 const Float_t THU_NTypes = 1;
 const Float_t THU_Types[THU_NTypes]  = {8.};
 const Float_t THU_Number[THU_NTypes] = {1.};
 
-const Float_t Star2_First_Y_Position=47.0;  // 
-const Float_t Star2_Delta_Y_Position=5.0;   // 
-const Float_t Star2_First_Z_Position=380.;
-const Float_t Star2_Delta_Z_Position=24.;
+const Float_t Star2_First_Y_Position=41.5;  // 
+const Float_t Star2_Delta_Y_Position=2.5;   // 
+//const Float_t Star2_First_Z_Position=423.6;
+//const Float_t Star2_Delta_Z_Position=-23.8;
+const Float_t Star2_First_Z_Position=376.;
+const Float_t Star2_Delta_Z_Position=23.8;
 const Float_t Star2_X_Offset=0.;
-const Float_t Star2_rotate_Z=0.;
+const Float_t Star2_rotate_Z=180.;
 const Float_t Star2_NTypes = 1;
 const Float_t Star2_Types[Star2_NTypes]  = {9.};
 const Float_t Star2_Number[Star2_NTypes] = {3.}; //debugging, V15c
@@ -237,6 +240,14 @@ const Float_t Pla_Z_Position[Pla_NTypes]={258.5,375.9,262.5,365.9};
 const Float_t Pla_rotate_Z[Pla_NTypes]={90.,90.,90.,90.};
 const Float_t Pla_Types[Pla_NTypes]  = {2.,2.,2.,2.};
 const Float_t Pla_Number[Pla_NTypes] = {1.,1.,1.,1.};   //V14b
+
+const Float_t Cer_NTypes = 2;
+const Float_t Cer_X_Position[Cer_NTypes]={0.,0.};
+const Float_t Cer_Y_Position[Cer_NTypes]={-29.,-29.};
+const Float_t Cer_Z_Position[Cer_NTypes]={521.3,526.3};
+const Float_t Cer_rotate_Z[Cer_NTypes]={0.,0.};
+const Float_t Cer_Types[Cer_NTypes]  = {2.,2.};
+const Float_t Cer_Number[Cer_NTypes] = {1.,1.};   //V15c
 
 const Float_t InnerSide_Module_X_Offset=51.;
 const Float_t InnerSide_Module_NTypes = 1;
@@ -276,6 +287,7 @@ void position_tof_poles(Int_t);
 void position_tof_bars(Int_t);
 void position_inner_tof_modules(Int_t); // HDbig
 void position_pla_modules(Int_t); 
+void position_cer_modules(Int_t); 
 void position_HDbig(Int_t);
 void position_HDsmall(Int_t);
 void position_BucRef(Int_t);
@@ -346,15 +358,15 @@ void Create_TOF_Geometry_v15c() {
 
   //  gPole = create_tof_pole();
 
-  position_Dia(1);
+  position_Dia(3);
   position_HDsmall(1);
   position_HDRef(1);
   position_Star2(1);
   position_BucRef(1);
   position_Buc2015(1);
   position_Buc2012(1);
-  position_BucRef(1);
   position_THU(1);
+  position_cer_modules(2);
   
   gGeoMan->CloseGeometry();
   gGeoMan->CheckOverlaps(0.001);
@@ -449,8 +461,8 @@ TGeoVolume* create_counter(Int_t modType)
   TGeoBBox* glass_plate = new TGeoBBox("", gdx/2., gdy/2., gdz/2.);
   TGeoVolume* glass_plate_vol = 
     new TGeoVolume("tof_glass", glass_plate, glassPlateVolMed);
-  glass_plate_vol->SetLineColor(kMagenta); // set line color for the glass plate
-  glass_plate_vol->SetTransparency(20); // set transparency for the TOF
+  glass_plate_vol->SetLineColor(kYellow); // set line color for the glass plate
+  glass_plate_vol->SetTransparency(90); // set transparency for the TOF
   TGeoTranslation* glass_plate_trans 
     = new TGeoTranslation("", 0., 0., 0.);
 
@@ -579,14 +591,14 @@ TGeoVolume* create_new_counter(Int_t modType)
   TGeoBBox* glass_plate = new TGeoBBox("", gdx/2., gdy/2., gdz/2.);
   TGeoVolume* glass_plate_vol = 
     new TGeoVolume("tof_glass", glass_plate, glassPlateVolMed);
-  glass_plate_vol->SetLineColor(kMagenta); // set line color for the glass plate
-  glass_plate_vol->SetTransparency(20); // set transparency for the TOF
+  glass_plate_vol->SetLineColor(kYellow); // set line color for the glass plate
+  glass_plate_vol->SetTransparency(98); // set transparency for the TOF
   // define single gas gap volume
   TGeoBBox* gas_gap = new TGeoBBox("", ggdx/2., ggdy/2., ggdz/2.);
   TGeoVolume* gas_gap_vol = 
     new TGeoVolume("Gap", gas_gap, activeGasVolMed);
   gas_gap_vol->Divide("Cell",1,nstrips,-ggdx/2.,0);
-  gas_gap_vol->SetLineColor(kRed); // set line color for the gas gap
+  gas_gap_vol->SetLineColor(kYellow); // set line color for the gas gap
   gas_gap_vol->SetTransparency(99); // set transparency for the TOF
  
   // place 8 gas gaps and 9 glas plates in the counter
@@ -755,7 +767,7 @@ TGeoVolume* create_new_tof_module(Int_t modType)
     xpos=startxpos + j*dxpos;
     ypos=startypos + j*dypos;
     if(6 == modType) {  //Buc2015a/b
-      if(j==1) cType=7; //second guy is b
+      if(j==1) cType=7; //second guy is a
     }
     if(7 == modType) {  //Buc2012
       Int_t zsh[4]={0,2,1,3};
@@ -1353,10 +1365,8 @@ void position_THU(Int_t modNType)
 
 void position_pla_modules(Int_t modNType)
 {
-
  Int_t ii=0; 
  Int_t modNum = 0;
-
  for (Int_t j=0; j<modNType; j++){
   Int_t modType= Pla_Types[j];
   Float_t xPos  = Pla_X_Position[j];
@@ -1369,8 +1379,38 @@ void position_pla_modules(Int_t modNType)
 
   for(Int_t i=0; i<Pla_Number[j]; i++) { 
     ii++; 
-
     cout <<"Position Pla Module "<<i<<" of "<<Pla_Number[j]<<" Type "<<modType
+         <<" at X = "<<xPos
+         <<", Y = "<<yPos
+         <<", Z = "<<zPos
+	 <<endl;
+    // Front staggered module (Top if pair), top
+    module_trans 
+      = new TGeoTranslation("", xPos, yPos, zPos);
+    module_combi_trans = new TGeoCombiTrans(*module_trans, *module_rot);
+    gGeoMan->GetVolume(geoVersion)->AddNode(gModules[modType], modNum, module_combi_trans);
+    modNum++;
+  }
+ }
+}
+
+void position_cer_modules(Int_t modNType)
+{
+ Int_t ii=0; 
+ Int_t modNum = 0;
+ for (Int_t j=0; j<modNType; j++){
+  Int_t modType= Cer_Types[j];
+  Float_t xPos  = Cer_X_Position[j];
+  Float_t yPos  = Cer_Y_Position[j];
+  Float_t zPos  = Cer_Z_Position[j];
+  TGeoTranslation* module_trans=NULL;
+  TGeoRotation* module_rot = new TGeoRotation();
+  module_rot->RotateZ(Cer_rotate_Z[j]);
+  TGeoCombiTrans* module_combi_trans = NULL;
+
+  for(Int_t i=0; i<Cer_Number[j]; i++) { 
+    ii++; 
+    cout <<"Position Ceramic Module "<<i<<" of "<<Cer_Number[j]<<" Type "<<modType
          <<" at X = "<<xPos
          <<", Y = "<<yPos
          <<", Z = "<<zPos
