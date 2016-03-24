@@ -769,25 +769,31 @@ void CbmMatchRecoToMC::MatchRichRings(
                 ringMatch->AddLink(1., motherIds[i]);
             }
         }
+        
+        if (ringMatch->GetNofLinks() != 0) {
 
-        Int_t bestTrackId = ringMatch->GetMatchedLink().GetIndex();
+            Int_t bestTrackId = ringMatch->GetMatchedLink().GetIndex();
 
-        Int_t trueCounter = 0;
-        Int_t wrongCounter = 0;
-        for (Int_t iHit = 0; iHit < nofHits; iHit++) {
-            const CbmRichHit* hit = static_cast<const CbmRichHit*>(richHits->At(ring->GetHit(iHit)));
-            if ( NULL == hit ) continue;
-            vector<Int_t> motherIds = GetMcTrackMotherIdsForRichHit(hit, richDigis, richMcPoints, mcTracks);
-            if(std::find(motherIds.begin(), motherIds.end(), bestTrackId) != motherIds.end()) {
-                trueCounter++;
-            } else {
-                wrongCounter++;
+            Int_t trueCounter = 0;
+            Int_t wrongCounter = 0;
+            for (Int_t iHit = 0; iHit < nofHits; iHit++) {
+                const CbmRichHit* hit = static_cast<const CbmRichHit*>(richHits->At(ring->GetHit(iHit)));
+                if ( NULL == hit ) continue;
+                vector<Int_t> motherIds = GetMcTrackMotherIdsForRichHit(hit, richDigis, richMcPoints, mcTracks);
+                if(std::find(motherIds.begin(), motherIds.end(), bestTrackId) != motherIds.end()) {
+                    trueCounter++;
+                } else {
+                    wrongCounter++;
+                }
+
             }
 
+            ringMatch->SetNofTrueHits(trueCounter);
+            ringMatch->SetNofWrongHits(wrongCounter);
+        } else {
+            ringMatch->SetNofTrueHits(0);
+            ringMatch->SetNofWrongHits(0);
         }
-
-        ringMatch->SetNofTrueHits(trueCounter);
-        ringMatch->SetNofWrongHits(wrongCounter);
 
     }// Ring loop
 }
