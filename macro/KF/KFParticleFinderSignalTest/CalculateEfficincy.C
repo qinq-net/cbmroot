@@ -7,7 +7,7 @@ void CalculateEfficincy(TString workdir="data") {
 
   KFPartEfficiencies fEfficiency;
   
-  const int nDirs = 86;
+  const int nDirs = 90;
   
   workdir += "/Signal";
   for(int i=0; i<nDirs; i++)

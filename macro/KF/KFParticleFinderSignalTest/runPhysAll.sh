@@ -25,7 +25,7 @@ NOL=0
 
 
 PID=""
-for i in {0..85}
+for i in {0..89}
 do
   CURDIR="Signal"$i
   cd $CURDIR

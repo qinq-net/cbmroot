@@ -12,7 +12,7 @@ void simSignal(Int_t iParticle = 0, Int_t nEvents = 10000, bool useMvd = 0)
   //          Adjust this part according to your requirements
   
   //For charm particles MVD should be on
-  if(iParticle >= 50 && iParticle<=67)
+  if(iParticle >= 54 && iParticle<=71)
     useMvd = 1;
   
   const bool sameZ = 0;
@@ -161,9 +161,9 @@ void simSignal(Int_t iParticle = 0, Int_t nEvents = 10000, bool useMvd = 0)
   Int_t PDG = eff.partPDG[iParticle];
   Double_t charge = eff.partCharge[iParticle];
   
-  if(iParticle == 52 || iParticle == 53)
+  if(iParticle == 56 || iParticle == 57)
   {
-    for(int iPall=52; iPall<54; iPall++)
+    for(int iPall=56; iPall<58; iPall++)
     {
       Double_t lifetime = eff.partLifeTime[iPall]; // lifetime
       Double_t mass = eff.partMass[iPall];
@@ -180,7 +180,7 @@ void simSignal(Int_t iParticle = 0, Int_t nEvents = 10000, bool useMvd = 0)
 
   fRun->Init();
   
-  if(!(iParticle == 52 || iParticle == 53))
+  if(!(iParticle == 56 || iParticle == 57))
   {
     gMC->DefineParticle(PDG, eff.partTitle[iParticle].data(), kPTHadron, mass, charge,
             lifetime, "hadron", 0.0, 1, 1, 0, 1, 1, 0, 0, 1, kFALSE);
