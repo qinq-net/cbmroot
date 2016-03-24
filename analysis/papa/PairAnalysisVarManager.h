@@ -626,7 +626,6 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisTrack(const PairAnalysisT
   // acceptance defintions
   FairTrackParam *param=NULL;
   if( (param = track->GetRichProj()) ) {   // RICH
-
     values[kRICHhasProj] = (TMath::Abs(param->GetX() + param->GetY()) > 0.);
   }
   if( (param = track->GetMvdEntrance()) ) {  // MVD
@@ -1156,8 +1155,8 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisPair(const PairAnalysisPa
 
   values[kLegDist]      = pair->DistanceDaughters();
   values[kLegDistXY]    = pair->DistanceDaughtersXY();
-  values[kDeltaEta]     = pair->DeltaEta();
-  values[kDeltaPhi]     = pair->DeltaPhi();
+  //  values[kDeltaEta]     = pair->DeltaEta();
+  //  values[kDeltaPhi]     = pair->DeltaPhi();
   values[kLegsP]        = TMath::Sqrt(pair->DaughtersP());
 
   // Armenteros-Podolanski quantities

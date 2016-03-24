@@ -41,26 +41,11 @@ ClassImp(PairAnalysisCutQA)
 
 
 PairAnalysisCutQA::PairAnalysisCutQA() :
-  TNamed(),
-  fQAHistList()
+  PairAnalysisCutQA("QAcuts","QAcuts")
 {
   //
   // Default constructor
   //
-  for(Int_t itype=0; itype<kNtypes; itype++) {
-    fNCuts[itype]=1;
-    for(Int_t i=0; i<20; i++) {
-      fCutNames[i][itype]="";
-    }
-  }
-  fTypeKeys[kTrack]  = "Track";
-  fTypeKeys[kTrack2] = "Track2";
-  fTypeKeys[kTrackMC]= "MCTrack";
-  fTypeKeys[kPair]   = "Pair";
-  fTypeKeys[kPrePair]= "Pair0";
-  fTypeKeys[kEvent]  = "Event";
-  fQAHistList.SetOwner(kFALSE);
-
 }
 
 //_____________________________________________________________________
@@ -78,10 +63,10 @@ PairAnalysisCutQA::PairAnalysisCutQA(const char* name, const char* title) :
     }
   }
   fTypeKeys[kTrack]  = "Track";
-  fTypeKeys[kTrack2] = "Track2";
+  fTypeKeys[kTrack2] = "FinalTrack";
   fTypeKeys[kTrackMC]= "MCTrack";
   fTypeKeys[kPair]   = "Pair";
-  fTypeKeys[kPrePair]= "Pair0";
+  fTypeKeys[kPrePair]= "PrePair";
   fTypeKeys[kEvent]  = "Event";
   fQAHistList.SetOwner(kFALSE);
 }
@@ -126,25 +111,27 @@ void PairAnalysisCutQA::Init()
   // loop over all types
   for(Int_t itype=0; itype<kNtypes; itype++) {
     //    printf("\n type: %d\n",itype);
-    fCutNames[0][itype]="no cuts";
+    TString logic = "passed";
+    if(itype==kPrePair) logic="rejected";
 
     const TVectorD *binsX = PairAnalysisHelper::MakeLinBinning(fNCuts[itype],0,fNCuts[itype]);
     // create histogram based on added cuts
     fCutQA = new TH1I(fTypeKeys[itype],
-			     Form("%sQA;cuts;# passed %ss",fTypeKeys[itype],fTypeKeys[itype]), 			     fNCuts[itype], binsX->GetMatrixArray());
+		      Form("%sQA;cuts;# %s %ss",fTypeKeys[itype],logic.Data(),fTypeKeys[itype]),
+		      fNCuts[itype], binsX->GetMatrixArray());
 
     if(itype==kTrack || itype==kTrack2) {
       fPdgCutQA = new TH2I(Form("%sPDG",fTypeKeys[itype]),
-				  Form("%sPDG;cuts;PDG code;# passed %ss",
-				       fTypeKeys[itype],fTypeKeys[itype]),
-				  fNCuts[itype],binsX->GetMatrixArray(),
-				  binsPdg->GetNrows()-1,binsPdg->GetMatrixArray() );
+				  Form("%sPDG;cuts;PDG code;# %s %ss",
+				       fTypeKeys[itype],logic.Data(),fTypeKeys[itype]),
+			   fNCuts[itype],binsX->GetMatrixArray(),
+			   binsPdg->GetNrows()-1,binsPdg->GetMatrixArray() );
 
       fEffCutQA = new TProfile2D(Form("%sMatchEff",fTypeKeys[itype]),
 					Form("%sMatchEff;cuts;detector;<#epsilon_{match}^{MC}>",
 					     fTypeKeys[itype]),
-					fNCuts[itype],binsX->GetMatrixArray(),
-					binsDet->GetNrows()-1,binsDet->GetMatrixArray() );
+				 fNCuts[itype],binsX->GetMatrixArray(),
+				 binsDet->GetNrows()-1,binsDet->GetMatrixArray() );
     }
     else {
       fPdgCutQA=0x0;
@@ -155,6 +142,8 @@ void PairAnalysisCutQA::Init()
     delete binsX;
 
     // Set labels to histograms
+    fCutNames[0][itype]="no cuts";
+    if(fNCuts[kPrePair]) fCutNames[0][kTrack2]="pair prefilter";
     // loop over all cuts
     for(Int_t i=0; i<fNCuts[itype]; i++) {
       fCutQA->GetXaxis()->SetBinLabel(i+1,fCutNames[i][itype]);

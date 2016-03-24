@@ -1160,14 +1160,23 @@ void PairAnalysis::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, 
 	candidate->SetType(pairIndex);
 	candidate->SetLabel(PairAnalysisMC::Instance()->GetLabelMotherWithPdg(candidate,fPdgMother));
 
+	// check if test particles are used
+	Bool_t testParticle = (track1==t1 || track1==t2 || track2==t1 || track2==t2 );
+
 	//pre filter pair cuts
-	UInt_t cutMask=fPairPreFilter.IsSelected(candidate);
+	UInt_t cutmask=fPairPreFilter.IsSelected(candidate);
+
+	//fill cut QA TODO: cheeeck for test particle
+	if (!testParticle) {
+	  if(fCutQA) fQAmonitor->FillAll(candidate,     1);
+	  if(fCutQA) fQAmonitor->Fill(cutmask,candidate,1);
+	}
 
 	// apply cut
-	if (cutMask!=selectedMask) continue;
+	if (cutmask!=selectedMask) continue;
 
 	// check for test particles
-	if( track1==t1 || track1==t2 || track2==t1 || track2==t2 ) {
+	if (testParticle) {
 	  // set variable to randomrejection probability to 1
 	  PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kRndmRej, 1.);
 	  continue;
