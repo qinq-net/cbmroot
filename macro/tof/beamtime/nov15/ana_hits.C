@@ -665,18 +665,19 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      switch (iRSel){	   
          case 5:
            //tofTestBeamClust->SetBeamAddRefMul(1);
-	   tofAnaTestbeam->SetChi2Lim(5.);     // initialization of Chi2 selection limit  
-	   tofAnaTestbeam->SetTShift(-21300.);     // Shift DTD4 to 0
+	   tofAnaTestbeam->SetChi2Lim(50.);     // initialization of Chi2 selection limit  
+	   tofAnaTestbeam->SetTShift(-6300.);     // Shift DTD4 to 0
 	   tofAnaTestbeam->SetTOffD4(17000.);      // Shift DTD4 to physical value
 	   tofAnaTestbeam->SetSel2TOff(2900.);     // Shift Sel2 time peak to 0
 	   switch(iSel2){
 	   case 0:
 	     break;
 	   case 6:
-	     tofAnaTestbeam->SetChi2Lim(5.);   // initialization of Chi2 selection limit  
+	     tofAnaTestbeam->SetChi2Lim2(5.);   // initialization of Chi2 selection limit  
 	     switch(iSel2Rpc){
 	     case 0:
-	       tofAnaTestbeam->SetSel2TOff(-3000.);     // Shift Sel2 time peak to 0 // 601
+	       tofAnaTestbeam->SetSel2TOff(2000.);     // Shift Sel2 time peak to 0 // 600
+	       break;
 	     case 1:
 	       tofAnaTestbeam->SetSel2TOff(-2920.);     // Shift Sel2 time peak to 0 // 601
 	       break;
