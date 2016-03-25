@@ -650,14 +650,14 @@ Bool_t   CbmTofAnaTestbeam::LoadGeometry()
 void CbmTofAnaTestbeam::Exec(Option_t* /*option*/)
 {
   // Task execution
-  if(NULL != fFindTracks)
+  if(NULL != fFindTracks){
    if(!fFindTracks->InspectEvent()) return;
 
    LOG(DEBUG)<<" CbmTofAnaTestbeam::Exec => New event with "
 	     <<fFindTracks->GetNStationsFired()<<" fired stations for "
 	     <<fFindTracks->GetMinNofHits()<<" requested hits"
 	     <<FairLogger::endl;
-
+  }
    fStart.Set();
    FillHistos();
    fStop.Set();
