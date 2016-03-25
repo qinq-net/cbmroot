@@ -9,7 +9,7 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    //TString logLevel = "DEBUG1";
    //TString logLevel = "DEBUG2";
    //TString logLevel = "DEBUG3";
-   FairLogger* log;  
+   FairLogger* log;
 
    TString workDir       = gSystem->Getenv("VMCWORKDIR");
    TString paramDir      = workDir  + "/macro/tof/beamtime/nov15";
@@ -90,6 +90,7 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    // =========================================================================
    // ===                       Tracking                                    ===
    // =========================================================================
+   /*
    CbmStsDigitize* stsDigitize = new CbmStsDigitize(); //necessary for kalman !!
    CbmKF* kalman = new CbmKF();
 
@@ -214,7 +215,7 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      ;
    }
    run->AddTask(tofFindTracks);
-
+   */
    // =========================================================================
    // ===                       Analysis                                    ===
    // =========================================================================
