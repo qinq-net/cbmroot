@@ -303,7 +303,8 @@ void CbmTSUnpackSpadic::FillEpochInfo(Int_t link, Int_t addr, Int_t epoch_count)
        are not captured by the CbmTsUnpacker. This is to ensure the 
        linearity of the GetFullTime() method.
      */
-    if ( epoch_count < fEpochMarkerArray[it->second][addr] )
+    // dirty workaround in the following line: only sufficiently big backsteps of Epoch will trigger an upcount of SuperEpoch. this avoids a high sensitivity of the SuperEpoch counting method to overlaps of some epochs, before the overlaps are understood better
+    if ( epoch_count < (fEpochMarkerArray[it->second][addr] - 3000) )
     {
       if(SuppressMultipliedEpochMessages)
       if ( epoch_count != fPreviousEpochMarkerArray[it->second][addr] ){
