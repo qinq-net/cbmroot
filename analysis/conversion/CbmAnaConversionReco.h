@@ -106,6 +106,10 @@ private:
 	TH1D * fhMC_electrons_theta;
 	TH1D * fhMC_electrons_p;
 	TH2D * fhMC_electrons_theta_vs_p;
+
+	TH1D * fhEta_openingAngleGG;
+	
+	TH1D * fhMC_grandmotherPDGs;
    
 	TH1D * fhInvariantMassReco_pi0;
 

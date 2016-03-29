@@ -114,6 +114,9 @@ private:
 	TH1D * fhTest_peakCheck3;
 	TH2D * fhTest_invmass_ANNcuts;
 
+	TH2D * fhTest_phaseSpace_pi0;
+	TH2D * fhTest_phaseSpace_eta;
+
 	// array with all refitted momenta
 	vector<TVector3>	fVector_AllMomenta;
 

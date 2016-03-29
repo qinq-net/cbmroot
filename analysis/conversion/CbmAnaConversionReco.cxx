@@ -24,6 +24,7 @@
 #include "CbmRichElectronIdAnn.h"
 
 #include "CbmAnaConversionCutSettings.h"
+#include "CbmAnaConversionGlobalFunctions.h"
 
 #define M2E 2.6112004954086e-7
 using namespace std;
@@ -61,6 +62,8 @@ CbmAnaConversionReco::CbmAnaConversionReco()
     fhMC_electrons_theta(NULL),
 	fhMC_electrons_p(NULL),
 	fhMC_electrons_theta_vs_p(NULL),
+	fhEta_openingAngleGG(NULL),
+	fhMC_grandmotherPDGs(NULL),
     fhInvariantMassReco_pi0(NULL),
     fhMCtest(NULL),
     fhEPEM_invmass_gg_mc(NULL),
@@ -212,6 +215,12 @@ void CbmAnaConversionReco::InitHistos()
 	fHistoList_MC.push_back(fhMC_electrons_theta);
 	fHistoList_MC.push_back(fhMC_electrons_p);
 	fHistoList_MC.push_back(fhMC_electrons_theta_vs_p);
+	
+	fhEta_openingAngleGG	= new TH1D("fhEta_openingAngleGG", "fhEta_openingAngleGG;theta in deg;#", 900, 0., 90.);
+	fHistoList_MC.push_back(fhEta_openingAngleGG);
+	
+	fhMC_grandmotherPDGs		= new TH1D("fhMC_grandmotherPDGs", "fhMC_grandmotherPDGs;particle pdg;#", 1000, 0., 1000.);
+	fHistoList_MC.push_back(fhMC_grandmotherPDGs);
 	
 	fhMCtest	= new TH1D("fhMCtest", "fhMCtest;invariant mass in GeV/c^{2};#", 2000, 0., 2.);
 	fHistoList_MC.push_back(fhMCtest);
@@ -371,22 +380,22 @@ void CbmAnaConversionReco::InitHistos()
 	fhInvariantMass_pi0epem = new TH1D("fhInvariantMass_pi0epem","fhInvariantMass_pi0epem;mass [GeV/c^2];#", 400, 0., 2.);
 	fHistoList_reco.push_back(fhInvariantMass_pi0epem);
 	
-	fhPi0_startvertex = new TH1D("fhPi0_startvertex","fhPi0_startvertex;z[cm];#", 210, -5., 100.);
+	fhPi0_startvertex = new TH1D("fhPi0_startvertex","fhPi0_startvertex;z in cm;#", 210, -5., 100.);
 	fHistoList_reco.push_back(fhPi0_startvertex);
 	
-	fhPi0_startvertexElectrons_all = new TH1D("fhPi0_startvertexElectrons_all","fhPi0_startvertexElectrons_all;z[cm];#", 411, -5.25, 200.25);
+	fhPi0_startvertexElectrons_all = new TH1D("fhPi0_startvertexElectrons_all","fhPi0_startvertexElectrons_all;z in cm;#", 411, -5.25, 200.25);
 	fHistoList_reco.push_back(fhPi0_startvertexElectrons_all);
 	
-	fhPi0_startvertexElectrons_gg = new TH1D("fhPi0_startvertexElectrons_gg","fhPi0_startvertexElectrons_gg;z[cm];#", 411, -5.25, 200.25);
+	fhPi0_startvertexElectrons_gg = new TH1D("fhPi0_startvertexElectrons_gg","fhPi0_startvertexElectrons_gg;z in cm;#", 411, -5.25, 200.25);
 	fHistoList_reco.push_back(fhPi0_startvertexElectrons_gg);
 	
-	fhPi0_startvertexElectrons_gee = new TH1D("fhPi0_startvertexElectrons_gee","fhPi0_startvertexElectrons_gee;z[cm];#", 411, -5.25, 200.25);
+	fhPi0_startvertexElectrons_gee = new TH1D("fhPi0_startvertexElectrons_gee","fhPi0_startvertexElectrons_gee;z in cm;#", 411, -5.25, 200.25);
 	fHistoList_reco.push_back(fhPi0_startvertexElectrons_gee);
 	
 	fhPi0_startvertex_vs_chi = new TH2D("fhPi0_startvertex_vs_chi","fhPi0_startvertex_vs_chi;z[cm];chi", 210, -5., 100., 1000, 0., 100.);
 	fHistoList_reco.push_back(fhPi0_startvertex_vs_chi);
 	
-	fhPi0_startvertex_vs_momentum = new TH2D("fhPi0_startvertex_vs_momentum","fhPi0_startvertex_vs_momentum;z[cm];momentum (MC-true)", 210, -5., 100., 1000, 0., 100.);
+	fhPi0_startvertex_vs_momentum = new TH2D("fhPi0_startvertex_vs_momentum","fhPi0_startvertex_vs_momentum;z in cm;momentum (MC-true)", 210, -5., 100., 1000, 0., 100.);
 	fHistoList_reco.push_back(fhPi0_startvertex_vs_momentum);
 
 	fhInvMassWithFullRecoCuts = new TH1D("fhInvMassWithFullRecoCuts","fhInvMassWithFullRecoCuts;mass [GeV/c^2];#", 800, 0., 2.);
@@ -676,10 +685,24 @@ void CbmAnaConversionReco::InvariantMassMC_all()
 							}
 							if(mcGrandmotherPdg1 == 221) {
 								fhInvariantMass_MC_eta->Fill(invmass);
+								
+								Double_t opening_angle_gg = 0;
+								if(motherId1 == motherId2) {
+									opening_angle_gg = CbmAnaConversionGlobalFunctions::OpeningAngleBetweenGamma(momentum1, momentum2, momentum3, momentum4);
+								}
+								if(motherId1 == motherId3) {
+									opening_angle_gg = CbmAnaConversionGlobalFunctions::OpeningAngleBetweenGamma(momentum1, momentum3, momentum2, momentum4);
+								}
+								if(motherId1 == motherId4) {
+									opening_angle_gg = CbmAnaConversionGlobalFunctions::OpeningAngleBetweenGamma(momentum1, momentum4, momentum2, momentum3);
+								}
+								
+								fhEta_openingAngleGG->Fill(opening_angle_gg);
 							}
 							if(mcGrandmotherPdg1 == 331) { // eta prime (958)
 								fhInvariantMass_MC_etaPrime->Fill(invmass);
 							}
+							fhMC_grandmotherPDGs->Fill(mcGrandmotherPdg1);
 						}
 						
 						

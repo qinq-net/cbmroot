@@ -68,6 +68,8 @@ CbmAnaConversionTest::CbmAnaConversionTest()
 	fhTest_peakCheck2(NULL),
 	fhTest_peakCheck3(NULL),
 	fhTest_invmass_ANNcuts(NULL),
+	fhTest_phaseSpace_pi0(NULL),
+	fhTest_phaseSpace_eta(NULL),
 	fVector_AllMomenta(),
 	fVector_gt(),
 	fVector_momenta(),
@@ -174,9 +176,9 @@ void CbmAnaConversionTest::InitHistos()
 	fHistoList_test.push_back(fhTest_ReconstructedPi0PerEvent);
 	fhTest_RICHelectronsPerEvent = new TH1I("fhTest_RICHelectronsPerEvent", "fhTest_RICHelectronsPerEvent; nof; #", 501, -0.5, 500.5);
 	fHistoList_test.push_back(fhTest_RICHelectronsPerEvent);
-	fhTest_invmass = new TH1D("fhTest_invmass", "fhTest_invmass; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhTest_invmass = new TH1D("fhTest_invmass", "fhTest_invmass; invariant mass of 3 e^{#pm} + 1 particle in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_test.push_back(fhTest_invmass);
-	fhTest_invmass_pCut = new TH1D("fhTest_invmass_pCut", "fhTest_invmass_pCut; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhTest_invmass_pCut = new TH1D("fhTest_invmass_pCut", "fhTest_invmass_pCut; invariant mass of 3 e^{#pm} + 1 particle in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_test.push_back(fhTest_invmass_pCut);
 	
 	
@@ -200,9 +202,13 @@ void CbmAnaConversionTest::InitHistos()
 	fHistoList_test.push_back(fhTest_peakCheck2);
 	fHistoList_test.push_back(fhTest_peakCheck3);
 
-	fhTest_invmass_ANNcuts = new TH2D("fhTest_invmass_ANNcuts", "fhTest_invmass_ANNcuts;ann;invariant mass of 4 e^{#pm} in GeV/c^{2}", 10, 0, 10, invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhTest_invmass_ANNcuts = new TH2D("fhTest_invmass_ANNcuts", "fhTest_invmass_ANNcuts;ann;invariant mass of 3 e^{#pm} + 1 particle in GeV/c^{2}", 10, 0, 10, invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_test.push_back(fhTest_invmass_ANNcuts);
 
+	fhTest_phaseSpace_pi0 = new TH2D("fhTest_phaseSpace_pi0", "fhTest_phaseSpace_pi0;p_{t} in GeV/c;rapidity y", 240, -2., 10., 270, -2., 7.);
+	fhTest_phaseSpace_eta = new TH2D("fhTest_phaseSpace_eta", "fhTest_phaseSpace_eta;p_{t} in GeV/c;rapidity y", 240, -2., 10., 270, -2., 7.);
+	fHistoList_test.push_back(fhTest_phaseSpace_pi0);
+	fHistoList_test.push_back(fhTest_phaseSpace_eta);
 
 	fhTest_eventMixing_STSonly_2p2 = new TH1D("fhTest_eventMixing_STSonly_2p2", "fhTest_eventMixing_STSonly_2p2; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_test.push_back(fhTest_eventMixing_STSonly_2p2);
@@ -854,6 +860,8 @@ void CbmAnaConversionTest::CombinePhotons()
 					}
 					if(TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 22 && grandmotherId11 == grandmotherId21 && grandmotherId11 > 0) {
 						fhTest_invmass_MCcutAll->Fill(3, invmass);
+						if(invmass < 0.3) fhTest_phaseSpace_pi0->Fill(paramsTest.fPt, paramsTest.fRapidity);
+						if(invmass > 0.3) fhTest_phaseSpace_eta->Fill(paramsTest.fPt, paramsTest.fRapidity);
 					}
 					if(TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 22 && grandmotherId11 != grandmotherId21) {
 						fhTest_invmass_MCcutAll->Fill(4, invmass);

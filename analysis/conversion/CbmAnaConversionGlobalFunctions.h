@@ -77,6 +77,35 @@ public:
 		else return false;
 	}
 
+
+
+
+	static Double_t OpeningAngleBetweenGamma(const TVector3 part11, const TVector3 part12, const TVector3 part21, const TVector3 part22)
+	{
+		Double_t openingAngle = 0;
+	
+		Double_t energy11 = TMath::Sqrt(part11.Mag2() + M2E);
+		TLorentzVector lorVec11(part11, energy11);
+
+		Double_t energy12 = TMath::Sqrt(part12.Mag2() + M2E);
+		TLorentzVector lorVec12(part12, energy12);
+
+		Double_t energy21 = TMath::Sqrt(part21.Mag2() + M2E);
+		TLorentzVector lorVec21(part21, energy21);
+
+		Double_t energy22 = TMath::Sqrt(part22.Mag2() + M2E);
+		TLorentzVector lorVec22(part22, energy22);
+		
+		TLorentzVector gamma1 = lorVec11 + lorVec12;
+		TLorentzVector gamma2 = lorVec21 + lorVec22;
+		
+		Double_t angle = gamma1.Angle(gamma2.Vect()); 
+		openingAngle = 180.*angle/TMath::Pi();
+
+		return openingAngle;
+	}
+
+
 };
 
 #endif
