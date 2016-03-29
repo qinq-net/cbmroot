@@ -182,6 +182,7 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
 	Int_t groupId = mp->group_id();
 	Int_t bufferOverflowCounter = 0;
 	Int_t samples = mp->samples().size();
+	if(samples>32) samples=32; //Suppress extraneous Samples, which cannot (!) occur in Raw Data Stream.
 	Int_t* sample_values =  new Int_t[samples];
 	Int_t channel = mp->channel_id();
 	Int_t counter1=0;
