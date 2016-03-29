@@ -36,6 +36,7 @@ public:
   //Analysis cuts interface
   //
   virtual void Init();
+  virtual Bool_t IsSelected(Double_t * const values);
   virtual Bool_t IsSelected(TObject* track);
   virtual Bool_t IsSelected(TList*   /* list */ ) {return kFALSE;}
   

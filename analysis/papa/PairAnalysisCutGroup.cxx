@@ -12,6 +12,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "PairAnalysisCutGroup.h"
+#include "PairAnalysisVarManager.h"
 
 ClassImp(PairAnalysisCutGroup)
 
@@ -52,28 +53,47 @@ void PairAnalysisCutGroup::Init()
   while (AnalysisCuts *thisCut = (AnalysisCuts*) next())    thisCut->Init();
 }
 
+//________________________________________________________________________
+Bool_t PairAnalysisCutGroup::IsSelected(Double_t * const values)
+{
+  //
+  // Make cut decision
+  //
+
+  //Different init for and/or makes code shorter
+  Bool_t selectionResult=fCompOperator;
+
+  TIter listIterator(&fCutGroupList);
+  while (AnalysisCuts *thisCut = (AnalysisCuts*) listIterator()) {
+    if (fCompOperator == kCompOR) {
+      selectionResult = (selectionResult || thisCut->IsSelected(values));
+    }
+    else { //kCompAND
+      selectionResult = (selectionResult && thisCut->IsSelected(values));
+      //      if (selectionResult==kFALSE) break; //Save loops vs. additional check?
+    }
+  }
+  return selectionResult;
+
+}
+
 //_____________________________________________________________________
 Bool_t PairAnalysisCutGroup::IsSelected(TObject* track) 
 {
   //
   // Selection-finder handling different comparison operations
   //
-  
-  
-  //Different init for and/or makes code shorter
-  Bool_t selectionResult=fCompOperator;
-  
-  TIter listIterator(&fCutGroupList);
-  while (AnalysisCuts *thisCut = (AnalysisCuts*) listIterator()) {
-    if (fCompOperator == kCompOR) {
-      selectionResult = (selectionResult || thisCut->IsSelected(track));
-    }
-    else { //kCompAND
-      selectionResult = (selectionResult && thisCut->IsSelected(track));
-      //      if (selectionResult==kFALSE) break; //Save loops vs. additional check?
-    }
-  }
-  return selectionResult;
+
+  if (!track) return kFALSE;
+
+  //Fill values
+  Double_t values[PairAnalysisVarManager::kNMaxValuesMC];
+  ///  PairAnalysisVarManager::SetFillMap(fUsedVars);
+  PairAnalysisVarManager::Fill(track,values);
+
+  /// selection
+  return (IsSelected(values));
+
 }
 
 //_____________________________________________________________________

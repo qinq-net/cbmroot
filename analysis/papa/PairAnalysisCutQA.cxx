@@ -143,7 +143,8 @@ void PairAnalysisCutQA::Init()
 
     // Set labels to histograms
     fCutNames[0][itype]="no cuts";
-    if(fNCuts[kPrePair]) fCutNames[0][kTrack2]="pair prefilter";
+    if(fNCuts[kPrePair]>1) fCutNames[0][kTrack2]="pair prefilter";
+    else                   fCutNames[0][kTrack2]="1st track filter";
     // loop over all cuts
     for(Int_t i=0; i<fNCuts[itype]; i++) {
       fCutQA->GetXaxis()->SetBinLabel(i+1,fCutNames[i][itype]);

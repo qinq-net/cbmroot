@@ -1395,7 +1395,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
     /// some default styles for certain options
     if(optString.Contains("scat"))   h->SetMarkerStyle(kDot);
     if(optString.Contains("e"))      h->SetLineStyle(kSolid);
-    if(optString.Contains("text")) { h->SetLineColor(1); h->SetMarkerColor(1); }
+    //    if(optString.Contains("text")) { h->SetLineColor(1); h->SetMarkerColor(1); }
 
     /// set histogram title to current histClass
     //      h->SetName(histClass.Data());

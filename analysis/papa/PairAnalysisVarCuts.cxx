@@ -227,6 +227,7 @@ void PairAnalysisVarCuts::Print(const Option_t* /*option*/) const
   //
   // Print cuts and the range
   //
+  printf("------------------------------------------\n");
   printf("cut ranges for '%s'\n",GetTitle());
   if (fCutType==kAll){
     printf("All Cuts have to be fulfilled\n");
@@ -271,4 +272,6 @@ void PairAnalysisVarCuts::Print(const Option_t* /*option*/) const
     else
       printf("cut class not found\n");
   } //loop over cuts
+  printf("------------------------------------------\n");
+
 }
