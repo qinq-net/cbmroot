@@ -342,6 +342,10 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      tofAnaTestbeam->SetMul4Max(3);      // Max Multiplicity in Ref - RPC 
      break;
 
+   case 900300:
+   case 901300:
+   case 910300:
+   case 920300:
    case 921300:
      cout << "Run with iRSel = "<<iRSel<<endl;
      switch (iRSel){
@@ -385,6 +389,10 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      break;
 
    case 300920:  
+   case 400920:  
+   case 900920:  
+   case 901920:  
+   case 910920:  
    case 921920:  
      tofAnaTestbeam->SetCh4Sel(16.5);    // Center of channel selection window
      tofAnaTestbeam->SetDCh4Sel(20.);   // Width  of channel selection window
@@ -396,17 +404,24 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
        case 5:	 
 	 tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in Diamond    
 	 tofAnaTestbeam->SetChi2Lim(5.);     // initialization of Chi2 selection limit  
-	 tofAnaTestbeam->SetTShift(-14000.);       // Shift DTD4 to 0
+	 tofAnaTestbeam->SetTShift(3500.);       // Shift DTD4 to 0
+	 tofAnaTestbeam->SetTOffD4(20000.);   // Shift DTD4 to physical value
 	 switch(iSel2){
 	 case 3:
 	   tofAnaTestbeam->SetChi2Lim2(4.);     // initialization of Chi2 selection limit  
-	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
-	   tofAnaTestbeam->SetSel2TOff(2230.);     // Shift Sel2 time peak to 0
+	   tofAnaTestbeam->SetSel2TOff(-20.);     // Shift Sel2 time peak to 0
 	   break;
 
 	 case 4:
-	   break
-	     ;
+	   tofAnaTestbeam->SetChi2Lim2(4.);     // initialization of Chi2 selection limit  
+	   tofAnaTestbeam->SetSel2TOff(-50.);     // Shift Sel2 time peak to 0	   break
+	   break;
+
+	 case 9:
+	   tofAnaTestbeam->SetChi2Lim2(4.);     // initialization of Chi2 selection limit  
+	   tofAnaTestbeam->SetSel2TOff(140.);     // Shift Sel2 time peak to 0	   break  //921
+	   break;
+
 	 default:
 	   ;
 	 }
@@ -429,49 +444,48 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    case 300921:  
    case 400921:  
    case 900921:  
+   case 901921:  
+   case 910921:  
    case 920921:  
 	 tofAnaTestbeam->SetCh4Sel(16.5);    // Center of channel selection window
 	 tofAnaTestbeam->SetDCh4Sel(20.);   // Width  of channel selection window
-	 //tofAnaTestbeam->SetChi2Lim(6.);     // initialization of Chi2 selection limit  
-
+	 tofAnaTestbeam->SetChi2Lim(5.);     // initialization of Chi2 selection limit  
 	 cout << "Run with iRSel = "<<iRSel<<endl;
 	 switch (iRSel){
 	 case 5:
-	   tofAnaTestbeam->SetTShift(-15000.);  // initialization
-	   tofAnaTestbeam->SetTOffD4(13000.);  // initialization
+	   tofAnaTestbeam->SetTShift(3000.);  // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(20000.);  // initialization
 	   tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in Diamond    
 	   switch(iSel2){
 	   case 3:
-	       tofAnaTestbeam->SetChi2Lim2(4.);     // initialization of Chi2 selection limit  
-	       tofAnaTestbeam->SetSel2TOff(2000.);  // Shift Sel2 time peak to 0
-	       break;
-
-	   case 4:
-	     tofAnaTestbeam->SetChi2Lim(5.);     // initialization of Chi2 selection limit  
-	     tofAnaTestbeam->SetTShift(-700.);       // Shift DTD4 to 0
-	     tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
-	     tofAnaTestbeam->SetSel2TOff(-700.);  // Shift Sel2 time peak to 0
-	   break;
-
-	   case 9:
-	     tofAnaTestbeam->SetChi2Lim(4.);      // initialization of Chi2 selection limit  
-	     tofAnaTestbeam->SetTShift(-600.);    // Shift DTD4 to 0
-	     tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
-	     tofAnaTestbeam->SetSel2TOff(-170.);  // Shift Sel2 time peak to 0
+	     tofAnaTestbeam->SetChi2Lim2(4.);     // initialization of Chi2 selection limit  
+	     tofAnaTestbeam->SetSel2TOff(-100.);  // Shift Sel2 time peak to 0
 	     break;
-
+	   case 4:
+	     tofAnaTestbeam->SetChi2Lim2(5.);     // initialization of Chi2 selection limit  
+	     tofAnaTestbeam->SetSel2TOff(-100.);  // Shift Sel2 time peak to 0
+	     break;
+	   case 9:
+	     tofAnaTestbeam->SetChi2Lim(5.);      // initialization of Chi2 selection limit  
+	     switch(iSel2Sm){
+	     case 2:
+	       tofAnaTestbeam->SetSel2TOff(-170.);  // Shift Sel2 time peak to 0   //920
+	       break;
+	     default:
+	       cout << "Counter "<<iSel2<<", "<<iSel2Sm<<", "<<iSel2Rpc<<" not configured yet as iSel2"<<endl;
+	       return; 
+	     }
+	     break;
 	   default:
 	     ;
 	   }
 	   break;
-
 	 case 3:
 	   tofAnaTestbeam->SetMulDMax(10);      // Max Multiplicity in Diamond    
 	   tofAnaTestbeam->SetTShift(1950.);  // initialization
 	   tofAnaTestbeam->SetTOffD4(13000.);  // initialization
 	   tofAnaTestbeam->SetSel2TOff(2070.);  // Shift Sel2 time peak to 0
 	   break;
-
 	 default:
 	   cout << "Define setup! "<< endl;
 	   return;
@@ -483,6 +497,119 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	 tofAnaTestbeam->SetDTWidth(120.);   // in ps
 	 break;
 
+   case 300901:  
+   case 400901:  
+   case 920901: 
+   case 921901: 
+   case 910901: 
+   case 900901:  
+	 tofAnaTestbeam->SetCh4Sel(16.5);    // Center of channel selection window
+	 tofAnaTestbeam->SetDCh4Sel(20.);   // Width  of channel selection window
+	 tofAnaTestbeam->SetChi2Lim(5.);     // initialization of Chi2 selection limit  
+	 cout << "Run with iRSel = "<<iRSel<<endl;
+	 switch (iRSel){
+	 case 5:
+	   tofAnaTestbeam->SetTShift(3500.);  // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(20000.);  // initialization
+	   tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in Diamond    
+	   switch(iSel2){
+	   case 3:
+	     tofAnaTestbeam->SetChi2Lim2(4.);     // initialization of Chi2 selection limit  
+	     tofAnaTestbeam->SetSel2TOff(0.);  // Shift Sel2 time peak to 0
+	     break;
+	   case 4:
+	     tofAnaTestbeam->SetChi2Lim2(5.);     // initialization of Chi2 selection limit  
+	     tofAnaTestbeam->SetSel2TOff(70.);  // Shift Sel2 time peak to 0
+	     break;
+	   case 9:
+	     tofAnaTestbeam->SetChi2Lim(5.);      // initialization of Chi2 selection limit  
+	     switch(iSel2Sm){
+	     case 0:
+	       tofAnaTestbeam->SetSel2TOff(20.);  // Shift Sel2 time peak to 0   //900
+	       break;
+	     default:
+	       cout << "Counter "<<iSel2<<", "<<iSel2Sm<<", "<<iSel2Rpc<<" not configured yet as iSel2"<<endl;
+	       return; 
+	     }
+	     break;
+	   default:
+	     ;
+	   }
+	   break;
+	 case 3:
+	   tofAnaTestbeam->SetMulDMax(10);      // Max Multiplicity in Diamond    
+	   tofAnaTestbeam->SetTShift(1950.);  // initialization
+	   tofAnaTestbeam->SetTOffD4(13000.);  // initialization
+	   tofAnaTestbeam->SetSel2TOff(2070.);  // Shift Sel2 time peak to 0
+	   break;
+	 default:
+	   cout << "Define setup! "<< endl;
+	   return;
+	   ;
+	 }
+	 tofAnaTestbeam->SetChi2Lim(5.);     // initialization of Chi2 selection limit  
+	 tofAnaTestbeam->SetDXWidth(1.5);
+	 tofAnaTestbeam->SetDYWidth(1.5);
+	 tofAnaTestbeam->SetDTWidth(120.);   // in ps
+	 break;
+
+   case 300900:  
+   case 400900:  
+   case 920900:  
+   case 921900:  
+   case 910900:  
+   case 901900:  
+	 tofAnaTestbeam->SetCh4Sel(16.5);    // Center of channel selection window
+	 tofAnaTestbeam->SetDCh4Sel(20.);   // Width  of channel selection window
+	 tofAnaTestbeam->SetChi2Lim(5.);     // initialization of Chi2 selection limit  
+	 cout << "Run with iRSel = "<<iRSel<<endl;
+	 switch (iRSel){
+	 case 5:
+	   tofAnaTestbeam->SetTShift(3500.);  // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(20000.);  // initialization
+	   tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in Diamond    
+	   switch(iSel2){
+	   case 3:
+	     tofAnaTestbeam->SetChi2Lim2(4.);     // initialization of Chi2 selection limit  
+	     tofAnaTestbeam->SetSel2TOff(0.);  // Shift Sel2 time peak to 0
+	     break;
+	   case 4:
+	     tofAnaTestbeam->SetChi2Lim2(5.);     // initialization of Chi2 selection limit  
+	     tofAnaTestbeam->SetSel2TOff(70.);  // Shift Sel2 time peak to 0
+	     break;
+	   case 9:
+	     tofAnaTestbeam->SetChi2Lim(5.);      // initialization of Chi2 selection limit  
+	     switch(iSel2Sm){
+	     case 0:
+	       tofAnaTestbeam->SetSel2TOff(20.);  // Shift Sel2 time peak to 0   //901
+	       break;
+	     default:
+	       cout << "Counter "<<iSel2<<", "<<iSel2Sm<<", "<<iSel2Rpc<<" not configured yet as iSel2"<<endl;
+	       return; 
+	     }
+	     break;
+	   default:
+	     ;
+	   }
+	   break;
+	 case 3:
+	   tofAnaTestbeam->SetMulDMax(10);      // Max Multiplicity in Diamond    
+	   tofAnaTestbeam->SetTShift(1950.);  // initialization
+	   tofAnaTestbeam->SetTOffD4(13000.);  // initialization
+	   tofAnaTestbeam->SetSel2TOff(2070.);  // Shift Sel2 time peak to 0
+	   break;
+	 default:
+	   cout << "Define setup! "<< endl;
+	   return;
+	   ;
+	 }
+	 tofAnaTestbeam->SetChi2Lim(5.);     // initialization of Chi2 selection limit  
+	 tofAnaTestbeam->SetDXWidth(1.5);
+	 tofAnaTestbeam->SetDYWidth(1.5);
+	 tofAnaTestbeam->SetDTWidth(120.);   // in ps
+	 break;
+
+   case 300400:
    case 900400:
    case 901400:
    case 910400:
@@ -506,16 +633,51 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
          case 5:
            //tofTestBeamClust->SetBeamAddRefMul(1);
 	   tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in Diamond    
-	   tofAnaTestbeam->SetTShift(-7700.);     // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTShift(3500.);     // Shift DTD4 to 0
 	   tofAnaTestbeam->SetTOffD4(17000.);   // Shift DTD4 to physical value
 	   tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in Diamond    
 	   switch(iSel2){
 	   case 3:
 	     tofAnaTestbeam->SetChi2Lim2(4.);   // initialization of Chi2 selection limit  
-	     tofAnaTestbeam->SetSel2TOff(2840.);     // Shift Sel2 time peak to 0
+	     tofAnaTestbeam->SetSel2TOff(-45.);     // Shift Sel2 time peak to 0
+	     break;
+	   case 9:
+	     tofAnaTestbeam->SetChi2Lim2(4.);   // initialization of Chi2 selection limit  
+	     switch(iSel2Sm){
+	     case 2:
+	       switch(iSel2Rpc){
+	       case 0:
+		 tofAnaTestbeam->SetSel2TOff(30.);     // Shift Sel2 time peak to 0
+		 break;
+	       case 1:
+		 tofAnaTestbeam->SetSel2TOff(124.);     // Shift Sel2 time peak to 0
+		 break;
+	       default:
+		 cout << "Counter "<<iSel2<<", "<<iSel2Sm<<", "<<iSel2Rpc<<" not configured yet as iSel2"<<endl;
+		 return; 
+	       }
+	       break;
+	     case 0:
+	       switch(iSel2Rpc){
+	       case 0:
+		 tofAnaTestbeam->SetSel2TOff(-40.);     // Shift Sel2 time peak to 0
+		 break;
+	       case 1:
+		 tofAnaTestbeam->SetSel2TOff(-45.);     // Shift Sel2 time peak to 0
+		 break;
+	       default:
+		 cout << "Counter "<<iSel2<<", "<<iSel2Sm<<", "<<iSel2Rpc<<" not configured yet as iSel2"<<endl;
+		 return; 
+	       }
+	       break;
+	     default:
+	       cout << "Counter "<<iSel2<<", "<<iSel2Sm<<", "<<iSel2Rpc<<" not configured yet as iSel2"<<endl;
+	       return; 
+	     }
 	     break;
 	   default:
-	     ;
+	     cout << "Counter "<<iSel2<<", "<<iSel2Sm<<", "<<iSel2Rpc<<" not configured yet as iSel2"<<endl;
+	     return; 	     
 	   }
 	   break;
 
@@ -542,21 +704,33 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      break;
 
    case 100600:
+   case 200600:
+   case 210600:
+   case 700600:
+   case 701600:
+   case 702600:
+   case 703600:
+   case 800600:
+   case 801600:
+   case 802600:
+   case 803600:
+   case 804600:
+   case 805600:
    case 601600:
      cout << "Run with iRSel = "<<iRSel<<endl;
      switch (iRSel){	   
          case 5:
            //tofTestBeamClust->SetBeamAddRefMul(1);
 	   tofAnaTestbeam->SetChi2Lim(5.);     // initialization of Chi2 selection limit  
-	   tofAnaTestbeam->SetTShift(-18300.);     // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTShift(-8300.);     // Shift DTD4 to 0
 	   tofAnaTestbeam->SetTOffD4(17000.);      // Shift DTD4 to physical value
 	   tofAnaTestbeam->SetSel2TOff(2900.);     // Shift Sel2 time peak to 0
 	   switch(iSel2){
 	   case 0:
 	     break;
 	   case 1:
-	     tofAnaTestbeam->SetChi2Lim2(10.);   // initialization of Chi2 selection limit  
-	     tofAnaTestbeam->SetSel2TOff(3000.);     // Shift Sel2 time peak to 0
+	     tofAnaTestbeam->SetChi2Lim2(5.);   // initialization of Chi2 selection limit  
+	     tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
 	     break;
 	   case 6:
 	     tofAnaTestbeam->SetChi2Lim2(10.);   // initialization of Chi2 selection limit  
@@ -596,13 +770,25 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      break;
 
    case 100601:
+   case 200601:
+   case 210601:
+   case 700601:
+   case 701601:
+   case 702601:
+   case 703601:
+   case 800601:
+   case 801601:
+   case 802601:
+   case 803601:
+   case 804601:
+   case 805601:
    case 600601:
      cout << "Run with iRSel = "<<iRSel<<endl;
      switch (iRSel){	   
          case 5:
            //tofTestBeamClust->SetBeamAddRefMul(1);
 	   tofAnaTestbeam->SetChi2Lim(5.);     // initialization of Chi2 selection limit  
-	   tofAnaTestbeam->SetTShift(-18300.);     // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTShift(-5300.);     // Shift DTD4 to 0
 	   tofAnaTestbeam->SetTOffD4(17000.);      // Shift DTD4 to physical value
 	   tofAnaTestbeam->SetSel2TOff(2900.);     // Shift Sel2 time peak to 0
 	   switch(iSel2){
@@ -610,11 +796,11 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	     break;
 	   case 1:
 	     tofAnaTestbeam->SetChi2Lim(4.);   // initialization of Chi2 selection limit  
-	     tofAnaTestbeam->SetSel2TOff(3000.);     // Shift Sel2 time peak to 0
+	     tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
 	     break;
 	   case 6:
 	     tofAnaTestbeam->SetChi2Lim2(4.);   // initialization of Chi2 selection limit  
-	     tofAnaTestbeam->SetSel2TOff(-50.);     // Shift Sel2 time peak to 0
+	     tofAnaTestbeam->SetSel2TOff(70.);     // Shift Sel2 time peak to 0
 	     break;
 	   default:
 	     ;
@@ -649,6 +835,8 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      tofAnaTestbeam->SetMul4Max(10);      // Max Multiplicity in Ref - RPC 
      break;
 
+   case 200100:
+   case 210100:
    case 700100:
    case 701100:
    case 702100:
@@ -665,7 +853,7 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      switch (iRSel){	   
          case 5:
            //tofTestBeamClust->SetBeamAddRefMul(1);
-	   tofAnaTestbeam->SetChi2Lim(50.);     // initialization of Chi2 selection limit  
+	   tofAnaTestbeam->SetChi2Lim(5.);     // initialization of Chi2 selection limit  
 	   tofAnaTestbeam->SetTShift(-6300.);     // Shift DTD4 to 0
 	   tofAnaTestbeam->SetTOffD4(17000.);      // Shift DTD4 to physical value
 	   tofAnaTestbeam->SetSel2TOff(2900.);     // Shift Sel2 time peak to 0
@@ -679,7 +867,7 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	       tofAnaTestbeam->SetSel2TOff(2000.);     // Shift Sel2 time peak to 0 // 600
 	       break;
 	     case 1:
-	       tofAnaTestbeam->SetSel2TOff(-2920.);     // Shift Sel2 time peak to 0 // 601
+	       tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0 // 601
 	       break;
 	     }
 	     break;
@@ -708,6 +896,9 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      tofAnaTestbeam->SetMul0Max(10);      // Max Multiplicity in dut 
      tofAnaTestbeam->SetMul4Max(10);      // Max Multiplicity in Ref - RPC 
      break;
+   default:
+     cout << "Define analysis setup! "<< endl;
+     return;
    }  // end of different subsets
 
    switch(cFileId){
@@ -767,10 +958,10 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
   gROOT->LoadMacro("pl_over_trk.C");
   gROOT->LoadMacro("pl_calib_trk.C");
   gROOT->LoadMacro("save_hst.C");
-
+  
   gInterpreter->ProcessLine("pl_over_MatD4sel()");
   //gInterpreter->ProcessLine("pl_over_trk(9)");
   //gInterpreter->ProcessLine("pl_calib_trk()");
   TString SaveToHstFile = "save_hst(\"" + cHstFile + "\")";
-  //  gInterpreter->ProcessLine(SaveToHstFile);
+  gInterpreter->ProcessLine(SaveToHstFile);
 }
