@@ -48,6 +48,7 @@ class CbmTrdTimeCorrel : public FairTask
   Bool_t  fRewriteSpadicName;
 
   const Bool_t fActivateClusterizer = true;
+  const Bool_t fDebugMode = true;
 
   Int_t   GetSpadicID(Int_t sourceA);
 

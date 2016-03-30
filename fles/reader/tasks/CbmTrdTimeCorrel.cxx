@@ -113,7 +113,6 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   Int_t nSpadicMessages0(0),nSpadicMessages1(0); //SPADIC messages per TimeSlice for single SPADICS
   Int_t nSpadicMessagesHit0(0), nSpadicMessagesHtimeIt(0), nSpadicMessagesHitAborted0(0), nSpadicMessagesHitAborted1(0), nSpadicMessagesOverflow0(0), nSpadicMessagesOverflow1(0), nSpadicMessagesInfo0(0), nSpadicMessagesEpoch0(0), nSpadicMessagesEpoch1(0), nSpadicMessagesInfo1(0), nSpadicMessagesLost0(0), nSpadicMessagesLost1(0), nSpadicMessagesStrange0(0), nSpadicMessagesStrange1(0); //SPADIC message types per TimeSlice for single SPADICS
   Int_t lostMessages(0);// this variable should be reset to 0 for every SPADIC message
-
   // Getting message type bools from Spadic raw message
   Bool_t isHit = false;
   Bool_t isHitAborted = false;
@@ -152,7 +151,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       if(isEpoch||isEpochOutOfSynch){
       sourceA = raw->GetSourceAddress();
       spaID = GetSpadicID(sourceA);
-      time = raw->GetSuperEpoch();
+      time = raw->GetFullTime();
 	//buffer all Epoch Messages
 	epochBuffer[spaID][time] = raw;
 	Int_t tempSize= fHM->G1(("Timestamps_Spadic"+std::to_string(spaID)))->GetN();
@@ -228,7 +227,6 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 
 
     if (!isOverflow && lostMessages!=0) LOG(ERROR) << "SpadicMessage " << iSpadicMessage << " is HIT " << (Int_t)isHit << " / INFO " << (Int_t)isInfo << " / EPOCH " << (Int_t)isEpoch << " / HITaborted " << (Int_t)isHitAborted << " / STRANGE " << (Int_t)isStrange << " but claims to have lost " << lostMessages << " messages" << FairLogger::endl;
-    
     time = raw->GetFullTime();
     timeStamp = raw->GetTime();
     
@@ -290,7 +288,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 											 raw->GetGroupId(), raw->GetBufferOverflowCount(), 
 											 raw->GetNrSamples(), raw->GetSamples(),
 											 raw->GetHit(), raw->GetInfo(), raw->GetEpoch(), raw->GetEpochOutOfSynch(), raw->GetHitAborted(), raw->GetOverFlow(), raw->GetStrange());
-	    
+
 	    /*
 	      A new TClonesArray without MS overlaps is created for offline analysis
 	    *//*
@@ -693,60 +691,66 @@ void CbmTrdTimeCorrel::ClusterizerTime()
   auto CompareSpadicMessages=
       [](CbmSpadicRawMessage* a,CbmSpadicRawMessage* b)
       {
-      if(a->GetFullTime() == b->GetFullTime())
-        if (a->GetSourceAddress() == b->GetSourceAddress())
-          if(a->GetChannelID() == b->GetChannelID()){
-            delete b;
-            return true;
-          }
-      return false;
+    if(a->GetFullTime() == b->GetFullTime())
+      if (a->GetSourceAddress() == b->GetSourceAddress())
+	if(a->GetChannelID() == b->GetChannelID()){
+	    delete b;
+	    return true;
+	}
+    return false;
       };
   auto CompareSpadicMessagesSmaller=
-        [](CbmSpadicRawMessage* a,CbmSpadicRawMessage* b)
-        {
-        if(a->GetFullTime() < b->GetFullTime())
-          if (a->GetSourceAddress() < b->GetSourceAddress())
-            if(a->GetChannelID() < b->GetChannelID())
-              return true;
-        return false;
-        };
+      [](CbmSpadicRawMessage* a,CbmSpadicRawMessage* b)
+      {
+    if(a->GetFullTime() < b->GetFullTime())
+      if (a->GetSourceAddress() < b->GetSourceAddress())
+	if(a->GetChannelID() < b->GetChannelID())
+	  return true;
+    return false;
+      };
   const Int_t clusterWindow = 10; // size of time window in which two hits are called "correlated", unit is timestamps
   std::sort(fLinearHitBuffer.begin(),fLinearHitBuffer.end(),CompareSpadicMessagesSmaller);
   std::unique(fLinearHitBuffer.begin(),fLinearHitBuffer.end(),CompareSpadicMessages);
   std::multimap<ULong_t, CbmSpadicRawMessage*> tempmap;
   for (auto x : fLinearHitBuffer){
-    long unsigned int temp = static_cast <long unsigned int>(x->GetFullTime());
-    tempmap.insert(std::make_pair(temp,x));
+      long unsigned int temp = static_cast <long unsigned int>(x->GetFullTime());
+      tempmap.insert(std::make_pair(temp,x));
   }
   for (auto it=tempmap.begin(); it != tempmap.end(); ++it){
-    auto range = std::make_pair(tempmap.lower_bound(it->first - clusterWindow), tempmap.upper_bound(it->first + clusterWindow));
-    if(tempmap.size()==0 && (range.first == tempmap.end())) continue;
-    for (;range.first != range.second; ++(range.first)){
-      if(it->second != nullptr && range.first->second!= nullptr)
-        if(range.first->second->GetTriggerType() == 1 || range.first->second->GetTriggerType() ==3) { // exclude purely neighbour triggered hits
-	  if(it->second->GetTriggerType() == 1 || it->second->GetTriggerType() == 3) { // exclude purely neighbour triggered hits for the comparator side too
-	    Int_t ChID1 = it->second->GetChannelID();
-	    Int_t ChID2 = range.first->second->GetChannelID();
-	    Int_t SpaID1 = GetSpadicID(it->second->GetSourceAddress());
-	    Int_t SpaID2 = GetSpadicID(range.first->second->GetSourceAddress());
-	    ChID1 += (SpaID1 %2 == 1)? 16 : 0; // Remap the channel IDs of each second Half-Spadic to 16...31
-	    ChID2 += (SpaID2 %2 == 1)? 16 : 0;
-	    // special for SPS2015 data: the chamber with SpaID 2 and 3 was turned by 180 degree with respect to the first one. thus, turn the pad plane number here
-	    Int_t SpaPad1 = (Int_t)(SpaID1/2) * 32 + ((SpaID1>1) ? 31-GetChannelOnPadPlane(ChID1) : GetChannelOnPadPlane(ChID1));
-	    Int_t SpaPad2 = (Int_t)(SpaID2/2) * 32 + ((SpaID2>1) ? 31-GetChannelOnPadPlane(ChID2) : GetChannelOnPadPlane(ChID2));
-	    //	    Int_t SpaPad1 = (Int_t)(SpaID1/2) * 32 + (GetChannelOnPadPlane(ChID1));
-	    //	    Int_t SpaPad2 = (Int_t)(SpaID2/2) * 32 + (GetChannelOnPadPlane(ChID2));
-	    if (it!=range.first) {
-	      if (((Int_t)(SpaID1/2) - (Int_t)(SpaID2/2)) != 0) fHM->H2("Hit_Coincidences")->Fill(SpaPad1,SpaPad2);
-	      // Fill for map of correlations following: require origin from variant TRD chambers to cut on physical correlations between two chambers, which is adressed for the moment just by requiring different SpaID/2
-	      // Furthermore, physical correlations coming from the target require a positve direction from Chamber 1 to Chamber 2, which means ascending SpaIDs  
-	      if (((Int_t)(SpaID2/2) - (Int_t)(SpaID1/2)) > 0) fHM->H2("Correlation_Map")->Fill(SpaPad2-SpaPad1-32,((range.first->second->GetFullTime())-(it->second->GetFullTime())));
+      auto range = std::make_pair(tempmap.lower_bound(it->first - clusterWindow), tempmap.upper_bound(it->first + clusterWindow));
+      if(tempmap.size()==0 && (range.first == tempmap.end())) continue;
+      for (;range.first != range.second; ++(range.first)){
+	  if(it->second != nullptr && range.first->second!= nullptr)
+	    if(range.first->second->GetTriggerType() == 1 || range.first->second->GetTriggerType() ==3) { // exclude purely neighbour triggered hits
+		if(it->second->GetTriggerType() == 1 || it->second->GetTriggerType() == 3) { // exclude purely neighbour triggered hits for the comparator side too
+		    Int_t ChID1 = it->second->GetChannelID();
+		    Int_t ChID2 = range.first->second->GetChannelID();
+		    Int_t SpaID1 = GetSpadicID(it->second->GetSourceAddress());
+		    Int_t SpaID2 = GetSpadicID(range.first->second->GetSourceAddress());
+		    ChID1 += (SpaID1 %2 == 1)? 16 : 0; // Remap the channel IDs of each second Half-Spadic to 16...31
+		    ChID2 += (SpaID2 %2 == 1)? 16 : 0;
+		    // special for SPS2015 data: the chamber with SpaID 2 and 3 was turned by 180 degree with respect to the first one. thus, turn the pad plane number here
+		    //Int_t SpaPad1 = (Int_t)(SpaID1/2) * 32 + ((SpaID1>1) ? 31-GetChannelOnPadPlane(ChID1) : GetChannelOnPadPlane(ChID1));
+		    //Int_t SpaPad2 = (Int_t)(SpaID2/2) * 32 + ((SpaID2>1) ? 31-GetChannelOnPadPlane(ChID2) : GetChannelOnPadPlane(ChID2));
+		    Int_t SpaPad1 = (Int_t)(SpaID1/2) * 32 + (GetChannelOnPadPlane(ChID1));
+		    Int_t SpaPad2 = (Int_t)(SpaID2/2) * 32 + (GetChannelOnPadPlane(ChID2));
+		    if (it!=range.first) { //Exlude Correlations of messages with themselves
+			if(fDebugMode){
+			    fHM->H2("Hit_Coincidences")->Fill(SpaPad1,SpaPad2);
+			    // Fill for map of correlations following: require origin from variant TRD chambers to cut on physical correlations between two chambers, which is adressed for the moment just by requiring different SpaID/2
+			    // Furthermore, physical correlations coming from the target require a positve direction from Chamber 1 to Chamber 2, which means ascending SpaIDs
+			    fHM->H2("Correlation_Map")->Fill(SpaPad2-SpaPad1-32,((range.first->second->GetFullTime())-(it->second->GetFullTime())));
+			}else{
+			    if (((Int_t)(SpaID1/2) - (Int_t)(SpaID2/2)) != 0) fHM->H2("Hit_Coincidences")->Fill(SpaPad1,SpaPad2);
+			    // Fill for map of correlations following: require origin from variant TRD chambers to cut on physical correlations between two chambers, which is adressed for the moment just by requiring different SpaID/2
+			    // Furthermore, physical correlations coming from the target require a positve direction from Chamber 1 to Chamber 2, which means ascending SpaIDs
+			    if (((Int_t)(SpaID2/2) - (Int_t)(SpaID1/2)) > 0) fHM->H2("Correlation_Map")->Fill(SpaPad2-SpaPad1-32,((range.first->second->GetFullTime())-(it->second->GetFullTime())));
+			}
+		    }
+		}
 	    }
-	  }
-        }
-    }
+      }
   }
-
 }
 // -------------------------------------------------------------------------
 void CbmTrdTimeCorrel::ClusterizerSpace()
