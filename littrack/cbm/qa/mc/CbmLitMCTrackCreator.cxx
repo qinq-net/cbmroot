@@ -91,11 +91,7 @@ void CbmLitMCTrackCreator::Create()
     
     std::map<Int_t, CbmLitMCTrack>::iterator it;
     int counter = 0;
-    //cout << "CbmLitMCTrackCreator: nof MC tracks=" << fLitMCTracks.size() << endl;
     for (it = fLitMCTracks.begin(); it != fLitMCTracks.end(); it++){
-        //cout << "before" << endl;
-        //cout << (*it).first << " => " << counter++ << " " << (*it).second;
-        //cout << "after" << endl;
         it->second.CalculateNofConsecutivePoints();
     }
     
@@ -203,6 +199,7 @@ void CbmLitMCTrackCreator::AddRingParameters()
         CbmRichHitLight hit(detPoint.X(), detPoint.Y());
         mapRings[motherIdRich].AddHit(hit);
     }
+
     map<Int_t, CbmRichRingLight>::const_iterator it;
     int i = 0;
     for (it = mapRings.begin(); it != mapRings.end(); it++) {

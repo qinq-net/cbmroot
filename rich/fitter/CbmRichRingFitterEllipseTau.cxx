@@ -109,6 +109,13 @@ void CbmRichRingFitterEllipseTau::DoFit(
 	   return;
 	}
 
+           if (nofHits >= MAX_NOF_HITS_IN_RING) {
+		cout << "-E- CbmRichRingFitterEllipseTau::DoFit(), too many hits in the ring:" << nofHits <<endl;
+                 ring->SetXYABP(-1., -1., -1., -1., -1.);
+		ring->SetRadius(-1.);
+		return;
+	}
+
 	//for (int i = 0; i < nofHits; i++) {
 	//	CbmRichHit* hit = (CbmRichHit*) fHitsArray->At(ring->GetHit(i));
 	//	fX.push_back(hit->GetX());
