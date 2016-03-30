@@ -187,7 +187,7 @@ CbmAnaDielectronTask::CbmAnaDielectronTask()
     fPrimVertex(NULL),
     fKFVertex(),
     fKFFitter(),
-    fMCTrackCreator(NULL),
+  //  fMCTrackCreator(NULL),
     fUseMvd(kFALSE),
     fUseRich(kTRUE),
     fUseTrd(kTRUE),
@@ -595,7 +595,11 @@ InitStatus CbmAnaDielectronTask::Init()
 
    fKFFitter.Init();
 
-   fMCTrackCreator = CbmLitMCTrackCreator::Instance();
+   //cout << "I'm HERE" <<endl;
+
+   CbmLitMCTrackCreator::Instance();
+
+   //cout << "I'm HERE end" << endl;
 
    if (fCuts.fUseRichAnn){
       fElIdAnn = new CbmRichElectronIdAnn();
@@ -606,7 +610,7 @@ InitStatus CbmAnaDielectronTask::Init()
    if (!fUseTrd){
       fCuts.fMomentumCut = 5.5;
    }
-
+     
    return kSUCCESS;
 }
 
@@ -624,9 +628,9 @@ void CbmAnaDielectronTask::Exec(Option_t*)
     } else {
        Fatal("CbmAnaDielectronTask::Exec","No PrimaryVertex array!");
     }
-
-    fMCTrackCreator->Create();
-
+    cout << "I'm here" << endl;
+   CbmLitMCTrackCreator::Instance()->Create();
+//
     FillRichRingNofHits();
     MCPairs();   
     RichPmtXY();
@@ -1590,8 +1594,8 @@ void CbmAnaDielectronTask::CalculateNofTopologyPairs(
     	  if (mcTrack->GetMotherId() != fCandidates[iP].fMcMotherId) continue;
     	  if (iMCTrack == fCandidates[iP].fStsMcTrackId) continue;
 
-		  if (!fMCTrackCreator->TrackExists(iMCTrack)) continue;
-		  const CbmLitMCTrack& litMCTrack = fMCTrackCreator->GetTrack(iMCTrack);
+		  if (!CbmLitMCTrackCreator::Instance()->TrackExists(iMCTrack)) continue;
+		  const CbmLitMCTrack& litMCTrack = CbmLitMCTrackCreator::Instance()->GetTrack(iMCTrack);
 		  nofPointsSts = litMCTrack.GetNofPointsInDifferentStations(kSTS);
 		  break;
       }

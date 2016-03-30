@@ -316,7 +316,7 @@ private:
     CbmKFVertex fKFVertex;
     CbmStsKFTrackFitter fKFFitter;
 
-    CbmLitMCTrackCreator* fMCTrackCreator; // MC track creator tool
+    //CbmLitMCTrackCreator* fMCTrackCreator; // MC track creator tool
 
     Bool_t fUseMvd;
     Bool_t fUseRich;

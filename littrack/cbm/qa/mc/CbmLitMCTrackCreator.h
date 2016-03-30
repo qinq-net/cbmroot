@@ -167,9 +167,6 @@ private:
     std::map<int, int>fTrdStationsMap; // for TRD
     std::map<int, int>fMuchStationsMap; // for MUCH
     
-    CbmGeoStsPar* fStsGeoPar; // Geometry parameter container
-    CbmStsDigiPar* fStsDigiPar; // Digitisation parameter container
-    
     CbmRichRingFitterEllipseTau* fTauFit; // Ellipse fitter algorithm
     
     CbmLitMCTrackCreator(const CbmLitMCTrackCreator&);
