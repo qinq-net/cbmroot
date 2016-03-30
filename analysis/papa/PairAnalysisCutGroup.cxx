@@ -70,7 +70,7 @@ Bool_t PairAnalysisCutGroup::IsSelected(Double_t * const values)
     }
     else { //kCompAND
       selectionResult = (selectionResult && thisCut->IsSelected(values));
-      //      if (selectionResult==kFALSE) break; //Save loops vs. additional check?
+      ///      if (selectionResult==kFALSE) break; //Save loops vs. additional check?
     }
   }
   return selectionResult;
@@ -124,10 +124,17 @@ void PairAnalysisCutGroup::Print(const Option_t* /*option*/) const
   // Print cuts and the range
   //
 
-  // TODO: add compOperator printout
+  printf("*****************************************************************\n");
+  printf("cut group '%s'\n",GetTitle());
+  if (fCompOperator==kCompAND){
+    printf("Cut are compared with AND \n");
+  } else {
+    printf("Cut are compared with OR \n");
+  }
   TIter listIterator(&fCutGroupList);
   while (AnalysisCuts *thisCut = (AnalysisCuts*) listIterator()) {
     thisCut->Print();
   }
+  printf("*****************************************************************\n");
 
 }

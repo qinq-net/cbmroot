@@ -53,7 +53,7 @@ Bool_t PairAnalysisPairLegCuts::IsSelected(TObject* track)
   //
   // check if cuts are fulfilled
   //
-  
+
   //check if we have a PairAnalysisPair
   PairAnalysisPair *pair=dynamic_cast<PairAnalysisPair*>(track);
   if (!pair) return kFALSE;
@@ -65,10 +65,15 @@ Bool_t PairAnalysisPairLegCuts::IsSelected(TObject* track)
   //mask used to require that all cuts are fulfilled
   UInt_t selectedMaskLeg1=(1<<fFilterLeg1.GetCuts()->GetEntries())-1;
   UInt_t selectedMaskLeg2=(1<<fFilterLeg2.GetCuts()->GetEntries())-1;
-  
+
   //test cuts
   Bool_t isLeg1selected=(fFilterLeg1.IsSelected(leg1)==selectedMaskLeg1);
   if(fCutType==kBothLegs && !isLeg1selected) {
+    SetSelected(isLeg1selected);
+    return isLeg1selected;
+  }
+  //skip further checks if first leg passes cuts and cuttype is any
+  if (fCutType==kAnyLeg && isLeg1selected) {
     SetSelected(isLeg1selected);
     return isLeg1selected;
   }
@@ -95,5 +100,34 @@ Bool_t PairAnalysisPairLegCuts::IsSelected(TObject* track)
   return isSelected;
 }
 
+//________________________________________________________________________
+void PairAnalysisPairLegCuts::Print(const Option_t* /*option*/) const
+{
+  //
+  // Print cuts and the range
+  //
+  printf("------------------------------------------\n");
+  printf("pair-leg cut ranges for '%s'\n",GetTitle());
+  switch(fCutType) {
+  case kBothLegs:     printf("Both legs have to fulfill the cuts\n"); break;
+  case kAnyLeg:       printf("Any leg have to fulfill the cuts\n"); break;
+  case kMixLegs:      printf("Leg1(leg2) has to fullfill the leg1(2)- or leg2(1)-cuts (mix mode)\n"); break;
+  case kOneLeg:       printf("Only one of legs is allowed to fulfill the cuts\n"); break;
+  }
+
+  printf("Leg filter1: \n");
+  TIter listIterator(fFilterLeg1.GetCuts());
+  while (AnalysisCuts *thisCut = (AnalysisCuts*) listIterator()) {
+    thisCut->Print();
+  }
+
+  printf("Leg filter2: \n");
+  TIter listIterator2(fFilterLeg2.GetCuts());
+  while (AnalysisCuts *thisCut = (AnalysisCuts*) listIterator2()) {
+    thisCut->Print();
+  }
+  printf("------------------------------------------\n");
+
+}
 
 

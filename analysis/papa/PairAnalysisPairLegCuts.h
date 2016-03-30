@@ -38,6 +38,8 @@ public:
   AnalysisFilter& GetLeg2Filter() { return fFilterLeg2; }
 
   void SetCutType(CutType type) {fCutType=type;}
+  virtual void Print(const Option_t* option = "") const;
+
 private:
   AnalysisFilter fFilterLeg1;     // Analysis Filter for leg1
   AnalysisFilter fFilterLeg2;     // Analysis Filter for leg2
