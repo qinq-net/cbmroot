@@ -27,6 +27,7 @@ public:
 		   kMEPP, kMEMP, kMEPM, kMEMM,
 		   kSEPMRot, kPairTypes };
   enum ELegType  { kSEP, kSEM, kLegTypes };
+  enum CutType { kBothLegs=0, kAnyLeg, kOneLeg };
 
   PairAnalysis();
   PairAnalysis(const char* name, const char* title);
@@ -47,12 +48,14 @@ public:
   AnalysisFilter& GetEventFilter()       { return fEventFilter;       }
   AnalysisFilter& GetTrackFilter()       { return fTrackFilter;       }
   AnalysisFilter& GetPairFilter()        { return fPairFilter;        }
+  AnalysisFilter& GetPairPreFilterLegs() { return fPairPreFilterLegs; }
   AnalysisFilter& GetPairPreFilter()     { return fPairPreFilter;     }
   AnalysisFilter& GetFinalTrackFilter()  { return fFinalTrackFilter;  }
 
   AnalysisFilter& GetTrackFilterMC()       { return fTrackFilterMC;       }
   AnalysisFilter& GetPairFilterMC()       { return fPairFilterMC;       }
 
+  void SetCutType(CutType type)             { fCutType=type; }
   void SetCutQA(Bool_t qa=kTRUE)            { fCutQA=qa; }
   void SetNoPairing(Bool_t noPairing=kTRUE) { fNoPairing=noPairing; }
   Bool_t IsNoPairing()                      { return fNoPairing; }
@@ -124,6 +127,7 @@ private:
 
   AnalysisFilter fEventFilter;            // Event cuts
   AnalysisFilter fTrackFilter;            // leg cuts
+  AnalysisFilter fPairPreFilterLegs;      // leg filter before pair prefilter cuts
   AnalysisFilter fPairPreFilter;          // pair prefilter cuts
   AnalysisFilter fFinalTrackFilter;       // Leg filter after the pair prefilter cuts
   AnalysisFilter fPairFilter;             // pair cuts
@@ -138,6 +142,7 @@ private:
 
   TObjArray* fSignalsMC = NULL;           // array of PairAnalysisSignalMC
 
+  CutType fCutType  = kBothLegs;          // type of pairprefilterleg cut logic
   Bool_t fNoPairing = kFALSE;             // if to skip pairing, can be used for track QA only
   Bool_t fProcessLS = kTRUE;              // do the like-sign pairing
   Bool_t fUseKF     = kFALSE;             // use KF particle for pairing

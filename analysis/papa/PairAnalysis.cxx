@@ -121,6 +121,7 @@ PairAnalysis::PairAnalysis(const char* name, const char* title) :
   TNamed(name,title),
   fEventFilter("EventFilter"),
   fTrackFilter("TrackFilter"),
+  fPairPreFilterLegs("PairPreFilterLegs"),
   fPairPreFilter("PairPreFilter"),
   fFinalTrackFilter("FinalTrackFilter"),
   fPairFilter("PairFilter"),
@@ -1089,6 +1090,14 @@ void PairAnalysis::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, 
   fTracks[1].Add(t2); // negative tracks
   /////
 
+  /// pairprefilter leg cuts
+  /// TODO: cut logic exceptions for test particles
+  /// mask used to require that all cuts are fulfilled
+  UInt_t selectedMaskLeg=(1<<fPairPreFilterLegs.GetCuts()->GetEntries())-1;
+  Bool_t isLeg1selected = kTRUE;
+  Bool_t isLeg2selected = kTRUE;
+
+
   Int_t ntrack1=arrTracks1.GetEntriesFast();
   Int_t ntrack2=arrTracks2.GetEntriesFast();
 
@@ -1149,14 +1158,37 @@ void PairAnalysis::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, 
     for (Int_t itrack1=0; itrack1<ntrack1RP; ++itrack1){
       Int_t end=ntrack2RP;
       if (arr1RP==arr2RP) end=itrack1;
+
+      TObject *track1=(*arrTracks1RP).UncheckedAt(itrack1);
+      if(!track1) continue;
+
+      /// pair prefilter leg cuts
+      if(selectedMaskLeg) {
+	isLeg1selected=(fPairPreFilterLegs.IsSelected(static_cast<PairAnalysisTrack*>(track1))==selectedMaskLeg);
+	if(fCutType==kBothLegs && !isLeg1selected) continue;
+      }
+
+
       for (Int_t itrack2=0; itrack2<end; ++itrack2){
-	TObject *track1=(*arrTracks1RP).UncheckedAt(itrack1);
 	TObject *track2=(*arrTracks2RP).UncheckedAt(itrack2);
-	if (!track1 || !track2) continue;
+	if (!track2) continue;
+
+	/// pair prefilter leg cuts
+	/// NOTE: in mode kAnyLeg do the next check only if track1 was not selected
+	if( (selectedMaskLeg && fCutType!=kAnyLeg)                        ||
+	    (selectedMaskLeg && fCutType==kAnyLeg && !isLeg1selected) ) {
+	  isLeg2selected=(fPairPreFilterLegs.IsSelected(static_cast<PairAnalysisTrack*>(track2))==selectedMaskLeg);        // apply selection
+	  switch(fCutType) {
+	  case kBothLegs:  if(!isLeg2selected)                continue; break;
+	  case kAnyLeg:    if(!isLeg2selected)                continue; break;
+	  case kOneLeg:    if(isLeg1selected==isLeg2selected) continue; break;
+	  }
+	}
+
 	//create the pair
 	candidate->SetTracks(static_cast<PairAnalysisTrack*>(track1), fPdgLeg1,
 			     static_cast<PairAnalysisTrack*>(track2), fPdgLeg2);
-	
+
 	candidate->SetType(pairIndex);
 	candidate->SetLabel(PairAnalysisMC::Instance()->GetLabelMotherWithPdg(candidate,fPdgMother));
 
