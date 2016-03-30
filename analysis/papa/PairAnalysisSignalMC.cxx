@@ -451,7 +451,7 @@ void PairAnalysisSignalMC::Print(Option_t * option) const
   //
   //
   //
-  Printf("Signal: %s with title %s ", GetName(), GetTitle());
+  Printf("MC Signal: %s with title %s ", GetName(), GetTitle());
   printf("\tPDGs leg1:  %s%s%d%s ",(fLeg1Exclude?"!":""),(fCheckBothChargesLeg1?"|":""),fLeg1,(fCheckBothChargesLeg1?"|":""));
   if(fMother1!=0)
     printf("<--- %s%s%d%s ",(fMother1Exclude?"!":""),(fCheckBothChargesMother1?"|":""),fMother1,(fCheckBothChargesMother1?"|":""));

@@ -1260,7 +1260,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
       if(optNorm)   h->SetYTitle( (ytitle.Append(" (normalized)")).Data() );
       if(optRatio)  h->SetYTitle( "ratio" );
       if(optDiv)    h->SetYTitle( "ratio" );
-      if(optEff)    h->SetYTitle( "efficiency" );
+      if(optEff)    h->SetYTitle( "acceptance #times efficiency" );
       if(optSclMax) h->SetYTitle( (ytitle+"/N_{max}").Data() );
       break;
     case 2:
@@ -1269,7 +1269,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
       if(optNorm)   h->SetZTitle( (ztitle.Prepend("normalized ")).Data() );
       if(optRatio)  h->SetZTitle( "ratio" );
       if(optDiv)    h->SetZTitle( "ratio" );
-      if(optEff)    h->SetZTitle( "efficiency" );
+      if(optEff)    h->SetZTitle( "acceptance #times efficiency" );
       if(optSclMax) h->SetZTitle( (ztitle+"/N_{max}").Data() );
       break;
     }
@@ -1560,7 +1560,10 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
 	h1->GetYaxis()->SetMoreLogLabels(kFALSE);
 	h1->GetYaxis()->SetNoExponent(kFALSE);
       }
-      if(gPad->GetLogx() && h1->GetXaxis()->GetXmax()/h1->GetXaxis()->GetXmin() > TMath::Power(10.,TGaxis::GetMaxDigits())) {
+      Double_t tmpXmin = h1->GetXaxis()->GetXmin();
+      if(gPad->GetLogx() && h1->GetXaxis()->GetXmax()/(TMath::Abs(tmpXmin)<1.e-10?1.:tmpXmin) > TMath::Power(10.,TGaxis::GetMaxDigits())) {
+	//	printf("Xaxis: max%f , min%f \t ratio %.3e >? %.3e \n",h1->GetXaxis()->GetXmax(),(TMath::Abs(tmpXmin)<1.e-10?1.:tmpXmin),
+	//              h1->GetXaxis()->GetXmax()/(TMath::Abs(tmpXmin)<1.e-10?1.:tmpXmin),TMath::Power(10.,TGaxis::GetMaxDigits()));
 	h1->GetXaxis()->SetMoreLogLabels(kFALSE);
 	h1->GetXaxis()->SetNoExponent(kFALSE);
       }
