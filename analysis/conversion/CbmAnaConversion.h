@@ -197,9 +197,11 @@ private:
 	TH1D * fhANN_output_electrons;
 	TH1D * fhANN_output_electrons2;
 	TH1D * fhANN_output_electrons_chiCut;
+	TH2D * fhANN_output_electrons_vs_p;
 	TH1D * fhANN_output_else;
 	TH1D * fhANN_output_else2;
 	TH1D * fhANN_output_else_chiCut;
+	TH2D * fhANN_output_else_vs_p;
 
    Int_t fEventNum;
    

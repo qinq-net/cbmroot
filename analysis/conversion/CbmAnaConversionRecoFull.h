@@ -278,6 +278,9 @@ private:
 	TH1D * fhPhotons_peakCheck1[5];
 	TH1D * fhPhotons_peakCheck2[5];
 	TH2D * fhPhotons_invmass_ANNcuts_new[5];
+	
+	TH2D * fhPhotons_phaseSpace_pi0[5];
+	TH2D * fhPhotons_phaseSpace_eta[5];
 
 
 

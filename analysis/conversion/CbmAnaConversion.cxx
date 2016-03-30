@@ -132,9 +132,11 @@ CbmAnaConversion::CbmAnaConversion()
     fhANN_output_electrons(NULL),
     fhANN_output_electrons2(NULL),
     fhANN_output_electrons_chiCut(NULL),
+    fhANN_output_electrons_vs_p(NULL),
     fhANN_output_else(NULL),
     fhANN_output_else2(NULL),
     fhANN_output_else_chiCut(NULL),
+    fhANN_output_else_vs_p(NULL),
     fEventNum(0),
     test(0),
     testint(0),
@@ -466,15 +468,19 @@ void CbmAnaConversion::InitHistograms()
 	fhANN_output_electrons			= new TH1D("fhANN_output_electrons","fhANN_output_electrons;ann output", 400, -2, 2.); 
 	fhANN_output_electrons2			= new TH1D("fhANN_output_electrons2","fhANN_output_electrons2;ann output", 400, -2, 2.); 
 	fhANN_output_electrons_chiCut	= new TH1D("fhANN_output_electrons_chiCut","fhANN_output_electrons_chiCut;ann output", 400, -2, 2.); 
+	fhANN_output_electrons_vs_p		= new TH2D("fhANN_output_electrons_vs_p","fhANN_output_electrons_vs_p;momentum in GeV/c; ann output",100, 0., 10., 400, -2, 2.); 
 	fhANN_output_else				= new TH1D("fhANN_output_else","fhANN_output_else;ann output", 400, -2, 2.); 
 	fhANN_output_else2				= new TH1D("fhANN_output_else2","fhANN_output_else2;ann output", 400, -2, 2.); 
 	fhANN_output_else_chiCut		= new TH1D("fhANN_output_else_chiCut","fhANN_output_else_chiCut;ann output", 400, -2, 2.); 
+	fhANN_output_else_vs_p			= new TH2D("fhANN_output_else_vs_p","fhANN_output_else_vs_p;momentum in GeV/c; ann output",100, 0., 10., 400, -2, 2.); 
 	fHistoList.push_back(fhANN_output_electrons);
 	fHistoList.push_back(fhANN_output_electrons2);
 	fHistoList.push_back(fhANN_output_electrons_chiCut);
+	fHistoList.push_back(fhANN_output_electrons_vs_p);
 	fHistoList.push_back(fhANN_output_else);
 	fHistoList.push_back(fhANN_output_else2);
 	fHistoList.push_back(fhANN_output_else_chiCut);
+	fHistoList.push_back(fhANN_output_else_vs_p);
 	
 	
 	
@@ -1049,9 +1055,11 @@ void CbmAnaConversion::Exec(Option_t*)
 				Double_t ann = fRichElIdAnn->DoSelect(ring, refittedMomentum_electron.Mag() );
 				if(TMath::Abs(pdg) == 11) {
 					fhANN_output_electrons2->Fill(ann);
+					fhANN_output_electrons_vs_p->Fill(refittedMomentum_electron.Mag(),ann);
 				}
 				if(TMath::Abs(pdg) != 11) {
 					fhANN_output_else2->Fill(ann);
+					fhANN_output_else_vs_p->Fill(refittedMomentum_electron.Mag(),ann);
 				}
 			}
 		}

@@ -208,6 +208,8 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
 	fhPhotons_peakCheck1(),
 	fhPhotons_peakCheck2(),
 	fhPhotons_invmass_ANNcuts_new(),
+	fhPhotons_phaseSpace_pi0(),
+	fhPhotons_phaseSpace_eta(),
 	fMixedEventsElectrons_list1(),
 	fMixedEventsElectrons_list2(),
 	fMixedEventsElectrons_list3(),
@@ -641,6 +643,14 @@ void CbmAnaConversionRecoFull::InitHistos()
 	
 		fhPhotons_invmass_ANNcuts_new[i] = new TH2D(Form("fhPhotons_invmass_ANNcuts_new_%i",i), Form("fhPhotons_invmass_ANNcuts_new_%i;ann;invariant mass of 4 e^{#pm} in GeV/c^{2}",i), 10, 0, 10, invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_ANNcuts_new[i]);
+	
+	
+		fhPhotons_phaseSpace_pi0[i] = new TH2D(Form("fhPhotons_phaseSpace_pi0_%i",i), Form("fhPhotons_phaseSpace_pi0_%i; p_{t} in GeV/c;rapidity y",i), 240, -2., 10., 270, -2., 7.);
+		fhPhotons_phaseSpace_eta[i] = new TH2D(Form("fhPhotons_phaseSpace_eta_%i",i), Form("fhPhotons_phaseSpace_eta_%i; p_{t} in GeV/c;rapidity y",i), 240, -2., 10., 270, -2., 7.);
+		fHistoList_recofull_new[i].push_back(fhPhotons_phaseSpace_pi0[i]);
+		fHistoList_recofull_new[i].push_back(fhPhotons_phaseSpace_eta[i]);
+	
+	
 	}
 
 
@@ -1733,16 +1743,19 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 						if(TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 22) {
 							fhPhotons_invmass_MCcutAll_new[index]->Fill(2, invmass);
 						}
-						if(TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 22 && grandmotherId11 == grandmotherId21 && grandmotherId11 > 0) {
+						if(TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 22 && grandmotherId11 == grandmotherId21 && grandmotherId11 > 0) {	// decay in to gg of pi0 and eta
 							fhPhotons_invmass_MCcutAll_new[index]->Fill(3, invmass);
+							if(invmass < 0.3) fhPhotons_phaseSpace_pi0[index]->Fill(paramsTest.fPt, paramsTest.fRapidity);
+							if(invmass > 0.3) fhPhotons_phaseSpace_eta[index]->Fill(paramsTest.fPt, paramsTest.fRapidity);
 						}
 						if(TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 22 && grandmotherId11 != grandmotherId21) {
 							fhPhotons_invmass_MCcutAll_new[index]->Fill(4, invmass);
 						}
 						if( (TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 111) || (TMath::Abs(motherpdg11) == 111 && TMath::Abs(motherpdg21) == 22) ) {
 							fhPhotons_invmass_MCcutAll_new[index]->Fill(5, invmass);
-							if(grandmotherId11 == motherId21 || motherId11 == grandmotherId21) {
+							if(grandmotherId11 == motherId21 || motherId11 == grandmotherId21) {	// Dalitz decay
 								fhPhotons_invmass_MCcutAll_new[index]->Fill(12, invmass);
+								fhPhotons_phaseSpace_pi0[index]->Fill(paramsTest.fPt, paramsTest.fRapidity);
 							}
 						}
 						if(TMath::Abs(motherpdg11) == 111 && TMath::Abs(motherpdg21) == 111) {

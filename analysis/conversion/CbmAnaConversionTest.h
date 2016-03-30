@@ -100,6 +100,7 @@ private:
 	TH1I * fhTest_ReconstructedPi0PerEvent;
 	TH1D * fhTest_invmass;
 	TH1D * fhTest_invmass_pCut;
+	TH1D * fhTest_invmass_GGcut;
 
 	// arrays for CombinePhotons_STSonly()
 	TH1D * fhTest_invmass_RICHindex0;
@@ -165,6 +166,7 @@ private:
 	vector< vector<Double_t> >	fMixedTest_3p1_ann;
 	TH1D * 						fhTest_eventMixing_3p1;
 	TH1D * 						fhTest_eventMixing_3p1_pCut;
+	TH1D * 						fhTest_eventMixing_3p1_GGcut;
 	TH2D * 						fhTest_eventMixing_3p1_ANNcuts;
 
 

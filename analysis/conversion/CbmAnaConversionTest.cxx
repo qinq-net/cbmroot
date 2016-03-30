@@ -58,6 +58,7 @@ CbmAnaConversionTest::CbmAnaConversionTest()
 	fhTest_ReconstructedPi0PerEvent(NULL),
 	fhTest_invmass(NULL),
 	fhTest_invmass_pCut(NULL),
+	fhTest_invmass_GGcut(NULL),
 	fhTest_invmass_RICHindex0(NULL),
 	fhTest_invmass_RICHindex1(NULL),
 	fhTest_invmass_RICHindex2(NULL),
@@ -98,6 +99,7 @@ CbmAnaConversionTest::CbmAnaConversionTest()
 	fMixedTest_3p1_ann(),
 	fhTest_eventMixing_3p1(NULL),
 	fhTest_eventMixing_3p1_pCut(NULL),
+	fhTest_eventMixing_3p1_GGcut(NULL),
 	fhTest_eventMixing_3p1_ANNcuts(NULL)
 {
 }
@@ -176,10 +178,13 @@ void CbmAnaConversionTest::InitHistos()
 	fHistoList_test.push_back(fhTest_ReconstructedPi0PerEvent);
 	fhTest_RICHelectronsPerEvent = new TH1I("fhTest_RICHelectronsPerEvent", "fhTest_RICHelectronsPerEvent; nof; #", 501, -0.5, 500.5);
 	fHistoList_test.push_back(fhTest_RICHelectronsPerEvent);
+	
 	fhTest_invmass = new TH1D("fhTest_invmass", "fhTest_invmass; invariant mass of 3 e^{#pm} + 1 particle in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_test.push_back(fhTest_invmass);
 	fhTest_invmass_pCut = new TH1D("fhTest_invmass_pCut", "fhTest_invmass_pCut; invariant mass of 3 e^{#pm} + 1 particle in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_test.push_back(fhTest_invmass_pCut);
+	fhTest_invmass_GGcut = new TH1D("fhTest_invmass_GGcut", "fhTest_invmass_GGcut; invariant mass of 3 e^{#pm} + 1 particle in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fHistoList_test.push_back(fhTest_invmass_GGcut);
 	
 	
 	fhTest_invmass_RICHindex0 = new TH1D("fhTest_invmass_RICHindex0", "fhTest_invmass_RICHindex0; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
@@ -216,10 +221,13 @@ void CbmAnaConversionTest::InitHistos()
 	fHistoList_test.push_back(fhTest_eventMixing_STSonly_3p1);
 	fhTest_eventMixing_STSonly_4p0 = new TH1D("fhTest_eventMixing_STSonly_4p0", "fhTest_eventMixing_STSonly_4p0; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_test.push_back(fhTest_eventMixing_STSonly_4p0);
+	
 	fhTest_eventMixing_3p1 = new TH1D("fhTest_eventMixing_3p1", "fhTest_eventMixing_3p1; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_test.push_back(fhTest_eventMixing_3p1);
 	fhTest_eventMixing_3p1_pCut = new TH1D("fhTest_eventMixing_3p1_pCut", "fhTest_eventMixing_3p1_pCut; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_test.push_back(fhTest_eventMixing_3p1_pCut);
+	fhTest_eventMixing_3p1_GGcut = new TH1D("fhTest_eventMixing_3p1_GGcut", "fhTest_eventMixing_3p1_GGcut; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fHistoList_test.push_back(fhTest_eventMixing_3p1_GGcut);
 	
 	fhTest_eventMixing_3p1_ANNcuts = new TH2D("fhTest_eventMixing_3p1_ANNcuts", "fhTest_eventMixing_3p1_ANNcuts;ann;invariant mass of 4 e^{#pm} in GeV/c^{2}", 10, 0, 10, invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_test.push_back(fhTest_eventMixing_3p1_ANNcuts);
@@ -740,6 +748,9 @@ void CbmAnaConversionTest::CombinePhotons()
 					fhTest_invmass_pCut->Fill(invmass);
 				}
 				
+				Double_t OpeningAngleGG = CbmAnaConversionGlobalFunctions::OpeningAngleBetweenGamma(fVector_momenta[electron11], fVector_electronRICH_momenta[electron12], fVector_electronRICH_momenta[electron21], fVector_electronRICH_momenta[electron22]);
+				if(OpeningAngleGG > 15 && OpeningAngleGG < 45) fhTest_invmass_GGcut->Fill(invmass);
+				
 				//Double_t pt = Pt_4particlesRECO(momenta[electron11], momenta[electron12], momenta[electron21], momenta[electron22]);
 				//Double_t rap = Rap_4particlesRECO(momenta[electron11], momenta[electron12], momenta[electron21], momenta[electron22]);
 				
@@ -858,7 +869,7 @@ void CbmAnaConversionTest::CombinePhotons()
 					if(TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 22) {
 						fhTest_invmass_MCcutAll->Fill(2, invmass);
 					}
-					if(TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 22 && grandmotherId11 == grandmotherId21 && grandmotherId11 > 0) {
+					if(TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 22 && grandmotherId11 == grandmotherId21 && grandmotherId11 > 0) {	// decay in to gg of pi0 and eta
 						fhTest_invmass_MCcutAll->Fill(3, invmass);
 						if(invmass < 0.3) fhTest_phaseSpace_pi0->Fill(paramsTest.fPt, paramsTest.fRapidity);
 						if(invmass > 0.3) fhTest_phaseSpace_eta->Fill(paramsTest.fPt, paramsTest.fRapidity);
@@ -868,8 +879,9 @@ void CbmAnaConversionTest::CombinePhotons()
 					}
 					if( (TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 111) || (TMath::Abs(motherpdg11) == 111 && TMath::Abs(motherpdg21) == 22) ) {
 						fhTest_invmass_MCcutAll->Fill(5, invmass);
-							if(grandmotherId11 == motherId21 || motherId11 == grandmotherId21) {
+							if(grandmotherId11 == motherId21 || motherId11 == grandmotherId21) {	// Dalitz decay of pi0
 								fhTest_invmass_MCcutAll->Fill(12, invmass);
+								fhTest_phaseSpace_pi0->Fill(paramsTest.fPt, paramsTest.fRapidity);
 							}
 					}
 					if(TMath::Abs(motherpdg11) == 111 && TMath::Abs(motherpdg21) == 111) {
@@ -1213,6 +1225,11 @@ void CbmAnaConversionTest::MixedEventTest_3p1()
 			if( (fMixedTest_3p1_combined[a] == 1 && e11.Mag() < 0.6) || (fMixedTest_3p1_combined[b] == 1 && e21.Mag() < 0.6) ) {
 				fhTest_eventMixing_3p1_pCut->Fill(params.fMinv);
 			}
+			
+			
+			Double_t OpeningAngleGG = CbmAnaConversionGlobalFunctions::OpeningAngleBetweenGamma(e11, e12, e21, e22);
+			if(OpeningAngleGG > 15 && OpeningAngleGG < 45) fhTest_eventMixing_3p1_GGcut->Fill(params.fMinv);
+			
 			
 			//Double_t ANNe11 = fMixedTest_3p1_ann[a][0];
 			Double_t ANNe12 = fMixedTest_3p1_ann[a][1];

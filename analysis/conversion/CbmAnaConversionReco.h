@@ -202,6 +202,10 @@ private:
 	TH2D * fhEPEM_pt_vs_p_all_refitted;
 	
 	
+	// analysis of missing lepton (for the case of only 3 leptons with identified as electron)
+	TH1D * fhEPEM_missingLepton_nofRingHits;
+	
+	
 	// histograms for eta analysis
 	TH1D * fhEPEM_invmass_eta_mc;
 	TH1D * fhEPEM_invmass_eta_refitted;

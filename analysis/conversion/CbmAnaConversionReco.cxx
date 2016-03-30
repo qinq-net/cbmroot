@@ -136,6 +136,7 @@ CbmAnaConversionReco::CbmAnaConversionReco()
 	fhEPEM_InDetector_invmass_all_refitted(NULL),
 	fhEPEM_pt_vs_p_all_mc(NULL),
 	fhEPEM_pt_vs_p_all_refitted(NULL),
+	fhEPEM_missingLepton_nofRingHits(NULL),
     fhEPEM_invmass_eta_mc(NULL),
     fhEPEM_invmass_eta_refitted(NULL),
     fhEPEM_efficiencyCuts_eta(NULL),
@@ -423,7 +424,8 @@ void CbmAnaConversionReco::InitHistos()
 	fhEPEM_pt_vs_p_all_refitted	= new TH2D("fhEPEM_pt_vs_p_all_refitted", "fhTest2_electrons_pt_vs_p;p_{t} in GeV/c; p in GeV/c", 240, -2., 10., 360, -2., 16.);
 	fHistoList_all.push_back(fhEPEM_pt_vs_p_all_refitted);
 
-
+	fhEPEM_missingLepton_nofRingHits = new TH1D("fhEPEM_missingLepton_nofRingHits","fhEPEM_missingLepton_nofRingHits;nofringhits;#", 30, 0, 30);
+	fHistoList_all.push_back(fhEPEM_missingLepton_nofRingHits);
 
 
 	// histograms for eta analysis
@@ -699,10 +701,10 @@ void CbmAnaConversionReco::InvariantMassMC_all()
 								
 								fhEta_openingAngleGG->Fill(opening_angle_gg);
 							}
-							if(mcGrandmotherPdg1 == 331) { // eta prime (958)
+							if(TMath::Abs(mcGrandmotherPdg1) == 331) { // eta prime (958)
 								fhInvariantMass_MC_etaPrime->Fill(invmass);
 							}
-							fhMC_grandmotherPDGs->Fill(mcGrandmotherPdg1);
+							fhMC_grandmotherPDGs->Fill(TMath::Abs(mcGrandmotherPdg1) );
 						}
 						
 						
@@ -1705,6 +1707,18 @@ void CbmAnaConversionReco::CutEfficiencyStudies(int e1, int e2, int e3, int e4, 
 	
 	if(IsEta == 0) {
 		fhEPEM_pi0_nofLeptons_ann->Fill(IsRichElectron1ann + IsRichElectron2ann + IsRichElectron3ann + IsRichElectron4ann);
+		
+		if(IsRichElectron1ann + IsRichElectron2ann + IsRichElectron3ann + IsRichElectron4ann == 3) {
+			CbmGlobalTrack* gTrack = NULL;
+			if(IsRichElectron1ann == 0) gTrack = (CbmGlobalTrack*) fGlobalTracks->At(fRecoTracklistEPEM_gtid[e1]);
+			if(IsRichElectron2ann == 0) gTrack = (CbmGlobalTrack*) fGlobalTracks->At(fRecoTracklistEPEM_gtid[e2]);
+			if(IsRichElectron3ann == 0) gTrack = (CbmGlobalTrack*) fGlobalTracks->At(fRecoTracklistEPEM_gtid[e3]);
+			if(IsRichElectron4ann == 0) gTrack = (CbmGlobalTrack*) fGlobalTracks->At(fRecoTracklistEPEM_gtid[e4]);
+			int richInd = gTrack->GetRichRingIndex();
+			CbmRichRing* richRing = (CbmRichRing*) fRichRings->At(richInd);
+			Int_t nofringhits = richRing->GetNofHits();
+			fhEPEM_missingLepton_nofRingHits->Fill(nofringhits);
+		}
 		
 		fhEPEM_pi0_ANNvalues_noCuts->Fill(ANNvalueE1);
 		fhEPEM_pi0_ANNvalues_noCuts->Fill(ANNvalueE2);
