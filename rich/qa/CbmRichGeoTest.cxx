@@ -844,7 +844,7 @@ void CbmRichGeoTest::DrawPmts()
     
     {
         TCanvas *c = CreateCanvas("richgeo_pmts_yz", "richgeo_pmts_yz", 1500, 1500);
-        c->SetGrid(true, true);
+        //c->SetGrid(true, true);
         TH2D* pad = new TH2D("richgeo_pmts_yz", ";Z [cm];Y [cm]", 1, 200, 250, 1, -220, 220);
         pad->SetStats(false);
         pad->Draw();

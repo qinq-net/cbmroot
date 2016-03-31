@@ -71,13 +71,13 @@ void CbmRichProjectionProducerAnalytical::DoProjection(
     double mirrorY = gp->fMirrorY;
     double mirrorZ = gp->fMirrorZ;
     double mirrorR = gp->fMirrorR;
-    double pmtPhi = gp->fPmtPhi;
-    double pmtTheta = gp->fPmtTheta;
-    double pmtPlaneX = gp->fPmtPlaneX;
-    double pmtPlaneY = gp->fPmtPlaneY;
-    double pmtPlaneZ = gp->fPmtPlaneZ;
-    double pmtWidth = gp->fPmtWidth;
-    double pmtHeight = gp->fPmtHeight;
+    double pmtPhi = gp->fPmt.fPhi;
+    double pmtTheta = gp->fPmt.fTheta;
+    double pmtPlaneX = gp->fPmt.fPlaneX;
+    double pmtPlaneY = gp->fPmt.fPlaneY;
+    double pmtPlaneZ = gp->fPmt.fPlaneZ;
+    double pmtWidth = gp->fPmt.fWidth;
+    double pmtHeight = gp->fPmt.fHeight;
     
     
     richProj->Delete();

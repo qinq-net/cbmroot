@@ -234,7 +234,7 @@ void CbmRichGeoOpt::Exec(Option_t* /*option*/)
   //cout << "#################### CbmRichGeoOpt, event No. " <<  fEventNum << endl;
   //Fill the coordinates of the three points on the PMT plane 
   CbmRichRecGeoPar* gp = CbmRichGeoManager::GetInstance().fGP;
-  PMTPlaneCenter.SetX(gp->fPmtX); PMTPlaneCenter.SetY(gp->fPmtY); PMTPlaneCenter.SetZ(gp->fPmtZ);
+  PMTPlaneCenter.SetX(gp->fPmt.fX); PMTPlaneCenter.SetY(gp->fPmt.fY); PMTPlaneCenter.SetZ(gp->fPmt.fZ);
   /////////////////////////////////////////
   // if(PMTPointsFilled==1 && SensPointsFilled==1 ){cout<<" Both are filled."<<endl;}
   // else if(PMTPointsFilled==1 && SensPointsFilled==0){cout<<" PMTPointsFilled==1 && SensPointsFilled==0."<<endl;}
@@ -953,7 +953,7 @@ bool  CbmRichGeoOpt::CheckPointLiesOnPlane(TVector3 Point,TVector3 p0,TVector3 n
 void CbmRichGeoOpt::GetPMTRotAngels()
 {
 	CbmRichRecGeoPar* gp = CbmRichGeoManager::GetInstance().fGP;
-  RotX=gp->fPmtTheta; RotY=gp->fPmtPhi;
+  RotX=gp->fPmt.fTheta; RotY=gp->fPmt.fPhi;
 }
 
 //////////////////////////////////////////////////////
