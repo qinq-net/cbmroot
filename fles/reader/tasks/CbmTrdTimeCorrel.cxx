@@ -136,7 +136,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 
   //Calculate Timestamp Offsets
   LOG(INFO) <<"Begin Buffering Epoch Messages" << FairLogger::endl;
-  {//Context to limit epochBuffers scope
+  if (false) {//Context to limit epochBuffers scope
     EpochMap epochBuffer;
     //Loop over all epoch messages to build Fulltime offsets.
     for (Int_t iSpadicMessage=0; iSpadicMessage < nSpadicMessages; ++iSpadicMessage){
@@ -489,7 +489,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   if(fNrTimeSlices % 10 ==0)
   {
     if (fActivateClusterizer){
-      if (fNrTimeSlices<931	)ClusterizerTime();
+      if (fNrTimeSlices!=0)ClusterizerTime();
       ClusterizerSpace();
     }
     CleanUpBuffers();
@@ -704,7 +704,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
 	  return true;
     return false;
       };
-  const Int_t clusterWindow = 10; // size of time window in which two hits are called "correlated", unit is timestamps
+  const Int_t clusterWindow = 0; // size of time window in which two hits are called "correlated", unit is timestamps
   std::sort(fLinearHitBuffer.begin(),fLinearHitBuffer.end(),CompareSpadicMessagesSmaller);
   std::unique(fLinearHitBuffer.begin(),fLinearHitBuffer.end(),CompareSpadicMessages);
   std::multimap<ULong_t, CbmSpadicRawMessage*> tempmap;
@@ -713,7 +713,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
       tempmap.insert(std::make_pair(temp,x));
   }
   for (auto it=tempmap.begin(); it != tempmap.end(); ++it){
-      auto range = std::make_pair(tempmap.lower_bound(it->first - clusterWindow), tempmap.upper_bound(it->first + clusterWindow));
+      auto range = std::make_pair(tempmap.lower_bound(it->first), tempmap.upper_bound(it->first + clusterWindow));
       if(tempmap.size()==0 && (range.first == tempmap.end())) continue;
       for (;range.first != range.second; ++(range.first)){
 	  if(it->second != nullptr && range.first->second!= nullptr)
