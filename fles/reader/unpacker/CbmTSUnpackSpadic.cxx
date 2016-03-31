@@ -24,7 +24,8 @@ CbmTSUnpackSpadic::CbmTSUnpackSpadic()
 	fPreviousEpochMarkerArray(),
     fSuperEpochArray(),
     fEpochMarker(0),
-    fSuperEpoch(0)
+    fSuperEpoch(0),
+    fNrExtraneousSamples{0}
 {
   for (Int_t i=0; i < NrOfSyscores; ++i) { 
     for (Int_t j=0; j < NrOfHalfSpadics; ++j) { 
@@ -37,6 +38,7 @@ CbmTSUnpackSpadic::CbmTSUnpackSpadic()
 
 CbmTSUnpackSpadic::~CbmTSUnpackSpadic()
 {
+  LOG(INFO) << "Number of extraneous Samples "<< fNrExtraneousSamples << FairLogger::endl;
 }
 
 Bool_t CbmTSUnpackSpadic::Init()
@@ -182,7 +184,10 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
 	Int_t groupId = mp->group_id();
 	Int_t bufferOverflowCounter = 0;
 	Int_t samples = mp->samples().size();
-	if(samples>32) samples=32; //Suppress extraneous Samples, which cannot (!) occur in Raw Data Stream.
+	if(samples>32) {
+	    fNrExtraneousSamples++;
+	    samples=32; //Suppress extraneous Samples, which cannot (!) occur in Raw Data Stream.
+	}
 	Int_t* sample_values =  new Int_t[samples];
 	Int_t channel = mp->channel_id();
 	Int_t counter1=0;

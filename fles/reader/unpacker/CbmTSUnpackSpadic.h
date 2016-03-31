@@ -50,7 +50,7 @@ class CbmTSUnpackSpadic : public CbmTSUnpack
 
   Int_t fEpochMarker;
   Int_t fSuperEpoch;
-
+  Int_t fNrExtraneousSamples;
   void GetEpochInfo(Int_t link, Int_t addr);
   void FillEpochInfo(Int_t link, Int_t addr, Int_t epoch_count);
 
