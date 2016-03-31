@@ -1065,6 +1065,11 @@ void CbmLitTrackingQa::PionSuppression()
       const CbmTrackMatchNew* trackMatch = static_cast<const CbmTrackMatchNew*>(fStsMatches->At(stsIndex));
       const FairTrackParam* richProjection = static_cast<const FairTrackParam*>(fRichProjections->At(iGT));
       if (richProjection == NULL || richProjection->GetX() == 0 || richProjection->GetY() == 0) continue;
+       Int_t trdIndex = globalTrack->GetTrdTrackIndex();
+       if (fDet.GetDet(kTRD) && trdIndex < 0) continue;
+       Int_t tofIndex = globalTrack->GetTofHitIndex();
+       if (fDet.GetDet(kTOF) && tofIndex < 0) continue;
+       
       Int_t mcIdSts = trackMatch->GetMatchedLink().GetIndex();
       if (mcIdSts < 0) continue;
       const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(fMCTracks->At(mcIdSts));

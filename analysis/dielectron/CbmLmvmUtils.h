@@ -132,7 +132,7 @@ public:
 		} else {
 			CbmMCTrack* mct1 = static_cast<CbmMCTrack*>(mcTracks->At(motherId));
 			Int_t motherPdg = mct1->GetPdgCode();
-			if (mct1 != NULL && motherPdg == 111 && pdg == 11){
+			if (mct1 != NULL && motherPdg == 111 && pdg == 11 && mctrack->GetGeantProcessId() != kPPrimary){
 				return true;
 			}
 		}
