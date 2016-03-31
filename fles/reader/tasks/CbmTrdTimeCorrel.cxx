@@ -298,7 +298,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	      */
 	    fiRawMessage++;
 	    if(fActivateClusterizer)
-	      if (isHit || isOverflow)
+	      if (isHit || isHitAborted || isOverflow)
 	        if(fNrTimeSlices!=0){
 	          CbmSpadicRawMessage* tempPtr = new CbmSpadicRawMessage;
 	          *tempPtr = *raw;
@@ -707,14 +707,14 @@ void CbmTrdTimeCorrel::ClusterizerTime()
   const Int_t clusterWindow = 0; // size of time window in which two hits are called "correlated", unit is timestamps
   std::sort(fLinearHitBuffer.begin(),fLinearHitBuffer.end(),CompareSpadicMessagesSmaller);
   std::unique(fLinearHitBuffer.begin(),fLinearHitBuffer.end(),CompareSpadicMessages);
-  std::multimap<ULong_t, CbmSpadicRawMessage*> tempmap;
+  std::multimap<ULong_t, CbmSpadicRawMessage*> TempHitMap,TempOverflowMap;
   for (auto x : fLinearHitBuffer){
-      long unsigned int temp = static_cast <long unsigned int>(x->GetFullTime());
-      tempmap.insert(std::make_pair(temp,x));
+      long unsigned int MessageTime = static_cast <long unsigned int>(x->GetFullTime());
+      (x->GetOverFlow()) ? TempOverflowMap.insert(std::make_pair(MessageTime,x)): TempHitMap.insert(std::make_pair(MessageTime,x));
   }
-  for (auto it=tempmap.begin(); it != tempmap.end(); ++it){
-      auto range = std::make_pair(tempmap.lower_bound(it->first), tempmap.upper_bound(it->first + clusterWindow));
-      if(tempmap.size()==0 && (range.first == tempmap.end())) continue;
+  for (auto it=TempHitMap.begin(); it != TempHitMap.end(); ++it){
+      auto range = std::make_pair(TempHitMap.lower_bound(it->first), TempHitMap.upper_bound(it->first + clusterWindow));
+      if(TempHitMap.size()==0 && (range.first == TempHitMap.end())) continue;
       for (;range.first != range.second; ++(range.first)){
 	  if(it->second != nullptr && range.first->second!= nullptr)
 	    if(range.first->second->GetTriggerType() == 1 || range.first->second->GetTriggerType() ==3) { // exclude purely neighbour triggered hits
@@ -731,6 +731,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
 		    Int_t SpaPad1 = (Int_t)(SpaID1/2) * 32 + (GetChannelOnPadPlane(ChID1));
 		    Int_t SpaPad2 = (Int_t)(SpaID2/2) * 32 + (GetChannelOnPadPlane(ChID2));
 		    if (it!=range.first) { //Exlude Correlations of messages with themselves
+			//TODO:Implement Clusters and fill them
 			if(fDebugMode){
 			    fHM->H2("Hit_Coincidences")->Fill(SpaPad1,SpaPad2);
 			    // Fill for map of correlations following: require origin from variant TRD chambers to cut on physical correlations between two chambers, which is adressed for the moment just by requiring different SpaID/2
