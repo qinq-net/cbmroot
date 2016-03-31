@@ -48,7 +48,7 @@ class CbmTrdTimeCorrel : public FairTask
   Bool_t  fRewriteSpadicName;
 
   const Bool_t fActivateClusterizer = true;
-  const Bool_t fDebugMode = true;
+  const Bool_t fDebugMode = false;
 
   Int_t   GetSpadicID(Int_t sourceA);
 
@@ -72,7 +72,7 @@ class CbmTrdTimeCorrel : public FairTask
   
   Int_t fRun;
 
-  ULong_t fLastMessageTime[3][3][32];
+  ULong_t fLastMessageTime[3][6][32];
   /* Store the last message time.
      Intended usage is for the first (outer) argument to be the SysCoreID 
      and the second (inner) to be the SPADICID of a full SPADIC.

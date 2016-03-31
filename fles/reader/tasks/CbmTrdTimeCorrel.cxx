@@ -35,14 +35,10 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
     fiDigi(0),
     fiCluster(0),
     fiRawMessage(0),
-    timestampOffsets()
-{
- LOG(DEBUG) << "Default constructor of CbmTrdTimeCorrel" << FairLogger::endl;
- for (Int_t SysID =0; SysID<3;++SysID)
-  for (Int_t SpaID =0; SpaID<3;++SpaID)
-   for (Int_t ChID =0; ChID<32;++ChID)
-	fLastMessageTime[SysID][SpaID][ChID]=0;
-}
+    timestampOffsets(),
+    fLastMessageTime{{0}}
+{};
+
 // ----              -------------------------------------------------------
 CbmTrdTimeCorrel::~CbmTrdTimeCorrel()
 {
@@ -341,17 +337,17 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	else fHM->H2("InfoType_vs_Channel")->Fill(33,10);
       }
       if (0 <= chID && chID < 32 && isEpoch){
-	if(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID/2][chID])<-1000)  LOG(INFO) << "SpadicMessage (isEpoch): " << iSpadicMessage << " has negative Delta Fulltime. sourceA: " << sourceA << " chID: " << raw->GetChannelID() << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " isInfo: " << isInfo << " isEpoch: " << isEpoch << " Lost Messages: " << lostMessages << FairLogger::endl;
+	if(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID][chID])<-1000)  LOG(INFO) << "SpadicMessage (isEpoch): " << iSpadicMessage << " has negative Delta Fulltime. sourceA: " << sourceA << " chID: " << raw->GetChannelID() << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " isInfo: " << isInfo << " isEpoch: " << isEpoch << " Lost Messages: " << lostMessages << FairLogger::endl;
 	//Compute Time Deltas, write them into a histogram and store timestamps in fLastMessageTime.
 	// WORKAROUND: at Present SyscoreID is not extracted, therefore all Messages are stored as if coming from SysCore 0.
 	// Epoch messages are sent with chID 0 or 16, i.e. rawChID 0 from the first or the second half-Spadic. Thus, the half-chip results as 0 or 1 by dividing the chID/16 and casting this to Int_t. Bit bloody but fast.
-	if(spaID != -1)fHM->H1("Delta_t_hist_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2)+"_Half_"+std::to_string((Int_t)(chID/16)))->Fill(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID/2][chID]));
+	if(spaID != -1)fHM->H1("Delta_t_hist_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2)+"_Half_"+std::to_string((Int_t)(chID/16)))->Fill(static_cast<Long_t>(epoch)-static_cast<Long_t>(fLastMessageTime[0][spaID][chID]));
 	//Write delta_t into a TGraph
 	if(spaID!=-1){
-	  Int_t tGraphSize = fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID/2)+"_Channel_"+std::to_string(chID))->GetN();
-	  fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID/2)+"_Channel_"+std::to_string(chID))->SetPoint(tGraphSize,time,(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID/2][chID])));
+	  Int_t tGraphSize = fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID/2)+"_Channel_"+std::to_string((Int_t)(chID+(15*spaID%2))))->GetN();
+	  fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID/2)+"_Channel_"+std::to_string((Int_t)(chID/16+(15*spaID%2))))->SetPoint(tGraphSize,time,(static_cast<Long_t>(epoch)-static_cast<Long_t>(fLastMessageTime[0][spaID][chID])));
 	}
-	fLastMessageTime[0][spaID/2][chID] = time;
+	fLastMessageTime[0][spaID][chID] = epoch;
       }
       //if(spadicName!="") {
 
@@ -493,7 +489,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   if(fNrTimeSlices % 10 ==0)
   {
     if (fActivateClusterizer){
-      ClusterizerTime();
+      if (fNrTimeSlices<931	)ClusterizerTime();
       ClusterizerSpace();
     }
     CleanUpBuffers();
@@ -694,7 +690,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
     if(a->GetFullTime() == b->GetFullTime())
       if (a->GetSourceAddress() == b->GetSourceAddress())
 	if(a->GetChannelID() == b->GetChannelID()){
-	    delete b;
+	    delete b;//This Function is only invoked in the std::unique call, which discards b if true is returned.
 	    return true;
 	}
     return false;
@@ -1072,22 +1068,39 @@ void CbmTrdTimeCorrel::CreateHistograms()
   }
 
   fHM->Add("TsCounter", new TGraph());
+  fHM->G1("TsCounter")->SetNameTitle("TsCounter","TsCounter");
   fHM->Add("TsCounterHit0", new TGraph());
+  fHM->G1("TsCounterHit0")->SetNameTitle("TsCounterHit0","TsCounterHit0");
   fHM->Add("TsCounterHtimeIt", new TGraph());
+  fHM->G1("TsCounterHtimeIt")->SetNameTitle("TsCounterHtimeIt","TsCounterHtimeIt");
   fHM->Add("TsCounterHitAborted0", new TGraph());
   fHM->Add("TsCounterHitAborted1", new TGraph());
+  fHM->G1("TsCounterHitAborted0")->SetNameTitle("TsCounterHitAborted0","TsCounterHitAborted0");
+  fHM->G1("TsCounterHitAborted1")->SetNameTitle("TsCounterHitAborted1","TsCounterHitAborted1");
   fHM->Add("TsCounterOverflow0", new TGraph());
   fHM->Add("TsCounterOverflow1", new TGraph());
+  fHM->G1("TsCounterOverflow0")->SetNameTitle("TsCounterOverflow0","TsCounterOverflow0");
+  fHM->G1("TsCounterOverflow1")->SetNameTitle("TsCounterOverflow1","TsCounterOverflow1");
   fHM->Add("TsLost0", new TGraph());
   fHM->Add("TsLost1", new TGraph());
+  fHM->G1("TsLost0")->SetNameTitle("TsLost0","TsLost0");
+  fHM->G1("TsLost1")->SetNameTitle("TsLost1","TsLost1");
   fHM->Add("TsCounterInfo0", new TGraph());
   fHM->Add("TsCounterInfo1", new TGraph());
+  fHM->G1("TsCounterInfo0")->SetNameTitle("TsCounterInfo0","TsCounterInfo0");
+  fHM->G1("TsCounterInfo1")->SetNameTitle("TsCounterInfo1","TsCounterInfo1");
   fHM->Add("TsCounterEpoch0", new TGraph());
   fHM->Add("TsCounterEpoch1", new TGraph());
+  fHM->G1("TsCounterEpoch0")->SetNameTitle("TsCounterEpoch0","TsCounterEpoch0");
+  fHM->G1("TsCounterEpoch1")->SetNameTitle("TsCounterEpoch1","TsCounterEpoch1");
   fHM->Add("TsCounterStrange0", new TGraph());
   fHM->Add("TsCounterStrange1", new TGraph());
+  fHM->G1("TsCounterStrange0")->SetNameTitle("TsCounterStrange0","TsCounterStrange0");
+  fHM->G1("TsCounterStrange1")->SetNameTitle("TsCounterStrange1","TsCounterStrange1");
   fHM->Add("TsStrangeness0", new TGraph()); // ratio of strange messages over all messages
   fHM->Add("TsStrangeness1", new TGraph());
+  fHM->G1("TsStrangeness0")->SetNameTitle("TsStrangeness0","TsStrangeness0");
+  fHM->G1("TsStrangeness1")->SetNameTitle("TsStrangeness1","TsStrangeness1");
   for (Int_t SysID=0; SysID<1;++SysID){
     for (Int_t SpaID=0; SpaID<3;++SpaID){
       for (Int_t ChID=0; ChID<32;++ChID){
