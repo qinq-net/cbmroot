@@ -839,7 +839,7 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
       PairAnalysisPair *pair=static_cast<PairAnalysisPair*>(PairArray(i)->UncheckedAt(ipair));
 
       //fill pair information
-      if (pairClass || pairClass2 || pairClassMC.CountBits() || pairClassMChf.CountBits()){
+      if (pairClass || pairClass2 || pairClassMC.CountBits() || pairClassMChf.CountBits()) {
 
 	// if(i==3)
 	//   printf("train: %d \t pair type: %s \t p:%p d1:%p d2:%p \n",!fEventProcess,fgkPairClassNames[i],pair,
@@ -855,22 +855,22 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
         PairAnalysisVarManager::Fill(pair, values);
         if(pairClass)  fHistos    ->FillClass(className, values);
         if(pairClass2) fHistoArray->FillClass(className, values);
+
 	// check mc filling
 	fillMC.ResetAllBits();
 	if(i==kSEPM) {
 	  for(Int_t isig=0; isig<nsig; isig++) {
+	    // next if nothing needs to be filled
+	    if(!pairClassMC.TestBitNumber(isig) && !pairClassMChf.TestBitNumber(isig)) continue;
+	    // get mc signal
 	    sigMC = (PairAnalysisSignalMC*) fSignalsMC->At(isig);
+	    // next if single particle signal
+	    if(sigMC->IsSingleParticle()) continue;
 	    Bool_t isMCtruth = mc->IsMCTruth(pair, sigMC);
 	    fillMC.SetBitNumber(isig,isMCtruth);
 	    if(!isMCtruth) continue;
 	    sigName =  Form("Pair_%s",sigMC->GetName());
-	    //	  Printf("fill %s: %d ",sigName.Data(),pairClassMC.TestBitNumber(isig));
-	    Double_t wght = sigMC->GetWeight(values);
-	    if(wght>1e-10) // weight is set, don't use track weights
-	      //	    if(TMath::Abs(wght-1.)>1e-8) // weight is set, don't use track weights
-	      PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, wght);
-	    else
-	      Error("FillHistograms","weight is zero!!!");
+	    Double_t wght      = sigMC->GetWeight(values);
 	    if(pairClassMC.TestBitNumber(isig))   fHistos     ->FillClass(sigName, values);
 	    if(pairClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
 	  }
@@ -891,11 +891,6 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	      if(!fillMC.TestBitNumber(isig)) continue;
 	      sigMC = (PairAnalysisSignalMC*) fSignalsMC->At(isig);
 	      sigName = Form("Track.Legs_%s",sigMC->GetName());
-	      Double_t wght = sigMC->GetWeight(values);
-	      if(wght>1e-10) // weight is set, don't use track weights
-		PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, wght);
-	      else
-		Error("FillHistograms","weight is zero!!!");
 	      if(legClassMC.TestBitNumber(isig))   fHistos     ->FillClass(sigName, values);
 	      if(legClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
 	    }
@@ -912,11 +907,6 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	      if(!fillMC.TestBitNumber(isig)) continue;
 	      sigMC = (PairAnalysisSignalMC*) fSignalsMC->At(isig);
 	      sigName = Form("Track.Legs_%s",sigMC->GetName());
-	      Double_t wght = sigMC->GetWeight(values);
-	      if(wght>1e-10) // weight is set, don't use track weights
-		PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, wght);
-	      else
-		Error("FillHistograms","weight is zero!!!");
 	      if(legClassMC.TestBitNumber(isig))   fHistos     ->FillClass(sigName, values);
 	      if(legClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
 	    }
@@ -1031,19 +1021,24 @@ void PairAnalysis::FillTrackArrays(PairAnalysisEvent * const ev)
     // store signal weights in the tracks - ATTENTION later signals should be more specific
     //    /*
     if(fHasMC && fSignalsMC) {
+      // printf("particle %p: pdg: %.0f \t mother: %.0f grand: %.0f \n", particle, values[PairAnalysisVarManager::kPdgCode],
+      // 	     values[PairAnalysisVarManager::kPdgCodeMother], values[PairAnalysisVarManager::kPdgCodeGrandMother]);
+      if(TMath::Abs(values[PairAnalysisVarManager::kPdgCode])!=11 || values[PairAnalysisVarManager::kGeantId]!=kPPrimary) continue;
       //      PairAnalysisMC* papaMC = PairAnalysisMC::Instance();
       for(Int_t isig=0; isig<fSignalsMC->GetEntriesFast(); isig++) {
 	PairAnalysisSignalMC *sigMC=(PairAnalysisSignalMC*)fSignalsMC->At(isig);
+	// printf("\t temp. particle weight: %f \t signal weight for %s is %f \n",particle->GetWeight(),sigMC->GetName(),sigMC->GetWeight());
 	if( papaMC->IsMCTruth(particle,sigMC,1) || papaMC->IsMCTruth(particle,sigMC,2) ) {
-	  //   printf("signal weight for %s is %f \n",sig->GetName(),sig->GetWeight());
+	  //	  printf("particle weight: %f \t signal weight for %s is %f \n",particle->GetWeight(),sigMC->GetName(),sigMC->GetWeight());
 	  //	  if(sig->GetWeight(values) != 1.0) particle->SetWeight( sig->GetWeight(values) );
 	  Double_t wght = sigMC->GetWeight(values);
-	  if(wght>1e-10) {
-	    if(wght != 1.0) particle->SetWeight( wght );
-	  } else
-	    Error("FillTrackArrays","weight is zero for %s!!!",sigMC->GetName());
+	  Bool_t useMCweight = (TMath::Abs(wght-1.) > 1.0e-15);
+	  if(useMCweight) particle->SetWeight( wght );
+	  //   printf("no weight set for %s, use  default (1.)",sigMC->GetName());
 	}
       }
+      //      printf("  -----> final particle weight: %f \n",particle->GetWeight());
+
     }
     //    */
 

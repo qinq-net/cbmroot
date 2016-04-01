@@ -27,7 +27,7 @@ public:
 		   kMEPP, kMEMP, kMEPM, kMEMM,
 		   kSEPMRot, kPairTypes };
   enum ELegType  { kSEP, kSEM, kLegTypes };
-  enum CutType { kBothLegs=0, kAnyLeg, kOneLeg };
+  enum CutType { kBothLegs=0, kAnyLeg, kOneLeg }; /// pair prefilter leg cut logic
 
   PairAnalysis();
   PairAnalysis(const char* name, const char* title);
@@ -55,7 +55,7 @@ public:
   AnalysisFilter& GetTrackFilterMC()       { return fTrackFilterMC;       }
   AnalysisFilter& GetPairFilterMC()       { return fPairFilterMC;       }
 
-  void SetCutType(CutType type)             { fCutType=type; }
+  void SetPairPreFilterLegCutType(CutType type)  { fCutType=type; }
   void SetCutQA(Bool_t qa=kTRUE)            { fCutQA=qa; }
   void SetNoPairing(Bool_t noPairing=kTRUE) { fNoPairing=noPairing; }
   Bool_t IsNoPairing()                      { return fNoPairing; }
