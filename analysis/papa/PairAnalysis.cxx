@@ -860,19 +860,21 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	fillMC.ResetAllBits();
 	if(i==kSEPM) {
 	  for(Int_t isig=0; isig<nsig; isig++) {
-	    // next if nothing needs to be filled
+            // next if nothing needs to be filled
 	    if(!pairClassMC.TestBitNumber(isig) && !pairClassMChf.TestBitNumber(isig)) continue;
-	    // get mc signal
 	    sigMC = (PairAnalysisSignalMC*) fSignalsMC->At(isig);
-	    // next if single particle signal
+            // next if single particle signal
 	    if(sigMC->IsSingleParticle()) continue;
 	    Bool_t isMCtruth = mc->IsMCTruth(pair, sigMC);
 	    fillMC.SetBitNumber(isig,isMCtruth);
 	    if(!isMCtruth) continue;
 	    sigName =  Form("Pair_%s",sigMC->GetName());
-	    Double_t wght      = sigMC->GetWeight(values);
 	    if(pairClassMC.TestBitNumber(isig))   fHistos     ->FillClass(sigName, values);
 	    if(pairClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
+	    // Double_t wght = sigMC->GetWeight(values);
+            // if(wght!= values[PairAnalysisVarManager::kWeight])
+            //   Warning("FillHistograms","pair weight from tracks (%.3e) not matching MC weight (%.3e) for signal %s",
+            //           values[PairAnalysisVarManager::kWeight],wght,sigMC->GetName());
 	  }
 	}
       }
@@ -1023,8 +1025,6 @@ void PairAnalysis::FillTrackArrays(PairAnalysisEvent * const ev)
     if(fHasMC && fSignalsMC) {
       // printf("particle %p: pdg: %.0f \t mother: %.0f grand: %.0f \n", particle, values[PairAnalysisVarManager::kPdgCode],
       // 	     values[PairAnalysisVarManager::kPdgCodeMother], values[PairAnalysisVarManager::kPdgCodeGrandMother]);
-      if(TMath::Abs(values[PairAnalysisVarManager::kPdgCode])!=11 || values[PairAnalysisVarManager::kGeantId]!=kPPrimary) continue;
-      //      PairAnalysisMC* papaMC = PairAnalysisMC::Instance();
       for(Int_t isig=0; isig<fSignalsMC->GetEntriesFast(); isig++) {
 	PairAnalysisSignalMC *sigMC=(PairAnalysisSignalMC*)fSignalsMC->At(isig);
 	// printf("\t temp. particle weight: %f \t signal weight for %s is %f \n",particle->GetWeight(),sigMC->GetName(),sigMC->GetWeight());
