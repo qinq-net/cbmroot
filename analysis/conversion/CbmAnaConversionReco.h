@@ -71,6 +71,7 @@ private:
 	TClonesArray* fMcTracks;
 	TClonesArray* fGlobalTracks;
 	TClonesArray* fRichRings;
+	TClonesArray* fRichHits;
 	CbmRichElectronIdAnn* fRichElIdAnn;
 
 	CbmLitGlobalElectronId* electronidentifier;
@@ -204,6 +205,11 @@ private:
 	
 	// analysis of missing lepton (for the case of only 3 leptons with identified as electron)
 	TH1D * fhEPEM_missingLepton_nofRingHits;
+	TH2D * fhEPEM_missingLepton_ringMid;
+	TH1D * fhEPEM_missingLepton_ringRadius;
+	TH1D * fhEPEM_missingLepton_distance;
+	TH1D * fhEPEM_missingLepton_selectionNN;
+	TH2D * fhEPEM_missingLepton_rings;
 	
 	
 	// histograms for eta analysis

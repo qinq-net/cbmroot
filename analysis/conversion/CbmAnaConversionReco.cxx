@@ -22,6 +22,7 @@
 #include "CbmGlobalTrack.h"
 #include "CbmRichRing.h"
 #include "CbmRichElectronIdAnn.h"
+#include "CbmRichRingLight.h"
 
 #include "CbmAnaConversionCutSettings.h"
 #include "CbmAnaConversionGlobalFunctions.h"
@@ -35,6 +36,7 @@ CbmAnaConversionReco::CbmAnaConversionReco()
   : fMcTracks(NULL),
 	fGlobalTracks(NULL),
 	fRichRings(NULL),
+	fRichHits(NULL),
 	fRichElIdAnn(NULL),
     electronidentifier(NULL),
     fMCTracklist_all(),
@@ -137,6 +139,11 @@ CbmAnaConversionReco::CbmAnaConversionReco()
 	fhEPEM_pt_vs_p_all_mc(NULL),
 	fhEPEM_pt_vs_p_all_refitted(NULL),
 	fhEPEM_missingLepton_nofRingHits(NULL),
+	fhEPEM_missingLepton_ringMid(NULL),
+	fhEPEM_missingLepton_ringRadius(NULL),
+	fhEPEM_missingLepton_distance(NULL),
+	fhEPEM_missingLepton_selectionNN(NULL),
+	fhEPEM_missingLepton_rings(NULL),
     fhEPEM_invmass_eta_mc(NULL),
     fhEPEM_invmass_eta_refitted(NULL),
     fhEPEM_efficiencyCuts_eta(NULL),
@@ -163,6 +170,9 @@ void CbmAnaConversionReco::Init()
 
 	fRichRings = (TClonesArray*) ioman->GetObject("RichRing");
 	if (NULL == fRichRings) { Fatal("CbmAnaConversion::Init","No RichRing array!"); }
+
+	fRichHits = (TClonesArray*) ioman->GetObject("RichHit");
+	if ( NULL == fRichHits) { Fatal("CbmAnaConversion::Init","No RichHit array!"); }
 
 
 	InitHistos();
@@ -424,8 +434,18 @@ void CbmAnaConversionReco::InitHistos()
 	fhEPEM_pt_vs_p_all_refitted	= new TH2D("fhEPEM_pt_vs_p_all_refitted", "fhTest2_electrons_pt_vs_p;p_{t} in GeV/c; p in GeV/c", 240, -2., 10., 360, -2., 16.);
 	fHistoList_all.push_back(fhEPEM_pt_vs_p_all_refitted);
 
-	fhEPEM_missingLepton_nofRingHits = new TH1D("fhEPEM_missingLepton_nofRingHits","fhEPEM_missingLepton_nofRingHits;nofringhits;#", 30, 0, 30);
+	fhEPEM_missingLepton_nofRingHits	= new TH1D("fhEPEM_missingLepton_nofRingHits","fhEPEM_missingLepton_nofRingHits;nofringhits;#", 30, 0, 30);
+	fhEPEM_missingLepton_ringMid		= new TH2D("fhEPEM_missingLepton_ringMid","fhEPEM_missingLepton_ringMid;X;Y", 400, -200, 200, 600, -300, 300);
+	fhEPEM_missingLepton_ringRadius		= new TH1D("fhEPEM_missingLepton_ringRadius","fhEPEM_missingLepton_ringRadius;ringRadius;#", 100, 0, 100);
+	fhEPEM_missingLepton_distance		= new TH1D("fhEPEM_missingLepton_distance","fhEPEM_missingLepton_distance;distance;#", 100, 0, 100);
+	fhEPEM_missingLepton_selectionNN	= new TH1D("fhEPEM_missingLepton_selectionNN","fhEPEM_missingLepton_selectionNN;selectionNN;#", 40, -2, 2);
+	fhEPEM_missingLepton_rings			= new TH2D("fhEPEM_missingLepton_rings","fhEPEM_missingLepton_rings;selectionNN;#", 400, -200, 200, 600, -300, 300);
 	fHistoList_all.push_back(fhEPEM_missingLepton_nofRingHits);
+	fHistoList_all.push_back(fhEPEM_missingLepton_ringMid);
+	fHistoList_all.push_back(fhEPEM_missingLepton_ringRadius);
+	fHistoList_all.push_back(fhEPEM_missingLepton_distance);
+	fHistoList_all.push_back(fhEPEM_missingLepton_selectionNN);
+	fHistoList_all.push_back(fhEPEM_missingLepton_rings);
 
 
 	// histograms for eta analysis
@@ -1718,6 +1738,17 @@ void CbmAnaConversionReco::CutEfficiencyStudies(int e1, int e2, int e3, int e4, 
 			CbmRichRing* richRing = (CbmRichRing*) fRichRings->At(richInd);
 			Int_t nofringhits = richRing->GetNofHits();
 			fhEPEM_missingLepton_nofRingHits->Fill(nofringhits);
+			fhEPEM_missingLepton_ringMid->Fill(richRing->GetCenterX(), richRing->GetCenterY() );
+			fhEPEM_missingLepton_ringRadius->Fill(richRing->GetRadius() );
+			fhEPEM_missingLepton_distance->Fill(richRing->GetDistance() );
+			fhEPEM_missingLepton_selectionNN->Fill(richRing->GetSelectionNN() );
+			
+			for(int i=0; i<nofringhits; i++) {
+				UShort_t richHit = richRing->GetHit(i);
+				CbmRichHitLight *hit = (CbmRichHitLight*)fRichHits->At(richHit);
+				if(hit == NULL) continue;
+				fhEPEM_missingLepton_rings->Fill(hit->fX, hit->fY);
+			}
 		}
 		
 		fhEPEM_pi0_ANNvalues_noCuts->Fill(ANNvalueE1);
