@@ -49,7 +49,7 @@ namespace PairAnalysisHelper
   TFormula *GetFormula(const char *name, const char* formula);
 
   // pdg labels
-  void SetPDGBinLabels( TH1 *hist);
+  void SetPDGBinLabels( TH1 *hist, Bool_t clean);
   TString GetPDGlabel(Int_t pdg);
   void SetGEANTBinLabels( TH1 *hist);
 

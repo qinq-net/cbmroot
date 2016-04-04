@@ -1093,9 +1093,14 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisPair(const PairAnalysisPa
 
   // Reset
   ResetArrayData(kPairMax, values);
+  ResetArrayDataMC(kPairMaxMC, values);
 
   // Protect
   if(!pair) return;
+
+  // first fill mc info to avoid kWeight beeing reset
+  FillVarMCParticle(pair->GetFirstDaughter()->GetMCTrack(),
+		    pair->GetSecondDaughter()->GetMCTrack(), values);
 
   // Set
   values[kPairType]  = pair->GetType();

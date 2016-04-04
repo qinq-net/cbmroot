@@ -31,6 +31,7 @@
 #include <CbmDetectorList.h>
 
 #include "PairAnalysisVarManager.h"
+#include "PairAnalysisStyler.h"
 #include "PairAnalysisHelper.h"
 
 //_____________________________________________________________________________
@@ -339,16 +340,40 @@ TFormula *PairAnalysisHelper::GetFormula(const char *name, const char* formula)
 }
 
 //_____________________________________________________________________________
-void PairAnalysisHelper::SetPDGBinLabels( TH1 *hist) {
+void PairAnalysisHelper::SetPDGBinLabels( TH1 *hist, Bool_t clean) {
   //
   // build formula key with parameter names
   //
+
+  TH1 *hLbl = PairAnalysisStyler::GetFirstHistogram();
+  if(!hLbl) hLbl = hist;
+
   TDatabasePDG *pdg = TDatabasePDG::Instance();
-  TAxis *xaxis = hist->GetXaxis();
+  TAxis *xaxis = hLbl->GetXaxis();
   for(Int_t i=1; i<hist->GetNbinsX()+1; i++) {
     // printf("bin %d: low edge: %.0f --> %s \n",i,xaxis->GetBinLowEdge(i), pdg->GetParticle(xaxis->GetBinLowEdge(i))->GetName());
-    xaxis->SetBinLabel(i,pdg->GetParticle((Int_t)xaxis->GetBinLowEdge(i))->GetName());
+    if(clean && !hist->GetBinContent(i)) continue;
+    Int_t pdgCode = (Int_t)xaxis->GetBinLowEdge(i);
+    TParticlePDG *p = pdg->GetParticle(pdgCode);
+    //    xaxis->SetBinLabel(i,(p?p->GetName():""));
+    xaxis->SetBinLabel(i,(p?GetPDGlabel(pdgCode):""));
   }
+
+  if(hLbl->GetDimension()==1) return;
+
+  TAxis *yaxis = hLbl->GetYaxis();
+  TString keyY = yaxis->GetName();
+  if(keyY.Contains("pdg",TString::kIgnoreCase)) {
+    for(Int_t i=1; i<hist->GetNbinsY()+1; i++) {
+      // printf("bin %d: low edge: %.0f --> %s \n",i,yaxis->GetBinLowEdge(i), pdg->GetParticle(yaxis->GetBinLowEdge(i))->GetName());
+      if(clean && !hist->GetBinContent(i)) continue;
+      Int_t pdgCode = (Int_t)yaxis->GetBinLowEdge(i);
+      TParticlePDG *p = pdg->GetParticle(pdgCode);
+      //    yaxis->SetBinLabel(i,(p?p->GetName():""));
+      yaxis->SetBinLabel(i,(p?GetPDGlabel(pdgCode):""));
+    }
+  }
+
 }
 
 //_____________________________________________________________________________
@@ -362,7 +387,9 @@ TString PairAnalysisHelper::GetPDGlabel(Int_t pdg)
   name.ReplaceAll("dd_1_bar","primary");
   name.ReplaceAll("proton","p");
   // correct greek letters
+  /*
   if(name.Contains("delta",TString::kIgnoreCase) ||
+     name.Contains("gamma",TString::kIgnoreCase) ||
      name.Contains("sigma",TString::kIgnoreCase) ||
      name.Contains("xi",TString::kIgnoreCase) ||
      name.Contains("lambda",TString::kIgnoreCase) ||
@@ -372,12 +399,31 @@ TString PairAnalysisHelper::GetPDGlabel(Int_t pdg)
      name.Contains("phi",TString::kIgnoreCase) ||
      name.Contains("eta",TString::kIgnoreCase) ||
      name.Contains("upsilon",TString::kIgnoreCase) ||
+     name.Contains("nu",TString::kIgnoreCase) ||
      name.Contains("pi",TString::kIgnoreCase) ||
      name.Contains("rho",TString::kIgnoreCase) ) name.Prepend("#");
+  */
+  name.ReplaceAll("delta","#delta");
+  name.ReplaceAll("gamma","#gamma");
+  name.ReplaceAll("psi","#psi");
+  name.ReplaceAll("sigma","#sigma");
+  name.ReplaceAll("xi","#xi");
+  name.ReplaceAll("lambda","#lambda");
+  name.ReplaceAll("omega","#omega");
+  name.ReplaceAll("eta","#eta");
+  name.ReplaceAll("tau","#tau");
+  name.ReplaceAll("phi","#phi");
+  name.ReplaceAll("eta","#eta");
+  name.ReplaceAll("upsilon","#upsilon");
+  name.ReplaceAll("nu","#nu");
+  name.ReplaceAll("mu","#mu");
+  name.ReplaceAll("pi","#pi");
+  name.ReplaceAll("rho","#rho");
+
   // correct anti particles
-  if(name.Contains("_bar")) { name.ReplaceAll("_bar","}"); name.Prepend("#bar{"); }
   if(name.Contains("anti")) { name.ReplaceAll("anti","#bar{"); name.Append("}"); }
-    // correct indices
+  else if(name.Contains("_bar")) { name.ReplaceAll("_bar","}"); name.Prepend("#bar{"); }
+  // correct indices
   name.ReplaceAll("+","^{+}");       name.ReplaceAll("-","^{-}");         name.ReplaceAll("0","^{0}");
   name.ReplaceAll("_s","_{s}");       name.ReplaceAll("_c","_{c}");       name.ReplaceAll("_b","_{b}");
   name.ReplaceAll("_1","_{1}");

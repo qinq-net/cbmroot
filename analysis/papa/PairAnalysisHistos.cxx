@@ -1035,6 +1035,8 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
   /// "events":     use number of used events in meta data to normalize the histograms
   ///
   /// "geant":      translate geantId to geant process names (see PairAnalysisHelper::SetGEANTBinLabels)
+  /// "pdg":        translate bin low edges into pdg label
+  /// "pdgc":       translate bin low edges into pdg label for bins with entries
 
   TString optString(option);
   optString.ToLower();
@@ -1072,6 +1074,8 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
   Bool_t optMeanY    =optString.Contains("meany");     optString.ReplaceAll("meany","");
   Bool_t optRmsY     =optString.Contains("rmsy");      optString.ReplaceAll("rmsy","");
   Bool_t optGeant    =optString.Contains("geant");     optString.ReplaceAll("geant","");
+  Bool_t optPdgClean =optString.Contains("pdgc");      optString.ReplaceAll("pdgc","");
+  Bool_t optPdg      =optString.Contains("pdg");       optString.ReplaceAll("pdg","");
 
   /// set rebinning
   Int_t rbn = 2;
@@ -1385,6 +1389,12 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
     if(optGeant) {
       Info("DrawSame"," Set GEANT bin labels");
       PairAnalysisHelper::SetGEANTBinLabels(h);
+    }
+
+    /// set special pdg labels
+    if(optPdg || optPdgClean) {
+      Info("DrawSame"," Set PDG bin labels");
+      PairAnalysisHelper::SetPDGBinLabels(h,optPdgClean);
     }
 
     /// style histograms if not done before
