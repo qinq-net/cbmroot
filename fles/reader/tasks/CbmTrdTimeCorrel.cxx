@@ -36,8 +36,11 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
     fiCluster(0),
     fiRawMessage(0),
     timestampOffsets(),
-    fLastMessageTime{{0}}
-{};
+    fLastMessageTime{{0}},
+    fEpochMarkerArray{{0}},
+    fFirstEpochMarker{{true}}
+
+    {};
 
 // ----              -------------------------------------------------------
 CbmTrdTimeCorrel::~CbmTrdTimeCorrel()
@@ -72,6 +75,16 @@ InitStatus CbmTrdTimeCorrel::Init()
   fClusters = new TClonesArray("CbmTrdCluster",100);
   ioman->Register("TrdCluster", "TRD Clusters", fClusters, kTRUE);
 
+  // Set variable for last epoch counter per spadic to zero and bool for "is first epoch" to true 
+  {
+    for (Int_t i=0; i < 3; ++i) { 
+      for (Int_t j=0; j < 6; ++j) {
+	fEpochMarkerArray[i][j] = 5000;
+	fFirstEpochMarker[i][j] = true;
+      }
+    }
+  }
+  
   CreateHistograms();
   return kSUCCESS;
 }
@@ -335,6 +348,12 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       if (isOverflow){   // fill overflow messages in an additional row
 	if(chID < 32)fHM->H2("InfoType_vs_Channel")->Fill(padID,10);
 	else fHM->H2("InfoType_vs_Channel")->Fill(33,10);
+      }
+      if (isEpoch) {
+	// sysID is hardcoded here to 0. To be changed as soon as sysID is set correctly.
+	if (!fFirstEpochMarker[0][spaID]) fHM->H1("Delta_Epoch_hist_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2)+"_Half_"+std::to_string((Int_t)(chID/16)))->Fill(epoch - fEpochMarkerArray[0][spaID]);
+	fEpochMarkerArray[0][spaID] = epoch;
+	fFirstEpochMarker[0][spaID] = false;
       }
       if (0 <= chID && chID < 32 && isEpoch){
 	if(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID][chID])<-1000)  LOG(INFO) << "SpadicMessage (isEpoch): " << iSpadicMessage << " has negative Delta Fulltime. sourceA: " << sourceA << " chID: " << raw->GetChannelID() << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " isInfo: " << isInfo << " isEpoch: " << isEpoch << " Lost Messages: " << lostMessages << FairLogger::endl;
@@ -1068,6 +1087,14 @@ void CbmTrdTimeCorrel::CreateHistograms()
     }
   }
 
+  for (Int_t syscore=0; syscore<1;++syscore) {
+    for (Int_t spadic=0; spadic<3;++spadic) {
+      for (Int_t halfchip=0; halfchip<2;++halfchip) {
+	fHM->Add("Delta_Epoch_hist_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic)+"_Half_"+std::to_string(halfchip), new TH1I(("Delta_Epoch_hist_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic)+"_Half_"+std::to_string(halfchip)).c_str(), "Epoch differences", 8301,-4150.5,4150.5));
+      }
+    }
+  }
+  
   fHM->Add("TsCounter", new TGraph());
   fHM->G1("TsCounter")->SetNameTitle("TsCounter","TsCounter");
   fHM->Add("TsCounterHit0", new TGraph());

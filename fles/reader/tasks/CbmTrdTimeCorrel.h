@@ -80,6 +80,9 @@ class CbmTrdTimeCorrel : public FairTask
      Timestamps are stored for a full spadic.
   */
 
+  Int_t fEpochMarkerArray[3][6];
+  Bool_t fFirstEpochMarker[3][6];
+  
   void CreateHistograms();
 
   void ReLabelAxis(TAxis* axis, TString type, Bool_t underflow, Bool_t overflow);
