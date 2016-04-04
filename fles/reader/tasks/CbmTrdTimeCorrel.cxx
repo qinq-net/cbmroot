@@ -79,7 +79,7 @@ InitStatus CbmTrdTimeCorrel::Init()
   {
     for (Int_t i=0; i < 3; ++i) { 
       for (Int_t j=0; j < 6; ++j) {
-	fEpochMarkerArray[i][j] = 5000;
+	fEpochMarkerArray[i][j] = 0;
 	fFirstEpochMarker[i][j] = true;
       }
     }
