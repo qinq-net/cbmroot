@@ -70,6 +70,7 @@
 #include <TProfile.h>
 #include <TProfile2D.h>
 #include <TProfile3D.h>
+#include <THStack.h>
 #include <TCollection.h>
 #include <THashList.h>
 #include <TString.h>
@@ -227,7 +228,8 @@ void PairAnalysisHistos::AddSparse(const char* histClass, Int_t ndim, TObjArray 
 
   isOk&=IsHistogramOk(histClass,name);
 
-  THnSparseD *hist;
+  //  THnSparseD *hist;
+  PairAnalysisHn *hist;
   Int_t bins[ndim];
   if (isOk) {
     // get number of bins
@@ -236,7 +238,8 @@ void PairAnalysisHistos::AddSparse(const char* histClass, Int_t ndim, TObjArray 
       bins[idim]=vec->GetNrows()-1;
     }
 
-    hist=new THnSparseD(name.Data(),"", ndim, bins, 0x0, 0x0);
+    //    hist=new THnSparseD(name.Data(),"", ndim, bins, 0x0, 0x0);
+    hist=new PairAnalysisHn(name.Data(),"", ndim, bins, 0x0, 0x0);
 
     // set binning
     for(Int_t idim=0 ;idim<ndim; idim++) {
@@ -351,9 +354,10 @@ TString PairAnalysisHistos::UserHistogram(const char* histClass, TObject* hist)
   UInt_t valType[20] = {0};
   // extract variables from axis
   FillVarArray(hist, valType);
+  // TODO: implement THn/PairAnalysisHn
   // change to mc truth variables if available
   TString hclass=histClass;
-  if(hclass.Contains("MCtruth")) {
+  if(hclass.Contains("MCtruth") && !(hist->IsA()==PairAnalysisHn::Class()) ) {
     for(Int_t i=0;i<2;i++) {
       /// protection for changes of variable enum (in the postprocessing) --> use axistname indentification
       //      UInt_t valTypeFromTitle = 0;
@@ -547,7 +551,7 @@ void PairAnalysisHistos::UserHistogramReservedWords(const char* histClass, const
   // Creation of histogram for all pair or track types
   //
   TString title(hist->GetTitle());
-  // Same Event Like Sign
+
   TIter nextClass(&fHistoList);
   THashList *l=0;
   while ( (l=static_cast<THashList*>(nextClass())) ){
@@ -556,7 +560,10 @@ void PairAnalysisHistos::UserHistogramReservedWords(const char* histClass, const
       TObject *h=hist->Clone();
       // Tobject has no function SetDirectory, didn't we need this???
       //      h->SetDirectory(0);
-      ((TH1*)h)->SetTitle(Form("%s %s",title.Data(),l->GetName()));
+      if(h->InheritsFrom(TH1::Class()))
+	((TH1*)h)->SetTitle(Form("%s %s",title.Data(),l->GetName()));
+      else
+       	((THnBase*)h)->SetTitle(Form("%s %s",title.Data(),l->GetName()));
 
       UserHistogram(l->GetName(),h);
     }
@@ -1008,6 +1015,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
   /// "eff":        efficiencies are calculated
   /// "ratio":      ratios of any histclass to "histClassDenom" are calculated
   /// "oneOver":    the histogram is rescaled by 1./contents
+  /// "stack":      build and plot a stack histogram
   ///
   /// "noMc":       no mc signals are plotted
   /// "noMcTrue":   no mc truth signals are plotted
@@ -1065,9 +1073,10 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
   Bool_t optRbnStat  =optString.Contains("rebinstat"); optString.ReplaceAll("rebinstat","");
   Bool_t optRbn      =optString.Contains("rebin");
   Bool_t optSclMax   =optString.Contains("sclmax");    optString.ReplaceAll("sclmax","");
-  Bool_t optNormY    =optString.Contains("normy");      optString.ReplaceAll("normy","");
+  Bool_t optNormY    =optString.Contains("normy");     optString.ReplaceAll("normy","");
   Bool_t optNorm     =optString.Contains("norm");      optString.ReplaceAll("norm","");
   Bool_t optEvt      =optString.Contains("events");    optString.ReplaceAll("events","");
+  Bool_t optStack    =optString.Contains("stack");     optString.ReplaceAll("stack","");
   /// options - information
   Bool_t optMeanX    =optString.Contains("meanx");     optString.ReplaceAll("meanx","");
   Bool_t optRmsX     =optString.Contains("rmsx");      optString.ReplaceAll("rmsx","");
@@ -1109,6 +1118,12 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
     arr->SetOwner(kFALSE);
   }
 
+  /// stack option
+  THStack *hs = NULL;
+  // if(optStack) {
+  //   hs = new THStack("hs","stacked histograms");
+  // }
+
   /// add canvas
   TCanvas *c=0;
   if (optCan){
@@ -1125,7 +1140,8 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
   if(prim && prim->GetSize()>1) prim->RemoveLast(); // remove redraw axis histogram
   for(Int_t io=0; io< (prim ? prim->GetSize() : 0); io++) {
     obj=prim->At(io);
-    if(obj->InheritsFrom(TH1::Class()) && obj!=prim->At(io+1)) nobj++;
+    if(obj->InheritsFrom(TH1::Class())     && obj!=prim->At(io+1)) nobj++;
+    if(obj->InheritsFrom(THStack::Class()) && obj!=prim->At(io+1)) nobj++;
   }
 
   /// add or get legend
@@ -1415,6 +1431,10 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
     /// draw the histogram
     if(optGoff)
       arr->Add(h);
+    else if(optStack) {
+      if(!hs) hs = new THStack("hs",Form(";%s;%s",h->GetXaxis()->GetTitle(),h->GetYaxis()->GetTitle()));
+      hs->Add(h);
+    }
     else {
       optString.ReplaceAll(" ","");
       Info("DrawSame"," Draw object with options: '%s'",optString.Data());
@@ -1495,7 +1515,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
       legOpt.ReplaceAll("z","");
       legOpt.ReplaceAll("e","");
       if (optTask) histClass.Prepend(Form("%s ",GetName()));
-      if (optTask && optCutStep && i) histClass.Prepend("+");
+      if ( (optTask && optCutStep && i) || (optStack && (i-nobj)) ) histClass.Prepend("+");
       if (optDiv && !optOneOver)  histClass.ReplaceAll(GetName(),Form("%s/%s",GetName(),divName.Data()));
       if (optDiv &&  optOneOver)  histClass.Prepend(Form("%s/",divName.Data()));
       if (optDet) {
@@ -1522,6 +1542,13 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
 
 
     //    }
+  }
+
+  /// draw stack histogram
+  if(optStack) {
+    optString.ReplaceAll(" ","");
+    Info("DrawSame"," Draw stacked object with options: '%s'",optString.Data());
+    hs->Draw(nobj>0?(optString+"same").Data():optString.Data());
   }
 
   /// draw legend only once

@@ -413,7 +413,6 @@ TString PairAnalysisHelper::GetPDGlabel(Int_t pdg)
   name.ReplaceAll("eta","#eta");
   name.ReplaceAll("tau","#tau");
   name.ReplaceAll("phi","#phi");
-  name.ReplaceAll("eta","#eta");
   name.ReplaceAll("upsilon","#upsilon");
   name.ReplaceAll("nu","#nu");
   name.ReplaceAll("mu","#mu");

@@ -27,6 +27,7 @@
 #include <TCollection.h>
 #include <TH1.h>
 #include <TGraph.h>
+#include <THStack.h>
 #include <TPad.h>
 #include <TLegend.h>
 #include <TLegendEntry.h>
@@ -511,6 +512,9 @@ TH1 * PairAnalysisStyler::GetFirstHistogram()
     }
     if(obj->InheritsFrom(TGraph::Class())) {
       return (static_cast<TH1*>(static_cast<TGraph*>(obj)->GetHistogram()));
+    }
+    if(obj->InheritsFrom(THStack::Class())) {
+      return (static_cast<TH1*>(static_cast<THStack*>(obj)->GetHistogram()));
     }
   }
   return 0x0;
