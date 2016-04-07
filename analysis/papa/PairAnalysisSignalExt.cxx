@@ -1047,6 +1047,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   Bool_t optCan      =optString.Contains("can");       optString.ReplaceAll("can","");
   Bool_t optLine     =optString.Contains("line");      optString.ReplaceAll("line","");
   Bool_t optStat     =optString.Contains("stat");      optString.ReplaceAll("stat","");
+  Bool_t optSSB      =optString.Contains("ssb");       optString.ReplaceAll("ssb","");
   Bool_t optSB       =optString.Contains("sb");        optString.ReplaceAll("sb","");
   Bool_t optSgn      =optString.Contains("sgn");       optString.ReplaceAll("sgn","");
   Bool_t optOnlyRaw  =optString.Contains("onlyraw");   optString.ReplaceAll("onlyraw","");
@@ -1210,7 +1211,8 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
 	  }
 	  if(fRebin>1)       hmc->Rebin(fRebin);
 	}
-	if(optSB) hmc->Divide(fHistSignal);
+	if(optSSB){ hmc->Divide(fHistDataPM); hmc->SetYTitle(Form("S/(S+B)")); }
+	if(optSB) { hmc->Divide(fHistBackground); hmc->SetYTitle(Form("%s",GetValueName(3))); }
 	if(fPlotMin!=fPlotMax) hmc->SetAxisRange(fPlotMin,fPlotMax, "X");
 	hmc->Draw(i>0?"HISTsame":"HIST");
 	i++;

@@ -496,6 +496,11 @@ inline void PairAnalysisVarManager::ResetArrayData(Int_t to, Double_t * const va
   if(to>=kHitMax && to>kConstMax) {
     values[kMassSq]     = -999.;
     values[kBeta]       = -999.;
+    values[kTOFPidDeltaBetaEL] = -999.;
+    values[kTOFPidDeltaBetaMU] = -999.;
+    values[kTOFPidDeltaBetaPI] = -999.;
+    values[kTOFPidDeltaBetaKA] = -999.;
+    values[kTOFPidDeltaBetaPR] = -999.;
   }
 }
 
@@ -831,7 +836,7 @@ inline void PairAnalysisVarManager::FillVarTrdTrack(const CbmTrdTrack *track, Do
   }
 
   // Set
-  values[kTRDSignal]      = track->GetELoss() * 1.e+6; //GeV->keV, NOTE: see corrections below (angles,#hits)
+  values[kTRDSignal]      = track->GetELoss() * 1.e+6; //GeV->keV, NOTE: see corrections,normalisation below (angles,#hits)
   values[kTRDPidWkn]      = track->GetPidWkn(); // PID value Wkn method
   values[kTRDPidANN]      = track->GetPidANN(); // PID value ANN method
   // PID value Likelihood method

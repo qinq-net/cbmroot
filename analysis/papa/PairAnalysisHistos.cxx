@@ -1008,6 +1008,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
   /// Draw histograms with the same histName into a canvas
   ///
   /// additional plotting options to TH1::Draw():
+  /// "back":       iterate backwards over the histClasses
   /// "goff":       graphics are switched off & an array with the objects is returned
   /// "task":       histograms of different tasks are compared (see DrawTaskSame)
   ///
@@ -1041,6 +1042,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
   /// "norm":       histogram is normalized to 1.
   /// "normY":      2D-histograms are normalized in x-axis slices to 1.
   /// "events":     use number of used events in meta data to normalize the histograms
+  /// "smoothX":    smooths the histogram along x-axis by factor "X" (for X<10)
   ///
   /// "geant":      translate geantId to geant process names (see PairAnalysisHelper::SetGEANTBinLabels)
   /// "pdg":        translate bin low edges into pdg label
@@ -1050,6 +1052,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
   optString.ToLower();
   printf("Plot hist: '%s' class-denom/sel: '%s' \t listDenom: '%s' \t options: '%s' \n",
        histName.Data(), histClassDenom.Data(), (listDenom?listDenom->GetName():""), optString.Data());
+  Bool_t optBack     =optString.Contains("back");      optString.ReplaceAll("back","");
   Bool_t optGoff     =optString.Contains("goff");      optString.ReplaceAll("goff","");
   Bool_t optTask     =optString.Contains("task");      optString.ReplaceAll("task","");
   Bool_t optCutStep = optString.Contains("cutstep");   optString.ReplaceAll("cutstep","");
@@ -1070,8 +1073,9 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
   Bool_t optDet      =optString.Contains("det");       optString.ReplaceAll("det","");
   Bool_t optMeta     =optString.Contains("meta");      optString.ReplaceAll("meta","");
   Bool_t optWdth     =optString.Contains("width");     optString.ReplaceAll("width","");
-  Bool_t optRbnStat  =optString.Contains("rebinstat"); optString.ReplaceAll("rebinstat","");
+  Bool_t optRbnStat  =optString.Contains("rebinstat"); optString.ReplaceAll("rebinstat","stat");
   Bool_t optRbn      =optString.Contains("rebin");
+  Bool_t optSmooth   =optString.Contains("smooth");
   Bool_t optSclMax   =optString.Contains("sclmax");    optString.ReplaceAll("sclmax","");
   Bool_t optNormY    =optString.Contains("normy");     optString.ReplaceAll("normy","");
   Bool_t optNorm     =optString.Contains("norm");      optString.ReplaceAll("norm","");
@@ -1095,6 +1099,31 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
       optString.ReplaceAll(rebin,"");
     }
     optString.ReplaceAll("rebin","");
+  }
+  /// set stat. uncertainty limit for rebinning
+  /// NOTE: first check for one digit, then 2 digits
+  TArrayD* limits=NULL;
+  Double_t stat = 0.8;
+  if(optRbnStat) {
+    TString rebin(optString(optString.Index("stat",4,0,TString::kExact)+4,4));
+    if(!rebin.IsFloat()) rebin=optString(optString.Index("stat",4,0,TString::kExact)+4,3);
+    if(rebin.IsFloat())  {
+      stat = rebin.Atof();
+      //    printf("rebinstat string: '%s' -> %f\n",rebin.Data(),stat);
+      optString.ReplaceAll(rebin,"");
+    }
+    optString.ReplaceAll("stat","");
+  }
+
+  /// set smoothing
+  Int_t smth = 1;
+  if(optSmooth) {
+    TString smooth(optString(optString.Index("smooth",6,0,TString::kExact)+6));
+    if(smooth.IsDigit())  {
+      smth = smooth.Atoi();
+      optString.ReplaceAll(smooth,"");
+    }
+    optString.ReplaceAll("smooth","");
   }
 
   /// activate std option for legend
@@ -1179,7 +1208,8 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
 
   Int_t i=nobj;
   if(optTask && nobj) i=nobj;
-  TIter next(&fHistoList);
+  TListIter next(&fHistoList,(optBack?kIterBackward:kIterForward));
+  //TIter next(&fHistoList);
   THashList *classTable=0;
   TH1 *hFirst=0x0;
   /// iterate over all histogram classes (events,pairs,tracks,hits)
@@ -1237,7 +1267,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
     if (i==0) hFirst=h;
 
     /// print normalisation option
-    if(optRbn||optRbnStat)        Info("DrawSame"," Rebin by %d, to <%.1f%% stat. uncertainty per bin",(optRbn?rbn:0),(optRbnStat?0.8*100:0));
+    if(optRbn||optRbnStat)        Info("DrawSame"," Rebin by %d, to <%.1f%% stat. uncertainty per bin",(optRbn?rbn:0),(optRbnStat?stat*100:0));
     if(optNormY||optNorm||optEvt) Info("DrawSame"," Normalize in y-axis,2D's only(%d), by int.(%d), by #events(%d)",optNormY,optNorm,optEvt);
     if(optSclMax)                 Info("DrawSame"," Scale to maximum(%d)",optSclMax);
 
@@ -1258,11 +1288,12 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
     }
     if(optRbnStat) {
       /// rebin until stat. uncertainty is lower than 80%
-      TArrayD* limits = PairAnalysisHelper::MakeStatBinLimits(h,0.8);
+      limits = PairAnalysisHelper::MakeStatBinLimits(h,stat);
       h=h->Rebin(limits->GetSize()-1,h->GetName(),limits->GetArray());
       h->Scale(1.,"width");
-      delete limits;
+      //      delete limits;
     }
+    if(optSmooth)                h->Smooth(smth);
 
     /// get default histogram titles
     TString ytitle = h->GetYaxis()->GetTitle();
@@ -1307,6 +1338,10 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
       delete hMC; //delete the surplus object
       // normalize and rebin only once
       hdenom->Sumw2(); //why is it crashing here
+      if(optRbnStat && (optEff || !(i%10)) )   {
+	hdenom=hdenom->Rebin(limits->GetSize()-1,hdenom->GetName(),limits->GetArray());
+	hdenom->Scale(1.,"width");
+      }
       if(optRbn && (optEff || !(i%10)) )       hdenom->Rebin(rbn);
       if(optEvt && (optEff || !(i%10)) )       hdenom->Scale(1./events);
       if(!hdenom || !h->Divide(hdenom))  { Warning("DrawSame(eff/ratio)","Division failed!!!!"); continue; }
@@ -1542,7 +1577,9 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
 
 
     //    }
-  }
+    // cleanup
+    if(limits) delete limits;
+  } //while loop histclass
 
   /// draw stack histogram
   if(optStack) {

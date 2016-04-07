@@ -77,6 +77,7 @@ namespace PairAnalysisStyler
   void LoadStyle();
   void Style(TObject *obj, Int_t idx=0);
   void SetForceLineStyle(Int_t line=kSolid);
+  void SetForceColor(Int_t color=kBlack);
 
   enum Epalette { kDefault=0, kGoodBad };
   void SetPalette(Epalette colors=kDefault, Bool_t reverse=kFALSE);

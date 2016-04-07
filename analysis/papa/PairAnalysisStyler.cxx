@@ -342,6 +342,17 @@ void PairAnalysisStyler::SetForceLineStyle(Int_t line)
 }
 
 //_____________________________________________________________________________
+void PairAnalysisStyler::SetForceColor(Int_t color)
+{
+  //
+  // force a certain color
+  //
+  for(Int_t i=0; i<kNMaxColor; i++) {
+    Color[i] = color;
+  }
+}
+
+//_____________________________________________________________________________
 void PairAnalysisStyler::SetStyle(Eidx idx, Int_t col, Int_t marker, Double_t size, Int_t line, Double_t width, Int_t fill)
 {
   //
@@ -378,15 +389,17 @@ void PairAnalysisStyler::SetLegendAttributes(TLegend *leg, Bool_t fill)
   Double_t txtsze    = 0.04; //0.025; //gStyle->GetLegendTextSize());
   Double_t charwdth  = 0.01;//0.01; // own defintion
   Double_t entrysep  = 1.25;//1.25;  //entry seperation
-  leg->SetTextSize(txtsze); // this should switch off the autosize
-  //  leg->SetTextAlign(11);
 
   // calculate get legend width
   Double_t maxwdth=0.0;
   TList *llist = leg->GetListOfPrimitives();
   Int_t nent = llist->GetEntries();
 
-  if(nent>5) txtsze=0.025;
+  if(nent>5) txtsze=0.03; //0.025
+  leg->SetTextSize(txtsze); // this should switch off the autosize
+  //  leg->SetTextAlign(11);
+
+
   for(Int_t il=0; il<nent; il++) {
     TLegendEntry *lent = static_cast<TLegendEntry*>(llist->At(il));
     TString lst(lent->GetLabel());

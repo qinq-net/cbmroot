@@ -11,7 +11,7 @@
 
 
 #include <TNamed.h>
-#include <TVectorT.h>
+#include <TVectorD.h>
 #include <TMath.h>
 #include <TH1F.h>
 #include <TF1.h>
@@ -68,7 +68,8 @@ public:
   void SetRebin(Int_t factor)                              { fRebin=factor; }
   void SetStatRebin(Double_t stat)                         { fRebinStat=stat; }
   void SetRebin(TArrayD *limits)                           { fBinLimits=limits; }
-  void SetExtractionMethod(ESignalExtractionMethod method, PairAnalysisFunction *sigF=0x0) { 
+  void SetRebin(TVectorD *limits)                          { fBinLimits=new TArrayD(limits->GetNrows()-1,limits->GetMatrixArray()); }
+  void SetExtractionMethod(ESignalExtractionMethod method, PairAnalysisFunction *sigF=0x0) {
     fPeakMethod=method; fExtrFunc=sigF;}
   void SetMixingCorrection(Bool_t mixcorr=kTRUE)           { fMixingCorr=mixcorr; }
 
