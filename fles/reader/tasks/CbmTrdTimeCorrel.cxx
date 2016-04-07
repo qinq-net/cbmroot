@@ -36,7 +36,7 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
     fiCluster(0),
     fiRawMessage(0),
     timestampOffsets(),
-    fLastMessageTime{{0}},
+    fLastMessageTime{{{0}}},
     fEpochMarkerArray{{0}},
     fFirstEpochMarker{{true}}
 
