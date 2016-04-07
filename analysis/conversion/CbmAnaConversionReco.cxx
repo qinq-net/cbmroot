@@ -23,6 +23,7 @@
 #include "CbmRichRing.h"
 #include "CbmRichElectronIdAnn.h"
 #include "CbmRichRingLight.h"
+#include "CbmRichHit.h"
 
 #include "CbmAnaConversionCutSettings.h"
 #include "CbmAnaConversionGlobalFunctions.h"
@@ -434,10 +435,10 @@ void CbmAnaConversionReco::InitHistos()
 	fhEPEM_pt_vs_p_all_refitted	= new TH2D("fhEPEM_pt_vs_p_all_refitted", "fhTest2_electrons_pt_vs_p;p_{t} in GeV/c; p in GeV/c", 240, -2., 10., 360, -2., 16.);
 	fHistoList_all.push_back(fhEPEM_pt_vs_p_all_refitted);
 
-	fhEPEM_missingLepton_nofRingHits	= new TH1D("fhEPEM_missingLepton_nofRingHits","fhEPEM_missingLepton_nofRingHits;nofringhits;#", 30, 0, 30);
-	fhEPEM_missingLepton_ringMid		= new TH2D("fhEPEM_missingLepton_ringMid","fhEPEM_missingLepton_ringMid;X;Y", 400, -200, 200, 600, -300, 300);
-	fhEPEM_missingLepton_ringRadius		= new TH1D("fhEPEM_missingLepton_ringRadius","fhEPEM_missingLepton_ringRadius;ringRadius;#", 100, 0, 100);
-	fhEPEM_missingLepton_distance		= new TH1D("fhEPEM_missingLepton_distance","fhEPEM_missingLepton_distance;distance;#", 100, 0, 100);
+	fhEPEM_missingLepton_nofRingHits	= new TH1D("fhEPEM_missingLepton_nofRingHits","fhEPEM_missingLepton_nofRingHits;nofringhits;#", 41, -0.5, 40.5);
+	fhEPEM_missingLepton_ringMid		= new TH2D("fhEPEM_missingLepton_ringMid","fhEPEM_missingLepton_ringMid;X;Y", 100, -150, 150, 150, -250, 250);
+	fhEPEM_missingLepton_ringRadius		= new TH1D("fhEPEM_missingLepton_ringRadius","fhEPEM_missingLepton_ringRadius;ringRadius;#", 100, 0, 10);
+	fhEPEM_missingLepton_distance		= new TH1D("fhEPEM_missingLepton_distance","fhEPEM_missingLepton_distance;distance;#", 100, 0, 20);
 	fhEPEM_missingLepton_selectionNN	= new TH1D("fhEPEM_missingLepton_selectionNN","fhEPEM_missingLepton_selectionNN;selectionNN;#", 40, -2, 2);
 	fhEPEM_missingLepton_rings			= new TH2D("fhEPEM_missingLepton_rings","fhEPEM_missingLepton_rings;selectionNN;#", 400, -200, 200, 600, -300, 300);
 	fHistoList_all.push_back(fhEPEM_missingLepton_nofRingHits);
@@ -1742,12 +1743,13 @@ void CbmAnaConversionReco::CutEfficiencyStudies(int e1, int e2, int e3, int e4, 
 			fhEPEM_missingLepton_ringRadius->Fill(richRing->GetRadius() );
 			fhEPEM_missingLepton_distance->Fill(richRing->GetDistance() );
 			fhEPEM_missingLepton_selectionNN->Fill(richRing->GetSelectionNN() );
-			
+
 			for(int i=0; i<nofringhits; i++) {
-				UShort_t richHit = richRing->GetHit(i);
-				CbmRichHitLight *hit = (CbmRichHitLight*)fRichHits->At(richHit);
-				if(hit == NULL) continue;
-				fhEPEM_missingLepton_rings->Fill(hit->fX, hit->fY);
+				Int_t hitInd = richRing->GetHit(i);
+				CbmRichHit* hit = (CbmRichHit*) fRichHits->At(hitInd);
+				if (NULL == hit) continue;
+				//CbmRichHitLight hl(hit->GetX(), hit->GetY());
+				fhEPEM_missingLepton_rings->Fill(hit->GetX(), hit->GetY() );
 			}
 		}
 		
