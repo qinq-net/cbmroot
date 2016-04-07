@@ -38,9 +38,14 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
     timestampOffsets(),
     fLastMessageTime{{{0}}},
     fEpochMarkerArray{{0}},
-    fFirstEpochMarker{{true}}
-
-    {};
+    fFirstEpochMarker{{true}}  
+ {
+   for (Int_t i=0; i < 3; ++i) { 
+     for (Int_t j=0; j < 6; ++j) {
+        fFirstEpochMarker[i][j] = true;
+     }
+   }
+ };
 
 // ----              -------------------------------------------------------
 CbmTrdTimeCorrel::~CbmTrdTimeCorrel()
@@ -74,16 +79,6 @@ InitStatus CbmTrdTimeCorrel::Init()
 
   fClusters = new TClonesArray("CbmTrdCluster",100);
   ioman->Register("TrdCluster", "TRD Clusters", fClusters, kTRUE);
-
-  // Set variable for last epoch counter per spadic to zero and bool for "is first epoch" to true 
-  {
-    for (Int_t i=0; i < 3; ++i) { 
-      for (Int_t j=0; j < 6; ++j) {
-	fEpochMarkerArray[i][j] = 0;
-	fFirstEpochMarker[i][j] = true;
-      }
-    }
-  }
   
   CreateHistograms();
   return kSUCCESS;
