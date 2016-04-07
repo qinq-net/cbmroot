@@ -47,8 +47,7 @@ const Float_t Wall_Z_ReferenceSmPos = 200; // target distance of setup
 // Counters: 
 // 0 HD small
 // 1 HD big
-// 2 HD ref	<< ", strip length "<< res[1]<<" +/- "<< err[1]<<endl;
-
+// 2 HD ref	
 // 3 Buc ref
 // 4 Ceramic
 // 5 Diamond 
@@ -97,7 +96,7 @@ const Float_t Module_Thick_Alu_Y = 1.;
 const Float_t Module_Thick_Alu_Z = 0.1;
 
 //Type of Counter for module 
-const Int_t CounterTypeInModule[NofModuleTypes] = {1,3,4,0,2,5,6,6,8,0};
+const Int_t CounterTypeInModule[NofModuleTypes] = {1,3,4,0,2,5,6,7,8,0};
 const Int_t NCounterInModule[NofModuleTypes]    = {1,1,1,1,1,1,2,4,6,2};
 
 // Placement of the counter inside the module
