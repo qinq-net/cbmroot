@@ -426,6 +426,7 @@ void CbmStsModule::CreateCluster(Int_t clusterStart, Int_t clusterEnd,
 	cluster->SetProperties(sum1, sum2, sum3, tsum);
 	cluster->SetPositionError(error);
 	cluster->SetAddress(fAddress);
+	cluster->SetSize(clusterEnd - clusterStart + 1);
 
 	LOG(DEBUG2) << GetName() << ": Created new cluster from channel "
 	    << clusterStart << " to " << clusterEnd << ", charge "
