@@ -82,7 +82,7 @@ void CbmStsSensor::CreateHit(Double_t xLocal, Double_t yLocal,
 
 	//Get pitch assuming that both sides and all sensors in a module have same pitch 
 	Double_t pitch = dynamic_cast<CbmStsSensorTypeDssd*>(this -> GetType()) -> GetPitch(0);
-	Double_t error[3] = {clusterF -> GetPositionError() * clusterF -> GetPositionError() * pitch * pitch , clusterB -> GetPositionError() * clusterB -> GetPositionError() * pitch * pitch, 0. };
+	Double_t error[3] = {clusterF -> GetPositionError() * pitch, clusterB -> GetPositionError() * pitch, 0. };
 
 	if ( fNode ) fNode->GetMatrix()->LocalToMaster(local, global);
 	else {
