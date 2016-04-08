@@ -210,6 +210,17 @@ private:
 	TH1D * fhEPEM_missingLepton_distance;
 	TH1D * fhEPEM_missingLepton_selectionNN;
 	TH2D * fhEPEM_missingLepton_rings;
+	TH2D * fhEPEM_missingLepton_radius_vs_p;
+	TH1D * fhEPEM_missingLepton_ANNvalue;
+	// analysis of missing lepton (for the case of only 3 leptons with identified as electron) - HERE: same parameters for identified electrons
+	TH1D * fhEPEM_identifiedLepton_nofRingHits;
+	TH2D * fhEPEM_identifiedLepton_ringMid;
+	TH1D * fhEPEM_identifiedLepton_ringRadius;
+	TH1D * fhEPEM_identifiedLepton_distance;
+	TH1D * fhEPEM_identifiedLepton_selectionNN;
+	TH2D * fhEPEM_identifiedLepton_rings;
+	TH2D * fhEPEM_identifiedLepton_radius_vs_p;
+	TH1D * fhEPEM_identifiedLepton_ANNvalue;
 	
 	
 	// histograms for eta analysis

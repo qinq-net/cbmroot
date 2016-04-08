@@ -145,6 +145,16 @@ CbmAnaConversionReco::CbmAnaConversionReco()
 	fhEPEM_missingLepton_distance(NULL),
 	fhEPEM_missingLepton_selectionNN(NULL),
 	fhEPEM_missingLepton_rings(NULL),
+	fhEPEM_missingLepton_radius_vs_p(NULL),
+	fhEPEM_missingLepton_ANNvalue(NULL),
+	fhEPEM_identifiedLepton_nofRingHits(NULL),
+	fhEPEM_identifiedLepton_ringMid(NULL),
+	fhEPEM_identifiedLepton_ringRadius(NULL),
+	fhEPEM_identifiedLepton_distance(NULL),
+	fhEPEM_identifiedLepton_selectionNN(NULL),
+	fhEPEM_identifiedLepton_rings(NULL),
+	fhEPEM_identifiedLepton_radius_vs_p(NULL),
+	fhEPEM_identifiedLepton_ANNvalue(NULL),
     fhEPEM_invmass_eta_mc(NULL),
     fhEPEM_invmass_eta_refitted(NULL),
     fhEPEM_efficiencyCuts_eta(NULL),
@@ -441,12 +451,34 @@ void CbmAnaConversionReco::InitHistos()
 	fhEPEM_missingLepton_distance		= new TH1D("fhEPEM_missingLepton_distance","fhEPEM_missingLepton_distance;distance;#", 100, 0, 20);
 	fhEPEM_missingLepton_selectionNN	= new TH1D("fhEPEM_missingLepton_selectionNN","fhEPEM_missingLepton_selectionNN;selectionNN;#", 40, -2, 2);
 	fhEPEM_missingLepton_rings			= new TH2D("fhEPEM_missingLepton_rings","fhEPEM_missingLepton_rings;selectionNN;#", 400, -200, 200, 600, -300, 300);
+	fhEPEM_missingLepton_radius_vs_p	= new TH2D("fhEPEM_missingLepton_radius_vs_p","fhEPEM_missingLepton_radius_vs_p;momentum p in GeV/c;ring radius in cm", 120, 0, 12, 100, 0, 10);
+	fhEPEM_missingLepton_ANNvalue		= new TH1D("fhEPEM_missingLepton_ANNvalue","fhEPEM_missingLepton_ANNvalue;ANNvalue;#", 40, -2, 2);
 	fHistoList_all.push_back(fhEPEM_missingLepton_nofRingHits);
 	fHistoList_all.push_back(fhEPEM_missingLepton_ringMid);
 	fHistoList_all.push_back(fhEPEM_missingLepton_ringRadius);
 	fHistoList_all.push_back(fhEPEM_missingLepton_distance);
 	fHistoList_all.push_back(fhEPEM_missingLepton_selectionNN);
 	fHistoList_all.push_back(fhEPEM_missingLepton_rings);
+	fHistoList_all.push_back(fhEPEM_missingLepton_radius_vs_p);
+	fHistoList_all.push_back(fhEPEM_missingLepton_ANNvalue);
+	
+
+	fhEPEM_identifiedLepton_nofRingHits		= new TH1D("fhEPEM_identifiedLepton_nofRingHits","fhEPEM_identifiedLepton_nofRingHits;nofringhits;#", 41, -0.5, 40.5);
+	fhEPEM_identifiedLepton_ringMid			= new TH2D("fhEPEM_identifiedLepton_ringMid","fhEPEM_identifiedLepton_ringMid;X;Y", 100, -150, 150, 150, -250, 250);
+	fhEPEM_identifiedLepton_ringRadius		= new TH1D("fhEPEM_identifiedLepton_ringRadius","fhEPEM_identifiedLepton_ringRadius;ringRadius;#", 100, 0, 10);
+	fhEPEM_identifiedLepton_distance		= new TH1D("fhEPEM_identifiedLepton_distance","fhEPEM_identifiedLepton_distance;distance;#", 100, 0, 20);
+	fhEPEM_identifiedLepton_selectionNN		= new TH1D("fhEPEM_identifiedLepton_selectionNN","fhEPEM_identifiedLepton_selectionNN;selectionNN;#", 40, -2, 2);
+	fhEPEM_identifiedLepton_rings			= new TH2D("fhEPEM_identifiedLepton_rings","fhEPEM_identifiedLepton_rings;selectionNN;#", 400, -200, 200, 600, -300, 300);
+	fhEPEM_identifiedLepton_radius_vs_p		= new TH2D("fhEPEM_identifiedLepton_radius_vs_p","fhEPEM_identifiedLepton_radius_vs_p;momentum p in GeV/c;ring radius in cm", 120, 0, 12, 100, 0, 10);
+	fhEPEM_identifiedLepton_ANNvalue		= new TH1D("fhEPEM_identifiedLepton_ANNvalue","fhEPEM_identifiedLepton_ANNvalue;ANNvalue;#", 40, -2, 2);
+	fHistoList_all.push_back(fhEPEM_identifiedLepton_nofRingHits);
+	fHistoList_all.push_back(fhEPEM_identifiedLepton_ringMid);
+	fHistoList_all.push_back(fhEPEM_identifiedLepton_ringRadius);
+	fHistoList_all.push_back(fhEPEM_identifiedLepton_distance);
+	fHistoList_all.push_back(fhEPEM_identifiedLepton_selectionNN);
+	fHistoList_all.push_back(fhEPEM_identifiedLepton_rings);
+	fHistoList_all.push_back(fhEPEM_identifiedLepton_radius_vs_p);
+	fHistoList_all.push_back(fhEPEM_identifiedLepton_ANNvalue);
 
 
 	// histograms for eta analysis
@@ -1743,6 +1775,22 @@ void CbmAnaConversionReco::CutEfficiencyStudies(int e1, int e2, int e3, int e4, 
 			fhEPEM_missingLepton_ringRadius->Fill(richRing->GetRadius() );
 			fhEPEM_missingLepton_distance->Fill(richRing->GetDistance() );
 			fhEPEM_missingLepton_selectionNN->Fill(richRing->GetSelectionNN() );
+			if(IsRichElectron1ann == 0) {
+				fhEPEM_missingLepton_radius_vs_p->Fill(fRecoRefittedMomentum[e1].Mag(), richRing->GetRadius() );
+				fhEPEM_missingLepton_ANNvalue->Fill(ANNvalueE1);
+			}
+			if(IsRichElectron2ann == 0) {
+				fhEPEM_missingLepton_radius_vs_p->Fill(fRecoRefittedMomentum[e2].Mag(), richRing->GetRadius() );
+				fhEPEM_missingLepton_ANNvalue->Fill(ANNvalueE2);
+			}
+			if(IsRichElectron3ann == 0) {
+				 fhEPEM_missingLepton_radius_vs_p->Fill(fRecoRefittedMomentum[e3].Mag(), richRing->GetRadius() );
+				fhEPEM_missingLepton_ANNvalue->Fill(ANNvalueE3);
+			}
+			if(IsRichElectron4ann == 0) {
+				 fhEPEM_missingLepton_radius_vs_p->Fill(fRecoRefittedMomentum[e4].Mag(), richRing->GetRadius() );
+				fhEPEM_missingLepton_ANNvalue->Fill(ANNvalueE4);
+			}
 
 			for(int i=0; i<nofringhits; i++) {
 				Int_t hitInd = richRing->GetHit(i);
@@ -1752,6 +1800,61 @@ void CbmAnaConversionReco::CutEfficiencyStudies(int e1, int e2, int e3, int e4, 
 				fhEPEM_missingLepton_rings->Fill(hit->GetX(), hit->GetY() );
 			}
 		}
+		
+		
+		if(IsRichElectron1ann > 0) {
+			CbmGlobalTrack* gTrack = (CbmGlobalTrack*) fGlobalTracks->At(fRecoTracklistEPEM_gtid[e1]);
+			int richInd = gTrack->GetRichRingIndex();
+			CbmRichRing* richRing = (CbmRichRing*) fRichRings->At(richInd);
+			Int_t nofringhits = richRing->GetNofHits();
+			fhEPEM_identifiedLepton_nofRingHits->Fill(nofringhits);
+			fhEPEM_identifiedLepton_ringMid->Fill(richRing->GetCenterX(), richRing->GetCenterY() );
+			fhEPEM_identifiedLepton_ringRadius->Fill(richRing->GetRadius() );
+			fhEPEM_identifiedLepton_distance->Fill(richRing->GetDistance() );
+			fhEPEM_identifiedLepton_selectionNN->Fill(richRing->GetSelectionNN() );
+			fhEPEM_identifiedLepton_radius_vs_p->Fill(fRecoRefittedMomentum[e1].Mag(), richRing->GetRadius() );
+			fhEPEM_identifiedLepton_ANNvalue->Fill(ANNvalueE1);
+		}
+		if(IsRichElectron2ann > 0) {
+			CbmGlobalTrack* gTrack = (CbmGlobalTrack*) fGlobalTracks->At(fRecoTracklistEPEM_gtid[e2]);
+			int richInd = gTrack->GetRichRingIndex();
+			CbmRichRing* richRing = (CbmRichRing*) fRichRings->At(richInd);
+			Int_t nofringhits = richRing->GetNofHits();
+			fhEPEM_identifiedLepton_nofRingHits->Fill(nofringhits);
+			fhEPEM_identifiedLepton_ringMid->Fill(richRing->GetCenterX(), richRing->GetCenterY() );
+			fhEPEM_identifiedLepton_ringRadius->Fill(richRing->GetRadius() );
+			fhEPEM_identifiedLepton_distance->Fill(richRing->GetDistance() );
+			fhEPEM_identifiedLepton_selectionNN->Fill(richRing->GetSelectionNN() );
+			fhEPEM_identifiedLepton_radius_vs_p->Fill(fRecoRefittedMomentum[e2].Mag(), richRing->GetRadius() );
+			fhEPEM_identifiedLepton_ANNvalue->Fill(ANNvalueE2);
+		}
+		if(IsRichElectron3ann > 0) {
+			CbmGlobalTrack* gTrack = (CbmGlobalTrack*) fGlobalTracks->At(fRecoTracklistEPEM_gtid[e3]);
+			int richInd = gTrack->GetRichRingIndex();
+			CbmRichRing* richRing = (CbmRichRing*) fRichRings->At(richInd);
+			Int_t nofringhits = richRing->GetNofHits();
+			fhEPEM_identifiedLepton_nofRingHits->Fill(nofringhits);
+			fhEPEM_identifiedLepton_ringMid->Fill(richRing->GetCenterX(), richRing->GetCenterY() );
+			fhEPEM_identifiedLepton_ringRadius->Fill(richRing->GetRadius() );
+			fhEPEM_identifiedLepton_distance->Fill(richRing->GetDistance() );
+			fhEPEM_identifiedLepton_selectionNN->Fill(richRing->GetSelectionNN() );
+			fhEPEM_identifiedLepton_radius_vs_p->Fill(fRecoRefittedMomentum[e3].Mag(), richRing->GetRadius() );
+			fhEPEM_identifiedLepton_ANNvalue->Fill(ANNvalueE3);
+		}
+		if(IsRichElectron4ann > 0) {
+			CbmGlobalTrack* gTrack = (CbmGlobalTrack*) fGlobalTracks->At(fRecoTracklistEPEM_gtid[e4]);
+			int richInd = gTrack->GetRichRingIndex();
+			CbmRichRing* richRing = (CbmRichRing*) fRichRings->At(richInd);
+			Int_t nofringhits = richRing->GetNofHits();
+			fhEPEM_identifiedLepton_nofRingHits->Fill(nofringhits);
+			fhEPEM_identifiedLepton_ringMid->Fill(richRing->GetCenterX(), richRing->GetCenterY() );
+			fhEPEM_identifiedLepton_ringRadius->Fill(richRing->GetRadius() );
+			fhEPEM_identifiedLepton_distance->Fill(richRing->GetDistance() );
+			fhEPEM_identifiedLepton_selectionNN->Fill(richRing->GetSelectionNN() );
+			fhEPEM_identifiedLepton_radius_vs_p->Fill(fRecoRefittedMomentum[e4].Mag(), richRing->GetRadius() );
+			fhEPEM_identifiedLepton_ANNvalue->Fill(ANNvalueE4);
+		}
+		
 		
 		fhEPEM_pi0_ANNvalues_noCuts->Fill(ANNvalueE1);
 		fhEPEM_pi0_ANNvalues_noCuts->Fill(ANNvalueE2);
