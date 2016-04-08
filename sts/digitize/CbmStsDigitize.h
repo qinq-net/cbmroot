@@ -104,6 +104,22 @@ class CbmStsDigitize : public FairTask
  	 noise          = fNoise;
     }
 
+   /** Get physics processes
+   ** @param eLossModel       0 = ideal, 1 = uniform, 2 = fluctuations
+   ** @param useLorentzShift  If kTRUE, activate Lorentz shift
+   ** @param useDiffusion     If kTRUE, activate diffusion
+   ** @param useCrossTalk     If kTRUE; activate cross talk
+   **/
+   void GetProcesses(Int_t& eLossModel,
+  		              Bool_t& useLorentzShift,
+  		              Bool_t& useDiffusion,
+  		              Bool_t& useCrossTalk) {
+       eLossModel      = fElossModel;
+       useLorentzShift = fUseLorentzShift;
+       useDiffusion    = fUseDiffusion;
+       useCrossTalk    = fUseCrossTalk;
+    }
+
 
   /** Initialise the STS setup and the parameters **/
   void InitSetup();
