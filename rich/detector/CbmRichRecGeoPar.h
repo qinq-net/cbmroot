@@ -85,7 +85,7 @@ public:
     CbmRichRecGeoPar()
     :fPmt(),
     fGeometryType(CbmRichGeometryTypeTwoWings),
-    fNRefrac(0.),
+    fPmtMap(),
     fMirrorX(0.),
     fMirrorY(0.),
     fMirrorZ(0.),
