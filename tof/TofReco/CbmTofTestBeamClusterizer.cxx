@@ -2233,7 +2233,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
           Double_t dWMean1=h1ytmp1->GetMean();
           Double_t dWMean=0.5*(dWMean0+dWMean1);
           Int_t iWalkUpd=1;                        // Walk update mode flag
-          if(5==iSmType || 8==iSmType) iWalkUpd=0; // keep both sides consistent for diamonds and pads 
+          if(5==iSmType || 8==iSmType || 2==iSmType) iWalkUpd=0; // keep both sides consistent for diamonds and pads 
           for(Int_t iWx=0; iWx<nbClWalkBinX; iWx++){
            if(iSmType==2)
              LOG(INFO)<<"Update Walk iSm = "<<iSm<<"("<<iNbRpc<<")," << iWx << ": "

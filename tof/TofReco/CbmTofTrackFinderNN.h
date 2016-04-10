@@ -56,6 +56,7 @@ public:
    inline void SetTyLIM  ( Double_t val ) { fTyLIM = val; }
    inline void SetTyMean ( Double_t val ) { fTyMean = val; }
    inline void SetSIGLIM ( Double_t val ) { fSIGLIM = val; }
+   inline void SetChiMaxAccept ( Double_t val ) { fChiMaxAccept = val; }
 
    inline Double_t GetSIGLIM () { return fSIGLIM; }
 
@@ -82,6 +83,7 @@ public:
    Double_t fTyLIM;
    Double_t fTyMean;
    Double_t fSIGLIM;
+   Double_t fChiMaxAccept;
    Double_t fPosYMaxScal;
    LKFMinuit fMinuit;
 

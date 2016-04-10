@@ -273,7 +273,7 @@ InitStatus CbmTofFindTracks::Init()
   FairRootManager* ioman = FairRootManager::Instance();
   if (! ioman) {
     cout << "-E- CbmTofFindTracks::Init: "
-	 << "RootManager not instantised!" << endl;
+	 << "RootManager not instantiated!" << endl;
     return kFATAL;
   }
 
@@ -307,7 +307,7 @@ InitStatus CbmTofFindTracks::Init()
       return kFATAL;
 
   // default parameters
-  if (fMinNofHits < 1) fMinNofHits=1;
+  // if (fMinNofHits < 1) fMinNofHits=1;
 
     //fill RpcId - map
     Int_t iRpc=0;
@@ -656,13 +656,16 @@ Bool_t CbmTofFindTracks::WriteHistos()
 	   dFMean=fRes->Parameter(1);
 	   dVal += hTOff1D->GetBinContent(ix+1); //revert default correction
 	   dVal -= dFMean;
-	 }
-	 LOG(INFO)<<"Update hPullT_Smt_Off "<<ix<<": Old "
+	   LOG(INFO)<<"Update hPullT_Smt_Off "<<ix<<": Old "
 		  << fhPullT_Smt_Off->GetBinContent(ix+1) <<", Pull "
 		  << htmp1D->GetBinContent(ix+1)<<", Dev@Peak "
 		  << hTOff1D->GetBinContent(ix+1)<<", FitMean "
 		  << dFMean
 		  << " -> " << dVal << FairLogger::endl;
+	 }else{
+	   LOG(INFO)<<"Update hPullT_Smt_Off "<<ix<<": insufficient counts: "
+		    <<hTOff1DY->GetEntries() << FairLogger::endl;
+	 }
 	 fhPullT_Smt_Off->SetBinContent(ix+1,dVal);
        }
      }else
@@ -673,7 +676,7 @@ Bool_t CbmTofFindTracks::WriteHistos()
      }
      break;
 
-   case 3:
+   case 3:  // correct Time Offset from PullT
      {
      TProfile *htmp=fhPullT_Smt->ProfileX();
      TH1D *htmp1D=htmp->ProjectionX();
@@ -681,20 +684,28 @@ Bool_t CbmTofFindTracks::WriteHistos()
      if(fhPullT_Smt_Off != NULL){
        Double_t nx=htmp1D->GetNbinsX();
        for (Int_t ix=1; ix<nx; ix++){
-	 Double_t dVal  = fhPullT_Smt_Off->GetBinContent(ix+1);
-	          dVal -= htmp1D->GetBinContent(ix+1);
-	 fhPullT_Smt_Off->SetBinContent(ix+1,dVal);
-
 	 TH1D *hpy=fhPullT_Smt->ProjectionY("_py",ix+1,ix+1);
 	 if(hpy->GetEntries()>100.){
+           Int_t iBmax  = hpy->GetMaximumBin();
+	   TAxis *xaxis = hpy->GetXaxis();
+	   Double_t dMean=xaxis->GetBinCenter(iBmax); //X-value of bin with maximal content 
 	   Double_t dRMS = TMath::Abs( hpy->GetRMS() );
+	   Double_t dLim =1.5*dRMS;
+	   TFitResultPtr fRes=hpy->Fit("gaus","S","",dMean-dLim,dMean+dLim);
+	   Double_t dFMean=fRes->Parameter(1);
+	   Double_t dVal  = fhPullT_Smt_Off->GetBinContent(ix+1);
+	            dVal -= dFMean;
 	   LOG(INFO)<<"Update hPullT_Smt_Off "<<ix<<": "
 		    << fhPullT_Smt_Off->GetBinContent(ix+1) <<" + "
-		    << htmp1D->GetBinContent(ix+1)<<" -> " << dVal 
+		    << dFMean <<" -> " << dVal 
 		    <<", Width "<<dRMS
 		    << FairLogger::endl;
 	   if(dRMS<RMSmin) dRMS=RMSmin;
+	   fhPullT_Smt_Off->SetBinContent(ix+1,dVal);
 	   fhPullT_Smt_Width->SetBinContent(ix+1,dRMS);
+	 }else{
+	   LOG(INFO)<<"Update hPullT_Smt_Off "<<ix<<": insufficient counts: "
+		    <<hpy->GetEntries() << FairLogger::endl;
 	 }      
        }
      }else
@@ -807,7 +818,45 @@ Bool_t CbmTofFindTracks::WriteHistos()
      }
 
      }
+     break;
 
+   case 10: //correct mean deviation from TB - histo of station 0 
+   case 11:
+   case 12:
+   case 13:
+   case 14:
+   case 15:
+   case 16:
+   case 17:
+   case 18:
+   case 19:
+     {
+       Int_t iSt=fiCorMode%10;
+       TString hname=Form("hPull%s_Station_%d","TB",iSt);
+       TH1* h1=(TH1 *)gROOT->FindObjectAny(hname);
+       if(h1->GetEntries()>100){
+	 Double_t dFMean=h1->GetMean();
+	 Double_t dFLim=2.5*h1->GetRMS();
+	 TFitResultPtr fRes=h1->Fit("gaus","S","",dFMean-dFLim,dFMean+dFLim);
+	 Double_t dDOff= fRes->Parameter(1);
+	 Double_t dSig = fRes->Parameter(2);
+	 Int_t iRpcInd = fMapRpcIdParInd[fMapStationRpcId[iSt]];
+	 Double_t dVal = fhPullT_Smt_Off->GetBinContent(iRpcInd+1);
+	          dVal -= dDOff;
+	 LOG(INFO)<<"Update hPullT_Smt_Off "<<iSt<<", Ind "<<iRpcInd<<": "
+		  << fhPullT_Smt_Off->GetBinContent(iRpcInd+1) <<" - "
+		  << dDOff<<" -> " << dVal 
+		  <<", Width "<<dSig
+		  << FairLogger::endl;
+	 fhPullT_Smt_Off->SetBinContent(iRpcInd+1,dVal);
+       } else
+       {
+	 LOG(INFO)<< "CbmTofFindTracks::WriteHistos: Too few entries in histo "
+		  << hname
+		  << FairLogger::endl;
+       }
+
+     }
      break;
 
    default: 
@@ -834,6 +883,8 @@ void CbmTofFindTracks::Exec(Option_t* /*opt*/)
 {
   fiEvent++;
   ResetStationsFired();
+  if(NULL != fTrackArray) fTrackArray->Delete();  // reset
+
   // recalibrate hits and count trackable hits
   for (Int_t iHit=0; iHit<fTofHitArray->GetEntries(); iHit++){
     CbmTofHit* pHit = (CbmTofHit*) fTofHitArray->At(iHit);
@@ -867,9 +918,11 @@ void CbmTofFindTracks::Exec(Option_t* /*opt*/)
     MarkStationFired(iSt);
 
     LOG(DEBUG) << Form("CbmTofFindTracks::Exec found Hit %d, addr 0x%08x, sta %d, X %6.2f, Y %6.2f Z %6.2f T %6.2f",
-		 iHit,pHit->GetAddress(),GetStationOfAddr(iDetId),pHit->GetX(),pHit->GetY(),pHit->GetZ(),pHit->GetTime())
-	       <<FairLogger::endl; 
+		  iHit,pHit->GetAddress(),GetStationOfAddr(iDetId),pHit->GetX(),pHit->GetY(),pHit->GetZ(),pHit->GetTime())
+	       << FairLogger::endl; 
   }
+  LOG(DEBUG) << Form("CbmTofFindTracks::Exec Fired %d < %d Min ?",GetNStationsFired(),GetMinNofHits())
+	     << FairLogger::endl; 
 
   if (GetNStationsFired()<GetMinNofHits()) {
     fInspectEvent=kFALSE;          // mark event as non trackable
@@ -879,7 +932,6 @@ void CbmTofFindTracks::Exec(Option_t* /*opt*/)
   if (fNTofStations > 1){
     fStart.Set();
     //fTrackArray->Clear("C+C");
-    fTrackArray->Delete();
     fNofTracks = fFinder->DoFind(fTofHitArray, fTrackArray);
     //  fTrackArray->Compress();
     fStop.Set();
@@ -974,7 +1026,7 @@ void CbmTofFindTracks::CreateHistograms(){
 			   fNTofStations-1, 2, fNTofStations+1, 100, -TTMAX, TTMAX);
   fhTrklVelHMul =  new TH2F(  Form("hTrklVelHMul"),
 			   Form("Tracklet Vel vs. Hit - Multiplicity; HMul_{Tracklet}; v (cm/ns)"),
-			   fNTofStations-1, 2, fNTofStations+1, 100, -50., 50.);
+			   fNTofStations-1, 2, fNTofStations+1, 100, 0., 50.);
   fhTrklT0HMul =  new TH2F(  Form("hTrklT0HMul"),
 			   Form("Tracklet T0 vs. Hit - Multiplicity; HMul_{Tracklet}; T0"),
 			   fNTofStations-1, 2, fNTofStations+1, 100, -500., 500.);
@@ -1042,10 +1094,10 @@ void CbmTofFindTracks::CreateHistograms(){
   for (Int_t iSt=0; iSt<fNTofStations; iSt++){
     vhPullX[iSt]=new TH1F(  Form("hPullX_Station_%d",iSt),
 			    Form("hPullX_Station_%d;  #DeltaX",iSt),
-			    100, -6., 6.);  
+			    100, -10., 10.);  
     vhPullY[iSt]=new TH1F(  Form("hPullY_Station_%d",iSt),
 			    Form("hPullY_Station_%d;  #DeltaY",iSt),
-			    100, -6., 6.);  
+			    100, -10., 10.);  
     vhPullZ[iSt]=new TH1F(  Form("hPullZ_Station_%d",iSt),
 			    Form("hPullZ_Station_%d;  #DeltaZ",iSt),
 			    100, -200., 200.);  

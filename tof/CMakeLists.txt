@@ -18,6 +18,7 @@ ${CBMROOT_SOURCE_DIR}/beamtime/tof/tdc
 ${CBMROOT_SOURCE_DIR}/beamtime/tof/mapping
 
 ${CBMROOT_SOURCE_DIR}/base 
+${CBMROOT_SOURCE_DIR}/eventdisplay
 
 ${CBMROOT_SOURCE_DIR}/data
 ${CBMROOT_SOURCE_DIR}/data/tof
@@ -90,7 +91,7 @@ TofQA/CbmTofHitFinderQa.cxx
 set(LINKDEF CbmTofLinkDef.h)
 Set(LIBRARY_NAME CbmTof)
 Set(DEPENDENCIES
-    CbmBase CbmData Base 
+    CbmBase CbmData CbmDisplay Base 
     ${TOF_BEAM_DEPEND}
 )
 
