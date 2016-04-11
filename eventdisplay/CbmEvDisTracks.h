@@ -44,6 +44,8 @@ class CbmEvDisTracks : public FairTask
     /** Destructor **/
     virtual ~CbmEvDisTracks();
 
+    inline static CbmEvDisTracks *Instance() { return fInstance; }
+
     /** Set verbosity level. For this task and all of the subtasks. **/
     void SetVerbose(Int_t iVerbose) {fVerbose = iVerbose;}
     /** Executed task **/
@@ -54,10 +56,9 @@ class CbmEvDisTracks : public FairTask
     /** Action after each event**/
     virtual void Finish();
     void Reset();
-    TEveTrackList* GetTrGroup(Int_t ihmul);
+    TEveTrackList* GetTrGroup(Int_t ihmul, Int_t iOpt);
 
   protected:
-
 
     TClonesArray*  fTrackList;  //!
     TEveTrackPropagator* fTrPr;
@@ -72,6 +73,7 @@ class CbmEvDisTracks : public FairTask
     Double_t PEnergy;
 
   private:
+    static CbmEvDisTracks *fInstance;
     CbmEvDisTracks(const CbmEvDisTracks&);
     CbmEvDisTracks& operator=(const CbmEvDisTracks&);
 

@@ -27,6 +27,9 @@
 using std::cout;
 using std::endl;
 
+ClassImp(CbmEvDisTracks);
+CbmEvDisTracks *CbmEvDisTracks::fInstance = 0;
+
 // -----   Default constructor   -------------------------------------------
 CbmEvDisTracks::CbmEvDisTracks()
   : FairTask("CbmEvDisTracks", 0),
@@ -40,6 +43,7 @@ CbmEvDisTracks::CbmEvDisTracks()
     MaxEnergyLimit(-1.),
     PEnergy(-1.)
 {
+  if( !fInstance ) fInstance = this;
 }
 // -------------------------------------------------------------------------
 
@@ -57,6 +61,7 @@ CbmEvDisTracks::CbmEvDisTracks(const char* name, Int_t iVerbose)
     MaxEnergyLimit(-1.),
     PEnergy(-1.)
 {
+  if( !fInstance ) fInstance = this;
 }
 // -------------------------------------------------------------------------
 InitStatus CbmEvDisTracks::Init()
@@ -70,7 +75,7 @@ InitStatus CbmEvDisTracks::Init()
   }
   if(fVerbose>2) { cout<<  "CbmEvDisTracks::Init() get track list" << fTrackList<< endl; }
   if(fVerbose>2) { cout<<  "CbmEvDisTracks::Init() create propagator" << endl; }
-  fEventManager =FairEventManager::Instance();
+  fEventManager = FairEventManager::Instance();
   if(fVerbose>2) { cout<<  "CbmEvDisTracks::Init() get instance of FairEventManager " << endl; }
   fEvent = "Current Event";
   MinEnergyLimit=fEventManager->GetEvtMinEnergy();
@@ -85,39 +90,63 @@ void CbmEvDisTracks::Exec(Option_t* /*option*/)
 
   if (IsActive()) {
 
-    if(fVerbose>1) { cout << " CbmEvDisTracks::Exec starting"<< endl; }
+    if(fVerbose>3) { cout << " CbmEvDisTracks::Exec starting with verbosity "<<fVerbose
+			  << " and option "<<option<< endl; }
     CbmTofTracklet* tr;
     const Double_t* point;
 
     Reset();
 
+    if(fVerbose>4) { cout << " CbmEvDisTracks:: NTrks "<< fTrackList->GetEntries() << endl; }
+
+    for(Int_t iOpt=0; iOpt<2; iOpt++)
     for (Int_t i=0; i<fTrackList->GetEntriesFast(); i++)  {
-      if(fVerbose>2) { cout << "CbmEvDisTracks::Exec "<< i << endl; }
+      if(fVerbose>4) { cout << "CbmEvDisTracks::Exec "<< i << endl; }
       tr=(CbmTofTracklet *)fTrackList->At(i);
       if(NULL == tr) continue;
       Int_t Np=tr->GetNofHits();
-      fTrList= GetTrGroup(tr->GetNofHits());
+      fTrList= GetTrGroup(tr->GetNofHits(),iOpt);
       TParticle* P=new TParticle();
       TEveTrack* track= new TEveTrack(P, tr->GetPidHypo(), fTrPr);
       Int_t iCol=Np;
       if(iCol>4) iCol++;
+      track->SetAttLineAttMarker(fTrList); //set defaults
       track->SetLineColor(iCol);
       track->SetMarkerColor(iCol);
       track->SetMarkerSize(2.);
       //track->SetMarkerDraw(kTRUE);
-      //insert starting point 
 
-      track->SetPoint(0,tr->GetFitX(0.),tr->GetFitY(0.),0.);
+      track->SetPoint(0,tr->GetFitX(0.),tr->GetFitY(0.),0.); //insert starting point 
       TEveVector pos0= TEveVector(tr->GetFitX(0.),tr->GetFitY(0.),0.);
       TEvePathMark* path0 = new TEvePathMark();
       path0->fV=pos0 ;
       track->AddPathMark(*path0);
 
+      Double_t      pbuf[3], vbuf[3];
+      TEveRecTrack  rt;
+      rt.fIndex  = i;
+      pbuf[0]=0.;   
+      pbuf[1]=0.;   
+      pbuf[2]=1./tr->GetTt(); // velocity
+      rt.fP.Set(pbuf);
+      vbuf[0]=tr->GetFitX(0.);
+      vbuf[1]=tr->GetFitY(0.);
+      vbuf[2]=0.;
+      rt.fV.Set(vbuf);
+      track->SetName(Form("TEveTrack %d", rt.fIndex));
+      track->SetStdTitle();
+
       for (Int_t n=0; n<Np; n++) {
-        //point=tr->GetPoint(n);
-	point=tr->GetFitPoint(n);
+	switch(iOpt){
+	case 0:
+	  point=tr->GetPoint(n);
+	  break;
+	case 1:
+	  point=tr->GetFitPoint(n);
+	  break;
+	}
         track->SetPoint(n+1,point[0],point[1],point[2]);
-        if(fVerbose>3) 
+        if(fVerbose>5) 
 	  { cout <<Form("   CbmEvDisTracks::Exec SetPoint %d, %6.2f, %6.2f, %6.2f, %6.2f ",
 			n,point[0],point[1],point[2],point[3]) << endl; } 
       
@@ -135,6 +164,7 @@ void CbmEvDisTracks::Exec(Option_t* /*option*/)
 
         if(fVerbose>5) { cout << "Path marker added " << path << endl; }
       }
+      track->SortPathMarksByTime();
       fTrList->AddElement(track);
       if(fVerbose>3) { cout << i<<". track added: " << track->GetName() << endl; }
     }
@@ -145,6 +175,8 @@ void CbmEvDisTracks::Exec(Option_t* /*option*/)
     fEventManager->SetEvtMaxEnergy(MaxEnergyLimit);
     fEventManager->SetEvtMinEnergy(MinEnergyLimit);
     gEve->Redraw3D(kFALSE);
+    //gEve->DoRedraw3D();
+    //gEve->Redraw3D(kTRUE);
   }
 }
 // -----   Destructor   ----------------------------------------------------
@@ -172,9 +204,17 @@ void CbmEvDisTracks::Reset()
   fEveTrList->Clear();
 }
 
-TEveTrackList* CbmEvDisTracks::GetTrGroup(Int_t ihmul)
+Char_t *gr;
+TEveTrackList* CbmEvDisTracks::GetTrGroup(Int_t ihmul,Int_t iOpt)
 {
-  const char *gr=Form("hmul%d",ihmul);
+  switch(iOpt){
+  case 0:
+    gr=Form("Trkl_hmul%d",ihmul);
+    break;
+  case 1:
+    gr=Form("FTrkl_hmul%d",ihmul);
+    break;
+  }
   fTrList=0;
   for (Int_t i=0; i<fEveTrList->GetEntriesFast(); i++) {
     TEveTrackList* TrListIn=( TEveTrackList*) fEveTrList->At(i);
@@ -190,7 +230,20 @@ TEveTrackList* CbmEvDisTracks::GetTrGroup(Int_t ihmul)
     fTrList->SetMainColor(iCol);
     fEveTrList->Add(fTrList);
     gEve->AddElement( fTrList ,fEventManager );
-    fTrList->SetRnrLine(kTRUE);
+    fTrList->SetRecurse(kTRUE);
+    switch(iOpt){
+    case 0: //  display points
+      fTrList->SetRnrPoints(kTRUE);
+      fTrList->SetRnrLine(kFALSE);
+      fTrList->SetMarkerSize(2.);
+      break;
+    case 1:  //display fit line
+      fTrList->SetRnrLine(kTRUE);
+      fTrList->SetLineWidth(2.);
+      break;
+    default:
+      ;
+    }
   }
   return fTrList;
 }
