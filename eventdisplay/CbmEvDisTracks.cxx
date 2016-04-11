@@ -85,12 +85,12 @@ InitStatus CbmEvDisTracks::Init()
   else { return kERROR; }
 }
 // -------------------------------------------------------------------------
-void CbmEvDisTracks::Exec(Option_t* /*option*/)
+void CbmEvDisTracks::Exec(Option_t* option)
 {
 
   if (IsActive()) {
 
-    if(fVerbose>3) { cout << " CbmEvDisTracks::Exec starting with verbosity "<<fVerbose
+    if(fVerbose>3) { cout << " CbmEvDisTracks::Exec starting with verbosity "<<fVerbose 
 			  << " and option "<<option<< endl; }
     CbmTofTracklet* tr;
     const Double_t* point;
