@@ -113,8 +113,9 @@ class CbmTofTracklet : public TObject {
 	Double_t GetTime() const { return fTime; }
 	Double_t UpdateTt(); 
 	Double_t UpdateT0();
+	Double_t GetTex(CbmTofHit* pHit);
 
-	Int_t GetFirstInd(Int_t iSmType);  // return closest Hit to target except in iSmType
+	Int_t    GetFirstInd(Int_t iSmType);  // return closest Hit to target except in iSmType
 	Double_t GetZ0x();                 // return intercept with z-axis  
 	Double_t GetZ0y();                 // return intercept with z-axis  
 	Double_t GetFitX(Double_t Z);      // get x value of fit function at position z

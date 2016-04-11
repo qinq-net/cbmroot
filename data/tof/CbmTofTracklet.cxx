@@ -10,6 +10,9 @@
 #include "TMatrixFSymfwd.h"             // for TMatrixFSym
 #include <iostream>
 #include "FairLogger.h"
+#include "TMatrixD.h"
+#include "TVectorD.h"
+#include "TDecompSVD.h"
 
 using std::cout;
 using std::endl;
@@ -125,21 +128,21 @@ void CbmTofTracklet::GetFairTrackParamLast(){
       fTrackPar.SetCovariance(k,fParamLast.GetCovariance(i,j));
 }
 
-Double_t CbmTofTracklet::GetMatChi2(Int_t iSm){
+Double_t CbmTofTracklet::GetMatChi2(Int_t iAddr){
   for (UInt_t iHit=0; iHit<fTofHit.size(); iHit++){
     //cout << Form(" -v- ind %d, sm %d==%d ?, chi %f ",fTofHit[iHit],iSm,fTofDet[iHit],fMatChi[iHit])<<endl;
     //if(0==fTofDet[iHit]) LOG(FATAL) << " CbmTofTracklet::GetMatChi2 Invalid Detector Type! "<<FairLogger::endl;
-    if (iSm == fTofDet[iHit]) return fMatChi[iHit];
+    if (iAddr == fTofDet[iHit]) return fMatChi[iHit];
   }
   return -1.;
 }
 
-Int_t CbmTofTracklet::GetFirstInd(Int_t iSm){
+Int_t CbmTofTracklet::GetFirstInd(Int_t iAddr){
   for (UInt_t iHit=0; iHit<fTofHit.size(); iHit++){
     //    cout << "     GFI "<< iSm <<", "<<iHit<<", "<< fTofDet[iHit] << endl;
-    if (iSm != fTofDet[iHit]) return fTofHit[iHit];
+    if (iAddr != fTofDet[iHit]) return fTofHit[iHit];
   }
-  LOG(FATAL) << " CbmTofTracklet::GetFirstInd, did only find "<< iSm << FairLogger::endl;
+  LOG(FATAL) << " CbmTofTracklet::GetFirstInd, did only find "<< iAddr << FairLogger::endl;
   return -1;
 }
 
@@ -155,10 +158,20 @@ Double_t CbmTofTracklet::GetZ0y(){
   return dZ0;
 }
 
+Double_t CbmTofTracklet::GetTex(CbmTofHit* pHit){
+  Double_t dR2=0.;
+  dR2 += TMath::Power(fTrackPar.GetX()-pHit->GetX(),2);
+  dR2 += TMath::Power(fTrackPar.GetY()-pHit->GetY(),2);
+  dR2 += TMath::Power(fTrackPar.GetZ()-pHit->GetZ(),2);
+  Double_t dR = TMath::Sqrt(dR2);
+  return   fT0 + dR*fTt;
+}
+
 Double_t CbmTofTracklet::UpdateT0(){ //returns estimated time at R==0
   Double_t dT0=0.;
-  Double_t nValidHits=0.;
+  Int_t    nValidHits=0.;
   Int_t    iHit0=-1;
+  /*
   if(fTofHit.size()>2) UpdateTt();  // update Tt first
   for (UInt_t iHit=0; iHit<fTofHit.size(); iHit++){
     //cout << fpHit[iHit]->ToString()<<endl;
@@ -169,9 +182,49 @@ Double_t CbmTofTracklet::UpdateT0(){ //returns estimated time at R==0
   }
   dT0 /= nValidHits;
   fT0=dT0;
-  if (iHit0>-1) fpHit[iHit0].SetTime(dT0);
+  */
+  // follow tutorial solveLinear.C to solve the linear equation t=t0+tt*R
+  Double_t aR[fTofHit.size()];
+  Double_t at[fTofHit.size()];
+  Double_t ae[fTofHit.size()];
+  for (UInt_t iHit=0; iHit<fTofHit.size(); iHit++){
+    if( fTofDet[iHit]>0) {                        // exlude faked hits
+      aR[nValidHits]=fpHit[iHit].GetR();
+      at[nValidHits]=fpHit[iHit].GetTime();
+      ae[nValidHits]=100.;                        // const timing error, FIXME
+      nValidHits++;
+    } else iHit0=iHit;
+  }
 
-  //cout << Form("   -D- CbmTofTracklet::GetT0: Trkl size %d,  validHits %3.0f, Tt = %6.2f dT0 = %6.2f",fTofHit.size(),nValidHits,fTt,dT0)<<endl;  
+  TVectorD R; R.Use(nValidHits,aR);
+  TVectorD t; t.Use(nValidHits,at);
+  TVectorD e; e.Use(nValidHits,ae);
+
+  const Int_t nrVar  = 2;
+  TMatrixD A(nValidHits,nrVar);
+  TMatrixDColumn(A,0) = 1.0;
+  TMatrixDColumn(A,1) = R;
+
+  // first bring the weights in place
+  TMatrixD Aw = A;
+  TVectorD yw = t;
+  for (Int_t irow = 0; irow < A.GetNrows(); irow++) {
+    TMatrixDRow(Aw,irow) *= 1/e(irow);
+    yw(irow) /= e(irow);
+  }
+
+  TDecompSVD svd(Aw);
+  Bool_t ok;
+  const TVectorD c_svd = svd.Solve(yw,ok);
+
+  //  c_svd.Print();
+  fT0=c_svd[0];
+  fTt=c_svd[1];
+
+  if (iHit0>-1) fpHit[iHit0].SetTime(fT0);
+
+  //cout << Form("   -D- CbmTofTracklet::UpdateT0: Trkl size %u,  validHits %d, Tt = %6.2f T0 = %6.2f",
+  //             (UInt_t)fTofHit.size(),nValidHits,fTt,fT0)<<endl;  
   return fT0;
 }
 
@@ -188,7 +241,7 @@ Double_t CbmTofTracklet::UpdateTt(){
     }
   }
   if (iNt==0) {
-    cout << "-W- CbmTofTracklet::GetTt: No valid hit pair "<<endl;
+    cout << "-W- CbmTofTracklet::UpdateTt: No valid hit pair "<<endl;
     return fTt; 
   }
   fTt = dTt/(Double_t)iNt;
@@ -196,15 +249,15 @@ Double_t CbmTofTracklet::UpdateTt(){
 }
 
 
-Double_t CbmTofTracklet::GetTdif(Int_t iSmType, CbmTofHit* pHit){
+Double_t CbmTofTracklet::GetTdif(Int_t iDetId, CbmTofHit* pHit){
   Double_t dTref=0.;
   Double_t Nref=0;
   Double_t dTt=0.;
   Int_t iNt=0;
-  for (UInt_t iHL=0; iHL<fpHit.size()-1; iHL++){
-     if (iSmType == fTofDet[iHL] || 0 == fTofDet[iHL]) continue;           // exclude faked hits 
-     for (UInt_t iHH=iHL+1; iHH<fpHit.size(); iHH++){
-       if (iSmType == fTofDet[iHH] || 0 == fTofDet[iHH]) continue;           // exclude faked hits 
+  for (Int_t iHL=0; iHL<fpHit.size()-1; iHL++){
+     if (iDetId == fTofDet[iHL] || 0 == fTofDet[iHL]) continue;           // exclude faked hits 
+     for (Int_t iHH=iHL+1; iHH<fpHit.size(); iHH++){
+       if (iDetId == fTofDet[iHH] || 0 == fTofDet[iHH]) continue;           // exclude faked hits 
 	dTt+=(fpHit[iHH].GetTime()-fpHit[iHL].GetTime())/(fpHit[iHH].GetR()-fpHit[iHL].GetR());
 	iNt++;
      }
@@ -217,18 +270,18 @@ Double_t CbmTofTracklet::GetTdif(Int_t iSmType, CbmTofHit* pHit){
   dTt/=(Double_t)iNt;
 
   for (UInt_t iHit=0; iHit<fTofHit.size(); iHit++){
-    if (iSmType == fTofDet[iHit] || 0 == fTofDet[iHit]) continue;  
+    if (iDetId == fTofDet[iHit] || 0 == fTofDet[iHit]) continue;  
     dTref += fpHit[iHit].GetTime() - dTt*(fpHit[iHit].GetR()-pHit->GetR());
     Nref++;
   }
   if(Nref == 0) {
-    cout << "-E- CbmTofTracklet::GetTdif: SmType "<<iSmType<<", Nref "<<Nref
+    cout << "-E- CbmTofTracklet::GetTdif: DetId "<<iDetId<<", Nref "<<Nref
 	 <<" sizes "<<fTofHit.size()<<", "<<fpHit.size()<<endl;
     return 1.E20;
   }
   dTref /= Nref;
   Double_t dTdif=pHit->GetTime()-dTref;
-  // cout << "-D- CbmTofTracklet::GetTdif: iSt "<< iSt<<" SmType "<<iSmType<<", Nref "<<Nref<<" Tdif "<<dTdif<<endl;
+  // cout << "-D- CbmTofTracklet::GetTdif: iSt "<< iSt<<" DetId "<<iDetId<<", Nref "<<Nref<<" Tdif "<<dTdif<<endl;
   return dTdif;
 }
 
@@ -262,10 +315,10 @@ Double_t CbmTofTracklet::GetFitY(Double_t dZ){
 }
 
 Double_t CbmTofTracklet::GetFitT(Double_t dR){
-  return GetT0() + fTt*dR;
+  return fT0 + fTt*dR;
 }
 
-void CbmTofTracklet::Clear(Option_t*){
+void CbmTofTracklet::Clear(Option_t* option){
 
   //  cout << "-D- Clear TofTracklet with option "<<*option<<endl; 
   fTofHit.clear();
