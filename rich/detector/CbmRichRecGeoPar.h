@@ -86,6 +86,7 @@ public:
     :fPmt(),
     fGeometryType(CbmRichGeometryTypeTwoWings),
     fPmtMap(),
+    fNRefrac(0.),
     fMirrorX(0.),
     fMirrorY(0.),
     fMirrorZ(0.),
