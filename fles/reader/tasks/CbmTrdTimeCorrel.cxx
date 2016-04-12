@@ -115,7 +115,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   LOG(INFO) << "rawMessages in TS:                               " << fRawSpadic->GetEntriesFast() << FairLogger::endl;
   Int_t nSpadicMessages = fRawSpadic->GetEntriesFast(); //SPADIC messages per TimeSlice
   Int_t nSpadicMessages0(0),nSpadicMessages1(0); //SPADIC messages per TimeSlice for single SPADICS
-  Int_t nSpadicMessagesHit0(0), nSpadicMessagesHtimeIt(0), nSpadicMessagesHitAborted0(0), nSpadicMessagesHitAborted1(0), nSpadicMessagesOverflow0(0), nSpadicMessagesOverflow1(0), nSpadicMessagesInfo0(0), nSpadicMessagesEpoch0(0), nSpadicMessagesEpoch1(0), nSpadicMessagesInfo1(0), nSpadicMessagesLost0(0), nSpadicMessagesLost1(0), nSpadicMessagesStrange0(0), nSpadicMessagesStrange1(0); //SPADIC message types per TimeSlice for single SPADICS
+  Int_t nSpadicMessagesHit0(0), nSpadicMessagesHit1(0), nSpadicMessagesHitAborted0(0), nSpadicMessagesHitAborted1(0), nSpadicMessagesOverflow0(0), nSpadicMessagesOverflow1(0), nSpadicMessagesInfo0(0), nSpadicMessagesEpoch0(0), nSpadicMessagesEpoch1(0), nSpadicMessagesInfo1(0), nSpadicMessagesLost0(0), nSpadicMessagesLost1(0), nSpadicMessagesStrange0(0), nSpadicMessagesStrange1(0); //SPADIC message types per TimeSlice for single SPADICS
   Int_t lostMessages(0);// this variable should be reset to 0 for every SPADIC message
   // Getting message type bools from Spadic raw message
   Bool_t isHit = false;
@@ -404,7 +404,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       
       else if(spadicName == RewriteSpadicName("SysCore0_Spadic1")) {
         nSpadicMessages1++;
-        if(isHit) nSpadicMessagesHtimeIt++;
+        if(isHit) nSpadicMessagesHit1++;
         else if(isHitAborted) nSpadicMessagesHitAborted1++;
         else if(isOverflow) {
 	  nSpadicMessagesOverflow1++;
@@ -472,7 +472,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   // Length of one timeslice: m * n * 8 ns, with e.g. n=1250 length of microslice and m=100 microslices in one timeslice at SPS2015
   fHM->G1("TsCounter")->SetPoint(fHM->G1("TsCounter")->GetN(),fNrTimeSlices+1,nSpadicMessages);
   fHM->G1("TsCounterHit0")->SetPoint(fHM->G1("TsCounterHit0")->GetN(),fNrTimeSlices+1,nSpadicMessagesHit0);
-  fHM->G1("TsCounterHtimeIt")->SetPoint(fHM->G1("TsCounterHtimeIt")->GetN(),fNrTimeSlices+1,nSpadicMessagesHtimeIt);
+  fHM->G1("TsCounterHit1")->SetPoint(fHM->G1("TsCounterHit1")->GetN(),fNrTimeSlices+1,nSpadicMessagesHit1);
   fHM->G1("TsCounterHitAborted0")->SetPoint(fHM->G1("TsCounterHitAborted0")->GetN(),fNrTimeSlices+1,nSpadicMessagesHitAborted0);
   fHM->G1("TsCounterHitAborted1")->SetPoint(fHM->G1("TsCounterHitAborted1")->GetN(),fNrTimeSlices+1,nSpadicMessagesHitAborted1);
   fHM->G1("TsCounterOverflow0")->SetPoint(fHM->G1("TsCounterOverflow0")->GetN(),fNrTimeSlices+1,nSpadicMessagesOverflow0);
@@ -560,10 +560,10 @@ void CbmTrdTimeCorrel::Finish()
   fHM->G1("TsCounterStrange0")->GetXaxis()->SetTitle("TS number");
   fHM->G1("TsCounterStrange0")->GetYaxis()->SetTitle("SPADIC0 strange messages");
   c1->cd(11);
-  fHM->G1("TsCounterHtimeIt")->Draw("AL");
-  fHM->G1("TsCounterHtimeIt")->SetLineColor(kBlue);
-  fHM->G1("TsCounterHtimeIt")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounterHtimeIt")->GetYaxis()->SetTitle("SPADIC1 hit messages");
+  fHM->G1("TsCounterHit1")->Draw("AL");
+  fHM->G1("TsCounterHit1")->SetLineColor(kBlue);
+  fHM->G1("TsCounterHit1")->GetXaxis()->SetTitle("TS number");
+  fHM->G1("TsCounterHit1")->GetYaxis()->SetTitle("SPADIC1 hit messages");
   /*
     c1->cd(14);
     fHM->G1("TsCounterHitAborted1")->Draw("AL");
@@ -622,7 +622,7 @@ void CbmTrdTimeCorrel::Finish()
   fHM->G1("TsStrangeness1")->GetYaxis()->SetTitle("SPADIC1 strangeness");
   c2->SaveAs("pics/"+runName+"TsCounterRatio.png");
 
-  if (true) {
+  if (false) {
     TCanvas *c3 = nullptr;
 
     for (Int_t SysID=0; SysID<1;++SysID)
@@ -642,7 +642,7 @@ void CbmTrdTimeCorrel::Finish()
 	c3->Update();
 	c3->SaveAs(TString("pics/Delta_t_Graph_Spadic_"+std::to_string(SpaID/2)+".pdf"));
       };
-  }
+
   TCanvas *c4 = new TCanvas("c4","Time_Offsets"+runName,5*320,3*300);
   c4->Divide(4,4);
   Int_t i=1;
@@ -656,20 +656,23 @@ void CbmTrdTimeCorrel::Finish()
       }
   c4->Update();
   c4->SaveAs(TString("pics/"+runName+"TimeOffsets"+".pdf"));
-
-  TCanvas *c5 = new TCanvas("c5","Fulltime_vs_Timeslice"+runName,5*320,3*300);
-  TMultiGraph * mg = new TMultiGraph("Fulltime_vs_TimeSlice_all_Spadics","Fulltime_vs_TimeSlice_all_Spadics");
-  for (Int_t baseSpaID=0; baseSpaID<4;++baseSpaID){
-    fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID)))->SetMarkerStyle(20);
-    fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID)))->SetMarkerColor(baseSpaID+2);
-    mg->Add(fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID))));
   }
-  mg->Draw("AB");
-  mg->GetXaxis()->SetTitle("Timeslice");
-  mg->GetYaxis()->SetTitle("SuperEpoch");
-  fHM->Add("Fulltime_vs_TimeSlice_all_Spadic",mg);
-  c5->SaveAs(TString("pics/"+runName+"SuperEpochs"+".png"));
-
+  
+  if (false) {
+      TCanvas *c5 = new TCanvas("c5","Fulltime_vs_Timeslice"+runName,5*320,3*300);
+      TMultiGraph * mg = new TMultiGraph("Fulltime_vs_TimeSlice_all_Spadics","Fulltime_vs_TimeSlice_all_Spadics");
+      for (Int_t baseSpaID=0; baseSpaID<4;++baseSpaID){
+	fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID)))->SetMarkerStyle(20);
+	fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID)))->SetMarkerColor(baseSpaID+2);
+	mg->Add(fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID))));
+      }
+      mg->Draw("AB");
+      mg->GetXaxis()->SetTitle("Timeslice");
+      mg->GetYaxis()->SetTitle("SuperEpoch");
+      fHM->Add("Fulltime_vs_TimeSlice_all_Spadic",mg);
+      c5->SaveAs(TString("pics/"+runName+"SuperEpochs"+".png"));
+    }
+  
   //Perform uniform relabeling of Axis
   ReLabelAxis(fHM->H1("InfoType_vs_Channel")->GetYaxis(),"infoType",true,true);
 
@@ -677,11 +680,11 @@ void CbmTrdTimeCorrel::Finish()
   /*
     TCanvas *cnice = new TCanvas("cnice","cnice",800,400); 
     cnice->cd();
-    fHM->G1("TsCounterHtimeIt")->Draw("AL");
-    fHM->G1("TsCounterHtimeIt")->SetLineColor(kBlack);
-    fHM->G1("TsCounterHtimeIt")->GetXaxis()->SetTitle("timeslice");
-    fHM->G1("TsCounterHtimeIt")->GetXaxis()->SetRangeUser(0,2166);
-    fHM->G1("TsCounterHtimeIt")->GetYaxis()->SetTitle("SPADIC1 hit messages");
+    fHM->G1("TsCounterHit1")->Draw("AL");
+    fHM->G1("TsCounterHit1")->SetLineColor(kBlack);
+    fHM->G1("TsCounterHit1")->GetXaxis()->SetTitle("timeslice");
+    fHM->G1("TsCounterHit1")->GetXaxis()->SetRangeUser(0,2166);
+    fHM->G1("TsCounterHit1")->GetYaxis()->SetTitle("SPADIC1 hit messages");
   */
   //Buffer (map) or multi SPADIC data streams based analyis have to be done here!!
   LOG(DEBUG) << "Finish of CbmTrdTimeCorrel" << FairLogger::endl;
@@ -1094,8 +1097,8 @@ void CbmTrdTimeCorrel::CreateHistograms()
   fHM->G1("TsCounter")->SetNameTitle("TsCounter","TsCounter");
   fHM->Add("TsCounterHit0", new TGraph());
   fHM->G1("TsCounterHit0")->SetNameTitle("TsCounterHit0","TsCounterHit0");
-  fHM->Add("TsCounterHtimeIt", new TGraph());
-  fHM->G1("TsCounterHtimeIt")->SetNameTitle("TsCounterHtimeIt","TsCounterHtimeIt");
+  fHM->Add("TsCounterHit1", new TGraph());
+  fHM->G1("TsCounterHit1")->SetNameTitle("TsCounterHit1","TsCounterHit1");
   fHM->Add("TsCounterHitAborted0", new TGraph());
   fHM->Add("TsCounterHitAborted1", new TGraph());
   fHM->G1("TsCounterHitAborted0")->SetNameTitle("TsCounterHitAborted0","TsCounterHitAborted0");
