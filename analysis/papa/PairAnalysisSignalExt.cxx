@@ -679,10 +679,12 @@ void PairAnalysisSignalExt::Process(TObjArray* const arrhist)
 
   // cocktail
   if(fArrCocktail && fArrCocktail->GetEntriesFast()) {
-    printf("rebin %d cocktail histograms\n",fArrCocktail->GetEntriesFast());
+    //    printf("rebin %d cocktail histograms\n",fArrCocktail->GetEntriesFast());
     fHistCocktail = new TH1D("HistCocktail", "Cocktail contribution",
 			     fHistDataPM->GetXaxis()->GetNbins(),
 			     fHistDataPM->GetXaxis()->GetXbins()->GetArray());
+    fHistCocktail->SetXTitle(fHistDataPM->GetXaxis()->GetTitle());
+    fHistCocktail->SetYTitle(fHistDataPM->GetYaxis()->GetTitle());
     if(fHistCocktail->GetDefaultSumw2()) fHistCocktail->Sumw2();
     fHistCocktail->SetDirectory(0);
 
@@ -1041,7 +1043,6 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   optString.ToLower();
   optString.ReplaceAll(" ","");
   Bool_t optTask     =optString.Contains("same");      optString.ReplaceAll("same","");
-  Bool_t optNoMC     =optString.Contains("nomc");      optString.ReplaceAll("nomc","");
   Bool_t optLegFull  =optString.Contains("legf");      optString.ReplaceAll("legf","");
   Bool_t optLeg      =optString.Contains("leg");       optString.ReplaceAll("leg","");
   Bool_t optCan      =optString.Contains("can");       optString.ReplaceAll("can","");
@@ -1052,7 +1053,10 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   Bool_t optSgn      =optString.Contains("sgn");       optString.ReplaceAll("sgn","");
   Bool_t optOnlyRaw  =optString.Contains("onlyraw");   optString.ReplaceAll("onlyraw","");
   Bool_t optOnlySig  =optString.Contains("onlysig");   optString.ReplaceAll("onlysig","");
+  Bool_t optNoSig    =optString.Contains("nosig");     optString.ReplaceAll("nosig","");
+  Bool_t optNoBgrd   =optString.Contains("nobgrd");    optString.ReplaceAll("nobgrd","");
   Bool_t optOnlyMC   =optString.Contains("onlymc");    optString.ReplaceAll("onlymc","");
+  Bool_t optNoMC     =optString.Contains("nomc");      optString.ReplaceAll("nomc","");
   Bool_t optCocktail =optString.Contains("cocktail");  optString.ReplaceAll("cocktail","");
 
   /// load style
@@ -1076,7 +1080,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   TList *prim = gPad->GetListOfPrimitives();
   for(Int_t io=0; io<prim->GetSize(); io++) {
     obj=prim->At(io);
-    if(obj->InheritsFrom(TH1::Class()) && obj!=prim->At(io+1)) nobj++;
+    if(obj->InheritsFrom(TH1::Class())     && obj!=prim->At(io+1)) nobj++;
   }
 
   // add or get legend
@@ -1099,6 +1103,13 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   optString.ReplaceAll("logx","");
   optString.ReplaceAll("logy","");
   optString.ReplaceAll("logz","");
+
+  /// error style
+  if(optString.Contains("E2") || optString.Contains("E3") || optString.Contains("E4")) {
+    //    printf("set x-error style \n");
+    gStyle->SetErrorX(0.5);
+    //    PairAnalysisStyler::SetForceFillStyle(1);
+  }
 
   Int_t i=nobj; // TODO: obsolete?
 
@@ -1160,19 +1171,21 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   // draw spectra
   if(!optOnlyMC) {
 
-    if(optSB && !optOnlyRaw)       { fHistSB->Draw(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++; }
-    else if(optSgn && !optOnlyRaw) { fHistSign->Draw(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++; }
+    if(optSB && !optOnlyRaw && !optNoSig)       { fHistSB->Draw(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++; }
+    else if(optSgn && !optOnlyRaw && !optNoSig) { fHistSign->Draw(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++; }
     else if(optOnlySig) { 
       drawOpt=(optString.IsNull()?"EP0":optString);
       fHistSignal->DrawCopy(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;
       drawOpt=(optString.IsNull()?"L same":optString+"same");
       if(fPeakIsTF1) { static_cast<TF1*>(fgPeakShape)->DrawCopy(drawOpt.Data()); i++; }
     }
-    else {
+    else if(!optSB && !optSgn){
       fHistDataPM->DrawCopy(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;
       if(fMethod==kRotation || fMethod==kEventMixing || fMethod==kCocktail)  drawOpt=(optString.IsNull()?"HIST":optString);
-      fHistBackground->DrawCopy(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;
-      if(!optOnlyRaw) {
+      if(!optNoBgrd)  {
+	fHistBackground->DrawCopy(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;
+      }
+      if(!optOnlyRaw && !optNoSig) {
 	drawOpt=(optString.IsNull()?"EP0":optString);
 	fHistSignal->DrawCopy(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;
 	drawOpt=(optString.IsNull()?"L same":optString+"same");
@@ -1182,7 +1195,10 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
     // add cocktail
     if(optCocktail && fHistCocktail) {
       drawOpt=(optString.IsNull()?"HIST":optString);
-      fHistCocktail->DrawCopy((drawOpt+"same").Data()); i++;
+      if(optSSB){ fHistCocktail->Divide(fHistDataPM);     fHistCocktail->SetYTitle(Form("S/(S+B)")); }
+      if(optSB) { fHistCocktail->Divide(fHistBackground); fHistCocktail->SetYTitle(Form("%s",GetValueName(3))); }
+      fHistCocktail->DrawCopy(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;
+      //      fHistCocktail->DrawCopy((drawOpt+"same").Data()); i++;
     }
 
   }
@@ -1302,7 +1318,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   TLine *line = new TLine();
   line->SetLineColor(kBlack);
   line->SetLineStyle(kDashed);
-  line->DrawLine(fPlotMin,0.,fPlotMax,0.);
+  if(optLine) line->DrawLine(fPlotMin,0.,fPlotMax,0.);
 
   // draw statistics box
   if(optStat) DrawStats(0.7, gPad->GetBottomMargin()+gStyle->GetTickLength("Y"),

@@ -69,6 +69,8 @@ namespace PairAnalysisStyler
 			 ,kCyan-2
   }; // kNMaxColor
 
+  static Int_t Fill[]= {-1};
+
   static TStyle *fUserDielStyle = NULL;   // user defined style
   void SetStyle(TStyle *userStyle);
 
@@ -78,6 +80,7 @@ namespace PairAnalysisStyler
   void Style(TObject *obj, Int_t idx=0);
   void SetForceLineStyle(Int_t line=kSolid);
   void SetForceColor(Int_t color=kBlack);
+  void SetForceFillStyle(Int_t fill=kFSolid);
 
   enum Epalette { kDefault=0, kGoodBad };
   void SetPalette(Epalette colors=kDefault, Bool_t reverse=kFALSE);

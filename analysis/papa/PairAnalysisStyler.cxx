@@ -323,10 +323,26 @@ void PairAnalysisStyler::Style(TObject *obj, Int_t idx) {
     }
   }
 
-  // fill attributes
-  // if (obj->InheritsFrom(TAttFill::Class()))
-  //   dynamic_cast<TAttFill*>(obj)->SetFillStyle();
-  //   dynamic_cast<TAttFill*>(obj)->SetFillColor();
+  // fill attributes, only used if fill style is set (default: not)
+  if (obj->InheritsFrom(TAttFill::Class())) {
+    //    printf("fill style %d for index: %d \n",Fill[0],idx);
+    if(idx>=100 && fFll[idx-kRaw]>=0) { // predefined styles
+      dynamic_cast<TAttFill*>(obj)->SetFillColor(fCol[idx-kRaw]);
+      dynamic_cast<TAttFill*>(obj)->SetFillStyle(fFll[idx-kRaw]);
+    }
+    else if(Fill[0]>=0) {
+      dynamic_cast<TAttFill*>(obj)->SetFillColor(Color[idx%kNMaxColor]);
+      if(idx>=kNMaxColor && idx<kNMaxColor*2) {
+	idx=idx%kNMaxColor;
+	dynamic_cast<TAttFill*>(obj)->SetFillColor(TColor::GetColorDark(Color[idx]));
+      }
+      else if(idx>=kNMaxColor*2) {
+	idx=idx%(2*kNMaxColor);
+	dynamic_cast<TAttFill*>(obj)->SetFillColor(TColor::GetColorBright(Color[idx]));
+      }
+      dynamic_cast<TAttFill*>(obj)->SetFillStyle(Fill[0]);
+    }
+  }
 
 }
 
@@ -350,6 +366,18 @@ void PairAnalysisStyler::SetForceColor(Int_t color)
   for(Int_t i=0; i<kNMaxColor; i++) {
     Color[i] = color;
   }
+}
+
+//_____________________________________________________________________________
+void PairAnalysisStyler::SetForceFillStyle(Int_t fill)
+{
+  //
+  // force a certain color
+  //
+  for(Int_t i=0; i<(kNidx-kRaw); i++) {
+    fFll[i] = fill;
+  }
+  Fill[0]=fill;
 }
 
 //_____________________________________________________________________________
@@ -404,7 +432,7 @@ void PairAnalysisStyler::SetLegendAttributes(TLegend *leg, Bool_t fill)
     TLegendEntry *lent = static_cast<TLegendEntry*>(llist->At(il));
     TString lst(lent->GetLabel());
     //    lent->SetTextSize(20);
-    /*    lst.ReplaceAll("#it","");
+    //    /*    lst.ReplaceAll("#it","");
     lst.ReplaceAll("{","");
     lst.ReplaceAll("}","");
     lst.ReplaceAll("^","");
@@ -415,12 +443,13 @@ void PairAnalysisStyler::SetLegendAttributes(TLegend *leg, Bool_t fill)
     lst.ReplaceAll("#rho","#");
     lst.ReplaceAll("#omega","#");
     lst.ReplaceAll("#eta","#");
+    lst.ReplaceAll("#epsilon","#");
     lst.ReplaceAll("#psi","#");
     lst.ReplaceAll("#pi","#");
     lst.ReplaceAll("#alpha","#");
     lst.ReplaceAll("#gamma","#");
     lst.ReplaceAll("#rightarrow","#");
-    */
+    //    */
     //    lst.ReplaceAll(" ","");
     TLatex entrytex( 0., 0., lst.Data());
     entrytex.SetNDC(kTRUE);

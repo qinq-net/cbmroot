@@ -909,6 +909,9 @@ void PairAnalysisHistos::DrawTaskSame(TString histName, TString opt, TString his
   TString legendname = GetName();
   //  printf("DrawTaskSame: legendname %s\n",legendname.Data());
 
+  /// reserved words
+  TObjArray *reservedWords = fReservedWords->Tokenize(":;");
+
   /// find cut step lists if option 'cutstep' is active
   if(optCutStep) {
     TString cutstepTask = fHistoList.GetName();
@@ -936,9 +939,19 @@ void PairAnalysisHistos::DrawTaskSame(TString histName, TString opt, TString his
 
     /// skip configs according to selection done via histClassDenom and option 'selcfg'
     if(optSelCfg && selections->GetEntriesFast()) {
-      Bool_t pass = kFALSE;
+      Bool_t pass   = kFALSE;
       for(Int_t is=0; is<selections->GetEntriesFast(); is++) {
+	Bool_t ignore = kFALSE;
 	TString raw        = ((TObjString*)selections->At(is))->GetString();
+
+	/// check if selection string contains reserved word
+	/// if true ignore it for config selection
+	for(Int_t ir=0; ir<reservedWords->GetEntriesFast(); ir++) {
+	  ignore = raw.Contains( ((TObjString*)reservedWords->At(ir))->GetString());
+	  if(ignore) break;
+	}
+	if(ignore) continue;
+
 	TString srch       = raw;   srch.ReplaceAll("!","");
 	Bool_t  optExclSel = !(srch.EqualTo(raw)); // exclude or not
 	// printf("selection %d/%d: raw '%s' \t search: '%s' exclude: %d compare to: '%s' \t pass %d \n",
@@ -952,8 +965,11 @@ void PairAnalysisHistos::DrawTaskSame(TString histName, TString opt, TString his
 	  //	  printf("\t same config found -> stop with pass: %d \n",pass);
 	  break;
 	}
+      // remove config selection string abgearbeitet
+      histClassDenom.ReplaceAll(raw.Data(),"");
       }
       if(!pass) continue;
+
     }
 
     /// keep only legend name!=task name
@@ -997,8 +1013,8 @@ void PairAnalysisHistos::DrawTaskSame(TString histName, TString opt, TString his
   }
 
   /// cleanup
-  if(selections) delete selections;
-
+  if(selections)    delete selections;
+  if(reservedWords) delete reservedWords;
 }
 
 //_____________________________________________________________________________
@@ -1021,7 +1037,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
   /// "noMc":       no mc signals are plotted
   /// "noMcTrue":   no mc truth signals are plotted
   /// "onlyMc":     only mc signals are plotted
-  /// "onlyMc":     only mc signals are plotted
+  /// "onlyMcTrue": only mc truth signals are plotted
   /// "sel":        option to (de-)select certain histClasses specified in "histClassDenom",
   ///               delimiters ":;," are recognized, exclusion done by prepending "!"
   ///
@@ -1064,6 +1080,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
   /// options - selection
   Bool_t optNoMCtrue =optString.Contains("nomctrue");  optString.ReplaceAll("nomctrue","");
   Bool_t optNoMC     =optString.Contains("nomc");      optString.ReplaceAll("nomc","");
+  Bool_t optOnlyMCtrue=optString.Contains("onlymctrue");    optString.ReplaceAll("onlymctrue","");
   Bool_t optOnlyMC   =optString.Contains("onlymc");    optString.ReplaceAll("onlymc","");
   Bool_t optSel      =optString.Contains("sel");       optString.ReplaceAll("sel","");
   /// options - representation
@@ -1221,10 +1238,11 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
 	 histName.Data(), histClassDenom.Data(), select.Data(), ndel, histClass.Data() );
 
     /// check selections done via MC options 'onlyMC', 'noMC', 'noMCtrue', 'eff'
-    if( (optNoMC && ndel>0) ||
-	(optEff && ndel<1)  ||
+    if( (optNoMC && ndel>0)   ||
+	(optEff && ndel<1)    ||
 	(optNoMCtrue && histClass.Contains("_MCtruth")) ||
-	(optOnlyMC && ndel<1)                      ) continue;
+	(optOnlyMC && ndel<1) ||
+	(optOnlyMCtrue && ndel<2)                     ) continue;
 
     /// histclass selections done via option 'sel' and argument 'histClassDenom' -> into array selections
     if(optSel && selections->GetEntriesFast()) {
