@@ -42,7 +42,7 @@ class CbmTrdDigiDraw : public FairTask {
   virtual ~CbmTrdDigiDraw();
 
   /** Set verbosity level. For this task and all of the subtasks. **/
-  void SetVerbose(Int_t iVerbose);
+  void SetVerbose(Int_t iVerbose) { fVerbose=iVerbose; }
    /** Executed task **/ 
   virtual void Exec(Option_t* option);
   void Reset();
