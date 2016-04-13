@@ -101,12 +101,38 @@ class CbmTrdTimeCorrel : public FairTask
   OffsetMap timestampOffsets;
   OffsetMap CalculateTimestampOffsets(const EpochMap &epochBuffer);
 
+  friend class Cluster;
+  class Cluster : public TObject
+  {
+  public:
+    Cluster();
+    ~Cluster();
+    Size_t size();
+    Int_t Type();
+    Float_t GetHorizontalPosition();
+    Int_t GetDetector();
+    std::pair<Int_t,Float_t> GetPosition();
+    Int_t GetTotalCharge();
+    std::pair<std::vector<CbmSpadicRawMessage>::const_iterator,std::vector<CbmSpadicRawMessage>::const_iterator> GetEntries();
+    Bool_t AddEntry (CbmSpadicRawMessage);
+  private:
+    std::vector<CbmSpadicRawMessage> fEntries;
+    Bool_t fParametersCalculated;
+    Int_t fDetector, fType,fTotalCharge;
+    Float_t fHorizontalPosition;
+    void CalculateParameters();
+    Int_t GetSpadicID(Int_t);
+    Int_t GetChannelOnPadPlane(Int_t);
+  };
 
   CbmTrdTimeCorrel(const CbmTrdTimeCorrel&);
   CbmTrdTimeCorrel operator=(const CbmTrdTimeCorrel&);
 
   ClassDef(CbmTrdTimeCorrel,1);
 };
+
+
+
 
 #endif
 

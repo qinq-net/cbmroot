@@ -1413,3 +1413,162 @@ std::map<Int_t, std::map<Int_t,std::map<ULong_t, Long_t> > > CbmTrdTimeCorrel::C
   return epochOffsets;
 }
 
+CbmTrdTimeCorrel::Cluster::Cluster () :
+    TObject (),
+    fEntries (),
+    fParametersCalculated(false),
+    fDetector (0),
+    fType (0),
+    fTotalCharge (0),
+    fHorizontalPosition (0)
+{};
+
+CbmTrdTimeCorrel::Cluster::~Cluster(){};
+
+Bool_t CbmTrdTimeCorrel::Cluster::AddEntry(CbmSpadicRawMessage NewEntry){
+  auto CompareSpadicMessages=
+      [](CbmSpadicRawMessage a,CbmSpadicRawMessage b)
+      {
+    if(a.GetFullTime() == b.GetFullTime())
+      if (a.GetSourceAddress() == b.GetSourceAddress())
+	if(a.GetChannelID() == b.GetChannelID()){
+	    return true;
+	}
+    return false;
+      };
+  auto CompareSpadicMessagesSmaller=
+      [](CbmSpadicRawMessage a,CbmSpadicRawMessage b)
+      {
+    if(a.GetFullTime() < b.GetFullTime())
+      if (a.GetSourceAddress() < b.GetSourceAddress())
+	if(a.GetChannelID() < b.GetChannelID())
+	  return true;
+    return false;
+      };
+  fParametersCalculated = false;
+  fEntries.push_back(NewEntry);
+  std::sort(fEntries.begin(),fEntries.end(),CompareSpadicMessagesSmaller);
+  std::unique(fEntries.begin(),fEntries.end(),CompareSpadicMessages);
+  fDetector = GetSpadicID(fEntries.begin()->GetSourceAddress());
+  BeforeLoop:
+  for (auto it = fEntries.begin(); it!= fEntries.end();it++){
+      if(GetSpadicID(it->GetSourceAddress())!= fDetector)
+	{
+	  fEntries.erase(it);
+	  goto BeforeLoop;
+	}
+  }
+  return true;
+}
+
+Int_t CbmTrdTimeCorrel::Cluster::GetTotalCharge(){return fTotalCharge;};
+
+std::pair<std::vector<CbmSpadicRawMessage>::const_iterator,std::vector<CbmSpadicRawMessage>::const_iterator> CbmTrdTimeCorrel::Cluster::GetEntries()
+{
+  return std::make_pair(fEntries.begin(),fEntries.end());
+}
+
+Int_t CbmTrdTimeCorrel::Cluster::GetDetector(){
+  if(fParametersCalculated) return fDetector;
+  else {
+      CalculateParameters();
+      return fDetector;
+  }
+}
+
+Float_t CbmTrdTimeCorrel::Cluster::GetHorizontalPosition(){
+  if(fParametersCalculated) return fHorizontalPosition;
+  else {
+      CalculateParameters();
+      return fHorizontalPosition;
+  }
+}
+Int_t CbmTrdTimeCorrel::Cluster::Type(){
+  if(fParametersCalculated) return fType;
+  else {
+      CalculateParameters();
+      return fType;
+  }
+}
+
+std::pair<Int_t,Float_t> CbmTrdTimeCorrel::Cluster::GetPosition(){
+  Int_t Detector = GetDetector();
+  Float_t HorPos = GetHorizontalPosition();
+  return std::make_pair(Detector,HorPos);
+}
+
+Size_t CbmTrdTimeCorrel::Cluster::size(){
+  return fEntries.size();
+}
+
+void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
+  fDetector = GetSpadicID(fEntries.begin()->GetSourceAddress());
+  fType = 0;
+  fTotalCharge = 0;
+  fHorizontalPosition = 0;
+  Int_t UnweightedPosSum = 0;
+  Int_t NumberOfTypeTwoMessages=0;
+  Int_t NumberOfHits=0;
+  Int_t LastPad= GetChannelOnPadPlane(fEntries.begin()->GetChannelID()+(16*(fDetector%2)));
+  for(auto x : fEntries){
+      if (LastPad+1 != GetChannelOnPadPlane(x.GetChannelID()+(16*(fDetector%2))))
+	{
+	  fType=1;
+	}
+      UnweightedPosSum+=GetChannelOnPadPlane(x.GetChannelID()+(16*(fDetector%2)));
+      if(x.GetTriggerType()==2) NumberOfTypeTwoMessages++;
+      if(x.GetTriggerType()==1||x.GetTriggerType()==3) NumberOfHits++;
+  }
+  if(NumberOfTypeTwoMessages!=2) fType=1;
+  if(NumberOfHits==0) fType=2;
+  fHorizontalPosition=static_cast<Float_t>(UnweightedPosSum)/static_cast<Float_t>(size());
+  fParametersCalculated =true;
+}
+Int_t CbmTrdTimeCorrel::Cluster::GetChannelOnPadPlane(Int_t SpadicChannel)
+{
+  Int_t channelMapping[32] = {31,15,30,14,29,13,28,12,27,11,26,10,25, 9,24, 8,
+				23, 7,22, 6,21, 5,20, 4,19, 3,18, 2,17, 1,16, 0};
+  if (SpadicChannel < 0 || SpadicChannel > 31){
+    if (SpadicChannel !=-1) LOG(ERROR) << "CbmTrdTimeCorrel::GetChannelOnPadPlane ChId " << SpadicChannel << FairLogger::endl;
+    return -1;
+  } else {
+    return channelMapping[SpadicChannel];
+  }
+}
+Int_t CbmTrdTimeCorrel::Cluster::GetSpadicID(Int_t sourceA)
+{
+  //TString spadic="";
+  Int_t SpaId = -1;
+  switch (sourceA) {
+  case (SpadicBaseAddress+0):  // first spadic
+    //spadic="Spadic0";
+    SpaId = 0;
+    break;
+  case (SpadicBaseAddress+1):  // first spadic
+    //spadic="Spadic0";
+    SpaId = 1;
+    break;
+  case (SpadicBaseAddress+2):  // second spadic
+    //spadic="Spadic1";
+    SpaId = 2;
+    break;
+  case (SpadicBaseAddress+3):  // second spadic
+    //spadic="Spadic1";
+    SpaId = 3;
+    break;
+  case (SpadicBaseAddress+4):  // third spadic
+    //spadic="Spadic2";
+    SpaId = 4;
+    break;
+  case (SpadicBaseAddress+5):  // third spadic
+    //spadic="Spadic2";
+    SpaId = 5;
+    break;
+  default:
+    LOG(ERROR) << "Source Address " << sourceA << " not known." << FairLogger::endl;
+    break;
+  }
+  return SpaId;
+}
+
+;
