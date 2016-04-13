@@ -733,7 +733,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
       auto range = std::make_pair(TempHitMap.lower_bound(it->first), TempHitMap.upper_bound(it->first + clusterWindow));
       if(TempHitMap.size()==0 && (range.first == TempHitMap.end())) continue;
       for (;range.first != range.second; ++(range.first)){
-	  if(it->second != nullptr && range.first->second!= nullptr)
+	  if(it->second == nullptr || range.first->second == nullptr) continue;
 	    if(range.first->second->GetTriggerType() == 1 || range.first->second->GetTriggerType() ==3) { // exclude purely neighbour triggered hits
 		if(it->second->GetTriggerType() == 1 || it->second->GetTriggerType() == 3) { // exclude purely neighbour triggered hits for the comparator side too
 		    Int_t ChID1 = it->second->GetChannelID();
