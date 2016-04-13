@@ -126,7 +126,7 @@ InitStatus AnalysisTaskMultiPairAnalysis::Init()
 
   // initialization time and memory
   gSystem->GetProcInfo(&fProcInfo);
-  printf("AnalysisTaskMultiPairAnalysis::Init:"" Real time %fs, CPU time %fs, Memory %li MB(res.) %li MB(virt.) \n",fTimer.RealTime(),fTimer.CpuTime(),fProcInfo.fMemResident/1024,fProcInfo.fMemVirtual/1024);
+  fprintf(stderr,"AnalysisTaskMultiPairAnalysis::Init:"" Real time %fs, CPU time %fs, Memory %li MB(res.) %li MB(virt.) \n",fTimer.RealTime(),fTimer.CpuTime(),fProcInfo.fMemResident/1024,fProcInfo.fMemVirtual/1024);
   fTimer.Reset();
 
   return kSUCCESS;
@@ -149,7 +149,7 @@ void AnalysisTaskMultiPairAnalysis::Exec(Option_t*)
   fEventsTotal++;
   if( !(fEventsTotal%10) ) {
     gSystem->GetProcInfo(&fProcInfo);
-    printf("AnalysisTaskMultiPairAnalysis::Exec: Process %.3e events, CPU time %.1fs, (%fs per event, eff %.3f), Memory %li MB(res.) %li MB(virt.) \n",
+    fprintf(stderr,"AnalysisTaskMultiPairAnalysis::Exec: Process %.3e events, CPU time %.1fs, (%fs per event, eff %.3f), Memory %li MB(res.) %li MB(virt.) \n",
 	   (Double_t)fEventsTotal, fTimer.CpuTime(), fTimer.CpuTime()/fEventsTotal, fTimer.CpuTime()/fTimer.RealTime(), fProcInfo.fMemResident/1024, fProcInfo.fMemVirtual/1024);
     fTimer.Continue();
   }
@@ -230,7 +230,7 @@ void AnalysisTaskMultiPairAnalysis::FinishTask()
   fMetaData.FillMeta("events",fEventsSelected);
 
   // write output to file
-  Printf("AnalysisTaskMultiPairAnalysis::FinsihTask - write histo list to %s",
+  fprintf(stderr,"AnalysisTaskMultiPairAnalysis::FinsihTask - write histo list to %s",
 	 FairRootManager::Instance()->GetOutFile()->GetName());
   FairRootManager::Instance()->GetOutFile()->cd();
 
