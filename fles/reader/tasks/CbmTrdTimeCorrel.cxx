@@ -394,7 +394,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	// sysID is hardcoded here to 0. To be changed as soon as sysID is set correctly.
 	if (!fFirstEpochMarker[0][spaID]) {
 	  fHM->H1("Delta_Epoch_hist_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2)+"_Half_"+std::to_string((Int_t)(chID/16)))->Fill(epoch - fEpochMarkerArray[0][spaID]);
-	  fHM->H2("Delta_Epoch_vs_Hitrate_hist_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2)+"_Half_"+std::to_string((Int_t)(chID/16)))->Fill(nSpadicMessagesHit0+nSpadicMessagesHit1,epoch - fEpochMarkerArray[0][spaID]);
+	  fHM->H2("Hitrate_vs_DeltaEpoch_hist_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2)+"_Half_"+std::to_string((Int_t)(chID/16)))->Fill(epoch - fEpochMarkerArray[0][spaID], nSpadicMessagesHit0+nSpadicMessagesHit1);
 	}
 	fEpochMarkerArray[0][spaID] = epoch;
 	fFirstEpochMarker[0][spaID] = false;
@@ -1100,9 +1100,9 @@ void CbmTrdTimeCorrel::CreateHistograms()
       for(Int_t halfchip = 0; halfchip < 2; ++halfchip) {
 	spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
 	if(spadicName != "") {
-	  histName = "Delta_Epoch_vs_Hitrate_hist_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic)+"_Half_"+std::to_string(halfchip);
-	  title = histName + runName + ";HitMessages per TimeSlice;DeltaEpoch";
-	  fHM->Add(histName.Data(), new TH2F(histName, title, 1000, 0, 10E5, 8301, -4150.5, 4150.5));
+	  histName = "Hitrate_vs_DeltaEpoch_hist_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic)+"_Half_"+std::to_string(halfchip);
+	  title = histName + runName + ";DeltaEpoch;HitMessages per TimeSlice";
+	  fHM->Add(histName.Data(), new TH2F(histName, title, 8301, -4150.5, 4150.5, 1000, 0, 10E5));
 	}
       }
     }
@@ -1121,7 +1121,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
     }
   }
 
-  for (Int_t syscore=0; syscore<1;++syscore) {
+  for (Int_t syscore=0; syscore<3;++syscore) {
     for (Int_t spadic=0; spadic<3;++spadic) {
       for (Int_t halfchip=0; halfchip<2;++halfchip) {
 	spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
