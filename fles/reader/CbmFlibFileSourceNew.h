@@ -42,6 +42,11 @@ class CbmFlibFileSourceNew : public FairSource
 #else                
     Int_t ReadEvent();      
 #endif    
+
+#ifndef VERSION_LESS_151102
+  Source_Type GetSourceType() {return kONLINE;}
+#endif            
+  
     void Close();
     void Reset();
 
