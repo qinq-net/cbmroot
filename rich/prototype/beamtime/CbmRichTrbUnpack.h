@@ -52,7 +52,7 @@ public:
     Int_t ReadEvent();    
 #endif            
 
-#ifndef VERSION_LESS_151102
+#ifdef VERSION_LEAST_151102
     Source_Type GetSourceType() {return kONLINE;}
 #endif            
 

@@ -205,10 +205,10 @@ EndIf()
 
 Set(_fairroot_version_found ${FairRoot_VERSION_MAJOR}.${FairRoot_VERSION_MINOR}.${FairRoot_VERSION_PATCH})
 If(_fairroot_version_found VERSION_LESS 15.11.2)
-  ADD_DEFINITIONS(-DVERSION_LESS_151102)  
-  Message("FairRoot Version less 15.11.2")
+  Message("RICH: FairRoot Version less 15.11.2")
 Else()
-  Message("FairRoot Version at least 15.11.2")
+  ADD_DEFINITIONS(-DVERSION_LEAST_151102)  
+  Message("RICH: FairRoot Version at least 15.11.2")
 EndIf()
 
 
