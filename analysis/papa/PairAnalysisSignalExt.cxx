@@ -631,8 +631,9 @@ void PairAnalysisSignalExt::Process(TObjArray* const arrhist)
     if(fHistMixMP->GetDefaultSumw2()) fHistMixMP->Sumw2();
     fHistMixMP->SetDirectory(0);
     if(fRebin>1)       fHistMixMP->Rebin(fRebin);
+
+    if(fHistMixPM) fHistMixMP->Add( fHistMixPM ); // merge ME +- and -+
   }
-  if(fHistMixPM && fHistMixMP) fHistMixPM->Add( fHistMixMP ); // merge ME +- and -+
   // ME --
   fHistMixMM = (TH1*)FindObject(arrhist,PairAnalysis::kMEMM);
   if(fHistMixMM) {
@@ -883,7 +884,7 @@ void PairAnalysisSignalExt::ProcessEM()
   // signal subtraction using event mixing (+-,-+) method
   //
 
-  if( !fHistMixPM ) {
+  if( !fHistMixMP ) {
     Error("ProcessEM","Mixed event histogram missing");
     return;
   }
@@ -891,8 +892,8 @@ void PairAnalysisSignalExt::ProcessEM()
 
   // fill background histogram
   for(Int_t ibin=1; ibin<=fHistDataPM->GetXaxis()->GetNbins(); ibin++) {
-    Float_t pm  = fHistMixPM->GetBinContent(ibin);
-    Float_t pme = fHistMixPM->GetBinError(ibin);
+    Float_t pm  = fHistMixMP->GetBinContent(ibin);
+    Float_t pme = fHistMixMP->GetBinError(ibin);
 
     Float_t background  = pm;
     Float_t ebackground = TMath::Sqrt(pme*pme);
