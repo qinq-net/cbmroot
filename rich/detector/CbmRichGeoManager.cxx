@@ -52,6 +52,7 @@ void CbmRichGeoManager::InitPmtCyl()
     geoIterator.SetTopName("/cave_1");
     TGeoNode* curNode;
     
+    vector<Double_t> xCoord;
     geoIterator.Reset();
     while ((curNode=geoIterator())) {
         TString nodeName(curNode->GetName());
@@ -73,18 +74,35 @@ void CbmRichGeoManager::InitPmtCyl()
             //double rotX = TMath::ASin(curNodeRot[5]/TMath::Cos(TMath::ASin(-curNodeRot[2]))); // around X
             double rotX = TMath::ACos(curNodeRot[8]/TMath::Cos(TMath::ASin(-curNodeRot[2]))); // around X
             
-            
             fGP->fPmtMap[string(nodePath.Data())].fTheta = rotX;
             fGP->fPmtMap[string(nodePath.Data())].fPhi = rotY;
             const TGeoBBox* shape = (const TGeoBBox*)(curNode->GetVolume()->GetShape());
-            fGP->fPmtMap[string(nodePath.Data())].fWidth = shape->GetDX();
-            fGP->fPmtMap[string(nodePath.Data())].fHeight = shape->GetDY();
+            fGP->fPmtMap[string(nodePath.Data())].fWidth = 2. * shape->GetDX();
+            fGP->fPmtMap[string(nodePath.Data())].fHeight = 2. * shape->GetDY();
             fGP->fPmtMap[string(nodePath.Data())].fZ = pmtZ;
             fGP->fPmtMap[string(nodePath.Data())].fX = pmtX;
             fGP->fPmtMap[string(nodePath.Data())].fY = pmtY;
+            
+            if (pmtX >=0 && pmtY >=0) {
+                xCoord.push_back(pmtX);
+            }
         }
     }
+    std::sort(xCoord.begin(), xCoord.end());
     
+    cout << "xCoord size:" << xCoord.size() << endl;
+    for ( map<string, CbmRichRecGeoParPmt>::iterator it = fGP->fPmtMap.begin(); it != fGP->fPmtMap.end(); it++) {
+        Double_t curX = TMath::Abs(it->second.fX);
+        int pos = -1;
+        //int pos = find(xCoord.begin(), xCoord.end(), curX) - xCoord.begin();
+        for (int i = 0; i < xCoord.size(); i++) {
+            if (TMath::Abs(curX - xCoord[i]) < 0.1) {
+                pos = i;
+                break;
+            }
+        }
+        it->second.fPmtPositionIndexX = pos;
+    }
 }
 
 void CbmRichGeoManager::InitPmt()
@@ -266,16 +284,41 @@ void CbmRichGeoManager::RotatePointTwoWings(
 void CbmRichGeoManager::RotatePointCyl(
                                        TVector3 *inPos,
                                        TVector3 *outPos,
-                                       Bool_t noTilting)
+                                       Bool_t noTilting,
+                                       Bool_t noShift)
 {
     if (noTilting == false){
         TGeoNode* node = gGeoManager->FindNode(inPos->X(), inPos->Y(), inPos->Z());
         string path(gGeoManager->GetPath());
         
         CbmRichRecGeoParPmt pmtPar = fGP->GetGeoRecPmtByBlockPath(path);
-
+        
         RotatePointImpl(inPos, outPos, -TMath::Abs(pmtPar.fPhi), TMath::Abs(pmtPar.fTheta), TMath::Abs(pmtPar.fX), TMath::Abs(pmtPar.fY), TMath::Abs(pmtPar.fZ));
         
+        // After rotation wee need to shift point
+        if (!noShift) {
+            // All pmt blocks centers will be move to this Y position
+            // TODO: We can also take smallest Y from all pmt blocks
+            Double_t baseLineY = (outPos->Y() >= 0)?160. : -160.; //cm
+            Double_t dY = pmtPar.fY - baseLineY;
+            outPos->SetY(outPos->Y() - dY);
+            
+            // Calculate pmt block center after rotation
+            TVector3 inPosPmt(pmtPar.fX, pmtPar.fY, pmtPar.fZ);
+            TVector3 outPosPmt;
+            RotatePointImpl(&inPosPmt, &outPosPmt, -TMath::Abs(pmtPar.fPhi), TMath::Abs(pmtPar.fTheta), TMath::Abs(pmtPar.fX), TMath::Abs(pmtPar.fY), TMath::Abs(pmtPar.fZ));
+            //RotatePointCyl(&inPosPmt, &outPosPmt, false, true);
+            
+            // calculate ideal position assuming the same width for all pmt blocks
+            //TODO:Actually we need to implement general solution if pmt-block widths are not the same
+            Double_t padding = 0.1; // cm
+            Double_t gap = 0.1;// cm
+            Double_t idealX = padding + 0.5 * pmtPar.fWidth + pmtPar.fPmtPositionIndexX * (pmtPar.fWidth + gap);
+            if (outPos->X() < 0) idealX = -idealX;
+            Double_t dX = idealX - outPosPmt.X();
+            
+            outPos->SetX(outPos->X() + dX);
+        }
     }  else {
         outPos->SetXYZ(inPos->X(), inPos->Y(), inPos->Z());
     }

@@ -48,7 +48,8 @@ public:
     void RotatePointCyl(
                         TVector3 *inPos,
                         TVector3 *outPos,
-                        Bool_t noTilting = false);
+                        Bool_t noTilting = false,
+                        Bool_t noShift = false);
     
     void RotatePointTwoWings(
                              TVector3 *inPos,

@@ -17,7 +17,7 @@
 
 using namespace std;
 
-enum CbmRichGeometryType { CbmRichGeometryTypeTwoWings, CbmRichGeometryTypeCylindrical };
+enum CbmRichGeometryType { CbmRichGeometryTypeTwoWings = 0, CbmRichGeometryTypeCylindrical = 1 };
 
 /**
  * \class CbmRichRecGeoPar
@@ -43,7 +43,8 @@ public:
     fPlaneY(0.),
     fPlaneZ(0.),
     fWidth(0.),
-    fHeight(0.)
+    fHeight(0.),
+    fPmtPositionIndexX(0.)
     {;}
     
     
@@ -62,6 +63,9 @@ public:
     
     Double_t fWidth; // TGeoBBox->GetDX(), half of the camera quater
     Double_t fHeight; // TGeoBBox->GetDY(), half of the camera quater
+    
+    // needed for cylindrcal geometry
+    Int_t fPmtPositionIndexX; // index of the pmt block in X coordinate
 };
 
 
@@ -157,14 +161,16 @@ public:
                 return iterator->second;
             }
         }
+        CbmRichRecGeoParPmt emptyPar;
+        return emptyPar;
     }
     
     
 public:
     
-    CbmRichGeometryType fGeometryType;
-    
     CbmRichRecGeoParPmt fPmt; // PMT parameters for 2-wings geometry CbmRichGeometryTypeTwoWings
+    
+    CbmRichGeometryType fGeometryType;
     
     map<string, CbmRichRecGeoParPmt> fPmtMap; // PMT parameter map for CbmRichGeometryTypeCylindrical, string is geo path to PMT block
     
