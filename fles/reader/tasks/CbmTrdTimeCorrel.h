@@ -101,6 +101,9 @@ class CbmTrdTimeCorrel : public FairTask
   OffsetMap timestampOffsets;
   OffsetMap CalculateTimestampOffsets(const EpochMap &epochBuffer);
 
+  Bool_t fGraph;
+  Bool_t fOutputCloneArrays;
+  
   friend class Cluster;
   class Cluster : public TObject
   {

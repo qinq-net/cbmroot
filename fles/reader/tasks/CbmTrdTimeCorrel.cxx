@@ -38,7 +38,9 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
     timestampOffsets(),
     fLastMessageTime{{{0}}},
     fEpochMarkerArray{{0}},
-    fFirstEpochMarker{{true}}  
+    fFirstEpochMarker{{true}},
+    fGraph(true),
+    fOutputCloneArrays(false)  
  {
    for (Int_t i=0; i < 3; ++i) { 
      for (Int_t j=0; j < 6; ++j) {
@@ -51,9 +53,9 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
 CbmTrdTimeCorrel::~CbmTrdTimeCorrel()
 {
   LOG(DEBUG) << "Destructor of CbmTrdTimeCorrel" << FairLogger::endl;
-  fRawMessages->Clear("C");
-  fDigis->Clear("C");
-  fClusters->Clear("C");
+  fRawMessages->Clear();
+  fDigis->Delete();
+  fClusters->Delete();
 }
 // ----              -------------------------------------------------------
 void CbmTrdTimeCorrel::SetParContainers()
@@ -71,13 +73,13 @@ InitStatus CbmTrdTimeCorrel::Init()
     return kERROR;
   }
 
-  fRawMessages = new TClonesArray("CbmSpadicRawMessage", 100);
+  fRawMessages = new TClonesArray("CbmSpadicRawMessage");
   ioman->Register("TrdRawMessage", "TRD Raw Messages", fRawMessages, kTRUE);
 
-  fDigis = new TClonesArray("CbmTrdDigi", 100);
+  fDigis = new TClonesArray("CbmTrdDigi");
   ioman->Register("TrdDigi", "TRD Digis", fDigis, kTRUE);
 
-  fClusters = new TClonesArray("CbmTrdCluster",100);
+  fClusters = new TClonesArray("CbmTrdCluster");
   ioman->Register("TrdCluster", "TRD Clusters", fClusters, kTRUE);
   
   CreateHistograms();
@@ -113,6 +115,10 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   LOG(INFO) << "Digis in TClonesArray:                           " << fDigis->GetEntriesFast() << FairLogger::endl;
   LOG(INFO) << "Clusters in TClonesArray:                        " << fClusters->GetEntriesFast() << FairLogger::endl;
   LOG(INFO) << "rawMessages in TS:                               " << fRawSpadic->GetEntriesFast() << FairLogger::endl;
+  fDigis->Delete();
+  fDigis = new TClonesArray("CbmTrdDigi");
+  fClusters->Delete();
+  fClusters = new TClonesArray("CbmTrdCluster");
   Int_t nSpadicMessages = fRawSpadic->GetEntriesFast(); //SPADIC messages per TimeSlice
   Int_t nSpadicMessages0(0),nSpadicMessages1(0); //SPADIC messages per TimeSlice for single SPADICS
   Int_t nSpadicMessagesHit0(0), nSpadicMessagesHit1(0), nSpadicMessagesHitAborted0(0), nSpadicMessagesHitAborted1(0), nSpadicMessagesOverflow0(0), nSpadicMessagesOverflow1(0), nSpadicMessagesInfo0(0), nSpadicMessagesEpoch0(0), nSpadicMessagesEpoch1(0), nSpadicMessagesInfo1(0), nSpadicMessagesLost0(0), nSpadicMessagesLost1(0), nSpadicMessagesStrange0(0), nSpadicMessagesStrange1(0); //SPADIC message types per TimeSlice for single SPADICS
@@ -153,13 +159,13 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       isEpoch = raw->GetEpoch();
       isEpochOutOfSynch = raw->GetEpochOutOfSynch();
       if(isEpoch||isEpochOutOfSynch){
-      sourceA = raw->GetSourceAddress();
-      spaID = GetSpadicID(sourceA);
-      time = raw->GetFullTime();
+	sourceA = raw->GetSourceAddress();
+	spaID = GetSpadicID(sourceA);
+	time = raw->GetFullTime();
 	//buffer all Epoch Messages
 	epochBuffer[spaID][time] = raw;
 	Int_t tempSize= fHM->G1(("Timestamps_Spadic"+std::to_string(spaID)))->GetN();
-	fHM->G1(("Timestamps_Spadic"+std::to_string(spaID)))->SetPoint(tempSize,fNrTimeSlices,time);
+	if (fGraph) fHM->G1(("Timestamps_Spadic"+std::to_string(spaID)))->SetPoint(tempSize,fNrTimeSlices,time);
       }
     }
     if(fNrTimeSlices!=0) timestampOffsets = CalculateTimestampOffsets(epochBuffer);
@@ -182,7 +188,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 		for (; FullTimeIt != timestampOffsets.at(baseSpaID).at(compSpaID).end(); ++FullTimeIt) //Loop over all timestamps and Fill Fulltime Offsets for Epoch Messages into Histograms
 		  {
 		    Int_t tGraphSize = fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->GetN();
-		    fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->SetPoint(tGraphSize,fNrTimeSlices,FullTimeIt->second);
+		    	if (fGraph) fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->SetPoint(tGraphSize,fNrTimeSlices,FullTimeIt->second);
 		  }
 	      }
   }
@@ -192,7 +198,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     }
 #endif //__CINT__
 
-    // Do the message type counting per timeslice here to make the full numbers available early in the following analysis loop
+  // Do the message type counting per timeslice here to make the full numbers available early in the following analysis loop
   for (Int_t iSpadicMessage=0; iSpadicMessage < nSpadicMessages; ++iSpadicMessage){
     raw = static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(iSpadicMessage));
     lostMessages = 0; // reset lost-counter for a new message
@@ -408,7 +414,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	//Write delta_t into a TGraph
 	if(spaID!=-1){
 	  Int_t tGraphSize = fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID/2)+"_Channel_"+std::to_string((Int_t)(chID+(15*spaID%2))))->GetN();
-	  fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID/2)+"_Channel_"+std::to_string((Int_t)(chID/16+(15*spaID%2))))->SetPoint(tGraphSize,time,(static_cast<Long_t>(epoch)-static_cast<Long_t>(fLastMessageTime[0][spaID][chID])));
+	  	if (fGraph) fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID/2)+"_Channel_"+std::to_string((Int_t)(chID/16+(15*spaID%2))))->SetPoint(tGraphSize,time,(static_cast<Long_t>(epoch)-static_cast<Long_t>(fLastMessageTime[0][spaID][chID])));
 	}
 	fLastMessageTime[0][spaID][chID] = epoch;
       }
@@ -447,10 +453,10 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	if(stopType == 0 && raw->GetNrSamples()==0 && iSpadicMessage < nSpadicMessages){
 	  for ( Int_t i=iSpadicMessage;i<nSpadicMessages;i++){
 	    if ((static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(i)))->GetOverFlow()==true && GetSpadicID((static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(i)))->GetSourceAddress())==spaID)
-	    {
-	      lostMessages = (static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(i)))->GetBufferOverflowCount();
-	      break;
-	    }
+	      {
+		lostMessages = (static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(i)))->GetBufferOverflowCount();
+		break;
+	      }
 	    //LOG(INFO) << i << "Info not found " << FairLogger::endl;
 	  }
 	  LOG(INFO) << "SpadicMessages: " << nSpadicMessages << " Lost Messages " <<FairLogger::endl;
@@ -488,6 +494,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 
   // Fill number of spadic-messages in tscounter-graph. Use TimeSlices (slices in processing time) here instead of physical full-time on the x-axis.
   // Length of one timeslice: m * n * 8 ns, with e.g. n=1250 length of microslice and m=100 microslices in one timeslice at SPS2015
+  if (fGraph) {
   fHM->G1("TsCounter")->SetPoint(fHM->G1("TsCounter")->GetN(),fNrTimeSlices+1,nSpadicMessages);
   fHM->G1("TsCounterHit0")->SetPoint(fHM->G1("TsCounterHit0")->GetN(),fNrTimeSlices+1,nSpadicMessagesHit0);
   fHM->G1("TsCounterHit1")->SetPoint(fHM->G1("TsCounterHit1")->GetN(),fNrTimeSlices+1,nSpadicMessagesHit1);
@@ -509,7 +516,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   else fHM->G1("TsStrangeness0")->SetPoint(fHM->G1("TsStrangeness0")->GetN(),fNrTimeSlices+1,0);
   if(nSpadicMessages1 > 0) fHM->G1("TsStrangeness1")->SetPoint(fHM->G1("TsStrangeness1")->GetN(),fNrTimeSlices+1,(Double_t(nSpadicMessagesStrange1)/Double_t(nSpadicMessages1)));
   else fHM->G1("TsStrangeness1")->SetPoint(fHM->G1("TsStrangeness1")->GetN(),fNrTimeSlices+1,0);
-  
+  }
   // Catch empty TimeSlices.
   if(fNrTimeSlices==0){
     if(fHM->G1("TsCounter")->GetN()==0){
@@ -519,21 +526,21 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   fNrTimeSlices++;
 
   if(fNrTimeSlices % 10 ==0)
-  {
-    if (fActivateClusterizer){
-      if (fNrTimeSlices!=0)ClusterizerTime();
-      ClusterizerSpace();
+    {
+      if (fActivateClusterizer){
+	if (fNrTimeSlices!=0)ClusterizerTime();
+	ClusterizerSpace();
+      }
+      CleanUpBuffers();
     }
-    CleanUpBuffers();
-  }
 }
 // ---- Finish  -------------------------------------------------------
 void CbmTrdTimeCorrel::Finish()
 {
   //ClusterizerSpace();
-  fRawMessages->Clear("C");
-  fDigis->Clear("C");
-  fClusters->Clear("C");
+  fRawMessages->Clear();
+  fDigis->Clear();
+  fClusters->Clear();
 
   TString runName="";
   if(fRun!=0) runName=Form(" (Run %d)",fRun);
@@ -715,6 +722,13 @@ void CbmTrdTimeCorrel::Finish()
 void CbmTrdTimeCorrel::FinishEvent()
 {
   LOG(DEBUG) << "FinishEvent of CbmTrdTimeCorrel" << FairLogger::endl;
+  
+  LOG(INFO) << "Digis in TClonesArray:                           " << fDigis->GetEntriesFast() << FairLogger::endl;
+  LOG(INFO) << "Clusters in TClonesArray:                        " << fClusters->GetEntriesFast() << FairLogger::endl;
+  fClusters->Delete();
+  fClusters = new TClonesArray("CbmTrdCluster");
+  fDigis->Delete();
+  fDigis = new TClonesArray("CbmTrdDigi");  
 }
 // -------------------------------------------------------------------------
 void CbmTrdTimeCorrel::ClusterizerTime()
@@ -842,18 +856,18 @@ void CbmTrdTimeCorrel::ClusterizerSpace()
 	  Samples[iBin] = raw->GetSamples()[iBin] - Baseline;
 	}
 	address = CbmTrdAddress::GetAddress(layerId,moduleId,sectorId,rowId,columnId);
-	/*
+	if (fOutputCloneArrays){
 	  new ((*fDigis)[fiDigi]) CbmTrdDigi(address,
-	  raw->GetFullTime(),//57,14 ns per timestamp
-	  raw->GetTriggerType(), raw->GetInfoType(), raw->GetStopType(),
-	  raw->GetNrSamples(), Samples);
-	*/
+					     raw->GetFullTime(),//57,14 ns per timestamp
+					     raw->GetTriggerType(), raw->GetInfoType(), raw->GetStopType(),
+					     raw->GetNrSamples(), Samples);
+	}
 	delete[] Samples;
 	if (combiIt->first - lastCombiID != 1 && digiIndices.size() > 0){
 	  address = CbmTrdAddress::GetAddress(layerId,moduleId,sectorId,rowId,columnId);
-	  
-	  //new ((*fClusters)[fiCluster]) CbmTrdCluster(digiIndices,address);
-	  
+	  if (fOutputCloneArrays){
+	    new ((*fClusters)[fiCluster]) CbmTrdCluster(digiIndices,address);
+	  }
 	  digiIndices.clear();
 	  fiCluster++;
 	}
@@ -863,9 +877,9 @@ void CbmTrdTimeCorrel::ClusterizerSpace()
       }
       if (digiIndices.size() > 0){
 	address = CbmTrdAddress::GetAddress(layerId,moduleId,sectorId,rowId,columnId);
-	
-	//new ((*fClusters)[fiCluster]) CbmTrdCluster(digiIndices,address);
-		
+	if (fOutputCloneArrays){
+	  new ((*fClusters)[fiCluster]) CbmTrdCluster(digiIndices,address);
+	}	
 	digiIndices.clear();      
 	fiCluster++;
       }
