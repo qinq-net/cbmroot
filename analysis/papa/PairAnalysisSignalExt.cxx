@@ -1218,7 +1218,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
 	if     (optOnlySig &&  fCocktailSubtr && FindObjectByTitle(fArrCocktail,key)) continue;
 	else if(optOnlySig && !fCocktailSubtr && fArrCocktail && !FindObjectByTitle(fArrCocktail,key)) continue;
 	else if     (optCocktail && FindObjectByTitle(fArrCocktail,key)) continue;
-	//	PairAnalysisStyler::Style(hmc,isty++);
+	PairAnalysisStyler::Style(hmc,isty++);
 	// check if rebinning is necessary
 	if(1 && fHistSignal->GetNbinsX()!=hmc->GetNbinsX()) {
 	  if(fBinLimits)     {
