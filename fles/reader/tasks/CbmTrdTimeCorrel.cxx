@@ -866,7 +866,7 @@ void CbmTrdTimeCorrel::ClusterizerSpace()
 	if (combiIt->first - lastCombiID != 1 && digiIndices.size() > 0){
 	  address = CbmTrdAddress::GetAddress(layerId,moduleId,sectorId,rowId,columnId);
 	  if (fOutputCloneArrays){
-	    new ((*fClusters)[fiCluster]) CbmTrdCluster(digiIndices,address);
+	    //new ((*fClusters)[fiCluster]) CbmTrdCluster(digiIndices,address);
 	  }
 	  digiIndices.clear();
 	  fiCluster++;
@@ -878,7 +878,7 @@ void CbmTrdTimeCorrel::ClusterizerSpace()
       if (digiIndices.size() > 0){
 	address = CbmTrdAddress::GetAddress(layerId,moduleId,sectorId,rowId,columnId);
 	if (fOutputCloneArrays){
-	  new ((*fClusters)[fiCluster]) CbmTrdCluster(digiIndices,address);
+	  //new ((*fClusters)[fiCluster]) CbmTrdCluster(digiIndices,address);
 	}	
 	digiIndices.clear();      
 	fiCluster++;
