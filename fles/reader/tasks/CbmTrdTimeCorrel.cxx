@@ -143,8 +143,8 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   timestampOffsets.clear();
 
   //Calculate Timestamp Offsets
-  LOG(INFO) <<"Begin Buffering Epoch Messages" << FairLogger::endl;
   if (false) {//Context to limit epochBuffers scope
+    LOG(INFO) <<"Begin Buffering Epoch Messages" << FairLogger::endl;
     EpochMap epochBuffer;
     //Loop over all epoch messages to build Fulltime offsets.
     for (Int_t iSpadicMessage=0; iSpadicMessage < nSpadicMessages; ++iSpadicMessage){
@@ -163,8 +163,8 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       }
     }
     if(fNrTimeSlices!=0) timestampOffsets = CalculateTimestampOffsets(epochBuffer);
+    LOG(INFO) <<"Finish Buffering Epoch Messages" << FairLogger::endl;
   }
-  LOG(INFO) <<"Finish Buffering Epoch Messages" << FairLogger::endl;
 
   //Fill Histograms with the Offsets
 #ifndef __CINT__
@@ -192,8 +192,54 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     }
 #endif //__CINT__
 
+    // Do the message type counting per timeslice here to make the full numbers available early in the following analysis loop
+  for (Int_t iSpadicMessage=0; iSpadicMessage < nSpadicMessages; ++iSpadicMessage){
+    raw = static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(iSpadicMessage));
+    lostMessages = 0; // reset lost-counter for a new message
+    sourceA = raw->GetSourceAddress();
+    spaID = GetSpadicID(sourceA);
+    eqID = raw->GetEquipmentID();
+    spadicName = GetSpadicName(eqID,sourceA);
+    isHit = raw->GetHit();
+    isHitAborted = raw->GetHitAborted();
+    isOverflow = raw->GetOverFlow();
+    isInfo = raw->GetInfo();
+    isEpoch = raw->GetEpoch();
+    isEpochOutOfSynch = raw->GetEpochOutOfSynch();
+    isStrange = raw->GetStrange();
+    // Count total messages per ASIC and message-types per ASIC.
+    if(spadicName == RewriteSpadicName("SysCore0_Spadic0")) {
+      nSpadicMessages0++;
+      if(isHit) nSpadicMessagesHit0++;
+      else if(isHitAborted) nSpadicMessagesHitAborted0++;
+      else if(isOverflow) {
+	nSpadicMessagesOverflow0++;
+	if (lostMessages > 0) nSpadicMessagesLost0 += lostMessages; //lostMessages might be -1 for hits or epochs, therefore one has to ensure that it is > 0
+      }
+      else if(isInfo) nSpadicMessagesInfo0++;
+      else if(isEpoch) nSpadicMessagesEpoch0++;
+      else if(isStrange) nSpadicMessagesStrange0++;
+    }
+    
+    else if(spadicName == RewriteSpadicName("SysCore0_Spadic1")) {
+      nSpadicMessages1++;
+      if(isHit) nSpadicMessagesHit1++;
+      else if(isHitAborted) nSpadicMessagesHitAborted1++;
+      else if(isOverflow) {
+	nSpadicMessagesOverflow1++;
+	if (lostMessages > 0) nSpadicMessagesLost1 += lostMessages; //lostMessages might be -1 for hits or epochs, therefore one has to ensure that it is > 0
+      }
+      else if(isInfo) nSpadicMessagesInfo1++;
+      else if(isEpoch) nSpadicMessagesEpoch1++;
+      else if(isStrange) nSpadicMessagesStrange1++;
+    }
+    // Currently only expecting Spadic0 and Spadic1. Logging others, if appearing.
+    else {
+      LOG(INFO) << "SpadicMessage " << iSpadicMessage << " claims to be from " << spadicName << " with spadicID " << spaID << FairLogger::endl;
+    }
+  }
 
-  // Starting to loop over all Spadic messages in unpacked TimeSlice
+  // Starting to loop over all Spadic messages in unpacked TimeSlice, Analysis loop
   for (Int_t iSpadicMessage=0; iSpadicMessage < nSpadicMessages; ++iSpadicMessage) {
     //std::cout << "  " << iSpadicMessage << std::endl;
     raw = static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(iSpadicMessage));
@@ -346,7 +392,10 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       }
       if (isEpoch) {
 	// sysID is hardcoded here to 0. To be changed as soon as sysID is set correctly.
-	if (!fFirstEpochMarker[0][spaID]) fHM->H1("Delta_Epoch_hist_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2)+"_Half_"+std::to_string((Int_t)(chID/16)))->Fill(epoch - fEpochMarkerArray[0][spaID]);
+	if (!fFirstEpochMarker[0][spaID]) {
+	  fHM->H1("Delta_Epoch_hist_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2)+"_Half_"+std::to_string((Int_t)(chID/16)))->Fill(epoch - fEpochMarkerArray[0][spaID]);
+	  fHM->H2("Delta_Epoch_vs_Hitrate_hist_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2)+"_Half_"+std::to_string((Int_t)(chID/16)))->Fill(nSpadicMessagesHit0+nSpadicMessagesHit1,epoch - fEpochMarkerArray[0][spaID]);
+	}
 	fEpochMarkerArray[0][spaID] = epoch;
 	fFirstEpochMarker[0][spaID] = false;
       }
@@ -388,37 +437,6 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       fHM->H2("NrSamples_vs_TriggerType")->Fill(raw->GetNrSamples(), raw->GetTriggerType());
       //-------------------
       
-      // Count total messages per ASIC and message-types per ASIC.
-      if(spadicName == RewriteSpadicName("SysCore0_Spadic0")) {
-        nSpadicMessages0++;
-        if(isHit) nSpadicMessagesHit0++;
-        else if(isHitAborted) nSpadicMessagesHitAborted0++;
-        else if(isOverflow) {
-	  nSpadicMessagesOverflow0++;
-	  if (lostMessages > 0) nSpadicMessagesLost0 += lostMessages; //lostMessages might be -1 for hits or epochs, therefore one has to ensure that it is > 0
-	}
-        else if(isInfo) nSpadicMessagesInfo0++;
-	else if(isEpoch) nSpadicMessagesEpoch0++;
-        else if(isStrange) nSpadicMessagesStrange0++;
-      }
-      
-      else if(spadicName == RewriteSpadicName("SysCore0_Spadic1")) {
-        nSpadicMessages1++;
-        if(isHit) nSpadicMessagesHit1++;
-        else if(isHitAborted) nSpadicMessagesHitAborted1++;
-        else if(isOverflow) {
-	  nSpadicMessagesOverflow1++;
-	  if (lostMessages > 0) nSpadicMessagesLost1 += lostMessages; //lostMessages might be -1 for hits or epochs, therefore one has to ensure that it is > 0
-	}
-	else if(isInfo) nSpadicMessagesInfo1++;
-	else if(isEpoch) nSpadicMessagesEpoch1++;
-	else if(isStrange) nSpadicMessagesStrange1++;
-      }
-      // Currently only expecting Spadic0 and Spadic1. Logging others, if appearing.
-      else {
-        LOG(INFO) << "SapdicMessage " << iSpadicMessage << " claims to be from " << spadicName << " with spadicID " << spaID << FairLogger::endl;
-      }
-
       /*Extended Message Debugging:
 	-Check for deformed Messages
 	-Check for empty Messages claiming to be normally stopped
@@ -1076,11 +1094,29 @@ void CbmTrdTimeCorrel::CreateHistograms()
       }
     }
   }
+
+  for(Int_t syscore = 0; syscore < 3; ++syscore) {
+    for(Int_t spadic = 0; spadic < 3; ++spadic) {
+      for(Int_t halfchip = 0; halfchip < 2; ++halfchip) {
+	spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
+	if(spadicName != "") {
+	  histName = "Delta_Epoch_vs_Hitrate_hist_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic)+"_Half_"+std::to_string(halfchip);
+	  title = histName + runName + ";HitMessages per TimeSlice;DeltaEpoch";
+	  fHM->Add(histName.Data(), new TH2F(histName, title, 1000, 0, 10E5, 8301, -4150.5, 4150.5));
+	}
+      }
+    }
+  }
   
-  for (Int_t syscore=0; syscore<1;++syscore) {
+  for (Int_t syscore=0; syscore<3;++syscore) {
     for (Int_t spadic=0; spadic<3;++spadic) {
       for (Int_t halfchip=0; halfchip<2;++halfchip) {
-	fHM->Add("Delta_t_hist_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic)+"_Half_"+std::to_string(halfchip), new TH1I(("Delta_t_hist_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic)+"_Half_"+std::to_string(halfchip)).c_str(), "Timestamp differences", 4096,-70000,70000));
+	spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
+	if(spadicName != "") {
+	  histName = "Delta_t_hist_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic)+"_Half_"+std::to_string(halfchip);
+	  title = histName + runName;
+	  fHM->Add(histName.Data(), new TH1I(histName, title, 4096,-70000,70000));
+	}
       }
     }
   }
@@ -1088,7 +1124,12 @@ void CbmTrdTimeCorrel::CreateHistograms()
   for (Int_t syscore=0; syscore<1;++syscore) {
     for (Int_t spadic=0; spadic<3;++spadic) {
       for (Int_t halfchip=0; halfchip<2;++halfchip) {
-	fHM->Add("Delta_Epoch_hist_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic)+"_Half_"+std::to_string(halfchip), new TH1I(("Delta_Epoch_hist_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic)+"_Half_"+std::to_string(halfchip)).c_str(), "Epoch differences", 8301,-4150.5,4150.5));
+	spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
+	if(spadicName != "") {
+	   histName = "Delta_Epoch_hist_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic)+"_Half_"+std::to_string(halfchip);
+	  title = histName + runName;
+	  fHM->Add(histName.Data(), new TH1I(histName, title, 8301,-4150.5,4150.5));
+	}
       }
     }
   }
