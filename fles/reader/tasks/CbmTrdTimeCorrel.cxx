@@ -27,6 +27,7 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
     fNrTimeSlices(0),
     fRun(0),
     fRewriteSpadicName(true),
+    fLinearHitBuffer(),
     fSpadics(0),
     fMessageBuffer(),
     fRawMessages(NULL),
