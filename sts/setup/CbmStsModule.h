@@ -127,7 +127,7 @@ class CbmStsModule : public CbmStsElement
       ** @param clusterArray  Output TClonesArray
       **/
      void CreateCluster(Int_t clusterStart, Int_t clusterEnd,
-    		                TClonesArray* clusterArray, Int_t algorithm);
+    		                TClonesArray* clusterArray, Int_t algorithm, Int_t eLossModel);
 
 
      /** Find hits from clusters

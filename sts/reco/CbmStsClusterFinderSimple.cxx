@@ -21,12 +21,13 @@
 #include "CbmStsModule.h"
 
 // -----   Constructor   ---------------------------------------------------
-CbmStsClusterFinderSimple::CbmStsClusterFinderSimple(Int_t finderModel, Int_t algorithm) : TObject(),
+CbmStsClusterFinderSimple::CbmStsClusterFinderSimple(Int_t finderModel, Int_t algorithm, Int_t eLossModel) : TObject(),
     fClusters(NULL)
   , fNofClustersWithGap (0)
   , fNofSplittedClusters (0)
   , fFinderModel(finderModel)			    
   , fAlgorithm(algorithm)			    
+  , fELossModel(eLossModel)			    
 {
 }
 // -------------------------------------------------------------------------
@@ -90,7 +91,7 @@ Int_t CbmStsClusterFinderSimple::FindClustersSimple(CbmStsModule* module) {
 			// --- Digi from other particle: close old cluster and start new one
 			else { 			
 			    mcIndex = digiMatch -> GetLink(0).GetIndex();
-			    module->CreateCluster(clusterStart, clusterEnd, fClusters, fAlgorithm);
+			    module->CreateCluster(clusterStart, clusterEnd, fClusters, fAlgorithm, fELossModel);
 			    nClusters++;
 			    fNofSplittedClusters++;
 			    clusterStart = channel;
@@ -100,7 +101,7 @@ Int_t CbmStsClusterFinderSimple::FindClustersSimple(CbmStsModule* module) {
 		// --- Not neighbouring; close old cluster and start new one
 		else {
 		    mcIndex = digiMatch -> GetLink(0).GetIndex();
-		    module->CreateCluster(clusterStart, clusterEnd, fClusters, fAlgorithm);
+		    module->CreateCluster(clusterStart, clusterEnd, fClusters, fAlgorithm, fELossModel);
 		    nClusters++;
 		    clusterStart = channel;
 		    clusterEnd   = channel;
@@ -134,7 +135,7 @@ Int_t CbmStsClusterFinderSimple::FindClustersSimple(CbmStsModule* module) {
 
 		    // --- Not neighbouring; close old cluster and start new one
 		    else {
-			module->CreateCluster(clusterStart, clusterEnd, fClusters, fAlgorithm);
+			module->CreateCluster(clusterStart, clusterEnd, fClusters, fAlgorithm, fELossModel);
 			nClusters++;
 			clusterStart = channel;
 			clusterEnd   = channel;
@@ -174,7 +175,7 @@ Int_t CbmStsClusterFinderSimple::FindClustersSimple(CbmStsModule* module) {
 		    }
 		    // --- Not neighbouring; close old cluster and start new one
 		    else {
-			module->CreateCluster(clusterStart, clusterEnd, fClusters, fAlgorithm);
+			module->CreateCluster(clusterStart, clusterEnd, fClusters, fAlgorithm, fELossModel);
 			if (gap) fNofClustersWithGap ++;
 			nClusters++;
 			clusterStart = channel;
@@ -190,7 +191,7 @@ Int_t CbmStsClusterFinderSimple::FindClustersSimple(CbmStsModule* module) {
 
 
     // --- Create last cluster
-    module->CreateCluster(clusterStart, clusterEnd, fClusters, fAlgorithm);
+    module->CreateCluster(clusterStart, clusterEnd, fClusters, fAlgorithm, fELossModel);
     if (gap) fNofClustersWithGap ++;
     nClusters++;
 

@@ -37,7 +37,7 @@ class CbmStsClusterFinderSimple : public TObject {
 	public:
 
 		/** Constructor **/
-		CbmStsClusterFinderSimple(Int_t finderModel, Int_t algorithm);
+		CbmStsClusterFinderSimple(Int_t finderModel, Int_t algorithm, Int_t eLossModel);
 
 		/** Destructor **/
 		virtual ~CbmStsClusterFinderSimple();
@@ -66,6 +66,7 @@ class CbmStsClusterFinderSimple : public TObject {
 		Int_t fNofSplittedClusters;///< Counter for splitted cluster
 		Int_t fFinderModel;  ///< Model of cluster finder
 		Int_t fAlgorithm;    ///< Algorithm of cluster finder
+		Int_t fELossModel;    ///< Energy loss model in simulation, to take into account error properly
 
 		TClonesArray* fClusters;   ///< Output array of clusters
 

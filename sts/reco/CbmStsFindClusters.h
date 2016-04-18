@@ -93,6 +93,9 @@ class CbmStsFindClusters : public FairTask
     void UseTbClusterFinder(Double_t dTime = 20.)  { fDeadTime = dTime;
                                                      fUseFinderTb    = kTRUE; }
 
+    /** Set energy loss model in order to take into account error properly **/
+    void SetELossModel(Int_t eLossModel = 1) {fELossModel = eLossModel;}
+
 
     	private:
 
@@ -103,6 +106,7 @@ class CbmStsFindClusters : public FairTask
     TStopwatch    fTimer;             ///< ROOT timer
     Int_t         fFinderModel;       ///< Cluster finder model
     Int_t         fAlgorithm;         ///< Cluster finder algorithm
+    Int_t         fELossModel;        ///< Energy loss model, to take propely into position error
     
     CbmTimeSlice* fTimeSlice;         ///< Time slice object in the DAQ approach
     vector<CbmStsDigi> fDigiData;     ///< Vector of digis for the time slices

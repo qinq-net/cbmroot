@@ -192,7 +192,7 @@ InitStatus CbmStsFindClusters::Init()
     CbmStsPhysics::Instance();
 
     // --- Create cluster finder
-    fFinder = new CbmStsClusterFinderSimple(fFinderModel, fAlgorithm);
+    fFinder = new CbmStsClusterFinderSimple(fFinderModel, fAlgorithm, fELossModel);
     fFinder->SetOutputArray(fClusters);
 
     LOG(INFO) << GetName() << ": Initialisation successful"
@@ -287,7 +287,7 @@ bool CbmStsFindClusters::InitMQ(const std::string& geo_file)
     CbmStsPhysics::Instance();
 
     // --- Create cluster finder
-    fFinder = new CbmStsClusterFinderSimple(fFinderModel, fAlgorithm);
+    fFinder = new CbmStsClusterFinderSimple(fFinderModel, fAlgorithm, fELossModel);
     fFinder->SetOutputArray(fClusters);
     return true;
 }

@@ -266,7 +266,7 @@ Int_t CbmStsModule::ChargeToAdc(Double_t charge) {
 
 // -----   Create a cluster in the output TClonesArray   -------------------
 void CbmStsModule::CreateCluster(Int_t clusterStart, Int_t clusterEnd,
-		                             TClonesArray* clusterArray, Int_t algorithm) {
+		                             TClonesArray* clusterArray, Int_t algorithm, Int_t eLossModel) {
 
         CbmStsCluster* cluster = NULL;
 
@@ -359,8 +359,12 @@ void CbmStsModule::CreateCluster(Int_t clusterStart, Int_t clusterEnd,
 		    if (channel == clusterStart) chargeFirst = charge;
 		    if (channel == clusterEnd) chargeLast = charge;
 		}
-		dq12 = errorNoise2 + errorDiscr2 + fPhysics -> LandauWidth(chargeFirst) * fPhysics -> LandauWidth(chargeFirst);
-		dq22 = errorNoise2 + errorDiscr2 + fPhysics -> LandauWidth(chargeLast) * fPhysics -> LandauWidth(chargeLast);
+		dq12 = errorNoise2 + errorDiscr2;
+		dq22 = errorNoise2 + errorDiscr2;
+		if (eLossModel == 2){
+		    dq12 += fPhysics -> LandauWidth(chargeFirst) * fPhysics -> LandauWidth(chargeFirst);
+		    dq22 += fPhysics -> LandauWidth(chargeLast) * fPhysics -> LandauWidth(chargeLast);
+		}
 
 		sum1 = chargeFirst + chargeLast;
 		sum3 = chargeFirst * Double_t(clusterStart) * Double_t(clusterStart) + chargeLast * Double_t(clusterEnd) * Double_t(clusterEnd);
@@ -383,7 +387,8 @@ void CbmStsModule::CreateCluster(Int_t clusterStart, Int_t clusterEnd,
 		    if ( ! digi ) continue;
 		    cluster->AddDigi(index);
 		    Double_t charge = AdcToCharge(digi->GetCharge());
-		    dq2 = errorNoise2 + errorDiscr2 + fPhysics -> LandauWidth(charge) * fPhysics -> LandauWidth(charge);
+		    dq2 = errorNoise2 + errorDiscr2;
+		    if (eLossModel == 2) dq2 += fPhysics -> LandauWidth(charge) * fPhysics -> LandauWidth(charge);
 		    sum1 += charge;
 		    sum3 += charge * Double_t(channel) * Double_t(channel);
 		    if (channel == clusterStart) {

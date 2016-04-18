@@ -120,6 +120,11 @@ class CbmStsDigitize : public FairTask
        useCrossTalk    = fUseCrossTalk;
     }
 
+   /** Get energy loss model
+   ** @param eLossModel       0 = ideal, 1 = uniform, 2 = fluctuations
+   **/
+   Int_t GetELossModel() const{return fElossModel;}
+
 
   /** Initialise the STS setup and the parameters **/
   void InitSetup();
