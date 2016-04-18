@@ -61,7 +61,6 @@ class CbmStsClusterFinderSimple : public TObject {
 
 	private:
 
-		Int_t fIndex[2048];  ///< Array of digi indices in channels
 		Int_t fNofClustersWithGap; ///< Counter for clusters with gap
 		Int_t fNofSplittedClusters;///< Counter for splitted cluster
 		Int_t fFinderModel;  ///< Model of cluster finder

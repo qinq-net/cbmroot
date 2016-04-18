@@ -34,6 +34,7 @@ CbmStsModule::CbmStsModule() : CbmStsElement(),
                                fDigis(),
                                fClusters(),
                                fDigisTb(),
+							   fDigisTbtemp(),
                                fIt_DigiTb(),
 			       fPhysics(NULL)
 {
@@ -60,6 +61,7 @@ CbmStsModule::CbmStsModule(const char* name, const char* title,
                            fDigis(),
                            fClusters(),
                            fDigisTb(),
+						   fDigisTbtemp(),
                            fIt_DigiTb(),
 			   fPhysics(NULL)
 {
@@ -82,7 +84,6 @@ CbmStsModule::~CbmStsModule() {
 			delete (*sigIt);
 		}
 	}
-
 }
 // -------------------------------------------------------------------------
 
@@ -297,7 +298,7 @@ void CbmStsModule::CreateCluster(Int_t clusterStart, Int_t clusterEnd,
 
 	Double_t error = 0.;
 	Int_t index = -1;
-
+std:cout.precision(10);
 	//--- Center-of-gravity algorithm
 	if (algorithm == 0) {
 	    for (Int_t channel = clusterStart; channel <= clusterEnd; channel++) {
@@ -317,32 +318,31 @@ void CbmStsModule::CreateCluster(Int_t clusterStart, Int_t clusterEnd,
 		    CbmStsDigi* digi = GetDigi(channel, index);
 		    if ( ! digi ) continue;
 		    errorMeas += (channel - sum2) * (channel - sum2);
-		}
+			}
 		errorMeas /= sum1;
 		errorMeas *= sqrt(errorNoise2 + errorDiscr2); 
 		errorMethod = 1. / sqrt(24.);
 	    }
-
 	}
 
 	// --- advanced algorithm
 	 else if (algorithm == 1){
 	    //1-strip cluster
 	    if (clusterStart == clusterEnd){
-		CbmStsDigi* digi = GetDigi(clusterStart, index);
-		if ( digi ){
-		    cluster->AddDigi(index);
-		     Double_t charge = AdcToCharge(digi->GetCharge());
-		    sum1 = charge;
-		    sum2 = Double_t (clusterStart);
-		    sum3 = charge * Double_t(clusterStart) * Double_t(clusterStart);
-		    tsum += digi->GetTime();
+	    	CbmStsDigi* digi = GetDigi(clusterStart, index);
+	    	if ( digi ){
+	    		cluster->AddDigi(index);
+	    		Double_t charge = AdcToCharge(digi->GetCharge());
+	    		sum1 = charge;
+	    		sum2 = Double_t (clusterStart);
+	    		sum3 = charge * Double_t(clusterStart) * Double_t(clusterStart);
+	    		tsum += digi->GetTime();
 
-		    if (sum1 > 0.) {
-			errorMethod = 1. / sqrt(24.);
-			errorMeas = 0.;
-		    } 
-		}
+	    		if (sum1 > 0.) {
+	    			errorMethod = 1. / sqrt(24.);
+	    			errorMeas = 0.;
+	    		}
+	    	}
 	    }//end of 1-strip clusters
 
 	    //2- strip cluster 
@@ -433,7 +433,7 @@ void CbmStsModule::CreateCluster(Int_t clusterStart, Int_t clusterEnd,
 	cluster->SetAddress(fAddress);
 	cluster->SetSize(clusterEnd - clusterStart + 1);
 
-	LOG(DEBUG2) << GetName() << ": Created new cluster from channel "
+	LOG(DEBUG4) << GetName() << ": Created new cluster from channel "
 	    << clusterStart << " to " << clusterEnd << ", charge "
 	    << sum1 << ", time " << tsum << "ns, channel mean "
 	    << sum2 << FairLogger::endl;
@@ -666,21 +666,21 @@ void CbmStsModule::AddDigiTb(CbmStsDigi* digi, Int_t index) {
 		return;
 	}
 	Int_t channel = CbmStsAddress::GetElementId(digi->GetAddress(), kStsChannel);
-	fDigisTb.insert(make_pair(channel, make_pair(digi, index)));
+	fDigisTb.insert(pair<Int_t, pair<CbmStsDigi*, Int_t> >(channel, pair<CbmStsDigi*, Int_t>(digi, index)));
 	return;
 }
 
 // -----   Start clustering procedure for the current module   -------------
 void CbmStsModule::StartClusteringTb() {
-	fIt_DigiTb = fDigisTb.begin();
+	fDigisTbtemp = fDigisTb;
+	fIt_DigiTb = fDigisTbtemp.begin();
 }
 
 // -----   Get information about next digi in multimap   -------------------
 Bool_t CbmStsModule::GetNextDigiTb(Int_t& channel, Double_t& time, Int_t& index, Int_t& charge) {
-	if ( fIt_DigiTb == fDigisTb.end() ) return kFALSE;
+	if ( fIt_DigiTb == fDigisTbtemp.end() ) return kFALSE;
 	channel = fIt_DigiTb->first;
 	index = fIt_DigiTb->second.second;
-//	charge = AdcToCharge(fIt_DigiTb->second.first->GetCharge());
 	charge = fIt_DigiTb->second.first->GetCharge();
 	time = fIt_DigiTb->second.first->GetTime();
 	fIt_DigiTb++;
@@ -689,7 +689,26 @@ Bool_t CbmStsModule::GetNextDigiTb(Int_t& channel, Double_t& time, Int_t& index,
 
 // -----   Delete used digi from the multimap   --------------------------------
 void CbmStsModule::DeactivateDigiTb() {
-	fIt_DigiTb = fDigisTb.erase(--fIt_DigiTb);
+	fIt_DigiTb = fDigisTbtemp.erase(--fIt_DigiTb);
+}
+
+CbmStsDigi* CbmStsModule::GetDigiTb(Int_t channel, Int_t index) {
+
+	if ( ! ( channel >= 0 && channel < fNofChannels) ) {
+		LOG(ERROR) << GetName() << ": Illegal channel number " << channel
+				       << FairLogger::endl;
+		return NULL;
+	}
+
+	multimap<Int_t, pair<CbmStsDigi*, Int_t> >::iterator it = fDigisTb.find(channel);
+	do {
+		if ( (it->second).second == index )
+			return (it->second).first;
+		else
+			++it;
+	} while ( it->first == channel );
+
+	return NULL;
 }
 
 // -----   Create cluster in the output array   ----------------------------
@@ -707,12 +726,168 @@ void CbmStsModule::CreateClusterTb(vector<Int_t> digiIndexes, Double_t s1,
 		cluster = new CbmStsCluster();
 		AddCluster(cluster);
 	}
-	for ( Int_t iDigi = 0; iDigi < digiIndexes.size(); iDigi++ ) {
-		cluster->AddDigi(digiIndexes[iDigi]);
-	}
+	cluster->SetDigis(digiIndexes);
 	cluster->SetProperties(s1, s2, s3, ts);
 	cluster->SetAddress(fAddress);
-	fIt_DigiTb = fDigisTb.begin();
+	cluster->SetSize(digiIndexes.size());
+	fIt_DigiTb = fDigisTbtemp.begin();
+}
+
+void CbmStsModule::CreateClusterTb(vector<Int_t>* digiIndexes, Int_t firstChannel, TClonesArray* clusterArray, Int_t algorithm) {
+	CbmStsCluster* cluster = NULL;
+	// --- If output array is specified: Create a new cluster there
+	if ( clusterArray ) {
+		Int_t nClusters = clusterArray->GetEntriesFast();
+		cluster = new ( (*clusterArray)[nClusters] ) CbmStsCluster();
+	}
+	// --- If no output array is specified: Create a new cluster and add it
+	// --- to the module
+	else {
+		cluster = new CbmStsCluster();
+		AddCluster(cluster);
+	}
+
+	Double_t sum1 = 0.;  // sum of charges
+	Double_t sum2 = 0.;  // position in channel number
+	Double_t sum3 = 0.;  // sum of channel^2 * charge
+	Double_t tsum = 0.;  // sum of digi times
+
+	Double_t errorMethod = 0.;
+	Double_t errorMeas = 0.;
+	Double_t errorNoise2 = fNoise*fNoise;
+	Double_t errorDiscr2 = fDynRange * fDynRange / 12. / fNofAdcChannels / fNofAdcChannels;
+
+	Double_t error = 0.;
+
+	Int_t clusterSize = digiIndexes->size();
+	Int_t lastChannel = firstChannel + clusterSize - 1;
+	if ( algorithm == 0 ) {
+		for ( Int_t channel = firstChannel; channel <= lastChannel; channel++ ) {
+			CbmStsDigi* digi = GetDigiTb(channel, (*digiIndexes)[channel - firstChannel]);
+			if ( ! digi ) continue;
+			Double_t charge = AdcToCharge(digi->GetCharge());
+			sum1 += charge;
+			sum2 += charge * Double_t(channel);
+			sum3 += charge * Double_t(channel) * Double_t(channel);
+			tsum += digi->GetTime();
+		}
+
+		if ( sum1 > 0. ) {
+			sum2 /= sum1;
+			for ( Int_t channel = firstChannel; channel <= lastChannel; channel++ ) {
+				CbmStsDigi* digi = GetDigiTb(channel, (*digiIndexes)[channel - firstChannel]);
+				if ( ! digi ) continue;
+				errorMeas += (channel - sum2) * (channel - sum2);
+			}
+			errorMeas /= sum1;
+			errorMeas *= sqrt(errorNoise2 + errorDiscr2);
+			errorMethod = 1. / sqrt(24.);
+		}
+	}
+
+	// --- advanced algorithm
+	else if (algorithm == 1){
+		if ( digiIndexes->size() == 1 ){
+			CbmStsDigi* digi = GetDigiTb(firstChannel, (*digiIndexes)[0]);
+			if ( digi ){
+				Double_t charge = AdcToCharge(digi->GetCharge());
+				sum1 = charge;
+				sum2 = charge * Double_t(firstChannel);	// charge * - added
+				sum3 = charge * Double_t(firstChannel) * Double_t(firstChannel);
+				tsum += digi->GetTime();
+
+				if (sum1 > 0.) {
+					errorMethod = 1. / sqrt(24.);
+					errorMeas = 0.;
+				}
+			}
+		}//end of 1-strip clusters
+
+		//2- strip cluster
+		if ( digiIndexes->size() == 2 ){
+			Double_t chargeFirst = 0.;
+			Double_t chargeLast = 0.;
+			Double_t dq12, dq22;
+			for ( Int_t channel = firstChannel; channel <= lastChannel; channel++ ) {
+				CbmStsDigi* digi = GetDigiTb(channel, (*digiIndexes)[channel - firstChannel]);
+				if ( ! digi ) continue;
+				Double_t charge = AdcToCharge(digi->GetCharge());
+				tsum += digi->GetTime();
+				if (channel == firstChannel) chargeFirst = charge;
+				if (channel == lastChannel) chargeLast = charge;
+			}
+			dq12 = errorNoise2 + errorDiscr2 + fPhysics -> LandauWidth(chargeFirst) * fPhysics -> LandauWidth(chargeFirst);
+			dq22 = errorNoise2 + errorDiscr2 + fPhysics -> LandauWidth(chargeLast) * fPhysics -> LandauWidth(chargeLast);
+
+			sum1 = chargeFirst + chargeLast;
+			sum3 = chargeFirst * Double_t(firstChannel) * Double_t(firstChannel) + chargeLast * Double_t(firstChannel + clusterSize) * Double_t(firstChannel + clusterSize);
+			if ( sum1 > 0. ) {
+				sum2 = lastChannel - 0.5 + (chargeLast - chargeFirst) / TMath::Max(chargeLast, chargeFirst) / 3.;
+				errorMethod =  1. / sqrt(72.) * TMath::Abs(chargeLast - chargeFirst) / TMath::Max(chargeLast, chargeFirst);
+				errorMeas = 1. / 3. / TMath::Max(chargeFirst, chargeLast) / TMath::Max(chargeFirst, chargeLast) * sqrt(chargeFirst*chargeFirst * dq22 + chargeLast*chargeLast * dq12);
+			}
+		}// end of 2-strip clusters
+
+		//3,4....-strip cluster
+		if ( digiIndexes->size() > 2 ){
+			Double_t chargeFirst = 0.;
+			Double_t chargeLast = 0.;
+			Double_t chargeMiddle = 0.;
+			Double_t dq2, dq12, dqN2;
+			Double_t dqMiddle2 = 0.;
+			for ( Int_t channel = firstChannel; channel <= lastChannel; channel++ ) {
+				CbmStsDigi* digi = GetDigiTb(channel, (*digiIndexes)[channel - firstChannel]);
+				if ( ! digi ) continue;
+				Double_t charge = AdcToCharge(digi->GetCharge());
+				dq2 = errorNoise2 + errorDiscr2 + fPhysics -> LandauWidth(charge) * fPhysics -> LandauWidth(charge);
+				sum1 += charge;
+				sum3 += charge * Double_t(channel) * Double_t(channel);
+				if (channel == firstChannel) {
+					chargeFirst = charge;
+					dq12 = dq2;
+				}
+				if (channel == lastChannel) {
+					chargeLast = charge;
+					dqN2 = dq2;
+				}
+				if (channel > firstChannel && channel < lastChannel) {
+					chargeMiddle += charge;
+					dqMiddle2 += dq2;
+				}
+
+				tsum += digi->GetTime();
+			}
+			dqMiddle2 /= (clusterSize - 1);
+			chargeMiddle /= (clusterSize - 1);
+			sum2 = 0.5 * (firstChannel + lastChannel + (chargeLast - chargeFirst) / chargeMiddle);
+			errorMethod = 0.;
+			errorMeas = 1. / 2. / chargeMiddle * sqrt(dq12 + dqN2 + (chargeLast - chargeFirst) * (chargeLast - chargeFirst) * dqMiddle2 / chargeMiddle / chargeMiddle);
+		}// end of 3-strip and bigger clusters
+	}
+
+	if ( sum1 > 0 ) {
+		sum3 /= sum1;
+		error = sqrt(errorMethod*errorMethod + errorMeas*errorMeas);
+	}
+	else {
+		sum3 = -1.;
+		sum2 = -1.;
+		error = -1.;
+	}
+	// --- Cluster time is average of all digi time
+	cluster->SetDigis(*digiIndexes);
+	cluster->SetSize(digiIndexes->size());
+	if ( cluster->GetNofDigis() ) tsum /= cluster->GetNofDigis();
+	else tsum = 0.;
+	cluster->SetProperties(sum1, sum2, sum3, tsum);
+	cluster->SetPositionError(error);
+	cluster->SetAddress(fAddress);
+	fIt_DigiTb = fDigisTbtemp.begin();
+
+	LOG(DEBUG4) << GetName() << ": Created new cluster from channel "
+			<< firstChannel << " to " << lastChannel << ", charge "
+			<< sum1 << ", time " << tsum << "ns, channel mean "
+			<< sum2 << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 

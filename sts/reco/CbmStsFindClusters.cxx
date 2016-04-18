@@ -44,9 +44,13 @@ CbmStsFindClusters::CbmStsFindClusters(Int_t finderModel, Int_t algorithm)
     , fUseFinderTb(kFALSE)
     , fTimeSlice(NULL)
     , fDigiData()
-    , fDeadTime(0.)
+    , fDeadTime(9999999.)
+	, fDynRange(40960.)
+	, fThreshold(4000.)
+	, fNofAdcChannels(4096)
+	, fTimeResolution(5.)
+	, fNoise(0.)
 {
-   // LOG(INFO) << "ClusterFinderModel = " << fFinderModel << ", algorithm = " << fAlgorithm << endl;
 }
 // -------------------------------------------------------------------------
 
@@ -143,7 +147,8 @@ void CbmStsFindClusters::FinishEvent() {
 	Int_t nModules = 0;
 	set<CbmStsModule*>::iterator it;
 	for (it = fActiveModules.begin(); it != fActiveModules.end(); it++) {
-		(*it)->ClearDigis();
+		if (fDaq)	(*it)->ClearDigisTb();
+		else 		(*it)->ClearDigis();
 		nModules++;
 	}
 	fActiveModules.clear();
@@ -187,6 +192,8 @@ InitStatus CbmStsFindClusters::Init()
 
     // --- Get STS setup
     fSetup = CbmStsSetup::Instance();
+
+    if (fDaq) SetModuleParameters();
 
     // --- Instantiate StsPhysics
     CbmStsPhysics::Instance();
@@ -269,6 +276,39 @@ Int_t CbmStsFindClusters::SortDigis() {
 
 
 
+// -----   Set parameters of the modules    --------------------------------
+void CbmStsFindClusters::SetModuleParameters()
+{
+	// --- Control output of parameters
+	LOG(INFO) << GetName() << ": Digitisation parameters :"
+			      << FairLogger::endl;
+	LOG(INFO) << "\t Dynamic range   " << setw(10) << right
+				    << fDynRange << " e"<< FairLogger::endl;
+	LOG(INFO) << "\t Threshold       " << setw(10) << right
+			      << fThreshold << " e"<< FairLogger::endl;
+	LOG(INFO) << "\t ADC channels    " << setw(10) << right
+			      << fNofAdcChannels << FairLogger::endl;
+	LOG(INFO) << "\t Time resolution " << setw(10) << right
+			      << fTimeResolution << " ns" << FairLogger::endl;
+	LOG(INFO) << "\t Dead time       " << setw(10) << right
+			      << fDeadTime << " ns" << FairLogger::endl;
+	LOG(INFO) << "\t ENC             " << setw(10) << right
+			      << fNoise << " e" << FairLogger::endl;
+
+	// --- Set parameters for all modules
+	Int_t nModules = fSetup->GetNofModules();
+	for (Int_t iModule = 0; iModule < nModules; iModule++) {
+		fSetup->GetModule(iModule)->SetParameters(2048, fDynRange, fThreshold,
+												  fNofAdcChannels, fTimeResolution,
+												  fDeadTime, fNoise);
+	}
+	LOG(INFO) << GetName() << ": Set parameters for " << nModules
+			      << " modules " << FairLogger::endl;
+}
+// -------------------------------------------------------------------------
+
+
+
 
 
 // -----   MQ specific   ------------------------------------------------
@@ -342,14 +382,4 @@ void CbmStsFindClusters::ExecMQ() {
               << fTimer.RealTime() << " s, digis: " << nOfDigis
               << ", clusters: " << nOfClusters << FairLogger::endl;
 }
-
-
-
-
-
-
-
-
-
-
 ClassImp(CbmStsFindClusters)

@@ -204,26 +204,25 @@ Int_t CbmStsClusterFinderSimple::FindClustersTb(CbmStsModule* module) {
 	Int_t nDigis = module->GetNofDigisTb();
 	module->StartClusteringTb();
 	Int_t nClusters = 0;
-	Double_t clusterTime = 0.;
-	Double_t clusterCharge(0.), sum2(0.), sum3(0.);
-	Int_t prevCharge(0), maxCharge(0), prevChannel(0), clusterSide(-1);
+	Double_t clusterTime(0.), clusterCharge(0.);
+	Int_t prevCharge(0), maxCharge(0), prevChannel(0);
+	Bool_t cluster(kFALSE);
 	vector<Int_t> digiArray;
 	Int_t channel_(-1), index_(0), charge_(0);
 	Double_t time_ = 0.;
+	Int_t firstChannel;
 	// --- Loop over digis in module ---
 	for ( ; nDigis >= 0; ) {
 		// --- If no open cluster ---
-		if ( clusterSide < 0 ) {
+		if ( !cluster ) {
 			// --- If digi found in module -> open new cluster ---
 			if ( module->GetNextDigiTb(channel_, time_, index_, charge_) ) {
 				digiArray.clear();
-				clusterSide = channel_ < 1024 ? 0 : 1;
+				cluster = kTRUE;
 				clusterTime = time_;
-				prevCharge = maxCharge = clusterCharge = sum2 = sum3 = charge_;
-				sum2 *= channel_;
-				sum3 *= channel_;
-				sum3 *= channel_;
+				prevCharge = maxCharge = clusterCharge = charge_;
 				prevChannel = channel_;
+				firstChannel = channel_;
 				digiArray.push_back(index_);
 				nDigis--;
 				module->DeactivateDigiTb();
@@ -240,28 +239,17 @@ Int_t CbmStsClusterFinderSimple::FindClustersTb(CbmStsModule* module) {
 			// --- If channel number is bigger than next channel -> close cluster ---
 			if ( channel_ > (prevChannel + 1) ) {
 				//... close cluster
-				if ( clusterCharge > 0 ) {
-					sum2 /= clusterCharge;
-					sum3 /= clusterCharge;
-				}
-				Bool_t side = clusterSide ? 1 : 0;
-				clusterSide = -1;
-				module->CreateClusterTb(digiArray, clusterCharge, sum2, sum3,
-											meanClusterTime, side, fClusters);
+				cluster = kFALSE;
+				module->CreateClusterTb(&digiArray, firstChannel, fClusters, 0);
 				nClusters++;
 				continue;
 			}
 			// --- If incorrect charge -> close cluster ---
 //			if ( (charge_ < maxCharge) && (charge_ > prevCharge) ) {
 //				//... close cluster
-//				if ( clusterCharge > 0 ) {
-//					sum2 /= clusterCharge;
-//					sum3 /= clusterCharge;
-//				}
 //				Bool_t side = clusterSide ? 1 : 0;
 //				clusterSide = -1;
-//				module->CreateClusterTb(digiArray, clusterCharge, sum2, sum3,
-//											meanClusterTime, side, fClusters);
+//				module->CreateClusterTb(digiArray, firstChannel, fClusters, 0);
 //				nClusters++;
 //				continue;
 //			}
@@ -271,8 +259,6 @@ Int_t CbmStsClusterFinderSimple::FindClustersTb(CbmStsModule* module) {
 			clusterTime += time_;
 			prevChannel = channel_;
 			clusterCharge += charge_;
-			sum2 += charge_ * channel_;
-			sum3 += charge_ * channel_ * channel_;
 			digiArray.push_back(index_);
 			nDigis--;
 			module->DeactivateDigiTb();
@@ -282,14 +268,8 @@ Int_t CbmStsClusterFinderSimple::FindClustersTb(CbmStsModule* module) {
 			if ( digiArray.size() ) {
 				Double_t meanClusterTime = clusterTime / (Double_t)digiArray.size();
 				//... close cluster
-				if ( clusterCharge > 0 ) {
-					sum2 /= clusterCharge;
-					sum3 /= clusterCharge;
-				}
-				Bool_t side = clusterSide ? 1 : 0;
-				clusterSide = -1;
-				module->CreateClusterTb(digiArray, clusterCharge, sum2, sum3,
-											meanClusterTime, side, fClusters);
+				cluster = kFALSE;
+				module->CreateClusterTb(&digiArray, firstChannel, fClusters, 0);
 				nClusters++;
 			}
 			continue;

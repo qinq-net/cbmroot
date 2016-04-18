@@ -236,6 +236,8 @@ class CbmStsModule : public CbmStsElement
       **/
      void AddDigiTb(CbmStsDigi* digi, Int_t index);
 
+     CbmStsDigi* GetDigiTb(Int_t channel, Int_t index);
+
      /** Return number of digis **/
      Int_t GetNofDigisTb() const { return fDigisTb.size(); }
 
@@ -260,8 +262,12 @@ class CbmStsModule : public CbmStsElement
      void CreateClusterTb(vector<Int_t> digiIndexes, Double_t s1, Double_t s2,
     		 	 	 Double_t s3, Double_t ts, Bool_t side, TClonesArray* clusterArray);
 
+     void CreateClusterTb(vector<Int_t>* digiIndexes, Int_t firstChannel, TClonesArray* clusterArray, Int_t algorithm);
+
      /** Set dead time for time-based hit finding **/
      void SetDeadTime(Double_t dTime) { fDeadTime = dTime; }
+
+     void ClearDigisTb() { fDigisTb.clear(); }
      //---
 
 
@@ -300,6 +306,7 @@ class CbmStsModule : public CbmStsElement
      ** Used for time-based cluster finding.
      **/
     multimap<Int_t, pair<CbmStsDigi*, Int_t> > fDigisTb;
+    multimap<Int_t, pair<CbmStsDigi*, Int_t> > fDigisTbtemp;
 
     /** Iterator for time-based clustering **/
     multimap<Int_t, pair<CbmStsDigi*, Int_t> >::iterator fIt_DigiTb;

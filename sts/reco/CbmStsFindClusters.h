@@ -93,11 +93,24 @@ class CbmStsFindClusters : public FairTask
     void UseTbClusterFinder(Double_t dTime = 20.)  { fDeadTime = dTime;
                                                      fUseFinderTb    = kTRUE; }
 
-    /** Set energy loss model in order to take into account error properly **/
-    void SetELossModel(Int_t eLossModel = 1) {fELossModel = eLossModel;}
+    /** Set parameters for all modules if digitizer and cluster finder
+     ** are used in different macro. Need for time-based case.
+     **/
+    void SetParameters(Double_t dynRange = 75000., Double_t threshold = 3000., Int_t nAdc = 32,
+      		               Double_t timeResolution = 10., Double_t deadTime = 800.,
+      		               Double_t noise = 1000.) {
+         fDynRange       = dynRange;
+         fThreshold      = threshold;
+         fNofAdcChannels = nAdc;
+         fTimeResolution = timeResolution;
+         fDeadTime       = deadTime;
+         fNoise          = noise;
+    }
+
+    void SetModuleParameters();
 
 
-    	private:
+    private:
 
     TClonesArray* fDigis;             ///< Input array of CbmStsDigi
     TClonesArray* fClusters;          ///< Output array of CbmStsCluster
@@ -119,6 +132,14 @@ class CbmStsFindClusters : public FairTask
     Double_t  fNofDigisTot;     ///< Total number of digis processed
     Double_t  fNofClustersTot;  ///< Total number of clusters produced
     Double_t  fTimeTot;         ///< Total execution time
+
+    // --- Module parameters
+    Double_t fDynRange;            ///< Dynamic range [e]
+    Double_t fThreshold;           ///< Threshold [e]
+    Int_t    fNofAdcChannels;      ///< Number of ADC channels
+    Double_t fTimeResolution;      ///< Time resolution (sigma) [ns]
+//    Double_t fDeadTime;            ///< Single-channel dead time [ns]
+    Double_t fNoise;               ///< equivalent noise charge (sigma) [ns]
 
     /** Set of active modules in the current event **/
     set<CbmStsModule*> fActiveModules;
