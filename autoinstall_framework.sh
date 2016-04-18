@@ -155,7 +155,11 @@ if [ $SETUP_FAIRROOT -ge 1 ]; then
   git checkout -b $FROOTVER $FROOTVER
   mkdir build
   cd build
-  cmake .. -DCMAKE_INSTALL_PREFIX=../../fairroot_$FROOTVER-fairsoft_${FSOFTVER}_root${ROOTVER}
+  cmake \
+    -DCMAKE_CXX_COMPILER=$($SIMPATH/bin/fairsoft-config --cxx) \
+    -DCMAKE_C_COMPILER=$($SIMPATH/bin/fairsoft-config --cc) \
+    -DCMAKE_INSTALL_PREFIX=../../fairroot_$FROOTVER-fairsoft_${FSOFTVER}_root${ROOTVER} \
+    ..
   nice make install -j$NUMOFCPU
   
   cd $CBMSRCDIR
@@ -196,7 +200,10 @@ if [ $SETUP_CBMROOT -ge 1 ]; then
   cd $CBMSRCDIR
   mkdir build
   cd build
-  cmake ..
+  cmake \
+    -DCMAKE_CXX_COMPILER=$($SIMPATH/bin/fairsoft-config --cxx) \
+    -DCMAKE_C_COMPILER=$($SIMPATH/bin/fairsoft-config --cc) \
+    ..
   nice make -j$NUMOFCPU
   cd ..
   
