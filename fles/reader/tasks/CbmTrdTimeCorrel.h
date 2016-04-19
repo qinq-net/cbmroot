@@ -82,6 +82,11 @@ class CbmTrdTimeCorrel : public FairTask
 
   Int_t fEpochMarkerArray[3][6];
   Bool_t fFirstEpochMarker[3][6];
+
+  // Variables for book keeping after a regress of the Epoch counter  
+  Bool_t EpochRegressTriggered[3][6];
+  Int_t EpochRegressOffset[3][6];
+  Int_t EpochRegressCounter[3][6];
   
   void CreateHistograms();
 

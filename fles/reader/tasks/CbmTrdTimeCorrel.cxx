@@ -402,8 +402,21 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	if (!fFirstEpochMarker[0][spaID]) {
 	  fHM->H1("Delta_Epoch_hist_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2)+"_Half_"+std::to_string((Int_t)(chID/16)))->Fill(epoch - fEpochMarkerArray[0][spaID]);
 	  fHM->H2("Hitrate_vs_DeltaEpoch_hist_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2)+"_Half_"+std::to_string((Int_t)(chID/16)))->Fill(epoch - fEpochMarkerArray[0][spaID], nSpadicMessagesHit0+nSpadicMessagesHit1);
+	  // Book keep here the trending of Epoch Counters after a regress has been detected
+	  if ( EpochRegressTriggered[0][spaID] ) {
+	      EpochRegressCounter[0][spaID]++;
+	      fHM->H2("EpochTrend_postregress_hist_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2)+"_Half_"+std::to_string((Int_t)(chID/16)))->Fill(EpochRegressCounter[0][spaID],epoch - EpochRegressOffset[0][spaID]);
+	      if ( EpochRegressCounter[0][spaID] >= 150 ) {
+		EpochRegressTriggered[0][spaID] = false;
+		EpochRegressCounter[0][spaID] = 0;
+	      }
+	  }
+	  if (epoch - fEpochMarkerArray[0][spaID] < 1 && !EpochRegressTriggered[0][spaID]) {
+	      EpochRegressTriggered[0][spaID] = true;
+	      EpochRegressOffset[0][spaID] = epoch;
+	  }
 	}
-	fEpochMarkerArray[0][spaID] = epoch;
+     	fEpochMarkerArray[0][spaID] = epoch;
 	fFirstEpochMarker[0][spaID] = false;
       }
       if (0 <= chID && chID < 32 && isEpoch){
@@ -1128,9 +1141,9 @@ void CbmTrdTimeCorrel::CreateHistograms()
       for (Int_t halfchip=0; halfchip<2;++halfchip) {
 	spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
 	if(spadicName != "") {
-	  histName = "EpochTrend_postregress_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic)+"_Half_"+std::to_string(halfchip);
+	  histName = "EpochTrend_postregress_hist_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic)+"_Half_"+std::to_string(halfchip);
 	  title = histName + runName;
-	  fHM->Add(histName.Data(), new TH2I(histName, title, 20,1,20,201,-50.5,150.5));
+	  fHM->Add(histName.Data(), new TH2I(histName, title, 150,1,150,201,-50.5,150.5));
 	}
       }
     }
