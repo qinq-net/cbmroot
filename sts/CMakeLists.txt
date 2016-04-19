@@ -33,6 +33,8 @@ digitize/CbmStsSensorTypeDssdOrtho.cxx
 digitize/CbmStsSensorTypeDssdIdeal.cxx;
 digitize/CbmStsSensorTypeDssdReal.cxx;
 digitize/CbmStsSignal.cxx;
+digitize/CbmStsDigitizeQa.cxx
+digitize/CbmStsDigitizeQaReport.cxx
 )
 # --- Sources in reco
 set (SRCS_RECO
@@ -59,7 +61,7 @@ CbmStsTrackFinderIdeal.cxx
 CbmStsTrackFitterIdeal.cxx 
 CbmStsSimulationQa.cxx 
 #CbmStsReconstructionQa.cxx
-CbmStsDigitizeQa.cxx
+#CbmStsDigitizeQa.cxx
 )
 # -----  End of sources   ---------------------------------
 
@@ -90,7 +92,13 @@ ${CBMROOT_SOURCE_DIR}/data/trd
 ${CBMROOT_SOURCE_DIR}/data/tof 
 ${CBMROOT_SOURCE_DIR}/data/ecal 
 ${CBMROOT_SOURCE_DIR}/data/psd 
-)
+
+
+# for CbmStsTimeBasedQaReport
+${CBMROOT_SOURCE_DIR}/base/report
+${CBMROOT_SOURCE_DIR}/base/draw
+${CBMROOT_SOURCE_DIR}/base/utils
+) 
 
 set(SYSTEM_INCLUDE_DIRECTORIES
 ${BASE_INCLUDE_DIRECTORIES} 

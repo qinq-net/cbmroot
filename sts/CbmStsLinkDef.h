@@ -53,6 +53,7 @@
 #pragma link C++ class CbmStsSimulationQa+;
 //#pragma link C++ class CbmStsReconstructionQa+;
 #pragma link C++ class CbmStsDigitizeQa+;
+#pragma link C++ class CbmStsDigitizeQaReport+;
 
 
 

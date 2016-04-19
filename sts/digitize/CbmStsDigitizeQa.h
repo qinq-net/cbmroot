@@ -4,7 +4,6 @@
 #include "FairTask.h"
 #include "CbmStsDigi.h"
 #include "CbmStsDigitize.h"
-//#include "CbmTimeSlice.h"
 #include "CbmHistManager.h"
 #include "CbmMCDataArray.h"
 #include <fstream>
@@ -36,26 +35,22 @@ class CbmStsDigitizeQa : public FairTask
 	void CreateDigiHistograms();
 
 	void ProcessDigisAndPoints(const TClonesArray* digis, const TClonesArray * points);
-void ProcessAngles();
+	void ProcessAngles();
 
     private:
 	void ReadDataBranches();
 
-	CbmHistManager* fHM;
-	CbmHistManager* fHMStation;
-	string fOutputDir;
 	CbmStsDigitize * fDigitizer;
-	CbmStsSetup * fSetup;
-	Int_t fNofStation;
-
+	CbmHistManager* fHM;
+	string fOutputDir;
 	TClonesArray* fStsDigis;
 	TClonesArray* fStsPoints;
-	vector<CbmStsDigi> fStsDigiData;
+	CbmStsSetup * fSetup;
+	Int_t fNofStation;
 
 	Int_t fMaxScale;
 	ofstream fOutFile;
 	vector < vector <vector <vector < vector <Int_t>>>>> fnOfDigisChip;
-	
 
 	CbmStsDigitizeQa(const CbmStsDigitizeQa&);
 	CbmStsDigitizeQa& operator=(const CbmStsDigitizeQa&);
