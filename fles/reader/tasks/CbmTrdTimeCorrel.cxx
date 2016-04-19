@@ -1122,6 +1122,19 @@ void CbmTrdTimeCorrel::CreateHistograms()
       }
     }
   }
+
+  for (Int_t syscore=0; syscore<3;++syscore) {
+    for (Int_t spadic=0; spadic<3;++spadic) {
+      for (Int_t halfchip=0; halfchip<2;++halfchip) {
+	spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
+	if(spadicName != "") {
+	  histName = "EpochTrend_postregress_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic)+"_Half_"+std::to_string(halfchip);
+	  title = histName + runName;
+	  fHM->Add(histName.Data(), new TH2I(histName, title, 20,1,20,201,-50.5,150.5));
+	}
+      }
+    }
+  }
   
   for (Int_t syscore=0; syscore<3;++syscore) {
     for (Int_t spadic=0; spadic<3;++spadic) {
