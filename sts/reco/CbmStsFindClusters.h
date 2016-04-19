@@ -93,6 +93,9 @@ class CbmStsFindClusters : public FairTask
     void UseTbClusterFinder(Double_t dTime = 20.)  { fDeadTime = dTime;
                                                      fUseFinderTb    = kTRUE; }
 
+    /** Set energy loss model in order to take it into account in position error **/
+    void SetELossModel(Int_t eLossModel = 1) {fELossModel = eLossModel;}
+
     /** Set parameters for all modules if digitizer and cluster finder
      ** are used in different macro. Need for time-based case.
      **/
