@@ -17,7 +17,8 @@
 #include "CbmRichHitProducer.h"
 #include "CbmRichGeoManager.h"
 #include "TMatrixFSym.h"
-#include "CbmRichNavigationUtil.h"
+
+#include "CbmRichNavigationUtil2.h"
 
 class TGeoNode;
 class TGeoVolume;
@@ -62,10 +63,10 @@ void CbmRichProjectionProducer2::DoProjection(TClonesArray* projectedPoint)
 	cout << "CbmRichProjectionProducer2 : Event #" << fEventNum << endl;
 
 	CbmRichRecGeoPar* gp = CbmRichGeoManager::GetInstance().fGP;
-	Double_t pmtPlaneX = gp->fPmtPlaneX;
-    Double_t pmtPlaneY = gp->fPmtPlaneY;
-    Double_t pmtWidth = gp->fPmtWidth;
-    Double_t pmtHeight = gp->fPmtHeight;
+	Double_t pmtPlaneX = gp->fPmt.fPlaneX;
+    Double_t pmtPlaneY = gp->fPmt.fPlaneY;
+    Double_t pmtWidth = gp->fPmt.fWidth;
+    Double_t pmtHeight = gp->fPmt.fHeight;
 
 	projectedPoint->Delete();
 	TMatrixFSym covMat(5);
@@ -135,23 +136,27 @@ Double_t* CbmRichProjectionProducer2::ProjectionProducer(FairTrackParam* trackPa
 	ptR1.at(1) = trackParam->GetY();
 	ptR1.at(2) = trackParam->GetZ();
 	Double_t nx=0., ny=0., nz=0.;
-	CbmRichNavigationUtil::GetDirCos(trackParam, nx, ny, nz);
+	CbmRichNavigationUtil2::GetDirCos(trackParam, nx, ny, nz);
 	TVector3 dirCos;
 	dirCos.SetXYZ(nx, ny, nz);
 	GetPmtNormal(NofPMTPoints, normalPMT, constantePMT);
 	cout << "Calculated normal vector to PMT plane = {" << normalPMT.at(0) << ", " << normalPMT.at(1) << ", " << normalPMT.at(2) << "} and constante d = " << constantePMT << endl << endl;
 
 	TVector3 mirrorPoint;
-	TString mirrorIntersection = CbmRichNavigationUtil::FindIntersection(trackParam, mirrorPoint, "mirror_tile_type");
+	TString mirrorIntersection1 = CbmRichNavigationUtil2::FindIntersection(trackParam, mirrorPoint, "mirror_tile_type", navi);
 	ptM.at(0) = mirrorPoint.x();
 	ptM.at(1) = mirrorPoint.y();
 	ptM.at(2) = mirrorPoint.z();
-	cout << "Mirror intersection: " << mirrorIntersection << endl;
+	cout << "mirrorIntersection1: " << mirrorIntersection1 << endl;
 	cout << "Mirror point coordinates = {" << mirrorPoint.x() << ", " << mirrorPoint.y() << ", " << mirrorPoint.z() << "}" << endl;
+	TString mirrorIntersection = "/cave_1/rich1_0/richContainer_333/rich_gas_329/mirror_full_half_321/mirror_tile_2_0_148/mirror_tile_type2"
+			"_inter_108/mirror_tile_type2_94/" + mirrorIntersection1;
+	cout << "mirrorIntersection: " << mirrorIntersection << endl;
 
-	if (mirrorIntersection) {
-		navi->cd(mirrorIntersection);
-		navi = gGeoManager->GetCurrentNavigator();
+	if (mirrorIntersection1) {
+		//navi->cd(mirrorIntersection1);
+		//navi = gGeoManager->GetCurrentNavigator();
+		navi->Dump();
 		cout << "Navigator path: " << navi->GetPath() << endl;
 		cout << "Coordinates of sphere center: " << endl;
 		navi->GetCurrentMatrix()->Print();

@@ -61,7 +61,8 @@ CbmRichAlignment::CbmRichAlignment() :
 	fOutputDir(""),
 	fRunTitle(""),
 	fAxisRotTitle(""),
-	fNumb(0),
+	fNumbAxis(0),
+	fTile(0),
 	fDrawAlignment(kTRUE),
 	fCopFit(NULL),
 	fTauFit(NULL),
@@ -487,7 +488,7 @@ void CbmRichAlignment::Finish()
 		std::string str = strs.str();
 		s = "/data/misalignment_correction/Sim_Outputs/Alignment_Correction/correction_param" + str + ".txt";
 */
-		TString s = "/data/misalignment_correction/Sim_Outputs/Alignment_Correction/correction_param_" + fNumb + ".txt";
+		TString s = fOutputDir + "correction_param_" + fNumbAxis + fTile + ".txt";
 		corr_file.open(s);
 		if (corr_file.is_open())
 		{

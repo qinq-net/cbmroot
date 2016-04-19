@@ -149,7 +149,9 @@ public:
 
     void SetIsReconstruction(Bool_t b) {fIsReconstruction = b;}
 
-    void SetNumb(TString s) {fNumb = s;}
+    void SetNumbAxis(TString n) {fNumbAxis = n;}
+
+    void SetTileName(TString t) {fTile = t;}
 
 
 private:
@@ -167,7 +169,8 @@ private:
     //CbmRichRecGeoPar* fGP;
     vector<Float_t> fPhi;
 
-    TString fNumb;
+    TString fNumbAxis;
+    TString fTile;
     UInt_t fEventNum; // Event counter
     Bool_t fDrawProjection;
     Bool_t fIsMeanCenter;

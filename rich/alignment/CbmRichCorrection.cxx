@@ -64,7 +64,8 @@ CbmRichCorrection::CbmRichCorrection() :
 	fGlobalTracks(NULL),
 	fHM(NULL),
 	//fGP(),
-	fNumb(0),
+	fNumbAxis(0),
+	fTile(0),
 	fEventNum(0),
 	fOutputDir(""),
 	fRunTitle(""),
@@ -213,10 +214,10 @@ void CbmRichCorrection::ProjectionProducer(TClonesArray* projectedPoint)
 	TGeoMatrix *mirrMatrix, *pmtMatrix, *richMatrix;
 
 	CbmRichRecGeoPar* gp = CbmRichGeoManager::GetInstance().fGP;
-	Double_t pmtPlaneX = gp->fPmtPlaneX;
-    Double_t pmtPlaneY = gp->fPmtPlaneY;
-    Double_t pmtWidth = gp->fPmtWidth;
-    Double_t pmtHeight = gp->fPmtHeight;
+	Double_t pmtPlaneX = gp->fPmt.fPlaneX;
+    Double_t pmtPlaneY = gp->fPmt.fPlaneY;
+    Double_t pmtWidth = gp->fPmt.fWidth;
+    Double_t pmtHeight = gp->fPmt.fHeight;
 
 	GetPmtNormal(NofPMTPoints, normalPMT, constantePMT);
 	cout << "Calculated normal vector to PMT plane = {" << normalPMT.at(0) << ", " << normalPMT.at(1) << ", " << normalPMT.at(2) << "} and constante d = " << constantePMT << endl << endl;
@@ -293,7 +294,7 @@ void CbmRichCorrection::ProjectionProducer(TClonesArray* projectedPoint)
 						cout << "New mirror points coordinates = {" << outPos.x() << ", " << outPos.y() << ", " << outPos.z() << "}" << endl;
 						TVector3 inPosIdeal (ptPMirrIdeal.at(0), ptPMirrIdeal.at(1), ptPMirrIdeal.at(2));
 						CbmRichGeoManager::GetInstance().RotatePoint(&inPosIdeal, &outPosIdeal);
-						cout << endl << "New mirror points coordinates = {" << outPosIdeal.x() << ", " << outPosIdeal.y() << ", " << outPosIdeal.z() << "}" << endl << endl;
+						cout << "New mirror points coordinates = {" << outPosIdeal.x() << ", " << outPosIdeal.y() << ", " << outPosIdeal.z() << "}" << endl << endl;
 
 						/*for (Int_t iPmt = 0; iPmt < NofPMTPoints; iPmt++) {
 						CbmRichPoint *pmtPoint = (CbmRichPoint*) fRichPoints->At(iPmt);
@@ -803,7 +804,7 @@ void CbmRichCorrection::ComputeR2(vector<Double_t> &ptR2Center, vector<Double_t>
 		// Reading misalignment information from correction_param.txt text file.
 		vector<Double_t> outputFit(4);
 		ifstream corr_file;
-		TString str = "/data/misalignment_correction/Sim_Outputs/Alignment_Correction/correction_param_" + fNumb + ".txt";
+		TString str = fOutputDir + "correction_param_" + fNumbAxis + fTile + ".txt";
 		corr_file.open(str);
 		if (corr_file.is_open())
 		{
@@ -811,7 +812,8 @@ void CbmRichCorrection::ComputeR2(vector<Double_t> &ptR2Center, vector<Double_t>
 			corr_file.close();
 		}
 		else {
-			cout << "Error in CbmRichCorrection: unable to open parameter file!" << endl << endl;
+			cout << "Error in CbmRichCorrection: unable to open parameter file!" << endl;
+			cout << "Parameter file path = " << str << endl << endl;
 			sleep(5);
 		}
 		cout << "Misalignment parameters read from file = [" << outputFit.at(0) << " ; " << outputFit.at(1) << " ; " << outputFit.at(2) << " ; " << outputFit.at(3) << "]" << endl;
@@ -968,10 +970,10 @@ void CbmRichCorrection::DrawHistProjection()
 	int colorInd = 1;
 
 	TCanvas* can3 = new TCanvas(fRunTitle + "_Distance_Histos_" + fAxisRotTitle, fRunTitle + "_Distance_Histos_" + fAxisRotTitle, 1500, 400);
-	can3->Divide(3,1);
+	can3->SetGrid(1,1);
+	can3->Divide(2,1);
 	can3->cd(1);
-	can3->SetGridx();
-	can3->SetGridy();
+	can3->SetGrid(1,1);
 	TH1D* Clone1 = (TH1D*)fHM->H1("fhDifferenceXIdeal")->Clone();
 	Clone1->GetXaxis()->SetTitleSize(0.04);
 	Clone1->GetYaxis()->SetTitleSize(0.04);
@@ -1014,6 +1016,7 @@ void CbmRichCorrection::DrawHistProjection()
 	LEG->Draw();
 
 	can3->cd(2);
+	can3->SetGrid(1,1);
 	TH1D* Clone4 = (TH1D*)fHM->H1("fhDifferenceYIdeal")->Clone();
 	Clone4->GetXaxis()->SetTitleSize(0.04);
 	Clone4->GetYaxis()->SetTitleSize(0.04);
@@ -1054,7 +1057,7 @@ void CbmRichCorrection::DrawHistProjection()
 	LEG1->AddEntry(Clone4, leg, "l");
 	LEG1->Draw();
 
-	can3->cd(3);
+	/*can3->cd(3);
 	//DrawH1(list_of(fHM->H1("fhDistanceCorrected"))(fHM->H1("fhDistanceUncorrected"))(fHM->H1("fhDistanceIdeal")), list_of("a corrected")("a uncorrected")("a ideal"), kLinear, kLog, true, 0.7, 0.7, 0.99, 0.99);
 	TH1D* CloneDist1 = (TH1D*)fHM->H1("fhDistanceIdeal")->Clone();
 	CloneDist1->GetXaxis()->SetTitleSize(0.04);
@@ -1094,11 +1097,12 @@ void CbmRichCorrection::DrawHistProjection()
 	LEG2->AddEntry(CloneDist3, leg, "l");
 	sprintf(leg, "Distance ideal");
 	LEG2->AddEntry(CloneDist1, leg, "l");
-	LEG2->Draw();
+	LEG2->Draw();*/
+	gStyle->SetOptStat(000000);
 
 	Cbm::SaveCanvasAsImage(can3, string(fOutputDir.Data()), "png");
 
-	TCanvas* can4 = new TCanvas(fRunTitle + "_Difference_Fits_" + fAxisRotTitle, fRunTitle + "_Difference_Fits_" + fAxisRotTitle, 800, 800);
+	/*TCanvas* can4 = new TCanvas(fRunTitle + "_Difference_Fits_" + fAxisRotTitle, fRunTitle + "_Difference_Fits_" + fAxisRotTitle, 800, 800);
 	int colorInd3 = 1;
 	can4->Divide(2,2);
 	can4->cd(1);
@@ -1165,7 +1169,7 @@ void CbmRichCorrection::DrawHistProjection()
 	Double_t meanY_ideal = fit4->GetParameter(1);
 	cout << "Fitted parameters of differenceY histo = " << fit3->GetParameter(0) << ", " << fit3->GetParameter(1) << " and " << fit3->GetParameter(2) << endl;
 	cout << "Fitted parameters of differenceYIdeal histo = " << fit4->GetParameter(0) << ", " << fit4->GetParameter(1) << " and " << fit4->GetParameter(2) << endl;
-	cout << "Mean Y corrected = " << meanY_corr << " and mean Y ideal = " << meanY_ideal << endl;
+	cout << "Mean Y corrected = " << meanY_corr << " and mean Y ideal = " << meanY_ideal << endl;*/
 }
 
 void CbmRichCorrection::DrawHistFromFile(TString fileName)

@@ -101,7 +101,12 @@ public:
     /*
      *
      */
-    void SetNumb(TString s) {fNumb = s;}
+    void SetNumbAxis(TString n) {fNumbAxis = n;}
+
+    /*
+     *
+     */
+    void SetTileName(TString a) {fTile = a;}
 
 
 private:
@@ -118,11 +123,8 @@ private:
     CbmHistManager* fHM;
 
     UInt_t fEventNum; // Event counter
-    Double_t XmeanCircle;
-	Double_t YmeanCircle;
-	Double_t XmeanEllipse;
-	Double_t YmeanEllipse;
-	TString fNumb;			// Misalignment applied on the geometry.
+	TString fNumbAxis;			// Misalignment applied on the geometry.
+	TString fTile;
     Bool_t fDrawAlignment;	// If TRUE, draws the alignment and fitting plots.
     vector<Float_t> fPhi;
 
