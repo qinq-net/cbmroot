@@ -54,6 +54,8 @@
 //#pragma link C++ class CbmStsReconstructionQa+;
 #pragma link C++ class CbmStsDigitizeQa+;
 #pragma link C++ class CbmStsDigitizeQaReport+;
+#pragma link C++ class CbmStsTimeBasedQa;
+#pragma link C++ class CbmStsTimeBasedQaReport;
 
 
 

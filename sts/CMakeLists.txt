@@ -41,6 +41,8 @@ set (SRCS_RECO
 reco/CbmStsClusterFinderSimple.cxx
 reco/CbmStsFindClusters.cxx
 reco/CbmStsFindHits.cxx
+reco/CbmStsTimeBasedQa.cxx
+reco/CbmStsTimeBasedQaReport.cxx
 )
 # --- All sources
 set(SRCS
