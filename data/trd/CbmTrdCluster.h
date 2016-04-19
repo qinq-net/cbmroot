@@ -22,7 +22,7 @@ public:
    * \brief Default constructor.
    */
   CbmTrdCluster();
-
+  CbmTrdCluster(const std::vector<Int_t>& indices, Int_t address);
   /**
    * \brief Destructor.
    */

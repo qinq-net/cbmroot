@@ -17,6 +17,14 @@ CbmCluster::CbmCluster()
 {
 
 }
+CbmCluster::CbmCluster(const std::vector<Int_t>& indices, Int_t address)
+ : TObject(),
+   fDigis(),
+   fAddress(address),
+   fMatch(NULL)
+{
+ fDigis.assign(indices.begin(), indices.end());
+}
 
 CbmCluster::~CbmCluster()
 {

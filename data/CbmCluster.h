@@ -25,7 +25,7 @@ public:
 	 * \brief Constructor.
 	 */
 	CbmCluster();
-
+	CbmCluster(const std::vector<Int_t>& indices, Int_t address);
 	/**
 	 * \brief Destructor.
 	 */

@@ -11,7 +11,12 @@ CbmTrdCluster::CbmTrdCluster()
     fNRows(0)
 {
 }
-
+CbmTrdCluster::CbmTrdCluster(const std::vector<Int_t>& indices, Int_t address)
+  : CbmCluster(indices,address),
+    fNCols(0),
+    fNRows(0)
+{
+}
 CbmTrdCluster::~CbmTrdCluster(){
 }
 
