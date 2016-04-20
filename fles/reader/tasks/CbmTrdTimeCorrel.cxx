@@ -46,6 +46,9 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
    for (Int_t i=0; i < 3; ++i) { 
      for (Int_t j=0; j < 6; ++j) {
         fFirstEpochMarker[i][j] = true;
+	EpochRegressTriggered[i][j] = false;
+	EpochRegressOffset[i][j] = 0;
+	EpochRegressCounter[i][j] = 0;
      }
    }
  };
@@ -403,17 +406,17 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	  fHM->H1("Delta_Epoch_hist_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2)+"_Half_"+std::to_string((Int_t)(chID/16)))->Fill(epoch - fEpochMarkerArray[0][spaID]);
 	  fHM->H2("Hitrate_vs_DeltaEpoch_hist_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2)+"_Half_"+std::to_string((Int_t)(chID/16)))->Fill(epoch - fEpochMarkerArray[0][spaID], nSpadicMessagesHit0+nSpadicMessagesHit1);
 	  // Book keep here the trending of Epoch Counters after a regress has been detected
-	  if ( EpochRegressTriggered[0][spaID] ) {
-	      EpochRegressCounter[0][spaID]++;
-	      fHM->H2("EpochTrend_postregress_hist_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2)+"_Half_"+std::to_string((Int_t)(chID/16)))->Fill(EpochRegressCounter[0][spaID],epoch - EpochRegressOffset[0][spaID]);
-	      if ( EpochRegressCounter[0][spaID] >= 150 ) {
-		EpochRegressTriggered[0][spaID] = false;
-		EpochRegressCounter[0][spaID] = 0;
-	      }
+	  if ( EpochRegressTriggered[0][spaID] ) { // Fill subsequent epoch messages in the histo, if the mechanism is triggered
+	    EpochRegressCounter[0][spaID]++; // Count how many epochs are put in the trending histo already
+	    fHM->H2("EpochTrend_postregress_hist_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2)+"_Half_"+std::to_string((Int_t)(chID/16)))->Fill(EpochRegressCounter[0][spaID],epoch - EpochRegressOffset[0][spaID]);
+	    if ( EpochRegressCounter[0][spaID] >= 150 ) { // After this condition is fulfilled, enough epochs have been recorded -- reset trigger and counter
+	      EpochRegressTriggered[0][spaID] = false;
+	      EpochRegressCounter[0][spaID] = 0;
+	    }
 	  }
-	  if (epoch - fEpochMarkerArray[0][spaID] < 1 && !EpochRegressTriggered[0][spaID]) {
-	      EpochRegressTriggered[0][spaID] = true;
-	      EpochRegressOffset[0][spaID] = epoch;
+	  if (epoch - fEpochMarkerArray[0][spaID] < 1 && !EpochRegressTriggered[0][spaID]) { // Trigger the recording if a regress is detected and the recording is not running up to now
+	    EpochRegressTriggered[0][spaID] = true;
+	    EpochRegressOffset[0][spaID] = epoch;
 	  }
 	}
      	fEpochMarkerArray[0][spaID] = epoch;
