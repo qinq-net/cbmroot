@@ -33,6 +33,7 @@ CbmStsTimeBasedQaReport::CbmStsTimeBasedQaReport():
 
 CbmStsTimeBasedQaReport::CbmStsTimeBasedQaReport(Bool_t useDaq):
     CbmSimulationReport()
+  , fDaq()
 {
   fDaq = useDaq;
 }
