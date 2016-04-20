@@ -6,6 +6,7 @@
 #include "CbmStsDigitize.h"
 #include "CbmHistManager.h"
 #include "CbmMCDataArray.h"
+#include <iostream>
 #include <fstream>
 #include <vector>
 class TClonesArray;
