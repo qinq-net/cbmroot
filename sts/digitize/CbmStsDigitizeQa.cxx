@@ -172,7 +172,9 @@ void CbmStsDigitizeQa::CreateDigiHistograms(){
     Double_t minX = 0.5;
     Double_t maxX = minX + nofBins;
     fHM -> Create1<TH1F>("h_PointsInDigi", "PointsInDigi;Number of Points;Entries", nofBins, minX, maxX);
+    fHM -> Create1<TH1F>("h_PointsInDigiLog", "PointsInDigi;Number of Points;Entries", nofBins, minX, maxX);
     fHM -> Create1<TH1F>("h_DigisByPoint", "DigisByPoint;Number of Digis;Entries" , nofBins, minX, maxX);
+    fHM -> Create1<TH1F>("h_DigisByPointLog", "DigisByPoint;Number of Digis;Entries" , nofBins, minX, maxX);
     Double_t tempD; Int_t tempI, nAdc; 
     fDigitizer -> GetParameters(tempD, tempD, nAdc, tempD, tempD, tempD);
     nofBins = nAdc;
@@ -252,6 +254,7 @@ void CbmStsDigitizeQa::ProcessDigisAndPoints(const TClonesArray* digis, const TC
 	}
 	fHM -> H1("h_NofObjects_Digis_Station") -> Fill(stationId);
 	fHM -> H1("h_PointsInDigi") -> Fill(digiMatch -> GetNofLinks());
+	fHM -> H1("h_PointsInDigiLog") -> Fill(digiMatch -> GetNofLinks());
 	fHM -> H1("h_DigiCharge") -> Fill(stsDigi -> GetCharge());
     }
     fHM -> H1("h_NofObjects_Points") -> Fill(pointIndexes.size());
@@ -260,6 +263,8 @@ void CbmStsDigitizeQa::ProcessDigisAndPoints(const TClonesArray* digis, const TC
 	fHM -> H1("h_NofObjects_Points_Station") -> Fill(stations[*set_it]);
 	fHM -> H1("h_DigisByPoint") -> Fill(digisByPoint[*set_it]);
 	fHM -> H1("h_DigisByPoint") -> Fill(digisByPoint[*set_it + 0.00001]);
+	fHM -> H1("h_DigisByPointLog") -> Fill(digisByPoint[*set_it]);
+	fHM -> H1("h_DigisByPointLog") -> Fill(digisByPoint[*set_it + 0.00001]);
     }
     if ( pointIndexes.size() > fMaxScale ) fMaxScale = pointIndexes.size();
 

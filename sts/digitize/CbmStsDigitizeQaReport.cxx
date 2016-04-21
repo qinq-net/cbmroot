@@ -44,18 +44,18 @@ void CbmStsDigitizeQaReport::Create(){
     if (eLossModel == 0) sprintf(eLossModelChar, "ideal");
     if (eLossModel == 1) sprintf(eLossModelChar, "uniform");
     if (eLossModel == 2) sprintf(eLossModelChar, "non-unifrom");
-    Out().precision(3);
+    Out().precision(1);
     Out() << R() -> DocumentBegin();
     Out() << R() -> Title(0, GetTitle());
     Out() << "Number of events: " << HM() -> H1("h_EventNo_DigitizeQa") -> GetEntries() << endl;
     Out() << endl;
     Out() << "Digitizer parameters: " << endl;
-    Out() << "\t dynamic range \t\t" << dynRange << endl;
-    Out() << "\t threshold \t\t" << threshold << endl;
+    Out() << "\t noise \t\t\t" << noise << " e" << endl;
+    Out() << "\t threshold \t\t" << threshold << " e" << endl;
+    Out() << "\t dynamic range \t\t" << dynRange << " e" << endl;
     Out() << "\t number of ADC \t\t" << nAdc << endl;
-    Out() << "\t time resolution \t" << timeResolution << endl;
-    Out() << "\t dead time \t\t" << deadTime << endl;
-    Out() << "\t noise \t\t\t" << noise << endl;
+    Out() << "\t time resolution \t" << timeResolution << " ns" << endl;
+    Out() << "\t dead time \t\t" << deadTime << " ns" << endl;
     Out() << endl;
     Out() << "Detector response model takes into account: " << endl;
     Out() << "\t energy loss model: \t" << eLossModelChar << endl;
@@ -73,6 +73,8 @@ void CbmStsDigitizeQaReport::Draw(){
     DrawNofObjectsHistograms();
     DrawLogHistograms();
     DrawH1ByPattern("h_DigiCharge");
+    DrawH1ByPattern("h_DigisByPoint");
+    DrawH1ByPattern("h_PointsInDigi");
     Draw2dHistograms();
 }
 
@@ -146,19 +148,19 @@ void CbmStsDigitizeQaReport::Draw2dHistograms(){
 
 void CbmStsDigitizeQaReport::DrawLogHistograms(){
     string name = "h_";
-    if ( !HM() -> Exists(name + "PointsInDigi") && !HM() -> Exists(name + "DigisByPoint") ) return;
-    string canvasName = GetReportName() + name + "PointsInDigi";
+    if ( !HM() -> Exists(name + "PointsInDigiLog") && !HM() -> Exists(name + "DigisByPointLog") ) return;
+    string canvasName = GetReportName() + name + "PointsInDigiLog";
     TCanvas* canvas = CreateCanvas(canvasName.c_str(), canvasName.c_str(), 800, 500);
     canvas -> SetGrid();
     canvas -> SetLogy();
     canvas -> cd();
     vector<string> labels = list_of("");
-    vector<TH1*> histos = list_of(HM() -> H1(name + "PointsInDigi"));
+    vector<TH1*> histos = list_of(HM() -> H1(name + "PointsInDigiLog"));
     DrawH1(histos, labels, kLinear, kLinear, true, 0.65, 0.55, 0.99);
 
-    canvasName = GetReportName() + name + "DigisByPoint";
+    canvasName = GetReportName() + name + "DigisByPointLog";
     vector<string> labels1 = list_of("Digis by Point");
-    vector<TH1*> histos1 = list_of(HM() -> H1(name + "DigisByPoint"));
+    vector<TH1*> histos1 = list_of(HM() -> H1(name + "DigisByPointLog"));
     TCanvas* canvas1 = CreateCanvas(canvasName.c_str(), canvasName.c_str(), 800, 500);
     canvas1 -> SetGrid();
     canvas1 -> SetLogy();
