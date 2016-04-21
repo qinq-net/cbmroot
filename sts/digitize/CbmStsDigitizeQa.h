@@ -50,7 +50,7 @@ class CbmStsDigitizeQa : public FairTask
 	Int_t fNofStation;
 
 	Int_t fMaxScale;
-	ofstream fOutFile;
+	std::ofstream fOutFile;
 	vector < vector <vector <vector < vector <Int_t>>>>> fnOfDigisChip;
 
 	CbmStsDigitizeQa(const CbmStsDigitizeQa&);
