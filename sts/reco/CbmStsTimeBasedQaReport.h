@@ -24,6 +24,8 @@ private:
 
   virtual void Draw();
 
+  void Draw2dHistograms(const string& type);
+
   void DrawNofObjectsHistograms(const string& type);
 
   void DrawResidualAndPullHistograms(const string& type);

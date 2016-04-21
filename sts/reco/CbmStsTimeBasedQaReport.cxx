@@ -70,8 +70,27 @@ void CbmStsTimeBasedQaReport::Draw()
   DrawDigiPerObjectHistograms(type);
 //  DrawH1ByPattern("hpa_.*");
   DrawHistograms(type);
+  Draw2dHistograms(type);
 }
 
+void CbmStsTimeBasedQaReport::Draw2dHistograms(const string& type)
+{
+  string name = "h2d_";
+  if ( !HM()->Exists(name + "Residual_X_vs_ClusterSize_" + type) &&
+	!HM()->Exists(name + "Residual_X_vs_SlopeX_" + type) &&  
+	!HM()->Exists(name + "ClusterSize_vs_SlopeX_" + type) ) return;
+vector<string> par = list_of("Residual_X_vs_ClusterSize")("Residual_X_vs_SlopeX")("ClusterSize_vs_SlopeX");
+  string canvasName = GetReportName() + "_Residuals_ClusterSize_Slope";
+  TCanvas* canvas = CreateCanvas(canvasName.c_str(), canvasName.c_str(), 2100, 500);
+  canvas->Divide(3, 1);
+  for(Int_t iBin = 0; iBin < 3; iBin++) {
+    string histName = name + par[iBin] + "_" + type;
+    canvas->cd(iBin + 1);
+    TH2* hist = HM()->H2(histName);
+    DrawH2(hist, kLinear, kLinear, kLinear);
+  }
+
+}
 void CbmStsTimeBasedQaReport::DrawNofObjectsHistograms(const string& type)
 {
   string name = "hno_NofObjects_";

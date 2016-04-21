@@ -85,7 +85,7 @@ void CbmStsTimeBasedQa::Exec(Option_t* opt)
     type = "Event";
     ProcessDigisAndPoints(fStsDigis, fStsPoints, type);
   }
-  ProcessClusters(fStsClusters, fStsClusterMatches, type);
+  ProcessClusters(fStsClusters, fStsClusterMatches, fStsPoints, type);
   ProcessHits(fStsHits, fStsHitMatches, type);
 
   FillResidualAndPullHistograms(fStsPoints, fStsHits, fStsHitMatches, type);
@@ -167,6 +167,7 @@ void CbmStsTimeBasedQa::CreateHistograms(const string& type)
 {
   CreateNofObjectsHistograms(type);
   CreateHitParametersHistograms(type);
+  Create2dHistograms(type);
 
   fHM->Create1<TH1F>("hen_EventNo_TimeBasedQa", "hen_EventNo_TimeBasedQa", 1, 0, 1.);
 }
@@ -230,6 +231,27 @@ void CbmStsTimeBasedQa::CreateHitParametersHistograms(const string& type)
 		  , 20, -0.5, 19.5);
   fHM->Create1<TH1F>("hce_EffInCells", "EffInCells;Hit density [x1000 Hits per 100 ns];Efficiency"
 		  , 20, -0.5, 19.5);
+}
+
+void CbmStsTimeBasedQa::Create2dHistograms(const string& type)
+{
+  Int_t nofBins = 100;
+  Int_t nofBinsClusterSize = 10;
+  Int_t nofBinsA = 90;
+  Double_t minX = -60.0;
+  Double_t maxX = 60.0;
+  Double_t minA = 0.;
+  Double_t maxA = 90.;
+  
+  fHM->Create2<TH2F>("h2d_Residual_X_vs_ClusterSize_" + type, 
+	  "Residual_X_vs_ClusterSize_" + type + ";Cluster Size;Residual [#mum];", 
+	  nofBinsClusterSize, 0.5, nofBinsClusterSize+0.5, nofBins, minX, maxX);
+  fHM->Create2<TH2F>("h2d_ClusterSize_vs_SlopeX_" + type, 
+	  "ClusterSize_vs_SlopeX_" + type + ";Slope X [deg];Cluster Size;", 
+	  nofBinsA, minA, maxA, nofBinsClusterSize, 0.5, nofBinsClusterSize+0.5);
+  fHM->Create2<TH2F>("h2d_Residual_X_vs_SlopeX_" + type, 
+	  "Residual_X_vs_SlopeX_" + type + ";Slope X [deg];Residual [#mum];", 
+	  nofBinsA, minA, maxA, nofBins, minX, maxX);
 }
 
 void CbmStsTimeBasedQa::ProcessDigisAndPoints(const vector<CbmStsDigi> digis, CbmMCDataArray* points, const string& type)
@@ -329,7 +351,7 @@ void CbmStsTimeBasedQa::ProcessDigisAndPoints(const TClonesArray* digis, const C
   if ( pointIndexes.size() > fMaxScale ) fMaxScale = pointIndexes.size();
 }
 
-void CbmStsTimeBasedQa::ProcessClusters(const TClonesArray* clusters, const TClonesArray* clusterMatches, const string& type)
+void CbmStsTimeBasedQa::ProcessClusters(const TClonesArray* clusters, const TClonesArray* clusterMatches, CbmMCDataArray* points, const string& type)
 {
   if ( NULL != clusters && fHM->Exists("hno_NofObjects_Clusters_" + type) )
     fHM->H1("hno_NofObjects_Clusters_" + type)->Fill(clusters->GetEntriesFast());
@@ -342,11 +364,17 @@ void CbmStsTimeBasedQa::ProcessClusters(const TClonesArray* clusters, const TClo
       fHM->H1("hdo_DigisInCluster_" + type)->Fill(stsCluster->GetNofDigis());
     if ( NULL != clusterMatches && fHM->Exists("hpa_PointsInCluster_" + type) )
       fHM->H1("hpa_PointsInCluster_" + type)->Fill(stsClusterMatch->GetNofLinks());
-    if ( NULL != clusters && fHM->Exists("hpa_ClusterSize_" + type) )
+    if ( NULL != clusters && (fHM->Exists("hpa_ClusterSize_" + type) || fHM->Exists("h2d_ClusterSize_vs_SlopeX_" + type) )){
       fHM->H1("hpa_ClusterSize_" + type)->Fill(stsCluster->GetSize());
+      Double_t slope = -1000.;
+      for(Int_t iLink = 0; iLink < stsClusterMatch->GetNofLinks(); iLink++) {
+          const CbmLink& link = static_cast<const CbmLink&>(stsClusterMatch->GetLink(iLink));
+          CbmStsPoint* point = (CbmStsPoint*) points -> Get(link.GetFile(), link.GetEntry() - 1, link.GetIndex());
+          slope = TMath::ATan(point -> GetPx() / point -> GetPz()) * 180. / 3.1416;
+          fHM->H2("h2d_ClusterSize_vs_SlopeX_" + type)->Fill(slope, stsCluster->GetSize());
+      }
+    }
   }
-
-
   if ( clusters->GetEntriesFast() > fMaxScale ) fMaxScale = clusters->GetEntriesFast();
 }
 
@@ -461,13 +489,23 @@ void CbmStsTimeBasedQa::FillResidualAndPullHistograms(
   string nameResY = "hrp_Residual_Y_" + type;
   string namePullX = "hrp_Pull_X_" + type;
   string namePullY = "hrp_Pull_Y_" + type;
+  string nameResXvsClusterSize = "h2d_Residual_X_vs_ClusterSize_" + type;
+  string nameResXvsSlope = "h2d_Residual_X_vs_SlopeX_" + type;
   if ( !fHM->Exists(nameResX) || !fHM->Exists(nameResY)
-		  || !fHM->Exists(namePullX) || !fHM->Exists(namePullY) ) return;
+		  || !fHM->Exists(namePullX) || !fHM->Exists(namePullY) 
+		  || !fHM->Exists(nameResXvsClusterSize) || !fHM->Exists(nameResXvsSlope)) return;
   Float_t residualX = -1000;
   Float_t residualY = -1000;
+  Float_t slopeX = -1000;
+  Int_t clusterSizeFront = -1;
+  Int_t clusterSizeBack = -1;
   Int_t nofHits = hits->GetEntriesFast();
   for(Int_t iHit = 0; iHit < nofHits; iHit++) {
     const CbmStsHit* hit = static_cast<const CbmStsHit*>(hits->At(iHit));
+    const CbmStsCluster * frontCluster = static_cast<const CbmStsCluster*>(fStsClusters->At(hit->GetFrontClusterId()));
+    clusterSizeFront = frontCluster -> GetSize();
+    const CbmStsCluster * backCluster = static_cast<const CbmStsCluster*>(fStsClusters->At(hit->GetBackClusterId()));
+    clusterSizeBack = backCluster -> GetSize();
     const CbmMatch* hitMatch = static_cast<const CbmMatch*>(hitMatches->At(iHit));
     if ( hitMatch->GetNofLinks() == 1 ) {
     	const CbmLink link = hitMatch->GetLink(0);
@@ -475,6 +513,7 @@ void CbmStsTimeBasedQa::FillResidualAndPullHistograms(
       CbmStsPoint* point = (CbmStsPoint*) points->Get(link.GetFile(), link.GetEntry() - 1, link.GetIndex());	// TODO: link.GetEntry() - from 1 to N. Should be from 0 to N-1
       residualX = point->GetX(hit->GetZ()) - hit->GetX();
       residualY = point->GetY(hit->GetZ()) - hit->GetY();
+      slopeX = TMath::ATan(point -> GetPx() / point -> GetPz()) * 180. / 3.1416;
     }
     else {
       const CbmMatch* frontClusterMatch = static_cast<const CbmMatch*>(fStsClusterMatches->At(hit->GetFrontClusterId()));
@@ -491,6 +530,7 @@ void CbmStsTimeBasedQa::FillResidualAndPullHistograms(
         	CbmStsPoint* point = (CbmStsPoint*) points->Get(frontLink.GetFile(), frontLink.GetEntry() - 1, frontLink.GetIndex());
             residualX = ((point->GetXIn() + point->GetXOut()) / 2) - hit->GetX();
             residualY = ((point->GetYIn() + point->GetYOut()) / 2) - hit->GetY();
+	    slopeX = TMath::ATan(point -> GetPx() / point -> GetPz()) * 180. / 3.1416;
             matched = kTRUE;
             break;
           }
@@ -502,6 +542,8 @@ void CbmStsTimeBasedQa::FillResidualAndPullHistograms(
     std:cout.precision(10);
     fHM->H1(namePullX)->Fill(residualX / hit->GetDx());
     fHM->H1(namePullY)->Fill(residualY / hit->GetDy());
+    fHM->H1(nameResXvsClusterSize)->Fill(clusterSizeFront, residualX * 10000);
+    fHM->H1(nameResXvsSlope)->Fill(slopeX, residualX * 10000);
   }
 }
 

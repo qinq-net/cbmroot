@@ -40,6 +40,8 @@ public:
 
   void CreateHitParametersHistograms(const string& type);
 
+  void Create2dHistograms(const string& type);
+
   void ProcessDigisAndPoints(
 		  const vector<CbmStsDigi> digis,
 		   CbmMCDataArray* points,
@@ -51,6 +53,7 @@ public:
   void ProcessClusters(
 		  const TClonesArray* clusters,
 		  const TClonesArray* clusterMatches,
+		  CbmMCDataArray* points,
 		  const string& type);
   void ProcessHits(
 		  const TClonesArray* hits,
