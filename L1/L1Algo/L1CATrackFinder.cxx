@@ -1373,7 +1373,10 @@ void L1Algo::CATrackFinder()
     // kAllPrimIter,      // primary all track
     // kAllPrimJumpIter,  // primary tracks with gaps. can be dissabled by macro
     // kAllSecIter        // secondary all track
-  for (isec = 0; isec < fNFindIterations; isec++){ // all finder
+  
+  //TODO The first iteration is temporary turned off to recover the length of fast primary tracks
+  //for (isec = 0; isec < fNFindIterations; isec++){ // all finder
+  for (isec = 1; isec < fNFindIterations; isec++){ // all finder
     
 #ifdef COUNTERS
   unsigned int nSinglets = 0;
