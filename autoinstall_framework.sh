@@ -29,7 +29,7 @@ export ROOTVER=5
 export FSOFTDEV=nov15p4
 export FROOTDEV=v-15.11b
 
-export FSOFTPRO=jul15p4
+export FSOFTPRO=jul15p5
 export FROOTPRO=v-15.07b 
 
 # former versions
