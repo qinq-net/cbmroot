@@ -102,6 +102,8 @@ class CbmTrdTimeCorrel : public FairTask
   Int_t GetLayerID(CbmSpadicRawMessage* raw);
   Int_t GetColumnID(CbmSpadicRawMessage* raw);
   Int_t GetModuleID(CbmSpadicRawMessage* raw);
+  Int_t GetCharge(CbmSpadicRawMessage&);
+
 
   OffsetMap timestampOffsets;
   OffsetMap CalculateTimestampOffsets(const EpochMap &epochBuffer);
@@ -113,12 +115,16 @@ class CbmTrdTimeCorrel : public FairTask
   class Cluster : public TObject
   {
   public:
-    Cluster();
+    Cluster():Cluster(0){};
+    Cluster(Int_t);
     ~Cluster();
     Size_t size();
     Int_t Type();
+    Int_t Windowsize();
+    ULong_t GetFulltime();
     Float_t GetHorizontalPosition();
-    Int_t GetDetector();
+    Int_t GetSpadic();
+    Int_t GetRow();
     std::pair<Int_t,Float_t> GetPosition();
     Int_t GetTotalCharge();
     std::pair<std::vector<CbmSpadicRawMessage>::const_iterator,std::vector<CbmSpadicRawMessage>::const_iterator> GetEntries();
@@ -126,12 +132,15 @@ class CbmTrdTimeCorrel : public FairTask
   private:
     std::vector<CbmSpadicRawMessage> fEntries;
     Bool_t fParametersCalculated;
-    Int_t fDetector, fType,fTotalCharge;
+    Int_t fSpadic, fType, fTotalCharge, fWindowsize;
     Float_t fHorizontalPosition;
     void CalculateParameters();
     Int_t GetSpadicID(Int_t);
     Int_t GetChannelOnPadPlane(Int_t);
+    Int_t GetCharge(CbmSpadicRawMessage&);
   };
+  std::deque<Cluster> fClusterBuffer;
+
 
   CbmTrdTimeCorrel(const CbmTrdTimeCorrel&);
   CbmTrdTimeCorrel operator=(const CbmTrdTimeCorrel&);
