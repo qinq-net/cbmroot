@@ -81,9 +81,22 @@ void CbmRichProtoAnalysis::Exec(Option_t* /*option*/)
 	Int_t nofDigisInEvent = fRichTrbDigi->GetEntries();
 
 	fHM->H1("fNumOfDigis")->Fill(nofDigisInEvent);
+/*
+   if (nofDigisInEvent > 60) {
+      printf ("-----------------------------------------------------------------------------------------\n");
+	   for (Int_t i=0; i<nofDigisInEvent; i++) {
+		   CbmRichTrbDigi* theDigit = static_cast<CbmRichTrbDigi*>(fRichTrbDigi->At(i));
+         printf ("tdc %04x\tch %d\t%f\t\tch %d\t%f\n", theDigit->GetTDCid(),
+                                                       theDigit->GetLeadingEdgeChannel(), theDigit->GetLeadingEdgeTimeStamp(),
+                                                       theDigit->GetTrailingEdgeChannel(), theDigit->GetTrailingEdgeTimeStamp());
+      }
+   }
+*/
 
 	// Find the trigger (hodo)
 	Bool_t hodoFound = kFALSE;
+	Bool_t Cherenkov1Found = kFALSE;
+	Bool_t Cherenkov2Found = kFALSE;
 	for (Int_t i=0; i<nofDigisInEvent; i++) {
 		CbmRichTrbDigi* theDigit = static_cast<CbmRichTrbDigi*>(fRichTrbDigi->At(i));
 
@@ -92,12 +105,22 @@ void CbmRichProtoAnalysis::Exec(Option_t* /*option*/)
 			//LOG(INFO) << "hodoFound = kTRUE" << FairLogger::endl;
 			break;
 		}
+		if (theDigit->GetTDCid() == 0x0110 && theDigit->GetLeadingEdgeChannel() == 9) {
+			Cherenkov1Found = kTRUE;
+			//LOG(INFO) << "Cherenkov1Found = kTRUE" << FairLogger::endl;
+			break;
+		}
+		if (theDigit->GetTDCid() == 0x0110 && theDigit->GetLeadingEdgeChannel() == 11) {
+			Cherenkov2Found = kTRUE;
+			//LOG(INFO) << "Cherenkov2Found = kTRUE" << FairLogger::endl;
+			break;
+		}
 
 	}
 
-	if (!hodoFound) return;
+	if (!hodoFound && !Cherenkov1Found && !Cherenkov2Found) return;
 
-	fHM->H1("fNumOfDigisSent")->Fill(nofDigisInEvent);
+	UInt_t counterDigisSent=0;
 
 	for (Int_t i=0; i<nofDigisInEvent; i++) {
 		CbmRichTrbDigi* theDigit = static_cast<CbmRichTrbDigi*>(fRichTrbDigi->At(i));
@@ -116,6 +139,7 @@ void CbmRichProtoAnalysis::Exec(Option_t* /*option*/)
 				continue;
 			}
 
+			counterDigisSent++;
 			//printf (" ... %.8f\t%.8f\t%.8f\t%.8f\t", hitData->GetX(), hitData->GetY(),
 			//	theDigit->GetLeadingEdgeTimeStamp(), theDigit->GetTOT());
 
@@ -143,6 +167,8 @@ void CbmRichProtoAnalysis::Exec(Option_t* /*option*/)
 			}
 		}
 	}
+
+	fHM->H1("fNumOfDigisSent")->Fill(counterDigisSent);
 
 }
 

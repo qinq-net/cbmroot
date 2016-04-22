@@ -30,8 +30,8 @@ CbmRichTrbEventBuilder::CbmRichTrbEventBuilder()
 	fEventNum(0),
 	fRunTitle(""),
 	fOutputDir(""),
-        fOutHistoFile(""),
-        fWlsState(""),
+    fOutHistoFile(""),
+    fWlsState(""),
 	fHM(NULL),
 	numOfPairs(0),
 	numOfSingleEdges(0),
@@ -126,9 +126,40 @@ void CbmRichTrbEventBuilder::InitHist()
       histoTitle.Form("Number of digits (constructed as pait of hits) in event");
       fHM->Create1<TH1D>(histoName.Data(), histoTitle.Data(), 200, 0., 200.);
 
-      histoName.Form("fTriggCorrelation");
-      histoTitle.Form("Correlation with the trigger");
-      fHM->Create1<TH1D>(histoName.Data(), histoTitle.Data(), 21200, -2000., 210000.);
+      for (unsigned int pixel=0; pixel<64; pixel++)
+      {
+	      histoName.Form("fTriggCorrelation_pixel%d", pixel);
+	      histoTitle.Form("Correlation with the trigger in pixel%d", pixel);
+	      fHM->Create1<TH1D>(histoName.Data(), histoTitle.Data(), 1200, -200., 1000.);
+
+	      histoName.Form("fTriggCorrelation_inWin_pixel%d", pixel);
+	      histoTitle.Form("Correlation with the trigger inside trigger window in pixel%d", pixel);
+	      fHM->Create1<TH1D>(histoName.Data(), histoTitle.Data(), 1200, -200., 1000.);
+
+	      histoName.Form("fTriggCorrelation_wide_pixel%d", pixel);
+	      histoTitle.Form("Correlation with the trigger in bigger window in pixel%d", pixel);
+	      fHM->Create1<TH1D>(histoName.Data(), histoTitle.Data(), 848, -2000., 210000.);
+
+	      histoName.Form("fTriggCorrelation_inNoiseWin_pixel%d", pixel);
+	      histoTitle.Form("Correlation with the trigger inside noise trigger window in pixel%d", pixel);
+	      fHM->Create1<TH1D>(histoName.Data(), histoTitle.Data(), 848, -2000., 210000.);
+	  }
+
+      histoName.Form("fTriggCorrelation_allPixels");
+      histoTitle.Form("Correlation with the trigger in all pixels");
+      fHM->Create1<TH1D>(histoName.Data(), histoTitle.Data(), 1200, -200., 1000.);
+
+      histoName.Form("fTriggCorrelation_inWin_allPixels");
+      histoTitle.Form("Correlation with the trigger inside trigger window in all pixels");
+      fHM->Create1<TH1D>(histoName.Data(), histoTitle.Data(), 1200, -200., 1000.);
+
+      histoName.Form("fTriggCorrelation_wide_allPixels");
+      histoTitle.Form("Correlation with the trigger in bigger window in all pixels");
+      fHM->Create1<TH1D>(histoName.Data(), histoTitle.Data(), 848, -2000., 210000.);
+
+      histoName.Form("fTriggCorrelation_inNoiseWin_allPixels");
+      histoTitle.Form("Correlation with the trigger inside noise trigger window in all pixels");
+      fHM->Create1<TH1D>(histoName.Data(), histoTitle.Data(), 848, -2000., 210000.);
 
       histoName.Form("fNumOfLightHitsInEvent");
       histoTitle.Form("Number of light hits in event");
@@ -162,7 +193,7 @@ void CbmRichTrbEventBuilder::Exec(Option_t* /*option*/)
 	TString curHistoName;
 
 #ifdef DEBUGPRINT
-	printf ("EVENT %d\n", fEventNum);
+	printf ("CbmRichTrbEventBuilder:EVENT %d - %d digis\n", fEventNum, nofDigisInEvent);
 #endif
 
 	// Number of pairs local for the current event
@@ -203,7 +234,7 @@ void CbmRichTrbEventBuilder::Exec(Option_t* /*option*/)
 
    UInt_t counterOfLightHits=0;
    for (Int_t i=0; i<nofDigisInEvent; i++) {
-		CbmRichTrbDigi* theDigit = static_cast<CbmRichTrbDigi*>(fRichTrbDigi->At(i));
+      CbmRichTrbDigi* theDigit = static_cast<CbmRichTrbDigi*>(fRichTrbDigi->At(i));
       hitTDCid1 = theDigit->GetTDCid();
       hitChannel1 = theDigit->GetLeadingEdgeChannel();
       hitTimestamp1 = theDigit->GetLeadingEdgeTimeStamp();
@@ -212,25 +243,59 @@ void CbmRichTrbEventBuilder::Exec(Option_t* /*option*/)
       if (!param->isStudiedTDC(hitTDCid1)) {
          continue;
       }
-		// Check that the hit is made of two edges (not a single edge) - thus skip sync messages
-		if (!(theDigit->GetHasLeadingEdge() && theDigit->GetHasTrailingEdge())) {
-			continue;
-		}
+
+/*
+      // Check that the hit is made of two edges (not a single edge) - thus skip sync messages
+      if (!(theDigit->GetHasLeadingEdge() && theDigit->GetHasTrailingEdge())) {
+         continue;
+      }
+*/
+
+      if (param->IsSyncChannel(hitChannel1)) {
+         continue;
+      }
+      if (!(theDigit->GetHasLeadingEdge())) {
+         continue;
+      }
+
+      UInt_t universalPixelID1 = (param->TDCidToInteger(hitTDCid1)*32 + hitChannel1)/2; //FIXME
+      fHM->H1("fTotalNumOfLightHitsInPixel")->Fill(universalPixelID1);
+
+      //printf ("TDC %d ch %d id %d\n", hitTDCid1, hitChannel1, universalPixelID1);
 
       // Correlation with the trigger (SYNC message in TESTEDTDC)
-      fHM->H1("fTriggCorrelation")->Fill(hitTimestamp1 - lastTriggerTimestamp);
+      TString hNam;
+
+      hNam.Form("fTriggCorrelation_pixel%d", universalPixelID1);
+      fHM->H1(hNam.Data())->Fill(hitTimestamp1 - lastTriggerTimestamp);
+
+      hNam.Form("fTriggCorrelation_wide_pixel%d", universalPixelID1);
+      fHM->H1(hNam.Data())->Fill(hitTimestamp1 - lastTriggerTimestamp);
+
+      hNam.Form("fTriggCorrelation_allPixels");
+      fHM->H1(hNam.Data())->Fill(hitTimestamp1 - lastTriggerTimestamp);
+
+      hNam.Form("fTriggCorrelation_wide_allPixels");
+      fHM->H1(hNam.Data())->Fill(hitTimestamp1 - lastTriggerTimestamp);
 
       // Here we cut hits using some window around trigger signal
       Double_t distToTrig = hitTimestamp1 - lastTriggerTimestamp;
-      if (distToTrig > -80. && distToTrig < 40.) {
 
+      if (distToTrig > -80. && distToTrig < 0.) {
+      	hNam.Form("fTriggCorrelation_inWin_pixel%d", universalPixelID1);
+      	fHM->H1(hNam.Data())->Fill(hitTimestamp1 - lastTriggerTimestamp);
+      	hNam.Form("fTriggCorrelation_inWin_allPixels");
+      	fHM->H1(hNam.Data())->Fill(hitTimestamp1 - lastTriggerTimestamp);
          // Count the number of light hits
          counterOfLightHits++;
-
       }
 
-		UInt_t universalPixelID1 = param->TDCidToInteger(hitTDCid1)*32 + hitChannel1;
-      fHM->H1("fTotalNumOfLightHitsInPixel")->Fill(universalPixelID1);
+      if (distToTrig > 50000. && distToTrig < 150000.) {
+      	hNam.Form("fTriggCorrelation_inNoiseWin_pixel%d", universalPixelID1);
+      	fHM->H1(hNam.Data())->Fill(hitTimestamp1 - lastTriggerTimestamp);
+      	hNam.Form("fTriggCorrelation_inNoiseWin_allPixels");
+      	fHM->H1(hNam.Data())->Fill(hitTimestamp1 - lastTriggerTimestamp);
+      }
 
    }
 

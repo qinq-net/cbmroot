@@ -101,11 +101,11 @@ Bool_t CbmRichTrbUnpack2::Init()
 	ioman->Register("CbmTrbRawMessage", "TRB raw messages", fTrbRawHits, kTRUE);
 
 	fHM = new CbmHistManager();
-/*
-	fHM->Create1<TH1D>("fhCorrection_0x0011", "fhCorrection_0x0011;ns;Entries", 500, -10., 10.);
-	fHM->Create1<TH1D>("fhCorrection_0x0012", "fhCorrection_0x0012;ns;Entries", 500, -10., 10.);
-	fHM->Create1<TH1D>("fhCorrection_0x0013", "fhCorrection_0x0013;ns;Entries", 500, -10., 10.);
-*/
+
+   fHM->Create1<TH1D>("fMessagesInTDC", "Total number of messages in TDC", 64, 0., 64.);
+   fHM->Create1<TH1D>("fMessagesInChannel", "Total number of messages in channel", 2118, 0., 2118.); // should be 2112
+   fHM->Create2<TH2D>("fHeatMapLeadingEdges", "Heat map built by leading edges", 32, 0., 32., 32, 0., 32.);
+
 	// Read the first file
 	ReadNextInputFileToMemory();
 
@@ -224,7 +224,6 @@ Int_t CbmRichTrbUnpack2::ReadOneRawEvent()
 	}
 
 	fNofRawEvents++;
-	//fNumberOfRawEventsInBuffer++;
 
 	return 0; // still some data
 }
@@ -372,12 +371,13 @@ void CbmRichTrbUnpack2::PushEvent(std::multimap<Double_t, CbmTrbRawMessage*>::it
 	}
 
 	// Here we skip single-hit events
-	if (counter > 2) {
+	if (counter > 0) {
 		for (iter = firstEdge; iter != lastEdge; /**/)
 		{
 #ifdef DEBUGPRINT
-			if (iter->second->GetSourceAddress() == 0x0110 ||
-				iter->second->GetSourceAddress() == 0x0111) {
+			//if (iter->second->GetSourceAddress() == 0x0110 ||
+			//	iter->second->GetSourceAddress() == 0x0111)
+			{
 				printf ("Pushing: tdc 0x%04x ch %d\t%f\n", iter->second->GetSourceAddress(), iter->second->GetChannelID(), this->GetFullTime(*iter->second));
 			}
 #endif
@@ -507,6 +507,22 @@ void CbmRichTrbUnpack2::ProcessSubSubEvent(UInt_t* data, UInt_t size, UInt_t sub
 
 			Double_t fullTime = GetFullTime(tdcId, channel, epoch, coarse, fine);
 
+         if (tdcId != 0x0110 && tdcId != 0x0111 && tdcId != 0x0112 && tdcId != 0x0113 && tdcId != 0xc000) {
+            if (channel != 0) {
+               fHM->H1("fMessagesInTDC")->Fill(param->TDCidToInteger(tdcId));
+               fHM->H1("fMessagesInChannel")->Fill(param->TDCandCHtoInteger(tdcId, channel));
+/*
+            if (param->TDCandCHtoInteger(tdcId, channel) == 2048) {
+               printf ("tdc 0x%04x ch %d edge %d epoch %08x coarse %08x fine %08x\n", tdcId, channel, edge, epoch, coarse, fine);
+            }
+*/
+               if (param->IsLeadingEdgeChannel(channel)) {
+                  CbmRichHitInfo* hitInfo = param->GetRichHitInfo(tdcId, channel);
+                  fHM->H2("fHeatMapLeadingEdges")->Fill(hitInfo->GetXPixel(), hitInfo->GetYPixel());
+               }
+            }
+         }
+
 			if (param->IsSyncChannel(channel)) {     // SYNC MESSAGE PROCESSING
 				//CbmTrbCalibrator::Instance()->AddFineTime(tdcId, channel, fine);    //TODO check - needed or not?
 
@@ -518,7 +534,7 @@ void CbmRichTrbUnpack2::ProcessSubSubEvent(UInt_t* data, UInt_t size, UInt_t sub
 				// 10 kHz - 100 000 ns, thres should be ~90 000
 				// 5 kHz - 200 000 ns, thres should be ~150 000
 				// 1.1 kHz - 909 090 ns, thres should be ~800 000
-				if (fLastSyncTime-fMainSyncTime > 90000) {
+				if (fLastSyncTime-fMainSyncTime > 150000) {
 					fMainSyncDefined = kFALSE;
 				}
 
@@ -554,14 +570,14 @@ void CbmRichTrbUnpack2::ProcessSubSubEvent(UInt_t* data, UInt_t size, UInt_t sub
 #endif
 				CbmTrbCalibrator::Instance()->AddFineTime(tdcId, channel, fine);
 			}
-/*
+/******* obsolete
 			// Important to keep it here - after fCorr computation
 			new ((*fTrbRawHits)[fTrbRawHits->GetEntriesFast()]) CbmTrbRawMessage(
 					0, tdcId, channel, epoch, coarse, fine, edge, fCorr);
 */
 			//TODO development workaround
 			//FIXME - here we skip sync messages so that they don't appear in event building
-//			if (!param->IsSyncChannel(channel))
+			//if (!param->IsSyncChannel(channel))
 			{
 				fMessageBuffer.insert( std::pair<Double_t, CbmTrbRawMessage*> (fullTime, new CbmTrbRawMessage(0, tdcId, channel, epoch, coarse, fine, edge, fCorr)));
 				//fMessageBuffer.insert( new CbmTrbRawMessage(0, tdcId, channel, epoch, coarse, fine, edge, fCorr) );

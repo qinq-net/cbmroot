@@ -42,10 +42,8 @@ public:
       trbId==0x80d5 || trbId==0x80e5 || trbId==0x80f5 || trbId==0x8105 || trbId == 0x8115);
    }
 
-// tdcId is UInt_t and always larger 0, so remove first part of statement
    Bool_t IsPmtTdc(UInt_t tdcId) const {
-//      return ( ((tdcId & 0x000f) >= 0) && ((tdcId & 0x000f) <= 3) && ((tdcId >> 8) == 0) ) ||
-      return ( ((tdcId & 0x000f) <= 3) && ((tdcId >> 8) == 0) ) ||
+      return ( ((tdcId & 0x000f) >= 0) && ((tdcId & 0x000f) <= 3) && ((tdcId >> 8) == 0) ) ||
       (tdcId == 0x0100 || tdcId == 0x0101 || tdcId == 0x0102 || tdcId == 0x0103);
    }
 
@@ -55,6 +53,17 @@ public:
 
    UInt_t IntegerToTDCid (UInt_t index) const {
       return (((index/4) + 1) << 4) + (index%4);
+   }
+
+   // TDC actually has 33 channels with 0-th being a special channel for SYNC messages.
+   // I intentionally put TDC after TDC with step of 32 channels - channels from 1 to 32 (incl.)
+   // and then a section for 64 sync channels - one for each of 64 TDCs
+   UInt_t TDCandCHtoInteger(UInt_t tdcId, UInt_t ch) const {
+      if (ch == 0) {
+         return 64*32 + this->TDCidToInteger(tdcId);
+      } else {
+         return this->TDCidToInteger(tdcId) * 32 + ch-1;
+      }
    }
 
    Bool_t IsSyncChannel(UInt_t ch, UInt_t tdcId=0xffff) const {
@@ -216,6 +225,7 @@ private:
             fMap[tdcId][chLeadingEdge] = new CbmRichHitInfo(pmtNum, pixelNum, xmm / 10., ymm / 10., simpleX, simpleY, tdcId, chLeadingEdge, chTrailingEdge, padiwaNum, trbNum, pmtTypeId);
          }
          myfile.close();
+         LOG(INFO) << "Imported pixel map from pixel-coord_channel-register.ascii" << FairLogger::endl;
       } else {
          LOG(FATAL) << "[CbmRichTrbParam::ReadMap] Failed to open ASCII map file." << FairLogger::endl;
       }

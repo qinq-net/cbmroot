@@ -14,7 +14,7 @@
 #include "CbmTrbRawMessage.h"
 #include "CbmTrbCalibrator.h"
 
-// Uncoment if you want to have excessive printout (do not execute on many events, may produce Gb's of output)
+// Uncomment if you want to have excessive printout (do not execute on many events, may produce Gb's of output)
 //#define DEBUGPRINT
 
 CbmTrbEdgeMatcher::CbmTrbEdgeMatcher() 
@@ -102,10 +102,12 @@ void CbmTrbEdgeMatcher::Exec(Option_t* /*option*/)
          printf ("Processing leading edge. tdc 0x00%x  ch %d  %f\n", tdcId, channel, timestamp);
 #endif
 
+         //FIXME
+/*
          if (tdcId == 0x0110 || tdcId == 0x0111) {
             this->CreateLeadingEdgeOnlyDigi(*curTrbRawHit);
          }
-
+*/
          this->AddPossibleLeadingEdge(*curTrbRawHit);
 
       } else {                                              // TRAILING EDGE PROCESSING
@@ -117,11 +119,14 @@ void CbmTrbEdgeMatcher::Exec(Option_t* /*option*/)
          printf ("Processing trailing edge. tdc 0x00%x  ch %d  %f\n", tdcId, channel, timestamp);
 #endif
 
+         //FIXME
+/*
          if (tdcId == 0x0110 || tdcId == 0x0111) {
             // Create trailing-edge-only digi
             new( (*fRichTrbDigi)[fRichTrbDigi->GetEntriesFast()] )
                CbmRichTrbDigi(tdcId, kFALSE, kTRUE, 0xffffffff, channel, 0.0, timestamp);
          }
+*/
 
          UInt_t searchedLchannel = param->GetCorrespondingLeadingEdgeChannel(channel, tdcId);
          std::pair<UInt_t, CbmTrbRawMessage> foundLedge = this->FindLeadingEdge(tdcId, searchedLchannel, *curTrbRawHit);
@@ -167,7 +172,7 @@ void CbmTrbEdgeMatcher::Exec(Option_t* /*option*/)
    } // for loop over the input raw hits
 
    for (auto iter : fTrBuf) {
-      
+
       UInt_t tdcId = iter->GetSourceAddress();
       UInt_t channel = iter->GetChannelID();
       UInt_t fine = iter->GetTDCfine();
@@ -176,17 +181,17 @@ void CbmTrbEdgeMatcher::Exec(Option_t* /*option*/)
       //Double_t corr = iter->GetCorr();
 
 	  Double_t fullT = GetFullTime(tdcId, channel, epoch, coarse, fine) /*+ corr*/;
-	  
+
       //printf ("POSTPROCESSING EVENT: tdc 0x00%x  ch %d time=%f\n", tdcId, channel, fullT);
-	  
+
       // Try to find the leading edge again - now in he buffer, which was formed during the first run
       UInt_t searchedLchannel = param->GetCorrespondingLeadingEdgeChannel(channel, tdcId);
       std::pair<UInt_t, CbmTrbRawMessage> foundLedge = this->FindLeadingEdge(tdcId, searchedLchannel, *iter);
-      
+
       if (foundLedge.first != 0xffffffff)  // corresponding leading edge found
       {
          //printf("FOUND!!!\n");
-         
+
          UInt_t lchannel = foundLedge.second.GetChannelID();
          UInt_t lfine = foundLedge.second.GetTDCfine();
          UInt_t lcoarse = foundLedge.second.GetTDCcoarse();
@@ -210,7 +215,6 @@ void CbmTrbEdgeMatcher::Exec(Option_t* /*option*/)
          printf("   --- TRAIL - tdc %x ch %d epoch %08x coarse %08x fine %08x\n", tdcId, channel, epoch, coarse, fine);
 #endif
 
-         
       } else {
          //printf("EDGE NOT FOUND!!! %x\tch %d\n", tdcId, channel);
 
@@ -228,9 +232,9 @@ void CbmTrbEdgeMatcher::Exec(Option_t* /*option*/)
       }
 
    }
-   
+
    fTrBuf.clear();
-   
+
 }
 
 void CbmTrbEdgeMatcher::FinishEvent()
@@ -245,7 +249,7 @@ void CbmTrbEdgeMatcher::FinishTask()
 	UInt_t v_numOfStoredEdges=0;
 
 	for (UInt_t tdcId=0x0010; tdcId<=0x0013; tdcId++) {
-	
+
 		std::map< UInt_t, std::vector< std::pair< UInt_t, CbmTrbRawMessage > >* >::iterator tdcIdToStoredEdgesI;
 		tdcIdToStoredEdgesI = tdcIdToStoredEdges.find(tdcId);
 
@@ -256,7 +260,7 @@ void CbmTrbEdgeMatcher::FinishTask()
 				v_numOfStoredEdges += PerTDCbuffer[v_channel].size();
 			}
 		}
-	
+
 	}
 	LOG(INFO) << "Leftovers in the pair-matching buffers: " << v_numOfStoredEdges << FairLogger::endl;
 
@@ -347,7 +351,8 @@ std::pair<UInt_t, CbmTrbRawMessage> CbmTrbEdgeMatcher::FindLeadingEdge(UInt_t td
          if (tdcId == 0x0110 && lChannel == 15) { return foundPair; }
 */
 
-         //if (tdcId == 0x0110 || tdcId == 0x0111 || tdcId == 0x0113) { return foundPair; }
+         //FIXME
+         if (tdcId == 0x0110 || tdcId == 0x0111 || tdcId == 0x0113) { return foundPair; }
 
          foundEpoch = foundPair.first;
          foundWord =  foundPair.second;
@@ -397,7 +402,7 @@ std::pair<UInt_t, CbmTrbRawMessage> CbmTrbEdgeMatcher::FindLeadingEdge(UInt_t td
                }
          }
 */
-		 
+
          UInt_t numWithinWindow = 0;
          Double_t storedTOT = 0.;
 

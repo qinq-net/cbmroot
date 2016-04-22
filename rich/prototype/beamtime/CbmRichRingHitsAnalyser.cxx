@@ -21,6 +21,7 @@
 
 #include <vector>
 #include <fstream>
+#include <math.h>
 
 CbmRichRingHitsAnalyser::CbmRichRingHitsAnalyser()
 	: FairTask(),
@@ -69,7 +70,7 @@ InitStatus CbmRichRingHitsAnalyser::Init()
 	TString histoTitle;
 
 	Double_t K, minWin, maxWin;
-	
+
 	K = 100.;	// 1000/W=K, where W - desired bin width in ps.
 	minWin = -50.;
 	maxWin = 50.;
@@ -125,10 +126,23 @@ InitStatus CbmRichRingHitsAnalyser::Init()
 	}
 */
 
+	histoName.Form("hDistBetwDoubleRings");
+	histoTitle.Form("hDistBetwDoubleRings");
+	fHM->Create1<TH1D>(histoName.Data(), histoTitle.Data(), 200, 0, 100.);
+
+	histoName.Form("hDeltaRdoubleRings");
+	histoTitle.Form("hDeltaRdoubleRings");
+	fHM->Create1<TH1D>(histoName.Data(), histoTitle.Data(), 200, 0, 100.);
+
+
+	histoName.Form("hNumOfRingInEvent");
+	histoTitle.Form("hNumOfRingInEvent");
+	fHM->Create1<TH1D>(histoName.Data(), histoTitle.Data(), 100, 0, 100);
+
 	histoName.Form("hNumOfHitsOnRing");
 	histoTitle.Form("hNumOfHitsOnRing");
 	fHM->Create1<TH1D>(histoName.Data(), histoTitle.Data(), 100, 0, 100);
-   
+/*
 	histoName.Form("hNumOfHitsOnRing_PMT1");
 	histoTitle.Form("hNumOfHitsOnRing_PMT1");
 	fHM->Create1<TH1D>(histoName.Data(), histoTitle.Data(), 100, 0, 100);
@@ -141,7 +155,7 @@ InitStatus CbmRichRingHitsAnalyser::Init()
 	histoName.Form("hNumOfHitsOnRing_PMT6");
 	histoTitle.Form("hNumOfHitsOnRing_PMT6");
 	fHM->Create1<TH1D>(histoName.Data(), histoTitle.Data(), 100, 0, 100);
-
+*/
 	histoName.Form("FirstPixelInRing");
 	histoTitle.Form("FirstPixelInRing");
 	fHM->Create1<TH1D>(histoName.Data(), histoTitle.Data(), 512, 0, 512);
@@ -149,16 +163,16 @@ InitStatus CbmRichRingHitsAnalyser::Init()
 	histoName.Form("ExponentaBudetTut");
 	histoTitle.Form("ExponentaBudetTut");
 	fHM->Create1<TH1D>(histoName.Data(), histoTitle.Data(), K*(maxWin-minWin), minWin, maxWin);
-	
+
 	// Histogram for rings centers
 	histoName.Form("RingsCenters1");
 	histoTitle.Form("Centers of the found rings 1");
 	fHM->Create2<TH2D>(histoName.Data(), histoTitle.Data(), 200, 0., 50., 200, 0., 50.);
-	
+
 	histoName.Form("RingsCenters2");
 	histoTitle.Form("Centers of the found rings 2");
 	fHM->Create2<TH2D>(histoName.Data(), histoTitle.Data(), 200, 0., 50., 200, 0., 50.);
-	
+
 	histoName.Form("RingsRadii");
 	histoTitle.Form("Radii of the found rings");
 	fHM->Create1<TH1D>(histoName.Data(), histoTitle.Data(), 200, 0., 10.);
@@ -211,12 +225,14 @@ void CbmRichRingHitsAnalyser::Exec(Option_t* /*option*/)
 	Int_t numOfRings = fRichRings->GetEntriesFast();
 	Int_t numOfHits = fRichHits->GetEntriesFast();
 
+	fHM->H1("hNumOfRingInEvent")->Fill(numOfRings);
+
 	std::vector< std::pair< CbmRichHit*, CbmRichHitInfo* > > listOfRingHitInfos;
 
 	if (numOfRings == 1) {
 		CbmRichRing* theRing = static_cast<CbmRichRing*>(fRichRings->At(0));
 		Int_t numOfHitsOnRing = theRing->GetNofHits();
-		
+
 //		printf("Ring. nHits=%d\tx=%.4f\ty=%.4f\tr=%.4f\n", numOfHitsOnRing, theRing->GetCenterX(), theRing->GetCenterY(), theRing->GetRadius());
 
 		// Cut on the ring center
@@ -237,17 +253,17 @@ void CbmRichRingHitsAnalyser::Exec(Option_t* /*option*/)
 			fHM->H2("RingsCenters1")->Fill(theRing->GetCenterX(), theRing->GetCenterY());
 		else
 			fHM->H2("RingsCenters2")->Fill(theRing->GetCenterX(), theRing->GetCenterY());
-		
+
 		fHM->H1("RingsRadii")->Fill(theRing->GetRadius());
-      fHM->H1("hNumOfHitsOnRing")->Fill(numOfHitsOnRing);
-	
+		fHM->H1("hNumOfHitsOnRing")->Fill(numOfHitsOnRing);
+
 		// Start analysis of pairs of hits
 		Int_t hitIndex1;
 		CbmRichHit* curHit1;
 		CbmRichHitInfo* curHitInfo1;
 		Int_t hitTDCid1;
 		Int_t hitChannel1;
-		
+
 		Int_t hitIndex2;
 		CbmRichHit* curHit2;
 		CbmRichHitInfo* curHitInfo2;
@@ -255,34 +271,34 @@ void CbmRichRingHitsAnalyser::Exec(Option_t* /*option*/)
 		Int_t hitChannel2;
 
 		TString histoName;
-		
+
 		// Get the first in time hit of the ring
 		Int_t firstHitIndex = -1;
 		Double_t minTimestamp = 0.;
-
-      UInt_t num_PMT1=0;
-      UInt_t num_PMT2=0;
-      UInt_t num_PMT5=0;
-      UInt_t num_PMT6=0;
-
+/*
+		UInt_t num_PMT1=0;
+		UInt_t num_PMT2=0;
+		UInt_t num_PMT5=0;
+		UInt_t num_PMT6=0;
+*/
 		for (Int_t i=0; i<numOfHitsOnRing; i++) {
 			hitIndex1 = theRing->GetHit(i);
 			curHit1 = static_cast<CbmRichHit*>(fRichHits->At(hitIndex1));
 			curHitInfo1 = static_cast<CbmRichHitInfo*>(fRichHitInfos->At(hitIndex1));
 			hitTDCid1 = curHitInfo1->GetTdcId();
 			hitChannel1 = curHitInfo1->GetLeadingChannel();
-			
-         if (!param->isNormalPixel(hitTDCid1, hitChannel1))
-            continue;
+
+			if (!param->isNormalPixel(hitTDCid1, hitChannel1))
+				continue;
 
 			if (param->isStudiedTDC(hitTDCid1))
 			{
-         
-            if (hitTDCid1==0x0010 || hitTDCid1==0x0011 || hitTDCid1==0x0012 || hitTDCid1==0x0013) num_PMT1++;
-            if (hitTDCid1==0x0020 || hitTDCid1==0x0021 || hitTDCid1==0x0022 || hitTDCid1==0x0023) num_PMT2++;
-            if (hitTDCid1==0x0050 || hitTDCid1==0x0051 || hitTDCid1==0x0052 || hitTDCid1==0x0053) num_PMT5++;
-            if (hitTDCid1==0x0060 || hitTDCid1==0x0061 || hitTDCid1==0x0062 || hitTDCid1==0x0063) num_PMT6++;
-         
+/*
+				if (hitTDCid1==0x0010 || hitTDCid1==0x0011 || hitTDCid1==0x0012 || hitTDCid1==0x0013) num_PMT1++;
+				if (hitTDCid1==0x0020 || hitTDCid1==0x0021 || hitTDCid1==0x0022 || hitTDCid1==0x0023) num_PMT2++;
+				if (hitTDCid1==0x0050 || hitTDCid1==0x0051 || hitTDCid1==0x0052 || hitTDCid1==0x0053) num_PMT5++;
+				if (hitTDCid1==0x0060 || hitTDCid1==0x0061 || hitTDCid1==0x0062 || hitTDCid1==0x0063) num_PMT6++;
+*/
 				if (firstHitIndex == -1) {
 					firstHitIndex = hitIndex1;
 					minTimestamp = curHit1->GetTimestamp();
@@ -296,18 +312,18 @@ void CbmRichRingHitsAnalyser::Exec(Option_t* /*option*/)
 		}
 
 		if (firstHitIndex == -1) return;
-
-      fHM->H1("hNumOfHitsOnRing_PMT1")->Fill(num_PMT1);
-      fHM->H1("hNumOfHitsOnRing_PMT2")->Fill(num_PMT2);
-      fHM->H1("hNumOfHitsOnRing_PMT5")->Fill(num_PMT5);
-      fHM->H1("hNumOfHitsOnRing_PMT6")->Fill(num_PMT6);
-		
+/*
+		fHM->H1("hNumOfHitsOnRing_PMT1")->Fill(num_PMT1);
+		fHM->H1("hNumOfHitsOnRing_PMT2")->Fill(num_PMT2);
+		fHM->H1("hNumOfHitsOnRing_PMT5")->Fill(num_PMT5);
+		fHM->H1("hNumOfHitsOnRing_PMT6")->Fill(num_PMT6);
+*/
 		curHit1 = static_cast<CbmRichHit*>(fRichHits->At(firstHitIndex));
 		curHitInfo1 = static_cast<CbmRichHitInfo*>(fRichHitInfos->At(firstHitIndex));
 		hitTDCid1 = curHitInfo1->GetTdcId();
 		hitChannel1 = curHitInfo1->GetLeadingChannel();
 		fHM->H1("FirstPixelInRing")->Fill(param->TDCidToInteger(hitTDCid1)*16 + hitChannel1/2);
-		
+
 		for (Int_t i=0; i<numOfHitsOnRing; i++) {
 			// Get information about the first hit
 			hitIndex1 = theRing->GetHit(i);
@@ -315,12 +331,12 @@ void CbmRichRingHitsAnalyser::Exec(Option_t* /*option*/)
 			curHitInfo1 = static_cast<CbmRichHitInfo*>(fRichHitInfos->At(hitIndex1));
 			hitTDCid1 = curHitInfo1->GetTdcId();
 			hitChannel1 = curHitInfo1->GetLeadingChannel();
-			
+
 			if (hitIndex1 != firstHitIndex && param->isStudiedTDC(hitTDCid1)) {
-		
+
 				if (param->isNormalPixel(hitTDCid1, hitChannel1))
 					fHM->H1("ExponentaBudetTut")->Fill(curHit1->GetTimestamp()-minTimestamp);
-				
+
 			}
 		}
 /*
@@ -334,14 +350,14 @@ void CbmRichRingHitsAnalyser::Exec(Option_t* /*option*/)
 			hitChannel1 = curHitInfo1->GetLeadingChannel();
 
 			for (Int_t j=i+1; j<numOfHitsOnRing; j++) {
-				
+
 				// Get information about the second hit
 				hitIndex2 = theRing->GetHit(j);
 				curHit2 = static_cast<CbmRichHit*>(fRichHits->At(hitIndex2));
 				curHitInfo2 = static_cast<CbmRichHitInfo*>(fRichHitInfos->At(hitIndex2));
 				hitTDCid2 = curHitInfo2->GetTdcId();
 				hitChannel2 = curHitInfo2->GetLeadingChannel();
-				
+
 				//printf ("Considering pair of hits: tdc %04x ch %d time %f\t\ttdc %04x ch %d time %f\n",
 				//	hitTDCid1, hitChannel1, curHit1->GetTimestamp(), hitTDCid2, hitChannel2, curHit2->GetTimestamp());
 
@@ -367,7 +383,7 @@ void CbmRichRingHitsAnalyser::Exec(Option_t* /*option*/)
 
 					UInt_t universalPixelID1 = param->TDCidToInteger(hitTDCid1)*32 + hitChannel1;
 					UInt_t universalPixelID2 = param->TDCidToInteger(hitTDCid2)*32 + hitChannel2;
-					
+
 					if (universalPixelID1 < universalPixelID2) {
 						histoName.Form("LeadingEdgeDiff_TDC%s_ch%d_TDC%s_ch%d", tdcID1.Data(), hitChannel1/2, tdcID2.Data(), hitChannel2/2);
 						fHM->H1(histoName.Data())->Fill(curHit1->GetTimestamp() - curHit2->GetTimestamp());
@@ -382,8 +398,23 @@ void CbmRichRingHitsAnalyser::Exec(Option_t* /*option*/)
 		}
 */
 
-	} else if (numOfRings > 1) {
-		LOG(INFO) << "CbmRichRingHitsAnalyser::Exec   More than one ring found. Skipping." << FairLogger::endl;
+	} else if (numOfRings == 2) {
+		CbmRichRing* theRing1 = static_cast<CbmRichRing*>(fRichRings->At(0));
+		CbmRichRing* theRing2 = static_cast<CbmRichRing*>(fRichRings->At(1));
+
+		Double_t c1x = theRing1->GetCenterX();
+		Double_t c1y = theRing1->GetCenterY();
+		Double_t c2x = theRing2->GetCenterX();
+		Double_t c2y = theRing2->GetCenterY();
+		Double_t r1 = theRing1->GetRadius();
+		Double_t r2 = theRing2->GetRadius();
+
+		Double_t distBetwCenters = sqrt( (c1x-c2x)*(c1x-c2x) + (c1y-c2y)*(c1y-c2y) );
+
+		fHM->H1("hDistBetwDoubleRings")->Fill(distBetwCenters);
+		fHM->H1("hDeltaRdoubleRings")->Fill(abs(r1-r2));
+	} else if (numOfRings > 2) {
+		LOG(INFO) << "CbmRichRingHitsAnalyser::Exec   More than two rings found. Skipping." << FairLogger::endl;
 		//return;
 	} else {
 		LOG(DEBUG) << "CbmRichRingHitsAnalyser::Exec   No rings found" << FairLogger::endl;

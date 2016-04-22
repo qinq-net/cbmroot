@@ -21,7 +21,7 @@
 //#define INVERSEPOLARITY		// if defined then leading channels are 2,4,6,... and corresponding trailing are 1,3,5,...
 
 // Maximum TOT in ns to build a pair. If TOT is positive and more than this value then two separate edges are sent to output.
-#define POSITIVEPAIRWINDOW 15.
+#define POSITIVEPAIRWINDOW 40.
 // Maximum in abs of a negative TOT to build a pair. If TOT is negative and in abs more than this value then two separate edges are sent to output.
 #define NEGATIVEPAIRWINDOW 5.
 // Hence a valid TOT for a pair is [-NEGATIVEPAIRINDOW; POSITIVEPAIRWINDOW]
