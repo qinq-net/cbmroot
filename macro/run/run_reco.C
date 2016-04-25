@@ -326,7 +326,7 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis100_electron")
    TString muchDigiFile(paramDir + muchDigi);
    cout << "MuchDigiFile: " << muchDigiFile << endl; 
 
-   // ----- MUCH hits----------   ----------------------------------------------
+   // ----- MUCH hits----------   --------4--------------------------------------
    CbmMuchDigitizeGem* muchDigitize = new CbmMuchDigitizeGem(muchDigiFile.Data());
    run->AddTask(muchDigitize);
    CbmMuchDigitizeStraws* strawDigitize = new CbmMuchDigitizeStraws(muchDigiFile.Data());

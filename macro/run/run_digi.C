@@ -159,8 +159,6 @@ void run_digi(Int_t nEvents = 2,
   // ------------------------------------------------------------------------
 
 
-
-
   // -----   Start run   ----------------------------------------------------
   std::cout << std::endl << std::endl;
   std::cout << "-I- " << myName << ": Starting run" << std::endl;
