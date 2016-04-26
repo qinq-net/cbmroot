@@ -43,7 +43,7 @@ Double_t gkStereoFront =  0.;
 Double_t gkStereoBack  =  7.5;
 
 // ---> Geometry and digitisation tags
-TString gkGeoTag  = "v16c"; // "v13y"; // "v15a"; // "v15b"; // "v18e"; 
+TString gkGeoTag  = "v16a"; // "v13y"; // "v15a"; // "v15b"; // "v18e"; 
 TString gkDigiTag = "std";
 // ----------------------------------------------------------------------------
 
@@ -116,6 +116,9 @@ void create_stsdigipar_v13(const char* geoTag  = gkGeoTag,
   Int_t stsModules02 = 0;
   Int_t stsModules03 = 0;
   Int_t stsModules04 = 0;
+  Int_t stsModules05 = 0;
+  Int_t stsModules06 = 0;
+  Int_t stsModules07 = 0;
   Int_t stsLadders   = 0;
 
   // ---> Stations
@@ -138,6 +141,13 @@ void create_stsdigipar_v13(const char* geoTag  = gkGeoTag,
     stsModules02 += nModules02;
     stsModules03 += nModules03;
     stsModules04 += nModules04;
+
+    Int_t nModules05 = GetNofModules(station, "Module05");
+    Int_t nModules06 = GetNofModules(station, "Module06");
+    Int_t nModules07 = GetNofModules(station, "Module07");
+    stsModules05 += nModules05;
+    stsModules06 += nModules06;
+    stsModules07 += nModules07;
     
     Int_t nLadders   = GetNofDaughters(station, "Ladder");
     stsLadders += nLadders;
@@ -149,6 +159,9 @@ void create_stsdigipar_v13(const char* geoTag  = gkGeoTag,
 	 << " " << nModules02
 	 << " " << nModules03
 	 << " " << nModules04
+	 << " " << nModules05
+	 << " " << nModules06
+	 << " " << nModules07
 	 << endl;
     fprintf(parFile, "%d   %d   %d\n", statNr, 0, nModules);
 
@@ -234,6 +247,9 @@ void create_stsdigipar_v13(const char* geoTag  = gkGeoTag,
        << " 02/" << stsModules02
        << " 03/" << stsModules03
        << " 04/" << stsModules04
+       << " 05/" << stsModules05
+       << " 06/" << stsModules06
+       << " 07/" << stsModules07
        << endl;
 
   delete geoMan;
