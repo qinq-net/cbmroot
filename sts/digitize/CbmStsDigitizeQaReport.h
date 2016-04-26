@@ -23,6 +23,7 @@ class CbmStsDigitizeQaReport : public CbmSimulationReport
 	virtual void Draw();
 	void DrawNofObjectsHistograms();
 	void DrawLogHistograms();
+	void DrawHistograms();
 	void Draw2dHistograms();
 	void ScaleHistograms();
 

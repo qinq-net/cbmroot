@@ -72,9 +72,10 @@ void CbmStsDigitizeQaReport::Draw(){
     ScaleHistograms();
     DrawNofObjectsHistograms();
     DrawLogHistograms();
+    DrawHistograms();
     DrawH1ByPattern("h_DigiCharge");
-    DrawH1ByPattern("h_DigisByPoint");
-    DrawH1ByPattern("h_PointsInDigi");
+    /*DrawH1ByPattern("h_DigisByPoint");
+    DrawH1ByPattern("h_PointsInDigi");*/
     Draw2dHistograms();
 }
 
@@ -89,14 +90,14 @@ void CbmStsDigitizeQaReport::DrawNofObjectsHistograms(){
     canvas -> cd();
     vector<string> labels = list_of("Points")("Digis");
     vector<TH1*> histos = list_of(HM() -> H1(name + "Points"))(HM() -> H1(name + "Digis"));
-    DrawH1(histos, labels, kLinear, kLinear, true, 0.65, 0.55, 0.99);
+    DrawH1(histos, labels, kLinear, kLinear, true, 0.5, 0.55, 0.9, 0.75);
 
     vector<TH1*> histos1 = list_of(HM() -> H1(name + "Points_Station"))(HM() -> H1(name + "Digis_Station"));
     canvasName = GetReportName() + "h_NofObjects_Station";
     TCanvas* canvas1 = CreateCanvas(canvasName.c_str(), canvasName.c_str(), 800, 500);
     canvas1 -> SetGrid();
     canvas1 -> cd();
-    DrawH1(histos1, labels, kLinear, kLinear, true, 0.65, 0.55, 0.99);
+    DrawH1(histos1, labels, kLinear, kLinear, true, 0.5, 0.55, 0.9, 0.75);
 }
 
 void CbmStsDigitizeQaReport::Draw2dHistograms(){
@@ -154,18 +155,38 @@ void CbmStsDigitizeQaReport::DrawLogHistograms(){
     canvas -> SetGrid();
     canvas -> SetLogy();
     canvas -> cd();
-    vector<string> labels = list_of("");
     vector<TH1*> histos = list_of(HM() -> H1(name + "PointsInDigiLog"));
-    DrawH1(histos, labels, kLinear, kLinear, true, 0.65, 0.55, 0.99);
+    vector<string> labels = list_of(Form("Points in digi, \n mean = %.2f", HM() -> H1(name + "PointsInDigiLog") -> GetMean()));
+    DrawH1(histos, labels, kLinear, kLinear, true, 0.5, 0.55, 0.9, 0.65);
 
     canvasName = GetReportName() + name + "DigisByPointLog";
-    vector<string> labels1 = list_of("Digis by Point");
     vector<TH1*> histos1 = list_of(HM() -> H1(name + "DigisByPointLog"));
+    vector<string> labels1 = list_of(Form("Digis by point, \n mean = %.2f", HM() -> H1(name + "DigisByPointLog") -> GetMean()));
     TCanvas* canvas1 = CreateCanvas(canvasName.c_str(), canvasName.c_str(), 800, 500);
     canvas1 -> SetGrid();
     canvas1 -> SetLogy();
     canvas1 -> cd();
-    DrawH1(histos1, labels1, kLinear, kLinear, true, 0.65, 0.55, 0.99);
+    DrawH1(histos1, labels1, kLinear, kLinear, true, 0.5, 0.55, 0.9, 0.65);
+}
+
+void CbmStsDigitizeQaReport::DrawHistograms(){
+    string name = "h_";
+    if ( !HM() -> Exists(name + "PointsInDigi") && !HM() -> Exists(name + "DigisByPoint") ) return;
+    string canvasName = GetReportName() + name + "PointsInDigi";
+    TCanvas* canvas = CreateCanvas(canvasName.c_str(), canvasName.c_str(), 800, 500);
+    canvas -> SetGrid();
+    canvas -> cd();
+    vector<TH1*> histos = list_of(HM() -> H1(name + "PointsInDigi"));
+    vector<string> labels = list_of(Form("Points in digi, \n mean = %.2f", HM() -> H1(name + "PointsInDigi") -> GetMean()));
+    DrawH1(histos, labels, kLinear, kLinear, true, 0.5, 0.55, 0.9, 0.65);
+
+    canvasName = GetReportName() + name + "DigisByPoint";
+    vector<TH1*> histos1 = list_of(HM() -> H1(name + "DigisByPoint"));
+    vector<string> labels1 = list_of(Form("Digis by point, \n mean = %.2f", HM() -> H1(name + "DigisByPoint") -> GetMean()));
+    TCanvas* canvas1 = CreateCanvas(canvasName.c_str(), canvasName.c_str(), 800, 500);
+    canvas1 -> SetGrid();
+    canvas1 -> cd();
+    DrawH1(histos1, labels1, kLinear, kLinear, true, 0.5, 0.55, 0.9, 0.65);
 }
 
 

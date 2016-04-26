@@ -103,9 +103,9 @@ void CbmStsDigitizeQa::Finish(){
 		    CbmStsModule* modu = static_cast<CbmStsModule*>(hlad -> GetDaughter(iMod));
 		    if(modu -> GetNofChannels() != 2048) cout << "nofChannels = " << modu -> GetNofChannels() << endl;
 		    Int_t nOfChips = Int_t(modu -> GetNofChannels() / 128.);
-		    for (Int_t iChip = 0; iChip < nOfChips; iChip++){
-			fOutFile << iStation << "\t" << iLad << "\t" << iHla << "\t" << iMod << "\t" << iChip << "\t" << fnOfDigisChip[iStation][iLad][iHla][iMod][iChip] << endl;
-		}
+		    for (Int_t iChip = 0; iChip < nOfChips; iChip++)
+			fOutFile << iStation << "\t" << iLad << "\t" << iHla << "\t" << iMod << "\t" << iChip 
+			    << "\t" << fnOfDigisChip[iStation][iLad][iHla][iMod][iChip] << endl;
 		}
 	    }
 	}
@@ -113,6 +113,7 @@ void CbmStsDigitizeQa::Finish(){
     gDirectory -> mkdir("STSDigitizeQA");
     gDirectory -> cd("STSDigitizeQA");
     fHM -> WriteToFile();
+    gDirectory -> cd("../");
     CbmSimulationReport* report = new CbmStsDigitizeQaReport(fSetup, fDigitizer);
     report -> Create(fHM, fOutputDir);
     delete report;
@@ -227,15 +228,10 @@ void CbmStsDigitizeQa::ProcessDigisAndPoints(const TClonesArray* digis, const TC
 	    matrix -> LocalToMaster(local, global);
 	}
 
-	map<Int_t, pair<CbmStsDigi*, Int_t> >* digiMap = modu -> GetDigiMap();
-	map<Int_t, pair<CbmStsDigi*, Int_t> >::iterator digiIt;
-
-	for (digiIt = digiMap -> begin(); digiIt != digiMap -> end(); digiIt++) {
-	    Int_t channel = digiIt -> first;  
-	    Int_t iChip = channel / 128 ;
-	    fnOfDigisChip[stationId][iLad][iHla][iMod][iChip]++;
-	    fHM -> H2(Form("h_DigisPerChip_Station%i",stationId)) -> Fill(global[0] + 50. / 400. * ((iChip-8.) * 2. - 1.), global[1]);
-	}
+	Int_t iChan = CbmStsAddress::GetElementId(stsDigi -> GetAddress(), kStsChannel);  
+	Int_t iChip = iChan / 128 ;
+	fnOfDigisChip[stationId][iLad][iHla][iMod][iChip]++;
+	fHM -> H2(Form("h_DigisPerChip_Station%i",stationId)) -> Fill(global[0] + 50. / 400. * ((iChip-8.) * 2. - 1.), global[1]);
 
 	for(Int_t iLink = 0; iLink < digiMatch -> GetNofLinks(); iLink++) {
 	    const CbmLink link = digiMatch -> GetLink(iLink);
