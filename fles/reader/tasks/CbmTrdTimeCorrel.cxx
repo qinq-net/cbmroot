@@ -4,7 +4,7 @@
 #include "CbmBeamDefaults.h"
 #include "CbmTrdCluster.h"
 #include "CbmTrdDigi.h"
-
+#include "TStyle.h"
 #include "FairLogger.h"
 #include "TCanvas.h"
 #include "TH1.h"
@@ -50,6 +50,7 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
         fFirstEpochMarker[i][j] = true;
      }
    }
+   gStyle->SetNumberContours(99);
  };
 
 // ----              -------------------------------------------------------
