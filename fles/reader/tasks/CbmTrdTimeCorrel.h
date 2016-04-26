@@ -112,7 +112,7 @@ class CbmTrdTimeCorrel : public FairTask
   Bool_t fOutputCloneArrays;
   
   friend class Cluster;
-  class Cluster : public TObject
+ public: class Cluster : public TObject
   {
   public:
     Cluster():Cluster(0){};
@@ -139,6 +139,7 @@ class CbmTrdTimeCorrel : public FairTask
     Int_t GetChannelOnPadPlane(Int_t);
     Int_t GetCharge(CbmSpadicRawMessage&);
   };
+ private:
   std::deque<Cluster> fClusterBuffer;
 
 
