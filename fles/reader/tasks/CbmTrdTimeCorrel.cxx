@@ -689,35 +689,35 @@ void CbmTrdTimeCorrel::Finish()
 	c3->SaveAs(TString("pics/Delta_t_Graph_Spadic_"+std::to_string(SpaID/2)+".pdf"));
       };
 
-  TCanvas *c4 = new TCanvas("c4","Time_Offsets"+runName,5*320,3*300);
-  c4->Divide(4,4);
-  Int_t i=1;
-  for (Int_t baseSpaID=0; baseSpaID<4;++baseSpaID)
-    for (Int_t compSpaID=0; compSpaID<4;++compSpaID)
-      {
-	c4->cd(i++);
-	fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->Draw("AB");
-	fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->SetLineColor(kRed);
-	fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->GetXaxis()->SetTitle("Timeslice");
-      }
-  c4->Update();
-  c4->SaveAs(TString("pics/"+runName+"TimeOffsets"+".pdf"));
+    TCanvas *c4 = new TCanvas("c4","Time_Offsets"+runName,5*320,3*300);
+    c4->Divide(4,4);
+    Int_t i=1;
+    for (Int_t baseSpaID=0; baseSpaID<4;++baseSpaID)
+      for (Int_t compSpaID=0; compSpaID<4;++compSpaID)
+	{
+	  c4->cd(i++);
+	  fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->Draw("AB");
+	  fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->SetLineColor(kRed);
+	  fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->GetXaxis()->SetTitle("Timeslice");
+	}
+    c4->Update();
+    c4->SaveAs(TString("pics/"+runName+"TimeOffsets"+".pdf"));
   }
   
   if (false) {
-      TCanvas *c5 = new TCanvas("c5","Fulltime_vs_Timeslice"+runName,5*320,3*300);
-      TMultiGraph * mg = new TMultiGraph("Fulltime_vs_TimeSlice_all_Spadics","Fulltime_vs_TimeSlice_all_Spadics");
-      for (Int_t baseSpaID=0; baseSpaID<4;++baseSpaID){
-	fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID)))->SetMarkerStyle(20);
-	fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID)))->SetMarkerColor(baseSpaID+2);
-	mg->Add(fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID))));
-      }
-      mg->Draw("AB");
-      mg->GetXaxis()->SetTitle("Timeslice");
-      mg->GetYaxis()->SetTitle("SuperEpoch");
-      fHM->Add("Fulltime_vs_TimeSlice_all_Spadic",mg);
-      c5->SaveAs(TString("pics/"+runName+"SuperEpochs"+".png"));
+    TCanvas *c5 = new TCanvas("c5","Fulltime_vs_Timeslice"+runName,5*320,3*300);
+    TMultiGraph * mg = new TMultiGraph("Fulltime_vs_TimeSlice_all_Spadics","Fulltime_vs_TimeSlice_all_Spadics");
+    for (Int_t baseSpaID=0; baseSpaID<4;++baseSpaID){
+      fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID)))->SetMarkerStyle(20);
+      fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID)))->SetMarkerColor(baseSpaID+2);
+      mg->Add(fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID))));
     }
+    mg->Draw("AB");
+    mg->GetXaxis()->SetTitle("Timeslice");
+    mg->GetYaxis()->SetTitle("SuperEpoch");
+    fHM->Add("Fulltime_vs_TimeSlice_all_Spadic",mg);
+    c5->SaveAs(TString("pics/"+runName+"SuperEpochs"+".png"));
+  }
   
   //Perform uniform relabeling of Axis
   ReLabelAxis(fHM->H1("InfoType_vs_Channel")->GetYaxis(),"infoType",true,true);
@@ -733,6 +733,12 @@ void CbmTrdTimeCorrel::Finish()
     fHM->G1("TsCounterHit1")->GetYaxis()->SetTitle("SPADIC1 hit messages");
   */
   //Buffer (map) or multi SPADIC data streams based analyis have to be done here!!
+  std::vector<TH2*> TH2vector = fHM->H2Vector(".*");
+  for (std::vector<TH2*>::iterator it = TH2vector.begin() ; it != TH2vector.end(); ++it){
+    LOG(INFO) << (*it)->GetTitle() << FairLogger::endl;
+    (*it)->SetContour(99);
+  }
+  
   LOG(DEBUG) << "Finish of CbmTrdTimeCorrel" << FairLogger::endl;
   LOG(INFO) << "Write histo list to " << FairRootManager::Instance()->GetOutFile()->GetName() << FairLogger::endl;
   FairRootManager::Instance()->GetOutFile()->cd();
