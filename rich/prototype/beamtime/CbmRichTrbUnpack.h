@@ -52,9 +52,11 @@ public:
     Int_t ReadEvent();    
 #endif            
 
-#ifdef VERSION_LEAST_151102
-    Source_Type GetSourceType() {return kONLINE;}
+#ifdef VERSION_LESS_151102
+    enum Source_Type {kONLINE, kFILE};
 #endif            
+
+    Source_Type GetSourceType() {return kONLINE;}
 
     /*
      * Inherited from FairSource.
