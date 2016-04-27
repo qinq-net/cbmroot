@@ -850,9 +850,11 @@ void CbmTrdTimeCorrel::ClusterizerTime()
       Cluster BuildingCluster (clusterWindow); //Create a new Cluster
       Int_t lastRow = (GetSpadicID(linearClusterBuffer.begin()->GetSourceAddress())/2)*32+GetChannelOnPadPlane(linearClusterBuffer.begin()->GetChannelID() + ((GetSpadicID(linearClusterBuffer.begin()->GetSourceAddress()) %2 == 1)? 16 : 0))/16;
       Int_t lastPad = GetChannelOnPadPlane(linearClusterBuffer.begin()->GetChannelID() + ((GetSpadicID(linearClusterBuffer.begin()->GetSourceAddress()) %2 == 1)? 16 : 0));
-      for (auto x : linearClusterBuffer) //Loop over all Messages inside the Hitwindow
+      for (auto currentMessage = linearClusterBuffer.begin(); currentMessage != linearClusterBuffer.end(); currentMessage++) //Loop over all Messages inside the Hitwindow
         {
-          if(lastRow != (GetSpadicID(x.GetSourceAddress())/2)*32+GetChannelOnPadPlane(x.GetChannelID() + ((GetSpadicID(x.GetSourceAddress()) %2 == 1)? 16 : 0))/16)//Check if the current message is not from the same row/spadic
+          if (lastPad-GetChannelOnPadPlane(currentMessage->GetChannelID() + ((GetSpadicID(currentMessage->GetSourceAddress()) %2 == 1)? 16 : 0))>=1)
+            OutsideCluster=true;
+          if(lastRow != (GetSpadicID(currentMessage->GetSourceAddress())/2)*32+GetChannelOnPadPlane(currentMessage->GetChannelID() + ((GetSpadicID(currentMessage->GetSourceAddress()) %2 == 1)? 16 : 0))/16)//Check if the current message is not from the same row/spadic
             {
               if (BuildingCluster.size () != 0)//Store away nonempty Cluster
                 {
@@ -860,10 +862,10 @@ void CbmTrdTimeCorrel::ClusterizerTime()
                   Cluster tempCluster (clusterWindow);
                   BuildingCluster = tempCluster;
                   OutsideCluster = true; //New Row, so we start outside any Cluster
-                  lastRow = (GetSpadicID(x.GetSourceAddress())/2)*32+GetChannelOnPadPlane(x.GetChannelID() + ((GetSpadicID(x.GetSourceAddress()) %2 == 1)? 16 : 0))/16;
+                  lastRow = (GetSpadicID(currentMessage->GetSourceAddress())/2)*32+GetChannelOnPadPlane(currentMessage->GetChannelID() + ((GetSpadicID(currentMessage->GetSourceAddress()) %2 == 1)? 16 : 0))/16;
                 }
             }
-          if (x.GetTriggerType () == 2)//Check for neighbour triggered Messages
+          if (currentMessage->GetTriggerType () == 2)//Check for neighbour triggered Messages
             {
               if (OutsideCluster)
                 {//Beginning of a Cluster
@@ -873,12 +875,44 @@ void CbmTrdTimeCorrel::ClusterizerTime()
                       Cluster tempCluster (clusterWindow);
                       BuildingCluster = tempCluster;
                     }
-                  BuildingCluster.AddEntry (x);
+                  BuildingCluster.AddEntry (*currentMessage);
                   OutsideCluster = false;
                 }
               else
-                {//End of a Cluster, marked by second neighbour triggered message
-                  BuildingCluster.AddEntry (x);
+                {//Test if currentMessage is Part of next Cluster
+                  auto nextMessage = currentMessage;
+                  nextMessage++;
+                  if (currentMessage != linearClusterBuffer.begin())
+                    if(nextMessage != linearClusterBuffer.end())
+                      if(nextMessage->GetTriggerType () == 1||nextMessage->GetTriggerType () == 3)
+                        {
+                          if(GetChannelOnPadPlane(nextMessage->GetChannelID() + ((GetSpadicID(nextMessage->GetSourceAddress()) %2 == 1)? 16 : 0))-
+                              GetChannelOnPadPlane(currentMessage->GetChannelID() + ((GetSpadicID(currentMessage->GetSourceAddress()) %2 == 1)? 16 : 0)) >1)
+                            {
+                              BuildingCluster.AddEntry (*currentMessage);
+                              if (BuildingCluster.size () != 0) //Store away the completed Cluster
+                                {
+                                  fClusterBuffer.push_back (BuildingCluster);
+                                  Cluster tempCluster (clusterWindow);
+                                  BuildingCluster = tempCluster;
+                                }
+                            }
+                          else if(GetChannelOnPadPlane(nextMessage->GetChannelID() + ((GetSpadicID(nextMessage->GetSourceAddress()) %2 == 1)? 16 : 0))-
+                              GetChannelOnPadPlane(currentMessage->GetChannelID() + ((GetSpadicID(currentMessage->GetSourceAddress()) %2 == 1)? 16 : 0)) <1)
+                            {
+                              if (BuildingCluster.size () != 0) //Store away the completed Cluster
+                                {
+                                  fClusterBuffer.push_back (BuildingCluster);
+                                  Cluster tempCluster (clusterWindow);
+                                  BuildingCluster = tempCluster;
+                                }
+                              currentMessage--;
+                            }
+                          OutsideCluster = true;
+                          goto SchleifenendeClusterizer;
+                        }
+                  //End of a Cluster, marked by second neighbour triggered message
+                  BuildingCluster.AddEntry (*currentMessage);
                   OutsideCluster = true;
                   if (BuildingCluster.size () != 0) //Store away the completed Cluster
                     {
@@ -888,10 +922,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
                     }
                 }
             }
-          else if ((x.GetTriggerType () == 3 || x.GetTriggerType () == 1)){
-              if (2<=lastPad-GetChannelOnPadPlane(x.GetChannelID() + ((GetSpadicID(x.GetSourceAddress()) %2 == 1)? 16 : 0)))
-                OutsideCluster=true;
-              //Check for selftriggered messages
+          else if ((currentMessage->GetTriggerType () == 3 || currentMessage->GetTriggerType () == 1)){
               if (OutsideCluster)
                 {//incomplete Cluster without a starting neighbour triggered Hitmessage
                   if (BuildingCluster.size () != 0)//Should not occur, but stores away previous Cluster
@@ -900,15 +931,16 @@ void CbmTrdTimeCorrel::ClusterizerTime()
                       Cluster tempCluster (clusterWindow);
                       BuildingCluster = tempCluster;
                     }//Start the Cluster
-                  BuildingCluster.AddEntry (x);
+                  BuildingCluster.AddEntry (*currentMessage);
                   OutsideCluster = false;//we are now inside a cluster
                 }
               else //Fill the Cluster
                 {
-                  BuildingCluster.AddEntry (x);
+                  BuildingCluster.AddEntry (*currentMessage);
                 }
           }
-          lastPad = GetChannelOnPadPlane(x.GetChannelID() + ((GetSpadicID(x.GetSourceAddress()) %2 == 1)? 16 : 0));
+          SchleifenendeClusterizer:
+          lastPad = GetChannelOnPadPlane(currentMessage->GetChannelID() + ((GetSpadicID(currentMessage->GetSourceAddress()) %2 == 1)? 16 : 0));
         }
       if (BuildingCluster.size () != 0) //Store away the last Cluster
         {
@@ -920,6 +952,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
   for (auto x: fClusterBuffer){
       fHM->H1("Clustersize_for_Syscore_"+std::to_string (0)+"_Spadic_"+std::to_string (static_cast<Int_t>(x.GetSpadic ()/2)))->Fill(static_cast<Int_t>(x.size ()));
       fHM->H2("Cluster("+std::to_string(static_cast<Int_t>(x.size()))+")_Heatmap_for_Syscore_"+std::to_string (0) +"_Spadic_"+std::to_string(static_cast<Int_t>(x.GetSpadic ()/2)))->Fill((x.GetHorizontalPosition()<16.0 ? x.GetHorizontalPosition() : x.GetHorizontalPosition()-16.0),static_cast<Int_t>(x.GetRow()));
+      x.FillChargeDistribution(fHM->H2("Charge_Distribution_for_Clusters_of_Size_"+std::to_string(static_cast<Int_t>(x.size()))));
   }
 }
 // -------------------------------------------------------------------------
@@ -1301,11 +1334,17 @@ void CbmTrdTimeCorrel::CreateHistograms()
               for (Int_t clusterSize=1; clusterSize<16;clusterSize++){
                   histName = "Cluster("+std::to_string(clusterSize)+")_Heatmap_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic);
                   title = histName + runName;
-                  fHM->Create2<TH2I>(histName.Data(), title.Data(), 160,-0.5,15.5,2,-0.5,1.5);
+                  fHM->Create2<TH2I>(histName.Data(), title.Data(), 80,-0.5,15.5,2,-0.5,1.5);
               }
           }
       }
   }
+  for(Int_t Size=1 ;Size < 16; Size++){
+      histName = "Charge_Distribution_for_Clusters_of_Size_"+std::to_string(Size);
+      title = histName + runName;
+      fHM->Create2<TH2I>(histName.Data(), title.Data(), 1100,-10.5,10.5,101,-0.5,100.5);
+  }
+
   fHM->Add("TsCounter", new TGraph());
   fHM->G1("TsCounter")->SetNameTitle("TsCounter","TsCounter");
   fHM->Add("TsCounterHit0", new TGraph());
@@ -1680,6 +1719,20 @@ if(false)
 
 Int_t CbmTrdTimeCorrel::Cluster::GetTotalCharge(){return fTotalCharge;}; //TODO ADD CHECK
 
+Bool_t CbmTrdTimeCorrel::Cluster::FillChargeDistribution(TH2* ChargeMap)
+{
+  if (!fParametersCalculated)
+    CalculateParameters();
+  for (auto currentMessage : fEntries )
+    {
+      Int_t Charge = GetCharge(currentMessage);
+      Float_t ChargeRatio = 100.0 * static_cast<Float_t>(Charge)/static_cast<Float_t>(GetTotalCharge());
+      Float_t Displacement = static_cast<Float_t>(GetHorizontalMessagePosition(currentMessage));
+      Displacement -= GetHorizontalPosition();
+      ChargeMap->Fill(Displacement,ChargeRatio);
+  }
+}
+
 Int_t CbmTrdTimeCorrel::Cluster::GetCharge(CbmSpadicRawMessage& message)
 {
   Int_t maxADC=-255;
@@ -1695,7 +1748,7 @@ Int_t NrSamples = message.GetNrSamples ();
  for (Int_t i = NrSamples -3 ; i < NrSamples ; i++)
    Baseline += *(message.GetSamples() + i);
  Baseline = Baseline/3;
- return (validHit ? maxADC-Baseline : maxADC-Baseline);
+ return TMath::Abs(maxADC-Baseline);
 };
 
 Int_t CbmTrdTimeCorrel::GetCharge(CbmSpadicRawMessage& message)
@@ -1747,6 +1800,12 @@ Float_t CbmTrdTimeCorrel::Cluster::GetHorizontalPosition(){
       return fHorizontalPosition;
   }
 }
+
+Int_t CbmTrdTimeCorrel::Cluster::GetHorizontalMessagePosition(CbmSpadicRawMessage& Message){
+  Int_t Position= GetChannelOnPadPlane(Message.GetChannelID()+((GetSpadicID(Message.GetSourceAddress())%2 == 1) ? 16 : 0 ));
+  return Position;
+}
+
 Int_t CbmTrdTimeCorrel::Cluster::Type(){
   if(fParametersCalculated) return fType;
   else {
