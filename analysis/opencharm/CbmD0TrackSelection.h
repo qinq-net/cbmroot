@@ -74,6 +74,8 @@ private:
   TClonesArray* fListMCTracks;
   TClonesArray* fMvdHitMatchArray;
   TClonesArray* fKFParticleArray;
+  TClonesArray* fD0KaonTrackArray;
+  TClonesArray* fD0PionTrackArray;
 
   float fvtx[3];
 

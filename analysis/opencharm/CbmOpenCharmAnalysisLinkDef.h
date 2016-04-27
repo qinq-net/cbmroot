@@ -4,8 +4,8 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-//#pragma link C++ class CbmD0Candidate+;
-//#pragma link C++ class CbmD0TrackCandidate+;
+#pragma link C++ class CbmD0Candidate+;
+#pragma link C++ class CbmD0TrackCandidate+;
 
 #pragma link C++ class CbmD0TrackSelection+;
 #pragma link C++ class CbmD0CandidateSelection+;

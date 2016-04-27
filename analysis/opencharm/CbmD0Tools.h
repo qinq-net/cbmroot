@@ -20,7 +20,7 @@ class KFPTrack;
 class CbmD0Tools : public TObject
 {
 public:
-/** Default constructor. Do not use it **/
+/** Default constructor **/
 CbmD0Tools();
 
 /** Destructor **/
@@ -28,7 +28,7 @@ CbmD0Tools();
 
 /** Accessors **/
 KFPVertex* CbmVertexToKFPVertex(const CbmVertex& vertex);
-KFPTrack*  CbmTrackToKFPTrack(const CbmTrack& track);
+//KFPTrack*  CbmTrackToKFPTrack(const CbmTrack& track);
 
 /** Modifiers **/
 

@@ -43,12 +43,16 @@ class CbmD0CandidateSelection : public FairTask
 
   void Exec(Option_t* option);                                   
   void SetTestMode ( Bool_t testMode ) { bTestMode = testMode; };
+  void Finish();
 
 private:
     Int_t fEventNumber;
     TClonesArray* fKaonParticleArray;
     TClonesArray* fPionParticleArray;
+    TClonesArray* fKaonTrackArray;
+    TClonesArray* fPionTrackArray;
     TClonesArray* fD0Candidates;
+    TClonesArray* fD0KFCandidates;
     TClonesArray* fListMCTracksPos;
     TClonesArray* fListMCTracksNeg;
     TClonesArray* fListMCTracks;
@@ -63,11 +67,11 @@ private:
     FairField* fMF;
     Bool_t bTestMode;
     Bool_t f_particleIsMCD0;
+    Double_t fcutIPD0;
+    Double_t fcutSVZ;
 
     /** Register the output arrays to the IOManager **/
     void Register();
-    void Finish();
-
     void CheckIfParticleIsD0(Int_t iNeg, Int_t iPos);
     Double_t GetPairImpactParameterR(KFParticle* particle );
     //Double_t GetPairPt(CbmD0TrackCandidate* tr1, CbmD0TrackCandidate* tr2);
@@ -84,9 +88,6 @@ private:
     //Double_t GetChi2Topo(CbmD0TrackCandidate* tr1, CbmD0TrackCandidate* tr2 );
     //Double_t GetAPalpha(CbmD0TrackCandidate* tr1, CbmD0TrackCandidate* tr2 );
     //Double_t GetAPptt(CbmD0TrackCandidate* tr1, CbmD0TrackCandidate* tr2 );
-
-    Double_t fcutIPD0, fcutSVZ;
-
     void SetCuts(Double_t ipD0, Double_t SVZ);
 
 

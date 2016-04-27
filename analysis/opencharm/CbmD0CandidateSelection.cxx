@@ -8,6 +8,8 @@
 #include "CbmTrackMatch.h"
 #include "CbmD0CandidateSelection.h" 
 #include "CbmD0Tools.h"
+#include "CbmD0Candidate.h"
+#include "CbmD0TrackCandidate.h"
 
 //includes from ROOT
 #include "TClonesArray.h"
@@ -43,27 +45,28 @@ using std::vector;
 
 // -------------------------------------------------------------------------
 CbmD0CandidateSelection::CbmD0CandidateSelection()
-:FairTask(),
-fEventNumber(),
-fKaonParticleArray(),
- fPionParticleArray(),
- fD0Candidates(),
-fListMCTracksPos(),
- fListMCTracksNeg(),
- fListMCTracks(),
-fListD0TrackCandidate(),
-fD0TrackArray(),
- fStsTrackMatches(),
- fPosStsTracks(),
- fNegStsTracks(),
- fPrimVtx(),
- fvtx(),
- tools(),
- fMF(),
- bTestMode(),
-    f_particleIsMCD0(),
-    fcutSVZ(),
-    fcutIPD0()
+    :FairTask(),
+     fEventNumber(),
+     fKaonParticleArray(),
+     fPionParticleArray(),
+     fD0Candidates(),
+     fD0KFCandidates(),
+     fListMCTracksPos(),
+     fListMCTracksNeg(),
+     fListMCTracks(),
+     fListD0TrackCandidate(),
+     fD0TrackArray(),
+     fStsTrackMatches(),
+     fPosStsTracks(),
+     fNegStsTracks(),
+     fPrimVtx(),
+     fvtx(),
+     tools(),
+     fMF(),
+     bTestMode(),
+     f_particleIsMCD0(),
+     fcutSVZ(),
+     fcutIPD0()
 
 {
     
@@ -74,27 +77,28 @@ Fatal( "CbmD0Candidates: Do not use the standard constructor","Wrong constructor
 
 // -------------------------------------------------------------------------
 CbmD0CandidateSelection::CbmD0CandidateSelection(char* name, Int_t iVerbose, Double_t cutIPD0, Double_t cutSVZ)
-:FairTask(name,iVerbose),
-fEventNumber(),
-fKaonParticleArray(),
- fPionParticleArray(),
- fD0Candidates(),
-fListMCTracksPos(),
- fListMCTracksNeg(),
- fListMCTracks(),
-fListD0TrackCandidate(),
-fD0TrackArray(),
- fStsTrackMatches(),
- fPosStsTracks(),
- fNegStsTracks(),
- fPrimVtx(),
- fvtx(),
- tools(),
- fMF(),
- bTestMode(),
- f_particleIsMCD0(),
-    fcutSVZ(),
-    fcutIPD0()
+    :FairTask(),
+     fEventNumber(),
+     fKaonParticleArray(),
+     fPionParticleArray(),
+     fD0Candidates(),
+     fD0KFCandidates(),
+     fListMCTracksPos(),
+     fListMCTracksNeg(),
+     fListMCTracks(),
+     fListD0TrackCandidate(),
+     fD0TrackArray(),
+     fStsTrackMatches(),
+     fPosStsTracks(),
+     fNegStsTracks(),
+     fPrimVtx(),
+     fvtx(),
+     tools(),
+     fMF(),
+     bTestMode(),
+     f_particleIsMCD0(),
+     fcutSVZ(),
+     fcutIPD0()
 
 {
 fEventNumber = 0;
@@ -148,13 +152,14 @@ InitStatus CbmD0CandidateSelection::Init() {
 
 
  // -------------------------------------------------------------------------
-void CbmD0CandidateSelection::Exec(Option_t* /*option*/){
+void CbmD0CandidateSelection::Exec(Option_t* option){
 
     fEventNumber++;
     Int_t D0counter;
     f_particleIsMCD0 = kFALSE;
     Int_t nAcceptedD0 = 0;
     Int_t crossCheck=0;
+
     cout << endl;
     cout << endl;
     cout << "========================================================================================"<<endl;
@@ -162,6 +167,7 @@ void CbmD0CandidateSelection::Exec(Option_t* /*option*/){
 
 
     fD0Candidates->Clear();
+    fD0KFCandidates->Clear();
 
     Int_t nPionTracks = fPionParticleArray->GetEntriesFast();
     Int_t nKaonTracks = fKaonParticleArray->GetEntriesFast();
@@ -171,15 +177,18 @@ void CbmD0CandidateSelection::Exec(Option_t* /*option*/){
 for( Int_t itr1=0; itr1<nKaonTracks; itr1++)
    {
        KFParticle kaon = *((KFParticle*)fKaonParticleArray->At(itr1));
+       CbmD0TrackCandidate kaonTrack = *((CbmD0TrackCandidate*)fKaonTrackArray->At(itr1));
 
 
    for( Int_t itr2=0; itr2<nPionTracks; itr2++)
       {
 	  KFParticle pion = *((KFParticle*)fPionParticleArray->At(itr2));
+	  CbmD0TrackCandidate pionTrack = *((CbmD0TrackCandidate*)fPionTrackArray->At(itr1));
 
       if(bTestMode)
         {
-        CheckIfParticleIsD0(itr1, itr2);
+	    CheckIfParticleIsD0(itr1, itr2);
+            if(!f_particleIsMCD0) continue;
 	}
 
       crossCheck++;
@@ -198,9 +207,18 @@ for( Int_t itr1=0; itr1<nKaonTracks; itr1++)
     
       nAcceptedD0 ++;
 
-      TClonesArray& clrefD0 = *fD0Candidates;
+      TClonesArray& clrefD0 = *fD0KFCandidates;
       Int_t sizeD0 = clrefD0.GetEntriesFast();
       new (clrefD0[sizeD0]) KFParticle(d0);
+
+      TClonesArray& clrefD0Tr = *fD0Candidates;
+      Int_t sizeD0Tr = clrefD0Tr.GetEntriesFast();
+      new (clrefD0Tr[sizeD0Tr]) CbmD0Candidate((Int_t)f_particleIsMCD0,
+					       -321, kaon.GetP(), kaon.GetPt(), 0.0, kaonTrack.GetIP(), kaonTrack.GetImx(), kaonTrack.GetImy(), kaonTrack.GetNMvdHits(), kaonTrack.GetNStsHits(),
+					       211, pion.GetP(), pion.GetPt(), 0.0, pionTrack.GetIP(), pionTrack.GetImx(), pionTrack.GetImy(), pionTrack.GetNMvdHits(), pionTrack.GetNStsHits(),
+					       0.0, SvZ, IPD0, d0.GetMass(), 0.0, 0.0,
+					       0.0, 0.0, 0.0, d0.GetPt(), d0.GetPz(), 0.0, 0.0, 0.0,
+                                               0.0, fPrimVtx->GetZ(), 0.0, d0.GetRapidity() );
         
       }// second for loop
 
@@ -225,6 +243,8 @@ CbmMCTrack* mcTrack2 = NULL;
 mcTrack1  = (CbmMCTrack*) fListMCTracksNeg->At(iNeg);
 mcTrack2  = (CbmMCTrack*) fListMCTracksPos->At(iPos);
 
+if(mcTrack1 == NULL || mcTrack2 == NULL) return;
+
 mcTrack1->GetStartVertex(vertex1);
 mcTrack2->GetStartVertex(vertex2);
 
@@ -236,7 +256,7 @@ Int_t mcPid2 = mcTrack2->GetPdgCode();
 if (
    ( (mcPid1 == -321) && (mcPid2 == 211) )
    &&
-   ( ( vertex1.Z() > 0.0000001 ) &&  ( vertex2.Z() > 0.0000001 ) )
+   ( ( vertex1.Z() > 0.0000001 ) && ( vertex1.Z() == vertex2.Z() ) )
    &&
    ( ( mcTrack1->GetMotherId() == -1 ) && ( mcTrack2->GetMotherId() == -1) )
    )
@@ -259,13 +279,17 @@ void CbmD0CandidateSelection::Register() {
   if ( ! ioman) Fatal(" CbmD0CandidateSelection::Register",
 		      "No FairRootManager");
 
-  fD0Candidates = new TClonesArray("KFParticle",100);
+  fD0KFCandidates = new TClonesArray("KFParticle",100);
+  fD0Candidates   = new TClonesArray("CbmD0Candidate", 100);
+  ioman->Register("CbmD0KFCandidate", "OpenCharm", fD0KFCandidates, kTRUE);
   ioman->Register("CbmD0Candidate", "OpenCharm", fD0Candidates, kTRUE);
 
     fStsTrackMatches    = (TClonesArray*) ioman->GetObject("StsTrackMatch");
     fListMCTracks       = (TClonesArray*) ioman->GetObject("MCTrack");
     fKaonParticleArray  = (TClonesArray*) ioman->GetObject("CbmD0KaonParticles");
     fPionParticleArray  = (TClonesArray*) ioman->GetObject("CbmD0PionParticles");
+    fKaonTrackArray     = (TClonesArray*) ioman->GetObject("CbmD0KaonTrackArray");
+    fPionTrackArray     = (TClonesArray*) ioman->GetObject("CbmD0PionTrackArray");
     fPrimVtx            = (CbmVertex*) ioman->GetObject("PrimaryVertex");
     fListMCTracksPos    = (TClonesArray*) ioman->GetObject("PositiveMCTracks");
     fListMCTracksNeg    = (TClonesArray*) ioman->GetObject("NegativeMCTracks");

@@ -1,23 +1,27 @@
-// -----------------------------------------------------------------------
-// -----               CbmTrackCandidate source file                 -----
-// -----         Created 23/01/07  by C. Dritsa and M. Deveaux       -----
-// -----------------------------------------------------------------------
-
-
+// -------------------------------------------------------------------------
+// -----                     CbmD0TrackCandidate header file           -----
+// -----                  Created 23/01/07  by C.Dritsa and M.Deveaux  -----
+// -----                        updated 2016 by P.Sitzmann             -----
+// -------------------------------------------------------------------------
 
 #include "CbmD0TrackCandidate.h"
 
 
 // -----   Default constructor   -------------------------------------------
-CbmD0TrackCandidate::CbmD0TrackCandidate() : FairTrackParam() {
-    SetX(0); SetY(0); SetZ(0); SetTx(0); SetTy(0); SetQp(0);
-    for (int i=0; i<4; i++){
-	for (int j=0; j<4; j++){
-	    SetCovariance(i,j,0);
-	}
-    }
+CbmD0TrackCandidate::CbmD0TrackCandidate()
+    : TObject(),
+      fTrackIndex(),
+      fTrackIndexMC(),
+      fPVChi2(),
+      fnMvdHits(),
+      fnStsHits(),
+      fPidHypothesis(),
+      fIP(),
+      fImx(),
+      fImy()
 
-    fPVSigma = 0;
+{
+    fPVChi2 = 0;
     fTrackIndex = fTrackIndexMC = -1;
 
 }
@@ -26,17 +30,28 @@ CbmD0TrackCandidate::CbmD0TrackCandidate() : FairTrackParam() {
 
 
 // -----   Constructor with parameters   -----------------------------------
-CbmD0TrackCandidate::CbmD0TrackCandidate( FairTrackParam* e_track, Double_t PVSigma,
-					 Int_t trackIndex ,Int_t mcTrackIndex, Int_t nMvdHits, Int_t nStsHits, Int_t pidHypo )
- :FairTrackParam(*e_track)
+CbmD0TrackCandidate::CbmD0TrackCandidate(Int_t globalTrackId , Int_t matchedTrackId, Double_t PVChi2, Double_t IP, Double_t Imx, Double_t Imy, Int_t nMvdHits, Int_t nStsHits, Int_t pidHypo)
+    : TObject(),
+      fTrackIndex(),
+      fTrackIndexMC(),
+      fPVChi2(),
+      fnMvdHits(),
+      fnStsHits(),
+      fPidHypothesis(),
+      fIP(),
+      fImx(),
+      fImy()
 {
 
-    fTrackIndex   = trackIndex;
-    fTrackIndexMC = mcTrackIndex;
-    fPVSigma      = PVSigma;
+    fTrackIndex   = globalTrackId;
+    fTrackIndexMC = matchedTrackId;
+    fPVChi2      = PVChi2;
     fnMvdHits     = nMvdHits;
     fnStsHits     = nStsHits;
     fPidHypothesis= pidHypo;
+    fIP = IP;
+    fImx = Imx;
+    fImy = Imy;
 }
 
 // -------------------------------------------------------------------------

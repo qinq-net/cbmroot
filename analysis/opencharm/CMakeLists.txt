@@ -11,7 +11,6 @@ ${CBMROOT_SOURCE_DIR}/data/rich
 ${CBMROOT_SOURCE_DIR}/data/trd
 ${CBMROOT_SOURCE_DIR}/data/tof
 
-
 ${CBMROOT_SOURCE_DIR}/KF
 ${CBMROOT_SOURCE_DIR}/KF/Interface 
 ${CBMROOT_SOURCE_DIR}/KF/KFParticle
@@ -46,8 +45,8 @@ ${Boost_LIBRARY_DIRS}
 link_directories( ${LINK_DIRECTORIES})
 
 set(SRCS
-#CbmD0Candidate.cxx
-#CbmD0TrackCandidate.cxx
+CbmD0Candidate.cxx 
+CbmD0TrackCandidate.cxx
 
 CbmD0Tools.cxx
 CbmD0CandidateSelection.cxx
@@ -74,8 +73,10 @@ ADD_DEFINITIONS(-DDO_TPCCATRACKER_EFF_PERFORMANCE -DNonhomogeneousField -DCBM -D
 
 Set(LINKDEF CbmOpenCharmAnalysisLinkDef.h)
 Set(LIBRARY_NAME CbmOpenCharmAnalysis)
-Set(DEPENDENCIES KF L1 CbmSts CbmBase CbmData Vc.a)
-Set(DEFINITIONS -DDO_TPCCATRACKER_EFF_PERFORMANCE -DNonhomogeneousField -DCBM -DUSE_TIMERS)
+Set(DEPENDENCIES KF L1 CbmSts CbmBase CbmData Vc.a) 
+Set(DEFINITIONS
+-DDO_TPCCATRACKER_EFF_PERFORMANCE -DNonhomogeneousField -DCBM
+-DUSE_TIMERS)
 
 GENERATE_LIBRARY()
 

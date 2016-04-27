@@ -3,6 +3,7 @@
 
 // --- Includes from CBM
 #include "CbmD0TrackSelection.h"
+#include "CbmD0TrackCandidate.h"
 #include "CbmGlobalTrack.h"
 #include "CbmTofHit.h"
 #include "CbmTrdTrack.h"
@@ -48,88 +49,88 @@ using namespace std;
 
 // -------------------------------------------------------------------------
 CbmD0TrackSelection::CbmD0TrackSelection()
- : FairTask("CbmD0TrackSelection", 0),
-   fNHitsOfLongTracks(1),
-   fEventNumber(0),
-   fMcPoints(NULL),
-   fStsTrackArray(NULL),
-   fGlobalTracks(NULL),
-   fTrdTracks(NULL),
-   fTofHits(NULL),
-   fRichRings(NULL),
-   fStsTrackArrayP(NULL),
-   fStsTrackArrayN(NULL),
-   fMCTrackArrayP(NULL),
-   fMCTrackArrayN(NULL),
-   fInfoArray(NULL),
-   fStsTrackMatches(NULL),
-   fKaonParticleArray(NULL),
-   fPionParticleArray(NULL),
-   fListMCTracks(NULL),
-   fMvdHitMatchArray(NULL),
-   fKFParticleArray(NULL),
-   fvtx(),
-   kfpInterface(NULL),
-   fPidMode(""),
-   fFit(NULL),
-   fPrimVtx(NULL),
-   fField(),
-   bUseMCInfo(kFALSE),
-   fPVCutPassed(0),
-   fPVCutNotPassed(0),
-   fNoHPassed(0),
-   fNoHNotPassed(0),
-   fCutPt(0.),
-   fCutP(0.),
-   fCutChi2(0.),
-   fCutIP(0.)
+ : FairTask(),
+   fNHitsOfLongTracks(),
+   fEventNumber(),
+   fMcPoints(),
+   fStsTrackArray(),
+   fGlobalTracks(),
+   fTrdTracks(),
+   fTofHits(),
+   fRichRings(),
+   fListMCTracks(),
+   fStsTrackArrayP(),
+   fStsTrackArrayN(),
+   fMCTrackArrayP(),
+   fMCTrackArrayN(),
+   fStsTrackMatches(),
+   fKaonParticleArray(),
+   fPionParticleArray(),
+   fMvdHitMatchArray(),
+   fKFParticleArray(),
+   kfpInterface(),
+   fPidMode(),
+    fFit(),
+   fPrimVtx(),
+   bUseMCInfo(),
+   fPVCutPassed(),
+   fPVCutNotPassed(),
+   fNoHPassed(),
+   fNoHNotPassed(),
+    fCutPt(),
+    fCutP(),
+    fCutChi2(),
+    fCutIP(),
+    fField(),
+  fD0KaonTrackArray(),
+  fD0PionTrackArray()
 {
-    Fatal( "CbmD0TrackSelection: Do not use the standard constructor","Wrong constructor"); 
-}
+    Fatal( "CbmD0TrackSelection: Do not use the standard constructor","Wrong constructor");
+    
+    }
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
 CbmD0TrackSelection::CbmD0TrackSelection(char* name, Int_t iVerbose, Double_t cutP, Double_t cutPt, Double_t cutChi2, Double_t cutIP)
- : FairTask(name, iVerbose),
-   fNHitsOfLongTracks(1),
-   fEventNumber(0),
-   fMcPoints(NULL),
-   fStsTrackArray(NULL),
-   fGlobalTracks(NULL),
-   fTrdTracks(NULL),
-   fTofHits(NULL),
-   fRichRings(NULL),
-   fStsTrackArrayP(NULL),
-   fStsTrackArrayN(NULL),
-   fMCTrackArrayP(NULL),
-   fMCTrackArrayN(NULL),
-   fInfoArray(NULL),
-   fStsTrackMatches(NULL),
-   fKaonParticleArray(NULL),
-   fPionParticleArray(NULL),
-   fListMCTracks(NULL),
-   fMvdHitMatchArray(NULL),
-   fKFParticleArray(NULL),
-   fvtx(),
-   kfpInterface(NULL),
-   fPidMode(""),
-   fFit(NULL),
-   fPrimVtx(NULL),
-   fField(),
-   bUseMCInfo(kFALSE),
-   fPVCutPassed(0),
-   fPVCutNotPassed(0),
-   fNoHPassed(0),
-   fNoHNotPassed(0),
-   fCutPt(cutPt),
-   fCutP(cutP),
-   fCutChi2(cutChi2),
-   fCutIP(cutIP)
+: FairTask(name, iVerbose),
+  fNHitsOfLongTracks(),
+  fEventNumber(),
+  fMcPoints(),
+  fStsTrackArray(),
+  fGlobalTracks(),
+  fTrdTracks(),
+  fTofHits(),
+  fRichRings(),
+  fListMCTracks(),
+  fStsTrackArrayP(),
+  fStsTrackArrayN(),
+  fMCTrackArrayP(),
+  fMCTrackArrayN(),
+  fStsTrackMatches(),
+  fKaonParticleArray(),
+  fPionParticleArray(),
+  fMvdHitMatchArray(),
+  fKFParticleArray(),
+  kfpInterface(),
+  fPidMode(),
+  fFit(),
+  fPrimVtx(),
+  bUseMCInfo(),
+  fPVCutPassed(),
+  fPVCutNotPassed(),
+  fNoHPassed(),
+  fNoHNotPassed(),
+  fCutPt(),
+  fCutP(),
+  fCutChi2(),
+  fCutIP(),
+  fField(),
+  fD0KaonTrackArray(),
+  fD0PionTrackArray()
 {
-/*
- fEventNumber = 0;
- fPVCutPassed = 0;
- fPVCutNotPassed = 0;
+fEventNumber = 0;
+fPVCutPassed = 0;
+fPVCutNotPassed = 0;
 fCutP  = cutP;
 fCutPt = cutPt;
 fCutChi2 = cutChi2;
@@ -137,7 +138,6 @@ fCutIP = cutIP;
 fNHitsOfLongTracks=1;
 fNoHPassed=0;
 fNoHNotPassed=0;
-*/
 }
 // -------------------------------------------------------------------------
 
@@ -177,11 +177,15 @@ InitStatus CbmD0TrackSelection::Init() {
     fMCTrackArrayN         = new TClonesArray("CbmMCTrack",100);
     fKaonParticleArray     = new TClonesArray("KFParticle",100);
     fPionParticleArray     = new TClonesArray("KFParticle",100);
+    fD0PionTrackArray      = new TClonesArray("CbmD0TrackCandidate", 100);
+    fD0KaonTrackArray      = new TClonesArray("CbmD0TrackCandidate", 100);
 
     ioman->Register("PositiveMCTracks",  "Open Charm Mc Positiv", fMCTrackArrayP,  kTRUE);
     ioman->Register("NegativeMCTracks",  "Open Charm Mc Negativ", fMCTrackArrayN,  kTRUE);
     ioman->Register("CbmD0KaonParticles", "Open Charm Kaon Particles", fKaonParticleArray, kTRUE);
     ioman->Register("CbmD0PionParticles", "Open Charm Pion Particles", fPionParticleArray, kTRUE);
+    ioman->Register("CbmD0PionTrackArray", "Open Charm Pion Tracks", fD0PionTrackArray , kTRUE);
+    ioman->Register("CbmD0KaonTrackArray", "Open Charm Kaon Tracks", fD0KaonTrackArray , kTRUE);
 
     fMcPoints        = (TClonesArray*) ioman->GetObject("MvdPoint");
     fStsTrackMatches = (TClonesArray*) ioman->GetObject("StsTrackMatch");
@@ -218,12 +222,14 @@ fMCTrackArrayP->Clear();
 fMCTrackArrayN->Clear();
 fKaonParticleArray->Clear();
 fPionParticleArray->Clear();
+fD0KaonTrackArray->Clear();
+fD0PionTrackArray->Clear();
 
 }
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
-void CbmD0TrackSelection::Exec(Option_t* /*option*/)
+void CbmD0TrackSelection::Exec(Option_t* option)
 {
 CbmGlobalTrack*      globalTrack;
 CbmStsTrack*         stsTrack;
@@ -268,22 +274,25 @@ globalTrack = (CbmGlobalTrack*) fGlobalTracks->At(itr);
 
 if(globalTrack->GetStsTrackIndex()!= -1)
         stsTrack    = (CbmStsTrack*) fStsTrackArray->At(globalTrack->GetStsTrackIndex()); else continue;
-                                        ;
+
 pidHypo = GetPid(globalTrack);
 
 if(pidHypo != -321 && pidHypo != 211) continue;
 
 FairTrackParam *param = new FairTrackParam();
 kfpInterface->ExtrapolateTrackToPV(stsTrack, fPrimVtx, param, Chi2);
-	if ( Chi2 > fCutChi2 ) continue;
+        if ( Chi2 < fCutChi2 ) continue;
 
-KFParticle newParticle;
-kfpInterface->SetKFParticleFromStsTrack(&*stsTrack,&newParticle, pidHypo);
+	KFParticle newParticle;
+	kfpInterface->SetKFParticleFromStsTrack(&*stsTrack,&newParticle, pidHypo);
+        pt        = newParticle.GetPt();
+        p         = newParticle.GetP();
+
+	newParticle.TransportToPoint(&*fvtx);
+
    ip        = GetImpactParameterRadius( &newParticle);
    ipx       = GetImpactParameterX( &newParticle );
    ipy       = GetImpactParameterY( &newParticle );
-   pt        = newParticle.GetPt();
-   p         = newParticle.GetP();
 
 const FairTrackParam *e_track = stsTrack->GetParamFirst();
 Double_t       	      qp   = e_track->GetQp();
@@ -291,15 +300,17 @@ Double_t       	      qp   = e_track->GetQp();
 	// --- single track pre-selection ---
 
 	if ( p  < fCutP       ) continue;
-	if ( pt < fCutPt      ) continue;
-	if ( ip > fCutIP      ) continue;
+        if ( pt < fCutPt      ) continue;
+        if ( ip > fCutIP      ) continue;
 	/////////////////////////////////////////////////////
 
     if(bUseMCInfo)
     {
         LOG(INFO) << "found possible opencharm track candidate, use MC-Data to start QA" << FairLogger::endl;
       	mcTrack = GetMCTrackFromTrackID(itr);// (CbmMCTrack*) fListMCTracks->At(mcTrackIndex);
-      // --- Save only positive MCtracks ---
+
+	if(mcTrack)// --- Save only positive MCtracks ---
+	{
 	    if (qp>0)
 	    {
 	    TClonesArray& MCTrackArrayP = *fMCTrackArrayP;
@@ -312,7 +323,9 @@ Double_t       	      qp   = e_track->GetQp();
 	    {
 	    i_MCtracksN = fMCTrackArrayN->GetEntriesFast();
 	    new((*fMCTrackArrayN)[i_MCtracksN]) CbmMCTrack(*mcTrack);
-            }
+	    }
+	}
+        else ;
 
 
     } 	
@@ -322,6 +335,12 @@ Double_t       	      qp   = e_track->GetQp();
 	    TClonesArray& clrefKaon = *fKaonParticleArray;
 	    Int_t sizeKaon = clrefKaon.GetEntriesFast();
 	    new (clrefKaon[sizeKaon]) KFParticle(newParticle);
+
+	    // --- Save Kaon to  TrackArray for QA       ---
+	    TClonesArray& clrefKaonTr = *fD0KaonTrackArray;
+	    Int_t sizeKaonTr = clrefKaonTr.GetEntriesFast();
+	    new (clrefKaonTr[sizeKaonTr]) CbmD0TrackCandidate(itr, globalTrack->GetStsTrackIndex(), Chi2, ip, ipx, ipy, stsTrack->GetNofMvdHits(), stsTrack->GetNofStsHits(), -321 );
+
 	}
 
 	if(qp > 0)
@@ -330,6 +349,11 @@ Double_t       	      qp   = e_track->GetQp();
 	    TClonesArray& clrefPion = *fPionParticleArray;
 	    Int_t sizePion = clrefPion.GetEntriesFast();
 	    new (clrefPion[sizePion]) KFParticle(newParticle);
+
+            // --- Save Pion to  TrackArray for QA       ---
+	    TClonesArray& clrefPionTr = *fD0PionTrackArray;
+	    Int_t sizePionTr = clrefPionTr.GetEntriesFast();
+	    new (clrefPionTr[sizePionTr]) CbmD0TrackCandidate(itr, globalTrack->GetStsTrackIndex(), Chi2, stsTrack->GetNofMvdHits(), stsTrack->GetNofStsHits(), 211 );
 	}
 
 	}// for loop track1
@@ -369,8 +393,12 @@ if(fPidMode == "NONE")
 
 else if(fPidMode == "MC")
     {
-     mcTrack = GetMCTrackFromTrackID(globalTrack->GetStsTrackIndex());
-     return mcTrack->GetPdgCode();
+	mcTrack = GetMCTrackFromTrackID(globalTrack->GetStsTrackIndex());
+       
+	if(mcTrack && trdTrack && tofHit)
+	{
+          return mcTrack->GetPdgCode();
+	} else return -1;
     }
 
 else if(fPidMode == "TOF")
@@ -410,7 +438,8 @@ CbmMCTrack* CbmD0TrackSelection::GetMCTrackFromTrackID(Int_t trackID)
        	}
      if(mcTrackIndex<0)
         {
-         LOG(FATAL) << "TrackMatch problem "<< fEventNumber << FairLogger::endl;
+	    // bg event or delta electron
+            return NULL;
       	}
      mcTrack = (CbmMCTrack*) fListMCTracks->At(mcTrackIndex);
      return mcTrack;

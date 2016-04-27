@@ -59,30 +59,28 @@ CbmD0CandidatesSE::CbmD0CandidatesSE()
 
 // -------------------------------------------------------------------------
 CbmD0CandidatesSE::CbmD0CandidatesSE(char* name, Int_t iVerbose, Double_t cutIPD0, Double_t cutSVZ)
-:FairTask(name,iVerbose),
-fEventNumber(),
-fcutIPD0(),
-fcutSVZ(),
-fStsTrackMatches(),
-fListMCTracks(),
-fKaonParticleArray(),
-fPionParticleArray(),
-fListMCTracksPos(),
-fListMCTracksNeg(),
-fD0Candidates(),
-fKaonParticles(),
-fKaonBuffer(),
-fPrimVtx(),
-fvtx(),
-fFrameWorkEvent(),
-fNegativeFileName(),
-bTestMode()
+  :FairTask(name,iVerbose),
+   fEventNumber(),
+   fcutIPD0(),
+   fcutSVZ(),
+   fStsTrackMatches(),
+   fListMCTracks(),
+   fKaonParticleArray(),
+   fPionParticleArray(),
+   fListMCTracksPos(),
+   fListMCTracksNeg(),
+   fD0Candidates(),
+   fKaonParticles(),
+   fKaonBuffer(),
+   fPrimVtx(),
+   fvtx(),
+   fFrameWorkEvent(),
+   fNegativeFileName(),
+   bTestMode()
 {
     fEventNumber = 0;
     fcutIPD0 = cutIPD0;
     fcutSVZ  = cutSVZ;
-
-
 }
 // -------------------------------------------------------------------------
 
@@ -117,6 +115,13 @@ void CbmD0CandidatesSE::Register() {
     fPrimVtx            = (CbmVertex*) ioman->GetObject("PrimaryVertex");
     fListMCTracksPos    = (TClonesArray*) ioman->GetObject("PositiveMCTracks");
     fListMCTracksNeg    = (TClonesArray*) ioman->GetObject("NegativeMCTracks");
+
+         // --- Fill the buffer ---
+    CbmMapsFileManager* file4 = new CbmMapsFileManager( fNegativeFileName, "CbmD0KaonParticles" );
+    fKaonBuffer = new TObjArray();
+    FillBuffer( file4, fKaonBuffer );
+    delete file4;
+
 }
 // -------------------------------------------------------------------------  
 
@@ -142,16 +147,10 @@ InitStatus CbmD0CandidatesSE::Init() {
     fvtx[1] = fPrimVtx->GetY();
     fvtx[2] = fPrimVtx->GetZ();
 
-     // --- Fill the buffer ---
-    CbmMapsFileManager* file4 = new CbmMapsFileManager( fNegativeFileName, "CbmD0KaonParticles" );
-    fKaonBuffer = new TObjArray();
-    FillBuffer( file4, fKaonBuffer );
-    delete file4;
 
-    cout << "-I- CbmD0Candidates: Buffers filled " << endl;
+    LOG(INFO) <<"CbmD0CandidatesSE: Init completed" << FairLogger::endl;
 
     return kSUCCESS;
-    cout <<"-I-  CbmD0CandidatesSE: Init completed" << endl;
 }
 // -------------------------------------------------------------------------
 
@@ -177,7 +176,7 @@ void CbmD0CandidatesSE::FillBuffer( CbmMapsFileManager* BackgroundFile, TObjArra
 
 
 // -------------------------------------------------------------------------
-void CbmD0CandidatesSE::Exec(Option_t* /*option*/){
+void CbmD0CandidatesSE::Exec(Option_t* option){
   
     fEventNumber++;
     Int_t nAcceptedD0 = 0;
@@ -189,8 +188,6 @@ void CbmD0CandidatesSE::Exec(Option_t* /*option*/){
     cout << "========================================================================================"<<endl;
     cout << endl << "CbmD0CandidatesSE:: Event: " << fEventNumber << endl;
 
-    printf("\nCbmD0CandidatesSE: Event:%i\n", fEventNumber);
-
     Int_t nPionTracks = fPionParticleArray->GetEntriesFast();
 
     Int_t entriesInNegativeFile = fKaonBuffer->GetEntries();
@@ -199,10 +196,11 @@ void CbmD0CandidatesSE::Exec(Option_t* /*option*/){
 	cout <<" -W- CbmD0CandidatesSE: No Pion Tracks found, ignoring this event." << endl;
 	return;
     }
-
-    for( Int_t itrNegEvt=0; itrNegEvt<entriesInNegativeFile; itrNegEvt++ ){
-	crossCheck = 0;
-        nAcceptedD0 = 0;
+      crossCheck = 0;
+      nAcceptedD0 = 0;
+    for( Int_t itrNegEvt=0; itrNegEvt<entriesInNegativeFile; itrNegEvt++ )
+    {
+      
         fKaonParticles = (TClonesArray*) fKaonBuffer->At(itrNegEvt);
 
 	Int_t nKaonTracks = fKaonParticles->GetEntriesFast();
@@ -237,10 +235,12 @@ void CbmD0CandidatesSE::Exec(Option_t* /*option*/){
       new (clrefD0[sizeD0]) KFParticle(D0_KF);
 	    }
 	}
+
+    }
+
     cout << endl << "Number of combinations: " << crossCheck << " Number of candidates in acceptance: "<< nAcceptedD0 <<endl;
     cout << "========================================================================================"<<endl;
 
-    }
 
 }//Exec
 // -------------------------------------------------------------------------
