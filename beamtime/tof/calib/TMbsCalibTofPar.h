@@ -60,6 +60,7 @@ class TMbsCalibTofPar : public FairParGenericSet
       Int_t   GetMainTdcTdcOffset( UInt_t uType ) const;
       
       Int_t   GetTotMode( UInt_t uType ) const;
+      Bool_t  CheckTotInvFlag( UInt_t uType, UInt_t uSlot ) const;
       Int_t   GetTotInvFlag( UInt_t uType, UInt_t uSlot, UInt_t uChan ) const;
          
       Bool_t  IsTimeHistEna() const 

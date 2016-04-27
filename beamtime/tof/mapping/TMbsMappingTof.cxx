@@ -54,6 +54,7 @@ TMbsMappingTof::TMbsMappingTof() :
    fCalibDataCollection(NULL),
    fTriglogBoardCollection(NULL),
    fbSaveMappedDigis(kFALSE),
+   fbFillHistos(kFALSE),
    fCbmTofDigiCollection(NULL)
 {
 }
@@ -73,6 +74,7 @@ TMbsMappingTof::TMbsMappingTof(const char* name, Int_t /*mode*/, Int_t verbose) 
    fCalibDataCollection(NULL),
    fTriglogBoardCollection(NULL),
    fbSaveMappedDigis(kFALSE),
+   fbFillHistos(kFALSE),
    fCbmTofDigiCollection(NULL)
 {
 }
@@ -140,8 +142,11 @@ void TMbsMappingTof::Exec(Option_t* /*option*/)
    } // if trigger rejection enabled and trigger board enabled
 
    MapTdcDataToDet();
-   
-   FillHistograms();
+
+   if( fbFillHistos )
+   {
+     FillHistograms();
+   }
 }
 void TMbsMappingTof::Finish()
 {
@@ -598,6 +603,10 @@ Bool_t TMbsMappingTof::RegisterOutput()
 }
 Bool_t TMbsMappingTof::ClearOutput()
 {
+   // Actually, neither CbmDigi nor CbmTofDigi nor CbmTofDigiExp reimplement
+   // TObject::Clear(). This does, however, not matter here because each event's
+   // digi objects are reconstructed in the dedicated TClonesArray by a
+   // placement new operation instead of calling TClonesArray::ConstructedAt().
    fCbmTofDigiCollection->Clear("C");
    return kTRUE;
 }

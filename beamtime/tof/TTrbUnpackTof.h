@@ -22,6 +22,7 @@
 
 // Parameters
 class TMbsUnpackTofPar;
+class TMbsCalibTofPar;
 
 // Iterator
 namespace hadaq
@@ -51,6 +52,9 @@ class TTrbUnpackTof : public FairUnpack
       
       void WriteHistograms();
 
+      void SetFineSpillTiming(Bool_t bFineTiming = kTRUE) {fbFineSpillTiming = bFineTiming;}
+      void SetInspection(Bool_t bInspection = kTRUE) {fbInspection = bInspection;}
+
       void   SetSaveRawData( Bool_t bSaveRaw=kTRUE );
    protected:
       // FairUnpack pure virtual method
@@ -68,18 +72,18 @@ class TTrbUnpackTof : public FairUnpack
       Bool_t RegisterOutput();
       Bool_t ClearOutput();
 
-      void SetFineSpillTiming(Bool_t bFineTiming = kTRUE) {fbFineSpillTiming = bFineTiming;}
-
       void DataErrorHandling(UInt_t uSubeventId, UInt_t uErrorPattern);
 
       // Parameters
       TMbsUnpackTofPar * fMbsUnpackPar;
+      TMbsCalibTofPar * fMbsCalibPar;
 
       Int_t fiNbEvents;
       UInt_t fiCurrentEventNumber;
       UInt_t fiPreviousEventNumber;
 
       Bool_t fbFineSpillTiming;
+      Bool_t fbInspection;
 
       // Iterator
       hadaq::TrbIterator * fTrbIterator;
@@ -109,6 +113,7 @@ class TTrbUnpackTof : public FairUnpack
       TH1* fCtsBusyTime;
       TH1* fCtsIdleTime;
       TH1* fCtsIdleTimeSpill;
+      TH1* fCtsTriggerDistance;
       TH1* fItcAssertions;
       TH1* fItcEvents;
       TH1* fHadaqEventTime;

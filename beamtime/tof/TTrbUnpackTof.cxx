@@ -43,10 +43,12 @@ ClassImp(TTrbUnpackTof)
 TTrbUnpackTof::TTrbUnpackTof( Short_t type, Short_t subType, Short_t procId, Short_t subCrate, Short_t control) : 
    FairUnpack( type, subType, procId, subCrate, control),
    fMbsUnpackPar(0),
+   fMbsCalibPar(0),
    fiNbEvents(0),
    fiCurrentEventNumber(0),
    fiPreviousEventNumber(0),
    fbFineSpillTiming(kTRUE),
+   fbInspection(kFALSE),
    fTrbIterator(NULL),
    fTrbTdcUnpacker(NULL),
    fTrbTdcBoardCollection(NULL),
@@ -59,6 +61,7 @@ TTrbUnpackTof::TTrbUnpackTof( Short_t type, Short_t subType, Short_t procId, Sho
    fCtsBusyTime(NULL),
    fCtsIdleTime(NULL),
    fCtsIdleTimeSpill(NULL),
+   fCtsTriggerDistance(NULL),
    fItcAssertions(NULL),
    fItcEvents(NULL),
    fHadaqEventTime(NULL),
@@ -271,6 +274,7 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
    if( 1 < (iHadaqCurrentEventTime - fiHadaqLastEventTime) )
    {
      fiHadaqCoarseSpillStartTime = iHadaqCurrentEventTime;
+     fHadaqTimeInSpill->Reset("ICE");
    }
 
    fTrbHeader->SetTimeInSpill(((UInt_t)(iHadaqCurrentEventTime-fiHadaqCoarseSpillStartTime))*100000000);
@@ -676,20 +680,29 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
 
          if( bIncludeLastIdle )
          {
-           // time to complete the TrbNet trigger process in the last event
-           fCtsBusyTime->Fill( tCurrentSubevent->Data(uBusyIdleOffset+1)/100. );
+           UInt_t uBusyTime = tCurrentSubevent->Data(uBusyIdleOffset+1);
+
+           // time [us] to complete the TrbNet trigger process in the last event
+           fCtsBusyTime->Fill( uBusyTime/100. );
 
            UInt_t uIdleTime = tCurrentSubevent->Data(uBusyIdleOffset);
 
-           // time passed since the last trigger procession
+           // time [us] passed since the last trigger procession
            fCtsIdleTime->Fill( uIdleTime/100. );
 
+
+
+           // CTS idle for more than 1 second
            if( 1. < uIdleTime/100000000. )
            {
              // time passed since the last trigger procession on inter-spill scales
              fCtsIdleTimeSpill->Fill( uIdleTime/100000000. );
 
              LOG(INFO)<<Form("CTS idle time of %.2f s observed in event %u.",uIdleTime/100000000.,fiNbEvents)<<FairLogger::endl;
+           }
+           else
+           {
+             fCtsTriggerDistance->Fill( (uBusyTime+uIdleTime)/100.);
            }
          }
 
@@ -791,6 +804,8 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
                    fiHadaqSpillStartTime = iHadaqCurrentEventTime - fiHadaqFirstEventTime;
                    iAllTriggersDiff = 0;
                    iAllEventsDiff = 0;
+
+                   fCtsTimeInSpill->Reset("ICE");
                  }
                }
                // a HADAQ buffer delay is propagating
@@ -801,6 +816,8 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
                  fiHadaqSpillStartTime = fiHadaqLastEventTime - fiHadaqFirstEventTime;
                  iAllTriggersDiff = 0;
                  iAllEventsDiff = 0;
+
+                 fCtsTimeInSpill->Reset("ICE");
                }
              }
              // somewhere inside a HADAQ spill
@@ -815,6 +832,8 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
                  fiHadaqSpillStartTime = fiHadaqLastEventTime - fiHadaqFirstEventTime;
                  iAllTriggersDiff = 0;
                  iAllEventsDiff = 0;
+
+                 fCtsTimeInSpill->Reset("ICE");
 
                  // HADAQ buffer delay propagation should stop here
                  fbHadaqBufferDelay = kFALSE;
@@ -836,7 +855,7 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
              {
                LOG(DEBUG)<<Form("time to origin: %f. event: %u",fiHadaqSpillStartTime*1. + (Double_t)(fiCtsLastEventTime + iTimeInSpill)/2./100000000.,fiNbEvents)<<FairLogger::endl;
                LOG(DEBUG)<<Form("timestamp value: %lld",iCurrentTimeStamp)<<FairLogger::endl;
-               LOG(DEBUG)<<Form("idle time: %u",tCurrentSubevent->Data(uBusyIdleOffset))<<FairLogger::endl; 
+               LOG(DEBUG)<<Form("idle time: %u",tCurrentSubevent->Data(uBusyIdleOffset))<<FairLogger::endl;
              }
 
              fCtsTriggerCycles->Fill(fiHadaqSpillStartTime*1. + (Double_t)(fiCtsLastEventTime + iTimeInSpill)/2./100000000., iAllTriggersDiff);
@@ -1023,13 +1042,27 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
 
    }
 
+   Bool_t bSkipHadaqEvent = kFALSE;
+
    // TDC data unpacking only in case of a positive trigger pattern evaluation
 	 for ( std::map<Int_t,std::pair<hadaq::RawSubevent*,UInt_t> >::iterator it = fTdcUnpackMap.begin();
 	       it != fTdcUnpackMap.end();
 	       ++it)
    {
-     fTrbTdcProcessStatus[ it->first ]->Fill( fTrbTdcUnpacker->ProcessData( (it->second).first, (it->second).second ) );
+     Int_t iTdcUnpackStatus = fTrbTdcUnpacker->ProcessData( (it->second).first, (it->second).second );
+     fTrbTdcProcessStatus[ it->first ]->Fill( iTdcUnpackStatus );
+
+     if( (trbtdc::process_Success != iTdcUnpackStatus) && (trbtdc::process_BadFineTime != iTdcUnpackStatus) )
+     {
+       bSkipHadaqEvent = kTRUE;
+     }
 	 }
+
+   if( bSkipHadaqEvent )
+   {
+     LOG(INFO)<<"TDC raw data integrity not guaranteed. Skip the full HADAQ raw event."<<FairLogger::endl;
+     return kFALSE;
+   }
 
    LOG(DEBUG)<<FairLogger::endl;
 
@@ -1069,7 +1102,12 @@ Bool_t TTrbUnpackTof::InitParameters()
 
    fMbsUnpackPar = (TMbsUnpackTofPar *) (rtdb->getContainer("TMbsUnpackTofPar"));
 
-   if( 0 == fMbsUnpackPar )
+   if( fbInspection )
+   {
+     fMbsCalibPar = (TMbsCalibTofPar *) (rtdb->getContainer("TMbsCalibTofPar"));
+   }
+
+   if( 0 == fMbsUnpackPar || ( fbInspection && !fMbsCalibPar ) )
       return kFALSE;
 
    fMbsUnpackPar->printParams();
@@ -1091,7 +1129,8 @@ Bool_t TTrbUnpackTof::CreateSubunpackers()
    }
    else
    {
-     fTrbTdcUnpacker = new TTofTrbTdcUnpacker( fMbsUnpackPar );
+     fTrbTdcUnpacker = new TTofTrbTdcUnpacker( fMbsUnpackPar, fMbsCalibPar );
+     fTrbTdcUnpacker->SetInspection(fbInspection);
    }
 
    return kTRUE;
@@ -1152,37 +1191,44 @@ void TTrbUnpackTof::CreateHistograms()
    gROOT->cd();
 
    fTrbTriggerPattern = new TH1I("tof_trb_trigger_pattern", "CTS trigger pattern", 16, 0, 16);
+   fTrbTriggerPattern->GetXaxis()->SetTitle("trigger pattern []");
    fTrbTriggerType = new TH1I("tof_trb_trigger_types", "CTS trigger types", 16, 0, 16);
+   fTrbTriggerType->GetXaxis()->SetTitle("trigger type []");
    fTrbEventNumberJump = new TH1I("tof_trb_event_jump", "CTS event number jumps", 30, 0, 30);
+   fTrbEventNumberJump->GetXaxis()->SetTitle("event counter increment []");
    fCtsBusyTime = new TH1I("tof_trb_cts_busy", "CTS busy time", 100, 0, 100);
-   fCtsBusyTime->GetXaxis()->SetTitle("#mus");
+   fCtsBusyTime->GetXaxis()->SetTitle("busy time [#mus]");
    fCtsIdleTime = new TH1I("tof_trb_cts_idle", "CTS idle time", 200, 0, 200);
-   fCtsIdleTime->GetXaxis()->SetTitle("#mus");
+   fCtsIdleTime->GetXaxis()->SetTitle("idle time [#mus]");
    fCtsIdleTimeSpill = new TH1I("tof_trb_cts_idle_spill", "CTS inter-spill idle time", 50, 0, 50);
-   fCtsIdleTimeSpill->GetXaxis()->SetTitle("s");
+   fCtsIdleTimeSpill->GetXaxis()->SetTitle("idle time [s]");
+   fCtsTriggerDistance = new TH1I("tof_trb_cts_cycle", "CTS trigger distance", 500, 0, 500);
+   fCtsTriggerDistance->GetXaxis()->SetTitle("trigger distance [#mus]");
    fItcAssertions = new TH1I("tof_trb_itc_assert", "All trigger cycles since last event", 50, 0, 50);
+   fItcAssertions->GetXaxis()->SetTitle("detected triggers []");
    fItcEvents = new TH1I("tof_trb_cts_events", "Accepted cycles since last event", 50, 0, 50);
+   fItcEvents->GetXaxis()->SetTitle("accepted triggers []");
 
    fHadaqEventTime = new TH1I("tof_trb_hadaq_time", "HADAQ/DABC event time", 300, 0, 300);
-   fHadaqEventTime->GetXaxis()->SetTitle("s");
+   fHadaqEventTime->GetXaxis()->SetTitle("DABC event time [s]");
 
    fCtsTriggerCycles = new TH1I("tof_trb_trigger_rate", "CTS trigger/event rate", 300, 0, 300);
-   fCtsTriggerCycles->GetXaxis()->SetTitle("s");
+   fCtsTriggerCycles->GetXaxis()->SetTitle("CTS event time [s]");
    fCtsTriggerCycles->SetMarkerStyle(34);
    fCtsTriggerCycles->SetMarkerColor(kRed);
    fCtsTriggerCycles->SetLineColor(kRed);
 
    fCtsTriggerAccepted = new TH1I("tof_trb_event_rate", "CTS trigger/event rate", 300, 0, 300);
-   fCtsTriggerAccepted->GetXaxis()->SetTitle("ms");
+   fCtsTriggerAccepted->GetXaxis()->SetTitle("CTS event time [s]");
    fCtsTriggerAccepted->SetMarkerStyle(34);
    fCtsTriggerAccepted->SetMarkerColor(kGreen);
    fCtsTriggerAccepted->SetLineColor(kGreen);
 
    fHadaqTimeInSpill = new TH1I("tof_hadaq_time_spill", "HADAQ coarse time in spill", 20, 0, 20);
-   fHadaqTimeInSpill->GetXaxis()->SetTitle("s");
+   fHadaqTimeInSpill->GetXaxis()->SetTitle("DABC time in spill [s]");
 
    fCtsTimeInSpill = new TH1I("tof_cts_time_spill", "CTS fine time in spill", 20000, 0, 20000);
-   fCtsTimeInSpill->GetXaxis()->SetTitle("ms");
+   fCtsTimeInSpill->GetXaxis()->SetTitle("CTS time in spill [ms]");
 
    fEventSkipsInSpill = new TH2I("tof_trb_skips_spill", "CTS events skipped in spill", 20, 0, 20, 20, 0, 20);
    fEventSkipsInSpill->GetXaxis()->SetTitle("CTS event time in spill [s]");
@@ -1197,12 +1243,14 @@ void TTrbUnpackTof::CreateHistograms()
      hTemp = new TH1I( Form("tof_trb_size_subevent_%03u", uTrbSeb),
                        Form("data sent by TRB-SEB 0x%04x", uTrbNetAddress),
                        65, 0, 65);
+     hTemp->GetXaxis()->SetTitle("subevent size [kB]");
 
      fTrbSubeventSize.push_back( hTemp );
 
      hTemp = new TH1I( Form("tof_trb_status_subevent_%03u", uTrbSeb),
                        Form("status bits of TRB-SEB 0x%04x", uTrbNetAddress),
     		           32, 0, 32);
+     hTemp->GetXaxis()->SetTitle("TrbNet status bits []");
 
      fTrbSubeventStatus.push_back( hTemp );
    }
@@ -1214,13 +1262,14 @@ void TTrbUnpackTof::CreateHistograms()
      hTemp = new TH1I( Form("tof_trb_words_tdc_%03u", uTrbTdc),
                        Form("words sent by TRB-TDC 0x%04x", uTrbNetAddress),
                        800, 0, 800);
+     hTemp->GetXaxis()->SetTitle("subsubevent words [4B]");
 
      fTrbTdcWords.push_back( hTemp );
 
      hTemp = new TH1I( Form("tof_trb_process_status_tdc_%03u", uTrbTdc),
                        Form("data processing status of TRB-TDC 0x%04x", uTrbNetAddress),
                        trbtdc::process_StatusMessages, 0, trbtdc::process_StatusMessages);
-
+     hTemp->GetXaxis()->SetTitle("TDC unpacking status []");
 
      fTrbTdcProcessStatus.push_back( hTemp );
    }
@@ -1242,6 +1291,7 @@ void TTrbUnpackTof::WriteHistograms()
    fCtsBusyTime->Write();
    fCtsIdleTime->Write();
    fCtsIdleTimeSpill->Write();
+   fCtsTriggerDistance->Write();
    fItcAssertions->Write();
    fItcEvents->Write();
    fHadaqEventTime->Write();

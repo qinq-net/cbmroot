@@ -42,6 +42,7 @@
 #pragma link C++ class TTofTrbTdcData+;
 #pragma link C++ class TTofTrbTdcBoard+;
 #pragma link C++ class TTofTrbTdcUnpacker+;
+#pragma link C++ class TTofTrbTdcCalib+;
 
 #pragma link C++ class TGet4v1MessageExtended+;
 #pragma link C++ class Get4v1Hit+;

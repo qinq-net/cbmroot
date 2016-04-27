@@ -102,7 +102,16 @@ namespace trbtdc
      process_ChannelButNoEpochChange = 8,
      process_TwoConsecutiveEpochs = 9,
      process_RingBufferOverwrite = 10,
+     process_BadFineTime = 11,
+     process_NoEpochIncrement = 12,
+     process_TwoIdenticalWords = 13,
      process_StatusMessages
+   };
+
+   enum TrbTdcFineInterpolation {
+     finetime_bincenter = 0,
+     finetime_binedge = 1,
+     finetime_linear = 2
    };
 
    // number of channels in FPGA-TDC modules
@@ -126,14 +135,19 @@ namespace trbtdc
    const UInt_t kuCoarseOverflowTest = kiCoarseCounterSize / 2 ; // Limit for overflow check
 
    // Size of one clock cycle (=1 coarse bin)
-   const Double_t kdClockCycleSize    = 5000.0; // [ps]
-   const Double_t kdClockCycleSizeSec = 5e-9;   // [s]
+   const Double_t kdClockCycleSize     = 5000.0; // [ps]
+   const Double_t kdClockCycleSizeSec  = 5e-9;   // [s]
 
    // also seen: (20,500) and (31,421)
    const UInt_t kuSimpleFineTimeMinValue = 31;
    const UInt_t kuSimpleFineTimeMaxValue = 500;
 
    const UInt_t kuHighestReasonableFineTimeBin = 600;
+
+   const UInt_t kuMinimumFineTimeRange = 400;
+
+   const Long64_t kliFullCoarseSize = ((static_cast<Long64_t>(epoch_EpochBitMask)<<size_CoarseTimeCounter)|static_cast<Long64_t>(time_CoarseTimeBitMask))+1;
+   const Long64_t kliEpochSize = static_cast<Long64_t>(time_CoarseTimeBitMask)+1;
 
 }
 

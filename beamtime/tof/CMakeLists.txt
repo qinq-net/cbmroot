@@ -93,6 +93,7 @@ set(SRCS
   tdc/trb/TTofTrbTdcData.cxx
   tdc/trb/TTofTrbTdcBoard.cxx
   tdc/trb/TTofTrbTdcUnpacker.cxx
+  tdc/trb/TTofTrbTdcCalib.cxx
   tdc/get4/TGet4v1Event.cxx
   tdc/get4/TTofGet4Data.cxx
   tdc/get4/TTofGet4Board.cxx
@@ -155,6 +156,7 @@ Set(HEADERS
   tdc/trb/TTofTrbTdcData.h
   tdc/trb/TTofTrbTdcBoard.h
   tdc/trb/TTofTrbTdcUnpacker.h
+  tdc/trb/TTofTrbTdcCalib.h
   tdc/get4/TofGet4Def.h
   tdc/get4/TGet4v1Event.h
   tdc/get4/TTofGet4Data.h

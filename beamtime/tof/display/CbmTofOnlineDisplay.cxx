@@ -15,10 +15,21 @@
 #include "TString.h"
 #include "TROOT.h"
 #include "TPaveStats.h"
+#include "TGraph.h"
+#include <TLegendEntry.h>
+
+#include "TofDef.h"
+#include "TMbsUnpackTofPar.h"
+#include "TMbsCalibTofPar.h"
+
+#include "FairRun.h"
+#include "FairRuntimeDb.h"
 
 // ---- Default constructor -------------------------------------------
 CbmTofOnlineDisplay::CbmTofOnlineDisplay()
   :FairTask("CbmTofOnlineDisplay"),
+   fMbsUnpackPar(NULL),
+   fMbsCalibPar(NULL),
    fbMonitorTdcOcc(kTRUE),
    fTdcChannelOccupancy(NULL),
    fNumberOfTDC(30),
@@ -56,7 +67,22 @@ CbmTofOnlineDisplay::CbmTofOnlineDisplay()
    fLegStackFreeTrloB(NULL),
    fLegStackFreeTrloOutA(NULL),
    fLegStackFreeTrloOutB(NULL),
-   fbRatesSlidingScale(kFALSE)
+   fbRatesSlidingScale(kFALSE),
+   fbMonitorInspection(kFALSE),
+   fLeadingEdgeOnly(NULL),
+   fTrailingEdgeOnly(NULL),
+   fUnequalEdgeCounts(NULL),
+   fTimeOverThreshold(NULL),
+   fLeadingPosition(NULL),
+   fTrailingPosition(NULL),
+   fBoardFineTime(NULL),
+   fRefChFineTime(NULL),
+   fbMonitorCalibration(kFALSE),
+   fBoardOffsetGraphs(NULL),
+   fBoardOffsetLinear(NULL),
+   fBoardOffsetBinCenter(NULL),
+   fBoardOffsetBinEdge(NULL)
+
 {
   fLogger->Debug(MESSAGE_ORIGIN,"Default Constructor of CbmTofOnlineDisplay");
   for( Int_t iCh = 0; iCh < 16; iCh++)
@@ -73,6 +99,8 @@ CbmTofOnlineDisplay::~CbmTofOnlineDisplay()
 void CbmTofOnlineDisplay::SetParContainers()
 {
   fLogger->Debug(MESSAGE_ORIGIN,"SetParContainers of CbmTofOnlineDisplay");
+
+   InitParameters();
 }
 
 void CbmTofOnlineDisplay::SetFreeTrloNames( 
@@ -104,6 +132,9 @@ InitStatus CbmTofOnlineDisplay::Init()
 {
   fLogger->Debug(MESSAGE_ORIGIN,"Initilization of CbmTofOnlineDisplay");
 
+  fNumberOfTDC = fMbsUnpackPar->GetNbActiveBoards( tofMbs::trbtdc );
+  fNumberOfSEB = fMbsUnpackPar->GetActiveTrbSebNb();
+
   TH1 *h1;
   TH2 *h2;
   Float_t lsize=0.07;
@@ -111,7 +142,7 @@ InitStatus CbmTofOnlineDisplay::Init()
   if( fbMonitorTdcOcc )
   {
     fTdcChannelOccupancy = new TCanvas("tCanvasOccupancy","TRB TDC channel occupancy",8,6,900,600);
-    fTdcChannelOccupancy->Divide(8,5);
+    fTdcChannelOccupancy->Divide(8,(fNumberOfTDC % 8 ? fNumberOfTDC/8+1 : fNumberOfTDC/8));
 
     for(Int_t iCh=0; iCh<fNumberOfTDC; iCh++){
       fTdcChannelOccupancy->cd(iCh+1);
@@ -129,7 +160,205 @@ InitStatus CbmTofOnlineDisplay::Init()
       }
     }
   }
-  
+
+  if( fbMonitorCalibration )
+  {
+    fBoardOffsetGraphs = new TCanvas("tBoardOffsetGraphs",Form("Reference hit run time difference precision with respect to reference TDC"),0,0,700,700);
+    fBoardOffsetGraphs->Divide(2,2);
+
+    fBoardOffsetLinear = new TCanvas("tBoardOffsetLinear",Form("Reference hit run time differences (calibrated linearly) with respect to reference TDC"),0,0,700,700);
+    fBoardOffsetLinear->Divide(8,(fNumberOfTDC % 8 ? fNumberOfTDC/8+1 : fNumberOfTDC/8));
+
+    fBoardOffsetBinCenter = new TCanvas("tBoardOffsetBinCenter",Form("Reference hit run time differences (calibrated bin-by-bin center) with respect to reference TDC"),0,0,700,700);
+    fBoardOffsetBinCenter->Divide(8,(fNumberOfTDC % 8 ? fNumberOfTDC/8+1 : fNumberOfTDC/8));
+
+    fBoardOffsetBinEdge = new TCanvas("tBoardOffsetBinEdge",Form("Reference hit run time differences (calibrated bin-by-bin edge) with respect to reference TDC"),0,0,700,700);
+    fBoardOffsetBinEdge->Divide(8,(fNumberOfTDC % 8 ? fNumberOfTDC/8+1 : fNumberOfTDC/8));
+
+  }
+
+  if( fbMonitorInspection )
+  {
+    fLeadingEdgeOnly = new TCanvas("tCanvasLeadingEdgeOnly","Shares of leading edge only TDC channel buffers",8,6,900,600);
+    fLeadingEdgeOnly->Divide(8,(fNumberOfTDC % 8 ? fNumberOfTDC/8+1 : fNumberOfTDC/8));
+
+    for(Int_t iCh=0; iCh<fNumberOfTDC; iCh++)
+    {
+      fLeadingEdgeOnly->cd(iCh+1);
+      gROOT->cd();
+      TString hname=Form("tof_trb_ch_leadonly_%03d",iCh);
+      h1=(TH1 *)gROOT->FindObjectAny(hname);
+      if (h1!=NULL)
+      {
+        h1->Draw("");
+        gPad->SetFillColor(0);
+        gStyle->SetPalette(1);
+        gStyle->SetLabelSize(lsize);
+      }
+      else
+      {
+        LOG(INFO)<<"Histogram "<<hname<<" not existing. "<<FairLogger::endl;
+      }
+    }
+
+    fTrailingEdgeOnly = new TCanvas("tCanvasTrailingEdgeOnly","Shares of trailing edge only TDC channel buffers",8,6,900,600);
+    fTrailingEdgeOnly->Divide(8,(fNumberOfTDC % 8 ? fNumberOfTDC/8+1 : fNumberOfTDC/8));
+
+    for(Int_t iCh=0; iCh<fNumberOfTDC; iCh++)
+    {
+      fTrailingEdgeOnly->cd(iCh+1);
+      gROOT->cd();
+      TString hname=Form("tof_trb_ch_trailonly_%03d",iCh);
+      h1=(TH1 *)gROOT->FindObjectAny(hname);
+      if (h1!=NULL)
+      {
+        h1->Draw("");
+        gPad->SetFillColor(0);
+        gStyle->SetPalette(1);
+        gStyle->SetLabelSize(lsize);
+      }
+      else
+      {
+        LOG(INFO)<<"Histogram "<<hname<<" not existing. "<<FairLogger::endl;
+      }
+    }
+
+    fUnequalEdgeCounts = new TCanvas("tCanvasUnequalEdgeCounts","Shares of unequal edge TDC channel buffers",8,6,900,600);
+    fUnequalEdgeCounts->Divide(8,(fNumberOfTDC % 8 ? fNumberOfTDC/8+1 : fNumberOfTDC/8));
+
+    for(Int_t iCh=0; iCh<fNumberOfTDC; iCh++)
+    {
+      fUnequalEdgeCounts->cd(iCh+1);
+      gROOT->cd();
+      TString hname=Form("tof_trb_ch_unequal_%03d",iCh);
+      h1=(TH1 *)gROOT->FindObjectAny(hname);
+      if (h1!=NULL)
+      {
+        h1->Draw("");
+        gPad->SetFillColor(0);
+        gStyle->SetPalette(1);
+        gStyle->SetLabelSize(lsize);
+      }
+      else
+      {
+        LOG(INFO)<<"Histogram "<<hname<<" not existing. "<<FairLogger::endl;
+      }
+    }
+
+    fTimeOverThreshold = new TCanvas("tCanvasTimeOverThreshold","RAW(!!!) Time over threshold - If negative, change the inversion flag!",8,6,900,600);
+    fTimeOverThreshold->Divide(8,(fNumberOfTDC % 8 ? fNumberOfTDC/8+1 : fNumberOfTDC/8));
+
+    for(Int_t iCh=0; iCh<fNumberOfTDC; iCh++)
+    {
+      fTimeOverThreshold->cd(iCh+1);
+      gROOT->cd();
+      TString hname=Form("tof_trb_board_tot_%03d",iCh);
+      h2=(TH2 *)gROOT->FindObjectAny(hname);
+      if (h2!=NULL)
+      {
+        gPad->SetFillColor(0);
+        gStyle->SetPalette(1);
+        gStyle->SetLabelSize(lsize);
+        gPad->SetLogz();
+        h2->Draw("colz");
+
+      }
+      else
+      {
+        LOG(INFO)<<"Histogram "<<hname<<" not existing. "<<FairLogger::endl;
+      }
+    }
+
+    fLeadingPosition = new TCanvas("tCanvasLeadingPosition","Leading edge time to trigger",8,6,900,600);
+    fLeadingPosition->Divide(8,(fNumberOfTDC % 8 ? fNumberOfTDC/8+1 : fNumberOfTDC/8));
+
+    for(Int_t iCh=0; iCh<fNumberOfTDC; iCh++)
+    {
+      fLeadingPosition->cd(iCh+1);
+      gROOT->cd();
+      TString hname=Form("tof_trb_board_lead_pos_%03d",iCh);
+      h2=(TH2 *)gROOT->FindObjectAny(hname);
+      if (h2!=NULL)
+      {
+        gPad->SetFillColor(0);
+        gStyle->SetPalette(1);
+        gStyle->SetLabelSize(lsize);
+        gPad->SetLogz();
+        h2->Draw("colz");
+      }
+      else
+      {
+        LOG(INFO)<<"Histogram "<<hname<<" not existing. "<<FairLogger::endl;
+      }
+    }
+
+    fTrailingPosition = new TCanvas("tCanvasTrailingPosition","Trailing edge time to trigger",8,6,900,600);
+    fTrailingPosition->Divide(8,(fNumberOfTDC % 8 ? fNumberOfTDC/8+1 : fNumberOfTDC/8));
+
+    for(Int_t iCh=0; iCh<fNumberOfTDC; iCh++)
+    {
+      fTrailingPosition->cd(iCh+1);
+      gROOT->cd();
+      TString hname=Form("tof_trb_board_trail_pos_%03d",iCh);
+      h2=(TH2 *)gROOT->FindObjectAny(hname);
+      if (h2!=NULL)
+      {
+        gPad->SetFillColor(0);
+        gStyle->SetPalette(1);
+        gStyle->SetLabelSize(lsize);
+        gPad->SetLogz();
+        h2->Draw("colz");
+      }
+      else
+      {
+        LOG(INFO)<<"Histogram "<<hname<<" not existing. "<<FairLogger::endl;
+      }
+    }
+
+    fBoardFineTime = new TCanvas("tCanvasBoardFineTime","TDC channel fine times",8,6,900,600);
+    fBoardFineTime->Divide(8,(fNumberOfTDC % 8 ? fNumberOfTDC/8+1 : fNumberOfTDC/8));
+
+    for(Int_t iCh=0; iCh<fNumberOfTDC; iCh++)
+    {
+      fBoardFineTime->cd(iCh+1);
+      gROOT->cd();
+      TString hname=Form("tof_trb_board_ft_%03d",iCh);
+      h2=(TH2 *)gROOT->FindObjectAny(hname);
+      if (h2!=NULL)
+      {
+        gPad->SetFillColor(0);
+        gStyle->SetPalette(1);
+        gStyle->SetLabelSize(lsize);
+        gPad->SetLogz();
+        h2->Draw("colz");
+      }
+      else
+      {
+        LOG(INFO)<<"Histogram "<<hname<<" not existing. "<<FairLogger::endl;
+      }
+    }
+
+    fRefChFineTime = new TCanvas("tCanvasRefChFineTime","TDC reference channel fine times",8,6,400,300);
+
+    gROOT->cd();
+    TString hname=Form("tof_trb_all_ref_ft");
+    h2=(TH2 *)gROOT->FindObjectAny(hname);
+    if (h2!=NULL)
+    {
+      gPad->SetFillColor(0);
+      gStyle->SetPalette(1);
+      gStyle->SetLabelSize(lsize);
+      gPad->SetLogz();
+      h2->Draw("colz");
+    }
+    else
+    {
+      LOG(INFO)<<"Histogram "<<hname<<" not existing. "<<FairLogger::endl;
+    }
+
+  }
+
+
   if( fbMonitorCts )
   {
     fCtsTriggerMonitor = new TCanvas("tCanvasTrigger","TRB CTS trigger monitor",1080,0,1000,750);
@@ -219,6 +448,18 @@ InitStatus CbmTofOnlineDisplay::Init()
       h1->Draw("");
     }
 
+    fCtsTriggerMonitor->cd(8);
+    gROOT->cd();
+    gPad->SetFillColor(0);
+    gStyle->SetPalette(1);
+    gStyle->SetLabelSize(lsize);
+    gPad->SetLogy();
+    h1 = ((TH1 *)gROOT->FindObjectAny("tof_trb_cts_cycle"));
+    if( h1 )
+    {
+      h1->Draw("");
+    }
+
     fCtsTriggerMonitor->cd(9);
     gROOT->cd();
     gPad->SetFillColor(0);
@@ -276,8 +517,8 @@ InitStatus CbmTofOnlineDisplay::Init()
 
   if( fbMonitorSebStatus )
   {
-	fSebSizeMonitor = new TCanvas("tCanvasSebSize","TRB subevent sizes",1080,36,500,300);
-	fSebSizeMonitor->Divide(6,1);
+	fSebSizeMonitor = new TCanvas("tCanvasSebSize","TRB subevent sizes",1080,36,500,100);
+	fSebSizeMonitor->Divide(8,(fNumberOfSEB % 8 ? fNumberOfSEB/8+1 : fNumberOfSEB/8));
 
 	for(Int_t iCh=0; iCh<fNumberOfSEB; iCh++){
       fSebSizeMonitor->cd(iCh+1);
@@ -295,8 +536,8 @@ InitStatus CbmTofOnlineDisplay::Init()
 	  }
     }
 
-	fSebStatusMonitor = new TCanvas("tCanvasSebStatus","TrbNet subevent status bits",1080,56,500,300);
-	fSebStatusMonitor->Divide(6,1);
+	fSebStatusMonitor = new TCanvas("tCanvasSebStatus","TrbNet subevent status bits",1080,56,500,100);
+	fSebStatusMonitor->Divide(8,(fNumberOfSEB % 8 ? fNumberOfSEB/8+1 : fNumberOfSEB/8));
 
 	for(Int_t iCh=0; iCh<fNumberOfSEB; iCh++){
       fSebStatusMonitor->cd(iCh+1);
@@ -318,7 +559,7 @@ InitStatus CbmTofOnlineDisplay::Init()
   if( fbMonitorTdcStatus )
   {
 	fTdcSizeMonitor = new TCanvas("tCanvasTdcSize","TDC data payload",980,76,500,300);
-	fTdcSizeMonitor->Divide(6,6);
+	fTdcSizeMonitor->Divide(8,(fNumberOfTDC % 8 ? fNumberOfTDC/8+1 : fNumberOfTDC/8));
 
 	for(Int_t iCh=0; iCh<fNumberOfTDC; iCh++){
       fTdcSizeMonitor->cd(iCh+1);
@@ -337,7 +578,7 @@ InitStatus CbmTofOnlineDisplay::Init()
     }
 
 	fTdcStatusMonitor = new TCanvas("tCanvasTdcStatus","TDC processing status",48,56,1000,700);
-	fTdcStatusMonitor->Divide(6,6);
+	fTdcStatusMonitor->Divide(8,(fNumberOfTDC % 8 ? fNumberOfTDC/8+1 : fNumberOfTDC/8));
 
 	for(Int_t iCh=0; iCh<fNumberOfTDC; iCh++){
       fTdcStatusMonitor->cd(iCh+1);
@@ -598,6 +839,76 @@ void CbmTofOnlineDisplay::Exec(Option_t* /*option*/)
         fTdcChannelOccupancy->Update();
      }
 
+     if( fbMonitorInspection )
+     {
+       for(Int_t iCh=0; iCh<fNumberOfTDC; iCh++){
+    	 fLeadingEdgeOnly->cd(iCh+1);
+         gPad->Modified();
+         gPad->Update();
+       }
+
+       fLeadingEdgeOnly->Modified();
+       fLeadingEdgeOnly->Update();
+
+       for(Int_t iCh=0; iCh<fNumberOfTDC; iCh++){
+    	 fTrailingEdgeOnly->cd(iCh+1);
+         gPad->Modified();
+         gPad->Update();
+       }
+
+       fTrailingEdgeOnly->Modified();
+       fTrailingEdgeOnly->Update();
+
+       for(Int_t iCh=0; iCh<fNumberOfTDC; iCh++){
+    	 fUnequalEdgeCounts->cd(iCh+1);
+         gPad->Modified();
+         gPad->Update();
+       }
+
+       fUnequalEdgeCounts->Modified();
+       fUnequalEdgeCounts->Update();
+
+       for(Int_t iCh=0; iCh<fNumberOfTDC; iCh++){
+    	 fTimeOverThreshold->cd(iCh+1);
+         gPad->Modified();
+         gPad->Update();
+       }
+
+       fTimeOverThreshold->Modified();
+       fTimeOverThreshold->Update();
+
+       for(Int_t iCh=0; iCh<fNumberOfTDC; iCh++){
+    	 fLeadingPosition->cd(iCh+1);
+         gPad->Modified();
+         gPad->Update();
+       }
+
+       fLeadingPosition->Modified();
+       fLeadingPosition->Update();
+
+       for(Int_t iCh=0; iCh<fNumberOfTDC; iCh++){
+    	 fTrailingPosition->cd(iCh+1);
+         gPad->Modified();
+         gPad->Update();
+       }
+
+       fTrailingPosition->Modified();
+       fTrailingPosition->Update();
+
+       for(Int_t iCh=0; iCh<fNumberOfTDC; iCh++){
+    	 fBoardFineTime->cd(iCh+1);
+         gPad->Modified();
+         gPad->Update();
+       }
+
+       fBoardFineTime->Modified();
+       fBoardFineTime->Update();
+
+       fRefChFineTime->Modified();
+       fRefChFineTime->Update();
+
+     }
+
      if( fbMonitorCts )
      {
        fCtsTriggerMonitor->cd(1);
@@ -856,6 +1167,207 @@ void CbmTofOnlineDisplay::Finish()
   if( fbMonitorTdcOcc )
    fTdcChannelOccupancy->Update();
 
+  if( fbMonitorCalibration )
+  {
+    TLegendEntry* tEntry;
+
+    TGraph* tGraphRmsLinear = dynamic_cast<TGraph*>(gROOT->FindObjectAny("tGraphRmsLinear"));
+    TGraph* tGraphSigmaLinear = dynamic_cast<TGraph*>(gROOT->FindObjectAny("tGraphSigmaLinear"));
+    TGraph* tGraphRmsBinCenter = dynamic_cast<TGraph*>(gROOT->FindObjectAny("tGraphRmsBinCenter"));
+    TGraph* tGraphSigmaBinCenter = dynamic_cast<TGraph*>(gROOT->FindObjectAny("tGraphSigmaBinCenter"));
+    TGraph* tGraphRmsBinEdge = dynamic_cast<TGraph*>(gROOT->FindObjectAny("tGraphRmsBinEdge"));
+    TGraph* tGraphSigmaBinEdge = dynamic_cast<TGraph*>(gROOT->FindObjectAny("tGraphSigmaBinEdge"));
+
+    TGraph* tGraphHistoMeanLinear = dynamic_cast<TGraph*>(gROOT->FindObjectAny("tGraphHistoMeanLinear"));
+    TGraph* tGraphGausMeanLinear = dynamic_cast<TGraph*>(gROOT->FindObjectAny("tGraphGausMeanLinear"));
+    TGraph* tGraphHistoMeanBinCenter = dynamic_cast<TGraph*>(gROOT->FindObjectAny("tGraphHistoMeanBinCenter"));
+    TGraph* tGraphGausMeanBinCenter = dynamic_cast<TGraph*>(gROOT->FindObjectAny("tGraphGausMeanBinCenter"));
+    TGraph* tGraphHistoMeanBinEdge = dynamic_cast<TGraph*>(gROOT->FindObjectAny("tGraphHistoMeanBinEdge"));
+    TGraph* tGraphGausMeanBinEdge = dynamic_cast<TGraph*>(gROOT->FindObjectAny("tGraphGausMeanBinEdge"));
+
+    // Workaround to prevent (not understood) warning messages like
+    //   Warning in <TROOT::Append>: Replacing existing TH1: tGraphRmsBinCenter (Potential memory leak).
+    // from popping up when multiple named TGraph objects added to the list of gROOT memory objects are drawn
+    // onto the same pad.
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    gROOT->GetList()->Remove(tGraphRmsLinear);
+    gROOT->GetList()->Remove(tGraphSigmaLinear);
+    gROOT->GetList()->Remove(tGraphRmsBinCenter);
+    gROOT->GetList()->Remove(tGraphSigmaBinCenter);
+    gROOT->GetList()->Remove(tGraphRmsBinEdge);
+    gROOT->GetList()->Remove(tGraphSigmaBinEdge);
+
+    gROOT->GetList()->Remove(tGraphHistoMeanLinear);
+    gROOT->GetList()->Remove(tGraphGausMeanLinear);
+    gROOT->GetList()->Remove(tGraphHistoMeanBinCenter);
+    gROOT->GetList()->Remove(tGraphGausMeanBinCenter);
+    gROOT->GetList()->Remove(tGraphHistoMeanBinEdge);
+    gROOT->GetList()->Remove(tGraphGausMeanBinEdge);
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    if(tGraphRmsLinear && tGraphRmsBinCenter && tGraphRmsBinEdge)
+    {
+      fBoardOffsetGraphs->cd(1);
+      gPad->SetGridx();
+      gPad->SetGridy();
+      tGraphRmsLinear->SetMarkerColor(1);
+      tGraphRmsBinCenter->SetMarkerColor(4);
+      tGraphRmsBinEdge->SetMarkerColor(2);
+      tGraphRmsLinear->SetMarkerStyle(20);
+      tGraphRmsBinCenter->SetMarkerStyle(21);
+      tGraphRmsBinEdge->SetMarkerStyle(22);
+      tGraphRmsLinear->GetXaxis()->SetTitle("TDC index []");
+      tGraphRmsLinear->GetYaxis()->SetTitle("RMS [ps]");
+      tGraphRmsLinear->Draw("AP");
+      tGraphRmsBinCenter->Draw("P");
+      tGraphRmsBinEdge->Draw("P");
+
+      TLegend* tLegend41 = new TLegend(gPad->GetLeftMargin()+0.05,gPad->GetBottomMargin()+0.05,1.-gPad->GetRightMargin()-0.05,0.5);
+      tLegend41->SetName("tLegendRms");
+      tLegend41->SetHeader(Form("%d events",fEventCounter));
+      tEntry = tLegend41->AddEntry("tGraphRmsLinear","linear calibration","P");
+      tEntry->SetMarkerSize(1.5);
+      tEntry = tLegend41->AddEntry("tGraphRmsBinEdge","bin-by-bin edge","P");
+      tEntry->SetMarkerSize(1.5);
+      tEntry = tLegend41->AddEntry("tGraphRmsBinCenter","bin-by-bin center","P");
+      tEntry->SetMarkerSize(1.5);
+      tLegend41->Draw();
+
+    }
+
+    if(tGraphSigmaLinear && tGraphSigmaBinCenter && tGraphSigmaBinEdge)
+    {
+      fBoardOffsetGraphs->cd(2);
+      gPad->SetGridx();
+      gPad->SetGridy();
+      tGraphSigmaLinear->SetMarkerColor(1);
+      tGraphSigmaBinCenter->SetMarkerColor(4);
+      tGraphSigmaBinEdge->SetMarkerColor(2);
+      tGraphSigmaLinear->SetMarkerStyle(20);
+      tGraphSigmaBinCenter->SetMarkerStyle(21);
+      tGraphSigmaBinEdge->SetMarkerStyle(22);
+      tGraphSigmaLinear->GetXaxis()->SetTitle("TDC index []");
+      tGraphSigmaLinear->GetYaxis()->SetTitle("Sigma [ps]");
+      tGraphSigmaLinear->Draw("AP");
+      tGraphSigmaBinCenter->Draw("P");
+      tGraphSigmaBinEdge->Draw("P");
+
+      TLegend* tLegend42 = new TLegend(gPad->GetLeftMargin()+0.05,gPad->GetBottomMargin()+0.05,1.-gPad->GetRightMargin()-0.05,0.5);
+      tLegend42->SetName("tLegendSigma");
+      tLegend42->SetHeader(Form("%d events",fEventCounter));
+      tEntry = tLegend42->AddEntry("tGraphSigmaLinear","linear calibration","P");
+      tEntry->SetMarkerSize(1.5);
+      tEntry = tLegend42->AddEntry("tGraphSigmaBinEdge","bin-by-bin edge","P");
+      tEntry->SetMarkerSize(1.5);
+      tEntry = tLegend42->AddEntry("tGraphSigmaBinCenter","bin-by-bin center","P");
+      tEntry->SetMarkerSize(1.5);
+      tLegend42->Draw();
+
+    }
+
+    if(tGraphHistoMeanLinear && tGraphHistoMeanBinCenter && tGraphHistoMeanBinEdge)
+    {
+      fBoardOffsetGraphs->cd(3);
+      gPad->SetLogy();
+      gPad->SetGridx();
+      gPad->SetGridy();
+      tGraphHistoMeanLinear->SetMarkerColor(1);
+      tGraphHistoMeanBinCenter->SetMarkerColor(4);
+      tGraphHistoMeanBinEdge->SetMarkerColor(2);
+      tGraphHistoMeanLinear->SetMarkerStyle(20);
+      tGraphHistoMeanBinCenter->SetMarkerStyle(21);
+      tGraphHistoMeanBinEdge->SetMarkerStyle(22);
+      tGraphHistoMeanLinear->GetXaxis()->SetTitle("TDC index []");
+      tGraphHistoMeanLinear->GetYaxis()->SetTitle("h-Mean [clock cycles]");
+      tGraphHistoMeanLinear->Draw("AP");
+      tGraphHistoMeanBinCenter->Draw("P");
+      tGraphHistoMeanBinEdge->Draw("P");
+      tGraphHistoMeanLinear->GetYaxis()->SetRangeUser(1.,1000000000000.);
+
+    }
+
+    if(tGraphGausMeanLinear && tGraphGausMeanBinCenter && tGraphGausMeanBinEdge)
+    {
+      fBoardOffsetGraphs->cd(4);
+      gPad->SetLogy();
+      gPad->SetGridx();
+      gPad->SetGridy();
+      tGraphGausMeanLinear->SetMarkerColor(1);
+      tGraphGausMeanBinCenter->SetMarkerColor(4);
+      tGraphGausMeanBinEdge->SetMarkerColor(2);
+      tGraphGausMeanLinear->SetMarkerStyle(20);
+      tGraphGausMeanBinCenter->SetMarkerStyle(21);
+      tGraphGausMeanBinEdge->SetMarkerStyle(22);
+      tGraphGausMeanLinear->GetXaxis()->SetTitle("TDC index []");
+      tGraphGausMeanLinear->GetYaxis()->SetTitle("g-Mean [clock cycles]");
+      tGraphGausMeanLinear->Draw("AP");
+      tGraphGausMeanBinCenter->Draw("P");
+      tGraphGausMeanBinEdge->Draw("P");
+      tGraphGausMeanLinear->GetYaxis()->SetRangeUser(1.,1000000000000.);
+
+    }
+
+
+    for(Int_t iBoardIndex = 0; iBoardIndex < fNumberOfTDC; iBoardIndex++)
+    {
+      TH1D* tOffsetsLinear = dynamic_cast<TH1D*>(gROOT->FindObjectAny(Form("tOffsetsLinear%d",iBoardIndex)));
+      TH1D* tOffsetsBinCenter = dynamic_cast<TH1D*>(gROOT->FindObjectAny(Form("tOffsetsBinCenter%d",iBoardIndex)));
+      TH1D* tOffsetsBinEdge = dynamic_cast<TH1D*>(gROOT->FindObjectAny(Form("tOffsetsBinEdge%d",iBoardIndex)));
+
+      if( tOffsetsLinear )
+      {
+        fBoardOffsetLinear->cd(iBoardIndex+1);
+        gPad->SetLogy();
+        tOffsetsLinear->GetXaxis()->SetRangeUser(tOffsetsLinear->GetMean()-0.3,tOffsetsLinear->GetMean()+0.3);
+        tOffsetsLinear->Draw();
+        gPad->Update();
+        (tOffsetsLinear->GetFunction("gaus"))->SetLineWidth(3);
+        (tOffsetsLinear->GetFunction("gaus"))->Draw("same");
+        gPad->Update();
+        gPad->Modified();
+      }
+
+      if( tOffsetsBinCenter )
+      {
+        fBoardOffsetBinCenter->cd(iBoardIndex+1);
+        gPad->SetLogy();
+        tOffsetsBinCenter->GetXaxis()->SetRangeUser(tOffsetsBinCenter->GetMean()-0.3,tOffsetsBinCenter->GetMean()+0.3);
+        tOffsetsBinCenter->Draw();
+        gPad->Update();
+        (tOffsetsBinCenter->GetFunction("gaus"))->SetLineWidth(3);
+        (tOffsetsBinCenter->GetFunction("gaus"))->Draw("same");
+        gPad->Update();
+        gPad->Modified();
+      }
+
+      if( tOffsetsBinEdge )
+      {
+        fBoardOffsetBinEdge->cd(iBoardIndex+1);
+        gPad->SetLogy();
+        tOffsetsBinEdge->GetXaxis()->SetRangeUser(tOffsetsBinEdge->GetMean()-0.3,tOffsetsBinEdge->GetMean()+0.3);
+        tOffsetsBinEdge->Draw();
+        gPad->Update();
+        (tOffsetsBinEdge->GetFunction("gaus"))->SetLineWidth(3);
+        (tOffsetsBinEdge->GetFunction("gaus"))->Draw("same");
+        gPad->Update();
+        gPad->Modified();
+      }
+    }
+
+  }
+
+  if( fbMonitorInspection )
+  {
+    fLeadingEdgeOnly->Update();
+    fTrailingEdgeOnly->Update();
+    fUnequalEdgeCounts->Update();
+    fTimeOverThreshold->Update();
+    fLeadingPosition->Update();
+    fTrailingPosition->Update();
+    fBoardFineTime->Update();
+    fRefChFineTime->Update();
+  }
+
   if( fbMonitorCts )
   {
     fCtsTriggerMonitor->Update();
@@ -881,6 +1393,31 @@ void CbmTofOnlineDisplay::Finish()
   {
     fDigiStatusMonitor->Update();
   }
+
+}
+
+Bool_t CbmTofOnlineDisplay::InitParameters()
+{
+   // Get Base Container
+   FairRun* ana = FairRun::Instance();
+   if( 0 == ana )
+      return kFALSE;
+   FairRuntimeDb* rtdb=ana->GetRuntimeDb();
+   if( 0 == rtdb )
+      return kFALSE;
+
+   // Unpacker parameter
+   fMbsUnpackPar = (TMbsUnpackTofPar*) (rtdb->getContainer("TMbsUnpackTofPar"));
+   if( 0 == fMbsUnpackPar )
+      return kFALSE;
+
+   // Call needed here to make available calibration parameters
+   // in the TRB unpack stage
+   fMbsCalibPar = (TMbsCalibTofPar*) (rtdb->getContainer("TMbsCalibTofPar"));
+   if( 0 == fMbsCalibPar )
+      return kFALSE;
+
+   return kTRUE;
 }
 
 ClassImp(CbmTofOnlineDisplay)

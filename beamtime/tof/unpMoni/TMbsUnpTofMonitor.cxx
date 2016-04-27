@@ -8,6 +8,7 @@
 // General MBS headers
 #include "TofDef.h"
 #include "TMbsUnpackTofPar.h"
+#include "TMbsCalibTofPar.h"
 
 // ToF specific headers
 #include "TTofTriglogUnpacker.h"
@@ -30,6 +31,7 @@
 TMbsUnpTofMonitor::TMbsUnpTofMonitor() : 
    FairTask("MbsUnpackTofCustom"),
    fMbsUnpackPar(NULL),
+   fMbsCalibPar(NULL),
    fTriglogUnp(NULL),
    fScomUnp(NULL),
    fScal2014Unp(NULL),
@@ -54,6 +56,7 @@ TMbsUnpTofMonitor::TMbsUnpTofMonitor() :
 TMbsUnpTofMonitor::TMbsUnpTofMonitor(const char* name, Int_t verbose) :
    FairTask(name, verbose),
    fMbsUnpackPar(0),
+   fMbsCalibPar(0),
    fTriglogUnp(NULL),
    fScomUnp(NULL),
    fScal2014Unp(NULL),
@@ -177,6 +180,12 @@ Bool_t TMbsUnpTofMonitor::InitParameters()
    if( 0 == fMbsUnpackPar )
       return kFALSE;
 
+   // Call needed here to make available calibration parameters
+   // in the TRB unpack stage
+   fMbsCalibPar = (TMbsCalibTofPar*) (rtdb->getContainer("TMbsCalibTofPar"));
+   if( 0 == fMbsCalibPar )
+      return kFALSE;
+
    return kTRUE;
 } 
 // ------------------------------------------------------------------
@@ -284,7 +293,7 @@ Bool_t TMbsUnpTofMonitor::CreateUnpackers()
       fGet4Unp = new TTofGet4Unpacker( fMbsUnpackPar );
 */
    if( 0 < fMbsUnpackPar->GetNbActiveBoards( tofMbs::trbtdc ) )
-      fTrbTdcUnp = new TTofTrbTdcUnpacker( fMbsUnpackPar );
+      fTrbTdcUnp = new TTofTrbTdcUnpacker( fMbsUnpackPar, fMbsCalibPar );
 
    return kTRUE;
 }

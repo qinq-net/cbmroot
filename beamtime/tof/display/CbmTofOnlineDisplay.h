@@ -3,6 +3,12 @@
 
 #include "FairTask.h"
 
+#include <vector>
+
+// Parameters
+class TMbsUnpackTofPar;
+class TMbsCalibTofPar;
+
 class TClonesArray;
 class TCanvas;
 class TH2;
@@ -51,6 +57,8 @@ class CbmTofOnlineDisplay : public FairTask
     void MonitorTdcStatus( Bool_t bMonitor = kTRUE){ fbMonitorTdcStatus = bMonitor; };
     void MonitorFSMockup( Bool_t bMonitor = kTRUE){ fbMonitorFSMockup = bMonitor; };
     void MonitorDigiStatus( Bool_t bMonitor = kTRUE){ fbMonitorDigiStatus = bMonitor; };
+    void MonitorInspection( Bool_t bMonitor = kTRUE){ fbMonitorInspection = bMonitor; };
+    void MonitorCalibration( Bool_t bMonitor = kTRUE){ fbMonitorCalibration = bMonitor; };
 
     void SetNumberOfSEB(Int_t val) { fNumberOfSEB = val; }
 
@@ -68,6 +76,10 @@ class CbmTofOnlineDisplay : public FairTask
 
     /** Output array to  new data level**/
     //  TClonesArray* <OutputDataLevel>;
+
+    Bool_t InitParameters();
+    TMbsUnpackTofPar    *fMbsUnpackPar;
+    TMbsCalibTofPar     *fMbsCalibPar;
 
     Bool_t   fbMonitorTdcOcc;
     TCanvas* fTdcChannelOccupancy; //!
@@ -118,6 +130,22 @@ class CbmTofOnlineDisplay : public FairTask
     TLegend* fLegStackFreeTrloOutA; //!
     TLegend* fLegStackFreeTrloOutB; //!
     Bool_t   fbRatesSlidingScale; //!
+
+    Bool_t   fbMonitorInspection;
+    TCanvas* fLeadingEdgeOnly; //!
+    TCanvas* fTrailingEdgeOnly; //!
+    TCanvas* fUnequalEdgeCounts; //!
+    TCanvas* fTimeOverThreshold; //!
+    TCanvas* fLeadingPosition; //!
+    TCanvas* fTrailingPosition; //!
+    TCanvas* fBoardFineTime; //!
+    TCanvas* fRefChFineTime; //!
+
+    Bool_t   fbMonitorCalibration;
+    TCanvas* fBoardOffsetGraphs; //!
+    TCanvas* fBoardOffsetLinear; //!
+    TCanvas* fBoardOffsetBinCenter; //!
+    TCanvas* fBoardOffsetBinEdge; //!
 
     CbmTofOnlineDisplay(const CbmTofOnlineDisplay&);
     CbmTofOnlineDisplay operator=(const CbmTofOnlineDisplay&);

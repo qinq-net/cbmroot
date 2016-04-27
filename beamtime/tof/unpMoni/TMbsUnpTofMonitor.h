@@ -12,6 +12,7 @@
 
 // Parameters
 class TMbsUnpackTofPar;
+class TMbsCalibTofPar;
 
 // Unpackers
 class TTofTriglogUnpacker;
@@ -66,6 +67,7 @@ class TMbsUnpTofMonitor : public FairTask
       // Parameters
       Bool_t InitParameters();
       TMbsUnpackTofPar    *fMbsUnpackPar;
+      TMbsCalibTofPar     *fMbsCalibPar;
       
       // Unpackers
       TTofTriglogUnpacker   * fTriglogUnp;

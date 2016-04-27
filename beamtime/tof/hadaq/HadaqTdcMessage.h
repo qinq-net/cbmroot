@@ -95,9 +95,9 @@ namespace hadaq {
 
          static Double_t SimpleFineCalibr(UInt_t fine)
          {
-            if (fine<=gFineMinValue) return 0.;
-            if (fine>=gFineMaxValue) return CoarseUnit();
-            return (CoarseUnit() * (fine - gFineMinValue)) / (gFineMaxValue - gFineMinValue);
+            if (fine < gFineMinValue) return 0.;
+            if (fine > gFineMaxValue) return 1.;
+            return (1.*(fine - (gFineMinValue - 1) - 0.5)/(gFineMaxValue - gFineMinValue + 1));
          }
 
          /** Method set static limits, which are used for simple interpolation of time for fine counter */
@@ -106,8 +106,24 @@ namespace hadaq {
             gFineMinValue = min;
             gFineMaxValue = max;
          }
-   };
 
+         static void CoarseOverflow(Long64_t& liEdgeCoarseTime, const Long64_t& liRefCoarseTime)
+         {
+           // hit arrived prior to reference hit but the full coarse counter overflowed in between
+           // time difference will yield a huge positive number
+           if(liEdgeCoarseTime - liRefCoarseTime > trbtdc::kliFullCoarseSize/2)
+           {
+             liEdgeCoarseTime -= trbtdc::kliFullCoarseSize;
+           }
+           // hit arrived posterior to reference hit but the full coarse counter overflowed in between
+           // time difference will yield a huge negative number
+           else if(liEdgeCoarseTime - liRefCoarseTime < -trbtdc::kliFullCoarseSize/2)
+           {
+             liEdgeCoarseTime += trbtdc::kliFullCoarseSize;
+           }
+         }
+
+      };
 }
 
 #endif

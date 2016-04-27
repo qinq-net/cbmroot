@@ -1578,6 +1578,46 @@ Int_t TMbsCalibTofPar::GetTotMode( UInt_t uType ) const
          break;
    } // switch( uType )
 }
+
+Bool_t TMbsCalibTofPar::CheckTotInvFlag( UInt_t uType, UInt_t uSlot ) const
+{
+   switch( uType )
+   {
+      case toftdc::caenV1290:
+         if( static_cast<Int_t>(uSlot) < fiNbCaenTotInvFlag && 
+             0 < fiTotInversionFlagCaen.GetSize() )
+         return kTRUE;
+            else return kFALSE;
+         break;
+      case toftdc::vftx:
+         if( static_cast<Int_t>(uSlot) < fiNbVftxTotInvFlag && 
+             0 < fiTotInversionFlagVftx.GetSize() )
+         return kTRUE;
+            else return kFALSE;
+         break;
+      case toftdc::trb:
+         if( static_cast<Int_t>(uSlot) < fiNbTrb3TotInvFlag && 
+             0 < fiTotInversionFlagTrb3.GetSize() )
+         return kTRUE;
+            else
+            {
+             LOG(ERROR)<<Form("Only %d inversion flags available.",fiNbTrb3TotInvFlag)<<FairLogger::endl;
+             return kFALSE;
+            }
+         break;
+      case toftdc::get4:
+         if( static_cast<Int_t>(uSlot) < fiNbGet4TotInvFlag && 
+             0 < fiTotInversionFlagGet4.GetSize() )
+            return kTRUE;
+            else return kFALSE;
+         break;
+      case toftdc::undef:
+      default:
+         return kFALSE;
+         break;
+   } // switch( uType )
+}
+
 Int_t TMbsCalibTofPar::GetTotInvFlag( UInt_t uType, UInt_t uSlot, UInt_t uChan ) const
 {
    switch( uType )

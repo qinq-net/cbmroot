@@ -67,11 +67,20 @@ UInt_t TTofTrbTdcBoard::AddData( TTofTrbTdcData & dataIn )
    if( NULL !=  fDataCollection )
    {
       Int_t iNextIndex = fDataCollection->GetEntriesFast();
-      if( iNextIndex < static_cast<Int_t>(trbtdc::kuNbMulti * GetChannelNb()) )
-      {
+      // Limiting the TClonesArray to trbtdc::kuNbMulti*trbtdc::kuNbChan entries
+      // might lead to unwanted data discard if the system is readout periodically
+      // without a trigger window enabled. The TClonesArray automatically expands
+      // if the original number of entries is exceeded by an out-of-range call
+      // of TClonesArray::ConstructedAt(). Due to the initial reservation of
+      // memory for trbtdc::kuNbMulti*trbtdc::kuNbChan hits per TDC per event
+      // we will most likely not face any performance penalty due to array
+      // expansion in triggered readout mode.
+//      if( iNextIndex < static_cast<Int_t>(trbtdc::kuNbMulti * GetChannelNb()) )
+//      {
          TTofTrbTdcData * dataSlot = (TTofTrbTdcData *)fDataCollection->ConstructedAt( iNextIndex );
+         // (implicit) copy assignment operator
          *dataSlot = dataIn;
-      } // if( iNextIndex < toftdc::kuDefNbMulti * GetChannelNb() )
+//      } // if( iNextIndex < toftdc::kuDefNbMulti * GetChannelNb() )
       return fDataCollection->GetEntriesFast();
    } // if( NULL !=  fDataCollection )
       else return 0;

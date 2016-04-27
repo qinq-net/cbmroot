@@ -18,6 +18,7 @@
 #include <map>
 
 class TMbsUnpackTofPar;
+class TMbsCalibTofPar;
 
 namespace hadaq
 {
@@ -31,13 +32,15 @@ namespace trbtdc
 */
 
 class TClonesArray;
-class TH1;
+class TH1I;
+class TH1D;
+class TH2I;
 class TDirectory;
 
 class TTofTrbTdcUnpacker : public TObject
 {
    public:
-      TTofTrbTdcUnpacker( TMbsUnpackTofPar * parIn );
+      TTofTrbTdcUnpacker( TMbsUnpackTofPar * parUnpackIn, TMbsCalibTofPar * parCalibIn );
       ~TTofTrbTdcUnpacker();
 
       // unsure if needed
@@ -46,7 +49,8 @@ class TTofTrbTdcUnpacker : public TObject
 
       Int_t ProcessData( hadaq::RawSubevent* tSubevent, UInt_t uStartIndex );
 
-      void SetCalibTrigger( UInt_t uTriggerType ) { fbCalibTrigger = (uTriggerType & 0xd); };
+      void SetCalibTrigger( UInt_t uTriggerType ) { fbCalibTrigger = (0xd == uTriggerType); };
+      static void SetInspection( Bool_t bInspection ) { fbInspection = bInspection;}
 
       void CreateHistos();
       void FillHistos();
@@ -59,28 +63,54 @@ class TTofTrbTdcUnpacker : public TObject
       TTofTrbTdcUnpacker& operator=(const TTofTrbTdcUnpacker&);
 
       TMbsUnpackTofPar * fParUnpack;
+      TMbsCalibTofPar * fParCalib;
       UInt_t   fuNbActiveTrbTdc;
       Bool_t fbCalibTrigger;
+      static Bool_t fbInspection;
       Bool_t fbJointEdgesChannel;
       TClonesArray * fTrbTdcBoardCollection;
 
       // TDC histograms
-      TH1* fTrbTdcRingBufferOverflow;
+      TH1I* fTrbTdcRingBufferOverflow;
       static std::map<Int_t,Bool_t> fmRingBufferOverflow;
+      static Int_t fiAcceptedHits;
+      static Int_t fiAvailableHits;
+
+      std::vector<TH1D*> fLeadingOnlyShares;
+      std::vector<TH1D*> fTrailingOnlyShares;
+      std::vector<TH1D*> fUnequalEdgesShares;
+
+      std::vector< std::vector<Int_t> > fiLeadingOnlyBuffers;
+      std::vector< std::vector<Int_t> > fiTrailingOnlyBuffers;
+      std::vector< std::vector<Int_t> > fiUnequalEdgesBuffers;
+      std::vector< std::vector<Int_t> > fiAllNonEmptyBuffers;
+
+      std::vector<TH2I*> fTrbTdcBoardTot;
+      std::vector<TH2I*> fTrbTdcLeadingPosition;
+      std::vector<TH2I*> fTrbTdcTrailingPosition;
+      TH2I* fTrbTdcRefChannelFineTime;
+      std::vector<TH2I*> fTrbTdcBoardFineTime;
 
       // TDC board histograms
       // channel occupancy distribution
-      std::vector<TH1*> fTrbTdcChannelOccupancy;
+      std::vector<TH1I*> fTrbTdcChannelOccupancy;
+
+/*
       // channel fine time overshoot distribution
-      std::vector<TH1*> fTrbTdcChannelFineTimeOvershoot;
+      std::vector<TH1I*> fTrbTdcChannelFineTimeOvershoot;
       // channel undetected hits distribution
-      std::vector<TH1*> fTrbTdcChannelUnprocessedHits;
+      std::vector<TH1I*> fTrbTdcChannelUnprocessedHits;
+*/
 
       // TDC channel histograms
       // channel fine time distribution
-      std::vector< std::vector<TH1*> > fTrbTdcChannelFineTime;
+      std::vector< std::vector<TH1I*> > fTrbTdcChannelFineTime;
+
+/*
       // channel coarse time distribution
-      std::vector< std::vector<TH1*> > fTrbTdcChannelCoarseTime;
+      std::vector< std::vector<TH1I*> > fTrbTdcChannelCoarseTime;
+*/
+      std::vector< std::vector<TH1I*> > fTrbTdcChannelToT;
 
       UInt_t fuEventIndex;
       

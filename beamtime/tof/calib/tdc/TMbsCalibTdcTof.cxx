@@ -527,6 +527,7 @@ Bool_t TMbsCalibTdcTof::CreateHistogramms()
                                           uChanInd, toftdc::ksTdcHistName[ uType ].Data(), uTdc),
                                     7500, -50000, 100000,
                                     vftxtdc::kuNbMulti, 1, vftxtdc::kuNbMulti + 1 );
+                                    // TODO: why VFTX values here?
             } // for( UInt_t uChanInd = 0; uChanInd< uNbChan; uChanInd++) 
             
             //Multiplicity
@@ -1037,6 +1038,9 @@ Bool_t TMbsCalibTdcTof::LoadCalibrationFile()
                LOG(INFO)<<" => No initial calib loading!"<<FairLogger::endl;
                continue;
             }
+            // TODO: Does not handle the TRB case!
+            // One could replace trbtdc::kiFineCounterSize everywhere by trbtdc::time_FineTimeBitMask + 1
+            // to handle this case like every other TDC
          
             TString sInfoLoading = "Loaded initial calibration histograms for following "+
                                    toftdc::ksTdcHistName[ uType ] + " TDC channels:";
@@ -1190,6 +1194,9 @@ Bool_t TMbsCalibTdcTof::LoadSingleCalibrations()
          LOG(INFO)<<" => No initial calib loading!"<<FairLogger::endl;
          continue;
       }
+      // TODO: Does not handle the TRB case!
+      // One could replace trbtdc::kiFineCounterSize everywhere by trbtdc::time_FineTimeBitMask + 1
+      // to handle this case like every other TDC
 
       TString sInfoLoading = "Loaded initial calibration histograms for following "+
                              toftdc::ksTdcHistName[ uType ] + " TDC channels:";
@@ -2571,6 +2578,9 @@ Bool_t TMbsCalibTdcTof::LoadCalibrationFileRef()
                LOG(INFO)<<" => No initial calib loading!"<<FairLogger::endl;
                continue;
             }
+            // TODO: Does not handle the TRB case!
+            // One could replace trbtdc::kiFineCounterSize everywhere by trbtdc::time_FineTimeBitMask + 1
+            // to handle this case like every other TDC
          
             TString sInfoLoading = "Loaded initial calibration histograms for following "+
                                    toftdc::ksTdcHistName[ uType ] + " TDC reference channel:";
@@ -2681,6 +2691,9 @@ Bool_t TMbsCalibTdcTof::LoadSingleCalibrationsRef()
          LOG(INFO)<<" => No initial calib loading!"<<FairLogger::endl;
          continue;
       }
+      // TODO: Does not handle the TRB case!
+      // One could replace trbtdc::kiFineCounterSize everywhere by trbtdc::time_FineTimeBitMask + 1
+      // to handle this case like every other TDC
 
       TString sInfoLoading = "Loaded initial calibration histograms for following "+
                              toftdc::ksTdcHistName[ uType ] + " TDC reference channel:";
@@ -2864,6 +2877,8 @@ Bool_t TMbsCalibTdcTof::CalibFactorsCalcReference( UInt_t uType, UInt_t uBoard, 
             {
                iSum = iSum + iBinContent;
                fdCorr[uType][uBoard][iBin] = (Double_t)iSum / dTotalEntriesInHisto;
+               //TODO-CHS: must be fdCorrRef!!!
+
 //               fhDnlChan[uType][iHistoIndex]->Fill(iBin, (Double_t)iBinContent/dTotalEntriesInHisto );
 //               fhBinSizeChan[uType][iHistoIndex]->Fill( dClockCycle*(Double_t)iBinContent/dTotalEntriesInHisto );
             } // if(bincontrol[iBin])
@@ -2903,6 +2918,8 @@ Bool_t TMbsCalibTdcTof::CalibFactorsCalcReference( UInt_t uType, UInt_t uBoard, 
       {
          iSum = iSum + iBinContent;
          fdCorr[uType][uBoard][iBin] = (Double_t)iSum / dTotalEntriesInHisto;
+         //TODO-CHS: must be fdCorrRef!!!
+
 //         fhDnlChan[uType][uBoard]->Fill(iBin, (Double_t)iBinContent/dTotalEntriesInHisto );
 //         fhBinSizeChan[uType][uBoard]->Fill( dClockCycle*(Double_t)iBinContent/dTotalEntriesInHisto );
       } // if(bincontrol[iBin])
@@ -3244,6 +3261,12 @@ Bool_t TMbsCalibTdcTof::CalibrateReference(UInt_t uType, UInt_t uBoard)
          iCoarseTime -= iMainTriggerCoarseTime & 0x7FFFFFFF;
       } // if( kTRUE == fMbsCalibPar->UseCoarse()
       fdTdcReference[uType][uBoard]  = dClockCycle * iCoarseTime;
+      //TODO: The total coarse time range (including the epoch counter) spans
+      //      values between [0, 2^39-1] or [0, 5.5e11]. The double floating
+      //      point precision is 1,1e-16. The coarse counter granularity is 5 ns.
+      //      The maximum time measurable by a TRB-TDC, 5.5e11*5 ns = 2.7e12 ns,
+      //      would have a maximum absolute error of 0.3 ps if stored in a
+      //      double floating point variable which is sufficient for our calculations.
 
       Int_t iNbEntriesFtHist = fhFineTimeRef[uType][uBoard]->GetEntries();
       if( NULL != fhInitialCalibHistoRef[uType][uBoard])
@@ -3292,7 +3315,8 @@ Bool_t TMbsCalibTdcTof::CalibrateReference(UInt_t uType, UInt_t uBoard)
          if( kTRUE == bInitialThere )
             if( NULL != fhFineTimeRef[ uType ][ uBoard ] )
                bInitialThere = kTRUE;
-         
+         //TODO: The above piece of code is never executed!!!
+
          // Check whether we should use the initial calibration on top of the new data
          Bool_t bUseInitial = bInitialThere;
          if( 0 < fMbsCalibPar->GetMinHitCalibNewOnly() &&
