@@ -208,6 +208,7 @@ If(_fairroot_version_found VERSION_LESS 15.11.2)
   Message("RICH: FairRoot Version less 15.11.2")
 Else()
   ADD_DEFINITIONS(-DVERSION_LEAST_151102)  
+  Set(DEFINITIONS VERSION_LEAST_151102)
   Message("RICH: FairRoot Version at least 15.11.2")
 EndIf()
 
@@ -232,7 +233,7 @@ EndIf(TBB_FOUND)
 
 If(NOT OldFairSource)
   Add_Definitions(-D_NewFairSource)
-  Set(DEFINITIONS _NewFairSource)
+  Set(DEFINITIONS ${DEFINITIONS} _NewFairSource)
 EndIf()
 
 Set(LIBRARY_NAME CbmRich)
