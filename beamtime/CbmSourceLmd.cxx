@@ -487,9 +487,9 @@ Int_t CbmSourceLmd::ReadEvent()
 	Int_t val = dynamic_cast<CbmAuxDigi*>(fCurrentDigi)->GetRocId();
 	if ( val == 666 ) {
 	  LOG(INFO) << "In Old Aux RocId: "<< val<<FairLogger::endl;
-	  FillBaselineDataContainer();
+	  Int_t retval = FillBaselineDataContainer();
 	  fNofEvents++;
-	  return 0;
+	  return retval;
 	} else {
 	  new( (*fAuxDigis)[fAuxDigis->GetEntriesFast()])
 	    CbmAuxDigi(*(dynamic_cast<CbmAuxDigi*>(fCurrentDigi)));
@@ -792,7 +792,7 @@ void CbmSourceLmd::Reset()
 {
 }
 
-void CbmSourceLmd::FillBaselineDataContainer()
+Int_t CbmSourceLmd::FillBaselineDataContainer()
 {
 
   // --- Clear output arrays
@@ -838,7 +838,7 @@ void CbmSourceLmd::FillBaselineDataContainer()
         LOG(INFO) << "Aux RocId: "<< val<<FairLogger::endl;
         LOG(INFO) << "Leaving FillBaselineDataContainer after " << 
 	  (fNofDigis[kTutDet] - _nofevents) << " events" << FairLogger::endl;
-	return;
+	return 0;
       } else {
         //  LOG(ERROR) << "Between baseline start and end marker there should be only sts data" <<FairLogger::endl;
       }
@@ -850,7 +850,7 @@ void CbmSourceLmd::FillBaselineDataContainer()
     fCurrentDigi = GetNextData();
     if ( ! fCurrentDigi ) {
       LOG(INFO) << "No more input data. End the run." << FairLogger::endl;
-      return;  // no more data; trigger end of run
+      return 1;  // no more data; trigger end of run
     }
   }
 }

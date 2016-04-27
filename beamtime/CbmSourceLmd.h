@@ -41,6 +41,13 @@ class CbmSourceLmd : public FairSource
 #else
     Int_t ReadEvent();
 #endif
+
+#ifdef VERSION_LESS_151102
+    enum Source_Type {kONLINE, kFILE};
+#endif            
+
+    Source_Type GetSourceType() {return kONLINE;}
+
     virtual void Close();
     virtual void Reset();
 
@@ -135,7 +142,7 @@ class CbmSourceLmd : public FairSource
      **/
     CbmDigi* GetNextData();
 
-    void FillBaselineDataContainer();
+    Int_t FillBaselineDataContainer();
     
     CbmSourceLmd(const CbmSourceLmd& source);
     CbmSourceLmd& operator=(const CbmSourceLmd&);

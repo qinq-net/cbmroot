@@ -59,6 +59,12 @@ class CbmSourceLmdNew : public FairSource
     Int_t ReadEvent();
 #endif
 
+#ifdef VERSION_LESS_151102
+    enum Source_Type {kONLINE, kFILE};
+#endif            
+
+    Source_Type GetSourceType() {return kONLINE;}
+
     virtual void Close();
 
     virtual void Reset();
