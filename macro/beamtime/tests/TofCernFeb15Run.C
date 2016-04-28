@@ -17,7 +17,8 @@ void TofCernFeb15Run( Int_t nEvents = 2 )
    // ------------------------------------------------------------------------
    
    FairRunOnline *run = new FairRunOnline ();
-   Bool_t hasFairMonitor = Has_Fair_Monitor();
+//   Bool_t hasFairMonitor = Has_Fair_Monitor();
+   Bool_t hasFairMonitor = kFALSE;
    if (hasFairMonitor) {
     FairMonitor::GetMonitor()->EnableMonitor(kTRUE);
    }

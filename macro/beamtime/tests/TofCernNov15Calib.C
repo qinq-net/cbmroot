@@ -25,7 +25,8 @@ void TofCernNov15Calib( Int_t nEvents = 10000 )
    // ------------------------------------------------------------------------
    
    FairRunOnline *run = new FairRunOnline ();
-   Bool_t hasFairMonitor = Has_Fair_Monitor();
+//   Bool_t hasFairMonitor = Has_Fair_Monitor();
+   Bool_t hasFairMonitor = kFALSE;
    if (hasFairMonitor) {
     FairMonitor::GetMonitor()->EnableMonitor(kTRUE);
    }
