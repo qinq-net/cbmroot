@@ -131,7 +131,11 @@ Bool_t CbmHldSource::Init()
 // =============================================================================
 
 // =============================================================================
-Int_t CbmHldSource::ReadEvent(UInt_t /*iev*/)
+#ifdef _NewFairSource 
+Int_t CbmHldSource::ReadEvent(UInt_t)
+#else
+Int_t CbmHldSource::ReadEvent()      
+#endif
 {
   // return values: 0 -- all fine
   //                1 -- source could not read event from file (stop event loop)

@@ -188,6 +188,39 @@ If(_UINT8_T_EXIST)
   Set(DEFINITIONS HAVE_UINT8_T_HEADER_FILE)
 EndIf()
 
+If(NOT OldFairSource)
+  Add_Definitions(-D_NewFairSource)
+  Set(DEFINITIONS ${DEFINITIONS} _NewFairSource)
+EndIf()
+
+Execute_Process(COMMAND $ENV{FAIRROOTPATH}/bin/fairroot-config --version
+                OUTPUT_VARIABLE _fairroot_version
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+               )
+String(REGEX MATCH "v-([0-9]+)\\.([0-9]+)([a-z]*)" _version_matches
+"${_fairroot_version}")
+Set(FairRoot_VERSION_MAJOR ${CMAKE_MATCH_1})
+Set(FairRoot_VERSION_MINOR ${CMAKE_MATCH_2})
+Set(FairRoot_VERSION_PATCH ${CMAKE_MATCH_3})
+
+If(FairRoot_VERSION_PATCH MATCHES "a")
+  Set(FairRoot_VERSION_PATCH 1)
+ElseIf(FairRoot_VERSION_PATCH MATCHES "b")
+  Set(FairRoot_VERSION_PATCH 2)
+Else()
+  Set(FairRoot_VERSION_PATCH 0)
+EndIf()
+
+Set(_fairroot_version_found
+${FairRoot_VERSION_MAJOR}.${FairRoot_VERSION_MINOR}.${FairRoot_VERSION_PATCH})
+If(_fairroot_version_found VERSION_LESS 15.11.2)
+  ADD_DEFINITIONS(-DVERSION_LESS_151102)
+  Set(DEFINITIONS ${DEFINITIONS} VERSION_LESS_151102)
+  Message("FairRoot Version less 15.11.2")
+Else()
+  Message("FairRoot Version at least 15.11.2")
+EndIf()
+
 
 #If(BUILD_BEAMTIME)
 #  Set_Source_Files_Properties(PROPERTIES tdc/get4/TTofGet4Unpacker.cxx PROPERTIES
