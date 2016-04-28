@@ -8,7 +8,7 @@
 #ifndef CBMSOURCELMD_H
 #define CBMSOURCELMD_H
 
-#include "FairSource.h"
+#include "FairOnlineSource.h"
 #include "CbmDetectorList.h"
 
 #include "TList.h"
@@ -27,7 +27,7 @@ class CbmTbDaqBuffer;
 class CbmTbEvent;
 class TClonesArray;
 
-class CbmSourceLmd : public FairSource
+class CbmSourceLmd : public FairOnlineSource
 {
   public:
     CbmSourceLmd();

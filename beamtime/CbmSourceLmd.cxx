@@ -31,7 +31,7 @@ using std::endl;
 using std::map;
 
 CbmSourceLmd::CbmSourceLmd()
-  : FairSource(),
+  : FairOnlineSource(),
     fInputFileName(""),
     fInputFileList(),
     fFileCounter(0),
@@ -82,7 +82,7 @@ CbmSourceLmd::CbmSourceLmd()
 }
 
 CbmSourceLmd::CbmSourceLmd(const char* inFile)
-  : FairSource(),
+  : FairOnlineSource(),
     fInputFileName(inFile),
     fInputFileList(new TObjString(inFile)),
     fFileCounter(0),
