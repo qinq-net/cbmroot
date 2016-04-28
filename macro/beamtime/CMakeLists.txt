@@ -30,9 +30,9 @@ GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/beamtime/tests/TofCernNov1
 add_test(TofCernNov15Calib ${CBMROOT_BINARY_DIR}/macro/beamtime/tests/TofCernNov15Calib.sh )
 SET_TESTS_PROPERTIES(TofCernNov15Calib PROPERTIES TIMEOUT "600")
 SET_TESTS_PROPERTIES(TofCernNov15Calib PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-SET_TESTS_PROPERTIES(TofCernNov15Calib PROPERTIES DEPENDS TofCernFeb15Run)
-Set(_FileName_Dependency tests/data/TofCernFeb15Run_ok)
-Set_Tests_Properties(TofCernNov15Calib PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
+#SET_TESTS_PROPERTIES(TofCernNov15Calib PROPERTIES DEPENDS TofCernFeb15Run)
+#Set(_FileName_Dependency tests/data/TofCernFeb15Run_ok)
+#Set_Tests_Properties(TofCernNov15Calib PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
 
 GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/beamtime/tests/TofCernNov15Run.C)
 add_test(TofCernNov15Run ${CBMROOT_BINARY_DIR}/macro/beamtime/tests/TofCernNov15Run.sh ${NumEvents} )
