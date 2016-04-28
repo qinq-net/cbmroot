@@ -1404,8 +1404,9 @@ void AddTrackHistogramsReconstruction(  PairAnalysisHistos *histos)
   //
   // add track histograms
   //
+  histos->AddHistogram("Track", PairAnalysisHelper::MakeLinBinning(80,0.,20.),    PairAnalysisVarManager::kImpactParam);
   histos->AddHistogram("Track", PairAnalysisHelper::MakeLinBinning(100,0.,500.),  PairAnalysisVarManager::kNTrk);
-  histos->AddHistogram("Track", PairAnalysisHelper::MakeLinBinning(100,0.,5000.), PairAnalysisVarManager::kNTrkMC);
+  histos->AddHistogram("Track", PairAnalysisHelper::MakeLinBinning(100,0.,50000.), PairAnalysisVarManager::kNTrkMC);
   histos->AddHistogram("Track", PairAnalysisHelper::MakeLinBinning(101,-0.05,10.05),  PairAnalysisVarManager::kChi2NDFtoVtx);
   histos->AddHistogram("Track", PairAnalysisHelper::MakeLinBinning(100,0.,0.01),  PairAnalysisVarManager::kImpactParXY);
   histos->AddHistogram("Track", PairAnalysisHelper::MakeLinBinning(100,0.,0.01),  PairAnalysisVarManager::kImpactParXY,
@@ -1446,26 +1447,36 @@ void AddTrackHistogramsMatching(        PairAnalysisHistos *histos)
   //  histos->AddProfile("Track", PairAnalysisHelper::MakeLinBinning(100,0.,10.), PairAnalysisVarManager::kP, "abs(P-PMC)/PMC", "S");
   /// MVD
   histos->AddHistogram("Track", PairAnalysisHelper::MakeLinBinning(2,-0.5,1.5),  PairAnalysisVarManager::kMVDisMC);
+  histos->AddProfile(  "Track", PairAnalysisHelper::MakeLinBinning(80,0.,20.),  PairAnalysisVarManager::kImpactParam, PairAnalysisVarManager::kMVDisMC,"I");
+  histos->AddProfile(  "Track", PairAnalysisHelper::MakeLinBinning(100,0.,TMath::Pi()/4),  PairAnalysisVarManager::kTheta, PairAnalysisVarManager::kMVDisMC,"I");
   histos->AddProfile(  "Track", PairAnalysisHelper::MakeLogBinning(23,1.,500.),   PairAnalysisVarManager::kNTrk, PairAnalysisVarManager::kMVDisMC,"I");
   histos->AddProfile(  "Track", PairAnalysisHelper::MakeLogBinning(100,0.05,10.), PairAnalysisVarManager::kP, PairAnalysisVarManager::kMVDisMC,"I");
   histos->AddProfile(  "Track", PairAnalysisHelper::MakeLinBinning(7,-0.5, 6.5),PairAnalysisVarManager::kMVDHits, PairAnalysisVarManager::kMVDisMC,"I");
   /// STS
   histos->AddHistogram("Track", PairAnalysisHelper::MakeLinBinning(2,-0.5,1.5),  PairAnalysisVarManager::kSTSisMC);
+  histos->AddProfile(  "Track", PairAnalysisHelper::MakeLinBinning(80,0.,20.),  PairAnalysisVarManager::kImpactParam, PairAnalysisVarManager::kSTSisMC,"I");
+  histos->AddProfile(  "Track", PairAnalysisHelper::MakeLinBinning(100,0.,TMath::Pi()/4),  PairAnalysisVarManager::kTheta, PairAnalysisVarManager::kSTSisMC,"I");
   histos->AddProfile(  "Track", PairAnalysisHelper::MakeLogBinning(23,1.,500.), PairAnalysisVarManager::kNTrk, PairAnalysisVarManager::kSTSisMC,"I");
   histos->AddProfile(  "Track", PairAnalysisHelper::MakeLogBinning(100,0.05,10.), PairAnalysisVarManager::kP, PairAnalysisVarManager::kSTSisMC,"I");
   histos->AddProfile(  "Track", PairAnalysisHelper::MakeLinBinning(11,-0.5, 10.5),PairAnalysisVarManager::kSTSHits, PairAnalysisVarManager::kSTSisMC,"I");
   /// RICH
   histos->AddHistogram("Track", PairAnalysisHelper::MakeLinBinning(2,-0.5,1.5),  PairAnalysisVarManager::kRICHisMC);
+  histos->AddProfile(  "Track", PairAnalysisHelper::MakeLinBinning(80,0.,20.),  PairAnalysisVarManager::kImpactParam, PairAnalysisVarManager::kRICHisMC,"I");
+  histos->AddProfile(  "Track", PairAnalysisHelper::MakeLinBinning(100,0.,TMath::Pi()/4),  PairAnalysisVarManager::kTheta, PairAnalysisVarManager::kRICHisMC,"I");
   histos->AddProfile(  "Track", PairAnalysisHelper::MakeLogBinning(23,1.,500.), PairAnalysisVarManager::kNTrk, PairAnalysisVarManager::kRICHisMC,"I");
   histos->AddProfile(  "Track", PairAnalysisHelper::MakeLogBinning(100,0.05,10.), PairAnalysisVarManager::kP, PairAnalysisVarManager::kRICHisMC,"I");
   histos->AddProfile(  "Track", PairAnalysisHelper::MakeLinBinning(61,-0.5, 60.5),PairAnalysisVarManager::kRICHHits, PairAnalysisVarManager::kRICHisMC,"I");
   /// TRD
   histos->AddHistogram("Track", PairAnalysisHelper::MakeLinBinning(2,-0.5,1.5),  PairAnalysisVarManager::kTRDisMC);
+  histos->AddProfile(  "Track", PairAnalysisHelper::MakeLinBinning(80,0.,20.),  PairAnalysisVarManager::kImpactParam, PairAnalysisVarManager::kTRDisMC,"I");
+  histos->AddProfile(  "Track", PairAnalysisHelper::MakeLinBinning(100,0.,TMath::Pi()/4),  PairAnalysisVarManager::kTheta, PairAnalysisVarManager::kTRDisMC,"I");
   histos->AddProfile(  "Track", PairAnalysisHelper::MakeLogBinning(23,1.,500.), PairAnalysisVarManager::kNTrk, PairAnalysisVarManager::kTRDisMC,"I");
   histos->AddProfile(  "Track", PairAnalysisHelper::MakeLogBinning(100,0.05,10.), PairAnalysisVarManager::kP, PairAnalysisVarManager::kTRDisMC,"I");
   histos->AddProfile(  "Track", PairAnalysisHelper::MakeLinBinning(7,-0.5, 6.5),PairAnalysisVarManager::kTRDHits, PairAnalysisVarManager::kTRDisMC,"I");
   /// TOF
   histos->AddHistogram("Track", PairAnalysisHelper::MakeLinBinning(2,-0.5,1.5),  PairAnalysisVarManager::kTOFisMC);
+  histos->AddProfile(  "Track", PairAnalysisHelper::MakeLinBinning(80,0.,20.),  PairAnalysisVarManager::kImpactParam, PairAnalysisVarManager::kTOFisMC,"I");
+  histos->AddProfile(  "Track", PairAnalysisHelper::MakeLinBinning(100,0.,TMath::Pi()/4),  PairAnalysisVarManager::kTheta, PairAnalysisVarManager::kTOFisMC,"I");
   histos->AddProfile(  "Track", PairAnalysisHelper::MakeLogBinning(23,1.,500.), PairAnalysisVarManager::kNTrk, PairAnalysisVarManager::kTOFisMC,"I");
   histos->AddProfile(  "Track", PairAnalysisHelper::MakeLogBinning(100,0.05,10.), PairAnalysisVarManager::kP, PairAnalysisVarManager::kTOFisMC,"I");
   histos->AddProfile(  "Track", PairAnalysisHelper::MakeLinBinning(3,-0.5, 2.5),PairAnalysisVarManager::kTOFHits, PairAnalysisVarManager::kTOFisMC,"I");
