@@ -6,7 +6,11 @@
 #ifndef CBMHLDSOURCE_H
 #define CBMHLDSOURCE_H 1
 
+#ifdef VERSION_LESS_151102
 #include "FairSource.h"
+#else
+#include "FairOnlineSource.h"
+#endif
 
 #include "FairUnpack.h"
 
@@ -36,7 +40,11 @@ class TList;
  ** ...
  **
  **/
+#ifdef VERSION_LESS_151102
 class CbmHldSource : public FairSource
+#else
+class CbmHldSource : public FairOnlineSource
+#endif
 {
   public:
 
@@ -84,8 +92,10 @@ class CbmHldSource : public FairSource
 
     /**private members*/
     
+#ifdef VERSION_LESS_151102
     TObjArray* fUnpackers;
     Int_t fNUnpackers;
+#endif    
     TList* fFileNames;
     Int_t fNFiles;
     Int_t fCurrentFile;
