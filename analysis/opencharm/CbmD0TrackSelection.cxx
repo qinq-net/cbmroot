@@ -143,7 +143,6 @@ fNoHNotPassed=0;
 
 // -------------------------------------------------------------------------
 CbmD0TrackSelection::~CbmD0TrackSelection() {
-    fInfoArray->Clear("C");
 
     delete fMCTrackArrayP;
     delete fMCTrackArrayN;

@@ -67,7 +67,6 @@ private:
   TClonesArray* fStsTrackArrayN;
   TClonesArray* fMCTrackArrayP;
   TClonesArray* fMCTrackArrayN;
-  TClonesArray* fInfoArray;
   TClonesArray* fStsTrackMatches;
   TClonesArray* fKaonParticleArray;
   TClonesArray* fPionParticleArray;
