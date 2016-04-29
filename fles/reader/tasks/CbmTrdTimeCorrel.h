@@ -133,7 +133,7 @@ class CbmTrdTimeCorrel : public FairTask
   private:
     std::vector<CbmSpadicRawMessage> fEntries;
     Bool_t fParametersCalculated;
-    Int_t fSpadic, fType, fTotalCharge, fWindowsize;
+    Int_t fSpadic, fRow, fType, fTotalCharge, fWindowsize;
     Float_t fHorizontalPosition;
     void CalculateParameters();
     Int_t GetHorizontalMessagePosition(CbmSpadicRawMessage&);

@@ -733,12 +733,14 @@ void CbmTrdTimeCorrel::Finish()
     fHM->G1("TsCounterHit1")->GetYaxis()->SetTitle("SPADIC1 hit messages");
   */
   //Buffer (map) or multi SPADIC data streams based analyis have to be done here!!
+  /*
   std::vector<TH2*> TH2vector = fHM->H2Vector(".*");
   for (std::vector<TH2*>::iterator it = TH2vector.begin() ; it != TH2vector.end(); ++it){
     LOG(INFO) << (*it)->GetTitle() << FairLogger::endl;
     (*it)->SetContour(99);
   }
-  
+  */
+
   LOG(DEBUG) << "Finish of CbmTrdTimeCorrel" << FairLogger::endl;
   LOG(INFO) << "Write histo list to " << FairRootManager::Instance()->GetOutFile()->GetName() << FairLogger::endl;
   FairRootManager::Instance()->GetOutFile()->cd();
@@ -760,8 +762,9 @@ void CbmTrdTimeCorrel::FinishEvent()
 // -------------------------------------------------------------------------
 void CbmTrdTimeCorrel::ClusterizerTime()
 {
+  static Int_t Clusterrun =0;
   auto CompareSpadicMessages=
-      [](CbmSpadicRawMessage* a,CbmSpadicRawMessage* b)
+      [&](CbmSpadicRawMessage* a,CbmSpadicRawMessage* b)
       {
     if(a->GetFullTime() == b->GetFullTime())
       if (a->GetSourceAddress() == b->GetSourceAddress())
@@ -772,15 +775,23 @@ void CbmTrdTimeCorrel::ClusterizerTime()
     return false;
       };
   auto CompareSpadicMessagesSmaller=
-      [](CbmSpadicRawMessage* a,CbmSpadicRawMessage* b)
+      [&](CbmSpadicRawMessage* a,CbmSpadicRawMessage* b)
       {
-    if(a->GetFullTime() < b->GetFullTime())
-      if (a->GetSourceAddress() < b->GetSourceAddress())
-	if(a->GetChannelID() < b->GetChannelID())
-	  return true;
-    return false;
+        Int_t ChIDA = a->GetChannelID() + ((GetSpadicID(a->GetSourceAddress()) %2 == 1)? 16 : 0);
+        Int_t ChIDB = b->GetChannelID() + ((GetSpadicID(b->GetSourceAddress()) %2 == 1)? 16 : 0);
+        Int_t PadA = GetChannelOnPadPlane(ChIDA);
+        Int_t PadB = GetChannelOnPadPlane(ChIDB);
+        Int_t rowA = (GetSpadicID(a->GetSourceAddress())/2)+PadA/16;
+        Int_t rowB = (GetSpadicID(b->GetSourceAddress())/2)+PadB/16;
+        if(a->GetFullTime() < b->GetFullTime())
+          if(rowA<rowB)
+            return true;
+          else if(rowA == rowB)
+            if(PadA<PadB)
+              return true;
+        return false;
       };
-  const Int_t clusterWindow = 1; // size of time window in which two hits are called "correlated", unit is timestamps
+  const Int_t clusterWindow = 3; // size of time window in which two hits are called "correlated", unit is timestamps
   std::sort(fLinearHitBuffer.begin(),fLinearHitBuffer.end(),CompareSpadicMessagesSmaller);
   std::unique(fLinearHitBuffer.begin(),fLinearHitBuffer.end(),CompareSpadicMessages);
   std::multimap<ULong_t, CbmSpadicRawMessage*> TempHitMap,TempOverflowMap;
@@ -788,7 +799,10 @@ void CbmTrdTimeCorrel::ClusterizerTime()
       long unsigned int MessageTime = static_cast <long unsigned int>(x->GetFullTime());
       (x->GetOverFlow()) ? TempOverflowMap.insert(std::make_pair(MessageTime,x)): TempHitMap.insert(std::make_pair(MessageTime,x));
   }
+  Int_t LastTimestamp = 0;
   for (auto it=TempHitMap.begin(); it != TempHitMap.end(); ++it){
+      if(LastTimestamp>=it->first) continue;
+      else LastTimestamp = it->first;
       auto range = std::make_pair(TempHitMap.lower_bound(it->first), TempHitMap.upper_bound(it->first + clusterWindow));
       auto rangeCopy=range;
       if(TempHitMap.size()==0 || (range.first == TempHitMap.end())) continue;
@@ -835,7 +849,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
             Int_t rowB = (GetSpadicID(b.GetSourceAddress())/2)+PadB/16;
             if(rowA<rowB)
               return true;
-            else if(rowA==rowB)
+            else if(rowA == rowB)
               if(PadA<PadB)
                 return true;
             return false;
@@ -846,13 +860,30 @@ void CbmTrdTimeCorrel::ClusterizerTime()
         {
           linearClusterBuffer.push_back (*rangeCopy.first->second);
         }
+      Clusterrun++;
       std::sort (linearClusterBuffer.begin (), linearClusterBuffer.end (),SortSpadicMessageRange);//Sort the Hitmessages by their position of origin on the padplane
       Cluster BuildingCluster (clusterWindow); //Create a new Cluster
       Int_t lastRow = (GetSpadicID(linearClusterBuffer.begin()->GetSourceAddress())/2)*32+GetChannelOnPadPlane(linearClusterBuffer.begin()->GetChannelID() + ((GetSpadicID(linearClusterBuffer.begin()->GetSourceAddress()) %2 == 1)? 16 : 0))/16;
       Int_t lastPad = GetChannelOnPadPlane(linearClusterBuffer.begin()->GetChannelID() + ((GetSpadicID(linearClusterBuffer.begin()->GetSourceAddress()) %2 == 1)? 16 : 0));
       for (auto currentMessage = linearClusterBuffer.begin(); currentMessage != linearClusterBuffer.end(); currentMessage++) //Loop over all Messages inside the Hitwindow
         {
-          if (lastPad-GetChannelOnPadPlane(currentMessage->GetChannelID() + ((GetSpadicID(currentMessage->GetSourceAddress()) %2 == 1)? 16 : 0))>=1)
+          if (false)
+          if (GetChannelOnPadPlane(currentMessage->GetChannelID() + ((GetSpadicID(currentMessage->GetSourceAddress()) %2 == 1)? 16 : 0)) == 6 || GetChannelOnPadPlane(currentMessage->GetChannelID() + ((GetSpadicID(currentMessage->GetSourceAddress()) %2 == 1)? 16 : 0)) == 16 + 6)
+            if (currentMessage != linearClusterBuffer.begin()&& currentMessage != linearClusterBuffer.end())
+            {
+              //Test if currentMessage is Part of next Cluster
+              auto nextMessage = currentMessage;
+              std::cout <<Clusterrun << " Current Pad: " <<GetChannelOnPadPlane(currentMessage->GetChannelID() + ((GetSpadicID(currentMessage->GetSourceAddress()) %2 == 1)? 16 : 0)) << std::endl;
+              for (Int_t i =1;i<=2;i++)
+                {
+                  nextMessage++;
+                    if(nextMessage != linearClusterBuffer.end())
+                      if (lastRow == (GetSpadicID(nextMessage->GetSourceAddress())/2)*32+GetChannelOnPadPlane(nextMessage->GetChannelID() + ((GetSpadicID(nextMessage->GetSourceAddress()) %2 == 1)? 16 : 0))/16)
+                      std::cout << "Current Pad + " << i << ": " << GetChannelOnPadPlane(nextMessage->GetChannelID() + ((GetSpadicID(nextMessage->GetSourceAddress()) %2 == 1)? 16 : 0)) << std::endl;
+                    else break;
+                }
+            }
+          if (GetChannelOnPadPlane(currentMessage->GetChannelID() + ((GetSpadicID(currentMessage->GetSourceAddress()) %2 == 1)? 16 : 0))- lastPad > 1)
             OutsideCluster=true;
           if(lastRow != (GetSpadicID(currentMessage->GetSourceAddress())/2)*32+GetChannelOnPadPlane(currentMessage->GetChannelID() + ((GetSpadicID(currentMessage->GetSourceAddress()) %2 == 1)? 16 : 0))/16)//Check if the current message is not from the same row/spadic
             {
@@ -861,9 +892,9 @@ void CbmTrdTimeCorrel::ClusterizerTime()
                   fClusterBuffer.push_back (BuildingCluster);
                   Cluster tempCluster (clusterWindow);
                   BuildingCluster = tempCluster;
-                  OutsideCluster = true; //New Row, so we start outside any Cluster
-                  lastRow = (GetSpadicID(currentMessage->GetSourceAddress())/2)*32+GetChannelOnPadPlane(currentMessage->GetChannelID() + ((GetSpadicID(currentMessage->GetSourceAddress()) %2 == 1)? 16 : 0))/16;
                 }
+              OutsideCluster = true; //New Row, so we start outside any Cluster
+              lastRow = (GetSpadicID(currentMessage->GetSourceAddress())/2)*32+GetChannelOnPadPlane(currentMessage->GetChannelID() + ((GetSpadicID(currentMessage->GetSourceAddress()) %2 == 1)? 16 : 0))/16;
             }
           if (currentMessage->GetTriggerType () == 2)//Check for neighbour triggered Messages
             {
@@ -951,8 +982,10 @@ void CbmTrdTimeCorrel::ClusterizerTime()
   }
   for (auto x: fClusterBuffer){
       fHM->H1("Clustersize_for_Syscore_"+std::to_string (0)+"_Spadic_"+std::to_string (static_cast<Int_t>(x.GetSpadic ()/2)))->Fill(static_cast<Int_t>(x.size ()));
-      fHM->H2("Cluster("+std::to_string(static_cast<Int_t>(x.size()))+")_Heatmap_for_Syscore_"+std::to_string (0) +"_Spadic_"+std::to_string(static_cast<Int_t>(x.GetSpadic ()/2)))->Fill((x.GetHorizontalPosition()<16.0 ? x.GetHorizontalPosition() : x.GetHorizontalPosition()-16.0),static_cast<Int_t>(x.GetRow()));
-      x.FillChargeDistribution(fHM->H2("Charge_Distribution_for_Clusters_of_Size_"+std::to_string(static_cast<Int_t>(x.size()))));
+      fHM->H2("Cluster("+std::to_string(static_cast<Int_t>(x.size()))+")_Heatmap_for_Syscore_"+std::to_string (0) +"_Spadic_"+std::to_string(static_cast<Int_t>(x.GetSpadic ()/2)))->Fill(x.GetHorizontalPosition(),0/*<16.0 ? x.GetHorizontalPosition() : x.GetHorizontalPosition()-16.0),static_cast<Int_t>(x.GetRow())*/);
+      string detectorName = (x.GetSpadic()/2 == 0 ? "Frankfurt" : "Muenster");;
+      string histname = "Pad_Response_"+ detectorName + "_for_Clusters_of_Size_"+std::to_string(static_cast<Int_t>(x.size()));
+      x.FillChargeDistribution(fHM->H2(histname));
   }
 }
 // -------------------------------------------------------------------------
@@ -1334,16 +1367,20 @@ void CbmTrdTimeCorrel::CreateHistograms()
               for (Int_t clusterSize=1; clusterSize<16;clusterSize++){
                   histName = "Cluster("+std::to_string(clusterSize)+")_Heatmap_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic);
                   title = histName + runName;
-                  fHM->Create2<TH2I>(histName.Data(), title.Data(), 80,-0.5,15.5,2,-0.5,1.5);
+                  fHM->Create2<TH2I>(histName.Data(), title.Data(), 330,-0.5,32.5,2,-0.5,1.5);
               }
           }
       }
   }
-  for(Int_t Size=1 ;Size < 16; Size++){
-      histName = "Charge_Distribution_for_Clusters_of_Size_"+std::to_string(Size);
-      title = histName + runName;
-      fHM->Create2<TH2I>(histName.Data(), title.Data(), 1100,-10.5,10.5,101,-0.5,100.5);
-  }
+  for(Int_t Size=1 ;Size < 16; Size++)
+    {
+      for(Int_t Detector =0;Detector<=1;Detector++){
+          TString Detectorname = (Detector == 0 ? "Frankfurt" : "Muenster");
+          histName = "Pad_Response_"+ Detectorname + "_for_Clusters_of_Size_"+std::to_string(Size);
+          title = histName + runName;
+          fHM->Create2<TH2I>(histName.Data(), title.Data(), 1101,-10.5,10.5,101,-0.5,100.5);
+      }
+    }
 
   fHM->Add("TsCounter", new TGraph());
   fHM->G1("TsCounter")->SetNameTitle("TsCounter","TsCounter");
@@ -1671,6 +1708,7 @@ CbmTrdTimeCorrel::Cluster::Cluster(Int_t initWindowsize) :
     fEntries (),
     fParametersCalculated(false),
     fSpadic (0),
+    fRow(0),
     fType (0),
     fTotalCharge (0),
     fHorizontalPosition (0),
@@ -1681,34 +1719,48 @@ CbmTrdTimeCorrel::Cluster::~Cluster(){};
 
 Bool_t CbmTrdTimeCorrel::Cluster::AddEntry(CbmSpadicRawMessage NewEntry){
   auto CompareSpadicMessages=
-      [](CbmSpadicRawMessage a,CbmSpadicRawMessage b)
+      [&](CbmSpadicRawMessage a,CbmSpadicRawMessage b)
       {
-    if(a.GetFullTime() == b.GetFullTime())
-      if (a.GetSourceAddress() == b.GetSourceAddress())
-	if(a.GetChannelID() == b.GetChannelID()){
-	    return true;
-	}
-    return false;
+        Int_t ChIDA = a.GetChannelID() + ((GetSpadicID(a.GetSourceAddress()) %2 == 1)? 16 : 0);
+        Int_t ChIDB = b.GetChannelID() + ((GetSpadicID(b.GetSourceAddress()) %2 == 1)? 16 : 0);
+        Int_t PadA = GetChannelOnPadPlane(ChIDA);
+        Int_t PadB = GetChannelOnPadPlane(ChIDB);
+        Int_t rowA = (GetSpadicID(a.GetSourceAddress())/2)+PadA/16;
+        Int_t rowB = (GetSpadicID(b.GetSourceAddress())/2)+PadB/16;
+        if(a.GetFullTime() == b.GetFullTime())
+          if(rowA==rowB)
+            if(PadA==PadB)
+              return true;
+        return false;
       };
   auto CompareSpadicMessagesSmaller=
-      [](CbmSpadicRawMessage a,CbmSpadicRawMessage b)
+      [&](CbmSpadicRawMessage a,CbmSpadicRawMessage b)
       {
-    if(a.GetFullTime() < b.GetFullTime())
-      if (a.GetSourceAddress() < b.GetSourceAddress())
-	if(a.GetChannelID() < b.GetChannelID())
-	  return true;
-    return false;
+        Int_t ChIDA = a.GetChannelID() + ((GetSpadicID(a.GetSourceAddress()) %2 == 1)? 16 : 0);
+        Int_t ChIDB = b.GetChannelID() + ((GetSpadicID(b.GetSourceAddress()) %2 == 1)? 16 : 0);
+        Int_t PadA = GetChannelOnPadPlane(ChIDA);
+        Int_t PadB = GetChannelOnPadPlane(ChIDB);
+        Int_t rowA = (GetSpadicID(a.GetSourceAddress())/2)+PadA/16;
+        Int_t rowB = (GetSpadicID(b.GetSourceAddress())/2)+PadB/16;
+        if(rowA<rowB)
+          return true;
+        else if(rowA==rowB)
+          if(PadA<PadB)
+            return true;
+        return false;
       };
+
   fParametersCalculated = false;
   fEntries.push_back(NewEntry);
   std::sort(fEntries.begin(),fEntries.end(),CompareSpadicMessagesSmaller);
   std::unique(fEntries.begin(),fEntries.end(),CompareSpadicMessages);
   fSpadic = GetSpadicID(fEntries.begin()->GetSourceAddress());
+  fRow = GetHorizontalMessagePosition(*(fEntries.begin()))/16;
 //GetChannelOnPadPlane(fEntries.begin()->GetChannelID() + ((GetSpadicID(fEntries.begin()->GetSourceAddress()) %2 == 1)? 16 : 0))/16;
   BeforeLoop:
   for (auto it = fEntries.begin(); it!= fEntries.end();it++){
-      //if(GetSpadicID(it->GetSourceAddress())!= fSpadic)
-if(false)
+      if(((GetSpadicID(it->GetSourceAddress())/2)!=fSpadic/2) || GetHorizontalMessagePosition(*it)/16 != fRow)
+//if(false)
 	{
 	  fEntries.erase(it);
 	  goto BeforeLoop;
@@ -1748,7 +1800,7 @@ Int_t NrSamples = message.GetNrSamples ();
  for (Int_t i = NrSamples -3 ; i < NrSamples ; i++)
    Baseline += *(message.GetSamples() + i);
  Baseline = Baseline/3;
- return TMath::Abs(maxADC-Baseline);
+ return (maxADC-Baseline);
 };
 
 Int_t CbmTrdTimeCorrel::GetCharge(CbmSpadicRawMessage& message)
