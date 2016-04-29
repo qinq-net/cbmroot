@@ -57,10 +57,11 @@ CbmHldSource::~CbmHldSource()
 // =============================================================================
 Bool_t CbmHldSource::Init()
 {
+  fNFiles = fFileNames->GetEntries();
 
 #ifdef VERSION_LESS_151102
   fNUnpackers = fUnpackers->GetEntriesFast();
-  fNFiles = fFileNames->GetEntries();
+
 
   if(!fNUnpackers)
   {
@@ -434,15 +435,15 @@ Int_t CbmHldSource::ReadEvent()
 // =============================================================================
 
 // =============================================================================
+#ifdef VERSION_LESS_151102
 void CbmHldSource::Reset()
 {
-#ifdef VERSION_LESS_151102
   for(Int_t i = 0; i < fNUnpackers; i++)
   {
     ((FairUnpack *)fUnpackers->At(i))->Reset();
   }
-#endif
 }
+#endif
 // =============================================================================
 
 // =============================================================================

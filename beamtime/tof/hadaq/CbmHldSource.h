@@ -64,13 +64,14 @@ class CbmHldSource : public FairOnlineSource
 
 #ifdef VERSION_LESS_151102
     enum Source_Type {kONLINE, kFILE};
-#endif            
+#endif
 
     Source_Type GetSourceType() {return kONLINE;}
     
     void Close();
+#ifdef VERSION_LESS_151102
     void Reset();
-
+#endif
     void AddUnpacker(FairUnpack* unpacker) { fUnpackers->Add(unpacker); }
     void AddFile(const TString& tFileName);
     void AddPath(const TString& tFileDirectory,
@@ -95,7 +96,7 @@ class CbmHldSource : public FairOnlineSource
 #ifdef VERSION_LESS_151102
     TObjArray* fUnpackers;
     Int_t fNUnpackers;
-#endif    
+#endif
     TList* fFileNames;
     Int_t fNFiles;
     Int_t fCurrentFile;
