@@ -41,6 +41,7 @@ class TTofTrbTdcCalib : public FairTask
     void SetFineTimeMethod(Int_t iMethod = 0) {fiFineTimeMethod = iMethod;}
     void SetToTMethod(Int_t iMethod = 0) {fiToTMethod = iMethod;}
     void SetMinEntriesBinByBin(Int_t iEntries = 100000) {fiMinEntriesBinByBin = iEntries;}
+    void SetMinEntriesLocalFineLimits(Int_t iEntries = 10000) {fiMinEntriesLocalLimits = iEntries;}
     void SetTimeContinuum(Bool_t bContinuum = kTRUE) {fbTimeContinuum = bContinuum;}
     void SetTrailingOffsetCycles(Int_t iCycles = 2) {fiTrailingOffset = iCycles;}
     void SetLowerLinearFineLimit(UInt_t uLowerLimit) {fuLowerLinearFineLimit = uLowerLimit;}
@@ -86,6 +87,7 @@ class TTofTrbTdcCalib : public FairTask
     Int_t fiFineTimeMethod;
     Int_t fiToTMethod;
     Int_t fiMinEntriesBinByBin;
+    Int_t fiMinEntriesLocalLimits;
     Bool_t fbTimeContinuum;
     Int_t fiTrailingOffset;
     UInt_t fuLowerLinearFineLimit;

@@ -41,7 +41,8 @@ TTofTrbTdcCalib::TTofTrbTdcCalib() :
   fTrbTdcCalibCollection(NULL),
   fiFineTimeMethod(0),
   fiToTMethod(0),
-  fiMinEntriesBinByBin(0),
+  fiMinEntriesBinByBin(100000),
+  fiMinEntriesLocalLimits(10000),
   fbTimeContinuum(kTRUE),
   fiTrailingOffset(0),
   fuLowerLinearFineLimit(trbtdc::kuSimpleFineTimeMinValue),
@@ -621,7 +622,7 @@ InitStatus TTofTrbTdcCalib::Init()
         // Insufficient number of entries in the fine time histogram
         // OR unreasonably narrow fine time distribution.
         // Switch to linear interpolation based on globally defined limits.
-        if( (fiMinEntriesBinByBin > tRefFineTimeHistos.at(iBoardIndex)->GetEntries()) || 
+        if( (fiMinEntriesLocalLimits > tRefFineTimeHistos.at(iBoardIndex)->GetEntries()) || 
             (trbtdc::kuMinimumFineTimeRange > ((uRefFineTimeLimits.at(iBoardIndex)).at(1) - (uRefFineTimeLimits.at(iBoardIndex)).at(0))) )
         {
           hadaq::TdcMessage::SetFineLimits(fuLowerLinearFineLimit,fuUpperLinearFineLimit);
@@ -697,7 +698,7 @@ InitStatus TTofTrbTdcCalib::Init()
           // Insufficient number of entries in the fine time histogram
           // OR unreasonably narrow fine time distribution.
           // Switch to linear interpolation based on globally defined limits.
-          if( (fiMinEntriesBinByBin > (tFineTimeHistos.at(iBoardIndex)).at(iChannelIndex)->GetEntries()) || 
+          if( (fiMinEntriesLocalLimits > (tFineTimeHistos.at(iBoardIndex)).at(iChannelIndex)->GetEntries()) || 
               (trbtdc::kuMinimumFineTimeRange > (((uFineTimeLimits.at(iBoardIndex)).at(iChannelIndex)).at(1) - ((uFineTimeLimits.at(iBoardIndex)).at(iChannelIndex)).at(0))) )
           {
             hadaq::TdcMessage::SetFineLimits(fuLowerLinearFineLimit,fuUpperLinearFineLimit);
@@ -883,7 +884,7 @@ void TTofTrbTdcCalib::Finish()
         // Insufficient number of entries in the fine time histogram
         // OR unreasonably narrow fine time distribution.
         // Switch to linear interpolation based on globally defined limits.
-        if( (fiMinEntriesBinByBin > tRefFineTimeHistos.at(iBoardIndex)->GetEntries()) || 
+        if( (fiMinEntriesLocalLimits > tRefFineTimeHistos.at(iBoardIndex)->GetEntries()) || 
             (trbtdc::kuMinimumFineTimeRange > ((uRefFineTimeLimits.at(iBoardIndex)).at(1) - (uRefFineTimeLimits.at(iBoardIndex)).at(0))) )
         {
           hadaq::TdcMessage::SetFineLimits(fuLowerLinearFineLimit,fuUpperLinearFineLimit);

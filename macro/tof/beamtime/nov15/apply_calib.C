@@ -5,7 +5,7 @@
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 
-void apply_calib(Int_t nEvents = -1, char *cFileId="CbmTofSps_01Dec0427")
+void apply_calib(Int_t nEvents = 100000000, char *cFileId="CbmTofSps_01Dec0427")
 {
   TStopwatch timer;
   timer.Start();
@@ -64,6 +64,7 @@ void apply_calib(Int_t nEvents = -1, char *cFileId="CbmTofSps_01Dec0427")
   tofCalibTrb->SetFineTimeMethod(0);
   tofCalibTrb->SetToTMethod(0);
   tofCalibTrb->SetMinEntriesBinByBin(100000);
+  tofCalibTrb->SetMinEntriesLocalFineLimits(10000);
   tofCalibTrb->SetTimeContinuum(kTRUE);
   tofCalibTrb->SetTrailingOffsetCycles(2);
 //  tofCalibTrb->SetLowerLinearFineLimit(31);  // feb15
@@ -101,7 +102,7 @@ void apply_calib(Int_t nEvents = -1, char *cFileId="CbmTofSps_01Dec0427")
   run->Init();
 
   cout << "Starting run" << endl;
-  run->Run(nEvents);
+  run->Run(0, nEvents);
 
   cout << "Finishing run" << endl;
   run->Finish();
