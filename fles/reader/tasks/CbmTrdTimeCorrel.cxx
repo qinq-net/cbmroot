@@ -417,10 +417,13 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	      EpochRegressCounter[0][spaID] = 0;
 	    }
 	  }
-	  if (epoch - fEpochMarkerArray[0][spaID] <= 0 && epoch - fEpochMarkerArray[0][spaID] > -4000 && !EpochRegressTriggered[0][spaID]) { // Trigger the recording if a regress is detected and the recording is not running up to now. The natural overflow of epoch (regress of 4095) is excluded
-	    LOG(INFO) << "EPOCH REGRESS triggered for spaID " << spaID << " from " << fEpochMarkerArray[0][spaID] << " to " << epoch << " (timeslice " << fNrTimeSlices << ", spadicmessage " << iSpadicMessage << ")" << FairLogger::endl;
-	    EpochRegressTriggered[0][spaID] = true;
-	    EpochRegressOffset[0][spaID] = epoch;
+	  if (epoch - fEpochMarkerArray[0][spaID] <= 0  && !EpochRegressTriggered[0][spaID]) { // Trigger the recording if a regress is detected and the recording is not running up to now. The natural overflow of epoch (regress of 4095) is excluded
+	    fHM->G1("DeltaEpoch_vs_timeslice_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2)+"_Half_"+std::to_string(chID/16))->SetPoint(fHM->G1("DeltaEpoch_vs_timeslice_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2)+"_Half_"+std::to_string(chID/16))->GetN(),fNrTimeSlices,epoch - fEpochMarkerArray[0][spaID]); // Fill TGraph with every regress of Epoch, also the normal overflows by 4095
+	    if (epoch - fEpochMarkerArray[0][spaID] > -4000) { // but trigger the recording only for irregular regress
+	      LOG(INFO) << "EPOCH REGRESS triggered for spaID " << spaID << " from " << fEpochMarkerArray[0][spaID] << " to " << epoch << " (timeslice " << fNrTimeSlices << ", spadicmessage " << iSpadicMessage << ")" << FairLogger::endl;
+	      EpochRegressTriggered[0][spaID] = true;
+	      EpochRegressOffset[0][spaID] = epoch;
+	    }
 	  }
 	}
      	fEpochMarkerArray[0][spaID] = epoch;
@@ -738,7 +741,7 @@ void CbmTrdTimeCorrel::Finish()
   for (std::vector<TH2*>::iterator it = TH2vector.begin() ; it != TH2vector.end(); ++it){
     LOG(INFO) << (*it)->GetTitle() << FairLogger::endl;
     (*it)->SetContour(99);
-  }
+    }
   */
 
   LOG(DEBUG) << "Finish of CbmTrdTimeCorrel" << FairLogger::endl;
@@ -1347,6 +1350,19 @@ void CbmTrdTimeCorrel::CreateHistograms()
 	   histName = "Delta_Epoch_hist_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic)+"_Half_"+std::to_string(halfchip);
 	  title = histName + runName;
 	  fHM->Add(histName.Data(), new TH1I(histName, title, 8301,-4150.5,4150.5));
+	}
+      }
+    }
+  }
+  for (Int_t syscore=0; syscore<3;++syscore) {
+    for (Int_t spadic=0; spadic<3;++spadic) {
+      for (Int_t halfchip=0; halfchip<2;++halfchip) {
+	spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
+	if(spadicName != "") {
+	  histName = "DeltaEpoch_vs_timeslice_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic)+"_Half_"+std::to_string(halfchip);
+	  title = histName + runName;
+	  fHM->Add(histName.Data(), new TGraph());
+	  fHM->G1(histName.Data())->SetNameTitle(title,title);
 	}
       }
     }
