@@ -87,6 +87,7 @@ class CbmTrdTimeCorrel : public FairTask
   Bool_t EpochRegressTriggered[3][6];
   Int_t EpochRegressOffset[3][6];
   Int_t EpochRegressCounter[3][6];
+  void FillBaselineHistogram(CbmSpadicRawMessage*);
   
   void CreateHistograms();
 
