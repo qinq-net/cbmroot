@@ -448,9 +448,25 @@ void CbmTrdOccupancyQa::CopyEvent2MemoryMap()
     fLayerAverageOccupancyMap[10 * (fModuleMap[fModuleOccupancyMapIt->first]->Station) + (fModuleMap[fModuleOccupancyMapIt->first]->Layer)]->Fill(fTriggerThreshold, Float_t(fModuleOccupancyMapIt->second->Integral()) / Float_t(fModuleOccupancyMapIt->second->GetNbinsX() * fModuleOccupancyMapIt->second->GetNbinsY()) * 100.);
   }
 }
-
+void CbmTrdOccupancyQa::SwitchToMergedFile()
+{
+  TString filename = "data/result.root";
+  TFile* Target = new TFile(filename, "READ");
+  if (Target){
+    gDirectory = Target->CurrentDirectory();
+     for (fModuleOccupancyMapIt = fModuleOccupancyMap.begin();
+       fModuleOccupancyMapIt != fModuleOccupancyMap.end(); ++fModuleOccupancyMapIt) {
+      TString histName = fModuleOccupancyMapIt->second->GetName();
+  
+      fModuleOccupancyMap[fModuleOccupancyMapIt->first] = (TH2I*)Target->Get("TrdOccupancy/Module/" + histName)->Clone(histName+"_result");
+    }
+  } else {
+    cout << "No merged data/result.root found" << endl;
+  }
+}
 void CbmTrdOccupancyQa::CreateLayerView()
 {
+  SwitchToMergedFile();
   TString origpath = gDirectory->GetPath();
   printf ("\n%s\n",origpath.Data());
   TString newpath = origpath;

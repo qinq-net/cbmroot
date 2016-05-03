@@ -82,6 +82,7 @@ class CbmTrdOccupancyQa : public FairTask {
   void Register();
   void SaveHistos2File();
   void CreateLayerView();
+  void SwitchToMergedFile();
   void CopyEvent2MemoryMap();
   void SetNeighbourReadout(Bool_t neighbourReadout);
   void SetTriggerThreshold(Double_t triggerthreshold);
