@@ -880,7 +880,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
         }
       Clusterrun++;
       std::sort (linearClusterBuffer.begin (), linearClusterBuffer.end (),SortSpadicMessageRange);//Sort the Hitmessages by their position of origin on the padplane
-      Cluster BuildingCluster (clusterWindow); //Create a new Cluster
+      Cluster BuildingCluster (clusterWindow,fBaseline[0],fBaseline[1],!fCalculateBaseline); //Create a new Cluster
       Int_t lastRow = (GetSpadicID(linearClusterBuffer.begin()->GetSourceAddress())/2)*32+GetChannelOnPadPlane(linearClusterBuffer.begin()->GetChannelID() + ((GetSpadicID(linearClusterBuffer.begin()->GetSourceAddress()) %2 == 1)? 16 : 0))/16;
       Int_t lastPad = GetChannelOnPadPlane(linearClusterBuffer.begin()->GetChannelID() + ((GetSpadicID(linearClusterBuffer.begin()->GetSourceAddress()) %2 == 1)? 16 : 0));
       for (auto currentMessage = linearClusterBuffer.begin(); currentMessage != linearClusterBuffer.end(); currentMessage++) //Loop over all Messages inside the Hitwindow
@@ -913,7 +913,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
               if (BuildingCluster.size () != 0)//Store away nonempty Cluster
                 {
                   fClusterBuffer.push_back (BuildingCluster);
-                  Cluster tempCluster (clusterWindow);
+                  Cluster tempCluster (clusterWindow,fBaseline[0],fBaseline[1],!fCalculateBaseline);
                   BuildingCluster = tempCluster;
                 }
               //std::cout << " Rowchange " << lastRow << " " << currentRow << " " << std::endl;
@@ -927,7 +927,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
                   if (BuildingCluster.size () != 0) //Store away the previous Cluster, if not already done
                     {
                       fClusterBuffer.push_back (BuildingCluster);
-                      Cluster tempCluster (clusterWindow);
+                      Cluster tempCluster (clusterWindow,fBaseline[0],fBaseline[1],!fCalculateBaseline);
                       BuildingCluster = tempCluster;
                     }
                   BuildingCluster.AddEntry (*currentMessage);
@@ -948,7 +948,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
                               if (BuildingCluster.size () != 0) //Store away the completed Cluster
                                 {
                                   fClusterBuffer.push_back (BuildingCluster);
-                                  Cluster tempCluster (clusterWindow);
+                                  Cluster tempCluster (clusterWindow,fBaseline[0],fBaseline[1],!fCalculateBaseline);
                                   BuildingCluster = tempCluster;
                                 }
                             }
@@ -958,7 +958,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
                               if (BuildingCluster.size () != 0) //Store away the completed Cluster
                                 {
                                   fClusterBuffer.push_back (BuildingCluster);
-                                  Cluster tempCluster (clusterWindow);
+                                  Cluster tempCluster (clusterWindow,fBaseline[0],fBaseline[1],!fCalculateBaseline);
                                   BuildingCluster = tempCluster;
                                 }
                               currentMessage--;
@@ -972,7 +972,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
                   if (BuildingCluster.size () != 0) //Store away the completed Cluster
                     {
                       fClusterBuffer.push_back (BuildingCluster);
-                      Cluster tempCluster (clusterWindow);
+                      Cluster tempCluster (clusterWindow,fBaseline[0],fBaseline[1],!fCalculateBaseline);
                       BuildingCluster = tempCluster;
                     }
                 }
@@ -983,7 +983,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
                   if (BuildingCluster.size () != 0)//Should not occur, but stores away previous Cluster
                     {
                       fClusterBuffer.push_back (BuildingCluster);
-                      Cluster tempCluster (clusterWindow);
+                      Cluster tempCluster (clusterWindow,fBaseline[0],fBaseline[1],!fCalculateBaseline);
                       BuildingCluster = tempCluster;
                     }//Start the Cluster
                   BuildingCluster.AddEntry (*currentMessage);
@@ -1000,7 +1000,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
       if (BuildingCluster.size () != 0) //Store away the last Cluster
         {
           fClusterBuffer.push_back (BuildingCluster);
-          Cluster tempCluster (clusterWindow);
+          Cluster tempCluster (clusterWindow,fBaseline[0],fBaseline[1],!fCalculateBaseline);
           BuildingCluster = tempCluster;
         }
 
@@ -1778,7 +1778,7 @@ std::map<Int_t, std::map<Int_t,std::map<ULong_t, Long_t> > > CbmTrdTimeCorrel::C
 }
 
 
-CbmTrdTimeCorrel::Cluster::Cluster(Int_t initWindowsize) :
+CbmTrdTimeCorrel::Cluster::Cluster(Int_t initWindowsize, Int_t BaselineFrankfurt, Int_t BaselineMuenster, Bool_t CalculateBaseline) :
     TObject (),
     fEntries (),
     fParametersCalculated(false),
@@ -1787,8 +1787,12 @@ CbmTrdTimeCorrel::Cluster::Cluster(Int_t initWindowsize) :
     fType (0),
     fTotalCharge (0),
     fHorizontalPosition (0),
-    fWindowsize(initWindowsize)
-{};
+    fWindowsize(initWindowsize),
+	fPreCalculatedBaseline(CalculateBaseline)
+{
+	fBaseline[0] = BaselineFrankfurt;
+	fBaseline[1] = BaselineMuenster;
+};
 
 CbmTrdTimeCorrel::Cluster::~Cluster(){};
 
@@ -1872,18 +1876,24 @@ Int_t NrSamples = message.GetNrSamples ();
      if((currentADC > previousADC) && ((currentADC - previousADC)>10)) validHit = true;
  }
  Int_t Baseline=0;
+ if(!fPreCalculatedBaseline){
  for (Int_t i = NrSamples -3 ; i < NrSamples ; i++)
    Baseline += *(message.GetSamples() + i);
  Baseline = Baseline/3;
+ }
+ else{
+	 Baseline = fBaseline[fSpadic/2];
+ }
  return (maxADC-Baseline);
 };
 
 Int_t CbmTrdTimeCorrel::GetCharge(CbmSpadicRawMessage& message)
 {
   Int_t maxADC=-255;
-  Bool_t validHit=false;
   Int_t previousADC=-255;
   Int_t NrSamples = message.GetNrSamples ();
+  Bool_t validHit=(NrSamples==32);
+  Int_t Spadic = GetSpadicID(message.GetSourceAddress());
   for (Int_t i = 0 ; i < NrSamples ; i++){
       Int_t currentADC = *(message.GetSamples() + i);
       if(currentADC > maxADC) maxADC=currentADC;
@@ -1894,7 +1904,7 @@ Int_t CbmTrdTimeCorrel::GetCharge(CbmSpadicRawMessage& message)
   for (Int_t i = NrSamples -3 ; i < NrSamples ; i++)
     Baseline += *(message.GetSamples() + i);
   Baseline = Baseline/3;
-  return (validHit ? maxADC-Baseline : maxADC-Baseline);
+  return (validHit ? maxADC-Baseline : maxADC-fBaseline[Spadic/2]);
 };
 
 void CbmTrdTimeCorrel::FillBaselineHistogram(CbmSpadicRawMessage* message){

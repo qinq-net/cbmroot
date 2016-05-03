@@ -47,7 +47,7 @@ class CbmTrdTimeCorrel : public FairTask
   Int_t   fSpadics;
   Bool_t  fRewriteSpadicName;
 
-  const Bool_t fActivateClusterizer = false;
+  const Bool_t fActivateClusterizer = true;
   const Bool_t fDebugMode = false;
   const Bool_t fDrawSignalShapes = true;
   const Bool_t fCalculateBaseline = false;
@@ -128,7 +128,8 @@ class CbmTrdTimeCorrel : public FairTask
   {
   public:
     Cluster():Cluster(0){};
-    Cluster(Int_t);
+    Cluster(Int_t Windowsize):Cluster(Windowsize,-255,-255,true){};
+    Cluster(Int_t,Int_t,Int_t,Bool_t);
     ~Cluster();
     Size_t size();
     Int_t Type();
@@ -145,7 +146,9 @@ class CbmTrdTimeCorrel : public FairTask
   private:
     std::vector<CbmSpadicRawMessage> fEntries;
     Bool_t fParametersCalculated;
+    Bool_t fPreCalculatedBaseline;
     Int_t fSpadic, fRow, fType, fTotalCharge, fWindowsize;
+    Int_t fBaseline[2];
     Float_t fHorizontalPosition;
     void CalculateParameters();
     Int_t GetHorizontalMessagePosition(CbmSpadicRawMessage&);
