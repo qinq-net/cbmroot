@@ -1394,18 +1394,26 @@ void CbmTrdTimeCorrel::CreateHistograms()
               fHM->Create2<TH2I>(histName.Data(), title.Data(), 16,-0.5,15.5,2,-0.5,1.5);
               histName = "Map_of_Charge_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic);
               title = histName + runName;
-              fHM->Create2<TH2I>(histName.Data(), title.Data(), 16,-0.5,15.5,2,-0.5,1.5);
-              histName = "Clustersize_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic);
-              title = histName + runName;
-              fHM->Create1<TH1I>(histName.Data(), title.Data(), 16,-0.5,15.5);
-              for (Int_t clusterSize=1; clusterSize<=16;clusterSize++){
-                  histName = "Cluster("+std::to_string(clusterSize)+")_Heatmap_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic);
-                  title = histName + runName;
-                  fHM->Create2<TH2I>(histName.Data(), title.Data(), 330,-0.5,32.5,2,-0.5,1.5);
-              }
+			  fHM->Create2<TH2I>(histName.Data(), title.Data(), 16,-0.5,15.5,2,-0.5,1.5);
           }
       }
   }
+  if(fActivateClusterizer)
+	  for (Int_t syscore=0; syscore<3;++syscore) {
+		  for (Int_t spadic=0; spadic<3;++spadic) {
+			  spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
+			  if(spadicName != "") {
+				  histName = "Clustersize_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic);
+				  title = histName + runName;
+				  fHM->Create1<TH1I>(histName.Data(), title.Data(), 16,-0.5,15.5);
+				  for (Int_t clusterSize=1; clusterSize<=16;clusterSize++){
+					  histName = "Cluster("+std::to_string(clusterSize)+")_Heatmap_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic);
+					  title = histName + runName;
+					  fHM->Create2<TH2I>(histName.Data(), title.Data(), 330,-0.5,32.5,2,-0.5,1.5);
+				  }
+			  }
+		  }
+	  }
   for(Int_t Size=1 ;Size <= 16; Size++)
     {
       for(Int_t Detector =0;Detector<=1;Detector++){
@@ -1423,6 +1431,21 @@ void CbmTrdTimeCorrel::CreateHistograms()
 		  title = histName + runName;
 		  fHM->Create2<TH2I>(histName.Data(), title.Data(),512,-256.5,255.5,33,-0.5,32.5);
 	  }
+  }
+  if(fDrawSignalShapes){
+	  for (Int_t syscore=0; syscore<1;++syscore) {
+		  for(Int_t Detector =0;Detector<=1;Detector++){
+			  for(Int_t ChID = 0 ; ChID < 32 ; ChID++){
+				  TString Detectorname = (Detector == 0 ? "Frankfurt" : "Muenster");
+				  histName = "SignalShape_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+Detectorname+"_Channel_"+ std::to_string(ChID);
+				  title = histName + runName;
+				  fHM->Create2<TH2I>(histName.Data(), title.Data(),33,-0.5,32.5,512,-256.5,255.5);
+				  fHM->H2(histName.Data())->GetXaxis()->SetNameTitle("Sample","Sample");
+				  fHM->H2(histName.Data())->GetYaxis()->SetNameTitle("ADC Value","ADC Value");
+			  }
+		  }
+	  }
+
   }
 
 
@@ -1877,9 +1900,25 @@ void CbmTrdTimeCorrel::FillBaselineHistogram(CbmSpadicRawMessage* message){
 	Int_t NrSamples = message->GetNrSamples ();
 	Int_t * Samples=message->GetSamples();
 	for (Int_t i = NrSamples -3 ; i < NrSamples ; i++){
+		if(fDrawSignalShapes)
+			if(*(Samples+ i)>fSignalShapeThreshold)
+				FillSignalShape(*message);
 		Histogram->Fill(*(Samples+ i),ChID);
 	}
 };
+
+void CbmTrdTimeCorrel::FillSignalShape(CbmSpadicRawMessage& message){
+	Int_t SpadicID = GetSpadicID(message.GetSourceAddress());
+	string Detectorname = ((SpadicID/2) == 0 ? "Frankfurt" : "Muenster");
+	Int_t ChID = message.GetChannelID() + (SpadicID%2)*16;
+	string histName = "SignalShape_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+Detectorname+"_Channel_"+ std::to_string(ChID);
+	Int_t NrSamples = message.GetNrSamples();
+	Int_t * Samples = message.GetSamples();
+	TH2* Histogram = fHM->H2(histName);
+	for (Int_t i = 0 ; i < NrSamples ; i++){
+		Histogram->Fill(i,*(Samples+ i));
+	}
+}
 
 std::pair<std::vector<CbmSpadicRawMessage>::const_iterator,std::vector<CbmSpadicRawMessage>::const_iterator> CbmTrdTimeCorrel::Cluster::GetEntries()
 {

@@ -49,6 +49,8 @@ class CbmTrdTimeCorrel : public FairTask
 
   const Bool_t fActivateClusterizer = true;
   const Bool_t fDebugMode = false;
+  const Bool_t fDrawSignalShapes = true;
+  const Int_t  fSignalShapeThreshold = -100;
 
   Int_t   GetSpadicID(Int_t sourceA);
 
@@ -88,6 +90,11 @@ class CbmTrdTimeCorrel : public FairTask
   Int_t EpochRegressOffset[3][6];
   Int_t EpochRegressCounter[3][6];
   void FillBaselineHistogram(CbmSpadicRawMessage*);
+  void FillSignalShape(CbmSpadicRawMessage&);
+  void FillSignalShape(CbmSpadicRawMessage* message){
+	  FillSignalShape(*message);
+  }
+
   
   void CreateHistograms();
 
