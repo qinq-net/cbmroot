@@ -51,6 +51,8 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
      }
    }
    gStyle->SetNumberContours(99);
+   fBaseline[0]=-190;
+   fBaseline[1]=-220;
  };
 
 // ----              -------------------------------------------------------
@@ -153,7 +155,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   timestampOffsets.clear();
 
   //Calculate Timestamp Offsets
-  if (false) {//Context to limit epochBuffers scope
+  if (fActivateOffsetAnalysis) {//Context to limit epochBuffers scope
     LOG(INFO) <<"Begin Buffering Epoch Messages" << FairLogger::endl;
     EpochMap epochBuffer;
     //Loop over all epoch messages to build Fulltime offsets.
@@ -435,8 +437,10 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	//Compute Time Deltas, write them into a histogram and store timestamps in fLastMessageTime.
 	// WORKAROUND: at Present SyscoreID is not extracted, therefore all Messages are stored as if coming from SysCore 0.
 	// Epoch messages are sent with chID 0 or 16, i.e. rawChID 0 from the first or the second half-Spadic. Thus, the half-chip results as 0 or 1 by dividing the chID/16 and casting this to Int_t. Bit bloody but fast.
+	if(fActivateDeltaTAnalysis)
 	if(spaID != -1)fHM->H1("Delta_t_hist_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2)+"_Half_"+std::to_string((Int_t)(chID/16)))->Fill(static_cast<Long_t>(epoch)-static_cast<Long_t>(fLastMessageTime[0][spaID][chID]));
 	//Write delta_t into a TGraph
+	if(fActivateDeltaTAnalysis)
 	if(spaID!=-1){
 	  Int_t tGraphSize = fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID/2)+"_Channel_"+std::to_string((Int_t)(chID+(15*spaID%2))))->GetN();
 	  	if (fGraph) fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID/2)+"_Channel_"+std::to_string((Int_t)(chID/16+(15*spaID%2))))->SetPoint(tGraphSize,time,(static_cast<Long_t>(epoch)-static_cast<Long_t>(fLastMessageTime[0][spaID][chID])));
@@ -672,6 +676,7 @@ void CbmTrdTimeCorrel::Finish()
   fHM->G1("TsStrangeness1")->GetYaxis()->SetTitle("SPADIC1 strangeness");
   c2->SaveAs("pics/"+runName+"TsCounterRatio.png");
 
+  if(fActivateDeltaTAnalysis)
   if (false) {
     TCanvas *c3 = nullptr;
 
@@ -708,7 +713,7 @@ void CbmTrdTimeCorrel::Finish()
     c4->SaveAs(TString("pics/"+runName+"TimeOffsets"+".pdf"));
   }
   
-  if (false) {
+  if (fActivateOffsetAnalysis) {
     TCanvas *c5 = new TCanvas("c5","Fulltime_vs_Timeslice"+runName,5*320,3*300);
     TMultiGraph * mg = new TMultiGraph("Fulltime_vs_TimeSlice_all_Spadics","Fulltime_vs_TimeSlice_all_Spadics");
     for (Int_t baseSpaID=0; baseSpaID<4;++baseSpaID){
@@ -1346,7 +1351,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
       }
     }
   }
-  
+  if(fActivateDeltaTAnalysis)
   for (Int_t syscore=0; syscore<3;++syscore) {
     for (Int_t spadic=0; spadic<3;++spadic) {
       for (Int_t halfchip=0; halfchip<2;++halfchip) {
@@ -1414,6 +1419,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
 			  }
 		  }
 	  }
+  if(fActivateClusterizer)
   for(Int_t Size=1 ;Size <= 16; Size++)
     {
       for(Int_t Detector =0;Detector<=1;Detector++){
@@ -1483,6 +1489,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
   fHM->Add("TsStrangeness1", new TGraph());
   fHM->G1("TsStrangeness0")->SetNameTitle("TsStrangeness0","TsStrangeness0");
   fHM->G1("TsStrangeness1")->SetNameTitle("TsStrangeness1","TsStrangeness1");
+  if(fActivateDeltaTAnalysis)
   for (Int_t SysID=0; SysID<1;++SysID){
     for (Int_t SpaID=0; SpaID<3;++SpaID){
       for (Int_t ChID=0; ChID<32;++ChID){
@@ -1491,6 +1498,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
       }
     }
   }
+  if(fActivateOffsetAnalysis)
   for (Int_t baseSpaID=0; baseSpaID<4;++baseSpaID){
     fHM->Add(("Timestamps_Spadic"+std::to_string(baseSpaID)), new TGraph());
     fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID)))->SetNameTitle(("Timestamps_Spadic"+std::to_string(baseSpaID)).c_str(),("Timestamps_Spadic"+std::to_string(baseSpaID)).c_str());
