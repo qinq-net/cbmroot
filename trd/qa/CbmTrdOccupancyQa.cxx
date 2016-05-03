@@ -58,7 +58,8 @@ CbmTrdOccupancyQa::CbmTrdOccupancyQa()
     fLayerAverageOccupancyMapIt(),
     fTriggerThreshold(1e-6),
     fNeigbourReadout(true),
-    fGeo("")
+    fGeo(""),
+    fPlotMergedResults(false)
 {
 // fLayerDummy = new TH2I("LayerDummy","",1200,-600,600,1000,-500,500);
   fLayerDummy->SetXTitle("x-coordinate [cm]");
@@ -102,7 +103,7 @@ CbmTrdOccupancyQa::CbmTrdOccupancyQa(const char *name, const char *title, const 
 {
 }
 */
-CbmTrdOccupancyQa::CbmTrdOccupancyQa(const char *name, const char*, const char *geo, Double_t triggerThreshold)
+CbmTrdOccupancyQa::CbmTrdOccupancyQa(const char *name, const char*, const char *geo, Double_t triggerThreshold, Bool_t plotMergedResults)
   : FairTask(name),
     fDigis(NULL),
     fClusters(NULL),
@@ -125,7 +126,8 @@ CbmTrdOccupancyQa::CbmTrdOccupancyQa(const char *name, const char*, const char *
     fLayerAverageOccupancyMapIt(),
     fTriggerThreshold(triggerThreshold),
     fNeigbourReadout(true),
-    fGeo(geo)
+    fGeo(geo),
+    fPlotMergedResults(plotMergedResults)
 {
 // fLayerDummy = new TH2I("LayerDummy","",1200,-600,600,1000,-500,500);
   fLayerDummy->SetXTitle("x-coordinate [cm]");
@@ -466,7 +468,8 @@ void CbmTrdOccupancyQa::SwitchToMergedFile()
 }
 void CbmTrdOccupancyQa::CreateLayerView()
 {
-  SwitchToMergedFile();
+  if (fPlotMergedResults)
+    SwitchToMergedFile();
   TString origpath = gDirectory->GetPath();
   printf ("\n%s\n",origpath.Data());
   TString newpath = origpath;

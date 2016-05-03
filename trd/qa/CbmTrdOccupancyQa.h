@@ -71,7 +71,7 @@ class CbmTrdOccupancyQa : public FairTask {
  public:
   CbmTrdOccupancyQa();
   //CbmTrdOccupancyQa(const char *name, const char *title="CBM Task", const char *geo="");
-  CbmTrdOccupancyQa(const char *name, const char *title="CBM Task", const char *geo="", Double_t triggerThreshold = 1.0e-6);
+  CbmTrdOccupancyQa(const char *name, const char *title="CBM Task", const char *geo="", Double_t triggerThreshold = 1.0e-6, Bool_t plotMergedResults=false);
   virtual ~CbmTrdOccupancyQa();
   virtual InitStatus ReInit();
   virtual InitStatus Init();
@@ -111,9 +111,10 @@ class CbmTrdOccupancyQa : public FairTask {
   std::map<Int_t, TProfile*>::iterator fLayerAverageOccupancyMapIt; //!
   Double_t fTriggerThreshold;
   Bool_t fNeigbourReadout;
+  Bool_t fPlotMergedResults;
   TString fGeo;
 
-  ClassDef(CbmTrdOccupancyQa,3)
+  ClassDef(CbmTrdOccupancyQa,4)
 
     };
 #endif // 
