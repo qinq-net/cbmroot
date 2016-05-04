@@ -73,10 +73,9 @@ PairAnalysisPair::~PairAnalysisPair()
 
 }
 
-
 //______________________________________________
 Double_t PairAnalysisPair::ThetaPhiCM(const PairAnalysisTrack* d1, const PairAnalysisTrack* d2, 
-                                       Bool_t isHE, Bool_t isTheta)
+				      Bool_t isHE, Bool_t isTheta)
 {
   // The function calculates theta and phi in the mother rest frame with
   // respect to the helicity coordinate system and Collins-Soper coordinate system
@@ -188,6 +187,28 @@ Double_t PairAnalysisPair::ThetaPhiCM(Bool_t isHE, Bool_t isTheta) const {
     else
       return TMath::ATan2((p2Mom.Vect()).Dot(yAxis), (p2Mom.Vect()).Dot(xAxis));
   }
+}
+
+//______________________________________________
+Double_t PairAnalysisPair::GetCosPointingAngle(const CbmVertex *primVtx) const
+{
+  //
+  // Calculate the poiting angle of the pair to the primary vertex and take the cosine
+  //
+  if(!primVtx) return -1.;
+
+  Double_t deltaPos[3]; //vector between the reference point and the V0 vertex
+  deltaPos[0] = Xv() - primVtx->GetX();
+  deltaPos[1] = Yv() - primVtx->GetY();
+  deltaPos[2] = Zv() - primVtx->GetZ();
+
+  Double_t momV02    = Px()*Px() + Py()*Py() + Pz()*Pz();
+  Double_t deltaPos2 = deltaPos[0]*deltaPos[0] + deltaPos[1]*deltaPos[1] + deltaPos[2]*deltaPos[2];
+
+  Double_t cosinePointingAngle = (deltaPos[0]*Px() + deltaPos[1]*Py() + deltaPos[2]*Pz()) / TMath::Sqrt(momV02 * deltaPos2);
+
+  return TMath::Abs(cosinePointingAngle);
+
 }
 
 //______________________________________________

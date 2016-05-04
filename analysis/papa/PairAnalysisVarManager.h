@@ -200,8 +200,8 @@ public:
 
 // Pair specific variables
     kChi2NDF = kTrackMax,    // Chi^2/NDF
-    kDecayLength,            // decay length
-    kR,                      // distance to the origin
+    kDecayLength,            // decay length p*t (cm)
+    kR,                      // xy-distance to origin (cm)
     kOpeningAngle,           // opening angle
     kCosPointingAngle,       // cosine of the pointing angle
     kArmAlpha,               // Armenteros-Podolanski alpha
@@ -995,9 +995,9 @@ inline void PairAnalysisVarManager::FillVarMCParticle(const CbmMCTrack *p1, cons
     values[kPtSqMC]      = pair->Pt()*pair->Pt();
     values[kPMC]         = pair->P();
 
-    values[kXvMC]        = 0.;
-    values[kYvMC]        = 0.;
-    values[kZvMC]        = 0.;
+    values[kXvMC]        = pair->Xv();
+    values[kYvMC]        = pair->Yv();
+    values[kZvMC]        = pair->Zv();
     //TODO  values[kTMC]         = 0.;
 
     values[kOneOverPtMC] = (pair->Pt()>1.0e-3 ? pair->OneOverPt() : 0.0);
@@ -1163,15 +1163,15 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisPair(const PairAnalysisPa
   values[kOpeningAngle]     = pair->OpeningAngle();
   values[kCosPointingAngle] = fgEvent ? pair->GetCosPointingAngle(fgEvent->GetPrimaryVertex()) : -1;
 
-  values[kLegDist]      = pair->DistanceDaughters();
-  values[kLegDistXY]    = pair->DistanceDaughtersXY();
+  values[kLegDist]          = pair->DistanceDaughters();
+  values[kLegDistXY]        = pair->DistanceDaughtersXY();
   //  values[kDeltaEta]     = pair->DeltaEta();
   //  values[kDeltaPhi]     = pair->DeltaPhi();
-  values[kLegsP]        = TMath::Sqrt(pair->DaughtersP());
+  values[kLegsP]            = TMath::Sqrt(pair->DaughtersP());
 
   // Armenteros-Podolanski quantities
-  values[kArmAlpha]     = pair->GetArmAlpha();
-  values[kArmPt]        = pair->GetArmPt();
+  values[kArmAlpha]         = pair->GetArmAlpha();
+  values[kArmPt]            = pair->GetArmPt();
 
   //if(Req(kPsiPair))  values[kPsiPair]      = fgEvent ? pair->PsiPair(fgEvent->GetMagneticField()) : -5;
   //if(Req(kPhivPair))  values[kPhivPair]      = pair->PhivPair(1.);

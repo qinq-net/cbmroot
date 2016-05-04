@@ -29,6 +29,7 @@ ClassImp(PairAnalysisPairLV)
 
 PairAnalysisPairLV::PairAnalysisPairLV() :
   PairAnalysisPair(),
+  fPairPos(),
   fPair(),
   fD1(),
   fD2()
@@ -42,6 +43,7 @@ PairAnalysisPairLV::PairAnalysisPairLV() :
 //______________________________________________
 PairAnalysisPairLV::PairAnalysisPairLV(const PairAnalysisPair& pair) :
   PairAnalysisPair(pair),
+  fPairPos(),
   fPair(),
   fD1(),
   fD2()
@@ -54,8 +56,9 @@ PairAnalysisPairLV::PairAnalysisPairLV(const PairAnalysisPair& pair) :
 
 //______________________________________________
 PairAnalysisPairLV::PairAnalysisPairLV(PairAnalysisTrack * const particle1, Int_t pid1,
-			       PairAnalysisTrack * const particle2, Int_t pid2, Char_t type) :
+				       PairAnalysisTrack * const particle2, Int_t pid2, Char_t type) :
   PairAnalysisPair(type),
+  fPairPos(),
   fPair(),
   fD1(),
   fD2()
@@ -80,13 +83,12 @@ void PairAnalysisPairLV::SetTracks(PairAnalysisTrack * const particle1, Int_t pi
 				   PairAnalysisTrack * const particle2, Int_t pid2)
 {
   //
-  // Sort particles by pt, first particle larget Pt
   // set TLorentzVector daughters and pair
   // refParticle1 and 2 are the original tracks. In the case of track rotation
   // they are needed in the framework
   //
   // TODO: think about moving the pid assignement to PairAnalysisTrack and use it here
-  // BUT think about mixed events or LS-pairs
+  // BUT what about mixed events or LS-pairs
   const Double_t mpid1 = TDatabasePDG::Instance()->GetParticle(pid1)->Mass();
   const Double_t mpid2 = TDatabasePDG::Instance()->GetParticle(pid2)->Mass();
   const Double_t cpid1 = TDatabasePDG::Instance()->GetParticle(pid1)->Charge()*3;
@@ -119,6 +121,7 @@ void PairAnalysisPairLV::SetTracks(PairAnalysisTrack * const particle1, Int_t pi
 
   // build pair
   fPair=(fD1+fD2);
+  fPairPos=(*particle1->GetPosition() + *particle2->GetPosition());
   fCharge=(particle1->Charge() * particle2->Charge());
   fWeight=TMath::Sqrt(particle1->GetWeight() * particle2->GetWeight() );
   //  printf("fill pair weight: %.1f * %.1f = %.1f \n",particle1->GetWeight(),particle2->GetWeight(),fWeight);
@@ -144,6 +147,9 @@ void PairAnalysisPairLV::SetMCTracks(const CbmMCTrack * const particle1, const C
   particle1->Get4Momentum(fD1);
   particle2->Get4Momentum(fD2);
   fPair=(fD1+fD2);
+  TLorentzVector fD1Pos(particle1->GetStartX(),particle1->GetStartY(),particle1->GetStartZ(),particle1->GetStartT());
+  TLorentzVector fD2Pos(particle2->GetStartX(),particle2->GetStartY(),particle2->GetStartZ(),particle2->GetStartT());
+  fPairPos=(fD1Pos+fD2Pos);
 }
 
 //______________________________________________
@@ -262,7 +268,6 @@ Double_t PairAnalysisPairLV::PsiPair(Double_t MagField) const
 Double_t PairAnalysisPairLV::ThetaPhiCM(Bool_t isHE, Bool_t isTheta) const {
   // The function calculates theta and phi in the mother rest frame with 
   // respect to the helicity coordinate system and Collins-Soper coordinate system
-  // TODO: generalize for different decays (only J/Psi->e+e- now) still true??
 
   // Laboratory frame 4-vectors:
   const Double_t proMass = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
@@ -298,27 +303,6 @@ Double_t PairAnalysisPairLV::ThetaPhiCM(Bool_t isHE, Bool_t isTheta) const {
     else
       return TMath::ATan2((p2.Vect()).Dot(yAxis), (p2.Vect()).Dot(xAxis));
   }
-}
-//______________________________________________
-Double_t PairAnalysisPairLV::GetCosPointingAngle(const CbmVertex *primVtx) const
-{
-  //
-  // Calculate the poiting angle of the pair to the primary vertex and take the cosine
-  //
-  if(!primVtx) return -1.;
-
-  Double_t deltaPos[3]; //vector between the reference point and the V0 vertex
-  deltaPos[0] = fPair.X() - primVtx->GetX();
-  deltaPos[1] = fPair.Y() - primVtx->GetY();
-  deltaPos[2] = fPair.Z() - primVtx->GetZ();
-
-  Double_t momV02    = Px()*Px() + Py()*Py() + Pz()*Pz();
-  Double_t deltaPos2 = deltaPos[0]*deltaPos[0] + deltaPos[1]*deltaPos[1] + deltaPos[2]*deltaPos[2];
-
-  Double_t cosinePointingAngle = (deltaPos[0]*Px() + deltaPos[1]*Py() + deltaPos[2]*Pz()) / TMath::Sqrt(momV02 * deltaPos2);
-
-  return TMath::Abs(cosinePointingAngle);
-
 }
 
 //______________________________________________
@@ -406,135 +390,6 @@ Double_t PairAnalysisPairLV::PhivPair(Double_t MagField) const
 
   return phiv;
 
-}
-
-//______________________________________________
-Double_t PairAnalysisPairLV::GetPairPlaneAngle(Double_t v0rpH2, Int_t VariNum)const
-{
-
-  // Calculate the angle between electron pair plane and variables
-  // kv0rpH2 is reaction plane angle using V0-A,C,AC,Random
-
-  Double_t px1=-9999.,py1=-9999.,pz1=-9999.;
-  Double_t px2=-9999.,py2=-9999.,pz2=-9999.;
-
-  px1 = fD1.Px();
-  py1 = fD1.Py();
-  pz1 = fD1.Pz();
-
-  px2 = fD2.Px();
-  py2 = fD2.Py();
-  pz2 = fD2.Pz();
-
-  //p1+p2
-  Double_t px = Px();
-  Double_t py = Py();
-  Double_t pz = Pz();
-
-  // normal vector of ee plane
-  Double_t pnorx = py1*pz2 - pz1*py2;
-  Double_t pnory = pz1*px2 - px1*pz2;
-  Double_t pnorz = px1*py2 - py1*px2;
-  Double_t pnor  = TMath::Sqrt( pnorx*pnorx + pnory*pnory + pnorz*pnorz );
-
-  //unit vector
-  Double_t upnx = -9999.;
-  Double_t upny = -9999.;
-  Double_t upnz = -9999.;
-
-  if (pnor !=0)
-    {
-      upnx= pnorx/pnor;
-      upny= pnory/pnor;
-      upnz= pnorz/pnor;
-    }
-
-
-  Double_t ax = -9999.;
-  Double_t ay = -9999.;
-  Double_t az = -9999.;
-
-  //variable 1
-  //seeing the angle between ee decay plane and reaction plane by using V0-A,C,AC,Random
-  if(VariNum == 1){
-    ax = TMath::Sin(v0rpH2);
-    ay = -TMath::Cos(v0rpH2);
-    az = 0.0;
-  }
-
-
-  //variable 2
-  //seeing the angle between ee decay plane and (p1+p2) rot ez
-  else if (VariNum == 2 ){
-    ax = py;
-    ay = -px;
-    az = 0.0;
-  }
-
-  //variable 3
-  //seeing the angle between ee decay plane and (p1+p2) rot (p1+p2)x'z
-  else if (VariNum == 3 ){
-    Double_t rotpx = px*TMath::Cos(v0rpH2)+py*TMath::Sin(v0rpH2);
-    //Double_t rotpy = 0.0;
-    // Double_t rotpz = pz;
-
-    ax = py*pz;
-    ay = pz*rotpx-pz*px;
-    az = -rotpx*py;
-  }
-
-  //variable 4
-  //seeing the angle between ee decay plane and (p1+p2) rot ey'
-  else if (VariNum == 4){
-    ax = 0.0;
-    ay = 0.0;
-    az = pz;
-  }
-
-  Double_t denomHelper = ax*ax + ay*ay +az*az;
-  Double_t uax = -9999.;
-  Double_t uay = -9999.;
-  Double_t uaz = -9999.;
-
-  if (denomHelper !=0) {
-    uax = ax/TMath::Sqrt(denomHelper);
-    uay = ay/TMath::Sqrt(denomHelper);
-    uaz = az/TMath::Sqrt(denomHelper);
-  }
-
-  //PM is the angle between Pair plane and a plane decided by using variable 1-4
-
-  Double_t cosPM = upnx*uax + upny*uay + upnz*uaz;
-  Double_t PM = TMath::ACos(cosPM);
-
-  //keep interval [0,pi/2]
-  if(PM > TMath::Pi()/2){
-    PM -= TMath::Pi();
-    PM *= -1.0;
-  }
-  return PM;
-}
-
-
-//_______________________________________________
-Double_t PairAnalysisPairLV::PairPlaneMagInnerProduct(Double_t ZDCrpH1) const
-{
-  //
-  // Calculate inner product of the strong magnetic field and electron pair plane
-  //
-  if(ZDCrpH1 == 0.) return -9999.;
-  //daughter vectors
-  TVector3 p1 = fD1.Vect();
-  TVector3 p2 = fD2.Vect();
-  //vector product of pep X pem
-  TVector3 vpm  = p2.Cross(p1);
-  vpm.SetMag(1.); // normalize
-  //direction of strong magnetic field
-  Double_t magx = TMath::Cos(ZDCrpH1+(TMath::Pi()/2));
-  Double_t magy = TMath::Sin(ZDCrpH1+(TMath::Pi()/2));
-  //inner product of strong magnetic field and  ee plane
-  Double_t upnmag = vpm.Px()*magx + vpm.Py()*magy;
-  return upnmag;
 }
 
 //_______________________________________________

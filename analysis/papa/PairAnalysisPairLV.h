@@ -30,7 +30,7 @@ public:
   PairAnalysisPairLV(const PairAnalysisPair& pair);
 
   PairAnalysisPairLV(PairAnalysisTrack * const particle1, Int_t pid1,
-		 PairAnalysisTrack * const particle2, Int_t pid2, Char_t type);
+		     PairAnalysisTrack * const particle2, Int_t pid2, Char_t type);
 
   void SetTracks(PairAnalysisTrack * const particle1, Int_t pid1,
                  PairAnalysisTrack * const particle2, Int_t pid2);
@@ -50,9 +50,9 @@ public:
   virtual Double_t P() const  { return fPair.P();  }
   virtual Bool_t   PxPyPz(Double_t p[3]) const { p[0]=Px(); p[1]=Py(); p[2]=Pz(); return kTRUE; }
   
-  virtual Double_t Xv() const { return fPair.X(); }
-  virtual Double_t Yv() const { return fPair.Y(); }
-  virtual Double_t Zv() const { return fPair.Z(); }
+  virtual Double_t Xv() const { return fPairPos.X(); }
+  virtual Double_t Yv() const { return fPairPos.Y(); }
+  virtual Double_t Zv() const { return fPairPos.Z(); }
   virtual Bool_t   XvYvZv(Double_t x[3]) const { x[0]=Xv(); x[1]=Yv(); x[2]=Zv(); return kTRUE; }
   
   virtual Double_t OneOverPt() const { return Pt()>0.?1./Pt():0.; }  //TODO: check
@@ -69,6 +69,7 @@ public:
   //  virtual Int_t Charge() const {return fCharge; }
 
   //inter leg information
+  Double_t GetR()                 const { return fPairPos.Vect().Mag();                    }
   Double_t OpeningAngle()         const { return fD1.Angle(fD2.Vect());                    }
   Double_t DeltaEta()             const { return TMath::Abs(fD1.Eta()-fD2.Eta());          }
   Double_t DeltaPhi()             const { return fD1.DeltaPhi(fD2);                        }
@@ -82,16 +83,9 @@ public:
   Double_t PsiPair(Double_t MagField)const; //Angle cut w.r.t. to magnetic field
   Double_t PhivPair(Double_t MagField)const; //Angle of ee plane w.r.t. to magnetic field
 
-  //Calculate the angle between ee decay plane and variables
-  Double_t GetPairPlaneAngle(Double_t kv0CrpH2, Int_t VariNum) const;
-
-  Double_t GetCosPointingAngle(const CbmVertex *primVtx) const;
   // TODO: replace by KFParticleBase function
   Double_t GetArmAlpha() const;
   Double_t GetArmPt()    const;
-
-  // Calculate inner product of strong magnetic field and ee plane
-  Double_t PairPlaneMagInnerProduct(Double_t ZDCrpH1) const;
 
   // internal Lorentz vector particle
   const TLorentzVector& GetLVParticle()       const { return fPair; }
@@ -103,11 +97,12 @@ public:
 
 private:
 
-  TLorentzVector fPair;   // lorentz vector internally used for pair calculation
+  TLorentzVector fPairPos;// lorentz vector position
+  TLorentzVector fPair;   // lorentz vector internaly used for pair calculation
   TLorentzVector fD1;     // lorentz vector first daughter
   TLorentzVector fD2;     // lorentz vector second daughter
 
-  ClassDef(PairAnalysisPairLV,1) // Lorentz vector pairs
+  ClassDef(PairAnalysisPairLV,2) // Lorentz vector pairs
 };
 
 #endif

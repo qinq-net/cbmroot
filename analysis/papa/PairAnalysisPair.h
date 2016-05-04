@@ -38,14 +38,6 @@ public:
   virtual void SetMCTracks(const CbmMCTrack * const particle1,
 			   const CbmMCTrack * const particle2)  = 0;
 
-  /*
-  virtual void SetTracks(const AliKFParticle * const particle1,
-			 const AliKFParticle * const particle2,
-			 PairAnalysisTrack * const refParticle1,
-			 PairAnalysisTrack * const refParticle2) = 0;
-  */
-
-  //PairAnalysisTrack interface
   // kinematics
   virtual Double_t Px() const { return -999.; }
   virtual Double_t Py() const { return -999.; }
@@ -115,18 +107,12 @@ public:
   virtual Double_t PsiPair(Double_t MagField)  const = 0;  //Angle cut w.r.t. to magnetic field
   virtual Double_t PhivPair(Double_t MagField) const = 0; //Angle of ee plane w.r.t. to magnetic field
 
-  //Calculate the angle between ee decay plane and variables
-  virtual Double_t GetPairPlaneAngle(Double_t kv0CrpH2, Int_t VariNum) const = 0;
+  virtual Double_t GetCosPointingAngle(const CbmVertex *primVtx) const /*= 0*/;
 
-  virtual Double_t GetCosPointingAngle(const CbmVertex */*primVtx*/) const = 0;
-
-  // TODO: replace by AliKFPArticleBase function
+  // TODO: replace by KFPArticleBase function
   virtual Double_t GetArmAlpha() const = 0;
   virtual Double_t GetArmPt()    const = 0;
   void GetDCA(const CbmVertex *primVtx, Double_t d0z0[2]) const; // TOCHECK
-
-  // Calculate inner product of strong magnetic field and ee plane
-  virtual Double_t PairPlaneMagInnerProduct(Double_t ZDCrpH1) const = 0;
 
   // daughter references
   void SetRefFirstDaughter(PairAnalysisTrack * const track)  {fRefD1 = track;}
