@@ -115,6 +115,7 @@ prototype/CbmRichProtProjectionProducer.cxx
 prototype/CbmRichProtRingFinderHough.cxx
 prototype/CbmRichProtRingFinderHoughImpl.cxx
 prototype/CbmRichPrototypeQa.cxx
+prototype/smallprototype/CbmRichSmallPrototypeQa.cxx
 qa/CbmRichGeoTest.cxx 
 qa/CbmRichUrqmdTest.cxx
 qa/CbmRichGeoTestStudyReport.cxx 
@@ -176,6 +177,7 @@ prototype/beamtime/CbmRichTrbRecoQa.h
 prototype/beamtime/CbmRichTrbPulserQa.h
 prototype/beamtime/CbmRichHitInfo.h
 prototype/beamtime/CbmRichTrbRecoQaStudyReport.h
+prototype/smallprototype/CbmRichSmallPrototypeQa.h
 )
 
 If(TBB_FOUND)
