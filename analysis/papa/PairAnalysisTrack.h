@@ -51,12 +51,13 @@ public:
 
   // setter
   void SetPdgCode(Int_t pdg)              { fPdgCode=pdg; }
-  void SetLabel(Int_t lbl)                { fLabel=lbl; }
-  void SetWeight(Double_t wght)            { fWeight=wght; }
+  void SetLabel(Int_t lbl)                { fLabel=lbl;   }
+  void SetWeight(Double_t wght)           { fWeight=wght; }
   void SetMassHypo(Int_t pdg1, Int_t pdg2, Bool_t refitMassAssump);
 
   // track getters
-  TLorentzVector *GetMomentum()            { return  &fMomentum; }
+  TLorentzVector *GetPosition()           { return &fPosition; }
+  TLorentzVector *GetMomentum()           { return &fMomentum; }
   CbmGlobalTrack *GetGlobalTrack()  const { return fGlblTrack; }
   CbmStsTrack    *GetStsTrack()     const { return fStsTrack;  }
   CbmMuchTrack   *GetMuchTrack()    const { return fMuchTrack; }
@@ -71,6 +72,7 @@ public:
   CbmMCTrack     *GetMCTrack()      const { return fMCTrack;   }
   CbmTrackMatchNew *GetTrackMatch(DetectorId det) const;
 
+  CbmKFVertex    *GetPrimaryKFVertex() const { return fPrimVertex; } 
   // default kinematics
   Double_t Px()         const { return fMomentum.Px(); }
   Double_t Py()         const { return fMomentum.Py(); }
