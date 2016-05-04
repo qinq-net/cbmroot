@@ -64,7 +64,12 @@ template<class T> vector<T> CbmHistManager::ObjectVector(
 	const boost::regex e(pattern);
 	map<string, TNamed*>::const_iterator it;
 	for (it = fMap.begin(); it != fMap.end(); it++) {
-		if (boost::regex_match(it->first, e)) objects.push_back((T)it->second);
+		if (boost::regex_match(it->first, e)){
+			T ObjectPointer = dynamic_cast<T>(it->second);
+			if (ObjectPointer != nullptr)
+				objects.push_back(ObjectPointer);
+		}
+
 	}
   } catch (exception& ex) {
     cout << "Exception in CbmHistManager::ObjectVector: " << ex.what() << endl;
