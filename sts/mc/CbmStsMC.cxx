@@ -146,6 +146,12 @@ Bool_t CbmStsMC::ProcessHits(FairVolume* vol) {
 		fEloss = 0.;
 	}
 
+  if ( gMC->IsNewTrack() ) {
+  	LOG(INFO) << "New track created in STS " << gMC->IsTrackEntering() << " "
+  			<< gMC->IsTrackExiting() << " " << gMC->IsTrackStop() << " "
+  			<< gMC->IsTrackDisappeared() << " " << gMC->Edep() << FairLogger::endl;
+
+  }
 
   // --- For all steps within active volume: sum up differential energy loss
   fEloss += gMC->Edep();
