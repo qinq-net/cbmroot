@@ -139,6 +139,8 @@ Bool_t CbmSetup::GetFile(Int_t moduleId, TString& fileName) {
   TString path = gSystem->Getenv("VMCWORKDIR");
   path += "/geometry/";
   TString dir = moduleName;
+  // Special case for shield
+  if ( moduleId == kShield ) dir = "much";
 
   // --- First try with ROOT file
   fileName = dir + "/" + moduleName + "_" + fGeoTags[moduleId]
@@ -494,7 +496,7 @@ void CbmSetup::SetModule(Int_t moduleId, const char* geoTag,
 
   // Check validity of module Id
   if ( moduleId < 0 || moduleId > kNofSystems ) {
-    if ( moduleId < kMagnet || moduleId > kPipe ) {
+    if ( moduleId < kMagnet || moduleId > kPlatform ) {
       LOG(ERROR) << GetName() << ": Illegal module Id " << moduleId
       		       << FairLogger::endl;
       return;

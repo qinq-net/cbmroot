@@ -38,7 +38,10 @@ enum ESystemId {kRef,         ///< Reference plane
 /** Enumerator for the Ids of passive modules **/
 enum EPassiveId {kMagnet = 100,  ///< Magnet
                  kTarget,        ///< Target
-                 kPipe};         ///< Beam pipe
+                 kPipe,          ///< Beam pipe
+                 kShield,        ///< Beam pipe shielding in MUCH section
+                 kPlatform,      ///< RICH rail platform
+                 kLastModule};   ///< End point for loops
 
 
 

@@ -47,7 +47,7 @@ void run_mc(Int_t nEvents = 2,
 
 
   // --- Logger settings ----------------------------------------------------
-  TString logLevel     = "INFO";  
+  TString logLevel     = "INFO";
   TString logVerbosity = "LOW";
   // ------------------------------------------------------------------------
 

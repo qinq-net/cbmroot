@@ -59,7 +59,9 @@ void registerSetup()
  	}
 
 	// --- Register other modules
-	for (Int_t moduleId = kRef; moduleId < kMagnet; moduleId++) {
+	for (Int_t moduleId = kRef; moduleId < kLastModule; moduleId++) {
+		// Magnet and pipe are already registered
+		if ( moduleId == kMagnet || moduleId == kPipe ) continue;
 		if ( setup->GetGeoTag(moduleId, geoTag) ) {
 			setup->GetGeoFileName(moduleId, fileName);
 			isActive = setup->IsActive(moduleId);
@@ -78,6 +80,7 @@ void registerSetup()
 				case kSts:  module = new CbmStsMC(isActive); break;
 				case kRich: module = new CbmRich("RICH", isActive); break;
 				case kMuch: module = new CbmMuch("MUCH", isActive); break;
+				case kShield: module = new CbmShield("SHIELD"); break;
 				case kTrd:  module = new CbmTrd("TRD", isActive); break;
 				case kTof:  module = new CbmTof("TOF", isActive); break;
 				case kEcal: module = new CbmEcal("Ecal", isActive); break;

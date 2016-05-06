@@ -13,19 +13,21 @@
 map<Int_t, TString> CbmModuleList::DefineModules() {
   map<Int_t, TString> data;
 
-  data[kRef]    = "ref";
-  data[kMvd]    = "mvd";
-  data[kSts]    = "sts";
-  data[kRich]   = "rich";
-  data[kMuch]   = "much";
-  data[kTrd]    = "trd";
-  data[kTof]    = "tof";
-  data[kEcal]   = "ecal";
-  data[kPsd]    = "psd";
-  data[kDummy]  = "dummy";
-  data[kMagnet] = "magnet";
-  data[kTarget] = "target";
-  data[kPipe]   = "pipe";
+  data[kRef]      = "ref";
+  data[kMvd]      = "mvd";
+  data[kSts]      = "sts";
+  data[kRich]     = "rich";
+  data[kMuch]     = "much";
+  data[kTrd]      = "trd";
+  data[kTof]      = "tof";
+  data[kEcal]     = "ecal";
+  data[kPsd]      = "psd";
+  data[kDummy]    = "dummy";
+  data[kMagnet]   = "magnet";
+  data[kTarget]   = "target";
+  data[kPipe]     = "pipe";
+  data[kShield]   = "shield";
+  data[kPlatform] = "platform";
 
   return data;
 }

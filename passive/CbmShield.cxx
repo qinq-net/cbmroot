@@ -29,6 +29,16 @@ CbmShield::CbmShield(const char * name,  const char * title)
 }
 void CbmShield::ConstructGeometry()
 {
+
+  TString fileName = GetGeometryFileName();
+  if ( fileName.EndsWith(".geo") ) {
+    LOG(INFO) << "Constructing SHIELD geometry from ASCII file "
+              << fileName.Data() << FairLogger::endl;
+  }
+  else
+    LOG(FATAL) << "Geometry format of SHIELD file " << fileName.Data()
+               << " not supported." << FairLogger::endl;
+
 	FairGeoLoader *loader=FairGeoLoader::Instance();
 	FairGeoInterface *GeoInterface =loader->getGeoInterface();
 	CbmShieldGeo *MGeo=new CbmShieldGeo();
