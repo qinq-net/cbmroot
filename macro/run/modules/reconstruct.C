@@ -67,10 +67,23 @@ void reconstruct()
   // -----   Local reconstruction in MUCH   ---------------------------------
   if ( setup->IsActive(kMuch) ) {
 
-  FairTask* muchHitGem = new CbmMuchFindHitsGem(muchDigiFile.Data());
-  run->AddTask(muchHitGem);
-  CbmMuchFindHitsStraws* strawFindHits = new CbmMuchFindHitsStraws(muchDigiFile.Data());
-  run->AddTask(strawFindHits);
+		// --- Parameter file name
+		TString geoTag;
+		setup->GetGeoTag(kMuch, geoTag);
+		std::cout << geoTag(0,4) << std::endl;
+		TString parFile = gSystem->Getenv("VMCWORKDIR");
+		parFile = parFile + "/parameters/much/much_" + geoTag(0,4)
+				    + "_digi_sector.root";
+		std::cout << "Using parameter file " << parFile << std::endl;
+
+		// --- Hit finder for GEMs
+		FairTask* muchHitGem = new CbmMuchFindHitsGem(muchDigiFile.Data());
+		run->AddTask(muchHitGem);
+
+		// --- Hit finder for Straws
+		CbmMuchFindHitsStraws* strawFindHits =
+				new CbmMuchFindHitsStraws(muchDigiFile.Data());
+		run->AddTask(strawFindHits);
 
   }
 
