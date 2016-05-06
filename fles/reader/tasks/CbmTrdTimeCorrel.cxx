@@ -2038,7 +2038,7 @@ Int_t CbmTrdTimeCorrel::Cluster::GetChannelOnPadPlane(Int_t SpadicChannel)
 Int_t CbmTrdTimeCorrel::Cluster::GetSpadicID(Int_t sourceA)
 {
   //TString spadic="";
-  Int_t SpaId = -1; if(fParametersCalculated) return fSpadic;
+  Int_t SpaId = -1;
   switch (sourceA) {
   case (SpadicBaseAddress+0):  // first spadic
     //spadic="Spadic0";
