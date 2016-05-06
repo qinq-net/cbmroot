@@ -180,10 +180,10 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis100_electron")
   Bool_t useDiffusion     = kFALSE;    // Deactivate diffusion
   Bool_t useCrossTalk     = kFALSE;    // Deactivate cross talk
 
-  CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
-  stsDigi->SetProcesses(eLossModel, useLorentzShift, useDiffusion, useCrossTalk);
-  stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution, deadTime, noise);
-  run->AddTask(stsDigi);
+  CbmStsDigitize* stsDigitize = new CbmStsDigitize(digiModel);
+  stsDigitize->SetProcesses(eLossModel, useLorentzShift, useDiffusion, useCrossTalk);
+  stsDigitize->SetParameters(dynRange, threshold, nAdc, timeResolution, deadTime, noise);
+  run->AddTask(stsDigitize);
   // -------------------------------------------------------------------------
 
   // -----   TOF digitizer   -------------------------------------------------

@@ -51,7 +51,7 @@ void run_sim(Int_t nEvents = 2,
 
   // --- Logger settings ----------------------------------------------------
   TString logLevel     = "INFO";  
-  TString logVerbosity = "LOW";
+  TString logVerbosity = "HIGH";
   // ------------------------------------------------------------------------
 
 
@@ -63,6 +63,7 @@ void run_sim(Int_t nEvents = 2,
   std::cout << "-I- " << myName << ": Loading macro " << setupFile << std::endl;
   gROOT->LoadMacro(setupFile);
   gROOT->ProcessLine(setupFunct);
+  CbmSetup::Instance()->SetField("v12a", 1., 0., 0., 40.);
   // ------------------------------------------------------------------------
 
 
@@ -160,13 +161,13 @@ void run_sim(Int_t nEvents = 2,
   // ------------------------------------------------------------------------
 
 
-/*
+
   // -----   Logger settings   ----------------------------------------------
   gLogger->SetLogScreenLevel(logLevel.Data());
   gLogger->SetLogVerbosityLevel(logVerbosity.Data());
   // ------------------------------------------------------------------------
 
-
+/*
   // -----   Load the geometry setup   -------------------------------------
   std::cout << std::endl;
   setupFile = srcDir + "/geometry/setup/setup_" + setupName + ".C";
@@ -226,7 +227,7 @@ void run_sim(Int_t nEvents = 2,
   std::cout << "-I- " << myName << ": Registering magnetic field" << std::endl;
   CbmFieldMap* magField = CbmSetup::Instance()->CreateFieldMap();
   if ( ! magField ) {
-  	std::cout << "-E- run_sim_new: No valid field!";
+  	std::cout << "-E- run_sim: No valid field!";
   	return;
   }
   run->SetField(magField);
