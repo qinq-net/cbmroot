@@ -554,7 +554,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   }
   fNrTimeSlices++;
 
-  if(fNrTimeSlices % 2 ==0)
+  if(fNrTimeSlices % 1 ==0)
     {
       if (fActivateClusterizer){
 	if (fNrTimeSlices!=0)ClusterizerTime();
@@ -905,7 +905,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
             	  else break;
                 }
             }
-          if (currentPad-lastPad > 1)
+          if (currentPad-lastPad > 2)
         	  OutsideCluster=true;
           Int_t currentRow = (GetSpadicID(currentMessage->GetSourceAddress())/2)*32+currentPad/16;
           if(BuildingCluster.size () > currentPad || lastRow != currentRow||lastPad >= currentPad)//Check if the current message is not from the same row/spadic
@@ -1009,9 +1009,17 @@ void CbmTrdTimeCorrel::ClusterizerTime()
   for (auto x: fClusterBuffer){
       fHM->H1("Clustersize_for_Syscore_"+std::to_string (0)+"_Spadic_"+std::to_string (static_cast<Int_t>(x.GetSpadic ()/2)))->Fill(static_cast<Int_t>(x.size ()));
       fHM->H2("Cluster("+std::to_string(static_cast<Int_t>(x.size()))+")_Heatmap_for_Syscore_"+std::to_string (0) +"_Spadic_"+std::to_string(static_cast<Int_t>(x.GetSpadic ()/2)))->Fill(x.GetHorizontalPosition(),0/*<16.0 ? x.GetHorizontalPosition() : x.GetHorizontalPosition()-16.0),static_cast<Int_t>(x.GetRow())*/);
-      string detectorName = (x.GetSpadic()/2 == 0 ? "Frankfurt" : "Muenster");;
-      string histname = "Pad_Response_"+ detectorName + "_for_Clusters_of_Size_"+std::to_string(static_cast<Int_t>(x.size()));
-      x.FillChargeDistribution(fHM->H2(histname));
+      string detectorName = (x.GetSpadic()/2 == 0 ? "Frankfurt" : "Muenster");
+      if (fDrawClustertypes){
+    	  string histname = "Clustertypes_for_Syscore_T"+std::to_string(0)+"_Prototype_from_"+detectorName;
+    	  fHM->H2(histname)->Fill(x.size(),x.Type());
+      }
+      if(x.Type() != 0) continue;
+      if(fDrawPadResponse){
+    	  string histname = "Pad_Response_"+ detectorName + "_for_Clusters_of_Size_"+std::to_string(static_cast<Int_t>(x.size()));
+    	  x.FillChargeDistribution(fHM->H2(histname));
+      }
+
   }
 }
 // -------------------------------------------------------------------------
@@ -1420,6 +1428,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
 		  }
 	  }
   if(fActivateClusterizer)
+	  if(fDrawPadResponse)
   for(Int_t Size=1 ;Size <= 16; Size++)
     {
       for(Int_t Detector =0;Detector<=1;Detector++){
@@ -1451,7 +1460,20 @@ void CbmTrdTimeCorrel::CreateHistograms()
 			  }
 		  }
 	  }
-
+  }
+  if (fDrawClustertypes){
+	  for (Int_t syscore=0; syscore<1;++syscore)
+	  {
+		  for(Int_t Detector =0;Detector<=1;Detector++)
+		  {
+			  TString Detectorname = (Detector == 0 ? "Frankfurt" : "Muenster");
+			  histName = "Clustertypes_for_Syscore_T"+std::to_string(0)+"_Prototype_from_"+Detectorname;
+			  title = histName + runName;
+			  fHM->Create2<TH2I>(histName.Data(), title.Data(),17,-0.5,16.5,4,-0.5,3.5);
+			  fHM->H2(histName.Data())->GetXaxis()->SetNameTitle("Clustersize in Pads","Clustersize in Pads");
+			  fHM->H2(histName.Data())->GetYaxis()->SetNameTitle("Clustertype","Clustertype");
+		  }
+	  }
   }
 
 
@@ -2000,16 +2022,19 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
   std::vector<Int_t> Charges;
   Int_t NumberOfTypeTwoMessages=0;
   Int_t NumberOfHits=0;
-  Int_t LastPad= GetChannelOnPadPlane(fEntries.begin()->GetChannelID()+((GetSpadicID(fEntries.begin()->GetSourceAddress())%2==1) ? 16 : 0 ))-1;
+  Int_t LastPad= GetHorizontalMessagePosition(*fEntries.begin())-1;
   for(auto x : fEntries){
-      if (LastPad+1 != GetChannelOnPadPlane(x.GetChannelID()+((GetSpadicID(x.GetSourceAddress())%2 == 1 )? 16 : 0 )))
+	  Int_t CurrentPad = GetHorizontalMessagePosition(x);
+      if (LastPad+1 != CurrentPad)
 	{
+    	  //std::cout << LastPad << " " << CurrentPad << std:: endl;
 	  fType=1;
 	}
+	  LastPad = CurrentPad;
       Int_t Charge = GetCharge(x);
       Charges.push_back(Charge);
       fTotalCharge += Charge;
-      unweightedPosSum.push_back(GetChannelOnPadPlane(x.GetChannelID()+((GetSpadicID(x.GetSourceAddress())%2 == 1) ? 16 : 0 )));
+      unweightedPosSum.push_back(CurrentPad);
       if(x.GetTriggerType()==2) NumberOfTypeTwoMessages++;
       if(x.GetTriggerType()==1||x.GetTriggerType()==3) NumberOfHits++;
   }

@@ -49,12 +49,15 @@ class CbmTrdTimeCorrel : public FairTask
 
   const Bool_t fActivateClusterizer = true;
   const Bool_t fDebugMode = false;
-  const Bool_t fDrawSignalShapes = true;
+  const Bool_t fDrawSignalShapes = false;
+  const Bool_t fDrawPadResponse = true;
   const Bool_t fCalculateBaseline = false;
   const Int_t  fSignalShapeThreshold = -255	;
   Int_t fBaseline[2];
   const Bool_t fActivateDeltaTAnalysis = false;
   const Bool_t fActivateOffsetAnalysis = false;
+  const Bool_t fDrawClustertypes = true;
+
 
   Int_t   GetSpadicID(Int_t sourceA);
 
