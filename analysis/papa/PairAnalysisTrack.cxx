@@ -35,6 +35,8 @@
 #include "CbmTrack.h"
 #include "CbmGlobalTrack.h"
 #include "CbmTrackParam.h"
+#include "CbmMvdDetector.h"
+#include "CbmMvdStationPar.h"
 #include "CbmStsTrack.h"
 #include "CbmMuchTrack.h"
 #include "CbmTrdTrack.h"
@@ -137,14 +139,17 @@ PairAnalysisTrack::PairAnalysisTrack(CbmKFVertex *vtx,
   //
   Double_t m2=TMath::Power(TDatabasePDG::Instance()->GetParticle(11)->Mass(), 2);
 
-  /// check mvd entrance
-  Double_t zMvd = 5.; // z-position of the first mvd station, TODO: how to get that for different geometries
-  TrackExtrapolatorPtr fExtrapolator = CbmLitToolFactory::CreateTrackExtrapolator("rk4");
-  CbmLitTrackParam litParamIn;
-  CbmLitConverterFairTrackParam::FairTrackParamToCbmLitTrackParam( ststrk->GetParamFirst(), &litParamIn);
-  CbmLitTrackParam litParamOut;
-  fExtrapolator->Extrapolate(&litParamIn, &litParamOut, zMvd, NULL);
-  CbmLitConverterFairTrackParam::CbmLitTrackParamToFairTrackParam(&litParamOut, fMvdEntrance);
+  /// check mvd entrance if mvd is in setup
+  CbmMvdStationPar* mvdpar = CbmMvdDetector::Instance()->GetParameterFile();
+  if(mvdpar->GetStationCount()) {
+    Double_t zMvd = mvdpar->GetZPosition(0); // z-position of the first mvd station
+    TrackExtrapolatorPtr fExtrapolator = CbmLitToolFactory::CreateTrackExtrapolator("rk4");
+    CbmLitTrackParam litParamIn;
+    CbmLitConverterFairTrackParam::FairTrackParamToCbmLitTrackParam( ststrk->GetParamFirst(), &litParamIn);
+    CbmLitTrackParam litParamOut;
+    fExtrapolator->Extrapolate(&litParamIn, &litParamOut, zMvd, NULL);
+    CbmLitConverterFairTrackParam::CbmLitTrackParamToFairTrackParam(&litParamOut, fMvdEntrance);
+  }
 
   /// get parameters at primary vertex
   const CbmTrackParam *ppar = fGlblTrack->GetParamVertex();
