@@ -1800,7 +1800,7 @@ std::map<Int_t, std::map<Int_t,std::map<ULong_t, Long_t> > > CbmTrdTimeCorrel::C
 }
 
 
-CbmTrdTimeCorrel::Cluster::Cluster(Int_t initWindowsize, Int_t BaselineFrankfurt, Int_t BaselineMuenster, Bool_t CalculateBaseline) :
+CbmTrdTimeCorrel::Cluster::Cluster(Int_t initWindowsize, Int_t BaselineFrankfurt, Int_t BaselineMuenster, Bool_t CalculateBaseline, Int_t ChargeThreshhold = 0) :
     TObject (),
     fEntries (),
     fParametersCalculated(false),
@@ -1810,7 +1810,8 @@ CbmTrdTimeCorrel::Cluster::Cluster(Int_t initWindowsize, Int_t BaselineFrankfurt
     fTotalCharge (0),
     fHorizontalPosition (0),
     fWindowsize(initWindowsize),
-	fPreCalculatedBaseline(CalculateBaseline)
+	fPreCalculatedBaseline(CalculateBaseline),
+fClusterChargeThreshhold(ChargeThreshhold)
 {
 	fBaseline[0] = BaselineFrankfurt;
 	fBaseline[1] = BaselineMuenster;
@@ -1996,11 +1997,59 @@ Int_t CbmTrdTimeCorrel::Cluster::GetHorizontalMessagePosition(CbmSpadicRawMessag
 }
 
 Int_t CbmTrdTimeCorrel::Cluster::Type(){
+	/* Get Information about the status of the Cluster
+	 * Type 0 means that the cluster is complete (no gaps and capping TriggerType 2 messages)
+	 * Type 1 means that the cluster is incomplete (either with gaps or without capping TriggerType 2 messages)
+	 * Type 2 means that the cluster is hitless (no selftriggerd HitMessages)
+	 * Type 3 means that the Cluster is invalid (see Veto())
+	 */
   if(fParametersCalculated) return fType;
   else {
       CalculateParameters();
       return fType;
   }
+}
+
+void CbmTrdTimeCorrel::Cluster::Veto() {
+	//Abort Conditions
+	if (fType > 0 || size() <= 2)
+		return;
+	//secondly veto based on total charge
+	if (fTotalCharge <= fClusterChargeThreshhold) {
+		//sstd::cout << " Veto based on Threshold" << std::endl;
+		fType = 3;
+		return;
+	}
+	//first Veto based on Charge Distribution.
+	Float_t VetoThreshhold = 100.0 / (size() - 1.0);
+	for (auto x : fEntries) {
+		Float_t ChargeRatio = 100.0 * static_cast<Float_t>(GetCharge(x))
+				/ fTotalCharge;
+		Float_t Displacement =
+				static_cast<Float_t>(GetHorizontalMessagePosition(x))
+						- fHorizontalPosition;
+		//if(x.GetTriggerType()==2)
+		if (std::abs(Displacement) > (size() / 2.0)) {
+			//std::cout << " Veto based on width" << std::endl;
+			fType = 3;
+			return;
+		} else //if ((x.GetTriggerType() ==1)||(x.GetTriggerType()==3))
+		if (std::abs(Displacement)
+				<= static_cast<Float_t>((size() - 2.0) / 2.0)) {
+			if ((ChargeRatio < VetoThreshhold)) {
+				//std::cout << "Veto based on Distribution " << ChargeRatio << " " << VetoThreshhold << " " <<Displacement<< " " <<std::abs(Displacement)<< " " <<  static_cast<Float_t>((size()-2.0)/2.0) <<  std::endl;
+				fType = 3;
+				return;
+			}
+		} else if (std::abs(Displacement)
+				>= static_cast<Float_t>((size() - 2.0) / 2.0)) {
+			if (ChargeRatio >= VetoThreshhold) {
+				//std::cout << "Veto based on Distribution " << ChargeRatio << " " << VetoThreshhold << " " <<Displacement<< " " <<std::abs(Displacement)<< " " <<  static_cast<Float_t>((size()-2.0)/2.0) <<  std::endl;
+				fType = 3;
+				return;
+			}
+		}
+	}
 }
 
 std::pair<Int_t,Float_t> CbmTrdTimeCorrel::Cluster::GetPosition(){
@@ -2046,6 +2095,7 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
   if(NumberOfTypeTwoMessages!=2) fType=1;
   if(NumberOfHits==0) fType=2;
   //fHorizontalPosition=fHorizontalPosition/(size())+Offset;
+  //Veto();
   fParametersCalculated =true;
 }
 

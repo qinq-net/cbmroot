@@ -132,7 +132,8 @@ class CbmTrdTimeCorrel : public FairTask
   public:
     Cluster():Cluster(0){};
     Cluster(Int_t Windowsize):Cluster(Windowsize,-255,-255,true){};
-    Cluster(Int_t,Int_t,Int_t,Bool_t);
+    Cluster(Int_t initWindowsize, Int_t BaselineFrankfurt, Int_t BaselineMuenster, Bool_t CalculateBaseline):Cluster(initWindowsize, BaselineFrankfurt, BaselineMuenster,CalculateBaseline, 50) {};
+    Cluster(Int_t,Int_t,Int_t,Bool_t,Int_t);
     ~Cluster();
     Size_t size();
     Int_t Type();
@@ -150,7 +151,7 @@ class CbmTrdTimeCorrel : public FairTask
     std::vector<CbmSpadicRawMessage> fEntries;
     Bool_t fParametersCalculated;
     Bool_t fPreCalculatedBaseline;
-    Int_t fSpadic, fRow, fType, fTotalCharge, fWindowsize;
+    Int_t fSpadic, fRow, fType, fTotalCharge, fWindowsize, fClusterChargeThreshhold;
     Int_t fBaseline[2];
     Float_t fHorizontalPosition;
     void CalculateParameters();
@@ -158,6 +159,7 @@ class CbmTrdTimeCorrel : public FairTask
     Int_t GetSpadicID(Int_t);
     Int_t GetChannelOnPadPlane(Int_t);
     Int_t GetCharge(CbmSpadicRawMessage&);
+    void Veto();
   };
  private:
   std::deque<Cluster> fClusterBuffer;
