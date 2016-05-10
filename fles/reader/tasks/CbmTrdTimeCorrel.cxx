@@ -2072,6 +2072,7 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
   Int_t NumberOfTypeTwoMessages=0;
   Int_t NumberOfHits=0;
   Int_t LastPad= GetHorizontalMessagePosition(*fEntries.begin())-1;
+  Int_t maxADC = fBaseline[fSpadic/2];
   for(auto x : fEntries){
 	  Int_t CurrentPad = GetHorizontalMessagePosition(x);
       if (LastPad+1 != CurrentPad)
@@ -2081,6 +2082,10 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
 	}
 	  LastPad = CurrentPad;
       Int_t Charge = GetCharge(x);
+      if(maxADC < Charge) maxADC = Charge;
+      if(Charge < 30){
+    	  fType = 3;
+      }
       Charges.push_back(Charge);
       fTotalCharge += Charge;
       unweightedPosSum.push_back(CurrentPad);
@@ -2088,9 +2093,21 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
       if(x.GetTriggerType()==1||x.GetTriggerType()==3) NumberOfHits++;
   }
   Int_t Offset = (LastPad/16)*16;
-  for (Int_t i=0;i<fEntries.size();i++){
-      Double_t Weight = static_cast<Double_t>(Charges.at(i))/static_cast<Double_t>(fTotalCharge);
-      fHorizontalPosition += static_cast<Float_t>(Weight* static_cast<Double_t>(unweightedPosSum.at(i)));
+  if (size()!=3||fType == 3){
+	  for (Int_t i=0;i<fEntries.size();i++){
+		  Double_t Weight = static_cast<Double_t>(Charges.at(i))/static_cast<Double_t>(fTotalCharge);
+		  fHorizontalPosition += static_cast<Float_t>(Weight* static_cast<Double_t>(unweightedPosSum.at(i)));
+	  }
+  }else{
+	  Float_t PadWidth = 7.125;
+		fHorizontalPosition = PadWidth / 2.0
+				* log(static_cast<Double_t>(Charges.at(2)) / Charges.at(0))
+				/ log(static_cast<Double_t>(Charges.at(1)*Charges.at(1))
+								/ static_cast<Double_t>(Charges.at(0))
+								* Charges.at(2));
+	  fHorizontalPosition += GetHorizontalMessagePosition(fEntries.at(1));
+	  //Float_t NormalizationFactor = 1.0/(Charges.at(0)*Charges.at(0)+Charges.at(1)*Charges.at(1));
+	  //Float_t LeftDisplacement=
   }
   if(NumberOfTypeTwoMessages!=2) fType=1;
   if(NumberOfHits==0) fType=2;
