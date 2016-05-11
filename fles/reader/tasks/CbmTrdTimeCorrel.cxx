@@ -2016,7 +2016,7 @@ void CbmTrdTimeCorrel::Cluster::Veto() {
 		return;
 	//secondly veto based on total charge
 	if (fTotalCharge <= fClusterChargeThreshhold) {
-		//sstd::cout << " Veto based on Threshold" << std::endl;
+		//std::cout << " Veto based on Threshold" << std::endl;
 		fType = 3;
 		return;
 	}
@@ -2075,7 +2075,7 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
   Int_t maxADC = fBaseline[fSpadic/2];
   for(auto x : fEntries){
 	  Int_t CurrentPad = GetHorizontalMessagePosition(x);
-      if (LastPad+1 != CurrentPad)
+      if (LastPad+1 != CurrentPad&&fType!=3)
 	{
     	  //std::cout << LastPad << " " << CurrentPad << std:: endl;
 	  fType=1;
@@ -2083,7 +2083,7 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
 	  LastPad = CurrentPad;
       Int_t Charge = GetCharge(x);
       if(maxADC < Charge) maxADC = Charge;
-      if(Charge < 30){
+      if(Charge < 20){
     	  fType = 3;
       }
       Charges.push_back(Charge);
@@ -2092,14 +2092,44 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
       if(x.GetTriggerType()==2) NumberOfTypeTwoMessages++;
       if(x.GetTriggerType()==1||x.GetTriggerType()==3) NumberOfHits++;
   }
-  Int_t Offset = (LastPad/16)*16;
-  if (size()!=3||fType == 3){
+  if(NumberOfTypeTwoMessages!=2) fType=1;
+  if(NumberOfHits==0) fType=2;
+  const Float_t PadWidth = 7.125;
+  const Float_t sigma = 0.646432;
+  if (size()==1||size()>3||fType == 3||(size()==2&&!(fType==1||fType==2))){
 	  for (Int_t i=0;i<fEntries.size();i++){
 		  Double_t Weight = static_cast<Double_t>(Charges.at(i))/static_cast<Double_t>(fTotalCharge);
 		  fHorizontalPosition += static_cast<Float_t>(Weight* static_cast<Double_t>(unweightedPosSum.at(i)));
 	  }
-  }else{
-	  Float_t PadWidth = 7.125;
+  }else if(size()==2){//For the special Case of size 2 Clusters reconstruction formulas for both Energy and displacement are given in [Bergmann2014]
+	  if(fType==1){
+		  //First identify if the cluster is left sided or right sided
+		  Bool_t IsLeftsided=false; //Leftsided is shorthand for the following Trigger Type composition: 2;(1|3).
+		  IsLeftsided = (fEntries.at(0).GetTriggerType()==2 &&
+				  	 fEntries.at(1).GetTriggerType()==1);
+		  Bool_t IsRightsided=false; //Leftsided is shorthand for the following Trigger Type composition: 2;(1|3).
+		  IsRightsided = (fEntries.at(0).GetTriggerType()==1 &&
+				  	 fEntries.at(1).GetTriggerType()==2);
+		  if (IsLeftsided) {
+				Float_t Displacement = (sigma * sigma) / PadWidth
+						* log( static_cast<Double_t>(Charges.at(1))
+										/ Charges.at(0)) - PadWidth / 2;
+				fHorizontalPosition = Displacement + GetHorizontalMessagePosition(fEntries.at(1));
+
+		  } else if(IsRightsided){
+				Float_t Displacement = (sigma * sigma) / PadWidth
+						* log( static_cast<Double_t>(Charges.at(1))
+										/ Charges.at(0)) + PadWidth / 2;
+				fHorizontalPosition = Displacement + GetHorizontalMessagePosition(fEntries.at(0));
+		  }
+	  }else if(fType==2){
+		  Float_t a = -0.19;
+			Float_t Displacement = a
+					* log(static_cast<Double_t>(Charges.at(0)) / Charges.at(1))
+					+ PadWidth / 2;
+	  }
+  }
+  else if(size()==3){
 		fHorizontalPosition = PadWidth / 2.0
 				* log(static_cast<Double_t>(Charges.at(2)) / Charges.at(0))
 				/ log(static_cast<Double_t>(Charges.at(1)*Charges.at(1))
@@ -2109,8 +2139,7 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
 	  //Float_t NormalizationFactor = 1.0/(Charges.at(0)*Charges.at(0)+Charges.at(1)*Charges.at(1));
 	  //Float_t LeftDisplacement=
   }
-  if(NumberOfTypeTwoMessages!=2) fType=1;
-  if(NumberOfHits==0) fType=2;
+
   //fHorizontalPosition=fHorizontalPosition/(size())+Offset;
   //Veto();
   fParametersCalculated =true;
