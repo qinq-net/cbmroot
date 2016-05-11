@@ -50,6 +50,7 @@ class CbmTrdTimeCorrel : public FairTask
   const Bool_t fActivateClusterizer = true;
   const Bool_t fDebugMode = false;
   const Bool_t fDrawSignalShapes = false;
+  const Bool_t fDrawSignalDebugHistograms = false;
   const Bool_t fDrawPadResponse = true;
   const Bool_t fCalculateBaseline = false;
   const Int_t  fSignalShapeThreshold = -255	;
@@ -76,6 +77,7 @@ class CbmTrdTimeCorrel : public FairTask
   Int_t fiCluster;//counter for fClusters
 
   CbmHistManager* fHM;
+  CbmHistManager* fBaselineHM;
 
   Int_t fNrTimeSlices;
   
@@ -97,7 +99,7 @@ class CbmTrdTimeCorrel : public FairTask
   Int_t EpochRegressOffset[3][6];
   Int_t EpochRegressCounter[3][6];
   void FillBaselineHistogram(CbmSpadicRawMessage*);
-  void FillSignalShape(CbmSpadicRawMessage&);
+  void FillSignalShape(CbmSpadicRawMessage&,string Hist="",Bool_t HighBaseline =false);
   void FillSignalShape(CbmSpadicRawMessage* message){
 	  FillSignalShape(*message);
   }
@@ -117,7 +119,11 @@ class CbmTrdTimeCorrel : public FairTask
   Int_t GetLayerID(CbmSpadicRawMessage* raw);
   Int_t GetColumnID(CbmSpadicRawMessage* raw);
   Int_t GetModuleID(CbmSpadicRawMessage* raw);
-  Int_t GetCharge(CbmSpadicRawMessage&);
+  Int_t GetCharge(CbmSpadicRawMessage&,Bool_t = true);
+  Int_t GetAvgBaseline(CbmSpadicRawMessage&,Int_t n=3);
+  Int_t GetAvgBaseline(CbmSpadicRawMessage* raw){
+	  return GetAvgBaseline(*raw);
+  };
 
 
   OffsetMap timestampOffsets;

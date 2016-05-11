@@ -24,6 +24,7 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
   : FairTask("CbmTrdTimeCorrel"),
     fRawSpadic(NULL),
     fHM(new CbmHistManager()),
+	fBaselineHM(new CbmHistManager()),
     fNrTimeSlices(0),
     fRun(0),
     fRewriteSpadicName(true),
@@ -373,6 +374,29 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	          *tempPtr = *raw;
 	          fLinearHitBuffer.push_back(tempPtr);
 	        }
+	    if(fDrawSignalDebugHistograms){
+	    	if (isHit||isHitAborted){
+	    		string detectorName = (GetSpadicID(raw->GetSourceAddress())/2 == 0 ? "Frankfurt" : "Muenster");
+	    			Int_t maxADC= GetCharge(*raw,false);
+	    			Int_t AvgBaseline=GetAvgBaseline(*raw);
+	    			string Histname = "MaxADC_vs_NrSamples_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+detectorName;
+	    			fHM->H2(Histname)->Fill(raw->GetNrSamples(),maxADC);
+	    			Histname = "MaxADC_vs_avgBaseline_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+detectorName;
+	    			fHM->H2(Histname)->Fill(AvgBaseline,maxADC);
+	    			Histname = "avgBaseline_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+detectorName;
+	    			fHM->H1(Histname)->Fill(AvgBaseline);
+	    			static Int_t DetectorBeaselinesIndex[2]={0,0};
+	    			if (AvgBaseline >200)DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2]++;
+	    			if(DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2]%13==0 && DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2]<1300&& AvgBaseline > 200){
+	    				histName = "High_Baseline_SignalShape_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+detectorName+"_Nr_"+std::to_string(DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2]);
+	    				TString title2 = histName + " ";
+	    				fBaselineHM->Create2<TH2I>(histName.Data(), title2.Data(),33,-0.5,32.5,512,-256.5,255.5);
+	    				fBaselineHM->H2(histName.Data())->GetXaxis()->SetNameTitle("Sample","Sample");
+	    				fBaselineHM->H2(histName.Data())->GetYaxis()->SetNameTitle("ADC Value","ADC Value");
+	    				FillSignalShape(*raw,histName.Data(),true);
+	    			}
+	    	}
+	    }
 
 	  } else {  
 	    
@@ -754,6 +778,23 @@ void CbmTrdTimeCorrel::Finish()
   LOG(INFO) << "Write histo list to " << FairRootManager::Instance()->GetOutFile()->GetName() << FairLogger::endl;
   FairRootManager::Instance()->GetOutFile()->cd();
   fHM->WriteToFile();
+  if(fDrawSignalDebugHistograms){
+	  TCanvas *c6 = new TCanvas("c6","Debug_Signal_Shapes"+runName,5*320,3*300);
+	  TH2vector = fBaselineHM->H2Vector(".*");
+	  TH2* currentPtr=nullptr;
+	  for (std::vector<TH2*>::iterator it = TH2vector.begin() ; it != TH2vector.end(); ++it){
+		  if(*it!=nullptr)currentPtr =*it;
+		  c6->Clear();
+		  LOG(INFO) << currentPtr->GetTitle() << FairLogger::endl;
+		  currentPtr->SetContour(99);
+		  currentPtr->Draw("colz");
+		  c6->Update();
+		  c6->SaveAs("pics/"+TString(currentPtr->GetTitle())+".pdf");
+		  c6->SaveAs("pics/"+TString(currentPtr->GetTitle())+".png");
+	  }
+
+
+  }
   //delete c1;
 }
 // ---- FinishEvent  -------------------------------------------------------
@@ -1011,7 +1052,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
       fHM->H2("Cluster("+std::to_string(static_cast<Int_t>(x.size()))+")_Heatmap_for_Syscore_"+std::to_string (0) +"_Spadic_"+std::to_string(static_cast<Int_t>(x.GetSpadic ()/2)))->Fill(x.GetHorizontalPosition(),0/*<16.0 ? x.GetHorizontalPosition() : x.GetHorizontalPosition()-16.0),static_cast<Int_t>(x.GetRow())*/);
       string detectorName = (x.GetSpadic()/2 == 0 ? "Frankfurt" : "Muenster");
       if (fDrawClustertypes){
-    	  string histname = "Clustertypes_for_Syscore_T"+std::to_string(0)+"_Prototype_from_"+detectorName;
+    	  string histname = "Clustertypes_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+detectorName;
     	  fHM->H2(histname)->Fill(x.size(),x.Type());
       }
       if(x.Type() != 0) continue;
@@ -1467,7 +1508,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
 		  for(Int_t Detector =0;Detector<=1;Detector++)
 		  {
 			  TString Detectorname = (Detector == 0 ? "Frankfurt" : "Muenster");
-			  histName = "Clustertypes_for_Syscore_T"+std::to_string(0)+"_Prototype_from_"+Detectorname;
+			  histName = "Clustertypes_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+Detectorname;
 			  title = histName + runName;
 			  fHM->Create2<TH2I>(histName.Data(), title.Data(),17,-0.5,16.5,4,-0.5,3.5);
 			  fHM->H2(histName.Data())->GetXaxis()->SetNameTitle("Clustersize in Pads","Clustersize in Pads");
@@ -1475,6 +1516,27 @@ void CbmTrdTimeCorrel::CreateHistograms()
 		  }
 	  }
   }
+	if (fDrawSignalDebugHistograms) {
+		for (Int_t syscore = 0; syscore < 1; ++syscore) {
+			for (Int_t Detector = 0; Detector <= 1; Detector++) {
+				  TString Detectorname = (Detector == 0 ? "Frankfurt" : "Muenster");
+				  histName = "MaxADC_vs_NrSamples_for_Syscore_"+std::to_string(syscore)+"_Prototype_from_"+Detectorname;
+				  title = histName + runName;
+				  fHM->Create2<TH2I>(histName.Data(), title.Data(),33,-0.5,32.5,512,-256.5,255.5);
+				  fHM->H2(histName.Data())->GetXaxis()->SetTitle("NrSamples");
+				  fHM->H2(histName.Data())->GetYaxis()->SetTitle("MaxADC");
+				  histName = "MaxADC_vs_avgBaseline_for_Syscore_"+std::to_string(syscore)+"_Prototype_from_"+Detectorname;
+				  title = histName + runName;
+				  fHM->Create2<TH2I>(histName.Data(), title.Data(),512,-256.5,255.5,512,-256.5,255.5);
+				  fHM->H2(histName.Data())->GetXaxis()->SetTitle("averagedBaseline");
+				  fHM->H2(histName.Data())->GetYaxis()->SetTitle("MaxADC");
+				  histName = "avgBaseline_for_Syscore_"+std::to_string(syscore)+"_Prototype_from_"+Detectorname;
+				  title = histName + runName;
+				  fHM->Create1<TH1I>(histName.Data(), title.Data(),512,-256.5,255.5);
+				  fHM->H1(histName.Data())->GetXaxis()->SetTitle("averagedBaseline");
+			}
+		  }
+	  }
 
 
   fHM->Add("TsCounter", new TGraph());
@@ -1910,7 +1972,7 @@ Int_t NrSamples = message.GetNrSamples ();
  return (maxADC-Baseline);
 };
 
-Int_t CbmTrdTimeCorrel::GetCharge(CbmSpadicRawMessage& message)
+Int_t CbmTrdTimeCorrel::GetCharge(CbmSpadicRawMessage& message,Bool_t SubtractBaseline)
 {
   Int_t maxADC=-255;
   Int_t previousADC=-255;
@@ -1923,12 +1985,21 @@ Int_t CbmTrdTimeCorrel::GetCharge(CbmSpadicRawMessage& message)
       if((currentADC > previousADC) && ((currentADC - previousADC)>10)) validHit = true;
       previousADC = currentADC;
   }
-  Int_t Baseline=0;
-  for (Int_t i = NrSamples -3 ; i < NrSamples ; i++)
-    Baseline += *(message.GetSamples() + i);
-  Baseline = Baseline/3;
-  return (validHit ? maxADC-Baseline : maxADC-fBaseline[Spadic/2]);
+  //Int_t Baseline=GetAvgBaseline(message);
+  return (SubtractBaseline ?  maxADC-fBaseline[Spadic/2] : maxADC);
 };
+
+Int_t CbmTrdTimeCorrel::GetAvgBaseline(CbmSpadicRawMessage& message,Int_t n){
+	  Int_t NrSamples = message.GetNrSamples ();
+	  if(NrSamples==0||n==0) return -255;
+	  if(NrSamples<n) n = NrSamples;
+	  Int_t Baseline=0;
+	  for (Int_t i = NrSamples -n ; i < NrSamples ; i++)
+	    Baseline += *(message.GetSamples() + i);
+	  Baseline /= n;
+	  return Baseline;
+};
+
 
 void CbmTrdTimeCorrel::FillBaselineHistogram(CbmSpadicRawMessage* message){
 	string histName;
@@ -1948,14 +2019,20 @@ void CbmTrdTimeCorrel::FillBaselineHistogram(CbmSpadicRawMessage* message){
 	}
 };
 
-void CbmTrdTimeCorrel::FillSignalShape(CbmSpadicRawMessage& message){
+void CbmTrdTimeCorrel::FillSignalShape(CbmSpadicRawMessage& message,string Hist,Bool_t HighBaseline){
 	Int_t SpadicID = GetSpadicID(message.GetSourceAddress());
 	string Detectorname = ((SpadicID/2) == 0 ? "Frankfurt" : "Muenster");
 	Int_t ChID = message.GetChannelID() + (SpadicID%2)*16;
-	string histName = "SignalShape_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+Detectorname+"_Channel_"+ std::to_string(ChID);
+	string histName=Hist;
+	if(Hist=="") histName = "SignalShape_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+Detectorname+"_Channel_"+ std::to_string(ChID);
 	Int_t NrSamples = message.GetNrSamples();
 	Int_t * Samples = message.GetSamples();
-	TH2* Histogram = fHM->H2(histName);
+	TH2* Histogram = nullptr;
+	if(HighBaseline){
+		Histogram = fBaselineHM->H2(histName);
+	}else{
+		Histogram = fHM->H2(histName);
+	}
 	for (Int_t i = 0 ; i < NrSamples ; i++){
 		Histogram->Fill(i,*(Samples+ i));
 	}
