@@ -54,7 +54,7 @@ Int_t matbudget_ana(Int_t nEvents=10000000, const char* stsGeo = "v16c")
   const int nBins     = 1000;    // number of bins in histograms (in both x and y)
   const int rMax      = 55;      // maximal radius for histograms (for both x and y)
   const double zRange = 1.4;
-  TProfile2D* hStaRadLen[nStations];
+  TProfile2D* hStationRadLen[nStations];
   TProfile2D* hStsRadLen;
   double StsRadThick = 0;
   
@@ -68,7 +68,7 @@ Int_t matbudget_ana(Int_t nEvents=10000000, const char* stsGeo = "v16c")
     TString name = "Material Budget x/X_{0} [%],";
     name += " Station ";
     name += i+1;
-    hStaRadLen[i] = new TProfile2D(hisname, name, nBins,-rMax, rMax, nBins,-rMax, rMax);
+    hStationRadLen[i] = new TProfile2D(hisname, name, nBins,-rMax, rMax, nBins,-rMax, rMax);
   }
   
   // Auxiliary variables
@@ -101,7 +101,7 @@ Int_t matbudget_ana(Int_t nEvents=10000000, const char* stsGeo = "v16c")
       TVector3 posIn, posOut, posDif;
       posIn  = point->GetPosition();
       posOut = point->GetPositionOut();
-      posDif = 0.5* (posOut - posIn);
+      posDif = posOut - posIn;
 
       // Midpoint between in and out
       const TVector3 middle = (posOut + posIn);
@@ -126,7 +126,7 @@ Int_t matbudget_ana(Int_t nEvents=10000000, const char* stsGeo = "v16c")
     // Fill material budget map for each station
     for ( int i = 0; i < nStations; ++i )
     {
-      hStaRadLen[i]->Fill( x, y, RadThick[i]*100 );
+      hStationRadLen[i]->Fill( x, y, RadThick[i]*100 );
       StsRadThick += RadThick[i];
     }
 
@@ -154,13 +154,13 @@ Int_t matbudget_ana(Int_t nEvents=10000000, const char* stsGeo = "v16c")
   for ( int iStation = 0; iStation < nStations; iStation++) {
     can1->cd(iStation+1);
 //single    int iStation = 7;
-    hStaRadLen[iStation]->GetXaxis()->SetTitle("x [cm]");
-    hStaRadLen[iStation]->GetYaxis()->SetTitle("y [cm]");
-    //hStaRadLen[iStation]->GetZaxis()->SetTitle("x/X_{0} [%]");
-    //hStaRadLen[i]->GetZaxis()->SetTitle("radiation thickness [%]");
-    hStaRadLen[iStation]->SetAxisRange(0, zRange, "Z");
-    hStaRadLen[iStation]->Draw("colz");
-    hStaRadLen[iStation]->Write();
+    hStationRadLen[iStation]->GetXaxis()->SetTitle("x [cm]");
+    hStationRadLen[iStation]->GetYaxis()->SetTitle("y [cm]");
+    //hStationRadLen[iStation]->GetZaxis()->SetTitle("x/X_{0} [%]");
+    //hStationRadLen[i]->GetZaxis()->SetTitle("radiation thickness [%]");
+    hStationRadLen[iStation]->SetAxisRange(0, zRange, "Z");
+    hStationRadLen[iStation]->Draw("colz");
+    hStationRadLen[iStation]->Write();
   }
   
   // Plot file
@@ -189,7 +189,7 @@ Int_t matbudget_ana(Int_t nEvents=10000000, const char* stsGeo = "v16c")
   TString thisStation(0);
   can2->Clear();
   for ( int iStation = 0; iStation < nStations; iStation++) {
-    hStaRadLen[iStation]->Draw("colz");
+    hStationRadLen[iStation]->Draw("colz");
     // Plot file
     thisStation.Form("%d",iStation+1);
     plotFile = "sts_" + stsVersion + "_station_" + thisStation + "_matbudget.png";
