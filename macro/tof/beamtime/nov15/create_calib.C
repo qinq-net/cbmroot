@@ -100,6 +100,8 @@ void create_calib(Int_t nEvents = 100000000, char *cFileId="CbmTofSps_01Dec0427"
   cout << "Finishing run" << endl;
   run->Finish();
 
+  tofTrbDataUnpacker->WriteHistograms();
+
   timer.Stop();
   Double_t rtime = timer.RealTime();
   Double_t ctime = timer.CpuTime();

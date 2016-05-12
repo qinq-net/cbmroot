@@ -79,8 +79,8 @@ class TTrbUnpackTof : public FairUnpack
       TMbsCalibTofPar * fMbsCalibPar;
 
       Int_t fiNbEvents;
-      UInt_t fiCurrentEventNumber;
-      UInt_t fiPreviousEventNumber;
+      Int_t fiCurrentEventNumber;
+      Int_t fiPreviousEventNumber;
 
       Bool_t fbFineSpillTiming;
       Bool_t fbInspection;
@@ -113,6 +113,7 @@ class TTrbUnpackTof : public FairUnpack
       TH1* fCtsBusyTime;
       TH1* fCtsIdleTime;
       TH1* fCtsIdleTimeSpill;
+      TH1* fCtsSpillLength;
       TH1* fCtsTriggerDistance;
       TH1* fItcAssertions;
       TH1* fItcEvents;
@@ -120,6 +121,7 @@ class TTrbUnpackTof : public FairUnpack
       TH1* fTrbEventNumberJump;
       TH1* fCtsTriggerCycles;
       TH1* fCtsTriggerAccepted;
+      TH1* fHadaqEventsRecorded;
       TH1* fHadaqTimeInSpill;
       TH1* fCtsTimeInSpill;
       TH2* fEventSkipsInSpill;
@@ -136,6 +138,8 @@ class TTrbUnpackTof : public FairUnpack
       UInt_t* fuTrigInputClockCounter;
       Long64_t fiAllPossibleTriggers;
       Long64_t fiAcceptedTriggers;
+      Long64_t fliAllPossibleTriggersOverflows;
+      Long64_t fliAcceptedTriggersOverflows;
 
       // HADAQ event timestamp
       Int_t fiHadaqLastEventTime;

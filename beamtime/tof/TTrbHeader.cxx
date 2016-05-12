@@ -3,7 +3,9 @@
 TTrbHeader::TTrbHeader() : TNamed(),
     fiTriggerPattern(0),
     fiTriggerType(0),
-    fiTimeInSpill(0)
+    fdTimeInSpill(0.),
+    fdTimeInRun(0.),
+    fiSpillIndex(-1)
     {}
 
 TTrbHeader::~TTrbHeader() 

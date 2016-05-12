@@ -12,6 +12,7 @@
 #include "TTofTrbTdcData.h"
 #include "TTofCalibData.h"
 #include "HadaqTdcMessage.h"
+#include "TTrbHeader.h"
 
 #include "FairRun.h"
 #include "FairRuntimeDb.h"
@@ -38,6 +39,7 @@ TTofTrbTdcCalib::TTofTrbTdcCalib() :
   fbCreateCalib(kFALSE),
   fbSaveOutput(kFALSE),
   fTrbTdcBoardCollection(NULL),
+  fTrbHeader(NULL),
   fTrbTdcCalibCollection(NULL),
   fiFineTimeMethod(0),
   fiToTMethod(0),
@@ -58,7 +60,12 @@ TTofTrbTdcCalib::TTofTrbTdcCalib() :
   fbFirstEvent(kTRUE),
   fdToTSingleLeading(-100.),
   fBufferFile(NULL),
-  fBufferTree(NULL)
+  fBufferTree(NULL),
+  fiPreviousSpillIndex(-1),
+  fdPreviousEventTime(0.),
+  fdSpillStartTime(0.),
+  fCtsIdleTimeSpill(NULL),
+  fCtsSpillLength(NULL)
 {
 }
 
@@ -145,6 +152,38 @@ void TTofTrbTdcCalib::Exec(Option_t */*option*/)
 
       // continuous time axis
       dBoardOffsets.at(fiReferenceBoard) -= static_cast<Double_t>(fliFullCoarseOverflows*trbtdc::kliFullCoarseSize);
+
+      Double_t fdCurrentEventTime = (dReferenceOffset-dBoardOffsets.at(fiReferenceBoard))*trbtdc::kdClockCycleSizeSec;
+
+      // Store the event time in the run (reference channel of the reference TDC)
+      fTrbHeader->SetTimeInRun(fdCurrentEventTime);
+
+      if( 0 > fiPreviousSpillIndex )
+      {
+        fiPreviousSpillIndex = 0;
+
+        fdSpillStartTime = fdCurrentEventTime;
+      }
+      // no event for at least 2 seconds: most probably a new spill started
+      // (criterion does not work if the spill breaks are not trigger free)
+      else if((fdCurrentEventTime-fdPreviousEventTime) > 2.)
+      {
+        fiPreviousSpillIndex++;
+
+        fCtsSpillLength->Fill(fdPreviousEventTime-fdSpillStartTime);
+
+        fdSpillStartTime = fdCurrentEventTime;
+
+        // time since the last trigger procession in spill breaks
+        fCtsIdleTimeSpill->Fill(fdCurrentEventTime-fdPreviousEventTime);
+      }
+
+      // Index all spills in a run consecutively
+      fTrbHeader->SetSpillIndex(fiPreviousSpillIndex);
+
+      fTrbHeader->SetTimeInSpill(fdCurrentEventTime-fdSpillStartTime);
+
+      fdPreviousEventTime = fdCurrentEventTime;
     }
 
 
@@ -491,7 +530,12 @@ InitStatus TTofTrbTdcCalib::Init()
 
     TDirectory* tOldDirectory = gDirectory;
 
-    fBufferFile = new TFile("calib_buffer.root","RECREATE");
+    TFile* tOutputFile = tRootManager->GetOutFile();
+
+    TString tBufferFileName(tOutputFile->GetName());
+    tBufferFileName.Replace(tBufferFileName.Length()-10,10,"buffer.root");
+
+    fBufferFile = new TFile(tBufferFileName.Data(),"RECREATE");
 
     fBufferTree = new TTree("trbtree","My TRB tree");
 
@@ -501,6 +545,27 @@ InitStatus TTofTrbTdcCalib::Init()
   }
   else
   {
+    fTrbHeader = dynamic_cast<TTrbHeader*>(tRootManager->GetObject("TofTrbHeader."));
+    if( !fTrbHeader )
+    {
+      LOG(ERROR)<<"Could not retrieve branch 'TofTrbHeader' from FairRootManager."<<FairLogger::endl;
+      return kFATAL;
+    }
+
+    fCtsIdleTimeSpill = dynamic_cast<TH1I*>(gROOT->FindObjectAny("tof_trb_cts_idle_spill"));
+    if( !fCtsIdleTimeSpill )
+    {
+      LOG(ERROR)<<"Could not retrieve histogram 'tof_trb_cts_idle_spill' from TROOT instance."<<FairLogger::endl;
+      return kFATAL;
+    }
+
+    fCtsSpillLength = dynamic_cast<TH1I*>(gROOT->FindObjectAny("tof_trb_cts_spill_length"));
+    if( !fCtsSpillLength )
+    {
+      LOG(ERROR)<<"Could not retrieve histogram 'tof_trb_cts_spill_length' from TROOT instance."<<FairLogger::endl;
+      return kFATAL;
+    }
+
     // By default, after construction TObject** TClonesArray::fCont points to 1000 pointers
     // to objects that are supposed to be stored in the array. If the total number of TDC hits per
     // event exceeded this limit, the TClonesArray would be automatically expanded. To prevent

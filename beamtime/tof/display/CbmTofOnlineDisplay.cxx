@@ -418,7 +418,7 @@ InitStatus CbmTofOnlineDisplay::Init()
     gStyle->SetPalette(1);
     gStyle->SetLabelSize(lsize);
     gPad->SetLogy();
-    h1 = ((TH1 *)gROOT->FindObjectAny("tof_trb_cts_idle_spill"));
+    h1 = ((TH1 *)gROOT->FindObjectAny("tof_cts_time_spill"));
     if( h1 )
     {
       h1->Draw("");
@@ -466,10 +466,15 @@ InitStatus CbmTofOnlineDisplay::Init()
     gStyle->SetPalette(1);
     gStyle->SetLabelSize(lsize);
     gPad->SetLogy();
-    h1 = ((TH1 *)gROOT->FindObjectAny("tof_trb_hadaq_time"));
+    h1 = ((TH1 *)gROOT->FindObjectAny("tof_trb_trigger_rate"));
     if( h1 )
     {
-      h1->Draw("");
+      h1->Draw("LP");
+    }
+    h1 = ((TH1 *)gROOT->FindObjectAny("tof_trb_event_rate"));
+    if( h1 )
+    {
+      h1->Draw("LPSAME");
     }
 
     fCtsTriggerMonitor->cd(10);
@@ -478,7 +483,7 @@ InitStatus CbmTofOnlineDisplay::Init()
     gStyle->SetPalette(1);
     gStyle->SetLabelSize(lsize);
     gPad->SetLogy();
-    h1 = ((TH1 *)gROOT->FindObjectAny("tof_trb_trigger_rate"));
+    h1 = ((TH1 *)gROOT->FindObjectAny("tof_trb_hadaq_rate"));
     if( h1 )
     {
       h1->Draw("LP");
@@ -495,7 +500,7 @@ InitStatus CbmTofOnlineDisplay::Init()
     gStyle->SetPalette(1);
     gStyle->SetLabelSize(lsize);
     gPad->SetLogy();
-    h1 = ((TH1 *)gROOT->FindObjectAny("tof_hadaq_time_spill"));
+    h1 = ((TH1 *)gROOT->FindObjectAny("tof_trb_cts_idle_spill"));
     if( h1 )
     {
       h1->Draw("");
@@ -507,7 +512,7 @@ InitStatus CbmTofOnlineDisplay::Init()
     gStyle->SetPalette(1);
     gStyle->SetLabelSize(lsize);
     gPad->SetLogy();
-    h1 = ((TH1 *)gROOT->FindObjectAny("tof_cts_time_spill"));
+    h1 = ((TH1 *)gROOT->FindObjectAny("tof_trb_cts_spill_length"));
     if( h1 )
     {
       h1->Draw("");

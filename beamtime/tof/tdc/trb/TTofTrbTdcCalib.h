@@ -15,6 +15,8 @@ class TMbsCalibTofPar;
 class TClonesArray;
 class TTree;
 class TFile;
+class TTrbHeader;
+class TH1;
 
 /** @class TTofTrbTdcCalib
  ** @brief ...
@@ -82,6 +84,7 @@ class TTofTrbTdcCalib : public FairTask
     Bool_t fbSaveOutput;
 
     TClonesArray* fTrbTdcBoardCollection;
+    TTrbHeader* fTrbHeader;
     TClonesArray* fTrbTdcCalibCollection;
 
     Int_t fiFineTimeMethod;
@@ -109,6 +112,13 @@ class TTofTrbTdcCalib : public FairTask
 
     TFile* fBufferFile;
     TTree* fBufferTree;
+
+    Int_t fiPreviousSpillIndex;
+    Double_t fdPreviousEventTime;
+    Double_t fdSpillStartTime;
+
+    TH1* fCtsIdleTimeSpill;
+    TH1* fCtsSpillLength;
 
     ClassDef(TTofTrbTdcCalib,1)
 };

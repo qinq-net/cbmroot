@@ -61,6 +61,7 @@ TTrbUnpackTof::TTrbUnpackTof( Short_t type, Short_t subType, Short_t procId, Sho
    fCtsBusyTime(NULL),
    fCtsIdleTime(NULL),
    fCtsIdleTimeSpill(NULL),
+   fCtsSpillLength(NULL),
    fCtsTriggerDistance(NULL),
    fItcAssertions(NULL),
    fItcEvents(NULL),
@@ -68,6 +69,7 @@ TTrbUnpackTof::TTrbUnpackTof( Short_t type, Short_t subType, Short_t procId, Sho
    fTrbEventNumberJump(NULL),
    fCtsTriggerCycles(NULL),
    fCtsTriggerAccepted(NULL),
+   fHadaqEventsRecorded(NULL),
    fHadaqTimeInSpill(NULL),
    fCtsTimeInSpill(NULL),
    fEventSkipsInSpill(NULL),
@@ -82,6 +84,8 @@ TTrbUnpackTof::TTrbUnpackTof( Short_t type, Short_t subType, Short_t procId, Sho
    fuTrigInputClockCounter(new UInt_t[16]),
    fiAllPossibleTriggers(0),
    fiAcceptedTriggers(0),
+   fliAllPossibleTriggersOverflows(0),
+   fliAcceptedTriggersOverflows(0),
    fiHadaqLastEventTime(0),
    fiHadaqFirstEventTime(0),
    fiHadaqSpillStartTime(0),
@@ -252,34 +256,6 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
                  <<FairLogger::endl;
    }
 
-   Int_t iHadaqCurrentEventTime = (tCurrentEvent->GetTime()&0xff)
-                                 +60*((tCurrentEvent->GetTime()&0xff00)>>8)
-                                 +3600*(tCurrentEvent->GetTime()>>16);
-
-   // time offset of the first valid event in a run
-   if( 0 == fiNbEvents )
-   {
-     fiHadaqFirstEventTime = iHadaqCurrentEventTime;
-   }
-
-   // allow for up to 24h of data taking per run (1 overflow from 23:59:59 to 00:00:00)
-   if( 0 > (iHadaqCurrentEventTime - fiHadaqLastEventTime) )
-   {
-     iHadaqCurrentEventTime += 86400;
-   }
-
-   fHadaqEventTime->Fill(iHadaqCurrentEventTime - fiHadaqFirstEventTime);
-
-   // start of a new HADAQ spill: at least 2 seconds time difference to the preceding event
-   if( 1 < (iHadaqCurrentEventTime - fiHadaqLastEventTime) )
-   {
-     fiHadaqCoarseSpillStartTime = iHadaqCurrentEventTime;
-     fHadaqTimeInSpill->Reset("ICE");
-   }
-
-   fTrbHeader->SetTimeInSpill(((UInt_t)(iHadaqCurrentEventTime-fiHadaqCoarseSpillStartTime))*100000000);
-
-   fHadaqTimeInSpill->Fill(fTrbHeader->GetTimeInSpill()/100000000);
 
    hadaq::RawSubevent* tCurrentSubevent;
    UInt_t uNbSubevents = 0;
@@ -310,8 +286,8 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
 
      if( tCurrentSubevent->GetDataError() || (tCurrentSubevent->GetErrBits() != 0x00000001) )
      {
-       LOG(ERROR)<<Form("Skipping HADAQ raw subevent from source 0x%.4x. Contains broken data!", uSubeventId)<<FairLogger::endl;
-       continue;
+       LOG(ERROR)<<Form("HADAQ raw subevent from source 0x%.4x contains broken data.", uSubeventId)<<FairLogger::endl;
+       return kFALSE;
      }
 
      uNbGoodSubevents++;
@@ -354,15 +330,6 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
      {
        LOG(WARNING)<<Form("No data in HADAQ raw subevent 0x%.4x.. Skip!", uSubeventId)<<FairLogger::endl;
        continue;
-     }
-
-     if( bKnownSubevent && ( 0xc000 == uSubeventId ) )
-     {
-       fiCurrentEventNumber = (tCurrentSubevent->GetTrigNr()) >> 8;
-       if( 0 < fiNbEvents )
-       {
-         fTrbEventNumberJump->Fill(fiCurrentEventNumber - fiPreviousEventNumber);
-       }
      }
 
      UInt_t uSubsubeventDataIndex = 0;
@@ -634,14 +601,48 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
        {
          uNbSubsubevents++;
 
+         // Moving all the HADAQ time calculations here to make sure that only
+         // good events with a CTS subsubevent are considered.
+         Int_t iHadaqCurrentEventTime = (tCurrentEvent->GetTime()&0xff)
+                                       +60*((tCurrentEvent->GetTime()&0xff00)>>8)
+                                       +3600*(tCurrentEvent->GetTime()>>16);
+
+         // time offset of the first valid event in a run
+         if( 0 == fiNbEvents )
+         {
+           fiHadaqFirstEventTime = iHadaqCurrentEventTime;
+         }
+
+         // allow for unambiguous, consecutive time stamping of events for between 24h and 48h of data taking per run
+         // (1 overflow from 23:59:59 to 00:00:00 can be taken into account without duplicating time stamps when
+         //  not keeping track of the number of overflows)
+         if( 0 > (iHadaqCurrentEventTime - fiHadaqLastEventTime) )
+         {
+           iHadaqCurrentEventTime += 86400;
+         }
+
+         fHadaqEventTime->Fill(iHadaqCurrentEventTime - fiHadaqFirstEventTime);
+
+         // start of a new HADAQ spill: at least 2 seconds time difference to the preceding event
+         if( 1 < (iHadaqCurrentEventTime - fiHadaqLastEventTime) )
+         {
+           fiHadaqCoarseSpillStartTime = iHadaqCurrentEventTime;
+           fHadaqTimeInSpill->Reset("ICE");
+         }
+
+         fTrbHeader->SetTimeInSpill(static_cast<Double_t>(iHadaqCurrentEventTime-fiHadaqCoarseSpillStartTime));
+
+         fHadaqTimeInSpill->Fill(fTrbHeader->GetTimeInSpill());
+
+         fiCurrentEventNumber = static_cast<Int_t>((tCurrentSubevent->GetTrigNr()) >> 8);
+         if( 0 < fiNbEvents )
+         {
+           fTrbEventNumberJump->Fill(fiCurrentEventNumber - fiPreviousEventNumber);
+         }
+
+
          UInt_t uTrigStatus = tCurrentSubevent->Data(uSubsubeventDataIndex+1) & 0xffff;
          uTriggerPattern = uTrigStatus;
-
-         if( !fMbsUnpackPar->IsTrbEventUnpacked(uTriggerPattern) )
-         {
-           LOG(INFO)<<"HADAQ raw event does not meet the trigger selection criteria. Skip it."<<FairLogger::endl;
-           return kFALSE;
-         }
 
          for(UInt_t uChannel = 0; uChannel < 16; uChannel++)
          {
@@ -690,17 +691,8 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
            // time [us] passed since the last trigger procession
            fCtsIdleTime->Fill( uIdleTime/100. );
 
-
-
-           // CTS idle for more than 1 second
-           if( 1. < uIdleTime/100000000. )
-           {
-             // time passed since the last trigger procession on inter-spill scales
-             fCtsIdleTimeSpill->Fill( uIdleTime/100000000. );
-
-             LOG(INFO)<<Form("CTS idle time of %.2f s observed in event %u.",uIdleTime/100000000.,fiNbEvents)<<FairLogger::endl;
-           }
-           else
+           // CTS idle for less than 1 second
+           if( 1. > uIdleTime/100000000. )
            {
              fCtsTriggerDistance->Fill( (uBusyTime+uIdleTime)/100.);
            }
@@ -711,30 +703,35 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
 
          if( bIncludeCounters )
          {
-           Long64_t iAllTriggersCounter = (Long64_t)tCurrentSubevent->Data(uStatsOffset+1);
-           Long64_t iAllEventsCounter = (Long64_t)tCurrentSubevent->Data(uStatsOffset+2);
+           Long64_t iAllTriggersCounter = (Long64_t)tCurrentSubevent->Data(uStatsOffset+1) + fliAllPossibleTriggersOverflows*4294967296;
+           Long64_t iAllEventsCounter = (Long64_t)tCurrentSubevent->Data(uStatsOffset+2) + fliAcceptedTriggersOverflows*4294967296;
 
            iAllTriggersDiff = iAllTriggersCounter - fiAllPossibleTriggers;
            if( 0 > iAllTriggersDiff )
            {
              iAllTriggersDiff += 4294967296;
+             fliAllPossibleTriggersOverflows++;
            }
 
            iAllEventsDiff = iAllEventsCounter - fiAcceptedTriggers;
            if( 0 > iAllEventsDiff )
            {
              iAllEventsDiff += 4294967296;
+             fliAcceptedTriggersOverflows++;
            }
 
            LOG(DEBUG)<<Form("In total, %lld trigger opportunities (10 ns sampling) have been counted since the last event.", iAllTriggersDiff)<<FairLogger::endl;
            LOG(DEBUG)<<Form("In total, %lld events have been triggered since the last event.", iAllEventsDiff)<<FairLogger::endl;
            LOG(DEBUG)<<FairLogger::endl;
 
-           fItcAssertions->Fill(iAllTriggersDiff);
-           fItcEvents->Fill(iAllEventsDiff);
+           if( 0 < fiNbEvents )
+           {
+             fItcAssertions->Fill(iAllTriggersDiff);
+             fItcEvents->Fill(iAllEventsDiff);
+           }
 
-           fiAllPossibleTriggers = iAllTriggersCounter;
-           fiAcceptedTriggers = iAllEventsCounter;
+           fiAllPossibleTriggers = (Long64_t)tCurrentSubevent->Data(uStatsOffset+1) + fliAllPossibleTriggersOverflows*4294967296;
+           fiAcceptedTriggers = (Long64_t)tCurrentSubevent->Data(uStatsOffset+2) + fliAcceptedTriggersOverflows*4294967296;
          }
 
          if( bIncludeTimestamp )
@@ -860,15 +857,16 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
 
              fCtsTriggerCycles->Fill(fiHadaqSpillStartTime*1. + (Double_t)(fiCtsLastEventTime + iTimeInSpill)/2./100000000., iAllTriggersDiff);
              fCtsTriggerAccepted->Fill(fiHadaqSpillStartTime*1. + (Double_t)(fiCtsLastEventTime + iTimeInSpill)/2./100000000., iAllEventsDiff);
+             fHadaqEventsRecorded->Fill(fiHadaqSpillStartTime*1. + (Double_t)(fiCtsLastEventTime + iTimeInSpill)/2./100000000., 1);
            }
 
            if(fbFineSpillTiming)
            {
-             fTrbHeader->SetTimeInSpill((UInt_t)iTimeInSpill);
+             fTrbHeader->SetTimeInSpill(static_cast<Double_t>(iTimeInSpill)/100000000.);
            }
            
            fCtsTimeInSpill->Fill((Double_t)iTimeInSpill/100000.);
-           fEventSkipsInSpill->Fill((Double_t)iTimeInSpill/100000000., fiCurrentEventNumber - fiPreviousEventNumber);
+           fEventSkipsInSpill->Fill((Double_t)iTimeInSpill/100000000., fiCurrentEventNumber - fiPreviousEventNumber - 1);
 
            fiCtsLastEventTime = iTimeInSpill;
          }
@@ -994,6 +992,21 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
 
          }
 
+         // Regardless of the trigger evaluation result this event contains valid CTS information that can be
+         // used for time-in-spill calculations etc.
+         fiNbEvents++;
+
+         fiPreviousEventNumber = fiCurrentEventNumber;
+         
+         fiHadaqLastEventTime = iHadaqCurrentEventTime;
+
+         // Trigger pattern evaluation
+         if( !fMbsUnpackPar->IsTrbEventUnpacked(uTriggerPattern) )
+         {
+           LOG(INFO)<<"HADAQ raw event does not meet the trigger selection criteria. Skip it."<<FairLogger::endl;
+           return kFALSE;
+         }
+
        }
 
        else if(0x5555 == uSubsubeventSource)
@@ -1070,11 +1083,6 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
    LOG(DEBUG)<<Form("The parameter file specifies %u active TRB subevent builders.", fMbsUnpackPar->GetActiveTrbSebNb())<<FairLogger::endl;
    LOG(DEBUG)<<FairLogger::endl;
    LOG(DEBUG)<<FairLogger::endl;
-   
-   fiNbEvents++;
-   fiPreviousEventNumber = fiCurrentEventNumber;
-   
-   fiHadaqLastEventTime = iHadaqCurrentEventTime;
 
    delete fTrbIterator;
 
@@ -1146,12 +1154,6 @@ Bool_t TTrbUnpackTof::RegisterOutput()
       return kFALSE;
    }
 
-   // PAL:
-   // Not sure here what is the best way to group the TDC objects......
-   // The vector of data in the board objects kill probably the TClonesArray purpose?
-   // Maybe better to have big fixed size array and TTofVftxData::Clear calls in TTofVftxBoard combined
-   // with ConstructedAt access in TTofVftxUnpacker
-
    FairRootManager * manager = FairRootManager::Instance();
 
    fTrbTdcBoardCollection = new TClonesArray( "TTofTrbTdcBoard", fuActiveTrbTdcNb );
@@ -1159,7 +1161,7 @@ Bool_t TTrbUnpackTof::RegisterOutput()
                       fMbsUnpackPar->WriteDataInCbmOut() || fbSaveRawTdcBoards );
 
    fTrbHeader = new TTrbHeader();
-   manager->Register( "TofTrbHeader","TofUnpack", fTrbHeader, kTRUE );
+   manager->Register( "TofTrbHeader.","TofUnpack", fTrbHeader, kTRUE );
 
    return kTRUE;
 }
@@ -1194,43 +1196,52 @@ void TTrbUnpackTof::CreateHistograms()
    fTrbTriggerPattern->GetXaxis()->SetTitle("trigger pattern []");
    fTrbTriggerType = new TH1I("tof_trb_trigger_types", "CTS trigger types", 16, 0, 16);
    fTrbTriggerType->GetXaxis()->SetTitle("trigger type []");
-   fTrbEventNumberJump = new TH1I("tof_trb_event_jump", "CTS event number jumps", 30, 0, 30);
+   fTrbEventNumberJump = new TH1I("tof_trb_event_jump", "CTS event number jumps", 100, 0, 100);
    fTrbEventNumberJump->GetXaxis()->SetTitle("event counter increment []");
    fCtsBusyTime = new TH1I("tof_trb_cts_busy", "CTS busy time", 100, 0, 100);
    fCtsBusyTime->GetXaxis()->SetTitle("busy time [#mus]");
    fCtsIdleTime = new TH1I("tof_trb_cts_idle", "CTS idle time", 200, 0, 200);
    fCtsIdleTime->GetXaxis()->SetTitle("idle time [#mus]");
-   fCtsIdleTimeSpill = new TH1I("tof_trb_cts_idle_spill", "CTS inter-spill idle time", 50, 0, 50);
-   fCtsIdleTimeSpill->GetXaxis()->SetTitle("idle time [s]");
+   fCtsIdleTimeSpill = new TH1I("tof_trb_cts_idle_spill", "TDC spill-break length", 100, 0, 100);
+   fCtsIdleTimeSpill->GetXaxis()->SetTitle("spill break [s]");
+   fCtsSpillLength = new TH1I("tof_trb_cts_spill_length", "TDC spill length", 20, 0, 20);
+   fCtsSpillLength->GetXaxis()->SetTitle("spill length [s]");
    fCtsTriggerDistance = new TH1I("tof_trb_cts_cycle", "CTS trigger distance", 500, 0, 500);
    fCtsTriggerDistance->GetXaxis()->SetTitle("trigger distance [#mus]");
-   fItcAssertions = new TH1I("tof_trb_itc_assert", "All trigger cycles since last event", 50, 0, 50);
+   fItcAssertions = new TH1I("tof_trb_itc_assert", "All trigger cycles since last event", 200, 0, 200);
    fItcAssertions->GetXaxis()->SetTitle("detected triggers []");
-   fItcEvents = new TH1I("tof_trb_cts_events", "Accepted cycles since last event", 50, 0, 50);
+   fItcEvents = new TH1I("tof_trb_cts_events", "Accepted cycles since last event", 100, 0, 100);
    fItcEvents->GetXaxis()->SetTitle("accepted triggers []");
 
-   fHadaqEventTime = new TH1I("tof_trb_hadaq_time", "HADAQ/DABC event time", 300, 0, 300);
-   fHadaqEventTime->GetXaxis()->SetTitle("DABC event time [s]");
+   // binning and range increased to cover run times of up to 6 hours
+   fHadaqEventTime = new TH1I("tof_trb_hadaq_time", "HADAQ event time", 20000, 0, 20000);
+   fHadaqEventTime->GetXaxis()->SetTitle("HADAQ event time [s]");
 
-   fCtsTriggerCycles = new TH1I("tof_trb_trigger_rate", "CTS trigger/event rate", 300, 0, 300);
+   fCtsTriggerCycles = new TH1I("tof_trb_trigger_rate", "CTS trigger/event rate", 20000, 0, 20000);
    fCtsTriggerCycles->GetXaxis()->SetTitle("CTS event time [s]");
    fCtsTriggerCycles->SetMarkerStyle(34);
    fCtsTriggerCycles->SetMarkerColor(kRed);
    fCtsTriggerCycles->SetLineColor(kRed);
 
-   fCtsTriggerAccepted = new TH1I("tof_trb_event_rate", "CTS trigger/event rate", 300, 0, 300);
+   fCtsTriggerAccepted = new TH1I("tof_trb_event_rate", "CTS trigger/event rate", 20000, 0, 20000);
    fCtsTriggerAccepted->GetXaxis()->SetTitle("CTS event time [s]");
    fCtsTriggerAccepted->SetMarkerStyle(34);
    fCtsTriggerAccepted->SetMarkerColor(kGreen);
    fCtsTriggerAccepted->SetLineColor(kGreen);
 
+   fHadaqEventsRecorded = new TH1I("tof_trb_hadaq_rate", "CTS/HADAQ event rate", 20000, 0, 20000);
+   fHadaqEventsRecorded->GetXaxis()->SetTitle("CTS event time [s]");
+   fHadaqEventsRecorded->SetMarkerStyle(34);
+   fHadaqEventsRecorded->SetMarkerColor(kBlue);
+   fHadaqEventsRecorded->SetLineColor(kBlue);
+
    fHadaqTimeInSpill = new TH1I("tof_hadaq_time_spill", "HADAQ coarse time in spill", 20, 0, 20);
-   fHadaqTimeInSpill->GetXaxis()->SetTitle("DABC time in spill [s]");
+   fHadaqTimeInSpill->GetXaxis()->SetTitle("HADAQ time in spill [s]");
 
    fCtsTimeInSpill = new TH1I("tof_cts_time_spill", "CTS fine time in spill", 20000, 0, 20000);
    fCtsTimeInSpill->GetXaxis()->SetTitle("CTS time in spill [ms]");
 
-   fEventSkipsInSpill = new TH2I("tof_trb_skips_spill", "CTS events skipped in spill", 20, 0, 20, 20, 0, 20);
+   fEventSkipsInSpill = new TH2I("tof_trb_skips_spill", "CTS events skipped in spill", 20, 0, 20, 100, 0, 100);
    fEventSkipsInSpill->GetXaxis()->SetTitle("CTS event time in spill [s]");
    fEventSkipsInSpill->GetYaxis()->SetTitle("CTS events skipped");
 
@@ -1291,12 +1302,14 @@ void TTrbUnpackTof::WriteHistograms()
    fCtsBusyTime->Write();
    fCtsIdleTime->Write();
    fCtsIdleTimeSpill->Write();
+   fCtsSpillLength->Write();
    fCtsTriggerDistance->Write();
    fItcAssertions->Write();
    fItcEvents->Write();
    fHadaqEventTime->Write();
    fCtsTriggerCycles->Write();
    fCtsTriggerAccepted->Write();
+   fHadaqEventsRecorded->Write();
    fHadaqTimeInSpill->Write();
    fCtsTimeInSpill->Write();
    fEventSkipsInSpill->Write();
