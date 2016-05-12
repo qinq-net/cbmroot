@@ -34,7 +34,7 @@ class CbmMuchDigi : public CbmDigi{
   CbmMuchDigi& operator=(const CbmMuchDigi&);
 
   
-  virtual ~CbmMuchDigi(){}
+  virtual ~CbmMuchDigi() {delete fMatch;}
   Int_t GetSystemId() const { return kMUCH; }
   Int_t GetAddress()  const { return (fData >> fgkAddrShift) & fgkAddrMask; }
   Int_t GetAdc()      const { return (fData >> fgkCharShift) & fgkCharMask; }
