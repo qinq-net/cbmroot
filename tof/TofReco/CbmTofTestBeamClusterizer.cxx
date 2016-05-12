@@ -457,7 +457,7 @@ Bool_t   CbmTofTestBeamClusterizer::RegisterInputs()
       return kFALSE;
    } // if( NULL == fTofDigisColl)
 
-   fTrbHeader = (TTrbHeader *)  fManager->GetObject("TofTrbHeader");
+   fTrbHeader = (TTrbHeader *)  fManager->GetObject("TofTrbHeader.");
    if( NULL == fTrbHeader)
    {
       LOG(INFO)<<"CbmTofTestBeamClusterizer::RegisterInputs => Could not get the TofTrbHeader Object"<<FairLogger::endl;

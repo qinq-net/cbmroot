@@ -722,7 +722,7 @@ Bool_t   CbmTofAnaTestbeam::RegisterInputs()
      //      return kFALSE;
    } // if( NULL == fTofHitsColl)
 
-   fTrbHeader = (TTrbHeader *)  fManager->GetObject("TofTrbHeader");
+   fTrbHeader = (TTrbHeader *)  fManager->GetObject("TofTrbHeader.");
    if( NULL == fTrbHeader)
    {
       LOG(INFO)<<"CbmTofAnaTestbeam::RegisterInputs => Could not get the TofTrbHeader Object"<<FairLogger::endl;
