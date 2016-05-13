@@ -365,7 +365,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	      */
 	    fiRawMessage++;
 	    if (isHit&&(triggerType==1||triggerType==3))fHM->H2("Map_of_Hits_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(static_cast<Int_t>(spaID/2)))->Fill(padID%16,static_cast<Int_t>(padID/16));
-	    if (isHit&&(triggerType==1||triggerType==3))fHM->H2("Map_of_Charge_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(static_cast<Int_t>(spaID/2)))->Fill(padID%16,static_cast<Int_t>(padID/16),GetCharge(*raw));
+	    if (isHit&&(triggerType==1||triggerType==3))fHM->H2("Map_of_Charge_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(static_cast<Int_t>(spaID/2)))->Fill(padID%16,static_cast<Int_t>(padID/16),GetMaxADC(*raw));
 	    if (isHit) FillBaselineHistogram(raw);
 	    if(fActivateClusterizer)
 	      if (isHit || isHitAborted || isOverflow)
@@ -377,17 +377,25 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	    if(fDrawSignalDebugHistograms){
 	    	if (isHit||isHitAborted){
 	    		string detectorName = (GetSpadicID(raw->GetSourceAddress())/2 == 0 ? "Frankfurt" : "Muenster");
-	    			Int_t maxADC= GetCharge(*raw,false);
+	    			Int_t maxADC= GetMaxADC(*raw,false);
 	    			Int_t AvgBaseline=GetAvgBaseline(*raw);
 	    			string Histname = "MaxADC_vs_NrSamples_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+detectorName;
+	    			string Hittype;
 	    			fHM->H2(Histname)->Fill(raw->GetNrSamples(),maxADC);
-	    			Histname = "MaxADC_vs_avgBaseline_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+detectorName;
+	    			if (raw->GetStopType()==0) {
+	    				Hittype = "_Hits";
+	    			}else {
+	    				Hittype = "_MultiHits";
+	    			}
+	    			Histname = "MaxADC_vs_avgBaseline_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+detectorName+Hittype;
 	    			fHM->H2(Histname)->Fill(AvgBaseline,maxADC);
 	    			Histname = "avgBaseline_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+detectorName;
-	    			fHM->H1(Histname)->Fill(AvgBaseline);
+	    			if(raw->GetStopType()==0)fHM->H1(Histname)->Fill(AvgBaseline);
+	    			Histname = "avgBaseline_vs_NrSamples_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+detectorName;
+	    			fHM->H2(Histname)->Fill(raw->GetNrSamples(),AvgBaseline);
 	    			static Int_t DetectorBeaselinesIndex[2]={0,0};
 	    			if (AvgBaseline >200)DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2]++;
-	    			if(DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2]%13==0 && DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2]<1300&& AvgBaseline > 200){
+	    			if(DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2]%13==0 && DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2]<1300 && AvgBaseline > 200 ){
 	    				histName = "High_Baseline_SignalShape_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+detectorName+"_Nr_"+std::to_string(DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2]);
 	    				TString title2 = histName + " ";
 	    				fBaselineHM->Create2<TH2I>(histName.Data(), title2.Data(),33,-0.5,32.5,512,-256.5,255.5);
@@ -594,6 +602,7 @@ void CbmTrdTimeCorrel::Finish()
   fRawMessages->Clear();
   fDigis->Clear();
   fClusters->Clear();
+  FitBaseline();
 
   TString runName="";
   if(fRun!=0) runName=Form(" (Run %d)",fRun);
@@ -778,6 +787,7 @@ void CbmTrdTimeCorrel::Finish()
   LOG(INFO) << "Write histo list to " << FairRootManager::Instance()->GetOutFile()->GetName() << FairLogger::endl;
   FairRootManager::Instance()->GetOutFile()->cd();
   fHM->WriteToFile();
+  if(false)
   if(fDrawSignalDebugHistograms){
 	  TCanvas *c6 = new TCanvas("c6","Debug_Signal_Shapes"+runName,5*320,3*300);
 	  TH2vector = fBaselineHM->H2Vector(".*");
@@ -1055,7 +1065,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
     	  string histname = "Clustertypes_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+detectorName;
     	  fHM->H2(histname)->Fill(x.size(),x.Type());
       }
-      if(x.Type() != 0) continue;
+      if(x.Type() != 0 && x.size()==3) continue;
       if(fDrawPadResponse){
     	  string histname = "Pad_Response_"+ detectorName + "_for_Clusters_of_Size_"+std::to_string(static_cast<Int_t>(x.size()));
     	  x.FillChargeDistribution(fHM->H2(histname));
@@ -1525,11 +1535,19 @@ void CbmTrdTimeCorrel::CreateHistograms()
 				  fHM->Create2<TH2I>(histName.Data(), title.Data(),33,-0.5,32.5,512,-256.5,255.5);
 				  fHM->H2(histName.Data())->GetXaxis()->SetTitle("NrSamples");
 				  fHM->H2(histName.Data())->GetYaxis()->SetTitle("MaxADC");
-				  histName = "MaxADC_vs_avgBaseline_for_Syscore_"+std::to_string(syscore)+"_Prototype_from_"+Detectorname;
+				  histName = "avgBaseline_vs_NrSamples_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+Detectorname;
 				  title = histName + runName;
-				  fHM->Create2<TH2I>(histName.Data(), title.Data(),512,-256.5,255.5,512,-256.5,255.5);
-				  fHM->H2(histName.Data())->GetXaxis()->SetTitle("averagedBaseline");
-				  fHM->H2(histName.Data())->GetYaxis()->SetTitle("MaxADC");
+				  fHM->Create2<TH2I>(histName.Data(), title.Data(),33,-0.5,32.5,512,-256.5,255.5);
+				  fHM->H2(histName.Data())->GetXaxis()->SetTitle("NrSamples");
+				  fHM->H2(histName.Data())->GetYaxis()->SetTitle("averagedBaseline");
+				  vector<string> Hittypes = {"_Hits","_MultiHits"};
+				  for (string Hittype : Hittypes){
+					  histName = "MaxADC_vs_avgBaseline_for_Syscore_"+std::to_string(syscore)+"_Prototype_from_"+Detectorname+Hittype;
+					  title = histName + runName;
+					  fHM->Create2<TH2I>(histName.Data(), title.Data(),512,-256.5,255.5,512,-256.5,255.5);
+					  fHM->H2(histName.Data())->GetXaxis()->SetTitle("averagedBaseline");
+					  fHM->H2(histName.Data())->GetYaxis()->SetTitle("MaxADC");
+				  }
 				  histName = "avgBaseline_for_Syscore_"+std::to_string(syscore)+"_Prototype_from_"+Detectorname;
 				  title = histName + runName;
 				  fHM->Create1<TH1I>(histName.Data(), title.Data(),512,-256.5,255.5);
@@ -1642,6 +1660,76 @@ void CbmTrdTimeCorrel::CreateHistograms()
       return GetLayerID(raw);
     }
   }
+ // ----              -------------------------------------------------------
+void CbmTrdTimeCorrel::FitBaseline() {
+	if (!fCalculateBaseline) {
+		return;
+	}
+	TString outfile = FairRootManager::Instance()->GetOutFile()->GetName();
+	outfile.ReplaceAll(".root", "_Calibration.root");
+	TFile CalibrationFile(outfile, "RECREATE");
+	CalibrationFile.cd();
+	vector<TFitResult> FitResults;
+	//TODO: Check for Rootfile of fits
+	for (Int_t Detector = 0; Detector <= NrOfSpadics / 2; Detector++) {
+		string Detectorname = (Detector == 0 ? "Frankfurt" : "Muenster");
+		string histName = "Baseline_for_Syscore_" + std::to_string(0)
+				+ "_Prototype_from_" + Detectorname;
+		TH2* BaselineHistogram2D = fHM->H2(histName);
+		for (Int_t ChannelID = 0; ChannelID < 32; ChannelID++) {
+			TH1D* BaselineProjection = BaselineHistogram2D->ProjectionX("_px",
+					ChannelID + 1, ChannelID + 1);
+			if (BaselineProjection->GetEntries() < 50)
+				continue;
+			TFitResultPtr Baselinefit = BaselineProjection->Fit("gaus", "S", "",
+					-253, -10);
+			TString fitname = "Fit_" + histName + "_Channel_"
+					+ std::to_string(ChannelID);
+			Baselinefit->SetName(fitname);
+			FitResults.push_back(*Baselinefit);
+			Baselinefit->Print("V");
+			std::cout << std::endl;
+		}
+		std::cout << "Fits " << Detectorname << " " << FitResults.size()
+				<< std::endl;
+	}
+	for (auto x : FitResults) {
+		x.Write();
+	}
+	FairRootManager::Instance()->GetOutFile()->cd();
+	CalibrationFile.Close();
+}
+
+// ----              -------------------------------------------------------
+void CbmTrdTimeCorrel::FitPRF() {
+	TString outfile = FairRootManager::Instance()->GetOutFile()->GetName();
+	outfile.ReplaceAll(".root", "_Calibration.root");
+	TFile CalibrationFile(outfile, "UPDATE");
+	CalibrationFile.cd();
+	vector<TFitResult> FitResults;
+	//TODO: Check for Rootfile of fits
+	for (Int_t Detector = 0; Detector <= NrOfSpadics / 2; Detector++) {
+		string Detectorname = (Detector == 0 ? "Frankfurt" : "Muenster");
+		string histName = "Pad_Response_" + Detectorname
+				+ "_for_Clusters_of_Size_" + std::to_string(3);
+		TH1* PRF = fHM->H1(histName);
+		if (PRF->GetEntries() < 50)
+			continue;
+		TFitResultPtr PRFFit = PRF->Fit("gaus", "S", "", -3, 3);
+		TString fitname = "Fit_PRF_" + histName;
+		PRFFit->SetName(fitname);
+		FitResults.push_back(*PRFFit);
+		PRFFit->Print("V");
+		std::cout << std::endl;
+		std::cout << "Fits " << Detectorname << " " << FitResults.size()
+				<< std::endl;
+	}
+	for (auto x : FitResults) {
+		x.Write();
+	}
+	FairRootManager::Instance()->GetOutFile()->cd();
+	CalibrationFile.Close();
+}
 // ----              -------------------------------------------------------
 Int_t CbmTrdTimeCorrel::GetSpadicID(Int_t sourceA)
 {
@@ -1941,7 +2029,7 @@ Bool_t CbmTrdTimeCorrel::Cluster::FillChargeDistribution(TH2* ChargeMap)
     CalculateParameters();
   for (auto currentMessage : fEntries )
     {
-      Int_t Charge = GetCharge(currentMessage);
+      Int_t Charge = GetMaxADC(currentMessage);
       Float_t ChargeRatio = 100.0 * static_cast<Float_t>(Charge)/static_cast<Float_t>(GetTotalCharge());
       Float_t Displacement = static_cast<Float_t>(GetHorizontalMessagePosition(currentMessage));
       Displacement -= GetHorizontalPosition();
@@ -1949,7 +2037,7 @@ Bool_t CbmTrdTimeCorrel::Cluster::FillChargeDistribution(TH2* ChargeMap)
   }
 }
 
-Int_t CbmTrdTimeCorrel::Cluster::GetCharge(CbmSpadicRawMessage& message)
+Int_t CbmTrdTimeCorrel::Cluster::GetMaxADC(CbmSpadicRawMessage& message)
 {
   Int_t maxADC=-255;
 Bool_t validHit=false;
@@ -1972,7 +2060,7 @@ Int_t NrSamples = message.GetNrSamples ();
  return (maxADC-Baseline);
 };
 
-Int_t CbmTrdTimeCorrel::GetCharge(CbmSpadicRawMessage& message,Bool_t SubtractBaseline)
+Int_t CbmTrdTimeCorrel::GetMaxADC(CbmSpadicRawMessage& message,Bool_t SubtractBaseline)
 {
   Int_t maxADC=-255;
   Int_t previousADC=-255;
@@ -2007,16 +2095,15 @@ void CbmTrdTimeCorrel::FillBaselineHistogram(CbmSpadicRawMessage* message){
 	Int_t Spadic = GetSpadicID(message->GetSourceAddress())/2;
 	string Detectorname = (Spadic == 0 ? "Frankfurt" : "Muenster");
 	histName = "Baseline_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+Detectorname;
+	Int_t StopType = message->GetStopType();
+	if (StopType > 0) return;
+	if (GetMaxADC(*message,false)>0) return;
 	TH2* Histogram = fHM->H2(histName);
 	Int_t ChID =  message->GetChannelID() + ((GetSpadicID(message->GetSourceAddress()) %2 == 1)? 16 : 0);
 	Int_t NrSamples = message->GetNrSamples ();
 	Int_t * Samples=message->GetSamples();
-	for (Int_t i = NrSamples -3 ; i < NrSamples ; i++){
-		if(fDrawSignalShapes)
-			if(*(Samples+ i)>fSignalShapeThreshold)
-				FillSignalShape(*message);
-		Histogram->Fill(*(Samples+ i),ChID);
-	}
+	Histogram->Fill(GetAvgBaseline(*message),ChID);
+
 };
 
 void CbmTrdTimeCorrel::FillSignalShape(CbmSpadicRawMessage& message,string Hist,Bool_t HighBaseline){
@@ -2100,7 +2187,7 @@ void CbmTrdTimeCorrel::Cluster::Veto() {
 	//first Veto based on Charge Distribution.
 	Float_t VetoThreshhold = 100.0 / (size() - 1.0);
 	for (auto x : fEntries) {
-		Float_t ChargeRatio = 100.0 * static_cast<Float_t>(GetCharge(x))
+		Float_t ChargeRatio = 100.0 * static_cast<Float_t>(GetMaxADC(x))
 				/ fTotalCharge;
 		Float_t Displacement =
 				static_cast<Float_t>(GetHorizontalMessagePosition(x))
@@ -2158,7 +2245,7 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
 	  fType=1;
 	}
 	  LastPad = CurrentPad;
-      Int_t Charge = GetCharge(x);
+      Int_t Charge = GetMaxADC(x);
       if(maxADC < Charge) maxADC = Charge;
       if(Charge < 20){
     	  fType = 3;
@@ -2183,9 +2270,9 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
 		  //First identify if the cluster is left sided or right sided
 		  Bool_t IsLeftsided=false; //Leftsided is shorthand for the following Trigger Type composition: 2;(1|3).
 		  IsLeftsided = (fEntries.at(0).GetTriggerType()==2 &&
-				  	 fEntries.at(1).GetTriggerType()==1);
+				  	 (fEntries.at(1).GetTriggerType()==1||fEntries.at(1).GetTriggerType()==3));
 		  Bool_t IsRightsided=false; //Leftsided is shorthand for the following Trigger Type composition: 2;(1|3).
-		  IsRightsided = (fEntries.at(0).GetTriggerType()==1 &&
+		  IsRightsided = ((fEntries.at(0).GetTriggerType()==1||fEntries.at(0).GetTriggerType()==3) &&
 				  	 fEntries.at(1).GetTriggerType()==2);
 		  if (IsLeftsided) {
 				Float_t Displacement = (sigma * sigma) / PadWidth
@@ -2204,6 +2291,7 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
 			Float_t Displacement = a
 					* log(static_cast<Double_t>(Charges.at(0)) / Charges.at(1))
 					+ PadWidth / 2;
+			fHorizontalPosition = Displacement + (GetHorizontalMessagePosition(fEntries.at(0))+ GetHorizontalMessagePosition(fEntries.at(1)))/2;
 	  }
   }
   else if(size()==3){

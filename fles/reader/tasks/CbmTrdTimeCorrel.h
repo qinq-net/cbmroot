@@ -4,6 +4,7 @@
 #include "FairTask.h"
 
 #include "CbmHistManager.h"
+#include "TFitResult.h"
 
 #include "TClonesArray.h"
 #include "CbmSpadicRawMessage.h"
@@ -52,12 +53,13 @@ class CbmTrdTimeCorrel : public FairTask
   const Bool_t fDrawSignalShapes = false;
   const Bool_t fDrawSignalDebugHistograms = false;
   const Bool_t fDrawPadResponse = true;
-  const Bool_t fCalculateBaseline = false;
+  Bool_t fCalculateBaseline = true;
   const Int_t  fSignalShapeThreshold = -255	;
   Int_t fBaseline[2];
   const Bool_t fActivateDeltaTAnalysis = false;
   const Bool_t fActivateOffsetAnalysis = false;
   const Bool_t fDrawClustertypes = true;
+
 
 
   Int_t   GetSpadicID(Int_t sourceA);
@@ -106,6 +108,8 @@ class CbmTrdTimeCorrel : public FairTask
 
   
   void CreateHistograms();
+  void FitBaseline();
+  void FitPRF();
 
   void ReLabelAxis(TAxis* axis, TString type, Bool_t underflow, Bool_t overflow);
 
@@ -113,13 +117,13 @@ class CbmTrdTimeCorrel : public FairTask
 
   Int_t GetChannelOnPadPlane(Int_t SpadicChannel);
 
-  // The followinfg block is used to generate TrdDigis
+  // The following block is used to generate TrdDigis
   Int_t GetSectorID(CbmSpadicRawMessage* raw);
   Int_t GetRowID(CbmSpadicRawMessage* raw);
   Int_t GetLayerID(CbmSpadicRawMessage* raw);
   Int_t GetColumnID(CbmSpadicRawMessage* raw);
   Int_t GetModuleID(CbmSpadicRawMessage* raw);
-  Int_t GetCharge(CbmSpadicRawMessage&,Bool_t = true);
+  Int_t GetMaxADC(CbmSpadicRawMessage&,Bool_t = true);
   Int_t GetAvgBaseline(CbmSpadicRawMessage&,Int_t n=3);
   Int_t GetAvgBaseline(CbmSpadicRawMessage* raw){
 	  return GetAvgBaseline(*raw);
@@ -164,7 +168,7 @@ class CbmTrdTimeCorrel : public FairTask
     Int_t GetHorizontalMessagePosition(CbmSpadicRawMessage&);
     Int_t GetSpadicID(Int_t);
     Int_t GetChannelOnPadPlane(Int_t);
-    Int_t GetCharge(CbmSpadicRawMessage&);
+    Int_t GetMaxADC(CbmSpadicRawMessage&);
     void Veto();
   };
  private:
