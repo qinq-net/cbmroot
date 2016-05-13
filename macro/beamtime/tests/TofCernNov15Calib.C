@@ -16,7 +16,8 @@ void TofCernNov15Calib( Int_t nEvents = 10000 )
 
    TString sMacroDir  = gSystem->Getenv("VMCWORKDIR");
    sMacroDir  +=  "/macro/beamtime/tests/";
-   TString sDataDir  = "/data.local1/cdash/data";
+   TString sInputDir  = gSystem->Getenv("VMCWORKDIR");
+   TString sDataDir  = sInputDir + "/input/";
    TString sFileId = "CbmTofSps_01Dec0206";
 
    // -----   Timer   --------------------------------------------------------

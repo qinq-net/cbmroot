@@ -11,7 +11,4 @@ If($ENV{ctest_model} MATCHES Nightly)
   Message("Additional Nightly tests for field.")
 EndIf($ENV{ctest_model}  MATCHES Nightly)
 
-
-If (CDASH_BEAMTESTS_NIGHTLY)
-  add_subdirectory(beamtime)
-EndIf (CDASH_BEAMTESTS_NIGHTLY)
+add_subdirectory(beamtime)

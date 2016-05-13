@@ -26,8 +26,9 @@ void StsCosyDec14(Int_t nEvents = -1, Int_t runID = 106, Int_t fileID = 0)
 	TString version = TString::Itoa(Version,10); // Cosy
 
 	// --- Specify input file name (this is just an example)
-		
-	TString inDir  = "/data.local1/cdash/data/";
+
+        TString srcDir = gSystem->Getenv("VMCWORKDIR");
+	TString inDir  = srcDir + "/input/";
 	TString inFile = "";
 	
 	TString setup = "";
