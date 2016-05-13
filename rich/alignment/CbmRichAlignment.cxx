@@ -497,7 +497,7 @@ void CbmRichAlignment::Finish()
 			corr_file << setprecision(7) << outputFit[2] << "\t";
 			corr_file << setprecision(7) << outputFit[3] << "\t";
 			corr_file.close();
-			cout << "Wrote correction paramters to: " << s << endl;
+			cout << "Wrote correction parameters to: " << s << endl;
 		}
 		else {cout << "Error in CbmRichAlignment::Finish ; unable to open parameter file!" << endl;}
 	}

@@ -59,7 +59,7 @@ public:
      */
     void InitHistProjection();
 
-    void ProjectionProducer(TClonesArray* projectedPoint);
+    void ProjectionProducer();
 
     /*
      * Get pmt normal from 3 different points on the plane.

@@ -27,7 +27,9 @@ CbmRichProjectionProducer2::CbmRichProjectionProducer2():
 	fTrackParams(NULL),
 	fMCTracks(NULL),
 	fRichPoints(NULL),
-	fNumb(0),
+	fOutputDir(""),
+	fNumbAxis(""),
+	fTile(""),
 	fEventNum(0)
 {
 }
@@ -288,7 +290,7 @@ void CbmRichProjectionProducer2::ComputeR2(vector<Double_t> &ptR2Center, vector<
 		// Reading misalignment information from correction_param.txt text file.
 		vector<Double_t> outputFit(4);
 		ifstream corr_file;
-		TString str = "/data/misalignment_correction/Sim_Outputs/Alignment_Correction/correction_param_" + fNumb + ".txt";
+		TString str = fOutputDir + "correction_param_" + fNumbAxis + fTile + ".txt";
 		corr_file.open(str);
 		if (corr_file.is_open())
 		{

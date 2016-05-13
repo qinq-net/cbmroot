@@ -453,10 +453,10 @@ void CbmRichCorrectionVector::ProjectionProducer(TClonesArray* projectedPoint)
 
 	CbmRichRecGeoPar* gp = CbmRichGeoManager::GetInstance().fGP;
 	double mirrorX = gp->fMirrorX;
-	Double_t pmtPlaneX = gp->fPmtPlaneX;
-    double pmtPlaneY = gp->fPmtPlaneY;
-    double pmtWidth = gp->fPmtWidth;
-    double pmtHeight = gp->fPmtHeight;
+	Double_t pmtPlaneX = gp->fPmt.fPlaneX;
+    double pmtPlaneY = gp->fPmt.fPlaneY;
+    double pmtWidth = gp->fPmt.fWidth;
+    double pmtHeight = gp->fPmt.fHeight;
 
 	GetPmtNormal(NofPMTPoints, normalPMT, constantePMT);
 	cout << "Calculated normal vector to PMT plane = {" << normalPMT.at(0) << ", " << normalPMT.at(1) << ", " << normalPMT.at(2) << "} and constante d = " << constantePMT << endl << endl;

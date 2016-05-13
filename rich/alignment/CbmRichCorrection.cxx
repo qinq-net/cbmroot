@@ -114,7 +114,7 @@ InitStatus CbmRichCorrection::Init()
 	if (NULL == fRichPoints) { Fatal("CbmRichCorrection::Init", "No RichPoint array !"); }
 
 	fGlobalTracks = (TClonesArray*) manager->GetObject("GlobalTrack");
-	if (NULL == fGlobalTracks) { Fatal("CbmAnaDielectronTask::Init","No GlobalTrack array!"); }
+	if (NULL == fGlobalTracks) { Fatal("CbmRichCorrection::Init", "No GlobalTrack array!"); }
 
 	fCopFit = new CbmRichRingFitterCOP();
 	fTauFit = new CbmRichRingFitterEllipseTau();
@@ -173,11 +173,11 @@ void CbmRichCorrection::Exec(Option_t* /*option*/)
 
 	if (nofRingsInEvent == 0) { cout << "Error no rings registered in event." << endl << endl; }
 	else {
-		ProjectionProducer(projectedPoint);
+		ProjectionProducer();
 	}
 }
 
-void CbmRichCorrection::ProjectionProducer(TClonesArray* projectedPoint)
+void CbmRichCorrection::ProjectionProducer()
 {
 	cout << "//------------------------------ CbmRichCorrection: Projection Producer ------------------------------//" << endl << endl;
 
@@ -186,17 +186,6 @@ void CbmRichCorrection::ProjectionProducer(TClonesArray* projectedPoint)
 	Int_t NofGTracks = fGlobalTracks->GetEntriesFast();
 	Int_t NofRefPlanePoints = fRichRefPlanePoints->GetEntriesFast();
 	Int_t NofPMTPoints = fRichPoints->GetEntriesFast();
-
-	if(fIsReconstruction) {
-		projectedPoint->Delete();
-	}
-	TMatrixFSym covMat(5);
-	for (Int_t iMatrix = 0; iMatrix < 5; iMatrix++) {
-		for (Int_t jMatrix = 0; jMatrix <= iMatrix; jMatrix++) {
-			covMat(iMatrix,jMatrix) = 0;
-		}
-	}
-	covMat(0,0) = covMat(1,1) = covMat(2,2) = covMat(3,3) = covMat(4,4) = 1.e-4;
 
 	// Declaration of points coordinates.
 	Double_t sphereRadius=300., constantePMT=0.;
@@ -972,8 +961,9 @@ void CbmRichCorrection::DrawHistProjection()
 	TCanvas* can3 = new TCanvas(fRunTitle + "_Distance_Histos_" + fAxisRotTitle, fRunTitle + "_Distance_Histos_" + fAxisRotTitle, 1500, 400);
 	can3->SetGrid(1,1);
 	can3->Divide(2,1);
+	can3->cd(1)->SetGrid(1,1);
+	can3->cd(2)->SetGrid(1,1);
 	can3->cd(1);
-	can3->SetGrid(1,1);
 	TH1D* Clone1 = (TH1D*)fHM->H1("fhDifferenceXIdeal")->Clone();
 	Clone1->GetXaxis()->SetTitleSize(0.04);
 	Clone1->GetYaxis()->SetTitleSize(0.04);

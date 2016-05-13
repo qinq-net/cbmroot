@@ -191,7 +191,7 @@ void CbmRichPMTMapping::Exec(Option_t* /*option*/)
 	if (nofRingsInEvent == 0) { cout << "Error no rings registered in event." << endl << endl; }
 	else {
 		//MatchFinder();
-		fGP = CbmRichHitProducer::InitGeometry();
+		fGP = CbmRichHitProducer::Init();
 		fGP.Print();
 		//ProjectionProducer();
 		ProjectionProducer2();
@@ -432,7 +432,7 @@ void CbmRichPMTMapping::ProjectionProducer2()
 
 					TVector3 pmtVector(ptPMirr[0], ptPMirr[1], ptPMirr[2]);
 					TVector3 pmtVectorNew;
-					CbmRichHitProducer::TiltPoint(&pmtVector, &pmtVectorNew, fGP.fPmtPhi, fGP.fPmtTheta, fGP.fPmtZOrig);
+					CbmRichHitProducer::TiltPoint(&pmtVector, &pmtVectorNew, fGP.fPmt.fPhi, fGP.fPmt.fTheta, fGP.fPmtZOrig);
 					cout << "New coordinates of point P on PMT plane, after PMT plane rotation = {" << pmtVectorNew.X() << ", " << pmtVectorNew.Y() << ", " << pmtVectorNew.Z() << "}" << endl << endl;
 					ptPMirr[0] = pmtVectorNew.X(), ptPMirr[1] = pmtVectorNew.Y(), ptPMirr[2] = pmtVectorNew.Z();
 
@@ -928,7 +928,7 @@ void CbmRichPMTMapping::RotateAndCopyHitsToRingLight(const CbmRichRing* ring1, C
 		if (NULL == hit) continue;
 		TVector3 inputHit(hit->GetX(), hit->GetY(), hit->GetZ());
 		TVector3 outputHit;
-		CbmRichHitProducer::TiltPoint(&inputHit, &outputHit, fGP.fPmtPhi, fGP.fPmtTheta, fGP.fPmtZOrig);
+		CbmRichHitProducer::TiltPoint(&inputHit, &outputHit, fGP.fPmt.fPhi, fGP.fPmt.fTheta, fGP.fPmtZOrig);
 		CbmRichHitLight hl(outputHit.X(), outputHit.Y());
 		ring2->AddHit(hl);
 	}

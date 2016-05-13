@@ -61,9 +61,19 @@ public:
     void ComputeP(vector<Double_t> &ptPMirr, vector<Double_t> &ptPR2, vector<Double_t> normalPMT, vector<Double_t> ptM, vector<Double_t> ptR2Mirr, Double_t normalCste);
 
     /*
+     * Set output directory for images.
+     */
+    void SetOutputDir(TString dir) {fOutputDir = dir;}
+
+    /*
      *
      */
-    void SetNumb(TString s) {fNumb = s;}
+    void SetNumbAxis(TString n) {fNumbAxis = n;}
+
+    /*
+     *
+     */
+    void SetTileName(TString t) {fTile = t;}
 
 
 private:
@@ -71,7 +81,9 @@ private:
     TClonesArray* fMCTracks;
     TClonesArray* fRichPoints;
 
-    TString fNumb;
+    TString fNumbAxis;
+    TString fTile;
+    TString fOutputDir;
     Int_t fEventNum; // Event counter
 
     /*
