@@ -42,6 +42,12 @@ class CbmFlibFileSource : public FairSource
 
     Source_Type GetSourceType() {return kONLINE;}
 
+    virtual void SetParUnpackers() {;}
+
+    virtual Bool_t InitUnpackers() {return kTRUE;}
+
+    virtual Bool_t ReInitUnpackers() {return kTRUE;}
+
     void Close();
     void Reset();
 

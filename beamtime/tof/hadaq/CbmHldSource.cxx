@@ -17,13 +17,9 @@
 
 // =====   default constructor   ===============================================
 CbmHldSource::CbmHldSource()
-#ifdef VERSION_LESS_151102
   : FairSource(),
     fUnpackers(new TObjArray()),
     fNUnpackers(0),
-#else
-  : FairOnlineSource(),
-#endif
     fFileNames(new TList()),
     fNFiles(0),
     fCurrentFile(0),
@@ -40,10 +36,8 @@ CbmHldSource::CbmHldSource()
 // =============================================================================
 CbmHldSource::~CbmHldSource()
 {
-#ifdef VERSION_LESS_151102
   fUnpackers->Delete(); //TODO: look into object ownership (optional)
   delete fUnpackers;
-#endif
 
   fFileNames->Delete(); //TODO: does it delete the TObjString instances?
   delete fFileNames;
@@ -57,11 +51,8 @@ CbmHldSource::~CbmHldSource()
 // =============================================================================
 Bool_t CbmHldSource::Init()
 {
-  fNFiles = fFileNames->GetEntries();
-
-#ifdef VERSION_LESS_151102
   fNUnpackers = fUnpackers->GetEntriesFast();
-
+  fNFiles = fFileNames->GetEntries();
 
   if(!fNUnpackers)
   {
@@ -96,7 +87,7 @@ Bool_t CbmHldSource::Init()
       return kFALSE;
     }
   }
-#endif
+
 
   if(!fNFiles)
   {
@@ -317,8 +308,7 @@ Int_t CbmHldSource::ReadEvent()
                                      ).Data()
                      );
 
-      for (Int_t i = 0; i < fUnpackers->GetEntriesFast(); i++) 
-      //for(Int_t i = 0; i < fNUnpackers; i++)
+      for(Int_t i = 0; i < fNUnpackers; i++)
       {
         FairUnpack* tUnpacker = (FairUnpack*)fUnpackers->At(i);
 
@@ -435,7 +425,6 @@ Int_t CbmHldSource::ReadEvent()
 // =============================================================================
 
 // =============================================================================
-#ifdef VERSION_LESS_151102
 void CbmHldSource::Reset()
 {
   for(Int_t i = 0; i < fNUnpackers; i++)
@@ -443,7 +432,6 @@ void CbmHldSource::Reset()
     ((FairUnpack *)fUnpackers->At(i))->Reset();
   }
 }
-#endif
 // =============================================================================
 
 // =============================================================================

@@ -8,11 +8,7 @@
 #ifndef CBMSOURCELMD_H
 #define CBMSOURCELMD_H
 
-#ifdef VERSION_LESS_151102
 #include "FairSource.h"
-#else
-#include "FairOnlineSource.h"
-#endif
   
 #include "CbmDetectorList.h"
 
@@ -31,13 +27,8 @@ class CbmDaqMap;
 class CbmTbDaqBuffer;
 class CbmTbEvent;
 class TClonesArray;
-class TObjArray;
 
-#ifdef VERSION_LESS_151102
 class CbmSourceLmd : public FairSource
-#else
-class CbmSourceLmd : public FairOnlineSource
-#endif
 {
   public:
     CbmSourceLmd();
@@ -57,6 +48,12 @@ class CbmSourceLmd : public FairOnlineSource
 #endif            
 
     Source_Type GetSourceType() {return kONLINE;}
+
+    virtual void SetParUnpackers() {;}
+
+    virtual Bool_t InitUnpackers() {return kTRUE;}
+
+    virtual Bool_t ReInitUnpackers() {return kTRUE;}
 
     virtual void Close();
     virtual void Reset();
@@ -133,8 +130,6 @@ class CbmSourceLmd : public FairOnlineSource
 
     Int_t fRocNumber1, fRocNumber2; ///< Number of ROC for external trigger
 
-    TObjArray* fUnpackers;
-    
     void ProcessSystemMessage();
     void ProcessEpochMarker();
     void ProcessHodoMessage();

@@ -6,11 +6,7 @@
 #ifndef CBMHLDSOURCE_H
 #define CBMHLDSOURCE_H 1
 
-#ifdef VERSION_LESS_151102
 #include "FairSource.h"
-#else
-#include "FairOnlineSource.h"
-#endif
 
 #include "FairUnpack.h"
 
@@ -40,11 +36,7 @@ class TList;
  ** ...
  **
  **/
-#ifdef VERSION_LESS_151102
 class CbmHldSource : public FairSource
-#else
-class CbmHldSource : public FairOnlineSource
-#endif
 {
   public:
 
@@ -67,11 +59,16 @@ class CbmHldSource : public FairOnlineSource
 #endif
 
     Source_Type GetSourceType() {return kONLINE;}
-    
+  
+    virtual void SetParUnpackers() {;}
+
+    virtual Bool_t InitUnpackers() {return kTRUE;}
+
+    virtual Bool_t ReInitUnpackers() {return kTRUE;}
+  
     void Close();
-#ifdef VERSION_LESS_151102
     void Reset();
-#endif
+
     void AddUnpacker(FairUnpack* unpacker) { fUnpackers->Add(unpacker); }
     void AddFile(const TString& tFileName);
     void AddPath(const TString& tFileDirectory,
@@ -93,10 +90,8 @@ class CbmHldSource : public FairOnlineSource
 
     /**private members*/
     
-#ifdef VERSION_LESS_151102
     TObjArray* fUnpackers;
     Int_t fNUnpackers;
-#endif
     TList* fFileNames;
     Int_t fNFiles;
     Int_t fCurrentFile;
