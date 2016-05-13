@@ -203,8 +203,9 @@ void CbmMuchDigiMatch::Reset() {
 
 
 // -------------------------------------------------------------------------
-void CbmMuchDigiMatch::AddCharge(Int_t iPoint, UInt_t charge, Double_t t, TArrayD shape, Double_t mcTime) {
-  AddLink(CbmLink(charge, iPoint));
+void CbmMuchDigiMatch::AddCharge(Int_t iPoint, UInt_t charge, Double_t t,
+		TArrayD shape, Double_t mcTime, Int_t eventNr, Int_t inputNr) {
+  AddLink(CbmLink(charge, iPoint, eventNr, inputNr));
   Int_t n = fRefIndexPerPrimaryElectron.GetSize();
   fRefIndexPerPrimaryElectron.Set(n+1);
   fChargePerPrimaryElectron.Set(n+1);

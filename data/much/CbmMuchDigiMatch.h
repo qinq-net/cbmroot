@@ -87,7 +87,9 @@ class CbmMuchDigiMatch : public CbmMatch
    */
   //UInt_t AddCharge(Int_t iPoint, UInt_t iCharge);
 
-  void AddCharge(Int_t iPoint, UInt_t iCharge, Double_t driftTime, TArrayD shape, Double_t mcTime);
+  void AddCharge(Int_t iPoint, UInt_t iCharge, Double_t driftTime,
+  		           TArrayD shape, Double_t mcTime,
+  		           Int_t eventNr = 0, Int_t inputNr = 0);
   
   Int_t GetNoPrimaryElectrons() { return fTimePerPrimaryElectron.GetSize(); }
   Int_t    GetRefIndexPerPrimaryElectron(Int_t i)  { return fRefIndexPerPrimaryElectron[i]; }
