@@ -60,11 +60,11 @@ class CbmHldSource : public FairSource
 
     Source_Type GetSourceType() {return kONLINE;}
   
-    virtual void SetParUnpackers() {;}
+    virtual void SetParUnpackers();
 
-    virtual Bool_t InitUnpackers() {return kTRUE;}
+    virtual Bool_t InitUnpackers();
 
-    virtual Bool_t ReInitUnpackers() {return kTRUE;}
+    virtual Bool_t ReInitUnpackers();
   
     void Close();
     void Reset();

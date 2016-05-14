@@ -594,4 +594,30 @@ void CbmHldSource::AddPath(const TString& tFileDirectory,
 }
 // =============================================================================
 
+Bool_t CbmHldSource::InitUnpackers() {
+  for (Int_t i = 0; i < fUnpackers->GetEntriesFast(); i++) {
+    if (!((FairUnpack *)fUnpackers->At(i))->Init()) {
+      return kFALSE;
+    }
+  }
+  return kTRUE;
+}
+
+Bool_t CbmHldSource::ReInitUnpackers() {
+  for (Int_t i = 0; i < fUnpackers->GetEntriesFast(); i++) {
+    if (!((FairUnpack *)fUnpackers->At(i))->Init()) {
+      return kFALSE;
+    }
+  }
+  return kTRUE;
+}
+
+void CbmHldSource::SetParUnpackers() {
+    for (Int_t i = 0; i < fUnpackers->GetEntriesFast(); i++) {
+        ((FairUnpack *)fUnpackers->At(i))->SetParContainers();
+    }
+}
+
+
+
 ClassImp(CbmHldSource)
