@@ -613,9 +613,11 @@ Bool_t CbmHldSource::ReInitUnpackers() {
 }
 
 void CbmHldSource::SetParUnpackers() {
+#ifndef VERSION_LESS_151102
     for (Int_t i = 0; i < fUnpackers->GetEntriesFast(); i++) {
         ((FairUnpack *)fUnpackers->At(i))->SetParContainers();
     }
+#endif
 }
 
 
