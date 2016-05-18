@@ -25,7 +25,7 @@
 #pragma link C++ class CbmGet4EventBuilder;
 #pragma link C++ class CbmGet4EventBuffer;
 
-#ifndef BUILD_BEAMTIME
+#ifdef BUILD_TOF_BEAMTIME
  #pragma link C++ class CbmGet4EventDumper;
  // #pragma link C++ class CbmGet4EventMonitor;
 #endif // NOT BUILD_BEAMTIME_LIB

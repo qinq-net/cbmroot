@@ -47,7 +47,6 @@ class TTrbUnpackTof : public FairUnpack
 
       // FairUnpack pure virtual methods
       virtual Bool_t Init();
-      virtual void SetParContainers(){;}
       virtual Bool_t DoUnpack(Int_t* data, Int_t size);
       virtual void Reset();
       
