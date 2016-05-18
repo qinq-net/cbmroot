@@ -378,30 +378,51 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	    	if (isHit||isHitAborted){
 	    		string detectorName = (GetSpadicID(raw->GetSourceAddress())/2 == 0 ? "Frankfurt" : "Muenster");
 	    			Int_t maxADC= GetMaxADC(*raw,false);
+	    			Int_t TriggerType = raw->GetTriggerType();
+	    			string TriggerName;
+	    			{
+	    				TString triggerTypes[4] = {
+	    						"Global trigger", "Self triggered",
+								"Neighbor triggered",
+								"Self and neighbor triggered" };
+	    				TriggerName = triggerTypes[TriggerType];
+	    			}
+	    			Int_t StopType = raw->GetStopType();
 	    			Int_t AvgBaseline=GetAvgBaseline(*raw);
-	    			string Histname = "MaxADC_vs_NrSamples_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+detectorName;
+	    			string Histname = "MaxADC_vs_NrSamples_for_Syscore_"
+	    					+std::to_string(0)+"_Prototype_from_"+detectorName+TriggerName;
 	    			string Hittype;
 	    			fHM->H2(Histname)->Fill(raw->GetNrSamples(),maxADC);
-	    			if (raw->GetStopType()==0) {
+	    			if (StopType==0) {
 	    				Hittype = "_Hits";
 	    			}else {
 	    				Hittype = "_MultiHits";
 	    			}
-	    			Histname = "MaxADC_vs_avgBaseline_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+detectorName+Hittype;
+	    			Histname = "MaxADC_vs_avgBaseline_for_Syscore_"
+	    					+std::to_string(0)+"_Prototype_from_"+detectorName+Hittype+TriggerName;
 	    			fHM->H2(Histname)->Fill(AvgBaseline,maxADC);
-	    			Histname = "avgBaseline_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+detectorName;
+	    			Histname = "avgBaseline_for_Syscore_"+std::to_string(0)
+	    					+"_Prototype_from_"+detectorName+TriggerName;
 	    			if(raw->GetStopType()==0)fHM->H1(Histname)->Fill(AvgBaseline);
-	    			Histname = "avgBaseline_vs_NrSamples_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+detectorName;
+	    			Histname = "avgBaseline_vs_NrSamples_for_Syscore_"
+	    					+std::to_string(0)+"_Prototype_from_"+detectorName+TriggerName;
 	    			fHM->H2(Histname)->Fill(raw->GetNrSamples(),AvgBaseline);
 	    			static Int_t DetectorBeaselinesIndex[2]={0,0};
-	    			if (AvgBaseline >200)DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2]++;
-	    			if(DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2]%13==0 && DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2]<1300 && AvgBaseline > 200 ){
-	    				histName = "High_Baseline_SignalShape_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+detectorName+"_Nr_"+std::to_string(DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2]);
-	    				TString title2 = histName + " ";
-	    				fBaselineHM->Create2<TH2I>(histName.Data(), title2.Data(),33,-0.5,32.5,512,-256.5,255.5);
-	    				fBaselineHM->H2(histName.Data())->GetXaxis()->SetNameTitle("Sample","Sample");
-	    				fBaselineHM->H2(histName.Data())->GetYaxis()->SetNameTitle("ADC Value","ADC Value");
-	    				FillSignalShape(*raw,histName.Data(),true);
+	    			if (raw->GetStopType() == 0) {
+	    				if (maxADC + AvgBaseline > 50){
+	    					DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2]++;
+	    					if(DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2]%13==0 && DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2]<1300){
+	    						histName = "High_Baseline_SignalShape_for_Syscore_"+std::to_string(0)
+	    								+"_Prototype_from_"+detectorName+"_Nr_"
+										+std::to_string(DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2])
+	    								+"_Trigger_"+std::to_string(raw->GetTriggerType());
+	    						TString title2 = histName + " ";
+	    						fBaselineHM->Create2<TH2I>(histName.Data(), title2.Data(),33,-0.5,32.5,512,-256.5,255.5);
+	    						fBaselineHM->H2(histName.Data())->GetXaxis()->SetNameTitle("Sample","Sample");
+	    						fBaselineHM->H2(histName.Data())->GetYaxis()->SetNameTitle("ADC Value","ADC Value");
+	    						FillSignalShape(*raw,histName.Data(),true);
+	    					}
+	    				}
 	    			}
 	    	}
 	    }
@@ -787,7 +808,7 @@ void CbmTrdTimeCorrel::Finish()
   LOG(INFO) << "Write histo list to " << FairRootManager::Instance()->GetOutFile()->GetName() << FairLogger::endl;
   FairRootManager::Instance()->GetOutFile()->cd();
   fHM->WriteToFile();
-  if(false)
+  //if(false)
   if(fDrawSignalDebugHistograms){
 	  TCanvas *c6 = new TCanvas("c6","Debug_Signal_Shapes"+runName,5*320,3*300);
 	  TH2vector = fBaselineHM->H2Vector(".*");
@@ -802,7 +823,13 @@ void CbmTrdTimeCorrel::Finish()
 		  c6->SaveAs("pics/"+TString(currentPtr->GetTitle())+".pdf");
 		  c6->SaveAs("pics/"+TString(currentPtr->GetTitle())+".png");
 	  }
-
+		TString outfile = FairRootManager::Instance()->GetOutFile()->GetName();
+		outfile.ReplaceAll(".root", "_Signal_shapes.root");
+		TFile Outfile(outfile, "RECREATE");
+		Outfile.cd();
+		fBaselineHM->WriteToFile();
+		FairRootManager::Instance()->GetOutFile()->cd();
+		Outfile.Close();
 
   }
   //delete c1;
@@ -1529,29 +1556,31 @@ void CbmTrdTimeCorrel::CreateHistograms()
 	if (fDrawSignalDebugHistograms) {
 		for (Int_t syscore = 0; syscore < 1; ++syscore) {
 			for (Int_t Detector = 0; Detector <= 1; Detector++) {
+				for(Int_t TriggerType =0;TriggerType<4;TriggerType++){
 				  TString Detectorname = (Detector == 0 ? "Frankfurt" : "Muenster");
-				  histName = "MaxADC_vs_NrSamples_for_Syscore_"+std::to_string(syscore)+"_Prototype_from_"+Detectorname;
+				  histName = "MaxADC_vs_NrSamples_for_Syscore_"+std::to_string(syscore)+"_Prototype_from_"+Detectorname+triggerTypes[TriggerType];
 				  title = histName + runName;
 				  fHM->Create2<TH2I>(histName.Data(), title.Data(),33,-0.5,32.5,512,-256.5,255.5);
 				  fHM->H2(histName.Data())->GetXaxis()->SetTitle("NrSamples");
 				  fHM->H2(histName.Data())->GetYaxis()->SetTitle("MaxADC");
-				  histName = "avgBaseline_vs_NrSamples_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+Detectorname;
+				  histName = "avgBaseline_vs_NrSamples_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+Detectorname+triggerTypes[TriggerType];
 				  title = histName + runName;
 				  fHM->Create2<TH2I>(histName.Data(), title.Data(),33,-0.5,32.5,512,-256.5,255.5);
 				  fHM->H2(histName.Data())->GetXaxis()->SetTitle("NrSamples");
 				  fHM->H2(histName.Data())->GetYaxis()->SetTitle("averagedBaseline");
 				  vector<string> Hittypes = {"_Hits","_MultiHits"};
 				  for (string Hittype : Hittypes){
-					  histName = "MaxADC_vs_avgBaseline_for_Syscore_"+std::to_string(syscore)+"_Prototype_from_"+Detectorname+Hittype;
+					  histName = "MaxADC_vs_avgBaseline_for_Syscore_"+std::to_string(syscore)+"_Prototype_from_"+Detectorname+Hittype+triggerTypes[TriggerType];
 					  title = histName + runName;
 					  fHM->Create2<TH2I>(histName.Data(), title.Data(),512,-256.5,255.5,512,-256.5,255.5);
 					  fHM->H2(histName.Data())->GetXaxis()->SetTitle("averagedBaseline");
 					  fHM->H2(histName.Data())->GetYaxis()->SetTitle("MaxADC");
 				  }
-				  histName = "avgBaseline_for_Syscore_"+std::to_string(syscore)+"_Prototype_from_"+Detectorname;
+				  histName = "avgBaseline_for_Syscore_"+std::to_string(syscore)+"_Prototype_from_"+Detectorname+triggerTypes[TriggerType];
 				  title = histName + runName;
 				  fHM->Create1<TH1I>(histName.Data(), title.Data(),512,-256.5,255.5);
 				  fHM->H1(histName.Data())->GetXaxis()->SetTitle("averagedBaseline");
+			}
 			}
 		  }
 	  }
@@ -2260,12 +2289,12 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
   if(NumberOfHits==0) fType=2;
   const Float_t PadWidth = 7.125;
   const Float_t sigma = 0.646432;
-  if (size()==1||size()>3||fType == 3||(size()==2&&!(fType==1||fType==2))){
+  if (size()<3||size()>3||fType == 3/*||(size()==2&&!(fType==1||fType==2))*/){
 	  for (Int_t i=0;i<fEntries.size();i++){
 		  Double_t Weight = static_cast<Double_t>(Charges.at(i))/static_cast<Double_t>(fTotalCharge);
 		  fHorizontalPosition += static_cast<Float_t>(Weight* static_cast<Double_t>(unweightedPosSum.at(i)));
 	  }
-  }else if(size()==2){//For the special Case of size 2 Clusters reconstruction formulas for both Energy and displacement are given in [Bergmann2014]
+  }/*else if(size()==2){//For the special Case of size 2 Clusters reconstruction formulas for both Energy and displacement are given in [Bergmann2014]
 	  if(fType==1){
 		  //First identify if the cluster is left sided or right sided
 		  Bool_t IsLeftsided=false; //Leftsided is shorthand for the following Trigger Type composition: 2;(1|3).
@@ -2293,7 +2322,7 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
 					+ PadWidth / 2;
 			fHorizontalPosition = Displacement + (GetHorizontalMessagePosition(fEntries.at(0))+ GetHorizontalMessagePosition(fEntries.at(1)))/2;
 	  }
-  }
+  }*/
   else if(size()==3){
 		fHorizontalPosition = PadWidth / 2.0
 				* log(static_cast<Double_t>(Charges.at(2)) / Charges.at(0))
