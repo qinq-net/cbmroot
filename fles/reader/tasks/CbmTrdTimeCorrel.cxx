@@ -377,53 +377,53 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	    if(fDrawSignalDebugHistograms){
 	    	if (isHit||isHitAborted){
 	    		string detectorName = (GetSpadicID(raw->GetSourceAddress())/2 == 0 ? "Frankfurt" : "Muenster");
-	    			Int_t maxADC= GetMaxADC(*raw,false);
-	    			Int_t TriggerType = raw->GetTriggerType();
-	    			string TriggerName;
-	    			{
-	    				TString triggerTypes[4] = {
-	    						"Global trigger", "Self triggered",
-								"Neighbor triggered",
-								"Self and neighbor triggered" };
-	    				TriggerName = triggerTypes[TriggerType];
-	    			}
-	    			Int_t StopType = raw->GetStopType();
-	    			Int_t AvgBaseline=GetAvgBaseline(*raw);
-	    			string Histname = "MaxADC_vs_NrSamples_for_Syscore_"
-	    					+std::to_string(0)+"_Prototype_from_"+detectorName+TriggerName;
-	    			string Hittype;
-	    			fHM->H2(Histname)->Fill(raw->GetNrSamples(),maxADC);
-	    			if (StopType==0) {
-	    				Hittype = "_Hits";
-	    			}else {
-	    				Hittype = "_MultiHits";
-	    			}
-	    			Histname = "MaxADC_vs_avgBaseline_for_Syscore_"
-	    					+std::to_string(0)+"_Prototype_from_"+detectorName+Hittype+TriggerName;
-	    			fHM->H2(Histname)->Fill(AvgBaseline,maxADC);
-	    			Histname = "avgBaseline_for_Syscore_"+std::to_string(0)
-	    					+"_Prototype_from_"+detectorName+TriggerName;
-	    			if(raw->GetStopType()==0)fHM->H1(Histname)->Fill(AvgBaseline);
-	    			Histname = "avgBaseline_vs_NrSamples_for_Syscore_"
-	    					+std::to_string(0)+"_Prototype_from_"+detectorName+TriggerName;
-	    			fHM->H2(Histname)->Fill(raw->GetNrSamples(),AvgBaseline);
-	    			static Int_t DetectorBeaselinesIndex[2]={0,0};
-	    			if (raw->GetStopType() == 0) {
-	    				if (maxADC + AvgBaseline > 50){
-	    					DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2]++;
-	    					if(DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2]%13==0 && DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2]<1300){
-	    						histName = "High_Baseline_SignalShape_for_Syscore_"+std::to_string(0)
-	    								+"_Prototype_from_"+detectorName+"_Nr_"
-										+std::to_string(DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2])
-	    								+"_Trigger_"+std::to_string(raw->GetTriggerType());
-	    						TString title2 = histName + " ";
-	    						fBaselineHM->Create2<TH2I>(histName.Data(), title2.Data(),33,-0.5,32.5,512,-256.5,255.5);
-	    						fBaselineHM->H2(histName.Data())->GetXaxis()->SetNameTitle("Sample","Sample");
-	    						fBaselineHM->H2(histName.Data())->GetYaxis()->SetNameTitle("ADC Value","ADC Value");
-	    						FillSignalShape(*raw,histName.Data(),true);
-	    					}
-	    				}
-	    			}
+				Int_t maxADC= GetMaxADC(*raw,false);
+				Int_t TriggerType = raw->GetTriggerType();
+				string TriggerName;
+				{
+					TString triggerTypes[4] = {
+							"Global trigger", "Self triggered",
+							"Neighbor triggered",
+							"Self and neighbor triggered" };
+					TriggerName = triggerTypes[TriggerType];
+				}
+				Int_t StopType = raw->GetStopType();
+				Int_t AvgBaseline=GetAvgBaseline(*raw);
+				string Histname = "MaxADC_vs_NrSamples_for_Syscore_"
+						+std::to_string(0)+"_Prototype_from_"+detectorName+TriggerName;
+				string Hittype;
+				fHM->H2(Histname)->Fill(raw->GetNrSamples(),maxADC);
+				if (StopType==0) {
+					Hittype = "_Hits";
+				}else {
+					Hittype = "_MultiHits";
+				}
+				Histname = "MaxADC_vs_avgBaseline_for_Syscore_"
+						+std::to_string(0)+"_Prototype_from_"+detectorName+Hittype+TriggerName;
+				fHM->H2(Histname)->Fill(AvgBaseline,maxADC);
+				Histname = "avgBaseline_for_Syscore_"+std::to_string(0)
+						+"_Prototype_from_"+detectorName+TriggerName;
+				if(raw->GetStopType()==0)fHM->H1(Histname)->Fill(AvgBaseline);
+				Histname = "avgBaseline_vs_NrSamples_for_Syscore_"
+						+std::to_string(0)+"_Prototype_from_"+detectorName+TriggerName;
+				fHM->H2(Histname)->Fill(raw->GetNrSamples(),AvgBaseline);
+				static Int_t DetectorBeaselinesIndex[2]={0,0};
+				if (raw->GetStopType() == 0) {
+					if (maxADC + AvgBaseline > 50){
+						DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2]++;
+						if(DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2]%13==0 && DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2]<1300){
+							histName = "High_Baseline_SignalShape_for_Syscore_"+std::to_string(0)
+									+"_Prototype_from_"+detectorName+"_Nr_"
+									+std::to_string(DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2])
+									+"_Trigger_"+std::to_string(raw->GetTriggerType());
+							TString title2 = histName + " ";
+							fBaselineHM->Create2<TH2I>(histName.Data(), title2.Data(),33,-0.5,32.5,512,-256.5,255.5);
+							fBaselineHM->H2(histName.Data())->GetXaxis()->SetNameTitle("Sample","Sample");
+							fBaselineHM->H2(histName.Data())->GetYaxis()->SetNameTitle("ADC Value","ADC Value");
+							FillSignalShape(*raw,histName.Data(),true);
+						}
+					}
+				}
 	    	}
 	    }
 
