@@ -141,6 +141,8 @@ Bool_t CbmSetup::GetFile(Int_t moduleId, TString& fileName) {
   TString dir = moduleName;
   // Special case for shield
   if ( moduleId == kShield ) dir = "much";
+  // Special case for platform
+  if ( moduleId == kPlatform ) dir = "passive";
 
   // --- First try with ROOT file
   fileName = dir + "/" + moduleName + "_" + fGeoTags[moduleId]

@@ -8,6 +8,7 @@
  **
  **/
 
+// 2016-05-19 - VF - Add platform module
 // 2016-02-25 - DE - use STS v16c as new default
 // 2016-02-05 - VF - Replaces former sis300_electron_muon.C,
 //                   now using the CbmSetup class.
@@ -34,6 +35,7 @@ void setup_sis300_muon()
   TString muchGeoTag      = "v13f";
   TString trdGeoTag       = "v15a_3m";
   TString tofGeoTag       = "v16a_3m";
+  TString platGeoTag      = "v13b";
   // ------------------------------------------------------------------------
 
 
@@ -65,6 +67,7 @@ void setup_sis300_muon()
   setup->SetModule(kMuch, muchGeoTag);
   setup->SetModule(kTrd, trdGeoTag);
   setup->SetModule(kTof, tofGeoTag);
+  setup->SetModule(kPlatform, platGeoTag);
   setup->SetPsd(psdGeoFile, psdZpos, psdXpos);
   setup->SetField(fieldTag, fieldScale, 0., 0., fieldZ);
   // ------------------------------------------------------------------------

@@ -8,6 +8,7 @@
  **
  **/
 
+// 2016-05-19 - VF - Add platform module
 // 2016-02-25 - DE - use STS v16c as new default
 // 2016-02-05 - VF - Replaces former sis100_hadron_setup.C,
 //                   now using the CbmSetup class.
@@ -36,6 +37,7 @@ void setup_sis100_hadron()
   TString trdGeoTag       = "v15a_1h";
   TString tofGeoTag       = "v16a_1h";
   TString psdGeoTag       = "psd_geo_xy.txt";
+  TString platGeoTag      = "v13a";
   // ------------------------------------------------------------------------
 
 
@@ -67,6 +69,7 @@ void setup_sis100_hadron()
   setup->SetModule(kSts, stsGeoTag);
   setup->SetModule(kTrd, trdGeoTag);
   setup->SetModule(kTof, tofGeoTag);
+  setup->SetModule(kPlatform, platGeoTag);
   setup->SetPsd(psdGeoFile, psdZpos, psdXpos);
   setup->SetField(fieldTag, fieldScale, 0., 0., fieldZ);
   // ------------------------------------------------------------------------

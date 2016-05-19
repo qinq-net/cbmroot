@@ -8,6 +8,7 @@
  **
  **/
 
+// 2016-05-19 - VF - Add platform module
 // 2016-02-25 - DE - use STS v16c as new default
 // 2016-02-05 - VF - Replaces former sis100_muon_jpsi_setup.C,
 //                   now using the CbmSetup class.
@@ -38,6 +39,7 @@ void setup_sis100_muon_jpsi()
   TString shieldGeoTag    = "v15c_SIS100C_149_3part_125cm";
   TString trdGeoTag       = "v15c_1m";
   TString tofGeoTag       = "v16a_1m";
+  TString platGeoTag      = "v13a";
   // ------------------------------------------------------------------------
 
 
@@ -63,6 +65,7 @@ void setup_sis100_muon_jpsi()
   setup->SetModule(kShield, shieldGeoTag);
   setup->SetModule(kTrd, trdGeoTag);
   setup->SetModule(kTof, tofGeoTag);
+  setup->SetModule(kPlatform, platGeoTag);
   setup->SetField(fieldTag, fieldScale, 0., 0., fieldZ);
   // ------------------------------------------------------------------------
 

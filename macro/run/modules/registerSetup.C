@@ -92,6 +92,7 @@ void registerSetup()
 					module = (FairModule*) psd;
 					break;
 				}
+				case kPlatform: module = new CbmPlatform("PLATFORM"); break;
 				default: std::cout << "-E- registerSetup: Unknown module ID "
 				                   << moduleId << std::endl; break;
 			}  //? known moduleId
