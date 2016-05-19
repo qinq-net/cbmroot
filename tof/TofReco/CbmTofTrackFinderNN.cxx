@@ -140,6 +140,7 @@ Int_t CbmTofTrackFinderNN::DoFind(
   //fTracks = new TClonesArray("CbmTofTracklet");
   //if (0 == fFindTracks->GetStationType(0)){ // Generate Pseudo TofHit at origin
   if (0 == fFindTracks->GetAddrOfStation(0)) {  // generate new track seed
+    fFindTracks->SetStation(0,0,0,0);
     const Int_t iDetId = CbmTofAddress::GetUniqueAddress(0,0,0,0,0);
     const TVector3 hitPos(0.,0.,0.);
     const TVector3 hitPosErr(0.5, 0.5, 0.5); // initialize fake hit error
@@ -154,9 +155,8 @@ Int_t CbmTofTrackFinderNN::DoFind(
                         dTime0,    // Time of hit
        		        0, //vPtsRef.size(), // flag  = number of TofPoints generating the cluster
 			0) ;
-    LOG(DEBUG1) << "CbmTofTrackFinderNN::DoFind: Hit at origin added at position "<<iNbHits
-      //		<<", fvTrkMap.size() "<< fvTrkMap.size()
-		<<", fvTrkVec.size() "<< fvTrkVec.size()
+    LOG(DEBUG1) << "CbmTofTrackFinderNN::DoFind: Fake Hit at origin added at position "<<iNbHits
+		<<Form(", DetId 0x%08x",iDetId) 
  	   	<<FairLogger::endl; 
 
   }
@@ -177,8 +177,11 @@ Int_t CbmTofTrackFinderNN::DoFind(
     for (Int_t iHit=0; iHit<fHits->GetEntries(); iHit++) { // loop over Hits 
      CbmTofHit* pHit = (CbmTofHit*) fHits->At( iHit );
      Int_t iSmType = CbmTofAddress::GetSmType( pHit->GetAddress() & DetMask );
-     if(HitUsed(iHit)==1 && iSmType!=fFindTracks->GetBeamCounter()) continue; // skip used Hits
+     if(HitUsed(iHit)==1 && iSmType!=fFindTracks->GetBeamCounter() && iSmType!=0) continue; // skip used Hits
      Int_t iAddr = (pHit->GetAddress() & DetMask );
+     LOG(DEBUG1) << Form("<I> TofTracklet Chkseed St0 %2d, St1 %2d, Mul %2d, Hit %2d, addr = 0x%08x - X %6.2f, Y %6.2f Z %6.2f T %6.2f TM %lu",
+		       iSt0,iSt1,fiNtrks,iHit,pHit->GetAddress(),pHit->GetX(),pHit->GetY(),pHit->GetZ(),pHit->GetTime(), fvTrkVec[iHit].size() )
+ 	         <<FairLogger::endl; 
      if (iAddr == fFindTracks->GetAddrOfStation(iSt0)) {  // generate new track seed
      LOG(DEBUG) << Form("<I> TofTracklet seed St0 %2d, St1 %2d, Mul %2d, Hit %2d, addr = 0x%08x - X %6.2f, Y %6.2f Z %6.2f T %6.2f TM %lu",
 		       iSt0,iSt1,fiNtrks,iHit,pHit->GetAddress(),pHit->GetX(),pHit->GetY(),pHit->GetZ(),pHit->GetTime(), fvTrkVec[iHit].size() )
@@ -190,6 +193,8 @@ Int_t CbmTofTrackFinderNN::DoFind(
       Double_t hitpos[3]={3*0.};
       Double_t hitpos_local[3]={3*0.};
       Double_t dSizey=1.;
+
+      if(iSmType>0) { // prevent geometry inspection for FAKE hits 
       if(NULL == fChannelInfo){
 	LOG(FATAL) <<"<D> CbmTofTrackFinderNN::DoFind0: Invalid Channel Pointer for ChId "
 		   << Form(" 0x%08x ",iChId)<<", Ch "<<iCh
@@ -208,6 +213,8 @@ Int_t CbmTofTrackFinderNN::DoFind(
 			    fiNtrks,iHit,hitpos_local[1],dSizey,fPosYMaxScal,fFindTracks->GetAddrOfStation(1) )
 	        <<FairLogger::endl; 
       }
+      }
+
       if(TMath::Abs(hitpos_local[1])<dSizey*fPosYMaxScal)
       for (Int_t iHit1=0; iHit1<fHits->GetEntries(); iHit1++) // loop over all Hits (order unknown) 
       {
@@ -268,7 +275,14 @@ Int_t CbmTofTrackFinderNN::DoFind(
 	    pTrk->SetTime(pHit->GetTime());          // define reference time from 1. plane   
 	    Double_t dR  = pHit1->GetR() - pHit->GetR();
 	    Double_t dTt = fFindTracks->GetTtTarg(); // assume calibration target value 
-	    if( 0 == iSmType) pHit->SetTime(pHit1->GetTime() - dTt * dR);
+	    if( 0 == iSmType) {
+	      Double_t T0Fake = pHit->GetTime();
+	      Double_t w=fvTrkVec[iHit].size();
+	      T0Fake=(T0Fake*(w-1.)+(pHit1->GetTime() - dTt * dR))/w;
+	      LOG(DEBUG1) << Form("<I> TofTracklet %d, Fake T0, old %8.0f -> new %8.0f",fiNtrks, pHit->GetTime(), T0Fake)
+			  <<FairLogger::endl; 
+	      pHit->SetTime(T0Fake);
+	    }
 	    dTt = (pHit1->GetTime() - pHit->GetTime())/dR;
 	    pTrk->SetTt(dTt);                        // store inverse velocity    
 	    pTrk->UpdateT0();

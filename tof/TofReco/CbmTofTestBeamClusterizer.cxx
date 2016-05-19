@@ -560,7 +560,8 @@ Bool_t   CbmTofTestBeamClusterizer::InitParameters()
    }
 
    LOG(INFO)<<"<I>  BeamRefType = "<<fiBeamRefType<<", SM "<<fiBeamRefSm
-             <<FairLogger::endl;
+	    <<", MulMax "<<fiBeamRefMulMax
+            <<FairLogger::endl;
 
    return kTRUE;
 }
@@ -1437,7 +1438,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
       if( fiBeamRefType == CbmTofAddress::GetSmType( iDetId )){
        if(fiBeamRefSm < 0 || fiBeamRefSm   == CbmTofAddress::GetSmId( iDetId ))
        {
-	 if(fviClusterMul[fiBeamRefType][fiBeamRefSm][fiBeamRefDet]>fiBeamRefMulMax) continue;
+	 if(fviClusterMul[fiBeamRefType][fiBeamRefSm][fiBeamRefDet]>fiBeamRefMulMax) break;
 	 // Check Tot
          CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchColl->At(pHit->GetRefId());
          Double_t TotSum=0.;
@@ -2440,9 +2441,9 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
           Double_t TMean=((TProfile *)htempTOff_pfx)->GetBinContent(iCh+1);
           Double_t dTYOff=YMean/fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc) ;
 
-	  // if (fiBeamRefType == iSmType && fiBeamRefSm == iSm && fiBeamRefDet == iRpc) {
-          if (fiBeamRefType == iSmType && fiBeamRefSm == iSm) {
-            TMean-=((TProfile *)hAvTOff_pfx)->GetBinContent(iSm*iNbRpc+iRpc+1); // don't shift reference counter
+	  if (fiBeamRefType == iSmType && fiBeamRefSm == iSm && fiBeamRefDet == iRpc) {
+	    //if (fiBeamRefType == iSmType && fiBeamRefSm == iSm) { /// don't shift reference counter on average
+            TMean-=((TProfile *)hAvTOff_pfx)->GetBinContent(iSm*iNbRpc+iRpc+1); 
           }
 
           if(htempTOff_px->GetBinContent(iCh+1)>WalkNHmin){

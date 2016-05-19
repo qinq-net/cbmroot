@@ -780,7 +780,12 @@ Bool_t   CbmTofAnaTestbeam::InitParameters()
 	    <<FairLogger::endl;
      fiBeamRefSmType=5;
      fiBeamRefSmId = 1;
+     fiBeamRefAddr=CbmTofAddress::GetUniqueAddress(fiBeamRefSmId,0,0,0,fiBeamRefSmType);
    }
+   LOG(INFO)<<Form("CbmTofAnaTestbeam::InitParameter BeamRef = %d, %d, 0x%08x",
+		   fiBeamRefSmType,fiBeamRefSmId,fiBeamRefAddr)
+	    <<FairLogger::endl;
+
    if( 0 == fdDTD4MAX) fdDTD4MAX=DTDMAX;   
 
    if ( 0. == fdChi2Lim )  fdChi2Lim = 10.;
@@ -807,8 +812,9 @@ Bool_t   CbmTofAnaTestbeam::LoadCalParameter()
     if (NULL == fhtmp) {
       fdChi2Lim=fdChi2Lim*1000.;
       fdChi2Lim2=fdChi2Lim2*1000.;
-      LOG(INFO)<<" Histo " << Form("hDTD4DT04D4best_pfx_px") << " not found => Chi2Lim = " << fdChi2Lim 
-             <<FairLogger::endl;
+      LOG(INFO)<<"CbmTofAnaTestbeam::LoadCalParameter: Histo hDTD4DT04D4best_pfx_px not found => Chi2Lim = " 
+	       << fdChi2Lim 
+               <<FairLogger::endl;
     }
 
     TProfile *fhtmpx=(TProfile *) gDirectory->FindObjectAny( Form("hDTX4D4best_pfx_px"));
@@ -1353,9 +1359,11 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
    if (fdMulDMax>0) dMDMax=fdMulDMax;
    Double_t hitpos1[3], hitpos2[3], hitpos3[3], hitpos4[3];
    Double_t hitpos1_local[3], hitpos2_local[3], hitpos3_local[3], hitpos4_local[3];
+   std::vector<CbmTofHit * > vDiaHit; 
+   Double_t DDiaAvLim = 200; // average width for fastest diamond hits 
+   Double_t dMulDAv=0;
 
    // find diamond reference
-
    for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)
    {
       pHit = (CbmTofHit*) fTofHitsColl->At( iHitInd );
@@ -1366,30 +1374,35 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
       Int_t iSmType=CbmTofAddress::GetSmType( iDetId );
       
       if(NULL == fChannelInfo){
-        LOG(DEBUG) << "CbmTofAnaTestbeam::FillHistos: NULL Channel Pointer for ChId "
-		   << Form(" 0x%08x ",iChId)
+        LOG(DEBUG) << Form("CbmTofAnaTestbeam::FillHistos: NULL Channel Pointer for ChId 0x%08x ",iChId)
 		   <<FairLogger::endl;
 	continue;
       }
       if(iSmType == fiBeamRefSmType){ // diamond hit (or other reference counter)
         if( fiBeamRefSmId == CbmTofAddress::GetSmId( iDetId )) {
 	  dMulD++;
-	  if (0) {  //fdTShift != 0.) {  //nhmod
-	    Double_t dTime=pHit->GetTime()+fdTShift;
-	    pHit->SetTime(dTime);  // shift beam reference times
-	    if(pHit->GetTime() != dTime) 
-	      LOG(ERROR)<<" Hit time not updated "<<pHit->GetTime()<<" -> "<<dTime<<FairLogger::endl;
-	  }
+	  vDiaHit.resize(dMulD);
+	  vDiaHit[dMulD-1]=pHit;
 	  if ( pHit->GetTime() < dTDia) {
 	    dTDia = pHit->GetTime();
 	    pDia  = pHit;
 	  }
 	}
       }
-   } // reaction reference loop end;
-
+   } // reaction reference search loop end;
+   if(dMulD>0){ // average fastest channels
+     dMulDAv=1;
+     for(Int_t iDiaHit=0; iDiaHit<dMulD; iDiaHit++){
+       if(vDiaHit[iDiaHit]!=pDia){ //additional hit found 
+	 if(TMath::Abs(vDiaHit[iDiaHit]->GetTime()-dTDia)<DDiaAvLim){
+	   dTDia = (dTDia*dMulDAv + vDiaHit[iDiaHit]->GetTime()) / (dMulDAv+1);
+	   dMulDAv++;
+	 }
+       }
+     }
+   }
    fhBRefMul->Fill(dMulD);
-   LOG(DEBUG)<<Form("CbmTofAnaTestbeam::FillHistos: Diamond mul %f, time: %6.2e",dMulD,dTDia)
+   LOG(DEBUG)<<Form("CbmTofAnaTestbeam::FillHistos: Diamond mul %3.0f, mulAv %3.0f, time: %6.2e",dMulD,dMulDAv,dTDia)
 	     <<Form(", inspect Dut 0x%08x, Ref 0x%08x, Sel2  0x%08x, Sel3  0x%08x ",fiDutAddr,
 		    fiMrpcRefAddr,fiMrpcSel2Addr,fiMrpcSel3Addr)
 	     <<FairLogger::endl;
@@ -2300,6 +2313,7 @@ Bool_t CbmTofAnaTestbeam::WriteHistos()
    fHist->cd();
 
    switch(fiCorMode){
+   case 0 :
    case 1 : {
      TProfile *htmp=fhDTD4DT04D4best->ProfileX();
      TH1D *htmp1D=htmp->ProjectionX();
