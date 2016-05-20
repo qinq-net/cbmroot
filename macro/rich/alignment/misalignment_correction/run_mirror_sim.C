@@ -1,4 +1,4 @@
-void run_sim(Int_t nEvents = 5000, TString Rot = "3")
+void run_mirror_sim(Int_t nEvents = 50)
 // !!! DEFINE NEW ROTATION ANGLE IN THE GEO FILE AND RUN IMPORT_EXPORT_GEO MACRO BEFORE RUNNING RUN_SIM !!!
 {
     TTree::SetMaxTreeSize(90000000000);
@@ -11,16 +11,14 @@ void run_sim(Int_t nEvents = 5000, TString Rot = "3")
 
 	TString urqmdFile = "/data/Cbm_Root/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root";
 
-//	TString outDir = "/data/misalignment_correction/Sim_Outputs/Alignment_Correction/Outer_Region_Study/Tile_2_8_bis/" + Rot + "mradY/";
-	TString outDir = "/data/misalignment_correction/Sim_Outputs/Alignment_Correction/Outer_Region_Study/Tile_2_1/" + Rot + "mradY/";
 //	TString outDir = "/data/misalignment_correction/Sim_Outputs/Alignment_Correction/Test/";
-//	TString outDir = "/data/misalignment_correction/Sim_Outputs/Mirror_Sorting/First/";
-	TString numb = Rot + "_";
-	TString axis = "Y_";
+	TString outDir = "/data/misalignment_correction/Sim_Outputs/Mirror_Sorting/First/";
+	TString numb = "_";
+	TString axis = "X_";
 //	TString tile = "TILE";
 //	TString tile = "1_4";
 	TString tile = "2_1";
-//	numb = "", axis = "", tile = "";
+	numb = "", axis = "", tile = "";
         TString parFile = outDir + "param." + numb + axis + tile + ".root";
         TString mcFile = outDir + "mc." + numb + axis + tile + ".root";
 	TString geoFile = outDir + "geofilefull." + numb + axis + tile + ".root";
@@ -214,38 +212,17 @@ void run_sim(Int_t nEvents = 5000, TString Rot = "3")
 
 //    phi0 = 145., theta0 = 28.5; // Tile 1_2 Study
 //    phi0 = 107., theta0 = 10.1; // Tile 1_4 Study
-//    phi0 = 42., theta0 = 23.; // Tile 2_8 Study
-//    phi0 = 38., theta0 = 24.; // Tile 2_8 Study bis
-//    phi0 = 10., theta0 = 21.; // Tile 0_8 Study
 
     //add electrons
     if (electrons == "yes"){
-/*	// Beam between tiles 1_3 & 1_4
+	// Beam between tiles 1_3 & 1_4
 	FairBoxGenerator* boxGen1 = new FairBoxGenerator(11, NPOSITRONS);
-        boxGen1->SetPtRange(9.8,9.9);
-        boxGen1->SetPhiRange(phi0 - 5., phi0 + 5.);
-        boxGen1->SetThetaRange(theta0 - 2., theta0 + 2.);
+        boxGen1->SetPtRange(5.,9.);
+        boxGen1->SetPhiRange(90., 180.);
+        boxGen1->SetThetaRange(2.5, 25.);
         boxGen1->SetCosTheta();
         boxGen1->Init();
-        primGen->AddGenerator(boxGen1);*/
-
-/*	// Box tile 2_8
-        FairBoxGenerator* boxGen2 = new FairBoxGenerator(-11, NPOSITRONS);
-        boxGen2->SetPtRange(1.,3.);
-        boxGen2->SetPhiRange(phi0 - 5., phi0 + 5.);
-        boxGen2->SetThetaRange(theta0, theta0 + 1.);
-        boxGen2->SetCosTheta();
-        boxGen2->Init();
-        primGen->AddGenerator(boxGen2);*/
-
-/*	// Box tile 0_8
-        FairBoxGenerator* boxGen3 = new FairBoxGenerator(-11, NPOSITRONS);
-        boxGen3->SetPtRange(1.,3.);
-        boxGen3->SetPhiRange(phi0 - 6., phi0 + 6.);
-        boxGen3->SetThetaRange(theta0, theta0 + 1.);
-        boxGen3->SetCosTheta();
-        boxGen3->Init();
-        primGen->AddGenerator(boxGen3);*/
+        primGen->AddGenerator(boxGen1);
 
 /*	// Box tile 1_2 & 1_4
 	FairBoxGenerator* boxGen4 = new FairBoxGenerator(-11, NELECTRONS);
@@ -255,91 +232,6 @@ void run_sim(Int_t nEvents = 5000, TString Rot = "3")
         boxGen4->SetCosTheta();
         boxGen4->Init();
         primGen->AddGenerator(boxGen4);*/
-
-/*	// Loop tile 2_8
-	for (Int_t i=0; i<8; i++) {
-		for (Int_t j=0; j<10; j++) {
-			for (Int_t k=0; k<5; k++) {
-				FairBoxGenerator* boxGen5 = new FairBoxGenerator(-11, NPOSITRONS);
-				boxGen5->SetPRange(2.5 + i*0.2, 2.5 + (i+1)*0.2);
-//				boxGen5->SetPtRange(1. + i*0.2, 1. + (i+1)*0.2);
-				boxGen5->SetPhiRange(phi0 - 5 + j*1., phi0 - 5 + (j+1)*1.);
-		        	boxGen5->SetThetaRange(theta0 + k*0.4, theta0 + (k+1)*0.4);
-//				boxGen5->SetThetaRange(24.99, 25.);
-			        boxGen5->SetCosTheta();
-			        boxGen5->Init();
-			        primGen->AddGenerator(boxGen5);
-			}
-		}
-	}*/
-
-/*	// Loop tile 0_8
-	for (Int_t i=0; i<10; i++) {
-		for (Int_t j=0; j<10; j++) {
-			for (Int_t k=0; k<5; k++) {
-				FairBoxGenerator* boxGen6 = new FairBoxGenerator(-11, NPOSITRONS);
-//				boxGen6->SetPRange(3.5 + i*0.2, 3.5 + (i+1)*0.2);
-				boxGen6->SetPtRange(1. + i*0.2, 1. + (i+1)*0.2);
-				boxGen6->SetPhiRange(phi0 - 6 + j*1, phi0 - 6 + (j+1)*1);
-		        	boxGen6->SetThetaRange(theta0 + k*0.2, theta0 + (k+1)*0.2);
-			        boxGen6->SetCosTheta();
-			        boxGen6->Init();
-			        primGen->AddGenerator(boxGen6);
-			}
-		}
-	}*/
-
-	// Loop tile 0_1
-	//phi0 = 175., theta0 = 21.;
-/*	for (Int_t i=0; i<10; i++) {
-		for (Int_t j=0; j<10; j++) {
-			for (Int_t k=0; k<5; k++) {
-				FairBoxGenerator* boxGen6 = new FairBoxGenerator(11, NELECTRONS);
-//				boxGen6->SetPRange(3.5 + i*0.2, 3.5 + (i+1)*0.2);
-				boxGen6->SetPtRange(1. + i*0.2, 1. + (i+1)*0.2);
-				boxGen6->SetPhiRange(phi0 - 6 + j*1, phi0 - 6 + (j+1)*1);
-		        	boxGen6->SetThetaRange(theta0 + k*0.2, theta0 + (k+1)*0.2);
-			        boxGen6->SetCosTheta();
-			        boxGen6->Init();
-			        primGen->AddGenerator(boxGen6);
-			}
-		}
-	}*/
-
-/*	FairBoxGenerator* boxGen6 = new FairBoxGenerator(11, NELECTRONS);
-//	boxGen6->SetPRange(3.5 + i*0.2, 3.5 + (i+1)*0.2);
-	boxGen6->SetPtRange(1., 3.);
-	boxGen6->SetPhiRange(phi0 - 6, phi0 - 6);
-	boxGen6->SetThetaRange(theta0, theta0 + 1);
-	boxGen6->SetCosTheta();
-	boxGen6->Init();
-	primGen->AddGenerator(boxGen6);*/
-
-	// Loop tile 2_1
-	phi0 = 142., theta0 = 24.;
-/*	for (Int_t i=0; i<8; i++) {
-		for (Int_t j=0; j<10; j++) {
-			for (Int_t k=0; k<5; k++) {
-				FairBoxGenerator* boxGen6 = new FairBoxGenerator(11, NELECTRONS);
-//				boxGen6->SetPRange(3.5 + i*0.2, 3.5 + (i+1)*0.2);
-				boxGen6->SetPtRange(1.2 + i*0.2, 1.2 + (i+1)*0.2);
-				boxGen6->SetPhiRange(phi0 - 5 + j*1, phi0 - 5 + (j+1)*1);
-		        	boxGen6->SetThetaRange(theta0 + k*0.2, theta0 + (k+1)*0.2);
-			        boxGen6->SetCosTheta();
-			        boxGen6->Init();
-			        primGen->AddGenerator(boxGen6);
-			}
-		}
-	}*/
-
-	FairBoxGenerator* boxGen6 = new FairBoxGenerator(11, NELECTRONS);
-//	boxGen6->SetPRange(3.5 + i*0.2, 3.5 + (i+1)*0.2);
-	boxGen6->SetPtRange(1.2, 2.8);
-	boxGen6->SetPhiRange(phi0 - 6, phi0 - 6);
-	boxGen6->SetThetaRange(theta0, theta0 + 1);
-	boxGen6->SetCosTheta();
-	boxGen6->Init();
-	primGen->AddGenerator(boxGen6);
 
         //      CbmLitPolarizedGenerator *polGen;
         //      polGen = new CbmLitPolarizedGenerator(443, NELECTRONS);

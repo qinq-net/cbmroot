@@ -1,4 +1,4 @@
-void run_reco(Int_t nEvents = 5000)
+void run_correction_reco(Int_t nEvents = 5000, TString Rot = "3")
 {
    TTree::SetMaxTreeSize(90000000000);
 
@@ -9,17 +9,20 @@ void run_reco(Int_t nEvents = 5000)
 
 	gRandom->SetSeed(10);
 
-//        TString outDir = "/data/cbm/cbmroot/macro/rich/alignment/misalignment_correction/Sim_Outputs/TrackExtrapolation/"; // For run_reco outputs
-        TString outDir = "/data/misalignment_correction/Sim_Outputs/Alignment_Correction/"; // For run_reco outputs
-//        TString outDir = "/data/misalignment_correction/event_display/test/"; // For run_rich_event_display output
-	TString numb = "5";
-	TString axis = "_X";
-	TString corr = ""; //"_GeoCorrected";
-	TString runTitle = "Align_Corr" + axis + corr;
-	TString axisRotTitle = numb + "mrad" + corr;
-        TString parFile = outDir + "param." + numb + axis + corr + ".root";
-        TString mcFile = outDir + "mc." + numb + axis + corr + ".root";
-        TString recoFile = outDir + "reco." + numb + axis + corr + ".root";
+//	TString outDir = "/data/misalignment_correction/Sim_Outputs/Alignment_Correction/Outer_Region_Study/Tile_2_8_bis/" + Rot + "mradY/";
+//	TString outDir = "/data/misalignment_correction/Sim_Outputs/Alignment_Correction/Outer_Region_Study/Tile_0_1/" + Rot + "mradX/";
+	TString outDir = "/data/misalignment_correction/Sim_Outputs/Alignment_Correction/Outer_Region_Study/Tile_2_1/" + Rot + "mradY/";
+//	TString outDir = "/data/misalignment_correction/Sim_Outputs/Alignment_Correction/Test/";
+	TString numb = Rot + "_";
+	TString axis = "Y_";
+//	TString tile = "TILE";
+//	TString tile = "1_4";
+	TString tile = "2_1";
+	TString runTitle = "Alignment_Correction";
+	TString axisRotTitle = numb + "mrad" + axis + tile;
+        TString parFile = outDir + "param." + numb + axis + tile + ".root";
+        TString mcFile = outDir + "mc." + numb + axis + tile + ".root";
+        TString recoFile = outDir + "reco." + numb + axis + tile + ".root";
 
 	TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/geosetup_25gev.C";
 
@@ -269,20 +272,14 @@ void run_reco(Int_t nEvents = 5000)
 	tofQa->SetOutputDir(std::string(resultDir));
 	//run->AddTask(tofQa);
 */
-	CbmRichAlignment* alignment = new CbmRichAlignment();
-	alignment->SetOutputDir(outDir);
-	alignment->SetRunTitle(runTitle);
-	alignment->SetAxisRotTitle(axisRotTitle);
-	alignment->SetDrawAlignment(true);
-	run->AddTask(alignment);
-
         CbmRichCorrection* correction = new CbmRichCorrection();
         correction->SetOutputDir(outDir);
         correction->SetRunTitle(runTitle);
         correction->SetAxisRotTitle(axisRotTitle);
         correction->SetDrawProjection(true);
-	correction->SetCorrectionInfo(alignment->GetCorrectionInfo);
-        run->AddTask(correction);
+	correction->SetNumbAxis(numb+axis);
+	correction->SetTileName(tile);
+	run->AddTask(correction);
 
 	// -----  Parameter database   --------------------------------------------
 	FairRuntimeDb* rtdb = run->GetRuntimeDb();

@@ -1,4 +1,4 @@
-void run_reco(Int_t nEvents = 5000)
+void run_mirror_reco(Int_t nEvents = 50)
 {
    TTree::SetMaxTreeSize(90000000000);
 
@@ -9,17 +9,11 @@ void run_reco(Int_t nEvents = 5000)
 
 	gRandom->SetSeed(10);
 
-//        TString outDir = "/data/cbm/cbmroot/macro/rich/alignment/misalignment_correction/Sim_Outputs/TrackExtrapolation/"; // For run_reco outputs
-        TString outDir = "/data/misalignment_correction/Sim_Outputs/Alignment_Correction/"; // For run_reco outputs
-//        TString outDir = "/data/misalignment_correction/event_display/test/"; // For run_rich_event_display output
-	TString numb = "5";
-	TString axis = "_X";
-	TString corr = ""; //"_GeoCorrected";
-	TString runTitle = "Align_Corr" + axis + corr;
-	TString axisRotTitle = numb + "mrad" + corr;
-        TString parFile = outDir + "param." + numb + axis + corr + ".root";
-        TString mcFile = outDir + "mc." + numb + axis + corr + ".root";
-        TString recoFile = outDir + "reco." + numb + axis + corr + ".root";
+	TString outDir = "/data/misalignment_correction/Sim_Outputs/Mirror_Sorting/First/";
+	TString runTitle = "Mirror_Sorting";
+        TString parFile = outDir + "param." + ".root";
+        TString mcFile = outDir + "mc." + ".root";
+        TString recoFile = outDir + "reco." + ".root";
 
 	TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/geosetup_25gev.C";
 
@@ -269,20 +263,9 @@ void run_reco(Int_t nEvents = 5000)
 	tofQa->SetOutputDir(std::string(resultDir));
 	//run->AddTask(tofQa);
 */
-	CbmRichAlignment* alignment = new CbmRichAlignment();
-	alignment->SetOutputDir(outDir);
-	alignment->SetRunTitle(runTitle);
-	alignment->SetAxisRotTitle(axisRotTitle);
-	alignment->SetDrawAlignment(true);
-	run->AddTask(alignment);
-
-        CbmRichCorrection* correction = new CbmRichCorrection();
-        correction->SetOutputDir(outDir);
-        correction->SetRunTitle(runTitle);
-        correction->SetAxisRotTitle(axisRotTitle);
-        correction->SetDrawProjection(true);
-	correction->SetCorrectionInfo(alignment->GetCorrectionInfo);
-        run->AddTask(correction);
+        CbmRichMirrorSorting* mirror = new CbmRichMirrorSorting();
+        mirror->setOutputDir(outDir);
+	run->AddTask(mirror);
 
 	// -----  Parameter database   --------------------------------------------
 	FairRuntimeDb* rtdb = run->GetRuntimeDb();

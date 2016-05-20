@@ -10,7 +10,8 @@ void ReadGeoManager_New()
 
 	TGDMLParse parser;
 	// Define your input GDML file HERE
-	TGeoVolume* gdmlTop = parser.GDMLReadFile ("../../../../../geometry/rich/alignment/misalignment_correction/v15_rot/Rich_dec_2015_misalign.gdml");
+//	TGeoVolume* gdmlTop = parser.GDMLReadFile ("../../../../../geometry/rich/alignment/misalignment_correction/v15_rot/Rich_dec_2015_misalign.gdml");
+	TGeoVolume* gdmlTop = parser.GDMLReadFile ("../../../../../geometry/rich/Rich_jan2016_misalign.gdml");
 	TGeoVolume* rootTop = new TGeoVolumeAssembly("TOP");
 
 	gGeoManager->SetTopVolume(rootTop);
