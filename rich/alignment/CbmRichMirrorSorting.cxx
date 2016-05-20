@@ -83,69 +83,73 @@ void CbmRichMirrorSorting::Exec(Option_t* Option)
 	vector<Double_t> vect(2,0), ptM(3,0), ptC(3,0), ptCIdeal(3,0), ptR1(3,0), ptR2Center(3,0), ptR2Mirr(3,0), ptPR2(3,0), ptPMirr(3,0), normalPMT(3,0);
 	ptC.at(0) = 0., ptC.at(1) = 132.594000, ptC.at(2) = 54.267226;
 
-	GetPmtNormal(nofPmtPoints, normalPMT, constantePMT);
-	cout << "Calculated normal vector to PMT plane = {" << normalPMT.at(0) << ", " << normalPMT.at(1) << ", " << normalPMT.at(2) << "} and constante d = " << constantePMT << endl << endl;
-
-	for (Int_t iGlobalTrack = 0; iGlobalTrack < fGlobalTracks->GetEntriesFast(); iGlobalTrack++)
+	if (nofRingsInEvent != 0)
 	{
-		CbmRichMirror* mirrorObject = new CbmRichMirror();																			// Create CbmRichMirror object, to be later filled.
-		// ----- PART 1 ----- //
-		// Ring-Track matching + Ring fit + Track momentum:
-		CbmGlobalTrack* gTrack  = (CbmGlobalTrack*) fGlobalTracks->At(iGlobalTrack);
-		Int_t richInd = gTrack->GetRichRingIndex();
-		if (richInd < 0) {
-			cout << "CbmRichMirrorSorting::Exec : richInd < 0." << endl;
-			continue;
-		}
-		CbmRichRing* ring = (CbmRichRing*) fRichRings->At(richInd);
-		if (ring == NULL) {
-			cout << "CbmRichMirrorSorting::Exec : ring = NULL." << endl;
-			continue;
-		}
-		CbmRichRingLight ringL;
-		CbmRichConverter::CopyHitsToRingLight(ring, &ringL);
-		fCopFit->DoFit(&ringL);
-		//fTauFit->DoFit(&ringL);
-		cout << "Ring parameters = " << ringL.GetCenterX() << ", " << ringL.GetCenterY() << endl;
-		mirrorObject->setFittedRing(ringL.GetCenterX(), ringL.GetCenterY());														// Fill fitted Ring Center coo inside mirrorObject.
-		Int_t ringTrackID = ring->GetTrackID();
-		CbmMCTrack* track = (CbmMCTrack*) fMCTracks->At(ringTrackID);
-		//Int_t ringMotherId = track->GetMotherId();
-		track->GetMomentum(momentum);
-		mirrorObject->setMomentum(momentum);																						// Fill track momentum inside mirrorObject.
+		GetPmtNormal(nofPmtPoints, normalPMT, constantePMT);
+		cout << "Calculated normal vector to PMT plane = {" << normalPMT.at(0) << ", " << normalPMT.at(1) << ", " << normalPMT.at(2) << "} and constante d = " << constantePMT << endl << endl;
 
-		// ----- PART 2 ----- //
-		// Mirror ID via TGeoNavigator + Extrap hit:
-		Int_t trackMotherId = track->GetMotherId();
-		if (trackMotherId == -1) {
-			CbmRichPoint* mirrPoint = (CbmRichPoint*) fMirrorPoints->At(ringTrackID);
-			ptM.at(0) = mirrPoint->GetX(), ptM.at(1) = mirrPoint->GetY(), ptM.at(2) = mirrPoint->GetZ();
-			TGeoNode* mirrNode = gGeoManager->FindNode(ptM.at(0),ptM.at(1),ptM.at(2));
-			cout << "Mirror node name: " << mirrNode->GetName() << endl;
-			mirrorObject->setMirrorId(mirrNode->GetName());
-			if (mirrNode) {
-				TGeoNavigator* navi = gGeoManager->GetCurrentNavigator();
-				cout << "Navigator path: " << navi->GetPath() << endl;
-				ptCIdeal.at(0) = navi->GetCurrentMatrix()->GetTranslation()[0];
-				ptCIdeal.at(1) = navi->GetCurrentMatrix()->GetTranslation()[1];
-				ptCIdeal.at(2) = navi->GetCurrentMatrix()->GetTranslation()[2];
-				CbmRichPoint *refPlanePoint = (CbmRichPoint*) fRefPlanePoints->At(ringTrackID);
-				ptR1.at(0) = refPlanePoint->GetX(), ptR1.at(1) = refPlanePoint->GetY(), ptR1.at(2) = refPlanePoint->GetZ();
-				ComputeR2(ptR2Center, ptR2Mirr, ptM, ptC, ptR1, navi, "Uncorrected");
-				ComputeP(ptPMirr, ptPR2, normalPMT, ptM, ptR2Mirr, constantePMT);
-				TVector3 inPos (ptPMirr.at(0), ptPMirr.at(1), ptPMirr.at(2));
-				CbmRichGeoManager::GetInstance().RotatePoint(&inPos, &outPos);
-				cout << "New mirror points coordinates = {" << outPos.x() << ", " << outPos.y() << ", " << outPos.z() << "}" << endl;
-				mirrorObject->setExtrapHit(outPos.x(), outPos.y());
+		for (Int_t iGlobalTrack = 0; iGlobalTrack < fGlobalTracks->GetEntriesFast(); iGlobalTrack++)
+		{
+			CbmRichMirror* mirrorObject = new CbmRichMirror();																			// Create CbmRichMirror object, to be later filled.
+			// ----- PART 1 ----- //
+			// Ring-Track matching + Ring fit + Track momentum:
+			CbmGlobalTrack* gTrack  = (CbmGlobalTrack*) fGlobalTracks->At(iGlobalTrack);
+			Int_t richInd = gTrack->GetRichRingIndex();
+			if (richInd < 0) {
+				cout << "CbmRichMirrorSorting::Exec : richInd < 0." << endl;
+				continue;
 			}
+			CbmRichRing* ring = (CbmRichRing*) fRichRings->At(richInd);
+			if (ring == NULL) {
+				cout << "CbmRichMirrorSorting::Exec : ring = NULL." << endl;
+				continue;
+			}
+			CbmRichRingLight ringL;
+			CbmRichConverter::CopyHitsToRingLight(ring, &ringL);
+			fCopFit->DoFit(&ringL);
+			//fTauFit->DoFit(&ringL);
+			cout << "Ring parameters = " << ringL.GetCenterX() << ", " << ringL.GetCenterY() << endl;
+			mirrorObject->setFittedRing(ringL.GetCenterX(), ringL.GetCenterY());														// Fill fitted Ring Center coo inside mirrorObject.
+			Int_t ringTrackID = ring->GetTrackID();
+			CbmMCTrack* track = (CbmMCTrack*) fMCTracks->At(ringTrackID);
+			//Int_t ringMotherId = track->GetMotherId();
+			track->GetMomentum(momentum);
+			mirrorObject->setMomentum(momentum);																						// Fill track momentum inside mirrorObject.
+
+			// ----- PART 2 ----- //
+			// Mirror ID via TGeoNavigator + Extrap hit:
+			Int_t trackMotherId = track->GetMotherId();
+			if (trackMotherId == -1) {
+				CbmRichPoint* mirrPoint = (CbmRichPoint*) fMirrorPoints->At(ringTrackID);
+				ptM.at(0) = mirrPoint->GetX(), ptM.at(1) = mirrPoint->GetY(), ptM.at(2) = mirrPoint->GetZ();
+				TGeoNode* mirrNode = gGeoManager->FindNode(ptM.at(0),ptM.at(1),ptM.at(2));
+				cout << "Mirror node name: " << mirrNode->GetName() << endl;
+				mirrorObject->setMirrorId(mirrNode->GetName());
+				if (mirrNode) {
+					TGeoNavigator* navi = gGeoManager->GetCurrentNavigator();
+					cout << "Navigator path: " << navi->GetPath() << endl;
+					ptCIdeal.at(0) = navi->GetCurrentMatrix()->GetTranslation()[0];
+					ptCIdeal.at(1) = navi->GetCurrentMatrix()->GetTranslation()[1];
+					ptCIdeal.at(2) = navi->GetCurrentMatrix()->GetTranslation()[2];
+					CbmRichPoint *refPlanePoint = (CbmRichPoint*) fRefPlanePoints->At(ringTrackID);
+					ptR1.at(0) = refPlanePoint->GetX(), ptR1.at(1) = refPlanePoint->GetY(), ptR1.at(2) = refPlanePoint->GetZ();
+					ComputeR2(ptR2Center, ptR2Mirr, ptM, ptC, ptR1, navi, "Uncorrected");
+					ComputeP(ptPMirr, ptPR2, normalPMT, ptM, ptR2Mirr, constantePMT);
+					TVector3 inPos (ptPMirr.at(0), ptPMirr.at(1), ptPMirr.at(2));
+					CbmRichGeoManager::GetInstance().RotatePoint(&inPos, &outPos);
+					cout << "New mirror points coordinates = {" << outPos.x() << ", " << outPos.y() << ", " << outPos.z() << "}" << endl;
+					mirrorObject->setExtrapHit(outPos.x(), outPos.y());
+				}
+			}
+			else { cout << "Not a mother particle." << endl; }
+
+			//ComputeAngles();
+
+			fMirrorMap[mirrorObject->getMirrorId()].push_back(mirrorObject);
+			delete mirrorObject;
 		}
-		else { cout << "Not a mother particle." << endl; }
-
-		//ComputeAngles();
-
-		fMirrorMap[mirrorObject->getMirrorId()].push_back(mirrorObject);
-		delete mirrorObject;
 	}
+	else { cout << "CbmRichMirrorSorting::Exec No rings in event were found." << endl; }
 }
 
 /*void CbmRichMirrorSorting::ComputeAngles()
@@ -412,13 +416,18 @@ void CbmRichMirrorSorting::Finish()
 	for (std::map<string, vector<CbmRichMirror*>>::iterator it=fMirrorMap.begin(); it!=fMirrorMap.end(); ++it) {
 		cout << "Mirror objects:" << endl;
 		// to get mirror Id:
-		string curMirrorId =  it->first;
+		string curMirrorId = it->first;
+		cout << "curMirrorId: " << curMirrorId << endl;
 		// get first CbmRichMirrors
-		if (it->first == "Hello") {
-			for (int i = 0; i < it->second.size(); i++) {
-				CbmRichMirror* mirror = it->second[i];
-				cout << "mirror ID: " << mirror->getMirrorId() << endl;
-			}
+		for (int i = 0; i < it->second.size(); i++) {
+			CbmRichMirror* mirror = it->second[i];
+			//cout << "HERE1" << endl;
+			//string s = mirror->getMirrorId();
+			//vector<Double_t> v = mirror->getFittedRing();
+			//cout << "HERE2" << endl;
+			//cout << "mirror ID: " << s << endl;
+			//cout << "HERE3" << endl;
+			//cout << "mirror ID: " << mirror->getMirrorId() << endl;
 		}
 	}
 }
