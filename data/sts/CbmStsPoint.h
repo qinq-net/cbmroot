@@ -37,7 +37,7 @@ class CbmStsPoint : public FairMCPoint
   /** Constructor with arguments
    *@param trackID  Index of MCTrack
    *@param detID    Detector ID
-   *@param posIn    Ccoordinates at entrance to active volume [cm]
+   *@param posIn    Coordinates at entrance to active volume [cm]
    *@param posOut   Coordinates at exit of active volume [cm]
    *@param momIn    Momentum of track at entrance [GeV]
    *@param momOut   Momentum of track at exit [GeV]
@@ -47,11 +47,13 @@ class CbmStsPoint : public FairMCPoint
    *@param pid      Particle ID (PDG code)
    *@param eventId  MC event identifier
    *@param index    Index of point in TClonesArray
+   *@param flag     +1 if entering, +2 if leaving the sensor
    **/
   CbmStsPoint(Int_t trackID, Int_t detID, TVector3 posIn, 
 		  	  TVector3 posOut, TVector3 momIn, TVector3 momOut,
 		  	  Double_t tof, Double_t length, Double_t eLoss,
-		  	  Int_t pid = 0, Int_t eventId = 0, Int_t index = 0);
+		  	  Int_t pid = 0, Int_t eventId = 0, Int_t index = 0,
+		  	  Short_t flag = 3);
 
 
   /** Copy constructor with event and epoch time 
@@ -82,6 +84,8 @@ class CbmStsPoint : public FairMCPoint
   Double_t GetPzOut() const { return fPz_out; }
   Int_t    GetPid()   const { return fPid; }
   Int_t    GetIndex() const { return fIndex; }
+  Bool_t   IsEntry()  const { return ( fFlag == 1 || fFlag == 3 ); }
+  Bool_t   IsExit()   const { return ( fFlag == 2 || fFlag == 3 ); }
 
   void PositionIn(TVector3& pos)  { pos.SetXYZ(fX, fY, fZ); }
   void PositionOut(TVector3& pos) { pos.SetXYZ(fX_out,fY_out,fZ_out); }
@@ -118,10 +122,11 @@ class CbmStsPoint : public FairMCPoint
   Double32_t fPx_out, fPy_out, fPz_out;
   Int_t fPid;         ///> Particle ID [PDG code]
   Int_t fIndex;       ///> Index of point in its TClonesArray
+  Short_t fFlag;    ///> 1 or 3: track entry step; 2 or 3: track exit step
 
 
 
-  ClassDef(CbmStsPoint,2)
+  ClassDef(CbmStsPoint,3)
 
 };
 

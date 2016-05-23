@@ -113,6 +113,9 @@ class CbmStsSimulationQa : public FairTask
   TH1F *fhNofEvents;
   TH1F *fhNofStsStations;
 
+  TH1F* fhDistIn;
+  TH1F* fhDistOut;
+
   /** List of histograms **/
   TList* fHistoList;
 

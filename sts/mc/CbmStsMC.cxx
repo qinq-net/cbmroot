@@ -7,6 +7,7 @@
 
 #include "CbmStsMC.h"
 
+#include "TGeoBBox.h"
 #include "TGeoManager.h"
 #include "TGeoPhysicalNode.h"
 #include "TParticle.h"
@@ -138,12 +139,13 @@ void CbmStsMC::Initialize() {
 // -----   ProcessHits  ----------------------------------------------------
 Bool_t CbmStsMC::ProcessHits(FairVolume* vol) {
 
-
-  // --- If track is entering the sensor:
-  //     store track parameters and reset energy loss
+  // --- If this is the first step for the track in the sensor:
+  //     Reset energy loss and store track parameters
   if ( gMC->IsTrackEntering() ) {
-		SetStatus(fStatusIn);
 		fEloss = 0.;
+		fStatusIn.Reset();
+		fStatusOut.Reset();
+		SetStatus(fStatusIn);
 	}
 
   // --- For all steps within active volume: sum up differential energy loss
@@ -166,11 +168,6 @@ Bool_t CbmStsMC::ProcessHits(FairVolume* vol) {
     // --- Increment number of StsPoints for this track
     CbmStack* stack = (CbmStack*) gMC->GetStack();
     stack->AddPoint(kSTS);
-
-    // --- Reset track status and accumulated energy loss
-    fStatusIn.Reset();
-    fStatusOut.Reset();
-    fEloss = 0.;
 
   }  //? track is exiting or stopped
 
@@ -246,18 +243,24 @@ CbmStsPoint* CbmStsMC::CreatePoint() {
   Double_t time   = 0.5 * ( fStatusIn.fTime   + fStatusOut.fTime );
   Double_t length = 0.5 * ( fStatusIn.fLength + fStatusOut.fLength);
   
+  // --- Flag for entry/exit
+  Int_t flag = 0;
+  if ( fStatusIn.fFlag  ) flag += 1;   // first coordinate is entry step
+  if ( fStatusOut.fFlag ) flag += 2;   // second coordinate is exit step
+
   // --- Debug output
   LOG(DEBUG2) << GetName() << ": Creating point from track "
               << fStatusIn.fTrackId << " in sensor " 
               << fStatusIn.fAddress << ", position (" << posIn.X()
               << ", " << posIn.Y() << ", " << posIn.Z() 
               << "), energy loss " << fEloss << FairLogger::endl;
-              
+
   // --- Add new point to output array
   Int_t newIndex = fStsPoints->GetEntriesFast();
   return new ( (*fStsPoints)[fStsPoints->GetEntriesFast()] )
     CbmStsPoint(fStatusIn.fTrackId, fStatusIn.fAddress, posIn, posOut,
-                momIn, momOut, time, length, fEloss, fStatusIn.fPid, 0, newIndex);
+                momIn, momOut, time, length, fEloss, fStatusIn.fPid, 0,
+                newIndex, flag);
                 
 }
 // -------------------------------------------------------------------------
@@ -301,6 +304,17 @@ void CbmStsMC::SetStatus(CbmStsTrackStatus& status) {
   status.fTime   = gMC->TrackTime() * 1.e9;  // conversion into ns
   status.fLength = gMC->TrackLength();
 
+  // --- Status flag (entry/exit or new/stopped/disappeared)
+  if ( gMC->IsTrackEntering() ) {
+  	if ( gMC->IsNewTrack() ) status.fFlag = kFALSE; // Track created in sensor
+  	else                     status.fFlag = kTRUE;  // Track entering
+  }
+  else { // exiting or stopped or disappeared
+  	if ( gMC->IsTrackDisappeared() || gMC->IsTrackStop() )
+  		status.fFlag = kFALSE;  // Track stopped or disappeared in sensor
+  	else
+  		status.fFlag = kTRUE;   // Track exiting
+  }
 }
 // -------------------------------------------------------------------------
 

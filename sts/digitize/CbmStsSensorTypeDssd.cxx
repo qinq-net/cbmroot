@@ -623,7 +623,6 @@ void CbmStsSensorTypeDssd::PrintChargeStatus() const {
 Int_t CbmStsSensorTypeDssd::ProcessPoint(CbmStsSensorPoint* point,
                                          const CbmStsSensor* sensor) {
 
-
 	// --- If desired, use the old ProcessPoint method
 	if ( fOld ) {
 	  Int_t nSignalsOld = ProcessPointOld(point, sensor);
@@ -837,7 +836,7 @@ void CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
 			for (Int_t strip = 0; strip < fNofStrips[side]; strip++)
 				fStripCharge[side][strip] *= ( chargeTotal / chargeSum );
 		} //# front and back side
-	} //? fluctuations on
+	} //? E loss fluctuations
 
 }
 // -------------------------------------------------------------------------
@@ -984,6 +983,7 @@ void CbmStsSensorTypeDssd::PropagateCharge(Double_t x, Double_t y,
 																		sensor->GetConditions().GetVfd(),
 																		sensor->GetConditions().GetTemperature(),
 																		side);
+		assert (diffusionWidth >= 0.);
 		LOG(DEBUG4) << GetName() << ": Diffusion width = " << diffusionWidth
 				        << " cm" << FairLogger::endl;
 		// Calculate charge fractions in strips

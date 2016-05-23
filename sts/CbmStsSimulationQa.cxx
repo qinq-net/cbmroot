@@ -30,6 +30,9 @@
 #include "TH3F.h"
 #include "TList.h"
 #include "TVector3.h"
+#include "TGeoMatrix.h"
+#include "TGeoShape.h"
+#include "TGeoBBox.h"
 
 #include <iostream>
 #include <iomanip>
@@ -65,6 +68,8 @@ CbmStsSimulationQa::CbmStsSimulationQa()
      fhStationPoints(),
      fhNofEvents(NULL),
      fhNofStsStations(NULL),
+     fhDistIn(NULL),
+     fhDistOut(NULL),
      fHistoList(NULL),
      fNEvents(0),
      fOnlineAnalysis(kFALSE),
@@ -100,6 +105,8 @@ CbmStsSimulationQa::CbmStsSimulationQa(Bool_t visualizeBool, Int_t iVerbose)
     fhStationPoints(),
     fhNofEvents(NULL),
     fhNofStsStations(NULL),
+    fhDistIn(NULL),
+    fhDistOut(NULL),
     fHistoList(NULL),
     fNEvents(0),
     fOnlineAnalysis(kFALSE),
@@ -267,6 +274,54 @@ InitStatus CbmStsSimulationQa::ReInit() {
 
 // -----   Public method Exec   --------------------------------------------
 void CbmStsSimulationQa::Exec(Option_t* /*opt*/) {
+
+	LOG(INFO) << "STSQA exec" << FairLogger::endl;
+
+	CbmStsSetup* setup = CbmStsSetup::Instance();
+
+	Int_t nPoints = fSTSPoints->GetEntriesFast();
+	for (Int_t iPoint = 0; iPoint < nPoints; iPoint++) {
+		CbmStsPoint* point = (CbmStsPoint*) fSTSPoints->At(iPoint);
+
+		if ( point->GetPid() != 11 ) continue;
+
+		if ( point->IsEntry() ) {
+		UInt_t address = point->GetDetectorID();
+		CbmStsSensor* sensor = (CbmStsSensor*) setup->GetElement(address, kStsSensor);
+		TGeoPhysicalNode* node = sensor->GetNode();
+	  Double_t dZ = dynamic_cast<TGeoBBox*>(node->GetShape())->GetDZ();
+	  Double_t global[3];
+	  Double_t local[3];
+	  global[0] = point->GetXIn();
+	  global[1] = point->GetYIn();
+	  global[2] = point->GetZIn();
+	  node->GetMatrix()->MasterToLocal(global, local);
+	  Double_t x = local[0];
+	  Double_t y = local[1];
+	  Double_t z = local[2];
+	  Double_t dist = TMath::Abs( TMath::Abs(z) - dZ ) * 10000.;
+	  fhDistIn->Fill(dist);
+		}
+
+		if ( point->IsExit() ) {
+		UInt_t address = point->GetDetectorID();
+		CbmStsSensor* sensor = (CbmStsSensor*) setup->GetElement(address, kStsSensor);
+		TGeoPhysicalNode* node = sensor->GetNode();
+	  Double_t dZ = dynamic_cast<TGeoBBox*>(node->GetShape())->GetDZ();
+	  Double_t global[3];
+	  Double_t local[3];
+	  global[0] = point->GetXOut();
+	  global[1] = point->GetYOut();
+	  global[2] = point->GetZOut();
+	  node->GetMatrix()->MasterToLocal(global, local);
+	  Double_t x = local[0];
+	  Double_t y = local[1];
+	  Double_t z = local[2];
+	  Double_t dist = TMath::Abs( TMath::Abs(z) - dZ ) * 10000.;
+	  fhDistOut->Fill(dist);
+		}
+
+	}
 
 
 	//TODO: This method will not work in the way implemented. Have a look.
@@ -467,6 +522,11 @@ void CbmStsSimulationQa::CreateHistos() {
   fHistoList->Add(fhStsPointsRec);
   fHistoList->Add(fhMomStsPoints);
   fHistoList->Add(fhStsPointsPosition);
+
+  fhDistIn = new TH1F("hDistIn","distance from surface", 100, 0., 2.);
+  fHistoList->Add(fhDistIn);
+  fhDistOut = new TH1F("hDistOut","distance from surface", 100, 0., 2.);
+  fHistoList->Add(fhDistOut);
 
   for ( Int_t ist = 0 ; ist < fNStations ; ist++ ) {
     Int_t histSize = (Int_t)(1.05*fStationRadius[ist])+1;

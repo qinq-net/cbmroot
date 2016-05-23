@@ -25,7 +25,8 @@ CbmStsPoint::CbmStsPoint()
     fPy_out(0.),
     fPz_out(0.),
     fPid(0),
-    fIndex(0)
+    fIndex(0),
+    fFlag(0)
 {
 }
 // -------------------------------------------------------------------------
@@ -36,7 +37,7 @@ CbmStsPoint::CbmStsPoint()
 CbmStsPoint::CbmStsPoint(Int_t trackID, Int_t detID, TVector3 posIn, 
 			 TVector3 posOut, TVector3 momIn, TVector3 momOut,
 			 Double_t tof, Double_t length, Double_t eLoss,
-			 Int_t pid, Int_t eventId, Int_t index)
+			 Int_t pid, Int_t eventId, Int_t index, Short_t flag)
   : FairMCPoint(trackID, detID, posIn, momIn, tof, length, eLoss, eventId),
     fX_out(posOut.X()),
     fY_out(posOut.Y()),
@@ -45,7 +46,8 @@ CbmStsPoint::CbmStsPoint(Int_t trackID, Int_t detID, TVector3 posIn,
     fPy_out(momOut.Py()),
     fPz_out(momOut.Pz()),
     fPid(pid),
-    fIndex(index)
+    fIndex(index),
+    fFlag(flag)
 {
   SetLink(FairLink(Cbm::kMCTrack, trackID));
 }

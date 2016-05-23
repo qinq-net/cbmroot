@@ -7,8 +7,12 @@
 // Include class header
 #include "CbmStsSensor.h"
 
+// Includes from c++
+#include <cassert>
+
 // Includes from ROOT
 #include "TClonesArray.h"
+#include "TGeoBBox.h"
 #include "TGeoMatrix.h"
 #include "TMath.h"
 
@@ -158,7 +162,7 @@ Int_t CbmStsSensor::ProcessPoint(const CbmStsPoint* point,
   	fNode->GetMatrix()->Print();
   }
 
-  // --- Transform entry coordinates into local C.S.
+  // --- Transform start coordinates into local C.S.
   Double_t global[3];
   Double_t local[3];
   global[0] = point->GetXIn();
@@ -169,7 +173,7 @@ Int_t CbmStsSensor::ProcessPoint(const CbmStsPoint* point,
   Double_t y1 = local[1];
   Double_t z1 = local[2];
 
-  // --- Transform exit coordinates into local C.S.
+  // --- Transform stop coordinates into local C.S.
   global[0] = point->GetXOut();
   global[1] = point->GetYOut();
   global[2] = point->GetZOut();
@@ -178,10 +182,104 @@ Int_t CbmStsSensor::ProcessPoint(const CbmStsPoint* point,
   Double_t y2 = local[1];
   Double_t z2 = local[2];
 
+  // --- Average track direction in local c.s.
+  Double_t tXav = 0.;
+  Double_t tYav = 0.;
+  Int_t    tZav = 0;
+  if ( z2 - z1 != 0. ) {
+  	tXav = ( x2 - x1 ) / (z2 - z1);
+  	tYav = ( y2 - y1 ) / (z2 - z1);
+  	tZav = 1;
+  }
+
+  // --- Normally, the entry and exit coordinates are slightly outside of
+  // --- the active node,which is a feature of the transport engine.
+  // --- We correct here for this, in case a track was entering or
+  // --- exiting the sensor (not for tracks newly created or stopped
+  // --- in the sensor volume).
+  // --- We here consider only the case of tracks leaving through the front
+  // --- or back plane. The rare case of tracks leaving through the sensor
+  // --- sides is caught by the digitisation procedure.
+  Double_t dZ = dynamic_cast<TGeoBBox*>(fNode->GetShape())->GetDZ();
+
+  // --- Correct start coordinates in case of entry step
+  if ( point->IsEntry() ) {
+
+ 		// Get track direction in local c.s.
+ 		global[0] = point->GetPx();
+ 		global[1] = point->GetPy();
+ 		global[2] = point->GetPz();
+ 		Double_t* rot;
+ 		rot = fNode->GetMatrix()->GetRotationMatrix();
+ 		TGeoHMatrix rotMat;
+ 		rotMat.SetRotation(rot);
+ 		rotMat.MasterToLocal(global,local);
+ 		if ( local[2] != 0.) {;  // should always be; else no correction
+ 			Double_t	tX = local[0] / local[2]; // px/pz
+ 			Double_t	tY = local[1] / local[2]; // py/pz
+
+ 			// New start coordinates
+ 			Double_t xNew = 0.;
+ 			Double_t yNew = 0.;
+ 			Double_t zNew = 0.;
+ 			if ( z1 > 0. ) zNew = dZ - 1.e-4; // front plane, safety margin 1 mum
+ 			else           zNew = 1.e-4 - dZ; // back plane, safety margin 1 mum
+ 			xNew = x1 + tX * (zNew - z1);
+ 			yNew = y1 + tY * (zNew - z1);
+
+ 			x1 = xNew;
+ 			y1 = yNew;
+ 			z1 = zNew;
+ 		} //? pz != 0.
+
+  }  //? track has entered
+
+  // --- Correct stop coordinates in case of being outside the sensor
+  if ( TMath::Abs(z2) > dZ ) {
+
+  	// Get track direction in local c.s.
+  	global[0] = point->GetPxOut();
+ 		global[1] = point->GetPyOut();
+ 		global[2] = point->GetPzOut();
+ 		Double_t* rot;
+  	rot = fNode->GetMatrix()->GetRotationMatrix();
+ 		TGeoHMatrix rotMat;
+ 		rotMat.SetRotation(rot);
+ 		rotMat.MasterToLocal(global,local);
+ 		Double_t tX = 0.;
+ 		Double_t tY = 0.;
+ 		// Use momentum components for track direction, if available
+ 		if ( local[2] != 0. ) {
+ 			tX = local[0] / local[2]; // px/pz
+ 			tY = local[1] / local[2]; // py/pz
+ 		}
+ 		else {   // Sometimes, a track is stopped outside the sensor volume
+ 			       // Then we take the average track direction as best approximation
+ 			assert(tZav);  // Catches no out momentum and in = out position
+ 		  tX = tXav;  // (x2-x1)/(z2-z1)
+ 		  tY = tYav;  // (y2-y1)/(z2-z1)
+ 		}
+
+ 		// New coordinates
+ 		Double_t xNew = 0.;
+ 		Double_t yNew = 0.;
+ 		Double_t zNew = 0.;
+ 		if ( z2 > 0. ) zNew = dZ - 1.e-4; // front plane, safety margin 1 mum
+ 		else           zNew = 1.e-4 - dZ; // back plane, safety margin 1 mum
+ 		xNew = x2 + tX * (zNew - z2);
+ 		yNew = y2 + tY * (zNew - z2);
+
+ 		x2 = xNew;
+ 		y2 = yNew;
+ 		z2 = zNew;
+
+  } //? track step outside sensor
+
+
   // --- Momentum magnitude
-  Double_t px = point->GetPx();
-  Double_t py = point->GetPy();
-  Double_t pz = point->GetPz();
+  Double_t px = 0.5 * ( point->GetPx() + point->GetPxOut() );
+  Double_t py = 0.5 * ( point->GetPy() + point->GetPyOut() );
+  Double_t pz = 0.5 * ( point->GetPz() + point->GetPzOut() );
   Double_t p = TMath::Sqrt( px*px + py*py + pz*pz );
 
   // --- Get magnetic field
@@ -209,6 +307,7 @@ Int_t CbmStsSensor::ProcessPoint(const CbmStsPoint* point,
   		        << FairLogger::endl;
   LOG(DEBUG2) << GetName() << ": Sensor type is " << fType->GetName()
   		        << " " << fType->GetTitle() << FairLogger::endl;
+  LOG(DEBUG2) << point->IsEntry() << " " << point->IsExit() << FairLogger::endl;
 
   // --- Call ProcessPoint method from sensor type
   Int_t result = fType->ProcessPoint(sPoint, this);

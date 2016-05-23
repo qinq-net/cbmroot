@@ -24,7 +24,7 @@ class CbmStsTrackStatus {
 		CbmStsTrackStatus() : fAddress(0), fTrackId(0), fPid(0),
 		                      fX(0.), fY(0.), fZ(0.),
 		                      fPx(0.), fPy(0.), fPz(0.),
-		                      fTime(0.), fLength(0.), fFlag(kFALSE) {		}
+		                      fTime(0.), fLength(0.), fFlag(kTRUE) {		}
 
 
 		/** Destructor  **/
@@ -44,7 +44,7 @@ class CbmStsTrackStatus {
 			fPz      = 0.;
 			fTime    = 0.;
 			fLength  = 0.;
-			fFlag    = kFALSE;
+			fFlag    = kTRUE;
 		}
 
 
@@ -59,7 +59,7 @@ class CbmStsTrackStatus {
 		Double_t fPz;         ///< Momentum x component [GeV]
 		Double_t fTime;       ///< Time since track creation [ns]
 		Double_t fLength;     ///< Length since track creation [cm]
-		Bool_t   fFlag;       ///< Status flag. FALSE if normal entry/exit, TRUE else
+		Bool_t   fFlag;       ///< Status flag. TRUE if normal entry/exit, else FALSE
 
 };
 
