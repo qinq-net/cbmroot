@@ -1,4 +1,4 @@
-void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t calSm=300, Int_t RefSel=1, char *cFileId="MbsTrbThu1715", Int_t iSet=0, Bool_t bOut=0, Int_t iSel2=0) 
+void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t calSm=300, Int_t RefSel=1, char *cFileId="MbsTrbThu1715", Int_t iCalSet=0, Bool_t bOut=0, Int_t iSel2=0) 
 {
   Int_t iVerbose = 1;
   // Specify log level (INFO, DEBUG, DEBUG1, ...)
@@ -15,7 +15,7 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
    TString paramDir   = workDir + "/macro/tof/beamtime/nov15";
    TString ParFile    = paramDir + "/unpack_" + cFileId + ".params.root";
    TString InputFile  = paramDir + "/unpack_" + cFileId + ".out.root";
-   TString OutputFile = paramDir + "/digi_"   + cFileId + Form("_%06d_%03d",iSet,iSel2) + ".out.root";
+   TString OutputFile = paramDir + "/digi_"   + cFileId + Form("_%09d_%03d",iCalSet,iSel2) + ".out.root";
 
    TList *parFileList = new TList();
 
@@ -87,15 +87,16 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
    tofTestBeamClust->SetMaxTimeDist(500.);       // default cluster range in ps 
    //tofTestBeamClust->SetMaxTimeDist(0.);       //Deb// default cluster range in ps 
    tofTestBeamClust->SetDelTofMax(6000.);        // acceptance range for cluster correlation  
+   tofTestBeamClust->SetBeamRefMulMax(4);        // limit Multiplicity in beam counter
 
    Int_t calSelRead = calSel;
    if (calSel<0) calSelRead=0;
-   TString cFname=Form("%s_set%06d_%02d_%01dtofTestBeamClust.hst.root",cFileId,iSet,calMode,calSelRead);
+   TString cFname=Form("%s_set%09d_%02d_%01dtofTestBeamClust.hst.root",cFileId,iCalSet,calMode,calSelRead);
    tofTestBeamClust->SetCalParFileName(cFname);
-   TString cOutFname=Form("tofTestBeamClust_%s_set%06d.hst.root",cFileId,iSet);
+   TString cOutFname=Form("tofTestBeamClust_%s_set%09d.hst.root",cFileId,iCalSet);
    tofTestBeamClust->SetOutHstFileName(cOutFname);
 
-   TString cAnaFile=Form("%s_%06d%03d_tofAnaTestBeam.hst.root",cFileId,iSet,iSel2);
+   TString cAnaFile=Form("%s_%09d%03d_tofAnaTestBeam.hst.root",cFileId,iCalSet,iSel2);
 
    switch (calMode) {
    case 0:                                      // initial calibration 
@@ -251,27 +252,29 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
    tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0 
    tofAnaTestbeam->SetTOffD4(13000.);   // Shift DTD4 to physical value
 
+   Int_t iBRef=iCalSet%1000;
+   Int_t iSet = (iCalSet - iBRef)/1000;
    Int_t iRSel=0;
+   Int_t iRSelTyp=0;
    Int_t iRSelSm=0;
    Int_t iRSelRpc=0;
    if(iSel2>=0){
-     iRSel=5;     // use diamond
-     iRSelSm=0;   // -1 -> any one ok
+     iRSel=iBRef;     // use diamond
    }else{
      iSel2=-iSel2;
      iRSel=iSel2;
-     iRSelRpc=iRSel%10;
-     iRSel = (iRSel-iRSelRpc)/10;
-     iRSelSm=iRSel%10;
-     iRSel = (iRSel-iRSelSm)/10;
    }
+   iRSelRpc=iRSel%10;
+   iRSelTyp = (iRSel-iRSelRpc)/10;
+   iRSelSm=iRSelTyp%10;
+   iRSelTyp = (iRSelTyp-iRSelSm)/10;
 
-   tofTestBeamClust->SetBeamRefId(iRSel);    // define Beam reference counter 
+   tofTestBeamClust->SetBeamRefId(iRSelTyp);    // define Beam reference counter 
    tofTestBeamClust->SetBeamRefSm(iRSelSm);
    tofTestBeamClust->SetBeamRefDet(iRSelRpc);
    tofTestBeamClust->SetBeamAddRefMul(-1);
 
-   tofAnaTestbeam->SetBeamRefSmType(iRSel);
+   tofAnaTestbeam->SetBeamRefSmType(iRSelTyp);
    tofAnaTestbeam->SetBeamRefSmId(iRSelSm);
 
    Int_t iSel2Rpc= iSel2%10;
@@ -562,11 +565,25 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
      }
      break;
 
+   case 210200:
+     switch (iRSel){
+         case 9:
+	   tofAnaTestbeam->SetTShift(-2000.);   // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
+	   break;
+         default:
+	   ;
+     }
+     break;
+
    case 700600:
    case 701600:
    case 702600:
    case 703600:
    case 100600:
+   case 200600:
+   case 210600:
    case 601600:
      switch (iRSel){
          case 5:
@@ -723,14 +740,23 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
   case 68:
   case 601600:
   case 100600:
+  case 200600:
   case 700600:
   case 600601:
   case 100601:
+  case 200601:
   case 700601:
 
     gInterpreter->ProcessLine("pl_over_clu(1)");
     gInterpreter->ProcessLine("pl_over_clu(5)");
     gInterpreter->ProcessLine("pl_over_clu(6)");
+    gInterpreter->ProcessLine("pl_over_clu(6,0,1)");
+    gInterpreter->ProcessLine("pl_over_clu(2,0,0)");
+    gInterpreter->ProcessLine("pl_over_clu(2,0,1)");
+    gInterpreter->ProcessLine("pl_over_clu(7,0,0)");
+    gInterpreter->ProcessLine("pl_over_clu(7,0,1)");
+    gInterpreter->ProcessLine("pl_over_clu(7,0,2)");
+    gInterpreter->ProcessLine("pl_over_clu(7,0,3)");
     gInterpreter->ProcessLine("pl_over_clu(8)");
     gInterpreter->ProcessLine("pl_over_clu(8,0,1)");
     gInterpreter->ProcessLine("pl_over_clu(8,0,2)");
@@ -739,6 +765,10 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
     gInterpreter->ProcessLine("pl_over_clu(8,0,5)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,5)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,5,1)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,7,0,0)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,7,0,1)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,7,0,2)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,7,0,3)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,8)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,8,0,1)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,8,0,2)");
@@ -753,6 +783,8 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
     gInterpreter->ProcessLine("pl_over_cluSel(1,1)");
     gInterpreter->ProcessLine("pl_over_cluSel(0,5)");
     gInterpreter->ProcessLine("pl_over_cluSel(0,5,1)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,2,0,0)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,2,1,0)");
     gInterpreter->ProcessLine("pl_all_dTSel()");
     gInterpreter->ProcessLine("pl_over_MatD4sel()");
     break;

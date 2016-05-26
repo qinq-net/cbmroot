@@ -1,4 +1,4 @@
-void ana_digi_cal(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int_t calSm=200, Int_t RefSel=1, char *cFileId="MbsTrbThu1715", Int_t iSet=0, Int_t iBRef=5) 
+void ana_digi_cal(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int_t calSm=200, Int_t RefSel=1, char *cFileId="MbsTrbThu1715", Int_t iCalSet=0, Int_t iBRef=500) 
 {
   Int_t iVerbose = 1;
   // Specify log level (INFO, DEBUG, DEBUG1, ...)
@@ -89,18 +89,31 @@ void ana_digi_cal(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
    //tofTestBeamClust->SetMaxTimeDist(0.);       // Deb// default cluster range in ps 
    tofTestBeamClust->SetDelTofMax(6000.);        // acceptance range for cluster correlation  
 
+   Int_t iRSel=iBRef;
+   Int_t iRSelRpc = iRSel%10;
+   iRSel = (iRSel - iRSelRpc)/10;
+   Int_t iRSelSm = iRSel%10;
+   iRSel = (iRSel - iRSelSm)/10;
+   cout << "set BeamRefId to "<<iRSel<<", "<<iRSelSm<<", "<<iRSelRpc<<endl;
+
+   tofTestBeamClust->SetBeamRefId(iRSel);    // define Beam reference counter 
+   tofTestBeamClust->SetBeamRefSm(iRSelSm);
+   tofTestBeamClust->SetBeamRefDet(iRSelRpc);
+   tofTestBeamClust->SetBeamAddRefMul(-1);
+   tofTestBeamClust->SetBeamRefMulMax(4);        // limit Multiplicity in beam counter
+ 
    Int_t calSelRead = calSel;
    if (calSel<0) calSelRead=0;
-   TString cFname=Form("%s_set%06d_%02d_%01dtofTestBeamClust.hst.root",cFileId,iSet,calMode,calSelRead);
+   TString cFname=Form("%s_set%09d_%02d_%01dtofTestBeamClust.hst.root",cFileId,iCalSet,calMode,calSelRead);
    tofTestBeamClust->SetCalParFileName(cFname);
-   TString cOutFname=Form("tofTestBeamClust_%s_set%06d.hst.root",cFileId,iSet);
+   TString cOutFname=Form("tofTestBeamClust_%s_set%09d.hst.root",cFileId,iCalSet);
    tofTestBeamClust->SetOutHstFileName(cOutFname);
 
-   TString cAnaFile=Form("%s_%06d_tofAnaTestBeam.hst.root",cFileId,iSet);
+   TString cAnaFile=Form("%s_%09d_tofAnaTestBeam.hst.root",cFileId,iCalSet);
 
    switch (calMode) {
    case 0:                                      // initial calibration 
-     tofTestBeamClust->SetTotMax(100000.);      // 100 ns
+     tofTestBeamClust->SetTotMax(500000.);      // 100 ns
      //tofTestBeamClust->SetTotMin(1.);
      tofTestBeamClust->SetTRefDifMax(2000000.); // in ps 
      tofTestBeamClust->PosYMaxScal(2000.);      // in % of length 
@@ -251,16 +264,9 @@ void ana_digi_cal(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
    tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0 
    tofAnaTestbeam->SetTOffD4(13000.);   // Shift DTD4 to physical value
 
-   Int_t iRSel=iBRef;
-   Int_t iRSelRpc = iRSel%10;
-   iRSel = (iRSel - iRSelRpc)/10;
-   Int_t iRSelSm = iRSel%10;
-   iRSel = (iRSel - iRSelSm)/10;
-   tofTestBeamClust->SetBeamRefId(iRSel);    // define Beam reference counter 
-   tofTestBeamClust->SetBeamRefSm(iRSelSm);
-   tofTestBeamClust->SetBeamRefDet(iRSelRpc);
-   tofTestBeamClust->SetBeamAddRefMul(-1);
 
+   Int_t iBRef=iCalSet%1000;
+   Int_t iSet = (iCalSet - iBRef)/1000;
    Int_t iRef = iSet %1000;
 
    Int_t iDut = (iSet - iRef)/1000;
@@ -299,6 +305,7 @@ void ana_digi_cal(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
    case 920300:
    case 921300:
    case 901900:
+   case 900901:
    case 921920:
    case 920921:
    case 400921:
@@ -309,6 +316,7 @@ void ana_digi_cal(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
 	 tofAnaTestbeam->SetDCh4Sel(20.);     // Width  of channel selection window
 	 break;
  
+   case 210200:
    case 700600:
    case 100600:
    case 601600:
@@ -437,6 +445,7 @@ void ana_digi_cal(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
   case 86:
   case 18:
   case 68:
+  case 210200:
   case 601600:
   case 100600:
   case 700600:
@@ -457,8 +466,13 @@ void ana_digi_cal(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
     gInterpreter->ProcessLine("pl_over_clu(8,0,4)");
     gInterpreter->ProcessLine("pl_over_clu(8,0,5)");
     gInterpreter->ProcessLine("pl_over_cluSel(0,1)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,5,0,0)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,5,1,0)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,5,2,0)");
     gInterpreter->ProcessLine("pl_over_cluSel(0,6,0,0)");
     gInterpreter->ProcessLine("pl_over_cluSel(0,6,0,1)");
+    gInterpreter->ProcessLine("pl_over_clu(2,0,0)");
+    gInterpreter->ProcessLine("pl_over_clu(2,0,1)");
     gInterpreter->ProcessLine("pl_over_cluSel(0,7,0,0)");
     gInterpreter->ProcessLine("pl_over_cluSel(0,7,0,1)");
     gInterpreter->ProcessLine("pl_over_cluSel(0,7,0,2)");
@@ -470,6 +484,9 @@ void ana_digi_cal(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
     gInterpreter->ProcessLine("pl_over_cluSel(0,8,0,4)");
     gInterpreter->ProcessLine("pl_over_cluSel(0,8,0,5)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,1)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,5,0,0)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,5,1,0)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,5,2,0)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,6,0,0)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,6,0,1)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,7,0,0)");
@@ -482,6 +499,10 @@ void ana_digi_cal(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
     gInterpreter->ProcessLine("pl_over_cluSel(1,8,0,3)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,8,0,4)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,8,0,5)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,2,0,0)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,2,1,0)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,2,0,0)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,2,1,0)");
     gInterpreter->ProcessLine("pl_all_dTSel()");
     break;
 

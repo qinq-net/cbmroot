@@ -17,8 +17,8 @@ void ana_trks(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    TString InputFile     = paramDir + "/unpack_" + cFileId + ".out.root";
    TString InputDigiFile = paramDir + "/digi_" + cFileId + Form("_%s",cSet) + ".out.root";
    TString OutputFile    = paramDir + "/hits_" + cFileId + Form("_%s_%06d_%03d",cSet,iSel,iSel2) + ".out.root";
-   TString cAnaFile=Form("%s_%s_%06d_%03d_tofAnaTestBeam.hst.root",cFileId,cSet,iSel,iSel2);
-   TString cHstFile=paramDir + Form("/hst/%s_%s_%06d_%03d_tofAna.hst.root",cFileId,cSet,iSel,iSel2);
+   TString cAnaFile=Form("%s_%s_%06d_%03d_TrkAnaTestBeam.hst.root",cFileId,cSet,iSel,iSel2);
+   TString cHstFile=paramDir + Form("/hst/%s_%s_%06d_%03d_trk%03dAna.hst.root",cFileId,cSet,iSel,iSel2,iTrackingSetup);
    TString cTrkFile=Form("%s_tofFindTracks.hst.root",cFileId);
 
    cout << " InputDigiFile = "
@@ -98,7 +98,6 @@ void ana_trks(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    tofTrackFinder->SetTxLIM(0.05);                 // max slope dx/dz
    tofTrackFinder->SetTyLIM(0.05);                  // max dev from mean slope dy/dz
    tofTrackFinder->SetTyMean(0.1);                 // mean slope dy/dz
-   tofTrackFinder->SetSIGLIM(3.);                  // max matching chi2
 
    CbmTofTrackFitter* tofTrackFitter= new CbmTofTrackFitterKF(0,211);
    TFitter *MyFit = new TFitter(1);                // initialize Minuit
@@ -106,18 +105,21 @@ void ana_trks(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    CbmTofFindTracks* tofFindTracks  = new CbmTofFindTracks("TOF Track Finder");
    tofFindTracks->UseFinder(tofTrackFinder);
    tofFindTracks->UseFitter(tofTrackFitter);
-   tofFindTracks->SetCorMode(iGenCor);           // valid options: 0,1,2
-   tofFindTracks->SetTtTarg(33.7);               // target value for inverse velocity, > 33.3 !
+   tofFindTracks->SetCorMode(iGenCor);           // valid options: 0,1,2,3,4,5,6, 10 - 19
+   tofFindTracks->SetTtTarg(37.);                // target value for inverse velocity, > 33.3 !
    tofFindTracks->SetCalParFileName(cTrkFile);   // Tracker parameter value file name
      
    tofFindTracks->SetT0MAX(dScalFac*1000.);       // in ps
    tofFindTracks->SetSIGT(100.);                  // default in ps
    tofFindTracks->SetSIGX(0.5);                   // default in cm
    tofFindTracks->SetSIGY(1.5);                   // default in cm 
-   tofFindTracks->SetSIGZ(5.0);                   // default in cm 
+   tofFindTracks->SetSIGZ(0.5);                   // default in cm 
+   tofTrackFinder->SetSIGLIM(500.);                // matching window in multiples of chi2
+   tofTrackFinder->SetChiMaxAccept(40.);          // max matching chi2
 
    switch (iTrackingSetup){
    case 0:                                       // bypass mode
+     tofFindTracks->SetMinNofHits(-1);
      tofFindTracks->SetNStations(1);
      tofFindTracks->SetStation(0, 5, 0, 0);           // Diamond 
      break;
@@ -149,40 +151,47 @@ void ana_trks(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      tofTrackFinder->SetSIGT(150.);                  // in ps
      break;
 
-   case 3:                                            // calibration mode
+   case 3:                                            // calibration debugging mode
      tofFindTracks->SetMinNofHits(3);
-     tofFindTracks->SetNStations(4);
-     tofFindTracks->SetStation(0, 9, 2, 0);           // USTC 
-     tofFindTracks->SetStation(1, 9, 2, 1);           // USTC
-     tofFindTracks->SetStation(2, 9, 0, 0);           //  
-     tofFindTracks->SetStation(3, 9, 0, 1);           // 
-     tofTrackFinder->SetSIGT(150.);                  // in ps
+     tofFindTracks->SetNStations(3);
+     tofFindTracks->SetStation(0, 4, 0, 0);           //  
+     tofFindTracks->SetStation(1, 9, 2, 0);           //  
+     tofFindTracks->SetStation(2, 9, 2, 1);           // 
      break;
 
    case 4:                                            // calibration mode
      tofFindTracks->SetMinNofHits(4);
      tofFindTracks->SetNStations(4);
-     tofFindTracks->SetStation(0, 9, 2, 0);           // USTC 
-     tofFindTracks->SetStation(1, 9, 2, 1);           // USTC
-     tofFindTracks->SetStation(2, 9, 0, 0);           //  
+     tofFindTracks->SetStation(0, 9, 0, 0);           //  
+     tofFindTracks->SetStation(1, 9, 2, 0);           // USTC 
+     tofFindTracks->SetStation(2, 9, 2, 1);           // USTC
      tofFindTracks->SetStation(3, 9, 0, 1);           // 
-     tofTrackFinder->SetSIGT(150.);                  // in ps
      break;
 
    case 5:                                            // calibration mode
      tofFindTracks->SetMinNofHits(5);
      tofFindTracks->SetNStations(5);
-     tofFindTracks->SetStation(0, 9, 2, 0);           // USTC 
+     tofFindTracks->SetStation(0, 4, 0, 0);           // P2 
      tofFindTracks->SetStation(1, 9, 2, 1);           // USTC
-     tofFindTracks->SetStation(2, 9, 0, 0);           //  
+     tofFindTracks->SetStation(2, 9, 2, 0);           // USTC 
      tofFindTracks->SetStation(3, 9, 0, 1);           // 
-     tofFindTracks->SetStation(4, 3, 0, 0);           // P2 
-     tofTrackFinder->SetSIGT(150.);                  // in ps
+     tofFindTracks->SetStation(4, 9, 0, 0);           //  
+     break;
+
+   case 6:                                            // calibration mode
+     tofFindTracks->SetMinNofHits(6);
+     tofFindTracks->SetNStations(6);
+     tofFindTracks->SetStation(0, 5, 0, 0);           // Diamond 
+     tofFindTracks->SetStation(1, 9, 2, 1);           // USTC
+     tofFindTracks->SetStation(2, 9, 2, 0);           // USTC 
+     tofFindTracks->SetStation(3, 9, 0, 1);           // 
+     tofFindTracks->SetStation(4, 9, 0, 0);           //  
+     tofFindTracks->SetStation(5, 4, 0, 0);           // P2 
      break;
 
    case 10:                                       // full lower setup
-     tofFindTracks->SetMinNofHits(3);
-     tofFindTracks->SetNStations(14);
+     tofFindTracks->SetMinNofHits(6);
+     tofFindTracks->SetNStations(16);
      tofFindTracks->SetStation(0, 5, 0, 0);           // Diamond 
      tofFindTracks->SetStation(1, 8, 0, 2);           // THUpad 
      tofFindTracks->SetStation(2, 8, 0, 3);           // THUpad
@@ -197,15 +206,48 @@ void ana_trks(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      tofFindTracks->SetStation(11, 7, 0, 2);           // Buc2012
      tofFindTracks->SetStation(12, 7, 0, 3);           // Buc2012
      tofFindTracks->SetStation(13, 1, 0, 0);           // BucRef  
+     tofFindTracks->SetStation(14, 2, 0, 0);           // Ceramic      
+     tofFindTracks->SetStation(15, 2, 1, 0);           // Ceramic  
      break;
 
    case 11:                                       // partial lower setup
-     tofFindTracks->SetMinNofHits(3);
+     tofFindTracks->SetMinNofHits(4);
      tofFindTracks->SetNStations(4);
      tofFindTracks->SetStation(0, 5, 0, 0);           // Diamond 
      tofFindTracks->SetStation(1, 6, 0, 0);           // Buc2015
      tofFindTracks->SetStation(2, 6, 0, 1);           // Buc2015
      tofFindTracks->SetStation(3, 1, 0, 0);           // BucRef  
+     break;
+
+   case 111:                                         // show case 
+     tofTrackFinder->SetTyLIM(0.2);                  // max dev from mean slope dy/dz
+     tofFindTracks->SetMinNofHits(5);
+     tofFindTracks->SetNStations(23);
+     tofFindTracks->SetStation(0, 5, 0, 0);           // Diamond 
+     tofFindTracks->SetStation(1, 4, 0, 0);           // P5 
+     tofFindTracks->SetStation(2, 9, 2, 0);           // USTC 
+     tofFindTracks->SetStation(3, 9, 2, 1);           // USTC
+     tofFindTracks->SetStation(4, 9, 1, 0);           // 
+     //tofFindTracks->SetStation(4, 9, 1, 1);           // broken
+     tofFindTracks->SetStation(5, 9, 0, 0);           //  
+     tofFindTracks->SetStation(6, 9, 0, 1);           //  
+     tofFindTracks->SetStation(7, 3, 0, 0);           // P2 
+
+     tofFindTracks->SetStation(8, 8, 0, 2);           // THUpad 
+     tofFindTracks->SetStation(9, 8, 0, 3);           // THUpad
+     tofFindTracks->SetStation(10, 8, 0, 0);           // THUpad
+     tofFindTracks->SetStation(11, 8, 0, 1);           // THUpad
+     tofFindTracks->SetStation(12, 8, 0, 4);           // THUpad
+     tofFindTracks->SetStation(13, 8, 0, 5);           // THUpad
+     tofFindTracks->SetStation(14, 6, 0, 0);           // Buc2015
+     tofFindTracks->SetStation(15, 6, 0, 1);           // Buc2015
+     tofFindTracks->SetStation(16, 7, 0, 0);           // Buc2012
+     tofFindTracks->SetStation(17, 7, 0, 1);           // Buc2012
+     tofFindTracks->SetStation(18, 7, 0, 2);           // Buc2012
+     tofFindTracks->SetStation(19, 7, 0, 3);           // Buc2012
+     tofFindTracks->SetStation(20, 1, 0, 0);           // BucRef      
+     tofFindTracks->SetStation(21, 2, 0, 0);           // Ceramic      
+     tofFindTracks->SetStation(22, 2, 1, 0);           // Ceramic     
      break;
 
    default:
@@ -436,26 +478,24 @@ void ana_trks(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	 cout << "Run with iRSel = "<<iRSel<<endl;
 	 switch (iRSel){
 	 case 5:
-	   tofAnaTestbeam->SetTShift(-15000.);  // initialization
+	   tofAnaTestbeam->SetTShift(2500.);  // initialization
 	   tofAnaTestbeam->SetTOffD4(13000.);  // initialization
 	   tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in Diamond    
 	   switch(iSel2){
 	   case 3:
-	       tofAnaTestbeam->SetChi2Lim2(4.);     // initialization of Chi2 selection limit  
-	       tofAnaTestbeam->SetSel2TOff(2000.);  // Shift Sel2 time peak to 0
-	       break;
+	     tofAnaTestbeam->SetChi2Lim2(4.);     // initialization of Chi2 selection limit  
+	     tofAnaTestbeam->SetSel2TOff(2000.);  // Shift Sel2 time peak to 0
+	     break;
 
 	   case 4:
 	     tofAnaTestbeam->SetChi2Lim(5.);     // initialization of Chi2 selection limit  
 	     tofAnaTestbeam->SetTShift(-700.);       // Shift DTD4 to 0
 	     tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
 	     tofAnaTestbeam->SetSel2TOff(-700.);  // Shift Sel2 time peak to 0
-	   break;
+	     break;
 
 	   case 9:
 	     tofAnaTestbeam->SetChi2Lim(4.);      // initialization of Chi2 selection limit  
-	     tofAnaTestbeam->SetTShift(-600.);    // Shift DTD4 to 0
-	     tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
 	     tofAnaTestbeam->SetSel2TOff(-170.);  // Shift Sel2 time peak to 0
 	     break;
 
@@ -546,19 +586,19 @@ void ana_trks(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      switch (iRSel){	   
          case 5:
            //tofTestBeamClust->SetBeamAddRefMul(1);
-	   tofAnaTestbeam->SetChi2Lim(5.);     // initialization of Chi2 selection limit  
-	   tofAnaTestbeam->SetTShift(-18300.);     // Shift DTD4 to 0
+	   tofAnaTestbeam->SetChi2Lim(10.);     // initialization of Chi2 selection limit  
+	   tofAnaTestbeam->SetTShift(0.) //-18300.);     // Shift DTD4 to 0
 	   tofAnaTestbeam->SetTOffD4(17000.);      // Shift DTD4 to physical value
 	   tofAnaTestbeam->SetSel2TOff(2900.);     // Shift Sel2 time peak to 0
 	   switch(iSel2){
 	   case 0:
 	     break;
 	   case 1:
-	     tofAnaTestbeam->SetChi2Lim(10.);   // initialization of Chi2 selection limit  
+	     tofAnaTestbeam->SetChi2Lim2(10.);   // initialization of Chi2 selection limit  
 	     tofAnaTestbeam->SetSel2TOff(3000.);     // Shift Sel2 time peak to 0
 	     break;
 	   case 6:
-	     tofAnaTestbeam->SetChi2Lim(10.);   // initialization of Chi2 selection limit  
+	     tofAnaTestbeam->SetChi2Lim2(10.);   // initialization of Chi2 selection limit  
 	     tofAnaTestbeam->SetSel2TOff(85.);     // Shift Sel2 time peak to 0
 	     break;
 	   default:
@@ -583,6 +623,7 @@ void ana_trks(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	   cout << "Define setup! "<< endl;
 	   return;
      }
+     tofAnaTestbeam->SetChi2Lim(10.);   // initialization of Chi2 selection limit  
      tofAnaTestbeam->SetDXWidth(0.5);
      tofAnaTestbeam->SetDYWidth(1.);
      tofAnaTestbeam->SetDTWidth(100.);   // in ps
@@ -716,6 +757,7 @@ void ana_trks(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	 ;
    }
    cout << " Initialize TSHIFT to "<<tofAnaTestbeam->GetTShift()<<endl;
+   cout << " Initialize MinNofHits to "<<tofFindTracks->GetMinNofHits()<<endl;
    run->AddTask(tofAnaTestbeam);
 
    // =========================================================================
