@@ -18,18 +18,14 @@ if [[ ${Sel2} = "" ]]; then
 Sel2="$3"
 fi
 
-if [ -e /hera ]; then
 source /hera/cbm/users/nh/CBM/cbmroot/trunk/build/config.sh 
+
 wdir=/hera/cbm/users/nh/CBM/cbmroot/trunk/macro/tof/beamtime/nov15
 outdir=/hera/cbm/users/nh/CBM/cbmroot/trunk/macro/tof/beamtime/nov15/${RunId}
-else 
-wdir=`pwd`
-outdir=${wdir}/${RunId}
-fi
 mkdir ${outdir}
 
 cd  ${wdir}
-source ./init_calib.sh ${RunId} ${CalSet}
+#source ./init_calib.sh ${RunId} ${CalSet}
 
 cd  ${wdir}
 source ./iter_calib.sh ${RunId} ${CalSet} ${Sel2}
@@ -38,3 +34,4 @@ cd  ${wdir}
 source ./gen_digi.sh ${RunId} ${CalSet} ${Sel2}
 
 mv -v ${SGE_STDOUT_PATH} ${outdir}/Calib_${RunId}_${CalSet}_${Sel2}.log
+
