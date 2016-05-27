@@ -13,6 +13,10 @@
 #include "CbmRichRingFitterEllipseTau.h"
 #include "TVector3.h"
 #include <vector>
+#include "TCanvas.h"
+#include "TF1.h"
+#include "TLegend.h"
+#include "TH2D.h"
 
 	// ----- PART 2 ----- //
 #include "TGeoManager.h"
@@ -79,19 +83,21 @@ void CbmRichMirrorSorting::Exec(Option_t* Option)
 	Int_t nofPmtPoints = fPmtPoints->GetEntries();
 	cout << "Nb of rings in evt = " << nofRingsInEvent << endl;
 	TVector3 momentum, outPos;
-	Double_t constantePMT = 0.;
+	Double_t constantePMT = 0., trackX=0., trackY=0.;
 	vector<Double_t> vect(2,0), ptM(3,0), ptC(3,0), ptCIdeal(3,0), ptR1(3,0), ptR2Center(3,0), ptR2Mirr(3,0), ptPR2(3,0), ptPMirr(3,0), normalPMT(3,0);
 	ptC.at(0) = 0., ptC.at(1) = 132.594000, ptC.at(2) = 54.267226;
+	std::map<string, vector<CbmRichMirror*>> mirrorMap;
+	mirrorMap.clear();
 
-	if (nofRingsInEvent != 0)
-	{
+	if (nofRingsInEvent != 0) {
+		GetTrackPosition(trackX, trackY);
 		GetPmtNormal(nofPmtPoints, normalPMT, constantePMT);
 		cout << "Calculated normal vector to PMT plane = {" << normalPMT.at(0) << ", " << normalPMT.at(1) << ", " << normalPMT.at(2) << "} and constante d = " << constantePMT << endl << endl;
 
-		for (Int_t iGlobalTrack = 0; iGlobalTrack < fGlobalTracks->GetEntriesFast(); iGlobalTrack++)
-		{
+		for (Int_t iGlobalTrack = 0; iGlobalTrack < fGlobalTracks->GetEntriesFast(); iGlobalTrack++) {
 			CbmRichMirror* mirrorObject = new CbmRichMirror();																			// Create CbmRichMirror object, to be later filled.
-			// ----- PART 1 ----- //
+			mirrorObject->setProjHit(trackX, trackY);
+				// ----- PART 1 ----- //
 			// Ring-Track matching + Ring fit + Track momentum:
 			CbmGlobalTrack* gTrack  = (CbmGlobalTrack*) fGlobalTracks->At(iGlobalTrack);
 			Int_t richInd = gTrack->GetRichRingIndex();
@@ -109,14 +115,14 @@ void CbmRichMirrorSorting::Exec(Option_t* Option)
 			fCopFit->DoFit(&ringL);
 			//fTauFit->DoFit(&ringL);
 			cout << "Ring parameters = " << ringL.GetCenterX() << ", " << ringL.GetCenterY() << endl;
-			mirrorObject->setFittedRing(ringL.GetCenterX(), ringL.GetCenterY());														// Fill fitted Ring Center coo inside mirrorObject.
+			mirrorObject->setRingLight(ringL);																							// Fill Cbm Rich Ring Light inside mirrorObject.
 			Int_t ringTrackID = ring->GetTrackID();
 			CbmMCTrack* track = (CbmMCTrack*) fMCTracks->At(ringTrackID);
 			//Int_t ringMotherId = track->GetMotherId();
 			track->GetMomentum(momentum);
 			mirrorObject->setMomentum(momentum);																						// Fill track momentum inside mirrorObject.
 
-			// ----- PART 2 ----- //
+				// ----- PART 2 ----- //
 			// Mirror ID via TGeoNavigator + Extrap hit:
 			Int_t trackMotherId = track->GetMotherId();
 			if (trackMotherId == -1) {
@@ -144,73 +150,144 @@ void CbmRichMirrorSorting::Exec(Option_t* Option)
 			else { cout << "Not a mother particle." << endl; }
 
 			//ComputeAngles();
-
-			fMirrorMap[mirrorObject->getMirrorId()].push_back(mirrorObject);
-			delete mirrorObject;
+			mirrorMap[mirrorObject->getMirrorId()].push_back(mirrorObject);
+			cout << "Key str: " << mirrorObject->getMirrorId() << " mirror map: " << mirrorMap[mirrorObject->getMirrorId()].size() << endl;
 		}
 	}
 	else { cout << "CbmRichMirrorSorting::Exec No rings in event were found." << endl; }
-}
 
-/*void CbmRichMirrorSorting::ComputeAngles()
-{
-	cout << "//------------------------------ CbmRichAlignment: Calculate Angles & Draw Distrib ------------------------------//" << endl << endl;
+	Int_t NofHits = 0, thresh = 0;
+	Double_t phi=0., theta0=0., thetaCh=0.;
+	Double_t p1=0, p2=0, p3=0, chi2=0, focalLength=150., q=0., A=0., alpha=0., mis_x=0., mis_y=0.;
+	// mis_x && mis_y corresponds respect. to rotation angles around the Y and X axes.
+	// !!! BEWARE: AXES INDEXES ARE SWITCHED !!!
+	std::map<string, vector<Double_t>> anglesMap;
+	anglesMap.clear();
+	std::map<string, TH2D*> histoMap;
+	histoMap.clear();
 
-	Double_t trackX=0., trackY=0.;
-    GetTrackPosition(trackX, trackY);
+	// Filling the reduced thetaCh VS phi histogram and writing the resulting histogram in histoMap:
+	for (std::map<string, vector<CbmRichMirror*>>::iterator it=mirrorMap.begin(); it!=mirrorMap.end(); ++it) {
+		histoMap[it->first] = new TH2D(string("fHCherenkovHitsDistribReduced" + it->first).c_str(), "fHCherenkovHitsDistribReduced;Phi_Ch [rad];Th_Ch-Th_0 [cm];Entries", 200, -3.4, 3.4, 500, -5., 5.);
+		cout << "Mirror objects:" << endl;
+		// to get mirror Id:
+		string curMirrorId = it->first;
+		cout << "curMirrorId: " << curMirrorId << endl;
+		vector<CbmRichMirror*> mirror = it->second;
+		cout << "mirror infos: " << endl;
+		// get first CbmRichMirrors
+		if (curMirrorId != "") {
+			for (int i = 0; i < it->second.size(); i++) {
+				CbmRichMirror* mirr = mirror.at(i);
+				string str = mirr->getMirrorId();
+				TVector3 mom = mirr->getMomentum();
+				vector<Double_t> projHit = mirr->getProjHit();
+				vector<Double_t> extrapHit = mirr->getExtrapHit();
+				CbmRichRingLight ringL = mirr->getRingLight();
+				//cout << "mirror: " << str << endl;
+				//cout << "momentum: {" << mom.X() << ", " << mom.Y() << ", " << mom.Z() << "}" << endl;
+				//cout << "Proj hit coo: {" << projHit[0] << ", " << projHit[1] << "}" << endl;
+				//cout << "Extrap Hit coo: {" << extrapHit[0] << ", " << extrapHit[1] << "}" << endl;
 
-    Int_t nofRingsInEvent = fRichRings->GetEntries();
-    Float_t DistCenters, Theta_Ch, Theta_0, Angles_0;
-    Float_t Pi = 3.14159265;
-    Float_t TwoPi = 2.*3.14159265;
-    Float_t phi = 0.;
-    //fPhi.resize(kMAX_NOF_HITS);
+				NofHits = ringL.GetNofHits();
+				for (Int_t iH = 0; iH < NofHits; iH++) {
+					// ----- Phi angle calculation ----- //
+					CbmRichHitLight hit = ringL.GetHit(iH);
+					//CbmRichHit* hit = static_cast<CbmRichHit*>(fPmtPoints->At(HitIndex));
+					phi = TMath::ATan2(hit.fY - ringL.GetCenterY(), hit.fX - ringL.GetCenterX());
 
-    // ------------------------- Loop to get ring center coordinates and photon hit coordinates per ring and per event ------------------------- //
-    if (nofRingsInEvent >= 1) {
-    	cout << "Number of Rings in event: " << nofRingsInEvent << endl;
-    	//sleep(2);
-    	for (Int_t iR = 0; iR < nofRingsInEvent; iR++) {
-    		// ----- Convert Ring to Ring Light ----- //
-    		CbmRichRing* ring = static_cast<CbmRichRing*>(fRichRings->At(iR));
-    		CbmRichRingLight ringL;
-    		CbmRichConverter::CopyHitsToRingLight(ring, &ringL);
-    		fCopFit->DoFit(&ringL);
-    		// ----- Distance between mean center and fitted center calculation ----- //
-    		DistCenters = sqrt(TMath::Power(ringL.GetCenterX() - trackX, 2) + TMath::Power(ringL.GetCenterY() - trackY, 2));
-    		fHM->H1("fHCenterDistance")->Fill(DistCenters);
-    		// ----- Declaration of new variables ----- //
-    		Int_t NofHits = ringL.GetNofHits();
-    		Float_t xRing = ringL.GetCenterX();
-    		Float_t yRing = ringL.GetCenterY();
+					// ----- Theta_Ch and Theta_0 calculations ----- //
+					thetaCh = sqrt(TMath::Power(projHit[0] - hit.fX, 2) + TMath::Power(projHit[1] - hit.fY, 2));
+					theta0 = sqrt(TMath::Power(ringL.GetCenterX() - hit.fX, 2) + TMath::Power(ringL.GetCenterY() - hit.fY, 2));
+					//cout << "Theta_0 = " << Theta_0 << endl;
 
-    		for (Int_t iH = 0; iH < NofHits; iH++) {
-    			// ----- Phi angle calculation ----- //
-    			Int_t HitIndex = ring->GetHit(iH);
-    			CbmRichHit* hit = static_cast<CbmRichHit*>(fPmtPoints->At(HitIndex));
-    			Float_t xHit = hit->GetX();
-    			Float_t yHit = hit->GetY();
-    			Angles_0 = TMath::ATan2((hit->GetX() - ringL.GetCenterX()), (ringL.GetCenterY() - hit->GetY())); //* TMath::RadToDeg();
-    			//cout << "Angles_0 = " << Angles_0[iH] << endl;
+					histoMap[it->first]->Fill(phi, thetaCh - theta0);
+				}
+			}
+		}
+	}
 
-    			if (xRing - xHit == 0 || yRing - yHit == 0) continue;
-    			phi = TMath::ATan2(yHit - yRing, xHit - xRing);
-    			fHM->H1("fHPhi")->Fill(phi);
+	// Drawing the obtained thetaCh VS phi histogram ; fitting with sinusoid ; write calculated misalignment angles in anglesMap:
+	for (std::map<string, TH2D*>::iterator it=histoMap.begin(); it!=histoMap.end(); ++it) {
+		TCanvas* can = new TCanvas();
+		can->Divide(3,1);
+		can->cd(1);
+		TH2D* histo = it->second;
+		for (Int_t y_bin=1; y_bin<=500; y_bin++) {
+			for (Int_t x_bin=1; x_bin<=200; x_bin++) {
+				if (histo->GetBinContent(x_bin, y_bin) < thresh) {
+					histo->SetBinContent(x_bin, y_bin, 0);
+				}
+			}
+		}
+		histo->Draw();
+		histo->FitSlicesY(0,0,-1,1);
 
-    			// ----- Theta_Ch and Theta_0 calculations ----- //
-    			Theta_Ch = sqrt(TMath::Power(trackX - hit->GetX(), 2) + TMath::Power(trackY - hit->GetY(), 2));
-    			Theta_0 = sqrt(TMath::Power(ringL.GetCenterX() - hit->GetX(), 2) + TMath::Power(ringL.GetCenterY() - hit->GetY(), 2));
-    			//cout << "Theta_0 = " << Theta_0 << endl;
-    			fHM->H1("fHThetaDiff")->Fill(Theta_Ch - Theta_0);
+		can->cd(2);
+		TH1D *histo_1 = (TH1D*)gDirectory->Get("fHCherenkovHitsDistribReduced_1");
+		histo_1->Draw();
 
-    			// ----- Filling of final histograms ----- //
-    			fHM->H2("fHCherenkovHitsDistribTheta0")->Fill(Angles_0, Theta_0);
-    			fHM->H2("fHCherenkovHitsDistribThetaCh")->Fill(phi, Theta_Ch);
-    			fHM->H2("fHCherenkovHitsDistribReduced")->Fill(phi, (Theta_Ch - Theta_0));
-    		}
-    		//cout << endl;
-    	}
-    }
+		can->cd(3);
+		TF1 *f1 = new TF1("f1", "[2]+[0]*cos(x)+[1]*sin(x)", -3.5, 3.5);
+		f1->SetParameters(0,0,0);
+		f1->SetParNames("Delta_phi", "Delta_lambda", "Offset");
+		histo_1->Fit("f1","","");
+		TF1 *fit = histo_1->GetFunction("f1");
+		p1 = fit->GetParameter("Delta_phi"), p2 = fit->GetParameter("Delta_lambda"), p3 = fit->GetParameter("Offset"), chi2 = fit->GetChisquare();
+		f1->SetParameters(fit->GetParameter(0), fit->GetParameter(1));
+		char leg[128];
+		f1->SetLineColor(2);
+		f1->Draw();
+		// ------------------------------ CALCULATION OF MISALIGNMENT ANGLE ------------------------------ //
+		q = TMath::ATan(fit->GetParameter(0)/fit->GetParameter(1));
+		cout << endl << "fit_1 = " << fit->GetParameter(0) << " and fit_2 = " << fit->GetParameter(1) << endl;
+		//cout << "q = " << q << endl;
+		A = fit->GetParameter(1)/TMath::Cos(q);
+		//cout << "Parameter a = " << A << endl;
+		alpha = TMath::ATan(A/1.5)*0.5*TMath::Power(10,3);														// *0.5, because a mirror rotation of alpha implies a rotation in the particle trajectory of 2*alpha ; 1.5 meters = Focal length = Radius_of_curvature/2
+		//cout << setprecision(6) << "Total angle of misalignment alpha = " << alpha << endl;					// setprecision(#) gives the number of digits in the cout.
+		mis_x = TMath::ATan(fit->GetParameter(0)/focalLength)*0.5*TMath::Power(10,3);
+		mis_y = TMath::ATan(fit->GetParameter(1)/focalLength)*0.5*TMath::Power(10,3);
+		//cout << "Horizontal displacement = " << outputFit[0] << " [mrad] and vertical displacement = " << outputFit[1] << " [mrad]." << endl;
+		TLegend* LEG= new TLegend(0.27,0.7,0.85,0.87); // Set legend position
+		LEG->SetBorderSize(1);
+		LEG->SetFillColor(0);
+		LEG->SetMargin(0.2);
+		LEG->SetTextSize(0.03);
+		sprintf(leg, "Fitted sinusoid");
+		LEG->AddEntry(f1, leg, "l");
+		sprintf(leg, "Rotation angle around X = %f", mis_y);
+		LEG->AddEntry("", leg, "l");
+		sprintf(leg, "Rotation angle around Y = %f", mis_x);
+		LEG->AddEntry("", leg, "l");
+		sprintf(leg, "Offset = %f", fit->GetParameter(2));
+		LEG->AddEntry("", leg, "l");
+		LEG->Draw();
+		//Cbm::SaveCanvasAsImage(c3, string(fOutputDir.Data()), "png");
+
+		anglesMap[it->first].push_back(mis_y);
+		anglesMap[it->first].push_back(mis_x);
+	}
+
+	// Write misalignment angles in output file:
+	for (std::map<string, vector<Double_t>>::iterator it=anglesMap.begin(); it!=anglesMap.end(); ++it) {
+		string mirrorId = it->first;
+		cout << "curMirrorId: " << mirrorId << endl;
+		vector<Double_t> misAngles = it->second;
+		cout << "mirror infos: {" << misAngles[0] << ", " << misAngles[1] << "}" << endl;
+		TString s = "correction_param_.txt";
+		ofstream corrFile;
+		corrFile.open(s);
+		if (corrFile.is_open())
+		{
+			corrFile << mirrorId << "\t";
+			corrFile << setprecision(7) << misAngles[0] << "\t";
+			corrFile << setprecision(7) << misAngles[1] << "\t";
+			corrFile.close();
+			cout << "Wrote correction parameters to: " << s << endl;
+		}
+		else {cout << "Error in CbmRichMirrorSorting::Finish ; unable to open parameter file!" << endl;}
+	}
 }
 
 void CbmRichMirrorSorting::GetTrackPosition(Double_t &x, Double_t &y)
@@ -229,7 +306,7 @@ void CbmRichMirrorSorting::GetTrackPosition(Double_t &x, Double_t &y)
 		//cout << "Center X: " << *x << " and Center y: " << *y << endl;
     }
 }
-*/
+
 void CbmRichMirrorSorting::GetPmtNormal(Int_t NofPMTPoints, vector<Double_t> &normalPMT, Double_t &normalCste)
 {
 	//cout << endl << "//------------------------------ CbmRichCorrection: Calculate PMT Normal ------------------------------//" << endl << endl;
@@ -314,14 +391,14 @@ void CbmRichMirrorSorting::ComputeR2(vector<Double_t> &ptR2Center, vector<Double
 		// Use the correction information from text file, to the tile sphere center:
 		// Reading misalignment information from correction_param.txt text file.
 		vector<Double_t> outputFit(4);
-		ifstream corr_file;
+		ifstream corrFile;
 		//TString str = fOutputDir + "correction_param_" + fNumbAxis + fTile + ".txt";
 		TString str = fOutputDir + "correction_param.txt";
-		corr_file.open(str);
-		if (corr_file.is_open())
+		corrFile.open(str);
+		if (corrFile.is_open())
 		{
-			for (Int_t i=0; i<4; i++) {corr_file >> outputFit.at(i);}
-			corr_file.close();
+			for (Int_t i=0; i<4; i++) {corrFile >> outputFit.at(i);}
+			corrFile.close();
 		}
 		else {
 			cout << "Error in CbmRichCorrection: unable to open parameter file!" << endl;
@@ -413,23 +490,6 @@ void CbmRichMirrorSorting::ComputeP(vector<Double_t> &ptPMirr, vector<Double_t> 
 
 void CbmRichMirrorSorting::Finish()
 {
-	for (std::map<string, vector<CbmRichMirror*>>::iterator it=fMirrorMap.begin(); it!=fMirrorMap.end(); ++it) {
-		cout << "Mirror objects:" << endl;
-		// to get mirror Id:
-		string curMirrorId = it->first;
-		cout << "curMirrorId: " << curMirrorId << endl;
-		// get first CbmRichMirrors
-		for (int i = 0; i < it->second.size(); i++) {
-			CbmRichMirror* mirror = it->second[i];
-			//cout << "HERE1" << endl;
-			//string s = mirror->getMirrorId();
-			//vector<Double_t> v = mirror->getFittedRing();
-			//cout << "HERE2" << endl;
-			//cout << "mirror ID: " << s << endl;
-			//cout << "HERE3" << endl;
-			//cout << "mirror ID: " << mirror->getMirrorId() << endl;
-		}
-	}
-}
 
+}
 ClassImp(CbmRichMirrorSorting)

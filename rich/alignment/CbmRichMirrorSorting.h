@@ -46,7 +46,7 @@ public:
 
     void ComputeAngles();
 
-    void GetTrackPosition(Double_t &x, Double_t &y);
+    void GetTrackPosition(Double_t &trackX, Double_t &trackY);
 
     void GetPmtNormal(Int_t NofPMTPoints, vector<Double_t> &normalPMT, Double_t &normalCste);
 
@@ -69,7 +69,6 @@ private:
     CbmRichRingFitterCOP* fCopFit;
     CbmRichRingFitterEllipseTau* fTauFit;
     TString fOutputDir;
-    std::map<string, vector<CbmRichMirror*>> fMirrorMap;
 
     TClonesArray* fMirrorPoints;
     TClonesArray* fRefPlanePoints;
