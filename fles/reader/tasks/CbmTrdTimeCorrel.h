@@ -116,6 +116,11 @@ class CbmTrdTimeCorrel : public FairTask
   Int_t GetMessageType(CbmSpadicRawMessage* raw);
 
   Int_t GetChannelOnPadPlane(Int_t SpadicChannel);
+  Int_t GetChannelonPadPlaneMessage(CbmSpadicRawMessage &message){
+	  Int_t SpaID = GetSpadicID(message.GetSourceAddress());
+	  Int_t ChID = message.GetChannelID();
+	  return GetChannelOnPadPlane(ChID + (SpaID%2)*16);
+  };
 
   // The following block is used to generate TrdDigis
   Int_t GetSectorID(CbmSpadicRawMessage* raw);
@@ -154,7 +159,7 @@ class CbmTrdTimeCorrel : public FairTask
     Int_t GetRow();
     std::pair<Int_t,Float_t> GetPosition();
     Int_t GetTotalCharge();
-    std::pair<std::vector<CbmSpadicRawMessage>::const_iterator,std::vector<CbmSpadicRawMessage>::const_iterator> GetEntries();
+    std::pair<std::vector<CbmSpadicRawMessage>::iterator,std::vector<CbmSpadicRawMessage>::iterator> GetEntries();
     Bool_t AddEntry (CbmSpadicRawMessage);
     Bool_t FillChargeDistribution(TH2*);
   private:
