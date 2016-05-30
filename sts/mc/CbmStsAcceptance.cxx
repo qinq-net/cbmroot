@@ -22,12 +22,10 @@ map<Int_t, map<Int_t, Int_t>>CbmStsAcceptance::fCountMap =
 		map<Int_t, map<Int_t, Int_t>>();
 // --------------------------------------------------------------------------
 
-
-
 // -----   Constructor   -----------------------------------------------------
 CbmStsAcceptance::CbmStsAcceptance()
 	: FairTask("CbmStsAcceptance"),
-	  fPoints(NULL), fTracks(NULL), fNofEvents(0), fNofPointsTot(0), fTimeTot(0.)
+	  fPoints(NULL), fTracks(NULL), fTimer(), fNofEvents(0), fNofPointsTot(0), fTimeTot(0.)
 {
 
 	// TODO: This is a sloppy way of preventing more than one instance.

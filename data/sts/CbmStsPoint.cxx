@@ -72,7 +72,9 @@ CbmStsPoint::CbmStsPoint(const CbmStsPoint& point, Int_t eventId,
     fPy_out(point.fPy_out),
     fPz_out(point.fPz_out),
     fPid(point.fPid),
-    fIndex(point.fIndex)
+    fIndex(point.fIndex),
+    fFlag(point.fFlag)
+
 {
   //  *this = point;
   if ( eventId > 0 ) fEventId = eventId; 
