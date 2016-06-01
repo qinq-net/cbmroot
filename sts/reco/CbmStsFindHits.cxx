@@ -23,7 +23,7 @@ using namespace std;
 
 
 // -----   Constructor   ---------------------------------------------------
-CbmStsFindHits::CbmStsFindHits()
+CbmStsFindHits::CbmStsFindHits(Int_t finderModel = 1)
     : FairTask("StsFindHits", 1)
     , fClusters(NULL)
     , fHits(NULL)
@@ -35,6 +35,7 @@ CbmStsFindHits::CbmStsFindHits()
     , fTimeTot(0.)
     , fActiveModules()
 	, fDTime(0.)
+    , fFinderModel(finderModel)
 {
 }
 // -------------------------------------------------------------------------
@@ -162,7 +163,12 @@ InitStatus CbmStsFindHits::Init()
     fSetup = CbmStsSetup::Instance();
 
     LOG(INFO) << GetName() << ": Initialisation successful"
-    		      << FairLogger::endl;
+	<< FairLogger::endl;
+
+    for (Int_t iSensor = 0; iSensor < fSetup -> GetNofSensors(); iSensor++){
+	CbmStsSensorTypeDssd * sensorType = static_cast<CbmStsSensorTypeDssd*>(fSetup -> GetSensor(iSensor) -> GetType());
+	sensorType -> SetHitFinderModel(fFinderModel);
+    }
     return kSUCCESS;
 }
 // -------------------------------------------------------------------------

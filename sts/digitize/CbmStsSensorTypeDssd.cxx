@@ -19,6 +19,7 @@
 #include "CbmStsPhysics.h"
 #include "CbmStsSensor.h"
 #include "CbmStsSensorPoint.h"
+#include "CbmMatch.h"
 
 
 using std::fixed;
@@ -34,7 +35,8 @@ CbmStsSensorTypeDssd::CbmStsSensorTypeDssd()
       fNofStrips(), fStereo(), fIsSet(kFALSE), fOld(kFALSE),
       fPitch(), fTanStereo(), fCosStereo(), fStripShift(),
       fStripCharge(),
-      fPhysics(NULL)
+      fPhysics(NULL),
+      fHitFinderModel(1)
 {
 	fPhysics = CbmStsPhysics::Instance();
 }
@@ -167,7 +169,8 @@ Int_t CbmStsSensorTypeDssd::FindHits(vector<CbmStsCluster*>& clusters,
 			// --- For time-based hit finding ---
 			if ( dTime > 0. && fabs(clusterF->GetTime() - clusterB->GetTime()) > dTime ) continue;
 			// ----------------------
-
+			
+			
 			// --- Calculate intersection points
 			Int_t nOfHits = IntersectClusters(clusterF, clusterB, sensor);
 			LOG(DEBUG4) << GetName() << ": Cluster front " << iClusterF
@@ -437,6 +440,30 @@ Int_t CbmStsSensorTypeDssd::IntersectClusters(CbmStsCluster* clusterF,
 				        << FairLogger::endl;
 		return 0;
 	}
+	//Ideal hit finder
+	if (fHitFinderModel == 0){
+		LOG(DEBUG3) << GetName() << ": ideal model of Hit Finder" << FairLogger::endl;
+	    const CbmMatch * clusterFMatch, *clusterBMatch;
+	    if (clusterFMatch = static_cast<const CbmMatch*>(clusterF -> GetMatch())){
+		LOG(DEBUG4) << GetName() << ": front cluster exists" << FairLogger::endl;
+		if ((clusterFMatch -> GetNofLinks()) > 1) {
+		    LOG(DEBUG4) << GetName() << ": front cluster has more than 1 CbmLink" << FairLogger::endl;
+		    return 0;
+		}
+	    }
+	    if (clusterBMatch = static_cast<const CbmMatch*> (clusterB -> GetMatch())){
+		LOG(DEBUG4) << GetName() << ": back cluster exists" << FairLogger::endl;
+
+		if ((clusterBMatch -> GetNofLinks()) > 1){
+		    LOG(DEBUG4) << GetName() << ": back cluster has more than 1 CbmLink" << FairLogger::endl;
+		    return 0;
+		}
+	    }
+	    if (clusterBMatch -> GetLink(0).GetIndex() != clusterFMatch -> GetLink(0).GetIndex()){
+		LOG(DEBUG4) << GetName() << ": back and front clusters have different index of CbmLink" << FairLogger::endl;
+		return 0;
+	    }
+	}
 
 	// --- Calculate cluster centre position on readout edge
 	Int_t side  = -1;
@@ -482,11 +509,11 @@ Int_t CbmStsSensorTypeDssd::IntersectClusters(CbmStsCluster* clusterF,
 	for (Int_t iF = nF1; iF <= nF2; iF++) {
 		Double_t xFi = xF - Double_t(iF) * fDx;
 		for (Int_t iB = nB1; iB <= nB2; iB++) {
-			Double_t xBi = xB - Double_t(iB) * fDx;
-
-			// --- Intersect the two lines
-			Bool_t found = Intersect(xFi, xBi, xC, yC);
-			LOG(DEBUG4) << GetName() << ": Trying " << xFi << ", " << xBi
+		    Double_t xBi = xB - Double_t(iB) * fDx;
+		    
+		    // --- Intersect the two lines
+		    Bool_t found = Intersect(xFi, xBi, xC, yC);
+		    LOG(DEBUG4) << GetName() << ": Trying " << xFi << ", " << xBi
 					        << ", intersection ( " << xC << ", " << yC
 					        << " ) " << ( found ? "TRUE" : "FALSE" )
 					        << FairLogger::endl;
@@ -555,7 +582,12 @@ Double_t CbmStsSensorTypeDssd::LorentzShift(Double_t z, Int_t chargeType,
 	Double_t vBias = sensor->GetConditions().GetVbias();
 	Double_t vFd   = sensor->GetConditions().GetVfd();
 	Double_t eField = CbmStsPhysics::ElectricField(vBias, vFd, fDz, z + fDz/2.);
-	Double_t muHall = sensor->GetConditions().HallMobility(eField, chargeType);
+	Double_t eFieldMax = CbmStsPhysics::ElectricField(vBias, vFd, fDz, fDz);
+	Double_t eFieldMin = CbmStsPhysics::ElectricField(vBias, vFd, fDz, 0.);
+	 
+	Double_t muHall;
+	if (chargeType == 0) muHall = sensor->GetConditions().HallMobility((eField + eFieldMax)/2., chargeType);
+	if (chargeType == 1) muHall = sensor->GetConditions().HallMobility((eField + eFieldMin)/2., chargeType);
 
 	// --- The direction of the shift is the same for electrons and holes.
 	// --- Holes drift in negative z direction, the field is in
@@ -908,7 +940,6 @@ Int_t CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
   }
   LOG(DEBUG3) << GetName() << ": R/O strips are " << i1 << " to "
   		        << i2 << FairLogger::endl;
-
 
   // --- Loop over fired strips
   Int_t nSignals = 0;

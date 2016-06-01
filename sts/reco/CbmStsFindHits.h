@@ -11,6 +11,7 @@
 #include "TStopwatch.h"
 #include "FairTask.h"
 #include "CbmStsModule.h"
+#include "CbmStsSensorTypeDssd.h"
 
 class TClonesArray;
 class CbmStsSetup;
@@ -36,8 +37,11 @@ class CbmStsFindHits : public FairTask
 {
 
 	public:
-    /** Constructor **/
-    CbmStsFindHits();
+    /** Constructor 
+     * finderModel = 0 - ideal hit finder
+     * finderModel = 1 - simple hit finder
+     **/
+    CbmStsFindHits(Int_t finderModel);
 
 
     /** Destructor  **/
@@ -69,6 +73,8 @@ class CbmStsFindHits : public FairTask
 
     /** Set dead time for time-based hit finding **/
     virtual void SetDTime(Double_t dTime) { fDTime = dTime; }
+    
+    void SetModel(Int_t finderModel) { fFinderModel = finderModel; }
 
 
 	private:
@@ -78,6 +84,7 @@ class CbmStsFindHits : public FairTask
     CbmStsSetup*  fSetup;             ///< Instance of STS setup
     TStopwatch    fTimer;             ///< ROOT timer
     Double_t fDTime;					///< Dead time for time-based hit finding
+    Int_t fFinderModel;		      ///< Hit finder model
 
     // --- Run counters
     Int_t    fNofEvents;       ///< Total number of events processed

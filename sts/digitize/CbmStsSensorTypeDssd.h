@@ -185,10 +185,24 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
      **/
     void SetStripPitch(Double_t pitch);
 
+    
+    /** Set hit finder model **/
+    void SetHitFinderModel(Int_t finder){fHitFinderModel = finder;}
+
 
     /** String output **/
     string ToString() const;
 
+/** Get the cluster position at the top edge of the sensor.
+     ** @param[in]  centre    Cluster centre in (module) channel units
+     ** @param[in]  sensor    Pointer to sensor object
+     ** @param[out] xCluster  Cluster position at readout edge
+     ** @param[out] side      Sensor side [0 = front, 1 = back]
+     **
+     ** A correction for the Lorentz shift is applied.
+     **/
+    void GetClusterPosition(Double_t centre, CbmStsSensor* sensor,
+    		                    Double_t& xCluster, Int_t& side);
 
 
   protected:
@@ -201,6 +215,7 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
     Bool_t   fIsSet;          ///< Flag whether parameters are set
     Bool_t   fOld;            ///< Use old ProcessPoint implementation
     CbmStsPhysics* fPhysics;  //!  Pointer to CbmStsPhysics instance
+    Int_t fHitFinderModel;    ///< Hit finder model
 
 
     /** Temporary variables to avoid frequent calculations **/
@@ -249,17 +264,7 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
     		                   Double_t& fracL, Double_t& fracC, Double_t& fracR);
 
 
-    /** Get the cluster position at the top edge of the sensor.
-     ** @param[in]  centre    Cluster centre in (module) channel units
-     ** @param[in]  sensor    Pointer to sensor object
-     ** @param[out] xCluster  Cluster position at readout edge
-     ** @param[out] side      Sensor side [0 = front, 1 = back]
-     **
-     ** A correction for the Lorentz shift is applied.
-     **/
-    void GetClusterPosition(Double_t centre, CbmStsSensor* sensor,
-    		                    Double_t& xCluster, Int_t& side);
-
+    
 
     /** Get the readout channel in the module for a given strip and side
      ** @param strip     Strip number
