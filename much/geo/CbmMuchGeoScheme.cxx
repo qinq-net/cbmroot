@@ -591,7 +591,7 @@ void CbmMuchGeoScheme::CreateMuchCave() {
   }
   Double_t muchRmin1 = fMuchZ1 * fAcceptanceTanMin - 0.001;
   Double_t muchRmin2 = muchZ2 * fAcceptanceTanMin - 0.001;
-  Double_t muchRmax2 = muchZ2 * fAcceptanceTanMax + 200; // 100 cm added for safety
+  Double_t muchRmax2 = muchZ2 * fAcceptanceTanMax + 150; // 100 cm added for safety - avoid overlap with platform v13a
   Double_t muchRmax1 = muchRmax2;
   // Calculate cone thickness
   Double_t muchDz = (muchZ2 - fMuchZ1) / 2.;
