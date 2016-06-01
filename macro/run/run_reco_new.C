@@ -68,7 +68,6 @@ void run_reco_new(Int_t nEvents = 2,
   std::cout << "-I- " << myName << ": Defining parameter files " << std::endl;
   TList *parFileList = new TList();
   TString geoTag;
-  CbmSetup* setup = CbmSetup::Instance();
 
   // - TRD digitisation parameters
   if ( setup->GetGeoTag(kTrd, geoTag) ) {

@@ -27,13 +27,6 @@ void run_tof_disim(Int_t nEvents = 2, const char* setup = "sis100_electron")
   TString parFile = outDir + setup + "_params.root";
   TString geoFile = outDir + setup + "_geofile_full.root";
 
-  // ----- Paths and file names  --------------------------------------------
-  TString inDir   = gSystem->Getenv("VMCWORKDIR");
-  TString inFile = ""; // give here or as argument; otherwise default is taken
-  TString outDir  = "data";
-  TString outFile = outDir + "/test.mc.root";
-  TString parFile = outDir + "/params.root";
-
   // --- Define the target geometry -----------------------------------------
   //
   // The target is not part of the setup, since one and the same setup can
