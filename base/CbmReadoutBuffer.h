@@ -216,7 +216,7 @@ template <class Data> class CbmReadoutBuffer : public FairWriteoutBuffer {
 				Int_t nData = newDataList.size();
 				for (Int_t iData1 = 0; iData1 < nData; iData1++) {
 					for (Int_t iData2 = iData1+1; iData2 < nData; iData2++) {
-						if ( CheckInterference(newDataList[iData1], newDataList.iData2) )
+						if ( CheckInterference(newDataList[iData1], newDataList[iData2]) )
 							LOG(FATAL) << GetName()
 							<< ": Interfering data in return from Modify! "
 							<< "Data 1: t(start) = " << newDataList[iData1]->GetTimeStart()
