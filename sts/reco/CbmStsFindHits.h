@@ -41,7 +41,7 @@ class CbmStsFindHits : public FairTask
      * finderModel = 0 - ideal hit finder
      * finderModel = 1 - simple hit finder
      **/
-    CbmStsFindHits(Int_t finderModel);
+    CbmStsFindHits(Int_t finderModel = 1);
 
 
     /** Destructor  **/

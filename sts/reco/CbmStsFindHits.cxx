@@ -23,7 +23,7 @@ using namespace std;
 
 
 // -----   Constructor   ---------------------------------------------------
-CbmStsFindHits::CbmStsFindHits(Int_t finderModel = 1)
+CbmStsFindHits::CbmStsFindHits(Int_t finderModel)
     : FairTask("StsFindHits", 1)
     , fClusters(NULL)
     , fHits(NULL)
