@@ -113,6 +113,36 @@ template <class Data> class CbmReadoutBuffer : public FairWriteoutBuffer {
 
 
 	  // ---------------------------------------------------------------------
+		/** Check data for consistency
+		 ** (stop time should be larger than start time)
+		 ** @param data  Data object
+		 ** @value kTRUE is stop time is later than start time.
+		 **/
+		Bool_t CheckData(Data* data) {
+			return ( data->GetTimeStop() >= data->GetTimeStart() );
+		}
+	  // ---------------------------------------------------------------------
+
+
+
+	  // ---------------------------------------------------------------------
+		/** Check interference of two data objects
+		 ** @param data1,data2   Data objects
+		 ** @value  kTRUE if objects interfere
+		 **
+		 ** Interference is present if the temporal extension of the objects
+		 ** overlap.
+		 **/
+		Bool_t CheckInterference(Data* data1, Data* data2) {
+			if ( data1->GetTimeStop() < data2->GetTimeStart() ) return kFALSE;
+			if ( data2->GetTimeStop() < data1->GetTimeStart() ) return kFALSE;
+			return kTRUE;
+		}
+	  // ---------------------------------------------------------------------
+
+
+
+	  // ---------------------------------------------------------------------
 		/** Clear the output TClonesArray
 		 ** Called at the end of the event from FairRootManager
 		 **/
@@ -149,6 +179,13 @@ template <class Data> class CbmReadoutBuffer : public FairWriteoutBuffer {
 			LOG(DEBUG4) << "RO: Filling data at t = " << data->GetTimeStart()
 					        << " in address " << address << FairLogger::endl;
 
+			// --- Check data for consistency (start/stop time)
+			if ( ! CheckData(data)) {
+				LOG(FATAL) << GetName() << ": inconsistent data input to Fill(). "
+						<< "Start time is " << data->GetTimeStart()
+						<< " stop time is " << data->GetTimeStop() << FairLogger::endl;
+			}
+
 			// --- Loop over all present data with same address
 			// --- Pick the first to which the interference criterion applies.
 			Bool_t dataFound = kFALSE;
@@ -157,24 +194,43 @@ template <class Data> class CbmReadoutBuffer : public FairWriteoutBuffer {
 
 				// --- Check interference of buffer data with old data. If so, jump
 				// --- out of loop
-				if ( data->GetTimeStart() < fBufferIt->second->GetTimeStop()  &&
-						 data->GetTimeStop() > fBufferIt->second->GetTimeStart() ) {
+				if ( CheckInterference(data, fBufferIt->second) ) {
 					dataFound = kTRUE;
 					break;
 				}	//? Interference
 
 			} //# Data at same address
 
-			// --- Interfering data found
+			// --- Action of interfering data found in the buffer
 			if ( dataFound ) {
 
 				// --- Call Modify method
 				vector<Data*> newDataList;
 				Modify(fBufferIt->second, data, newDataList);
 
-				// --- Remove old data from buffer
+				// --- Check return data list for non-interference
+				// --- Modify has to be implemented in such as way as to return a
+				// --- list (vector) of non-interfering data objects. This is
+				// --- checked here to prevent unwanted behaviour
+				// --- (e.g., endless loops).
+				Int_t nData = newDataList.size();
+				for (Int_t iData1 = 0; iData1 < nData; iData1++) {
+					for (Int_t iData2 = iData1+1; iData2 < nData; iData2++) {
+						if ( CheckInterference(newDataList[iData1], newDataList.iData2) )
+							LOG(FATAL) << GetName()
+							<< ": Interfering data in return from Modify! "
+							<< "Data 1: t(start) = " << newDataList[iData1]->GetTimeStart()
+							<< " ns, t(stop) = " << newDataList[iData1]->GetTimeStop()
+							<< ", Data 2: t(start) = " << newDataList[iData2]->GetTimeStart()
+							<< " ns, t(stop) = " << newDataList[iData2]->GetTimeStop()
+							<< FairLogger::endl;
+					} //# data in vector (second loop)
+				} //# data in vector (first loop)
+
+				// --- Remove old data from buffer and delete added data object
 				if ( fBufferIt->second ) delete fBufferIt->second;
 				fBuffer.erase(fBufferIt);
+				delete data;
 
 				// --- Fill new data to buffer, still checking for existing ones
 				for (Int_t iData = 0; iData < newDataList.size(); iData++) {
