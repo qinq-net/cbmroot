@@ -299,8 +299,9 @@ void CbmMuch::ConstructGeometry() {
 
   // Create much cave
   Double_t muchZ0 = fGeoScheme->GetMuchCaveZ0();
-  TGeoCone* shMuch = fGeoScheme->GetMuchCave();
-  TGeoVolume*  voMuch = new TGeoVolume("much",shMuch,air);
+  //  TGeoCone*   shMuch = fGeoScheme->GetMuchCave();
+  //  TGeoVolume* voMuch = new TGeoVolume("much",shMuch,air);
+  TGeoVolume* voMuch = new TGeoVolumeAssembly("much");
   gGeoManager->Node("much",0,"cave",0.,0.,muchZ0,0,kTRUE,buf,0);
 
 
@@ -359,9 +360,10 @@ void CbmMuch::ConstructGeometry() {
     Double_t stRmin = station->GetTubeRmin();
     Double_t stRmax = station->GetTubeRmax();
     Double_t stDz   = station->GetTubeDz();
-    TGeoTube* shStation = new TGeoTube(stRmin,shMuch->GetRmax2()-0.001,stDz);
     TString stationName = Form("muchstation%02i",iStation+1);
-    TGeoVolume* voSt = new TGeoVolume(stationName,shStation,air);
+    //  TGeoTube*   shStation = new TGeoTube(stRmin,shMuch->GetRmax2()-0.001,stDz);
+    //  TGeoVolume* voSt = new TGeoVolume(stationName,shStation,air);
+    TGeoVolume* voSt = new TGeoVolumeAssembly(stationName);
     gGeoManager->Node(stationName,0,"much",0.,0.,station->GetZ()-muchZ0,0,kTRUE,buf,0);
 
     // Create support shape
@@ -385,9 +387,10 @@ void CbmMuch::ConstructGeometry() {
       CbmMuchLayer* layer = station->GetLayer(iLayer);
       Double_t layerZ  = layer->GetZtoStationCenter();
       Double_t layerDz = layer->GetDz();
-      TGeoTube*   shLayer = new TGeoTube(stRmin,stRmax+50,layerDz);
       TString layerName   = Form("muchstation%02ilayer%i",iStation+1,iLayer+1);
-      TGeoVolume* voLayer = new TGeoVolume(layerName,shLayer,air);
+      //  TGeoTube*   shLayer = new TGeoTube(stRmin,stRmax+50,layerDz);
+      //  TGeoVolume* voLayer = new TGeoVolume(layerName,shLayer,air);
+      TGeoVolume* voLayer = new TGeoVolumeAssembly(layerName);
       gGeoManager->Node(layerName,0,stationName,0.,0.,layerZ,0,kTRUE,buf,0);
 
       // Create support
