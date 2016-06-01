@@ -33,33 +33,44 @@
 
 using std::ostringstream;
 
-const long klReceiveMaskLsbsRoc0 = 0x00ff0000;
-const long klReceiveMaskMsbsRoc0 = 0x00000000;
-const long klSampleMaskLsbsRoc0  = 0x00400000;
-const long klSampleMaskMsbsRoc0  = 0x00000000;
+const uint32_t kuPadiSpiFee = 0;
+const uint32_t kuPadiSpiA = 0x1C0;
+const uint32_t kuPadiSpiB = 0x1C0;
+const uint32_t kuPadiSpiC = 0x1C0;
+const uint32_t kuPadiSpiD = 0x1C0;
 
-const long kiChanEnaMaskRoc0Fee0 = 0x00000000;
+const long klReceiveMaskLsbsRoc00 = 0xff;
+const long klReceiveMaskMsbsRoc00 = 0x00000000;
+const long klSampleMaskLsbsRoc00  = 0x00000000;
+const long klSampleMaskMsbsRoc00  = 0x00000000;
+
+const long kiChanEnaMaskRoc0Fee0 = 0xffffffff;
 const long kiChanEnaMaskRoc0Fee1 = 0x00000000;
 //const long kiChanEnaMaskRoc0Fee1 = 0xffffffff;
-//const long kiChanEnaMaskRoc0Fee2 = 0x00000000;
-const long kiChanEnaMaskRoc0Fee2 = 0xffffffff;
+const long kiChanEnaMaskRoc0Fee2 = 0x00000000;
+//const long kiChanEnaMaskRoc0Fee2 = 0xffffffff;
 const long kiChanEnaMaskRoc0Fee3 = 0x00000000;
 
-const long klReceiveMaskLsbsRoc1 = 0x0000ff00;
-const long klReceiveMaskMsbsRoc1 = 0x00000000;
-const long klSampleMaskLsbsRoc1  = 0x00000000;
-const long klSampleMaskMsbsRoc1  = 0x00000000;
+const long klReceiveMaskLsbsRoc01 = 0x00000000;
+const long klReceiveMaskMsbsRoc01 = 0x00000000;
+const long klSampleMaskLsbsRoc01  = 0x00000000;
+const long klSampleMaskMsbsRoc01  = 0x00000000;
 
 const long kiChanEnaMaskRoc1Fee0 = 0x00000000;
-const long kiChanEnaMaskRoc1Fee1 = 0xffffffff;
+const long kiChanEnaMaskRoc1Fee1 = 0x00000000;
 const long kiChanEnaMaskRoc1Fee2 = 0x00000000;
 const long kiChanEnaMaskRoc1Fee3 = 0x00000000;
 
 // Link speed, allowed values: 160, 80, 40, 20
-const int  kiLinkSpeed           = 160;
-//const int  kiLinkSpeed           =  80;
+//const int  kiLinkSpeed           = 160;
+const int  kiLinkSpeed           =  80;
 
 // Tot building flags
+const int   kiTotBin     = 0x0; // *50 ps/bin
+   // Bits maximum = 8 bits output (FF) * n bits resolution = FF (1 bin) to 7FF (8 bins)
+   // Eventually can be set to higher than payload capacity => overflow (saturation?)
+   // => Set here to to 1FF
+const int   kiTotRange   = 0x1FF; // *bins
 //const int   kiAutoHealOn = 0x0; // OFF
 const int   kiAutoHealOn = 0x4; // ON
 //const int   kiDiOn       = 0x0; // OFF
@@ -68,24 +79,25 @@ const int   kiDiOn       = 0x8; // ON
 // TDC core timing: Valid values of delay are 0 to f per chip
 //const bool kbCoreDelayOn   = false;
 const bool kbCoreDelayOn   = true;
-const long kiCoreDelayRoc0Fee0 = 0x00000000;
+//const long kiCoreDelayRoc0Fee0 = 0x22221111;
+const long kiCoreDelayRoc0Fee0 = 0x22222222;
 const long kiCoreDelayRoc0Fee1 = 0x00000000;
-const long kiCoreDelayRoc0Fee2 = 0x222b2222;
+const long kiCoreDelayRoc0Fee2 = 0x22222222;
 const long kiCoreDelayRoc0Fee3 = 0x00000000;
 const long kiCoreDelayRoc1Fee0 = 0x00000000;
-const long kiCoreDelayRoc1Fee1 = 0x27222222;
+const long kiCoreDelayRoc1Fee1 = 0x00000000;
 const long kiCoreDelayRoc1Fee2 = 0x00000000;
 const long kiCoreDelayRoc1Fee3 = 0x00000000;
 
 //enable Edge Counter
 const bool kbScalerReadOn   = false;
 //const bool kbScalerReadOn   = true;
-const long kiScalerPeriod   = 0x00;
+const long kiScalerPeriod   = 0x08;
 
-//enable Deadtime Counter
+//enable D_teadtime Counter
 const bool kbDeadTimeReadOn   = false;
 //const bool kbDeadTimeReadOn = true;
-const long kiDeadtimePeriod = 0x00;
+const long kiDeadtimePeriod = 0x08;
 
 //enable SEU Counter
 const bool kbSeuReadOn   = false;
@@ -106,16 +118,16 @@ int ConfigRoc0_24b(CbmNet::ControlClient & conn, uint32_t nodeid)
 //# ROC_GET4_RECEIVE_MASK_LSBS & ROC_GET4_RECEIVE_MASK_MSBS
 //  => Lab Jun 2015: 3 FEE per ROC
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00FFFFFF);
-   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, klReceiveMaskLsbsRoc0);
-   initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, klReceiveMaskMsbsRoc0);
+   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, klReceiveMaskLsbsRoc00);
+   initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, klReceiveMaskMsbsRoc00);
 
 
 //# ROC_GET4_SAMPLE_FALLING_EDGE_LSBS & ROC_GET4_SAMPLE_FALLING_EDGE_MSBS
 //  => Change the edge on which the data from the GET4 are sampled
 //  => Flat band cable dependent
    // ROC #1
-   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, klSampleMaskLsbsRoc0 );
-   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_MSBS, klSampleMaskMsbsRoc0 );
+   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, klSampleMaskLsbsRoc00 );
+   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_MSBS, klSampleMaskMsbsRoc00 );
 
 //# ROC_GET4_SUPRESS_EPOCHS_LSBS & ROC_GET4_SUPRESS_EPOCHS_MSBS
 //  => Enable the suppression of the 156.25 MHz epoch without data messages
@@ -160,11 +172,11 @@ int ConfigRoc0_24b(CbmNet::ControlClient & conn, uint32_t nodeid)
    //   (bit 4 enable, bits3..0 : phase shift in 400ps steps)
    initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_TDC_CORE_TIMING_CONF + 0x000000 );//12
 
-   //# GET4V1X_DLL_DAC_MIN => lower DLL monitoring threshold 450 mV
-   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_DLL_DAC_MIN          + 0x000100 );
+   //# GET4V1X_DLL_DAC_MIN => lower DLL monitoring threshold 450 mV 
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_DLL_DAC_MIN          + 0x000070 );//0x0000100
 
    //# GET4V1X_DLL_DAC_MAX => upper DLL monitoring threshold 1000 mV
-   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_DLL_DAC_MAX          + 0x000238 );
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_DLL_DAC_MAX          + 0x000238 );//0x000238
 
    //# ROC_GET4_CMD_TO_GET4 => Disable all channels
    initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_HIT_MASK             + 0x00000F );
@@ -255,7 +267,7 @@ int ConfigRoc1_24b(CbmNet::ControlClient & conn, uint32_t nodeid)
    CbmNet::ListSeq initList;
 
 //# ROC_GET4_RECEIVE_CLK_CFG => Set link speed to 156.25 MBit/s
-   initList.AddWrite(ROC_GET4_RECEIVE_CLK_CFG,           3);
+//   initList.AddWrite(ROC_GET4_RECEIVE_CLK_CFG,           3);
 
 // ROC_EPOCH250_EN => Enable/Disable the production of 250MHz (ROC)
 //                    epochs
@@ -264,16 +276,16 @@ int ConfigRoc1_24b(CbmNet::ControlClient & conn, uint32_t nodeid)
 //# ROC_GET4_RECEIVE_MASK_LSBS & ROC_GET4_RECEIVE_MASK_MSBS
 //  => Lab Jun 2015: 3 FEE per ROC
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00FFFFFF);
-   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, klReceiveMaskLsbsRoc1);
-   initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, klReceiveMaskMsbsRoc1);
+   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, klReceiveMaskLsbsRoc01);
+   initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, klReceiveMaskMsbsRoc01);
 
 
 //# ROC_GET4_SAMPLE_FALLING_EDGE_LSBS & ROC_GET4_SAMPLE_FALLING_EDGE_MSBS
 //  => Change the edge on which the data from the GET4 are sampled
 //  => Flat band cable dependent
    // ROC #2
-   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, klSampleMaskLsbsRoc1 );
-   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_MSBS, klSampleMaskMsbsRoc1 );
+   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, klSampleMaskLsbsRoc01 );
+   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_MSBS, klSampleMaskMsbsRoc01 );
 
 //# ROC_GET4_SUPRESS_EPOCHS_LSBS & ROC_GET4_SUPRESS_EPOCHS_MSBS
 //  => Enable the suppression of the 156.25 MHz epoch without data messages
@@ -319,7 +331,7 @@ int ConfigRoc1_24b(CbmNet::ControlClient & conn, uint32_t nodeid)
    initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_TDC_CORE_TIMING_CONF + 0x000000 );
 
    //# GET4V1X_DLL_DAC_MIN => lower DLL monitoring threshold 450 mV
-   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_DLL_DAC_MIN          + 0x000100 );
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_DLL_DAC_MIN          + 0x000070 );
 
    //# GET4V1X_DLL_DAC_MAX => upper DLL monitoring threshold 1000 mV
    initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_DLL_DAC_MAX          + 0x000238 );
@@ -418,15 +430,15 @@ int ConfigRoc0_32b(CbmNet::ControlClient & conn, uint32_t nodeid)
 // ROC_GET4_RECEIVE_MASK_LSBS & ROC_GET4_RECEIVE_MASK_MSBS
 //  => Lab Jun 2015: 3 FEE per ROC
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00FFFFFF);
-   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, klReceiveMaskLsbsRoc0);
-   initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, klReceiveMaskMsbsRoc0);
+   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, klReceiveMaskLsbsRoc00);
+   initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, klReceiveMaskMsbsRoc00);
 
 // ROC_GET4_SAMPLE_FALLING_EDGE_LSBS & ROC_GET4_SAMPLE_FALLING_EDGE_MSBS
 //  => Change the edge on which the data from the GET4 are sampled
 //  => Flat band cable dependent
    // ROC #1
-   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, klSampleMaskLsbsRoc0 );
-   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_MSBS, klSampleMaskMsbsRoc0 );
+   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, klSampleMaskLsbsRoc00 );
+   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_MSBS, klSampleMaskMsbsRoc00 );
 
 // ROC_GET4_SUPRESS_EPOCHS_LSBS & ROC_GET4_SUPRESS_EPOCHS_MSBS
 //  => Enable the suppression of the 156.25 MHz epoch without data messages
@@ -470,7 +482,7 @@ int ConfigRoc0_32b(CbmNet::ControlClient & conn, uint32_t nodeid)
    initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_TDC_CORE_TIMING_CONF + 0x000000 );
 
    //# GET4V1X_DLL_DAC_MIN => lower DLL monitoring threshold 450 mV
-   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_DLL_DAC_MIN          + 0x000100 );
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_DLL_DAC_MIN          + 0x000070 );
 
    //# GET4V1X_DLL_DAC_MAX => upper DLL monitoring threshold 1000 mV
    initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_DLL_DAC_MAX          + 0x000238 );
@@ -495,13 +507,13 @@ int ConfigRoc0_32b(CbmNet::ControlClient & conn, uint32_t nodeid)
 
    // ROC_GET4_CMD_TO_GET4 => Time over Threshold Configuration: 
    // => DI ON, AutoHeal ON, 2 bins resolution (100ps)
-   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_32B_RO_CONF_TOT   +      0x1 + kiAutoHealOn + kiDiOn );
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_32B_RO_CONF_TOT   + kiTotBin + kiAutoHealOn + kiDiOn );
 
    // ROC_GET4_CMD_TO_GET4 => Time over Threshold Range: 
    // Bits maximum = 8 bits output (FF) * n bits resolution = FF (1 bin) to 7FF (8 bins)
    // Eventually can be set to higher than payload capacity => overflow (saturation?)
    // => Set here to to 1FF
-   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_32B_RO_CONF_TOT_MAX +  0x1FF );
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_32B_RO_CONF_TOT_MAX +  kiTotRange);
 
    switch( kiLinkSpeed )
    {
@@ -581,15 +593,15 @@ int ConfigRoc1_32b(CbmNet::ControlClient & conn, uint32_t nodeid)
 // ROC_GET4_RECEIVE_MASK_LSBS & ROC_GET4_RECEIVE_MASK_MSBS
 //  => Lab Jun 2015: 3 FEE per ROC
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00FFFFFF);
-   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, klReceiveMaskLsbsRoc1 );
-   initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, klReceiveMaskMsbsRoc1 );
+   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, klReceiveMaskLsbsRoc01 );
+   initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, klReceiveMaskMsbsRoc01 );
 
 // ROC_GET4_SAMPLE_FALLING_EDGE_LSBS & ROC_GET4_SAMPLE_FALLING_EDGE_MSBS
 //  => Change the edge on which the data from the GET4 are sampled
 //  => Flat band cable dependent
    // ROC #2
-   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, klSampleMaskLsbsRoc1 );
-   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_MSBS, klSampleMaskMsbsRoc1 );
+   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, klSampleMaskLsbsRoc01 );
+   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_MSBS, klSampleMaskMsbsRoc01 );
 
 // ROC_GET4_SUPRESS_EPOCHS_LSBS & ROC_GET4_SUPRESS_EPOCHS_MSBS
 //  => Enable the suppression of the 156.25 MHz epoch without data messages
@@ -633,7 +645,7 @@ int ConfigRoc1_32b(CbmNet::ControlClient & conn, uint32_t nodeid)
    initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_TDC_CORE_TIMING_CONF + 0x000000 );//12
 
    //# GET4V1X_DLL_DAC_MIN => lower DLL monitoring threshold 450 mV
-   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_DLL_DAC_MIN          + 0x000100 );
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_DLL_DAC_MIN          + 0x000070 );
 
    //# GET4V1X_DLL_DAC_MAX => upper DLL monitoring threshold 1000 mV
    initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_DLL_DAC_MAX          + 0x000238 );
@@ -658,13 +670,13 @@ int ConfigRoc1_32b(CbmNet::ControlClient & conn, uint32_t nodeid)
 
    // ROC_GET4_CMD_TO_GET4 => Time over Threshold Configuration:
    // => DI ON, AutoHeal ON, 2 bins resolution (100ps)
-   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_32B_RO_CONF_TOT   +      0x1 + kiAutoHealOn + kiDiOn );
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_32B_RO_CONF_TOT   + kiTotBin + kiAutoHealOn + kiDiOn );
 
    // ROC_GET4_CMD_TO_GET4 => Time over Threshold Range:
    // Bits maximum = 8 bits output (FF) * n bits resolution = FF (1 bin) to 7FF (8 bins)
    // Eventually can be set to higher than payload capacity => overflow (saturation?)
    // => Set here to to 1FF
-   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_32B_RO_CONF_TOT_MAX +  0x1FF );
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_32B_RO_CONF_TOT_MAX +  kiTotRange );
 
    switch( kiLinkSpeed )
    {
@@ -796,7 +808,7 @@ void config_toflab15( int mode, uint32_t uNbMess = 800  )
 {
    // Custom settings:
    const uint32_t kNodeId  = 0;
-   const uint32_t kuNbRocs = 2;
+   const uint32_t kuNbRocs = 1;
 //uRoc = number of Rocs in use
    for( uint32_t uRoc = 0; uRoc < kuNbRocs; uRoc++ )
    {
@@ -911,3 +923,26 @@ void config_toflab15( int mode, uint32_t uNbMess = 800  )
 }
 
 
+void SetAllSpiPadi8( uint32_t uFee = kuPadiSpiFee,
+      uint32_t uSpiA = kuPadiSpiA, uint32_t uSpiB = kuPadiSpiB, 
+      uint32_t uSpiC = kuPadiSpiC, uint32_t uSpiD = kuPadiSpiD )
+{
+   // Custom settings:
+   const uint32_t kNodeId  = 0;
+   const uint32_t kuNbRocs = 1;
+uint32_t uRoc = 0;
+/*
+   CbmNet::ControlClient conn;
+   ostringstream dpath;
+   int FlibLink = uRoc;
+
+   dpath << "tcp://" << "localhost" << ":" << CbmNet::kPortControl + FlibLink;
+   conn.Connect(dpath.str());
+*/
+   // Printout header
+   printf("++++++++++++++++++++++++++++++++++++++++++\n" );
+   printf("Now setting PADI 8 thresholds on ROC #%05d FEE %02d\n", uRoc, uFee );
+   printf("to 0x%04x, 0x%04x, 0x%04x, 0x%04x\n", uSpiA, uSpiB, uSpiC, uSpiD );
+
+   spiPadi8All_get4v1x( uRoc, uFee, uSpiA, uSpiB, uSpiC, uSpiD );
+}

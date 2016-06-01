@@ -47,6 +47,11 @@ int SendSpi(CbmNet::ControlClient & conn, uint32_t nodeid,
    conn.Read( nodeid, ROC_GET4_TRANSMIT_MASK_MSBS, uMaskOldMsbs );
    printf("SendSpi: Save Get4 chip mask %08X %08X\n", uMaskOldMsbs, uMaskOldLsbs);
 
+/*
+   uint32_t uMaskLsbs = 0x00000001;
+   uint32_t uMaskMsbs = 0x00000000;
+*/
+
    // Send only to chosen get4
    uint32_t uMaskLsbs = 0x00000000;
    uint32_t uMaskMsbs = 0x00000000;
@@ -65,6 +70,7 @@ int SendSpi(CbmNet::ControlClient & conn, uint32_t nodeid,
          printf("SendSpi: Invalid get4 chip index (%u) or link stopping there\n", get4idx);
          return 0;
       }
+
    printf("SendSpi: Get4 chip mask (index %u) %08X %08X\n", get4idx, uMaskMsbs, uMaskLsbs);
    initList.AddWrite(ROC_GET4_TRANSMIT_MASK_LSBS, uMaskLsbs);
    initList.AddWrite(ROC_GET4_TRANSMIT_MASK_MSBS, uMaskMsbs);
@@ -771,21 +777,25 @@ void spiPadi8All_get4v1x( int link, uint32_t uFeeIdx = 0,
    printf("build time       = %s \n", buffer);
    printf("\n");
 
-   const int32_t kuNbPadiPerGet4 = 4;
+   const int32_t kuNbPadiPerGet4 = 5;
    uint32_t uSpiWords[kuNbPadiPerGet4];
 
    // The GET4 connected to the SPI connector is the #4 on each FEE-GET4
-   uint32_t uGet4Idx   = 4 + 8*uFeeIdx;
+//   uint32_t uGet4Idx   = 4 + 8*uFeeIdx; // for FEE prototype
+   uint32_t uGet4Idx   = 0 + 8*uFeeIdx; // for packaged FEE
 
    // # SPI Interface : 16 Bit, 20 MBit/s, read OFF, CPHA 0, CPOL 1
    uint32_t uSpiConfig = 0x429;
+   // # SPI Interface : 16 Bit, 20 MBit/s, read OFF, CPHA 1, CPOL 0
+//   uint32_t uSpiConfig = 0x42a;
 
    uint32_t uWriteBit  = 0x1<<23;
    uint32_t uMaskAllCh = 0x1<<21;
-   uSpiWords[0]=  uWriteBit + uMaskAllCh + ( (uDacValChip0 & 0x3FF) << 8);
-   uSpiWords[1]=  uWriteBit + uMaskAllCh + ( (uDacValChip1 & 0x3FF) << 8);
-   uSpiWords[2]=  uWriteBit + uMaskAllCh + ( (uDacValChip2 & 0x3FF) << 8);
-   uSpiWords[3]=  uWriteBit + uMaskAllCh + ( (uDacValChip3 & 0x3FF) << 8);
+   uSpiWords[0]=  uWriteBit + uMaskAllCh; // Dummy word = 0xa000
+   uSpiWords[1]=  uWriteBit + uMaskAllCh + ( (uDacValChip0 & 0x3FF) << 8);
+   uSpiWords[2]=  uWriteBit + uMaskAllCh + ( (uDacValChip1 & 0x3FF) << 8);
+   uSpiWords[3]=  uWriteBit + uMaskAllCh + ( (uDacValChip2 & 0x3FF) << 8);
+   uSpiWords[4]=  uWriteBit + uMaskAllCh + ( (uDacValChip3 & 0x3FF) << 8);
 
    SendSpi( conn, kNodeId, uGet4Idx, uSpiConfig, kuNbPadiPerGet4, uSpiWords);
 
@@ -844,7 +854,8 @@ void spiPadi8_get4v1x( int link, uint32_t uFeeIdx = 0,
    uint32_t uSpiWords[kuNbPadiPerGet4];
 
    // The GET4 connected to the SPI connector is the #4 on each FEE-GET4
-   uint32_t uGet4Idx   = 4 + 8*uFeeIdx;
+//   uint32_t uGet4Idx   = 4 + 8*uFeeIdx; // for FEE prototype
+   uint32_t uGet4Idx   = 0 + 8*uFeeIdx; // for packaged FEE
 
    // # SPI Interface : 16 Bit, 20 MBit/s, read OFF, CPHA 0, CPOL 1
    uint32_t uSpiConfig = 0x429;
