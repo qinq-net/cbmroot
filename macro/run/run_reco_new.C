@@ -47,7 +47,7 @@ void run_reco_new(Int_t nEvents = 2,
 
 
   // -----   Remove old CTest runtime dependency file  ----------------------
-  TString depFile = Remove_CTest_Dependency_File(outDir, "run_digi" , setupName);
+  TString depFile = Remove_CTest_Dependency_File(outDir, "run_reco" , setupName);
   // ------------------------------------------------------------------------
 
 
@@ -200,4 +200,7 @@ void run_reco_new(Int_t nEvents = 2,
   std::cout << " Test passed" << std::endl;
   std::cout << " All ok " << std::endl;
   // ------------------------------------------------------------------------
+
+  // Function needed for CTest runtime dependency
+  Generate_CTest_Dependency_File(depFile);
 }

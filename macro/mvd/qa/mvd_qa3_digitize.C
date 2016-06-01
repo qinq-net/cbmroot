@@ -8,44 +8,6 @@
 // V. Friese   06/02/2007
 //
 // --------------------------------------------------------------------------
-
-TString caveGeom="";
-TString pipeGeom="";
-TString magnetGeom="";
-TString mvdGeom="";
-TString stsGeom="";
-TString richGeom="";
-TString muchGeom="";
-TString shieldGeom="";
-TString trdGeom="";
-TString tofGeom="";
-TString ecalGeom="";
-TString platformGeom="";
-TString psdGeom="";
-Double_t psdZpos=0.;
-Double_t psdXpos=0.;
-
-TString mvdTag="";
-TString stsTag="";
-TString trdTag="";
-TString tofTag="";
-
-TString stsDigi="";
-TString muchDigi="";
-TString trdDigi="";
-TString tofDigi="";
-
-TString mvdMatBudget="";
-TString stsMatBudget="";
-
-TString  fieldMap="";
-Double_t fieldZ=0.;
-Double_t fieldScale=0.;
-Int_t    fieldSymType=0;
-
-TString defaultInputFile="";
-
-
 void mvd_qa3_digitize( const char* setup = "sis100_electron")
 {
 
@@ -76,9 +38,21 @@ void mvd_qa3_digitize( const char* setup = "sis100_electron")
     // Verbosity level (0=quiet, 1=event level, 2=track level, 3=debug)
     Int_t iVerbose = 0;
 
-     FairLogger* logger = FairLogger::GetLogger();
-  logger->SetLogScreenLevel("INFO");
-  logger->SetLogVerbosityLevel("LOW");
+    FairLogger* logger = FairLogger::GetLogger();
+    logger->SetLogScreenLevel("INFO");
+    logger->SetLogVerbosityLevel("LOW");
+
+
+    TString setupFile = inDir + "/geometry/setup/setup_" + setup + ".C";
+    TString setupFunct = "setup_";
+    setupFunct = setupFunct + setup + "()";
+
+    gROOT->LoadMacro(setupFile);
+    gInterpreter->ProcessLine(setupFunct);
+
+    // Function needed for CTest runtime dependency
+    TString depFile = Remove_CTest_Dependency_File(outDir, "mvd_qa3_digitize");
+
 
     // In general, the following parts need not be touched
     // ========================================================================
@@ -98,13 +72,17 @@ void mvd_qa3_digitize( const char* setup = "sis100_electron")
     FairRunAna *fRun= new FairRunAna();
     fRun->SetInputFile(inFile);
     fRun->SetOutputFile(outFile);
+    Bool_t hasFairMonitor = Has_Fair_Monitor();
+    if (hasFairMonitor) {
+      FairMonitor::GetMonitor()->EnableMonitor(kTRUE);
+    }
     // ------------------------------------------------------------------------
 
-      // ----- Mc Data Manager   ------------------------------------------------
-  CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
-  mcManager->AddFile(inFile);
-  fRun->AddTask(mcManager);
-  // ------------------------------------------------------------------------
+    // ----- Mc Data Manager   ------------------------------------------------
+    CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
+    mcManager->AddFile(inFile);
+    fRun->AddTask(mcManager);
+    // ------------------------------------------------------------------------
   
 
     // -------   MVD Digitiser   ----------------------------------------------
@@ -179,6 +157,28 @@ void mvd_qa3_digitize( const char* setup = "sis100_electron")
     cout << endl;
     // ---------------------------------------------------------------------------
 
+  if (hasFairMonitor) {
+    // Extract the maximal used memory an add is as Dart measurement
+    // This line is filtered by CTest and the value send to CDash
+    FairSystemInfo sysInfo;
+    Float_t maxMemory=sysInfo.GetMaxMemory();
+    cout << "<DartMeasurement name=\"MaxMemory\" type=\"numeric/double\">";
+    cout << maxMemory;
+    cout << "</DartMeasurement>" << endl;
+
+    Float_t cpuUsage=ctime/rtime;
+    cout << "<DartMeasurement name=\"CpuLoad\" type=\"numeric/double\">";
+    cout << cpuUsage;
+    cout << "</DartMeasurement>" << endl;
+
+    FairMonitor* tempMon = FairMonitor::GetMonitor();
+    tempMon->Print();
+  }
+  //  delete run;
+
   cout << " Test passed" << endl;
   cout << " All ok " << endl;
+
+  // Function needed for CTest runtime dependency
+  Generate_CTest_Dependency_File(depFile);
 }

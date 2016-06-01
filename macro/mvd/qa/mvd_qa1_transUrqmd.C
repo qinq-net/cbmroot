@@ -6,43 +6,6 @@
 // V. Friese   06/02/2007
 //
 // --------------------------------------------------------------------------
-
-TString caveGeom="";
-TString pipeGeom="";
-TString magnetGeom="";
-TString mvdGeom="";
-TString stsGeom="";
-TString richGeom="";
-TString muchGeom="";
-TString shieldGeom="";
-TString trdGeom="";
-TString tofGeom="";
-TString ecalGeom="";
-TString platformGeom="";
-TString psdGeom="";
-Double_t psdZpos=0.;
-Double_t psdXpos=0.;
-
-TString mvdTag="";
-TString stsTag="";
-TString trdTag="";
-TString tofTag="";  
-
-TString stsDigi="";
-TString trdDigi="";
-TString tofDigi="";
-TString muchDigi="";
-TString mvdMatBudget="";
-TString stsMatBudget="";
-
-TString  fieldMap="";
-Double_t fieldZ=0.;
-Double_t fieldScale=0.;
-Int_t    fieldSymType=0;
-
-TString defaultInputFile="";
-
-
 void mvd_qa1_transUrqmd( const char* setup = "sis100_electron")
 {
   // ========================================================================
@@ -50,7 +13,7 @@ void mvd_qa1_transUrqmd( const char* setup = "sis100_electron")
 
   // Input file
   TString inDir   = gSystem->Getenv("VMCWORKDIR");
-
+  TString inFile  = "";
 
   // Number of events
   Int_t   nEvents = 5;
@@ -64,14 +27,14 @@ void mvd_qa1_transUrqmd( const char* setup = "sis100_electron")
 
   TString geoFile = outDir + "geoQA.root";
 
-  TString setupFile = inDir + "/geometry/setup/" + setup + "_setup.C";
-  TString setupFunct = setup;
-  setupFunct += "_setup()";
-  
+  // Function needed for CTest runtime dependency
+  TString depFile = Remove_CTest_Dependency_File(outDir, "mvd_qa1_transUrqmd");
+
+  TString setupFile = inDir + "/geometry/setup/setup_"+ setup +".C";
+  TString setupFunct = "setup_";
+  setupFunct = setupFunct + setup + "()";
   gROOT->LoadMacro(setupFile);
   gInterpreter->ProcessLine(setupFunct);
-
-  TString inFile  = inDir + defaultInputFile;
 
   // In general, the following parts need not be touched
   // ========================================================================
@@ -147,61 +110,70 @@ void mvd_qa1_transUrqmd( const char* setup = "sis100_electron")
   fRun->SetMaterials("media.geo");       // Materials
   // ------------------------------------------------------------------------
 
-
-  // -----   Create geometry   ----------------------------------------------
-  if ( caveGeom != "" ) {
-    FairModule* cave = new CbmCave("CAVE");
-    cave->SetGeometryFileName(caveGeom);
-    fRun->AddModule(cave);
-  }
-
-    if ( pipeGeom != "" ) {
-    FairModule* pipe = new CbmPipe("PIPE");
-    pipe->SetGeometryFileName(pipeGeom);
-    fRun->AddModule(pipe);
-  }
-  
-  // --- Target
-  CbmTarget* target = new CbmTarget(targetElement.Data(),
-  		                              targetThickness,
-  		                              targetDiameter);
-  target->SetPosition(targetPosX, targetPosY, targetPosZ);
-  target->SetRotation(targetRotY);
-  fRun->AddModule(target);
-
-  if ( magnetGeom != "" ) {
-    FairModule* magnet = new CbmMagnet("MAGNET");
-    magnet->SetGeometryFileName(magnetGeom);
-    fRun->AddModule(magnet);
-  }
-
-      if ( mvdGeom != "" ) {
-    FairDetector* mvd = new CbmMvd("MVD", kTRUE);
-    mvd->SetGeometryFileName(mvdGeom);
-    mvd->SetMotherVolume("pipevac1");
-    fRun->AddModule(mvd);
-  }
-
-
+  // -----   Create and register modules   ----------------------------------
+  TString macroName = gSystem->Getenv("VMCWORKDIR");
+  macroName += "/macro/run/modules/registerSetup.C";
+  std::cout << "Loading macro " << macroName << std::endl;
+  gROOT->LoadMacro(macroName);
+  gROOT->ProcessLine("registerSetup()");
   // ------------------------------------------------------------------------
 
 
+  // -----   Create and register the target   -------------------------------
+  CbmTarget* target = new CbmTarget(targetElement.Data(),
+                                              targetThickness,
+                                              targetDiameter);
+  target->SetPosition(targetPosX, targetPosY, targetPosZ);
+  target->SetRotation(targetRotY);
+  target->Print();
+  fRun->AddModule(target);
+  // ------------------------------------------------------------------------
+
   // -----   Create magnetic field   ----------------------------------------
-  CbmFieldMap* magField = NULL;
-  if ( 2 == fieldSymType ) {
-    magField = new CbmFieldMapSym2(fieldMap);
-  }  else if ( 3 == fieldSymType ) {
-    magField = new CbmFieldMapSym3(fieldMap);
-  } 
-  magField->SetPosition(0., 0., fieldZ);
-  magField->SetScale(fieldScale);
+  CbmFieldMap* magField = CbmSetup::Instance()->CreateFieldMap();
+  if ( ! magField ) {
+        std::cout << "-E- run_sim_new: No valid field!";
+        return;
+  }
   fRun->SetField(magField);
   // ------------------------------------------------------------------------
 
-
+  // -----   Input file   ---------------------------------------------------
+  std::cout << std::endl;
+  TString defaultInputFile = inDir + "/input/urqmd.auau.10gev.centr.root";
+  if ( inFile.IsNull() ) {  // Not defined in the macro explicitly
+//        if ( strcmp(inFile, "") == 0 ) {  // not given as argument to the macro
+                inFile = defaultInputFile;
+//        }
+//        else inFile = inputFile;
+  }
+  // ------------------------------------------------------------------------
 
   // -----   Create PrimaryGenerator   --------------------------------------
   FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
+  // --- Uniform distribution of event plane angle
+  primGen->SetEventPlane(0., 2. * TMath::Pi());
+  // --- Get target parameters
+  Double_t tX = 0.;
+  Double_t tY = 0.;
+  Double_t tZ = 0.;
+  Double_t tDz = 0.;
+  if ( target ) {
+        target->GetPosition(tX, tY, tZ);
+        tDz = target->GetThickness();
+  }
+  primGen->SetTarget(tZ, tDz);
+  primGen->SetBeam(0., 0., beamWidthX, beamWidthY);
+  primGen->SmearGausVertexXY(smearVertexXY);
+  primGen->SmearVertexZ(smearVertexZ);
+  //
+  // TODO: Currently, there is no guaranteed consistency of the beam profile
+  // and the transversal target dimension, i.e., that the sampled primary
+  // vertex falls into the target volume. This would require changes
+  // in the FairPrimaryGenerator class.
+  // ------------------------------------------------------------------------
+
+  // Use the CbmUnigenGenrator for the input
   CbmUnigenGenerator*  uniGen = new CbmUnigenGenerator(inFile);
   primGen->AddGenerator(uniGen);
   fRun->SetGenerator(primGen);
@@ -254,5 +226,7 @@ void mvd_qa1_transUrqmd( const char* setup = "sis100_electron")
   cout << " Test passed" << endl;
   cout << " All ok " << endl;
 
+  // Function needed for CTest runtime dependency
+  Generate_CTest_Dependency_File(depFile);
 }
 

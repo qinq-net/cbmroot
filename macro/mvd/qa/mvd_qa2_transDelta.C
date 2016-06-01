@@ -51,15 +51,10 @@ void mvd_qa2_transDelta(const char* setup = "sis100_electron")
   logger->SetLogScreenLevel("INFO");
   logger->SetLogVerbosityLevel("LOW");
 
-     // Input file
   TString inDir   = gSystem->Getenv("VMCWORKDIR");
-  //  TString inFile  = inDir + "/input/urqmd.ftn14";
-
-
  
   // Number of events
   Int_t   nEvents = 50;
-
 
   // Output path
   TString outDir="./data/";   
@@ -74,19 +69,22 @@ void mvd_qa2_transDelta(const char* setup = "sis100_electron")
   // Parameter file name
   TString parFile = outpath + "params.root";
 
+  // Function needed for CTest runtime dependency
+  TString depFile = Remove_CTest_Dependency_File(outDir, "mvd_qa2_transDelta");
+
+  TString setupFile = inDir + "/geometry/setup/setup_"+ setup +".C";
+  TString setupFunct = "setup_";
+  setupFunct = setupFunct + setup + "()";
+  gROOT->LoadMacro(setupFile);
+  gInterpreter->ProcessLine(setupFunct);
+
+
   // In general, the following parts need not be touched
   // ========================================================================
 
   // ----    Debug option   -------------------------------------------------
   gDebug = 0;
   // ------------------------------------------------------------------------
-
-  TString setupFile = inDir + "/geometry/setup/" + setup + "_setup.C";
-  TString setupFunct = setup;
-  setupFunct += "_setup()";
-  
-  gROOT->LoadMacro(setupFile);
-  gInterpreter->ProcessLine(setupFunct);
 
   // -----   Timer   --------------------------------------------------------
   TStopwatch timer;
@@ -140,57 +138,33 @@ void mvd_qa2_transDelta(const char* setup = "sis100_electron")
   fRun->SetMaterials("media.geo");       // Materials
   // ------------------------------------------------------------------------
 
+  // -----   Create and register modules   ----------------------------------
+  TString macroName = gSystem->Getenv("VMCWORKDIR");
+  macroName += "/macro/run/modules/registerSetup.C";
+  std::cout << "Loading macro " << macroName << std::endl;
+  gROOT->LoadMacro(macroName);
+  gROOT->ProcessLine("registerSetup()");
+  // ------------------------------------------------------------------------
 
-  // -----   Create geometry   ----------------------------------------------
-  if ( caveGeom != "" ) {
-    FairModule* cave = new CbmCave("CAVE");
-    cave->SetGeometryFileName(caveGeom);
-    fRun->AddModule(cave);
-  }
 
-    if ( pipeGeom != "" ) {
-    FairModule* pipe = new CbmPipe("PIPE");
-    pipe->SetGeometryFileName(pipeGeom);
-    fRun->AddModule(pipe);
-  }
-  
-  // --- Target
+  // -----   Create and register the target   -------------------------------
   CbmTarget* target = new CbmTarget(targetElement.Data(),
-  		                              targetThickness,
-  		                              targetDiameter);
+                                              targetThickness,
+                                              targetDiameter);
   target->SetPosition(targetPosX, targetPosY, targetPosZ);
   target->SetRotation(targetRotY);
+  target->Print();
   fRun->AddModule(target);
-
-  if ( magnetGeom != "" ) {
-    FairModule* magnet = new CbmMagnet("MAGNET");
-    magnet->SetGeometryFileName(magnetGeom);
-    fRun->AddModule(magnet);
-  }
-
-      if ( mvdGeom != "" ) {
-    FairDetector* mvd = new CbmMvd("MVD", kTRUE);
-    mvd->SetGeometryFileName(mvdGeom);
-    mvd->SetMotherVolume("pipevac1");
-    fRun->AddModule(mvd);
-  }
-
-
   // ------------------------------------------------------------------------
-
 
   // -----   Create magnetic field   ----------------------------------------
-  CbmFieldMap* magField = NULL;
-  if ( 2 == fieldSymType ) {
-    magField = new CbmFieldMapSym2(fieldMap);
-  }  else if ( 3 == fieldSymType ) {
-    magField = new CbmFieldMapSym3(fieldMap);
-  } 
-  magField->SetPosition(0., 0., fieldZ);
-  magField->SetScale(fieldScale);
+  CbmFieldMap* magField = CbmSetup::Instance()->CreateFieldMap();
+  if ( ! magField ) {
+        std::cout << "-E- run_sim_new: No valid field!";
+        return;
+  }
   fRun->SetField(magField);
   // ------------------------------------------------------------------------
-
 
   FairIon *fIon = new FairIon("My_Au", 79, 197, 79, 25.,183.47324);
   fRun->AddNewIon(fIon);
@@ -249,5 +223,7 @@ void mvd_qa2_transDelta(const char* setup = "sis100_electron")
   cout << " Test passed" << endl;
   cout << " All ok " << endl;
 
+  // Function needed for CTest runtime dependency
+  Generate_CTest_Dependency_File(depFile);
 }
 
