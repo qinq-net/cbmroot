@@ -10,43 +10,6 @@
 // Version         13/03/2015 (P.-A. Loizeau)
 //
 // --------------------------------------------------------------------------
-
-TString caveGeom="";
-TString pipeGeom="";
-TString magnetGeom="";
-TString mvdGeom="";
-TString stsGeom="";
-TString richGeom="";
-TString muchGeom="";
-TString shieldGeom="";
-TString trdGeom="";
-TString tofGeom="";
-TString ecalGeom="";
-TString platformGeom="";
-TString psdGeom="";
-Double_t psdZpos=0.;
-Double_t psdXpos=0.;
-
-TString mvdTag="";
-TString stsTag="";
-TString trdTag="";
-TString tofTag="";
-
-TString stsDigi="";
-TString muchDigi="";
-TString trdDigi="";
-TString tofDigi="";
-
-TString mvdMatBudget="";
-TString stsMatBudget="";
-
-TString  fieldMap="";
-Double_t fieldZ=0.;
-Double_t fieldScale=0.;
-Int_t    fieldSymType=0;
-
-TString defaultInputFile="";
-
 void run_digi_test(Int_t nEvents = 2, const char* setup = "sis100_electron")
 {
 
@@ -69,29 +32,44 @@ void run_digi_test(Int_t nEvents = 2, const char* setup = "sis100_electron")
   // Output file
   TString outFile = outDir + setup + "_digitizerTest.eds.root";
 
-  TString setupFile = inDir + "/geometry/setup/" + setup + "_setup.C";
-  TString setupFunct = setup;
-  setupFunct += "_setup()";
-  
+  TString setupFile = inDir + "/geometry/setup/setup_"+ setup +".C";
+  TString setupFunct = "setup_";
+  setupFunct = setupFunct + setup + "()";
   gROOT->LoadMacro(setupFile);
   gInterpreter->ProcessLine(setupFunct);
-
-  //  Digitisation files.
-  // Add TObjectString containing the different file names to
-  // a TList which is passed as input to the FairParAsciiFileIo.
-  // The FairParAsciiFileIo will take care to create on the fly
-  // a concatenated input parameter file which is then used during
-  // the reconstruction.
-  TList *parFileList = new TList();
+  CbmSetup* cbmsetup = CbmSetup::Instance();
 
   TString workDir = gSystem->Getenv("VMCWORKDIR");
   TString paramDir = workDir + "/parameters/";
 
-  TObjString tofDigiFile(paramDir + tofDigi);
-  parFileList->Add(&tofDigiFile);
+  //  Digitisation files.
+  // Add TObjectString containing the different file names to
+  // a TList which is passed as input to the FairParAsciiFileIo.
+  // The FairParAsciiFileIo will take care to create on the fly 
+  // a concatenated input parameter file which is then used during
+  // the reconstruction.
+  TList *parFileList = new TList();
+  TString geoTag;
 
-  TObjString tofDigiBdfFile(paramDir + "/tof/tof_" + tofTag + ".digibdf.par");
-  parFileList->Add(&tofDigiBdfFile);
+  // - TRD digitisation parameters
+  if ( cbmsetup->GetGeoTag(kTrd, geoTag) ) {
+    TObjString* trdFile = new TObjString(inDir + "/parameters/trd/trd_" + geoTag + ".digi.par");
+    parFileList->Add(trdFile);
+    std::cout << "-I- Using parameter file "
+              << trdFile->GetString() << std::endl;
+  }
+
+  // - TOF digitisation parameters
+  if ( cbmsetup->GetGeoTag(kTof, geoTag) ) {
+    TObjString* tofFile = new TObjString(inDir + "/parameters/tof/tof_" + geoTag + ".digi.par");
+    parFileList->Add(tofFile);
+    std::cout << "-I- Using parameter file "
+              << tofFile->GetString() << std::endl;
+    TObjString* tofBdfFile = new TObjString(inDir + "/parameters/tof/tof_" + geoTag + ".digibdf.par");
+    parFileList->Add(tofBdfFile);
+    std::cout << "-I- Using parameter file "
+              << tofBdfFile->GetString() << std::endl;
+  }
 
   // Function needed for CTest runtime dependency
   TString depFile = Remove_CTest_Dependency_File(outDir, "run_digi_test" , setup);
