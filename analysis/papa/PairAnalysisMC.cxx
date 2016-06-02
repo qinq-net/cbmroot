@@ -626,6 +626,9 @@ Bool_t PairAnalysisMC::IsMCTruth(Int_t label, PairAnalysisSignalMC* signalMC, In
   if(label<0) return kFALSE; // to be checked
   //  if(label<0) label *= -1; 
 
+  /// check for single particle signals
+  if(signalMC->IsSingleParticle() && branch>1) return kFALSE;
+
   CbmMCTrack* part = GetMCTrackFromMCEvent(label);
   if (!part) {
     Error("PairAnalysisMC::","Could not find MC particle with label %d",label);

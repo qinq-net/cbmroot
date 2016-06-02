@@ -75,6 +75,7 @@ Some options to add background estimators:
 
 #include "PairAnalysisPair.h"
 #include "PairAnalysisPairLV.h"
+#include "PairAnalysisPairKF.h"
 #include "PairAnalysisHistos.h"
 #include "PairAnalysisMC.h"
 #include "PairAnalysisVarManager.h"
@@ -428,7 +429,7 @@ void PairAnalysis::ProcessMC()
       if(!sigMC->GetFillPureMCStep()) continue;
 
       truth1 = papaMC->IsMCTruth(ipart, (PairAnalysisSignalMC*)fSignalsMC->UncheckedAt(isig), 1);
-      // TODO: save time by asking for single particle mc signals
+      /// NOTE: single particle signals staisfy only the first branch, truth2=kFALSE in this case
       truth2 = papaMC->IsMCTruth(ipart, (PairAnalysisSignalMC*)fSignalsMC->UncheckedAt(isig), 2);
 
       // particles satisfying both branches are treated separately to avoid double counting during pairing
@@ -449,8 +450,9 @@ void PairAnalysis::ProcessMC()
     }
   }  // end loop over MC particles
 
-  // Do the pairing and fill the CF container with pure MC info
-  // selection of MCtruth pairs
+  /// do the pairing and fill the output with pure MC info
+  /// selection of MCtruth pairs
+  /// NOTE: for MCtruth LV useage should be okay, no need to calculate KF particles
   PairAnalysisPair* 	  pair = new PairAnalysisPairLV();
 
   UInt_t selectedMask=(1<<fPairFilterMC.GetCuts()->GetEntries())-1;
@@ -483,6 +485,9 @@ void PairAnalysis::ProcessMC()
 	UInt_t cutmask=0;
 	if(mother)  cutmask=fPairFilterMC.IsSelected(mother);
 	else {
+	  /// TODO: do we really want to look at combinatorics at the genrator level?
+	  ///       this might save a lot of cpu time
+	  /// continue;
 	  pair->SetMCTracks(part1,part2);
 	  cutmask=fPairFilterMC.IsSelected(pair);
 	}
@@ -490,8 +495,14 @@ void PairAnalysis::ProcessMC()
 	if (cutmask!=selectedMask) continue;
 	//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+	/// TODO: replace below lines by new fill function FillMCHistograms(mother, isig)
 	if(bFillHF)  fHistoArray->Fill(labels1[isig][i1], labels2[isig][i2], isig);
 	if(bFillHist)FillMCHistograms(labels1[isig][i1], labels2[isig][i2], isig);
+	//	if(bFillHist && mother) FillMCHistograms(mother, isig);
+	//	else if(bFillHist) FillMCHistograms(pair, isig);
+
+
+
 
       }
     }
@@ -499,8 +510,8 @@ void PairAnalysis::ProcessMC()
     for(Int_t i1=0;i1<indexes12[isig];++i1) {
       for(Int_t i2=0; i2<i1; ++i2) {
 	// TODO: add pair cuts on mc truth level (SEE above)
-	if(bFillHF) fHistoArray->Fill(labels12[isig][i1], labels12[isig][i2], isig);
-	FillMCHistograms(labels12[isig][i1], labels12[isig][i2], isig);
+	if(bFillHF)  fHistoArray->Fill(labels12[isig][i1], labels12[isig][i2], isig);
+	if(bFillHist)FillMCHistograms(labels12[isig][i1], labels12[isig][i2], isig);
       }
     }
   }    // end loop over signals
@@ -1148,9 +1159,8 @@ void PairAnalysis::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, 
 
   // candiate
   PairAnalysisPair *candidate;
-  //  if(fUseKF) candidate = new PairAnalysisPairKF();
-  //else
-  candidate = new PairAnalysisPairLV();
+  if(fUseKF) candidate = new PairAnalysisPairKF();
+  else       candidate = new PairAnalysisPairLV();
   candidate->SetKFUsage(fUseKF);
 
   UInt_t selectedMask=(1<<fPairPreFilter.GetCuts()->GetEntries())-1;
@@ -1406,10 +1416,13 @@ void PairAnalysis::FillPairArrays(Int_t arr1, Int_t arr2)
   Int_t ntrack1=arrTracks1.GetEntriesFast();
   Int_t ntrack2=arrTracks2.GetEntriesFast();
 
+  /// NOTE: use KF particle only for same event (SE) pair types
+  ///       mixed event pairs use the default LV vertexing
+  ///       otherwise this will crash in the refiting done in PairAnalysisPairKF
+  ///       track rotation is not done here!
   PairAnalysisPair *candidate;
-  //  if(fUseKF) candidate = new PairAnalysisPairKF();
-  //  else
-  candidate = new PairAnalysisPairLV();
+  if(fUseKF && pairIndex<=kSEMM) candidate = new PairAnalysisPairKF();
+  else       candidate = new PairAnalysisPairLV();
   candidate->SetKFUsage(fUseKF);
   candidate->SetType(pairIndex);
 
@@ -1449,9 +1462,8 @@ void PairAnalysis::FillPairArrays(Int_t arr1, Int_t arr2)
       //add the candidate to the candidate array
       PairArray(pairIndex)->Add(candidate);
       //get a new candidate
-      //      if(fUseKF) candidate = new PairAnalysisPairKF();
-      //else
-      candidate = new PairAnalysisPairLV();
+      if(fUseKF && pairIndex<=kSEMM) candidate = new PairAnalysisPairKF();
+      else       candidate = new PairAnalysisPairLV();
       candidate->SetKFUsage(fUseKF);
       candidate->SetType(pairIndex);
     }
@@ -1471,9 +1483,8 @@ void PairAnalysis::FillPairArrayTR()
   Int_t ntrack2=fTracks[1].GetEntriesFast();
 
   PairAnalysisPair *candidate;
-  //  if(fUseKF) candidate = new PairAnalysisPairKF();
-  //  else
-  candidate = new PairAnalysisPairLV();
+  if(fUseKF) candidate = new PairAnalysisPairKF();
+  else       candidate = new PairAnalysisPairLV();
   candidate->SetKFUsage(fUseKF);
   candidate->SetType(kSEPMRot);
 
@@ -1501,9 +1512,8 @@ void PairAnalysis::FillPairArrayTR()
 
 	if(fHistos) FillHistogramsPair(candidate);
 	if(fStoreRotatedPairs) {
-	  //	  if(fUseKF) PairArray(kSEPMRot)->Add(static_cast<PairAnalysisPairKF*>(candidate->Clone()));
-	  //	  else
-	  PairArray(kSEPMRot)->Add(static_cast<PairAnalysisPairLV*>(candidate->Clone()));
+	  if(fUseKF) PairArray(kSEPMRot)->Add(static_cast<PairAnalysisPairKF*>(candidate->Clone()));
+	  else       PairArray(kSEPMRot)->Add(static_cast<PairAnalysisPairLV*>(candidate->Clone()));
 	  // if(fUseKF) PairArray(kSEPMRot)->Add(new PairAnalysisPairKF(*candidate);
 	  // else       PairArray(kSEPMRot)->Add(new PairAnalysisPairLV(*candidate);
 	}
@@ -1583,9 +1593,10 @@ void PairAnalysis::FillMCHistograms(Int_t label1, Int_t label2, Int_t nSignal) {
 
   /// loop over all detectors and fill point histograms
   /// currently only first branch is checked (aka single particle signals)
+  /// TODO: second leg or only single particle MC signals??
   FairMCPoint *pnt=NULL;
   TString className4;
-  if(part1) {
+  if(part1 && sigMC->IsSingleParticle()) {
     for (Int_t idet=kREF; idet<kNOFDETS; ++idet){
       className4="Hit." + PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet)) + "_" + sigMC->GetName() + "_MCtruth";
       if(!fHistos->HasHistClass(className4)) continue;
