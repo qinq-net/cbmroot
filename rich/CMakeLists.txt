@@ -187,36 +187,13 @@ If(TBB_FOUND)
      )
 EndIf(TBB_FOUND)
 
-Execute_Process(COMMAND $ENV{FAIRROOTPATH}/bin/fairroot-config --version
-                OUTPUT_VARIABLE _fairroot_version
-                OUTPUT_STRIP_TRAILING_WHITESPACE
-               )
-String(REGEX MATCH "v-([0-9]+)\\.([0-9]+)([a-z]*)" _version_matches
-"${_fairroot_version}")
-Set(FairRoot_VERSION_MAJOR ${CMAKE_MATCH_1})
-Set(FairRoot_VERSION_MINOR ${CMAKE_MATCH_2})
-Set(FairRoot_VERSION_PATCH ${CMAKE_MATCH_3})
-
-If(FairRoot_VERSION_PATCH MATCHES "a")
-  Set(FairRoot_VERSION_PATCH 1)
-ElseIf(FairRoot_VERSION_PATCH MATCHES "b")
-  Set(FairRoot_VERSION_PATCH 2)
-ElseIf(FairRoot_VERSION_PATCH MATCHES "c")
-  Set(FairRoot_VERSION_PATCH 3)
+If(FairRoot_VERSION VERSION_LESS 15.11.2)
+  ADD_DEFINITIONS(-DVERSION_LESS_151102)
+  Set(DEFINITIONS ${DEFINITIONS} VERSION_LESS_151102)
+  Message("FairRoot Version less 15.11.2")
 Else()
-  Set(FairRoot_VERSION_PATCH 0)
+  Message("FairRoot Version at least 15.11.2")
 EndIf()
-
-Set(_fairroot_version_found ${FairRoot_VERSION_MAJOR}.${FairRoot_VERSION_MINOR}.${FairRoot_VERSION_PATCH})
-If(_fairroot_version_found VERSION_LESS 15.11.2)
-  ADD_DEFINITIONS(-DVERSION_LESS_151102)  
-  Set(DEFINITIONS VERSION_LESS_151102)
-  Message("RICH: FairRoot Version less 15.11.2")
-Else()
-  Message("RICH: FairRoot Version at least 15.11.2")
-EndIf()
-
-
 
 IF (SSE_FOUND)
   ADD_DEFINITIONS(-DHAVE_SSE)
