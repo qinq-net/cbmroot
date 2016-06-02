@@ -4,15 +4,24 @@
 
 ///////////////////////////////////////////////////////////////////////////
 //                                                                       //
-//  PairAnalysis Pair class. Internally it makes use of AliKFParticle.     //
+//  PairAnalysis Pair class. Internally it makes use of KFParticle.     //
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
-
 #include <TDatabasePDG.h>
-#include <AliVTrack.h>
-#include <AliVVertex.h>
-#include <AliExternalTrackParam.h>
+
+
+#include "CbmL1.h"
+#include "L1Algo.h"
+#include "L1Field.h"
+
+#include "CbmKFTrack.h"
+#include "KFParticle.h"
+#include "CbmKFParticleInterface.h"
+
+#include "CbmVertex.h"
+#include "CbmMCTrack.h"
+#include "PairAnalysisTrack.h"
 
 #include "PairAnalysisPairKF.h"
 
@@ -38,14 +47,14 @@ PairAnalysisPairKF::PairAnalysisPairKF(const PairAnalysisPair& pair) :
   fD2()
 {
   //
-  // Copy Constructor, TOCHECK
+  // Copy Constructor
   //
   SetTracks(pair.GetFirstDaughter(), pair.GetFirstDaughterPid(), pair.GetSecondDaughter(), pair.GetSecondDaughterPid());
 }
 
 //______________________________________________
-PairAnalysisPairKF::PairAnalysisPairKF(AliVTrack * const particle1, Int_t pid1,
-					 AliVTrack * const particle2, Int_t pid2, Char_t type) :
+PairAnalysisPairKF::PairAnalysisPairKF(PairAnalysisTrack * const particle1, Int_t pid1,
+				       PairAnalysisTrack * const particle2, Int_t pid2, Char_t type) :
   PairAnalysisPair(type),
   fPair(),
   fD1(),
@@ -58,22 +67,6 @@ PairAnalysisPairKF::PairAnalysisPairKF(AliVTrack * const particle1, Int_t pid1,
 }
 
 //______________________________________________
-PairAnalysisPairKF::PairAnalysisPairKF(const AliKFParticle * const particle1,
-                                     const AliKFParticle * const particle2,
-                                     AliVTrack * const refParticle1,
-                                     AliVTrack * const refParticle2, Char_t type) :
-  PairAnalysisPair(type),
-  fPair(),
-  fD1(),
-  fD2()
-{
-  //
-  // Constructor with tracks
-  //
-  SetTracks(particle1, particle2,refParticle1,refParticle2);
-}
-
-//______________________________________________
 PairAnalysisPairKF::~PairAnalysisPairKF()
 {
   //
@@ -83,101 +76,108 @@ PairAnalysisPairKF::~PairAnalysisPairKF()
 }
 
 //______________________________________________
-void PairAnalysisPairKF::SetTracks(AliVTrack * const particle1, Int_t pid1,
-				    AliVTrack * const particle2, Int_t pid2)
+void PairAnalysisPairKF::SetTracks(PairAnalysisTrack * const particle1, Int_t pid1,
+				   PairAnalysisTrack * const particle2, Int_t pid2)
 {
   //
-  // Sort particles by pt, first particle larget Pt
-  // set AliKF daughters and pair
+  // set KF daughters and pair
   // refParticle1 and 2 are the original tracks. In the case of track rotation
   // they are needed in the framework
   //
+  // TODO: think about moving the pid assignement to PairAnalysisTrack and use it here
+  // BUT think about mixed events or LS-pairs
+  const Double_t mpid1 = TDatabasePDG::Instance()->GetParticle(pid1)->Mass();
+  const Double_t mpid2 = TDatabasePDG::Instance()->GetParticle(pid2)->Mass();
+  const Double_t cpid1 = TDatabasePDG::Instance()->GetParticle(pid1)->Charge()*3;
+  const Double_t cpid2 = TDatabasePDG::Instance()->GetParticle(pid2)->Charge()*3;
+
+  // match charge of track to pid and set mass accordingly
+  fPid1  = pid1;
+  fPid2  = pid2;
+  Double_t m1 = mpid1;
+  Double_t m2 = mpid2;
+  if(particle1->Charge() == cpid2) { m1=mpid2; fPid1=pid2; } //TODO: what about 2e-charges
+  if(particle2->Charge() == cpid1) { m2=mpid1; fPid2=pid1; }
+
+  /// this interface refits the sts track according to the pdg code, fails when refit is done
+  /// be carefull in Mixed events this does not work because STS hits are not there
+  //// TODO: - write converter w/o refit, what about field coefficients
+  ////       - OR store the KFparticle in the PapaTrack and use it here instead
+  CbmKFParticleInterface::SetKFParticleFromStsTrack(particle1->GetStsTrack(), &fD1, fPid1, kTRUE);
+  CbmKFParticleInterface::SetKFParticleFromStsTrack(particle2->GetStsTrack(), &fD2, fPid2, kTRUE);
+
+  // references
+  fRefD1 = particle1;
+  fRefD2 = particle2;
+
+  // build pair
   fPair.Initialize();
-  fD1.Initialize();
-  fD2.Initialize();
 
-  AliKFParticle kf1(*particle1,pid1);
-  AliKFParticle kf2(*particle2,pid2);
+  fPair.AddDaughter(fD1);
+  fPair.AddDaughter(fD2);
 
-  fPair.AddDaughter(kf1);
-  fPair.AddDaughter(kf2);
+  /// mass constrain
+  // Double_t mass = TDatabasePDG::Instance()->GetParticle(443)->Mass();
+  // Double_t wdth = TDatabasePDG::Instance()->GetParticle(443)->Width();
+  // if(wdth<1.e-6) wdth=mass*0.01; // width<1keV, then 1% mass resolution
+  //  fPair.SetMassConstraint( mass, wdth ); //TODO: take from mother pdg code provided to pairanalysis
 
-  if (particle1->Pt()>particle2->Pt()){
-    fRefD1 = particle1;
-    fRefD2 = particle2;
-    fD1+=kf1;
-    fD2+=kf2;
-  } else {
-    fRefD1 = particle2;
-    fRefD2 = particle1;
-    fD1+=kf2;
-    fD2+=kf1;
-  }
+  fCharge=(particle1->Charge() * particle2->Charge());
+  fWeight=TMath::Sqrt(particle1->GetWeight() * particle2->GetWeight() );
+  //  printf("fill pair weight: %.1f * %.1f = %.1f \n",particle1->GetWeight(),particle2->GetWeight(),fWeight);
+
 }
 
 //______________________________________________
-void PairAnalysisPairKF::SetGammaTracks(AliVTrack * const particle1, Int_t pid1,
-					 AliVTrack * const particle2, Int_t pid2)
+void PairAnalysisPairKF::SetGammaTracks(PairAnalysisTrack * const particle1, Int_t pid1,
+					 PairAnalysisTrack * const particle2, Int_t pid2)
 {
   //
-  // Sort particles by pt, first particle larget Pt
-  // set AliKF daughters and a GAMMA pair
+  // set KF daughters and a GAMMA pair
   // refParticle1 and 2 are the original tracks. In the case of track rotation
   // they are needed in the framework
   //
-  fD1.Initialize();
-  fD2.Initialize();
-
-  AliKFParticle kf1(*particle1,pid1);
-  AliKFParticle kf2(*particle2,pid2);
-  fPair.ConstructGamma(kf1,kf2);
-
-  if (particle1->Pt()>particle2->Pt()){
-    fRefD1 = particle1;
-    fRefD2 = particle2;
-    fD1+=kf1;
-    fD2+=kf2;
-  } else {
-    fRefD1 = particle2;
-    fRefD2 = particle1;
-    fD1+=kf2;
-    fD2+=kf1;
-  }
+  SetTracks(particle1, pid1, particle2, pid2);
 }
 
 //______________________________________________
-void PairAnalysisPairKF::SetTracks(const AliKFParticle * const particle1,
-				    const AliKFParticle * const particle2,
-				    AliVTrack * const refParticle1,
-				    AliVTrack * const refParticle2)
+void PairAnalysisPairKF::SetMCTracks(const CbmMCTrack * const particle1, const CbmMCTrack * const particle2)
 {
   //
-  // Sort particles by pt, first particle larget Pt
-  // set AliKF daughters and pair
-  // refParticle1 and 2 are the original tracks. In the case of track rotation
-  // they are needed in the framework
+  // build MC pair from daughters
+  // no references are set
   //
+
+  //Initialise covariance matrix and set current parameters to 0.0
+  KFParticle kf1;
+  kf1.Initialize();
+  Float_t *par1 = kf1.Parameters();
+  par1[0] = particle1->GetStartX();
+  par1[1] = particle1->GetStartY();
+  par1[2] = particle1->GetStartZ();
+  par1[3] = particle1->GetPx();
+  par1[4] = particle1->GetPy();
+  par1[5] = particle1->GetPz();
+  par1[6] = particle1->GetEnergy();
+  kf1.SetPDG(particle1->GetPdgCode());
+
+  KFParticle kf2;
+  kf2.Initialize();
+  Float_t *par2 = kf2.Parameters();
+  par2[0] = particle2->GetStartX();
+  par2[1] = particle2->GetStartY();
+  par2[2] = particle2->GetStartZ();
+  par2[3] = particle2->GetPx();
+  par2[4] = particle2->GetPy();
+  par2[5] = particle2->GetPz();
+  par2[6] = particle2->GetEnergy();
+  kf2.SetPDG(particle2->GetPdgCode());
+
+  // build pair
   fPair.Initialize();
-  fD1.Initialize();
-  fD2.Initialize();
-  
-  AliKFParticle kf1(*particle1);
-  AliKFParticle kf2(*particle2);
-  
   fPair.AddDaughter(kf1);
   fPair.AddDaughter(kf2);
-  
-  if (kf1.GetPt()>kf2.GetPt()){
-    fRefD1 = refParticle1;
-    fRefD2 = refParticle2;
-    fD1+=kf1;
-    fD2+=kf2;
-  } else {
-    fRefD1 = refParticle2;
-    fRefD2 = refParticle1;
-    fD1+=kf2;
-    fD2+=kf1;
-  }
+
 }
 
 //______________________________________________
@@ -191,8 +191,8 @@ void PairAnalysisPairKF::GetThetaPhiCM(Double_t &thetaHE, Double_t &phiHE, Doubl
   const Double_t eleMass = TDatabasePDG::Instance()->GetParticle(11)->Mass();
   const Double_t proMass = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
   
-//   AliVParticle *d1 = static_cast<AliVParticle*>(fRefD1.GetObject());
-//   AliVParticle *d2 = static_cast<AliVParticle*>(fRefD2.GetObject());
+//   VParticle *d1 = static_cast<VParticle*>(fRefD1.GetObject());
+//   VParticle *d2 = static_cast<VParticle*>(fRefD2.GetObject());
 
 //   d1->PxPyPz(pxyz1);
 //   d2->PxPyPz(pxyz2);
@@ -240,8 +240,9 @@ void PairAnalysisPairKF::GetThetaPhiCM(Double_t &thetaHE, Double_t &phiHE, Doubl
 //______________________________________________
 Double_t PairAnalysisPairKF::PsiPair(Double_t MagField) const
 {
+  return 0.;/*
   //Following idea to use opening of colinear pairs in magnetic field from e.g. PHENIX
-  //to ID conversions. Adapted from AliTRDv0Info class
+  //to ID conversions. Adapted from TRDv0Info class
   Double_t x, y;//, z;
   x = fPair.GetX();
   y = fPair.GetY();
@@ -267,10 +268,10 @@ Double_t PairAnalysisPairKF::PsiPair(Double_t MagField) const
   Double_t mom1Prop[3];
   Double_t mom2Prop[3];
 
-  AliExternalTrackParam *d1 = static_cast<AliExternalTrackParam*>(fRefD1.GetObject());
-  AliExternalTrackParam *d2 = static_cast<AliExternalTrackParam*>(fRefD2.GetObject());
+  ExternalTrackParam *d1 = static_cast<ExternalTrackParam*>(fRefD1.GetObject());
+  ExternalTrackParam *d2 = static_cast<ExternalTrackParam*>(fRefD2.GetObject());
 
-  AliExternalTrackParam nt(*d1), pt(*d2);
+  ExternalTrackParam nt(*d1), pt(*d2);
 
   Double_t fPsiPair = 4.;
   if(nt.PropagateTo(radiussum,MagField) == 0)//propagate tracks to the outside
@@ -295,11 +296,11 @@ Double_t PairAnalysisPairKF::PsiPair(Double_t MagField) const
   fPsiPair =  TMath::Abs(TMath::ASin(deltat/chipair));
 
   return fPsiPair;
-
+	    */
 }
-
+/*
 //______________________________________________
-Double_t PairAnalysisPairKF::GetCosPointingAngle(const AliVVertex *primVtx) const
+Double_t PairAnalysisPairKF::GetCosPointingAngle(const CbmVertex *primVtx) const
 {
   //
   // Calculate the poiting angle of the pair to the primary vertex and take the cosine
@@ -315,11 +316,11 @@ Double_t PairAnalysisPairKF::GetCosPointingAngle(const AliVVertex *primVtx) cons
   Double_t deltaPos2 = deltaPos[0]*deltaPos[0] + deltaPos[1]*deltaPos[1] + deltaPos[2]*deltaPos[2];
 
   Double_t cosinePointingAngle = (deltaPos[0]*Px() + deltaPos[1]*Py() + deltaPos[2]*Pz()) / TMath::Sqrt(momV02 * deltaPos2);
-  
+
   return TMath::Abs(cosinePointingAngle);
 
 }
-
+*/
 //______________________________________________
 Double_t PairAnalysisPairKF::GetArmAlpha() const
 {
@@ -457,161 +458,6 @@ Double_t PairAnalysisPairKF::PhivPair(Double_t MagField) const
 
   return phiv;
 
-}
-
-//______________________________________________
-Double_t PairAnalysisPairKF::GetPairPlaneAngle(Double_t v0rpH2, Int_t VariNum)const
-{
-
-  // Calculate the angle between electron pair plane and variables
-  // kv0rpH2 is reaction plane angle using V0-A,C,AC,Random
-
-  Double_t px1=-9999.,py1=-9999.,pz1=-9999.;
-  Double_t px2=-9999.,py2=-9999.,pz2=-9999.;
-
-  px1 = fD1.GetPx();
-  py1 = fD1.GetPy();
-  pz1 = fD1.GetPz();
-
-  px2 = fD2.GetPx();
-  py2 = fD2.GetPy();
-  pz2 = fD2.GetPz();
-
-  //p1+p2
-  Double_t px = px1+px2;
-  Double_t py = py1+py2;
-  Double_t pz = pz1+pz2;
-
-  // normal vector of ee plane
-  Double_t pnorx = py1*pz2 - pz1*py2;
-  Double_t pnory = pz1*px2 - px1*pz2;
-  Double_t pnorz = px1*py2 - py1*px2;
-  Double_t pnor  = TMath::Sqrt( pnorx*pnorx + pnory*pnory + pnorz*pnorz );
-
-  //unit vector
-  Double_t upnx = -9999.;
-  Double_t upny = -9999.;
-  Double_t upnz = -9999.;
-
-  if (pnor !=0)
-    {
-      upnx= pnorx/pnor;
-      upny= pnory/pnor;
-      upnz= pnorz/pnor;
-    }
-
-
-  Double_t ax = -9999.;
-  Double_t ay = -9999.;
-  Double_t az = -9999.;
-
-  //variable 1
-  //seeing the angle between ee decay plane and reaction plane by using V0-A,C,AC,Random
-	  if(VariNum == 1){
-		ax = TMath::Sin(v0rpH2);
-		ay = -TMath::Cos(v0rpH2);
-		az = 0.0;
-	  }
-
-
-	//variable 2
-	//seeing the angle between ee decay plane and (p1+p2) rot ez
-	  else if (VariNum == 2 ){
-		ax = py;
-		ay = -px;
-		az = 0.0;
-	  }
-
-	//variable 3
-	//seeing the angle between ee decay plane and (p1+p2) rot (p1+p2)x'z
-	  else if (VariNum == 3 ){
-		Double_t rotpx = px*TMath::Cos(v0rpH2)+py*TMath::Sin(v0rpH2);
-		//Double_t rotpy = 0.0;
-		// Double_t rotpz = pz;
-
-		ax = py*pz;
-		ay = pz*rotpx-pz*px;
-		az = -rotpx*py;
-	  }
-
-	//variable 4
-	//seeing the angle between ee decay plane and (p1+p2) rot ey'
-	  else if (VariNum == 4){
-		ax = 0.0;
-		ay = 0.0;
-		az = pz;
-	  }
-
-	Double_t denomHelper = ax*ax + ay*ay +az*az;
-	Double_t uax = -9999.;
-	Double_t uay = -9999.;
-	Double_t uaz = -9999.;
-
-	if (denomHelper !=0) {
-	  uax = ax/TMath::Sqrt(denomHelper);
-	  uay = ay/TMath::Sqrt(denomHelper);
-	  uaz = az/TMath::Sqrt(denomHelper);
-	}
-
-	//PM is the angle between Pair plane and a plane decided by using variable 1-4
-
-	Double_t cosPM = upnx*uax + upny*uay + upnz*uaz;
-	Double_t PM = TMath::ACos(cosPM);
-	
-	//keep interval [0,pi/2]
-	if(PM > TMath::Pi()/2){
-	  PM -= TMath::Pi();
-	  PM *= -1.0;
-	  
-	}
-	return PM;
-}
-
-
-//_______________________________________________
-Double_t PairAnalysisPairKF::PairPlaneMagInnerProduct(Double_t ZDCrpH1) const
-{
-
-  // Calculate inner product of the strong magnetic field and electron pair plane
-
-  if(ZDCrpH1 == 0.) return -9999.;
-
-  Double_t px1=-9999.,py1=-9999.,pz1=-9999.;
-  Double_t px2=-9999.,py2=-9999.,pz2=-9999.;
-
-  px1 = fD1.GetPx();
-  py1 = fD1.GetPy();
-  pz1 = fD1.GetPz();
-
-
-  px2 = fD2.GetPx();
-  py2 = fD2.GetPy();
-  pz2 = fD2.GetPz();
-
-  // normal vector of ee plane
-  Double_t pnorx = py2*pz1 - pz2*py1;
-  Double_t pnory = pz2*px1 - px2*pz1;
-  Double_t pnorz = px2*py1 - py2*px1;
-  Double_t pnor  = TMath::Sqrt( pnorx*pnorx + pnory*pnory + pnorz*pnorz );
-
-  //unit vector
-  Double_t upnx = -9999.;
-  Double_t upny = -9999.;
-  //Double_t upnz = -9999.;
-
-  if (pnor == 0) return -9999.;
-  upnx= pnorx/pnor;
-  upny= pnory/pnor;
-  //upnz= pnorz/pnor;
-
-  //direction of strong magnetic field
-  Double_t magx = TMath::Cos(ZDCrpH1+(TMath::Pi()/2));
-  Double_t magy = TMath::Sin(ZDCrpH1+(TMath::Pi()/2));
-
-  //inner product of strong magnetic field and  ee plane
-  Double_t upnmag = upnx*magx + upny*magy;
-
-  return upnmag;
 }
 
 

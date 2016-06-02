@@ -33,6 +33,7 @@
 #include "PairAnalysisEvent.h"
 #include "PairAnalysisTrack.h"
 #include "PairAnalysisPairLV.h"
+#include "PairAnalysisPairKF.h"
 
 #include "PairAnalysisHelper.h"
 
@@ -486,9 +487,10 @@ UInt_t PairAnalysisCutQA::GetObjIndex(TObject *obj)
   if(obj->IsA()==CbmMCTrack::Class()               )  return kTrackMC;
   else if(obj->IsA()==PairAnalysisTrack::Class()   )  return kTrack;
   else if(obj->IsA()==PairAnalysisPairLV::Class()  )  return kPair;
+  else if(obj->IsA()==PairAnalysisPairKF::Class()  )  return kPair;
   else if(obj->IsA()==PairAnalysisEvent::Class()   )  return kEvent;
-  // else
-  //   printf("ERROR: object type %s not yet supported, please let the author know\n", obj->IsA()->GetName());
+  else
+    fprintf(stderr,"ERROR: object type not supported, please let the author know about it\n");//, obj->IsA()->GetName());
   return -1;
 }
 

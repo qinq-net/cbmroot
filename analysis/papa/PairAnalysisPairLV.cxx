@@ -18,8 +18,6 @@
 #include "L1Algo.h"
 #include "L1Field.h"
 
-
-#include "CbmVertex.h"
 #include "CbmMCTrack.h"
 #include "PairAnalysisTrack.h"
 
@@ -87,6 +85,8 @@ void PairAnalysisPairLV::SetTracks(PairAnalysisTrack * const particle1, Int_t pi
   // refParticle1 and 2 are the original tracks. In the case of track rotation
   // they are needed in the framework
   //
+
+  //vvv
   // TODO: think about moving the pid assignement to PairAnalysisTrack and use it here
   // BUT what about mixed events or LS-pairs
   const Double_t mpid1 = TDatabasePDG::Instance()->GetParticle(pid1)->Mass();

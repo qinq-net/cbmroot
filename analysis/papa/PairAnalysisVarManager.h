@@ -20,6 +20,7 @@
 #include <TFormula.h>
 #include <TVector2.h>
 #include <TVector3.h>
+#include <TMatrixFSym.h>
 
 #include <FairRootManager.h>
 #include <CbmRichElectronIdAnn.h>
@@ -326,11 +327,15 @@ public:
 
     // Pair specific MC variables
     kOpeningAngleMC=kTrackMaxMC,// opening angle
+    kCosPointingAngleMC,        // cosine of the pointing angle
     //    kPhivPairMC,                // angle between d1d2 plane and the magnetic field
     kPairMaxMC,
 
     // Event specific MCvariables
     kNTrkMC=kPairMaxMC,      // number of MC tracks
+    kXvPrimMC,               /// MC vertex [cm]
+    kYvPrimMC,               /// MC vertex [cm]
+    kZvPrimMC,               /// MC vertex [cm]
     kSTSMatches,             // number of matched STS tracks
     kTRDMatches,             // number of matched TRD tracks
     kVageMatches,            // number of MC tracks (STS) matched to multiple reconstr. track
@@ -386,7 +391,8 @@ private:
   static const char* fgkParticleNames[kNMaxValuesMC][3];   // variable names
   //static const char* fgkParticleNamesMC[kNMaxValuesMC]; // MC variable names
   static PairAnalysisEvent *fgEvent;                      // current event pointer
-  static CbmKFVertex        *fgKFVertex;                   // kf vertex
+  static CbmKFVertex       *fgKFVertex;                   // kf vertex                   @TODO: OBSOLETE/UNUSED?
+  static CbmVertex         *fgVertexMC;                   // MC vertex
   //  static CbmStsKFTrackFitter*fgKFFitter;                   // kf fitter
   //  static CbmL1PFFitter      *fgL1Fitter;                   // L1 fitter
   static TBits              *fgFillMap;                    // map for filling variables
@@ -573,16 +579,22 @@ inline void PairAnalysisVarManager::FillVarMCHeader(const FairMCEventHeader *hea
 
   // Reset
   // ResetArrayData(kNMaxValues, values);
+  if(fgVertexMC) fgVertexMC->Reset();
 
   // Set
   //  values[k]  = header->GetPhi(); // event plane angle [rad]
 
   // accessors via first FairMCEventHeader
+  values[kXvPrimMC]     = header->GetX();
+  values[kYvPrimMC]     = header->GetY();
+  values[kZvPrimMC]     = header->GetZ();
   values[kImpactParam]  = header->GetB(); // [fm]
-  //Double_t GetX()       /// vertex x [cm]
-  //Double_t GetY()       /// vertex y [cm]
-  //Double_t GetZ()       /// vertex z [cm]
   values[kNPrimMC]      = header->GetNPrim();
+
+  // Fill mc vertex data member
+  TMatrixFSym mat(3);
+  fgVertexMC->SetVertex(values[kXvPrimMC],values[kYvPrimMC],values[kZvPrimMC],
+			-999., 1., values[kNPrimMC], mat);
 }
 
 inline void PairAnalysisVarManager::FillVarVertex(const CbmVertex *vertex, Double_t * const values)
@@ -1011,7 +1023,8 @@ inline void PairAnalysisVarManager::FillVarMCParticle(const CbmMCTrack *p1, cons
     values[kChargeMC]    = p1->GetCharge()*p2->GetCharge();
 
   }
-  values[kOpeningAngleMC] = pair->OpeningAngle();
+  values[kOpeningAngleMC]     = pair->OpeningAngle();
+  values[kCosPointingAngleMC] = fgVertexMC ? pair->GetCosPointingAngle(fgVertexMC) : -1;
   //  values[kPhivPairMC]     = pair->PhivPair(1.);
 
   // delete the surplus pair
@@ -1104,6 +1117,7 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisPair(const PairAnalysisPa
   if(!pair) return;
 
   // first fill mc info to avoid kWeight beeing reset
+  // TODO: check if it makes sence only for pairtypes of SE
   FillVarMCParticle(pair->GetFirstDaughter()->GetMCTrack(),
 		    pair->GetSecondDaughter()->GetMCTrack(), values);
 
@@ -1459,6 +1473,8 @@ inline void PairAnalysisVarManager::SetEvent(PairAnalysisEvent * const ev)
   // Reset
   if (fgKFVertex) delete fgKFVertex;
   fgKFVertex=0x0;
+  if (fgVertexMC) fgVertexMC->Reset();
+  else            fgVertexMC = new CbmVertex();
 
   // Set
   FillVarConstants(fgData);

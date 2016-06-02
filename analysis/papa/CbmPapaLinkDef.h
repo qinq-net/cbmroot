@@ -12,7 +12,7 @@
 
 #pragma link C++ class PairAnalysisPair+;
 #pragma link C++ class PairAnalysisPairLV+;
-//#pragma link C++ class PairAnalysisPairKF+;
+#pragma link C++ class PairAnalysisPairKF+;
 
 #pragma link C++ class PairAnalysisCutQA+;
 #pragma link C++ class PairAnalysisPairLegCuts+;

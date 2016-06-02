@@ -16,15 +16,14 @@
 
 #include <TMath.h>
 #include <TLorentzVector.h>
+#include <KFParticle.h>
 
-#include <AliKFParticle.h>
-#include <AliVParticle.h>
-#include <AliVTrack.h>
-#include "PairAnalysisPair.h"
+#include "PairAnalysisTrack.h"
 #include "PairAnalysisTrackRotator.h"
+#include "PairAnalysisPair.h"
 
-class AliVVertex;
-//class AliVTrack;
+class CbmVertex;
+class CbmMCTrack;
 
 class PairAnalysisPairKF : public PairAnalysisPair {
 public:
@@ -32,30 +31,18 @@ public:
   virtual ~PairAnalysisPairKF();
   PairAnalysisPairKF(const PairAnalysisPair& pair);
 
-  PairAnalysisPairKF(AliVTrack * const particle1, Int_t pid1,
-		      AliVTrack * const particle2, Int_t pid2, Char_t type);
+  PairAnalysisPairKF(PairAnalysisTrack * const particle1, Int_t pid1,
+		     PairAnalysisTrack * const particle2, Int_t pid2, Char_t type);
 
-  PairAnalysisPairKF(const AliKFParticle * const particle1,
-		      const AliKFParticle * const particle2,
-		      AliVTrack * const refParticle1,
-		      AliVTrack * const refParticle2,
-		      Char_t type);
-  
-//TODO:  copy constructor + assignment operator
-  
-  void SetTracks(AliVTrack * const particle1, Int_t pid1,
-                 AliVTrack * const particle2, Int_t pid2);
+  void SetTracks(PairAnalysisTrack * const particle1, Int_t pid1,
+                 PairAnalysisTrack * const particle2, Int_t pid2);
 
-  void SetGammaTracks(AliVTrack * const particle1, Int_t pid1,
-		      AliVTrack * const particle2, Int_t pid2);
+  void SetGammaTracks(PairAnalysisTrack * const particle1, Int_t pid1,
+		      PairAnalysisTrack * const particle2, Int_t pid2);
 
+  void SetMCTracks(const CbmMCTrack * const particle1,
+		   const CbmMCTrack * const particle2);
 
-  void SetTracks(const AliKFParticle * const particle1,
-                 const AliKFParticle * const particle2,
-                 AliVTrack * const refParticle1,
-                 AliVTrack * const refParticle2);
-    
-  //AliVParticle interface
   // kinematics
   virtual Double_t Px() const { return fPair.GetPx(); }
   virtual Double_t Py() const { return fPair.GetPy(); }
@@ -83,10 +70,9 @@ public:
     else return -1111.;
   }
   
-  virtual Short_t Charge() const    { return fPair.GetQ();}
+  //  virtual Short_t Charge() const    { return fPair.GetQ();}
+  //  void SetProductionVertex(const KFParticle &Vtx) { fPair.SetProductionVertex(Vtx); }
 
-  void SetProductionVertex(const AliKFParticle &Vtx) { fPair.SetProductionVertex(Vtx); }
-  
   //inter leg information
   Double_t GetChi2()              const { return fPair.GetChi2();                               }
   Int_t    GetNdf()               const { return fPair.GetNDF();                                }
@@ -100,42 +86,35 @@ public:
   Double_t DeviationDaughters()   const { return fD1.GetDeviationFromParticle(fD2);             }
   Double_t DeviationDaughtersXY() const { return fD1.GetDeviationFromParticleXY(fD2);           }
   Double_t DeltaEta()             const { return TMath::Abs(fD1.GetEta()-fD2.GetEta());         }
-//   Double_t DeltaPhi()             const { Double_t dphi=TMath::Abs(fD1.GetPhi()-fD2.GetPhi());
-//                                           return (dphi>TMath::Pi())?dphi-TMath::Pi():dphi;      }
-  Double_t DeltaPhi()             const { return fD1.GetAngleXY(fD2);     }
+  Double_t DeltaPhi()             const { return fD1.GetAngleXY(fD2);                           }
+  Double_t DaughtersP()           const { return fD1.GetP()*fD2.GetP();                         }
 
   // calculate cos(theta*) and phi* in HE and CS pictures
   void GetThetaPhiCM(Double_t &thetaHE, Double_t &phiHE, Double_t &thetaCS, Double_t &phiCS) const;
 
-  //  Double_t ThetaPhiCM(Bool_t isHE, Bool_t isTheta) const;
+  //  Double_t ThetaPhiCM(Bool_t isHE, Bool_t isTheta) const; ////TODO: check
   Double_t PsiPair(Double_t MagField)const; //Angle cut w.r.t. to magnetic field
   Double_t PhivPair(Double_t MagField)const; //Angle of ee plane w.r.t. to magnetic field
 
-  //Calculate the angle between ee decay plane and variables
-  Double_t GetPairPlaneAngle(Double_t kv0CrpH2, Int_t VariNum) const;
-
-  Double_t GetCosPointingAngle(const AliVVertex *primVtx) const;
-  // TODO: replace by AliKFPArticleBase function
+  //Double_t GetCosPointingAngle(const CbmVertex *primVtx) const;
+  // TODO: replace by KFParticleBase function
   Double_t GetArmAlpha() const;
   Double_t GetArmPt()    const;
 
-  // Calculate inner product of strong magnetic field and ee plane
-  Double_t PairPlaneMagInnerProduct(Double_t ZDCrpH1) const;
-
   // internal KF particle
-  const AliKFParticle& GetKFParticle()       const { return fPair; }
-  const AliKFParticle& GetKFFirstDaughter()  const { return fD1;   }
-  const AliKFParticle& GetKFSecondDaughter() const { return fD2;   }
+  const KFParticle& GetKFParticle()       const { return fPair; }
+  const KFParticle& GetKFFirstDaughter()  const { return fD1;   }
+  const KFParticle& GetKFSecondDaughter() const { return fD2;   }
 
   // rotations
-  virtual void RotateTrack(PairAnalysisTrackRotator *rot) = 0;
+  virtual void RotateTrack(PairAnalysisTrackRotator *rot) { return; }
 
 
 private:
 
-  AliKFParticle fPair;   // KF particle internally used for pair calculation
-  AliKFParticle fD1;     // KF particle first daughter
-  AliKFParticle fD2;     // KF particle1 second daughter
+  KFParticle fPair;   // KF particle internally used for pair calculation
+  KFParticle fD1;     // KF particle first daughter
+  KFParticle fD2;     // KF particle1 second daughter
 
   ClassDef(PairAnalysisPairKF,1)
 };

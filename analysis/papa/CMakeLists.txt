@@ -76,7 +76,7 @@ AnalysisFilter.cxx
 PairAnalysisTrack.cxx
 PairAnalysisEvent.cxx
 PairAnalysisPair.cxx
-#PairAnalysisPairKF.cxx
+PairAnalysisPairKF.cxx
 PairAnalysisPairLV.cxx
 PairAnalysisHelper.cxx
 PairAnalysisStyler.cxx

@@ -278,10 +278,14 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
 
 // Pair specific MC variables
   {"OpeningAngleMC",           "#varphi^{MC}",                                     "(rad.)"},
+  {"CosPointingAngleMC",       "cos(#theta)^{MC}",                                 "(rad.)"},
   //  {"PhivPairMC",               "#Phi_{v}^{MC}",                                    "(rad.)"},
 
 // Event specific MCvariables
   {"NTrkMC",                   "N_{trk}^{MC}",                                       ""},
+  {"XvPrimMC",                 "x_{prim.vtx}^{MC}",                                  "(cm)"},
+  {"YvPrimMC",                 "y_{prim.vtx}^{MC}",                                  "(cm)"},
+  {"ZvPrimMC",                 "z_{prim.vtx}^{MC}",                                  "(cm)"},
   {"STSMatches",               "N_{trk.matches}^{STS}",                              ""},
   {"TRDMatches",               "N_{trk.matches}^{TRD}",                              ""},
   {"VageMatches",              "N_{vage.matches}^{STS}",                             ""},
@@ -293,6 +297,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
 
 PairAnalysisEvent* PairAnalysisVarManager::fgEvent           = 0x0;
 CbmKFVertex*    PairAnalysisVarManager::fgKFVertex         = 0x0;
+CbmVertex*      PairAnalysisVarManager::fgVertexMC         = 0x0;
 //CbmStsKFTrackFitter* PairAnalysisVarManager::fgKFFitter    = 0x0;
 //CbmL1PFFitter*  PairAnalysisVarManager::fgL1Fitter    = 0x0;
 TBits*          PairAnalysisVarManager::fgFillMap          = 0x0;
