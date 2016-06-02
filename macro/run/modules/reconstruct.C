@@ -134,6 +134,12 @@ void reconstruct()
   std::cout << "-I- : Added task " << stsFindTracks->GetName() << std::endl;
   // -------------------------------------------------------------------------
 
+  // -----   Primary vertex finding   ---------------------------------------
+  CbmPrimaryVertexFinder* pvFinder = new CbmPVFinderKF();
+  CbmFindPrimaryVertex* findVertex = new CbmFindPrimaryVertex(pvFinder);
+  run->AddTask(findVertex);
+  std::cout << "-I- : Added task " << findVertex->GetName() << std::endl;
+  // -------------------------------------------------------------------------
 
   // ---   Global track finding   --------------------------------------------
   CbmLitFindGlobalTracks* finder = new CbmLitFindGlobalTracks();
@@ -144,12 +150,6 @@ void reconstruct()
   // -------------------------------------------------------------------------
 
 
-  // -----   Primary vertex finding   ---------------------------------------
-  CbmPrimaryVertexFinder* pvFinder = new CbmPVFinderKF();
-  CbmFindPrimaryVertex* findVertex = new CbmFindPrimaryVertex(pvFinder);
-  run->AddTask(findVertex);
-  std::cout << "-I- : Added task " << findVertex->GetName() << std::endl;
-  // -------------------------------------------------------------------------
 
 
   // -----   RICH reconstruction   ------------------------------------------
