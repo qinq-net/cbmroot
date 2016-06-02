@@ -88,9 +88,9 @@ void trd_sim(Int_t nEvents = 1, Int_t CbmSetup = 4)
   gInterpreter->ProcessLine(setupFunct);
 
   if (CbmSetup <= 3)
-    platformGeom = "passive/platform_v13a.geo";
+    CbmSetup::Instance()->SetModule(kPlatform, "v13a");
   else
-    platformGeom = "passive/platform_v13b.geo";
+    CbmSetup::Instance()->SetModule(kPlatform, "v13b");
 
   // In general, the following parts need not be touched
   // ========================================================================

@@ -23,8 +23,6 @@ void run_tof_disim(Int_t nEvents = 2, const char* setup = "sis100_electron")
   TString inDir   = gSystem->Getenv("VMCWORKDIR");
   TString inFile = ""; // give here or as argument; otherwise default is taken
 
-  TString outDir  = "data";
-
   TString outDir  = "data/";
   TString outFile = outDir + setup + "_test.mc.root";
   TString parFile = outDir + setup + "_params.root";

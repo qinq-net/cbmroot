@@ -148,7 +148,7 @@ void run_reco_new(Int_t nEvents = 2,
 
   // -----   Reconstruction tasks   -----------------------------------------
   std::cout << std::endl;
-  TString macroName = srcDir + "/macro/run/modules/reconstruct.C";
+  macroName = srcDir + "/macro/run/modules/reconstruct.C";
   std::cout << "Loading macro " << macroName << std::endl;
   gROOT->LoadMacro(macroName);
   gROOT->ProcessLine("reconstruct()");
