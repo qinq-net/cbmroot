@@ -106,7 +106,7 @@ const Bool_t IncludeBackpanel   = true;  // false;  // true, if backpanel is inc
 const Bool_t IncludeFebs        = true;  // false;  // true, if FEBs are included in geometry
 const Bool_t IncludeRobs        = false; // false;  // true, if ROBs are included in geometry
 const Bool_t IncludeAsics       = true;  // false;  // true, if ASICs are included in geometry
-const Bool_t IncludeSupports    = true;  // support structure must be there, otherwise there are no TRDpoints in sim
+const Bool_t IncludeSupports    = false; // true;  // support structure must be there, otherwise there are no TRDpoints in sim
 const Bool_t IncludeLabels      = true;  // false;  // true, if TRD (I, II, III) labels are plotted in (VisLevel 5)
 const Bool_t IncludeFieldVector = false;  // true, if magnetic field vector to be shown (in the magnet)
 
@@ -184,8 +184,8 @@ Double_t LayerPosition[MaxLayers] = { 360. }; // start position - 2014-06-16 - D
 
 const Double_t LayerThickness = 45.0; // Thickness of one TRD layer in cm
 
-const Double_t LayerOffset[MaxLayers] = {   0.,   0.,   0.,   0.,   5.,   0.,   0.,   0.,   5.,   0. };  // v13x[4,5] - z offset in addition to LayerThickness 
-//const Double_t LayerOffset[MaxLayers] = {   0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,   0. };  // SIS100 - z offset in addition to LayerThickness 
+//const Double_t LayerOffset[MaxLayers] = {   0.,   0.,   0.,   0.,   5.,   0.,   0.,   0.,   5.,   0. };  // v13x[4,5] - z offset in addition to LayerThickness 
+const Double_t LayerOffset[MaxLayers] = {   0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,   0. };  // SIS100 - z offset in addition to LayerThickness 
 //const Double_t LayerOffset[MaxLayers] = {   0.,   0.,   0.,   0.,  95.,   0.,   0.,   0.,   5.,   0. };  // v13n       - z offset in addition to LayerThickness 
 
 const Int_t LayerArraySize[3][4] =  { { 5, 5, 9, 11 },    // for layer[1-3][i,o] below
