@@ -2,17 +2,17 @@
 ##   trd_v15e_1e information file
 #
 
-# created 20160414
+# created 20160602
 
 # envelope
  410 cm   start of TRD (z)
- 685 cm   end   of TRD (z)
+ 680 cm   end   of TRD (z)
 
 # thickness
   45 cm   per single layer (z)
 
 # extra gaps
-   0   0   0   0   5   0    extra gaps in z (cm)
+   0   0   0   0   0   0    extra gaps in z (cm)
 
 # generated TRD layers
   1  2  3  4  5  6    planeID
@@ -38,11 +38,11 @@
   455 cm   z-position of layer  2
   500 cm   z-position of layer  3
   545 cm   z-position of layer  4
-  595 cm   z-position of layer  5
-  640 cm   z-position of layer  6
+  590 cm   z-position of layer  5
+  635 cm   z-position of layer  6
 
 # flags
-support structure is    : included
+support structure is    : NOT included
 radiator is             : included
 lattice grid is         : included
 kapton window is        : included
@@ -102,22 +102,22 @@ GBTX readout boards are : NOT included
   486.6000 cm   position of gas volume - layer  2
   531.6000 cm   position of gas volume - layer  3
   576.6000 cm   position of gas volume - layer  4
-  626.6000 cm   position of gas volume - layer  5
-  671.6000 cm   position of gas volume - layer  6
+  621.6000 cm   position of gas volume - layer  5
+  666.6000 cm   position of gas volume - layer  6
 
 # angles of acceptance
 v: 28.24 deg, h: 36.94 deg - vertical/horizontal - layer  1
 v: 25.99 deg, h: 34.31 deg - vertical/horizontal - layer  2
 v: 24.05 deg, h: 31.99 deg - vertical/horizontal - layer  3
 v: 22.36 deg, h: 29.94 deg - vertical/horizontal - layer  4
-v: 27.93 deg, h: 34.28 deg - vertical/horizontal - layer  5
-v: 26.32 deg, h: 32.45 deg - vertical/horizontal - layer  6
+v: 28.12 deg, h: 34.49 deg - vertical/horizontal - layer  5
+v: 26.49 deg, h: 32.65 deg - vertical/horizontal - layer  6
 
 # inner aperture
 v:  3.69 deg, h:  3.69 deg - vertical/horizontal - layer  1
 v:  3.35 deg, h:  3.35 deg - vertical/horizontal - layer  2
 v:  3.07 deg, h:  3.07 deg - vertical/horizontal - layer  3
 v:  2.83 deg, h:  2.83 deg - vertical/horizontal - layer  4
-v:  2.60 deg, h:  2.60 deg - vertical/horizontal - layer  5
-v:  2.43 deg, h:  2.43 deg - vertical/horizontal - layer  6
+v:  2.62 deg, h:  2.62 deg - vertical/horizontal - layer  5
+v:  2.45 deg, h:  2.45 deg - vertical/horizontal - layer  6
 

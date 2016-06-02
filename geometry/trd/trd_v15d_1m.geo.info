@@ -2,17 +2,17 @@
 ##   trd_v15d_1m information file
 #
 
-# created 20160509
+# created 20160602
 
 # envelope
  360 cm   start of TRD (z)
- 590 cm   end   of TRD (z)
+ 585 cm   end   of TRD (z)
 
 # thickness
   45 cm   per single layer (z)
 
 # extra gaps
-   0   0   0   0   5    extra gaps in z (cm)
+   0   0   0   0   0    extra gaps in z (cm)
 
 # generated TRD layers
   1  2  3  4  5    planeID
@@ -36,10 +36,10 @@
   405 cm   z-position of layer  2
   450 cm   z-position of layer  3
   495 cm   z-position of layer  4
-  545 cm   z-position of layer  5
+  540 cm   z-position of layer  5
 
 # flags
-support structure is    : included
+support structure is    : NOT included
 radiator is             : included
 lattice grid is         : included
 kapton window is        : included
@@ -98,19 +98,19 @@ GBTX readout boards are : NOT included
   436.6000 cm   position of gas volume - layer  2
   481.6000 cm   position of gas volume - layer  3
   526.6000 cm   position of gas volume - layer  4
-  576.6000 cm   position of gas volume - layer  5
+  571.6000 cm   position of gas volume - layer  5
 
 # angles of acceptance
 v: 31.20 deg, h: 40.29 deg - vertical/horizontal - layer  1
 v: 28.51 deg, h: 37.25 deg - vertical/horizontal - layer  2
 v: 26.22 deg, h: 34.59 deg - vertical/horizontal - layer  3
 v: 24.25 deg, h: 32.24 deg - vertical/horizontal - layer  4
-v: 29.94 deg, h: 36.52 deg - vertical/horizontal - layer  5
+v: 30.16 deg, h: 36.76 deg - vertical/horizontal - layer  5
 
 # inner aperture
 v:  4.16 deg, h:  4.16 deg - vertical/horizontal - layer  1
 v:  3.73 deg, h:  3.73 deg - vertical/horizontal - layer  2
 v:  3.38 deg, h:  3.38 deg - vertical/horizontal - layer  3
 v:  3.09 deg, h:  3.09 deg - vertical/horizontal - layer  4
-v:  2.83 deg, h:  2.83 deg - vertical/horizontal - layer  5
+v:  2.85 deg, h:  2.85 deg - vertical/horizontal - layer  5
 
