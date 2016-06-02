@@ -1157,7 +1157,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
     Info("DrawSame","graphics option off, collect an array");
     //    arr=(TObjArray*)gROOT->FindObject(Form("%s",histName.Data()));
     arr=(TObjArray*)gROOT->FindObject(GetName());
-    if(arr) { arr->ls(); arr->Clear(); }
+    if(arr) { Warning("DrawSame","Clear existing array %s",GetName()); arr->ls(); arr->Clear(); }
     else      arr = new TObjArray();
     //    arr->SetName(Form("%s",histName.Data()));
     arr->SetName(GetName());
@@ -1291,7 +1291,8 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
 
     /// rebin, normalize and scale spectra according to options 'rebinX','rebinStat','norm','normY','events','sclMax'
     h->Sumw2();
-    if(optRbn)                    h->Rebin(rbn);
+    if(optRbn && h->InheritsFrom( TH2::Class()) )   h=((TH2*)h)->RebinX(rbn,h->GetName());
+    else if( optRbn )                               h->Rebin(rbn);
     if(optNormY && h->GetDimension()==2 && !(h->GetSumOfWeights()==0)) {
       TH2 *hsum = (TH2*) h->Clone("orig");
       hsum->Reset("CE");
@@ -1360,7 +1361,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
 	hdenom=hdenom->Rebin(limits->GetSize()-1,hdenom->GetName(),limits->GetArray());
 	hdenom->Scale(1.,"width");
       }
-      if(optRbn && (optEff || !(i%10)) )       hdenom->Rebin(rbn);
+      if(optRbn && (optEff || !(i%10)) )       hdenom->RebinX(rbn);
       if(optEvt && (optEff || !(i%10)) )       hdenom->Scale(1./events);
       if(!hdenom || !h->Divide(hdenom))  { Warning("DrawSame(eff/ratio)","Division failed!!!!"); continue; }
     }
@@ -1413,9 +1414,9 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
       if(optRbn && !i) {
 	// TODO: check for consistency if opttask, than htden is rebinned multiple times!
 	//	  Printf(" rebin spectra");
-	if(hdenom) hdenom->Rebin(rbn);
-	if(htden)  htden->Rebin(rbn);
-	if(htnom)  htnom->Rebin(rbn);
+	if(hdenom) hdenom->RebinX(rbn);
+	if(htden)  htden->RebinX(rbn);
+	if(htnom)  htnom->RebinX(rbn);
       }
       if(optEvt && !i ) {
 	if(hdenom) hdenom->Scale(1./events);

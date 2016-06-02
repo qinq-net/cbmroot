@@ -53,7 +53,6 @@
 #include "CbmLitPtrTypes.h"
 #include "CbmLitConverterFairTrackParam.h"
 
-
 #include "PairAnalysisTrack.h"
 
 ClassImp(PairAnalysisTrack)
@@ -268,7 +267,7 @@ void PairAnalysisTrack::SetMassHypo(Int_t pdg1, Int_t pdg2, Bool_t refitMassAssu
   else                       Error("SetMassHypo","via STS charge went wrong!");
 
   // use TOF time(ns) and track length(cm) if available
-  if(fTofHit && 0) { //TODO: switched OFF!!
+  if(fTofHit && kFALSE) { //TODO: switched OFF!!
     m2 = fMomentum.Mag2() * (TMath::Power( (fTofHit->GetTime()*1e-9*TMath::C()) /
 					   fGlblTrack->GetLength()/100,           2)  - 1);
   }
@@ -339,6 +338,7 @@ void PairAnalysisTrack::Refit(Int_t pidHypo)
 
   // set charge based on fit
   fCharge  = (vtxTrack->GetQp()>0. ? +1. : -1. );
+
 }
 
 //______________________________________________
