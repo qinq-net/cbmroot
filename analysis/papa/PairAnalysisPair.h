@@ -18,6 +18,7 @@
 #include "PairAnalysisTrack.h"
 #include "PairAnalysisTrackRotator.h"
 
+class TLorentzVector;
 class CbmVertex;
 class CbmMCTrack;
 
@@ -77,10 +78,8 @@ public:
   void SetLabel(Int_t label)     { fLabel=label;}
   void SetWeight(Double_t wght)  { fWeight=wght;}
   void SetPdgCode(Int_t pdgCode) { fPdgCode=pdgCode; }
-  Int_t PdgCode() const {return fPdgCode;}
+  Int_t PdgCode() const          { return fPdgCode; }
 
-  ////  virtual void SetProductionVertex(const AliKFParticle &/*Vtx*/) { return; }
-  
   //inter leg information
   virtual Double_t GetChi2()              const { return -999.;     }
   virtual Int_t    GetNdf()               const { return -999.;     }
@@ -99,17 +98,14 @@ public:
 
   // calculate cos(theta*) and phi* in HE and CS pictures
   virtual void GetThetaPhiCM(Double_t &thetaHE, Double_t &phiHE, Double_t &thetaCS, Double_t &phiCS) const = 0;
-
-  virtual Double_t ThetaPhiCM(Bool_t isHE, Bool_t isTheta) const;
-  static  Double_t ThetaPhiCM(const PairAnalysisTrack* d1, const PairAnalysisTrack* d2,
-			      Bool_t isHE, Bool_t isTheta);
+  void GetThetaPhiCM(TLorentzVector &motherMom, TLorentzVector &p1Mom, TLorentzVector &p2Mom,
+		     Double_t &thetaHE, Double_t &phiHE, Double_t &thetaCS, Double_t &phiCS) const;
 
   virtual Double_t PsiPair(Double_t MagField)  const = 0;  //Angle cut w.r.t. to magnetic field
   virtual Double_t PhivPair(Double_t MagField) const = 0; //Angle of ee plane w.r.t. to magnetic field
 
   virtual Double_t GetCosPointingAngle(const CbmVertex *primVtx) const /*= 0*/;
 
-  // TODO: replace by KFPArticleBase function
   virtual Double_t GetArmAlpha() const = 0;
   virtual Double_t GetArmPt()    const = 0;
   void GetDCA(const CbmVertex *primVtx, Double_t d0z0[2]) const; // TOCHECK

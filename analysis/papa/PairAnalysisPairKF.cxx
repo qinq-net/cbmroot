@@ -186,54 +186,22 @@ void PairAnalysisPairKF::GetThetaPhiCM(Double_t &thetaHE, Double_t &phiHE, Doubl
   //
   // Calculate theta and phi in helicity and Collins-Soper coordinate frame
   //
-  Double_t pxyz1[3]={fD1.GetPx(),fD1.GetPy(),fD1.GetPz()};
-  Double_t pxyz2[3]={fD2.GetPx(),fD2.GetPy(),fD2.GetPz()};
-  const Double_t eleMass = TDatabasePDG::Instance()->GetParticle(11)->Mass();
-  const Double_t proMass = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
-  
-//   VParticle *d1 = static_cast<VParticle*>(fRefD1.GetObject());
-//   VParticle *d2 = static_cast<VParticle*>(fRefD2.GetObject());
+  Double_t px1=fD1.GetPx();
+  Double_t py1=fD1.GetPy();
+  Double_t pz1=fD1.GetPz();
+  Double_t px2=fD2.GetPx();
+  Double_t py2=fD2.GetPy();
+  Double_t pz2=fD2.GetPz();
+  const Double_t d1Mass = TDatabasePDG::Instance()->GetParticle(fPid1)->Mass();
+  const Double_t d2Mass = TDatabasePDG::Instance()->GetParticle(fPid2)->Mass();
 
-//   d1->PxPyPz(pxyz1);
-//   d2->PxPyPz(pxyz2);
-  
-  TLorentzVector projMom(0.,0.,-fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+proMass*proMass));
-  TLorentzVector targMom(0.,0., fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+proMass*proMass));
-  
   // first & second daughter 4-mom
-  TLorentzVector p1Mom(pxyz1[0],pxyz1[1],pxyz1[2],
-                       TMath::Sqrt(pxyz1[0]*pxyz1[0]+pxyz1[1]*pxyz1[1]+pxyz1[2]*pxyz1[2]+eleMass*eleMass));
-  TLorentzVector p2Mom(pxyz2[0],pxyz2[1],pxyz2[2],
-                       TMath::Sqrt(pxyz2[0]*pxyz2[0]+pxyz2[1]*pxyz2[1]+pxyz2[2]*pxyz2[2]+eleMass*eleMass));
-  // J/Psi 4-momentum vector
+  TLorentzVector p1Mom(px1,py1,pz1,TMath::Sqrt(px1*px1+py1*py1+pz1*pz1+d1Mass*d1Mass));
+  TLorentzVector p2Mom(px2,py2,pz2,TMath::Sqrt(px2*px2+py2*py2+pz2*pz2+d2Mass*d2Mass));
+  // mother 4-momentum vector
   TLorentzVector motherMom=p1Mom+p2Mom;
-  
-  // boost all the 4-mom vectors to the mother rest frame
-  TVector3 beta = (-1.0/motherMom.E())*motherMom.Vect();
-  p1Mom.Boost(beta);
-  p2Mom.Boost(beta);
-  projMom.Boost(beta);
-  targMom.Boost(beta);
 
-    // x,y,z axes
-  TVector3 zAxisHE = (motherMom.Vect()).Unit();
-  TVector3 zAxisCS = ((projMom.Vect()).Unit()-(targMom.Vect()).Unit()).Unit();
-  TVector3 yAxis = ((projMom.Vect()).Cross(targMom.Vect())).Unit();
-  TVector3 xAxisHE = (yAxis.Cross(zAxisHE)).Unit();
-  TVector3 xAxisCS = (yAxis.Cross(zAxisCS)).Unit();
-  
-  // fill theta and phi
-  if(fD1.GetQ()>0){
-    thetaHE = zAxisHE.Dot((p1Mom.Vect()).Unit());
-    thetaCS = zAxisCS.Dot((p1Mom.Vect()).Unit());
-    phiHE   = TMath::ATan2((p1Mom.Vect()).Dot(yAxis), (p1Mom.Vect()).Dot(xAxisHE));
-    phiCS   = TMath::ATan2((p1Mom.Vect()).Dot(yAxis), (p1Mom.Vect()).Dot(xAxisCS));
-  } else {
-    thetaHE = zAxisHE.Dot((p2Mom.Vect()).Unit());
-    thetaCS = zAxisCS.Dot((p2Mom.Vect()).Unit());
-    phiHE   = TMath::ATan2((p2Mom.Vect()).Dot(yAxis), (p2Mom.Vect()).Dot(xAxisHE));
-    phiCS   = TMath::ATan2((p2Mom.Vect()).Dot(yAxis), (p2Mom.Vect()).Dot(xAxisCS));
-  }
+  PairAnalysisPair::GetThetaPhiCM(motherMom, p1Mom, p2Mom, thetaHE, phiHE, thetaCS, phiCS);
 }
 
 
@@ -298,29 +266,7 @@ Double_t PairAnalysisPairKF::PsiPair(Double_t MagField) const
   return fPsiPair;
 	    */
 }
-/*
-//______________________________________________
-Double_t PairAnalysisPairKF::GetCosPointingAngle(const CbmVertex *primVtx) const
-{
-  //
-  // Calculate the poiting angle of the pair to the primary vertex and take the cosine
-  //
-  if(!primVtx) return -1.;
 
-  Double_t deltaPos[3]; //vector between the reference point and the V0 vertex
-  deltaPos[0] = fPair.GetX() - primVtx->GetX();
-  deltaPos[1] = fPair.GetY() - primVtx->GetY();
-  deltaPos[2] = fPair.GetZ() - primVtx->GetZ();
-
-  Double_t momV02    = Px()*Px() + Py()*Py() + Pz()*Pz();
-  Double_t deltaPos2 = deltaPos[0]*deltaPos[0] + deltaPos[1]*deltaPos[1] + deltaPos[2]*deltaPos[2];
-
-  Double_t cosinePointingAngle = (deltaPos[0]*Px() + deltaPos[1]*Py() + deltaPos[2]*Pz()) / TMath::Sqrt(momV02 * deltaPos2);
-
-  return TMath::Abs(cosinePointingAngle);
-
-}
-*/
 //______________________________________________
 Double_t PairAnalysisPairKF::GetArmAlpha() const
 {
@@ -365,7 +311,7 @@ Double_t PairAnalysisPairKF::PhivPair(Double_t MagField) const
   //Following idea to use opening of colinear pairs in magnetic field from e.g. PHENIX
   //to ID conversions. Angle between ee plane and magnetic field is calculated.
 
-  //Define local buffer variables for leg properties                                                                                                               
+  //Define local buffer variables for leg properties
   Double_t px1=-9999.,py1=-9999.,pz1=-9999.;
   Double_t px2=-9999.,py2=-9999.,pz2=-9999.;
 

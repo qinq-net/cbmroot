@@ -94,7 +94,7 @@ PairAnalysisSignalExt::PairAnalysisSignalExt(const PairAnalysisSignalExt &c) :
   fArrCocktail(c.fArrCocktail),
   fHistSignal(c.GetSignalHistogram()),
   fHistSB(c.GetSoverBHistogram()),
-  fHistSign(c.GetSignificanceHistogram()),
+  fHistSgn(c.GetSignificanceHistogram()),
   fHistBackground(c.GetBackgroundHistogram()),
   fHistCocktail(c.GetCocktailHistogram()),
   fHistDataPM(c.GetUnlikeSignHistogram()),
@@ -132,7 +132,7 @@ PairAnalysisSignalExt::~PairAnalysisSignalExt()
   if (fArrCocktail)    delete fArrCocktail;
   if (fHistSignal)     delete fHistSignal;
   if (fHistSB)         delete fHistSB;
-  if (fHistSign)       delete fHistSign;
+  if (fHistSgn)       delete fHistSgn;
   if (fHistBackground) delete fHistBackground;
   if (fHistCocktail)   delete fHistCocktail;
   if (fHistDataPP)     delete fHistDataPP;
@@ -554,7 +554,7 @@ void PairAnalysisSignalExt::Process(TObjArray* const arrhist)
     if(fHistSignal)     delete fHistSignal;     fHistSignal=0x0;
     if(fHistBackground) delete fHistBackground; fHistBackground=0x0;
     if(fHistSB)         delete fHistSB;         fHistSB=0x0;
-    if(fHistSign)       delete fHistSign;       fHistSign=0x0;
+    if(fHistSgn)       delete fHistSgn;       fHistSgn=0x0;
     if(fHistCocktail)   delete fHistCocktail;   fHistCocktail=0x0;
   }
 
@@ -760,19 +760,19 @@ void PairAnalysisSignalExt::Process(TObjArray* const arrhist)
   fHistSB->SetYTitle("S/B");
 
   //significance
-  fHistSign = (TH1*)fHistSignal->Clone("histSB");
-  fHistSign->Reset("CEIS");
+  fHistSgn = (TH1*)fHistSignal->Clone("histSB");
+  fHistSgn->Reset("CEIS");
   Double_t s=0.; Double_t b=0.;
-  for(Int_t i=1; i<=fHistSign->GetNbinsX(); i++) {
+  for(Int_t i=1; i<=fHistSgn->GetNbinsX(); i++) {
 
     if(!fPeakIsTF1)  s=static_cast<TH1*>(fgPeakShape)->GetBinContent(i);
-    else             s=static_cast<TF1*>(fgPeakShape)->Eval(fHistSign->GetBinCenter(i));
+    else             s=static_cast<TF1*>(fgPeakShape)->Eval(fHistSgn->GetBinCenter(i));
     b=fHistBackground->GetBinContent(i);
 
     if(s+b<1.e-6) continue;
-    fHistSign->SetBinContent(i,s/TMath::Sqrt(s+b));
+    fHistSgn->SetBinContent(i,s/TMath::Sqrt(s+b));
   }
-  fHistSign->SetYTitle("S/#sqrt{S+B}");
+  fHistSgn->SetYTitle("S/#sqrt{S+B}");
   //  fErrors(2) = ((s+b)>0 ? fValues(2)*TMath::Sqrt(be*be + TMath::Power(se*(s+2*b)/s, 2)) / 2 / (s+b) : 0);
 
 }
@@ -1042,7 +1042,8 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   Info("Draw", "Signal extraction results for '%s'",fgkBackgroundMethodNames[fMethod]);
   TString optString(option);
   optString.ToLower();
-  optString.ReplaceAll(" ","");
+  printf("Plot extraction: bgrd. estimator: '%s' \t options: '%s' \n",
+       fgkBackgroundMethodNames[fMethod], optString.Data());
   Bool_t optTask     =optString.Contains("same");      optString.ReplaceAll("same","");
   Bool_t optLegFull  =optString.Contains("legf");      optString.ReplaceAll("legf","");
   Bool_t optLeg      =optString.Contains("leg");       optString.ReplaceAll("leg","");
@@ -1059,6 +1060,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   Bool_t optOnlyMC   =optString.Contains("onlymc");    optString.ReplaceAll("onlymc","");
   Bool_t optNoMC     =optString.Contains("nomc");      optString.ReplaceAll("nomc","");
   Bool_t optCocktail =optString.Contains("cocktail");  optString.ReplaceAll("cocktail","");
+  optString.ReplaceAll(" ","");
 
   /// load style
   PairAnalysisStyler::LoadStyle();
@@ -1151,10 +1153,10 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
     if(fPlotMin!=fPlotMax) fHistSB->SetAxisRange(fPlotMin,fPlotMax, "X");
   }
   else if(optSgn) {
-    fHistSign->SetNameTitle("signal","signal");
-    fHistSign->UseCurrentStyle();
-    PairAnalysisStyler::Style(fHistSign,PairAnalysisStyler::kSig);
-    if(fPlotMin!=fPlotMax) fHistSign->SetAxisRange(fPlotMin,fPlotMax, "X");
+    fHistSgn->SetNameTitle("signal","signal");
+    fHistSgn->UseCurrentStyle();
+    PairAnalysisStyler::Style(fHistSgn,PairAnalysisStyler::kSig);
+    if(fPlotMin!=fPlotMax) fHistSgn->SetAxisRange(fPlotMin,fPlotMax, "X");
   }
 
   // fHistRfactor->UseCurrentStyle();
@@ -1173,7 +1175,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   if(!optOnlyMC) {
 
     if(optSB && !optOnlyRaw && !optNoSig)       { fHistSB->Draw(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++; }
-    else if(optSgn && !optOnlyRaw && !optNoSig) { fHistSign->Draw(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++; }
+    else if(optSgn && !optOnlyRaw && !optNoSig) { fHistSgn->Draw(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++; }
     else if(optOnlySig) { 
       drawOpt=(optString.IsNull()?"EP0":optString);
       fHistSignal->DrawCopy(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;
@@ -1198,6 +1200,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
       drawOpt=(optString.IsNull()?"HIST":optString);
       if(optSSB){ fHistCocktail->Divide(fHistDataPM);     fHistCocktail->SetYTitle(Form("S/(S+B)")); }
       if(optSB) { fHistCocktail->Divide(fHistBackground); fHistCocktail->SetYTitle(Form("%s",GetValueName(3))); }
+      if(optSgn){ FillSignificance(fHistCocktail, fHistCocktail, fHistBackground); }
       fHistCocktail->DrawCopy(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;
       //      fHistCocktail->DrawCopy((drawOpt+"same").Data()); i++;
     }
@@ -1299,6 +1302,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
 	legOpt.ReplaceAll("scat","");
 	legOpt.ReplaceAll("col","");
 	legOpt.ReplaceAll("z","");
+	legOpt.ReplaceAll("text","");
 	legOpt.ReplaceAll("e","");
 	//	Printf("hist %s legopt %s",histClass.Data(),legOpt.Data());
 	if(ileg==nobj && optTask) leg->AddEntry((TObject*)0x0,fArrHists->GetName(),"");
@@ -1328,7 +1332,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
 
 
   // styling
-  gPad->RedrawAxis();
+  //  gPad->RedrawAxis();
 
 }
 

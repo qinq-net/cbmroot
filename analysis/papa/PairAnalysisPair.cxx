@@ -74,91 +74,16 @@ PairAnalysisPair::~PairAnalysisPair()
 }
 
 //______________________________________________
-Double_t PairAnalysisPair::ThetaPhiCM(const PairAnalysisTrack* d1, const PairAnalysisTrack* d2, 
-				      Bool_t isHE, Bool_t isTheta)
+void PairAnalysisPair::GetThetaPhiCM(TLorentzVector &motherMom, TLorentzVector &p1Mom, TLorentzVector &p2Mom,
+				     Double_t &thetaHE, Double_t &phiHE, Double_t &thetaCS, Double_t &phiCS) const
 {
-  // The function calculates theta and phi in the mother rest frame with
-  // respect to the helicity coordinate system and Collins-Soper coordinate system
-  // TO DO: generalize for different decays (only J/Psi->e+e- now)
+  //
+  // Calculate theta and phi in helicity and Collins-Soper coordinate frame
+  //
 
-  // Laboratory frame 4-vectors:
-  // projectile beam & target beam 4-mom
-  Double_t px1=d1->Px();
-  Double_t py1=d1->Py();
-  Double_t pz1=d1->Pz();
-  Double_t px2=d2->Px();
-  Double_t py2=d2->Py();
-  Double_t pz2=d2->Pz();
-  const Double_t eleMass = TDatabasePDG::Instance()->GetParticle(11)->Mass();
   const Double_t proMass = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
-//   printf(" beam energy %f \n ", fBeamEnergy);
   TLorentzVector projMom(0.,0.,-fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+proMass*proMass));
   TLorentzVector targMom(0.,0., fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+proMass*proMass));
-  
-  // first & second daughter 4-mom
-  TLorentzVector p1Mom(px1,py1,pz1,TMath::Sqrt(px1*px1+py1*py1+pz1*pz1+eleMass*eleMass));
-  TLorentzVector p2Mom(px2,py2,pz2,TMath::Sqrt(px2*px2+py2*py2+pz2*pz2+eleMass*eleMass));
-  // J/Psi 4-momentum vector
-  TLorentzVector motherMom=p1Mom+p2Mom;
-  
-  // boost all the 4-mom vectors to the mother rest frame
-  TVector3 beta = (-1.0/motherMom.E())*motherMom.Vect();
-  p1Mom.Boost(beta);
-  p2Mom.Boost(beta);
-  projMom.Boost(beta);
-  targMom.Boost(beta);
-  
-  // x,y,z axes 
-  TVector3 zAxis;
-  if(isHE) zAxis = (motherMom.Vect()).Unit();
-  else zAxis = ((projMom.Vect()).Unit()-(targMom.Vect()).Unit()).Unit();
-  TVector3 yAxis = ((projMom.Vect()).Cross(targMom.Vect())).Unit();
-  TVector3 xAxis = (yAxis.Cross(zAxis)).Unit();
-  
-  // return either theta or phi
-  if(isTheta) {
-    if(d1->Charge()>0)
-      return zAxis.Dot((p1Mom.Vect()).Unit());
-    else 
-      return zAxis.Dot((p2Mom.Vect()).Unit());
-
-  }
-  else {
-    if(d1->Charge()>0)
-      return TMath::ATan2((p1Mom.Vect()).Dot(yAxis), (p1Mom.Vect()).Dot(xAxis));
-    else
-      return TMath::ATan2((p2Mom.Vect()).Dot(yAxis), (p2Mom.Vect()).Dot(xAxis));
-  }
-}
-
-//______________________________________________
-Double_t PairAnalysisPair::ThetaPhiCM(Bool_t isHE, Bool_t isTheta) const {
-  // The function calculates theta and phi in the mother rest frame with 
-  // respect to the helicity coordinate system and Collins-Soper coordinate system
-  // TO DO: generalize for different decays (only J/Psi->e+e- now)
-
-  // Laboratory frame 4-vectors:
-  // projectile beam & target beam 4-mom
-  PairAnalysisTrack *d1 = static_cast<PairAnalysisTrack*>(fRefD1.GetObject());
-  PairAnalysisTrack *d2 = static_cast<PairAnalysisTrack*>(fRefD2.GetObject());
-  
-  Double_t px1=d1->Px();
-  Double_t py1=d1->Py();
-  Double_t pz1=d1->Pz();
-  Double_t px2=d2->Px();
-  Double_t py2=d2->Py();
-  Double_t pz2=d2->Pz();
-  const Double_t eleMass = TDatabasePDG::Instance()->GetParticle(11)->Mass();
-  const Double_t proMass = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
-  
-  TLorentzVector projMom(0.,0.,-fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+proMass*proMass));
-  TLorentzVector targMom(0.,0., fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+proMass*proMass));
-  
-  // first & second daughter 4-mom
-  TLorentzVector p1Mom(px1,py1,pz1,TMath::Sqrt(px1*px1+py1*py1+pz1*pz1+eleMass*eleMass));
-  TLorentzVector p2Mom(px2,py2,pz2,TMath::Sqrt(px2*px2+py2*py2+pz2*pz2+eleMass*eleMass));
-  // J/Psi 4-momentum vector
-  TLorentzVector motherMom=p1Mom+p2Mom;
 
   // boost all the 4-mom vectors to the mother rest frame
   TVector3 beta = (-1.0/motherMom.E())*motherMom.Vect();
@@ -167,26 +92,26 @@ Double_t PairAnalysisPair::ThetaPhiCM(Bool_t isHE, Bool_t isTheta) const {
   projMom.Boost(beta);
   targMom.Boost(beta);
 
-  // x,y,z axes 
-  TVector3 zAxis;
-  if(isHE) zAxis = (motherMom.Vect()).Unit();
-  else zAxis = ((projMom.Vect()).Unit()-(targMom.Vect()).Unit()).Unit();
+  // x,y,z axes
+  TVector3 zAxisHE = (motherMom.Vect()).Unit();
+  TVector3 zAxisCS = ((projMom.Vect()).Unit()-(targMom.Vect()).Unit()).Unit();
   TVector3 yAxis = ((projMom.Vect()).Cross(targMom.Vect())).Unit();
-  TVector3 xAxis = (yAxis.Cross(zAxis)).Unit();
+  TVector3 xAxisHE = (yAxis.Cross(zAxisHE)).Unit();
+  TVector3 xAxisCS = (yAxis.Cross(zAxisCS)).Unit();
 
-  // return either theta or phi
-  if(isTheta) {
-    if(d1->Charge()>0) 
-      return zAxis.Dot((p1Mom.Vect()).Unit());
-    else
-      return zAxis.Dot((p2Mom.Vect()).Unit());
+  // fill theta and phi
+  if(static_cast<PairAnalysisTrack*>(fRefD1.GetObject())->Charge()>0){
+    thetaHE = zAxisHE.Dot((p1Mom.Vect()).Unit());
+    thetaCS = zAxisCS.Dot((p1Mom.Vect()).Unit());
+    phiHE   = TMath::ATan2((p1Mom.Vect()).Dot(yAxis), (p1Mom.Vect()).Dot(xAxisHE));
+    phiCS   = TMath::ATan2((p1Mom.Vect()).Dot(yAxis), (p1Mom.Vect()).Dot(xAxisCS));
+  } else {
+    thetaHE = zAxisHE.Dot((p2Mom.Vect()).Unit());
+    thetaCS = zAxisCS.Dot((p2Mom.Vect()).Unit());
+    phiHE   = TMath::ATan2((p2Mom.Vect()).Dot(yAxis), (p2Mom.Vect()).Dot(xAxisHE));
+    phiCS   = TMath::ATan2((p2Mom.Vect()).Dot(yAxis), (p2Mom.Vect()).Dot(xAxisCS));
   }
-  else {
-    if(d1->Charge()>0)
-      return TMath::ATan2((p1Mom.Vect()).Dot(yAxis), (p1Mom.Vect()).Dot(xAxis));
-    else
-      return TMath::ATan2((p2Mom.Vect()).Dot(yAxis), (p2Mom.Vect()).Dot(xAxis));
-  }
+
 }
 
 //______________________________________________
@@ -197,17 +122,14 @@ Double_t PairAnalysisPair::GetCosPointingAngle(const CbmVertex *primVtx) const
   //
   if(!primVtx) return -1.;
 
-  Double_t deltaPos[3]; //vector between the reference point and the V0 vertex
-  deltaPos[0] = Xv() - primVtx->GetX();
-  deltaPos[1] = Yv() - primVtx->GetY();
-  deltaPos[2] = Zv() - primVtx->GetZ();
+  TVector3 pairPos(Xv(),Yv(),Zv());
+  TVector3 pvtxPos;
+  primVtx->Position(pvtxPos);
+  pairPos-=pvtxPos;   //vector between the reference point and the V0 vertex
 
-  Double_t momV02    = Px()*Px() + Py()*Py() + Pz()*Pz();
-  Double_t deltaPos2 = deltaPos[0]*deltaPos[0] + deltaPos[1]*deltaPos[1] + deltaPos[2]*deltaPos[2];
-
-  Double_t cosinePointingAngle = (deltaPos[0]*Px() + deltaPos[1]*Py() + deltaPos[2]*Pz()) / TMath::Sqrt(momV02 * deltaPos2);
-
-  return TMath::Abs(cosinePointingAngle);
+  TVector3 pairMom(Px(),Py(),Pz());
+  Double_t pointingAngle = pairMom.Angle(pairPos);
+  return TMath::Abs( TMath::Cos(pointingAngle) );
 
 }
 
@@ -233,9 +155,6 @@ void PairAnalysisPair::SetBeamEnergy(Double_t beamEbyHand)
   //
   // set the beam energy by hand
   //
-  // if(ev->IsA()==AliESDEvent::Class())
-  //   fBeamEnergy = ((AliESDEvent*)ev)->GetBeamEnergy();
-  // else
   fBeamEnergy = beamEbyHand;
 }
 

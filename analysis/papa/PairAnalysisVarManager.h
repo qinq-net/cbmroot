@@ -1116,6 +1116,9 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisPair(const PairAnalysisPa
   // Protect
   if(!pair) return;
 
+  // set the beamenergy (needed by some variables)
+  pair->SetBeamEnergy( values[kEbeam] );
+
   // first fill mc info to avoid kWeight beeing reset
   // TODO: check if it makes sence only for pairtypes of SE
   FillVarMCParticle(pair->GetFirstDaughter()->GetMCTrack(),

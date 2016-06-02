@@ -165,38 +165,11 @@ void PairAnalysisPairLV::GetThetaPhiCM(Double_t &thetaHE, Double_t &phiHE, Doubl
   //
   // Calculate theta and phi in helicity and Collins-Soper coordinate frame
   //
-  const Double_t proMass = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
-  TLorentzVector projMom(0.,0.,-fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+proMass*proMass));
-  TLorentzVector targMom(0.,0., fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+proMass*proMass));
 
-  // boost all the 4-mom vectors to the mother rest frame
-  TVector3 beta = (-1.0/fPair.E())*fPair.Vect();
-  TLorentzVector p1(fD1);
-  TLorentzVector p2(fD2);
-  p1.Boost(beta);
-  p2.Boost(beta);
-  projMom.Boost(beta);
-  targMom.Boost(beta);
-
-  // x,y,z axes
-  TVector3 zAxisHE = (fPair.Vect()).Unit();
-  TVector3 zAxisCS = ((projMom.Vect()).Unit()-(targMom.Vect()).Unit()).Unit();
-  TVector3 yAxis   = ((projMom.Vect()).Cross(targMom.Vect())).Unit();
-  TVector3 xAxisHE = (yAxis.Cross(zAxisHE)).Unit();
-  TVector3 xAxisCS = (yAxis.Cross(zAxisCS)).Unit();
-
-  // fill theta and phi
-  if(dynamic_cast<PairAnalysisTrack*>(fRefD1.GetObject())->Charge()>0){
-    thetaHE = zAxisHE.Dot((p1.Vect()).Unit());
-    thetaCS = zAxisCS.Dot((p1.Vect()).Unit());
-    phiHE   = TMath::ATan2((p1.Vect()).Dot(yAxis), (p1.Vect()).Dot(xAxisHE));
-    phiCS   = TMath::ATan2((p1.Vect()).Dot(yAxis), (p1.Vect()).Dot(xAxisCS));
-  } else {
-    thetaHE = zAxisHE.Dot((p2.Vect()).Unit());
-    thetaCS = zAxisCS.Dot((p2.Vect()).Unit());
-    phiHE   = TMath::ATan2((p2.Vect()).Dot(yAxis), (p2.Vect()).Dot(xAxisHE));
-    phiCS   = TMath::ATan2((p2.Vect()).Dot(yAxis), (p2.Vect()).Dot(xAxisCS));
-  }
+  TLorentzVector motherMom(fPair);
+  TLorentzVector p1Mom(fD1);
+  TLorentzVector p2Mom(fD2);
+  PairAnalysisPair::GetThetaPhiCM(motherMom, p1Mom, p2Mom, thetaHE, phiHE, thetaCS, phiCS);
 }
 
 
@@ -262,47 +235,6 @@ Double_t PairAnalysisPairLV::PsiPair(Double_t MagField) const
 
   return fPsiPair;
 
-}
-
-//______________________________________________
-Double_t PairAnalysisPairLV::ThetaPhiCM(Bool_t isHE, Bool_t isTheta) const {
-  // The function calculates theta and phi in the mother rest frame with 
-  // respect to the helicity coordinate system and Collins-Soper coordinate system
-
-  // Laboratory frame 4-vectors:
-  const Double_t proMass = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
-  TLorentzVector projMom(0.,0.,-fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+proMass*proMass));
-  TLorentzVector targMom(0.,0., fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+proMass*proMass));
-
-  // boost all the 4-mom vectors to the mother rest frame
-  TVector3 beta = (-1.0/fPair.E())*fPair.Vect();
-  TLorentzVector p1(fD1);
-  TLorentzVector p2(fD2);
-  p1.Boost(beta);
-  p2.Boost(beta);
-  projMom.Boost(beta);
-  targMom.Boost(beta);
-
-  // x,y,z axes
-  TVector3 zAxis;
-  if(isHE) zAxis = (fPair.Vect()).Unit();
-  else     zAxis = ((projMom.Vect()).Unit()-(targMom.Vect()).Unit()).Unit();
-  TVector3 yAxis = ((projMom.Vect()).Cross(targMom.Vect())).Unit();
-  TVector3 xAxis = (yAxis.Cross(zAxis)).Unit();
-
-  // return either theta or phi
-  if(isTheta) {
-    if(dynamic_cast<PairAnalysisTrack*>(fRefD1.GetObject())->Charge()>0)
-      return zAxis.Dot((p1.Vect()).Unit());
-    else
-      return zAxis.Dot((p2.Vect()).Unit());
-  }
-  else {
-    if(dynamic_cast<PairAnalysisTrack*>(fRefD1.GetObject())->Charge()>0)
-      return TMath::ATan2((p1.Vect()).Dot(yAxis), (p1.Vect()).Dot(xAxis));
-    else
-      return TMath::ATan2((p2.Vect()).Dot(yAxis), (p2.Vect()).Dot(xAxis));
-  }
 }
 
 //______________________________________________

@@ -120,7 +120,7 @@ public:
   TH1* GetMCSignalShape()            const { return fHistSignalMC; }
   TH1* GetSignalHistogram()          const { return fHistSignal; }
   TH1* GetSoverBHistogram()          const { return fHistSB; }
-  TH1* GetSignificanceHistogram()    const { return fHistSign; }
+  TH1* GetSignificanceHistogram()    const { return fHistSgn; }
   TH1* GetBackgroundHistogram()      const { return fHistBackground; }
   TH1* GetUnlikeSignHistogram()      const { return fHistDataPM; }
   TH1* GetCocktailHistogram()        const { return fHistCocktail; }
@@ -162,7 +162,7 @@ protected:
   TObjArray *fArrCocktail = NULL; // array of cocktail histograms
   TH1 *fHistSignal        = NULL; // histogram of pure signal
   TH1 *fHistSB            = NULL; // histogram of signal to bgrd
-  TH1 *fHistSign          = NULL; // histogram of significance
+  TH1 *fHistSgn           = NULL; // histogram of significance
   TH1 *fHistBackground    = NULL; // histogram of background (fitted=0, like-sign=1, event mixing=2)
   TH1 *fHistCocktail      = NULL; // histogram of cocktail
   TH1 *fHistDataPM        = NULL; // histogram of selected +- pair candidates
@@ -210,6 +210,7 @@ protected:
   Bool_t fProcessed       = kFALSE; // flag
   static TH1F* fgHistSimPM;         // simulated peak shape
 
+  void FillSignificance(TH1* hfill, TObject* signal, TH1* hbgrd);
   void SetSignificanceAndSOB();      // calculate the significance and S/B
   void SetFWHM();                    // calculate the fwhm
 
@@ -319,5 +320,36 @@ inline void PairAnalysisSignalExt::SetFWHM()
   }
 
 }
+
+inline void PairAnalysisSignalExt::FillSignificance(TH1* hfill, TObject* signal, TH1* hbgrd) {
+  ///
+  /// fill significance histogram
+  ///
+  /// TODO: signal error for TF1
+
+
+  /* hfill->Reset("CEIS"); */
+  hfill->SetYTitle( GetValueName(2) );
+
+  Double_t s=0.;  Double_t b=0.;
+  Double_t se=0.; Double_t be=0.;
+  for(Int_t i=1; i<=hfill->GetNbinsX(); i++) {
+
+    if(signal->IsA()==TF1::Class()) s=static_cast<TF1*>(signal)->Eval(hfill->GetBinCenter(i));
+    else                            {
+      s   =static_cast<TH1*>(signal)->GetBinContent(i);
+      se  =static_cast<TH1*>(signal)->GetBinError(i);
+    }
+
+    b=hbgrd->GetBinContent(i);
+    be=hbgrd->GetBinError(i);
+
+    Double_t sgn = ((s+b)>0. ? s/TMath::Sqrt(s+b) : 0.);
+    hfill->SetBinContent(i, sgn );
+    hfill->SetBinError(  i,((s+b)>0. ? sgn*TMath::Sqrt(be*be + TMath::Power(se*(s+2*b)/s, 2)) / 2 / (s+b) : 0) );
+  }
+
+}
+
 
 #endif

@@ -92,12 +92,10 @@ public:
   // calculate cos(theta*) and phi* in HE and CS pictures
   void GetThetaPhiCM(Double_t &thetaHE, Double_t &phiHE, Double_t &thetaCS, Double_t &phiCS) const;
 
-  //  Double_t ThetaPhiCM(Bool_t isHE, Bool_t isTheta) const; ////TODO: check
   Double_t PsiPair(Double_t MagField)const; //Angle cut w.r.t. to magnetic field
   Double_t PhivPair(Double_t MagField)const; //Angle of ee plane w.r.t. to magnetic field
 
-  //Double_t GetCosPointingAngle(const CbmVertex *primVtx) const;
-  // TODO: replace by KFParticleBase function
+  // TODO: replace by KFParticleBase functions?
   Double_t GetArmAlpha() const;
   Double_t GetArmPt()    const;
 
