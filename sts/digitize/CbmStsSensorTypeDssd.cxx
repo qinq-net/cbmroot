@@ -444,14 +444,16 @@ Int_t CbmStsSensorTypeDssd::IntersectClusters(CbmStsCluster* clusterF,
 	if (fHitFinderModel == 0){
 		LOG(DEBUG3) << GetName() << ": ideal model of Hit Finder" << FairLogger::endl;
 	    const CbmMatch * clusterFMatch, *clusterBMatch;
-	    if (clusterFMatch = static_cast<const CbmMatch*>(clusterF -> GetMatch())){
+	    clusterFMatch = static_cast<const CbmMatch*>(clusterF -> GetMatch());
+	    if (!clusterFMatch){
 		LOG(DEBUG4) << GetName() << ": front cluster exists" << FairLogger::endl;
 		if ((clusterFMatch -> GetNofLinks()) > 1) {
 		    LOG(DEBUG4) << GetName() << ": front cluster has more than 1 CbmLink" << FairLogger::endl;
 		    return 0;
 		}
 	    }
-	    if (clusterBMatch = static_cast<const CbmMatch*> (clusterB -> GetMatch())){
+	    clusterBMatch = static_cast<const CbmMatch*> (clusterB -> GetMatch());
+	    if (!clusterBMatch){
 		LOG(DEBUG4) << GetName() << ": back cluster exists" << FairLogger::endl;
 
 		if ((clusterBMatch -> GetNofLinks()) > 1){
