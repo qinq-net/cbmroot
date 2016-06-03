@@ -24,7 +24,7 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
   : FairTask("CbmTrdTimeCorrel"),
     fRawSpadic(NULL),
     fHM(new CbmHistManager()),
-	fBaselineHM(new CbmHistManager()),
+    fBaselineHM(new CbmHistManager()),
     fNrTimeSlices(0),
     fRun(0),
     fRewriteSpadicName(true),
@@ -44,6 +44,8 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
     EpochRegressCounter(),
     EpochRegressOffset(),
     EpochRegressTriggered(),
+    fLinearHitBuffer(),
+    fClusterBuffer(),
     fOutputCloneArrays(false)  
 {
    for (Int_t i=0; i < 3; ++i) { 
