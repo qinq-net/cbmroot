@@ -130,18 +130,6 @@ void PairAnalysisPairKF::SetTracks(PairAnalysisTrack * const particle1, Int_t pi
 }
 
 //______________________________________________
-void PairAnalysisPairKF::SetGammaTracks(PairAnalysisTrack * const particle1, Int_t pid1,
-					 PairAnalysisTrack * const particle2, Int_t pid2)
-{
-  //
-  // set KF daughters and a GAMMA pair
-  // refParticle1 and 2 are the original tracks. In the case of track rotation
-  // they are needed in the framework
-  //
-  SetTracks(particle1, pid1, particle2, pid2);
-}
-
-//______________________________________________
 void PairAnalysisPairKF::SetMCTracks(const CbmMCTrack * const particle1, const CbmMCTrack * const particle2)
 {
   //

@@ -128,16 +128,6 @@ void PairAnalysisPairLV::SetTracks(PairAnalysisTrack * const particle1, Int_t pi
 }
 
 //______________________________________________
-void PairAnalysisPairLV::SetGammaTracks(PairAnalysisTrack * const particle1, Int_t pid1,
-				      PairAnalysisTrack * const particle2, Int_t pid2)
-{
-  //
-  // special gamma function not used in LV class using std constructor
-  //
-  SetTracks(particle1, pid1, particle2, pid2);
-}
-
-//______________________________________________
 void PairAnalysisPairLV::SetMCTracks(const CbmMCTrack * const particle1, const CbmMCTrack * const particle2)
 {
   //

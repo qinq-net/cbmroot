@@ -33,9 +33,6 @@ public:
   virtual void SetTracks(PairAnalysisTrack * const particle1, Int_t pid1,
 			 PairAnalysisTrack * const particle2, Int_t pid2)  = 0;
 
-  virtual void SetGammaTracks(PairAnalysisTrack * const particle1, Int_t pid1,
-			      PairAnalysisTrack * const particle2, Int_t pid2) = 0;
-
   virtual void SetMCTracks(const CbmMCTrack * const particle1,
 			   const CbmMCTrack * const particle2)  = 0;
 
