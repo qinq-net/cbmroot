@@ -1,0 +1,74 @@
+SIS-100. Beam pipe geometry created with create_bpipe_geometry_v16a_1m.C
+
+ pipe_v16a_1m = pipe for the SIS100 muon setups
+
+ The beam pipe is composed of carbon with a thickness of 0.5 mm (0.4 mm is
+ available from producer).
+ It is placed directly into the cave as mother volume.
+ Each section has a PCON shape (including windows).
+ There are two windows: 
+   - first one @ 220mm with R600mm and 0.7mm thickness,
+   - second one of iron the end of the pipe with R600mm and 0.2mm thickness.
+ The STS section is composed of cylinder D(z=220-500mm)=36mm and cone
+ (z=500-1700mm). 
+ All other sections of the beam pipe fit either the 2.5 degree standard
+ limit or their respective detectors opening if less than 2.5 degree is
+ available.
+ The PSD section of the beam pipe is missing because it is planned that it 
+ will be part of PSD geometry.
+
+Material:  carbon
+Thickness: D(z)mm/60
+
+
+Beam pipe section: pipe1 - vacuum chamber
+ i      Z,mm    Rin,mm   Rout,mm      h,mm
+ 1    -50.00     25.00     25.70      0.70
+ 2     -5.00     25.00     25.70      0.70
+ 3     -5.00    400.00    400.70      0.70
+ 4    230.17    400.00    400.70      0.70
+ 5    230.17    110.00    400.70    290.70
+ 6    230.87    110.00    130.70     20.70
+
+Beam pipe section: pipe2 - first window @ 220mm, h=0.7mm, R=600mm
+ i      Z,mm    Rin,mm   Rout,mm      h,mm
+ 1    220.00     18.00     18.00      0.00
+ 2    220.70     18.00     28.69     10.69
+ 3    221.45     30.00     39.30      9.30
+ 4    223.71     60.00     65.55      5.55
+ 5    227.49     90.00     94.14      4.14
+ 6    230.17    105.86    110.00      4.14
+ 7    230.87    110.00    110.00      0.00
+
+Beam pipe section: pipe3 - STS section
+ i      Z,mm    Rin,mm   Rout,mm      h,mm
+ 1    220.00     17.50     18.00      0.50
+ 2    500.00     17.50     18.00      0.50
+ 3   1250.00     54.50     55.00      0.50
+ 4   1700.00     73.70     74.20      0.50
+
+Beam pipe section: pipe4 - MUCH section
+ i      Z,mm    Rin,mm   Rout,mm      h,mm
+ 1   1700.00     73.70     74.20      0.50
+ 2   3700.00    161.10    161.60      0.50
+
+Beam pipe section: pipe5 - TRD section
+ i      Z,mm    Rin,mm   Rout,mm      h,mm
+ 1   3700.00    161.45    161.95      0.50
+ 2   6700.00    287.50    288.00      0.50
+
+Beam pipe section: pipe6 - TOF section
+ i      Z,mm    Rin,mm   Rout,mm      h,mm
+ 1   6700.00    287.50    288.00      0.50
+ 2   8250.00    211.50    212.00      0.50
+ 3   8800.00    211.50    212.00      0.50
+
+Beam pipe section: pipe7 - downstream section
+ i      Z,mm    Rin,mm   Rout,mm      h,mm
+ 1   8800.00    211.50    212.00      0.50
+ 2  15000.00    654.81    655.31      0.50
+
+Beam pipe section: pipe8 - second window @ the end, h=0.2mm, R=600mm, material: iron
+ i      Z,mm    Rin,mm   Rout,mm      h,mm
+ 1  15000.00      0.00    655.31    655.31
+ 2  15000.20      0.00    655.31    655.31
