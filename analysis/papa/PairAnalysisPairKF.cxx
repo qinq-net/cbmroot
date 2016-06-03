@@ -14,6 +14,7 @@
 #include "CbmL1.h"
 #include "L1Algo.h"
 #include "L1Field.h"
+#include "CbmL1PFFitter.h"
 
 #include "CbmKFTrack.h"
 #include "KFParticle.h"
