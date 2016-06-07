@@ -72,7 +72,7 @@ void run_reco_qa(Int_t nEvents = 100, const char* setup = "sis100_electron")
   TString outFile = outDir + setup + "_test.eds.root";      // Output file
 
   // Function needed for CTest runtime dependency
-  TString depFile = Remove_CTest_Dependency_File(outDir, "run_reco" , setup);
+  //  TString depFile = Remove_CTest_Dependency_File(outDir, "run_reco" , setup);
 
   //  Digitisation files.
   // Add TObjectString containing the different file names to
@@ -125,7 +125,7 @@ void run_reco_qa(Int_t nEvents = 100, const char* setup = "sis100_electron")
   run->SetInputFile(inFile);
   run->SetOutputFile(outFile);
   run->SetGenerateRunInfo(kTRUE);
-  Bool_t hasFairMonitor = Has_Fair_Monitor();
+  Bool_t hasFairMonitor = kFALSE; //Has_Fair_Monitor();
   if (hasFairMonitor) {
     FairMonitor::GetMonitor()->EnableMonitor(kTRUE);
   }
@@ -485,5 +485,5 @@ void run_reco_qa(Int_t nEvents = 100, const char* setup = "sis100_electron")
   cout << " All ok " << endl;
 
   // Function needed for CTest runtime dependency
-  Generate_CTest_Dependency_File(depFile);
+  //  Generate_CTest_Dependency_File(depFile);
 }

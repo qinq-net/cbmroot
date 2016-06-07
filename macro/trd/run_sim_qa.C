@@ -23,7 +23,7 @@
 
 
 
-void run_sim(Int_t nEvents = 100,
+void run_sim_qa(Int_t nEvents = 100,
 		         const char* setupName = "sis100_electron",
 		         const char* inputFile = "")
 {
@@ -48,7 +48,7 @@ void run_sim(Int_t nEvents = 100,
 
   // -----   Functions needed for CTest runtime dependency   ----------------
   TString depFile = Remove_CTest_Dependency_File(outDir, "run_sim" , setupName);
-  Bool_t hasFairMonitor = Has_Fair_Monitor();
+  Bool_t hasFairMonitor = kFALSE;//Has_Fair_Monitor();
   // ------------------------------------------------------------------------
 
 
@@ -157,7 +157,7 @@ void run_sim(Int_t nEvents = 100,
   // -----   Create and register modules   ----------------------------------
   std::cout << std::endl;
   TString macroName = gSystem->Getenv("VMCWORKDIR");
-  macroName += "/macro/run/registerSetup.C";
+  macroName += "/macro/run/modules/registerSetup.C";
   std::cout << "Loading macro " << macroName << std::endl;
   gROOT->LoadMacro(macroName);
   gROOT->ProcessLine("registerSetup()");
@@ -287,7 +287,7 @@ void run_sim(Int_t nEvents = 100,
   std::cout << " All ok " << std::endl;
 
   // Function needed for CTest runtime dependency
-  Generate_CTest_Dependency_File(depFile);
+  //  Generate_CTest_Dependency_File(depFile);
   // ------------------------------------------------------------------------
 
 }
