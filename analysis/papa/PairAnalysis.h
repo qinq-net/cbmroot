@@ -192,7 +192,7 @@ private:
   void ProcessMC();
 
   void  FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOnly=kFALSE);
-  void  FillMCHistograms(Int_t label1, Int_t label2, Int_t nSignal);
+  Bool_t FillMCHistograms(Int_t label1, Int_t label2, Int_t nSignal);
   void  FillHistogramsMC(const PairAnalysisEvent *ev,  PairAnalysisEvent *ev1);
   void  FillHistogramsPair(PairAnalysisPair *pair,Bool_t fromPreFilter=kFALSE);
   void  FillHistogramsTracks(TObjArray **tracks);

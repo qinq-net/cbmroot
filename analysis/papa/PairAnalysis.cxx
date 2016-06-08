@@ -423,9 +423,10 @@ void PairAnalysis::ProcessMC()
     // loop over signals
     for(Int_t isig=0; isig<nSignals; ++isig) {
       PairAnalysisSignalMC *sigMC = (PairAnalysisSignalMC*)fSignalsMC->UncheckedAt(isig);
-      // Proceed only if this signal is required in the pure MC step
       // NOTE: Some signals can be satisfied by many particles and this leads to high
       //       computation times (e.g. secondary electrons from the GEANT transport). Be aware of this!!
+
+      // Proceed only if this signal is required in the pure MC step
       if(!sigMC->GetFillPureMCStep()) continue;
 
       truth1 = papaMC->IsMCTruth(ipart, (PairAnalysisSignalMC*)fSignalsMC->UncheckedAt(isig), 1);
@@ -458,27 +459,28 @@ void PairAnalysis::ProcessMC()
   UInt_t selectedMask=(1<<fPairFilterMC.GetCuts()->GetEntries())-1;
   // loop over signals
   for(Int_t isig=0; isig<nSignals; ++isig) {
-    //    printf("INDEXES: %d-%d both%d\n",indexes1[isig],indexes2[isig],indexes12[isig]);
 
     // mix the particles which satisfy only one of the signal branches
     for(Int_t i1=0;i1<indexes1[isig];++i1) {
       CbmMCTrack* part1 = papaMC->GetMCTrackFromMCEvent(labels1[isig][i1]);
       Int_t mLabel1 = part1->GetMotherId();
+
       // (e.g. single electrons only, no pairs)
       if(!indexes2[isig]) FillMCHistograms(labels1[isig][i1], -1, isig);
-      //      PairAnalysisSignalMC *sigMC = (PairAnalysisSignalMC*)fSignalsMC->UncheckedAt(isig);
-      //      printf(" this %d is a single mc particle signal: %d \n",isig,sigMC->IsSingleParticle());
       //      if(sigMC->IsSingleParticle()) continue;
 
-      for(Int_t i2=0;i2<indexes2[isig];++i2) {
+      /// loop over second branch
+      /// NOTE: start from index i1 not 0, to avoid large combinatorics
+      ///       this is valid because particles with same mother follow each other,
+      ///       in other words they are not distributed over the stack, but the stack is sorted
+      for(Int_t i2=i1;i2<indexes2[isig];++i2) {
+	//	for(Int_t i2=0;i2<indexes2[isig];++i2) { /// old slower way
 
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-	// TODO: do pairing before filling anything, should be much faster
-	// CbmMCTrack* part1 = papaMC->GetMCTrackFromMCEvent(labels1[isig][i1]);
 	CbmMCTrack* part2 = papaMC->GetMCTrackFromMCEvent(labels2[isig][i2]);
-	CbmMCTrack*   mother=0x0;
-	//	Int_t mLabel1 = part1->GetMotherId();
 	Int_t mLabel2 = part2->GetMotherId();
+	CbmMCTrack*   mother=0x0;
+
+	/// check and get same mother MCtrack
 	if(mLabel1==mLabel2) mother = papaMC->GetMCTrackFromMCEvent(mLabel1);
 
 	// selection of MCtruth pairs
@@ -486,35 +488,53 @@ void PairAnalysis::ProcessMC()
 	if(mother)  cutmask=fPairFilterMC.IsSelected(mother);
 	else {
 	  /// TODO: do we really want to look at combinatorics at the genrator level?
-	  ///       this might save a lot of cpu time
+	  ///       this might saves a lot of cpu time and combinatorics on MCtruth level is useless
+	  /// NOTE: at the moment this is avoided by the 'break' after FillMCHistograms below
 	  /// continue;
 	  pair->SetMCTracks(part1,part2);
 	  cutmask=fPairFilterMC.IsSelected(pair);
 	}
 	//apply MC truth pair cuts
 	if (cutmask!=selectedMask) continue;
-	//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-	/// TODO: replace below lines by new fill function FillMCHistograms(mother, isig)
 	if(bFillHF)  fHistoArray->Fill(labels1[isig][i1], labels2[isig][i2], isig);
-	if(bFillHist)FillMCHistograms(labels1[isig][i1], labels2[isig][i2], isig);
-	//	if(bFillHist && mother) FillMCHistograms(mother, isig);
-	//	else if(bFillHist) FillMCHistograms(pair, isig);
-
-
-
-
+	if(bFillHist) {
+	  if(FillMCHistograms(labels1[isig][i1], labels2[isig][i2], isig)) break;
+	}
       }
     }
+
     // mix the particles which satisfy both branches
     for(Int_t i1=0;i1<indexes12[isig];++i1) {
       for(Int_t i2=0; i2<i1; ++i2) {
-	// TODO: add pair cuts on mc truth level (SEE above)
+
+	CbmMCTrack* part1 = papaMC->GetMCTrackFromMCEvent(labels12[isig][i1]);
+	CbmMCTrack* part2 = papaMC->GetMCTrackFromMCEvent(labels12[isig][i2]);
+	Int_t mLabel1 = part1->GetMotherId();
+	Int_t mLabel2 = part2->GetMotherId();
+
+	/// check and get same mother MCtrack
+	CbmMCTrack*   mother=0x0;
+	if(mLabel1==mLabel2) mother = papaMC->GetMCTrackFromMCEvent(mLabel1);
+
+	// selection of MCtruth pairs
+	UInt_t cutmask=0;
+	if(mother)  cutmask=fPairFilterMC.IsSelected(mother);
+	else {
+	  /// NOTE: at the moment this is avoided by the 'break' after FillMCHistograms (see above NOTE)
+	  pair->SetMCTracks(part1,part2);
+	  cutmask=fPairFilterMC.IsSelected(pair);
+	}
+	//apply MC truth pair cuts
+	if (cutmask!=selectedMask) continue;
+
 	if(bFillHF)  fHistoArray->Fill(labels12[isig][i1], labels12[isig][i2], isig);
-	if(bFillHist)FillMCHistograms(labels12[isig][i1], labels12[isig][i2], isig);
+	if(bFillHist) {
+	  if(FillMCHistograms(labels12[isig][i1], labels12[isig][i2], isig)) break;
+	}
       }
     }
-  }    // end loop over signals
+  }   // end loop over signals
 
   // release the memory
   delete pair;
@@ -1543,7 +1563,7 @@ void PairAnalysis::AddSignalMC(PairAnalysisSignalMC* signal) {
 }
 
 //________________________________________________________________
-void PairAnalysis::FillMCHistograms(Int_t label1, Int_t label2, Int_t nSignal) {
+Bool_t PairAnalysis::FillMCHistograms(Int_t label1, Int_t label2, Int_t nSignal) {
   //
   // fill QA MC TRUTH histograms for pairs and legs of all added mc signals
   //
@@ -1556,15 +1576,15 @@ void PairAnalysis::FillMCHistograms(Int_t label1, Int_t label2, Int_t nSignal) {
   Bool_t legClass =fHistos->HasHistClass(className2.Data());
   Bool_t trkClass =fHistos->HasHistClass(className3.Data());
   //  printf("fill signal %d: pair %d legs %d trk %d \n",nSignal,pairClass,legClass,trkClass);
-  if(!pairClass && !legClass && !trkClass) return;
+  if(!pairClass && !legClass && !trkClass) return kFALSE;
 
   PairAnalysisMC* papaMC = PairAnalysisMC::Instance();
   CbmMCTrack* part1 = papaMC->GetMCTrackFromMCEvent(label1);
   CbmMCTrack* part2 = papaMC->GetMCTrackFromMCEvent(label2);
-  if(!part1 && !part2) return;
+  if(!part1 && !part2) return kFALSE;
   if(part1&&part2) {
     // fill only unlike sign (and only SE)
-    if(part1->GetCharge()*part2->GetCharge()>0) return;
+    if(part1->GetCharge()*part2->GetCharge()>0) return kFALSE;
   }
 
   Int_t mLabel1 = papaMC->GetMothersLabel(label1);
@@ -1572,8 +1592,8 @@ void PairAnalysis::FillMCHistograms(Int_t label1, Int_t label2, Int_t nSignal) {
   //  printf("leg/mother labels: %d/%d %d/%d \t part %p,%p \n",label1,mLabel1,label2,mLabel2,part1,part2);
 
   // check the same mother option
-  if(sigMC->GetMothersRelation()==PairAnalysisSignalMC::kSame      && mLabel1!=mLabel2) return;
-  if(sigMC->GetMothersRelation()==PairAnalysisSignalMC::kDifferent && mLabel1==mLabel2) return;
+  if(sigMC->GetMothersRelation()==PairAnalysisSignalMC::kSame      && mLabel1!=mLabel2) return kFALSE;
+  if(sigMC->GetMothersRelation()==PairAnalysisSignalMC::kDifferent && mLabel1==mLabel2) return kFALSE;
 
   // fill event values
   Double_t *values = PairAnalysisVarManager::GetData(); //NEW CHANGED
@@ -1632,6 +1652,7 @@ void PairAnalysis::FillMCHistograms(Int_t label1, Int_t label2, Int_t nSignal) {
     fHistos->FillClass(className, values);
   }
 
+  return kTRUE;
 }
 
 //________________________________________________________________
