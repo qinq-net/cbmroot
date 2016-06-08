@@ -9,11 +9,11 @@ void run_reco(Int_t nEvents = 1000)
 
 	gRandom->SetSeed(10);
 
-	TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/mc.00001.root";
-	TString parFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/param.00001.root";
-	TString recoFile ="/Users/slebedev/Development/cbm/data/simulations/rich/richreco/reco.00001.root";
+	TString mcFile = "/data/cbm/Gregor/mc.00001.root";
+	TString parFile = "/data/cbm/Gregor/param.00001.root";
+	TString recoFile ="/data/cbm/Gregor/reco.00001.root";
 
-	TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/geosetup_8geV.C";
+	TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/geosetup_8gev.C";
 
 	std::string resultDir = "recqa_0001/";
 
