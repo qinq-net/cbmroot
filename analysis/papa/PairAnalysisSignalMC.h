@@ -83,9 +83,6 @@ class PairAnalysisSignalMC : public TNamed {
   Bool_t GetFillPureMCStep()                           const {return fFillPureMCStep;}
   Bool_t IsSingleParticle()                            const {return fIsSingleParticle; }
 
-  void SetJpsiRadiative(EJpsiRadiativ rad) { fJpsiRadiative=rad;    }
-  EJpsiRadiativ GetJpsiRadiative() const   { return fJpsiRadiative; }
-
   void SetIsDalitz(EDalitz dal, Int_t pdg=0) { fDalitz=dal; fDalitzPdg=pdg;   }
   EDalitz GetDalitz() const   { return fDalitz; }
   Int_t   GetDalitzPdg()   const   { return fDalitzPdg; }
@@ -96,60 +93,58 @@ class PairAnalysisSignalMC : public TNamed {
 
  private:
   // PDG codes for legs, mothers and grand-mothers
-  Int_t fLeg1;                        // leg 1 PDG
-  Int_t fLeg2;                        // leg 2 PDG
-  Int_t fMother1;                     // mother 1 PDG
-  Int_t fMother2;                     // mother 2 PDG
-  Int_t fGrandMother1;                // grandmother 1 PDG
-  Int_t fGrandMother2;                // grandmother 2 PDG
-  Int_t fGreatGrandMother1;           // great grandmother 1 PDG
-  Int_t fGreatGrandMother2;           // great grandmother 2 PDG
+  Int_t fLeg1                = 0;                        // leg 1 PDG
+  Int_t fLeg2                = 0;                        // leg 2 PDG
+  Int_t fMother1             = 0;                     // mother 1 PDG
+  Int_t fMother2             = 0;                     // mother 2 PDG
+  Int_t fGrandMother1        = 0;                // grandmother 1 PDG
+  Int_t fGrandMother2        = 0;                // grandmother 2 PDG
+  Int_t fGreatGrandMother1   = 0;          // great grandmother 1 PDG
+  Int_t fGreatGrandMother2   = 0;          // great grandmother 2 PDG
 
   // Toggle on/off the use of the PDG codes as inclusion or exclusion
   // Example: if fLeg1=211 and fLeg1Exclude=kTRUE than all codes will be accepted for leg 1 with
   //          the exception of 211 (pions)
-  Bool_t fLeg1Exclude;                // leg 1 
-  Bool_t fLeg2Exclude;                // leg 2 
-  Bool_t fMother1Exclude;             // mother 1 
-  Bool_t fMother2Exclude;             // mother 2 
-  Bool_t fGrandMother1Exclude;        // grandmother 1 
-  Bool_t fGrandMother2Exclude;        // grandmother 2 
-  Bool_t fGreatGrandMother1Exclude;   // great grandmother 1 
-  Bool_t fGreatGrandMother2Exclude;   // great grandmother 2 
-    
+  Bool_t fLeg1Exclude               = kFALSE;                // leg 1
+  Bool_t fLeg2Exclude               = kFALSE;                // leg 2
+  Bool_t fMother1Exclude            = kFALSE;             // mother 1
+  Bool_t fMother2Exclude            = kFALSE;             // mother 2
+  Bool_t fGrandMother1Exclude       = kFALSE;        // grandmother 1
+  Bool_t fGrandMother2Exclude       = kFALSE;        // grandmother 2
+  Bool_t fGreatGrandMother1Exclude  = kFALSE;  // great grandmother 1
+  Bool_t fGreatGrandMother2Exclude  = kFALSE;  // great grandmother 2
+
   // Particle sources
-  ESource fLeg1Source;                // leg 1 source
-  ESource fLeg2Source;                // leg 2 source
-  ESource fMother1Source;             // mother 1 source
-  ESource fMother2Source;             // mother 2 source
-  ESource fGrandMother1Source;        // grandmother 1 source
-  ESource fGrandMother2Source;        // grandmother 2 source
+  ESource fLeg1Source               = kDontCare;                // leg 1 source
+  ESource fLeg2Source               = kDontCare;                // leg 2 source
+  ESource fMother1Source            = kDontCare;             // mother 1 source
+  ESource fMother2Source            = kDontCare;             // mother 2 source
+  ESource fGrandMother1Source       = kDontCare;        // grandmother 1 source
+  ESource fGrandMother2Source       = kDontCare;        // grandmother 2 source
 
   // Flaggs whether to check both charges of a given PDG code
-  Bool_t fCheckBothChargesLeg1;         // check both charges of the legs pdg
-  Bool_t fCheckBothChargesLeg2;         //                leg2
-  Bool_t fCheckBothChargesMother1;      //                mother 1
-  Bool_t fCheckBothChargesMother2;      //                mother 2
-  Bool_t fCheckBothChargesGrandMother1; //              grand mother 1
-  Bool_t fCheckBothChargesGrandMother2; //              grand mother 2
-  Bool_t fCheckBothChargesGreatGrandMother1; //         great grand mother 1
-  Bool_t fCheckBothChargesGreatGrandMother2; //         great grand mother 2
-  Bool_t fCheckGEANTProcess;            //              GEANT process
+  Bool_t fCheckBothChargesLeg1              = kFALSE; // check both charges of the legs pdg
+  Bool_t fCheckBothChargesLeg2              = kFALSE; //                leg2
+  Bool_t fCheckBothChargesMother1           = kFALSE; //                mother 1
+  Bool_t fCheckBothChargesMother2           = kFALSE; //                mother 2
+  Bool_t fCheckBothChargesGrandMother1      = kFALSE; //              grand mother 1
+  Bool_t fCheckBothChargesGrandMother2      = kFALSE; //              grand mother 2
+  Bool_t fCheckBothChargesGreatGrandMother1 = kFALSE; //         great grand mother 1
+  Bool_t fCheckBothChargesGreatGrandMother2 = kFALSE; //         great grand mother 2
+  Bool_t fCheckGEANTProcess                 = kFALSE; //              GEANT process
 
-  EBranchRelation fMothersRelation;   // mother 1&2 relation (same, different or whatever)
-  TMCProcess fGEANTProcess;           // GEANT process ID (see roots TMCProcess)
-  Double_t fWeight;                   // weighting factor
-  //  TSpline3   fWeights;                   //> weighting factors
-  TSpline3   *fWeights;                   //> weighting factors
-  UInt_t   fType;                   // lookup variable for weighting factors
-  EJpsiRadiativ fJpsiRadiative;       // check for J/psi radiative decay
+  EBranchRelation fMothersRelation          = kUndefined;   // mother 1&2 relation (same, different or whatever)
+  TMCProcess fGEANTProcess                  = kPPrimary;    // GEANT process ID (see roots TMCProcess)
+  Double_t fWeight                          = 1.;           // weighting factor
+  TSpline3   *fWeights                      = NULL;         //> weighting factors
+  UInt_t   fType                            = 0;            // lookup variable for weighting factors
 
   // dalitz decays
-  EDalitz fDalitz;                      // check for dalitz decay
-  Int_t fDalitzPdg;                     // dalitz PDG
+  EDalitz fDalitz                           = kWhoCares;    // check for dalitz decay
+  Int_t fDalitzPdg                          = 0;            // dalitz PDG
 
-  Bool_t fFillPureMCStep;             // check and fill the pure MC step
-  Bool_t fIsSingleParticle;           // single particle MC signal such as e,pi,K,p
+  Bool_t fFillPureMCStep                    = kFALSE;       // check and fill the pure MC step
+  Bool_t fIsSingleParticle                  = kFALSE;       // single particle MC signal such as e,pi,K,p
 
   PairAnalysisSignalMC(const PairAnalysisSignalMC &c);
   PairAnalysisSignalMC &operator=(const PairAnalysisSignalMC &c);

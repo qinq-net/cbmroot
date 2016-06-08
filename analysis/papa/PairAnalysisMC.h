@@ -83,8 +83,6 @@ private:
   PairAnalysisMC &operator=(const PairAnalysisMC &c);
 
   Bool_t ComparePDG(Int_t particlePDG, Int_t requiredPDG, Bool_t pdgExclusion, Bool_t checkBothCharges) const;
-  Bool_t CheckIsRadiative(Int_t label) const;
-  Bool_t CheckRadiativeDecision(Int_t mLabel, const PairAnalysisSignalMC * const signalMC) const;
 
   Bool_t CheckIsDalitz(Int_t label, const PairAnalysisSignalMC * const signalMC) const;
   Bool_t CheckDalitzDecision(Int_t mLabel, const PairAnalysisSignalMC * const signalMC) const;

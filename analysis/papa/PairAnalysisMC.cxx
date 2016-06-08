@@ -543,32 +543,11 @@ Bool_t PairAnalysisMC::CheckParticleSource(Int_t label, PairAnalysisSignalMC::ES
 }
 
 //________________________________________________________________________________
-Bool_t PairAnalysisMC::CheckIsRadiative(Int_t label) const
-{
-  //
-  // Check if the particle has a three body decay, one being a photon
-  // NOTE: no information on # of daugthers available
-  // TODO: OBSOLETE can be checked via CheckIsDalitz function
-  if(label<0) return kFALSE;
-  
-  if(!fMCArray) return kFALSE;
-  CbmMCTrack *mother=static_cast<CbmMCTrack*>(GetMCTrackFromMCEvent(label));
-  if (!mother) return kFALSE;
-
-  /*
-  const Int_t nd=mother->GetNDaughters();
-  if (nd==2) return kFALSE;
-  for (Int_t i=2; i<nd; ++i)
-    if (GetMCTrackFromMCEvent(mother->GetDaughter(0)+i)->PdgCode()!=22) return kFALSE; //last daughter is photon
-  */
-  return kTRUE;
-}
-
-//________________________________________________________________________________
 Bool_t PairAnalysisMC::CheckIsDalitz(Int_t label, const PairAnalysisSignalMC * const signalMC) const
 {
   //
   // Check if the particle has a three body decay, one being a dalitz pdg
+  // NOTE: no information on # of daugthers available in CbmMCTrack
 
   // loop over the MC tracks
   //  for(Int_t ipart=0; ipart<fMCArray->GetEntriesFast(); ++ipart) { // super slow
@@ -579,24 +558,6 @@ Bool_t PairAnalysisMC::CheckIsDalitz(Int_t label, const PairAnalysisSignalMC * c
     if( daughter->GetMotherId() == label ) return kTRUE;
   }
   return kFALSE;
-}
-
-//________________________________________________________________________________
-Bool_t PairAnalysisMC::CheckRadiativeDecision(Int_t mLabel, const PairAnalysisSignalMC * const signalMC) const
-{
-  //
-  // Check for the decision of the radiative type request
-  //
-  
-  if (!signalMC) return kFALSE;
-  
-  if (signalMC->GetJpsiRadiative()==PairAnalysisSignalMC::kAll) return kTRUE;
-  
-  Bool_t isRadiative=CheckIsRadiative(mLabel);
-  if ((signalMC->GetJpsiRadiative()==PairAnalysisSignalMC::kIsRadiative) && !isRadiative) return kFALSE;
-  if ((signalMC->GetJpsiRadiative()==PairAnalysisSignalMC::kIsNotRadiative) && isRadiative) return kFALSE;
-  
-  return kTRUE;
 }
 
 //________________________________________________________________________________
@@ -666,8 +627,6 @@ Bool_t PairAnalysisMC::IsMCTruth(Int_t label, PairAnalysisSignalMC* signalMC, In
 		    signalMC->GetCheckBothChargesMothers(branch)) ) return kFALSE;
     if( !CheckParticleSource(mLabel, signalMC->GetMotherSource(branch))) return kFALSE;
 
-    //check for radiative decay
-    //    if( !CheckRadiativeDecision(mLabel, signalMC) ) return kFALSE;
     //check for dalitz decay
     if( !CheckDalitzDecision(mLabel, signalMC) ) return kFALSE;
   }
@@ -771,7 +730,6 @@ Bool_t PairAnalysisMC::IsMCTruth(const PairAnalysisPair* pair, const PairAnalysi
     directTerm = directTerm && (mcM1 || signalMC->GetMotherPDGexclude(1))
       && ComparePDG((mcM1 ? mcM1->GetPdgCode() : -99999),signalMC->GetMotherPDG(1),signalMC->GetMotherPDGexclude(1),signalMC->GetCheckBothChargesMothers(1))
       && CheckParticleSource(labelM1, signalMC->GetMotherSource(1))
-      //      && CheckRadiativeDecision(labelM1,signalMC)
       && CheckDalitzDecision(labelM1,signalMC);
   }
   
@@ -782,7 +740,6 @@ Bool_t PairAnalysisMC::IsMCTruth(const PairAnalysisPair* pair, const PairAnalysi
     directTerm = directTerm && (mcM2 || signalMC->GetMotherPDGexclude(2))
       && ComparePDG((mcM2 ? mcM2->GetPdgCode() : -99999 ),signalMC->GetMotherPDG(2),signalMC->GetMotherPDGexclude(2),signalMC->GetCheckBothChargesMothers(2))
       && CheckParticleSource(labelM2, signalMC->GetMotherSource(2))
-      //      && CheckRadiativeDecision(labelM2,signalMC)
       && CheckDalitzDecision(labelM2,signalMC);
   }
 
@@ -846,7 +803,6 @@ Bool_t PairAnalysisMC::IsMCTruth(const PairAnalysisPair* pair, const PairAnalysi
     crossTerm = crossTerm && (mcM2 || signalMC->GetMotherPDGexclude(1))
       && ComparePDG((mcM2 ? mcM2->GetPdgCode() : -99999),signalMC->GetMotherPDG(1),signalMC->GetMotherPDGexclude(1),signalMC->GetCheckBothChargesMothers(1))
       && CheckParticleSource(labelM2, signalMC->GetMotherSource(1))
-      //      && CheckRadiativeDecision(labelM2,signalMC)
       && CheckDalitzDecision(labelM2,signalMC);
   }
   
@@ -858,7 +814,6 @@ Bool_t PairAnalysisMC::IsMCTruth(const PairAnalysisPair* pair, const PairAnalysi
     crossTerm = crossTerm && (mcM1 || signalMC->GetMotherPDGexclude(2))
       && ComparePDG((mcM1 ? mcM1->GetPdgCode() : -99999),signalMC->GetMotherPDG(2),signalMC->GetMotherPDGexclude(2),signalMC->GetCheckBothChargesMothers(2))
       && CheckParticleSource(labelM1, signalMC->GetMotherSource(2))
-      //      && CheckRadiativeDecision(labelM1,signalMC)
       && CheckDalitzDecision(labelM1,signalMC);
   }
 

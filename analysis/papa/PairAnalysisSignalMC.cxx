@@ -96,49 +96,7 @@ const char* PairAnalysisSignalMC::fgkSignals[kNSignals][2]= {  //default signal 
 
 //_________________________________________________________________________
 PairAnalysisSignalMC::PairAnalysisSignalMC() :
-  TNamed("PairAnalysisSignalMC", "PairAnalysisSignalMC"),
-  fLeg1(0),
-  fLeg2(0),
-  fMother1(0),
-  fMother2(0),
-  fGrandMother1(0),
-  fGrandMother2(0),
-  fGreatGrandMother1(0),
-  fGreatGrandMother2(0),
-  fLeg1Exclude(kFALSE),      
-  fLeg2Exclude(kFALSE),         
-  fMother1Exclude(kFALSE),       
-  fMother2Exclude(kFALSE),   
-  fGrandMother1Exclude(kFALSE),
-  fGrandMother2Exclude(kFALSE),
-  fGreatGrandMother1Exclude(kFALSE),
-  fGreatGrandMother2Exclude(kFALSE),
-  fLeg1Source(kDontCare),
-  fLeg2Source(kDontCare),
-  fMother1Source(kDontCare),
-  fMother2Source(kDontCare),
-  fGrandMother1Source(kDontCare),
-  fGrandMother2Source(kDontCare),
-  fCheckBothChargesLeg1(kFALSE),
-  fCheckBothChargesLeg2(kFALSE),
-  fCheckBothChargesMother1(kFALSE),
-  fCheckBothChargesMother2(kFALSE),
-  fCheckBothChargesGrandMother1(kFALSE),
-  fCheckBothChargesGrandMother2(kFALSE),
-  fCheckBothChargesGreatGrandMother1(kFALSE),
-  fCheckBothChargesGreatGrandMother2(kFALSE),
-  fCheckGEANTProcess(kFALSE),
-  fMothersRelation(kUndefined),
-  fGEANTProcess(kPPrimary),
-  fWeight(1.),
-  fWeights(0x0),
-  //  fWeights(*(new TSpline3())),
-  fType(0),
-  fJpsiRadiative(kAll),
-  fDalitz(kWhoCares),
-  fDalitzPdg(0),
-  fFillPureMCStep(kFALSE),
-  fIsSingleParticle(kFALSE)
+  PairAnalysisSignalMC("PairAnalysisSignalMC", "PairAnalysisSignalMC")
 {
 
   //
@@ -149,49 +107,7 @@ PairAnalysisSignalMC::PairAnalysisSignalMC() :
 
 //_________________________________________________________________________
 PairAnalysisSignalMC::PairAnalysisSignalMC(const Char_t* name, const Char_t* title) :
-  TNamed(name, title),
-  fLeg1(0),
-  fLeg2(0),
-  fMother1(0),
-  fMother2(0),
-  fGrandMother1(0),
-  fGrandMother2(0),
-  fGreatGrandMother1(0),
-  fGreatGrandMother2(0),
-  fLeg1Exclude(kFALSE),      
-  fLeg2Exclude(kFALSE),         
-  fMother1Exclude(kFALSE),       
-  fMother2Exclude(kFALSE),   
-  fGrandMother1Exclude(kFALSE),
-  fGrandMother2Exclude(kFALSE),
-  fGreatGrandMother1Exclude(kFALSE),
-  fGreatGrandMother2Exclude(kFALSE),
-  fLeg1Source(kDontCare),
-  fLeg2Source(kDontCare),
-  fMother1Source(kDontCare),
-  fMother2Source(kDontCare),
-  fGrandMother1Source(kDontCare),
-  fGrandMother2Source(kDontCare),
-  fCheckBothChargesLeg1(kFALSE),
-  fCheckBothChargesLeg2(kFALSE),
-  fCheckBothChargesMother1(kFALSE),
-  fCheckBothChargesMother2(kFALSE),
-  fCheckBothChargesGrandMother1(kFALSE),
-  fCheckBothChargesGrandMother2(kFALSE),
-  fCheckBothChargesGreatGrandMother1(kFALSE),
-  fCheckBothChargesGreatGrandMother2(kFALSE),
-  fCheckGEANTProcess(kFALSE),
-  fMothersRelation(kUndefined),
-  fGEANTProcess(kPPrimary),
-  fWeight(1.),
-  fWeights(0x0),
-  //  fWeights(*(new TSpline3())),
-  fType(0),
-  fJpsiRadiative(kAll),
-  fDalitz(kWhoCares),
-  fDalitzPdg(0),
-  fFillPureMCStep(kFALSE),
-  fIsSingleParticle(kFALSE)
+  TNamed(name, title)
 {
 
   //
@@ -201,49 +117,7 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(const Char_t* name, const Char_t* tit
 
 //_________________________________________________________________________
 PairAnalysisSignalMC::PairAnalysisSignalMC(EDefinedSignal defaultSignal) :
-  TNamed(),
-  fLeg1(0),
-  fLeg2(0),
-  fMother1(0),
-  fMother2(0),
-  fGrandMother1(0),
-  fGrandMother2(0),
-  fGreatGrandMother1(0),
-  fGreatGrandMother2(0),
-  fLeg1Exclude(kFALSE),      
-  fLeg2Exclude(kFALSE),         
-  fMother1Exclude(kFALSE),       
-  fMother2Exclude(kFALSE),   
-  fGrandMother1Exclude(kFALSE),
-  fGrandMother2Exclude(kFALSE),
-  fGreatGrandMother1Exclude(kFALSE),
-  fGreatGrandMother2Exclude(kFALSE),
-  fLeg1Source(kDontCare),
-  fLeg2Source(kDontCare),
-  fMother1Source(kDontCare),
-  fMother2Source(kDontCare),
-  fGrandMother1Source(kDontCare),
-  fGrandMother2Source(kDontCare),
-  fCheckBothChargesLeg1(kFALSE),
-  fCheckBothChargesLeg2(kFALSE),
-  fCheckBothChargesMother1(kFALSE),
-  fCheckBothChargesMother2(kFALSE),
-  fCheckBothChargesGrandMother1(kFALSE),
-  fCheckBothChargesGrandMother2(kFALSE),
-  fCheckBothChargesGreatGrandMother1(kFALSE),
-  fCheckBothChargesGreatGrandMother2(kFALSE),
-  fCheckGEANTProcess(kFALSE),
-  fMothersRelation(kUndefined),
-  fGEANTProcess(kPPrimary),
-  fWeight(1.),
-  fWeights(0x0),
-  // fWeights(*(new TSpline3())),
-  fType(0),
-  fJpsiRadiative(kAll),
-  fDalitz(kWhoCares),
-  fDalitzPdg(0),
-  fFillPureMCStep(kFALSE),
-  fIsSingleParticle(kFALSE)
+  PairAnalysisSignalMC()
 {
 
   //
@@ -253,33 +127,33 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(EDefinedSignal defaultSignal) :
   switch(defaultSignal) {
   case kInclJpsi:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
-    fLeg1=11;  fLeg2=-11; fCheckBothChargesLeg1=kTRUE; fCheckBothChargesLeg2=kTRUE;
+    fLeg1=11;  fLeg2=-11;
     fMother1=443; fMother2=443;
     fMothersRelation=kSame;
     break;
   case kRadJpsi:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
-    fLeg1=11;  fLeg2=-11; fCheckBothChargesLeg1=kTRUE; fCheckBothChargesLeg2=kTRUE;
+    fLeg1=11;  fLeg2=-11;
     fMother1=443; fMother2=443;
     fMothersRelation=kSame;
     fDalitz=kIsDalitz; fDalitzPdg=22;
     break;
   case kNonRadJpsi:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
-    fLeg1=11;  fLeg2=-11; fCheckBothChargesLeg1=kTRUE; fCheckBothChargesLeg2=kTRUE;
+    fLeg1=11;  fLeg2=-11;
     fMother1=443; fMother2=443;
     fMothersRelation=kSame;
     fDalitz=kIsNotDalitz; fDalitzPdg=22;
     break;
   case kPsi2S:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
-    fLeg1=11;  fLeg2=-11; fCheckBothChargesLeg1=kTRUE; fCheckBothChargesLeg2=kTRUE;
+    fLeg1=11;  fLeg2=-11;
     fMother1=100443; fMother2=100443;
     fMothersRelation=kSame;
     break;
   case kConversion:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
-    fLeg1=11;    fLeg2=-11;   fCheckBothChargesLeg1=kTRUE;    fCheckBothChargesLeg2=kTRUE;
+    fLeg1=11;    fLeg2=-11;
     fMother1=22; fMother2=22;
     fMother1Source=kSecondary; fMother2Source=kSecondary;
     fMothersRelation=kSame;
@@ -289,14 +163,14 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(EDefinedSignal defaultSignal) :
     break;
   case kRho0:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
-    fLeg1=11;    fLeg2=-11;   fCheckBothChargesLeg1=kTRUE;    fCheckBothChargesLeg2=kTRUE;
+    fLeg1=11;    fLeg2=-11;
     fMother1=113; fMother2=113;
     fMothersRelation=kSame;
     SetGEANTProcess(kPPrimary); //pluto
     break;
   case kOmega:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
-    fLeg1=11;    fLeg2=-11;   fCheckBothChargesLeg1=kTRUE;    fCheckBothChargesLeg2=kTRUE;
+    fLeg1=11;    fLeg2=-11;
     fMother1=223; fMother2=223;
     fMothersRelation=kSame;
     fDalitz=kIsNotDalitz; fDalitzPdg=111;
@@ -304,7 +178,7 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(EDefinedSignal defaultSignal) :
     break;
   case kOmegaDalitz:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
-    fLeg1=11;    fLeg2=-11;   fCheckBothChargesLeg1=kTRUE;    fCheckBothChargesLeg2=kTRUE;
+    fLeg1=11;    fLeg2=-11;
     fMother1=223; fMother2=223;
     fMothersRelation=kSame;
     fDalitz=kIsDalitz; fDalitzPdg=111;
@@ -312,7 +186,7 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(EDefinedSignal defaultSignal) :
     break;
   case kPhi:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
-    fLeg1=11;    fLeg2=-11;   fCheckBothChargesLeg1=kTRUE;    fCheckBothChargesLeg2=kTRUE;
+    fLeg1=11;    fLeg2=-11;
     fMother1=333; fMother2=333;
     fMothersRelation=kSame;
     SetGEANTProcess(kPPrimary); //pluto
@@ -327,21 +201,21 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(EDefinedSignal defaultSignal) :
     break;
   case kEta:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
-    fLeg1=11;    fLeg2=-11;   fCheckBothChargesLeg1=kTRUE;    fCheckBothChargesLeg2=kTRUE;
+    fLeg1=11;    fLeg2=-11;
     fMother1=221; fMother2=221;
     fMothersRelation=kSame;
     //    SetGEANTProcess(kPUserDefined);
     break;
   case kPi0:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
-    fLeg1=11;    fLeg2=-11;   fCheckBothChargesLeg1=kTRUE;    fCheckBothChargesLeg2=kTRUE;
+    fLeg1=11;    fLeg2=-11;
     fMother1=111; fMother2=111;
     fMothersRelation=kSame;
     //    SetGEANTProcess(kPUserDefined);
     break;
   case kPi0Gamma:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
-    fLeg1=11;    fLeg2=-11;   fCheckBothChargesLeg1=kTRUE;    fCheckBothChargesLeg2=kTRUE;
+    fLeg1=11;    fLeg2=-11;
     fMother1=22; fMother2=22;
     fMothersRelation=kSame;
     fGrandMother1=111; fGrandMother2=111;
@@ -349,7 +223,7 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(EDefinedSignal defaultSignal) :
     break;
   case kPi0Dalitz:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
-    fLeg1=11;    fLeg2=-11;   fCheckBothChargesLeg1=kTRUE;    fCheckBothChargesLeg2=kTRUE;
+    fLeg1=11;    fLeg2=-11;
     fMother1=111; fMother2=111;
     fMothersRelation=kSame;
     fDalitz=kIsDalitz; fDalitzPdg=22;
@@ -438,11 +312,7 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(EDefinedSignal defaultSignal) :
   }
   //  Info("PairAnalysisSignalMC","Use predefined signal selected: %s\n",GetName());
 
-  // TODO: add print command showing the signal configuration
-  // e.g.: (add charge, source/origin, geant process)
-  // grandMothersPDG1 -> mothersPDG1 -> daughtersPDG1
-  //                     | relation
-  // grandMothersPDG2 -> mothersPDG2 -> !(daughtersPDG2)
+  Print();
 
 }
 
