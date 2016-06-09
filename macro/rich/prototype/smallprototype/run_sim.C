@@ -4,11 +4,16 @@ void run_sim(Int_t nEvents = 100)
     TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
     
     //gRandom->SetSeed(10);
+
+    //TString parFile = "/data/cbm/Gregor/param.00001.root";
+   // TString geoFile = "/data/cbm/Gregor/geofilefull.00001.root";
+   // TString mcFile = "/data/cbm/Gregor/mc.00001.root";
     
-    TString urqmdFile = "/data/cbm/cbmroot/input/urqmd.auau.10gev.mbias.root";
-    TString parFile = "/data/cbm/Gregor/param.00001.root";
-    TString geoFile = "/data/cbm/Gregor/geofilefull.00001.root";
-    TString mcFile = "/data/cbm/Gregor/mc.00001.root";
+    
+    TString parFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/param.00001.root";
+    TString geoFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/geofilefull.00001.root";
+    TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/mc.00001.root";
+    
     
 
 	TString caveGeom = "cave.geo";
@@ -31,7 +36,7 @@ void run_sim(Int_t nEvents = 100)
     fRun->SetGenerateRunInfo(kTRUE);
     FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
     
-    fRun->SetMaterials("media.geo"); // Materials
+    fRun->SetMaterials("media_rich_prototype.geo"); // Materials
     
     if ( caveGeom != "" ) {
         FairModule* cave = new CbmCave("CAVE");
