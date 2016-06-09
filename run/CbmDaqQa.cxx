@@ -73,7 +73,7 @@ void CbmDaqQa::Exec(Option_t*) {
     CbmMuchDigi* digi = (CbmMuchDigi*) fTimeSlice->GetData(kMUCH,iDigi);
     fTimeMUCH->Fill(digi->GetTime());
     fTimeOverThreshold->Fill(digi->GetAdc());
-    CbmMuchDigiMatch* match = digi->GetMatch();
+    CbmMuchDigiMatch* match = static_cast<CbmMuchDigiMatch*>(digi->GetMatch());
     Double_t tot = match->GetTimeOverThreshold(10000);
     fChargeVsTOT->Fill(digi->GetAdc(),tot);
     fTotChargeVsTOT->Fill(match->GetTotalWeight()/1000000.,tot);
@@ -106,7 +106,7 @@ void CbmDaqQa::Exec(Option_t*) {
 //    for (Int_t iDigi=0;iDigi<fTimeSlice->GetDataSize(kMUCH);iDigi++){
       CbmMuchDigi* digi = (CbmMuchDigi*) fTimeSlice->GetData(kMUCH,iDigiIndex);
       Double_t t = digi->GetTime();
-      CbmMuchDigiMatch* match = digi->GetMatch();
+      CbmMuchDigiMatch* match = static_cast<CbmMuchDigiMatch*>(digi->GetMatch());
       for (Int_t el=0;el<match->GetNoPrimaryElectrons();el++){
         Int_t mcRefTmp = match->GetRefIndexPerPrimaryElectron(el);
         if (mcRef<0) mcRef=mcRefTmp;

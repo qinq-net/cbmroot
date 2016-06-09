@@ -204,7 +204,7 @@ void CbmMuchDigitizeGem::Exec(Option_t* /*opt*/) {
 
       for (vector<CbmMuchPad*>::iterator j = pads.begin(); j != pads.end(); ++j)
       {
-        CbmMuchDigiMatch* match = (*j)->GetMatch();
+        CbmMuchDigiMatch* match = static_cast<CbmMuchDigiMatch*>((*j)->GetMatch());
         match->ClearLinks();
       }
     }
@@ -483,7 +483,7 @@ Bool_t CbmMuchDigitizeGem::AddCharge(CbmMuchSectorRadial* s,UInt_t ne, Int_t iPo
 // -------------------------------------------------------------------------
 void CbmMuchDigitizeGem::AddCharge(CbmMuchPad* pad, UInt_t charge, Int_t iPoint, Double_t time, Double_t driftTime){
   if (!pad) return;
-  CbmMuchDigiMatch* match = pad->GetMatch();
+  CbmMuchDigiMatch* match = static_cast<CbmMuchDigiMatch*>(pad->GetMatch());
   CbmMuchDigi* digi = pad->GetDigi();
   
   if (match->GetNofLinks()==0) {
@@ -503,7 +503,7 @@ void CbmMuchDigitizeGem::AddCharge(CbmMuchPad* pad, UInt_t charge, Int_t iPoint,
 
 // -------------------------------------------------------------------------
 Bool_t CbmMuchDigitizeGem::AddDigi(CbmMuchPad* pad) {
-  CbmMuchDigiMatch* match = pad->GetMatch();
+  CbmMuchDigiMatch* match = static_cast<CbmMuchDigiMatch*>(pad->GetMatch());
   CbmMuchDigi* digi = pad->GetDigi();
   match->AddNoise(fMeanNoise);
   Double_t  max_charge = match->GetMaxCharge();
