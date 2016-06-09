@@ -61,8 +61,8 @@ void run_sim(Int_t nEvents = 100)
     //primGen->SmearGausVertexXY(smearVertexXY);
     //primGen->SmearVertexZ(smearVertexZ);
     
-        FairBoxGenerator* boxGen1 = new FairBoxGenerator(11, 1);
-        boxGen1->SetPRange(10.,10.);
+        FairBoxGenerator* boxGen1 = new FairBoxGenerator(2212, 1);
+        boxGen1->SetPRange(2.,2.);
         boxGen1->SetPhiRange(0.,360.);
         boxGen1->SetThetaRange(180., 180.);
 		boxGen1->SetXYZ(0., 0., 30.);

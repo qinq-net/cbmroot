@@ -24,11 +24,17 @@ FairGeoMedia*   geoMedia = geoFace->getMedia();
   FairGeoBuilder* geoBuild = geoLoad->getGeoBuilder();
 
 //Media
-FairGeoMedium* mAluminium      = geoMedia->getMedium("aluminium");
-  if ( ! mAluminium) Fatal("Main", "FairMedium aluminium not found");
-  geoBuild->createMedium(mAluminium);
-  TGeoMedium* medAl = gGeoMan->GetMedium("aluminium");
-  if ( ! medAl) Fatal("Main", "Medium aluminium not found");
+FairGeoMedium* mCoating      = geoMedia->getMedium("RICHglass");
+  if ( ! mCoating) Fatal("Main", "FairMedium RICHglass not found");
+  geoBuild->createMedium(mCoating);
+  TGeoMedium* medCoating = gGeoMan->GetMedium("RICHglass");
+  if ( ! medCoating) Fatal("Main", "Medium RICHglass not found");
+
+FairGeoMedium* mVacuum      = geoMedia->getMedium("vacuum");				
+  if ( ! mVacuum ) Fatal("Main", "FairMedium vacuum not found");
+  geoBuild->createMedium(mVacuum);
+  TGeoMedium* medVacuum = gGeoMan->GetMedium("vacuum");
+  if ( ! medVacuum ) Fatal("Main", "Medium vacuum not found");
 
 FairGeoMedium* mNitrogen      = geoMedia->getMedium("RICHgas_N2_dis");				
   if ( ! mNitrogen ) Fatal("Main", "FairMedium RICHgas_N2_dis not found");
@@ -42,11 +48,11 @@ FairGeoMedium* mPMT      = geoMedia->getMedium("CsI");
   TGeoMedium* medCsI = gGeoMan->GetMedium("CsI");
   if ( ! medCsI ) Fatal("Main", "Medium CsI not found");
 
-FairGeoMedium* mGlass      = geoMedia->getMedium("RICHgas_CO2_dis+");
+FairGeoMedium* mGlass      = geoMedia->getMedium("Rich_NBK7_glass");
   if ( ! mGlass ) Fatal("Main", "FairMedium Rich_NBK7_glass not found");
   geoBuild->createMedium(mGlass);
-  TGeoMedium* medGlass = gGeoMan->GetMedium("RICHgas_CO2_dis+");
-  if ( ! medGlass ) Fatal("Main", "Medium Rich_NBK7_glass not found");
+  TGeoMedium* medGlass = gGeoMan->GetMedium("Rich_NBK7_glass");
+  if ( ! medGlass ) Fatal("Main", "Medium Rich_NBK7_glass  not found");
 
 
 
@@ -102,40 +108,34 @@ TGeoVolume *gas= gGeoMan->MakeBox("Gasbox", medNitrogen , testboxwidth/2-1+50, t
 
 //PMT Container containing PMT Matrix
 
-//TGeoVolume *pmtcontainer= gGeoMan->MakeBox("PMTContainer", medCsI , 3*pmtsize/2, 2*pmtsize/2, 0.5);
+TGeoVolume *pmtcontainer= gGeoMan->MakeBox("PMTContainer", medCsI , 3*pmtsize/2, 2*pmtsize/2, 0.5);
 
 //PMT
-//TGeoVolume *pmt= gGeoMan->MakeBox("PMT", medCsI , pmtsize/2, pmtsize/2, 0.5);
+TGeoVolume *pmt= gGeoMan->MakeBox("PMT", medCsI , pmtsize/2, pmtsize/2, 0.5);
 
 //PMT Pixels
 
-//TGeoVolume *pmtpixel= gGeoMan->MakeBox("pmt_pixel", medCsI, pmtpixelsize/2, pmtpixelsize/2, 0.5); 
+TGeoVolume *pmtpixel= gGeoMan->MakeBox("pmt_pixel", medCsI, pmtpixelsize/2, pmtpixelsize/2, 0.5); 
 
 //Lensecoating parametrized as sphere
-//TGeoVolume *coating= gGeoMan->MakeSphere("Coating", medAl, lenseradius, lenseradius+lensebeschichtung, 90., 180., 0., 360.);
+TGeoSphere *coating= new TGeoSphere("Coating", lenseradius, lenseradius+lensebeschichtung, 90., 180., 0., 360.);
 
 //Lense parametrized as sphere
-TGeoVolume *lense=gGeoMan->MakeSphere("Lense", medNitrogen, 0., lenseradius, 90., 180., 0., 360.);
+TGeoSphere *lense= new TGeoSphere("Lense", 0., lenseradius, 90., 180., 0., 360.);
 
-//TGeoVolume *lense1=gGeoMan->MakeSphere("Lense1", medNitrogen, 0., lenseradius, 90., 180., 0., 360.);
 
 //Cutout for Lense
-//TGeoVolume *cutoutlense= gGeoMan->MakeBox("CutOutLense", medAl, lenseradius+lensebeschichtung, lenseradius+lensebeschichtung, (lenseradius-centerthickness)/2);
-TGeoVolume *cutoutlense1= gGeoMan->MakeBox("CutOutLense1", medNitrogen, lenseradius+lensebeschichtung, lenseradius+lensebeschichtung, (lenseradius-centerthickness)/2);
+TGeoBBox *cutoutlense= new TGeoBBox("CutOutLense", lenseradius+lensebeschichtung, lenseradius+lensebeschichtung, (lenseradius-centerthickness)/2);
 
 //Composite Lense
-TGeoCompositeShape *endlense= new TGeoCompositeShape("Endlense", "Lense-CutOutLense1:trComp");
-//TGeoCompositeShape *lensecoating= new TGeoCompositeShape("Endlensecoating", "Coating-CutOutLense:trComp");
-TGeoVolume *compendlense= new TGeoVolume("CompEndLense", endlense);
-//TGeoVolume *complensecoating= new TGeoVolume("Complensecoating", lensecoating); 
+TGeoCompositeShape *endlense= new TGeoCompositeShape("Endlense", "Lense-CutOutLense:trComp");
+TGeoCompositeShape *lensecoating= new TGeoCompositeShape("Endlensecoating", "Coating-CutOutLense:trComp");
+TGeoVolume *compendlense= new TGeoVolume("CompEndLense", endlense, medGlass);
+TGeoVolume *complensecoating= new TGeoVolume("Complensecoating", lensecoating, medCoating); 
 
 
-//complensecoating->SetLineColor(kRed);
+complensecoating->SetLineColor(kRed);
 compendlense->SetLineColor(kBlue);
-
-
-//TGeoVolume *clipbox= gGeoMan->MakeBox("Clipbox", medNitrogen, lenseradius+lensebeschichtung, lenseradius+lensebeschichtung, (lenseradius-centerthickness)/2);
-//gGeoMan->SetClippingShape(clipbox);
 
 
 //Positioning
@@ -143,25 +143,21 @@ top->AddNode(box, 1, trBox);
 
 box->AddNode(gas, 1, trBox);
 
-//gas->AddNode(complensecoating, 1, trLense);
+gas->AddNode(complensecoating, 1, trLense);
 gas->AddNode(compendlense, 1, trLense);
-//gas->AddNode(lense, 1, trLense);
-//gas->AddNode(lense1, 1, tr100);
-//gas->AddNode(pmtcontainer, 1, trPMTup);
-//gas->AddNode(pmtcontainer, 2, trPMTdown);
-
-//gas->AddNode(clipbox, 1, trComp);
+gas->AddNode(pmtcontainer, 1, trPMTup);
+gas->AddNode(pmtcontainer, 2, trPMTdown);
 
 
-//pmtcontainer->AddNode(pmt, 1, tr2);
-//pmtcontainer->AddNode(pmt, 2, tr3);
-//pmtcontainer->AddNode(pmt, 3, tr4);
-//pmtcontainer->AddNode(pmt, 4, tr5);
-//pmtcontainer->AddNode(pmt, 5, tr6);
-//pmtcontainer->AddNode(pmt, 6, tr7);
+pmtcontainer->AddNode(pmt, 1, tr2);
+pmtcontainer->AddNode(pmt, 2, tr3);
+pmtcontainer->AddNode(pmt, 3, tr4);
+pmtcontainer->AddNode(pmt, 4, tr5);
+pmtcontainer->AddNode(pmt, 5, tr6);
+pmtcontainer->AddNode(pmt, 6, tr7);
 
 
-/*for(int i=0; i<8; i++)
+for(int i=0; i<8; i++)
 	{
 		for(int j=0; j<8; j++)
 		{
@@ -169,10 +165,8 @@ gas->AddNode(compendlense, 1, trLense);
 			pmt->AddNode(pmtpixel, 8*i+j+1, trij);
 		}	
 	}	
-*/
 
 
-//gGeoManager->SetClipping(flag);
 
 gGeoMan->CheckOverlaps();
 gGeoMan->PrintOverlaps();
@@ -184,7 +178,7 @@ gGeoMan->SetTopVisible();
 box->SetVisibility(false);
 
 
-box->Draw("ogl");
+box->Draw();
 
 
  TFile* geoFile = new TFile(geoFileName, "RECREATE");
