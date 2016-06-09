@@ -24,8 +24,8 @@
 #include "CbmStsHit.h"
 #include "CbmTrdPoint.h"
 #include "CbmTrdHit.h"
-#include "/data/cbm/cbmroot/data/tof/CbmTofPoint.h"
-#include "/data/cbm/cbmroot/data/tof/CbmTofHit.h"
+#include "../../../data/tof/CbmTofPoint.h"
+#include "../../../data/tof/CbmTofHit.h"
 
 #include "CbmUtils.h"
 #include "CbmHistManager.h"
