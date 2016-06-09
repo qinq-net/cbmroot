@@ -88,8 +88,42 @@ private:
     
     string fOutputDir; // output dir for results
     
-    TClonesArray* fRichHits;
-    
+  
+
+    TClonesArray* fMCTracks;
+
+
+	TClonesArray* fSTSPoints;
+
+	TClonesArray* fSTSDigis;
+
+	TClonesArray* fSTSHits;
+
+	TClonesArray* fSTSTrack;
+
+
+	TClonesArray* fRichPoints;
+
+	TClonesArray* fRichDigis;
+	
+	TClonesArray* fRichHits;
+
+	TClonesArray* fRichRings;
+
+
+	TClonesArray* fTRDPoints;
+
+	TClonesArray* fTRDHits;
+
+	TClonesArray* fTRDTrack;
+
+
+	TClonesArray* fToFPoints;
+
+	TClonesArray* fToFHits;
+
+	TClonesArray* fToFTrack;
+
     
     vector<TCanvas*> fCanvas;
     
