@@ -65,7 +65,7 @@ void run_sim(Int_t nEvents = 100)
         boxGen1->SetPRange(10.,10.);
         boxGen1->SetPhiRange(0.,360.);
         boxGen1->SetThetaRange(180., 180.);
-		boxGen1->SetXYZ(0., 0., 0.);
+		boxGen1->SetXYZ(0., 0., 30.);
         boxGen1->Init();
         primGen->AddGenerator(boxGen1);
     
