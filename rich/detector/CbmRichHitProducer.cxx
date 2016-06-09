@@ -1,9 +1,9 @@
 /**
-* \file CbmRichHitProducer.cxx
-*
-* \author B. Polichtchouk
-* \date 2004
-**/
+ * \file CbmRichHitProducer.cxx
+ *
+ * \author B. Polichtchouk
+ * \date 2004
+ **/
 
 #include "CbmRichHitProducer.h"
 
@@ -23,18 +23,20 @@ using namespace std;
 
 
 CbmRichHitProducer::CbmRichHitProducer():
-   FairTask("CbmRichHitProducer"),
-   fRichDigis(NULL),
-   fRichHits(NULL),
-   fEventNum(0)
-{
+FairTask("CbmRichHitProducer"),
+fRichDigis(NULL),
+fRichHits(NULL),
+fEventNum(0),
+fRotationNeeded(true)
 
+{
+    
 }
 
 CbmRichHitProducer::~CbmRichHitProducer()
 {
-   FairRootManager *manager =FairRootManager::Instance();
-   manager->Write();
+    FairRootManager *manager =FairRootManager::Instance();
+    manager->Write();
 }
 
 void CbmRichHitProducer::SetParContainers()
@@ -43,45 +45,44 @@ void CbmRichHitProducer::SetParContainers()
 
 InitStatus CbmRichHitProducer::Init()
 {
-   FairRootManager* manager = FairRootManager::Instance();
-
-   fRichDigis = (TClonesArray*)manager->GetObject("RichDigi");
-   if (NULL == fRichDigis) { Fatal("CbmRichHitProducer::Init","No RichDigi array!"); }
-
-   fRichHits = new TClonesArray("CbmRichHit");
-   manager->Register("RichHit","RICH", fRichHits, kTRUE);
-
-   return kSUCCESS;
+    FairRootManager* manager = FairRootManager::Instance();
+    
+    fRichDigis = (TClonesArray*)manager->GetObject("RichDigi");
+    if (NULL == fRichDigis) { Fatal("CbmRichHitProducer::Init","No RichDigi array!"); }
+    
+    fRichHits = new TClonesArray("CbmRichHit");
+    manager->Register("RichHit","RICH", fRichHits, kTRUE);
+    
+    return kSUCCESS;
 }
 
 void CbmRichHitProducer::Exec(
-      Option_t* option)
+                              Option_t* option)
 {
-	fEventNum++;
-	LOG(INFO) << "CbmRichHitProducer event " << fEventNum << FairLogger::endl;
-
-	fRichHits->Delete();
-
-	for(Int_t j = 0; j < fRichDigis->GetEntries(); j++){
-		CbmRichDigi* digi = (CbmRichDigi*) fRichDigis->At(j);
+    fEventNum++;
+    LOG(INFO) << "CbmRichHitProducer event " << fEventNum << FairLogger::endl;
+    
+    fRichHits->Delete();
+    
+    for(Int_t j = 0; j < fRichDigis->GetEntries(); j++){
+        CbmRichDigi* digi = (CbmRichDigi*) fRichDigis->At(j);
         if (digi == NULL) continue;
         if (digi->GetAddress() < 0) continue;
-		CbmRichMapData* data =  CbmRichDigiMapManager::GetInstance().GetDataByAddress(digi->GetAddress());
-		TVector3 posPoint;
-		posPoint.SetXYZ(data->fX, data->fY, data->fZ);
-		TVector3 detPoint;
-
-		CbmRichGeoManager::GetInstance().RotatePoint(&posPoint, &detPoint);
+        CbmRichMapData* data =  CbmRichDigiMapManager::GetInstance().GetDataByAddress(digi->GetAddress());
+        TVector3 posPoint;
+        posPoint.SetXYZ(data->fX, data->fY, data->fZ);
+        TVector3 detPoint;
         
+        CbmRichGeoManager::GetInstance().RotatePoint(&posPoint, &detPoint, !fRotationNeeded);
         AddHit(detPoint, j);
-	}
+    }
 }
 
 
 
 void CbmRichHitProducer::AddHit(
-      TVector3 &posHit,
-		Int_t index)
+                                TVector3 &posHit,
+                                Int_t index)
 {
     Int_t nofHits = fRichHits->GetEntriesFast();
     new((*fRichHits)[nofHits]) CbmRichHit();
@@ -97,7 +98,7 @@ void CbmRichHitProducer::AddHit(
 
 void CbmRichHitProducer::Finish()
 {
-  fRichHits->Clear();
+    fRichHits->Clear();
 }
 
 
