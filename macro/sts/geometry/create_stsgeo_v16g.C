@@ -594,8 +594,15 @@ void create_stsgeo_v16g(const char* geoTag="v16g")
 //      myunit[iUnit]->GetShape()->ComputeBBox();
 //    }
     
-    CheckVolume(myunit[iUnit]);
-    CheckVolume(myunit[iUnit], infoFile);
+//    CheckVolume(myunit[iUnit]);
+//    CheckVolume(myunit[iUnit], infoFile);
+    if ((iUnit%2 == 0)||(iUnit == 15))
+    {
+      CheckVolume(myunit[iUnit*2+0]);
+      CheckVolume(myunit[iUnit*2+0], infoFile);
+      CheckVolume(myunit[iUnit*2+1]);
+      CheckVolume(myunit[iUnit*2+1], infoFile);
+    }
     infoFile << "Position z = " << statPos[iUnit] << endl;
   }
   // --------------------------------------------------------------------------
