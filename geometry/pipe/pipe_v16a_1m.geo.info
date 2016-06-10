@@ -50,22 +50,24 @@ Beam pipe section: pipe3 - STS section
 Beam pipe section: pipe4 - MUCH section
  i      Z,mm    Rin,mm   Rout,mm      h,mm
  1   1700.00     73.70     74.20      0.50
- 2   3700.00    161.10    161.60      0.50
+ 2   1850.00     96.50     97.00      0.50
+ 3   3700.00    193.40    193.90      0.50
 
 Beam pipe section: pipe5 - TRD section
  i      Z,mm    Rin,mm   Rout,mm      h,mm
- 1   3700.00    161.45    161.95      0.50
- 2   6700.00    287.50    288.00      0.50
+ 1   3700.00    193.40    193.90      0.50
+ 2   4700.00    229.50    230.00      0.50
+ 3   6700.00    287.50    288.00      0.50
 
 Beam pipe section: pipe6 - TOF section
  i      Z,mm    Rin,mm   Rout,mm      h,mm
  1   6700.00    287.50    288.00      0.50
  2   8250.00    211.50    212.00      0.50
- 3   8800.00    211.50    212.00      0.50
+ 3   8950.00    211.50    212.00      0.50
 
 Beam pipe section: pipe7 - downstream section
  i      Z,mm    Rin,mm   Rout,mm      h,mm
- 1   8800.00    211.50    212.00      0.50
+ 1   8950.00    211.50    212.00      0.50
  2  15000.00    654.81    655.31      0.50
 
 Beam pipe section: pipe8 - second window @ the end, h=0.2mm, R=600mm, material: iron
