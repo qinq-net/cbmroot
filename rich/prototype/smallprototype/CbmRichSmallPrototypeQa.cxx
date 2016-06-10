@@ -62,11 +62,11 @@ InitStatus CbmRichSmallPrototypeQa::Init()
     if (NULL == ioman) { Fatal("CbmRichSmallPrototypeQa::Init","RootManager not instantised!"); }
     
     
-	fMCTracks = (TClonesArray*) ioman->GetObject("MCTrack");
-	if (NULL == fMCTracks) { Fatal("CbmRichSmallPrototypeQa::Init", "No MC Tracks!"); }
+/*	fMCTracks = (TClonesArray*) ioman->GetObject("MCTrack");
+	if (NULL == fMCTracks) { Fatal("CbmRichSmallPrototypeQa::Init", "No MC Tracks!"); } 
+*/
 
-
-	fSTSPoints =(TClonesArray*) ioman->GetObject("StsPoint");
+/*	fSTSPoints =(TClonesArray*) ioman->GetObject("StsPoint");
 	if (NULL == fSTSPoints) { Fatal("CbmRichSmallPrototypeQa::Init", "No STS Points!");}
 
 	fSTSDigis =(TClonesArray*) ioman->GetObject("StsDigi");
@@ -77,7 +77,7 @@ InitStatus CbmRichSmallPrototypeQa::Init()
 
 	fSTSTrack =(TClonesArray*) ioman->GetObject("StsTrack");
 	if (NULL == fSTSTrack) { Fatal("CbmRichSmallPrototypeQa::Init", "No STS Track!");}
-
+*/
 
 	fRichPoints =(TClonesArray*) ioman->GetObject("RichPoint");
 	if (NULL == fRichPoints) { Fatal("CbmRichSmallPrototypeQa::Init", "No Rich Points!");}
@@ -88,10 +88,10 @@ InitStatus CbmRichSmallPrototypeQa::Init()
 	fRichHits = (TClonesArray*) ioman->GetObject("RichHit");
     if ( NULL == fRichHits) { Fatal("CbmRichSmallPrototypeQa::Init","No RichHits!"); }
 
-	fRichRings = (TClonesArray*) ioman->GetObject("RichRing");
-    if ( NULL == fRichRings) { Fatal("CbmRichSmallPrototypeQa::Init","No RichRings!"); }
+//	fRichRings = (TClonesArray*) ioman->GetObject("RichRing");
+//    if ( NULL == fRichRings) { Fatal("CbmRichSmallPrototypeQa::Init","No RichRings!"); }
 
-
+/*
 	fTRDPoints = (TClonesArray*) ioman->GetObject("TrdPoint");
     if ( NULL == fTRDPoints) { Fatal("CbmRichSmallPrototypeQa::Init","No TRD Points!"); }
 
@@ -100,8 +100,8 @@ InitStatus CbmRichSmallPrototypeQa::Init()
 
 	fTRDTrack = (TClonesArray*) ioman->GetObject("TrdTrack");
     if ( NULL == fTRDTrack) { Fatal("CbmRichSmallPrototypeQa::Init","No TRD Tracks!"); }
-
-
+*/
+/*
 	fToFPoints = (TClonesArray*) ioman->GetObject("TofPoint");
 	if ( NULL == fToFPoints) { Fatal("CbmRichSmallPrototypeQa::Init","No ToF Points");}
 
@@ -110,7 +110,7 @@ InitStatus CbmRichSmallPrototypeQa::Init()
 
 	fToFTrack = (TClonesArray*) ioman->GetObject("TofTrack");
 	if ( NULL == fToFPoints) { Fatal("CbmRichSmallPrototypeQa::Init","No ToF Track");}
-
+*/
     InitHistograms();
 
 	
@@ -126,55 +126,63 @@ void CbmRichSmallPrototypeQa::Exec(
     
     cout << "CbmRichSmallPrototypeQa, event No. " <<  fEventNum << endl;
 
-	Int_t nofMCTracks = fMCTracks->GetEntriesFast();
+//	Int_t nofMCTracks = fMCTracks->GetEntriesFast();
 
-
+/*
 	Int_t nofSTSPoints = fSTSPoints->GetEntriesFast();
 	Int_t nofSTSDigis = fSTSDigis->GetEntriesFast();
 	Int_t nofSTSHits = fSTSHits->GetEntriesFast();
 	Int_t nofSTSTrack = fSTSTrack->GetEntriesFast();
+*/
 
 	Int_t nofRichPoints = fRichPoints->GetEntriesFast();
 	Int_t nofRichDigis = fRichDigis->GetEntriesFast();
 	Int_t nofRichHits = fRichHits->GetEntriesFast();	
-	Int_t nofRichRings = fRichRings->GetEntriesFast();
+//	Int_t nofRichRings = fRichRings->GetEntriesFast();
 
+/*
 	Int_t nofTRDPoints = fTRDPoints->GetEntriesFast();
 	Int_t nofTRDHits = fTRDHits->GetEntriesFast();
 	Int_t nofTRDTrack = fTRDTrack->GetEntriesFast(); 
-
+*/
+/*
 	Int_t nofToFPoints = fToFPoints->GetEntriesFast();
 	Int_t nofToFHits = fToFHits->GetEntriesFast();
 	Int_t nofToFTrack = fToFTrack->GetEntriesFast();  
+*/
 
 
-	fHM->H1("fh_nof_mc_tracks")->Fill(nofMCTracks);
+//	fHM->H1("fh_nof_mc_tracks")->Fill(nofMCTracks);
 
+/*
 	fHM->H1("fh_nof_sts_points")->Fill(nofSTSPoints);
     fHM->H1("fh_nof_sts_digis")->Fill(nofSTSDigis);
 	fHM->H1("fh_nof_sts_hits")->Fill(nofSTSHits);
 	fHM->H1("fh_nof_sts_track")->Fill(nofSTSTrack);
+*/
 
 	fHM->H1("fh_nof_rich_points")->Fill(nofRichPoints);
 	fHM->H1("fh_nof_rich_digis")->Fill(nofRichDigis);
     fHM->H1("fh_nof_rich_hits")->Fill(nofRichHits); 
-	fHM->H1("fh_nof_rich_rings")->Fill(nofRichRings);
+//	fHM->H1("fh_nof_rich_rings")->Fill(nofRichRings);
 
+/*
 	fHM->H1("fh_nof_trd_points")->Fill(nofTRDPoints);
 	fHM->H1("fh_nof_trd_hits")->Fill(nofTRDHits);
 	fHM->H1("fh_nof_trd_track")->Fill(nofTRDTrack);
-
+*/
+/*
 	fHM->H1("fh_nof_tof_points")->Fill(nofToFPoints);
 	fHM->H1("fh_nof_tof_hits")->Fill(nofToFHits);
 	fHM->H1("fh_nof_tof_track")->Fill(nofToFTrack);
-
+*/
 
 	for (int i=0; i<nofRichHits; i++)
 	{ 
 	 CbmRichHit* richHit= (CbmRichHit*) (fRichHits->At(i));
 	 //CbmRichHit* richHit = static_cast<CbmRichHit*>(fRichHits -> At(i));
-        }
-	for (int i=0; i<nofMCTracks; i++)
+    }
+/*	for (int i=0; i<nofMCTracks; i++)
 	{
 		CbmMCTrack* mctrack= (CbmMCTrack*) (fMCTracks->At(i));
 		Double_t momentum = mctrack->GetP();
@@ -231,6 +239,7 @@ void CbmRichSmallPrototypeQa::Exec(
 		
 
 	}
+*/
 
 	for(int i=0; i<nofRichPoints; i++)
 	{
@@ -249,7 +258,11 @@ void CbmRichSmallPrototypeQa::Exec(
 		fHM->H2("fh_dis_rich_hits")->Fill(xrichh, yrichh);
 		
 	}
+
+		
 	
+	
+/*
 	for(int i=0; i<nofSTSPoints; i++)
 	{
 		CbmStsPoint* stspoints= (CbmStsPoint*) (fSTSPoints->At(i));
@@ -267,8 +280,9 @@ void CbmRichSmallPrototypeQa::Exec(
 		fHM->H2("fh_dis_sts_hits")->Fill(xstsh, ystsh);
 		
 	}
-	
-	for(int i=0; i<nofTRDPoints; i++)
+*/	
+
+/*	for(int i=0; i<nofTRDPoints; i++)
 	{
 		CbmTrdPoint* trdpoints= (CbmTrdPoint*) (fTRDPoints->At(i));
 		Double_t xtrdp = trdpoints->GetXIn();
@@ -283,7 +297,9 @@ void CbmRichSmallPrototypeQa::Exec(
 		Double_t ytrdh = trdhits->GetY();
 		fHM->H2("fh_dis_trd_hits")->Fill(xtrdh, ytrdh);
 	}
-	
+*/
+
+/*
 	for( int i=0; i<nofToFPoints; i++)
 	{
 		CbmTofPoint* tofpoints= (CbmTofPoint*) (fToFPoints->At(i));
@@ -299,6 +315,7 @@ void CbmRichSmallPrototypeQa::Exec(
 		Double_t ytofh = tofhits->GetY();
 		fHM->H2("fh_dis_tof_hits")->Fill(xtofh, ytofh);
 	}
+*/
 }	
 
 void CbmRichSmallPrototypeQa::InitHistograms()
@@ -307,6 +324,7 @@ void CbmRichSmallPrototypeQa::InitHistograms()
     fHM = new CbmHistManager();
   	
 //MC Tracks	
+/*
 	fHM->Create1<TH1D>("fh_nof_mc_tracks", "fh_nof_mc_tracks;Nof MC Tracks;Yield", 300, 0., 3000.);
 
 	fHM->Create1<TH1D>("fh_mc_mom_all", "fh_mc_mom_all;Momentum;Yield", 250, 0., 25.);
@@ -319,8 +337,10 @@ void CbmRichSmallPrototypeQa::InitHistograms()
 
 	fHM->Create2<TH2D>("fh_mc_gammaxy", "fh_mc_gammaxy;x;y", 3000, 0., 300., 3000., 0., 300.);
 	fHM->Create1<TH1D>("fh_mc_gammaz", "fh_mc_gammaz; z", 3000, 0., 300.);
+*/
 
 //STS 
+/*
 	fHM->Create1<TH1D>("fh_nof_sts_points", "fh_nof_sts_points;Nof STS Points;Yield", 300, 0., 300.);
 	fHM->Create1<TH1D>("fh_nof_sts_digis", "fh_nof_sts-digs;Nof STS Digis;Yield", 300, 0., 10000.);
 	fHM->Create1<TH1D>("fh_nof_sts_hits", "fh_nof_sts_hits;Nof STS Hits;Yield", 300, 0., 10000.);
@@ -328,6 +348,7 @@ void CbmRichSmallPrototypeQa::InitHistograms()
 	
 	fHM->Create2<TH2D>("fh_dis_sts_points", "fh_dis_stspoints; x; y", 3000, -150., 150., 3000, -150., 150.);
 	fHM->Create2<TH2D>("fh_dis_sts_hits", "fh_dis_stshits; x; y;", 3000, -150., 150., 3000, -150., 150.);
+*/
 	
 //RICH
 	fHM->Create1<TH1D>("fh_nof_rich_points", "fh_nof_rich_points;Nof Rich Points;Yield", 300, 0., 2000.);
@@ -339,21 +360,23 @@ void CbmRichSmallPrototypeQa::InitHistograms()
 	fHM->Create2<TH2D>("fh_dis_rich_hits", "fh_dis_rich_hits; x; y", 3000, -150., 150., 3000, -150., 150.);
 
 //TRD
-	fHM->Create1<TH1D>("fh_nof_trd_points", "fh_nof_trd_points;Nof TRD Points;Yield", 300, 0., 10000.);
+/*	fHM->Create1<TH1D>("fh_nof_trd_points", "fh_nof_trd_points;Nof TRD Points;Yield", 300, 0., 10000.);
 	fHM->Create1<TH1D>("fh_nof_trd_hits", "fh_nof_trd_hits;Nof TRD Hits;Yield", 300, 0., 10000.);
 	fHM->Create1<TH1D>("fh_nof_trd_track", "fh_nof_trd_track;Nof TRD Track;Yield", 300, 0., 600.);
 
 	fHM->Create2<TH2D>("fh_dis_trd_points", "fh_dis_trd_points;x;y",3000, -150., 150., 3000, -150., 150.);
 	fHM->Create2<TH2D>("fh_dis_trd_hits", "fh_dis_trd_hits;x;y", 3000, -150., 150., 3000, -150., 150.);
-
+*/
 
 //ToF
+/*
 	fHM->Create1<TH1D>("fh_nof_tof_points", "fh_nof_tof_points;Nof ToF Points;Yield", 300, 0., 2000.);
 	fHM->Create1<TH1D>("fh_nof_tof_hits", "fh_nof_tof_hits;Nof ToF Hits;Yield", 300, 0., 2000.);
 	fHM->Create1<TH1D>("fh_nof_tof_track", "fh_nof_tof_track;Nof ToF Track;Yield", 300, 0., 2000.);
 
 	fHM->Create2<TH2D>("fh_dis_tof_points", "fh_dis_tof_points;x;y", 3000, -150., 150., 3000, -150., 150.);
 	fHM->Create2<TH2D>("fh_dis_tof_hits", "fh_dis_tof_hits;x;y", 3000, -150., 150., 3000, -150., 150.);
+*/
 }
 
 void CbmRichSmallPrototypeQa::DrawHist()
@@ -380,12 +403,15 @@ void CbmRichSmallPrototypeQa::DrawHist()
 		*/
 		
 	}
+/*
 	{
 		TCanvas* c = CreateCanvas("rich_sp_nof_mc_tracks", "rich_sp_nof_mc_tracks", 800, 800);
 		gStyle->SetOptTitle(1);
 		DrawH1andFitGauss(fHM->H1("fh_nof_mc_tracks"));
 		fHM->H1("fh_nof_mc_tracks")->SetTitle("MC Track");
 	}
+*/
+/*
 	{
 		TCanvas* c=CreateCanvas("rich_sp_sts_nof", "rich_sp_sts_nof", 1600, 800);
 		c->Divide(2,2);
@@ -402,8 +428,9 @@ void CbmRichSmallPrototypeQa::DrawHist()
 		gStyle->SetOptTitle(1);
 		DrawH1andFitGauss(fHM->H1("fh_nof_sts_track"));
 		
-
 	}
+*/
+
 	{
 		TCanvas* c=CreateCanvas("rich_sp_rich_nof", "rich_sp_rich_nof", 1600, 800);
 		c->Divide(2,2);
@@ -421,6 +448,8 @@ void CbmRichSmallPrototypeQa::DrawHist()
 		DrawH1andFitGauss(fHM->H1("fh_nof_rich_rings"));
 		
 	}
+
+/*
 	{
 		TCanvas* c=CreateCanvas("rich_sp_trd_nof", "rich_sp_trd_nof", 1600, 800);
 		c->Divide(2,2);
@@ -435,6 +464,8 @@ void CbmRichSmallPrototypeQa::DrawHist()
 		DrawH1andFitGauss(fHM->H1("fh_nof_trd_track"));
 
 	}
+*/	
+/*	
 	{
 		TCanvas* c=CreateCanvas("rich_sp_tof_nof", "rich_sp_tof_nof", 1600, 800);
 		c->Divide(2,2);
@@ -449,6 +480,8 @@ void CbmRichSmallPrototypeQa::DrawHist()
 		DrawH1andFitGauss(fHM->H1("fh_nof_tof_track"));
 
 	}
+*/
+/*
 	{
 		TCanvas* c=CreateCanvas("mc_track_mom","mc_track_mom", 1600, 800);
 		c->Divide(2,2);
@@ -465,6 +498,7 @@ void CbmRichSmallPrototypeQa::DrawHist()
 		gStyle->SetOptTitle(1);
 		DrawH1(fHM->H1("fh_mc_startz"), kLinear, kLog);
 	}
+*/
 	{ 
 		TCanvas* c=CreateCanvas("rich_dis_of_points_and_hits", "rich_dis_of_points_hits", 800, 800);
 		c->Divide(1,2);
@@ -476,6 +510,8 @@ void CbmRichSmallPrototypeQa::DrawHist()
 		fHM->H2("fh_dis_rich_hits")->SetTitle("Rich Hits");
 
 	}
+
+/*
 	{
 		TCanvas* c=CreateCanvas("sts_dis_of_points_and_hits", "sts_dis_of_points_hits", 800, 800);
 		c->Divide(1,2);
@@ -488,6 +524,8 @@ void CbmRichSmallPrototypeQa::DrawHist()
 		DrawH2(fHM->H2("fh_dis_sts_hits"));
 		fHM->H2("fh_dis_sts_hits")->SetTitle("STS Hits");
 	}
+*/
+/*	
 	{
 		TCanvas* c=CreateCanvas("trd_dis_of_points_and_hits", "trd_dis_of_points_and_hits", 800, 800);
 		c->Divide(1,2);
@@ -500,6 +538,8 @@ void CbmRichSmallPrototypeQa::DrawHist()
 		DrawH2(fHM->H2("fh_dis_trd_hits"));
 		fHM->H2("fh_dis_trd_hits")->SetTitle("TRD Hits");
 	}
+*/
+/*	
 	{
 		TCanvas* c=CreateCanvas("tof_dis_of_points_and_hits", "tof_dis_of_points_and_hits", 800, 800);
 		c->Divide(1,2);
@@ -512,6 +552,8 @@ void CbmRichSmallPrototypeQa::DrawHist()
 		fHM->H2("fh_dis_tof_hits")->SetTitle("ToF Hits");
 		
 	}
+*/
+/*
 	{
 		TCanvas* c=CreateCanvas("gamma_conversion", "gamma_conversion", 1600, 400);
 		c->Divide(2,1);
@@ -524,7 +566,8 @@ void CbmRichSmallPrototypeQa::DrawHist()
 		DrawH1(fHM->H1("fh_mc_gammaz"), kLinear, kLog);
 		fHM->H1("fh_mc_gammaz")->SetTitle("GammaZ");
 	}
-  }
+*/  
+}
 
 void CbmRichSmallPrototypeQa::Finish()
 {
