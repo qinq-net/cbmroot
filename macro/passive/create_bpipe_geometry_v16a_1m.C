@@ -110,8 +110,8 @@ void create_bpipe_geometry_v16a_1m( Bool_t bMuch = kTRUE, Bool_t bTrd = kTRUE,
   
   TString pipeVacNameMuch = "pipevac3";
   const Int_t nSectsVacMuch = nSectsMuch;
-  Double_t dZposVacMuch[nSectsVacMuch] = { 1800.,   1850.,   3700.   }; // mm
-  Double_t dRinVacMuch[ nSectsVacMuch] = {    0.,      0.,      0.   }; // mm
+  Double_t dZposVacMuch[nSectsVacMuch]; for(Int_t i=0; i<nSectsVacMuch; i++) { dZposVacMuch[i] = dZposMuch[i]; }
+  Double_t dRinVacMuch[ nSectsVacMuch]; for(Int_t i=0; i<nSectsVacMuch; i++) { dRinVacMuch[i]  = 0.; }
   Double_t dRoutVacMuch[nSectsVacMuch]; for(Int_t i=0; i<nSectsVacMuch; i++) { dRoutVacMuch[i] = dRinMuch[i]; }
 /*************************************************************/
   
@@ -125,7 +125,7 @@ void create_bpipe_geometry_v16a_1m( Bool_t bMuch = kTRUE, Bool_t bTrd = kTRUE,
   TString pipeVacNameTrd = "pipevac5";
   const Int_t nSectsVacTrd = nSectsTrd;
   Double_t dZposVacTrd[nSectsVacTrd]; for(Int_t i=0; i<nSectsVacTrd; i++) { dZposVacTrd[i] = dZposTrd[i]; }
-  Double_t dRinVacTrd[ nSectsVacTrd]  = {    0.,      0. }; // mm
+  Double_t dRinVacTrd[ nSectsVacTrd]; for(Int_t i=0; i<nSectsVacTrd; i++) { dRinVacTrd[i]  = 0.; }
   Double_t dRoutVacTrd[nSectsVacTrd]; for(Int_t i=0; i<nSectsVacTrd; i++) { dRoutVacTrd[i] = dRinTrd[i]; }
 /*************************************************************/
 
@@ -139,7 +139,7 @@ void create_bpipe_geometry_v16a_1m( Bool_t bMuch = kTRUE, Bool_t bTrd = kTRUE,
   TString pipeVacNameTof = "pipevac6";
   const Int_t nSectsVacTof = nSectsTof;
   Double_t dZposVacTof[nSectsVacTof]; for(Int_t i=0; i<nSectsVacTof; i++) { dZposVacTof[i] = dZposTof[i]; }
-  Double_t dRinVacTof[ nSectsVacTof]  = {    0.,      0.,      0. }; // mm
+  Double_t dRinVacTof[ nSectsVacTof]; for(Int_t i=0; i<nSectsVacTof; i++) { dRinVacTof[i]  = 0.; }
   Double_t dRoutVacTof[nSectsVacTof]; for(Int_t i=0; i<nSectsVacTof; i++) { dRoutVacTof[i] = dRinTof[i]; }
 /*************************************************************/
 
@@ -153,7 +153,7 @@ void create_bpipe_geometry_v16a_1m( Bool_t bMuch = kTRUE, Bool_t bTrd = kTRUE,
   TString pipeVacNameEnd = "pipevac7";
   const Int_t nSectsVacEnd = nSectsEnd;
   Double_t dZposVacEnd[nSectsVacEnd]; for(Int_t i=0; i<nSectsVacEnd; i++) { dZposVacEnd[i] = dZposEnd[i]; }
-  Double_t dRinVacEnd[ nSectsVacEnd]  = {    0.,      0.}; // mm
+  Double_t dRinVacEnd[ nSectsVacEnd]; for(Int_t i=0; i<nSectsVacEnd; i++) { dRinVacEnd[i]  = 0.; }
   Double_t dRoutVacEnd[nSectsVacEnd]; for(Int_t i=0; i<nSectsVacEnd; i++) { dRoutVacEnd[i] = dRinEnd[i]; }
 /*************************************************************/
 
