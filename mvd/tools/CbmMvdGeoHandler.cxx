@@ -80,7 +80,9 @@ void CbmMvdGeoHandler::Init(Bool_t isSimulation)
    GetGeometryTyp();
    if(!isSimulation)
 	{
-   	fStationPar = new CbmMvdStationPar();
+	    fStationPar = new CbmMvdStationPar();
+            fDetector = CbmMvdDetector::Instance();
+            fDetector->SetParameterFile(fStationPar);
 	switch (fGeoTyp)
 	{
 	case FourStation:
@@ -350,13 +352,10 @@ if(fGeoTyp == Default)
 
 if(fGeoTyp == FourStation || fGeoTyp == FourStationShift)
 {
-fDetector = CbmMvdDetector::Instance();
 
 if(!fDetector)
 	LOG(FATAL) <<  "GeometryHandler couldn't find a valid Detector"
 		   << FairLogger::endl;
-
-fDetector->SetParameterFile(fStationPar);
 
 Int_t iStation = 0;
   	for(Int_t StatNr = 0; StatNr < 4; StatNr++)
@@ -400,13 +399,10 @@ Int_t iStation = 0;
 }
 else if(fGeoTyp == MiniCbm)
 {
-fDetector = CbmMvdDetector::Instance();
 
 if(!fDetector)
 	LOG(FATAL) <<  "GeometryHandler couldn't find a valid mCBM Detector"
 		   << FairLogger::endl;
-
-fDetector->SetParameterFile(fStationPar);
 
 Int_t iStation = 0;
   	for(Int_t StatNr = 0; StatNr < 2; StatNr++)
@@ -439,7 +435,7 @@ Int_t iStation = 0;
 }
 else
 {
-LOG(FATAL) << "Tried to load an unsupported MVD Geometry" << FairLogger::endl;
+LOG(ERROR) << "Tried to load an unsupported MVD Geometry" << FairLogger::endl;
 }
 }
 //--------------------------------------------------------------------------
@@ -570,7 +566,7 @@ Int_t iStation = 0;
 
 
 else
-	LOG(FATAL) << "You tried to use an unsoported Geometry" << FairLogger::endl;
+	LOG(ERROR) << "You tried to use an unsoported Geometry" << FairLogger::endl;
 }
 //--------------------------------------------------------------------------
 
