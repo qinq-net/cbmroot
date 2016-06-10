@@ -5,14 +5,14 @@ void run_sim(Int_t nEvents = 100)
     
     //gRandom->SetSeed(10);
 
-    //TString parFile = "/data/cbm/Gregor/param.00001.root";
-   // TString geoFile = "/data/cbm/Gregor/geofilefull.00001.root";
-   // TString mcFile = "/data/cbm/Gregor/mc.00001.root";
+   	TString parFile = "/data/cbm/Gregor/param.00001.root";
+   	TString geoFile = "/data/cbm/Gregor/geofilefull.00001.root";
+    TString mcFile = "/data/cbm/Gregor/mc.00001.root";
     
     
-    TString parFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/param.00001.root";
-    TString geoFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/geofilefull.00001.root";
-    TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/mc.00001.root";
+    //TString parFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/param.00001.root";
+    //TString geoFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/geofilefull.00001.root";
+    //TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/mc.00001.root";
     
     
 
@@ -36,7 +36,7 @@ void run_sim(Int_t nEvents = 100)
     fRun->SetGenerateRunInfo(kTRUE);
     FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
     
-    fRun->SetMaterials("media_rich_prototype.geo"); // Materials
+    fRun->SetMaterials("media.geo"); // Materials
     
     if ( caveGeom != "" ) {
         FairModule* cave = new CbmCave("CAVE");
@@ -69,8 +69,8 @@ void run_sim(Int_t nEvents = 100)
         FairBoxGenerator* boxGen1 = new FairBoxGenerator(2212, 1);
         boxGen1->SetPRange(2.,2.);
         boxGen1->SetPhiRange(0.,360.);
-        boxGen1->SetThetaRange(180., 180.);
-		boxGen1->SetXYZ(0., 0., 30.);
+        boxGen1->SetThetaRange(0., 0.);
+		boxGen1->SetXYZ(0., 0., -30.);
         boxGen1->Init();
         primGen->AddGenerator(boxGen1);
     

@@ -10,7 +10,7 @@ gSystem->Load("libGeom");
 //gGeoMan = gGeoManager;// (TGeoManager*)gROOT->FindObject("FAIRGeom");
 //new TGeoManager ("Testbox", "Testbox");
 
-TString geoFileName= "Testbox.geo.root";
+TString geoFileName= "/data/cbm/cbmroot/geometry/rich/prototype/Testbox.geo.root";
 
 FairGeoLoader*    geoLoad = new FairGeoLoader("TGeo","FairGeoLoader");
   FairGeoInterface* geoFace = geoLoad->getGeoInterface();
@@ -29,6 +29,12 @@ FairGeoMedium* mCoating      = geoMedia->getMedium("RICHglass");
   geoBuild->createMedium(mCoating);
   TGeoMedium* medCoating = gGeoMan->GetMedium("RICHglass");
   if ( ! medCoating) Fatal("Main", "Medium RICHglass not found");
+
+FairGeoMedium* mAluminium      = geoMedia->getMedium("aluminium");				
+  if ( ! mAluminium ) Fatal("Main", "FairMedium aluminium not found");
+  geoBuild->createMedium(mAluminium);
+  TGeoMedium* medAl = gGeoMan->GetMedium("aluminium");
+  if ( ! medAl ) Fatal("Main", "Medium vacuum not found");
 
 FairGeoMedium* mVacuum      = geoMedia->getMedium("vacuum");				
   if ( ! mVacuum ) Fatal("Main", "FairMedium vacuum not found");
@@ -71,6 +77,8 @@ const Double_t lenseradius =15.51;
 const Double_t lensepmtdistance =3;
 const Double_t lensebeschichtung =0.1;
 
+const Double_t absorberthickness =0.1;
+const Double_t absorberradius =0.5;
 
 //Transformations
 TGeoTranslation *trBox= new TGeoTranslation(0., 0., 0.);			//Gasbox/Box Translation
@@ -85,7 +93,7 @@ TGeoTranslation *tr5= new TGeoTranslation( 	-pmtsize, -pmtsize/2, 0.);
 TGeoTranslation *tr6= new TGeoTranslation(	0.		, -pmtsize/2, 0.);
 TGeoTranslation *tr7= new TGeoTranslation( 	pmtsize , -pmtsize/2, 0.);
 
-TGeoTranslation *tr100= new TGeoTranslation(0. ,0., lenseradius+1);
+TGeoTranslation *trabsorber= new TGeoTranslation(0. ,0., -(lenseradius-centerthickness)+absorberthickness/2);
 
 
 TGeoTranslation *trLense= new TGeoTranslation(0., 0., 0.);		//Lense Translations
@@ -99,23 +107,23 @@ TGeoVolume* top = new TGeoVolumeAssembly("top");
 //Shapes
 
 //TopBox
-TGeoVolume *box= gGeoMan->MakeBox("TopBox", medNitrogen, testboxwidth/2+50 , testboxheight/2+50, testboxlength/2+50);
+TGeoVolume *box= gGeoMan->MakeBox("TopBox", medNitrogen, testboxwidth/2, testboxheight/2, testboxlength/2);
 //gGeoMan->SetTopVolume(box);
 
 //Gasbox
 
-TGeoVolume *gas= gGeoMan->MakeBox("Gasbox", medNitrogen , testboxwidth/2-1+50, testboxheight/2-1+50, testboxlength/2-1+50);
+TGeoVolume *gas= gGeoMan->MakeBox("Gasbox", medNitrogen , testboxwidth/2-1, testboxheight/2-1, testboxlength/2-1);
 
 //PMT Container containing PMT Matrix
 
-TGeoVolume *pmtcontainer= gGeoMan->MakeBox("PMTContainer", medCsI , 3*pmtsize/2, 2*pmtsize/2, 0.5);
+TGeoVolume *pmtcontainer= gGeoMan->MakeBox("PMTContainer", medCsI , 3*pmtsize/2, 2*pmtsize/2, 0.1);
 
 //PMT
-TGeoVolume *pmt= gGeoMan->MakeBox("PMT", medCsI , pmtsize/2, pmtsize/2, 0.5);
+TGeoVolume *pmt= gGeoMan->MakeBox("PMT", medCsI , pmtsize/2, pmtsize/2, 0.1);
 
 //PMT Pixels
 
-TGeoVolume *pmtpixel= gGeoMan->MakeBox("pmt_pixel", medCsI, pmtpixelsize/2, pmtpixelsize/2, 0.5); 
+TGeoVolume *pmtpixel= gGeoMan->MakeBox("pmt_pixel", medCsI, pmtpixelsize/2, pmtpixelsize/2, 0.1); 
 
 //Lensecoating parametrized as sphere
 TGeoSphere *coating= new TGeoSphere("Coating", lenseradius, lenseradius+lensebeschichtung, 90., 180., 0., 360.);
@@ -133,6 +141,8 @@ TGeoCompositeShape *lensecoating= new TGeoCompositeShape("Endlensecoating", "Coa
 TGeoVolume *compendlense= new TGeoVolume("CompEndLense", endlense, medGlass);
 TGeoVolume *complensecoating= new TGeoVolume("Complensecoating", lensecoating, medCoating); 
 
+//Absorber
+TGeoVolume *absorber= gGeoMan->MakeTube("Absorber", medAl, 0., absorberradius, absorberthickness/2);
 
 complensecoating->SetLineColor(kRed);
 compendlense->SetLineColor(kBlue);
@@ -148,6 +158,7 @@ gas->AddNode(compendlense, 1, trLense);
 gas->AddNode(pmtcontainer, 1, trPMTup);
 gas->AddNode(pmtcontainer, 2, trPMTdown);
 
+compendlense->AddNode(absorber, 1, trabsorber);
 
 pmtcontainer->AddNode(pmt, 1, tr2);
 pmtcontainer->AddNode(pmt, 2, tr3);
@@ -155,6 +166,8 @@ pmtcontainer->AddNode(pmt, 3, tr4);
 pmtcontainer->AddNode(pmt, 4, tr5);
 pmtcontainer->AddNode(pmt, 5, tr6);
 pmtcontainer->AddNode(pmt, 6, tr7);
+
+
 
 
 for(int i=0; i<8; i++)
@@ -178,7 +191,7 @@ gGeoMan->SetTopVisible();
 box->SetVisibility(false);
 
 
-box->Draw();
+box->Draw("ogl");
 
 
  TFile* geoFile = new TFile(geoFileName, "RECREATE");
