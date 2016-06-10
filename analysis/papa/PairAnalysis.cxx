@@ -746,7 +746,6 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	    if( (mtch=hit->GetMatch()) && ev->GetPoints(static_cast<DetectorId>(idet))) {
 	      Int_t nlinks=mtch->GetNofLinks();
 
-
 	      // pnt = static_cast<FairMCPoint*>( ev->GetPoints(static_cast<DetectorId>(idet))
 	      // 				       ->At(mtch->GetLink(0).GetIndex())
 	      // 				       );
@@ -764,7 +763,7 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 		if(!iLink) PairAnalysisVarManager::Fill(pnt, values);
 		else       PairAnalysisVarManager::FillSum(pnt, values);
 
-		// hit defintion
+		// hit type defintion
 		if(!pnt) trueHit=kFALSE;
 		else if(mc){
 		  Int_t lbl  = pnt->GetTrackID();
@@ -777,27 +776,6 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	      } //end links
 
 	    } //end match found
-	    else {
-	      // fill only once
-
-	      //NOTE: old way only possible for 1pnt to 1hit, no clustering, TOF
-	      if(hit->GetRefId()>=0 && ev->GetPoints(static_cast<DetectorId>(idet)) && idet==kTOF)
-		pnt = static_cast<FairMCPoint*>( ev->GetPoints(static_cast<DetectorId>(idet))->At(hit->GetRefId()) );
-	      // fill MC variables
-	      PairAnalysisVarManager::Fill(pnt, values);
-
-	      // fill histos
-	      if(hitClass)	    fHistos    ->FillClass(className3, values);
-	      if(hitClass2)	    fHistoArray->FillClass(className3, values);
-	      // check and fill mc signal histos
-	      for(Int_t isig=0; isig<nsig; isig++) {
-		sigName = className3 + "_" + fSignalsMC->At(isig)->GetName();
-		if(fillMC.TestBitNumber(isig)) {
-		  if(hitClassMC.TestBitNumber(isig))   fHistos     ->FillClass(sigName, values);
-		  if(hitClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
-		}
-	      }
-	    }
 
 	    // fill rec hit histos
 	    if(hitClass)	    fHistos    ->FillClass(className3, values);

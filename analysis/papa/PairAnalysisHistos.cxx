@@ -1306,7 +1306,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
       delete hsum;
     }
     if(optRbnStat) {
-      /// rebin until stat. uncertainty is lower than 80%
+      /// rebin until stat. uncertainty is lower than 'stat'
       limits = PairAnalysisHelper::MakeStatBinLimits(h,stat);
       h=h->Rebin(limits->GetSize()-1,h->GetName(),limits->GetArray());
       h->Scale(1.,"width");

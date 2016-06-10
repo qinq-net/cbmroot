@@ -268,6 +268,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"TRDFakeHits",              "N_{fake,hit}^{TRD}",                                      ""},
   {"TRDDistortion",            "distortion^{TRD}",                                 ""},
   {"STSTrueHits",              "N_{true,hit}^{STS}",                                      ""},
+  {"STSDistHits",              "N_{distorted,hit}^{STS}",                                 ""},
   {"STSFakeHits",              "N_{fake,hit}^{STS}",                                      ""},
   {"TRDisMC",                  "MC status TRD",                                    ""},
   {"MVDisMC",                  "MC status MVD",                                    ""},

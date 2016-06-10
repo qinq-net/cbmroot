@@ -316,6 +316,7 @@ public:
     kTRDFakeHits,              // number of fake TRD hits in reconstructed track
     kTRDDistortion,            // level of distortion of reconstructed track [0,1]
     kSTSTrueHits,              // number of true STS hits in reconstructed track
+    kSTSDistHits,              // number of distorted STS hits in reconstructed track
     kSTSFakeHits,              // number of fake STS hits in reconstructed track
     kTRDisMC,                  // status bit for matching btw. glbl. and local MC track
     kMVDisMC,                  // status bit for matching btw. glbl. and local MC track
@@ -357,6 +358,9 @@ public:
   static void Fill(             const TObject* particle,                    Double_t * const values);
   static void FillVarMCParticle(const CbmMCTrack *p1, const CbmMCTrack *p2, Double_t * const values);
   static void FillSum(          const TObject* particle,                    Double_t * const values);
+
+  static void CalculateHitTypes(const PairAnalysisTrack *track, DetectorId idet,
+				Int_t *trueH, Int_t *distH, Int_t *fakeH);
 
   // Setter
   static void SetFillMap(        TBits   *map)                   { fgFillMap=map;     }
@@ -658,68 +662,27 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisTrack(const PairAnalysisT
 
   // mc
   Fill(track->GetMCTrack(),     values); // this contains particle infos as well
+
   if(track->GetTrackMatch(kTRD)) {       // track match specific (accessors via CbmTrackMatchNew)
+    values[kTRDMCTracks]    = track->GetTrackMatch(kTRD)->GetNofLinks(); //number of different! mc tracks
 
-    CbmTrackMatchNew *tmtch = track->GetTrackMatch(kTRD);
-    values[kTRDMCTracks]    = tmtch->GetNofLinks(); //number of different! mc tracks
-    Int_t mctrk = tmtch->GetMatchedLink().GetIndex();
+    Int_t trueHits=0, distHits=0, fakeHits=0;
+    CalculateHitTypes(track,kTRD, &trueHits,&distHits,&fakeHits);
 
-    PairAnalysisMC *mc = PairAnalysisMC::Instance();
-    if(mc) {
-
-      // Calculate true and fake hits
-      TClonesArray *hits   = fgEvent->GetHits(kTRD);
-      TClonesArray *pnts   = fgEvent->GetPoints(kTRD);
-      Int_t links=0;
-      Double_t dist=0.;
-      Int_t trueH=0;
-      Int_t distH=0;
-      Int_t fakeH=(mctrk>-1 ? 0 : track->GetTrack(kTRD)->GetNofHits());
-      if(hits && pnts && mctrk>-1) {
-	for (Int_t ihit=0; ihit < track->GetTrack(kTRD)->GetNofHits(); ihit++){
-	  Int_t idx      = track->GetTrack(kTRD)->GetHitIndex(ihit);
-	  CbmHit *hit    = dynamic_cast<CbmHit*>(hits->At(idx));
-	  if(!hit)  { fakeH++; continue; }
-	  CbmMatch *mtch = hit->GetMatch();
-	  if(!mtch)  { fakeH++; continue; }
-
-	  Bool_t btrueH=kTRUE;
-	  Bool_t bfakeH=kTRUE;
-	  Int_t nlinks=mtch->GetNofLinks();
-	  links+=nlinks;
-	  for (Int_t iLink = 0; iLink < nlinks; iLink++) {
-	    //	if(nlinks!=1) { fakeH++; continue; }
-	    FairMCPoint *pnt = static_cast<FairMCPoint*>( pnts->At(mtch->GetLink(iLink).GetIndex()) );
-	    // hit defintion
-	    if(!pnt) btrueH=kFALSE;
-	    else {
-	      Int_t lbl  = pnt->GetTrackID();
-	      Int_t lblM = mc->GetMothersLabel(lbl);
-	      Int_t lblG = mc->GetMothersLabel(lblM);
-	      if(lbl!=mctrk && lblM!=mctrk && lblG!=mctrk) {
-		btrueH=kFALSE; dist+=1.;
-	      }
-	      else                                         bfakeH=kFALSE;
-	    }
-	  }
-	  // increase counters
-	  if(btrueH) trueH++;
-	  if(bfakeH) fakeH++;
-	  if(!btrueH &&!bfakeH) distH++;
-	}
-      }
-      values[kTRDTrueHits]    = trueH;
-      values[kTRDDistHits]    = distH;
-      values[kTRDFakeHits]    = fakeH;
-      values[kTRDDistortion]  = dist/links;
-    }
-
-    /* values[kTRDTrueHits]    = tmtch->GetNofTrueHits(); //TODO: changed defintion */
-    /* values[kTRDFakeHits]    = tmtch->GetNofWrongHits(); //TODO: changed definition */
+    values[kTRDTrueHits]    = trueHits;
+    values[kTRDDistHits]    = distHits;
+    values[kTRDFakeHits]    = fakeHits;
+    //    values[kTRDDistortion]  = dist/links;
+    /* values[kTRDTrueHits]    = tmtch->GetNofTrueHits(); //NOTE: changed defintion */
+    /* values[kTRDFakeHits]    = tmtch->GetNofWrongHits(); //NOTE: changed definition */
   }
   if(track->GetTrackMatch(kSTS)) {
-    values[kSTSTrueHits]    = track->GetTrackMatch(kSTS)->GetNofTrueHits();
-    values[kSTSFakeHits]    = track->GetTrackMatch(kSTS)->GetNofWrongHits();
+    Int_t trueHits=0, distHits=0, fakeHits=0;
+    CalculateHitTypes(track,kSTS, &trueHits,&distHits,&fakeHits);
+
+    values[kSTSTrueHits]    = trueHits;
+    values[kSTSDistHits]    = distHits;
+    values[kSTSFakeHits]    = fakeHits;
   }
   if(track->GetTrackMatch(kRICH)) {
     values[kRICHMCPoints]    = track->GetTrackMatch(kRICH)->GetNofLinks();
@@ -1490,6 +1453,94 @@ inline void PairAnalysisVarManager::SetEventData(const Double_t data[PairAnalysi
   /* for (Int_t i=0; i<kNMaxValuesMC;++i) fgData[i]=0.; */
   for (Int_t i=kPairMax; i<kNMaxValues;++i)     fgData[i]=data[i];
   for (Int_t i=kPairMaxMC; i<kNMaxValuesMC;++i) fgData[i]=data[i];
+}
+
+
+inline void PairAnalysisVarManager::CalculateHitTypes(const PairAnalysisTrack *track, DetectorId idet,
+						      Int_t *trueH, Int_t *distH, Int_t *fakeH) {
+
+  CbmTrack    *trkl = track->GetTrack(idet);
+  CbmRichRing *ring = track->GetRichRing();
+  Int_t nhits = 0;
+  switch(idet) {
+  case kMVD:  if(trkl) nhits = static_cast<CbmStsTrack*>(trkl)->GetNofMvdHits(); break;
+  case kSTS:  if(trkl) nhits = static_cast<CbmStsTrack*>(trkl)->GetNofStsHits(); break;
+  case kMUCH:
+  case kTRD:  if(trkl) nhits = trkl->GetNofHits();    break;
+  case kTOF:  nhits = 1; /* one is maximum */         break;
+  case kRICH: if(ring) nhits = ring->GetNofHits();    break;
+  default:
+    return;
+  }
+
+  CbmTrackMatchNew *tmtch = track->GetTrackMatch(idet);
+  Int_t mctrk = (tmtch && tmtch->GetNofHits()>0 && tmtch->GetNofLinks()>0 ? tmtch->GetMatchedLink().GetIndex() : -1 );
+
+    PairAnalysisMC *mc = PairAnalysisMC::Instance();
+    if(mc) {
+
+      /// Calculate true, distorted and fake hits
+      TClonesArray *hits   = fgEvent->GetHits(idet);
+      TClonesArray *pnts   = fgEvent->GetPoints(idet);
+
+      Int_t links=0;
+      Double_t dist=0.;
+      *trueH=0;
+      *distH=0;
+      *fakeH=(mctrk>-1 ? 0 : nhits);
+      if(hits && pnts && mctrk>-1) {
+	for (Int_t ihit=0; ihit < nhits; ihit++){
+
+	  CbmHit *hit=NULL;
+	  Int_t idx      = -1;
+	  switch(idet) {
+	  case kMVD:  idx = static_cast<CbmStsTrack*>(trkl)->GetMvdHitIndex(ihit); break;
+	  case kSTS:  idx = static_cast<CbmStsTrack*>(trkl)->GetStsHitIndex(ihit); break;
+	  case kMUCH:
+	  case kTRD:  idx = trkl->GetHitIndex(ihit);                               break;
+	  case kTOF:  hit = track->GetTofHit();                                    break;
+	  case kRICH: idx = ring->GetHit(ihit);                                    break;
+	  default:
+	    continue;
+	  }
+
+	  if(idet!=kTOF && idx>-1)  {
+	    hit = dynamic_cast<CbmHit*>(hits->At(idx));
+	  }
+
+	  if(!hit)  { (*fakeH)++; continue; }
+	  CbmMatch *mtch = hit->GetMatch();
+	  if(!mtch)  { (*fakeH)++; continue; }
+
+	  Bool_t btrueH=kTRUE;
+	  Bool_t bfakeH=kTRUE;
+	  Int_t nlinks=mtch->GetNofLinks();
+	  links+=nlinks;
+	  for (Int_t iLink = 0; iLink < nlinks; iLink++) {
+	    //	if(nlinks!=1) { fakeH++; continue; }
+	    FairMCPoint *pnt = static_cast<FairMCPoint*>( pnts->At(mtch->GetLink(iLink).GetIndex()) );
+	    // hit defintion
+	    if(!pnt) btrueH=kFALSE;
+	    else {
+	      Int_t lbl  = pnt->GetTrackID();
+	      Int_t lblM = mc->GetMothersLabel(lbl);
+	      Int_t lblG = mc->GetMothersLabel(lblM);
+	      if(lbl!=mctrk && lblM!=mctrk && lblG!=mctrk) {
+		btrueH=kFALSE; dist+=1.;
+	      }
+	      else                                         bfakeH=kFALSE;
+	    }
+	  }
+	  // increase counters
+	  if(btrueH) (*trueH)++;
+	  if(bfakeH) (*fakeH)++;
+	  if(!btrueH &&!bfakeH) (*distH)++;
+	}
+      }
+      /* values[kTRDDistortion]  = dist/links; */
+    }
+
+
 }
 
 
