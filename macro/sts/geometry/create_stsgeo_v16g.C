@@ -482,22 +482,22 @@ void create_stsgeo_v16g(const char* geoTag="v16g")
 
 
   Int_t allUnitTypes[16][16]=
-  { {  -1,  -1,  -1,  -1,  10,   0,   9,   0,     1,   0,   9,   0,  -1,  -1,  -1,  -1 },    // unit00D
-    {  -1,  -1,  -1,  -1,   0, 109,   0, 101,     0, 109,   0, 110,  -1,  -1,  -1,  -1 },    // unit01U
-    {  -1,  -1,   0,  10,   0,   9,   0,   2,     0,   9,   0,  10,   0,  11,  -1,  -1 },    // unit01D
-    {  -1,  -1, 111,   0, 110,   0, 109,   0,   102,   0, 109,   0, 110,   0,  -1,  -1 },    // unit02U
-    {  -1,  -1,  14,   0,  12,   0,  12,   0,     3,   0,  12,   0,  13,   0,  -1,  -1 },    // unit02D
-    {  -1,  -1,   0, 113,   0, 112,   0, 103,     0, 112,   0, 112,   0, 114,  -1,  -1 },    // unit03U
-    {  -1,  15,   0,  13,   0,  12,   0,   4,     0,  12,   0,  12,   0,  14,   0,  -1 },    // unit03D
-    {  -1,   0, 114,   0, 112,   0, 112,   0,   104,   0, 112,   0, 113,   0, 115,  -1 },    // unit04U
-    {  -1,   0,  18,   0,  17,   0,  16,   0,     5,   0,  16,   0,  17,   0,  19,  -1 },    // unit04D
-    {  -1, 119,   0, 117,   0, 116,   0, 105,     0, 116,   0, 117,   0, 118,   0,  -1 },    // unit05U
-    {  -1,  19,   0,  17,   0,  16,   0,   6,     0,  16,   0,  17,   0,  18,   0,  -1 },    // unit05D
-    {  -1,   0, 118,   0, 117,   0, 116,   0,   106,   0, 116,   0, 117,   0, 119,  -1 },    // unit06U
-    {  21,   0,  18,   0,  20,   0,  20,   0,     7,   0,  20,   0,  20,   0,  19,   0 },    // unit06D
-    {   0, 119,   0, 120,   0, 120,   0, 107,     0, 120,   0, 120,   0, 118,   0, 121 },    // unit07U
-    {   0,  17,   0,  22,   0,  22,   0,   8,     0,  22,   0,  22,   0,  23,   0,  19 },    // unit07D
-    { 119,   0, 123,   0, 122,   0, 122,   0,   108,   0, 122,   0, 122,   0, 117,   0 } };  // unit08U
+  { {  -1,  -1,  -1,  -1,  10,   0,   9,   0,     1,   0,   9,   0,  -1,  -1,  -1,  -1 },    // unit00D Station01 00
+    {  -1,  -1,  -1,  -1,   0, 109,   0, 101,     0, 109,   0, 110,  -1,  -1,  -1,  -1 },    // unit01U Station01 01
+    {  -1,  -1,   0,  10,   0,   9,   0,   2,     0,   9,   0,  10,   0,  11,  -1,  -1 },    // unit01D Station02 02
+    {  -1,  -1, 111,   0, 110,   0, 109,   0,   102,   0, 109,   0, 110,   0,  -1,  -1 },    // unit02U Station02 03
+    {  -1,  -1,  14,   0,  12,   0,  12,   0,     3,   0,  12,   0,  13,   0,  -1,  -1 },    // unit02D Station03 04
+    {  -1,  -1,   0, 113,   0, 112,   0, 103,     0, 112,   0, 112,   0, 114,  -1,  -1 },    // unit03U Station03 05
+    {  -1,  15,   0,  13,   0,  12,   0,   4,     0,  12,   0,  12,   0,  14,   0,  -1 },    // unit03D Station04 06
+    {  -1,   0, 114,   0, 112,   0, 112,   0,   104,   0, 112,   0, 113,   0, 115,  -1 },    // unit04U Station04 07
+    {  -1,   0,  18,   0,  17,   0,  16,   0,     5,   0,  16,   0,  17,   0,  19,  -1 },    // unit04D Station05 08
+    {  -1, 119,   0, 117,   0, 116,   0, 105,     0, 116,   0, 117,   0, 118,   0,  -1 },    // unit05U Station05 09
+    {  -1,  19,   0,  17,   0,  16,   0,   6,     0,  16,   0,  17,   0,  18,   0,  -1 },    // unit05D Station06 10
+    {  -1,   0, 118,   0, 117,   0, 116,   0,   106,   0, 116,   0, 117,   0, 119,  -1 },    // unit06U Station06 11
+    {  21,   0,  18,   0,  20,   0,  20,   0,     7,   0,  20,   0,  20,   0,  19,   0 },    // unit06D Station07 12
+    {   0, 119,   0, 120,   0, 120,   0, 107,     0, 120,   0, 120,   0, 118,   0, 121 },    // unit07U Station07 13
+    {   0,  17,   0,  22,   0,  22,   0,   8,     0,  22,   0,  22,   0,  23,   0,  19 },    // unit07D Station08 14
+    { 119,   0, 123,   0, 122,   0, 122,   0,   108,   0, 122,   0, 122,   0, 117,   0 } };  // unit08U Station08 15
 
 
 //  unitTypes[0]  = {   0,   0,   0,   0,  10,   0,   9,   0,   1,   0,   9,   0,   0,   0,   0,   0 };  // unit 0D
@@ -561,8 +561,10 @@ void create_stsgeo_v16g(const char* geoTag="v16g")
       }
 //    myunit[iUnit] = ConstructUnit(iUnit, nLadders, ladderTypes);
 //    myunit[iUnit] = ConstructUnit(iUnit*2+0, nLadders, ladderTypes);
-    myunit[iUnit*2+0] = ConstructUnit(0, iUnit*2+0, nLadders, ladderTypes);
-    myunit[iUnit*2+1] = ConstructUnit(1, iUnit*2+1, nLadders, ladderTypes);
+//    myunit[iUnit*2+0] = ConstructUnit(0, iUnit*2+0, nLadders, ladderTypes);
+//    myunit[iUnit*2+1] = ConstructUnit(1, iUnit*2+1, nLadders, ladderTypes);
+    myunit[iUnit*2+0] = ConstructUnit(0, iUnit*2+0, nLadders, ladderTypes, iUnit/2+1);
+    myunit[iUnit*2+1] = ConstructUnit(1, iUnit*2+1, nLadders, ladderTypes, iUnit/2+1);
     
 //    if (gkConstructCones) {
 //      if (iUnit%2 == 0)
@@ -1521,7 +1523,8 @@ void AddCarbonLadder(Int_t LadderIndex,
  TGeoVolume* ConstructUnit(Int_t iSide, 
                            Int_t iUnit, 
                            Int_t nLadders,
-                           Int_t* ladderTypes) {
+                           Int_t* ladderTypes,
+                           Int_t iStation) {
 
  Bool_t isFirstPartOfHalfUnit = kFALSE;
 
@@ -1626,15 +1629,24 @@ void AddCarbonLadder(Int_t LadderIndex,
       TGeoCombiTrans* trans = new TGeoCombiTrans(xPos, yPos, zPos, rot);
 // start
 //      cout << "DEEE** iLadder " << iLadder << " " << nLadders/2 << " " << nLadders << endl;
+
       if (iSide == 0)
       {
         if (iLadder < nLadders/2)   // right side - only half unit -x
-  	  unit->AddNode(ladder, iLadder+1, trans);
+	{
+  	  unit->AddNode(ladder, iStation*100 + iLadder+1, trans);
+          // calculate Station number to encode the ladder copy number
+          cout << "DEFG** iLadder: " << iLadder << " iStation: " << iStation << endl;
+        }
       }
       else
       {
         if (iLadder >= nLadders/2)  // left  side - only half unit +x
-          unit->AddNode(ladder, iLadder+1, trans);
+	{
+          unit->AddNode(ladder, iStation*100 + iLadder+1, trans);
+          // calculate Station number to encode the ladder copy number
+          cout << "DEFG** iLadder: " << iLadder << " iStation: " << iStation << endl;
+        }
       }
       unit->GetShape()->ComputeBBox();
 // stop
