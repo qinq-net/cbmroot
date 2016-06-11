@@ -1147,7 +1147,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
     	  string histname = "Clustertypes_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+detectorName;
     	  fHM->H2(histname)->Fill(x.size(),x.Type());
       }
-      if(x.Type() != 0 && x.size()==3) continue;
+      if(x.Type() != 0 && x.size()>=3) continue;
       if(fDrawPadResponse){
     	  string histname = "Pad_Response_"+ detectorName + "_for_Clusters_of_Size_"+std::to_string(static_cast<Int_t>(x.size()));
     	  x.FillChargeDistribution(fHM->H2(histname));
@@ -2294,7 +2294,7 @@ void CbmTrdTimeCorrel::Cluster::Veto() {
 		return;
 	}
 	//first Veto based on Charge Distribution.
-	Float_t VetoThreshhold = 100.0 / (size() - 1.0);
+	Float_t VetoThreshhold = 100.0 / (size() - 0.5);
 	for (auto x : fEntries) {
 		Float_t ChargeRatio = 100.0 * static_cast<Float_t>(GetMaxADC(x))
 				/ fTotalCharge;
@@ -2302,6 +2302,10 @@ void CbmTrdTimeCorrel::Cluster::Veto() {
 				static_cast<Float_t>(GetHorizontalMessagePosition(x))
 						- fHorizontalPosition;
 		//if(x.GetTriggerType()==2)
+        if(x.GetTriggerType()==1||x.GetTriggerType()==3){
+			if (ChargeRatio<VetoThreshhold) fType=3;
+		}
+		continue;
 		if (std::abs(Displacement) > (size() / 2.0)) {
 			//std::cout << " Veto based on width" << std::endl;
 			fType = 3;
@@ -2356,7 +2360,7 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
 	  LastPad = CurrentPad;
       Int_t Charge = GetMaxADC(x);
       if(maxADC < Charge) maxADC = Charge;
-      if(Charge < 20){
+      if(Charge < 0){
     	  fType = 3;
       }
       Charges.push_back(Charge);
@@ -2367,9 +2371,9 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
   }
   if(NumberOfTypeTwoMessages!=2) fType=1;
   if(NumberOfHits==0) fType=2;
-  const Float_t PadWidth = 7.125;
+  const Float_t PadWidth =1.0;
   const Float_t sigma = 0.646432;
-  if (size()<3||size()>3||fType == 3/*||(size()==2&&!(fType==1||fType==2))*/){
+  if (size()<3||size()>4||fType == 3/*||(size()==2&&!(fType==1||fType==2))*/){
 	  for (Int_t i=0;i<fEntries.size();i++){
 		  Double_t Weight = static_cast<Double_t>(Charges.at(i))/static_cast<Double_t>(fTotalCharge);
 		  fHorizontalPosition += static_cast<Float_t>(Weight* static_cast<Double_t>(unweightedPosSum.at(i)));
@@ -2407,15 +2411,25 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
 		fHorizontalPosition = PadWidth / 2.0
 				* log(static_cast<Double_t>(Charges.at(2)) / Charges.at(0))
 				/ log(static_cast<Double_t>(Charges.at(1)*Charges.at(1))
-								/ static_cast<Double_t>(Charges.at(0))
-								* Charges.at(2));
+								/ static_cast<Double_t>(Charges.at(0)
+								* Charges.at(2)));
 	  fHorizontalPosition += GetHorizontalMessagePosition(fEntries.at(1));
 	  //Float_t NormalizationFactor = 1.0/(Charges.at(0)*Charges.at(0)+Charges.at(1)*Charges.at(1));
 	  //Float_t LeftDisplacement=
   }
+  else if (size()==4){
+    fHorizontalPosition = PadWidth * 2.0
+				* log(static_cast<Double_t>(Charges.at(2)) / static_cast<Double_t>(Charges.at(1)))
+				/ (log(static_cast<Double_t>(Charges.at(1))
+								/ static_cast<Double_t>(Charges.at(3)))
+				+ log(static_cast<Double_t>(Charges.at(2))
+								/ static_cast<Double_t>(Charges.at(0))));
+	  fHorizontalPosition += static_cast<Double_t>(GetHorizontalMessagePosition(fEntries.at(1))
+				+GetHorizontalMessagePosition(fEntries.at(2)))/2.0;
+  }
 
   //fHorizontalPosition=fHorizontalPosition/(size())+Offset;
-  //Veto();
+  Veto();
   fParametersCalculated =true;
 }
 
