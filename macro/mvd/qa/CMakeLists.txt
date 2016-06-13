@@ -19,4 +19,6 @@ add_test(mvd_qa3_digitize ${CBMROOT_BINARY_DIR}/macro/mvd/qa/mvd_qa3_digitize.sh
 SET_TESTS_PROPERTIES(mvd_qa3_digitize PROPERTIES TIMEOUT "300")
 SET_TESTS_PROPERTIES(mvd_qa3_digitize PROPERTIES DEPENDS mvd_qa2_transDelta)
 SET_TESTS_PROPERTIES(mvd_qa3_digitize PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
+Set(_FileName_Dependency "data/mvd_qa1_transUrqmd_ok;data/mvd_qa2_transDelta_ok")
+Set_Tests_Properties(mvd_qa3_digitize PROPERTIES REQUIRED_FILES "${_FileName_Dependency}")
 
