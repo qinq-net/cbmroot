@@ -35,6 +35,12 @@ void mvd_qa1_transUrqmd( const char* setup = "sis100_electron")
   setupFunct = setupFunct + setup + "()";
   gROOT->LoadMacro(setupFile);
   gInterpreter->ProcessLine(setupFunct);
+  CbmSetup* cbmsetup = CbmSetup::Instance();
+  cbmsetup->RemoveModule(kSTS);
+  cbmsetup->RemoveModule(kRICH);
+  cbmsetup->RemoveModule(kTRD);
+  cbmsetup->RemoveModule(kTOF);
+  cbmsetup->RemoveModule(kPSD);
 
   // In general, the following parts need not be touched
   // ========================================================================

@@ -7,41 +7,6 @@
 //
 // --------------------------------------------------------------------------
 
-TString caveGeom="";
-TString pipeGeom="";
-TString magnetGeom="";
-TString mvdGeom="";
-TString stsGeom="";
-TString richGeom="";
-TString muchGeom="";
-TString shieldGeom="";
-TString trdGeom="";
-TString tofGeom="";
-TString ecalGeom="";
-TString platformGeom="";
-TString psdGeom="";
-Double_t psdZpos=0.;
-Double_t psdXpos=0.;
-
-TString mvdTag="";
-TString stsTag="";
-TString trdTag="";
-TString tofTag="";  
-
-TString stsDigi="";
-TString trdDigi="";
-TString tofDigi="";
-TString muchDigi="";
-TString mvdMatBudget="";
-TString stsMatBudget="";
-
-TString  fieldMap="";
-Double_t fieldZ=0.;
-Double_t fieldScale=0.;
-Int_t    fieldSymType=0;
-
-TString defaultInputFile="";
-
 void mvd_qa2_transDelta(const char* setup = "sis100_electron")
 {
   // ========================================================================
@@ -77,6 +42,12 @@ void mvd_qa2_transDelta(const char* setup = "sis100_electron")
   setupFunct = setupFunct + setup + "()";
   gROOT->LoadMacro(setupFile);
   gInterpreter->ProcessLine(setupFunct);
+  CbmSetup* cbmsetup = CbmSetup::Instance();
+  cbmsetup->RemoveModule(kSTS);
+  cbmsetup->RemoveModule(kRICH);
+  cbmsetup->RemoveModule(kTRD);
+  cbmsetup->RemoveModule(kTOF);
+  cbmsetup->RemoveModule(kPSD);
 
 
   // In general, the following parts need not be touched
