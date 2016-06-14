@@ -14,6 +14,8 @@ CbmHit::CbmHit():
 	fDz(0.),
 	fRefId(-1),
 	fAddress(-1),
+	fTime(-1.),
+	fTimeError(-1.),
 	fMatch(NULL)
 {
 }
@@ -26,6 +28,8 @@ CbmHit::CbmHit(const CbmHit& rhs)
    fDz(rhs.fDz),
    fRefId(rhs.fRefId),
    fAddress(rhs.fAddress),
+   fTime(rhs.fTime),
+   fTimeError(rhs.fTimeError),
    fMatch(NULL)
 {
 }
@@ -41,6 +45,8 @@ CbmHit& CbmHit::operator=(const CbmHit& rhs)
     fDz = rhs.fDz;
     fRefId = rhs.fRefId;
     fAddress = rhs.fAddress;
+    fTime = rhs.fTime;
+    fTimeError = rhs.fTimeError;
     fMatch = rhs.fMatch;
   }
   return *this;

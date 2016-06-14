@@ -64,38 +64,14 @@ public:
     Int_t GetFrontClusterId() const { return fFrontClusterId; }
 
 
-    /** Time of hit
-     ** @return Hit time [ns]
-     **/
-    Double_t GetTime() const { return fTime; }
-
-
-    /** Time error of hit
-     ** @return Hit time error [ns]
-     **/
-    Double_t GetTimeError() const { return fTimeError; }
-
-
-   /** Set hit time
-     ** @param time  Hit time [ns]
-     **/
-    void SetTime(Double_t time) { fTime = time; }
-
-
-    /** Set hit time error
-     ** @param time  Hit time error [ns]
-     **/
-    void SetTimeError(Double_t error) { fTimeError = error; }
 
 
 private:
 
     Int_t fFrontClusterId; ///< Cluster index front side
     Int_t fBackClusterId;  ///< Cluster index back side
-    Double_t fTime;        ///< Hit time [ns]
-    Double_t fTimeError;   ///< Hit time error [ms]
 
-    ClassDef(CbmStsHit, 6);
+    ClassDef(CbmStsHit, 7);
 };
 
 #endif

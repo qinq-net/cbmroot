@@ -15,9 +15,9 @@ CbmStsHit::CbmStsHit()
     : CbmPixelHit()
     , fFrontClusterId(-1)
     , fBackClusterId(-1)
-    , fTime(0.)
-    , fTimeError(0.)
 {
+	SetTime(-1.);
+	SetTimeError(-1.);
 }
 
 
@@ -29,9 +29,9 @@ CbmStsHit::CbmStsHit(Int_t address, const TVector3& pos, const TVector3& dpos,
     : CbmPixelHit(address, pos, dpos, dxy, -1)
     , fFrontClusterId(frontClusterId)
     , fBackClusterId(backClusterId)
-    , fTime(time)
-    , fTimeError(timeError)
 {
+	SetTime(time);
+	SetTimeError(timeError);
 }
 
 

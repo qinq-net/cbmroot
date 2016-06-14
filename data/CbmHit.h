@@ -52,13 +52,20 @@ public:
 	Int_t GetRefId() const { return fRefId; }
 	Int_t GetAddress() const { return fAddress; }
 	CbmMatch* GetMatch() const { return fMatch; }
+	Double_t GetTime() const { return fTime; }
+	Double_t GetTimeError() const { return fTimeError; }
 
 	/* Setters */
 	void SetZ(Double_t z) { fZ = z; }
 	void SetDz(Double_t dz) { fDz = dz; }
 	void SetRefId(Int_t refId) { fRefId = refId; }
 	void SetAddress(Int_t address) { fAddress = address; }
-	 void SetMatch(CbmMatch* match) { fMatch = match; }
+	void SetMatch(CbmMatch* match) { fMatch = match; }
+	void SetTime(Double_t time) { fTime = time; }
+	void SetTime(Double_t time, Double_t error) {
+		fTime = time; fTimeError = error;
+	}
+	void SetTimeError(Double_t error) { fTimeError = error; }
 
 	/**
 	 * Virtual function. Must be implemented in derived class.
@@ -90,9 +97,11 @@ private:
 	Double_t fDz; ///< Z position error [cm]
 	Int_t fRefId; ///< some reference id (usually to cluster, digi or MC point)
 	Int_t fAddress; ///< detector unique identifier
+	Double_t fTime;       ///< Hit time [ns]
+	Double_t fTimeError;  //< Error of hit time [ns]
 	CbmMatch* fMatch; ///< Monte-Carlo information
 
-	ClassDef(CbmHit, 2);
+	ClassDef(CbmHit, 3);
 };
 
 #endif /* CBMHIT_H_ */
