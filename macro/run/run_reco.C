@@ -280,8 +280,8 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis100_electron")
   //"G30" : ALICE fibers 30 layers
 
   Bool_t triangularPads = false;// Bucharest triangular pad-plane layout
-  //Double_t triggerThreshold = 0.5e-6;//SIS100
-  Double_t triggerThreshold = 1.0e-6;//SIS300
+  Double_t triggerThreshold = 0.5e-6;//SIS100
+  //Double_t triggerThreshold = 1.0e-6;//SIS300
   Double_t trdNoiseSigma_keV = 0.1; //default best matching to test beam PRF
 
   CbmTrdDigitizerPRF* trdDigiPrf = new CbmTrdDigitizerPRF(radiator);
