@@ -24,9 +24,13 @@
 #include "CbmMvdPoint.h"
 #include "CbmMvdPileupManager.h"
 
-#include "FairRunAna.h"
 #include "FairRuntimeDb.h"
 
+// Includes from FairRoot
+#include "FairEventHeader.h"
+#include "FairMCEventHeader.h"
+#include "FairRunAna.h"
+#include "FairRunSim.h"
 
 
 // Includes from C++
@@ -436,7 +440,11 @@ for (Int_t iPoint=0; iPoint<fInputPoints->GetEntriesFast(); iPoint++)
 
      
  
- 
+Int_t inputNr = 0;
+Int_t eventNr = 0;
+Double_t eventTime = .0;
+GetEventInfo(inputNr, eventNr, eventTime);
+
 for (Int_t i=0; i<fPixelCharge->GetEntriesFast(); i++)
 	{ 
         CbmMvdPixelCharge* pixel = (CbmMvdPixelCharge*)fPixelCharge->At(i);
@@ -459,8 +467,9 @@ for (Int_t i=0; i<fPixelCharge->GetEntriesFast(); i++)
                 CbmMatch* match = (CbmMatch*)fDigiMatch->At(nDigis);
 		for(Int_t iLink = 0; iLink < pixel->GetNContributors(); iLink++)
 			{
-	                match->AddLink((Double_t) pixel->GetPointWeight()[iLink],pixel->GetPointID()[iLink]);
-			}		    
+	                if(pixel->GetTrackID()[iLink]>-1) match->AddLink((Double_t) pixel->GetPointWeight()[iLink],pixel->GetPointID()[iLink], eventNr, inputNr);
+                        else match->AddLink((Double_t) pixel->GetPointWeight()[iLink],pixel->GetPointID()[iLink]);
+			}
 	    }
 		else 
 		{ 
@@ -482,6 +491,33 @@ else { //cout << endl << "No input found." << endl;
 
 // -------------------------------------------------------------------------
 
+// -------------------------------------------------------------------------
+void CbmMvdSensorDigitizerTask::GetEventInfo(Int_t& inputNr, Int_t& eventNr,
+					     Double_t& eventTime)
+{
+
+    // --- In a FairRunAna, take the information from FairEventHeader
+    if ( FairRunAna::Instance() ) {
+        FairEventHeader* event = FairRunAna::Instance()->GetEventHeader();
+      inputNr   = event->GetInputFileId();
+      eventNr   = event->GetMCEntryNumber();
+      eventTime = event->GetEventTime();
+    }
+
+    // --- In a FairRunSim, the input number and event time are always zero;
+    // --- only the event number is retrieved.
+    else {
+        if ( ! FairRunSim::Instance() )
+            LOG(FATAL) << GetName() << ": neither SIM nor ANA run." 
+                           << FairLogger::endl;
+        FairMCEventHeader* event = FairRunSim::Instance()->GetMCEventHeader();
+        inputNr   = 0;
+        eventNr   = event->GetEventID();
+        eventTime = 0.;
+    }
+
+}
+// -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
 void CbmMvdSensorDigitizerTask::ProduceIonisationPoints(CbmMvdPoint* point) {

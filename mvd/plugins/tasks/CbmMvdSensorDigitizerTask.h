@@ -85,6 +85,8 @@ class CbmMvdSensorDigitizerTask : public CbmMvdSensorTask
   void SetCutOnDeltaRays(Double_t cutOnDeltaRays)   { fCutOnDeltaRays = cutOnDeltaRays;   }
   void SetChargeThreshold(Float_t chargeThreshold) { fChargeThreshold = chargeThreshold; }
 
+  void GetEventInfo(Int_t& inputNr, Int_t& eventNr, Double_t& eventTime);
+
   
 
 //protected:
