@@ -805,6 +805,44 @@ void CbmTrdTimeCorrel::Finish()
     (*it)->SetContour(99);
     }
 
+  if(fBatchAssessment){
+	  vector<TH2*> PadResponses = fHM->H2Vector("Pad_Response.*");
+	  vector<TH2*> Heatmap = fHM->H2Vector(".*Heatmap.*");
+	  vector<TH2*> Baselines = fHM->H2Vector(".*Baseline.*");
+	  TCanvas *c6 = new TCanvas("BatchAssesment",""+runName,1600,900);
+	  TString path = FairRootManager::Instance()->GetOutFile()->GetName();
+	  TString RunNumber = path(TRegexp("[0-9]+_"));
+	  path = "/ddfs/user/data/p/p_munk01/Pictures";
+	  for (auto h : PadResponses){
+		  TString Title = h->GetTitle();
+		  if(!(Title.Contains("_3")||Title.Contains("_4"))) continue;
+		  c6->Clear();
+		  c6->SetLogz();
+		  h->SetContour(99);
+		  h->Draw("colz");
+		  c6->Update();
+		  c6->SaveAs(path+RunNumber+Title+".png");
+	  }
+	  for (auto h : Heatmap){
+		  TString Title = h->GetTitle();
+		  if(!(Title.Contains("Cluster(3")||Title.Contains("Cluster(4"))) continue;
+		  c6->Clear();
+		  c6->SetLogz();
+		  h->SetContour(99);
+		  h->Draw("colz");
+		  c6->Update();
+		  c6->SaveAs(path+RunNumber+h->GetTitle()+".png");
+	  }
+	  for (auto h : Baselines){
+		  TString Title = h->GetTitle();
+		  c6->Clear();
+		  c6->SetLogz();
+		  h->SetContour(99);
+		  h->Draw("colz");
+		  c6->Update();
+		  c6->SaveAs(path+RunNumber+h->GetTitle()+".png");
+	  }
+  }
 
   LOG(DEBUG) << "Finish of CbmTrdTimeCorrel" << FairLogger::endl;
   LOG(INFO) << "Write histo list to " << FairRootManager::Instance()->GetOutFile()->GetName() << FairLogger::endl;
@@ -899,8 +937,6 @@ void CbmTrdTimeCorrel::ClusterizerTime()
   }
   Int_t LastTimestamp = 0;
   for (auto it=TempHitMap.begin(); it != TempHitMap.end(); ++it){
-      if(LastTimestamp>=it->first-clusterWindow) continue;
-      else LastTimestamp = it->first;
       auto range = std::make_pair(TempHitMap.lower_bound(it->first), TempHitMap.upper_bound(it->first + clusterWindow));
       auto rangeCopy=range;
       if(TempHitMap.size()==0 || (range.first == TempHitMap.end())) continue;
@@ -936,21 +972,41 @@ void CbmTrdTimeCorrel::ClusterizerTime()
 		}
 	    }
       }
+      if(LastTimestamp>=it->first-clusterWindow) continue;
+      else LastTimestamp = it->first;
+/*
+ * Important Notice:
+ * If fActivate2DClusterizer is set to true,
+ * Messages are sorted byChIDs instead of PadID's,
+ * also turns of row detection.
+ */
       auto SortSpadicMessageRange =
-          [&](CbmSpadicRawMessage a,CbmSpadicRawMessage b)
-          {
-            Int_t ChIDA = a.GetChannelID() + ((GetSpadicID(a.GetSourceAddress()) %2 == 1)? 16 : 0);
-            Int_t ChIDB = b.GetChannelID() + ((GetSpadicID(b.GetSourceAddress()) %2 == 1)? 16 : 0);
-            Int_t PadA = GetChannelOnPadPlane(ChIDA);
-            Int_t PadB = GetChannelOnPadPlane(ChIDB);
-            Int_t rowA = (GetSpadicID(a.GetSourceAddress())/2)*2+PadA/16;
-            Int_t rowB = (GetSpadicID(b.GetSourceAddress())/2)*2+PadB/16;
-            if(rowA<rowB)
-              return true;
-            else if(rowA == rowB)
-              if(PadA<PadB)
-                return true;
-            return false;
+    		  [&](CbmSpadicRawMessage a,CbmSpadicRawMessage b)
+			  {	if (fActivate2DClusterizer) {
+				  Int_t ChIDA = a.GetChannelID() + ((GetSpadicID(a.GetSourceAddress()) %2 == 1)? 16 : 0);
+				  Int_t ChIDB = b.GetChannelID() + ((GetSpadicID(b.GetSourceAddress()) %2 == 1)? 16 : 0);
+				  Int_t SpaIDA = (GetSpadicID(a.GetSourceAddress())/2);
+				  Int_t SpaIDB = (GetSpadicID(b.GetSourceAddress())/2);
+				  if(SpaIDA<SpaIDB)
+					  return true;
+				  else if(SpaIDA == SpaIDB)
+					  if(ChIDA<ChIDB)
+						  return true;
+				  return false;
+			  } else {
+				  Int_t ChIDA = a.GetChannelID() + ((GetSpadicID(a.GetSourceAddress()) %2 == 1)? 16 : 0);
+				  Int_t ChIDB = b.GetChannelID() + ((GetSpadicID(b.GetSourceAddress()) %2 == 1)? 16 : 0);
+				  Int_t PadA = GetChannelOnPadPlane(ChIDA);
+				  Int_t PadB = GetChannelOnPadPlane(ChIDB);
+				  Int_t rowA = (GetSpadicID(a.GetSourceAddress())/2)*2+PadA/16;
+				  Int_t rowB = (GetSpadicID(b.GetSourceAddress())/2)*2+PadB/16;
+				  if(rowA<rowB)
+					  return true;
+				  else if(rowA == rowB)
+					  if(PadA<PadB)
+						  return true;
+				  return false;
+			  }
           };
       Bool_t OutsideCluster = true;
       std::vector<CbmSpadicRawMessage> linearClusterBuffer;
@@ -987,10 +1043,10 @@ void CbmTrdTimeCorrel::ClusterizerTime()
       Cluster BuildingCluster (clusterWindow,fBaseline[0],fBaseline[1],!fCalculateBaseline); //Create a new Cluster
       Int_t lastRow = (GetSpadicID(linearClusterBuffer.begin()->GetSourceAddress())/2)*32+GetChannelOnPadPlane(linearClusterBuffer.begin()->GetChannelID() + ((GetSpadicID(linearClusterBuffer.begin()->GetSourceAddress()) %2 == 1)? 16 : 0))/16;
       Int_t lastPad = GetChannelOnPadPlane(linearClusterBuffer.begin()->GetChannelID() + ((GetSpadicID(linearClusterBuffer.begin()->GetSourceAddress()) %2 == 1)? 16 : 0));
-      auto Debugrange = std::make_pair(linearClusterBuffer.begin(),linearClusterBuffer.end());
       auto SatteliteDebug =
     		  [&](Cluster currentCluster){
-    	  if(currentCluster.size() != 2) return 0;
+    	  if(/*currentCluster.size() != 2&&*/!currentCluster.Get2DStatus()) return 0;
+    	  return 0;
     	  Int_t Detector = currentCluster.GetSpadic()/2;
           string Detectorname = (Detector == 0 ? "Frankfurt" : "Muenster");
     		  //std::cout << "Fragmented Cluster Found on Pad: " <<currentCluster.GetHorizontalPosition() << std::endl;
@@ -1009,7 +1065,6 @@ void CbmTrdTimeCorrel::ClusterizerTime()
     		  for (auto tempMessage=Messages.first;tempMessage!= Messages.second;tempMessage++){
     			  Hist->Fill(GetChannelonPadPlaneMessage(*tempMessage),tempMessage->GetTriggerType());
     		  }
-    		  return 0;
     		  for (auto x: linearClusterBuffer ){
     		  std::cout << x.GetChannelID() << " " << GetSpadicID(x.GetSourceAddress()) <<" " << x.GetFullTime() << " " <<x.GetTriggerType() << " " << x.GetStopType() << std::endl;
 
@@ -1023,12 +1078,13 @@ void CbmTrdTimeCorrel::ClusterizerTime()
     	  Int_t currentPad = GetChannelOnPadPlane(currentMessage->GetChannelID() + ((GetSpadicID(currentMessage->GetSourceAddress()) %2 == 1)? 16 : 0));
     	  if(BuildingCluster.size()>16) std::cout << "Cluster of Size " << BuildingCluster.size() << " with current Pad " << currentPad << " " << lastPad <<std::endl;
           if (currentPad-lastPad >1 ){
-        	  OutsideCluster=true;
+        	  if(!fActivate2DClusterizer) OutsideCluster=true;
+        	  else if(currentPad-lastPad >3)OutsideCluster=true;
         	  //std::cout << "Gap in Cluster found " << std::endl;
           }
           Int_t currentRow = (GetSpadicID(currentMessage->GetSourceAddress())/2)*32+currentPad/16;
-          if(BuildingCluster.size () > currentPad || lastRow != currentRow||lastPad >= currentPad)//Check if the current message is not from the same row/spadic
-            {
+          if((!fActivate2DClusterizer&&(BuildingCluster.size () > currentPad || lastRow != currentRow||lastPad >= currentPad)))//Check if the current message is not from the same row/spadic
+        	  {
               if (BuildingCluster.size () != 0)//Store away nonempty Cluster
                 {
             	  SatteliteDebug(BuildingCluster);
@@ -1039,7 +1095,24 @@ void CbmTrdTimeCorrel::ClusterizerTime()
               //std::cout << " Rowchange " << lastRow << " " << currentRow << " " << std::endl;
               OutsideCluster = true; //New Row, so we start outside any Cluster
               lastRow = currentRow;
+            } else if(fActivate2DClusterizer){
+            	if(currentRow%32==lastRow%32){
+            		lastRow=currentRow;
+            	}
+            	else {
+            		if (BuildingCluster.size () != 0)//Store away nonempty Cluster
+            				{
+            			SatteliteDebug(BuildingCluster);
+            			fClusterBuffer.push_back (BuildingCluster);
+            			Cluster tempCluster (clusterWindow,fBaseline[0],fBaseline[1],!fCalculateBaseline);
+            			BuildingCluster = tempCluster;
+            				}
+            		//std::cout << " Rowchange " << lastRow << " " << currentRow << " " << std::endl;
+            		OutsideCluster = true; //New Row, so we start outside any Cluster
+            		lastRow = currentRow;
+            	}
             }
+
           if (currentMessage->GetTriggerType () == 2)//Check for neighbour triggered Messages
             {
               if (OutsideCluster)
@@ -1138,16 +1211,36 @@ void CbmTrdTimeCorrel::ClusterizerTime()
 
       //std::sort(rangeCopy.first,rangeCopy.second,CompareSpadicMessagesSmaller);
   }
+  if(fClusterBuffer.size()>0)
+  {
+	  TH2* CoincidenceHistogram = fHM->H2("Cluster_Coincidences");
+	  for (int i =0; i< fClusterBuffer.size()-1;i++){
+		  Float_t CurrentPosition=fClusterBuffer.at(i).GetHorizontalPosition();
+		  if (fClusterBuffer.at(i).size()<3 ||fClusterBuffer.at(i).size()>4) continue;
+		  Int_t CurrentDetector = fClusterBuffer.at(i).GetSpadic()/2;
+		  if(CurrentPosition>16.0) CurrentPosition -= 16.0;
+		  Long_t CurrentTime = fClusterBuffer.at(i).GetFulltime();
+		  for(int j=1;j<10&&i+j<fClusterBuffer.size();j++){
+			  if(fClusterBuffer.at(i+j).GetSpadic()/2==CurrentDetector) continue;
+			  if (fClusterBuffer.at(i+j).size()<3 ||fClusterBuffer.at(i+j).size()>4) continue;
+			  Float_t NextPosition=fClusterBuffer.at(i+j).GetHorizontalPosition();
+			  if(NextPosition>16.0) NextPosition -= 16.0;
+			  Long_t NextTime = fClusterBuffer.at(i+j).GetFulltime();
+			  CoincidenceHistogram->Fill(NextPosition - CurrentPosition,NextTime -CurrentTime);
+		  }
+	  }
+  }
+
   for (auto x: fClusterBuffer){
       fHM->H1("Clustersize_for_Syscore_"+std::to_string (0)+"_Spadic_"+std::to_string (static_cast<Int_t>(x.GetSpadic ()/2)))->Fill(static_cast<Int_t>(x.size ()));
       fHM->H2("Cluster("+std::to_string(static_cast<Int_t>(x.size()))+")_Heatmap_for_Syscore_"+std::to_string (0) +"_Spadic_"+std::to_string(static_cast<Int_t>(x.GetSpadic ()/2)))->Fill(x.GetHorizontalPosition(),0/*<16.0 ? x.GetHorizontalPosition() : x.GetHorizontalPosition()-16.0),static_cast<Int_t>(x.GetRow())*/);
-
       string detectorName = (x.GetSpadic()/2 == 0 ? "Frankfurt" : "Muenster");
       if (fDrawClustertypes){
     	  string histname = "Clustertypes_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+detectorName;
     	  fHM->H2(histname)->Fill(x.size(),x.Type());
       }
       if(x.Type() != 0 && x.size()>=3) continue;
+      //if(x.size()==3&&(x.GetTotalCharge()> 250)) continue;
       if(fDrawPadResponse){
     	  string histname = "Pad_Response_"+ detectorName + "_for_Clusters_of_Size_"+std::to_string(static_cast<Int_t>(x.size()));
     	  x.FillChargeDistribution(fHM->H2(histname));
@@ -1583,7 +1676,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
           TString Detectorname = (Detector == 0 ? "Frankfurt" : "Muenster");
           histName = "Pad_Response_"+ Detectorname + "_for_Clusters_of_Size_"+std::to_string(Size);
           title = histName + runName;
-          fHM->Create2<TH2I>(histName.Data(), title.Data(), 1101,-10.5,10.5,101,-0.5,100.5);
+          fHM->Create2<TH2I>(histName.Data(), title.Data(), 1100,-10.5,10.5,101,-0.5,100.5/*,100,0,1000*/);
       }
     }
 
@@ -1605,6 +1698,13 @@ void CbmTrdTimeCorrel::CreateHistograms()
 		  fHM->Create2<TH2I>(histName.Data(), title.Data(),512,-256.5,255.5,33,-0.5,32.5);
 	  }
   }
+  //Cluster Coincidences
+  {
+	  histName="Cluster_Coincidences";
+	  title = histName + runName;
+	  fHM->Create2<TH2I>(histName.Data(), title.Data(),461,-32.5,32.5,100,0,100);
+  }
+
   if(fDrawSignalShapes){
 	  for (Int_t syscore=0; syscore<1;++syscore) {
 		  for(Int_t Detector =0;Detector<=1;Detector++){
@@ -2059,7 +2159,7 @@ std::map<Int_t, std::map<Int_t,std::map<ULong_t, Long_t> > > CbmTrdTimeCorrel::C
 }
 
 
-CbmTrdTimeCorrel::Cluster::Cluster(Int_t initWindowsize, Int_t BaselineFrankfurt, Int_t BaselineMuenster, Bool_t CalculateBaseline, Int_t ChargeThreshhold = 0) :
+CbmTrdTimeCorrel::Cluster::Cluster(Int_t initWindowsize, Int_t BaselineFrankfurt, Int_t BaselineMuenster, Bool_t CalculateBaseline, Int_t ChargeThreshhold = 50) :
     TObject (),
     fEntries (),
     fParametersCalculated(false),
@@ -2070,7 +2170,8 @@ CbmTrdTimeCorrel::Cluster::Cluster(Int_t initWindowsize, Int_t BaselineFrankfurt
     fHorizontalPosition (0),
     fWindowsize(initWindowsize),
 	fPreCalculatedBaseline(CalculateBaseline),
-fClusterChargeThreshhold(ChargeThreshhold)
+	fClusterChargeThreshhold(ChargeThreshhold),
+	fFullTime()
 {
 	fBaseline[0] = BaselineFrankfurt;
 	fBaseline[1] = BaselineMuenster;
@@ -2119,18 +2220,33 @@ Bool_t CbmTrdTimeCorrel::Cluster::AddEntry(CbmSpadicRawMessage NewEntry){
   fRow = GetHorizontalMessagePosition(*(fEntries.begin()))/16;
 //GetChannelOnPadPlane(fEntries.begin()->GetChannelID() + ((GetSpadicID(fEntries.begin()->GetSourceAddress()) %2 == 1)? 16 : 0))/16;
   BeforeLoop:
-  for (auto it = fEntries.begin(); it!= fEntries.end();it++){
-      if(((GetSpadicID(it->GetSourceAddress())/2)!=fSpadic/2) || GetHorizontalMessagePosition(*it)/16 != fRow)
-//if(false)
-	{
-	  fEntries.erase(it);
-	  goto BeforeLoop;
-	}
-  }
+  if (fIs2D) {
+	  for (auto it = fEntries.begin(); it != fEntries.end(); it++) {
+		  if (((GetSpadicID(it->GetSourceAddress()) / 2) != fSpadic / 2)) {
+			  fEntries.erase(it);
+			  goto BeforeLoop;
+		  }
+	  }
+  } else {
+	  for (auto it = fEntries.begin(); it != fEntries.end(); it++) {
+		  if (((GetSpadicID(it->GetSourceAddress()) / 2) != fSpadic / 2)
+				  || GetHorizontalMessagePosition(*it) / 16 != fRow) {
+			  fEntries.erase(it);
+			  goto BeforeLoop;
+		  }
+	  }
+  }//End of goto scope
   return true;
 }
 
-Int_t CbmTrdTimeCorrel::Cluster::GetTotalCharge(){return fTotalCharge;}; //TODO ADD CHECK
+Int_t CbmTrdTimeCorrel::Cluster::GetTotalCharge() {
+	if (fParametersCalculated) {
+		return fTotalCharge;
+	} else {
+		CalculateParameters();
+		return fTotalCharge;
+	}
+}
 
 Bool_t CbmTrdTimeCorrel::Cluster::FillChargeDistribution(TH2* ChargeMap)
 {
@@ -2142,7 +2258,7 @@ Bool_t CbmTrdTimeCorrel::Cluster::FillChargeDistribution(TH2* ChargeMap)
       Float_t ChargeRatio = 100.0 * static_cast<Float_t>(Charge)/static_cast<Float_t>(GetTotalCharge());
       Float_t Displacement = static_cast<Float_t>(GetHorizontalMessagePosition(currentMessage));
       Displacement -= GetHorizontalPosition();
-      ChargeMap->Fill(Displacement,ChargeRatio);
+      ChargeMap->Fill(Displacement,ChargeRatio/*,fTotalCharge*/);
   }
 }
 
@@ -2255,6 +2371,22 @@ Int_t CbmTrdTimeCorrel::Cluster::GetRow(){
   }
 }
 
+Bool_t CbmTrdTimeCorrel::Cluster::Get2DStatus(){
+	if(fParametersCalculated) return fIs2D;
+	else {
+		CalculateParameters();
+		return fIs2D;
+	}
+}
+
+ULong_t CbmTrdTimeCorrel::Cluster::GetFulltime(){
+	if(fParametersCalculated) return fFullTime;
+	else {
+		CalculateParameters();
+		return fFullTime;
+	}
+}
+
 
 Float_t CbmTrdTimeCorrel::Cluster::GetHorizontalPosition(){
   if(fParametersCalculated) return fHorizontalPosition;
@@ -2293,15 +2425,24 @@ void CbmTrdTimeCorrel::Cluster::Veto() {
 		fType = 3;
 		return;
 	}
-	//first Veto based on Charge Distribution.
+	//Lastly Veto based on Charge Distribution.
 	Float_t VetoThreshhold = 100.0 / (size() - 0.5);
+
 	for (auto x : fEntries) {
 		Float_t ChargeRatio = 100.0 * static_cast<Float_t>(GetMaxADC(x))
 				/ fTotalCharge;
 		Float_t Displacement =
 				static_cast<Float_t>(GetHorizontalMessagePosition(x))
 						- fHorizontalPosition;
-		//if(x.GetTriggerType()==2)
+		if(x.GetTriggerType()==1||x.GetTriggerType()==3){
+			if(ChargeRatio<VetoThreshhold)
+			{
+				fType=3;
+			}
+
+		}
+		/*
+		if(x.GetTriggerType()==2)
         if(x.GetTriggerType()==1||x.GetTriggerType()==3){
 			if (ChargeRatio<VetoThreshhold) fType=3;
 		}
@@ -2310,7 +2451,7 @@ void CbmTrdTimeCorrel::Cluster::Veto() {
 			//std::cout << " Veto based on width" << std::endl;
 			fType = 3;
 			return;
-		} else //if ((x.GetTriggerType() ==1)||(x.GetTriggerType()==3))
+		} else if ((x.GetTriggerType() ==1)||(x.GetTriggerType()==3))
 		if (std::abs(Displacement)
 				<= static_cast<Float_t>((size() - 2.0) / 2.0)) {
 			if ((ChargeRatio < VetoThreshhold)) {
@@ -2325,7 +2466,7 @@ void CbmTrdTimeCorrel::Cluster::Veto() {
 				fType = 3;
 				return;
 			}
-		}
+		}*/
 	}
 }
 
@@ -2344,6 +2485,8 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
   fType = 0;
   fTotalCharge = 0;
   fHorizontalPosition = 0;
+  fFullTime = fEntries.begin()->GetFullTime();
+  fIs2D=false;
   std::vector<Int_t> unweightedPosSum;
   std::vector<Int_t> Charges;
   Int_t NumberOfTypeTwoMessages=0;
@@ -2409,7 +2552,7 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
   }*/
   else if(size()==3){
 		fHorizontalPosition = PadWidth / 2.0
-				* log(static_cast<Double_t>(Charges.at(2)) / Charges.at(0))
+				* log(static_cast<Double_t>(Charges.at(2)) / static_cast<Double_t>(Charges.at(0)))
 				/ log(static_cast<Double_t>(Charges.at(1)*Charges.at(1))
 								/ static_cast<Double_t>(Charges.at(0)
 								* Charges.at(2)));

@@ -9,6 +9,7 @@
 #include "TClonesArray.h"
 #include "CbmSpadicRawMessage.h"
 #include <deque>
+#include "TRegexp.h"
 
 typedef std::map<Int_t, std::map<ULong_t, CbmSpadicRawMessage* > > EpochMap;
 typedef std::map<Int_t, std::map<Int_t,std::map<ULong_t, Long_t> > > OffsetMap;
@@ -49,6 +50,8 @@ class CbmTrdTimeCorrel : public FairTask
   Bool_t  fRewriteSpadicName;
 
   const Bool_t fActivateClusterizer = true;
+  const Bool_t fActivate2DClusterizer=false;
+  const Bool_t fBatchAssessment = false;
   const Bool_t fDebugMode = false;
   const Bool_t fDrawSignalShapes = false;
   const Bool_t fDrawSignalDebugHistograms = false;
@@ -147,7 +150,7 @@ class CbmTrdTimeCorrel : public FairTask
   public:
     Cluster():Cluster(0){};
     Cluster(Int_t Windowsize):Cluster(Windowsize,-255,-255,true){};
-    Cluster(Int_t initWindowsize, Int_t BaselineFrankfurt, Int_t BaselineMuenster, Bool_t CalculateBaseline):Cluster(initWindowsize, BaselineFrankfurt, BaselineMuenster,CalculateBaseline, 50) {};
+    Cluster(Int_t initWindowsize, Int_t BaselineFrankfurt, Int_t BaselineMuenster, Bool_t CalculateBaseline):Cluster(initWindowsize, BaselineFrankfurt, BaselineMuenster,CalculateBaseline, 120) {};
     Cluster(Int_t,Int_t,Int_t,Bool_t,Int_t);
     ~Cluster();
     Size_t size();
@@ -155,6 +158,7 @@ class CbmTrdTimeCorrel : public FairTask
     Int_t Windowsize();
     ULong_t GetFulltime();
     Float_t GetHorizontalPosition();
+    Bool_t Get2DStatus();
     Int_t GetSpadic();
     Int_t GetRow();
     std::pair<Int_t,Float_t> GetPosition();
@@ -164,10 +168,11 @@ class CbmTrdTimeCorrel : public FairTask
     Bool_t FillChargeDistribution(TH2*);
   private:
     std::vector<CbmSpadicRawMessage> fEntries;
-    Bool_t fParametersCalculated;
+    Bool_t fParametersCalculated,fIs2D=true;
     Bool_t fPreCalculatedBaseline;
     Int_t fSpadic, fRow, fType, fTotalCharge, fWindowsize, fClusterChargeThreshhold;
     Int_t fBaseline[2];
+    ULong_t fFullTime;
     Float_t fHorizontalPosition;
     void CalculateParameters();
     Int_t GetHorizontalMessagePosition(CbmSpadicRawMessage&);
