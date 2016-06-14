@@ -196,14 +196,16 @@ void CbmMatchRecoToMC::Exec(
    }
 
    // STS
-   if (fStsDigis && fStsClusters && fStsHits) { // MC->digi->cluster->hit->track
+   if (fStsDigis && fStsClusters) { // digi->cluster
       if (fStsDigiMatches)
          MatchClusters(fStsDigiMatches, fStsClusters, fStsClusterMatches);
       else
          MatchStsClusters(fStsDigis, fStsClusters, fStsClusterMatches);
-      MatchHitsSts(fStsClusterMatches, fStsHits, fStsHitMatches);
-      MatchStsTracks(fMvdHitMatches, fStsHitMatches, fMvdPoints, fStsPoints, fStsTracks, fStsTrackMatches);
-   }
+      if ( fStsHits ) { // cluster->hit->track
+      	MatchHitsSts(fStsClusterMatches, fStsHits, fStsHitMatches);
+      	MatchStsTracks(fMvdHitMatches, fStsHitMatches, fMvdPoints, fStsPoints, fStsTracks, fStsTrackMatches);
+      } //? hit array
+   } //? digi and cluster arrays
 
    //RICH
    if (fRichDigis && fRichHits && fRichMcPoints && fRichRings && fRichTrackMatches) {
@@ -386,14 +388,15 @@ void CbmMatchRecoToMC::MatchClusters(
    if (!(digiMatches && clusters && clusterMatches)) return;
    Int_t nofClusters = clusters->GetEntriesFast();
    for (Int_t iCluster = 0; iCluster < nofClusters; iCluster++) {
-      const CbmCluster* cluster = static_cast<const CbmCluster*>(clusters->At(iCluster));
+      CbmCluster* cluster = static_cast<CbmCluster*>(clusters->At(iCluster));
       CbmMatch* clusterMatch = new ((*clusterMatches)[iCluster]) CbmMatch();
       Int_t nofDigis = cluster->GetNofDigis();
       for (Int_t iDigi = 0; iDigi < nofDigis; iDigi++) {
          const CbmMatch* digiMatch = static_cast<const CbmMatch*>(digiMatches->At(cluster->GetDigi(iDigi)));
          clusterMatch->AddLinks(*digiMatch);
-      }
-   }
+      }  //# digis
+      cluster->SetMatch(clusterMatch);
+   } //# clusters
 }
 
 void CbmMatchRecoToMC::MatchStsClusters(
@@ -404,13 +407,14 @@ void CbmMatchRecoToMC::MatchStsClusters(
    if (!(digi && clusters && clusterMatches)) return;
    Int_t nofClusters = clusters->GetEntriesFast();
    for (Int_t iCluster = 0; iCluster < nofClusters; iCluster++) {
-      const CbmCluster* cluster = static_cast<const CbmCluster*>(clusters->At(iCluster));
+      CbmCluster* cluster = static_cast<CbmCluster*>(clusters->At(iCluster));
       CbmMatch* clusterMatch = new ((*clusterMatches)[iCluster]) CbmMatch();
       Int_t nofDigis = cluster->GetNofDigis();
       for (Int_t iDigi = 0; iDigi < nofDigis; iDigi++) {
          const CbmMatch* digiMatch = (static_cast<const CbmDigi*>(digi->At(cluster->GetDigi(iDigi))))->GetMatch();
          clusterMatch->AddLinks(*digiMatch);
-      }
+      } //# digis
+      cluster->SetMatch(clusterMatch);
    }
 }
 
