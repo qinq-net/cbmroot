@@ -68,6 +68,8 @@ class CbmTrdDigitizerPRF : public FairTask {
 
   void AddDigi(Int_t pointId, Int_t address, Double_t charge, Double_t chargeTR, Double_t time);
 
+  void GetEventInfo(Int_t& inputNr, Int_t& eventNr, Double_t& eventTime);
+
   Bool_t fDebug;
   Bool_t fTrianglePads;
   Bool_t fCbmLinkWeightDistance;
@@ -86,6 +88,11 @@ class CbmTrdDigitizerPRF : public FairTask {
   Int_t fModuleId;
   Int_t fMCPointId;
 
+  // event info
+  Int_t fInputNr      = 0;  // input file ID
+  Int_t fEventNr      = 0;  // event ID or mc entry number
+  Double_t fEventTime = 0.; // event time
+
   TClonesArray* fPoints; //! Trd MC points
   TClonesArray* fDigis; //! TRD digis
   TClonesArray* fDigiMatches; //! Corresponding MCPoints to TRD digis
@@ -97,6 +104,6 @@ class CbmTrdDigitizerPRF : public FairTask {
 
   std::map<Int_t, pair<CbmTrdDigi*, CbmMatch*> > fDigiMap; // Temporary storage for digis.
 
-  ClassDef(CbmTrdDigitizerPRF, 2);
+  ClassDef(CbmTrdDigitizerPRF, 3);
 };
 #endif // CBMTRDDIGITIZER_PRF_H

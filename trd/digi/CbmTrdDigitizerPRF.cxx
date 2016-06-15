@@ -10,11 +10,16 @@
 #include "CbmMCTrack.h"
 #include "CbmMatch.h"
 
-#include "FairRootManager.h"
+// Includes from FairRoot
+#include "FairEventHeader.h"
+#include "FairMCEventHeader.h"
 #include "FairRunAna.h"
+#include "FairRunSim.h"
+#include "FairRootManager.h"
 #include "FairRuntimeDb.h"
 #include "FairLogger.h"
 
+// Includes from Root
 #include "TRandom.h"
 #include "TMath.h"
 #include "TVector3.h"
@@ -22,6 +27,7 @@
 #include "TGeoManager.h"
 #include "TStopwatch.h"
 
+// Includes from C++
 #include <iomanip>
 #include <iostream>
 #include <cmath>
@@ -137,6 +143,10 @@ void CbmTrdDigitizerPRF::Exec(Option_t*)
   fDebug = false;
   TStopwatch timer;
   timer.Start();
+
+  /// get event info (once per event, used later in the matching)
+  GetEventInfo(fInputNr, fEventNr, fEventTime);
+
 
   Int_t nofLatticeHits = 0;
   Int_t nofElectrons = 0;
@@ -680,7 +690,7 @@ void CbmTrdDigitizerPRF::AddDigi(Int_t pointId, Int_t address, Double_t charge, 
     }
 
     CbmMatch* digiMatch = new CbmMatch();
-    digiMatch->AddLink(CbmLink(weighting, pointId));
+    digiMatch->AddLink(CbmLink(weighting, pointId, fEventNr, fInputNr));
     //    fDigiMap[address] = make_pair(new CbmTrdDigi(address, charge, chargeTR, time), digiMatch);
     fDigiMap[address] = make_pair(new CbmTrdDigi(address, charge, time), digiMatch);
     it = fDigiMap.find(address);
@@ -689,7 +699,34 @@ void CbmTrdDigitizerPRF::AddDigi(Int_t pointId, Int_t address, Double_t charge, 
     it->second.first->AddCharge(charge);
     it->second.first->AddChargeTR(chargeTR);
     it->second.first->SetTime(max(time, it->second.first->GetTime()));
-    it->second.second->AddLink(CbmLink(weighting, pointId));
+    it->second.second->AddLink(CbmLink(weighting, pointId, fEventNr, fInputNr));
   }
 }
-  ClassImp(CbmTrdDigitizerPRF)
+
+// -------------------------------------------------------------------------
+void CbmTrdDigitizerPRF::GetEventInfo(Int_t& inputNr, Int_t& eventNr,
+				      Double_t& eventTime)
+{
+  // --- In a FairRunAna, take the information from FairEventHeader
+  if ( FairRunAna::Instance() ) {
+    FairEventHeader* event = FairRunAna::Instance()->GetEventHeader();
+    inputNr   = event->GetInputFileId();
+    eventNr   = event->GetMCEntryNumber();
+    eventTime = event->GetEventTime();
+  }
+
+  // --- In a FairRunSim, the input number and event time are always zero;
+  // --- only the event number is retrieved.
+  else {
+    if ( ! FairRunSim::Instance() )
+      LOG(FATAL) << GetName() << ": neither SIM nor ANA run." 
+		 << FairLogger::endl;
+    FairMCEventHeader* event = FairRunSim::Instance()->GetMCEventHeader();
+    inputNr   = 0;
+    eventNr   = event->GetEventID();
+    eventTime = 0.;
+  }
+}
+
+
+ClassImp(CbmTrdDigitizerPRF)
