@@ -61,14 +61,18 @@ class CbmMvdHit : public CbmPixelHit, public CbmMvdDetectorId
   Int_t GetIndexCentralX() const { return fIndexCentralX;}; // returns index of center of gravity
   Int_t GetIndexCentralY() const { return fIndexCentralY;}; // returns index of center of gravity
   void GetDigiIndexVector(TClonesArray* cbmMvdClusterArray, std::vector<Int_t>* digiIndexVector);
-  Double_t GetTimeStamp() const { return fTimeStamp; }
-  Double_t GetTimeStampError() const { return fTimeStampError; }
+
+
+  /** Outdated. Should use CbmHit::GetTime() and CbmHit::GetTimeError() instead. **/
+  Double_t GetTimeStamp() const { return GetTime(); }
+  Double_t GetTimeStampError() const { return GetTimeError(); }
   
   Int_t GetRefIndex() { return fFlag; }
   
 
-  void SetTimeStamp( Double_t time ){fTimeStamp = time;};
-  void SetTimeStampError (Double_t timeError) {fTimeStampError = timeError;};
+  /** Outdated. Should use CbmHit::SetTime() and CbmHit::SetTimeError() instead. **/
+  void SetTimeStamp( Double_t time ){ SetTime(time); };
+  void SetTimeStampError (Double_t timeError) {SetTimeError(timeError);};
 
  protected:
 
@@ -77,15 +81,11 @@ class CbmMvdHit : public CbmPixelHit, public CbmMvdDetectorId
   Int_t fIndexCentralX;
   Int_t fIndexCentralY;
   
-
-  Double_t fTimeStamp;
-  Double_t fTimeStampError;  
-
   Int_t fDetectorID;
  
 
 
-  ClassDef(CbmMvdHit,2);
+  ClassDef(CbmMvdHit,3);
 
 };
 

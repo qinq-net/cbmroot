@@ -93,23 +93,27 @@ public:
 	 */
 	virtual Int_t GetPlaneId() const { return fPlaneId; }
 
-	/** Setters **/
-	Double_t GetTime() const { return fTime; }
-	Double_t GetDTime() const { return fDTime; }
+	/** Accessors **/
 	Int_t GetFlag() const { return fFlag; }
 
-	/** Accessors **/
-	void SetTime(Double_t time) { fTime = time; }
-	void SetDTime(Double_t dtime) { fDTime = dtime; }
+
+
+	/** Modifiers **/
 	void SetFlag(Int_t flag) { fFlag = flag; }
+
+	/** Time error (old methods). Here for backward compatibility.
+	 ** Methods of base class CbmHit::GetTimeError and
+	 ** CbmHit::SetTimeError should be used.
+	 **/
+	void SetDTime(Double_t error) { SetTimeError(error); }
+	Double_t GetDTime() const { return GetTimeError(); }
+
 
 private:
    Int_t fPlaneId; // Plane number
-   Double_t fTime; // Time since event start [ns]
-   Double_t fDTime; // Time resolution [ns]
    Int_t fFlag; // Flag
 
-	ClassDef(CbmMuchPixelHit, 2);
+	ClassDef(CbmMuchPixelHit, 3);
 };
 
 #endif /* CBMMUCHPIXELHIT_H_ */

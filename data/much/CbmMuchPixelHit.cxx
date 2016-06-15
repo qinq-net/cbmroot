@@ -8,8 +8,6 @@
 CbmMuchPixelHit::CbmMuchPixelHit()
   : CbmPixelHit(),
     fPlaneId(-1),
-    fTime(-1.),
-    fDTime(-1.),
     fFlag(0)
 {
   SetType(kMUCHPIXELHIT);
@@ -35,11 +33,11 @@ CbmMuchPixelHit::CbmMuchPixelHit(
 		Double_t dt)
   : CbmPixelHit(address, x, y, z, dx, dy, dz, dxy, refId),
     fPlaneId(planeId),
-    fTime(t),
-    fDTime(dt),
     fFlag(0)
 {
 	SetType(kMUCHPIXELHIT);
+  SetTime(-1);
+  SetTimeError(-1.);
 }
 
 CbmMuchPixelHit::CbmMuchPixelHit(
@@ -51,11 +49,11 @@ CbmMuchPixelHit::CbmMuchPixelHit(
 		Int_t planeId)
   : CbmPixelHit(address, pos, err, dxy, refId),
     fPlaneId(planeId),
-    fTime(-1.),
-    fDTime(-1.),
     fFlag(0)
 {
   SetType(kMUCHPIXELHIT);
+  SetTime(-1);
+  SetTimeError(-1.);
 }
 
 CbmMuchPixelHit::CbmMuchPixelHit(
@@ -69,11 +67,11 @@ CbmMuchPixelHit::CbmMuchPixelHit(
 		Double_t dtime)
   : CbmPixelHit(address, pos, err, dxy, refId),
     fPlaneId(planeId),
-    fTime(time),
-    fDTime(dtime),
     fFlag(0)
 {
   SetType(kMUCHPIXELHIT);
+  SetTime(-1);
+  SetTimeError(-1.);
 }
 
 ClassImp(CbmMuchPixelHit);

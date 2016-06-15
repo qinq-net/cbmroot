@@ -91,14 +91,15 @@ protected:
         CbmHit(const CbmHit&);
         CbmHit& operator=(const CbmHit&);
 
+
 private:
 	HitType fType; ///< hit type
 	Double_t fZ; ///< Z position of hit [cm]
 	Double_t fDz; ///< Z position error [cm]
 	Int_t fRefId; ///< some reference id (usually to cluster, digi or MC point)
 	Int_t fAddress; ///< detector unique identifier
-	Double_t fTime;       ///< Hit time [ns]
-	Double_t fTimeError;  //< Error of hit time [ns]
+  Double_t fTime;       ///< Hit time [ns]
+  Double_t fTimeError;  ///< Error of hit time [ns]
 	CbmMatch* fMatch; ///< Monte-Carlo information
 
 	ClassDef(CbmHit, 3);

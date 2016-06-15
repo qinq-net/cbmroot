@@ -13,10 +13,10 @@ CbmRichHit::CbmRichHit()
     fPmtId(0),
    // fNPhotons(0),
    // fAmplitude(0.),
-    fTimestamp(0.),
-    fToT(0.)
+     fToT(0.)
 {
    SetType(kRICHHIT);
+   SetTime(0.);
 }
 
 CbmRichHit::CbmRichHit(Double_t x, Double_t y)
@@ -24,12 +24,12 @@ CbmRichHit::CbmRichHit(Double_t x, Double_t y)
 		    fPmtId(0),
 		  //  fNPhotons(0),
 		  //  fAmplitude(0.),
-		    fTimestamp(0.),
                     fToT(0.)
 {
 	SetType(kRICHHIT);
 	SetX(x);
 	SetY(y);
+	SetTime(0.);
 }
 
 CbmRichHit::CbmRichHit(Double_t x, Double_t y, Double_t ts, Double_t tot)
@@ -37,12 +37,12 @@ CbmRichHit::CbmRichHit(Double_t x, Double_t y, Double_t ts, Double_t tot)
 		    fPmtId(0),
 		//    fNPhotons(0),
 		//    fAmplitude(0.),
-		    fTimestamp(ts),
 		    fToT(tot)
 {
 	SetType(kRICHHIT);
 	SetX(x);
 	SetY(y);
+	SetTime(ts);
 }
 
 CbmRichHit::~CbmRichHit()

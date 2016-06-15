@@ -52,7 +52,6 @@ public:
   Int_t GetPlaneId() const { return 0; }
 
   /** Accessors **/
-  Double_t GetTime() const { return fTime; }
   Int_t GetFlag() const { return fFlag; }
   Int_t GetCh() const { return fChannel; }
 
@@ -64,16 +63,14 @@ public:
   Double_t GetSinPhi() const {return GetY()/GetRt();}
 
   /** Modifiers **/
-  void SetTime(Double_t time) { fTime = time; };
   void SetFlag(Int_t flag) { fFlag = flag; };
 
 private:
 
-  Double_t fTime; ///< Time since event start [ps]
   Int_t fFlag; ///< Flag for general purposes [TDC, event tagging...]
   Int_t fChannel; ///< Channel identifier
 
-  ClassDef(CbmTofHit, 3)
+  ClassDef(CbmTofHit, 4)
 };
 
 #endif
