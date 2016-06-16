@@ -256,27 +256,6 @@ If(CMAKE_SYSTEM_NAME MATCHES Darwin)
   Check_Include_File("_types/_uint8_t.h" _UINT8_T_EXIST)
 EndIf()
 
-Execute_Process(COMMAND ${ROOT_CONFIG_EXECUTABLE} --has-vc
-                OUTPUT_VARIABLE ROOT_HAS_VC
-               )
-String(STRIP ${ROOT_HAS_VC} ROOT_HAS_VC)
-
-If(NOT ${ROOT_HAS_VC})
-  Message(STATUS "Root does not support VC. Compile the internal version.")
-  ExternalProject_Add(vc
-    SOURCE_DIR ${CMAKE_SOURCE_DIR}/vc_074
-    PREFIX vc
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}
-  )
-  Add_Library(Vc STATIC IMPORTED)
-  Set_Property(TARGET Vc PROPERTY IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/lib/libVc.a)
-  Set(VC_INCLUDE_DIRS       
-      ${CBMROOT_SOURCE_DIR}/vc_074/ 
-      ${CBMROOT_SOURCE_DIR}/vc_074/include/
-     )
-  Install(FILES $${CMAKE_BINARY_DIR}/lib/libVc.a DESTINATION lib)
-EndIf()
-
 If(ROOT_VERSION_MAJOR VERSION_LESS 6 )
   # Test is we use the new FairSource. The difference is the signature.
   # Compile test code. If the code compiles we use the new FairSource.
