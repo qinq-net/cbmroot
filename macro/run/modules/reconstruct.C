@@ -121,7 +121,7 @@ void reconstruct()
   // ------------------------------------------------------------------------
 
 
-  // -----   Track finding in STS   -----------------------------------------
+  // -----   Track finding in (MVD+) STS    -----------------------------------------
   CbmKF* kalman = new CbmKF();
   run->AddTask(kalman);
   CbmL1* l1 = new CbmL1();
@@ -146,7 +146,7 @@ void reconstruct()
   std::cout << "-I- : Added task " << l1->GetName() << std::endl;
 
   CbmStsTrackFinder* stsTrackFinder = new CbmL1StsTrackFinder();
-  FairTask* stsFindTracks = new CbmStsFindTracks(0, stsTrackFinder);
+  FairTask* stsFindTracks = new CbmStsFindTracks(0, stsTrackFinder, setup->IsActive(kMvd));
   run->AddTask(stsFindTracks);
   std::cout << "-I- : Added task " << stsFindTracks->GetName() << std::endl;
   // -------------------------------------------------------------------------
