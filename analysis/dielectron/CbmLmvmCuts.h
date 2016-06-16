@@ -51,7 +51,7 @@ public:
 	{
 		//electron ID cuts
 		fTrdAnnCut = 0.85;
-		fRichAnnCut = 0.0;
+		fRichAnnCut = -0.4;
 		fUseRichAnn = true;
 		fMeanA = -1.;
 		fMeanB = -1.;
