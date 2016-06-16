@@ -1,7 +1,7 @@
 #$ -wd /tmp 
 #$ -j y
 # Number of subtasks to start
-#$ -t 1-250
+#$ -t 1-1000
 
 #XXXXX=$(printf "%05d" "1")
 #XXXX=$(printf "%04d" "1")
@@ -9,7 +9,7 @@ XXXXX=$(printf "%05d" "$SGE_TASK_ID")
 XXXX=$(printf "%04d" "$SGE_TASK_ID")
 
 # specify input and output directories
-outdir=/hera/cbm/users/slebedev/data/lmvm/sep15/${coll_energy}/${setupDirName}/${pluto_particle}/
+outdir=/hera/cbm/users/slebedev/data/lmvm/apr16/${coll_energy}/${setupDirName}/${pluto_particle}/
 cbmroot_config_path=/hera/cbm/users/slebedev/trunk/build/config.sh
 macro_dir=/hera/cbm/users/slebedev/trunk/cbmroot/macro/analysis/dielectron/
 
@@ -42,9 +42,9 @@ fi
 
 export MC_FILE=${outdir}/mc.auau.${coll_energy}.centr.${XXXXX}.root
 export PAR_FILE=${outdir}/params.auau.${coll_energy}.centr.${XXXXX}.root
-export RECO_FILE=${outdir}/reco.trdclustering.auau.${coll_energy}.centr.${XXXXX}.root
-export LITQA_FILE=${outdir}/litqa.trdclustering.auau.${coll_energy}.centr.${XXXXX}.root
-export ANALYSIS_FILE=${outdir}/analysis.trdclustering.auau.${coll_energy}.centr.${XXXXX}.root
+export RECO_FILE=${outdir}/reco.tofclustering.auau.${coll_energy}.centr.${XXXXX}.root
+export LITQA_FILE=${outdir}/litqa.tofclustering.auau.${coll_energy}.centr.${XXXXX}.root
+export ANALYSIS_FILE=${outdir}/analysis.tofclustering.auau.${coll_energy}.centr.${XXXXX}.root
 #export ANALYSIS_FILE=${outdir}/analysis.auau.pisupp${PION_MISIDENTIFICATION_LEVEL}.${coll_energy}.centr.${XXXXX}.root 
 export RESULT_DIR=
 
@@ -73,19 +73,18 @@ export PLUTO=yes
 
 if [ ${pluto_particle} = "rho0" ] ; then 
    export PLUTO_FILE=/hera/cbm/users/ekrebs/pluto/cktA/${ENERGY}/rho0/epem/pluto.auau.${ENERGY}.rho0.epem.${XXXX}.root
-  #  export PLUTO_FILE=/hera/cbm/users/slebedev/mc/pluto/auau/${ENERGY}/rho0/epem/pluto.auau.${ENERGY}.rho0.epem.${XXXX}.root
 elif [ ${pluto_particle} = "omegaepem" ] ; then 
    export PLUTO_FILE=/hera/cbm/users/ekrebs/pluto/cktA/${ENERGY}/omega/epem/pluto.auau.${ENERGY}.omega.epem.${XXXX}.root
- #   export PLUTO_FILE=/hera/cbm/users/slebedev/mc/pluto/auau/${ENERGY}/omega/epem/pluto.auau.${ENERGY}.omega.epem.${XXXX}.root
 elif [ ${pluto_particle} = "omegadalitz" ] ; then 
    export PLUTO_FILE=/hera/cbm/users/ekrebs/pluto/cktA/${ENERGY}/omega/pi0epem/pluto.auau.${ENERGY}.omega.pi0epem.${XXXX}.root
- #   export PLUTO_FILE=/hera/cbm/users/slebedev/mc/pluto/auau/${ENERGY}/omega/pi0epem/pluto.auau.${ENERGY}.omega.pi0epem.${XXXX}.root
 elif [ ${pluto_particle} = "phi" ] ; then 
    export PLUTO_FILE=/hera/cbm/users/ekrebs/pluto/cktA/${ENERGY}/phi/epem/pluto.auau.${ENERGY}.phi.epem.${XXXX}.root
- #   export PLUTO_FILE=/hera/cbm/users/slebedev/mc/pluto/auau/${ENERGY}/phi/epem/pluto.auau.${ENERGY}.phi.epem.${XXXX}.root
 elif [ ${pluto_particle} = "pi0" ] ; then 
    export PLUTO_FILE=/hera/cbm/users/ekrebs/pluto/cktA/${ENERGY}/pi0/gepem/pluto.auau.${ENERGY}.pi0.gepem.${XXXX}.root
- #   export PLUTO_FILE=/hera/hades/user/ekrebs/cbm/pluto/auau/${ENERGY}/pi0/gepem/pluto.auau.${ENERGY}.pi0.gepem.${XXXX}.root
+elif [ ${pluto_particle} = "inmed" ] ; then 
+   export PLUTO_FILE=/hera/cbm/users/ekrebs/pluto/jun15/auau/cktRapp/${ENERGY}/rapp.inmed/epem/pluto.auau.${ENERGY}.rapp.inmed.epem.${XXXX}.root
+elif [ ${pluto_particle} = "qgp" ] ; then 
+   export PLUTO_FILE=/hera/cbm/users/ekrebs/pluto/jun15/auau/cktRapp/${ENERGY}/rapp.qgp/epem/pluto.auau.${ENERGY}.rapp.qgp.epem.${XXXX}.root
 elif [ ${pluto_particle} = "urqmd" ] ; then 
    export PLUTO=no
 fi 
@@ -97,7 +96,7 @@ mkdir -p $workdir
 cd $workdir
 
 # run the root simulation
-root -b -l -q "${macro_dir}/run_sim.C(${nevents})"
+#root -b -l -q "${macro_dir}/run_sim.C(${nevents})"
 root -b -l -q "${macro_dir}/run_reco.C(${nevents})"
 root -b -l -q "${macro_dir}/run_litqa.C(${nevents})"
 root -b -l -q "${macro_dir}/run_analysis.C(${nevents})"

@@ -1,7 +1,7 @@
 #####!/bin/sh
 
-mainDirFrom=/hera/cbm/users/slebedev/data/lmvm/sep15/
-mainDirTo=/u/slebedev/Baykal/copytemp/sep15/
+mainDirFrom=/hera/cbm/users/slebedev/data/lmvm/apr16/
+mainDirTo=/u/slebedev/Baykal/copytemp/apr16_tofclustering/
 
 copy_func() {
    dirFrom=${1}
@@ -17,6 +17,8 @@ copy_all_mesons() {
   copy_func ${1} ${2} ${3} omegaepem
   copy_func ${1} ${2} ${3} omegadalitz
   copy_func ${1} ${2} ${3} phi 
+  copy_func ${1} ${2} ${3} inmed
+  copy_func ${1} ${2} ${3} qgp
   #copy_func ${1} ${2} ${3} urqmd
 }
 
@@ -29,7 +31,8 @@ copy_all_mesons_ana_litqa() {
 	copy_all_mesons ${mainDirFrom}/${subPath} ${mainDirTo}/${subPath} ${fileNameLitqa}
 }
 
-copy_all_mesons_ana_litqa /8gev/geosetup_v1509_8gev/ .auau.8gev.centr.all.root
+rm -rf ${mainDirTo}
+copy_all_mesons_ana_litqa /8gev/geosetup_v1512_8gev/ .tofclustering.auau.8gev.centr.all.root
 
 
 

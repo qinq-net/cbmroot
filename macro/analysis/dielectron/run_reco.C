@@ -42,12 +42,13 @@ void run_reco(Int_t nEvents = 100)
 
 	// digi parameters
 	TList *parFileList = new TList();
-	TObjString stsDigiFile = parDir + "/" + stsDigi;
 	TObjString trdDigiFile = parDir + "/" + trdDigi;
 	TObjString tofDigiFile = parDir + "/" + tofDigi;
-	parFileList->Add(&stsDigiFile);
+	TObjString tofDigiBdfFile = parDir + "/" + tofDigiBdf;
+
 	if (trdDigiFile.GetString() != "") parFileList->Add(&trdDigiFile);
-	parFileList->Add(&tofDigiFile);
+	if (tofDigiFile.GetString() != "") parFileList->Add(&tofDigiFile);
+	if (tofDigiBdfFile.GetString() != "") parFileList->Add(&tofDigiBdfFile);
 
 	// material budget for STS and MVD
 	TString mvdMatBudgetFileName = "";
@@ -179,9 +180,24 @@ void run_reco(Int_t nEvents = 100)
 	// ===                     TOF local reconstruction                      ===
 	// =========================================================================
 	if (IsTof(parFile)) {
+             if (tofHitProducerType == "smearing") {
 		CbmTofHitProducerNew* tofHitProd = new CbmTofHitProducerNew("CbmTofHitProducer", 1);
 		tofHitProd->SetInitFromAscii(kFALSE);
-	        run->AddTask(tofHitProd);
+		run->AddTask(tofHitProd);
+
+	     }  else if (tofHitProducerType == "clustering") {
+
+		 Bool_t bSaveTofDigisInOut = kFALSE;
+		 CbmTofDigitizerBDF* tofDigi = new CbmTofDigitizerBDF("TOF Digitizer BDF",0, bSaveTofDigisInOut);
+		 TString paramDir = gSystem->Getenv("VMCWORKDIR");
+		 tofDigi->SetInputFileName( paramDir + "/parameters/tof/test_bdf_input.root"); // Required as input file name not read anymore by param class
+		// tofDigi->SetHistoFileName( digiOutFile ); // Uncomment to save control histograms
+		 run->AddTask(tofDigi);
+
+		 CbmTofSimpClusterizer* tofSimpClust = new CbmTofSimpClusterizer("TOF Simple Clusterizer", 0, kTRUE);
+		// tofSimpClust->SetHistoFileName( clustOutFile ); // Uncomment to save control histograms
+		 run->AddTask(tofSimpClust);
+	     }
 	} //isTof
 
 	// =========================================================================
@@ -209,19 +225,14 @@ void run_reco(Int_t nEvents = 100)
     // ===                        RICH reconstruction                        ===
     // =========================================================================
 	if (IsRich(parFile)){
-		CbmRichHitProducer* richHitProd  = new CbmRichHitProducer();
-		richHitProd->SetDetectorType(4);
-		richHitProd->SetNofNoiseHits(220);
-		richHitProd->SetCollectionEfficiency(1.0);
-		richHitProd->SetSigmaMirror(0.06);
-	        run->AddTask(richHitProd);
+	    CbmRichDigitizer* richDigitizer = new CbmRichDigitizer();
+	    run->AddTask(richDigitizer);
 
-		CbmRichReconstruction* richReco = new CbmRichReconstruction();
-	        run->AddTask(richReco);
+	    CbmRichHitProducer* richHitProd  = new CbmRichHitProducer();
+	    run->AddTask(richHitProd);
 
-		// ------------------- RICH Ring matching  ---------------------------------
-		CbmRichMatchRings* matchRings = new CbmRichMatchRings();
-	        run->AddTask(matchRings);
+	    CbmRichReconstruction* richReco = new CbmRichReconstruction();
+	    run->AddTask(richReco);
 
 	}//isRich
 

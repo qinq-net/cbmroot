@@ -4,7 +4,7 @@
  * @version 1.0
  **/
 
-void run_analysis(Int_t nEvents = 3)
+void run_analysis(Int_t nEvents = 1000)
 {
    TString script = TString(gSystem->Getenv("SCRIPT"));
    TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
@@ -16,15 +16,15 @@ void run_analysis(Int_t nEvents = 3)
 	TString recoFile = dir + "/reco.auau.25gev.centr.00001.root";
 	TString analysisFile = dir + "/test.analysis.test.auau.25gev.centr.00001.root";*/
 
-   TString parFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.param.root";
-   TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.mc.root";
-   TString recoFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.reco.root";
-   TString analysisFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.analysis.root";
+   TString parFile = "/hera/cbm/users/slebedev/data/lmvm/apr16/8gev/geosetup_v1512_8gev/rho0/params.auau.8gev.centr.00002.root";
+   TString mcFile = "/hera/cbm/users/slebedev/data/lmvm/apr16/8gev/geosetup_v1512_8gev/rho0/mc.auau.8gev.centr.00002.root";
+   TString recoFile = "/hera/cbm/users/slebedev/data/lmvm/apr16/8gev/geosetup_v1512_8gev/rho0/reco.auau.8gev.centr.00002.root";
+   TString analysisFile = "/hera/cbm/users/slebedev/data/lmvm/apr16/8gev/geosetup_v1512_8gev/rho0/analysis.auau.8gev.centr.00002.root";
 
-	TString energy = "25gev";
+	TString energy = "8gev";
 	TString plutoParticle = "rho0";
 
-   TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/analysis/dielectron/geosetup/geo_setup_lmvm.C";
+   TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/analysis/dielectron/geosetup/geosetup_v1512_8gev.C";
 
    if (script == "yes") {
       mcFile = TString(gSystem->Getenv("MC_FILE"));
@@ -46,10 +46,10 @@ void run_analysis(Int_t nEvents = 3)
 
    	// digi parameters
    	TList *parFileList = new TList();
-   	TObjString stsDigiFile = parDir + "/" + stsDigi;
+       // TObjString stsDigiFile = parDir + "/" + stsDigi;
    	TObjString trdDigiFile = parDir + "/" + trdDigi;
    	TObjString tofDigiFile = parDir + "/" + tofDigi;
-   	parFileList->Add(&stsDigiFile);
+       // parFileList->Add(&stsDigiFile);
    	if (trdDigiFile.GetString() != "") parFileList->Add(&trdDigiFile);
    	parFileList->Add(&tofDigiFile);
 
@@ -59,9 +59,9 @@ void run_analysis(Int_t nEvents = 3)
 
 
    // load libraries
-   gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
-   loadlibs();
-   gSystem->Load("libAnalysis");
+  // gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
+  // loadlibs();
+   //gSystem->Load("libAnalysis");
    gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/determine_setup.C");
 
    TStopwatch timer;
@@ -91,6 +91,10 @@ void run_analysis(Int_t nEvents = 3)
       if (plutoParticle == "omegadalitz") task->SetWeight(19 * 7.7e-4);
       // weight phi = Multipli0city * Branching Ratio = 0.12 * 2.97e-4 for 10 AGeV beam energy
       if (plutoParticle == "phi") task->SetWeight(0.12 * 2.97e-4);
+      // weight in medium rho. 0.5 is a scaling factor for 8AGev from 25AGeV
+      if (plutoParticle == "inmed") task->SetWeight(0.5 * 4.45e-2);
+      // weight qgp radiation  0.5 is a scaling factor for 8AGev from 25AGeV
+      if (plutoParticle == "qgp") task->SetWeight(0.5 * 1.15e-2);
    } else if (energy == "25gev") {
       // weight rho0 = Multiplicity * Branching Ratio = 23 * 4.7e-5 for 25 AGeV beam energy
       if (plutoParticle == "rho0") task->SetWeight(23 * 4.7e-5);
@@ -100,6 +104,10 @@ void run_analysis(Int_t nEvents = 3)
       if (plutoParticle == "omegadalitz") task->SetWeight(38 * 7.7e-4);
       // weight phi = Multiplicity * Branching Ratio = 1.28 * 2.97e-4 for 25 AGeV beam energy
       if (plutoParticle == "phi") task->SetWeight(1.28 * 2.97e-4);
+       // weight in medium rho.
+      if (plutoParticle == "inmed") task->SetWeight(4.45e-2);
+      // weight qgp radiation
+      if (plutoParticle == "qgp") task->SetWeight(1.15e-2);
    } else if (energy == "3.5gev") {
       // weight rho0 = Multiplicity * Branching Ratio = 1.0 * 4.7e-5 for 25 AGeV beam energy
       if (plutoParticle == "rho0") task->SetWeight(1.0 * 4.7e-5);

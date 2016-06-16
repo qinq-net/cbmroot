@@ -32,6 +32,8 @@ void run_litqa(Int_t nEvents = 1000)
 		geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/analysis/dielectron/geosetup/" + TString(gSystem->Getenv("GEO_SETUP_FILE"));
 	}
 
+        resultDir = "";
+
          remove(qaFile.Data());
 
 	//setup all geometries from macro
@@ -41,10 +43,10 @@ void run_litqa(Int_t nEvents = 1000)
 
 	// digi parameters
 	TList *parFileList = new TList();
-	TObjString stsDigiFile = parDir + "/" + stsDigi;
+       // TObjString stsDigiFile = parDir + "/" + stsDigi;
 	TObjString trdDigiFile = parDir + "/" + trdDigi;
 	TObjString tofDigiFile = parDir + "/" + tofDigi;
-	parFileList->Add(&stsDigiFile);
+      //  parFileList->Add(&stsDigiFile);
 	if (trdDigiFile.GetString() != "") parFileList->Add(&trdDigiFile);
 	parFileList->Add(&tofDigiFile);
 
@@ -86,7 +88,7 @@ void run_litqa(Int_t nEvents = 1000)
    trackingQa->SetVerbose(0);
    trackingQa->SetMinNofHitsRich(7);
    trackingQa->SetQuotaRich(0.6);
-   trackingQa->SetPRange(30, 0., 3.);
+   trackingQa->SetPRange(40, 0., 4.);
    trackingQa->SetOutputDir(std::string(resultDir));
    std::vector<std::string> trackCat, richCat;
    trackCat.push_back("All");

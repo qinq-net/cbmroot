@@ -24,8 +24,10 @@ static TString tofTag;
 static TString stsDigi;
 static TString trdDigi;
 static TString tofDigi;
+static TString tofDigiBdf;
 
 static TString trdHitProducerType;
+static TString tofHitProducerType;
 
 static TString mvdMatBudget;
 static TString stsMatBudget;
@@ -52,7 +54,7 @@ void init_geo_setup()
 
   // -----  Tags  -----------------------------------------------------------
   mvdTag       = "";
-  stsTag       = "v15a";
+  stsTag       = "v16c";
   trdTag       = "v15a_1e";
   tofTag       = "v16a_1e";
 
@@ -60,6 +62,7 @@ void init_geo_setup()
   stsDigi      = "sts/sts_" + stsTag + "_std.digi.par";
   trdDigi      = "trd/trd_" + trdTag + ".digi.par";
   tofDigi      = "tof/tof_" + tofTag + ".digi.par";
+  tofDigiBdf   = "tof/tof_" + tofTag + ".digibdf.par";
 
   // -----  Material budget files -------------------------------------------
   mvdMatBudget = "";
@@ -67,6 +70,7 @@ void init_geo_setup()
 
   //TRD and TOF hit producer types
   trdHitProducerType = "smearing"; // smearing, digi, clustering
+  tofHitProducerType = "clustering"; // smearing, clustering
 
   // -----  Geometries  -----------------------------------------------------
   caveGeom     = "cave.geo";
@@ -74,7 +78,7 @@ void init_geo_setup()
   magnetGeom   = "magnet/magnet_v15a.geo.root";
   mvdGeom      = "";
   stsGeom      = "sts/sts_" + stsTag + ".geo.root";
-  richGeom     = "rich/rich_v14a_1e.root";
+  richGeom     = "rich/rich_v16a_1e.geo.root";
   platformGeom = ""; // "passive/platform_v13b.geo";
   trdGeom      = "trd/trd_" + trdTag + ".geo.root";
   tofGeom      = "tof/tof_" + tofTag + ".geo.root";

@@ -24,8 +24,10 @@ static TString tofTag;
 static TString stsDigi;
 static TString trdDigi;
 static TString tofDigi;
+static TString tofDigiBdf;
 
 static TString trdHitProducerType;
+static TString tofHitProducerType;
 
 static TString mvdMatBudget;
 static TString stsMatBudget;
@@ -60,6 +62,7 @@ void init_geo_setup()
   stsDigi      = "sts/sts_" + stsTag + "_std.digi.par";
   trdDigi      = "trd/trd_" + trdTag + ".digi.par";
   tofDigi      = "tof/tof_" + tofTag + ".digi.par";
+  tofDigiBdf   = "tof/tof_" + tofTag + ".digibdf.par";
 
   // -----  Material budget files -------------------------------------------
   mvdMatBudget = "";
@@ -67,6 +70,7 @@ void init_geo_setup()
 
   //TRD and TOF hit producer types
   trdHitProducerType = "smearing"; // smearing, digi, clustering
+  tofHitProducerType = "clustering"; // smearing
 
   // -----  Geometries  -----------------------------------------------------
   caveGeom     = "cave.geo";
