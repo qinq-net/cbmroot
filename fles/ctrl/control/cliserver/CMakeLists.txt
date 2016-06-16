@@ -6,7 +6,7 @@ ${CBMROOT_SOURCE_DIR}/fles/ctrl
 Set(SYSTEM_INCLUDE_DIRECTORIES
 ${Boost_INCLUDE_DIR}
 ${ZMQ_INCLUDE_DIR}
-${CMAKE_SOURCE_DIR}/fles/cppzmq
+${CMAKE_SOURCE_DIR}/external/cppzmq
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})
