@@ -3,14 +3,9 @@
 # This executable uses the fles_ipc library to read timeslices
 # This file is only called if the compiler provides c++11 support
 
-Set(CMAKE_CXX_FLAGS_BAK ${CMAKE_CXX_FLAGS})
-
-# Add some extra compile warnings 
-Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -Winit-self -Wundef -Wold-style-cast -Woverloaded-virtual -Wwrite-strings -Wnon-virtual-dtor")
-
 Set(INCLUDE_DIRECTORIES
-  ${CBMROOT_CURRENT_SOURCE_DIR}
-  ${CBMROOT_SOURCE_DIR}/fles/ipc/src
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CBMROOT_SOURCE_DIR}/external/ipc_legacy/ipc/src
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})
@@ -35,10 +30,8 @@ TrbBridgeFrame.cpp
 TrbBridgeTransaction.cpp
 )
 
+Set_Source_Files_Properties(${SRCS} COMPILE_FLAGS "-Wall -pedantic -Wextra -Winit-self -Wundef -Wold-style-cast -Woverloaded-virtual -Wwrite-strings -Wnon-virtual-dtor")
 
 Set(LIBRARY_NAME trbnet)
-#Set(DEPENDENCIES boost_)
 
 GENERATE_LIBRARY()
-
-Set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS_BAK})

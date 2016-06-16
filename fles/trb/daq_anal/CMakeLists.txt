@@ -5,7 +5,7 @@
 # This file is only called if the compiler provides c++11 support
 
 Set(INCLUDE_DIRECTORIES
-  ${CBMROOT_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})
@@ -22,12 +22,6 @@ subevt.c
 Set_Source_Files_Properties(subevt.c COMPILE_FLAGS -Wno-implicit-function-declaration)
 
 Set(EXE_NAME daq_anal)
-#If(UNIX AND NOT APPLE)
-#  Set(DEPENDENCIES fles_ipc boost_thread boost_system boost_serialization boost_program_options ${CMAKE_THREAD_LIBS_INIT} rt)
-#Else()
-#  Set(DEPENDENCIES fles_ipc boost_thread boost_system boost_serialization boost_program_options ${CMAKE_THREAD_LIBS_INIT})
-#  Set(DEPENDENCIES fles_ipc boost_program_options ${CMAKE_THREAD_LIBS_INIT})
-#EndIf()
 
 GENERATE_EXECUTABLE()
 

@@ -339,6 +339,8 @@ add_subdirectory (macro)
 #add_subdirectory (tutorials/Tutorial2/src)
 #add_subdirectory (vis)
 
+add_subdirectory (external)
+
 # Check if the compilation flag -std=c++11 is set
 # In this case the code is compiled with the new standard and it is possible
 # to compile the fles_ipc library

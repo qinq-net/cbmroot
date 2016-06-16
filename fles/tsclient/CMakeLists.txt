@@ -5,15 +5,11 @@
 # This file is only called if the compiler provides c++11 support
 
 
-Set(CMAKE_CXX_FLAGS_BAK ${CMAKE_CXX_FLAGS})
-
-# Add some extra compile warnings 
-Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -Winit-self -Wundef -Wold-style-cast -Woverloaded-virtual -Wwrite-strings -Wnon-virtual-dtor")
-
 Set(INCLUDE_DIRECTORIES
-${CBMROOT_CURRENT_SOURCE_DIR}
-${CBMROOT_SOURCE_DIR}/fles/ipc/src
-${CBMROOT_SOURCE_DIR}/fles/flib_dpb
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CBMROOT_SOURCE_DIR}/external/ipc_legacy/ipc/src
+  ${CBMROOT_SOURCE_DIR}/extrenal/flib_dpb/flib_dpb
+  ${CMAKE_SOURCE_DIR}/external/cppzmq
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})
@@ -39,13 +35,13 @@ TimesliceAnalyzer.cpp
 TimesliceDebugger.cpp
 )
 
+Set_Source_Files_Properties(${SRCS} COMPILE_FLAGS "-Wall -pedantic -Wextra -Winit-self -Wundef -Wold-style-cast -Woverloaded-virtual -Wwrite-strings -Wnon-virtual-dtor")
+
 Set(EXE_NAME tsclient)
 If(UNIX AND NOT APPLE)
-  Set(DEPENDENCIES fles_ipc flib_dpb boost_thread boost_system boost_serialization boost_program_options ${CMAKE_THREAD_LIBS_INIT} zmq rt)
+  Set(DEPENDENCIES fles_ipc_legacy flib_dpb boost_thread boost_system boost_serialization boost_program_options ${CMAKE_THREAD_LIBS_INIT} zmq rt)
 Else()
-  Set(DEPENDENCIES fles_ipc flib_dpb boost_thread boost_system boost_serialization boost_program_options ${CMAKE_THREAD_LIBS_INIT} zmq)
+  Set(DEPENDENCIES fles_ipc_legacy flib_dpb boost_thread boost_system boost_serialization boost_program_options ${CMAKE_THREAD_LIBS_INIT} zmq)
 EndIf()
 
 GENERATE_EXECUTABLE()
-
-Set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS_BAK})

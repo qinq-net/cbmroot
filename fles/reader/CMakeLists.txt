@@ -18,9 +18,9 @@ Set(SYSTEM_INCLUDE_DIRECTORIES
   ${BASE_INCLUDE_DIRECTORIES} 
   ${Boost_INCLUDE_DIR} 
   ${ROOT_INCLUDE_DIR}  
-  ${CBMROOT_SOURCE_DIR}/fles/ipc/src
-  ${CBMROOT_SOURCE_DIR}/fles/flib_dpb
-  ${CBMROOT_SOURCE_DIR}/fles/spadic
+  ${CBMROOT_SOURCE_DIR}/external/ipc_legacy/ipc/src
+  ${CBMROOT_SOURCE_DIR}/external/flib_dpb/flib_dpb
+  ${CBMROOT_SOURCE_DIR}/external/spadic/spadic
   ${CBMROOT_SOURCE_DIR}/fles/trb/trbnet_lib
   ${CBMROOT_SOURCE_DIR}/rich/prototype/beamtime
   ${CBMROOT_SOURCE_DIR}/beamtime/tof
@@ -28,8 +28,9 @@ Set(SYSTEM_INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/beamtime/tof/tdc/get4
 
   # needed by rootcling
-  ${CBMROOT_SOURCE_DIR}/fles/spadic/message/wrap/cpp
-  ${CBMROOT_SOURCE_DIR}/fles/spadic/message
+  ${CBMROOT_SOURCE_DIR}/external/spadic/spadic/message/wrap/cpp
+  ${CBMROOT_SOURCE_DIR}/external/spadic/spadic/message
+  ${CMAKE_SOURCE_DIR}/external/cppzmq
 )
 
 Include_Directories(${INCLUDE_DIRECTORIES})
@@ -120,7 +121,7 @@ EndIf()
 Set(LINKDEF  CbmFlibReaderLinkDef.h )
 Set(LIBRARY_NAME CbmFlibReader)
 Set(DEPENDENCIES
-    CbmBase CbmRich fles_ipc flib_dpb spadicMessage trbnet ${FLES_TOF_BEAM_DEPEND} Eve Base 
+    CbmBase CbmRich fles_ipc_legacy flib_dpb spadicMessage trbnet ${FLES_TOF_BEAM_DEPEND} Eve Base 
 )
 
 GENERATE_LIBRARY()
