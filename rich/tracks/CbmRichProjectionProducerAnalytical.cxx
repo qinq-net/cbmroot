@@ -61,24 +61,16 @@ void CbmRichProjectionProducerAnalytical::Init()
 }
 
 void CbmRichProjectionProducerAnalytical::DoProjection(
-                                             TClonesArray* richProj)
+                                                       TClonesArray* richProj)
 {
     fEventNum++;
     cout << "CbmRichProjectionProducerAnalytical:: event " << fEventNum << endl;
     
     CbmRichRecGeoPar* gp = CbmRichGeoManager::GetInstance().fGP;
-    double mirrorX = gp->fMirrorX;
-    double mirrorY = gp->fMirrorY;
-    double mirrorZ = gp->fMirrorZ;
-    double mirrorR = gp->fMirrorR;
-    double pmtPhi = gp->fPmt.fPhi;
-    double pmtTheta = gp->fPmt.fTheta;
-    double pmtPlaneX = gp->fPmt.fPlaneX;
-    double pmtPlaneY = gp->fPmt.fPlaneY;
-    double pmtPlaneZ = gp->fPmt.fPlaneZ;
-    double pmtWidth = gp->fPmt.fWidth;
-    double pmtHeight = gp->fPmt.fHeight;
-    
+    Double_t mirrorX = gp->fMirrorX;
+    Double_t mirrorY = gp->fMirrorY;
+    Double_t mirrorZ = gp->fMirrorZ;
+    Double_t mirrorR = gp->fMirrorR;
     
     richProj->Delete();
     TMatrixFSym covMat(5);
@@ -98,7 +90,6 @@ void CbmRichProjectionProducerAnalytical::DoProjection(
         if (point->GetQp()==0) continue;
         
         Double_t rho1 = 0.;
-        Double_t rho2 = 0.;
         TVector3 startP, momP, crossP, centerP;
         
         
@@ -176,89 +167,182 @@ void CbmRichProjectionProducerAnalytical::DoProjection(
         // reflect track
         Double_t np=normP.x()*momP.x()+normP.y()*momP.y()+normP.z()*momP.z();
         
-        Double_t refX = 2*np*normP.x()-momP.x();
-        Double_t refY = 2*np*normP.y()-momP.y();
-        Double_t refZ = 2*np*normP.z()-momP.z();
+        TVector3 ref;
+        ref.SetXYZ(2*np*normP.x()-momP.x(), 2*np*normP.y()-momP.y(), 2*np*normP.z()-momP.z());
         
-        // crosspoint whith photodetector plane:
-        // calculate intersection between straight line and (tilted) plane:
-        // normal on plane tilted by theta around x-axis: (0,-sin(theta),cos(theta)) = n
-        // normal on plane tilted by phi around y-axis: (-sin(phi),0,cos(phi)) = n
-        // normal on plane tilted by theta around x-axis and phi around y-axis: (-sin(phi),-sin(theta)cos(phi),cos(theta)cos(phi)) = n
-        // point on plane is (fDetX,fDetY,fDetZ) = p as photodetector is tiled around its center
-        // equation of plane for r being point in plane: n(r-p) = 0
-        // calculate intersection point of reflected track with plane: r=intersection point
-        // intersection point = crossP + rho2 * refl_track
-        // take care for all 4 cases:
-        //        -> first calculate for case x>0, then check
-        if (refZ!=0.) {
-            if (centerP.y() > 0){
-                rho2 = (-TMath::Sin(pmtPhi)*(pmtPlaneX-crossP.x())
-                        -TMath::Sin(pmtTheta)*TMath::Cos(pmtPhi)*(pmtPlaneY-crossP.y())
-                        + TMath::Cos(pmtTheta)*TMath::Cos(pmtPhi)*(pmtPlaneZ-crossP.z()))/
-                (-TMath::Sin(pmtPhi)*refX-TMath::Sin(pmtTheta)*TMath::Cos(pmtPhi)*refY + TMath::Cos(pmtTheta)*TMath::Cos(pmtPhi)*refZ);
-            }
-            if (centerP.y() < 0){
-                rho2 = (-TMath::Sin(pmtPhi)*(pmtPlaneX-crossP.x())
-                        -TMath::Sin(-pmtTheta)*TMath::Cos(pmtPhi)*(-pmtPlaneY-crossP.y())
-                        + TMath::Cos(-pmtTheta)*TMath::Cos(pmtPhi)*(pmtPlaneZ-crossP.z()))/
-                (-TMath::Sin(pmtPhi)*refX-TMath::Sin(-pmtTheta)*TMath::Cos(pmtPhi)*refY + TMath::Cos(-pmtTheta)*TMath::Cos(pmtPhi)*refZ);
+        if (ref.z() != 0.) {
+            
+            TVector3 inPos(0., 0., 0.), outPos(0., 0., 0.);
+            
+            
+            if ( gp->fGeometryType == CbmRichGeometryTypeCylindrical ) {
+                GetPmtIntersectionPointCyl(&centerP, &crossP, &ref, &inPos);
+            } else if (gp->fGeometryType == CbmRichGeometryTypeTwoWings) {
+                GetPmtIntersectionPointTwoWings(&centerP, &crossP, &ref, &inPos);
+            } else {
+                Fatal("CbmRichProjectionProducerAnalytical ", "unnown geometry type");
             }
             
-            //rho2 = -1*(crossP.z() - fDetZ)/refZ;    // only for theta = 0, phi=0
-            Double_t xX = crossP.x() + refX * rho2;
-            Double_t yY = crossP.y() + refY * rho2;
-            Double_t zZ = crossP.z() + refZ * rho2;
-            
-            if (xX < 0) {
-                if (centerP.y() > 0){
-                    rho2 = (-TMath::Sin(-pmtPhi)*(-pmtPlaneX-crossP.x())
-                            -TMath::Sin(pmtTheta)*TMath::Cos(-pmtPhi)*(pmtPlaneY-crossP.y())
-                            + TMath::Cos(pmtTheta)*TMath::Cos(-pmtPhi)*(pmtPlaneZ-crossP.z()))/
-                    (-TMath::Sin(-pmtPhi)*refX-TMath::Sin(pmtTheta)*TMath::Cos(-pmtPhi)*refY + TMath::Cos(pmtTheta)*TMath::Cos(-pmtPhi)*refZ);
-                }
-                if (centerP.y() < 0){
-                    rho2 = (-TMath::Sin(-pmtPhi)*(-pmtPlaneX-crossP.x())
-                            -TMath::Sin(-pmtTheta)*TMath::Cos(-pmtPhi)*(-pmtPlaneY-crossP.y())
-                            + TMath::Cos(-pmtTheta)*TMath::Cos(-pmtPhi)*(pmtPlaneZ-crossP.z()))/
-                    (-TMath::Sin(-pmtPhi)*refX-TMath::Sin(-pmtTheta)*TMath::Cos(-pmtPhi)*refY + TMath::Cos(-pmtTheta)*TMath::Cos(-pmtPhi)*refZ);
-                }
-                
-                xX = crossP.x() + refX * rho2;
-                yY = crossP.y() + refY * rho2;
-                zZ = crossP.z() + refZ * rho2;
-            }
-            
-            // Transform intersection point in same way as MCPoints were
-            // transformed in HitProducer before stored as Hit:
-            TVector3 inPos(xX, yY, zZ);
-            TVector3 outPos;
+            // Transform intersection point in same way as MCPoints were transformed in HitProducer before stored as Hit
             CbmRichGeoManager::GetInstance().RotatePoint(&inPos, &outPos);
-            Double_t xDet = outPos.X();
-            Double_t yDet = outPos.Y();
-            Double_t zDet = outPos.Z();
+            Bool_t isInsidePmt = CbmRichGeoManager::GetInstance().IsPointInsidePmt(&outPos);
             
-            
-            //check that crosspoint inside the plane
-            Double_t marginX = 2.; // [cm]
-            Double_t marginY = 2.; // [cm]
-            // upper pmt planes
-            Double_t pmtYTop = TMath::Abs(pmtPlaneY) + pmtHeight + marginY;
-            Double_t pmtYBottom = TMath::Abs(pmtPlaneY) - pmtHeight - marginY;
-            Double_t absYDet = TMath::Abs(yDet);
-            Bool_t isYOk = (absYDet <= pmtYTop && absYDet >= pmtYBottom);
-            
-            Double_t pmtXMin = -TMath::Abs(pmtPlaneX) - pmtWidth - marginX;
-            Double_t pmtXMax = TMath::Abs(pmtPlaneX) + pmtWidth + marginX;
-            ///cout << pmtXMin << " " << pmtXMax << " " <<  pmtYBottom << "  " << pmtYTop <<  endl;
-            Bool_t isXOk = (xDet >= pmtXMin && xDet <= pmtXMax);
-        
-            if ( isYOk && isXOk) {
-                FairTrackParam richtrack(xDet,yDet,zDet,0.,0.,0.,covMat);
+            if ( isInsidePmt) {
+                FairTrackParam richtrack(outPos.x(), outPos.y(), outPos.z(), 0., 0., 0., covMat);
                 * (FairTrackParam*)(richProj->At(j)) = richtrack;
-            }
+             }
         }// if (refZ!=0.)
     }// j
+}
+
+void CbmRichProjectionProducerAnalytical::GetPmtIntersectionPointTwoWings(
+                                                                          const TVector3* centerP,
+                                                                          const TVector3* crossP,
+                                                                          const TVector3* ref,
+                                                                          TVector3* outPoint)
+{
+    // crosspoint whith photodetector plane:
+    // calculate intersection between straight line and (tilted) plane:
+    // normal on plane tilted by theta around x-axis: (0,-sin(theta),cos(theta)) = n
+    // normal on plane tilted by phi around y-axis: (-sin(phi),0,cos(phi)) = n
+    // normal on plane tilted by theta around x-axis and phi around y-axis: (-sin(phi),-sin(theta)cos(phi),cos(theta)cos(phi)) = n
+    // point on plane is (fDetX,fDetY,fDetZ) = p as photodetector is tiled around its center
+    // equation of plane for r being point in plane: n(r-p) = 0
+    // calculate intersection point of reflected track with plane: r=intersection point
+    // intersection point = crossP + rho2 * refl_track
+    // take care for all 4 cases:
+    //        -> first calculate for case x>0, then check
+    
+    CbmRichRecGeoPar* gp = CbmRichGeoManager::GetInstance().fGP;
+    
+    if ( gp->fGeometryType != CbmRichGeometryTypeTwoWings ) {
+        Fatal("CbmRichProjectionProducerAnalytical::GetPmtIntersectionPointTwoWings ", "Wrong geometry, this method could be used only for CbmRichGeometryTypeTwoWings");
+    }
+    
+    Double_t pmtPhi = gp->fPmt.fPhi;
+    Double_t pmtTheta = gp->fPmt.fTheta;
+    Double_t pmtPlaneX = gp->fPmt.fPlaneX;
+    Double_t pmtPlaneY = gp->fPmt.fPlaneY;
+    Double_t pmtPlaneZ = gp->fPmt.fPlaneZ;
+    Double_t rho2 = 0.;
+    
+    if (centerP->y() > 0){
+        rho2 = (-TMath::Sin(pmtPhi)*(pmtPlaneX-crossP->x())
+                -TMath::Sin(pmtTheta)*TMath::Cos(pmtPhi)*(pmtPlaneY-crossP->y())
+                + TMath::Cos(pmtTheta)*TMath::Cos(pmtPhi)*(pmtPlaneZ-crossP->z()))/
+        (-TMath::Sin(pmtPhi)*ref->x()-TMath::Sin(pmtTheta)*TMath::Cos(pmtPhi)*ref->y() + TMath::Cos(pmtTheta)*TMath::Cos(pmtPhi)*ref->z());
+    }
+    if (centerP->y() < 0){
+        rho2 = (-TMath::Sin(pmtPhi)*(pmtPlaneX-crossP->x())
+                -TMath::Sin(-pmtTheta)*TMath::Cos(pmtPhi)*(-pmtPlaneY-crossP->y())
+                + TMath::Cos(-pmtTheta)*TMath::Cos(pmtPhi)*(pmtPlaneZ-crossP->z()))/
+        (-TMath::Sin(pmtPhi)*ref->x()-TMath::Sin(-pmtTheta)*TMath::Cos(pmtPhi)*ref->y() + TMath::Cos(-pmtTheta)*TMath::Cos(pmtPhi)*ref->z());
+    }
+    
+    //rho2 = -1*(crossP.z() - fDetZ)/refZ;    // only for theta = 0, phi=0
+    Double_t xX = crossP->x() + ref->x() * rho2;
+    Double_t yY = crossP->y() + ref->y() * rho2;
+    Double_t zZ = crossP->z() + ref->z() * rho2;
+    
+    if (xX < 0) {
+        if (centerP->y() > 0){
+            rho2 = (-TMath::Sin(-pmtPhi)*(-pmtPlaneX-crossP->x())
+                    -TMath::Sin(pmtTheta)*TMath::Cos(-pmtPhi)*(pmtPlaneY-crossP->y())
+                    + TMath::Cos(pmtTheta)*TMath::Cos(-pmtPhi)*(pmtPlaneZ-crossP->z()))/
+            (-TMath::Sin(-pmtPhi)*ref->x()-TMath::Sin(pmtTheta)*TMath::Cos(-pmtPhi)*ref->y() + TMath::Cos(pmtTheta)*TMath::Cos(-pmtPhi)*ref->z());
+        }
+        if (centerP->y() < 0){
+            rho2 = (-TMath::Sin(-pmtPhi)*(-pmtPlaneX-crossP->x())
+                    -TMath::Sin(-pmtTheta)*TMath::Cos(-pmtPhi)*(-pmtPlaneY-crossP->y())
+                    + TMath::Cos(-pmtTheta)*TMath::Cos(-pmtPhi)*(pmtPlaneZ-crossP->z()))/
+            (-TMath::Sin(-pmtPhi)*ref->x()-TMath::Sin(-pmtTheta)*TMath::Cos(-pmtPhi)*ref->y() + TMath::Cos(-pmtTheta)*TMath::Cos(-pmtPhi)*ref->z());
+        }
+        
+        xX = crossP->x() + ref->x() * rho2;
+        yY = crossP->y() + ref->y() * rho2;
+        zZ = crossP->z() + ref->z() * rho2;
+    }
+    
+    outPoint->SetXYZ(xX, yY, zZ);
+    
+}
+
+
+void CbmRichProjectionProducerAnalytical::GetPmtIntersectionPointCyl(
+                                                                     const TVector3* centerP,
+                                                                     const TVector3* crossP,
+                                                                     const TVector3* ref,
+                                                                     TVector3* outPoint)
+{
+    CbmRichRecGeoPar* gp = CbmRichGeoManager::GetInstance().fGP;
+    if ( gp->fGeometryType != CbmRichGeometryTypeCylindrical ) {
+        Fatal("CbmRichProjectionProducerAnalytical::GetPmtIntersectionPointCyl ", "Wrong geometry, this method could be used only for CbmRichGeometryTypeCylindrical");
+    }
+    Double_t xX;
+    Double_t yY;
+    Double_t zZ;
+    Double_t maxDist = 0.;
+    
+    for ( map<string, CbmRichRecGeoParPmt>::iterator it = gp->fPmtMap.begin(); it != gp->fPmtMap.end(); it++) {
+        Double_t pmtPlaneX = it->second.fPlaneX;
+        Double_t pmtPlaneY = it->second.fPlaneY;
+        Double_t pmtPlaneZ = it->second.fPlaneZ;
+        Double_t pmtPhi = it->second.fPhi;
+        Double_t pmtTheta = it->second.fTheta;
+        
+        if ( !(pmtPlaneX >= 0 && pmtPlaneY >= 0)) continue;
+        
+        double rho2 = 0.;
+        
+        if (centerP->y() > 0){
+            rho2 = (-TMath::Sin(pmtPhi)*(pmtPlaneX-crossP->x())
+                    -TMath::Sin(pmtTheta)*TMath::Cos(pmtPhi)*(pmtPlaneY-crossP->y())
+                    + TMath::Cos(pmtTheta)*TMath::Cos(pmtPhi)*(pmtPlaneZ-crossP->z()))/
+            (-TMath::Sin(pmtPhi)*ref->x()-TMath::Sin(pmtTheta)*TMath::Cos(pmtPhi)*ref->y() + TMath::Cos(pmtTheta)*TMath::Cos(pmtPhi)*ref->z());
+        }
+        if (centerP->y() < 0){
+            rho2 = (-TMath::Sin(pmtPhi)*(pmtPlaneX-crossP->x())
+                    -TMath::Sin(-pmtTheta)*TMath::Cos(pmtPhi)*(-pmtPlaneY-crossP->y())
+                    + TMath::Cos(-pmtTheta)*TMath::Cos(pmtPhi)*(pmtPlaneZ-crossP->z()))/
+            (-TMath::Sin(pmtPhi)*ref->x()-TMath::Sin(-pmtTheta)*TMath::Cos(pmtPhi)*ref->y() + TMath::Cos(-pmtTheta)*TMath::Cos(pmtPhi)*ref->z());
+        }
+        
+        //rho2 = -1*(crossP.z() - fDetZ)/refZ;    // only for theta = 0, phi=0
+        Double_t cxX = crossP->x() + ref->x() * rho2;
+        Double_t cyY = crossP->y() + ref->y() * rho2;
+        Double_t czZ = crossP->z() + ref->z() * rho2;
+        
+        if (cxX < 0) {
+            if (centerP->y() > 0){
+                rho2 = (-TMath::Sin(-pmtPhi)*(-pmtPlaneX-crossP->x())
+                        -TMath::Sin(pmtTheta)*TMath::Cos(-pmtPhi)*(pmtPlaneY-crossP->y())
+                        + TMath::Cos(pmtTheta)*TMath::Cos(-pmtPhi)*(pmtPlaneZ-crossP->z()))/
+                (-TMath::Sin(-pmtPhi)*ref->x()-TMath::Sin(pmtTheta)*TMath::Cos(-pmtPhi)*ref->y() + TMath::Cos(pmtTheta)*TMath::Cos(-pmtPhi)*ref->z());
+            }
+            if (centerP->y() < 0){
+                rho2 = (-TMath::Sin(-pmtPhi)*(-pmtPlaneX-crossP->x())
+                        -TMath::Sin(-pmtTheta)*TMath::Cos(-pmtPhi)*(-pmtPlaneY-crossP->y())
+                        + TMath::Cos(-pmtTheta)*TMath::Cos(-pmtPhi)*(pmtPlaneZ-crossP->z()))/
+                (-TMath::Sin(-pmtPhi)*ref->x()-TMath::Sin(-pmtTheta)*TMath::Cos(-pmtPhi)*ref->y() + TMath::Cos(-pmtTheta)*TMath::Cos(-pmtPhi)*ref->z());
+            }
+            
+            cxX = crossP->x() + ref->x() * rho2;
+            cyY = crossP->y() + ref->y() * rho2;
+            czZ = crossP->z() + ref->z() * rho2;
+        }
+        
+        Double_t dP = TMath::Sqrt( (crossP->x() - cxX) * (crossP->X() - cxX) + (crossP->y() - cyY) * (crossP->y() - cyY) +
+                                  (crossP->z() - czZ) * (crossP->Z() - czZ) );
+        
+        if (dP >= maxDist) {
+            maxDist = dP;
+            xX = cxX;
+            yY = cyY;
+            zZ = czZ;
+        }
+    }
+    
+    outPoint->SetXYZ(xX, yY, zZ);
 }
 
 

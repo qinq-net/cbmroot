@@ -132,7 +132,7 @@ void CbmRichDigitizer::AddCrossTalkDigis(
 
 	if (!crosstalkDigiDetected) {
 		for (Int_t i = 0; i < diagonalPixels.size(); i++) {
-			if (gRandom->Rndm() < fCrossTalkProbability && !crosstalkDigiDetected) {
+			if (gRandom->Rndm() < fCrossTalkProbability / 4. && !crosstalkDigiDetected) {
 				//FindRichHitPositionMAPMT(0., x + r, y, xHit, yHit, pmtID);
 				crosstalkDigiDetected = true;
 				break;

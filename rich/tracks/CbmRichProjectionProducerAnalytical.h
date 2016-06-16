@@ -57,6 +57,18 @@ public:
     virtual void DoProjection(
                               TClonesArray* richProj);
     
+    void GetPmtIntersectionPointTwoWings(
+                                         const TVector3* centerP,
+                                         const TVector3* crossP,
+                                         const TVector3* ref,
+                                         TVector3* outPoint);
+    
+    void GetPmtIntersectionPointCyl(
+                                    const TVector3* centerP,
+                                    const TVector3* crossP,
+                                    const TVector3* ref,
+                                    TVector3* outPoint);
+    
     
 private:
     TClonesArray* fTrackParams; // Starting points&directions

@@ -17,7 +17,7 @@
 
 using namespace std;
 
-enum CbmRichGeometryType { CbmRichGeometryTypeTwoWings = 0, CbmRichGeometryTypeCylindrical = 1 };
+enum CbmRichGeometryType { CbmRichGeometryTypeNotDefined = 0, CbmRichGeometryTypeTwoWings = 1, CbmRichGeometryTypeCylindrical = 2 };
 
 /**
  * \class CbmRichRecGeoPar
@@ -88,7 +88,7 @@ public:
      */
     CbmRichRecGeoPar()
     :fPmt(),
-    fGeometryType(CbmRichGeometryTypeTwoWings),
+    fGeometryType(CbmRichGeometryTypeNotDefined),
     fPmtMap(),
     fNRefrac(0.),
     fMirrorX(0.),
@@ -135,12 +135,13 @@ public:
      * \brief Print geometry parameters for cylindrical geometry
      */
     void PrintCylindrical() {
+        cout << "PMT strip gap " << fPmtStripGap << " [cm]" << endl;
         
         typedef map<string, CbmRichRecGeoParPmt>::iterator it_type;
         for(it_type iterator = fPmtMap.begin(); iterator != fPmtMap.end(); iterator++) {
             cout << endl << "Geo path:" << iterator->first << endl;
             cout << "PMT position in (x,y,z) [cm]: " << iterator->second.fX << "  " << iterator->second.fY << "  " << iterator->second.fZ << endl;
-           // cout << "PMT plane position in (x,y,z) [cm]: " << iterator->second.fPlaneX << "  " << iterator->second.fPlaneY << "  " << iterator->second.fPlaneZ << endl;
+            // cout << "PMT plane position in (x,y,z) [cm]: " << iterator->second.fPlaneX << "  " << iterator->second.fPlaneY << "  " << iterator->second.fPlaneZ << endl;
             cout << "PMT width and height [cm]: " << iterator->second.fWidth << "  " << iterator->second.fHeight << endl;
             cout << "PMT was rotated around x (theta) by " << iterator->second.fTheta*180./TMath::Pi() << " degrees" << endl;
             cout << "PMT was rotated around y (phi) by " << iterator->second.fPhi*180./TMath::Pi() << " degrees" << endl;
@@ -173,6 +174,7 @@ public:
     CbmRichGeometryType fGeometryType;
     
     map<string, CbmRichRecGeoParPmt> fPmtMap; // PMT parameter map for CbmRichGeometryTypeCylindrical, string is geo path to PMT block
+    Double_t fPmtStripGap; // [cm] Gap between pmt strips, only valid for CbmRichGeometryTypeCylindrical
     
     
     Double_t fNRefrac; // refraction index
@@ -184,5 +186,67 @@ public:
     
     Double_t fMirrorTheta; // mirror rotation angle around X-axis
 };
+
+/**
+ * \class CbmRichPmtPlaneMinMax
+ *
+ * \brief This class is used to store pmt_pixel min and max positions.
+ *
+ * \author Lebedev Semen
+ * \date 2016
+ **/
+class CbmRichPmtPlaneMinMax
+{
+public:
+    
+    CbmRichPmtPlaneMinMax():
+    fMinPmtX(9999999.0),
+    fMaxPmtX(-9999999.0),
+    fMinPmtY(9999999.0),
+    fMaxPmtY(-9999999.0),
+    fMinPmtZ(9999999.0),
+    fMaxPmtZ(-9999999.0)
+    {
+        
+    }
+    
+    void AddPoint(
+                  Double_t x,
+                  Double_t y,
+                  Double_t z)
+    {
+        fMinPmtX = TMath::Min(fMinPmtX, x);
+        fMaxPmtX = TMath::Max(fMaxPmtX, x);
+        fMinPmtY = TMath::Min(fMinPmtY, y);
+        fMaxPmtY = TMath::Max(fMaxPmtY, y);
+        fMinPmtZ = TMath::Min(fMinPmtZ, z);
+        fMaxPmtZ = TMath::Max(fMaxPmtZ, z);
+    }
+    
+    Double_t GetMeanX()
+    {
+        return (fMinPmtX + fMaxPmtX) / 2.;
+    }
+    
+    Double_t GetMeanY()
+    {
+        return (fMinPmtY + fMaxPmtY) / 2.;
+    }
+    
+    Double_t GetMeanZ()
+    {
+        return (fMinPmtZ + fMaxPmtZ) / 2.;
+    }
+    
+private:
+    Double_t fMinPmtX;
+    Double_t fMaxPmtX;
+    Double_t fMinPmtY;
+    Double_t fMaxPmtY;
+    Double_t fMinPmtZ;
+    Double_t fMaxPmtZ;
+};
+
+
 
 #endif

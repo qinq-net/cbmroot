@@ -30,20 +30,49 @@ void CbmRichGeoManager::InitGeometry() {
     //TODO: get refractive index from material
     fGP->fNRefrac = 1.000446242;
     
-    CbmRichGeometryType geoType = CbmRichGeometryTypeTwoWings;
+    DetectGeometryType();
     
-    fGP->fGeometryType = geoType;
-    
-    if (geoType == CbmRichGeometryTypeTwoWings) {
+    if (fGP->fGeometryType == CbmRichGeometryTypeTwoWings) {
         InitPmt();
-    } else if (geoType == CbmRichGeometryTypeCylindrical) {
+    } else if (fGP->fGeometryType == CbmRichGeometryTypeCylindrical) {
         InitPmtCyl();
+    } else if (fGP->fGeometryType == CbmRichGeometryTypeNotDefined) {
+        Fatal("CbmRichGeoManager::InitGeometry()", " Geometry type is CbmRichGeometryTypeNotDefined. Geometry could not be defined automatically.");
     }
     
     
     InitMirror();
     
     fGP->Print();
+}
+
+void CbmRichGeoManager::DetectGeometryType()
+{
+    TGeoIterator geoIterator(gGeoManager->GetTopNode()->GetVolume());
+    geoIterator.SetTopName("/cave_1");
+    TGeoNode* curNode;
+    
+    geoIterator.Reset();
+    while ((curNode=geoIterator())) {
+        TString nodeName(curNode->GetName());
+        TString nodePath;
+        if (curNode->GetVolume()->GetName() == TString("pmt_block_strip")) {
+            fGP->fGeometryType = CbmRichGeometryTypeCylindrical;
+            return;
+        }
+    }
+    
+    geoIterator.Reset();
+    while ((curNode=geoIterator())) {
+        TString nodeName(curNode->GetName());
+        TString nodePath;
+        if (curNode->GetVolume()->GetName() == TString("camera_quarter")) {
+            fGP->fGeometryType = CbmRichGeometryTypeTwoWings;
+            return;
+        }
+    }
+    
+    fGP->fGeometryType = CbmRichGeometryTypeNotDefined;
 }
 
 void CbmRichGeoManager::InitPmtCyl()
@@ -77,6 +106,7 @@ void CbmRichGeoManager::InitPmtCyl()
             fGP->fPmtMap[string(nodePath.Data())].fTheta = rotX;
             fGP->fPmtMap[string(nodePath.Data())].fPhi = rotY;
             const TGeoBBox* shape = (const TGeoBBox*)(curNode->GetVolume()->GetShape());
+            
             fGP->fPmtMap[string(nodePath.Data())].fWidth = 2. * shape->GetDX();
             fGP->fPmtMap[string(nodePath.Data())].fHeight = 2. * shape->GetDY();
             fGP->fPmtMap[string(nodePath.Data())].fZ = pmtZ;
@@ -90,7 +120,6 @@ void CbmRichGeoManager::InitPmtCyl()
     }
     std::sort(xCoord.begin(), xCoord.end());
     
-    cout << "xCoord size:" << xCoord.size() << endl;
     for ( map<string, CbmRichRecGeoParPmt>::iterator it = fGP->fPmtMap.begin(); it != fGP->fPmtMap.end(); it++) {
         Double_t curX = TMath::Abs(it->second.fX);
         int pos = -1;
@@ -103,6 +132,90 @@ void CbmRichGeoManager::InitPmtCyl()
         }
         it->second.fPmtPositionIndexX = pos;
     }
+    
+    // We also need to find pmt plane center
+    map<string, CbmRichPmtPlaneMinMax> mapPmtPlaneMinMax;
+    TString filterNamePixel("pmt_pixel");
+    geoIterator.Reset();
+    CbmRichPmtPlaneMinMax pmtPlaneMinMax;
+    
+    while ((curNode=geoIterator())) {
+        TString nodeName(curNode->GetName());
+        TString nodePath;
+        if (curNode->GetVolume()->GetName() == filterNamePixel) {
+            
+            geoIterator.GetPath(nodePath);
+            
+            
+            string nodePathStr = string(nodePath.Data());
+            size_t foundIndex1 = nodePathStr.find("pmt_block_strip");
+            if (foundIndex1 == string::npos) continue;
+            size_t foundIndex2 = nodePathStr.find("/", foundIndex1  + 1);
+            if (foundIndex2 == string::npos) continue;
+            
+            string mapKey = nodePathStr.substr(0, foundIndex2);
+            
+            const TGeoMatrix* curMatrix = geoIterator.GetCurrentMatrix();
+            const Double_t* curNodeTr = curMatrix->GetTranslation();
+            
+            double pmtX = curNodeTr[0];
+            double pmtY = curNodeTr[1];
+            double pmtZ = curNodeTr[2];
+            
+            mapPmtPlaneMinMax[mapKey].AddPoint(pmtX, pmtY, pmtZ);
+        }
+    }
+    
+    for ( map<string, CbmRichRecGeoParPmt>::iterator it = fGP->fPmtMap.begin(); it != fGP->fPmtMap.end(); it++) {
+        it->second.fPlaneX = mapPmtPlaneMinMax[it->first].GetMeanX();
+        it->second.fPlaneY = mapPmtPlaneMinMax[it->first].GetMeanY();
+        it->second.fPlaneZ = mapPmtPlaneMinMax[it->first].GetMeanZ();
+        
+        // cout << "name:" << it->first << " strip(x,y,z):" <<it->second.fX << "," << it->second.fY << "," << it->second.fZ <<
+        // " pmtPlane(z,y,z)" <<it->second.fPlaneX << "," << it->second.fPlaneY << "," << it->second.fPlaneZ << endl;
+    }
+    
+    
+    // Calculate gap between pmt_block_strips
+    geoIterator.Reset();
+    double master1[3], master2[3];
+    while ((curNode=geoIterator())) {
+        TString nodeName(curNode->GetName());
+        TString nodePath;
+        if (curNode->GetVolume()->GetName() == TString("pmt_block_strip")) {
+            
+            geoIterator.GetPath(nodePath);
+            const TGeoMatrix* curMatrix = geoIterator.GetCurrentMatrix();
+            const Double_t* curNodeTr = curMatrix->GetTranslation();
+            const Double_t* curNodeRot = curMatrix->GetRotationMatrix();
+            
+            double pmtX = curNodeTr[0];
+            double pmtY = curNodeTr[1];
+            double pmtZ = curNodeTr[2];
+            
+            if ( pmtX < 0 || pmtY < 0) continue;
+            const TGeoBBox* shape = (const TGeoBBox*)(curNode->GetVolume()->GetShape());
+            
+            double loc[3];
+            if (fGP->fPmtMap[string(nodePath.Data())].fPmtPositionIndexX == 1) {
+                loc[0] = shape->GetDX();
+                loc[1] = shape->GetDY();
+                loc[2] = shape->GetDZ();
+                curMatrix->LocalToMaster(loc, master1);
+            } else if (fGP->fPmtMap[string(nodePath.Data())].fPmtPositionIndexX == 2) {
+                loc[0] = -shape->GetDX();
+                loc[1] = shape->GetDY();
+                loc[2] = shape->GetDZ();
+                curMatrix->LocalToMaster(loc, master2);
+            }
+        }
+    }
+    //cout  << master1[0] << " "<< master1[1] << " "<< master1[2]<< endl;
+    //cout  << master2[0] << " "<< master2[1] << " "<< master2[2]<< endl;
+    double dist = TMath::Sqrt( (master1[0] - master2[0]) * (master1[0] - master2[0]) +
+                              (master1[1] - master2[1]) * (master1[1] - master2[1]) +
+                              (master1[2] - master2[2]) * (master1[2] - master2[2]) );
+    fGP->fPmtStripGap =  dist;
 }
 
 void CbmRichGeoManager::InitPmt()
@@ -113,8 +226,7 @@ void CbmRichGeoManager::InitPmt()
     // PMT plane position\rotation
     TString filterName_pixel("pmt_pixel");
     geoIterator.Reset();
-    double minPmtX = 9999999., minPmtY = 9999999., minPmtZ = 9999999.;
-    double maxPmtX, maxPmtY, maxPmtZ = 0.;
+    CbmRichPmtPlaneMinMax pmtPlaneMinMax;
     while ((curNode=geoIterator())) {
         TString nodeName(curNode->GetName());
         TString nodePath;
@@ -139,21 +251,14 @@ void CbmRichGeoManager::InitPmt()
                 fGP->fPmt.fTheta = rotX;
                 fGP->fPmt.fPhi = rotY;
                 
-                minPmtX = TMath::Min(minPmtX, pmtX);
-                maxPmtX = TMath::Max(maxPmtX, pmtX);
-                minPmtY = TMath::Min(minPmtY, pmtY);
-                maxPmtY = TMath::Max(maxPmtY, pmtY);
-                minPmtZ = TMath::Min(minPmtZ, pmtZ);
-                maxPmtZ = TMath::Max(maxPmtZ, pmtZ);
+                pmtPlaneMinMax.AddPoint(pmtX, pmtY, pmtZ);
             }
         }
     }
     
-    // cout << "minPmtX = " << minPmtX << " maxPmtX = " << maxPmtX << endl;
-    // cout << "minPmtY = " << minPmtY << " maxPmtY = " << maxPmtY << endl;
-    fGP->fPmt.fPlaneX = (minPmtX + maxPmtX) / 2.;
-    fGP->fPmt.fPlaneY = (minPmtY + maxPmtY) / 2.;
-    fGP->fPmt.fPlaneZ = (minPmtZ + maxPmtZ) / 2.;
+    fGP->fPmt.fPlaneX = pmtPlaneMinMax.GetMeanX();
+    fGP->fPmt.fPlaneY = pmtPlaneMinMax.GetMeanY();
+    fGP->fPmt.fPlaneZ = pmtPlaneMinMax.GetMeanZ();
     
     geoIterator.Reset();
     while ((curNode=geoIterator())) {
@@ -311,8 +416,8 @@ void CbmRichGeoManager::RotatePointCyl(
             
             // calculate ideal position assuming the same width for all pmt blocks
             //TODO:Actually we need to implement general solution if pmt-block widths are not the same
-            Double_t padding = 0.1; // cm
-            Double_t gap = 0.1;// cm
+            Double_t gap = fGP->fPmtStripGap;
+            Double_t padding = gap / 2.;
             Double_t idealX = padding + 0.5 * pmtPar.fWidth + pmtPar.fPmtPositionIndexX * (pmtPar.fWidth + gap);
             if (outPos->X() < 0) idealX = -idealX;
             Double_t dX = idealX - outPosPmt.X();
@@ -411,4 +516,34 @@ void CbmRichGeoManager::RotatePointImpl(
         outPos->SetXYZ(x,y,z);
     }
     outPos->SetXYZ(xDet,yDet,zDet);
+}
+
+Bool_t CbmRichGeoManager::IsPointInsidePmt(
+                                           const TVector3* rotatedPoint)
+{
+    if (fGP->fGeometryType == CbmRichGeometryTypeTwoWings) {
+        CbmRichRecGeoPar* gp = CbmRichGeoManager::GetInstance().fGP;
+        Double_t pmtPlaneX = gp->fPmt.fPlaneX;
+        Double_t pmtPlaneY = gp->fPmt.fPlaneY;
+        Double_t pmtWidth = gp->fPmt.fWidth;
+        Double_t pmtHeight = gp->fPmt.fHeight;
+        
+        Double_t marginX = 2.; // [cm]
+        Double_t marginY = 2.; // [cm]
+        // upper pmt planes
+        Double_t pmtYTop = TMath::Abs(pmtPlaneY) + pmtHeight + marginY;
+        Double_t pmtYBottom = TMath::Abs(pmtPlaneY) - pmtHeight - marginY;
+        Double_t absYDet = TMath::Abs(rotatedPoint->y());
+        Bool_t isYOk = (absYDet <= pmtYTop && absYDet >= pmtYBottom);
+        
+        Double_t pmtXMin = -TMath::Abs(pmtPlaneX) - pmtWidth - marginX;
+        Double_t pmtXMax = TMath::Abs(pmtPlaneX) + pmtWidth + marginX;
+        Bool_t isXOk = (rotatedPoint->x() >= pmtXMin && rotatedPoint->x() <= pmtXMax);
+        
+        return (isXOk && isYOk);
+    } else if (fGP->fGeometryType == CbmRichGeometryTypeCylindrical) {
+        return true;
+    } else {
+        return false;
+    }
 }

@@ -28,6 +28,8 @@ public:
         return fInstance;
     }
     
+    void DetectGeometryType();
+    
     /**
      * Rotate points by
      * -theta, -phi for x>0, y>0
@@ -64,6 +66,15 @@ public:
                          Double_t pmtX,
                          Double_t pmtY,
                          Double_t pmtZ);
+    
+    /**
+     * Check if point is inside PMT plane +-margin.
+     *
+     * \param[in] rotatedPoint Input point should be already rotated.
+     */
+    
+    Bool_t IsPointInsidePmt(
+                            const TVector3* rotatedPoint);
     
 private:
     
