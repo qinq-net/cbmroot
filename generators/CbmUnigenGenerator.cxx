@@ -11,8 +11,6 @@
 #include "FairPrimaryGenerator.h"
 #include "FairLogger.h"
 #include "FairRunSim.h"
-#include "FairRuntimeDb.h"
-#include "FairBaseParSet.h"
 
 #include "URun.h"
 #include "UEvent.h"
@@ -88,12 +86,8 @@ CbmUnigenGenerator::CbmUnigenGenerator(TString fileName)
     LOG(INFO) << "CbmUnigenGenerator: boost parameters: "
               << "betaCM = "    << fBetaCM
               << ", gammaCM = " << fGammaCM << FairLogger::endl;
-    // store the beam momentum in FairBaseParSet
-    FairRuntimeDb* rtdb = FairRunSim::Instance()->GetRuntimeDb();
-    if(rtdb) {
-      FairBaseParSet* par=dynamic_cast<FairBaseParSet*>(rtdb->getContainer("FairBaseParSet"));
-      if(par) { par->SetBeamMom(plab); }
-    }
+    // store the beam momentum in FairRunSim, it will be transfered to FairBaseParSet in FairRunSim::Init
+    FairRunSim::Instance()->SetBeamMom(plab);
   } else {
     LOG(INFO) << "Input data is in LAB frame" << FairLogger::endl;
   }
