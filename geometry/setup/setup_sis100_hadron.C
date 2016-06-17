@@ -31,7 +31,7 @@ void setup_sis100_hadron()
 
   // -----  Geometry Tags  --------------------------------------------------
   TString magnetGeoTag    = "v15a";
-  TString pipeGeoTag      = "v14q";
+  TString pipeGeoTag      = "v16b_1e";
   TString mvdGeoTag       = "v15a";
   TString stsGeoTag       = "v16c";
   TString trdGeoTag       = "v15a_1h";
