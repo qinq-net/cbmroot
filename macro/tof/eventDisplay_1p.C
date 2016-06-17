@@ -1,4 +1,4 @@
-eventDisplay_1p(Int_t iTrackingSetup=2, Int_t iSys=0)
+eventDisplay_1p(Int_t iTrackingSetup=1, Int_t iSys=0, Int_t iSel=1, Int_t iSel2=-3)
 {
   switch(iSys){
   case 0:
@@ -19,6 +19,7 @@ eventDisplay_1p(Int_t iTrackingSetup=2, Int_t iSys=0)
   TString logLevel = "DEBUG";
   //TString logLevel = "DEBUG1";
   TString logLevel = "DEBUG2";
+  //TString logLevel = "DEBUG3";
 
    TString workDir = gSystem->Getenv("VMCWORKDIR");
    TString geoDir  = gSystem->Getenv("VMCWORKDIR");
@@ -30,7 +31,8 @@ eventDisplay_1p(Int_t iTrackingSetup=2, Int_t iSys=0)
      cout << "<E> FAIRGeom not found in geoFile"<<endl;
      return;
    }
-   TString cTrkFile=""; //Form("%s_tofFindTracks.hst.root",cFileId);
+   TString cTrkFile=Form("%s_tofFindTracks.hst.root",TofGeo);
+   TString cAnaFile=Form("%s_tofAnaTestBeam.hst.root",TofGeo);
 
    TList *parFileList = new TList();
 
@@ -77,7 +79,7 @@ eventDisplay_1p(Int_t iTrackingSetup=2, Int_t iSys=0)
    tofTrackFinder->SetTxLIM(0.3);                  // max slope dx/dz
    tofTrackFinder->SetTyLIM(0.2);                  // max dev from mean slope dy/dz
    tofTrackFinder->SetTyMean(0.1);                // mean slope dy/dz
-   tofTrackFinder->SetSIGLIM(4.);                 // max matching chi2
+   tofTrackFinder->SetSIGLIM(40.);                 // max matching chi2
    tofTrackFinder->SetSIGT(100.);                // in ps
    tofTrackFinder->SetSIGX(1.);                  // in cm
    tofTrackFinder->SetSIGY(1.);                  // in cm
@@ -87,7 +89,8 @@ eventDisplay_1p(Int_t iTrackingSetup=2, Int_t iSys=0)
    CbmTofFindTracks* tofFindTracks  = new CbmTofFindTracks("TOF Track Finder");
    tofFindTracks->UseFinder(tofTrackFinder);
    tofFindTracks->UseFitter(tofTrackFitter);
-   //tofFindTracks->SetCorMode(iGenCor);           // valid options: 0,1,2
+   Int_t iGenCor=1;
+   tofFindTracks->SetCorMode(iGenCor);           // valid options: 0,1,2
    tofFindTracks->SetTtTarg(33.7);               // target value for inverse velocity, > 33.3 !
    tofFindTracks->SetCalParFileName(cTrkFile);   // Tracker parameter value file name  
    switch (iTrackingSetup){
@@ -97,7 +100,7 @@ eventDisplay_1p(Int_t iTrackingSetup=2, Int_t iSys=0)
      tofFindTracks->SetStations(3974);           // upper part of Nov15 setup 
      break;
    case 1:                                       // tracking mode
-     tofFindTracks->SetMinNofHits(2);
+     tofFindTracks->SetMinNofHits(6);
      tofFindTracks->SetNStations(8);
      tofFindTracks->SetStation(0, 4, 0, 0);           // upper part of Nov15 setup 
      tofFindTracks->SetStation(1, 9, 0, 0);           // upper part of Nov15 setup 
@@ -109,7 +112,7 @@ eventDisplay_1p(Int_t iTrackingSetup=2, Int_t iSys=0)
      tofFindTracks->SetStation(7, 3, 0, 0);           // upper part of Nov15 setup 
      break;
    case 2:                                       // tracking mode
-     tofFindTracks->SetMinNofHits(3);
+     tofFindTracks->SetMinNofHits(7);
      tofFindTracks->SetNStations(9);
      tofFindTracks->SetStation(0, 5, 0, 0);           // upper part of Nov15 setup 
      tofFindTracks->SetStation(1, 4, 0, 0);           // upper part of Nov15 setup 
@@ -125,7 +128,96 @@ eventDisplay_1p(Int_t iTrackingSetup=2, Int_t iSys=0)
      ;
    }
    tofFindTracks->PrintSetup();
-   //fRun->AddTask(tofFindTracks);
+   fRun->AddTask(tofFindTracks);
+
+   // =========================================================================
+   // ===                       Analysis                                    ===
+   // =========================================================================
+   CbmTofAnaTestbeam* tofAnaTestbeam = new CbmTofAnaTestbeam("TOF TestBeam Analysis",iVerbose);
+   tofAnaTestbeam->SetCorMode(iGenCor); // 1 - DTD4, 2 - X4, 3 - Y4, 4 - Texp 
+   tofAnaTestbeam->SetHitDistMin(30.);  // initialization
+
+   //CbmTofAnaTestbeam defaults  
+   tofAnaTestbeam->SetDXMean(0.);
+   tofAnaTestbeam->SetDYMean(0.);
+   tofAnaTestbeam->SetDTMean(0.);      // in ps
+   tofAnaTestbeam->SetDXWidth(0.5);
+   tofAnaTestbeam->SetDYWidth(0.5);
+   tofAnaTestbeam->SetDTWidth(90.);    // in ps
+   tofAnaTestbeam->SetCalParFileName(cAnaFile);
+   tofAnaTestbeam->SetPosY4Sel(0.5);   // Y Position selection in fraction of strip length
+   tofAnaTestbeam->SetDTDia(0.);       // Time difference to additional diamond
+   tofAnaTestbeam->SetMul0Max(20);     // Max Multiplicity in dut 
+   tofAnaTestbeam->SetMul4Max(10);     // Max Multiplicity in Ref - RPC 
+   tofAnaTestbeam->SetMulDMax(20);     // Max Multiplicity in Diamond    
+   tofAnaTestbeam->SetDTD4MAX(6000.);  // initialization of Max time difference Ref - BRef
+
+   //tofAnaTestbeam->SetTShift(-28000.);// initialization
+   tofAnaTestbeam->SetPosYS2Sel(0.5);   // Y Position selection in fraction of strip length
+   tofAnaTestbeam->SetChS2Sel(0.);      // Center of channel selection window
+   tofAnaTestbeam->SetDChS2Sel(100.);   // Width  of channel selection window
+   tofAnaTestbeam->SetSel2TOff(0.);   // Shift Sel2 time peak to 0 
+   tofAnaTestbeam->SetTOffD4(0.);  // initialization
+
+   Int_t iRSel=0;
+   if(iSel2>=0){
+     iRSel=5;   // use diamond
+   }else{
+     iSel2=-iSel2;
+     iRSel=iSel2;
+     //     tofAnaTestbeam->SetTShift(50.);  // initialization
+   }
+   tofAnaTestbeam->SetMrpcSel2(iSel2);     // initialization of second selector Mrpc 
+   tofAnaTestbeam->SetBeamRefSmType(iRSel); // common reaction reference 
+   tofAnaTestbeam->SetBeamRefSmId(0);
+   tofAnaTestbeam->SetSIGLIM(30.);                // max matching chi2
+   tofAnaTestbeam->SetSIGT(100.);                // in ps
+   tofAnaTestbeam->SetSIGX(1.);                  // in cm
+   tofAnaTestbeam->SetSIGY(1.);                  // in cm
+   tofAnaTestbeam->SetChi2Lim(10000.);     // initialization of Chi2 selection limit  
+
+  switch (iSel) {
+   case 0:                                 // upper part of setup: P2 - P5
+   case 1:
+   case 900911:
+	 tofAnaTestbeam->SetDut(9);        // Device under test   
+	 tofAnaTestbeam->SetDutSm(0);      // Device under test   
+	 tofAnaTestbeam->SetDutRpc(0);     // Device under test   
+	 tofAnaTestbeam->SetMrpcRef(9);    // Reference RPC     
+	 tofAnaTestbeam->SetMrpcRefSm(1);    // Reference RPC     
+	 tofAnaTestbeam->SetMrpcRefRpc(1);   // Reference RPC     
+	 tofAnaTestbeam->SetCh4Sel(8.5);    // Center of channel selection window
+	 tofAnaTestbeam->SetDCh4Sel(60.);   // Width  of channel selection window
+	 //	 tofAnaTestbeam->SetTShift(-2000.);  // initialization
+	 switch(iSel2){
+	 case 9:
+	   tofAnaTestbeam->SetSel2TOff(-240.);   // Shift Sel2 time peak to 0 
+	   break;
+	 case 3:
+	   //tofAnaTestbeam->SetTShift(-14000.);  // initialization of MrpcRef - Dia shift
+	   if(iRSel == iSel2) {
+	     tofAnaTestbeam->SetTShift(1420.);  // initialization of MrpcRef - Dia shift
+	     tofAnaTestbeam->SetTOffD4(0.);   // shift TOF to phsical values 
+	     tofAnaTestbeam->SetSel2TOff(1460.);   // Shift Sel2 time peak to 0 
+	   }else {
+	     tofAnaTestbeam->SetTShift(-13400.);  // initialization of MrpcRef - Dia shift
+	     tofAnaTestbeam->SetTOffD4(0.);   // shift TOF to phsical values 
+	     tofAnaTestbeam->SetSel2TOff(1460.);   // Shift Sel2 time peak to 0 
+	   }
+	   break;
+	 default:
+	   ;
+	 }
+	 break;
+
+
+
+         default:
+	 ;
+   }  // end of different subsets
+
+   cout << " Initialize TSHIFT to "<<tofAnaTestbeam->GetTShift()<<endl;
+   fRun->AddTask(tofAnaTestbeam);
 
   // -----  Parameter database   --------------------------------------------
   FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
@@ -139,14 +231,34 @@ eventDisplay_1p(Int_t iTrackingSetup=2, Int_t iSys=0)
   rtdb->saveOutput();
 
   TGeoVolume* top = gGeoManager->GetTopVolume();
-  gGeoManager->SetVisOption(0);
+  gGeoManager->SetVisOption(1);
   gGeoManager->SetVisLevel(5);
   TObjArray* allvolumes = gGeoManager->GetListOfVolumes();
   //cout<<"GeoVolumes  "  << gGeoManager->GetListOfVolumes()->GetEntries()<<endl;
   for(Int_t i=0; i<allvolumes->GetEntries(); i++){
     TGeoVolume* vol     = (TGeoVolume*)allvolumes->At(i);
     TString name = vol->GetName();
-    //cout << " GeoVolume "<<i<<" Name: "<< name << endl;
+    cout << " GeoVolume "<<i<<" Name: "<< name << endl;
+    switch(name) {
+    case "counter":
+      vol->SetTransparency(99);
+      break;
+
+    case "tof_glass":
+    case "Gap":
+    case "Cell":
+      vol->SetTransparency(99);
+      break;
+
+    case "pcb":
+      vol->SetTransparency(30);
+      break;
+
+    default:
+      vol->SetTransparency(99);
+    }
+  }
+  /*
     if( name == "counter"){
       //cout << " counter found " << i <<", transparency "<<vol->GetTransparency()<<", set 70 "<<endl;
       vol->SetTransparency(70);
@@ -164,7 +276,7 @@ eventDisplay_1p(Int_t iTrackingSetup=2, Int_t iSys=0)
       vol->SetTransparency(99);    
     } 
   }
-   
+  */   
   FairEventManager *fMan= new FairEventManager();
   FairMCTracks *Track =  new FairMCTracks ("Monte-Carlo Tracks");
   //  FairMCPointDraw *RichPoint =   new FairMCPointDraw ("RichPoint",kOrange,  kFullSquare);
@@ -188,7 +300,8 @@ eventDisplay_1p(Int_t iTrackingSetup=2, Int_t iSys=0)
   CbmEvDisTracks *TTrack =  new CbmEvDisTracks ("Tof Tracks",1);
   fMan->AddTask(TTrack);
 
-    fMan->Init(1,5,10000);
+  fMan->Init(1,5,10000);
+  //fMan->Init(1,5);
                 
   gEve->GetDefaultGLViewer()->SetClearColor(kYellow-10);
 
