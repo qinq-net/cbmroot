@@ -5,6 +5,8 @@
  ** @author Andrey Chernogorov <a.chernogorov@gsi.de>
  ** @date 04.06.2014
  **
+ ** pipe v16b_1e is actually identical to v14q and can be reused in the hadron setup
+ **
  ** SIS-100
  ** pipe_v14l = pipe_v14f + fixed sizes of vacuum chamber for mvd_v14a
  **
