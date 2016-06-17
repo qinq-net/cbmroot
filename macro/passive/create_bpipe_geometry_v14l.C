@@ -71,6 +71,15 @@ void create_bpipe_geometry_v14l()
   Double_t rin01[nSects01]  = {   0.,  0.,   0.,   0.,  18.,  28.69,  39.3,   65.55,  94.14, 110.   };
   Double_t rout01[nSects01] = {  25., 25., 400., 400., 400., 400.,   400.,   400.,   400.,   400.   };
 
+  // tan (2.5) *  30 cm = 1.310 cm
+  // tan (2.5) *  40 cm = 1.746 cm
+  // tan (2.5) *  50 cm = 2.183 cm
+  // tan (2.5) *  60 cm = 2.620 cm
+  // tan (2.5) *  70 cm = 3.056 cm
+  // tan (2.5) *  80 cm = 3.493 cm
+  // tan (2.5) *  90 cm = 3.929 cm
+  // tan (2.5) * 100 cm = 4.366 cm
+
   TString pipe3name = "pipe3 - STS section";
   const Int_t nSects3 = 4;
   Double_t z3[nSects3]    = { 220.,  500.,  1250.,   1700.  }; // mm

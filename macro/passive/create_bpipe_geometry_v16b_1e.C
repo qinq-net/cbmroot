@@ -41,7 +41,7 @@ TString pipeMediumName = "aluminium"; // "beryllium" "carbon"
 // ---> Macros name to info file
 TString macrosname = "create_bpipe_geometry_v16b_1e.C";
 // ---> Geometry file name (output)
-TString rootFileName = "pipe_v16b_1e.root";
+TString rootFileName = "pipe_v16b_1e.geo.root";
 // ---> Geometry name
 TString pipeName = "pipe_v16b_1e";
 // ----------------------------------------------------------------------------
