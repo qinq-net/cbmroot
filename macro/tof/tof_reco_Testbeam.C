@@ -117,10 +117,13 @@ void tof_reco_Testbeam (Int_t nEvents = 100, Int_t iSys=0)
    
   CbmTofDigitizerBDF* tofDigitizerBdf = new CbmTofDigitizerBDF("TOF Digitizer BDF",iVerbose, kTRUE);
   tofDigitizerBdf->SetInputFileName(TofDigitizerBDFInputFile);
+  tofDigitizerBdf->SetHistoFileName("DigitizerBDF_Control.root");
   run->AddTask(tofDigitizerBdf);
 
   // Cluster/Hit builder
   CbmTofSimpClusterizer* tofSimpClust = new CbmTofSimpClusterizer("TOF Simple Clusterizer",iVerbose, kTRUE);
+  tofSimpClust->SetHistoFileName("SimpClusterizer_Control.root");
+  tofSimpClust->SetOutTimeFactor(1000.);  /* convert ns -> ps */
   run->AddTask(tofSimpClust);
   // ------   TOF hit producer   ---------------------------------------------
   //    CbmTofHitProducerNew* tofHitProd = new CbmTofHitProducerNew("TOF HitProducer",0);

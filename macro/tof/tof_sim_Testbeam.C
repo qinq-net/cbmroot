@@ -64,9 +64,9 @@ void tof_sim_Testbeam(Int_t nEvents = 10, Int_t iSys=0)
 
   // -----   Create simulation run   ----------------------------------------
   FairRunSim* fRun = new FairRunSim();
-  fRun->SetName("TGeant3");              // Transport engine
-  fRun->SetTrackingDebugMode(kTRUE);   // Geant3 debug output can be set in ./gconfig/g3Config.C 
-  fRun->SetOutputFile(outFile);          // Output file
+  fRun->SetName("TGeant3");             // Transport engine
+  fRun->SetTrackingDebugMode(kFALSE);   // Geant3 debug output can be set in ./gconfig/g3Config.C 
+  fRun->SetOutputFile(outFile);         // Output file
   FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
   // ------------------------------------------------------------------------
 
@@ -136,10 +136,11 @@ void tof_sim_Testbeam(Int_t nEvents = 10, Int_t iSys=0)
   //  FairIonGenerator *fIongen= new FairIonGenerator(79, 197,79,1, 0.,0., 25, 0.,0.,-1.);
   //  FairParticleGenerator *fPartGen= new FairParticleGenerator(2212, 1.,0.,5., 25., 0.,0.,0.);
   //primGen->AddGenerator(fPartGen);
-  Int_t iMode=1;
+  Int_t iMode=0;
   switch (iMode) {
     case 0:                                                   //(pdg,mul,px, py, pz, vx,vy,vz)
-      FairParticleGenerator *fPartGen= new FairParticleGenerator(2212, 1,0.03,0.36, 3.5, 0.,0.,0.); //proton
+      FairParticleGenerator *fPartGen= new FairParticleGenerator(2212, 1,0.03,0.38, 3.5, 0.,0.,0.); //proton
+      //FairParticleGenerator *fPartGen= new FairParticleGenerator(13, 1,0.03,0.38, 3.5, 0.,0.,0.); //mu-
       break;
     case 1:
       FairBoxGenerator *fPartGen= new FairBoxGenerator(2212, 10);

@@ -38,7 +38,6 @@ void tof_ana_Testbeam(Int_t nEvents = 1000, Int_t iSel=1, Int_t iGenCor=1, Int_t
 
   // -----   Reconstruction run   -------------------------------------------
   FairRunAna *fRun= new FairRunAna();
-
   fRun->SetInputFile(InputFile.Data());
   fRun->AddFriend(InputFile2.Data());
   gLogger->SetLogScreenLevel(logLevel.Data());
@@ -54,7 +53,7 @@ void tof_ana_Testbeam(Int_t nEvents = 1000, Int_t iSel=1, Int_t iGenCor=1, Int_t
    tofTrackFinder->SetTxLIM(0.3);                  // max slope dx/dz
    tofTrackFinder->SetTyLIM(0.2);                  // max dev from mean slope dy/dz
    tofTrackFinder->SetTyMean(0.1);                // mean slope dy/dz
-   tofTrackFinder->SetSIGLIM(4.);                 // max matching chi2
+   tofTrackFinder->SetSIGLIM(40.);                 // max matching chi2
    tofTrackFinder->SetSIGT(100.);                // in ps
    tofTrackFinder->SetSIGX(1.);                  // in cm
    tofTrackFinder->SetSIGY(1.);                  // in cm
@@ -75,7 +74,7 @@ void tof_ana_Testbeam(Int_t nEvents = 1000, Int_t iSel=1, Int_t iGenCor=1, Int_t
      tofFindTracks->SetStations(3974);           // upper part of Nov15 setup 
      break;
    case 1:                                       // tracking mode
-     tofFindTracks->SetMinNofHits(3);
+     tofFindTracks->SetMinNofHits(6);
      tofFindTracks->SetNStations(8);
      tofFindTracks->SetStation(0, 4, 0, 0);           // upper part of Nov15 setup 
      tofFindTracks->SetStation(1, 9, 0, 0);           // upper part of Nov15 setup 
@@ -87,7 +86,7 @@ void tof_ana_Testbeam(Int_t nEvents = 1000, Int_t iSel=1, Int_t iGenCor=1, Int_t
      tofFindTracks->SetStation(7, 3, 0, 0);           // upper part of Nov15 setup 
      break;
    case 2:                                       // tracking mode
-     tofFindTracks->SetMinNofHits(3);
+     tofFindTracks->SetMinNofHits(7);
      tofFindTracks->SetNStations(9);
      tofFindTracks->SetStation(0, 5, 0, 0);           // upper part of Nov15 setup 
      tofFindTracks->SetStation(1, 4, 0, 0);           // upper part of Nov15 setup 
@@ -142,18 +141,19 @@ void tof_ana_Testbeam(Int_t nEvents = 1000, Int_t iSel=1, Int_t iGenCor=1, Int_t
      //     tofAnaTestbeam->SetTShift(50.);  // initialization
    }
    tofAnaTestbeam->SetMrpcSel2(iSel2);     // initialization of second selector Mrpc 
-   tofAnaTestbeam->SetChi2Lim(10000.);     // initialization of Chi2 selection limit  
    tofAnaTestbeam->SetBeamRefSmType(iRSel); // common reaction reference 
    tofAnaTestbeam->SetBeamRefSmId(0);
    tofAnaTestbeam->SetSIGLIM(3.);                // max matching chi2
    tofAnaTestbeam->SetSIGT(100.);                // in ps
    tofAnaTestbeam->SetSIGX(1.);                  // in cm
    tofAnaTestbeam->SetSIGY(1.);                  // in cm
+   tofAnaTestbeam->SetChi2Lim(10.);     // initialization of Chi2 selection limit  
+   tofAnaTestbeam->SetChi2Lim2(4.);     // initialization of Chi2 selection limit  
 
   switch (iSel) {
    case 0:                                 // upper part of setup: P2 - P5
    case 1:
-   case 34:
+   case 900911:
 	 tofAnaTestbeam->SetDut(9);        // Device under test   
 	 tofAnaTestbeam->SetDutSm(0);      // Device under test   
 	 tofAnaTestbeam->SetDutRpc(0);     // Device under test   
@@ -162,18 +162,22 @@ void tof_ana_Testbeam(Int_t nEvents = 1000, Int_t iSel=1, Int_t iGenCor=1, Int_t
 	 tofAnaTestbeam->SetMrpcRefRpc(1);   // Reference RPC     
 	 tofAnaTestbeam->SetCh4Sel(8.5);    // Center of channel selection window
 	 tofAnaTestbeam->SetDCh4Sel(60.);   // Width  of channel selection window
-	 //tofAnaTestbeam->SetChi2Lim(6.);     // initialization of Chi2 selection limit  
-	 tofAnaTestbeam->SetTOffD4(13000.);  // initialization
 	 //	 tofAnaTestbeam->SetTShift(-2000.);  // initialization
 	 switch(iSel2){
 	 case 9:
 	   tofAnaTestbeam->SetSel2TOff(-240.);   // Shift Sel2 time peak to 0 
-	   tofAnaTestbeam->SetChi2Lim(6.);     // initialization of Chi2 selection limit  
 	   break;
 	 case 3:
-	   tofAnaTestbeam->SetTShift(-13750.);  // initialization of MrpcRef - Dia shift
-	   tofAnaTestbeam->SetTOffD4(13750.);   // shift TOF to phsical values 
-	   tofAnaTestbeam->SetSel2TOff(1400.);   // Shift Sel2 time peak to 0 
+	   //tofAnaTestbeam->SetTShift(-14000.);  // initialization of MrpcRef - Dia shift
+	   if(iRSel == iSel2) {
+	     tofAnaTestbeam->SetTShift(1420.);  // initialization of MrpcRef - Dia shift
+	     tofAnaTestbeam->SetTOffD4(0.);   // shift TOF to phsical values 
+	     tofAnaTestbeam->SetSel2TOff(1460.);   // Shift Sel2 time peak to 0 
+	   }else {
+	     tofAnaTestbeam->SetTShift(-13400.);  // initialization of MrpcRef - Dia shift
+	     tofAnaTestbeam->SetTOffD4(0.);   // shift TOF to phsical values 
+	     tofAnaTestbeam->SetSel2TOff(1460.);   // Shift Sel2 time peak to 0 
+	   }
 	   break;
 	 default:
 	   ;
