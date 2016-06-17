@@ -182,6 +182,27 @@ void PairAnalysisEvent::Init()
   fTracks->Clear("C");
   if(!fGlobalTracks && !fFastTracks) return;
 
+  // DEBUG stuff
+  if(0) {
+    fprintf(stderr, "check %s: has %d points in %p \n", "MVD",GetNumberOfPoints(kMVD), GetPoints(kMVD));
+    fprintf(stderr, "check %s: has %d points in %p \n", "STS",GetNumberOfPoints(kSTS), GetPoints(kSTS));
+    fprintf(stderr, "check %s: has %d points in %p \n", "RICH",GetNumberOfPoints(kRICH), GetPoints(kRICH));
+    fprintf(stderr, "check %s: has %d points in %p \n", "TRD",GetNumberOfPoints(kTRD), GetPoints(kTRD));
+    fprintf(stderr, "check %s: has %d points in %p \n", "TOF",GetNumberOfPoints(kTOF), GetPoints(kTOF));
+
+    fprintf(stderr, "check %s: has %d hitMatches in %p \n", "MVD",GetNumberOfHitMatches(kMVD), GetHitMatches(kMVD));
+    fprintf(stderr, "check %s: has %d hitMatches in %p \n", "STS",GetNumberOfHitMatches(kSTS), GetHitMatches(kSTS));
+    fprintf(stderr, "check %s: has %d hitMatches in %p \n", "RICH",GetNumberOfHitMatches(kRICH), GetHitMatches(kRICH));
+    fprintf(stderr, "check %s: has %d hitMatches in %p \n", "TRD",GetNumberOfHitMatches(kTRD), GetHitMatches(kTRD));
+    fprintf(stderr, "check %s: has %d hitMatches in %p \n", "TOF",GetNumberOfHitMatches(kTOF), GetHitMatches(kTOF));
+
+    fprintf(stderr, "check %s: has %d hits in %p \n", "MVD",GetNumberOfHits(kMVD), GetHits(kMVD));
+    fprintf(stderr, "check %s: has %d hits in %p \n", "STS",GetNumberOfHits(kSTS), GetHits(kSTS));
+    fprintf(stderr, "check %s: has %d hits in %p \n", "RICH",GetNumberOfHits(kRICH), GetHits(kRICH));
+    fprintf(stderr, "check %s: has %d hits in %p \n", "TRD",GetNumberOfHits(kTRD), GetHits(kTRD));
+    fprintf(stderr, "check %s: has %d hits in %p \n", "TOF",GetNumberOfHits(kTOF), GetHits(kTOF));
+  }
+
   // get primary kf vertex or create one from mc header
   CbmKFVertex *vtx = 0x0;
   if(!fPrimVertex && fMCHeader) {
@@ -327,6 +348,17 @@ Int_t PairAnalysisEvent::GetNumberOfMatches(DetectorId det) const
   case kRICH: return (fRichMatches ? fRichMatches->GetEntriesFast() : 0);
   default:   return 0;
   }
+
+}
+
+//______________________________________________
+Int_t PairAnalysisEvent::GetNumberOfHitMatches(DetectorId det) const
+{
+  //
+  // number of hit matches
+  //
+  if(!GetHitMatches(det)) { return 0; }
+  else {                return (GetHitMatches(det)->GetEntriesFast()); }
 
 }
 

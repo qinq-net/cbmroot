@@ -39,9 +39,10 @@ public:
   Int_t      GetNumberOfTracks()      const { return (fTracks ? fTracks->GetEntriesFast() : -1); }
   Int_t      GetNumberOfMCTracks()    const { return (fMCTracks ? fMCTracks->GetEntriesFast() : -1); }
   Int_t      GetNumberOfVageMatches() const { return fMultiMatch; }
-  Int_t      GetNumberOfMatches(DetectorId det) const;
-  Int_t      GetNumberOfHits(   DetectorId det) const;
-  Int_t      GetNumberOfPoints( DetectorId det) const;
+  Int_t      GetNumberOfMatches(   DetectorId det) const;
+  Int_t      GetNumberOfHits(      DetectorId det) const;
+  Int_t      GetNumberOfHitMatches(DetectorId det) const;
+  Int_t      GetNumberOfPoints(    DetectorId det) const;
 
   TClonesArray *GetHits(      DetectorId det) const;
   TClonesArray *GetHitMatches(DetectorId det) const;
