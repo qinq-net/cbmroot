@@ -347,7 +347,7 @@ else
 void CbmMvdGeoHandler::FillDetector()
 {
 if(fGeoTyp == Default)
-	LOG(FATAL) << "Using old Geometry files within the new Digitizer is not supported, "
+	LOG(ERROR) << "Using old Geometry files within the new Digitizer is not supported, "
 		   << "please use CbmMvdDigitizeL if you want to use this Geometry" << FairLogger::endl;
 
 if(fGeoTyp == FourStation || fGeoTyp == FourStationShift)
