@@ -3,6 +3,8 @@
 #include "Parameters.hpp"
 #include "Application.hpp"
 
+#include <iostream>
+
 int main(int argc, char* argv[])
 {
     try {
