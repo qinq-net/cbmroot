@@ -25,6 +25,7 @@
 #include <TParameter.h>
 #include <TNamed.h>
 #include <TPaveText.h>
+#include <TGeoElement.h>
 
 #include "URun.h"
 #include "PairAnalysisMetaData.h"
@@ -80,7 +81,6 @@ void PairAnalysisMetaData::Init()
   //  pProduction->SetTitle(gProduction->Getenv("USER"));
   fMetaList.Add(pProduction);
 
-  // TODO: replace by FairBaseParSet::GetBeamMom()
   TParameter<Double_t> *pBeamEnergy = new TParameter<Double_t>("beamenergy", 4.107);
   //  pBeamEnergy->SetBit(TParameter<Double_t>::kIsConst);
   pBeamEnergy->SetBit(TParameter<Double_t>::kFirst);
@@ -233,8 +233,26 @@ void PairAnalysisMetaData::DrawSame(TString opt/*="msb"*/)
     sys.ReplaceAll("+","");     sys.ReplaceAll("-","");
     Int_t aProj=0; Int_t zProj=0;
     Int_t aTarg=0; Int_t zTarg=0;
-    if(sys.EqualTo("pAu"))       { aProj=1;   zProj=1;  aTarg=197; zTarg=79; }
-    else if(sys.EqualTo("AuAu")) { aProj=197; zProj=79; aTarg=197; zTarg=79; }
+
+    if(sys.EqualTo("pp"))        { aProj=1;   zProj=1;  aTarg=1;   zTarg=1; }
+    else {
+      /// get charge and atomic number of elements from database
+      TGeoElementTable g(0);
+      TString targ=( sys(sys.Length()-2, sys.Length())  );
+      TString proj=( sys(0,              sys.Length()-2));
+      proj.ReplaceAll("p","H");
+      aProj=g.FindElement(proj.Data())->A()+0.05; // add a small number to get proper rounding (e.g. Au: 196->197)
+      zProj=g.FindElement(proj.Data())->Z();
+      aTarg=g.FindElement(targ.Data())->A()+0.05;
+      zTarg=g.FindElement(targ.Data())->Z();
+    }
+    // else if(sys.EqualTo("pAu"))  { aProj=1;   zProj=1;  aTarg=197; zTarg=79; }
+    // else if(sys.EqualTo("pNi"))  { aProj=1;   zProj=1;  aTarg=58;  zTarg=28; }
+    // else if(sys.EqualTo("AuAu")) { aProj=197; zProj=79; aTarg=197; zTarg=79; }
+    // else if(sys.EqualTo("AgAg")) { aProj=107; zProj=47; aTarg=107; zTarg=47; }
+    // else if(sys.EqualTo("NiNi")) { aProj=58;  zProj=28; aTarg=58;  zTarg=28; }
+    // else if(sys.EqualTo("NiAu")) { aProj=58;  zProj=28; aTarg=197; zTarg=79; }
+    // else if(sys.EqualTo("AgAu")) { aProj=107; zProj=47; aTarg=197; zTarg=79; }
     // Get the cm energy, according to URun::GetNNSqrtS
     URun run("","",aProj,zProj,parD->GetVal(),aTarg,zTarg,0.,0.,0.,0,0.,0.,0.,0);
     tmp=Form("#sqrt{#it{s}_{NN}} = %.2f GeV",run.GetNNSqrtS());

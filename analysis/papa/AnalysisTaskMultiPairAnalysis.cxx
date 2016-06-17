@@ -10,8 +10,7 @@
   This task can hold multiple instances of PairAnalysis and a common set 
   of meta data PairAnalysisMetaData.
 
-  A.t.m. you have to provide the beam energy via SetBeamEnergy(Double_t beamEbyHand)
-  and can optionally add common event cuts for all PairAnalysis instances via
+  optionally add common event cuts for all PairAnalysis instances via
   SetEventFilter(AnalysisCuts *const filter)
 
 
@@ -25,6 +24,11 @@
 #include <TH1D.h>
 
 #include "FairRootManager.h"
+#include "FairRunAna.h"
+#include "FairRuntimeDb.h"
+#include "FairBaseParSet.h"
+
+
 #include "CbmRichElectronIdAnn.h"
 
 #include "PairAnalysisMetaData.h"
@@ -91,9 +95,23 @@ InitStatus AnalysisTaskMultiPairAnalysis::Init()
 
   fTimer.Start();
 
+  /// get beam momentum from parameter set
+  FairRuntimeDb* rtdb = FairRunAna::Instance()->GetRuntimeDb();
+  if(rtdb) {
+    FairBaseParSet* par=dynamic_cast<FairBaseParSet*>(rtdb->getContainer("FairBaseParSet"));
+    if(par) {
+      Double_t parBeamMom = par->GetBeamMom();
+      // if default values of FairBaseParSet(15.) or FairRunSim(0.) are stored take the one set by hand
+      if(parBeamMom>0. && TMath::Abs(parBeamMom-15.)>1.e-10) {
+	fBeamEnergy=parBeamMom;
+	Info("Init"," take beam momentum from parameter set: %f ",fBeamEnergy);
+      }
+    }
+  }
+
   // fill metadata object
   fMetaData.Init();
-  fMetaData.FillMeta("beamenergy",fBeamEnergy); // TODO: internal access to FairBaseParSet::GetBeamMom()
+  fMetaData.FillMeta("beamenergy",fBeamEnergy);
 
   if (!fListHistos.IsEmpty()) return kERROR; //already initialised
 

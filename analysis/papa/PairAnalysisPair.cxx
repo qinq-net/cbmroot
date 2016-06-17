@@ -82,8 +82,8 @@ void PairAnalysisPair::GetThetaPhiCM(TLorentzVector &motherMom, TLorentzVector &
   //
 
   const Double_t proMass = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
-  TLorentzVector projMom(0.,0.,-fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+proMass*proMass));
-  TLorentzVector targMom(0.,0., fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+proMass*proMass));
+  TLorentzVector projMom(0.,0., fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+proMass*proMass));
+  TLorentzVector targMom(0.,0., 0.,         TMath::Sqrt(0.*0+proMass*proMass));
 
   // boost all the 4-mom vectors to the mother rest frame
   TVector3 beta = (-1.0/motherMom.E())*motherMom.Vect();
