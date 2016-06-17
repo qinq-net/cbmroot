@@ -6,7 +6,9 @@
 #include <cassert>
 #include <sstream>
 #include "TGeoBBox.h"
+#include "TGeoManager.h"
 #include "TGeoMatrix.h"
+#include "TGeoVolume.h"
 #include "CbmStsSensor.h"
 #include "CbmStsSensorTypeDssd.h"
 #include "CbmStsStation.h"
@@ -162,19 +164,42 @@ Double_t CbmStsStation::GetSensorStereoAngle(Int_t iSide) const {
 // -----   Initialise station parameters   ---------------------------------
 void CbmStsStation::Init() {
 
-	// Determine x and y extensions of the STS volume. This implementation
-	// assumes that the shape of the latter derives from TGeoBBox and that
-	// it is not rotated in the global c.s.
-	TGeoBBox* box = dynamic_cast<TGeoBBox*>(fNode->GetShape());
-	if ( ! box )
-		LOG(FATAL) << GetName() << ": shape is not box! " << FairLogger::endl;
-	Double_t local[3] = { 0., 0., 0.};
-	Double_t global[3];
-  fNode->GetMatrix()->LocalToMaster(local, global);
-  fXmin = global[0] - box->GetDX();
-  fXmax = global[0] + box->GetDX();
-  fYmin = global[1] - box->GetDY();
-  fYmax = global[1] + box->GetDY();
+	// Determine x and y extensions of the station, in case it is present
+	// as TGeoNode (for old geometries). This implementation assumes that
+	// the shape of the station volume derives from TGeoBBox and that it is
+	// not rotated in the global c.s.
+	if ( fNode ) {
+		TGeoBBox* box = dynamic_cast<TGeoBBox*>(fNode->GetShape());
+		if ( ! box )
+			LOG(FATAL) << GetName() << ": shape is not box! " << FairLogger::endl;
+		Double_t local[3] = { 0., 0., 0.};
+		Double_t global[3];
+	  fNode->GetMatrix()->LocalToMaster(local, global);
+	  fXmin = global[0] - box->GetDX();
+	  fXmax = global[0] + box->GetDX();
+	  fYmin = global[1] - box->GetDY();
+	  fYmax = global[1] + box->GetDY();
+	}
+
+	// For new geometries with units instead of stations, the station element
+	// is not a node in the geometry. To obtain its extensions in x and y,
+	// a station volume is transiently made as TGeoVolumeAssembly, composed
+	// of its ladder daughters.
+	else {
+	  TGeoVolumeAssembly* statVol = new TGeoVolumeAssembly("myStation");
+	  for (Int_t iLadder = 0; iLadder < GetNofDaughters(); iLadder++) {
+	  	TGeoVolume* ladVol = GetDaughter(iLadder)->GetPnode()->GetVolume();
+	  	TGeoHMatrix* ladMat = GetDaughter(iLadder)->GetPnode()->GetMatrix();
+	  	statVol->AddNode(ladVol, iLadder, ladMat);
+	  } // # ladders in station
+	  statVol->GetShape()->ComputeBBox();
+	  TGeoBBox* statShape = dynamic_cast<TGeoBBox*>(statVol->GetShape());
+	  const Double_t* origin = statShape->GetOrigin();
+	  fXmin = origin[0] - statShape->GetDX();
+	  fXmax = origin[0] + statShape->GetDX();
+	  fYmin = origin[1] - statShape->GetDY();
+	  fYmax = origin[1] + statShape->GetDY();
+	}
 
   // The z position of the station is obtained from the sensor positions,
   // not from the station node. This is more flexible, because it does not

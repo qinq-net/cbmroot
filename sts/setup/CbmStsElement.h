@@ -102,7 +102,7 @@ class CbmStsElement : public TNamed
 
 
     /** Initialise daughters from geometry **/
-    void InitDaughters();
+    virtual void InitDaughters();
 
 
     /** Print **/

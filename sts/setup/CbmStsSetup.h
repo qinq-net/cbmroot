@@ -11,6 +11,7 @@
 #include <vector>
 #include "setup/CbmStsSensor.h"
 #include "setup/CbmStsElement.h"
+#include "setup/CbmStsStation.h"
 
 class TGeoManager;
 class CbmStsDigitize;
@@ -116,6 +117,12 @@ class CbmStsSetup : public CbmStsElement
      ** @return kTRUE if successfully initialised; kFALSE else
      **/
     Bool_t Init(const char* fileName);
+
+
+    /** Initialise daughters from geometry
+     ** Overrides the mother class implementation in case of new geometries (with units) **/
+    virtual void InitDaughters();
+
 
 
     /** Static instance of CbmStsSetup **/

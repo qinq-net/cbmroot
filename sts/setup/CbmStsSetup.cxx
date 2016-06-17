@@ -7,6 +7,7 @@
 #include "setup/CbmStsSetup.h"
 
 // Includes from C++
+#include <cassert>
 #include <iostream>
 
 // Includes from ROOT
@@ -252,8 +253,20 @@ Bool_t CbmStsSetup::Init(TGeoManager* geo) {
   // --- Set system address
   fAddress = kSTS;
 
+  // --- Check for old geometry (with stations) or new geometry (with units)
+  Bool_t isOldGeo = kFALSE;
+  TString dName = fNode->GetNode()->GetDaughter(0)->GetName();
+  LOG(DEBUG) << "First node is " << dName << FairLogger::endl;
+  if ( dName.Contains("station", TString::kIgnoreCase) ) isOldGeo = kTRUE;
+  else if ( dName.Contains("unit", TString::kIgnoreCase) ) isOldGeo = kFALSE;
+  else LOG(FATAL) << GetName() << ": unknown geometry type; first level name is "
+  		<< dName << FairLogger::endl;
+  if ( isOldGeo ) LOG(WARNING) << GetName() << ": using old geometry (with stations)"
+  		<< FairLogger::endl;
+
   // --- Recursively initialise daughter elements
-  InitDaughters();
+  if ( isOldGeo) CbmStsElement::InitDaughters(); // use method from CbmStsElement
+  else InitDaughters();
 
   // --- Build arrays of modules and sensors
   for (Int_t iStat = 0; iStat < GetNofDaughters(); iStat++) {
@@ -447,6 +460,79 @@ Bool_t CbmStsSetup::Init(const char* fileName) {
 
   fIsInitialised = kTRUE;
 	return kTRUE;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   InitDaughters   -------------------------------------------------
+void CbmStsSetup::InitDaughters() {
+
+	// --- Catch absence of TGeoManager
+	if ( ! gGeoManager ) {
+		LOG(ERROR) << fName << ": cannot initialise without TGeoManager!"
+				<< FairLogger::endl;
+		return;
+	}
+
+	// --- Catch physical node not being set
+	if ( ! fNode ) {
+		LOG(ERROR) << fName << ": physical node is not set!"
+				<< FairLogger::endl;
+		return;
+	}
+
+	TGeoNode* mNode = fNode->GetNode();   // This node
+	TString   mPath = fNode->GetName();   // Full path to this node
+	Int_t nDaughters = 0;
+	for (Int_t iNode = 0; iNode < mNode->GetNdaughters(); iNode++) {
+		TGeoNode* unitNode = mNode->GetDaughter(iNode);
+		assert(unitNode);
+
+		// Check name of daughter node (should be a "unit") for level name
+		TString uName = unitNode->GetName();
+		if ( ! uName.Contains("unit", TString::kIgnoreCase ) ) continue;
+		TString uPath = mPath + "/" + uName;
+
+		// Loop over unit daughters (should be ladders)
+		for (Int_t iLadder = 0; iLadder < unitNode->GetNdaughters(); iLadder++) {
+			TGeoNode* ladderNode = unitNode->GetDaughter(iLadder);
+			assert(ladderNode);
+
+			// Check name of ladder node
+			TString lName = ladderNode->GetName();
+			if ( ! lName.Contains("ladder", TString::kIgnoreCase ) ) continue;
+
+			// Get station number
+			Int_t iStation = ladderNode->GetNumber() / 100;
+			Int_t ladderNumber = ladderNode->GetNumber() - 100 * iStation;
+
+			// Get station, if it already exists. Otherwise, create new one
+			CbmStsStation* station = dynamic_cast<CbmStsStation*>(GetDaughter(iStation-1));
+			if ( ! station ) {
+				TString name = Form("Station%02i", iStation);
+				station = new CbmStsStation(name, "", NULL);
+				AddDaughter(station);
+			}
+
+			// Create a physical node for the ladder
+			TString lPath = uPath + "/" + lName;
+			TGeoPhysicalNode* pNode = new TGeoPhysicalNode(lPath.Data());
+
+			// Create the ladder element
+			TString name = Form("Ladder%02i", ladderNumber);
+			const char* title = ladderNode->GetVolume()->GetName();
+			CbmStsElement* ladder = new CbmStsElement(name, title, kStsLadder, pNode);
+
+			// Add the ladder to its station
+			station->AddDaughter(ladder);
+
+			// Initialise the ladder daughters recursively
+			ladder->InitDaughters();
+
+		} // #ladder nodes
+	} // #unit nodes
+
 }
 // -------------------------------------------------------------------------
 
