@@ -28,15 +28,17 @@
 
 #pragma link C++ class CbmMvdSensorPlugin+;
 
-#pragma link C++ class CbmMvdSensorBuffer+;
-#pragma link C++ class CbmMvdSensorTrackingBuffer+;
-#pragma link C++ class CbmMvdSensorFrameBuffer+;
+//#pragma link C++ class CbmMvdSensorBuffer+;
+//#pragma link C++ class CbmMvdSensorTrackingBuffer+;
+//#pragma link C++ class CbmMvdSensorFrameBuffer+;
 
 #pragma link C++ class CbmMvdSensorTask+;
 #pragma link C++ class CbmMvdSensorFindHitTask+;
 #pragma link C++ class CbmMvdSensorHitfinderTask+;
 #pragma link C++ class CbmMvdSensorDigitizerTask+;
+//#pragma link C++ class CbmMvdSensorDigiTBTask+;
 #pragma link C++ class CbmMvdSensorClusterfinderTask+;
+//#pragma link C++ class CbmMvdReadoutBuffer+;
 
 #pragma link C++ class CbmMvdGeoHandler+;
 

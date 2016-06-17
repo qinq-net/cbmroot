@@ -60,14 +60,15 @@ link_directories( ${LINK_DIRECTORIES})
 set(SRCS
 plugins/tasks/CbmMvdSensorTask.cxx
 plugins/tasks/CbmMvdSensorDigitizerTask.cxx
+#plugins/tasks/CbmMvdSensorDigiTBTask.cxx
 plugins/tasks/CbmMvdSensorFindHitTask.cxx
 plugins/tasks/CbmMvdSensorHitfinderTask.cxx
 plugins/tasks/CbmMvdSensorClusterfinderTask.cxx
 
-plugins/buffers/CbmMvdSensorBuffer.cxx
-plugins/buffers/CbmMvdSensorFrameBuffer.cxx
-plugins/buffers/CbmMvdSensorTrackingBuffer.cxx
- 
+#plugins/buffers/CbmMvdSensorBuffer.cxx
+#plugins/buffers/CbmMvdSensorFrameBuffer.cxx
+#plugins/buffers/CbmMvdSensorTrackingBuffer.cxx
+
 plugins/CbmMvdSensorPlugin.cxx
 
 SensorDataSheets/CbmMvdMimosa26AHR.cxx
@@ -91,7 +92,8 @@ CbmMvdStationPar.cxx
 CbmMvdDetector.cxx
 CbmMvdSensor.cxx
 CbmMvdClusterfinder.cxx
- 
+#CbmMvdReadoutBuffer.h
+
 #old/CbmMvdStation.cxx
 #old/CbmMvdFindHits.cxx
 #old/CbmMvdDigitizeL.cxx 

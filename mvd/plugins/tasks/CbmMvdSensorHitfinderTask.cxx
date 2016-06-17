@@ -292,8 +292,8 @@ void CbmMvdSensorHitfinderTask::CreateHit(CbmMvdCluster* cluster,  TVector3 &pos
     Int_t nHits = fOutputBuffer->GetEntriesFast();
     new((*fOutputBuffer)[nHits]) CbmMvdHit(fSensor->GetStationNr(), pos, dpos, indexX, indexY, cluster->GetRefId(), 0);
     CbmMvdHit* currentHit = (CbmMvdHit*) fOutputBuffer->At(nHits);
-    currentHit->SetTimeStamp(fSensor->GetCurrentEventTime());
-    currentHit->SetTimeStampError(fSensor->GetIntegrationtime()/2);
+    currentHit->SetTime(fSensor->GetCurrentEventTime());
+    currentHit->SetTimeError(fSensor->GetIntegrationtime()/2);
     currentHit->SetRefId(cluster->GetRefId());
 }
       

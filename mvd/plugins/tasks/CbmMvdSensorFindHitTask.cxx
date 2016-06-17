@@ -643,8 +643,8 @@ void CbmMvdSensorFindHitTask::CreateHit(vector<Int_t>* clusterArray,  TVector3 &
     new ((*fHits)[nHits]) CbmMvdHit(fSensor->GetStationNr(), pos, dpos, indexX, indexY, nClusters, 0);
     CbmMvdHit* currentHit = new CbmMvdHit;
     currentHit = (CbmMvdHit*) fHits->At(nHits);
-    currentHit->SetTimeStamp(fSensor->GetCurrentEventTime());
-    currentHit->SetTimeStampError(fSensor->GetIntegrationtime()/2);
+    currentHit->SetTime(fSensor->GetCurrentEventTime());
+    currentHit->SetTimeError(fSensor->GetIntegrationtime()/2);
     currentHit->SetRefId(thisRefID);
     if (pixelInCluster->GetRefId() < 0)
     cout << endl << "new hit with refID " << pixelInCluster->GetRefId() << " to hit " << nHits << endl;
@@ -652,8 +652,8 @@ void CbmMvdSensorFindHitTask::CreateHit(vector<Int_t>* clusterArray,  TVector3 &
     nHits = fOutputBuffer->GetEntriesFast();
     new((*fOutputBuffer)[nHits]) CbmMvdHit(fSensor->GetStationNr(), pos, dpos, indexX, indexY, nClusters, 0);
     currentHit = (CbmMvdHit*) fOutputBuffer->At(nHits);
-    currentHit->SetTimeStamp(fSensor->GetCurrentEventTime());
-    currentHit->SetTimeStampError(fSensor->GetIntegrationtime()/2);
+    currentHit->SetTime(fSensor->GetCurrentEventTime());
+    currentHit->SetTimeError(fSensor->GetIntegrationtime()/2);
     currentHit->SetRefId(pixelInCluster->GetRefId());
 
   delete digiArray;

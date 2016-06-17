@@ -221,12 +221,12 @@ ReadSensorGeometry(fVolName, fNodeName);
   CbmMvdSensorPlugin* pluginFirst;
   CbmMvdSensorPlugin* pluginNext;
   
-  CbmMvdSensorFrameBuffer* framebuffer;
+ // CbmMvdSensorFrameBuffer* framebuffer;
   CbmMvdSensorDigitizerTask* digitask;
   CbmMvdSensorClusterfinderTask* clustertask;
   CbmMvdSensorHitfinderTask* hitfindertask;
 
-  CbmMvdSensorTrackingBuffer* trackingbuffer;
+  //CbmMvdSensorTrackingBuffer* trackingbuffer;
   CbmMvdSensorFindHitTask* findertask;
   
   TClonesArray* dataArray;
@@ -236,7 +236,7 @@ ReadSensorGeometry(fVolName, fNodeName);
       pluginFirst=(CbmMvdSensorPlugin*)fPluginArray->At(i);
       if( pluginFirst->GetPluginType() == buffer)
           {
-           const TString framename = "CbmMvdSensorFrameBuffer";
+          /* const TString framename = "CbmMvdSensorFrameBuffer";
            const TString trackingname = "CbmMvdSensorTrackingBuffer";
 
 	   
@@ -254,7 +254,7 @@ ReadSensorGeometry(fVolName, fNodeName);
 		if(! trackingbuffer->IsInit())
                		 trackingbuffer->InitBuffer(this);
                }
-              
+               */
 	  }
     if(pluginFirst->GetPluginType() == task)
       {
@@ -341,7 +341,7 @@ void CbmMvdSensor::SendInput(CbmMvdPoint* point){
   
       CbmMvdSensorPlugin* pluginFirst;
       
-      CbmMvdSensorFrameBuffer* framebuffer;
+     // CbmMvdSensorFrameBuffer* framebuffer;
       CbmMvdSensorDigitizerTask* digitask;
 
     pluginFirst=(CbmMvdSensorPlugin*)fPluginArray->At(0);
@@ -351,8 +351,8 @@ void CbmMvdSensor::SendInput(CbmMvdPoint* point){
            if ( pluginFirst->ClassName() == framename)
 	       {
 		
-                framebuffer = (CbmMvdSensorFrameBuffer*)fPluginArray->At(0);
-                framebuffer->SetInput(point);
+               // framebuffer = (CbmMvdSensorFrameBuffer*)fPluginArray->At(0);
+               // framebuffer->SetInput(point);
                }
                
                else

@@ -5,6 +5,7 @@
 
 #include "CbmMvdDetector.h"
 #include "tools/CbmMvdGeoHandler.h"
+#include "FairLogger.h"
 #include <iostream>
 //#include <omp.h>
 
@@ -24,7 +25,7 @@ CbmMvdDetector* CbmMvdDetector::Instance()
 	CbmMvdGeoHandler* mvdHandler = new CbmMvdGeoHandler();
 	mvdHandler->Init();
 	mvdHandler->Fill();
-        mvdHandler->PrintGeoParameter();
+	mvdHandler->PrintGeoParameter();
 	return fInstance;
 	}
 
@@ -147,8 +148,8 @@ void CbmMvdDetector::AddPlugin(CbmMvdSensorPlugin* plugin) {
   Int_t nSensors=fSensorArray->GetEntriesFast();
   const TString digitizername = "CbmMvdSensorDigitizerTask";
   const TString findername = "CbmMvdSensorFindHitTask";
-  const TString framename = "CbmMvdSensorFrameBuffer";
-  const TString trackingname = "CbmMvdSensorTrackingBuffer";
+  //const TString framename = "CbmMvdSensorFrameBuffer";
+  //  const TString trackingname = "CbmMvdSensorTrackingBuffer";
   const TString clustername = "CbmMvdSensorClusterfinderTask";
   const TString hitname = "CbmMvdSensorHitfinderTask";
   
@@ -204,7 +205,7 @@ void CbmMvdDetector::AddPlugin(CbmMvdSensorPlugin* plugin) {
      // cout << endl << "Type is Buffer" << endl;
      // cout << endl <<  plugin->ClassName() << endl;
       
-     
+  /*
       if ( plugin->ClassName() == framename)
 	  {
 	  CbmMvdSensorFrameBuffer* frameBuffer = new CbmMvdSensorFrameBuffer();
@@ -226,9 +227,9 @@ void CbmMvdDetector::AddPlugin(CbmMvdSensorPlugin* plugin) {
 	   sensor=(CbmMvdSensor*)fSensorArray->At(i);
 	   sensor->AddPlugin(buffer);
 	  }
-      //data parallelizm requires that each sensor get its own buffer object
+      //data parallelizm requires that each sensor get its own buffer object    */
     
-    }
+    }   
     else {cout << "Invalide" << endl;}
   };
   
