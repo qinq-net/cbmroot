@@ -62,6 +62,7 @@ EndIf()
 set(SRCS
 
 CbmBuildEventsSimple.cxx
+CbmEvBuildSource.cxx
 CbmDaq.cxx
 CbmDaqQa.cxx
 CbmDaqBuffer.cxx

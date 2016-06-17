@@ -6,6 +6,7 @@
 
 
 #pragma link C++ class CbmBuildEventsSimple;
+#pragma link C++ class CbmEvBuildSource;
 #pragma link C++ class CbmDaq;
 #pragma link C++ class CbmDaqQa;
 #pragma link C++ class CbmMCBuffer;
