@@ -155,6 +155,7 @@ CbmTofSimpClusterizer::CbmTofSimpClusterizer():
    fTRefDifMax(0.),
    fTotMax(0.),
    fTotMin(0.),
+   fOutTimeFactor(1.),
    fCalParFileName(""),
    fCalParFile(NULL)
 {
@@ -250,6 +251,7 @@ CbmTofSimpClusterizer::CbmTofSimpClusterizer(const char *name, Int_t verbose, Bo
    fTRefDifMax(0.),
    fTotMax(0.),
    fTotMin(0.),
+   fOutTimeFactor(1.),
    fCalParFileName(""),
    fCalParFile(NULL)
 
@@ -1580,7 +1582,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                     new((*fTofHitsColl)[fiNbHits]) CbmTofHit( iDetId,
                                                         hitPos, hitPosErr,  //local detector coordinates
                                                         fiNbHits,
-                                                        dWeightedTime,
+                                                        dWeightedTime*fOutTimeFactor,
                                                         vPtsRef.size(), // flag  = number of TofPoints generating the cluster
                                                         0) ; //channel
                                       //                vDigiIndRef);
@@ -1801,7 +1803,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                      new((*fTofHitsColl)[fiNbHits]) CbmTofHit( iDetId,
                                          hitPos, hitPosErr,
                                          fiNbHits, //iRefId
-                                         dWeightedTime,
+                                         dWeightedTime*fOutTimeFactor,
                                          vPtsRef.size(),
                                          0);
                      //                                         vDigiIndRef);

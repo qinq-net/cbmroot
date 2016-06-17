@@ -862,15 +862,16 @@ Bool_t CbmTofFindTracks::WriteHistos()
    default: 
      ;
    }
-   fhPullT_Smt_Off->Write();
-   fhPullX_Smt_Off->Write();
-   fhPullY_Smt_Off->Write();
-   fhPullZ_Smt_Off->Write();
-   fhPullT_Smt_Width->Write();
-   fhPullX_Smt_Width->Write();
-   fhPullY_Smt_Width->Write();
-   fhPullZ_Smt_Width->Write();
-
+   if(NULL != fhPullT_Smt_Off){
+     fhPullT_Smt_Off->Write();
+     fhPullX_Smt_Off->Write();
+     fhPullY_Smt_Off->Write();
+     fhPullZ_Smt_Off->Write();
+     fhPullT_Smt_Width->Write();
+     fhPullX_Smt_Width->Write();
+     fhPullY_Smt_Width->Write();
+     fhPullZ_Smt_Width->Write();
+   }
    gDirectory->cd( oldir->GetPath() );
    fHist->Close();
 
@@ -956,6 +957,8 @@ void CbmTofFindTracks::Finish()
 
   WriteHistos();
 
+  LOG(INFO) << Form(" CbmTofFindTracks::Finished  ")
+	    <<FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 
@@ -966,7 +969,8 @@ void CbmTofFindTracks::CreateHistograms(){
 
    // define histos here
 
-  LOG(INFO) << Form(" CbmTofFindTracks::CreateHistograms for %d stations ",fNTofStations)
+  Double_t nSmt=fMapRpcIdParInd.size();
+  LOG(INFO) << Form(" CbmTofFindTracks::CreateHistograms for %d types, %4.0f stations ",fNTofStations,nSmt)
 	    <<FairLogger::endl;
 
   fhTrklMul =  new TH1F(  Form("hTrklMul"),
@@ -1052,12 +1056,11 @@ void CbmTofFindTracks::CreateHistograms(){
 			   Form("Tracklet XY at z=0 for hmul=5 ; x (xm); y (cm)"),
 			   100, -X0MAX, X0MAX, 100, -X0MAX, X0MAX);
 
-  Double_t nSmt=fMapRpcIdParInd.size();
   Double_t DT0MAX=50000.;
   if(fT0MAX == 0) fT0MAX = DT0MAX;
   fhPullT_Smt = new TH2F( Form("hPullT_Smt"),
 			  Form("Tracklet PullT vs RpcInd ; RpcInd ; #DeltaT (ps)"),
-			  nSmt, 0, nSmt, 100, -fT0MAX, fT0MAX);
+			  nSmt, 0, nSmt, 5001, -fT0MAX, fT0MAX);
   Double_t DX0MAX=5.;
   fhPullX_Smt = new TH2F( Form("hPullX_Smt"),
 			  Form("Tracklet PullX vs RpcInd ; RpcInd ; #DeltaX (cm)"),
@@ -1073,7 +1076,7 @@ void CbmTofFindTracks::CreateHistograms(){
 
   fhTOff_Smt = new TH2F( Form("hTOff_Smt"),
 			 Form("Tracklet TOff; RpcInd ; TOff (ps)"),
-			 nSmt, 0, nSmt, 500, -fT0MAX, fT0MAX);
+			 nSmt, 0, nSmt, 5001, -fT0MAX, fT0MAX);
   fhTOff_HMul2 = new TH2F( Form("hTOff_HMul2"),
 			 Form("Tracklet TOff(HMul2); RpcInd ; TOff (ps)"),
 			 nSmt, 0, nSmt, 500, -fT0MAX, fT0MAX);
@@ -1279,7 +1282,7 @@ void CbmTofFindTracks::FillHistograms(){
 	;
       }
       // extrapolation of tracklet to vertex @ z=0
-      FairTrackParam paramExtr;
+      //      FairTrackParam paramExtr;
       //      fFitter->Extrapolate(pTrk->GetParamFirst(),0.,&paramExtr);
     } // condition on NofHits>2 end 
 
@@ -1465,6 +1468,8 @@ void CbmTofFindTracks::PrintSetup(){
 }
 
 Double_t CbmTofFindTracks::GetTOff(Int_t iAddr){
+  cout << Form(" <D> GetT0ff for 0x%08x at HistoIndex %d: %7.1f ", iAddr, fMapRpcIdParInd[iAddr], 
+  (Double_t)fhPullT_Smt_Off->GetBinContent( fMapRpcIdParInd[iAddr] + 1)) <<endl;
   return (Double_t)fhPullT_Smt_Off->GetBinContent( fMapRpcIdParInd[iAddr] + 1);
 }
 

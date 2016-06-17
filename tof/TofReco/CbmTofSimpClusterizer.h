@@ -85,6 +85,7 @@ class CbmTofSimpClusterizer : public FairTask
       inline void PosYMaxScal   (Double_t PosYmaxScal)  { fPosYMaxScal = PosYmaxScal;}
       inline void SetTotMax     (Double_t TOTMax)       { fTotMax      = TOTMax;}
       inline void SetTotMin     (Double_t TOTMin)       { fTotMin      = TOTMin;}
+      inline void SetOutTimeFactor  (Double_t val)      { fOutTimeFactor  = val;}
 
       inline void SetCalParFileName(TString CalParFileName) { fCalParFileName = CalParFileName; }
       Bool_t   SetHistoFileName( TString sFilenameIn = "./tofSimpClust.hst.root" );
@@ -257,6 +258,7 @@ class CbmTofSimpClusterizer : public FairTask
       Double_t fTRefDifMax;
       Double_t fTotMax;
       Double_t fTotMin;
+      Double_t fOutTimeFactor;
 
       TString       fCalParFileName;      // name of the file name with Calibration Parameters
       TFile*        fCalParFile;          // pointer to Calibration Parameter file 

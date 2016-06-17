@@ -864,6 +864,7 @@ void CbmTofTrackFinderNN::Line3Dfit(CbmTofTracklet*  pTrk)
    //gr->Draw("P0");
    // fit the graph now 
    fMinuit.DoFit(gr);
+   gr->Delete();
    Double_t* dRes;
    dRes=fMinuit.GetParFit();
    LOG(DEBUG) <<  "Line3Dfit result: "<<dRes[0]<<", "<<dRes[1]<<", "<<dRes[2]<<", "<<dRes[3]<<FairLogger::endl;
