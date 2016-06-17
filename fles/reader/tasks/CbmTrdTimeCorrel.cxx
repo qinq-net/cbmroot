@@ -54,8 +54,61 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
      }
    }
    gStyle->SetNumberContours(99);
-   fBaseline[0]=-190;
-   fBaseline[1]=-220;
+    {
+      TString CalibrationFilename =
+          FairRootManager::Instance ()->GetOutFile ()->GetName ();
+      Int_t DefaultBaselineFrankfurt = -190;
+      Int_t DefaultBaselineMuenster = -220;
+      CalibrationFilename.ReplaceAll (".root", "_Calibration.root");
+      TFile* Calibration = new TFile (CalibrationFilename.Data (), "READ");
+      if (Calibration == nullptr)
+        {
+          LOG(INFO) << "No calibration file found, continuing with default baseline."
+                       << FairLogger::endl;
+          for (Int_t syscore = 0; syscore < 1; ++syscore)
+            {
+              for (Int_t spadic = 0; spadic < 4; ++spadic)
+                {
+                  for (Int_t channel = 0; channel < 16; ++channel)
+                    {
+                      fBaseline[syscore * 64 + spadic * 16 + channel] =
+                          ((spadic / 2) == 0 ?
+                              DefaultBaselineFrankfurt : DefaultBaselineMuenster);
+                    }
+                }
+            }
+        }
+      else{ Calibration->cd();
+          LOG(INFO) << "Calibration file found at " <<CalibrationFilename<< " reading baseline."
+                       << FairLogger::endl;
+          for (Int_t syscore = 0; syscore < 1; ++syscore)
+            {
+              for (Int_t spadic = 0; spadic < 4; ++spadic)
+                {
+                  for (Int_t channel = 0; channel < 16; ++channel)
+                    {
+                      TString fitname = "Fit_Baseline_for_Syscore_"
+                          + std::to_string (syscore) + "_Spadic_"
+                          + std::to_string (spadic)
+                          + "_Channel_" + std::to_string (channel);
+                      TFitResult* CurrentFit = dynamic_cast<TFitResult*>(Calibration->Get(fitname.Data()));
+                      if(CurrentFit==nullptr){
+                          LOG(INFO) << "No baseline fit found for Spadic "<<spadic << "Channel"<<channel
+                                       << FairLogger::endl;
+                          fBaseline[syscore * 64 + spadic * 16 + channel] =
+                                                    ((spadic / 2) == 0 ?
+                                                        DefaultBaselineFrankfurt : DefaultBaselineMuenster);
+                      }
+                      else {
+                          fBaseline[syscore * 64 + spadic * 16 + channel] = CurrentFit->GetParams()[1];
+                      }
+                    }
+                }
+            }
+          FairRootManager::Instance ()->GetOutFile ()->cd();
+          Calibration->Close();
+        }
+    }
  };
 
 // ----              -------------------------------------------------------
@@ -90,7 +143,7 @@ InitStatus CbmTrdTimeCorrel::Init()
 
   fClusters = new TClonesArray("CbmTrdCluster");
   ioman->Register("TrdCluster", "TRD Clusters", fClusters, kTRUE);
-  
+
   CreateHistograms();
   return kSUCCESS;
 }
@@ -1040,7 +1093,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
 		}
       Clusterrun++;
       std::sort (linearClusterBuffer.begin (), linearClusterBuffer.end (),SortSpadicMessageRange);//Sort the Hitmessages by their position of origin on the padplane
-      Cluster BuildingCluster (clusterWindow,fBaseline[0],fBaseline[1],!fCalculateBaseline); //Create a new Cluster
+      Cluster BuildingCluster (fBaseline,clusterWindow,120); //Create a new Cluster
       Int_t lastRow = (GetSpadicID(linearClusterBuffer.begin()->GetSourceAddress())/2)*32+GetChannelOnPadPlane(linearClusterBuffer.begin()->GetChannelID() + ((GetSpadicID(linearClusterBuffer.begin()->GetSourceAddress()) %2 == 1)? 16 : 0))/16;
       Int_t lastPad = GetChannelOnPadPlane(linearClusterBuffer.begin()->GetChannelID() + ((GetSpadicID(linearClusterBuffer.begin()->GetSourceAddress()) %2 == 1)? 16 : 0));
       auto SatteliteDebug =
@@ -1089,7 +1142,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
                 {
             	  SatteliteDebug(BuildingCluster);
                   fClusterBuffer.push_back (BuildingCluster);
-                  Cluster tempCluster (clusterWindow,fBaseline[0],fBaseline[1],!fCalculateBaseline);
+                  Cluster tempCluster (fBaseline,clusterWindow,120);
                   BuildingCluster = tempCluster;
                 }
               //std::cout << " Rowchange " << lastRow << " " << currentRow << " " << std::endl;
@@ -1104,7 +1157,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
             				{
             			SatteliteDebug(BuildingCluster);
             			fClusterBuffer.push_back (BuildingCluster);
-            			Cluster tempCluster (clusterWindow,fBaseline[0],fBaseline[1],!fCalculateBaseline);
+            			Cluster tempCluster (fBaseline,clusterWindow,120);
             			BuildingCluster = tempCluster;
             				}
             		//std::cout << " Rowchange " << lastRow << " " << currentRow << " " << std::endl;
@@ -1121,7 +1174,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
                     {
                 	  SatteliteDebug(BuildingCluster);
                       fClusterBuffer.push_back (BuildingCluster);
-                      Cluster tempCluster (clusterWindow,fBaseline[0],fBaseline[1],!fCalculateBaseline);
+                      Cluster tempCluster (fBaseline,clusterWindow,120);
                       BuildingCluster = tempCluster;
                     }
                   BuildingCluster.AddEntry (*currentMessage);
@@ -1146,7 +1199,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
                                 {
                             	  SatteliteDebug(BuildingCluster);
                                   fClusterBuffer.push_back (BuildingCluster);
-                                  Cluster tempCluster (clusterWindow,fBaseline[0],fBaseline[1],!fCalculateBaseline);
+                                  Cluster tempCluster (fBaseline,clusterWindow,120);
                                   BuildingCluster = tempCluster;
                                 }
                             }
@@ -1158,7 +1211,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
                                 {
                             	  SatteliteDebug(BuildingCluster);
                                   fClusterBuffer.push_back (BuildingCluster);
-                                  Cluster tempCluster (clusterWindow,fBaseline[0],fBaseline[1],!fCalculateBaseline);
+                                  Cluster tempCluster (fBaseline,clusterWindow,120);
                                   BuildingCluster = tempCluster;
                                 }
                               currentMessage--;
@@ -1174,7 +1227,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
                     {
                 	  SatteliteDebug(BuildingCluster);
                       fClusterBuffer.push_back (BuildingCluster);
-                      Cluster tempCluster (clusterWindow,fBaseline[0],fBaseline[1],!fCalculateBaseline);
+                      Cluster tempCluster (fBaseline,clusterWindow,120);
                       BuildingCluster = tempCluster;
                     }
                 }
@@ -1186,7 +1239,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
                     {
                 	  SatteliteDebug(BuildingCluster);
                       fClusterBuffer.push_back (BuildingCluster);
-                      Cluster tempCluster (clusterWindow,fBaseline[0],fBaseline[1],!fCalculateBaseline);
+                      Cluster tempCluster (fBaseline,clusterWindow,120);
                       BuildingCluster = tempCluster;
                     }//Start the Cluster
                   BuildingCluster.AddEntry (*currentMessage);
@@ -1205,7 +1258,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
         {
     	  SatteliteDebug(BuildingCluster);
           fClusterBuffer.push_back (BuildingCluster);
-          Cluster tempCluster (clusterWindow,fBaseline[0],fBaseline[1],!fCalculateBaseline);
+          Cluster tempCluster (fBaseline,clusterWindow,120);
           BuildingCluster = tempCluster;
         }
 
@@ -1879,7 +1932,8 @@ void CbmTrdTimeCorrel::FitBaseline() {
 	TFile CalibrationFile(outfile, "RECREATE");
 	CalibrationFile.cd();
 	vector<TFitResult> FitResults;
-	//TODO: Check for Rootfile of fits
+	//TODO: Refine fits based on previous iterations
+	//DONE: Check for Rootfile of fits and import them
 	for (Int_t Detector = 0; Detector <= NrOfSpadics / 2; Detector++) {
 		string Detectorname = (Detector == 0 ? "Frankfurt" : "Muenster");
 		string histName = "Baseline_for_Syscore_" + std::to_string(0)
@@ -1890,13 +1944,15 @@ void CbmTrdTimeCorrel::FitBaseline() {
 					ChannelID + 1, ChannelID + 1);
 			if (BaselineProjection->GetEntries() < 50)
 				continue;
-			TFitResultPtr Baselinefit = BaselineProjection->Fit("gaus", "S", "",
+			TFitResultPtr Baselinefit = BaselineProjection->Fit("gaus", "MQS", "",
 					-253, -10);
-			TString fitname = "Fit_" + histName + "_Channel_"
-					+ std::to_string(ChannelID);
+			TString fitname = "Fit_Baseline_for_Syscore_"
+			    + std::to_string (0) + "_Spadic_"
+			    + std::to_string (Detector*2 + ChannelID / 16) + "_Channel_"
+			    + std::to_string (ChannelID % 16);
 			Baselinefit->SetName(fitname);
 			FitResults.push_back(*Baselinefit);
-			//Baselinefit->Print("V");
+			//Baselinefit->Print("V ");
 			std::cout << std::endl;
 		}
 		std::cout << "Fits " << Detectorname << " " << FitResults.size()
@@ -2159,23 +2215,21 @@ std::map<Int_t, std::map<Int_t,std::map<ULong_t, Long_t> > > CbmTrdTimeCorrel::C
 }
 
 
-CbmTrdTimeCorrel::Cluster::Cluster(Int_t initWindowsize, Int_t BaselineFrankfurt, Int_t BaselineMuenster, Bool_t CalculateBaseline, Int_t ChargeThreshhold = 50) :
+CbmTrdTimeCorrel::Cluster::Cluster(Int_t * BaselineArray,Int_t initWindowsize, Int_t ChargeThreshhold = 50) :
     TObject (),
     fEntries (),
     fParametersCalculated(false),
     fSpadic (0),
     fRow(0),
     fType (0),
+    fBaseline(BaselineArray),
     fTotalCharge (0),
     fHorizontalPosition (0),
     fWindowsize(initWindowsize),
-	fPreCalculatedBaseline(CalculateBaseline),
+	fPreCalculatedBaseline(true),
 	fClusterChargeThreshhold(ChargeThreshhold),
 	fFullTime()
-{
-	fBaseline[0] = BaselineFrankfurt;
-	fBaseline[1] = BaselineMuenster;
-};
+{};
 
 CbmTrdTimeCorrel::Cluster::~Cluster(){};
 
@@ -2280,7 +2334,7 @@ Int_t NrSamples = message.GetNrSamples ();
  Baseline = Baseline/3;
  }
  else{
-	 Baseline = fBaseline[fSpadic/2];
+	 Baseline = fBaseline[0*64+16*GetSpadicID(message.GetSourceAddress())+message.GetChannelID()];
  }
  return (maxADC-Baseline);
 };
@@ -2299,7 +2353,7 @@ Int_t CbmTrdTimeCorrel::GetMaxADC(CbmSpadicRawMessage& message,Bool_t SubtractBa
       previousADC = currentADC;
   }
   //Int_t Baseline=GetAvgBaseline(message);
-  return (SubtractBaseline ?  maxADC-fBaseline[Spadic/2] : maxADC);
+  return (SubtractBaseline ?  maxADC-fBaseline[0*64+16*GetSpadicID(message.GetSourceAddress())+message.GetChannelID()] : maxADC);
 };
 
 Int_t CbmTrdTimeCorrel::GetAvgBaseline(CbmSpadicRawMessage& message,Int_t n){
@@ -2492,16 +2546,16 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
   Int_t NumberOfTypeTwoMessages=0;
   Int_t NumberOfHits=0;
   Int_t LastPad= GetHorizontalMessagePosition(*fEntries.begin())-1;
-  Int_t maxADC = fBaseline[fSpadic/2];
-  for(auto x : fEntries){
-	  Int_t CurrentPad = GetHorizontalMessagePosition(x);
+  for(auto message : fEntries){
+	  Int_t CurrentPad = GetHorizontalMessagePosition(message);
+	  Int_t maxADC = fBaseline[0+16*GetSpadicID(message.GetSourceAddress())+message.GetChannelID()];
       if (LastPad+1 != CurrentPad&&fType!=3)
 	{
     	  //std::cout << LastPad << " " << CurrentPad << std:: endl;
 	  fType=1;
 	}
 	  LastPad = CurrentPad;
-      Int_t Charge = GetMaxADC(x);
+      Int_t Charge = GetMaxADC(message);
       if(maxADC < Charge) maxADC = Charge;
       if(Charge < 0){
     	  fType = 3;
@@ -2509,8 +2563,8 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
       Charges.push_back(Charge);
       fTotalCharge += Charge;
       unweightedPosSum.push_back(CurrentPad);
-      if(x.GetTriggerType()==2) NumberOfTypeTwoMessages++;
-      if(x.GetTriggerType()==1||x.GetTriggerType()==3) NumberOfHits++;
+      if(message.GetTriggerType()==2) NumberOfTypeTwoMessages++;
+      if(message.GetTriggerType()==1||message.GetTriggerType()==3) NumberOfHits++;
   }
   if(NumberOfTypeTwoMessages!=2) fType=1;
   if(NumberOfHits==0) fType=2;

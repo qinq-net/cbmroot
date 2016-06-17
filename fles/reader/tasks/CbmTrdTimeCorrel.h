@@ -8,6 +8,7 @@
 
 #include "TClonesArray.h"
 #include "CbmSpadicRawMessage.h"
+#include "CbmBeamDefaults.h"
 #include <deque>
 #include "TRegexp.h"
 
@@ -58,7 +59,7 @@ class CbmTrdTimeCorrel : public FairTask
   const Bool_t fDrawPadResponse = true;
   Bool_t fCalculateBaseline = true;
   const Int_t  fSignalShapeThreshold = -255	;
-  Int_t fBaseline[2];
+  Int_t fBaseline[1*6*16];
   const Bool_t fActivateDeltaTAnalysis = false;
   const Bool_t fActivateOffsetAnalysis = false;
   const Bool_t fDrawClustertypes = true;
@@ -149,9 +150,8 @@ class CbmTrdTimeCorrel : public FairTask
   {
   public:
     Cluster():Cluster(0){};
-    Cluster(Int_t Windowsize):Cluster(Windowsize,-255,-255,true){};
-    Cluster(Int_t initWindowsize, Int_t BaselineFrankfurt, Int_t BaselineMuenster, Bool_t CalculateBaseline):Cluster(initWindowsize, BaselineFrankfurt, BaselineMuenster,CalculateBaseline, 120) {};
-    Cluster(Int_t,Int_t,Int_t,Bool_t,Int_t);
+    Cluster(Int_t initWindowsize):Cluster(nullptr,initWindowsize, 120) {};
+    Cluster(Int_t*,Int_t,Int_t);
     ~Cluster();
     Size_t size();
     Int_t Type();
@@ -171,7 +171,7 @@ class CbmTrdTimeCorrel : public FairTask
     Bool_t fParametersCalculated,fIs2D=true;
     Bool_t fPreCalculatedBaseline;
     Int_t fSpadic, fRow, fType, fTotalCharge, fWindowsize, fClusterChargeThreshhold;
-    Int_t fBaseline[2];
+    Int_t*  fBaseline;
     ULong_t fFullTime;
     Float_t fHorizontalPosition;
     void CalculateParameters();
