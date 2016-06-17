@@ -96,7 +96,7 @@ InitStatus AnalysisTaskMultiPairAnalysis::Init()
   fTimer.Start();
 
   /// get beam momentum from parameter set
-  Double_t beamEnergy=0.;
+  //  Double_t beamEnergy=0.; /// TODO: replace all fBeamEnergy by beamEnergy in NOV16
   FairRuntimeDb* rtdb = FairRunAna::Instance()->GetRuntimeDb();
   if(rtdb) {
     FairBaseParSet* par=dynamic_cast<FairBaseParSet*>(rtdb->getContainer("FairBaseParSet"));
@@ -104,15 +104,15 @@ InitStatus AnalysisTaskMultiPairAnalysis::Init()
       Double_t parBeamMom = par->GetBeamMom();
       // if default values of FairBaseParSet(15.) or FairRunSim(0.) are stored take the one set by hand
       if(parBeamMom>0. && TMath::Abs(parBeamMom-15.)>1.e-10) {
-	beamEnergy=parBeamMom;
-	Info("Init"," take beam momentum from parameter set: %f ",beamEnergy);
+	fBeamEnergy=parBeamMom;
+	Info("Init"," Use beam momentum from parameter set: %f ",fBeamEnergy);
       }
     }
   }
 
   // fill metadata object
   fMetaData.Init();
-  fMetaData.FillMeta("beamenergy",beamEnergy);
+  fMetaData.FillMeta("beamenergy",fBeamEnergy);
 
   if (!fListHistos.IsEmpty()) return kERROR; //already initialised
 
@@ -144,7 +144,7 @@ InitStatus AnalysisTaskMultiPairAnalysis::Init()
   PairAnalysisVarManager::SetRichPidResponse(fgRichElIdAnn);
 
   // set the beam energy to the varmanager
-  PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kEbeam, beamEnergy);
+  PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kEbeam, fBeamEnergy);
 
   // initialization time and memory
   gSystem->GetProcInfo(&fProcInfo);
