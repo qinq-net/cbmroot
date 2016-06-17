@@ -151,7 +151,14 @@ void run_reco_new(Int_t nEvents = 2,
   macroName = srcDir + "/macro/run/modules/reconstruct.C";
   std::cout << "Loading macro " << macroName << std::endl;
   gROOT->LoadMacro(macroName);
-  gROOT->ProcessLine("reconstruct()");
+  Bool_t recoSuccess = gROOT->ProcessLine("reconstruct()");
+  if ( ! recoSuccess ) {
+  	std::cerr << "-E-" << myName << ": error in executing " << macroName
+  			<< std::endl;
+  	return;
+  }
+  std::cout << "-I-" << myName << ": " << macroName << " excuted successfully"
+  		<< std::endl;
   // ------------------------------------------------------------------------
 
 

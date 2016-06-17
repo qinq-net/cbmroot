@@ -9,7 +9,7 @@
  **/
 
 
-void reconstruct()
+Bool_t reconstruct()
 {
 
 
@@ -113,12 +113,11 @@ void reconstruct()
 
 
   // -----   Local reconstruction in TOF   ----------------------------------
-  CbmTofHitProducerNew* tofHit =
-  		new CbmTofHitProducerNew("TOF HitProducerNew", 0);
-  tofHit->SetInitFromAscii(kFALSE);
-  run->AddTask(tofHit);
-  std::cout << "-I- : Added task " << tofHit->GetName() << std::endl;
-  // ------------------------------------------------------------------------
+  CbmTofSimpClusterizer* tofCluster
+  	= new CbmTofSimpClusterizer("TOF Simple Clusterizer", 0, kTRUE);
+  run->AddTask(tofCluster);
+  std::cout << "-I- : Added task " << tofCluster->GetName() << std::endl;
+  // -------------------------------------------------------------------------
 
 
   // -----   Track finding in (MVD+) STS    -----------------------------------------
@@ -194,4 +193,5 @@ void reconstruct()
   }
   // ------------------------------------------------------------------------
 
+  return kTRUE;
 }
