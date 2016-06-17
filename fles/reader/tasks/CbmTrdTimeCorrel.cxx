@@ -679,6 +679,7 @@ void CbmTrdTimeCorrel::Finish()
   fDigis->Clear();
   fClusters->Clear();
   FitBaseline();
+  FitPRF();
 
   TString runName="";
   if(fRun!=0) runName=Form(" (Run %d)",fRun);
@@ -1968,19 +1969,49 @@ void CbmTrdTimeCorrel::FitBaseline() {
 // ----              -------------------------------------------------------
 void CbmTrdTimeCorrel::FitPRF() {
 	TString outfile = FairRootManager::Instance()->GetOutFile()->GetName();
-	outfile.ReplaceAll(".root", "_Calibration.root");
-	TFile CalibrationFile(outfile, "UPDATE");
-	CalibrationFile.cd();
+	FairRootManager::Instance()->GetOutFile()->cd();
 	vector<TFitResult> FitResults;
+	auto PRFLambda =[&](Double_t Displacement, Double_t * Parameters)
+        {
+          Double_t d = Displacement;
+          Double_t K3 = Parameters[0];
+          Double_t A = Parameters[2];
+          Double_t SqrtK3 = sqrt(K3);
+          Double_t W=Parameters[3];
+          Double_t h = Parameters[1];
+
+          return std::fabs(
+              - A / (2. * atan(SqrtK3)) * (
+                  std::atan(SqrtK3 * std::tanh(TMath::Pi() * (-2. + SqrtK3 ) * (W + 2.* d) / (8.* h) )) +
+                  std::atan(SqrtK3 * std::tanh(TMath::Pi() * (-2. + SqrtK3 ) * (W - 2.* d) / (8.* h) ))
+              )
+          );
+        };
+	TF1* PRF =
+	    new TF1 (
+	        "PRF",[&PRFLambda](double*x, double *p){ return PRFLambda(x[0],p);}
+	        ,-10.0, 10.0, 4);
+	PRF->SetParameters(2,5.3/7.125,100,1.0);
+	PRF->SetParName(0,"K3");
+	PRF->SetParLimits(0,0.0,2.0);
+	PRF->SetParName(1,"h");
+        PRF->SetParLimits(1,0.5,3);
+        PRF->SetParName(2,"A");
+        PRF->SetParLimits(2,1,1000);
+        PRF->SetParName(3,"W");
+        PRF->SetParLimits(3,0.01,10);
 	//TODO: Check for Rootfile of fits
 	for (Int_t Detector = 0; Detector <= NrOfSpadics / 2; Detector++) {
 		string Detectorname = (Detector == 0 ? "Frankfurt" : "Muenster");
 		string histName = "Pad_Response_" + Detectorname
 				+ "_for_Clusters_of_Size_" + std::to_string(3);
-		TH1* PRF = fHM->H1(histName);
-		if (PRF->GetEntries() < 50)
+		TH2* PRFHist = fHM->H2(histName);
+		if (PRFHist->GetEntries() < 50)
 			continue;
-		TFitResultPtr PRFFit = PRF->Fit("gaus", "S", "", -3, 3);
+		TString ProfileName ="Profile_"+histName;
+		TProfile* PRFProfile = PRFHist->ProfileX(ProfileName.Data(),1,-1);
+		PRFProfile->Write();
+		TFitResultPtr PRFFit = PRFProfile->Fit(PRF, "S", "", -1.6, 1.6);
 		TString fitname = "Fit_PRF_" + histName;
 		PRFFit->SetName(fitname);
 		FitResults.push_back(*PRFFit);
@@ -1989,6 +2020,9 @@ void CbmTrdTimeCorrel::FitPRF() {
 		std::cout << "Fits " << Detectorname << " " << FitResults.size()
 				<< std::endl;
 	}
+        outfile.ReplaceAll(".root", "_Calibration.root");
+        TFile CalibrationFile(outfile, "UPDATE");
+        CalibrationFile.cd();
 	for (auto x : FitResults) {
 		x.Write();
 	}

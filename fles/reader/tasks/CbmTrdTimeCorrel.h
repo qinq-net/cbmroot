@@ -11,6 +11,8 @@
 #include "CbmBeamDefaults.h"
 #include <deque>
 #include "TRegexp.h"
+#include <cmath>
+
 
 typedef std::map<Int_t, std::map<ULong_t, CbmSpadicRawMessage* > > EpochMap;
 typedef std::map<Int_t, std::map<Int_t,std::map<ULong_t, Long_t> > > OffsetMap;
