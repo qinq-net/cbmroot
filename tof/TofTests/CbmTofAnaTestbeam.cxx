@@ -571,9 +571,10 @@ InitStatus CbmTofAnaTestbeam::Init()
   LOG(WARNING) << Form("CbmTofAnaTestbeam::Init : no FindTracks instance found")
 	     << FairLogger::endl;
   else{  // reinitialize Offsets 
-    fdTShift   = - fFindTracks->GetTOff(fiMrpcRefAddr) + fFindTracks->GetTOff(fiBeamRefAddr);
-    fdSel2TOff = - fFindTracks->GetTOff(fiMrpcRefAddr) + fFindTracks->GetTOff(fiMrpcSel2Addr);
-    LOG(INFO) << Form("CbmTofAnaTestbeam::Init : Set time offsets D4: %7.0f, Sel24:  %7.0f",fdTShift,fdSel2TOff)
+    fdTShift   += - fFindTracks->GetTOff(fiMrpcRefAddr) + fFindTracks->GetTOff(fiBeamRefAddr);
+    fdSel2TOff += - fFindTracks->GetTOff(fiMrpcRefAddr) + fFindTracks->GetTOff(fiMrpcSel2Addr);
+    LOG(INFO) << Form("CbmTofAnaTestbeam::Init : Set time offsets D: %7.1f, 4: %7.1f, D4: %7.1f, Sel24:  %7.1f",
+		      fFindTracks->GetTOff(fiBeamRefAddr), fFindTracks->GetTOff(fiMrpcRefAddr), fdTShift,fdSel2TOff)
 	      << FairLogger::endl;
   }
    return kSUCCESS;
@@ -880,7 +881,7 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
    fhBRefMul =  new TH1F( Form("hBRefMul"),Form("Multiplicity in Beam Reference counter ; Mul ()"),
 			  50, 0., 50.); 
    fhDTD4    =  new TH1F( Form("hDTD4"),Form("reference time ; #Delta tD4 (ps)"),
-			  100, -100000., 100000.); 
+			  101, -100000., 100000.); 
 
    Int_t iNbDet=fMbsMappingPar->GetNbMappedDet();
    fhXYPos.resize( iNbDet  );
@@ -1606,6 +1607,8 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	     if( TMath::Abs(dDTD4)<fdDTD4MAX &&        // single selection scheme, selector 0
 	         TMath::Abs(CbmTofAddress::GetChannelId( iChId2 ) - fdCh4Sel) < fdDCh4Sel     )
 	       {
+		 LOG(DEBUG1)<<Form("CbmTofAnaTestbeam:FillHisto: Valid Mrpc hit 0x%08x",iChId2)
+			<<FairLogger::endl;
 		 /*TGeoNode *fNode=*/        // prepare global->local trafo
 		   gGeoManager->FindNode(fChannelInfo2->GetX(),fChannelInfo2->GetY(),fChannelInfo2->GetZ());
 		 Double_t hitpos[3],  hitpos_local[3];
@@ -1616,18 +1619,22 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 		 gGeoManager->MasterToLocal(hitpos, hitpos_local);
 	         if( TMath::Abs(hitpos_local[1]-fdPosY4SelOff)<fdPosY4Sel*fChannelInfo2->GetSizey()
 		   &&TMath::Abs(dDTD4)<TMath::Abs(dDTD4Min)){
-
+		   BSel[0]=kFALSE; // invalidate previous matches
 		   dDTD4Min=dDTD4;
 		   pHitRef=pHit2;
 		   fChannelInfoRef=fChannelInfo2;
-		   if( fiMrpcSel2 < 1 ) {  // assume to be initialized to 0 
+		   LOG(DEBUG1)<<Form("CbmTofAnaTestbeam:FillHisto: accep Mrpc, look for %d, 0x%08x",fiMrpcSel2,fiMrpcSel2Addr)
+			<<FairLogger::endl;
+		   if( fiMrpcSel2 < 1 ) {  // assume Mrpctype to be initialized to 0 
 		     BSel[0]=kTRUE;
 		   } else { // request presence of coincident fiMrpcSel2 hit!
 		     Double_t xPos2=Zref/pHit2->GetZ()*pHit2->GetX();
 		     Double_t yPos2=Zref/pHit2->GetZ()*pHit2->GetY();
 		     Double_t tof2 =pHit2->GetTime();
 		     Double_t dTcor=0.;
-		     
+		     Double_t xPos3B=0.;
+		     Double_t yPos3B=0.;
+		     Double_t tof3B=0.;
 		     //	 if(fhDTD4DT04D4Off != NULL) 
 		     //  dTcor=(Double_t)fhDTD4DT04D4Off->GetBinContent(fhDTD4DT04D4Off->FindBin(dTDia-tof2));
 		     
@@ -1635,7 +1642,13 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 		     pHitSel2 = NULL;
 
 		     for( Int_t iHitInd3 = 0; iHitInd3 < iNbTofHits; iHitInd3++) 
-		     if(iHitInd3 != iHitInd && iHitInd3 != iHitInd2)
+		     {
+		     LOG(DEBUG2)<<Form("CbmTofAnaTestbeam:FillHisto: inspect %d. Sel2, Ind %d, Ind2 %d ",
+					 iHitInd3,iHitInd,iHitInd2)
+				    <<FairLogger::endl;
+
+		     //if(iHitInd3 != iHitInd && iHitInd3 != iHitInd2)
+		     if(iHitInd3 != iHitInd2)
 		     {
 		       pHit3 = (CbmTofHit*) fTofHitsColl->At( iHitInd3 );
 		       if(pHit3==NULL) continue;
@@ -1648,16 +1661,22 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 				    <<FairLogger::endl;
 			 continue;
 		       }
+		       LOG(DEBUG2)<<Form("CbmTofAnaTestbeam:FillHisto: inspect %d. Sel2 0x%08x",iHitInd3,iDetId3)
+				    <<FairLogger::endl;
+
 		       if( fiMrpcSel2Addr == iDetId3 ) { //CbmTofAddress::GetSmType( iDetId3 )){   // Sel2 RPC hit
+			 LOG(DEBUG1)<<Form("CbmTofAnaTestbeam:FillHisto: found Sel2 0x%08x",fiMrpcSel2Addr)
+				    <<FairLogger::endl;
 			 if(TMath::Abs(CbmTofAddress::GetChannelId( iChId3 ) - fdChS2Sel) < fdDChS2Sel) {
 			   /*TGeoNode *fNode3= */       // prepare global->local trafo
 			     gGeoManager->FindNode(fChannelInfo3->GetX(),fChannelInfo3->GetY(),fChannelInfo3->GetZ());
 			   hitpos3[0]=pHit3->GetX();
 			   hitpos3[1]=pHit3->GetY();
-			   hitpos3[2]=pHit3->GetZ();
+			   hitpos3[2]=pHit3->GetZ(); 
 			   /*TGeoNode* cNode3=*/ gGeoManager->GetCurrentNode();
 			   gGeoManager->MasterToLocal(hitpos3, hitpos3_local);
 			   if( TMath::Abs(hitpos3_local[1]-fdPosYS2SelOff)<fdPosYS2Sel*fChannelInfo3->GetSizey() ){
+
 			     Double_t xPos3=Zref/pHit3->GetZ()*pHit3->GetX();
 			     Double_t yPos3=Zref/pHit3->GetZ()*pHit3->GetY();
 			     Double_t tof3 =pHit3->GetTime();	
@@ -1667,15 +1686,14 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	                        +TMath::Power((tof3-tof2-dTcor-fdSel2TOff)/fdDTWidth,2.);
 
 			     Chi2Match /= 3;
+			     LOG(DEBUG1)<<Form("CbmTofAnaTestbeam:FillHisto: valid Sel2 0x%08x with Chi2 %7.1f, %7.1f",
+					       fiMrpcSel2Addr,Chi2Match,Chi2Max)
+				    <<FairLogger::endl;
 			     
 			     if (Chi2Match < Chi2Max) {
-
-			       fhChiSel24->Fill(Chi2Match);
-			       fhDXSel24->Fill(xPos3-xPos2);
-			       fhDYSel24->Fill(yPos3-yPos2);
-			       fhDTSel24->Fill(tof3-tof2-dTcor-fdSel2TOff);
-			       fhTofSel24->Fill(tof3-tof2-fdSel2TOff);
-
+			       xPos3B=xPos3;
+			       yPos3B=yPos3;
+			       tof3B=tof3;
 			       Chi2Max = Chi2Match;
 			       BSel[0] = kTRUE;
 			       pHitSel2= pHit3;
@@ -1684,7 +1702,16 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 			   }
 			 }
 		       }
-		     } // loop over third hit 
+		     }
+		     } // loop over third hit end
+		 
+		     if(BSel[0]){
+			       fhChiSel24->Fill(Chi2Max);
+			       fhDXSel24->Fill(xPos3B-xPos2);
+			       fhDYSel24->Fill(yPos3B-yPos2);
+			       fhDTSel24->Fill(tof3B-tof2-dTcor-fdSel2TOff);
+			       fhTofSel24->Fill(tof3B-tof2-fdSel2TOff);
+		     }
 		   }		   
 		 }		  
 	       }
