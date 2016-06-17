@@ -40,7 +40,7 @@ public:
 
   void AddPairAnalysis(PairAnalysis * const papa)  { fListPairAnalysis.Add((TObject*)papa); } //why cast to tobject????????
   void SetBeamEnergy(Double_t beamEbyHand=-1.)     { fBeamEnergy=beamEbyHand;
-    Warning("SetBeamEnergy","This function is only kept for backward compatibility!!! Value will be overwritten, when parameter is availbale (<JUN16 release).");
+    Warning("SetBeamEnergy","This function is only kept for backward compatibility!!! Value will be overwritten, when parameter is availbale (>JUN16 release).");
   } // TODO: this should become obsolete in NOV16
 
 protected:
