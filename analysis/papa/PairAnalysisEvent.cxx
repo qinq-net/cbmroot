@@ -226,19 +226,19 @@ void PairAnalysisEvent::Init()
 
     // track and TOFhit matches
     CbmTrackMatchNew *stsMatch = 0x0;
-    if(stsTrack) stsMatch = static_cast<CbmTrackMatchNew*>( fStsMatches->At(ists) );
+    if(fStsMatches && stsTrack) stsMatch = static_cast<CbmTrackMatchNew*>( fStsMatches->At(ists) );
     Int_t istsMC = (stsMatch && stsMatch->GetNofHits()>0 ? stsMatch->GetMatchedLink().GetIndex() : -1 );
     CbmTrackMatchNew *muchMatch = 0x0;
-    if(muchTrack) muchMatch = static_cast<CbmTrackMatchNew*>( fMuchMatches->At(imuch) );
+    if(fMuchMatches && muchTrack) muchMatch = static_cast<CbmTrackMatchNew*>( fMuchMatches->At(imuch) );
     Int_t imuchMC = (muchMatch && muchMatch->GetNofHits()>0 ? muchMatch->GetMatchedLink().GetIndex() : -1 );
     CbmTrackMatchNew *trdMatch = 0x0;
-    if(trdTrack) trdMatch = static_cast<CbmTrackMatchNew*>( fTrdMatches->At(itrd) );
+    if(fTrdMatches && trdTrack) trdMatch = static_cast<CbmTrackMatchNew*>( fTrdMatches->At(itrd) );
     Int_t itrdMC = (trdMatch ? trdMatch->GetMatchedLink().GetIndex() : -1 );
     CbmTrackMatchNew *richMatch = 0x0;
-    if(richRing) richMatch = static_cast<CbmTrackMatchNew*>( fRichMatches->At(irich) );
+    if(fRichMatches && richRing) richMatch = static_cast<CbmTrackMatchNew*>( fRichMatches->At(irich) );
     Int_t irichMC = (richMatch && richMatch->GetNofHits()>0 ? richMatch->GetMatchedLink().GetIndex() : -1 );
     CbmMatch *tofMatch = 0x0;
-    if(tofHit)     tofMatch = static_cast<CbmMatch*>( fTofHitMatches->At(itof) );     //tofMatch = tofHit->GetMatch();
+    if(fTofHitMatches && tofHit)  tofMatch = static_cast<CbmMatch*>( fTofHitMatches->At(itof) );     //tofMatch = tofHit->GetMatch();
     FairMCPoint *tofPoint = 0x0;
     if(tofMatch && tofMatch->GetNofLinks()>0) tofPoint = static_cast<FairMCPoint*>( fTofPoints->At(tofMatch->GetMatchedLink().GetIndex()) );
     Int_t itofMC = (tofPoint ? tofPoint->GetTrackID() : -1 );
