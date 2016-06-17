@@ -80,6 +80,7 @@ public:
     kMKA,                    // pdg mass of kaons
     kMPR,                    // pdg mass of protons
     kMPair,                  // pdg mass of pair
+    kEbeam,                  // beam energy
     kConstMax,
 // Hit specific variables
     kPosX=kConstMax,         // X position [cm]
@@ -260,7 +261,6 @@ public:
     kNevents,                // event counter
     kRunNumber,              // run number
     kYbeam,                  // beam rapdity
-    kEbeam,                  // beam energy
     kMixingBin,              // event mixing pool number
     kTotalTRDHits,           // size of trd hit array
     kNMaxValues,              //
@@ -496,7 +496,7 @@ inline void PairAnalysisVarManager::ResetArrayData(Int_t to, Double_t * const va
   if (to >= kNMaxValues) return;
   // Reset
   for (Int_t i=kConstMax; i<to; ++i) {
-    if(i!=kEbeam)  values[i] = 0.;
+    values[i] = 0.;
   }
   // reset values different from zero
   if(to>=kTrackMax && to>kParticleMax) {
@@ -1425,6 +1425,7 @@ inline void PairAnalysisVarManager::FillVarConstants(Double_t * const values)
   values[kMKA]          = TDatabasePDG::Instance()->GetParticle(kKA)->Mass();
   values[kMPR]          = TDatabasePDG::Instance()->GetParticle(kPR)->Mass();
   values[kMPair]        = fgData[kMPair]; /// automaticaly filled in PairAnalysis::Process using PairAnalysis::fPdgMother
+  values[kEbeam]        = fgData[kEbeam]; /// automaticaly filled in AnalysisTaskMultiPairAnalysis::Init
 }
 
 inline void PairAnalysisVarManager::SetEvent(PairAnalysisEvent * const ev)

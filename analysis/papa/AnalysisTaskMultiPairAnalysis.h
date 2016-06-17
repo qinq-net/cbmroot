@@ -39,7 +39,6 @@ public:
   void SetEventFilter(AnalysisCuts * const filter) {fEventFilter=filter;}
 
   void AddPairAnalysis(PairAnalysis * const papa) { fListPairAnalysis.Add((TObject*)papa); } //why cast to tobject????????
-  void SetBeamEnergy(Double_t beamEbyHand=-1.)   { fBeamEnergy=beamEbyHand;  }
 
 protected:
 
@@ -49,8 +48,6 @@ protected:
   TList fListHistos;                          //! List of histogram manager lists in the framework classes
 
   CbmRichElectronIdAnn *fgRichElIdAnn = NULL; // neural network for Rich electron ID
-  Double_t fBeamEnergy  = 0.;                 // beam energy in GeV (set by hand)
-
   AnalysisCuts      *fEventFilter = NULL;     // event filter
   PairAnalysisEvent *fInputEvent  = NULL;     //! event handler
   Int_t fEventsTotal    = 0;                  // total number of processed events
@@ -62,6 +59,6 @@ protected:
   AnalysisTaskMultiPairAnalysis(const AnalysisTaskMultiPairAnalysis &c);
   AnalysisTaskMultiPairAnalysis& operator= (const AnalysisTaskMultiPairAnalysis &c);
 
-  ClassDef(AnalysisTaskMultiPairAnalysis, 4); //Analysis Task handling multiple instances of PairAnalysis
+  ClassDef(AnalysisTaskMultiPairAnalysis, 5); //Analysis Task handling multiple instances of PairAnalysis
 };
 #endif

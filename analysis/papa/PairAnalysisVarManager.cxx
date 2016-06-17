@@ -42,6 +42,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"MKA",                    "m_{K}",                                              "(GeV/#it{c}^{2})"},
   {"MPR",                    "m_{p}",                                              "(GeV/#it{c}^{2})"},
   {"MPair",                  "m_{pair}",                                           "(GeV/#it{c}^{2})"},
+  {"Ebeam",                  "#it{E}_{beam}",                                      "(#it{A}GeV)"},
 // Hit specific variables
   {"PosX",                   "x_{hit}",                                            "(cm)"},
   {"PosY",                   "y_{hit}",                                            "(cm)"},
@@ -213,7 +214,6 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"Nevents",                "N_{evt}",                                            ""},
   {"RunNumber",              "run",                                                ""},
   {"Ybeam",                  "#it{y}_{beam}",                                      ""},
-  {"Ebeam",                  "#sqrt{s}",                                           "(#it{A}GeV)"},
   {"MixingBin",              "mixing bin",                                         ""},
   {"TotalTRDHits",           "N_{tot.hit}^{TRD}",                                  ""},
 
