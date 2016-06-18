@@ -17,7 +17,7 @@ Bool_t reconstruct()
 	FairRun* run = FairRun::Instance();
 	if ( ! run ) {
 		std::cerr << "-E- digitize: No run instance!" << std::endl;
-		return;
+		return kFALSE;
 	}
 	std::cout << std::endl;
 	std::cout << "-I- Macro reconstruct.C called for run " << run->GetName()
