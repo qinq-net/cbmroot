@@ -168,10 +168,11 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
         "Vc/global.h"
 
         # -- warnings from fles subdirector
-        "fles/ipc"
+        "external/ipc"
+        "external/ipc_legacy"
         "fles/ctrl"
-        "fles/flib_dpb"
-        "fles/spadic"
+        "external/flib_dpb"
+        "external/spadic"
         "fles/tsclient"
         "fles/softdpb"
         "fles/reader.*old-style cast"
