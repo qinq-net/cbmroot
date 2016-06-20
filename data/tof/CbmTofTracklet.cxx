@@ -159,15 +159,21 @@ Double_t CbmTofTracklet::GetZ0y(){
 }
 
 Double_t CbmTofTracklet::GetTex(CbmTofHit* pHit){
+  /*
   Double_t dR2=0.;
   dR2 += TMath::Power(fTrackPar.GetX()-pHit->GetX(),2);
   dR2 += TMath::Power(fTrackPar.GetY()-pHit->GetY(),2);
   dR2 += TMath::Power(fTrackPar.GetZ()-pHit->GetZ(),2);
   Double_t dR = TMath::Sqrt(dR2);
+  */
+  Double_t dR = pHit->GetR();
+  LOG(DEBUG) <<Form(" CbmTofTracklet::GetTex T0 %7.1f dR %7.1f, Tt %7.1f => Tex %7.1f ",
+		    fT0,dR,fTt,fT0 + dR*fTt)
+	     << FairLogger::endl;
   return   fT0 + dR*fTt;
 }
 
-Double_t CbmTofTracklet::UpdateT0(){ //returns estimated time at R==0
+Double_t CbmTofTracklet::UpdateT0(){ //returns estimated time at R=0
   Double_t dT0=0.;
   Int_t    nValidHits=0.;
   Int_t    iHit0=-1;
@@ -183,7 +189,9 @@ Double_t CbmTofTracklet::UpdateT0(){ //returns estimated time at R==0
   dT0 /= nValidHits;
   fT0=dT0;
   */
+  //
   // follow tutorial solveLinear.C to solve the linear equation t=t0+tt*R
+  //
   Double_t aR[fTofHit.size()];
   Double_t at[fTofHit.size()];
   Double_t ae[fTofHit.size()];
@@ -217,14 +225,16 @@ Double_t CbmTofTracklet::UpdateT0(){ //returns estimated time at R==0
   Bool_t ok;
   const TVectorD c_svd = svd.Solve(yw,ok);
 
-  //  c_svd.Print();
+  // c_svd.Print();
+
   fT0=c_svd[0];
   fTt=c_svd[1];
 
   if (iHit0>-1) fpHit[iHit0].SetTime(fT0);
-
-  //cout << Form("   -D- CbmTofTracklet::UpdateT0: Trkl size %u,  validHits %d, Tt = %6.2f T0 = %6.2f",
-  //             (UInt_t)fTofHit.size(),nValidHits,fTt,fT0)<<endl;  
+  /*
+  cout << Form("-D- CbmTofTracklet::UpdateT0: Trkl size %u,  validHits %d, Tt = %6.2f T0 = %6.2f",
+              (UInt_t)fTofHit.size(),nValidHits,fTt,fT0)<<endl;  
+  */
   return fT0;
 }
 
