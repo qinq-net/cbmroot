@@ -10,11 +10,18 @@
 
 #ifndef __CINT__
   #include "Timeslice.hpp"
+  #include "rocMess_wGet4v1.h"
 #endif
 
 #include "CbmTSUnpack.h"
+#include "CbmHistManager.h"
+#include "CbmNxyterRawMessage.h"
+#include "CbmFiberHodoDigi.h"
 
 #include "TClonesArray.h"
+
+#include <vector>
+#include <map>
 
 class CbmTSUnpackTest : public CbmTSUnpack
 {
@@ -29,9 +36,35 @@ public:
 #endif
   virtual void Reset();
 
-  virtual void Finish() {;}
+  virtual void Finish();
 
 private:
+
+  std::vector<int> fMsgCounter;
+
+  std::map<int,int> fHodoStationMap;
+  
+  Int_t fHodoFiber[128];  /** Mapping from fiber hodoscope feb channel to fiber number **/
+  Int_t fHodoPlane[128];  /** Mapping from fiber hodoscope feb channel to plane number 1=X, 2=Y **/
+  Int_t fHodoPixel[128];  /** Mapping from fiber hodoscope feb channel to pixel number **/
+
+  CbmHistManager* fHM;  ///< Histogram manager
+
+  Int_t fCurrEpoch; // Current epoch (first epoch in the stream initialises the 
+
+  TClonesArray* fFiberHodoRaw;
+  TClonesArray* fFiberHodoDigi;
+  CbmNxyterRawMessage* fRawMessage;  
+  CbmFiberHodoDigi* fDigi;  
+
+  void InitializeFiberHodoMapping();
+
+  void CreateHistograms();
+
+#ifndef __CINT__
+  void FillHitInfo(ngdpb::Message);
+  void FillEpochInfo(ngdpb::Message);
+#endif
 
   CbmTSUnpackTest(const CbmTSUnpackTest&);
   CbmTSUnpackTest operator=(const CbmTSUnpackTest&);
