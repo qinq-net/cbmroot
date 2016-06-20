@@ -65,7 +65,7 @@ Set(SRCS
   CbmDaqBuffer.cxx
   CbmFiberHodoMapping.cxx
 
-  unpacker/CbmTSUnpack.cxx
+#  unpacker/CbmTSUnpack.cxx
   unpacker/CbmTSUnpackSpadic.cxx
   unpacker/CbmTSUnpackSpadicLegacy.cxx
   unpacker/CbmTSUnpackNxyter.cxx

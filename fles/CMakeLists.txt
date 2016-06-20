@@ -8,3 +8,6 @@ If(NOT APPLE)
 #  Add_Subdirectory(scv3)
 EndIf()
 Add_Subdirectory(reader)
+
+
+Add_Subdirectory(test)
