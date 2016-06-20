@@ -66,7 +66,7 @@ CbmD0Candidate::CbmD0Candidate(Int_t signal,
 		   Int_t Pid2, Double_t p2, Double_t pt2, Double_t PV2, Double_t IP2, Double_t imx2, Double_t imy2, Int_t nMvdHits2, Int_t nStsHits2,
 		   Double_t SvChi,  Double_t SvZ,  Double_t IPD0, Double_t IM,     Double_t cos12, Double_t IPAngle,
 		   Double_t SvXErr, Double_t SvYErr, Double_t SvZErr, Double_t ptD0, Double_t pzD0, Double_t SvChiT, Double_t SvZT,  Double_t ptt,
-			       Double_t alpha,  Double_t PvZ,  Double_t cosA, Double_t rapidity)
+			       Double_t alpha,  Double_t PvZ,  Double_t cosA, Double_t rapidity, Int_t trackCand1, Int_t trackCand2)
     :TObject(),
      fSignal(),
      fPid1(),
@@ -149,6 +149,9 @@ CbmD0Candidate::CbmD0Candidate(Int_t signal,
     fPvZ     = PvZ;
     fCosA    = cosA;
     fRapidity= rapidity;
+
+    ftrack1 = trackCand1;
+    ftrack2 = trackCand2;
    
 }
 // -------------------------------------------------------------------------

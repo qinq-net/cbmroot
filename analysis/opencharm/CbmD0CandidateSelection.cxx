@@ -187,7 +187,7 @@ for( Int_t itr1=0; itr1<nKaonTracks; itr1++)
    for( Int_t itr2=0; itr2<nPionTracks; itr2++)
       {
 	  KFParticle pion = *((KFParticle*)fPionParticleArray->At(itr2));
-	  CbmD0TrackCandidate pionTrack = *((CbmD0TrackCandidate*)fPionTrackArray->At(itr1));
+	  CbmD0TrackCandidate pionTrack = *((CbmD0TrackCandidate*)fPionTrackArray->At(itr2));
 
       if(bTestMode)
         {
@@ -222,7 +222,7 @@ for( Int_t itr1=0; itr1<nKaonTracks; itr1++)
 					       211, pion.GetP(), pion.GetPt(), 0.0, pionTrack.GetIP(), pionTrack.GetImx(), pionTrack.GetImy(), pionTrack.GetNMvdHits(), pionTrack.GetNStsHits(),
 					       0.0, SvZ, IPD0, d0.GetMass(), 0.0, 0.0,
 					       0.0, 0.0, 0.0, d0.GetPt(), d0.GetPz(), 0.0, 0.0, 0.0,
-                                               0.0, fPrimVtx->GetZ(), 0.0, d0.GetRapidity() );
+                                               0.0, fPrimVtx->GetZ(), 0.0, d0.GetRapidity(), itr1, itr2 );
         
       }// second for loop
 
