@@ -4,13 +4,13 @@
 # format written by the FLIB
 
 Set(INCLUDE_DIRECTORIES
-  ${CBMROOT_SOURCE_DIR}/external/ipc/ipc
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
   ${Boost_INCLUDE_DIR}
   ${ZMQ_INCLUDE_DIR}
   ${CMAKE_SOURCE_DIR}/external/cppzmq
+  ${CMAKE_SOURCE_DIR}/external/ipc/ipc
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})

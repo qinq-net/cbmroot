@@ -5,7 +5,6 @@
 
 Set(INCLUDE_DIRECTORIES
   ${CMAKE_CURRENT_SOURCE_DIR}
-  ${CBMROOT_SOURCE_DIR}/external/ipc_legacy/ipc/src
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})
@@ -13,6 +12,7 @@ Include_Directories( ${INCLUDE_DIRECTORIES})
 Include_Directories(SYSTEM 
   ${Boost_INCLUDE_DIR}  
 #  ${ZMQ_INCLUDE_DIR}
+  ${CBMROOT_SOURCE_DIR}/external/ipc_legacy/ipc/src
 )
 
 Set(LINK_DIRECTORIES

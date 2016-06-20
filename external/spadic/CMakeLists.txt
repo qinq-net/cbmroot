@@ -5,11 +5,11 @@
 Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/external/spadic/spadic/message
   ${CBMROOT_SOURCE_DIR}/external/spadic/spadic/message/wrap/cpp
-  ${CBMROOT_SOURCE_DIR}/external/flib_dpb/flib_dpb
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
   ${Boost_INCLUDE_DIR}
+  ${CBMROOT_SOURCE_DIR}/external/flib_dpb/flib_dpb
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})
@@ -21,13 +21,18 @@ ${Boost_LIBRARY_DIRS}
  
 Link_Directories( ${LINK_DIRECTORIES})
 
-Set(SRCS
+Set(C_SRCS
 spadic/message/message.c
 spadic/message/message_reader.c
+)
+
+Set(CXX_SRCS
 spadic/message/wrap/cpp/Message.cpp
 )
 
-Set_Source_Files_Properties(${SRCS} COMPILE_FLAGS "-Wall -pedantic -Wextra -Winit-self -Wundef -Wold-style-cast -Woverloaded-virtual -Wwrite-strings -Wnon-virtual-dtor")
+Set_Source_Files_Properties(${CXX_SRCS} COMPILE_FLAGS "-Wall -pedantic -Wextra -Winit-self -Wundef -Wold-style-cast -Woverloaded-virtual -Wwrite-strings -Wnon-virtual-dtor")
+
+Set(SRCS ${C_SRCS} ${CXX_SRCS})
 
 Set(LIBRARY_NAME spadicMessage)
 Set(DEPENDENCIES)
