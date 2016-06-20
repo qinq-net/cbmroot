@@ -170,17 +170,17 @@ Int_t CbmTofTrackFinderNN::DoFind(
   Int_t iNTrks=0;
   Int_t iSt0=-1;
   Int_t iSt1=0;
-  while(iSt0 < fFindTracks->GetNofStations()-1){        // seed loop, all combinations as seeds 
+  while(iSt0 < fFindTracks->GetNofStations()-2){        // seed loop, all combinations as seeds 
    iSt0++; iSt1=iSt0;
-   while(iSt1 < fFindTracks->GetNofStations()){
+   while(iSt1 < fFindTracks->GetNofStations()-1){
     iSt1++;
     for (Int_t iHit=0; iHit<fHits->GetEntries(); iHit++) { // loop over Hits 
      CbmTofHit* pHit = (CbmTofHit*) fHits->At( iHit );
-     Int_t iSmType = CbmTofAddress::GetSmType( pHit->GetAddress() & DetMask );
-     if(HitUsed(iHit)==1 && iSmType!=fFindTracks->GetBeamCounter() && iSmType!=0) continue; // skip used Hits
-     Int_t iAddr = (pHit->GetAddress() & DetMask );
-     LOG(DEBUG1) << Form("<I> TofTracklet Chkseed St0 %2d, St1 %2d, Mul %2d, Hit %2d, addr = 0x%08x - X %6.2f, Y %6.2f Z %6.2f T %6.2f TM %lu",
-		       iSt0,iSt1,fiNtrks,iHit,pHit->GetAddress(),pHit->GetX(),pHit->GetY(),pHit->GetZ(),pHit->GetTime(), fvTrkVec[iHit].size() )
+     Int_t iAddr   = (pHit->GetAddress() & DetMask );
+     Int_t iSmType = CbmTofAddress::GetSmType( iAddr );
+     if(HitUsed(iHit)==1 && iAddr==fFindTracks->GetBeamCounter()) continue; // skip used Hits except for BeamCounter
+     LOG(DEBUG1) << Form("<I> TofTracklet Chkseed St0 %2d, St1 %2d, Mul %2d, Hit %2d, addr = 0x%08x - X %6.2f, Y %6.2f Z %6.2f R %6.2f T %6.2f TM %lu",
+			 iSt0,iSt1,fiNtrks,iHit,pHit->GetAddress(),pHit->GetX(),pHit->GetY(),pHit->GetZ(),pHit->GetR(),pHit->GetTime(), fvTrkVec[iHit].size() )
  	         <<FairLogger::endl; 
      if (iAddr == fFindTracks->GetAddrOfStation(iSt0)) {  // generate new track seed
      LOG(DEBUG) << Form("<I> TofTracklet seed St0 %2d, St1 %2d, Mul %2d, Hit %2d, addr = 0x%08x - X %6.2f, Y %6.2f Z %6.2f T %6.2f TM %lu",
@@ -526,8 +526,8 @@ Int_t CbmTofTrackFinderNN::DoFind(
   fiNtrks=0;
   for(Int_t iTr=0; iTr<fTracks.size(); iTr++){
     if(fTracks[iTr]==NULL) continue;
-    if(fTracks[iTr]->GetNofHits() < 3) continue;  // request minimum number of hits (3) 
-    if(fTracks[iTr]->GetChiSq() > fChiMaxAccept) continue;  // request minimum number of hits (3) 
+    if(fTracks[iTr]->GetNofHits() < 3) continue;            // request minimum number of hits (3) 
+    if(fTracks[iTr]->GetChiSq() > fChiMaxAccept) continue;  // request minimum ChiSq (3) 
     CbmTofTracklet* pTrk = new((*fTofTracks)[fiNtrks++]) CbmTofTracklet (*fTracks[iTr]);
   }
   PrintStatus((char*)"<D> Final result");
@@ -655,10 +655,11 @@ void  CbmTofTrackFinderNN::UpdateTrackList( Int_t iTrk)
        Int_t iHitInd = pTrk->GetHitIndex(iHit);   // Hit index in fHits
        //Int_t NTrks=fvTrkMap[iHitInd].size();    // Number of tracks containing this hit
        Int_t NTrks=fvTrkVec[iHitInd].size();      // Number of tracks containing this hit
-       Int_t iSmType = CbmTofAddress::GetSmType( pTrk->GetTofHitPointer(iHit)->GetAddress() & DetMask );
+       Int_t iAddr   = ( pTrk->GetTofHitPointer(iHit)->GetAddress() & DetMask );
+       if(iAddr == fFindTracks->GetBeamCounter()) continue;  // keep all tracklets from common beam reference counter
 
+       Int_t iSmType = CbmTofAddress::GetSmType( iAddr );
        if(iSmType==0) continue;                              // keep all tracklets with common target faked hit
-       if(iSmType==fFindTracks->GetBeamCounter()) continue;  // keep all tracklets from common beam reference counter
 
        if(NTrks == 0) LOG(FATAL)<<"CbmTofTrackFinderNN::UpdateTrackList NTrks=0 for iTrk "
 			        <<iTrk<<", iHit "<<iHit<<FairLogger::endl;
@@ -683,13 +684,13 @@ void  CbmTofTrackFinderNN::UpdateTrackList( Int_t iTrk)
 	     Int_t iHi = (*iT)->GetTofHitIndex(iH);
 	     LOG(DEBUG2) << " <D3>  process Hit "<<iH<<" at index "<<iHi
 		         << FairLogger::endl;
-	     Int_t iSmTi = CbmTofAddress::GetSmType( (*iT)->GetTofHitPointer(iH)->GetAddress() & DetMask );	     
+	     Int_t iAddri = ( (*iT)->GetTofHitPointer(iH)->GetAddress() & DetMask );	     
 	     LOG(DEBUG2) <<"   --- iHitInd "<<iHitInd<<"("<<fvTrkVec.size()<<"), size "<<fvTrkVec[iHitInd].size()
 			 <<" - iH "
 			 <<iH<<"("<<(*iT)->GetNofHits()<<"), iHi "<<iHi<<" Hi vec size "<<fvTrkVec[iHi].size()
 			 <<Form(" poi %p, iTpoi %p, SmAddr 0x%08x ", pTrk, *iT, (*iT)->GetTofHitPointer(iH)->GetAddress())
 			 << FairLogger::endl;
-	     if(iSmTi==fFindTracks->GetBeamCounter()) continue; 
+	     if(iAddri==fFindTracks->GetBeamCounter()) continue; 
 
 	     if(fvTrkVec[iHi].size()==0) {
 	       LOG(FATAL)<<"CbmTofTrackFinderNN::UpdateTrackList no track "
@@ -812,6 +813,7 @@ void CbmTofTrackFinderNN::PrintStatus(char* cComment)
     for(Int_t ih=0; ih<pTrk->GetNofHits();ih++){
 	LOG(DEBUG)<<Form(" %3d ",pTrk->GetHitIndex(ih));
     }
+    LOG(DEBUG)<<Form(", ChiSq %7.1f ",pTrk->GetChiSq());
     LOG(DEBUG)<< FairLogger::endl;
   }
 

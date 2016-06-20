@@ -97,8 +97,9 @@ class CbmTofFindTracks : public FairTask
   inline Int_t GetMinNofHits() const   { return fMinNofHits+1;}
   inline Int_t GetNStations() const    { return fNTofStations;}
 
-  void SetStations (Int_t ival);
-  void SetStation  (Int_t iVal, Int_t iModType, Int_t iModId, Int_t iRpcId);
+  void SetStations    (Int_t ival);
+  void SetStation     (Int_t iVal, Int_t iModType, Int_t iModId, Int_t iRpcId);
+  void SetBeamCounter (Int_t iModType, Int_t iModId, Int_t iRpcId);
   void PrintSetup();
 
   inline Int_t GetAddrOfStation(Int_t iVal) {return fMapStationRpcId[iVal]; } 
@@ -128,7 +129,6 @@ class CbmTofFindTracks : public FairTask
   inline void SetSIGZ     (Double_t dval){ fSIGZ = dval;}
 
   inline void SetCorMode       (Int_t ival){ fiCorMode     = ival;}
-  inline void SetBeamCounter   (Int_t ival){ fiBeamCounter = ival;}
   inline void SetCalParFileName(TString CalParFileName) { fCalParFileName = CalParFileName; }
   inline void SetTtTarg(Double_t val){ fTtTarg=val; }
   inline void SetT0MAX(Double_t val){ fT0MAX=val; }

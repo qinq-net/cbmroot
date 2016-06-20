@@ -1445,6 +1445,11 @@ void CbmTofFindTracks::SetStation (Int_t iVal, Int_t iModType, Int_t iModId, Int
   fMapStationRpcId[iVal]=iAddr;
 }
 
+void CbmTofFindTracks::SetBeamCounter (Int_t iModType, Int_t iModId, Int_t iRpcId)
+{
+  fiBeamCounter = CbmTofAddress::GetUniqueAddress(iModId,iRpcId,0,0,iModType);
+}
+
 Int_t CbmTofFindTracks::GetStationOfAddr(Int_t iAddr){
   std::map <Int_t, Int_t>::iterator it;
   for(it = fMapStationRpcId.begin(); it != fMapStationRpcId.end(); it++)  
