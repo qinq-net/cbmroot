@@ -37,6 +37,7 @@ void global_reco(Int_t nEvents = 10, // number of events
   TString muchDigiFile = parDir + "/much/much_v13f.digi.root"; // MUCH digi file
   TString stsMatBudgetFile = parDir + "/sts/sts_matbudget_v13y.root";
   TObjString tofDigiFile(parDir + "/tof/tof_v13b.digi.par");// TOF digi file
+  TObjString tofDigiBdfFile(parDir + "/tof/tof_v13b.digi.par");// TOF digi file
 
   // Reconstruction parameters
   TString globalTrackingType = "nn"; // Global tracking type
@@ -60,6 +61,7 @@ void global_reco(Int_t nEvents = 10, // number of events
     trdDigiFile = TObjString(gSystem->Getenv("LIT_TRD_DIGI"));
     muchDigiFile = TString(gSystem->Getenv("LIT_MUCH_DIGI"));
     tofDigiFile = TObjString(gSystem->Getenv("LIT_TOF_DIGI"));
+    tofDigiBdfFile = TObjString(gSystem->Getenv("LIT_TOF_DIGI_BDF"));
     stsMatBudgetFile = TString(gSystem->Getenv("LIT_STS_MAT_BUDGET_FILE"));
   }
 
@@ -251,10 +253,18 @@ void global_reco(Int_t nEvents = 10, // number of events
     
     if (IsTof(parFile)) {
       parFileList->Add(&tofDigiFile);
+      parFileList->Add(&tofDigiBdfFile);
       // ------ TOF hits --------------------------------------------------------
-      CbmTofHitProducerNew* tofHitProd = new CbmTofHitProducerNew("TOF HitProducerNew",iVerbose);
-      tofHitProd->SetInitFromAscii(kFALSE);
-      run->AddTask(tofHitProd);
+      Int_t iVerbose = 0;
+      Bool_t bSaveTofDigisInOut = kFALSE;
+      CbmTofDigitizerBDF* tofDigi = new CbmTofDigitizerBDF("TOF Digitizer BDF",iVerbose, bSaveTofDigisInOut);
+      TString paramDir = gSystem->Getenv("VMCWORKDIR");
+      tofDigi->SetInputFileName( paramDir + "/parameters/tof/test_bdf_input.root"); // Required as input file name not read anymore by param class
+      run->AddTask(tofDigi);
+
+      CbmTofSimpClusterizer* tofCluster
+             = new CbmTofSimpClusterizer("TOF Simple Clusterizer", 0, kTRUE);
+      run->AddTask(tofCluster);
       // ------------------------------------------------------------------------
     }
   }
