@@ -41,7 +41,12 @@ CbmEvBuildSource::CbmEvBuildSource(const char* fname)
 }
 
 CbmEvBuildSource::CbmEvBuildSource(const CbmEvBuildSource& source)
-  : FairSource(source), fCh(NULL), fN(-1111), fI(-1111)
+  : FairSource(source), fCh(NULL), fN(-1111), fI(-1111), fSTSDigi(NULL), fNSTSDigis(-1111),
+    fSlice(NULL), fISts(0), fEv(0), fNDigis(0),
+    fSN(-1111), fST(-1111),
+    fWindDur(2), fMinusDeltaT(2), fPlusDeltaT(5), fDeadT(10),
+    fMinHitStations(8), fMinDigis(2000),
+    fEvHeader(NULL)
 {
   ;
 }

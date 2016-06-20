@@ -41,10 +41,24 @@ using boost::assign::list_of;
 CbmRichSmallPrototypeQa::CbmRichSmallPrototypeQa()
 : FairTask("CbmRichSmallPrototypeQa"),
 fHM(NULL),
+fEventNum(0),
 fOutputDir(""),
+fMCTracks(NULL),
+fSTSPoints(NULL),
+fSTSDigis(NULL),
+fSTSHits(NULL),
+fSTSTrack(NULL),
+fRichPoints(NULL),
+fRichDigis(NULL),
 fRichHits(NULL),
-fCanvas(),
-fEventNum(0)
+fRichRings(NULL),
+fTRDPoints(NULL),
+fTRDHits(NULL),
+fTRDTrack(NULL),
+fToFPoints(NULL),
+fToFHits(NULL),
+fToFTrack(NULL),
+fCanvas()
 //fMinNofHits(7),
 //fNofHitsInRingMap()
 {

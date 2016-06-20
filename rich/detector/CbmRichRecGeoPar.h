@@ -90,6 +90,7 @@ public:
     :fPmt(),
     fGeometryType(CbmRichGeometryTypeNotDefined),
     fPmtMap(),
+    fPmtStripGap(0.),
     fNRefrac(0.),
     fMirrorX(0.),
     fMirrorY(0.),

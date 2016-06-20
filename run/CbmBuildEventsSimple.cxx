@@ -18,7 +18,7 @@ using namespace std;
 
 CbmBuildEventsSimple::CbmBuildEventsSimple()
   : FairTask(), fSlice(NULL), fSTSDigi(NULL),
-    fNSTSDigis(0), fEv(0), fSliceN(0),
+    fNSTSDigis(0), fEv(0), fSliceN(0), fNDigis(0),
     fSN(-1111), fST(-1111),
     fWindDur(2), fMinusDeltaT(2), fPlusDeltaT(5), fDeadT(10),
     fMinHitStations(8), fMinDigis(5000)
@@ -27,7 +27,7 @@ CbmBuildEventsSimple::CbmBuildEventsSimple()
 
 CbmBuildEventsSimple::CbmBuildEventsSimple(const char* name, Int_t iVerbose)
   : FairTask(name, iVerbose), fSlice(NULL), fSTSDigi(NULL),
-    fNSTSDigis(0), fEv(0), fSliceN(0),
+    fNSTSDigis(0), fEv(0), fSliceN(0), fNDigis(0),
     fSN(-1111), fST(-1111),
     fWindDur(2), fMinusDeltaT(2), fPlusDeltaT(5), fDeadT(10),
     fMinHitStations(8), fMinDigis(5000)

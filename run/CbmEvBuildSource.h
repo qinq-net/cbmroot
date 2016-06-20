@@ -51,6 +51,8 @@ public:
   CbmEvBuildSource(const CbmEvBuildSource& source);
   void FillEvent(Int_t st, Int_t end);	//Fill output TClonesArray
   Int_t GetNextTimeSlice();		//Load next time slice from disk
+
+private:
   TChain* fCh;			//!Chain of input files
   Int_t fN;			//Number of entries in input tree
   Int_t fI;			//Current entry in tree
@@ -71,6 +73,8 @@ public:
   Int_t fMinHitStations;// Minimum number of hit STS stations for event formation
   Int_t fMinDigis;	// Minimum number of digis in time window for event formation
   FairEventHeader* fEvHeader; //! Event header 
+
+  CbmEvBuildSource& operator=(const CbmEvBuildSource&);
 
   ClassDef(CbmEvBuildSource, 1)
 };
