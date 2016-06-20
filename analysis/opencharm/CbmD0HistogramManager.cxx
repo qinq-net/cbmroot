@@ -30,6 +30,7 @@
 
 // Includes from Root
 #include "TClonesArray.h"
+
 #include "TMatrixFSym.h"
 
 #include <stdio.h>
@@ -39,8 +40,6 @@ using namespace std;
 // -------------------------------------------------------------------------
 CbmD0HistogramManager::CbmD0HistogramManager()
     :FairTask("default"),
-     kalman(),
-     l1(),
      ioman(),
      fcutPT(),
      fcutSvZ(),
@@ -52,19 +51,6 @@ CbmD0HistogramManager::CbmD0HistogramManager()
      fnrTrackEvents(),
      fnrSingelEvents(),
      fwriteOutFile(),
-     fMCFile(NULL),
-     fRecoFile(NULL),
-     fPairFile(NULL),
-     fTrackFile(NULL),
-     fmcTrackBranch(NULL),
-     fmvdPointBranch(NULL),
-     fStsPointBranch(NULL),
-     fpairBranch(NULL),
-     fKaonBranch(NULL),
-     fPionBranch(NULL),
-     fRecoBranch(NULL),
-     fRecoVtxBranch(NULL),
-     fTrackMatchBranch(NULL),
      fListTrackMatch(),
      fListMCTracks(),
      fListMCPointsMvd(),
@@ -128,8 +114,6 @@ CbmD0HistogramManager::CbmD0HistogramManager()
 CbmD0HistogramManager::CbmD0HistogramManager(TString name,Float_t PTCut,
 					     Float_t SvZCut, Float_t PZCut)
     :FairTask(name),
-     kalman(),
-     l1(),
      ioman(),
      fcutPT(),
      fcutSvZ(),
@@ -141,19 +125,6 @@ CbmD0HistogramManager::CbmD0HistogramManager(TString name,Float_t PTCut,
      fnrTrackEvents(),
      fnrSingelEvents(),
      fwriteOutFile(),
-     fMCFile(NULL),
-     fRecoFile(NULL),
-     fPairFile(NULL),
-     fTrackFile(NULL),
-     fmcTrackBranch(NULL),
-     fmvdPointBranch(NULL),
-     fStsPointBranch(NULL),
-     fpairBranch(NULL),
-     fKaonBranch(NULL),
-     fPionBranch(NULL),
-     fRecoBranch(NULL),
-     fRecoVtxBranch(NULL),
-     fTrackMatchBranch(NULL),
      fListTrackMatch(),
      fListMCTracks(),
      fListMCPointsMvd(),
