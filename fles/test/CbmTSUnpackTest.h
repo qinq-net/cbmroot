@@ -50,7 +50,11 @@ private:
 
   CbmHistManager* fHM;  ///< Histogram manager
 
-  Int_t fCurrEpoch; // Current epoch (first epoch in the stream initialises the 
+  std::map<Int_t, UInt_t> fCurrentEpoch; // Current epoch (first epoch in the stream initialises the 
+  Int_t fNofEpochs; /** Current epoch marker for each ROC **/
+  ULong_t fCurrentEpochTime;     /** Time stamp of current epoch **/
+
+  Int_t fEquipmentId;
 
   TClonesArray* fFiberHodoRaw;
   TClonesArray* fFiberHodoDigi;

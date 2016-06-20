@@ -18,6 +18,7 @@
 
 #include <iostream>
 #include <stdint.h>
+#include <iomanip>
 
 CbmTSUnpackTest::CbmTSUnpackTest()
   : CbmTSUnpack(),
@@ -26,7 +27,10 @@ CbmTSUnpackTest::CbmTSUnpackTest()
     fHodoPlane(),
     fHodoFiber(),
     fHM(new CbmHistManager()),
-    fCurrEpoch(0),
+    fCurrentEpoch(),
+    fNofEpochs(0),
+    fCurrentEpochTime(0.),
+    fEquipmentId(0),
     fFiberHodoRaw(new TClonesArray("CbmNxyterRawMessage", 10)),
     fFiberHodoDigi(new TClonesArray("CbmFiberHodoDigi", 10)),
     fRawMessage(NULL),  
@@ -71,7 +75,7 @@ void CbmTSUnpackTest::CreateHistograms()
 Bool_t CbmTSUnpackTest::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
 
-  LOG(INFO) << "Timeslice contains " << ts.num_microslices(component)
+  LOG(DEBUG) << "Timeslice contains " << ts.num_microslices(component)
             << "microslices." << FairLogger::endl;
   
   // Loop over microslices
@@ -81,6 +85,7 @@ Bool_t CbmTSUnpackTest::DoUnpack(const fles::Timeslice& ts, size_t component)
       constexpr uint32_t kuBytesPerMessage = 8;
 
       auto msDescriptor = ts.descriptor(component, m);
+      fEquipmentId = msDescriptor.eq_id;
       const uint8_t* msContent = reinterpret_cast<const uint8_t*>(ts.content(component, m));
 
       uint32_t size = msDescriptor.size;
@@ -142,17 +147,32 @@ void CbmTSUnpackTest::FillHitInfo(ngdpb::Message mess)
   Int_t nxyterId   = mess.getNxNumber();
   Int_t nxChannel  = mess.getNxChNum(); 
   Int_t charge     = mess.getNxAdcValue();
+  fCurrentEpoch[rocId] = mess.getEpochNumber(); 
 
-  if(gLogger->IsLogNeeded(DEBUG)) {
-    LOG(INFO) << "Hit: " << rocId << ", " << nxyterId 
-	      << ", " << nxChannel << ", " << charge << FairLogger::endl;
-  }
+  fRawMessage = new( (*fFiberHodoRaw)[fFiberHodoRaw->GetEntriesFast()] )
+    CbmNxyterRawMessage(fEquipmentId,
+			rocId*4 + nxyterId,   //TODO check
+			nxChannel,
+			fCurrentEpoch[rocId],             // note the trick
+			mess.getNxTs(),
+			charge,
+			mess.getNxLastEpoch(),
+			mess.getNxPileup(),
+			mess.getNxOverflow());
+ 
+  LOG(DEBUG) << "Hit: " << rocId << ", " << nxyterId 
+	     << ", " << nxChannel << ", " << charge << FairLogger::endl;
 
   Int_t station = fHodoStationMap[rocId];
   Int_t plane = fHodoPlane[nxChannel];
   Int_t fiber = fHodoFiber[nxChannel];
 
   Int_t address = CbmFiberHodoAddress::GetAddress(station, plane, fiber);
+
+  ULong_t hitTime= mess.getMsgFullTime(fCurrentEpoch[rocId]);
+
+  fDigi = new( (*fFiberHodoDigi)[fFiberHodoDigi->GetEntriesFast()] )
+    CbmFiberHodoDigi(address, charge, hitTime);
 
   if ( 0 == station ) {
     fHM->H2("Raw_ADC_FrontHodo")->Fill(nxChannel,charge);
@@ -171,10 +191,23 @@ void CbmTSUnpackTest::FillHitInfo(ngdpb::Message mess)
 
 void CbmTSUnpackTest::FillEpochInfo(ngdpb::Message mess)
 {
+  Int_t rocId          = mess.getRocNumber();
+  fCurrentEpoch[rocId] = mess.getEpochNumber();
+
+  fCurrentEpochTime = mess.getMsgFullTime(fCurrentEpoch[rocId]);
+  fNofEpochs++;
+  LOG(DEBUG) << "Epoch message "
+             << fNofEpochs << ", epoch " << static_cast<Int_t>(fCurrentEpoch[rocId])
+             << ", time " << std::setprecision(9) << std::fixed
+             << Double_t(fCurrentEpochTime) * 1.e-9 << " s"
+             << FairLogger::endl;
+
 }
 
 void CbmTSUnpackTest::Reset()
 {
+  fFiberHodoRaw->Clear();
+  fFiberHodoDigi->Clear();
 }
 
 void CbmTSUnpackTest::Finish()
