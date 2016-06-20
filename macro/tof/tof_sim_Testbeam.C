@@ -156,8 +156,8 @@ void tof_sim_Testbeam(Int_t nEvents = 10, Int_t iSys=0)
   // Use the CbmUrqmdGenrator which calculates a reaction plane and
   // rotate all particles accordingly
   if (iSys>0){
-  CbmUrqmdGenerator*  urqmdGen = new CbmUrqmdGenerator(inFile);
-  urqmdGen->SetEventPlane(-TMath::Pi(), TMath::Pi());
+  FairUrqmdGenerator*  urqmdGen = new FairUrqmdGenerator(inFile);
+  primGen->SetEventPlane(-TMath::Pi(), TMath::Pi());
   //(CbmUrqmdGenerator *)urqmdGen->SetVertex(0.,0.,20.);   // test shifted vertex
   //urqmdGen->SetEventPlane(-180., 180.);
   primGen->AddGenerator(urqmdGen);

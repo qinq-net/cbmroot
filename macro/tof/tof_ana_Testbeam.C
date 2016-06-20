@@ -53,10 +53,11 @@ void tof_ana_Testbeam(Int_t nEvents = 1000, Int_t iSel=1, Int_t iGenCor=1, Int_t
    tofTrackFinder->SetTxLIM(0.3);                  // max slope dx/dz
    tofTrackFinder->SetTyLIM(0.2);                  // max dev from mean slope dy/dz
    tofTrackFinder->SetTyMean(0.1);                // mean slope dy/dz
-   tofTrackFinder->SetSIGLIM(40.);                 // max matching chi2
    tofTrackFinder->SetSIGT(100.);                // in ps
    tofTrackFinder->SetSIGX(1.);                  // in cm
    tofTrackFinder->SetSIGY(1.);                  // in cm
+   tofTrackFinder->SetSIGLIM(5.);                // max matching chi2
+   tofTrackFinder->SetChiMaxAccept(3.);          // max accepted tracklet chi2
    CbmTofTrackFitter* tofTrackFitter= new CbmTofTrackFitterKF(0,211);
    TFitter *MyFit = new TFitter(1);              // initialize Minuit
    tofTrackFinder->SetFitter(tofTrackFitter);
@@ -147,7 +148,7 @@ void tof_ana_Testbeam(Int_t nEvents = 1000, Int_t iSel=1, Int_t iGenCor=1, Int_t
    tofAnaTestbeam->SetSIGT(100.);                // in ps
    tofAnaTestbeam->SetSIGX(1.);                  // in cm
    tofAnaTestbeam->SetSIGY(1.);                  // in cm
-   tofAnaTestbeam->SetChi2Lim(10.);     // initialization of Chi2 selection limit  
+   tofAnaTestbeam->SetChi2Lim(100.);     // initialization of Chi2 selection limit  
    tofAnaTestbeam->SetChi2Lim2(4.);     // initialization of Chi2 selection limit  
 
   switch (iSel) {
@@ -171,11 +172,11 @@ void tof_ana_Testbeam(Int_t nEvents = 1000, Int_t iSel=1, Int_t iGenCor=1, Int_t
 	   //tofAnaTestbeam->SetTShift(-14000.);  // initialization of MrpcRef - Dia shift
 	   if(iRSel == iSel2) {
 	     tofAnaTestbeam->SetTShift(1420.);  // initialization of MrpcRef - Dia shift
-	     tofAnaTestbeam->SetTOffD4(0.);   // shift TOF to phsical values 
+	     tofAnaTestbeam->SetTOffD4(14000.);   // shift TOF to phsical values 
 	     tofAnaTestbeam->SetSel2TOff(1460.);   // Shift Sel2 time peak to 0 
 	   }else {
-	     tofAnaTestbeam->SetTShift(-13400.);  // initialization of MrpcRef - Dia shift
-	     tofAnaTestbeam->SetTOffD4(0.);   // shift TOF to phsical values 
+	     tofAnaTestbeam->SetTShift(-13980.);  // initialization of MrpcRef - Dia shift
+	     tofAnaTestbeam->SetTOffD4(14000.);   // shift TOF to phsical values 
 	     tofAnaTestbeam->SetSel2TOff(1460.);   // Shift Sel2 time peak to 0 
 	   }
 	   break;
