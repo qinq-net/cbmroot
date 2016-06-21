@@ -12,8 +12,9 @@
   #include "Timeslice.hpp"
 #endif
 
-
 #include "TObject.h"
+
+class CbmDigi;
 
 class CbmTSUnpack : public TObject
 {
@@ -32,6 +33,8 @@ class CbmTSUnpack : public TObject
   // protected:
   //  virtual void Register() = 0;
 
+  virtual void FillOutput(CbmDigi*) = 0;
+  
   ClassDef(CbmTSUnpack, 0)
 };
 

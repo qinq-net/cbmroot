@@ -35,6 +35,9 @@ class CbmTSUnpackSpadicLegacy : public CbmTSUnpack
   virtual void Finish();
   // protected:
   //  virtual void Register();
+
+  virtual void FillOutput(CbmDigi*){;}
+
   static const Int_t NrOfSyscores2 = 3;
   static const Int_t NrOfSpadics2 = 3;
   static const Int_t NrOfHalfSpadics2 = NrOfSpadics2*2;

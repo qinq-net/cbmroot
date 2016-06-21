@@ -45,6 +45,8 @@ class CbmTSUnpackTrb : public CbmTSUnpack
 
   virtual void Finish();
 
+  virtual void FillOutput(CbmDigi*){;}
+
  private:
 
   TClonesArray* fTrbRaw;

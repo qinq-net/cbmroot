@@ -44,6 +44,8 @@ public:
   // protected:
   //  virtual void Register();
 
+  virtual void FillOutput(CbmDigi*){;}
+
   static const size_t fgkNRocsMax = 64;
 
 private:

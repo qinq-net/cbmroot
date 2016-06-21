@@ -37,6 +37,7 @@ class CbmTSUnpackSpadic : public CbmTSUnpack
   // protected:
   //  virtual void Register();
 
+  virtual void FillOutput(CbmDigi*){;}
  private:
 
   TClonesArray* fSpadicRaw;

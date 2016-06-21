@@ -41,6 +41,8 @@ class CbmTSUnpackFiberHodo : public CbmTSUnpack
   // protected:
   //  virtual void Register();
 
+  virtual void FillOutput(CbmDigi*){;}
+
  private:
   Int_t fCurrEpoch; // Current epoch (first epoch in the stream initialises the 
 

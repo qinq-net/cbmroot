@@ -51,6 +51,8 @@ public:
 
   virtual void Finish();
 
+  virtual void FillOutput(CbmDigi*){;}
+
   inline void SetRocNb(  UInt_t uNbRocsIn ) { fuNbRocs = uNbRocsIn; }
   inline void SetGet4Nb( UInt_t uNbChipsIn) { fuNbGet4 = uNbChipsIn; }
   inline void SetMsOverlapTs( UInt_t uMsOverIn) { fuMsOverlapTs = uMsOverIn; }
