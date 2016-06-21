@@ -37,14 +37,14 @@ link_directories( ${LINK_DIRECTORIES})
 set(SRCS
 CbmEcalTrackingMuch.cxx
 CbmFindGlobalTracks.cxx    
-CbmFindGlobalTracksQa.cxx  
+#CbmFindGlobalTracksQa.cxx  
 CbmFindPrimaryVertex.cxx   
 CbmFitGlobalTracks.cxx 
 CbmFitGlobalTracksQa.cxx 
 CbmGlobalTrackFitterIdeal.cxx 
 CbmPVFinderIdeal.cxx       
 CbmTrackMergerIdeal.cxx    
-CbmTofMergerIdeal.cxx 
+#CbmTofMergerIdeal.cxx 
 )
 
 
