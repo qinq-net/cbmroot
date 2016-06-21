@@ -172,7 +172,7 @@ class CbmTrdTimeCorrel : public FairTask
     std::vector<CbmSpadicRawMessage> fEntries;
     Bool_t fParametersCalculated,fIs2D=true;
     Bool_t fPreCalculatedBaseline;
-    Int_t fSpadic, fRow, fType, fTotalCharge, fWindowsize, fClusterChargeThreshhold;
+    Int_t fSpadic, fRow, fType, fTotalCharge, fMaxCharge, fMaxStopType, fWindowsize, fClusterChargeThreshhold;
     Int_t*  fBaseline;
     ULong_t fFullTime;
     Float_t fHorizontalPosition;

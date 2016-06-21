@@ -927,6 +927,9 @@ void CbmTrdTimeCorrel::Finish()
 
   }
   //delete c1;
+  TString outfile = FairRootManager::Instance()->GetOutFile()->GetName();
+      outfile.ReplaceAll(".root", "_Calibration.root");
+    LOG(INFO) << "Baselines extracted and stored at "<< outfile << FairLogger::endl << " If this is your first time running this analysis, please rerun this analysis." <<FairLogger::endl;
 }
 // ---- FinishEvent  -------------------------------------------------------
 void CbmTrdTimeCorrel::FinishEvent()
@@ -1730,7 +1733,10 @@ void CbmTrdTimeCorrel::CreateHistograms()
           TString Detectorname = (Detector == 0 ? "Frankfurt" : "Muenster");
           histName = "Pad_Response_"+ Detectorname + "_for_Clusters_of_Size_"+std::to_string(Size);
           title = histName + runName;
-          fHM->Create2<TH2I>(histName.Data(), title.Data(), 1100,-10.5,10.5,101,-0.5,100.5/*,100,0,1000*/);
+          fHM->Create2<TH2I>(histName.Data(), title.Data(), 1001,-(Size+0.05)*7.125,(Size+0.05)*7.125,101,-0.005,1.005/*,100,0,1000*/);
+          fHM->H2(histName.Data())->GetXaxis()->SetTitle("Displacement frac{d}{mm}");
+          fHM->H2(histName.Data())->GetYaxis()->SetTitle("Chargeratio frac{Q_{i}}{#sum_{k}^{ } Q_{k}}");
+          //fHM->H3(histName.Data())->GetZaxis()->SetTitle("TotalCharge");
       }
     }
 
@@ -1991,31 +1997,46 @@ void CbmTrdTimeCorrel::FitPRF() {
 	    new TF1 (
 	        "PRF",[&PRFLambda](double*x, double *p){ return PRFLambda(x[0],p);}
 	        ,-10.0, 10.0, 4);
-	PRF->SetParameters(2,5.3/7.125,100,1.0);
-	PRF->SetParName(0,"K3");
-	PRF->SetParLimits(0,0.0,2.0);
-	PRF->SetParName(1,"h");
-        PRF->SetParLimits(1,0.5,3);
-        PRF->SetParName(2,"A");
-        PRF->SetParLimits(2,1,1000);
-        PRF->SetParName(3,"W");
-        PRF->SetParLimits(3,0.01,10);
 	//TODO: Check for Rootfile of fits
+	for(Int_t size=3;size<=4;size++)
 	for (Int_t Detector = 0; Detector <= NrOfSpadics / 2; Detector++) {
 		string Detectorname = (Detector == 0 ? "Frankfurt" : "Muenster");
 		string histName = "Pad_Response_" + Detectorname
-				+ "_for_Clusters_of_Size_" + std::to_string(3);
+				+ "_for_Clusters_of_Size_" + std::to_string(size);
 		TH2* PRFHist = fHM->H2(histName);
 		if (PRFHist->GetEntries() < 50)
 			continue;
 		TString ProfileName ="Profile_"+histName;
+                TCanvas *c1 = new TCanvas("c1","",1600,600);
 		TProfile* PRFProfile = PRFHist->ProfileX(ProfileName.Data(),1,-1);
+		PRFProfile->Draw("");
 		PRFProfile->Write();
-		TFitResultPtr PRFFit = PRFProfile->Fit(PRF, "S", "", -1.6, 1.6);
-		TString fitname = "Fit_PRF_" + histName;
+	        PRF->SetParameters(0.1,3.5,1,7.125);
+	        PRF->SetParName(0,"K3");
+                //PRF->FixParameter(0,0.92);
+	        //PRF->SetParLimits(0,0.78,0.92);
+	        PRF->SetParName(1,"h");
+	        PRF->FixParameter(1,3.5);
+	        PRF->SetParName(2,"A");
+	        PRF->FixParameter(2,1.0);
+	        //PRF->SetParLimits(2,0.99999,1.00001);
+	        PRF->SetParName(3,"W");
+	        PRF->FixParameter(3,7.125);
+		PRF->Draw();
+                c1->Update();
+                TString fitname = "Fit_PRF_" + histName;
+                c1->SaveAs("pics/Pre_"+fitname+".pdf");
+                c1->SaveAs("pics/Pre_"+fitname+".png");
+                c1->Clear();
+                PRFProfile->Draw("colz");
+		TFitResultPtr PRFFit = PRFProfile->Fit(PRF, "S", "", -10.0, 10.0);
 		PRFFit->SetName(fitname);
 		FitResults.push_back(*PRFFit);
 		PRFFit->Print("V");
+		c1->Update();
+		c1->SaveAs("pics/"+fitname+".pdf");
+                c1->SaveAs("pics/"+fitname+".png");
+                delete c1;
 		std::cout << std::endl;
 		std::cout << "Fits " << Detectorname << " " << FitResults.size()
 				<< std::endl;
@@ -2340,14 +2361,17 @@ Bool_t CbmTrdTimeCorrel::Cluster::FillChargeDistribution(TH2* ChargeMap)
 {
   if (!fParametersCalculated)
     CalculateParameters();
+  if(fMaxStopType>0)return false;
   for (auto currentMessage : fEntries )
     {
       Int_t Charge = GetMaxADC(currentMessage);
-      Float_t ChargeRatio = 100.0 * static_cast<Float_t>(Charge)/static_cast<Float_t>(GetTotalCharge());
+      Float_t ChargeRatio =  static_cast<Float_t>(Charge)/static_cast<Float_t>(GetTotalCharge());
       Float_t Displacement = static_cast<Float_t>(GetHorizontalMessagePosition(currentMessage));
       Displacement -= GetHorizontalPosition();
+      Displacement *= 7.125;
       ChargeMap->Fill(Displacement,ChargeRatio/*,fTotalCharge*/);
   }
+  return true;
 }
 
 Int_t CbmTrdTimeCorrel::Cluster::GetMaxADC(CbmSpadicRawMessage& message)
@@ -2580,9 +2604,10 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
   Int_t NumberOfTypeTwoMessages=0;
   Int_t NumberOfHits=0;
   Int_t LastPad= GetHorizontalMessagePosition(*fEntries.begin())-1;
+  Int_t maxADC = -255;
+  fMaxStopType=0;
   for(auto message : fEntries){
 	  Int_t CurrentPad = GetHorizontalMessagePosition(message);
-	  Int_t maxADC = fBaseline[0+16*GetSpadicID(message.GetSourceAddress())+message.GetChannelID()];
       if (LastPad+1 != CurrentPad&&fType!=3)
 	{
     	  //std::cout << LastPad << " " << CurrentPad << std:: endl;
@@ -2591,18 +2616,20 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
 	  LastPad = CurrentPad;
       Int_t Charge = GetMaxADC(message);
       if(maxADC < Charge) maxADC = Charge;
+      if(message.GetStopType()>fMaxStopType)fMaxStopType=message.GetStopType();
       if(Charge < 0){
     	  fType = 3;
       }
       Charges.push_back(Charge);
       fTotalCharge += Charge;
+      fMaxCharge=maxADC;
       unweightedPosSum.push_back(CurrentPad);
       if(message.GetTriggerType()==2) NumberOfTypeTwoMessages++;
       if(message.GetTriggerType()==1||message.GetTriggerType()==3) NumberOfHits++;
   }
   if(NumberOfTypeTwoMessages!=2) fType=1;
   if(NumberOfHits==0) fType=2;
-  const Float_t PadWidth =1.0;
+  const Float_t PadWidth = 7.0/7.125;
   const Float_t sigma = 0.646432;
   if (size()<3||size()>4||fType == 3/*||(size()==2&&!(fType==1||fType==2))*/){
 	  for (Int_t i=0;i<fEntries.size();i++){
