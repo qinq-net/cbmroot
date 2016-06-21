@@ -11,6 +11,7 @@
 #include "FairSource.h"
   
 #include "CbmDetectorList.h"
+#include "CbmTbDaqBuffer.h"
 
 #include "TList.h"
 #include "TString.h"
@@ -24,7 +25,7 @@
 
 class CbmDigi;
 class CbmDaqMap;
-class CbmTbDaqBuffer;
+//class CbmTbDaqBuffer;
 class CbmTbEvent;
 class TClonesArray;
 

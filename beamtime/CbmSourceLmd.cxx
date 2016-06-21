@@ -440,6 +440,7 @@ Int_t CbmSourceLmd::ReadEvent()
     fMuchBaselineDigis->Expand(10);
   } 
 
+/*
   // --- Clear output arrays
   fHodoDigis->Clear();
   fHodoBaselineDigis->Clear();
@@ -448,6 +449,16 @@ Int_t CbmSourceLmd::ReadEvent()
   fMuchDigis->Clear();
   fMuchBaselineDigis->Clear();
   fAuxDigis->Clear();
+*/
+
+  // --- Clear output arrays
+  fHodoDigis->Delete();
+  fHodoBaselineDigis->Delete();
+  fStsDigis->Delete();
+  fStsBaselineDigis->Delete();
+  fMuchDigis->Delete();
+  fMuchBaselineDigis->Delete();
+  fAuxDigis->Delete();
 
   // --- Clrear event header
   fCurrentEvent->Clear();

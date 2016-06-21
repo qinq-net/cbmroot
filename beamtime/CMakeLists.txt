@@ -2,6 +2,8 @@
 # the array .
 # The extension is already found.  Any number of sources could be listed here.
 
+Add_Subdirectory(base)
+
 Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/base
   ${CBMROOT_SOURCE_DIR}/data
@@ -14,17 +16,15 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/beamtime
   ${CBMROOT_SOURCE_DIR}/beamtime/fhodo
   ${CBMROOT_SOURCE_DIR}/beamtime/param
-  ${CBMROOT_SOURCE_DIR}/sts/setup
+  ${CBMROOT_SOURCE_DIR}/beamtime/base
   ${CBMROOT_SOURCE_DIR}/beamtime/reco
   ${CBMROOT_SOURCE_DIR}/beamtime/unpacker
-  ${CBMROOT_SOURCE_DIR}/beamtime/eventbuilder
 )
 
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
   ${BASE_INCLUDE_DIRECTORIES} 
   ${Boost_INCLUDE_DIR}
-  ${GEANT4_INCLUDE_DIR}
 )
 
 Include_Directories( 
@@ -38,7 +38,6 @@ Include_Directories(
 Set(LINK_DIRECTORIES
   ${ROOT_LIBRARY_DIR}
   ${Boost_LIBRARY_DIRS}
-  ${GEANT4_LIBRARY_DIR}
   ${FAIRROOT_LIBRARY_DIR}
 )
  
@@ -51,14 +50,12 @@ Set(SRCS
   CbmSourceLmd.cxx
   CbmSourceLmdNew.cxx
   CbmLmdDebug.cxx
-  CbmTbDaqBuffer.cxx
 
   CbmDaqMap.cxx
   CbmDaqMapCosy2014.cxx
   CbmDaqMapCosy2014Much.cxx
   CbmDaqMapCosy2013.cxx
   
-  unpacker/CbmROCUnpack.cxx
   unpacker/CbmROCUnpackAux.cxx
   unpacker/CbmROCUnpackDummy.cxx
   unpacker/CbmROCUnpackEpoch.cxx
@@ -66,9 +63,6 @@ Set(SRCS
   unpacker/CbmROCUnpackSts.cxx
   unpacker/CbmROCUnpackHodo.cxx
   unpacker/CbmROCUnpackMuch.cxx
-
-  eventbuilder/CbmTbEventBuilder.cxx
-  eventbuilder/CbmTbEventBuilderFixedTimeWindow.cxx
 
   fhodo/CbmFiberHodoClusterFinder.cxx
   fhodo/CbmHodoRawHistos.cxx
@@ -87,8 +81,6 @@ Set(SRCS
   sts/settings/StsAlignment.cxx
   sts/settings/StsClusterSet.cxx
   sts/settings/StsHitSet.cxx
-
-
 )
 
 # Add artificial dependency which delays the compilation of the defined file
@@ -120,15 +112,11 @@ EndIf()
 Set(LINKDEF  CbmBeamtimeLinkDef.h)
 Set(LIBRARY_NAME CbmBeamtime)
 Set(DEPENDENCIES
-#    ${LIBRARY_OUTPUT_PATH}/libDabcRoc.so 
-#    ${LIBRARY_OUTPUT_PATH}/libDabcMbs.so 
-#    ${LIBRARY_OUTPUT_PATH}/libDabcBase.so 
-#    ${LIBRARY_OUTPUT_PATH}/libRoc.so 
+    CbmBeamtimeBase
     CbmRocLight
     CbmSts
     CbmData 
     CbmBase
-#    Base Trd
     Base 
 )
 
