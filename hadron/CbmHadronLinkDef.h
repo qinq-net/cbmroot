@@ -5,10 +5,10 @@
 #pragma link off all functions;
 
 #pragma link C++ class CbmHadron+;
-#pragma link C++ class CbmProduceDst+;
+//#pragma link C++ class CbmProduceDst+;
 #pragma link C++ class CbmFillM2+;
 #pragma link C++ class CbmFitM2+;
-#pragma link C++ class CbmHadronYields+;
+//#pragma link C++ class CbmHadronYields+;
 #pragma link C++ class CbmHadronSpectra+;
 #pragma link C++ class CbmHadronAnalysis+;
 #pragma link C++ class CbmMixedEventsProducer+;

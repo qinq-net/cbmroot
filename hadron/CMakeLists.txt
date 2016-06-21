@@ -36,12 +36,12 @@ link_directories( ${LINK_DIRECTORIES})
 
 set(SRCS
 CbmHadron.cxx
-CbmProduceDst.cxx
+#CbmProduceDst.cxx
 CbmFillM2.cxx
 CbmFitM2.cxx
 CbmHadronSpectra.cxx
 CbmHadronAnalysis.cxx
-CbmHadronYields.cxx
+#CbmHadronYields.cxx
 CbmMixedEventsProducer.cxx
 CbmEbefluctPYR.cxx
 )
