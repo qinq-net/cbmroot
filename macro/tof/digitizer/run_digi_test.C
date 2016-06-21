@@ -133,6 +133,14 @@ void run_digi_test(Int_t nEvents = 2, const char* setup = "sis100_electron")
 
   // ===                   End of TOF local reconstruction                 ===
   // =========================================================================
+  
+  // =========================================================================
+  // ===                    Matching to Monte-carlo                        ===
+  // =========================================================================
+  CbmMatchRecoToMC* matchTask = new CbmMatchRecoToMC();
+  run->AddTask(matchTask);
+  // ===                  End of matching to Monte-Carlo                   ===
+  // =========================================================================
 
   // =========================================================================
   // ===                     TOF evaluation                                ===
