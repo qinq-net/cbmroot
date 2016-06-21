@@ -12,19 +12,14 @@
 // third argument. If none of these options are chosen, a default
 // input file distributed with the source code is selected.
 //
-// 2014-06-30 - DE - available setups from geometry/setup:
-// 2014-06-30 - DE - sis100_hadron
-// 2014-06-30 - DE - sis100_electron
-// 2014-06-30 - DE - sis100_muon
-// 2014-06-30 - DE - sis300_electron
-// 2014-06-30 - DE - sis300_muon
-//
 // --------------------------------------------------------------------------
-
 
 
 void run_mc(Int_t nEvents = 2,
 		        const char* setupName = "sis100_electron",
+//                        const char* setupName = "sis100_hadron",
+//                        const char* setupName = "sis100_muon_jpsi",
+//                        const char* setupName = "sis100_muon_lmvm",
 		        const char* inputFile = "")
 {
 
