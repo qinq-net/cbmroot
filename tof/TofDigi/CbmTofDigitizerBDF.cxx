@@ -45,7 +45,6 @@
 #include "TGeoManager.h"
 
 // C++ Classes and includes
-#include <cassert> // from CbmStsDigitize, for GetEventInfo
 
 // Gauss Integration Constants
 const Int_t    kiNbIntPts = 2;
@@ -4330,7 +4329,6 @@ void CbmTofDigitizerBDF::GetEventInfo(Int_t& inputNr, Int_t& eventNr,
     // --- In a FairRunAna, take the information from FairEventHeader
     if ( FairRunAna::Instance() ) {
         FairEventHeader* event = FairRunAna::Instance()->GetEventHeader();
-        assert ( event );
       inputNr   = event->GetInputFileId();
       eventNr   = event->GetMCEntryNumber();
       eventTime = event->GetEventTime();
@@ -4343,7 +4341,6 @@ void CbmTofDigitizerBDF::GetEventInfo(Int_t& inputNr, Int_t& eventNr,
             LOG(FATAL) << GetName() << ": neither SIM nor ANA run." 
                            << FairLogger::endl;
         FairMCEventHeader* event = FairRunSim::Instance()->GetMCEventHeader();
-        assert ( event );
         inputNr   = 0;
         eventNr   = event->GetEventID();
         eventTime = 0.;
