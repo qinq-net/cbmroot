@@ -79,6 +79,7 @@ class CbmTofTests : public FairTask {
       TClonesArray          * fMcTracksColl;  // MC tracks
       TClonesArray          * fTofDigisColl;  // TOF Digis
       TClonesArray          * fTofHitsColl; // TOF hits
+      TClonesArray          * fTofHitMatchColl; // // Indices of MC original points for each hit with TOT weight (CbmMatch)
 //    TClonesArray *fStsPoints;     // STS points
 //    TClonesArray *fStsHits;       // STS hits
 //    TClonesArray *fStsTracks;     // STS tracks

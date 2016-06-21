@@ -52,7 +52,7 @@ private:
     TClonesArray *fTofHits;       // TOF hits
     TClonesArray *fTofDigis;      // TOF Digis
     TClonesArray *fTofDigiMatchColl;  // TOF Matched Digis
-    TClonesArray *fTofDigiMatchPointsColl;  // TOF Matched Digi Points
+    TClonesArray *fTofDigiMatchPointsColl;  // TOF Matched Digi Points    
     TClonesArray *fGlobalTracks;  // Global tracks
     TClonesArray *fHadrons;       // Hadrons
     CbmVertex    *fPrimVertex;        // Pointer to the primary vertex

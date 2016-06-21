@@ -902,12 +902,16 @@ Bool_t   CbmTofSimpClusterizer::FillHistos()
          // Using the SetLinks/GetLinks of the TofHit class seems to conflict
          // with something in littrack QA
 //         CbmTofPoint* pPt = (CbmTofPoint*)(pHit->GetLinks());
-         // Use instead the index
+/*
+         // Use instead the index => WRONG and not consistent with hit creation  
+         // Need to loop on digi match object, check the digi to pnt match object for each, etc....
+         // ====> Just comment this code, if anybody needs it, have to implement proper solution
          CbmTofPoint* pPt = (CbmTofPoint*)fTofPointsColl->At( pHit->GetRefId() );
          fhTimePtVsHits->Fill( pPt->GetTime(), pHit->GetTime() );
          fhTimeResSingHits->Fill( pHit->GetTime() - pPt->GetTime() );
          fhTimeResSingHitsB->Fill( pHit->GetTime() - pPt->GetTime(),
                fGeoHandler->GetSMType(pPt->GetDetectorID()) );
+*/               
       } // if( 1 == pHit->GetFlag() )
    } // for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)
 

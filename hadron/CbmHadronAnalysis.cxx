@@ -1246,7 +1246,7 @@ InitStatus CbmHadronAnalysis::Init()
 	cout << "-W- CbmHadronAnalysis::Init : "
 	    << "no TOF Hit array!" << endl;
     }
-
+    
     fTofTracks = (TClonesArray*) rootMgr->GetObject("TofTrack");
     if(NULL == fTofTracks) {
 	cout << "-W- CbmHadronAnalysis::Init : "
@@ -1332,6 +1332,7 @@ void CbmHadronAnalysis::Exec(Option_t*)
 //    CbmTofTrack *TofTrackh;
     CbmTofTrack *BestTofTrack;
     CbmGlobalTrack *GlobTrack;
+    CbmMatch *tofHitMatch;
 
     Int_t nMCTracks, nTofPoints, nTofHits, nTofTracks, nGlobTracks;
     Int_t pdgCode, Np1, Np2;
@@ -2007,7 +2008,8 @@ void CbmHadronAnalysis::Exec(Option_t*)
     for (Int_t j =0; j<nTofHits; j++) {
       //cout << "<D-hit> j= " << j << endl;
       TofHit   = (CbmTofHit*) fTofHits->At(j);
-      Int_t l = TofHit->GetRefId();  // pointer to Digi
+//      Int_t l = TofHit->GetRefId();  // pointer to Digi
+      Int_t l = j;  // One CbmMatch per hit and in same order!!!!
       if(fTofDigiMatchColl != NULL) {
        CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchColl->At(l);
        // take first digi's point link
@@ -2912,7 +2914,8 @@ void CbmHadronAnalysis::Exec(Option_t*)
       if (j>-1) {   // TofHit available for global track
        NGTofTrack++;
        TofHit   = (CbmTofHit*) fTofHits->At(j);
-       Int_t l = TofHit->GetRefId();
+//       Int_t l = TofHit->GetRefId();
+       Int_t l = j; // One CbmMatch per Hit and in the same order!!!!
        Int_t k;
        if (verbose>10) {
          cout << "<Dj> gt "<<i<<", th "<<j<<", l "<<l<<", DMC "<<fTofDigiMatchColl<<endl;

@@ -21,6 +21,7 @@
 // CBMroot classes and includes
 #include "FairMCEventHeader.h"
 #include "CbmMCTrack.h"
+#include "CbmMatch.h"
 /*
 #include "CbmStsTrack.h"
 #include "CbmStsHit.h"
@@ -72,6 +73,7 @@ CbmTofTests::CbmTofTests()
     fMcTracksColl(NULL),
     fTofDigisColl(NULL),
     fTofHitsColl(NULL),
+    fTofHitMatchColl(NULL),
     fhTestingTime(NULL),
     fhPointMapXY(NULL),
     fhPointMapXZ(NULL),
@@ -144,6 +146,7 @@ CbmTofTests::CbmTofTests(const char* name, Int_t verbose)
     fMcTracksColl(NULL),
     fTofDigisColl(NULL),
     fTofHitsColl(NULL),
+    fTofHitMatchColl(NULL),
     fhTestingTime(NULL),
     fhPointMapXY(NULL),
     fhPointMapXZ(NULL),
@@ -357,6 +360,13 @@ Bool_t   CbmTofTests::RegisterInputs()
       LOG(ERROR)<<"CbmTofTests::RegisterInputs => Could not get the TofHit TClonesArray!!!"<<FairLogger::endl;
       return kFALSE;
    } // if( NULL == fTofHitsColl)
+
+   fTofHitMatchColl   = (TClonesArray *) fManager->GetObject("TofHitMatch");
+   if( NULL == fTofHitMatchColl)
+   {
+      LOG(ERROR)<<"CbmTofHitFinderQa::RegisterInputs => Could not get the TofHitMatch TClonesArray!!!"<<FairLogger::endl;
+      return kFALSE;
+   } // if( NULL == fTofDigiMatchPointsColl)
 
 /*
    fGlobalTracks = (TClonesArray*) fManager->GetObject("GlobalTrack");
@@ -645,6 +655,7 @@ Bool_t CbmTofTests::FillHistos()
    CbmMCTrack  *pMcTrk;
    CbmTofPoint *pTofPoint;
    CbmTofHit   *pTofHit;
+   CbmMatch    * pMatchHitPnt;
 
    Int_t iNbTracks, iNbTofPts, iNbTofDigis, iNbTofHits;
 
@@ -805,6 +816,7 @@ Bool_t CbmTofTests::FillHistos()
    for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)
    {
       pTofHit = (CbmTofHit*) fTofHitsColl->At( iHitInd );
+      pMatchHitPnt  = (CbmMatch*) fTofHitMatchColl->At( iHitInd );
 
       // Need a method to reconvert position in a "central channel"
 //      fhHitRateCh->Fill();
@@ -825,15 +837,12 @@ Bool_t CbmTofTests::FillHistos()
       Double_t dPhi    = TMath::ATan2( TMath::Sqrt( dX*dX + dY*dY ), dZ );//*180.0/TMath::Pi();
       Double_t dTheta  = TMath::ATan2( dY, dX );//*180.0/TMath::Pi();
       fhHitMapSph->Fill( dPhi, dTheta );
-
-      // Using the SetLinks/GetLinks of the TofHit class seems to conflict
-      // with something in littrack QA
-//      CbmTofPoint* pPt = (CbmTofPoint*)(pTofHit->GetLinks());
-      // Use instead the index
-      // outdated TBD
-      return kTRUE;
-
-      CbmTofPoint* pPt = (CbmTofPoint*)fTofPointsColl->At( pTofHit->GetRefId() );
+     
+      // Get Nb of links in Match and index of Point for best link
+      Int_t iNbPntHit = pMatchHitPnt->GetNofLinks();
+      CbmLink lPnt    = pMatchHitPnt->GetMatchedLink(); 
+      Int_t   iPtIdx = lPnt.GetIndex();
+      CbmTofPoint* pPt = (CbmTofPoint*) fTofPointsColl->At( iPtIdx );
 
       fhTofRes->Fill( pTofHit->GetTime() - pPt->GetTime() );
 
@@ -841,7 +850,7 @@ Bool_t CbmTofTests::FillHistos()
       fhTofPosDifY->Fill( pPt->GetY(), pPt->GetY() - pTofHit->GetY() );
       fhTofPosDifZ->Fill( pPt->GetZ(), pPt->GetZ() - pTofHit->GetZ() );
 
-      if( 1 == pTofHit->GetFlag() )
+      if( 1 == iNbPntHit )
       {
          fhTofPosDifSingXX->Fill( pPt->GetX(), pPt->GetX() - pTofHit->GetX() );
          fhTofPosDifSingXY->Fill( pPt->GetY(), pPt->GetX() - pTofHit->GetX() );
@@ -866,6 +875,7 @@ Bool_t CbmTofTests::FillHistos()
          fhTofResSing->Fill( pTofHit->GetTime() - pPt->GetTime() );
       } // if( 1 == pTofHit->GetFlag() )
          else iNbMixedHits++;
+ 
    } // for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)
    if( 0 <  iNbTofHits )
       fhTofMixing->Fill(iNbMixedHits/iNbTofHits);
