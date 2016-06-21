@@ -217,6 +217,11 @@ class CbmTofDigitizerBDF : public FairTask
                                         Double_t dBaseXa, Double_t dBaseYa,
                                         Double_t dBaseXb, Double_t dBaseYb );
 
+      /**
+       ** @brief Retrieve event info from run manager to properly fill the CbmLink objects.
+       **/      
+      void GetEventInfo(Int_t& inputNr, Int_t& eventNr, Double_t& eventTime);
+
       // Fee properties and constants
       Double_t            fdFeeGainSigma;
       Double_t            fdFeeTotThr;

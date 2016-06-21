@@ -139,6 +139,11 @@ class CbmTofSimpClusterizer : public FairTask
        **/
       Bool_t   BuildClusters();
 
+      /**
+       ** @brief Retrieve event info from run manager to properly fill the CbmLink objects.
+       **/      
+      void GetEventInfo(Int_t& inputNr, Int_t& eventNr, Double_t& eventTime);
+
       // ToF geometry variables
       CbmTofGeoHandler      * fGeoHandler;
       CbmTofDetectorId      * fTofId;

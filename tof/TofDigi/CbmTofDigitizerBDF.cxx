@@ -27,6 +27,9 @@
 #include "FairRunAna.h"
 #include "FairRuntimeDb.h"
 #include "FairLogger.h"
+#include "FairMCEventHeader.h" // from CbmStsDigitize, for GetEventInfo
+#include "FairEventHeader.h" // from CbmStsDigitize, for GetEventInfo
+#include "FairRunSim.h" // from CbmStsDigitize, for GetEventInfo
 
 // ROOT Classes and includes
 #include "TClonesArray.h"
@@ -42,6 +45,7 @@
 #include "TGeoManager.h"
 
 // C++ Classes and includes
+#include <cassert> // from CbmStsDigitize, for GetEventInfo
 
 // Gauss Integration Constants
 const Int_t    kiNbIntPts = 2;
@@ -975,6 +979,12 @@ Bool_t   CbmTofDigitizerBDF::DeleteHistos()
 // TODO: Charge summing up
 Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
 {
+	// --- MC Event info (input file, entry number, start time)
+	Int_t    iInputNr   = 0;
+	Int_t    iEventNr   = 0;
+	Double_t dEventTime = 0.;
+	GetEventInfo(iInputNr, iEventNr, dEventTime);
+   
    Int_t iNbSmTypes = fDigiBdfPar->GetNbSmTypes();
    if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
    {
@@ -1024,7 +1034,8 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                         {
                            // Store Link with weight 0 to have a trace of MC tracks firing the channel 
                            // but whose Digi is not propagated to next stage
-                           digiMatch->AddLink(CbmLink(0.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi] ));
+                           digiMatch->AddLink(CbmLink(0.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi], 
+                                                      iEventNr, iInputNr ));
                         
                           if( fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetTime()
                                                                                           < dMinTime )
@@ -1064,7 +1075,8 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                               iChosenDigi, fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].size(),
                               iSmType,iSm,iRpc,iCh,iSide,fiNbDigis)<<FairLogger::endl;
 
-                        digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] ));
+                        digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi], 
+                                                      iEventNr, iInputNr ));
 
                         new((*fTofDigiMatchPointsColl)[fiNbDigis]) CbmMatch(*digiMatch);
                         CbmLink LP = digiMatch->GetMatchedLink(); 
@@ -1137,7 +1149,8 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                         {
                            // Store Link with weight 0 to have a trace of MC tracks firing the channel 
                            // but whose Digi is not propagated to next stage
-                           digiMatch->AddLink(CbmLink(0.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi] ));
+                           digiMatch->AddLink(CbmLink(0.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi], 
+                                                      iEventNr, iInputNr ));
                            
                            if( fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetTime()
                                                                                           < dMinTime )
@@ -1176,7 +1189,8 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                         new((*fTofDigisColl)[fiNbDigis]) CbmTofDigi(
                               *fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] );
 
-                        digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] ));
+                        digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi], 
+                                                      iEventNr, iInputNr ));
                         
                         new((*fTofDigiMatchPointsColl)[fiNbDigis]) CbmMatch(*digiMatch);
                         CbmLink LP = digiMatch->GetMatchedLink(); 
@@ -4306,5 +4320,34 @@ Double_t  CbmTofDigitizerBDF::DistanceCircleToBase(
                    <<FairLogger::endl;
          return 0.0;
       } // else of if( 0.0 <= dRoot )
+}
+/************************************************************************************/
+
+void CbmTofDigitizerBDF::GetEventInfo(Int_t& inputNr, Int_t& eventNr,
+                                         Double_t& eventTime)
+{
+
+    // --- In a FairRunAna, take the information from FairEventHeader
+    if ( FairRunAna::Instance() ) {
+        FairEventHeader* event = FairRunAna::Instance()->GetEventHeader();
+        assert ( event );
+      inputNr   = event->GetInputFileId();
+      eventNr   = event->GetMCEntryNumber();
+      eventTime = event->GetEventTime();
+    }
+
+    // --- In a FairRunSim, the input number and event time are always zero;
+    // --- only the event number is retrieved.
+    else {
+        if ( ! FairRunSim::Instance() )
+            LOG(FATAL) << GetName() << ": neither SIM nor ANA run." 
+                           << FairLogger::endl;
+        FairMCEventHeader* event = FairRunSim::Instance()->GetMCEventHeader();
+        assert ( event );
+        inputNr   = 0;
+        eventNr   = event->GetEventID();
+        eventTime = 0.;
+    }
+
 }
 /************************************************************************************/

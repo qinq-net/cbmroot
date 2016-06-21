@@ -27,6 +27,9 @@
 #include "FairRunAna.h"
 #include "FairRuntimeDb.h"
 #include "FairLogger.h"
+#include "FairMCEventHeader.h" // from CbmStsDigitize, for GetEventInfo
+#include "FairEventHeader.h" // from CbmStsDigitize, for GetEventInfo
+#include "FairRunSim.h" // from CbmStsDigitize, for GetEventInfo
 
 // ROOT Classes and includes
 #include "TClonesArray.h"
@@ -42,6 +45,8 @@
 #include "TROOT.h"
 #include "TGeoManager.h"
 
+// C++ Classes and includes
+#include <cassert> // from CbmStsDigitize, for GetEventInfo
 
 const Int_t DetMask = 4194303;
 const Int_t nbClWalkBinX=20;
@@ -1055,6 +1060,12 @@ Bool_t   CbmTofSimpClusterizer::DeleteHistos()
 /************************************************************************************/
 Bool_t   CbmTofSimpClusterizer::BuildClusters()
 {
+	// --- MC Event info (input file, entry number, start time)
+	Int_t    iInputNr   = 0;
+	Int_t    iEventNr   = 0;
+	Double_t dEventTime = 0.;
+	GetEventInfo(iInputNr, iEventNr, dEventTime);
+   
    /*
     * FIXME: maybe use the 2D distance (X/Y) as criteria instead of the distance long channel
     * direction
@@ -1593,7 +1604,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
 
                                     CbmMatch* digiMatch = new CbmMatch();
                                     for (UInt_t i=0; i<vDigiIndRef.size();i++){
-                                      digiMatch->AddLink(CbmLink(0.,vDigiIndRef.at(i)));
+                                      digiMatch->AddLink(CbmLink(0.,vDigiIndRef.at(i), iEventNr, iInputNr));
                                     }
                                     new((*fTofDigiMatchColl)[fiNbHits]) CbmMatch(*digiMatch);
                                     delete digiMatch;
@@ -1813,7 +1824,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                      //                                         vDigiIndRef);
                      CbmMatch* digiMatch = new CbmMatch();
                      for (UInt_t i=0; i<vDigiIndRef.size();i++){
-                       digiMatch->AddLink(CbmLink(0.,vDigiIndRef.at(i)));
+                       digiMatch->AddLink(CbmLink(0.,vDigiIndRef.at(i), iEventNr, iInputNr));
                      }
                      new((*fTofDigiMatchColl)[fiNbHits]) CbmMatch(*digiMatch);
                      delete digiMatch;
@@ -1846,4 +1857,32 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
      LOG(ERROR)<<" Compressed Digis not implemented ... "<<FairLogger::endl;
    }
    return kTRUE;
+}
+
+void CbmTofSimpClusterizer::GetEventInfo(Int_t& inputNr, Int_t& eventNr,
+                                         Double_t& eventTime)
+{
+
+    // --- In a FairRunAna, take the information from FairEventHeader
+    if ( FairRunAna::Instance() ) {
+        FairEventHeader* event = FairRunAna::Instance()->GetEventHeader();
+        assert ( event );
+      inputNr   = event->GetInputFileId();
+      eventNr   = event->GetMCEntryNumber();
+      eventTime = event->GetEventTime();
+    }
+
+    // --- In a FairRunSim, the input number and event time are always zero;
+    // --- only the event number is retrieved.
+    else {
+        if ( ! FairRunSim::Instance() )
+            LOG(FATAL) << GetName() << ": neither SIM nor ANA run." 
+                           << FairLogger::endl;
+        FairMCEventHeader* event = FairRunSim::Instance()->GetMCEventHeader();
+        assert ( event );
+        inputNr   = 0;
+        eventNr   = event->GetEventID();
+        eventTime = 0.;
+    }
+
 }
