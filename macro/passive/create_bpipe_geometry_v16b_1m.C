@@ -92,11 +92,11 @@ void create_bpipe_geometry_v16b_1m()
   Double_t z3[nSects3]      = { 220.,  500.,  1250. }; // mm
   Double_t rout3[nSects3]   = {  18.,   18.,    55. };
   Double_t rin3[nSects3]; for(Int_t i=0; i<nSects3; i++) { rin3[i] = rout3[i] - rout3[i]/30.; }
-  TString pipevac2name = "pipevac3";
-  const Int_t nSects02 = nSects3;
-  Double_t z02[nSects02]    = { 220.,  500.,  1250. }; // mm
-  Double_t rin02[nSects02]  = {   0.,    0.,     0. };
-  Double_t rout02[nSects02]; for(Int_t i=0; i<nSects02; i++) { rout02[i]=rin3[i]; }
+  TString pipevac3name = "pipevac3";
+  const Int_t nSects03 = nSects3;
+  Double_t z03[nSects03]    = { 220.,  500.,  1250. }; // mm
+  Double_t rin03[nSects03]  = {   0.,    0.,     0. };
+  Double_t rout03[nSects03]; for(Int_t i=0; i<nSects03; i++) { rout03[i]=rin3[i]; }
 
   // dimensions from pipe_much_v15b_125cm_no.geo
   TString pipe4name = "pipe4 - MUCH Pb-section";
@@ -104,12 +104,12 @@ void create_bpipe_geometry_v16b_1m()
   Double_t z4[nSects4]      = { 1250.,  1850. }; // mm
   Double_t rout4[nSects4]   = {  124.,   184. };
   Double_t rin4[nSects4]    = {   63.,    94. };
-  TString pipevac3name = "pipevac4";
-  const Int_t nSects03 = nSects4;
-  Double_t z03[nSects03]    = { 1250.,  1850. }; // mm
-  Double_t rin03[nSects03]  = {    0.,     0. };
-  Double_t rout03[nSects03]; for(Int_t i=0; i<nSects03; i++) { rout03[i]=rin4[i]; }
-  //  Double_t rout03[nSects03]; for(Int_t i=0; i<nSects03; i++) { rout03[i]=rin4[i]-0.001; }
+  TString pipevac4name = "pipevac4";
+  const Int_t nSects04 = nSects4;
+  Double_t z04[nSects04]    = { 1250.,  1850. }; // mm
+  Double_t rin04[nSects04]  = {    0.,     0. };
+  Double_t rout04[nSects04]; for(Int_t i=0; i<nSects04; i++) { rout04[i]=rin4[i]; }
+  //  Double_t rout04[nSects04]; for(Int_t i=0; i<nSects04; i++) { rout04[i]=rin4[i]-0.001; }
 
   // dimensions from pipe_much_v15b_125cm_no.geo
   TString pipe5name = "pipe5 - MUCH Al-section - inner part";
@@ -117,12 +117,12 @@ void create_bpipe_geometry_v16b_1m()
   Double_t z5[nSects5]      = { 1850.,  4000. }; // mm
   Double_t rout5[nSects5]   = {  109.,   217. };
   Double_t rin5[nSects5]    = {  104.,   212. };
-  TString pipevac4name = "pipevac5";
-  const Int_t nSects04 = 2;
-  Double_t z04[nSects04]    = { 1850.,  4000. }; // mm
-  Double_t rin04[nSects04]  = {    0.,     0. };
-  Double_t rout04[nSects04]; for(Int_t i=0; i<nSects04; i++) { rout04[i]=rin5[i]; }
-  //  Double_t rout04[nSects04]; for(Int_t i=0; i<nSects04; i++) { rout04[i]=rin5[i]-0.001; }
+  TString pipevac5name = "pipevac5";
+  const Int_t nSects05 = 2;
+  Double_t z05[nSects05]    = { 1850.,  4000. }; // mm
+  Double_t rin05[nSects05]  = {    0.,     0. };
+  Double_t rout05[nSects05]; for(Int_t i=0; i<nSects05; i++) { rout05[i]=rin5[i]; }
+  //  Double_t rout05[nSects05]; for(Int_t i=0; i<nSects05; i++) { rout05[i]=rin5[i]-0.001; }
 
   // --------------------------------------------------------------------------
 
@@ -183,12 +183,12 @@ void create_bpipe_geometry_v16b_1m()
   TGeoMedium* pipeMedium = gGeoMan->GetMedium(pipeMediumName.Data());
   TString geoError = "Medium " + pipeMediumName + " not found";
   if ( ! pipeMedium ) Fatal("Main", geoError.Data());
-  // ---> iron
-  FairGeoMedium* mIron = geoMedia->getMedium("iron");
-  if ( ! mIron ) Fatal("Main", "FairMedium iron not found");
-  geoBuild->createMedium(mIron);
-  TGeoMedium* iron = gGeoMan->GetMedium("iron");
-  if ( ! iron ) Fatal("Main", "Medium iron not found");
+//  // ---> iron
+//  FairGeoMedium* mIron = geoMedia->getMedium("iron");
+//  if ( ! mIron ) Fatal("Main", "FairMedium iron not found");
+//  geoBuild->createMedium(mIron);
+//  TGeoMedium* iron = gGeoMan->GetMedium("iron");
+//  if ( ! iron ) Fatal("Main", "Medium iron not found");
   // ---> lead
   FairGeoMedium* mLead = geoMedia->getMedium("lead");
   if ( ! mLead ) Fatal("Main", "FairMedium lead not found");
@@ -235,31 +235,27 @@ void create_bpipe_geometry_v16b_1m()
   TGeoVolume* pipe3    = MakePipe  (3, nSects3,  z3,  rin3,  rout3,  pipeMedium, &infoFile); 
   pipe3->SetLineColor(kGreen);
   pipe->AddNode(pipe3, 0);
-  //  TGeoVolume* pipevac2 = MakeVacuum(2, nSects02, z02, rin02, rout02, vacuum,     &infoFile); 
-  TGeoVolume* pipevac2 = MakeVacuum(3, nSects02, z02, rin02, rout02, vacuum,     &infoFile); 
-  pipevac2->SetLineColor(kCyan);
-  pipe->AddNode(pipevac2, 0);
+  TGeoVolume* pipevac3 = MakeVacuum(3, nSects03, z03, rin03, rout03, vacuum,     &infoFile); 
+  pipevac3->SetLineColor(kCyan);
+  pipe->AddNode(pipevac3, 0);
 
   infoFile << endl << "Beam pipe section: " << pipe4name << endl;
   infoFile << setw(2) << "i" << setw(10) << "Z,mm" << setw(10) << "Rin,mm" << setw(10) << "Rout,mm" << setw(10) << "h,mm" << endl;
   TGeoVolume* pipe4    = MakePipe  (4, nSects4,  z4,  rin4,  rout4,  lead, &infoFile); 
-  //  pipe4->SetLineColor(kGreen+2);
   pipe4->SetLineColor(kRed);
   pipe->AddNode(pipe4, 0);
-  //  TGeoVolume* pipevac3 = MakeVacuum(3, nSects03, z03, rin03, rout03, vacuum,     &infoFile); 
-  TGeoVolume* pipevac3 = MakeVacuum(4, nSects03, z03, rin03, rout03, vacuum,     &infoFile); 
-  pipevac3->SetLineColor(kCyan);
-  pipe->AddNode(pipevac3, 0);
+  TGeoVolume* pipevac4 = MakeVacuum(4, nSects04, z04, rin04, rout04, vacuum,     &infoFile); 
+  pipevac4->SetLineColor(kCyan);
+  pipe->AddNode(pipevac4, 0);
 
   infoFile << endl << "Beam pipe section: " << pipe5name << endl;
   infoFile << setw(2) << "i" << setw(10) << "Z,mm" << setw(10) << "Rin,mm" << setw(10) << "Rout,mm" << setw(10) << "h,mm" << endl;
   TGeoVolume* pipe5    = MakePipe  (5, nSects5,  z5,  rin5,  rout5,  pipeMedium, &infoFile); 
   pipe5->SetLineColor(kGreen);
   pipe->AddNode(pipe5, 0);
-  //  TGeoVolume* pipevac4 = MakeVacuum(4, nSects04, z04, rin04, rout04, vacuum,     &infoFile); 
-  TGeoVolume* pipevac4 = MakeVacuum(5, nSects04, z04, rin04, rout04, vacuum,     &infoFile); 
-  pipevac4->SetLineColor(kCyan);
-  pipe->AddNode(pipevac4, 0);
+  TGeoVolume* pipevac5 = MakeVacuum(5, nSects05, z05, rin05, rout05, vacuum,     &infoFile); 
+  pipevac5->SetLineColor(kCyan);
+  pipe->AddNode(pipevac5, 0);
 
   // -----   End   --------------------------------------------------
 
