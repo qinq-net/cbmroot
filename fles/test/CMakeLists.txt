@@ -3,12 +3,12 @@
 # The extension is already found.  Any number of sources could be listed here.
 
 Set(INCLUDE_DIRECTORIES
+  ${CBMROOT_SOURCE_DIR}/data
   ${CBMROOT_SOURCE_DIR}/data/beamtime/fhodo
   ${CBMROOT_SOURCE_DIR}/data/raw
   ${CBMROOT_SOURCE_DIR}/base
-  ${CBMROOT_SOURCE_DIR}/data
   ${CBMROOT_SOURCE_DIR}/fles/test
-  ${CBMROOT_SOURCE_DIR}/fles/reader/unpacker
+#  ${CBMROOT_SOURCE_DIR}/fles/reader/unpacker
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
@@ -47,6 +47,7 @@ Link_Directories(
 Set(SRCS
   CbmFlibTestSource.cxx   
   CbmTSUnpackTest.cxx
+  CbmTbDaqTestBuffer.cxx
 )
 
 Set(NO_DICT_SRCS
