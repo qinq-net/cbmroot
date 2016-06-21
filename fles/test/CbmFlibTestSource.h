@@ -27,7 +27,7 @@
 #include <memory>
 #include <map>
 
-class CbmDaqBuffer;
+class CbmTbDaqTestBuffer;
 
 class CbmFlibTestSource : public FairSource
 {
@@ -62,8 +62,11 @@ class CbmFlibTestSource : public FairSource
     void SetHostName(TString name) { fHost = name; }
     void SetPortNumber(Int_t port) { fPort = port; }
 
-    void AddUnpacker(CbmTSUnpack* unpacker, Int_t id)
-    { fUnpackers.insert ( std::pair<Int_t,CbmTSUnpack*>(id,unpacker) ); }    
+    void AddUnpacker(CbmTSUnpack* unpacker, Int_t flibId, Int_t detId)
+    { 
+      fUnpackers.insert ( std::pair<Int_t,CbmTSUnpack*>(flibId,unpacker) ); 
+      fDetectorSystemMap.insert ( std::pair<Int_t,Int_t>(detId,flibId) ); 
+    }    
 
     void AddFile(const char * name) {       
       fInputFileList.Add(new TObjString(name));
@@ -78,18 +81,24 @@ class CbmFlibTestSource : public FairSource
     Int_t   fPort;
 
     std::map<Int_t, CbmTSUnpack*> fUnpackers;
+    std::map<Int_t, Int_t> fDetectorSystemMap; //! Map detector system id to flib system id 
 
-    //    CbmDaqBuffer* fBuffer;
+    CbmTbDaqTestBuffer* fBuffer;
  
     UInt_t fTSNumber;
     UInt_t fTSCounter;
     TStopwatch fTimer;
+
+    Bool_t fBufferFillNeeded; /** True if the input buffer has to be filled again **/  
 
 #ifndef __CINT__
     fles::TimesliceSource* fSource; //!
     Bool_t CheckTimeslice(const fles::Timeslice& ts);
     void PrintMicroSliceDescriptor(const fles::MicrosliceDescriptor& mdsc);
 #endif
+
+    Int_t FillBuffer();
+    Int_t GetNextEvent();
 
     CbmFlibTestSource operator=(const CbmFlibTestSource&);
 

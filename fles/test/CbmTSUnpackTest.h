@@ -23,6 +23,9 @@
 #include <vector>
 #include <map>
 
+class CbmTbDaqTestBuffer;
+class CbmDigi;
+
 class CbmTSUnpackTest : public CbmTSUnpack
 {
 public:
@@ -37,6 +40,8 @@ public:
   virtual void Reset();
 
   virtual void Finish();
+
+  void FillOutput(CbmDigi* digi);
 
 private:
 
@@ -60,6 +65,8 @@ private:
   TClonesArray* fFiberHodoDigi;
   CbmNxyterRawMessage* fRawMessage;  
   CbmFiberHodoDigi* fDigi;  
+
+  CbmTbDaqTestBuffer* fBuffer;
 
   void InitializeFiberHodoMapping();
 
