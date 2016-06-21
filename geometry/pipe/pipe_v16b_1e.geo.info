@@ -41,4 +41,8 @@ Beam pipe section: pipe3 - STS section
  1    220.00     17.40     18.00      0.60
  2    500.00     17.40     18.00      0.60
  3   1250.00     53.17     55.00      1.83
- 4   1700.00     71.73     74.20      2.47
+
+Beam pipe section: pipe4 - STS to RICH junction
+ i      Z,mm    Rin,mm   Rout,mm      h,mm
+ 1   1250.00     53.17     55.00      1.83
+ 2   1700.00     71.73     74.20      2.47
