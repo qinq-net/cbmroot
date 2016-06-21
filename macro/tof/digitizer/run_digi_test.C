@@ -99,7 +99,11 @@ void run_digi_test(Int_t nEvents = 2, const char* setup = "sis100_electron")
   // ------------------------------------------------------------------------
 
 
-
+  // ----- Mc Data Manager   ------------------------------------------------
+  CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
+  mcManager->AddFile(inFile);
+  run->AddTask(mcManager);
+  // ------------------------------------------------------------------------
 
   // =========================================================================
   // ===             Detector Response Simulation (Digitiser)              ===
