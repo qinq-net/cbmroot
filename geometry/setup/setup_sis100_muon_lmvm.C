@@ -8,6 +8,7 @@
  **
  **/
 
+// 2016-06-21 - DE - switch to shortened root pipe v16b_1m geometry ref #721
 // 2016-05-19 - VF - Add platform module
 // 2016-02-25 - DE - use STS v16c as new default
 // 2016-02-05 - VF - Replaces former sis100_muon_lmvm_setup.C,
@@ -33,7 +34,7 @@ void setup_sis100_muon_lmvm()
 
   // -----  Geometry Tags  --------------------------------------------------
   TString magnetGeoTag    = "v15b_much";
-  TString pipeGeoTag      = "much_v15b_125cm_no";
+  TString pipeGeoTag      = "v16b_1m";
   TString stsGeoTag       = "v16c";
   TString muchGeoTag      = "v15b_STS100-B_125cm_no";
   TString shieldGeoTag    = "v15b_SIS100B_149_3part_125cm";
