@@ -64,9 +64,9 @@ void create_bpipe_geometry_v16b_1e()
   Double_t rout1[nSects1] = {  25.7, 25.7, 400.7, 400.7,  400.7,  130.7  };
   TString pipe2name = "pipe2 - first window @ 220mm, h=0.7mm, R=600mm";
   const Int_t nSects2 = 7;
-  Double_t z2[nSects2]    = { 220., 220.7, 221.45, 223.71, 227.49, 230.17, 230.87 }; // mm
-  Double_t rin2[nSects2]  = {  18.,  18.,   30.,    60.,    90.,   105.86, 110.   };
-  Double_t rout2[nSects2] = {  18.,  28.69, 39.3,   65.55,  94.14, 110.,   110.   };
+  Double_t z2[nSects2]      = { 220., 220.7, 221.45, 223.71, 227.49, 230.17, 230.87 }; // mm
+  Double_t rin2[nSects2]    = {  18.,  18.,   30.,    60.,    90.,   105.86, 110.   };
+  Double_t rout2[nSects2]   = {  18.,  28.69, 39.3,   65.55,  94.14, 110.,   110.   };
   TString pipevac1name = "pipevac1";
   const Int_t nSects01 = 10;
   Double_t z01[nSects01]    = { -50., -5.,  -5., 220., 220., 220.7,  221.45, 223.71, 227.49, 230.17 }; // mm
@@ -83,48 +83,42 @@ void create_bpipe_geometry_v16b_1e()
   // tan (2.5) * 100 cm = 4.366 cm
 
   TString pipe3name = "pipe3 - STS section";
-  const Int_t nSects3 = 4;
-  Double_t z3[nSects3]    = { 220.,  500.,  1250.,   1700.  }; // mm
-  Double_t rout3[nSects3] = {  18.,   18.,    55.,     74.2 };
+  const Int_t nSects3 = 3;
+  Double_t z3[nSects3]      = { 220.,  500.,  1250. }; // mm
+  Double_t rout3[nSects3]   = {  18.,   18.,    55. };
   Double_t rin3[nSects3]; for(Int_t i=0; i<nSects3; i++) { rin3[i] = rout3[i] - rout3[i]/30.; }
-  TString pipevac2name = "pipevac2";
-  const Int_t nSects02 = nSects3;
-  Double_t z02[nSects02]    = { 220.,  500.,  1250.,   1700. }; // mm
-  Double_t rin02[nSects02]  = {   0.,    0.,     0.,      0. };
-  Double_t rout02[nSects02]; for(Int_t i=0; i<nSects02; i++) { rout02[i]=rin3[i]; }
-  /*
-  TString pipe4name = "pipe4 - RICH section";
-  const Int_t nSects4 = 2;
-  Double_t z4[nSects4]    = { 1800.,   3700.  }; // mm
-  Double_t rout4[nSects4] = {   74.2,   161.6 };
-  Double_t rin4[nSects4]; for(Int_t i=0; i<nSects4; i++) { rin4[i] = rout4[i] - rout4[i]/30.; }
   TString pipevac3name = "pipevac3";
-  const Int_t nSects03 = nSects4;
-  Double_t z03[nSects03]    = { 1800.,   3700.   }; // mm
-  Double_t rin03[nSects03]  = {    0.,      0.   };
-  Double_t rout03[nSects03]; for(Int_t i=0; i<nSects03; i++) { rout03[i]=rin4[i]; }
-  //*/
-  /*
-  TString pipe5name = "pipe5 - TRD & TOF section";
-  const Int_t nSects5 = 3;
-  Double_t z5[nSects5]    = { 3700.,   5999.8,  6000.   }; // mm
-  Double_t rout5[nSects5] = {  161.6,   261.96,  262.   };
-  Double_t rin5[nSects5]  = {  156.2,   253.23,  253.27 };
-  //Double_t rin5[nSects5]; for(Int_t i=0; i<nSects5; i++) { rin5[i] = rout5[i] - rout5[i]/30.; }
-  
+  const Int_t nSects03 = nSects3;
+  Double_t z03[nSects03]    = { 220.,  500.,  1250. }; // mm
+  Double_t rin03[nSects03]  = {   0.,    0.,     0. };
+  Double_t rout03[nSects03]; for(Int_t i=0; i<nSects03; i++) { rout03[i]=rin3[i]; }
+
+  TString pipe4name = "pipe4 - STS to RICH junction";
+  const Int_t nSects4 = 2;
+  Double_t z4[nSects4]      = { 1250.,  1700.  }; // mm
+  Double_t rout4[nSects4]   = {  55.,     74.2 };
+  Double_t rin4[nSects4]; for(Int_t i=0; i<nSects4; i++) { rin4[i] = rout4[i] - rout4[i]/30.; }
   TString pipevac4name = "pipevac4";
-  const Int_t nSects04 = 7;
-  Double_t z04[nSects04]    = { 3700.,   5943.24, 5943.44, 5947.34, 5959.8,  5981.19, 5999.8  }; // mm
-  Double_t rin04[nSects04]  = {    0.,      0.,      3.42,   70.,    140.,    210.,    253.23 };
-  //Double_t rout04[nSects04] = {  156.2,   250.87,  250.88,  251.05,  251.57,  252.48,  253.23 };
-  Double_t rout04[nSects04] = {  156.2,   250.84,  250.85,  251.01,  251.54,  252.44,  253.23 };
-  
-  TString pipe6name = "pipe6 - second window @ 6000mm, h=0.2mm, R=600mm"; // iron !!!
-  const Int_t nSects6 = 7;
-  Double_t z6[nSects6]     = { 5943.24, 5943.44, 5947.34, 5959.8,  5981.19, 5999.8,  6000.  }; // mm
-  Double_t rin6[nSects6]   = {    0.,      0.,     66.58,  138.88,  209.35,  252.28,  253.27 };
-  Double_t rout6[nSects6]  = {    0.,      3.42,   70.,    140.,    210.,    253.23,  253.27 };
-*/
+  const Int_t nSects04 = nSects4;
+  Double_t z04[nSects04]    = { 1250.,  1700. }; // mm
+  Double_t rin04[nSects04]  = {    0.,     0. };
+  Double_t rout04[nSects04]; for(Int_t i=0; i<nSects04; i++) { rout04[i]=rin4[i]; }
+  //  Double_t rout04[nSects04]; for(Int_t i=0; i<nSects04; i++) { rout04[i]=rin4[i]-0.001; }
+
+  /*
+  TString pipe5name = "pipe5 - MUCH Al-section - inner part";
+  const Int_t nSects5 = 2;
+  Double_t z5[nSects5]      = { 1850.,  4000. }; // mm
+  Double_t rout5[nSects5]   = {  109.,   217. };
+  Double_t rin5[nSects5]    = {  104.,   212. };
+  TString pipevac5name = "pipevac5";
+  const Int_t nSects05 = 2;
+  Double_t z05[nSects05]    = { 1850.,  4000. }; // mm
+  Double_t rin05[nSects05]  = {    0.,     0. };
+  Double_t rout05[nSects05]; for(Int_t i=0; i<nSects05; i++) { rout05[i]=rin5[i]; }
+  //  Double_t rout05[nSects05]; for(Int_t i=0; i<nSects05; i++) { rout05[i]=rin5[i]-0.001; }
+  */
+
   // --------------------------------------------------------------------------
 
   // -------------  Load the necessary FairRoot libraries   -------------------
@@ -184,12 +178,18 @@ void create_bpipe_geometry_v16b_1e()
   TGeoMedium* pipeMedium = gGeoMan->GetMedium(pipeMediumName.Data());
   TString geoError = "Medium " + pipeMediumName + " not found";
   if ( ! pipeMedium ) Fatal("Main", geoError.Data());
-  // ---> iron
-  FairGeoMedium* mIron = geoMedia->getMedium("iron");
-  if ( ! mIron ) Fatal("Main", "FairMedium iron not found");
-  geoBuild->createMedium(mIron);
-  TGeoMedium* iron = gGeoMan->GetMedium("iron");
-  if ( ! iron ) Fatal("Main", "Medium iron not found");
+//  // ---> iron
+//  FairGeoMedium* mIron = geoMedia->getMedium("iron");
+//  if ( ! mIron ) Fatal("Main", "FairMedium iron not found");
+//  geoBuild->createMedium(mIron);
+//  TGeoMedium* iron = gGeoMan->GetMedium("iron");
+//  if ( ! iron ) Fatal("Main", "Medium iron not found");
+//  // ---> lead
+//  FairGeoMedium* mLead = geoMedia->getMedium("lead");
+//  if ( ! mLead ) Fatal("Main", "FairMedium lead not found");
+//  geoBuild->createMedium(mLead);
+//  TGeoMedium* lead = gGeoMan->GetMedium("lead");
+//  if ( ! lead ) Fatal("Main", "Medium lead not found");
   // ---> vacuum
   FairGeoMedium* mVacuum = geoMedia->getMedium("vacuum");
   if ( ! mVacuum ) Fatal("Main", "FairMedium vacuum not found");
@@ -212,7 +212,6 @@ void create_bpipe_geometry_v16b_1e()
   // -----   Create sections  -------------------------------------------------
   infoFile << endl << "Beam pipe section: " << pipe1name << endl;
   infoFile << setw(2) << "i" << setw(10) << "Z,mm" << setw(10) << "Rin,mm" << setw(10) << "Rout,mm" << setw(10) << "h,mm" << endl;
-  
   TGeoVolume* pipe1    = MakePipe  (1, nSects1,  z1,  rin1,  rout1,  pipeMedium, &infoFile); 
   pipe1->SetLineColor(kGray);
   pipe->AddNode(pipe1, 0);
@@ -231,37 +230,29 @@ void create_bpipe_geometry_v16b_1e()
   TGeoVolume* pipe3    = MakePipe  (3, nSects3,  z3,  rin3,  rout3,  pipeMedium, &infoFile); 
   pipe3->SetLineColor(kGreen);
   pipe->AddNode(pipe3, 0);
-  //  TGeoVolume* pipevac2 = MakeVacuum(2, nSects02, z02, rin02, rout02, vacuum,     &infoFile); 
-  TGeoVolume* pipevac2 = MakeVacuum(3, nSects02, z02, rin02, rout02, vacuum,     &infoFile); 
-  pipevac2->SetLineColor(kCyan);
-  pipe->AddNode(pipevac2, 0);
-  /*
-  infoFile << endl << "Beam pipe section: " << pipe4name << endl;
-  infoFile << setw(2) << "i" << setw(10) << "Z,mm" << setw(10) << "Rin,mm" << setw(10) << "Rout,mm" << setw(10) << "h,mm" << endl;
-  TGeoVolume* pipe4    = MakePipe  (4, nSects4,  z4,  rin4,  rout4,  pipeMedium, &infoFile); 
-  pipe4->SetLineColor(kGreen+2);
-  pipe->AddNode(pipe4, 0);
   TGeoVolume* pipevac3 = MakeVacuum(3, nSects03, z03, rin03, rout03, vacuum,     &infoFile); 
   pipevac3->SetLineColor(kCyan);
   pipe->AddNode(pipevac3, 0);
-  //*/
+
+  infoFile << endl << "Beam pipe section: " << pipe4name << endl;
+  infoFile << setw(2) << "i" << setw(10) << "Z,mm" << setw(10) << "Rin,mm" << setw(10) << "Rout,mm" << setw(10) << "h,mm" << endl;
+  TGeoVolume* pipe4    = MakePipe  (4, nSects4,  z4,  rin4,  rout4,  pipeMedium, &infoFile); 
+  pipe4->SetLineColor(kGreen);
+  pipe->AddNode(pipe4, 0);
+  TGeoVolume* pipevac4 = MakeVacuum(4, nSects04, z04, rin04, rout04, vacuum,     &infoFile); 
+  pipevac4->SetLineColor(kCyan);
+  pipe->AddNode(pipevac4, 0);
+
   /*
   infoFile << endl << "Beam pipe section: " << pipe5name << endl;
   infoFile << setw(2) << "i" << setw(10) << "Z,mm" << setw(10) << "Rin,mm" << setw(10) << "Rout,mm" << setw(10) << "h,mm" << endl;
   TGeoVolume* pipe5    = MakePipe  (5, nSects5,  z5,  rin5,  rout5,  pipeMedium, &infoFile); 
   pipe5->SetLineColor(kGreen);
   pipe->AddNode(pipe5, 0);
-  TGeoVolume* pipevac4 = MakeVacuum(4, nSects04, z04, rin04, rout04, vacuum,     &infoFile); 
-  pipevac4->SetLineColor(kCyan);
-  pipe->AddNode(pipevac4, 0);
-
-  infoFile << endl << "Beam pipe section: " << pipe6name << ", material: iron" << endl;
-  infoFile << setw(2) << "i" << setw(10) << "Z,mm" << setw(10) << "Rin,mm" << setw(10) << "Rout,mm" << setw(10) << "h,mm" << endl;
-  TGeoVolume* pipe6 = MakePipe(6, nSects6,  z6,  rin6,  rout6, iron, &infoFile);
-  pipe6->SetLineColor(kBlue);
-  pipe->AddNode(pipe6, 0);
-*/  
-  
+  TGeoVolume* pipevac5 = MakeVacuum(5, nSects05, z05, rin05, rout05, vacuum,     &infoFile); 
+  pipevac5->SetLineColor(kCyan);
+  pipe->AddNode(pipevac5, 0);
+  */
   // -----   End   --------------------------------------------------
 
   // ---------------   Finish   -----------------------------------------------
