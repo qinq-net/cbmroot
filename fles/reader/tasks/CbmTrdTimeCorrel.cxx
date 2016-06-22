@@ -1097,7 +1097,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
 		}
       Clusterrun++;
       std::sort (linearClusterBuffer.begin (), linearClusterBuffer.end (),SortSpadicMessageRange);//Sort the Hitmessages by their position of origin on the padplane
-      Cluster BuildingCluster (fBaseline,clusterWindow,120); //Create a new Cluster
+      Cluster BuildingCluster (fBaseline,clusterWindow,fClusterThreshhold); //Create a new Cluster
       Int_t lastRow = (GetSpadicID(linearClusterBuffer.begin()->GetSourceAddress())/2)*32+GetChannelOnPadPlane(linearClusterBuffer.begin()->GetChannelID() + ((GetSpadicID(linearClusterBuffer.begin()->GetSourceAddress()) %2 == 1)? 16 : 0))/16;
       Int_t lastPad = GetChannelOnPadPlane(linearClusterBuffer.begin()->GetChannelID() + ((GetSpadicID(linearClusterBuffer.begin()->GetSourceAddress()) %2 == 1)? 16 : 0));
       auto SatteliteDebug =
@@ -1146,7 +1146,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
                 {
             	  SatteliteDebug(BuildingCluster);
                   fClusterBuffer.push_back (BuildingCluster);
-                  Cluster tempCluster (fBaseline,clusterWindow,120);
+                  Cluster tempCluster (fBaseline,clusterWindow,fClusterThreshhold);
                   BuildingCluster = tempCluster;
                 }
               //std::cout << " Rowchange " << lastRow << " " << currentRow << " " << std::endl;
@@ -1161,7 +1161,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
             				{
             			SatteliteDebug(BuildingCluster);
             			fClusterBuffer.push_back (BuildingCluster);
-            			Cluster tempCluster (fBaseline,clusterWindow,120);
+            			Cluster tempCluster (fBaseline,clusterWindow,fClusterThreshhold);
             			BuildingCluster = tempCluster;
             				}
             		//std::cout << " Rowchange " << lastRow << " " << currentRow << " " << std::endl;
@@ -1178,7 +1178,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
                     {
                 	  SatteliteDebug(BuildingCluster);
                       fClusterBuffer.push_back (BuildingCluster);
-                      Cluster tempCluster (fBaseline,clusterWindow,120);
+                      Cluster tempCluster (fBaseline,clusterWindow,fClusterThreshhold);
                       BuildingCluster = tempCluster;
                     }
                   BuildingCluster.AddEntry (*currentMessage);
@@ -1203,7 +1203,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
                                 {
                             	  SatteliteDebug(BuildingCluster);
                                   fClusterBuffer.push_back (BuildingCluster);
-                                  Cluster tempCluster (fBaseline,clusterWindow,120);
+                                  Cluster tempCluster (fBaseline,clusterWindow,fClusterThreshhold);
                                   BuildingCluster = tempCluster;
                                 }
                             }
@@ -1215,7 +1215,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
                                 {
                             	  SatteliteDebug(BuildingCluster);
                                   fClusterBuffer.push_back (BuildingCluster);
-                                  Cluster tempCluster (fBaseline,clusterWindow,120);
+                                  Cluster tempCluster (fBaseline,clusterWindow,fClusterThreshhold);
                                   BuildingCluster = tempCluster;
                                 }
                               currentMessage--;
@@ -1231,7 +1231,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
                     {
                 	  SatteliteDebug(BuildingCluster);
                       fClusterBuffer.push_back (BuildingCluster);
-                      Cluster tempCluster (fBaseline,clusterWindow,120);
+                      Cluster tempCluster (fBaseline,clusterWindow,fClusterThreshhold);
                       BuildingCluster = tempCluster;
                     }
                 }
@@ -1243,7 +1243,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
                     {
                 	  SatteliteDebug(BuildingCluster);
                       fClusterBuffer.push_back (BuildingCluster);
-                      Cluster tempCluster (fBaseline,clusterWindow,120);
+                      Cluster tempCluster (fBaseline,clusterWindow,fClusterThreshhold);
                       BuildingCluster = tempCluster;
                     }//Start the Cluster
                   BuildingCluster.AddEntry (*currentMessage);
@@ -1297,6 +1297,11 @@ void CbmTrdTimeCorrel::ClusterizerTime()
     	  fHM->H2(histname)->Fill(x.size(),x.Type());
       }
       if(x.Type() != 0 && x.size()>=3) continue;
+      if(x.fMaxStopType < 1 && x.size() >=3)
+      {
+          string histname = "Charge_Spectrum_for_Syscore_"+std::to_string(0)+"_Detector_"+std::to_string(x.GetSpadic()/2);
+          fHM->H1(histname)->Fill(x.GetTotalCharge()/*,x.GetHorizontalPosition()*/);
+      }
       //if(x.size()==3&&(x.GetTotalCharge()> 250)) continue;
       if(fDrawPadResponse){
     	  string histname = "Pad_Response_"+ detectorName + "_for_Clusters_of_Size_"+std::to_string(static_cast<Int_t>(x.size()));
@@ -1739,6 +1744,18 @@ void CbmTrdTimeCorrel::CreateHistograms()
           //fHM->H3(histName.Data())->GetZaxis()->SetTitle("TotalCharge");
       }
     }
+  if(fActivateClusterizer){
+      for (Int_t syscore=0; syscore<1;++syscore) {
+          for (Int_t detector=0; detector<2;++detector) {
+              TString histname = "Charge_Spectrum_for_Syscore_"+std::to_string(syscore)+"_Detector_"+std::to_string(detector);
+              title = histname + runName;
+              fHM->Create1<TH1I>(histname.Data(), title.Data(),2001,-0.5,2000.5/*,33,-0.5,32.5*/);
+              fHM->H1(histname.Data())->GetXaxis()->SetTitle("Cluster Charge in ADC Units");
+              //fHM->H2(histname.Data())->GetYaxis()->SetTitle("ChID");
+              fHM->H1(histname.Data())->GetYaxis()->SetTitle("N^{o}");
+          }
+      }
+  }
 
   for(Int_t Detector =0;Detector<=1;Detector++){
             TString Detectorname = (Detector == 0 ? "Frankfurt" : "Muenster");
@@ -1998,7 +2015,33 @@ void CbmTrdTimeCorrel::FitPRF() {
 	        "PRF",[&PRFLambda](double*x, double *p){ return PRFLambda(x[0],p);}
 	        ,-10.0, 10.0, 4);
 	//TODO: Check for Rootfile of fits
-	for(Int_t size=3;size<=4;size++)
+	auto MPVProfile = [&](TH2* PRFHist,Int_t size=3){
+	  TString ProfileName= "Profile_";
+	      ProfileName +=PRFHist->GetName();
+          TProfile* PRFProfile =  new TProfile(ProfileName.Data(),ProfileName.Data(), 1001,-(size+0.05)*7.125,(size+0.05)*7.125);
+          TF1* MPVFkt = new TF1("MPVFkt","gaus",0,1);
+          MPVFkt->SetParameters(100,0.5,0.125);
+          MPVFkt->SetParLimits(1,0,1);
+          MPVFkt->SetParLimits(2,0,1);
+	  if (PRFHist->GetEntries() < 50) return PRFProfile;
+	  TH1D* TempProfile=nullptr;
+          for (Int_t BinX=1;BinX<=1001;BinX++){
+              TempProfile=PRFHist->ProjectionY("_px",BinX,BinX);
+              //std::cout <<BinX << " " << TempProfile->GetEntries()<< std::endl;
+              if (TempProfile->GetEntries() < 1)continue;
+              TFitResultPtr MPVFit = TempProfile->Fit(MPVFkt, "MQS","",0,1.0);
+              if(MPVFit->GetParams()==nullptr) continue;
+              Double_t Mean=MPVFit->Parameter(1);
+              Double_t Sigma=(MPVFit->Parameter(2));
+              //std::cout <<BinX << " " << Mean << " " << Sigma << std::endl;
+              PRFProfile->Fill(PRFProfile->GetBinCenter(BinX),Mean,TempProfile->GetEntries());
+              PRFProfile->SetBinError((BinX),Sigma);
+          }
+          delete TempProfile;
+          delete MPVFkt;
+          return PRFProfile;
+	};
+	for (Int_t size=3;size<=4;size++)
 	for (Int_t Detector = 0; Detector <= NrOfSpadics / 2; Detector++) {
 		string Detectorname = (Detector == 0 ? "Frankfurt" : "Muenster");
 		string histName = "Pad_Response_" + Detectorname
@@ -2006,10 +2049,10 @@ void CbmTrdTimeCorrel::FitPRF() {
 		TH2* PRFHist = fHM->H2(histName);
 		if (PRFHist->GetEntries() < 50)
 			continue;
-		TString ProfileName ="Profile_"+histName;
+		//TString ProfileName ="Profile_"+histName;
                 TCanvas *c1 = new TCanvas("c1","",1600,600);
-		TProfile* PRFProfile = PRFHist->ProfileX(ProfileName.Data(),1,-1);
-		PRFProfile->Draw("");
+                TH1* PRFProfile = MPVProfile(PRFHist);
+		PRFProfile->Draw("E1");
 		PRFProfile->Write();
 	        PRF->SetParameters(0.1,3.5,1,7.125);
 	        PRF->SetParName(0,"K3");
@@ -2028,7 +2071,7 @@ void CbmTrdTimeCorrel::FitPRF() {
                 c1->SaveAs("pics/Pre_"+fitname+".pdf");
                 c1->SaveAs("pics/Pre_"+fitname+".png");
                 c1->Clear();
-                PRFProfile->Draw("colz");
+                PRFProfile->Draw("E2");
 		TFitResultPtr PRFFit = PRFProfile->Fit(PRF, "S", "", -10.0, 10.0);
 		PRFFit->SetName(fitname);
 		FitResults.push_back(*PRFFit);
@@ -2280,6 +2323,8 @@ CbmTrdTimeCorrel::Cluster::Cluster(Int_t * BaselineArray,Int_t initWindowsize, I
     fBaseline(BaselineArray),
     fTotalCharge (0),
     fHorizontalPosition (0),
+    fMaxStopType(0),
+    fMaxCharge(-256),
     fWindowsize(initWindowsize),
 	fPreCalculatedBaseline(true),
 	fClusterChargeThreshhold(ChargeThreshhold),
@@ -2361,7 +2406,7 @@ Bool_t CbmTrdTimeCorrel::Cluster::FillChargeDistribution(TH2* ChargeMap)
 {
   if (!fParametersCalculated)
     CalculateParameters();
-  if(fMaxStopType>0)return false;
+  //if(fMaxStopType>0)return false;
   for (auto currentMessage : fEntries )
     {
       Int_t Charge = GetMaxADC(currentMessage);

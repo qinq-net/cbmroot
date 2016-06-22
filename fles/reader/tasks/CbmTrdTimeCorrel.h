@@ -62,6 +62,7 @@ class CbmTrdTimeCorrel : public FairTask
   Bool_t fCalculateBaseline = true;
   const Int_t  fSignalShapeThreshold = -255	;
   Int_t fBaseline[1*6*16];
+  Int_t fClusterThreshhold=0;
   const Bool_t fActivateDeltaTAnalysis = false;
   const Bool_t fActivateOffsetAnalysis = false;
   const Bool_t fDrawClustertypes = true;
@@ -157,6 +158,7 @@ class CbmTrdTimeCorrel : public FairTask
     ~Cluster();
     Size_t size();
     Int_t Type();
+    Int_t fMaxStopType;
     Int_t Windowsize();
     ULong_t GetFulltime();
     Float_t GetHorizontalPosition();
@@ -172,7 +174,7 @@ class CbmTrdTimeCorrel : public FairTask
     std::vector<CbmSpadicRawMessage> fEntries;
     Bool_t fParametersCalculated,fIs2D=true;
     Bool_t fPreCalculatedBaseline;
-    Int_t fSpadic, fRow, fType, fTotalCharge, fMaxCharge, fMaxStopType, fWindowsize, fClusterChargeThreshhold;
+    Int_t fSpadic, fRow, fType, fTotalCharge, fMaxCharge, fWindowsize, fClusterChargeThreshhold;
     Int_t*  fBaseline;
     ULong_t fFullTime;
     Float_t fHorizontalPosition;
