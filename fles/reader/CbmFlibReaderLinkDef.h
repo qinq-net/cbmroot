@@ -8,7 +8,7 @@
 //#pragma link C++ class CbmNxFlibFileSource;
 #pragma link C++ class CbmFlibFileSourceNew;
 
-#pragma link C++ class CbmTSUnpack;
+//#pragma link C++ class CbmTSUnpack;
 #pragma link C++ class CbmTSUnpackSpadic;
 #pragma link C++ class CbmTSUnpackSpadicLegacy;
 #pragma link C++ class CbmTSUnpackNxyter;

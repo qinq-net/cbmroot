@@ -8,6 +8,7 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/data/raw
   ${CBMROOT_SOURCE_DIR}/data/beamtime/fhodo
   ${CBMROOT_SOURCE_DIR}/base
+  ${CBMROOT_SOURCE_DIR}/beamtime/base
   ${CBMROOT_SOURCE_DIR}/fles/reader
   ${CBMROOT_SOURCE_DIR}/fles/reader/unpacker
   ${CBMROOT_SOURCE_DIR}/fles/reader/tasks
@@ -65,7 +66,6 @@ Set(SRCS
   CbmDaqBuffer.cxx
   CbmFiberHodoMapping.cxx
 
-  unpacker/CbmTSUnpack.cxx
   unpacker/CbmTSUnpackSpadic.cxx
   unpacker/CbmTSUnpackSpadicLegacy.cxx
   unpacker/CbmTSUnpackNxyter.cxx
@@ -121,7 +121,7 @@ EndIf()
 Set(LINKDEF  CbmFlibReaderLinkDef.h )
 Set(LIBRARY_NAME CbmFlibReader)
 Set(DEPENDENCIES
-    CbmBase CbmRich fles_ipc_legacy flib_dpb spadicMessage trbnet ${FLES_TOF_BEAM_DEPEND} Eve Base 
+    CbmBase CbmBeamtimeBase CbmRich fles_ipc_legacy flib_dpb spadicMessage trbnet ${FLES_TOF_BEAM_DEPEND} Eve Base 
 )
 
 GENERATE_LIBRARY()
