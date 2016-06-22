@@ -73,6 +73,7 @@ private:
   TClonesArray* fTrdTrackMatches;
   TClonesArray* fTofPoints; 
   TClonesArray* fTofHits;
+  TClonesArray* fTofHitsMatches;
   TClonesArray* fGlobalTracks;
   TClonesArray* fJpsiCandidates; //output array of Jpsi candidates
 

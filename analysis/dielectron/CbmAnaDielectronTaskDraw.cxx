@@ -803,6 +803,7 @@ void CbmAnaDielectronTaskDraw::DrawMinvSource(
    for (int i = 0; i < CbmLmvmHist::fNofBgPairSources; i++){
       stringstream ss;
       ss << "fh_source_bg_minv_" <<i << "_" << CbmLmvmHist::fAnaSteps[step];
+       H1(ss.str())->GetXaxis()->SetRangeUser(0, 2.);
       hists.push_back( H1(ss.str()) );
    }
 
@@ -835,6 +836,10 @@ void CbmAnaDielectronTaskDraw::DrawMinvSourceAll()
    TCanvas *cPtCut = CreateCanvas("lmvm_minv_source_" + CbmLmvmHist::fAnaSteps[kPtCut],
          "lmvm_minv_source_"+CbmLmvmHist::fAnaSteps[kPtCut], 600, 600);
    DrawMinvSource(kPtCut, false);
+       
+       TCanvas *cElId = CreateCanvas("lmvm_minv_source_" + CbmLmvmHist::fAnaSteps[kElId],
+                                      "lmvm_minv_source_"+CbmLmvmHist::fAnaSteps[kElId], 600, 600);
+       DrawMinvSource(kElId, false);
 
    }
 
@@ -886,6 +891,7 @@ void CbmAnaDielectronTaskDraw::DrawElPiMomHis()
    H1("fh_pi_mom_rec_sts_rich_trd")->Scale(1/binWEl);
    H1("fh_pi_mom_rec_sts_rich_trd_tof")->Scale(1/binWEl);
    H1("fh_pi_mom_mc")->SetMinimum(2);
+    
    DrawH1( list_of(H1("fh_pi_mom_mc"))(H1("fh_pi_mom_acc"))(H1("fh_pi_mom_rec"))(H1("fh_pi_mom_rec_only_sts"))
          (H1("fh_pi_mom_rec_sts_rich_trd"))(H1("fh_pi_mom_rec_sts_rich_trd_tof")),
          list_of("MC ("+Cbm::NumberToString(H1("fh_pi_mom_mc")->GetEntries()/fNofEvents, 2) +" per event)")
@@ -894,7 +900,7 @@ void CbmAnaDielectronTaskDraw::DrawElPiMomHis()
          ("Rec only STS (" + Cbm::NumberToString(H1("fh_pi_mom_rec_only_sts")->GetEntries()/fNofEvents, 2) +" per event)")
          ("Rec STS-RICH-TRD (" + Cbm::NumberToString(H1("fh_pi_mom_rec_sts_rich_trd")->GetEntries()/fNofEvents, 2) +" per event)")
          ("Rec STS-RICH-TRD-TOF (" + Cbm::NumberToString(H1("fh_pi_mom_rec_sts_rich_trd_tof")->GetEntries()/fNofEvents, 2) +" per event)"),
-         kLinear, kLog, true, 0.1, 0.3, 0.99, 0.99);
+         kLinear, kLog, true, 0.1, 0.7, 0.99, 0.99);
 
    //primary pions vertex < 0.1 cm
    double binWElPrim = H1("fh_piprim_mom_mc")->GetBinWidth(1);
@@ -914,7 +920,7 @@ void CbmAnaDielectronTaskDraw::DrawElPiMomHis()
          ("Rec only STS (" + Cbm::NumberToString(H1("fh_piprim_mom_rec_only_sts")->GetEntries()/fNofEvents, 2) +" per event)")
          ("Rec STS-RICH-TRD (" + Cbm::NumberToString(H1("fh_piprim_mom_rec_sts_rich_trd")->GetEntries()/fNofEvents, 2) +" per event)")
          ("Rec STS-RICH-TRD-TOF (" + Cbm::NumberToString(H1("fh_piprim_mom_rec_sts_rich_trd_tof")->GetEntries()/fNofEvents, 2) +" per event)"),
-         kLinear, kLog, true, 0.1, 0.3, 0.99, 0.99);
+         kLinear, kLog, true, 0.1, 0.7, 0.99, 0.99);
 
    TCanvas *cPiNotAcc = CreateCanvas("lmvm_pi_mom_notacc", "lmvm_pi_mom_notacc", 800, 800);
    TH1D* h1 = ((TH1D*)H1("fh_pi_mom_mc")->Clone());

@@ -311,6 +311,7 @@ private:
     TClonesArray *fTrdHits;
     TClonesArray *fTrdTrackMatches;
     TClonesArray *fTofHits;
+    TClonesArray* fTofHitsMatches;
     TClonesArray *fTofPoints;
     CbmVertex *fPrimVertex;
     CbmKFVertex fKFVertex;

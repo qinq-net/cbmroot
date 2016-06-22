@@ -41,6 +41,7 @@ CbmLitTofQa::CbmLitTofQa():
    fStsTrackMatches(NULL),
    fTofHits(NULL),
    fTofPoints(NULL),
+   fTofHitsMatches(NULL),
    fTofTracks(NULL),
    fMCTracks(NULL),
    fPrimVertex(NULL),
@@ -96,6 +97,7 @@ void CbmLitTofQa::ReadDataBranches()
    fStsTracks = (TClonesArray*) ioman->GetObject("StsTrack");
    fStsTrackMatches = (TClonesArray*) ioman->GetObject("StsTrackMatch");
    fTofHits = (TClonesArray*) ioman->GetObject("TofHit");
+   fTofHitsMatches = (TClonesArray*) ioman->GetObject("TofHitMatch");
    fTofPoints = (TClonesArray*) ioman->GetObject("TofPoint");
    fTofTracks = (TClonesArray*) ioman->GetObject("TofTrack");
    fMCTracks = (TClonesArray*) ioman->GetObject("MCTrack");
@@ -168,7 +170,10 @@ void CbmLitTofQa::ProcessMC()
    Int_t nofHits = fTofHits->GetEntriesFast();
    for (Int_t iHit = 0; iHit < nofHits; iHit++) {
       const CbmTofHit* tofHit = static_cast<const CbmTofHit*>(fTofHits->At(iHit));
-      const CbmTofPoint* tofPoint = static_cast<const CbmTofPoint*>(fTofPoints->At(tofHit->GetRefId()));
+      CbmMatch*  tofHitMatch = static_cast<CbmMatch*>(fTofHitsMatches->At(iHit));
+      if (tofHitMatch == NULL) {continue;}
+      Int_t tofPointIndex = tofHitMatch->GetMatchedLink().GetIndex();
+      const CbmTofPoint* tofPoint = static_cast<const CbmTofPoint*>(fTofPoints->At(tofPointIndex));
       fMCTrackIdForTofHits.insert(tofPoint->GetTrackID());
    }
 
@@ -199,7 +204,9 @@ void CbmLitTofQa::ProcessGlobalTracks()
       Int_t stsMCTrackId = stsMatch->GetMatchedLink().GetIndex();
 
       const CbmTofHit* tofHit = static_cast<const CbmTofHit*>(fTofHits->At(tofId));
-      Int_t tofMCPointId = tofHit->GetRefId();
+      CbmMatch*  tofHitMatch = static_cast<CbmMatch*>(fTofHitsMatches->At(tofId));
+      if (tofHitMatch == NULL) {continue;}
+      Int_t tofMCPointId = tofHitMatch->GetMatchedLink().GetIndex();
       const CbmTofPoint* tofPoint = static_cast<const CbmTofPoint*>(fTofPoints->At(tofMCPointId));
       Int_t tofMCTrackId = tofPoint->GetTrackID();
 
@@ -270,7 +277,9 @@ void CbmLitTofQa::ProcessTofHits()
    Int_t nofTofHits = fTofHits->GetEntriesFast();
    for (Int_t iHit = 0; iHit < nofTofHits; iHit++) {
       const CbmTofHit* tofHit = static_cast<const CbmTofHit*>(fTofHits->At(iHit));
-      Int_t tofMCPointId = tofHit->GetRefId();
+      CbmMatch*  tofHitMatch = static_cast<CbmMatch*>(fTofHitsMatches->At(iHit));
+      if (tofHitMatch == NULL) {continue;}
+      Int_t tofMCPointId = tofHitMatch->GetMatchedLink().GetIndex();
       const CbmTofPoint* tofPoint = static_cast<const CbmTofPoint*>(fTofPoints->At(tofMCPointId));
       Int_t tofMCTrackId = tofPoint->GetTrackID();
 
@@ -290,7 +299,10 @@ void CbmLitTofQa::ProcessTofTracks()
    for (Int_t iTrack = 0; iTrack < nofTofTracks; iTrack++) {
       const CbmTofTrack* tofTrack = static_cast<const CbmTofTrack*>(fTofTracks->At(iTrack));
       const CbmTofHit* tofHit = static_cast<const CbmTofHit*>(fTofHits->At(tofTrack->GetTofHitIndex()));
-      const FairMCPoint* tofPoint = static_cast<const FairMCPoint*>(fTofPoints->At(tofHit->GetRefId()));
+      CbmMatch*  tofHitMatch = static_cast<CbmMatch*>(fTofHitsMatches->At(tofTrack->GetTofHitIndex()));
+      if (tofHitMatch == NULL) {continue;}
+      Int_t tofMCPointId = tofHitMatch->GetMatchedLink().GetIndex();
+      const FairMCPoint* tofPoint = static_cast<const FairMCPoint*>(fTofPoints->At(tofMCPointId));
       Int_t tofMCTrackId = tofPoint->GetTrackID();
 
       const FairTrackParam* par = tofTrack->GetTrackParameter();

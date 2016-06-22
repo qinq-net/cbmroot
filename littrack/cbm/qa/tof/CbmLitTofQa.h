@@ -116,6 +116,7 @@ private:
    TClonesArray* fStsTrackMatches; // CbmTrackMatchNew array
    TClonesArray* fTofHits; // CbmTofHit array
    TClonesArray* fTofPoints; // CbmTofPoint array
+   TClonesArray* fTofHitsMatches;
    TClonesArray* fTofTracks; // CbmTofTrack array
    TClonesArray* fMCTracks; // CbmMCTrack array
 

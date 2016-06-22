@@ -43,6 +43,7 @@ CbmAnaJpsiTask::CbmAnaJpsiTask()
 	  fTrdTrackMatches(NULL),
 	  fTofPoints(NULL),
 	  fTofHits(NULL),
+      fTofHitsMatches(NULL),
 	  fGlobalTracks(NULL),
 	  fJpsiCandidates(NULL),
           fNofHitsInRingMap(),
@@ -118,6 +119,9 @@ InitStatus CbmAnaJpsiTask::Init()
    fTofHits = (TClonesArray*) ioman->GetObject("TofHit");
    if ( NULL == fTofHits) {Fatal("CbmAnaJpsiTask::Init","No TofHits Array! ");}
    
+   fTofHitsMatches = (TClonesArray*) ioman->GetObject("TofHitMatch");
+   if ( NULL == fTofHitsMatches) {Fatal("CbmAnaJpsiTask::Init","No TofHitMatch Array! ");}
+    
    fTofPoints = (TClonesArray*) ioman->GetObject("TofPoint");
    if ( NULL == fTofPoints) {Fatal("CbmAnaJpsiTask::Init","No TofPoint Array! "); }
    
@@ -497,7 +501,9 @@ void CbmAnaJpsiTask::AssignMcToCandidates()
       if (tofInd < 0) continue;
       CbmTofHit* tofHit = (CbmTofHit*) fTofHits->At(tofInd);
       if (tofHit == NULL) continue;
-      Int_t tofPointIndex = tofHit->GetRefId();
+      CbmMatch*  tofHitMatch = static_cast<CbmMatch*>(fTofHitsMatches->At(tofInd));
+      if (tofHitMatch == NULL) {continue;}
+      Int_t tofPointIndex = tofHitMatch->GetMatchedLink().GetIndex();
       if (tofPointIndex < 0) continue;
       FairMCPoint* tofPoint = (FairMCPoint*) fTofPoints->At(tofPointIndex);
       if (tofPoint == NULL) continue;

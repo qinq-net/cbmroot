@@ -10,6 +10,7 @@
 #include "CbmGlobalTrack.h"
 #include "CbmMCTrack.h"
 #include "FairRootManager.h"
+#include "CbmMatch.h"
 
 #include "TClonesArray.h"
 
@@ -24,6 +25,7 @@ CbmLitFindGlobalTracksIdeal::CbmLitFindGlobalTracksIdeal():
    fTrdMatches(NULL),
    fTofMCPoints(NULL),
    fTofHits(NULL),
+   fTofHitsMatches(NULL),
    fGlobalTracks(NULL),
 
    fMcStsMap(),
@@ -99,6 +101,8 @@ void CbmLitFindGlobalTracksIdeal::ReadDataBranches()
       if (NULL == fTofMCPoints ) { Fatal("Init","No TofPoint array!"); }
       fTofHits = (TClonesArray*) ioman->GetObject("TofHit");
       if (NULL == fTofHits) { Fatal("Init", "No TofHit array!"); }
+      fTofHitsMatches = (TClonesArray*) ioman->GetObject("TofHitMatch");
+      if (NULL == fTofHitsMatches) { Fatal("Init","No TofHitMatch array!"); }
    }
 
    // Create and register CbmGlobalTrack array
@@ -128,7 +132,10 @@ void CbmLitFindGlobalTracksIdeal::FillMapTof()
    for(Int_t iTofHit = 0; iTofHit < nofTofHits; iTofHit++) {
       CbmTofHit* tofHit = (CbmTofHit*) fTofHits->At(iTofHit);
       if (tofHit == NULL) { continue; }
-      CbmTofPoint* tofPoint = (CbmTofPoint*) fTofMCPoints->At(tofHit->GetRefId());
+      CbmMatch*  tofHitMatch = (CbmMatch*) fTofHitsMatches->At(iTofHit);
+      if (tofHitMatch == NULL) {continue;}
+      Int_t tofPointIndex = tofHitMatch->GetMatchedLink().GetIndex();
+      CbmTofPoint* tofPoint = (CbmTofPoint*) fTofMCPoints->At(tofPointIndex);
       if (tofPoint == NULL) { continue; }
       Int_t mcId = tofPoint->GetTrackID();
       if(mcId == -1) { continue; }

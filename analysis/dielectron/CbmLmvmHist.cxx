@@ -27,7 +27,7 @@ const vector<int> CbmLmvmHist::fAnaStepsColor =
       list_of(kGreen+3)(kOrange+3)(kBlack)(kOrange+7)(kRed)(kPink-6)(kGreen)(kOrange-3)(kViolet+10)(kGreen-3)(kMagenta)(kYellow+1);
 
 const vector<string> CbmLmvmHist::fSignalNames =
-      list_of("rho0")("omega")("phi")("omega_dalitz");
+      list_of("im_rho")("qgp")("omega")("phi")("omega_dalitz");
 
 const vector<string> CbmLmvmHist::fBgPairSourceLatex =
       list_of("#gamma-#gamma")("#pi^{0}-#pi^{0}")("o.-o.")("#gamma-#pi^{0}")("#gamma-o.")("#pi^{0}-o.");

@@ -89,6 +89,7 @@ private:
    TClonesArray* fTrdMatches; // CbmTrackMatchNew
    TClonesArray* fTofMCPoints; // CbmTofPoint
    TClonesArray* fTofHits; // CbmTofHit
+   TClonesArray* fTofHitsMatches; //
    TClonesArray* fGlobalTracks; //output: CbmGlobalTrack
 
    // Maps for reconstructed tracks
