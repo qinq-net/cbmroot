@@ -49,11 +49,13 @@ Int_t    fieldSymType=0;
 TString defaultInputFile="";
 
 
-void tof_qa_ana(Int_t nEvents = 2, const char* setup = "sis100_electron")
+void tof_qa_ana(Int_t nEvents = 2, const char* setup = "sis100_electron", Int_t iRandSeed = 0)
 {
 
   // ========================================================================
   //          Adjust this part according to your requirements
+      // Random seed for random generator!
+   gRandom->SetSeed(iRandSeed);
 
   // Verbosity level (0=quiet, 1=event level, 2=track level, 3=debug)
   Int_t iVerbose = 0;
