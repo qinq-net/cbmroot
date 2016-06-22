@@ -27,6 +27,7 @@ class CbmTofDigiBdfPar;
 class TClonesArray;
 class TH1;
 class TH2;
+class TH3;
 class TString;
 
 class CbmTofHitFinderQa : public FairTask {
@@ -75,7 +76,6 @@ class CbmTofHitFinderQa : public FairTask {
       Int_t         fEvents;            // Number of processed events
 
       // Geometry infos
-      FairMCEventHeader *fMCEventHeader;
       CbmTofGeoHandler * fGeoHandler;
       CbmTofDetectorId * fTofId;
       CbmTofCell       * fChannelInfo;
@@ -90,6 +90,7 @@ class CbmTofHitFinderQa : public FairTask {
       CbmTofDigiPar    * fDigiPar;
       CbmTofDigiBdfPar * fDigiBdfPar;
 
+      FairMCEventHeader     * fMCEventHeader; // MC event header
 //      TClonesArray          * fStsPointsColl; // STS MC points
       TClonesArray          * fTofPointsColl; // TOF MC points
       TClonesArray          * fMcTracksColl;  // MC tracks
@@ -115,6 +116,12 @@ class CbmTofHitFinderQa : public FairTask {
          // Position of the TOF wall on Z axis for centering histos with Z
       Double_t fdWallPosZ;
          // Geometric Mapping
+      std::vector<TH2 *> fvhTrackAllStartZCent; // Dependence of Track origin on centrality, if TOF points
+      std::vector<TH2 *> fvhTrackSecStartZCent; // Dependence of Track origin on centrality, if TOF points
+      std::vector<TH3 *> fvhTrackAllStartXZCent; // Dependence of Track origin on centrality, if TOF points
+      std::vector<TH2 *> fvhTrackAllStartXZ;    // Track origin mapping, if TOF points
+      std::vector<TH2 *> fvhTrackAllStartYZ;    // Track origin mapping, if TOF points
+      std::vector<TH3 *> fvhTofPntAllAngCent; // Dependence of Tof Point position (angular) on centrality
       TH2 * fhTrackMapXY;  // Only when creating normalization histos
       TH2 * fhTrackMapXZ;  // Only when creating normalization histos
       TH2 * fhTrackMapYZ;  // Only when creating normalization histos

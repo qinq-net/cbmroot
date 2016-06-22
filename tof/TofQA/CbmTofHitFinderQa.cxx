@@ -34,6 +34,7 @@
 #include "TClonesArray.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "TH3.h"
 #include "TString.h"
 #include "TFile.h"
 #include "TMath.h"
@@ -53,7 +54,7 @@ const Int_t   kiPartPdgCode[kiNbPart] =
     2212, -2212, 1000010020, 1000010030, 1000020030, 1000020040 };
 const TString ksPartName[kiNbPart] = 
    { "any other part.", 
-     "e-", "e+",   "#pi+", "#pi-", "k+", "k-", 
+     "e+", "e-",   "#pi+", "#pi-", "k+", "k-", 
      "p",  "anti-p", "d",    "t",    "he", "#alpha"};
 const Int_t   kiMinNbStsPntAcc = 3; // Number of STS Pnt for Trk to be reconstructable
 //___________________________________________________________________
@@ -69,7 +70,6 @@ const Int_t   kiMinNbStsPntAcc = 3; // Number of STS Pnt for Trk to be reconstru
 CbmTofHitFinderQa::CbmTofHitFinderQa()
   : FairTask("TofHitFinderQa"),
     fEvents(0),
-    fMCEventHeader(NULL),
     fGeoHandler(new CbmTofGeoHandler()),
     fTofId(NULL),
     fChannelInfo(NULL),
@@ -81,6 +81,7 @@ CbmTofHitFinderQa::CbmTofHitFinderQa()
     fvRpcChOffs(),
     fDigiPar(NULL),
     fDigiBdfPar(NULL),
+    fMCEventHeader(NULL),
     fTofPointsColl(NULL),
     fMcTracksColl(NULL),
     fTofDigisColl(NULL),
@@ -98,6 +99,12 @@ CbmTofHitFinderQa::CbmTofHitFinderQa()
     fsHistoInNormSphFilename(""),
     fsHistoOutFilename("./tofQa.hst.root"),
     fdWallPosZ(1000),
+    fvhTrackAllStartZCent(), // Beam pipe check
+    fvhTrackSecStartZCent(), // Beam pipe check
+    fvhTrackAllStartXZCent(), // Beam pipe check
+    fvhTrackAllStartXZ(), // Beam pipe check
+    fvhTrackAllStartYZ(), // Beam pipe check
+    fvhTofPntAllAngCent(), // Beam pipe check
     fhTrackMapXY(NULL),  // Only when creating normalization histos
     fhTrackMapXZ(NULL),  // Only when creating normalization histos
     fhTrackMapYZ(NULL),  // Only when creating normalization histos
@@ -319,7 +326,6 @@ CbmTofHitFinderQa::CbmTofHitFinderQa()
 CbmTofHitFinderQa::CbmTofHitFinderQa(const char* name, Int_t verbose)
   : FairTask(name, verbose),
     fEvents(0),
-    fMCEventHeader(NULL),
     fGeoHandler(new CbmTofGeoHandler()),
     fTofId(NULL),
     fChannelInfo(NULL),
@@ -331,6 +337,7 @@ CbmTofHitFinderQa::CbmTofHitFinderQa(const char* name, Int_t verbose)
     fvRpcChOffs(),
     fDigiPar(NULL),
     fDigiBdfPar(NULL),
+    fMCEventHeader(NULL),
     fTofPointsColl(NULL),
     fMcTracksColl(NULL),
     fTofDigisColl(NULL),
@@ -348,6 +355,12 @@ CbmTofHitFinderQa::CbmTofHitFinderQa(const char* name, Int_t verbose)
     fsHistoInNormSphFilename(""),
     fsHistoOutFilename("./tofQa.hst.root"),
     fdWallPosZ(1000),
+    fvhTrackAllStartZCent(), // Beam pipe check
+    fvhTrackSecStartZCent(), // Beam pipe check
+    fvhTrackAllStartXZCent(), // Beam pipe check
+    fvhTrackAllStartXZ(), // Beam pipe check
+    fvhTrackAllStartYZ(), // Beam pipe check
+    fvhTofPntAllAngCent(), // Beam pipe check
     fhTrackMapXY(NULL),  // Only when creating normalization histos
     fhTrackMapXZ(NULL),  // Only when creating normalization histos
     fhTrackMapYZ(NULL),  // Only when creating normalization histos
@@ -666,6 +679,13 @@ Bool_t   CbmTofHitFinderQa::RegisterInputs()
 {
    FairRootManager *fManager = FairRootManager::Instance();
    
+   fMCEventHeader = (FairMCEventHeader*) fManager->GetObject("MCEventHeader.");
+   if(NULL == fMCEventHeader)
+   {
+      LOG(ERROR)<<"CbmTofHitFinderQa::RegisterInputs => Could not get the MCEventHeader object!!!"<<FairLogger::endl;
+      return kFALSE;
+   }
+    
    fTofPointsColl  = (TClonesArray *) fManager->GetObject("TofPoint");
    if( NULL == fTofPointsColl)
    {
@@ -847,6 +867,59 @@ Bool_t CbmTofHitFinderQa::CreateHistos()
    Double_t dPullPosRange   =    5; 
 
    // Mapping
+      // Dependence of Track origin on centrality
+   Int_t    iNbBinsStartZ = 1250;
+   Double_t dMinStartZ    =  -50.0;
+   Double_t dMaxStartZ    = 1200.0;
+   Int_t    iNbBinsStartXY = 1200;
+   Double_t dMinStartXY    = -600.0;
+   Double_t dMaxStartXY    =  600.0;
+   Int_t    iNbBinsCentr  = 16;
+   Double_t dNbMinCentr   =  0.0;
+   Double_t dNbMaxCentr   = 16.0;
+   fvhTrackAllStartZCent.resize(kiNbPart);
+   fvhTrackSecStartZCent.resize(kiNbPart);
+   fvhTrackAllStartXZCent.resize(kiNbPart);
+   fvhTrackAllStartXZ.resize(kiNbPart);
+   fvhTrackAllStartYZ.resize(kiNbPart);
+   fvhTofPntAllAngCent.resize(kiNbPart);
+   for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
+   {
+         // Track origin for tracks reaching TOF
+      fvhTrackAllStartZCent[iPartIdx] = new TH2D( Form("TofTests_TrackAllStartZCent_%s", ksPartTag[iPartIdx].Data() ) ,  
+                              Form("Centrality vs Start Z distribution for MC tracks w/ TOF Pnt, %s, all tracks; Start Z [cm]; B [fm]; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
+                              iNbBinsStartZ, dMinStartZ,  dMaxStartZ,
+                              iNbBinsCentr,  dNbMinCentr, dNbMaxCentr);
+      fvhTrackSecStartZCent[iPartIdx] = new TH2D( Form("TofTests_TrackSecStartZCent_%s", ksPartTag[iPartIdx].Data() ) ,  
+                              Form("Centrality vs Start Z distribution for MC tracks w/ TOF Pnt, %s, secondary tracks; Start Z [cm]; B [fm]; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
+                              iNbBinsStartZ, dMinStartZ,  dMaxStartZ,
+                              iNbBinsCentr,  dNbMinCentr, dNbMaxCentr);
+      if( 2 == iPartIdx ) // 3D plot only for e-
+         fvhTrackAllStartXZCent[iPartIdx] = new TH3D( Form("TofTests_TrackAllStartXZCent_%s", ksPartTag[iPartIdx].Data() ) ,  
+                              Form("Centrality vs Start Z distribution for MC tracks w/ TOF Pnt, %s, all tracks; Start X [cm]; Start Z [cm]; B [fm];", 
+                                   ksPartName[iPartIdx].Data()  ),
+                              iNbBinsStartXY/2,  dMinStartXY, dMaxStartXY,
+                              iNbBinsStartZ/2, dMinStartZ,  dMaxStartZ,
+                              iNbBinsCentr,  dNbMinCentr, dNbMaxCentr);
+      fvhTrackAllStartXZ[iPartIdx] = new TH2D( Form("TofTests_TrackAllStartXZ_%s", ksPartTag[iPartIdx].Data() ) ,  
+                              Form("Start X vs Z distribution for MC tracks w/ TOF Pnt, %s, all tracks; Start Z [cm]; Start X [cm]; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
+                              iNbBinsStartZ/2, dMinStartZ,  dMaxStartZ,
+                              iNbBinsStartXY,  dMinStartXY, dMaxStartXY);
+      fvhTrackAllStartYZ[iPartIdx] = new TH2D( Form("TofTests_TrackAllStartYZ_%s", ksPartTag[iPartIdx].Data() ) ,  
+                              Form("Start Y vs Z distribution for MC tracks w/ TOF Pnt, %s, all tracks; Start Z [cm]; Start Y [cm]; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
+                              iNbBinsStartZ/2, dMinStartZ,  dMaxStartZ,
+                              iNbBinsStartXY,  dMinStartXY, dMaxStartXY);
+      fvhTofPntAllAngCent[iPartIdx] = new TH3D( Form("TofTests_TofPntAllAngCent_%s", ksPartTag[iPartIdx].Data() ) ,  
+                              Form("Centrality vs Angular position of TOF Pnt, %s, all tracks; #theta_{x}[Deg.]; #theta_{y}[Deg.]; B [fm];", 
+                                   ksPartName[iPartIdx].Data()  ),
+                                 iNbBinThetaX/2, dThetaXMin, dThetaXMax,
+                                 iNbBinThetaY/2, dThetaYMin, dThetaYMax,
+                              iNbBinsCentr,  dNbMinCentr, dNbMaxCentr);
+   } // for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
       // tracks: Only when creating normalization histos
    if( kTRUE == fbNormHistGenMode )
    {
@@ -1826,6 +1899,17 @@ Bool_t CbmTofHitFinderQa::FillHistos()
          } // if( kiPartPdgCode[iPart] == iPdgCode )
       if( -1 == iPartIdx )
          iPartIdx = 0;
+         
+         // Dependence of Track origin on centrality or position
+      if( 0 < pMcTrk->GetNPoints(kTOF) )
+      {
+         fvhTrackAllStartZCent[iPartIdx]->Fill( pMcTrk->GetStartZ(), fMCEventHeader->GetB());
+         if( 2 == iPartIdx ) // 3D plot only for e-
+            fvhTrackAllStartXZCent[iPartIdx]->Fill( pMcTrk->GetStartX(), pMcTrk->GetStartZ(), fMCEventHeader->GetB());
+         fvhTrackAllStartXZ[iPartIdx]->Fill( pMcTrk->GetStartZ(), pMcTrk->GetStartX());
+         fvhTrackAllStartYZ[iPartIdx]->Fill( pMcTrk->GetStartZ(), pMcTrk->GetStartY());
+      }
+         
       if( -1 == pMcTrk->GetMotherId() )
       {
          // primary track
@@ -1852,6 +1936,10 @@ Bool_t CbmTofHitFinderQa::FillHistos()
          else
          {
             // secondary track
+               // Dependence of Track origin on centrality
+            if( 0 < pMcTrk->GetNPoints(kTOF) )
+               fvhTrackSecStartZCent[iPartIdx]->Fill( pMcTrk->GetStartZ(), fMCEventHeader->GetB());
+               
                // Phase space
             fvhPtmRapSecGenTrk[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
                // PLab
@@ -1929,6 +2017,9 @@ Bool_t CbmTofHitFinderQa::FillHistos()
       if( -1 == iPartIdx )
          iPartIdx = 0;
          
+      // Beam pipe check
+      fvhTofPntAllAngCent[iPartIdx]->Fill( dThetaX, dThetaY, fMCEventHeader->GetB());
+      
       if( -1 == pMcTrk->GetMotherId() )
       {
          // primary track
@@ -3342,6 +3433,20 @@ Bool_t CbmTofHitFinderQa::WriteHistos()
       fhNbPointsInHit->Write();
       fhNbTracksInHit->Write();
       
+      TDirectory *cdStartZ = fHist->mkdir( "StartZ" );
+      cdStartZ->cd();    // make the "MixMap" directory the current directory
+         // Dependence of Track origin on centrality
+      for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
+      {
+         fvhTrackAllStartZCent[iPartIdx]->Write();
+         fvhTrackSecStartZCent[iPartIdx]->Write();
+         if( 2 == iPartIdx ) // 3D plot only for e-
+            fvhTrackAllStartXZCent[iPartIdx]->Write();
+         fvhTrackAllStartXZ[iPartIdx]->Write();
+         fvhTrackAllStartYZ[iPartIdx]->Write();
+         fvhTofPntAllAngCent[iPartIdx]->Write();
+      } // for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
+      
       TDirectory *cdMixMap = fHist->mkdir( "MixMap" );
       cdMixMap->cd();    // make the "MixMap" directory the current directory
          // Mapping of position for hits coming from a single MC Point
@@ -3569,6 +3674,23 @@ Bool_t CbmTofHitFinderQa::WriteHistos()
 Bool_t   CbmTofHitFinderQa::DeleteHistos()
 {
    // Mapping
+      // Physics coord mapping, 1 per particle type
+   for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
+   {
+      delete fvhTrackAllStartZCent[iPartIdx];
+      delete fvhTrackSecStartZCent[iPartIdx];
+      if( 2 == iPartIdx ) // 3D plot only for e-
+         delete fvhTrackAllStartXZCent[iPartIdx];
+      delete fvhTrackAllStartXZ[iPartIdx];
+      delete fvhTrackAllStartYZ[iPartIdx];
+      delete fvhTofPntAllAngCent[iPartIdx];
+   } // for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
+   fvhTrackAllStartZCent.clear();
+   fvhTrackSecStartZCent.clear();
+   fvhTrackAllStartXZCent.clear();
+   fvhTrackAllStartXZ.clear();
+   fvhTrackAllStartYZ.clear();
+   fvhTofPntAllAngCent.clear();
    if( kTRUE == fbNormHistGenMode )
    {
       delete fhTrackMapXY;
