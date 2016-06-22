@@ -301,11 +301,11 @@ void CbmRichRingHitsAnalyser::Exec(Option_t* /*option*/)
 */
 				if (firstHitIndex == -1) {
 					firstHitIndex = hitIndex1;
-					minTimestamp = curHit1->GetTimestamp();
+					minTimestamp = curHit1->GetTime();
 				} else {
-					if (curHit1->GetTimestamp() < minTimestamp) {
+					if (curHit1->GetTime() < minTimestamp) {
 						firstHitIndex = hitIndex1;
-						minTimestamp = curHit1->GetTimestamp();
+						minTimestamp = curHit1->GetTime();
 					}
 				}
 			}
@@ -335,7 +335,7 @@ void CbmRichRingHitsAnalyser::Exec(Option_t* /*option*/)
 			if (hitIndex1 != firstHitIndex && param->isStudiedTDC(hitTDCid1)) {
 
 				if (param->isNormalPixel(hitTDCid1, hitChannel1))
-					fHM->H1("ExponentaBudetTut")->Fill(curHit1->GetTimestamp()-minTimestamp);
+					fHM->H1("ExponentaBudetTut")->Fill(curHit1->GetTime()-minTimestamp);
 
 			}
 		}

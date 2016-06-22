@@ -58,8 +58,8 @@ public:
   Double_t GetToT() const { return fToT; }
 
   /** Outdated. Use CbmHit::GetTime() and SetTime() instead. **/
-  Double_t GetTimestamp() const { return GetTime(); }
-  void SetTimestamp(Double_t ts) { SetTime(ts); }
+ // Double_t GetTimestamp() const { return GetTime(); }
+ // void SetTimestamp(Double_t ts) { SetTime(ts); }
 
 private:
 

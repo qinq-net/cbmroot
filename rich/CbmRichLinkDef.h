@@ -36,6 +36,7 @@
 #pragma link C++ class CbmRichProtProjectionProducer+;
 #pragma link C++ class CbmRichPrototypeQa+;
 #pragma link C++ class CbmRichSmallPrototypeQa+;
+#pragma link C++ class CbmRichSmallPrototypeStudyReport+;
 
 //prototype analysis (beamtime and lab)
 #pragma link C++ class CbmRichTrbUnpack+;
