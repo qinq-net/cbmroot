@@ -65,14 +65,14 @@ public:
   /** Modifiers **/
   void SetFlag(Int_t flag) { fFlag = flag; };
 
+  // Make this method otherwise inherited from CbmHit through CbmPixelHit 
+  // private to prevent its usage
+  Int_t GetRefId() const __attribute__ ((deprecated)) { return -1; }
+  
 private:
 
   Int_t fFlag; ///< Flag for general purposes [TDC, event tagging...]
   Int_t fChannel; ///< Channel identifier
-  
-  // Make this method otherwise inherited from CbmHit through CbmPixelHit 
-  // private to prevent its usage
-  Int_t GetRefId() const { return -1; }
 
   ClassDef(CbmTofHit, 4)
 };
