@@ -13,6 +13,7 @@ Set(INCLUDE_DIRECTORIES
 Set(SYSTEM_INCLUDE_DIRECTORIES
   ${BASE_INCLUDE_DIRECTORIES} 
   ${Boost_INCLUDE_DIR}
+  ${CBMROOT_SOURCE_DIR}/external/ipc/ipc
 )
 
 Include_Directories( 
@@ -38,6 +39,7 @@ Set(SRCS
   CbmTbDaqBuffer.cxx
   CbmTbEventBuilder.cxx
   CbmTbEventBuilderFixedTimeWindow.cxx
+  CbmTSUnpack.cxx
 )
 
 If(_UINT8_T_EXIST)
