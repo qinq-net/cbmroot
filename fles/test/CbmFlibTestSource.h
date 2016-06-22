@@ -17,6 +17,7 @@
 
 #include "FairSource.h"
 #include "CbmTSUnpack.h"
+#include "CbmTbDaqBuffer.h"
 
 #include "TString.h"
 #include "TClonesArray.h"
@@ -27,7 +28,6 @@
 #include <memory>
 #include <map>
 
-class CbmTbDaqTestBuffer;
 
 class CbmFlibTestSource : public FairSource
 {
@@ -83,7 +83,7 @@ class CbmFlibTestSource : public FairSource
     std::map<Int_t, CbmTSUnpack*> fUnpackers;
     std::map<Int_t, Int_t> fDetectorSystemMap; //! Map detector system id to flib system id 
 
-    CbmTbDaqTestBuffer* fBuffer;
+    CbmTbDaqBuffer* fBuffer;
  
     UInt_t fTSNumber;
     UInt_t fTSCounter;

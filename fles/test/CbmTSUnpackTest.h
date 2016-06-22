@@ -17,13 +17,13 @@
 #include "CbmHistManager.h"
 #include "CbmNxyterRawMessage.h"
 #include "CbmFiberHodoDigi.h"
+#include "CbmTbDaqBuffer.h"
 
 #include "TClonesArray.h"
 
 #include <vector>
 #include <map>
 
-class CbmTbDaqTestBuffer;
 class CbmDigi;
 
 class CbmTSUnpackTest : public CbmTSUnpack
@@ -66,7 +66,7 @@ private:
   CbmNxyterRawMessage* fRawMessage;  
   CbmFiberHodoDigi* fDigi;  
 
-  CbmTbDaqTestBuffer* fBuffer;
+  CbmTbDaqBuffer* fBuffer;
 
   void InitializeFiberHodoMapping();
 

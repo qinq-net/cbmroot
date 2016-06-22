@@ -3,12 +3,12 @@
 # The extension is already found.  Any number of sources could be listed here.
 
 Set(INCLUDE_DIRECTORIES
+  ${CBMROOT_SOURCE_DIR}/base
   ${CBMROOT_SOURCE_DIR}/data
   ${CBMROOT_SOURCE_DIR}/data/beamtime/fhodo
   ${CBMROOT_SOURCE_DIR}/data/raw
-  ${CBMROOT_SOURCE_DIR}/base
+  ${CBMROOT_SOURCE_DIR}/beamtime/base
   ${CBMROOT_SOURCE_DIR}/fles/test
-#  ${CBMROOT_SOURCE_DIR}/fles/reader/unpacker
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
@@ -17,16 +17,6 @@ Set(SYSTEM_INCLUDE_DIRECTORIES
   ${ROOT_INCLUDE_DIR}  
   ${CBMROOT_SOURCE_DIR}/external/ipc/ipc
   ${CBMROOT_SOURCE_DIR}/external/flib_dpb/flib_dpb
-#  ${CBMROOT_SOURCE_DIR}/external/spadic/spadic
-#  ${CBMROOT_SOURCE_DIR}/fles/trb/trbnet_lib
-#  ${CBMROOT_SOURCE_DIR}/rich/prototype/beamtime
-#  ${CBMROOT_SOURCE_DIR}/beamtime/tof
-#  ${CBMROOT_SOURCE_DIR}/beamtime/tof/tdc
-#  ${CBMROOT_SOURCE_DIR}/beamtime/tof/tdc/get4
-
-  # needed by rootcling
-#  ${CBMROOT_SOURCE_DIR}/external/spadic/spadic/message/wrap/cpp
-#  ${CBMROOT_SOURCE_DIR}/external/spadic/spadic/message
   ${CMAKE_SOURCE_DIR}/external/cppzmq
 )
 
@@ -47,7 +37,6 @@ Link_Directories(
 Set(SRCS
   CbmFlibTestSource.cxx   
   CbmTSUnpackTest.cxx
-  CbmTbDaqTestBuffer.cxx
 )
 
 Set(NO_DICT_SRCS
@@ -76,7 +65,7 @@ EndIf()
 Set(LINKDEF  CbmFlibTestLinkDef.h )
 Set(LIBRARY_NAME CbmFlibTest)
 Set(DEPENDENCIES
-    CbmBase fles_ipc Eve Base 
+    CbmBase CbmBeamtimeBase fles_ipc Eve Base 
 )
 
 GENERATE_LIBRARY()

@@ -7,7 +7,7 @@
 
 #include "CbmFlibTestSource.h"
 
-#include "CbmTbDaqTestBuffer.h"
+#include "CbmTbDaqBuffer.h"
  
 #include "TimesliceInputArchive.hpp"
 #include "Timeslice.hpp"
@@ -28,7 +28,7 @@ CbmFlibTestSource::CbmFlibTestSource()
     fHost("localhost"),
     fPort(5556),
     fUnpackers(),
-    fBuffer(CbmTbDaqTestBuffer::Instance()),
+    fBuffer(CbmTbDaqBuffer::Instance()),
     fTSNumber(0),
     fTSCounter(0),
     fTimer(),
@@ -45,7 +45,7 @@ CbmFlibTestSource::CbmFlibTestSource(const CbmFlibTestSource& source)
     fHost("localhost"),
     fPort(5556),
     fUnpackers(),
-    fBuffer(CbmTbDaqTestBuffer::Instance()),
+    fBuffer(CbmTbDaqBuffer::Instance()),
     fTSNumber(0),
     fTSCounter(0),
     fTimer(),
@@ -106,10 +106,10 @@ Int_t CbmFlibTestSource::ReadEvent()
 
   Int_t retVal = -1;  
   if (fBufferFillNeeded) {
-    retVal = FillBuffer();
+    FillBuffer();
   }
 
-  GetNextEvent();
+  retVal = GetNextEvent();
   
   return retVal; // no more data; trigger end of run
 }
@@ -211,16 +211,18 @@ Int_t CbmFlibTestSource::GetNextEvent()
 {
 
   Double_t fTimeBufferOut = fBuffer->GetTimeLast();
-  LOG(INFO) << "Timeslice contains data from " 
+  LOG(DEBUG) << "Timeslice contains data from " 
 	    << std::setprecision(9) << std::fixed 
 	    << static_cast<Double_t>(fBuffer->GetTimeFirst()) * 1.e-9 << " to "
 	    << std::setprecision(9) << std::fixed 
 	    << static_cast<Double_t>(fBuffer->GetTimeLast()) * 1.e-9 << " s" << FairLogger::endl;
 
-  LOG(INFO) << "Buffer has " << fBuffer->GetSize() << " entries." << FairLogger::endl;
+  LOG(DEBUG) << "Buffer has " << fBuffer->GetSize() << " entries." << FairLogger::endl;
 
 
   CbmDigi* digi = fBuffer->GetNextData(fTimeBufferOut);
+
+  if (NULL == digi) return 1; 
 
   while(digi) {
     Int_t detId = digi->GetSystemId();
@@ -238,7 +240,7 @@ Int_t CbmFlibTestSource::GetNextEvent()
     digi = fBuffer->GetNextData(fTimeBufferOut);
   }; 
 
-  LOG(INFO) << "After loop" << FairLogger::endl;
+  return 0;
 }
 
 ClassImp(CbmFlibTestSource)

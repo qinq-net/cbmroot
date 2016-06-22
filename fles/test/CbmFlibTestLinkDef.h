@@ -6,6 +6,5 @@
 
 #pragma link C++ class CbmFlibTestSource;
 #pragma link C++ class CbmTSUnpackTest;
-#pragma link C++ class CbmTbDaqTestBuffer;
 
 #endif

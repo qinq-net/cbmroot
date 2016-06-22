@@ -7,7 +7,7 @@
 
 #include "CbmTSUnpackTest.h"
 
-#include "CbmTbDaqTestBuffer.h"
+#include "CbmTbDaqBuffer.h"
 
 #include "CbmFiberHodoAddress.h"
 #include "CbmHistManager.h"
@@ -37,7 +37,7 @@ CbmTSUnpackTest::CbmTSUnpackTest()
     fFiberHodoDigi(new TClonesArray("CbmFiberHodoDigi", 10)),
     fRawMessage(NULL),  
     fDigi(NULL),
-    fBuffer(CbmTbDaqTestBuffer::Instance())
+    fBuffer(CbmTbDaqBuffer::Instance())
 {
   fHodoStationMap[23533] = 0; //Roc -> Hodo station
   InitializeFiberHodoMapping();
