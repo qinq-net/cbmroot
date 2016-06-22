@@ -1,5 +1,5 @@
 #include <iostream>
-using namespace std;
+using namespace std; 
 
 
 
@@ -60,7 +60,11 @@ FairGeoMedium* mGlass      = geoMedia->getMedium("Rich_NBK7_glass");
   TGeoMedium* medGlass = gGeoMan->GetMedium("Rich_NBK7_glass");
   if ( ! medGlass ) Fatal("Main", "Medium Rich_NBK7_glass  not found");
 
-
+FairGeoMedium* mElectronic      = geoMedia->getMedium("air");
+  if ( ! mElectronic) Fatal("Main", "FairMedium air not found");
+  geoBuild->createMedium(mElectronic);
+  TGeoMedium* medElectronic = gGeoMan->GetMedium("air");
+  if ( ! medElectronic) Fatal("Main", "Medium air not found");
 
 
 
@@ -68,9 +72,16 @@ FairGeoMedium* mGlass      = geoMedia->getMedium("Rich_NBK7_glass");
 const Double_t testboxlength=44;		//Testbox
 const Double_t testboxwidth=20;
 const Double_t testboxheight=30;
+const Double_t wallwidth=0.3;
+
 
 const Double_t pmtsize =4.85;			//PMT
-const Double_t pmtpixelsize =pmtsize/8;
+const Double_t pmtpixelsize =0.6;
+const Double_t pmtgap =0.1;
+
+const Double_t eleclength=10;			//Electronic
+const Double_t elecwidth=3*pmtsize;
+const Double_t elecheight=2*pmtsize;
 
 const Double_t centerthickness =2.44;	//Lense
 const Double_t lenseradius =15.51;
@@ -78,20 +89,31 @@ const Double_t lensepmtdistance =3;
 const Double_t lensebeschichtung =0.1;
 
 const Double_t absorberthickness =0.1;
-const Double_t absorberradius =0.5;
+const Double_t absorberradius =1.8;
+
+const Double_t sensplanesize=40;
+const Double_t sensplaneboxdis=1;
+
 
 //Transformations
+TGeoRotation *rotBox= new TGeoRotation("Boxrotation", 0., 0., 0.);
+
 TGeoTranslation *trBox= new TGeoTranslation(0., 0., 0.);			//Gasbox/Box Translation
+TGeoTranslation *trSensePlane= new TGeoTranslation(0.,0., testboxlength+ sensplaneboxdis);
+
 TGeoTranslation *trPMTup= new TGeoTranslation(0., pmtsize+0.5, -(lenseradius-centerthickness-lensepmtdistance));		//PMTContainer Translations
 TGeoTranslation *trPMTdown= new TGeoTranslation(0., -(pmtsize+0.5), -(lenseradius-centerthickness-lensepmtdistance));
 
 
-TGeoTranslation *tr2= new TGeoTranslation( 	-pmtsize,  pmtsize/2, 0.);		//PMT Translations
-TGeoTranslation *tr3= new TGeoTranslation(	0.		,  pmtsize/2, 0.);
-TGeoTranslation *tr4= new TGeoTranslation( 	pmtsize ,  pmtsize/2, 0.);
-TGeoTranslation *tr5= new TGeoTranslation( 	-pmtsize, -pmtsize/2, 0.);
-TGeoTranslation *tr6= new TGeoTranslation(	0.		, -pmtsize/2, 0.);
-TGeoTranslation *tr7= new TGeoTranslation( 	pmtsize , -pmtsize/2, 0.);
+TGeoTranslation *tr2= new TGeoTranslation( 	-(pmtsize + pmtgap)	,  pmtsize/2 + pmtgap/2	, 0.);		//PMT Translations
+TGeoTranslation *tr3= new TGeoTranslation(	0.					,  pmtsize/2 + pmtgap/2	, 0.);
+TGeoTranslation *tr4= new TGeoTranslation( 	pmtsize + pmtgap 	,  pmtsize/2 + pmtgap/2	, 0.);
+TGeoTranslation *tr5= new TGeoTranslation( 	-(pmtsize + pmtgap)	,-(pmtsize/2 + pmtgap/2), 0.);
+TGeoTranslation *tr6= new TGeoTranslation(	0.					,-(pmtsize/2 + pmtgap/2), 0.);
+TGeoTranslation *tr7= new TGeoTranslation( 	pmtsize + pmtgap	,-(pmtsize/2 + pmtgap/2), 0.);
+
+//TGeoTranslation *trelec1= new TGeoTranslation(0., pmtsize+0.5 , -(lenseradius-centerthickness-lensepmtdistance)+eleclength/2+0.1); 		//Electronic Transformations
+//TGeoTranslation *trelec2= new TGeoTranslation(0., -(pmtsize+0.5) ,-(lenseradius-centerthickness-lensepmtdistance)+eleclength/2+0.1);
 
 TGeoTranslation *trabsorber= new TGeoTranslation(0. ,0., -(lenseradius-centerthickness)+absorberthickness/2);
 
@@ -112,7 +134,7 @@ TGeoVolume *box= gGeoMan->MakeBox("TopBox", medNitrogen, testboxwidth/2, testbox
 
 //Gasbox
 
-TGeoVolume *gas= gGeoMan->MakeBox("Gasbox", medNitrogen , testboxwidth/2-1, testboxheight/2-1, testboxlength/2-1);
+TGeoVolume *gas= gGeoMan->MakeBox("Gasbox", medNitrogen , testboxwidth/2-wallwidth, testboxheight/2-wallwidth, testboxlength/2-wallwidth);
 
 //PMT Container containing PMT Matrix
 
@@ -124,6 +146,10 @@ TGeoVolume *pmt= gGeoMan->MakeBox("PMT", medCsI , pmtsize/2, pmtsize/2, 0.1);
 //PMT Pixels
 
 TGeoVolume *pmtpixel= gGeoMan->MakeBox("pmt_pixel", medCsI, pmtpixelsize/2, pmtpixelsize/2, 0.1); 
+
+//Electronic
+
+//TGeoVolume *elec= gGeoMan->MakeBox("elec", medElectronic , elecwidth/2, elecheight/2, eleclength/2);
 
 //Lensecoating parametrized as sphere
 TGeoSphere *coating= new TGeoSphere("Coating", lenseradius, lenseradius+lensebeschichtung, 90., 180., 0., 360.);
@@ -144,19 +170,30 @@ TGeoVolume *complensecoating= new TGeoVolume("Complensecoating", lensecoating, m
 //Absorber
 TGeoVolume *absorber= gGeoMan->MakeTube("Absorber", medAl, 0., absorberradius, absorberthickness/2);
 
+// Sensitive plane behind box
+TGeoVolume *sensplane= gGeoMan->MakeBox("SensPlane", medCsI, sensplanesize/2 , sensplanesize/2  ,0.1);
+
 complensecoating->SetLineColor(kRed);
 compendlense->SetLineColor(kBlue);
 
 
+
+
+
 //Positioning
 top->AddNode(box, 1, trBox);
+top->AddNode(sensplane, 1, trSensePlane);
 
-box->AddNode(gas, 1, trBox);
+box->AddNode(gas, 1, rotBox);
 
 gas->AddNode(complensecoating, 1, trLense);
 gas->AddNode(compendlense, 1, trLense);
 gas->AddNode(pmtcontainer, 1, trPMTup);
 gas->AddNode(pmtcontainer, 2, trPMTdown);
+//gas->AddNode(elec, 1, trelec1);
+//gas->AddNode(elec, 2, trelec2);
+
+
 
 compendlense->AddNode(absorber, 1, trabsorber);
 
@@ -191,7 +228,7 @@ gGeoMan->SetTopVisible();
 box->SetVisibility(false);
 
 
-box->Draw("ogl");
+box->Draw();
 
 
  TFile* geoFile = new TFile(geoFileName, "RECREATE");

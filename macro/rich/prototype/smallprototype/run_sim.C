@@ -1,19 +1,28 @@
-void run_sim(Int_t nEvents = 100)
+void run_sim(Int_t nEvents = 10000)
 {
     TTree::SetMaxTreeSize(90000000000);
     TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
     
+	TString script = TString(gSystem->Getenv("SCRIPT"));
     //gRandom->SetSeed(10);
 
-   	TString parFile = "/data/cbm/Gregor/param.00001.root";
-   	TString geoFile = "/data/cbm/Gregor/geofilefull.00001.root";
-    TString mcFile = "/data/cbm/Gregor/mc.00001.root";
+	TString asciiInput = "/data/cbm/cbmroot/macro/rich/prototype/smallprototype/beamdistribution.ascii.dat";
+   	TString parFile = "/data/cbm/Gregor/param.00100.root";
+   	TString geoFile = "/data/cbm/Gregor/geofilefull.00100.root";
+    TString mcFile = "/data/cbm/Gregor/mc.00100.root";
     
     
     //TString parFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/param.00001.root";
     //TString geoFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/geofilefull.00001.root";
     //TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/mc.00001.root";
     
+	if (script == "yes") {
+      asciiInput = TString(gSystem->Getenv("IN_ASCII_FILE"));
+      outFile = TString(gSystem->Getenv("MC_FILE"));
+      parFile = TString(gSystem->Getenv("PAR_FILE"));
+      caveGeom = TString(gSystem->Getenv("CAVE_GEOM"));
+      richGeom = TString(gSystem->Getenv("RICH_GEOM"));
+   }
     
 
 	TString caveGeom = "cave.geo";
@@ -66,13 +75,18 @@ void run_sim(Int_t nEvents = 100)
     //primGen->SmearGausVertexXY(smearVertexXY);
     //primGen->SmearVertexZ(smearVertexZ);
     
-        FairBoxGenerator* boxGen1 = new FairBoxGenerator(2212, 1);
+   	/*      FairBoxGenerator* boxGen1 = new FairBoxGenerator(2212, 1);
         boxGen1->SetPRange(2.,2.);
         boxGen1->SetPhiRange(0.,360.);
         boxGen1->SetThetaRange(0., 0.);
-		boxGen1->SetXYZ(0., 0., -30.);
+	//	boxGen1->SetXYZ(0.,0.,-30.);
+		boxGen1->SetBoxXYZ(-1., -1., 1., 1., -30.);
         boxGen1->Init();
-        primGen->AddGenerator(boxGen1);
+		primGen->AddGenerator(boxGen1);
+	*/
+		FairAsciiGenerator* asciiGen = new FairAsciiGenerator(asciiInput);	
+   		primGen->AddGenerator(asciiGen);
+        
     
     fRun->SetGenerator(primGen);
     fRun->SetStoreTraj(true);
