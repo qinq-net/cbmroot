@@ -370,6 +370,8 @@ void CbmRichGeoManager::RotatePoint(
         RotatePointTwoWings(inPos, outPos, noTilting);
     } else if (fGP->fGeometryType == CbmRichGeometryTypeCylindrical) {
         RotatePointCyl(inPos, outPos, noTilting);
+    } else {
+        outPos->SetXYZ(inPos->X(), inPos->Y(), inPos->Z());
     }
     
 }
