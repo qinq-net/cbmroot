@@ -16,6 +16,7 @@
 #include <TClonesArray.h>
 #include <TParticle.h>
 #include <TMCProcess.h>
+#include <TPDGCode.h>
 
 #include "FairRootManager.h"
 #include "CbmMCTrack.h"
@@ -480,64 +481,53 @@ Bool_t PairAnalysisMC::CheckParticleSource(Int_t label, PairAnalysisSignalMC::ES
   //  NOTE: TODO: check and clarify different sources, UPDATE!
   //
 
+  UInt_t processID = static_cast<CbmMCTrack*>(GetMCTrackFromMCEvent(label))->GetGeantProcessId();
+  //  printf("process: id %d --> %s \n",processID,TMCProcessName[processID]);
+
   switch (source) {
-    case PairAnalysisSignalMC::kDontCare :
-      return kTRUE;
+  case PairAnalysisSignalMC::kDontCare :      return kTRUE;    break;
+  case PairAnalysisSignalMC::kPrimary :
+    // NOTE: This includes all physics event history (initial state particles,
+    //       exchange bosons, quarks, di-quarks, strings, un-stable particles, final state particles)
+    //       Only the final state particles make it to the detector!!
+    return (processID==kPPrimary);
     break;
-    case PairAnalysisSignalMC::kPrimary :
-      // NOTE: This includes all physics event history (initial state particles,
-      //       exchange bosons, quarks, di-quarks, strings, un-stable particles, final state particles)
-      //       Only the final state particles make it to the detector!!
-      // NOTE: according to CbmMCTrack::fMotherId
-      return (label<0); // was ==-1
+  case PairAnalysisSignalMC::kSecondary :
+    // particles which are created by the interaction of final state primaries with the detector
+    // or particles from strange weakly decaying particles (e.g. lambda, kaons, etc.)
+    return (!IsPhysicalPrimary(label, processID));
     break;
-    case PairAnalysisSignalMC::kSecondary :
-      // particles which are created by the interaction of final state primaries with the detector
-      // or particles from strange weakly decaying particles (e.g. lambda, kaons, etc.)
-      return (label>=0);
+  case PairAnalysisSignalMC::kFinalState :
+    // primary particles created in the collision which reach the detectors
+    // These would be:
+    // 1.) particles produced in the collision
+    // 2.) stable particles with respect to strong and electromagnetic interactions
+    // 3.) excludes initial state particles
+    // 4.) includes products of directly produced Sigma0 hyperon decay
+    // 5.) includes products of directly produced pi0 decays
+    // 6.) includes products of directly produced beauty hadron decays
+    return IsPhysicalPrimary(label, processID);
     break;
-    /*
-    case PairAnalysisSignalMC::kFinalState :         
-      // primary particles created in the collision which reach the detectors
-      // These would be:
-      // 1.) particles produced in the collision
-      // 2.) stable particles with respect to strong and electromagnetic interactions
-      // 3.) excludes initial state particles
-      // 4.) includes products of directly produced Sigma0 hyperon decay
-      // 5.) includes products of directly produced pi0 decays
-      // 6.) includes products of directly produced beauty hadron decays
-      return IsPhysicalPrimary(label);
+  case PairAnalysisSignalMC::kDirect :
+    // Primary particles which do not have any mother
+    // This is the case for:
+    // 1.) Initial state particles (the 2 protons in Pythia pp collisions)
+    // 2.) In some codes, with sudden freeze-out, all particles generated from the fireball are direct.
+    //     There is no history for these particles.
+    // 3.) Certain particles added via MC generator cocktails (e.g. J/psi added to pythia MB events)
+    return (label>=0 && GetMothersLabel(label)<0);
     break;
-    case PairAnalysisSignalMC::kDirect :
-      // Primary particles which do not have any mother
-      // This is the case for:
-      // 1.) Initial state particles (the 2 protons in Pythia pp collisions)
-      // 2.) In some codes, with sudden freeze-out, all particles generated from the fireball are direct.
-      //     There is no history for these particles.
-      // 3.) Certain particles added via MC generator cocktails (e.g. J/psi added to pythia MB events)
-      return (label>=0 && GetMothersLabel(label)<0);
-      break;
-    case PairAnalysisSignalMC::kNoCocktail :
-      // Particles from the HIJING event and NOT from the AliGenCocktail
-      return (label>=0 && GetMothersLabel(label)>=0);
-      break;
-    case PairAnalysisSignalMC::kSecondary :          
-      // particles which are created by the interaction of final state primaries with the detector
-      // or particles from strange weakly decaying particles (e.g. lambda, kaons, etc.)
-      return (label>=GetNPrimary() && !IsPhysicalPrimary(label));
+  case PairAnalysisSignalMC::kSecondaryFromWeakDecay :
+    // secondary particle from weak decay
+    // or particles from strange weakly decaying particles (e.g. lambda, kaons, etc.)
+    return (IsSecondaryFromWeakDecay(label, processID));
     break;
-    case PairAnalysisSignalMC::kSecondaryFromWeakDecay :          
-      // secondary particle from weak decay
-      // or particles from strange weakly decaying particles (e.g. lambda, kaons, etc.)
-      return (IsSecondaryFromWeakDecay(label));
+  case PairAnalysisSignalMC::kSecondaryFromMaterial :
+    // secondary particle from material
+    return (IsSecondaryFromMaterial(label, processID));
     break;
-    case PairAnalysisSignalMC::kSecondaryFromMaterial :
-      // secondary particle from material
-      return (IsSecondaryFromMaterial(label));
-    break;
-  */
-    default :
-      return kFALSE;
+  default :
+    return kFALSE;
   }
   return kFALSE;
 }
@@ -893,4 +883,97 @@ Bool_t PairAnalysisMC::HaveSameMother(const PairAnalysisPair * pair) const
   Bool_t sameMother=(labelMother1>-1)&&(labelMother2>-1)&&(labelMother1==labelMother2);
 
   return sameMother;
+}
+
+//____________________________________________________________
+Bool_t PairAnalysisMC::IsPhysicalPrimary( Int_t label , UInt_t processID) const
+{
+
+  // initial state particle
+  if(processID!=kPPrimary) return kFALSE;
+
+  // stable (anti-)particles
+  Double_t isStable = kFALSE;
+  Int_t pdg = TMath::Abs( GetPdgFromLabel(label) );
+
+  // All ions/nucleons are considered as stable
+  // Nuclear code is 10LZZZAAAI
+  if(pdg>1000000000) isStable=kTRUE;
+
+  switch(pdg)
+    {
+    case kGamma :             // Photon
+    case kElectron :          // Electron
+    case kMuonMinus :         // Muon
+    case kPiPlus :            // Pion
+    case kKPlus :             // kaon
+    case kK0Short :           // k0s
+    case kK0Long :            // k0l
+    case kProton :            // Proton
+    case kNeutron :           // Neutron
+    case kLambda0 :           // Lambda_0
+    case kSigmaMinus :        // Sigma Minus
+    case kSigmaPlus :         // Sigma Plus
+    case kXiMinus :           // Xsi Minus
+    case kOmegaMinus :        // Omega
+    case kNuE :               // Electron Neutrino
+    case kNuMu :              // Muon Neutrino
+    case kNuTau :             // Tau Neutrino
+    case 3322 :               // Xsi
+      isStable=kTRUE;
+      break;
+    default :
+      isStable=kFALSE;
+      return isStable;
+      break;
+    }
+
+  // particle produced during transport
+  CbmMCTrack * mother = GetMCTrackFromMCEvent( GetMothersLabel(label) );
+  if(!mother) return kTRUE;
+  Int_t pdgMother      = TMath::Abs( mother->GetPdgCode() );
+  UInt_t processMother = mother->GetGeantProcessId();
+
+  // Check for Sigma0
+  if ((pdgMother == kSigma0) &&  (processMother == kPPrimary)) return kTRUE;
+  // Check if it comes from a pi0 decay
+  if ((pdgMother == kPi0)    &&  (processMother == kPPrimary)) return kTRUE;
+  // Check if it this is a heavy flavor decay product
+  Int_t mfl  = Int_t (pdgMother / TMath::Power(10, Int_t(TMath::Log10(pdgMother))));
+  if (mfl < 4)                                            return kFALSE;   // Light hadron
+  // Heavy flavor hadron produced by generator
+  if (processMother == kPPrimary)                         return kTRUE;
+  // Check for secondary interaction producing the heavy flavour
+  Int_t mLabel=-1;
+  while( (mLabel = mother->GetMotherId() && mLabel>=0) ) {
+    mother = GetMCTrackFromMCEvent(mLabel);
+  }
+  pdgMother      = TMath::Abs( mother->GetPdgCode() );
+  mfl            = Int_t (pdgMother / TMath::Power(10, Int_t(TMath::Log10(pdgMother))));
+  return (mfl < 4 ? kFALSE : kTRUE);
+}
+
+//____________________________________________________________
+Bool_t PairAnalysisMC::IsSecondaryFromWeakDecay( Int_t label , UInt_t processID) const
+{
+  if(IsPhysicalPrimary(label, processID))           return kFALSE;
+  if(processID!=kPDecay)                            return kFALSE;
+
+  Float_t pdgMother = (Float_t) TMath::Abs( GetPdgFromLabel( GetMothersLabel(label) ) );
+  // mass fo the flavour
+  Int_t mfl = Int_t (pdgMother / TMath::Power(10, Int_t(TMath::Log10(pdgMother))));
+  // mother has strangeness, pion+- or muon decay
+  if(mfl==3 || pdgMother==211 || pdgMother==13)     return kTRUE;
+  else                                              return kFALSE;
+}
+//____________________________________________________________
+Bool_t PairAnalysisMC::IsSecondaryFromMaterial( Int_t label , UInt_t processID) const
+{
+  if(IsPhysicalPrimary(       label, processID)) return kFALSE;
+  if(IsSecondaryFromWeakDecay(label, processID)) return kFALSE;
+
+  // Check if it is a non-stable product or one of the beams
+  CbmMCTrack * mother = GetMCTrackFromMCEvent( GetMothersLabel(label) );
+  if(!mother)                                    return kFALSE;
+  else                                           return kTRUE;
 }

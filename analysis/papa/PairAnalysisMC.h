@@ -86,6 +86,9 @@ private:
 
   Bool_t CheckIsDalitz(Int_t label, const PairAnalysisSignalMC * const signalMC) const;
   Bool_t CheckDalitzDecision(Int_t mLabel, const PairAnalysisSignalMC * const signalMC) const;
+  Bool_t IsPhysicalPrimary(        Int_t label , UInt_t processID) const;
+  Bool_t IsSecondaryFromWeakDecay( Int_t label , UInt_t processID) const;
+  Bool_t IsSecondaryFromMaterial(  Int_t label , UInt_t processID) const;
 
   ClassDef(PairAnalysisMC, 0) // MC signal finder
 };
