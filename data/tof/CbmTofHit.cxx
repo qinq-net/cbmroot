@@ -56,8 +56,8 @@ string CbmTofHit::ToString() const
    ss << "CbmTofHit: address=" << GetAddress()
        << " pos=(" << GetX() << "," << GetY() << "," << GetZ()
        << ") err=(" << GetDx() << "," << GetDy() << "," << GetDz()
-       << ") dxy=" << GetDxy() << " refId=" << GetRefId()
-      << Form(" time=%8.2f",GetTime()); //<< " flag=" << GetFlag()
+       << ") dxy=" << GetDxy() //<< " refId=" << GetRefId()
+      << Form(" time=%8.2f",GetTime()) << " flag=" << GetFlag();
      // << " channel=" << GetCh(); // << endl;
    return ss.str();
 }
