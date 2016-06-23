@@ -207,6 +207,22 @@ void run_reco_new(Int_t nEvents = 2,
   std::cout << " All ok " << std::endl;
   // ------------------------------------------------------------------------
 
+  // -----   Resource monitoring   ------------------------------------------
+  if ( Has_Fair_Monitor() ) {      // FairRoot Version >= 15.11
+    // Extract the maximal used memory an add is as Dart measurement
+    // This line is filtered by CTest and the value send to CDash
+    FairSystemInfo sysInfo;
+    Float_t maxMemory=sysInfo.GetMaxMemory();
+    std::cout << "<DartMeasurement name=\"MaxMemory\" type=\"numeric/double\">";
+    std::cout << maxMemory;
+    std::cout << "</DartMeasurement>" << std::endl;
+
+    Float_t cpuUsage=ctime/rtime;
+    std::cout << "<DartMeasurement name=\"CpuLoad\" type=\"numeric/double\">";
+    std::cout << cpuUsage;
+    std::cout << "</DartMeasurement>" << std::endl;
+  }
+
   // Function needed for CTest runtime dependency
   Generate_CTest_Dependency_File(depFile);
 }
