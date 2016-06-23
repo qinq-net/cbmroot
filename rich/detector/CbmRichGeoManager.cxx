@@ -37,7 +37,8 @@ void CbmRichGeoManager::InitGeometry() {
     } else if (fGP->fGeometryType == CbmRichGeometryTypeCylindrical) {
         InitPmtCyl();
     } else if (fGP->fGeometryType == CbmRichGeometryTypeNotDefined) {
-        Fatal("CbmRichGeoManager::InitGeometry()", " Geometry type is CbmRichGeometryTypeNotDefined. Geometry could not be defined automatically.");
+       // Fatal("CbmRichGeoManager::InitGeometry()", " Geometry type is CbmRichGeometryTypeNotDefined. Geometry could not be defined automatically.");
+        cout<< endl << endl << "CbmRichGeoManager::InitGeometry(): Geometry type is CbmRichGeometryTypeNotDefined. Geometry could not be defined automatically." << endl << endl;
     }
     
     
