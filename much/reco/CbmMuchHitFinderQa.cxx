@@ -1126,7 +1126,7 @@ void CbmMuchHitFinderQa::PullsQa(){
     Double_t dy   = hit->GetDy();
     
 //    Double_t tRC  = hit->GetTime();
-//    Double_t dt   = hit->GetDTime();
+//    Double_t dt   = hit->GetTimeError();
     
     
     if (dx<1.e-10) { printf("Anomalously small dx\n"); continue;}

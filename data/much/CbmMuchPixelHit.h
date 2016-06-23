@@ -101,14 +101,6 @@ public:
 	/** Modifiers **/
 	void SetFlag(Int_t flag) { fFlag = flag; }
 
-	/** Time error (old methods). Here for backward compatibility.
-	 ** Methods of base class CbmHit::GetTimeError and
-	 ** CbmHit::SetTimeError should be used.
-	 **/
-	void SetDTime(Double_t error) { SetTimeError(error); }
-	Double_t GetDTime() const { return GetTimeError(); }
-
-
 private:
    Int_t fPlaneId; // Plane number
    Int_t fFlag; // Flag

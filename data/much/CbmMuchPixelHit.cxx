@@ -35,9 +35,9 @@ CbmMuchPixelHit::CbmMuchPixelHit(
     fPlaneId(planeId),
     fFlag(0)
 {
-	SetType(kMUCHPIXELHIT);
-  SetTime(-1);
-  SetTimeError(-1.);
+  SetType(kMUCHPIXELHIT);
+  SetTime(t);
+  SetTimeError(dt);
 }
 
 CbmMuchPixelHit::CbmMuchPixelHit(
