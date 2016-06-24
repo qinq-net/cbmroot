@@ -1218,8 +1218,8 @@ InitStatus CbmMvdDigitizeL::Init() {
     // **********  Register output array
     fDigis = new TClonesArray("CbmMvdDigi", 10000);
     fDigiMatch = new TClonesArray("CbmMvdDigiMatch", 10000);
-    ioman->Register("MvdDigi", "MVDRawData", fDigis, kTRUE);
-    ioman->Register("MvdDigiMatch", "MvdMCData", fDigiMatch, kTRUE);
+    ioman->Register("MvdDigi", "MVDRawData", fDigis, IsOutputBranchPersistent("MvdDigi"));
+    ioman->Register("MvdDigiMatch", "MvdMCData", fDigiMatch, IsOutputBranchPersistent("MvdDigiMatch"));
 
     // *****  Get MVD geometry
     Int_t nStations = GetMvdGeometry();

@@ -269,15 +269,15 @@ void CbmMatchRecoToMC::ReadAndCreateDataBranches()
    fStsDigiMatches = (TClonesArray*) ioman->GetObject("StsDigiMatch");
    if (fStsClusters != NULL) {
       fStsClusterMatches = new TClonesArray("CbmMatch", 100);
-      ioman->Register("StsClusterMatch", "STS", fStsClusterMatches, kTRUE);
+      ioman->Register("StsClusterMatch", "STS", fStsClusterMatches, IsOutputBranchPersistent("StsClusterMatch"));
    }
    if (fStsHits != NULL) {
       fStsHitMatches = new TClonesArray("CbmMatch", 100);
-      ioman->Register("StsHitMatch", "STS", fStsHitMatches, kTRUE);
+      ioman->Register("StsHitMatch", "STS", fStsHitMatches, IsOutputBranchPersistent("StsHitMatch"));
    }
    if (fStsTracks != NULL) {
       fStsTrackMatches = new TClonesArray("CbmTrackMatchNew", 100);
-      ioman->Register("StsTrackMatch", "STS", fStsTrackMatches, kTRUE);
+      ioman->Register("StsTrackMatch", "STS", fStsTrackMatches, IsOutputBranchPersistent("StsTrackMatch"));
    }
 
    //RICH
@@ -287,7 +287,7 @@ void CbmMatchRecoToMC::ReadAndCreateDataBranches()
    fRichMcPoints = (TClonesArray*) ioman->GetObject("RichPoint");
    if (fRichRings != NULL) {
       fRichTrackMatches = new TClonesArray("CbmTrackMatchNew", 100);
-      ioman->Register("RichRingMatch", "RICH", fRichTrackMatches, kTRUE);
+      ioman->Register("RichRingMatch", "RICH", fRichTrackMatches, IsOutputBranchPersistent("RichRingMatch"));
    }
 
    // TRD
@@ -301,21 +301,21 @@ void CbmMatchRecoToMC::ReadAndCreateDataBranches()
 	  fTrdClusterMatches = (TClonesArray*) ioman->GetObject("TrdClusterMatch");
 	  if (NULL == fTrdClusterMatches) {
 	     fTrdClusterMatches = new TClonesArray("CbmMatch", 100);
-		 ioman->Register("TrdClusterMatch", "TRD", fTrdClusterMatches, kTRUE);
+	     ioman->Register("TrdClusterMatch", "TRD", fTrdClusterMatches, IsOutputBranchPersistent("TrdClusterMatch"));
 	  }
    }
    if (fTrdHits != NULL) {
 	  fTrdHitMatches = (TClonesArray*) ioman->GetObject("TrdHitMatch");
 	  if (NULL == fTrdHitMatches) {
          fTrdHitMatches = new TClonesArray("CbmMatch", 100);
-         ioman->Register("TrdHitMatch", "TRD", fTrdHitMatches, kTRUE);
+         ioman->Register("TrdHitMatch", "TRD", fTrdHitMatches, IsOutputBranchPersistent("TrdHitMatch"));
 	  }
    }
    if (fTrdTracks != NULL) {
 	  fTrdTrackMatches = (TClonesArray*) ioman->GetObject("TrdTrackMatch");
 	  if (NULL == fTrdTrackMatches) {
 	     fTrdTrackMatches = new TClonesArray("CbmTrackMatchNew", 100);
-         ioman->Register("TrdTrackMatch", "TRD", fTrdTrackMatches, kTRUE);
+	     ioman->Register("TrdTrackMatch", "TRD", fTrdTrackMatches, IsOutputBranchPersistent("TrdTrackMatch"));
 	  }
    }
 
@@ -331,19 +331,19 @@ void CbmMatchRecoToMC::ReadAndCreateDataBranches()
    fMuchStrawDigiMatches = (TClonesArray*) ioman->GetObject("MuchStrawDigiMatch");
    if (fMuchClusters != NULL) {
       fMuchClusterMatches = new TClonesArray("CbmMatch", 100);
-      ioman->Register("MuchClusterMatch", "MUCH", fMuchClusterMatches, kTRUE);
+      ioman->Register("MuchClusterMatch", "MUCH", fMuchClusterMatches, IsOutputBranchPersistent("MuchClusterMatch"));
    }
    if (fMuchPixelHits) {
       fMuchPixelHitMatches = new TClonesArray("CbmMatch", 100);
-      ioman->Register("MuchPixelHitMatch", "MUCH", fMuchPixelHitMatches, kTRUE);
+      ioman->Register("MuchPixelHitMatch", "MUCH", fMuchPixelHitMatches, IsOutputBranchPersistent("MuchPixelHitMatch"));
    }
    if (fMuchStrawHits) {
       fMuchStrawHitMatches = new TClonesArray("CbmMatch", 100); //AZ
-      ioman->Register("MuchStrawHitMatch", "MUCH", fMuchStrawHitMatches, kTRUE); //AZ
+      ioman->Register("MuchStrawHitMatch", "MUCH", fMuchStrawHitMatches, IsOutputBranchPersistent("MuchStrawHitMatch")); //AZ
    }
    if (fMuchTracks) {
       fMuchTrackMatches = new TClonesArray("CbmTrackMatchNew", 100);
-      ioman->Register("MuchTrackMatch", "MUCH", fMuchTrackMatches, kTRUE);
+      ioman->Register("MuchTrackMatch", "MUCH", fMuchTrackMatches, IsOutputBranchPersistent("MuchTrackMatch"));
    }
 
    // MVD
@@ -353,12 +353,12 @@ void CbmMatchRecoToMC::ReadAndCreateDataBranches()
    fMvdDigiMatches = (TClonesArray*) ioman->GetObject("MvdDigiMatch");
    if (fMvdCluster != NULL) {
       fMvdClusterMatches = new TClonesArray("CbmMatch", 100);
-      ioman->Register("MvdClusterMatch", "MVD", fMvdClusterMatches, kTRUE);
+      ioman->Register("MvdClusterMatch", "MVD", fMvdClusterMatches, IsOutputBranchPersistent("MvdClusterMatch"));
    }
 
    if (fMvdHits != NULL) {
       fMvdHitMatches = new TClonesArray("CbmMatch", 100);
-      ioman->Register("MvdHitMatch", "MVD", fMvdHitMatches, kTRUE);
+      ioman->Register("MvdHitMatch", "MVD", fMvdHitMatches, IsOutputBranchPersistent("MvdHitMatch"));
    }
 
    // TOF
@@ -375,7 +375,7 @@ void CbmMatchRecoToMC::ReadAndCreateDataBranches()
 
    if (NULL != fTofDigis && fTofHits != NULL) {
       fTofHitMatches = new TClonesArray("CbmMatch", 100);
-      ioman->Register("TofHitMatch", "TOF", fTofHitMatches, kTRUE);
+      ioman->Register("TofHitMatch", "TOF", fTofHitMatches, IsOutputBranchPersistent("TofHitMatch"));
    }
 }
 

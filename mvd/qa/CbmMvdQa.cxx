@@ -119,7 +119,7 @@ cout << "-----------------------------------------------------------------------
     return kFATAL;
     }
     fBadTracks = new TClonesArray("CbmStsTrack", 5000);
-    ioman->Register("BadTracks", "sts", fBadTracks, kTRUE);
+    ioman->Register("BadTracks", "sts", fBadTracks, IsOutputBranchPersistent("BadTracks"));
 
     fStsTrackMatches = (TClonesArray*) ioman->GetObject("StsTrackMatch");
     fStsTrackArray   = (TClonesArray*) ioman->GetObject("StsTrack");

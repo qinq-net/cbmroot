@@ -266,7 +266,7 @@ InitStatus CbmTrdMatchTracksMK::Init() {
 
   // Create and register TrdTrackMatch array
   fMatches = new TClonesArray("CbmTrackMatch",100);
-  ioman->Register("TrdTrackMatch", "TRD", fMatches, kTRUE);
+  ioman->Register("TrdTrackMatch", "TRD", fMatches, IsOutputBranchPersistent("TrdTrackMatch"));
 
   MC_Tot_PrimaryRefFast = 0;
 

@@ -85,7 +85,7 @@ InitStatus CbmMuchFindVectors::Init()
 
   // Create and register MuchTrack array
   fTrackArray = new TClonesArray("CbmMuchTrack",100);
-  ioman->Register("MuchVector", "Much", fTrackArray, kTRUE);
+  ioman->Register("MuchVector", "Much", fTrackArray, IsOutputBranchPersistent("MuchVector"));
 
   CbmMuchFindHitsStraws *hitFinder = (CbmMuchFindHitsStraws*) 
     FairRun::Instance()->GetTask("CbmMuchFindHitsStraws");

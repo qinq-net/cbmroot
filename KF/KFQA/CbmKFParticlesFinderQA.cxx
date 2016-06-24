@@ -423,18 +423,18 @@ InitStatus CbmKFParticlesFinderQA::Init()
   {
     // create and register TClonesArray with output reco particles
     fRecParticles = new TClonesArray("KFParticle",100);
-    fManger->Register("RecoParticles", "KFParticle", fRecParticles, kTRUE);
+    fManger->Register("RecoParticles", "KFParticle", fRecParticles, IsOutputBranchPersistent("RecoParticles"));
   }
 
   if(fSaveMCParticles)
   {
     // create and register TClonesArray with output MC particles
     fMCParticles = new TClonesArray("KFMCParticle",100);
-    fManger->Register("KFMCParticles", "KFParticle", fMCParticles, kTRUE);
+    fManger->Register("KFMCParticles", "KFParticle", fMCParticles, IsOutputBranchPersistent("KFMCParticles"));
 
     // create and register TClonesArray with matching between reco and MC particles
     fMatchParticles = new TClonesArray("KFParticleMatch",100);
-    fManger->Register("KFParticleMatch", "KFParticle", fMatchParticles, kTRUE);
+    fManger->Register("KFParticleMatch", "KFParticle", fMatchParticles, IsOutputBranchPersistent("FFParticleMatch"));
   }
   
    if (ThermalNoFlow!=NULL) ThermalNoFlow->ReInit(fManger);

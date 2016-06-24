@@ -180,7 +180,7 @@ InitStatus CbmBuildEventsSimple::Init()
   }
 
   fSTSDigi=new TClonesArray("CbmStsDigi", 10000);
-  mgr->Register("StsDigi", "Digital response in STS" ,fSTSDigi, kTRUE);
+  mgr->Register("StsDigi", "Digital response in STS" ,fSTSDigi, IsOutputBranchPersistent("StsDigi"));
   fSTSDigi->Delete(); fNSTSDigis=0;
 
   return kSUCCESS;

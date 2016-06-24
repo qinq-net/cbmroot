@@ -84,7 +84,7 @@ InitStatus CbmTrdClusterFinderFast::Init()
    if (fDigis == NULL) LOG(FATAL) << "CbmTrdClusterFinderFast::Init No TrdDigi array" << FairLogger::endl;
 
    fClusters = new TClonesArray("CbmTrdCluster", 100);
-   ioman->Register("TrdCluster","Trd Cluster",fClusters,kTRUE);
+   ioman->Register("TrdCluster","Trd Cluster",fClusters,IsOutputBranchPersistent("TrdCluster"));
 
    fGeoHandler = new CbmTrdGeoHandler();
    fGeoHandler->Init();

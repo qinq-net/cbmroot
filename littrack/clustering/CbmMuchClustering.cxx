@@ -130,9 +130,9 @@ void CbmMuchClustering::ReadDataBranches()
 	assert(ioman != NULL);
 	fMuchDigi = (TClonesArray*) ioman->GetObject("MuchDigi");
 	fCluster = new TClonesArray("CbmMuchCluster", 1000);
-	ioman->Register("MuchCluster", "Cluster in MUCH", fCluster, kTRUE);
+	ioman->Register("MuchCluster", "Cluster in MUCH", fCluster, IsOutputBranchPersistent("MuchCluster"));
 	fHit = new TClonesArray("CbmMuchPixelHit", 1000);
-	ioman->Register("MuchPixelHit", "Hit in MUCH", fHit, kTRUE);
+	ioman->Register("MuchPixelHit", "Hit in MUCH", fHit, IsOutputBranchPersistent("MuchPixelHit"));
 }
 
 void CbmMuchClustering::CreateModulesGeometryArray()

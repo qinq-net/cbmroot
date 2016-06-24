@@ -191,9 +191,9 @@ InitStatus StsCosyBL::Init()
   fNofEvent = 0;
  
   cDigis = new TClonesArray("CbmStsDigi", 100);
-  ioman->Register("StsCalibDigi", "Calibrated", cDigis, kTRUE);
+  ioman->Register("StsCalibDigi", "Calibrated", cDigis, IsOutputBranchPersistent("StsCalibDigi"));
   chDigis = new TClonesArray("CbmFiberHodoDigi", 100);
-  ioman->Register("HodoCalibDigi", "HodoCalibrated", chDigis, kTRUE);
+  ioman->Register("HodoCalibDigi", "HodoCalibrated", chDigis, IsOutputBranchPersistent("HodoCalibDigi"));
   return kSUCCESS;
   
 }

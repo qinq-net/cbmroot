@@ -438,8 +438,8 @@ void CbmTrdOccupancyQa::FinishTask()
 	  // ---- Register ------------------------------------------------------
 void CbmTrdOccupancyQa::Register()
 {
-  //FairRootManager::Instance()->Register("TrdDigi","Trd Digi", fDigiCollection, kTRUE);
-  //FairRootManager::Instance()->Register("TrdDigiMatch","Trd Digi Match", fDigiMatchCollection, kTRUE);
+  //FairRootManager::Instance()->Register("TrdDigi","Trd Digi", fDigiCollection, IsOutputBranchPersistent("TrdDigi"));
+  //FairRootManager::Instance()->Register("TrdDigiMatch","Trd Digi Match", fDigiMatchCollection, IsOutputBranchPersistent("TrdDigiMatch"));
 }
 	  // --------------------------------------------------------------------
 void CbmTrdOccupancyQa::CopyEvent2MemoryMap()

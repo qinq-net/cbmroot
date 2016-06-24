@@ -121,7 +121,7 @@ InitStatus CbmTrdSimpleHitProducerCluster::Init()
     }
 
     fHitCollection = new TClonesArray("CbmTrdHit", 100);
-    ioman->Register("TrdHit","TRD",fHitCollection,kTRUE);
+    ioman->Register("TrdHit","TRD",fHitCollection,IsOutputBranchPersistent("TrdHit"));
 
     fGeoHandler->Init();
 
@@ -226,7 +226,7 @@ void CbmTrdSimpleHitProducerCluster::Finish()
 // ---- Register ------------------------------------------------------
 void CbmTrdSimpleHitProducerCluster::Register(){
 
-  FairRootManager::Instance()->Register("TrdHit","Trd", fHitCollection, kTRUE);
+  FairRootManager::Instance()->Register("TrdHit","Trd", fHitCollection, IsOutputBranchPersistent("TrdHit"));
 
 }
 

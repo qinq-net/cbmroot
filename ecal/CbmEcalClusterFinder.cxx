@@ -58,7 +58,7 @@ InitStatus CbmEcalClusterFinder::Init()
   }
 
   fClusters=new TClonesArray("CbmEcalCluster", 2000);
-  io->Register("EcalClusters", "ECAL", fClusters, kTRUE);
+  io->Register("EcalClusters", "ECAL", fClusters, IsOutputBranchPersistent("EcalCluster"));
   fEv=0;
   return kSUCCESS;
 }

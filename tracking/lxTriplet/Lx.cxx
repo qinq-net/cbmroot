@@ -303,7 +303,7 @@ InitStatus LxFinderTriplet::Init()
 
   // Create an output array.
   listRecoTracks = new TClonesArray("CbmMuchTrack", 100);
-  fManager->Register("MuchTrack", "Much", listRecoTracks, kTRUE);
+  fManager->Register("MuchTrack", "Much", listRecoTracks, IsOutputBranchPersistent("MuchTrack"));
 
   if (generateInvMass)
     massHisto = new TH1F("jpsi_mass", "jpsi_mass", 100, 2., 4.);

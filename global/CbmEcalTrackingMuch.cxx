@@ -70,7 +70,7 @@ InitStatus CbmEcalTrackingMuch::Init()
     return kFATAL;
   }
   fTrackPar=new TClonesArray("FairTrackParam", 3000);
-  fManager->Register("EcalTrackParam", "ECAL", fTrackPar, kTRUE);
+  fManager->Register("EcalTrackParam", "ECAL", fTrackPar, IsOutputBranchPersistent("EcalTrackParam"));
   fFitter=new CbmStsKFTrackFitter(); 
   fInf=fStr->GetEcalInf();
   fCaloZ=fInf->GetZPos();

@@ -126,8 +126,8 @@ InitStatus CbmAnaDimuonAnalysis::Init()
     Fatal("Init","One of TCloneArrays not available");
   }  
   
-  fManager->Register("DimuonCandidates" ,"Much",fDimuonCandidates,kTRUE);
-  fManager->Register("MuCandidates" ,"Much",fMuCandidates,kTRUE);
+  fManager->Register("DimuonCandidates" ,"Much",fDimuonCandidates,IsOutputBranchPersistent("DimuonCandidates"));
+  fManager->Register("MuCandidates" ,"Much",fMuCandidates,IsOutputBranchPersistent("MuCandidates"));
   
   fGeoScheme = CbmMuchGeoScheme::Instance();
   fGeoScheme->Init(fDigiFileName);

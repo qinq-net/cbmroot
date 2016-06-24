@@ -75,7 +75,7 @@ InitStatus CbmEcalReconstructionFastMC::Init()
   fListECALhits = (TClonesArray*)fManager->GetObject("EcalHitFastMC");
   // new list of ECAL reconstructed particles
   fListRecParticles = new TClonesArray("CbmEcalRecParticle",100);
-  fManager->Register("EcalRecParticle","ECAL",fListRecParticles,kTRUE);
+  fManager->Register("EcalRecParticle","ECAL",fListRecParticles,IsOutputBranchPersistent("EcalRecParticle"));
   return kSUCCESS;
 }
 // -------------------------------------------------------------------------

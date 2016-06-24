@@ -179,12 +179,12 @@ InitStatus CbmD0TrackSelection::Init() {
     fD0PionTrackArray      = new TClonesArray("CbmD0TrackCandidate", 100);
     fD0KaonTrackArray      = new TClonesArray("CbmD0TrackCandidate", 100);
 
-    ioman->Register("PositiveMCTracks",  "Open Charm Mc Positiv", fMCTrackArrayP,  kTRUE);
-    ioman->Register("NegativeMCTracks",  "Open Charm Mc Negativ", fMCTrackArrayN,  kTRUE);
-    ioman->Register("CbmD0KaonParticles", "Open Charm Kaon Particles", fKaonParticleArray, kTRUE);
-    ioman->Register("CbmD0PionParticles", "Open Charm Pion Particles", fPionParticleArray, kTRUE);
-    ioman->Register("CbmD0PionTrackArray", "Open Charm Pion Tracks", fD0PionTrackArray , kTRUE);
-    ioman->Register("CbmD0KaonTrackArray", "Open Charm Kaon Tracks", fD0KaonTrackArray , kTRUE);
+    ioman->Register("PositiveMCTracks",  "Open Charm Mc Positiv", fMCTrackArrayP,  IsOutputBranchPersistent("PositiveMCTracks"));
+    ioman->Register("NegativeMCTracks",  "Open Charm Mc Negativ", fMCTrackArrayN,  IsOutputBranchPersistent("NegativeMCTracks"));
+    ioman->Register("CbmD0KaonParticles", "Open Charm Kaon Particles", fKaonParticleArray, IsOutputBranchPersistent("CbmD0KaonParticles"));
+    ioman->Register("CbmD0PionParticles", "Open Charm Pion Particles", fPionParticleArray, IsOutputBranchPersistent("CbmD0PionParticles"));
+    ioman->Register("CbmD0PionTrackArray", "Open Charm Pion Tracks", fD0PionTrackArray , IsOutputBranchPersistent("CbmD0PionTrackArray"));
+    ioman->Register("CbmD0KaonTrackArray", "Open Charm Kaon Tracks", fD0KaonTrackArray , IsOutputBranchPersistent("CbmD0KaonTrackArray"));
 
     fMcPoints        = (TClonesArray*) ioman->GetObject("MvdPoint");
     fStsTrackMatches = (TClonesArray*) ioman->GetObject("StsTrackMatch");

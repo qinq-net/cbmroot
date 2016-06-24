@@ -538,7 +538,7 @@ InitStatus LxFinder::Init()
   if (!parallMode)
   {
     listRecoTracks = new TClonesArray("CbmMuchTrack", 100);
-    fRootManager->Register("MuchTrack", "Much", listRecoTracks, kTRUE);
+    fRootManager->Register("MuchTrack", "Much", listRecoTracks, IsOutputBranchPersistent("MuchTrack"));
   }
 
 #ifdef MAKE_HISTOS

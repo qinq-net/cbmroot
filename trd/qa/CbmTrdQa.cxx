@@ -2678,7 +2678,7 @@ Double_t CbmTrdQa::CalcAngle(const CbmTrdPoint* pointA, const CbmTrdPoint* point
   }
   void CbmTrdQa::Register()
   {
-    //FairRootManager::Instance()->Register("TrdDigi","Trd Digi", fDigiCollection, kTRUE);
-    //FairRootManager::Instance()->Register("TrdDigiMatch","Trd Digi Match", fDigiMatchCollection, kTRUE);
+    //FairRootManager::Instance()->Register("TrdDigi","Trd Digi", fDigiCollection, IsOutputBranchPersistent("TrdDigi"));
+    //FairRootManager::Instance()->Register("TrdDigiMatch","Trd Digi Match", fDigiMatchCollection, IsOutputBranchPersistent("TrdDigiMatch"));
   }
   ClassImp(CbmTrdQa)

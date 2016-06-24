@@ -446,13 +446,13 @@ InitStatus eventPlane::Init()
   // =========== Create and register output array
   
   fMCEventData = new CbmMCEventData("CbmMcEvent");
-  ioman->Register("McEvent", "MC", fMCEventData, kTRUE);  
+  ioman->Register("McEvent", "MC", fMCEventData, IsOutputBranchPersistent("McEvent"));  
   
   fCbmPsdEvent = new CbmPsdEventData("CbmPsdEvent");
-  ioman->Register("PsdEvent", "PSD", fCbmPsdEvent, kTRUE);
+  ioman->Register("PsdEvent", "PSD", fCbmPsdEvent, IsOutputBranchPersistent("PsdEvent"));
   
   fCbmStsEvent = new CbmStsEventData("CbmStsEvent");
-  ioman->Register("StsEvent", "STS", fCbmStsEvent, kTRUE);
+  ioman->Register("StsEvent", "STS", fCbmStsEvent, IsOutputBranchPersistent("StsEvent"));
 
   for (Int_t i=0; i<100; i++) // to change if different number of PSD modules
   {

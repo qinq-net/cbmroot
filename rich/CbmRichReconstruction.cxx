@@ -91,20 +91,20 @@ InitStatus CbmRichReconstruction::Init()
     
     if (fRunExtrapolation && fRunProjection) {
         fRichTrackParamZ = new TClonesArray("FairTrackParam",100);
-        ioman->Register("RichTrackParamZ", "RICH", fRichTrackParamZ, kFALSE);
+        ioman->Register("RichTrackParamZ", "RICH", fRichTrackParamZ, IsOutputBranchPersistent("RichTrackParamZ"));
         
         fGlobalTracks = (TClonesArray*) ioman->GetObject("GlobalTrack");
         if ( NULL == fGlobalTracks) { Fatal("CbmRichReconstruction::Init", "No GlobalTrack array!");}
         
         fRichProjections = new TClonesArray("FairTrackParam");
-        ioman->Register("RichProjection", "RICH", fRichProjections, kTRUE);
+        ioman->Register("RichProjection", "RICH", fRichProjections, IsOutputBranchPersistent("RichProjection"));
     }
 
     fRichHits = (TClonesArray*) ioman->GetObject("RichHit");
     if ( NULL == fRichHits) { Fatal("CbmRichReconstruction::Init","No RichHit array!"); }
 
     fRichRings = new TClonesArray("CbmRichRing", 100);
-    ioman->Register("RichRing", "RICH", fRichRings, kTRUE);
+    ioman->Register("RichRing", "RICH", fRichRings, IsOutputBranchPersistent("RichRing"));
     
     if (fRunExtrapolation) InitExtrapolation();
     if (fRunProjection) InitProjection();

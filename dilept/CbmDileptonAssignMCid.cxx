@@ -292,7 +292,7 @@ InitStatus CbmDileptonAssignMCid::Init(){
         return kFATAL;
     }
 
-    fRootManager->Register("DileptonTrackSim","Dilepton", fTrackSimColl->DileptonTracksSim(),kTRUE);
+    fRootManager->Register("DileptonTrackSim","Dilepton", fTrackSimColl->DileptonTracksSim(),IsOutputBranchPersistent("DileptonTrackSim"));
 
     // initialize KF-Fitter
     fFitter.Init();

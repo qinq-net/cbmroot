@@ -279,7 +279,7 @@ InitStatus CbmStsMatchTracksEpoch::Init() {
   
   // Create and register StsTrackMatch array
   fMatches = new TClonesArray("CbmTrackMatch",100);
-  ioman->Register("StsTrackMatch", "STS", fMatches, kTRUE);
+  ioman->Register("StsTrackMatch", "STS", fMatches, IsOutputBranchPersistent("StsTrackMatch"));
 
   return kSUCCESS;
 

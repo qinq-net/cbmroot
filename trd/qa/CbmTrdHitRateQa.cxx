@@ -248,10 +248,10 @@ InitStatus CbmTrdHitRateQa::Init()
     }
   /*
     fDigiCollection = new TClonesArray("CbmTrdDigi", 100);
-    ioman->Register("TrdDigi","TRD Digis",fDigiCollection,kTRUE);
+    ioman->Register("TrdDigi","TRD Digis",fDigiCollection,IsOutputBranchPersistent("TrdDigi"));
 
     fDigiMatchCollection = new TClonesArray("CbmTrdDigiMatch", 100);
-    ioman->Register("TrdDigiMatch","TRD Digis",fDigiMatchCollection,kTRUE);
+    ioman->Register("TrdDigiMatch","TRD Digis",fDigiMatchCollection,IsOutputBranchPersistent("TrdDigiMatch"));
   */
     fGeoHandler->Init();
 
@@ -1396,8 +1396,8 @@ void CbmTrdHitRateQa::DrawDigi()
 // ---- Register ------------------------------------------------------
 void CbmTrdHitRateQa::Register()
 {
-  //FairRootManager::Instance()->Register("TrdDigi","Trd Digi", fDigiCollection, kTRUE);
-  //FairRootManager::Instance()->Register("TrdDigiMatch","Trd Digi Match", fDigiMatchCollection, kTRUE);
+  //FairRootManager::Instance()->Register("TrdDigi","Trd Digi", fDigiCollection, IsOutputBranchPersistent("TrdDigi"));
+  //FairRootManager::Instance()->Register("TrdDigiMatch","Trd Digi Match", fDigiMatchCollection, IsOutputBranchPersistent("TrdDigiMatch"));
 }
 // --------------------------------------------------------------------
 

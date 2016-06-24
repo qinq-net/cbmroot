@@ -107,7 +107,7 @@ void CbmLitFindGlobalTracksIdeal::ReadDataBranches()
 
    // Create and register CbmGlobalTrack array
    fGlobalTracks = new TClonesArray("CbmGlobalTrack",100);
-   ioman->Register("GlobalTrack", "Global", fGlobalTracks, kTRUE);
+   ioman->Register("GlobalTrack", "Global", fGlobalTracks, IsOutputBranchPersistent("GlobalTrack"));
 }
 
 void CbmLitFindGlobalTracksIdeal::FillTrackMap(

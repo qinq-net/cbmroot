@@ -136,13 +136,13 @@ InitStatus CbmTrdTimeCorrel::Init()
   }
 
   fRawMessages = new TClonesArray("CbmSpadicRawMessage");
-  ioman->Register("TrdRawMessage", "TRD Raw Messages", fRawMessages, kTRUE);
+  ioman->Register("TrdRawMessage", "TRD Raw Messages", fRawMessages, IsOutputBranchPersistent("TrdRawMessage"));
 
   fDigis = new TClonesArray("CbmTrdDigi");
-  ioman->Register("TrdDigi", "TRD Digis", fDigis, kTRUE);
+  ioman->Register("TrdDigi", "TRD Digis", fDigis, IsOutputBranchPersistent("TrdDigi"));
 
   fClusters = new TClonesArray("CbmTrdCluster");
-  ioman->Register("TrdCluster", "TRD Clusters", fClusters, kTRUE);
+  ioman->Register("TrdCluster", "TRD Clusters", fClusters, IsOutputBranchPersistent("TrdCluster"));
 
   CreateHistograms();
   return kSUCCESS;

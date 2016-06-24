@@ -108,7 +108,7 @@ InitStatus StsCosyHitFinder::Init()
   FairRootManager *ioman = FairRootManager::Instance();
 
   fHits = new TClonesArray("CbmStsHit", 1000);
-  ioman->Register("StsHit", "Hit in STS", fHits, kTRUE);
+  ioman->Register("StsHit", "Hit in STS", fHits, IsOutputBranchPersistent("StsHit"));
     
   stsClusters =(TClonesArray *)  ioman->GetObject("StsCluster");
   if ( !stsClusters  ) {

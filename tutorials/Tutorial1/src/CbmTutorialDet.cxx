@@ -101,7 +101,8 @@ void CbmTutorialDet::Register() {
 */
  
   FairRootManager::Instance()->Register("TutorialDetPoint", "TutorialDet",
-				       fCbmTutorialDetPointCollection, kTRUE);
+					fCbmTutorialDetPointCollection,
+					IsOutputBranchPersistent("TutorialDetPoint"));
  
 }
 

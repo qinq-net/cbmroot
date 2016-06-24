@@ -116,7 +116,7 @@ InitStatus CbmMvdClusterfinder::Init() {
    
     // **********  Register output array
     fCluster = new TClonesArray("CbmMvdCluster", 10000);
-    ioman->Register("MvdCluster", "Mvd Clusters", fCluster, kTRUE);
+    ioman->Register("MvdCluster", "Mvd Clusters", fCluster, IsOutputBranchPersistent("MvdCluster"));
 
     fDetector = CbmMvdDetector::Instance();
     

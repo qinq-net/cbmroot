@@ -595,7 +595,7 @@ Bool_t TMbsMappingTof::RegisterOutput()
    if( kTRUE == fMbsMappingPar->UseDigiExp() )
       fCbmTofDigiCollection = new TClonesArray("CbmTofDigiExp");
       else fCbmTofDigiCollection = new TClonesArray("CbmTofDigi");
-//   rootMgr->Register("CbmTofDigi","Tof",fCbmTofDigiCollection, kTRUE);
+//   rootMgr->Register("CbmTofDigi","Tof",fCbmTofDigiCollection, IsOutputBranchPersistent("CbmTofDigi"));
    rootMgr->Register( "CbmTofDigi","Tof",fCbmTofDigiCollection,
                       fMbsUnpackPar->WriteDataInCbmOut() || fbSaveMappedDigis );
    

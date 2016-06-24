@@ -164,7 +164,7 @@ InitStatus CbmStsFindTracks::Init() {
 
   // Create and register output array STSTrack
   fTracks = new TClonesArray("CbmStsTrack",100);
-  ioman->Register("StsTrack", "STS", fTracks, kTRUE);
+  ioman->Register("StsTrack", "STS", fTracks, IsOutputBranchPersistent("StsTrack"));
 
   // Build digitisation scheme
   /*

@@ -43,7 +43,7 @@ InitStatus CbmTrdHitProducerIdeal::Init()
    }
   
    fTrdHits = new TClonesArray("CbmTrdHit", 100);
-   rootMgr->Register("TrdHit", "TRD", fTrdHits, kTRUE);
+   rootMgr->Register("TrdHit", "TRD", fTrdHits, IsOutputBranchPersistent("TrdHit"));
   
    return kSUCCESS;
 }

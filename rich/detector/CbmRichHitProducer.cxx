@@ -51,7 +51,7 @@ InitStatus CbmRichHitProducer::Init()
     if (NULL == fRichDigis) { Fatal("CbmRichHitProducer::Init","No RichDigi array!"); }
     
     fRichHits = new TClonesArray("CbmRichHit");
-    manager->Register("RichHit","RICH", fRichHits, kTRUE);
+    manager->Register("RichHit","RICH", fRichHits, IsOutputBranchPersistent("RichHit"));
     
     return kSUCCESS;
 }

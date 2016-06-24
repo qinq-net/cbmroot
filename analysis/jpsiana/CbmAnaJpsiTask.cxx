@@ -133,7 +133,7 @@ InitStatus CbmAnaJpsiTask::Init()
 
 
    fJpsiCandidates = new TClonesArray("CbmAnaJpsiCandidate");
-   ioman->Register("JpsiCandidates","Jpsi", fJpsiCandidates, kTRUE);
+   ioman->Register("JpsiCandidates","Jpsi", fJpsiCandidates, IsOutputBranchPersistent("JpsiCandidates"));
 
    InitHist();
 

@@ -1008,7 +1008,7 @@ InitStatus CbmMvdDigitize::Init() {
   
   // **********  Register output array
   fDigis = new TClonesArray("CbmMvdDigi", 10000);
-  ioman->Register("MvdDigi", "MVDRawData", fDigis, kTRUE);
+  ioman->Register("MvdDigi", "MVDRawData", fDigis, IsOutputBranchPersistent("MvdDigi"));
   
   
   // **********  Get MVD geometry

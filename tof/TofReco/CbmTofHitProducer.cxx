@@ -167,7 +167,7 @@ InitStatus CbmTofHitProducer::Init() {
 
 
    fTofHits = new TClonesArray("CbmTofHit");
-   ioman->Register("TofHit", "Tof", fTofHits, kTRUE);
+   ioman->Register("TofHit", "Tof", fTofHits, IsOutputBranchPersistent("TofHit"));
 
    LOG(INFO) << "-I- CbmTofHitProducer: Intialization successfull!" << FairLogger::endl;
 

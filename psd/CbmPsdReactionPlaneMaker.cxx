@@ -62,7 +62,7 @@ InitStatus CbmPsdReactionPlaneMaker::Init() {
   }
  // Create and register output array
   fCbmPsdEvent = new CbmPsdEventData("");
-  ioman->Register("PsdEvent", "PSDEvent", fCbmPsdEvent, kTRUE);
+  ioman->Register("PsdEvent", "PSDEvent", fCbmPsdEvent, IsOutputBranchPersistent("PsdEvent"));
 
 
   TFile *fhist = new TFile("EdepHistos.root");

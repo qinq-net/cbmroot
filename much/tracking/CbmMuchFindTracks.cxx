@@ -56,7 +56,7 @@ InitStatus CbmMuchFindTracks::Init()
 
 	// Create and register MuchTrack array
 	fTrackArray = new TClonesArray("CbmMuchTrack",100);
-	ioman->Register("MuchTrack", "Much", fTrackArray, kTRUE);
+	ioman->Register("MuchTrack", "Much", fTrackArray, IsOutputBranchPersistent("MuchTrack"));
 
 	fFinder->Init();
 	return kSUCCESS;

@@ -264,7 +264,7 @@ InitStatus CbmRichProtHitProducer::Init()
    if (NULL == fMcTracks) { Fatal("CbmRichHitProducer::Init","No MCTrack array!"); }
 
    fRichHits = new TClonesArray("CbmRichHit");
-   fManager->Register("RichHit","RICH", fRichHits, kTRUE);
+   fManager->Register("RichHit","RICH", fRichHits, IsOutputBranchPersistent("RichHit"));
 
    // Set photodetector parameters according to its type
    if (fDetType == 0){

@@ -62,7 +62,7 @@ InitStatus CbmRichMatchRings::Init()
 
    // Create and register RichRingMatch array
    fMatches = new TClonesArray("CbmTrackMatchNew",100);
-   ioman->Register("RichRingMatch", "RICH", fMatches, kTRUE);
+   ioman->Register("RichRingMatch", "RICH", fMatches, IsOutputBranchPersistent("RichRingMatch"));
 
    return kSUCCESS;
 }

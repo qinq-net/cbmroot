@@ -107,16 +107,16 @@ void CbmLitFindGlobalTracksParallel::ReadAndCreateDataBranches()
 
    // Create and register track arrays
    fGlobalTracks = new TClonesArray("CbmGlobalTrack", 100);
-   ioman->Register("GlobalTrack", "Global", fGlobalTracks, kTRUE);
+   ioman->Register("GlobalTrack", "Global", fGlobalTracks, IsOutputBranchPersistent("GlobalTrack"));
 
    if (fDet.GetDet(kTRD)) {
       fTrdTracks = new TClonesArray("CbmTrdTrack", 100);
-      ioman->Register("TrdTrack", "Trd", fTrdTracks, kTRUE);
+      ioman->Register("TrdTrack", "Trd", fTrdTracks, IsOutputBranchPersistent("TrdTrack"));
    }
 
    if (fDet.GetDet(kMUCH)) {
       fMuchTracks = new TClonesArray("CbmMuchTrack", 100);
-      ioman->Register("MuchTrack", "Much", fMuchTracks, kTRUE);
+      ioman->Register("MuchTrack", "Much", fMuchTracks, IsOutputBranchPersistent("MuchTrack"));
    }
 }
 

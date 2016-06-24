@@ -41,7 +41,7 @@ InitStatus CbmTrbEdgeMatcher::Init()
    fTrbRawHits = (TClonesArray*)manager->GetObject("CbmTrbRawMessage");
    if (NULL == fTrbRawHits) { Fatal("CbmTrbEdgeMatcher","No CbmTrbRawMessage array!"); }
 
-   manager->Register("CbmRichTrbDigi", "RICH TRB leading-trailing edge pairs", fRichTrbDigi, kTRUE);
+   manager->Register("CbmRichTrbDigi", "RICH TRB leading-trailing edge pairs", fRichTrbDigi, IsOutputBranchPersistent("CbmRichTrbDigi"));
 
    if (fDrawHist)
    {

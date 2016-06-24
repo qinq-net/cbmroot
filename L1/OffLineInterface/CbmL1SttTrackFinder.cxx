@@ -70,7 +70,7 @@ InitStatus CbmL1SttTrackFinder::ReInit()
   fPrimVtx =  (CbmVertex *) FairRootManager::Instance() ->GetObject("PrimaryVertex");
   fStsFitter.Init();
 
-  FairRootManager::Instance()->Register("SttTrack", "Stt", fTrackCollection, kTRUE);
+  FairRootManager::Instance()->Register("SttTrack", "Stt", fTrackCollection, IsOutputBranchPersistent("SttTrack"));
 
   cout << " **************************************************" << endl;
   if (fMuchTracks) cout << " *** Using Much tracks for Stt tracking *** " << endl;

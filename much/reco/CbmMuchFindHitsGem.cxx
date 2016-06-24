@@ -49,8 +49,8 @@ InitStatus CbmMuchFindHitsGem::Init() {
   if (fDaq) fTimeSlice = (CbmTimeSlice*) ioman->GetObject("TimeSlice.");
   else      fDigis     = (TClonesArray*) ioman->GetObject("MuchDigi");
   
-  ioman->Register("MuchCluster", "Cluster in MUCH", fClusters, kTRUE);
-  ioman->Register("MuchPixelHit", "Hit in MUCH", fHits, kTRUE);
+  ioman->Register("MuchCluster", "Cluster in MUCH", fClusters, IsOutputBranchPersistent("MuchCluster"));
+  ioman->Register("MuchPixelHit", "Hit in MUCH", fHits, IsOutputBranchPersistent("MuchPixelHit"));
   
   // Initialize GeoScheme
   TFile* oldfile = gFile;

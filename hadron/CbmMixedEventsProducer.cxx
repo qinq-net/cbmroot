@@ -127,10 +127,10 @@ InitStatus CbmMixedEventsProducer::Init()
 
     // Register the output
     if(1 == fLevel || 2 == fLevel) {
-	rootMgr->Register("MCTrack", "Stack", fOutputArrayMCTrack, kTRUE);
-	rootMgr->Register("TOFPoint", "Tof", fOutputArrayTofPoint, kTRUE);
+      rootMgr->Register("MCTrack", "Stack", fOutputArrayMCTrack, IsOutputBranchPersistent("MCTrack"));
+      rootMgr->Register("TOFPoint", "Tof", fOutputArrayTofPoint, IsOutputBranchPersistent("TOFPoint"));
     } else {
-	rootMgr->Register("Hadron", "Hadrons", fOutputArrayHadron, kTRUE);
+      rootMgr->Register("Hadron", "Hadrons", fOutputArrayHadron, IsOutputBranchPersistent("Hadron"));
     }
 
     // Create random number generator

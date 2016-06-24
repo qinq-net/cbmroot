@@ -109,7 +109,7 @@ InitStatus CbmAnaHypSecFinder::Init() {
 
   if (fStandAlone) {
     newTrackArray = new TClonesArray("CbmStsTrack",100);
-    ioman->Register("StsTrackSec", "STS", newTrackArray, kTRUE);
+    ioman->Register("StsTrackSec", "STS", newTrackArray, IsOutputBranchPersistent("StsTrackSec"));
   }
   else {
     newTrackArray = (TClonesArray*) ioman->GetObject("StsTrack");

@@ -166,7 +166,7 @@ InitStatus CbmFindGlobalTracks::Init() {
 
   // Create and register GlobalTrack array
   fGlobalTracks = new TClonesArray("CbmGlobalTrack",100);
-  ioman->Register("GlobalTrack", "Global", fGlobalTracks, kTRUE);
+  ioman->Register("GlobalTrack", "Global", fGlobalTracks, IsOutputBranchPersistent("GlobalTrack"));
 
 
   // Set verbosities of mergers

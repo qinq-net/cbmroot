@@ -74,6 +74,16 @@ If(${POS_C++11} EQUAL -1)
   Message(FATAL_ERROR "FairSoft wasn't compiled with c++11 support. Please recompile FairSoft with a compiler which supports c++11.")
 EndIf()
 
+# Extract the FairRoot version from fairroot-config
+# The version info is of the form Major.Minor.Patch e.g. 15.11.1 and
+# is stored in the variable FairRoot_VERSION
+FairRootVersion()
+
+# Since 23.06.2016 CbmRoot need at least FairRoot v-15.11 f
+# Check if the FairRoot version has at least this version 
+If(FairRoot_VERSION VERSION_LESS 15.11.0)
+  Message(FATAL_ERROR "\n CbmRoot needs at least FairRoot version v-15.11 (15.11.0).\n You use FairRoot ${FairRoot_VERSION}. Please upgrade your FairRoot version.") 
+EndIf()
 
 Execute_process(COMMAND $ENV{FAIRROOTPATH}/bin/fairroot-config --fairsoft_path OUTPUT_VARIABLE _simpath OUTPUT_STRIP_TRAILING_WHITESPACE)
 Remove_Trailing_Slash($ENV{SIMPATH})
@@ -87,10 +97,6 @@ If(NOT _same_fairsoft)
     Message(FATAL_ERROR "Both versions must be the same.")
 EndIf()
 
-# Extract the FairRoot version from fairroot-config
-# The version info is of the form Major.Minor.Patch e.g. 15.11.1 and
-# is stored in the variable FairRoot_VERSION
-FairRootVersion()
 
 #Check the compiler and set the compile and link flags
 Check_Compiler()

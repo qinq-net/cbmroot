@@ -55,7 +55,7 @@ InitStatus CbmTofHitProducerIdeal::Init() {
 
   // Create and register output array
   fHitArray = new TClonesArray("CbmTofHit");
-  ioman->Register("TofHit", "TOF", fHitArray, kTRUE);
+  ioman->Register("TofHit", "TOF", fHitArray, IsOutputBranchPersistent("TofHit"));
 
   cout << "-I- CbmTofHitProducerIdeal: Intialisation successfull" << endl;
   return kSUCCESS;

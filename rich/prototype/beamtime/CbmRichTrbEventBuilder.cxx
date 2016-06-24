@@ -52,10 +52,10 @@ InitStatus CbmRichTrbEventBuilder::Init()
 	if (NULL == fRichTrbDigi) { Fatal("CbmRichTrbEventBuilder::Init","No CbmRichTrbDigi array!"); }
 
 	fRichHits = new TClonesArray("CbmRichHit", 10);
-	manager->Register("RichHit", "RICH", fRichHits, kTRUE);
+	manager->Register("RichHit", "RICH", fRichHits, IsOutputBranchPersistent("RichHit"));
 
 	fRichHitInfos = new TClonesArray("CbmRichHitInfo", 10);
-	manager->Register("RichHitInfo","RICH", fRichHitInfos, kTRUE);
+	manager->Register("RichHitInfo","RICH", fRichHitInfos, IsOutputBranchPersistent("RichHitInfo"));
 
 	InitHist();
 

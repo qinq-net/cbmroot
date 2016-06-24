@@ -285,8 +285,8 @@ void CbmD0CandidateSelection::Register() {
 
   fD0KFCandidates = new TClonesArray("KFParticle",100);
   fD0Candidates   = new TClonesArray("CbmD0Candidate", 100);
-  ioman->Register("CbmD0KFCandidate", "OpenCharm", fD0KFCandidates, kTRUE);
-  ioman->Register("CbmD0Candidate", "OpenCharm", fD0Candidates, kTRUE);
+  ioman->Register("CbmD0KFCandidate", "OpenCharm", fD0KFCandidates, IsOutputBranchPersistent("CbmD0KFCandidate"));
+  ioman->Register("CbmD0Candidate", "OpenCharm", fD0Candidates, IsOutputBranchPersistent("CbmD0Candidate"));
 
     fStsTrackMatches    = (TClonesArray*) ioman->GetObject("StsTrackMatch");
     fListMCTracks       = (TClonesArray*) ioman->GetObject("MCTrack");

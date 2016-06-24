@@ -58,7 +58,7 @@ InitStatus CbmTrdClusterAnalysis::Init()
     return kERROR;
   }
   fHits = new TClonesArray("CbmTrdHit", 100);
-  ioman->Register("TrdHit", "TRD Hits", fDigis, kTRUE);
+  ioman->Register("TrdHit", "TRD Hits", fDigis, IsOutputBranchPersistent("TrdHit"));
 
   CbmTrdClusterAnalysis::CreateHistograms();
 

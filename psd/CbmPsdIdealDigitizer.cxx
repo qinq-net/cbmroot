@@ -64,7 +64,7 @@ InitStatus CbmPsdIdealDigitizer::Init() {
 
   // Create and register output array
   fDigiArray = new TClonesArray("CbmPsdDigi", 1000);
-  ioman->Register("PsdDigi", "PSD", fDigiArray, kTRUE);
+  ioman->Register("PsdDigi", "PSD", fDigiArray, IsOutputBranchPersistent("PsdDigi"));
 
   cout << "-I- CbmPsdIdealDigitizer: Intialisation successfull " << kSUCCESS<< endl;
   return kSUCCESS;

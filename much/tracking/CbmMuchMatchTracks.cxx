@@ -67,7 +67,7 @@ InitStatus CbmMuchMatchTracks::Init()
 	if (fClusters == NULL) Info("CbmMuchMatchTracks::Init", "No cluster array -- simple hit to digi matching will be used");
 
 	fMatches = new TClonesArray("CbmTrackMatch",100);
-	ioman->Register("MuchTrackMatch", "MUCH", fMatches, kTRUE);
+	ioman->Register("MuchTrackMatch", "MUCH", fMatches, IsOutputBranchPersistent("MuchTrackMatch"));
 
 	return kSUCCESS;
 }

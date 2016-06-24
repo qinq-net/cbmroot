@@ -106,7 +106,7 @@ void CbmD0CandidatesSE::Register() {
 		      "No FairRootManager");
 
   fD0Candidates = new TClonesArray("KFParticle",100);
-  ioman->Register("CbmD0Candidate", "OpenCharm Superevent", fD0Candidates, kTRUE);
+  ioman->Register("CbmD0Candidate", "OpenCharm Superevent", fD0Candidates, IsOutputBranchPersistent("CbmD0Candidate"));
 
     fStsTrackMatches    = (TClonesArray*) ioman->GetObject("StsTrackMatch");
     fListMCTracks       = (TClonesArray*) ioman->GetObject("MCTrack");

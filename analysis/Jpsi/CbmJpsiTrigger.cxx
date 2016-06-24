@@ -102,9 +102,9 @@ InitStatus CbmJpsiTrigger::Init()
   fTrdTrack = (TClonesArray*) fRootManager->GetObject("TrdTrack");
   
   // fJpsiEl = new TClonesArray("CbmJpsiTriggerElectron",1000); 
-  //    fRootManager->Register("CbmJpsiTriggerElectron","Jpsi electrons canditates",fJpsiEl ,kTRUE);
+  //    fRootManager->Register("CbmJpsiTriggerElectron","Jpsi electrons canditates",fJpsiEl ,IsOutputBranchPersistent("CbmJpsiTriggerElectron"));
     fRootManager->Register("CbmJpsiTriggerElectron","Jpsi electrons canditates",
-			 fJpsiColl->JpsiTracks() ,kTRUE);
+			   fJpsiColl->JpsiTracks() ,IsOutputBranchPersistent("CbmJpsiTriggerElectron"));
   
   
   

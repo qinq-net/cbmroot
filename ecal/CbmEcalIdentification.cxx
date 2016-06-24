@@ -900,7 +900,7 @@ InitStatus CbmEcalIdentification::Init()
     return kFATAL;
   }
   fId=new TClonesArray("CbmEcalIdParticle", 2000);
-  fManager->Register("EcalId", "ECAL", fId, kTRUE);
+  fManager->Register("EcalId", "ECAL", fId, IsOutputBranchPersistent("EcalId"));
   fEvent=0;
   CbmEcalParam* p=new CbmEcalParam("IdentificationParam", fCfgName);
   fTreeOut=p->GetInteger("treeout");

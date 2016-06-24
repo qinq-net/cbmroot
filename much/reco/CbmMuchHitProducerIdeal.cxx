@@ -41,7 +41,7 @@ InitStatus CbmMuchHitProducerIdeal::Init()
    FairRootManager* ioman = FairRootManager::Instance();
    fMuchPoints = static_cast<TClonesArray*>(ioman->GetObject("MuchPoint"));
    fMuchPixelHits = new TClonesArray("CbmMuchPixelHit", 100);
-   ioman->Register("MuchPixelHit", "MUCH", fMuchPixelHits, kTRUE);
+   ioman->Register("MuchPixelHit", "MUCH", fMuchPixelHits, IsOutputBranchPersistent("MuchPixelHit"));
 
    // Initialize GeoScheme
    fGeoScheme = CbmMuchGeoScheme::Instance();

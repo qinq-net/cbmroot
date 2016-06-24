@@ -71,13 +71,6 @@ InitStatus CbmStsHodoCorrelations::Init()
   }
   
 
-  // Create the TClonesArray for the output data and register
-  // it in the IO manager
-  /*
-    <OutputDataLevel> = new TClonesArray("OutputDataLevelName", 100);
-    ioman->Register("OutputDataLevelName","OutputDataLevelName",<OutputDataLevel>,kTRUE);
-  */
-
   // Do whatever else is needed at the initilization stage
   // Create histograms to be filled
   // initialize variables

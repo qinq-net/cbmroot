@@ -183,8 +183,8 @@ InitStatus CbmMvdFullRun::Init() {
     // **********  Register output array
     fHits =  new TClonesArray("CbmMvdHit", 10000);
     fDigis = new TClonesArray("CbmMvdDigi", 10000);
-    ioman->Register("MvdPluginHits", "MvdHit", fHits, kTRUE);
-    ioman->Register("MvdPluginDigis", "MvdDigi", fDigis, kTRUE);
+    ioman->Register("MvdPluginHits", "MvdHit", fHits, IsOutputBranchPersistent("MvdPluginHits"));
+    ioman->Register("MvdPluginDigis", "MvdDigi", fDigis, IsOutputBranchPersistent("MvdPluginDigis"));
 
     // Screen output
     cout << GetName() << " initialised with parameters: " << endl;

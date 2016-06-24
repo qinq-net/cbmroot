@@ -47,10 +47,10 @@ InitStatus CbmTrdHitProducerDigi::Init()
    if (NULL == fTrdDigis) LOG(FATAL) << "CbmTrdHitProducerDigi::Init: No TrdDigi array!" << FairLogger::endl;
 
    fTrdClusters = new TClonesArray("CbmTrdCluster", 100);
-   ioman->Register("TrdCluster", "TRD", fTrdClusters, kTRUE);
+   ioman->Register("TrdCluster", "TRD", fTrdClusters, IsOutputBranchPersistent("TrdCluster"));
 
    fTrdHits = new TClonesArray("CbmTrdHit", 100);
-   ioman->Register("TrdHit", "TRD", fTrdHits, kTRUE);
+   ioman->Register("TrdHit", "TRD", fTrdHits, IsOutputBranchPersistent("TrdHit"));
 
    return kSUCCESS;
 }

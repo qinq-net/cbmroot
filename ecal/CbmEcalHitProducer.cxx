@@ -134,16 +134,16 @@ InitStatus CbmEcalHitProducer::Init()
   if (fProduceHits)
   {
     if (fProduceSummableHits)
-      fManager->Register("EcalSumHit","ECAL",fHitCollection,kTRUE);
+      fManager->Register("EcalSumHit","ECAL",fHitCollection,IsOutputBranchPersistent("EcalSumHit"));
     else
-      fManager->Register("EcalHit","ECAL",fHitCollection,kTRUE);
+      fManager->Register("EcalHit","ECAL",fHitCollection,IsOutputBranchPersistent("EcalHit"));
   }
   else
   {
     if (fProduceSummableHits)
-      fManager->Register("EcalSumHit","ECAL",fHitCollection,kFALSE);
+      fManager->Register("EcalSumHit","ECAL",fHitCollection,IsOutputBranchPersistent("EcalSumHit"));
     else
-      fManager->Register("EcalHit","ECAL",fHitCollection,kFALSE);
+      fManager->Register("EcalHit","ECAL",fHitCollection,IsOutputBranchPersistent("EcalHit"));
   }
 
   if (fStandAlone)

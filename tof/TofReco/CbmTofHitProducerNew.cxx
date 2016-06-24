@@ -554,10 +554,10 @@ InitStatus CbmTofHitProducerNew::Init()
     }
     
     fHitCollection = new TClonesArray("CbmTofHit");
-    fManager->Register("TofHit","Tof",fHitCollection, kTRUE);
+    fManager->Register("TofHit","Tof",fHitCollection, IsOutputBranchPersistent("TofHit"));
 
     fTofHitMatches = new TClonesArray("CbmMatch");
-    fManager->Register("TofHitMatch","TOF",fTofHitMatches, kTRUE);
+    fManager->Register("TofHitMatch","TOF",fTofHitMatches, IsOutputBranchPersistent("TofHitMatch"));
      
     LOG(INFO) << "CbmTofHitProducerNew: Initialization successful for " 
          << nCh <<" electronics channels"<< FairLogger::endl;

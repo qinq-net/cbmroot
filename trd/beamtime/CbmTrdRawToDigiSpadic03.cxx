@@ -156,7 +156,7 @@ InitStatus CbmTrdRawToDigiSpadic03::Init()
   if ( ! ioman ) Fatal("Init", "No FairRootManager");
 
   fDigis = new TClonesArray("CbmTrdDigi", 100);
-  ioman->Register("TrdDigi","TRD Digis",fDigis,kTRUE);
+  ioman->Register("TrdDigi","TRD Digis",fDigis,IsOutputBranchPersistent("TrdDigi"));
 
   //fGeoHandler->Init();
 

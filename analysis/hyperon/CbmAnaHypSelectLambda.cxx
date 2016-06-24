@@ -75,7 +75,7 @@ InitStatus CbmAnaHypSelectLambda::Init(){
   fRCMatch   = (TClonesArray*) fManager->GetObject("StsTrackMatch");
   fPV        = (CbmVertex*)    fManager->GetObject("PrimaryVertex");
 
-  fManager->Register("V0Candidates","Sts",fListRCLambda,kTRUE);
+  fManager->Register("V0Candidates","Sts",fListRCLambda,IsOutputBranchPersistent("V0Candidates"));
 
   fKF= CbmKF::Instance();
   fTools = new CbmAnaHypTools();

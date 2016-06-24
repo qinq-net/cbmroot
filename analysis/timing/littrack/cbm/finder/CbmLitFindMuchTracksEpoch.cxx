@@ -148,8 +148,8 @@ void CbmLitFindMuchTracksEpoch::ReadAndCreateDataBranches(){
   fMuchPixelHits = (TClonesArray*) ioman->GetObject("MuchPixelHit");
   fGlobalTracks = new TClonesArray("CbmGlobalTrack",100);
   fMuchTracks = new TClonesArray("CbmMuchTrack", 100);
-  ioman->Register("MuchTrack", "Much", fMuchTracks, kTRUE);
-  ioman->Register("GlobalTrack", "Global", fGlobalTracks, kTRUE);
+  ioman->Register("MuchTrack", "Much", fMuchTracks, IsOutputBranchPersistent("MuchTrack"));
+  ioman->Register("GlobalTrack", "Global", fGlobalTracks, IsOutputBranchPersistent("GlobalTrack"));
 }
 
 void CbmLitFindMuchTracksEpoch::InitTrackReconstruction(){

@@ -171,21 +171,21 @@ void CbmLitFindGlobalTracks::ReadAndCreateDataBranches()
 
    // Create and register track arrays
    fGlobalTracks = new TClonesArray("CbmGlobalTrack",100);
-   ioman->Register("GlobalTrack", "Global", fGlobalTracks, kTRUE);
+   ioman->Register("GlobalTrack", "Global", fGlobalTracks, IsOutputBranchPersistent("GlobalTrack"));
 
    if (fDet.GetDet(kMUCH)) {
       fMuchTracks = new TClonesArray("CbmMuchTrack", 100);
-      ioman->Register("MuchTrack", "Much", fMuchTracks, kTRUE);
+      ioman->Register("MuchTrack", "Much", fMuchTracks, IsOutputBranchPersistent("MuchTrack"));
    }
 
    if (fDet.GetDet(kTRD)) {
       fTrdTracks = new TClonesArray("CbmTrdTrack", 100);
-      ioman->Register("TrdTrack", "Trd", fTrdTracks, kTRUE);
+      ioman->Register("TrdTrack", "Trd", fTrdTracks, IsOutputBranchPersistent("TrdTrack"));
    }
 
    if (fDet.GetDet(kTOF)) {
       fTofTracks = new TClonesArray("CbmTofTrack", 100);
-      ioman->Register("TofTrack", "Tof", fTofTracks, kTRUE);
+      ioman->Register("TofTrack", "Tof", fTofTracks, IsOutputBranchPersistent("TofTrack"));
    }
 
    fPrimVertex = (CbmVertex*) ioman->GetObject("PrimaryVertex");

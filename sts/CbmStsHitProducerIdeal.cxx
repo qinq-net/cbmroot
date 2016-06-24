@@ -54,7 +54,7 @@ InitStatus CbmStsHitProducerIdeal::Init() {
 
   // Create and register output array
   fHitArray = new TClonesArray("CbmStsHit");
-  ioman->Register("StsHit", "STS", fHitArray, kTRUE);
+  ioman->Register("StsHit", "STS", fHitArray, IsOutputBranchPersistent("StsHit"));
 
   cout << "-I- CbmStsHitProducerIdeal: Intialisation successfull" << endl;
   return kSUCCESS;

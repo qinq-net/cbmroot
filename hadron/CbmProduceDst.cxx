@@ -149,7 +149,7 @@ InitStatus CbmProduceDst::Init()
         return kERROR;
     }
 
-    rootMgr->Register("Hadron", "Hadrons", fArrayHadron, kTRUE);
+    rootMgr->Register("Hadron", "Hadrons", fArrayHadron, IsOutputBranchPersistent("Hadron"));
 
     fh_pdl = new TH2F("h_pdl", "Length resolution vs. momentum",
 		      100, 0., 10., 200, -10., 10.);

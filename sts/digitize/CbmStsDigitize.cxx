@@ -418,13 +418,13 @@ InitStatus CbmStsDigitize::Init() {
 
     // Register output array (CbmStsDigi)
     fDigis = new TClonesArray("CbmStsDigi",1000);
-    ioman->Register("StsDigi", "Digital response in STS", fDigis, kTRUE);
+    ioman->Register("StsDigi", "Digital response in STS", fDigis, IsOutputBranchPersistent("StsDigi"));
 
     // Register output array (CbmStsDigiMatch)
     // For backward compatibility only; the match object is already member
     // of CbmStsDigi.
     fMatches = new TClonesArray("CbmMatch", 1000);
-    ioman->Register("StsDigiMatch", "MC link to StsDigi", fMatches, kTRUE);
+    ioman->Register("StsDigiMatch", "MC link to StsDigi", fMatches, IsOutputBranchPersistent("StsDigiMatch"));
 
   } //? event mode
 

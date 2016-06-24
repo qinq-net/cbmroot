@@ -103,10 +103,10 @@ InitStatus CbmFiberHodoClusterFinder::Init()
   }
   
   finalClusters = new TClonesArray("CbmFiberHodoCluster", 100);
-  ioman->Register("FiberHodoCluster","TRD",finalClusters,kTRUE);
+  ioman->Register("FiberHodoCluster","TRD",finalClusters,IsOutputBranchPersistent("FiberHodoCluster"));
 
   fClusters = new TClonesArray("CbmFiberHodoCluster", 100);
-  ioman->Register("FiberHodoClusterCandidate","TRD",fClusters,kTRUE);
+  ioman->Register("FiberHodoClusterCandidate","TRD",fClusters,IsOutputBranchPersistent("FiberHodoClusterCandidate"));
 
   hodo1x = new TH1F("hodo1x", "Hodo 1 x", 64, 0., 64.);
   hodo1y = new TH1F("hodo1y", "Hodo 1 y", 64, 0., 64.);

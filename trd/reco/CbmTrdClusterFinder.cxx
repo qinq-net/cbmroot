@@ -111,7 +111,7 @@ InitStatus CbmTrdClusterFinder::Init()
   }
   
   fClusters = new TClonesArray("CbmTrdCluster", 100);
-  ioman->Register("TrdCluster","TRD",fClusters,kTRUE);
+  ioman->Register("TrdCluster","TRD",fClusters,IsOutputBranchPersistent("TrdCluster"));
 
   fGeoHandler->Init();
   

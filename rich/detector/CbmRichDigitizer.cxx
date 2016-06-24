@@ -52,7 +52,7 @@ InitStatus CbmRichDigitizer::Init()
    if (NULL == fMcTracks) { Fatal("CbmRichDigitizer::Init","No MCTrack array!"); }
 
    fRichDigis = new TClonesArray("CbmRichDigi");
-   manager->Register("RichDigi","RICH", fRichDigis, kTRUE);
+   manager->Register("RichDigi","RICH", fRichDigis, IsOutputBranchPersistent("RichDigi"));
 
    return kSUCCESS;
 }

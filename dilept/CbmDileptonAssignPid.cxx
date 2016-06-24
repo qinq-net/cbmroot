@@ -230,7 +230,7 @@ InitStatus CbmDileptonAssignPid::Init(){
 
    // fTrackRealColl = (TClonesArray*) fRootManager->GetObject("CbmDileptonTrackReal");
    // if (!fTrackRealColl)
-    fRootManager->Register("DileptonTrackReal","Dilepton", fTrackRealColl->DileptonTracksReal(),kTRUE);
+    fRootManager->Register("DileptonTrackReal","Dilepton", fTrackRealColl->DileptonTracksReal(),IsOutputBranchPersistent("DileptonTrackReal"));
 
     // initialize KF-Fitter
     fFitter.Init();

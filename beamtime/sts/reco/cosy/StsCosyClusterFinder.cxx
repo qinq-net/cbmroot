@@ -109,10 +109,10 @@ InitStatus StsCosyClusterFinder::Init()
   }
     
   finalClusters = new TClonesArray("CbmStsCluster", 100);
-  ioman->Register("StsCluster","STS",finalClusters,kTRUE);
+  ioman->Register("StsCluster","STS",finalClusters,IsOutputBranchPersistent("StsCluster"));
 
   fClusters = new TClonesArray("CbmStsCluster", 100);
-  ioman->Register("StsClusterCandidate","STS",fClusters,kTRUE);
+  ioman->Register("StsClusterCandidate","STS",fClusters,IsOutputBranchPersistent("StsClusterCandidate"));
     
   if(fCutName != ""){
     

@@ -264,7 +264,7 @@ InitStatus CbmMvdMatchTracks::Init() {
 
   // Create and register MvdTrackMatch array
   fMatches = new TClonesArray("CbmMvdTrackMatch",100);
-  ioman->Register("MvdTrackMatch", "Mvd", fMatches, kTRUE);
+  ioman->Register("MvdTrackMatch", "Mvd", fMatches, IsOutputBranchPersistent("MvdTrackMatch"));
 
   return kSUCCESS;
 

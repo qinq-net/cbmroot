@@ -131,9 +131,9 @@ void CbmTofMergeMcPoints::ReadAndCreateDataBranches()
    if (NULL != fTofPointsColl )
    {
       fRealTofPoints = new TClonesArray("CbmTofPoint", 100);
-      ioman->Register("RealisticTofPoint", "TOF", fRealTofPoints, kTRUE);
+      ioman->Register("RealisticTofPoint", "TOF", fRealTofPoints, IsOutputBranchPersistent("RealisticTofPoint"));
       fTofRealPntMatches = new TClonesArray("CbmMatch", 100);
-      ioman->Register("TofRealPntMatch", "TOF", fTofRealPntMatches, kTRUE);
+      ioman->Register("TofRealPntMatch", "TOF", fTofRealPntMatches, IsOutputBranchPersistent("TofRealPntMatch"));
    }
 }
 

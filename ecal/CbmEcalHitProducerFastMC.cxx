@@ -106,7 +106,7 @@ InitStatus CbmEcalHitProducerFastMC::Init()
   fListStack = (TClonesArray *)fManager->GetObject("MCTrack");
   // new list of ECAL hits
   fHitCollection = new TClonesArray("CbmEcalHitFastMC",100);
-  fManager->Register("EcalHitFastMC","ECAL",fHitCollection,kTRUE);
+  fManager->Register("EcalHitFastMC","ECAL",fHitCollection,IsOutputBranchPersistent("EcalHitFastMC"));
   return kSUCCESS;
 }
 // -------------------------------------------------------------------------

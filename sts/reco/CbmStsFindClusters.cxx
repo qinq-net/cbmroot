@@ -189,7 +189,7 @@ InitStatus CbmStsFindClusters::Init()
 
     // --- Register output array
     fClusters = new TClonesArray("CbmStsCluster", 10000);
-    ioman->Register("StsCluster", "Cluster in STS", fClusters, kTRUE);
+    ioman->Register("StsCluster", "Cluster in STS", fClusters, IsOutputBranchPersistent("StsCluster"));
 
     // --- Get STS setup
     fSetup = CbmStsSetup::Instance();

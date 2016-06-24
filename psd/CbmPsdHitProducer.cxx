@@ -83,7 +83,7 @@ InitStatus CbmPsdHitProducer::Init() {
 
     // Create and register output array
     fHitArray = new TClonesArray("CbmPsdHit", 1000);
-    ioman->Register("PsdHit", "PSD", fHitArray, kTRUE);
+    ioman->Register("PsdHit", "PSD", fHitArray, IsOutputBranchPersistent("PsdHit"));
 
     fHitArray->Dump();
     cout << "-I- CbmPsdHitProducer: Intialisation successfull " << kSUCCESS<< endl;

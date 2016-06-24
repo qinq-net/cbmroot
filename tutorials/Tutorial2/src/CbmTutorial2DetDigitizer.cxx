@@ -105,7 +105,7 @@ InitStatus CbmTutorial2DetDigitizer::Init()
 
     //fListStack = (TClonesArray*)ioman->GetObject("MCTrack");
     //fDigiCollection = new TClonesArray("CbmTrdDigi", 100);
-    //ioman->Register("TrdDigi","TRD Digis",fDigiCollection,kTRUE);
+    //ioman->Register("TrdDigi","TRD Digis",fDigiCollection,IsOutputBranchPersistent("TrdDigi"));
 
     return kSUCCESS;
 
@@ -199,7 +199,7 @@ void CbmTutorial2DetDigitizer::Finish()
 // ---- Register ------------------------------------------------------
 void CbmTutorial2DetDigitizer::Register(){
 
-  //FairRootManager::Instance()->Register("TrdDigi","Trd Digi", fDigiCollection, kTRUE);
+  //FairRootManager::Instance()->Register("TrdDigi","Trd Digi", fDigiCollection, IsOutputBranchPersistent("TrdDigi"));
 
 }
 // --------------------------------------------------------------------

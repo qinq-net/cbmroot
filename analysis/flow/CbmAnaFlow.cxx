@@ -834,7 +834,7 @@ InitStatus CbmAnaFlow::Init()
   if (fmode == 0 || fmode == 1 || fmode == 2) 
   {
       //fAnaPart = (CbmAnaParticleData*) new CbmAnaParticleData("CbmAnaPart");
-      //ioman->Register("AnaParticle", "AnaParticleFolder", fAnaPart, kTRUE);
+      //ioman->Register("AnaParticle", "AnaParticleFolder", fAnaPart, IsOutputBranchPersistent("AnaParticle"));
 
       outTree = new TTree("cbmana","particles");
       outTree->Branch("fphi_to_RP", &fphi_to_RP, "fphi_to_RP/D");

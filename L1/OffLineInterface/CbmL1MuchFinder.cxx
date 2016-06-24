@@ -62,7 +62,7 @@ InitStatus CbmL1MuchFinder::ReInit()
   fPrimVtx =  (CbmVertex *) FairRootManager::Instance() ->GetObject("PrimaryVertex");
   fStsFitter.Init();
 
-  FairRootManager::Instance()->Register("MuchTrack", "Much", fTrackCollection, kTRUE);
+  FairRootManager::Instance()->Register("MuchTrack", "Much", fTrackCollection, IsOutputBranchPersistent("MuchTrack"));
 
   return kSUCCESS;
 }

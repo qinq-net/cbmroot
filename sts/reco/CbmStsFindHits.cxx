@@ -157,7 +157,7 @@ InitStatus CbmStsFindHits::Init()
 
     // --- Register output array
     fHits = new TClonesArray("CbmStsHit", 10000);
-    ioman->Register("StsHit", "Hits in STS", fHits, kTRUE);
+    ioman->Register("StsHit", "Hits in STS", fHits,IsOutputBranchPersistent("StsHit"));
 
     // --- Get STS setup
     fSetup = CbmStsSetup::Instance();

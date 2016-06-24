@@ -80,10 +80,10 @@ InitStatus CbmRichProtPrepareExtrapolation::Init()
     }
 
     fArrayStsTracks = new TClonesArray("CbmStsTrack");
-    mgr->Register("StsTrack", "STS", fArrayStsTracks, kTRUE);
+    mgr->Register("StsTrack", "STS", fArrayStsTracks, IsOutputBranchPersistent("StsTrack"));
 
     fArrayGlobalTracks = new TClonesArray("CbmGlobalTrack");
-    mgr->Register("GlobalTrack", "Global", fArrayGlobalTracks, kTRUE);
+    mgr->Register("GlobalTrack", "Global", fArrayGlobalTracks, IsOutputBranchPersistent("GlobalTrack"));
 
     return kSUCCESS;
 }

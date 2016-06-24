@@ -70,10 +70,10 @@ InitStatus CbmTrdDigitizer::Init()
    if (NULL == fMCTracks) LOG(FATAL) << "CbmTrdDigitizer::Init(): No MCTrack array!" << FairLogger::endl;
 
    fTrdDigis = new TClonesArray("CbmTrdDigi", 100);
-   ioman->Register("TrdDigi", "TRD Digis", fTrdDigis, kTRUE);
+   ioman->Register("TrdDigi", "TRD Digis", fTrdDigis, IsOutputBranchPersistent("TrdDigi"));
 
    fTrdDigiMatches = new TClonesArray("CbmMatch", 100);
-   ioman->Register("TrdDigiMatch", "TRD Digis", fTrdDigiMatches, kTRUE);
+   ioman->Register("TrdDigiMatch", "TRD Digis", fTrdDigiMatches, IsOutputBranchPersistent("TrdDigiMatch"));
 
    fRadiator->Init();
 

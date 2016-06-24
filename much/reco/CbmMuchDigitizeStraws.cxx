@@ -177,9 +177,9 @@ InitStatus CbmMuchDigitizeStraws::Init()
     {
         // 1-D readout
         fDigis = new TClonesArray("CbmMuchStrawDigi", 1000);
-        ioman->Register("MuchStrawDigi", "MUCH", fDigis, kTRUE);
+        ioman->Register("MuchStrawDigi", "MUCH", fDigis, IsOutputBranchPersistent("MuchStrawDigi"));
         fDigiMatches = new TClonesArray("CbmMuchDigiMatch", 1000);
-        ioman->Register("MuchStrawDigiMatch", "MUCH", fDigiMatches, kTRUE);
+        ioman->Register("MuchStrawDigiMatch", "MUCH", fDigiMatches, IsOutputBranchPersistent("MuchStrawDigiMatch"));
     }
     else
     {

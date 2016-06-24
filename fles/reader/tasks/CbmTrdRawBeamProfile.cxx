@@ -165,10 +165,10 @@ CbmTrdRawBeamProfile::~CbmTrdRawBeamProfile()
 
 
     fDigis = new TClonesArray("CbmTrdDigi", 100);
-    ioman->Register("TrdDigi", "TRD Digis", fDigis, kTRUE);
+    ioman->Register("TrdDigi", "TRD Digis", fDigis, IsOutputBranchPersistent("TrdDigi"));
 
     fClusters = new TClonesArray("CbmTrdCluster",100);
-    ioman->Register("TrdCluster", "TRD Clusters", fClusters, kTRUE);
+    ioman->Register("TrdCluster", "TRD Clusters", fClusters, IsOutputBranchPersistent("TrdCluster"));
 
     // Do whatever else is needed at the initilization stage
     // Create histograms to be filled

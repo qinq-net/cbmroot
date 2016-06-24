@@ -1033,7 +1033,7 @@ InitStatus CbmEcalReco2::Init()
     return kFATAL;
   }
   fReco=new TClonesArray("CbmEcalRecParticle", 2000);
-  io->Register(fRecoName, "ECAL", fReco, kTRUE);
+  io->Register(fRecoName, "ECAL", fReco, IsOutputBranchPersistent(fRecoName));
 
   fFCN=new FCNEcalCluster2(fCal, fShLib, fSigma, fInf);
   fFCN->SetEStep(fEStep);

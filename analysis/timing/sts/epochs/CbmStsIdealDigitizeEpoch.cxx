@@ -362,11 +362,11 @@ InitStatus CbmStsIdealDigitizeEpoch::Init() {
 
   // Register output array StsDigi
   fDigis = new TClonesArray("CbmStsDigi",1000);
-  ioman->Register("StsDigi", "Digital response in STS", fDigis, kTRUE);
+  ioman->Register("StsDigi", "Digital response in STS", fDigis, IsOutputBranchPersistent("StsDigi"));
 
   // Register output array StsDigiMatches
   fDigiMatches = new TClonesArray("CbmStsDigiMatch",1000);
-  ioman->Register("StsDigiMatch", "Digi Match in STS", fDigiMatches, kTRUE);
+  ioman->Register("StsDigiMatch", "Digi Match in STS", fDigiMatches, IsOutputBranchPersistent("StsDigiMatch"));
 
   // Build digitisation scheme
   if ( fDigiScheme->Init(fGeoPar, fDigiPar) ) {

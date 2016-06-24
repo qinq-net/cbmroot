@@ -86,7 +86,7 @@ InitStatus CbmTrdFindTracks::Init()
 
   // Create and register TrdTrack array
   fTrackArray = new TClonesArray("CbmTrdTrack",100);
-  ioman->Register("TrdTrack", "TRD", fTrackArray, kTRUE);
+  ioman->Register("TrdTrack", "TRD", fTrackArray, IsOutputBranchPersistent("TrdTrack"));
 
 
   // Call the Init method of the track finder

@@ -53,7 +53,7 @@ InitStatus CbmTrdHitProducerCluster::Init()
    if (fClusters == NULL) LOG(FATAL) << "CbmTrdHitProducerCluster::Init No TrdCluster array." << FairLogger::endl;
 
    fHits = new TClonesArray("CbmTrdHit", 100);
-   ioman->Register("TrdHit","TRD Hit",fHits,kTRUE);
+   ioman->Register("TrdHit","TRD Hit",fHits,IsOutputBranchPersistent("TrdHit"));
 
    return kSUCCESS;
 }

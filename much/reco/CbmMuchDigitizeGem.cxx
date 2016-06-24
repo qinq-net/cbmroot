@@ -150,10 +150,10 @@ InitStatus CbmMuchDigitizeGem::Init() {
     fMCTracks = (TClonesArray*) ioman->GetObject("MCTrack");
     // Register output array MuchDigi
     fDigis = new TClonesArray("CbmMuchDigi", 1000);
-    ioman->Register("MuchDigi", "Digital response in MUCH", fDigis, kTRUE);
+    ioman->Register("MuchDigi", "Digital response in MUCH", fDigis, IsOutputBranchPersistent("MuchDigi"));
     // Register output array MuchDigiMatches
     fDigiMatches = new TClonesArray("CbmMuchDigiMatch", 1000);
-    ioman->Register("MuchDigiMatch", "Digi Match in MUCH", fDigiMatches, kTRUE);
+    ioman->Register("MuchDigiMatch", "Digi Match in MUCH", fDigiMatches, IsOutputBranchPersistent("MuchDigiMatch"));
   } else {
     if ( ! ( CbmMCBuffer::Instance() && CbmDaqBuffer::Instance() ) ) {
       fLogger->Fatal(MESSAGE_ORIGIN, "No MCBuffer or DaqBuffer present!");

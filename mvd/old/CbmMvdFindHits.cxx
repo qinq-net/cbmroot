@@ -1163,9 +1163,10 @@ void CbmMvdFindHits::Register() {
   FairRootManager* ioman = FairRootManager::Instance();
   if ( ! ioman) Fatal("Register",
 		      "No FairRootManager");
-  ioman->Register("MvdHit", "MVD", fHits, kTRUE);
-  ioman->Register("MvdCluster", "MVD", fClusters, kTRUE);
-  ioman->Register("MvdHitMatch", "MVD Hit Match", fMatches, kTRUE);
+  ioman->Register("MvdHit", "MVD", fHits, IsOutputBranchPersistent("MvdHit"));
+  ioman->Register("MvdCluster", "MVD", fClusters, IsOutputBranchPersistent("MvdCluster"));
+  ioman->Register("MvdHitMatch", "MVD Hit Match", fMatches, IsOutputBranchPersistent("MvdHitMatch"));
+  ioma);
 
 
 }

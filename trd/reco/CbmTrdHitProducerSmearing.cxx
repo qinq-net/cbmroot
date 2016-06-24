@@ -94,7 +94,7 @@ InitStatus CbmTrdHitProducerSmearing::Init()
   if (NULL == fMCTracks) Fatal("CbmTrdHitProducerSmearing", "No MCTrack array!");
 
   fTrdHits = new TClonesArray("CbmTrdHit", 100);
-  ioman->Register("TrdHit", "TRD", fTrdHits, kTRUE);
+  ioman->Register("TrdHit", "TRD", fTrdHits, IsOutputBranchPersistent("TrdHit"));
   if (fRadiator != NULL)
     fRadiator->Init();
 

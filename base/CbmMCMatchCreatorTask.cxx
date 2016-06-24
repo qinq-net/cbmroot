@@ -62,7 +62,7 @@ InitStatus CbmMCMatchCreatorTask::Init()
   	}
 
 	fMCLink = new TClonesArray("CbmMCEntry");
-	ioman->Register("MCLink", "MCInfo", fMCLink, kTRUE);
+	ioman->Register("MCLink", "MCInfo", fMCLink, IsOutputBranchPersistent("MCLink"));
 
 	ioman->Register("MCMatch", "MCMatch", fMCMatch, kFALSE);
 

@@ -242,7 +242,7 @@ InitStatus CbmStsIdealFindHitsEpoch::Init() {
 
   // Register output array
   fHits = new TClonesArray("CbmStsHit", 1000);
-  ioman->Register("StsHit", "Hit in STS", fHits, kTRUE);
+  ioman->Register("StsHit", "Hit in STS", fHits, IsOutputBranchPersistent("StsHit"));
 
   // Build digitisation scheme
   Bool_t success = fDigiScheme->Init(fGeoPar, fDigiPar);
