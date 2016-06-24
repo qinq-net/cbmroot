@@ -47,7 +47,23 @@ using namespace std;
 
 static Double_t speedOfLight = 0;
 
-struct LxTbBinnedRay;
+struct LxTbBinnedPoint;
+
+struct LxTbBinnedRay
+{
+    const LxTbBinnedPoint* lPoint;
+    scaltype tx;
+    scaltype dtxSq;
+    scaltype ty;
+    scaltype dtySq;
+    scaltype chi2;
+    
+    LxTbBinnedRay(scaltype deltaZ, const LxTbBinnedPoint& rP, const LxTbBinnedPoint& lP, scaltype Chi2);/* : lPoint(&lP), tx((lP.x - rP.x) / deltaZ),
+        dtxSq((lP.dx - rP.dx) * (lP.dx - rP.dx) / (deltaZ * deltaZ)), ty((lP.y - rP.y) / deltaZ),
+        dtySq((lP.dy - rP.dy) * (lP.dy - rP.dy) / (deltaZ * deltaZ)), chi2(Chi2)
+    {
+    }*/
+};
 
 struct LxTbBinnedPoint
 {
@@ -84,22 +100,11 @@ struct LxTbBinnedPoint
     {}
 };
 
-struct LxTbBinnedRay
-{
-    const LxTbBinnedPoint* lPoint;
-    scaltype tx;
-    scaltype dtxSq;
-    scaltype ty;
-    scaltype dtySq;
-    scaltype chi2;
-    
-    LxTbBinnedRay(scaltype deltaZ, const LxTbBinnedPoint& rP, const LxTbBinnedPoint& lP, scaltype Chi2) : lPoint(&lP), tx((lP.x - rP.x) / deltaZ),
+inline LxTbBinnedRay::LxTbBinnedRay(scaltype deltaZ, const LxTbBinnedPoint& rP, const LxTbBinnedPoint& lP, scaltype Chi2) : lPoint(&lP), tx((lP.x - rP.x) / deltaZ),
         dtxSq((lP.dx - rP.dx) * (lP.dx - rP.dx) / (deltaZ * deltaZ)), ty((lP.y - rP.y) / deltaZ),
         dtySq((lP.dy - rP.dy) * (lP.dy - rP.dy) / (deltaZ * deltaZ)), chi2(Chi2)
-    {
-    }
-};
-
+{
+}
 
 struct LxTbXBin
 {
