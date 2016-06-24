@@ -16,7 +16,7 @@ CbmRichSmallPrototypeStudyReport::CbmRichSmallPrototypeStudyReport():
 CbmStudyReport()
 {
     SetReportName("rich_small_prototype_study_report");
-    SetReportTitle("RICH small protitype study report");
+    SetReportTitle("RICH small prototype study report");
 }
 
 CbmRichSmallPrototypeStudyReport::~CbmRichSmallPrototypeStudyReport()
