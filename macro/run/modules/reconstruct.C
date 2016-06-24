@@ -115,7 +115,9 @@ Bool_t reconstruct()
   // -----   Local reconstruction in TOF   ----------------------------------
   if ( setup->IsActive(kTof) ) {
     CbmTofSimpClusterizer* tofCluster
-          = new CbmTofSimpClusterizer("TOF Simple Clusterizer", 0, kTRUE);
+          = new CbmTofSimpClusterizer("TOF Simple Clusterizer", 0);
+    tofCluster->SetOutputBranchPersistent("TofHit",          kTRUE);
+    tofCluster->SetOutputBranchPersistent("TofDigiMatch",    kTRUE);
     run->AddTask(tofCluster);
     std::cout << "-I- : Added task " << tofCluster->GetName() << std::endl;
   }

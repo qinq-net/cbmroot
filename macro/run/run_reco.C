@@ -187,8 +187,9 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis100_electron")
   // -------------------------------------------------------------------------
 
   // -----   TOF digitizer   -------------------------------------------------
-  Bool_t bSaveTofDigisInOut = kFALSE;
-  CbmTofDigitizerBDF* tofDigitizerBdf = new CbmTofDigitizerBDF("TOF Digitizer BDF", 0, bSaveTofDigisInOut);
+  CbmTofDigitizerBDF* tofDigitizerBdf = new CbmTofDigitizerBDF("TOF Digitizer BDF", 0);
+  tofDigitizerBdf->SetOutputBranchPersistent("TofDigi",            kFALSE);
+  tofDigitizerBdf->SetOutputBranchPersistent("TofDigiMatchPoints", kFALSE);
   tofDigitizerBdf->SetInputFileName( paramDir + "tof/test_bdf_input.root"); // Required as input file name not read anymore by param class
 //  tofDigitizerBdf->SetHistoFileName( digiOutFile ); // Uncomment to save control histograms
   run->AddTask(tofDigitizerBdf);
@@ -312,7 +313,9 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis100_electron")
 
 
   // ------   TOF Cluster/Hit builder   ---------------------------------------
-  CbmTofSimpClusterizer* tofSimpClust = new CbmTofSimpClusterizer("TOF Simple Clusterizer", 0, kTRUE);
+  CbmTofSimpClusterizer* tofSimpClust = new CbmTofSimpClusterizer("TOF Simple Clusterizer", 0);
+  tofSimpClust->SetOutputBranchPersistent("TofHit",          kTRUE);
+  tofSimpClust->SetOutputBranchPersistent("TofDigiMatch",    kTRUE);
 //  tofSimpClust->SetHistoFileName( clustOutFile ); // Uncomment to save control histograms
   run->AddTask(tofSimpClust);
   // -------------------------------------------------------------------------

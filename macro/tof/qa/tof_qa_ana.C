@@ -160,7 +160,9 @@ void tof_qa_ana(Int_t nEvents = 2, const char* setup = "sis100_electron", Int_t 
   // =========================================================================
 
   // -----   TOF digitizer   -------------------------------------------------
-  CbmTofDigitizerBDF* tofDigitizerBdf = new CbmTofDigitizerBDF("TOF Digitizer BDF",iVerbose, kFALSE);
+  CbmTofDigitizerBDF* tofDigitizerBdf = new CbmTofDigitizerBDF("TOF Digitizer BDF",iVerbose);
+  tofDigitizerBdf->SetOutputBranchPersistent("TofDigi",            kFALSE);
+  tofDigitizerBdf->SetOutputBranchPersistent("TofDigiMatchPoints", kFALSE);
   tofDigitizerBdf->SetInputFileName( paramDir + "tof/test_bdf_input.root"); // Required as input file name not read anymore by param class
   tofDigitizerBdf->SetHistoFileName( digiOutFile );
   run->AddTask(tofDigitizerBdf);
@@ -170,7 +172,9 @@ void tof_qa_ana(Int_t nEvents = 2, const char* setup = "sis100_electron", Int_t 
   // ===                     TOF local reconstruction                      ===
   // =========================================================================
   // Cluster/Hit builder
-  CbmTofSimpClusterizer* tofSimpClust = new CbmTofSimpClusterizer("TOF Simple Clusterizer",iVerbose, kFALSE);
+  CbmTofSimpClusterizer* tofSimpClust = new CbmTofSimpClusterizer("TOF Simple Clusterizer",iVerbose);
+  tofSimpClust->SetOutputBranchPersistent("TofHit",          kFALSE);
+  tofSimpClust->SetOutputBranchPersistent("TofDigiMatch",    kFALSE);
   tofSimpClust->SetHistoFileName( clustOutFile );
   run->AddTask(tofSimpClust);
   // -------------------------------------------------------------------------

@@ -57,7 +57,7 @@ class CbmTofDigitizerBDF : public FairTask
       /**
        ** @brief Constructor.
        **/
-      CbmTofDigitizerBDF(const char *name, Int_t verbose = 1, Bool_t writeDataInOut = kTRUE);
+      CbmTofDigitizerBDF(const char *name, Int_t verbose = 1);
       /**
        ** @brief Destructor.
        **/
@@ -275,7 +275,6 @@ class CbmTofDigitizerBDF : public FairTask
       TRandom3 * fRandRes;
 
       // Output variables
-      Bool_t                  fbWriteDigisInOut;
       TClonesArray          * fTofDigisColl;  // TOF Digis
       TClonesArray          * fTofDigiMatchPointsColl; // MC original points
       Int_t  fiNbDigis;                       // Index of the CbmTofDigi/CbmTofDigiExp TClonesArray

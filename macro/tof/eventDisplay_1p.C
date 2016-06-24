@@ -58,12 +58,16 @@ eventDisplay_1p(Int_t iTrackingSetup=1, Int_t iSys=0, Int_t iSel=1, Int_t iSel2=
 
   // -----   TOF digitizer   -------------------------------------------------
   /*
-  CbmTofDigitizerBDF* tofDigitizerBdf = new CbmTofDigitizerBDF("TOF Digitizer BDF",iVerbose, kTRUE);
+  CbmTofDigitizerBDF* tofDigitizerBdf = new CbmTofDigitizerBDF("TOF Digitizer BDF",iVerbose);
+  tofDigitizerBdf->SetOutputBranchPersistent("TofDigi",            kTRUE);
+  tofDigitizerBdf->SetOutputBranchPersistent("TofDigiMatchPoints", kTRUE);
   tofDigitizerBdf->SetInputFileName(TofDigitizerBDFInputFile);
   fRun->AddTask(tofDigitizerBdf);
 
   // Cluster/Hit builder
-  CbmTofSimpClusterizer* tofSimpClust = new CbmTofSimpClusterizer("TOF Simple Clusterizer",iVerbose, kTRUE);
+  CbmTofSimpClusterizer* tofSimpClust = new CbmTofSimpClusterizer("TOF Simple Clusterizer",iVerbose);
+  tofSimpClust->SetOutputBranchPersistent("TofHit",          kTRUE);
+  tofSimpClust->SetOutputBranchPersistent("TofDigiMatch",    kTRUE);
   fRun->AddTask(tofSimpClust);
   */
   // -----   TOF reconstruction   -------------------------------------------------

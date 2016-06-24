@@ -79,7 +79,6 @@ CbmTofSimpClusterizer::CbmTofSimpClusterizer():
    fTofPointsColl(NULL),
    fMcTracksColl(NULL),
    fTofDigisColl(NULL),
-   fbWriteHitsInOut(kTRUE),
    fTofHitsColl(NULL),
    fTofDigiMatchColl(NULL),
    fiNbHits(0),
@@ -165,7 +164,7 @@ CbmTofSimpClusterizer::CbmTofSimpClusterizer():
 {
 }
 
-CbmTofSimpClusterizer::CbmTofSimpClusterizer(const char *name, Int_t verbose, Bool_t writeDataInOut):
+CbmTofSimpClusterizer::CbmTofSimpClusterizer(const char *name, Int_t verbose):
    FairTask(TString(name),verbose),
    fGeoHandler(new CbmTofGeoHandler()),
    fTofId(NULL),
@@ -175,7 +174,6 @@ CbmTofSimpClusterizer::CbmTofSimpClusterizer(const char *name, Int_t verbose, Bo
    fTofPointsColl(NULL),
    fMcTracksColl(NULL),
    fTofDigisColl(NULL),
-   fbWriteHitsInOut(writeDataInOut),
    fTofHitsColl(NULL),
    fTofDigiMatchColl(NULL),
    fiNbHits(0),
@@ -373,10 +371,10 @@ Bool_t   CbmTofSimpClusterizer::RegisterOutputs()
    fTofHitsColl = new TClonesArray("CbmTofHit");
 
    // Flag check to control whether digis are written in output root file
-   rootMgr->Register( "TofHit","Tof", fTofHitsColl, fbWriteHitsInOut);
+   rootMgr->Register( "TofHit","Tof", fTofHitsColl, IsOutputBranchPersistent("TofHit"));
 
    fTofDigiMatchColl = new TClonesArray("CbmMatch",100);
-   rootMgr->Register( "TofDigiMatch","Tof", fTofDigiMatchColl, fbWriteHitsInOut);
+   rootMgr->Register( "TofDigiMatch","Tof", fTofDigiMatchColl, IsOutputBranchPersistent("TofDigiMatch"));
 
    return kTRUE;
 

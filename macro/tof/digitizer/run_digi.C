@@ -79,7 +79,9 @@ void run_digi(Int_t nEvents = 2) {
   // =========================================================================
 
   // -----   TOF digitizer   -------------------------------------------------
-  CbmTofDigitizerBDF* tofDigitizerBdf = new CbmTofDigitizerBDF("TOF Digitizer BDF",iVerbose, kFALSE);
+  CbmTofDigitizerBDF* tofDigitizerBdf = new CbmTofDigitizerBDF("TOF Digitizer BDF",iVerbose);
+  tofDigitizerBdf->SetOutputBranchPersistent("TofDigi",            kFALSE);
+  tofDigitizerBdf->SetOutputBranchPersistent("TofDigiMatchPoints", kFALSE);
   tofDigitizerBdf->SetInputFileName( paramDir + "tof/test_bdf_input.root"); // Required as input file name not read anymore by param class
   run->AddTask(tofDigitizerBdf);
 
@@ -89,7 +91,9 @@ void run_digi(Int_t nEvents = 2) {
   // =========================================================================
 
   // Cluster/Hit builder
-  CbmTofSimpClusterizer* tofSimpClust = new CbmTofSimpClusterizer("TOF Simple Clusterizer",iVerbose, kFALSE);
+  CbmTofSimpClusterizer* tofSimpClust = new CbmTofSimpClusterizer("TOF Simple Clusterizer",iVerbose);
+  tofSimpClust->SetOutputBranchPersistent("TofHit",          kFALSE);
+  tofSimpClust->SetOutputBranchPersistent("TofDigiMatch",    kFALSE);
   run->AddTask(tofSimpClust);
 
   // ------   TOF hit producer   ---------------------------------------------

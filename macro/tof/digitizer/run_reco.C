@@ -123,7 +123,9 @@ void run_reco(Int_t nEvents = 2) {
 
 /**/
   // -----   TOF digitizer   -------------------------------------------------
-  CbmTofDigitizerBDF* tofDigitizerBdf = new CbmTofDigitizerBDF("TOF Digitizer BDF",iVerbose, kFALSE);
+  CbmTofDigitizerBDF* tofDigitizerBdf = new CbmTofDigitizerBDF("TOF Digitizer BDF",iVerbose);
+  tofDigitizerBdf->SetOutputBranchPersistent("TofDigi",            kFALSE);
+  tofDigitizerBdf->SetOutputBranchPersistent("TofDigiMatchPoints", kFALSE);
   run->AddTask(tofDigitizerBdf);
 
   // =========================================================================
@@ -223,7 +225,9 @@ void run_reco(Int_t nEvents = 2) {
   // =========================================================================
 
   // Cluster/Hit builder
-  CbmTofSimpClusterizer* tofSimpClust = new CbmTofSimpClusterizer("TOF Simple Clusterizer",iVerbose, kTRUE);
+  CbmTofSimpClusterizer* tofSimpClust = new CbmTofSimpClusterizer("TOF Simple Clusterizer",iVerbose);
+  tofSimpClust->SetOutputBranchPersistent("TofHit",          kTRUE);
+  tofSimpClust->SetOutputBranchPersistent("TofDigiMatch",    kTRUE);
   run->AddTask(tofSimpClust);
 
   // ------   TOF hit producer   ---------------------------------------------

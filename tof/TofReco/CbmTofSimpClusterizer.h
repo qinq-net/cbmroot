@@ -49,7 +49,7 @@ class CbmTofSimpClusterizer : public FairTask
       /**
        ** @brief Constructor.
        **/
-      CbmTofSimpClusterizer(const char *name, Int_t verbose = 1, Bool_t writeDataInOut = kTRUE);
+      CbmTofSimpClusterizer(const char *name, Int_t verbose = 1);
       /**
        ** @brief Destructor.
        **/
@@ -157,7 +157,6 @@ class CbmTofSimpClusterizer : public FairTask
       TClonesArray          * fTofDigisColl;  // TOF Digis
 
       // Output variables
-      Bool_t                  fbWriteHitsInOut;
       TClonesArray          * fTofHitsColl;       // TOF hits
       TClonesArray          * fTofDigiMatchColl;  // TOF Digis
       Int_t  fiNbHits;                            // Index of the CbmTofHit TClonesArray

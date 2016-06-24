@@ -31,4 +31,17 @@ Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependenc
 #SET_TESTS_PROPERTIES(tof_digi2 PROPERTIES DEPENDS tof_disim)
 #SET_TESTS_PROPERTIES(tof_digi2 PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
 
+### Copy TOF macros and folders to allow execution of tasks on batch farm after installation
+#Install(FILES .rootrc run_mc.C 
+#        DESTINATION share/cbmroot/macro/tof/beamtime/feb15
+#       )
+#Install(FILES .rootrc run_mc.C
+#        DESTINATION share/cbmroot/macro/tof/beamtime/nov15
+#       )
+#Install(DIRECTORY modules DESTINATION share/cbmroot/macro/run)
+#Install(CODE "FILE(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/share/cbmroot/macro/run/data)")
 
+Install(FILES qa/tof_qa_sim.C qa/tof_qa_ana.C qa/tof_qa_hp.C qa/tofDigiBdf.hst.root qa/tof.digibdf.par
+        DESTINATION share/cbmroot/macro/tof/qa
+       )
+Install(CODE "FILE(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/share/cbmroot/macro/tof/qa/data)")

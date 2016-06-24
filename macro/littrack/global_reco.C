@@ -256,14 +256,17 @@ void global_reco(Int_t nEvents = 10, // number of events
       parFileList->Add(&tofDigiBdfFile);
       // ------ TOF hits --------------------------------------------------------
       Int_t iVerbose = 0;
-      Bool_t bSaveTofDigisInOut = kFALSE;
-      CbmTofDigitizerBDF* tofDigi = new CbmTofDigitizerBDF("TOF Digitizer BDF",iVerbose, bSaveTofDigisInOut);
+      CbmTofDigitizerBDF* tofDigi = new CbmTofDigitizerBDF("TOF Digitizer BDF",iVerbose);
+      tofDigi->SetOutputBranchPersistent("TofDigi",            kFALSE);
+      tofDigi->SetOutputBranchPersistent("TofDigiMatchPoints", kFALSE);
       TString paramDir = gSystem->Getenv("VMCWORKDIR");
       tofDigi->SetInputFileName( paramDir + "/parameters/tof/test_bdf_input.root"); // Required as input file name not read anymore by param class
       run->AddTask(tofDigi);
 
       CbmTofSimpClusterizer* tofCluster
-             = new CbmTofSimpClusterizer("TOF Simple Clusterizer", 0, kTRUE);
+             = new CbmTofSimpClusterizer("TOF Simple Clusterizer", 0);
+      tofCluster->SetOutputBranchPersistent("TofHit",          kTRUE);
+      tofCluster->SetOutputBranchPersistent("TofDigiMatch",    kTRUE);
       run->AddTask(tofCluster);
       // ------------------------------------------------------------------------
     }

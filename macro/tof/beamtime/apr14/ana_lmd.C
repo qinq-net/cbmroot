@@ -145,7 +145,7 @@ void ana_lmd(Int_t nEvents = 10, Int_t start_run=1, Int_t end_run=100, Int_t cal
    // =========================================================================
 
    // Cluster/Hit builder
-   //CbmTofSimpClusterizer* tofSimpClust = new CbmTofSimpClusterizer("TOF Simple Clusterizer",iVerbose, kTRUE);
+   //CbmTofSimpClusterizer* tofSimpClust = new CbmTofSimpClusterizer("TOF Simple Clusterizer",iVerbose);
    //run->AddTask(tofSimpClust);
    
    CbmTofTestBeamClusterizer* tofTestBeamClust = new CbmTofTestBeamClusterizer("TOF TestBeam Clusterizer",iVerbose, kTRUE);

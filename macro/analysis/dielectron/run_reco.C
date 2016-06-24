@@ -187,14 +187,17 @@ void run_reco(Int_t nEvents = 100)
 
 	     }  else if (tofHitProducerType == "clustering") {
 
-		 Bool_t bSaveTofDigisInOut = kFALSE;
-		 CbmTofDigitizerBDF* tofDigi = new CbmTofDigitizerBDF("TOF Digitizer BDF",0, bSaveTofDigisInOut);
+		 CbmTofDigitizerBDF* tofDigi = new CbmTofDigitizerBDF("TOF Digitizer BDF",0);
+       tofDigi->SetOutputBranchPersistent("TofDigi",            kFALSE);
+       tofDigi->SetOutputBranchPersistent("TofDigiMatchPoints", kFALSE);
 		 TString paramDir = gSystem->Getenv("VMCWORKDIR");
 		 tofDigi->SetInputFileName( paramDir + "/parameters/tof/test_bdf_input.root"); // Required as input file name not read anymore by param class
 		// tofDigi->SetHistoFileName( digiOutFile ); // Uncomment to save control histograms
 		 run->AddTask(tofDigi);
 
-		 CbmTofSimpClusterizer* tofSimpClust = new CbmTofSimpClusterizer("TOF Simple Clusterizer", 0, kTRUE);
+		 CbmTofSimpClusterizer* tofSimpClust = new CbmTofSimpClusterizer("TOF Simple Clusterizer", 0);
+       tofSimpClust->SetOutputBranchPersistent("TofHit",        kTRUE);
+       tofSimpClust->SetOutputBranchPersistent("TofDigiMatch",  kTRUE);
 		// tofSimpClust->SetHistoFileName( clustOutFile ); // Uncomment to save control histograms
 		 run->AddTask(tofSimpClust);
 	     }

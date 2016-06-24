@@ -99,7 +99,6 @@ CbmTofDigitizerBDF::CbmTofDigitizerBDF():
    fRandRadius(NULL),
    fRandCharge(NULL),
    fRandRes(NULL),  
-   fbWriteDigisInOut(kTRUE),
    fTofDigisColl(NULL),
    fTofDigiMatchPointsColl(NULL),
    fiNbDigis(0),
@@ -136,7 +135,7 @@ CbmTofDigitizerBDF::CbmTofDigitizerBDF():
 
 }
 
-CbmTofDigitizerBDF::CbmTofDigitizerBDF(const char *name, Int_t verbose, Bool_t writeDataInOut):
+CbmTofDigitizerBDF::CbmTofDigitizerBDF(const char *name, Int_t verbose):
    FairTask(TString(name),verbose),
    fdFeeGainSigma(0.),
    fdFeeTotThr(0.),
@@ -165,8 +164,7 @@ CbmTofDigitizerBDF::CbmTofDigitizerBDF(const char *name, Int_t verbose, Bool_t w
    fRandEff(NULL),  
    fRandRadius(NULL),
    fRandCharge(NULL),
-   fRandRes(NULL),  
-   fbWriteDigisInOut(writeDataInOut),
+   fRandRes(NULL),
    fTofDigisColl(NULL),
    fTofDigiMatchPointsColl(NULL),
    fiNbDigis(0),
@@ -347,8 +345,8 @@ Bool_t   CbmTofDigitizerBDF::RegisterOutputs()
    fTofDigiMatchPointsColl = new TClonesArray("CbmMatch",100000);
 
    // Flag check to control whether digis are written in ouput root file
-   rootMgr->Register( "TofDigi","Tof", fTofDigisColl, fbWriteDigisInOut);
-   rootMgr->Register( "TofDigiMatchPoints","Tof", fTofDigiMatchPointsColl, fbWriteDigisInOut);
+   rootMgr->Register( "TofDigi","Tof", fTofDigisColl, IsOutputBranchPersistent("TofDigi"));
+   rootMgr->Register( "TofDigiMatchPoints","Tof", fTofDigiMatchPointsColl, IsOutputBranchPersistent("TofDigiMatchPoints"));
 
    return kTRUE;
 }

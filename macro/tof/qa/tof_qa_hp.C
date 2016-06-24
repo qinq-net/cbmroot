@@ -160,26 +160,6 @@ void tof_qa_hp(Int_t nEvents = 2, const char* setup = "sis100_electron")
   run->AddTask(tofHitProd);
   // -------------------------------------------------------------------------
 
-/*
-  // -----   TOF digitizer   -------------------------------------------------
-  CbmTofDigitizerBDF* tofDigitizerBdf = new CbmTofDigitizerBDF("TOF Digitizer BDF",iVerbose, kFALSE);
-  tofDigitizerBdf->SetInputFileName( paramDir + "tof/test_bdf_input.root"); // Required as input file name not read anymore by param class
-  tofDigitizerBdf->SetHistoFileName( digiOutFile );
-  run->AddTask(tofDigitizerBdf);
-
-
-  // =========================================================================
-  // ===                     TOF local reconstruction                      ===
-  // =========================================================================
-  // Cluster/Hit builder
-  CbmTofSimpClusterizer* tofSimpClust = new CbmTofSimpClusterizer("TOF Simple Clusterizer",iVerbose, kFALSE);
-  tofSimpClust->SetHistoFileName( clustOutFile );
-  run->AddTask(tofSimpClust);
-  // -------------------------------------------------------------------------
-
-  // ===                   End of TOF local reconstruction                 ===
-  // =========================================================================
-*/
   // =========================================================================
   // ===                     TOF evaluation                                ===
   // =========================================================================
