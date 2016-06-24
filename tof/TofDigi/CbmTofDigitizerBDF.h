@@ -323,7 +323,7 @@ class CbmTofDigitizerBDF : public FairTask
 
       TString fsBeamInputFile;
 
-   ClassDef(CbmTofDigitizerBDF, 1);
+   ClassDef(CbmTofDigitizerBDF, 2);
 };
 
 #endif // CBMTOFDIGITIZERBDF_H

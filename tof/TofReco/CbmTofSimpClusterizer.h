@@ -267,7 +267,7 @@ class CbmTofSimpClusterizer : public FairTask
       TString       fCalParFileName;      // name of the file name with Calibration Parameters
       TFile*        fCalParFile;          // pointer to Calibration Parameter file 
 
-   ClassDef(CbmTofSimpClusterizer, 1);
+   ClassDef(CbmTofSimpClusterizer, 2);
 };
 
 #endif // CBMTOFSIMPCLUSTERIZER_H
