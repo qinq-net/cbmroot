@@ -1020,7 +1020,6 @@ inline void PairAnalysisVarManager::FillVarMCTrack(const CbmMCTrack *particle, D
   values[kEMotherMC]          = (mother ? mother->GetEnergy()  : -99999. );
   CbmMCTrack* granni = 0x0;
   if(mother) granni = mc->GetMCTrackMother(mother);
-  Int_t gLabel1 = (mother ? mother->GetMotherId() : -5);
   values[kPdgCodeGrandMother] = (granni ? granni->GetPdgCode() : -99999. );//mc->GetMotherPDG(mother);
   values[kGeantId]            = particle->GetGeantProcessId();
 

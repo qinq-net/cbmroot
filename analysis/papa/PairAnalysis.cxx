@@ -208,9 +208,13 @@ void PairAnalysis::Init()
     (*fUsedVars)|= (*fHistos->GetUsedVars());
   }
 
-  if(fTrackFilter.GetHistogramList() || fFinalTrackFilter.GetHistogramList()) {
-    fCutStepHistos       = fTrackFilter.     GetHistogramList();
-    fCutStepHistos->AddAll(fFinalTrackFilter.GetHistogramList());
+  // initialize cut step histograms
+  if(fTrackFilterMC.GetHistogramList() || fTrackFilter.GetHistogramList() || fFinalTrackFilter.GetHistogramList()) {
+    if(fTrackFilterMC.GetHistogramList()) fCutStepHistos = fTrackFilterMC.GetHistogramList();
+    if(fCutStepHistos)                    fCutStepHistos->AddAll(fTrackFilter.GetHistogramList());
+    else                                  fCutStepHistos = fTrackFilter.GetHistogramList();
+    if(fCutStepHistos)                    fCutStepHistos->AddAll(fFinalTrackFilter.GetHistogramList());
+    else                                  fCutStepHistos = fFinalTrackFilter.GetHistogramList();
     fCutStepHistos->SetName(Form("CutSteps_%s",GetName()));
   }
 
@@ -405,18 +409,29 @@ void PairAnalysis::ProcessMC()
 
   Bool_t truth1=kFALSE;
   Bool_t truth2=kFALSE;
+  // selection of particles
+  UInt_t selectedMask=(1<<fTrackFilterMC.GetCuts()->GetEntries())-1;
+  // get event data (this contains MC event informations as well)
+  Double_t *values=PairAnalysisVarManager::GetData();
   // loop over the MC tracks
   for(Int_t ipart=0; ipart<papaMC->GetNMCTracks(); ++ipart) {
 
-    // selection of particles
-    UInt_t selectedMask=(1<<fTrackFilterMC.GetCuts()->GetEntries())-1;
+    //get MC particle
     CbmMCTrack *mctrk = papaMC->GetMCTrackFromMCEvent(ipart);
 
+    // fill variables
+    PairAnalysisVarManager::Fill(mctrk, values);
+
     //apply track cuts
-    UInt_t cutmask=fTrackFilterMC.IsSelected(mctrk);
+    UInt_t cutmask=fTrackFilterMC.IsSelected(values);
     //fill cut QA
     if(fCutQA) fQAmonitor->FillAll(mctrk);
     if(fCutQA) fQAmonitor->Fill(cutmask,mctrk);
+
+    /// fill detailed cut histograms
+    if(fTrackFilterMC.GetHistogramList()->GetSize())
+      FillCutStepHistogramsMC( &fTrackFilterMC, cutmask, ipart, values);
+
     // rejection
     if (cutmask!=selectedMask) continue;
 
@@ -456,7 +471,7 @@ void PairAnalysis::ProcessMC()
   /// NOTE: for MCtruth LV useage should be okay, no need to calculate KF particles
   PairAnalysisPair* 	  pair = new PairAnalysisPairLV();
 
-  UInt_t selectedMask=(1<<fPairFilterMC.GetCuts()->GetEntries())-1;
+  selectedMask=(1<<fPairFilterMC.GetCuts()->GetEntries())-1;
   // loop over signals
   for(Int_t isig=0; isig<nSignals; ++isig) {
 
@@ -1713,6 +1728,7 @@ void PairAnalysis::FillHistogramsFromPairArray(Bool_t pairInfoOnly/*=kFALSE*/)
 
 }
 
+//________________________________________________________________
 void  PairAnalysis::FillCutStepHistograms(AnalysisFilter *filter, UInt_t cutmask, PairAnalysisTrack *trk, const Double_t * values)
 {
 
@@ -1773,6 +1789,68 @@ void  PairAnalysis::FillCutStepHistograms(AnalysisFilter *filter, UInt_t cutmask
 	  }
 	}
 	/// fill mc
+	if(isMCtruth)  histo.FillClass(classNameMC, values);
+      } ///end passed cut
+      iCut++;
+    } ///end cuts
+  } ///end mc signals
+
+}
+
+//________________________________________________________________
+void  PairAnalysis::FillCutStepHistogramsMC(AnalysisFilter *filter, UInt_t cutmask, Int_t label, const Double_t * values)
+{
+
+  /// mc instance
+  PairAnalysisMC* papaMC=0x0;
+  if(fHasMC && fSignalsMC) papaMC = PairAnalysisMC::Instance();
+
+  /// hist classes
+  TString className;
+  TString classNameMC;
+  TString classNamePM=Form("Track.%s",fgkPairClassNames[1]);
+
+  PairAnalysisHistos histo;
+  AnalysisCuts *cuts;
+  TIter next(filter->GetCuts());
+  Int_t iCut=0;
+
+  /// loop over mc signals
+  Int_t nsig = (fSignalsMC ? fSignalsMC->GetEntriesFast() : 0);
+  PairAnalysisSignalMC *sigMC;
+  for(Int_t isig=0; isig<nsig; isig++) {
+
+    sigMC = (PairAnalysisSignalMC*)fSignalsMC->At(isig);
+    classNameMC = classNamePM + "_" + sigMC->GetName() + "_MCtruth";
+    //	  printf("fill cut details for %s \n",classNameMC.Data());
+
+    // Proceed only if this signal is required in the pure MC step
+    if(!sigMC->GetFillPureMCStep()) continue;
+
+    // check if matches mc signal
+    Bool_t isMCtruth = fSignalsMC && (papaMC->IsMCTruth(label, sigMC, 1) || papaMC->IsMCTruth(label, sigMC, 2) );
+    if(isig && !isMCtruth) continue;
+
+    /// store mc signal weights in track - ATTENTION later signals should be more specific
+    //    if(sigMC->GetWeight(values) != 1.0) trk->SetWeight( sigMC->GetWeight(values) );
+
+    /// reset iterator
+    next.Reset();
+    iCut=0;
+
+    /// loop over cuts
+    while((cuts = (AnalysisCuts*)next())) {
+      ///    UInt_t cutMask=1<<iCut;         // for each cut
+      UInt_t cutRef=(1<<(iCut+1))-1; // increasing cut match
+
+      /// passed cut
+      if ((cutmask&cutRef)==cutRef) {
+
+	/// find histogram list of current track
+	histo.SetHistogramList( *(THashList*)filter->GetHistogramList()->FindObject( cuts->GetName() ),
+				kFALSE );
+
+	/// fill mc truth
 	if(isMCtruth)  histo.FillClass(classNameMC, values);
       } ///end passed cut
       iCut++;

@@ -197,6 +197,7 @@ private:
   void  FillHistogramsPair(PairAnalysisPair *pair,Bool_t fromPreFilter=kFALSE);
   void  FillHistogramsTracks(TObjArray **tracks);
   void  FillCutStepHistograms(AnalysisFilter *filter, UInt_t cutmask, PairAnalysisTrack *trk, const Double_t * values);
+  void  FillCutStepHistogramsMC(AnalysisFilter *filter, UInt_t cutmask, Int_t label,          const Double_t * values);
 
   PairAnalysis(const PairAnalysis &c);
   PairAnalysis &operator=(const PairAnalysis &c);

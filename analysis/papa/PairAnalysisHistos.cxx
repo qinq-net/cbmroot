@@ -1272,6 +1272,8 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
       h                   = (TH1*) classTable->FindObject( histdenomMC.Data() );
     }
     if (!h) continue;
+    if (h->GetEntries()<1.) continue;
+
 
     /// get histClassDenom for efficiency caluclation, e.g. the MCtruth (denominator)
     if(optEff && !histClass.Contains("_MCtruth")) histClassDenom = histClass + "_MCtruth";
