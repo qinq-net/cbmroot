@@ -6,22 +6,10 @@ void drawField()
   Double_t fzmin =  -300.;    // along z axis
   Double_t fzmax =   300.;
 
-
-  
-  // -----   Load libraries   ---------------------------------------------
-  // Load libraries
-  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-  basiclibs();
-  gSystem->Load("libGeoBase");
-  gSystem->Load("libParBase");
-  gSystem->Load("libBase");
-  gSystem->Load("libField");
-  // ----------------------------------------------------------------------
-
   CbmFieldMap* field = new CbmFieldMapSym3(fieldName.Data());
-  field->SetPosition(0., 0., 50.);
+  field->SetPosition(0., 0., 40.);
 
-  field->SetFieldRegionNew(-1000.,1000.,-1000., 1000, 30.,1000.);
+//  field->SetFieldRegionNew(-1000.,1000.,-1000., 1000, 30.,1000.);
 
   field->Init();
   field->Print();
