@@ -229,11 +229,7 @@ Int_t CbmRichTrbUnpack2::ReadOneRawEvent()
 }
 
 // Actually not _read_ event but produce (build) one event from the buffer of raw events
-#ifdef _NewFairSource
 Int_t CbmRichTrbUnpack2::ReadEvent(UInt_t)
-#else
-Int_t CbmRichTrbUnpack2::ReadEvent()
-#endif
 {
 	// This shit is quite complicated...
 	// So, there are two modes - standard and "garbage collation"

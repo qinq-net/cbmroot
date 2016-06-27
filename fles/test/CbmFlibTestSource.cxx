@@ -99,11 +99,7 @@ Bool_t CbmFlibTestSource::Init()
   return kTRUE;
 }
 
-#ifdef _NewFairSource
 Int_t CbmFlibTestSource::ReadEvent(UInt_t) 
-#else
-Int_t CbmFlibTestSource::ReadEvent()       
-#endif
 {
 
   Int_t retVal = -1;  

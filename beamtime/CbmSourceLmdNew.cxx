@@ -348,11 +348,7 @@ Bool_t CbmSourceLmdNew::Init()
 // Action: Digis are retrieved from the buffer one by one.
 // If their time is within the association window, they are added to the
 // event. If not, the event loop is stopped.
-#ifdef _NewFairSource
 Int_t CbmSourceLmdNew::ReadEvent(UInt_t)
-#else
-Int_t CbmSourceLmdNew::ReadEvent()
-#endif
 {
   
   // The TClonesArrays and everything else is cleared when FairRunOnline

@@ -215,11 +215,6 @@ Else(TBB_FOUND)
   set(LINKDEF  CbmRichLinkDef.h)
 EndIf(TBB_FOUND)
 
-If(NOT OldFairSource)
-  Add_Definitions(-D_NewFairSource)
-  Set(DEFINITIONS ${DEFINITIONS} _NewFairSource)
-EndIf()
-
 Set(LIBRARY_NAME CbmRich)
 Set(DEPENDENCIES
     # KF L1 ????

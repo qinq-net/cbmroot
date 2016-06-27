@@ -90,11 +90,7 @@ Bool_t CbmFlibFileSource::Init()
 
 }
 
-#ifdef _NewFairSource
 Int_t CbmFlibFileSource::ReadEvent(UInt_t)
-#else
-Int_t CbmFlibFileSource::ReadEvent()
-#endif 
 {
   fSpadicRaw->Clear();
   while (auto timeslice = fSource->get()) {

@@ -56,11 +56,7 @@ class CbmHldSource : public FairOnlineSource
 
     /** inherited pure virtual methods from FairSource **/
     Bool_t Init();
-#ifdef _NewFairSource
     Int_t ReadEvent(UInt_t = 0);
-#else
-    Int_t ReadEvent();
-#endif
 
 #ifdef VERSION_LESS_151102
     enum Source_Type {kONLINE, kFILE};

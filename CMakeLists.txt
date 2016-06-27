@@ -240,51 +240,10 @@ Generate_Version_Info()
 # cause another cmake executable to run.  The same process will walk through
 # the project's entire directory structure.
 
-#set(BUILD_BEAMTIME FALSE CACHE BOOL "Build everything needed (DABC, RocLib ...) to read testbeam data.")
-#If(BUILD_BEAMTIME)
-#  Set(BUILD_MBS FALSE)
-#  Set(DEFINITIONS BUILD_BEAMTIME)
-#  
-#  If(EXISTS "${FAIRROOTPATH}/include/FairLmdSource.h")
-#    Message(FATAL_ERROR "FairRoot compiled with MBS support => lead to conflict with roc library needed by beamtime." 
-#                        "See https://lxcbmredmine01.gsi.de/projects/cbmroot/wiki/BeamtimeSoftRocLib for more details")
-#  EndIf()
-#  
-#  Message(WARNING "The TOF beamtime library (CBMROOT/beamtime/tof) will not be compiled.\n"
-#                  " => Due to this CbmTofAnaTestbeam (tof/TofTests), CbmTofTestBeamClusterizer (tof/TofReco) "
-#                  "and CbmGet4EventDumper (fles/reader/get4) will also not be compiled!!!")
-#Else(BUILD_BEAMTIME)
-#  Message(WARNING "The general Beamtime library (CBMROOT/beamtime) will not be compiled!")
-#EndIf(BUILD_BEAMTIME)
-
 If(CMAKE_SYSTEM_NAME MATCHES Darwin)
   Include(CheckIncludeFile)
   Check_Include_File("_types/_uint8_t.h" _UINT8_T_EXIST)
 EndIf()
-
-If(ROOT_VERSION_MAJOR VERSION_LESS 6 )
-  # Test is we use the new FairSource. The difference is the signature.
-  # Compile test code. If the code compiles we use the new FairSource.
-  Message(STATUS "Checking for FairSource version")
-  Execute_process(COMMAND ${CMAKE_CXX_COMPILER} -c 
-                          ${CMAKE_SOURCE_DIR}/test/testcode/CbmTestSource.cxx
-                          -I${ROOT_INCLUDE_DIR} -I${FAIRROOTPATH}/include
-                          -I${CMAKE_SOURCE_DIR}/base/source
-                  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-                  RESULT_VARIABLE OldFairSource
-                  ERROR_QUIET
-                 )
-Else()
-  Set(ROOT6 TRUE)
-  Set(OldFairSource FALSE)
-EndIf()
-
-If(OldFairSource)
-  Message(STATUS "Found old FairSource")
-Else()
-  Message(STATUS "Found new FairSource")
-EndIf()
-
 
 ### Subdirectories to be compiled #####
 
