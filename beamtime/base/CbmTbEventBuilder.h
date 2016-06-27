@@ -24,6 +24,9 @@ class CbmTbEventBuilder : public TObject
   virtual Bool_t IsInEvent(CbmDigi* digi) = 0;
   virtual void Reset() = 0;
   virtual void PrintCurrentEvent() = 0;
+
+  virtual void BuildNextEvent() = 0;
+
  protected:
    // --- Event status
    CbmTbEvent* fCurrentEvent;    ///< Pointer to current event

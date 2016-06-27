@@ -26,7 +26,8 @@ class CbmTbEventBuilderFixedTimeWindow : public CbmTbEventBuilder
   virtual void PrintCurrentEvent()
   { fCurrentEvent->Print(); }
 
-
+  virtual void BuildNextEvent(){;}
+  
   void SetEventTimeWindow(Double_t window) { fEventTimeWindow = window; }
 
  private:
