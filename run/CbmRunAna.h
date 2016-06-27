@@ -13,8 +13,6 @@
 #ifndef CBMRUNANA_H
 #define CBMRUNANA_H 1
 
-
-#include "FairRootManager.h"
 #include "FairRunAna.h"
 
 
@@ -38,40 +36,10 @@ class CbmRunAna : public FairRunAna
   /**   Set asynchronous output mode  **/
   void SetAsync(Bool_t async = kTRUE) { fAsync = async; }
 
-
-#ifdef OLDFAIRROOTVERSION
-   /**   Run all events in input file  **/
-  void Run() { ExecRun(0, fRootManager->GetInChain()->GetEntries() - 1); }
-
-
-  /**   Run n events 
-   **@param nEvents   Number of events to be processed  **/
-  void Run(Int_t nEvents) { ExecRun(0, nEvents - 1); }
-
-
-  /**   Run from event iStart to event iStop
-   **@param iStart   Number of first event
-   **@param iStop    Number of last event
-   **/
-  void Run(Int_t iStart, Int_t iStop) { ExecRun(iStart, iStop); }
-#endif
-
-
  private:
 
   Bool_t fAsync;       /** Flag for asynchronous output mode **/
   Bool_t fMarkFill;    /** Flag for filling output tree at end of event **/
-  FairRunInfo fRunInfo;
-  // TODO: fRunInfo shadows FairRunAna::fRunInfo, because that obe is declared private.
-
-
-#ifdef OLDFAIRROOTVERSION
-  /**   Run execution
-   **@param iStart  Number of first event
-   **@param iStop   Number of last event
-   **/
-  void ExecRun(Int_t iStart, Int_t iStop);
-#endif
 
   /** Fill output tree
    **
@@ -82,15 +50,8 @@ class CbmRunAna : public FairRunAna
   void Fill();
 
 
-  ClassDef(CbmRunAna,2);
+  ClassDef(CbmRunAna,3);
 
 };
 
 #endif
-
-
-
-  
-
-
-
