@@ -8,6 +8,7 @@
  **
  **/
 
+// 2016-06-27 - DE - use STS v16x as new default, see issue #647
 // 2016-05-19 - VF - Add platform module
 // 2016-02-25 - DE - use STS v16c as new default
 // 2016-02-05 - VF - Replaces former sis300_electron_muon.C,
@@ -31,7 +32,7 @@ void setup_sis300_muon()
   // -----  Geometry Tags  --------------------------------------------------
   TString magnetGeoTag    = "v15a";
   TString pipeGeoTag      = "v13c";
-  TString stsGeoTag       = "v16c";
+  TString stsGeoTag       = "v16x";
   TString muchGeoTag      = "v13f";
   TString trdGeoTag       = "v15a_3m";
   TString tofGeoTag       = "v16a_3m";

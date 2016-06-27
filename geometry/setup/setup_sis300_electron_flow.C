@@ -8,6 +8,7 @@
  **
  **/
 
+// 2016-06-27 - DE - use STS v16x as new default, see issue #647
 // 2016-02-25 - DE - use STS v16c as new default
 // 2016-02-05 - VF - Replaces former sis300_electron_setup.C,
 //                   now using the CbmSetup class.
@@ -37,7 +38,7 @@ void setup_sis300_electron_flow()
   TString magnetGeoTag    = "v15a";
   TString pipeGeoTag      = "v14c";
   TString mvdGeoTag       = "v15a";
-  TString stsGeoTag       = "v16c";
+  TString stsGeoTag       = "v16x";
   TString richGeoTag      = "v16a_3e";
   TString trdGeoTag       = "v15a_3e";
   TString tofGeoTag       = "v16a_3e";

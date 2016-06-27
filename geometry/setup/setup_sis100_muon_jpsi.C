@@ -8,6 +8,7 @@
  **
  **/
 
+// 2016-06-27 - DE - use STS v16x as new default, see issue #647
 // 2016-06-21 - DE - switch to shortened root pipe v16b_1m geometry ref #721
 // 2016-05-19 - VF - Add platform module
 // 2016-02-25 - DE - use STS v16c as new default
@@ -35,7 +36,7 @@ void setup_sis100_muon_jpsi()
   // -----  Geometry Tags  --------------------------------------------------
   TString magnetGeoTag    = "v15b_much";
   TString pipeGeoTag      = "v16b_1m";
-  TString stsGeoTag       = "v16c";
+  TString stsGeoTag       = "v16x";
   TString muchGeoTag      = "v15c_SIS100-C_gemtrd";
   TString shieldGeoTag    = "v15c_SIS100C_149_3part_125cm";
   TString trdGeoTag       = "v15c_1m";

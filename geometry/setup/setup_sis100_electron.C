@@ -6,6 +6,7 @@
  **
  **/
 
+// 2016-06-27 - DE - use STS v16x as new default, see issue #647
 // 2016-05-19 - VF - Add platform module
 // 2016-02-25 - DE - use STS v16c as new default
 // 2016-02-05 - VF - Replaces former sis100_electron_setup.C,
@@ -39,7 +40,7 @@ void setup_sis100_electron()
   TString magnetGeoTag    = "v15a";
   TString pipeGeoTag      = "v16b_1e";
   TString mvdGeoTag       = "v15a";
-  TString stsGeoTag       = "v16c";
+  TString stsGeoTag       = "v16x";
   TString richGeoTag      = "v16a_1e";
   TString trdGeoTag       = "v15a_1e";
   TString tofGeoTag       = "v16a_1e";
