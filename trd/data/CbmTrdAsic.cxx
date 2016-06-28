@@ -10,17 +10,7 @@
 #include <iomanip>
 
 CbmTrdAsic::CbmTrdAsic() 
-  : TNamed(),
-    fChannelAddresses(),
-    fAsicAddress(0),
-    fX(0.),
-    fY(0.),
-    fZ(0.),
-    fSizeX(0.),
-    fSizeY(0.),
-    fSizeZ(0.),
-    fnofChannels(0),
-    fFebGrouping(-1)
+  : CbmTrdAsic(0, 0, -1, 0., 0., 0., 0., 0., 0.)
 {
 }
 

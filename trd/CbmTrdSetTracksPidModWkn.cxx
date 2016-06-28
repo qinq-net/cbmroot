@@ -32,19 +32,7 @@ using std::endl;
 
 // -----   Default constructor   -------------------------------------------
 CbmTrdSetTracksPidModWkn::CbmTrdSetTracksPidModWkn() 
-  : FairTask(),
-    fTrackArray(NULL),
-    fTrdHitArray(NULL),
-    fnSet(0),
-    fdegWkn(0),
-    fk1(0),
-    fwkn0(0),
-    fEmp(0),
-    fXi(0),
-    fWmin(0),
-    fWmax(0),
-    fDiff(0),
-    fSISType("sis300")
+  : CbmTrdSetTracksPidModWkn("TrdSetTracksPidModWkn", "")
 {
 }
 // -------------------------------------------------------------------------

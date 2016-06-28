@@ -23,18 +23,8 @@ using std::endl;
 // ---- Default constructor -------------------------------------------------
 
 CbmTrdCreatePidLike::CbmTrdCreatePidLike() 
-  : FairTask(),
-    fTrdHitCollection(NULL),
-    fTrdPointCollection(NULL),
-    fMCTrackArray(NULL),
-    h1dEdxEL(),
-    h1dEdxPI(),
-    h1dEdxKA(),
-    h1dEdxPR(),
-    h1dEdxMU(),
-    h1momentum(NULL)
+  :CbmTrdCreatePidLike("TrdCreatePidLike", "")
 {
-    PrepareHistograms();
 }
 // --------------------------------------------------------------------------
 
@@ -53,7 +43,22 @@ CbmTrdCreatePidLike::CbmTrdCreatePidLike(const char* name,
     h1dEdxMU(),
     h1momentum(NULL)
 {
-    PrepareHistograms();
+    Char_t text[200];
+
+    h1momentum = new TH1F("momentum","momentum",1000,0,20.);
+
+    for (Int_t imom = 0; imom < kNMom; imom++) {
+        sprintf(text,"h1dEdxEL%01d",imom+1);
+        h1dEdxEL[imom] = new TH1F(text,"dE/dx  Dist.",400,0,80);
+        sprintf(text,"h1dEdxPI%01d",imom+1);
+        h1dEdxPI[imom] = new TH1F(text,"dE/dx  Dist.",400,0,80);
+        sprintf(text,"h1dEdxKA%01d",imom+1);
+        h1dEdxKA[imom] = new TH1F(text,"dE/dx  Dist.",400,0,80);
+        sprintf(text,"h1dEdxPR%01d",imom+1);
+        h1dEdxPR[imom] = new TH1F(text,"dE/dx  Dist.",400,0,80);
+        sprintf(text,"h1dEdxMU%01d",imom+1);
+        h1dEdxMU[imom] = new TH1F(text,"dE/dx  Dist.",400,0,80);
+    }
 }
 // --------------------------------------------------------------------------
 
@@ -211,31 +216,6 @@ void CbmTrdCreatePidLike::Finish() {
     WriteHistograms();
 }
 // --------------------------------------------------------------------------
-
-
-// ---- Prepare test histograms ---------------------------------------------
-
-void CbmTrdCreatePidLike::PrepareHistograms() {
-
-    Char_t text[200];
-
-    h1momentum = new TH1F("momentum","momentum",1000,0,20.);
-
-    for (Int_t imom = 0; imom < kNMom; imom++) {
-        sprintf(text,"h1dEdxEL%01d",imom+1);
-        h1dEdxEL[imom] = new TH1F(text,"dE/dx  Dist.",400,0,80);
-        sprintf(text,"h1dEdxPI%01d",imom+1);
-        h1dEdxPI[imom] = new TH1F(text,"dE/dx  Dist.",400,0,80);
-        sprintf(text,"h1dEdxKA%01d",imom+1);
-        h1dEdxKA[imom] = new TH1F(text,"dE/dx  Dist.",400,0,80);
-        sprintf(text,"h1dEdxPR%01d",imom+1);
-        h1dEdxPR[imom] = new TH1F(text,"dE/dx  Dist.",400,0,80);
-        sprintf(text,"h1dEdxMU%01d",imom+1);
-        h1dEdxMU[imom] = new TH1F(text,"dE/dx  Dist.",400,0,80);
-    }
-}
-// --------------------------------------------------------------------------
-
 
 // ---- Write test histograms ------------------------------------------------
 

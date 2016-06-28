@@ -22,11 +22,7 @@ using std::endl;
 
 // -----   Default constructor   -------------------------------------------
 CbmTrdFindTracks::CbmTrdFindTracks()
-  : FairTask(),
-    fFinder(NULL),
-    fTrdHitArray(NULL),
-    fTrackArray(NULL),
-    fNofTracks(-1)
+  : CbmTrdFindTracks("TrdFindTracks", "", NULL)
 {
 }
 // -------------------------------------------------------------------------

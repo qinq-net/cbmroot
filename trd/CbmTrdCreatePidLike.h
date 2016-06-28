@@ -62,10 +62,6 @@ private:
     TH1F*         h1dEdxMU[kNMom]; //
     TH1F*         h1momentum;
 
-
-    /* Prepare test histograms */
-    void PrepareHistograms();
-
     /* Write test histograms */
     void WriteHistograms();
 

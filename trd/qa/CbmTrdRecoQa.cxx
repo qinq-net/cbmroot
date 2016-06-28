@@ -129,9 +129,6 @@ InitStatus CbmTrdRecoQa::Init()
 
   fGeoHandler->Init();
 
-  PrepareHistograms();
-
-
   return kSUCCESS;
 
 }

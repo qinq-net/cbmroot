@@ -39,7 +39,7 @@ class TrdEloss
 {
 public:
  TrdEloss() 
-   : fEloss(0.), fdEdX(0.), fTR(0.) {}
+   : TrdEloss(0., 0., 0.) {}
   
  TrdEloss(double eloss, double dedx = 0., double tr = 0.) 
    : fEloss(eloss), fdEdX(dedx), fTR(tr) {}

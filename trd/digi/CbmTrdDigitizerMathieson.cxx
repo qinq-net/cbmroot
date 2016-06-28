@@ -41,38 +41,13 @@ using std::fabs;
 
 // ---- Default constructor -------------------------------------------
 CbmTrdDigitizerMathieson::CbmTrdDigitizerMathieson()
-  : FairTask("TrdCluster"),
-    Digicounter(-1),
-    fLayerZ(),
-    fTime(-1.),
-    fModuleType(-1),
-    fModuleCopy(-1),
-    fModuleID(-1),
-    fMCindex(-1),
-    tempx(0.),
-    tempy(0.),
-    fPadCharge(),
-    fMathieson(),
-    fModuleSize(),
-    fEfficiency(1.),
-    fTrdPoints(NULL),
-    fDigiCollection(new TClonesArray("CbmTrdDigi")),
-    fDigiMatchCollection(NULL),
-    fMCStacks(NULL),
-    fDigiPar(NULL),
-    fModuleInfo(NULL),
-    fRadiators(NULL),
-    fGeoHandler(new CbmTrdGeoHandler()),
-    fDigiMap(),
-    fDigiMapIt(),
-    fModuleParaMap(),
-    fModuleParaMapIt()
+  :CbmTrdDigitizerMathieson("TrdDigitizerMathieson","", NULL)
 {
 }
 // --------------------------------------------------------------------
 
 // ---- Constructor ----------------------------------------------------
-CbmTrdDigitizerMathieson::CbmTrdDigitizerMathieson(const char *name, const char *title,
+CbmTrdDigitizerMathieson::CbmTrdDigitizerMathieson(const char *name, const char*,
                  CbmTrdRadiator *radiator)
   :FairTask(name),
     Digicounter(-1),

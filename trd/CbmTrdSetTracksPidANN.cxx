@@ -23,14 +23,7 @@
 using namespace std;
 
 CbmTrdSetTracksPidANN::CbmTrdSetTracksPidANN() 
-  : FairTask(),
-    fTrackArray(NULL),
-    fTrdHitArray(NULL),
-    fNofTracks(0),
-    fANNPar1(-1.),
-    fANNPar2(-1.), 
-    fNN(),
-    fTRDGeometryType("h++")
+  : CbmTrdSetTracksPidANN("TrdSetTracksPidANN", "")
 {
 }
 

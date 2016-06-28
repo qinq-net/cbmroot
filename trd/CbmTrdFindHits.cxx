@@ -20,18 +20,9 @@ using std::cout;
 using std::endl;
 
 // -----   Default constructor   -------------------------------------------
-CbmTrdFindHits::CbmTrdFindHits() :
-  FairTask("Cbm Trd hitfinding task")
+CbmTrdFindHits::CbmTrdFindHits() 
+ : CbmTrdFindHits("CbmTrdHitFinder", 0)
 {
-  this->Add(new CbmTrdHitProducerDigi("CbmTrdHitProducerDig"));
-  this->Add(new CbmTrdHitProducerSmearing("CbmTrdHitProducerSmearing"));
- 
-  TList* thistasks = this->GetListOfTasks();
-  for(Int_t i=0;i<thistasks->GetEntries();i++)
-  {
-    ((FairTask*)thistasks->At(i))->SetVerbose(fVerbose);
-    ((FairTask*)thistasks->At(i))->SetActive(kFALSE);
-  }
 }
 // -------------------------------------------------------------------------
 

@@ -29,109 +29,21 @@ using std::setprecision;
 
 // -----   Default constructor   ---------------------------------------
 CbmTrdRadiator::CbmTrdRadiator()
- : fWindowFoil(""),
-   fRndm(0),
-   fRadType(""),
-   fDetType(-1),
-   fFirstPass(kTRUE),
-   fSimpleTR(kTRUE),
-   fNFoils(130),
-   fFoilThick(0.0013),
-   fGapThick(0.02),
-   fFoilMaterial(""),
-   fGasThick(-1),
-   fFoilDens(-1.),
-   fGapDens(-1.),
-   fFoilOmega(-1.),
-   fGapOmega(-1.),
-   fnPhotonCorr(1.0),
-   fFoilThickCorr(1.),
-   fGapThickCorr(1.),
-   fGasThickCorr(1.),
-   fnTRprod(-1),
-   fWinDens(-1.),
-   fWinThick(-1.),
-   fCom1(-1.),
-   fCom2(-1.),
-   fSpBinWidth((Float_t)fSpRange / (Float_t)fSpNBins),
-   fSigma(NULL),
-   fSigmaWin(NULL),
-   fSigmaDet(NULL),
-   fSpectrum(NULL),
-   fWinSpectrum(NULL),
-   fDetSpectrumA(NULL),
-   fDetSpectrum(NULL),
-   fTrackMomentum(NULL),
-   fFinal(),
-   fnTRabs(),
-   fnTRab(-1.),
-   fELoss(-1.),
-   fMom(-1.,-1.,-1.)
+ : CbmTrdRadiator(kTRUE, 130, 0.0013, 0.02)
 {
-  for(Int_t i=0; i<fNMom; i++){
-      fFinal[i] = NULL;
-  }
-
-  //Init();
-  // Set initial parameters defining the radiator
-  CreateHistograms();
-  fRndm.SetSeed(0); //TUUID -> unique seed
 }
 //-----------------------------------------------------------------------------
 
 // -----  Constructor   --------------------------------------------------
 CbmTrdRadiator::CbmTrdRadiator(Bool_t SimpleTR, Int_t Nfoils, Float_t FoilThick, Float_t GapThick)
-  : fWindowFoil(""),
-    fRndm(0),
-    fRadType(""),
-    fDetType(-1),
-    fFirstPass(kTRUE),
-    fSimpleTR(SimpleTR),
-    fNFoils(Nfoils),
-    fFoilThick(FoilThick),
-    fGapThick(GapThick),
-    fFoilMaterial("polyethylen"),
-    fGasThick(-1),
-    fFoilDens(-1.),
-    fGapDens(-1.),
-    fFoilOmega(-1.),
-    fGapOmega(-1.),
-    fnPhotonCorr(1.0),
-    fFoilThickCorr(1.),
-    fGapThickCorr(1.),
-    fGasThickCorr(1.),
-    fnTRprod(-1),
-    fWinDens(-1.),
-    fWinThick(-1.),
-    fCom1(-1.),
-    fCom2(-1.),
-    fSpBinWidth((Float_t)fSpRange / (Float_t)fSpNBins),
-    fSigma(NULL),
-    fSigmaWin(NULL),
-    fSigmaDet(NULL),
-    fSpectrum(NULL),
-    fWinSpectrum(NULL),
-    fDetSpectrumA(NULL),
-    fDetSpectrum(NULL),
-    fTrackMomentum(NULL),
-    fFinal(),
-    fnTRabs(),
-    fnTRab(-1.),
-    fELoss(-1.),
-    fMom(-1.,-1.,-1.)
+  : CbmTrdRadiator(SimpleTR, Nfoils, FoilThick, GapThick, "polyethylen", "")  
 {
-  for(Int_t i=0; i<fNMom; i++){
-      fFinal[i] = NULL;
-  }
-  //Init();
-  CreateHistograms();
-  fRndm.SetSeed(0); //TUUID -> unique seed
 }
 //-----------------------------------------------------------------------------
 
 // -----  Constructor   --------------------------------------------------
 CbmTrdRadiator::CbmTrdRadiator(Bool_t SimpleTR, Int_t Nfoils, Float_t FoilThick, Float_t GapThick, TString material, TString prototype)
-  : fWindowFoil(""),
+  : fWindowFoil(""),                                         
     fRndm(0),
     fRadType(prototype),
     fDetType(-1),

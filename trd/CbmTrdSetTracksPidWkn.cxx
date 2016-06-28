@@ -20,12 +20,7 @@ using std::endl;
 
 // -----   Default constructor   -------------------------------------------
 CbmTrdSetTracksPidWkn::CbmTrdSetTracksPidWkn() 
-  : FairTask(),
-    fTrackArray(NULL),
-    fTrdHitArray(NULL),
-    fNofTracks(0),
-    WknPar1(1.279),
-    WknPar2(0.61)
+  : CbmTrdSetTracksPidWkn("TrdSetTracksPidWkn", "")
 {
 }
 // -------------------------------------------------------------------------

@@ -24,16 +24,7 @@ using std::endl;
 
 // -----   Default constructor   -------------------------------------------
 CbmTrdSetTracksPidLike::CbmTrdSetTracksPidLike()
-  : FairTask(),
-    fTrackArray(NULL), 
-    fTrdHitArray(0), 
-    fglobalTrackArray(NULL),
-    fstsTrackArray(NULL),
-    fHistdEdx(NULL), 
-    fNofTracks(0), 
-    fTrackMomentum(NULL), 
-    fNBins(0), 
-    fBinSize(0)
+  : CbmTrdSetTracksPidLike("TrdSetTracksPidLike", "")
 {
 }
 // -------------------------------------------------------------------------

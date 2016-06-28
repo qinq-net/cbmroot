@@ -31,14 +31,7 @@ using std::setprecision;
 
 // ---- Default constructor -------------------------------------------
 CbmTrdSimpleHitProducerCluster::CbmTrdSimpleHitProducerCluster()
-  : FairTask("TrdHitProducer",1),
-    fTrdCluster(NULL),
-    fTrdDigi(NULL),
-    fHitCollection(NULL),
-    fMCStack(NULL),
-    fDigiPar(NULL),
-    fModuleInfo(NULL),
-    fGeoHandler(new CbmTrdGeoHandler())
+  : CbmTrdSimpleHitProducerCluster("TrdHitProducer",1)
 {
 }
 // --------------------------------------------------------------------

@@ -47,30 +47,7 @@
 //#define noBaselineTB               5 
 
 CbmTrdRawToDigiSpadic03::CbmTrdRawToDigiSpadic03()
-: FairTask("TrdSpadic03"),
-    fNBaselineTB(5),
-    fSusid(-1),
-    fLowercorthreshold(),
-    fMinimumAmplitudeThreshold(),
-    fSusIds(),
-    fFile(NULL),
-    fPrincipal(NULL),
-    fDigis(NULL),
-    fDigiPar(NULL),
-    fModuleInfo(NULL),
-
-    baselineDistribution(),
-    covaMatixValue(),
-    covaMatixValueMaxAmplitude(),
-    covaMatixValueHitTime(),
-    maxAmplitudeHitTime(),
-    maxAmplitudeValue(),
-    noiseDistribution(),
-    clusterSize(),
-    signalChDistance(),
-    averageNoise_2D(),
-    averageSignal_2D(),
-    covaMatixValueClusterSize()
+ : CbmTrdRawToDigiSpadic03("TrdSpadic03","")
 {
 }
 

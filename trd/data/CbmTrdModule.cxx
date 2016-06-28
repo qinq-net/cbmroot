@@ -10,42 +10,28 @@
 #include <iomanip>
 
 CbmTrdModule::CbmTrdModule() 
-  : TNamed(),
-    fModuleAddress(0),
-    fOrientation(0),
-    fX(0.),
-    fY(0.),
-    fZ(0.),
-    fSizeX(0.),
-    fSizeY(0.),
-    fSizeZ(0.),
-    fAnodeWireOffset(0),
-    fAnodeWireSpacing(0),
-    fAnodeWireToPadPlaneDistance(0),
-    fNofSectors(0),  
-    fSectorX(0),    
-    fSectorY(0),    
-    fSectorZ(0),    
-    fSectorBeginX(0),
-    fSectorBeginY(0),
-    fSectorEndX(0),
-    fSectorEndY(0),
-    fSectorSizeX(0),
-    fSectorSizeY(0),
-    fPadSizeX(0),
-    fPadSizeY(0),
-    fTriangularPads(false),
-    fAsicMap(),
-    fNofAsics(0)
+  : CbmTrdModule(0, 0, 0., 0., 0., 0., 0., 0., 0, TArrayD(0), TArrayD(0), TArrayD(0), TArrayD(0), false)
 {
 }
+
+CbmTrdModule::CbmTrdModule(Int_t address, Int_t orientation, Double_t x, Double_t y, Double_t z,
+			   Double_t sizex, Double_t sizey, Double_t sizez, Int_t nofSectors,
+			   const TArrayD& sectorSizeX, const TArrayD& sectorSizeY,
+			   const TArrayD& padSizeX, const TArrayD& padSizeY)
+  :   CbmTrdModule(address, orientation, x, y, z,
+	           sizex, sizey, sizez, nofSectors,
+	           sectorSizeX, sectorSizeY,
+	           padSizeX, padSizeY, false)
+{
+}
+
 CbmTrdModule::CbmTrdModule(
 			   Int_t address, Int_t orientation, Double_t x, Double_t y, Double_t z,
 			   Double_t sizex, Double_t sizey, Double_t sizez, Int_t nofSectors,
 			   const TArrayD& sectorSizeX, const TArrayD& sectorSizeY,
 			   const TArrayD& padSizeX, const TArrayD& padSizeY,
 			   const Bool_t padGeoTriangular)
-  : TNamed(),
+  : TNamed(),                                 
     fModuleAddress(address),
     fOrientation(orientation),
     fX(x),
@@ -70,46 +56,6 @@ CbmTrdModule::CbmTrdModule(
     fPadSizeX(padSizeX),
     fPadSizeY(padSizeY) ,
     fTriangularPads(padGeoTriangular),
-    fAsicMap(),
-    fNofAsics(0)
-{
-  CbmTrdModule(address, orientation, x, y, z,
-	       sizex, sizey, sizez, nofSectors,
-	       sectorSizeX, sectorSizeY,
-	       padSizeX, padSizeY);
-}
-
-
-CbmTrdModule::CbmTrdModule(
-			   Int_t address, Int_t orientation, Double_t x, Double_t y, Double_t z,
-			   Double_t sizex, Double_t sizey, Double_t sizez, Int_t nofSectors,
-			   const TArrayD& sectorSizeX, const TArrayD& sectorSizeY,
-			   const TArrayD& padSizeX, const TArrayD& padSizeY)
-  : TNamed(),
-    fModuleAddress(address),
-    fOrientation(orientation),
-    fX(x),
-    fY(y),
-    fZ(z),
-    fSizeX(sizex),
-    fSizeY(sizey),
-    fSizeZ(sizez),
-    fAnodeWireOffset(0.375),
-    fAnodeWireSpacing(0.25),
-    fAnodeWireToPadPlaneDistance(0.35),
-    fNofSectors(nofSectors),
-    fSectorX(nofSectors),
-    fSectorY(nofSectors),
-    fSectorZ(nofSectors),
-    fSectorBeginX(nofSectors),
-    fSectorBeginY(nofSectors),
-    fSectorEndX(nofSectors),
-    fSectorEndY(nofSectors),
-    fSectorSizeX(sectorSizeX),
-    fSectorSizeY(sectorSizeY),
-    fPadSizeX(padSizeX),
-    fPadSizeY(padSizeY) ,
-    fTriangularPads(false),
     fAsicMap(),
     fNofAsics(0)
 {

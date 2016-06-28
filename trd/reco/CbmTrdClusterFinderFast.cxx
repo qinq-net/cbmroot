@@ -30,20 +30,7 @@ using std::cout;
 using std::endl;
 
 CbmTrdClusterFinderFast::CbmTrdClusterFinderFast()
-  :FairTask("TrdClusterFinderFast",1),
-   fDigis(NULL),
-   fClusters(NULL),
-   fDigiPar(NULL),
-   fModuleInfo(NULL),
-   fGeoHandler(NULL),
-   fRowMergerCounter(0),
-   ClusterSum(-1),
-   fMinimumChargeTH(1.0e-06),//1.0e-08),
-   fNeighbourReadout(true),
-   fNeighbourRowTrigger(true),
-   fRowClusterMerger(true),
-   fMultiHit(false),
-   fTrianglePads(false)
+  : CbmTrdClusterFinderFast(kFALSE, kTRUE, kTRUE, 1.0e-06)
 {
 }
 

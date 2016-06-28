@@ -21,10 +21,7 @@ using std::endl;
 
 // -----   Default constructor   -------------------------------------------
 CbmTrdFitTracks::CbmTrdFitTracks() 
-  : FairTask(),
-    fFitter(NULL),
-    fTrackArray(NULL),
-    fNofTracks(-1)
+  : CbmTrdFitTracks("TrdFitTracks", "", NULL)
 {
 }
 // -------------------------------------------------------------------------
