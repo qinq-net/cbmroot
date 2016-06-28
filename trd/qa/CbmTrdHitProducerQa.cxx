@@ -30,30 +30,8 @@ using std::endl;
 // ---- Default constructor -------------------------------------------------
 
 CbmTrdHitProducerQa::CbmTrdHitProducerQa() 
-  : FairTask(),
-    fTrdHitCollection(NULL),
-    fTrdDigiCollection(NULL),
-    fTrdDigiMatchCollection(NULL),
-    fTrdPointCollection(NULL),
-    fMCTrackArray(NULL),
-    fNoTrdStations(-1),
-    fNoTrdPerStation(-1),
-    fHitPoolsX(NULL),
-    fHitPoolsY(NULL),
-    S1L1eTR15(NULL),
-    S1L1edEdx15(NULL),
-    S1L1edE15(NULL),
-    S1L1edEall(NULL),
-    S1L1pidE15(NULL),
-    S1L1pidEall(NULL),
-    S3L4eTR15(NULL),
-    S3L4edEdx15(NULL),
-    S3L4edE15(NULL),
-    S3L4edEall(NULL),
-    S3L4pidE15(NULL),
-    S3L4pidEall(NULL)
+  :CbmTrdHitProducerQa("TrdHitProducerQa","")
 {
-    PrepareHistograms();
 }
 // --------------------------------------------------------------------------
 
@@ -69,27 +47,26 @@ CbmTrdHitProducerQa::CbmTrdHitProducerQa(const char* name,
     fMCTrackArray(NULL),
     fNoTrdStations(-1),
     fNoTrdPerStation(-1),
-    fHitPoolsX(NULL),
-    fHitPoolsY(NULL),
-    S1L1eTR15(NULL),
-    S1L1edEdx15(NULL),
-    S1L1edE15(NULL),
-    S1L1edEall(NULL),
-    S1L1pidE15(NULL),
-    S1L1pidEall(NULL),
+    fHitPoolsX(new TH1F("fHitPoolsX", "", 500, -50, 50)),
+    fHitPoolsY(new TH1F("fHitPoolsY", "", 500, -50, 50)),
+    S1L1eTR15(new TH1F("S1L1eTR15","TR of e- for first layer ",600,0.,60.)),
+    S1L1edEdx15(new TH1F("S1L1edEdx15","dEdx of e- for first layer ",600,0.,60.)),
+    S1L1edE15(new TH1F("S1L1edE15","dEdx+TR of e- for first layer ",600,0.,60.)),
+    S1L1edEall(new TH1F("S1L1edEall","dEdx+TR of e- for first layer ",600,0.,60.)),
+    S1L1pidE15(new TH1F("S1L1pidE15","dEdx+TR of pi- for first layer ",600,0.,60.)),
+    S1L1pidEall(new TH1F("S1L1pidEall","dEdx+TR of pi- for first layer ",600,0.,60.)),
     S3L4eTR15(NULL),
     S3L4edEdx15(NULL),
     S3L4edE15(NULL),
-    S3L4edEall(NULL),
+    S3L4edEall(new TH1F("S3L4edEall","dEdx+TR of e- for layer 12",600,0.,60.)),
     S3L4pidE15(NULL),
-    S3L4pidEall(NULL)
+    S3L4pidEall(new TH1F("S3L4pidEall","dEdx+TR of pi- for layer 12",600,0.,60.))
 {
-    PrepareHistograms();
 }
 // --------------------------------------------------------------------------
 
 
-// ---- Destructor ----------------------------------------------------------
+// ---- Destructor ---------------------------------------------------------
 CbmTrdHitProducerQa::~CbmTrdHitProducerQa()
 {
 }
@@ -367,6 +344,7 @@ void CbmTrdHitProducerQa::Finish()
 
 // ---- Prepare test histograms ---------------------------------------------
 
+/*
 void CbmTrdHitProducerQa::PrepareHistograms()
 {
 
@@ -400,6 +378,7 @@ void CbmTrdHitProducerQa::PrepareHistograms()
     S3L4pidEall = new TH1F("S3L4pidEall","dEdx+TR of pi- for layer 12",600,0.,60.);
 
 }
+*/
 // --------------------------------------------------------------------------
 
 

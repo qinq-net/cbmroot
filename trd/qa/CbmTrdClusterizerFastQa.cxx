@@ -24,16 +24,19 @@ using std::cout;
 using std::endl;
 
 CbmTrdClusterizerFastQa::CbmTrdClusterizerFastQa()
-: FairTask()
+: CbmTrdClusterizerFastQa("TrdClusterizerFastQa","")
 {
 }
+
 CbmTrdClusterizerFastQa::CbmTrdClusterizerFastQa(const char* name,const char*)
 : FairTask(name)
 {
 }
+
 CbmTrdClusterizerFastQa::~CbmTrdClusterizerFastQa()
 {
 }
+
 InitStatus CbmTrdClusterizerFastQa::Init()
 {
   FairRootManager* rootMgr = FairRootManager::Instance();

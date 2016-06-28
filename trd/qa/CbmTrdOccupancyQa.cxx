@@ -36,75 +36,12 @@ using std::pair;
 using std::fabs;
 
 CbmTrdOccupancyQa::CbmTrdOccupancyQa()
-  : FairTask("TrdOccupancy"),
-    fDigis(NULL),
-    fClusters(NULL),
-    fDigiPar(NULL),
-    fModuleInfo(NULL),
-    fGeoHandler(new CbmTrdGeoHandler()),
-    fDigiChargeSpectrum(new TH1I("DigiChargeSpectrum","DigiChargeSpectrum",1e6,0,1.0e-3)),
-    fLayerDummy(new TH2I("LayerDummy","",1,-400,400,1,-300,300)),
-    fmin(0),
-    fmax(13),
-    fModuleMap(),
-    fModuleMapIt(),
-    fModuleOccupancyMap(),
-    fModuleOccupancyMapIt(),
-    fModuleOccupancyMemoryMap(),
-    fModuleOccupancyMemoryMapIt(),
-    fLayerOccupancyMap(),
-    fLayerOccupancyMapIt(),
-    fLayerAverageOccupancyMap(),
-    fLayerAverageOccupancyMapIt(),
-    fTriggerThreshold(1e-6),
-    fNeigbourReadout(true),
-    fGeo(""),
-    fPlotMergedResults(false)
-{
-// fLayerDummy = new TH2I("LayerDummy","",1200,-600,600,1000,-500,500);
-  fLayerDummy->SetXTitle("x-coordinate [cm]");
-  fLayerDummy->SetYTitle("y-coordinate [cm]");
-  fLayerDummy->SetStats(kFALSE);
-  fLayerDummy->GetXaxis()->SetLabelSize(0.02);
-  fLayerDummy->GetYaxis()->SetLabelSize(0.02);
-  fLayerDummy->GetZaxis()->SetLabelSize(0.02);
-  fLayerDummy->GetXaxis()->SetTitleSize(0.02);
-  fLayerDummy->GetXaxis()->SetTitleOffset(1.5);
-  fLayerDummy->GetYaxis()->SetTitleSize(0.02);
-  fLayerDummy->GetYaxis()->SetTitleOffset(2);
-  fLayerDummy->GetZaxis()->SetTitleSize(0.02);
-  fLayerDummy->GetZaxis()->SetTitleOffset(-2);
- fLayerDummy->SetContour(99);
-  fLayerDummy->GetZaxis()->SetRangeUser(fmin,fmax);
-  fLayerDummy->Fill(0.,0.,0.);
-//  fDigiChargeSpectrum = new TH1I("DigiChargeSpectrum","DigiChargeSpectrum",1e6,0,1.0e-3);
-  for (fModuleOccupancyMapIt = fModuleOccupancyMap.begin();
-       fModuleOccupancyMapIt != fModuleOccupancyMap.end(); ++fModuleOccupancyMapIt) {
-    //delete fModuleOccupancyMapIt->second;
-  } 
-}
-/*
-CbmTrdOccupancyQa::CbmTrdOccupancyQa(const char *name, const char *title, const char *geo)
-  : FairTask(name),
-    fDigis(NULL),
-    fDigiPar(NULL),
-    fModuleInfo(NULL),
-    fGeoHandler(new CbmTrdGeoHandler()),
-    fModuleMap(),
-    fModuleMapIt(),
-    fModuleOccupancyMemoryMap(),
-    fModuleOccupancyMemoryMapIt(),
-    fModuleOccupancyMap(),
-    fModuleOccupancyMapIt(),
-    fDigiChargeSpectrum(NULL),
-    fTriggerThreshold(1.0e-6),
-    fNeigbourReadout(true),
-    fGeo(geo)
+  : CbmTrdOccupancyQa("TrdOccupancy", "", "", 1e-6, kFALSE)
 {
 }
-*/
+
 CbmTrdOccupancyQa::CbmTrdOccupancyQa(const char *name, const char*, const char *geo, Double_t triggerThreshold, Bool_t plotMergedResults)
-  : FairTask(name),
+  : FairTask(name),                                                                         
     fDigis(NULL),
     fClusters(NULL),
     fDigiPar(NULL),
@@ -129,7 +66,6 @@ CbmTrdOccupancyQa::CbmTrdOccupancyQa(const char *name, const char*, const char *
     fGeo(geo),
     fPlotMergedResults(plotMergedResults)
 {
-// fLayerDummy = new TH2I("LayerDummy","",1200,-600,600,1000,-500,500);
   fLayerDummy->SetXTitle("x-coordinate [cm]");
   fLayerDummy->SetYTitle("y-coordinate [cm]");
   fLayerDummy->GetXaxis()->SetLabelSize(0.02);
@@ -143,7 +79,6 @@ CbmTrdOccupancyQa::CbmTrdOccupancyQa(const char *name, const char*, const char *
   fLayerDummy->GetZaxis()->SetTitleOffset(-2);
   fLayerDummy->SetContour(99);
   fLayerDummy->GetZaxis()->SetRangeUser(fmin,fmax);
-//  fDigiChargeSpectrum = new TH1I("DigiChargeSpectrum","DigiChargeSpectrum",1e6,0,1.0e-3);
   for (fModuleOccupancyMapIt = fModuleOccupancyMap.begin();
        fModuleOccupancyMapIt != fModuleOccupancyMap.end(); ++fModuleOccupancyMapIt) {
     //delete fModuleOccupancyMapIt->second;

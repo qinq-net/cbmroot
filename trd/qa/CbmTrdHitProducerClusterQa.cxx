@@ -24,16 +24,19 @@ using std::cout;
 using std::endl;
 
 CbmTrdHitProducerClusterQa::CbmTrdHitProducerClusterQa()
-: FairTask()
+: CbmTrdHitProducerClusterQa("TrdHitProducerClusterQa","")
 {
 }
+
 CbmTrdHitProducerClusterQa::CbmTrdHitProducerClusterQa(const char* name,const char*)
 : FairTask(name)
 {
 }
+
 CbmTrdHitProducerClusterQa::~CbmTrdHitProducerClusterQa()
 {
 }
+
 InitStatus CbmTrdHitProducerClusterQa::Init()
 {
   FairRootManager* rootMgr = FairRootManager::Instance();

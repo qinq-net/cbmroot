@@ -24,16 +24,19 @@ using std::cout;
 using std::endl;
 
 CbmTrdDigitizerPRFQa::CbmTrdDigitizerPRFQa()
-: FairTask()
+: CbmTrdDigitizerPRFQa("TrdDigitizerPRFQa","")
 {
 }
+
 CbmTrdDigitizerPRFQa::CbmTrdDigitizerPRFQa(const char* name,const char*)
 : FairTask(name)
 {
 }
+
 CbmTrdDigitizerPRFQa::~CbmTrdDigitizerPRFQa()
 {
 }
+
 InitStatus CbmTrdDigitizerPRFQa::Init()
 {
   FairRootManager* rootMgr = FairRootManager::Instance();

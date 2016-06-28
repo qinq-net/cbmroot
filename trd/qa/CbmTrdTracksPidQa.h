@@ -103,11 +103,6 @@ private:
     TH1F*         LikeLowALL;//
 
 
-
-    /* Prepare the QA histograms */
-    void PrepareHistograms();
-
-
     /* Write the QA histograms to file*/
   void WriteHistograms();
   

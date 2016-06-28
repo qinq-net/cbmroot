@@ -82,9 +82,6 @@ private:
 
 private:
 
-    /* Prepare test histograms */
-    void PrepareHistograms();
-
     CbmTrdHitProducerQa(const CbmTrdHitProducerQa&);
     CbmTrdHitProducerQa& operator=(const CbmTrdHitProducerQa&);
 

@@ -25,49 +25,7 @@ using std::endl;
 // ---- Default constructor -------------------------------------------------
 
 CbmTrdTracksPidQa::CbmTrdTracksPidQa()
-  : FairTask(),
-    fTrdTrackCollection(NULL),
-    fTrdHitCollection(NULL),
-    fMCPointArray(NULL),
-    fMCTrackArray(NULL),
-    PartID(NULL),
-    NrTRDHits(NULL),
-    ELossPI(NULL),
-    ELossEL(NULL),
-    ELossALL(NULL),
-    MomPI(NULL),
-    MomEL(NULL),
-    MomALL(NULL),
-    MOMvsELossEL(NULL),
-    MOMvsELossPI(NULL),
-    MOMvsELossALL(NULL),
-    WknPI(NULL),
-    WknEL(NULL),
-    WknALL(NULL),
-    WknLowPI(NULL),
-    WknLowEL(NULL),
-    WknLowALL(NULL),
-    WknHighPI(NULL),
-    WknHighEL(NULL),
-    WknHighALL(NULL),
-    AnnPI(NULL),
-    AnnEL(NULL),
-    AnnALL(NULL),
-    AnnLowPI(NULL),
-    AnnLowEL(NULL),
-    AnnLowALL(NULL),
-    AnnHighPI(NULL),
-    AnnHighEL(NULL),
-    AnnHighALL(NULL),
-    LikePI(NULL),
-    LikeEL(NULL),
-    LikeALL(NULL),
-    LikeHighPI(NULL),
-    LikeHighEL(NULL),
-    LikeHighALL(NULL),
-    LikeLowPI(NULL),
-    LikeLowEL(NULL),
-    LikeLowALL(NULL)
+  : CbmTrdTracksPidQa("TrdTracksPidQa","")
 {
 }
 // --------------------------------------------------------------------------
@@ -81,44 +39,44 @@ CbmTrdTracksPidQa::CbmTrdTracksPidQa(const char* name,
     fTrdHitCollection(NULL),
     fMCPointArray(NULL),
     fMCTrackArray(NULL),
-    PartID(NULL),
-    NrTRDHits(NULL),
-    ELossPI(NULL),
-    ELossEL(NULL),
-    ELossALL(NULL),
-    MomPI(NULL),
-    MomEL(NULL),
-    MomALL(NULL),
-    MOMvsELossEL(NULL),
-    MOMvsELossPI(NULL),
-    MOMvsELossALL(NULL),
-    WknPI(NULL),
-    WknEL(NULL),
-    WknALL(NULL),
-    WknLowPI(NULL),
-    WknLowEL(NULL),
-    WknLowALL(NULL),
-    WknHighPI(NULL),
-    WknHighEL(NULL),
-    WknHighALL(NULL),
-    AnnPI(NULL),
-    AnnEL(NULL),
-    AnnALL(NULL),
-    AnnLowPI(NULL),
-    AnnLowEL(NULL),
-    AnnLowALL(NULL),
-    AnnHighPI(NULL),
-    AnnHighEL(NULL),
-    AnnHighALL(NULL),
-    LikePI(NULL),
-    LikeEL(NULL),
-    LikeALL(NULL),
-    LikeHighPI(NULL),
-    LikeHighEL(NULL),
-    LikeHighALL(NULL),
-    LikeLowPI(NULL),
-    LikeLowEL(NULL),
-    LikeLowALL(NULL)
+    PartID(new TH1F("PartID","Particle ID of the Track",4600,-2300.,2300.)),
+    NrTRDHits(new TH1F("NrTRDHits","Nr. of TRD Hits for track",20,0.,20.)),
+    ELossPI(new TH1F("ELossPI","summed ELoss for pions",2000, 0.,200.)),
+    ELossEL(new TH1F("ELossEL","summed ELoss for electrons",2000, 0.,200.)),
+    ELossALL(new TH1F("ELossALL","summed ELoss for all except electrons",2000, 0.,200.)),
+    MomPI(new TH1F("MomPI","summed Momentum for pions",110, 0.,11.)),
+    MomEL(new TH1F("MomEL","summed Momentum for electrons",110, 0.,11.)),
+    MomALL(new TH1F("MomALL","summed Momentum for all except electrons",110, 0.,11.)),
+    MOMvsELossEL(new TH2F("MomvsElossEL","Momentum vs Eloss PI",2000, 0.,200.,110, 0.,11.)),
+    MOMvsELossPI(new TH2F("MomvsElossPI","Momentum vs Eloss EL",2000, 0.,200.,110, 0.,11.)),
+    MOMvsELossALL(new TH2F("MomvsElossALL","Momentum vs Eloss EL",2000, 0.,200.,110, 0.,11.)),
+    WknPI(new TH1F("WknPI","Wkn for pions ",10000,0.,2000.)),
+    WknEL(new TH1F("WknEL","Wkn for electrons ",10000,0.,2000.)),
+    WknALL(new TH1F("WknALL","Wkn for all particles except electrons ",10000,0.,2000.)),
+    WknLowPI(new TH1F("WknLowPI","Wkn for pions ",10000,0.,2000.)),
+    WknLowEL(new TH1F("WknLowEL","Wkn for electrons ",10000,0.,2000.)),
+    WknLowALL(new TH1F("WknLowALL","Wkn for all particles except electrons ",10000,0.,2000.)),
+    WknHighPI(new TH1F("WknHighPI","Wkn for pions ",10000,0.,2000.)),
+    WknHighEL(new TH1F("WknHighEL","Wkn for electrons ",10000,0.,2000.)),
+    WknHighALL(new TH1F("WknHighALL","Wkn for all particles except electrons ",10000,0.,2000.)),
+    AnnPI(new TH1F("AnnPI","Ann for pions ",400,-2.,2.)),
+    AnnEL(new TH1F("AnnEL","Ann for electrons ",400,-2.,2.)),
+    AnnALL(new TH1F("AnnALL","Ann for all except electrons ",400,-2.,2.)),
+    AnnLowPI(new TH1F("AnnLowPI","Ann for pions ",400,-2.,2.)),
+    AnnLowEL(new TH1F("AnnLowEL","Ann for electrons ",400,-2.,2.)),
+    AnnLowALL(new TH1F("AnnLowALL","Ann for all except electrons ",400,-2.,2.)),
+    AnnHighPI(new TH1F("AnnHighPI","Ann for pions ",400,-2.,2.)),
+    AnnHighEL(new TH1F("AnnHighEL","Ann for electrons ",400,-2.,2.)),
+    AnnHighALL(new TH1F("AnnHighALL","Ann for all except electrons ",400,-2.,2.)),
+    LikePI(new TH1F("LikePI","Likelihood for pions ",400,-2.,2.)),
+    LikeEL(new TH1F("LikeEL","Likelihood for electrons ",400,-2.,2.)),
+    LikeALL(new TH1F("LikeALL","Likelihood for all except electrons ",400,-2.,2.)),
+    LikeHighPI(new TH1F("LikeHighPI","Likelihood for pions ",400,-2.,2.)),
+    LikeHighEL(new TH1F("LikeHighEL","Likelihood for electrons ",400,-2.,2.)),
+    LikeHighALL(new TH1F("LikeHighALL","Likelihood for all except electrons ",400,-2.,2.)),
+    LikeLowPI(new TH1F("LikeLowPI","Likelihood for pions ",400,-2.,2.)),
+    LikeLowEL(new TH1F("LikeLowEL","Likelihood for electrons ",400,-2.,2.)),
+    LikeLowALL(new TH1F("LikeLowALL","Likelihood for all except electrons ",400,-2.,2.))
 {
 }
 // --------------------------------------------------------------------------
@@ -174,10 +132,6 @@ InitStatus CbmTrdTracksPidQa::Init()
          << endl;
       return kFATAL;
     }
-
-
-    PrepareHistograms();
-
 
     return kSUCCESS;
 
@@ -294,63 +248,6 @@ void CbmTrdTracksPidQa::Finish()
   WriteHistograms();
 }
 // --------------------------------------------------------------------------
-
-
-// ---- Prepare test histograms ---------------------------------------------
-
-void CbmTrdTracksPidQa::PrepareHistograms()
-{
-
-    WknPI     = new TH1F("WknPI","Wkn for pions ",10000,0.,2000.);
-    WknEL      = new TH1F("WknEL","Wkn for electrons ",10000,0.,2000.);
-    WknALL    = new TH1F("WknALL","Wkn for all particles except electrons ",10000,0.,2000.);
-    WknLowPI     = new TH1F("WknLowPI","Wkn for pions ",10000,0.,2000.);
-    WknLowEL      = new TH1F("WknLowEL","Wkn for electrons ",10000,0.,2000.);
-    WknLowALL    = new TH1F("WknLowALL","Wkn for all particles except electrons ",10000,0.,2000.);
-    WknHighPI     = new TH1F("WknHighPI","Wkn for pions ",10000,0.,2000.);
-    WknHighEL      = new TH1F("WknHighEL","Wkn for electrons ",10000,0.,2000.);
-    WknHighALL    = new TH1F("WknHighALL","Wkn for all particles except electrons ",10000,0.,2000.);
-
-
-    AnnPI    = new TH1F("AnnPI","Ann for pions ",400,-2.,2.);
-    AnnEL    = new TH1F("AnnEL","Ann for electrons ",400,-2.,2.);
-    AnnALL   = new TH1F("AnnALL","Ann for all except electrons ",400,-2.,2.);
-    AnnHighPI    = new TH1F("AnnHighPI","Ann for pions ",400,-2.,2.);
-    AnnHighEL    = new TH1F("AnnHighEL","Ann for electrons ",400,-2.,2.);
-    AnnHighALL   = new TH1F("AnnHighALL","Ann for all except electrons ",400,-2.,2.);
-    AnnLowPI    = new TH1F("AnnLowPI","Ann for pions ",400,-2.,2.);
-    AnnLowEL    = new TH1F("AnnLowEL","Ann for electrons ",400,-2.,2.);
-    AnnLowALL   = new TH1F("AnnLowALL","Ann for all except electrons ",400,-2.,2.);
-
-
-    LikePI    = new TH1F("LikePI","Likelihood for pions ",400,-2.,2.);
-    LikeEL    = new TH1F("LikeEL","Likelihood for electrons ",400,-2.,2.);
-    LikeALL   = new TH1F("LikeALL","Likelihood for all except electrons ",400,-2.,2.);
-    LikeHighPI    = new TH1F("LikeHighPI","Likelihood for pions ",400,-2.,2.);
-    LikeHighEL    = new TH1F("LikeHighEL","Likelihood for electrons ",400,-2.,2.);
-    LikeHighALL   = new TH1F("LikeHighALL","Likelihood for all except electrons ",400,-2.,2.);
-    LikeLowPI    = new TH1F("LikeLowPI","Likelihood for pions ",400,-2.,2.);
-    LikeLowEL    = new TH1F("LikeLowEL","Likelihood for electrons ",400,-2.,2.);
-    LikeLowALL   = new TH1F("LikeLowALL","Likelihood for all except electrons ",400,-2.,2.);
-
-    PartID    = new TH1F("PartID","Particle ID of the Track",4600,-2300.,2300.);
-    NrTRDHits = new TH1F("NrTRDHits","Nr. of TRD Hits for track",20,0.,20.);
-
-    ELossPI   = new TH1F("ELossPI","summed ELoss for pions",2000, 0.,200.);
-    ELossEL   = new TH1F("ELossEL","summed ELoss for electrons",2000, 0.,200.);
-    ELossALL  = new TH1F("ELossALL","summed ELoss for all except electrons",2000, 0.,200.);
-
-    MomPI   = new TH1F("MomPI","summed Momentum for pions",110, 0.,11.);
-    MomEL   = new TH1F("MomEL","summed Momentum for electrons",110, 0.,11.);
-    MomALL  = new TH1F("MomALL","summed Momentum for all except electrons",110, 0.,11.);
-
-    MOMvsELossPI   = new TH2F("MomvsElossPI","Momentum vs Eloss EL",2000, 0.,200.,110, 0.,11.);
-    MOMvsELossEL   = new TH2F("MomvsElossEL","Momentum vs Eloss PI",2000, 0.,200.,110, 0.,11.);
-    MOMvsELossALL  = new TH2F("MomvsElossALL","Momentum vs Eloss EL",2000, 0.,200.,110, 0.,11.);
-
-}
-// --------------------------------------------------------------------------
-
 
 // ---- Write test histograms ------------------------------------------------
 

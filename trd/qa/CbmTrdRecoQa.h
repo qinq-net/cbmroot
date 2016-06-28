@@ -81,9 +81,6 @@ class CbmTrdRecoQa : public FairTask
   CbmTrdModule   *fModuleInfo; //!
   CbmTrdGeoHandler* fGeoHandler; //!
 
-  /* Prepare the QA histograms */
-  void PrepareHistograms();
-
   //Int_t SecRowToGlobalRow(Int_t secRow);
 
 
