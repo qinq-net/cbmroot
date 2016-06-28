@@ -1,4 +1,4 @@
-void run_sim(Int_t nEvents = 10000)
+void run_sim(Int_t nEvents = 100)
 {
     TTree::SetMaxTreeSize(90000000000);
     TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");

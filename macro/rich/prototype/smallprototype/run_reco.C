@@ -1,4 +1,4 @@
-void run_reco(Int_t nEvents = 10000)
+void run_reco(Int_t nEvents = 100)
 {
    TTree::SetMaxTreeSize(90000000000);
 
@@ -14,7 +14,7 @@ void run_reco(Int_t nEvents = 10000)
 
 	TString mcFile = "/data/cbm/Gregor/mc.00100.root";
 	TString parFile = "/data/cbm/Gregor/param.00100.root";
-	TString recoFile ="/data/cbm/Gregor/reco.000100.root";
+	TString recoFile ="/data/cbm/Gregor/reco.00100.root";
     
     //TString parFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/param.00001.root";
     //TString recoFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/reco.00001.root";
@@ -36,9 +36,9 @@ void run_reco(Int_t nEvents = 10000)
 	if (mcFile != "") run->SetInputFile(mcFile);
 	if (recoFile != "") run->SetOutputFile(recoFile);
 
-	CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
-    mcManager->AddFile(mcFile);
-    run->AddTask(mcManager);
+	//CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
+    //mcManager->AddFile(mcFile);
+    //run->AddTask(mcManager);
 
     CbmRichDigitizer* richDigitizer = new CbmRichDigitizer();
     richDigitizer->SetNofNoiseHits(0);
@@ -55,16 +55,19 @@ void run_reco(Int_t nEvents = 10000)
 	richReco->SetFinderName("ideal");
 	run->AddTask(richReco);
 
-	 CbmMatchRecoToMC* matchRecoToMc = new CbmMatchRecoToMC();
-	run->AddTask(matchRecoToMc);
+	//CbmMatchRecoToMC* matchRecoToMc = new CbmMatchRecoToMC();
+	//run->AddTask(matchRecoToMc);
 	
     CbmRichSmallPrototypeQa* richQa = new CbmRichSmallPrototypeQa();
     richQa->SetOutputDir(std::string(resultDir));
     run->AddTask(richQa);
 
-	//CbmRichRingFitterCircle* richRing =new CbmRichRingFitterCircle();
-	//run->AddTask(richQa);
-    
+	CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
+    mcManager->AddFile(mcFile);
+    run->AddTask(mcManager);
+
+	
+	
 
 	// -----  Parameter database   --------------------------------------------
 	FairRuntimeDb* rtdb = run->GetRuntimeDb();

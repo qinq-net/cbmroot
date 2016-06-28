@@ -78,6 +78,7 @@ const Double_t wallwidth=0.3;
 const Double_t pmtsize =4.85;			//PMT
 const Double_t pmtpixelsize =0.6;
 const Double_t pmtgap =0.1;
+const Double_t pmtpmtdis=4;
 
 const Double_t eleclength=10;			//Electronic
 const Double_t elecwidth=3*pmtsize;
@@ -89,7 +90,7 @@ const Double_t lensepmtdistance =3;
 const Double_t lensebeschichtung =0.1;
 
 const Double_t absorberthickness =0.1;
-const Double_t absorberradius =1.8;
+const Double_t absorberradius =1.6;
 
 const Double_t sensplanesize=40;
 const Double_t sensplaneboxdis=1;
@@ -101,8 +102,8 @@ TGeoRotation *rotBox= new TGeoRotation("Boxrotation", 0., 0., 0.);
 TGeoTranslation *trBox= new TGeoTranslation(0., 0., 0.);			//Gasbox/Box Translation
 TGeoTranslation *trSensePlane= new TGeoTranslation(0.,0., testboxlength+ sensplaneboxdis);
 
-TGeoTranslation *trPMTup= new TGeoTranslation(0., pmtsize+0.5, -(lenseradius-centerthickness-lensepmtdistance));		//PMTContainer Translations
-TGeoTranslation *trPMTdown= new TGeoTranslation(0., -(pmtsize+0.5), -(lenseradius-centerthickness-lensepmtdistance));
+TGeoTranslation *trPMTup= new TGeoTranslation(0., pmtsize+pmtpmtdis/2, -(lenseradius-centerthickness-lensepmtdistance));		//PMTContainer Translations
+TGeoTranslation *trPMTdown= new TGeoTranslation(0., -(pmtsize+pmtpmtdis/2), -(lenseradius-centerthickness-lensepmtdistance));
 
 
 TGeoTranslation *tr2= new TGeoTranslation( 	-(pmtsize + pmtgap)	,  pmtsize/2 + pmtgap/2	, 0.);		//PMT Translations
@@ -228,7 +229,7 @@ gGeoMan->SetTopVisible();
 box->SetVisibility(false);
 
 
-box->Draw();
+top->Draw();
 
 
  TFile* geoFile = new TFile(geoFileName, "RECREATE");
