@@ -479,51 +479,59 @@ void CbmRichGeoOpt::HitsAndPointsWithRef(){
 void CbmRichGeoOpt::RingParameters()
 {
   Int_t nofRings = fRichRings->GetEntriesFast();
-  for (Int_t iR = 0; iR < nofRings; iR++){
-    CbmRichRing *ring = (CbmRichRing*) fRichRings->At(iR);  if (NULL == ring) continue;
-    CbmTrackMatchNew* ringMatch = (CbmTrackMatchNew*) fRichRingMatches->At(iR); 
-    if (NULL == ringMatch){ 
-      // H_NofRings->SetBinContent(8,H_NofRings->GetBinCenter(8)+1);
-      continue;}
+  for (Int_t iR = 0; iR < nofRings; iR++)
+	{
+	    CbmRichRing *ring = (CbmRichRing*) fRichRings->At(iR);  if (NULL == ring) continue;
+	    CbmTrackMatchNew* ringMatch = (CbmTrackMatchNew*) fRichRingMatches->At(iR); 
+	    if (NULL == ringMatch)
+			{ 
+	      		// H_NofRings->SetBinContent(8,H_NofRings->GetBinCenter(8)+1);
+	     		continue;
+			}
     
-    Int_t mcTrackId = ringMatch->GetMatchedLink().GetIndex();  
-    if (mcTrackId < 0){
-      //H_NofRings->SetBinContent(8,H_NofRings->GetBinCenter(8)+1); 
-      continue;}//{ continue;}
-    CbmMCTrack* mcTrack = (CbmMCTrack*)fMcTracks->At(mcTrackId);  if (!mcTrack){
-      //H_NofRings->SetBinContent(8,H_NofRings->GetBinCenter(8)+1); 
-      continue;}// continue;
+    	Int_t mcTrackId = ringMatch->GetMatchedLink().GetIndex();  
+    	if (mcTrackId < 0){
+   	   	//H_NofRings->SetBinContent(8,H_NofRings->GetBinCenter(8)+1); 
+      	continue;}//{ continue;}
+    	CbmMCTrack* mcTrack = (CbmMCTrack*)fMcTracks->At(mcTrackId);  if (!mcTrack){
+    	  //H_NofRings->SetBinContent(8,H_NofRings->GetBinCenter(8)+1); 
+    	 continue;}// continue;
     
-    Int_t motherId = mcTrack->GetMotherId();
-    Int_t pdg = TMath::Abs(mcTrack->GetPdgCode());
-    if (pdg != 11 || motherId != -1){ 
-      //H_NofRings->SetBinContent(8,H_NofRings->GetBinCenter(8)+1); 
-      continue;
-    }// continue; // only primary electrons
+    	Int_t motherId = mcTrack->GetMotherId();
+    	Int_t pdg = TMath::Abs(mcTrack->GetPdgCode());
+    	if (pdg != 11 || motherId != -1)
+			{ 
+	      		//H_NofRings->SetBinContent(8,H_NofRings->GetBinCenter(8)+1); 
+      			continue;
+    		}// continue; // only primary electrons
     
-    Double_t momentum = mcTrack->GetP();
-    Double_t pt = mcTrack->GetPt();
-    Double_t rapidity = mcTrack->GetRapidity();
+    	Double_t momentum = mcTrack->GetP();
+    	Double_t pt = mcTrack->GetPt();
+    	Double_t rapidity = mcTrack->GetRapidity();
     
-    TVector3 mom; mcTrack->GetMomentum(mom);  
-    Double_t theta=mom.Theta()* 180 / TMath::Pi();
-    H_MomRing->Fill(momentum);
-    H_Mom_Theta_Rec->Fill(momentum, theta);
-    H_Pt_Theta_Rec->Fill(pt, theta);
+    	TVector3 mom; mcTrack->GetMomentum(mom);  
+    	Double_t theta=mom.Theta()* 180 / TMath::Pi();
+    	H_MomRing->Fill(momentum);
+    	H_Mom_Theta_Rec->Fill(momentum, theta);
+    	H_Pt_Theta_Rec->Fill(pt, theta);
 
-    // Double_t theta = mcTrack->Theta();
-    // cout<<" **************************** "<<theta<<endl;
+    	// Double_t theta = mcTrack->Theta();
+    	// cout<<" **************************** "<<theta<<endl;
  
-    H_NofRings->Fill(nofRings);
-    if (ring->GetNofHits() >= fMinNofHits){
-      H_Mom_Theta_Acc->Fill(momentum, theta);
-      H_Pt_Theta_Acc->Fill(pt, theta);
-      H_acc_mom_el->Fill(momentum);
-      if(theta<=25){H_acc_mom_el_RegularTheta->Fill(momentum);}
+    	H_NofRings->Fill(nofRings);
+    	if (ring->GetNofHits() >= fMinNofHits)
+			{
+      			H_Mom_Theta_Acc->Fill(momentum, theta);
+      			H_Pt_Theta_Acc->Fill(pt, theta);
+      			H_acc_mom_el->Fill(momentum);
+      			if(theta<=25)
+					{
+						H_acc_mom_el_RegularTheta->Fill(momentum);
+					}
       
-      H_acc_pty_el->Fill(rapidity, pt);
+      			H_acc_pty_el->Fill(rapidity, pt);
       
-    }
+    		}
     
     ///////////////////////////////////
     float radius=ring->GetRadius();

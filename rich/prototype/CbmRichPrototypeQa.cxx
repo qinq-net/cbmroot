@@ -98,12 +98,12 @@ CbmRichPrototypeQa::~CbmRichPrototypeQa()
 
 InitStatus CbmRichPrototypeQa::Init()
 {
-   cout << "CbmRichPrototypeQa::Init"<<endl;
-   FairRootManager* ioman = FairRootManager::Instance();
-   if (NULL == ioman) { Fatal("CbmRichPrototypeQa::Init","RootManager not instantised!"); }
+  	 cout << "CbmRichPrototypeQa::Init"<<endl;
+   	FairRootManager* ioman = FairRootManager::Instance();
+   	if (NULL == ioman) { Fatal("CbmRichPrototypeQa::Init","RootManager not instantised!"); }
 
-   fRichHits = (TClonesArray*) ioman->GetObject("RichHit");
-   if ( NULL == fRichHits) { Fatal("CbmRichPrototypeQa::Init","No RichHit array!"); }
+   	fRichHits = (TClonesArray*) ioman->GetObject("RichHit");
+   	if ( NULL == fRichHits) { Fatal("CbmRichPrototypeQa::Init","No RichHit array!"); }
 
 	fRichRings = (TClonesArray*) ioman->GetObject("RichRing");
 	if ( NULL == fRichRings) { Fatal("CbmRichPrototypeQa::Init","No RichRing array!"); }
@@ -117,10 +117,10 @@ InitStatus CbmRichPrototypeQa::Init()
 	fRichRingMatches = (TClonesArray*) ioman->GetObject("RichRingMatch");
 	if ( NULL == fRichRingMatches) { Fatal("CbmRichPrototypeQa::Init","No RichRingMatch array!"); }
 
-   fCopFit = new CbmRichRingFitterCOP();
-   fTauFit = new CbmRichRingFitterEllipseTau();
+  	 fCopFit = new CbmRichRingFitterCOP();
+   	fTauFit = new CbmRichRingFitterEllipseTau();
 
-   InitHistograms();
+   	InitHistograms();
 
 	return kSUCCESS;
 }
@@ -135,28 +135,28 @@ void CbmRichPrototypeQa::Exec(
 
 void CbmRichPrototypeQa::InitHistograms()
 {
-   double xMin = -15.;
-   double xMax = 15.;
-   int nBinsX = 60;
-   double yMin = 20.;
-   double yMax = 50.;
-   int nBinsY = 60;
+   	double xMin = -15.;
+   	double xMax = 15.;
+   	int nBinsX = 60;
+   	double yMin = 20.;
+   	double yMax = 50.;
+   	int nBinsY = 60;
 
-   fhHitsXY.resize(2);
-   fhPointsXY.resize(2);
-   fhNofPhotonsPerHit.resize(2);
-   fhNofPointsEv.resize(2);
-   fhNofHitsEv.resize(2);
-   fhNofHitsRing.resize(2);
-   fhAaxis.resize(2);
-   fhBaxis.resize(2);
-   fhBoverA.resize(2);
-   fhXcYcCircle.resize(2);
-   fhRadius.resize(2);
-   fhDR.resize(2);
+   	fhHitsXY.resize(2);
+   	fhPointsXY.resize(2);
+   	fhNofPhotonsPerHit.resize(2);
+   	fhNofPointsEv.resize(2);
+   	fhNofHitsEv.resize(2);
+   	fhNofHitsRing.resize(2);
+   	fhAaxis.resize(2);
+   	fhBaxis.resize(2);
+   	fhBoverA.resize(2);
+   	fhXcYcCircle.resize(2);
+   	fhRadius.resize(2);
+   	fhDR.resize(2);
 
-   string s;
-   for (int i = 0; i < 2; i++){
+  	 string s;
+   	for (int i = 0; i < 2; i++){
       if (i == 0) s = "electron";
       if (i == 1) s = "pion";
 

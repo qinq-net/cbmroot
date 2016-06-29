@@ -84,7 +84,10 @@ InitStatus CbmRichSmallPrototypeQa::Init()
 
 	fRichRings = (TClonesArray*) ioman->GetObject("RichRing");
     if ( NULL == fRichRings) { Fatal("CbmRichSmallPrototypeQa::Init","No RichRings!"); }
-
+	
+	fRefPlanePoints = (TClonesArray*) ioman->GetObject("RefPlanePoint");
+    if ( NULL == fRefPlanePoints) { Fatal("CbmRichSmallPrototypeQa::Init","No RefPlanePoints!"); }
+	
     InitHistograms();
 
 	
@@ -106,6 +109,7 @@ void CbmRichSmallPrototypeQa::Exec(
 	Int_t nofRichDigis = fRichDigis->GetEntriesFast();
 	Int_t nofRichHits = fRichHits->GetEntriesFast();	
 	Int_t nofRichRings = fRichRings->GetEntriesFast();
+	Int_t nofRefPlanePoints = fRefPlanePoints->GetEntriesFast();
 
 
 //	fHM->H1("fh_nof_mc_tracks")->Fill(nofMCTracks);
@@ -190,18 +194,15 @@ void CbmRichSmallPrototypeQa::Exec(
 		
 	}
 	
-	for(int i=0; i<nofRichHits; i++)
-	{
-		CbmRichHit* richhits= (CbmRichHit*) (fRichHits->At(i));
-		Double_t xrichh = richhits->GetX();
-		Double_t yrichh = richhits->GetY();
-		fHM->H2("fh_dis_rich_hits")->Fill(xrichh, yrichh);
 		
-	}
+
+	
 
 	
 	for( int i=0; i<nofMCTracks; i++)
 	{
+	
+
 		CbmMCTrack* mctrack= (CbmMCTrack*) (fMCTracks->At(i));
 		Double_t pdg = mctrack->GetPdgCode();
 		if (pdg == 2212)
@@ -214,13 +215,38 @@ void CbmRichSmallPrototypeQa::Exec(
 
 	
 	}
+
 	
 	for(int i=0; i<nofRichRings; i++)
 	{
-		CbmRichRing* ringradius= (CbmRichRing*) (fRichHits->At(i));
-		Double_t radius	= ringradius->GetRadius();
+		CbmRichRing* ring= (CbmRichRing*) (fRichRings->At(i));
+
+		Double_t CentX=ring->GetCenterX();
+    	Double_t CentY=ring->GetCenterY();
+		Double_t radius=ring->GetRadius();
+
+		
+
+		for(int j=0; j<nofRichHits; j++)
+		{
+			CbmRichHit* richhits= (CbmRichHit*) (fRichHits->At(j));
+			Double_t xrichh = richhits->GetX();
+			Double_t yrichh = richhits->GetY();
+			Double_t dR=radius-TMath::Sqrt( (CentX-xrichh)*(CentX-xrichh) + (CentY-yrichh)*(CentY-yrichh) );
+			fHM->H2("fh_dis_rich_hits")->Fill(xrichh, yrichh);
+			fHM->H1("fh_dR")->Fill(dR);
+		
+		}
 		fHM->H1("fh_rich_ring_radius")->Fill(radius);	
 	}
+	
+	for (Int_t i=0; i<nofRefPlanePoints; i++)
+	{
+		 CbmRichPoint* pRefPlane = (CbmRichPoint*) (fRefPlanePoints->At(i));
+         Double_t xsec= pRefPlane->GetX();
+         Double_t ysec= pRefPlane->GetY();
+		 fHM->H2("fh_dis_sec")->Fill(xsec,ysec);
+    }
 }	
 
 void CbmRichSmallPrototypeQa::InitHistograms()
@@ -251,12 +277,16 @@ void CbmRichSmallPrototypeQa::InitHistograms()
 	fHM->Create1<TH1D>("fh_nof_rich_hits", "fh_nof_rich_hits;Nof Rich hits;Yield", 300, 0., 350.);
 	fHM->Create1<TH1D>("fh_nof_rich_rings", "fh_nof_rich_rings;Nof Rich rings;Yield", 5, -0.5, 4.5);
 
-	fHM->Create1<TH1D>("fh_rich_ring_radius","fh_rich_ring_radius; Ring Radius; Yield", 6, -0.5, 5.5);
+	fHM->Create1<TH1D>("fh_rich_ring_radius","fh_rich_ring_radius; Ring Radius; Yield", 10, -0.5, 9.5);
 	
 	fHM->Create2<TH2D>("fh_dis_rich_points", "fh_dis_rich_points; x; y", 300, -7., 7., 300, -7., 7.);
 	fHM->Create2<TH2D>("fh_dis_rich_hits", "fh_dis_rich_hits; x; y", 50, -10., 10., 50, -10., 10.);
 
 	fHM->Create2<TH2D>("fh_proton_startxy","fh_proton_startxy; x; y;", 100, -5.,5, 100, -5., 5.);
+
+	fHM->Create1<TH1D>("fh_dR","fh_dR; dR; Yield", 100, -1., 1.);
+
+	fHM->Create2<TH2D>("fh_dis_sec", "fh_dis_sec; x; y;", 1000, -20., 20., 1000, -20., 20.);
 }
 
 void CbmRichSmallPrototypeQa::DrawHist()
@@ -360,8 +390,20 @@ void CbmRichSmallPrototypeQa::DrawHist()
 		DrawH1(fHM->H1("fh_nof_rich_rings"));
 		fHM->H1("fh_nof_rich_rings")->SetTitle("Nof Rich Rings");
 		c->cd(2);
-		DrawH1(fHM->H1("fh_rich_ring_radius"));
+		DrawH1andFitGauss(fHM->H1("fh_rich_ring_radius"));
 		fHM->H1("fh_rich_ring_radius")->SetTitle("Ring Radius");	
+	}
+	
+	{
+		TCanvas* c=CreateCanvas("fh_dR", "fh_dR", 400, 400);
+		DrawH1andFitGauss(fHM->H1("fh_dR"));
+		fHM->H1("fh_dR")->SetTitle("dR");
+	}
+	
+	{
+		TCanvas* c=CreateCanvas("fh_dis_sec", "fh_dis_sec", 400, 400);
+		DrawH2(fHM->H2("fh_dis_sec"));
+		fHM->H2("fh_dis_sec")->SetTitle("Secondaries");
 	}
 }
 

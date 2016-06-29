@@ -110,6 +110,8 @@ private:
 
 	TClonesArray* fRichRings;
 
+	TClonesArray* fRefPlanePoints;
+
 
 	TClonesArray* fTRDPoints;
 
