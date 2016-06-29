@@ -42,7 +42,7 @@ std::map<TString, TGeoMedium*> CbmRich::fFixedMedia;
 CbmRich::CbmRich() :
 FairDetector("RICH", kTRUE, kRICH),
 fPosIndex(0),
-fRegisterPhotonsOnSensitivePlane(true),
+fRegisterPhotonsOnSensitivePlane(false),
 fRichPoints(new TClonesArray("CbmRichPoint")),
 fRichRefPlanePoints(new TClonesArray("CbmRichPoint")),
 fRichMirrorPoints(new TClonesArray("CbmRichPoint")),
@@ -113,8 +113,8 @@ Bool_t CbmRich::CheckIfSensitive(std::string name)
 {
     //return true;
     TString volName = name;
-    if ( volName.Contains("pmt_pixel") || volName.Contains("sens_plane")) return kTRUE;    
-	// mirrors
+    if ( volName.Contains("pmt_pixel") || volName.Contains("sens_plane")) return kTRUE;
+    // mirrors
     if( volName.Contains("mirror_tile_type")) return kTRUE;
     return kFALSE;
 }
@@ -127,53 +127,72 @@ Bool_t CbmRich::ProcessHits(
     Int_t iVol = vol->getMCid();
     TString volName = TString(vol->GetName());
     
-    if (volName.Contains("pmt_pixel"/* || "sens_plane"*/))
-		{
-        	if (gMC->IsTrackEntering())
-				{
-            		//  cout << gGeoManager->GetPath() << endl;
-            		TParticle* part = gMC->GetStack()->GetCurrentTrack();
-            		Double_t charge = part->GetPDG()->Charge() / 3. ;
-            		Int_t trackID = gMC->GetStack()->GetCurrentTrackNumber();
-            		Double_t time = gMC->TrackTime() * 1.0e09;
-            		Double_t length = gMC->TrackLength();
-            		Double_t eLoss = gMC->Edep();
+    if (volName.Contains("pmt_pixel")){
+        if (gMC->IsTrackEntering()){
+            //  cout << gGeoManager->GetPath() << endl;
+            TParticle* part = gMC->GetStack()->GetCurrentTrack();
+            Double_t charge = part->GetPDG()->Charge() / 3. ;
+            Int_t trackID = gMC->GetStack()->GetCurrentTrackNumber();
+            Double_t time = gMC->TrackTime() * 1.0e09;
+            Double_t length = gMC->TrackLength();
+            Double_t eLoss = gMC->Edep();
             
-            		TLorentzVector tPos, tMom;
-            		gMC->TrackPosition(tPos);
-            		gMC->TrackMomentum(tMom);
+            TLorentzVector tPos, tMom;
+            gMC->TrackPosition(tPos);
+            gMC->TrackMomentum(tMom);
             
-            		if ( pdgCode == 50000050) 
-						{ // Cherenkovs only
-                			AddHit(trackID, iVol , TVector3(tPos.X(), tPos.Y(), tPos.Z()), TVector3(tMom.Px(), tMom.Py(), tMom.Pz()), time, length, eLoss);
+            if ( pdgCode == 50000050) { // Cherenkovs only
+                AddHit(trackID, iVol , TVector3(tPos.X(), tPos.Y(), tPos.Z()), TVector3(tMom.Px(), tMom.Py(), tMom.Pz()), time, length, eLoss);
                 
-                			// Increment number of RichPoints for this track
-                			CbmStack* stack = (CbmStack*) gMC->GetStack();
-                			stack->AddPoint(kRICH);
-                			return kTRUE;
-            			} 	
-					else 
-						{
-                			if (charge == 0.) 
-								{
-                    				return kFALSE; // no neutrals
-                				} 
-							else 
-								{ // charged particles
-                    				AddHit(trackID, iVol, TVector3(tPos.X(), tPos.Y(), tPos.Z()), TVector3(tMom.Px(), tMom.Py(), tMom.Pz()), time, length, eLoss);
+                // Increment number of RichPoints for this track
+                CbmStack* stack = (CbmStack*) gMC->GetStack();
+                stack->AddPoint(kRICH);
+                return kTRUE;
+            } else {
+                if (charge == 0.) {
+                    return kFALSE; // no neutrals
+                } else { // charged particles
+                    AddHit(trackID, iVol, TVector3(tPos.X(), tPos.Y(), tPos.Z()), TVector3(tMom.Px(), tMom.Py(), tMom.Pz()), time, length, eLoss);
                     
-                    				// Increment number of RichPoints for this track
-                    				CbmStack* stack = (CbmStack*) gMC->GetStack();
-                    				stack->AddPoint(kRICH);
-                    				return kTRUE;
-                				}
-            			}
-        		}
-    	}	
-
-	
-
-   
+                    // Increment number of RichPoints for this track
+                    CbmStack* stack = (CbmStack*) gMC->GetStack();
+                    stack->AddPoint(kRICH);
+                    return kTRUE;
+                }
+            }
+        }
+    }
+    
+    // Treat imaginary plane in front of the mirrors: Only charged particles at entrance
+    if (volName.Contains("sens_plane")) {
+        //  cout << volName << endl;
+        // Collecting points of tracks and imaginary plane intersection
+        if ( gMC->IsTrackEntering() ) {
+            TParticle* part    = gMC->GetStack()->GetCurrentTrack();
+            Double_t charge = part->GetPDG()->Charge() / 3. ;
+            
+            if ( (fRegisterPhotonsOnSensitivePlane && pdgCode == 50000050) || (!fRegisterPhotonsOnSensitivePlane && charge != 0.) ) {
+                Int_t trackID = gMC->GetStack()->GetCurrentTrackNumber();
+                Double_t time = gMC->TrackTime() * 1.0e09;
+                Double_t length = gMC->TrackLength();
+                Double_t eLoss = gMC->Edep();
+                TLorentzVector tPos, tMom;
+                
+                gMC->TrackPosition(tPos);
+                gMC->TrackMomentum(tMom);
+                
+                AddRefPlaneHit(trackID, iVol, TVector3(tPos.X(), tPos.Y(), tPos.Z()), TVector3(tMom.Px(), tMom.Py(), tMom.Pz()), time, length, eLoss);
+                
+                //Increment number of RefPlanePoints for this track
+                CbmStack* stack = (CbmStack*) gMC->GetStack();
+                stack->AddPoint(kREF);
+                return kTRUE;
+            } else {
+                return kFALSE;
+            }
+        }
+    }
+    
     // Treat mirror points
     Bool_t isMirror = ( volName.Contains("mirror_tile_type"));
     if (isMirror){
