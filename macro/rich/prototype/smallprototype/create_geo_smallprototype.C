@@ -78,7 +78,7 @@ const Double_t wallwidth=0.3;
 const Double_t pmtsize =4.85;			//PMT
 const Double_t pmtpixelsize =0.6;
 const Double_t pmtgap =0.1;
-const Double_t pmtpmtdis=4;
+const Double_t pmtpmtdis=3.5;
 
 const Double_t eleclength=10;			//Electronic
 const Double_t elecwidth=3*pmtsize;
@@ -100,7 +100,7 @@ const Double_t sensplaneboxdis=1;
 TGeoRotation *rotBox= new TGeoRotation("Boxrotation", 0., 0., 0.);
 
 TGeoTranslation *trBox= new TGeoTranslation(0., 0., 0.);			//Gasbox/Box Translation
-TGeoTranslation *trSensePlane= new TGeoTranslation(0.,0., testboxlength+ sensplaneboxdis);
+TGeoTranslation *trsensplane= new TGeoTranslation(0.,0., testboxlength+ sensplaneboxdis);
 
 TGeoTranslation *trPMTup= new TGeoTranslation(0., pmtsize+pmtpmtdis/2, -(lenseradius-centerthickness-lensepmtdistance));		//PMTContainer Translations
 TGeoTranslation *trPMTdown= new TGeoTranslation(0., -(pmtsize+pmtpmtdis/2), -(lenseradius-centerthickness-lensepmtdistance));
@@ -172,7 +172,7 @@ TGeoVolume *complensecoating= new TGeoVolume("Complensecoating", lensecoating, m
 TGeoVolume *absorber= gGeoMan->MakeTube("Absorber", medAl, 0., absorberradius, absorberthickness/2);
 
 // Sensitive plane behind box
-TGeoVolume *sensplane= gGeoMan->MakeBox("SensPlane", medCsI, sensplanesize/2 , sensplanesize/2  ,0.1);
+TGeoVolume *sensplane= gGeoMan->MakeBox("sens_plane", medCsI, sensplanesize/2 , sensplanesize/2  ,0.1);
 
 complensecoating->SetLineColor(kRed);
 compendlense->SetLineColor(kBlue);
@@ -183,7 +183,7 @@ compendlense->SetLineColor(kBlue);
 
 //Positioning
 top->AddNode(box, 1, trBox);
-top->AddNode(sensplane, 1, trSensePlane);
+top->AddNode(sensplane, 1, trsensplane);
 
 box->AddNode(gas, 1, rotBox);
 
@@ -229,7 +229,7 @@ gGeoMan->SetTopVisible();
 box->SetVisibility(false);
 
 
-top->Draw();
+top->Draw("ogl");
 
 
  TFile* geoFile = new TFile(geoFileName, "RECREATE");
