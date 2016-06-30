@@ -131,6 +131,41 @@
 #include <iostream>
 #include "TGeoManager.h"
 
+#include "TGeoTube.h"
+#include "TGeoPara.h"
+#include "TGeoCone.h"
+#include "TGeoTrd2.h"
+#include "TGeoCompositeShape.h"
+
+// forward declarations
+Int_t CreateSensors();
+Int_t CreateSectors();
+Int_t CreateLadders();
+TGeoVolume* ConstructModule(const char* name,
+			    TGeoVolume* sector,
+			    Double_t cableLength);
+TGeoVolume* ConstructHalfLadder(const TString& name,
+				Int_t nSectors,
+				Int_t* sectorTypes,
+				char align);
+TGeoVolume* ConstructLadder(Int_t LadderIndex,
+			    TGeoVolume* halfLadderU,
+			    TGeoVolume* halfLadderD,
+			    Double_t gapY,
+			    Double_t shiftZ);
+TGeoVolume* ConstructUnit(Int_t iSide, 
+                          Int_t iUnit, 
+                          Int_t nLadders,
+                          Int_t* ladderTypes,
+                          Int_t iStation);
+void CheckVolume(TGeoVolume* volume);
+void CheckVolume(TGeoVolume* volume, fstream& file);
+Double_t BeamPipeRadius(Double_t z);
+TGeoVolume* ConstructFrameElement(const TString& name, TGeoVolume* frameBoxVol, Double_t x);
+TGeoVolume* ConstructSmallCone(Double_t coneDz);
+TGeoVolume* ConstructBigCone(Double_t coneDz);
+
+
 // -------------   Steering variables       -----------------------------------
 
 // ---> Horizontal width of sensors [cm]
@@ -446,7 +481,7 @@ void create_stsgeo_v16g(const char* geoTag="v16g")
   cout << "===> Creating stations...." << endl;
   infoFile << endl << "Stations: ";
   Int_t angle = 0;
-  Int_t nLadders = 0;
+  nLadders = 0;
   Int_t ladderTypes[16];
   TGeoTranslation* statTrans = NULL;
 
@@ -734,7 +769,7 @@ void create_stsgeo_v16g(const char* geoTag="v16g")
   TString geoFileName_ = "sts_";
   geoFileName_ = geoFileName_ + geoTag + "_geo.root";
 
-  TFile* geoFile = new TFile(geoFileName_, "RECREATE");
+  geoFile = new TFile(geoFileName_, "RECREATE");
   gGeoMan->Write();  // use this is you want GeoManager format in the output
   geoFile->Close();
 
@@ -780,7 +815,7 @@ Int_t CreateMedia() {
   Double_t density = 0.;
 
   // --- Material air
-  density = 1.205e-3.;  // [g/cm^3]
+  density = 1.205e-3;  // [g/cm^3]
   TGeoMixture* matAir = new TGeoMixture("sts_air", 3, density);
   matAir->AddElement(14.0067, 7, 0.755);      // Nitrogen
   matAir->AddElement(15.999,  8, 0.231);      // Oxygen
@@ -1204,7 +1239,7 @@ TGeoVolume* ConstructModule(const char* name,
     TGeoNode* sensor = sector->GetNode(iSensor);
 
     // --- Calculate position of sensor in module
-    Double_t* xSensTrans = sensor->GetMatrix()->GetTranslation();
+    const Double_t* xSensTrans = sensor->GetMatrix()->GetTranslation();
     Double_t sensorXpos = 0.;
     Double_t sensorYpos = sectorYpos + xSensTrans[1];
     Double_t sensorZpos = 0.;
@@ -1295,8 +1330,8 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
 			      sectorTypes[iSector]);
     TGeoVolume* sector = gGeoMan->GetVolume(sectorName);
     if ( ! sector )
-      Fatal("ConstructHalfLadder", Form("Volume %s not found", sectorName));
-    TGeoBBox* box = sector->GetShape();
+      Fatal("ConstructHalfLadder", Form("Volume %s not found", sectorName.Data()));
+    TGeoBBox* box = (TGeoBBox*) sector->GetShape();
     // --- Ladder x size equals largest sector x size
     ladderX = TMath::Max(ladderX, 2. * box->GetDX());
     // --- Ladder y size is sum of sector ysizes
@@ -1699,7 +1734,7 @@ void CheckVolume(TGeoVolume* volume) {
 	   << setw(6) << 2. * shape->GetDY() << " x " 
 	   << setw(6) << 2. * shape->GetDZ() << ", position ( ";
       TGeoMatrix* matrix = node->GetMatrix();
-      Double_t* pos = matrix->GetTranslation();
+      const Double_t* pos = matrix->GetTranslation();
       cout << setfill(' ');
       cout << fixed << setw(8) << pos[0] << ", " 
 	   << setw(8) << pos[1] << ", "
@@ -1759,6 +1794,8 @@ TGeoVolume* ConstructFrameElement(const TString& name, TGeoVolume* frameBoxVol, 
 	// --- Material of the frames
 	TGeoMedium* framesMaterial = gGeoMan->GetMedium("carbon");
 
+        TGeoBBox* frameVertPillarShp;
+	
 	Double_t t = gkFrameThickness/2.;
 
 	// --- Main vertical pillars
@@ -1770,9 +1807,9 @@ TGeoVolume* ConstructFrameElement(const TString& name, TGeoVolume* frameBoxVol, 
 
         if (gkCylindricalFrames)
 	  //          TGeoBBox* frameVertPillarShp = new TGeoTube(name + "_vertpillar_shape", 0, t, gkFrameStep/2.);  // circle crossection, along z
-          TGeoBBox* frameVertPillarShp = new TGeoTube(name + "_vertpillar_shape", gkCylinderDiaInner/2., gkCylinderDiaOuter/2., gkFrameStep/2.);  // circle crossection, along z
+          frameVertPillarShp = new TGeoTube(name + "_vertpillar_shape", gkCylinderDiaInner/2., gkCylinderDiaOuter/2., gkFrameStep/2.);  // circle crossection, along z
         else
-          TGeoBBox* frameVertPillarShp = new TGeoBBox(name + "_vertpillar_shape", t, t, gkFrameStep/2.);  // square crossection, along z
+          frameVertPillarShp = new TGeoBBox(name + "_vertpillar_shape", t, t, gkFrameStep/2.);  // square crossection, along z
 	TGeoVolume* frameVertPillarVol = new TGeoVolume(name + "_vertpillar", frameVertPillarShp, framesMaterial);
 	frameVertPillarVol->SetLineColor(kGreen);
 
