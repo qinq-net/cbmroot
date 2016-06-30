@@ -134,28 +134,31 @@
 #include "TGeoCompositeShape.h"
 
 // forward declarations
-Double_t BeamPipeRadius(Double_t z);
-void CheckVolume(TGeoVolume* volume);
-void CheckVolume(TGeoVolume* volume, fstream& file);
 Int_t CreateSensors();
 Int_t CreateSectors();
 Int_t CreateLadders();
-TGeoVolume* ConstructStation(Int_t iStation, 
-                             Int_t nLadders,
-                             Int_t* ladderTypes, 
-                             Double_t rHole);
+TGeoVolume* ConstructModule(const char* name,
+			    TGeoVolume* sector,
+			    Double_t cableLength);
+TGeoVolume* ConstructHalfLadder(const TString& name,
+				Int_t nSectors,
+				Int_t* sectorTypes,
+				char align);
 TGeoVolume* ConstructLadder(Int_t LadderIndex,
 			     TGeoVolume* halfLadderU,
 			     TGeoVolume* halfLadderD,
 			     Double_t gapY,
                              Double_t shiftZ);
-TGeoVolume* ConstructHalfLadder(const TString& name,
-				Int_t nSectors,
-				Int_t* sectorTypes,
-				char align);
+TGeoVolume* ConstructStation(Int_t iStation, 
+                             Int_t nLadders,
+                             Int_t* ladderTypes, 
+                             Double_t rHole);
+void CheckVolume(TGeoVolume* volume);
+void CheckVolume(TGeoVolume* volume, fstream& file);
+Double_t BeamPipeRadius(Double_t z);
 TGeoVolume* ConstructFrameElement(const TString& name, TGeoVolume* frameBoxVol, Double_t x);
-TGeoVolume* ConstructBigCone(Double_t coneDz);
 TGeoVolume* ConstructSmallCone(Double_t coneDz);
+TGeoVolume* ConstructBigCone(Double_t coneDz);
 
 // -------------   Steering variables       -----------------------------------
 
