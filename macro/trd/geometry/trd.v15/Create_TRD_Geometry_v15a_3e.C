@@ -414,7 +414,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType);
 void create_detector_layers(Int_t layer);
 void create_xtru_supports();
 void create_box_supports();
-void add_trd_labels(TGeoVolume* trdbox1, TGeoVolume* trdbox2, TGeoVolume* trdbox3);
+void add_trd_labels(TGeoVolume*, TGeoVolume*, TGeoVolume*);
 void create_mag_field_vector();
 void dump_info_file();
 void dump_digi_file();
@@ -511,7 +511,7 @@ void dump_digi_file()
                                     DetectorSizeX[1] - 2 * FrameWidth[1] };
   const Int_t NofSectors = 3;
   const Int_t NofPadsInRow[2]  = { 80, 128 };  // numer of pads in rows
-  Double_t nrow = 0;   // number of rows in module
+  Int_t nrow = 0;   // number of rows in module
 
   const Double_t PadHeightInSector[NofModuleTypes][NofSectors] =  // pad height
         { {  1.50,  1.50,  1.50 },   // module type 1 -  1.01 mm2
@@ -721,20 +721,20 @@ void dump_info_file()
 
   fprintf(ifile,"# envelope\n");
   // Show extension of TRD
-  fprintf(ifile,"%4d cm   start of TRD (z)\n", z_first_layer);
-  fprintf(ifile,"%4d cm   end   of TRD (z)\n", z_last_layer + LayerThickness);
+  fprintf(ifile,"%4f cm   start of TRD (z)\n", z_first_layer);
+  fprintf(ifile,"%4f cm   end   of TRD (z)\n", z_last_layer + LayerThickness);
   fprintf(ifile,"\n");
 
   // Layer thickness
   fprintf(ifile,"# thickness\n");
-  fprintf(ifile,"%4d cm   per single layer (z)\n", LayerThickness);
+  fprintf(ifile,"%4f cm   per single layer (z)\n", LayerThickness);
   fprintf(ifile,"\n");
 
   // Show extra gaps
   fprintf(ifile,"# extra gaps\n ");
   for (Int_t iLayer = 0; iLayer < MaxLayers; iLayer++)
     if (ShowLayer[iLayer])
-      fprintf(ifile,"%3d ", LayerOffset[iLayer]);
+      fprintf(ifile,"%3f ", LayerOffset[iLayer]);
   fprintf(ifile,"   extra gaps in z (cm)\n");
   fprintf(ifile,"\n");
 
@@ -750,24 +750,34 @@ void dump_info_file()
   fprintf(ifile,"# dimensions in x\n");
   for (Int_t iLayer = 0; iLayer < MaxLayers; iLayer++)
     if (ShowLayer[iLayer])
+    {
       if (PlaneId[iLayer] < 5)
-        fprintf(ifile,"%5d cm to %5d cm x-dimension of layer %2d\n", -3.5 * DetectorSizeX[1], 3.5 * DetectorSizeX[1], PlaneId[iLayer]);
-      else if (PlaneId[iLayer] < 9)
-        fprintf(ifile,"%5d cm to %5d cm x-dimension of layer %2d\n", -4.5 * DetectorSizeX[1], 4.5 * DetectorSizeX[1], PlaneId[iLayer]);
+        fprintf(ifile,"%5f cm to %5f cm x-dimension of layer %2d\n", -3.5 * DetectorSizeX[1], 3.5 * DetectorSizeX[1], PlaneId[iLayer]);
       else
-        fprintf(ifile,"%5d cm to %5d cm x-dimension of layer %2d\n", -5.5 * DetectorSizeX[1], 5.5 * DetectorSizeX[1], PlaneId[iLayer]);
+      {
+	if (PlaneId[iLayer] < 9)
+          fprintf(ifile,"%5f cm to %5f cm x-dimension of layer %2d\n", -4.5 * DetectorSizeX[1], 4.5 * DetectorSizeX[1], PlaneId[iLayer]);
+        else
+          fprintf(ifile,"%5f cm to %5f cm x-dimension of layer %2d\n", -5.5 * DetectorSizeX[1], 5.5 * DetectorSizeX[1], PlaneId[iLayer]);
+      }
+    }
   fprintf(ifile,"\n");
 
   // Dimensions in y
   fprintf(ifile,"# dimensions in y\n");
   for (Int_t iLayer = 0; iLayer < MaxLayers; iLayer++)
     if (ShowLayer[iLayer])
+    {
       if (PlaneId[iLayer] < 5)
-        fprintf(ifile,"%5d cm to %5d cm y-dimension of layer %2d\n", -2.5 * DetectorSizeY[1], 2.5 * DetectorSizeY[1], PlaneId[iLayer]);
-      else if (PlaneId[iLayer] < 9)
-        fprintf(ifile,"%5d cm to %5d cm y-dimension of layer %2d\n", -3.5 * DetectorSizeY[1], 3.5 * DetectorSizeY[1], PlaneId[iLayer]);
+        fprintf(ifile,"%5f cm to %5f cm y-dimension of layer %2d\n", -2.5 * DetectorSizeY[1], 2.5 * DetectorSizeY[1], PlaneId[iLayer]);
       else
-        fprintf(ifile,"%5d cm to %5d cm y-dimension of layer %2d\n", -4.5 * DetectorSizeY[1], 4.5 * DetectorSizeY[1], PlaneId[iLayer]);
+      {
+        if (PlaneId[iLayer] < 9)
+	  fprintf(ifile,"%5f cm to %5f cm y-dimension of layer %2d\n", -3.5 * DetectorSizeY[1], 3.5 * DetectorSizeY[1], PlaneId[iLayer]);
+        else
+          fprintf(ifile,"%5f cm to %5f cm y-dimension of layer %2d\n", -4.5 * DetectorSizeY[1], 4.5 * DetectorSizeY[1], PlaneId[iLayer]);
+      }
+    }
   fprintf(ifile,"\n");
 
   // Show layer positions
@@ -775,7 +785,7 @@ void dump_info_file()
   for (Int_t iLayer = 0; iLayer < MaxLayers; iLayer++)
   {
     if (ShowLayer[iLayer])
-      fprintf(ifile,"%5d cm   z-position of layer %2d\n", LayerPosition[iLayer], PlaneId[iLayer]);
+      fprintf(ifile,"%5f cm   z-position of layer %2d\n", LayerPosition[iLayer], PlaneId[iLayer]);
   }
   fprintf(ifile,"\n");
 
@@ -1678,7 +1688,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
             asic_pos_x = asic_pos * activeAreaX;
 	    //            trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2., 0.);  // move asic on top of FEB
             trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB
-            incline_asic = new TGeoHMatrix("");
+            *incline_asic = new TGeoHMatrix("");
             (*incline_asic) = (*trd_asic_trans1) * (*incline_feb);
             trd_feb_box->AddNode(trdmod1_asic, iAsic+1, incline_asic);  // now we have ASICs on the inclined FEB
           }
@@ -1691,7 +1701,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
             asic_pos_x = asic_pos * activeAreaX + (0.5 + asic_distance/2.) * asic_width;
 	    //            trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2., 0.);  // move asic on top of FEB
             trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB);
-            incline_asic = new TGeoHMatrix("");
+            *incline_asic = new TGeoHMatrix("");
             (*incline_asic) = (*trd_asic_trans1) * (*incline_feb);
             trd_feb_box->AddNode(trdmod1_asic, 2*iAsic+1, incline_asic);  // now we have ASICs on the inclined FEB
 
@@ -1699,7 +1709,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
             asic_pos_x = asic_pos * activeAreaX - (0.5 + asic_distance/2.) * asic_width;
 	    //            trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2., 0.);  // move asic on top of FEB
             trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB
-            incline_asic = new TGeoHMatrix("");
+            *incline_asic = new TGeoHMatrix("");
             (*incline_asic) = (*trd_asic_trans1) * (*incline_feb);
             trd_feb_box->AddNode(trdmod1_asic, 2*iAsic+2, incline_asic);  // now we have ASICs on the inclined FEB
           }
@@ -1711,21 +1721,21 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
             // ASIC 1
             asic_pos_x = asic_pos * activeAreaX + 1.1 * asic_width; // (0.5 + asic_distance/2.) * asic_width;
             trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB);
-            incline_asic = new TGeoHMatrix("");
+            *incline_asic = new TGeoHMatrix("");
             (*incline_asic) = (*trd_asic_trans1) * (*incline_feb);
             trd_feb_box->AddNode(trdmod1_asic, 3*iAsic+1, incline_asic);  // now we have ASICs on the inclined FEB
 
             // ASIC 2
             asic_pos_x = asic_pos * activeAreaX;
             trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB
-            incline_asic = new TGeoHMatrix("");
+            *incline_asic = new TGeoHMatrix("");
             (*incline_asic) = (*trd_asic_trans1) * (*incline_feb);
             trd_feb_box->AddNode(trdmod1_asic, 3*iAsic+2, incline_asic);  // now we have ASICs on the inclined FEB
 
             // ASIC 3
             asic_pos_x = asic_pos * activeAreaX - 1.1 * asic_width; // (0.5 + asic_distance/2.) * asic_width;
             trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB
-            incline_asic = new TGeoHMatrix("");
+            *incline_asic = new TGeoHMatrix("");
             (*incline_asic) = (*trd_asic_trans1) * (*incline_feb);
             trd_feb_box->AddNode(trdmod1_asic, 3*iAsic+3, incline_asic);  // now we have ASICs on the inclined FEB
           }
@@ -1880,11 +1890,11 @@ void create_detector_layers(Int_t layerId)
   
   Int_t innerarray_size1 = LayerArraySize[layerType - 1][0];
   Int_t innerarray_size2 = LayerArraySize[layerType - 1][1];
-  Int_t* innerLayer;
+  const Int_t* innerLayer;
   
   Int_t outerarray_size1 = LayerArraySize[layerType - 1][2];
   Int_t outerarray_size2 = LayerArraySize[layerType - 1][3];
-  Int_t* outerLayer;
+  const Int_t* outerLayer;
   
   if ( 1 == layerType ) {
     innerLayer = (Int_t*) layer1i;      
