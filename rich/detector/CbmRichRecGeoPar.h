@@ -111,8 +111,10 @@ public:
         cout << endl << "-I- RICH geometry parameters" << endl;
         
         if (fGeometryType == CbmRichGeometryTypeTwoWings) {
+            cout << "Geometry type: CbmRichGeometryTypeTwoWings" << endl;
             PrintTwoWings();
         } else if (fGeometryType == CbmRichGeometryTypeCylindrical) {
+            cout << "Geometry type: CbmRichGeometryTypeCylindrical" << endl;
             PrintCylindrical();
         } else {
             cout << "ERROR, geometry type is not correct" << endl;

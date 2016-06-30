@@ -33,8 +33,10 @@ void CbmRichGeoManager::InitGeometry() {
     DetectGeometryType();
     
     if (fGP->fGeometryType == CbmRichGeometryTypeTwoWings) {
+        cout << "Init CbmRichGeometryTypeTwoWings" << endl;
         InitPmt();
     } else if (fGP->fGeometryType == CbmRichGeometryTypeCylindrical) {
+        cout << "Init CbmRichGeometryTypeCylindrical" << endl;
         InitPmtCyl();
     } else if (fGP->fGeometryType == CbmRichGeometryTypeNotDefined) {
        // Fatal("CbmRichGeoManager::InitGeometry()", " Geometry type is CbmRichGeometryTypeNotDefined. Geometry could not be defined automatically.");
@@ -57,7 +59,7 @@ void CbmRichGeoManager::DetectGeometryType()
     while ((curNode=geoIterator())) {
         TString nodeName(curNode->GetName());
         TString nodePath;
-        if (curNode->GetVolume()->GetName() == TString("pmt_block_strip")) {
+        if (curNode->GetVolume()->GetName() == TString("camera_two_quarters")) {
             fGP->fGeometryType = CbmRichGeometryTypeCylindrical;
             return;
         }

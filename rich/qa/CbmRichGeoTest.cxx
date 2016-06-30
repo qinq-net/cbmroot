@@ -987,7 +987,7 @@ void CbmRichGeoTest::CreateStudyReport(
 void CbmRichGeoTest::Finish()
 {
     DrawHist();
-    DrawPmts();
+    //DrawPmts();
     //fHM->WriteToFile();
     SaveCanvasToImage();
 }
