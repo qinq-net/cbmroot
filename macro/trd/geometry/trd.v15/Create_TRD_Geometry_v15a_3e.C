@@ -1688,7 +1688,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
             asic_pos_x = asic_pos * activeAreaX;
 	    //            trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2., 0.);  // move asic on top of FEB
             trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB
-            *incline_asic = new TGeoHMatrix("");
+            incline_asic = new TGeoHMatrix("");
             (*incline_asic) = (*trd_asic_trans1) * (*incline_feb);
             trd_feb_box->AddNode(trdmod1_asic, iAsic+1, incline_asic);  // now we have ASICs on the inclined FEB
           }
@@ -1701,7 +1701,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
             asic_pos_x = asic_pos * activeAreaX + (0.5 + asic_distance/2.) * asic_width;
 	    //            trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2., 0.);  // move asic on top of FEB
             trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB);
-            *incline_asic = new TGeoHMatrix("");
+            incline_asic = new TGeoHMatrix("");
             (*incline_asic) = (*trd_asic_trans1) * (*incline_feb);
             trd_feb_box->AddNode(trdmod1_asic, 2*iAsic+1, incline_asic);  // now we have ASICs on the inclined FEB
 
@@ -1709,7 +1709,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
             asic_pos_x = asic_pos * activeAreaX - (0.5 + asic_distance/2.) * asic_width;
 	    //            trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2., 0.);  // move asic on top of FEB
             trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB
-            *incline_asic = new TGeoHMatrix("");
+            incline_asic = new TGeoHMatrix("");
             (*incline_asic) = (*trd_asic_trans1) * (*incline_feb);
             trd_feb_box->AddNode(trdmod1_asic, 2*iAsic+2, incline_asic);  // now we have ASICs on the inclined FEB
           }
@@ -1721,21 +1721,21 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
             // ASIC 1
             asic_pos_x = asic_pos * activeAreaX + 1.1 * asic_width; // (0.5 + asic_distance/2.) * asic_width;
             trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB);
-            *incline_asic = new TGeoHMatrix("");
+            incline_asic = new TGeoHMatrix("");
             (*incline_asic) = (*trd_asic_trans1) * (*incline_feb);
             trd_feb_box->AddNode(trdmod1_asic, 3*iAsic+1, incline_asic);  // now we have ASICs on the inclined FEB
 
             // ASIC 2
             asic_pos_x = asic_pos * activeAreaX;
             trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB
-            *incline_asic = new TGeoHMatrix("");
+            incline_asic = new TGeoHMatrix("");
             (*incline_asic) = (*trd_asic_trans1) * (*incline_feb);
             trd_feb_box->AddNode(trdmod1_asic, 3*iAsic+2, incline_asic);  // now we have ASICs on the inclined FEB
 
             // ASIC 3
             asic_pos_x = asic_pos * activeAreaX - 1.1 * asic_width; // (0.5 + asic_distance/2.) * asic_width;
             trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB
-            *incline_asic = new TGeoHMatrix("");
+            incline_asic = new TGeoHMatrix("");
             (*incline_asic) = (*trd_asic_trans1) * (*incline_feb);
             trd_feb_box->AddNode(trdmod1_asic, 3*iAsic+3, incline_asic);  // now we have ASICs on the inclined FEB
           }
