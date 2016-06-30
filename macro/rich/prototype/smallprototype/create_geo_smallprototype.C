@@ -10,12 +10,13 @@ gSystem->Load("libGeom");
 //gGeoMan = gGeoManager;// (TGeoManager*)gROOT->FindObject("FAIRGeom");
 //new TGeoManager ("Testbox", "Testbox");
 
-TString geoFileName= "/data/cbm/cbmroot/geometry/rich/prototype/Testbox.geo.root";
-
+//TString geoFileName= "/data/cbm/cbmroot/geometry/rich/prototype/Testbox.geo.root";
+TString geoFileName= "/Users/slebedev/Development/cbm/trunk/cbmroot/geometry/rich/prototype/Testbox.geo.root";
 FairGeoLoader*    geoLoad = new FairGeoLoader("TGeo","FairGeoLoader");
   FairGeoInterface* geoFace = geoLoad->getGeoInterface();
   TString geoPath = gSystem->Getenv("VMCWORKDIR");
-  TString medFile = geoPath + "/geometry/media.geo";
+  //TString medFile = geoPath + "/geometry/media.geo";
+  TString medFile = geoPath + "/geometry/media_rich_prototype.geo";
   geoFace->setMediaFile(medFile);
   geoFace->readMedia();
   gGeoMan = gGeoManager;
@@ -98,7 +99,8 @@ const Double_t sensplaneboxdis=1;
 
 //Transformations
 TGeoRotation *rotBox= new TGeoRotation("Boxrotation", 0., 0., 0.);
-
+TGeoTranslation *trRichCave= new TGeoTranslation(0., 0., 0.);
+    
 TGeoTranslation *trBox= new TGeoTranslation(0., 0., 0.);			//Gasbox/Box Translation
 TGeoTranslation *trsensplane= new TGeoTranslation(0.,0., testboxlength+ sensplaneboxdis);
 
@@ -124,10 +126,12 @@ TGeoTranslation *trComp= new TGeoTranslation("trComp", 0.,0., -(lenseradius-cent
 trComp->RegisterYourself();
 
 //Virtual Topbox
-TGeoVolume* top = new TGeoVolumeAssembly("top");
+TGeoVolume* top = new TGeoVolumeAssembly("rich");
  gGeoMan->SetTopVolume(top);
 
 //Shapes
+    
+TGeoVolume *richCave= gGeoMan->MakeBox("RichCave", medNitrogen, 300., 300., 300.);
 
 //TopBox
 TGeoVolume *box= gGeoMan->MakeBox("TopBox", medNitrogen, testboxwidth/2, testboxheight/2, testboxlength/2);
@@ -182,8 +186,10 @@ compendlense->SetLineColor(kBlue);
 
 
 //Positioning
-top->AddNode(box, 1, trBox);
-top->AddNode(sensplane, 1, trsensplane);
+top->AddNode(richCave, 1, trRichCave);
+
+richCave->AddNode(box, 1, trBox);
+richCave->AddNode(sensplane, 1, trsensplane);
 
 box->AddNode(gas, 1, rotBox);
 

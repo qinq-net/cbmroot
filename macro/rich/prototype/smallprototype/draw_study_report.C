@@ -19,5 +19,5 @@ void draw_study_report()
     }
     
     CbmRichSmallPrototypeStudyReport* reportQa = new CbmRichSmallPrototypeStudyReport();
-    reportQa->Create(fileNames, studyNames, outputDir);
+    //reportQa->Create(fileNames, studyNames, outputDir);
 }

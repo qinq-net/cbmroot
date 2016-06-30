@@ -6,7 +6,8 @@ using namespace std;
 void run_ascii_generator(Int_t nEvents = 100000)
 {
 	
-   	string asciiFile = "/data/cbm/cbmroot/macro/rich/prototype/smallprototype/beamdistribution.ascii.dat";
+   	//string asciiFile = "/data/cbm/cbmroot/macro/rich/prototype/smallprototype/beamdistribution.ascii.dat";
+    string asciiFile = "/Users/slebedev/Development/cbm/trunk/cbmroot/macro/rich/prototype/smallprototype/beamdistribution.ascii.dat";
    	double minMomentum = 1.8;
    	double maxMomentum = 1.8;
 
