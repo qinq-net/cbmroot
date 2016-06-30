@@ -1229,7 +1229,7 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
 			      sectorTypes[iSector]);
     TGeoVolume* sector = gGeoMan->GetVolume(sectorName);
     if ( ! sector )
-      Fatal("ConstructHalfLadder", Form("Volume %s not found", sectorName));
+      Fatal("ConstructHalfLadder", Form("Volume %s not found", sectorName.Data()));
     TGeoBBox* box = (TGeoBBox*) sector->GetShape();
     // --- Ladder x size equals largest sector x size
     ladderX = TMath::Max(ladderX, 2. * box->GetDX());
