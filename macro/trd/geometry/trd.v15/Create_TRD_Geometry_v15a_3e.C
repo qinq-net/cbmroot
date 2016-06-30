@@ -510,7 +510,7 @@ void dump_digi_file()
   const Double_t ActiveAreaX[2] = { DetectorSizeX[0] - 2 * FrameWidth[0],
                                     DetectorSizeX[1] - 2 * FrameWidth[1] };
   const Int_t NofSectors = 3;
-  const Int_t NofPadsInRow[2]  = { 80, 128 };  // numer of pads in rows
+  const Int_t NofPadsInRow[2]  = { 80, 128 };  // number of pads in rows
   Int_t nrow = 0;   // number of rows in module
 
   const Double_t PadHeightInSector[NofModuleTypes][NofSectors] =  // pad height
