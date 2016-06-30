@@ -78,6 +78,10 @@
 #include "TRandom3.h"
 #include "TDatime.h"
 
+#include "TGeoArb8.h"
+#include "TGeoTube.h"
+#include "TGeoCone.h"
+
 #include <iostream>
 
 // Name of output file with geometry
@@ -407,11 +411,11 @@ TGeoVolume*  gModules[NofModuleTypes]; // Global storage for module types
 
 // Forward declarations
 void create_materials_from_media_file();
-void create_trd_module_type(Int_t moduleType);
+TGeoVolume* create_trd_module_type(Int_t moduleType);
 void create_detector_layers(Int_t layer);
 void create_xtru_supports();
 void create_box_supports();
-void add_trd_labels();
+void add_trd_labels(TGeoVolume*, TGeoVolume*, TGeoVolume*);
 void create_mag_field_vector();
 void dump_info_file();
 void dump_digi_file();
@@ -482,7 +486,7 @@ void Create_TRD_Geometry_v15c_3e() {
   TFile* outfile = new TFile(FileNameSim,"RECREATE");
   top->Write();      // use this as input to simulations (run_sim.C)
   outfile->Close();
-  TFile* outfile = new TFile(FileNameGeo,"RECREATE");
+  outfile = new TFile(FileNameGeo,"RECREATE");
   gGeoMan->Write();  // use this is you want GeoManager format in the output
   outfile->Close();
 
@@ -507,8 +511,8 @@ void dump_digi_file()
   const Double_t ActiveAreaX[2] = { DetectorSizeX[0] - 2 * FrameWidth[0],
                                     DetectorSizeX[1] - 2 * FrameWidth[1] };
   const Int_t NofSectors = 3;
-  const Int_t NofPadsInRow[2]  = { 80, 128 };  // numer of pads in rows
-  Double_t nrow = 0;   // number of rows in module
+  const Int_t NofPadsInRow[2]  = { 80, 128 };  // number of pads in rows
+  Int_t nrow = 0;   // number of rows in module
 
   const Double_t PadHeightInSector[NofModuleTypes][NofSectors] =  // pad height
         { {  1.50,  1.50,  1.50 },   // module type 1 -  1.01 mm2
@@ -558,7 +562,7 @@ void dump_digi_file()
     {
       printf("WARNING: sector size does not add up to module size for module type %d\n", im+1);
       printf("%.2f = %.2f + %.2f + %.2f\n", ActiveAreaX[ModuleType[im]], HeightOfSector[im][0], HeightOfSector[im][1], HeightOfSector[im][2]);
-      exit();
+      exit(1);
     }
 
 //==============================================================
@@ -718,20 +722,20 @@ void dump_info_file()
 
   fprintf(ifile,"# envelope\n");
   // Show extension of TRD
-  fprintf(ifile,"%4d cm   start of TRD (z)\n", z_first_layer);
-  fprintf(ifile,"%4d cm   end   of TRD (z)\n", z_last_layer + LayerThickness);
+  fprintf(ifile,"%4f cm   start of TRD (z)\n", z_first_layer);
+  fprintf(ifile,"%4f cm   end   of TRD (z)\n", z_last_layer + LayerThickness);
   fprintf(ifile,"\n");
 
   // Layer thickness
   fprintf(ifile,"# thickness\n");
-  fprintf(ifile,"%4d cm   per single layer (z)\n", LayerThickness);
+  fprintf(ifile,"%4f cm   per single layer (z)\n", LayerThickness);
   fprintf(ifile,"\n");
 
   // Show extra gaps
   fprintf(ifile,"# extra gaps\n ");
   for (Int_t iLayer = 0; iLayer < MaxLayers; iLayer++)
     if (ShowLayer[iLayer])
-      fprintf(ifile,"%3d ", LayerOffset[iLayer]);
+      fprintf(ifile,"%3f ", LayerOffset[iLayer]);
   fprintf(ifile,"   extra gaps in z (cm)\n");
   fprintf(ifile,"\n");
 
@@ -747,24 +751,34 @@ void dump_info_file()
   fprintf(ifile,"# dimensions in x\n");
   for (Int_t iLayer = 0; iLayer < MaxLayers; iLayer++)
     if (ShowLayer[iLayer])
+    {
       if (PlaneId[iLayer] < 5)
-        fprintf(ifile,"%5d cm to %5d cm x-dimension of layer %2d\n", -3.5 * DetectorSizeX[1], 3.5 * DetectorSizeX[1], PlaneId[iLayer]);
-      else if (PlaneId[iLayer] < 9)
-        fprintf(ifile,"%5d cm to %5d cm x-dimension of layer %2d\n", -4.5 * DetectorSizeX[1], 4.5 * DetectorSizeX[1], PlaneId[iLayer]);
+        fprintf(ifile,"%5f cm to %5f cm x-dimension of layer %2d\n", -3.5 * DetectorSizeX[1], 3.5 * DetectorSizeX[1], PlaneId[iLayer]);
       else
-        fprintf(ifile,"%5d cm to %5d cm x-dimension of layer %2d\n", -5.5 * DetectorSizeX[1], 5.5 * DetectorSizeX[1], PlaneId[iLayer]);
+      {
+	if (PlaneId[iLayer] < 9)
+          fprintf(ifile,"%5f cm to %5f cm x-dimension of layer %2d\n", -4.5 * DetectorSizeX[1], 4.5 * DetectorSizeX[1], PlaneId[iLayer]);
+        else
+          fprintf(ifile,"%5f cm to %5f cm x-dimension of layer %2d\n", -5.5 * DetectorSizeX[1], 5.5 * DetectorSizeX[1], PlaneId[iLayer]);
+      }
+    }
   fprintf(ifile,"\n");
 
   // Dimensions in y
   fprintf(ifile,"# dimensions in y\n");
   for (Int_t iLayer = 0; iLayer < MaxLayers; iLayer++)
     if (ShowLayer[iLayer])
+    {
       if (PlaneId[iLayer] < 5)
-        fprintf(ifile,"%5d cm to %5d cm y-dimension of layer %2d\n", -2.5 * DetectorSizeY[1], 2.5 * DetectorSizeY[1], PlaneId[iLayer]);
-      else if (PlaneId[iLayer] < 9)
-        fprintf(ifile,"%5d cm to %5d cm y-dimension of layer %2d\n", -3.5 * DetectorSizeY[1], 3.5 * DetectorSizeY[1], PlaneId[iLayer]);
+        fprintf(ifile,"%5f cm to %5f cm y-dimension of layer %2d\n", -2.5 * DetectorSizeY[1], 2.5 * DetectorSizeY[1], PlaneId[iLayer]);
       else
-        fprintf(ifile,"%5d cm to %5d cm y-dimension of layer %2d\n", -4.5 * DetectorSizeY[1], 4.5 * DetectorSizeY[1], PlaneId[iLayer]);
+      {
+        if (PlaneId[iLayer] < 9)
+	  fprintf(ifile,"%5f cm to %5f cm y-dimension of layer %2d\n", -3.5 * DetectorSizeY[1], 3.5 * DetectorSizeY[1], PlaneId[iLayer]);
+        else
+          fprintf(ifile,"%5f cm to %5f cm y-dimension of layer %2d\n", -4.5 * DetectorSizeY[1], 4.5 * DetectorSizeY[1], PlaneId[iLayer]);
+      }
+    }
   fprintf(ifile,"\n");
 
   // Show layer positions
@@ -772,7 +786,7 @@ void dump_info_file()
   for (Int_t iLayer = 0; iLayer < MaxLayers; iLayer++)
   {
     if (ShowLayer[iLayer])
-      fprintf(ifile,"%5d cm   z-position of layer %2d\n", LayerPosition[iLayer], PlaneId[iLayer]);
+      fprintf(ifile,"%5f cm   z-position of layer %2d\n", LayerPosition[iLayer], PlaneId[iLayer]);
   }
   fprintf(ifile,"\n");
 
@@ -1222,8 +1236,8 @@ void create_materials_from_media_file()
   FairGeoLoader* geoLoad = new FairGeoLoader("TGeo", "FairGeoLoader");
   FairGeoInterface* geoFace = geoLoad->getGeoInterface();
   TString geoPath = gSystem->Getenv("VMCWORKDIR");
-  TString geoFile = geoPath + "/geometry/media.geo";
-  geoFace->setMediaFile(geoFile);
+  TString medFile = geoPath + "/geometry/media.geo";
+  geoFace->setMediaFile(medFile);
   geoFace->readMedia();
 
   // Read the required media and create them in the GeoManager
@@ -1648,6 +1662,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
 
       if (IncludeAsics) 
       {
+        TGeoHMatrix *incline_asic;
         // put many ASICs on each inclined FEB
         TGeoBBox* trd_asic = new TGeoBBox("", asic_width/2., asic_thickness/2., asic_width/2.);              // ASIC dimensions
         // TODO: use Silicon as ASICs material
@@ -1674,7 +1689,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
             asic_pos_x = asic_pos * activeAreaX;
 	    //            trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2., 0.);  // move asic on top of FEB
             trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB
-            TGeoHMatrix *incline_asic = new TGeoHMatrix("");
+            incline_asic = new TGeoHMatrix("");
             (*incline_asic) = (*trd_asic_trans1) * (*incline_feb);
             trd_feb_box->AddNode(trdmod1_asic, iAsic+1, incline_asic);  // now we have ASICs on the inclined FEB
           }
@@ -1687,7 +1702,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
             asic_pos_x = asic_pos * activeAreaX + (0.5 + asic_distance/2.) * asic_width;
 	    //            trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2., 0.);  // move asic on top of FEB
             trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB);
-            TGeoHMatrix *incline_asic = new TGeoHMatrix("");
+            incline_asic = new TGeoHMatrix("");
             (*incline_asic) = (*trd_asic_trans1) * (*incline_feb);
             trd_feb_box->AddNode(trdmod1_asic, 2*iAsic+1, incline_asic);  // now we have ASICs on the inclined FEB
 
@@ -1695,7 +1710,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
             asic_pos_x = asic_pos * activeAreaX - (0.5 + asic_distance/2.) * asic_width;
 	    //            trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2., 0.);  // move asic on top of FEB
             trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB
-            TGeoHMatrix *incline_asic = new TGeoHMatrix("");
+            incline_asic = new TGeoHMatrix("");
             (*incline_asic) = (*trd_asic_trans1) * (*incline_feb);
             trd_feb_box->AddNode(trdmod1_asic, 2*iAsic+2, incline_asic);  // now we have ASICs on the inclined FEB
           }
@@ -1707,21 +1722,21 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
             // ASIC 1
             asic_pos_x = asic_pos * activeAreaX + 1.1 * asic_width; // (0.5 + asic_distance/2.) * asic_width;
             trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB);
-            TGeoHMatrix *incline_asic = new TGeoHMatrix("");
+            incline_asic = new TGeoHMatrix("");
             (*incline_asic) = (*trd_asic_trans1) * (*incline_feb);
             trd_feb_box->AddNode(trdmod1_asic, 3*iAsic+1, incline_asic);  // now we have ASICs on the inclined FEB
 
             // ASIC 2
             asic_pos_x = asic_pos * activeAreaX;
             trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB
-            TGeoHMatrix *incline_asic = new TGeoHMatrix("");
+            incline_asic = new TGeoHMatrix("");
             (*incline_asic) = (*trd_asic_trans1) * (*incline_feb);
             trd_feb_box->AddNode(trdmod1_asic, 3*iAsic+2, incline_asic);  // now we have ASICs on the inclined FEB
 
             // ASIC 3
             asic_pos_x = asic_pos * activeAreaX - 1.1 * asic_width; // (0.5 + asic_distance/2.) * asic_width;
             trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB
-            TGeoHMatrix *incline_asic = new TGeoHMatrix("");
+            incline_asic = new TGeoHMatrix("");
             (*incline_asic) = (*trd_asic_trans1) * (*incline_feb);
             trd_feb_box->AddNode(trdmod1_asic, 3*iAsic+3, incline_asic);  // now we have ASICs on the inclined FEB
           }
@@ -1876,21 +1891,21 @@ void create_detector_layers(Int_t layerId)
   
   Int_t innerarray_size1 = LayerArraySize[layerType - 1][0];
   Int_t innerarray_size2 = LayerArraySize[layerType - 1][1];
-  Int_t* innerLayer;
+  const Int_t* innerLayer;
   
   Int_t outerarray_size1 = LayerArraySize[layerType - 1][2];
   Int_t outerarray_size2 = LayerArraySize[layerType - 1][3];
-  Int_t* outerLayer;
+  const Int_t* outerLayer;
   
   if ( 1 == layerType ) {
-    innerLayer = layer1i;      
-    outerLayer = layer1o; 
+    innerLayer = (Int_t*) layer1i;      
+    outerLayer = (Int_t*) layer1o; 
   } else if ( 2 == layerType ) {
-    innerLayer = layer2i;      
-    outerLayer = layer2o; 
+    innerLayer = (Int_t*) layer2i;      
+    outerLayer = (Int_t*) layer2o; 
   } else if ( 3 == layerType ) {
-    innerLayer = layer3i;      
-    outerLayer = layer3o; 
+    innerLayer = (Int_t*) layer3i;      
+    outerLayer = (Int_t*) layer3o; 
   } else {
     std::cout << "Type of layer not known" << std::endl;
   } 
@@ -2441,7 +2456,7 @@ void create_xtru_supports()
 }
 
 
-add_trd_labels(TGeoVolume* trdbox1, TGeoVolume* trdbox2, TGeoVolume* trdbox3)
+void add_trd_labels(TGeoVolume* trdbox1, TGeoVolume* trdbox2, TGeoVolume* trdbox3)
 {
 // write TRD (the 3 characters) in a simple geometry
   TGeoMedium* textVolMed        = gGeoMan->GetMedium(TextVolumeMedium);
@@ -2503,7 +2518,7 @@ add_trd_labels(TGeoVolume* trdbox1, TGeoVolume* trdbox2, TGeoVolume* trdbox3)
   R->AddNode(Rbar2, 1, tr12);
   R->AddNode(Rbar2, 2, tr13);
   TGeoTubeSeg *Rtub1b = new TGeoTubeSeg("", 4., 12, 4., 90., 270.);
-  TGeoVolume *Rtub1 = new TGeoVolume("Rtub1", Rtub1b, textVolMed);
+  TGeoVolume *Rtub1 = new TGeoVolume("Rtub1", (TGeoShape *) Rtub1b, textVolMed);
   Rtub1->SetLineColor(Rcolor);
   R->AddNode(Rtub1, 1, tr14);
   TGeoArb8 *Rbar3b = new TGeoArb8("", 4.);
@@ -2535,7 +2550,7 @@ add_trd_labels(TGeoVolume* trdbox1, TGeoVolume* trdbox2, TGeoVolume* trdbox3)
   D->AddNode(Dbar2, 1, tr22);
   D->AddNode(Dbar2, 2, tr23);
   TGeoTubeSeg *Dtub1b = new TGeoTubeSeg("", 12, 20, 4., 90., 270.);
-  TGeoVolume *Dtub1 = new TGeoVolume("Dtub1", Dtub1b, textVolMed);
+  TGeoVolume *Dtub1 = new TGeoVolume("Dtub1", (TGeoShape *) Dtub1b, textVolMed);
   Dtub1->SetLineColor(Dcolor);
   D->AddNode(Dtub1, 1, tr24);
 
