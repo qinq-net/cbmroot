@@ -311,8 +311,7 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(EDefinedSignal defaultSignal) :
     break;
   }
   //  Info("PairAnalysisSignalMC","Use predefined signal selected: %s\n",GetName());
-
-  Print();
+  //  Print();
 
 }
 

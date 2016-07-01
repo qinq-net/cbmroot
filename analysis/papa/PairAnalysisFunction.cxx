@@ -9,11 +9,14 @@
 
   2) configure the signal extraction
 
-  2.1) chose one of the signal functions (MCshape, CrystalBall, Gauss)
+  2.1) chose one of the signal functions (MCshape, CrystalBall, Gauss, PowGaussPow, ExpGaussExp)
   TF1 *fS = new TF1("fitSign",PairAnalysisFunction::PeakFunCB,minFit,maxFit,5); // has 5 parameters
-  //  TF1 *fS = new TF1("fitSign",PairAnalysisFunction::PeakFunGaus,minFit,maxFit,3); // has 3 parameters
   //  sig->SetMCSignalShape(hMCsign);
   //  TF1 *fS = new TF1("fitSign",PairAnalysisFunction::PeakFunMC,minFit,maxFit,1); // requires a MC shape
+
+  OR
+
+  2.2) one of the other predefined function (Boltzmann, PtExp, Hagedorn, Levi)
 
 
   3) combined fit of bgrd+signal
@@ -138,7 +141,7 @@ Double_t PairAnalysisFunction::PeakFunCB(const Double_t *x, const Double_t *par)
   Double_t fitval = 0;
 
   if (arg > -1.*alpha) {
-    fitval = nn * TMath::Exp(-.5*arg*arg);
+    fitval = nn * TMath::Exp(-.5*arg*arg); //gaussian part
   } else {
     fitval = nn * a * TMath::Power((b-arg), (-1*n));
   }
@@ -147,7 +150,58 @@ Double_t PairAnalysisFunction::PeakFunCB(const Double_t *x, const Double_t *par)
 }
 
 //______________________________________________________________________________
-Double_t PairAnalysisFunction::PeakFunGaus(const Double_t *x, const Double_t *par) {
+Double_t PairAnalysisFunction::PeakFunPowGaussPow(const Double_t *x, const Double_t *par) {
+  // PowGaussPow function fit function (both sided Crystall Ball)
+
+  Double_t     n = par[0];
+  Double_t alpha = par[1];
+  Double_t    nn = par[4];
+  Double_t meanx = par[2];
+  Double_t sigma = par[3];
+
+  Double_t a = TMath::Power((n/TMath::Abs(alpha)), n) * TMath::Exp(-.5*alpha*alpha);
+  Double_t b = n/TMath::Abs(alpha) - TMath::Abs(alpha);
+
+  Double_t arg = (x[0] - meanx)/sigma;
+  Double_t fitval = 0;
+
+  if (arg > alpha) {
+    fitval = nn * a * TMath::Power((b+arg), (-1*n));
+  } else if (arg < -alpha) {
+    fitval = nn * a * TMath::Power((b-arg), (-1*n));
+  } else {
+    fitval = nn * TMath::Exp(-0.5*arg*arg); //gaussian part
+  }
+
+  return fitval;
+}
+
+//______________________________________________________________________________
+Double_t PairAnalysisFunction::PeakFunExpGaussExp(const Double_t *x, const Double_t *par) {
+  // ExpGaussExp function fit function
+
+  Double_t     n = par[0];
+  Double_t alpha = par[1];
+
+  Double_t meanx = par[2];
+  Double_t sigma = par[3];
+
+  Double_t arg = (x[0] - meanx)/sigma;
+  Double_t fitval = 0;
+
+  if (arg > alpha) {
+    fitval = n * TMath::Exp(-0.5*alpha*alpha - alpha*arg);
+  } else if (arg < -alpha) {
+    fitval = n * TMath::Exp(-0.5*alpha*alpha + alpha*arg);
+  } else {
+    fitval = n * TMath::Exp(-0.5*arg*arg); //gaussian part
+  }
+
+  return fitval;
+}
+
+//______________________________________________________________________________
+Double_t PairAnalysisFunction::PeakFunGauss(const Double_t *x, const Double_t *par) {
   // Gaussian fit function
 
   //printf("fNparBgrd %d \n",fNparBgnd);

@@ -414,7 +414,7 @@ TObject* PairAnalysisSignalExt::DescribePeakShape(ESignalExtractionMethod method
     break;
 
   case kGaus:
-    fit = new TF1("Gaussisan",fExtrFunc,&PairAnalysisFunction::PeakFunGaus,fFitMin,fFitMax,3);
+    fit = new TF1("Gaussisan",fExtrFunc,&PairAnalysisFunction::PeakFunGauss,fFitMin,fFitMax,3);
     //fit = new TF1("fitGaus","gaus",fFitMin,fFitMax);
     fit->SetParNames("N","meanx","sigma");
     fit->SetParameters(1.3*nPOI, massPOI, sigPOI);

@@ -35,14 +35,15 @@ Some options to configure your analysis instance:
   SetRefitWithMassAssump(kTRUE)            // whether tracks should be refitted accordingly
   SetNoPairing()                           // look only at track level
   SetProcessLS(kFALSE)                     // switch off like-sign pair calculations
- 
+  SetUseKF(kTRUE)                          // use Kalman-Filter mathematics for vertexing
+
 
 Some options to configure the output:
   SetHistogramManager(PairAnalysisHistos * const histos)  // default histogram manager
   SetHistogramArray(PairAnalysisHF * const histoarray)    // histogram matrix
   SetCutQA()                                              // switch on basic qa histograms
 
-  
+
 Some options to add background estimators:
   SetMixingHandler(PairAnalysisMixingHandler *mix)        // event mixing
   SetTrackRotator(PairAnalysisTrackRotator * const rot)   // track rotation

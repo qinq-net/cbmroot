@@ -140,7 +140,7 @@ PairAnalysisTrack::PairAnalysisTrack(CbmKFVertex *vtx,
 
   /// check mvd entrance if mvd is in setup
   CbmMvdStationPar* mvdpar = CbmMvdDetector::Instance()->GetParameterFile();
-  if(mvdpar->GetStationCount()) {
+  if(mvdpar && mvdpar->GetStationCount()) {
     Double_t zMvd = mvdpar->GetZPosition(0); // z-position of the first mvd station
     TrackExtrapolatorPtr fExtrapolator = CbmLitToolFactory::CreateTrackExtrapolator("rk4");
     CbmLitTrackParam litParamIn;

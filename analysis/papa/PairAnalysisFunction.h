@@ -53,7 +53,10 @@ class PairAnalysisFunction : public TNamed {
   // predefined peak functions
   Double_t PeakFunMC(const Double_t *x, const Double_t *par); // peak function from a mc histo
   Double_t PeakFunCB(const Double_t *x, const Double_t *par); // crystal ball function
-  Double_t PeakFunGaus(const Double_t *x, const Double_t *par); // gaussian
+  Double_t PeakFunGauss(const Double_t *x, const Double_t *par);       // gaussian
+  Double_t PeakFunPowGaussPow(const Double_t *x, const Double_t *par); // pow gaussian pow
+  Double_t PeakFunExpGaussExp(const Double_t *x, const Double_t *par); // exp gaussian exp
+
   // TODO: predefined other functions (tsallis, boltzman, levi, powerlaw)
   TF1*  GetBoltzmann();
   TF1*  GetPtExp();
