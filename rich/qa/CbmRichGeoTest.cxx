@@ -585,6 +585,7 @@ void CbmRichGeoTest::DrawH2MeanRms(
     c->cd(1);
     DrawH2(hist);
     DrawH1(mean, kLinear, kLinear, "same", kBlack, 4.);
+    //DrawH1(rms);
     c->cd(2);
     TH1D* py = (TH1D*)hist->ProjectionY( (string(hist->GetName())+ "_py" ).c_str() )->Clone();
     DrawH1andFitGauss(py);
