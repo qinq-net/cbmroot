@@ -101,6 +101,7 @@ void CbmRichSmallPrototypeQa::Exec(
 
     fEventNum++;
     
+	//cout << "SOMETHING" <<endl;
     cout << "CbmRichSmallPrototypeQa, event No. " <<  fEventNum << endl;
 
 	Int_t nofMCTracks = fMCTracks->GetEntriesFast();
@@ -199,7 +200,7 @@ void CbmRichSmallPrototypeQa::Exec(
 	
 
 	
-	for( int i=0; i<nofMCTracks; i++)
+/*	for( int i=0; i<nofMCTracks; i++)
 	{
 	
 
@@ -215,7 +216,7 @@ void CbmRichSmallPrototypeQa::Exec(
 
 	
 	}
-
+*/
 	
 	for(int i=0; i<nofRichRings; i++)
 	{
@@ -242,11 +243,51 @@ void CbmRichSmallPrototypeQa::Exec(
 	
 	for (Int_t i=0; i<nofRefPlanePoints; i++)
 	{
-		 CbmRichPoint* pRefPlane = (CbmRichPoint*) (fRefPlanePoints->At(i));
-         Double_t xsec= pRefPlane->GetX();
-         Double_t ysec= pRefPlane->GetY();
-		 fHM->H2("fh_dis_sec")->Fill(xsec,ysec);
-    }
+		CbmRichPoint* pRefPlane = (CbmRichPoint*) (fRefPlanePoints->At(i));
+        Double_t xsec= pRefPlane->GetX();
+        Double_t ysec= pRefPlane->GetY();
+		Int_t trackid = pRefPlane->GetTrackID();
+		if( trackid < 0) continue;
+		CbmMCTrack* mctrack= (CbmMCTrack*) (fMCTracks->At(trackid));
+		if(mctrack ==NULL) continue;
+		Int_t motherid = mctrack->GetMotherId();
+		if(motherid >= 0)										//Check if secondary or primary particle
+		{
+			fHM->H2("fh_dis_sec")->Fill(xsec,ysec);
+   		} 
+	}
+	
+	for (Int_t i=0; i<nofRefPlanePoints; i++)
+	{
+		CbmRichPoint* pRefPlane = (CbmRichPoint*) (fRefPlanePoints->At(i));
+        Double_t xprimsec= pRefPlane->GetX();
+        Double_t yprimsec= pRefPlane->GetY();
+		Int_t trackid = pRefPlane->GetTrackID();
+		if( trackid < 0) continue;
+		CbmMCTrack* mctrack= (CbmMCTrack*) (fMCTracks->At(trackid));
+		if(mctrack ==NULL) continue;
+		Int_t motherid = mctrack->GetMotherId();
+		//if(motherid >= 0)
+		{
+			fHM->H2("fh_dis_primsec")->Fill(xprimsec,yprimsec);
+   		} 
+	}
+	
+	for (Int_t i=0; i<nofRefPlanePoints; i++)
+	{
+		CbmRichPoint* pRefPlane = (CbmRichPoint*) (fRefPlanePoints->At(i));
+        Double_t xprim= pRefPlane->GetX();
+        Double_t yprim= pRefPlane->GetY();
+		Int_t trackid = pRefPlane->GetTrackID();
+		if( trackid < 0) continue;
+		CbmMCTrack* mctrack= (CbmMCTrack*) (fMCTracks->At(trackid));
+		if(mctrack ==NULL) continue;
+		Int_t motherid = mctrack->GetMotherId();
+		if(motherid <= 0)
+		{
+			fHM->H2("fh_dis_prim")->Fill(xprim,yprim);
+   		} 
+	}
 }	
 
 void CbmRichSmallPrototypeQa::InitHistograms()
@@ -263,11 +304,11 @@ void CbmRichSmallPrototypeQa::InitHistograms()
 	fHM->Create1<TH1D>("fh_mc_mom_pion", "fh_mc_mom_pion;Momentum;Yield", 270, 0., 27.);
 	fHM->Create1<TH1D>("fh_mc_mom_elec", "fh_mc_mom_elec;Momentum;Yield", 270, 0., 27.);
 
-	fHM->Create2<TH2D>("fh_mc_startxy", "fh_mc_startxy; Start x; Start y", 3000, 0., 300., 3000, 0., 300.);
-	fHM->Create1<TH1D>("fh_mc_startz", "fh_mc_startz; Start z", 3000, 0., 300.);
+	fHM->Create2<TH2D>("fh_mc_startxy", "fh_mc_startxy; Start x [cm]; Start y [cm]", 3000, 0., 300., 3000, 0., 300.);
+	fHM->Create1<TH1D>("fh_mc_startz", "fh_mc_startz; Start z [cm]", 3000, 0., 300.);
 
-	fHM->Create2<TH2D>("fh_mc_gammaxy", "fh_mc_gammaxy;x;y", 3000, 0., 300., 3000., 0., 300.);
-	fHM->Create1<TH1D>("fh_mc_gammaz", "fh_mc_gammaz; z", 3000, 0., 300.);
+	fHM->Create2<TH2D>("fh_mc_gammaxy", "fh_mc_gammaxy;x [cm];y [cm]", 3000, 0., 300., 3000., 0., 300.);
+	fHM->Create1<TH1D>("fh_mc_gammaz", "fh_mc_gammaz; z [cm]", 3000, 0., 300.);
 */
 
 	
@@ -277,16 +318,18 @@ void CbmRichSmallPrototypeQa::InitHistograms()
 	fHM->Create1<TH1D>("fh_nof_rich_hits", "fh_nof_rich_hits;Nof Rich hits;Yield", 300, 0., 350.);
 	fHM->Create1<TH1D>("fh_nof_rich_rings", "fh_nof_rich_rings;Nof Rich rings;Yield", 5, -0.5, 4.5);
 
-	fHM->Create1<TH1D>("fh_rich_ring_radius","fh_rich_ring_radius; Ring Radius; Yield", 10, -0.5, 9.5);
+	fHM->Create1<TH1D>("fh_rich_ring_radius","fh_rich_ring_radius; Ring Radius [cm]; Yield", 1000, -0.5, 9.5);
 	
-	fHM->Create2<TH2D>("fh_dis_rich_points", "fh_dis_rich_points; x; y", 300, -7., 7., 300, -7., 7.);
-	fHM->Create2<TH2D>("fh_dis_rich_hits", "fh_dis_rich_hits; x; y", 50, -10., 10., 50, -10., 10.);
+	fHM->Create2<TH2D>("fh_dis_rich_points", "fh_dis_rich_points; x [cm]; y [cm]", 300, -7., 7., 300, -7., 7.);
+	fHM->Create2<TH2D>("fh_dis_rich_hits", "fh_dis_rich_hits; x[cm]; y[cm]", 50, -10., 10., 50, -10., 10.);
 
-	fHM->Create2<TH2D>("fh_proton_startxy","fh_proton_startxy; x; y;", 100, -5.,5, 100, -5., 5.);
+	fHM->Create2<TH2D>("fh_proton_startxy","fh_proton_startxy; x [cm]; y[cm];", 100, -5.,5, 100, -5., 5.);
 
-	fHM->Create1<TH1D>("fh_dR","fh_dR; dR; Yield", 100, -1., 1.);
+	fHM->Create1<TH1D>("fh_dR","fh_dR; dR [cm]; Yield", 100, -1., 1.);
 
-	fHM->Create2<TH2D>("fh_dis_sec", "fh_dis_sec; x; y;", 1000, -20., 20., 1000, -20., 20.);
+	fHM->Create2<TH2D>("fh_dis_primsec", "fh_dis_primsec; x [cm]; y [cm];", 80, -20., 20., 80, -20., 20.);
+	fHM->Create2<TH2D>("fh_dis_prim", "fh_dis_prim; x [cm]; y [cm];", 80, -20., 20., 80, -20., 20.);
+	fHM->Create2<TH2D>("fh_dis_sec", "fh_dis_sec; x [cm]; y [cm];", 80, -20., 20., 80, -20., 20.);
 }
 
 void CbmRichSmallPrototypeQa::DrawHist()
@@ -299,7 +342,7 @@ void CbmRichSmallPrototypeQa::DrawHist()
     fHM->ScaleByPattern("", 1./fEventNum);
 	
 
-    {  
+  {  
         TCanvas* c = CreateCanvas("rich_sp_nof_rich_hits_points", "rich_sp_nof_rich_hits_points", 800, 800);
 		c->Divide(1,2);
 		c->cd(1);
@@ -307,6 +350,7 @@ void CbmRichSmallPrototypeQa::DrawHist()
         //gPad->SetLogy(true);
 		c->cd(2);
 		DrawH1andFitGauss(fHM->H1("fh_nof_rich_points"));
+		
 		
 		/*
 		fHM->H1("fh_nof_rich_hits")->Fit("gaus");
@@ -317,6 +361,8 @@ void CbmRichSmallPrototypeQa::DrawHist()
 		*/
 		
 	}
+
+
 /*
 	{
 		TCanvas* c = CreateCanvas("rich_sp_nof_mc_tracks", "rich_sp_nof_mc_tracks", 800, 800);
@@ -405,6 +451,19 @@ void CbmRichSmallPrototypeQa::DrawHist()
 		DrawH2(fHM->H2("fh_dis_sec"));
 		fHM->H2("fh_dis_sec")->SetTitle("Secondaries");
 	}
+	
+	{
+		TCanvas* c=CreateCanvas("fh_dis_prim", "fh_dis_prim", 400, 400);
+		DrawH2(fHM->H2("fh_dis_prim"));
+		fHM->H2("fh_dis_prim")->SetTitle("Primaries");
+	}
+	
+	{
+		TCanvas* c=CreateCanvas("fh_dis_primsec", "fh_dis_primsec", 400, 400);
+		DrawH2(fHM->H2("fh_dis_primsec"));
+		fHM->H2("fh_dis_primsec")->SetTitle("Primaries and Secondaries");
+	}
+
 }
 
 void CbmRichSmallPrototypeQa::Finish()
