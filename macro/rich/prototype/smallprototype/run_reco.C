@@ -36,9 +36,9 @@ void run_reco(Int_t nEvents = 100)
 	if (mcFile != "") run->SetInputFile(mcFile);
 	if (recoFile != "") run->SetOutputFile(recoFile);
 
-	//CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
-    //mcManager->AddFile(mcFile);
-    //run->AddTask(mcManager);
+	CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
+    mcManager->AddFile(mcFile);
+    run->AddTask(mcManager);
 
     CbmRichDigitizer* richDigitizer = new CbmRichDigitizer();
     richDigitizer->SetNofNoiseHits(0);
@@ -55,8 +55,8 @@ void run_reco(Int_t nEvents = 100)
 	richReco->SetFinderName("ideal");
 	run->AddTask(richReco);
 
-	//CbmMatchRecoToMC* matchRecoToMc = new CbmMatchRecoToMC();
-	//run->AddTask(matchRecoToMc);
+	CbmMatchRecoToMC* matchRecoToMc = new CbmMatchRecoToMC();
+	run->AddTask(matchRecoToMc);
 	
     CbmRichSmallPrototypeQa* richQa = new CbmRichSmallPrototypeQa();
     richQa->SetOutputDir(std::string(resultDir));
