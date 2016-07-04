@@ -49,15 +49,15 @@ Int_t    fieldSymType=0;
 
 TString defaultInputFile="";
 
-void run_digi_tb(Int_t nEvents = 2, const char* setup = "sis100_electron")
+void run_digi_tb(Int_t nEvents = 2, const char* setupName = "sis100_electron")
 {
   // ========================================================================
   //          Adjust this part according to your requirements
 
   TString outDir  = "data/";
-  TString inFile  = outDir + setup + "_test.mc.root";   // Input file (MC events)
-  TString parFile = outDir + setup + "_params.root";    // Parameter file
-  TString outFile = outDir + setup + "_test.raw.root";  // Output file
+  TString inFile  = outDir + setupName + "_test.mc.root";   // Input file (MC events)
+  TString parFile = outDir + setupName + "_params.root";    // Parameter file
+  TString outFile = outDir + setupName + "_test.raw.root";  // Output file
   
   // Specify interaction rate in 1/s
   Double_t eventRate = 1.e6;
@@ -71,9 +71,8 @@ void run_digi_tb(Int_t nEvents = 2, const char* setup = "sis100_electron")
   TString inDir = gSystem->Getenv("VMCWORKDIR");
   TString paramDir = inDir + "/parameters/";
 
-  TString setupFile = inDir + "/geometry/setup/" + setup + "_setup.C";
-  TString setupFunct = setup;
-  setupFunct += "_setup()";
+  TString setupFile = inDir + "/geometry/setup/setup_" + setupName + ".C";
+  TString setupFunct = TString("setup_") + setupName + "()";
 
   gROOT->LoadMacro(setupFile);
   gInterpreter->ProcessLine(setupFunct);
@@ -81,6 +80,17 @@ void run_digi_tb(Int_t nEvents = 2, const char* setup = "sis100_electron")
   // In general, the following parts need not be touched
   // ========================================================================
 
+  TList *parFileList = new TList();
+  TString geoTag;
+  CbmSetup* setup = CbmSetup::Instance();
+
+  // - TOF digitisation parameters
+  if ( setup->GetGeoTag(kTof, geoTag) ) {
+  	TObjString* tofFile = new TObjString(paramDir + "tof/tof_" + geoTag + ".digi.par");
+  	TObjString* tofBdfFile = new TObjString(paramDir + "tof/tof_" + geoTag + ".digibdf.par");
+  	parFileList->Add(tofFile);
+  	parFileList->Add(tofBdfFile);
+  }
 
   // ----    Debug option   -------------------------------------------------
   gDebug = 0;
@@ -130,7 +140,12 @@ void run_digi_tb(Int_t nEvents = 2, const char* setup = "sis100_electron")
   stsDigi->SetProcesses(eLossModel, useLorentzShift, useDiffusion, useCrossTalk);
   stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution, deadTime, noise);
   run->AddTask(stsDigi);
- 
+  
+  CbmTofDigitizerBDF* tofDigi = new CbmTofDigitizerBDF("TOF Digitizer BDF");
+  tofDigi->SetInputFileName( paramDir + "tof/test_bdf_input.root");
+//  tofDigi->SetHistoFileName( outDir + "tof.digi.hst.root" ); // Uncomment to save control histograms
+  tofDigi->SetMonitorHistograms(kFALSE);
+  run->AddTask(tofDigi);
  
   // ----- DAQ
   FairTask* daq = new CbmDaq(timeSliceSize);
@@ -143,8 +158,11 @@ void run_digi_tb(Int_t nEvents = 2, const char* setup = "sis100_electron")
   // -----  Parameter database   --------------------------------------------
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
   FairParRootFileIo* parIo1 = new FairParRootFileIo();
+  FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
   parIo1->open(parFile.Data());
+  parIo2->open(parFileList, "in");
   rtdb->setFirstInput(parIo1);
+  rtdb->setSecondInput(parIo2);
   rtdb->setOutput(parIo1);
   rtdb->saveOutput();
   // ------------------------------------------------------------------------

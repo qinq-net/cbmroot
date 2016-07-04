@@ -50,7 +50,7 @@ CbmTofDigiExp::CbmTofDigiExp(const CbmTofDigiExp& digiIn)
    fdTime    = digiIn.GetTime();    ///< Absolute time [ps]
    fdTot     = digiIn.GetTot();     ///< Tot [ps]
   */
-   SetMatch( digiIn.GetMatch() );
+//   SetMatch( digiIn.GetMatch() );
 }
 
 CbmTofDigiExp::~CbmTofDigiExp()

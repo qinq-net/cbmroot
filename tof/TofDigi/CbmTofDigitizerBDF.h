@@ -86,6 +86,8 @@ class CbmTofDigitizerBDF : public FairTask
       void SetInputFileName (TString FileName) { fsBeamInputFile = FileName; }
       
       Bool_t   SetHistoFileName( TString sFilenameIn = "./tofDigiBdf.hst.root" );
+
+      void SetMonitorHistograms(Bool_t bMonitor = kTRUE) { fbMonitorHistos = bMonitor; }
       
    protected:
 
@@ -217,11 +219,18 @@ class CbmTofDigitizerBDF : public FairTask
                                         Double_t dBaseXa, Double_t dBaseYa,
                                         Double_t dBaseXb, Double_t dBaseYb );
 
-      /**
-       ** @brief Retrieve event info from run manager to properly fill the CbmLink objects.
-       **/      
+      /** Get event information
+       ** @param[out]  eventNumber  Number of MC event
+       ** @param[out]  inputNumber  Number of input
+       ** @param[out]  eventTime    Start time of event [ns]
+       **  
+       ** In case of being run with FairRunAna, this information
+       ** is taken from FairEventHeader. If the task is run with
+       ** FairRunSim, the FairEventHeader is not filled, so the
+       ** respective information is taken from FairMCEventHeader.
+       **/ 
       void GetEventInfo(Int_t& inputNr, Int_t& eventNr, Double_t& eventTime);
-
+      
       // Fee properties and constants
       Double_t            fdFeeGainSigma;
       Double_t            fdFeeTotThr;
@@ -323,7 +332,14 @@ class CbmTofDigitizerBDF : public FairTask
 
       TString fsBeamInputFile;
 
-   ClassDef(CbmTofDigitizerBDF, 2);
+      Bool_t fbMonitorHistos;
+      Bool_t fbTimeBasedOutput;
+
+      Int_t fiCurrentFileId;
+      Int_t fiCurrentEventId;
+      Double_t fdCurrentEventTime;
+
+   ClassDef(CbmTofDigitizerBDF, 3);
 };
 
 #endif // CBMTOFDIGITIZERBDF_H

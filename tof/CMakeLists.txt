@@ -22,6 +22,8 @@ ${CBMROOT_SOURCE_DIR}/eventdisplay
 
 ${CBMROOT_SOURCE_DIR}/data
 ${CBMROOT_SOURCE_DIR}/data/tof
+
+${CBMROOT_SOURCE_DIR}/run
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})

@@ -12,6 +12,7 @@
 #include "TNamed.h"
 #include "CbmStsDigi.h"
 #include "CbmMuchDigi.h"
+#include "CbmTofDigiExp.h"
 #include "CbmDigi.h"
 
 #ifndef __CINT__ // for BOOST serialization
@@ -129,6 +130,7 @@ class CbmTimeSlice : public TNamed
      */
     vector<CbmMuchDigi> GetMuchData() {return fMuchData; } 
     vector<CbmStsDigi>  GetStsData()  {return fStsData; }
+    vector<CbmTofDigiExp>  GetTofData()  {return fTofData; }
     
 
     template <class Archive>
@@ -148,6 +150,7 @@ class CbmTimeSlice : public TNamed
     Bool_t   fIsEmpty;             ///< Flag for containing no data
     vector<CbmStsDigi> fStsData;   ///< raw data container for STS
     vector<CbmMuchDigi> fMuchData; ///< raw data container for MUCH
+    vector<CbmTofDigiExp> fTofData;   ///< raw data container for TOF
     CbmMatch fMatch;               ///< link time slice to events
 
     
@@ -156,7 +159,7 @@ class CbmTimeSlice : public TNamed
     friend class boost::serialization::access;
     #endif // for BOOST serialization
 
-    ClassDef(CbmTimeSlice,2)
+    ClassDef(CbmTimeSlice,3)
 };
 
 #endif /* CBMTIMESLICE_H */

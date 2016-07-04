@@ -21,15 +21,16 @@
 #include "CbmLink.h"
 #include "CbmMCTrack.h"
 #include "CbmMatch.h"
+#include "CbmDaqBuffer.h"
 
 // FAIR classes and includes
 #include "FairRootManager.h"
 #include "FairRunAna.h"
+#include "FairRunSim.h"
 #include "FairRuntimeDb.h"
 #include "FairLogger.h"
 #include "FairMCEventHeader.h" // from CbmStsDigitize, for GetEventInfo
 #include "FairEventHeader.h" // from CbmStsDigitize, for GetEventInfo
-#include "FairRunSim.h" // from CbmStsDigitize, for GetEventInfo
 
 // ROOT Classes and includes
 #include "TClonesArray.h"
@@ -130,7 +131,12 @@ CbmTofDigitizerBDF::CbmTofDigitizerBDF():
    fStop(),
    fdDigitizeTime(0.),
    fdMergeTime(0.),
-   fsBeamInputFile("")
+   fsBeamInputFile(""),
+   fbMonitorHistos(kTRUE),
+   fbTimeBasedOutput(kFALSE),
+   fiCurrentFileId(-1),
+   fiCurrentEventId(-1),
+   fdCurrentEventTime(0.)
 {
 
 }
@@ -196,7 +202,12 @@ CbmTofDigitizerBDF::CbmTofDigitizerBDF(const char *name, Int_t verbose):
    fStop(),
    fdDigitizeTime(0.),
    fdMergeTime(0.),
-   fsBeamInputFile("")
+   fsBeamInputFile(""),
+   fbMonitorHistos(kTRUE),
+   fbTimeBasedOutput(kFALSE),
+   fiCurrentFileId(-1),
+   fiCurrentEventId(-1),
+   fdCurrentEventTime(0.)
 {
 
 }
@@ -217,6 +228,14 @@ CbmTofDigitizerBDF::~CbmTofDigitizerBDF()
 // FairTasks inherited functions
 InitStatus CbmTofDigitizerBDF::Init()
 {
+   // If the task CbmDaq is found, send time-based output to it.
+   FairTask* daq = FairRun::Instance()->GetTask("Daq");
+   if ( daq )
+   {
+     LOG(INFO) << GetName() << ": Sending time-based output to DAQ." << FairLogger::endl;
+     fbTimeBasedOutput = kTRUE;
+   }
+
    if( kFALSE == RegisterInputs() )
       return kFATAL;
 
@@ -232,16 +251,20 @@ InitStatus CbmTofDigitizerBDF::Init()
    if( kFALSE == CreateHistos() )
       return kFATAL;
 
+   // use default seed (same random numbers will be generated each time)
+   // use 0: a unique seed will be automatically generated using TUUID
+   // - simulation results should be reproducible!
+
    fRandStart  = new TRandom3();
-   fRandStart->SetSeed(0);
+//   fRandStart->SetSeed(0);
    fRandEff    = new TRandom3();
-   fRandEff->SetSeed(0);
+//   fRandEff->SetSeed(0);
    fRandRadius = new TRandom3();
-   fRandRadius->SetSeed(0);
+//   fRandRadius->SetSeed(0);
    fRandCharge = new TRandom3();
-   fRandCharge->SetSeed(0);
+//   fRandCharge->SetSeed(0);
    fRandRes    = new TRandom3();
-   fRandRes->SetSeed(0);
+//   fRandRes->SetSeed(0);
 
    return kSUCCESS;
 }
@@ -263,6 +286,9 @@ void CbmTofDigitizerBDF::SetParContainers()
 
 void CbmTofDigitizerBDF::Exec(Option_t* /*option*/)
 {
+   // Get FairEventHeader information for CbmLink objects
+   GetEventInfo(fiCurrentFileId, fiCurrentEventId, fdCurrentEventTime);
+
    fTofDigisColl->Clear("C");
 //   fTofDigiMatchPointsColl->Clear("C"); // Not enough => CbmMatch has no Clear functions!!
    fTofDigiMatchPointsColl->Delete();
@@ -340,13 +366,22 @@ Bool_t   CbmTofDigitizerBDF::RegisterOutputs()
    } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
       else
       {
+         if(fbTimeBasedOutput)
+         {
+            LOG(ERROR)<<"CbmTofDigitizerBDF::RegisterOutputs => For time-based output, set 'UseExpDigi' to '1' in your *.digibdf.par file!!!"<<FairLogger::endl;
+            return kFALSE;
+         }
+
          fTofDigisColl = new TClonesArray("CbmTofDigi");
       } // else of if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
    fTofDigiMatchPointsColl = new TClonesArray("CbmMatch",100000);
 
-   // Flag check to control whether digis are written in ouput root file
-   rootMgr->Register( "TofDigi","Tof", fTofDigisColl, IsOutputBranchPersistent("TofDigi"));
-   rootMgr->Register( "TofDigiMatchPoints","Tof", fTofDigiMatchPointsColl, IsOutputBranchPersistent("TofDigiMatchPoints"));
+   if(!fbTimeBasedOutput)
+   {
+      // Flag check to control whether digis are written in ouput root file
+      rootMgr->Register( "TofDigi","Tof", fTofDigisColl, IsOutputBranchPersistent("TofDigi"));
+      rootMgr->Register( "TofDigiMatchPoints","Tof", fTofDigiMatchPointsColl, IsOutputBranchPersistent("TofDigiMatchPoints"));
+   }
 
    return kTRUE;
 }
@@ -412,7 +447,7 @@ Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
    fdChannelGain.resize( iNbSmTypes );
 
    TRandom3 randFeeGain;
-   randFeeGain.SetSeed(0);
+//   randFeeGain.SetSeed(0);
 
    // Save the total number of electronic channels for the "Occupancy" estimation
    // and the first channel of each RPC for the multiple signals estimation
@@ -489,7 +524,17 @@ Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
          Double_t dNbBinsProb = fh1ClusterSizeProb[iSmType]->GetNbinsX();
          Int_t    iProbBin   = 1;
          Double_t dIntegral  = 0.;
-         Double_t dIntSize   = hClusterSize->GetEntries();
+//         Double_t dIntSize   = hClusterSize->GetEntries();
+         // BUGFIX
+         // The histogram integral is the sum of bin contents (1-N), while the
+         // number of histogram entries is given by the number of times the
+         // Fill() method was called.
+         // The quantile histogram 'fh1ClusterSizeProb' computed below might
+         // contain a few F^-1(u) = 0 towards u = 1 if the underflow and/or
+         // overflow bins of the original PDF histogram were populated. This
+         // in return would lead to an excess at 0 in the spectrum of values
+         // sampled from the quantile histogram.
+         Double_t dIntSize   = hClusterSize->Integral();
          Double_t dSizeVal   = 0.;
 
          for( Int_t iBin = 1; iBin <= iNbBinsSize; iBin++ )
@@ -542,7 +587,17 @@ Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
       Double_t dNbBinsProb = fh1ClusterTotProb[iSmType]->GetNbinsX();
       Int_t    iProbBin   = 1;
       Double_t dIntegral  = 0.;
-      Double_t dIntTot    = hClusterTot->GetEntries();
+//      Double_t dIntTot    = hClusterTot->GetEntries();
+         // BUGFIX
+         // The histogram integral is the sum of bin contents (1-N), while the
+         // number of histogram entries is given by the number of times the
+         // Fill() method was called.
+         // The quantile histogram 'fh1ClusterTotProb' computed below might
+         // contain a few F^-1(u) = 0 towards u = 1 if the underflow and/or
+         // overflow bins of the original PDF histogram were populated. This
+         // in return would lead to an excess at 0 in the spectrum of values
+         // sampled from the quantile histogram.
+      Double_t dIntTot    = hClusterTot->Integral();
       Double_t dTotVal    = 0.;
       Double_t dPsToNs = 1e3; // FIXME? Most histograms from analysis are in ps, simulation used ns !!
 
@@ -658,6 +713,11 @@ Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
 // Histogramming functions
 Bool_t   CbmTofDigitizerBDF::CreateHistos()
 {
+   if(!fbMonitorHistos)
+   {
+     return kTRUE;
+   }
+
    TDirectory * oldir = gDirectory; // <= To prevent histos from being sucked in by the param file of the TRootManager!
    gROOT->cd(); // <= To prevent histos from being sucked in by the param file of the TRootManager !
 
@@ -742,6 +802,11 @@ Bool_t   CbmTofDigitizerBDF::CreateHistos()
 }
 Bool_t   CbmTofDigitizerBDF::FillHistos()
 {
+   if(!fbMonitorHistos)
+   {
+     return kTRUE;
+   }
+
    Int_t nTofPoint = fTofPointsColl->GetEntries();
    Int_t nTracks   = fMcTracksColl->GetEntries();
    Int_t nTofDigi  = fTofDigisColl->GetEntries();
@@ -815,8 +880,8 @@ Bool_t   CbmTofDigitizerBDF::FillHistos()
       {
          pDigi = (CbmTofDigiExp*) fTofDigisColl->At( iDigInd );
          CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchPointsColl->At(iDigInd);	
-	 CbmLink L0 = digiMatch->GetMatchedLink(); 
-	 CbmTofPoint* point = (CbmTofPoint*)fTofPointsColl->At( L0.GetIndex()); 
+         CbmLink L0 = digiMatch->GetMatchedLink(); 
+         CbmTofPoint* point = (CbmTofPoint*)fTofPointsColl->At( L0.GetIndex()); 
 
          if( pDigi->GetTot() < 0 )
             cout<<iDigInd<<"/"<<nTofDigi<<" "<<pDigi->GetTot()<<endl;
@@ -835,10 +900,10 @@ Bool_t   CbmTofDigitizerBDF::FillHistos()
          for( Int_t iDigInd = 0; iDigInd < nTofDigi; iDigInd++ )
          {
             pDigi = (CbmTofDigi*) fTofDigisColl->At( iDigInd );
-	    CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchPointsColl->At(iDigInd);	
-	    CbmLink L0 = digiMatch->GetMatchedLink();
-	    CbmTofPoint* point = (CbmTofPoint*)fTofPointsColl->At( L0.GetIndex()); 
-	 //			CbmTofPoint* point = (CbmTofPoint*)fTofPointsColl->At(pDigi->GetMatch()->GetMatchedLink().GetIndex()); 
+            CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchPointsColl->At(iDigInd);	
+            CbmLink L0 = digiMatch->GetMatchedLink();
+            CbmTofPoint* point = (CbmTofPoint*)fTofPointsColl->At( L0.GetIndex()); 
+            //     CbmTofPoint* point = (CbmTofPoint*)fTofPointsColl->At(pDigi->GetMatch()->GetMatchedLink().GetIndex()); 
             if( pDigi->GetTot() < 0 )
                cout<<iDigInd<<"/"<<nTofDigi<<" "<<pDigi->GetTot()<<endl;
             fhDigiTime->Fill( pDigi->GetTime() );
@@ -861,7 +926,7 @@ Bool_t CbmTofDigitizerBDF::SetHistoFileName( TString sFilenameIn )
 }
 Bool_t   CbmTofDigitizerBDF::WriteHistos()
 {
-   if( "" == fsHistoOutFilename )
+   if( "" == fsHistoOutFilename || !fbMonitorHistos )
    {
       LOG(INFO) << "CbmTofDigitizerBDF::WriteHistos => Control histograms will not be written to disk!" 
                 << FairLogger::endl;
@@ -927,6 +992,10 @@ Bool_t   CbmTofDigitizerBDF::WriteHistos()
 }
 Bool_t   CbmTofDigitizerBDF::DeleteHistos()
 {
+   if(!fbMonitorHistos)
+   {
+     return kTRUE;
+   }
 
    delete fhTofPointsPerTrack;
    delete fhTofPtsInTrkVsGapInd;
@@ -975,13 +1044,7 @@ Bool_t   CbmTofDigitizerBDF::DeleteHistos()
 // TODO: FEE double hit discrimination capability (using Time distance between Digis)
 // TODO: Charge summing up
 Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
-{
-	// --- MC Event info (input file, entry number, start time)
-	Int_t    iInputNr   = 0;
-	Int_t    iEventNr   = 0;
-	Double_t dEventTime = 0.;
-	GetEventInfo(iInputNr, iEventNr, dEventTime);
-   
+{   
    Int_t iNbSmTypes = fDigiBdfPar->GetNbSmTypes();
    if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
    {
@@ -1007,13 +1070,16 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                      std::vector<Int_t> vPrevTrackIdList;
                      if( 0 < iNbDigis )
                      {
-                        fhNbDigiEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbDigis);
-                        
-                        fhDigiNbElecCh->Fill(iNbDigis);
+                        if(fbMonitorHistos)
+                        {
+                          fhNbDigiEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbDigis);
+                          
+                          fhDigiNbElecCh->Fill(iNbDigis);
 
-                        fhFiredEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide );
-                        if( 1 < iNbDigis )
-                           fhMultiDigiEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide );
+                          fhFiredEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide );
+                          if( 1 < iNbDigis )
+                             fhMultiDigiEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide );
+                        }
 
                         if (0 == fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].size()){
                            LOG(ERROR)<<Form(" cannot add digiMatch for (%d,%d,%d,%d,%d) at pos  %d",
@@ -1031,8 +1097,7 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                         {
                            // Store Link with weight 0 to have a trace of MC tracks firing the channel 
                            // but whose Digi is not propagated to next stage
-                           digiMatch->AddLink(CbmLink(0.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi], 
-                                                      iEventNr, iInputNr ));
+                           digiMatch->AddLink(CbmLink(0.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi],fiCurrentEventId,fiCurrentFileId ));
                         
                           if( fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetTime()
                                                                                           < dMinTime )
@@ -1062,8 +1127,12 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                               }  // if( kFALSE ==  bTrackFound )
                           } // if fastest digi on this side of the channel
                         } // for( Int_t iDigi = 0; iDigi < iNbDigis; iDigi++)
-                        // TOF QA: monitor number of tracks leading to digi before merging them
-                        fhNbTracksEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbTracks );
+                        
+                        if(fbMonitorHistos)
+                        {
+                          // TOF QA: monitor number of tracks leading to digi before merging them
+                          fhNbTracksEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbTracks );
+                        }
 
                         new((*fTofDigisColl)[fiNbDigis]) CbmTofDigiExp(
                               *fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] );
@@ -1072,13 +1141,28 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                               iChosenDigi, fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].size(),
                               iSmType,iSm,iRpc,iCh,iSide,fiNbDigis)<<FairLogger::endl;
 
-                        digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi], 
-                                                      iEventNr, iInputNr ));
+                        digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi],fiCurrentEventId,fiCurrentFileId ));
+
+                        // In time-based mode, 'CbmDaq::FillTimeSlice' takes care of deleting the digi objects.
+                        if(fbTimeBasedOutput)
+                        {
+                          CbmTofDigiExp* tNewDigi = new CbmTofDigiExp(*fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] );
+                          tNewDigi->SetTime(tNewDigi->GetTime() + fdCurrentEventTime);
+                          tNewDigi->SetMatch(digiMatch);
+
+                          CbmDaqBuffer::Instance()->InsertData(tNewDigi);
+                        }
 
                         new((*fTofDigiMatchPointsColl)[fiNbDigis]) CbmMatch(*digiMatch);
                         CbmLink LP = digiMatch->GetMatchedLink(); 
                         Int_t lp=LP.GetIndex();
-                        delete digiMatch;
+
+                        // In time-based mode, calling '~CbmDigi()' when destroying the digi object in 'CbmDaq::FillTimeSlice'
+                        // takes care of deleting the match object as well.
+                        if(!fbTimeBasedOutput)
+                        {
+                          delete digiMatch;
+                        }
 
                         LOG(DEBUG)<<"CbmTofDigitizerBDF:: TofDigiMatchColl entry "
                              <<fTofDigiMatchPointsColl->GetEntries()-1
@@ -1107,9 +1191,6 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
    } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
    else
    {
-      LOG(ERROR)<<Form(" skip compressed digi section ")<<FairLogger::endl;
-      return 0;
-
       // loop over each (Smtype, Sm, Rpc, Channel, Side)
       for( Int_t iSmType = 0; iSmType < iNbSmTypes; iSmType++ )
       {
@@ -1131,13 +1212,16 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                      std::vector<Int_t> vPrevTrackIdList;
                      if( 0 < iNbDigis )
                      {
-                        fhNbDigiEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbDigis);
-                        
-                        fhDigiNbElecCh->Fill(iNbDigis);
+                        if(fbMonitorHistos)
+                        {
+                          fhNbDigiEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbDigis);
+                          
+                          fhDigiNbElecCh->Fill(iNbDigis);
 
-                        fhFiredEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide );
-                        if( 1 < iNbDigis )
-                           fhMultiDigiEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide );
+                          fhFiredEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide );
+                          if( 1 < iNbDigis )
+                             fhMultiDigiEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide );
+                        }
 
                         Int_t iChosenDigi = -1;
                         Double_t dMinTime = 1e18;
@@ -1146,8 +1230,7 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                         {
                            // Store Link with weight 0 to have a trace of MC tracks firing the channel 
                            // but whose Digi is not propagated to next stage
-                           digiMatch->AddLink(CbmLink(0.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi], 
-                                                      iEventNr, iInputNr ));
+                           digiMatch->AddLink(CbmLink(0.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi],fiCurrentEventId,fiCurrentFileId ));
                            
                            if( fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetTime()
                                                                                           < dMinTime )
@@ -1178,16 +1261,18 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                            } // if fastest digi on this side of the channel
                         } // for( Int_t iDigi = 0; iDigi < iNbDigis; iDigi++)
                         
-                        // TOF QA: monitor number of tracks leading to digi before merging them
-                        fhNbTracksEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbTracks );
+                        if(fbMonitorHistos)
+                        {
+                          // TOF QA: monitor number of tracks leading to digi before merging them
+                          fhNbTracksEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbTracks );
+                        }
 
                         LOG(DEBUG)<<Form(" New Tof Digi ")<<FairLogger::endl;
 
                         new((*fTofDigisColl)[fiNbDigis]) CbmTofDigi(
                               *fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] );
 
-                        digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi], 
-                                                      iEventNr, iInputNr ));
+                        digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi],fiCurrentEventId,fiCurrentFileId ));
                         
                         new((*fTofDigiMatchPointsColl)[fiNbDigis]) CbmMatch(*digiMatch);
                         CbmLink LP = digiMatch->GetMatchedLink(); 
@@ -1382,7 +1467,21 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
    Int_t    iChType;
 
    // Start jitter: Same contrib. for all points in same event
-   Double_t dStartJitter = fRandStart->Gaus( 0.0, fDigiBdfPar->GetStartTimeRes() );
+   // FIXME
+   // Actually, event start time reconstruction should not be done in the ToF
+   // digitizer, neither in event-based nor in time-based mode. The timestamp
+   // of a CbmTofDigi object is not the time difference between signals in a
+   // (hypothetical) start detector system and the MRPC wall but rather
+   // represents the detection point in time in an MRPC measured with respect to
+   // the start of the run.
+   // For compatibility reasons, we continue adding a start detector jitter to
+   // digi timestamps in event-based mode. In time-based mode, event start time
+   // reconstruction is not considered here.
+   Double_t dStartJitter = 0.;
+   if(!fbTimeBasedOutput)
+   {
+     dStartJitter = fRandStart->Gaus( 0.0, fDigiBdfPar->GetStartTimeRes() );
+   }
 
    for (Int_t iPntInd = 0; iPntInd < nTofPoint; iPntInd++ )
    {
@@ -1579,6 +1678,9 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
 //                                          poipos_local[1] + 2*iClusterSize,
 //                                          3
 //                                          );
+         // FIXME: wrong normalization
+         //         why is there a coefficient of 1/2 for the standard deviation?
+         //         why is the mean given in [cm] and the standard deviation dimensionless?
          f1ChargeGauss->SetParameters( dClustCharge/( TMath::Sqrt( 2.0*TMath::Pi()*iClusterSize/6.0 )),
                                        poipos_local[1], 0.5*iClusterSize/3.0);
 
@@ -1873,7 +1975,21 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
    Int_t    iChType;
 
    // Start jitter: Same contrib. for all points in same event
-   Double_t dStartJitter = fRandStart->Gaus( 0.0, fDigiBdfPar->GetStartTimeRes() );
+   // FIXME
+   // Actually, event start time reconstruction should not be done in the ToF
+   // digitizer, neither in event-based nor in time-based mode. The timestamp
+   // of a CbmTofDigi object is not the time difference between signals in a
+   // (hypothetical) start detector system and the MRPC wall but rather
+   // represents the detection point in time in an MRPC measured with respect to
+   // the start of the run.
+   // For compatibility reasons, we continue adding a start detector jitter to
+   // digi timestamps in event-based mode. In time-based mode, event start time
+   // reconstruction is not considered here.
+   Double_t dStartJitter = 0.;
+   if(!fbTimeBasedOutput)
+   {
+     dStartJitter = fRandStart->Gaus( 0.0, fDigiBdfPar->GetStartTimeRes() );
+   }
 
    for (Int_t iPntInd = 0; iPntInd < nTofPoint; iPntInd++ )
    {
@@ -2769,7 +2885,21 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
    Int_t    iChType;
 
    // Start jitter: Same contrib. for all points in same event
-   Double_t dStartJitter = fRandStart->Gaus( 0.0, fDigiBdfPar->GetStartTimeRes() );
+   // FIXME
+   // Actually, event start time reconstruction should not be done in the ToF
+   // digitizer, neither in event-based nor in time-based mode. The timestamp
+   // of a CbmTofDigi object is not the time difference between signals in a
+   // (hypothetical) start detector system and the MRPC wall but rather
+   // represents the detection point in time in an MRPC measured with respect to
+   // the start of the run.
+   // For compatibility reasons, we continue adding a start detector jitter to
+   // digi timestamps in event-based mode. In time-based mode, event start time
+   // reconstruction is not considered here.
+   Double_t dStartJitter = 0.;
+   if(!fbTimeBasedOutput)
+   {
+     dStartJitter = fRandStart->Gaus( 0.0, fDigiBdfPar->GetStartTimeRes() );
+   }
 
    for (Int_t iPntInd = 0; iPntInd < nTofPoint; iPntInd++ )
    {
@@ -4318,15 +4448,13 @@ Double_t  CbmTofDigitizerBDF::DistanceCircleToBase(
          return 0.0;
       } // else of if( 0.0 <= dRoot )
 }
-/************************************************************************************/
-
-void CbmTofDigitizerBDF::GetEventInfo(Int_t& inputNr, Int_t& eventNr,
-                                         Double_t& eventTime)
+void CbmTofDigitizerBDF::GetEventInfo(Int_t& inputNr, Int_t& eventNr, Double_t& eventTime)
 {
-
     // --- In a FairRunAna, take the information from FairEventHeader
-    if ( FairRunAna::Instance() ) {
-        FairEventHeader* event = FairRunAna::Instance()->GetEventHeader();
+    if ( FairRunAna::Instance() )
+    {
+      FairEventHeader* event = FairRunAna::Instance()->GetEventHeader();
+
       inputNr   = event->GetInputFileId();
       eventNr   = event->GetMCEntryNumber();
       eventTime = event->GetEventTime();
@@ -4334,15 +4462,16 @@ void CbmTofDigitizerBDF::GetEventInfo(Int_t& inputNr, Int_t& eventNr,
 
     // --- In a FairRunSim, the input number and event time are always zero;
     // --- only the event number is retrieved.
-    else {
-        if ( ! FairRunSim::Instance() )
-            LOG(FATAL) << GetName() << ": neither SIM nor ANA run." 
-                           << FairLogger::endl;
-        FairMCEventHeader* event = FairRunSim::Instance()->GetMCEventHeader();
-        inputNr   = 0;
-        eventNr   = event->GetEventID();
-        eventTime = 0.;
-    }
+    else
+    {
+      if ( ! FairRunSim::Instance() )
+         LOG(FATAL) << GetName() << ": neither SIM nor ANA run." << FairLogger::endl;
 
+      FairMCEventHeader* event = FairRunSim::Instance()->GetMCEventHeader();
+
+      inputNr   = 0;
+      eventNr   = event->GetEventID();
+      eventTime = 0.;
+    }
 }
 /************************************************************************************/

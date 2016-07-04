@@ -25,6 +25,7 @@ CbmTimeSlice::CbmTimeSlice()
    fIsEmpty(kTRUE),
    fStsData(),
    fMuchData(),
+   fTofData(),
    fMatch()
 {
 }
@@ -40,6 +41,7 @@ CbmTimeSlice::CbmTimeSlice(Double_t start, Double_t duration)
    fIsEmpty(kTRUE),
    fStsData(),
    fMuchData(),
+   fTofData(),
    fMatch()
 {
 }
@@ -67,6 +69,9 @@ CbmDigi* CbmTimeSlice::GetData(DetectorId iDet, UInt_t index) {
     case kMUCH:
       if ( index < fMuchData.size() ) digi = &(fMuchData[index]);
       break;
+    case kTOF:
+      if ( index < fTofData.size() ) digi = &(fTofData[index]);
+      break;
     default:
       break;
   }
@@ -81,6 +86,7 @@ Int_t CbmTimeSlice::GetDataSize(DetectorId iDet) const {
   switch (iDet) {
     case kSTS:  return fStsData.size();
     case kMUCH: return fMuchData.size();
+    case kTOF:  return fTofData.size();
     default:    return 0;
   }
 
@@ -133,6 +139,13 @@ void CbmTimeSlice::InsertData(CbmDigi* data) {
       break;
    }
 
+    case kTOF: {
+      CbmTofDigiExp* digi = static_cast<CbmTofDigiExp*>(data);
+      fTofData.push_back(*digi);
+      fIsEmpty = kFALSE;
+      break;
+   }
+
     default:
       TString sysName;
       CbmDetectorList::GetSystemName(iDet, sysName);
@@ -151,6 +164,7 @@ void CbmTimeSlice::Reset(Double_t start, Double_t duration) {
 
   fStsData.clear();
   fMuchData.clear();
+  fTofData.clear();
   fIsEmpty = kTRUE;
   fStartTime = start;
   fDuration = duration;
@@ -217,6 +231,7 @@ string CbmTimeSlice::ToString() const {
   		<< ", " << GetEndTime() << "] ns, Data:";
   ss << " STS "  << fStsData.size();
   ss << " MUCH " << fMuchData.size();
+  ss << " TOF "  << fMuchData.size();
   return ss.str();
 }
 // ---------------------------------------------------------------------------
