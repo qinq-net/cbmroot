@@ -93,7 +93,7 @@ const Double_t lensebeschichtung =0.1;
 const Double_t absorberthickness =0.1;
 const Double_t absorberradius =1.6;
 
-const Double_t sensplanesize=80;
+const Double_t sensplanesize=200;
 const Double_t sensplaneboxdis=1;
 
 
