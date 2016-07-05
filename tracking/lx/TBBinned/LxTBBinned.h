@@ -924,6 +924,16 @@ struct LxTbBinnedFinder
         {
             scaltype lastZ = lastStation.z;
             scaltype deltaZsTrd[4] = {trdStation.Zs[0] - lastZ, trdStation.Zs[2] - lastZ, trdStation.Zs[2] - lastZ, trdStation.Zs[3] - lastZ};
+            scaltype dispX0Sq = trdStation.dispXs[0] * trdStation.dispXs[0];
+            scaltype dispY0Sq = trdStation.dispYs[0] * trdStation.dispYs[0];
+            scaltype dispX1Sq = trdStation.dispXs[1] * trdStation.dispXs[1];
+            scaltype dispY1Sq = trdStation.dispYs[1] * trdStation.dispYs[1];
+            scaltype trdDeltaZ10 = (trdStation.Zs[1] - trdStation.Zs[0]);
+            scaltype trdDeltaZ10Sq = trdDeltaZ10 * trdDeltaZ10;
+            scaltype trdDeltaZ21 = (trdStation.Zs[2] - trdStation.Zs[1]);
+            scaltype trdDeltaZ21Sq = trdDeltaZ21 * trdDeltaZ21;
+            scaltype trdDeltaZ31 = (trdStation.Zs[3] - trdStation.Zs[1]);
+            scaltype trdDeltaZ31Sq = trdDeltaZ31 * trdDeltaZ31;
             
             for (int i = 0; i < nofTrackBins; ++i)
             {
@@ -939,8 +949,8 @@ struct LxTbBinnedFinder
                     scaltype trdPy0 = lPoint.y + ty * deltaZsTrd[0];
                     scaltype trajLen0 = std::sqrt(1 + tx * tx + ty * ty) * deltaZsTrd[0];
                     scaltype trdPt0 = lPoint.t + 1.e9 * trajLen0 / c; // 1.e9 to convert to ns.
-                    scaltype wX0 = NOF_SIGMAS * trdStation.dispXs[0];
-                    scaltype wY0 = NOF_SIGMAS * trdStation.dispYs[0];
+                    scaltype wX0 = NOF_SIGMAS * sqrt(dispX0Sq + 2 * lPoint.dx * lPoint.dx);
+                    scaltype wY0 = NOF_SIGMAS * sqrt(dispY0Sq + 2 * lPoint.dy * lPoint.dy);
                     scaltype wT0 = NOF_SIGMAS * std::sqrt(2.0) * lPoint.dt;
                     list<LxTbBinnedPoint*> results0;
                     FindNeighbours(trdPx0, wX0, trdPy0, wY0, trdPt0, wT0, 0, results0);
@@ -949,8 +959,8 @@ struct LxTbBinnedFinder
                     scaltype trdPy1 = lPoint.y + ty * deltaZsTrd[1];
                     scaltype trajLen1 = std::sqrt(1 + tx * tx + ty * ty) * deltaZsTrd[1];
                     scaltype trdPt1 = lPoint.t + 1.e9 * trajLen1 / c; // 1.e9 to convert to ns.
-                    scaltype wX1 = NOF_SIGMAS * trdStation.dispXs[1];
-                    scaltype wY1 = NOF_SIGMAS * trdStation.dispYs[1];
+                    scaltype wX1 = NOF_SIGMAS * sqrt(dispX1Sq + 2 * lPoint.dx * lPoint.dx);
+                    scaltype wY1 = NOF_SIGMAS * sqrt(dispY1Sq + 2 * lPoint.dy * lPoint.dy);
                     scaltype wT1 = NOF_SIGMAS * std::sqrt(2.0) * lPoint.dt;
                     list<LxTbBinnedPoint*> results1;
                     FindNeighbours(trdPx1, wX1, trdPy1, wY1, trdPt1, wT1, 1, results1);
@@ -962,15 +972,17 @@ struct LxTbBinnedFinder
                         for (list<LxTbBinnedPoint*>::const_iterator l = results1.begin(); l != results1.end(); ++l)
                         {
                             LxTbBinnedPoint& trdPoint1 = *(*l);
-                            scaltype trdTx = (trdPoint1.x - trdPoint0.x) / (trdStation.Zs[1] - trdStation.Zs[0]);
-                            scaltype trdTy = (trdPoint1.y - trdPoint0.y) / (trdStation.Zs[1] - trdStation.Zs[0]);
+                            scaltype trdTx = (trdPoint1.x - trdPoint0.x) / trdDeltaZ10;
+                            scaltype trdTy = (trdPoint1.y - trdPoint0.y) / trdDeltaZ10;
+                            scaltype trdDtxSq = (trdPoint0.dx * trdPoint0.dx + trdPoint1.dx * trdPoint1.dx) / trdDeltaZ10Sq;
+                            scaltype trdDtySq = (trdPoint0.dy * trdPoint0.dy + trdPoint1.dy * trdPoint1.dy) / trdDeltaZ10Sq;
 
-                            scaltype trdPx2 = trdPoint1.x + trdTx * (trdStation.Zs[2] - trdStation.Zs[1]);
-                            scaltype trdPy2 = trdPoint1.y + trdTy * (trdStation.Zs[2] - trdStation.Zs[1]);
-                            scaltype trajLen2 = std::sqrt(1 + trdTx * trdTx + trdTx * trdTx) * (trdStation.Zs[2] - trdStation.Zs[1]);
+                            scaltype trdPx2 = trdPoint1.x + trdTx * trdDeltaZ21;
+                            scaltype trdPy2 = trdPoint1.y + trdTy * trdDeltaZ21;
+                            scaltype trajLen2 = std::sqrt(1 + trdTx * trdTx + trdTx * trdTx) * trdDeltaZ21;
                             scaltype trdPt2 = trdPoint1.t + 1.e9 * trajLen2 / c; // 1.e9 to convert to ns.
-                            scaltype wX2 = 0.35135;
-                            scaltype wY2 = 0.33515;
+                            scaltype wX2 = NOF_SIGMAS * sqrt(0.0878375 * 0.0878375 + trdDtxSq * trdDeltaZ21Sq + trdPoint1.dx * trdPoint1.dx);//0.35135;
+                            scaltype wY2 = NOF_SIGMAS * sqrt(0.0837875 * 0.0837875 + trdDtySq * trdDeltaZ21Sq + trdPoint1.dy * trdPoint1.dy);//0.33515;
                             scaltype wT2 = NOF_SIGMAS * std::sqrt(2.0) * trdPoint1.dt;
                             list<LxTbBinnedPoint*> results2;
                             FindNeighbours(trdPx2, wX2, trdPy2, wY2, trdPt2, wT2, 2, results2);
@@ -978,12 +990,12 @@ struct LxTbBinnedFinder
                             if (results2.empty())
                                 continue;
 
-                            scaltype trdPx3 = trdPoint1.x + trdTx * (trdStation.Zs[3] - trdStation.Zs[1]);
-                            scaltype trdPy3 = trdPoint1.y + trdTy * (trdStation.Zs[3] - trdStation.Zs[1]);
-                            scaltype trajLen3 = std::sqrt(1 + trdTx * trdTx + trdTx * trdTx) * (trdStation.Zs[3] - trdStation.Zs[1]);
+                            scaltype trdPx3 = trdPoint1.x + trdTx * trdDeltaZ31;
+                            scaltype trdPy3 = trdPoint1.y + trdTy * trdDeltaZ31;
+                            scaltype trajLen3 = std::sqrt(1 + trdTx * trdTx + trdTx * trdTx) * trdDeltaZ31;
                             scaltype trdPt3 = trdPoint1.t + 1.e9 * trajLen3 / c; // 1.e9 to convert to ns.
-                            scaltype wX3 = 0.909;
-                            scaltype wY3 = 0.8455;
+                            scaltype wX3 = NOF_SIGMAS * sqrt(0.22725 * 0.22725 + trdDtxSq * trdDeltaZ31Sq + trdPoint1.dx * trdPoint1.dx);//0.909;
+                            scaltype wY3 = NOF_SIGMAS * sqrt(0.211375 * 0.211375 + trdDtySq * trdDeltaZ31Sq + trdPoint1.dy * trdPoint1.dy);//0.8455;
                             scaltype wT3 = NOF_SIGMAS * std::sqrt(2.0) * trdPoint1.dt;
                             list<LxTbBinnedPoint*> results3;
                             FindNeighbours(trdPx3, wX3, trdPy3, wY3, trdPt3, wT3, 3, results3);

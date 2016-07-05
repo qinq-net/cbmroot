@@ -7,7 +7,7 @@
 #define LXTB_QA
 
 #ifdef LXTB_QA
-#define LXTB_QA_IDEAL
+//#define LXTB_QA_IDEAL
 #endif//LXTB_QA
 
 #include "LxTBTask.h"
@@ -289,7 +289,7 @@ static list<pair<scaltype, scaltype> > triggerTimes_trd1_sign1_dist1;
 #endif//LXTB_QA
 
 InitStatus LxTBFinder::Init()
-{
+{   
     FairRootManager* ioman = FairRootManager::Instance();
     
     if (0 == ioman)
@@ -298,6 +298,11 @@ InitStatus LxTBFinder::Init()
     speedOfLight = 100 * TMath::C();// Multiply by 100 to express in centimeters.
     gMuonMass = TDatabasePDG::Instance()->GetParticle(13)->Mass();
     gElectronMass = TDatabasePDG::Instance()->GetParticle(11)->Mass();
+    
+   //time_t initTime;
+   //gRandomGen.SetSeed(time(&initTime));
+   //CreateMuonPair(3.1);
+   
     TObjArray* absorbers = CbmMuchGeoScheme::Instance()->GetAbsorbers();
     
     hasTrd = useTrd ? HasTrd() : false;
@@ -323,6 +328,11 @@ InitStatus LxTBFinder::Init()
     CbmMCDataArray* mcTracks = mcManager->InitBranch("MCTrack");
     
 #ifdef LXTB_QA
+    TH1F* jpsiPHisto = new TH1F("jpsiPHisto", "jpsiPHisto", 90, 0., 30.);
+    TH1F* jpsiMHisto = new TH1F("jpsiMHisto", "jpsiMHisto", 200, 3., 3.2);
+    TH1F* jpsiEHisto = new TH1F("jpsiEHisto", "jpsiEHisto", 90, 0., 30.);
+    TH1F* signalMHisto = new TH1F("signalMHisto", "signalMHisto", 600, 0., 6.0);
+    
     for (int i = 0; i < 1000; ++i)
     {
         Int_t evSize = mcTracks->Size(0, i);
@@ -332,30 +342,108 @@ InitStatus LxTBFinder::Init()
             continue;
         
         vector<TrackDataHolder>& evTracks = fMCTracks.back();
+        const CbmMCTrack* posTrack = 0;
+        const CbmMCTrack* negTrack = 0;
         
         for (int j = 0; j < evSize; ++j)
         {
             evTracks.push_back(TrackDataHolder());
             const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*> (mcTracks->Get(0, i, j));
 
+            if (mcTrack->GetPdgCode() == 443)
+            {
+               Double_t p = mcTrack->GetP();
+               jpsiPHisto->Fill(p);
+               Double_t m = mcTrack->GetMass();
+               jpsiMHisto->Fill(m);
+               Double_t e = mcTrack->GetEnergy();
+               jpsiEHisto->Fill(e);
+            }
+            
             if (mcTrack->GetPdgCode() == 13 || mcTrack->GetPdgCode() == -13)
             {
+               Double_t m = mcTrack->GetMass();
                 Int_t motherId = mcTrack->GetMotherId();
 
                 if (motherId >= 0)
+                //if (motherId < 0)
                 {
-                    const CbmMCTrack* motherTrack = static_cast<const CbmMCTrack*> (mcTracks->Get(0, i, motherId));
+                    const CbmMCTrack* motherTrack = static_cast<const CbmMCTrack*> (mcTracks->Get(0, i, motherId));//
 
-                    if (fFinder->fSignalParticle->fPdgCode == motherTrack->GetPdgCode())
+                    if (fFinder->fSignalParticle->fPdgCode == motherTrack->GetPdgCode())//
                     {
                         evTracks.back().isSignalShort = true;
                         evTracks.back().isSignalLong = true;
                         evTracks.back().isPos = mcTrack->GetPdgCode() == -13;
+                        
+                        if (-13 == mcTrack->GetPdgCode())
+                           posTrack = mcTrack;
+                        else
+                           negTrack = mcTrack;
                     }
                 }
             }
         }// for (int j = 0; j < evSize; ++j)
+        
+        if (0 != posTrack && 0 != negTrack)
+        {
+           Double_t E12 = posTrack->GetEnergy() + negTrack->GetEnergy();
+           Double_t E12Sq = E12 * E12;
+           Double_t P12Sq = (posTrack->GetPx() + negTrack->GetPx()) * (posTrack->GetPx() + negTrack->GetPx()) +
+              (posTrack->GetPy() + negTrack->GetPy()) * (posTrack->GetPy() + negTrack->GetPy()) +
+              (posTrack->GetPz() + negTrack->GetPz()) * (posTrack->GetPz() + negTrack->GetPz());
+           Double_t m = sqrt(E12Sq - P12Sq);
+           signalMHisto->Fill(m);
+        }
     }// for (int i = 0; i < 1000; ++i)
+    
+    {
+      TFile* curFile = TFile::CurrentFile();
+      TString histoName = "jpsiMHisto.root";
+
+      TFile fh(histoName.Data(), "RECREATE");
+      jpsiMHisto->Write();
+      fh.Close();
+      delete jpsiMHisto;
+
+      TFile::CurrentFile() = curFile;
+   }
+    
+   {
+      TFile* curFile = TFile::CurrentFile();
+      TString histoName = "jpsiPHisto.root";
+
+      TFile fh(histoName.Data(), "RECREATE");
+      jpsiPHisto->Write();
+      fh.Close();
+      delete jpsiPHisto;
+
+      TFile::CurrentFile() = curFile;
+   }
+   
+   {
+      TFile* curFile = TFile::CurrentFile();
+      TString histoName = "jpsiEHisto.root";
+
+      TFile fh(histoName.Data(), "RECREATE");
+      jpsiEHisto->Write();
+      fh.Close();
+      delete jpsiEHisto;
+
+      TFile::CurrentFile() = curFile;
+   }
+   
+   {
+      TFile* curFile = TFile::CurrentFile();
+      TString histoName = "signalMHisto.root";
+
+      TFile fh(histoName.Data(), "RECREATE");
+      signalMHisto->Write();
+      fh.Close();
+      delete signalMHisto;
+
+      TFile::CurrentFile() = curFile;
+   }
     
     TH2F* trdHisto = new TH2F("TRD", "TRD", 500, -50., 1000., 500, 0., 600.);
     TH2F* trdHistoXY = new TH2F("TRD_XY", "TRD_XY", 400, -400., 400., 300, -300., 300.);
@@ -714,6 +802,10 @@ void LxTBFinder::AddHit(const CbmPixelHit* hit, Int_t stationNumber)
    scaltype x = hit->GetX();
    scaltype y = hit->GetY();
    scaltype t = tsStartTime + 10;
+   scaltype dx = hit->GetDx();
+   scaltype dy = hit->GetDy();
+   scaltype dt = 4;
+   LxTbBinnedPoint point(x, dx, y, dy, t, dt, /*!hasTrd && */CUR_LAST_STATION == stationNumber);
 #ifdef LXTB_QA        
    //point.eventId = pt.eventId;
    //point.trackId = pt.trackId;
@@ -726,11 +818,38 @@ void LxTBFinder::AddHit(const CbmPixelHit* hit, Int_t stationNumber)
    Int_t trackId = pMCPt->GetTrackID();
    LxTbBinnedPoint::PointDesc ptDesc = { currentEventN, clusterId, trackId };
    t = isTrd ? fTrdPoints[currentEventN][clusterId].t : fMuchPoints[currentEventN][clusterId].t;
+#else
+   const CbmCluster* cluster = static_cast<const CbmCluster*> (isTrd ? fTrdClusters->At(clusterId) : fMuchClusters->At(clusterId));
+   Int_t nDigis = cluster->GetNofDigis();
+   double avT = 0;
+   int nofT = 0;
+
+   for (Int_t i = 0; i < nDigis; ++i)
+   {
+      const CbmMatch* digiMatch = static_cast<const CbmMatch*> (isTrd ? fTrdDigiMatches->At(cluster->GetDigi(i)) : fMuchPixelDigiMatches->At(cluster->GetDigi(i)));
+      Int_t nMCs = digiMatch->GetNofLinks();
+
+      for (Int_t j = 0; j < nMCs; ++j)
+      {
+         const CbmLink& lnk = digiMatch->GetLink(j);
+         Int_t eventId = isEvByEv ? currentEventN : lnk.GetEntry();
+         Int_t pointId = lnk.GetIndex();
+         const FairMCPoint* pMCPt = static_cast<const FairMCPoint*> (isTrd ? fTrdMCPoints->Get(0, eventId, pointId) : fMuchMCPoints->Get(0, eventId, pointId));
+         Int_t trackId = pMCPt->GetTrackID();
+         LxTbBinnedPoint::PointDesc ptDesc = { eventId, pointId, trackId };
+         point.mcRefs.push_back(ptDesc);
+         avT += isTrd ? fTrdPoints[eventId][pointId].t : fMuchPoints[eventId][pointId].t;
+         ++nofT;
+      }
+   }
+   
+   if (nofT > 0)
+      avT /= nofT;
+   
+   t = avT;
 #endif//LXTB_QA_IDEAL
 #endif//LXTB_QA
-   scaltype dx = hit->GetDx();
-   scaltype dy = hit->GetDy();
-   scaltype dt = 4;
+   point.t = t;
    
    scaltype minY = (isTrd ? fFinder->trdStation.minY : fFinder->stations[stationNumber].minY);
    scaltype binSizeY = (isTrd ? fFinder->trdStation.binSizeY : fFinder->stations[stationNumber].binSizeY);
@@ -765,7 +884,7 @@ void LxTBFinder::AddHit(const CbmPixelHit* hit, Int_t stationNumber)
    LxTbXBin& xBin = yxBin.xBins[xInd];
    //LxTbBinnedPoint point(x, dx, y, dy, t, dt, CUR_LAST_STATION == stationNumber);
    //LxTbBinnedPoint point(x, dx, y, dy, t, dt, false);
-   LxTbBinnedPoint point(x, dx, y, dy, t, dt, /*!hasTrd && */CUR_LAST_STATION == stationNumber);
+   //LxTbBinnedPoint point(x, dx, y, dy, t, dt, /*!hasTrd && */CUR_LAST_STATION == stationNumber);
 
 #ifdef LXTB_QA        
    //point.eventId = pt.eventId;
@@ -776,7 +895,7 @@ void LxTBFinder::AddHit(const CbmPixelHit* hit, Int_t stationNumber)
 #ifdef LXTB_QA_IDEAL
    point.mcRefs.push_back(ptDesc);
 #else//LXTB_QA_IDEAL
-   const CbmCluster* cluster = static_cast<const CbmCluster*> (isTrd ? fTrdClusters->At(clusterId) : fMuchClusters->At(clusterId));
+   /*const CbmCluster* cluster = static_cast<const CbmCluster*> (isTrd ? fTrdClusters->At(clusterId) : fMuchClusters->At(clusterId));
    Int_t nDigis = cluster->GetNofDigis();
 
    for (Int_t i = 0; i < nDigis; ++i)
@@ -794,7 +913,7 @@ void LxTBFinder::AddHit(const CbmPixelHit* hit, Int_t stationNumber)
          LxTbBinnedPoint::PointDesc ptDesc = { eventId, pointId, trackId };
          point.mcRefs.push_back(ptDesc);
       }
-   }
+   }*/
 #endif//LXTB_QA_IDEAL
 #endif//LXTB_QA
    
@@ -897,7 +1016,7 @@ struct RTDLess
     }
 };
 
-static void PrintTrigger(list<pair<scaltype, scaltype> >& signalRecoTimes, list<scaltype>& signalMCTimes, const char* name)
+static void PrintTrigger(list<pair<scaltype, scaltype> >& signalRecoTimes, list<scaltype>& signalMCTimes, const char* name, bool write_eff_for_inv_m = false)
 {
    int nofRecoSignals = 0;
    
@@ -931,6 +1050,19 @@ static void PrintTrigger(list<pair<scaltype, scaltype> >& signalRecoTimes, list<
    sprintf(buf, "signal_triggerings_%s.txt", name);
    ofstream signalTriggeringsFile(buf, ios_base::out | ios_base::trunc);
    signalTriggeringsFile << nofRecoSignals;
+   
+   if (write_eff_for_inv_m)
+   {
+      ifstream invMFile("inv_m.txt");
+
+      if (invMFile.is_open())
+      {
+        double invM;
+        invMFile >> invM;
+        ofstream invMEffFile("inv_m_eff.txt", ios_base::out | ios_base::trunc);
+        invMEffFile << invM <<  " " << eff << endl;
+      }
+   }
 }
 
 void LxTBFinder::Finish()
@@ -1077,7 +1209,7 @@ void LxTBFinder::Finish()
    PrintTrigger(triggerTimes_trd1_sign0_dist0, longSignalMCTimes, "triggerTimes_trd1_sign0_dist0");
    PrintTrigger(triggerTimes_trd1_sign0_dist1, longSignalMCTimes, "triggerTimes_trd1_sign0_dist1");
    PrintTrigger(triggerTimes_trd1_sign1_dist0, longSignalMCTimes, "triggerTimes_trd1_sign1_dist0");
-   PrintTrigger(triggerTimes_trd1_sign1_dist1, longSignalMCTimes, "triggerTimes_trd1_sign1_dist1");
+   PrintTrigger(triggerTimes_trd1_sign1_dist1, longSignalMCTimes, "triggerTimes_trd1_sign1_dist1", true);
 #endif//LXTB_QA
    
    for (list<LxTbBinnedFinder::Chain*>::iterator i = recoTracks.begin(); i != recoTracks.end(); ++i)
