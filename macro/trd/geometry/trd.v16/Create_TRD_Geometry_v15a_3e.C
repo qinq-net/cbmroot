@@ -1,5 +1,5 @@
 ///                                             
-/// \file Create_TRD_Geometry_v15a.C
+/// \file Create_TRD_Geometry_v16a.C
 /// \brief Generates TRD geometry in Root format.
 ///                                             
 
@@ -84,7 +84,7 @@
 #include <iostream>
 
 // Name of output file with geometry
-const TString tagVersion   = "v15a";
+const TString tagVersion   = "v16a";
 //const TString subVersion   = "_1h";
 //const TString subVersion   = "_1e";
 //const TString subVersion   = "_1m";
@@ -420,7 +420,7 @@ void dump_info_file();
 void dump_digi_file();
 
 
-void Create_TRD_Geometry_v15a_3e() {
+void Create_TRD_Geometry_v16a_3e() {
 
   // Load needed material definition from media.geo file
   create_materials_from_media_file();
@@ -480,17 +480,13 @@ void Create_TRD_Geometry_v15a_3e() {
 //  gGeoMan->PrintOverlaps();
   gGeoMan->Test();
 
-  trd->Export(FileNameSim);   // an alternative way of writing the top volume
+  trd->Export(FileNameSim);   // an alternative way of writing the trd volume
 
   TFile* outfile = new TFile(FileNameSim, "UPDATE");
   TGeoTranslation* trd_placement = new TGeoTranslation("trd_trans", 0., 0., 0.);  
   trd_placement->Write();
-
-  /*
-  TFile* outfile = new TFile(FileNameSim,"RECREATE");
-  top->Write();      // use this as input to simulations (run_sim.C)
-  */
   outfile->Close();
+
   outfile = new TFile(FileNameGeo,"RECREATE");
   gGeoMan->Write();  // use this is you want GeoManager format in the output
   outfile->Close();
