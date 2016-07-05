@@ -162,7 +162,7 @@ CbmFieldMapDistorted::~CbmFieldMapDistorted() { }
 // -----------   Intialisation   ------------------------------------------
 void CbmFieldMapDistorted::Init() {
   fParentField->Init();
-  fParentField->Print();
+  fParentField->Print("");
   SetFromParent(fParentField);
   ReadDistortionInformation(fDistortionFilename.Data());
 
@@ -426,7 +426,7 @@ void CbmFieldMapDistorted::Print() {
   cout << "----  " << fTitle << " : " << fName << endl;
 
   cout << "==   Parent Field:          ==" << endl;
-  fParentField->Print();
+  fParentField->Print("");
   cout << "==============================" << endl;
 
   cout << "==  Distortion Information File :  ==" << endl;
