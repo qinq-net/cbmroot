@@ -12,13 +12,13 @@ void run_reco(Int_t nEvents = 100)
 
 	gRandom->SetSeed(10);
 
-	//TString mcFile = "/data/cbm/Gregor/mc.00100.root";
-	//TString parFile = "/data/cbm/Gregor/param.00100.root";
-	//TString recoFile ="/data/cbm/Gregor/reco.00100.root";
+	TString mcFile = "/data/cbm/Gregor/mc.01001.root";
+	TString parFile = "/data/cbm/Gregor/param.01001.root";
+	TString recoFile ="/data/cbm/Gregor/reco.01001.root";
     
-    TString parFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/param.00001.root";
-    TString recoFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/reco.00001.root";
-    TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/mc.00001.root";
+    //TString parFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/param.00001.root";
+    //TString recoFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/reco.00001.root";
+    //TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/mc.00001.root";
 
 	remove(recoFile.Data());
 
