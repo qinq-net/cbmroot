@@ -480,16 +480,10 @@ void Create_TRD_Geometry_v15a_3e() {
 //  gGeoMan->PrintOverlaps();
   gGeoMan->Test();
 
-  trd->Export(FileNameSim);   // an alternative way of writing the top volume
+  //  top->Export(FileNameSim);   // an alternative way of writing the top volume
 
-  TFile* outfile = new TFile(FileNameSim, "UPDATE");
-  TGeoTranslation* trd_placement = new TGeoTranslation("trd_trans", 0., 0., 0.);  
-  trd_placement->Write();
-
-  /*
   TFile* outfile = new TFile(FileNameSim,"RECREATE");
   top->Write();      // use this as input to simulations (run_sim.C)
-  */
   outfile->Close();
   outfile = new TFile(FileNameGeo,"RECREATE");
   gGeoMan->Write();  // use this is you want GeoManager format in the output
