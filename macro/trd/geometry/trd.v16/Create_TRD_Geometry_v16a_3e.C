@@ -3,6 +3,7 @@
 /// \brief Generates TRD geometry in Root format.
 ///                                             
 
+// 2016-07-05 - FU - v16a_3e - identical to v15a, change the way the trd volume is exported to resolve a bug with TGeoShape destructor
 // 2015-01-08 - DE - v15a_3e - reduce frame thickness in large modules to 15 mm instead of 20 mm
 // 2014-06-25 - DE - v14a_3e - consists of only 3 small and 3 large modules types (was 4+4 before)
 // 2014-06-25 - DE - v14a_3e - inner part of all 3 stations is now identical
