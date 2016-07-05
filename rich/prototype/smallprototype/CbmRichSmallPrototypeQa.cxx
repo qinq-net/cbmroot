@@ -188,11 +188,24 @@ void CbmRichSmallPrototypeQa::Exec(
 	}
 	
 		
-
+	for(int i=0; i<nofRichPoints; i++)
+	{
+		CbmRichPoint* richpoints= (CbmRichPoint*) (fRichPoints->At(i));
+		Int_t trackid = richpoints->GetTrackID();
+		if(trackid<0) continue;
+		CbmMCTrack* mctrack= (CbmMCTrack*) (fMCTracks->At(trackid));
+		Int_t motherid = mctrack->GetMotherId();
+		if(motherid < 0)
+		{	
+			Double_t xpmtproton = richpoints->GetX();
+			Double_t ypmtproton = richpoints->GetY();
+			fHM->H2("fh_dis_pmt_protons")->Fill(xpmtproton, ypmtproton);
+		}
+	}
 	
 
 	
-/*	for( int i=0; i<nofMCTracks; i++)
+	for( int i=0; i<nofMCTracks; i++)
 	{
 	
 
@@ -208,9 +221,10 @@ void CbmRichSmallPrototypeQa::Exec(
 
 	
 	}
-*/
+
 	
 	for(int iR = 0; iR < nofRichRings; iR++) {
+	
 		CbmRichRing* ring = (CbmRichRing*) (fRichRings->At(iR));
         if (NULL == ring) continue;
         CbmTrackMatchNew* ringMatch = (CbmTrackMatchNew*) fRichRingMatches->At(iR);
@@ -227,20 +241,34 @@ void CbmRichSmallPrototypeQa::Exec(
 
 		Double_t cX = ring->GetCenterX();
     	Double_t cY = ring->GetCenterY();
-		Double_t radius = ring->GetRadius();
+		fHM->H2("fh_cX_cY")->Fill(cX,cY);
         int nofHits = ring->GetNofHits();
+		fHM->H1("fh_hits_per_ring")->Fill(nofHits);
+cout << nofRichRings << endl;
+cout << iR << endl;
+cout<<nofHits<<endl;
+		fHM->H2("fh_hits_per_ring_per_ring")->Fill(iR, nofHits);
+        
 
-        for (int iH = 0; iH < nofHits; iH++){
-            Int_t hitInd = ring->GetHit(iH);
-            CbmRichHit* hit = (CbmRichHit*) fRichHits->At(hitInd);
-            if (NULL == hit) continue;
-            Double_t hitX = hit->GetX();
-            Double_t hitY = hit->GetY();
-            Double_t dR = radius - TMath::Sqrt( (cX - hitX)*( cX - hitX) + (cY - hitY)*(cY - hitY) );
-            fHM->H1("fh_dR")->Fill(dR);
-        }
+//		if(nofHits>0)
+//		{
+			
+			Double_t radius = ring->GetRadius();		
+			fHM->H1("fh_rich_ring_radius")->Fill(radius);
+			fHM->H2("fh_radius_ring")->Fill(iR,radius);
+		
+			for (int iH = 0; iH < nofHits; iH++)
 
-		fHM->H1("fh_rich_ring_radius")->Fill(radius);	
+			{
+            	Int_t hitInd = ring->GetHit(iH);
+            	CbmRichHit* hit = (CbmRichHit*) fRichHits->At(hitInd);
+            	if (NULL == hit) continue;
+            	Double_t hitX = hit->GetX();
+            	Double_t hitY = hit->GetY();
+            	Double_t dR = radius - TMath::Sqrt( (cX - hitX)*( cX - hitX) + (cY - hitY)*(cY - hitY) );
+            	fHM->H1("fh_dR")->Fill(dR);
+        	}
+//		}
 	}
     
     
@@ -250,6 +278,18 @@ void CbmRichSmallPrototypeQa::Exec(
         fHM->H2("fh_dis_rich_hits")->Fill(richHit->GetX(), richHit->GetY());
     }
 
+	for (Int_t i=0; i<nofRefPlanePoints; i++)
+	{
+		CbmRichPoint* pRefPlane = (CbmRichPoint*) (fRefPlanePoints->At(i));
+        
+		Int_t trackid = pRefPlane->GetTrackID();
+		if( trackid < 0) continue;
+		CbmMCTrack* mctrack= (CbmMCTrack*) (fMCTracks->At(trackid));
+		if(mctrack ==NULL) continue;
+		Int_t pdg = mctrack->GetPdgCode();
+		fHM->H1("fh_sensplane_pdg")->Fill(pdg);
+		
+	}
     
 	
 	for (Int_t i=0; i<nofRefPlanePoints; i++)
@@ -261,8 +301,8 @@ void CbmRichSmallPrototypeQa::Exec(
 		if( trackid < 0) continue;
 		CbmMCTrack* mctrack= (CbmMCTrack*) (fMCTracks->At(trackid));
 		if(mctrack ==NULL) continue;
-		Int_t motherid = mctrack->GetMotherId();
-		if(motherid >= 0)										//Check if secondary or primary particle
+		Int_t pdg = mctrack->GetPdgCode();
+		if(pdg != 2212)										//Check if secondary or primary particle
 		{
 			fHM->H2("fh_dis_sec")->Fill(xsec,ysec);
    		} 
@@ -278,7 +318,7 @@ void CbmRichSmallPrototypeQa::Exec(
 		CbmMCTrack* mctrack= (CbmMCTrack*) (fMCTracks->At(trackid));
 		if(mctrack ==NULL) continue;
 		Int_t motherid = mctrack->GetMotherId();
-		//if(motherid >= 0)
+		
 		{
 			fHM->H2("fh_dis_primsec")->Fill(xprimsec,yprimsec);
    		} 
@@ -293,12 +333,24 @@ void CbmRichSmallPrototypeQa::Exec(
 		if( trackid < 0) continue;
 		CbmMCTrack* mctrack= (CbmMCTrack*) (fMCTracks->At(trackid));
 		if(mctrack ==NULL) continue;
-		Int_t motherid = mctrack->GetMotherId();
-		if(motherid <= 0)
+		Int_t pdg = mctrack->GetPdgCode();
+
+		if(pdg==2212)
 		{
 			fHM->H2("fh_dis_prim")->Fill(xprim,yprim);
    		} 
+		
 	}
+	
+/*	for (Int_t i=0; i<nofRichDigis; i++)
+	{
+		CbmRichDigi* digi = (CbmRichDigi*) (fRichDigis->At(i));
+		
+
+
+	}
+*/
+
 }	
 
 void CbmRichSmallPrototypeQa::InitHistograms()
@@ -324,23 +376,30 @@ void CbmRichSmallPrototypeQa::InitHistograms()
 
 	
 //RICH
-	fHM->Create1<TH1D>("fh_nof_rich_points", "fh_nof_rich_points;Nof Rich Points;Yield", 300, 0., 2000.);
-	fHM->Create1<TH1D>("fh_nof_rich_digis", "fh_nof_rich_digis;Nof Rich Digis;Yield", 300, 0., 1000.);
-	fHM->Create1<TH1D>("fh_nof_rich_hits", "fh_nof_rich_hits;Nof Rich hits;Yield", 300, 0., 350.);
-	fHM->Create1<TH1D>("fh_nof_rich_rings", "fh_nof_rich_rings;Nof Rich rings;Yield", 5, -0.5, 4.5);
+	fHM->Create1<TH1D>("fh_nof_rich_points", "fh_nof_rich_points;Nof Rich Points;Yield (a.u.)", 250, 0., 500.);
+	fHM->Create1<TH1D>("fh_nof_rich_digis", "fh_nof_rich_digis;Nof Rich Digis;Yield (a.u.)", 250, 0., 1000.);
+	fHM->Create1<TH1D>("fh_nof_rich_hits", "fh_nof_rich_hits;Nof Rich hits;Yield (a.u.)", 70, 0., 70.);
+	fHM->Create1<TH1D>("fh_nof_rich_rings", "fh_nof_rich_rings;Nof Rich rings;Yield (a.u.)", 5, -0.5, 4.5);
 
-	fHM->Create1<TH1D>("fh_rich_ring_radius","fh_rich_ring_radius; Ring Radius [cm]; Yield", 1000, -0.5, 9.5);
+	fHM->Create1<TH1D>("fh_rich_ring_radius","fh_rich_ring_radius; Ring Radius [cm]; Yield (a.u.)", 300, 5.2, 6.);
 	
 	fHM->Create2<TH2D>("fh_dis_rich_points", "fh_dis_rich_points; x [cm]; y [cm]", 300, -7., 7., 300, -7., 7.);
 	fHM->Create2<TH2D>("fh_dis_rich_hits", "fh_dis_rich_hits; x[cm]; y[cm]", 50, -10., 10., 50, -10., 10.);
-
+	fHM->Create1<TH1D>("fh_hits_per_ring", "fh_hits_per_ring;Hits per Ring;Yield (a.u.)", 40, -0.5, 39.5);
+	fHM->Create2<TH2D>("fh_cX_cY","fh_cX_cY;cX[cm];cY[cm]", 20, -10, 10, 20, -10, 10);	
+	fHM->Create2<TH2D>("fh_hits_per_ring_per_ring","fh_hits_per_ring_per_ring; Ring Number; Hits[cm]", 10, 0., 10., 40., 0., 40.);
+	fHM->Create2<TH2D>("fh_radius_ring","fh_radius_ring;Ring Number;Radius[cm]", 10, 0., 10., 140 , 0., 7. );
+	
 	fHM->Create2<TH2D>("fh_proton_startxy","fh_proton_startxy; x [cm]; y[cm];", 100, -5.,5, 100, -5., 5.);
 
-	fHM->Create1<TH1D>("fh_dR","fh_dR; dR [cm]; Yield", 100, -1., 1.);
+	fHM->Create1<TH1D>("fh_dR","fh_dR; dR [cm]; Yield (a.u.)", 100, -0.8, 0.8);
 
-	fHM->Create2<TH2D>("fh_dis_primsec", "fh_dis_primsec; x [cm]; y [cm];", 80, -20., 20., 80, -20., 20.);
-	fHM->Create2<TH2D>("fh_dis_prim", "fh_dis_prim; x [cm]; y [cm];", 80, -20., 20., 80, -20., 20.);
-	fHM->Create2<TH2D>("fh_dis_sec", "fh_dis_sec; x [cm]; y [cm];", 80, -20., 20., 80, -20., 20.);
+	fHM->Create2<TH2D>("fh_dis_primsec", "fh_dis_primsec; x [cm]; y [cm];", 160, -40., 40., 160, -40., 40.);
+	fHM->Create2<TH2D>("fh_dis_prim", "fh_dis_prim; x [cm]; y [cm];", 160, -40., 40., 160, -40., 40.);
+	fHM->Create2<TH2D>("fh_dis_sec", "fh_dis_sec; x [cm]; y [cm];", 160, -40., 40., 160, -40., 40.);
+	fHM->Create1<TH1D>("fh_sensplane_pdg", "fh_sensplane_pdg;PDG Codes;Yield (a.u.)", 6001, -3000., 3000.);
+
+	fHM->Create2<TH2D>("fh_dis_pmt_protons","fh_dis_pmt_protons; x [cm]; y [cm];", 50, -10., 10., 50, -10., 10.);
 }
 
 void CbmRichSmallPrototypeQa::DrawHist()
@@ -474,7 +533,42 @@ void CbmRichSmallPrototypeQa::DrawHist()
 		DrawH2(fHM->H2("fh_dis_primsec"));
 		fHM->H2("fh_dis_primsec")->SetTitle("Primaries and Secondaries");
 	}
+	
+	{
+		TCanvas* c=CreateCanvas("fh_dis_pmt_protons", "fh_dis_pmt_protons", 400, 400);
+		DrawH2(fHM->H2("fh_dis_pmt_protons"));
+		fHM->H2("fh_dis_pmt_protons")->SetTitle("Protons on PMT");
+	}
 
+	{
+		TCanvas* c=CreateCanvas("fh_sensplane_pdg", "fh_sensplane_pdg", 1600, 400);
+		DrawH1(fHM->H1("fh_sensplane_pdg"));
+		fHM->H1("fh_sensplane_pdg")->SetTitle("PDGs on sens_plane");
+	}
+
+	{
+		TCanvas* c=CreateCanvas("fh_hits_per_ring", "fh_hits_per_ring", 400, 400);
+		DrawH1(fHM->H1("fh_hits_per_ring"));
+		fHM->H1("fh_hits_per_ring")->SetTitle("Hits per Ring");
+	}
+
+	{
+		TCanvas* c=CreateCanvas("fh_cX_cY", "fh_cX_cY", 400, 400);
+		DrawH2(fHM->H2("fh_cX_cY"));
+		fHM->H1("fh_cX_cY")->SetTitle("Ringcenter");
+	}
+	
+	{
+		TCanvas* c=CreateCanvas("fh_hits_per_ring_per_ring", "fh_hits_per_ring_per_ring", 400, 400);
+		DrawH2(fHM->H2("fh_hits_per_ring_per_ring"));
+		fHM->H1("fh_hits_per_ring_per_ring")->SetTitle("Hits per single Ring");
+	}
+
+	{
+		TCanvas* c=CreateCanvas("fh_radius_ring", "fh_radius_ring", 400, 400);
+		DrawH2(fHM->H2("fh_radius_ring"));
+		fHM->H1("fh_radius_ring")->SetTitle("Radius per single Ring");
+	}
 }
 
 void CbmRichSmallPrototypeQa::Finish()
