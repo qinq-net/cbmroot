@@ -26,7 +26,7 @@
 #include "TVirtualMC.h"
 #include "TGeoManager.h"
 #include "TMath.h"
-
+#include "TKey.h"
 
 #include <iostream>
 using std::cout;
@@ -46,7 +46,9 @@ CbmTrd::CbmTrd()
     fPosIndex(0),
     fTrdPoints(new TClonesArray("CbmTrdPoint")),
     fGeoHandler(new CbmTrdGeoHandler()),
-    fUseGlobalPhysicsProcesses(kTRUE)
+    fUseGlobalPhysicsProcesses(kTRUE),
+    fCombiTrans(),
+    fVolumeName("")
 {
   fVerboseLevel = 1;
 }
@@ -66,7 +68,10 @@ CbmTrd::CbmTrd(const char* name, Bool_t active)
     fPosIndex(0),
     fTrdPoints(new TClonesArray("CbmTrdPoint")),
     fGeoHandler(new CbmTrdGeoHandler()),
-    fUseGlobalPhysicsProcesses(kTRUE)
+    fUseGlobalPhysicsProcesses(kTRUE),
+    fCombiTrans(),
+    fVolumeName("")
+
 {
   fVerboseLevel = 1;
 }
@@ -318,6 +323,107 @@ void CbmTrd::ConstructGeometry()
 }
 // ----------------------------------------------------------------------------
 
+//__________________________________________________________________________
+void CbmTrd::ConstructRootGeometry()
+{   
+  if( IsNewGeometryFile(fgeoName) ) {
+    TGeoVolume *module1 = TGeoVolume::Import(fgeoName, fVolumeName.c_str());
+
+    gGeoManager->GetTopVolume()->AddNode(module1, 0, fCombiTrans);
+    TGeoNode* node = module1->GetNode(0);
+    ExpandTrdNodes(node);
+  } else {
+    FairModule::ConstructRootGeometry();
+  } 
+}   
+
+void CbmTrd::ExpandTrdNodes(TGeoNode* fN)
+{   
+  TGeoVolume* v1=fN->GetVolume();
+  TObjArray* NodeList=v1->GetNodes();
+  for (Int_t Nod=0; Nod<NodeList->GetEntriesFast(); Nod++) {
+    TGeoNode* fNode =(TGeoNode*)NodeList->At(Nod);
+    
+    if(fNode->GetNdaughters()>0) { ExpandTrdNodes(fNode); }
+    TGeoVolume* v= fNode->GetVolume();
+    if ( (this->InheritsFrom("FairDetector")) && CheckIfSensitive(v->GetName())) {
+      AddSensitiveVolume(v);
+    }
+  } 
+
+}   
+
+Bool_t CbmTrd::IsNewGeometryFile(TString filename)
+{
+
+  TFile* f=new TFile(fgeoName);
+  TList* l = f->GetListOfKeys();
+  Int_t numKeys = l->GetSize();
+  if ( 2 != numKeys) {
+    LOG(INFO) << "Not exactly two keys in the file. File is not of new type."
+              << FairLogger::endl;
+    return kFALSE;
+  }
+  TKey* key;
+  TIter next( l);
+  Bool_t foundGeoVolume = kFALSE;
+  Bool_t foundGeoMatrix = kFALSE;
+  TGeoTranslation* trans = NULL;
+  TGeoRotation* rot = NULL;
+  while ((key = (TKey*)next())) {
+    if (strcmp(key->GetClassName(),"TGeoVolume") == 0) {
+      LOG(INFO) << "Found TGeoVolume in geometry file." << FairLogger::endl;
+      LOG(INFO) << "Name: " << key->GetName() << FairLogger::endl;      
+      foundGeoVolume =  kTRUE;
+      fVolumeName = key->GetName();
+      continue;
+    }
+    if (strcmp(key->GetClassName(),"TGeoVolumeAssembly") == 0) {
+      LOG(INFO) << "Found TGeoVolumeAssembly in geometry file." << FairLogger::endl;
+      LOG(INFO) << "Name: " << key->GetName() << FairLogger::endl;
+      foundGeoVolume =  kTRUE;
+      fVolumeName = key->GetName();
+      continue;
+    }
+    if (strcmp(key->GetClassName(),"TGeoTranslation") == 0) {
+      LOG(DEBUG) << "Found TGeoTranslation in geometry file." << FairLogger::endl;
+      foundGeoMatrix =  kTRUE;
+      trans = static_cast<TGeoTranslation*>(key->ReadObj());
+      rot = new TGeoRotation();
+      fCombiTrans = new TGeoCombiTrans(*trans, *rot);
+      continue;
+    }
+    if (strcmp(key->GetClassName(),"TGeoRotation") == 0) {
+      LOG(DEBUG) << "Found TGeoRotation in geometry file." << FairLogger::endl;
+      foundGeoMatrix =  kTRUE;
+      trans = new TGeoTranslation();
+      rot = static_cast<TGeoRotation*>(key->ReadObj());
+      fCombiTrans = new TGeoCombiTrans(*trans, *rot);
+      continue;
+    }
+    if (strcmp(key->GetClassName(),"TGeoCombiTrans") == 0) {
+      LOG(DEBUG) << "Found TGeoCombiTrans in geometry file." << FairLogger::endl;
+      foundGeoMatrix =  kTRUE;
+      fCombiTrans = static_cast<TGeoCombiTrans*>(key->ReadObj());
+      continue;
+    }
+  }
+  if ( foundGeoVolume && foundGeoMatrix ) {
+    LOG(INFO) << "Geometry file is of new type." << FairLogger::endl;
+    return kTRUE;
+  } else {
+    if ( !foundGeoVolume) {
+      LOG(INFO) << "No TGeoVolume found in geometry file. File is not of new type."
+              << FairLogger::endl;
+    }
+    if ( !foundGeoVolume) {
+      LOG(INFO) << "Not TGeoMatrix derived object found in geometry file. File is not of new type."
+                << FairLogger::endl;
+    }
+    return kFALSE;
+  }
+}
+
 
 // -----   ConstructAsciiGeometry   -------------------------------------------
 void CbmTrd::ConstructAsciiGeometry()
@@ -360,7 +466,7 @@ void CbmTrd::ConstructAsciiGeometry()
 
 // -----   CheckIfSensitive   -------------------------------------------------
 Bool_t CbmTrd::CheckIfSensitive(
-      string name)
+				std::string name)
 {
    TString tsname = name;
    if (tsname.Contains("gas")){

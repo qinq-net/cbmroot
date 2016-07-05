@@ -17,8 +17,7 @@ class CbmTrdPoint;
 class CbmTrdGeoHandler;
 class FairVolume;
 class TClonesArray;
-
-using std::string;
+class TGeoCombiTrans;
 
 /**
  * \class CbmTrd
@@ -97,7 +96,7 @@ public:
     **/
    virtual void ConstructAsciiGeometry();
 
-   Bool_t CheckIfSensitive(string name);
+   Bool_t CheckIfSensitive(std::string name);
 
    void   UseGlobalPhysicsProcesses(Bool_t use) { fUseGlobalPhysicsProcesses=use; }
 
@@ -118,6 +117,11 @@ private:
    CbmTrdGeoHandler* fGeoHandler; //! Interface to gMC and gGeoManager
 
    Bool_t         fUseGlobalPhysicsProcesses; //! weather to follow the global switch for physics cuts for the TRDgas
+
+   TGeoCombiTrans*   fCombiTrans;  //! Transformation matrix for geometry positioning
+
+   std::string fVolumeName;
+   
    /**
     * \brief Resets the private members for the track parameters.
     **/
@@ -125,10 +129,24 @@ private:
    virtual void Initialize();
    virtual void SetSpecialPhysicsCuts();
 
+   virtual void        ConstructRootGeometry();
+   void                ExpandTrdNodes(TGeoNode* fN);
+
+    /** @brief Check how the TGeoVolume in file was produced
+     *  Check how the TGeoVolume in the geometry file was produced.
+     *  The new way is to export the volume with the Export function
+     *  of TGeoVolume together with a TGeoMatrix.
+     *  To identify a file of new type check for TGeoVolume and a TGeoMatrix
+     *  derived class in the file.
+     */
+    Bool_t IsNewGeometryFile(TString filename);
+
+
+
    CbmTrd(const CbmTrd&);
    CbmTrd operator=(const CbmTrd&);
 
-   ClassDef(CbmTrd, 8);
+   ClassDef(CbmTrd, 9);
 };
 
 
