@@ -228,6 +228,7 @@ void CbmRichSmallPrototypeQa::Exec(
 		CbmRichRing* ring = (CbmRichRing*) (fRichRings->At(iR));
         if (NULL == ring) continue;
         CbmTrackMatchNew* ringMatch = (CbmTrackMatchNew*) fRichRingMatches->At(iR);
+cout << iR << endl;
         if (NULL == ringMatch) continue;
         
         Int_t mcTrackId = ringMatch->GetMatchedLink().GetIndex();
@@ -245,13 +246,12 @@ void CbmRichSmallPrototypeQa::Exec(
         int nofHits = ring->GetNofHits();
 		fHM->H1("fh_hits_per_ring")->Fill(nofHits);
 cout << nofRichRings << endl;
-cout << iR << endl;
+
 cout<<nofHits<<endl;
 		fHM->H2("fh_hits_per_ring_per_ring")->Fill(iR, nofHits);
         
 
-//		if(nofHits>0)
-//		{
+
 			
 			Double_t radius = ring->GetRadius();		
 			fHM->H1("fh_rich_ring_radius")->Fill(radius);
@@ -268,7 +268,7 @@ cout<<nofHits<<endl;
             	Double_t dR = radius - TMath::Sqrt( (cX - hitX)*( cX - hitX) + (cY - hitY)*(cY - hitY) );
             	fHM->H1("fh_dR")->Fill(dR);
         	}
-//		}
+
 	}
     
     
@@ -342,14 +342,6 @@ cout<<nofHits<<endl;
 		
 	}
 	
-/*	for (Int_t i=0; i<nofRichDigis; i++)
-	{
-		CbmRichDigi* digi = (CbmRichDigi*) (fRichDigis->At(i));
-		
-
-
-	}
-*/
 
 }	
 
@@ -394,7 +386,7 @@ void CbmRichSmallPrototypeQa::InitHistograms()
 
 	fHM->Create1<TH1D>("fh_dR","fh_dR; dR [cm]; Yield (a.u.)", 100, -0.8, 0.8);
 
-	fHM->Create2<TH2D>("fh_dis_primsec", "fh_dis_primsec; x [cm]; y [cm];", 160, -40., 40., 160, -40., 40.);
+	fHM->Create2<TH2D>("fh_dis_primsec", "fh_dis_primsec; x [cm]; y [cm];", 800, -200., 200, 800, -200., 200.);
 	fHM->Create2<TH2D>("fh_dis_prim", "fh_dis_prim; x [cm]; y [cm];", 160, -40., 40., 160, -40., 40.);
 	fHM->Create2<TH2D>("fh_dis_sec", "fh_dis_sec; x [cm]; y [cm];", 160, -40., 40., 160, -40., 40.);
 	fHM->Create1<TH1D>("fh_sensplane_pdg", "fh_sensplane_pdg;PDG Codes;Yield (a.u.)", 6001, -3000., 3000.);
