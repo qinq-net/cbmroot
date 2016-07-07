@@ -6,10 +6,6 @@
 
 #define LXTB_QA
 
-#ifdef LXTB_QA
-//#define LXTB_QA_IDEAL
-#endif//LXTB_QA
-
 #include "LxTBTask.h"
 #include "FairLogger.h"
 #include "CbmMCDataManager.h"
@@ -41,7 +37,7 @@ LxTbBinnedFinder::SignalParticle LxTbBinnedFinder::particleDescs[] = { { "jpsi",
 
 LxTBFinder::LxTBFinder() : fMuchMCPoints(0), fMuchPixelHits(0), fMuchClusters(0), fMuchPixelDigiMatches(0),
    fTrdMCPoints(0), fTrdHits(0), fTrdClusters(0), fTrdDigiMatches(0),
-   isEvByEv(false), fFinder(0), hasTrd(false), useTrd(true), fSignalParticle("jpsi")
+   isEvByEv(false), fFinder(0), hasTrd(false), useTrd(true), useIdeal(false), fSignalParticle("jpsi")
 {
 }
 
@@ -813,41 +809,46 @@ void LxTBFinder::AddHit(const CbmPixelHit* hit, Int_t stationNumber)
    //point.pHit = hit;
    //point.isTrd = isTrd;
    Int_t clusterId = hit->GetRefId();
-#ifdef LXTB_QA_IDEAL
-   const FairMCPoint* pMCPt = static_cast<const FairMCPoint*> (isTrd ? fTrdMCPoints->Get(0, currentEventN, clusterId) : fMuchMCPoints->Get(0, currentEventN, clusterId));
-   Int_t trackId = pMCPt->GetTrackID();
-   LxTbBinnedPoint::PointDesc ptDesc = { currentEventN, clusterId, trackId };
-   t = isTrd ? fTrdPoints[currentEventN][clusterId].t : fMuchPoints[currentEventN][clusterId].t;
-#else
-   const CbmCluster* cluster = static_cast<const CbmCluster*> (isTrd ? fTrdClusters->At(clusterId) : fMuchClusters->At(clusterId));
-   Int_t nDigis = cluster->GetNofDigis();
-   double avT = 0;
-   int nofT = 0;
 
-   for (Int_t i = 0; i < nDigis; ++i)
+   if (useIdeal)
    {
-      const CbmMatch* digiMatch = static_cast<const CbmMatch*> (isTrd ? fTrdDigiMatches->At(cluster->GetDigi(i)) : fMuchPixelDigiMatches->At(cluster->GetDigi(i)));
-      Int_t nMCs = digiMatch->GetNofLinks();
-
-      for (Int_t j = 0; j < nMCs; ++j)
-      {
-         const CbmLink& lnk = digiMatch->GetLink(j);
-         Int_t eventId = isEvByEv ? currentEventN : lnk.GetEntry();
-         Int_t pointId = lnk.GetIndex();
-         const FairMCPoint* pMCPt = static_cast<const FairMCPoint*> (isTrd ? fTrdMCPoints->Get(0, eventId, pointId) : fMuchMCPoints->Get(0, eventId, pointId));
-         Int_t trackId = pMCPt->GetTrackID();
-         LxTbBinnedPoint::PointDesc ptDesc = { eventId, pointId, trackId };
-         point.mcRefs.push_back(ptDesc);
-         avT += isTrd ? fTrdPoints[eventId][pointId].t : fMuchPoints[eventId][pointId].t;
-         ++nofT;
-      }
+      const FairMCPoint* pMCPt = static_cast<const FairMCPoint*> (isTrd ? fTrdMCPoints->Get(0, currentEventN, clusterId) : fMuchMCPoints->Get(0, currentEventN, clusterId));
+      Int_t trackId = pMCPt->GetTrackID();
+      LxTbBinnedPoint::PointDesc ptDesc = {currentEventN, clusterId, trackId};
+      t = isTrd ? fTrdPoints[currentEventN][clusterId].t : fMuchPoints[currentEventN][clusterId].t;
+      point.mcRefs.push_back(ptDesc);
    }
-   
-   if (nofT > 0)
-      avT /= nofT;
-   
-   t = avT;
-#endif//LXTB_QA_IDEAL
+   else
+   {
+      const CbmCluster* cluster = static_cast<const CbmCluster*> (isTrd ? fTrdClusters->At(clusterId) : fMuchClusters->At(clusterId));
+      Int_t nDigis = cluster->GetNofDigis();
+      double avT = 0;
+      int nofT = 0;
+
+      for (Int_t i = 0; i < nDigis; ++i)
+      {
+         const CbmMatch* digiMatch = static_cast<const CbmMatch*> (isTrd ? fTrdDigiMatches->At(cluster->GetDigi(i)) : fMuchPixelDigiMatches->At(cluster->GetDigi(i)));
+         Int_t nMCs = digiMatch->GetNofLinks();
+
+         for (Int_t j = 0; j < nMCs; ++j)
+         {
+            const CbmLink& lnk = digiMatch->GetLink(j);
+            Int_t eventId = isEvByEv ? currentEventN : lnk.GetEntry();
+            Int_t pointId = lnk.GetIndex();
+            const FairMCPoint* pMCPt = static_cast<const FairMCPoint*> (isTrd ? fTrdMCPoints->Get(0, eventId, pointId) : fMuchMCPoints->Get(0, eventId, pointId));
+            Int_t trackId = pMCPt->GetTrackID();
+            LxTbBinnedPoint::PointDesc ptDesc = {eventId, pointId, trackId};
+            point.mcRefs.push_back(ptDesc);
+            avT += isTrd ? fTrdPoints[eventId][pointId].t : fMuchPoints[eventId][pointId].t;
+            ++nofT;
+         }
+      }
+
+      if (nofT > 0)
+         avT /= nofT;
+
+      t = avT;
+   }
 #endif//LXTB_QA
    point.t = t;
    
@@ -881,42 +882,7 @@ void LxTBFinder::AddHit(const CbmPixelHit* hit, Int_t stationNumber)
    else if (xInd > lastXBin)
       xInd = lastXBin;
 
-   LxTbXBin& xBin = yxBin.xBins[xInd];
-   //LxTbBinnedPoint point(x, dx, y, dy, t, dt, CUR_LAST_STATION == stationNumber);
-   //LxTbBinnedPoint point(x, dx, y, dy, t, dt, false);
-   //LxTbBinnedPoint point(x, dx, y, dy, t, dt, /*!hasTrd && */CUR_LAST_STATION == stationNumber);
-
-#ifdef LXTB_QA        
-   //point.eventId = pt.eventId;
-   //point.trackId = pt.trackId;
-   //fMCTracks[point.eventId][point.trackId].hasPoint[stationNumber] = true;
-   //point.pHit = hit;
-   //point.isTrd = isTrd;
-#ifdef LXTB_QA_IDEAL
-   point.mcRefs.push_back(ptDesc);
-#else//LXTB_QA_IDEAL
-   /*const CbmCluster* cluster = static_cast<const CbmCluster*> (isTrd ? fTrdClusters->At(clusterId) : fMuchClusters->At(clusterId));
-   Int_t nDigis = cluster->GetNofDigis();
-
-   for (Int_t i = 0; i < nDigis; ++i)
-   {
-      const CbmMatch* digiMatch = static_cast<const CbmMatch*> (isTrd ? fTrdDigiMatches->At(cluster->GetDigi(i)) : fMuchPixelDigiMatches->At(cluster->GetDigi(i)));
-      Int_t nMCs = digiMatch->GetNofLinks();
-
-      for (Int_t j = 0; j < nMCs; ++j)
-      {
-         const CbmLink& lnk = digiMatch->GetLink(j);
-         Int_t eventId = isEvByEv ? currentEventN : lnk.GetEntry();
-         Int_t pointId = lnk.GetIndex();
-         const FairMCPoint* pMCPt = static_cast<const FairMCPoint*> (isTrd ? fTrdMCPoints->Get(0, eventId, pointId) : fMuchMCPoints->Get(0, eventId, pointId));
-         Int_t trackId = pMCPt->GetTrackID();
-         LxTbBinnedPoint::PointDesc ptDesc = { eventId, pointId, trackId };
-         point.mcRefs.push_back(ptDesc);
-      }
-   }*/
-#endif//LXTB_QA_IDEAL
-#endif//LXTB_QA
-   
+   LxTbXBin& xBin = yxBin.xBins[xInd];   
    xBin.points.push_back(point);
 
    if (/*!hasTrd && */CUR_LAST_STATION == stationNumber)

@@ -43,6 +43,7 @@ public:
     void Finish();// Overridden from FairTask
     void SetEvByEv(bool v = true) { isEvByEv = v; }
     void SetUseTrd(bool v = true) { useTrd = v; }
+    void SetUseIdeal(bool v = true) { useIdeal = v; }
     void SetSignalParticle(const char* name) { fSignalParticle = name; }
     
 private:
@@ -104,6 +105,7 @@ private:
     list<LxTbBinnedFinder::Chain*> recoTracks;
     bool hasTrd;
     bool useTrd;
+    bool useIdeal;
     const char* fSignalParticle;
 
 ClassDef(LxTBFinder, 1)
