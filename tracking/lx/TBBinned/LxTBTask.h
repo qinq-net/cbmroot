@@ -44,6 +44,7 @@ public:
     void SetEvByEv(bool v = true) { isEvByEv = v; }
     void SetUseTrd(bool v = true) { useTrd = v; }
     void SetUseIdeal(bool v = true) { useIdeal = v; }
+    void SetUseAsciiSig(bool v = true) { useAsciiSig = v; }
     void SetSignalParticle(const char* name) { fSignalParticle = name; }
     
 private:
@@ -106,6 +107,7 @@ private:
     bool hasTrd;
     bool useTrd;
     bool useIdeal;
+    bool useAsciiSig;
     const char* fSignalParticle;
 
 ClassDef(LxTBFinder, 1)

@@ -37,7 +37,7 @@ LxTbBinnedFinder::SignalParticle LxTbBinnedFinder::particleDescs[] = { { "jpsi",
 
 LxTBFinder::LxTBFinder() : fMuchMCPoints(0), fMuchPixelHits(0), fMuchClusters(0), fMuchPixelDigiMatches(0),
    fTrdMCPoints(0), fTrdHits(0), fTrdClusters(0), fTrdDigiMatches(0),
-   isEvByEv(false), fFinder(0), hasTrd(false), useTrd(true), useIdeal(false), fSignalParticle("jpsi")
+   isEvByEv(false), fFinder(0), hasTrd(false), useTrd(true), useIdeal(false), useAsciiSig(false), fSignalParticle("jpsi")
 {
 }
 
@@ -361,12 +361,12 @@ InitStatus LxTBFinder::Init()
                Double_t m = mcTrack->GetMass();
                 Int_t motherId = mcTrack->GetMotherId();
 
-                if (motherId >= 0)
-                //if (motherId < 0)
+                if ((useAsciiSig && motherId < 0) ||
+                   (motherId >= 0 && static_cast<const CbmMCTrack*> (mcTracks->Get(0, i, motherId))->GetPdgCode() == fFinder->fSignalParticle->fPdgCode))
                 {
-                    const CbmMCTrack* motherTrack = static_cast<const CbmMCTrack*> (mcTracks->Get(0, i, motherId));//
+                    //const CbmMCTrack* motherTrack = static_cast<const CbmMCTrack*> (mcTracks->Get(0, i, motherId));
 
-                    if (fFinder->fSignalParticle->fPdgCode == motherTrack->GetPdgCode())//
+                    //if (fFinder->fSignalParticle->fPdgCode == motherTrack->GetPdgCode())
                     {
                         evTracks.back().isSignalShort = true;
                         evTracks.back().isSignalLong = true;
