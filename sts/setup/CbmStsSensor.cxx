@@ -253,11 +253,14 @@ Int_t CbmStsSensor::ProcessPoint(const CbmStsPoint* point,
  			tX = local[0] / local[2]; // px/pz
  			tY = local[1] / local[2]; // py/pz
  		}
- 		else {   // Sometimes, a track is stopped outside the sensor volume
- 			       // Then we take the average track direction as best approximation
- 			assert(tZav);  // Catches no out momentum and in = out position
- 		  tX = tXav;  // (x2-x1)/(z2-z1)
- 		  tY = tYav;  // (y2-y1)/(z2-z1)
+ 		// Sometimes, a track is stopped outside the sensor volume.
+ 		// Then we take the average track direction as best approximation.
+ 		// Note that there may be cases where entry and exit coordinates are
+ 		// the same. In this case, tXav = tYav = 0; there will be no correction
+ 		// of the coordinates.
+ 		else {
+ 		  tX = tXav;  // (x2-x1)/(z2-z1) or 0 if z2 = z1
+ 		  tY = tYav;  // (y2-y1)/(z2-z1) or 0 if z2 = z1
  		}
 
  		// New coordinates
