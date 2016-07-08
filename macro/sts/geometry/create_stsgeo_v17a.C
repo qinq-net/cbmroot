@@ -659,8 +659,12 @@ void create_stsgeo_v17a(const char* geoTag="v17a")
   gGeoMan->PrintOverlaps();
   gGeoMan->Test();
 
-  TFile* geoFile = new TFile(geoFileName, "RECREATE");
-  top->Write();
+  sts->Export(geoFileName);   // an alternative way of writing the sts volume
+  
+  TFile* geoFile = new TFile(geoFileName, "UPDATE");
+  TGeoTranslation* sts_placement = new TGeoTranslation("sts_trans", 0., 0., 0.);
+  sts_placement->Write();  
+
   cout << endl;
   cout << "Geometry " << top->GetName() << " written to " 
        << geoFileName << endl;
