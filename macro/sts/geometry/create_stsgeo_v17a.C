@@ -638,6 +638,7 @@ void create_stsgeo_v17a(const char* geoTag="v17a")
     TString statName = Form("Station%02d", iStation);
     TGeoVolume* station = gGeoMan->GetVolume(statName);
     Double_t posZ = statPos[iStation-1] - stsPosZ;
+    //    Double_t posZ = statPos[iStation-1];
     TGeoTranslation* trans = new TGeoTranslation(0., 0., posZ);
     sts->AddNode(station, iStation, trans);
     sts->GetShape()->ComputeBBox();
@@ -649,6 +650,7 @@ void create_stsgeo_v17a(const char* geoTag="v17a")
 
   // ---------------   Finish   -----------------------------------------------
   TGeoTranslation* stsTrans = new TGeoTranslation(0., 0., stsPosZ);
+  // TGeoTranslation* stsTrans = new TGeoTranslation(0., 0., 0.);
   top->AddNode(sts, 1, stsTrans);
   top->GetShape()->ComputeBBox();
   cout << endl << endl;
@@ -662,7 +664,7 @@ void create_stsgeo_v17a(const char* geoTag="v17a")
   sts->Export(geoFileName);   // an alternative way of writing the sts volume
   
   TFile* geoFile = new TFile(geoFileName, "UPDATE");
-  TGeoTranslation* sts_placement = new TGeoTranslation("sts_trans", 0., 0., 0.);
+  TGeoTranslation* sts_placement = new TGeoTranslation("sts_trans", 0., 0., stsPosZ);
   sts_placement->Write();  
 
   cout << endl;
