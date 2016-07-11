@@ -640,7 +640,7 @@ void create_stsgeo_v17a(const char* geoTag="v17a")
     Double_t posZ = statPos[iStation-1] - stsPosZ;
     //    Double_t posZ = statPos[iStation-1];
     TGeoTranslation* trans = new TGeoTranslation(0., 0., posZ);
-    sts->AddNode(station, iStation, trans);
+    sts->AddNode(station, 1, trans);
     sts->GetShape()->ComputeBBox();
   }
   cout << endl;
