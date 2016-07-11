@@ -28,8 +28,8 @@
 
 #define CUR_NOF_STATIONS 4
 #define CUR_LAST_STATION CUR_NOF_STATIONS - 1
-#define CUR_NOF_TIMEBINS 5
-#define CUR_LAST_TIMEBIN CUR_NOF_TIMEBINS - 1
+//#define CUR_NOF_TIMEBINS 5
+//#define CUR_LAST_TIMEBIN CUR_NOF_TIMEBINS - 1
 #define CUR_TIMEBIN_LENGTH 100
 
 #include "LxTBBinned.h"
@@ -41,11 +41,28 @@ public:
     InitStatus Init();// Overridden from FairTask
     void Exec(Option_t* opt);// Overridden from FairTask
     void Finish();// Overridden from FairTask
-    void SetEvByEv(bool v = true) { isEvByEv = v; }
+    
+    void SetEvByEv(bool v = true)
+    {
+        isEvByEv = v;
+        
+        if (isEvByEv)
+#ifdef LXTB_EMU_TS
+            nof_timebins = 1000;
+#else//LXTB_EMU_TS
+            nof_timebins = 1000;
+#endif//LXTB_EMU_TS
+        else
+            nof_timebins = 1000;
+        
+        last_timebin = nof_timebins - 1;
+    }
+    
     void SetUseTrd(bool v = true) { useTrd = v; }
     void SetUseIdeal(bool v = true) { useIdeal = v; }
     void SetUseAsciiSig(bool v = true) { useAsciiSig = v; }
     void SetSignalParticle(const char* name) { fSignalParticle = name; }
+    void SetNEvents(Int_t v) { fNEvents = v; }
     
 private:
     void HandleGeometry();
@@ -109,6 +126,9 @@ private:
     bool useIdeal;
     bool useAsciiSig;
     const char* fSignalParticle;
+    unsigned int nof_timebins;
+    unsigned int last_timebin;
+    Int_t fNEvents;
 
 ClassDef(LxTBFinder, 1)
 };

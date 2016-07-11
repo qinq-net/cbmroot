@@ -81,6 +81,7 @@ struct LxTbBinnedPoint
     Int_t trackId;
     const CbmPixelHit* pHit;
     bool isTrd;
+    Int_t stationNumber;
     
     struct PointDesc
     {
