@@ -17,6 +17,7 @@
 
 void run_mc(Int_t nEvents = 2,
 		        const char* setupName = "sis100_electron",
+//                        const char* setupName = "sis100_debug",
 //                        const char* setupName = "sis100_hadron",
 //                        const char* setupName = "sis100_muon_jpsi",
 //                        const char* setupName = "sis100_muon_lmvm",
