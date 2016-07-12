@@ -69,7 +69,7 @@ void setup_sis100_debug()
   setup->SetModule(kMvd, mvdGeoTag);
   setup->SetModule(kSts, stsGeoTag);
   setup->SetModule(kTrd, trdGeoTag);
-  //  setup->SetModule(kTof, tofGeoTag);
+  setup->SetModule(kTof, tofGeoTag);
   //  setup->SetModule(kPlatform, platGeoTag);
   setup->SetPsd(psdGeoFile, psdZpos, psdXpos);
   setup->SetField(fieldTag, fieldScale, 0., 0., fieldZ);
