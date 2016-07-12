@@ -25,6 +25,7 @@ class CbmTofGeoHandler;
 class FairVolume; 
 class TClonesArray;
 class TVector3;
+class TGeoCombiTrans;
 
 class CbmTof : public FairDetector
 {
@@ -125,6 +126,10 @@ class CbmTof : public FairDetector
   TClonesArray* fTofCollection;      //! Hit collection
   CbmTofGeoHandler *fGeoHandler;      //! Interface to gMC and gGeoManager
 
+   TGeoCombiTrans*   fCombiTrans;  //! Transformation matrix for geometry positioning
+
+   std::string fVolumeName;    //! Name of Volume to be imported
+
   /** Private method AddHit
    **
    ** Adds a CbmTofPoint to the HitCollection
@@ -145,6 +150,18 @@ class CbmTof : public FairDetector
   void ConstructASCIIGeometry();
  
   Bool_t CheckIfSensitive(std::string name);
+
+  virtual void        ConstructRootGeometry();
+  void                ExpandTofNodes(TGeoNode* fN);
+
+    /** @brief Check how the TGeoVolume in file was produced
+     *  Check how the TGeoVolume in the geometry file was produced.
+     *  The new way is to export the volume with the Export function
+     *  of TGeoVolume together with a TGeoMatrix.
+     *  To identify a file of new type check for TGeoVolume and a TGeoMatrix
+     *  derived class in the file.
+     */
+    Bool_t IsNewGeometryFile(TString filename);
 
   CbmTof(const CbmTof&);
   CbmTof& operator=(const CbmTof&);
