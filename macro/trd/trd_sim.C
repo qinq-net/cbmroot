@@ -7,7 +7,7 @@
 //
 // --------------------------------------------------------------------------
 
-void trd_sim(Int_t nEvents = 1, Int_t CbmSetup = 4)
+void trd_sim(Int_t nEvents = 1, Int_t CbmSetup = 2)
 {
 
 

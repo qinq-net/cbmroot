@@ -17,7 +17,7 @@
 //
 // 20130605 - checked by DE
 // --------------------------------------------------------------------------
-void trd_digi2(Int_t nEvents = 1, const char* setup = "sis300_electron")
+void trd_digi2(Int_t nEvents = 1, const char* setup = "sis100_electron")
 {
 
   gStyle->SetPalette(1,0);
