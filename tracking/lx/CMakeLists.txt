@@ -7,6 +7,8 @@ Set(INCLUDE_DIRECTORIES
   ${BASE_INCLUDE_DIRECTORIES}
   ${CBMROOT_SOURCE_DIR}/tracking/lx
   ${CBMROOT_SOURCE_DIR}/tracking/lx/TBBinned
+  ${CBMROOT_SOURCE_DIR}/tracking/lx/GenNoiseElectrons
+  ${CBMROOT_SOURCE_DIR}/tracking/lx/CalcStats
   ${CBMROOT_SOURCE_DIR}/base 
   ${CBMROOT_SOURCE_DIR}/data 
   ${CBMROOT_SOURCE_DIR}/data/much 
@@ -42,6 +44,8 @@ Set(SRCS
   TBBinned/LxTBTask.cxx
   #LxTBMLTask.cxx
   #LxTBMPTask.cxx
+  GenNoiseElectrons/GenNoiseElectrons.cxx
+  CalcStats/CalcStats.cxx
 )
 
 Set(NO_DICT_SRCS

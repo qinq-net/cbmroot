@@ -9,5 +9,7 @@
 #pragma link C++ class  LxTBFinder+;
 //#pragma link C++ class  LxTBMLFinder+;
 //#pragma link C++ class  LxTBMPFinder+;
+#pragma link C++ class LxGenNoiseElectrons+;
+#pragma link C++ class LxCalcStats+;
 
 #endif

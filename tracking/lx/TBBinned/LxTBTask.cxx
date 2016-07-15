@@ -4,12 +4,6 @@
  * and open the template in the editor.
  */
 
-#define LXTB_QA
-
-#ifdef LXTB_QA
-#define LXTB_EMU_TS
-#endif//LXTB_QA
-
 #include "LxTBTask.h"
 #include "FairLogger.h"
 #include "CbmMCDataManager.h"
@@ -42,7 +36,12 @@ LxTbBinnedFinder::SignalParticle LxTbBinnedFinder::particleDescs[] = { { "jpsi",
 LxTBFinder::LxTBFinder() : fMuchMCPoints(0), fMuchPixelHits(0), fMuchClusters(0), fMuchPixelDigiMatches(0),
    fTrdMCPoints(0), fTrdHits(0), fTrdClusters(0), fTrdDigiMatches(0),
    isEvByEv(false), fFinder(0), hasTrd(false), useTrd(true), useIdeal(false), useAsciiSig(false), fSignalParticle("jpsi"),
-   nof_timebins(isEvByEv ? 1000 : 1000), last_timebin(nof_timebins - 1), fNEvents(1000)
+#ifdef LXTB_EMU_TS
+   nof_timebins(1000),
+#else//LXTB_EMU_TS
+   nof_timebins(isEvByEv ? 5 : 1000),
+#endif//LXTB_EMU_TS
+   last_timebin(nof_timebins - 1), fNEvents(1000)
 {
 }
 
@@ -305,9 +304,8 @@ InitStatus LxTBFinder::Init()
     gMuonMass = TDatabasePDG::Instance()->GetParticle(13)->Mass();
     gElectronMass = TDatabasePDG::Instance()->GetParticle(11)->Mass();
     
-   //time_t initTime;
-   //gRandomGen.SetSeed(time(&initTime));
-   //CreateMuonPair(3.1);
+   time_t initTime;
+   gRandom->SetSeed(time(&initTime));
    
     TObjArray* absorbers = CbmMuchGeoScheme::Instance()->GetAbsorbers();
     
@@ -858,6 +856,10 @@ void LxTBFinder::AddHit(const CbmPixelHit* hit, Int_t stationNumber)
             const CbmLink& lnk = digiMatch->GetLink(j);
             Int_t eventId = isEvByEv ? currentEventN : lnk.GetEntry();
             Int_t pointId = lnk.GetIndex();
+            
+            if ((isTrd && fTrdPoints[eventId].size() <= pointId) || (!isTrd && fMuchPoints[eventId].size() <= pointId))// Do this check because of possible addition of noise electrons in runtime.
+               continue;
+            
             const FairMCPoint* pMCPt = static_cast<const FairMCPoint*> (isTrd ? fTrdMCPoints->Get(0, eventId, pointId) : fMuchMCPoints->Get(0, eventId, pointId));
             Int_t trackId = pMCPt->GetTrackID();
             LxTbBinnedPoint::PointDesc ptDesc = {eventId, pointId, trackId};

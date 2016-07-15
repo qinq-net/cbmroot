@@ -19,6 +19,12 @@
 #include "CbmTrdPoint.h"
 #include <vector>
 
+#define LXTB_QA
+
+#ifdef LXTB_QA
+#define LXTB_EMU_TS
+#endif//LXTB_QA
+
 #define CUR_NOF_TRD_LAYERS 4
 #define CUR_LAST_TRD_LAYER CUR_NOF_TRD_LAYERS - 1
 
@@ -50,7 +56,7 @@ public:
 #ifdef LXTB_EMU_TS
             nof_timebins = 1000;
 #else//LXTB_EMU_TS
-            nof_timebins = 1000;
+            nof_timebins = 5;
 #endif//LXTB_EMU_TS
         else
             nof_timebins = 1000;
