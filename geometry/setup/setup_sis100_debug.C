@@ -37,6 +37,8 @@ void setup_sis100_debug()
   TString stsGeoTag       = "v17a";     // exported
   TString trdGeoTag       = "v16a_1h";  // exported
   TString tofGeoTag       = "v17a_1h";  // exported
+//  TString tofGeoTag       = "v14-0a";   // bug
+//  TString tofGeoTag       = "v13-5a";   // no bug
   TString psdGeoTag       = "psd_geo_xy.txt";
   TString platGeoTag      = "v16a";     // exported
   // ------------------------------------------------------------------------
