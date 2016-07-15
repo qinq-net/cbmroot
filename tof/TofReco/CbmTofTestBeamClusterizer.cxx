@@ -450,12 +450,19 @@ Bool_t   CbmTofTestBeamClusterizer::RegisterInputs()
 
    if( NULL == fTofDigisColl)
       fTofDigisColl = (TClonesArray *) fManager->GetObject("CbmTofDigi");
+
+   if( NULL == fTofDigisColl)
+      fTofDigisColl = (TClonesArray *) fManager->GetObject("TofDigiExp");
+
+   if( NULL == fTofDigisColl)
+      fTofDigisColl = (TClonesArray *) fManager->GetObject("TofDigi");
   
    if( NULL == fTofDigisColl)
    {
       LOG(ERROR)<<"CbmTofTestBeamClusterizer::RegisterInputs => Could not get the CbmTofDigi TClonesArray!!!"<<FairLogger::endl;
       return kFALSE;
    } // if( NULL == fTofDigisColl)
+
 
    fTrbHeader = (TTrbHeader *)  fManager->GetObject("TofTrbHeader.");
    if( NULL == fTrbHeader)
@@ -1440,7 +1447,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
        {
 	 if(fviClusterMul[fiBeamRefType][fiBeamRefSm][fiBeamRefDet]>fiBeamRefMulMax) break;
 	 // Check Tot
-         CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchColl->At(pHit->GetRefId());
+         CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchColl->At(iHitInd);
          Double_t TotSum=0.;
          for (Int_t iLink=0; iLink<digiMatch->GetNofLinks(); iLink+=2){  // loop over digis
            CbmLink L0 = digiMatch->GetLink(iLink);   //vDigish.at(ivDigInd);
@@ -1666,7 +1673,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
 
          LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::FillHistos: Hit  "
                     <<Form(" 0x%08x %d %f %f %f %f %f %d",iChId,iCh,
-                           pHit->GetX(),pHit->GetY(),pHit->GetTime(),fChannelInfo->GetX(),fChannelInfo->GetY(), pHit->GetRefId() )
+                           pHit->GetX(),pHit->GetY(),pHit->GetTime(),fChannelInfo->GetX(),fChannelInfo->GetY(), iHitInd )
                     <<FairLogger::endl;
 
          Double_t hitpos[3];
@@ -1696,14 +1703,13 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
                     <<fTofDigiMatchColl->GetEntries()
                     <<FairLogger::endl;
 
-         if(pHit->GetRefId()>fTofDigiMatchColl->GetEntries()){
-           LOG(ERROR)<<"CbmTofTestBeamClusterizer::FillHistos: Inconsistent DigiMatches for Hit "
-                     <<iHitInd<<" Ref: "<<pHit->GetRefId()
-                     <<", TClonesArraySize: "<<fTofDigiMatchColl->GetEntries()
+         if(iHitInd>fTofDigiMatchColl->GetEntries()){
+           LOG(ERROR)<<"CbmTofTestBeamClusterizer::FillHistos: Inconsistent DigiMatches for Hitind "
+                     <<iHitInd<<", TClonesArraySize: "<<fTofDigiMatchColl->GetEntries()
                      <<FairLogger::endl;
          }
 
-         CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchColl->At(pHit->GetRefId());
+         CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchColl->At( iHitInd );
          LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::FillHistos: got matches: "
                     <<digiMatch->GetNofLinks()<<":";
          fhRpcCluSize[iDetIndx]->Fill((Double_t)iCh,digiMatch->GetNofLinks()/2.);
@@ -3394,7 +3400,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                                           CbmTofDigiExp *pDigiC = (CbmTofDigiExp*) fTofDigisColl->At(vDigiIndRef.at(i));
                                          LOG(DEBUG)<<" Digi  "<<pDigiC->ToString()<<FairLogger::endl;
                                        }
-                                       CbmMatch* digiMatchL=(CbmMatch *)fTofDigiMatchColl->At(pHitL->GetRefId());
+                                       CbmMatch* digiMatchL=(CbmMatch *)fTofDigiMatchColl->At(fiNbHits-1);
                                        for (Int_t i=0; i<digiMatchL->GetNofLinks();i++){
                                          CbmLink L0 = digiMatchL->GetLink(i);  
                                          Int_t iDigIndL=L0.GetIndex();
@@ -3723,12 +3729,12 @@ Bool_t   CbmTofTestBeamClusterizer::MergeClusters()
 		<<Form(" DX %6.1f, DY %6.1f, DT %6.1f",xPos-xPos2,yPos-yPos2,tof-tof2)
 		<<FairLogger::endl;
 
-                CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchColl->At(pHit->GetRefId());
 
                 if(      TMath::Abs(xPos-xPos2)<fdCaldXdYMax*2.
                       && TMath::Abs(yPos-yPos2)<fdCaldXdYMax*2.
                       && TMath::Abs(tof-tof2)<fMaxTimeDist ){
 
+                  CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchColl->At(iHitInd);
                   Double_t dTot=0;
                   for (Int_t iLink=0; iLink<digiMatch->GetNofLinks(); iLink+=2){  // loop over digis
                     CbmLink L0 = digiMatch->GetLink(iLink);  
@@ -3742,7 +3748,7 @@ Bool_t   CbmTofTestBeamClusterizer::MergeClusters()
                     } 
                   }
 
-                  CbmMatch* digiMatch2=(CbmMatch *)fTofDigiMatchColl->At(pHit2->GetRefId());
+                  CbmMatch* digiMatch2=(CbmMatch *)fTofDigiMatchColl->At(iHitInd2);
                   Double_t dTot2=0;
                   for (Int_t iLink=0; iLink<digiMatch2->GetNofLinks(); iLink+=2){  // loop over digis
                     CbmLink L0 = digiMatch2->GetLink(iLink);  
@@ -3772,13 +3778,11 @@ Bool_t   CbmTofTestBeamClusterizer::MergeClusters()
                   pHit->SetTime(dtofM);
 
                   // remove merged hit at iHitInd2 and update digiMatch
-                  if( pHit2->GetRefId() != iHitInd2 )
-                    LOG(ERROR)<<"CbmTofTestBeamClusterizer::MergeClusters: Inconsistent Links! Check!"
-                              <<FairLogger::endl;
 
-                  fTofDigiMatchColl->RemoveAt( pHit2->GetRefId() );
-                  fTofDigiMatchColl->Compress();
                   fTofHitsColl->RemoveAt( iHitInd2 );
+                  fTofDigiMatchColl->RemoveAt( iHitInd2 );
+		  /*
+                  fTofDigiMatchColl->Compress();
                   fTofHitsColl->Compress();
                   LOG(DEBUG)<<"MergeClusters: Compress TClonesArrays to "
                             <<fTofHitsColl->GetEntries()<<", "
@@ -3788,6 +3792,7 @@ Bool_t   CbmTofTestBeamClusterizer::MergeClusters()
                      CbmTofHit *pHiti = (CbmTofHit*) fTofHitsColl->At( i );
                     pHiti->SetRefId(i);
                   }
+		  */
                   //check merged hit (cluster)
                   //pHit->Print();
                 }
