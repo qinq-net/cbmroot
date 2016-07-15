@@ -1851,9 +1851,9 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 
      fhChi04D4best->Fill(Chi2List[iM0]);
 
-     CbmMatch* digiMatch1=(CbmMatch *)fTofDigiMatchColl->At(pHit1->GetRefId());
+     CbmMatch* digiMatch1=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit1));
      fhDigiMul0D4best->Fill(digiMatch1->GetNofLinks()/2.);
-     CbmMatch* digiMatch2=(CbmMatch *)fTofDigiMatchColl->At(pHit2->GetRefId());
+     CbmMatch* digiMatch2=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit2));
      fhDigiMul4D4best->Fill(digiMatch2->GetNofLinks()/2.);
 
      fhCluMul04D4best->Fill(dMul0,dMul4);
@@ -1914,7 +1914,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      dTot /= digiMatch2->GetNofLinks();  // average time over threshold
      fhTot4DT04D4best->Fill(TMath::Log(dTot),tof1-tof2-dTcor);
 
-     CbmMatch* digiMatch0=(CbmMatch *)fTofDigiMatchColl->At(pHit1->GetRefId());
+     CbmMatch* digiMatch0=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit1));
      fhCluSize0DT04D4best->Fill(digiMatch0->GetNofLinks()/2.,tof1-tof2-dTcor);
 
      dTot = 0.;
@@ -2022,9 +2022,9 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 			       +TMath::Power(pHit3->GetZ()-pHit4->GetZ(),2)
 				);
 
-	 CbmMatch* digiMatch3=(CbmMatch *)fTofDigiMatchColl->At(pHit3->GetRefId());
+	 CbmMatch* digiMatch3=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit3));
 	 fhDigiMul0D4sbest->Fill(digiMatch3->GetNofLinks()/2.);
-	 CbmMatch* digiMatch4=(CbmMatch *)fTofDigiMatchColl->At(pHit4->GetRefId());
+	 CbmMatch* digiMatch4=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit4));
 	 fhDigiMul4D4sbest->Fill(digiMatch4->GetNofLinks()/2.);
 
 	 fhCluMul04D4sbest->Fill(dMul0,dMul4);
