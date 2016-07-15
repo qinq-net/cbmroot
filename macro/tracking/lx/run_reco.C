@@ -1,18 +1,20 @@
 void run_reco(int index = -1)
 {
-   Int_t nEvents = 10;
+   Int_t nEvents = 1000;
    const char* setupName = "sis100_muon_jpsi";
    TString system  = "auau";
    TString beam    = "10gev";
-   TString trigger = "mbias";//"centr";
+   TString trigger = "centr";//"centr";
    TString part = "jpsi";
    TString channel = "mpmm";
 
    bool useSig = true;
-   bool useBg = false;
+   bool useBg = true;
    bool sigAscii = false;
    bool useIdeal = false;
    bool isEvByEv = true;
+   bool addElectrons = true;
+   Int_t nofNoiseE = 5;
 
    if (!useSig && !useBg)
    {
@@ -85,6 +87,13 @@ void run_reco(int index = -1)
    gROOT->ProcessLine(setupFunct);
    CbmSetup* setup = CbmSetup::Instance();
    // ------------------------------------------------------------------------
+   
+   if (addElectrons)
+   {
+      LxGenNoiseElectrons* elGenerator = new LxGenNoiseElectrons;
+      elGenerator->SetNofNoiseE(nofNoiseE);
+      run->AddTask(elGenerator);
+   }
    
    TList* parFileList = new TList();
    
@@ -200,6 +209,7 @@ void run_reco(int index = -1)
    lxTbFinder->SetSignalParticle(part.Data());
    lxTbFinder->SetUseIdeal(useIdeal);
    lxTbFinder->SetUseAsciiSig(sigAscii);
+   lxTbFinder->SetNEvents(nEvents);
    run->AddTask(lxTbFinder);
     
 
