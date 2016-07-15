@@ -7,7 +7,10 @@
 //
 // --------------------------------------------------------------------------
 
-void trd_sim(Int_t nEvents = 1, Int_t CbmSetup = 2)
+void trd_sim(Int_t nEvents = 1, 
+//             const char* setupName = "sis100_electron")
+//             const char* setupName = "sis100_hadron")
+               const char* setupName = "sis100_debug")
 {
 
 
@@ -60,37 +63,17 @@ void trd_sim(Int_t nEvents = 1, Int_t CbmSetup = 2)
   // Function needed for CTest runtime dependency
   TString depFile = Remove_CTest_Dependency_File(outDir, "trd_sim");
 
-  TString setup;
-  if (CbmSetup == 1)
-    {
-      setup="setup_sis100_hadron";
-    }
-  if (CbmSetup == 2)
-    {
-      setup="setup_sis100_electron";
-    }
-  if (CbmSetup == 3)
-    {
-      setup="setup_sis100_muon";
-    }
-  if (CbmSetup == 4)  // default setup
-    {
-      setup="setup_sis300_electron";
-    }
-  if (CbmSetup == 5)
-    {
-      setup="setup_sis300_muon";     
-    }
+  TString setupFile = inDir + "/geometry/setup/setup_" + setupName + ".C";
+  TString setupFunct = "setup_";
+  setupFunct = setupFunct + setupName + "()";
 
-  TString setupFile = inDir + "/geometry/setup/"+ setup +".C";
-  TString setupFunct = setup + "()";
   gROOT->LoadMacro(setupFile);
   gInterpreter->ProcessLine(setupFunct);
 
-  if (CbmSetup <= 3)
-    CbmSetup::Instance()->SetModule(kPlatform, "v13a");
-  else
-    CbmSetup::Instance()->SetModule(kPlatform, "v13b");
+//  if (CbmSetup <= 3)
+//    CbmSetup::Instance()->SetModule(kPlatform, "v13a");
+//  else
+//    CbmSetup::Instance()->SetModule(kPlatform, "v13b");
 
   // In general, the following parts need not be touched
   // ========================================================================

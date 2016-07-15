@@ -17,7 +17,10 @@
 //
 // 20130605 - checked by DE
 // --------------------------------------------------------------------------
-void trd_digi2(Int_t nEvents = 1, const char* setup = "sis100_electron")
+void trd_digi2(Int_t nEvents = 1,
+//             const char* setupName = "sis100_electron")
+//             const char* setupName = "sis100_hadron")
+               const char* setupName = "sis100_debug")
 {
 
   gStyle->SetPalette(1,0);
@@ -55,9 +58,9 @@ void trd_digi2(Int_t nEvents = 1, const char* setup = "sis100_electron")
   TString inDir = gSystem->Getenv("VMCWORKDIR");
   TString paramDir = inDir + "/parameters";
 
-  TString setupFile = inDir + "/geometry/setup/setup_" + setup + ".C";
+  TString setupFile = inDir + "/geometry/setup/setup_" + setupName + ".C";
   TString setupFunct = "setup_";
-  setupFunct = setupFunct + setup + "()";
+  setupFunct = setupFunct + setupName + "()";
   
   gROOT->LoadMacro(setupFile);
   gInterpreter->ProcessLine(setupFunct);
