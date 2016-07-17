@@ -438,7 +438,7 @@ void Create_TRD_Geometry_v16a_1h() {
   gGeoMan->SetVisLevel(10);  
   
   // Create the top volume 
-  TGeoBBox* topbox= new TGeoBBox("", 1000., 1000., 2000.);
+  TGeoBBox* topbox= new TGeoBBox("top", 1000., 1000., 2000.);
   TGeoVolume* top = new TGeoVolume("top", topbox, gGeoMan->GetMedium("air"));
   gGeoMan->SetTopVolume(top);
 
@@ -1522,7 +1522,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
 
    // start of Frame in z
    // Gas
-   TGeoBBox* trd_gas = new TGeoBBox("", activeAreaX /2., activeAreaY /2., gas_thickness /2.);
+   TGeoBBox* trd_gas = new TGeoBBox("trd_gas", activeAreaX /2., activeAreaY /2., gas_thickness /2.);
    TGeoVolume* trdmod1_gasvol = new TGeoVolume("gas", trd_gas, gasVolMed);
    //   TGeoVolume* trdmod1_gasvol = new TGeoVolume(Form("module%d_gas", moduleType), trd_gas, gasVolMed);
    //   TGeoVolume* trdmod1_gasvol = new TGeoVolume(Form("trd1mod%dgas", moduleType), trd_gas, gasVolMed);
@@ -1536,7 +1536,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
    if(IncludeGasFrame)
    {
      // frame1
-     TGeoBBox* trd_frame1 = new TGeoBBox("", sizeX /2., frameWidth /2., frame_thickness/2.);
+     TGeoBBox* trd_frame1 = new TGeoBBox("trd_frame1", sizeX /2., frameWidth /2., frame_thickness/2.);
      TGeoVolume* trdmod1_frame1vol = new TGeoVolume("frame1", trd_frame1, frameVolMed);
      //   TGeoVolume* trdmod1_frame1vol = new TGeoVolume(Form("module%d_frame1", moduleType), trd_frame1, frameVolMed);
      //   TGeoVolume* trdmod1_frame1vol = new TGeoVolume(Form("trd1mod%dframe1", moduleType), trd_frame1, frameVolMed);
@@ -1550,7 +1550,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
      
      
      // frame2
-     TGeoBBox* trd_frame2 = new TGeoBBox("", frameWidth /2., activeAreaY /2., frame_thickness /2.);
+     TGeoBBox* trd_frame2 = new TGeoBBox("trd_frame2", frameWidth /2., activeAreaY /2., frame_thickness /2.);
      TGeoVolume* trdmod1_frame2vol = new TGeoVolume("frame2", trd_frame2, frameVolMed);
      //   TGeoVolume* trdmod1_frame2vol = new TGeoVolume(Form("module%d_frame2", moduleType), trd_frame2, frameVolMed);
      //   TGeoVolume* trdmod1_frame2vol = new TGeoVolume(Form("trd1mod%dframe2", moduleType), trd_frame2, frameVolMed);
