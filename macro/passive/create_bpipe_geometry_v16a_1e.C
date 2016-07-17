@@ -451,7 +451,8 @@ TGeoVolume* MakePipe(Int_t iPart, Int_t nSects, Double_t* z, Double_t* rin,
 	                 Double_t* rout, TGeoMedium* medium, fstream* infoFile) {
 
   // ---> Shape
-  TGeoPcon* shape = new TGeoPcon(0., 360., nSects);
+  TString volName = Form("pipe%i", iPart);
+  TGeoPcon* shape = new TGeoPcon(volName.Data(), 0., 360., nSects);
   for (Int_t iSect = 0; iSect < nSects; iSect++) {
     shape->DefineSection(iSect, z[iSect]/10., rin[iSect]/10., rout[iSect]/10.); // mm->cm
     *infoFile << setw(2)  << iSect+1
@@ -462,7 +463,6 @@ TGeoVolume* MakePipe(Int_t iPart, Int_t nSects, Double_t* z, Double_t* rin,
   }
 
   // ---> Volume
-  TString volName = Form("pipe%i", iPart);
   TGeoVolume* pipe = new TGeoVolume(volName.Data(), shape, medium);
 
   return pipe;
@@ -477,13 +477,13 @@ TGeoVolume* MakeVacuum(Int_t iPart, Int_t nSects, Double_t* z, Double_t* rin,
 	                   Double_t* rout, TGeoMedium* medium, fstream* infoFile) {
 
   // ---> Shape
-  TGeoPcon* shape = new TGeoPcon(0., 360., nSects);
+  TString volName = Form("pipevac%i", iPart);
+  TGeoPcon* shape = new TGeoPcon(volName.Data(), 0., 360., nSects);
   for (Int_t iSect = 0; iSect < nSects; iSect++) {
     shape->DefineSection(iSect, z[iSect]/10., rin[iSect]/10., rout[iSect]/10.); // mm->cm
   }
 
   // ---> Volume
-  TString volName = Form("pipevac%i", iPart);
   TGeoVolume* pipevac = new TGeoVolume(volName.Data(), shape, medium);
 
   return pipevac;
