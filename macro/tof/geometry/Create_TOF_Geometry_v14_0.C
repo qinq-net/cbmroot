@@ -82,6 +82,7 @@ const Float_t TOF_Z_Front =  (     "tof_v14-0a" == geoVersion  ?  450 : // SIS 1
 // The materials are defined in the global media.geo file 
 const TString KeepingVolumeMedium     = "air";
 const TString BoxVolumeMedium         = "aluminium";
+const TString PoleVolumeMedium        = "tof_pole_aluminium";
 const TString NoActivGasMedium        = "RPCgas_noact";
 const TString ActivGasMedium          = "RPCgas";
 const TString GlasMedium              = "RPCglass";
@@ -108,9 +109,9 @@ const Float_t Electronics_Y[NumberOfDifferentCounterTypes] = {5.0,5.0,0.5,0.5};
 const Float_t Electronics_Z[NumberOfDifferentCounterTypes] = {0.3,0.3,0.3,0.3};
 
 const Int_t NofModuleTypes = 6;
-const Int_t MaxNofModules =500;
-Int_t ActNofModuleTypes=2;
-Int_t NModules[NofModuleTypes]=0;
+const Int_t MaxNofModules  = 500;
+Int_t ActNofModuleTypes    = 2;
+Int_t NModules[NofModuleTypes] = {0};
 Float_t xPosMod[NofModuleTypes][MaxNofModules];
 Float_t yPosMod[NofModuleTypes][MaxNofModules];
 Float_t zPosMod[NofModuleTypes][MaxNofModules];
@@ -184,8 +185,8 @@ const Float_t CounterDypos2[NMTm] = { 8.,9.,8.};
 */
 
 //*************************************************************
-const Float_t xPosCounter1[32] = {43.5,14.5,-14.5,-43.5,43.5,14.5,-14.5,-43.5,43.5,14.5,-14 .5,-43.5,43.5,14.5,-14.5,-43.5,
-43.5,14.5,-14.5,-43.5,43.5,14.5,-14.5,-43.5,43.5,14.5,-14.5,-43.5,43.5,14.5,-14.5,-43.5};
+const Float_t xPosCounter1[32] = {43.5,14.5,-14.5,-43.5,43.5,14.5,-14.5,-43.5,43.5,14.5,-14.5,-43.5,43.5,14.5,-14.5,-43.5,
+				  43.5,14.5,-14.5,-43.5,43.5,14.5,-14.5,-43.5,43.5,14.5,-14.5,-43.5,43.5,14.5,-14.5,-43.5};
 const Float_t yPosCounter1[32] = {-54.6,-54.6,-54.6,-54.6,-36.4,-36.4,-36.4,-36.4,-18.2,-18.2,-18.2,-18.2,0.,0.,0.,0.,18.2,18.2,18.2,18.2,
 				  36.4,36.4,36.4,36.4,50.5,50.5,50.5,50.5,59.6,59.6,59.6,59.6};
 const Float_t zPosCounter1[32] = {-3.01,-7.55,-3.01,-7.55,6.07,1.53,6.07,1.53,-3.01,-7.55,-3.01,-7.55,6.07,1.53,6.07,1.53,
@@ -219,18 +220,18 @@ const Float_t CounterXstart1[NMTm] = {-43.5,87.,72.5};  // position of left most
 const Float_t CounterYstart1[NMTm] = {-54.6,-19.,-54.6};  // position of lowest counter in y direction (for un-rotated modules)
 const Float_t CounterDyoff1[NMTm][2] = {{-4.54,4.54},       // staggering in z direction due to row number  
 		    			{4.54,-4.54},
-					{4.54,-4.54.}}; 
+					{4.54,-4.54}}; 
 const Float_t CounterDzoff1[NMTm][2] = {{4.54,-4.54},       // staggering in z direction due to column number 
 					{4.54,-4.54},
 					{4.54,-4.54}}; 
 const Float_t CounterDxpos1[NMTm] = {29.,29.,29.};      // distance of counters in x - direction 
-const Float_t CounterDypos1[NMTm] = {18.2.,19.,18.2};      // distance of counters in y - direction
+const Float_t CounterDypos1[NMTm] = {18.2,19.,18.2};      // distance of counters in y - direction
 
 const Int_t NCounter2Y[NMTm]       = {2,6,0}; //number of counters of 100 mm strip length in a column within each module type
 
 const Float_t CounterXstart2[NMTm] = {-43.5,-58.,0.}; 
 const Float_t CounterYstart2[NMTm] = {50.5,-24.,0.}; 
-const Float_t CounterDyoff2[NMTm][2] = {{-4.54,4.54.},
+const Float_t CounterDyoff2[NMTm][2] = {{-4.54,4.54},
 					{-4.54,4.54},
 				      	{0.,0.}}; 
 const Float_t CounterDzoff2[NMTm][2] = {{4.54,-4.54},
@@ -327,10 +328,10 @@ const Float_t DxColl=158.0; //Module_Size_X-ChamberOverlap;
 const Float_t Pole_Offset=90.0+Pole_Size_X/2.;
 
 // Position for module placement
-const Float_t Inner_Module_First_Y_Position=16.;
-const Float_t Inner_Module_Last_Y_Position=480.;
-const Float_t Inner_Module_X_Offset=2.;
-const Float_t Inner_Module_NTypes = 3;
+const Float_t Inner_Module_First_Y_Position = 16.;
+const Float_t Inner_Module_Last_Y_Position = 480.;
+const Float_t Inner_Module_X_Offset = 2.;
+const Int_t Inner_Module_NTypes = 3;
 const Float_t Inner_Module_Types[Inner_Module_NTypes]  = {4.,3.,0.};
 const Float_t Inner_Module_Number[Inner_Module_NTypes] = {2.,2.,6.}; //V13_3a
 //const Float_t Inner_Module_Number[Inner_Module_NTypes] = {0.,0.,0.}; //debugging
@@ -344,8 +345,8 @@ const Float_t InnerSide_Module_Number[Inner_Module_NTypes] = {2.};  //v13_3a
 const Float_t Outer_Module_First_Y_Position=0.;
 const Float_t Outer_Module_Last_Y_Position=480.;
 const Float_t Outer_Module_X_Offset=3.;
-const Float_t Outer_Module_Col = 4;
-const Float_t Outer_Module_NTypes = 2;
+const Int_t Outer_Module_Col = 4;
+const Int_t Outer_Module_NTypes = 2;
 const Float_t Outer_Module_Types [Outer_Module_NTypes][Outer_Module_Col] = {1.,1.,1.,1.,  2.,2.,2.,2.};
 const Float_t Outer_Module_Number[Outer_Module_NTypes][Outer_Module_Col] = {9.,9.,2.,0.,  0.,0.,3.,4.};//V13_3a
 //const Float_t Outer_Module_Number[Outer_Module_NTypes][Outer_Module_Col] = {1.,1.,0.,0.,  0.,0.,0.,0.};//debug
@@ -368,7 +369,9 @@ TGeoVolume* create_new_counter(Int_t);
 TGeoVolume* create_tof_module(Int_t);
 TGeoVolume* create_tof_module_m(Int_t);
 TGeoVolume* create_new_tof_module(Int_t);
+TGeoVolume* create_new_tof_module_m(Int_t);
 TGeoVolume* create_tof_pole();
+TGeoVolume* create_tof_poleshort();
 TGeoVolume* create_tof_bar();
 void position_tof_poles(Int_t);
 void position_tof_bars(Int_t);
@@ -455,7 +458,7 @@ void Create_TOF_Geometry_v14_0() {
   //gGeoMan->Write();
   outfile->Close();
 
-  TFile* outfile = new TFile(FileNameGeo,"RECREATE");
+  outfile = new TFile(FileNameGeo,"RECREATE");
   gGeoMan->Write();
   outfile->Close();
 
@@ -562,17 +565,19 @@ void create_materials_from_media_file()
   FairGeoMedia* geoMedia = geoFace->getMedia();
   FairGeoBuilder* geoBuild = geoLoad->getGeoBuilder();
 
-  FairGeoMedium* air              = geoMedia->getMedium("air");
-  FairGeoMedium* aluminium        = geoMedia->getMedium("aluminium");
-  FairGeoMedium* RPCgas           = geoMedia->getMedium("RPCgas");
-  FairGeoMedium* RPCgas_noact     = geoMedia->getMedium("RPCgas_noact");
-  FairGeoMedium* RPCglass         = geoMedia->getMedium("RPCglass");
-  FairGeoMedium* carbon           = geoMedia->getMedium("carbon");
+  FairGeoMedium* air                = geoMedia->getMedium("air");
+  FairGeoMedium* aluminium          = geoMedia->getMedium("aluminium");
+  FairGeoMedium* tof_pole_aluminium = geoMedia->getMedium("tof_pole_aluminium");
+  FairGeoMedium* RPCgas             = geoMedia->getMedium("RPCgas");
+  FairGeoMedium* RPCgas_noact       = geoMedia->getMedium("RPCgas_noact");
+  FairGeoMedium* RPCglass           = geoMedia->getMedium("RPCglass");
+  FairGeoMedium* carbon             = geoMedia->getMedium("carbon");
 
   // include check if all media are found
 
   geoBuild->createMedium(air);
   geoBuild->createMedium(aluminium);
+  geoBuild->createMedium(tof_pole_aluminium);
   geoBuild->createMedium(RPCgas);
   geoBuild->createMedium(RPCgas_noact);
   geoBuild->createMedium(RPCglass);
@@ -662,7 +667,8 @@ TGeoVolume* create_counter(Int_t modType)
 
   // Add 8 single stacks + one glass plate at the e09.750nd to a multi stack
   TGeoVolume* multi_stack = new TGeoVolumeAssembly("multi_stack");
-  for (Int_t l=0; l<ngaps; l++){
+  Int_t l=0;
+  for (l=0; l<ngaps; l++){
     TGeoTranslation* single_stack_trans 
       = new TGeoTranslation("", 0., 0., startzpos + l*dzpos);
     multi_stack->AddNode(single_stack, l, single_stack_trans);
@@ -1052,7 +1058,7 @@ TGeoVolume* create_new_tof_module_m(Int_t modType)
 TGeoVolume* create_tof_pole()
 {
   // needed materials
-  TGeoMedium* boxVolMed   = gGeoMan->GetMedium(BoxVolumeMedium);
+  TGeoMedium* boxVolMed   = gGeoMan->GetMedium(PoleVolumeMedium);
   TGeoMedium* airVolMed   = gGeoMan->GetMedium(KeepingVolumeMedium);
    
   Float_t dx=Pole_Size_X;
@@ -1067,7 +1073,7 @@ TGeoVolume* create_tof_pole()
   TGeoVolume* pole_alu_vol = 
     new TGeoVolume("pole_alu", pole_alu_box, boxVolMed);
   pole_alu_vol->SetLineColor(kGreen); // set line color for the alu box
-  pole_alu_vol->SetTransparency(20); // set transparency for the TOF
+  //  pole_alu_vol->SetTransparency(20); // set transparency for the TOF
   TGeoTranslation* pole_alu_trans 
     = new TGeoTranslation("", 0., 0., 0.);
   pole->AddNode(pole_alu_vol, 0, pole_alu_trans);
@@ -1105,7 +1111,7 @@ TGeoVolume* create_tof_pole()
 TGeoVolume* create_tof_poleshort()
 {
   // needed materials
-  TGeoMedium* boxVolMed   = gGeoMan->GetMedium(BoxVolumeMedium);
+  TGeoMedium* boxVolMed   = gGeoMan->GetMedium(PoleVolumeMedium);
   TGeoMedium* airVolMed   = gGeoMan->GetMedium(KeepingVolumeMedium);
    
   Float_t dx=Pole_Size_X;
@@ -1120,7 +1126,7 @@ TGeoVolume* create_tof_poleshort()
   TGeoVolume* pole_alu_vol = 
     new TGeoVolume("pole_alu", pole_alu_box, boxVolMed);
   pole_alu_vol->SetLineColor(kGreen); // set line color for the alu box
-  pole_alu_vol->SetTransparency(20); // set transparency for the TOF
+  //  pole_alu_vol->SetTransparency(20); // set transparency for the TOF
   TGeoTranslation* pole_alu_trans 
     = new TGeoTranslation("", 0., 0., 0.);
   pole->AddNode(pole_alu_vol, 0, pole_alu_trans);
@@ -1158,7 +1164,7 @@ TGeoVolume* create_tof_poleshort()
 TGeoVolume* create_tof_bar(Float_t dx, Float_t dy, Float_t dz)
 {
   // needed materials
-  TGeoMedium* boxVolMed = gGeoMan->GetMedium(BoxVolumeMedium);
+  TGeoMedium* boxVolMed = gGeoMan->GetMedium(PoleVolumeMedium);
   TGeoMedium* airVolMed = gGeoMan->GetMedium(KeepingVolumeMedium);
    
   Float_t width_alux=Pole_Thick_X;
@@ -1170,7 +1176,7 @@ TGeoVolume* create_tof_bar(Float_t dx, Float_t dy, Float_t dz)
   TGeoVolume* bar_alu_vol = 
     new TGeoVolume("bar_alu", bar_alu_box, boxVolMed);
   bar_alu_vol->SetLineColor(kGreen); // set line color for the alu box
-  bar_alu_vol->SetTransparency(20); // set transparency for the TOF
+  //  bar_alu_vol->SetTransparency(20); // set transparency for the TOF
   TGeoTranslation* bar_alu_trans 
     = new TGeoTranslation("", 0., 0., 0.);
   bar->AddNode(bar_alu_vol, 0, bar_alu_trans);
@@ -1227,7 +1233,8 @@ void position_tof_bars(Int_t modType)
   TGeoTranslation* bar_trans=NULL;
 
   Int_t numBars=0;
-  for (Int_t i=0; i<NumberOfBars; i++){
+  Int_t i=0;
+  for (i=0; i<NumberOfBars; i++){
 
      Float_t xPos=Bar_XPos[i];
      Float_t zPos=Bar_ZPos[i];
@@ -1255,7 +1262,7 @@ void position_tof_bars(Int_t modType)
    // outer horizontal and vertical frame bars 
 
     NumberOfBars++;
-    Int_t i = NumberOfBars;
+    i = NumberOfBars;
     gBar[i]=create_tof_bar(Bar_XLen,Bar_Size_Y,Bar_Size_Y);
     j=i+1;
     gBar[j]=create_tof_bar(Bar_Size_X,Bar_YLen,Bar_Size_Y);
@@ -1398,17 +1405,18 @@ void position_tof_modules(Int_t NModTypes)
  TGeoCombiTrans* module_combi_trans = NULL;
  const Int_t MaxLayer=20;
  Int_t NLayer=0;
- Float_t zPosLayer[MaxLayer]=0.;
+ Float_t zPosLayer[MaxLayer] = {0.};
  const Int_t MaxCol=100;
  Int_t NCol=0;
- Float_t xPosCol[MaxCol]=0.;
+ Float_t xPosCol[MaxCol] = {0.};
  const Float_t zAcc=0.1;
  const Float_t xAcc=2.;
 
  Int_t ii=0; 
+ Int_t modNum = 0;
  for (Int_t j=0; j<NModTypes+1; j++){
   Int_t modType= j;
-  Int_t modNum = 0;
+  modNum = 0;
   Float_t SignZ;
   //  if(modType != 0) continue; // debugging  
   for(Int_t i=0; i<NModules[j]; i++) { 
@@ -1463,7 +1471,7 @@ void position_tof_modules(Int_t NModTypes)
       break;
     case 7: SignZ=-1;
       break;
-    default:
+      //    default:
     }
 
     Float_t zPosPole = zPos + (Module_Size_Z[j]/2. + Pole_Size_Z/2.)*SignZ;
@@ -1529,6 +1537,7 @@ void position_tof_modules(Int_t NModTypes)
  //  Pole related bars
  Float_t BZMin= 10000.;
  Float_t BZMax=-10000.;
+ Int_t iL;
  for(iL=0; iL<NLayer; iL++){
    if(zPosLayer[iL]>BZMax) BZMax=zPosLayer[iL];
    if(zPosLayer[iL]<BZMin) BZMin=zPosLayer[iL];
@@ -1539,6 +1548,7 @@ void position_tof_modules(Int_t NModTypes)
 
  //cout << "Place "<< NCol << " bars of z-length "<< Bar_Size_Z <<" at z = "<<Bar_Pos_Z<< endl;
 
+ Int_t iC;
  for (iC=0; iC<NCol; iC++)
  {
    gBar[NumberOfBars] = create_tof_bar(Bar_Size_X, Bar_Size_Y, Bar_Size_Z);
