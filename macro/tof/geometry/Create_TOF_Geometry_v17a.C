@@ -46,6 +46,8 @@
 #include <iostream>
 #include <sstream>
 
+const Bool_t IncludeSupports    = true; // false;   // true, if support structure is included in geometry
+
 // Name of geometry version and output file
 const TString geoVersion = "tof_v17a_1h";     // SIS 100 hadron, 4.5 m
 //const TString geoVersion = "tof_v17a_1e";     // SIS 100 electron, 6 m
@@ -461,7 +463,9 @@ void Create_TOF_Geometry_v17a() {
        <<endl;
   position_outer_tof_modules(4);
   */
+  if (IncludeSupports)
   position_tof_poles(0);
+  if (IncludeSupports)
   position_tof_bars(0);
   
   gGeoMan->CloseGeometry();
