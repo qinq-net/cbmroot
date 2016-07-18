@@ -1474,7 +1474,8 @@ void position_tof_modules(Int_t NModTypes)
       break;
     case 7: SignZ=-1;
       break;
-      //    default:
+    default:
+      cout << endl;
     }
 
     Float_t zPosPole = zPos + (Module_Size_Z[j]/2. + Pole_Size_Z/2.)*SignZ;
