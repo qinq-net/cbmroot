@@ -55,9 +55,9 @@ class CbmTrdTimeCorrel : public FairTask
   const Bool_t fActivateClusterizer = true;
   const Bool_t fActivate2DClusterizer=false;
   const Bool_t fBatchAssessment = false;
-  const Bool_t fDebugMode = false;
+  const Bool_t fDebugMode = true;
   const Bool_t fDrawSignalShapes = false;
-  const Bool_t fDrawSignalDebugHistograms = false;
+  const Bool_t fDrawSignalDebugHistograms = true;
   const Bool_t fDrawPadResponse = true;
   Bool_t fCalculateBaseline = true;
   const Int_t  fSignalShapeThreshold = -255	;
@@ -136,7 +136,7 @@ class CbmTrdTimeCorrel : public FairTask
   Int_t GetColumnID(CbmSpadicRawMessage* raw);
   Int_t GetModuleID(CbmSpadicRawMessage* raw);
   Int_t GetMaxADC(CbmSpadicRawMessage&,Bool_t = true);
-  Int_t GetAvgBaseline(CbmSpadicRawMessage&,Int_t n=3);
+  Int_t GetAvgBaseline(CbmSpadicRawMessage&,Int_t n=1);
   Int_t GetAvgBaseline(CbmSpadicRawMessage* raw){
 	  return GetAvgBaseline(*raw);
   };
@@ -182,7 +182,7 @@ class CbmTrdTimeCorrel : public FairTask
     Int_t GetHorizontalMessagePosition(CbmSpadicRawMessage&);
     Int_t GetSpadicID(Int_t);
     Int_t GetChannelOnPadPlane(Int_t);
-    Int_t GetMaxADC(CbmSpadicRawMessage&);
+    Int_t GetMaxADC(CbmSpadicRawMessage&,Bool_t = false);
     void Veto();
   };
  private:
