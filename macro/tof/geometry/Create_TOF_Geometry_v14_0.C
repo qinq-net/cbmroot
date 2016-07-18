@@ -5,6 +5,7 @@
 
 // Changelog
 //
+// 2016-07-18 - DE - patch double free or corruption with poleshort: same TGeoVolume name was used in pole
 // 2015-11-09 - PAL- Modify to easily prepare tof_v14_0a to tof_v14_0e on model of 13_5a to 13_5e
 // 2014-06-30 - NH - prepare tof_v14_0  geometry - SIS 300 hadron  : TOF_Z_Front =  880 cm //Bucharest 
 // 2014-06-27 - NH - prepare tof_v13_6b geometry - SIS 300 hadron  : TOF_Z_Front =  880 cm //external input
@@ -1124,7 +1125,7 @@ TGeoVolume* create_tof_poleshort()
   TGeoVolume* pole = new TGeoVolumeAssembly("PoleShort");
   TGeoBBox*   pole_alu_box = new TGeoBBox("", dx/2., dy/2., dz/2.);
   TGeoVolume* pole_alu_vol = 
-    new TGeoVolume("pole_alu", pole_alu_box, boxVolMed);
+    new TGeoVolume("poleshort_alu", pole_alu_box, boxVolMed);
   pole_alu_vol->SetLineColor(kGreen); // set line color for the alu box
   //  pole_alu_vol->SetTransparency(20); // set transparency for the TOF
   TGeoTranslation* pole_alu_trans 
@@ -1147,7 +1148,7 @@ TGeoVolume* create_tof_poleshort()
     TGeoBBox* pole_air_box = new TGeoBBox("", air_dx, air_dy, air_dz);
     //  TGeoBBox* pole_air_box = new TGeoBBox("", dx/2.-width_alux, dy/2.-width_aluy, dz/2.-width_aluz);
     TGeoVolume* pole_air_vol = 
-      new TGeoVolume("pole_air", pole_air_box, airVolMed);
+      new TGeoVolume("poleshort_air", pole_air_box, airVolMed);
     pole_air_vol->SetLineColor(kYellow); // set line color for the alu box
     pole_air_vol->SetTransparency(70); // set transparency for the TOF
     TGeoTranslation* pole_air_trans 
