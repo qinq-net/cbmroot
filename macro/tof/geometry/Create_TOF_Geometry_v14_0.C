@@ -43,11 +43,11 @@
 #include <sstream>
 
 // Name of geometry version and output file
-//const TString geoVersion = "tof_v14-0a";     //4.5 m
+const TString geoVersion = "tof_v14-0a";     //4.5 m
 //const TString geoVersion = "tof_v14-0b";     //6 m
 //const TString geoVersion = "tof_v14-0c";     //6.5 m
 //const TString geoVersion = "tof_v14-0d";     //8.8 m
-const TString geoVersion = "tof_v14-0e";     //10 m
+//const TString geoVersion = "tof_v14-0e";     //10 m
 //const TString geoVersion = "tof_v13-6b";   //10 m
 //const TString geoVersion = "tof_v13-5b";
 //const TString geoVersion = "tof_v13-5c";
@@ -1212,13 +1212,15 @@ void position_tof_poles(Int_t modType)
        numPoles++;
      }else{ // position 2 short poles 
 
+       // upper short poles
        pole_trans 
-	 = new TGeoTranslation("", xPos, PoleShort_Size_Y/2.-Pole_Size_Y/2., zPos);
+	 = new TGeoTranslation("", xPos, Pole_Size_Y/2.-PoleShort_Size_Y/2., zPos);
        gGeoMan->GetVolume(geoVersion)->AddNode(gPoleShort, numPolesShort, pole_trans);
        numPolesShort++;
 
+       // lower short poles
        pole_trans 
-	 = new TGeoTranslation("", xPos, Pole_Size_Y/2.-PoleShort_Size_Y/2., zPos);
+	 = new TGeoTranslation("", xPos, PoleShort_Size_Y/2.-Pole_Size_Y/2., zPos);
        gGeoMan->GetVolume(geoVersion)->AddNode(gPoleShort, numPolesShort, pole_trans);
        numPolesShort++;
 
