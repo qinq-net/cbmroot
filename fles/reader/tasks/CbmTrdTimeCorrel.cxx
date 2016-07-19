@@ -401,7 +401,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	      if there is no message found for spadicName at this time and the same padID (which should never be the case) the 
 	      processed message is added to the map. This avoids per definition the use of overlapping microslices. It is up to you to 
 	      define the time for spacial and time clusterization (after each timeSliceContainer or ad the end of the file. This will 
-	      be mainly a question of avainlable RAM. It might be a good idea to clusterize after each timeSliceContainer, write all 
+	      be mainly a question of available RAM. It might be a good idea to clusterize after each timeSliceContainer, write all 
 	      rawMessages inside of the buffer to a TClonesArray or TTree as well as all found CbmTrdClusters to a separate TClonesArray 
 	      or TTree. Afterwards one should erase the buffer partially (leaving a rest of messages at the end of the buffer to be able 
 	      to cluster messages at the beginning of the next TimeSliceContainer.
@@ -1084,7 +1084,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
 		    //Int_t SpaPad2 = (Int_t)(SpaID2/2) * 32 + ((SpaID2>1) ? 31-GetChannelOnPadPlane(ChID2) : GetChannelOnPadPlane(ChID2));
 		    Int_t SpaPad1 = (Int_t)(SpaID1/2) * 32 + (GetChannelOnPadPlane(ChID1));
 		    Int_t SpaPad2 = (Int_t)(SpaID2/2) * 32 + (GetChannelOnPadPlane(ChID2));
-		    if (it!=range.first) { //Exlude Correlations of messages with themselves
+		    if (it!=range.first) { //Exclude Correlations of messages with themselves
 			//TODO:Implement Clusters and fill them
 			if(fDebugMode){
 			    fHM->H2("Hit_Coincidences")->Fill(SpaPad1,SpaPad2);
@@ -1355,7 +1355,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
 			  Float_t NextPosition=fClusterBuffer.at(i+j).GetHorizontalPosition();
 			  //if(NextPosition>16.0) NextPosition -= 16.0;
 			  Long_t NextTime = fClusterBuffer.at(i+j).GetFulltime();
-			  CoincidenceHistogram->Fill(NextPosition - CurrentPosition,NextTime -CurrentTime);
+			  CoincidenceHistogram->Fill(NextPosition - CurrentPositionNextTime -CurrentTime);
 		  }
 	  }
   }
@@ -2698,7 +2698,7 @@ Int_t CbmTrdTimeCorrel::Cluster::Type(){
 	/* Get Information about the status of the Cluster
 	 * Type 0 means that the cluster is complete (no gaps and capping TriggerType 2 messages)
 	 * Type 1 means that the cluster is incomplete (either with gaps or without capping TriggerType 2 messages)
-	 * Type 2 means that the cluster is hitless (no selftriggerd HitMessages)
+	 * Type 2 means that the cluster is hitless (no selftriggered HitMessages)
 	 * Type 3 means that the Cluster is invalid (see Veto())
 	 */
   if(fParametersCalculated) return fType;
