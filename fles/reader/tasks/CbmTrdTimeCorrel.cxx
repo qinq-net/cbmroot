@@ -1355,7 +1355,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
 			  Float_t NextPosition=fClusterBuffer.at(i+j).GetHorizontalPosition();
 			  //if(NextPosition>16.0) NextPosition -= 16.0;
 			  Long_t NextTime = fClusterBuffer.at(i+j).GetFulltime();
-			  CoincidenceHistogram->Fill(NextPosition - CurrentPositionNextTime -CurrentTime);
+			  CoincidenceHistogram->Fill(NextPosition - CurrentPosition,NextTime -CurrentTime);
 		  }
 	  }
   }
