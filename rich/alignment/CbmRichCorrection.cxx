@@ -150,6 +150,8 @@ void CbmRichCorrection::InitHistProjection()
 
 	fHM->Create1<TH1D>("fHistoDiffX", "fHistoDiffX;Histogram difference between corrected and ideal X positions;A.U.", bin, 0., upperScaleLimit);
 	fHM->Create1<TH1D>("fHistoDiffY", "fHistoDiffY;Histogram difference between corrected and ideal Y positions;A.U.", bin, 0., upperScaleLimit);
+
+	fHM->Create1<TH1D>("fHistoBoA", "fHistoBoA;Histogram B axis over A axis;A.U.", bin, 0., upperScaleLimit);
 }
 
 void CbmRichCorrection::Exec(Option_t* /*option*/)
@@ -949,6 +951,7 @@ void CbmRichCorrection::FillHistProjection(TVector3 outPosIdeal, TVector3 outPos
 		cout << "Distance between fitted ring center and extrapolated track hit in plane = " << distToExtrapTrackHitInPlaneIdeal << endl << endl;
 		//}
 		//else { cout << "No identical ring mother ID and mirror track ID ..." << endl;}
+
 	}
 	cout << "End of loop on global tracks;" << endl;
 }
