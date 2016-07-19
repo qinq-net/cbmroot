@@ -1361,15 +1361,20 @@ void CbmTrdTimeCorrel::ClusterizerTime()
   }
 
   for (auto x: fClusterBuffer){
-	  Float_t Position = x.GetHorizontalPosition();
-	  if(Position<0.5||Position>30.5||
-			  (Position >14.5 && Position<16.5)||
-			  (Position >6.5 && Position<8.5)||
-			  (Position >22.5 && Position<24.5)||
-			  (Position >26.5 && Position<29.5)){
-	      fHM->H1("Masked_Clustersize_for_Syscore_"+std::to_string (0)+"_Spadic_"+std::to_string (static_cast<Int_t>(x.GetSpadic ()/2)))->Fill(static_cast<Int_t>(x.size ()));
-	      continue;
-	  }
+      Float_t Position = x.GetHorizontalPosition();
+      if (Position < 0.5 || Position > 30.5 || //exclude Clusters outside Padplane
+          (Position > 14.5 && Position < 16.5) || //exclude Clusters between rows on Padplane
+          (Position > 6.5 && Position < 8.5) || //exclude Clusters on gap between Halfchip A and B
+          (Position > 22.5 && Position < 24.5) || //exclude Clusters on gap between Halfchip A and B
+          (Position > 26.5 && Position < 29.5)) //exclude Clusters around defective channel 6
+        {
+          fHM->H1 (
+              "Masked_Clustersize_for_Syscore_" + std::to_string (0)
+                  + "_Spadic_"
+                  + std::to_string (static_cast<Int_t> (x.GetSpadic () / 2)))->Fill (
+              static_cast<Int_t> (x.size ()));
+          continue;
+        }
       fHM->H1("Clustersize_for_Syscore_"+std::to_string (0)+"_Spadic_"+std::to_string (static_cast<Int_t>(x.GetSpadic ()/2)))->Fill(static_cast<Int_t>(x.size ()));
       fHM->H2("Cluster("+std::to_string(static_cast<Int_t>(x.size()))+")_Heatmap_for_Syscore_"+std::to_string (0) +"_Spadic_"+std::to_string(static_cast<Int_t>(x.GetSpadic ()/2)))->Fill((x.GetHorizontalPosition()<16.0 ? x.GetHorizontalPosition() : x.GetHorizontalPosition()-16.0),1-static_cast<Int_t>(x.GetRow()));
       string detectorName = (x.GetSpadic()/2 == 0 ? "Frankfurt" : "Muenster");
