@@ -14,7 +14,7 @@
  ** It is placed directly into the cave as mother volume. The beam pipe consists of 
  ** few sections up to the RICH section (1700-3700mm), which is part of the RICH geometry. 
  ** Each section has a PCON shape (including windows).
- ** The STS section is composed of cylinder D(z=220-450mm)=34mm and cone (z=450-1183mm). 
+ ** The STS section is composed of cylinder D(z=220-410mm)=34mm and cone (z=410-1183mm). 
  ** All sections of the beam pipe with conical shape have half opening angle 2.5deg.
  *****************************************************************************/
 
@@ -88,16 +88,16 @@ void create_bpipe_geometry_v16c_1e()
 //  Double_t rout3[nSects3]   = {  18.,   18.,    55. };
 //  Double_t rin3[nSects3]; for(Int_t i=0; i<nSects3; i++) { rin3[i] = rout3[i] - rout3[i]/30.; }
   const Int_t nSects3 = 5;
-//Double_t z3[nSects3]      = { 220.,  450.,  1183.,  1183.,  1188. }; // mm Wolfgang's drawing
-  Double_t z3[nSects3]      = { 220.,  400.,  1183.,  1183.,  1188. }; // mm Wolfgang's drawing
+  Double_t z3[nSects3]      = { 220.,  410.,  1183.,  1183.,  1188. }; // mm Wolfgang's drawing
+  //  Double_t z3[nSects3]      = { 220.,  400.,  1183.,  1183.,  1188. }; // mm Wolfgang's drawing
   Double_t rout3[nSects3]   = {34/2., 34/2.,    55.+pipewallthickness, 
 			                                85.,    85. };
   Double_t rin3[nSects3]    = { 999.,  999.,    55.,    55.,    55. };
   for(Int_t i=0; i<2; i++) { rin3[i] = rout3[i] - pipewallthickness; }
   TString pipevac3name = "pipevac3";
   const Int_t nSects03 = nSects3;
-//Double_t z03[nSects03]    = { 220.,  450.,  1183.,  1183.,  1188. }; // mm Wolfgang's drawing
-  Double_t z03[nSects03]    = { 220.,  400.,  1183.,  1183.,  1188. }; // mm Wolfgang's drawing
+  Double_t z03[nSects03]    = { 220.,  410.,  1183.,  1183.,  1188. }; // mm Wolfgang's drawing
+  //  Double_t z03[nSects03]    = { 220.,  400.,  1183.,  1183.,  1188. }; // mm Wolfgang's drawing
   Double_t rin03[nSects03]  = {   0.,    0.,     0.,     0.,     0. };
   Double_t rout03[nSects03]; for(Int_t i=0; i<nSects03; i++) { rout03[i]=rin3[i]; }
 
@@ -145,20 +145,17 @@ void create_bpipe_geometry_v16c_1e()
   fstream infoFileEmpty;
   infoFile.open(infoFileName.Data(), fstream::out);
   infoFile << "SIS-100. Beam pipe geometry created with " + macroname << endl << endl;
-  infoFile << "	  pipe_v16c_1e = pipe_v14f + fixed sizes of vacuum chamber for mvd_v14a" << endl << endl;
-  infoFile << " The beam pipe is composed of aluminium with a thickness proportional to the" << endl;
-  infoFile << " diameter (D(z)mm/60). It is placed directly into the cave as mother volume." << endl;
-  infoFile << " The beam pipe consists of few sections excluding RICH section(1700-3700mm) " << endl;
-  infoFile << " because it is part of the RICH geometry. Each section has a PCON shape " << endl;
-  infoFile << " (including windows). There are two windows: first one @ 220mm with R600mm " << endl;
-  infoFile << " and 0.7mm thickness, second one of iron @ 6000mm with R600mm and 0.2mm " << endl;
-  infoFile << " thickness. The STS section is composed of cylinder D(z=220-500mm)=36mm and " << endl;
-  infoFile << " cone (z=500-1700mm). All sections of the beam pipe with conical shape have " << endl;
-  infoFile << " half opening angle 2.5deg. The PSD section of the beam pipe is missing " << endl;
-  infoFile << " because it is planned that it will be part of PSD geometry." << endl << endl;
-  
+  infoFile << "  pipe v16c_1e - is a pipe for the STS up to the interface to RICH at z = 1700 mm" << endl << endl;
+  infoFile << "                 with a (blue) flange at the downstream end of the STS box" << endl << endl;
+  infoFile << "The beam pipe is composed of carbon with a fixed wall thickness of 0.5 or 1.0 mm." << endl;
+  infoFile << "It is placed directly into the cave as mother volume. The beam pipe consists of" << endl;
+  infoFile << "few sections up to the RICH section (1700-3700mm), which is part of the RICH geometry." << endl;
+  infoFile << "Each section has a PCON shape (including windows)." << endl;
+  infoFile << "The STS section is composed of cylinder D(z=220-410mm)=34mm and cone (z=410-1183mm)." << endl;
+  infoFile << "All sections of the beam pipe with conical shape have half opening angle 2.5deg." << endl << endl;
+
   infoFile << "Material:  " << pipeMediumName << endl;
-  infoFile << "Thickness: D(z)mm/60" << endl << endl;
+  infoFile << "Wall Thickness: " << pipewallthickness << " mm" << endl << endl;
   // --------------------------------------------------------------------------
 
 
