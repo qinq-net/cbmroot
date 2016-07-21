@@ -73,7 +73,7 @@ set(SRCS
   hadaq/HadaqDefines.cxx
   hadaq/HadaqTrbIterator.cxx
   hadaq/HadaqTdcMessage.cxx
-  hadaq/CbmHldSource.cxx
+#  hadaq/CbmHldSource.cxx
   TTrbUnpackTof.cxx
   TTrbHeader.cxx
   TMbsUnpackTofPar.cxx
@@ -128,7 +128,7 @@ Set(HEADERS
   hadaq/HadaqTimeStamp.h
   hadaq/HadaqTdcMessage.h
   hadaq/HadaqTdcIterator.h
-  hadaq/CbmHldSource.h
+#  hadaq/CbmHldSource.h
   TTrbUnpackTof.h
   TTrbHeader.h
   TMbsUnpackTofPar.h
@@ -231,8 +231,16 @@ Set(DEPENDENCIES
 
 If(FairRoot_VERSION VERSION_EQUAL 15.11.2)
   Message("FairRoot Version equal 15.11.2")
-  Message(STATUS "Correct FairRoot version found. Build tof beamtime library.")
+  Message(STATUS "Correct FairRoot version found. Build full tof beamtime library.")
+  set(SRCS ${SRCS}
+     hadaq/CbmHldSource.cxx
+  )
+  set(HEADERS ${HEADERS}
+     hadaq/CbmHldSource.h
+  )
+  Set(DEFINITIONS ${DEFINITIONS} BUILD_TOF_BEAMTIME)
   GENERATE_LIBRARY()
 Else()
-  Message(STATUS "No correct FairRoot version found. Dont't build tof beamtime library.")
+  Message(STATUS "No correct FairRoot version found. Build tof beamtime library without HLD unpack support.")
+  GENERATE_LIBRARY()
 EndIf()
