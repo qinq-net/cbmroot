@@ -339,6 +339,8 @@ void global_reco(Int_t nEvents = 10, // number of events
   rtdb->setOutput(parIo1);
   rtdb->saveOutput();
   // ------------------------------------------------------------------------
+
+  RemoveGeoManager();
   
   // -----   Initialize and run   --------------------------------------------
   run->Init();
@@ -375,6 +377,7 @@ void global_reco(Int_t nEvents = 10, // number of events
     FairMonitor* tempMon = FairMonitor::GetMonitor();
     tempMon->Print();
   }
+  RemoveGeoManager();
 
   // ------------------------------------------------------------------------
 }

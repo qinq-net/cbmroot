@@ -155,6 +155,9 @@ Bool_t CheckDetectorPresence(
       }
     }
   }
+  gGeoManager->GetListOfVolumes()->Delete();
+  gGeoManager->GetListOfShapes()->Delete();
+  delete gGeoManager;
   f->Close();
   gFile=currentfile;
   delete f;
@@ -219,4 +222,21 @@ Bool_t IsMvd(
 		const TString& parFile)
 {
 	return CheckDetectorPresence(parFile, "mvd");
+}
+
+/**
+ * \ function RemoveGeoManager
+ * There are some problems when deleting our geometries. In some cases
+ * or combinations of geometries there is a double free of some memory 
+ * which results in a crash of ROOT. To avoid this we have patched one
+ * ROOT class. With the newest ROOT6 version this isn't done any longer.
+ * As a workaround to avoid the crash we delete two TObjArrays ourself 
+ * and then call the destructor of the TGeoManager at the end of the 
+ * macro. To simplify this one also can use this function.
+ */
+void RemoveGeoManager()
+{
+  gGeoManager->GetListOfVolumes()->Delete();
+  gGeoManager->GetListOfShapes()->Delete();
+  delete gGeoManager;
 }

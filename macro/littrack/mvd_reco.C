@@ -139,6 +139,8 @@ void mvd_reco(Int_t nEvents = 10)
   rtdb->setOutput(parIo1);
   rtdb->saveOutput();
   // ------------------------------------------------------------------------
+
+  RemoveGeoManager();
   
   // -----   Initialize and run   --------------------------------------------
   run->Init();
@@ -175,5 +177,6 @@ void mvd_reco(Int_t nEvents = 10)
   cout << "Test passed"<< endl;
   cout << " All ok " << endl;
   // ------------------------------------------------------------------------
+  RemoveGeoManager();
 }
 
