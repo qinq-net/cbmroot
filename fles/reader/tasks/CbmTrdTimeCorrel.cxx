@@ -841,6 +841,9 @@ void CbmTrdTimeCorrel::Finish()
 				TString histname = "Charge_Spectrum_for_Syscore_"
 						+ std::to_string(syscore) + "_Detector_"
 						+ std::to_string(detector);
+				TString histname2 = "ChargeIntegral_Spectrum_for_Syscore_"
+						+ std::to_string(syscore) + "_Detector_"
+						+ std::to_string(detector);
 				//fHM->H1(histname.Data())->Scale(1.0/fHM->H1(histname.Data())->GetEntries());
 			}
 		}
@@ -1365,8 +1368,8 @@ void CbmTrdTimeCorrel::ClusterizerTime()
       if (Position < 0.5 || Position > 30.5 || //exclude Clusters outside Padplane
           (Position > 14.5 && Position < 16.5) || //exclude Clusters between rows on Padplane
           (Position > 6.5 && Position < 8.5) || //exclude Clusters on gap between Halfchip A and B
-          (Position > 22.5 && Position < 24.5) || //exclude Clusters on gap between Halfchip A and B
-          (Position > 26.5 && Position < 29.5)) //exclude Clusters around defective channel 6
+          (Position > 22.5 && Position < 24.5)) //exclude Clusters on gap between Halfchip A and B
+          //(Position > 26.5 && Position < 29.5)) //exclude Clusters around defective channel 6
         {
           fHM->H1 (
               "Masked_Clustersize_for_Syscore_" + std::to_string (0)
@@ -1391,6 +1394,9 @@ void CbmTrdTimeCorrel::ClusterizerTime()
       {
           string histname = "Charge_Spectrum_for_Syscore_"+std::to_string(0)+"_Detector_"+std::to_string(x.GetSpadic()/2);
           fHM->H1(histname)->Fill(x.GetTotalCharge(),1/*,x.GetHorizontalPosition()*/);
+          string histname2 = "ChargeIntegral_Spectrum_for_Syscore_"+std::to_string(0)+"_Detector_"+std::to_string(x.GetSpadic()/2);
+          fHM->H1(histname2)->Fill(x.GetTotalIntegralCharge(),1/*,x.GetHorizontalPosition()*/);
+
       }
       //if(x.size()==3&&(x.GetTotalCharge()> 250)) continue;
       if(fDrawPadResponse){
@@ -1852,6 +1858,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
 
       }
     }
+
   if(fActivateClusterizer){
       for (Int_t syscore=0; syscore<1;++syscore) {
           for (Int_t detector=0; detector<2;++detector) {
@@ -1861,6 +1868,12 @@ void CbmTrdTimeCorrel::CreateHistograms()
               fHM->H1(histname.Data())->GetXaxis()->SetTitle("Cluster Charge in ADC Units");
               //fHM->H2(histname.Data())->GetYaxis()->SetTitle("ChID");
               fHM->H1(histname.Data())->GetYaxis()->SetTitle("N^{o}");
+	      // Integral Charge
+              TString histname2 = "ChargeIntegral_Spectrum_for_Syscore_"+std::to_string(syscore)+"_Detector_"+std::to_string(detector);
+              title = histname2 + runName;
+              fHM->Create1<TH1D>(histname2.Data(), title.Data(),6001,-0.5,6000.5/*,33,-0.5,32.5*/);
+              fHM->H1(histname2.Data())->GetXaxis()->SetTitle("Cluster Charge in ADC Units");
+              fHM->H1(histname2.Data())->GetYaxis()->SetTitle("N^{o}");
           }
       }
   }
@@ -1892,7 +1905,6 @@ void CbmTrdTimeCorrel::CreateHistograms()
 	  title = histName + runName;
 	  fHM->Create2<TH2I>(histName.Data(), title.Data(),461,-32.5,32.5,100,0,100);
   }
-
   if(fDrawSignalShapes){
 	  for (Int_t syscore=0; syscore<1;++syscore) {
 		  for(Int_t Detector =0;Detector<=1;Detector++){
@@ -2083,6 +2095,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
   fHM->H2("Correlation_Map")->GetYaxis()->SetTitle("#Delta Time (1 timestamp = 57 ns)");
 
 }
+
 // ----              -------------------------------------------------------
  Int_t CbmTrdTimeCorrel::GetModuleID(CbmSpadicRawMessage* raw)
   {
@@ -2240,6 +2253,7 @@ void CbmTrdTimeCorrel::FitPRF() {
 	FairRootManager::Instance()->GetOutFile()->cd();
 	CalibrationFile.Close();
 }
+
 // ----              -------------------------------------------------------
 Int_t CbmTrdTimeCorrel::GetSpadicID(Int_t sourceA)
 {
@@ -2549,6 +2563,15 @@ Int_t CbmTrdTimeCorrel::Cluster::GetTotalCharge() {
 	}
 }
 
+ Int_t CbmTrdTimeCorrel::Cluster::GetTotalIntegralCharge() {  //For Integral Charge
+	if (fParametersCalculated) {
+		return fTotalIntegralCharge;
+	} else {
+		CalculateParameters();
+		return fTotalIntegralCharge;
+	}
+}
+
 Bool_t CbmTrdTimeCorrel::Cluster::FillChargeDistribution(TH2* ChargeMap,TH2* CentralMap)
 {
   if (!fParametersCalculated)
@@ -2567,7 +2590,8 @@ Bool_t CbmTrdTimeCorrel::Cluster::FillChargeDistribution(TH2* ChargeMap,TH2* Cen
   return true;
 }
 
-Int_t CbmTrdTimeCorrel::Cluster::GetMaxADC(CbmSpadicRawMessage& message,Bool_t GetRawADC)
+//TOBEMERGED with  CbmTrdTimeCorrel::GetMaxADC, at least put the identical sourcecode
+Int_t CbmTrdTimeCorrel::Cluster::GetMaxADC(CbmSpadicRawMessage& message,Bool_t GetRawADC) 
 {
   Int_t maxADC=-255;
 Bool_t validHit=false;
@@ -2589,7 +2613,7 @@ Int_t NrSamples = message.GetNrSamples ();
  }
  if(GetRawADC) Baseline = 0;
  return (maxADC-Baseline);
-};
+}
 
 Int_t CbmTrdTimeCorrel::GetMaxADC(CbmSpadicRawMessage& message,Bool_t SubtractBaseline)
 {
@@ -2606,7 +2630,34 @@ Int_t CbmTrdTimeCorrel::GetMaxADC(CbmSpadicRawMessage& message,Bool_t SubtractBa
   }
   //Int_t Baseline=GetAvgBaseline(message);
   return (SubtractBaseline ?  maxADC-fBaseline[0*64+16*GetSpadicID(message.GetSourceAddress())+message.GetChannelID()] : maxADC);
+}
+
+Int_t CbmTrdTimeCorrel::Cluster::GetMessageChargeIntegral(CbmSpadicRawMessage& message)
+{
+  Int_t maxADC=-255;
+  Int_t integral=0;
+  Bool_t validHit=false;
+  Int_t previousADC=-255;
+  Int_t NrSamples = message.GetNrSamples ();
+  Int_t Baseline=0;
+ if(!fPreCalculatedBaseline){
+ for (Int_t i = NrSamples -3 ; i < NrSamples ; i++)
+   Baseline += *(message.GetSamples() + i);
+ Baseline = Baseline/3;
+ }
+ else{
+	 Baseline = fBaseline[0*64+16*GetSpadicID(message.GetSourceAddress())+message.GetChannelID()];
+ }
+ for (Int_t i = 0 ; i < NrSamples ; i++){
+   Int_t currentADC = *(message.GetSamples() + i) - Baseline; // correct each tb with the channels Baseline
+     integral += currentADC;
+     if(currentADC > maxADC) maxADC=currentADC;
+     if((currentADC > previousADC) && ((currentADC - previousADC)>10)) validHit = true;
+ }
+
+ return (integral);
 };
+
 
 Int_t CbmTrdTimeCorrel::GetAvgBaseline(CbmSpadicRawMessage& message,Int_t n){
 	  Int_t NrSamples = message.GetNrSamples ();
@@ -2814,11 +2865,13 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
   fSpadic = GetSpadicID(fEntries.begin()->GetSourceAddress());//GetChannelOnPadPlane(fEntries.begin()->GetChannelID() + ((GetSpadicID(fEntries.begin()->GetSourceAddress()) %2 == 1)? 16 : 0))/16;
   fType = 0;
   fTotalCharge = 0;
+  fTotalIntegralCharge = 0;
   fHorizontalPosition = 0;
   fFullTime = fEntries.begin()->GetFullTime();
   fIs2D=false;
   std::vector<Int_t> unweightedPosSum;
   std::vector<Int_t> Charges;
+  std::vector<Int_t> ChargesIntegral;
   Int_t NumberOfTypeTwoMessages=0;
   Int_t NumberOfHits=0;
   Int_t LastPad= GetHorizontalMessagePosition(*fEntries.begin())-1;
@@ -2833,19 +2886,25 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
 	  fType=1;
 	}
 	  LastPad = CurrentPad;
-      Int_t Charge = GetMaxADC(message);
+	  Int_t Charge = GetMaxADC(message); // here the calculation of the Charge takes place
+	  Int_t ChargeIntegral = GetMessageChargeIntegral(message);
       maxADC = GetMaxADC(message,true);
       if(maxADC > fMaxADC) fMaxADC=maxADC;
       if(message.GetStopType()>fMaxStopType)fMaxStopType=message.GetStopType();
       if(Charge < 0){
     	  fType = 4;
       }
-      Charges.push_back(Charge);
+      ChargesIntegral.push_back(ChargeIntegral);//charge Integral
+      fTotalIntegralCharge += ChargeIntegral;
+      Charges.push_back(Charge);// chargemax of each message in a cluster
       fTotalCharge += Charge;
       unweightedPosSum.push_back(CurrentPad);
       if(message.GetTriggerType()==2) NumberOfTypeTwoMessages++;
       if(message.GetTriggerType()==1||message.GetTriggerType()==3) NumberOfHits++;
   }
+  // if(!(fEntries.size()==4)) fTotalCharge = -42;
+  std::cout << fEntries.size() << "   " << fTotalCharge << std::endl;
+
   if(NumberOfTypeTwoMessages!=2) fType=1;
   if(NumberOfHits==0) fType=2;
   const Float_t PadWidth = 1.0;//7.0/7.125;
@@ -2969,4 +3028,4 @@ Int_t CbmTrdTimeCorrel::Cluster::GetSpadicID(Int_t sourceA)
   return SpaId;
 }
 
-;
+
