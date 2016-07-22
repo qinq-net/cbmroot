@@ -341,14 +341,16 @@ Bool_t CbmTofDigiBdfPar::LoadBeamtimeHistos()
          // This results in the relation: p = 1 - (1 - P)^(1/Ngaps)
          //         with P = RPC efficiency from beamtime
          fdGapsEfficiency[iSmType].Set( fiNbRpc[iSmType] );
-         for( Int_t iRpc = 0; iRpc < fiNbRpc[iSmType]; iRpc ++)
-//         {
-//            cout<<iSmType<<" "<<iRpc<<" "<<fdEfficiency[iSmType]<<" "<<GetNbGaps( iSmType, iRpc)<<" "<<(Double_t)GetNbGaps( iSmType, iRpc)<<endl;
-            fdGapsEfficiency[iSmType][iRpc] = 1 - TMath::Power( 1.0 - fdEfficiency[iSmType],
-                                                       1.0/(Double_t)GetNbGaps( iSmType, iRpc) );
-//         }
-
          fdTimeResolution[iSmType] = pInputRes->GetAt( fiSmTypeInpMapp[iSmType] );
+
+         for( Int_t iRpc = 0; iRpc < fiNbRpc[iSmType]; iRpc ++)
+         {
+	   LOG(INFO)<<iSmType<<" Eff: "<<iRpc<<" "<<fdEfficiency[iSmType]<<" "<<GetNbGaps( iSmType, iRpc)<<" "
+		    <<(Double_t)GetNbGaps( iSmType, iRpc)<<" TRes "<<fdTimeResolution[iSmType]<<FairLogger::endl;
+           fdGapsEfficiency[iSmType][iRpc] = 1 - TMath::Power( 1.0 - fdEfficiency[iSmType],
+                                                       1.0/(Double_t)GetNbGaps( iSmType, iRpc) );
+         }
+
 
          // Cluster Size histograms
          fBeamtimeInput->GetObject( Form("h1ClusterSizeType%03d", fiSmTypeInpMapp[iSmType]),

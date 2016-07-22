@@ -288,6 +288,7 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam()
     fiPlaSelect(0),
     fiBeamRefSmType(0),
     fiBeamRefSmId(0),
+    fiBeamRefRpc(0),
     fiDutNch(0),
     fiReqTrg(-1),
     fSIGLIM(3.),
@@ -529,6 +530,7 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fiPlaSelect(0),
     fiBeamRefSmType(0),
     fiBeamRefSmId(0),
+    fiBeamRefRpc(0),
     fiDutNch(0),
     fiReqTrg(-1),
     fSIGLIM(3.),
@@ -1379,8 +1381,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 		   <<FairLogger::endl;
 	continue;
       }
-      if(iSmType == fiBeamRefSmType){ // diamond hit (or other reference counter)
-        if( fiBeamRefSmId == CbmTofAddress::GetSmId( iDetId )) {
+      if(iDetId == fiBeamRefAddr){ // diamond hit (or other reference counter)
 	  dMulD++;
 	  vDiaHit.resize(dMulD);
 	  vDiaHit[dMulD-1]=pHit;
@@ -1388,7 +1389,6 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	    dTDia = pHit->GetTime();
 	    pDia  = pHit;
 	  }
-	}
       }
    } // reaction reference search loop end;
    if(dMulD>0){ // average fastest channels
@@ -1408,7 +1408,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 		    fiMrpcRefAddr,fiMrpcSel2Addr,fiMrpcSel3Addr)
 	     <<FairLogger::endl;
 
-   // process counter hits, fill Chi2List, check selectors 
+   // process counter hits, fill Chi2List, check selector
 
    for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)
    {
@@ -1438,7 +1438,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 		   <<Form(", Muls %4.0f, %4.0f, %4.0f",dMulD, dMul0, dMul4)
 		   <<FairLogger::endl;
 
-      if(fiDutAddr == iDetId) {
+      if(fiDutAddr == iDetId) {    // Process Dut
 	dMul0++;
 	Double_t xPos1=Zref/pHit->GetZ()*pHit->GetX();
 	Double_t yPos1=Zref/pHit->GetZ()*pHit->GetY();
@@ -1460,7 +1460,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	       && fiMrpcRefSm  == CbmTofAddress::GetSmId( iDetId2 )
 	       && fiMrpcRefRpc == CbmTofAddress::GetRpcId( iDetId2 )
 	     */
-               ){  // MrpcRef
+               ){        // Dut - MrpcRef
              Double_t xPos2=Zref/pHit2->GetZ()*pHit2->GetX();
 	     Double_t yPos2=Zref/pHit2->GetZ()*pHit2->GetY();
              Double_t tof2 =pHit2->GetTime();
@@ -1481,7 +1481,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 		        <<Form(" -> %f ", Chi2Match)
 		        <<FairLogger::endl;
 
-	     iNbMatchedHits++;
+	     iNbMatchedHits++;                                             // count Dut - Ref matches
 	     if(iNbMatchedHits==iNbMaxMatch) iNbMatchedHits=iNbMaxMatch-1; //prevent array overflow
  	     LOG(DEBUG)
 	       <<Form("CbmTofAnaTestbeam::FillHistos: match %d (%f):  %2d.-%2d. Tof hit 0x%08x of SmT %1d, 0x%08x with 0x%08x",
@@ -1552,7 +1552,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	dMul4++;
       }
 
-      if(fiBeamRefAddr == iDetId) {
+      if(fiBeamRefAddr == iDetId) {  // process beam Ref hit
 	if( pHit != pDia ) continue;
 	if( fdDTDia>0. )
 	{
@@ -1594,9 +1594,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	   LOG(DEBUG2)<<Form("CbmTofAnaTestbeam:FillHisto: TDia %f, THit %f",dTDia,pHit2->GetTime())
 		      <<FairLogger::endl;
 
-	   if(  fiMrpcRefAddr  == iDetId2  //CbmTofAddress::GetSmType( iDetId2 )
-	     //&& fiMrpcRefSm  == CbmTofAddress::GetSmId( iDetId2 )
-	     //&& fiMrpcRefRpc == CbmTofAddress::GetRpcId( iDetId2 )
+	   if(  fiMrpcRefAddr  == iDetId2  // Beam - Ref coincidence
 	       ){   // Reference RPC hit
 	     dDTD4=pHit2->GetTime()-dTDia + fdTShift;
 	     fhDTD4->Fill(dDTD4);
@@ -1623,7 +1621,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 		   dDTD4Min=dDTD4;
 		   pHitRef=pHit2;
 		   fChannelInfoRef=fChannelInfo2;
-		   LOG(DEBUG1)<<Form("CbmTofAnaTestbeam:FillHisto: accep Mrpc, look for %d, 0x%08x",fiMrpcSel2,fiMrpcSel2Addr)
+		   LOG(DEBUG1)<<Form("CbmTofAnaTestbeam:FillHisto: accept Mrpc, look for Sel2 %d, 0x%08x",fiMrpcSel2,fiMrpcSel2Addr)
 			<<FairLogger::endl;
 		   if( fiMrpcSel2 < 1 ) {  // assume Mrpctype to be initialized to 0 
 		     BSel[0]=kTRUE;

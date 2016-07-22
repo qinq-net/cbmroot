@@ -80,7 +80,8 @@ class CbmTofAnaTestbeam : public FairTask {
       inline Int_t GetMrpcSel3  () const              { return fiMrpcSel3;}
       inline Int_t GetPlaSelect () const              { return fiPlaSelect;}
       inline Int_t GetBeamRefSmType () const          { return fiBeamRefSmType;}
-      inline Int_t GetBeamRefSmId    () const         { return fiBeamRefSmId;}
+      inline Int_t GetBeamRefSmId   () const          { return fiBeamRefSmId;}
+      inline Int_t GetBeamRefRpc    () const          { return fiBeamRefRpc;}
 
       inline void SetDXMean    (Double_t val)           { fdDXMean = val;}
       inline void SetDYMean    (Double_t val)           { fdDYMean = val;}
@@ -145,9 +146,11 @@ class CbmTofAnaTestbeam : public FairTask {
 
       inline void SetPlaSelect (Int_t ival)             { fiPlaSelect = ival;}
       inline void SetBeamRefSmType (Int_t ival)         { fiBeamRefSmType = ival;
-	fiBeamRefAddr=CbmTofAddress::GetUniqueAddress(fiBeamRefSmId,0,0,0,fiBeamRefSmType);}
+	fiBeamRefAddr=CbmTofAddress::GetUniqueAddress(fiBeamRefSmId,fiBeamRefRpc,0,0,fiBeamRefSmType);}
       inline void SetBeamRefSmId    (Int_t ival)        { fiBeamRefSmId   = ival;
-	fiBeamRefAddr=CbmTofAddress::GetUniqueAddress(fiBeamRefSmId,0,0,0,fiBeamRefSmType);}
+	fiBeamRefAddr=CbmTofAddress::GetUniqueAddress(fiBeamRefSmId,fiBeamRefRpc,0,0,fiBeamRefSmType);}
+      inline void SetBeamRefRpc    (Int_t ival)        { fiBeamRefRpc   = ival;
+	fiBeamRefAddr=CbmTofAddress::GetUniqueAddress(fiBeamRefSmId,fiBeamRefRpc,0,0,fiBeamRefSmType);}
 
       inline void SetReqTrg (Int_t ival)                { fiReqTrg = ival;}
 
@@ -435,7 +438,8 @@ class CbmTofAnaTestbeam : public FairTask {
       Int_t    fiMrpcSel3Rpc; // Coincident Mrpc 3 Rpc 
       Int_t      fiPlaSelect; // Select plastics: 0 - P2, 2 - Buc2013
       Int_t  fiBeamRefSmType; // Beam reference counter type 
-      Int_t    fiBeamRefSmId; // Beam reference counter 
+      Int_t    fiBeamRefSmId; // Beam reference module 
+      Int_t    fiBeamRefRpc;  // Beam reference Rpc 
       Int_t         fiDutNch; // Number of cells in Device under test
       Int_t         fiReqTrg; // Requested Trigger Pattern 
 
