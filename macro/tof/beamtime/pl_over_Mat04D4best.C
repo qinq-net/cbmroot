@@ -19,6 +19,10 @@ gStyle->SetOptFit(kTRUE);
  Double_t NFinalHits;
  Double_t dTRes;
  Double_t dTRMS;
+ Double_t dMeanX;
+ Double_t dSigX;
+ Double_t dMeanY;
+ Double_t dSigY;
 
  // if (hPla!=NULL) hPla->Delete();
 
