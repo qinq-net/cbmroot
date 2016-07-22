@@ -100,7 +100,7 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
                                                         DefaultBaselineFrankfurt : DefaultBaselineMuenster);
                       }
                       else {
-                          fBaseline[syscore * 64 + spadic * 16 + channel] = CurrentFit->GetParams()[1]-2*CurrentFit->GetParams()[2];
+                          fBaseline[syscore * 64 + spadic * 16 + channel] = CurrentFit->GetParams()[1]-0*CurrentFit->GetParams()[2];
                       }
                     }
                 }
