@@ -155,9 +155,6 @@ Bool_t CheckDetectorPresence(
       }
     }
   }
-  gGeoManager->GetListOfVolumes()->Delete();
-  gGeoManager->GetListOfShapes()->Delete();
-  delete gGeoManager;
   f->Close();
   gFile=currentfile;
   delete f;
@@ -236,7 +233,9 @@ Bool_t IsMvd(
  */
 void RemoveGeoManager()
 {
-  gGeoManager->GetListOfVolumes()->Delete();
-  gGeoManager->GetListOfShapes()->Delete();
-  delete gGeoManager;
+  if (gROOT->GetVersionInt() >= 60602) {
+    gGeoManager->GetListOfVolumes()->Delete();
+    gGeoManager->GetListOfShapes()->Delete();
+    delete gGeoManager;
+  }
 }
