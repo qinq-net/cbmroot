@@ -100,7 +100,7 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
                                                         DefaultBaselineFrankfurt : DefaultBaselineMuenster);
                       }
                       else {
-                          fBaseline[syscore * 64 + spadic * 16 + channel] = CurrentFit->GetParams()[1];
+                          fBaseline[syscore * 64 + spadic * 16 + channel] = CurrentFit->GetParams()[1]-2*CurrentFit->GetParams()[2];
                       }
                     }
                 }
@@ -1395,7 +1395,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
       //if(x.size()==3&&(x.GetTotalCharge()> 250)) continue;
       if(fDrawPadResponse){
     	  string histname = "Pad_Response_"+ detectorName + "_for_Clusters_of_Size_"+std::to_string(static_cast<Int_t>(x.size()));
-    	  x.FillChargeDistribution(fHM->H2(histname));
+    	  x.FillChargeDistribution(fHM->H2(histname),fHM->H2("Central_"+histname));
       }
 
   }
@@ -1843,6 +1843,13 @@ void CbmTrdTimeCorrel::CreateHistograms()
           fHM->H2(histName.Data())->GetXaxis()->SetTitle("Displacement frac{d}{mm}");
           fHM->H2(histName.Data())->GetYaxis()->SetTitle("Chargeratio frac{Q_{i}}{#sum_{k}^{ } Q_{k}}");
           //fHM->H3(histName.Data())->GetZaxis()->SetTitle("TotalCharge");
+          histName = "Central_Pad_Response_"+ Detectorname + "_for_Clusters_of_Size_"+std::to_string(Size);
+          title = histName + runName;
+          fHM->Create2<TH2I>(histName.Data(), title.Data(), 801,-(4+0.05)*7.125,(4+0.05)*7.125,101,-0.005,1.005);
+          //fHM->Create3<TH3I>(histName.Data(), title.Data(), 801,-(4+0.05)*7.125,(4+0.05)*7.125,101,-0.005,1.005,100,0,1000);
+          fHM->H2(histName.Data())->GetXaxis()->SetTitle("Displacement frac{d}{mm}");
+          fHM->H2(histName.Data())->GetYaxis()->SetTitle("Chargeratio frac{Q_{i}}{#sum_{k}^{ } Q_{k}}");
+
       }
     }
   if(fActivateClusterizer){
@@ -2464,7 +2471,7 @@ CbmTrdTimeCorrel::Cluster::Cluster(Int_t * BaselineArray,Int_t initWindowsize, I
     fTotalCharge (0),
     fHorizontalPosition (0),
     fMaxStopType(0),
-    fMaxCharge(-256),
+    fMaxADC(-256),
     fWindowsize(initWindowsize),
 	fPreCalculatedBaseline(true),
 	fClusterChargeThreshhold(ChargeThreshhold),
@@ -2542,7 +2549,7 @@ Int_t CbmTrdTimeCorrel::Cluster::GetTotalCharge() {
 	}
 }
 
-Bool_t CbmTrdTimeCorrel::Cluster::FillChargeDistribution(TH2* ChargeMap)
+Bool_t CbmTrdTimeCorrel::Cluster::FillChargeDistribution(TH2* ChargeMap,TH2* CentralMap)
 {
   if (!fParametersCalculated)
     CalculateParameters();
@@ -2554,7 +2561,8 @@ Bool_t CbmTrdTimeCorrel::Cluster::FillChargeDistribution(TH2* ChargeMap)
       Float_t Displacement = static_cast<Float_t>(GetHorizontalMessagePosition(currentMessage));
       Displacement -= GetHorizontalPosition();
       Displacement *= 7.125;
-      ChargeMap->Fill(Displacement,ChargeRatio/*,fTotalCharge*/);
+      if(ChargeMap!=nullptr)ChargeMap->Fill(Displacement,ChargeRatio/*,fTotalCharge*/);
+      if(CentralMap!=nullptr && currentMessage.GetTriggerType()!=2)CentralMap->Fill(Displacement,ChargeRatio/*,fTotalCharge*/);
   }
   return true;
 }
@@ -2723,6 +2731,30 @@ void CbmTrdTimeCorrel::Cluster::Veto() {
 		fType = 3;
 		return;
 	}
+	if (size()<3|| size()>4){
+		if (fMaxADC >= 245) {
+			//std::cout << " Veto based on Threshold" << std::endl;
+			fType = 5;
+			return;
+		}
+	} else if (size() == 3) {
+		if ((GetMaxADC(fEntries.at(0)) > GetMaxADC(fEntries.at(1)))
+				|| (GetMaxADC(fEntries.at(2)) > GetMaxADC(fEntries.at(1)))) {
+			fType = 5;
+			return;
+		}
+	} else if (size() == 4) {
+		if (((GetMaxADC(fEntries.at(0)) > GetMaxADC(fEntries.at(1)))
+				|| (GetMaxADC(fEntries.at(3)) > GetMaxADC(fEntries.at(1))))
+			|| ((GetMaxADC(fEntries.at(0)) > GetMaxADC(fEntries.at(2)))
+				|| (GetMaxADC(fEntries.at(3)) > GetMaxADC(fEntries.at(2))))) {
+			fType = 5;
+			return;
+		}
+	}
+
+	return;
+
 	//Lastly Veto based on Charge Distribution.
 	Float_t VetoThreshhold = 100.0 / (size() - 0.50);
 
@@ -2735,7 +2767,7 @@ void CbmTrdTimeCorrel::Cluster::Veto() {
 		if(x.GetTriggerType()==1||x.GetTriggerType()==3){
 			if(ChargeRatio<VetoThreshhold)
 			{
-				fType=5;
+				fType=6;
 			}
 
 		}
@@ -2791,6 +2823,7 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
   Int_t NumberOfHits=0;
   Int_t LastPad= GetHorizontalMessagePosition(*fEntries.begin())-1;
   Int_t maxADC = -255;
+  fMaxADC=maxADC;
   fMaxStopType=0;
   for(auto message : fEntries){
 	  Int_t CurrentPad = GetHorizontalMessagePosition(message);
@@ -2801,14 +2834,14 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
 	}
 	  LastPad = CurrentPad;
       Int_t Charge = GetMaxADC(message);
-      if(maxADC < Charge) maxADC = Charge;
+      maxADC = GetMaxADC(message,true);
+      if(maxADC > fMaxADC) fMaxADC=maxADC;
       if(message.GetStopType()>fMaxStopType)fMaxStopType=message.GetStopType();
       if(Charge < 0){
     	  fType = 4;
       }
       Charges.push_back(Charge);
       fTotalCharge += Charge;
-      fMaxCharge=maxADC;
       unweightedPosSum.push_back(CurrentPad);
       if(message.GetTriggerType()==2) NumberOfTypeTwoMessages++;
       if(message.GetTriggerType()==1||message.GetTriggerType()==3) NumberOfHits++;
