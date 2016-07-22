@@ -2903,7 +2903,7 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
       if(message.GetTriggerType()==1||message.GetTriggerType()==3) NumberOfHits++;
   }
   // if(!(fEntries.size()==4)) fTotalCharge = -42;
-  std::cout << fEntries.size() << "   " << fTotalCharge << std::endl;
+  //std::cout << fEntries.size() << "   " << fTotalCharge << std::endl;
 
   if(NumberOfTypeTwoMessages!=2) fType=1;
   if(NumberOfHits==0) fType=2;
