@@ -461,16 +461,18 @@ Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
       Int_t iNbSm  = fDigiBdfPar->GetNbSm(  iSmType);
       Int_t iNbRpc = fDigiBdfPar->GetNbRpc( iSmType);
 
-      fvdSignalVelocityRpc[iSmType].resize( iNbRpc );
+      fvdSignalVelocityRpc[iSmType].resize( iNbSm );
       fdChannelGain[iSmType].resize( iNbSm*iNbRpc );
       fvRpcChOffs[iSmType].resize( iNbSm );
 
-      for( Int_t iRpc = 0; iRpc < iNbRpc; iRpc++ )
-	for( Int_t iSm = 0; iSm < iNbSm; iSm++ )
+      for( Int_t iSm = 0; iSm < iNbSm; iSm++ ){
+	fvdSignalVelocityRpc[iSmType][iSm].resize( iNbRpc );
+        for( Int_t iRpc = 0; iRpc < iNbRpc; iRpc++ )
 	  if( 0.0 < fDigiBdfPar->GetSigVel( iSmType, iSm, iRpc ) )
-            fvdSignalVelocityRpc[iSmType][iRpc]      = 1000.0 * fDigiBdfPar->GetSigVel( iSmType, iSm, iRpc ); // convert in cm/ns
-            else fvdSignalVelocityRpc[iSmType][iRpc] = fdSignalPropSpeed;
-         
+            fvdSignalVelocityRpc[iSmType][iSm][iRpc]      = 1000.0 * fDigiBdfPar->GetSigVel( iSmType, iSm, iRpc ); // convert in cm/ns
+            else fvdSignalVelocityRpc[iSmType][iSm][iRpc] = fdSignalPropSpeed;
+      }
+
       for( Int_t iSm = 0; iSm < iNbSm; iSm++ )
       {
          fvRpcChOffs[iSmType][iSm].resize( iNbRpc );
@@ -1716,7 +1718,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
 #else
                            + ( poipos_local[0] )
 #endif
-                             /fvdSignalVelocityRpc[iSmType][iRpc];
+                             /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
                   // Switch between Digi and DigiExp
                   if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
                   {
@@ -1750,7 +1752,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
 #else
                            - ( poipos_local[0] )
 #endif
-                             /fvdSignalVelocityRpc[iSmType][iRpc];
+                             /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
                   // Switch between Digi and DigiExp
                   if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
                   {
@@ -1829,7 +1831,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
 #else
                            + ( poipos_local[1] )
 #endif
-                             /fvdSignalVelocityRpc[iSmType][iRpc];
+                             /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
                   // Switch between Digi and DigiExp
                   if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
                   {
@@ -1862,7 +1864,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
 #else
                            - ( poipos_local[1] )
 #endif
-                             /fvdSignalVelocityRpc[iSmType][iRpc];
+                             /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
                   // Switch between Digi and DigiExp
                   if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
                   {
@@ -2213,14 +2215,14 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 #else
                      + ( poipos_local[0] )
 #endif
-                       /fvdSignalVelocityRpc[iSmType][iRpc];
+                       /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
             dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                      + TMath::Abs( poipos_local[0] - ( - fChannelInfo->GetSizex()/2.0 ) )
 #else
                      - ( poipos_local[0] )
 #endif
-                       /fvdSignalVelocityRpc[iSmType][iRpc];
+                       /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
          } // if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
             else
             {
@@ -2232,7 +2234,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 		 //                        + ( poipos_local[1] - fChannelInfo->GetY() )
                         + poipos_local[1]
 #endif
-                          /fvdSignalVelocityRpc[iSmType][iRpc];
+                          /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
                dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                         + TMath::Abs( poipos_local[1] - ( - fChannelInfo->GetSizey()/2.0 ) )
@@ -2240,7 +2242,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 		 //                        - ( poipos_local[1] - fChannelInfo->GetY() )
                         - poipos_local[1]
 #endif
-                          /fvdSignalVelocityRpc[iSmType][iRpc];
+                          /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
             } // else of if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
          // Switch between Digi and DigiExp
          if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
@@ -2351,7 +2353,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
                             + TMath::Power( poipos_local[1] - ( + fChannelInfo->GetSizey()/2.0 ), 2) );
                } // else of if( iChannel < iNbCh/2.0 )
 
-            dPadTime += fRandRes->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iRpc];
+            dPadTime += fRandRes->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iSM][iRpc];
 
             if( fDigiBdfPar->GetFeeThreshold() <=
                   dChargeCentral*fdChannelGain[iSmType][iSM*iNbRpc + iRpc][iChannel] )
@@ -2491,14 +2493,14 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 #else
                         + ( poipos_local[0] )
 #endif
-                          /fvdSignalVelocityRpc[iSmType][iRpc];
+                          /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
                dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                         + TMath::Abs( poipos_local[0] - ( - fChannelInfo->GetSizex()/2.0 ) )
 #else
                         - ( poipos_local[0] )
 #endif
-                          /fvdSignalVelocityRpc[iSmType][iRpc];
+                          /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
             } // if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
                else
                {
@@ -2511,7 +2513,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 		    //                           + ( poipos_local[1] - fChannelInfo->GetY() )
 		           + poipos_local[1]
 #endif
-                             /fvdSignalVelocityRpc[iSmType][iRpc];
+                             /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
                   dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                            + TMath::Abs( poipos_local[1] - ( - fChannelInfo->GetSizey()/2.0 ) )
@@ -2519,7 +2521,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 		    //                           - ( poipos_local[1] - fChannelInfo->GetY() )
 		           - poipos_local[1]
 #endif
-                             /fvdSignalVelocityRpc[iSmType][iRpc];
+                             /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
                } // else of if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
 	    LOG(DEBUG)<<Form(" TofDigitizerBDF:: chrg %7.1f, gain %7.1f, thr %7.1f times %5.1f,%5.1f ",dChargeCentral,
 			     fdChannelGain[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1],fDigiBdfPar->GetFeeThreshold(),dTimeA,dTimeB)
@@ -2711,7 +2713,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
                      dClustToReadout = TMath::Sqrt(  TMath::Power( poipos_local[0] , 2)
                          + TMath::Power( poipos_local[1] - ( - (1-2*iRow)*fChannelInfo->GetSizey()/2.0 ), 2) );
 
-               dPadTime += fRandRes->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iRpc];
+               dPadTime += fRandRes->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iSM][iRpc];
 
                // Switch between Digi and DigiExp
                if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
@@ -2773,7 +2775,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
                         dClustToReadout = TMath::Sqrt(  TMath::Power( poipos_local[0] , 2)
                             + TMath::Power( poipos_local[1] - ( - (1-2*iRow)*fChannelInfo->GetSizey()/2.0 ), 2) );
 		  
-                  dPadTime += fRandRes->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iRpc];
+                  dPadTime += fRandRes->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iSM][iRpc];
 
                   // Switch between Digi and DigiExp
                   if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
@@ -3085,14 +3087,14 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
 #else
                      + ( poipos_local[0] )
 #endif
-                       /fvdSignalVelocityRpc[iSmType][iRpc];
+                       /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
             dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                      + TMath::Abs( poipos_local[0] - ( - fChannelInfo->GetSizex()/2.0 ) )
 #else
                      - ( poipos_local[0] )
 #endif
-                       /fvdSignalVelocityRpc[iSmType][iRpc];
+                       /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
          } // if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
             else
             {
@@ -3103,14 +3105,14 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
 #else
                         + ( poipos_local[1] )
 #endif
-                          /fvdSignalVelocityRpc[iSmType][iRpc];
+                          /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
                dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                         + TMath::Abs( poipos_local[1] - ( - fChannelInfo->GetSizey()/2.0 ) )
 #else
                         - ( poipos_local[1] )
 #endif
-                          /fvdSignalVelocityRpc[iSmType][iRpc];
+                          /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
             } // else of if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
 
          // Switch between Digi and DigiExp
@@ -3200,7 +3202,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
                             + TMath::Power( poipos_local[1] - ( + fChannelInfo->GetSizey()/2.0 ), 2) );
                } // else of if( iChannel < iNbCh/2.0 )
 
-            dPadTime += fRandRes->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iRpc];
+            dPadTime += fRandRes->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iSM][iRpc];
 
             // TODO: Check on fee threshold ?
             // Switch between Digi and DigiExp
@@ -3269,14 +3271,14 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
 #else
                            + ( poipos_local[0] )
 #endif
-                             /fvdSignalVelocityRpc[iSmType][iRpc];
+                             /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
                   dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                            + TMath::Abs( poipos_local[0] - ( - fChannelInfo->GetSizex()/2.0 ) )
 #else
                            - ( poipos_local[0] )
 #endif
-                             /fvdSignalVelocityRpc[iSmType][iRpc];
+                             /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
                } // if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
                   else
                   {
@@ -3287,14 +3289,14 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
 #else
                               + ( poipos_local[1] )
 #endif
-                                /fvdSignalVelocityRpc[iSmType][iRpc];
+                                /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
                      dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                               + TMath::Abs( poipos_local[1] - ( - fChannelInfo->GetSizey()/2.0 ) )
 #else
                               - ( poipos_local[1] )
 #endif
-                                /fvdSignalVelocityRpc[iSmType][iRpc];
+                                /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
                   } // else of if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
 
                // Switch between Digi and DigiExp
@@ -3393,14 +3395,14 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
 #else
                            + ( poipos_local[0] )
 #endif
-                             /fvdSignalVelocityRpc[iSmType][iRpc];
+                             /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
                   dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                            + TMath::Abs( poipos_local[0] - ( - fChannelInfo->GetSizex()/2.0 ) )
 #else
                            - ( poipos_local[0] )
 #endif
-                             /fvdSignalVelocityRpc[iSmType][iRpc];
+                             /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
                } // if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
                   else
                   {
@@ -3411,14 +3413,14 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
 #else
                               + ( poipos_local[1] )
 #endif
-                                /fvdSignalVelocityRpc[iSmType][iRpc];
+                                /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
                      dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                               + TMath::Abs( poipos_local[1] - ( - fChannelInfo->GetSizey()/2.0 ) )
 #else
                               - ( poipos_local[1] )
 #endif
-                                /fvdSignalVelocityRpc[iSmType][iRpc];
+                                /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
                   } // else of if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
 
                // Switch between Digi and DigiExp
@@ -3551,7 +3553,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
                         dClustToReadout = TMath::Sqrt(  TMath::Power( poipos_local[0] , 2)
                             + TMath::Power( poipos_local[1] - ( - (1-2*iRow)*fChannelInfo->GetSizey()/2.0 ), 2) );
 
-                  dPadTime += fRandRes->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iRpc];
+                  dPadTime += fRandRes->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iSM][iRpc];
 
                   // Switch between Digi and DigiExp
                   if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
@@ -3634,7 +3636,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
                         dClustToReadout = TMath::Sqrt(  TMath::Power( poipos_local[0] , 2)
                             + TMath::Power( poipos_local[1] - ( - (1-2*iRow)*fChannelInfo->GetSizey()/2.0 ), 2) );
 
-                  dPadTime += fRandRes->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iRpc];
+                  dPadTime += fRandRes->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iSM][iRpc];
 
                   // Switch between Digi and DigiExp
                   if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
@@ -3731,7 +3733,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
                            dClustToReadout = TMath::Sqrt(  TMath::Power( poipos_local[0] , 2)
                                + TMath::Power( poipos_local[1] - ( - (1-2*iRow)*fChannelInfo->GetSizey()/2.0 ), 2) );
 
-                     dPadTime += fRandRes->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iRpc];
+                     dPadTime += fRandRes->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iSM][iRpc];
 
                      // Switch between Digi and DigiExp
                      if( kTRUE == fDigiBdfPar->UseExpandedDigi() )

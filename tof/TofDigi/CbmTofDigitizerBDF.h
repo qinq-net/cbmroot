@@ -241,8 +241,8 @@ class CbmTofDigitizerBDF : public FairTask
       std::vector< TH1* > fh1ClusterSizeProb;
       std::vector< TH1* > fh1ClusterTotProb;
 
-      // RPC variables from beamtime [nbSmType][NbRpc]
-      std::vector< std::vector< Double_t > > fvdSignalVelocityRpc;
+      // RPC variables from beamtime [nbSmType][NbSm][NbRpc]
+      std::vector< std::vector< std::vector< Double_t > > > fvdSignalVelocityRpc;
 
       // Channel variables [nbSmType][NbSm*NbRpc][NbChannel*NbSides]
       std::vector< std::vector< std::vector< Double_t > > > fdChannelGain;   // <- Generated from parameter FeeGainSigma
