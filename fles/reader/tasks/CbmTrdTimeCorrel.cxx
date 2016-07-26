@@ -1368,8 +1368,8 @@ void CbmTrdTimeCorrel::ClusterizerTime()
       if (Position < 0.5 || Position > 30.5 || //exclude Clusters outside Padplane
           (Position > 14.5 && Position < 16.5) || //exclude Clusters between rows on Padplane
           (Position > 6.5 && Position < 8.5) || //exclude Clusters on gap between Halfchip A and B
-          (Position > 22.5 && Position < 24.5)) //exclude Clusters on gap between Halfchip A and B
-          //(Position > 26.5 && Position < 29.5)) //exclude Clusters around defective channel 6
+          (Position > 22.5 && Position < 24.5)|| //exclude Clusters on gap between Halfchip A and B
+          (Position > 26.5 && Position < 29.5)) //exclude Clusters around defective channel 6
         {
           fHM->H1 (
               "Masked_Clustersize_for_Syscore_" + std::to_string (0)
@@ -1385,9 +1385,9 @@ void CbmTrdTimeCorrel::ClusterizerTime()
     	  string histname = "Clustertypes_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+detectorName;
     	  fHM->H2(histname)->Fill(x.size(),x.Type());
       }
-      if(x.Type() > 0 && x.size()>=3 && x.Type() < 6){
-    	  string histname = "Filtered_Pad_Response_"+ detectorName + "_for_Clusters_of_Size_"+std::to_string(static_cast<Int_t>(x.size()));
-    	  x.FillChargeDistribution(fHM->H2(histname));
+      if(x.Type() > 0 && x.size()>=3 && x.Type() <6){
+    	  string histname = "Cut5_Pad_Response_"+ detectorName + "_for_Clusters_of_Size_"+std::to_string(static_cast<Int_t>(x.size()));
+    	  if(x.Type()==5) x.FillChargeDistribution(fHM->H2(histname));
     	  continue;
       }
       if(x.fMaxStopType < 1 && x.size() >=3)
@@ -1842,7 +1842,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
           fHM->H2(histName.Data())->GetXaxis()->SetTitle("Displacement frac{d}{mm}");
           fHM->H2(histName.Data())->GetYaxis()->SetTitle("Chargeratio frac{Q_{i}}{#sum_{k}^{ } Q_{k}}");
           //fHM->H3(histName.Data())->GetZaxis()->SetTitle("TotalCharge");
-          histName = "Filtered_" +histName;
+          histName = "Cut5_" +histName;
           title = histName + runName;
           fHM->Create2<TH2I>(histName.Data(), title.Data(), 801,-(4+0.05)*7.125,(4+0.05)*7.125,101,-0.005,1.005);
           //fHM->Create3<TH3I>(histName.Data(), title.Data(), 801,-(4+0.05)*7.125,(4+0.05)*7.125,101,-0.005,1.005,100,0,1000);
