@@ -132,7 +132,15 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam()
     fhVelD4best(NULL),
     fhDigiMul0D4best(NULL),
     fhDigiMul4D4best(NULL),
+    fhCluSize04D4best(NULL),
     fhCluMul04D4best(NULL),
+    fhStrMul04D4best(NULL),
+    fhCluMulTSig0D4best(NULL),
+    fhCluMulTSig4D4best(NULL),
+    fhCluMulTrel0D4best(NULL),
+    fhCluMulTrel4D4best(NULL),
+    fhCluSizeTrel0D4best(NULL),
+    fhCluSizeTrel4D4best(NULL),
     fhDXDY04D4best(NULL),
     fhDXDT04D4best(NULL),
     fhDYDT04D4best(NULL),
@@ -248,6 +256,8 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam()
     fhDTX4D4Off(NULL),
     fhDTY4D4Off(NULL),
     fhDTTexpD4Off(NULL),
+    fhCluSize0DT04D4Off(NULL),
+    fhCluSize4DT04D4Off(NULL),
     fdMulDMax(0.),
     fdDTDia(0.),
     fdDTD4MAX(0.),
@@ -374,7 +384,15 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fhVelD4best(NULL),
     fhDigiMul0D4best(NULL),
     fhDigiMul4D4best(NULL),
+    fhCluSize04D4best(NULL),
     fhCluMul04D4best(NULL),
+    fhStrMul04D4best(NULL),
+    fhCluMulTSig0D4best(NULL),
+    fhCluMulTSig4D4best(NULL),
+    fhCluMulTrel0D4best(NULL),
+    fhCluMulTrel4D4best(NULL),
+    fhCluSizeTrel0D4best(NULL),
+    fhCluSizeTrel4D4best(NULL),
     fhDXDY04D4best(NULL),
     fhDXDT04D4best(NULL),
     fhDYDT04D4best(NULL),
@@ -490,6 +508,8 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fhDTX4D4Off(NULL),
     fhDTY4D4Off(NULL),
     fhDTTexpD4Off(NULL),
+    fhCluSize0DT04D4Off(NULL),
+    fhCluSize4DT04D4Off(NULL),
     fdMulDMax(0.),
     fdDTDia(0.),
     fdDTD4MAX(0.),
@@ -838,11 +858,25 @@ Bool_t   CbmTofAnaTestbeam::LoadCalParameter()
              <<FairLogger::endl;
     }
 
+    TProfile *fhtmpcs0=(TProfile *) gDirectory->FindObjectAny( Form("hCluSize0DT04D4best_pfx_px"));
+    if (NULL == fhtmpcs0) {
+      LOG(INFO)<<" Histo " << Form("hCluSize0DT04D4best_pfx_px") << " not found. "
+             <<FairLogger::endl;
+    }
+
+    TProfile *fhtmpcs4=(TProfile *) gDirectory->FindObjectAny( Form("hCluSize4DT04D4best_pfx_px"));
+    if (NULL == fhtmpcs4) {
+      LOG(INFO)<<" Histo " << Form("hCluSize4DT04D4best_pfx_px") << " not found. "
+             <<FairLogger::endl;
+    }
+
     gROOT->cd();
-    if(NULL != fhtmp)  fhDTD4DT04D4Off=(TH1D *)fhtmp->Clone();
-    if(NULL != fhtmpx) fhDTX4D4Off=(TH1D *)fhtmpx->Clone();
-    if(NULL != fhtmpy) fhDTY4D4Off=(TH1D *)fhtmpy->Clone();
-    if(NULL != fhtmpt) fhDTTexpD4Off=(TH1D *)fhtmpt->Clone();
+    if(NULL != fhtmp)    fhDTD4DT04D4Off=(TH1D *)fhtmp->Clone();
+    if(NULL != fhtmpx)   fhDTX4D4Off=(TH1D *)fhtmpx->Clone();
+    if(NULL != fhtmpy)   fhDTY4D4Off=(TH1D *)fhtmpy->Clone();
+    if(NULL != fhtmpt)   fhDTTexpD4Off=(TH1D *)fhtmpt->Clone();
+    if(NULL != fhtmpcs0) fhCluSize0DT04D4Off=(TH1D *)fhtmpcs0->Clone();
+    if(NULL != fhtmpcs4) fhCluSize4DT04D4Off=(TH1D *)fhtmpcs4->Clone();
 
     fCalParFile->Close();
     //    fhDTD4DT04D4Off->Draw();
@@ -988,16 +1022,16 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 			       100, 0., 6000., 100, -DTMAX, DTMAX); 
      fhCluSize0DT04D4best = new TH2F( Form("hCluSize0DT04D4best"),
 	 			     Form("time - CluSize correlation; N_{strips} ; #DeltaT [ps]"),
-				     16, 0.5, 16.5, 100, -DTMAX, DTMAX); 
+				     20, 0.5, 20.5, 100, -DTMAX, DTMAX); 
      fhCluSize4DT04D4best = new TH2F( Form("hCluSize4DT04D4best"),
 	 			     Form("time - CluSize correlation; N_{strips} ; #DeltaT [ps]"),
-				     16, 0.5, 16.5, 100, -DTMAX, DTMAX);
+				     20, 0.5, 20.5, 100, -DTMAX, DTMAX);
      fhTot0DT04D4best = new TH2F( Form("hTot0DT04D4best"),
 	 			     Form("time - Tot correlation; ln TOT0 ; #DeltaT [ps]"),
-				     100, 0., 12., 100, -DTMAX, DTMAX);  
+				     100, 8., 11., 100, -DTMAX, DTMAX);  
      fhTot4DT04D4best = new TH2F( Form("hTot4DT04D4best"),
 	 			     Form("time - Tot correlation; ln TOT4 ; #DeltaT [ps]"),
-				     100, 0., 12., 100, -DTMAX, DTMAX);  
+				     100, 8., 11., 100, -DTMAX, DTMAX);  
 
      fhX0DT04D4best = new TH2F( Form("hX0DT04D4best"),Form("time - position correlation; #Delta x [cm]; #DeltaT [ps]"),
 			       100, -50., 50., 100, -DTMAX, DTMAX); 
@@ -1014,13 +1048,28 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
      fhVelD4best  =  new TH1F( Form("hVelD4best"),Form("vel D4; v [cm/ns]; Counts"),
 			  100, 0., 50.); 
 
-     fhDigiMul0D4best =  new TH1F( Form("hDigiMul0D4best"),Form("Number of digis in cluster; N_{digi}; "),
-			  20, 0., 20.); 
-     fhDigiMul4D4best =  new TH1F( Form("hDigiMul4D4best"),Form("Number of digis in cluster; N_{digi}; "),
-			  20, 0., 20.); 
-     fhCluMul04D4best =  new TH2F( Form("hCluMul04D4best"),Form("cluster multiplicity ; Mul0; Mul4"),
+     fhDigiMul0D4best =  new TH2F( Form("hDigiMul0D4best"),Form("Number of digis in cluster; Mul0; N_{strips}; "),
 				   20, 0., 20., 20, 0., 20.); 
-
+     fhDigiMul4D4best =  new TH2F( Form("hDigiMul4D4best"),Form("Number of digis in cluster; Mul4; N_{strips}; "),
+				   20, 0., 20., 20, 0., 20.); 
+     fhCluSize04D4best =  new TH2F( Form("hCluSize04D4best"),Form("cluster multiplicity ; CluSize0; CluSize4"),
+				   20, 0., 20., 20, 0., 20.); 
+     fhCluMul04D4best =  new TH2F( Form("hCluMul04D4best"),Form("cluster size correlation ; Mul0; Mul4"),
+				   20, 0., 20., 20, 0., 20.); 
+     fhStrMul04D4best =  new TH2F( Form("hStrMul04D4best"),Form("strip multiplicity ; StrMul0; StrMul4"),
+				   50, 0., 50., 50, 0., 50.); 
+     fhCluMulTSig0D4best =  new TH2F( Form("hCluMulTSig0D4best"),Form("time spread - cluster multiplicity ; Mul0; #sigma_{T} (ps)"),
+				   50, 0., 50., 100, 0., 200000.);      
+     fhCluMulTSig4D4best =  new TH2F( Form("hCluMulTSig4D4best"),Form("time spread - cluster multiplicity ; Mul4; #sigma_{T} (ps)"),
+				   50, 0., 50., 100, 0., 200000.); 
+     fhCluMulTrel0D4best =  new TH2F( Form("hCluMulTrel0D4best"),Form("arrrival time - cluster multiplicity ; Mul0; T_{rel} (ps)"),
+				   50, 0., 50., 99, -10000., 10000.); 
+     fhCluMulTrel4D4best =  new TH2F( Form("hCluMulTrel4D4best"),Form("arrival time - cluster multiplicity ; Mul4; T_{rel} (ps)"),
+				   50, 0., 50., 99, -10000., 10000.); 
+     fhCluSizeTrel0D4best =  new TH2F( Form("hCluSizeTrel0D4best"),Form("arrrival time - cluster size ; CluSize0; T_{rel} (ps)"),
+				   30, 0., 30., 99, -10000., 10000.); 
+     fhCluSizeTrel4D4best =  new TH2F( Form("hCluSizeTrel4D4best"),Form("arrival time - cluster size ; CluSize4; T_{rel} (ps)"),
+				   30, 0., 30., 99, -10000., 10000.);  
 
      fhChiDT04D4best = new TH2F( Form("hChiDT04D4best"),Form("Time - position correlation; #chi; #DeltaT [ps]"),
 			       100, 0., 100., 100, -DTMAX, DTMAX);
@@ -1093,16 +1142,16 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 			       100, 0., 6000., 100, -DTMAX, DTMAX); 
      fhCluSize0DT04D4sbest = new TH2F( Form("hCluSize0DT04D4sbest"),
 	 			     Form("time - CluSize correlation; N_{strips} ; #DeltaT [ps]"),
-				     16, 0.5, 16.5, 100, -DTMAX, DTMAX); 
+				     20, 0.5, 20.5, 100, -DTMAX, DTMAX); 
      fhCluSize4DT04D4sbest = new TH2F( Form("hCluSize4DT04D4sbest"),
 	 			     Form("time - CluSize correlation; N_{strips} ; #DeltaT [ps]"),
-				     16, 0.5, 16.5, 100, -DTMAX, DTMAX);
+				     20, 0.5, 20.5, 100, -DTMAX, DTMAX);
      fhTot0DT04D4sbest = new TH2F( Form("hTot0DT04D4sbest"),
 	 			     Form("time - Tot correlation; ln TOT0 ; #DeltaT [ps]"),
-				     100, 0., 10000., 100, -DTMAX, DTMAX);  
+				     100, 8., 11., 100, -DTMAX, DTMAX);  
      fhTot4DT04D4sbest = new TH2F( Form("hTot4DT04D4sbest"),
 	 			     Form("time - Tot correlation; ln TOT4 ; #DeltaT [ps]"),
-				     100, 0., 10000., 100, -DTMAX, DTMAX); 
+				     100, 8., 11., 100, -DTMAX, DTMAX); 
 
      fhChi04D4sbest  =  new TH1F( Form("hChi04D4sbest"),Form("matching chi2; #chi; Nhits"),
 			  100, 0., fdChi2Lim);
@@ -1353,6 +1402,8 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
    dDTD4Min=1.E300;
    Double_t dMul0=0.;
    Double_t dMul4=0.;
+   Double_t dStrMul0=0.;
+   Double_t dStrMul4=0.;
    Double_t dMulD=0.;
    Double_t dM4Max=1; // modify
    if (fdMul4Max>0) dM4Max=fdMul4Max;
@@ -1410,6 +1461,9 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 
    // process counter hits, fill Chi2List, check selector
 
+   vector <CbmTofHit *> vDutHit;
+   vector <CbmTofHit *> vRefHit;
+
    for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)
    {
       pHit = (CbmTofHit*) fTofHitsColl->At( iHitInd );
@@ -1440,6 +1494,10 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 
       if(fiDutAddr == iDetId) {    // Process Dut
 	dMul0++;
+	vDutHit.push_back(pHit);
+
+        CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit));
+        dStrMul0 += digiMatch->GetNofLinks()/2.;
 	Double_t xPos1=Zref/pHit->GetZ()*pHit->GetX();
 	Double_t yPos1=Zref/pHit->GetZ()*pHit->GetY();
         Double_t tof1 =pHit->GetTime();
@@ -1550,6 +1608,9 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
       */
       if(fiMrpcRefAddr == iDetId) {
 	dMul4++;
+	vRefHit.push_back(pHit);
+        CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit));
+        dStrMul4 += digiMatch->GetNofLinks()/2.;
       }
 
       if(fiBeamRefAddr == iDetId) {  // process beam Ref hit
@@ -1724,6 +1785,28 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
        LOG(DEBUG) << Form("<D> Muls %4.0f, %4.0f, %4.0f, Matches %d",dMulD, dMul0, dMul4, iNbMatchedHits) 
 		  << FairLogger::endl;
    }
+
+   // Determine average event quantities 
+   Double_t dDutTMean=0.;
+   Double_t dDutTMean2=0.;
+   for (UInt_t i=0; i<vDutHit.size();i++){ // loop over Dut Hits
+     dDutTMean  += vDutHit[i]->GetTime();
+     dDutTMean2 += vDutHit[i]->GetTime()*vDutHit[i]->GetTime();
+   }
+   dDutTMean  /= (Double_t) vDutHit.size();
+   dDutTMean2 /= (Double_t) vDutHit.size();
+   Double_t dDutTSig=TMath::Sqrt( dDutTMean2 - dDutTMean*dDutTMean );
+
+   Double_t dRefTMean=0.;
+   Double_t dRefTMean2=0.;
+   for (UInt_t i=0; i<vRefHit.size();i++){ // loop over Dut Hits
+     dRefTMean  += vRefHit[i]->GetTime();
+     dRefTMean2 += vRefHit[i]->GetTime()*vRefHit[i]->GetTime();
+   }
+   dRefTMean  /= (Double_t) vRefHit.size();
+   dRefTMean2 /= (Double_t) vRefHit.size();
+   Double_t dRefTSig=TMath::Sqrt( dRefTMean2 - dRefTMean*dRefTMean );
+
    //  normalisation distributions 
    fhNMatch04->Fill(iNbMatchedHits);
    if(fTrbHeader != NULL) fhTIS_all->Fill(fTrbHeader->GetTimeInSpill());
@@ -1734,6 +1817,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
  	     <<FairLogger::endl;
    // selector 0 distributions 
    if(BSel[0]){
+
     fhNMatchD4sel->Fill(iNbMatchedHits);  // use as normalisation
     if(fTrbHeader != NULL) fhTIS_sel->Fill(fTrbHeader->GetTimeInSpill());
     fhTofD4sel->Fill(pHitRef->GetTime()-pDia->GetTime());           //  general normalisation
@@ -1849,12 +1933,27 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 
      fhChi04D4best->Fill(Chi2List[iM0]);
 
+
      CbmMatch* digiMatch1=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit1));
-     fhDigiMul0D4best->Fill(digiMatch1->GetNofLinks()/2.);
+     Double_t dCluSize0 = digiMatch1->GetNofLinks()/2.;
+     fhDigiMul0D4best->Fill(dMul0,dCluSize0);
      CbmMatch* digiMatch2=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit2));
-     fhDigiMul4D4best->Fill(digiMatch2->GetNofLinks()/2.);
+     Double_t dCluSize4 = digiMatch2->GetNofLinks()/2.;
+     fhDigiMul4D4best->Fill(dMul4,dCluSize4);
+
+     fhCluSize04D4best->Fill(dCluSize0,dCluSize4);
 
      fhCluMul04D4best->Fill(dMul0,dMul4);
+     fhStrMul04D4best->Fill(dStrMul0,dStrMul4);
+
+     fhCluMulTSig0D4best->Fill(dMul0,dDutTSig);
+     fhCluMulTSig4D4best->Fill(dMul4,dRefTSig);
+
+     fhCluMulTrel0D4best->Fill(dMul0,pHit1->GetTime()-dDutTMean);
+     fhCluMulTrel4D4best->Fill(dMul4,pHit2->GetTime()-dRefTMean);
+
+     fhCluSizeTrel0D4best->Fill(dCluSize0,pHit1->GetTime()-dDutTMean);
+     fhCluSizeTrel4D4best->Fill(dCluSize4,pHit2->GetTime()-dRefTMean);
 
      // check for dependence in counter reference frame 
      /*TGeoNode *fNode=*/        // prepare global->local trafo
@@ -1877,6 +1976,8 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      if(fhDTX4D4Off     != NULL) dTcor+=(Double_t)fhDTX4D4Off->GetBinContent(fhDTX4D4Off->FindBin(hitpos2_local[0]));
      if(fhDTY4D4Off     != NULL) dTcor+=(Double_t)fhDTY4D4Off->GetBinContent(fhDTY4D4Off->FindBin(hitpos2_local[1]));
      if(fhDTTexpD4Off   != NULL) dTcor+=(Double_t)fhDTTexpD4Off->GetBinContent(fhDTTexpD4Off->FindBin(dDTexp));
+     if(fhCluSize0DT04D4Off != NULL) dTcor+=(Double_t)fhCluSize0DT04D4Off->GetBinContent(fhCluSize0DT04D4Off->FindBin(dCluSize0));
+     if(fhCluSize4DT04D4Off != NULL) dTcor+=(Double_t)fhCluSize4DT04D4Off->GetBinContent(fhCluSize4DT04D4Off->FindBin(dCluSize4));
 
      //     LOG(INFO) << "dTcor for "<<-dDTD4<<" from "<<fhDTD4DT04D4Off<<": "<<dTcor<<FairLogger::endl;
 
@@ -2152,22 +2253,6 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
        /*TGeoNode* cNode=*/ gGeoManager->GetCurrentNode();
        Double_t  dDutzPos=fChannelInfo->GetZ();
        Double_t  hitpos[3], hitpos_local[3];
-
-       vector <CbmTofHit *> vDutHit;
-       for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)
-       {
-	 pHit = (CbmTofHit*) fTofHitsColl->At( iHitInd );
-	 if(NULL == pHit) continue;
-	 Int_t iDetId = (pHit->GetAddress() & DetMask);
-	 Int_t iSmType=CbmTofAddress::GetSmType( iDetId );
-	 Int_t iSm    =CbmTofAddress::GetSmId( iDetId );
-	 Int_t iRpc   =CbmTofAddress::GetRpcId(iDetId );
-
-	 //	 if(iSmType == fiDut && iSm==fiDutSm && iRpc==fiDutRpc) {
-	 if(iDetId == fiDutAddr) {
-	   vDutHit.push_back(pHit);
-	 }
-       }
 	
        LOG(DEBUG)<<Form("Tracklet analysis of %d tracks and %d Dut Hits ",iNbTofTracks,(int)vDutHit.size())<< FairLogger::endl;
 
@@ -2364,9 +2449,11 @@ Bool_t CbmTofAnaTestbeam::WriteHistos()
      }
    //   fhDTD4DT04D4best->Write();
      htmp1D->Write();
-     if(fhDTX4D4Off != NULL)    fhDTX4D4Off->Write();
-     if(fhDTY4D4Off != NULL)    fhDTY4D4Off->Write();
-     if(fhDTTexpD4Off != NULL)  fhDTTexpD4Off->Write();
+     if(fhDTX4D4Off         != NULL)         fhDTX4D4Off->Write();
+     if(fhDTY4D4Off         != NULL)         fhDTY4D4Off->Write();
+     if(fhDTTexpD4Off       != NULL)       fhDTTexpD4Off->Write();
+     if(fhCluSize0DT04D4Off != NULL) fhCluSize0DT04D4Off->Write();
+     if(fhCluSize4DT04D4Off != NULL) fhCluSize4DT04D4Off->Write();
      }
      break;
    case 2 :{
@@ -2386,11 +2473,14 @@ Bool_t CbmTofAnaTestbeam::WriteHistos()
 		   << FairLogger::endl;
      }
      htmpx1D->Write();
-     if(fhDTD4DT04D4Off != NULL) fhDTD4DT04D4Off->Write();
-     if(fhDTY4D4Off != NULL)     fhDTY4D4Off->Write();
-     if(fhDTTexpD4Off != NULL)   fhDTTexpD4Off->Write();
+     if(fhDTD4DT04D4Off     != NULL)    fhDTD4DT04D4Off->Write();
+     if(fhDTY4D4Off         != NULL)        fhDTY4D4Off->Write();
+     if(fhDTTexpD4Off       != NULL)      fhDTTexpD4Off->Write();
+     if(fhCluSize0DT04D4Off != NULL) fhCluSize0DT04D4Off->Write();
+     if(fhCluSize4DT04D4Off != NULL) fhCluSize4DT04D4Off->Write();
      }
      break;
+
    case 3 :{
      TProfile *htmpx=fhDTY4D4best->ProfileX();
      TH1D *htmpx1D=htmpx->ProjectionX();
@@ -2408,9 +2498,11 @@ Bool_t CbmTofAnaTestbeam::WriteHistos()
 		   << FairLogger::endl;
      }
      htmpx1D->Write();
-     if(fhDTD4DT04D4Off != NULL) fhDTD4DT04D4Off->Write();
-     if(fhDTX4D4Off != NULL)     fhDTX4D4Off->Write();
-     if(fhDTTexpD4Off != NULL)   fhDTTexpD4Off->Write();
+     if(fhDTD4DT04D4Off     != NULL)    fhDTD4DT04D4Off->Write();
+     if(fhDTX4D4Off         != NULL)        fhDTX4D4Off->Write();
+     if(fhDTTexpD4Off       != NULL)      fhDTTexpD4Off->Write();
+     if(fhCluSize0DT04D4Off != NULL) fhCluSize0DT04D4Off->Write();
+     if(fhCluSize4DT04D4Off != NULL) fhCluSize4DT04D4Off->Write();
      }
      break;
 
@@ -2431,9 +2523,61 @@ Bool_t CbmTofAnaTestbeam::WriteHistos()
 		   << FairLogger::endl;
      }
      htmpx1D->Write();
-     if(fhDTD4DT04D4Off != NULL) fhDTD4DT04D4Off->Write();
-     if(fhDTX4D4Off != NULL)     fhDTX4D4Off->Write();
-     if(fhDTY4D4Off != NULL)     fhDTY4D4Off->Write();
+     if(fhDTD4DT04D4Off     != NULL)     fhDTD4DT04D4Off->Write();
+     if(fhDTX4D4Off         != NULL)         fhDTX4D4Off->Write();
+     if(fhDTY4D4Off         != NULL)        fhDTY4D4Off->Write();
+     if(fhCluSize0DT04D4Off != NULL) fhCluSize0DT04D4Off->Write();
+     if(fhCluSize4DT04D4Off != NULL) fhCluSize4DT04D4Off->Write();
+     }
+     break;
+
+   case 5 :{
+     TProfile *htmpx=fhCluSize0DT04D4best->ProfileX();
+     TH1D *htmpx1D=htmpx->ProjectionX();
+     if(fhCluSize0DT04D4Off != NULL){
+       Double_t nx=htmpx1D->GetNbinsX();
+       for (Int_t ix=0; ix<nx; ix++){
+	 Double_t dVal=htmpx1D->GetBinContent(ix) + fhCluSize0DT04D4Off->GetBinContent(ix);
+	 LOG(DEBUG1)<<"Update hCluSize0DT04D4best "<<ix<<": "<<htmpx1D->GetBinContent(ix)<<" + "
+		    << fhCluSize0DT04D4Off->GetBinContent(ix) << " -> " << dVal << FairLogger::endl;
+	 htmpx1D->SetBinContent(ix,dVal);
+       }
+     }else
+     {
+       LOG(WARNING)<<"CbmTofAnaTestbeam::WriteHistos: fhCluSize0DT04D4Off not found "
+		   << FairLogger::endl;
+     }
+     htmpx1D->Write();
+     if(fhDTD4DT04D4Off     != NULL)    fhDTD4DT04D4Off->Write();
+     if(fhDTX4D4Off         != NULL)        fhDTX4D4Off->Write();
+     if(fhDTY4D4Off         != NULL)        fhDTY4D4Off->Write();
+     if(fhDTTexpD4Off       != NULL)      fhDTTexpD4Off->Write();
+     if(fhCluSize4DT04D4Off != NULL) fhCluSize4DT04D4Off->Write();
+     }
+     break;
+
+   case 6 :{
+     TProfile *htmpx=fhCluSize4DT04D4best->ProfileX();
+     TH1D *htmpx1D=htmpx->ProjectionX();
+     if(fhCluSize4DT04D4Off != NULL){
+       Double_t nx=htmpx1D->GetNbinsX();
+       for (Int_t ix=0; ix<nx; ix++){
+	 Double_t dVal=htmpx1D->GetBinContent(ix) + fhCluSize4DT04D4Off->GetBinContent(ix);
+	 LOG(DEBUG1)<<"Update hCluSize4DT04D4best "<<ix<<": "<<htmpx1D->GetBinContent(ix)<<" + "
+		    << fhCluSize4DT04D4Off->GetBinContent(ix) << " -> " << dVal << FairLogger::endl;
+	 htmpx1D->SetBinContent(ix,dVal);
+       }
+     }else
+     {
+       LOG(WARNING)<<"CbmTofAnaTestbeam::WriteHistos: fhCluSize4DT04D4Off not found "
+		   << FairLogger::endl;
+     }
+     htmpx1D->Write();
+     if(fhDTD4DT04D4Off     != NULL)    fhDTD4DT04D4Off->Write();
+     if(fhDTX4D4Off         != NULL)        fhDTX4D4Off->Write();
+     if(fhDTY4D4Off         != NULL)        fhDTY4D4Off->Write();
+     if(fhDTTexpD4Off       != NULL)      fhDTTexpD4Off->Write();
+     if(fhCluSize0DT04D4Off != NULL) fhCluSize0DT04D4Off->Write();
      }
      break;
 

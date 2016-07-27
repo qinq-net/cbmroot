@@ -268,9 +268,17 @@ class CbmTofAnaTestbeam : public FairTask {
       TH1 *fhChi04D4best;
       TH1 *fhTofD4best;
       TH1 *fhVelD4best;
-      TH1 *fhDigiMul0D4best;
-      TH1 *fhDigiMul4D4best;
+      TH2 *fhDigiMul0D4best;
+      TH2 *fhDigiMul4D4best;
+      TH2 *fhCluSize04D4best;
       TH2 *fhCluMul04D4best;
+      TH2 *fhStrMul04D4best;
+      TH2 *fhCluMulTSig0D4best;
+      TH2 *fhCluMulTSig4D4best;
+      TH2 *fhCluMulTrel0D4best;
+      TH2 *fhCluMulTrel4D4best;
+      TH2 *fhCluSizeTrel0D4best;
+      TH2 *fhCluSizeTrel4D4best;
       TH2 *fhDXDY04D4best;
       TH2 *fhDXDT04D4best;
       TH2 *fhDYDT04D4best;
@@ -397,6 +405,8 @@ class CbmTofAnaTestbeam : public FairTask {
       TH1          *fhDTX4D4Off;          // 'calibration' histo
       TH1          *fhDTY4D4Off;          // 'calibration' histo
       TH1        *fhDTTexpD4Off;          // 'calibration' histo
+      TH1  *fhCluSize0DT04D4Off;          // 'calibration' histo
+      TH1  *fhCluSize4DT04D4Off;          // 'calibration' histo
       Double_t        fdMulDMax;          // max multiplicity in Diamond counter
       Double_t        fdDTDia;            // max time difference between diamonds
       Double_t        fdDTD4MAX;          // max time difference between reference & diamond

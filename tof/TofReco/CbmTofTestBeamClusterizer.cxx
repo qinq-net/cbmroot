@@ -385,6 +385,7 @@ void CbmTofTestBeamClusterizer::SetParContainers()
 void CbmTofTestBeamClusterizer::Exec(Option_t* /*option*/)
 {
    fTofHitsColl->Clear("C");
+   //fTofHitsColl->Delete();
    //for (Int_t i=0; i<fTofDigiMatchColl->GetEntries(); i++) ((CbmMatch *)(fTofDigiMatchColl->At(i)))->ClearLinks();  // FIXME, try to tamper memory leak (did not help)
    //fTofDigiMatchColl->Clear("C+L");
    fTofDigiMatchColl->Delete();
@@ -402,6 +403,7 @@ void CbmTofTestBeamClusterizer::Exec(Option_t* /*option*/)
    
    fdEvent++;
    FillHistos();
+
 }
 
 /************************************************************************************/
@@ -3781,13 +3783,13 @@ Bool_t   CbmTofTestBeamClusterizer::MergeClusters()
 
                   fTofHitsColl->RemoveAt( iHitInd2 );
                   fTofDigiMatchColl->RemoveAt( iHitInd2 );
-		  /*
                   fTofDigiMatchColl->Compress();
                   fTofHitsColl->Compress();
                   LOG(DEBUG)<<"MergeClusters: Compress TClonesArrays to "
                             <<fTofHitsColl->GetEntries()<<", "
                             <<fTofDigiMatchColl->GetEntries()
                             <<FairLogger::endl;
+		  /*
                   for(Int_t i=iHitInd2; i<fTofHitsColl->GetEntries(); i++){ // update RefLinks
                      CbmTofHit *pHiti = (CbmTofHit*) fTofHitsColl->At( i );
                     pHiti->SetRefId(i);
