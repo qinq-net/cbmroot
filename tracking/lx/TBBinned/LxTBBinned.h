@@ -77,8 +77,6 @@ struct LxTbBinnedPoint
     list<LxTbBinnedRay> neighbours;
     
 #ifdef LXTB_QA
-    Int_t eventId;
-    Int_t trackId;
     const CbmPixelHit* pHit;
     bool isTrd;
     Int_t stationNumber;
@@ -400,6 +398,9 @@ struct LxTbBinnedFinder
     TriggerTimeArray triggerTimes_trd1_sign0_dist1;
     TriggerTimeArray triggerTimes_trd1_sign1_dist0;
     TriggerTimeArray triggerTimes_trd1_sign1_dist1;
+#ifdef LXTB_QA
+    set<Int_t> triggerEventNumber;
+#endif//LXTB_QA
 
     int fNofStations;
     int fLastStationNumber;
@@ -468,6 +469,9 @@ struct LxTbBinnedFinder
         triggerTimes_trd1_sign0_dist1.Clear();
         triggerTimes_trd1_sign1_dist0.Clear();
         triggerTimes_trd1_sign1_dist1.Clear();
+#ifdef LXTB_QA
+        triggerEventNumber.clear();
+#endif//LXTB_QA
     }
     
     void SetTSBegin(unsigned long long tsLowBound)
@@ -1096,7 +1100,12 @@ struct LxTbBinnedFinder
                     if (trackSign * track2Sign < 0)
                     {
                         if (dist >= 50.0)
+                        {
                             triggerTimes_trd1_sign1_dist1.Insert(pairTime);
+#ifdef LXTB_QA
+                            triggerEventNumber.insert(point->mcRefs.front().eventId);
+#endif//LXTB_QA
+                        }
                         
                         triggerTimes_trd1_sign1_dist0.Insert(pairTime);
                     }

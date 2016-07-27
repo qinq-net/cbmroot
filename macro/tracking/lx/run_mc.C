@@ -1,16 +1,16 @@
 void run_mc(int index = -1)
 {
-   Int_t nEvents = 10;
+   Int_t nEvents = 1000;
    const char* setupName = "sis100_muon_jpsi";
    TString system  = "auau";
    TString beam    = "10gev";
-   TString trigger = "mbias";//"centr";
+   TString trigger = "centr";//"centr";
    TString part = "jpsi";
    TString channel = "mpmm";
 
    bool useSig = true;
-   bool useBg = true;
-   bool sigAscii = true;
+   bool useBg = false;
+   bool sigAscii = false;
    Bool_t storeTraj = kFALSE;
 
    if (!useSig && !useBg)
@@ -49,11 +49,11 @@ void run_mc(int index = -1)
    TString fsPrefix;
    
    if (index >= 0)
-      fsPrefix = "/lustre";
+      fsPrefix = "/lustre/nyx";
    else
-      fsPrefix = "/SAT";
+      fsPrefix = "/SAT/hera";
 
-   TString bgFile = fsPrefix + "/nyx/cbm/prod/gen/urqmd/" + system + "/" + beam + "/" + trigger + "/" + "urqmd." + system + "." + beam + "." + trigger + "." + TString(str) + ".root";
+   TString bgFile = fsPrefix + "/cbm/prod/gen/urqmd/" + system + "/" + beam + "/" + trigger + "/" + "urqmd." + system + "." + beam + "." + trigger + "." + TString(str) + ".root";
    TString outDir;
    
    if (index >= 0)
@@ -66,7 +66,7 @@ void run_mc(int index = -1)
    if (sigAscii)
       sigFile = outDir + "muon_pairs.txt";
    else
-      sigFile = fsPrefix + "/nyx/cbm/prod/gen/pluto/" + system + "/" + partDir + "/" + beam + "/" + part + "/" + channel + "/pluto." + system + "." + beam + "." + part + "." + channel + "." + TString(str2) + ".root";
+      sigFile = fsPrefix + "/cbm/prod/gen/pluto/" + system + "/" + partDir + "/" + beam + "/" + part + "/" + channel + "/pluto." + system + "." + beam + "." + part + "." + channel + "." + TString(str2) + ".root";
 
    TString outFile = outDir + setupName + ".mc." + system + "." + beam + suffix + ".root";
    TString parFile = outDir + setupName + ".mc." + system + "." + beam + suffix + "_param.root";

@@ -4,17 +4,15 @@ void run_reco(int index = -1)
    const char* setupName = "sis100_muon_jpsi";
    TString system  = "auau";
    TString beam    = "10gev";
-   TString trigger = "centr";//"centr";
+   TString trigger = "mbias";
    TString part = "jpsi";
    TString channel = "mpmm";
 
-   bool useSig = true;
+   bool useSig = false;
    bool useBg = true;
    bool sigAscii = false;
    bool useIdeal = false;
    bool isEvByEv = true;
-   bool addElectrons = true;
-   Int_t nofNoiseE = 5;
 
    if (!useSig && !useBg)
    {
@@ -58,6 +56,7 @@ void run_reco(int index = -1)
    TString outFile = inOutDir + setupName + ".reco." + system + "." + beam + suffix + ".root";
    TString outParFile = inOutDir + setupName + ".reco." + system + "." + beam + suffix + "_param.root";
 
+   TString myName = "run_reco_lx";  // this macro's name for screen output
    TString srcDir = gSystem->Getenv("VMCWORKDIR");
 
    Int_t iVerbose = 1;
@@ -88,12 +87,12 @@ void run_reco(int index = -1)
    CbmSetup* setup = CbmSetup::Instance();
    // ------------------------------------------------------------------------
    
-   if (addElectrons)
-   {
-      LxGenNoiseElectrons* elGenerator = new LxGenNoiseElectrons;
-      elGenerator->SetNofNoiseE(nofNoiseE);
-      run->AddTask(elGenerator);
-   }
+   //if (nofNoiseE > 0)
+   //{
+      //LxGenNoiseElectrons* elGenerator = new LxGenNoiseElectrons;
+      //elGenerator->SetNofNoiseE(nofNoiseE);
+      //run->AddTask(elGenerator);
+   //}
    
    TList* parFileList = new TList();
    
@@ -116,6 +115,54 @@ void run_reco(int index = -1)
          parFileList->Add(trdFile);
          std::cout << "-I- : Using parameter file " << trdFile->GetString() << std::endl;
       }
+      
+      // - TOF digitisation parameters
+      if (setup->GetGeoTag(kTof, geoTag)) {
+         TObjString* tofFile = new TObjString(srcDir + "/parameters/tof/tof_" + geoTag + ".digi.par");
+         parFileList->Add(tofFile);
+         std::cout << "-I- " << myName << ": Using parameter file "
+            << tofFile->GetString() << std::endl;
+         TObjString* tofBdfFile = new TObjString(srcDir + "/parameters/tof/tof_" + geoTag + ".digibdf.par");
+         parFileList->Add(tofBdfFile);
+         std::cout << "-I- " << myName << ": Using parameter file "
+            << tofBdfFile->GetString() << std::endl;
+      }
+      // ------------------------------------------------------------------------
+      
+      // -----   MVD Digitiser   -------------------------------------------------
+      if (setup->IsActive(kMvd)) {
+         FairTask* mvdDigi = new CbmMvdDigitizer("MVD Digitiser", 0);
+         run->AddTask(mvdDigi);
+         std::cout << "-I- digitize: Added task " << mvdDigi->GetName()
+            << std::endl;
+      }
+      // -------------------------------------------------------------------------
+
+
+      // -----   STS Digitiser   -------------------------------------------------
+      if (setup->IsActive(kSts)) {
+
+         Double_t dynRange = 40960.; // Dynamic range [e]
+         Double_t threshold = 4000.; // Digitisation threshold [e]
+         Int_t nAdc = 4096; // Number of ADC channels (12 bit)
+         Double_t timeResolution = 5.; // time resolution [ns]
+         Double_t deadTime = 9999999.; // infinite dead time (integrate entire event)
+         Double_t noise = 0.; // ENC [e]
+         Int_t digiModel = 1; // User sensor type DSSD
+
+         // The following settings correspond to a validated implementation.
+         // Changing them is on your own risk.
+         Int_t eLossModel = 1; // Energy loss model: uniform
+         Bool_t useLorentzShift = kFALSE; // Deactivate Lorentz shift
+         Bool_t useDiffusion = kFALSE; // Deactivate diffusion
+         Bool_t useCrossTalk = kFALSE; // Deactivate cross talk
+
+         CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
+         stsDigi->SetProcesses(eLossModel, useLorentzShift, useDiffusion, useCrossTalk);
+         stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution, deadTime, noise);
+         run->AddTask(stsDigi);
+      }
+      // -------------------------------------------------------------------------
       
       // -----   MUCH Digitiser   ------------------------------------------------
       if (setup->IsActive(kMuch))
@@ -156,6 +203,52 @@ void run_reco(int index = -1)
       }
       // -------------------------------------------------------------------------
       
+      // -----   TOF Digitiser   -------------------------------------------------
+      if (setup->IsActive(kTof)) {
+         Int_t iVerbose = 0;
+         CbmTofDigitizerBDF* tofDigi = new CbmTofDigitizerBDF("TOF Digitizer BDF", iVerbose);
+         tofDigi->SetOutputBranchPersistent("TofDigi", kFALSE);
+         tofDigi->SetOutputBranchPersistent("TofDigiMatchPoints", kFALSE);
+         TString paramDir = gSystem->Getenv("VMCWORKDIR");
+         tofDigi->SetInputFileName(paramDir + "/parameters/tof/test_bdf_input.root"); // Required as input file name not read anymore by param class
+         run->AddTask(tofDigi);
+
+         std::cout << "-I- digitize: Added task " << tofDigi->GetName()
+            << std::endl;
+      }
+      // -------------------------------------------------------------------------
+      
+      // -----   Local reconstruction in MVD   ----------------------------------
+      if (setup->IsActive(kMvd)) {
+
+         CbmMvdClusterfinder* mvdCluster =
+            new CbmMvdClusterfinder("MVD Cluster Finder", 0, 0);
+         run->AddTask(mvdCluster);
+         std::cout << "-I- : Added task " << mvdCluster->GetName() << std::endl;
+
+         CbmMvdHitfinder* mvdHit = new CbmMvdHitfinder("MVD Hit Finder", 0, 0);
+         mvdHit->UseClusterfinder(kTRUE);
+         run->AddTask(mvdHit);
+         std::cout << "-I- : Added task " << mvdHit->GetName() << std::endl;
+
+      }
+      // ------------------------------------------------------------------------
+
+
+      // -----   Local reconstruction in STS   ----------------------------------
+      if (setup->IsActive(kSts)) {
+
+         FairTask* stsCluster = new CbmStsFindClusters();
+         run->AddTask(stsCluster);
+         std::cout << "-I- : Added task " << stsCluster->GetName() << std::endl;
+
+         FairTask* stsHit = new CbmStsFindHits();
+         run->AddTask(stsHit);
+         std::cout << "-I- : Added task " << stsHit->GetName() << std::endl;
+
+      }
+      // ------------------------------------------------------------------------
+      
       // -----   Local reconstruction in MUCH   ---------------------------------
       if (setup->IsActive(kMuch)) {
 
@@ -179,8 +272,6 @@ void run_reco(int index = -1)
 
       }
 
-
-
       // -----   Local reconstruction in TRD   ----------------------------------
       if (setup->IsActive(kTrd)) {
 
@@ -202,6 +293,17 @@ void run_reco(int index = -1)
 
       }
       // ------------------------------------------------------------------------
+      
+      // -----   Local reconstruction in TOF   ----------------------------------
+      if (setup->IsActive(kTof)) {
+         CbmTofSimpClusterizer* tofCluster
+            = new CbmTofSimpClusterizer("TOF Simple Clusterizer", 0);
+         tofCluster->SetOutputBranchPersistent("TofHit", kTRUE);
+         tofCluster->SetOutputBranchPersistent("TofDigiMatch", kTRUE);
+         run->AddTask(tofCluster);
+         std::cout << "-I- : Added task " << tofCluster->GetName() << std::endl;
+      }
+      // -------------------------------------------------------------------------
    }
 
    LxTBFinder* lxTbFinder = new LxTBFinder;

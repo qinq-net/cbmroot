@@ -35,6 +35,9 @@ LxTbBinnedFinder::SignalParticle LxTbBinnedFinder::particleDescs[] = { { "jpsi",
 
 LxTBFinder::LxTBFinder() : fMuchMCPoints(0), fMuchPixelHits(0), fMuchClusters(0), fMuchPixelDigiMatches(0),
    fTrdMCPoints(0), fTrdHits(0), fTrdClusters(0), fTrdDigiMatches(0),
+#ifdef LXTB_QA
+   fMvdDigis(0), fStsDigis(0), fTofDigis(0),
+#endif//LXTB_QA
    isEvByEv(false), fFinder(0), hasTrd(false), useTrd(true), useIdeal(false), useAsciiSig(false), fSignalParticle("jpsi"),
 #ifdef LXTB_EMU_TS
    nof_timebins(1000),
@@ -317,21 +320,23 @@ InitStatus LxTBFinder::Init()
     
     HandleGeometry();    
     fFinder->Init();
-
-    CbmMCDataManager* mcManager = static_cast<CbmMCDataManager*> (ioman->GetObject("MCDataManager"));
-    fMuchMCPoints = mcManager->InitBranch("MuchPoint");
+    
     fMuchPixelHits = static_cast<TClonesArray*> (ioman->GetObject("MuchPixelHit"));
-    fMuchClusters = static_cast<TClonesArray*> (ioman->GetObject("MuchCluster"));
-    fMuchPixelDigiMatches = static_cast<TClonesArray*> (ioman->GetObject("MuchDigiMatch"));
-    
-    fTrdMCPoints = mcManager->InitBranch("TrdPoint");
     fTrdHits = static_cast<TClonesArray*> (ioman->GetObject("TrdHit"));
-    fTrdClusters = static_cast<TClonesArray*> (ioman->GetObject("TrdCluster"));
-    fTrdDigiMatches = static_cast<TClonesArray*> (ioman->GetObject("TrdDigiMatch"));
-    
-    CbmMCDataArray* mcTracks = mcManager->InitBranch("MCTrack");
     
 #ifdef LXTB_QA
+    CbmMCDataManager* mcManager = static_cast<CbmMCDataManager*> (ioman->GetObject("MCDataManager"));
+    fMuchMCPoints = mcManager->InitBranch("MuchPoint");
+    fMuchClusters = static_cast<TClonesArray*> (ioman->GetObject("MuchCluster"));
+    fMuchPixelDigiMatches = static_cast<TClonesArray*> (ioman->GetObject("MuchDigiMatch"));
+    fTrdMCPoints = mcManager->InitBranch("TrdPoint");
+    fTrdClusters = static_cast<TClonesArray*> (ioman->GetObject("TrdCluster"));
+    fTrdDigiMatches = static_cast<TClonesArray*> (ioman->GetObject("TrdDigiMatch"));
+    fMvdDigis = static_cast<TClonesArray*> (ioman->GetObject("MvdDigi"));
+    fStsDigis = static_cast<TClonesArray*> (ioman->GetObject("StsDigi"));
+    fTofDigis = static_cast<TClonesArray*> (ioman->GetObject("TofDigi"));
+    CbmMCDataArray* mcTracks = mcManager->InitBranch("MCTrack");
+    
     TH1F* jpsiPHisto = new TH1F("jpsiPHisto", "jpsiPHisto", 90, 0., 30.);
     TH1F* jpsiMHisto = new TH1F("jpsiMHisto", "jpsiMHisto", 200, 3., 3.2);
     TH1F* jpsiEHisto = new TH1F("jpsiEHisto", "jpsiEHisto", 90, 0., 30.);
@@ -460,7 +465,7 @@ InitStatus LxTBFinder::Init()
         eventTimes[0] = 0;
     
    for (int i = 1; i < fNEvents; ++i)
-      eventTimes[i] = eventTimes[i - 1] + gRandom->Exp(100);
+      eventTimes[i] = eventTimes[i - 1] + gRandom->Exp(CUR_TIMEBIN_LENGTH);
 #else
    eventTimes[0] = 50;
     
@@ -940,6 +945,11 @@ void LxTBFinder::AddHit(const CbmPixelHit* hit, Int_t stationNumber)
 #endif//LXTB_EMU_TS
 }
 
+#ifdef LXTB_QA
+static vector<int> nof_ev_digis(1000);
+static int nof_digis = 0;
+#endif//LXTB_QA
+
 static void SpliceTriggerings(list<pair<scaltype, scaltype> >& out, LxTbBinnedFinder::TriggerTimeArray& in)
 {
    for (int i = 0; i < in.nofTimebins; ++i)
@@ -1017,6 +1027,31 @@ void LxTBFinder::Exec(Option_t* opt)
    SpliceTriggerings(triggerTimes_trd1_sign1_dist0, fFinder->triggerTimes_trd1_sign1_dist0);
    SpliceTriggerings(triggerTimes_trd1_sign1_dist1, fFinder->triggerTimes_trd1_sign1_dist1);
 #endif//LXTB_EMU_TS
+   
+#ifdef LXTB_QA
+   if (fMvdDigis)
+   {
+      nof_ev_digis[currentEventN] += fMvdDigis->GetEntriesFast();
+      nof_digis += fMvdDigis->GetEntriesFast();
+   }
+   
+   if (fStsDigis)
+   {
+      nof_ev_digis[currentEventN] += fStsDigis->GetEntriesFast();
+      nof_digis += fStsDigis->GetEntriesFast();
+   }
+   
+   nof_ev_digis[currentEventN] += fMuchPixelDigiMatches->GetEntriesFast();
+   nof_digis += fMuchPixelDigiMatches->GetEntriesFast();
+   nof_ev_digis[currentEventN] += fTrdDigiMatches->GetEntriesFast();
+   nof_digis += fTrdDigiMatches->GetEntriesFast();
+   
+   if (fTofDigis)
+   {
+      nof_ev_digis[currentEventN] += fTofDigis->GetEntriesFast();
+      nof_digis += fTofDigis->GetEntriesFast();
+   }
+#endif//LXTB_QA
    
    ++currentEventN;
 }
@@ -1145,7 +1180,6 @@ void LxTBFinder::Finish()
    
    fFinder->Reconstruct();
 
-#ifdef LXTB_EMU_TS
    for (list<scaltype>::iterator i = shortSignalMCTimes.begin(); i != shortSignalMCTimes.end(); ++i)
    {
       scaltype& v = *i;
@@ -1157,7 +1191,6 @@ void LxTBFinder::Finish()
       scaltype& v = *i;
       v = (v - min_ts_time) * tCoeff;
    }
-#endif//LXTB_EMU_TS
    
    for (int i = 0; i < fFinder->nofTrackBins; ++i)
    {
@@ -1319,6 +1352,16 @@ void LxTBFinder::Finish()
    PrintTrigger(triggerTimes_trd1_sign0_dist1, longSignalMCTimes, "triggerTimes_trd1_sign0_dist1");
    PrintTrigger(triggerTimes_trd1_sign1_dist0, longSignalMCTimes, "triggerTimes_trd1_sign1_dist0");
    PrintTrigger(triggerTimes_trd1_sign1_dist1, longSignalMCTimes, "triggerTimes_trd1_sign1_dist1", true);
+   
+   Int_t nofTriggerDigis = 0;
+   
+   for (set<Int_t>::const_iterator i = fFinder->triggerEventNumber.begin(); i != fFinder->triggerEventNumber.end(); ++i)
+      nofTriggerDigis += nof_ev_digis[*i];
+   
+   ofstream nofTriggerDigisFile("nof_trigger_digis.txt", ios_base::out | ios_base::trunc);
+   nofTriggerDigisFile << nofTriggerDigis;
+   ofstream nofDigisFile("nof_digis.txt", ios_base::out | ios_base::trunc);
+   nofDigisFile << nof_digis;
 #endif//LXTB_QA
    
    for (list<LxTbBinnedFinder::Chain*>::iterator i = recoTracks.begin(); i != recoTracks.end(); ++i)

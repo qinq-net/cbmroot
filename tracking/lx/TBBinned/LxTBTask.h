@@ -36,7 +36,7 @@
 #define CUR_LAST_STATION CUR_NOF_STATIONS - 1
 //#define CUR_NOF_TIMEBINS 5
 //#define CUR_LAST_TIMEBIN CUR_NOF_TIMEBINS - 1
-#define CUR_TIMEBIN_LENGTH 100
+#define CUR_TIMEBIN_LENGTH 10000
 
 #include "LxTBBinned.h"
 
@@ -102,6 +102,12 @@ private:
     TClonesArray* fTrdHits;
     TClonesArray* fTrdClusters;
     TClonesArray* fTrdDigiMatches;
+    
+#ifdef LXTB_QA
+    TClonesArray* fMvdDigis;
+    TClonesArray* fStsDigis;
+    TClonesArray* fTofDigis;
+#endif//LXTB_QA
     
 //#ifdef LXTB_QA
     struct TrackDataHolder
