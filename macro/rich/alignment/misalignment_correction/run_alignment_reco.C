@@ -1,4 +1,4 @@
-void run_alignment_reco(Int_t nEvents = 5000, TString Rot = "3")
+void run_alignment_reco(Int_t nEvents = 5000, TString Rot = "5")
 {
    TTree::SetMaxTreeSize(90000000000);
 
@@ -9,15 +9,15 @@ void run_alignment_reco(Int_t nEvents = 5000, TString Rot = "3")
 
 	gRandom->SetSeed(10);
 
-//	TString outDir = "/data/misalignment_correction/Sim_Outputs/Alignment_Correction/Outer_Region_Study/Tile_2_8_bis/" + Rot + "mradY/";
-//	TString outDir = "/data/misalignment_correction/Sim_Outputs/Alignment_Correction/Outer_Region_Study/Tile_0_1/" + Rot + "mradX/";
-	TString outDir = "/data/misalignment_correction/Sim_Outputs/Alignment_Correction/Outer_Region_Study/Tile_2_1/" + Rot + "mradY/";
+//	TString outDir = "/data/misalignment_correction/Sim_Outputs/Alignment_Correction/Outer_Region_Study/Tile_0_8_bis/" + Rot + "mradXY/";
+	TString outDir = "/data/misalignment_correction/Sim_Outputs/Alignment_Correction/Outer_Region_Study/Tile_1_4/" + Rot + "mradXY/";
+//	TString outDir = "/data/misalignment_correction/Sim_Outputs/Alignment_Correction/Outer_Region_Study/Tile_2_1/" + Rot + "mradX/";
 //	TString outDir = "/data/misalignment_correction/Sim_Outputs/Alignment_Correction/Test/";
 	TString numb = Rot + "_";
-	TString axis = "Y_";
+	TString axis = "XY_";
 //	TString tile = "TILE";
-//	TString tile = "1_4";
-	TString tile = "2_1";
+	TString tile = "1_4";
+//	TString tile = "0_8";
 	TString runTitle = "Misalignment_Determination";
 	TString axisRotTitle = numb + "mrad" + axis + tile;
         TString parFile = outDir + "param." + numb + axis + tile + ".root";

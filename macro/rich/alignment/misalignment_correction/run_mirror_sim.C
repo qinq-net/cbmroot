@@ -1,4 +1,4 @@
-void run_mirror_sim(Int_t nEvents = 50)
+void run_mirror_sim(Int_t nEvents = 2000)
 // !!! DEFINE NEW ROTATION ANGLE IN THE GEO FILE AND RUN IMPORT_EXPORT_GEO MACRO BEFORE RUNNING RUN_SIM !!!
 {
     TTree::SetMaxTreeSize(90000000000);
@@ -13,21 +13,21 @@ void run_mirror_sim(Int_t nEvents = 50)
 
 //	TString outDir = "/data/misalignment_correction/Sim_Outputs/Alignment_Correction/Test/";
 	TString outDir = "/data/misalignment_correction/Sim_Outputs/Mirror_Sorting/First/";
-	TString numb = "_";
+	TString numb = "3mrad_";
 	TString axis = "X_";
 //	TString tile = "TILE";
 //	TString tile = "1_4";
 	TString tile = "2_1";
-	numb = "", axis = "", tile = "";
+	numb = "test", axis = "", tile = "";
         TString parFile = outDir + "param." + numb + axis + tile + ".root";
         TString mcFile = outDir + "mc." + numb + axis + tile + ".root";
 	TString geoFile = outDir + "geofilefull." + numb + axis + tile + ".root";
 	TString outFile = outDir + "out." + numb + axis + tile + ".root";
 
 /*	TString outDir = "/data/misalignment_correction/event_display/test/"; // For eventDisplay and run_rich_event_display macros
-	TString numb = "00001";
-	TString parFile = outDir + "param." + numb + ".root";
-	TString mcFile = outDir + "mc." + numb + ".root";*/
+	TString numb = ".00001";
+	TString parFile = outDir + "param" + numb + ".root";
+	TString mcFile = outDir + "mc" + numb + ".root";*/
 
 	// Set geometries:
 	TString caveGeom = "cave.geo";
@@ -35,7 +35,7 @@ void run_mirror_sim(Int_t nEvents = 50)
 	TString magnetGeom = "magnet/magnet_v15a.geo.root";
 	TString fieldMap = "field_v12b";
 	TString stsGeom = "sts/sts_v15c.geo.root";
-	TString richGeom = "rich/Rich_jan2016_misalign.root";
+	TString richGeom = "rich/Rich_jan2016_misalign_MirrorStudy.root";
 //	TString richGeom = "rich/rich_v16a_1e.root";
 	TString trdGeom = ""; //"trd_v15a_1e.geo.root";
 	TString tofGeom = ""; //"tof_v16a_1e.geo.root";
@@ -211,27 +211,38 @@ void run_mirror_sim(Int_t nEvents = 50)
     Double_t theta2 = theta0 + 0.5;*/
 
 //    phi0 = 145., theta0 = 28.5; // Tile 1_2 Study
-//    phi0 = 107., theta0 = 10.1; // Tile 1_4 Study
+    phi0 = 109., theta0 = 10.1; // Tile 1_4 Study
+    phi1 = 136., theta1 = 13.8; // Tile 1_3 Study
+    phi2 = 38., theta2 = 24.; // Tile 2_8 Study
 
     //add electrons
     if (electrons == "yes"){
-	// Beam between tiles 1_3 & 1_4
-	FairBoxGenerator* boxGen1 = new FairBoxGenerator(11, NPOSITRONS);
-        boxGen1->SetPtRange(5.,9.);
-        boxGen1->SetPhiRange(90., 180.);
-        boxGen1->SetThetaRange(2.5, 25.);
+	// Box tile 1_3
+	FairBoxGenerator* boxGen1 = new FairBoxGenerator(11, NELECTRONS);
+        boxGen1->SetPtRange(8.,9.);
+        boxGen1->SetPhiRange(phi1 - 3., phi1 + 3.);
+        boxGen1->SetThetaRange(theta1 - 1., theta1 + 1.);
         boxGen1->SetCosTheta();
         boxGen1->Init();
         primGen->AddGenerator(boxGen1);
 
-/*	// Box tile 1_2 & 1_4
-	FairBoxGenerator* boxGen4 = new FairBoxGenerator(-11, NELECTRONS);
-        boxGen4->SetPtRange(9.,9.5);
-        boxGen4->SetPhiRange(phi0 - 5.5, phi0 + 5.5);
-        boxGen4->SetThetaRange(theta0 - 3., theta0);
+	// Box tile 1_2 & 1_4
+	FairBoxGenerator* boxGen4 = new FairBoxGenerator(11, NELECTRONS);
+        boxGen4->SetPtRange(8.,9.);
+        boxGen4->SetPhiRange(phi0 - 3., phi0 + 3.);
+        boxGen4->SetThetaRange(theta0 - 1., theta0 + 1.);
         boxGen4->SetCosTheta();
         boxGen4->Init();
-        primGen->AddGenerator(boxGen4);*/
+        primGen->AddGenerator(boxGen4);
+
+	// Box tile 2_8
+        FairBoxGenerator* boxGen2 = new FairBoxGenerator(-11, NPOSITRONS);
+        boxGen2->SetPtRange(1.,3.);
+        boxGen2->SetPhiRange(phi2 - 5., phi2 + 5.);
+        boxGen2->SetThetaRange(theta2, theta2 + 1.);
+        boxGen2->SetCosTheta();
+        boxGen2->Init();
+        primGen->AddGenerator(boxGen2);
 
         //      CbmLitPolarizedGenerator *polGen;
         //      polGen = new CbmLitPolarizedGenerator(443, NELECTRONS);

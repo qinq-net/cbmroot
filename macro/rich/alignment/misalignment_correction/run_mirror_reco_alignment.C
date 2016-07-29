@@ -1,4 +1,4 @@
-void run_correction_reco(Int_t nEvents = 5000, TString Rot = "5")
+void run_mirror_reco_alignment(Int_t nEvents = 2000)
 {
    TTree::SetMaxTreeSize(90000000000);
 
@@ -9,20 +9,11 @@ void run_correction_reco(Int_t nEvents = 5000, TString Rot = "5")
 
 	gRandom->SetSeed(10);
 
-//	TString outDir = "/data/misalignment_correction/Sim_Outputs/Alignment_Correction/Outer_Region_Study/Tile_0_8_bis/" + Rot + "mradXY/";
-	TString outDir = "/data/misalignment_correction/Sim_Outputs/Alignment_Correction/Outer_Region_Study/Tile_1_4/" + Rot + "mradXY/";
-//	TString outDir = "/data/misalignment_correction/Sim_Outputs/Alignment_Correction/Outer_Region_Study/Tile_2_1/" + Rot + "mradX/";
-//	TString outDir = "/data/misalignment_correction/Sim_Outputs/Alignment_Correction/Test/";
-	TString numb = Rot + "_";
-	TString axis = "XY_";
-//	TString tile = "TILE";
-	TString tile = "1_4";
-//	TString tile = "0_8";
-	TString runTitle = "Alignment_Correction";
-	TString axisRotTitle = numb + "mrad" + axis + tile;
-        TString parFile = outDir + "param." + numb + axis + tile + ".root";
-        TString mcFile = outDir + "mc." + numb + axis + tile + ".root";
-        TString recoFile = outDir + "reco." + numb + axis + tile + ".root";
+	TString outDir = "/data/misalignment_correction/Sim_Outputs/Mirror_Sorting/First/";
+	TString runTitle = "Mirror_Sorting";
+        TString parFile = outDir + "param." + "test" + ".root";
+        TString mcFile = outDir + "mc." + "test" + ".root";
+        TString recoFile = outDir + "reco." + "test" + ".root";
 
 	TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/geosetup_25gev.C";
 
@@ -222,7 +213,7 @@ void run_correction_reco(Int_t nEvents = 5000, TString Rot = "5")
 	richReco->SetRunExtrapolation(true);
 	richReco->SetRunProjection(true);
 	richReco->SetRunTrackAssign(true);
-	//richReco->SetFinderName("ideal");
+//	richReco->SetFinderName("ideal");     // To do matching Sts-Ring
 //	richReco->SetProjectionName("analytical2"); // Set to analytical2 to test my class.
 	//richReco->SetFitterName("circle_cop");;
 	run->AddTask(richReco);
@@ -272,14 +263,10 @@ void run_correction_reco(Int_t nEvents = 5000, TString Rot = "5")
 	tofQa->SetOutputDir(std::string(resultDir));
 	//run->AddTask(tofQa);
 */
-        CbmRichCorrection* correction = new CbmRichCorrection();
-        correction->SetOutputDir(outDir);
-        correction->SetRunTitle(runTitle);
-        correction->SetAxisRotTitle(axisRotTitle);
-        correction->SetDrawProjection(true);
-	correction->SetNumbAxis(numb+axis);
-	correction->SetTileName(tile);
-	run->AddTask(correction);
+        CbmRichMirrorSortingAlignment* mirror = new CbmRichMirrorSortingAlignment();
+        mirror->setOutputDir(outDir);
+	mirror->setStudyName("test");
+	run->AddTask(mirror);
 
 	// -----  Parameter database   --------------------------------------------
 	FairRuntimeDb* rtdb = run->GetRuntimeDb();
