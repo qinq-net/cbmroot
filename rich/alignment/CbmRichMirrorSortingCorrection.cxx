@@ -101,9 +101,9 @@ void CbmRichMirrorSortingCorrection::InitHistProjection()
 {
 	fHM = new CbmHistManager();
 
-	Double_t upperScaleLimit = 20., bin = 400.;
+	Double_t upperScaleLimit = 6., bin = 400.;
 	// fhDistance => fhDistanceCenterToExtrapolatedTrack.
-	fHM->Create1<TH1D>("fhDistanceCenterToExtrapolatedTrack", "fhDistanceCenterToExtrapolatedTrack;Distance fitted center to extrapolated track;Number of entries", bin, 0., 2.);
+	fHM->Create1<TH1D>("fhDistanceCenterToExtrapolatedTrack", "fhDistanceCenterToExtrapolatedTrack;Distance fitted center to extrapolated track;Number of entries", bin, 0., upperScaleLimit);
 	fHM->Create1<TH1D>("fhDistanceCorrected", "fhDistanceCorrected;Distance a [cm];A.U.", bin, 0., upperScaleLimit);
 	fHM->Create1<TH1D>("fhDifferenceX", "fhDifferenceX;Difference in X (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
 	fHM->Create1<TH1D>("fhDifferenceY", "fhDifferenceY;Difference in Y (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
@@ -234,9 +234,20 @@ void CbmRichMirrorSortingCorrection::Exec(Option_t* Option)
 					ComputeP(ptPMirr, ptPR2, normalPMT, ptM, ptR2Mirr, constantePMT);
 					ComputeP(ptPMirrUnCorr, ptPR2UnCorr, normalPMT, ptM, ptR2MirrUnCorr, constantePMT);
 					ComputeP(ptPMirrIdeal, ptPR2Ideal, normalPMT, ptM, ptR2MirrIdeal, constantePMT);
+					cout << "PMT points mirr coordinates before rotation = {" << ptPMirr[0] << ", " << ptPMirr[1] << ", " << ptPMirr[2] << "}" << endl;
+					cout << "PMT points mirr uncorr coordinates before rotation = {" << ptPMirrUnCorr[0] << ", " << ptPMirrUnCorr[1] << ", " << ptPMirrUnCorr[2] << "}" << endl;
+					cout << "PMT points mirr ideal coordinates before rotation = {" << ptPMirrIdeal[0] << ", " << ptPMirrIdeal[1] << ", " << ptPMirrIdeal[2] << "}" << endl;
+
 					TVector3 inPos (ptPMirr.at(0), ptPMirr.at(1), ptPMirr.at(2));
 					CbmRichGeoManager::GetInstance().RotatePoint(&inPos, &outPos);
-					cout << "New PMT points coordinates = {" << outPos.x() << ", " << outPos.y() << ", " << outPos.z() << "}" << endl;
+					cout << endl << "New PMT points coordinates = {" << outPos.x() << ", " << outPos.y() << ", " << outPos.z() << "}" << endl;
+					TVector3 inPosUnCorr (ptPMirrUnCorr.at(0), ptPMirrUnCorr.at(1), ptPMirrUnCorr.at(2));
+					CbmRichGeoManager::GetInstance().RotatePoint(&inPosUnCorr, &outPosUnCorr);
+					cout << "New mirror points coordinates = {" << outPosUnCorr.x() << ", " << outPosUnCorr.y() << ", " << outPosUnCorr.z() << "}" << endl;
+					TVector3 inPosIdeal (ptPMirrIdeal.at(0), ptPMirrIdeal.at(1), ptPMirrIdeal.at(2));
+					CbmRichGeoManager::GetInstance().RotatePoint(&inPosIdeal, &outPosIdeal);
+					cout << "New mirror points coordinates = {" << outPosIdeal.x() << ", " << outPosIdeal.y() << ", " << outPosIdeal.z() << "}" << endl << endl;
+
 					FillHistProjection(outPosIdeal, outPosUnCorr, outPos, ringL, normalPMT, constantePMT);
 				}
 			}
@@ -357,24 +368,24 @@ void CbmRichMirrorSortingCorrection::ComputeR2(vector<Double_t> &ptR2Center, vec
 				lineIndex = fileLine.find(mirrorTileName, 0);
 				if (lineIndex != string::npos)
 				{
-					cout << mirrorTileName << " has been found in the file at line: " << lineCounter << " and position: " << lineIndex << "." << endl;
+					//cout << mirrorTileName << " has been found in the file at line: " << lineCounter << " and position: " << lineIndex << "." << endl;
 					break;
 				}
 				lineCounter++;
 			}
 //			getline(corrFile, strMisX);
 			corrFile >> misX;
-			cout << "number at line: " << lineCounter+1 << " = " << misX << "." << endl;
+			//cout << "number at line: " << lineCounter+1 << " = " << misX << "." << endl;
 //			getline(corrFile, strMisY);
 			corrFile >> misY;
-			cout << "number at line: " << lineCounter+2 << " = " << misY << "." << endl;
+			//cout << "number at line: " << lineCounter+2 << " = " << misY << "." << endl;
 
 			/*std::istringstream i1(strMisX);
 			i1 >> misX;
 			std::istringstream i2(strMisY);
-			i2 >> misY;*/
+			i2 >> misY;
 			double sum = misX + misY;
-			cout << "x1 = " << misX << ", x2 = " << misY << ", sum = " << sum << endl;
+			cout << "x1 = " << misX << ", x2 = " << misY << ", sum = " << sum << endl;*/
 
 			corrFile.close();
 		}
@@ -404,12 +415,12 @@ void CbmRichMirrorSortingCorrection::ComputeR2(vector<Double_t> &ptR2Center, vec
 		dist2 = TMath::Sqrt(x + y + TMath::Power(z2-ptTileCenter.at(2), 2));
 		//cout << "dist2 = " << dist2 << endl;
 		ptCNew.at(2) += z2;
-		//cout << "Sphere center coordinates of the rotated mirror tile, after correction, = {" << ptCNew.at(0) << ", " << ptCNew.at(1) << ", " << ptCNew.at(2) << "}" << endl;
+		cout << "Sphere center coordinates of the rotated mirror tile, after correction, = {" << ptCNew.at(0) << ", " << ptCNew.at(1) << ", " << ptCNew.at(2) << "}" << endl;
 	}
 	else if (option == "Uncorrected") {
 		// Keep the same tile sphere center, with no correction information.
 		ptCNew = ptC;
-		//cout << "Sphere center coordinates of the rotated mirror tile, without correction = {" << ptCNew.at(0) << ", " << ptCNew.at(1) << ", " << ptCNew.at(2) << "}" << endl;
+		cout << "Sphere center coordinates of the rotated mirror tile, without correction = {" << ptCNew.at(0) << ", " << ptCNew.at(1) << ", " << ptCNew.at(2) << "}" << endl;
 	}
 	else {
 		//cout << "No input given in function ComputeR2! Uncorrected parameters for the sphere center of the tile will be used!" << endl;
@@ -493,7 +504,7 @@ void CbmRichMirrorSortingCorrection::FillHistProjection(TVector3 outPosIdeal, TV
 	vector<Double_t> pUnCorr(3); // Absolute coordinates of fitted ring Center r and PMT extrapolated point p
 	pUnCorr.at(0) = TMath::Abs(outPosUnCorr.x()), pUnCorr.at(1) = TMath::Abs(outPosUnCorr.y()), pUnCorr.at(2) = TMath::Abs(outPosUnCorr.z());
 	//cout << "Ring center coordinates = {" << ringCenter[0] << ", " << ringCenter[1] << ", " << ringCenter[2] << "}" << endl;
-	cout << "Difference in X = " << TMath::Abs(r.at(0) - pUnCorr.at(0)) << "; \t" << "Difference in Y = " << TMath::Abs(r.at(1) - pUnCorr.at(1)) << "; \t" << "Difference in Z = " << TMath::Abs(r.at(2) - pUnCorr.at(2)) << endl;
+	cout << "Difference in X w/o correction = " << TMath::Abs(r.at(0) - pUnCorr.at(0)) << "; \t" << "Difference in Y = " << TMath::Abs(r.at(1) - pUnCorr.at(1)) << "; \t" << "Difference in Z = " << TMath::Abs(r.at(2) - pUnCorr.at(2)) << endl;
 	fHM->H1("fhDifferenceXUncorrected")->Fill(TMath::Abs(r.at(0) - pUnCorr.at(0)));
 	fHM->H1("fhDifferenceYUncorrected")->Fill(TMath::Abs(r.at(1) - pUnCorr.at(1)));
 	distToExtrapTrackHitInPlaneUnCorr = TMath::Sqrt(TMath::Power(r.at(0) - pUnCorr.at(0),2) + TMath::Power(r.at(1) - pUnCorr.at(1),2));
@@ -503,7 +514,7 @@ void CbmRichMirrorSortingCorrection::FillHistProjection(TVector3 outPosIdeal, TV
 	vector<Double_t> pIdeal(3); // Absolute coordinates of fitted ring Center r and PMT extrapolated point p
 	pIdeal.at(0) = TMath::Abs(outPosIdeal.x()), pIdeal.at(1) = TMath::Abs(outPosIdeal.y()), pIdeal.at(2) = TMath::Abs(outPosIdeal.z());
 	//cout << "Ring center coordinates = {" << ringCenter[0] << ", " << ringCenter[1] << ", " << ringCenter[2] << "}" << endl;
-	cout << "Difference in X = " << TMath::Abs(r.at(0) - pIdeal.at(0)) << "; \t" << "Difference in Y = " << TMath::Abs(r.at(1) - pIdeal.at(1)) << "; \t" << "Difference in Z = " << TMath::Abs(r.at(2) - pIdeal.at(2)) << endl;
+	cout << "Difference in X w/ ideal correction = " << TMath::Abs(r.at(0) - pIdeal.at(0)) << "; \t" << "Difference in Y = " << TMath::Abs(r.at(1) - pIdeal.at(1)) << "; \t" << "Difference in Z = " << TMath::Abs(r.at(2) - pIdeal.at(2)) << endl;
 	fHM->H1("fhDifferenceXIdeal")->Fill(TMath::Abs(r.at(0) - pIdeal.at(0)));
 	fHM->H1("fhDifferenceYIdeal")->Fill(TMath::Abs(r.at(1) - pIdeal.at(1)));
 	distToExtrapTrackHitInPlaneIdeal = TMath::Sqrt(TMath::Power(r.at(0) - pIdeal.at(0),2) + TMath::Power(r.at(1) - pIdeal.at(1),2));
@@ -655,6 +666,6 @@ void CbmRichMirrorSortingCorrection::DrawHistProjection()
 
 void CbmRichMirrorSortingCorrection::Finish()
 {
-	//DrawHistProjection();
+	DrawHistProjection();
 }
 ClassImp(CbmRichMirrorSortingCorrection)
