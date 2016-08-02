@@ -199,7 +199,7 @@ TGeoVolume*  gModules[NofModuleTypes]; // Global storage for module types
 
 // Forward declarations
 void create_materials_from_media_file();
-void create_trd_module_type(Int_t moduleType);
+TGeoVolume* create_trd_module_type(Int_t moduleType);
 void create_detector_layers(Int_t layer);
 void dump_info_file();
 void dump_digi_file();
@@ -261,7 +261,8 @@ void create_MUCH_geometry_v16a() {
   TFile* outfile = new TFile(FileNameSim,"RECREATE");
   top->Write();      // use this as input to simulations (run_sim.C)
   outfile->Close();
-  TFile* outfile = new TFile(FileNameGeo,"RECREATE");
+  
+  outfile = new TFile(FileNameGeo,"RECREATE");
   gGeoMan->Write();  // use this is you want GeoManager format in the output
   outfile->Close();
 
@@ -337,7 +338,7 @@ void dump_digi_file()
     {
       printf("WARNING: sector size does not add up to module size for module type %d\n", im+1);
       printf("%.2f = %.2f + %.2f + %.2f\n", ActiveAreaX[ModuleType[im]], HeightOfSector[im][0], HeightOfSector[im][1], HeightOfSector[im][2]);
-      exit();
+      exit(1);
     }
 
 }
@@ -402,20 +403,20 @@ void dump_info_file()
 
   fprintf(ifile,"# envelope\n");
   // Show extension of TRD
-  fprintf(ifile,"%4d cm   start of TRD (z)\n", z_first_layer);
-  fprintf(ifile,"%4d cm   end   of TRD (z)\n", z_last_layer + LayerThickness);
+  fprintf(ifile,"%4f cm   start of TRD (z)\n", z_first_layer);
+  fprintf(ifile,"%4f cm   end   of TRD (z)\n", z_last_layer + LayerThickness);
   fprintf(ifile,"\n");
 
   // Layer thickness
   fprintf(ifile,"# thickness\n");
-  fprintf(ifile,"%4d cm   per single layer (z)\n", LayerThickness);
+  fprintf(ifile,"%4f cm   per single layer (z)\n", LayerThickness);
   fprintf(ifile,"\n");
 
   // Show extra gaps
   fprintf(ifile,"# extra gaps\n ");
   for (Int_t iLayer = 0; iLayer < MaxLayers; iLayer++)
     if (ShowLayer[iLayer])
-      fprintf(ifile,"%3d ", LayerOffset[iLayer]);
+      fprintf(ifile,"%3f ", LayerOffset[iLayer]);
   fprintf(ifile,"   extra gaps in z (cm)\n");
   fprintf(ifile,"\n");
 
@@ -491,7 +492,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
    {
      // Radiator
      //   TGeoBBox* trd_radiator = new TGeoBBox("", activeAreaX /2., activeAreaY /2., radiator_thickness /2.);
-     TGeoBBox* trd_radiator = new TGeoBBox("", sizeX /2., sizeY /2., radiator_thickness /2.);
+     TGeoBBox* trd_radiator = new TGeoBBox("trd_radiator", sizeX /2., sizeY /2., radiator_thickness /2.);
      TGeoVolume* trdmod1_radvol = new TGeoVolume("radiator", trd_radiator, radVolMed);
      //     TGeoVolume* trdmod1_radvol = new TGeoVolume(Form("module%d_radiator", moduleType), trd_radiator, radVolMed);
      //     TGeoVolume* trdmod1_radvol = new TGeoVolume(Form("trd1mod%dradiator", moduleType), trd_radiator, radVolMed);
@@ -504,7 +505,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
    if(IncludeKaptonFoil)
    {
      // Kapton Foil
-     TGeoBBox* trd_kapton = new TGeoBBox("", sizeX /2., sizeY /2., kapton_thickness /2.);
+     TGeoBBox* trd_kapton = new TGeoBBox("trd_kapton", sizeX /2., sizeY /2., kapton_thickness /2.);
      TGeoVolume* trdmod1_kaptonvol = new TGeoVolume("kaptonfoil", trd_kapton, kaptonVolMed);
      //   TGeoVolume* trdmod1_kaptonvol = new TGeoVolume(Form("module%d_kaptonfoil", moduleType), trd_kapton, kaptonVolMed);
      //   TGeoVolume* trdmod1_kaptonvol = new TGeoVolume(Form("trd1mod%dkapton", moduleType), trd_kapton, kaptonVolMed);
@@ -515,7 +516,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
 
    // start of Frame in z
    // Gas
-   TGeoBBox* trd_gas = new TGeoBBox("", activeAreaX /2., activeAreaY /2., gas_thickness /2.);
+   TGeoBBox* trd_gas = new TGeoBBox("trd_gas", activeAreaX /2., activeAreaY /2., gas_thickness /2.);
    TGeoVolume* trdmod1_gasvol = new TGeoVolume("gas", trd_gas, gasVolMed);
    //   TGeoVolume* trdmod1_gasvol = new TGeoVolume(Form("module%d_gas", moduleType), trd_gas, gasVolMed);
    //   TGeoVolume* trdmod1_gasvol = new TGeoVolume(Form("trd1mod%dgas", moduleType), trd_gas, gasVolMed);
@@ -529,7 +530,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
    if(IncludeGasFrame)
    {
      // frame1
-     TGeoBBox* trd_frame1 = new TGeoBBox("", sizeX /2., frameWidth /2., frame_thickness/2.);
+     TGeoBBox* trd_frame1 = new TGeoBBox("trd_frame1", sizeX /2., frameWidth /2., frame_thickness/2.);
      TGeoVolume* trdmod1_frame1vol = new TGeoVolume("frame1", trd_frame1, frameVolMed);
      //   TGeoVolume* trdmod1_frame1vol = new TGeoVolume(Form("module%d_frame1", moduleType), trd_frame1, frameVolMed);
      //   TGeoVolume* trdmod1_frame1vol = new TGeoVolume(Form("trd1mod%dframe1", moduleType), trd_frame1, frameVolMed);
@@ -543,7 +544,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
      
      
      // frame2
-     TGeoBBox* trd_frame2 = new TGeoBBox("", frameWidth /2., activeAreaY /2., frame_thickness /2.);
+     TGeoBBox* trd_frame2 = new TGeoBBox("trd_frame2", frameWidth /2., activeAreaY /2., frame_thickness /2.);
      TGeoVolume* trdmod1_frame2vol = new TGeoVolume("frame2", trd_frame2, frameVolMed);
      //   TGeoVolume* trdmod1_frame2vol = new TGeoVolume(Form("module%d_frame2", moduleType), trd_frame2, frameVolMed);
      //   TGeoVolume* trdmod1_frame2vol = new TGeoVolume(Form("trd1mod%dframe2", moduleType), trd_frame2, frameVolMed);
@@ -559,7 +560,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
    if(IncludePadplane)
    {
      // Pad Copper
-     TGeoBBox *trd_padcopper = new TGeoBBox("", sizeX /2., sizeY /2., padcopper_thickness /2.);
+     TGeoBBox* trd_padcopper = new TGeoBBox("trd_padcopper", sizeX /2., sizeY /2., padcopper_thickness /2.);
      TGeoVolume* trdmod1_padcoppervol = new TGeoVolume("padcopper", trd_padcopper, padcopperVolMed);
      //   TGeoVolume* trdmod1_padcoppervol = new TGeoVolume(Form("module%d_padcopper", moduleType), trd_padcopper, padcopperVolMed);
      //   TGeoVolume* trdmod1_padcoppervol = new TGeoVolume(Form("trd1mod%dpadcopper", moduleType), trd_padcopper, padcopperVolMed);
@@ -568,7 +569,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
      module->AddNode(trdmod1_padcoppervol, 1, trd_padcopper_trans);
   
      // Pad Plane
-     TGeoBBox* trd_padpcb = new TGeoBBox("", sizeX /2., sizeY /2., padplane_thickness /2.);
+     TGeoBBox* trd_padpcb = new TGeoBBox("trd_padpcb", sizeX /2., sizeY /2., padplane_thickness /2.);
      TGeoVolume* trdmod1_padpcbvol = new TGeoVolume("padplane", trd_padpcb, padpcbVolMed);
      //   TGeoVolume* trdmod1_padpcbvol = new TGeoVolume(Form("module%d_padplane", moduleType), trd_padpcb, padpcbVolMed);
      //   TGeoVolume* trdmod1_padpcbvol = new TGeoVolume(Form("trd1mod%dpadplane", moduleType), trd_padpcb, padpcbVolMed);
@@ -580,7 +581,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
    if(IncludeBackpanel)
    { 
      // Honeycomb
-     TGeoBBox* trd_honeycomb = new TGeoBBox("", sizeX /2., sizeY /2., honeycomb_thickness /2.);
+     TGeoBBox* trd_honeycomb = new TGeoBBox("trd_honeycomb", sizeX /2., sizeY /2., honeycomb_thickness /2.);
      TGeoVolume* trdmod1_honeycombvol = new TGeoVolume("honeycomb", trd_honeycomb, honeycombVolMed);
      //   TGeoVolume* trdmod1_honeycombvol = new TGeoVolume(Form("module%d_honeycomb", moduleType), trd_honeycomb, honeycombVolMed);
      //   TGeoVolume* trdmod1_honeycombvol = new TGeoVolume(Form("trd1mod%dhoneycomb", moduleType), trd_honeycomb, honeycombVolMed);
@@ -589,7 +590,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
      module->AddNode(trdmod1_honeycombvol, 1, trd_honeycomb_trans);
   
      // Carbon fiber layers
-     TGeoBBox* trd_carbon = new TGeoBBox("", sizeX /2., sizeY /2., carbon_thickness /2.);
+     TGeoBBox* trd_carbon = new TGeoBBox("trd_carbon", sizeX /2., sizeY /2., carbon_thickness /2.);
      TGeoVolume* trdmod1_carbonvol = new TGeoVolume("carbonsheet", trd_carbon, carbonVolMed);
      //   TGeoVolume* trdmod1_carbonvol = new TGeoVolume(Form("module%d_carbonsheet", moduleType), trd_carbon, carbonVolMed);
      //   TGeoVolume* trdmod1_carbonvol = new TGeoVolume(Form("trd1mod%dcarbon", moduleType), trd_carbon, carbonVolMed);
@@ -642,8 +643,8 @@ void create_detector_layers(Int_t layerId)
   Int_t* outerLayer;
   
   if ( 1 == layerType ) {
-    innerLayer = layer1i;      
-    outerLayer = layer1o; 
+    innerLayer = (Int_t*) layer1i;      
+    outerLayer = (Int_t*) layer1o; 
   } else {
     std::cout << "Type of layer not known" << std::endl;
   } 
