@@ -1183,7 +1183,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
   TObject *obj;
   Int_t nobj=0;
   TList *prim = (gPad ? gPad->GetListOfPrimitives() : 0x0);
-  if(prim && prim->GetSize()>1) prim->RemoveLast(); // remove redraw axis histogram
+  if(prim && prim->GetSize()>1 && !optGoff) prim->RemoveLast(); // remove redraw axis histogram
   for(Int_t io=0; io< (prim ? prim->GetSize() : 0); io++) {
     obj=prim->At(io);
     if(obj->InheritsFrom(TH1::Class())     && obj!=prim->At(io+1)) nobj++;
@@ -1687,7 +1687,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
 
   /// styling
   /// NOTE: this draws a copy of the first histogram
-  if(gPad) gPad->RedrawAxis();
+  if(gPad && !optGoff) gPad->RedrawAxis();
 
   /// remove canvas if graphics are switched off ('goff')
   //  if(optGoff) { c->Close(); delete c; }
