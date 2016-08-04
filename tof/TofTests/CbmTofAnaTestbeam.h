@@ -241,6 +241,9 @@ class CbmTofAnaTestbeam : public FairTask {
       TH2 *fhYX04;
       TH2 *fhTT04;
 
+      TH3 *fhDutDXDYDT;
+      TH3 *fhRefDXDYDT;
+
       TH1 *fhChi04;
       TH1 *fhChiSel24;
       TH1 *fhDXSel24;
@@ -286,6 +289,8 @@ class CbmTofAnaTestbeam : public FairTask {
       TH2 *fhTexpDT04D4best;
       TH2 *fhCluSize0DT04D4best;
       TH2 *fhCluSize4DT04D4best;
+      TH2 *fhCluSizeSigT0D4best;
+      TH2 *fhCluSizeSigT4D4best;
       TH2 *fhTot0DT04D4best;
       TH2 *fhTot4DT04D4best;
       TH2 *fhChiDT04D4best;

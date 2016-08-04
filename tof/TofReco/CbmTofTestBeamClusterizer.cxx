@@ -1758,7 +1758,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
             fhRpcCluTot[iDetIndx]->Fill((Double_t)iCh*2+pDig0->GetSide(),pDig0->GetTot());
             fhRpcCluTot[iDetIndx]->Fill((Double_t)iCh*2+pDig1->GetSide(),pDig1->GetTot());
 
-            if (digiMatch->GetNofLinks()>2 && digiMatch->GetNofLinks()<8 ) // FIXME: hardwired limits on CluSize
+            if (digiMatch->GetNofLinks()>2 ) //&& digiMatch->GetNofLinks()<8 ) // FIXME: hardwired limits on CluSize
             {
               dNstrips+=1.;
               dMeanTimeSquared += TMath::Power(0.5*(pDig0->GetTime()+pDig1->GetTime())-pHit->GetTime(),2);
@@ -1899,16 +1899,16 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
                        << FairLogger::endl;  
            }
          } // linked digi loop end;
-         if (2<dNstrips){
-           //           Double_t dVar=dMeanTimeSquared/dNstrips - TMath::Power(pHit->GetTime(),2);
+         if (1<dNstrips){
+	   //           Double_t dVar=dMeanTimeSquared/dNstrips - TMath::Power(pHit->GetTime(),2);
            Double_t dVar=dMeanTimeSquared/(dNstrips-1);
-           if(dVar<0.) dVar=0.;
+           //if(dVar<0.) dVar=0.;
            Double_t dTrms=TMath::Sqrt(dVar);
            LOG(DEBUG)<<Form(" Trms for Tofhit %d in iDetIndx %d, Ch %d from %3.0f strips: %6.1f ps",
                              iHitInd,iDetIndx,iCh,dNstrips,dTrms)
                     << FairLogger::endl;  
            fhRpcCluTrms[iDetIndx]->Fill((Double_t)iCh,dTrms);
-
+           pHit->SetTimeError(dTrms);
          }
 
          LOG(DEBUG1)<<" Fill Time of iDetIndx "<<iDetIndx<<" for |y| <"
@@ -3365,9 +3365,8 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                                     // calc mean ch from dPosX=((Double_t)(-iNbCh/2 + iCh)+0.5)*fChannelInfo->GetSizex();
 
 				    Int_t iChm=floor(dWeightedPosX/fChannelInfo->GetSizex())+iNbCh/2;
-				    if(iChm<0 || iChm >iNbCh){
-				      iCh=0;
-				    }
+				    if(iChm<0)        iChm=0;
+				    if(iChm >iNbCh-1) iChm=iNbCh-1;
                                     Int_t iDetId = CbmTofAddress::GetUniqueAddress(iSm,iRpc,iChm,0,iSmType);
                                     Int_t iRefId = 0; // Index of the correspondng TofPoint
                                     if(NULL != fTofPointsColl) {
@@ -3375,7 +3374,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                                     }
                                     LOG(DEBUG)<<"CbmTofTestBeamClusterizer::BuildClusters: Save Hit  "
                                                << Form(" %3d %3d 0x%08x %3d %3d %3d %f %f",
-                                                       fiNbHits,iNbChanInHit,iDetId,iCh,iLastChan,iRefId,
+                                                       fiNbHits,iNbChanInHit,iDetId,iChm,iLastChan,iRefId,
                                                        dWeightedTime,dWeightedPosY)
                                                <<", DigiSize: "<<vDigiIndRef.size()
                                                <<", DigiInds: ";
@@ -3599,10 +3598,9 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 //                     cout<<"c "<<vPtsRef[0]->GetDetectorID()<<endl;
 //                     Int_t iDetId = vPtsRef[0]->GetDetectorID();// detID = pt->GetDetectorID() <= from TofPoint
 //                     Int_t iDetId = iChId;
-                     Int_t iChm=floor(dWeightedPosX/fChannelInfo->GetSizex())+iNbCh/2;
-		     if(iChm<0 || iChm >iNbCh){
-			LOG(DEBUG)<<"CbmTofTestbeam::BuildClusters: Invalid mean channel"<<FairLogger::endl;
-		     }
+		     Int_t iChm=floor(dWeightedPosX/fChannelInfo->GetSizex())+iNbCh/2;
+		     if(iChm<0)        iChm=0;
+		     if(iChm >iNbCh-1) iChm=iNbCh-1;
                      Int_t iDetId = CbmTofAddress::GetUniqueAddress(iSm,iRpc,iChm,0,iSmType);
                      Int_t iRefId = 0; // Index of the correspondng TofPoint
                      if(NULL != fTofPointsColl) iRefId = fTofPointsColl->IndexOf( vPtsRef[0] );

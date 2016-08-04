@@ -105,6 +105,8 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam()
     fhXY04(NULL),
     fhYX04(NULL),
     fhTT04(NULL),
+    fhDutDXDYDT(NULL),
+    fhRefDXDYDT(NULL),
     fhChi04(NULL),
     fhChiSel24(NULL),
     fhDXSel24(NULL),
@@ -148,6 +150,8 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam()
     fhTexpDT04D4best(NULL),
     fhCluSize0DT04D4best(NULL),
     fhCluSize4DT04D4best(NULL),
+    fhCluSizeSigT0D4best(NULL),
+    fhCluSizeSigT4D4best(NULL),
     fhTot0DT04D4best(NULL),
     fhTot4DT04D4best(NULL),
     fhChiDT04D4best(NULL),
@@ -357,6 +361,8 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fhXY04(NULL),
     fhYX04(NULL),
     fhTT04(NULL),
+    fhDutDXDYDT(NULL),
+    fhRefDXDYDT(NULL),
     fhChi04(NULL),
     fhChiSel24(NULL),
     fhDXSel24(NULL),
@@ -400,6 +406,8 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fhTexpDT04D4best(NULL),
     fhCluSize0DT04D4best(NULL),
     fhCluSize4DT04D4best(NULL),
+    fhCluSizeSigT0D4best(NULL),
+    fhCluSizeSigT4D4best(NULL),
     fhTot0DT04D4best(NULL),
     fhTot4DT04D4best(NULL),
     fhChiDT04D4best(NULL),
@@ -949,6 +957,12 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 			       100, -YDMAX, YDMAX, 100, -YDMAX, YDMAX); 
    }
    
+     const Double_t HTMAX=100000.;
+     const Double_t HYMAX=40.;
+     fhDutDXDYDT =  new TH3F( Form("hDutDXDYDT"),Form("Hits distances; #DeltaX [cm]; #DeltaY [cm];  #DeltaT [ps]"),
+			      101, -HYMAX, HYMAX, 101, -HYMAX, HYMAX, 101, -HTMAX, HTMAX);  
+     fhRefDXDYDT =  new TH3F( Form("hRefDXDYDT"),Form("Hits distances; #DeltaX [cm]; #DeltaY [cm];  #DeltaT [ps]"),
+			      101, -HYMAX, HYMAX, 101, -HYMAX, HYMAX, 101, -HTMAX, HTMAX);    
 
      fhXX04 =  new TH2F( Form("hXX04"),Form("X Position correlation; X0 [cm]; X4 [cm]"),
 			       500, -YDMAX, YDMAX, 500, -YDMAX, YDMAX);      
@@ -1021,11 +1035,17 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
      fhTexpDT04D4best = new TH2F( Form("hTexpDT04D4best"),Form("measured - expected time - correlation; Texp [ps]; #DeltaT [ps]"),
 			       100, 0., 6000., 100, -DTMAX, DTMAX); 
      fhCluSize0DT04D4best = new TH2F( Form("hCluSize0DT04D4best"),
-	 			     Form("time - CluSize correlation; N_{strips} ; #DeltaT [ps]"),
+	 			     Form("time - CluSize correlation; M_{strips} ; #DeltaT [ps]"),
 				     20, 0.5, 20.5, 100, -DTMAX, DTMAX); 
      fhCluSize4DT04D4best = new TH2F( Form("hCluSize4DT04D4best"),
-	 			     Form("time - CluSize correlation; N_{strips} ; #DeltaT [ps]"),
+	 			     Form("time - CluSize correlation; M_{strips} ; #DeltaT [ps]"),
 				     20, 0.5, 20.5, 100, -DTMAX, DTMAX);
+     fhCluSizeSigT0D4best = new TH2F( Form("hCluSizeSigT0D4best"),
+	 			     Form("time spread - CluSize correlation; M_{strips} ; #sigma_{T} [ps]"),
+				      20, 0.5, 20.5, 100, 0., DTMAX/5.); 
+     fhCluSizeSigT4D4best = new TH2F( Form("hCluSizeSigT4D4best"),
+	 			     Form("time spread - CluSize correlation; M_{strips} ; #sigma_{T} [ps]"),
+				     20, 0.5, 20.5, 100, 0., DTMAX/5.);
      fhTot0DT04D4best = new TH2F( Form("hTot0DT04D4best"),
 	 			     Form("time - Tot correlation; ln TOT0 ; #DeltaT [ps]"),
 				     100, 8., 11., 100, -DTMAX, DTMAX);  
@@ -1040,7 +1060,7 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 
      fhTISDT04D4best = new TH2F( Form("hTISDT04D4best"),Form("time - TIS; time in spill  [s]; #DeltaT [ps]"),
 			       TISnbins, 0., TISmax, 100, -DTMAX, DTMAX); 
-
+ 
      fhChi04D4best  =  new TH1F( Form("hChi04D4best"),Form("matching chi2; #chi; Nhits"),
 			  100, 0., fdChi2Lim); 
      fhTofD4best  =  new TH1F( Form("hTofD4best"),Form("tof D4; t [ps]; Counts"),
@@ -1786,10 +1806,12 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 		  << FairLogger::endl;
    }
 
-   // Determine average event quantities 
+   // Determine average event quantities
+ 
    Double_t dDutTMean=0.;
    Double_t dDutTMean2=0.;
-   for (UInt_t i=0; i<vDutHit.size();i++){ // loop over Dut Hits
+   Int_t iNDutHits=vDutHit.size();
+   for (UInt_t i=0; i<iNDutHits;i++){ // loop over Dut Hits
      dDutTMean  += vDutHit[i]->GetTime();
      dDutTMean2 += vDutHit[i]->GetTime()*vDutHit[i]->GetTime();
    }
@@ -1799,13 +1821,30 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 
    Double_t dRefTMean=0.;
    Double_t dRefTMean2=0.;
-   for (UInt_t i=0; i<vRefHit.size();i++){ // loop over Dut Hits
+   Int_t iNRefHits=vRefHit.size();
+   for (UInt_t i=0; i<iNRefHits;i++){ // loop over Dut Hits
      dRefTMean  += vRefHit[i]->GetTime();
      dRefTMean2 += vRefHit[i]->GetTime()*vRefHit[i]->GetTime();
    }
    dRefTMean  /= (Double_t) vRefHit.size();
    dRefTMean2 /= (Double_t) vRefHit.size();
    Double_t dRefTSig=TMath::Sqrt( dRefTMean2 - dRefTMean*dRefTMean );
+
+   //  histogram distances
+   for (Int_t i=0; i<iNDutHits-1;i++){ // loop over Dut Hits
+    for (Int_t j=i+1; j<iNDutHits;j++){ // loop over Dut Hits
+     fhDutDXDYDT->Fill(vDutHit[j]->GetX()-vDutHit[i]->GetX(),
+		       vDutHit[j]->GetY()-vDutHit[i]->GetY(),
+		       vDutHit[j]->GetTime()-vDutHit[i]->GetTime());
+    }
+   }
+   for (Int_t i=0; i<iNRefHits-1;i++){ // loop over Dut Hits
+    for (Int_t j=i+1; j<iNRefHits;j++){ // loop over Dut Hits
+     fhRefDXDYDT->Fill(vRefHit[j]->GetX()-vRefHit[i]->GetX(),
+		       vRefHit[j]->GetY()-vRefHit[i]->GetY(),
+		       vRefHit[j]->GetTime()-vRefHit[i]->GetTime());
+    }
+   }
 
    //  normalisation distributions 
    fhNMatch04->Fill(iNbMatchedHits);
@@ -2029,6 +2068,9 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      } 
      dTot /= digiMatch0->GetNofLinks();  // average time over threshold
      fhTot0DT04D4best->Fill(TMath::Log(dTot),tof1-tof2-dTcor);
+
+     fhCluSizeSigT0D4best->Fill(digiMatch1->GetNofLinks()/2.,pHit1->GetTimeError());
+     fhCluSizeSigT4D4best->Fill(digiMatch2->GetNofLinks()/2.,pHit2->GetTimeError());
 
      fhDTMul0D4best->Fill(dMul0,tof1-tof2-dTcor);
 
