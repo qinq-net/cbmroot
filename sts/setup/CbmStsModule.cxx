@@ -408,10 +408,18 @@ std:cout.precision(10);
 		}
 		dqMiddle2 /= (clusterEnd - clusterStart - 1);
 		chargeMiddle /= (clusterEnd - clusterStart - 1);
-		sum2 = 0.5 * (clusterStart + clusterEnd + (chargeLast - chargeFirst) / chargeMiddle);
-		errorMethod = 0.;
-		errorMeas = 1. / 2. / chargeMiddle * sqrt(dq12 + dqN2 + (chargeLast - chargeFirst) * (chargeLast - chargeFirst) * dqMiddle2 / chargeMiddle / chargeMiddle);
+		if (chargeMiddle > 0.1){
+		    sum2 = 0.5 * (clusterStart + clusterEnd + (chargeLast - chargeFirst) / chargeMiddle);
+		    errorMethod = 0.;
+		    errorMeas = 1. / 2. / chargeMiddle * sqrt(dq12 + dqN2 + (chargeLast - chargeFirst) * (chargeLast - chargeFirst) * dqMiddle2 / chargeMiddle / chargeMiddle);
 
+		} else if (sum1 > 0.1){ //all the middle strips has 0 charge, but first and last strips have some charge
+		    sum2 = (clusterEnd - clusterStart) / 2. + (chargeLast - chargeFirst) / TMath::Max(chargeLast, chargeFirst) / 3.;
+		    errorMethod =  1. / sqrt(72.) * TMath::Abs(chargeLast - chargeFirst) / TMath::Max(chargeLast, chargeFirst);
+		    errorMeas = 1. / 3. / TMath::Max(chargeFirst, chargeLast) / TMath::Max(chargeFirst, chargeLast) * sqrt(chargeFirst*chargeFirst * dqN2 + chargeLast*chargeLast * dq12);
+		}
+
+	
 	    }// end of 3-strip and bigger clusters
 	 }// end of advanced
 
