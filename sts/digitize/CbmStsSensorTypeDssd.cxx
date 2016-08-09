@@ -32,7 +32,7 @@ using std::stringstream;
 CbmStsSensorTypeDssd::CbmStsSensorTypeDssd()
     : CbmStsSensorType(), 
       fDx(-1.), fDy(-1.), fDz(-1.),
-      fNofStrips(), fStereo(), fIsSet(kFALSE), fOld(kFALSE),
+      fNofStrips(), fStereo(), fIsSet(kFALSE), fOld(kTRUE),
       fPitch(), fTanStereo(), fCosStereo(), fStripShift(),
       fStripCharge(),
       fPhysics(NULL),
@@ -443,28 +443,31 @@ Int_t CbmStsSensorTypeDssd::IntersectClusters(CbmStsCluster* clusterF,
 	//Ideal hit finder
 	if (fHitFinderModel == 0){
 		LOG(DEBUG3) << GetName() << ": ideal model of Hit Finder" << FairLogger::endl;
-	    const CbmMatch * clusterFMatch, *clusterBMatch;
-	    clusterFMatch = static_cast<const CbmMatch*>(clusterF -> GetMatch());
-	    if (!clusterFMatch){
-		LOG(DEBUG4) << GetName() << ": front cluster exists" << FairLogger::endl;
-		if ((clusterFMatch -> GetNofLinks()) > 1) {
-		    LOG(DEBUG4) << GetName() << ": front cluster has more than 1 CbmLink" << FairLogger::endl;
-		    return 0;
-		}
-	    }
-	    clusterBMatch = static_cast<const CbmMatch*> (clusterB -> GetMatch());
-	    if (!clusterBMatch){
-		LOG(DEBUG4) << GetName() << ": back cluster exists" << FairLogger::endl;
 
-		if ((clusterBMatch -> GetNofLinks()) > 1){
-		    LOG(DEBUG4) << GetName() << ": back cluster has more than 1 CbmLink" << FairLogger::endl;
+	    const CbmMatch *clusterFMatch, *clusterBMatch;
+
+	    clusterFMatch = static_cast<const CbmMatch*>(clusterF -> GetMatch());
+	    if (clusterFMatch){
+		LOG(DEBUG4) << GetName() << ": front cluster exists" << FairLogger::endl;
+		if ((clusterFMatch -> GetNofLinks()) != 1) {
+		    LOG(DEBUG4) << GetName() << ": front cluster has more or less than 1 CbmLink" << FairLogger::endl;
 		    return 0;
-		}
-	    }
+		} else LOG(DEBUG4) << GetName() << ": front cluster has " <<  clusterFMatch -> GetNofLinks() << " CbmLink" << FairLogger::endl;
+	    } else return 0;
+
+	    clusterBMatch = static_cast<const CbmMatch*> (clusterB -> GetMatch());
+	    if (clusterBMatch){
+		LOG(DEBUG4) << GetName() << ": back cluster exists" << FairLogger::endl;
+		if ((clusterBMatch -> GetNofLinks()) != 1){
+		    LOG(DEBUG4) << GetName() << ": back cluster has more or less than 1 CbmLink" << FairLogger::endl;
+		    return 0;
+		} else LOG(DEBUG4) << GetName() << ": back cluster has " <<  clusterBMatch -> GetNofLinks() << " CbmLink" << FairLogger::endl;
+	    } else return 0;
+
 	    if (clusterBMatch -> GetLink(0).GetIndex() != clusterFMatch -> GetLink(0).GetIndex()){
 		LOG(DEBUG4) << GetName() << ": back and front clusters have different index of CbmLink" << FairLogger::endl;
 		return 0;
-	    }
+	    } else LOG(DEBUG4) << GetName() << ": back and front clusters have the same index of CbmLink" << FairLogger::endl;
 	}
 
 	// --- Calculate cluster centre position on readout edge
