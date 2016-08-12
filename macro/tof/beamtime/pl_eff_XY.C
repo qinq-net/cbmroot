@@ -28,6 +28,9 @@ void pl_eff_XY(Int_t iMode=0)
  TH2 *heffS;
  TH2 *heff0;
 
+ Double_t Npredicted=0;
+ Double_t Nfound=0.;
+
  can->cd(1);
    gROOT->cd();
    TString hname=Form("hXY4D4sel");
@@ -53,6 +56,7 @@ void pl_eff_XY(Int_t iMode=0)
    if (hs0!=NULL) {
      hs0->UseCurrentStyle(); hs0->GetYaxis()->SetLabelSize(lsize);
      hs0->Draw("colz");
+     Npredicted=hs0->GetEntries();
    }else{cout<<"Histogram "<<hname<<" not existing. "<<endl;}
 
  can->cd(4);
@@ -63,7 +67,7 @@ void pl_eff_XY(Int_t iMode=0)
      h2->UseCurrentStyle(); h2->GetYaxis()->SetLabelSize(lsize);
      h2->Draw("colz");
      heff4=(TH2 *)h2->Clone();
-     heff4->SetName(hname);
+     heff4->SetName("hXEffRef");
      heff4->SetTitle("Selection efficiency on reference counter");
      heff4->Divide(h2,hs4,1.,1.,"B");
    }else{cout<<"Histogram "<<hname<<" not existing. "<<endl;}
@@ -76,7 +80,7 @@ void pl_eff_XY(Int_t iMode=0)
      h2->UseCurrentStyle(); h2->GetYaxis()->SetLabelSize(lsize);
      h2->Draw("colz");
      heffS=(TH2 *)h2->Clone();
-     heffS->SetName(hname);
+     heffS->SetName("hXYEffSel2");
      heffS->SetTitle("Selection efficiency on Sel2 counter");
      heffS->Divide(h2,hsS,1.,1.,"B");   
    }else{cout<<"Histogram "<<hname<<" not existing. "<<endl;}
@@ -88,10 +92,14 @@ void pl_eff_XY(Int_t iMode=0)
    if (h2!=NULL) {
      h2->UseCurrentStyle(); h2->GetYaxis()->SetLabelSize(lsize);
      h2->Draw("colz");
+     Nfound=h2->GetEntries();
      heff0=(TH2 *)h2->Clone();
-     heff0->SetName(hname);
-     heff0->SetTitle("Selection efficiency on Dut counter");
-     heff0->Divide(h2,hs0,1.,1.,"B");  
+     heff0->SetName("hXYEffDut");
+     heff0->SetTitle("Efficiency of Dut counter");
+     heff0->Divide(h2,hs0,1.,1.,"B"); 
+     Double_t dEff=Nfound/Npredicted*100.;
+     cout<<"Integral Efficiency: "<<Form("%3.1f",dEff)<<" % "<<endl;
+ 
    }else{cout<<"Histogram "<<hname<<" not existing. "<<endl;}
 
  can->cd(7);

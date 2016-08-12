@@ -1,4 +1,4 @@
-void pl_all_cluWalk(Int_t iNch=1, Int_t i1=0, Int_t SmT=0, Int_t iSm=0)
+void pl_all_cluWalk(Int_t iNch=1, Int_t i1=0, Int_t SmT=0, Int_t iSm=0, Int_t iRpc=0)
 {
   //  TCanvas *can = new TCanvas("can22","can22");
   //  can->Divide(2,2); 
@@ -43,7 +43,7 @@ void pl_all_cluWalk(Int_t iNch=1, Int_t i1=0, Int_t SmT=0, Int_t iSm=0)
  for(Int_t iCh=i1; iCh<i1+iNch/2; iCh++){
    can->cd(++ic);
    gROOT->cd();
-   TString hname=Form("cl_SmT%d_sm%03d_rpc000_Ch%03d_S0_Walk",SmT,iSm,iCh);
+   TString hname=Form("cl_SmT%d_sm%03d_rpc%03d_Ch%03d_S0_Walk",SmT,iSm,iRpc,iCh);
    h2=(TH2 *)gROOT->FindObjectAny(hname);
    if (h2!=NULL) {
      h2->UseCurrentStyle(); h2->GetYaxis()->SetLabelSize(lsize);

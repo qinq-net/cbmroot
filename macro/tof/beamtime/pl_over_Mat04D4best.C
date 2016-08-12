@@ -224,6 +224,7 @@ can->cd(16);
   gPad->SetLogz();
   TH1D* h2clu=h2->ProjectionX("_px",1,h2->GetNbinsY());
   dMeanCluSize0=h2clu->GetMean();
+  h2->ProfileX()->Draw("same");
  }else  { cout << hname << " not found" << endl; }
 
 can->cd(17);
@@ -235,6 +236,7 @@ can->cd(17);
   gPad->SetLogz();
   TH1D* h2clu=h2->ProjectionX("_px",1,h2->GetNbinsY());
   dMeanCluSize4=h2clu->GetMean();
+  h2->ProfileX()->Draw("same");
  }else  { cout << hname << " not found" << endl; }
 
 
