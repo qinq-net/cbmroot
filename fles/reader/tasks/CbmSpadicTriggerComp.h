@@ -4,6 +4,7 @@
 #include "FairTask.h"
 #include "CbmSpadicRawMessage.h"
 #include "TClonesArray.h"
+#include <algorithm>
 
 class CbmSpadicTriggerComp : public FairTask
 {
