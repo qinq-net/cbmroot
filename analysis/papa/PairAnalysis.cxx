@@ -1046,7 +1046,6 @@ void PairAnalysis::FillTrackArrays(PairAnalysisEvent * const ev)
     if (cutmask!=selectedMask) continue;
 
     // store signal weights in the tracks - ATTENTION later signals should be more specific
-    //    /*
     if(fHasMC && fSignalsMC) {
       // printf("particle %p: pdg: %.0f \t mother: %.0f grand: %.0f \n", particle, values[PairAnalysisVarManager::kPdgCode],
       // 	     values[PairAnalysisVarManager::kPdgCodeMother], values[PairAnalysisVarManager::kPdgCodeGrandMother]);
@@ -1094,67 +1093,7 @@ void PairAnalysis::FillTrackArrays(PairAnalysisEvent * const ev)
 
       }
 
-	/*
-      Double_t wght = particle->GetWeight();
-      Bool_t hasMCweight = (TMath::Abs(wght-1.) > 1.0e-15);
-      if(!hasMCweight) {
-	Int_t motherLabel = papaMC->GetMothersLabel(particle->GetLabel());
-	if(motherLabel>-1) {
-	  for(Int_t isig=0; isig<fSignalsMC->GetEntriesFast(); isig++) {
-	    PairAnalysisSignalMC *sigMC=(PairAnalysisSignalMC*)fSignalsMC->At(isig);
-	    Double_t wghtMC    = sigMC->GetWeight(values);
-	    Bool_t useMCweight = (TMath::Abs(wghtMC-1.) > 1.0e-15);
-	    if(!useMCweight) continue;
-	    if( papaMC->IsMCTruth(motherLabel,sigMC,1) || papaMC->IsMCTruth(motherLabel,sigMC,2) ) {
-	      particle->SetWeight( wghtMC );
-	      hasMCweight = kTRUE;
-	    }
-	  }
-	  // grand mother iteration
-	  if(!hasMCweight) {
-	    Int_t grandmotherLabel = papaMC->GetMothersLabel(motherLabel);
-	    if(grandmotherLabel>-1) {
-	      for(Int_t isig=0; isig<fSignalsMC->GetEntriesFast(); isig++) {
-		PairAnalysisSignalMC *sigMC=(PairAnalysisSignalMC*)fSignalsMC->At(isig);
-		Double_t wghtMC    = sigMC->GetWeight(values);
-		Bool_t useMCweight = (TMath::Abs(wghtMC-1.) > 1.0e-15);
-		if(!useMCweight) continue;
-		if( papaMC->IsMCTruth(grandmotherLabel,sigMC,1) || papaMC->IsMCTruth(grandmotherLabel,sigMC,2) ) {
-		  particle->SetWeight( wghtMC );
-		  hasMCweight = kTRUE;
-		  // printf("particle %p: pdg: %.0f \t mother: %.0f grand: %.0f \n", particle, values[PairAnalysisVarManager::kPdgCode],
-		  // 	 values[PairAnalysisVarManager::kPdgCodeMother], values[PairAnalysisVarManager::kPdgCodeGrandMother]);
-		  // printf("  -----> final particle weight from grandmother iteration: %f %s\n",particle->GetWeight(),sigMC->GetName());
-		}
-	      }
-	      // great grand mother iteration
-	      if(!hasMCweight) {
-		Int_t greatgrandmotherLabel = papaMC->GetMothersLabel(motherLabel);
-		if(greatgrandmotherLabel>-1) {
-		  for(Int_t isig=0; isig<fSignalsMC->GetEntriesFast(); isig++) {
-		    PairAnalysisSignalMC *sigMC=(PairAnalysisSignalMC*)fSignalsMC->At(isig);
-		    Double_t wghtMC    = sigMC->GetWeight(values);
-		    Bool_t useMCweight = (TMath::Abs(wghtMC-1.) > 1.0e-15);
-		    if(!useMCweight) continue;
-		    if( papaMC->IsMCTruth(greatgrandmotherLabel,sigMC,1) || papaMC->IsMCTruth(greatgrandmotherLabel,sigMC,2) ) {
-		      particle->SetWeight( wghtMC );
-		      hasMCweight = kTRUE;
-		      // printf("particle %p: pdg: %.0f \t mother: %.0f greatgrand: %.0f \n", particle, values[PairAnalysisVarManager::kPdgCode],
-		      // 	 values[PairAnalysisVarManager::kPdgCodeMother], values[PairAnalysisVarManager::kPdgCodeGrandMother]);
-		      // printf("  -----> final particle weight from greatgrandmother iteration: %f %s\n",particle->GetWeight(),sigMC->GetName());
-		    }
-		  }
-		}//valid great grandmother label
-	      }//!has MC weight
-	    }//valid grandmother label
-	  }//!has MC weight
-	}//valid mother label
-
-      }//!has MC weight
-	*/
-
     }//end: store mc weights
-    //    */
 
     //fill selected particle into the corresponding track arrays
     Short_t charge=particle->Charge();
