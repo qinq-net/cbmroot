@@ -159,7 +159,7 @@ void CbmSpadicTriggerComp::Exec (Option_t*)
 	  //Naive implementation: try to fill 32 Samples, discarding true multihits
 	  Int_t NrSamples = currentMessage->GetNrSamples ();
 	  Int_t* MessageSamples = currentMessage->GetSamples ();
-	  for (Int_t j = 0; (j < 32 || j + samplesCount < 64); j++)
+	  for (Int_t j = 0; (j < NrSamples || j + samplesCount < 64); j++)
 	    {
 	      samples[j + samplesCount] = *(MessageSamples + j);
 	    }
@@ -177,7 +177,6 @@ void CbmSpadicTriggerComp::Exec (Option_t*)
 		  0, firstMessage->GetGroupId (),
 		  firstMessage->GetBufferOverflowCount (), 32, samples, true,
 		  false, false, false, false, false, false);
-
 	      processedMessages.push_back (tempMessage);
 	      selfCreatedMessages.push_back (tempMessage);
 	      firstMessage = nullptr;
@@ -195,7 +194,9 @@ void CbmSpadicTriggerComp::Exec (Option_t*)
 	  else
 	    return false;
       };
+#ifndef __CINT__
   std::sort(processedMessages.begin(),processedMessages.end(),CompareSpadicMessages);
+#endif //__CINT__
   for (Int_t i =0; i<processedMessages.size();i++){
       CbmSpadicRawMessage* currentMessage = processedMessages.at (i);
       new ((*fProcSpadic)[fProcSpadic->GetEntriesFast ()]) CbmSpadicRawMessage (
