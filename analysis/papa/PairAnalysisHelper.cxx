@@ -209,7 +209,8 @@ TArrayD *PairAnalysisHelper::MakeStatBinLimits(TH1* h, Double_t stat)
   Int_t     vEle   = 1;
 
   for(Int_t i=1; i<=h->GetNbinsX(); i++) {
-    if(h->GetBinContent(i)==0.0 && h->GetBinError(i)==0.) continue;
+
+    if(h->GetBinContent(i)==0.0 && h->GetBinError(i)==0.)  continue;
 
     to=h->GetBinLowEdge(i+1);
     cont+=h->GetBinContent(i);
@@ -217,11 +218,12 @@ TArrayD *PairAnalysisHelper::MakeStatBinLimits(TH1* h, Double_t stat)
     vBins->AddAt(to, vEle);
 
     // Printf("cont %f/%f=%f err %f(%f) sum of -> rel err %f%% (current: %f%%)",
-    // 	   h->GetBinContent(i),h->Integral(),h->GetBinContent(i)/h->Integral(), h->GetBinError(i), TMath::Sqrt(h->GetBinContent(i)),h->GetBinError(i)/h->GetBinContent(i)*100, TMath::Sqrt(err)/cont*100);
+    //  	   h->GetBinContent(i),h->Integral(),h->GetBinContent(i)/h->Integral(), h->GetBinError(i), TMath::Sqrt(h->GetBinContent(i)),h->GetBinError(i)/h->GetBinContent(i)*100, TMath::Sqrt(err)/cont*100);
 
     // check for new bin
     if( TMath::Sqrt(err)/cont <= stat
 	//	||   (h->GetBinContent(i)/h->Integral()) < 0.01
+	//	|| (h->GetBinContent(i)==0.0 && h->GetBinError(i)==0. && vEle==1)
        ) {
       //      Printf("bin from %f to %f with err %f%%",from,to,TMath::Sqrt(err)/cont*100);
       err=0.0;
@@ -235,7 +237,7 @@ TArrayD *PairAnalysisHelper::MakeStatBinLimits(TH1* h, Double_t stat)
 
   vBins->AddAt(h->GetXaxis()->GetXmax(), vBins->GetSize()-1);
 
-  //for(Int_t i=0;i<vBins->GetSize();i++)  Printf("%d %f",i,vBins->At(i));
+  //  for(Int_t i=0;i<vBins->GetSize();i++)  Printf("%d %f",i,vBins->At(i));
   return vBins;
 }
 
@@ -578,3 +580,26 @@ TObject* PairAnalysisHelper::FindObjectByTitle(TObjArray *arrhist, TString ref)
 
 }
 
+
+//_____________________________________________________________________________
+Int_t PairAnalysisHelper::GetPrecision(Double_t value)
+{
+  //
+  // computes the precision of a double
+  // usefull for axis ranges etc
+
+  Bool_t bfnd     = kFALSE;
+  Int_t precision = 0;
+  value*=1e6;
+  while(!bfnd) {
+    //    Printf(" value %f precision %d bfnd %d",TMath::Abs(value*TMath::Power(10,precision)), precision, bfnd);
+    bfnd = ((TMath::Abs(value*TMath::Power(10,precision))/1e6  -  TMath::Floor(TMath::Abs(value*TMath::Power(10,precision))/1e6)) != 0.0
+	    ? kFALSE
+	    : kTRUE);
+    if(!bfnd) precision++;
+  }
+
+  //  Printf("precision for %f found to be %d", value, precision);
+  return precision;
+
+}

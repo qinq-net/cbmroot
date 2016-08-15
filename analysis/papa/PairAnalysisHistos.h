@@ -229,13 +229,12 @@ public:
   virtual TObjArray *DrawSame(TString histName,  TString option="leg can", TString histClassDenom="", THashList *listDenom=0x0);
   virtual void DrawTaskSame(TString histName, TString opt="leg can", TString histClassDenom="", TString taskDenom="");
 
-  static Int_t GetPrecision(Double_t value);
 
 protected:
   THashList fHistoList;             //-> list of histograms
 
 
-private:
+  //private:
 
   TFormula *GetFormula(const char *name, const char* formula);
   TH1 *GetTHist(const char* histClass, const char *name, const char* title,

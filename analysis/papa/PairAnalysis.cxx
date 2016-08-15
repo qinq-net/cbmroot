@@ -1065,9 +1065,36 @@ void PairAnalysis::FillTrackArrays(PairAnalysisEvent * const ev)
       }
       //      printf("  -----> final particle weight: %f \n",particle->GetWeight());
 
+      Double_t wght = particle->GetWeight();
+      Bool_t hasMCweight = (TMath::Abs(wght-1.) > 1.0e-15);
+
       /// check for weights of coming from mother and/or grandmother particles
       /// NOTE: by this bremsstrahlung weight are automatically propagated to the cascade product
-      // mother iteration
+      Int_t label = particle->GetLabel();
+      while ( !hasMCweight ) {
+
+	Int_t motherLabel = papaMC->GetMothersLabel( label );
+	if(motherLabel==-1) break; // stop if primary particle is reached
+
+	/// loop over all added signals
+	for(Int_t isig=0; isig<fSignalsMC->GetEntriesFast(); isig++) {
+	  PairAnalysisSignalMC *sigMC=(PairAnalysisSignalMC*)fSignalsMC->At(isig);
+	  Double_t wghtMC    = sigMC->GetWeight(values);
+	  Bool_t useMCweight = (TMath::Abs(wghtMC-1.) > 1.0e-15);
+	  if(!useMCweight) continue; // signal has no weights applied
+
+	  if( papaMC->IsMCTruth(motherLabel,sigMC,1) || papaMC->IsMCTruth(motherLabel,sigMC,2) ) {
+	    particle->SetWeight( wghtMC );
+	    hasMCweight = kTRUE;
+	  }
+	}
+
+	/// start from mother label to next familiy generation
+	label = motherLabel;
+
+      }
+
+	/*
       Double_t wght = particle->GetWeight();
       Bool_t hasMCweight = (TMath::Abs(wght-1.) > 1.0e-15);
       if(!hasMCweight) {
@@ -1100,10 +1127,32 @@ void PairAnalysis::FillTrackArrays(PairAnalysisEvent * const ev)
 		  // printf("  -----> final particle weight from grandmother iteration: %f %s\n",particle->GetWeight(),sigMC->GetName());
 		}
 	      }
+	      // great grand mother iteration
+	      if(!hasMCweight) {
+		Int_t greatgrandmotherLabel = papaMC->GetMothersLabel(motherLabel);
+		if(greatgrandmotherLabel>-1) {
+		  for(Int_t isig=0; isig<fSignalsMC->GetEntriesFast(); isig++) {
+		    PairAnalysisSignalMC *sigMC=(PairAnalysisSignalMC*)fSignalsMC->At(isig);
+		    Double_t wghtMC    = sigMC->GetWeight(values);
+		    Bool_t useMCweight = (TMath::Abs(wghtMC-1.) > 1.0e-15);
+		    if(!useMCweight) continue;
+		    if( papaMC->IsMCTruth(greatgrandmotherLabel,sigMC,1) || papaMC->IsMCTruth(greatgrandmotherLabel,sigMC,2) ) {
+		      particle->SetWeight( wghtMC );
+		      hasMCweight = kTRUE;
+		      // printf("particle %p: pdg: %.0f \t mother: %.0f greatgrand: %.0f \n", particle, values[PairAnalysisVarManager::kPdgCode],
+		      // 	 values[PairAnalysisVarManager::kPdgCodeMother], values[PairAnalysisVarManager::kPdgCodeGrandMother]);
+		      // printf("  -----> final particle weight from greatgrandmother iteration: %f %s\n",particle->GetWeight(),sigMC->GetName());
+		    }
+		  }
+		}//valid great grandmother label
+	      }//!has MC weight
 	    }//valid grandmother label
 	  }//!has MC weight
 	}//valid mother label
+
       }//!has MC weight
+	*/
+
     }//end: store mc weights
     //    */
 
@@ -1161,7 +1210,7 @@ void PairAnalysis::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, 
   Int_t ntrack1=arrTracks1.GetEntriesFast();
   Int_t ntrack2=arrTracks2.GetEntriesFast();
 
-  // flag arrays for track removal
+  /// flag arrays for track removal
   Bool_t *bTracks1 = new Bool_t[ntrack1];
   for (Int_t itrack1=0; itrack1<ntrack1; ++itrack1) bTracks1[itrack1]=kFALSE;
   Bool_t *bTracks2 = new Bool_t[ntrack2];
@@ -1244,39 +1293,41 @@ void PairAnalysis::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, 
 	  }
 	}
 
-	//create the pair
+	/// create the pair
 	candidate->SetTracks(static_cast<PairAnalysisTrack*>(track1), fPdgLeg1,
 			     static_cast<PairAnalysisTrack*>(track2), fPdgLeg2);
 
 	candidate->SetType(pairIndex);
 	candidate->SetLabel(PairAnalysisMC::Instance()->GetLabelMotherWithPdg(candidate,fPdgMother));
 
-	// check if test particles are used
+	/// check if test particles are used
 	Bool_t testParticle = (track1==t1 || track1==t2 || track2==t1 || track2==t2 );
 
-	//pre filter pair cuts
+	/// pre filter pair cuts
 	UInt_t cutmask=fPairPreFilter.IsSelected(candidate);
 
-	//fill cut QA TODO: cheeeck for test particle
+	/// fill cut QA TODO: cheeeck for test particle
 	if (!testParticle) {
 	  if(fCutQA) fQAmonitor->FillAll(candidate,     1);
 	  if(fCutQA) fQAmonitor->Fill(cutmask,candidate,1);
 	}
 
-	// apply cut
-	if (cutmask!=selectedMask) continue;
+	/// apply cut
+	if (cutmask!=selectedMask) {
+	  continue;
+	}
 
-	// check for test particles
+	/// check for test particles
 	if (testParticle) {
 	  // set variable to randomrejection probability to 1
 	  PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kRndmRej, 1.);
 	  continue;
 	}
 
-	// fill histos
+	/// fill histos
 	if (fHistos) FillHistogramsPair(candidate,kTRUE); // kTRUE: fromPrefilter
 
-	//set flags for track removal
+	/// set flags for track removal
 	bTracks1RP[itrack1]=kTRUE;
 	bTracks2RP[itrack2]=kTRUE;
       }

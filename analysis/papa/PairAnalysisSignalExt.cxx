@@ -1108,13 +1108,15 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   optString.ReplaceAll("logz","");
 
   /// error style
-  if(optString.Contains("E2") || optString.Contains("E3") || optString.Contains("E4")) {
+  if(optString.Contains("e2") || optString.Contains("e3") || optString.Contains("e4")) {
     //    printf("set x-error style \n");
     gStyle->SetErrorX(0.5);
     //    PairAnalysisStyler::SetForceFillStyle(1);
   }
 
   Int_t i=nobj; // TODO: obsolete?
+  Info("Draw","this is object number: %d",nobj);
+
 
   TString ytitle = fHistDataPM->GetYaxis()->GetTitle();
   // add bin width to y-axis title
@@ -1125,7 +1127,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   fHistSignal->GetYaxis()->SetTitle(ytitle.Data());
 
   // styling
-  fHistDataPM->SetNameTitle("unlike-sign","unlike-sign");
+  fHistDataPM->SetNameTitle(Form("unlike-sign%s",GetName()),"unlike-sign");
   fHistDataPM->UseCurrentStyle();
   PairAnalysisStyler::Style(fHistDataPM,PairAnalysisStyler::kRaw);
   if(fPlotMin!=fPlotMax) fHistDataPM->SetAxisRange(fPlotMin,fPlotMax, "X");
@@ -1134,26 +1136,26 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   fHistBackground->UseCurrentStyle();
   PairAnalysisStyler::Style(fHistBackground,PairAnalysisStyler::kBgrd);
 
-  fHistSignal->SetNameTitle("signal","signal");
+  fHistSignal->SetNameTitle(Form("signal%s",GetName()),"signal");
   fHistSignal->UseCurrentStyle();
   PairAnalysisStyler::Style(fHistSignal,PairAnalysisStyler::kSig);
   if(fPlotMin!=fPlotMax) fHistSignal->SetAxisRange(fPlotMin,fPlotMax, "X");
 
   if(fHistCocktail) {
-    fHistCocktail->SetNameTitle("cocktail","cocktail");
+    fHistCocktail->SetNameTitle(Form("cocktail%s",GetName()),"cocktail");
     fHistCocktail->UseCurrentStyle();
     PairAnalysisStyler::Style(fHistCocktail,PairAnalysisStyler::kCocktail);
     if(fPlotMin!=fPlotMax) fHistCocktail->SetAxisRange(fPlotMin,fPlotMax, "X");
   }
 
   if(optSB) {
-    fHistSB->SetNameTitle("signal","signal");
+    fHistSB->SetNameTitle(Form("s2b%s",GetName()),"signal");
     fHistSB->UseCurrentStyle();
     PairAnalysisStyler::Style(fHistSB,PairAnalysisStyler::kSig);
     if(fPlotMin!=fPlotMax) fHistSB->SetAxisRange(fPlotMin,fPlotMax, "X");
   }
   else if(optSgn) {
-    fHistSgn->SetNameTitle("signal","signal");
+    fHistSgn->SetNameTitle(Form("sgn%s",GetName()),"signal");
     fHistSgn->UseCurrentStyle();
     PairAnalysisStyler::Style(fHistSgn,PairAnalysisStyler::kSig);
     if(fPlotMin!=fPlotMax) fHistSgn->SetAxisRange(fPlotMin,fPlotMax, "X");
@@ -1201,7 +1203,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
       if(optSSB){ fHistCocktail->Divide(fHistDataPM);     fHistCocktail->SetYTitle(Form("S/(S+B)")); }
       if(optSB) { fHistCocktail->Divide(fHistBackground); fHistCocktail->SetYTitle(Form("%s",GetValueName(3))); }
       if(optSgn){ FillSignificance(fHistCocktail, fHistCocktail, fHistBackground); }
-      fHistCocktail->DrawCopy(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;
+      fHistCocktail->DrawCopy(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;//TODO: needed?
       //      fHistCocktail->DrawCopy((drawOpt+"same").Data()); i++;
     }
 

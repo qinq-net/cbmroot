@@ -1198,7 +1198,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
 		    1. - gPad->GetRightMargin() + gStyle->GetTickLength("Y"),
 		    1. - gPad->GetTopMargin()   + gStyle->GetTickLength("X"),
 		    GetName(),"nbNDC");
-    if(optTask) leg->SetHeader("");
+    if(optTask && !optCutStep) leg->SetHeader("");
   }
   else if(optLeg && nobj) {
     leg=(TLegend*)prim->FindObject("TPave");
@@ -1273,7 +1273,6 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
     }
     if (!h) continue;
     if (h->GetEntries()<1.) continue;
-
 
     /// get histClassDenom for efficiency caluclation, e.g. the MCtruth (denominator)
     if(optEff && !histClass.Contains("_MCtruth")) histClassDenom = histClass + "_MCtruth";
@@ -1650,7 +1649,9 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
       // if(!optEff) h1->SetMinimum( min*(min<0.?1.1:0.9) ); //TODO: doesnt work, why?? Negative values?
 
       /// automatically set log option labels
-      if(gPad->GetLogy() && (tmpmax/(tmpmin>0.?tmpmin:1.) > TMath::Power(10.,TGaxis::GetMaxDigits()) || tmpmin<TMath::Power(10.,-TGaxis::GetMaxDigits()))) {
+      if(gPad->GetLogy() && (tmpmax/(tmpmin>0.?tmpmin:1.) > TMath::Power(10.,TGaxis::GetMaxDigits()) ||
+			     tmpmin<TMath::Power(10.,-TGaxis::GetMaxDigits())                        ||
+			     tmpmin>TMath::Power(10.,+TGaxis::GetMaxDigits()) )) {
 	//      if(gPad->GetLogy() && tmpmax/(tmpmin>0.?tmpmin:1.) > TMath::Power(10.,TGaxis::GetMaxDigits())) {
 	h1->GetYaxis()->SetMoreLogLabels(kFALSE);
 	h1->GetYaxis()->SetNoExponent(kFALSE);
@@ -2011,7 +2012,9 @@ void PairAnalysisHistos::AdaptNameTitle(TH1 *hist, const char* histClass) {
       break;
     }
     if(option.Contains("s",TString::kIgnoreCase)) bStdOpt=kFALSE;
-    if(pmin!=pmax) calcrange=Form("#cbar_{%+.*f}^{%+.*f}",GetPrecision(pmin),pmin,GetPrecision(pmax),pmax);
+    if(pmin!=pmax) calcrange=Form("#cbar_{%+.*f}^{%+.*f}",
+				  PairAnalysisHelper::GetPrecision(pmin),pmin,
+				  PairAnalysisHelper::GetPrecision(pmax),pmax);
   }
 
   UInt_t varx = hist->GetXaxis()->GetUniqueID();
@@ -2157,29 +2160,5 @@ void PairAnalysisHistos::AdaptNameTitle(THnBase *hist, const char* histClass) {
     if(hclass.Contains("pair")) currentName.Prepend("p");
     hist->SetName(currentName.Data());
   }
-
-}
-
-//_____________________________________________________________________________
-Int_t PairAnalysisHistos::GetPrecision(Double_t value)
-{
-  //
-  // computes the precision of a double
-  // usefull for axis ranges etc
-  // TODO: move to PairAnalysisHelper
-
-  Bool_t bfnd     = kFALSE;
-  Int_t precision = 0;
-  value*=1e6;
-  while(!bfnd) {
-    //    Printf(" value %f precision %d bfnd %d",TMath::Abs(value*TMath::Power(10,precision)), precision, bfnd);
-    bfnd = ((TMath::Abs(value*TMath::Power(10,precision))/1e6  -  TMath::Floor(TMath::Abs(value*TMath::Power(10,precision))/1e6)) != 0.0
-	    ? kFALSE
-	    : kTRUE);
-    if(!bfnd) precision++;
-  }
-
-  //  Printf("precision for %f found to be %d", value, precision);
-  return precision;
 
 }
