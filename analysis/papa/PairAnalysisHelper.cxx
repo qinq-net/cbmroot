@@ -18,6 +18,7 @@
 #include <TObjArray.h>
 #include <TVectorD.h>
 #include <TH1.h>
+#include <TH2.h>
 #include <TF1.h>
 #include <TRandom.h>
 #include <TProfile.h>
@@ -560,6 +561,40 @@ Double_t PairAnalysisHelper::GetQuantile(TH1* h1, Double_t p/*=0.5*/) {
   //for(int i=0; i<nfilled; i++) cout << i << " " << idx[i] << " " << val[idx[i]] << endl;
   //printf("nfilled %d quantile %f pos %d: %f \n",nfilled,p,pos,val[idx[pos]]);
   return val[idx[pos]];
+}
+
+void     PairAnalysisHelper::NormalizeSlicesY(TH2* h) {
+  //
+  // normalize slices along Y in case of a 2D histogram
+  //
+  TH2 *hsum = (TH2*) h->Clone("SliceInts");
+  hsum->Reset("CE");
+  for(Int_t ix = 0; ix <= hsum->GetNbinsX()+1; ix++) {
+    Double_t ysum = h->Integral(ix,ix);
+    for(Int_t iy = 0; iy <= hsum->GetNbinsY()+1; iy++) {
+      hsum->SetBinContent(ix,iy,ysum);
+    }
+  }
+  /// normalize
+  h->Divide(hsum);
+  delete hsum;
+}
+
+void     PairAnalysisHelper::CumulateSlicesX(TH2* h, Bool_t norm) {
+  //
+  // caluclate cumulative sum of bins normalized to one
+  // for slices along X in case of a 2D histogram
+  //
+  Double_t integral = 1.;
+  for(Int_t iy = 0; iy <= h->GetNbinsY()+1; iy++) {
+    if(norm) integral = h->Integral(0,h->GetNbinsX()+1,iy,iy);
+
+    Double_t cumInt = 0;
+    for(Int_t ix = 0; ix <= h->GetNbinsX()+1; ix++) {
+      cumInt += h->GetBinContent(ix,iy);
+      h->SetBinContent(ix,iy,cumInt/integral);
+    }
+  }
 }
 
 

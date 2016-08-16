@@ -1294,18 +1294,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
     h->Sumw2();
     if(optRbn && h->InheritsFrom( TH2::Class()) )   h=((TH2*)h)->RebinX(rbn,h->GetName());
     else if( optRbn )                               h->Rebin(rbn);
-    if(optNormY && h->GetDimension()==2 && !(h->GetSumOfWeights()==0)) {
-      TH2 *hsum = (TH2*) h->Clone("orig");
-      hsum->Reset("CE");
-      for(Int_t ix = 1; ix <= hsum->GetNbinsX(); ix++) {
-	Double_t ysum = h->Integral(ix,ix);
-	for(Int_t iy = 1; iy <= hsum->GetNbinsY(); iy++) {
-	  hsum->SetBinContent(ix,iy,ysum);
-	}
-      }
-      h->Divide(hsum);
-      delete hsum;
-    }
+    if(optNormY && h->GetDimension()==2 && !(h->GetSumOfWeights()==0)) PairAnalysisHelper::NormalizeSlicesY((TH2*)h);
     if(optRbnStat) {
       /// rebin until stat. uncertainty is lower than 'stat'
       limits = PairAnalysisHelper::MakeStatBinLimits(h,stat);

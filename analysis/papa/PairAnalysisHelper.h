@@ -25,6 +25,7 @@
 ///class PairAnalysisEventNEW;
 class TFormula;
 class TH1;
+class TH2;
 class TObjArray;
 
 namespace PairAnalysisHelper
@@ -58,6 +59,9 @@ namespace PairAnalysisHelper
   Double_t GetContentMinimum(TH1 *h, Bool_t inclErr=kTRUE);
   Double_t GetContentMaximum(TH1 *h, Bool_t inclErr=kTRUE);
   Double_t GetQuantile(TH1* h1, Double_t p=0.5);
+
+  void     NormalizeSlicesY(TH2* h);
+  void     CumulateSlicesX(TH2* h, Bool_t norm=kFALSE);
 
   TObject* FindObjectByTitle(TObjArray *arrhist, TString ref);
 
