@@ -61,7 +61,8 @@ namespace PairAnalysisHelper
   Double_t GetQuantile(TH1* h1, Double_t p=0.5);
 
   void     NormalizeSlicesY(TH2* h);
-  void     CumulateSlicesX(TH2* h, Bool_t norm=kFALSE);
+  void     CumulateSlicesX(TH2* h, Bool_t reverse=kFALSE, Bool_t norm=kFALSE);
+  void     Cumulate(TH1* h, Bool_t reverse=kFALSE, Bool_t norm=kFALSE);
 
   TObject* FindObjectByTitle(TObjArray *arrhist, TString ref);
 

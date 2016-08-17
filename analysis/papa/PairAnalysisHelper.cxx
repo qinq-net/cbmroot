@@ -580,20 +580,44 @@ void     PairAnalysisHelper::NormalizeSlicesY(TH2* h) {
   delete hsum;
 }
 
-void     PairAnalysisHelper::CumulateSlicesX(TH2* h, Bool_t norm) {
+void     PairAnalysisHelper::CumulateSlicesX(TH2* h, Bool_t reverse, Bool_t norm) {
   //
-  // caluclate cumulative sum of bins normalized to one
+  // caluclate cumulative sum of bins (normalized to one)
   // for slices along X in case of a 2D histogram
   //
+  /// NOTE: addition +-1 for limits because of != loop
+  Int_t xstart = (reverse ? h->GetNbinsX()+1 : 0-1);
+  Int_t xend   = (reverse ? 0 : h->GetNbinsX()+1+1);
+  Int_t xincr  = (reverse ? -1 : +1);
+
   Double_t integral = 1.;
   for(Int_t iy = 0; iy <= h->GetNbinsY()+1; iy++) {
     if(norm) integral = h->Integral(0,h->GetNbinsX()+1,iy,iy);
 
     Double_t cumInt = 0;
-    for(Int_t ix = 0; ix <= h->GetNbinsX()+1; ix++) {
+    for(Int_t ix = xstart; ix != xend; ix+=xincr) {
       cumInt += h->GetBinContent(ix,iy);
       h->SetBinContent(ix,iy,cumInt/integral);
     }
+  }
+}
+
+void     PairAnalysisHelper::Cumulate(TH1* h, Bool_t reverse, Bool_t norm) {
+  //
+  // caluclate cumulative sum of bins (normalized to one)
+  //
+  /// NOTE: addition +-1 for limits because of != loop
+  Int_t xstart = (reverse ? h->GetNbinsX()+1 : 0-1);
+  Int_t xend   = (reverse ? 0 : h->GetNbinsX()+1+1);
+  Int_t xincr  = (reverse ? -1 : +1);
+
+  Double_t integral = 1.;
+  if(norm) integral = h->Integral(0,h->GetNbinsX()+1);
+
+  Double_t cumInt = 0;
+  for(Int_t ix = xstart; ix != xend; ix+=xincr) {
+    cumInt += h->GetBinContent(ix);
+    h->SetBinContent(ix,cumInt/integral);
   }
 }
 
