@@ -1057,6 +1057,8 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
   /// "sclmax":     scale the histogram by 1./maximum
   /// "norm":       histogram is normalized to 1.
   /// "normY":      2D-histograms are normalized in x-axis slices to 1.
+  /// "cum":        calculate cumulated sum of bins for 1D-histograms (left-to-right)
+  /// "cumR":       calculate cumulated sum of bins for 1D-histograms (reverse: right-to-left)
   /// "events":     use number of used events in meta data to normalize the histograms
   /// "smoothX":    smooths the histogram along x-axis by factor "X" (for X<10)
   ///
@@ -1096,6 +1098,8 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
   Bool_t optSclMax   =optString.Contains("sclmax");    optString.ReplaceAll("sclmax","");
   Bool_t optNormY    =optString.Contains("normy");     optString.ReplaceAll("normy","");
   Bool_t optNorm     =optString.Contains("norm");      optString.ReplaceAll("norm","");
+  Bool_t optCumR     =optString.Contains("cumr");      optString.ReplaceAll("cumr","");
+  Bool_t optCum      =optString.Contains("cum");       optString.ReplaceAll("cum","");
   Bool_t optEvt      =optString.Contains("events");    optString.ReplaceAll("events","");
   Bool_t optStack    =optString.Contains("stack");     optString.ReplaceAll("stack","");
   /// options - information
@@ -1143,8 +1147,9 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
     optString.ReplaceAll("smooth","");
   }
 
-  /// activate std option for legend
+  /// activate std option for legend and conncetions
   if(optLegFull) optLeg=kTRUE;
+  if(optCumR)    optCum=kTRUE;
 
   /// selection string
   TString select("");
@@ -1289,12 +1294,13 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
     if(optRbn||optRbnStat)        Info("DrawSame"," Rebin by %d, to <%.1f%% stat. uncertainty per bin",(optRbn?rbn:0),(optRbnStat?stat*100:0));
     if(optNormY||optNorm||optEvt) Info("DrawSame"," Normalize in y-axis,2D's only(%d), by int.(%d), by #events(%d)",optNormY,optNorm,optEvt);
     if(optSclMax)                 Info("DrawSame"," Scale to maximum(%d)",optSclMax);
+    if(optCum)                    Info("DrawSame"," Cumulate sum of bins along x-axis, 1D's left-to-right(%d), right-to-left(%d)",!optCumR,optCumR);
 
-    /// rebin, normalize and scale spectra according to options 'rebinX','rebinStat','norm','normY','events','sclMax'
+    /// rebin, normalize, cumulate and scale spectra according to options 'rebinX','rebinStat','norm','normY','cum','cumR','events','sclMax'
     h->Sumw2();
     if(optRbn && h->InheritsFrom( TH2::Class()) )   h=((TH2*)h)->RebinX(rbn,h->GetName());
     else if( optRbn )                               h->Rebin(rbn);
-    if(optNormY && h->GetDimension()==2 && !(h->GetSumOfWeights()==0)) PairAnalysisHelper::NormalizeSlicesY((TH2*)h);
+    if(optNormY && h->GetDimension()==2 && !(h->GetSumOfWeights()==0) && !optCum) PairAnalysisHelper::NormalizeSlicesY((TH2*)h);
     if(optRbnStat) {
       /// rebin until stat. uncertainty is lower than 'stat'
       limits = PairAnalysisHelper::MakeStatBinLimits(h,stat);
@@ -1302,6 +1308,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
       h->Scale(1.,"width");
       //      delete limits;
     }
+    if(optCum)                   PairAnalysisHelper::Cumulate(h,optCumR,optNorm);
     if(optSmooth)                h->Smooth(smth);
 
     /// get default histogram titles
@@ -1309,7 +1316,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
     TString ztitle = h->GetZaxis()->GetTitle();
     if(ytitle.Contains("{evt}")) optEvt=kFALSE;
 
-    if(optNorm && !(h->GetSumOfWeights()==0)) h=h->DrawNormalized(i>0?(optString+"same").Data():optString.Data());
+    if(optNorm && !(h->GetSumOfWeights()==0) && !optCum) h=h->DrawNormalized(i>0?(optString+"same").Data():optString.Data());
     if(optEvt)                    h->Scale(1./events);
     if(optSclMax)                 h->Scale(1./h->GetBinContent(h->GetMaximumBin()));
 
@@ -1318,6 +1325,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
     case 1:
       if(optEvt)    h->SetYTitle( (ytitle+"/N_{evt}").Data() );
       if(optNorm)   h->SetYTitle( (ytitle.Append(" (normalized)")).Data() );
+      if(optCum)    h->SetYTitle( (ytitle.Prepend("cumulated ")).Data() );
       if(optRatio)  h->SetYTitle( "ratio" );
       if(optDiv)    h->SetYTitle( "ratio" );
       if(optEff)    h->SetYTitle( "acceptance #times efficiency" );
