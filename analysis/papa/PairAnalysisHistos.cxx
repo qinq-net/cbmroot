@@ -1031,7 +1031,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
   /// "div":        histograms of different tasks are divided (see DrawTaskSame) INTERNAL?
   /// "eff":        efficiencies are calculated
   /// "ratio":      ratios of any histclass to "histClassDenom" are calculated
-  /// "oneOver":    the histogram is rescaled by 1./contents
+  /// "oneOver":    the histogram is rescaled by 1./(bin contents)
   /// "stack":      build and plot a stack histogram
   ///
   /// "noMc":       no mc signals are plotted
@@ -1044,7 +1044,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
   /// "can":        a new canvas is created with name: "c"+"histName"
   /// "logx,y,z":   the axis are plotted in log-scale (labels are added automatically according to the range)
   /// "meta"        adds default meta data to the pad (see PairAnalysisMetaData::DrawSame)
-  /// "leg(f)":     a ("filled") legend will be created with caption=className ,
+  /// "legF":       (option "F":filled) legend will be created with caption=className ,
   ///               can be modified by PairAnalysisHistos::SetName("mycaption"),
   ///               change of legend position: see PairAnalysisStyler::SetLegendAlign
   /// "meanX,Y":    quote the mean in the legend (Y only works for TProfile a.t.m.)
@@ -1052,14 +1052,14 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
   /// "det":        adds the detector name to the legend for detector specific histograms (e.g. hit histograms)
   ///
   /// "width":      scale histograms by 1./bin width according to TH1::Scale
-  /// "rebinstat":  the objects are rebinned to have <80% stat uncertainty in each bin (preliminary)
+  /// "rebinstat0.XY":  the objects are rebinned to have <"0.XY" stat uncertainty in each bin (max two digits)
   /// "rebinX":     rebins the histogram along x-axis by factor "X" (for X<10)
   /// "sclmax":     scale the histogram by 1./maximum
   /// "norm":       histogram is normalized to 1.
   /// "normY":      2D-histograms are normalized in x-axis slices to 1.
-  /// "cum":        calculate cumulated sum of bins for 1D-histograms (left-to-right)
-  /// "cumR":       calculate cumulated sum of bins for 1D-histograms (reverse: right-to-left)
-  /// "events":     use number of used events in meta data to normalize the histograms
+  /// "cum":        calculate cumulated sum of bins (+under- & overflow) for 1D-histograms (left-to-right)
+  /// "cumR":       calculate cumulated sum of bins (+under- & overflow)for 1D-histograms ("R"=reverse: right-to-left)
+  /// "events":     use number of selected (after cuts) events in meta data to normalize the histograms
   /// "smoothX":    smooths the histogram along x-axis by factor "X" (for X<10)
   ///
   /// "geant":      translate geantId to geant process names (see PairAnalysisHelper::SetGEANTBinLabels)
