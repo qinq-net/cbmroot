@@ -249,7 +249,7 @@ void AnalysisTaskMultiPairAnalysis::FinishTask()
   fMetaData.FillMeta("events",fEventsSelected);
 
   // write output to file
-  fprintf(stderr,"AnalysisTaskMultiPairAnalysis::FinsihTask - write histo list to %s \n",
+  fprintf(stderr,"AnalysisTaskMultiPairAnalysis::FinishTask - write histo list to %s \n",
 	 FairRootManager::Instance()->GetOutFile()->GetName());
   FairRootManager::Instance()->GetOutFile()->cd();
 

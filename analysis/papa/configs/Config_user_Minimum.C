@@ -7,7 +7,6 @@ AnalysisTaskMultiPairAnalysis *Config_user_Minimum(const char *taskname)
 {
   /// analysis task
   AnalysisTaskMultiPairAnalysis *task = new AnalysisTaskMultiPairAnalysis(taskname);
-  task->SetBeamEnergy(8.); //TODO: get internally from FairBaseParSet::GetBeamMom()
 
 
   /// apply event cuts for all configs
@@ -24,7 +23,7 @@ AnalysisTaskMultiPairAnalysis *Config_user_Minimum(const char *taskname)
   papa->SetRefitWithMassAssump(kTRUE); /// refit the track under mass assumption
 
 
-  /// acceptance cuts (applied after pair pre filter)
+  /// acceptance cuts
   PairAnalysisVarCuts   *accCuts = new PairAnalysisVarCuts("Acc","Acc");
   accCuts->SetCutType(PairAnalysisVarCuts::kAll);
   accCuts->AddCut(PairAnalysisVarManager::kPt,             0.2, 1e30);        // NOTE: was 0.2 GeV/c

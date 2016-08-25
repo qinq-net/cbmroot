@@ -65,7 +65,7 @@ public:
   //  virtual Int_t Charge() const {return fCharge; }
 
   //inter leg information
-  Double_t GetR()                 const { return fPairPos.Vect().Mag();                    }
+  Double_t GetR()                 const { return fPairPos.Vect().Perp();                   }
   Double_t OpeningAngle()         const { return fD1.Angle(fD2.Vect());                    }
   Double_t DeltaEta()             const { return TMath::Abs(fD1.Eta()-fD2.Eta());          }
   Double_t DeltaPhi()             const { return fD1.DeltaPhi(fD2);                        }

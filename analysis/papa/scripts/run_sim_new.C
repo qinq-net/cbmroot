@@ -104,7 +104,7 @@ void run_sim_new(Int_t nEvents = 2,
   // created by the placement of the target.
   //
   TString  targetElement   = "Gold";
-  Double_t targetThickness = 0.0025;  // full thickness in cm
+  Double_t targetThickness = 0.0025; // full thickness in cm
   Double_t targetDiameter  = 2.5;    // diameter in cm
   Double_t targetPosX      = 0.;     // target x position in global c.s. [cm]
   Double_t targetPosY      = 0.;     // target y position in global c.s. [cm]
@@ -264,21 +264,21 @@ void run_sim_new(Int_t nEvents = 2,
     location + "/cbm/users/jbook/urqmd/auau/8gev/centr010/";                    //selfmade UrQMD
   /// pA urqmd
     // location + "/cbm/users/jbook/urqmd/pau/30gev/centr/";                    //selfmade UrQMD
-  AddUrqmdGenerator(    primGen, idx, urqmdFile );
+  //  AddUrqmdGenerator(    primGen, idx, urqmdFile );
 
   TString plutoFile =
     location + "/cbm/users/jbook/pluto/train/";
     // location + "/cbm/users/ekrebs/pluto/jun15/auau/cktA/8gev/";             //for mumu
-  AddLMVMCocktail(      primGen, idx, plutoFile );
+  //  AddLMVMCocktail(      primGen, idx, plutoFile );
 
   TString radiationFile =
     location + "/cbm/users/jbook/pluto/inmed/out_rapp_pluto_ee_inmed_";
     // location + "/cbm/users/ekrebs/pluto/jun15/auau/cktRapp/8gev/";         // for mumu
-  AddRadiationCocktail( primGen, idx, radiationFile );
+  //AddRadiationCocktail( primGen, idx, radiationFile );
 
   //  AddFragmentsCocktail( primGen, 1 );
 
-  //  AddBoxGenerator(      primGen, 25);
+  AddBoxGenerator(      primGen, 2);
 
 
   run->SetGenerator(primGen);

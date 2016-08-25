@@ -161,7 +161,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
 // Pair specific variables
   {"Chi2NDF",                "#chi^{2}/^{}ndf",                                    ""},
   {"DecayLength",            "l_{decay}",                                          "(cm)"},
-  {"R",                      "d(#vec{x}_{vtx},#vec{x}_{part.})",                   "(cm)"},
+  {"R",                      "d_{xy}(origin,pair)",                                "(cm)"},
   {"OpeningAngle",           "#varphi",                                            "(rad.)"},
   {"CosPointingAngle",       "cos(#theta)",                                        "(rad.)"},
   {"ArmAlpha",               "#alpha^{arm}",                                       ""},

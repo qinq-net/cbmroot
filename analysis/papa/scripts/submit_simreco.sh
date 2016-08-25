@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## test train or batch submission
-TEST=0
+TEST=1
 
 ## number of events: default=1000
 NEVENT=1000
@@ -26,7 +26,7 @@ outdir=$LOCATION/cbm/users/$USER/$DIR/sim_AA_UrQMD_eeCocktail_centr010_JUN16_25m
 mkdir -p "$outdir"
 
 ## source cbm root environment
-. $LOCATION/cbm/users/$USER/CBMsoft/cbm-env.sh -n
+source $LOCATION/cbm/users/$USER/CBMsoft/cbm-env.sh -n
 
 ## choose CBM setup for simulation and reconstruction
 export SETUP="sis100_electron"      #"sis100_muon_jpsi"
