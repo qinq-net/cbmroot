@@ -71,7 +71,7 @@ CbmUnigenGenerator::CbmUnigenGenerator(TString fileName)
     LOG(FATAL) << "CbmUnigenGenerator: No run description in input file." << FairLogger::endl;
   }
   fCM = kFALSE;
-  LOG(DEBUG) << "Target Momentum: " << run->GetPTarg() << endl;
+  LOG(DEBUG) << "Target Momentum: " << run->GetPTarg() << FairLogger::endl;
   if(TMath::Abs(run->GetPTarg()) > 0.001) { fCM = kTRUE; }
   fBetaCM = 0.;
   fGammaCM = 1.;
@@ -97,7 +97,6 @@ CbmUnigenGenerator::CbmUnigenGenerator(TString fileName)
   if(NULL == fInTree) {
     LOG(FATAL) << "CbmUnigenGenerator: No event tree in input file." << FairLogger::endl;
   }
-  fEvent = new UEvent();
   fInTree->SetBranchAddress("event", &fEvent);
 }
 // ------------------------------------------------------------------------
