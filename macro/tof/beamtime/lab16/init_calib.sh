@@ -48,13 +48,13 @@
 #cRun='CbmTofPiHd_30Mar1435'
 #cRun='CbmTofPiHd_01Apr1647'
 #cRun='CbmTofPiHd_14Apr1255'
-#cRun='CbmTofPiHd_Plastic_26Jul1744'
-#cRun='CbmTofPiHd_Plastic_27Jul1725'
-#cRun='CbmTofPiHd_Plastic_01Aug1700'
-#cRun='CbmTofPiHd_Plastic_05Aug1913'
 #cRun='CbmTofPiHd_09Aug1533'
 #cRun='CbmTofPiHd_10Aug1728'
-cRun='CbmTofPiHd_11Aug1224'
+#cRun='CbmTofPiHd_11Aug1224'
+#cRun='CbmTofPiHd_13Aug0855'
+#cRun='CbmTofPiHd_15Aug0818'
+cRun='CbmTofPiHd_17Aug1724'
+
 
 # Clean up before fresh re-run of init_calib.sh
 if((1)); then
@@ -65,20 +65,7 @@ fi
 nIter=1
 echo "Initialize clusterizer calibration for run $cRun, execute $nIter iterations"
 #iDut=3; iMRef=9; iBRef=7;
-#iDut=9; iMRef=4; iBRef=3;
-#iDut=9; iMRef=7; iBRef=3;
-#iDut=9; iMRef=3; iBRef=5; 
-#iDut=3; iMRef=9; iBRef=5;
-#iDut=9; iMRef=9; iBRef=5;
-#iDut=3; iMRef=4; iBRef=5;
-#iDut=921; iMRef=920; iBRef=300;
-#iDut=400; iMRef=300; iBRef=500;
-#iDut=921; iMRef=300; iBRef=500;
-#iDut=921; iMRef=920; iBRef=500;
-
-#iDut=6; iMRef=1; iBRef=8; 
-#iDut=6; iMRef=1; iBRef=5; 
-#iDut=1; iMRef=6; iBRef=5; 
+#iDut=901; iMRef=900; iBRef=921;
 
 #((iSet=$iDut*1000+$iMRef))
 #((iSet=$iDut*1000000+$iMRef*1000+$iBRef))
@@ -86,8 +73,9 @@ echo "Initialize clusterizer calibration for run $cRun, execute $nIter iteration
 #iCalSet=$2
 #iCalSet=iDutiMRefiBRef
 #iCalSet=400900901
-iCalSet=901900921
 #iCalSet=921900901
+iCalSet=901900921
+
 ((iTmp  = $iCalSet ))
 ((iBRef = $iTmp % 1000))
 ((iTmp  = $iTmp - $iBRef))
@@ -114,11 +102,11 @@ cd ${cRun}
 iStep=0
 iStepLast=0
 
-# ************************** Starting while Loop ***************************** #
+# ***************************** Starting while Loop ************************* #
 while [[ $nIter > 0 ]]; do 
 echo "start from scratch with $nIter iterations"
 
-# ------------------ Starting 1st for Loop ------------------ #
+# ---------------------------- Starting 1st for Loop ------------------------ #
 if((1)); then
 # echo "starting first loop with $nIter iterations"
 # inOpt = 'nEvents, calMode, calSel, calSm, RefSel'
@@ -169,9 +157,7 @@ if((1)); then
 
 fi # end if((1))
 
-
-
-# ------------------ Starting 2nd for Loop ------------------ #
+# ---------------------------- Starting 2nd for Loop ------------------------ #
 if((1)); then
 # echo "execute main loop at $nIter iteration"
 # inOpt = 'nEvents, calMode, calSel, calSm, RefSel'

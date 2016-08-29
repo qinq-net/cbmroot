@@ -5,7 +5,7 @@
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 
-void apply_calib(Int_t nEvents = 100000000, char *cFileId="CbmTofPiHd_Plastic_29Jul2007_16211200704")
+void apply_calib(Int_t nEvents = 100000000, char *cFileId="CbmTofSps_01Dec0427")
 {
 	TStopwatch timer;
 	timer.Start();
@@ -13,7 +13,7 @@ void apply_calib(Int_t nEvents = 100000000, char *cFileId="CbmTofPiHd_Plastic_29
 	//gLogger->SetLogScreenLevel("FATAL");
 	gLogger->SetLogScreenLevel("ERROR");
 	//gLogger->SetLogScreenLevel("WARNING");
-	gLogger->SetLogScreenLevel("INFO");
+	//gLogger->SetLogScreenLevel("INFO");
 	//gLogger->SetLogScreenLevel("DEBUG");
 	//gLogger->SetLogScreenLevel("DEBUG1");
 	//gLogger->SetLogScreenLevel("DEBUG2");
@@ -36,28 +36,28 @@ void apply_calib(Int_t nEvents = 100000000, char *cFileId="CbmTofPiHd_Plastic_29
 	parFileList->Add(&mapParFile);
 	
 	// TODO: FairRunOnline* run = new FairRunOnline() in created in new_hld_unpack.sh
-	
 	FairRuntimeDb* rtdb = run->GetRuntimeDb();
-
 	FairParAsciiFileIo* parIo1 = new FairParAsciiFileIo();
 	parIo1->open(parFileList, "in");
 	rtdb->setFirstInput(parIo1);
-
 	TString cOutfileId = Form("%s",cFileId);
-
 	TString outFile = paramDir + "/unpack_" + cOutfileId + ".out.root";
-
 	CbmHldSource* source = new CbmHldSource();
-	source->AddPath("./HLD/",Form("%s*.hld",cFileId));
+	//source->AddPath("./HLD/",Form("%s*.hld",cFileId));
 	//source->AddFile("./HLD/CbmTofPiHd_01Apr1647_16092164739.hld");
 	//source->AddFile("./HLD/CbmTofPiHd_08Apr1811_16099181155.hld");
 	//source->AddFile("./HLD/CbmTofPiHd_14Apr1255_16105125514.hld");
 	
-	// New Data Files (As of 26 July)
-	//source->AddFile("./HLD/CbmTofPiHd_Plastic_26Jul1744_16208174409.hld");
-	//   source->AddFile("./HLD/CbmTofPiHd_Plastic_27Jul1725_16209172532.hld");
-        //source->AddFile("./HLD/CbmTofPiHd_Plastic_29Jul2007_16211200704.hld");
-
+  	// ----------------- New Data Files (As of Aug 01, 2016)
+   //source->AddFile("./HLD/CbmTofPiHd_09Aug1533_16222183515.hld");
+	//source->AddFile("./HLD/CbmTofPiHd_10Aug1728_16223172839.hld");
+	//source->AddFile("./HLD/CbmTofPiHd_11Aug1224_16224122413.hld");
+ 	//source->AddFile("./HLD/CbmTofPiHd_13Aug0855_16226085556.hld");
+	//source->AddFile("./HLD/CbmTofPiHd_15Aug0818_16228081806.hld");
+	//source->AddFile("./HLD/CbmTofPiHd_16Aug1016_16229101637.hld");
+	source->AddFile("./HLD/CbmTofPiHd_17Aug1724_16230172404.hld");
+	
+	 	
 	TTrbUnpackTof* tofTrbDataUnpacker = new TTrbUnpackTof(10,1,31,0,0);
 	tofTrbDataUnpacker->SetInspection(kFALSE);
 	tofTrbDataUnpacker->SetSaveRawData(kFALSE);
@@ -67,7 +67,7 @@ void apply_calib(Int_t nEvents = 100000000, char *cFileId="CbmTofPiHd_Plastic_29
 
 	TTofTrbTdcCalib* tofCalibTrb = new TTofTrbTdcCalib();
 	tofCalibTrb->CreateCalibration(kFALSE);
-	tofCalibTrb->SaveCalibData(kTRUE);
+	tofCalibTrb->SaveCalibData(kFALSE);						// aa: kTRUE will also write calib data to unpack_*.out.root
 	tofCalibTrb->SetFineTimeMethod(0);
 	tofCalibTrb->SetToTMethod(0);
 	tofCalibTrb->SetMinEntriesBinByBin(100000);
@@ -78,7 +78,7 @@ void apply_calib(Int_t nEvents = 100000000, char *cFileId="CbmTofPiHd_Plastic_29
 	//tofCalibTrb->SetUpperLinearFineLimit(480); 		// feb15
 	tofCalibTrb->SetLowerLinearFineLimit(16);  			// nov15
 	tofCalibTrb->SetUpperLinearFineLimit(490); 			// nov15
-	tofCalibTrb->SetReferenceBoard(2);
+	tofCalibTrb->SetReferenceBoard(3);						// aa: 1st active tdc in the list in parUnpack_basic.txt
 	tofCalibTrb->SetToTSingleLeading(-100.);
 
 	TMbsMappingTof* tofMapping = new TMbsMappingTof("Tof Mapping");
@@ -87,19 +87,19 @@ void apply_calib(Int_t nEvents = 100000000, char *cFileId="CbmTofPiHd_Plastic_29
 
 	CbmTofOnlineDisplay* display = new CbmTofOnlineDisplay();
 	//display->MonitorTdcOccupancy(kTRUE);
-	display->MonitorCts(kTRUE);
+	//display->MonitorCts(kTRUE);
 	//display->MonitorSebStatus(kTRUE);
 	//display->MonitorTdcStatus(kTRUE);
 	//display->MonitorFSMockup(kTRUE);
 	//display->MonitorInspection(kTRUE);
 	//display->MonitorCalibration(kTRUE);
 	display->SetUpdateInterval(1000);
-	//display->SetUpdateInterval(100000000); // disables live updates (speed-up)
+	//display->SetUpdateInterval(100000000); 				// disables live updates (speed-up)
 
 
 	run->AddTask(tofUnpMonitor);
 	run->AddTask(tofCalibTrb);
-	run->AddTask(tofMapping);	 // additional feature as opposed to create_calib.C, now get digis.
+	run->AddTask(tofMapping);				   				// additional feature as opposed to create_calib.C, now get digis.
 	run->AddTask(display);
 
 	run->SetSource(source);

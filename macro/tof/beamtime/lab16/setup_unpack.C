@@ -6,13 +6,12 @@
 // -----------------------------------------------------------------------------
 
 // Max nEvents: 198999999999
-void setup_unpack(Int_t calMode=1, char *cFileId="CbmTofSps_01Dec0128", Int_t iSet=0) 
+void setup_unpack(Int_t calMode=1, char *cFileId="CbmTofPiHd_17Aug1057", Int_t iSet=0) 
 {
 	// Verbosity level (0=quiet, 1=event level, 2=track level, 3=debug, 4=raw debug)
 	Int_t iVerbose = 2;
 	
 	// Specify log level (INFO, FATAL, ERROR, DEBUG, DEBUG1, DEBUG2, DEBUG3...)
-	
 	TString logLevel = "INFO";
 	//TString logLevel = "ERROR";
 	//TString logLevel = "FATAL";
@@ -37,28 +36,26 @@ void setup_unpack(Int_t calMode=1, char *cFileId="CbmTofSps_01Dec0128", Int_t iS
 	TString TofGeo="v15d";
 	TObjString mapParFile;
 
-	// Give file names
-	switch(iSet){
-	case 0:
-	 calParFile = paramDir + "/parCalib_basic.txt";										
-	 cOutfileId = Form("%s",cFileId);
-	 mapParFile = paramDir + "/parMapLab16.txt";
-	 break;
-
-	case 1:
-	/*
-	 calParFile = paramDir + "/parCalib_basic.txt";
-	 cOutfileId = Form("%s%s",cFileId,"_nopla");
-	 mapParFile = paramDir + "/parMapCosmicsThuMay2015_nopla.txt";
-	 int mapping= 1;   
-	*/  
-	break;
-
-	default:
-	 ; 
-	} // end-switch(iSet)
+	// ---------------------------  Give file names  ---------------------------
+	switch(iSet)
+	{
+		case 0:
+			calParFile = paramDir + "/parCalib_basic.txt";										
+			cOutfileId = Form("%s",cFileId);
+			mapParFile = paramDir + "/parMapLab16.txt";
+			break;
+		case 1:
+			/*
+			calParFile = paramDir + "/parCalib_basic.txt";
+			cOutfileId = Form("%s%s",cFileId,"_nopla");
+			mapParFile = paramDir + "/parMapCosmicsThuMay2015_nopla.txt";
+			int mapping= 1;   
+			*/  
+			break;
+		default:
+			;
+	}//end-switch(iSet)
 	
-
 	parFileList->Add(&calParFile);
 	cout << " Output File tag "<< cOutfileId << endl;
 	parFileList->Add(&mapParFile);
@@ -72,22 +69,21 @@ void setup_unpack(Int_t calMode=1, char *cFileId="CbmTofSps_01Dec0128", Int_t iS
 	TObjString tofDigiBdfFile = workDir + "/parameters/tof/tof_" + TofGeo + ".digibdf.par"; 
 	// parFileList->Add(&tofDigiBdfFile);
 
+	// -----------------------------  Geo Manager  -----------------------------
 	TString geoDir  = gSystem->Getenv("VMCWORKDIR");
 	TString geoFile = geoDir + "/geometry/tof/geofile_tof_" + TofGeo + ".root";
 	TFile* fgeo = new TFile(geoFile);
-
 	TGeoManager *geoMan = (TGeoManager*) fgeo->Get("FAIRGeom");
-	
-	if (NULL == geoMan){
-	cout << "<E> FAIRGeom not found in geoFile"<<endl;
-	// return;
+	if (NULL == geoMan)
+	{
+		cout << "<E> FAIRGeom not found in geoFile"<<endl;
+		// return;
 	}
-   
-   
-	if(0){
-	TGeoVolume* master=geoMan->GetTopVolume();
-	master->SetVisContainers(1); 
-	master->Draw("ogl"); 
+	if(0)
+	{
+		TGeoVolume* master=geoMan->GetTopVolume();
+		master->SetVisContainers(1); 
+		master->Draw("ogl"); 
 	}
 
 
@@ -100,14 +96,10 @@ void setup_unpack(Int_t calMode=1, char *cFileId="CbmTofSps_01Dec0128", Int_t iS
 
 	// ----------------------------  Debug option   ----------------------------
 	gDebug = 0;
-	// -------------------------------------------------------------------------
-
 
 	// -----------------------------    Timer    -------------------------------
 	TStopwatch timer;
 	timer.Start();
-	// -------------------------------------------------------------------------
-
 
 	// =========================================================================
 	// ===                             Unpacker                              ===
@@ -122,14 +114,19 @@ void setup_unpack(Int_t calMode=1, char *cFileId="CbmTofSps_01Dec0128", Int_t iS
 	//source->AddFile("./HLD/CbmTofPiHd_26Feb1747_16057174732.hld");
 	//source->AddFile("./HLD/CbmTofPiHd_26Feb1747_16058011819.hld");
 	//source->AddFile("./HLD/CbmTofPiHd_01Mar1558_16061155836.hld");
-   	
 	//source->AddFile("./HLD/CbmTofPiHd_01Apr1647_16092164739.hld");
 	//source->AddFile("./HLD/CbmTofPiHd_08Apr1811_16099181155.hld");
 	//source->AddFile("./HLD/CbmTofPiHd_14Apr1255_16105125514.hld");
 	
-	//source->AddFile("./HLD/CbmTofPiHd_Plastic_26Jul1744_16208174409.hld");
-   source->AddFile("./HLD/CbmTofPiHd_Plastic_27Jul1725_16209172532.hld");
+	// -------------------- New Files ------------------------------
+	//source->AddFile("./HLD/CbmTofPiHd_11Aug1224_16224122413.hld");
+	//source->AddFile("./HLD/CbmTofPiHd_13Aug0855_16226085556.hld");
+	source->AddFile("./HLD/CbmTofPiHd_15Aug0818_16228081806.hld");
+	//source->AddFile("./HLD/CbmTofPiHd_16Aug1016_16229101637.hld");
+	//source->AddFile("./HLD/CbmTofPiHd_17Aug1121_16230112115.hld");
+	//source->AddFile("./HLD/CbmTofPiHd_17Aug1724_16230172404.hld");
 	
+	// -----------------------  TTriglogUnpackTof  -----------------------------
 	/*
 	TTriglogUnpackTof* tofTriglogUnpacker = new TTriglogUnpackTof();
 	//tofTriglogUnpacker->SetSaveTriglog(kTRUE);
@@ -140,12 +137,12 @@ void setup_unpack(Int_t calMode=1, char *cFileId="CbmTofSps_01Dec0128", Int_t iS
 	source->AddUnpacker( tofMbsDataUnpacker );
 	*/
 
+	// --------------------------  TTrbUnpackTof  ------------------------------
 	TTrbUnpackTof* tofTrbDataUnpacker = new TTrbUnpackTof(10,1,31,0,0);
 	source->AddUnpacker( tofTrbDataUnpacker );
 	gLogger->SetLogScreenLevel(logLevel.Data());
 
 	// ----------------------   Online/Offline MBS run   -----------------------
-
 	FairRunOnline *run = FairRunOnline::Instance();
 	run->SetSource(source);
 	run->SetOutputFile(outFile);
@@ -174,6 +171,7 @@ void setup_unpack(Int_t calMode=1, char *cFileId="CbmTofSps_01Dec0128", Int_t iS
 
 	TMbsCalibTof* tofCalibration = new TMbsCalibTof("Tof Calibration", iVerbose);
 	tofCalibration->SetTdcCalibOutFoldername("./");
+	//tofCalibration->SetTdcCalibFilename("TofTdcCalibHistos");
 	tofCalibration->SetTdcCalibFilename(cFileId);
 	run->AddTask(tofCalibration);
 
@@ -185,84 +183,15 @@ void setup_unpack(Int_t calMode=1, char *cFileId="CbmTofSps_01Dec0128", Int_t iS
 	// =========================================================================
 	// ===                             Mapping                               ===
 	// =========================================================================
-	if(calMode>0){
-	TMbsMappingTof* tofMapping = new TMbsMappingTof("Tof Mapping", iVerbose);
-	tofMapping->SetSaveDigis(kTRUE);
-	run->AddTask(tofMapping);
+	if(calMode > 0)
+	{
+		TMbsMappingTof* tofMapping = new TMbsMappingTof("Tof Mapping", iVerbose);
+		tofMapping->SetSaveDigis(kTRUE);
+		run->AddTask(tofMapping);
 	}
-
 	// ===                          End of Mapping                           ===
 	// =========================================================================
 
-
-	// =========================================================================
-	// ===                              if(0)                                ===
-	// =========================================================================
-	if(0){  
-	CbmTofTestBeamClusterizer* tofTestBeamClust = 
-	new CbmTofTestBeamClusterizer("TOF TestBeam Clusterizer",iVerbose,kFALSE);
-	//tofTestBeamClust->SetCalParFileName("MbsTrbBeamtofTestBeamClust.hst.root");
-	Int_t calTrg=-1;
-	Int_t calSmType=0;
-	Int_t RefTrg=0;
-
-	tofTestBeamClust->SetCalMode(0);
-	tofTestBeamClust->SetCalSel(calTrg);
-	tofTestBeamClust->SetCaldXdYMax(150.);         	// Geometrical matching window
-	tofTestBeamClust->SetdTRefMax(500000.);			// 
-	tofTestBeamClust->SetCalSmType(calSmType);    	// Select detectors for walk correction 
-	//tofTestBeamClust->SetTRefDetId(20486);        // 0x00005006; Big Diamond
-	//tofTestBeamClust->SetTRefDetId(8214);       	// 0x00002016; Plastic 1
-	//tofTestBeamClust->SetTRefDetId(8198);       	// 0x00002006; Plastic 0 
-	tofTestBeamClust->SetTRefId(RefTrg);          	// Reference trigger 5 -> Diamond  
-	tofTestBeamClust->SetTotMax(100000.);
-	tofTestBeamClust->SetTotMin(1.); 
-
-	tofTestBeamClust->SetBeamRefType(4);    		// Test case 
-	tofTestBeamClust->SetBeamRefSm(0);
-	tofTestBeamClust->SetBeamRefDet(0);
-	tofTestBeamClust->SetBeamAddRefMul(-1);
-
-	switch (calMode) {
-		case 0: 
-		 tofTestBeamClust->SetTotMax(100000.);      	// 100 ns
-		 //tofTestBeamClust->SetTotMin(1.);				// 
-		 tofTestBeamClust->SetTRefDifMax(2000000.); 	// in ps 
-		 tofTestBeamClust->PosYMaxScal(2000.);      	// in % of length 
-		 tofTestBeamClust->SetMaxTimeDist(0.);      	// no cluster building  
-		 break;
-		case 1:
-		 tofTestBeamClust->SetTRefDifMax(100000.);    	// in ps 
-		 tofTestBeamClust->PosYMaxScal(1000.);         	// in % of length 
-		 break;
-		case 2:                                      	// time difference calibration
-		 tofTestBeamClust->SetCalParFileName("MbsTrbBeam02tofTestBeamClust.hst.root");
-		 tofTestBeamClust->SetTRefDifMax(300000.);   	// in ps 
-		 tofTestBeamClust->PosYMaxScal(1000.);         	// in % of length
-		 break;
-		case 3:
-		 //tofTestBeamClust->SetCalParFileName("MbsTrbBeam00tofTestBeamClust.hst.root");
-		 //tofTestBeamClust->SetCalParFileName("MbsTrbThu0138_01tofTestBeamClust.hst.root");
-		 tofTestBeamClust->SetCalParFileName("MbsTrbThu224_03tofTestBeamClust.hst.root");
-		 tofTestBeamClust->SetTRefDifMax(200000.);   	// in ps 
-		 tofTestBeamClust->PosYMaxScal(2.);       		// in % of length
-		 break;
-		case 13:
-		 tofTestBeamClust->SetTRefDifMax(50000.);   	// in ps 
-		 tofTestBeamClust->PosYMaxScal(2.);       		// in % of length
-		 break;
-		default:
-		 cout << "<E> Calib mode not implemented! stop execution of script"<<endl;
-		 return;
-		} 
-
-		//run->AddTask(tofTestBeamClust);
-	}	
-	// ===                         End if(0)                                 ===
-	// =========================================================================
-	
-	
-	
 	// =========================================================================
 	// ===                  GO4 like output formatting                       ===
 	// =========================================================================
@@ -273,11 +202,9 @@ void setup_unpack(Int_t calMode=1, char *cFileId="CbmTofSps_01Dec0128", Int_t iS
 	// ===                  End of output conversion                         ===
 	// =========================================================================
 
-
 	// =========================================================================
 	// ===                         Online Display                            ===
 	// =========================================================================
-
 	CbmTofOnlineDisplay* display = new CbmTofOnlineDisplay();
 	display->SetUpdateInterval(1000);
 	run->AddTask(display);   
@@ -285,12 +212,9 @@ void setup_unpack(Int_t calMode=1, char *cFileId="CbmTofSps_01Dec0128", Int_t iS
 	// ===                       End of Online Display                       ===
 	// =========================================================================
 
-
-
 	// =========================================================================
 	// ===                       Parameter Database                          ===
 	// =========================================================================
-
 	FairRuntimeDb* rtdb = run->GetRuntimeDb();
 	Bool_t kParameterMerged = kTRUE;
 	FairParRootFileIo* parIo2 = new FairParRootFileIo(kParameterMerged);
@@ -310,12 +234,9 @@ void setup_unpack(Int_t calMode=1, char *cFileId="CbmTofSps_01Dec0128", Int_t iS
 	// ===                      End of Parameter Database                    ===
 	// =========================================================================
 
-
-
 	// =========================================================================
 	// ===                       Intialise and Run                           ===
 	// =========================================================================
-	
 	run->Init();
 	cout << "Starting Run" << endl;
 	
@@ -323,7 +244,7 @@ void setup_unpack(Int_t calMode=1, char *cFileId="CbmTofSps_01Dec0128", Int_t iS
 	// script named "lmd_unpack.sh" or "hld_unpack.sh"
 	//run->Run(nEvents, 0);
 
-	// ===                      				                             ===
+	// ===                      				                                  ===
 	// =========================================================================
 
 

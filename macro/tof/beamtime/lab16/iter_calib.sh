@@ -6,24 +6,14 @@
 #cRun='CbmTofPiHd_30Mar1435'
 #cRun='CbmTofPiHd_01Apr1647'
 #cRun='CbmTofPiHd_14Apr1255'
-#cRun='CbmTofPiHd_Plastic_26Jul1744'
-#cRun='CbmTofPiHd_Plastic_27Jul1725'
-#cRun='CbmTofPiHd_Plastic_01Aug1700'
-#cRun='CbmTofPiHd_Plastic_05Aug1913'
 #cRun='CbmTofPiHd_09Aug1533'
-cRun='CbmTofPiHd_11Aug1224'
+#cRun='CbmTofPiHd_11Aug1224'
+#cRun='CbmTofPiHd_13Aug0855'
+#cRun='CbmTofPiHd_15Aug0818'
+cRun='CbmTofPiHd_17Aug1724'
 
-#iDut=921; iRef=920; iSel2=-300
-#iDut=921; iRef=300; iSel2=920
-#iDut=400; iRef=300; iSel2=921
-#iDut=400; iRef=300; iSel2=0
 #iDut=921; iRef=300; iSel2=920
 #iDut=921; iRef=920; iSel2=0
-#iDut=3; iRef=9; iSel2=9
-#iDut=9; iRef=9; iSel2=3
-#iDut=9; iRef=4; iSel2=-3
-#iDut=9; iRef=7; iSel2=-3
-#iDut=6; iRef=1; iSel2=-8
 #iDut=6; iRef=1; iSel2=8;
 #((iSet=$iDut*1000+$iRef))
   

@@ -5,7 +5,7 @@
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 
-void create_calib(Int_t nEvents = 100000000, char *cFileId="CbmTofSps_01Dec0427")
+void create_calib(Int_t nEvents = 100000000, char *cFileId="CbmTofPiHd_All")
 {
 	TStopwatch timer;
 	timer.Start();
@@ -40,19 +40,28 @@ void create_calib(Int_t nEvents = 100000000, char *cFileId="CbmTofSps_01Dec0427"
 	rtdb->setFirstInput(parIo1);
 	TString cOutfileId = Form("%s",cFileId);
 	TString outFile = paramDir + "/unpack_" + cOutfileId + ".calib.root";
-
    CbmHldSource* source = new CbmHldSource();
-   source->AddPath("./HLD/",Form("%s*.hld",cFileId));
+   //source->AddPath("./HLD/",Form("%s*.hld",cFileId));
    //source->AddFile("./HLD/CbmTofPiHd_01Apr1647_16092164739.hld");
 	//source->AddFile("./HLD/CbmTofPiHd_08Apr1811_16099181155.hld");
 	//source->AddFile("./HLD/CbmTofPiHd_14Apr1255_16105125514.hld");
 	
-  	// New Data Files (As of 26 July)
-  	//source->AddFile("./HLD/CbmTofPiHd_Plastic_26Jul1744_16208174409.hld");
-       //source->AddFile("./HLD/CbmTofPiHd_Plastic_27Jul1725_16209172532.hld");
- 	//source->AddFile("./HLD/CbmTofPiHd_Plastic_29Jul2007_16211200704.hld");
-   //	source->AddFile("./HLD/CbmTofPiHd_Plastic_09Aug1533_16222153334.hld");
- 	
+  	// ----------------- Calibration: Pulser Data (As of 17 Aug 2016)
+	//source->AddFile("./HLD/CbmTofPiHd_All_5.hld");
+	//source->AddFile("./HLD/CbmTofPiHd_All_6.hld");
+	//source->AddFile("./HLD/CbmTofPiHd_All_7.hld");
+	//source->AddFile("./HLD/CbmTofPiHd_All_8.hld");
+	//source->AddFile("./HLD/CbmTofPiHd_All_9.hld");
+	//source->AddFile("./HLD/CbmTofPiHd_All_10.hld");
+	
+  	// ----------------- New Data Files (As of Aug 01, 2016)
+ 	//source->AddFile("./HLD/CbmTofPiHd_09Aug1533_16222183515.hld");
+ 	//source->AddFile("./HLD/CbmTofPiHd_10Aug1728_16223172839.hld");
+ 	//source->AddFile("./HLD/CbmTofPiHd_11Aug1224_16224122413.hld");
+ 	//source->AddFile("./HLD/CbmTofPiHd_13Aug0855_16226085556.hld");
+ 	//source->AddFile("./HLD/CbmTofPiHd_15Aug0818_16228081806.hld");
+ 	//source->AddFile("./HLD/CbmTofPiHd_16Aug1016_16229101637.hld");
+	source->AddFile("./HLD/CbmTofPiHd_17Aug1724_16230172404.hld");
  	
 	TTrbUnpackTof* tofTrbDataUnpacker = new TTrbUnpackTof(10,1,31,0,0);
 	tofTrbDataUnpacker->SetInspection(kTRUE);
@@ -83,9 +92,9 @@ void create_calib(Int_t nEvents = 100000000, char *cFileId="CbmTofSps_01Dec0427"
 	//display->MonitorSebStatus(kTRUE);
 	//display->MonitorTdcStatus(kTRUE);
 	//display->MonitorFSMockup(kTRUE);
-	//display->MonitorInspection(kTRUE);
-	//display->MonitorCalibration(kTRUE);						// aa: if fit failure see SetReferenceBoard() above
-	display->SetUpdateInterval(10000);
+	display->MonitorInspection(kTRUE);
+	display->MonitorCalibration(kTRUE);						// aa: if fit failure see SetReferenceBoard() above
+	display->SetUpdateInterval(10000);						// aa: entries
 	//display->SetUpdateInterval(100000000); 				// disables live updates (speed-up)
 
 	// Remember no mapping in create_calib.C

@@ -1,4 +1,5 @@
 #!/bin/bash
+# Shell script for unpacking ...
 
 #cRun=CbmTofPiHd_01Mar1558
 #cRun=CbmTofPiHd_21Mar1734
@@ -6,11 +7,16 @@
 #cRun=CbmTofPiHd_01Apr1647
 #cRun=CbmTofPiHd_08Apr1811
 #cRun=CbmTofPiHd_14Apr1255
-#cRun=CbmTofPiHd_Plastic_26Jul1744
-cRun=CbmTofPiHd_Plastic_27Jul1725
+#cRun=CbmTofPiHd_All
+#cRun=CbmTofPiHd_09Aug1533
+#cRun=CbmTofPiHd_10Aug1728
+#cRun=CbmTofPiHd_11Aug1224
+#cRun=CbmTofPiHd_13Aug0855
+cRun=CbmTofPiHd_15Aug0818
+
 
 # Removing files: Fresh unpacking
-if((1)); then
+if((0)); then
 rm all_*.par core_dump_* *.pdf
 rm tofMbsUnp.hst.root
 rm tofMbsCal.hst.root
@@ -25,19 +31,21 @@ rm unpack_$cRun.params.root
 fi
 
 # Removing files: Without unpacking
-if((1)); then
+if((0)); then
 rm -r $cRun
 rm *.pdf
-rm $cRun_*tofTestBeamClust.hst.root
+rm tofTestBeamClust_$cRun_set*.hst.root
+rm $cRun_set*_0tofTestBeamClust.hst.root
+rm $cRun_set*_1tofTestBeamClust.hst.root
 rm $cRun_*tofAnaTestBeam.hst.root
-rm tofTestBeamClust_$cRun_*.hst.root
+rm digi_$cRun.out.root
 rm digi_$cRun_*.out.root
 fi
 
 # -------------------------- Old Calibration Class ----------------------------
 echo "setup_unpack.C is called..."
 
-if((0)); then
+if((1)); then
 root -l<<EOF
 Int_t nEvents  =10000000
 Int_t calMode  =1
