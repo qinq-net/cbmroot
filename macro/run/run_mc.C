@@ -113,6 +113,7 @@ void run_mc(Int_t nEvents = 2,
 
 
   // -----   Logger settings   ----------------------------------------------
+  FairLogger* gLogger = FairLogger::GetLogger();
   gLogger->SetLogScreenLevel(logLevel.Data());
   gLogger->SetLogVerbosityLevel(logVerbosity.Data());
   // ------------------------------------------------------------------------
