@@ -53,8 +53,8 @@
 #cRun='CbmTofPiHd_11Aug1224'
 #cRun='CbmTofPiHd_13Aug0855'
 #cRun='CbmTofPiHd_15Aug0818'
-cRun='CbmTofPiHd_17Aug1724'
-
+#cRun='CbmTofPiHd_17Aug1724'
+cRun='CbmTofPiHd_22Aug1616'
 
 # Clean up before fresh re-run of init_calib.sh
 if((1)); then

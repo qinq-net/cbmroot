@@ -3,7 +3,8 @@
 
 # -----------------------------------------------------------------------------
 # gen_digi.sh will repeat the last step in "iter_calib.sh", similar to running 
-# the ana_digi.C as $ root -l ana_digi.C(....) interactively.
+# the ana_digi.C('$inOpt', 1, "'$cRun'", '$iCalSet', 0, '$iSel2') interactively.
+# Where $inOpt= 100000000, 93, 1, $iRef in the iter_calib.sh
 # -----------------------------------------------------------------------------
 
 #cRun=$1
@@ -11,7 +12,8 @@
 #cRun='CbmTofPiHd_11Aug1224'
 #cRun='CbmTofPiHd_13Aug0855'
 #cRun='CbmTofPiHd_15Aug0818'
-cRun='CbmTofPiHd_17Aug1724'
+#cRun='CbmTofPiHd_17Aug1724'
+cRun='CbmTofPiHd_22Aug1616'
 
 #iDut=921; iRef=920; iSel2=-300
 #((iSet=$iDut*1000+$iRef))
@@ -37,6 +39,8 @@ if((${iSel2}<0));then
  ((iBRef=-$iSel2))
 fi
 
-echo gen_digi with iDut=$iDut, iRef=$iRef, iSet=$iCalSet, iSel2=$iSel2, iBRef=$iBRef
+echo gen_digi with iDut=$iDut, iRef=$iRef, iCalSet=$iCalSet, iSet=$iSet, iBRef=$iBRef, iSel2=$iSel2
+
+# void ana_digi(nEvents, calMode, calSel, calSm, RefSel, cFileId, iCalSet, bOut, iSel2) 
 root -b -q './ana_digi.C(100000000,93,1,'$iRef',0,"'$cRun'",'$iCalSet',1,'$iSel2') '
 

@@ -10,7 +10,8 @@
 #cRun='CbmTofPiHd_11Aug1224'
 #cRun='CbmTofPiHd_13Aug0855'
 #cRun='CbmTofPiHd_15Aug0818'
-cRun='CbmTofPiHd_17Aug1724'
+#cRun='CbmTofPiHd_17Aug1724'
+cRun='CbmTofPiHd_22Aug1616'
 
 #iDut=921; iRef=300; iSel2=920
 #iDut=921; iRef=920; iSel2=0
@@ -36,11 +37,11 @@ iCalSet=901900921
 #iSel2=$3
 iSel2=-$iBRef
 
-if((${iSel2}<0));then
+if((${iSel2}<0)); then
  ((iBRef=-$iSel2))
 fi
 
-echo iter_calib with iDut=$iDut, iRef=$iRef, iSet=$iSet, iSel2=$iSel2, iBRef=$iBRef
+echo iter_calib with iDut=$iDut, iRef=$iRef, iCalSet=$iCalSet, iSet=$iSet, iBRef=$iBRef, iSel2=$iSel2
 
 #mkdir ${cRun}
 #cp rootlogon.C ${cRun}
@@ -154,8 +155,9 @@ fi
 cp -v  ../${cRun}_${iCalSet}${cSel2}_tofAnaTestBeam.hst.root .
 
 # generate new calibration file
+# void ana_digi(nEvents, calMode, calSel, calSm, RefSel, cFileId, iCalSet, bOut, iSel2)
 #root -b -q '../../ana_digi.C('$inOpt',0,"'$cRun'",'$iSet',0,'$iSel2') '
-root -b -q '../../ana_digi.C('$inOpt',1,"'$cRun'",'$iCalSet',0,'$iSel2') '
+root -b -q '../../ana_digi.C('$inOpt',1,"'$cRun'",'$iCalSet',0,'$iSel2')'
 
 lastOpt=$inOpt
 

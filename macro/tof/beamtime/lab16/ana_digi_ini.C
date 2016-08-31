@@ -99,8 +99,7 @@ void ana_digi_ini(Int_t nEvents = 10000, Int_t calMode=0, Int_t calSel=-1, Int_t
 	tofTestBeamClust->SetTotMin(1.); 						// (12000.); Tot lower limit for walk correction
 	tofTestBeamClust->SetTotPreRange(5000.);      		// Effective lower Tot limit  in ps from peak position
 	tofTestBeamClust->SetTotMean(2000.);         		// Tot calibration target value in ps 
-	tofTestBeamClust->SetMaxTimeDist(500.);       		// Default cluster range in ps 
-	//tofTestBeamClust->SetMaxTimeDist(0.);       		// default cluster range in ps 
+	tofTestBeamClust->SetMaxTimeDist(500.);       		// Default cluster range in ps, aa: cluster building radius
 
 	Int_t calSelRead = calSel;
 	if (calSel<0) calSelRead=0;
@@ -264,36 +263,46 @@ void ana_digi_ini(Int_t nEvents = 10000, Int_t calMode=0, Int_t calSel=-1, Int_t
 	tofAnaTestbeam->SetDXMean(0.);							//CbmTofAnaTestbeam Defaults:
 	tofAnaTestbeam->SetDYMean(0.);
 	tofAnaTestbeam->SetDTMean(0.);  							// in ps
+	
 	tofAnaTestbeam->SetDXWidth(0.4);
 	tofAnaTestbeam->SetDYWidth(0.4);
 	tofAnaTestbeam->SetDTWidth(80.); 						// in ps
+	
 	tofAnaTestbeam->SetCalParFileName(cAnaFile);
 	tofAnaTestbeam->SetPosY4Sel(0.5); 						// Y Position selection in fraction of strip length
 	tofAnaTestbeam->SetDTDia(0.);   							// Time difference to additional diamond
-	tofAnaTestbeam->SetCorMode(1);    						// 1 - DTD4, 2 - X4 
+	tofAnaTestbeam->SetCorMode(1);    						// 1 - DTD4, 2 - X4
+	 
 	tofAnaTestbeam->SetMul0Max(10);   						// Max Multiplicity in dut 
 	tofAnaTestbeam->SetMul4Max(5);    						// Max Multiplicity in HDRef - RPC 
-	tofAnaTestbeam->SetMulDMax(5);    						// Max Multiplicity in Diamond    
+	tofAnaTestbeam->SetMulDMax(5);    						// Max Multiplicity in Diamond
+	   
 	tofAnaTestbeam->SetHitDistMin(30.);  					// initialization
 	tofAnaTestbeam->SetPosYS2Sel(0.5);   					// Y Position selection in fraction of strip length
 	tofAnaTestbeam->SetChS2Sel(0.);      					// Center of channel selection window
 	tofAnaTestbeam->SetDChS2Sel(100.);   					// Width  of channel selection window
-	tofAnaTestbeam->SetTShift(0.);       					// Shift DTD4 to 0
-	tofAnaTestbeam->SetSel2TOff(0.);     					// Shift Sel2 time peak to 0 
-	tofAnaTestbeam->SetTOffD4(13000.);   					// Shift DTD4 to physical value
-
+	
+	/* *************************************************************************  
+		 								iRSel, iRSelSm, iRSelRpc
+	************************************************************************* */
+	
 	Int_t iRSel=iBRef;
 	Int_t iRSelRpc = iRSel%10;
 	iRSel = (iRSel - iRSelRpc)/10;
 	Int_t iRSelSm = iRSel%10;
 	iRSel = (iRSel - iRSelSm)/10;
 	
-	tofTestBeamClust->SetBeamRefId(iRSel);    			// define Beam reference counter 
-	tofTestBeamClust->SetBeamRefSm(iRSelSm);
-	tofTestBeamClust->SetBeamRefDet(iRSelRpc);
+	tofTestBeamClust->SetBeamRefId(iRSel);    			// define Beam reference counter
+	tofTestBeamClust->SetBeamRefSm(iRSelSm);				// define Beam reference counter
+	tofTestBeamClust->SetBeamRefDet(iRSelRpc);			// define Beam reference counter
+	
 	tofTestBeamClust->SetBeamAddRefMul(-1);
-
-   Int_t iBRef=iCalSet%1000;
+	
+	/* *************************************************************************  
+				iDut, iRef (~iMRef) based on iCalSet=901900-920 & iSet=901900
+	************************************************************************* */
+	
+   Int_t iBRef= iCalSet%1000;
    Int_t iSet = (iCalSet - iBRef)/1000;
    Int_t iRef = iSet %1000;
 
@@ -312,18 +321,20 @@ void ana_digi_ini(Int_t nEvents = 10000, Int_t calMode=0, Int_t calSel=-1, Int_t
    Int_t iRefSm = iRef%10;
    iRef = (iRef - iRefSm)/10;
 
-   tofTestBeamClust->SetSelId(iRef);
-   tofTestBeamClust->SetSelSm(iRefSm);
-   tofTestBeamClust->SetSelRpc(iRefRpc);
+   tofTestBeamClust->SetSelId(iRef);						// Selector RPC (Sel)
+   tofTestBeamClust->SetSelSm(iRefSm);						// Selector RPC (Sel)			
+   tofTestBeamClust->SetSelRpc(iRefRpc);					// Selector RPC (Sel)
 
-   tofAnaTestbeam->SetDut(iDut);              			// Device under test   
-   tofAnaTestbeam->SetDutSm(iDutSm);          			// Device under test   
-   tofAnaTestbeam->SetDutRpc(iDutRpc);        			// Device under test
+   tofAnaTestbeam->SetDut(iDut);              			// Device Under Test (Dut)
+   tofAnaTestbeam->SetDutSm(iDutSm);          			// Device Under Test (Dut)
+   tofAnaTestbeam->SetDutRpc(iDutRpc);        			// Device Under Test (Dut)
    
-   tofAnaTestbeam->SetMrpcRef(iRef);          			// Reference RPC     
-   tofAnaTestbeam->SetMrpcRefSm(iRefSm);      			// Reference RPC     
-   tofAnaTestbeam->SetMrpcRefRpc(iRefRpc);    			// Reference RPC   
+   tofAnaTestbeam->SetMrpcRef(iRef);          			// Reference RPC (MRef)
+   tofAnaTestbeam->SetMrpcRefSm(iRefSm);      			// Reference RPC (MRef)
+   tofAnaTestbeam->SetMrpcRefRpc(iRefRpc);    			// Reference RPC (MRef)
 
+	tofAnaTestbeam->SetChi2Lim(100.);             		// initialization of Chi2 selection limit
+	
 	/* **************************************************************************
 	Remember in init_calib.sh the parmeter iCalSet=iDutiMRefiBRef==920921400, so
 	iSet == iDutiMRef == 920921 etc
@@ -342,12 +353,25 @@ void ana_digi_ini(Int_t nEvents = 10000, Int_t calMode=0, Int_t calSel=-1, Int_t
 		case 901901:
 		case 921901:
 		
+			tofAnaTestbeam->SetTShift(0.);       			// Shift DTD4 to 0
+			tofAnaTestbeam->SetSel2TOff(0.);     			// Shift Sel2 time peak to 0 
 			tofAnaTestbeam->SetTOffD4(13000.);   			// Shift DTD4 to physical value
-			tofAnaTestbeam->SetSel2TOff(-230.);  			// Shift Sel2 time peak to 0
+	
 			tofAnaTestbeam->SetCh4Sel(16.);      			// Center of channel selection window
 			tofAnaTestbeam->SetDCh4Sel(20.);     			// Width  of channel selection window
 			break;
 			
+		case 601600:
+		case 600601:
+		
+			tofAnaTestbeam->SetTShift(0.);       			// Shift DTD4 to 0
+			tofAnaTestbeam->SetSel2TOff(0.);     			// Shift Sel2 time peak to 0 
+			tofAnaTestbeam->SetTOffD4(13000.);   			// Shift DTD4 to physical value
+	
+			tofAnaTestbeam->SetCh4Sel(16.);      			// Center of channel selection window
+			tofAnaTestbeam->SetDCh4Sel(20.);     			// Width  of channel selection window
+			break;
+				
 		default:
 			cout << "<E> detector setup " << iSet << " unknown, stop!" << endl;
 			return;
@@ -363,7 +387,6 @@ void ana_digi_ini(Int_t nEvents = 10000, Int_t calMode=0, Int_t calSel=-1, Int_t
 	display->SetUpdateInterval(1000);
 	run->AddTask(display);   
 	*/
-
 
 	/* **************************************************************************
 												Parameter Database	   
@@ -387,8 +410,6 @@ void ana_digi_ini(Int_t nEvents = 10000, Int_t calMode=0, Int_t calSel=-1, Int_t
 	//parInput1->open(ParFile.Data());
 	//rtdb->setFirstInput(parInput1);
 
-
-
 	/* **************************************************************************
 							  					Intialise and Run	   
 	************************************************************************** */
@@ -396,15 +417,13 @@ void ana_digi_ini(Int_t nEvents = 10000, Int_t calMode=0, Int_t calSel=-1, Int_t
 	cout << "Starting run" << endl;
 	run->Run(0, nEvents);
 
-
 	/* **************************************************************************
 													Plotting	   
 	************************************************************************** */
 	// default display 
 	TString Display_Status = "pl_over_Mat04D4best.C";
+	TString Display_Funct = "pl_over_Mat04D4best()";
 	gROOT->LoadMacro(Display_Status);
-
-	//TString Display_Funct = "pl_over_Mat04D4best()";
 	//gInterpreter->ProcessLine(Display_Funct);
 
 	gROOT->LoadMacro("pl_over_cluSel.C");
@@ -424,11 +443,12 @@ void ana_digi_ini(Int_t nEvents = 10000, Int_t calMode=0, Int_t calSel=-1, Int_t
 		case 901900:
 		case 921900:
 		case 901901:
-		
+		case 601600:
+		case 600601:
+				
 			// void pl_over_clu(Int_t SmT=0, Int_t iSm=0, Int_t iRpc=0)
-
-			gInterpreter->ProcessLine("pl_over_clu(3,0,0)");			
-			gInterpreter->ProcessLine("pl_over_clu(4,0,0)");
+			//gInterpreter->ProcessLine("pl_over_clu(3,0,0)");			
+			//gInterpreter->ProcessLine("pl_over_clu(4,0,0)");
 			//gInterpreter->ProcessLine("pl_over_clu(5,0)");
 			//gInterpreter->ProcessLine("pl_over_clu(5,1)");
 			//gInterpreter->ProcessLine("pl_over_clu(5,2)");
@@ -440,9 +460,8 @@ void ana_digi_ini(Int_t nEvents = 10000, Int_t calMode=0, Int_t calSel=-1, Int_t
 			gInterpreter->ProcessLine("pl_over_clu(9,2,1)");
 
 			// void pl_over_cluSel(Int_t iSel=0, Int_t iSmT=0, Int_t iSm=0, Int_t iRpc=0)
-
-			gInterpreter->ProcessLine("pl_over_cluSel(0,3)");		
-			gInterpreter->ProcessLine("pl_over_cluSel(0,4)");
+			//gInterpreter->ProcessLine("pl_over_cluSel(0,3)");		
+			//gInterpreter->ProcessLine("pl_over_cluSel(0,4)");
 			//gInterpreter->ProcessLine("pl_over_cluSel(0,5,0)");
 			//gInterpreter->ProcessLine("pl_over_cluSel(0,5,1)");
 			//gInterpreter->ProcessLine("pl_over_cluSel(0,5,2)");
@@ -452,8 +471,9 @@ void ana_digi_ini(Int_t nEvents = 10000, Int_t calMode=0, Int_t calSel=-1, Int_t
 			gInterpreter->ProcessLine("pl_over_cluSel(0,9,1,1)");
 			gInterpreter->ProcessLine("pl_over_cluSel(0,9,2,0)");
 			gInterpreter->ProcessLine("pl_over_cluSel(0,9,2,1)");
-			gInterpreter->ProcessLine("pl_over_cluSel(1,3)");
-			gInterpreter->ProcessLine("pl_over_cluSel(1,4)");
+			
+			//gInterpreter->ProcessLine("pl_over_cluSel(1,3)");
+			//gInterpreter->ProcessLine("pl_over_cluSel(1,4)");
 			//gInterpreter->ProcessLine("pl_over_cluSel(1,5,0)");
 			//gInterpreter->ProcessLine("pl_over_cluSel(1,5,1)");
 			//gInterpreter->ProcessLine("pl_over_cluSel(1,5,2)");
@@ -463,12 +483,18 @@ void ana_digi_ini(Int_t nEvents = 10000, Int_t calMode=0, Int_t calSel=-1, Int_t
 			gInterpreter->ProcessLine("pl_over_cluSel(1,9,1,1)");
 			gInterpreter->ProcessLine("pl_over_cluSel(1,9,2,0)");
 			gInterpreter->ProcessLine("pl_over_cluSel(1,9,2,1)");
-
+			
+			gInterpreter->ProcessLine("pl_over_clu(6,0,0)");
+			gInterpreter->ProcessLine("pl_over_clu(6,0,1)");
+			gInterpreter->ProcessLine("pl_over_cluSel(0,6,0,0)");
+			gInterpreter->ProcessLine("pl_over_cluSel(0,6,0,1)");
+			gInterpreter->ProcessLine("pl_over_cluSel(1,6,0,0)");
+			gInterpreter->ProcessLine("pl_over_cluSel(1,6,0,1)");
+			
 			// void pl_all_dTSel(Int_t iNSel=2)
-
 			gInterpreter->ProcessLine("pl_all_dTSel()");				
 			break;
-		
+						
 		default:
 			cout << "iSet = " << iSet << "\tnot found for plotting..." << endl;
 			;

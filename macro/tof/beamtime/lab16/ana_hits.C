@@ -228,31 +228,32 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    // ===                       			Analysis                             ===
    // =========================================================================
    CbmTofAnaTestbeam* tofAnaTestbeam = new CbmTofAnaTestbeam("TOF TestBeam Analysis",iVerbose);
-   tofAnaTestbeam->SetCorMode(iGenCor); 					// 1 - DTD4, 2 - X4, 3 - Y4, 4 - Texp 
-   tofAnaTestbeam->SetHitDistMin(30.);  					// initialization
-
+   
    //CbmTofAnaTestbeam defaults  
    tofAnaTestbeam->SetDXMean(0.);
    tofAnaTestbeam->SetDYMean(0.);
    tofAnaTestbeam->SetDTMean(0.);      					// in ps
-   tofAnaTestbeam->SetDXWidth(0.5);
-   tofAnaTestbeam->SetDYWidth(0.5);
-   tofAnaTestbeam->SetDTWidth(90.);    					// in ps
+   
+   tofAnaTestbeam->SetDXWidth(1.5);
+   tofAnaTestbeam->SetDYWidth(1.5);
+   tofAnaTestbeam->SetDTWidth(80.);    					// in ps
+   
+   tofAnaTestbeam->SetMul0Max(30);     					// Max Multiplicity in Dut
+   tofAnaTestbeam->SetMul4Max(30);     					// Max Multiplicity in Ref - RPC
+   tofAnaTestbeam->SetMulDMax(30);     					// Max Multiplicity in Diamond
+   
    tofAnaTestbeam->SetCalParFileName(cAnaFile);
+   
    tofAnaTestbeam->SetPosY4Sel(0.5*dScalFac);    		// Y Position selection in fraction of strip length
-   tofAnaTestbeam->SetPosYS2Sel(0.5*dScalFac);   		// Y Position selection in fraction of strip length
    tofAnaTestbeam->SetDTDia(0.);       					// Time difference to additional diamond
-   tofAnaTestbeam->SetMul0Max(20);     					// Max Multiplicity in dut 
-   tofAnaTestbeam->SetMul4Max(10);     					// Max Multiplicity in Ref - RPC 
-   tofAnaTestbeam->SetMulDMax(20);     					// Max Multiplicity in Diamond    
-   tofAnaTestbeam->SetTOffD4(10000.);  					// initialization
+   tofAnaTestbeam->SetCorMode(iGenCor); 					// 1 - DTD4, 2 - X4, 3 - Y4, 4 - Texp
+   tofAnaTestbeam->SetHitDistMin(30.);  					// initialization
+   tofAnaTestbeam->SetPosYS2Sel(0.5*dScalFac);   		// Y Position selection in fraction of strip length
+   
+   tofAnaTestbeam->SetChS2Sel(15.);     					// Center of channel selection window
+   tofAnaTestbeam->SetDChS2Sel(15.*dScalFac);   		// Width  of channel selection window
+   
    tofAnaTestbeam->SetDTD4MAX(6000.);  					// initialization of Max time difference Ref - BRef
-
-   //tofAnaTestbeam->SetTShift(-28000.);					// initialization
-   tofAnaTestbeam->SetChS2Sel(0.);     					// Center of channel selection window
-   tofAnaTestbeam->SetDChS2Sel(100.);   					// Width  of channel selection window
-   tofAnaTestbeam->SetSel2TOff(450.);   					// Shift Sel2 time peak to 0 
-
 
 	/* *************************************************************************  
 		 		iRSel, iRSelTyp, iRSelSm, iRSelRpc based on iSel2=-921
@@ -279,8 +280,9 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    tofAnaTestbeam->SetBeamRefSmType(iRSel); 				// common reaction reference 
    tofAnaTestbeam->SetBeamRefSmId(iRSelSm);
    tofAnaTestbeam->SetBeamRefRpc(iRSelRpc);
-
-	//cout << "\niRSel = " << iRSel << ", iRSelSm = " << iRSelSm << ", iRSelRpc = " << iRSelRpc << endl;
+	
+	cout << endl;
+	cout << "dispatch iRSel = " << iRSel << ", iRSelSm = " << iRSelSm << ", iRSelRpc = " << iRSelRpc << endl;
 	
 	/* *************************************************************************  
 		 				iSel2Rpc, iSel2Sm, iSel2 based on iSel2
@@ -302,7 +304,7 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	tofAnaTestbeam->SetSIGX(1.);                  		// in cm
 	tofAnaTestbeam->SetSIGY(1.);                  		// in cm
 	
-	//cout << "iSel2 = " << iSel2 << ", iSel2Sm = " << iSel2Sm << ", iSel2Rpc = " << iSel2Rpc << endl;
+	cout << "dispatch iSel2 = " << iSel2 << ", iSel2Sm = " << iSel2Sm << ", iSel2Rpc = " << iSel2Rpc << endl;
 	
 	/* *************************************************************************  
 		iDut, iRef (~iMRef) based on iCalSet=901900-920, iSet=901900, iRSel = 9
@@ -318,126 +320,97 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	Int_t iRefSm = iRef%10;
 	iRef = (iRef - iRefSm)/10;
 	
-	tofAnaTestbeam->SetDut(iDut);              			// Device under test   
-	tofAnaTestbeam->SetDutSm(iDutSm);          			// Device under test   
-	tofAnaTestbeam->SetDutRpc(iDutRpc);        			// Device under test   
-	tofAnaTestbeam->SetMrpcRef(iRef);          			// Reference RPC     
-	tofAnaTestbeam->SetMrpcRefSm(iRefSm);      			// Reference RPC     
-	tofAnaTestbeam->SetMrpcRefRpc(iRefRpc);    			// Reference RPC  
+	tofAnaTestbeam->SetDut(iDut);              			// Device Under Test (Dut)
+	tofAnaTestbeam->SetDutSm(iDutSm);          			// Device Under Test (Dut)
+	tofAnaTestbeam->SetDutRpc(iDutRpc);        			// Device Under Test (Dut)
+	   
+	tofAnaTestbeam->SetMrpcRef(iRef);          			// Reference RPC (MRef)
+	tofAnaTestbeam->SetMrpcRefSm(iRefSm);      			// Reference RPC (MRef)
+	tofAnaTestbeam->SetMrpcRefRpc(iRefRpc);    			// Reference RPC (MRef)
 	
-	//cout << "iDut = " << iDut << ", iDutSm = " << iDutSm << ", iDutRpc = " << iDutRpc << endl;
-	//cout << "iRef = " << iRef << ", iRefSm = " << iRefSm << ", iRefRpc = " << iRefRpc << endl;
+	cout << "dispatch iDut  = " << iDut << ", iDutSm = " << iDutSm << ", iDutRpc = " << iDutRpc << endl;
+	cout << "dispatch iRef  = " << iRef << ", iRefSm = " << iRefSm << ", iRefRpc = " << iRefRpc << endl;
 	
    /* **************************************************************************
 	In init_calib.sh/iter_calib.sh the parmeter iCalSet=iDutiMRefiBRef==901900921,
 	so iSet == iDutiMRef == 901900 etc...
 	************************************************************************** */
-	// iCalSet = 901900921
-	// iSel    = 901900
-	// iRSel   = 9
-	// iSel2   = 9
-	// iSel2Sm = 2
-	// iSel2Rpc= 1 
-	// dispatch iSel = 901900, iSel2 = 9, 2, 1
-	cout << "dispatch iSel = " << iSel << ", iRSel = " << iRSel << ", iSel2in = " << iSel2in << ", iSel2 = " << iSel2 <<", " << iSel2Sm <<", " << iSel2Rpc << endl;
+	cout << "dispatch iSel  = " << iSel << ", iRSel = " << iRSel << ", iSel2in (~iSel2) = " << iSel2in << endl;
 	
    switch (iSel) {
 	case 910900:  														//aa: iSel, iRSel, iSel2, iSel2in
-	case 901900:  
-		tofAnaTestbeam->SetCh4Sel(15.);                		// Center of channel selection window
-		tofAnaTestbeam->SetDCh4Sel(15.*dScalFac);      		// Width  of channel selection window
-		tofAnaTestbeam->SetChi2Lim(5.);     					// initialization of Chi2 selection limit  
-		
+	case 901900:
+	case 601600:
+	case 600601:
+			
 		cout << "Run with iRSel = " << iRSel << endl;
 		switch (iRSel) {
-		
-			case 5:		// iRSel
-				tofAnaTestbeam->SetTShift(3500.);  				// Shift DTD4 to 0
-				tofAnaTestbeam->SetTOffD4(20000.);  			// initialization
-				tofAnaTestbeam->SetMulDMax(1);      			// Max Multiplicity in Diamond    
-				switch(iSel2) {
-					cout << "Run with iSel2 = " << iSel2 << endl;
-					
-					case 3:
-						tofAnaTestbeam->SetChi2Lim2(4.);     	// initialization of Chi2 selection limit  
-						tofAnaTestbeam->SetSel2TOff(0.);  		// Shift Sel2 time peak to 0
-						break;
-						
-					case 4:
-						tofAnaTestbeam->SetChi2Lim2(5.);    	// initialization of Chi2 selection limit  
-						tofAnaTestbeam->SetSel2TOff(70.);  		// Shift Sel2 time peak to 0
-						break;
-						
-					case 9:
-						tofAnaTestbeam->SetChi2Lim(50.);      	// initialization of Chi2 selection limit
-						
-						switch(iSel2Sm) {
-						cout << "Run with iSel2Sm = " << iSel2Sm << endl;
-						case 0:
-							tofAnaTestbeam->SetSel2TOff(20.);// Shift Sel2 time peak to 0   //901
-							break;
-						default:
-							cout << "Counter "<<iSel2<<", "<<iSel2Sm<<", "<<iSel2Rpc<<" not configured yet as iSel2"<<endl;
-							return; 
-						}
-						break;
-						
-					default:
-						;
-				}//end-switch(iSel2)
-				break;
-			
+
 			case 3:		// iRSel
-				tofAnaTestbeam->SetMulDMax(10);     			// Max Multiplicity in Diamond    
+				//tofTestBeamClust->SetBeamAddRefMul(1);
 				tofAnaTestbeam->SetTShift(1950.); 				// initialization
 				tofAnaTestbeam->SetTOffD4(13000.);  			// initialization
 				tofAnaTestbeam->SetSel2TOff(2070.);  			// Shift Sel2 time peak to 0
 				break;
-
-			case 9:		// iRSel
-				tofAnaTestbeam->SetChS2Sel(15.);          	// Center of channel selection window
-				tofAnaTestbeam->SetDChS2Sel(15.*dScalFac);	// Width  of channel selection window
-				tofAnaTestbeam->SetMulDMax(20);      			// Max Multiplicity in 921    
-				tofAnaTestbeam->SetMul0Max(20);      			// Max Multiplicity in dut 
-				tofAnaTestbeam->SetMul4Max(20);      			// Max Multiplicity in Ref - RPC 
 				
-				switch(iSel2in) 										// iSel2in = iSel2 = iBRef = 921 line # 269
-				{
+			case 4:		// iRSel
+				//tofTestBeamClust->SetBeamAddRefMul(1);
+				tofAnaTestbeam->SetTShift(-1200.);   			// Shift DTD4 to 0
+				tofAnaTestbeam->SetSel2TOff(-1290.);     		// Shift Sel2 time peak to 0
+				tofAnaTestbeam->SetTOffD4(16000.);   			// Shift DTD4 to physical value
+				break;
+
+			case 5:		// iRSel
+				//tofTestBeamClust->SetBeamAddRefMul(1);
+				tofAnaTestbeam->SetTShift(200.);     			// Shift DTD4 to 0
+				tofAnaTestbeam->SetSel2TOff(0.);     			// Shift Sel2 time peak to 0
+				tofAnaTestbeam->SetTOffD4(16000.);   			// Shift DTD4 to physical value
+				break;
+				
+			case 6:		// iRSel
+				//tofTestBeamClust->SetBeamAddRefMul(1);
+				tofAnaTestbeam->SetTShift(200.);     			// Shift DTD4 to 0
+				tofAnaTestbeam->SetSel2TOff(0.);     			// Shift Sel2 time peak to 0
+				tofAnaTestbeam->SetTOffD4(16000.);   			// Shift DTD4 to physical value
+				break;
+					
+			case 9:		// iRSel
+				//tofTestBeamClust->SetBeamAddRefMul(1);
+				switch (iSel2in) { 									// iSel2in = iSel2 = iBRef = 921 line # 269
+				
 					case 901: 
-						tofAnaTestbeam->SetTShift(-250.);  		// initialization
-						tofAnaTestbeam->SetTOffD4(13000.);  	// initialization
-						tofAnaTestbeam->SetSel2TOff(-150.); 	// Shift Sel2 time peak to 0
+						tofAnaTestbeam->SetTShift(-1332.);     // Shift DTD4 to 0
+						tofAnaTestbeam->SetSel2TOff(-1246.);   // Shift Sel2 time peak to 0
+						tofAnaTestbeam->SetTOffD4(16000.);   	// Shift DTD4 to physical value
 						break;
 
-					case 921: 
-						tofAnaTestbeam->SetTShift(-1442.);  	// dtD4, initialization
-						tofAnaTestbeam->SetTOffD4(16000.);  	// Texp, initialization
-						tofAnaTestbeam->SetSel2TOff(-1422.);	// dtcor (dt), Shift Sel2 time peak to 0
+					case 921:
+						tofAnaTestbeam->SetTShift(-800.);      // Shift DTD4 to 0
+						tofAnaTestbeam->SetSel2TOff(-528.8);   // Shift Sel2 time peak to 0
+						tofAnaTestbeam->SetTOffD4(16000.);   	// Shift DTD4 to physical value
 						break;
 
 					default:
 						;
-						
 				}//end-switch(iSel2in)
-				
 				break;
 
 			default:		// iRSel
-				cout << "Define setup! "<< endl;
+				cout << "Undefined setup! iRSel: " << iRSel << " doesn't exits" << endl;
 				return;
 				;
 				
 		}//end-switch (iRSel)
+				
+		tofAnaTestbeam->SetChi2Lim(10.);     					// initialization of Chi2 selection limit , b/w iDut & iMRef; increase efficiency
+		tofAnaTestbeam->SetChi2Lim2(10.);     					// initialization of Chi2 selection limit , b/w iMRef & iSel2; narrow down area
 		
-		tofAnaTestbeam->SetChi2Lim(5.);     					// initialization of Chi2 selection limit , b/w iDut & iMRef; increase efficiency
-		tofAnaTestbeam->SetChi2Lim2(5.);     					// initialization of Chi2 selection limit , b/w iMRef & iSel2; narrow down area 
-		tofAnaTestbeam->SetDXWidth(1.5);
-		tofAnaTestbeam->SetDYWidth(1.5);
-		tofAnaTestbeam->SetDTWidth(120.);   					// in ps
+		// Additional Parameters (as of ana_digi.C)
+		tofAnaTestbeam->SetCh4Sel(15.);                		// Center of channel selection window
+		tofAnaTestbeam->SetDCh4Sel(15.*dScalFac);      		// Width  of channel selection window		
 		break;
 		
 		//end (aa)
-		
    default:
      cout << "Define analysis setup! " << endl;
      return;
