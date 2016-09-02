@@ -128,6 +128,9 @@ class CbmTofTestBeamClusterizer : public FairTask
       inline void SetOutHstFileName(TString OutHstFileName) { fOutHstFileName = OutHstFileName; }
       inline void SetCalParFileName(TString CalParFileName) { fCalParFileName = CalParFileName; }
 
+      inline void SetEnableMatchPosScaling(Bool_t bval) { fEnableMatchPosScaling = bval; }
+      inline void SetEnableAvWalk(Bool_t bval)          { fEnableAvWalk = bval; }
+
    protected:
 
    private:
@@ -333,6 +336,9 @@ class CbmTofTestBeamClusterizer : public FairTask
       Double_t fdDelTofMax;
       Double_t fTotPreRange;
       Double_t fMaxTimeDist;
+
+      Bool_t fEnableMatchPosScaling;
+      Bool_t fEnableAvWalk;
 
       TString       fCalParFileName;      // name of the file name with Calibration Parameters
       TString       fOutHstFileName;      // name of the histogram output file name with Calibration Parameters
