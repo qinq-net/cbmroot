@@ -277,6 +277,7 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam()
     fdPosYS2SelOff(0.),
     fdSel2TOff(0.),
     fdHitDistMin(0.),
+    fdHitDistAv(1.),
     fdTOffD4(0.),
     fdTShift(0.),
     fdChi2Lim(0.),
@@ -309,6 +310,7 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam()
     fSIGT(100.),
     fSIGX(1.),
     fSIGY(1.),
+    fEnableMatchPosScaling(kTRUE),
     fFindTracks(NULL)
 {
   cout << "CbmTofTests: Task started " << endl;
@@ -533,6 +535,7 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fdPosYS2SelOff(0.),
     fdSel2TOff(0.),
     fdHitDistMin(0.),
+    fdHitDistAv(1.),
     fdTOffD4(0.),
     fdTShift(0.),
     fdChi2Lim(0.),
@@ -565,6 +568,7 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fSIGT(100.),
     fSIGX(1.),
     fSIGY(1.),
+    fEnableMatchPosScaling(kTRUE),
     fFindTracks(NULL)
 {
 }
@@ -839,10 +843,14 @@ Bool_t   CbmTofAnaTestbeam::LoadCalParameter()
       return kTRUE;
     }
 
+    LOG(INFO) << "CbmTofAnaTestBeam::LoadCalParameter: "
+	      << "read from file " << fCalParFileName 
+	      << FairLogger::endl;
+
     TProfile *fhtmp=(TProfile *) gDirectory->FindObjectAny( Form("hDTD4DT04D4best_pfx_px"));
     if (NULL == fhtmp) {
-      fdChi2Lim=fdChi2Lim*1000.;
-      fdChi2Lim2=fdChi2Lim2*1000.;
+      fdChi2Lim=fdChi2Lim*100.;
+      fdChi2Lim2=fdChi2Lim2*100.;
       LOG(INFO)<<"CbmTofAnaTestbeam::LoadCalParameter: Histo hDTD4DT04D4best_pfx_px not found => Chi2Lim = " 
 	       << fdChi2Lim 
                <<FairLogger::endl;
@@ -877,6 +885,12 @@ Bool_t   CbmTofAnaTestbeam::LoadCalParameter()
       LOG(INFO)<<" Histo " << Form("hCluSize4DT04D4best_pfx_px") << " not found. "
              <<FairLogger::endl;
     }
+
+    TH2D * fh2tmp = (TH2D *) gDirectory->FindObjectAny( Form("hDistDT04D4best"));
+    if (NULL != fh2tmp)  fdHitDistAv=fh2tmp->GetMean(1);
+    if (fdHitDistAv<=0.) fdHitDistAv=1.;
+    LOG(INFO)<<"CbmTofAnaTestBeam::LoadCalParameter: average distance Dut - Ref initialized to "<<Form("%5.1f",fdHitDistAv)<<" cm "
+             <<FairLogger::endl;
 
     gROOT->cd();
     if(NULL != fhtmp)    fhDTD4DT04D4Off=(TH1D *)fhtmp->Clone();
@@ -991,7 +1005,7 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
      fhDTSel24 =  new TH1F( Form("hDTSel24"),Form("Matching Sel24; #Delta t_{cor} [ps]; Nhits"),
 			  100, -1000., 1000.); 
      fhTofSel24 =  new TH1F( Form("hTofSel24"),Form("Matching Sel24; #Delta t [ps]; Nhits"),
-			  100, -5000., 5000.); 
+			  100, -10000., 10000.); 
      Int_t iNbinXY=68;
      fhXY0D4best = new TH2F( Form("hXY0D4best"),Form("local position 0;  x [cm]; y [cm]"), iNbinXY, -17., 17., iNbinXY, -17., 17.);
      fhXY4D4best = new TH2F( Form("hXY4D4best"),Form("local position 4;  x [cm]; y [cm]"), iNbinXY, -17., 17., iNbinXY, -17., 17.);
@@ -1031,9 +1045,9 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
      fhDYDT04D4best = new TH2F( Form("hDYDT04D4best"),Form("time - position correlation; #Delta y [cm]; #DeltaT [ps]"),
 			       100, -DYMAX, DYMAX, 100, -DTMAX, DTMAX); 
      fhDistDT04D4best = new TH2F( Form("hDistDT04D4best"),Form("time - distance correlation; Dist [cm]; #DeltaT [ps]"),
-			       100, fdHitDistMin, fdHitDistMin + 5., 100, -DTMAX, DTMAX); 
+			       100, fdHitDistMin, fdHitDistMin + 30., 100, -DTMAX, DTMAX); 
      fhTexpDT04D4best = new TH2F( Form("hTexpDT04D4best"),Form("measured - expected time - correlation; Texp [ps]; #DeltaT [ps]"),
-			       100, 0., 6000., 100, -DTMAX, DTMAX); 
+			       100, 0., 500., 100, -DTMAX, DTMAX); 
      fhCluSize0DT04D4best = new TH2F( Form("hCluSize0DT04D4best"),
 	 			     Form("time - CluSize correlation; M_{strips} ; #DeltaT [ps]"),
 				     20, 0.5, 20.5, 100, -DTMAX, DTMAX); 
@@ -1093,55 +1107,56 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 
      fhChiDT04D4best = new TH2F( Form("hChiDT04D4best"),Form("Time - position correlation; #chi; #DeltaT [ps]"),
 			       100, 0., 100., 100, -DTMAX, DTMAX);
-
+     Double_t dtscal=5.;
+     if ( fdChi2Lim>100. ) dtscal *= 500.;
      fhDTD4DT04D4best = new TH2F( Form("hDTD4DT04D4best"),
 			    Form("Time - velocity correlation; #DeltaTD4 [ps]; #DeltaT04 [ps]"),
-			    100, -DTMAX*6., DTMAX*6., 500, -DTMAX*5., DTMAX*5.); 
+			    100, -DTMAX*6., DTMAX*6., 500, -DTMAX*dtscal, DTMAX*dtscal); 
 
 /*     Double_t dXMAX=30.;*/
 /*     Double_t dYMAX=20.;*/
      fhDTMul4D4best = new TH2F( Form("hDTMul4D4best"),
-			    Form("Time - Multiplicity correlation; Mul4 ; #DeltaT04 [ps]"),
+			    Form("MRef Time - Multiplicity correlation; Mul4 ; #DeltaT04 [ps]"),
 			    20, 0., 20., 100, -DTMAX, DTMAX);
      fhDTX4D4best = new TH2F( Form("hDTX4D4best"),
-			    Form("Time - position correlation; X4 [cm]; #DeltaT04 [ps]"),
+			    Form("MRef Time - position correlation; X4 [cm]; #DeltaT04 [ps]"),
 			    50, -17., 17., 100, -DTMAX, DTMAX); 
      fhDTY4D4best = new TH2F( Form("hDTY4D4best"),
-			    Form("Time - position correlation; Y4 [cm]; #DeltaT04 [ps]"),
+			    Form("MRef Time - position correlation; Y4 [cm]; #DeltaT04 [ps]"),
 			    50, -15., 15., 100, -DTMAX, DTMAX); 
      fhDXX4D4best = new TH2F( Form("hDXX4D4best"),
-			    Form("DX - position correlation; X4 [cm]; #DeltaX04 [cm]"),
+			    Form("MRef DX - position correlation; X4 [cm]; #DeltaX04 [cm]"),
 			    50, -17., 17., 50, -10., 10.); 
      fhDXY4D4best = new TH2F( Form("hDXY4D4best"),
-			    Form("DX - position correlation; Y4 [cm]; #DeltaX04 [cm]"),
+			    Form("MRef DX - position correlation; Y4 [cm]; #DeltaX04 [cm]"),
 			    50, -15., 15., 50, -10., 10.); 
      fhDYX4D4best = new TH2F( Form("hDYX4D4best"),
-			    Form("DY - position correlation; X4 [cm]; #DeltaY04 [cm]"),
+			    Form("MRef DY - position correlation; X4 [cm]; #DeltaY04 [cm]"),
 			    50, -17., 17., 50, -10., 10.); 
      fhDYY4D4best = new TH2F( Form("hDYY4D4best"),
-			    Form("DY - position correlation; Y4 [cm]; #DeltaY04 [cm]"),
+			    Form("MRef DY - position correlation; Y4 [cm]; #DeltaY04 [cm]"),
 			    50, -15., 15., 50, -10., 10.); 
 
      fhDTMul0D4best = new TH2F( Form("hDTMul0D4best"),
-			    Form("Time - Multiplicity correlation; Mul0 ; #DeltaT04 [ps]"),
+			    Form("Dut Time - Multiplicity correlation; Mul0 ; #DeltaT04 [ps]"),
 			    20, 0., 20., 100, -DTMAX, DTMAX);
      fhDTX0D4best = new TH2F( Form("hDTX0D4best"),
-			    Form("Time - position correlation; X0 [cm]; #DeltaT04 [ps]"),
+			    Form("Dut Time - position correlation; X0 [cm]; #DeltaT04 [ps]"),
 			    50, -17., 17., 100, -DTMAX, DTMAX); 
      fhDTY0D4best = new TH2F( Form("hDTY0D4best"),
-			    Form("Time - position correlation; Y0 [cm]; #DeltaT04 [ps]"),
+			    Form("Dut Time - position correlation; Y0 [cm]; #DeltaT04 [ps]"),
 			    50, -15., 15., 100, -DTMAX, DTMAX); 
      fhDXX0D4best = new TH2F( Form("hDXX0D4best"),
-			    Form("DX - position correlation; X0 [cm]; #DeltaX04 [cm]"),
+			    Form("Dut DX - position correlation; X0 [cm]; #DeltaX04 [cm]"),
 			    50, -17., 17., 50, -15., 15.); 
      fhDXY0D4best = new TH2F( Form("hDXY0D4best"),
-			    Form("DX - position correlation; Y0 [cm]; #DeltaX04 [cm]"),
+			    Form("Dut DX - position correlation; Y0 [cm]; #DeltaX04 [cm]"),
 			    50, -15., 15., 50, -15., 15.); 
      fhDYX0D4best = new TH2F( Form("hDYX0D4best"),
-			    Form("DY - position correlation; X0 [cm]; #DeltaY04 [cm]"),
+			    Form("Dut DY - position correlation; X0 [cm]; #DeltaY04 [cm]"),
 			    50, -17., 17., 50, -15., 15.); 
      fhDYY0D4best = new TH2F( Form("hDYY0D4best"),
-			    Form("DY - position correlation; Y0 [cm]; #DeltaY04 [cm]"),
+			    Form("Dut DY - position correlation; Y0 [cm]; #DeltaY04 [cm]"),
 			    50, -15., 15., 50, -15., 15.); 
 
 
@@ -1157,7 +1172,7 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
      fhDYDT04D4sbest = new TH2F( Form("hDYDT04D4sbest"),Form("time - position correlation; #Delta y [cm]; #DeltaT [ps]"),
 			       100, -DYMAX, DYMAX, 100, -DTMAX, DTMAX); 
      fhDistDT04D4sbest = new TH2F( Form("hDistDT04D4sbest"),Form("time - distance correlation; Dist [cm]; #DeltaT [ps]"),
-			       100, fdHitDistMin, fdHitDistMin + 5., 100, -DTMAX, DTMAX); 
+			       100, fdHitDistMin, fdHitDistMin + 30., 100, -DTMAX, DTMAX); 
      fhTexpDT04D4sbest = new TH2F( Form("hTexpDT04D4sbest"),Form("measured - expected time - correlation; Texp [ps]; #DeltaT [ps]"),
 			       100, 0., 6000., 100, -DTMAX, DTMAX); 
      fhCluSize0DT04D4sbest = new TH2F( Form("hCluSize0DT04D4sbest"),
@@ -1405,7 +1420,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
    // Hits info
    Int_t iNbMatchedHits = 0;
    Int_t iNbMaxMatch=100;
-   Double_t Zref=300.;
+   //   Double_t Zref=300.;
 /*   Double_t Chi2MatchMin=1.E8;*/
    Double_t Chi2List[iNbMaxMatch];
    CbmTofHit *pChi2Hit1[iNbMaxMatch];
@@ -1518,9 +1533,13 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 
         CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit));
         dStrMul0 += digiMatch->GetNofLinks()/2.;
-	Double_t xPos1=Zref/pHit->GetZ()*pHit->GetX();
-	Double_t yPos1=Zref/pHit->GetZ()*pHit->GetY();
+	//Double_t xPos1=Zref/pHit->GetZ()*pHit->GetX();
+	//Double_t yPos1=Zref/pHit->GetZ()*pHit->GetY();
+	Double_t xPos1=pHit->GetX();
+	Double_t yPos1=pHit->GetY();
+	Double_t zPos1=pHit->GetZ();
         Double_t tof1 =pHit->GetTime();
+	Double_t dzscal=1.;
 
 	for( Int_t iHitInd2 = 0; iHitInd2 < iNbTofHits; iHitInd2++)
 	{
@@ -1539,8 +1558,11 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	       && fiMrpcRefRpc == CbmTofAddress::GetRpcId( iDetId2 )
 	     */
                ){        // Dut - MrpcRef
-             Double_t xPos2=Zref/pHit2->GetZ()*pHit2->GetX();
-	     Double_t yPos2=Zref/pHit2->GetZ()*pHit2->GetY();
+
+	     if(fEnableMatchPosScaling) dzscal=zPos1/pHit2->GetZ();
+
+             Double_t xPos2=dzscal*pHit2->GetX();
+	     Double_t yPos2=dzscal*pHit2->GetY();
              Double_t tof2 =pHit2->GetTime();
 	     Double_t dTcor=0.;
 	     if(fhDTD4DT04D4Off != NULL) 
@@ -1612,8 +1634,8 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	   if (2==CbmTofAddress::GetSmType( iDetId2 )){  // Plastic 
 	     Int_t iSm=CbmTofAddress::GetSmId( iDetId2 );
              if(iSm<2){
-	      fhXX02[iSm]->Fill(Zref/pHit->GetZ()*pHit->GetX(),Zref/pHit2->GetZ()*pHit2->GetX());
-	      fhYY02[iSm]->Fill(Zref/pHit->GetZ()*pHit->GetY(),Zref/pHit2->GetZ()*pHit2->GetY());
+	      fhXX02[iSm]->Fill(pHit->GetX(),dzscal*pHit2->GetX());
+	      fhYY02[iSm]->Fill(pHit->GetY(),dzscal*pHit2->GetY());
 	     }
 	   }
 	  } //iHit2 != iHit condition end
@@ -1657,6 +1679,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	  if (dDDia==0.) continue;
 	} // 2 diamond condition end 
 
+	Double_t zPos1=pHit->GetZ();
 	for( Int_t iHitInd2 = 0; iHitInd2 < iNbTofHits; iHitInd2++) 
 	  if(iHitInd2!=iHitInd)
 	  {
@@ -1707,8 +1730,10 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 		   if( fiMrpcSel2 < 1 ) {  // assume Mrpctype to be initialized to 0 
 		     BSel[0]=kTRUE;
 		   } else { // request presence of coincident fiMrpcSel2 hit!
-		     Double_t xPos2=Zref/pHit2->GetZ()*pHit2->GetX();
-		     Double_t yPos2=Zref/pHit2->GetZ()*pHit2->GetY();
+		     Double_t dzscal=1.;
+		     if(fEnableMatchPosScaling) dzscal=zPos1/pHit2->GetZ();
+		     Double_t xPos2=dzscal*pHit2->GetX();
+		     Double_t yPos2=dzscal*pHit2->GetY();
 		     Double_t tof2 =pHit2->GetTime();
 		     Double_t dTcor=0.;
 		     Double_t xPos3B=0.;
@@ -1755,9 +1780,9 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 			   /*TGeoNode* cNode3=*/ gGeoManager->GetCurrentNode();
 			   gGeoManager->MasterToLocal(hitpos3, hitpos3_local);
 			   if( TMath::Abs(hitpos3_local[1]-fdPosYS2SelOff)<fdPosYS2Sel*fChannelInfo3->GetSizey() ){
-
-			     Double_t xPos3=Zref/pHit3->GetZ()*pHit3->GetX();
-			     Double_t yPos3=Zref/pHit3->GetZ()*pHit3->GetY();
+			     if(fEnableMatchPosScaling) dzscal=zPos1/pHit3->GetZ();
+			     Double_t xPos3=dzscal*pHit3->GetX();
+			     Double_t yPos3=dzscal*pHit3->GetY();
 			     Double_t tof3 =pHit3->GetTime();	
 	       
 			     Double_t Chi2Match =TMath::Power((xPos3-xPos2)/fdDXWidth,2.)
@@ -1949,12 +1974,15 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      Int_t iChId2 = pHit2->GetAddress();
      fChannelInfo2 = fDigiPar->GetCell( iChId2 );
 
-     Double_t xPos1=Zref/pHit1->GetZ()*pHit1->GetX();
-     Double_t yPos1=Zref/pHit1->GetZ()*pHit1->GetY();
-     Double_t tof1=pHit1->GetTime();
+     Double_t xPos1=pHit1->GetX();
+     Double_t yPos1=pHit1->GetY();
+     Double_t zPos1=pHit1->GetZ();
+     Double_t tof1 =pHit1->GetTime();
+     Double_t dzscal=1.;
+     if(fEnableMatchPosScaling) dzscal=zPos1/pHit2->GetZ();
 
-     Double_t xPos2=Zref/pHit2->GetZ()*pHit2->GetX();
-     Double_t yPos2=Zref/pHit2->GetZ()*pHit2->GetY();
+     Double_t xPos2=dzscal*pHit2->GetX();
+     Double_t yPos2=dzscal*pHit2->GetY();
      Double_t tof2=pHit2->GetTime();
 
      if(fTrbHeader != NULL) fhTIS_sel1->Fill(fTrbHeader->GetTimeInSpill());
@@ -2018,25 +2046,26 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      if(fhCluSize0DT04D4Off != NULL) dTcor+=(Double_t)fhCluSize0DT04D4Off->GetBinContent(fhCluSize0DT04D4Off->FindBin(dCluSize0));
      if(fhCluSize4DT04D4Off != NULL) dTcor+=(Double_t)fhCluSize4DT04D4Off->GetBinContent(fhCluSize4DT04D4Off->FindBin(dCluSize4));
 
+     //    dTcor *= dDist/fdHitDistAv;
+     Double_t dToD = (tof1-tof2-dTcor); //*fdHitDistAv/dDist;
      //     LOG(INFO) << "dTcor for "<<-dDTD4<<" from "<<fhDTD4DT04D4Off<<": "<<dTcor<<FairLogger::endl;
 
      fhTofD4best->Fill(dTofD4);
      if(dInvVel>0.) fhVelD4best->Fill(1000./dInvVel);
 
-     fhChiDT04D4best->Fill(Chi2List[iM0],tof1-tof2-dTcor);
-
-     fhDTD4DT04D4best->Fill(-dDTD4Min,tof1-tof2-dTcor);
-     fhDTMul4D4best->Fill(dMul4,tof1-tof2-dTcor);
+     fhChiDT04D4best->Fill(Chi2List[iM0],dToD);
+     fhDTD4DT04D4best->Fill(-dDTD4Min,dToD);
+     fhDTMul4D4best->Fill(dMul4,dToD);
 
      fhXY4D4best->Fill(hitpos2_local[0],hitpos2_local[1]);
-     fhDTX4D4best->Fill(hitpos2_local[0],tof1-tof2-dTcor);
-     fhDTY4D4best->Fill(hitpos2_local[1],tof1-tof2-dTcor);
+     fhDTX4D4best->Fill(hitpos2_local[0],dToD);
+     fhDTY4D4best->Fill(hitpos2_local[1],dToD);
      fhDXX4D4best->Fill(hitpos2_local[0],xPos1-xPos2);
      fhDXY4D4best->Fill(hitpos2_local[1],xPos1-xPos2);
      fhDYX4D4best->Fill(hitpos2_local[0],yPos1-yPos2);
      fhDYY4D4best->Fill(hitpos2_local[1],yPos1-yPos2);
 
-     fhCluSize4DT04D4best->Fill(digiMatch2->GetNofLinks()/2.,tof1-tof2-dTcor);
+     fhCluSize4DT04D4best->Fill(digiMatch2->GetNofLinks()/2.,dToD);
 
      Double_t dTot = 0.;
      for (Int_t iLink=0; iLink<digiMatch2->GetNofLinks(); iLink++){  // loop over digis
@@ -2050,10 +2079,10 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 }
      } 
      dTot /= digiMatch2->GetNofLinks();  // average time over threshold
-     fhTot4DT04D4best->Fill(TMath::Log(dTot),tof1-tof2-dTcor);
+     fhTot4DT04D4best->Fill(TMath::Log(dTot),dToD);
 
      CbmMatch* digiMatch0=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit1));
-     fhCluSize0DT04D4best->Fill(digiMatch0->GetNofLinks()/2.,tof1-tof2-dTcor);
+     fhCluSize0DT04D4best->Fill(digiMatch0->GetNofLinks()/2.,dToD);
 
      dTot = 0.;
      for (Int_t iLink=0; iLink<digiMatch0->GetNofLinks(); iLink++){  // loop over digis
@@ -2067,12 +2096,12 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 }
      } 
      dTot /= digiMatch0->GetNofLinks();  // average time over threshold
-     fhTot0DT04D4best->Fill(TMath::Log(dTot),tof1-tof2-dTcor);
+     fhTot0DT04D4best->Fill(TMath::Log(dTot),dToD);
 
      fhCluSizeSigT0D4best->Fill(digiMatch1->GetNofLinks()/2.,pHit1->GetTimeError());
      fhCluSizeSigT4D4best->Fill(digiMatch2->GetNofLinks()/2.,pHit2->GetTimeError());
 
-     fhDTMul0D4best->Fill(dMul0,tof1-tof2-dTcor);
+     fhDTMul0D4best->Fill(dMul0,dToD);
 
      // check for dependence in counter reference frame
      /*TGeoNode *fNode1=*/        // prepare global->local trafo
@@ -2089,21 +2118,21 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      fhXX04D4best->Fill(hitpos1_local[0],hitpos2_local[0]);
      fhYY04D4best->Fill(hitpos1_local[1],hitpos2_local[1]);
 
-     fhDTX0D4best->Fill(hitpos1_local[0],tof1-tof2-dTcor);
-     fhDTY0D4best->Fill(hitpos1_local[1],tof1-tof2-dTcor);
+     fhDTX0D4best->Fill(hitpos1_local[0],dToD);
+     fhDTY0D4best->Fill(hitpos1_local[1],dToD);
      fhDXX0D4best->Fill(hitpos1_local[0],xPos1-xPos2);
      fhDXY0D4best->Fill(hitpos1_local[1],xPos1-xPos2);
      fhDYX0D4best->Fill(hitpos1_local[0],yPos1-yPos2);
      fhDYY0D4best->Fill(hitpos1_local[1],yPos1-yPos2);
 
      fhDXDY04D4best->Fill(xPos1-xPos2,yPos1-yPos2);
-     fhDXDT04D4best->Fill(xPos1-xPos2,tof1-tof2-dTcor);
-     fhDYDT04D4best->Fill(yPos1-yPos2,tof1-tof2-dTcor);
-     fhDistDT04D4best->Fill(dDist,tof1-tof2-dTcor);
-     fhTexpDT04D4best->Fill(dDTexp,tof1-tof2-dTcor);
-     fhX0DT04D4best->Fill(hitpos1_local[0],tof1-tof2-dTcor);
-     fhY0DT04D4best->Fill(hitpos1_local[1],tof1-tof2-dTcor);
-     if(fTrbHeader != NULL) fhTISDT04D4best->Fill(fTrbHeader->GetTimeInSpill(),tof1-tof2-dTcor);
+     fhDXDT04D4best->Fill(xPos1-xPos2,dToD);
+     fhDYDT04D4best->Fill(yPos1-yPos2,dToD);
+     fhDistDT04D4best->Fill(dDist,dToD);
+     fhTexpDT04D4best->Fill(dDTexp,dToD);
+     fhX0DT04D4best->Fill(hitpos1_local[0],dToD);
+     fhY0DT04D4best->Fill(hitpos1_local[1],dToD);
+     if(fTrbHeader != NULL) fhTISDT04D4best->Fill(fTrbHeader->GetTimeInSpill(),dToD);
 
      if(iNbMatchedHits>1){
        LOG(DEBUG)<<Form(" Matches>1: %d with first chi2s = %12.1f, %12.1f, %12.1f, %12.1f",iNbMatchedHits,
@@ -2148,13 +2177,14 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 if(TMath::Abs(hitpos4_local[1])>fdPosY4Sel*fChannelInfo4->GetSizey()) continue;
 
 	 fhChi04D4sbest->Fill(Chi2List[iM]);
-
-	 Double_t xPos3=Zref/pChi2Hit1[iM]->GetZ()*pChi2Hit1[iM]->GetX();
-	 Double_t yPos3=Zref/pChi2Hit1[iM]->GetZ()*pChi2Hit1[iM]->GetY();
+	 if(fEnableMatchPosScaling) dzscal=zPos1/pChi2Hit1[iM]->GetZ();
+	 Double_t xPos3=dzscal*pChi2Hit1[iM]->GetX();
+	 Double_t yPos3=dzscal*pChi2Hit1[iM]->GetY();
 	 Double_t tof3=pChi2Hit1[iM]->GetTime();
 
-	 Double_t xPos4=Zref/pChi2Hit2[iM]->GetZ()*pChi2Hit2[iM]->GetX();
-	 Double_t yPos4=Zref/pChi2Hit2[iM]->GetZ()*pChi2Hit2[iM]->GetY();
+	 if(fEnableMatchPosScaling) dzscal=zPos1/pChi2Hit2[iM]->GetZ();
+	 Double_t xPos4=dzscal*pChi2Hit2[iM]->GetX();
+	 Double_t yPos4=dzscal*pChi2Hit2[iM]->GetY();
 	 Double_t tof4=pChi2Hit2[iM]->GetTime();
 
 	 Double_t dDist34=TMath::Sqrt(
@@ -2172,7 +2202,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 
 	 Double_t dTofD44  = fdTOffD4 + pHit4->GetTime()-dTDia;
 	 Double_t dInvVel4 = dTofD44/pHitRef->GetR(); // in ps/cm
-	 Double_t dDTexp4  = dDist34*dInvVel;
+	 Double_t dDTexp4  = dDist34*dInvVel4;
 	 Double_t dTcor4=0.;
 	 if(fhDTD4DT04D4Off != NULL) dTcor4=(Double_t)fhDTD4DT04D4Off->GetBinContent(fhDTD4DT04D4Off->FindBin(dTDia-pHit4->GetTime()));
 	 if(fhDTX4D4Off     != NULL) dTcor4+=(Double_t)fhDTX4D4Off->GetBinContent(fhDTX4D4Off->FindBin(hitpos4_local[0]));
@@ -2180,7 +2210,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 if(fhDTTexpD4Off   != NULL) dTcor4+=(Double_t)fhDTTexpD4Off->GetBinContent(fhDTTexpD4Off->FindBin(dDTexp4));
 
 	 fhTofD4sbest->Fill(dTofD44);
-	 if(dInvVel>0.) fhVelD4sbest->Fill(1000./dInvVel4);
+	 if(dInvVel4>0.) fhVelD4sbest->Fill(1000./dInvVel4);
 
 	 fhChiDT04D4sbest->Fill(Chi2List[iM],tof3-tof4-dTcor4);
 
@@ -2262,13 +2292,13 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 fhDT04DY4_2->Fill(hitpos2_local[1]-hitpos4_local[1],tof3-tof4-dTcor4);
 	 fhDT04DT4_2->Fill(tof2-tof4,tof3-tof4-dTcor4);
 
-	 fhDT04DX0_1->Fill(hitpos1_local[0]-hitpos3_local[0],tof1-tof2-dTcor);
-	 fhDT04DY0_1->Fill(hitpos1_local[1]-hitpos3_local[1],tof1-tof2-dTcor);
-	 fhDT04DT0_1->Fill(tof1-tof3,tof1-tof2-dTcor);
+	 fhDT04DX0_1->Fill(hitpos1_local[0]-hitpos3_local[0],dToD);
+	 fhDT04DY0_1->Fill(hitpos1_local[1]-hitpos3_local[1],dToD);
+	 fhDT04DT0_1->Fill(tof1-tof3,dToD);
 
-	 fhDT04DX4_1->Fill(hitpos2_local[0]-hitpos4_local[0],tof1-tof2-dTcor);
-	 fhDT04DY4_1->Fill(hitpos2_local[1]-hitpos4_local[1],tof1-tof2-dTcor);
-	 fhDT04DT4_1->Fill(tof2-tof4,tof1-tof2-dTcor);
+	 fhDT04DX4_1->Fill(hitpos2_local[0]-hitpos4_local[0],dToD);
+	 fhDT04DY4_1->Fill(hitpos2_local[1]-hitpos4_local[1],dToD);
+	 fhDT04DT4_1->Fill(tof2-tof4,dToD);
 
 	 break;
 	 }
@@ -2626,6 +2656,8 @@ Bool_t CbmTofAnaTestbeam::WriteHistos()
    default:
      ;
    }
+
+   fhDistDT04D4best->Write();
 
    //   fHist->Write();
    if(0) {

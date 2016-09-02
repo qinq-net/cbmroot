@@ -161,6 +161,8 @@ class CbmTofAnaTestbeam : public FairTask {
       inline void SetSIGX   ( Double_t val ) { fSIGX = val; }
       inline void SetSIGY   ( Double_t val ) { fSIGY = val; }
 
+      inline void SetEnableMatchPosScaling(Bool_t bval) { fEnableMatchPosScaling = bval; }
+
       inline Double_t GetSIGLIM () { return fSIGLIM; }
       inline Double_t GetSIGT () { return fSIGT; }
       inline Double_t GetSIGX () { return fSIGX; }
@@ -428,6 +430,7 @@ class CbmTofAnaTestbeam : public FairTask {
       Double_t        fdSel2TOff;          // Offset for matching Sel2 time
 
       Double_t        fdHitDistMin;       // minimal spatial distance of correlated hits 
+      Double_t        fdHitDistAv;        // average spatial distance of correlated hits 
       Double_t        fdTOffD4;           // Offset to calibrate TD4 to time of flight 
       Double_t        fdTShift;           // general time shift of all hits  
       Double_t        fdChi2Lim;          // Chi2 Limit to accept selector coincidence
@@ -462,6 +465,8 @@ class CbmTofAnaTestbeam : public FairTask {
       Double_t fSIGT;
       Double_t fSIGX;
       Double_t fSIGY;
+
+      Bool_t   fEnableMatchPosScaling;
 
       CbmTofFindTracks*  fFindTracks;  // Pointer to Task 
 
