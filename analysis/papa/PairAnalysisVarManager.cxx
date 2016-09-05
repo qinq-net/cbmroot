@@ -41,6 +41,8 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"MPI",                    "m_{#pi}",                                            "(GeV/#it{c}^{2})"},
   {"MKA",                    "m_{K}",                                              "(GeV/#it{c}^{2})"},
   {"MPR",                    "m_{p}",                                              "(GeV/#it{c}^{2})"},
+  {"MK0",                    "m_{K^{0}_{s}}",                                      "(GeV/#it{c}^{2})"},
+  {"MLA",                    "m_{#Lambda}",                                        "(GeV/#it{c}^{2})"},
   {"MPair",                  "m_{pair}",                                           "(GeV/#it{c}^{2})"},
   {"Ebeam",                  "#it{E}_{beam}",                                      "(#it{A}GeV)"},
 // Hit specific variables

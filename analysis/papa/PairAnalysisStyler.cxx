@@ -381,6 +381,35 @@ void PairAnalysisStyler::SetForceFillStyle(Int_t fill)
 }
 
 //_____________________________________________________________________________
+void PairAnalysisStyler::SetForceMarkerFillStyle(EfillMark fill)
+{
+  //
+  // force a certain marker fill style
+  //
+  for(Int_t i=0; i<kNMaxMarker; i++) {
+
+    switch(Marker[i]) {
+    case kOpenCircle:       if (fill==kFullMarker) Marker[i] = kFullCircle       ; break;
+    case kOpenSquare:       if (fill==kFullMarker) Marker[i] = kFullSquare       ; break;
+    case kOpenTriangleUp:   if (fill==kFullMarker) Marker[i] = kFullTriangleUp   ; break;
+    case kOpenTriangleDown: if (fill==kFullMarker) Marker[i] = kFullTriangleDown ; break;
+    case kOpenStar:         if (fill==kFullMarker) Marker[i] = kFullStar         ; break;
+    case kOpenDiamond:      if (fill==kFullMarker) Marker[i] = kFullDiamond      ; break;
+    case kOpenCross:        if (fill==kFullMarker) Marker[i] = kFullCross        ; break;
+    case kFullCircle:       if (fill==kOpenMarker) Marker[i] = kOpenCircle       ; break;
+    case kFullSquare:       if (fill==kOpenMarker) Marker[i] = kOpenSquare       ; break;
+    case kFullTriangleUp:   if (fill==kOpenMarker) Marker[i] = kOpenTriangleUp   ; break;
+    case kFullTriangleDown: if (fill==kOpenMarker) Marker[i] = kOpenTriangleDown ; break;
+    case kFullStar:         if (fill==kOpenMarker) Marker[i] = kOpenStar         ; break;
+    case kFullDiamond:      if (fill==kOpenMarker) Marker[i] = kOpenDiamond      ; break;
+    case kFullCross:        if (fill==kOpenMarker) Marker[i] = kOpenCross        ; break;
+    }
+
+  }
+}
+
+
+//_____________________________________________________________________________
 void PairAnalysisStyler::SetStyle(Eidx idx, Int_t col, Int_t marker, Double_t size, Int_t line, Double_t width, Int_t fill)
 {
   //

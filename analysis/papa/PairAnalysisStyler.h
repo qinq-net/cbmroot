@@ -29,6 +29,7 @@ namespace PairAnalysisStyler
   static Double_t fWdt[kNidx-kRaw]={2.,2.,2.,2.,2.};
   static Int_t    fFll[kNidx-kRaw]={0,0,0,0,0}; //kFEmpty
 
+  enum EfillMark { kOpenMarker=1, kFullMarker, kDontCare };
   enum Estyle { kNMaxMarker=13, kNMaxLine=4, kNMaxColor=17 };
   static Int_t Marker[]= {kFullCircle,
 			  kFullDiamond,
@@ -81,6 +82,8 @@ namespace PairAnalysisStyler
   void SetForceLineStyle(Int_t line=kSolid);
   void SetForceColor(Int_t color=kBlack);
   void SetForceFillStyle(Int_t fill=kFSolid);
+
+  void SetForceMarkerFillStyle(EfillMark fill);
 
   enum Epalette { kDefault=0, kGoodBad };
   void SetPalette(Epalette colors=kDefault, Bool_t reverse=kFALSE);

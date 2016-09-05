@@ -14,6 +14,7 @@
 
 #include <TNamed.h>
 #include <TDatabasePDG.h>
+#include <TPDGCode.h>
 
 #include <TBits.h>
 #include <TRandom3.h>
@@ -68,9 +69,8 @@ using std::vector;
 
 //________________________________________________________________
 class PairAnalysisVarManager : public TNamed {
-  
+
 public:
-  enum PIDtypes { kEL=11, kMU=13, kPI=211, kKA=321, kPR=2212, kNPIDtypes };
 
   enum ValueTypes {
 // Constant information
@@ -79,6 +79,8 @@ public:
     kMPI,                    // pdg mass of pions
     kMKA,                    // pdg mass of kaons
     kMPR,                    // pdg mass of protons
+    kMK0,                    // pdg mass of neutral kaons
+    kMLA,                    // pdg mass of lambdas
     kMPair,                  // pdg mass of pair
     kEbeam,                  // beam energy
     kConstMax,
@@ -1415,14 +1417,17 @@ inline void PairAnalysisVarManager::FillVarConstants(Double_t * const values)
 {
   //
   // Fill constant information available into an array
+  // make use of TPDGCode
   //
 
   // Set
-  values[kMEL]          = TDatabasePDG::Instance()->GetParticle(kEL)->Mass();
-  values[kMMU]          = TDatabasePDG::Instance()->GetParticle(kMU)->Mass();
-  values[kMPI]          = TDatabasePDG::Instance()->GetParticle(kPI)->Mass();
-  values[kMKA]          = TDatabasePDG::Instance()->GetParticle(kKA)->Mass();
-  values[kMPR]          = TDatabasePDG::Instance()->GetParticle(kPR)->Mass();
+  values[kMEL]          = TDatabasePDG::Instance()->GetParticle(kElectron) ->Mass();
+  values[kMMU]          = TDatabasePDG::Instance()->GetParticle(kMuonMinus)->Mass();
+  values[kMPI]          = TDatabasePDG::Instance()->GetParticle(kPiPlus)   ->Mass();
+  values[kMKA]          = TDatabasePDG::Instance()->GetParticle(kKPlus)    ->Mass();
+  values[kMPR]          = TDatabasePDG::Instance()->GetParticle(kProton)   ->Mass();
+  values[kMK0]          = TDatabasePDG::Instance()->GetParticle(kK0Short)  ->Mass();
+  values[kMLA]          = TDatabasePDG::Instance()->GetParticle(kLambda0)  ->Mass();
   values[kMPair]        = fgData[kMPair]; /// automaticaly filled in PairAnalysis::Process using PairAnalysis::fPdgMother
   values[kEbeam]        = fgData[kEbeam]; /// automaticaly filled in AnalysisTaskMultiPairAnalysis::Init
 }
