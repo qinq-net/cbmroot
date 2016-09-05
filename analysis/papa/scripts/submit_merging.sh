@@ -25,7 +25,7 @@ if [ -e $outdir/runList_$splitstep.txt ]; then
     echo "run list already there, only split the list";
 elif [ $splitstep == "1" ]; then
     # first iteration
-    find $indir/. -type f -name "sis100_*analysis.root" > "$outdir/runList_$splitstep.txt";
+    find $indir/. -type f -size +100k -name "sis100_*analysis.root" > "$outdir/runList_$splitstep.txt";
 else
     # iterations > 1
     laststep=$(expr $splitstep - 1)
