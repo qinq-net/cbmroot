@@ -112,8 +112,8 @@ PairAnalysisSignalExt.cxx
 PairAnalysisSpectrum.cxx
 
 
-CbmFastSim.cxx
-CbmFastDecayer.cxx
+#CbmFastSim.cxx
+#CbmFastDecayer.cxx
 )
 
 

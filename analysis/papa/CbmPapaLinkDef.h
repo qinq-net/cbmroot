@@ -197,8 +197,8 @@
 #pragma link C++ class Extraction+;
 
 
-#pragma link C++ class CbmFastSim+;
-#pragma link C++ class CbmFastDecayer+;
+//#pragma link C++ class CbmFastSim+;
+//#pragma link C++ class CbmFastDecayer+;
 
 
 #endif
