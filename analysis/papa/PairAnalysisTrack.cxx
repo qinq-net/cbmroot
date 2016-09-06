@@ -88,7 +88,8 @@ PairAnalysisTrack::PairAnalysisTrack(TParticle *fastTrk,
   fMomentum(),
   fPosition(),
   fPdgCode(fastTrk->GetPdgCode()),
-  fLabel(fastTrk->GetFirstMother())
+  fLabel(fastTrk->GetFirstMother()),
+  fFastTrack(kTRUE)
 {
   //
   // Constructor
@@ -190,7 +191,8 @@ PairAnalysisTrack::PairAnalysisTrack(const PairAnalysisTrack& track) :
   fCharge(track.Charge()),
   fPdgCode(track.PdgCode()),
   fLabel(track.GetLabel()),
-  fWeight(track.GetWeight())
+  fWeight(track.GetWeight()),
+  fFastTrack(track.fFastTrack)
 {
   //
   // Copy Constructor
@@ -273,7 +275,7 @@ void PairAnalysisTrack::SetMassHypo(Int_t pdg1, Int_t pdg2, Bool_t refitMassAssu
   }
 
   // refit (under pdg assumption if activated)
-  if(!refitMassAssump) {
+  if(!refitMassAssump && !fFastTrack) {
     /// get back parameters at primary vertex
     const CbmTrackParam *ppar = fGlblTrack->GetParamVertex();
     if(ppar) {
@@ -303,6 +305,9 @@ void PairAnalysisTrack::Refit(Int_t pidHypo)
   // refit the track under certain mass assumption using CbmL1PFFitter
   // to the primary vertex
   //
+
+  /// do proceed if fast simulation track
+  if(fFastTrack) return;
 
   vector<CbmStsTrack> stsTracks;
   stsTracks.resize(1);

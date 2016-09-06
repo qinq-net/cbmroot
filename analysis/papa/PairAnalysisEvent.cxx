@@ -216,6 +216,14 @@ void PairAnalysisEvent::Init()
 				fMCHeader->GetNPrim(),
 				cov );
   }
+  else if(!fPrimVertex && !fMCHeader) {
+    TMatrixFSym cov(3);
+    fPrimVertex = new CbmVertex("defaultvtx","default vtx",0.,0.,0.,
+				1.0,
+				1,
+				TMath::Max(fGlobalTracks->GetEntriesFast(),fFastTracks->GetEntriesFast()),
+				cov );
+  }
   if(fPrimVertex)     vtx = new CbmKFVertex(*fPrimVertex);
 
   TArrayS matches;
@@ -289,29 +297,35 @@ void PairAnalysisEvent::Init()
     if(iMC<0) iMC=-999; // STS tracks w/o MC matching
     tr->SetLabel(iMC);
     // NOTE: sts track matching might include mvd points
-    tr->SetBit(BIT(14+kMVD),  (iMC==imvdMC)  ); 
+    tr->SetBit(BIT(14+kMVD),  (iMC==imvdMC)  );
     tr->SetBit(BIT(14+kSTS),  (iMC==istsMC)  );
     tr->SetBit(BIT(14+kRICH), (iMC==irichMC) );
     tr->SetBit(BIT(14+kTRD),  (iMC==itrdMC)  );
     tr->SetBit(BIT(14+kTOF),  (iMC==itofMC) );
     tr->SetBit(BIT(14+kMUCH), (iMC==imuchMC)  );
-    
+
   }
 
-  // loop over all fast tracks
-  for (Int_t i=0; i<(fFastTracks?fFastTracks->GetEntriesFast():0); i++) {
-    // fast(sim) track
-    TParticle *ftrk=static_cast<TParticle*>(fFastTracks->UncheckedAt(i));
-    if(!ftrk) continue;
+  // loop over all fast tracks and add them
+  // NOTE: only when there are no global tracks
+  if(!fGlobalTracks || !fGlobalTracks->GetEntriesFast()) {
 
-    // monte carlo track
-    Int_t iMC = ftrk->GetFirstMother();
-    CbmMCTrack *mcTrack=0x0;
-    if(fMCTracks && iMC>=0) mcTrack=static_cast<CbmMCTrack*>(fMCTracks->At(iMC));
-    // increment position in matching array
-    if(mcTrack && fMCTracks) matches[iMC]++;
-    // build papa track
-    fTracks->AddAtAndExpand(new PairAnalysisTrack(ftrk, mcTrack),  i);
+    // loop over all fast tracks
+    for (Int_t i=0; i<(fFastTracks?fFastTracks->GetEntriesFast():0); i++) {
+      // fast(sim) track
+      TParticle *ftrk=static_cast<TParticle*>(fFastTracks->UncheckedAt(i));
+      if(!ftrk) continue;
+
+      // monte carlo track
+      Int_t iMC = ftrk->GetFirstMother();
+      CbmMCTrack *mcTrack=0x0;
+      if(fMCTracks && iMC>=0) mcTrack=static_cast<CbmMCTrack*>(fMCTracks->At(iMC));
+      // increment position in matching array
+      if(mcTrack && fMCTracks) matches[iMC]++;
+      // build papa track
+      fTracks->AddAtAndExpand(new PairAnalysisTrack(ftrk, mcTrack),  i);
+    }
+
   }
 
   // number of multiple matched tracks

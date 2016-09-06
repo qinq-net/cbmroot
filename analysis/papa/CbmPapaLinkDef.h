@@ -196,4 +196,9 @@
 #pragma link C++ class PairAnalysisSpectrum+;
 #pragma link C++ class Extraction+;
 
+
+#pragma link C++ class CbmFastSim+;
+#pragma link C++ class CbmFastDecayer+;
+
+
 #endif

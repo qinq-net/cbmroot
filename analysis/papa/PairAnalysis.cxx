@@ -252,8 +252,8 @@ Bool_t PairAnalysis::Process(PairAnalysisEvent *ev1)
 
   /// event vertex is needed!
   if (!ev1->GetPrimaryVertex() ){
-    Fatal("PairAnalysis::Process","No vertex found!");
-    //Error("PairAnalysis::Process","No vertex found!");
+    Fatal("Process","No vertex found!");
+    //Error("Process","No vertex found!");
     return kFALSE;
   }
 

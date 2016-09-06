@@ -131,8 +131,10 @@ private:
   Double_t       fWeight             = 1.;   // weighting
   Int_t          fMultiMatch         = 0;    // MC label for n-times matched tracks
 
+  Bool_t         fFastTrack          = kFALSE; // fast simulation track identifier
+
   PairAnalysisTrack &operator=(const PairAnalysisTrack &c);
-  ClassDef(PairAnalysisTrack,5)         // Track structure
+  ClassDef(PairAnalysisTrack,6)         // Track structure
 };
 
 

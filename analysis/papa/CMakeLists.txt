@@ -110,6 +110,10 @@ PairAnalysisFunction.cxx
 PairAnalysisSignalExt.cxx
 #PairAnalysisSignalFit.cxx
 PairAnalysisSpectrum.cxx
+
+
+CbmFastSim.cxx
+CbmFastDecayer.cxx
 )
 
 

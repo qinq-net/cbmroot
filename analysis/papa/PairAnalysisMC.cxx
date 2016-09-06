@@ -470,7 +470,7 @@ Bool_t PairAnalysisMC::CheckGEANTProcess(Int_t label, TMCProcess process) const 
   if(!fMCArray) return kFALSE;
   UInt_t processID = static_cast<CbmMCTrack*>(GetMCTrackFromMCEvent(label))->GetGeantProcessId();
   //  printf("process: id %d --> %s \n",processID,TMCProcessName[processID]);
-  return (process==processID);
+  return (process==processID || process==(processID-100) );
 
 }
 
