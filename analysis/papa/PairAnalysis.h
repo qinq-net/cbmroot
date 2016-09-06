@@ -196,6 +196,7 @@ private:
   void  FillHistogramsMC(const PairAnalysisEvent *ev,  PairAnalysisEvent *ev1);
   void  FillHistogramsPair(PairAnalysisPair *pair,Bool_t fromPreFilter=kFALSE);
   void  FillHistogramsTracks(TObjArray **tracks);
+  void  FillHistogramsHits(const PairAnalysisEvent *ev, TBits *fillMC, PairAnalysisTrack *track, Bool_t trackIsLeg, Double_t * values);
   void  FillCutStepHistograms(AnalysisFilter *filter, UInt_t cutmask, PairAnalysisTrack *trk, const Double_t * values);
   void  FillCutStepHistogramsMC(AnalysisFilter *filter, UInt_t cutmask, Int_t label,          const Double_t * values);
 

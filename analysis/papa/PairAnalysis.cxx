@@ -637,8 +637,6 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
   Int_t nsig = (fSignalsMC ? fSignalsMC->GetEntriesFast() : 0);
   TBits trkClassMC(  nsig);
   TBits trkClassMChf(nsig);
-  TBits hitClassMC(  nsig);
-  TBits hitClassMChf(nsig);
   TBits fillMC(  nsig);
   PairAnalysisMC *mc = (nsig ? PairAnalysisMC::Instance() : 0x0);
   PairAnalysisSignalMC *sigMC=0x0;
@@ -685,143 +683,8 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	}
 
 	//Fill tracks hit information
-	// loop over all detectors
-	for (Int_t idet=kREF; idet<kNOFDETS; ++idet){
-	  className3="Hit."+PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet));  // detector hit
-	  Bool_t hitClass  =  fHistos->HasHistClass(className3);
-	  Bool_t hitClass2 = (fHistoArray && fHistoArray->HasHistClass(className3));
-	  // check mc signal filling
-	  for(Int_t isig=0; isig<nsig; isig++) {
-	    sigName = className3 + "_" + fSignalsMC->At(isig)->GetName();
-	    hitClassMC  .SetBitNumber(isig, fHistos->HasHistClass(sigName));
-	    hitClassMChf.SetBitNumber(isig, fHistoArray && fHistoArray->HasHistClass(sigName));
-	  }
-	  if(!hitClass && !hitClass2 && !hitClassMC.CountBits() && !hitClassMChf.CountBits()) continue;
+	FillHistogramsHits(ev, &fillMC, track, kFALSE, values);
 
-	  // get hit array
-	  TClonesArray *hits = ev->GetHits(static_cast<DetectorId>(idet));
-	  if(!hits || hits->GetSize()<1) continue;
-
-	  // get matched track and mc track index/id
-	  CbmTrackMatchNew *tmtch = track->GetTrackMatch(static_cast<DetectorId>(idet));
-	  Int_t mctrk = (tmtch?tmtch->GetMatchedLink().GetIndex():-1);
-	  //	  Printf("mc track id via track match (%p) link: %d",tmtch,mctrk);
-	  // get detector tracks
-	  CbmTrack    *trkl = 0x0;
-	  CbmRichRing *ring = 0x0;
-	  switch(idet) {
-	  case kMVD:
-	  case kSTS:
-	  case kMUCH:
-	  case kTRD:  trkl = track->GetTrack(static_cast<DetectorId>(idet)); break;
-	  case kRICH: ring = track->GetRichRing();   break;
-	  case kTOF:  /* */ break;
-	  default:
-	    continue;
-	  }
-
-	  // loop over all hits
-	  CbmHit      *hit  = 0x0;
-	  CbmMatch    *mtch = 0x0;
-	  FairMCPoint *pnt  = 0x0;
-	  Int_t nhits = 0;
-	  switch(idet) {
-	  case kMVD:  if(trkl) nhits = static_cast<CbmStsTrack*>(trkl)->GetNofMvdHits(); break;
-	  case kSTS:  if(trkl) nhits = static_cast<CbmStsTrack*>(trkl)->GetNofStsHits(); break;
-	  case kMUCH:
-	  case kTRD:  if(trkl) nhits = trkl->GetNofHits();    break;
-	  case kTOF:  nhits = 1; /* one is maximum */         break;
-	  case kRICH: if(ring) nhits = ring->GetNofHits();    break;
-	  default:
-	    continue;
-	  }
-	  // loop over all reconstructed hits
-	  for (Int_t ihit=0; ihit < nhits; ihit++) {
-	    Int_t idx=-1;
-	    switch(idet) {
-	    case kMVD:  idx = static_cast<CbmStsTrack*>(trkl)->GetMvdHitIndex(ihit); break;
-	    case kSTS:  idx = static_cast<CbmStsTrack*>(trkl)->GetStsHitIndex(ihit); break;
-	    case kMUCH:
-	    case kTRD:  idx = trkl->GetHitIndex(ihit);                               break;
-	    case kTOF:  hit = track->GetTofHit();                                    break;
-	    case kRICH: idx = ring->GetHit(ihit);                                    break;
-	    default:
-	      continue;
-	    }
-	    // get hit
-	    if(idet!=kTOF && idx>-1)  {
-	      hit = dynamic_cast<CbmHit*>(hits->At(idx));
-	    }
-	    if(!hit) continue;
-
-	    // fill rec hit variables
-	    PairAnalysisVarManager::Fill(hit, values);
-	    Bool_t trueHit=kTRUE;
-	    Bool_t fakeHit=kTRUE;
-	    // access to mc points
-	    if( (mtch=hit->GetMatch()) && ev->GetPoints(static_cast<DetectorId>(idet))) {
-	      Int_t nlinks=mtch->GetNofLinks();
-
-	      // pnt = static_cast<FairMCPoint*>( ev->GetPoints(static_cast<DetectorId>(idet))
-	      // 				       ->At(mtch->GetLink(0).GetIndex())
-	      // 				       );
-	      // check if mc point corresponds to the matched track (true or fake pnt)
-	      // DEFINITION: always a fake hit if you link to >1 mc points?
-	      //  trueHit = (pnt->GetTrackID() == mctrk && mctrk>-1 && nlinks==1);
-	      // fill MC hit variables
-
-	      // loop over all linked mc points
-	      for (Int_t iLink = 0; iLink < nlinks; iLink++) {
-		pnt = static_cast<FairMCPoint*>( ev->GetPoints(static_cast<DetectorId>(idet))
-						 ->At(mtch->GetLink(iLink).GetIndex())
-						 );
-		// Fill the MC hit variables
-		if(!iLink) PairAnalysisVarManager::Fill(pnt, values);
-		else       PairAnalysisVarManager::FillSum(pnt, values);
-
-		// hit type defintion
-		if(!pnt) trueHit=kFALSE;
-		else if(mc){
-		  Int_t lbl  = pnt->GetTrackID();
-		  Int_t lblM = mc->GetMothersLabel(lbl);
-		  Int_t lblG = mc->GetMothersLabel(lblM);
-		  if(lbl!=mctrk && lblM!=mctrk && lblG!=mctrk) trueHit=kFALSE;
-		  else                                         fakeHit=kFALSE;
-		}
-
-	      } //end links
-
-	    } //end match found
-
-	    // fill rec hit histos
-	    if(hitClass)	    fHistos    ->FillClass(className3, values);
-	    if(hitClass2)	    fHistoArray->FillClass(className3, values);
-	    // true, distorted or fake hit histos
-	    if(trueHit) {
-	      if(hitClass)	    fHistos    ->FillClass(className3+"_true", values);
-	      if(hitClass2)         fHistoArray->FillClass(className3+"_true", values);
-	    }
-	    else if(fakeHit){
-	      if(hitClass)	    fHistos    ->FillClass(className3+"_fake", values);
-	      if(hitClass2)         fHistoArray->FillClass(className3+"_fake", values);
-	    }
-	    else {
-	      if(hitClass)	    fHistos    ->FillClass(className3+"_dist", values);
-	      if(hitClass2)         fHistoArray->FillClass(className3+"_dist", values);
-	    }
-	    // check and fill mc signal histos
-	    for(Int_t isig=0; isig<nsig; isig++) {
-	      sigName = className3 + "_" + fSignalsMC->At(isig)->GetName();
-	      if(fillMC.TestBitNumber(isig)) {
-		if(hitClassMC.TestBitNumber(isig))   fHistos     ->FillClass(sigName, values);
-		if(hitClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
-	      }
-	    }
-
-	    // reset pointer (needed for tof)
-	    hit=0x0;
-	  } // rec hit loop
-	} // det loop
       } // track loop
     } // loop leg type
   } // not pair info only
@@ -840,8 +703,19 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
     Bool_t legClass   =  fHistos->HasHistClass(className2);
     Bool_t legClass2  = (fHistoArray && fHistoArray->HasHistClass(className2));
 
-    // check mc signal filling
+    Bool_t legClassHits =  kFALSE;
+
+    // check leg hits and mc signal filling
     if(i==kSEPM) {
+
+      // loop over all detectors and check for hit histos
+      for (Int_t idet=kREF; idet<kNOFDETS; ++idet){
+	className3+Form("Hit.Legs.")+PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet));
+	legClassHits = fHistos->HasHistClass(className3);
+	if(legClassHits) break;
+      }
+
+
       for(Int_t isig=0; isig<nsig; isig++) {
 	sigName =  Form("Pair_%s",fSignalsMC->At(isig)->GetName());
 	pairClassMC  .SetBitNumber(isig, fHistos->HasHistClass(sigName));
@@ -850,10 +724,22 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	sigName =  Form("Track.Legs_%s",fSignalsMC->At(isig)->GetName());
 	legClassMC  .SetBitNumber(isig, fHistos->HasHistClass(sigName));
 	legClassMChf.SetBitNumber(isig, fHistoArray && fHistoArray->HasHistClass(sigName));
+
+	// check mc signal leg hits filling
+	if(!legClassHits) {
+	  // loop over all detectors
+	  for (Int_t idet=kREF; idet<kNOFDETS; ++idet){
+	    className3=Form("Hit.Legs.")+PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet));
+	    sigName = className3 + "_" + fSignalsMC->At(isig)->GetName();
+	    legClassHits = fHistos->HasHistClass(className3);
+	    if(legClassHits) break; // abort when at least something should be filled
+	  }
+	}
+
       }
     }
 
-    Bool_t fill = (pairClass || pairClass2 || legClass || legClass2 );
+    Bool_t fill = (pairClass || pairClass2 || legClass || legClass2 || legClassHits);
     if (!fill && !legClassMC.CountBits() && !legClassMChf.CountBits() &&
 	!pairClassMC.CountBits() && !pairClassMChf.CountBits()) continue;
 
@@ -905,7 +791,7 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
       }
 
       //fill leg information, don't fill the information twice
-      if (legClass || legClass2 || legClassMC.CountBits() || legClassMChf.CountBits()){
+      if (legClass || legClass2 || legClassMC.CountBits() || legClassMChf.CountBits() || legClassHits){
         PairAnalysisTrack *d1=pair->GetFirstDaughter();
         PairAnalysisTrack *d2=pair->GetSecondDaughter();
         if (!arrLegs.FindObject(d1)){
@@ -922,6 +808,10 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	      if(legClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
 	    }
 	  }
+
+	  //Fill leg hits information
+	  if(legClassHits) FillHistogramsHits(ev, &fillMC, d1, kTRUE, values);
+
 	  arrLegs.Add(d1);
         }
         if (!arrLegs.FindObject(d2)){
@@ -938,6 +828,10 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	      if(legClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
 	    }
 	  }
+
+	  //Fill leg hits information
+	  if(legClassHits) FillHistogramsHits(ev, &fillMC, d2, kTRUE, values);
+
           arrLegs.Add(d2);
         }
       }
@@ -1596,38 +1490,49 @@ Bool_t PairAnalysis::FillMCHistograms(Int_t label1, Int_t label2, Int_t nSignal)
   }
 
   /// loop over all detectors and fill point histograms
-  /// currently only first branch is checked (aka single particle signals)
-  /// TODO: second leg or only single particle MC signals??
   FairMCPoint *pnt=NULL;
   TString className4;
-  if(part1 && sigMC->IsSingleParticle()) {
-    for (Int_t idet=kREF; idet<kNOFDETS; ++idet){
-      className4="Hit." + PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet)) + "_" + sigMC->GetName() + "_MCtruth";
-      if(!fHistos->HasHistClass(className4)) continue;
+  // loop over daughters
+  for(Int_t ipart=0; ipart<2; ipart++) {
 
-      Int_t npnts = part1->GetNPoints(static_cast<DetectorId>(idet));
-      //printf("track %p(%d) \t has %d %s mc points \n",part1,label1,npnts,PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet)).Data());
-      if(!npnts) continue;
+    CbmMCTrack *part = (!ipart ? part1  : part2);
+    Int_t      label = (!ipart ? label1 : label2);
+    if(!part) continue;
+    if(ipart && sigMC->IsSingleParticle()) continue;
 
-      TClonesArray *points = PairAnalysisVarManager::GetCurrentEvent()->GetPoints(static_cast<DetectorId>(idet));    // get point array
-      Int_t psize = points->GetSize();
-      if(!points || psize<1) continue;
+    // leg and no leg loop
+    for(Int_t ileg=0; ileg<2; ileg++) {
 
-      Int_t nfnd=0;
-      for(Int_t idx=0; idx<psize; idx++) {
-	if(nfnd==npnts) break; // all points found
+      // loop over all detectors
+      for (Int_t idet=kREF; idet<kNOFDETS; ++idet){
+	className4=Form("Hit.%s",(ileg?"Legs.":""));
+	className4+= PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet)) + "_" + sigMC->GetName() + "_MCtruth";
+	if(!fHistos->HasHistClass(className4)) continue;
 
-	pnt = static_cast<FairMCPoint*>( points->At(idx));
-	if(pnt->GetTrackID() == label1) {
-	  // printf("det %s \t point index: %d/%d found! \n",PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet)).Data(),idx,psize);
-	  nfnd++;   // found point
-	  PairAnalysisVarManager::Fill(pnt,values);
-	  fHistos->FillClass(className4, values);
+	Int_t npnts = part->GetNPoints(static_cast<DetectorId>(idet));
+	//printf("track %p(%d) \t has %d %s mc points \n",part,label1,npnts,PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet)).Data());
+	if(!npnts) continue;
+
+	TClonesArray *points = PairAnalysisVarManager::GetCurrentEvent()->GetPoints(static_cast<DetectorId>(idet));    // get point array
+	Int_t psize = points->GetSize();
+	if(!points || psize<1) continue;
+
+	Int_t nfnd=0;
+	for(Int_t idx=0; idx<psize; idx++) {
+	  if(nfnd==npnts) break; // all points found
+
+	  pnt = static_cast<FairMCPoint*>( points->At(idx));
+	  if(pnt->GetTrackID() == label) {
+	    // printf("det %s \t point index: %d/%d found! \n",PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet)).Data(),idx,psize);
+	    nfnd++;   // found point
+	    PairAnalysisVarManager::Fill(pnt,values);
+	    fHistos->FillClass(className4, values);
+	  }
 	}
-      }
 
-    }
-  }
+      } //idet loop
+    } // leg or not loop
+  } // daughters loop
 
   //fill pair information
   if (pairClass && part1 && part2) {
@@ -1850,4 +1755,181 @@ void  PairAnalysis::FillCutStepHistogramsMC(AnalysisFilter *filter, UInt_t cutma
 
 }
 
+//________________________________________________________________
+void PairAnalysis::FillHistogramsHits(const PairAnalysisEvent *ev,
+				      TBits *fillMC,
+				      PairAnalysisTrack *track,
+				      Bool_t trackIsLeg,
+				      Double_t * values)
+{
+  //
+  // Fill Histogram information for hits and hits of legs
+  //
+  TString  className;
+
+  Int_t nsig = (fSignalsMC ? fSignalsMC->GetEntriesFast() : 0);
+  TBits hitClassMC(  nsig);
+  TBits hitClassMChf(nsig);
+
+  TString  sigName;
+  PairAnalysisMC *mc = (nsig ? PairAnalysisMC::Instance() : 0x0);
+
+
+  // loop over all detectors
+  for (Int_t idet=kREF; idet<kNOFDETS; ++idet){
+
+    // detectors implemented
+    switch(idet) {
+    case kMVD:
+    case kSTS:
+    case kMUCH:
+    case kTRD:
+    case kRICH:
+    case kTOF:  /* */ break;
+    default:
+      continue;
+    }
+
+    /// histogram name convention
+    className.Form("Hit.%s",(trackIsLeg?"Legs.":""));
+    className+=PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet));  // detector hit
+
+    Bool_t hitClass  =  fHistos->HasHistClass(className);
+    Bool_t hitClass2 = (fHistoArray && fHistoArray->HasHistClass(className));
+
+    // check mc signal filling
+    for(Int_t isig=0; isig<nsig; isig++) {
+      sigName = className + "_" + fSignalsMC->At(isig)->GetName();
+      hitClassMC  .SetBitNumber(isig, fHistos->HasHistClass(sigName));
+      hitClassMChf.SetBitNumber(isig, fHistoArray && fHistoArray->HasHistClass(sigName));
+    }
+    if(!hitClass && !hitClass2 && !hitClassMC.CountBits() && !hitClassMChf.CountBits()) continue;
+
+    // get hit array
+    TClonesArray *hits = ev->GetHits(static_cast<DetectorId>(idet));
+    if(!hits || hits->GetSize()<1) continue;
+
+    // get matched track and mc track index/id
+    CbmTrackMatchNew *tmtch = track->GetTrackMatch(static_cast<DetectorId>(idet));
+    Int_t mctrk = (tmtch?tmtch->GetMatchedLink().GetIndex():-1);
+    //	  Printf("mc track id via track match (%p) link: %d",tmtch,mctrk);
+
+    // get detector tracks
+    CbmTrack    *trkl = 0x0;
+    CbmRichRing *ring = 0x0;
+    switch(idet) {
+    case kMVD:
+    case kSTS:
+    case kMUCH:
+    case kTRD:  trkl = track->GetTrack(static_cast<DetectorId>(idet)); break;
+    case kRICH: ring = track->GetRichRing();   break;
+    case kTOF:  /* */ break;
+    default:
+      continue;
+    }
+
+    // get number of hits
+    Int_t nhits = 0;
+    switch(idet) {
+    case kMVD:  if(trkl) nhits = static_cast<CbmStsTrack*>(trkl)->GetNofMvdHits(); break;
+    case kSTS:  if(trkl) nhits = static_cast<CbmStsTrack*>(trkl)->GetNofStsHits(); break;
+    case kMUCH:
+    case kTRD:  if(trkl) nhits = trkl->GetNofHits();    break;
+    case kTOF:  nhits = 1; /* one is maximum */         break;
+    case kRICH: if(ring) nhits = ring->GetNofHits();    break;
+    default:
+      continue;
+    }
+
+    // loop over all reconstructed hits
+    CbmHit      *hit  = 0x0;
+    CbmMatch    *mtch = 0x0;
+    FairMCPoint *pnt  = 0x0;
+    for (Int_t ihit=0; ihit < nhits; ihit++) {
+      Int_t idx=-1;
+      switch(idet) {
+      case kMVD:  idx = static_cast<CbmStsTrack*>(trkl)->GetMvdHitIndex(ihit); break;
+      case kSTS:  idx = static_cast<CbmStsTrack*>(trkl)->GetStsHitIndex(ihit); break;
+      case kMUCH:
+      case kTRD:  idx = trkl->GetHitIndex(ihit);                               break;
+      case kTOF:  hit = track->GetTofHit();                                    break;
+      case kRICH: idx = ring->GetHit(ihit);                                    break;
+      default:
+	continue;
+      }
+      // get hit
+      if(idet!=kTOF && idx>-1)  {
+	hit = dynamic_cast<CbmHit*>(hits->At(idx));
+      }
+      if(!hit) continue;
+
+      // fill rec hit variables
+      PairAnalysisVarManager::Fill(hit, values);
+      Bool_t trueHit=kTRUE;
+      Bool_t fakeHit=kTRUE;
+      // access to mc points
+      if( (mtch=hit->GetMatch()) && ev->GetPoints(static_cast<DetectorId>(idet))) {
+	Int_t nlinks=mtch->GetNofLinks();
+
+	// check if mc point corresponds to the matched track (true or fake pnt)
+	// DEFINITION: always a fake hit if you link to >1 mc points?
+	//  trueHit = (pnt->GetTrackID() == mctrk && mctrk>-1 && nlinks==1);
+
+	// fill MC hit variables
+	// NOTE: the sum of all linked mc points is stored, you have to normlize to the mean
+	// loop over all linked mc points
+	for (Int_t iLink = 0; iLink < nlinks; iLink++) {
+	  pnt = static_cast<FairMCPoint*>( ev->GetPoints(static_cast<DetectorId>(idet))
+					   ->At(mtch->GetLink(iLink).GetIndex())
+					   );
+
+	  // Fill the MC hit variables
+	  if(!iLink) PairAnalysisVarManager::Fill(pnt, values);
+	  else       PairAnalysisVarManager::FillSum(pnt, values);
+
+	  // hit type defintion
+	  if(!pnt) trueHit=kFALSE;
+	  else if(mc){
+	    Int_t lbl  = pnt->GetTrackID();
+	    Int_t lblM = mc->GetMothersLabel(lbl);
+	    Int_t lblG = mc->GetMothersLabel(lblM);
+	    if(lbl!=mctrk && lblM!=mctrk && lblG!=mctrk) trueHit=kFALSE;
+	    else                                         fakeHit=kFALSE;
+	  }
+
+	} //end links
+
+      } //end match found
+
+      // fill rec hit histos
+      if(hitClass)	    fHistos    ->FillClass(className, values);
+      if(hitClass2)	    fHistoArray->FillClass(className, values);
+      // fill true, distorted or fake hit histos
+      if(trueHit) {
+	if(hitClass)	    fHistos    ->FillClass(className+"_true", values);
+	if(hitClass2)       fHistoArray->FillClass(className+"_true", values);
+      }
+      else if(fakeHit){
+	if(hitClass)	    fHistos    ->FillClass(className+"_fake", values);
+	if(hitClass2)       fHistoArray->FillClass(className+"_fake", values);
+      }
+      else {
+	if(hitClass)	    fHistos    ->FillClass(className+"_dist", values);
+	if(hitClass2)       fHistoArray->FillClass(className+"_dist", values);
+      }
+      // check and fill mc signal histos
+      for(Int_t isig=0; isig<nsig; isig++) {
+	sigName = className + "_" + fSignalsMC->At(isig)->GetName();
+	if(fillMC->TestBitNumber(isig)) { // track is MC signal truth
+	  if(hitClassMC.TestBitNumber(isig))   fHistos     ->FillClass(sigName, values);
+	  if(hitClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
+	}
+      }
+
+      // reset pointer (needed for tof)
+      hit=0x0;
+    } // rec hit loop
+  } // det loop
+
+}
 
