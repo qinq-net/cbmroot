@@ -2,20 +2,16 @@
 # shell script to iterate clusterizer calibrations 
 
 #cRun=$1
-#cRun='CbmTofPiHd_01Mar1558'
-#cRun='CbmTofPiHd_30Mar1435'
-#cRun='CbmTofPiHd_01Apr1647'
-#cRun='CbmTofPiHd_14Apr1255'
 #cRun='CbmTofPiHd_09Aug1533'
 #cRun='CbmTofPiHd_11Aug1224'
 #cRun='CbmTofPiHd_13Aug0855'
 #cRun='CbmTofPiHd_15Aug0818'
 #cRun='CbmTofPiHd_17Aug1724'
-cRun='CbmTofPiHd_22Aug1616'
+#cRun='CbmTofPiHd_22Aug1616'
+cRun='CbmTofPiHd_29Aug1401'
+
 
 #iDut=921; iRef=300; iSel2=920
-#iDut=921; iRef=920; iSel2=0
-#iDut=6; iRef=1; iSel2=8;
 #((iSet=$iDut*1000+$iRef))
   
 c0='00000'
@@ -36,6 +32,16 @@ iCalSet=901900921
 
 #iSel2=$3
 iSel2=-$iBRef
+
+# ----------------------- Clean up before fresh Re-run --------------------------
+if((0)); then
+rm all_*.par core_dump_* *.pdf
+rm digi_${cRun}.out.root
+rm tofAnaTestBeam.hst.root
+rm tofTestBeamClust_${cRun}_set${iCalSet}.hst.root
+rm digi_${cRun}_${iCalSet}_${iSel2}.out.root
+fi
+# ------------------------------- End Clean up ----------------------------------
 
 if((${iSel2}<0)); then
  ((iBRef=-$iSel2))

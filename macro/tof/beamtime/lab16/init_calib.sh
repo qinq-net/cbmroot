@@ -44,30 +44,19 @@
 # **************************************************************************** #
 
 #cRun=$1
-#cRun='CbmTofPiHd_01Mar1558'
-#cRun='CbmTofPiHd_30Mar1435'
-#cRun='CbmTofPiHd_01Apr1647'
-#cRun='CbmTofPiHd_14Apr1255'
 #cRun='CbmTofPiHd_09Aug1533'
 #cRun='CbmTofPiHd_10Aug1728'
 #cRun='CbmTofPiHd_11Aug1224'
 #cRun='CbmTofPiHd_13Aug0855'
 #cRun='CbmTofPiHd_15Aug0818'
 #cRun='CbmTofPiHd_17Aug1724'
-cRun='CbmTofPiHd_22Aug1616'
+#cRun='CbmTofPiHd_22Aug1616'
+cRun='CbmTofPiHd_29Aug1401'
 
-# Clean up before fresh re-run of init_calib.sh
-if((1)); then
-	rm -r $cRun
-	rm $cRun_*tofTestBeamClust.hst.root
-fi
 
 nIter=1
 echo "Initialize clusterizer calibration for run $cRun, execute $nIter iterations"
-#iDut=3; iMRef=9; iBRef=7;
 #iDut=901; iMRef=900; iBRef=921;
-
-#((iSet=$iDut*1000+$iMRef))
 #((iSet=$iDut*1000000+$iMRef*1000+$iBRef))
 
 #iCalSet=$2
@@ -85,12 +74,19 @@ iCalSet=901900921
 ((iTmp  = $iTmp - $iMRef))
 ((iDut  = $iTmp / 1000000))
 
-echo "Calib setup is ${iCalSet}, iSet=$iSet, iDut=$iDut, iMRef=$iMRef, iBRef=$iBRef"
+# ----------------------- Clean up before fresh Re-run --------------------------
+if((0)); then
+rm all_*.par core_dump_* *.pdf
+rm digi_${cRun}.out.root
+rm ${cRun}_set${iCalSet}_*_0tofTestBeamClust.hst.root
+rm ${cRun}_set${iCalSet}_*_1tofTestBeamClust.hst.root
+fi
+# ------------------------------- End Clean up ----------------------------------
 
+echo "Calib setup is ${iCalSet}, iSet=$iSet, iDut=$iDut, iMRef=$iMRef, iBRef=$iBRef"
 #return
 #iSet=0
 #lastOpt=''
-
 nEvi=10000000
 nEvii=10000000
 mkdir ${cRun}

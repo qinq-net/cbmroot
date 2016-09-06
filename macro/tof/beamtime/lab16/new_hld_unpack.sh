@@ -7,34 +7,24 @@
 #cRun=CbmTofPiHd_13Aug0855
 #cRun=CbmTofPiHd_15Aug0818
 #cRun=CbmTofPiHd_17Aug1724
-cRun=CbmTofPiHd_22Aug1616
-# -------------------------------- Cleaning Up -------------------------------- 
+#cRun=CbmTofPiHd_22Aug1616
+cRun=CbmTofPiHd_29Aug1401
+
+# -------------------------------- Cleaning Up --------------------------------
 
 # Removing files: Fresh unpacking
-if((0)); then
+if((1)); then
 rm all_*.par core_dump_* *.pdf
 rm tofMbsUnp.hst.root
 rm tofMbsCal.hst.root
 rm tofMbsMap.hst.root
 rm tofTrbUnp.hst.root
-rm TofTdcCalibHistos_$cRun.root
+rm TofTdcCalibHistos_${cRun}.root
 rm tofFindTracks.hst.root
-rm unpack_$cRun.buffer.root
-rm unpack_$cRun.calib.root
-rm unpack_$cRun.out.root 
-rm unpack_$cRun.params.root
-fi
-
-# Removing files: Without unpacking
-if((0)); then
-rm -r $cRun
-rm *.pdf
-rm tofTestBeamClust_$cRun_set*.hst.root
-rm $cRun_set*_0tofTestBeamClust.hst.root
-rm $cRun_set*_1tofTestBeamClust.hst.root
-rm $cRun_*tofAnaTestBeam.hst.root
-rm digi_$cRun.out.root
-rm digi_$cRun_*.out.root
+rm unpack_${cRun}.buffer.root
+rm unpack_${cRun}.calib.root
+rm unpack_${cRun}.out.root 
+rm unpack_${cRun}.params.root
 fi
 
 # ------------------------ Using New Calibration Class ------------------------

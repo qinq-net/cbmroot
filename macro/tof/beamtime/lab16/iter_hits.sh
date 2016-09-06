@@ -11,8 +11,8 @@
 cRun='CbmTofPiHd_22Aug1616'
 
 #iDut=$2; iRef=$3; iSel2=$4
-#iDut=901; iRef=900; iSel2=-921
-iDut=601; iRef=600; iSel2=-921
+iDut=901; iRef=900; iSel2=-921
+#iDut=601; iRef=600; iSel2=-921
 
 iTraSetup=0;
 
@@ -35,6 +35,15 @@ cSel2=$iSel2;
 if [[ $iSel2 = 0 ]]; then
 cSel2="000"
 fi
+
+# ----------------------- Clean up before fresh Re-run ------------------------
+if((0)); then
+rm hits_${cRun}_${cSet}_${iSel}_${iSel2}.out.root
+rm ${cRun}_${cSet}_${iSel}_${iSel2}_tofAnaTestBeam.hst.root
+fi
+# ------------------------------- End Clean up --------------------------------
+
+if((1)); then
 
 cd ${cRun}
 mkdir          Ana${cRun}_${cSet}_${iSel}_${cSel2}
@@ -86,3 +95,5 @@ root -b -q '../../ana_hits.C(1000000000,'$iSel',1,"'$cRun'","'$cSet'",'$iSel2','
 #cp -v ./hst/* ../../hst/
 rm all_*.par
 cd ../..
+
+fi

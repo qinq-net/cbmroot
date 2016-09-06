@@ -84,24 +84,24 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
 										 TOF TestBeam Clusterizer
 	************************************************************************** */
 	CbmTofTestBeamClusterizer* tofTestBeamClust = new CbmTofTestBeamClusterizer("TOF TestBeam Clusterizer",iVerbose, bOut);
-
+	
+	//defaults
 	tofTestBeamClust->SetCalMode(calMode);
 	tofTestBeamClust->SetCalSel(calSel);
 	tofTestBeamClust->SetCaldXdYMax(3.);          		// geometrical matching window in cm 
-	tofTestBeamClust->SetCalCluMulMax(20.);       		// Max Counter Cluster Multiplicity for filling calib histos  
+	tofTestBeamClust->SetCalCluMulMax(20.);       		// max Counter Cluster Multiplicity for filling calib histos  
 	tofTestBeamClust->SetCalRpc(calSm);           		// select detector for calibration update  
 	tofTestBeamClust->SetTRefId(RefSel);          		// reference trigger for offset calculation 
-	tofTestBeamClust->SetTotMax(10000.);         		// Tot upper limit for walk corection
-	tofTestBeamClust->SetTotMin(1.); 						//(12000.), Tot lower limit for walk correction
-	tofTestBeamClust->SetTotPreRange(5000.);      		// effective lower Tot limit  in ps from peak position
-	tofTestBeamClust->SetTotMean(2000.);          		// Tot calibration target value in ps 
-	tofTestBeamClust->SetMaxTimeDist(500.);       		// default cluster range in ps
+	tofTestBeamClust->SetTotMax(10000.);         		// tot upper limit for walk corection
+	tofTestBeamClust->SetTotMin(1.); 						// (12000.), tot lower limit for walk correction
+	tofTestBeamClust->SetTotPreRange(5000.);      		// effective lower tot limit in ps from peak position
+	tofTestBeamClust->SetTotMean(2000.);          		// tot calibration target value in ps 
+	tofTestBeamClust->SetMaxTimeDist(500.);       		// FIXME, default cluster range in ps
 	tofTestBeamClust->SetBeamRefMulMax(5);					// set max multiplicity in BeamRef 
-	Int_t calSelRead = calSel;
+	//end-defaults
 	
-	if	(calSel < 0) 	
-		calSelRead=0;
-
+	Int_t calSelRead = calSel;
+	if	(calSel < 0) calSelRead=0;
 	TString cFname=Form("%s_set%09d_%02d_%01dtofTestBeamClust.hst.root", cFileId, iCalSet, calMode, calSelRead);
 	tofTestBeamClust->SetCalParFileName(cFname);
 	TString cOutFname=Form("tofTestBeamClust_%s_set%09d.hst.root", cFileId, iCalSet);
@@ -250,31 +250,30 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
 	************************************************************************** */
 	CbmTofAnaTestbeam* tofAnaTestbeam = new CbmTofAnaTestbeam("TOF TestBeam Analysis", iVerbose);
 
-	//CbmTofAnaTestbeam defaults  
+	//defaults  
 	tofAnaTestbeam->SetReqTrg(-1);   						// 0 - no selection
-	
-	tofAnaTestbeam->SetDXMean(0.);
-	tofAnaTestbeam->SetDYMean(0.);
+	tofAnaTestbeam->SetDXMean(0.);							// in cm
+	tofAnaTestbeam->SetDYMean(0.);							// in cm
 	tofAnaTestbeam->SetDTMean(0.);  							// in ps
-	
-	tofAnaTestbeam->SetDXWidth(1.5);
-	tofAnaTestbeam->SetDYWidth(1.5);
-	tofAnaTestbeam->SetDTWidth(80.); 						// in ps
-	
-	tofAnaTestbeam->SetMul0Max(30);      					// Max Multiplicity in dut 
-	tofAnaTestbeam->SetMul4Max(30);      					// Max Multiplicity in Ref - RPC 
-	tofAnaTestbeam->SetMulDMax(30);      					// Max Multiplicity in Diamond
-	
-	tofAnaTestbeam->SetCalParFileName(cAnaFile);
-	
-	tofAnaTestbeam->SetPosY4Sel(10.5); 						// Y Position selection in fraction of strip length
+	tofAnaTestbeam->SetDXWidth(1.5);							// in cm
+	tofAnaTestbeam->SetDYWidth(1.5);							// in cm
+	tofAnaTestbeam->SetDTWidth(100.); 						// in ps
+	tofAnaTestbeam->SetMul0Max(20);      					// Max Multiplicity in Dut - RPC
+	tofAnaTestbeam->SetMul4Max(20);      					// Max Multiplicity in Ref - RPC 
+	tofAnaTestbeam->SetMulDMax(20);      					// Max Multiplicity in Diamond
+	tofAnaTestbeam->SetCalParFileName(cAnaFile);			// Output file name
 	tofAnaTestbeam->SetDTDia(0.);   							// Time difference to additional diamond
 	tofAnaTestbeam->SetCorMode(RefSel); 					// 1 - DTD4, 2 - X4
-	tofAnaTestbeam->SetHitDistMin(30.);  					// initialization
-	tofAnaTestbeam->SetPosYS2Sel(10.5);   					// Y Position selection in fraction of strip length
+	tofAnaTestbeam->SetHitDistMin(30.);  					// Initialization
 	
-	tofAnaTestbeam->SetChS2Sel(0.);      					// Center of channel selection window
-	tofAnaTestbeam->SetDChS2Sel(100.);   					// Width  of channel selection window
+	// D vs 4 vs S2 vs Sel ???
+	tofAnaTestbeam->SetPosY4Sel(10.5); 						// Y-Position selection in fraction of strip length
+	tofAnaTestbeam->SetPosYS2Sel(10.5);   					// Y-Position selection in fraction of strip length
+	//tofAnaTestbeam->SetCh4Sel(0.);                	// Center of channel selection window
+   tofAnaTestbeam->SetChS2Sel(0.);     					// Center of channel selection window
+   //tofAnaTestbeam->SetDCh4Sel(100.);      				// Width of channel selection window
+   tofAnaTestbeam->SetDChS2Sel(100.);   					// Width of channel selection window
+	//end-defaults
 	
 	/* *************************************************************************  
 		 		iRSel, iRSelTyp, iRSelSm, iRSelRpc based on iSel2=-921
@@ -283,10 +282,9 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
    Int_t iSet  = (iCalSet - iBRef)/1000;
    
    cout << endl;
-	cout << "dispatch: iCalSet = " << iCalSet << ", iSet = " << iSet << ", iBRef    = " << iBRef  << ", iSel2 = " << iSel2 << endl;
+	cout << "dispatch: iCalSet = " << iCalSet << ", iSet = " << iSet << ", iBRef = " << iBRef  << ", iSel2 = " << iSel2 << endl;
 	
    Int_t iRSel=0, iRSelTyp=0, iRSelSm=0, iRSelRpc=0;
-
    if (iSel2 >= 0) {
      iRSel=iBRef;     											// use diamond
    } else {
@@ -299,12 +297,13 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
    iRSelSm=iRSelTyp%10;
    iRSelTyp = (iRSelTyp-iRSelSm)/10;
 
-   tofTestBeamClust->SetBeamRefId(iRSelTyp);    		// define Beam reference counter 
+   tofTestBeamClust->SetBeamRefId(iRSelTyp);    		// define beam reference counter 
    tofTestBeamClust->SetBeamRefSm(iRSelSm);
    tofTestBeamClust->SetBeamRefDet(iRSelRpc);
-   tofTestBeamClust->SetBeamAddRefMul(-1);
+   
+   tofTestBeamClust->SetBeamAddRefMul(-1);				// ???
 
-   tofAnaTestbeam->SetBeamRefSmType(iRSelTyp);
+   tofAnaTestbeam->SetBeamRefSmType(iRSelTyp);			// define beam reference counter 
    tofAnaTestbeam->SetBeamRefSmId(iRSelSm);
    tofAnaTestbeam->SetBeamRefRpc(iRSelRpc);
 	
@@ -317,9 +316,7 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
    iSel2 = (iSel2-iSel2Rpc)/10;
    Int_t iSel2Sm = iSel2%10;
    iSel2 = (iSel2-iSel2Sm)/10;
-   
-   if (iSel2 > 0) 
-   {
+   if (iSel2 > 0) {
      tofTestBeamClust->SetSel2Id(iSel2); 
      tofTestBeamClust->SetSel2Sm(iSel2Sm); 
      tofTestBeamClust->SetSel2Rpc(iSel2Rpc);
@@ -336,32 +333,31 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
 	************************************************************************* */
 	Int_t iRef = iSet %1000;
    Int_t iDut = (iSet - iRef)/1000;
-   
    Int_t iDutRpc = iDut%10;
    iDut = (iDut - iDutRpc)/10;
    Int_t iDutSm = iDut%10;
    iDut = (iDut - iDutSm)/10;
 
-   tofTestBeamClust->SetDutId(iDut);
-   tofTestBeamClust->SetDutSm(iDutSm);
-   tofTestBeamClust->SetDutRpc(iDutRpc);
+   tofTestBeamClust->SetDutId(iDut);						// Device Under Test (Dut) for Clusterizer
+   tofTestBeamClust->SetDutSm(iDutSm);						// Device Under Test (Dut) for Clusterizer
+   tofTestBeamClust->SetDutRpc(iDutRpc);					// Device Under Test (Dut) for Clusterizer
 
    Int_t iRefRpc = iRef%10;
    iRef = (iRef - iRefRpc)/10;
    Int_t iRefSm = iRef%10;
    iRef = (iRef - iRefSm)/10;
 
-   tofTestBeamClust->SetSelId(iRef);						// Selector RPC (Sel)
-   tofTestBeamClust->SetSelSm(iRefSm);						// Selector RPC (Sel)
-   tofTestBeamClust->SetSelRpc(iRefRpc);					// Selector RPC (Sel)
+   tofTestBeamClust->SetSelId(iRef);						// Selector RPC (Sel) for Clusterizer
+   tofTestBeamClust->SetSelSm(iRefSm);						// Selector RPC (Sel) for Clusterizer
+   tofTestBeamClust->SetSelRpc(iRefRpc);					// Selector RPC (Sel) for Clusterizer
 
-   tofAnaTestbeam->SetDut(iDut);              			// Device Under Test (Dut)
-   tofAnaTestbeam->SetDutSm(iDutSm);          			// Device Under Test (Dut)
-   tofAnaTestbeam->SetDutRpc(iDutRpc);        			// Device Under Test (Dut)
+   tofAnaTestbeam->SetDut(iDut);              			// Device Under Test (Dut) for AnaTestBeam
+   tofAnaTestbeam->SetDutSm(iDutSm);          			// Device Under Test (Dut) for AnaTestBeam
+   tofAnaTestbeam->SetDutRpc(iDutRpc);        			// Device Under Test (Dut) for AnaTestBeam
     
-   tofAnaTestbeam->SetMrpcRef(iRef);          			// Reference RPC (MRef)
-   tofAnaTestbeam->SetMrpcRefSm(iRefSm);      			// Reference RPC (MRef)
-   tofAnaTestbeam->SetMrpcRefRpc(iRefRpc);    			// Reference RPC (MRef)
+   tofAnaTestbeam->SetMrpcRef(iRef);          			// Reference RPC (MRef) for AnaTestBeam
+   tofAnaTestbeam->SetMrpcRefSm(iRefSm);      			// Reference RPC (MRef) for AnaTestBeam
+   tofAnaTestbeam->SetMrpcRefRpc(iRefRpc);    			// Reference RPC (MRef) for AnaTestBeam
 
 	cout << "dispatch: iDut = " << iDut << ", iDutSm = " << iDutSm << ", iDutRpc = " << iDutRpc << endl;
 	cout << "dispatch: iRef = " << iRef << ", iRefSm = " << iRefSm << ", iRefRpc = " << iRefRpc << endl;
@@ -414,37 +410,47 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
 				break;
 				
 			case 6:		// iRSel
+			
 				//tofTestBeamClust->SetBeamAddRefMul(1);
 				tofAnaTestbeam->SetTShift(200.);     			// Shift DTD4 to 0
 				tofAnaTestbeam->SetSel2TOff(0.);     			// Shift Sel2 time peak to 0
 				tofAnaTestbeam->SetTOffD4(16000.);   			// Shift DTD4 to physical value
+				
+				//additional counter-specific settings
+				tofAnaTestbeam->SetChi2Lim(10.);   				// Chi2Lim selection limit b/w iDut & iMRef; increase efficiency
+				tofAnaTestbeam->SetChi2Lim2(10.);				// Chi2Lim2 selection limit b/w Sel2 (-iBRef) & iMRef; narrow down area
+			
 				break;
 				
 			case 9:		// iRSel
+			
 				//tofTestBeamClust->SetBeamAddRefMul(1);
-				tofAnaTestbeam->SetTShift(-940.);     		// Shift DTD4 to 0
-				tofAnaTestbeam->SetSel2TOff(-900.);     		// Shift Sel2 time peak to 0
+				tofAnaTestbeam->SetTShift(-775.);     			// Shift DTD4 to 0
+				tofAnaTestbeam->SetSel2TOff(-705.);     		// Shift Sel2 time peak to 0
 				tofAnaTestbeam->SetTOffD4(16000.);   			// Shift DTD4 to physical value
+				
+				//additional counter-specific settings
+				tofAnaTestbeam->SetChi2Lim(5.);   				// Chi2Lim selection limit b/w iDut & iMRef; increase efficiency
+				tofAnaTestbeam->SetChi2Lim2(5.);					// Chi2Lim2 selection limit b/w Sel2 (-iBRef) & iMRef; narrow down area
+			
 				break;
 
 			default:
 				;
 				
 			}//end-switch(iRSel)
-		
-			tofAnaTestbeam->SetChi2Lim(10.);   				 	// initialization of Chi2Lim selection limit  
-			tofAnaTestbeam->SetChi2Lim2(10.);					// initialization of Chi2Lim2 selection limit
-	
-			if ((0)) {  												// for efficiency determination
-		
+			
+			//specific settings for current "iSet"
+			if ((0)) 													// For efficiency determination
+			{  															
 				tofAnaTestbeam->SetPosY4Sel(10.5); 				// Y Position selection in fraction of strip length
 				tofAnaTestbeam->SetMulDMax(3);      			// Max Multiplicity in Diamond    
 				tofAnaTestbeam->SetPosY4Sel(0.25);   			// Y Position selection in fraction of strip length
 				tofAnaTestbeam->SetCh4Sel(16.);      			// Center of channel selection window
-				tofAnaTestbeam->SetDCh4Sel(8.); 
+				tofAnaTestbeam->SetDCh4Sel(8.); 					// 
 				tofAnaTestbeam->SetPosYS2Sel(0.25);   			// Y Position selection in fraction of strip length
 				tofAnaTestbeam->SetChS2Sel(16.);      			// Center of channel selection window
-				tofAnaTestbeam->SetDChS2Sel(8.);
+				tofAnaTestbeam->SetDChS2Sel(8.);					// 
 				
 			}//end-if(0)
 		
@@ -456,7 +462,6 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
 			;
 		
 	}//end-switch(iSet)
-	
   	run->AddTask(tofAnaTestbeam);
 
 	/* **************************************************************************
@@ -530,56 +535,61 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
 		case 601600:
 		
 			// void pl_over_clu(Int_t SmT=0, Int_t iSm=0, Int_t iRpc=0)
-			//gInterpreter->ProcessLine("pl_over_clu(3)");
-			//gInterpreter->ProcessLine("pl_over_clu(4)");
-			//gInterpreter->ProcessLine("pl_over_clu(5)");
+			
+			//gInterpreter->ProcessLine("pl_over_clu(3,0,0)");			
+			//gInterpreter->ProcessLine("pl_over_clu(4,0,0)");
+			//gInterpreter->ProcessLine("pl_over_clu(5,0)");
 			//gInterpreter->ProcessLine("pl_over_clu(5,1)");
 			//gInterpreter->ProcessLine("pl_over_clu(5,2)");
+			
+			gInterpreter->ProcessLine("pl_over_clu(6,0,0)");
+			gInterpreter->ProcessLine("pl_over_clu(6,0,1)");
+			
 			gInterpreter->ProcessLine("pl_over_clu(9,0,0)");
 			gInterpreter->ProcessLine("pl_over_clu(9,0,1)");
 			gInterpreter->ProcessLine("pl_over_clu(9,1,0)");
 			gInterpreter->ProcessLine("pl_over_clu(9,1,1)");
 			gInterpreter->ProcessLine("pl_over_clu(9,2,0)");
 			gInterpreter->ProcessLine("pl_over_clu(9,2,1)");
-		
+
 			// void pl_over_cluSel(Int_t iSel=0, Int_t iSmT=0, Int_t iSm=0, Int_t iRpc=0)
-			//gInterpreter->ProcessLine("pl_over_cluSel(0,3)");
+			
+			//gInterpreter->ProcessLine("pl_over_cluSel(0,3)");		
 			//gInterpreter->ProcessLine("pl_over_cluSel(0,4)");
-			//gInterpreter->ProcessLine("pl_over_cluSel(0,5,0,0)");
-			//gInterpreter->ProcessLine("pl_over_cluSel(0,5,1,0)");
-			//gInterpreter->ProcessLine("pl_over_cluSel(0,5,2,0)");
+			//gInterpreter->ProcessLine("pl_over_cluSel(0,5,0)");
+			//gInterpreter->ProcessLine("pl_over_cluSel(0,5,1)");
+			//gInterpreter->ProcessLine("pl_over_cluSel(0,5,2)");
+			
+			gInterpreter->ProcessLine("pl_over_cluSel(0,6,0,0)");
+			gInterpreter->ProcessLine("pl_over_cluSel(0,6,0,1)");
+			
 			gInterpreter->ProcessLine("pl_over_cluSel(0,9,0,0)");
 			gInterpreter->ProcessLine("pl_over_cluSel(0,9,0,1)");
 			gInterpreter->ProcessLine("pl_over_cluSel(0,9,1,0)");
 			gInterpreter->ProcessLine("pl_over_cluSel(0,9,1,1)");
 			gInterpreter->ProcessLine("pl_over_cluSel(0,9,2,0)");
 			gInterpreter->ProcessLine("pl_over_cluSel(0,9,2,1)");
-
+			
+			// void pl_over_cluSel(Int_t iSel=0, Int_t iSmT=0, Int_t iSm=0, Int_t iRpc=0)
+			
 			//gInterpreter->ProcessLine("pl_over_cluSel(1,3)");
 			//gInterpreter->ProcessLine("pl_over_cluSel(1,4)");
-			//gInterpreter->ProcessLine("pl_over_cluSel(1,5,0,0)");
-			//gInterpreter->ProcessLine("pl_over_cluSel(1,5,1,0)");
-			//gInterpreter->ProcessLine("pl_over_cluSel(1,5,2,0)");
+			//gInterpreter->ProcessLine("pl_over_cluSel(1,5,0)");
+			//gInterpreter->ProcessLine("pl_over_cluSel(1,5,1)");
+			//gInterpreter->ProcessLine("pl_over_cluSel(1,5,2)");
+			
+			gInterpreter->ProcessLine("pl_over_cluSel(1,6,0,0)");
+			gInterpreter->ProcessLine("pl_over_cluSel(1,6,0,1)");
+			
 			gInterpreter->ProcessLine("pl_over_cluSel(1,9,0,0)");
 			gInterpreter->ProcessLine("pl_over_cluSel(1,9,0,1)");
 			gInterpreter->ProcessLine("pl_over_cluSel(1,9,1,0)");
 			gInterpreter->ProcessLine("pl_over_cluSel(1,9,1,1)");
 			gInterpreter->ProcessLine("pl_over_cluSel(1,9,2,0)");
 			gInterpreter->ProcessLine("pl_over_cluSel(1,9,2,1)");
-
-
-			gInterpreter->ProcessLine("pl_over_clu(6,0,0)");
-			gInterpreter->ProcessLine("pl_over_clu(6,0,1)");
-			gInterpreter->ProcessLine("pl_over_cluSel(0,6,0,0)");
-			gInterpreter->ProcessLine("pl_over_cluSel(0,6,0,1)");
-			gInterpreter->ProcessLine("pl_over_cluSel(1,6,0,0)");
-			gInterpreter->ProcessLine("pl_over_cluSel(1,6,0,1)");
-
+			
 			// void pl_all_dTSel(Int_t iNSel=2)
 			gInterpreter->ProcessLine("pl_all_dTSel()");
-		
-			//void pl_over_MatD4sel()
-			gInterpreter->ProcessLine("pl_over_MatD4sel()");
 			break;
 
 		default:

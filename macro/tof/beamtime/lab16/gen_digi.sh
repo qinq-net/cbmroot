@@ -35,12 +35,23 @@ iCalSet=901900921
 #iSel2=$3
 iSel2=-921
 
-if((${iSel2}<0));then
+# ----------------------- Clean up before fresh Re-run --------------------------
+if((0)); then
+rm all_*.par core_dump_* *.pdf
+rm tofAnaTestBeam.hst.root
+rm tofTestBeamClust_${cRun}_set${iCalSet}.hst.root
+rm digi_${cRun}_${iCalSet}_${iSel2}.out.root
+fi
+# ------------------------------- End Clean up ----------------------------------
+
+if((${iSel2}<0)); then
  ((iBRef=-$iSel2))
 fi
 
 echo gen_digi with iDut=$iDut, iRef=$iRef, iCalSet=$iCalSet, iSet=$iSet, iBRef=$iBRef, iSel2=$iSel2
 
-# void ana_digi(nEvents, calMode, calSel, calSm, RefSel, cFileId, iCalSet, bOut, iSel2) 
-root -b -q './ana_digi.C(100000000,93,1,'$iRef',0,"'$cRun'",'$iCalSet',1,'$iSel2') '
+if((1)); then
+#void ana_digi(nEvents, calMode, calSel, calSm, RefSel, cFileId, iCalSet, bOut, iSel2) 
+root -b -q './ana_digi.C(100000000,93,1,'$iRef',0,"'$cRun'",'$iCalSet',1,'$iSel2')'
+fi
 
