@@ -17,6 +17,7 @@
 #include <cmath>
 
 #define scaltype float
+#define timetype double
 
 static scaltype gMuonMass = 0;
 static scaltype gElectronMass = 0;

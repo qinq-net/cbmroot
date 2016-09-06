@@ -23,10 +23,12 @@
 #include "CbmTrdHit.h"
 #include "CbmCluster.h"
 #include "CbmMatch.h"
+#include "LxTBTieTracks.h"
 
 #ifdef LXTB_QA
 #include "TH1F.h"
 #include "TH2F.h"
+#include "CbmStsHit.h"
 #endif//LXTB_QA
 
 ClassImp(LxTBFinder)
@@ -34,7 +36,7 @@ ClassImp(LxTBFinder)
 LxTbBinnedFinder::SignalParticle LxTbBinnedFinder::particleDescs[] = { { "jpsi", 443, 3.0, true  }, { "omega", 223, 1.5, false }, { "", -1, 0, false } };
 
 LxTBFinder::LxTBFinder() : fMuchMCPoints(0), fMuchPixelHits(0), fMuchClusters(0), fMuchPixelDigiMatches(0),
-   fTrdMCPoints(0), fTrdHits(0), fTrdClusters(0), fTrdDigiMatches(0),
+   fTrdMCPoints(0), fTrdHits(0), fTrdClusters(0), fTrdDigiMatches(0), fStsHits(0), fStsTracks(0), fStsClusters(0), fStsDigiMatches(0),
 #ifdef LXTB_QA
    fMvdDigis(0), fStsDigis(0), fTofDigis(0),
 #endif//LXTB_QA
@@ -279,16 +281,16 @@ void LxTBFinder::HandleGeometry()
 }
 
 #ifdef LXTB_QA
-static list<scaltype> shortSignalMCTimes;
-static list<scaltype> longSignalMCTimes;
-static list<pair<scaltype, scaltype> > triggerTimes_trd0_sign0_dist0;
-static list<pair<scaltype, scaltype> > triggerTimes_trd0_sign0_dist1;
-static list<pair<scaltype, scaltype> > triggerTimes_trd0_sign1_dist0;
-static list<pair<scaltype, scaltype> > triggerTimes_trd0_sign1_dist1;
-static list<pair<scaltype, scaltype> > triggerTimes_trd1_sign0_dist0;
-static list<pair<scaltype, scaltype> > triggerTimes_trd1_sign0_dist1;
-static list<pair<scaltype, scaltype> > triggerTimes_trd1_sign1_dist0;
-static list<pair<scaltype, scaltype> > triggerTimes_trd1_sign1_dist1;
+static list<timetype> shortSignalMCTimes;
+static list<timetype> longSignalMCTimes;
+static list<pair<timetype, timetype> > triggerTimes_trd0_sign0_dist0;
+static list<pair<timetype, timetype> > triggerTimes_trd0_sign0_dist1;
+static list<pair<timetype, timetype> > triggerTimes_trd0_sign1_dist0;
+static list<pair<timetype, timetype> > triggerTimes_trd0_sign1_dist1;
+static list<pair<timetype, timetype> > triggerTimes_trd1_sign0_dist0;
+static list<pair<timetype, timetype> > triggerTimes_trd1_sign0_dist1;
+static list<pair<timetype, timetype> > triggerTimes_trd1_sign1_dist0;
+static list<pair<timetype, timetype> > triggerTimes_trd1_sign1_dist1;
 #endif//LXTB_QA
 
 InitStatus LxTBFinder::Init()
@@ -323,6 +325,10 @@ InitStatus LxTBFinder::Init()
     
     fMuchPixelHits = static_cast<TClonesArray*> (ioman->GetObject("MuchPixelHit"));
     fTrdHits = static_cast<TClonesArray*> (ioman->GetObject("TrdHit"));
+    fStsHits = static_cast<TClonesArray*> (ioman->GetObject("StsHit"));
+    fStsTracks = static_cast<TClonesArray*> (ioman->GetObject("StsTrack"));
+    fStsClusters = static_cast<TClonesArray*> (ioman->GetObject("StsCluster"));
+    fStsDigiMatches = static_cast<TClonesArray*> (ioman->GetObject("StsDigiMatch"));
     
 #ifdef LXTB_QA
     CbmMCDataManager* mcManager = static_cast<CbmMCDataManager*> (ioman->GetObject("MCDataManager"));
@@ -459,18 +465,18 @@ InitStatus LxTBFinder::Init()
     
    //Int_t numEvents = 0;
    Int_t numPoints[] = { 0, 0, 0, 0, 0, 0 }; 
-   vector<Double_t> eventTimes(fNEvents);
+   fEventTimes.resize(fNEvents);
     
 #ifdef LXTB_EMU_TS
-        eventTimes[0] = 0;
+        fEventTimes[0] = 0;
     
    for (int i = 1; i < fNEvents; ++i)
-      eventTimes[i] = eventTimes[i - 1] + gRandom->Exp(CUR_TIMEBIN_LENGTH);
+      fEventTimes[i] = fEventTimes[i - 1] + gRandom->Exp(CUR_TIMEBIN_LENGTH);
 #else
-   eventTimes[0] = 50;
+   fEventTimes[0] = 50;
     
    for (int i = 1; i < fNEvents; ++i)
-      eventTimes[i] = eventTimes[i - 1] + 100;
+      fEventTimes[i] = fEventTimes[i - 1] + 100;
 #endif//LXTB_EMU_TS
     
     for (int i = 0; i < fNEvents; ++i)
@@ -495,7 +501,7 @@ InitStatus LxTBFinder::Init()
                 PointDataHolder muchPt;
                 muchPt.x = (pMuchPt->GetXIn() + pMuchPt->GetXOut()) / 2;
                 muchPt.y = (pMuchPt->GetYIn() + pMuchPt->GetYOut()) / 2;
-                muchPt.t = eventTimes[i] + pMuchPt->GetTime();
+                muchPt.t = fEventTimes[i] + pMuchPt->GetTime();
                 muchPt.eventId = i;
                 muchPt.trackId = pMuchPt->GetTrackID();
                 muchPt.pointId = j;
@@ -534,7 +540,7 @@ InitStatus LxTBFinder::Init()
             trdPt.x = (pTrdPt->GetXIn() + pTrdPt->GetXOut()) / 2;
             trdPt.y = (pTrdPt->GetYIn() + pTrdPt->GetYOut()) / 2;
             trdPt.z = (pTrdPt->GetZIn() + pTrdPt->GetZOut()) / 2;
-            trdPt.t = eventTimes[i] + pTrdPt->GetTime();
+            trdPt.t = fEventTimes[i] + pTrdPt->GetTime();
             trdPt.eventId = i;
             trdPt.trackId = pTrdPt->GetTrackID();
             trdPt.pointId = j;
@@ -705,8 +711,8 @@ InitStatus LxTBFinder::Init()
       bool hasShortNeg = false;
       bool hasLongPos = false;
       bool hasLongNeg = false;
-      scaltype posTime = 0;
-      scaltype negTime = 0;
+      timetype posTime = 0;
+      timetype negTime = 0;
       Double_t posX = 0;
       Double_t posY = 0;
       Double_t negX = 0;
@@ -815,10 +821,10 @@ void LxTBFinder::AddHit(const CbmPixelHit* hit, Int_t stationNumber)
 {
    scaltype x = hit->GetX();
    scaltype y = hit->GetY();
-   scaltype t = hit->GetTime();
+   timetype t = hit->GetTime();
    scaltype dx = hit->GetDx();
    scaltype dy = hit->GetDy();
-   scaltype dt = 4;//hit->GetTimeError();
+   timetype dt = 4;//hit->GetTimeError();
    LxTbBinnedPoint point(x, dx, y, dy, t, dt, /*!hasTrd && */CUR_LAST_STATION == stationNumber);
 #ifdef LXTB_QA
    point.isTrd = isTrd;
@@ -847,7 +853,7 @@ void LxTBFinder::AddHit(const CbmPixelHit* hit, Int_t stationNumber)
       Int_t nDigis = cluster->GetNofDigis();
       double avT = 0;
 #ifdef LXTB_EMU_TS
-      double avTErr;
+      double avTErr = 0;
 #endif//LXTB_EMU_TS
       int nofT = 0;
 
@@ -905,10 +911,10 @@ void LxTBFinder::AddHit(const CbmPixelHit* hit, Int_t stationNumber)
 #else//LXTB_EMU_TS
    scaltype minY = (isTrd ? fFinder->trdStation.minY : fFinder->stations[stationNumber].minY);
    scaltype binSizeY = (isTrd ? fFinder->trdStation.binSizeY : fFinder->stations[stationNumber].binSizeY);
-   scaltype lastYBin = (isTrd ? fFinder->trdStation.lastYBin : fFinder->stations[stationNumber].lastYBin);
+   int lastYBin = (isTrd ? fFinder->trdStation.lastYBin : fFinder->stations[stationNumber].lastYBin);
    scaltype minX = (isTrd ? fFinder->trdStation.minX : fFinder->stations[stationNumber].minX);
    scaltype binSizeX = (isTrd ? fFinder->trdStation.binSizeX : fFinder->stations[stationNumber].binSizeX);
-   scaltype lastXBin = (isTrd ? fFinder->trdStation.lastXBin : fFinder->stations[stationNumber].lastXBin);
+   int lastXBin = (isTrd ? fFinder->trdStation.lastXBin : fFinder->stations[stationNumber].lastXBin);
    
    int tInd = (t - fFinder->minT) / CUR_TIMEBIN_LENGTH;
 
@@ -945,12 +951,32 @@ void LxTBFinder::AddHit(const CbmPixelHit* hit, Int_t stationNumber)
 #endif//LXTB_EMU_TS
 }
 
+void LxTBFinder::AddStsTrack(const CbmStsTrack& stsTrack)
+{
+   const FairTrackParam& par = *stsTrack.GetParamLast();
+   Int_t nofHits = stsTrack.GetNofHits();
+   
+   if (nofHits < 1)
+      return;
+   
+   Int_t lastHitNr = nofHits - 1;
+   
+   if (kSTSHIT != stsTrack.GetHitType(lastHitNr))
+      return;
+   
+   Int_t lastHitIndex = stsTrack.GetHitIndex(lastHitNr);
+   const CbmStsHit& lastHit = *static_cast<const CbmStsHit*> (fStsHits->At(lastHitIndex));
+   Double_t lastHitTime = fEventTimes[currentEventN] + lastHit.GetTime();
+   Double_t lastHitTimeErr = lastHit.GetTimeError();
+   gDetector.AddStsTrack(par, lastHitTime);
+}
+
 #ifdef LXTB_QA
 static vector<int> nof_ev_digis(1000);
 static int nof_digis = 0;
 #endif//LXTB_QA
 
-static void SpliceTriggerings(list<pair<scaltype, scaltype> >& out, LxTbBinnedFinder::TriggerTimeArray& in)
+static void SpliceTriggerings(list<pair<timetype, timetype> >& out, LxTbBinnedFinder::TriggerTimeArray& in)
 {
    for (int i = 0; i < in.nofTimebins; ++i)
       out.splice(out.end(), in.triggerTimeBins[i]);
@@ -1005,6 +1031,9 @@ void LxTBFinder::Exec(Option_t* opt)
 #endif//LXTB_QA
       }
    }
+   
+   for (int i = 0; i < fStsTracks->GetEntriesFast(); ++i)
+      AddStsTrack(*static_cast<const CbmStsTrack*> (fStsTracks->At(i)));
    
 #ifndef LXTB_EMU_TS
    fFinder->Reconstruct();
@@ -1075,19 +1104,19 @@ struct RTDLess
     }
 };
 
-static void PrintTrigger(list<pair<scaltype, scaltype> >& signalRecoTimes, list<scaltype>& signalMCTimes, const char* name, bool write_eff_for_inv_m = false)
+static void PrintTrigger(list<pair<timetype, timetype> >& signalRecoTimes, list<timetype>& signalMCTimes, const char* name, bool write_eff_for_inv_m = false)
 {
    int nofRecoSignals = 0;
    
-   for (list<scaltype>::const_iterator i = signalMCTimes.begin(); i != signalMCTimes.end(); ++i)
+   for (list<timetype>::const_iterator i = signalMCTimes.begin(); i != signalMCTimes.end(); ++i)
    {
-      scaltype mcTime = *i;
+      timetype mcTime = *i;
       bool matched = false;
       
-      for (list<pair<scaltype, scaltype> >::const_iterator j = signalRecoTimes.begin(); j != signalRecoTimes.end(); ++j)
+      for (list<pair<timetype, timetype> >::const_iterator j = signalRecoTimes.begin(); j != signalRecoTimes.end(); ++j)
       {
-         scaltype recoTime = j->first;
-         scaltype dt = j->second;
+         timetype recoTime = j->first;
+         timetype dt = j->second;
          
          if (fabs(recoTime - mcTime) < NOF_SIGMAS * dt)
             matched = true;
@@ -1139,10 +1168,10 @@ void LxTBFinder::Finish()
       Int_t stationNumber = point.stationNumber;
       scaltype minY = (isTrd ? fFinder->trdStation.minY : fFinder->stations[stationNumber].minY);
       scaltype binSizeY = (isTrd ? fFinder->trdStation.binSizeY : fFinder->stations[stationNumber].binSizeY);
-      scaltype lastYBin = (isTrd ? fFinder->trdStation.lastYBin : fFinder->stations[stationNumber].lastYBin);
+      int lastYBin = (isTrd ? fFinder->trdStation.lastYBin : fFinder->stations[stationNumber].lastYBin);
       scaltype minX = (isTrd ? fFinder->trdStation.minX : fFinder->stations[stationNumber].minX);
       scaltype binSizeX = (isTrd ? fFinder->trdStation.binSizeX : fFinder->stations[stationNumber].binSizeX);
-      scaltype lastXBin = (isTrd ? fFinder->trdStation.lastXBin : fFinder->stations[stationNumber].lastXBin);
+      int lastXBin = (isTrd ? fFinder->trdStation.lastXBin : fFinder->stations[stationNumber].lastXBin);
 
       int tInd = (point.t - fFinder->minT) / CUR_TIMEBIN_LENGTH;
 
@@ -1180,15 +1209,15 @@ void LxTBFinder::Finish()
    
    fFinder->Reconstruct();
 
-   for (list<scaltype>::iterator i = shortSignalMCTimes.begin(); i != shortSignalMCTimes.end(); ++i)
+   for (list<timetype>::iterator i = shortSignalMCTimes.begin(); i != shortSignalMCTimes.end(); ++i)
    {
-      scaltype& v = *i;
+      timetype& v = *i;
       v = (v - min_ts_time) * tCoeff;
    }
    
-   for (list<scaltype>::iterator i = longSignalMCTimes.begin(); i != longSignalMCTimes.end(); ++i)
+   for (list<timetype>::iterator i = longSignalMCTimes.begin(); i != longSignalMCTimes.end(); ++i)
    {
-      scaltype& v = *i;
+      timetype& v = *i;
       v = (v - min_ts_time) * tCoeff;
    }
    

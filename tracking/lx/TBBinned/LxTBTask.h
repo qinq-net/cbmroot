@@ -22,7 +22,7 @@
 #define LXTB_QA
 
 #ifdef LXTB_QA
-#define LXTB_EMU_TS
+//#define LXTB_EMU_TS
 #endif//LXTB_QA
 
 #define CUR_NOF_TRD_LAYERS 4
@@ -31,12 +31,13 @@
 #include "TGeoManager.h"
 #include "CbmPixelHit.h"
 #include "CbmMCDataArray.h"
+#include "CbmStsTrack.h"
 
 #define CUR_NOF_STATIONS 4
 #define CUR_LAST_STATION CUR_NOF_STATIONS - 1
 //#define CUR_NOF_TIMEBINS 5
 //#define CUR_LAST_TIMEBIN CUR_NOF_TIMEBINS - 1
-#define CUR_TIMEBIN_LENGTH 10000
+#define CUR_TIMEBIN_LENGTH 100
 
 #include "LxTBBinned.h"
 
@@ -77,6 +78,7 @@ private:
 #else
     void AddHit(const CbmPixelHit* hit, Int_t stationNumber);
 #endif//LXTB_QA
+    void AddStsTrack(const CbmStsTrack& stsTrack);
     
     struct PointDataHolder
     {
@@ -102,6 +104,11 @@ private:
     TClonesArray* fTrdHits;
     TClonesArray* fTrdClusters;
     TClonesArray* fTrdDigiMatches;
+    
+    TClonesArray* fStsHits;
+    TClonesArray* fStsTracks;
+    TClonesArray* fStsClusters;
+    TClonesArray* fStsDigiMatches;
     
 #ifdef LXTB_QA
     TClonesArray* fMvdDigis;
@@ -141,6 +148,7 @@ private:
     unsigned int nof_timebins;
     unsigned int last_timebin;
     Int_t fNEvents;
+    vector<Double_t> fEventTimes;
 
 ClassDef(LxTBFinder, 1)
 };
