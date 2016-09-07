@@ -157,8 +157,9 @@ struct LxTBBinndedLayer
 struct LxTBBinnedStsTrack
 {
     FairTrackParam fPar;
+    Double_t fChiSq;
     Double_t fTime;
-    //Int_t fSelfId;
+    Int_t fSelfId;
     //Int_t fEventId;
     //Int_t fFileId;
 };
@@ -168,12 +169,12 @@ struct LxTBBinnedDetector
     LxTBBinndedLayer* fLayers;
     int fNofLayers;
     std::list<LxTBBinnedStsTrack> fStsTracks;
+    TClonesArray* fMuchTracks;
     
-    void AddStsTrack(const FairTrackParam& par, Double_t time/*, Int_t selfId, Int_t eventId, Int_t fileId*/);
+    LxTBBinnedDetector();
+    void AddStsTrack(const FairTrackParam& par, Double_t chiSq, Double_t time, Int_t selfId/*, Int_t eventId, Int_t fileId*/);
     void TieTracks(LxTbBinnedFinder& fFinder);
 };
-
-extern LxTBBinnedDetector gDetector;
 
 #endif /* LXTBTIETRACKS_H */
 

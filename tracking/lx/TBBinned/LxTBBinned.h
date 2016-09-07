@@ -75,6 +75,7 @@ struct LxTbBinnedPoint
     timetype dt;
     bool use;
     list<LxTbBinnedRay> neighbours;
+    Int_t refId;
     
 #ifdef LXTB_QA
     const CbmPixelHit* pHit;
@@ -91,8 +92,8 @@ struct LxTbBinnedPoint
     list<PointDesc> mcRefs;
 #endif//LXTB_QA
     
-    LxTbBinnedPoint(scaltype X, scaltype Dx, scaltype Y, scaltype Dy, timetype T, timetype Dt, bool Use) : x(X), dx(Dx), y(Y), dy(Dy),
-        t(T), dt(Dt), use(Use)
+    LxTbBinnedPoint(scaltype X, scaltype Dx, scaltype Y, scaltype Dy, timetype T, timetype Dt, Int_t ri, bool Use) : x(X), dx(Dx), y(Y), dy(Dy),
+        t(T), dt(Dt), refId(ri), use(Use)
 #ifdef LXTB_QA
     , pHit(0), isTrd(false)
 #endif//LXTB_QA

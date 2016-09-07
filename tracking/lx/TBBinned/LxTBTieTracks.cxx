@@ -9,16 +9,14 @@
 #include "utils/CbmLitConverter.h"
 #include "base/CbmLitToolFactory.h"
 
-LxTBBinnedDetector gDetector;
-
-void LxTBBinnedDetector::AddStsTrack(const FairTrackParam& par, Double_t time/*, Int_t selfId, Int_t eventId, Int_t fileId*/)
+void LxTBBinnedDetector::AddStsTrack(const FairTrackParam& par, Double_t chiSq, Double_t time, Int_t selfId/*, Int_t eventId, Int_t fileId*/)
 {
-   LxTBBinnedStsTrack stsTrack = { par, time/*, selfId, eventId, fileId*/ };
+   LxTBBinnedStsTrack stsTrack = { par, chiSq, time, selfId/*, eventId, fileId*/ };
    fStsTracks.push_back(stsTrack);
 }
 
 struct TieHandlePoint : public LxTBBinndedLayer::PointHandler
-{
+{   
    TrackUpdatePtr fFilter;
    CbmLitTrackParam fPar;
    CbmLitTrackParam fOutPar;
@@ -50,6 +48,10 @@ struct TieHandlePoint : public LxTBBinndedLayer::PointHandler
    }
 };
 
+LxTBBinnedDetector::LxTBBinnedDetector() : fMuchTracks(0)
+{
+}
+
 void LxTBBinnedDetector::TieTracks(LxTbBinnedFinder& fFinder)
 {
    //for (int i = 0; i < fFinder.nofTrackBins; ++i)
@@ -62,14 +64,24 @@ void LxTBBinnedDetector::TieTracks(LxTbBinnedFinder& fFinder)
    TrackPropagatorPtr propagator = CbmLitToolFactory::CreateTrackPropagator("lit");
    TrackUpdatePtr filter = CbmLitToolFactory::CreateTrackUpdate("kalman");
    //TrackFitterPtr fFitter = CbmLitToolFactory::CreateTrackFitter("lit_kalman");
+   int muchTrackNo = 0;
    
    for (list<LxTBBinnedStsTrack>::const_iterator i = fStsTracks.begin(); i != fStsTracks.end(); ++i)
    {
       const LxTBBinnedStsTrack& stsTrack = *i;
+      Double_t trackChiSq = stsTrack.fChiSq;
       CbmLitTrackParam par;
       CbmLitConverterFairTrackParam::FairTrackParamToCbmLitTrackParam(&stsTrack.fPar, &par);
       CbmLitTrackParam prevPar;
       timetype t = stsTrack.fTime;
+      
+      struct PointData
+      {
+         const LxTbBinnedPoint* point;
+         bool isTrd;
+      };
+      
+      list<PointData> points;
       
       for (int j = 0; j < fNofLayers; ++j)
       {
@@ -96,7 +108,31 @@ void LxTBBinnedDetector::TieTracks(LxTbBinnedFinder& fFinder)
          if (pointHandler.fPoint)
          {
             par = pointHandler.fOutPar;
+            trackChiSq += pointHandler.fChiSq;
+            PointData pd = { pointHandler.fPoint, j > 11 };
+            points.push_back(pd);
          }
+      }
+      
+      if (points.empty())
+         continue;
+      
+      CbmMuchTrack* muchTrack = new ((*fMuchTracks)[++muchTrackNo]) CbmMuchTrack();
+      Int_t ndf = points.size() * 2 - 5;
+      muchTrack->SetChiSq(trackChiSq);
+      muchTrack->SetNDF(ndf < 0 ? 1 : ndf);
+      muchTrack->SetPreviousTrackId(stsTrack.fSelfId);
+      muchTrack->SetFlag(kLITGOOD);
+      FairTrackParam parLast, parFirst;
+      CbmLitConverterFairTrackParam::CbmLitTrackParamToFairTrackParam(&par, &parLast);
+      CbmLitConverterFairTrackParam::CbmLitTrackParamToFairTrackParam(&par, &parFirst);
+      muchTrack->SetParamLast(&parLast);
+      muchTrack->SetParamFirst(&parFirst);
+      
+      for (list<PointData>::const_iterator j = points.begin(); j != points.end(); ++j)
+      {
+         const PointData pd = *j;
+         muchTrack->AddHit(pd.point->refId, pd.isTrd ? kTRDHIT : kMUCHPIXELHIT);
       }
    }
 }

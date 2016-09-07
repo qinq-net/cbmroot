@@ -330,6 +330,9 @@ InitStatus LxTBFinder::Init()
     fStsClusters = static_cast<TClonesArray*> (ioman->GetObject("StsCluster"));
     fStsDigiMatches = static_cast<TClonesArray*> (ioman->GetObject("StsDigiMatch"));
     
+    fDetector.fMuchTracks = new TClonesArray("CbmMuchTrack", 100);
+    ioman->Register("MuchTrack", "Much", fDetector.fMuchTracks, IsOutputBranchPersistent("MuchTrack"));
+    
 #ifdef LXTB_QA
     CbmMCDataManager* mcManager = static_cast<CbmMCDataManager*> (ioman->GetObject("MCDataManager"));
     fMuchMCPoints = mcManager->InitBranch("MuchPoint");
@@ -814,9 +817,9 @@ static list<LxTbBinnedPoint> ts_points;
 #endif//LXTB_EMU_TS
 
 #ifdef LXTB_QA
-void LxTBFinder::AddHit(const CbmPixelHit* hit, Int_t stationNumber, bool isTrd)
+void LxTBFinder::AddHit(const CbmPixelHit* hit, Int_t stationNumber, Int_t refId, bool isTrd)
 #else
-void LxTBFinder::AddHit(const CbmPixelHit* hit, Int_t stationNumber)
+void LxTBFinder::AddHit(const CbmPixelHit* hit, Int_t stationNumber, Int_t refId)
 #endif//LXTB_QA
 {
    scaltype x = hit->GetX();
@@ -825,7 +828,7 @@ void LxTBFinder::AddHit(const CbmPixelHit* hit, Int_t stationNumber)
    scaltype dx = hit->GetDx();
    scaltype dy = hit->GetDy();
    timetype dt = 4;//hit->GetTimeError();
-   LxTbBinnedPoint point(x, dx, y, dy, t, dt, /*!hasTrd && */CUR_LAST_STATION == stationNumber);
+   LxTbBinnedPoint point(x, dx, y, dy, t, dt, refId,/*!hasTrd && */CUR_LAST_STATION == stationNumber);
 #ifdef LXTB_QA
    point.isTrd = isTrd;
    point.stationNumber = stationNumber;
@@ -951,9 +954,13 @@ void LxTBFinder::AddHit(const CbmPixelHit* hit, Int_t stationNumber)
 #endif//LXTB_EMU_TS
 }
 
-void LxTBFinder::AddStsTrack(const CbmStsTrack& stsTrack)
-{
+void LxTBFinder::AddStsTrack(const CbmStsTrack& stsTrack, Int_t selfId)
+{   
    const FairTrackParam& par = *stsTrack.GetParamLast();
+   
+   if (0 == par.GetQp())
+      return;
+   
    Int_t nofHits = stsTrack.GetNofHits();
    
    if (nofHits < 1)
@@ -968,7 +975,7 @@ void LxTBFinder::AddStsTrack(const CbmStsTrack& stsTrack)
    const CbmStsHit& lastHit = *static_cast<const CbmStsHit*> (fStsHits->At(lastHitIndex));
    Double_t lastHitTime = fEventTimes[currentEventN] + lastHit.GetTime();
    Double_t lastHitTimeErr = lastHit.GetTimeError();
-   gDetector.AddStsTrack(par, lastHitTime);
+   fDetector.AddStsTrack(par, stsTrack.GetChiSq(), lastHitTime, selfId);
 }
 
 #ifdef LXTB_QA
@@ -1007,9 +1014,9 @@ void LxTBFinder::Exec(Option_t* opt)
       
       Int_t hitStN = CbmMuchGeoScheme::GetStationIndex(mh->GetAddress());
 #ifdef LXTB_QA
-      AddHit(mh, hitStN, false);
+      AddHit(mh, hitStN, i, false);
 #else
-      AddHit(mh, hitStN);
+      AddHit(mh, hitStN, i);
 #endif//LXTB_QA
    }
    
@@ -1025,15 +1032,15 @@ void LxTBFinder::Exec(Option_t* opt)
       
          //hitStN = CUR_LAST_STATION;
 #ifdef LXTB_QA
-         AddHit(th, hitStN, true);
+         AddHit(th, hitStN, i, true);
 #else
-         AddHit(th, hitStN);
+         AddHit(th, hitStN, i);
 #endif//LXTB_QA
       }
    }
    
    for (int i = 0; i < fStsTracks->GetEntriesFast(); ++i)
-      AddStsTrack(*static_cast<const CbmStsTrack*> (fStsTracks->At(i)));
+      AddStsTrack(*static_cast<const CbmStsTrack*> (fStsTracks->At(i)), i);
    
 #ifndef LXTB_EMU_TS
    fFinder->Reconstruct();

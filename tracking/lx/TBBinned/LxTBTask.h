@@ -32,6 +32,7 @@
 #include "CbmPixelHit.h"
 #include "CbmMCDataArray.h"
 #include "CbmStsTrack.h"
+#include "LxTBTieTracks.h"
 
 #define CUR_NOF_STATIONS 4
 #define CUR_LAST_STATION CUR_NOF_STATIONS - 1
@@ -74,11 +75,11 @@ public:
 private:
     void HandleGeometry();
 #ifdef LXTB_QA
-    void AddHit(const CbmPixelHit* hit, Int_t stationNumber, bool isTrd);
+    void AddHit(const CbmPixelHit* hit, Int_t stationNumber, Int_t refId, bool isTrd);
 #else
-    void AddHit(const CbmPixelHit* hit, Int_t stationNumber);
+    void AddHit(const CbmPixelHit* hit, Int_t stationNumber, Int_t refId);
 #endif//LXTB_QA
-    void AddStsTrack(const CbmStsTrack& stsTrack);
+    void AddStsTrack(const CbmStsTrack& stsTrack, Int_t selfId);
     
     struct PointDataHolder
     {
@@ -149,6 +150,7 @@ private:
     unsigned int last_timebin;
     Int_t fNEvents;
     vector<Double_t> fEventTimes;
+    LxTBBinnedDetector fDetector;
 
 ClassDef(LxTBFinder, 1)
 };
