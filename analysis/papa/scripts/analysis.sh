@@ -3,7 +3,8 @@
 LOCATION=/lustre/nyx
 
 ## choose cbm root installation
-. $LOCATION/cbm/users/$USER/CBMsoft/cbm-env.sh -n
+#. $LOCATION/cbm/users/$USER/CBMsoft/cbm-env.sh -n
+source /sw/cbm/cbm-env.sh -n 
 
 ## job content
 export INDIR="$1"  ## path to simreco directory
@@ -14,3 +15,6 @@ export OUTDIR="$3" ## output directory
 NEVT=$4
 
 root -l -b -q "$OUTDIR/../run_analysis.C($NEVT)"
+
+## cleanup
+rm -v L1_histo.root

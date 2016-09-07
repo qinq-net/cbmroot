@@ -80,6 +80,31 @@ while [ "$I" -lt "$NRUNS" ]; do
 
       ## submit job
       sbatch $tmpjobscriptname
+
+
+
+
+      ## long partition
+#      resources="--mem=4000 --time=1-05:00:00"
+#      partition="--partition=long"
+
+      resources="--mem=4000 --time=0-00:20:00"
+      partition="--partition=debug"
+
+      scriptdir="$PWD"
+      workdir="--workdir ${out}"
+
+      mail_type="--mail-type=FAIL"
+      mail_user="--mail-user=j.book"
+
+      job_name="--job-name=sr_${I}"
+      log_output="--output=${out}/simreco.slurm.out"
+      log_error="--error=${out}/simreco.slurm.err"
+
+      ## submit job
+      sbatch "${partition} ${resources} ${workdir} ${log_output} ${log_error} ${mail_type} ${mail_user} ${job_name} ${scriptdir}/simreco.sh $out $NEVENT"
+
+
   fi
 
   let I=$I+1

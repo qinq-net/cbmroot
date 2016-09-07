@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## test train or batch submission
-TEST=0
+TEST=1
 
 ## split level: defines number of files per jobs
 split_level=10;
@@ -10,7 +10,7 @@ split_level=10;
 NEVENT=0
 
 ## unique train id
-train="train0001"
+train="train0002"
 
 ## storage element and directory
 LOCATION=/lustre/nyx
@@ -28,11 +28,12 @@ fi
 indir=$LOCATION/cbm/users/$USER/$DIR/sim_AA_UrQMD_eeCocktail_centr010_JUN16_25mum_4lay_wMVD
 
 ## output directory
-out=$indir/$train
+out=$HOME/$indir/$train
 mkdir -p $out
 
 ## path for analysis configs
-configPath="$LOCATION/cbm/users/$USER/papa-conf"
+#configPath="$LOCATION/cbm/users/$USER/papa-conf"
+configPath="$HOME/Documents/Uni/Doktor/Work/ikf-svn-trunk/jbook/papa-conf"
 
 ## get CBM setup used in simulation and reconstruction
 SETUP=$(basename $indir/setup* .C)
@@ -40,8 +41,8 @@ SETUP=${SETUP/setup_/}
 
 ## copy user config and analysis macro to train output directory
 ## for backup and documentation
-cp -uv "$configPath/"*.C     "$out/."
-cp -uv "$PWD/run_analysis.C" "$out/."
+cp -v "$configPath/"*.C     "$out/."
+cp -v "$PWD/run_analysis.C" "$out/."
 
 ## get run list and sort it
 if grep -Fq "$indir/" runListSort.txt; then
