@@ -48,8 +48,11 @@ struct TieHandlePoint : public LxTBBinndedLayer::PointHandler
    }
 };
 
-LxTBBinnedDetector::LxTBBinnedDetector() : fMuchTracks(0)
+LxTBBinnedDetector::LxTBBinnedDetector(int nofl, int nofxb, int nofyb, int noftb) : fLayers(reinterpret_cast<LxTBBinndedLayer*> (new unsigned char[nofl * sizeof(LxTBBinndedLayer)])),
+   fNofLayers(nofl), fMuchTracks(0), fGlobalTracks(0)
 {
+   for (int i = 0; i < noftb; ++i)
+      new (&fLayers[i]) LxTBBinndedLayer(nofxb, nofyb, noftb);
 }
 
 void LxTBBinnedDetector::TieTracks(LxTbBinnedFinder& fFinder)
@@ -65,10 +68,13 @@ void LxTBBinnedDetector::TieTracks(LxTbBinnedFinder& fFinder)
    TrackUpdatePtr filter = CbmLitToolFactory::CreateTrackUpdate("kalman");
    //TrackFitterPtr fFitter = CbmLitToolFactory::CreateTrackFitter("lit_kalman");
    int muchTrackNo = 0;
+   int globalTrackNo = 0;
    
    for (list<LxTBBinnedStsTrack>::const_iterator i = fStsTracks.begin(); i != fStsTracks.end(); ++i)
    {
       const LxTBBinnedStsTrack& stsTrack = *i;
+      CbmGlobalTrack* globalTrack = new ((*fGlobalTracks)[globalTrackNo]) CbmGlobalTrack();
+      globalTrack->SetStsTrackIndex(globalTrackNo++);
       Double_t trackChiSq = stsTrack.fChiSq;
       CbmLitTrackParam par;
       CbmLitConverterFairTrackParam::FairTrackParamToCbmLitTrackParam(&stsTrack.fPar, &par);
@@ -117,7 +123,8 @@ void LxTBBinnedDetector::TieTracks(LxTbBinnedFinder& fFinder)
       if (points.empty())
          continue;
       
-      CbmMuchTrack* muchTrack = new ((*fMuchTracks)[++muchTrackNo]) CbmMuchTrack();
+      CbmMuchTrack* muchTrack = new ((*fMuchTracks)[muchTrackNo]) CbmMuchTrack();
+      globalTrack->SetMuchTrackIndex(muchTrackNo++);
       Int_t ndf = points.size() * 2 - 5;
       muchTrack->SetChiSq(trackChiSq);
       muchTrack->SetNDF(ndf < 0 ? 1 : ndf);

@@ -36,7 +36,7 @@ ClassImp(LxTBFinder)
 LxTbBinnedFinder::SignalParticle LxTbBinnedFinder::particleDescs[] = { { "jpsi", 443, 3.0, true  }, { "omega", 223, 1.5, false }, { "", -1, 0, false } };
 
 LxTBFinder::LxTBFinder() : fMuchMCPoints(0), fMuchPixelHits(0), fMuchClusters(0), fMuchPixelDigiMatches(0),
-   fTrdMCPoints(0), fTrdHits(0), fTrdClusters(0), fTrdDigiMatches(0), fStsHits(0), fStsTracks(0), fStsClusters(0), fStsDigiMatches(0),
+   fTrdMCPoints(0), fTrdHits(0), fTrdClusters(0), fTrdDigiMatches(0),
 #ifdef LXTB_QA
    fMvdDigis(0), fStsDigis(0), fTofDigis(0),
 #endif//LXTB_QA
@@ -47,6 +47,9 @@ LxTBFinder::LxTBFinder() : fMuchMCPoints(0), fMuchPixelHits(0), fMuchClusters(0)
    nof_timebins(isEvByEv ? 5 : 1000),
 #endif//LXTB_EMU_TS
    last_timebin(nof_timebins - 1), fNEvents(1000)
+#ifdef LXTB_TIE
+   , fStsHits(0), fStsTracks(0), fStsClusters(0), fStsDigiMatches(0), fDetector(0)
+#endif//LXTB_TIE
 {
 }
 
@@ -115,11 +118,11 @@ void LxTBFinder::HandleGeometry()
          for (list<TGeoNode*>::iterator k = layers.begin(); k != layers.end(); ++k)
          {
             TGeoNode* layer = *k;
+            pNavigator->CdDown(layer);               
+            gGeoManager->LocalToMaster(localCoords, globalCoords);
             
             if (1 == layerNumber)
             {
-               pNavigator->CdDown(layer);
-               gGeoManager->LocalToMaster(localCoords, globalCoords);
                fFinder->stations[stationNumber].stationNumber = stationNumber;
                fFinder->stations[stationNumber].z = globalCoords[2];
                fFinder->stations[stationNumber].minX = 0;
@@ -128,28 +131,55 @@ void LxTBFinder::HandleGeometry()
                fFinder->stations[stationNumber].minY = 0;
                fFinder->stations[stationNumber].maxY = 0;
                fFinder->stations[stationNumber].binSizeY = 0;
-               
-               list<TGeoNode*> actives;
-               FindGeoChild(layer, "active", actives);
-      
-               for (list<TGeoNode*>::iterator l = actives.begin(); l != actives.end(); ++l)
+            }
+            
+#ifdef LXTB_TIE
+            fDetector->fLayers[stationNumber * 3 + layerNumber].z = globalCoords[2];
+            fDetector->fLayers[stationNumber * 3 + layerNumber].minX = 0;
+            fDetector->fLayers[stationNumber * 3 + layerNumber].maxX = 0;
+            fDetector->fLayers[stationNumber * 3 + layerNumber].binSizeX = 0;
+            fDetector->fLayers[stationNumber * 3 + layerNumber].minY = 0;
+            fDetector->fLayers[stationNumber * 3 + layerNumber].maxY = 0;
+            fDetector->fLayers[stationNumber * 3 + layerNumber].binSizeY = 0;
+#endif//LXTB_TIE
+
+            list<TGeoNode*> actives;
+            FindGeoChild(layer, "active", actives);
+
+            for (list<TGeoNode*>::iterator l = actives.begin(); l != actives.end(); ++l)
+            {
+               TGeoNode* active = *l;
+               pNavigator->CdDown(active);
+               TGeoCompositeShape* cs = dynamic_cast<TGeoCompositeShape*> (active->GetVolume()->GetShape());
+               TGeoBoolNode* bn = cs->GetBoolNode();
+               TGeoTrap* trap = dynamic_cast<TGeoTrap*> (bn->GetLeftShape());
+
+               if (0 != trap)
                {
-                  TGeoNode* active = *l;
-                  pNavigator->CdDown(active);
-                  TGeoCompositeShape* cs = dynamic_cast<TGeoCompositeShape*> (active->GetVolume()->GetShape());
-                  TGeoBoolNode* bn = cs->GetBoolNode();
-                  TGeoTrap* trap = dynamic_cast<TGeoTrap*> (bn->GetLeftShape());
+                  Double_t* xy = trap->GetVertices();
 
-                  if (0 != trap)
+                  for (int m = 0; m < 4; ++m)
                   {
-                     Double_t* xy = trap->GetVertices();
+                     Double_t localActiveCoords[3] = {xy[2 * m], xy[2 * m + 1], 0.};
+                     Double_t globalActiveCoords[3];
+                     gGeoManager->LocalToMaster(localActiveCoords, globalActiveCoords);
 
-                     for (int m = 0; m < 4; ++m)
+#ifdef LXTB_TIE
+                     if (fDetector->fLayers[stationNumber * 3 + layerNumber].minY > globalActiveCoords[1])
+                        fDetector->fLayers[stationNumber * 3 + layerNumber].minY = globalActiveCoords[1];
+
+                     if (fDetector->fLayers[stationNumber * 3 + layerNumber].maxY < globalActiveCoords[1])
+                        fDetector->fLayers[stationNumber * 3 + layerNumber].maxY = globalActiveCoords[1];
+
+                     if (fDetector->fLayers[stationNumber * 3 + layerNumber].minX > globalActiveCoords[0])
+                        fDetector->fLayers[stationNumber * 3 + layerNumber].minX = globalActiveCoords[0];
+
+                     if (fDetector->fLayers[stationNumber * 3 + layerNumber].maxX < globalActiveCoords[0])
+                        fDetector->fLayers[stationNumber * 3 + layerNumber].maxX = globalActiveCoords[0];
+#endif//LXTB_TIE
+
+                     if (1 == layerNumber)
                      {
-                        Double_t localActiveCoords[3] = {xy[2 * m], xy[2 * m + 1], 0.};
-                        Double_t globalActiveCoords[3];
-                        gGeoManager->LocalToMaster(localActiveCoords, globalActiveCoords);
-
                         if (fFinder->stations[stationNumber].minY > globalActiveCoords[1])
                            fFinder->stations[stationNumber].minY = globalActiveCoords[1];
 
@@ -163,13 +193,12 @@ void LxTBFinder::HandleGeometry()
                            fFinder->stations[stationNumber].maxX = globalActiveCoords[0];
                      }
                   }
-                  
-                  pNavigator->CdUp();
                }
-               
+
                pNavigator->CdUp();
             }
-            
+
+            pNavigator->CdUp();
             ++layerNumber;
          }
          
@@ -253,6 +282,10 @@ void LxTBFinder::HandleGeometry()
                pBox->ComputeBBox();
                gGeoManager->LocalToMaster(localCoords, globalCoords);
                fFinder->trdStation.Zs[layerNumber] = globalCoords[2];
+               
+#ifdef LXTB_TIE
+               fDetector->fLayers[CUR_NOF_STATIONS * 3 + layerNumber].z = globalCoords[2];
+#endif//LXTB_TIE
 
                if (fFinder->trdStation.minY > globalCoords[1] - pBox->GetDY())
                   fFinder->trdStation.minY = globalCoords[1] - pBox->GetDY();
@@ -278,6 +311,18 @@ void LxTBFinder::HandleGeometry()
       
       pNavigator->CdUp();
    }
+   
+#ifdef LXTB_TIE
+   for (int i = 0; i < CUR_NOF_TRD_LAYERS; ++i)
+   {
+      fDetector->fLayers[CUR_NOF_STATIONS * 3 + i].minX = fFinder->trdStation.minX;
+      fDetector->fLayers[CUR_NOF_STATIONS * 3 + i].maxX = fFinder->trdStation.maxX;
+      fDetector->fLayers[CUR_NOF_STATIONS * 3 + i].binSizeX = 0;
+      fDetector->fLayers[CUR_NOF_STATIONS * 3 + i].minY = fFinder->trdStation.minY;
+      fDetector->fLayers[CUR_NOF_STATIONS * 3 + i].maxY = fFinder->trdStation.maxY;
+      fDetector->fLayers[CUR_NOF_STATIONS * 3 + i].binSizeY = 0;
+   }
+#endif//LXTB_TIE
 }
 
 #ifdef LXTB_QA
@@ -320,18 +365,30 @@ InitStatus LxTBFinder::Init()
     fFinder->SetSignalParticle(fSignalParticle);
     hasTrd = fFinder->fSignalParticle->fHasTrd;
     
-    HandleGeometry();    
-    fFinder->Init();
+#ifdef LXTB_TIE
+    int nofLayers = CUR_NOF_STATIONS * 3;
     
-    fMuchPixelHits = static_cast<TClonesArray*> (ioman->GetObject("MuchPixelHit"));
-    fTrdHits = static_cast<TClonesArray*> (ioman->GetObject("TrdHit"));
+    if (hasTrd)
+       nofLayers += CUR_NOF_TRD_LAYERS;
+    
+    fDetector = new LxTBBinnedDetector(nofLayers, 20, 20, nof_timebins);
+    
     fStsHits = static_cast<TClonesArray*> (ioman->GetObject("StsHit"));
     fStsTracks = static_cast<TClonesArray*> (ioman->GetObject("StsTrack"));
     fStsClusters = static_cast<TClonesArray*> (ioman->GetObject("StsCluster"));
     fStsDigiMatches = static_cast<TClonesArray*> (ioman->GetObject("StsDigiMatch"));
     
-    fDetector.fMuchTracks = new TClonesArray("CbmMuchTrack", 100);
-    ioman->Register("MuchTrack", "Much", fDetector.fMuchTracks, IsOutputBranchPersistent("MuchTrack"));
+    fDetector->fMuchTracks = new TClonesArray("CbmMuchTrack", 100);
+    ioman->Register("MuchTrack", "Much", fDetector->fMuchTracks, IsOutputBranchPersistent("MuchTrack"));
+    fDetector->fGlobalTracks = new TClonesArray("CbmGlobalTrack",100);
+    ioman->Register("GlobalTrack", "Global", fDetector->fGlobalTracks, IsOutputBranchPersistent("GlobalTrack"));
+#endif//LXTB_TIE
+       
+    HandleGeometry();
+    fFinder->Init();
+    
+    fMuchPixelHits = static_cast<TClonesArray*> (ioman->GetObject("MuchPixelHit"));
+    fTrdHits = static_cast<TClonesArray*> (ioman->GetObject("TrdHit"));
     
 #ifdef LXTB_QA
     CbmMCDataManager* mcManager = static_cast<CbmMCDataManager*> (ioman->GetObject("MCDataManager"));
@@ -954,6 +1011,7 @@ void LxTBFinder::AddHit(const CbmPixelHit* hit, Int_t stationNumber, Int_t refId
 #endif//LXTB_EMU_TS
 }
 
+#ifdef LXTB_TIE
 void LxTBFinder::AddStsTrack(const CbmStsTrack& stsTrack, Int_t selfId)
 {   
    const FairTrackParam& par = *stsTrack.GetParamLast();
@@ -975,8 +1033,9 @@ void LxTBFinder::AddStsTrack(const CbmStsTrack& stsTrack, Int_t selfId)
    const CbmStsHit& lastHit = *static_cast<const CbmStsHit*> (fStsHits->At(lastHitIndex));
    Double_t lastHitTime = fEventTimes[currentEventN] + lastHit.GetTime();
    Double_t lastHitTimeErr = lastHit.GetTimeError();
-   fDetector.AddStsTrack(par, stsTrack.GetChiSq(), lastHitTime, selfId);
+   fDetector->AddStsTrack(par, stsTrack.GetChiSq(), lastHitTime, selfId);
 }
+#endif//LXTB_TIE
 
 #ifdef LXTB_QA
 static vector<int> nof_ev_digis(1000);
@@ -1061,7 +1120,17 @@ void LxTBFinder::Exec(Option_t* opt)
    SpliceTriggerings(triggerTimes_trd1_sign0_dist0, fFinder->triggerTimes_trd1_sign0_dist0);
    SpliceTriggerings(triggerTimes_trd1_sign0_dist1, fFinder->triggerTimes_trd1_sign0_dist1);
    SpliceTriggerings(triggerTimes_trd1_sign1_dist0, fFinder->triggerTimes_trd1_sign1_dist0);
-   SpliceTriggerings(triggerTimes_trd1_sign1_dist1, fFinder->triggerTimes_trd1_sign1_dist1);
+   
+   int prevTrigTimeSize = triggerTimes_trd1_sign1_dist1.size();// Not very elegant! >---------------------------------------
+   SpliceTriggerings(triggerTimes_trd1_sign1_dist1, fFinder->triggerTimes_trd1_sign1_dist1);//                             |
+   //                                                                                                                      |
+   if (triggerTimes_trd1_sign1_dist1.size() - prevTrigTimeSize > 0)// Triggering event. Do global tracks generation. <------
+   {
+      for (int i = 0; i < CUR_NOF_STATIONS; ++i)
+      {
+         
+      }
+   }
 #endif//LXTB_EMU_TS
    
 #ifdef LXTB_QA

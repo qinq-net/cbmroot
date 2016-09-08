@@ -19,6 +19,7 @@
 #include "CbmTrdPoint.h"
 #include <vector>
 
+#define LXTB_TIE
 #define LXTB_QA
 
 #ifdef LXTB_QA
@@ -106,11 +107,6 @@ private:
     TClonesArray* fTrdClusters;
     TClonesArray* fTrdDigiMatches;
     
-    TClonesArray* fStsHits;
-    TClonesArray* fStsTracks;
-    TClonesArray* fStsClusters;
-    TClonesArray* fStsDigiMatches;
-    
 #ifdef LXTB_QA
     TClonesArray* fMvdDigis;
     TClonesArray* fStsDigis;
@@ -150,7 +146,13 @@ private:
     unsigned int last_timebin;
     Int_t fNEvents;
     vector<Double_t> fEventTimes;
-    LxTBBinnedDetector fDetector;
+#ifdef LXTB_TIE
+    TClonesArray* fStsHits;
+    TClonesArray* fStsTracks;
+    TClonesArray* fStsClusters;
+    TClonesArray* fStsDigiMatches;
+    LxTBBinnedDetector* fDetector;
+#endif//LXTB_TIE
 
 ClassDef(LxTBFinder, 1)
 };

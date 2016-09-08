@@ -170,8 +170,9 @@ struct LxTBBinnedDetector
     int fNofLayers;
     std::list<LxTBBinnedStsTrack> fStsTracks;
     TClonesArray* fMuchTracks;
+    TClonesArray* fGlobalTracks;
     
-    LxTBBinnedDetector();
+    LxTBBinnedDetector(int nofl, int nofxb, int nofyb, int noftb);
     void AddStsTrack(const FairTrackParam& par, Double_t chiSq, Double_t time, Int_t selfId/*, Int_t eventId, Int_t fileId*/);
     void TieTracks(LxTbBinnedFinder& fFinder);
 };
