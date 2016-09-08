@@ -46,7 +46,7 @@ GCC  : >= 4.8
   or
 Clang: >= 3.4
 
-FairSoft: nov15p6 
+FairSoft: nov15p7
 
 FairRoot: v-15.11e
 
