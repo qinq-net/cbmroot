@@ -1086,6 +1086,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
   /// "events":     use number of selected (after cuts) events in meta data to normalize the histograms
   /// "smoothX":    smooths the histogram along x-axis by factor "X" (for X<10)
   ///
+  /// "rststy":     reset style index to zero (usefull when the same color code should be plotted on top of each other)
   /// "geant":      translate geantId to geant process names (see PairAnalysisHelper::SetGEANTBinLabels)
   /// "pdg":        translate bin low edges into pdg label
   /// "pdgc":       translate bin low edges into pdg label for bins with entries
@@ -1446,11 +1447,6 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
 
       // normalize and rebin only once
       if(optRbn) {
-	//      if(optRbn && !i) {
-	// TODO: check for consistency if opttask, than htden is rebinned multiple times!
-	// returns kTRUE if number of bins and bin limits are identical
-
-	//	  Printf(" rebin spectra");
 	if(hdenom && nbinsd >nbinsh) hdenom->RebinX(rbn);
 	if(htden  && nbinstd>nbinsh) htden->RebinX(rbn);
 	if(htnom  && nbinstn>nbinsh) htnom->RebinX(rbn);
@@ -1580,10 +1576,13 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
 	if(ratioName.CountChar('_')>0) ratioName.ReplaceAll( PairAnalysis::PairClassName(iptype), "");
 	if(divName.CountChar('_')>0)   divName.ReplaceAll( PairAnalysis::PairClassName(iptype), "");
       }
-      // save Dalitz underscore
+      // save Dalitz and Short underscore
       histClass.ReplaceAll("_{Dalitz}","#{Dalitz}");
       ratioName.ReplaceAll("_{Dalitz}","#{Dalitz}");
       divName.ReplaceAll("_{Dalitz}","#{Dalitz}");
+      histClass.ReplaceAll("_{S}","#{S}");
+      ratioName.ReplaceAll("_{S}","#{S}");
+      divName.ReplaceAll("_{S}","#{S}");
       // remove delimiters
       histClass.ReplaceAll("_"," ");
       ratioName.ReplaceAll("_"," ");
@@ -1591,10 +1590,13 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
       histClass.ReplaceAll(".","");
       ratioName.ReplaceAll(".","");
       divName.ReplaceAll(".","");
-      // get Dalitz back
+      // get Dalitz and Short back
       histClass.ReplaceAll("#{Dalitz}","_{Dalitz}");
       ratioName.ReplaceAll("#{Dalitz}","_{Dalitz}");
       divName.ReplaceAll("#{Dalitz}","_{Dalitz}");
+      histClass.ReplaceAll("#{S}","_{S}");
+      ratioName.ReplaceAll("#{S}","_{S}");
+      divName.ReplaceAll("#{S}","_{S}");
       // remove trailing and leading spaces
       histClass.Remove(TString::kBoth,' ');
       ratioName.Remove(TString::kBoth,' ');

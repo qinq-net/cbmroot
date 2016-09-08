@@ -81,6 +81,8 @@ const char* PairAnalysisSignalMC::fgkSignals[kNSignals][2]= {  //default signal 
   {"Pi0Dalitz",      "#pi^{0}_{Dalitz}"},
   {"Pi0Gamma",       "#pi^{0}"},
   {"Pi0",            "#pi^{0}"},
+  {"K0Short",       "K^{0}_{S}"},
+  {"Lambda",         "#Lambda"},
   {"InclElePM",      "e^{+}e^{-} (incl.)"},
   {"DeltaElectron",  "#delta rays"},
   {"PrimElectron",   "e (prim.)"},
@@ -228,6 +230,18 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(EDefinedSignal defaultSignal) :
     fMothersRelation=kSame;
     fDalitz=kIsDalitz; fDalitzPdg=22;
     // SetGEANTProcess(kPPrimary); //pluto
+    break;
+  case kK0Short:
+    SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
+    fLeg1=211;    fLeg2=-211;
+    fMother1=310; fMother2=310; fCheckBothChargesMother1=kTRUE; fCheckBothChargesMother2=kTRUE;
+    fMothersRelation=kSame;
+    break;
+  case kLambda:
+    SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
+    fLeg1=211;     fLeg2=2212;    fCheckBothChargesLeg1=kTRUE; fCheckBothChargesLeg2=kTRUE;
+    fMother1=3122; fMother2=3122; fCheckBothChargesMother1=kTRUE; fCheckBothChargesMother2=kTRUE;
+    fMothersRelation=kSame;
     break;
   case kInclElePM:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);

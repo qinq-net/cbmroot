@@ -23,6 +23,7 @@ class PairAnalysisSignalMC : public TNamed {
 		       kRho0, kOmegaDalitz, kOmega, kPhi,
 		       kEtaDalitz, kEta,
 		       kPi0Dalitz, kPi0Gamma, kPi0,
+		       kK0Short, kLambda,
 		       kInclElePM,
 		       kDeltaElectron,
 		       kPrimElectron, kPrimMuon, kPrimPion, kPrimKaon, kPrimProton,
