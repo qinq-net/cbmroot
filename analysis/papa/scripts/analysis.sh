@@ -3,8 +3,7 @@
 LOCATION=/lustre/nyx
 
 ## choose cbm root installation
-#. $LOCATION/cbm/users/$USER/CBMsoft/cbm-env.sh -n
-source /sw/cbm/cbm-env.sh -n 
+source $LOCATION/cbm/users/$USER/CBMsoft/cbm-env.sh -n
 
 ## job content
 export INDIR="$1"  ## path to simreco directory

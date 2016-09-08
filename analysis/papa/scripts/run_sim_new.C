@@ -83,6 +83,7 @@ void run_sim_new(Int_t nEvents = 2,
 
 
   // -----   Modify Cbm setup   ---------------------------------------------
+  std::cout << std::endl;
   setup->SetActive(kPsd, kFALSE); // dont write psd points
   // --- remove detector geometries
   setup->RemoveModule(kPsd);      // remove psd from setup
@@ -90,6 +91,7 @@ void run_sim_new(Int_t nEvents = 2,
   // setup->RemoveModule(kTrd);   // e.g. for sts-tof-matching study
   // --- change default geomerties
   //  setup->SetModule(kTrd, "v15d_1e", kTRUE); // 5 TRD layer
+  std::cout << "-I- " << myName << ": CbmSetup updated " << std::endl;
   // ------------------------------------------------------------------------
 
 

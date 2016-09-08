@@ -10,7 +10,7 @@ split_level=10;
 NEVENT=0
 
 ## unique train id
-train="train0002"
+train="train0001"
 
 ## storage element and directory
 LOCATION=/lustre/nyx
@@ -28,12 +28,11 @@ fi
 indir=$LOCATION/cbm/users/$USER/$DIR/sim_AA_UrQMD_eeCocktail_centr010_JUN16_25mum_4lay_wMVD
 
 ## output directory
-out=$HOME/$indir/$train
+out=$indir/$train
 mkdir -p $out
 
 ## path for analysis configs
-#configPath="$LOCATION/cbm/users/$USER/papa-conf"
-configPath="$HOME/Documents/Uni/Doktor/Work/ikf-svn-trunk/jbook/papa-conf"
+configPath="$LOCATION/cbm/users/$USER/papa-conf"
 
 ## get CBM setup used in simulation and reconstruction
 SETUP=$(basename $indir/setup* .C)
@@ -50,7 +49,7 @@ if grep -Fq "$indir/" runListSort.txt; then
 else
     ## only collect file with validated reconstruction output
     if [[ $TEST == "1" ]] ; then
-	find $indir -type f -name "run_reco_${SETUP}_ok" -exec dirname {} \; -quit > runList.txt;
+	find $indir -type f -name "run_reco_${SETUP}_ok" -printf "%h\n" | head -n $split_level > runList.txt;
     else
 	find $indir -type f -name "run_reco_${SETUP}_ok" -exec dirname {} \; > runList.txt;
     fi
@@ -78,6 +77,7 @@ for filelist in $ListOfFilelist ; do
 	rm $(ls filelist_${train}_* | grep -v aaaa)
 	rm -v runListSort.txt;
 	./analysis.sh $indir $filelist $outdir $NEVENT     # LOCAL run
+	rm -v filelist_${train}_*
 	break;
 
     else
@@ -90,24 +90,30 @@ for filelist in $ListOfFilelist ; do
 	#### memory max 4096M, default 2048M
 
 	## configure batch job
-	tmpjobscriptname=$PWD/ana_${train}_$I.sh
-	####
-	echo "#! /bin/sh"                                   > $tmpjobscriptname
-	echo "#SBATCH --output=$outdir/ana.slurm.out"       >> $tmpjobscriptname
-	echo "#SBATCH --error=$outdir/ana.slurm.err"        >> $tmpjobscriptname
-	echo "#SBATCH --job-name=ana_${train}_${I}"         >> $tmpjobscriptname
-	echo "#SBATCH --mail-type=FAIL"                     >> $tmpjobscriptname
-	echo "#SBATCH --mail-user=j.book@gsi.de"            >> $tmpjobscriptname
-	echo "#SBATCH --mem-per-cpu=2000"                   >> $tmpjobscriptname
-	echo "#SBATCH --time=0-03:00:00"                    >> $tmpjobscriptname
-	echo "#SBATCH --partition=main"                     >> $tmpjobscriptname
-	####
-	echo "srun ./analysis.sh $indir $filelist $outdir $NEVENT"  >> $tmpjobscriptname
 
-	chmod u+x $tmpjobscriptname
+	## copy filelist
+	mv $filelist $outdir/.
+
+	## partition
+	resources="--mem=4000 --time=0-03:00:00"
+	partition="--partition=main"
+#	resources="--mem=4000 --time=0-00:05:00"
+#	partition="--partition=debug"
+
+	scriptdir="$PWD"
+	workdir="--workdir ${outdir}"
+
+	mail_type="--mail-type=FAIL"
+	mail_user="--mail-user=j.book"
+
+	job_name="--job-name=ana_${train}_${I}"
+	log_output="--output=${outdir}/ana.slurm.out"
+	log_error="--error=${outdir}/ana.slurm.err"
 
 	## submit job
-	sbatch $tmpjobscriptname
+	command="${partition} ${resources} ${workdir} ${log_output} ${log_error} ${mail_type} ${mail_user} ${job_name} ${scriptdir}/analysis.sh $indir $filelist $outdir $NEVENT"
+	sbatch $command
+	break;
 
     fi
 

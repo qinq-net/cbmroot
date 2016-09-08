@@ -1,4 +1,4 @@
-FairTask * addtask(TString configPath, TString configFunct, TString configName) {
+FairTask * addpapa(TString configPath, TString configFunct, TString configName) {
 
   TString myName = "run_analysis";
   std::cout << "-I- " << myName << ": Loading task " << (configFunct + configName) << std::endl;
@@ -51,10 +51,11 @@ void run_analysis(Int_t nEvents = 0)
 
 
   // -----   Modify Cbm setup   ---------------------------------------------
+  std::cout << std::endl;
   // --- remove detector geometries
-  setup->RemoveModule(kPsd);      // remove psd from setup
   // setup->RemoveModule(kMvd);   // remove mvd and its material budget
   // setup->RemoveModule(kTrd);   // e.g. for sts-tof-matching study
+  setup->RemoveModule(kPsd);      // remove psd from setup
   // --- change default geomerties
   //  setup->SetModule(kTrd, "v15d_1e", kTRUE); // 5 TRD layer
   std::cout << "-I- " << myName << ": CbmSetup updated " << std::endl;
@@ -138,26 +139,27 @@ void run_analysis(Int_t nEvents = 0)
   std::cout << "-I- : Added task " << l1->GetName() << std::endl;
 
   // --- TRD pid tasks
-  // ----------- TRD track Pid Ann ----------------------
-  CbmTrdSetTracksPidANN* trdSetTracksPidAnnTask = new CbmTrdSetTracksPidANN("Ann", "Ann");
-  run->AddTask(trdSetTracksPidAnnTask);
-  std::cout << "-I- : Added task " << trdSetTracksPidAnnTask->GetName() << std::endl;
-  // ----------------------------------------------------
+  if ( setup->IsActive(kTrd) ) {
+    // ----------- TRD track Pid Ann ----------------------
+    CbmTrdSetTracksPidANN* trdSetTracksPidAnnTask = new CbmTrdSetTracksPidANN("Ann", "Ann");
+    run->AddTask(trdSetTracksPidAnnTask);
+    std::cout << "-I- : Added task " << trdSetTracksPidAnnTask->GetName() << std::endl;
+    // ----------------------------------------------------
 
-  // ----------- TRD track Pid Like ----------------------
-  // CbmTrdCreatePidLike* getTRDli = new CbmTrdCreatePidLike();
-  // run->AddTask(getTRDli);
-  //  std::cout << "-I- : Added task " << getTRDli->GetName() << std::endl;
-  // CbmTrdSetTracksPidLike* setTRDli = new CbmTrdSetTracksPidLike("Likelihood", "Likelihood");
-  // run->AddTask(setTRDli);
-  //  std::cout << "-I- : Added task " << setTRDli->GetName() << std::endl;
+    // ----------- TRD track Pid Like ----------------------
+    // CbmTrdCreatePidLike* getTRDli = new CbmTrdCreatePidLike();
+    // run->AddTask(getTRDli);
+    //  std::cout << "-I- : Added task " << getTRDli->GetName() << std::endl;
+    // CbmTrdSetTracksPidLike* setTRDli = new CbmTrdSetTracksPidLike("Likelihood", "Likelihood");
+    // run->AddTask(setTRDli);
+    //  std::cout << "-I- : Added task " << setTRDli->GetName() << std::endl;
 
-  // CbmTrdSetTracksPidLike_JB* trdLI = new CbmTrdSetTracksPidLike_JB("TRDLikelihood", "TRDLikelihood");
-  // trdLI->SetInputFileName("/Users/jbook/Documents/Uni/Doktor/Work/ikf-svn-trunk/jbook/papa-ana/Likelihood_Input.root");
-  // run->AddTask(trdLI);
-  //  std::cout << "-I- : Added task " << trdLI->GetName() << std::endl;
-  // ------------------------------------------------------------------------
-
+    // CbmTrdSetTracksPidLike_JB* trdLI = new CbmTrdSetTracksPidLike_JB("TRDLikelihood", "TRDLikelihood");
+    // trdLI->SetInputFileName("/Users/jbook/Documents/Uni/Doktor/Work/ikf-svn-trunk/jbook/papa-ana/Likelihood_Input.root");
+    // run->AddTask(trdLI);
+    //  std::cout << "-I- : Added task " << trdLI->GetName() << std::endl;
+    // ------------------------------------------------------------------------
+  }
 
   // -----   PAPA tasks   ---------------------------------------------------
   std::cout << std::endl;
@@ -167,24 +169,27 @@ void run_analysis(Int_t nEvents = 0)
   TString cfgPath = outDir + "/../";
   TString cfgFunc = "Config_jbook_";
 
-  // run->AddTask( addtask(cfgPath,cfgFunc, "MC")    );
-  // run->AddTask( addtask(cfgPath,cfgFunc, "URQMD") );
-  // run->AddTask( addtask(cfgPath,cfgFunc, "MVD")   );
-  // run->AddTask( addtask(cfgPath,cfgFunc, "MUCH")  );
-  // run->AddTask( addtask(cfgPath,cfgFunc, "TOF")   );
+  // run->AddTask( addpapa(cfgPath,cfgFunc, "MC")    );
+  // run->AddTask( addpapa(cfgPath,cfgFunc, "URQMD") );
+  // run->AddTask( addpapa(cfgPath,cfgFunc, "MVD")   );
+  // run->AddTask( addpapa(cfgPath,cfgFunc, "MUCH")  );
+  run->AddTask( addpapa(cfgPath,cfgFunc, "TOF")   );
 
-  // run->AddTask( addtask(cfgPath,cfgFunc, "QA")    );
-  // run->AddTask( addtask(cfgPath,cfgFunc, "StsQA") );
+  // run->AddTask( addpapa(cfgPath,cfgFunc, "QA")    );
+  // run->AddTask( addpapa(cfgPath,cfgFunc, "StsQA") );
 
-  //  run->AddTask( addtask(cfgPath,cfgFunc, "AA")    );
-  // run->AddTask( addtask(cfgPath,cfgFunc, "pA")    );
-  //  run->AddTask( addtask(cfgPath,cfgFunc, "RF")    );
+  //run->AddTask( addpapa(cfgPath,cfgFunc, "AA")    );
+  // run->AddTask( addpapa(cfgPath,cfgFunc, "pA")    );
+  //  run->AddTask( addpapa(cfgPath,cfgFunc, "RF")    );
 
   // run->AddTask( addtask(cfgPath,cfgFunc, "PID")   );
   // run->AddTask( addtask(cfgPath,cfgFunc, "Perf")  );
   // run->AddTask( addtask(cfgPath,cfgFunc, "Phi")   );
 
-  run->AddTask( addtask(cfgPath,cfgFunc, "Test")   );
+  //  run->AddTask( addpapa(cfgPath,cfgFunc, "AAfast")    );
+  //  run->AddTask( addpapa(cfgPath,cfgFunc, "RFfast")    );
+  //  run->AddTask( addpapa(cfgPath,cfgFunc, "Test")   );
+
   // ------------------------------------------------------------------------
 
   /// fair runtime database

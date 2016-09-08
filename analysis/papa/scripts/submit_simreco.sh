@@ -33,7 +33,7 @@ export SETUP="sis100_electron"      #"sis100_muon_jpsi"
 
 ## copy cbm setup macro and simulation and reconstruction macros to output directory
 ## for backup and documentation
-cp -nv "$HOME/.rootrc"                                           "$outdir/."
+cp -nv "$VMCWORKDIR/macro/run/.rootrc"                           "$outdir/."
 cp -nv "$VMCWORKDIR/geometry/setup/setup_${SETUP}.C"             "$outdir/."
 cp -nv "./run_sim_new.C"                                         "$outdir/."
 cp -nv "./run_reco_new.C"                                        "$outdir/."
@@ -62,34 +62,10 @@ while [ "$I" -lt "$NRUNS" ]; do
       #### memory max 4096M, default 2048M
 
       ## configure batch job
-      tmpjobscriptname=$PWD/sr_$(basename $outdir)_$I.sh
-      ####
-      echo "#! /bin/sh"                                 > $tmpjobscriptname
-      echo "#SBATCH --output=$out/simreco.slurm.out"    >> $tmpjobscriptname
-      echo "#SBATCH --error=$out/simreco.slurm.err"     >> $tmpjobscriptname
-      echo "#SBATCH --job-name=sr_${I}"                 >> $tmpjobscriptname
-      echo "#SBATCH --mail-type=END"                    >> $tmpjobscriptname
-      echo "#SBATCH --mail-user=j.book"                 >> $tmpjobscriptname
-      echo "#SBATCH --mem-per-cpu=4000"                 >> $tmpjobscriptname
-      echo "#SBATCH --time=1-05:00:00"                  >> $tmpjobscriptname
-      echo "#SBATCH --partition=long"                   >> $tmpjobscriptname
-      ####
-      echo "srun ./simreco.sh $out $NEVENT"                   >> $tmpjobscriptname
 
-      chmod u+x $tmpjobscriptname
-
-      ## submit job
-      sbatch $tmpjobscriptname
-
-
-
-
-      ## long partition
-#      resources="--mem=4000 --time=1-05:00:00"
-#      partition="--partition=long"
-
-      resources="--mem=4000 --time=0-00:20:00"
-      partition="--partition=debug"
+      ## partition
+      resources="--mem=4000 --time=1-00:00:00"
+      partition="--partition=long"
 
       scriptdir="$PWD"
       workdir="--workdir ${out}"
@@ -102,8 +78,8 @@ while [ "$I" -lt "$NRUNS" ]; do
       log_error="--error=${out}/simreco.slurm.err"
 
       ## submit job
-      sbatch "${partition} ${resources} ${workdir} ${log_output} ${log_error} ${mail_type} ${mail_user} ${job_name} ${scriptdir}/simreco.sh $out $NEVENT"
-
+      command="${partition} ${resources} ${workdir} ${log_output} ${log_error} ${mail_type} ${mail_user} ${job_name} ${scriptdir}/simreco.sh $out $NEVENT"
+      sbatch $command
 
   fi
 
