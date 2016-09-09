@@ -371,7 +371,7 @@ InitStatus LxTBFinder::Init()
     if (hasTrd)
        nofLayers += CUR_NOF_TRD_LAYERS;
     
-    fDetector = new LxTBBinnedDetector(nofLayers, 20, 20, nof_timebins);
+    fDetector = new LxTBBinnedDetector(nofLayers, 20, 20, nof_timebins, CUR_TIMEBIN_LENGTH);
     
     fStsHits = static_cast<TClonesArray*> (ioman->GetObject("StsHit"));
     fStsTracks = static_cast<TClonesArray*> (ioman->GetObject("StsTrack"));
@@ -386,6 +386,10 @@ InitStatus LxTBFinder::Init()
        
     HandleGeometry();
     fFinder->Init();
+    
+#ifdef LXTB_TIE
+    fDetector->Init();
+#endif//LXTB_TIE
     
     fMuchPixelHits = static_cast<TClonesArray*> (ioman->GetObject("MuchPixelHit"));
     fTrdHits = static_cast<TClonesArray*> (ioman->GetObject("TrdHit"));
@@ -1012,6 +1016,131 @@ void LxTBFinder::AddHit(const CbmPixelHit* hit, Int_t stationNumber, Int_t refId
 }
 
 #ifdef LXTB_TIE
+void LxTBFinder::AddLayerHit(const CbmPixelHit* hit, Int_t layerNumber, Int_t refId, bool isTrd)
+{
+   scaltype x = hit->GetX();
+   scaltype y = hit->GetY();
+   timetype t = hit->GetTime();
+   scaltype dx = hit->GetDx();
+   scaltype dy = hit->GetDy();
+   timetype dt = 4;//hit->GetTimeError();
+   LxTbBinnedPoint point(x, dx, y, dy, t, dt, refId, false);
+#ifdef LXTB_QA
+   point.isTrd = isTrd;
+   point.stationNumber = layerNumber;// Station number does not matter in this context.
+   Int_t clusterId = hit->GetRefId();
+
+   /*if (useIdeal)
+   {
+      const FairMCPoint* pMCPt = static_cast<const FairMCPoint*> (isTrd ? fTrdMCPoints->Get(0, currentEventN, clusterId) : fMuchMCPoints->Get(0, currentEventN, clusterId));
+      Int_t trackId = pMCPt->GetTrackID();
+      LxTbBinnedPoint::PointDesc ptDesc = {currentEventN, clusterId, trackId};
+      t = isTrd ? fTrdPoints[currentEventN][clusterId].t : fMuchPoints[currentEventN][clusterId].t;
+#ifdef LXTB_EMU_TS
+      t += gRandom->Gaus(0, 4);
+#endif//LXTB_EMU_TS
+      point.mcRefs.push_back(ptDesc);
+   }
+   else*/
+   {
+      const CbmCluster* cluster = static_cast<const CbmCluster*> (isTrd ? fTrdClusters->At(clusterId) : fMuchClusters->At(clusterId));
+      Int_t nDigis = cluster->GetNofDigis();
+      double avT = 0;
+#ifdef LXTB_EMU_TS
+      double avTErr = 0;
+#endif//LXTB_EMU_TS
+      int nofT = 0;
+
+      for (Int_t i = 0; i < nDigis; ++i)
+      {
+         const CbmMatch* digiMatch = static_cast<const CbmMatch*> (isTrd ? fTrdDigiMatches->At(cluster->GetDigi(i)) : fMuchPixelDigiMatches->At(cluster->GetDigi(i)));
+         Int_t nMCs = digiMatch->GetNofLinks();
+
+         for (Int_t j = 0; j < nMCs; ++j)
+         {
+            const CbmLink& lnk = digiMatch->GetLink(j);
+            Int_t eventId = isEvByEv ? currentEventN : lnk.GetEntry();
+            Int_t pointId = lnk.GetIndex();
+            
+            if ((isTrd && fTrdPoints[eventId].size() <= pointId) || (!isTrd && fMuchPoints[eventId].size() <= pointId))// Do this check because of possible addition of noise electrons in runtime.
+               continue;
+            
+            const FairMCPoint* pMCPt = static_cast<const FairMCPoint*> (isTrd ? fTrdMCPoints->Get(0, eventId, pointId) : fMuchMCPoints->Get(0, eventId, pointId));
+            Int_t trackId = pMCPt->GetTrackID();
+            LxTbBinnedPoint::PointDesc ptDesc = {eventId, pointId, trackId};
+            point.mcRefs.push_back(ptDesc);
+            Double_t deltaT = isTrd ? fTrdPoints[eventId][pointId].t : fMuchPoints[eventId][pointId].t;
+#ifdef LXTB_EMU_TS
+            deltaT += gRandom->Gaus(0, 4);
+            avTErr += 4 * 4;
+#endif//LXTB_EMU_TS
+            avT += deltaT;
+            ++nofT;
+         }
+      }
+
+      if (nofT > 0)
+      {
+         avT /= nofT;
+#ifdef LXTB_EMU_TS
+         avTErr = TMath::Sqrt(avTErr);
+         avTErr /= nofT;
+         dt = avT;
+#endif//LXTB_EMU_TS
+      }
+
+      t = avT;
+   }
+#endif//LXTB_QA
+   point.t = t;
+   
+/*#ifdef LXTB_EMU_TS
+   ts_points.push_back(point);
+   
+   if (min_ts_time > t)
+      min_ts_time = t;
+   
+   if (max_ts_time < t)
+      max_ts_time = t;
+#else//LXTB_EMU_TS*/
+   scaltype minY = fDetector->fLayers[layerNumber].minY;
+   scaltype binSizeY = fDetector->fLayers[layerNumber].binSizeY;
+   int lastYBin = fDetector->fLayers[layerNumber].lastYBin;
+   scaltype minX = fDetector->fLayers[layerNumber].minX;
+   scaltype binSizeX = fDetector->fLayers[layerNumber].binSizeX;
+   int lastXBin = fDetector->fLayers[layerNumber].lastXBin;
+   timetype minT = fDetector->fLayers[layerNumber].minT;
+   int binSizeT = fDetector->fLayers[layerNumber].binSizeT;
+   int lastTBin = fDetector->fLayers[layerNumber].lastTBin;
+   
+   int tInd = (t - minT) / binSizeT;
+
+   if (tInd < 0)
+      tInd = 0;
+   else if (tInd > lastTBin)
+      tInd = lastTBin;
+
+   LxTbTYXBin& tyxBin = fDetector->fLayers[layerNumber].tyxBins[tInd];
+   int yInd = (y - minY) / binSizeY;
+
+   if (yInd < 0)
+      yInd = 0;
+   else if (yInd > lastYBin)
+      yInd = lastYBin;
+
+   LxTbYXBin& yxBin = tyxBin.yxBins[yInd];
+   int xInd = (x - minX) / binSizeX;
+
+   if (xInd < 0)
+      xInd = 0;
+   else if (xInd > lastXBin)
+      xInd = lastXBin;
+
+   LxTbXBin& xBin = yxBin.xBins[xInd];   
+   xBin.points.push_back(point);
+//#endif//LXTB_EMU_TS
+}
+
 void LxTBFinder::AddStsTrack(const CbmStsTrack& stsTrack, Int_t selfId)
 {   
    const FairTrackParam& par = *stsTrack.GetParamLast();
@@ -1061,6 +1190,10 @@ void LxTBFinder::Exec(Option_t* opt)
    
    fFinder->Clear();
    fFinder->SetTSBegin(tsStartTime);
+   
+#ifdef LXTB_TIE
+   fDetector->SetTSBegin(tsStartTime);
+#endif//LXTB_TIE   
    
    // As the SIS100 geometry contains 4 MUCH and 1 TRD stations we need to read both MUCH and TRD hits.
    for (int i = 0; i < fMuchPixelHits->GetEntriesFast(); ++i)
@@ -1126,10 +1259,22 @@ void LxTBFinder::Exec(Option_t* opt)
    //                                                                                                                      |
    if (triggerTimes_trd1_sign1_dist1.size() - prevTrigTimeSize > 0)// Triggering event. Do global tracks generation. <------
    {
-      for (int i = 0; i < CUR_NOF_STATIONS; ++i)
+      for (int i = 0; i < fMuchPixelHits->GetEntriesFast(); ++i)
       {
-         
+         const CbmMuchPixelHit* mh = static_cast<const CbmMuchPixelHit*> (fMuchPixelHits->At(i));
+         Int_t hitStN = CbmMuchGeoScheme::GetStationIndex(mh->GetAddress());
+         Int_t hitLrN = CbmMuchGeoScheme::GetLayerIndex(mh->GetAddress());
+         AddLayerHit(mh, hitStN * 3 + hitLrN, i, false);
       }
+
+      for (int i = 0; i < fTrdHits->GetEntriesFast(); ++i)
+      {
+         const CbmTrdHit* th = static_cast<const CbmTrdHit*> (fTrdHits->At(i));
+         Int_t hitStN = th->GetPlaneId();
+         AddLayerHit(th, CUR_NOF_STATIONS * 3 + hitStN, i, true);
+      }
+      
+      fDetector->TieTracks(*fFinder);
    }
 #endif//LXTB_EMU_TS
    
@@ -1282,6 +1427,10 @@ void LxTBFinder::Finish()
          tyxBin.use = true;
       }
    }
+   
+#ifdef LXTB_TIE
+   fDetector->SetTSBegin(0);
+#endif//LXTB_TIE
    
    fFinder->Reconstruct();
 

@@ -8,6 +8,8 @@
 #include "data/CbmLitTrackParam.h"
 #include "utils/CbmLitConverter.h"
 #include "base/CbmLitToolFactory.h"
+#include "CbmMuchPixelHit.h"
+#include "CbmTrdHit.h"
 
 void LxTBBinnedDetector::AddStsTrack(const FairTrackParam& par, Double_t chiSq, Double_t time, Int_t selfId/*, Int_t eventId, Int_t fileId*/)
 {
@@ -48,11 +50,29 @@ struct TieHandlePoint : public LxTBBinndedLayer::PointHandler
    }
 };
 
-LxTBBinnedDetector::LxTBBinnedDetector(int nofl, int nofxb, int nofyb, int noftb) : fLayers(reinterpret_cast<LxTBBinndedLayer*> (new unsigned char[nofl * sizeof(LxTBBinndedLayer)])),
-   fNofLayers(nofl), fMuchTracks(0), fGlobalTracks(0)
+LxTBBinnedDetector::LxTBBinnedDetector(int nofl, int nofxb, int nofyb, int noftb, int binSizeT) :
+   fLayers(reinterpret_cast<LxTBBinndedLayer*> (new unsigned char[nofl * sizeof(LxTBBinndedLayer)])), fNofLayers(nofl), fMuchTracks(0), fGlobalTracks(0)
 {
    for (int i = 0; i < noftb; ++i)
-      new (&fLayers[i]) LxTBBinndedLayer(nofxb, nofyb, noftb);
+      new (&fLayers[i]) LxTBBinndedLayer(nofxb, nofyb, noftb, binSizeT);
+}
+
+void LxTBBinnedDetector::Init()
+{
+   for (int i = 0; i < fNofLayers; ++i)
+      fLayers[i].Init();
+}
+
+void LxTBBinnedDetector::Clear()
+{
+   for (int i = 0; i < fNofLayers; ++i)
+      fLayers[i].Clear();
+}
+
+void LxTBBinnedDetector::SetTSBegin(unsigned long long tsLowBound)
+{
+   for (int i = 0; i < fNofLayers; ++i)
+      fLayers[i].SetTSBegin(tsLowBound);
 }
 
 void LxTBBinnedDetector::TieTracks(LxTbBinnedFinder& fFinder)

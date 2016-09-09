@@ -14,6 +14,7 @@
 #ifndef LXTBTIETRACKS_H
 #define LXTBTIETRACKS_H
 
+#include "LxTBDefinitions.h"
 #include "LxTBBinned.h"
 #include "FairTrackParam.h"
 
@@ -34,14 +35,15 @@ struct LxTBBinndedLayer
     scaltype binSizeY;
     timetype minT;
     timetype maxT;
-    timetype binSizeT;
+    int binSizeT;
+    int timeSliceLength;
     scaltype maxDx;
     scaltype maxDy;
     timetype maxDt;
     LxTbTYXBin* tyxBins;
     
-    LxTBBinndedLayer(int nofxb, int nofyb, int noftb) : nofXBins(nofxb), nofYBins(nofyb), nofTBins(noftb), lastXBin(nofxb - 1), lastYBin(nofyb - 1), lastTBin(noftb - 1),
-        minT(0), maxT(0), maxDx(0), maxDy(0), maxDt(0),
+    LxTBBinndedLayer(int nofxb, int nofyb, int noftb, int bst) : nofXBins(nofxb), nofYBins(nofyb), nofTBins(noftb), lastXBin(nofxb - 1), lastYBin(nofyb - 1), lastTBin(noftb - 1),
+        minT(0), maxT(0), binSizeT(bst), timeSliceLength(nofTBins * binSizeT), maxDx(0), maxDy(0), maxDt(0),
         tyxBins(reinterpret_cast<LxTbTYXBin*> (new unsigned char[noftb * sizeof(LxTbTYXBin)]))
     {
         for (int i = 0; i < noftb; ++i)
@@ -57,6 +59,18 @@ struct LxTBBinndedLayer
     {
         for (int i = 0; i < nofTBins; ++i)
             tyxBins[i].Clear();
+    }
+    
+    void Init()
+    {
+        binSizeX = (maxX - minX) / nofXBins;
+        binSizeY = (maxY - minY) / nofYBins;
+    }
+    
+    void SetTSBegin(unsigned long long tsLowBound)
+    {
+        minT = tsLowBound;
+        maxT = tsLowBound + timeSliceLength;
     }
     
     struct PointHandler
@@ -172,7 +186,10 @@ struct LxTBBinnedDetector
     TClonesArray* fMuchTracks;
     TClonesArray* fGlobalTracks;
     
-    LxTBBinnedDetector(int nofl, int nofxb, int nofyb, int noftb);
+    LxTBBinnedDetector(int nofl, int nofxb, int nofyb, int noftb, int binSizeT);
+    void Init();
+    void Clear();
+    void SetTSBegin(unsigned long long tsLowBound);
     void AddStsTrack(const FairTrackParam& par, Double_t chiSq, Double_t time, Int_t selfId/*, Int_t eventId, Int_t fileId*/);
     void TieTracks(LxTbBinnedFinder& fFinder);
 };

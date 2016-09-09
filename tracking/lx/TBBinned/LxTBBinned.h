@@ -14,6 +14,7 @@
 #ifndef LXTBBINNED_H
 #define LXTBBINNED_H
 
+#include "LxTBDefinitions.h"
 #include "LxTBMatEffs.h"
 
 #ifdef __MACH__
@@ -38,6 +39,7 @@ int clock_gettime(int clk_id, struct timespec *t){
 #include <list>
 #include <memory>
 #include "CbmPixelHit.h"
+#include <set>
 
 #define NOF_SIGMAS 4
 #define NOF_SIGMAS_SQ NOF_SIGMAS * NOF_SIGMAS

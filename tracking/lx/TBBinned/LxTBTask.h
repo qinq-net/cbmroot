@@ -14,17 +14,11 @@
 #ifndef LXTBTASK_H
 #define LXTBTASK_H
 
+#include "LxTBDefinitions.h"
 #include "FairTask.h"
 #include "CbmMuchPoint.h"
 #include "CbmTrdPoint.h"
 #include <vector>
-
-#define LXTB_TIE
-#define LXTB_QA
-
-#ifdef LXTB_QA
-//#define LXTB_EMU_TS
-#endif//LXTB_QA
 
 #define CUR_NOF_TRD_LAYERS 4
 #define CUR_LAST_TRD_LAYER CUR_NOF_TRD_LAYERS - 1
@@ -80,7 +74,11 @@ private:
 #else
     void AddHit(const CbmPixelHit* hit, Int_t stationNumber, Int_t refId);
 #endif//LXTB_QA
+    
+#ifdef LXTB_TIE
+    void AddLayerHit(const CbmPixelHit* hit, Int_t layerNumber, Int_t refId, bool isTrd);
     void AddStsTrack(const CbmStsTrack& stsTrack, Int_t selfId);
+#endif//LXTB_TIE
     
     struct PointDataHolder
     {
