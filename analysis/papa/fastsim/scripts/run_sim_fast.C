@@ -698,23 +698,23 @@ void AddCharmoniaCocktail(FairPrimaryGenerator *primGen, Int_t idx, TString inpu
   TString file = inputFile + Form("%05d",idy+1) + "/pluto.pau.30gev.jpsi.epem.root";
   printf("pluto vec.meson: %s \n",file.Data());
   CbmPlutoGenerator *plutoJpsi= new CbmPlutoGenerator(file);
-  if(idx%2) primGen->AddGenerator(plutoJpsi);
+  if(idy%2) primGen->AddGenerator(plutoJpsi);
 
   /// for radiative decay
   CbmGenEvtGen *evtgen = new CbmGenEvtGen();
   evtgen->SetForceDecay(kBJpsiDiElectron);
   evtgen->SetParticleSwitchedOff(CbmGenEvtGen::kJPsiPart);
-  if(idx%2) primGen->AddGenerator(evtgen);
+  if(idy%2) primGen->AddGenerator(evtgen);
 
   /// NOTE: do NOT decay with evtgen
-  idy = (idx >= 0 ? idx%module : gRandom->Integer(module) );
+  //  idy = (idx >= 0 ? idx%module : gRandom->Integer(module) );
   file = inputFile + Form("%05d",idy+1) + "/pluto.pau.30gev.jpsi.epem.root";
   file.ReplaceAll("jpsi","psi2s");
   //inputFile.ReplaceAll("jpsi","psi2s.epem");
   printf("pluto vec.meson: %s \n",file.Data());
   CbmPlutoGenerator *plutoPsi2S= new CbmPlutoGenerator(file);
   plutoPsi2S->SetManualPDG(100443);
-  if(!(idx%2)) primGen->AddGenerator(plutoPsi2S);
+  if(!(idy%2)) primGen->AddGenerator(plutoPsi2S);
 
   return;
 }

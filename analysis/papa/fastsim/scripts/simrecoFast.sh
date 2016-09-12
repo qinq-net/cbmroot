@@ -11,9 +11,6 @@ mkdir -p $OUTDIR
 cd $OUTDIR
 echo $PWD
 
-## copy rootrc
-cp "../.rootrc" "."
-
 ## get cbm setup macro forseen
 export SETUP=$(basename $OUTDIR/../setup* .C)
 SETUP=${SETUP/setup_/}
@@ -41,6 +38,9 @@ while [ $JOB -lt $NJOBS ] ; do
     cd $OUTDIR
     echo $PWD
 
+    ## copy rootrc
+    cp "../.rootrc" "."
+
     ## check files in output directory
     echo "$OUTDIR"
     ls -lhSr "$OUTDIR"
@@ -67,6 +67,20 @@ while [ $JOB -lt $NJOBS ] ; do
 	    fi
 	fi
 	echo
+    fi
+
+    ## validation
+    if [ -f "$PWD/run_sim_${SETUP}_ok" ] ; then
+	echo "everything okay"
+	ls -lhSr "$PWD"
+	echo "clean up diretory"
+	rm -v "$PWD/.rootrc"
+	rm -v "$PWD/gphysi.dat"
+	ls -lhSr "$PWD"
+	echo "everything done";
+    else
+	echo "validation failed!"
+	rm -v "$PWD/${SETUP}_mc.root"
     fi
 
     #### next sub job
