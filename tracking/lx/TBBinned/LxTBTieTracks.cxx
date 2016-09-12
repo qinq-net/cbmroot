@@ -53,7 +53,7 @@ struct TieHandlePoint : public LxTBBinndedLayer::PointHandler
 LxTBBinnedDetector::LxTBBinnedDetector(int nofl, int nofxb, int nofyb, int noftb, int binSizeT) :
    fLayers(reinterpret_cast<LxTBBinndedLayer*> (new unsigned char[nofl * sizeof(LxTBBinndedLayer)])), fNofLayers(nofl), fMuchTracks(0), fGlobalTracks(0)
 {
-   for (int i = 0; i < noftb; ++i)
+   for (int i = 0; i < fNofLayers; ++i)
       new (&fLayers[i]) LxTBBinndedLayer(nofxb, nofyb, noftb, binSizeT);
 }
 
@@ -65,6 +65,8 @@ void LxTBBinnedDetector::Init()
 
 void LxTBBinnedDetector::Clear()
 {
+   fStsTracks.clear();
+   
    for (int i = 0; i < fNofLayers; ++i)
       fLayers[i].Clear();
 }
@@ -99,6 +101,8 @@ void LxTBBinnedDetector::TieTracks(LxTbBinnedFinder& fFinder)
       CbmLitTrackParam par;
       CbmLitConverterFairTrackParam::FairTrackParamToCbmLitTrackParam(&stsTrack.fPar, &par);
       CbmLitTrackParam prevPar;
+      CbmLitTrackParam firstPar;
+      bool firstTime = true;
       timetype t = stsTrack.fTime;
       
       struct PointData
@@ -137,6 +141,12 @@ void LxTBBinnedDetector::TieTracks(LxTbBinnedFinder& fFinder)
             trackChiSq += pointHandler.fChiSq;
             PointData pd = { pointHandler.fPoint, j > 11 };
             points.push_back(pd);
+            
+            if (firstTime)
+            {
+               firstPar = par;
+               firstTime = false;
+            }
          }
       }
       
@@ -147,12 +157,12 @@ void LxTBBinnedDetector::TieTracks(LxTbBinnedFinder& fFinder)
       globalTrack->SetMuchTrackIndex(muchTrackNo++);
       Int_t ndf = points.size() * 2 - 5;
       muchTrack->SetChiSq(trackChiSq);
-      muchTrack->SetNDF(ndf < 0 ? 1 : ndf);
+      muchTrack->SetNDF(ndf < 1 ? 1 : ndf);
       muchTrack->SetPreviousTrackId(stsTrack.fSelfId);
       muchTrack->SetFlag(kLITGOOD);
       FairTrackParam parLast, parFirst;
       CbmLitConverterFairTrackParam::CbmLitTrackParamToFairTrackParam(&par, &parLast);
-      CbmLitConverterFairTrackParam::CbmLitTrackParamToFairTrackParam(&par, &parFirst);
+      CbmLitConverterFairTrackParam::CbmLitTrackParamToFairTrackParam(&firstPar, &parFirst);
       muchTrack->SetParamLast(&parLast);
       muchTrack->SetParamFirst(&parFirst);
       

@@ -47,7 +47,7 @@ int clock_gettime(int clk_id, struct timespec *t){
 
 using namespace std;
 
-static Double_t speedOfLight = 0;
+extern Double_t speedOfLight;
 
 struct LxTbBinnedPoint;
 

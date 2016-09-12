@@ -32,6 +32,8 @@
 #endif//LXTB_QA
 
 ClassImp(LxTBFinder)
+   
+Double_t speedOfLight = 0;
 
 LxTbBinnedFinder::SignalParticle LxTbBinnedFinder::particleDescs[] = { { "jpsi", 443, 3.0, true  }, { "omega", 223, 1.5, false }, { "", -1, 0, false } };
 
@@ -1024,6 +1026,18 @@ void LxTBFinder::AddLayerHit(const CbmPixelHit* hit, Int_t layerNumber, Int_t re
    scaltype dx = hit->GetDx();
    scaltype dy = hit->GetDy();
    timetype dt = 4;//hit->GetTimeError();
+   
+   LxTBBinndedLayer& layer = fDetector->fLayers[layerNumber];
+   
+   if (layer.maxDx < dx)
+      layer.maxDx = dx;
+   
+   if (layer.maxDy < dy)
+      layer.maxDy = dy;
+   
+   if (layer.maxDt < dt)
+      layer.maxDt = dt;
+   
    LxTbBinnedPoint point(x, dx, y, dy, t, dt, refId, false);
 #ifdef LXTB_QA
    point.isTrd = isTrd;
@@ -1231,9 +1245,6 @@ void LxTBFinder::Exec(Option_t* opt)
       }
    }
    
-   for (int i = 0; i < fStsTracks->GetEntriesFast(); ++i)
-      AddStsTrack(*static_cast<const CbmStsTrack*> (fStsTracks->At(i)), i);
-   
 #ifndef LXTB_EMU_TS
    fFinder->Reconstruct();
    tsStartTime += 100;
@@ -1259,6 +1270,15 @@ void LxTBFinder::Exec(Option_t* opt)
    //                                                                                                                      |
    if (triggerTimes_trd1_sign1_dist1.size() - prevTrigTimeSize > 0)// Triggering event. Do global tracks generation. <------
    {
+      fDetector->Clear();
+      Int_t nofStsTracks = fStsTracks->GetEntriesFast();
+      
+      for (int i = 0; i < nofStsTracks; ++i)
+      {
+         const CbmStsTrack* stsTrack = static_cast<const CbmStsTrack*> (fStsTracks->At(i));
+         AddStsTrack(*stsTrack, i);
+      }
+      
       for (int i = 0; i < fMuchPixelHits->GetEntriesFast(); ++i)
       {
          const CbmMuchPixelHit* mh = static_cast<const CbmMuchPixelHit*> (fMuchPixelHits->At(i));
