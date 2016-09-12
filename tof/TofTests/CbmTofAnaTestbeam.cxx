@@ -600,6 +600,13 @@ InitStatus CbmTofAnaTestbeam::Init()
    if( kFALSE == CreateHistos() )
       return kFATAL;
 
+   if(fEnableMatchPosScaling)
+     LOG(INFO) << Form("CbmTofAnaTestbeam::Init: Position Scaling for Matching enabled ")
+	       << FairLogger::endl;
+      else 
+	LOG(INFO) << Form("CbmTofAnaTestbeam::Init: Position Scaling for Matching not enabled ")
+		  << FairLogger::endl;
+
   fFindTracks = CbmTofFindTracks::Instance();
   if (NULL == fFindTracks) 
   LOG(WARNING) << Form("CbmTofAnaTestbeam::Init : no FindTracks instance found")
@@ -1006,7 +1013,7 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 			  100, -1000., 1000.); 
      fhTofSel24 =  new TH1F( Form("hTofSel24"),Form("Matching Sel24; #Delta t [ps]; Nhits"),
 			  100, -10000., 10000.); 
-     Int_t iNbinXY=68;
+     Int_t iNbinXY=34;
      fhXY0D4best = new TH2F( Form("hXY0D4best"),Form("local position 0;  x [cm]; y [cm]"), iNbinXY, -17., 17., iNbinXY, -17., 17.);
      fhXY4D4best = new TH2F( Form("hXY4D4best"),Form("local position 4;  x [cm]; y [cm]"), iNbinXY, -17., 17., iNbinXY, -17., 17.);
      fhXX04D4best = new TH2F( Form("hXX04D4best"),Form("local x position 0-4; x0 [cm]; x4 [cm]"), iNbinXY, -17., 17., iNbinXY, -17., 17.);
@@ -1108,7 +1115,7 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
      fhChiDT04D4best = new TH2F( Form("hChiDT04D4best"),Form("Time - position correlation; #chi; #DeltaT [ps]"),
 			       100, 0., 100., 100, -DTMAX, DTMAX);
      Double_t dtscal=5.;
-     if ( fdChi2Lim>100. ) dtscal *= 500.;
+     if ( fdChi2Lim>100. ) dtscal *= 50.;
      fhDTD4DT04D4best = new TH2F( Form("hDTD4DT04D4best"),
 			    Form("Time - velocity correlation; #DeltaTD4 [ps]; #DeltaT04 [ps]"),
 			    100, -DTMAX*6., DTMAX*6., 500, -DTMAX*dtscal, DTMAX*dtscal); 
@@ -1875,13 +1882,13 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
    fhNMatch04->Fill(iNbMatchedHits);
    if(fTrbHeader != NULL) fhTIS_all->Fill(fTrbHeader->GetTimeInSpill());
 
-   LOG(DEBUG)<<Form(" Matches: %d with first chi2s = %12.1f, %12.1f, %12.1f, %12.1f",iNbMatchedHits,
+   LOG(DEBUG)<<Form(" FoundMatches: %d with first chi2s = %12.1f, %12.1f, %12.1f, %12.1f",iNbMatchedHits,
 		    Chi2List[0],Chi2List[1],Chi2List[2],Chi2List[3])
 	     <<Form(", Muls %4.0f, %4.0f, %4.0f",dMulD, dMul0, dMul4)
  	     <<FairLogger::endl;
    // selector 0 distributions 
    if(BSel[0]){
-
+    LOG(DEBUG)<<Form(" Found valid selector ")<<FairLogger::endl;
     fhNMatchD4sel->Fill(iNbMatchedHits);  // use as normalisation
     if(fTrbHeader != NULL) fhTIS_sel->Fill(fTrbHeader->GetTimeInSpill());
     fhTofD4sel->Fill(pHitRef->GetTime()-pDia->GetTime());           //  general normalisation
@@ -2039,7 +2046,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      Double_t dDTexp  = dDist*dInvVel;
 
      Double_t dTcor=0.;
-     if(fhDTD4DT04D4Off != NULL) dTcor=(Double_t)fhDTD4DT04D4Off->GetBinContent(fhDTD4DT04D4Off->FindBin(-dDTD4Min));
+     if(fhDTD4DT04D4Off != NULL) dTcor+=(Double_t)fhDTD4DT04D4Off->GetBinContent(fhDTD4DT04D4Off->FindBin(-dDTD4Min));
      if(fhDTX4D4Off     != NULL) dTcor+=(Double_t)fhDTX4D4Off->GetBinContent(fhDTX4D4Off->FindBin(hitpos2_local[0]));
      if(fhDTY4D4Off     != NULL) dTcor+=(Double_t)fhDTY4D4Off->GetBinContent(fhDTY4D4Off->FindBin(hitpos2_local[1]));
      if(fhDTTexpD4Off   != NULL) dTcor+=(Double_t)fhDTTexpD4Off->GetBinContent(fhDTTexpD4Off->FindBin(dDTexp));
