@@ -12,7 +12,7 @@ cd $OUTDIR
 echo $PWD
 
 ## copy rootrc
-cp "../.rootrc" "."
+cp -v "../.rootrc" "."
 
 ## get cbm setup macro forseen
 export SETUP=$(basename $OUTDIR/../setup* .C)
@@ -24,7 +24,7 @@ NEVT=$2
 
 ## check files in output directory
 echo "$OUTDIR"
-ls -lhSr "$OUTDIR"
+ls -lhSra "$OUTDIR"
 
 ## simulation
 if [ -f "$1/run_sim_${SETUP}_ok" ] ; then
@@ -83,21 +83,21 @@ fi
 ## validation
 if [ -f "$1/run_reco_${SETUP}_ok" ] ; then
     echo "everything okay"
-    ls -lhSr "$1"
+    ls -lhSra "$1"
     echo "clean up diretory"
     rm -v "$1/.rootrc"
     rm -v "$1/L1_histo.root"
     rm -v "$1/TRhistos.root"
     rm -v "$1/all_*.par"
     rm -v "$1/gphysi.dat"
-    ls -lhSr "$1"
+    ls -lhSra "$1"
     echo "everything done";
 else
     echo "validation failed!"
     rm -v "$1/${SETUP}_reco.root"
     if [ -f "$1/run_sim_${SETUP}_ok" ] ; then
 	echo
-	ls -lhSr "$1"
+	ls -lhSra "$1"
 	echo "simulation okay";
     else
 	rm -v "$1/${SETUP}_mc.root"

@@ -39,11 +39,11 @@ while [ $JOB -lt $NJOBS ] ; do
     echo $PWD
 
     ## copy rootrc
-    cp "../.rootrc" "."
+    cp -v "../.rootrc" "."
 
     ## check files in output directory
     echo "$OUTDIR"
-    ls -lhSr "$OUTDIR"
+    ls -lhSra "$OUTDIR"
 
     ## simulation
     if [ -f "$1$JOB/run_sim_${SETUP}_ok" ] ; then
@@ -72,11 +72,11 @@ while [ $JOB -lt $NJOBS ] ; do
     ## validation
     if [ -f "$PWD/run_sim_${SETUP}_ok" ] ; then
 	echo "everything okay"
-	ls -lhSr "$PWD"
+	ls -lhSra "$PWD"
 	echo "clean up diretory"
 	rm -v "$PWD/.rootrc"
 	rm -v "$PWD/gphysi.dat"
-	ls -lhSr "$PWD"
+	ls -lhSra "$PWD"
 	echo "everything done";
     else
 	echo "validation failed!"
