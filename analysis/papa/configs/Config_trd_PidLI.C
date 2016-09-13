@@ -117,7 +117,6 @@ PairAnalysis* Config_Analysis(Int_t cutDefinition)
   SetupTrackCutsMC(papa,cutDefinition);
 
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv MISC vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
-  papa->SetPairPreFilterLegCutType(PairAnalysis::kBothLegs);
 
   /// Monte Carlo Signals
   AddMCSignals(papa, cutDefinition);
