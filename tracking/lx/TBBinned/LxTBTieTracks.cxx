@@ -10,6 +10,7 @@
 #include "base/CbmLitToolFactory.h"
 #include "CbmMuchPixelHit.h"
 #include "CbmTrdHit.h"
+#include "CbmMuch.h"
 
 void LxTBBinnedDetector::AddStsTrack(const FairTrackParam& par, Double_t chiSq, Double_t time, Int_t selfId/*, Int_t eventId, Int_t fileId*/)
 {
@@ -104,6 +105,7 @@ void LxTBBinnedDetector::TieTracks(LxTbBinnedFinder& fFinder)
       CbmLitTrackParam firstPar;
       bool firstTime = true;
       timetype t = stsTrack.fTime;
+      int nofMissingHits = 0;
       
       struct PointData
       {
@@ -148,6 +150,11 @@ void LxTBBinnedDetector::TieTracks(LxTbBinnedFinder& fFinder)
                firstTime = false;
             }
          }
+         else
+            ++nofMissingHits;
+         
+         if (nofMissingHits > 4)
+            break;
       }
       
       if (points.empty())

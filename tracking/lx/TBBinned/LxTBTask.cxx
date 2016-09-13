@@ -1206,6 +1206,8 @@ void LxTBFinder::Exec(Option_t* opt)
    fFinder->SetTSBegin(tsStartTime);
    
 #ifdef LXTB_TIE
+   fDetector->fMuchTracks->Delete();
+   fDetector->fGlobalTracks->Clear();
    fDetector->SetTSBegin(tsStartTime);
 #endif//LXTB_TIE   
    
