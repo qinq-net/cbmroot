@@ -318,6 +318,12 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	  }
 
   }
+  static Long64_t lastHitTimestamp[64];
+  if (fNrTimeSlices==0){
+	for(Int_t i=0;i<64;i++){
+		lastHitTimestamp[i]=0;
+	}
+  }
   // Starting to loop over all Spadic messages in unpacked TimeSlice, Analysis loop
   for (Int_t iSpadicMessage=0; iSpadicMessage < nSpadicMessages; ++iSpadicMessage) {
     //std::cout << "  " << iSpadicMessage << std::endl;
@@ -368,6 +374,12 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     triggerType = raw->GetTriggerType();
 
     if(isHit) hitCounter[sysID][spaID]++;
+    if(isHit||isHitAborted){
+    	string HistName = "Hitfrequency_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID);
+    	if(fNrTimeSlices>0)fHM->G1(HistName)->SetPoint(fHM->G1(HistName)->GetN(),static_cast<Double_t>(time)/17500000.0,17500000/std::fabs((static_cast<Double_t>(lastHitTimestamp[spaID*16+raw->GetChannelID()])-static_cast<Double_t>(time))));
+//    	fHM->H2(HistName+"_linear")->Fill(fNrTimeSlices,17600000/std::fabs((static_cast<Double_t>(lastHitTimestamp[spaID*16+raw->GetChannelID()])-static_cast<Double_t>(time))));
+    	lastHitTimestamp[spaID*16+raw->GetChannelID()]=time;
+    }
 
     if (raw->GetChannelID()>100) LOG(ERROR) << "SpadicMessage with strange chID: " << iSpadicMessage << " sourceA: " << sourceA << " chID: " << raw->GetChannelID() << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " isInfo: " << isInfo << " isEpoch: " << isEpoch << " Lost Messages: " << lostMessages << FairLogger::endl;
     if (raw->GetChannelID()>32 && !isInfo && !isStrange) LOG(FATAL) << "SpadicMessage: " << iSpadicMessage << " sourceA: " << sourceA << " chID: " << raw->GetChannelID() << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " isInfo: " << isInfo << " isEpoch: " << isEpoch << " Lost Messages: " << lostMessages << FairLogger::endl;
@@ -920,7 +932,29 @@ void CbmTrdTimeCorrel::Finish()
     LOG(INFO) << (*it)->GetTitle() << FairLogger::endl;
     (*it)->SetContour(99);
     }
-
+{	  vector<TH2*> HitFrequencies = fHM->H2Vector(".*frequency.*");
+	for (auto h : HitFrequencies){
+		h->Sumw2();
+		TH1* P= h->ProjectionY();
+		P->Scale(1.0/P->GetEntries(),"width");
+		TString HistName = TString(h->GetTitle())+"_Spectrum";
+		P->SetNameTitle(HistName.Data(),HistName.Data());
+		fHM->Add(HistName.Data(),P);
+	}
+}
+{	  vector<TGraph*> HitFrequencies = fHM->G1Vector(".*frequency.*");
+	for (auto h : HitFrequencies){
+		Int_t NrEntries=h->GetN();
+		auto Y=h->GetY();
+		for(Int_t i = 0; i<NrEntries;i++){
+			if(TMath::IsNaN(Y[i])||Y[i]==TMath::Infinity()){
+				h->RemovePoint(i);
+				i=0;
+				NrEntries=h->GetN();
+			}
+		}
+	}
+}
   if(fBatchAssessment){
 	  vector<TH2*> PadResponses = fHM->H2Vector("Pad_Response.*");
 	  vector<TH2*> Heatmap = fHM->H2Vector(".*Heatmap.*");
@@ -1362,6 +1396,12 @@ void CbmTrdTimeCorrel::ClusterizerTime()
 		  }
 	  }
   }
+  static Long64_t lastClusterTimestamp[64];
+  if (fNrTimeSlices==1){
+	for(Int_t i=0;i<64;i++){
+		lastClusterTimestamp[i]=0;
+	}
+  }
 
   for (auto x: fClusterBuffer){
       Float_t Position = x.GetHorizontalPosition();
@@ -1403,6 +1443,11 @@ void CbmTrdTimeCorrel::ClusterizerTime()
     	  string histname = "Pad_Response_"+ detectorName + "_for_Clusters_of_Size_"+std::to_string(static_cast<Int_t>(x.size()));
     	  x.FillChargeDistribution(fHM->H2(histname),fHM->H2("Central_"+histname));
       }
+        int spaID=x.GetSpadic();
+	Long64_t time=x.GetFulltime();
+        string HistName = "Clusterfrequency_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID%2);
+    	fHM->H2(HistName)->Fill(static_cast<Double_t>(time),17600000/std::fabs((static_cast<Double_t>(lastClusterTimestamp[(spaID%2)*32])-static_cast<Double_t>(time))));
+    	lastClusterTimestamp[(spaID%2)*32]=time;
 
   }
 }
@@ -1829,6 +1874,55 @@ void CbmTrdTimeCorrel::CreateHistograms()
 			  }
 		  }
 	  }
+  if(fActivateClusterizer)
+  	  for (Int_t syscore=0; syscore<1;++syscore) {
+  		  for (Int_t spadic=0; spadic<4;++spadic) {
+  			  const Int_t nBins=70;
+  			  auto BinBoarders = [&nBins] (Int_t reBinHigh=32){
+  				  const Double_t MaxFreq = (17500000.0);
+  				  const Double_t slope=MaxFreq/nBins;
+  				  //const Int_t iThreshhold=std::ceil((MaxFreq/Threshold-0.5)/static_cast<Double_t>(reBinHigh));
+  				  //LOG(FATAL) << "iThresshold = " << iThreshhold << FairLogger::endl;
+  				  Double_t* Result=new Double_t[nBins+1];
+  				  for(Int_t i=0;i<nBins;i++){
+  					  size_t j=nBins-i;
+  					  //Result[j]=TMath::Power(TMath::E(),i*slope+TMath::Log(2));
+  					  Double_t LowEdge = MaxFreq/(reBinHigh*(i*i)+0.5);
+  					  Result[j]=LowEdge;
+  				  }/*
+  				  for(Int_t i=0;i<nBins-iThreshhold;i++) {
+  					  size_t j=nBins-iThreshhold-i;
+  					  Double_t LowEdge = MaxFreq/(reBinHigh*(iThreshhold)+0.5+RebinLow*(i));
+  					  Result[j]=LowEdge;
+  				  }*/
+  				  Result[0]=0.0;
+				  std::sort(Result,&Result[nBins]);
+  				  return Result;
+  			  };
+  			  Double_t* freqbins = (BinBoarders());
+  			  //spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
+  				  histName = "Hitfrequency_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic);
+  				  title = histName + runName;
+  				  //TH2* tempHist= new TH2D(histName.Data(), title.Data(),40000,0,400,nBins,freqbins);
+  				  //delete[] freqbins;
+  				  fHM->Add(histName.Data(),new TGraph());
+  		          fHM->G1(histName.Data())->GetXaxis()->SetTitle("Full Time");
+  		          fHM->G1(histName.Data())->SetNameTitle(histName.Data(),histName.Data());
+  		          fHM->G1(histName.Data())->GetYaxis()->SetTitle("Hitfrequency f/Hz");
+  				  histName = "Clusterfrequency_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic);
+  				  title = histName + runName;
+  				  TH2* tempHist= new TH2D(histName.Data(), title.Data(),40000,0,4000,nBins,freqbins);
+  				  fHM->Add(histName.Data(),tempHist);
+  		          fHM->H2(histName.Data())->GetXaxis()->SetTitle("Full Time");
+  		          fHM->H2(histName.Data())->GetYaxis()->SetTitle("Clusterfrequency f/Hz");
+/*  		          fHM->Create2<TH2I>(histName.Data(), title.Data(),2000,-0.5,1999.5,5000,0,17600000.0);
+  		          fHM->H2(histName.Data())->GetXaxis()->SetTitle("Full Time");
+  		          fHM->H2(histName.Data())->GetYaxis()->SetTitle("Hitfrequency f/Hz");*/
+  				  /*histName = "Masked_"+histName;
+  				  title = histName + runName;
+  				  fHM->Create1<TH1I>(histName.Data(), title.Data(), 16,-0.5,15.5);*/
+  		  }
+  	  }
   if(fActivateClusterizer)
 	  if(fDrawPadResponse)
   for(Int_t Size=1 ;Size <= 16; Size++)
