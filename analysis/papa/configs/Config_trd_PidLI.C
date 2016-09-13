@@ -113,6 +113,8 @@ PairAnalysis* Config_Analysis(Int_t cutDefinition)
   papa->SetRefitWithMassAssump(kTRUE); /// refit the track under mass assumption
   papa->SetUseKF(kTRUE);
 
+  if(cutDefinition==kMCcfg) papa->SetNoPairing(); /// switch off the pairing
+
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
   SetupTrackCuts(papa,cutDefinition);
   SetupPairCuts(papa,cutDefinition);
