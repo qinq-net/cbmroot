@@ -133,10 +133,38 @@ void CbmRecoTracks::HandlePixelHit(TEveTrack* eveTrack, Int_t& n, const CbmPixel
     ++n;
 }
 
-void CbmRecoTracks::HandleTrack(TEveTrack* eveTrack, Int_t& n, TClonesArray* fHits, const CbmTrack* recoTrack)
+void CbmRecoTracks::HandleTrack(TEveTrack* eveTrack, Int_t& n, const CbmTrack* recoTrack)
 {
-    for (Int_t i = 0; i < recoTrack->GetNofHits(); ++i)
-        HandlePixelHit(eveTrack, n, static_cast<const CbmPixelHit*> (fHits->At(recoTrack->GetHitIndex(i))));
+   Int_t nofHits = recoTrack->GetNofHits();
+   
+   for (Int_t i = 0; i < nofHits; ++i)
+   {
+      HitType hitType = recoTrack->GetHitType(i);
+      Int_t hitIndex = recoTrack->GetHitIndex(i);
+      const CbmPixelHit* pixelHit = 0;
+      
+      switch (hitType)
+      {
+         case kRICHHIT:
+            pixelHit = static_cast<const CbmPixelHit*> (fRichHits->At(hitIndex));
+            break;
+            
+         case kMUCHPIXELHIT:
+            pixelHit = static_cast<const CbmPixelHit*> (fMuchPixelHits->At(hitIndex));
+            break;
+            
+         case kTRDHIT:
+            pixelHit = static_cast<const CbmPixelHit*> (fTrdHits->At(hitIndex));
+            break;
+            
+         case kTOFHIT:
+            pixelHit = static_cast<const CbmPixelHit*> (fTofHits->At(hitIndex));
+            break;
+      }
+      
+      if (0 != pixelHit)
+         HandlePixelHit(eveTrack, n, pixelHit);
+   }
 }
 
 void CbmRecoTracks::HandleStsTrack(TEveTrack* eveTrack, Int_t& n, const CbmStsTrack* stsTrack)
@@ -180,8 +208,10 @@ void CbmRecoTracks::Exec(Option_t* /*option*/)
     LOG(DEBUG1) << " CbmRecoTracks::Exec "<< FairLogger::endl; 
 
     Reset();
+    
+    Int_t nofGlobalTracks = fGlobalTracks->GetEntriesFast();
 
-    for (Int_t i = 0; i < fGlobalTracks->GetEntriesFast(); ++i) 
+    for (Int_t i = 0; i < nofGlobalTracks; ++i) 
     {
         LOG(DEBUG3) << "CbmRecoTracks::Exec " << i << FairLogger::endl;
         const CbmGlobalTrack* globalTrack = static_cast<const CbmGlobalTrack*>(fGlobalTracks->At(i));
@@ -195,6 +225,10 @@ void CbmRecoTracks::Exec(Option_t* /*option*/)
             continue;
         
         const CbmStsTrack* stsTrack = static_cast<const CbmStsTrack*> (fStsTracks->At(stsId));
+        
+        if (0 == stsTrack)
+           continue;
+        
         Int_t pdg = stsTrack->GetPidHypo();
         TParticle P;
         P.SetPdgCode(pdg);
@@ -215,10 +249,10 @@ void CbmRecoTracks::Exec(Option_t* /*option*/)
             HandlePixelHit(eveTrack, n, &h);
         }
         else if (-1 < muchId)
-            HandleTrack(eveTrack, n, fMuchPixelHits, static_cast<const CbmTrack*> (fMuchTracks->At(muchId)));
+            HandleTrack(eveTrack, n, static_cast<const CbmTrack*> (fMuchTracks->At(muchId)));
         
         if (-1 < trdId)
-            HandleTrack(eveTrack, n, fTrdHits, static_cast<const CbmTrack*> (fTrdTracks->At(trdId)));
+            HandleTrack(eveTrack, n, static_cast<const CbmTrack*> (fTrdTracks->At(trdId)));
         
         if (-1 < tofId)
             HandlePixelHit(eveTrack, n, static_cast<const CbmPixelHit*> (fTofHits->At(tofId)));     

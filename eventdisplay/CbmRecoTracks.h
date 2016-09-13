@@ -69,7 +69,7 @@ class CbmRecoTracks : public FairTask
 
   protected:
       void HandlePixelHit(TEveTrack* eveTrack, Int_t& n, const CbmPixelHit* hit, TEveVector* pMom);
-      void HandleTrack(TEveTrack* eveTrack, Int_t& n, TClonesArray* fHits, const CbmTrack* recoTrack);
+      void HandleTrack(TEveTrack* eveTrack, Int_t& n, const CbmTrack* recoTrack);
       void HandleStsTrack(TEveTrack* eveTrack, Int_t& n, const CbmStsTrack* stsTrack);
 
     TClonesArray* fGlobalTracks;
