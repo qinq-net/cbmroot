@@ -277,7 +277,7 @@ void SetupPairCuts(PairAnalysis *papa, Int_t cutDefinition)
   switch(cutDefinition) {
   case kElecfg:
     armCut->AddCut(PairAnalysisVarManager::kArmPt,
-		   "-(((ArmAlpha-0.7159)*(ArmAlpha-0.7159))/((2*0.07/MLA)*(2*0.07/MLA)))*(0.07*0.07)+(0.07*0.07)",             // lambda - lower cut
+		   "sqrt(-(((ArmAlpha-0.7159)*(ArmAlpha-0.7159))/((2*0.07/MLA)*(2*0.07/MLA)))*(0.07*0.07)+(0.07*0.07))",       // lambda - lower cut
 		   "sqrt(-(((ArmAlpha-0.7159)*(ArmAlpha-0.7159))/((2*0.134/MLA)*(2*0.134/MLA)))*(0.134*0.134)+(0.134*0.134))", // lambda - upper cut
 		   kTRUE);                                                                                                     // exclusion
     armCut->AddCut(PairAnalysisVarManager::kArmPt,
