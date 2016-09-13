@@ -36,6 +36,7 @@ iSel2=-$iBRef
 # ----------------------- Clean up before fresh Re-run --------------------------
 if((0)); then
 rm all_*.par core_dump_* *.pdf
+rm -rf ${cRun}/Iter*
 rm digi_${cRun}.out.root
 rm tofAnaTestBeam.hst.root
 rm tofTestBeamClust_${cRun}_set${iCalSet}.hst.root
@@ -44,7 +45,7 @@ fi
 # ------------------------------- End Clean up ----------------------------------
 
 if((${iSel2}<0)); then
- ((iBRef=-$iSel2))
+((iBRef=-$iSel2))
 fi
 
 echo iter_calib with iDut=$iDut, iRef=$iRef, iCalSet=$iCalSet, iSet=$iSet, iBRef=$iBRef, iSel2=$iSel2
@@ -139,37 +140,36 @@ i2=($i1+3)
 cMode=${inOpt:$i1:2}
 cSel=${inOpt:$i2:1}
 echo Next iteration: cMode=$cMode, cSel=$cSel 
-if [[ ${cSel} = "-" ]];then 
+if [[ ${cSel} = "-" ]]; then 
     cSel=${inOpt:$i2:2}
     echo cSel=$cSel 
     cSel="0"
 fi
-#copy calibration file 
 
+#copy calibration file 
 if [[ ${iStep} = 1 ]]; then 
     cp -v ../${cRun}_set${iCalSet}_${cMode}_${cSel}tofTestBeamClust.hst.root .
 else 
     cp -v ../Iter${iStepLast}/tofTestBeamClust_${cRun}_set${iCalSet}.hst.root ${cRun}_set${iCalSet}_${cMode}_${cSel}tofTestBeamClust.hst.root
 fi
-fi 
 
+fi #end-if(${lastOpt:+1})
 
 cSel2=$iSel2;
 if [[ $iSel2 = 0 ]]; then
 cSel2="000"
 fi
-cp -v  ../${cRun}_${iCalSet}${cSel2}_tofAnaTestBeam.hst.root .
+cp -v ../${cRun}_${iCalSet}${cSel2}_tofAnaTestBeam.hst.root .
 
 # generate new calibration file
 # void ana_digi(nEvents, calMode, calSel, calSm, RefSel, cFileId, iCalSet, bOut, iSel2)
-#root -b -q '../../ana_digi.C('$inOpt',0,"'$cRun'",'$iSet',0,'$iSel2') '
+#root -b -q '../../ana_digi.C('$inOpt',0,"'$cRun'",'$iSet',0,'$iSel2')'
 root -b -q '../../ana_digi.C('$inOpt',1,"'$cRun'",'$iCalSet',0,'$iSel2')'
 
 lastOpt=$inOpt
 
 #./screenshot.sh 
 cp -v tofTestBeamClust_${cRun}_set${iCalSet}.hst.root ../${cRun}_set${iCalSet}_${cMode}_${cSel}tofTestBeamClust.hst.root
-
 cp -v tofAnaTestBeam.hst.root ../${cRun}_${iCalSet}${cSel2}_tofAnaTestBeam.hst.root
 cp *pdf ../
 rm all_*
@@ -180,7 +180,7 @@ ln -s ./${cRun}/${cRun}_set${iCalSet}_${cMode}_${cSel}tofTestBeamClust.hst.root 
 done
 (( nIter -= 1))
 done
+
 #cp -v tofTestBeamClust_${cRun}_set${iCalSet}.hst.root ${cRun}_set${iCalSet}_${cMode}_${cSel}${mode}tofTestBeamClust.hst.root
 
-done 
-#
+done

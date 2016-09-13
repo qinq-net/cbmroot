@@ -106,6 +106,8 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
 	tofTestBeamClust->SetCalParFileName(cFname);
 	TString cOutFname=Form("tofTestBeamClust_%s_set%09d.hst.root", cFileId, iCalSet);
 	tofTestBeamClust->SetOutHstFileName(cOutFname);
+	//Input file. cp tofAnaTestBeam.hst.root to cFieldId_iCalSetiSel2_tofAnaTestBeam.hst.root
+	//gives error if it doesn't exits. Above file comes from previous iteration.
 	TString cAnaFile=Form("%s_%09d%03d_tofAnaTestBeam.hst.root", cFileId, iCalSet, iSel2);
   
 	/* **************************************************************************
@@ -250,7 +252,7 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
 	************************************************************************** */
 	CbmTofAnaTestbeam* tofAnaTestbeam = new CbmTofAnaTestbeam("TOF TestBeam Analysis", iVerbose);
 
-	//defaults  
+   //CbmTofAnaTestbeam defaults 
 	tofAnaTestbeam->SetReqTrg(-1);   						// 0 - no selection
 	tofAnaTestbeam->SetDXMean(0.);							// in cm
 	tofAnaTestbeam->SetDYMean(0.);							// in cm
@@ -261,19 +263,21 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
 	tofAnaTestbeam->SetMul0Max(20);      					// Max Multiplicity in Dut - RPC
 	tofAnaTestbeam->SetMul4Max(20);      					// Max Multiplicity in Ref - RPC 
 	tofAnaTestbeam->SetMulDMax(20);      					// Max Multiplicity in Diamond
-	tofAnaTestbeam->SetCalParFileName(cAnaFile);			// Output file name
+	
+	tofAnaTestbeam->SetCalParFileName(cAnaFile);			// Output file name, still tofAnaTestBeam.hst.root produced, cp to cRun_***_tofAnaTestBeam.hst.root
 	tofAnaTestbeam->SetDTDia(0.);   							// Time difference to additional diamond
 	tofAnaTestbeam->SetCorMode(RefSel); 					// 1 - DTD4, 2 - X4
 	tofAnaTestbeam->SetHitDistMin(30.);  					// Initialization
 	
-	// D vs 4 vs S2 vs Sel ???
-	tofAnaTestbeam->SetPosY4Sel(10.5); 						// Y-Position selection in fraction of strip length
-	tofAnaTestbeam->SetPosYS2Sel(10.5);   					// Y-Position selection in fraction of strip length
-	//tofAnaTestbeam->SetCh4Sel(0.);                	// Center of channel selection window
-   tofAnaTestbeam->SetChS2Sel(0.);     					// Center of channel selection window
+	//MRef(4)
+   //tofAnaTestbeam->SetCh4Sel(0.);                	// Center of channel selection window
    //tofAnaTestbeam->SetDCh4Sel(100.);      				// Width of channel selection window
+   tofAnaTestbeam->SetPosY4Sel(10.5);    					// Y Position selection in fraction of strip length
+ 	
+ 	//BRef(S2)
+   tofAnaTestbeam->SetChS2Sel(0.);     					// Center of channel selection window
    tofAnaTestbeam->SetDChS2Sel(100.);   					// Width of channel selection window
-	//end-defaults
+ 	tofAnaTestbeam->SetPosYS2Sel(10.5);   					// Y Position selection in fraction of strip length
 	
 	/* *************************************************************************  
 		 		iRSel, iRSelTyp, iRSelSm, iRSelRpc based on iSel2=-921
@@ -361,6 +365,9 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
 
 	cout << "dispatch: iDut = " << iDut << ", iDutSm = " << iDutSm << ", iDutRpc = " << iDutRpc << endl;
 	cout << "dispatch: iRef = " << iRef << ", iRefSm = " << iRefSm << ", iRefRpc = " << iRefRpc << endl;
+	
+	tofAnaTestbeam->SetChi2Lim(10.);   						// Chi2Lim selection limit b/w iDut & iMRef; increase efficiency
+	tofAnaTestbeam->SetChi2Lim2(10.);						// Chi2Lim2 selection limit b/w Sel2 (-iBRef) & iMRef; narrow down area
 	
 	/* **************************************************************************
 	In init_calib.sh/iter_calib.sh the parmeter iCalSet=iDutiMRefiBRef==901900921,
@@ -535,16 +542,13 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
 		case 601600:
 		
 			// void pl_over_clu(Int_t SmT=0, Int_t iSm=0, Int_t iRpc=0)
-			
 			//gInterpreter->ProcessLine("pl_over_clu(3,0,0)");			
 			//gInterpreter->ProcessLine("pl_over_clu(4,0,0)");
 			//gInterpreter->ProcessLine("pl_over_clu(5,0)");
 			//gInterpreter->ProcessLine("pl_over_clu(5,1)");
 			//gInterpreter->ProcessLine("pl_over_clu(5,2)");
-			
 			gInterpreter->ProcessLine("pl_over_clu(6,0,0)");
 			gInterpreter->ProcessLine("pl_over_clu(6,0,1)");
-			
 			gInterpreter->ProcessLine("pl_over_clu(9,0,0)");
 			gInterpreter->ProcessLine("pl_over_clu(9,0,1)");
 			gInterpreter->ProcessLine("pl_over_clu(9,1,0)");
@@ -553,16 +557,13 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
 			gInterpreter->ProcessLine("pl_over_clu(9,2,1)");
 
 			// void pl_over_cluSel(Int_t iSel=0, Int_t iSmT=0, Int_t iSm=0, Int_t iRpc=0)
-			
 			//gInterpreter->ProcessLine("pl_over_cluSel(0,3)");		
 			//gInterpreter->ProcessLine("pl_over_cluSel(0,4)");
 			//gInterpreter->ProcessLine("pl_over_cluSel(0,5,0)");
 			//gInterpreter->ProcessLine("pl_over_cluSel(0,5,1)");
 			//gInterpreter->ProcessLine("pl_over_cluSel(0,5,2)");
-			
 			gInterpreter->ProcessLine("pl_over_cluSel(0,6,0,0)");
 			gInterpreter->ProcessLine("pl_over_cluSel(0,6,0,1)");
-			
 			gInterpreter->ProcessLine("pl_over_cluSel(0,9,0,0)");
 			gInterpreter->ProcessLine("pl_over_cluSel(0,9,0,1)");
 			gInterpreter->ProcessLine("pl_over_cluSel(0,9,1,0)");
@@ -571,16 +572,13 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
 			gInterpreter->ProcessLine("pl_over_cluSel(0,9,2,1)");
 			
 			// void pl_over_cluSel(Int_t iSel=0, Int_t iSmT=0, Int_t iSm=0, Int_t iRpc=0)
-			
 			//gInterpreter->ProcessLine("pl_over_cluSel(1,3)");
 			//gInterpreter->ProcessLine("pl_over_cluSel(1,4)");
 			//gInterpreter->ProcessLine("pl_over_cluSel(1,5,0)");
 			//gInterpreter->ProcessLine("pl_over_cluSel(1,5,1)");
 			//gInterpreter->ProcessLine("pl_over_cluSel(1,5,2)");
-			
 			gInterpreter->ProcessLine("pl_over_cluSel(1,6,0,0)");
 			gInterpreter->ProcessLine("pl_over_cluSel(1,6,0,1)");
-			
 			gInterpreter->ProcessLine("pl_over_cluSel(1,9,0,0)");
 			gInterpreter->ProcessLine("pl_over_cluSel(1,9,0,1)");
 			gInterpreter->ProcessLine("pl_over_cluSel(1,9,1,0)");
@@ -590,6 +588,9 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
 			
 			// void pl_all_dTSel(Int_t iNSel=2)
 			gInterpreter->ProcessLine("pl_all_dTSel()");
+			
+			// void pl_over_MatD4sel()
+			gInterpreter->ProcessLine("pl_over_MatD4sel()");
 			break;
 
 		default:

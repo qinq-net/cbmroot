@@ -74,14 +74,15 @@ iCalSet=901900921
 ((iTmp  = $iTmp - $iMRef))
 ((iDut  = $iTmp / 1000000))
 
-# ----------------------- Clean up before fresh Re-run --------------------------
-if((0)); then
+# ----------------------- Clean Up Before Fresh Re-run ------------------------
+if((1)); then
 rm all_*.par core_dump_* *.pdf
+rm -rf ${cRun}
 rm digi_${cRun}.out.root
 rm ${cRun}_set${iCalSet}_*_0tofTestBeamClust.hst.root
 rm ${cRun}_set${iCalSet}_*_1tofTestBeamClust.hst.root
 fi
-# ------------------------------- End Clean up ----------------------------------
+# ------------------------------- End Clean Up --------------------------------
 
 echo "Calib setup is ${iCalSet}, iSet=$iSet, iDut=$iDut, iMRef=$iMRef, iBRef=$iBRef"
 #return

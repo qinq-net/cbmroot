@@ -235,23 +235,26 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    tofAnaTestbeam->SetDTMean(0.);      					// in ps
    tofAnaTestbeam->SetDXWidth(1.5);							// in cm
    tofAnaTestbeam->SetDYWidth(1.5);							// in cm
-   tofAnaTestbeam->SetDTWidth(80.);    					// in ps
-   tofAnaTestbeam->SetMul0Max(30);     					// Max Multiplicity in Dut - RPC
-   tofAnaTestbeam->SetMul4Max(30);     					// Max Multiplicity in Ref - RPC
-   tofAnaTestbeam->SetMulDMax(30);     					// Max Multiplicity in Diamond
+   tofAnaTestbeam->SetDTWidth(100.);    					// in ps
+   tofAnaTestbeam->SetMul0Max(20);     					// Max Multiplicity in Dut - RPC
+   tofAnaTestbeam->SetMul4Max(20);     					// Max Multiplicity in Ref - RPC
+   tofAnaTestbeam->SetMulDMax(20);     					// Max Multiplicity in Diamond
+   
    tofAnaTestbeam->SetCalParFileName(cAnaFile);			// Output file name
    tofAnaTestbeam->SetDTDia(0.);       					// Time difference to additional diamond
    tofAnaTestbeam->SetCorMode(iGenCor); 					// 1 - DTD4, 2 - X4, 3 - Y4, 4 - Texp
    tofAnaTestbeam->SetHitDistMin(30.);  					// initialization
    
-   // D vs 4 vs S2 vs Sel ???
-   tofAnaTestbeam->SetPosY4Sel(0.5*dScalFac);    		// Y Position selection in fraction of strip length
-   tofAnaTestbeam->SetPosYS2Sel(0.5*dScalFac);   		// Y Position selection in fraction of strip length
+   //MRef(4)
    tofAnaTestbeam->SetCh4Sel(15.);                		// Center of channel selection window
-   tofAnaTestbeam->SetChS2Sel(15.);     					// Center of channel selection window
    tofAnaTestbeam->SetDCh4Sel(15.*dScalFac);      		// Width of channel selection window
+   tofAnaTestbeam->SetPosY4Sel(0.5*dScalFac);    		// Y Position selection in fraction of strip length
+ 	
+ 	//BRef(S2)
+   tofAnaTestbeam->SetChS2Sel(15.);     					// Center of channel selection window
    tofAnaTestbeam->SetDChS2Sel(15.*dScalFac);   		// Width of channel selection window
-
+ 	tofAnaTestbeam->SetPosYS2Sel(0.5*dScalFac);   		// Y Position selection in fraction of strip length
+ 	
    tofAnaTestbeam->SetDTD4MAX(6000.);  					// initialization of Max time difference Ref - BRef
 
 	/* *************************************************************************  
@@ -281,7 +284,7 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    tofAnaTestbeam->SetBeamRefRpc(iRSelRpc);
 	
 	cout << endl;
-	cout << "dispatch iRSel = " << iRSel << ", iRSelSm = " << iRSelSm << ", iRSelRpc = " << iRSelRpc << endl;
+	cout << "dispatch: iRSel = " << iRSel << ", iRSelSm = " << iRSelSm << ", iRSelRpc = " << iRSelRpc << endl;
 	
 	/* *************************************************************************  
 		 				iSel2Rpc, iSel2Sm, iSel2 based on iSel2
@@ -303,7 +306,7 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	tofAnaTestbeam->SetSIGX(1.);                  		// in cm
 	tofAnaTestbeam->SetSIGY(1.);                  		// in cm
 	
-	cout << "dispatch iSel2 = " << iSel2 << ", iSel2Sm = " << iSel2Sm << ", iSel2Rpc = " << iSel2Rpc << endl;
+	cout << "dispatch: iSel2 = " << iSel2 << ", iSel2Sm = " << iSel2Sm << ", iSel2Rpc = " << iSel2Rpc << endl;
 	
 	/* *************************************************************************  
 		iDut, iRef (~iMRef) based on iCalSet=901900-920, iSet=901900, iRSel = 9
@@ -327,14 +330,17 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	tofAnaTestbeam->SetMrpcRefSm(iRefSm);      			// Reference RPC (MRef)
 	tofAnaTestbeam->SetMrpcRefRpc(iRefRpc);    			// Reference RPC (MRef)
 	
-	cout << "dispatch iDut  = " << iDut << ", iDutSm = " << iDutSm << ", iDutRpc = " << iDutRpc << endl;
-	cout << "dispatch iRef  = " << iRef << ", iRefSm = " << iRefSm << ", iRefRpc = " << iRefRpc << endl;
+	cout << "dispatch: iDut  = " << iDut << ", iDutSm = " << iDutSm << ", iDutRpc = " << iDutRpc << endl;
+	cout << "dispatch: iRef  = " << iRef << ", iRefSm = " << iRefSm << ", iRefRpc = " << iRefRpc << endl;
 	
+	tofAnaTestbeam->SetChi2Lim(10.);     					// Chi2Lim selection limit b/w iDut & iMRef; increase efficiency
+	tofAnaTestbeam->SetChi2Lim2(10.);     					// Chi2Lim2 selection limit b/w Sel2 (-iBRef) & iMRef; narrow down area
+		
    /* **************************************************************************
 	In init_calib.sh/iter_calib.sh the parmeter iCalSet=iDutiMRefiBRef==901900921,
 	so iSet == iDutiMRef == 901900 etc...
 	************************************************************************** */
-	cout << "dispatch iSel  = " << iSel << ", iRSel = " << iRSel << ", iSel2in (~iSel2) = " << iSel2in << endl;
+	cout << "dispatch: iSel  = " << iSel << ", iRSel = " << iRSel << ", iSel2in (~iSel2) = " << iSel2in << endl;
 	
    switch (iSel) {
 	case 910900:  														//aa: iSel, iRSel, iSel2, iSel2in
@@ -368,9 +374,31 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 				
 			case 6:		// iRSel
 				//tofTestBeamClust->SetBeamAddRefMul(1);
-				tofAnaTestbeam->SetTShift(200.);     			// Shift DTD4 to 0
-				tofAnaTestbeam->SetSel2TOff(0.);     			// Shift Sel2 time peak to 0
-				tofAnaTestbeam->SetTOffD4(16000.);   			// Shift DTD4 to physical value
+				switch (iSel2in) { 									// iSel2in = iSel2 = iBRef = 921 line # 269
+				
+					case 600: 
+						tofAnaTestbeam->SetTShift(200.);     	// Shift DTD4 to 0
+						tofAnaTestbeam->SetSel2TOff(0.);     	// Shift Sel2 time peak to 0
+						tofAnaTestbeam->SetTOffD4(16000.);    	// Shift DTD4 to physical value
+						
+						//specific additional parameters
+						
+						
+						break;
+
+					case 601:
+						tofAnaTestbeam->SetTShift(-964.5);     // Shift DTD4 to 0
+						tofAnaTestbeam->SetSel2TOff(-920.);   	// Shift Sel2 time peak to 0
+						tofAnaTestbeam->SetTOffD4(16000.);   	// Shift DTD4 to physical value
+						
+						//specific additional parameters
+						tofAnaTestbeam->SetChi2Lim(10.);
+						tofAnaTestbeam->SetChi2Lim2(10.);
+						break;
+
+					default:
+						;
+				}//end-switch(iSel2in)
 				break;
 					
 			case 9:		// iRSel
@@ -381,12 +409,21 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 						tofAnaTestbeam->SetTShift(-1332.);     // Shift DTD4 to 0
 						tofAnaTestbeam->SetSel2TOff(-1246.);   // Shift Sel2 time peak to 0
 						tofAnaTestbeam->SetTOffD4(16000.);   	// Shift DTD4 to physical value
+						
+						//specific additional parameters
+						
+						
+						
 						break;
 
 					case 921:
-						tofAnaTestbeam->SetTShift(-880.);      // Shift DTD4 to 0
-						tofAnaTestbeam->SetSel2TOff(-855.);   // Shift Sel2 time peak to 0
+						tofAnaTestbeam->SetTShift(-964.5);     // Shift DTD4 to 0
+						tofAnaTestbeam->SetSel2TOff(-920.);   	// Shift Sel2 time peak to 0
 						tofAnaTestbeam->SetTOffD4(16000.);   	// Shift DTD4 to physical value
+						
+						//specific additional parameters
+						
+						
 						break;
 
 					default:
@@ -399,16 +436,10 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 				return;
 				;
 				
-		}//end-switch (iRSel)
-				
-		tofAnaTestbeam->SetChi2Lim(2.);     					// Chi2Lim selection limit b/w iDut & iMRef; increase efficiency
-		tofAnaTestbeam->SetChi2Lim2(2.);     					// Chi2Lim2 selection limit b/w Sel2 (-iBRef) & iMRef; narrow down area
-		
-		// Additional Parameters (as of ana_digi.C)
-		
+		}//end-switch (iRSel)		
 		break;
-		
 		//end (aa)
+		
    default:
      cout << "Define analysis setup! " << endl;
      return;

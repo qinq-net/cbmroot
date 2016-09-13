@@ -1,104 +1,3 @@
-Int_t nEvents  =10000000
-char* cFileId  ="CbmTofPiHd_17Aug1057"
-FairRunOnline* run = new FairRunOnline();
-.x apply_calib.C(nEvents, cFileId);
-Int_t nEvents  =10000000
-char* cFileId  ="CbmTofPiHd_17Aug1057"
-FairRunOnline* run = new FairRunOnline();
-.x apply_calib.C(nEvents, cFileId);
-Int_t nEvents  =10000000
-char* cFileId  ="CbmTofPiHd_17Aug1724"
-FairRunOnline* run = new FairRunOnline();
-.x apply_calib.C(nEvents, cFileId);
-Int_t nEvents  =10000000
-char* cFileId  ="CbmTofPiHd_17Aug1724"
-FairRunOnline* run = new FairRunOnline();
-.x apply_calib.C(nEvents, cFileId);
-Int_t nEvents  =10000000
-Int_t calMode  =1
-char* cFileId  ="CbmTofPiHd_15Aug0818"
-Int_t iSet     =0
-FairRunOnline* run = new FairRunOnline();
-.x setup_unpack.C(calMode, cFileId, iSet);
-run->Run(-1);
-run->Finish();
-FairRunOnline* run = new FairRunOnline();
-.x create_calib.C(10000000000, "CbmTofPiHd_All");
-ccc
-.w
-.q
-FairRunOnline* run = new FairRunOnline();
-.x create_calib.C(10000, "CbmTofPiHd_All");
-.q
-FairRunOnline* run = new FairRunOnline();
-.x create_calib.C(10000, "CbmTofPiHd_All");
-.q
-FairRunOnline* run = new FairRunOnline();
-.x create_calib.C(100000, "CbmTofPiHd_All");
-.q
-.x ana_digi.C(1000000,93,1,900,1,"CbmTofPiHd_15Aug0818",901900921,0,-921)
-.x pl_over_MatD4sel.C 
-.x ana_digi.C(1000000,93,1,900,1,"CbmTofPiHd_15Aug0818",901900921,0,-921)
-.x ana_digi.C(1000000,93,1,900,1,"CbmTofPiHd_15Aug0818",901900921,0,-921)
-Int_t nEvents  =10000000
-char* cFileId  ="CbmTofPiHd_17Aug1724"
-FairRunOnline* run = new FairRunOnline();
-.x create_calib.C(nEvents, cFileId);
-.q
-Int_t nEvents  =10000000
-char* cFileId  ="CbmTofPiHd_17Aug1724"
-FairRunOnline* run = new FairRunOnline();
-.x apply_calib.C(nEvents, cFileId);
-.x ./ana_digi.C(100000000,93,1,900,0,"CbmTofPiHd_17Aug1724",901900921,1,-921) 
-.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_17Aug1724","901900921_-921",-921,0,1.0)
-.x pl_over_MatD4sel.C 
-.q
-.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_17Aug1724","901900921_-921",-921,0,1.0)
-.q
-.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_17Aug1724","901900921_-921",-921,0,1.0)
-.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_17Aug1724","901900921_-921",-921,0,1.0)
-.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_17Aug1724","901900921_-921",-921,0,1.0)
-.q
-.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_17Aug1724","901900921_-921",-921,0,1.0)
-.q
-.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_17Aug1724","901900921_-921",-921,0,1.0)
-.q
-.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_17Aug1724","901900921_-921",-921,0,1.0)
-.q
-.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_17Aug1724","901900921_-921",-921,0,1.0)
-.q
-.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_17Aug1724","901900921_-921",-921,0,1.0)
-.q
-.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_17Aug1724","901900921_-921",-921,0,1.0)
-.q
-.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_17Aug1724","901900921_-921",-921,0,1.0)
-.q
-.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_17Aug1724","901900921_-921",-921,0,1.0)
-.q
-.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_17Aug1724","901900921_-921",-921,0,1.0)
-.q
-.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_17Aug1724","901900921_-921",-921,0,1.0)
-.q
-.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_17Aug1724","901900921_-921",-921,0,1.0)
-.q
-.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_17Aug1724","901900921_-921",-921,0,1.0)
-.q
-.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_17Aug1724","901900921_-921",-921,0,1.0)
-.q
-.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_17Aug1724","901900921_-921",-921,0,1.0)
-.x pl_over_MatD4sel.C 
-.q
-.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_17Aug1724","901900921_-921",-921,0,1.0)
-.q
-.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_17Aug1724","901900921_-921",-921,0,.7)
-.q
-.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_17Aug1724","901900921_-921",-921,0,.5)
-.q
-.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_17Aug1724","901900921_-921",-921,0,.3)
-.q
-.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_17Aug1724","901900921_-921",-921,0,1.0)
-.q
-.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_17Aug1724","901900921_-921",-921,0,1.0)
 .q
 .x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_17Aug1724","901900921_-921",-921,0,1.0)
 .q
@@ -414,3 +313,98 @@ Int_t nEvents  =100000000
 char* cFileId  ="CbmTofPiHd_29Aug1401"
 FairRunOnline* run = new FairRunOnline();
 .x create_calib.C(nEvents, cFileId);
+Int_t nEvents  =100000000
+char* cFileId  ="CbmTofPiHd_29Aug1401"
+FairRunOnline* run = new FairRunOnline();
+.x apply_calib.C(nEvents, cFileId);
+Int_t nEvents  =100000000
+char* cFileId  ="CbmTofPiHd_29Aug1401"
+FairRunOnline* run = new FairRunOnline();
+.x create_calib.C(nEvents, cFileId);
+FairRunOnline* run = new FairRunOnline();
+.x create_calib.C(10000000000, "CbmTofPiHd_29Aug1401");
+.q
+Int_t nEvents  =100000000
+char* cFileId  ="CbmTofPiHd_29Aug1401"
+FairRunOnline* run = new FairRunOnline();
+.x create_calib.C(nEvents, cFileId);
+Int_t nEvents  =100000000
+char* cFileId  ="CbmTofPiHd_29Aug1401"
+FairRunOnline* run = new FairRunOnline();
+.x apply_calib.C(nEvents, cFileId);
+.x ./ana_digi.C(100000000,93,1,900,0,"CbmTofPiHd_22Aug1616",901900921,1,-921)
+.x ./ana_digi.C(100000000,93,1,900,0,"CbmTofPiHd_29Aug1401",901900921,1,-921)
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,1.0)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,1.0)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,1.0)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,1.0)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,1.0)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,1.0)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,1.0)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,1.0)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,1.0)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,1.0)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,1.0)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,1.0)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,1.0)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,1.0)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,1.0)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,1.0)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,1.0)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,1.0)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,1.0)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,1.0)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,1.0)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,1.0)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,.7)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,1.0)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,0.7)
+.q
+.x ana_hits.C(1000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,0.7)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,0.7)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,0.7)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,0.7)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,0.5)
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,0.5).q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,0.5)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,0.3)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,0.7)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,1.0)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,1.0)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,1.0)
+.q
+.x ana_hits.C(1000000000,901900,1,"CbmTofPiHd_29Aug1401","901900921_-921",-921,0,1.0)
+.q
