@@ -47,7 +47,7 @@ TObjArray *arrNames=names.Tokenize(";");
 const Int_t nPapa=arrNames->GetEntries();
 
 //______________________________________________________________________________________
-AnalysisTaskMultiPairAnalysis *Config_trd_PidLI(const char *taskname)
+AnalysisTaskMultiPairAnalysis *Config_trd_PidLI(const char *taskname="PidLI")
 {
   ///
   /// creation of one multi task
@@ -96,7 +96,7 @@ PairAnalysis* Config_Analysis(Int_t cutDefinition)
 
   /// task name
   TString name=arrNames->At(cutDefinition)->GetName();
-  printf(" Adding config %s \n",name.Data());
+  Info("Config_trd_PidLI::Config_Analysis", "Adding config %s \n",name.Data());
 
   /// init managing object PairAnalysis with unique name,title
   PairAnalysis *papa = new PairAnalysis(Form("%s",name.Data()), Form("%s",name.Data()));
@@ -149,7 +149,7 @@ void SetupEventCuts(AnalysisTaskMultiPairAnalysis *task)
   task->SetEventFilter(eventCuts);
 
   /// for debug purpose (recommended)
-  eventCuts->Print();
+  //  eventCuts->Print();
 
 }
 
@@ -172,7 +172,7 @@ void SetupTrackCutsMC(PairAnalysis *papa, Int_t cutDefinition)
   varAccCutsMC->AddCut(PairAnalysisVarManager::kSTSHitsMC,        2., 1.e10  );
 
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv ACTIVATE CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
-  papa->           GetTrackFilterMC().AddCuts(varAccCutsMC);    varAccCutsMC->Print();
+  papa->           GetTrackFilterMC().AddCuts(varAccCutsMC);    //varAccCutsMC->Print();
 
 }
 
@@ -210,10 +210,10 @@ void SetupTrackCuts(PairAnalysis *papa, Int_t cutDefinition)
 
 
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv ACTIVATE CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
-  papa->           GetTrackFilter().AddCuts(accCuts);   accCuts   ->Print();
-  papa->           GetTrackFilter().AddCuts(recSTS);    recSTS    ->Print();
-  papa->           GetTrackFilter().AddCuts(recTRD);    recTRD    ->Print();
-  papa->           GetTrackFilter().AddCuts(momCut);    momCut    ->Print();
+  papa->           GetTrackFilter().AddCuts(accCuts);   //accCuts   ->Print();
+  papa->           GetTrackFilter().AddCuts(recSTS);    //recSTS    ->Print();
+  papa->           GetTrackFilter().AddCuts(recTRD);    //recTRD    ->Print();
+  papa->           GetTrackFilter().AddCuts(momCut);    //momCut    ->Print();
 }
 
 //______________________________________________________________________________________
@@ -301,17 +301,17 @@ void SetupPairCuts(PairAnalysis *papa, Int_t cutDefinition)
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv ACTIVATE CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
   switch(cutDefinition) {
   case kElecfg:
-    papa->           GetPairFilter().AddCuts(topoCut);          topoCut->Print();
-    papa->           GetPairFilter().AddCuts(pairRecCut);       pairRecCut->Print();
-    papa->           GetPairFilter().AddCuts(massCut);          massCut->Print();
-    papa->           GetPairFilter().AddCuts(armInclCut);       armInclCut->Print();
-    papa->           GetPairFilter().AddCuts(armCut);           armCut->Print();
+    papa->           GetPairFilter().AddCuts(topoCut);          //topoCut->Print();
+    papa->           GetPairFilter().AddCuts(pairRecCut);       //pairRecCut->Print();
+    papa->           GetPairFilter().AddCuts(massCut);          //massCut->Print();
+    papa->           GetPairFilter().AddCuts(armInclCut);       //armInclCut->Print();
+    papa->           GetPairFilter().AddCuts(armCut);           //armCut->Print();
     break;
   case kPiocfg:
-    papa->           GetPairFilter().AddCuts(topoCut);          topoCut->Print();
-    papa->           GetPairFilter().AddCuts(pairRecCut);       pairRecCut->Print();
-    papa->           GetPairFilter().AddCuts(massCut);          massCut->Print();
-    papa->           GetPairFilter().AddCuts(armCut);           armCut->Print();
+    papa->           GetPairFilter().AddCuts(topoCut);          //topoCut->Print();
+    papa->           GetPairFilter().AddCuts(pairRecCut);       //pairRecCut->Print();
+    papa->           GetPairFilter().AddCuts(massCut);          //massCut->Print();
+    papa->           GetPairFilter().AddCuts(armCut);           //armCut->Print();
     break;
   }
 
@@ -358,7 +358,7 @@ void InitHistograms(PairAnalysis *papa, Int_t cutDefinition)
   TIter nextClass(histos->GetHistogramList());
   THashList *l=0;
   while ( (l=static_cast<THashList*>(nextClass())) ) {
-    printf(" [D] HistogramManger: Class %s: Histograms: %04d \n", l->GetName(), l->GetEntries());
+    //    printf(" [D] HistogramManger: Class %s: Histograms: %04d \n", l->GetName(), l->GetEntries());
   }
 
 } //end: init histograms
@@ -428,11 +428,11 @@ void AddMCSignals(PairAnalysis *papa, Int_t cutDefinition){
   papa->AddSignalMC(muo);
 
   /// Pair Signal
-  papa->AddSignalMC(conv);         conv->Print();
-  papa->AddSignalMC(k0s);          k0s->Print();
-  papa->AddSignalMC(lambda);       lambda->Print();
-  papa->AddSignalMC(xx);           xx->Print();
-  papa->AddSignalMC(ee);           ee->Print();
+  papa->AddSignalMC(conv);         //conv->Print();
+  papa->AddSignalMC(k0s);          //k0s->Print();
+  papa->AddSignalMC(lambda);       //lambda->Print();
+  papa->AddSignalMC(xx);           //xx->Print();
+  papa->AddSignalMC(ee);           //ee->Print();
 
 }
 
