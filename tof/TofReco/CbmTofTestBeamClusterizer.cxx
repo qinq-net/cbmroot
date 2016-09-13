@@ -3242,16 +3242,44 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                               {
                                  // Not one Digi of each end!
                                  fiNbSameSide++;
-                                 LOG(DEBUG) << "CbmTofTestBeamClusterizer::BuildClusters: SameSide Hits! Times: "
-                                              <<   (fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0])->GetTime()
-                                              << ", "<<(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][1])->GetTime()
-                                              <<", DeltaT " <<(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][1])->GetTime() - 
-                                                              (fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0])->GetTime()
+				 if(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size()>2) {
+				   LOG(DEBUG) << "CbmTofTestBeamClusterizer::BuildClusters: SameSide Hits! on "
+					     << iSmType<<iSm<<iRpc<<iCh<<", Times: "
+					     <<   (fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0])->GetTime()
+					     << ", "<<(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][1])->GetTime()
+					     <<", DeltaT " <<(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][1])->GetTime() - 
+                                                           (fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0])->GetTime()
+					     <<", array size: " <<  fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size() 
+					     <<FairLogger::endl;
+				   if (     fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][2]->GetSide() 
+					 == fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0]->GetSide() ) {
+				     LOG(DEBUG) << "CbmTofTestBeamClusterizer::BuildClusters: 3 consecutive SameSide Hits! on "
+					       << iSmType<<iSm<<iRpc<<iCh<<", Times: "
+					       <<   (fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0])->GetTime()
+					       << ", "<<(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][1])->GetTime()
+					       <<", DeltaT " <<(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][1])->GetTime() - 
+                                                           (fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0])->GetTime()
+					       <<", array size: " <<  fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size() 
+					       <<FairLogger::endl;
+				     fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
+				   }else {
+				     if( fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][2]->GetTime()
+					-fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0]->GetTime() >
+					 fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][2]->GetTime()
+					-fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][1]->GetTime())
+				       fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
+				     else 
+				       {
+					 LOG(WARNING) << "CbmTofTestBeamClusterizer::BuildClusters: digis not properly time ordered "
+					              << FairLogger::endl;
+				       }
+				   }
+				 }else{
+				   LOG(DEBUG2)<<" SameSide Erase fStor entries(d) "<<iSmType<<", SR "<<iSm*iNbRpc+iRpc<<", Ch"<<iCh
                                               <<FairLogger::endl;
-                                 LOG(DEBUG2)<<" SameSide Erase fStor entries(d) "<<iSmType<<", SR "<<iSm*iNbRpc+iRpc<<", Ch"<<iCh
-                                               <<FairLogger::endl;
-                                 fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
-                                 fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
+				   fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
+				   fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
+				 }
                                  if(2 > fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size()) break;
                                  continue;  
                               }
