@@ -33,11 +33,11 @@
 #pragma link C++ class  CbmTrdContFact;
 #pragma link C++ class  CbmTrdRadiator;
 //#pragma link C++ class  CbmTrdMatchTracks+;
-#pragma link C++ class  CbmTrdSetTracksPidWkn+;
-#pragma link C++ class  CbmTrdSetTracksPidModWkn+;
-#pragma link C++ class  CbmTrdSetTracksPidLike+;
-#pragma link C++ class  CbmTrdSetTracksPidANN+;
-#pragma link C++ class  CbmTrdCreatePidLike+;
+//#pragma link C++ class  CbmTrdSetTracksPidWkn+;
+//#pragma link C++ class  CbmTrdSetTracksPidModWkn+;
+//#pragma link C++ class  CbmTrdSetTracksPidLike+;
+//#pragma link C++ class  CbmTrdSetTracksPidANN+;
+//#pragma link C++ class  CbmTrdCreatePidLike+;
 #pragma link C++ class  CbmTrdTracksPidQa+;
 #pragma link C++ class  CbmTrdGas+;
 #pragma link C++ class  CbmTrdDigitizer+;

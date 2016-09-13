@@ -2,6 +2,8 @@
 # the array .
 # The extension is already found.  Any number of sources could be listed here.
 
+add_subdirectory (pid)
+
 Set(INCLUDE_DIRECTORIES
 # needed by run/FairMCBuffer.h
 ${CBMROOT_SOURCE_DIR}/run 
@@ -30,6 +32,7 @@ ${CBMROOT_SOURCE_DIR}/trd/reco
 ${CBMROOT_SOURCE_DIR}/trd/tools
 ${CBMROOT_SOURCE_DIR}/trd/data
 ${CBMROOT_SOURCE_DIR}/trd/beamtime
+
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})
@@ -131,11 +134,11 @@ CbmTrdTrackFinderIdeal.cxx
 CbmTrdFitTracks.cxx  
 CbmTrdTrackFitterIdeal.cxx  
 #CbmTrdMatchTracks.cxx
-CbmTrdSetTracksPidWkn.cxx   
-CbmTrdSetTracksPidModWkn.cxx  
-CbmTrdSetTracksPidLike.cxx     
-CbmTrdSetTracksPidANN.cxx       
-CbmTrdCreatePidLike.cxx 
+#CbmTrdSetTracksPidWkn.cxx   
+#CbmTrdSetTracksPidModWkn.cxx  
+#CbmTrdSetTracksPidLike.cxx     
+#CbmTrdSetTracksPidANN.cxx       
+#CbmTrdCreatePidLike.cxx 
 #CbmTrdDigiSorterTask.cxx
 #CbmTrdDigiRingSorter.cxx
 
