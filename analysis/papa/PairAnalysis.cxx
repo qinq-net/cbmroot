@@ -1115,6 +1115,7 @@ void PairAnalysis::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, 
 	if (!track2) continue;
 
 	/// pair prefilter leg cuts
+	/// TODO: check rejection of pairleg only, when non prepair cut is applied!
 	/// NOTE: in mode kAnyLeg do the next check only if track1 was not selected
 	if( (selectedMaskLeg && fCutType!=kAnyLeg)                        ||
 	    (selectedMaskLeg && fCutType==kAnyLeg && !isLeg1selected) ) {

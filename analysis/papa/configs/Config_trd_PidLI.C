@@ -82,7 +82,7 @@ AnalysisTaskMultiPairAnalysis *Config_trd_PidLI(const char *taskname="PidLI")
     std::cout << "-I- : Added subtask " << papa->GetName() << std::endl;
 
   }
-  std::cout << "-I- : Added task " << task->GetName() << std::endl;
+  //  std::cout << "-I- : Added task " << task->GetName() << std::endl;
   return task;
 
 }
