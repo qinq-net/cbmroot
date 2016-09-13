@@ -118,7 +118,7 @@ public:
     kZv,                     // vertex position in z
     kOneOverPt,              // 1/pt
     kPhi,                    // phi angle
-    kTheta,                  // theta angle
+    kTheta,                  // theta polar angle
     kEta,                    // pseudo-rapidity
     kY,                      // rapidity
     kYlab,                   // rapidity lab
@@ -377,7 +377,7 @@ public:
   static const char* GetValueName(Int_t i)      { return (i>=0&&i<kNMaxValuesMC)?fgkParticleNames[i][0]:""; }
   static const char* GetValueLabel(Int_t i)     { return (i>=0&&i<kNMaxValuesMC)?fgkParticleNames[i][1]:""; }
   static const char* GetValueUnit(Int_t i)      { return (i>=0&&i<kNMaxValuesMC)?fgkParticleNames[i][2]:""; }
-  static Double_t* GetData()              { return fgData;        }
+  static Double_t* GetData()                    { return fgData;        }
   static Double_t GetValue(ValueTypes val)      { return fgData[val];   }
   static UInt_t GetValueType(const char* valname);
   static UInt_t GetValueTypeMC(UInt_t var);

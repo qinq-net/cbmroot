@@ -1128,6 +1128,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
   Bool_t optEvt      =optString.Contains("events");    optString.ReplaceAll("events","");
   Bool_t optStack    =optString.Contains("stack");     optString.ReplaceAll("stack","");
   Bool_t optRstSty   =optString.Contains("rststy");    optString.ReplaceAll("rststy","");
+  Bool_t optSlicesY  =optString.Contains("slicesy");   optString.ReplaceAll("slicesy","");
   /// options - information
   Bool_t optMeanX    =optString.Contains("meanx");     optString.ReplaceAll("meanx","");
   Bool_t optRmsX     =optString.Contains("rmsx");      optString.ReplaceAll("rmsx","");
@@ -1332,7 +1333,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
     if(optRbn && h->InheritsFrom( TH2::Class()) )   h=((TH2*)h)->RebinX(rbn,h->GetName());
     else if( optRbn )                               h->Rebin(rbn);
     if(optNormY && h->GetDimension()==2 && !(h->GetSumOfWeights()==0) && !optCum) PairAnalysisHelper::NormalizeSlicesY((TH2*)h);
-    if(optRbnStat) {
+    if(optRbnStat && h->GetDimension()==1) {
       /// rebin until stat. uncertainty is lower than 'stat'
       limits = PairAnalysisHelper::MakeStatBinLimits(h,stat);
       h=h->Rebin(limits->GetSize()-1,h->GetName(),limits->GetArray());
@@ -1523,8 +1524,10 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
 
     /// add histograms to returned array if option 'goff' is active, otherwise
     /// draw the histogram
-    if(optGoff)
+    if(optGoff) {
+      if(optTask) h->SetTitle(Form("%s %s",GetName(),h->GetTitle()));
       arr->Add(h);
+    }
     else if(optStack) {
       if(!hs) hs = new THStack("hs",Form(";%s;%s",h->GetXaxis()->GetTitle(),h->GetYaxis()->GetTitle()));
       hs->Add(h);
@@ -1533,7 +1536,29 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
       optString.ReplaceAll(" ","");
       Info("DrawSame"," Draw object with options: '%s'",optString.Data());
       //      h->Draw(i>0?(optString+"same").Data():optString.Data());
-      h->Draw(h!=hFirst?(optString+"same").Data():optString.Data());
+      if(!optSlicesY) {
+	h->Draw(h!=hFirst?(optString+"same").Data():optString.Data());
+      }
+      else if(h->GetDimension()==2) {
+	// loop over all projections
+	for (Int_t bin=1;bin<h->GetNbinsX();bin++) {
+	  TH1 *hp= ((TH2*)h)->ProjectionY(Form("%s_%d",h->GetName(),bin),bin,bin,"e");
+	  if(!hp) continue;
+	  Long64_t nentries = Long64_t(hp->GetEntries());
+	  if(nentries == 0) { delete hp; continue; }
+	  PairAnalysisStyler::Style(hp, i+(bin-1)-(optRstSty?nobj:0) );
+	  if( optRbn )                               hp->Rebin(rbn);
+	  if(optRbnStat) {
+	    /// rebin until stat. uncertainty is lower than 'stat'
+	    limits = PairAnalysisHelper::MakeStatBinLimits(hp,stat);
+	    hp=hp->Rebin(limits->GetSize()-1,hp->GetName(),limits->GetArray());
+	    hp->Scale(1.,"width");
+	  }
+	  if(optCum)                   PairAnalysisHelper::Cumulate(hp,optCumR,optNorm);
+	  if(optSmooth)                hp->Smooth(smth);
+	  hp->Draw(hFirst?(optString+"same").Data():optString.Data());
+	}
+      }
     }
 
 

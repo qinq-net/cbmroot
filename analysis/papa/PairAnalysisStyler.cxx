@@ -591,3 +591,22 @@ TH1 * PairAnalysisStyler::GetFirstHistogram()
   return 0x0;
 
 }
+
+//_____________________________________________________________________________
+TLegendEntry *PairAnalysisStyler::GetLegendEntry(Int_t idx)
+{
+  //
+  // TODO
+  // 
+  //
+  if(!gPad) { Error("GetLegendEntry","No pad found, return NULL pointer!!"); return 0x0; }
+
+  TList *prim  = gPad->GetListOfPrimitives();
+  if(!prim) return NULL;
+  TLegend *leg = dynamic_cast<TLegend*>(prim->FindObject("TPave"));
+  if(!leg) return NULL;
+  TList *entries  = leg->GetListOfPrimitives();
+  if(!entries) return NULL;
+  return (dynamic_cast<TLegendEntry*>(entries->At(idx)));
+
+}

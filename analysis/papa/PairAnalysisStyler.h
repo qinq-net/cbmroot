@@ -16,6 +16,7 @@
 #include <TColor.h>
 #include <Rtypes.h>
 #include <TLegend.h>
+#include <TLegendEntry.h>
 #include <TH1.h>
 
 namespace PairAnalysisStyler
@@ -93,6 +94,7 @@ namespace PairAnalysisStyler
   void SetLegendAttributes(TLegend *leg, Bool_t fill=kFALSE);
 
   TH1* GetFirstHistogram();
+  TLegendEntry* GetLegendEntry(Int_t idx);
 
 } // Styling (static)
 
