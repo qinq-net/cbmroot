@@ -18,8 +18,9 @@
 PairAnalysis* Config_Analysis(Int_t cutDefinition);
 
 /// names of the tasks
-TString names=("ELE;PIO");
+TString names=("MC;ELE;PIO");
 enum {
+  kMCcfg,              /// MC pid samples
   kElecfg,             /// electron sample
   kPiocfg              /// pion sample
 };
@@ -63,6 +64,7 @@ AnalysisTaskMultiPairAnalysis *Config_trd_PidLI(const char *taskname="PidLI")
   for (Int_t i=0; i<nPapa; ++i) {
 
     switch(i) {
+    case kMCcfg:
     case kElecfg:
     case kPiocfg:
       Info("Config_trd_PidLI::Configure PAPa subtask",((TObjString*)arrNames->At(i))->GetName());
@@ -103,8 +105,8 @@ PairAnalysis* Config_Analysis(Int_t cutDefinition)
   papa->SetHasMC(kTRUE);
 
   /// ~ type of analysis (leptonic, hadronic or semi-leptonic 2-particle decays are supported)
-  papa->SetMotherPdg(333); /// used for mT-calculation
   switch(cutDefinition) {
+  case kMCcfg:       papa->SetLegPdg( +11, -11); break;
   case kElecfg:      papa->SetMotherPdg(22);  papa->SetLegPdg( +11, -11); break;
   case kPiocfg:      papa->SetMotherPdg(310); papa->SetLegPdg(+211,-211); break;
   }
@@ -196,7 +198,8 @@ void SetupTrackCuts(PairAnalysis *papa, Int_t cutDefinition)
   PairAnalysisVarCuts   *recSTS = new PairAnalysisVarCuts("recSTS","recSTS");
   recSTS->SetCutType(PairAnalysisVarCuts::kAll);
   recSTS->AddCut("MVDHits+STSHits",                        6.,   15.);
-  recSTS->AddCut(PairAnalysisVarManager::kChi2NDFtoVtx,    0.,    6., kTRUE);  /// tracks NOT pointing to the primary vertex
+  if(cutDefinition==kMCcfg) recSTS->AddCut(PairAnalysisVarManager::kChi2NDFtoVtx,    0.,    3., kFALSE); /// tracks pointing to the primary vertex
+  else                      recSTS->AddCut(PairAnalysisVarManager::kChi2NDFtoVtx,    0.,    6., kTRUE);  /// tracks NOT pointing to the primary vertex
 
   /// TRD reconstruction cuts
   PairAnalysisVarCuts   *recTRD = new PairAnalysisVarCuts("recTRD","recTRD");
@@ -428,11 +431,13 @@ void AddMCSignals(PairAnalysis *papa, Int_t cutDefinition){
   papa->AddSignalMC(muo);
 
   /// Pair Signal
-  papa->AddSignalMC(conv);         //conv->Print();
-  papa->AddSignalMC(k0s);          //k0s->Print();
-  papa->AddSignalMC(lambda);       //lambda->Print();
-  papa->AddSignalMC(xx);           //xx->Print();
-  papa->AddSignalMC(ee);           //ee->Print();
+  if(cutDefinition!=kMCcfg) {
+    papa->AddSignalMC(conv);         //conv->Print();
+    papa->AddSignalMC(k0s);          //k0s->Print();
+    papa->AddSignalMC(lambda);       //lambda->Print();
+    papa->AddSignalMC(xx);           //xx->Print();
+    papa->AddSignalMC(ee);           //ee->Print();
+  }
 
 }
 
