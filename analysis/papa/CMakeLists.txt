@@ -100,20 +100,17 @@ PairAnalysisHF.cxx
 PairAnalysisHistos.cxx
 PairAnalysisMC.cxx
 
-#PairAnalysisVarCutsCombi.cxx
 PairAnalysisSignalMC.cxx
 PairAnalysisTrackRotator.cxx
 PairAnalysisMixedEvent.cxx
 PairAnalysisMixingHandler.cxx
 
+#PairAnalysisHistosHelper.cxx
 PairAnalysisFunction.cxx
 PairAnalysisSignalExt.cxx
 #PairAnalysisSignalFit.cxx
 PairAnalysisSpectrum.cxx
 
-
-#CbmFastSim.cxx
-#CbmFastDecayer.cxx
 )
 
 
@@ -158,4 +155,6 @@ Set(DEPENDENCIES
 GENERATE_LIBRARY()
 
 
-
+Install(FILES configs/Config_trd_PidLI.C
+        DESTINATION share/cbmroot/macro/papa
+       )
