@@ -180,9 +180,9 @@ Bool_t PairAnalysisObjectCuts::IsSelected(Double_t * const values)
       return kTRUE;
     }
 
-    // protection against NaN (e.g. outside formula ranges)
-    if(TMath::IsNaN(cutMin)) cutMin=compValue;
-    if(TMath::IsNaN(cutMax)) cutMax=compValue;
+    // protection against NaN (e.g. outside formula ranges, exclude them)
+    if(TMath::IsNaN(cutMin)) cutMin=compValue+1.;
+    if(TMath::IsNaN(cutMax)) cutMax=compValue-1.;
 
     // apply cut
     if ( ((compValue<cutMin) || (compValue>cutMax))^fCutExclude[iCut] ) CLRBIT(fSelectedCutsMask,iCut);
