@@ -152,7 +152,6 @@ void run_analysis(Int_t nEvents = 0)
     std::cout << "-I- : Added task " << getTRDli->GetName() << std::endl;
 
     // CbmTrdSetTracksPidLike* trdLI = new CbmTrdSetTracksPidLike("TRDLikelihood", "TRDLikelihood");
-    // trdLI->SetInputFileName("/Users/jbook//lustre/nyx/cbm/users/jbook/sim/sim_AA_UrQMD_eeCocktail_centr010_JUN16_25mum_4lay_wMVD/test0001/0001/sis100_electron_analysis.root");
     // trdLI->SetUseMCInfo(kTRUE);
     // trdLI->SetUseMomDependence(kFALSE);
     // run->AddTask(trdLI);
