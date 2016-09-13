@@ -147,17 +147,16 @@ void run_analysis(Int_t nEvents = 0)
     // ----------------------------------------------------
 
     // ----------- TRD track Pid Like ----------------------
-    // CbmTrdCreatePidLike* getTRDli = new CbmTrdCreatePidLike();
-    // run->AddTask(getTRDli);
-    //  std::cout << "-I- : Added task " << getTRDli->GetName() << std::endl;
-    // CbmTrdSetTracksPidLike* setTRDli = new CbmTrdSetTracksPidLike("Likelihood", "Likelihood");
-    // run->AddTask(setTRDli);
-    //  std::cout << "-I- : Added task " << setTRDli->GetName() << std::endl;
+    FairTask *getTRDli = dynamic_cast<FairTask*>( gROOT->Macro( "$VMCWORKDIR/macro/papa/Config_trd_PidLI.C" ));
+    run->AddTask( getTRDli );
+    std::cout << "-I- : Added task " << getTRDli->GetName() << std::endl;
 
-    // CbmTrdSetTracksPidLike_JB* trdLI = new CbmTrdSetTracksPidLike_JB("TRDLikelihood", "TRDLikelihood");
-    // trdLI->SetInputFileName("/Users/jbook/Documents/Uni/Doktor/Work/ikf-svn-trunk/jbook/papa-ana/Likelihood_Input.root");
+    // CbmTrdSetTracksPidLike* trdLI = new CbmTrdSetTracksPidLike("TRDLikelihood", "TRDLikelihood");
+    // trdLI->SetInputFileName("/Users/jbook//lustre/nyx/cbm/users/jbook/sim/sim_AA_UrQMD_eeCocktail_centr010_JUN16_25mum_4lay_wMVD/test0001/0001/sis100_electron_analysis.root");
+    // trdLI->SetUseMCInfo(kTRUE);
+    // trdLI->SetUseMomDependence(kFALSE);
     // run->AddTask(trdLI);
-    //  std::cout << "-I- : Added task " << trdLI->GetName() << std::endl;
+    // std::cout << "-I- : Added task " << trdLI->GetName() << std::endl;
     // ------------------------------------------------------------------------
   }
 
@@ -173,7 +172,7 @@ void run_analysis(Int_t nEvents = 0)
   // run->AddTask( addpapa(cfgPath,cfgFunc, "URQMD") );
   // run->AddTask( addpapa(cfgPath,cfgFunc, "MVD")   );
   // run->AddTask( addpapa(cfgPath,cfgFunc, "MUCH")  );
-  run->AddTask( addpapa(cfgPath,cfgFunc, "TOF")   );
+  //  run->AddTask( addpapa(cfgPath,cfgFunc, "TOF")   );
 
   // run->AddTask( addpapa(cfgPath,cfgFunc, "QA")    );
   // run->AddTask( addpapa(cfgPath,cfgFunc, "StsQA") );
