@@ -607,12 +607,12 @@ Bool_t   CbmTofSimpClusterizer::InitCalibParameter()
 /************************************************************************************/
 Bool_t   CbmTofSimpClusterizer::LoadGeometry()
 {
-   LOG(INFO)<<"CbmTofSimpClusterizer::LoadGeometry starting for  "
+   LOG(DEBUG)<<"CbmTofSimpClusterizer::LoadGeometry starting for  "
             <<fDigiPar->GetNrOfModules() << " geometrically known modules "
             <<FairLogger::endl;
 
    Int_t iNrOfCells = fDigiPar->GetNrOfModules();
-   LOG(INFO)<<"Digi Parameter container contains "<<iNrOfCells<<" cells"
+   LOG(DEBUG)<<"Digi Parameter container contains "<<iNrOfCells<<" cells"
             <<", interpret with GeoVersion "<<fGeoHandler->GetGeoVersion()<<FairLogger::endl;
 
    fGeoHandler->CheckGeometryVersion();

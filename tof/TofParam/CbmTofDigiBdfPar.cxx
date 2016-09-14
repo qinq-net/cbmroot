@@ -345,8 +345,9 @@ Bool_t CbmTofDigiBdfPar::LoadBeamtimeHistos()
 
          for( Int_t iRpc = 0; iRpc < fiNbRpc[iSmType]; iRpc ++)
          {
-	   LOG(INFO)<<iSmType<<" Eff: "<<iRpc<<" "<<fdEfficiency[iSmType]<<" "<<GetNbGaps( iSmType, iRpc)<<" "
-		    <<(Double_t)GetNbGaps( iSmType, iRpc)<<" TRes "<<fdTimeResolution[iSmType]<<FairLogger::endl;
+            LOG(DEBUG1) << iSmType << " Eff: " << iRpc << " " << fdEfficiency[iSmType] << " " 
+                        << GetNbGaps( iSmType, iRpc) << " " << (Double_t)GetNbGaps( iSmType, iRpc)
+                        << " TRes " << fdTimeResolution[iSmType] << FairLogger::endl;
            fdGapsEfficiency[iSmType][iRpc] = 1 - TMath::Power( 1.0 - fdEfficiency[iSmType],
                                                        1.0/(Double_t)GetNbGaps( iSmType, iRpc) );
          }
@@ -672,7 +673,8 @@ void CbmTofDigiBdfPar::printParams()
       {
          sGapsNb[iSmType] += Form( "%3d  ", GetNbGaps( iSmType, iRpc) );
          sGapsSz[iSmType] += Form( "%3.2f ", GetGapSize( iSmType, iRpc) );
-         for(Int_t iSm=0; iSm<fiNbSm[iSmType]; iSm++) sSigVel[iSmType] += Form( "%4.3f ", GetSigVel( iSmType, iSm, iRpc) );
+         for(Int_t iSm=0; iSm<fiNbSm[iSmType]; iSm++) 
+            sSigVel[iSmType] += Form( "%4.3f ", GetSigVel( iSmType, iSm, iRpc) );
          sChNb[iSmType] += Form( "%3d  ", GetNbChan( iSmType, iRpc) );
          if( 1 == GetChanType( iSmType, iRpc) )
             sChType[iSmType] += "pad  ";
@@ -692,7 +694,7 @@ void CbmTofDigiBdfPar::printParams()
    {
       LOG(INFO)<<sGapsNb[iSmType]<<FairLogger::endl;
       LOG(INFO)<<sGapsSz[iSmType]<<FairLogger::endl;
-      LOG(INFO)<<sSigVel[iSmType]<<FairLogger::endl;
+      LOG(DEBUG)<<sSigVel[iSmType]<<FairLogger::endl;
       LOG(INFO)<<sChNb[iSmType]<<FairLogger::endl;
       LOG(INFO)<<sChType[iSmType]<<FairLogger::endl;
       LOG(INFO)<<sChOrient[iSmType]<<FairLogger::endl;
