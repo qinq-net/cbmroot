@@ -10,7 +10,7 @@ void run_sim(Int_t nEvents = 10000)
    	TString parFile = "/data/cbm/Gregor/param.01001.root";
    	TString geoFile = "/data/cbm/Gregor/geofilefull.01001.root";
     TString mcFile = "/data/cbm/Gregor/mc.01001.root";
-    
+   
     //TString asciiInput = "/Users/slebedev/Development/cbm/trunk/cbmroot/macro/rich/prototype/smallprototype/beamdistribution.ascii.dat";
     //TString parFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/param.00001.root";
     //TString geoFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/geofilefull.00001.root";

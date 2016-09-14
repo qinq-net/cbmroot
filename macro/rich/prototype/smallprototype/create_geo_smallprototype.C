@@ -77,9 +77,10 @@ const Double_t wallwidth=0.3;
 
 
 const Double_t pmtsize =4.85;			//PMT
-const Double_t pmtpixelsize =0.6;
+const Double_t pmtpixelsize =pmtsize/8;
 const Double_t pmtgap =0.1;
-const Double_t pmtpmtdis=3.5;
+const Double_t pmtedge =0.175;
+const Double_t pmtmatrixgap=3.5;
 
 const Double_t eleclength=10;			//Electronic
 const Double_t elecwidth=3*pmtsize;
@@ -87,7 +88,7 @@ const Double_t elecheight=2*pmtsize;
 
 const Double_t centerthickness =2.44;	//Lense
 const Double_t lenseradius =15.51;
-const Double_t lensepmtdistance =3.0;
+const Double_t lensepmtdistance =3.1;
 const Double_t lensebeschichtung =0.1;
 
 const Double_t absorberthickness =0.1;
@@ -102,18 +103,18 @@ TGeoRotation *rotBox= new TGeoRotation("Boxrotation", 0., 0., 0.);
 TGeoTranslation *trRichCave= new TGeoTranslation(0., 0., 0.);
     
 TGeoTranslation *trBox= new TGeoTranslation(0., 0., 0.);			//Gasbox/Box Translation
-TGeoTranslation *trsensplane= new TGeoTranslation(0.,0., testboxlength+ sensplaneboxdis);
+TGeoTranslation *trsensplane= new TGeoTranslation(0.,0., testboxlength/2+ sensplaneboxdis);
 
-TGeoTranslation *trPMTup= new TGeoTranslation(0., pmtsize+pmtpmtdis/2, -(lenseradius-centerthickness-lensepmtdistance));		//PMTContainer Translations
-TGeoTranslation *trPMTdown= new TGeoTranslation(0., -(pmtsize+pmtpmtdis/2), -(lenseradius-centerthickness-lensepmtdistance));
+TGeoTranslation *trPMTup= new TGeoTranslation(0., pmtsize+pmtmatrixgap/2 + 2*pmtedge + pmtgap/2, -(lenseradius-centerthickness-lensepmtdistance));		//PMTContainer Translations
+TGeoTranslation *trPMTdown= new TGeoTranslation(0., -(pmtsize+pmtmatrixgap/2 + 2*pmtedge + pmtgap/2), -(lenseradius-centerthickness-lensepmtdistance));
 
 
-TGeoTranslation *tr2= new TGeoTranslation( 	-(pmtsize + pmtgap)	,  pmtsize/2 + pmtgap/2	, 0.);		//PMT Translations
-TGeoTranslation *tr3= new TGeoTranslation(	0.					,  pmtsize/2 + pmtgap/2	, 0.);
-TGeoTranslation *tr4= new TGeoTranslation( 	pmtsize + pmtgap 	,  pmtsize/2 + pmtgap/2	, 0.);
-TGeoTranslation *tr5= new TGeoTranslation( 	-(pmtsize + pmtgap)	,-(pmtsize/2 + pmtgap/2), 0.);
-TGeoTranslation *tr6= new TGeoTranslation(	0.					,-(pmtsize/2 + pmtgap/2), 0.);
-TGeoTranslation *tr7= new TGeoTranslation( 	pmtsize + pmtgap	,-(pmtsize/2 + pmtgap/2), 0.);
+TGeoTranslation *tr2= new TGeoTranslation( 	-(pmtsize + pmtgap +2*pmtedge)	,  pmtsize/2 + pmtgap/2 + pmtedge	, 0.);		//PMT Translations
+TGeoTranslation *tr3= new TGeoTranslation(	0.					,  pmtsize/2 + pmtgap/2 + pmtedge	, 0.);
+TGeoTranslation *tr4= new TGeoTranslation( 	pmtsize + pmtgap +2*pmtedge	,  pmtsize/2 + pmtgap/2 + pmtedge	, 0.);
+TGeoTranslation *tr5= new TGeoTranslation( 	-(pmtsize + pmtgap +2*pmtedge)	,-(pmtsize/2 + pmtgap/2 + pmtedge), 0.);
+TGeoTranslation *tr6= new TGeoTranslation(	0.					,-(pmtsize/2 + pmtgap/2 + pmtedge), 0.);
+TGeoTranslation *tr7= new TGeoTranslation( 	pmtsize + pmtgap +2*pmtedge	,-(pmtsize/2 + pmtgap/2 + pmtedge), 0.);
 
 //TGeoTranslation *trelec1= new TGeoTranslation(0., pmtsize+0.5 , -(lenseradius-centerthickness-lensepmtdistance)+eleclength/2+0.1); 		//Electronic Transformations
 //TGeoTranslation *trelec2= new TGeoTranslation(0., -(pmtsize+0.5) ,-(lenseradius-centerthickness-lensepmtdistance)+eleclength/2+0.1);
@@ -143,7 +144,7 @@ TGeoVolume *gas= gGeoMan->MakeBox("Gasbox", medNitrogen , testboxwidth/2-wallwid
 
 //PMT Container containing PMT Matrix
 
-TGeoVolume *pmtcontainer= gGeoMan->MakeBox("PMTContainer", medCsI , 3*pmtsize/2, 2*pmtsize/2, 0.1);
+TGeoVolume *pmtcontainer= gGeoMan->MakeBox("PMTContainer", medCsI , 3*pmtsize/2 + 2*pmtedge, 2*pmtsize/2 + 2*pmtedge, 0.1);
 
 //PMT
 TGeoVolume *pmt= gGeoMan->MakeBox("PMT", medCsI , pmtsize/2, pmtsize/2, 0.1);
