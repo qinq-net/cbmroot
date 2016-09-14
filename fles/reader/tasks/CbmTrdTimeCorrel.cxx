@@ -268,6 +268,8 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     spaID = GetSpadicID(sourceA);
     eqID = raw->GetEquipmentID();
     spadicName = GetSpadicName(eqID,sourceA);
+    chID = raw->GetChannelID();
+    if(chID > -1 && chID < 16 && spaID%2==1) chID+=16; // eqID ?
     isHit = raw->GetHit();
     isHitAborted = raw->GetHitAborted();
     isOverflow = raw->GetOverFlow();
@@ -275,6 +277,11 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     isEpoch = raw->GetEpoch();
     isEpochOutOfSynch = raw->GetEpochOutOfSynch();
     isStrange = raw->GetStrange();
+
+    fHM->H2("SourceAvsEquipIDall")->Fill(eqID,sourceA);
+    if(isEpoch) fHM->H2("SourceAvsEquipIDepoch")->Fill(eqID,sourceA);
+    if(isHit && chID >= 0 && chID <= 15) fHM->H2("SourceAvsEquipIDhit")->Fill(eqID,(sourceA + GetChannelOnPadPlane(chID)*0.0625 + 0.03125)); // For hit messages, the originating padID is displayed within the sourceA axis
+    
     // Count total messages per ASIC and message-types per ASIC.
     if(spadicName == RewriteSpadicName("SysCore0_Spadic0")) {
       nSpadicMessages0++;
@@ -742,6 +749,13 @@ void CbmTrdTimeCorrel::Finish()
   TString runName= path(TRegexp("[0-9]+_"));
   if(fRun!=0) runName=Form(" (Run %d)",fRun);
 
+  fHM->H2("SourceAvsEquipIDall")->GetXaxis()->SetTitle("eqID");
+  fHM->H2("SourceAvsEquipIDall")->GetYaxis()->SetTitle("sourceA");
+  fHM->H2("SourceAvsEquipIDepoch")->GetXaxis()->SetTitle("eqID");
+  fHM->H2("SourceAvsEquipIDepoch")->GetYaxis()->SetTitle("sourceA");
+  fHM->H2("SourceAvsEquipIDhit")->GetXaxis()->SetTitle("eqID");
+  fHM->H2("SourceAvsEquipIDhit")->GetYaxis()->SetTitle("sourceA/padID");
+  
   // Plot message counter histos to screen
   TCanvas *c1 = new TCanvas("c1","histograms"+runName,5*320,3*300);
   c1->Divide(5,3);
@@ -1855,6 +1869,12 @@ void CbmTrdTimeCorrel::CreateHistograms()
           }
       }
   }
+
+  // On the x axis, there is a typical eqID hardcoded so far. 57344 is equal 0xE000.
+  fHM->Add("SourceAvsEquipIDall", new TH2I("SourceAvsEquipIDall", "SourceAddress vs Equipment ID ALL MESS", 20,57334.5,57354.5,6,-0.5,5.5));
+  fHM->Add("SourceAvsEquipIDepoch", new TH2I("SourceAvsEquipIDepoch", "SourceAddress vs Equipment ID EPOCH MESS", 20,57334.5,57354.5,6,-0.5,5.5));
+  fHM->Add("SourceAvsEquipIDhit", new TH2F("SourceAvsEquipIDhit", "SourceAddress vs Equipment ID HIT MESS", 20,57334.5,57354.5,96,-0.5,5.5));
+
   if(fActivateClusterizer)
 	  for (Int_t syscore=0; syscore<3;++syscore) {
 		  for (Int_t spadic=0; spadic<3;++spadic) {
