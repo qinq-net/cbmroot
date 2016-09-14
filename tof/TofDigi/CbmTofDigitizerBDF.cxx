@@ -423,7 +423,7 @@ Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
              << fDigiPar->GetNrOfModules() << " cells " <<FairLogger::endl;
              
    // Add Param printout only if DEBUG level ON
-   if( gLogger->IsLogNeeded( DEBUG ) );
+   if( gLogger->IsLogNeeded( DEBUG ) )
       fDigiBdfPar->printParams();
 
    if(kFALSE == fDigiBdfPar->LoadBeamtimeHistos()){
