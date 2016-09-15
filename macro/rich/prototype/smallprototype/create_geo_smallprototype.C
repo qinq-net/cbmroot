@@ -105,7 +105,7 @@ TGeoTranslation *trRichCave= new TGeoTranslation(0., 0., 0.);
 TGeoTranslation *trBox= new TGeoTranslation(0., 0., 0.);			//Gasbox/Box Translation
 TGeoTranslation *trsensplane= new TGeoTranslation(0.,0., testboxlength/2+ sensplaneboxdis);
 
-TGeoTranslation *trPMTup= new TGeoTranslation(0., pmtsize+pmtmatrixgap/2 + 2*pmtedge + pmtgap/2, -(lenseradius-centerthickness-lensepmtdistance));		//PMTContainer Translations
+TGeoTranslation *trPMTup= 	new TGeoTranslation(0.,   pmtsize+pmtmatrixgap/2 + 2*pmtedge + pmtgap/2	, -(lenseradius-centerthickness-lensepmtdistance));		//PMTContainer Translations
 TGeoTranslation *trPMTdown= new TGeoTranslation(0., -(pmtsize+pmtmatrixgap/2 + 2*pmtedge + pmtgap/2), -(lenseradius-centerthickness-lensepmtdistance));
 
 
@@ -144,7 +144,7 @@ TGeoVolume *gas= gGeoMan->MakeBox("Gasbox", medNitrogen , testboxwidth/2-wallwid
 
 //PMT Container containing PMT Matrix
 
-TGeoVolume *pmtcontainer= gGeoMan->MakeBox("PMTContainer", medCsI , 3*pmtsize/2 + 2*pmtedge, 2*pmtsize/2 + 2*pmtedge, 0.1);
+TGeoVolume *pmtcontainer= gGeoMan->MakeBox("PMTContainer", medCsI , 3*pmtsize/2 + 2*pmtedge, 2*pmtsize/2 + pmtedge, 0.1);
 
 //PMT
 TGeoVolume *pmt= gGeoMan->MakeBox("PMT", medCsI , pmtsize/2, pmtsize/2, 0.1);
