@@ -94,7 +94,7 @@ void run_sim_fast(Int_t nEvents = 2,
   setup->SetActive(kPsd, kFALSE); // dont write psd points
   // --- remove detector geometries
   setup->RemoveModule(kPsd);      // remove psd from setup to reduce size of mcstack
-  //  setup->RemoveModule(kMvd);      // reduce material budget
+  setup->RemoveModule(kMvd);      // reduce material budget
   // setup->RemoveModule(kTrd);   // sts-tof-matching study
   // --- change default geomerties
   //  setup->SetModule(kTrd, "v15d_1e", kTRUE); // 5layers
@@ -256,7 +256,9 @@ void run_sim_fast(Int_t nEvents = 2,
   }
   delete arr;
 
-  // NOTE: for random file selection set idx to -1
+  // NOTE: for random file selection set idx to -1,
+  //       this is important if you want to run larger statistics/jobs
+  //       than e.g. pluto/urqmd files you have
   idx=-1;
   gRandom->SetSeed(0);
 
@@ -305,7 +307,8 @@ void run_sim_fast(Int_t nEvents = 2,
   std::cout << "-I- " << myName << ": Add momentum smearing" << std::endl;
   PairAnalysisHistos *histos = new PairAnalysisHistos();
   histos->ReadFromFile(
-		       "/lustre/nyx/cbm/users/jbook/sim/sim_AA_UrQMD_eeCocktail_centr010_JUN16_25mum_4lay_wMVD/train0371/sis100_electron_analysis.root",
+		       "/lustre/nyx/cbm/users/jbook/sim/sim_AA_UrQMD_eeCocktail_centr010_JUN16_25mum_4lay_noMVD/train0032/sis100_electron_analysis.root",
+		       //"/lustre/nyx/cbm/users/jbook/sim/sim_AA_UrQMD_eeCocktail_centr010_JUN16_25mum_4lay_wMVD/train0371/sis100_electron_analysis.root",
 		       "RF",
 		       "SMEAR");
   TH2F *eMom = (TH2F*)histos->GetHist("SMEAR","Track.SE+-_PrimElectron",         "P_PMC");
@@ -324,10 +327,10 @@ void run_sim_fast(Int_t nEvents = 2,
   std::cout << "-I- " << myName << ": Add efficiency filter" << std::endl;
   PairAnalysisHistos *histos2 = new PairAnalysisHistos();
   histos2->ReadFromFile(
-			"/lustre/nyx/cbm/users/jbook/sim/sim_AA_UrQMD_eeCocktail_centr010_JUN16_25mum_4lay_wMVD/train0371/sis100_electron_analysis.root",
+			"/lustre/nyx/cbm/users/jbook/sim/sim_AA_UrQMD_eeCocktail_centr010_JUN16_25mum_4lay_noMVD/train0032/sis100_electron_analysis.root",
+			//"/lustre/nyx/cbm/users/jbook/sim/sim_AA_UrQMD_eeCocktail_centr010_JUN16_25mum_4lay_wMVD/train0371/sis100_electron_analysis.root",
 			"RF",
 			"EFF");
-  Bool_t redim = kTRUE;
   THnBase *eRec = (THnBase*)histos2->GetHist("EFF","Track.SE+-_PrimElectron",         "PtMC_ThetaMC_PhiMC_ZvMC");
   THnBase *eGen = (THnBase*)histos2->GetHist("EFF","Track.SE+-_PrimElectron_MCtruth", "PtMC_ThetaMC_PhiMC_ZvMC");
   fastSim->SetLookupEfficiency( eRec, eGen, CbmFastSim::kEle);
@@ -349,10 +352,10 @@ void run_sim_fast(Int_t nEvents = 2,
   fastSim->SetLookupEfficiency( gRec, gGen, CbmFastSim::kGam);
 
   fastSim->SetEfficiencyMethod(
-			       CbmFastSim::kInterpolate
+			       //                              CbmFastSim::kInterpolate
 			       //			       CbmFastSim::kFactorize
 			       //			       CbmFastSim::kAverage
-			       //			       CbmFastSim::kLastDim
+			       CbmFastSim::kLastDim
 			       );
   run->AddTask(fastSim);
 
