@@ -242,7 +242,9 @@ void CbmRichSmallPrototypeQa::Exec(
         Int_t pdg = TMath::Abs(mcTrack->GetPdgCode());
         //select only primary protons
         if (!(motherId == -1 && pdg == 2212)) continue;
+		//if (nofHits < 30) continue; 
 
+		
 		if(nofHits>2)
 		{
 			fHM->H1("fh_nof_good_rings")->Fill(iR+1);
@@ -262,7 +264,7 @@ void CbmRichSmallPrototypeQa::Exec(
 			Double_t radius = ring->GetRadius();		
 			fHM->H1("fh_rich_ring_radius")->Fill(radius);
 			fHM->H2("fh_radius_ring")->Fill(iR,radius);
-		
+			if(radius<4.0) continue;
 			for (int iH = 0; iH < nofHits; iH++)
 
 			{
@@ -271,6 +273,7 @@ void CbmRichSmallPrototypeQa::Exec(
             	if (NULL == hit) continue;
             	Double_t hitX = hit->GetX();
             	Double_t hitY = hit->GetY();
+				if(hitX<3.0 && hitX>-3.0 && hitY<3.0 && hitY>-3.0) continue;
             	Double_t dR = radius - TMath::Sqrt( (cX - hitX)*( cX - hitX) + (cY - hitY)*(cY - hitY) );
             	fHM->H1("fh_dR")->Fill(dR);
 			
