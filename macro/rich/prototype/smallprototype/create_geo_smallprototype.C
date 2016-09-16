@@ -75,9 +75,9 @@ const Double_t testboxwidth=20;
 const Double_t testboxheight=30;
 const Double_t wallwidth=0.3;
 
-
+const Double_t nofpixels=16;
 const Double_t pmtsize =4.85;			//PMT
-const Double_t pmtpixelsize =pmtsize/8;
+const Double_t pmtpixelsize =pmtsize/nofpixels;
 const Double_t pmtgap =0.1;
 const Double_t pmtedge =0.175;
 const Double_t pmtmatrixgap=3.5;
@@ -88,11 +88,11 @@ const Double_t elecheight=2*pmtsize;
 
 const Double_t centerthickness =2.44;	//Lense
 const Double_t lenseradius =15.51;
-const Double_t lensepmtdistance =3.1;
+const Double_t lensepmtdistance =3.5;
 const Double_t lensebeschichtung =0.1;
 
 const Double_t absorberthickness =0.1;
-const Double_t absorberradius =1.6;
+const Double_t absorberradius =2.0;
 
 const Double_t sensplanesize=200;
 const Double_t sensplaneboxdis=1;
@@ -105,16 +105,16 @@ TGeoTranslation *trRichCave= new TGeoTranslation(0., 0., 0.);
 TGeoTranslation *trBox= new TGeoTranslation(0., 0., 0.);			//Gasbox/Box Translation
 TGeoTranslation *trsensplane= new TGeoTranslation(0.,0., testboxlength/2+ sensplaneboxdis);
 
-TGeoTranslation *trPMTup= 	new TGeoTranslation(0.,   pmtsize+pmtmatrixgap/2 + 2*pmtedge + pmtgap/2	, -(lenseradius-centerthickness-lensepmtdistance));		//PMTContainer Translations
-TGeoTranslation *trPMTdown= new TGeoTranslation(0., -(pmtsize+pmtmatrixgap/2 + 2*pmtedge + pmtgap/2), -(lenseradius-centerthickness-lensepmtdistance));
+TGeoTranslation *trPMTup= 	new TGeoTranslation(0.,   pmtsize/*+pmtmatrixgap/2 + 2*pmtedge + pmtgap/2*/	, -(lenseradius-centerthickness-lensepmtdistance));		//PMTContainer Translations
+TGeoTranslation *trPMTdown= new TGeoTranslation(0., -(pmtsize/*+pmtmatrixgap/2 + 2*pmtedge + pmtgap/2*/), -(lenseradius-centerthickness-lensepmtdistance));
 
 
-TGeoTranslation *tr2= new TGeoTranslation( 	-(pmtsize + pmtgap +2*pmtedge)	,  pmtsize/2 + pmtgap/2 + pmtedge	, 0.);		//PMT Translations
-TGeoTranslation *tr3= new TGeoTranslation(	0.					,  pmtsize/2 + pmtgap/2 + pmtedge	, 0.);
-TGeoTranslation *tr4= new TGeoTranslation( 	pmtsize + pmtgap +2*pmtedge	,  pmtsize/2 + pmtgap/2 + pmtedge	, 0.);
-TGeoTranslation *tr5= new TGeoTranslation( 	-(pmtsize + pmtgap +2*pmtedge)	,-(pmtsize/2 + pmtgap/2 + pmtedge), 0.);
-TGeoTranslation *tr6= new TGeoTranslation(	0.					,-(pmtsize/2 + pmtgap/2 + pmtedge), 0.);
-TGeoTranslation *tr7= new TGeoTranslation( 	pmtsize + pmtgap +2*pmtedge	,-(pmtsize/2 + pmtgap/2 + pmtedge), 0.);
+TGeoTranslation *tr2= new TGeoTranslation( 	-(pmtsize /*+ pmtgap +2*pmtedge*/)	,  pmtsize/2/* + pmtgap/2 + pmtedge*/	, 0.);		//PMT Translations
+TGeoTranslation *tr3= new TGeoTranslation(	0.					,  pmtsize/2/* + pmtgap/2 + pmtedge*/	, 0.);
+TGeoTranslation *tr4= new TGeoTranslation( 	pmtsize/* + pmtgap +2*pmtedge*/	,  pmtsize/2 /*+ pmtgap/2 + pmtedge*/	, 0.);
+TGeoTranslation *tr5= new TGeoTranslation( 	-(pmtsize/* + pmtgap +2*pmtedge*/)	,-(pmtsize/2 /*+ pmtgap/2 + pmtedge*/), 0.);
+TGeoTranslation *tr6= new TGeoTranslation(	0.					,-(pmtsize/2/* + pmtgap/2 + pmtedge*/), 0.);
+TGeoTranslation *tr7= new TGeoTranslation( 	pmtsize /*+ pmtgap +2*pmtedge*/	,-(pmtsize/2/* + pmtgap/2 + pmtedge*/), 0.);
 
 //TGeoTranslation *trelec1= new TGeoTranslation(0., pmtsize+0.5 , -(lenseradius-centerthickness-lensepmtdistance)+eleclength/2+0.1); 		//Electronic Transformations
 //TGeoTranslation *trelec2= new TGeoTranslation(0., -(pmtsize+0.5) ,-(lenseradius-centerthickness-lensepmtdistance)+eleclength/2+0.1);
@@ -144,7 +144,7 @@ TGeoVolume *gas= gGeoMan->MakeBox("Gasbox", medNitrogen , testboxwidth/2-wallwid
 
 //PMT Container containing PMT Matrix
 
-TGeoVolume *pmtcontainer= gGeoMan->MakeBox("PMTContainer", medCsI , 3*pmtsize/2 + 2*pmtedge, 2*pmtsize/2 + pmtedge, 0.1);
+TGeoVolume *pmtcontainer= gGeoMan->MakeBox("PMTContainer", medCsI , 3*pmtsize/2/* + 2*pmtedge + pmtgap*/, 2*pmtsize/2 /*+ 2*pmtedge + pmtgap*/, 0.1);
 
 //PMT
 TGeoVolume *pmt= gGeoMan->MakeBox("PMT", medCsI , pmtsize/2, pmtsize/2, 0.1);
@@ -215,12 +215,12 @@ pmtcontainer->AddNode(pmt, 6, tr7);
 
 
 
-for(int i=0; i<8; i++)
+for(int i=0; i<nofpixels; i++)
 	{
-		for(int j=0; j<8; j++)
+		for(int j=0; j<nofpixels; j++)
 		{
-			TGeoTranslation *trij = new TGeoTranslation((2*i-7)*pmtpixelsize/2, (2*j-7)*pmtpixelsize/2, 0.);
-			pmt->AddNode(pmtpixel, 8*i+j+1, trij);
+			TGeoTranslation *trij = new TGeoTranslation((2*i-(nofpixels-1))*pmtpixelsize/2, (2*j-(nofpixels-1))*pmtpixelsize/2, 0.);
+			pmt->AddNode(pmtpixel, nofpixels*i+j+1, trij);
 		}	
 	}	
 

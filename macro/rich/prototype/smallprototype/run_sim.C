@@ -1,4 +1,4 @@
-void run_sim(Int_t nEvents = 100000)
+void run_sim(Int_t nEvents = 500)
 {
     TTree::SetMaxTreeSize(90000000000);
     TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
@@ -75,18 +75,18 @@ void run_sim(Int_t nEvents = 100000)
     //primGen->SmearGausVertexXY(smearVertexXY);
     //primGen->SmearVertexZ(smearVertexZ);
     
-   	/*      FairBoxGenerator* boxGen1 = new FairBoxGenerator(2212, 1);
+   	     FairBoxGenerator* boxGen1 = new FairBoxGenerator(2212, 1);
         boxGen1->SetPRange(2.,2.);
         boxGen1->SetPhiRange(0.,360.);
         boxGen1->SetThetaRange(0., 0.);
-	//	boxGen1->SetXYZ(0.,0.,-30.);
-		boxGen1->SetBoxXYZ(-1., -1., 1., 1., -30.);
+		boxGen1->SetXYZ(0.,0.,-30.);
+	//	boxGen1->SetBoxXYZ(-1., -1., 1., 1., -30.);
         boxGen1->Init();
 		primGen->AddGenerator(boxGen1);
-	*/
-		FairAsciiGenerator* asciiGen = new FairAsciiGenerator(asciiInput);	
+	
+	/*	FairAsciiGenerator* asciiGen = new FairAsciiGenerator(asciiInput);	
    		primGen->AddGenerator(asciiGen);
-        
+     */   
     
     fRun->SetGenerator(primGen);
     fRun->SetStoreTraj(true);

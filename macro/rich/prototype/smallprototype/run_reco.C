@@ -1,4 +1,4 @@
-void run_reco(Int_t nEvents = 100000)
+void run_reco(Int_t nEvents = 500)
 {
    TTree::SetMaxTreeSize(90000000000);
 
@@ -52,7 +52,8 @@ void run_reco(Int_t nEvents = 100000)
 	richReco->SetRunExtrapolation(false);
 	richReco->SetRunProjection(false);
 	richReco->SetRunTrackAssign(false);
-	richReco->SetFinderName("ideal");
+	richReco->SetFinderName("hough_prototype");
+    richReco->SetFitterName("circle_cop");
 	run->AddTask(richReco);
 
 	CbmMatchRecoToMC* matchRecoToMc = new CbmMatchRecoToMC();
@@ -62,9 +63,6 @@ void run_reco(Int_t nEvents = 100000)
     richQa->SetOutputDir(std::string(resultDir));
     run->AddTask(richQa);
 
-	CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
-    mcManager->AddFile(mcFile);
-    run->AddTask(mcManager);
 
 	
 	
