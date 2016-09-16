@@ -333,7 +333,7 @@ Bool_t CbmFastSim::PassEfficiencyFilter(Int_t pdg, Double_t *vals, Int_t *coord)
 
       err=fEFF[idx]->GetBinError(bin);
       //    if (eff>0. && err/eff>=0.60 ) return kFALSE;
-      if (eff>0. && err/eff>=0.30 ) {
+      if (eff>0. && err/eff>=0.10 ) {
 	Double_t effm= GetEfficiency(idx, vals, coord); // vals was NULL
 	//      Info("PassEfficiencyFilter","statistical error %f too small (eff:%.2e, new:%.2e)",(eff>0.?err/eff:0.),eff,effm);
 	eff=effm;
@@ -415,6 +415,14 @@ Double_t CbmFastSim::AnalyzeMap(TH2F *map, Double_t refValue)
 
   /// find y-bin for mc variable
   Int_t binGen=yGen->FindBin( refValue );
+
+  /// for under- or overflow, apply gaussian smearing with 2% resolution
+  /// by this electrons are handled without bremsstrahlung (TODO: add crystal ball smearing)
+  /// NOTE: in general this should not happen often, you have to provide smearing maps
+  ///       with large momentum ranges
+  if(binGen<1 || binGen>yGen->GetNbins()) {
+    return ( fRand->Gaus(refValue,refValue*0.02) );
+  }
 
   /// get histogram array and calculate offset
   Float_t *arrayh = map->GetArray();
