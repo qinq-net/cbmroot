@@ -87,7 +87,7 @@ Bool_t PairAnalysisCutGroup::IsSelected(TObject* track)
   if (!track) return kFALSE;
 
   //Fill values
-  Double_t values[PairAnalysisVarManager::kNMaxValuesMC];
+  Double_t *values=PairAnalysisVarManager::GetData();
   ///  PairAnalysisVarManager::SetFillMap(fUsedVars);
   PairAnalysisVarManager::Fill(track,values);
 

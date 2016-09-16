@@ -577,7 +577,7 @@ void PairAnalysis::FillHistogramsTracks(TObjArray **tracks)
   //
   
   TString  className,className2;
-  Double_t values[PairAnalysisVarManager::kNMaxValuesMC];
+  Double_t *values=PairAnalysisVarManager::GetData();
   PairAnalysisVarManager::SetFillMap(fUsedVars);
 
   //Fill track information, separately for the track array candidates
@@ -601,7 +601,7 @@ void PairAnalysis::FillHistogramsMC(const PairAnalysisEvent *ev, PairAnalysisEve
   //
   return;
   /*
-  Double_t values[PairAnalysisVarManager::kNMaxValuesMC]={0.};
+    Double_t *values=PairAnalysisVarManager::GetData();
   PairAnalysisVarManager::SetFillMap(fUsedVars);
 
   // Fill event information
@@ -850,7 +850,7 @@ void PairAnalysis::FillHistogramsPair(PairAnalysisPair *pair,Bool_t fromPreFilte
   //       and those legs are not saved!
   //
   TString  className,className2;
-  Double_t values[PairAnalysisVarManager::kNMaxValuesMC];
+  Double_t *values=PairAnalysisVarManager::GetData();
   PairAnalysisVarManager::SetFillMap(fUsedVars);
 
   //Fill Pair information, separately for all pair candidate arrays and the legs
@@ -1553,7 +1553,7 @@ void PairAnalysis::FillHistogramsFromPairArray(Bool_t pairInfoOnly/*=kFALSE*/)
   //
 
   TString  className,className2;
-  Double_t values[PairAnalysisVarManager::kNMaxValuesMC]={0.};
+  Double_t *values=PairAnalysisVarManager::GetData();
   PairAnalysisVarManager::SetFillMap(fUsedVars);
 
   //Fill event information

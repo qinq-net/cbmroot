@@ -158,9 +158,7 @@ void PairAnalysisMixingHandler::DoMixing(TClonesArray &pool, PairAnalysis *papa)
   for (Int_t i=0; i<4; ++i) arrTrDummy[i]=papa->fTracks[i];
 
   //buffer also global event data
-  Double_t values[PairAnalysisVarManager::kNMaxValuesMC]={0};
-  for (Int_t i=PairAnalysisVarManager::kPairMax; i<PairAnalysisVarManager::kNMaxValuesMC; ++i)
-    values[i]=PairAnalysisVarManager::GetValue((PairAnalysisVarManager::ValueTypes)i);
+  Double_t *values=PairAnalysisVarManager::GetData();
 
   // The event data should alread be filled, since
   // all events are in the same mixing bin anyhow...
