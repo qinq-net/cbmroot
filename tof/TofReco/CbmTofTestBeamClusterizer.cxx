@@ -3272,6 +3272,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 				       {
 					 LOG(WARNING) << "CbmTofTestBeamClusterizer::BuildClusters: digis not properly time ordered "
 					              << FairLogger::endl;
+				         fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
 				       }
 				   }
 				 }else{
