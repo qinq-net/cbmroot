@@ -156,10 +156,10 @@ InitStatus StsCosyClusterFinder::Init()
 void StsCosyClusterFinder::Exec(Option_t*)
 {
   if(fEvent%100000 == 0)cout << "-I- StsCosyClusterFinder: ----- " << fEvent << endl;
-  
-  fClusters->Clear();
-  finalClusters->Clear();
-  
+
+  fClusters->Delete();
+  finalClusters->Delete();
+
   map<Int_t, set<CbmStsDigi*, classcomp1> >::iterator mapIt;
   for (mapIt=fDigiMap.begin(); mapIt!=fDigiMap.end(); mapIt++) 
     {
@@ -167,13 +167,18 @@ void StsCosyClusterFinder::Exec(Option_t*)
     }
   fDigiMap.clear();
   
+  Int_t nofDigis = fDigis->GetEntriesFast();
+
+  fEvent++;
+  
+  if (0 == nofDigis) return;
+    
   set<Int_t> layerSet;
   
   CbmStsDigi* digi = NULL;
   
   map<CbmStsDigi*, Int_t> fIndices;
   
-  Int_t nofDigis = fDigis->GetEntries();
 
   for (Int_t iDigi=0; iDigi < nofDigis; iDigi++ ) 
     {
@@ -323,8 +328,10 @@ void StsCosyClusterFinder::Exec(Option_t*)
 	 cluster_size[station][side]->Fill(new_cluster->GetNofDigis());
 	}
     }
+  fIndices.clear();
+  digiSet.clear();
+  layerSet.clear();
   
-  fEvent++;
 }
 // --------------------------------------------------------------------
 
