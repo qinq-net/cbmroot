@@ -48,6 +48,7 @@ link_directories( ${LINK_DIRECTORIES})
 set(SRCS
 
 CbmBuildEventsSimple.cxx
+CbmBuildEventsIdeal.cxx
 CbmEvBuildSource.cxx
 CbmDaq.cxx
 CbmDaqQa.cxx
