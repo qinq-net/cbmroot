@@ -1071,8 +1071,9 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   /// add canvas
   TCanvas *c=0;
   if (optCan){
-    c=(TCanvas*)gROOT->FindObject(Form("cSignalExtraction"));
-    if (!c) c=new TCanvas(Form("cSignalExtraction"),Form("SignalExtraction"));
+    TString key=Form("cSignalExtraction%s",(optSB?"SB":(optSgn?"SGN":(optSSB?"SSB":""))));
+    c=(TCanvas*)gROOT->FindObject(key.Data());
+    if (!c) c=new TCanvas(key.Data(),key.Data());
     //    c->Clear();
     c->cd();
   }

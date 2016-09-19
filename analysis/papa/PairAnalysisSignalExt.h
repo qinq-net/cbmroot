@@ -345,6 +345,7 @@ inline void PairAnalysisSignalExt::FillSignificance(TH1* hfill, TObject* signal,
     be=hbgrd->GetBinError(i);
 
     Double_t sgn = ((s+b)>0. ? s/TMath::Sqrt(s+b) : 0.);
+    //    printf("s %.3e b %.3e \t s/b: %.3e sgn %.3e \n",s,b,s/b,sgn);
     hfill->SetBinContent(i, sgn );
     hfill->SetBinError(  i,((s+b)>0. ? sgn*TMath::Sqrt(be*be + TMath::Power(se*(s+2*b)/s, 2)) / 2 / (s+b) : 0) );
   }
