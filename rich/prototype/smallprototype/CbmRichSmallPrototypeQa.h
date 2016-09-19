@@ -63,6 +63,11 @@ private:
      */
     void DrawHist();
     
+    void DrawCircle(
+                    CbmRichRing* ring);
+    
+    void DrawEvent();
+    
     TCanvas* CreateCanvas(
                           const string& name,
                           const string& title,
@@ -100,10 +105,6 @@ private:
 
     
     vector<TCanvas*> fCanvas;
-	
-	vector<Double_t> fcX;
-	vector<Double_t> fcY;
-	vector<Double_t> fradius;
     
     ClassDef(CbmRichSmallPrototypeQa,1)
 };
