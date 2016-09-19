@@ -10,9 +10,6 @@
 #include <sstream>
 #include "FairLogger.h"
 
-//using std::map;
-using std::stringstream;
-//using std::vector;
 
 
 // -----   Add data to event   ---------------------------------------------
@@ -25,6 +22,7 @@ void CbmEvent::AddData(Cbm::DataType type, Int_t index) {
 	}
 
 	fIndexMap[type].push_back(UShort_t(index));
+	fNofData++;
 
 }
 // -------------------------------------------------------------------------
@@ -57,13 +55,13 @@ Int_t CbmEvent::GetNofData(Cbm::DataType type) {
 // -----   String output   -------------------------------------------------
 std::string CbmEvent::ToString() const
 {
-   stringstream ss;
-   ss << "Event " << fNumber << " at t = " << fTime << " ns."
-  		<< " ns. Registered data types: " << fIndexMap.size() << std::endl;
+   std::stringstream ss;
+   ss << "Event " << fNumber << " at t = " << fTime
+  		<< " ns. Registered data types: " << fIndexMap.size()
+  		<< ", data objects: " << fNofData << "\n";
    for (auto it = fIndexMap.begin(); it != fIndexMap.end(); it++) {
-  	 ss << "-- Data type " << it->first << ", number of data "
-  			 << it->second.size() << std::endl;
-  	 it++;
+  	 ss << "          -- Data type " << it->first
+  			<< ", number of data " << it->second.size() << "\n";
    }
   return ss.str();
 }

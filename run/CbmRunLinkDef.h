@@ -9,6 +9,7 @@
 #pragma link C++ class CbmBuildEventsIdeal;
 #pragma link C++ class CbmEvBuildSource;
 #pragma link C++ class CbmDaq;
+#pragma link C++ class CbmDaqNew;
 #pragma link C++ class CbmDaqQa;
 #pragma link C++ class CbmMCBuffer;
 #pragma link C++ class CbmMCTimeSim;

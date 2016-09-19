@@ -28,7 +28,8 @@ class CbmEvent: public TObject {
 	public:
 
 		/** Default constructor **/
-		CbmEvent() : TObject(), fNumber(-1), fTime(0.), fIndexMap() {
+		CbmEvent() :
+			TObject(), fNumber(-1), fTime(0.), fNofData(0), fIndexMap() {
 		}
 
 
@@ -37,7 +38,7 @@ class CbmEvent: public TObject {
 		 ** @param time    Event start time [ns]
 		 **/
 		CbmEvent(Int_t number, Double_t time = 0.) :
-			TObject(), fNumber(number), fTime(time) , fIndexMap() {
+			TObject(), fNumber(number), fTime(time) , fNofData(0), fIndexMap() {
 		}
 
 
@@ -61,6 +62,10 @@ class CbmEvent: public TObject {
 		Int_t GetIndex(Cbm::DataType type, UInt_t iData);
 
 
+		/** Get total number of data (of all types) in the event **/
+		Int_t GetNofData() { return fNofData; }
+
+
 		/** Get number of data objects of a given type in this event
 		 ** @param DataType  Type of data (for values see CbmDetectorList.h)
 		 ** @value Number of objects of type DataType in the event.
@@ -79,6 +84,7 @@ class CbmEvent: public TObject {
 		/** Event metadata **/
 		Int_t fNumber;   ///< Event number
 		Double_t fTime;  ///< Event time [ns]
+		Int_t fNofData;  ///< Number of data objects in the event
 
 		/** Arrays of indices to data types **/
 		std::map<Cbm::DataType, std::vector<UShort_t>> fIndexMap;

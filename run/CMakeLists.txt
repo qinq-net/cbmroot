@@ -51,6 +51,7 @@ CbmBuildEventsSimple.cxx
 CbmBuildEventsIdeal.cxx
 CbmEvBuildSource.cxx
 CbmDaq.cxx
+CbmDaqNew.cxx
 CbmDaqQa.cxx
 CbmDaqBuffer.cxx
 CbmMCBuffer.cxx

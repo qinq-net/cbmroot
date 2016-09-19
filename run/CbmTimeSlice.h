@@ -113,6 +113,12 @@ class CbmTimeSlice : public TNamed
     void Reset(Double_t start, Double_t duration);
 
 
+    /** Set the flag whether the time slice is empty
+     ** @param isEmpty  kTRUE is timeslice contains no data
+     **/
+    void SetEmpty(Bool_t isEmpty = kTRUE) { fIsEmpty = isEmpty; }
+
+
     /** Consistency check
      ** Tests data to be in defined time interval and ordered w.r.t. time.
      ** @return kTRUE if OK, else kFALSE

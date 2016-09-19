@@ -21,27 +21,39 @@
 
 using namespace std;
 
+
+// =====   Constructor   =====================================================
 CbmBuildEventsIdeal::CbmBuildEventsIdeal() :
 	FairTask("BuildEventsIdeal"),
 	fStsDigis(NULL),
 	fEvents(NULL),
 	fNofEntries(0)
 {
-
 }
+// ===========================================================================
 
+
+
+// =====   Destructor   ======================================================
 CbmBuildEventsIdeal::~CbmBuildEventsIdeal() {
-
 }
+// ===========================================================================
 
 
+
+// =====   Task execution   ==================================================
 void CbmBuildEventsIdeal::Exec(Option_t* opt) {
 
 	TStopwatch timer;
 	timer.Start();
 	std::map<Int_t, CbmEvent*> eventMap;
 
+	// Clear output array
+	fEvents->Delete();
+
 	Int_t nDigis = fStsDigis->GetEntriesFast();
+	LOG(DEBUG) << GetName() << ": found " << nDigis << " digis "
+			       << FairLogger::endl;
 	for (Int_t iDigi = 0; iDigi < nDigis; iDigi++) {
 		CbmStsDigi* digi = (CbmStsDigi*) fStsDigis->At(iDigi);
 
@@ -73,15 +85,21 @@ void CbmBuildEventsIdeal::Exec(Option_t* opt) {
   		      << nDigis << ", events: " << fEvents->GetEntriesFast()
   		      << FairLogger::endl;
 
-  for (Int_t iEvent = 0; iEvent < fEvents->GetEntriesFast(); iEvent++ ) {
-  	CbmEvent* event = (CbmEvent*) fEvents->At(iEvent);
-  	LOG(INFO) << iEvent << " " << event << FairLogger::endl;
-  	LOG(INFO) << event->ToString() << FairLogger::endl;
+  // --- For debug: event info
+  if (gLogger->IsLogNeeded(DEBUG)) {
+  	for (Int_t iEvent = 0; iEvent < fEvents->GetEntriesFast(); iEvent++ ) {
+  		CbmEvent* event = (CbmEvent*) fEvents->At(iEvent);
+  		LOG(INFO) << event->ToString() << FairLogger::endl;
+  	}
   }
 
 
 }
+// ===========================================================================
 
+
+
+// =====   Task initialisation   =============================================
 InitStatus CbmBuildEventsIdeal::Init() {
 
 	// --- Get FairRootManager instance
@@ -99,6 +117,7 @@ InitStatus CbmBuildEventsIdeal::Init() {
 
   return kSUCCESS;
 }
+// ===========================================================================
 
 
 ClassImp(CbmBuildEventsIdeal)
