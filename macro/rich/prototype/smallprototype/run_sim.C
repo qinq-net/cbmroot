@@ -6,15 +6,15 @@ void run_sim(Int_t nEvents = 500)
 	TString script = TString(gSystem->Getenv("SCRIPT"));
     //gRandom->SetSeed(10);
 
-	TString asciiInput = "/data/cbm/cbmroot/macro/rich/prototype/smallprototype/beamdistribution.ascii.dat";
-   	TString parFile = "/data/cbm/Gregor/param.01001.root";
-   	TString geoFile = "/data/cbm/Gregor/geofilefull.01001.root";
-    TString mcFile = "/data/cbm/Gregor/mc.01001.root";
+	//TString asciiInput = "/data/cbm/cbmroot/macro/rich/prototype/smallprototype/beamdistribution.ascii.dat";
+   //	TString parFile = "/data/cbm/Gregor/param.01001.root";
+   //	TString geoFile = "/data/cbm/Gregor/geofilefull.01001.root";
+   // TString mcFile = "/data/cbm/Gregor/mc.01001.root";
    
-    //TString asciiInput = "/Users/slebedev/Development/cbm/trunk/cbmroot/macro/rich/prototype/smallprototype/beamdistribution.ascii.dat";
-    //TString parFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/param.00001.root";
-    //TString geoFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/geofilefull.00001.root";
-    //TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/mc.00001.root";
+    TString asciiInput = "/Users/slebedev/Development/cbm/trunk/cbmroot/macro/rich/prototype/smallprototype/beamdistribution.ascii.dat";
+    TString parFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/param.00001.root";
+    TString geoFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/geofilefull.00001.root";
+    TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/mc.00001.root";
     
 	if (script == "yes") {
       asciiInput = TString(gSystem->Getenv("IN_ASCII_FILE"));
@@ -45,7 +45,8 @@ void run_sim(Int_t nEvents = 500)
     fRun->SetGenerateRunInfo(kTRUE);
     FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
     
-    fRun->SetMaterials("media.geo"); // Materials
+   // fRun->SetMaterials("media.geo"); // Materials
+    fRun->SetMaterials("media_rich_prototype.geo"); // Materials
     
     if ( caveGeom != "" ) {
         FairModule* cave = new CbmCave("CAVE");

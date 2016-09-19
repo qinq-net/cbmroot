@@ -10,13 +10,13 @@ gSystem->Load("libGeom");
 //gGeoMan = gGeoManager;// (TGeoManager*)gROOT->FindObject("FAIRGeom");
 //new TGeoManager ("Testbox", "Testbox");
 
-TString geoFileName= "/data/cbm/cbmroot/geometry/rich/prototype/Testbox.geo.root";
-//TString geoFileName= "/Users/slebedev/Development/cbm/trunk/cbmroot/geometry/rich/prototype/Testbox.geo.root";
+//TString geoFileName= "/data/cbm/cbmroot/geometry/rich/prototype/Testbox.geo.root";
+TString geoFileName= "/Users/slebedev/Development/cbm/trunk/cbmroot/geometry/rich/prototype/Testbox.geo.root";
 FairGeoLoader*    geoLoad = new FairGeoLoader("TGeo","FairGeoLoader");
   FairGeoInterface* geoFace = geoLoad->getGeoInterface();
   TString geoPath = gSystem->Getenv("VMCWORKDIR");
-  TString medFile = geoPath + "/geometry/media.geo";
-  //TString medFile = geoPath + "/geometry/media_rich_prototype.geo";
+//  TString medFile = geoPath + "/geometry/media.geo";
+  TString medFile = geoPath + "/geometry/media_rich_prototype.geo";
   geoFace->setMediaFile(medFile);
   geoFace->readMedia();
   gGeoMan = gGeoManager;
@@ -88,7 +88,7 @@ const Double_t elecheight=2*pmtsize;
 
 const Double_t centerthickness =2.44;	//Lense
 const Double_t lenseradius =15.51;
-const Double_t lensepmtdistance =3.5;
+const Double_t lensepmtdistance =3.0;
 const Double_t lensebeschichtung =0.1;
 
 const Double_t absorberthickness =0.1;

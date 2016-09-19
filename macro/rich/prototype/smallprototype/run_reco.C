@@ -12,13 +12,13 @@ void run_reco(Int_t nEvents = 500)
 
 	gRandom->SetSeed(10);
 
-	TString mcFile = "/data/cbm/Gregor/mc.01001.root";
-	TString parFile = "/data/cbm/Gregor/param.01001.root";
-	TString recoFile ="/data/cbm/Gregor/reco.01001.root";
+	//TString mcFile = "/data/cbm/Gregor/mc.01001.root";
+	//TString parFile = "/data/cbm/Gregor/param.01001.root";
+	//TString recoFile ="/data/cbm/Gregor/reco.01001.root";
     
-    //TString parFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/param.00001.root";
-    //TString recoFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/reco.00001.root";
-    //TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/mc.00001.root";
+    TString parFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/param.00001.root";
+    TString recoFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/reco.00001.root";
+    TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/mc.00001.root";
 
 	remove(recoFile.Data());
 
@@ -52,7 +52,7 @@ void run_reco(Int_t nEvents = 500)
 	richReco->SetRunExtrapolation(false);
 	richReco->SetRunProjection(false);
 	richReco->SetRunTrackAssign(false);
-	richReco->SetFinderName("hough_prototype");
+	richReco->SetFinderName("ideal");
     richReco->SetFitterName("circle_cop");
 	run->AddTask(richReco);
 
