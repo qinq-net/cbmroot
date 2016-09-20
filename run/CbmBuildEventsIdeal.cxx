@@ -74,7 +74,9 @@ void CbmBuildEventsIdeal::Exec(Option_t* opt) {
 		// Fill digi index into event
 		event->AddData(Cbm::kStsDigi, iDigi);
 
-	}
+	} //# digis
+
+
 	fNofEntries++;
 	timer.Stop();
 

@@ -33,7 +33,7 @@ void CbmEvent::AddData(Cbm::DataType type, Int_t index) {
 Int_t CbmEvent::GetIndex(Cbm::DataType type, UInt_t iData) {
 
 	if ( fIndexMap.find(type) == fIndexMap.end() ) return -1;
-	if ( fIndexMap[type].size() > iData ) return -1;
+	if ( fIndexMap[type].size() <= iData ) return -2;
 	return fIndexMap.at(type)[iData];
 
 }
@@ -42,7 +42,7 @@ Int_t CbmEvent::GetIndex(Cbm::DataType type, UInt_t iData) {
 
 
 // -----   Get number of data of a type in this event   --------------------
-Int_t CbmEvent::GetNofData(Cbm::DataType type) {
+Int_t CbmEvent::GetNofData(Cbm::DataType type) const {
 
 	if ( fIndexMap.find(type) == fIndexMap.end() ) return -1;
 	else return fIndexMap.at(type).size();

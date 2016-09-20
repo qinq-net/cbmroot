@@ -49,6 +49,7 @@ set(SRCS
 
 CbmBuildEventsSimple.cxx
 CbmBuildEventsIdeal.cxx
+CbmBuildEventsQA.cxx
 CbmEvBuildSource.cxx
 CbmDaq.cxx
 CbmDaqNew.cxx
