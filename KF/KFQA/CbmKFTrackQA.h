@@ -9,6 +9,7 @@
 #include "TString.h"
 
 #include <vector>
+#include <map>
 
 class KFParticleTopoReconstructor;
 class KFTopoPerformance;
@@ -16,6 +17,7 @@ class TClonesArray;
 class TFile;
 class TDirectory;
 class TH1F;
+class TH2F;
 class TObject;
 
 class CbmKFTrackQA : public FairTask {
@@ -29,13 +31,13 @@ class CbmKFTrackQA : public FairTask {
   void SetGlobalTrackBranchName(const TString& name)   { fGlobalTrackBranchName = name;  }
   void SetTofBranchName(const TString& name)   { fTofBranchName = name;  }
   void SetMCTrackBranchName(const TString& name)   { fMCTracksBranchName = name;  }
-  void SetTrackMatchBranchName(const TString& name)   { fTrackMatchBranchName = name;  }
+  void SetTrackMatchBranchName(const TString& name)   { fStsTrackMatchBranchName = name;  }
   void SetMuchTrackMatchBranchName(const TString& name)   { fMuchTrackMatchBranchName = name;  }
   void SetTrdBranchName (const TString& name)      {   fTrdBranchName = name;  }
   void SetRichBranchName (const TString& name)      {   fRichBranchName = name;   }
   void SetMuchTrackBranchName (const TString& name) { fMuchTrackBranchName = name; }
   Int_t GetZtoNStation(Double_t getZ);
-
+  
   virtual InitStatus Init();
   virtual void Exec(Option_t* opt);
   virtual void Finish();
@@ -46,35 +48,43 @@ class CbmKFTrackQA : public FairTask {
   CbmKFTrackQA(const CbmKFTrackQA&);
   
   void WriteHistosCurFile( TObject *obj );
+  int GetHistoIndex(int pdg);
   
   //names of input branches
-  TString fStsTrackBranchName;      //! Name of the input TCA with reco tracks
-  TString fGlobalTrackBranchName;      //! Name of the input TCA with gloabal tracks
-  TString fTofBranchName;      //! Name of the input TCA with tof hits
-  TString fMCTracksBranchName;      //! Name of the input TCA with MC tracks
-  TString fTrackMatchBranchName;      //! Name of the input TCA with track match
-  TString fMuchTrackMatchBranchName;
-  TString fTrdBranchName;
+  TString fStsTrackBranchName;
+  TString fGlobalTrackBranchName;
   TString fRichBranchName;
+  TString fTrdBranchName;
+  TString fTofBranchName;
   TString fMuchTrackBranchName;
+  TString fMCTracksBranchName;
+  TString fStsTrackMatchBranchName;
+  TString fRichRingMatchBranchName;
+  TString fTrdTrackMatchBranchName;
+  TString fTofHitMatchBranchName;
+  TString fMuchTrackMatchBranchName;
 
   //input branches
-  TClonesArray *fTrackArray; //input reco tracks
-  TClonesArray *fGlobalTrackArray; //input reco tracks
-  TClonesArray *fTofHitArray; //input reco tracks
-  TClonesArray *fMCTrackArray; //mc tracks
-  TClonesArray *fTrackMatchArray; //track match
-  TClonesArray *fMuchTrackMatchArray;//MuCh track match
-  TClonesArray *fTrdTrackArray;
-  TClonesArray *fRichRingArray;
-  TClonesArray *fMuchTrackArray;//input much tracks
-   
+  TClonesArray* fStsTrackArray;
+  TClonesArray* fGlobalTrackArray;
+  TClonesArray* fRichRingArray;
+  TClonesArray* fTrdTrackArray;
+  TClonesArray* fTofHitArray;
+  TClonesArray* fMuchTrackArray;
+  TClonesArray* fMCTrackArray;
+  TClonesArray* fStsTrackMatchArray;
+  TClonesArray* fRichRingMatchArray;
+  TClonesArray* fTrdTrackMatchArray;
+  TClonesArray* fTofHitMatchArray;
+  TClonesArray* fMuchTrackMatchArray;
+  
   //output file with histograms
   TString fOutFileName;
   TFile* fOutFile;
   TDirectory* fHistoDir;
   
   Int_t fNEvents;
+  std::map<int, int> fPDGtoIndexMap;
   
   //histograms
     //STS
@@ -84,6 +94,9 @@ class CbmKFTrackQA : public FairTask {
     //Much
   static const int NMuchHisto = 5;
   TH1F* hMuchHisto[3][NMuchHisto]; //Muons, Background, Ghost
+    //RICH
+  static const int NRichRingHisto2D = 3; // r, axis a, axis b
+  TH2F* hRichRingHisto2D[10][NRichRingHisto2D]; //All tracks, electrons, muons, pions, kaons, protons, fragments, mismatch, ghost track, ghost ring
   
   ClassDef(CbmKFTrackQA,1);
 };

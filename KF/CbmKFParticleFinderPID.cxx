@@ -271,7 +271,7 @@ void CbmKFParticleFinderPID::SetRecoPID()
 
 
         //            if(fElIdAnn->DoSelect(richRing, p) > -0.5) isElectronRICH = 1;
-            if (p<5.5){
+            if (p<5.){
               if ( fabs(axisA-fMeanA) < fRmsCoeff*fRmsA &&
               fabs(axisB-fMeanB) < fRmsCoeff*fRmsB && 
               dist < fDistCut) isElectronRICH = 1;
@@ -418,7 +418,7 @@ void CbmKFParticleFinderPID::SetRecoPID()
           fPID[stsTrackIndex] = q*PdgHypo[iPdg];
       }
     }
-    
+
     if(isElectron)
       fPID[stsTrackIndex] = q*PdgHypo[3];
     
