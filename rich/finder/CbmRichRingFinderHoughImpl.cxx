@@ -383,8 +383,8 @@ void CbmRichRingFinderHoughImpl::FindPeak(
     
     if (select > -0.7) {
         fFoundRings.push_back(ring2);
+        ring2=NULL;
     }
-    ring2=NULL;
     delete ring2;
 }
 
