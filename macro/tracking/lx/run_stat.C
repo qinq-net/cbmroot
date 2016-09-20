@@ -50,9 +50,8 @@ void run_stat(int index = -1)
       inOutDir = "/data.local/cbmrootdata/";
    
    TString inFile = inOutDir + setupName + ".mc." + system + "." + beam + suffix + ".root";
-   TString inParFile = inOutDir + setupName + ".mc." + system + "." + beam + suffix + "_param.root";
+   TString globalParFile = inOutDir + setupName + ".param." + system + "." + beam + suffix + ".root";
    TString outFile = inOutDir + setupName + ".reco." + system + "." + beam + suffix + ".root";
-   TString outParFile = inOutDir + setupName + ".reco." + system + "." + beam + suffix + "_param.root";
 
    TString srcDir = gSystem->Getenv("VMCWORKDIR");
 

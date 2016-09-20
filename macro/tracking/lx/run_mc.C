@@ -51,7 +51,7 @@ void run_mc(int index = -1)
    if (index >= 0)
       fsPrefix = "/lustre/nyx";
    else
-      fsPrefix = "/SAT/hera";
+      fsPrefix = "/SAT/nyx";//"/SAT/hera";
 
    TString bgFile = fsPrefix + "/cbm/prod/gen/urqmd/" + system + "/" + beam + "/" + trigger + "/" + "urqmd." + system + "." + beam + "." + trigger + "." + TString(str) + ".root";
    TString outDir;
@@ -69,7 +69,7 @@ void run_mc(int index = -1)
       sigFile = fsPrefix + "/cbm/prod/gen/pluto/" + system + "/" + partDir + "/" + beam + "/" + part + "/" + channel + "/pluto." + system + "." + beam + "." + part + "." + channel + "." + TString(str2) + ".root";
 
    TString outFile = outDir + setupName + ".mc." + system + "." + beam + suffix + ".root";
-   TString parFile = outDir + setupName + ".mc." + system + "." + beam + suffix + "_param.root";
+   TString parFile = outDir + setupName + ".param." + system + "." + beam + suffix + ".root";
    TString geoFile = outDir + setupName + "_geofile.root";
 
   // ========================================================================

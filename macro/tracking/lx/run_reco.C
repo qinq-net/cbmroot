@@ -1,6 +1,6 @@
 void run_reco(int index = -1)
 {
-   Int_t nEvents = 1000;
+   Int_t nEvents = 100;
    const char* setupName = "sis100_muon_jpsi";
    TString system  = "auau";
    TString beam    = "10gev";
@@ -8,8 +8,8 @@ void run_reco(int index = -1)
    TString part = "jpsi";
    TString channel = "mpmm";
 
-   bool useSig = false;
-   bool useBg = true;
+   bool useSig = true;
+   bool useBg = false;
    bool sigAscii = false;
    bool useIdeal = false;
    bool isEvByEv = true;
@@ -52,9 +52,8 @@ void run_reco(int index = -1)
       inOutDir = "/data.local/cbmrootdata/";
    
    TString inFile = inOutDir + setupName + ".mc." + system + "." + beam + suffix + ".root";
-   TString inParFile = inOutDir + setupName + ".mc." + system + "." + beam + suffix + "_param.root";
+   TString globalParFile = inOutDir + setupName + ".param." + system + "." + beam + suffix + ".root";
    TString outFile = inOutDir + setupName + ".reco." + system + "." + beam + suffix + ".root";
-   TString outParFile = inOutDir + setupName + ".reco." + system + "." + beam + suffix + "_param.root";
 
    TString myName = "run_reco_lx";  // this macro's name for screen output
    TString srcDir = gSystem->Getenv("VMCWORKDIR");
@@ -66,11 +65,13 @@ void run_reco(int index = -1)
    gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
    loadlibs();
    gSystem->Load("libLxTrack.so");
+   gSystem->Load("libLittrack.so");
 
    FairRunAna* run = new FairRunAna;
    run->SetUseFairLinks(1);
    run->SetInputFile(inFile);
    run->SetOutputFile(outFile);
+   run->SetGenerateRunInfo(kTRUE);
    
    CbmMCDataManager* mcManager = new CbmMCDataManager;
    mcManager->AddFile(inFile);
@@ -305,6 +306,36 @@ void run_reco(int index = -1)
       }
       // -------------------------------------------------------------------------
    }
+   
+   // -----   Track finding in (MVD+) STS    -----------------------------------------
+   CbmKF* kalman = new CbmKF();
+   run->AddTask(kalman);
+   CbmL1* l1 = new CbmL1();
+   // --- Material budget file names
+   if (setup->IsActive(kMvd)) {
+      TString geoTag;
+      setup->GetGeoTag(kMvd, geoTag);
+      TString parFile = gSystem->Getenv("VMCWORKDIR");
+      parFile = parFile + "/parameters/mvd/mvd_matbudget_" + geoTag + ".root";
+      std::cout << "Using material budget file " << parFile << std::endl;
+      l1->SetMvdMaterialBudgetFileName(parFile.Data());
+   }
+   if (setup->IsActive(kSts)) {
+      TString geoTag;
+      setup->GetGeoTag(kSts, geoTag);
+      TString parFile = gSystem->Getenv("VMCWORKDIR");
+      parFile = parFile + "/parameters/sts/sts_matbudget_" + geoTag + ".root";
+      std::cout << "Using material budget file " << parFile << std::endl;
+      l1->SetStsMaterialBudgetFileName(parFile.Data());
+   }
+   run->AddTask(l1);
+   std::cout << "-I- : Added task " << l1->GetName() << std::endl;
+
+   CbmStsTrackFinder* stsTrackFinder = new CbmL1StsTrackFinder();
+   FairTask* stsFindTracks = new CbmStsFindTracks(0, stsTrackFinder, setup->IsActive(kMvd));
+   run->AddTask(stsFindTracks);
+   std::cout << "-I- : Added task " << stsFindTracks->GetName() << std::endl;
+   // -------------------------------------------------------------------------
 
    LxTBFinder* lxTbFinder = new LxTBFinder;
    lxTbFinder->SetEvByEv(isEvByEv);
@@ -318,19 +349,17 @@ void run_reco(int index = -1)
    // -----  Parameter database   --------------------------------------------
    FairRuntimeDb* rtdb = run->GetRuntimeDb();
    FairParRootFileIo* parIo1 = new FairParRootFileIo();
-   parIo1->open(inParFile.Data());
+   parIo1->open(globalParFile.Data());
    rtdb->setFirstInput(parIo1);
+   rtdb->setOutput(parIo1); 
    
    if (!useIdeal)
    {
-      FairParAsciiFileIo* parIo3 = new FairParAsciiFileIo();
-      parIo3->open(parFileList, "in");
-      rtdb->setSecondInput(parIo3);
+      FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
+      parIo2->open(parFileList, "in");
+      rtdb->setSecondInput(parIo2);
    }
    
-   FairParRootFileIo* parIo2 = new FairParRootFileIo(kTRUE);
-   parIo2->open(outParFile.Data());
-   rtdb->setOutput(parIo2);   
    rtdb->saveOutput();
    // ------------------------------------------------------------------------
 
@@ -344,7 +373,7 @@ void run_reco(int index = -1)
    timer.Stop();
    cout << "Macro finished successfully." << endl;
    cout << "Output file is "    << inFile << endl;
-   cout << "Parameter file is " << outParFile << endl;
+   cout << "Parameter file is " << globalParFile << endl;
    cout << "Real time " << timer.RealTime() << " s, CPU time " << timer.CpuTime() << " s" << endl;
    cout << endl;
    // ------------------------------------------------------------------------
