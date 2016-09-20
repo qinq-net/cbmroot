@@ -7,6 +7,7 @@ class LxGenNoiseElectrons : public FairTask
 {
 public:
     LxGenNoiseElectrons();
+    ~LxGenNoiseElectrons();
     InitStatus Init();// Overridden from FairTask
     void Exec(Option_t* opt);// Overridden from FairTask
     void Finish();// Overridden from FairTask
@@ -20,6 +21,9 @@ private:
     TClonesArray* fMCTracks;
     TClonesArray* fMuchPoints;
     TClonesArray* fTrdPoints;
+    TClonesArray* fOutMCTracks;
+    TClonesArray* fOutMuchPoints;
+    TClonesArray* fOutTrdPoints;
 ClassDef(LxGenNoiseElectrons, 1)        
 };
 

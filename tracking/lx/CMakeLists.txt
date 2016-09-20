@@ -11,8 +11,9 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/tracking/lx/CalcStats
   ${CBMROOT_SOURCE_DIR}/base 
   ${CBMROOT_SOURCE_DIR}/data 
-  ${CBMROOT_SOURCE_DIR}/data/much 
-  ${CBMROOT_SOURCE_DIR}/data/sts 
+  ${CBMROOT_SOURCE_DIR}/data/much
+  ${CBMROOT_SOURCE_DIR}/data/sts
+  ${CBMROOT_SOURCE_DIR}/data/mvd
   ${CBMROOT_SOURCE_DIR}/data/trd
   ${CBMROOT_SOURCE_DIR}/data/tof
   ${CBMROOT_SOURCE_DIR}/data/global
@@ -42,8 +43,7 @@ Link_Directories( ${LINK_DIRECTORIES})
 
 Set(SRCS
   TBBinned/LxTBTask.cxx
-  #LxTBMLTask.cxx
-  #LxTBMPTask.cxx
+  TBBinned/LxTBTieTracks.cxx
   GenNoiseElectrons/GenNoiseElectrons.cxx
   CalcStats/CalcStats.cxx
 )
