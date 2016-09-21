@@ -24,7 +24,6 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
   : FairTask("CbmTrdTimeCorrel"),
     fRawSpadic(NULL),
     fHM(new CbmHistManager()),
-    fBaselineHM(new CbmHistManager()),
     fNrTimeSlices(0),
     fRun(0),
     fRewriteSpadicName(true),
@@ -37,22 +36,18 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
     fiCluster(0),
     fiRawMessage(0),
     timestampOffsets(),
-    fLastMessageTime{{{0}}},
-    fEpochMarkerArray{{0}},
-    fFirstEpochMarker{{true}},
+    fLastMessageTime (NrOfActiveSyscores*NrOfSpadics*32,0),
+    fEpochMarkerArray(NrOfActiveSyscores*NrOfHalfSpadics,0),
+    fFirstEpochMarker(NrOfActiveSyscores*NrOfHalfSpadics,true),
+	fBaseline(NrOfActiveSyscores*NrOfHalfSpadics*16,0),
     fGraph(true),
-    EpochRegressCounter(),
-    EpochRegressOffset(),
-    EpochRegressTriggered(),
+    EpochRegressCounter(NrOfActiveSyscores*NrOfHalfSpadics,0),
+    EpochRegressOffset(NrOfActiveSyscores*NrOfHalfSpadics,0),
+    EpochRegressTriggered(NrOfActiveSyscores*NrOfHalfSpadics,false),
     fLinearHitBuffer(),
     fClusterBuffer(),
     fOutputCloneArrays(false)  
 {
-   for (Int_t i=0; i < 3; ++i) { 
-     for (Int_t j=0; j < 6; ++j) {
-        fFirstEpochMarker[i][j] = true;
-     }
-   }
    gStyle->SetNumberContours(99);
     {
       TString CalibrationFilename =
@@ -65,13 +60,13 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
         {
           LOG(INFO) << "No calibration file found, continuing with default baseline."
                        << FairLogger::endl;
-          for (Int_t syscore = 0; syscore < 1; ++syscore)
+          for (Int_t syscore = 0; syscore < NrOfActiveSyscores; ++syscore)
             {
-              for (Int_t spadic = 0; spadic < 4; ++spadic)
+              for (Int_t spadic = 0; spadic < NrOfActiveSpadics; ++spadic)
                 {
-                  for (Int_t channel = 0; channel < 16; ++channel)
+                  for (Int_t channel = 0; channel < 32; ++channel)
                     {
-                      fBaseline[syscore * 64 + spadic * 16 + channel] =
+                      fBaseline[syscore * NrOfHalfSpadics * 16 + spadic * 32 + channel] =
                           ((spadic / 2) == 0 ?
                               DefaultBaselineFrankfurt : DefaultBaselineMuenster);
                     }
@@ -81,26 +76,25 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
       else{ Calibration->cd();
           LOG(INFO) << "Calibration file found at " <<CalibrationFilename<< " reading baseline."
                        << FairLogger::endl;
-          for (Int_t syscore = 0; syscore < 1; ++syscore)
+          for (Int_t syscore = 0; syscore < NrOfActiveSyscores; ++syscore)
             {
-              for (Int_t spadic = 0; spadic < 4; ++spadic)
+              for (Int_t spadic = 0; spadic < NrOfActiveSpadics; ++spadic)
                 {
-                  for (Int_t channel = 0; channel < 16; ++channel)
+                  for (Int_t channel = 0; channel < 32; ++channel)
                     {
-                      TString fitname = "Fit_Baseline_for_Syscore_"
-                          + std::to_string (syscore) + "_Spadic_"
-                          + std::to_string (spadic)
+                	  string spadicName = GetSpadicName(syscore, spadic, kDirectOutput,kFullSpadic).Data();
+                      TString fitname = "Fit_Baseline_for_"+spadicName
                           + "_Channel_" + std::to_string (channel);
                       TFitResult* CurrentFit = dynamic_cast<TFitResult*>(Calibration->Get(fitname.Data()));
                       if(CurrentFit==nullptr){
-                          LOG(INFO) << "No baseline fit found for Spadic "<<spadic << "Channel"<<channel
+                          LOG(INFO) << "No baseline fit found for Syscore "<< syscore << " Spadic "<<spadic << " Channel "<<channel
                                        << FairLogger::endl;
-                          fBaseline[syscore * 64 + spadic * 16 + channel] =
+                          fBaseline[syscore * NrOfHalfSpadics * 16 + spadic * 16 + channel] =
                                                     ((spadic / 2) == 0 ?
                                                         DefaultBaselineFrankfurt : DefaultBaselineMuenster);
                       }
                       else {
-                          fBaseline[syscore * 64 + spadic * 16 + channel] = CurrentFit->GetParams()[1]-0*CurrentFit->GetParams()[2];
+                          fBaseline[syscore * NrOfHalfSpadics * 16 + spadic * 32 + channel] = CurrentFit->GetParams()[1]-0*CurrentFit->GetParams()[2];
                       }
                     }
                 }
@@ -170,10 +164,9 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   TString histName="";
   TString title="";
   
-  std::map<TString, std::map<ULong_t, std::vector<CbmSpadicRawMessage*> > > timeBuffer;
 
 
-  LOG(INFO) << "CbmTrdTimeCorrel: Number of current TimeSlice: " << fNrTimeSlices << FairLogger::endl;
+  LOG(INFO) << "CbmTrdTimeCorrel: Number of current TimeSlice:   " << fNrTimeSlices << FairLogger::endl;
   LOG(INFO) << "Digis in TClonesArray:                           " << fDigis->GetEntriesFast() << FairLogger::endl;
   LOG(INFO) << "Clusters in TClonesArray:                        " << fClusters->GetEntriesFast() << FairLogger::endl;
   LOG(INFO) << "rawMessages in TS:                               " << fRawSpadic->GetEntriesFast() << FairLogger::endl;
@@ -181,9 +174,16 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   fDigis = new TClonesArray("CbmTrdDigi");
   fClusters->Delete();
   fClusters = new TClonesArray("CbmTrdCluster");
-  Int_t nSpadicMessages = fRawSpadic->GetEntriesFast(); //SPADIC messages per TimeSlice
-  Int_t nSpadicMessages0(0),nSpadicMessages1(0); //SPADIC messages per TimeSlice for single SPADICS
-  Int_t nSpadicMessagesHit0(0), nSpadicMessagesHit1(0), nSpadicMessagesHitAborted0(0), nSpadicMessagesHitAborted1(0), nSpadicMessagesOverflow0(0), nSpadicMessagesOverflow1(0), nSpadicMessagesInfo0(0), nSpadicMessagesEpoch0(0), nSpadicMessagesEpoch1(0), nSpadicMessagesInfo1(0), nSpadicMessagesLost0(0), nSpadicMessagesLost1(0), nSpadicMessagesStrange0(0), nSpadicMessagesStrange1(0); //SPADIC message types per TimeSlice for single SPADICS
+  Int_t nSpadicMessagesFull = fRawSpadic->GetEntriesFast(); //SPADIC messages per TimeSlice
+  Int_t nSpadicMessages[NrOfActiveSyscores*NrOfSpadics]; //SPADIC messages per TimeSlice for single SPADICS
+  //SPADIC message types per TimeSlice for single SPADICS:
+  Int_t nSpadicMessagesHit[NrOfActiveSyscores*NrOfSpadics]={};
+  Int_t nSpadicMessagesHitAborted[NrOfActiveSyscores*NrOfSpadics]={};
+  Int_t nSpadicMessagesOverflow[NrOfActiveSyscores*NrOfSpadics]={};
+  Int_t nSpadicMessagesInfo[NrOfActiveSyscores*NrOfSpadics]={};
+  Int_t nSpadicMessagesEpoch[NrOfActiveSyscores*NrOfSpadics]={};
+  Int_t nSpadicMessagesLost[NrOfActiveSyscores*NrOfSpadics]={};
+  Int_t nSpadicMessagesStrange[NrOfActiveSyscores*NrOfSpadics]={};
   Int_t lostMessages(0);// this variable should be reset to 0 for every SPADIC message
   // Getting message type bools from Spadic raw message
   Bool_t isHit = false;
@@ -202,71 +202,19 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   ULong_t time = 0;
   // Time stamp and epoch are counted in the Spadic
   Int_t timeStamp(0), epoch(0), superEpoch(0);
-  LOG(INFO) << "nSpadicMessages: " << nSpadicMessages << FairLogger::endl;
+  LOG(INFO) << "nSpadicMessages: " << nSpadicMessagesFull << FairLogger::endl;
 
-  Int_t hitCounter[3][6]={{0}};
+  Int_t hitCounter[NrOfActiveSyscores*NrOfSpadics]={};
   CbmSpadicRawMessage* raw = NULL;
-  //Clear Offset Map
-  LOG(DEBUG)<< "Size of timestampOffsets: "<<timestampOffsets.size() << FairLogger::endl;
-  timestampOffsets.clear();
-
-  //Calculate Timestamp Offsets
-  if (fActivateOffsetAnalysis) {//Context to limit epochBuffers scope
-    LOG(INFO) <<"Begin Buffering Epoch Messages" << FairLogger::endl;
-    EpochMap epochBuffer;
-    //Loop over all epoch messages to build Fulltime offsets.
-    for (Int_t iSpadicMessage=0; iSpadicMessage < nSpadicMessages; ++iSpadicMessage){
-      raw = static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(iSpadicMessage));
-      lostMessages = 0; // reset lost-counter for a new message
-      isEpoch = raw->GetEpoch();
-      isEpochOutOfSynch = raw->GetEpochOutOfSynch();
-      if(isEpoch||isEpochOutOfSynch){
-	sourceA = raw->GetSourceAddress();
-	spaID = GetSpadicID(sourceA);
-	time = raw->GetFullTime();
-	//buffer all Epoch Messages
-	epochBuffer[spaID][time] = raw;
-	Int_t tempSize= fHM->G1(("Timestamps_Spadic"+std::to_string(spaID)))->GetN();
-	if (fGraph) fHM->G1(("Timestamps_Spadic"+std::to_string(spaID)))->SetPoint(tempSize,fNrTimeSlices,time);
-      }
-    }
-    if(fNrTimeSlices!=0) timestampOffsets = CalculateTimestampOffsets(epochBuffer);
-    LOG(INFO) <<"Finish Buffering Epoch Messages" << FairLogger::endl;
-  }
-
-  //Fill Histograms with the Offsets
-#ifndef __CINT__
-  try{
-    if(fNrTimeSlices!=0)
-      if(timestampOffsets.size()!=0) //If there are no Epoch Messages, skip loop
-	for (auto baseSpaIt = timestampOffsets.begin() ; baseSpaIt!= timestampOffsets.end() ; ++baseSpaIt) //Loop over all Base Spadics
-	  if(baseSpaIt->second.size()!=0) //If this Base Spadic is missing, skip to next Base Spadic
-	    for (auto compSpaIt = baseSpaIt->second.begin(); compSpaIt != baseSpaIt->second.end(); ++compSpaIt) //For every Base Spadic, loop over all Spadics
-	      {
-		int baseSpaID = baseSpaIt->first;
-		int compSpaID = compSpaIt->first;
-		const Int_t SysID =0;
-		auto FullTimeIt = timestampOffsets.at(baseSpaID).at(compSpaID).begin();
-		for (; FullTimeIt != timestampOffsets.at(baseSpaID).at(compSpaID).end(); ++FullTimeIt) //Loop over all timestamps and Fill Fulltime Offsets for Epoch Messages into Histograms
-		  {
-		    Int_t tGraphSize = fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->GetN();
-		    	if (fGraph) fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->SetPoint(tGraphSize,fNrTimeSlices,FullTimeIt->second);
-		  }
-	      }
-  }
-  catch(std::out_of_range)
-    {
-      LOG(ERROR)<< "map::at() has thrown an exception " << FairLogger::endl;
-    }
-#endif //__CINT__
 
   // Do the message type counting per timeslice here to make the full numbers available early in the following analysis loop
-  for (Int_t iSpadicMessage=0; iSpadicMessage < nSpadicMessages; ++iSpadicMessage){
+  for (Int_t iSpadicMessage=0; iSpadicMessage < nSpadicMessagesFull; ++iSpadicMessage){
     raw = static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(iSpadicMessage));
     lostMessages = 0; // reset lost-counter for a new message
     sourceA = raw->GetSourceAddress();
     spaID = GetSpadicID(sourceA);
     eqID = raw->GetEquipmentID();
+    sysID = GetSyscoreID(eqID);
     spadicName = GetSpadicName(eqID,sourceA);
     chID = raw->GetChannelID();
     if(chID > -1 && chID < 16 && spaID%2==1) chID+=16; // eqID ?
@@ -283,35 +231,20 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     if(isHit && chID >= 0 && chID <= 15) fHM->H2("SourceAvsEquipIDhit")->Fill(eqID,(sourceA + GetChannelOnPadPlane(chID)*0.0625 + 0.03125)); // For hit messages, the originating padID is displayed within the sourceA axis
     
     // Count total messages per ASIC and message-types per ASIC.
-    if(spadicName == RewriteSpadicName("SysCore0_Spadic0")) {
-      nSpadicMessages0++;
-      if(isHit) nSpadicMessagesHit0++;
-      else if(isHitAborted) nSpadicMessagesHitAborted0++;
+    {
+      nSpadicMessages[NrOfSpadics*sysID+spaID]++;
+      if(isHit) nSpadicMessagesHit[NrOfSpadics*sysID+spaID]++;
+      else if(isHitAborted) nSpadicMessagesHitAborted[NrOfSpadics*sysID+spaID]++;
       else if(isOverflow) {
-	nSpadicMessagesOverflow0++;
-	if (lostMessages > 0) nSpadicMessagesLost0 += lostMessages; //lostMessages might be -1 for hits or epochs, therefore one has to ensure that it is > 0
+	nSpadicMessagesOverflow[NrOfSpadics*sysID+spaID]++;
+	if (lostMessages > 0) nSpadicMessagesLost[NrOfSpadics*sysID+spaID] += lostMessages; //lostMessages might be -1 for hits or epochs, therefore one has to ensure that it is > 0
       }
-      else if(isInfo) nSpadicMessagesInfo0++;
-      else if(isEpoch) nSpadicMessagesEpoch0++;
-      else if(isStrange) nSpadicMessagesStrange0++;
+      else if(isInfo) nSpadicMessagesInfo[NrOfSpadics*sysID+spaID]++;
+      else if(isEpoch) nSpadicMessagesEpoch[NrOfSpadics*sysID+spaID]++;
+      else if(isStrange) nSpadicMessagesStrange[NrOfSpadics*sysID+spaID]++;
     }
     
-    else if(spadicName == RewriteSpadicName("SysCore0_Spadic1")) {
-      nSpadicMessages1++;
-      if(isHit) nSpadicMessagesHit1++;
-      else if(isHitAborted) nSpadicMessagesHitAborted1++;
-      else if(isOverflow) {
-	nSpadicMessagesOverflow1++;
-	if (lostMessages > 0) nSpadicMessagesLost1 += lostMessages; //lostMessages might be -1 for hits or epochs, therefore one has to ensure that it is > 0
-      }
-      else if(isInfo) nSpadicMessagesInfo1++;
-      else if(isEpoch) nSpadicMessagesEpoch1++;
-      else if(isStrange) nSpadicMessagesStrange1++;
-    }
     // Currently only expecting Spadic0 and Spadic1. Logging others, if appearing.
-    else {
-      LOG(INFO) << "SpadicMessage " << iSpadicMessage << " claims to be from " << spadicName << " with spadicID " << spaID << FairLogger::endl;
-    }
   }
   {
 	  TString path = FairRootManager::Instance()->GetOutFile()->GetName();
@@ -325,14 +258,15 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	  }
 
   }
-  static Long64_t lastHitTimestamp[64];
+  static Long64_t lastHitTimestamp[NrOfActiveSyscores*NrOfSpadics*32];
   if (fNrTimeSlices==0){
-	for(Int_t i=0;i<64;i++){
+	for(size_t i=0;i<NrOfActiveSyscores*NrOfSpadics*32;i++){
 		lastHitTimestamp[i]=0;
 	}
   }
+
   // Starting to loop over all Spadic messages in unpacked TimeSlice, Analysis loop
-  for (Int_t iSpadicMessage=0; iSpadicMessage < nSpadicMessages; ++iSpadicMessage) {
+  for (Int_t iSpadicMessage=0; iSpadicMessage < nSpadicMessagesFull; ++iSpadicMessage) {
     //std::cout << "  " << iSpadicMessage << std::endl;
     raw = static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(iSpadicMessage));
     lostMessages = 0; // reset lost-counter for a new message
@@ -354,6 +288,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 
     groupId=raw->GetGroupId();
     chID = raw->GetChannelID();
+    sysID = GetSyscoreID(eqID);
     spaID = GetSpadicID(sourceA);
     if(chID > -1 && chID < 16 && spaID%2==1) chID+=16; // eqID ?
     padID = GetChannelOnPadPlane(chID);// Remapping from ASIC to pad-plane channel numbers.
@@ -380,12 +315,13 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     infoType=raw->GetInfoType();
     triggerType = raw->GetTriggerType();
 
-    if(isHit) hitCounter[sysID][spaID]++;
+    if(isHit) hitCounter[sysID*NrOfHalfSpadics+spaID]++;
     if(isHit||isHitAborted){
-    	string HistName = "Hitfrequency_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID);
+    	TString TempName = "Hitfrequency_for_"+GetSpadicName(sysID, spaID, kProcessedData,kFullSpadic);
+    	string HistName=TempName.Data();
     	if(fNrTimeSlices>0)fHM->G1(HistName)->SetPoint(fHM->G1(HistName)->GetN(),static_cast<Double_t>(time)/17500000.0,17500000/std::fabs((static_cast<Double_t>(lastHitTimestamp[spaID*16+raw->GetChannelID()])-static_cast<Double_t>(time))));
 //    	fHM->H2(HistName+"_linear")->Fill(fNrTimeSlices,17600000/std::fabs((static_cast<Double_t>(lastHitTimestamp[spaID*16+raw->GetChannelID()])-static_cast<Double_t>(time))));
-    	lastHitTimestamp[spaID*16+raw->GetChannelID()]=time;
+    	lastHitTimestamp[sysID*NrOfHalfSpadics*16+spaID*16+raw->GetChannelID()]=time;
     }
 
     if (raw->GetChannelID()>100) LOG(ERROR) << "SpadicMessage with strange chID: " << iSpadicMessage << " sourceA: " << sourceA << " chID: " << raw->GetChannelID() << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " isInfo: " << isInfo << " isEpoch: " << isEpoch << " Lost Messages: " << lostMessages << FairLogger::endl;
@@ -397,7 +333,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       infoType = 7;
     }
     
-    spadicName = GetSpadicName(eqID,sourceA);
+    spadicName = GetSpadicName(eqID,sourceA,kRawData,kFullSpadic);
     //printf("spadicName:%s:\n",spadicName.Data());
     if ( isOverflow )
       if (spadicName != "")
@@ -412,7 +348,6 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   
       if (!isStrange && !isEpoch && !isEpochOutOfSynch){
 
-	timeBuffer[TString(spadicName)][time].push_back(raw);
 	if (!isInfo) {
 	  std::map<Int_t, CbmSpadicRawMessage*>::iterator MessageBufferIt = fMessageBuffer[TString(spadicName)][time].find(combiID);
 	  if (MessageBufferIt == fMessageBuffer[TString(spadicName)][time].end()){ 
@@ -449,8 +384,8 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 		raw->GetHit(), raw->GetInfo(), raw->GetEpoch(), raw->GetEpochOutOfSynch(), raw->GetHitAborted(), raw->GetOverFlow(), raw->GetStrange());
 	      */
 	    fiRawMessage++;
-	    if (isHit&&(triggerType==1||triggerType==3))fHM->H2("Map_of_Hits_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(static_cast<Int_t>(spaID/2)))->Fill(padID%16,static_cast<Int_t>(padID/16));
-	    if (isHit&&(triggerType==1||triggerType==3))fHM->H2("Map_of_Charge_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(static_cast<Int_t>(spaID/2)))->Fill(padID%16,static_cast<Int_t>(padID/16),GetMaxADC(*raw,false));
+	    if (isHit&&(triggerType==1||triggerType==3))fHM->H2(TString("Map_of_Hits_for_"+GetSpadicName(eqID,sourceA,kRawData,kFullSpadic)).Data())->Fill(padID%16,static_cast<Int_t>(padID/16));
+	    if (isHit&&(triggerType==1||triggerType==3))fHM->H2(TString("Map_of_Charge_for_"+GetSpadicName(eqID,sourceA,kRawData,kFullSpadic)).Data())->Fill(padID%16,static_cast<Int_t>(padID/16),GetMaxADC(*raw,false));
 	    if (isHit) FillBaselineHistogram(raw);
 	    if(fActivateClusterizer)
 	      if (isHit || isHitAborted || isOverflow)
@@ -460,12 +395,11 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	          *tempPtr = *raw;
 	          */
 	          fLinearHitBuffer.push_back(raw);
-	          string Histname = "Signalshape_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID)+"_Trigger_"+std::to_string(triggerType)+"_StopType_"+std::to_string(stopType);
+	          string Histname = "Signalshape_for_"+string(spadicName.Data())+"_Trigger_"+std::to_string(triggerType)+"_StopType_"+std::to_string(stopType);
 	          if(triggerType>0&&(stopType==0||stopType==3)) FillSignalShape(*raw,Histname,false);
 	        }
 	    if(fDrawSignalDebugHistograms){
 	    	if (isHit||isHitAborted){
-	    		string detectorName = (GetSpadicID(raw->GetSourceAddress())/2 == 0 ? "Frankfurt" : "Muenster");
 	    		Int_t maxADC= GetMaxADC(*raw,false);
 	    		Int_t TriggerType = raw->GetTriggerType();
 	    		if(!(TriggerType<0 ||TriggerType>3)){
@@ -479,8 +413,8 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	    			}
 	    			Int_t StopType = raw->GetStopType();
 	    			Int_t AvgBaseline=GetAvgBaseline(*raw);
-	    			string Histname = "MaxADC_vs_NrSamples_for_Syscore_"
-	    					+std::to_string(0)+"_Prototype_from_"+detectorName+TriggerName;
+	    			string Histname = "MaxADC_vs_NrSamples_for_"
+	    					+string(GetSpadicName(sysID, spaID, kProcessedData,kFullSpadic).Data())+"_"+TriggerName;
 	    			string Hittype;
 	    			fHM->H2(Histname)->Fill(raw->GetNrSamples(),maxADC);
 	    			if (StopType==0) {
@@ -488,22 +422,22 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	    			}else {
 	    				Hittype = "_MultiHits";
 	    			}
-	    			Histname = "MaxADC_vs_avgBaseline_for_Syscore_"
-	    					+std::to_string(0)+"_Prototype_from_"+detectorName+Hittype+TriggerName;
+	    			Histname = "MaxADC_vs_avgBaseline_for_"
+	    					+string(GetSpadicName(sysID, spaID, kProcessedData,kFullSpadic).Data())+Hittype+"_"+TriggerName;
 	    			if(raw->GetSamples()[0] < maxADC) {
 		    			fHM->H2(Histname)->Fill(AvgBaseline,maxADC);
 	    			}else{
 	    				Histname = "Exp_Decay" +Histname;
 	    				fHM->H2(Histname)->Fill(raw->GetSamples()[raw->GetNrSamples()-1]/*AvgBaseline*/,maxADC);
 	    			}
-	    			Histname = "avgBaseline_for_Syscore_"+std::to_string(0)
-	    			+"_Prototype_from_"+detectorName+TriggerName;
+	    			Histname = "avgBaseline_for_"
+	    			+string(GetSpadicName(sysID, spaID, kProcessedData,kFullSpadic).Data())+"_"+TriggerName;
 	    			if(raw->GetStopType()==0)fHM->H1(Histname)->Fill(AvgBaseline);
-	    			Histname = "avgBaseline_vs_NrSamples_for_Syscore_"
-	    					+std::to_string(0)+"_Prototype_from_"+detectorName+TriggerName;
+	    			Histname = "avgBaseline_vs_NrSamples_for_"
+	    					+string(GetSpadicName(sysID, spaID, kProcessedData,kFullSpadic).Data())+"_"+TriggerName;
 	    			fHM->H2(Histname)->Fill(raw->GetNrSamples(),raw->GetSamples()[raw->GetNrSamples()-1]/*AvgBaseline*/);
-	    			Histname = "First_Sample_vs_last_Sample_for_Syscore_"
-	    					+std::to_string(0)+"_Prototype_from_"+detectorName+Hittype+TriggerName;
+	    			Histname = "First_Sample_vs_last_Sample_for_"
+	    					+string(GetSpadicName(sysID, spaID, kProcessedData,kFullSpadic).Data())+Hittype+"_"+TriggerName;
 	    			if(raw->GetSamples()[0] < maxADC) {
 		    			fHM->H2(Histname)->SetBinContent(fHM->H2(Histname)->FindBin(0),0);
 		    			fHM->H2(Histname)->Fill(raw->GetSamples()[raw->GetNrSamples()-1],raw->GetSamples()[0]);
@@ -511,23 +445,6 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	    				Histname = "Exp_Decay" +Histname;
 		    			fHM->H2(Histname)->SetBinContent(fHM->H2(Histname)->FindBin(0),0);
 		    			fHM->H2(Histname)->Fill(raw->GetSamples()[raw->GetNrSamples()-1],raw->GetSamples()[0]);
-	    			}
-	    			static Int_t DetectorBeaselinesIndex[2]={0,0};
-	    			if (raw->GetStopType() == 0&&false) {
-	    				if (maxADC + AvgBaseline > 50){
-	    					DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2]++;
-	    					if(DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2]%13==0 && DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2]<1300){
-	    						histName = "High_Baseline_SignalShape_for_Syscore_"+std::to_string(0)
-	    						+"_Prototype_from_"+detectorName+"_Nr_"
-								+std::to_string(DetectorBeaselinesIndex[GetSpadicID(raw->GetSourceAddress())/2])
-	    						+"_Trigger_"+std::to_string(raw->GetTriggerType());
-	    						TString title2 = histName + " ";
-	    						fBaselineHM->Create2<TH2I>(histName.Data(), title2.Data(),33,-0.5,32.5,512,-256.5,255.5);
-	    						fBaselineHM->H2(histName.Data())->GetXaxis()->SetNameTitle("Sample","Sample");
-	    						fBaselineHM->H2(histName.Data())->GetYaxis()->SetNameTitle("ADC Value","ADC Value");
-	    						FillSignalShape(*raw,histName.Data(),true);
-	    					}
-	    				}
 	    			}
 	    		}
 	    	}
@@ -565,46 +482,30 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	else fHM->H2("InfoType_vs_Channel")->Fill(33,10);
       }
       if (isEpoch) {
-	// sysID is hardcoded here to 0. To be changed as soon as sysID is set correctly.
-	if (!fFirstEpochMarker[0][spaID]) {
-	  fHM->H1("Delta_Epoch_hist_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2)+"_Half_"+std::to_string((Int_t)(chID/16)))->Fill(epoch - fEpochMarkerArray[0][spaID]);
-	  fHM->H2("Hitrate_vs_DeltaEpoch_hist_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2)+"_Half_"+std::to_string((Int_t)(chID/16)))->Fill(epoch - fEpochMarkerArray[0][spaID], nSpadicMessagesHit0+nSpadicMessagesHit1);
+	if (!fFirstEpochMarker[sysID*NrOfHalfSpadics+spaID]) {
+	  fHM->H1(TString("Delta_Epoch_hist_for_"+GetSpadicName(eqID, sourceA, kRawData,kHalfSpadic)).Data())->Fill(epoch - fEpochMarkerArray[sysID*NrOfHalfSpadics+spaID]);
+	  fHM->H2(TString("Hitrate_vs_Delta_Epoch_hist_for_"+GetSpadicName(eqID, sourceA, kRawData,kHalfSpadic)).Data())->Fill(epoch - fEpochMarkerArray[sysID*NrOfHalfSpadics+spaID], nSpadicMessagesHit[sysID*NrOfHalfSpadics+spaID]);
 	  // Book keep here the trending of Epoch Counters after a regress has been detected
-	  if ( EpochRegressTriggered[0][spaID] ) { // Fill subsequent epoch messages in the histo, if the mechanism is triggered
-	    EpochRegressCounter[0][spaID]++; // Count how many epochs are put in the trending histo already
-	    LOG(INFO) << "EPOCH REGRESS ongoing (step " << EpochRegressCounter[0][spaID] << ") for spaID " << spaID << " from " << fEpochMarkerArray[0][spaID] << " to " << epoch << " (timeslice " << fNrTimeSlices << ", spadicmessage " << iSpadicMessage << ")" << FairLogger::endl;
-	    fHM->H2("EpochTrend_postregress_hist_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2)+"_Half_"+std::to_string((Int_t)(chID/16)))->Fill(EpochRegressCounter[0][spaID],epoch - EpochRegressOffset[0][spaID]);
-	    if ( EpochRegressCounter[0][spaID] >= 150 ) { // After this condition is fulfilled, enough epochs have been recorded -- reset trigger and counter
-	      EpochRegressTriggered[0][spaID] = false;
-	      EpochRegressCounter[0][spaID] = 0;
+	  if ( EpochRegressTriggered[sysID*NrOfHalfSpadics+spaID] ) { // Fill subsequent epoch messages in the histo, if the mechanism is triggered
+	    EpochRegressCounter[sysID*NrOfHalfSpadics+spaID]++; // Count how many epochs are put in the trending histo already
+	    LOG(INFO) << "EPOCH REGRESS ongoing (step " << EpochRegressCounter[sysID*NrOfHalfSpadics+spaID] << ") for spaID " << spaID << " from " << fEpochMarkerArray[sysID*NrOfHalfSpadics+spaID] << " to " << epoch << " (timeslice " << fNrTimeSlices << ", spadicmessage " << iSpadicMessage << ")" << FairLogger::endl;
+	    fHM->H2(TString("EpochTrend_postregress_hist_for_"+GetSpadicName(sysID, spaID, kProcessedData,kHalfSpadic)).Data())->Fill(EpochRegressCounter[sysID*NrOfHalfSpadics+spaID],epoch - EpochRegressOffset[sysID*NrOfHalfSpadics+spaID]);
+	    if ( EpochRegressCounter[sysID*NrOfHalfSpadics+spaID] >= 150 ) { // After this condition is fulfilled, enough epochs have been recorded -- reset trigger and counter
+	      EpochRegressTriggered[sysID*NrOfHalfSpadics+spaID] = false;
+	      EpochRegressCounter[sysID*NrOfHalfSpadics+spaID] = 0;
 	    }
 	  }
-	  if (epoch - fEpochMarkerArray[0][spaID] <= 0  && !EpochRegressTriggered[0][spaID]) { // Trigger the recording if a regress is detected and the recording is not running up to now. The natural overflow of epoch (regress of 4095) is excluded
-	    fHM->G1("DeltaEpoch_vs_timeslice_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2)+"_Half_"+std::to_string(chID/16))->SetPoint(fHM->G1("DeltaEpoch_vs_timeslice_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2)+"_Half_"+std::to_string(chID/16))->GetN(),fNrTimeSlices,epoch - fEpochMarkerArray[0][spaID]); // Fill TGraph with every regress of Epoch, also the normal overflows by 4095
-	    if (epoch - fEpochMarkerArray[0][spaID] > -4000) { // but trigger the recording only for irregular regress
-	      LOG(INFO) << "EPOCH REGRESS triggered for spaID " << spaID << " from " << fEpochMarkerArray[0][spaID] << " to " << epoch << " (timeslice " << fNrTimeSlices << ", spadicmessage " << iSpadicMessage << ")" << FairLogger::endl;
-	      EpochRegressTriggered[0][spaID] = true;
-	      EpochRegressOffset[0][spaID] = epoch;
+	  if (epoch - fEpochMarkerArray[sysID*NrOfHalfSpadics+spaID] <= 0  && !EpochRegressTriggered[sysID*NrOfHalfSpadics+spaID]) { // Trigger the recording if a regress is detected and the recording is not running up to now. The natural overflow of epoch (regress of 4095) is excluded
+	    fHM->G1(TString("DeltaEpoch_vs_timeslice_for_"+GetSpadicName(eqID, sourceA, kRawData,kHalfSpadic)).Data())->SetPoint(fHM->G1(TString("DeltaEpoch_vs_timeslice_for_"+GetSpadicName(eqID, sourceA, kRawData,kHalfSpadic)).Data())->GetN(),fNrTimeSlices,epoch - fEpochMarkerArray[sysID*NrOfHalfSpadics+spaID]); // Fill TGraph with every regress of Epoch, also the normal overflows by 4095
+	    if (epoch - fEpochMarkerArray[sysID*NrOfHalfSpadics+spaID] > -4000) { // but trigger the recording only for irregular regress
+	      LOG(INFO) << "EPOCH REGRESS triggered for sysId "<< sysID <<" spaID " << spaID << " from " << fEpochMarkerArray[sysID*NrOfHalfSpadics+spaID] << " to " << epoch << " (timeslice " << fNrTimeSlices << ", spadicmessage " << iSpadicMessage << ")" << FairLogger::endl;
+	      EpochRegressTriggered[sysID*NrOfHalfSpadics+spaID] = true;
+	      EpochRegressOffset[sysID*NrOfHalfSpadics+spaID] = epoch;
 	    }
 	  }
 	}
-     	fEpochMarkerArray[0][spaID] = epoch;
-	fFirstEpochMarker[0][spaID] = false;
-      }
-      if (0 <= chID && chID < 32 && isEpoch){
-	if(static_cast<Long_t>(time)-static_cast<Long_t>(fLastMessageTime[0][spaID][chID])<-1000)  LOG(INFO) << "SpadicMessage (isEpoch): " << iSpadicMessage << " has negative Delta Fulltime. sourceA: " << sourceA << " chID: " << raw->GetChannelID() << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " isInfo: " << isInfo << " isEpoch: " << isEpoch << " Lost Messages: " << lostMessages << FairLogger::endl;
-	//Compute Time Deltas, write them into a histogram and store timestamps in fLastMessageTime.
-	// WORKAROUND: at Present SyscoreID is not extracted, therefore all Messages are stored as if coming from SysCore 0.
-	// Epoch messages are sent with chID 0 or 16, i.e. rawChID 0 from the first or the second half-Spadic. Thus, the half-chip results as 0 or 1 by dividing the chID/16 and casting this to Int_t. Bit bloody but fast.
-	if(fActivateDeltaTAnalysis)
-	if(spaID != -1)fHM->H1("Delta_t_hist_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID/2)+"_Half_"+std::to_string((Int_t)(chID/16)))->Fill(static_cast<Long_t>(epoch)-static_cast<Long_t>(fLastMessageTime[0][spaID][chID]));
-	//Write delta_t into a TGraph
-	if(fActivateDeltaTAnalysis)
-	if(spaID!=-1){
-	  Int_t tGraphSize = fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID/2)+"_Channel_"+std::to_string((Int_t)(chID+(15*spaID%2))))->GetN();
-	  	if (fGraph) fHM->G1("Delta_t_for_Syscore_"+ std::to_string(0) +"_Spadic_"+std::to_string(spaID/2)+"_Channel_"+std::to_string((Int_t)(chID/16+(15*spaID%2))))->SetPoint(tGraphSize,time,(static_cast<Long_t>(epoch)-static_cast<Long_t>(fLastMessageTime[0][spaID][chID])));
-	}
-	fLastMessageTime[0][spaID][chID] = epoch;
+     	fEpochMarkerArray[sysID*NrOfHalfSpadics+spaID] = epoch;
+	fFirstEpochMarker[sysID*NrOfHalfSpadics+spaID] = false;
       }
       //if(spadicName!="") {
 
@@ -613,13 +514,13 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       //
       
       if(isHit && chID >= 0 && chID < 32) {
-        histName = spadicName + "_Half_" + std::to_string((Int_t)(chID/16)) + "_Time_vs_TimeSlice";
-        fHM->H2(histName.Data())->Fill(fNrTimeSlices,time); //timeStamp(0), epoch(0), superEpoch(0);
+    	  histName = GetSpadicName(eqID,sourceA,kRawData,kHalfSpadic) + "_Time_vs_TimeSlice";
+    	  fHM->H2(histName.Data())->Fill(fNrTimeSlices,time); //timeStamp(0), epoch(0), superEpoch(0);
       }
 
       if(isEpoch && chID >= 0 && chID < 32) {
-        histName = spadicName + "_Half_" + std::to_string((Int_t)(chID/16)) + "_Epoch_vs_TimeSlice";
-        fHM->H2(histName.Data())->Fill(fNrTimeSlices,epoch); //timeStamp(0), epoch(0), superEpoch(0);
+    	  histName = GetSpadicName(eqID,sourceA,kRawData,kHalfSpadic) + "_Epoch_vs_TimeSlice";
+    	  fHM->H2(histName.Data())->Fill(fNrTimeSlices,epoch); //timeStamp(0), epoch(0), superEpoch(0);
       }
       
       // These are pure debuging histos to ensure that the unpacker is running without errors (C.B)
@@ -638,8 +539,8 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       */
       if(false){
 	if(stopType == 0 && (chID <-1 || chID >32)) LOG(FATAL) << "SpadicMessage: " << iSpadicMessage << " sourceA: " << sourceA << " chID: " << chID << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " is Info: " << isInfo << FairLogger::endl;
-	if(stopType == 0 && raw->GetNrSamples()==0 && iSpadicMessage < nSpadicMessages){
-	  for ( Int_t i=iSpadicMessage;i<nSpadicMessages;i++){
+	if(stopType == 0 && raw->GetNrSamples()==0 && iSpadicMessage < nSpadicMessagesFull){
+	  for ( Int_t i=iSpadicMessage;i<nSpadicMessagesFull;i++){
 	    if ((static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(i)))->GetOverFlow()==true && GetSpadicID((static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(i)))->GetSourceAddress())==spaID)
 	      {
 		lostMessages = (static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(i)))->GetBufferOverflowCount();
@@ -647,7 +548,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	      }
 	    //LOG(INFO) << i << "Info not found " << FairLogger::endl;
 	  }
-	  LOG(INFO) << "SpadicMessages: " << nSpadicMessages << " Lost Messages " <<FairLogger::endl;
+	  LOG(INFO) << "SpadicMessages: " << nSpadicMessagesFull << " Lost Messages " <<FairLogger::endl;
 	  LOG(ERROR) << "SpadicMessage: " << iSpadicMessage << " sourceA: " << sourceA << " chID: " << raw->GetChannelID() << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << " isHit: " << isHit << " is Info: " << isInfo << " Lost Messages: " << lostMessages <<FairLogger::endl;
 	}
       }
@@ -678,32 +579,35 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     //    it->second.clear();
     }
   */
-  timeBuffer.clear();
 
   // Fill number of spadic-messages in tscounter-graph. Use TimeSlices (slices in processing time) here instead of physical full-time on the x-axis.
   // Length of one timeslice: m * n * 8 ns, with e.g. n=1250 length of microslice and m=100 microslices in one timeslice at SPS2015
   if (fGraph) {
-  fHM->G1("TsCounter")->SetPoint(fHM->G1("TsCounter")->GetN(),fNrTimeSlices+1,nSpadicMessages);
-  fHM->G1("TsCounterHit0")->SetPoint(fHM->G1("TsCounterHit0")->GetN(),fNrTimeSlices+1,nSpadicMessagesHit0);
-  fHM->G1("TsCounterHit1")->SetPoint(fHM->G1("TsCounterHit1")->GetN(),fNrTimeSlices+1,nSpadicMessagesHit1);
-  fHM->G1("TsCounterHitAborted0")->SetPoint(fHM->G1("TsCounterHitAborted0")->GetN(),fNrTimeSlices+1,nSpadicMessagesHitAborted0);
-  fHM->G1("TsCounterHitAborted1")->SetPoint(fHM->G1("TsCounterHitAborted1")->GetN(),fNrTimeSlices+1,nSpadicMessagesHitAborted1);
-  fHM->G1("TsCounterOverflow0")->SetPoint(fHM->G1("TsCounterOverflow0")->GetN(),fNrTimeSlices+1,nSpadicMessagesOverflow0);
-  fHM->G1("TsCounterOverflow1")->SetPoint(fHM->G1("TsCounterOverflow1")->GetN(),fNrTimeSlices+1,nSpadicMessagesOverflow1);
-  if(nSpadicMessagesOverflow0 > 0) fHM->G1("TsLost0")->SetPoint(fHM->G1("TsLost0")->GetN(),fNrTimeSlices+1,(Double_t(nSpadicMessagesLost0)/Double_t(nSpadicMessagesOverflow0)));
-  else fHM->G1("TsLost0")->SetPoint(fHM->G1("TsLost0")->GetN(),fNrTimeSlices+1,0);
-  if(nSpadicMessagesOverflow1 > 0) fHM->G1("TsLost1")->SetPoint(fHM->G1("TsLost1")->GetN(),fNrTimeSlices+1,(Double_t(nSpadicMessagesLost1)/Double_t(nSpadicMessagesOverflow1)));
-  else fHM->G1("TsLost1")->SetPoint(fHM->G1("TsLost1")->GetN(),fNrTimeSlices+1,0);
-  fHM->G1("TsCounterInfo0")->SetPoint(fHM->G1("TsCounterInfo0")->GetN(),fNrTimeSlices+1,nSpadicMessagesInfo0);
-  fHM->G1("TsCounterInfo1")->SetPoint(fHM->G1("TsCounterInfo1")->GetN(),fNrTimeSlices+1,nSpadicMessagesInfo1);
-  fHM->G1("TsCounterEpoch0")->SetPoint(fHM->G1("TsCounterEpoch0")->GetN(),fNrTimeSlices+1,nSpadicMessagesEpoch0);
-  fHM->G1("TsCounterEpoch1")->SetPoint(fHM->G1("TsCounterEpoch1")->GetN(),fNrTimeSlices+1,nSpadicMessagesEpoch1);
-  fHM->G1("TsCounterStrange0")->SetPoint(fHM->G1("TsCounterStrange0")->GetN(),fNrTimeSlices+1,nSpadicMessagesStrange0);
-  fHM->G1("TsCounterStrange1")->SetPoint(fHM->G1("TsCounterStrange1")->GetN(),fNrTimeSlices+1,nSpadicMessagesStrange1);
-  if(nSpadicMessages0 > 0) fHM->G1("TsStrangeness0")->SetPoint(fHM->G1("TsStrangeness0")->GetN(),fNrTimeSlices+1,(Double_t(nSpadicMessagesStrange0)/Double_t(nSpadicMessages0)));
-  else fHM->G1("TsStrangeness0")->SetPoint(fHM->G1("TsStrangeness0")->GetN(),fNrTimeSlices+1,0);
-  if(nSpadicMessages1 > 0) fHM->G1("TsStrangeness1")->SetPoint(fHM->G1("TsStrangeness1")->GetN(),fNrTimeSlices+1,(Double_t(nSpadicMessagesStrange1)/Double_t(nSpadicMessages1)));
-  else fHM->G1("TsStrangeness1")->SetPoint(fHM->G1("TsStrangeness1")->GetN(),fNrTimeSlices+1,0);
+	  std::vector<Int_t> spadicList(NrOfActiveHalfSpadics);
+	  std::iota(spadicList.begin(),spadicList.end(),0);
+	  fHM->G1("TsCounter")->SetPoint(fHM->G1("TsCounter")->GetN(),fNrTimeSlices+1,nSpadicMessagesFull);
+	  for(Int_t syscore = 0; syscore < NrOfActiveSyscores; ++syscore) {
+		  for(auto spadic : spadicList) {
+			  string SpadicName = GetSpadicName(syscore, spadic, kDirectOutput,kHalfSpadic).Data();
+			  string graphName = "TsCounterHit_"+SpadicName;
+			  fHM->G1(graphName)->SetPoint(fHM->G1(graphName)->GetN(),fNrTimeSlices+1,nSpadicMessagesHit[NrOfSpadics*syscore+spadic]);
+ 			  graphName = "TsCounterHitAborted_"+SpadicName;
+			  fHM->G1(graphName)->SetPoint(fHM->G1(graphName)->GetN(),fNrTimeSlices+1,nSpadicMessagesHitAborted[NrOfSpadics*syscore+spadic]);
+			  graphName = "TsCounterOverflow_"+SpadicName;
+			  fHM->G1(graphName)->SetPoint(fHM->G1(graphName)->GetN(),fNrTimeSlices+1,nSpadicMessagesOverflow[NrOfSpadics*syscore+spadic]);
+			  graphName = "TsLost_"+SpadicName;
+			  if(nSpadicMessagesOverflow[NrOfSpadics*syscore+spadic] > 0) fHM->G1(graphName)->SetPoint(fHM->G1(graphName)->GetN(),fNrTimeSlices+1,(Double_t(nSpadicMessagesLost[NrOfSpadics*syscore+spadic])/Double_t(nSpadicMessagesOverflow[NrOfSpadics*syscore+spadic])));
+			  else fHM->G1(graphName)->SetPoint(fHM->G1(graphName)->GetN(),fNrTimeSlices+1,0);
+			  graphName = "TsCounterInfo_"+SpadicName;
+			  fHM->G1(graphName)->SetPoint(fHM->G1(graphName)->GetN(),fNrTimeSlices+1,nSpadicMessagesInfo[NrOfSpadics*syscore+spadic]);
+			  graphName = "TsCounterEpoch_"+SpadicName;
+			  fHM->G1(graphName)->SetPoint(fHM->G1(graphName)->GetN(),fNrTimeSlices+1,nSpadicMessagesEpoch[NrOfSpadics*syscore+spadic]);
+			  graphName = "TsCounterStrange_"+SpadicName;
+			  fHM->G1(graphName)->SetPoint(fHM->G1(graphName)->GetN(),fNrTimeSlices+1,nSpadicMessagesStrange[NrOfSpadics*syscore+spadic]);
+			  if(nSpadicMessages[NrOfSpadics*syscore+spadic] > 0) fHM->G1("TsStrangeness_"+SpadicName)->SetPoint(fHM->G1("TsStrangeness_"+SpadicName)->GetN(),fNrTimeSlices+1,(Double_t(nSpadicMessagesStrange[NrOfSpadics*syscore+spadic])/Double_t(nSpadicMessages[NrOfSpadics*syscore+spadic])));
+			  else fHM->G1("TsStrangeness_"+SpadicName)->SetPoint(fHM->G1("TsStrangeness_"+SpadicName)->GetN(),fNrTimeSlices+1,0);
+		  }
+	  }
   }
   // Catch empty TimeSlices.
   if(fNrTimeSlices==0){
@@ -721,14 +625,13 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       }
       CleanUpBuffers();
     }
-  for (Int_t syscore=0; syscore<1;++syscore) {
-      for(Int_t Detector =0;Detector<=1;Detector++){
-		  TString Detectorname = (Detector == 0 ? "Frankfurt" : "Muenster");
-		  histName = "Baseline_for_Syscore_"+std::to_string(syscore)+"_Prototype_from_"+Detectorname;
+  for(Int_t syscore = 0; syscore < NrOfActiveSyscores; ++syscore) {
+	  for(Int_t spadic = 0; spadic < NrOfActiveSpadics; ++spadic) {
+		  spadicName = GetSpadicName(syscore, spadic, kDirectOutput,kFullSpadic);
+		  histName = "Baseline_for_"+spadicName;
 		  TString TemphistName = "Temp_"+histName;
 		  fHM->H2(histName.Data())->Add(fHM->H2(TemphistName.Data()));
-		  TString Graph = (Detector == 0 ? "IKF" : "IKP");
-		  Graph = "Baselinetrend"+Graph;
+		  TString Graph = "Baselinetrend_"+spadicName;
 		  fHM->G1(Graph.Data())->SetPoint(fHM->G1(Graph.Data())->GetN(),fNrTimeSlices+1,fHM->H2(TemphistName.Data())->GetMean(1));
 		  fHM->H2(TemphistName.Data())->Reset();
 		  if(fHM->H2(TemphistName.Data())->GetEntries()!=0) LOG(FATAL)<<"Reset Failed for Temp_"+histName;
@@ -755,176 +658,8 @@ void CbmTrdTimeCorrel::Finish()
   fHM->H2("SourceAvsEquipIDepoch")->GetYaxis()->SetTitle("sourceA");
   fHM->H2("SourceAvsEquipIDhit")->GetXaxis()->SetTitle("eqID");
   fHM->H2("SourceAvsEquipIDhit")->GetYaxis()->SetTitle("sourceA/padID");
+
   
-  // Plot message counter histos to screen
-  TCanvas *c1 = new TCanvas("c1","histograms"+runName,5*320,3*300);
-  c1->Divide(5,3);
-  c1->cd(1);
-  fHM->G1("TsCounter")->Draw("AL");
-  fHM->G1("TsCounter")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounter")->GetYaxis()->SetTitle("total SPADIC(all) messages");
-  c1->cd(4);
-  fHM->G1("BaselinetrendIKF")->Draw("AL");
-  c1->cd(5);
-  fHM->G1("BaselinetrendIKP")->Draw("AL");
-  c1->cd(6);
-  fHM->G1("TsCounterHit0")->Draw("AL");
-  fHM->G1("TsCounterHit0")->SetLineColor(kRed);
-  fHM->G1("TsCounterHit0")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounterHit0")->GetYaxis()->SetTitle("SPADIC0 hit messages");
-  /*
-    c1->cd(8);
-    fHM->G1("TsCounterHitAborted0")->Draw("AL");
-    fHM->G1("TsCounterHitAborted0")->SetLineColor(kRed);
-    fHM->G1("TsCounterHitAborted0")->GetXaxis()->SetTitle("TS number");
-    fHM->G1("TsCounterHitAborted0")->GetYaxis()->SetTitle("SPADIC0 hit aborted messages");
-  */
-  c1->cd(7);
-  fHM->G1("TsCounterOverflow0")->Draw("AL");
-  fHM->G1("TsCounterOverflow0")->SetLineColor(kRed);
-  fHM->G1("TsCounterOverflow0")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounterOverflow0")->GetYaxis()->SetTitle("SPADIC0 overflow messages");
-  c1->cd(8);
-  fHM->G1("TsCounterInfo0")->Draw("AL");
-  fHM->G1("TsCounterInfo0")->SetLineColor(kRed);
-  fHM->G1("TsCounterInfo0")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounterInfo0")->GetYaxis()->SetTitle("SPADIC0 info messages");
-  c1->cd(9);
-  fHM->G1("TsCounterEpoch0")->Draw("AL");
-  fHM->G1("TsCounterEpoch0")->SetLineColor(kRed);
-  fHM->G1("TsCounterEpoch0")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounterEpoch0")->GetYaxis()->SetTitle("SPADIC0 epoch messages");
-  c1->cd(10);
-  fHM->G1("TsCounterStrange0")->Draw("AL");
-  fHM->G1("TsCounterStrange0")->SetLineColor(kRed);
-  fHM->G1("TsCounterStrange0")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounterStrange0")->GetYaxis()->SetTitle("SPADIC0 strange messages");
-  c1->cd(11);
-  fHM->G1("TsCounterHit1")->Draw("AL");
-  fHM->G1("TsCounterHit1")->SetLineColor(kBlue);
-  fHM->G1("TsCounterHit1")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounterHit1")->GetYaxis()->SetTitle("SPADIC1 hit messages");
-  /*
-    c1->cd(14);
-    fHM->G1("TsCounterHitAborted1")->Draw("AL");
-    fHM->G1("TsCounterHitAborted1")->SetLifNrTimeSlicesneColor(kBlue);
-    fHM->G1("TsCounterHitAborted1")->GetXaxis()->SetTitle("TS number");
-    fHM->G1("TsCounterHitAborted1")->GetYaxis()->SetTitle("SPADIC1 hit aborted messages");
-  */
-  c1->cd(12);
-  fHM->G1("TsCounterOverflow1")->Draw("AL");
-  fHM->G1("TsCounterOverflow1")->SetLineColor(kBlue);
-  fHM->G1("TsCounterOverflow1")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounterOverflow1")->GetYaxis()->SetTitle("SPADIC1 overflow messages");
-  c1->cd(13);
-  fHM->G1("TsCounterInfo1")->Draw("AL");
-  fHM->G1("TsCounterInfo1")->SetLineColor(kBlue);
-  fHM->G1("TsCounterInfo1")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounterInfo1")->GetYaxis()->SetTitle("SPADIC1 info messages");
-  c1->cd(14);
-  fHM->G1("TsCounterEpoch1")->Draw("AL");
-  fHM->G1("TsCounterEpoch1")->SetLineColor(kBlue);
-  fHM->G1("TsCounterEpoch1")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounterEpoch1")->GetYaxis()->SetTitle("SPADIC1 epoch messages");
-  c1->cd(15);
-  fHM->G1("TsCounterStrange1")->Draw("AL");
-  fHM->G1("TsCounterStrange1")->SetLineColor(kBlue);
-  fHM->G1("TsCounterStrange1")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounterStrange1")->GetYaxis()->SetTitle("SPADIC1 strange messages");
-  c1->SaveAs("pics/"+runName+"TsCounter.png");
-
-  // Plot message counter ratios to screen
-  TCanvas *c2 = new TCanvas("c2","ratios"+runName,3*320,2*300);
-  c2->Divide(3,2);
-  c2->cd(1);
-  fHM->G1("TsLost0")->Draw("AB"); // use bar chart here, since we have a ratio
-  fHM->G1("TsLost0")->SetLineColor(kRed);
-  fHM->G1("TsLost0")->SetFillColor(kRed);
-  fHM->G1("TsLost0")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsLost0")->GetYaxis()->SetTitle("SPADIC0 lost per overflow");
-  c2->cd(4);
-  fHM->G1("TsLost1")->Draw("AB"); // bar chart
-  fHM->G1("TsLost1")->SetLineColor(kBlue);
-  fHM->G1("TsLost1")->SetFillColor(kBlue);
-  fHM->G1("TsLost1")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsLost1")->GetYaxis()->SetTitle("SPADIC1 lost per overflow");
-  c2->cd(2);
-  fHM->G1("TsStrangeness0")->Draw("AB"); // bar chart
-  fHM->G1("TsStrangeness0")->SetLineColor(kRed);
-  fHM->G1("TsStrangeness0")->SetFillColor(kRed);
-  fHM->G1("TsStrangeness0")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsStrangeness0")->GetYaxis()->SetTitle("SPADIC0 strangeness");
-  c2->cd(5);
-  fHM->G1("TsStrangeness1")->Draw("AB"); // bar chart
-  fHM->G1("TsStrangeness1")->SetLineColor(kBlue);
-  fHM->G1("TsStrangeness1")->SetFillColor(kBlue);
-  fHM->G1("TsStrangeness1")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsStrangeness1")->GetYaxis()->SetTitle("SPADIC1 strangeness");
-  c2->SaveAs("pics/"+runName+"TsCounterRatio.png");
-	if (fActivateClusterizer) {
-		for (Int_t syscore = 0; syscore < 1; ++syscore) {
-			for (Int_t detector = 0; detector < 2; ++detector) {
-				TString histname = "Charge_Spectrum_for_Syscore_"
-						+ std::to_string(syscore) + "_Detector_"
-						+ std::to_string(detector);
-				TString histname2 = "ChargeIntegral_Spectrum_for_Syscore_"
-						+ std::to_string(syscore) + "_Detector_"
-						+ std::to_string(detector);
-				//fHM->H1(histname.Data())->Scale(1.0/fHM->H1(histname.Data())->GetEntries());
-			}
-		}
-	}
-  if(fActivateDeltaTAnalysis)
-  if (false) {
-    TCanvas *c3 = nullptr;
-
-    for (Int_t SysID=0; SysID<1;++SysID)
-      for (Int_t SpaID=0; SpaID<4;++SpaID){
-	if(SpaID%2 == 0){
-	  c3 = new TCanvas("c3","Delta_t"+runName+"_Spadic_"+std::to_string(SpaID),5*320,3*300);
-	  c3->Divide(8,4);
-	}
-	for (Int_t ChID=0; ChID<32;++ChID)
-	  {
-	    c3->cd(ChID+1);
-	    fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID/2)+"_Channel_"+std::to_string(ChID)))->Draw("AB");
-	    fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID/2)+"_Channel_"+std::to_string(ChID)))->SetLineColor(kRed);
-	    fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID/2)+"_Channel_"+std::to_string(ChID)))->SetFillColor(kRed);
-	    fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID/2)+"_Channel_"+std::to_string(ChID)))->GetXaxis()->SetTitle("Fulltime()");
-  	  }
-	c3->Update();
-	c3->SaveAs(TString("pics/Delta_t_Graph_Spadic_"+std::to_string(SpaID/2)+".pdf"));
-      };
-
-    TCanvas *c4 = new TCanvas("c4","Time_Offsets"+runName,5*320,3*300);
-    c4->Divide(4,4);
-    Int_t i=1;
-    for (Int_t baseSpaID=0; baseSpaID<4;++baseSpaID)
-      for (Int_t compSpaID=0; compSpaID<4;++compSpaID)
-	{
-	  c4->cd(i++);
-	  fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->Draw("AB");
-	  fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->SetLineColor(kRed);
-	  fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->GetXaxis()->SetTitle("Timeslice");
-	}
-    c4->Update();
-    c4->SaveAs(TString("pics/"+runName+"TimeOffsets"+".pdf"));
-  }
-  
-  if (fActivateOffsetAnalysis) {
-    TCanvas *c5 = new TCanvas("c5","Fulltime_vs_Timeslice"+runName,5*320,3*300);
-    TMultiGraph * mg = new TMultiGraph("Fulltime_vs_TimeSlice_all_Spadics","Fulltime_vs_TimeSlice_all_Spadics");
-    for (Int_t baseSpaID=0; baseSpaID<4;++baseSpaID){
-      fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID)))->SetMarkerStyle(20);
-      fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID)))->SetMarkerColor(baseSpaID+2);
-      mg->Add(fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID))));
-    }
-    mg->Draw("AB");
-    mg->GetXaxis()->SetTitle("Timeslice");
-    mg->GetYaxis()->SetTitle("SuperEpoch");
-    fHM->Add("Fulltime_vs_TimeSlice_all_Spadic",mg);
-    c5->SaveAs(TString("pics/"+runName+"SuperEpochs"+".png"));
-  }
   
   //Perform uniform relabeling of Axis
   ReLabelAxis(fHM->H1("InfoType_vs_Channel")->GetYaxis(),"infoType",true,true);
@@ -946,7 +681,7 @@ void CbmTrdTimeCorrel::Finish()
     LOG(INFO) << (*it)->GetTitle() << FairLogger::endl;
     (*it)->SetContour(99);
     }
-{	  vector<TH2*> HitFrequencies = fHM->H2Vector(".*frequency.*");
+{	  vector<TH2*> HitFrequencies = fHM->H2Vector("Clusterfrequency.*");
 	for (auto h : HitFrequencies){
 		h->Sumw2();
 		TH1* P= h->ProjectionY();
@@ -954,6 +689,8 @@ void CbmTrdTimeCorrel::Finish()
 		TString HistName = TString(h->GetTitle())+"_Spectrum";
 		P->SetNameTitle(HistName.Data(),HistName.Data());
 		fHM->Add(HistName.Data(),P);
+		h->GetXaxis()->SetNameTitle("Time t/s","Time t/s");
+		h->GetYaxis()->SetNameTitle("Clusterfrequency f/Hz","Clusterfrequency f/Hz");
 	}
 }
 {	  vector<TGraph*> HitFrequencies = fHM->G1Vector(".*frequency.*");
@@ -967,6 +704,8 @@ void CbmTrdTimeCorrel::Finish()
 				NrEntries=h->GetN();
 			}
 		}
+		h->GetXaxis()->SetNameTitle("Time t/s","Time t/s");
+		h->GetYaxis()->SetNameTitle("Hitfrequency f/Hz","Hitfrequency f/Hz");
 	}
 }
   if(fBatchAssessment){
@@ -1013,35 +752,6 @@ void CbmTrdTimeCorrel::Finish()
   FairRootManager::Instance()->GetOutFile()->cd();
   fHM->WriteToFile();
   //if(false)
-  if(fDrawSignalDebugHistograms){
-	  TCanvas *c6 = new TCanvas("c6","Debug_Signal_Shapes"+runName,5*320,3*300);
-	  TH2vector = fBaselineHM->H2Vector(".*");
-	  TH2* currentPtr=nullptr;
-	  for (std::vector<TH2*>::iterator it = TH2vector.begin() ; it != TH2vector.end(); ++it){
-		  if(*it!=nullptr)currentPtr =*it;
-		  c6->Clear();
-		  LOG(INFO) << currentPtr->GetTitle() << FairLogger::endl;
-		  currentPtr->SetContour(99);
-		  currentPtr->Draw("colz2");
-		  c6->Update();
-		  if(fBatchAssessment){
-			  path = FairRootManager::Instance()->GetOutFile()->GetName();
-			  TString RunNumber = path(TRegexp("[0-9]+_"));
-			  path = "/home/p_munk01/Pictures/BatchAssesment/";
-			  c6->SaveAs(path+RunNumber+currentPtr->GetTitle()+".png");
-		  }
-		  c6->SaveAs("pics/"+TString(currentPtr->GetTitle())+".pdf");
-		  c6->SaveAs("pics/"+TString(currentPtr->GetTitle())+".png");
-	  }
-		TString outfile = FairRootManager::Instance()->GetOutFile()->GetName();
-		outfile.ReplaceAll(".root", "_Signal_shapes.root");
-		TFile Outfile(outfile, "RECREATE");
-		Outfile.cd();
-		fBaselineHM->WriteToFile();
-		FairRootManager::Instance()->GetOutFile()->cd();
-		Outfile.Close();
-
-  }
   //delete c1;
   TString outfile = FairRootManager::Instance()->GetOutFile()->GetName();
       outfile.ReplaceAll(".root", "_Calibration.root");
@@ -1066,6 +776,8 @@ void CbmTrdTimeCorrel::ClusterizerTime()
   auto CompareSpadicMessages=
       [&](CbmSpadicRawMessage* a,CbmSpadicRawMessage* b)
 	  {
+	  	  Int_t SyscoreIDA = GetSyscoreID(a->GetEquipmentID());
+	  	  Int_t SyscoreIDB = GetSyscoreID(b->GetEquipmentID());
 		  Int_t SpadicIDA = GetSpadicID(a->GetSourceAddress());
 		  Int_t SpadicIDB = GetSpadicID(b->GetSourceAddress());
 		  Int_t ChIDA = a->GetChannelID() + ((SpadicIDA %2 == 1)? 16 : 0);
@@ -1075,15 +787,18 @@ void CbmTrdTimeCorrel::ClusterizerTime()
 		  Int_t rowA = (SpadicIDA/2)*2+PadA/16;
 		  Int_t rowB = (SpadicIDB/2)*2+PadB/16;
 		  if(a->GetFullTime() == b->GetFullTime())
-			  if (SpadicIDA == SpadicIDB)
-				  if(rowA==rowB)
-					  if(PadA==PadB)
-						  return true;
+			  if(SyscoreIDA==SyscoreIDB)
+				  if (SpadicIDA == SpadicIDB)
+					  if(rowA==rowB)
+						  if(PadA==PadB)
+							  return true;
 		  return false;
       };
   auto CompareSpadicMessagesSmaller=
       [&](CbmSpadicRawMessage* a,CbmSpadicRawMessage* b)
       {
+  	    Int_t SyscoreIDA = GetSyscoreID(a->GetEquipmentID());
+  	  	Int_t SyscoreIDB = GetSyscoreID(b->GetEquipmentID());
 		Int_t SpadicIDA = GetSpadicID(a->GetSourceAddress());
 		Int_t SpadicIDB = GetSpadicID(b->GetSourceAddress());
         Int_t ChIDA = a->GetChannelID() + ((SpadicIDA %2 == 1)? 16 : 0);
@@ -1093,11 +808,13 @@ void CbmTrdTimeCorrel::ClusterizerTime()
         Int_t rowA = (SpadicIDA/2)*4+PadA/16;
         Int_t rowB = (SpadicIDB/2)*4+PadB/16;
         if(a->GetFullTime() < b->GetFullTime())
-          if(rowA<rowB)
-            return true;
-          else if(rowA == rowB)
-            if(PadA<PadB)
-              return true;
+        	if(SyscoreIDA<SyscoreIDB){
+        		if(rowA<rowB)
+        			return true;
+        		else if(rowA == rowB)
+        			if(PadA<PadB)
+        				return true;
+        	}
         return false;
       };
   auto TimeStampSort=
@@ -1210,9 +927,8 @@ void CbmTrdTimeCorrel::ClusterizerTime()
 					if (std::abs(Channel - HitChs.at(i)) < 3)
 						if (Trigger == 2) {
 							string histname =
-									"Trigger_Bug_Investigation_Syscore_"
-											+ std::to_string(0) + "_Spadic_"
-											+ std::to_string(SpadicID / 2);
+									"Trigger_Bug_Investigation_"
+											+ string(GetSpadicName(x.GetEquipmentID(),x.GetSourceAddress(),kRawData,kFullSpadic).Data());
 							fHM->H2(histname)->Fill(HitChs.at(i), Channel);
 						}
 				}
@@ -1220,7 +936,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
 		}
       Clusterrun++;
       std::sort (linearClusterBuffer.begin (), linearClusterBuffer.end (),SortSpadicMessageRange);//Sort the Hitmessages by their position of origin on the padplane
-      Cluster BuildingCluster (fBaseline,clusterWindow,fClusterThreshhold); //Create a new Cluster
+      Cluster BuildingCluster (&fBaseline,clusterWindow,fClusterThreshhold); //Create a new Cluster
       Int_t lastRow = (GetSpadicID(linearClusterBuffer.begin()->GetSourceAddress())/2)*32+GetChannelOnPadPlane(linearClusterBuffer.begin()->GetChannelID() + ((GetSpadicID(linearClusterBuffer.begin()->GetSourceAddress()) %2 == 1)? 16 : 0))/16;
       Int_t lastPad = GetChannelOnPadPlane(linearClusterBuffer.begin()->GetChannelID() + ((GetSpadicID(linearClusterBuffer.begin()->GetSourceAddress()) %2 == 1)? 16 : 0));
       auto SatteliteDebug =
@@ -1238,12 +954,6 @@ void CbmTrdTimeCorrel::ClusterizerTime()
     				  MainMassage = *tempMessage;
     				  break;
     			  }
-    		  }
-    		  string sidedness= (Messages.first->GetTriggerType()==1)? "Left":"Right";
-              string histName = "Shape_of_"+sidedness+"sided_Clusters"+ Detectorname;
-              TH2* Hist = fHM->H2(histName);
-    		  for (auto tempMessage=Messages.first;tempMessage!= Messages.second;tempMessage++){
-    			  Hist->Fill(GetChannelonPadPlaneMessage(*tempMessage),tempMessage->GetTriggerType());
     		  }
     		  for (auto x: linearClusterBuffer ){
     		  std::cout << x.GetChannelID() << " " << GetSpadicID(x.GetSourceAddress()) <<" " << x.GetFullTime() << " " <<x.GetTriggerType() << " " << x.GetStopType() << std::endl;
@@ -1269,7 +979,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
                 {
             	  SatteliteDebug(BuildingCluster);
                   fClusterBuffer.push_back (BuildingCluster);
-                  Cluster tempCluster (fBaseline,clusterWindow,fClusterThreshhold);
+                  Cluster tempCluster (&fBaseline,clusterWindow,fClusterThreshhold);
                   BuildingCluster = tempCluster;
                 }
               //std::cout << " Rowchange " << lastRow << " " << currentRow << " " << std::endl;
@@ -1284,7 +994,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
             				{
             			SatteliteDebug(BuildingCluster);
             			fClusterBuffer.push_back (BuildingCluster);
-            			Cluster tempCluster (fBaseline,clusterWindow,fClusterThreshhold);
+            			Cluster tempCluster (&fBaseline,clusterWindow,fClusterThreshhold);
             			BuildingCluster = tempCluster;
             				}
             		//std::cout << " Rowchange " << lastRow << " " << currentRow << " " << std::endl;
@@ -1301,7 +1011,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
                     {
                 	  SatteliteDebug(BuildingCluster);
                       fClusterBuffer.push_back (BuildingCluster);
-                      Cluster tempCluster (fBaseline,clusterWindow,fClusterThreshhold);
+                      Cluster tempCluster (&fBaseline,clusterWindow,fClusterThreshhold);
                       BuildingCluster = tempCluster;
                     }
                   BuildingCluster.AddEntry (*currentMessage);
@@ -1354,7 +1064,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
                     {
                 	  SatteliteDebug(BuildingCluster);
                       fClusterBuffer.push_back (BuildingCluster);
-                      Cluster tempCluster (fBaseline,clusterWindow,fClusterThreshhold);
+                      Cluster tempCluster (&fBaseline,clusterWindow,fClusterThreshhold);
                       BuildingCluster = tempCluster;
                     }
                 }
@@ -1366,7 +1076,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
                     {
                 	  SatteliteDebug(BuildingCluster);
                       fClusterBuffer.push_back (BuildingCluster);
-                      Cluster tempCluster (fBaseline,clusterWindow,fClusterThreshhold);
+                      Cluster tempCluster (&fBaseline,clusterWindow,fClusterThreshhold);
                       BuildingCluster = tempCluster;
                     }//Start the Cluster
                   BuildingCluster.AddEntry (*currentMessage);
@@ -1385,7 +1095,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
         {
     	  SatteliteDebug(BuildingCluster);
           fClusterBuffer.push_back (BuildingCluster);
-          Cluster tempCluster (fBaseline,clusterWindow,120);
+          Cluster tempCluster (&fBaseline,clusterWindow,120);
           BuildingCluster = tempCluster;
         }
 
@@ -1410,9 +1120,9 @@ void CbmTrdTimeCorrel::ClusterizerTime()
 		  }
 	  }
   }
-  static Long64_t lastClusterTimestamp[64];
+  static Long64_t lastClusterTimestamp[NrOfActiveSyscores*NrOfSpadics];
   if (fNrTimeSlices==1){
-	for(Int_t i=0;i<64;i++){
+	for(Int_t i=0;i<NrOfActiveSyscores*NrOfSpadics;i++){
 		lastClusterTimestamp[i]=0;
 	}
   }
@@ -1426,43 +1136,41 @@ void CbmTrdTimeCorrel::ClusterizerTime()
           (Position > 26.5 && Position < 29.5)) //exclude Clusters around defective channel 6
         {
           fHM->H1 (
-              "Masked_Clustersize_for_Syscore_" + std::to_string (0)
-                  + "_Spadic_"
-                  + std::to_string (static_cast<Int_t> (x.GetSpadic () / 2)))->Fill (
+              "Masked_Clustersize_for_"
+        		  + string(GetSpadicName(0, x.GetSpadic (), kProcessedData,kFullSpadic).Data()))->Fill (
               static_cast<Int_t> (x.size ()));
           continue;
         }
-      fHM->H1("Clustersize_for_Syscore_"+std::to_string (0)+"_Spadic_"+std::to_string (static_cast<Int_t>(x.GetSpadic ()/2)))->Fill(static_cast<Int_t>(x.size ()));
-      fHM->H2("Cluster("+std::to_string(static_cast<Int_t>(x.size()))+")_Heatmap_for_Syscore_"+std::to_string (0) +"_Spadic_"+std::to_string(static_cast<Int_t>(x.GetSpadic ()/2)))->Fill((x.GetHorizontalPosition()<16.0 ? x.GetHorizontalPosition() : x.GetHorizontalPosition()-16.0),1-static_cast<Int_t>(x.GetRow()));
-      string detectorName = (x.GetSpadic()/2 == 0 ? "Frankfurt" : "Muenster");
+      fHM->H1("Clustersize_for_"+string(GetSpadicName(0, x.GetSpadic (), kProcessedData,kFullSpadic).Data()))->Fill(static_cast<Int_t>(x.size ()));
+      fHM->H2("Cluster("+std::to_string(static_cast<Int_t>(x.size()))+")_Heatmap_for_"+string(GetSpadicName(0, x.GetSpadic (), kProcessedData,kFullSpadic).Data()))->Fill((x.GetHorizontalPosition()<16.0 ? x.GetHorizontalPosition() : x.GetHorizontalPosition()-16.0),1-static_cast<Int_t>(x.GetRow()));
       if (fDrawClustertypes){
-    	  string histname = "Clustertypes_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+detectorName;
+    	  string histname = "Clustertypes_for_"+string(GetSpadicName(0, x.GetSpadic (), kProcessedData,kFullSpadic).Data());
     	  fHM->H2(histname)->Fill(x.size(),x.Type());
       }
       if(x.Type() > 0 && x.size()>=3 && x.Type() <6){
-    	  string histname = "Cut5_Pad_Response_"+ detectorName + "_for_Clusters_of_Size_"+std::to_string(static_cast<Int_t>(x.size()));
+    	  string histname = "Cut5_Pad_Response_"+ string(GetSpadicName(0, x.GetSpadic (), kProcessedData,kFullSpadic).Data())
+    			  + "_for_Clusters_of_Size_"+std::to_string(static_cast<Int_t>(x.size()));
     	  if(x.Type()==5) x.FillChargeDistribution(fHM->H2(histname));
     	  continue;
       }
       if(x.fMaxStopType < 1 && x.size() >=3)
       {
-          string histname = "Charge_Spectrum_for_Syscore_"+std::to_string(0)+"_Detector_"+std::to_string(x.GetSpadic()/2);
+          string histname = "Charge_Spectrum_for_"+string(GetSpadicName(0, x.GetSpadic (), kProcessedData,kFullSpadic).Data());
           fHM->H1(histname)->Fill(x.GetTotalCharge(),1/*,x.GetHorizontalPosition()*/);
-          string histname2 = "ChargeIntegral_Spectrum_for_Syscore_"+std::to_string(0)+"_Detector_"+std::to_string(x.GetSpadic()/2);
+          string histname2 = "ChargeIntegral_Spectrum_for_"+string(GetSpadicName(0, x.GetSpadic (), kProcessedData,kFullSpadic).Data());
           fHM->H1(histname2)->Fill(x.GetTotalIntegralCharge(),1/*,x.GetHorizontalPosition()*/);
 
       }
       //if(x.size()==3&&(x.GetTotalCharge()> 250)) continue;
       if(fDrawPadResponse){
-    	  string histname = "Pad_Response_"+ detectorName + "_for_Clusters_of_Size_"+std::to_string(static_cast<Int_t>(x.size()));
+    	  string histname = "Pad_Response_"+ string(GetSpadicName(0, x.GetSpadic (), kProcessedData,kFullSpadic).Data()) + "_for_Clusters_of_Size_"+std::to_string(static_cast<Int_t>(x.size()));
     	  x.FillChargeDistribution(fHM->H2(histname),fHM->H2("Central_"+histname));
       }
         int spaID=x.GetSpadic();
 	Long64_t time=x.GetFulltime();
-        string HistName = "Clusterfrequency_for_Syscore_"+std::to_string(0)+"_Spadic_"+std::to_string(spaID%2);
+        string HistName = "Clusterfrequency_for_"+string(GetSpadicName(0, x.GetSpadic (), kProcessedData,kFullSpadic).Data());
     	fHM->H2(HistName)->Fill(static_cast<Double_t>(time),17600000/std::fabs((static_cast<Double_t>(lastClusterTimestamp[(spaID%2)*32])-static_cast<Double_t>(time))));
     	lastClusterTimestamp[(spaID%2)*32]=time;
-
   }
 }
 // -------------------------------------------------------------------------
@@ -1706,22 +1414,16 @@ void CbmTrdTimeCorrel::CreateHistograms()
 			  "Epoch out of sync", 
 			  "infoType out of array"}; //not official type, just to monitor overflows
   
-  fSpadics = 0;
+  fSpadics = NrOfActiveSyscores*NrOfActiveSpadics;
   
-  for(Int_t syscore = 0; syscore < 3; ++syscore) {
-    for(Int_t spadic = 0; spadic < 3; ++spadic) {
-      spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
-      if(spadicName!="") fSpadics++;
-    }   
-  }
   
   
   Int_t n = 0;
   
-  fHM->Add("Trigger", new TH1F("Trigger", "Trigger", 9,0,9));
-  for(Int_t syscore = 0; syscore < 3; ++syscore) {
-    for(Int_t spadic = 0; spadic < 3; ++spadic) {
-      spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
+  fHM->Add("Trigger", new TH1F("Trigger", "Trigger", fSpadics,0,fSpadics));
+  for(Int_t syscore = 0; syscore < NrOfActiveSyscores; ++syscore) {
+    for(Int_t spadic = 0; spadic < NrOfActiveSpadics; ++spadic) {
+      spadicName = GetSpadicName(syscore, spadic, kDirectOutput);
       if(spadicName != "") {
         n++;
         fHM->H1("Trigger")->GetXaxis()->SetBinLabel(n,spadicName);
@@ -1731,14 +1433,14 @@ void CbmTrdTimeCorrel::CreateHistograms()
 
   fHM->Add("MessageCount", new TH1D("MessageCount","MessageCount",fSpadics*8,0,fSpadics*8));
   n = 0;
-  for(Int_t syscore = 0; syscore < 3; ++syscore) {
-    for(Int_t spadic = 0; spadic < 3; ++spadic) {
-      spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
+  for(Int_t syscore = 0; syscore < NrOfActiveSyscores; ++syscore) {
+    for(Int_t spadic = 0; spadic < NrOfActiveSpadics; ++spadic) {
+      spadicName = GetSpadicName(syscore, spadic, kDirectOutput,kFullSpadic);
       if(spadicName != "") {
-	fHM->Add((spadicName + TString("_LostCount_vs_PadID")).Data(), new TH2D((spadicName + TString("_LostCount_vs_PadID")).Data(),(spadicName + TString("_LostCount_vs_PadID")).Data(),257,-0.5,256.5,32,-0.5,31.5));
-	fHM->H2((spadicName + TString("_LostCount_vs_PadID")).Data())->GetXaxis()->SetTitle("LostMessages");
-	fHM->H2((spadicName + TString("_LostCount_vs_PadID")).Data())->GetYaxis()->SetTitle("PadID");
-	fHM->Add((spadicName + TString("_CluterSize")).Data(), new TH1D((spadicName + TString("_ClusterSize")).Data(),(spadicName + TString("_ClusterSize")).Data(),32,-0.5,31.5));
+    	  fHM->Add((spadicName + TString("_LostCount_vs_PadID")).Data(), new TH2D((spadicName + TString("_LostCount_vs_PadID")).Data(),(spadicName + TString("_LostCount_vs_PadID")).Data(),257,-0.5,256.5,32,-0.5,31.5));
+    	  fHM->H2((spadicName + TString("_LostCount_vs_PadID")).Data())->GetXaxis()->SetTitle("LostMessages");
+    	  fHM->H2((spadicName + TString("_LostCount_vs_PadID")).Data())->GetYaxis()->SetTitle("PadID");
+    	  fHM->Add((spadicName + TString("_CluterSize")).Data(), new TH1D((spadicName + TString("_ClusterSize")).Data(),(spadicName + TString("_ClusterSize")).Data(),32,-0.5,31.5));
         for(Int_t stopType = 0; stopType < 6; ++stopType) {
           n++;
           fHM->H1("MessageCount")->GetXaxis()->SetBinLabel(n,TString(spadicName+"_"+stopTypes[stopType]));
@@ -1751,77 +1453,53 @@ void CbmTrdTimeCorrel::CreateHistograms()
     }
   }
 
-  for(Int_t syscore = 0; syscore < 3; ++syscore) {
-    for(Int_t spadic = 0; spadic < 3; ++spadic) {
-      spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
+  for(Int_t syscore = 0; syscore < NrOfActiveSyscores; ++syscore) {
+    for(Int_t spadic = 0; spadic < NrOfActiveHalfSpadics; ++spadic) {
+      spadicName = GetSpadicName(syscore, spadic, kDirectOutput,kHalfSpadic);
       if(spadicName != "") {
-	for(Int_t halfchip = 0; halfchip < 2; ++halfchip) {
-	  histName = spadicName + "_Half_" + std::to_string(halfchip) + "_Time_vs_TimeSlice";
+	  histName = spadicName + "_Time_vs_TimeSlice";
 	  title = histName + runName + ";TimeSlice;Time";
 	  fHM->Add(histName.Data(), new TH2F(histName, title, 2001, -0.5, 2000.5, 9000, 0, 90000000000));
-	}
       }
     }
   }
 
-  for(Int_t syscore = 0; syscore < 3; ++syscore) {
-    for(Int_t spadic = 0; spadic < 3; ++spadic) {
-      for(Int_t halfchip = 0; halfchip < 2; ++halfchip) {
-	spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
-	if(spadicName != "") {
-	  histName = spadicName + "_Half_" + std::to_string(halfchip) + "_Epoch_vs_TimeSlice";
-	  title = histName + runName + ";TimeSlice;Epoch";
-	  fHM->Add(histName.Data(), new TH2F(histName, title, 2001, -0.5, 2000.5, 4097, -0.5, 4096.5));
-	}
-      }
-    }
+  for(Int_t syscore = 0; syscore < NrOfActiveSyscores; ++syscore) {
+	  for(Int_t spadic = 0; spadic < NrOfActiveHalfSpadics; ++spadic) {
+	      spadicName = GetSpadicName(syscore, spadic, kDirectOutput,kHalfSpadic);
+		  if(spadicName != "") {
+			  histName = spadicName + "_Epoch_vs_TimeSlice";
+			  title = histName + runName + ";TimeSlice;Epoch";
+			  fHM->Add(histName.Data(), new TH2F(histName, title, 2001, -0.5, 2000.5, 4097, -0.5, 4096.5));
+		  }
+	  }
   }
 
-  for(Int_t syscore = 0; syscore < 3; ++syscore) {
-    for(Int_t spadic = 0; spadic < 3; ++spadic) {
-      for(Int_t halfchip = 0; halfchip < 2; ++halfchip) {
-	spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
-	if(spadicName != "") {
-	  histName = "Hitrate_vs_DeltaEpoch_hist_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic)+"_Half_"+std::to_string(halfchip);
-	  title = histName + runName + ";DeltaEpoch;HitMessages per TimeSlice";
-	  fHM->Add(histName.Data(), new TH2F(histName, title, 8301, -4150.5, 4150.5, 1000, 0, 10E5));
-	}
-      }
-    }
+  for(Int_t syscore = 0; syscore < NrOfActiveSyscores; ++syscore) {
+	  for(Int_t spadic = 0; spadic < NrOfActiveHalfSpadics; ++spadic) {
+	      spadicName = GetSpadicName(syscore, spadic, kDirectOutput,kHalfSpadic);
+		  if(spadicName != "") {
+			  histName = "Hitrate_vs_Delta_Epoch_hist_for_"+spadicName;
+			  title = histName + runName + ";DeltaEpoch;HitMessages per TimeSlice";
+			  fHM->Add(histName.Data(), new TH2F(histName, title, 8301, -4150.5, 4150.5, 1000, 0, 10E5));
+		  }
+	  }
   }
 
-  for (Int_t syscore=0; syscore<3;++syscore) {
-    for (Int_t spadic=0; spadic<3;++spadic) {
-      for (Int_t halfchip=0; halfchip<2;++halfchip) {
-	spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
-	if(spadicName != "") {
-	  histName = "EpochTrend_postregress_hist_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic)+"_Half_"+std::to_string(halfchip);
-	  title = histName + runName;
-	  fHM->Add(histName.Data(), new TH2I(histName, title, 150,0.5,150.5,201,-50.5,150.5));
-	}
-      }
-    }
-  }
-  if(fActivateDeltaTAnalysis)
-  for (Int_t syscore=0; syscore<3;++syscore) {
-    for (Int_t spadic=0; spadic<3;++spadic) {
-      for (Int_t halfchip=0; halfchip<2;++halfchip) {
-	spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
-	if(spadicName != "") {
-	  histName = "Delta_t_hist_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic)+"_Half_"+std::to_string(halfchip);
-	  title = histName + runName;
-	  fHM->Add(histName.Data(), new TH1I(histName, title, 4096,-70000,70000));
-	}
-      }
-    }
+  for(Int_t syscore = 0; syscore < NrOfActiveSyscores; ++syscore) {
+	  for(Int_t spadic = 0; spadic < NrOfActiveHalfSpadics; ++spadic) {
+	      spadicName = GetSpadicName(syscore, spadic, kDirectOutput,kHalfSpadic);
+		  histName = "EpochTrend_postregress_hist_for_"+spadicName;
+		  title = histName + runName;
+		  fHM->Add(histName.Data(), new TH2I(histName, title, 150,0.5,150.5,201,-50.5,150.5));
+	  }
   }
 
   if(true){
-	  for (Int_t syscore=0; syscore<1;++syscore)
-	  {
-		  for (Int_t spadic=0; spadic<2;++spadic)
-		  {
-			  histName = "Trigger_Bug_Investigation_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic);
+	  for(Int_t syscore = 0; syscore < NrOfActiveSyscores; ++syscore) {
+		  for(Int_t spadic = 0; spadic < NrOfActiveSpadics; ++spadic) {
+			  spadicName = GetSpadicName(syscore, spadic, kDirectOutput,kFullSpadic);
+			  histName = "Trigger_Bug_Investigation_"+spadicName;
 			  title = histName + runName;
 			  fHM->Create2<TH2I>(histName.Data(), title.Data(), 32,-0.5,31.5, 32,-0.5,31.5);
 			  fHM->H2(histName.Data())->GetXaxis()->SetNameTitle("Ch Self triggered","Ch Self triggered");
@@ -1831,39 +1509,35 @@ void CbmTrdTimeCorrel::CreateHistograms()
   }
 
 
-  for (Int_t syscore=0; syscore<3;++syscore) {
-    for (Int_t spadic=0; spadic<3;++spadic) {
-      for (Int_t halfchip=0; halfchip<2;++halfchip) {
-	spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
-	if(spadicName != "") {
-	   histName = "Delta_Epoch_hist_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic)+"_Half_"+std::to_string(halfchip);
-	  title = histName + runName;
-	  fHM->Add(histName.Data(), new TH1I(histName, title, 8301,-4150.5,4150.5));
-	}
-      }
-    }
+  for(Int_t syscore = 0; syscore < NrOfActiveSyscores; ++syscore) {
+	  for(Int_t spadic = 0; spadic < NrOfActiveHalfSpadics; ++spadic) {
+	      spadicName = GetSpadicName(syscore, spadic, kDirectOutput,kHalfSpadic);
+		  if(spadicName != "") {
+			  histName = "Delta_Epoch_hist_for_"+spadicName;
+			  title = histName + runName;
+			  fHM->Add(histName.Data(), new TH1I(histName, title, 8301,-4150.5,4150.5));
+		  }
+	  }
   }
-  for (Int_t syscore=0; syscore<3;++syscore) {
-    for (Int_t spadic=0; spadic<3;++spadic) {
-      for (Int_t halfchip=0; halfchip<2;++halfchip) {
-	spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
-	if(spadicName != "") {
-	  histName = "DeltaEpoch_vs_timeslice_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic)+"_Half_"+std::to_string(halfchip);
-	  title = histName + runName;
-	  fHM->Add(histName.Data(), new TGraph());
-	  fHM->G1(histName.Data())->SetNameTitle(title,title);
-	}
-      }
-    }
+  for(Int_t syscore = 0; syscore < NrOfActiveSyscores; ++syscore) {
+	  for(Int_t spadic = 0; spadic < NrOfActiveHalfSpadics; ++spadic) {
+	      spadicName = GetSpadicName(syscore, spadic, kDirectOutput,kHalfSpadic);
+		  if(spadicName != "") {
+			  histName = "DeltaEpoch_vs_timeslice_for_"+spadicName;
+			  title = histName + runName;
+			  fHM->Add(histName.Data(), new TGraph());
+			  fHM->G1(histName.Data())->SetNameTitle(title,title);
+		  }
+	  }
   }
-  for (Int_t syscore=0; syscore<3;++syscore) {
-      for (Int_t spadic=0; spadic<3;++spadic) {
-          spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
+  for(Int_t syscore = 0; syscore < NrOfActiveSyscores; ++syscore) {
+	  for(Int_t spadic = 0; spadic < NrOfActiveSpadics; ++spadic) {
+		  spadicName = GetSpadicName(syscore, spadic, kDirectOutput,kFullSpadic);
           if(spadicName != "") {
-              histName = "Map_of_Hits_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic);
+              histName = "Map_of_Hits_for_"+spadicName;
               title = histName + runName;
               fHM->Create2<TH2I>(histName.Data(), title.Data(), 16,-0.5,15.5,2,-0.5,1.5);
-              histName = "Map_of_Charge_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic);
+              histName = "Map_of_Charge_for_"+spadicName;
               title = histName + runName;
 			  fHM->Create2<TH2I>(histName.Data(), title.Data(), 16,-0.5,15.5,2,-0.5,1.5);
           }
@@ -1876,18 +1550,18 @@ void CbmTrdTimeCorrel::CreateHistograms()
   fHM->Add("SourceAvsEquipIDhit", new TH2F("SourceAvsEquipIDhit", "SourceAddress vs Equipment ID HIT MESS", 20,57334.5,57354.5,96,-0.5,5.5));
 
   if(fActivateClusterizer)
-	  for (Int_t syscore=0; syscore<3;++syscore) {
-		  for (Int_t spadic=0; spadic<3;++spadic) {
-			  spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
+	  for(Int_t syscore = 0; syscore < NrOfActiveSyscores; ++syscore) {
+		  for(Int_t spadic = 0; spadic < NrOfActiveSpadics; ++spadic) {
+			  spadicName = GetSpadicName(syscore, spadic, kDirectOutput,kFullSpadic);
 			  if(spadicName != "") {
-				  histName = "Clustersize_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic);
+				  histName = "Clustersize_for_"+spadicName;
 				  title = histName + runName;
 				  fHM->Create1<TH1I>(histName.Data(), title.Data(), 16,-0.5,15.5);
 				  histName = "Masked_"+histName;
 				  title = histName + runName;
 				  fHM->Create1<TH1I>(histName.Data(), title.Data(), 16,-0.5,15.5);
 				  for (Int_t clusterSize=1; clusterSize<=16;clusterSize++){
-					  histName = "Cluster("+std::to_string(clusterSize)+")_Heatmap_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic);
+					  histName = "Cluster("+std::to_string(clusterSize)+")_Heatmap_for_"+spadicName;
 					  title = histName + runName;
 					  fHM->Create2<TH2I>(histName.Data(), title.Data(), 76,-0.1,15.1,2,-0.5,1.5);
 				  }
@@ -1895,8 +1569,9 @@ void CbmTrdTimeCorrel::CreateHistograms()
 		  }
 	  }
   if(fActivateClusterizer)
-  	  for (Int_t syscore=0; syscore<1;++syscore) {
-  		  for (Int_t spadic=0; spadic<4;++spadic) {
+	  for(Int_t syscore = 0; syscore < NrOfActiveSyscores; ++syscore) {
+		  for(Int_t spadic = 0; spadic < NrOfActiveSpadics; ++spadic) {
+			  spadicName = GetSpadicName(syscore, spadic, kDirectOutput,kFullSpadic);
   			  const Int_t nBins=70;
   			  auto BinBoarders = [&nBins] (Int_t reBinHigh=32){
   				  const Double_t MaxFreq = (17500000.0);
@@ -1921,69 +1596,72 @@ void CbmTrdTimeCorrel::CreateHistograms()
   			  };
   			  Double_t* freqbins = (BinBoarders());
   			  //spadicName = RewriteSpadicName(Form("SysCore%01d_Spadic%01d", syscore, spadic));
-  				  histName = "Hitfrequency_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic);
-  				  title = histName + runName;
-  				  //TH2* tempHist= new TH2D(histName.Data(), title.Data(),40000,0,400,nBins,freqbins);
-  				  //delete[] freqbins;
-  				  fHM->Add(histName.Data(),new TGraph());
-  		          fHM->G1(histName.Data())->GetXaxis()->SetTitle("Full Time");
-  		          fHM->G1(histName.Data())->SetNameTitle(histName.Data(),histName.Data());
-  		          fHM->G1(histName.Data())->GetYaxis()->SetTitle("Hitfrequency f/Hz");
-  				  histName = "Clusterfrequency_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic);
-  				  title = histName + runName;
-  				  TH2* tempHist= new TH2D(histName.Data(), title.Data(),40000,0,4000,nBins,freqbins);
-  				  fHM->Add(histName.Data(),tempHist);
-  		          fHM->H2(histName.Data())->GetXaxis()->SetTitle("Full Time");
-  		          fHM->H2(histName.Data())->GetYaxis()->SetTitle("Clusterfrequency f/Hz");
-/*  		          fHM->Create2<TH2I>(histName.Data(), title.Data(),2000,-0.5,1999.5,5000,0,17600000.0);
-  		          fHM->H2(histName.Data())->GetXaxis()->SetTitle("Full Time");
-  		          fHM->H2(histName.Data())->GetYaxis()->SetTitle("Hitfrequency f/Hz");*/
-  				  /*histName = "Masked_"+histName;
-  				  title = histName + runName;
-  				  fHM->Create1<TH1I>(histName.Data(), title.Data(), 16,-0.5,15.5);*/
+  			  histName = "Hitfrequency_for_"+spadicName;
+  			  title = histName + runName;
+  			  //TH2* tempHist= new TH2D(histName.Data(), title.Data(),40000,0,400,nBins,freqbins);
+  			  //delete[] freqbins;
+  			  fHM->Add(histName.Data(),new TGraph());
+  			  fHM->G1(histName.Data())->GetXaxis()->SetNameTitle("Time t/s","Time t/s");
+  			  fHM->G1(histName.Data())->SetNameTitle(histName.Data(),histName.Data());
+  			  fHM->G1(histName.Data())->GetYaxis()->SetNameTitle("Hitfrequency f/Hz","Hitfrequency f/Hz");
+  			  histName = "Clusterfrequency_for_"+spadicName;
+  			  title = histName + runName;
+  			  TH2* tempHist= new TH2D(histName.Data(), title.Data(),40000,0,4000,nBins,freqbins);
+  			  fHM->Add(histName.Data(),tempHist);
+  			  fHM->H2(histName.Data())->GetXaxis()->SetNameTitle("Time t/s","Time t/s");
+  			  fHM->H2(histName.Data())->GetYaxis()->SetNameTitle("Clusterfrequency f/Hz","Clusterfrequency f/Hz");
+  			  /*
+  			   * fHM->Create2<TH2I>(histName.Data(), title.Data(),2000,-0.5,1999.5,5000,0,17600000.0);
+  			   * fHM->H2(histName.Data())->GetXaxis()->SetTitle("Full Time");
+  			   * fHM->H2(histName.Data())->GetYaxis()->SetTitle("Hitfrequency f/Hz");
+  			   * histName = "Masked_"+histName;
+  			   * title = histName + runName;
+  			   * fHM->Create1<TH1I>(histName.Data(), title.Data(), 16,-0.5,15.5);*/
   		  }
-  	  }
+	  }
   if(fActivateClusterizer)
 	  if(fDrawPadResponse)
-  for(Int_t Size=1 ;Size <= 16; Size++)
-    {
-      for(Int_t Detector =0;Detector<=1;Detector++){
-          TString Detectorname = (Detector == 0 ? "Frankfurt" : "Muenster");
-          histName = "Pad_Response_"+ Detectorname + "_for_Clusters_of_Size_"+std::to_string(Size);
-          title = histName + runName;
-          fHM->Create2<TH2I>(histName.Data(), title.Data(), 801,-(4+0.05)*7.125,(4+0.05)*7.125,101,-0.005,1.005);
-          //fHM->Create3<TH3I>(histName.Data(), title.Data(), 801,-(4+0.05)*7.125,(4+0.05)*7.125,101,-0.005,1.005,100,0,1000);
-          fHM->H2(histName.Data())->GetXaxis()->SetTitle("Displacement frac{d}{mm}");
-          fHM->H2(histName.Data())->GetYaxis()->SetTitle("Chargeratio frac{Q_{i}}{#sum_{k}^{ } Q_{k}}");
-          //fHM->H3(histName.Data())->GetZaxis()->SetTitle("TotalCharge");
-          histName = "Cut5_" +histName;
-          title = histName + runName;
-          fHM->Create2<TH2I>(histName.Data(), title.Data(), 801,-(4+0.05)*7.125,(4+0.05)*7.125,101,-0.005,1.005);
-          //fHM->Create3<TH3I>(histName.Data(), title.Data(), 801,-(4+0.05)*7.125,(4+0.05)*7.125,101,-0.005,1.005,100,0,1000);
-          fHM->H2(histName.Data())->GetXaxis()->SetTitle("Displacement frac{d}{mm}");
-          fHM->H2(histName.Data())->GetYaxis()->SetTitle("Chargeratio frac{Q_{i}}{#sum_{k}^{ } Q_{k}}");
-          //fHM->H3(histName.Data())->GetZaxis()->SetTitle("TotalCharge");
-          histName = "Central_Pad_Response_"+ Detectorname + "_for_Clusters_of_Size_"+std::to_string(Size);
-          title = histName + runName;
-          fHM->Create2<TH2I>(histName.Data(), title.Data(), 801,-(4+0.05)*7.125,(4+0.05)*7.125,101,-0.005,1.005);
-          //fHM->Create3<TH3I>(histName.Data(), title.Data(), 801,-(4+0.05)*7.125,(4+0.05)*7.125,101,-0.005,1.005,100,0,1000);
-          fHM->H2(histName.Data())->GetXaxis()->SetTitle("Displacement frac{d}{mm}");
-          fHM->H2(histName.Data())->GetYaxis()->SetTitle("Chargeratio frac{Q_{i}}{#sum_{k}^{ } Q_{k}}");
-
-      }
-    }
+		  for(Int_t Size=1 ;Size <= 16; Size++)
+		  {
+			  for(Int_t syscore = 0; syscore < NrOfActiveSyscores; ++syscore) {
+				  for(Int_t spadic = 0; spadic < NrOfActiveSpadics; ++spadic) {
+					  spadicName = GetSpadicName(syscore, spadic, kDirectOutput,kFullSpadic);
+					  histName = "Pad_Response_"+ spadicName + "_for_Clusters_of_Size_"+std::to_string(Size);
+					  title = histName + runName;
+					  fHM->Create2<TH2I>(histName.Data(), title.Data(), 801,-(4+0.05)*7.125,(4+0.05)*7.125,101,-0.005,1.005);
+					  //fHM->Create3<TH3I>(histName.Data(), title.Data(), 801,-(4+0.05)*7.125,(4+0.05)*7.125,101,-0.005,1.005,100,0,1000);
+					  fHM->H2(histName.Data())->GetXaxis()->SetTitle("Displacement frac{d}{mm}");
+					  fHM->H2(histName.Data())->GetYaxis()->SetTitle("Chargeratio frac{Q_{i}}{#sum_{k}^{ } Q_{k}}");
+					  //fHM->H3(histName.Data())->GetZaxis()->SetTitle("TotalCharge");
+					  histName = "Cut5_" +histName;
+					  title = histName + runName;
+					  fHM->Create2<TH2I>(histName.Data(), title.Data(), 801,-(4+0.05)*7.125,(4+0.05)*7.125,101,-0.005,1.005);
+					  //fHM->Create3<TH3I>(histName.Data(), title.Data(), 801,-(4+0.05)*7.125,(4+0.05)*7.125,101,-0.005,1.005,100,0,1000);
+					  fHM->H2(histName.Data())->GetXaxis()->SetTitle("Displacement frac{d}{mm}");
+					  fHM->H2(histName.Data())->GetYaxis()->SetTitle("Chargeratio frac{Q_{i}}{#sum_{k}^{ } Q_{k}}");
+					  //fHM->H3(histName.Data())->GetZaxis()->SetTitle("TotalCharge");
+					  histName = "Central_Pad_Response_"+ spadicName + "_for_Clusters_of_Size_"+std::to_string(Size);
+					  title = histName + runName;
+					  fHM->Create2<TH2I>(histName.Data(), title.Data(), 801,-(4+0.05)*7.125,(4+0.05)*7.125,101,-0.005,1.005);
+					  //fHM->Create3<TH3I>(histName.Data(), title.Data(), 801,-(4+0.05)*7.125,(4+0.05)*7.125,101,-0.005,1.005,100,0,1000);
+					  fHM->H2(histName.Data())->GetXaxis()->SetTitle("Displacement frac{d}{mm}");
+					  fHM->H2(histName.Data())->GetYaxis()->SetTitle("Chargeratio frac{Q_{i}}{#sum_{k}^{ } Q_{k}}");
+				  }
+			  }
+		  }
 
   if(fActivateClusterizer){
-      for (Int_t syscore=0; syscore<1;++syscore) {
-          for (Int_t detector=0; detector<2;++detector) {
-              TString histname = "Charge_Spectrum_for_Syscore_"+std::to_string(syscore)+"_Detector_"+std::to_string(detector);
+	  for(Int_t syscore = 0; syscore < NrOfActiveSyscores; ++syscore) {
+		  for(Int_t spadic = 0; spadic < NrOfActiveSpadics; ++spadic) {
+			  spadicName = GetSpadicName(syscore, spadic, kDirectOutput,kFullSpadic);
+              TString histname = "Charge_Spectrum_for_"+spadicName;
               title = histname + runName;
               fHM->Create1<TH1D>(histname.Data(), title.Data(),2001,-0.5,2000.5/*,33,-0.5,32.5*/);
               fHM->H1(histname.Data())->GetXaxis()->SetTitle("Cluster Charge in ADC Units");
               //fHM->H2(histname.Data())->GetYaxis()->SetTitle("ChID");
               fHM->H1(histname.Data())->GetYaxis()->SetTitle("N^{o}");
-	      // Integral Charge
-              TString histname2 = "ChargeIntegral_Spectrum_for_Syscore_"+std::to_string(syscore)+"_Detector_"+std::to_string(detector);
+              // Integral Charge
+              TString histname2 = "ChargeIntegral_Spectrum_for_"+spadicName;
               title = histname2 + runName;
               fHM->Create1<TH1D>(histname2.Data(), title.Data(),6001,-0.5,6000.5/*,33,-0.5,32.5*/);
               fHM->H1(histname2.Data())->GetXaxis()->SetTitle("Cluster Charge in ADC Units");
@@ -1992,20 +1670,10 @@ void CbmTrdTimeCorrel::CreateHistograms()
       }
   }
 
-  for(Int_t Detector =0;Detector<=1;Detector++){
-            TString Detectorname = (Detector == 0 ? "Frankfurt" : "Muenster");
-            histName = "Shape_of_Rightsided_Clusters"+ Detectorname;
-            title = histName + runName;
-            fHM->Create2<TH2I>(histName.Data(), title.Data(), 32,-0.5,31.5,3,0.5,3.5);
-            histName = "Shape_of_Leftsided_Clusters"+ Detectorname;
-            title = histName + runName;
-            fHM->Create2<TH2I>(histName.Data(), title.Data(), 32,-0.5,31.5,3,0.5,3.5);
-        }
-
-  for (Int_t syscore=0; syscore<1;++syscore) {
-      for(Int_t Detector =0;Detector<=1;Detector++){
-		  TString Detectorname = (Detector == 0 ? "Frankfurt" : "Muenster");
-		  histName = "Baseline_for_Syscore_"+std::to_string(syscore)+"_Prototype_from_"+Detectorname;
+  for(Int_t syscore = 0; syscore < NrOfActiveSyscores; ++syscore) {
+	  for(Int_t spadic = 0; spadic < NrOfActiveSpadics; ++spadic) {
+		  spadicName = GetSpadicName(syscore, spadic, kDirectOutput,kFullSpadic);
+		  histName = "Baseline_for_"+spadicName;
 		  title = histName + runName;
 		  fHM->Create2<TH2I>(histName.Data(), title.Data(),512,-256.5,255.5,33,-0.5,32.5);
 		  histName = "Temp_"+histName;
@@ -2019,27 +1687,12 @@ void CbmTrdTimeCorrel::CreateHistograms()
 	  title = histName + runName;
 	  fHM->Create2<TH2I>(histName.Data(), title.Data(),461,-32.5,32.5,100,0,100);
   }
-  if(fDrawSignalShapes){
-	  for (Int_t syscore=0; syscore<1;++syscore) {
-		  for(Int_t Detector =0;Detector<=1;Detector++){
-			  for(Int_t ChID = 0 ; ChID < 32 ; ChID++){
-				  TString Detectorname = (Detector == 0 ? "Frankfurt" : "Muenster");
-				  histName = "SignalShape_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+Detectorname+"_Channel_"+ std::to_string(ChID);
-				  title = histName + runName;
-				  fHM->Create2<TH2I>(histName.Data(), title.Data(),33,-0.5,32.5,512,-256.5,255.5);
-				  fHM->H2(histName.Data())->GetXaxis()->SetNameTitle("Sample","Sample");
-				  fHM->H2(histName.Data())->GetYaxis()->SetNameTitle("ADC Value","ADC Value");
-			  }
-		  }
-	  }
-  }
+
   if (fDrawClustertypes){
-	  for (Int_t syscore=0; syscore<1;++syscore)
-	  {
-		  for(Int_t Detector =0;Detector<=1;Detector++)
-		  {
-			  TString Detectorname = (Detector == 0 ? "Frankfurt" : "Muenster");
-			  histName = "Clustertypes_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+Detectorname;
+	  for(Int_t syscore = 0; syscore < NrOfActiveSyscores; ++syscore) {
+		  for(Int_t spadic = 0; spadic < NrOfActiveSpadics; ++spadic) {
+			  spadicName = GetSpadicName(syscore, spadic, kDirectOutput,kFullSpadic);
+			  histName = "Clustertypes_for_"+spadicName;
 			  title = histName + runName;
 			  fHM->Create2<TH2I>(histName.Data(), title.Data(),17,-0.5,16.5,6,-0.5,5.5);
 			  fHM->H2(histName.Data())->GetXaxis()->SetNameTitle("Clustersize in Pads","Clustersize in Pads");
@@ -2047,24 +1700,24 @@ void CbmTrdTimeCorrel::CreateHistograms()
 		  }
 	  }
   }
-	if (fDrawSignalDebugHistograms) {
-		for (Int_t syscore = 0; syscore < 1; ++syscore) {
-			for (Int_t Detector = 0; Detector <= 1; Detector++) {
-				for(Int_t TriggerType =0;TriggerType<4;TriggerType++){
-				  TString Detectorname = (Detector == 0 ? "Frankfurt" : "Muenster");
-				  histName = "MaxADC_vs_NrSamples_for_Syscore_"+std::to_string(syscore)+"_Prototype_from_"+Detectorname+triggerTypes[TriggerType];
+  if (fDrawSignalDebugHistograms) {
+	  for(Int_t syscore = 0; syscore < NrOfActiveSyscores; ++syscore) {
+		  for(Int_t spadic = 0; spadic < NrOfActiveSpadics; ++spadic) {
+			  spadicName = GetSpadicName(syscore, spadic, kDirectOutput,kFullSpadic);
+			  for(Int_t TriggerType =0;TriggerType<4;TriggerType++){
+				  histName = "MaxADC_vs_NrSamples_for_"+spadicName+"_"+triggerTypes[TriggerType];
 				  title = histName + runName;
 				  fHM->Create2<TH2I>(histName.Data(), title.Data(),33,-0.5,32.5,512,-256.5,255.5);
 				  fHM->H2(histName.Data())->GetXaxis()->SetTitle("NrSamples");
 				  fHM->H2(histName.Data())->GetYaxis()->SetTitle("MaxADC");
-				  histName = "avgBaseline_vs_NrSamples_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+Detectorname+triggerTypes[TriggerType];
+				  histName = "avgBaseline_vs_NrSamples_for_"+spadicName+"_"+triggerTypes[TriggerType];;
 				  title = histName + runName;
 				  fHM->Create2<TH2I>(histName.Data(), title.Data(),33,-0.5,32.5,512,-256.5,255.5);
 				  fHM->H2(histName.Data())->GetXaxis()->SetTitle("NrSamples");
 				  fHM->H2(histName.Data())->GetYaxis()->SetTitle("averagedBaseline");
 				  vector<string> Hittypes = {"_Hits","_MultiHits"};
 				  for (string Hittype : Hittypes){
-					  histName = "MaxADC_vs_avgBaseline_for_Syscore_"+std::to_string(syscore)+"_Prototype_from_"+Detectorname+Hittype+triggerTypes[TriggerType];
+					  histName = "MaxADC_vs_avgBaseline_for_"+spadicName+Hittype+"_"+triggerTypes[TriggerType];
 					  title = histName + runName;
 					  fHM->Create2<TH2I>(histName.Data(), title.Data(),512,-256.5,255.5,512,-256.5,255.5);
 					  fHM->H2(histName.Data())->GetXaxis()->SetTitle("averagedBaseline");
@@ -2074,7 +1727,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
 					  fHM->Create2<TH2I>(histName.Data(), title.Data(),512,-256.5,255.5,512,-256.5,255.5);
 					  fHM->H2(histName.Data())->GetXaxis()->SetTitle("averagedBaseline");
 					  fHM->H2(histName.Data())->GetYaxis()->SetTitle("MaxADC");
-					  histName = "First_Sample_vs_last_Sample_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+Detectorname+Hittype+triggerTypes[TriggerType];
+					  histName = "First_Sample_vs_last_Sample_for_"+spadicName+Hittype+"_"+triggerTypes[TriggerType];
 					  title = histName + runName;
 					  fHM->Create2<TH2I>(histName.Data(), title.Data(),512,-256.5,255.5,512,-256.5,255.5);
 					  fHM->H2(histName.Data())->GetXaxis()->SetTitle("Letztes Sample");
@@ -2087,20 +1740,21 @@ void CbmTrdTimeCorrel::CreateHistograms()
 
 
 				  }
-				  histName = "avgBaseline_for_Syscore_"+std::to_string(syscore)+"_Prototype_from_"+Detectorname+triggerTypes[TriggerType];
+				  histName = "avgBaseline_for_"+spadicName+"_"+triggerTypes[TriggerType];
 				  title = histName + runName;
 				  fHM->Create1<TH1I>(histName.Data(), title.Data(),512,-256.5,255.5);
 				  fHM->H1(histName.Data())->GetXaxis()->SetTitle("averagedBaseline");
-			}
-			}
+			  }
 		  }
-	}
+	  }
+  }
 	{
-		for (Int_t syscore =0;syscore<1;syscore++){
-			for (Int_t spadic=0; spadic<4;++spadic) {
+		for(Int_t syscore = 0; syscore < NrOfActiveSyscores; ++syscore) {
+			for(Int_t spadic = 0; spadic < NrOfActiveSpadics; ++spadic) {
+				spadicName = GetSpadicName(syscore, spadic, kDirectOutput,kFullSpadic);
 				for(Int_t TriggerType =1;TriggerType<4;TriggerType++){
 					for(Int_t stopType =0;stopType<4;stopType+=3){
-						histName = "Signalshape_for_Syscore_"+std::to_string(syscore)+"_Spadic_"+std::to_string(spadic)+"_Trigger_"+std::to_string(TriggerType)+"_StopType_"+std::to_string(stopType);
+						histName = "Signalshape_for_"+spadicName+"_Trigger_"+std::to_string(TriggerType)+"_StopType_"+std::to_string(stopType);
 						title = histName + runName;
 						fHM->Create2<TH2I>(histName.Data(), title.Data(),33,-0.5,32.5,512,-256.5,255.5);
 					}
@@ -2108,65 +1762,43 @@ void CbmTrdTimeCorrel::CreateHistograms()
 			}
 		}
 	}
-  fHM->Add("BaselinetrendIKF",new TGraph());
-  fHM->G1("BaselinetrendIKF")->SetNameTitle("BaselinetrendIKF","BaselinetrendIKF");
-  fHM->G1("BaselinetrendIKF")->GetXaxis()->SetTitle("Timeslice");
-  fHM->G1("BaselinetrendIKF")->GetYaxis()->SetTitle("Baseline");
-  fHM->Add("BaselinetrendIKP",new TGraph());
-  fHM->G1("BaselinetrendIKP")->SetNameTitle("BaselinetrendIKP","BaselinetrendIKP");
-  fHM->G1("BaselinetrendIKP")->GetXaxis()->SetTitle("Timeslice");
-  fHM->G1("BaselinetrendIKP")->GetYaxis()->SetTitle("Baseline");
+
   fHM->Add("TsCounter", new TGraph());
   fHM->G1("TsCounter")->SetNameTitle("TsCounter","TsCounter");
-  fHM->Add("TsCounterHit0", new TGraph());
-  fHM->G1("TsCounterHit0")->SetNameTitle("TsCounterHit0","TsCounterHit0");
-  fHM->Add("TsCounterHit1", new TGraph());
-  fHM->G1("TsCounterHit1")->SetNameTitle("TsCounterHit1","TsCounterHit1");
-  fHM->Add("TsCounterHitAborted0", new TGraph());
-  fHM->Add("TsCounterHitAborted1", new TGraph());
-  fHM->G1("TsCounterHitAborted0")->SetNameTitle("TsCounterHitAborted0","TsCounterHitAborted0");
-  fHM->G1("TsCounterHitAborted1")->SetNameTitle("TsCounterHitAborted1","TsCounterHitAborted1");
-  fHM->Add("TsCounterOverflow0", new TGraph());
-  fHM->Add("TsCounterOverflow1", new TGraph());
-  fHM->G1("TsCounterOverflow0")->SetNameTitle("TsCounterOverflow0","TsCounterOverflow0");
-  fHM->G1("TsCounterOverflow1")->SetNameTitle("TsCounterOverflow1","TsCounterOverflow1");
-  fHM->Add("TsLost0", new TGraph());
-  fHM->Add("TsLost1", new TGraph());
-  fHM->G1("TsLost0")->SetNameTitle("TsLost0","TsLost0");
-  fHM->G1("TsLost1")->SetNameTitle("TsLost1","TsLost1");
-  fHM->Add("TsCounterInfo0", new TGraph());
-  fHM->Add("TsCounterInfo1", new TGraph());
-  fHM->G1("TsCounterInfo0")->SetNameTitle("TsCounterInfo0","TsCounterInfo0");
-  fHM->G1("TsCounterInfo1")->SetNameTitle("TsCounterInfo1","TsCounterInfo1");
-  fHM->Add("TsCounterEpoch0", new TGraph());
-  fHM->Add("TsCounterEpoch1", new TGraph());
-  fHM->G1("TsCounterEpoch0")->SetNameTitle("TsCounterEpoch0","TsCounterEpoch0");
-  fHM->G1("TsCounterEpoch1")->SetNameTitle("TsCounterEpoch1","TsCounterEpoch1");
-  fHM->Add("TsCounterStrange0", new TGraph());
-  fHM->Add("TsCounterStrange1", new TGraph());
-  fHM->G1("TsCounterStrange0")->SetNameTitle("TsCounterStrange0","TsCounterStrange0");
-  fHM->G1("TsCounterStrange1")->SetNameTitle("TsCounterStrange1","TsCounterStrange1");
-  fHM->Add("TsStrangeness0", new TGraph()); // ratio of strange messages over all messages
-  fHM->Add("TsStrangeness1", new TGraph());
-  fHM->G1("TsStrangeness0")->SetNameTitle("TsStrangeness0","TsStrangeness0");
-  fHM->G1("TsStrangeness1")->SetNameTitle("TsStrangeness1","TsStrangeness1");
-  if(fActivateDeltaTAnalysis)
-  for (Int_t SysID=0; SysID<1;++SysID){
-    for (Int_t SpaID=0; SpaID<3;++SpaID){
-      for (Int_t ChID=0; ChID<32;++ChID){
-	fHM->Add(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID)+"_Channel_"+std::to_string(ChID)), new TGraph());
-	fHM->G1(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID)+"_Channel_"+std::to_string(ChID)))->SetNameTitle(("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID)).c_str(),("Delta_t_for_Syscore_"+std::to_string(SysID)+"_Spadic_"+std::to_string(SpaID)).c_str());
-      }
-    }
-  }
-  if(fActivateOffsetAnalysis)
-  for (Int_t baseSpaID=0; baseSpaID<4;++baseSpaID){
-    fHM->Add(("Timestamps_Spadic"+std::to_string(baseSpaID)), new TGraph());
-    fHM->G1(("Timestamps_Spadic"+std::to_string(baseSpaID)))->SetNameTitle(("Timestamps_Spadic"+std::to_string(baseSpaID)).c_str(),("Timestamps_Spadic"+std::to_string(baseSpaID)).c_str());
-    for (Int_t compSpaID=0; compSpaID<4;++compSpaID) {
-      fHM->Add(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)), new TGraph());
-      fHM->G1(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)))->SetNameTitle(("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)).c_str(),("Time_Offset_between_Spadic_"+std::to_string(baseSpaID)+"_and_Spadic_"+std::to_string(compSpaID)).c_str());
-    }
+	//TODO: Refactor TGraphs
+  {
+	  vector<string> graphnames={
+			  "Baselinetrend_",
+			  "TsCounterHit_",
+			  "TsCounterHitAborted_",
+			  "TsCounterOverflow_",
+			  "TsLost_",
+			  "TsCounterInfo_",
+			  "TsCounterEpoch_",
+			  "TsCounterStrange_",
+			  "TsStrangeness_"
+	  };
+	  std::vector<Int_t> spadicList(NrOfActiveHalfSpadics);
+	  std::iota(spadicList.begin(),spadicList.end(),0);
+	  for (const string& graphName : graphnames){
+		  for(Int_t syscore = 0; syscore < NrOfActiveSyscores; ++syscore) {
+				  for(auto spadic : spadicList) {
+				  kSpadicType SpadicType;
+				  if(graphName=="Baselinetrend_"){
+					  SpadicType=kFullSpadic;
+					  if(spadic>=NrOfActiveSpadics)continue;
+				  }else{
+					  SpadicType= kHalfSpadic;
+				  }
+				  spadicName = GetSpadicName(syscore, spadic, kDirectOutput,SpadicType);
+				  TGraph* currentGraph = new TGraph();
+				  fHM->Add(graphName+spadicName.Data(),currentGraph);
+				  currentGraph->SetNameTitle((graphName+spadicName).Data(),(graphName+spadicName).Data());
+				  currentGraph->GetXaxis()->SetTitle("Timeslice");
+				  if(graphName=="Baselinetrend_")currentGraph->GetYaxis()->SetTitle("Baseline");
+			  }
+		  }
+	  }
   }
   fHM->Add("DoubleMessage_MessageType", new TH2I("DoubleMessage_MessageType","DoubleMessage_MessageType",8,-1.5,6.5,8,-1.5,6.5));
   fHM->H2("DoubleMessage_MessageType")->GetYaxis()->SetTitle("MessageType TClonesArray");
@@ -2232,31 +1864,28 @@ void CbmTrdTimeCorrel::FitBaseline() {
 	vector<TFitResult> FitResults;
 	//TODO: Refine fits based on previous iterations
 	//DONE: Check for Rootfile of fits and import them
-	for (Int_t Detector = 0; Detector <= NrOfSpadics / 2; Detector++) {
-		string Detectorname = (Detector == 0 ? "Frankfurt" : "Muenster");
-		string histName = "Baseline_for_Syscore_" + std::to_string(0)
-				+ "_Prototype_from_" + Detectorname;
-		TH2* BaselineHistogram2D = fHM->H2(histName);
-		for (Int_t ChannelID = 0; ChannelID < 32; ChannelID++) {
-			TH1D* BaselineProjection = BaselineHistogram2D->ProjectionX("_px",
-					ChannelID + 1, ChannelID + 1);
-			if (BaselineProjection->GetEntries() < 50)
-				continue;
-			TFitResultPtr Baselinefit = BaselineProjection->Fit("gaus", "MQS", "",
-					-253, -10);
-			TString fitname = "Fit_Baseline_for_Syscore_"
-			    + std::to_string (0) + "_Spadic_"
-			    + std::to_string (Detector*2 + ChannelID / 16) + "_Channel_"
-			    + std::to_string (ChannelID % 16);
-			Baselinefit->SetName(fitname);
-			FitResults.push_back(*Baselinefit);
-			//Baselinefit->Print("V ");
-			std::cout << std::endl;
-		}
-		std::cout << "Fits " << Detectorname << " " << FitResults.size()
-				<< std::endl;
-	}
-	for (auto x : FitResults) {
+	  for(Int_t syscore = 0; syscore < NrOfActiveSyscores; ++syscore) {
+		  for(Int_t spadic = 0; spadic < NrOfActiveSpadics; ++spadic) {
+			  string spadicName = GetSpadicName(syscore, spadic, kDirectOutput,kFullSpadic).Data();
+			  string histName = "Baseline_for_" + spadicName;
+			  TH2* BaselineHistogram2D = fHM->H2(histName);
+			  for (Int_t ChannelID = 0; ChannelID < 32; ChannelID++) {
+				  TH1D* BaselineProjection = BaselineHistogram2D->ProjectionX("_px",
+						  ChannelID + 1, ChannelID + 1);
+				  if (BaselineProjection->GetEntries() < 50)
+					  continue;
+				  TFitResultPtr Baselinefit = BaselineProjection->Fit("gaus", "MQS", "",
+						  -253, -10);
+				  TString fitname = "Fit_Baseline_for_"
+						  + spadicName + "_Channel_"
+						  + std::to_string (ChannelID);
+				  Baselinefit->SetName(fitname);
+				  FitResults.push_back(*Baselinefit);
+				  //Baselinefit->Print("V ");
+			  }
+		  }
+	  }
+	  for (auto x : FitResults) {
 		x.Write();
 	}
 	FairRootManager::Instance()->GetOutFile()->cd();
@@ -2369,7 +1998,7 @@ void CbmTrdTimeCorrel::FitPRF() {
 }
 
 // ----              -------------------------------------------------------
-Int_t CbmTrdTimeCorrel::GetSpadicID(Int_t sourceA)
+inline Int_t CbmTrdTimeCorrel::GetSpadicID(Int_t sourceA)
 {
   //TString spadic="";
   Int_t SpaId = -1;
@@ -2405,6 +2034,16 @@ Int_t CbmTrdTimeCorrel::GetSpadicID(Int_t sourceA)
   return SpaId;
 }
 // ----              -------------------------------------------------------
+inline Int_t CbmTrdTimeCorrel::GetSyscoreID(Int_t eqID)
+{
+	Int_t SyscoreID=eqID-BaseEquipmentID;
+	if(SyscoreID<0||SyscoreID>NrOfActiveSyscores){
+	    LOG(ERROR) << "EqID " << eqID << " not known." << FairLogger::endl;
+	    SyscoreID=-1;
+	}
+	return SyscoreID;
+}
+// ----              -------------------------------------------------------
 TString CbmTrdTimeCorrel::GetStopName(Int_t stopType)
 {
   TString stopName="";
@@ -2437,53 +2076,44 @@ TString CbmTrdTimeCorrel::GetStopName(Int_t stopType)
   return stopName;
 }
 
-TString CbmTrdTimeCorrel::GetSpadicName(Int_t eqID,Int_t sourceA)
-{
+TString CbmTrdTimeCorrel::GetSpadicName(Int_t eqID,Int_t sourceA,kInputType InputType,kSpadicType OutputType){
+	/*	Get a String of the Form "Syscore_0_Spadic_0" describing the specific SPADIC corresponding to the input parameters.
+	 *  The Parameter InputType allows either the Equipment ID/Source Address or the final Syscore/Spadic ID to be used.
+	 *  	kRawData (default) is the parameter that allows the raw EqID/Source Address to be used, kProcessedData takes Syscore/SpadicID.
+	 *  The Parameter OutputType allows adressing either the corresponding FullSpadic, via kDivideBy2 (default), or the original HalfSpadic,
+	 *  	via kDivideBy2.
+	 * */
   TString spadicName="";
-  
-  switch (eqID) {
-  case kFlesMuenster:
-    spadicName="SysCore0_";
-    break;
-  case kFlesFrankfurt:
-    spadicName="SysCore1_";
-    break;
-  case kFlesBucarest:
-    spadicName="SysCore2_";
-    break;
-  default:
-    LOG(ERROR) << "EquipmentID " << eqID << " not known." << FairLogger::endl;
-    break;
+  Int_t SpadicID=0;
+  if(InputType==kRawData){
+	  spadicName="SysCore_"+std::to_string(GetSyscoreID(eqID))+"_";
+	  SpadicID=GetSpadicID(sourceA);
   }
-  
-  switch (sourceA) {
-  case (SpadicBaseAddress+0):  // first spadic
-  case (SpadicBaseAddress+1):  // first spadic
-    spadicName+="Spadic0";
-    break;
-  case (SpadicBaseAddress+2):  // second spadic
-  case (SpadicBaseAddress+3):  // second spadic
-    spadicName+="Spadic1";
-    break;
-  case (SpadicBaseAddress+4):  // third spadic
-  case (SpadicBaseAddress+5):  // third spadic
-    spadicName+="Spadic2";
-    break;
-  default:
-    LOG(ERROR) << "Source Address " << sourceA << " not known." << FairLogger::endl;
-    break;
+  else {
+	  spadicName="SysCore_"+std::to_string((eqID))+"_";
+	  SpadicID=(sourceA);
   }
-  
-  spadicName = RewriteSpadicName(spadicName);
-  
+
+  if(OutputType==kFullSpadic&&InputType!=kDirectOutput){
+	  SpadicID/=2;
+  }
+  ;
+  if(OutputType==kFullSpadic){
+	  spadicName += "Spadic_";
+  }else{
+	  spadicName += "Half_Spadic_";
+
+  }
+  spadicName+=std::to_string(SpadicID);
+
   return spadicName;
 }
 
 TString CbmTrdTimeCorrel::RewriteSpadicName(TString spadicName) 
 {
-  if(spadicName=="SysCore0_Spadic0") {
+  if(spadicName=="SysCore_0_Spadic_0") {
     if(fRewriteSpadicName) spadicName="Frankfurt";
-  }else if(spadicName=="SysCore0_Spadic1"){
+  }else if(spadicName=="SysCore_0_Spadic_1"){
     if(fRewriteSpadicName) spadicName="Muenster";
   }else{
     spadicName="";
@@ -2588,7 +2218,7 @@ std::map<Int_t, std::map<Int_t,std::map<ULong_t, Long_t> > > CbmTrdTimeCorrel::C
 }
 
 
-CbmTrdTimeCorrel::Cluster::Cluster(Int_t * BaselineArray,Int_t initWindowsize, Int_t ChargeThreshhold = 50) :
+CbmTrdTimeCorrel::Cluster::Cluster(std::vector<Int_t> * BaselineArray,Int_t initWindowsize, Int_t ChargeThreshhold = 50) :
     TObject (),
     fEntries (),
     fParametersCalculated(false),
@@ -2612,12 +2242,12 @@ Bool_t CbmTrdTimeCorrel::Cluster::AddEntry(CbmSpadicRawMessage NewEntry){
   auto CompareSpadicMessages=
       [&](CbmSpadicRawMessage a,CbmSpadicRawMessage b)
       {
-        Int_t ChIDA = a.GetChannelID() + ((GetSpadicID(a.GetSourceAddress()) %2 == 1)? 16 : 0);
-        Int_t ChIDB = b.GetChannelID() + ((GetSpadicID(b.GetSourceAddress()) %2 == 1)? 16 : 0);
-        Int_t PadA = GetChannelOnPadPlane(ChIDA);
-        Int_t PadB = GetChannelOnPadPlane(ChIDB);
-        Int_t rowA = (GetSpadicID(a.GetSourceAddress())/2)+PadA/16;
-        Int_t rowB = (GetSpadicID(b.GetSourceAddress())/2)+PadB/16;
+        Int_t ChIDA = a.GetChannelID() + ((CbmTrdTimeCorrel::GetSpadicID(a.GetSourceAddress()) %2 == 1)? 16 : 0);
+        Int_t ChIDB = b.GetChannelID() + ((CbmTrdTimeCorrel::GetSpadicID(b.GetSourceAddress()) %2 == 1)? 16 : 0);
+        Int_t PadA = CbmTrdTimeCorrel::GetChannelOnPadPlane(ChIDA);
+        Int_t PadB = CbmTrdTimeCorrel::GetChannelOnPadPlane(ChIDB);
+        Int_t rowA = (CbmTrdTimeCorrel::GetSpadicID(a.GetSourceAddress())/2)+PadA/16;
+        Int_t rowB = (CbmTrdTimeCorrel::GetSpadicID(b.GetSourceAddress())/2)+PadB/16;
         if(a.GetFullTime() == b.GetFullTime())
           if(rowA==rowB)
             if(PadA==PadB)
@@ -2627,12 +2257,12 @@ Bool_t CbmTrdTimeCorrel::Cluster::AddEntry(CbmSpadicRawMessage NewEntry){
   auto CompareSpadicMessagesSmaller=
       [&](CbmSpadicRawMessage a,CbmSpadicRawMessage b)
       {
-        Int_t ChIDA = a.GetChannelID() + ((GetSpadicID(a.GetSourceAddress()) %2 == 1)? 16 : 0);
-        Int_t ChIDB = b.GetChannelID() + ((GetSpadicID(b.GetSourceAddress()) %2 == 1)? 16 : 0);
-        Int_t PadA = GetChannelOnPadPlane(ChIDA);
-        Int_t PadB = GetChannelOnPadPlane(ChIDB);
-        Int_t rowA = (GetSpadicID(a.GetSourceAddress())/2)+PadA/16;
-        Int_t rowB = (GetSpadicID(b.GetSourceAddress())/2)+PadB/16;
+        Int_t ChIDA = a.GetChannelID() + ((CbmTrdTimeCorrel::GetSpadicID(a.GetSourceAddress()) %2 == 1)? 16 : 0);
+        Int_t ChIDB = b.GetChannelID() + ((CbmTrdTimeCorrel::GetSpadicID(b.GetSourceAddress()) %2 == 1)? 16 : 0);
+        Int_t PadA = CbmTrdTimeCorrel::GetChannelOnPadPlane(ChIDA);
+        Int_t PadB = CbmTrdTimeCorrel::GetChannelOnPadPlane(ChIDB);
+        Int_t rowA = (CbmTrdTimeCorrel::GetSpadicID(a.GetSourceAddress())/2)+PadA/16;
+        Int_t rowB = (CbmTrdTimeCorrel::GetSpadicID(b.GetSourceAddress())/2)+PadB/16;
         if(rowA<rowB)
           return true;
         else if(rowA==rowB)
@@ -2645,20 +2275,20 @@ Bool_t CbmTrdTimeCorrel::Cluster::AddEntry(CbmSpadicRawMessage NewEntry){
   fEntries.push_back(NewEntry);
   std::sort(fEntries.begin(),fEntries.end(),CompareSpadicMessagesSmaller);
   std::unique(fEntries.begin(),fEntries.end(),CompareSpadicMessages);
-  fSpadic = GetSpadicID(fEntries.begin()->GetSourceAddress());
+  fSpadic = CbmTrdTimeCorrel::GetSpadicID(fEntries.begin()->GetSourceAddress());
   fRow = GetHorizontalMessagePosition(*(fEntries.begin()))/16;
 //GetChannelOnPadPlane(fEntries.begin()->GetChannelID() + ((GetSpadicID(fEntries.begin()->GetSourceAddress()) %2 == 1)? 16 : 0))/16;
   BeforeLoop:
   if (fIs2D) {
 	  for (auto it = fEntries.begin(); it != fEntries.end(); it++) {
-		  if (((GetSpadicID(it->GetSourceAddress()) / 2) != fSpadic / 2)) {
+		  if (((CbmTrdTimeCorrel::GetSpadicID(it->GetSourceAddress()) / 2) != fSpadic / 2)) {
 			  fEntries.erase(it);
 			  goto BeforeLoop;
 		  }
 	  }
   } else {
 	  for (auto it = fEntries.begin(); it != fEntries.end(); it++) {
-		  if (((GetSpadicID(it->GetSourceAddress()) / 2) != fSpadic / 2)
+		  if (((CbmTrdTimeCorrel::GetSpadicID(it->GetSourceAddress()) / 2) != fSpadic / 2)
 				  || GetHorizontalMessagePosition(*it) / 16 != fRow) {
 			  fEntries.erase(it);
 			  goto BeforeLoop;
@@ -2723,7 +2353,7 @@ Int_t NrSamples = message.GetNrSamples ();
  Baseline = Baseline/3;
  }
  else{
-	 Baseline = fBaseline[0*64+16*GetSpadicID(message.GetSourceAddress())+message.GetChannelID()];
+	 Baseline = (*fBaseline)[0*NrOfActiveHalfSpadics*16+16*GetSpadicID(message.GetSourceAddress())+message.GetChannelID()];
  }
  if(GetRawADC) Baseline = 0;
  return (maxADC-Baseline);
@@ -2743,7 +2373,7 @@ Int_t CbmTrdTimeCorrel::GetMaxADC(CbmSpadicRawMessage& message,Bool_t SubtractBa
       previousADC = currentADC;
   }
   //Int_t Baseline=GetAvgBaseline(message);
-  return (SubtractBaseline ?  maxADC-fBaseline[0*64+16*GetSpadicID(message.GetSourceAddress())+message.GetChannelID()] : maxADC);
+  return (SubtractBaseline ?  maxADC-fBaseline[0*NrOfHalfSpadics * 16+16*GetSpadicID(message.GetSourceAddress())+message.GetChannelID()] : maxADC);
 }
 
 Int_t CbmTrdTimeCorrel::Cluster::GetMessageChargeIntegral(CbmSpadicRawMessage& message)
@@ -2760,7 +2390,7 @@ Int_t CbmTrdTimeCorrel::Cluster::GetMessageChargeIntegral(CbmSpadicRawMessage& m
  Baseline = Baseline/3;
  }
  else{
-	 Baseline = fBaseline[0*64+16*GetSpadicID(message.GetSourceAddress())+message.GetChannelID()];
+	 Baseline = (*fBaseline)[0*NrOfActiveHalfSpadics*16+16*GetSpadicID(message.GetSourceAddress())+message.GetChannelID()];
  }
  for (Int_t i = 0 ; i < NrSamples ; i++){
    Int_t currentADC = *(message.GetSamples() + i) - Baseline; // correct each tb with the channels Baseline
@@ -2787,10 +2417,8 @@ Int_t CbmTrdTimeCorrel::GetAvgBaseline(CbmSpadicRawMessage& message,Int_t n){
 
 void CbmTrdTimeCorrel::FillBaselineHistogram(CbmSpadicRawMessage* message){
 	string histName;
-	Int_t Syscore = 0;
-	Int_t Spadic = GetSpadicID(message->GetSourceAddress())/2;
-	string Detectorname = (Spadic == 0 ? "Frankfurt" : "Muenster");
-	histName = "Temp_Baseline_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+Detectorname;
+	string spadicName = GetSpadicName(message->GetEquipmentID(), message->GetSourceAddress(),kRawData,kFullSpadic).Data();
+	histName = "Temp_Baseline_for_"+spadicName;
 	Int_t StopType = message->GetStopType();
 	if (StopType > 0) return;
 	Int_t * Samples=message->GetSamples();
@@ -2807,15 +2435,11 @@ void CbmTrdTimeCorrel::FillSignalShape(CbmSpadicRawMessage& message,string Hist,
 	string Detectorname = ((SpadicID/2) == 0 ? "Frankfurt" : "Muenster");
 	Int_t ChID = message.GetChannelID() + (SpadicID%2)*16;
 	string histName=Hist;
-	if(Hist=="") histName = "SignalShape_for_Syscore_"+std::to_string(0)+"_Prototype_from_"+Detectorname+"_Channel_"+ std::to_string(ChID);
+	if(Hist=="") return;
 	Int_t NrSamples = message.GetNrSamples();
 	Int_t * Samples = message.GetSamples();
 	TH2* Histogram = nullptr;
-	if(HighBaseline){
-		Histogram = fBaselineHM->H2(histName);
-	}else{
-		Histogram = fHM->H2(histName);
-	}
+	Histogram = fHM->H2(histName);
 	for (Int_t i = 0 ; i < NrSamples ; i++){
 		Histogram->Fill(i,*(Samples+ i));
 	}
@@ -2868,7 +2492,7 @@ Float_t CbmTrdTimeCorrel::Cluster::GetHorizontalPosition(){
 }
 
 Int_t CbmTrdTimeCorrel::Cluster::GetHorizontalMessagePosition(CbmSpadicRawMessage& Message){
-  Int_t Position= GetChannelOnPadPlane(Message.GetChannelID()+((GetSpadicID(Message.GetSourceAddress())%2 == 1) ? 16 : 0 ));
+  Int_t Position= CbmTrdTimeCorrel::GetChannelOnPadPlane(Message.GetChannelID()+((GetSpadicID(Message.GetSourceAddress())%2 == 1) ? 16 : 0 ));
   return Position;
 }
 
@@ -2976,7 +2600,8 @@ Size_t CbmTrdTimeCorrel::Cluster::size(){
 }
 
 void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
-  fSpadic = GetSpadicID(fEntries.begin()->GetSourceAddress());//GetChannelOnPadPlane(fEntries.begin()->GetChannelID() + ((GetSpadicID(fEntries.begin()->GetSourceAddress()) %2 == 1)? 16 : 0))/16;
+  fSpadic = CbmTrdTimeCorrel::GetSpadicID(fEntries.begin()->GetSourceAddress());//GetChannelOnPadPlane(fEntries.begin()->GetChannelID() + ((GetSpadicID(fEntries.begin()->GetSourceAddress()) %2 == 1)? 16 : 0))/16;
+  fSyscore = CbmTrdTimeCorrel::GetSyscoreID(fEntries.begin()->GetEquipmentID());
   fType = 0;
   fTotalCharge = 0;
   fTotalIntegralCharge = 0;
@@ -3095,51 +2720,5 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
   fParametersCalculated =true;
 }
 
-Int_t CbmTrdTimeCorrel::Cluster::GetChannelOnPadPlane(Int_t SpadicChannel)
-{
-  Int_t channelMapping[32] = {31,15,30,14,29,13,28,12,27,11,26,10,25, 9,24, 8,
-				23, 7,22, 6,21, 5,20, 4,19, 3,18, 2,17, 1,16, 0};
-  if (SpadicChannel < 0 || SpadicChannel > 31){
-    if (SpadicChannel !=-1) LOG(ERROR) << "CbmTrdTimeCorrel::GetChannelOnPadPlane ChId " << SpadicChannel << FairLogger::endl;
-    return -1;
-  } else {
-    return channelMapping[SpadicChannel];
-  }
-}
-Int_t CbmTrdTimeCorrel::Cluster::GetSpadicID(Int_t sourceA)
-{
-  //TString spadic="";
-  Int_t SpaId = -1;
-  switch (sourceA) {
-  case (SpadicBaseAddress+0):  // first spadic
-    //spadic="Spadic0";
-    SpaId = 0;
-    break;
-  case (SpadicBaseAddress+1):  // first spadic
-    //spadic="Spadic0";
-    SpaId = 1;
-    break;
-  case (SpadicBaseAddress+2):  // second spadic
-    //spadic="Spadic1";
-    SpaId = 2;
-    break;
-  case (SpadicBaseAddress+3):  // second spadic
-    //spadic="Spadic1";
-    SpaId = 3;
-    break;
-  case (SpadicBaseAddress+4):  // third spadic
-    //spadic="Spadic2";
-    SpaId = 4;
-    break;
-  case (SpadicBaseAddress+5):  // third spadic
-    //spadic="Spadic2";
-    SpaId = 5;
-    break;
-  default:
-    LOG(ERROR) << "Source Address " << sourceA << " not known." << FairLogger::endl;
-    break;
-  }
-  return SpaId;
-}
 
 

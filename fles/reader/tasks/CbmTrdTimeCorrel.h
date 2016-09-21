@@ -12,6 +12,7 @@
 #include <deque>
 #include "TRegexp.h"
 #include <cmath>
+#include <numeric>
 
 
 typedef std::map<Int_t, std::map<ULong_t, CbmSpadicRawMessage* > > EpochMap;
@@ -42,7 +43,7 @@ class CbmTrdTimeCorrel : public FairTask
 
   void ClusterizerSpace();
 
- void ClusterizerTime();
+  void ClusterizerTime();
 
   void CleanUpBuffers();
 
@@ -56,22 +57,31 @@ class CbmTrdTimeCorrel : public FairTask
   const Bool_t fActivate2DClusterizer=false;
   const Bool_t fBatchAssessment = false;
   const Bool_t fDebugMode = true;
-  const Bool_t fDrawSignalShapes = false;
   const Bool_t fDrawSignalDebugHistograms = true;
   const Bool_t fDrawPadResponse = true;
   Bool_t fCalculateBaseline = true;
   const Int_t  fSignalShapeThreshold = -255	;
-  Int_t fBaseline[1*6*16];
+  std::vector<Int_t> fBaseline;
   Int_t fClusterThreshhold=0;
   const Bool_t fActivateDeltaTAnalysis = false;
-  const Bool_t fActivateOffsetAnalysis = false;
   const Bool_t fDrawClustertypes = true;
 
 
+  enum kSpadicType{
+	  kHalfSpadic,
+	  kFullSpadic
+  };
+  enum kInputType{
+	  kRawData,
+	  kProcessedData,
+	  kDirectOutput
+  };
 
-  Int_t   GetSpadicID(Int_t sourceA);
 
-  TString GetSpadicName(Int_t eqID,Int_t sourceA);
+  inline static Int_t   GetSpadicID(Int_t sourceA);
+  inline static Int_t   GetSyscoreID(Int_t eqID);
+
+  TString GetSpadicName(Int_t eqID,Int_t sourceA,kInputType InputType=kRawData,kSpadicType OutputType=kHalfSpadic);
   TString RewriteSpadicName(TString spadicName);
 
   TString GetStopName(Int_t stopType);
@@ -86,13 +96,12 @@ class CbmTrdTimeCorrel : public FairTask
   Int_t fiCluster;//counter for fClusters
 
   CbmHistManager* fHM;
-  CbmHistManager* fBaselineHM;
 
   Int_t fNrTimeSlices;
   
   Int_t fRun;
 
-  ULong_t fLastMessageTime[3][6][32];
+  std::vector<ULong_t> fLastMessageTime;
   /* Store the last message time.
      Intended usage is for the first (outer) argument to be the SysCoreID 
      and the second (inner) to be the SPADICID of a full SPADIC.
@@ -100,14 +109,14 @@ class CbmTrdTimeCorrel : public FairTask
      Timestamps are stored for a full spadic.
   */
 
-  Int_t fEpochMarkerArray[3][6];
-  Bool_t fFirstEpochMarker[3][6];
+  std::vector<Int_t> fEpochMarkerArray;
+  std::deque<Bool_t> fFirstEpochMarker;
 
   // Variables for book keeping after a regress of the Epoch counter  
-  Bool_t EpochRegressTriggered[3][6];
-  Int_t EpochRegressOffset[3][6];
-  Int_t EpochRegressCounter[3][6];
-  void FillBaselineHistogram(CbmSpadicRawMessage*);
+  std::deque<Bool_t> EpochRegressTriggered;
+  std::vector<Int_t> EpochRegressOffset;
+  std::vector<Int_t> EpochRegressCounter;
+  inline void FillBaselineHistogram(CbmSpadicRawMessage*);
   void FillSignalShape(CbmSpadicRawMessage&,string Hist="",Bool_t HighBaseline =false);
   void FillSignalShape(CbmSpadicRawMessage* message){
 	  FillSignalShape(*message);
@@ -122,8 +131,8 @@ class CbmTrdTimeCorrel : public FairTask
 
   Int_t GetMessageType(CbmSpadicRawMessage* raw);
 
-  Int_t GetChannelOnPadPlane(Int_t SpadicChannel);
-  Int_t GetChannelonPadPlaneMessage(CbmSpadicRawMessage &message){
+  static Int_t GetChannelOnPadPlane(Int_t SpadicChannel);
+  static Int_t GetChannelonPadPlaneMessage(CbmSpadicRawMessage &message){
 	  Int_t SpaID = GetSpadicID(message.GetSourceAddress());
 	  Int_t ChID = message.GetChannelID();
 	  return GetChannelOnPadPlane(ChID + (SpaID%2)*16);
@@ -154,7 +163,7 @@ class CbmTrdTimeCorrel : public FairTask
   public:
     Cluster():Cluster(0){};
     Cluster(Int_t initWindowsize):Cluster(nullptr,initWindowsize, 120) {};
-    Cluster(Int_t*,Int_t,Int_t);
+    Cluster(std::vector<Int_t>*,Int_t,Int_t);
     ~Cluster();
     Size_t size();
     Int_t Type();
@@ -175,14 +184,12 @@ class CbmTrdTimeCorrel : public FairTask
     std::vector<CbmSpadicRawMessage> fEntries;
     Bool_t fParametersCalculated,fIs2D=true;
     Bool_t fPreCalculatedBaseline;
-    Int_t fSpadic, fRow, fType, fTotalCharge, fTotalIntegralCharge, fMaxADC, fMaxCharge, fWindowsize, fClusterChargeThreshhold;
-    Int_t*  fBaseline;
+    Int_t fSyscore,fSpadic, fRow, fType, fTotalCharge, fTotalIntegralCharge, fMaxADC, fMaxCharge, fWindowsize, fClusterChargeThreshhold;
+    std::vector<Int_t>*  fBaseline;
     ULong_t fFullTime;
     Float_t fHorizontalPosition;
     void CalculateParameters();
     Int_t GetHorizontalMessagePosition(CbmSpadicRawMessage&);
-    Int_t GetSpadicID(Int_t);
-    Int_t GetChannelOnPadPlane(Int_t);
     Int_t GetMaxADC(CbmSpadicRawMessage&,Bool_t = false);
     Int_t GetMessageChargeIntegral(CbmSpadicRawMessage& message);
     void Veto();
