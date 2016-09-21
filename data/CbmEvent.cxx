@@ -13,15 +13,9 @@
 
 
 // -----   Add data to event   ---------------------------------------------
-void CbmEvent::AddData(Cbm::DataType type, Int_t index) {
+void CbmEvent::AddData(Cbm::DataType type, UInt_t index) {
 
-	if ( index < 0 || index > 65535 ) {
-		LOG(ERROR) << "CbmEvent: index " << index << " out of range (UShort)"
-				       << FairLogger::endl;
-		return;
-	}
-
-	fIndexMap[type].push_back(UShort_t(index));
+	fIndexMap[type].push_back(index);
 	fNofData++;
 
 }
@@ -30,7 +24,7 @@ void CbmEvent::AddData(Cbm::DataType type, Int_t index) {
 
 
 // -----   Get a data index   ----------------------------------------------
-Int_t CbmEvent::GetIndex(Cbm::DataType type, UInt_t iData) {
+UInt_t CbmEvent::GetIndex(Cbm::DataType type, UInt_t iData) {
 
 	if ( fIndexMap.find(type) == fIndexMap.end() ) return -1;
 	if ( fIndexMap[type].size() <= iData ) return -2;

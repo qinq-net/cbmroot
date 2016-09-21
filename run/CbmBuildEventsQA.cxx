@@ -71,8 +71,8 @@ void CbmBuildEventsQA::Exec(Option_t* opt) {
 		nMCEvents += event->GetMatch()->GetNofLinks();
 
 		// --- Loop over STS digis
-		for (Int_t iDigi = 0; iDigi < nDigis; iDigi++) {
-			Int_t index = event->GetIndex(Cbm::kStsDigi, iDigi);
+		for (UInt_t iDigi = 0; iDigi < nDigis; iDigi++) {
+			UInt_t index = event->GetIndex(Cbm::kStsDigi, iDigi);
 			CbmStsDigi* digi = (CbmStsDigi*) fStsDigis->At(index);
 			assert(digi);
 

@@ -53,7 +53,7 @@ class CbmEvent: public TObject {
 		 ** @param DataType  Type of data (for values see CbmDetectorList.h)
 		 ** @param Index     Index of the data object in its TClonesArray
 		 */
-		void AddData(Cbm::DataType type, Int_t index);
+		void AddData(Cbm::DataType type, UInt_t index);
 
 
 		/** Get the index of a data object in its TClonesArray
@@ -61,7 +61,7 @@ class CbmEvent: public TObject {
 		 ** @param iData     Running number of data object in event
 		 ** @value Index of data object in its TClonesArray
 		 **/
-		Int_t GetIndex(Cbm::DataType type, UInt_t iData);
+		UInt_t GetIndex(Cbm::DataType type, UInt_t iData);
 
 
 		/** Get match object
@@ -108,7 +108,7 @@ class CbmEvent: public TObject {
 		CbmMatch* fMatch; ///< Match object to MCEvent
 
 		/** Arrays of indices to data types **/
-		std::map<Cbm::DataType, std::vector<UShort_t>> fIndexMap;
+		std::map<Cbm::DataType, std::vector<UInt_t>> fIndexMap;
 
 
 		ClassDef(CbmEvent, 1);

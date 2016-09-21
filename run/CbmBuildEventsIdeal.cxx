@@ -51,10 +51,10 @@ void CbmBuildEventsIdeal::Exec(Option_t* opt) {
 	// Clear output array
 	fEvents->Delete();
 
-	Int_t nDigis = fStsDigis->GetEntriesFast();
+	UInt_t nDigis = fStsDigis->GetEntriesFast();
 	LOG(DEBUG) << GetName() << ": found " << nDigis << " digis "
 			       << FairLogger::endl;
-	for (Int_t iDigi = 0; iDigi < nDigis; iDigi++) {
+	for (UInt_t iDigi = 0; iDigi < nDigis; iDigi++) {
 		CbmStsDigi* digi = (CbmStsDigi*) fStsDigis->At(iDigi);
 
 		// This implementation uses only MC event number from
