@@ -33,13 +33,6 @@ CbmPlutoGenerator::CbmPlutoGenerator()
    fParticles(NULL),
    fPDGmanual(0)
 {
-  // Get Pluto database
-/*  fdata = makeStaticData();
-  fbase = makeDataBase();
-  iEvent     = 0;
-  fInputFile = NULL;
-  fInputTree = NULL;
-  */
 }
 // ------------------------------------------------------------------------
 
@@ -57,16 +50,7 @@ CbmPlutoGenerator::CbmPlutoGenerator(const Char_t* fileName)
    fParticles(new TClonesArray("PParticle",100)),
    fPDGmanual(0)
 {
-  // Get Pluto database
-/*
-  fdata = makeStaticData();
-  fbase = makeDataBase();
-  iEvent     = 0;
-  fFileName  = fileName;
-  fInputFile = new TFile(fFileName);
-  */
   fInputTree = (TTree*) fInputFile->Get("data");
-  //  fParticles = new TClonesArray("PParticle",100);
   fInputTree->SetBranchAddress("Particles", &fParticles);
 }
 // ------------------------------------------------------------------------
@@ -91,13 +75,13 @@ Bool_t CbmPlutoGenerator::ReadEvent(FairPrimaryGenerator* primGen)
 
   // Check for input file
   if ( ! fInputFile ) {
-    cout << "-E CbmPlutoGenerator: Input file nor open!" << endl;
+    LOG(ERROR) << "CbmPlutoGenerator: Input file nor open!" << FairLogger::endl;
     return kFALSE;
   }
 
   // Check for number of events in input file
   if ( iEvent > fInputTree->GetEntries() ) {
-    cout << "-E CbmPlutoGenerator: No more events in input file!" << endl;
+    LOG(ERROR) << "CbmPlutoGenerator: No more events in input file!" << FairLogger::endl;
     CloseInput();
     return kFALSE;
   }
@@ -122,17 +106,23 @@ Bool_t CbmPlutoGenerator::ReadEvent(FairPrimaryGenerator* primGen)
 
     // Check if particle type is known to database
     if ( ! found ) {
-      cout << "-W CbmPlutoGenerator: Unknown type " << part->ID() << ", skipping particle." << endl;
+      LOG(WARNING) << "CbmPlutoGenerator: Unknown type " << part->ID() 
+                   << ", skipping particle." << FairLogger::endl;
       continue;
     }
-    Info("ReadEvent"," %d Particle (geant%d) PDG %d -> %s", iPart,part->ID(),*pdgType, dataBase->GetParticle(*pdgType)->GetName());
+    LOG(INFO) << iPart << " Particle (geant" << part->ID() << " PDG " 
+              << *pdgType << " -> " << dataBase->GetParticle(*pdgType)->GetName()  
+              << FairLogger::endl;
+    //Info("ReadEvent"," %d Particle (geant%d) PDG %d -> %s", iPart,part->ID(),*pdgType, dataBase->GetParticle(*pdgType)->GetName());
 
     // set PDG by hand for pluto dilepton pairs and other not defined codes in pluto
     Int_t dielectron=99009911;
     Int_t dimuon    =99009913;
     if(fPDGmanual && *pdgType==0) {
       pdgType=&fPDGmanual;
-      Warning("ReadEvent","\t PDG code changed by user defintion to %d",*pdgType);
+      LOG(WARNING) << "\t PDG code changed by user defintion to " << *pdgType
+                   << FairLogger::endl; 
+      //Warning("ReadEvent","\t PDG code changed by user defintion to %d",*pdgType);
       //      Printf(" \t PDG changed to %d -> %s",*pdgType,dataBase->GetParticle(*pdgType)->GetName());
     }
     else if(part->ID()==51) pdgType=&dielectron;
@@ -157,7 +147,9 @@ Bool_t CbmPlutoGenerator::ReadEvent(FairPrimaryGenerator* primGen)
     Bool_t wanttracking = kTRUE;
     if(idx>-1) wanttracking=kFALSE; // only tracking for decay products
     Int_t parent = parIdx;
-    Info("ReadEvent","\t Add particle with parent at index %d and do tracking %d",parIdx,wanttracking);
+    LOG(INFO) << "\t Add particle with parent at index " << parIdx 
+              << " and do tracking " << wanttracking << FairLogger::endl;
+    //Info("ReadEvent","\t Add particle with parent at index %d and do tracking %d",parIdx,wanttracking);
     //    part->Print();
 
     // Give track to PrimaryGenerator
@@ -177,8 +169,8 @@ Bool_t CbmPlutoGenerator::ReadEvent(FairPrimaryGenerator* primGen)
 void CbmPlutoGenerator::CloseInput()
 {
   if ( fInputFile ) {
-    cout << "-I CbmPlutoGenerator: Closing input file " << fFileName
-         << endl;
+    LOG(INFO) << "CbmPlutoGenerator: Closing input file " << fFileName
+              << FairLogger::endl;
     fInputFile->Close();
     delete fInputFile;
   }
