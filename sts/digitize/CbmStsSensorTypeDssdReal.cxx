@@ -413,7 +413,7 @@ const {
     } // Loop over fired strips
 
     //deleting pointers
-    delete stripCharge;
+    delete[] stripCharge;
     if ( fCrossTalk ) delete stripChargeCT;
     
     return nSignals;
