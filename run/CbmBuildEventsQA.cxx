@@ -3,7 +3,7 @@
  ** @date 20.09.2016
  **/
 
-#include "CbmBuildEventsQa.h"
+#include "CbmBuildEventsQA.h"
 
 #include <cassert>
 #include <iomanip>

@@ -164,7 +164,7 @@ class CbmSetup : public TNamed
      ** @param active    Activity tag for module (only in case of detectors)
      **
      ** The construction of the PSD does not follow the same convention
-     ** (with geometry tag) as that of the other modules. It thus necessitates
+     ** (with geometry tag) as that of the other modules. It thus necessitates
      ** special treatment.
      **/
     void SetPsd(TString geoFile, Double_t zPos, Double_t xPos,
