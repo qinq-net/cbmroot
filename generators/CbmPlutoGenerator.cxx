@@ -118,21 +118,21 @@ Bool_t CbmPlutoGenerator::ReadEvent(FairPrimaryGenerator* primGen)
 
     Int_t *pdgType = 0x0;
     Bool_t found = fbase->GetParamInt("pid",part->ID(),"pythiakf",&pdgType);
-    // TODO: replace by fdata->GetParticleKF(part->ID()); as soon as FairSoft uses pluto version 5.42.6 or higher and remove fbase
+    // TODO: replace by fdata->GetParticleKF(part->ID()); as soon as FairSoft uses pluto version 5.43 or higher and remove fbase
 
     // Check if particle type is known to database
     if ( ! found ) {
       cout << "-W CbmPlutoGenerator: Unknown type " << part->ID() << ", skipping particle." << endl;
       continue;
     }
-    Printf(" %d Particle (geant%d) PDG %d -> %s", iPart,part->ID(),*pdgType, dataBase->GetParticle(*pdgType)->GetName());
+    Info("ReadEvent"," %d Particle (geant%d) PDG %d -> %s", iPart,part->ID(),*pdgType, dataBase->GetParticle(*pdgType)->GetName());
 
     // set PDG by hand for pluto dilepton pairs and other not defined codes in pluto
     Int_t dielectron=99009911;
     Int_t dimuon    =99009913;
     if(fPDGmanual && *pdgType==0) {
       pdgType=&fPDGmanual;
-      Printf(" \t PDG changed by user defintion to %d",*pdgType);
+      Warning("ReadEvent","\t PDG code changed by user defintion to %d",*pdgType);
       //      Printf(" \t PDG changed to %d -> %s",*pdgType,dataBase->GetParticle(*pdgType)->GetName());
     }
     else if(part->ID()==51) pdgType=&dielectron;
@@ -157,7 +157,7 @@ Bool_t CbmPlutoGenerator::ReadEvent(FairPrimaryGenerator* primGen)
     Bool_t wanttracking = kTRUE;
     if(idx>-1) wanttracking=kFALSE; // only tracking for decay products
     Int_t parent = parIdx;
-    Printf(" \t add particle with parent at index %d and do tracking %d",parIdx,wanttracking);
+    Info("ReadEvent","\t Add particle with parent at index %d and do tracking %d",parIdx,wanttracking);
     //    part->Print();
 
     // Give track to PrimaryGenerator

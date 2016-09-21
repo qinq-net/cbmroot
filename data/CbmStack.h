@@ -185,11 +185,13 @@ class CbmStack : public FairGenericStack
   TParticle* GetParticle(Int_t trackId) const;
   TClonesArray* GetListOfParticles() { return fParticles; }
 
+  /** Swich on/off the tracking of a particle*/
+  void DoTracking(Bool_t doTracking = kTRUE) { fdoTracking = doTracking; }
 
 
  private:
 
-    
+
   /** STL stack (FILO) used to handle the TParticles for tracking **/
   std::stack<TParticle*>  fStack;           //!
 
@@ -217,7 +219,7 @@ class CbmStack : public FairGenericStack
   /** STL map from track index and detector ID to number of MCPoints **/
   std::map<std::pair<Int_t, Int_t>, Int_t> fPointsMap;     //!
 
-  
+
   /** Some indizes and counters **/
   Int_t fCurrentTrack;  //! Index of current track
   Int_t fNPrimaries;    //! Number of primary particles
@@ -232,6 +234,8 @@ class CbmStack : public FairGenericStack
   Double32_t fEnergyCut;
   Bool_t     fStoreMothers;
 
+  /** go to tracking  */
+  Bool_t fdoTracking; //! global switch for geant propagation
 
   /** Mark tracks for output using selection criteria  **/
   void SelectTracks();
@@ -239,9 +243,9 @@ class CbmStack : public FairGenericStack
   CbmStack(const CbmStack&);
   CbmStack& operator=(const CbmStack&);
 
-  ClassDef(CbmStack,1)
+  ClassDef(CbmStack,2)
 
-      
+
 };
 
 

@@ -38,7 +38,8 @@ CbmStack::CbmStack(Int_t size)
     fStoreSecondaries(kTRUE),
     fMinPoints(1),
     fEnergyCut(0.),
-    fStoreMothers(kTRUE)
+    fStoreMothers(kTRUE),
+    fdoTracking(kTRUE)
 {
 
 }
@@ -115,7 +116,9 @@ void CbmStack::PushTrack(Int_t toBeDone, Int_t parentId, Int_t pdgCode,
   ntr = trackId;
 
   // --> Push particle on the stack if toBeDone is set
-  if (toBeDone == 1) { fStack.push(particle); }
+  if (fdoTracking && toBeDone) {
+    fStack.push(particle);
+  }
 
 }
 // -------------------------------------------------------------------------
