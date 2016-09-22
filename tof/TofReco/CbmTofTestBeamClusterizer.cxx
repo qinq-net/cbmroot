@@ -388,11 +388,13 @@ void CbmTofTestBeamClusterizer::SetParContainers()
 
 void CbmTofTestBeamClusterizer::Exec(Option_t* /*option*/)
 {
-   fTofHitsColl->Clear("C");
-   //fTofHitsColl->Delete();
+   // Clear output arrays 
+   //fTofHitsColl->Clear("C");
+   fTofHitsColl->Delete();  // Computationally costly!, but hopefully safe
    //for (Int_t i=0; i<fTofDigiMatchColl->GetEntries(); i++) ((CbmMatch *)(fTofDigiMatchColl->At(i)))->ClearLinks();  // FIXME, try to tamper memory leak (did not help)
    //fTofDigiMatchColl->Clear("C+L");
    fTofDigiMatchColl->Delete();
+
 
    fiNbHits = 0;
 
@@ -408,6 +410,7 @@ void CbmTofTestBeamClusterizer::Exec(Option_t* /*option*/)
    fdEvent++;
    FillHistos();
 
+   fTofDigisColl->RemoveAll();
 }
 
 /************************************************************************************/
@@ -1665,7 +1668,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
      for(Int_t iDetIndx=0; iDetIndx<fMbsMappingPar->GetNbMappedDet(); iDetIndx++){
        Int_t iUniqueId = fMbsMappingPar->GetMappedDetUId( iDetIndx );
 
-       LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::FillHistos: Inspect Hit  "
+       LOG(DEBUG2)<<"CbmTofTestBeamClusterizer::FillHistos: Inspect Hit  "
                   << Form(" %d %08x %08x %d %08x ", iHitInd, pHit->GetAddress(), DetMask, iDetIndx, iUniqueId)
                   <<FairLogger::endl;
        if(iDetId == iUniqueId){    // detector index found
@@ -1735,7 +1738,9 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
 
          CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchColl->At( iHitInd );
          LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::FillHistos: got matches: "
-                    <<digiMatch->GetNofLinks()<<":";
+                    <<digiMatch->GetNofLinks()
+                    <<FairLogger::endl;
+
          fhRpcCluSize[iDetIndx]->Fill((Double_t)iCh,digiMatch->GetNofLinks()/2.);
 
          for (Int_t iSel=0; iSel<iNSel; iSel++) if(BSel[iSel]){
@@ -1765,7 +1770,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
            CbmLink L0 = digiMatch->GetLink(iLink);   //vDigish.at(ivDigInd);
            Int_t iDigInd0=L0.GetIndex(); 
            Int_t iDigInd1=(digiMatch->GetLink(iLink+1)).GetIndex(); //vDigish.at(ivDigInd+1);
-           LOG(DEBUG1)<<" " << iDigInd0<<", "<<iDigInd1<<FairLogger::endl;
+           //LOG(DEBUG1)<<" " << iDigInd0<<", "<<iDigInd1<<FairLogger::endl;
 
            if (iDigInd0 < fTofDigisColl->GetEntries() && iDigInd1 < fTofDigisColl->GetEntries()){
             CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
@@ -1790,9 +1795,9 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
               Int_t iS0=pDig0->GetSide();
               Int_t iS1=pDig1->GetSide();
               if(iCh0 != iCh1 || iS0==iS1){
-                   LOG(ERROR)<<Form(" MT2 for Tofhit %d in iDetIndx %d, Ch %d from %3.0f strips: ",iHitInd,iDetIndx,iCh,dNstrips)
+               LOG(ERROR)<<Form(" MT2 for Tofhit %d in iDetIndx %d, Ch %d from %3.0f strips: ",iHitInd,iDetIndx,iCh,dNstrips)
                          <<Form(" Dig0: Ch %d, Side %d, T: %6.1f ",iCh0,iS0,pDig0->GetTime())
-                          <<Form(" Dig1: Ch %d, Side %d, T: %6.1f ",iCh1,iS1,pDig1->GetTime())
+                         <<Form(" Dig1: Ch %d, Side %d, T: %6.1f ",iCh1,iS1,pDig1->GetTime())
                          << FairLogger::endl; 
                continue;
               }
@@ -2888,7 +2893,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 
    fTRefHits=0.;
 
-   Int_t iNbTofDigi  = fTofDigisColl->GetEntries();
+   Int_t iNbTofDigi = fTofDigisColl->GetEntries();
    if( kTRUE )
    {
       for( Int_t iDigInd = 0; iDigInd < iNbTofDigi; iDigInd++ )
@@ -2987,35 +2992,30 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
       for( Int_t iDigInd = 0; iDigInd < iNbTofDigi; iDigInd++ )
       {
          pDigi = (CbmTofDigiExp*) fTofDigisColl->At( iDigInd );
-         LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::BuildClusters: "
-                   <<iDigInd<<" "<<pDigi<<" "
+         LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::BuildClusters:BC "  // Before Calibration
+		    <<Form("%3d",iDigInd)<<" "<<pDigi<<" "
                    <<pDigi->GetType()<<" "
                    <<pDigi->GetSm()<<" "
                    <<pDigi->GetRpc()<<" "
-                   <<pDigi->GetChannel()<<" "
-                   <<pDigi->GetTime()<<" "
+		    <<Form("%2d",(Int_t)pDigi->GetChannel())<<" "
+                   <<pDigi->GetSide()<<" "
+		   <<Form("%f",pDigi->GetTime())<<" "
                    <<pDigi->GetTot()
                    <<FairLogger::endl;
          if(    fDigiBdfPar->GetNbSmTypes() > pDigi->GetType()  // prevent crash due to misconfiguration 
-             &&        fDigiBdfPar->GetNbSm(  pDigi->GetType()) > pDigi->GetSm()
+             && fDigiBdfPar->GetNbSm(  pDigi->GetType()) > pDigi->GetSm()
              && fDigiBdfPar->GetNbRpc( pDigi->GetType()) > pDigi->GetRpc()
              && fDigiBdfPar->GetNbChan(pDigi->GetType(),0) >pDigi->GetChannel() 
                 )
          {
-         fStorDigiExp[pDigi->GetType()]
-                     [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-                     [pDigi->GetChannel()].push_back(pDigi);
-         fStorDigiInd[pDigi->GetType()]
-                     [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-                     [pDigi->GetChannel()].push_back(iDigInd);
-         LOG(DEBUG1)<<FairLogger::endl<<" CluCal-Init: "<<pDigi->ToString()<<FairLogger::endl;
+         LOG(DEBUG2)<<FairLogger::endl<<" CluCal-Init: "<<pDigi->ToString()<<FairLogger::endl;
          // apply calibration vectors 
          pDigi->SetTime(pDigi->GetTime()- // calibrate Digi Time 
                         fvCPTOff[pDigi->GetType()]
                        [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
                        [pDigi->GetChannel()]
                        [pDigi->GetSide()]);
-         LOG(DEBUG1)<<" CluCal-TOff: "<<pDigi->ToString()<<FairLogger::endl;
+         LOG(DEBUG2)<<" CluCal-TOff: "<<pDigi->ToString()<<FairLogger::endl;
 
          Double_t dTot = pDigi->GetTot()-  // subtract Offset 
                        fvCPTotOff[pDigi->GetType()]
@@ -3066,7 +3066,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
          }
              
          pDigi->SetTime(pDigi->GetTime() - dWT); // calibrate Digi Time 
-         LOG(DEBUG1)<<" CluCal-Walk: "<<pDigi->ToString()<<FairLogger::endl;
+         LOG(DEBUG2)<<" CluCal-Walk: "<<pDigi->ToString()<<FairLogger::endl;
 
          if(0) {//pDigi->GetType()==7 && pDigi->GetSm()==0){
           LOG(INFO)<<"CbmTofTestBeamClusterizer::BuildClusters: CalDigi "
@@ -3126,6 +3126,53 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                      <<FairLogger::endl;
            }
       } // for( Int_t iDigInd = 0; iDigInd < nTofDigi; iDigInd++ )
+
+      if(fTofDigisColl->IsSortable())
+	LOG(DEBUG)<<"CbmTofTestBeamClusterizer::BuildClusters: Sort "<<iNbTofDigi<<" digis "
+                   <<FairLogger::endl;
+      if(iNbTofDigi>1){
+	fTofDigisColl->Sort(iNbTofDigi); // Time order again, in case modified by the calibration 
+	if(!fTofDigisColl->IsSorted()){
+	  LOG(WARNING)<<"CbmTofTestBeamClusterizer::BuildClusters: Sorting not successful "
+                     <<FairLogger::endl;
+	}
+      }
+      for( Int_t iDigInd = 0; iDigInd < iNbTofDigi; iDigInd++ )
+      {
+         pDigi = (CbmTofDigiExp*) fTofDigisColl->At( iDigInd );
+         LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::BuildClusters:AC " // After Calibration
+		    <<Form("%3d",iDigInd)<<" "<<pDigi<<" "
+                    <<pDigi->GetType()<<" "
+                    <<pDigi->GetSm()<<" "
+                    <<pDigi->GetRpc()<<" "
+		    <<Form("%2d",(Int_t)pDigi->GetChannel())<<" "
+                    <<pDigi->GetSide()<<" "
+		    <<Form("%f",pDigi->GetTime())<<" "
+                    <<pDigi->GetTot()
+                    <<FairLogger::endl;
+         if(    fDigiBdfPar->GetNbSmTypes() > pDigi->GetType()  // prevent crash due to misconfiguration 
+             && fDigiBdfPar->GetNbSm(  pDigi->GetType()) > pDigi->GetSm()
+             && fDigiBdfPar->GetNbRpc( pDigi->GetType()) > pDigi->GetRpc()
+             && fDigiBdfPar->GetNbChan(pDigi->GetType(),0) >pDigi->GetChannel() 
+                )
+         {
+         fStorDigiExp[pDigi->GetType()]
+                     [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
+                     [pDigi->GetChannel()].push_back(pDigi);
+         fStorDigiInd[pDigi->GetType()]
+                     [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
+                     [pDigi->GetChannel()].push_back(iDigInd);
+          } else 
+           {
+           LOG(DEBUG)<<"CbmTofTestBeamClusterizer::BuildClusters: Skip2 Digi "
+                     <<" Type "<<pDigi->GetType()<<" "<< fDigiBdfPar->GetNbSmTypes()
+                     <<" Sm "  <<pDigi->GetSm()<<" " << fDigiBdfPar->GetNbSm(pDigi->GetType())
+                     <<" Rpc " <<pDigi->GetRpc()<<" "<< fDigiBdfPar->GetNbRpc(pDigi->GetType())
+                     <<" Ch "  <<pDigi->GetChannel()<<" "<<fDigiBdfPar->GetNbChan(pDigi->GetType(),0)
+                     <<FairLogger::endl;
+           }
+      } // for( Int_t iDigInd = 0; iDigInd < nTofDigi; iDigInd++ )
+
    } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
       else
       {
@@ -3141,6 +3188,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                      [pDigi->GetChannel()].push_back(iDigInd);
          } // for( Int_t iDigInd = 0; iDigInd < nTofDigi; iDigInd++ )
       } // else of if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
+
 
    // Then build clusters inside each RPC module
    // Assume only 0 or 1 Digi per channel/side in each event
@@ -3243,17 +3291,17 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                                  // Not one Digi of each end!
                                  fiNbSameSide++;
 				 if(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size()>2) {
-				   LOG(DEBUG) << "CbmTofTestBeamClusterizer::BuildClusters: SameSide Hits! on "
+				   LOG(DEBUG) << "CbmTofTestBeamClusterizer::BuildClusters: SameSide Digis! on "
 					     << iSmType<<iSm<<iRpc<<iCh<<", Times: "
-					     <<   (fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0])->GetTime()
-					     << ", "<<(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][1])->GetTime()
+					      <<Form("%f",(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0])->GetTime())
+					      << ", "<<Form("%f",(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][1])->GetTime())
 					     <<", DeltaT " <<(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][1])->GetTime() - 
                                                            (fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0])->GetTime()
 					     <<", array size: " <<  fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size() 
 					     <<FairLogger::endl;
 				   if (     fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][2]->GetSide() 
 					 == fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0]->GetSide() ) {
-				     LOG(DEBUG) << "CbmTofTestBeamClusterizer::BuildClusters: 3 consecutive SameSide Hits! on "
+				     LOG(DEBUG) << "CbmTofTestBeamClusterizer::BuildClusters: 3 consecutive SameSide Digis! on "
 					       << iSmType<<iSm<<iRpc<<iCh<<", Times: "
 					       <<   (fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0])->GetTime()
 					       << ", "<<(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][1])->GetTime()
@@ -3262,17 +3310,22 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 					       <<", array size: " <<  fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size() 
 					       <<FairLogger::endl;
 				     fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
+                                     fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
 				   }else {
 				     if( fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][2]->GetTime()
 					-fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0]->GetTime() >
 					 fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][2]->GetTime()
 					-fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][1]->GetTime())
-				       fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
+				       {
+					 fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
+					 fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
+				       }
 				     else 
 				       {
 					 LOG(WARNING) << "CbmTofTestBeamClusterizer::BuildClusters: digis not properly time ordered "
 					              << FairLogger::endl;
 				         fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
+					 fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
 				       }
 				   }
 				 }else{
