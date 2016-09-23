@@ -385,14 +385,13 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	      */
 	    fiRawMessage++;
 	    if (isHit&&(triggerType==1||triggerType==3))fHM->H2(TString("Map_of_Hits_for_"+GetSpadicName(eqID,sourceA,kRawData,kFullSpadic)).Data())->Fill(padID%16,static_cast<Int_t>(padID/16));
-	    if (isHit&&(triggerType==1||triggerType==3))fHM->H2(TString("Map_of_Charge_for_"+GetSpadicName(eqID,sourceA,kRawData,kFullSpadic)).Data())->Fill(padID%16,static_cast<Int_t>(padID/16),GetMaxADC(*raw,false));
+	    if (isHit&&(triggerType==1||triggerType==3))fHM->H2(TString("Map_of_Charge_for_"+GetSpadicName(eqID,sourceA,kRawData,kFullSpadic)).Data())->Fill(padID%16,static_cast<Int_t>(padID/16),GetMaxADC(*raw,false,&fBaseline));
 	    if (isHit) FillBaselineHistogram(raw);
 	    if(fActivateClusterizer)
 	      if (isHit || isHitAborted || isOverflow)
 	        if(fNrTimeSlices!=0){
 	          /*
-	          CbmSpadicRawMessage* tempPtr = new CbmSpadicRawMessage;
-	          *tempPtr = *raw;
+	          CbmSpadicRawMessage* tempPtr = new CbmSpadicRawMessage(*raw);
 	          */
 	          fLinearHitBuffer.push_back(raw);
 	          string Histname = "Signalshape_for_"+string(spadicName.Data())+"_Trigger_"+std::to_string(triggerType)+"_StopType_"+std::to_string(stopType);
@@ -400,7 +399,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 	        }
 	    if(fDrawSignalDebugHistograms){
 	    	if (isHit||isHitAborted){
-	    		Int_t maxADC= GetMaxADC(*raw,false);
+	    		Int_t maxADC= GetMaxADC(*raw,false,&fBaseline);
 	    		Int_t TriggerType = raw->GetTriggerType();
 	    		if(!(TriggerType<0 ||TriggerType>3)){
 	    			string TriggerName;
@@ -1998,7 +1997,7 @@ void CbmTrdTimeCorrel::FitPRF() {
 }
 
 // ----              -------------------------------------------------------
-inline Int_t CbmTrdTimeCorrel::GetSpadicID(Int_t sourceA)
+Int_t CbmTrdTimeCorrel::GetSpadicID(Int_t sourceA)
 {
   //TString spadic="";
   Int_t SpaId = -1;
@@ -2034,7 +2033,7 @@ inline Int_t CbmTrdTimeCorrel::GetSpadicID(Int_t sourceA)
   return SpaId;
 }
 // ----              -------------------------------------------------------
-inline Int_t CbmTrdTimeCorrel::GetSyscoreID(Int_t eqID)
+Int_t CbmTrdTimeCorrel::GetSyscoreID(Int_t eqID)
 {
 	Int_t SyscoreID=eqID-BaseEquipmentID;
 	if(SyscoreID<0||SyscoreID>NrOfActiveSyscores){
@@ -2076,7 +2075,7 @@ TString CbmTrdTimeCorrel::GetStopName(Int_t stopType)
   return stopName;
 }
 
-TString CbmTrdTimeCorrel::GetSpadicName(Int_t eqID,Int_t sourceA,kInputType InputType,kSpadicType OutputType){
+inline TString CbmTrdTimeCorrel::GetSpadicName(Int_t eqID,Int_t sourceA,kInputType InputType,kSpadicType OutputType){
 	/*	Get a String of the Form "Syscore_0_Spadic_0" describing the specific SPADIC corresponding to the input parameters.
 	 *  The Parameter InputType allows either the Equipment ID/Source Address or the final Syscore/Spadic ID to be used.
 	 *  	kRawData (default) is the parameter that allows the raw EqID/Source Address to be used, kProcessedData takes Syscore/SpadicID.
@@ -2334,38 +2333,20 @@ Bool_t CbmTrdTimeCorrel::Cluster::FillChargeDistribution(TH2* ChargeMap,TH2* Cen
   return true;
 }
 
-//TOBEMERGED with  CbmTrdTimeCorrel::GetMaxADC, at least put the identical sourcecode
-Int_t CbmTrdTimeCorrel::Cluster::GetMaxADC(CbmSpadicRawMessage& message,Bool_t GetRawADC) 
+inline Int_t CbmTrdTimeCorrel::Cluster::GetMaxADC(CbmSpadicRawMessage& message,Bool_t SubtractBaseline)
 {
-  Int_t maxADC=-255;
-Bool_t validHit=false;
-Int_t previousADC=-255;
-Int_t NrSamples = message.GetNrSamples ();
- for (Int_t i = 0 ; i < NrSamples ; i++){
-     Int_t currentADC = *(message.GetSamples() + i);
-     if(currentADC > maxADC) maxADC=currentADC;
-     if((currentADC > previousADC) && ((currentADC - previousADC)>10)) validHit = true;
- }
- Int_t Baseline=0;
- if(!fPreCalculatedBaseline){
- for (Int_t i = NrSamples -3 ; i < NrSamples ; i++)
-   Baseline += *(message.GetSamples() + i);
- Baseline = Baseline/3;
- }
- else{
-	 Baseline = (*fBaseline)[0*NrOfActiveHalfSpadics*16+16*GetSpadicID(message.GetSourceAddress())+message.GetChannelID()];
- }
- if(GetRawADC) Baseline = 0;
- return (maxADC-Baseline);
+  return CbmTrdTimeCorrel::GetMaxADC(message,SubtractBaseline,fBaseline);
 }
 
-Int_t CbmTrdTimeCorrel::GetMaxADC(CbmSpadicRawMessage& message,Bool_t SubtractBaseline)
+Int_t CbmTrdTimeCorrel::GetMaxADC(CbmSpadicRawMessage& message,Bool_t SubtractBaseline,std::vector<Int_t>* fBaseline)
 {
   Int_t maxADC=-255;
   Int_t previousADC=-255;
   Int_t NrSamples = message.GetNrSamples ();
   Bool_t validHit=(NrSamples==32);
   Int_t Spadic = GetSpadicID(message.GetSourceAddress());
+  Int_t Syscore = GetSyscoreID(message.GetEquipmentID());
+  if(fBaseline==nullptr) SubtractBaseline=false;
   for (Int_t i = 0 ; i < NrSamples ; i++){
       Int_t currentADC = *(message.GetSamples() + i);
       if(currentADC > maxADC) maxADC=currentADC;
@@ -2373,7 +2354,7 @@ Int_t CbmTrdTimeCorrel::GetMaxADC(CbmSpadicRawMessage& message,Bool_t SubtractBa
       previousADC = currentADC;
   }
   //Int_t Baseline=GetAvgBaseline(message);
-  return (SubtractBaseline ?  maxADC-fBaseline[0*NrOfHalfSpadics * 16+16*GetSpadicID(message.GetSourceAddress())+message.GetChannelID()] : maxADC);
+  return (SubtractBaseline ?  maxADC-(*fBaseline)[Syscore*NrOfHalfSpadics * 16+16*GetSpadicID(message.GetSourceAddress())+message.GetChannelID()] : maxADC);
 }
 
 Int_t CbmTrdTimeCorrel::Cluster::GetMessageChargeIntegral(CbmSpadicRawMessage& message)
@@ -2422,7 +2403,7 @@ void CbmTrdTimeCorrel::FillBaselineHistogram(CbmSpadicRawMessage* message){
 	Int_t StopType = message->GetStopType();
 	if (StopType > 0) return;
 	Int_t * Samples=message->GetSamples();
-	if (GetMaxADC(*message,false)>Samples[0]) return;
+	if (GetMaxADC(*message,false,&fBaseline)>Samples[0]) return;
 	TH2* Histogram = fHM->H2(histName);
 	Int_t ChID =  message->GetChannelID() + ((GetSpadicID(message->GetSourceAddress()) %2 == 1)? 16 : 0);
 	Int_t NrSamples = message->GetNrSamples ();
@@ -2520,8 +2501,8 @@ void CbmTrdTimeCorrel::Cluster::Veto() {
 		fType = 3;
 		return;
 	}
-	if (size()<3|| size()>4){
-		if (fMaxADC >= 245) {
+	if (true||size()<3|| size()>4){
+		if (fMaxADC >= 0) {
 			//std::cout << " Veto based on Threshold" << std::endl;
 			fType = 5;
 			return;
@@ -2627,7 +2608,7 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
 	  LastPad = CurrentPad;
 	  Int_t Charge = GetMaxADC(message); // here the calculation of the Charge takes place
 	  Int_t ChargeIntegral = GetMessageChargeIntegral(message);
-      maxADC = GetMaxADC(message,true);
+      maxADC = GetMaxADC(message,false);
       if(maxADC > fMaxADC) fMaxADC=maxADC;
       if(message.GetStopType()>fMaxStopType)fMaxStopType=message.GetStopType();
       if(Charge < 0){

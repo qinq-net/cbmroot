@@ -78,10 +78,10 @@ class CbmTrdTimeCorrel : public FairTask
   };
 
 
-  inline static Int_t   GetSpadicID(Int_t sourceA);
-  inline static Int_t   GetSyscoreID(Int_t eqID);
+  static Int_t   GetSpadicID(Int_t sourceA);
+  static Int_t   GetSyscoreID(Int_t eqID);
 
-  TString GetSpadicName(Int_t eqID,Int_t sourceA,kInputType InputType=kRawData,kSpadicType OutputType=kHalfSpadic);
+  inline TString GetSpadicName(Int_t eqID,Int_t sourceA,kInputType InputType=kRawData,kSpadicType OutputType=kHalfSpadic);
   TString RewriteSpadicName(TString spadicName);
 
   TString GetStopName(Int_t stopType);
@@ -144,7 +144,7 @@ class CbmTrdTimeCorrel : public FairTask
   Int_t GetLayerID(CbmSpadicRawMessage* raw);
   Int_t GetColumnID(CbmSpadicRawMessage* raw);
   Int_t GetModuleID(CbmSpadicRawMessage* raw);
-  Int_t GetMaxADC(CbmSpadicRawMessage&,Bool_t = true);
+  static Int_t GetMaxADC(CbmSpadicRawMessage&,Bool_t = true,std::vector<Int_t>* =nullptr);
   Int_t GetAvgBaseline(CbmSpadicRawMessage&,Int_t n=1);
   Int_t GetAvgBaseline(CbmSpadicRawMessage* raw){
 	  return GetAvgBaseline(*raw);
@@ -190,7 +190,7 @@ class CbmTrdTimeCorrel : public FairTask
     Float_t fHorizontalPosition;
     void CalculateParameters();
     Int_t GetHorizontalMessagePosition(CbmSpadicRawMessage&);
-    Int_t GetMaxADC(CbmSpadicRawMessage&,Bool_t = false);
+    inline Int_t GetMaxADC(CbmSpadicRawMessage&,Bool_t = true);
     Int_t GetMessageChargeIntegral(CbmSpadicRawMessage& message);
     void Veto();
   };
