@@ -5,6 +5,7 @@
 #include "CbmPlutoGenerator.h"
 
 #include "FairPrimaryGenerator.h"       // for FairPrimaryGenerator
+#include "FairLogger.h"
 
 #include "PStaticData.h"                // for PStaticData
 #include "PDataBase.h"                  // for PDataBase
