@@ -50,6 +50,8 @@ class CbmBuildEventsQA: public FairTask {
 		 **/
 		void MatchEvent(CbmEvent* event);
 
+                CbmBuildEventsQA(const CbmBuildEventsQA&);
+                CbmBuildEventsQA& operator=(const CbmBuildEventsQA&);
 
 		ClassDef(CbmBuildEventsQA, 1);
 

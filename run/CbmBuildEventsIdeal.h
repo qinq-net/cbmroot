@@ -43,6 +43,8 @@ class CbmBuildEventsIdeal: public FairTask {
 		/** Task initialisation **/
 		virtual InitStatus Init();
 
+                CbmBuildEventsIdeal(const CbmBuildEventsIdeal&);
+                CbmBuildEventsIdeal& operator=(const CbmBuildEventsIdeal&);
 
 		ClassDef(CbmBuildEventsIdeal, 1);
 

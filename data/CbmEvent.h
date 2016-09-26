@@ -42,7 +42,6 @@ class CbmEvent: public TObject {
 			fMatch(NULL), fNofData(0), fIndexMap() {
 		}
 
-
 		/** Destructor **/
 		virtual ~CbmEvent() {
 			if ( fMatch ) delete fMatch;
@@ -109,6 +108,9 @@ class CbmEvent: public TObject {
 
 		/** Arrays of indices to data types **/
 		std::map<Cbm::DataType, std::vector<UInt_t>> fIndexMap;
+
+                CbmEvent(const CbmEvent&);
+                CbmEvent& operator=(const CbmEvent&);
 
 
 		ClassDef(CbmEvent, 1);
