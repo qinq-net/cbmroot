@@ -107,6 +107,7 @@ void mvd_qa1_transUrqmd( const char* setup = "sis100_electron")
   // ------------------------------------------------------------------------
 
   // -----   Logger settings   ----------------------------------------------
+  FairLogger* gLogger = FairLogger::GetLogger();
   gLogger->SetLogScreenLevel(logLevel.Data());
   gLogger->SetLogVerbosityLevel(logVerbosity.Data());
   // ------------------------------------------------------------------------
