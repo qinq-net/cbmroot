@@ -162,7 +162,7 @@ TClonesArray* CbmPsd::GetCollection(Int_t iColl) const {
 
 
 // -----   Public method Print   -------------------------------------------
-void CbmPsd::Print() const {
+void CbmPsd::Print(Option_t*) const {
   Int_t nHits = fPsdCollection->GetEntriesFast();
   cout << "-I- CbmPsd: " << nHits << " points registered in this event." 
        << endl;

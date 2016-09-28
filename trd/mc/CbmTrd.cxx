@@ -261,7 +261,7 @@ TClonesArray* CbmTrd::GetCollection(
 
 
 // -----   Public method Print   ----------------------------------------------
-void CbmTrd::Print() const
+void CbmTrd::Print(Option_t*) const
 {
   Int_t nHits = fTrdPoints->GetEntriesFast();
   LOG(INFO) << fName << ": " << nHits << " points registered in this event." << FairLogger::endl;

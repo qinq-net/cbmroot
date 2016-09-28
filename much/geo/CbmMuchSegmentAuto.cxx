@@ -454,7 +454,7 @@ Int_t CbmMuchSegmentAuto::IntersectsRad(CbmMuchSectorRectangular* sector, Double
 }
 // -------------------------------------------------------------------------
 
-void CbmMuchSegmentAuto::Print(){
+void CbmMuchSegmentAuto::Print(Option_t*) const {
   printf("Segmentation written to file %s\n", fDigiFileName.Data());
   Int_t nTotSectors = 0;
   Int_t nTotChannels = 0;

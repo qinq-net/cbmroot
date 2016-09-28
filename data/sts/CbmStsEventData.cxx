@@ -99,7 +99,7 @@ CbmStsEventData::CbmStsEventData(Float_t rp, Float_t b)
 CbmStsEventData::~CbmStsEventData(){}
 
 
-void CbmStsEventData::Print(Option_t*) {  
+void CbmStsEventData::Print(Option_t*) const {  
   cout << "(RECO) EVENT PLANE : using first harmonic =  "<< fEP_RECO_harmo1_full << ", using second harmonic = " << fEP_RECO_harmo2_full << endl;
 
 }

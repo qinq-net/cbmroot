@@ -97,7 +97,7 @@ class CbmPsdEventData : public TNamed
 	Float_t GetE2() const { return fedep_1stCorona; }
         Float_t GetE3() const { return fedep_2ndCorona; }
 
-	void Print(Option_t* = "");
+	void Print(Option_t* = "") const;
 
     private:
 

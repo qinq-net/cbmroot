@@ -191,7 +191,7 @@ TClonesArray* CbmTof::GetCollection(Int_t iColl) const {
 
 
 // -----   Public method Print   -------------------------------------------
-void CbmTof::Print() const {
+void CbmTof::Print(Option_t*) const {
   Int_t nHits = fTofCollection->GetEntriesFast();
   LOG(INFO) << fName << ": " << nHits << " points registered in this event." << FairLogger::endl;
 

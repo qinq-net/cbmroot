@@ -204,7 +204,7 @@ void CbmTarget::ConstructGeometry() {
 
 
 // -----   Output to screen   -----------------------------------------------
-void CbmTarget::Print(Option_t*) {
+void CbmTarget::Print(Option_t*) const {
   if ( fBuildFromFile ) LOG(INFO) << GetName() << ": Geometry file "
                                   << fgeoName << FairLogger::endl;
   else {

@@ -98,7 +98,7 @@ class CbmMvd : public FairDetector
    **
    ** Screen output of hit collection.
    **/
-  virtual void Print() const;
+  virtual void Print(Option_t* ="") const;
 
 
   /** Virtual method Reset

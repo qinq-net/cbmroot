@@ -215,7 +215,7 @@ TClonesArray* CbmMuchMcbm::GetCollection(Int_t iColl) const {
 
 
 // -------------------------------------------------------------------------
-void CbmMuchMcbm::Print() const {
+void CbmMuchMcbm::Print(Option_t*) const {
   Int_t nHits = fMuchCollection->GetEntriesFast();
   LOG(INFO) << fName << ": " << nHits << " points registered in this event." << FairLogger::endl;
 }

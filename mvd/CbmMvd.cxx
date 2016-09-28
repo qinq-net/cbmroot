@@ -189,7 +189,7 @@ TClonesArray* CbmMvd::GetCollection(Int_t iColl) const {
 
 
 // -----   Virtual public method Print   -----------------------------------
-void CbmMvd::Print() const {
+void CbmMvd::Print(Option_t*) const {
   Int_t nHits = fCollection->GetEntriesFast();
   LOG(INFO) << fName << ": " << nHits << " points registered in this event." << FairLogger::endl;
 }

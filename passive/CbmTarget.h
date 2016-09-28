@@ -106,7 +106,7 @@ class CbmTarget : public FairModule {
 
 
     /** Output to stdout **/
-    virtual void Print(Option_t* opt = "");
+    virtual void Print(Option_t* = "") const;
 
 
     /** Set the geometry file name

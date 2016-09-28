@@ -75,7 +75,7 @@ class CbmMuchSegmentAuto : public FairTask{
   Bool_t ShouldSegmentByY(CbmMuchSectorRectangular* sector);
   Int_t IntersectsRad(CbmMuchSectorRectangular* sector, Double_t radius);
   void DrawSegmentation();
-  void Print();
+  void Print(Option_t* ="") const;
 
   CbmMuchSegmentAuto(const CbmMuchSegmentAuto&);
   CbmMuchSegmentAuto& operator=(const CbmMuchSegmentAuto&);

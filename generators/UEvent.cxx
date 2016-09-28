@@ -65,7 +65,7 @@ UEvent::~UEvent()
 
 
 //--------------------------------------------------------------------
-void UEvent::Print(Option_t* option)
+void UEvent::Print(Option_t* option) const
 {
   // Print data members to the standard output
   cout << "---------------------------------------------" << endl
@@ -171,7 +171,7 @@ void UEvent::SetParameters(Int_t eventNr, Double_t b, Double_t phi, Int_t nes,
 
 
 //--------------------------------------------------------------------
-void UEvent::Clear()
+void UEvent::Clear(Option_t*)
 {
   // Remove the particles from the array and reset counter
   fParticles->Clear();

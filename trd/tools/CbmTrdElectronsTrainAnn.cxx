@@ -718,7 +718,7 @@ void CbmTrdElectronsTrainAnn::FillAnnInputHist(
 	}
 }
 
-void CbmTrdElectronsTrainAnn::Draw()
+void CbmTrdElectronsTrainAnn::Draw(Option_t*)
 {
    SetDefaultDrawStyle();
    TCanvas* cEloss = new TCanvas("trd_elid_eloss", "trd_elid_eloss", 1200, 600);

@@ -44,7 +44,7 @@ class CbmMCEventData : public TNamed
 	Double_t GetB() const { return fB; }
 	void SetB(Double_t b) {  fB = b; }	
 
-	void Print(Option_t* = "");
+	void Print(Option_t* = "") const;
 
     private:
 

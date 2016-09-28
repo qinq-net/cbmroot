@@ -472,7 +472,7 @@ void CbmMuchGeoScheme::ReadGeoFile(const char* geoName) {
 
 
 // -------------------------------------------------------------------------
-void CbmMuchGeoScheme::Print() {
+void CbmMuchGeoScheme::Print(Option_t*) const {
   Int_t i;
   // Print geometry parameters
   printf("\n");

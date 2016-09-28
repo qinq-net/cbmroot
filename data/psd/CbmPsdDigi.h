@@ -51,7 +51,7 @@ class CbmPsdDigi : public TObject
   Int_t GetSectionID() const { return fSectionID; }
   void SetSectionID(Int_t sec) {  fSectionID = sec; }
 
-  void Print(Option_t* = "");
+  void Print(Option_t* = "") const;
   
  private:
 

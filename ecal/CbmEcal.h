@@ -116,7 +116,7 @@ public:
   virtual void EndOfEvent();
   virtual void BeginEvent();
   virtual void Reset();
-  virtual void Print() const;
+  virtual void Print(Option_t* ="") const;
   virtual void CopyClones(TClonesArray* cl1, TClonesArray* cl2, Int_t offset);
   virtual void Register();
   virtual void ChangeHit(CbmEcalPointLite* oldHit=NULL);

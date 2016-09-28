@@ -253,7 +253,7 @@ Bool_t UParticle::operator == (const UParticle& right) const
 
 
 //--------------------------------------------------------------------
-void UParticle::Print(Option_t* /*option*/)
+void UParticle::Print(Option_t* /*option*/) const
 {
   // Print the data members to the standard output
   cout << "------------------------------------------------" << endl

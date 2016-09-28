@@ -47,7 +47,7 @@ class UParticle : public TObject {
   const UParticle& operator =  (const UParticle& right);
   const UParticle& operator =  (const TParticle& right);
   Bool_t     operator == (const UParticle& right) const;
-  void Print(Option_t* option = "");
+  void Print(Option_t* = "") const;
   inline Int_t    GetIndex()       const {return fIndex;}
   inline Int_t    GetPdg()         const {return fPdg;}
   inline Int_t    GetStatus()      const {return fStatus;}

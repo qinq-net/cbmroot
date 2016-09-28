@@ -36,7 +36,7 @@ class CbmTofCell : public TNamed
   Double_t GetSizex()      const { return fSizex; }
   Double_t GetSizey()      const { return fSizey; }
   
-  void Print();
+  void Print(Option_t* ="") const;
 
  private:
 

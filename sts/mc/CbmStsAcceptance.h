@@ -127,7 +127,7 @@ class CbmStsAcceptance : public FairTask {
 	  Double_t       fTimeTot;        ///< Total execution time
 
 		/** Clear map entries **/
-		void Clear();
+		void Clear(Option_t* ="");
 
 		/** Test consistency
 		 ** @value kTRUE is test successful; else kFLASE

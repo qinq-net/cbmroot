@@ -154,7 +154,7 @@ void CbmTofCell::GetPosition(const Int_t Col, const Int_t Row,
 }
 */
 
-void CbmTofCell::Print()
+void CbmTofCell::Print(Option_t*) const
 {
   LOG(INFO)<<"ID, X, Y, Z, sizex, sizey: "<< fDetectorId << ", "<< fX << ", "<< fY
         << ", "<< fZ << ", "<< fSizex << ", "<< fSizey << FairLogger::endl;

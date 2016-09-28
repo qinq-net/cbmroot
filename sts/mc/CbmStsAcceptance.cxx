@@ -47,7 +47,7 @@ CbmStsAcceptance::~CbmStsAcceptance() {
 
 
 // -----   Clear the count map    -------------------------------------------
-void CbmStsAcceptance::Clear() {
+void CbmStsAcceptance::Clear(Option_t*) {
 	map<Int_t, map<Int_t, Int_t>>::iterator it1;
 	for (it1 = fCountMap.begin(); it1 != fCountMap.end(); it1++) {
 		it1->second.clear();

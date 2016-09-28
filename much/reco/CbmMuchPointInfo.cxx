@@ -42,7 +42,7 @@ CbmMuchPointInfo::CbmMuchPointInfo
 
 
 // -------------------------------------------------------------------------
-void CbmMuchPointInfo::Print(){
+void CbmMuchPointInfo::Print(Option_t*) const{
     printf("PointInfo:pdg=%i,kine=%6.4f,length=%4.2f,st_id=%i,charge=%i\n",
            fPdgCode,fKine,fLength,fStationId,fCharge);
 

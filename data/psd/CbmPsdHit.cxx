@@ -40,7 +40,7 @@ CbmPsdHit::CbmPsdHit(Int_t module, Double_t edep)
 CbmPsdHit::~CbmPsdHit() { }
 // -------------------------------------------------------------------------
 
-void CbmPsdHit::Print(Option_t*) {
+void CbmPsdHit::Print(Option_t*) const {
   cout<<"module : "<<fModuleID <<" ELoss "<<fEdep <<  endl;
 
 }

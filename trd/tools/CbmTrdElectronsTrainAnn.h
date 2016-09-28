@@ -83,7 +83,7 @@ public:
    /**
     * \brief Draw results.
     */
-	void Draw();
+	void Draw(Option_t* ="");
 
 private:
 

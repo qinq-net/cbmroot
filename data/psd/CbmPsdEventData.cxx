@@ -85,7 +85,7 @@ CbmPsdEventData::CbmPsdEventData(Float_t rp, Float_t b)
 CbmPsdEventData::~CbmPsdEventData(){}
 
 
-void CbmPsdEventData::Print(Option_t*) {  
+void CbmPsdEventData::Print(Option_t*) const {  
   cout << "(RECO) EVENT PLANE : " << fEP_RECO << endl;
 }
 

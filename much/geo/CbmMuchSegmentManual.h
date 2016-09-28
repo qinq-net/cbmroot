@@ -197,7 +197,7 @@ class CbmMuchSegmentManual : public FairTask {
     void DrawSegmentation();
 
     /** Prints summary. */
-    void Print();
+    void Print(Option_t* ="");
 
     /** Reads input parameters for the segmentation. */
     void ReadInputFile();

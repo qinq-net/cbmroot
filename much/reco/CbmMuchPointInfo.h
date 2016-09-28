@@ -22,7 +22,7 @@ class CbmMuchPointInfo : public TObject{
   void SetLength(Double_t length)  { fLength = length;     }
   void AddCharge(Int_t charge)     { fCharge+= charge;     }
   void AddArea(Double_t s)         { fS+=s; fNPads ++;     }
-  void Print();
+  void Print(Option_t* ="") const;
 
   Double_t GetKine()      { return fKine;      }
   Double_t GetLength()    { return fLength;    }

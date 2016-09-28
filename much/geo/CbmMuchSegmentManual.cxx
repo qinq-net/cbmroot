@@ -576,7 +576,7 @@ Bool_t CbmMuchSegmentManual::IsIncompleteSector(CbmMuchSectorRectangular* sector
 // -------------------------------------------------------------------------
 
 // -----   Private method Print  -------------------------------------------
-void CbmMuchSegmentManual::Print(){
+void CbmMuchSegmentManual::Print(Option_t*) {
   printf("Segmentation written to file %s\n", fDigiFileName);
   Int_t nTotSectors = 0;
   Int_t nTotChannels = 0;

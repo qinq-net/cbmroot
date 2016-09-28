@@ -46,7 +46,7 @@ class CbmPsdHit : public TObject
   Int_t GetModuleID() const { return fModuleID; }
   void SetModuleID(Int_t mod) {  fModuleID = mod; }
   
-   void Print(Option_t* = "");
+   void Print(Option_t* = "") const;
   
  private:
 

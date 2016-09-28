@@ -104,7 +104,7 @@ class CbmMuchGeoScheme: public TObject {
     Int_t GetLayerSideNr(Int_t detId) const;
 
     void ReadGeoFile(const char* geoName);
-    void Print();
+    void Print(Option_t* = "") const;
     void CreateMuchCave();
 
 

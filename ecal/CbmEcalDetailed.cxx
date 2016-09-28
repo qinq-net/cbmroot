@@ -623,7 +623,7 @@ void CbmEcalDetailed::Reset()
 // -------------------------------------------------------------------------
 
 // -----   Public method Print   -------------------------------------------
-void CbmEcalDetailed::Print() const 
+void CbmEcalDetailed::Print(Option_t*) const 
 {
   Int_t nHits = fEcalCollection->GetEntriesFast();
   Int_t nLiteHits;
