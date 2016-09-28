@@ -247,7 +247,7 @@ void CbmStack::FillTrackArray()
   fIndexMap[-1] = -1;
 
   // --> Screen output
-  Print(0);
+  Print();
 
 }
 // -------------------------------------------------------------------------
@@ -337,7 +337,7 @@ void CbmStack::Register()
 
 
 // -----   Public method Print  --------------------------------------------
-void CbmStack::Print(Int_t /*iVerbose*/) const
+void CbmStack::Print(Option_t*) const
 {
   LOG(DEBUG) << "Number of primaries        = "
             << fNPrimaries << FairLogger::endl;

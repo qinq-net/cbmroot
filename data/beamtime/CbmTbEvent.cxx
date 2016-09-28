@@ -76,7 +76,7 @@ void CbmTbEvent::AddDigi(CbmDigi* digi) {
 
 
 // -----   Reset event   -----------------------------------------------------
-void CbmTbEvent::Clear() {
+void CbmTbEvent::Clear(Option_t*) {
   fEventTime          = 0.;
   fTimeStart     = 0.;
   fTimeStop      = 0.;
@@ -94,7 +94,7 @@ void CbmTbEvent::Clear() {
 
 
 // -----   Print   -----------------------------------------------------------
-void CbmTbEvent::Print(Option_t* /*opt*/) { 
+void CbmTbEvent::Print(Option_t* /*opt*/) const { 
   cout.setf(ios::fixed, ios::floatfield);
   cout << "-I- Cbm Testbeam Event: " << setprecision(9) << fixed << "Event time " 
        << fEventTime << " s, duration " << setprecision(0) << GetDuration()

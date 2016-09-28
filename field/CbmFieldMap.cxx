@@ -494,7 +494,7 @@ void CbmFieldMap::SetPosition(Double_t x, Double_t y, Double_t z) {
 
 
 // ---------   Screen output   --------------------------------------------
-void CbmFieldMap::Print() {
+void CbmFieldMap::Print(Option_t*) {
   TString type = "Map";
   if ( fType == 2 ) type = "Map sym2";
   if ( fType == 3 ) type = "Map sym3";

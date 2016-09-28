@@ -45,7 +45,7 @@ CbmMCEventData::CbmMCEventData(Float_t rp, Float_t b)
 CbmMCEventData::~CbmMCEventData(){}
 
 
-void CbmMCEventData::Print() {  
+void CbmMCEventData::Print(Option_t*) {  
   cout << "(MC) impact parameter: " << fB << ", (MC) REACTION PLANE: " << fRP << endl;
 }
 

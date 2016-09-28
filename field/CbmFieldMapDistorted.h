@@ -85,7 +85,7 @@ public:
   virtual FairField* GetParent() {return fParentField;}
 
   /** Screen output **/
-  virtual void Print();
+  virtual void Print(Option_t* = "");
 
   /** Set the position of the field centre of the distorted and the parent field**/
   virtual void SetPosition(Double_t x, Double_t y, Double_t z);

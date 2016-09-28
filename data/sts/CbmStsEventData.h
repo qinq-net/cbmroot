@@ -99,7 +99,7 @@ class CbmStsEventData : public TNamed
 
         Int_t GetMult() const { return fmult; }
 
-	void Print();
+	void Print(Option_t* = "");
 
     private:
 

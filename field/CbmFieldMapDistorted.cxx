@@ -421,7 +421,7 @@ Double_t CbmFieldMapDistorted::GetBz(Double_t x, Double_t y, Double_t z) {
     return bz;
 }
 
-void CbmFieldMapDistorted::Print() {
+void CbmFieldMapDistorted::Print(Option_t*) {
   cout << "=============================================================" << endl;
   cout << "----  " << fTitle << " : " << fName << endl;
 

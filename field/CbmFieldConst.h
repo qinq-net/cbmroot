@@ -93,7 +93,7 @@ class CbmFieldConst : public FairField
 
 
   /** Screen output **/
-  virtual void Print();
+  virtual void Print(Option_t* = "");
 
 
  private:

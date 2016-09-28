@@ -86,7 +86,7 @@ void CbmMCEpoch::AddPoint(DetectorId det, FairMCPoint* point,
 
 
 // -----   Clear epoch   -----------------------------------------------------
-void CbmMCEpoch::Clear() {
+void CbmMCEpoch::Clear(Option_t*) {
 
   /* Note: The loop over the detetcor id works only if the corresponding
    * enum is continuous. Did not find a better solution yet. V.F.  */

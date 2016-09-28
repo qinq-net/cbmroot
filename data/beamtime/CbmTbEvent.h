@@ -70,11 +70,11 @@ class CbmTbEvent : public FairEventHeader
 
 
   /** Clear event **/
-  void Clear();
+  void Clear(Option_t* = "");
 
 
   /** Print event **/
-  virtual void Print(Option_t* opt = "");
+  virtual void Print(Option_t* opt = "") const;
 
 
 

@@ -61,7 +61,7 @@ class CbmMCEpoch : public TNamed
 
 
   /**   Clear data   **/
-  void Clear();
+  void Clear(Option_t* = "");
 
 
   /**   Get number of points in this epoch for a given detector 

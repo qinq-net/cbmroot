@@ -47,7 +47,7 @@ CbmPsdDigi::CbmPsdDigi(Int_t section, Int_t module, Double_t edep)
 CbmPsdDigi::~CbmPsdDigi() { }
 // -------------------------------------------------------------------------
 
-void CbmPsdDigi::Print() {
+void CbmPsdDigi::Print(Option_t*) {
   cout<<"module : "<<fModuleID <<" section    : "<<fSectionID <<
     " ELoss "<<fEdep <<  endl;
 

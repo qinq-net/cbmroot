@@ -158,7 +158,7 @@ Double_t CbmFieldConst::GetBz(Double_t x, Double_t y, Double_t z) {
 
 
 // -----   Screen output   -------------------------------------------------
-void CbmFieldConst::Print() {
+void CbmFieldConst::Print(Option_t*) {
   cout << "======================================================" << endl;
   cout << "----  " << fTitle << " : " << fName << endl;
   cout << "----" << endl;
