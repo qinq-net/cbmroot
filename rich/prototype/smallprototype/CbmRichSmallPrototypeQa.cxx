@@ -45,6 +45,7 @@ fRichDigis(NULL),
 fRichHits(NULL),
 fRichRings(NULL),
 fRichRingMatches(NULL),
+fRefPlanePoints(NULL),
 fCanvas()
 //fMinNofHits(7),
 //fNofHitsInRingMap()

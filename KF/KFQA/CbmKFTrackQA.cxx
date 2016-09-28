@@ -50,7 +50,8 @@ CbmKFTrackQA::CbmKFTrackQA(const char* name, Int_t iVerbose, TString outFileName
   fStsTrackArray(0), fGlobalTrackArray(0), fRichRingArray(0), fTrdTrackArray(0), fTofHitArray(0), fMuchTrackArray(0),
   fMCTrackArray(0), fStsTrackMatchArray(0), fRichRingMatchArray(0), fTrdTrackMatchArray(0),
   fTofHitMatchArray(0), fMuchTrackMatchArray(0),   
-  fOutFileName(outFileName), fOutFile(0), fHistoDir(0), fNEvents(0)
+  fOutFileName(outFileName), fOutFile(0), fHistoDir(0), fNEvents(0),
+  fPDGtoIndexMap()
 { 
   TFile* curFile = gFile;
   TDirectory* curDirectory = gDirectory;
