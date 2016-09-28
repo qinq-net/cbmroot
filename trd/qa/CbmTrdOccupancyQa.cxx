@@ -63,8 +63,8 @@ CbmTrdOccupancyQa::CbmTrdOccupancyQa(const char *name, const char*, const char *
     fLayerAverageOccupancyMapIt(),
     fTriggerThreshold(triggerThreshold),
     fNeigbourReadout(true),
-    fGeo(geo),
-    fPlotMergedResults(plotMergedResults)
+    fPlotMergedResults(plotMergedResults),
+    fGeo(geo)
 {
   fLayerDummy->SetXTitle("x-coordinate [cm]");
   fLayerDummy->SetYTitle("y-coordinate [cm]");

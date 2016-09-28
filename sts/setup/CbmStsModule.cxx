@@ -30,13 +30,13 @@ CbmStsModule::CbmStsModule() : CbmStsElement(),
                                fNoise(0.),
                                fIsSet(kFALSE),
                                fDeadChannels(),
+			       fPhysics(NULL),
                                fAnalogBuffer(),
                                fDigis(),
                                fClusters(),
                                fDigisTb(),
-							   fDigisTbtemp(),
-                               fIt_DigiTb(),
-			       fPhysics(NULL)
+			       fDigisTbtemp(),
+                               fIt_DigiTb()
 {
 	fPhysics = CbmStsPhysics::Instance();
 }
@@ -56,14 +56,14 @@ CbmStsModule::CbmStsModule(const char* name, const char* title,
                            fDeadTime(0.),
                            fNoise(0.),
                            fIsSet(0),
-                           fAnalogBuffer(),
                            fDeadChannels(),
+			   fPhysics(NULL),
+                           fAnalogBuffer(),
                            fDigis(),
                            fClusters(),
                            fDigisTb(),
-						   fDigisTbtemp(),
-                           fIt_DigiTb(),
-			   fPhysics(NULL)
+			   fDigisTbtemp(),
+                           fIt_DigiTb()
 {
 	fPhysics = CbmStsPhysics::Instance();
 }

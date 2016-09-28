@@ -21,13 +21,13 @@
 #include "CbmStsModule.h"
 
 // -----   Constructor   ---------------------------------------------------
-CbmStsClusterFinderSimple::CbmStsClusterFinderSimple(Int_t finderModel, Int_t algorithm, Int_t eLossModel) : TObject(),
-    fClusters(NULL)
+CbmStsClusterFinderSimple::CbmStsClusterFinderSimple(Int_t finderModel, Int_t algorithm, Int_t eLossModel) : TObject()
   , fNofClustersWithGap (0)
   , fNofSplittedClusters (0)
   , fFinderModel(finderModel)			    
   , fAlgorithm(algorithm)			    
-  , fELossModel(eLossModel)			    
+  , fELossModel(eLossModel)
+  , fClusters(NULL)
 {
 }
 // -------------------------------------------------------------------------

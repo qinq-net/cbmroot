@@ -29,7 +29,7 @@ class CbmEvent: public TObject {
 		/** Default constructor **/
 		CbmEvent() :
 			TObject(), fNumber(-1), fTime(0.),
-			fMatch(NULL), fNofData(0), fIndexMap() {
+			fNofData(0), fMatch(NULL), fIndexMap() {
 		}
 
 
@@ -39,7 +39,7 @@ class CbmEvent: public TObject {
 		 **/
 		CbmEvent(Int_t number, Double_t time = 0.) :
 			TObject(), fNumber(number), fTime(time),
-			fMatch(NULL), fNofData(0), fIndexMap() {
+			fNofData(0), fMatch(NULL), fIndexMap() {
 		}
 
 		/** Destructor **/

@@ -29,13 +29,13 @@ CbmStsFindHits::CbmStsFindHits(Int_t finderModel)
     , fHits(NULL)
     , fSetup(NULL)
     , fTimer()
+    , fDTime(0.)
+    , fFinderModel(finderModel)
     , fNofEvents(0.)
     , fNofClustersTot(0.)
     , fNofHitsTot(0.)
     , fTimeTot(0.)
     , fActiveModules()
-	, fDTime(0.)
-    , fFinderModel(finderModel)
 {
 }
 // -------------------------------------------------------------------------

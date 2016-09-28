@@ -33,10 +33,10 @@ CbmStsSensorTypeDssd::CbmStsSensorTypeDssd()
     : CbmStsSensorType(), 
       fDx(-1.), fDy(-1.), fDz(-1.),
       fNofStrips(), fStereo(), fIsSet(kFALSE), fOld(kTRUE),
+      fPhysics(NULL), fHitFinderModel(1),
       fPitch(), fTanStereo(), fCosStereo(), fStripShift(),
-      fStripCharge(),
-      fPhysics(NULL),
-      fHitFinderModel(1)
+      fStripCharge()
+      
 {
 	fPhysics = CbmStsPhysics::Instance();
 }

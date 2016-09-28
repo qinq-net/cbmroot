@@ -16,6 +16,7 @@ using std::endl;
 // -----   Default constructor   -------------------------------------------
 CbmMvdStationPar::CbmMvdStationPar() 
   : TNamed(),
+    fStationCount(),
     fZPositions(), 
     fThicknesses(), 
     fHeights(), 
@@ -24,8 +25,7 @@ CbmMvdStationPar::CbmMvdStationPar()
     fYResolutions(), 
     fRadiationLength(), 
     fBeamHeights(), 
-    fBeamWidths(),
-    fStationCount()
+    fBeamWidths()
 {
 }
 // -------------------------------------------------------------------------

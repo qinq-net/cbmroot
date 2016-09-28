@@ -26,8 +26,9 @@ CbmTSUnpackTest::CbmTSUnpackTest()
   : CbmTSUnpack(),
     fMsgCounter(11,0), // length of enum MessageTypes initialized with 0
     fHodoStationMap(),
-    fHodoPlane(),
     fHodoFiber(),
+    fHodoPlane(),
+    fHodoPixel(),
     fHM(new CbmHistManager()),
     fCurrentEpoch(),
     fNofEpochs(0),
