@@ -37,7 +37,7 @@ vector<string> Split(
 {
 	vector<string> result;
 	Int_t begin = 0;
-	Int_t end = name.find_first_of(delimiter);
+	UInt_t end = name.find_first_of(delimiter);
 	while (end != string::npos) {
 		string str = name.substr(begin, end - begin);
 		if (str[0] == delimiter) str.erase(0, 1);

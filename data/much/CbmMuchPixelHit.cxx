@@ -63,8 +63,8 @@ CbmMuchPixelHit::CbmMuchPixelHit(
 		Double_t dxy,
 		Int_t refId,
 		Int_t planeId,
-		Double_t time,
-		Double_t dtime)
+		Double_t /*time*/,
+		Double_t /*dtime*/)
   : CbmPixelHit(address, pos, err, dxy, refId),
     fPlaneId(planeId),
     fFlag(0)

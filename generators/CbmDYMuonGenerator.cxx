@@ -121,11 +121,11 @@ Bool_t CbmDYMuonGenerator::ReadEvent(FairPrimaryGenerator* primGen)
   g->cd();
 
   Int_t nParts = trackNo;
-    Double_t mass=MDY;
+  //  Double_t mass=MDY;
   // Loop over particles in TClonesArray
   for (Int_t iPart=0; iPart < nParts; iPart++) {
    
-   Double_t px=Px[iPart],py=Py[iPart],pz=Pz[iPart],ee=En[iPart];
+   Double_t px=Px[iPart],py=Py[iPart],pz=Pz[iPart];//,ee=En[iPart];
    
    // Track vertices are all set to zero 
     Double_t vx=0.0,vy=0.0,vz=0.0;

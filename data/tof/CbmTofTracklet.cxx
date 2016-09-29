@@ -174,7 +174,7 @@ Double_t CbmTofTracklet::GetTex(CbmTofHit* pHit){
 }
 
 Double_t CbmTofTracklet::UpdateT0(){ //returns estimated time at R=0
-  Double_t dT0=0.;
+//  Double_t dT0=0.;
   Int_t    nValidHits=0.;
   Int_t    iHit0=-1;
   /*
@@ -264,9 +264,9 @@ Double_t CbmTofTracklet::GetTdif(Int_t iDetId, CbmTofHit* pHit){
   Double_t Nref=0;
   Double_t dTt=0.;
   Int_t iNt=0;
-  for (Int_t iHL=0; iHL<fpHit.size()-1; iHL++){
+  for (UInt_t iHL=0; iHL<fpHit.size()-1; iHL++){
      if (iDetId == fTofDet[iHL] || 0 == fTofDet[iHL]) continue;           // exclude faked hits 
-     for (Int_t iHH=iHL+1; iHH<fpHit.size(); iHH++){
+     for (UInt_t iHH=iHL+1; iHH<fpHit.size(); iHH++){
        if (iDetId == fTofDet[iHH] || 0 == fTofDet[iHH]) continue;           // exclude faked hits 
 	dTt+=(fpHit[iHH].GetTime()-fpHit[iHL].GetTime())/(fpHit[iHH].GetR()-fpHit[iHL].GetR());
 	iNt++;
@@ -328,7 +328,7 @@ Double_t CbmTofTracklet::GetFitT(Double_t dR){
   return fT0 + fTt*dR;
 }
 
-void CbmTofTracklet::Clear(Option_t* option){
+void CbmTofTracklet::Clear(Option_t* /*option*/){
 
   //  cout << "-D- Clear TofTracklet with option "<<*option<<endl; 
   fTofHit.clear();

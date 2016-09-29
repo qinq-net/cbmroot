@@ -71,7 +71,7 @@ class CbmStsDigi : public CbmDigi
   virtual Double_t GetTime() const { return Double_t(fTime); }
 
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version)
+  void serialize(Archive& ar, const unsigned int /*version*/)
   {
     ar& fAddress;
     ar& fTime;

@@ -54,7 +54,7 @@ class CbmMuchDigi : public CbmDigi{
   Int_t GetDTime() const { return 0; }
  
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version)
+  void serialize(Archive& ar, const unsigned int /*version*/)
   {
       ar& fData;
   }

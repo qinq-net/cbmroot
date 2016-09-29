@@ -42,7 +42,7 @@ public:
 		out << *this;
 	}
 
-	friend std::ostream& operator<< (std::ostream& out, const CbmMCEntry& link){
+	friend std::ostream& operator<< (std::ostream& out, const CbmMCEntry& /*link*/){
 		//out << "Source: " << link.GetSource() << " Position: " << link.GetPos() << std::endl;
 
 	//	((FairMultiLinkedData)link).Print(out);

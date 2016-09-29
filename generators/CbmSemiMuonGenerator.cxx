@@ -120,7 +120,7 @@ Bool_t CbmSemiMuonGenerator::ReadEvent(FairPrimaryGenerator* primGen)
   for (Int_t iPart=0; iPart < nParts; iPart++) {
    
 
-    Double_t px=Px[iPart],py=Py[iPart],pz=Pz[iPart],ee=En[iPart];
+    Double_t px=Px[iPart],py=Py[iPart],pz=Pz[iPart];//,ee=En[iPart];
     
     Double_t vx=0.0,vy=0.0,vz=0.0;
     Int_t pdgType=0;
