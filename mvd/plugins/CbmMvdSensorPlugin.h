@@ -37,7 +37,7 @@ class CbmMvdSensorPlugin : public TObject
   /** Destructor **/
   virtual ~CbmMvdSensorPlugin();
   
-  virtual const MvdSensorPluginType GetPluginType() = 0;
+  virtual MvdSensorPluginType GetPluginType() = 0;
   virtual void Init(){;}
   virtual void Exec(){;}
   virtual void ExecChain(){;}

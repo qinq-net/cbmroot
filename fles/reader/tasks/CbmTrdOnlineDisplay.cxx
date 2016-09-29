@@ -24,9 +24,9 @@ CbmTrdOnlineDisplay::CbmTrdOnlineDisplay(TString inFile)
    fSpadic1(),
    fSpadic1a(),
    fSpadicTime(),
+   finFile(inFile),
    fUpdateInterval(10),
-   fEventCounter(0),
-   finFile(inFile)
+   fEventCounter(0)
 {
 }
 
@@ -48,7 +48,7 @@ InitStatus CbmTrdOnlineDisplay::Init()
 
   TH1* h1 = NULL;
   TH1* h2 = NULL;
-  TGraph* g1 = NULL;
+  //  TGraph* g1 = NULL;
   gROOT->cd();
   Float_t lsize=0.07;
   gStyle->SetPalette(1);

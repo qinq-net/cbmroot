@@ -109,11 +109,12 @@ void CbmTrdRawPulseMonitor::Exec(Option_t*)
     Int_t channelMapping[32] = {31,15,30,14,29,13,28,12,27,11,26,10,25, 9,24, 8,
     23, 7,22, 6,21, 5,20, 4,19, 3,18, 2,17, 1,16, 0};
   */
+  /*
   TString timebinName[32] = { "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", 
 			      "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", 
 			      "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", 
 			      "30", "31"};
-
+  */
   //std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > > timeBuffer;// <ASIC ID "Syscore%d_Spadic%d"<Time, <CombiId, SpadicMessage> >
 
   Int_t entriesInMessage = fRawSpadic->GetEntriesFast();
@@ -156,7 +157,7 @@ void CbmTrdRawPulseMonitor::Exec(Option_t*)
     //printf("EI%i SA%i ->",eqID,sourceA);
     Int_t chID = raw->GetChannelID();
     Int_t SysId(-1), SpaId(-1);
-    Int_t nrSamples=raw->GetNrSamples();
+    //    Int_t nrSamples=raw->GetNrSamples();
     Int_t triggerType=raw->GetTriggerType();
     Int_t stopType=raw->GetStopType();
     Int_t infoType=raw->GetInfoType();
@@ -165,8 +166,8 @@ void CbmTrdRawPulseMonitor::Exec(Option_t*)
 	LOG(ERROR) << "Container " << fContainerCounter << " Message " << fMessageCounter <<  " eqId " << eqID << " sourceA " << sourceA <<  " InfoType " << infoType << " out of range. Set to 7. StopType:" << stopType << " TriggerType:" << triggerType << FairLogger::endl;
 	infoType = 7;
       }
-    Int_t groupId=raw->GetGroupId();
-    ULong_t time = raw->GetFullTime();
+    //    Int_t groupId=raw->GetGroupId();
+    //    ULong_t time = raw->GetFullTime();
  
    
     TString syscore="";

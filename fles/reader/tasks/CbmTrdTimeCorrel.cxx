@@ -22,32 +22,32 @@
 // ----              -------------------------------------------------------
 CbmTrdTimeCorrel::CbmTrdTimeCorrel()
   : FairTask("CbmTrdTimeCorrel"),
-    fRawSpadic(NULL),
-    fHM(new CbmHistManager()),
-    fNrTimeSlices(0),
-    fRun(0),
-    fRewriteSpadicName(true),
-    fSpadics(0),
     fMessageBuffer(),
+    fLinearHitBuffer(),
+    fSpadics(0),
+    fRewriteSpadicName(true),
+    fBaseline(NrOfActiveSyscores*NrOfHalfSpadics*16,0),
+    fRawSpadic(NULL),
     fRawMessages(NULL),
     fDigis(NULL),
     fClusters(NULL),
+    fiRawMessage(0),
     fiDigi(0),
     fiCluster(0),
-    fiRawMessage(0),
-    timestampOffsets(),
+    fHM(new CbmHistManager()),
+    fNrTimeSlices(0),
+    fRun(0),
     fLastMessageTime (NrOfActiveSyscores*NrOfSpadics*32,0),
     fEpochMarkerArray(NrOfActiveSyscores*NrOfHalfSpadics,0),
     fFirstEpochMarker(NrOfActiveSyscores*NrOfHalfSpadics,true),
-	fBaseline(NrOfActiveSyscores*NrOfHalfSpadics*16,0),
-    fGraph(true),
-    EpochRegressCounter(NrOfActiveSyscores*NrOfHalfSpadics,0),
-    EpochRegressOffset(NrOfActiveSyscores*NrOfHalfSpadics,0),
     EpochRegressTriggered(NrOfActiveSyscores*NrOfHalfSpadics,false),
-    fLinearHitBuffer(),
-    fClusterBuffer(),
-    fOutputCloneArrays(false)  
-{
+    EpochRegressOffset(NrOfActiveSyscores*NrOfHalfSpadics,0),
+    EpochRegressCounter(NrOfActiveSyscores*NrOfHalfSpadics,0),
+    timestampOffsets(),
+    fGraph(true),
+    fOutputCloneArrays(false),
+    fClusterBuffer()
+ {
    gStyle->SetNumberContours(99);
     {
       TString CalibrationFilename =
@@ -148,7 +148,7 @@ InitStatus CbmTrdTimeCorrel::ReInit()
   return kSUCCESS;
 }
 // ---- Exec  -------------------------------------------------------
-void CbmTrdTimeCorrel::Exec(Option_t* option)
+void CbmTrdTimeCorrel::Exec(Option_t*)
 {
   const Int_t maxNrColumns = 16; //max number of channels on a pad plane per asic and row
 
@@ -298,7 +298,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     combiID = rowID * (maxNrColumns + 1) + columnID;// Is needed to cluster messages within one detector layer. combiID provides a linear representation of  a 2dim coordinate system (row, column) with an additional column. By using continues combiIDs one avoids to build continues clusters between to rows.
 
 
-    Int_t nrSamples=raw->GetNrSamples();
+    //    Int_t nrSamples=raw->GetNrSamples();
 
     lostMessages = raw->GetBufferOverflowCount();
 
@@ -816,14 +816,16 @@ void CbmTrdTimeCorrel::ClusterizerTime()
         	}
         return false;
       };
+  /*
   auto TimeStampSort=
       [&](CbmSpadicRawMessage* a,CbmSpadicRawMessage* b)
-	{
+      {
 		if(a->GetFullTime() < b->GetFullTime())
 			return true;
 		return false;
       };
-  const Int_t clusterWindow = 0; // size of time window in which two hits are called "correlated", unit is timestamps
+*/
+    const Int_t clusterWindow = 0; // size of time window in which two hits are called "correlated", unit is timestamps
   std::sort(fLinearHitBuffer.begin(),fLinearHitBuffer.end(),CompareSpadicMessagesSmaller);
   std::unique(fLinearHitBuffer.begin(),fLinearHitBuffer.end(),CompareSpadicMessages);
   std::multimap<ULong_t, CbmSpadicRawMessage*> TempHitMap,TempOverflowMap;
@@ -831,7 +833,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
       long unsigned int MessageTime = static_cast <long unsigned int>(x->GetFullTime());
       (x->GetOverFlow()) ? TempOverflowMap.insert(std::make_pair(MessageTime,x)): TempHitMap.insert(std::make_pair(MessageTime,x));
   }
-  Int_t LastTimestamp = 0;
+  UInt_t LastTimestamp = 0;
   for (auto it=TempHitMap.begin(); it != TempHitMap.end(); ++it){
       auto range = std::make_pair(TempHitMap.lower_bound(it->first), TempHitMap.upper_bound(it->first + clusterWindow));
       auto rangeCopy=range;
@@ -916,7 +918,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
         	  HitSpadic.push_back(GetSpadicID((*rangeCopy.first->second).GetSourceAddress()));
           }
 		}
-		for (Int_t i = 0; i < HitChs.size(); i++) {
+		for (UInt_t i = 0; i < HitChs.size(); i++) {
 			for (auto x : linearClusterBuffer) {
 				Int_t SpadicID = GetSpadicID(x.GetSourceAddress());
 				Int_t Channel = x.GetChannelID()
@@ -1086,7 +1088,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
                   BuildingCluster.AddEntry (*currentMessage);
                 }
           }
-          SchleifenendeClusterizer:
+	  //          SchleifenendeClusterizer:
           lastPad = currentPad;
         }
       //std::cout << " CLusterizer loop finished" << std::endl;
@@ -1103,13 +1105,13 @@ void CbmTrdTimeCorrel::ClusterizerTime()
   if(fClusterBuffer.size()>0)
   {
 	  TH2* CoincidenceHistogram = fHM->H2("Cluster_Coincidences");
-	  for (int i =0; i< fClusterBuffer.size()-1;i++){
+	  for (unsigned int i =0; i< fClusterBuffer.size()-1;i++){
 		  Float_t CurrentPosition=fClusterBuffer.at(i).GetHorizontalPosition();
 		  if (fClusterBuffer.at(i).size()<3 ||fClusterBuffer.at(i).size()>4) continue;
 		  Int_t CurrentDetector = fClusterBuffer.at(i).GetSpadic()/2;
 		  //if(CurrentPosition>16.0) CurrentPosition -= 16.0;
 		  Long_t CurrentTime = fClusterBuffer.at(i).GetFulltime();
-		  for(int j=1;j<10&&i+j<fClusterBuffer.size();j++){
+		  for(unsigned int j=1;j<10&&i+j<fClusterBuffer.size();j++){
 			  if(fClusterBuffer.at(i+j).GetSpadic()/2==CurrentDetector) continue;
 			  if (fClusterBuffer.at(i+j).size()<3 ||fClusterBuffer.at(i+j).size()>4) continue;
 			  Float_t NextPosition=fClusterBuffer.at(i+j).GetHorizontalPosition();
@@ -1390,10 +1392,12 @@ void CbmTrdTimeCorrel::CreateHistograms()
   TString histName="";
   TString title="";
 
+  /*
   TString channelName[32] = { "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", 
 			      "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", 
 			      "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", 
 			      "30", "31"};
+  */
   TString triggerTypes[4] = { "Global trigger",
 			      "Self triggered",
 			      "Neighbor triggered",
@@ -1404,6 +1408,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
 			  "Multi hit", 
 			  "Multi hit and channel buffer full", 
 			  "Multi hit and ordering FIFO full"};
+  /*
   TString infoTypes[8] = {"Channel disabled during message building", 
 			  "Next grant timeout", 
 			  "Next request timeout", 
@@ -1412,6 +1417,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
 			  "Empty word", 
 			  "Epoch out of sync", 
 			  "infoType out of array"}; //not official type, just to monitor overflows
+  */
   
   fSpadics = NrOfActiveSyscores*NrOfActiveSpadics;
   
@@ -1574,7 +1580,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
   			  const Int_t nBins=70;
   			  auto BinBoarders = [&nBins] (Int_t reBinHigh=32){
   				  const Double_t MaxFreq = (17500000.0);
-  				  const Double_t slope=MaxFreq/nBins;
+				  //  				  const Double_t slope=MaxFreq/nBins;
   				  //const Int_t iThreshhold=std::ceil((MaxFreq/Threshold-0.5)/static_cast<Double_t>(reBinHigh));
   				  //LOG(FATAL) << "iThresshold = " << iThreshhold << FairLogger::endl;
   				  Double_t* Result=new Double_t[nBins+1];
@@ -2135,7 +2141,7 @@ TString CbmTrdTimeCorrel::RewriteSpadicName(TString spadicName)
   }
 
 //---------------------------------------------------------------------------
-  Int_t  CbmTrdTimeCorrel::GetSectorID(CbmSpadicRawMessage* raw)// To be used to create CbmTrdDigis
+  Int_t  CbmTrdTimeCorrel::GetSectorID(CbmSpadicRawMessage*)// To be used to create CbmTrdDigis
   {
     return 0;
   }
@@ -2219,20 +2225,23 @@ std::map<Int_t, std::map<Int_t,std::map<ULong_t, Long_t> > > CbmTrdTimeCorrel::C
 
 CbmTrdTimeCorrel::Cluster::Cluster(std::vector<Int_t> * BaselineArray,Int_t initWindowsize, Int_t ChargeThreshhold = 50) :
     TObject (),
+    fMaxStopType(0),    
     fEntries (),
     fParametersCalculated(false),
+    fPreCalculatedBaseline(true),
+    fSyscore(0),
     fSpadic (0),
     fRow(0),
     fType (0),
-    fBaseline(BaselineArray),
     fTotalCharge (0),
-    fHorizontalPosition (0),
-    fMaxStopType(0),
+    fTotalIntegralCharge (0),
     fMaxADC(-256),
+    fMaxCharge(-256),
     fWindowsize(initWindowsize),
-	fPreCalculatedBaseline(true),
-	fClusterChargeThreshhold(ChargeThreshhold),
-	fFullTime()
+    fClusterChargeThreshhold(ChargeThreshhold),     
+    fBaseline(BaselineArray),
+    fFullTime(),
+    fHorizontalPosition (0)
 {};
 
 CbmTrdTimeCorrel::Cluster::~Cluster(){};
@@ -2344,7 +2353,7 @@ Int_t CbmTrdTimeCorrel::GetMaxADC(CbmSpadicRawMessage& message,Bool_t SubtractBa
   Int_t previousADC=-255;
   Int_t NrSamples = message.GetNrSamples ();
   Bool_t validHit=(NrSamples==32);
-  Int_t Spadic = GetSpadicID(message.GetSourceAddress());
+  //  Int_t Spadic = GetSpadicID(message.GetSourceAddress());
   Int_t Syscore = GetSyscoreID(message.GetEquipmentID());
   if(fBaseline==nullptr) SubtractBaseline=false;
   for (Int_t i = 0 ; i < NrSamples ; i++){
@@ -2406,15 +2415,15 @@ void CbmTrdTimeCorrel::FillBaselineHistogram(CbmSpadicRawMessage* message){
 	if (GetMaxADC(*message,false,&fBaseline)>Samples[0]) return;
 	TH2* Histogram = fHM->H2(histName);
 	Int_t ChID =  message->GetChannelID() + ((GetSpadicID(message->GetSourceAddress()) %2 == 1)? 16 : 0);
-	Int_t NrSamples = message->GetNrSamples ();
+	//	Int_t NrSamples = message->GetNrSamples ();
 	Histogram->Fill(GetAvgBaseline(*message),ChID);
 
 };
 
-void CbmTrdTimeCorrel::FillSignalShape(CbmSpadicRawMessage& message,string Hist,Bool_t HighBaseline){
+void CbmTrdTimeCorrel::FillSignalShape(CbmSpadicRawMessage& message,string Hist,Bool_t /*HighBaseline*/){
 	Int_t SpadicID = GetSpadicID(message.GetSourceAddress());
 	string Detectorname = ((SpadicID/2) == 0 ? "Frankfurt" : "Muenster");
-	Int_t ChID = message.GetChannelID() + (SpadicID%2)*16;
+	//Int_t ChID = message.GetChannelID() + (SpadicID%2)*16;
 	string histName=Hist;
 	if(Hist=="") return;
 	Int_t NrSamples = message.GetNrSamples();
@@ -2531,9 +2540,11 @@ void CbmTrdTimeCorrel::Cluster::Veto() {
 	for (auto x : fEntries) {
 		Float_t ChargeRatio = 100.0 * static_cast<Float_t>(GetMaxADC(x))
 				/ fTotalCharge;
+		/*
 		Float_t Displacement =
 				static_cast<Float_t>(GetHorizontalMessagePosition(x))
 						- fHorizontalPosition;
+		*/
 		if(x.GetTriggerType()==1||x.GetTriggerType()==3){
 			if(ChargeRatio<VetoThreshhold)
 			{
@@ -2628,9 +2639,9 @@ void CbmTrdTimeCorrel::Cluster::CalculateParameters(){
   if(NumberOfTypeTwoMessages!=2) fType=1;
   if(NumberOfHits==0) fType=2;
   const Float_t PadWidth = 1.0;//7.0/7.125;
-  const Float_t sigma = 0.646432;
+  //  const Float_t sigma = 0.646432;
   if (size()<3||size()>4||fType > 0/*||(size()==2&&!(fType==1||fType==2))*/){
-	  for (Int_t i=0;i<fEntries.size();i++){
+	  for (UInt_t i=0;i<fEntries.size();i++){
 		  Double_t Weight = static_cast<Double_t>(Charges.at(i))/static_cast<Double_t>(fTotalCharge);
 		  fHorizontalPosition += static_cast<Float_t>(Weight* static_cast<Double_t>(unweightedPosSum.at(i)));
 	  }

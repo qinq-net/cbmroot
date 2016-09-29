@@ -1332,7 +1332,7 @@ void CbmHadronAnalysis::Exec(Option_t*)
 //    CbmTofTrack *TofTrackh;
     CbmTofTrack *BestTofTrack;
     CbmGlobalTrack *GlobTrack;
-    CbmMatch *tofHitMatch;
+//    CbmMatch *tofHitMatch;
 
     Int_t nMCTracks, nTofPoints, nTofHits, nTofTracks, nGlobTracks;
     Int_t pdgCode, Np1, Np2;

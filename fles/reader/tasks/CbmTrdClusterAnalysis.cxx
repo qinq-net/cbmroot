@@ -79,7 +79,7 @@ void CbmTrdClusterAnalysis::Finish()
   TH1F* pulse = new TH1F("pulse","pulse",32,-0.5,31.5);
   pulse->GetYaxis()->SetRangeUser(-255,256);
   TString histName = "";
-  Int_t nDigis = fDigis->GetEntriesFast();
+  //  Int_t nDigis = fDigis->GetEntriesFast();
   Int_t nClusters = fClusters->GetEntriesFast();
   Int_t DigiCounter(0), ClusterCounter(0);
   for (Int_t iCluster=0; iCluster < nClusters; iCluster++) {

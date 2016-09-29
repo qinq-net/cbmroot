@@ -44,7 +44,8 @@ class CbmSpadicTriggerComp : public FairTask
     * Action at end of run. For this task and all of the subtasks. *
     virtual void FinishTask();
 */
-    inline Int_t GetSpadicID(Int_t sourceA);
+//    inline Int_t GetSpadicID(Int_t sourceA);
+    Int_t GetSpadicID(Int_t sourceA);
 
 
   private:

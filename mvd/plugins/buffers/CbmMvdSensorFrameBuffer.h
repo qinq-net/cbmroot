@@ -57,7 +57,7 @@ class CbmMvdSensorFrameBuffer : public CbmMvdSensorBuffer
  
   virtual void 		ExecChain();
   virtual void 		InitBuffer     	(CbmMvdSensor* mySensor);
-  virtual void 		BuildTimeSlice	(Double_t tStart, Double_t tStop){
+  virtual void 		BuildTimeSlice	(Double_t /*tStart*/, Double_t /*tStop*/){
 			cout<<"Do not use " << GetName() << "::BuildTimeSlice()"<< endl;};
   
   /**BuildMimosaFrame: Provides a TClonesArray containing all points related to a frame.

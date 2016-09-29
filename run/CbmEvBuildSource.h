@@ -30,13 +30,13 @@ public:
 
   //virtual Source_Type GetSourceType() {return kFILE;}
 
-  virtual Bool_t ActivateObject(TObject** obj, const char* ObjType)  { return kFALSE; }
+  virtual Bool_t ActivateObject(TObject**, const char*)  { return kFALSE; }
     
   /**Check the maximum event number we can run to*/
-  virtual Int_t CheckMaxEventNo(Int_t EvtEnd=0) {return 1000000000;}
+  virtual Int_t CheckMaxEventNo(Int_t =0) {return 1000000000;}
   /**Read the tre entry on one branch**/
-  virtual void ReadBranchEvent(const char* BrName) {return;}
-  virtual void ReadBranchEvent(const char* BrName, Int_t Event) {return;}
+  virtual void ReadBranchEvent(const char*) {return;}
+  virtual void ReadBranchEvent(const char*, Int_t) {return;}
   virtual void FillEventHeader(FairEventHeader* feh); 
 
   // Setters. Time in [ns], events in counts :) Only STS information is used.
@@ -61,7 +61,7 @@ private:
   CbmTimeSlice* fSlice;		//!Current time slice
   Int_t fISts;			//Number of STS digi under consideration
 
-  Int_t fEv;		// Number of current event **/
+  UInt_t fEv;		// Number of current event **/
   Int_t fNDigis;	// Number of digis in current time window
   Int_t fSN;		// N of start of time window
   Double_t fST;		// Time of start of time window

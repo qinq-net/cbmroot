@@ -37,8 +37,8 @@ const Int_t kiBinSizeClkCycle = 10; // Bin size for Multi histo, in clocks
 
 /*************** Channel coincidence trigger *****************/
 // Constants for channels coincidence trigger
-const Int_t kiMaxNbTriggers   = 16;
-const Int_t kiMaxNbChPerTrig  =  4;
+//const Int_t kiMaxNbTriggers   = 16;
+//const Int_t kiMaxNbChPerTrig  =  4;
 /*************************************************************/
 
 //___________________________________________________________________

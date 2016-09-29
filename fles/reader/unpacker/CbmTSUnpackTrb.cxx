@@ -248,7 +248,7 @@ void CbmTSUnpackTrb::DecodeTdcData(UInt_t* data, UInt_t size, UInt_t trbId, UInt
   UInt_t prevCoarseTime[5] = {0, 0, 0, 0, 0};
   UInt_t prevFineTime[5] = {0, 0, 0, 0, 0};
   UInt_t prevCounter = 0;
-  UInt_t prevNof = 0;
+//  UInt_t prevNof = 0;
   for (UInt_t i = 0; i < size; i++){
     UInt_t tdcData = data[i];
     

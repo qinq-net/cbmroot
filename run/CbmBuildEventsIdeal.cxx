@@ -42,7 +42,7 @@ CbmBuildEventsIdeal::~CbmBuildEventsIdeal() {
 
 
 // =====   Task execution   ==================================================
-void CbmBuildEventsIdeal::Exec(Option_t* opt) {
+void CbmBuildEventsIdeal::Exec(Option_t*) {
 
 	TStopwatch timer;
 	timer.Start();

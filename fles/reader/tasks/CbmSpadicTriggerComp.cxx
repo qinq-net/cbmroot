@@ -143,7 +143,7 @@ void CbmSpadicTriggerComp::Exec (Option_t*)
       LOG(DEBUG) << "CbmSpadicTriggerComp: linear ChID Size: "
 		    << ent.second.size() << FairLogger::endl;
       CbmSpadicRawMessage* firstMessage = nullptr;
-      for (Int_t i =0; i<ent.second.size();i++){
+      for (UInt_t i =0; i<ent.second.size();i++){
 	  CbmSpadicRawMessage* currentMessage = ent.second.at(i);
 	  if(currentMessage == nullptr){
 	      continue;
@@ -197,7 +197,7 @@ void CbmSpadicTriggerComp::Exec (Option_t*)
 #ifndef __CINT__
   std::sort(processedMessages.begin(),processedMessages.end(),CompareSpadicMessages);
 #endif //__CINT__
-  for (Int_t i =0; i<processedMessages.size();i++){
+  for (UInt_t i =0; i<processedMessages.size();i++){
       CbmSpadicRawMessage* currentMessage = processedMessages.at (i);
       new ((*fProcSpadic)[fProcSpadic->GetEntriesFast ()]) CbmSpadicRawMessage (
 	  currentMessage->GetEquipmentID (),

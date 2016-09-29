@@ -47,7 +47,7 @@ CbmTrdQa::CbmTrdQa(CbmTrdRadiator *radiator)
 {
 }
 
-CbmTrdQa::CbmTrdQa(const char *name, const char* /*title*/, const char *geo, Double_t triggerThreshold, CbmTrdRadiator *radiator) 
+CbmTrdQa::CbmTrdQa(const char* /*name*/, const char* /*title*/, const char *geo, Double_t triggerThreshold, CbmTrdRadiator *radiator) 
   : FairTask("TrdQa"),
     fMCTracks(NULL),
     fPoints(NULL),

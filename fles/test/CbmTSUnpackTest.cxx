@@ -218,7 +218,7 @@ void CbmTSUnpackTest::Finish()
 {
   TString message_type;
 
-  for (int i=0; i< fMsgCounter.size(); ++i) {
+  for (unsigned int i=0; i< fMsgCounter.size(); ++i) {
     switch(i) {
     case 0: message_type ="NOP"; break;
     case 1: message_type ="HIT"; break;

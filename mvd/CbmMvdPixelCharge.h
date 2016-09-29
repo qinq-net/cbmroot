@@ -48,7 +48,7 @@ public:
     Float_t  GetTime()			{return fPixelTime;}
     Int_t    GetFrame()			{return fFrame;}
     
-    virtual void Clear(Option_t* opt = "") { };
+    virtual void Clear(Option_t* = "") { };
 
     
 

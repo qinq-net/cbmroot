@@ -36,8 +36,8 @@ class CbmStsTrackFitterIdeal : public CbmStsTrackFitter
   /** Fitting algorithm **/
   Int_t DoFit(CbmStsTrack* pTrack, Int_t pidHypo = 211);
 
-  void Extrapolate( CbmStsTrack* track, Double_t z,
-		   FairTrackParam *param ) {}
+  void Extrapolate( CbmStsTrack* /*track*/, Double_t /*z*/,
+		   FairTrackParam* /*param*/ ) {}
 
   /** Set tracks parameters from the MC point **/
   void SetTrackParam(CbmStsPoint* point, FairTrackParam* trackParam, Int_t out = 0);

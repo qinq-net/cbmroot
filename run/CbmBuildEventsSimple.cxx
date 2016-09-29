@@ -38,7 +38,7 @@ void CbmBuildEventsSimple::Exec(Option_t*)
 {
   Int_t i=0;
   Int_t j=0;
-  Int_t n=0;
+//  Int_t n=0;
   Int_t k;
   Int_t nsts=fSlice->GetDataSize(kSTS);
   Double_t t;

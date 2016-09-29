@@ -622,7 +622,7 @@ void CbmTrdDigitizerPRF_TB::AddDigi(Int_t pointId, Int_t address, Double_t charg
     fAddressTimeMap[address] = time;
     fTimeAddressMap[Int_t(time)].push_back(address);
   }
-  std::map<Int_t, Double_t > ::iterator previousAddress = fAddressTimeMap.begin();
+//  std::map<Int_t, Double_t > ::iterator previousAddress = fAddressTimeMap.begin();
   
   printf("____________________________________________________________________\n  Time:%8.2fns point:%8i  digi:%8i  address:%10i  time:%10i\n  %8i digis in time map\n  %8i digis in data map\n",time,fnPoint,fnDigi,address,(Int_t)fAddressTimeMap.size(),(Int_t)fTimeAddressMap.size(),(Int_t)fDigiMap.size());
   /*

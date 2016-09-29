@@ -18,22 +18,22 @@
 // ----              -------------------------------------------------------
 CbmTrdTestBeamAnalysis2015SPS::CbmTrdTestBeamAnalysis2015SPS()
   : FairTask("CbmTrdTestBeamAnalysis2015SPS"),
-    fRawSpadic(NULL),
     fTimeBins(32),
-    fHM(new CbmHistManager()),
-    fNrTimeSlices(0),
     fRun(0),
-    fTimeMax(0),
-    fTimeMin(0),
     fSpadics(0),
     fRewriteSpadicName(false),
     fPlotSignalShape(true),
     fPlotClusterFinder(true),
+    fRawSpadic(NULL),
+    fHM(new CbmHistManager()),
     fTimeCounter(0),
     fBaseMethod(kLastTimeBins),
     fBaselineBins(1),
     fBaseline(),
-    fNoiseCounter(0)
+    fNoiseCounter(0),
+    fNrTimeSlices(0),
+    fTimeMax(0),
+    fTimeMin(0)
     //fNT(0x0)
     //*/
 {
@@ -83,8 +83,8 @@ void CbmTrdTestBeamAnalysis2015SPS::Exec(Option_t* /*option*/)
   std::map<TString, std::map<ULong_t, std::vector<CbmSpadicRawMessage*> > > timeBuffer;
   //LOG(ERROR) << "CbmTrdTestBeamAnalysis2015SPS: Run: " << fRun << " / Number of current TimeSlice: " << fNrTimeSlices << FairLogger::endl;
   Int_t nSpadicMessages = fRawSpadic->GetEntriesFast();//SPADIC messages per TimeSlice
-  Int_t nSpadicMessages0(0),nSpadicMessages1(0); //SPADIC messages per TimeSlice for single SPADICS
-  Int_t nSpadicMessagesHit0(0), nSpadicMessagesHit1(0), nSpadicMessagesInfo0(0), nSpadicMessagesInfo1(0), nSpadicMessagesEpoch0(0), nSpadicMessagesEpoch1(0),  nSpadicMessagesLost0(0), nSpadicMessagesLost1(0); // SPADIC message types per TimeSlice for single SPADICS 
+  //  Int_t nSpadicMessages0(0),nSpadicMessages1(0); //SPADIC messages per TimeSlice for single SPADICS
+  //  Int_t nSpadicMessagesHit0(0), nSpadicMessagesHit1(0), nSpadicMessagesInfo0(0), nSpadicMessagesInfo1(0), nSpadicMessagesEpoch0(0), nSpadicMessagesEpoch1(0),  nSpadicMessagesLost0(0), nSpadicMessagesLost1(0); // SPADIC message types per TimeSlice for single SPADICS 
   Bool_t isHit = false;
   Bool_t isHitAborted = false;
   Bool_t isOverflow = false;
@@ -427,7 +427,7 @@ void CbmTrdTestBeamAnalysis2015SPS::Exec(Option_t* /*option*/)
           middle /= (maxbin-minbin);
 
           // noise amplitude
-          Int_t ampl = max-min;
+	  //          Int_t ampl = max-min;
 
           // fill noise histograms
           histName = "Noise_AvgBaseline" ;
@@ -441,7 +441,7 @@ void CbmTrdTestBeamAnalysis2015SPS::Exec(Option_t* /*option*/)
 
           histName = "Noise_Shape" ;
           for(Int_t bin = 0; bin < nrSamples; bin++) {
-            Int_t adc=raw->GetSamples()[bin];
+	    //            Int_t adc=raw->GetSamples()[bin];
             //fHM->H2(histName.Data())->Fill(bin,adc);
             //fHM->H2((histName+channelId).Data())->Fill(bin,adc);
           }
@@ -731,11 +731,12 @@ void CbmTrdTestBeamAnalysis2015SPS::CreateHistograms()
 			      "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", 
 			      "30", "31"};
 
+  /*
   TString triggerTypes[4] = { "Global trigger",
 			      "Self triggered",
 			      "Neighbor triggered",
 			      "Self and neighbor triggered"};
-			      
+  */			      
   TString stopTypes[6] = {"Normal end of message", 
 			  "Channel buffer full", 
 			  "Ordering FIFO full", 

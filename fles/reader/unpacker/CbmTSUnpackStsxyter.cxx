@@ -356,7 +356,7 @@ void CbmTSUnpackStsxyter::UnpackEpochMessage( const uint32_t & msg, const Int_t 
         LOG(ERROR) << "CbmTSUnpackStsxyter::UnpackEpochMessage: Invalid link number " << link << FairLogger::endl;
     }
 
-    if( sourceAddress >= fCurrEpoch.size() ) {
+    if( sourceAddress >= static_cast<Int_t>(fCurrEpoch.size()) ) {
         fCurrEpoch.resize( sourceAddress + 1, std::vector< Int_t>( fkgNumStsxyterLinks, 0 ) );
     }
 

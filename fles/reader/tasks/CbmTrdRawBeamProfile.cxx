@@ -224,7 +224,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
     Int_t tdcFine = raw->GetTDCfine();
     Int_t tdcCoarse = raw->GetTDCcoarse();
     Int_t edge = raw->GetEdge();
-    ULong_t fullTime = raw->GetFullTime();
+    //    ULong_t fullTime = raw->GetFullTime();
 
     //LOG(INFO) << "TrbMessage: " << fTrbMessageCounter << " EqId:" << eqID << " sourceA:" << sourceA << " ChID:" << chID << " Epoch:" << epoch << " tdcFine:" << tdcFine << " tdcCoarse:" << tdcCoarse << " edge:" << edge << FairLogger::endl;
     
@@ -265,8 +265,8 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
     Int_t sourceA = raw->GetSourceAddress();
     //printf("EI%i SA%i ->",eqID,sourceA);
     Int_t chID = raw->GetChannelID();
-    Int_t AdcValue = raw->GetADCvalue();
-    ULong_t fullTime = raw->GetFullTime();
+    //    Int_t AdcValue = raw->GetADCvalue();
+    //    ULong_t fullTime = raw->GetFullTime();
     LOG(INFO) << "NxyterMessage: EqId:" << eqID << " sourceA:" << sourceA << " ChID:" << chID << FairLogger::endl;
   }
 
@@ -283,7 +283,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
   LOG(DEBUG) << "Digis in TClonesArray:                           " << fDigis->GetEntriesFast() << FairLogger::endl;
   LOG(DEBUG) << "Clusters in TClonesArray:                        " << fClusters->GetEntriesFast() << FairLogger::endl;
   // Find info about hitType, stopType and infoType in cbmroot/fles/spadic/message/constants/..
-  
+  /*
   TString triggerTypes[5] = {"infoMessage",
 			     "Global trigger",
 			     "Self triggered",
@@ -295,6 +295,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
 			  "Multi hit", 
 			  "Multi hit and channel buffer full", 
 			  "Multi hit and ordering FIFO full"};
+
   TString infoTypes[8] = {"Channel disabled during message building", 
 			  "Next grant timeout", 
 			  "Next request timeout", 
@@ -303,6 +304,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
 			  "Empty word", 
 			  "Epoch out of sync", 
 			  "infoType out of array"};
+  */
   
   //if (entriesInMessage > 1) entriesInMessage = 1; // for fast data visualization
   ULong_t lastSpadicTime[3][6] = {{0}}; //[sys][spa]

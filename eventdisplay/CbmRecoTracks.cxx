@@ -160,6 +160,9 @@ void CbmRecoTracks::HandleTrack(TEveTrack* eveTrack, Int_t& n, const CbmTrack* r
          case kTOFHIT:
             pixelHit = static_cast<const CbmPixelHit*> (fTofHits->At(hitIndex));
             break;
+         default:
+            LOG(WARNING) << "Pixel type " << hitType << " not supported." 
+                         << FairLogger::endl; 
       }
       
       if (0 != pixelHit)

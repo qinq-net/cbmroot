@@ -7,11 +7,7 @@
 #include "CbmMvdHit.h"
 #include "CbmMvdCluster.h"
 
-#include <iostream>
-
-using std::cout;
-using std::endl;
-
+#include "FairLogger.h"
 
 // -----   Default constructor   -------------------------------------------
 CbmMvdHit::CbmMvdHit() 
@@ -75,8 +71,9 @@ void CbmMvdHit::GetDigiIndexVector(TClonesArray* cbmMvdClusterArray, std::vector
     
   }
   
-  if(cluster->GetTotalDigisInCluster()!=digiIndexVector->size()) {
-    cout << "-W- " << GetName() << " - GetDigiIndexVector: Inconsistent number of digis in cluster. Ignored. " << endl;
+  if(static_cast<size_t>(cluster->GetTotalDigisInCluster())!=digiIndexVector->size()) {
+    LOG(WARNING) << "Inconsistent number of digis in cluster. Ignored. " 
+                 << FairLogger::endl;
   }
     
   
@@ -94,9 +91,9 @@ CbmMvdHit::~CbmMvdHit() {}
 // -----   Public method Print   -------------------------------------------
 void CbmMvdHit::Print(const Option_t* /*opt*/) const {
   //cout.precision(10);
-  cout << "MvdHit in station " << GetStationNr() << " at (" 
-       << GetX() << ", "  << GetY() << ", " 
-       << GetZ() << ") cm" << endl;
+  LOG(INFO) << "MvdHit in station " << GetStationNr() << " at (" 
+            << GetX() << ", "  << GetY() << ", " 
+            << GetZ() << ") cm" << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 

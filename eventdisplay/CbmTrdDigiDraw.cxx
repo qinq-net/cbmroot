@@ -134,7 +134,7 @@ void CbmTrdDigiDraw::Exec(Option_t* /*option*/)
      if(digi!=0) {
        
     
-       Double_t ELoss = digi-> GetCharge();
+       //Double_t ELoss = digi-> GetCharge();
 
        Int_t address = digi->GetAddress();
        Int_t Col = CbmTrdAddress::GetColumnId(address);
@@ -156,7 +156,7 @@ void CbmTrdDigiDraw::Exec(Option_t* /*option*/)
        Double_t Y = posHit.Y()-(padSize.Y()/2);
 
 
-       LOG(DEBUG1)<<"*** CbmTrdHitProducerDigi::CalculateHitPosition ***"<<FairLogger::endl;
+//       LOG(DEBUG1)<<"*** CbmTrdHitProducerDigi::CalculateHitPosition ***"<<FairLogger::endl;
        LOG(DEBUG1)<<"Col: "<< Col <<FairLogger::endl;
        LOG(DEBUG1)<<"Row: "<< Row <<FairLogger::endl;
        LOG(DEBUG1)<<setprecision(5)<<"fPadX: "<< padSize.X() <<FairLogger::endl;

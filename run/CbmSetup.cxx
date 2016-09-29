@@ -31,7 +31,7 @@ CbmSetup* CbmSetup::fgInstance = NULL;
 
 
 // -----   Clear the setup   -----------------------------------------------
-void CbmSetup::Clear(Option_t* opt) {
+void CbmSetup::Clear(Option_t*) {
 	fGeoTags.clear();
 	fGeoFileNames.clear();
 	fActive.clear();
@@ -45,7 +45,7 @@ void CbmSetup::Clear(Option_t* opt) {
 
 
 // -----   Instantiate module   --------------------------------------------
-FairModule* CbmSetup::CreateModule(Int_t moduleId, Bool_t active) {
+FairModule* CbmSetup::CreateModule(Int_t /*moduleId*/, Bool_t /*active*/) {
 
 	/* This does not work for the time being, due to missing linking
 
@@ -250,7 +250,7 @@ Bool_t CbmSetup::GetMagnetPosition(const char* geoTag,
 
 
 // -----   Intialisation    ------------------------------------------------
-void CbmSetup::Init(FairRunSim* run) {
+void CbmSetup::Init(FairRunSim* /*run*/) {
 
 	/* Does not work for the time being due to missing linking
 

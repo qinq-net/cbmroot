@@ -44,7 +44,7 @@ class CbmMvdSensorTask : public CbmMvdSensorPlugin
   virtual void          ExecChain(){;};
   virtual bool	  PluginReady(){return (true);};
   /** Returns task type to a upper control unit **/
-  const MvdSensorPluginType GetPluginType(){return task;};
+  MvdSensorPluginType GetPluginType(){return task;};
   
 
   protected:

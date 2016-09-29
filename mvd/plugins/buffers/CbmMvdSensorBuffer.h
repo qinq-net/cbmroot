@@ -42,7 +42,7 @@ class CbmMvdSensorBuffer : public CbmMvdSensorPlugin
   /** Send a new event to the buffer. The event will be absorbed but not processed.
    *The input - array will be emptied
    **/
-  virtual void 		SendInputEvent	(TClonesArray* inputStream)	{;};
+  virtual void 		SendInputEvent	(TClonesArray* /*inputStream*/)	{;};
   
   /** Receives the current event from the buffer. The Event is defined by the functions
   *BuildTimeSlice or BuildMimosaFrame. The memory is not emtied, use Clear*-methods
@@ -54,7 +54,7 @@ class CbmMvdSensorBuffer : public CbmMvdSensorPlugin
   //=======================================================
   virtual void ExecChain(){;}
   virtual void 		InitBuffer     	(CbmMvdSensor* mySensor)	 {fSensor=mySensor;};
-  virtual void 		BuildTimeSlice	(Double_t tStart, Double_t tStop){;};
+  virtual void 		BuildTimeSlice	(Double_t /*tStart*/, Double_t /*tStop*/){;};
   virtual void 		Finish		()				 {;};
   
   
@@ -66,19 +66,19 @@ class CbmMvdSensorBuffer : public CbmMvdSensorPlugin
    * Important: Clears also the output buffer delivered by GetCurrentEvent()
    * Make sure you don't need it.
    **/ 
-  virtual void          Clear           (Option_t* opt = "");
+  virtual void          Clear           (Option_t* = "");
   
   /**Clears the objects related to a time periode from the buffer.
   * Use ClearTimeSlice(0,t) to clear all objects earlier than t
   * Not implemented in base class as data type of objects in buffer is unknown
   **/
   
-  virtual void            ClearTimeSlice  (Double_t tStart, Double_t tStop) {;};
+  virtual void            ClearTimeSlice  (Double_t /*tStart*/, Double_t /*tStop*/) {;};
   
   
   
   /** Returns task type to a upper control unit **/
-  const MvdSensorPluginType GetPluginType(){return buffer;};
+  MvdSensorPluginType GetPluginType(){return buffer;};
   
   protected:
 

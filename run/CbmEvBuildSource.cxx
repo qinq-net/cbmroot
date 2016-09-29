@@ -54,7 +54,7 @@ CbmEvBuildSource::CbmEvBuildSource(const CbmEvBuildSource& source)
 Int_t CbmEvBuildSource::ReadEvent(UInt_t par)
 {
   Int_t j=0;
-  Int_t n=0;
+//  Int_t n=0;
   Int_t k;
   Int_t nsts;
   Double_t t;

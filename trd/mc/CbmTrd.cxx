@@ -353,7 +353,7 @@ void CbmTrd::ExpandTrdNodes(TGeoNode* fN)
 
 }   
 
-Bool_t CbmTrd::IsNewGeometryFile(TString filename)
+Bool_t CbmTrd::IsNewGeometryFile(TString /*filename*/)
 {
 
   TFile* f=new TFile(fgeoName);
