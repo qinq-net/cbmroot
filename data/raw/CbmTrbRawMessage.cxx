@@ -23,7 +23,7 @@ CbmTrbRawMessage::CbmTrbRawMessage(Int_t FlibLink, Int_t FebId,
 
 // -------------------------------------------------------------------------
 
-void CbmTrbRawMessage::Copy(CbmTrbRawMessage* source)
+void CbmTrbRawMessage::CopyMessage(CbmTrbRawMessage* source)
 {
   /* From CbmRawMessage */
   fEquipmentID = source->GetEquipmentID();

@@ -380,7 +380,7 @@ void CbmRichTrbUnpack2::PushEvent(std::multimap<Double_t, CbmTrbRawMessage*>::it
 
 			ind = fTrbRawHits->GetEntriesFast();
 			new ((*fTrbRawHits)[ind]) CbmTrbRawMessage();
-			static_cast<CbmTrbRawMessage*>(fTrbRawHits->At(ind))->Copy(iter->second);
+			static_cast<CbmTrbRawMessage*>(fTrbRawHits->At(ind))->CopyMessage(iter->second);
 
 			fPushedTimestamps++;
 

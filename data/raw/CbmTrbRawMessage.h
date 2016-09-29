@@ -20,7 +20,7 @@ class CbmTrbRawMessage : public CbmRawMessage
   /** Destructor  **/
   virtual ~CbmTrbRawMessage() { };
 
-  void Copy(CbmTrbRawMessage* source);
+  void CopyMessage(CbmTrbRawMessage* source);
 
   Int_t GetTDCfine() { return fTDCfine;}
   Int_t GetTDCcoarse() { return fTime;}
