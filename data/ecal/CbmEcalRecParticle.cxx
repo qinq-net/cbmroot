@@ -22,10 +22,7 @@
 #include "CbmEcalRecParticle.h"
 #include "CbmEcalCluster.h"
 
-#include <iostream>
-
-using std::cout;
-using std::endl;
+#include "FairLogger.h"
 
 // -----   Default constructor   -------------------------------------------
 CbmEcalRecParticle::CbmEcalRecParticle() 
@@ -126,8 +123,12 @@ CbmEcalRecParticle::~CbmEcalRecParticle()
 
 // -----   Public method Print   -------------------------------------------
 void CbmEcalRecParticle::Print(const Option_t* /*opt*/) const {
-  printf("-I- CbmEcalRecParticle: ECAL rec.particle :(px,py,pz,E) = (%f,%f,%f,%f) GeV\n",
-	 fPx,fPy,fPz,fE);
+  LOG(INFO) << "ECAL rec.particle :(px,py,pz,E) = (" 
+            << fPx << "," 
+            << fPy << "," 
+            << fPz << "," 
+            << fE << ") GeV/n"
+            << FairLogger::endl; 
 }
 // -------------------------------------------------------------------------
 

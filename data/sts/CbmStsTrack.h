@@ -106,7 +106,7 @@ public:
 
 
    /** Debug output **/
-   virtual string ToString() const;
+   virtual std::string ToString() const;
 
 
 

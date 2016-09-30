@@ -5,16 +5,14 @@
 
 
 #include "CbmTbEvent.h"
-
-#include <iostream>
-#include <iomanip>
-
-#include "FairLogger.h"
 #include "CbmDigi.h"
 
+#include "FairLogger.h"
 
-using namespace std;
+#include <iomanip>
 
+using std::fixed;
+using std::setprecision;
 
 // -----   Constructor  ------------------------------------------------------ 
 CbmTbEvent::CbmTbEvent()
@@ -95,18 +93,17 @@ void CbmTbEvent::Clear(Option_t*) {
 
 // -----   Print   -----------------------------------------------------------
 void CbmTbEvent::Print(Option_t* /*opt*/) const { 
-  cout.setf(ios::fixed, ios::floatfield);
-  cout << "-I- Cbm Testbeam Event: " << setprecision(9) << fixed << "Event time " 
-       << fEventTime << " s, duration " << setprecision(0) << GetDuration()
-       << " ns, Beam " << fTimeBc.size();
+  LOG(INFO) << "Cbm Testbeam Event: " << setprecision(9) << fixed << "Event time " 
+            << fEventTime << " s, duration " << setprecision(0) << GetDuration()
+            << " ns, Beam " << fTimeBc.size();
   for (Int_t iSys = 0; iSys < kNOFDETS; iSys++) {
   	if ( fNofDigis[iSys] ) {
   		TString systemName;
   		CbmDetectorList::GetSystemNameCaps(iSys, systemName);
-  		cout << ", " << systemName << " " << fNofDigis[iSys];
+  		LOG(INFO) << ", " << systemName << " " << fNofDigis[iSys];
   	}
   }
-  cout << ", AUX " << fNofAux << endl;
+  LOG(INFO) << ", AUX " << fNofAux << FairLogger::endl;
 }
 // ---------------------------------------------------------------------------
 

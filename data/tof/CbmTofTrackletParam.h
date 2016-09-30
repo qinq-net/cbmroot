@@ -10,16 +10,8 @@
 
 #include "TVector3.h"
 #include <sstream>
-#include <cmath>
 #include <vector>
 #include <string>
-#include <iostream> 
-
-using std::vector;
-using std::string;
-using std::stringstream;
-using std::endl;
-using std::cout;
 
 /**
  * built by on 
@@ -58,7 +50,7 @@ public:
    Double_t GetTy() const { return fTy; }
    Double_t GetQp() const { return fQp; }
    Double_t GetCovariance(int index) const { return fCovMatrix[index]; }
-   const vector<Double_t>& GetCovMatrix() const { return fCovMatrix; }
+   const std::vector<Double_t>& GetCovMatrix() const { return fCovMatrix; }
 
    /* Setters */
    void SetX(Double_t x) { fX  = x; }
@@ -68,7 +60,7 @@ public:
    void SetTx(Double_t tx) { fTx = tx; }
    void SetTy(Double_t ty) { fTy = ty; }
    void SetQp(Double_t qp) { fQp = qp; }
-   void SetCovMatrix(const vector<Double_t>& C) { fCovMatrix.assign(C.begin(), C.end()); }
+   void SetCovMatrix(const std::vector<Double_t>& C) { fCovMatrix.assign(C.begin(), C.end()); }
    void SetCovariance(int index, Double_t cov) { fCovMatrix[index] = cov; }
 
    /**
@@ -92,8 +84,8 @@ public:
     * \brief Return state vector as vector.
     * \return State vector as vector.
     */
-   vector<Double_t> GetStateVector() const {
-      vector<Double_t> state(5, 0.);
+   std::vector<Double_t> GetStateVector() const {
+      std::vector<Double_t> state(5, 0.);
       state[0] = GetX();
       state[1] = GetY();
       state[2] = GetTx();
@@ -106,7 +98,7 @@ public:
     * \brief Set parameters from vector.
     * \param[in] x State vector.
     */
-   void SetStateVector(const vector<Double_t>& x) {
+   void SetStateVector(const std::vector<Double_t>& x) {
       SetX(x[0]);
       SetY(x[1]);
       SetTx(x[2]);
@@ -118,8 +110,8 @@ public:
     * \brief Return string representation of class.
     * \return String representation of class.
     */
-   string ToString() const {
-      stringstream ss;
+   std::string ToString() const {
+      std::stringstream ss;
       ss << "TrackletParam: pos=(" << fX << "," << fY << "," << fZ
          << ") tx=" << fTx << " ty=" << fTy << " qp=" << fQp;// << std::endl;
    // ss << "cov: ";
@@ -132,19 +124,7 @@ public:
       return ss.str();
    }
 
-   Double_t GetZr(Double_t R) const { 
-     Double_t P = (fTx+fTy);
-     Double_t Q =  0.5*(fX*fX + fY*fY - R*R);
-     Double_t Arg = P*P*0.25 - Q ;
-     cout << " GetZr "<<R<<", P "<<P<<", Q "<<Q<<", Arg "<<Arg<<endl; 
-
-     if ( Arg > 0.) { 
-       Double_t z=-P*0.5 + std::sqrt(Arg);
-       cout << " GetZr "<<R<<", P "<<P<<", Q "<<Q<<", Arg "<<Arg<<", z "<<z<<endl; 
-       return z;
-     }
-     return 0.; 
-   }
+   Double_t GetZr(Double_t R) const; 
 
    Double_t GetZy(Double_t Y) const { 
      if ( fTy != 0.) { 
@@ -163,7 +143,7 @@ private:
    /* Covariance matrix.
     * Upper triangle symmetric matrix.
     * a[0,0..4], a[1,1..4], a[2,2..4], a[3,3..4], a[4,4] */
-   vector<Double_t> fCovMatrix;
+   std::vector<Double_t> fCovMatrix;
 
    ClassDef(CbmTofTrackletParam, 1);
 

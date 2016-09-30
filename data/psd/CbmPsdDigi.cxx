@@ -7,9 +7,8 @@
 
 
 #include "CbmPsdDigi.h"
-#include <iostream>
-using std::cout;
-using std::endl;
+
+#include "FairLogger.h"
 
 
 // -----   Default constructor   -------------------------------------------
@@ -48,8 +47,8 @@ CbmPsdDigi::~CbmPsdDigi() { }
 // -------------------------------------------------------------------------
 
 void CbmPsdDigi::Print(Option_t*) const {
-  cout<<"module : "<<fModuleID <<" section    : "<<fSectionID <<
-    " ELoss "<<fEdep <<  endl;
+  LOG(INFO) <<"module : "<<fModuleID <<" section    : "<<fSectionID <<
+    " ELoss "<<fEdep << FairLogger::endl;
 
 
 }

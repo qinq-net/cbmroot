@@ -8,10 +8,8 @@
 
 
 #include "CbmPsdHit.h"
-#include <iostream>
-using std::cout;
-using std::endl;
 
+#include "FairLogger.h"
 
 // -----   Default constructor   -------------------------------------------
 CbmPsdHit::CbmPsdHit() 
@@ -41,7 +39,7 @@ CbmPsdHit::~CbmPsdHit() { }
 // -------------------------------------------------------------------------
 
 void CbmPsdHit::Print(Option_t*) const {
-  cout<<"module : "<<fModuleID <<" ELoss "<<fEdep <<  endl;
+  LOG(INFO)<<"module : "<<fModuleID <<" ELoss "<<fEdep <<  FairLogger::endl;
 
 }
 

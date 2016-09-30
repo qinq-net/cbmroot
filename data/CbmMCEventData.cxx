@@ -7,9 +7,8 @@
 
 
 #include "CbmMCEventData.h"
-#include <iostream>
-using std::cout;
-using std::endl;
+
+#include "FairLogger.h"
 
 // -----   Default constructor   -------------------------------------------
 CbmMCEventData::CbmMCEventData() 
@@ -46,7 +45,8 @@ CbmMCEventData::~CbmMCEventData(){}
 
 
 void CbmMCEventData::Print(Option_t*) const {  
-  cout << "(MC) impact parameter: " << fB << ", (MC) REACTION PLANE: " << fRP << endl;
+  LOG(INFO) << "(MC) impact parameter: " << fB << ", (MC) REACTION PLANE: " << fRP 
+            << FairLogger::endl;
 }
 
 ClassImp(CbmMCEventData)

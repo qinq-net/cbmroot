@@ -8,10 +8,7 @@
 
 
 #include "CbmPsdEventData.h"
-#include <iostream>
-using std::cout;
-using std::endl;
-
+#include "FairLogger.h"
 
 // -----   Default constructor   -------------------------------------------
 CbmPsdEventData::CbmPsdEventData() 
@@ -86,7 +83,7 @@ CbmPsdEventData::~CbmPsdEventData(){}
 
 
 void CbmPsdEventData::Print(Option_t*) const {  
-  cout << "(RECO) EVENT PLANE : " << fEP_RECO << endl;
+  LOG(INFO) << "(RECO) EVENT PLANE : " << fEP_RECO << FairLogger::endl;
 }
 
 ClassImp(CbmPsdEventData)

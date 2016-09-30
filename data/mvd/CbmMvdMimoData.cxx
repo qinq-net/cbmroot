@@ -4,10 +4,6 @@
 */
 
 #include "CbmMvdMimoData.h"
-#include <iostream>
-
-using std::cout;
-using std::endl;
 
 CbmMvdMimoData::CbmMvdMimoData()
 {

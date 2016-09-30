@@ -88,7 +88,7 @@ class CbmDaqNew : public FairTask
     CbmMCEventList* fEventsCurrent; //! MC events for current time slice
 
     /** First and last event in current time slice for each input **/
-    map<Int_t, pair<Int_t, Int_t>> fEventRange; //!
+    std::map<Int_t, std::pair<Int_t, Int_t>> fEventRange; //!
 
 
     /** Close the current time slice

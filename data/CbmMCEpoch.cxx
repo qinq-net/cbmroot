@@ -8,14 +8,9 @@
 
 #include "CbmMCEpoch.h"
 
-#include <iostream>
-
 #include "FairLogger.h"
 
 #include "TClonesArray.h"
-
-using namespace std;
-
 
 // -----    Default  constructor   -------------------------------------------
 CbmMCEpoch::CbmMCEpoch() 
@@ -106,8 +101,7 @@ void CbmMCEpoch::Clear(Option_t*) {
 Int_t CbmMCEpoch::GetNofPoints(DetectorId det) const {
 
   if ( ! fPoints[det] ) {
-    cout << "-W- " << GetName() << "::GetNofPoints: "
-	 << "No array for detector system " << det << endl;
+    LOG(WARNING) << "No array for detector system " << det << FairLogger::endl;
     return 0;
   }
 
@@ -122,14 +116,13 @@ Int_t CbmMCEpoch::GetNofPoints(DetectorId det) const {
 FairMCPoint* CbmMCEpoch::GetPoint(DetectorId det, Int_t index) {
 
   if ( ! fPoints[det] ) {
-    cout << "-W- " << GetName() << "::GetPoint: "
-	 << "No array for detector system " << det << endl;
+    LOG(WARNING) << "No array for detector system " << det << FairLogger::endl;
     return NULL;
   }
 
   if ( index < 0  ||  index >= GetNofPoints(det) ) {
-    cout << "-W- " << GetName() << "::GetPoint: Index " << index 
-	 << "out of range for system " << det << endl;
+    LOG(WARNING) << "Index " << index 
+	 << "out of range for system " << det << FairLogger::endl;
     return NULL;
   }
 
@@ -162,16 +155,16 @@ Bool_t CbmMCEpoch::IsEmpty() {
 // -----   Print epoch info   ------------------------------------------------
 void CbmMCEpoch::Print(Option_t* /*opt*/) const { 
 
-  cout << "-I- " << GetName() << " Start time " << fStartTime << ", Points: ";
+  LOG(INFO) << " Start time " << fStartTime << ", Points: ";
   TString sysName;
   for (Int_t iDet = kREF; iDet<kTutDet; iDet++) {
     DetectorId det = DetectorId(iDet);
     if ( fPoints[iDet] ) {
       CbmDetectorList::GetSystemName(DetectorId(iDet), sysName);
-      cout << sysName << " " << GetNofPoints(det) << " ";
+      LOG(INFO)<< "   " << sysName << " " << GetNofPoints(det) << " ";
     }
   }
-  cout << endl;
+  LOG(INFO) << FairLogger::endl;
 
 }
 // ---------------------------------------------------------------------------

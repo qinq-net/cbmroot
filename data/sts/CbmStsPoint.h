@@ -22,9 +22,6 @@
 
 class TVector3;
 
-using std::string;
-
-
 class CbmStsPoint : public FairMCPoint 
 {
 
@@ -111,7 +108,7 @@ class CbmStsPoint : public FairMCPoint
 
 
   /** String output **/
-  string ToString() const;
+  std::string ToString() const;
 
 
 

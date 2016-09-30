@@ -4,13 +4,9 @@
 // -----           Update to new CbmMatch Class by P. Sitzmann         -----
 // -------------------------------------------------------------------------
 
-#include <iostream>
 #include "CbmMvdDigiMatch.h"
+
 #include "TMath.h"
-
-using std::cout;
-using std::endl;
-
 
 // -----   Default constructor   -------------------------------------------
 CbmMvdDigiMatch::CbmMvdDigiMatch():

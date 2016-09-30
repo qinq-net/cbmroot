@@ -90,7 +90,6 @@ CbmMvdHit::~CbmMvdHit() {}
 
 // -----   Public method Print   -------------------------------------------
 void CbmMvdHit::Print(const Option_t* /*opt*/) const {
-  //cout.precision(10);
   LOG(INFO) << "MvdHit in station " << GetStationNr() << " at (" 
             << GetX() << ", "  << GetY() << ", " 
             << GetZ() << ") cm" << FairLogger::endl;

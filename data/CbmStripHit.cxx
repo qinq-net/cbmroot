@@ -66,7 +66,7 @@ CbmStripHit::~CbmStripHit()
 {
 }
 
-string CbmStripHit::ToString() const
+std::string CbmStripHit::ToString() const
 {
    stringstream ss;
 	ss << "CbmStripHit: address=" << GetAddress()

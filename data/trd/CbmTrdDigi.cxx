@@ -3,6 +3,7 @@
 #include <sstream>
 using std::endl;
 using std::stringstream;
+using std::string;
 
 CbmTrdDigi::CbmTrdDigi() 
   : CbmDigi(),

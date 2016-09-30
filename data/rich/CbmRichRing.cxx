@@ -36,14 +36,13 @@
 
 
 #include "CbmRichRing.h"
-//#include "CbmRichHit.h"
 
-# include "TMath.h"
+#include "FairLogger.h"
 
-# include <iostream>
-# include <cmath>
+#include "TMath.h"
 
-using std::cout;
+#include <cmath>
+
 using std::sqrt;
 using std::fabs;
 using std::atan;
@@ -182,7 +181,7 @@ Double_t CbmRichRing::GetYF2() const
 }
 
 void CbmRichRing::Print(Option_t*) const {
-	cout << " Ring parameters: " <<
+	LOG(INFO) << " Ring parameters: " <<
 			" Aaxis = " << GetAaxis() <<
 			", Baxis = " << GetBaxis() <<
 			", Phi = " << GetPhi() <<
@@ -194,7 +193,8 @@ void CbmRichRing::Print(Option_t*) const {
 			", Chi2 = " << GetChi2() <<
 			", RingTrackDistance = "<< GetDistance() <<
 			", Angle() = " << GetAngle() <<
-			", NofHitsOnRing = " << GetNofHitsOnRing() << std::endl;
+			", NofHitsOnRing = " << GetNofHitsOnRing() 
+                   << FairLogger::endl;
 }
 
 Float_t CbmRichRing::GetRadialPosition() const

@@ -10,9 +10,8 @@
 #define CBMLINK_H_
 
 #include "TObject.h"
-#include <string>
 
-using std::string;
+#include <string>
 
 class CbmLink : public TObject
 {
@@ -50,7 +49,7 @@ public:
     * \brief Return string representation of the object.
     * \return String representation of the object.
     **/
-   virtual string ToString() const;
+   virtual std::string ToString() const;
 
    friend Bool_t operator==(const CbmLink& lhs, const CbmLink& rhs) {
       return (lhs.GetFile() == rhs.GetFile() && lhs.GetEntry() == rhs.GetEntry() && lhs.GetIndex() == rhs.GetIndex());

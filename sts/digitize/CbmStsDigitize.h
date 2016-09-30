@@ -283,10 +283,10 @@ class CbmStsDigitize : public FairTask
 
 
   /** Status of the analog buffers **/
-  string BufferStatus() const;
+  std::string BufferStatus() const;
 
   /** Status of the analog buffers **/
-  string BufferStatus2() const;
+  std::string BufferStatus2() const;
 
   /** End-of-run action **/
   virtual void Finish();

@@ -3,15 +3,12 @@
 // -----              Created 17/04/08  by C. Dritsa                 -----
 // -----------------------------------------------------------------------
 
-
-
-
-#include <iostream>
 #include "CbmMvdDigi.h"
+
+#include "FairLogger.h"
+
 #include "TMath.h"
 
-using std::cout;
-using std::endl;
 
 // -----   Default constructor   -------------------------------------------
 CbmMvdDigi::CbmMvdDigi()
@@ -59,8 +56,7 @@ CbmMvdDigi::CbmMvdDigi(Int_t iStation, Int_t iChannelNrX, Int_t iChannelNrY, Flo
 {
     // Check range for station
     if ( ! ( iStation >= 0 && iStation <= 255 ) ) {
-	cout << "-E- CbmMvdDigi: Illegal station number " << iStation << endl;
-	Fatal("", "Illegal station number");
+	LOG(FATAL) << "Illegal station number " << iStation << FairLogger::endl;
     }
 
     fDetectorId = DetectorId(iStation);
@@ -98,8 +94,7 @@ CbmMvdDigi::CbmMvdDigi(Int_t iStation, Int_t iChannelNrX, Int_t iChannelNrY, Flo
 {
     // Check range for station
     if ( ! ( iStation >= 0 && iStation <= 600 ) ) {
-	cout << "-E- CbmMvdDigi: Illegal station number " << iStation << endl;
-	Fatal("", "Illegal station number");
+	LOG(FATAL) << "Illegal station number " << iStation << FairLogger::endl;
     }
     
 }
@@ -138,7 +133,8 @@ Int_t CbmMvdDigi::GetAdcCharge(Int_t adcDynamic, Int_t adcOffset, Int_t adcBits)
     }
 
     if(gDebug>0){
-	cout << "CbmMvdDigi::GetAdcCharge() "<< adcCharge<< endl;
+	LOG(DEBUG) << "CbmMvdDigi::GetAdcCharge() "<< adcCharge
+                   << FairLogger::endl;
     }
 
     return adcCharge;

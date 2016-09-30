@@ -5,12 +5,7 @@
 // -------------------------------------------------------------------------
 #include "CbmGlobalTrack.h"
 
-#include <iostream>
-
-using std::cout;
-using std::endl;
-
-
+#include "FairLogger.h"
 
 // -----   Default constructor   -------------------------------------------
 CbmGlobalTrack::CbmGlobalTrack() 
@@ -42,15 +37,16 @@ CbmGlobalTrack::~CbmGlobalTrack() { }
 
 // -----   Public method Print   -------------------------------------------
 void CbmGlobalTrack::Print(Option_t*) const {
-  cout << endl << "StsTrack " << fStsTrack << ", TrdTrack " << fTrdTrack << ", MuchTrack " << fMuchTrack
-       << ", RichRing " << fRichRing << ", TofHit " << fTofHit << endl;
-//  cout << "Parameters at first plane: " << endl;
+  LOG(INFO) << "StsTrack " << fStsTrack << ", TrdTrack " << fTrdTrack << ", MuchTrack " << fMuchTrack
+            << ", RichRing " << fRichRing << ", TofHit " << fTofHit 
+            << FairLogger::endl;
+//  LOG(INFO) << "Parameters at first plane: " << FairLogger::endl;
 //  fParamFirst.Print();
-//  cout << "Parameters at last plane: " << endl;
+//  LOG(INFO) << "Parameters at last plane: " << FairLogger::endl;
 //  fParamLast.Print();
-  cout << "chi2 = " << fChi2 << ", NDF = " << fNDF
-       << ", Quality flag " << fFlag << endl;
-  cout << "length = " << fLength << endl;
+  LOG(INFO) << "chi2 = " << fChi2 << ", NDF = " << fNDF
+            << ", Quality flag " << fFlag << FairLogger::endl;
+  LOG(INFO) << "length = " << fLength << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 

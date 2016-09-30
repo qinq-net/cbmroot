@@ -35,7 +35,7 @@ CbmLink::~CbmLink()
 
 }
 
-string CbmLink::ToString() const
+std::string CbmLink::ToString() const
 {
    stringstream ss;
    ss << "CbmLink: weight=" << fWeight << " index=" << fIndex << " entry="

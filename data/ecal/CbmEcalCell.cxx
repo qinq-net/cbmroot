@@ -37,10 +37,7 @@
 #include "CbmEcalCell.h"
 
 #include <algorithm>
-#include <iostream>
 
-using std::cout;
-using std::endl;
 using std::map;
 using std::list;
 

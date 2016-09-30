@@ -13,15 +13,16 @@
 
 #include "CbmMuchDigiMatch.h"
 #include "CbmMuchPoint.h"
+
+#include "FairLogger.h"
 #include "TClonesArray.h"
 #include "TMath.h"
 #include "TRandom.h"
-#include <iostream>
+
 #include <limits>
 #include <cassert>
 #include <map>
-using std::cout;
-using std::endl;
+
 using std::numeric_limits;
 using std::map;
 using std::pair;
@@ -87,8 +88,8 @@ CbmMuchDigiMatch::~CbmMuchDigiMatch() { };
 //// -----   Public method AddPoint   ----------------------------------------
 //Int_t CbmMuchDigiMatch::AddPoint(Int_t iPoint) {
 //  if ( iPoint < 0 ) {
-//    cout << "-W- CbmMuchDigiMatch::AddPoint: Illegal MuchPoint index "
-//	 << iPoint << endl;
+//    LOG(WARNING) << "Illegal MuchPoint index "
+//	 << iPoint << FairLogger::endl;
 //    return 0;
 //  }
 //  Int_t n = fRefIndex.GetSize();
@@ -102,8 +103,8 @@ CbmMuchDigiMatch::~CbmMuchDigiMatch() { };
 //// -----   Public method GetRefIndex   -------------------------------------
 //Int_t CbmMuchDigiMatch::GetRefIndex(Int_t i) const {
 //  if ( i<0 || i>GetNPoints()-1 ) {
-//    cout << "-W- CbmMuchDigiMatch::GetRefIndex: Illegal index number "
-//	 << i << endl;
+//    LOG(WARNING) << "Illegal index number "
+//	 << i << FairLogger::endl;
 //    return -1;
 //  }
 //  return fRefIndex.At(i);
@@ -114,8 +115,8 @@ CbmMuchDigiMatch::~CbmMuchDigiMatch() { };
 //// -----   Public method AddCharge  ----------------------------------------
 //UInt_t CbmMuchDigiMatch::AddCharge(UInt_t iCharge) {
 ////  if ( iCharge < 0 ) {
-////    cout << "-W- CbmMuchDigiMatch::AddCharge: Illegal charge value "
-////	 << iCharge << endl;
+////    LOG(WARNING) << "Illegal charge value "
+////	 << iCharge << FairLogger::endl;
 ////    return 0;
 ////  }
 //  Int_t n = fCharge.GetSize();
@@ -143,8 +144,8 @@ CbmMuchDigiMatch::~CbmMuchDigiMatch() { };
 //// -----   Public method GetCharge  ----------------------------------------
 //UInt_t CbmMuchDigiMatch::GetCharge(Int_t i) const {
 //  if ( i<0 || i>GetNPoints()-1 ) {
-//    cout << "-W- CbmMuchDigiMatch::GetCharge: Illegal index number "
-//	 << i << endl;
+//    LOG(WARNING) << "Illegal index number "
+//	 << i << FairLogger::endl;
 //    return 0;
 //  }
 //  return fCharge.At(i);

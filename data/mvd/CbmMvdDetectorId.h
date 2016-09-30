@@ -21,15 +21,13 @@
 #define CBMMVDDETECTORID_H 1
 
 
-#include <iostream>
-#include "TObject.h"
 #include "CbmDetectorList.h"
+
+#include "FairLogger.h"
+
+#include "TObject.h"
+
  
-using std::cerr;
-using std::endl;
-
-
-
 class CbmMvdDetectorId
 {
 
@@ -54,8 +52,8 @@ class CbmMvdDetectorId
   Int_t SystemId(Int_t detectorId) const {
     Int_t iSystem = detectorId & 31;
     if ( iSystem != kMVD ) {
-    	cerr << "-E- CbmMvdDetectorId::GetSystemId : "
-	     << "wrong system ID " << iSystem << endl;
+    	LOG(ERROR) << "-E- CbmMvdDetectorId::GetSystemId : "
+	     << "wrong system ID " << iSystem << FairLogger::endl;
 	return -1;
     }
     return iSystem;

@@ -7,12 +7,12 @@
 
 #include "CbmDetectorList.h"
 
-#include <iostream>
+#include "FairLogger.h"
+
 #include <sstream>
 
-using std::cout;
 using std::endl;
-using std::flush;
+using std::string;
 using std::stringstream;
 
 // -----   Default constructor   -------------------------------------------
@@ -86,7 +86,7 @@ CbmStsPoint::CbmStsPoint(const CbmStsPoint& point, Int_t eventId,
 
 // -----   Point x coordinate from linear extrapolation   ------------------
 Double_t CbmStsPoint::GetX(Double_t z) const {
-  //  cout << fZ << " " << z << " " << fZ_out << endl;
+  //  LOG(INFO) << fZ << " " << z << " " << fZ_out << FairLogger::endl;
   if ( (fZ_out-z)*(fZ-z) >= 0. ) return (fX_out+fX)/2.;
   Double_t dz = fZ_out - fZ;
   return ( fX + (z-fZ) / dz * (fX_out-fX) );

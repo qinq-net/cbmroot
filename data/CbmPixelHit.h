@@ -68,7 +68,7 @@ public:
 	/**
 	 * \brief Inherited from CbmBaseHit.
 	 **/
-	virtual string ToString() const;
+	virtual std::string ToString() const;
 
 	/* Accessors */
 	Double_t GetX() const { return fX; }

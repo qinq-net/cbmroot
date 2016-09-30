@@ -39,7 +39,7 @@ CbmTrdHit::~CbmTrdHit()
 {
 }
 
-string CbmTrdHit::ToString() const
+std::string CbmTrdHit::ToString() const
 {
    stringstream ss;
    ss << "CbmTrdHit: address=" << GetAddress()

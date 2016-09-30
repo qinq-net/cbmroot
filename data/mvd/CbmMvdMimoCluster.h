@@ -8,12 +8,7 @@
 
 #include "TObject.h"
 #include <vector>
-#include <iostream>
 //#include "FairTimeStamp.h"
-
-using std::cout;
-using std::endl;
-using namespace std;
 
 class CbmMvdMimoCluster : public TObject
 {
@@ -46,7 +41,7 @@ class CbmMvdMimoCluster : public TObject
       Int_t fCulAddrOfFirstPixel;
     } cluster;
     
-    vector< cluster > fClustVector;  
+    std::vector< cluster > fClustVector;  
     
        
 ClassDef(CbmMvdMimoCluster,1);

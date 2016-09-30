@@ -10,6 +10,8 @@
 
 using std::make_pair;
 using std::stringstream;
+using std::string;
+using std::vector;
 
 CbmMatch::CbmMatch() :
       fLinks(),

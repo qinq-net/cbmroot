@@ -5,10 +5,7 @@
 
 #include "CbmTrdPoint.h"
 
-#include <iostream>
-using std::cout;
-using std::endl;
-
+#include "FairLogger.h"
 
 // -----   Default constructor   -------------------------------------------
 CbmTrdPoint::CbmTrdPoint() 
@@ -49,18 +46,18 @@ CbmTrdPoint::~CbmTrdPoint() { }
 
 // -----   Public method Print   -------------------------------------------
 void CbmTrdPoint::Print(const Option_t* /*opt*/) const {
-  cout << "-I- CbmTrdPoint: TRD point for track " << fTrackID 
-       << " in detector " << fDetectorID << endl;
-  cout << "    Position In (" << fX << ", " << fY << ", " << fZ
-       << ") cm" << endl;
-  cout << "    Momentum In (" << fPx << ", " << fPy << ", " << fPz
-       << ") GeV" << endl;
-  cout << "    Position Out (" << fX_out << ", " << fY_out << ", " << fZ_out
-       << ") cm" << endl;
-  cout << "    Momentum In (" << fPx_out << ", " << fPy_out << ", " << fPz_out
-       << ") GeV" << endl;
-  cout << "    Time " << fTime << " ns,  Length " << fLength 
-       << " cm,  Energy loss " << fELoss*1.0e06 << " keV" << endl;
+  LOG(INFO) << "-TRD point for track " << fTrackID 
+            << " in detector " << fDetectorID << FairLogger::endl;
+  LOG(INFO) << "    Position In (" << fX << ", " << fY << ", " << fZ
+            << ") cm" << FairLogger::endl;
+  LOG(INFO) << "    Momentum In (" << fPx << ", " << fPy << ", " << fPz
+            << ") GeV" << FairLogger::endl;
+  LOG(INFO) << "    Position Out (" << fX_out << ", " << fY_out << ", " << fZ_out
+            << ") cm" << FairLogger::endl;
+  LOG(INFO) << "    Momentum In (" << fPx_out << ", " << fPy_out << ", " << fPz_out
+            << ") GeV" << FairLogger::endl;
+  LOG(INFO) << "    Time " << fTime << " ns,  Length " << fLength 
+            << " cm,  Energy loss " << fELoss*1.0e06 << " keV" << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 

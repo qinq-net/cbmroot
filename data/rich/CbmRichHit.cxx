@@ -49,7 +49,7 @@ CbmRichHit::~CbmRichHit()
 {
 }
 
-string CbmRichHit::ToString() const {
+std::string CbmRichHit::ToString() const {
    stringstream ss;
    ss << "CbmRichHit: address=" << GetAddress()
        << " pos=(" << GetX() << "," << GetY() << "," << GetZ()

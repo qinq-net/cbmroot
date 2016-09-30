@@ -8,10 +8,8 @@
 
 
 #include "CbmStsEventData.h"
-#include <iostream>
-using std::cout;
-using std::endl;
 
+#include "FairLogger.h"
 
 // -----   Default constructor   -------------------------------------------
 CbmStsEventData::CbmStsEventData() 
@@ -100,8 +98,9 @@ CbmStsEventData::~CbmStsEventData(){}
 
 
 void CbmStsEventData::Print(Option_t*) const {  
-  cout << "(RECO) EVENT PLANE : using first harmonic =  "<< fEP_RECO_harmo1_full << ", using second harmonic = " << fEP_RECO_harmo2_full << endl;
-
+  LOG(INFO) << "(RECO) EVENT PLANE : using first harmonic =  "<< fEP_RECO_harmo1_full 
+            << ", using second harmonic = " << fEP_RECO_harmo2_full 
+            << FairLogger::endl;
 }
 
 ClassImp(CbmStsEventData)

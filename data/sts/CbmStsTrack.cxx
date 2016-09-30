@@ -31,7 +31,7 @@ CbmStsTrack::~CbmStsTrack() {
 
 
 // -----   Debug   ---------------------------------------------------------
-string CbmStsTrack::ToString() const {
+std::string CbmStsTrack::ToString() const {
    stringstream ss;
    ss << "CbmStsTrack: nof STS hits=" << GetNofStsHits() << ", nof MVD hits="
          << GetNofMvdHits() << "chiSq=" << GetChiSq() << ", NDF="

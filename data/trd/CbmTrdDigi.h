@@ -11,9 +11,7 @@
 #include "CbmTrdAddress.h"
 
 #include <string>
-#include <list>
-using std::string;
-using std::list;
+//#include <list>
 
 class CbmTrdDigi : public CbmDigi
 {
@@ -79,7 +77,7 @@ class CbmTrdDigi : public CbmDigi
   void AddCharge(Double_t charge) { fCharge += charge; }
   void AddChargeTR(Double_t charge) { fChargeTR += charge; }
 
-  string ToString() const;
+  std::string ToString() const;
   
  private:
   Int_t fn_FNR_Triggers;

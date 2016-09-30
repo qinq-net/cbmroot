@@ -6,9 +6,7 @@
 
 #include "CbmPsdPoint.h"
 
-#include <iostream>
-using std::cout;
-using std::endl;
+#include "FairLogger.h"
 
 
 // -----   Default constructor   -------------------------------------------
@@ -40,14 +38,14 @@ CbmPsdPoint::~CbmPsdPoint() { }
 
 // -----   Public method Print   -------------------------------------------
 void CbmPsdPoint::Print(const Option_t* /*opt*/) const {
-  cout << "-I- CbmPsdPoint: ECAL point for track " << fTrackID 
-       << " in detector " << fDetectorID << endl;
-  cout << "    Position (" << fX << ", " << fY << ", " << fZ
-       << ") cm" << endl;
-  cout << "    Momentum (" << fPx << ", " << fPy << ", " << fPz
-       << ") GeV" << endl;
-  cout << "    Time " << fTime << " ns,  Length " << fLength 
-       << " cm,  Energy loss " << fELoss*1.0e06 << " keV" << endl;
+  LOG(INFO) << "-I- CbmPsdPoint: ECAL point for track " << fTrackID 
+            << " in detector " << fDetectorID << FairLogger::endl;
+  LOG(INFO) << "    Position (" << fX << ", " << fY << ", " << fZ
+            << ") cm" << FairLogger::endl;
+  LOG(INFO) << "    Momentum (" << fPx << ", " << fPy << ", " << fPz
+            << ") GeV" << FairLogger::endl;
+  LOG(INFO) << "    Time " << fTime << " ns,  Length " << fLength 
+            << " cm,  Energy loss " << fELoss*1.0e06 << " keV" << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 

@@ -1,12 +1,13 @@
 #include "CbmEcalPointLite.h"
 
-#include <iostream>
-
-using namespace std;
+#include "FairLogger.h"
 
 void CbmEcalPointLite::Print(const Option_t* /*opt*/) const
 {
-  cout << "CbmEcalPointLite: DetectorID=" << GetDetectorID() << ", TrackID=" << GetTrackID() << ", Eloss=" << GetEnergyLoss() << ", Time=" << GetTime() << endl;
+  LOG(INFO) << "CbmEcalPointLite: DetectorID=" << GetDetectorID() 
+            << ", TrackID=" << GetTrackID() 
+            << ", Eloss=" << GetEnergyLoss() 
+            << ", Time=" << GetTime() << FairLogger::endl;
 }
 
 ClassImp(CbmEcalPointLite)

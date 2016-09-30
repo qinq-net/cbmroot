@@ -8,12 +8,7 @@
 
 #include "TObject.h"
 #include <vector>
-#include <iostream>
 //#include "FairTimeStamp.h"
-
-using std::cout;
-using std::endl;
-using namespace std;
 
 class CbmMvdStateMatch : public TObject
 {
@@ -35,7 +30,7 @@ class CbmMvdStateMatch : public TObject
   Int_t GetDatalength()		{return (Int_t)( fMimoData[3*fWidthOfData-1]*16777216 + fMimoData[3*fWidthOfData-2]*65536 + fMimoData[3*fWidthOfData-3]*256 + fMimoData[3*fWidthOfData-4]);};
   Int_t GetTrailer()		{return (Int_t)( fMimoData[fByteNumberOfData-1]*16777216 + fMimoData[fByteNumberOfData-2]*65536 + fMimoData[fByteNumberOfData-3]*256 + fMimoData[fByteNumberOfData-4]);};
  
-  void GetState( vector< unsigned char >& state);//only read the useful data from fMimoData into the vector state[]
+  void GetState( std::vector< unsigned char >& state);//only read the useful data from fMimoData into the vector state[]
  
    /** modifier **/
   //header and framecounter are 32-bits value
@@ -43,7 +38,7 @@ class CbmMvdStateMatch : public TObject
   
   private:
     
-  vector< vector< Int_t > > fStateInformation
+  std::vector< std::vector< Int_t > > fStateInformation
     
 
       

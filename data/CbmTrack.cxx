@@ -73,7 +73,7 @@ void CbmTrack::AddHit(
 	fHitType.push_back(type);
 }
 
-string CbmTrack::ToString() const
+std::string CbmTrack::ToString() const
 {
    stringstream ss;
 	ss << "CbmTrack: nof hits=" << fHitIndex.size() << ", chiSq=" << fChiSq

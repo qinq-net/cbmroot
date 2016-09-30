@@ -6,10 +6,8 @@
 #include "CbmMvdCluster.h"
 #include "TVector3.h"
 
-#include <iostream>
-
-using std::cout;
-using std::endl;
+using std::pair;
+using std::map;
 
 // -----   Default constructor   -------------------------------------------
 CbmMvdCluster::CbmMvdCluster() 

@@ -27,7 +27,7 @@ CbmFiberHodoDigi::~CbmFiberHodoDigi()
 {
 }
 
-string CbmFiberHodoDigi::ToString() const {
+std::string CbmFiberHodoDigi::ToString() const {
    stringstream ss;
    ss << "CbmFiberHodoDigi: address=" << fAddress << " charge=" << fCharge
          << " time=" << fTime << endl;

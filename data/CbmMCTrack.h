@@ -30,8 +30,6 @@
 
 class TParticle;
 
-using std::string;
-
 class CbmMCTrack : public TObject
 {
 
@@ -94,7 +92,7 @@ class CbmMCTrack : public TObject
 
 
   /** String output **/
-  string ToString() const;
+  std::string ToString() const;
 
 
 private:

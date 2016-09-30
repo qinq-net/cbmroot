@@ -6,10 +6,7 @@
 
 #include "CbmEcalHit.h"
 
-#include <iostream>
-
-using std::cout;
-using std::endl;
+#include "FairLogger.h"
 
 // -----   Default constructor   -------------------------------------------
 CbmEcalHit::CbmEcalHit() 
@@ -31,10 +28,11 @@ CbmEcalHit::~CbmEcalHit() {}
 
 // -----   Public method Print   -------------------------------------------
 void CbmEcalHit::Print(const Option_t* /*opt*/) const {
-  cout << "ECAL hit: cellid=" << GetDetectorId() << ", Energy=" << fEnergy;
-  cout << ", PS Energy=" << fPSEnergy;
-  if (fTrackId>0) cout << ", TrackID= " << fTrackId;
-//  cout << ", x=" << GetX() << ", y=" << GetY() << endl << flush; 
+  LOG(INFO) << "ECAL hit: cellid=" << GetDetectorId() << ", Energy=" << fEnergy;
+  LOG(INFO) << ", PS Energy=" << fPSEnergy;
+  if (fTrackId>0) LOG(INFO) << ", TrackID= " << fTrackId;
+  LOG(INFO) << FairLogger::endl;
+//  LOG(INFO) << ", x=" << GetX() << ", y=" << GetY() << FairLogger::endl; 
 }
 // -------------------------------------------------------------------------
 

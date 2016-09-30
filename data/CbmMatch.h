@@ -15,10 +15,6 @@
 #include <vector>
 #include <algorithm>
 
-using std::string;
-using std::vector;
-using std::pair;
-
 class CbmMatch : public TObject
 {
 public:
@@ -34,7 +30,7 @@ public:
 
    /* Accessors */
    const CbmLink& GetLink(Int_t i) const { return fLinks[i]; }
-   const vector<CbmLink>& GetLinks() const { return fLinks; }
+   const std::vector<CbmLink>& GetLinks() const { return fLinks; }
    const CbmLink& GetMatchedLink() const { return fLinks[fMatchedIndex]; }
    Int_t GetNofLinks() const { return fLinks.size(); }
    Double_t GetTotalWeight() const { return fTotalWeight; }
@@ -49,10 +45,10 @@ public:
     * \brief Return string representation of the object.
     * \return String representation of the object.
     **/
-   virtual string ToString() const;
+   virtual std::string ToString() const;
 
 protected:
-   vector<CbmLink> fLinks; // List of links to MC
+   std::vector<CbmLink> fLinks; // List of links to MC
    Double_t fTotalWeight; // Sum of all reference weights
    Int_t fMatchedIndex; // Index of the matched reference in fReferences array
 

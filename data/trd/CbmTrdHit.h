@@ -55,7 +55,7 @@ public:
    /**
     * \brief Inherited from CbmBaseHit.
     **/
-   virtual string ToString() const;
+   virtual std::string ToString() const;
 
 	/** Accessors **/
 	Double_t GetELoss() const { return fELoss; }

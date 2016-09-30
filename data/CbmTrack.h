@@ -70,7 +70,7 @@ public:
 	void SetParamLast(const FairTrackParam* par){ fParamLast  = *par; }
    void SetMatch(CbmMatch* match) { fMatch = match; }
 
-	virtual string ToString() const;
+	virtual std::string ToString() const;
 
 private:
 	/** Array contains the hit indices of the hits attached to the track **/

@@ -11,9 +11,6 @@
 
 #include <TNamed.h>
 
-using std::map;
-using std::pair;
-
 /** @class CbmMCEventList
  ** @brief Container class for MC events with number, file and start time
  **
@@ -73,7 +70,7 @@ class CbmMCEventList: public TNamed
     /** Event container. Implemented as std::map:
      ** Input file number -> ( event number -> event time )
      **/
-    map<Int_t, map<Int_t, Double_t>> fEvents;
+   std:: map<Int_t, std::map<Int_t, Double_t>> fEvents;
 
     Int_t fNofEvents;  /// Number of events in list
 

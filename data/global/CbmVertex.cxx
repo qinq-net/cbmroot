@@ -4,11 +4,7 @@
 // -------------------------------------------------------------------------
 #include "CbmVertex.h"
 
-#include <iostream>
-
-using std::cout;
-using std::endl;
-
+#include "FairLogger.h"
 
 // -----   Default constructor   -------------------------------------------
 CbmVertex::CbmVertex() 
@@ -24,8 +20,6 @@ CbmVertex::CbmVertex()
   for(Int_t i=0; i<6; i++) fCovMatrix[i] = 0;
 }
 // -------------------------------------------------------------------------
-
-
 
 // -----   Constructor with name and title   -------------------------------
 CbmVertex::CbmVertex(const char* name, const char* title) 
@@ -87,9 +81,9 @@ void CbmVertex::Print(Option_t*) const {
   Double_t chi2ndf;
   if (fNDF) chi2ndf = fChi2 / Double_t(fNDF);
   else chi2ndf = 0.;	       
-  cout << "Vertex coord. (" << fX << "," << fY << "," << fZ << ") cm, "
-       << "chi2/ndf = " << chi2ndf << ", " << fNTracks
-       << " tracks used" << endl;
+  LOG(INFO) << "Vertex coord. (" << fX << "," << fY << "," << fZ << ") cm, "
+            << "chi2/ndf = " << chi2ndf << ", " << fNTracks
+            << " tracks used" << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 

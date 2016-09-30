@@ -68,7 +68,7 @@ CbmPixelHit::~CbmPixelHit()
 {
 }
 
-string CbmPixelHit::ToString() const
+std::string CbmPixelHit::ToString() const
 {
    stringstream ss;
    ss << "CbmPixelHit: address=" << GetAddress()

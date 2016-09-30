@@ -8,11 +8,6 @@
 
 #include "TObject.h"
 #include <vector>
-#include <iostream>
-
-using std::cout;
-using std::endl;
-using namespace std;
 
 class CbmMvdMimoStateMatch : public TObject
 {
@@ -22,7 +17,7 @@ class CbmMvdMimoStateMatch : public TObject
     CbmMvdMimoStateMatch();
 
     /** Constructor with all variables **/
-    CbmMvdMimoStateMatch(Int_t ROCFrame,Long64_t TimeStamp,Long64_t SensorOffset,Short_t Temp,Short_t ROCAddress,vector< vector< Int_t > >& stateInformation);
+    CbmMvdMimoStateMatch(Int_t ROCFrame,Long64_t TimeStamp,Long64_t SensorOffset,Short_t Temp,Short_t ROCAddress,std::vector< std::vector< Int_t > >& stateInformation);
     
   // destructor
    ~CbmMvdMimoStateMatch();
@@ -39,13 +34,13 @@ class CbmMvdMimoStateMatch : public TObject
   Short_t    GetTempSI()             {return fTemp;};
   Short_t    GetROCAddress()         {return fROCAddress;};
  
-  void  GetStateDigis(Int_t indexOfState,vector< Int_t >& stateDigis);
+  void  GetStateDigis(Int_t indexOfState,std::vector< Int_t >& stateDigis);
   
   //store the data into the fStateInformation
 private:
   
-    vector< vector< Int_t > > fStateInformation;
-    vector< Int_t > fOneState;
+    std::vector< std::vector< Int_t > > fStateInformation;
+    std::vector< Int_t > fOneState;
     Int_t fStateNum;
 //     Int_t fStationID;
 //     Int_t fSensorID;

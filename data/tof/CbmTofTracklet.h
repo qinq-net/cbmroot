@@ -13,7 +13,6 @@
 #include "tof/CbmTofHit.h"
 
 #include <vector>
-using std::vector;
 
 /** @class CbmTofTracklet
  ** @brief Provides information on attaching a TofHit to a TofTrack
@@ -80,7 +79,7 @@ class CbmTofTracklet : public TObject {
 	CbmTofHit*   GetTofHitPointer(Int_t ind) { return &fpHit[ind]; }
 	Int_t        GetTofDetIndex(Int_t ind)   const { return fTofDet[ind]; }
 
-	const vector<Int_t>&  GetTofHitInd() const { return fTofHit; }
+	const std::vector<Int_t>&  GetTofHitInd() const { return fTofHit; }
 
 	const Double_t* GetPoint(Int_t n);     // interface to event display: CbmEvDisTracks
 	const Double_t* GetFitPoint(Int_t n);  // interface to event display: CbmEvDisTracks
@@ -157,7 +156,7 @@ class CbmTofTracklet : public TObject {
 	  fMatChi[0]=chi2;
 	}
 
-	inline void SetTofHitInd(const vector<Int_t>& tofHitInd) { fTofHit = tofHitInd; }
+	inline void SetTofHitInd(const std::vector<Int_t>& tofHitInd) { fTofHit = tofHitInd; }
 
     
 	inline void AddTofHitIndex(Int_t tofHitIndex, Int_t iDet, CbmTofHit* pHit) { 
@@ -234,10 +233,10 @@ class CbmTofTracklet : public TObject {
 	CbmTofTrackletParam fTrackPar;   //!  Track parameters at z of TofHit
 	FairTrackParam fParamFirst;      //!  Track parameters at first and last fitted hit
 	FairTrackParam fParamLast;       //!
-	vector<Int_t>     fTofHit;       //! Index of TofHit
-	vector<Int_t>     fTofDet;       //! DetLayer of TofHit
-	vector<Double_t>  fMatChi;       //! Matching Chi2 of TofHit
-	vector<CbmTofHit> fpHit;         //! vector of TofHit objects 
+	std::vector<Int_t>     fTofHit;       //! Index of TofHit
+	std::vector<Int_t>     fTofDet;       //! DetLayer of TofHit
+	std::vector<Double_t>  fMatChi;       //! Matching Chi2 of TofHit
+	std::vector<CbmTofHit> fpHit;         //! vector of TofHit objects 
 	Double_t fP[4];                  //! transient (transfer) space point to Eve
 
 	CbmTofTracklet& operator=(const CbmTofTracklet &);/**   Assignment operator   **/

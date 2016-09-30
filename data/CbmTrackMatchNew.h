@@ -12,8 +12,6 @@
 #include "CbmMatch.h"
 #include <string>
 
-using std::string;
-
 class CbmTrackMatchNew : public CbmMatch
 {
 public:
@@ -48,7 +46,7 @@ public:
     * \brief Return string representation of the object.
     * \return String representation of the object.
     **/
-   virtual string ToString() const;
+   virtual std::string ToString() const;
 
 private:
    Int_t fNofTrueHits; // Number of true hits in reconstructed track

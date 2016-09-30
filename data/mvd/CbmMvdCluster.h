@@ -21,9 +21,6 @@
 #include "FairLogger.h"
 #include <map>
 
-using std::map;
-using std::pair;
-
 class CbmMvdCluster : public CbmCluster
 {
 
@@ -45,7 +42,7 @@ CbmMvdCluster& operator=(const CbmMvdCluster&){return *this;};
   /** Setters **/
   void SetNeighbourUp(Int_t index){fNeighbourUp=index;};
   void SetNeighbourDown(Int_t index){fNeighbourDown=index;};
-  void SetPixelMap(map <pair<Int_t, Int_t>, Int_t > PixelMap); 
+  void SetPixelMap(std::map <std::pair<Int_t, Int_t>, Int_t > PixelMap); 
   void SetStationNr(Int_t stationNr){fStation = stationNr;};
   void SetRefId(Int_t RefId){fRefId = RefId;}; //* stores the index to the global TClonesArray	
   void SetDetectorId(Int_t detId)      { fDetectorId = detId;};
@@ -57,7 +54,7 @@ CbmMvdCluster& operator=(const CbmMvdCluster&){return *this;};
   Short_t GetDigisInThisObject(){return fDigisInThisObject;};
   Short_t GetTotalDigisInCluster(){return fPixelMap.size();};
   Short_t GetMaxDigisInThisObject(){return fMaxDigisInObject;};
-  map <pair<Int_t, Int_t>, Int_t > GetPixelMap(){return fPixelMap;};
+  std::map <std::pair<Int_t, Int_t>, Int_t > GetPixelMap(){return fPixelMap;};
   Int_t    GetStationNr() {return fStation;};
   Int_t* GetDigiList(){return fDigiArray;};
   Int_t GetRefId(){return fRefId;};
@@ -68,7 +65,7 @@ CbmMvdCluster& operator=(const CbmMvdCluster&){return *this;};
  protected:
      static const Short_t fMaxDigisInObject=8;
      Int_t fDigiArray[fMaxDigisInObject];
-     map <pair<Int_t, Int_t>, Int_t > fPixelMap;
+     std::map <std::pair<Int_t, Int_t>, Int_t > fPixelMap;
      Int_t fNeighbourDown;
      Int_t fNeighbourUp;
      Short_t fDigisInThisObject;

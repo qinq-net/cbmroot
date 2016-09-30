@@ -167,8 +167,8 @@ public:
     std::vector<CbmMvdPixelCharge*> fPixelChargeShort;
 
     TObjArray* fPixelScanAccelerator;
-    std::map<pair<Int_t, Int_t>, CbmMvdPixelCharge*> fChargeMap;
-    std::map<pair<Int_t, Int_t>, CbmMvdPixelCharge*>::iterator fChargeMapIt;
+    std::map<std::pair<Int_t, Int_t>, CbmMvdPixelCharge*> fChargeMap;
+    std::map<std::pair<Int_t, Int_t>, CbmMvdPixelCharge*>::iterator fChargeMapIt;
     
     
     

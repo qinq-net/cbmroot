@@ -27,7 +27,6 @@
 #include "CbmFiberHodoAddress.h"
 
 #include <string>
-using std::string;
 
 class CbmFiberHodoDigi : public CbmDigi
 {
@@ -78,7 +77,7 @@ public:
    /** Modifiers **/
    void AddCharge(Double_t charge) { fCharge += charge; }
 
-   string ToString() const;
+   std::string ToString() const;
   
 private:
    Int_t fAddress; ///< Unique channel address

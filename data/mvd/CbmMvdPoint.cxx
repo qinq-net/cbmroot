@@ -4,11 +4,7 @@
 // -------------------------------------------------------------------------
 #include "CbmMvdPoint.h"
 
-#include <iostream>
-
-using std::cout;
-using std::endl;
-
+#include "FairLogger.h"
 
 // -----   Default constructor   -------------------------------------------
 CbmMvdPoint::CbmMvdPoint()
@@ -69,14 +65,14 @@ CbmMvdPoint::~CbmMvdPoint() { }
 
 // -----   Public method Print   -------------------------------------------
 void CbmMvdPoint::Print(const Option_t* /*opt*/) const {
-  cout << "-I- CbmMvdPoint: MVD Point for track " << fTrackID 
-       << " in station " << GetStationNr() << endl;
-  cout << "    Position (" << fX << ", " << fY << ", " << fZ
-       << ") cm" << endl;
-  cout << "    Momentum (" << fPx << ", " << fPy << ", " << fPz
-       << ") GeV" << endl;
-  cout << "    Time " << fTime << " ns,  Length " << fLength 
-       << " cm,  Energy loss " << fELoss*1.0e06 << " keV" << endl;
+  LOG(INFO) << "MVD Point for track " << fTrackID 
+            << " in station " << GetStationNr() << FairLogger::endl;
+  LOG(INFO) << "    Position (" << fX << ", " << fY << ", " << fZ
+            << ") cm" << FairLogger::endl;
+  LOG(INFO) << "    Momentum (" << fPx << ", " << fPy << ", " << fPz
+            << ") GeV" << FairLogger::endl;
+  LOG(INFO) << "    Time " << fTime << " ns,  Length " << fLength 
+            << " cm,  Energy loss " << fELoss*1.0e06 << " keV" << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 

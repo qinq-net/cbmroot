@@ -4,10 +4,8 @@
 */
 
 #include "CbmMvdMimoStateMatch.h"
-#include <iostream>
 
-using std::cout;
-using std::endl;
+#include "FairLogger.h"
 
 CbmMvdMimoStateMatch::CbmMvdMimoStateMatch()
 {
@@ -38,7 +36,7 @@ void CbmMvdMimoStateMatch::GetStateDigis(Int_t indexOfState,vector< Int_t >& sta
 {
 
   if(indexOfState > fStateNum)
-    cout<<"the state num is out of the range in this StateMatch!!!"<<endl;
+    LOG(INFO)<<"the state num is out of the range in this StateMatch!!!"<<FairLogger::endl;
   else
   {
     stateDigis.clear();

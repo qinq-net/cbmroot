@@ -236,7 +236,7 @@ void CbmMCTrack::SetNPoints(Int_t iDet, Int_t nPoints) {
 
 
 // -----   String output   -------------------------------------------------
-string CbmMCTrack::ToString() const
+std::string CbmMCTrack::ToString() const
 {
    stringstream ss;
    ss << "MCTrack: mother  " << fMotherId

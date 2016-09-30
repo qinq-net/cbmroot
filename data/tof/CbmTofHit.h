@@ -44,7 +44,7 @@ public:
   /**
    * \brief Inherited from CbmBaseHit.
    */
-  virtual string ToString() const;
+  virtual std::string ToString() const;
 
   /**
    * \brief Inherited from CbmBaseHit.

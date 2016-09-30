@@ -28,8 +28,9 @@ enum HitType {
 };
 
 #include "TObject.h"
+
 #include <string>
-using std::string;
+
 class CbmMatch;
 
 class CbmHit : public TObject
@@ -79,7 +80,7 @@ public:
 	 * \brief Virtual function. Must be implemented in derived class.
 	 * Has to return string representation of the object.
 	 **/
-	virtual string ToString() const { return "Has to be implemented in derrived class"; }
+	virtual std::string ToString() const { return "Has to be implemented in derrived class"; }
 
 protected:
 	/**

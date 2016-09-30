@@ -24,7 +24,7 @@ CbmTrackMatchNew::~CbmTrackMatchNew()
 
 }
 
-string CbmTrackMatchNew::ToString() const
+std::string CbmTrackMatchNew::ToString() const
 {
    stringstream ss;
    ss << "CbmMatch: ";

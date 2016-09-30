@@ -11,8 +11,6 @@
 #include <vector>
 #include <cmath>
 
-using std::vector;
-
 class CbmRichHitLight
 {
 public:
@@ -111,7 +109,7 @@ public:
    bool RemoveHit(
          int hitId)
    {
-      vector<unsigned short>::iterator it;
+      std::vector<unsigned short>::iterator it;
       for (it = fHitIds.begin(); it!= fHitIds.end(); it++){
          if (hitId == *it){
             fHitIds.erase(it);
@@ -301,8 +299,8 @@ public:
 	void SetRecFlag(int r) { fRecFlag = r;}
 
 private:
-   vector<CbmRichHitLight> fHits; // STL container for CbmRichHitLight
-   vector<unsigned short> fHitIds; // STL container for hit indexes
+   std::vector<CbmRichHitLight> fHits; // STL container for CbmRichHitLight
+   std::vector<unsigned short> fHitIds; // STL container for hit indexes
 
    float fCenterX;
 	float fCenterY;
