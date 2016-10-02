@@ -728,14 +728,18 @@ void CbmTofAnaTestbeam::Finish()
 Bool_t   CbmTofAnaTestbeam::RegisterInputs()
 {
    FairRootManager *fManager = FairRootManager::Instance();
+   fTofDigisColl   = (TClonesArray *) fManager->GetObject("TofCalDigi");
 
-   fTofDigisColl   = (TClonesArray *) fManager->GetObject("CbmTofDigiExp");
+   /*
+   if( NULL == fTofDigisColl)
+     fTofDigisColl   = (TClonesArray *) fManager->GetObject("CbmTofDigiExp");
 
    if( NULL == fTofDigisColl)
       fTofDigisColl = (TClonesArray *) fManager->GetObject("CbmTofDigi");
 
    if( NULL == fTofDigisColl)
       fTofDigisColl = (TClonesArray *) fManager->GetObject("TofDigi");
+   */
 
    if( NULL == fTofDigisColl)
    {
@@ -1069,10 +1073,10 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 				     20, 0.5, 20.5, 100, 0., DTMAX/5.);
      fhTot0DT04D4best = new TH2F( Form("hTot0DT04D4best"),
 	 			     Form("time - Tot correlation; ln TOT0 ; #DeltaT [ps]"),
-				     100, 8., 11., 100, -DTMAX, DTMAX);  
+				     100, 6.5, 9.5, 100, -DTMAX, DTMAX);  
      fhTot4DT04D4best = new TH2F( Form("hTot4DT04D4best"),
 	 			     Form("time - Tot correlation; ln TOT4 ; #DeltaT [ps]"),
-				     100, 8., 11., 100, -DTMAX, DTMAX);  
+				     100, 6.5, 9.5, 100, -DTMAX, DTMAX);  
 
      fhX0DT04D4best = new TH2F( Form("hX0DT04D4best"),Form("time - position correlation; #Delta x [cm]; #DeltaT [ps]"),
 			       100, -50., 50., 100, -DTMAX, DTMAX); 
@@ -1190,10 +1194,10 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 				     20, 0.5, 20.5, 100, -DTMAX, DTMAX);
      fhTot0DT04D4sbest = new TH2F( Form("hTot0DT04D4sbest"),
 	 			     Form("time - Tot correlation; ln TOT0 ; #DeltaT [ps]"),
-				     100, 8., 11., 100, -DTMAX, DTMAX);  
+				     100, 6.5, 9.5, 100, -DTMAX, DTMAX);  
      fhTot4DT04D4sbest = new TH2F( Form("hTot4DT04D4sbest"),
 	 			     Form("time - Tot correlation; ln TOT4 ; #DeltaT [ps]"),
-				     100, 8., 11., 100, -DTMAX, DTMAX); 
+				     100, 6.5, 9.5, 100, -DTMAX, DTMAX); 
 
      fhChi04D4sbest  =  new TH1F( Form("hChi04D4sbest"),Form("matching chi2; #chi; Nhits"),
 			  100, 0., fdChi2Lim);
@@ -2044,12 +2048,13 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      Double_t dTofD4  = fdTOffD4 + dDTD4Min;
      Double_t dInvVel = dTofD4/pHitRef->GetR(); // in ps/cm
      Double_t dDTexp  = dDist*dInvVel;
+     Double_t dTMin   = fdHitDistAv/0.03;
 
      Double_t dTcor=0.;
      if(fhDTD4DT04D4Off != NULL) dTcor+=(Double_t)fhDTD4DT04D4Off->GetBinContent(fhDTD4DT04D4Off->FindBin(-dDTD4Min));
      if(fhDTX4D4Off     != NULL) dTcor+=(Double_t)fhDTX4D4Off->GetBinContent(fhDTX4D4Off->FindBin(hitpos2_local[0]));
      if(fhDTY4D4Off     != NULL) dTcor+=(Double_t)fhDTY4D4Off->GetBinContent(fhDTY4D4Off->FindBin(hitpos2_local[1]));
-     if(fhDTTexpD4Off   != NULL) dTcor+=(Double_t)fhDTTexpD4Off->GetBinContent(fhDTTexpD4Off->FindBin(dDTexp));
+     if(fhDTTexpD4Off   != NULL) dTcor+=(Double_t)fhDTTexpD4Off->GetBinContent(fhDTTexpD4Off->FindBin(dDTexp-dTMin));
      if(fhCluSize0DT04D4Off != NULL) dTcor+=(Double_t)fhCluSize0DT04D4Off->GetBinContent(fhCluSize0DT04D4Off->FindBin(dCluSize0));
      if(fhCluSize4DT04D4Off != NULL) dTcor+=(Double_t)fhCluSize4DT04D4Off->GetBinContent(fhCluSize4DT04D4Off->FindBin(dCluSize4));
 
@@ -2136,7 +2141,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      fhDXDT04D4best->Fill(xPos1-xPos2,dToD);
      fhDYDT04D4best->Fill(yPos1-yPos2,dToD);
      fhDistDT04D4best->Fill(dDist,dToD);
-     fhTexpDT04D4best->Fill(dDTexp,dToD);
+     fhTexpDT04D4best->Fill(dDTexp,dToD-dTMin);
      fhX0DT04D4best->Fill(hitpos1_local[0],dToD);
      fhY0DT04D4best->Fill(hitpos1_local[1],dToD);
      if(fTrbHeader != NULL) fhTISDT04D4best->Fill(fTrbHeader->GetTimeInSpill(),dToD);

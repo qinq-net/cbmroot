@@ -348,6 +348,9 @@ Bool_t   CbmTofFindTracks::LoadCalParameter()
       return kTRUE;
     }
 
+    LOG(INFO) << "CbmTofFindTracks::LoadCalParameter: "
+	      << " read from file " << fCalParFileName << FairLogger::endl;
+
     TH1D *fhtmp =(TH1D *) gDirectory->FindObjectAny( Form("hPullT_Smt_Off"));
     TH1D *fhtmpX=(TH1D *) gDirectory->FindObjectAny( Form("hPullX_Smt_Off"));
     TH1D *fhtmpY=(TH1D *) gDirectory->FindObjectAny( Form("hPullY_Smt_Off"));
@@ -616,7 +619,7 @@ Bool_t CbmTofFindTracks::WriteHistos()
 	 Double_t dVal  = fhPullT_Smt_Off->GetBinContent(ix+1);
 	          dVal -= htmp1D->GetBinContent(ix+1);
 
-	 LOG(INFO)<<"Update hPullT_Smt_Off "<<ix<<": "
+	 LOG(DEBUG1)<<"Update hPullT_Smt_Off "<<ix<<": "
 		  << fhPullT_Smt_Off->GetBinContent(ix+1) <<" + "
 		  << htmp1D->GetBinContent(ix+1)<<" + "
 		  << hTOff1D->GetBinContent(ix+1) << " -> " << dVal 
@@ -656,14 +659,14 @@ Bool_t CbmTofFindTracks::WriteHistos()
 	   dFMean=fRes->Parameter(1);
 	   dVal += hTOff1D->GetBinContent(ix+1); //revert default correction
 	   dVal -= dFMean;
-	   LOG(INFO)<<"Update hPullT_Smt_Off "<<ix<<": Old "
+	   LOG(DEBUG1)<<"Update hPullT_Smt_Off "<<ix<<": Old "
 		  << fhPullT_Smt_Off->GetBinContent(ix+1) <<", Pull "
 		  << htmp1D->GetBinContent(ix+1)<<", Dev@Peak "
 		  << hTOff1D->GetBinContent(ix+1)<<", FitMean "
 		  << dFMean
 		  << " -> " << dVal << FairLogger::endl;
 	 }else{
-	   LOG(INFO)<<"Update hPullT_Smt_Off "<<ix<<": insufficient counts: "
+	   LOG(DEBUG1)<<"Update hPullT_Smt_Off "<<ix<<": insufficient counts: "
 		    <<hTOff1DY->GetEntries() << FairLogger::endl;
 	 }
 	 fhPullT_Smt_Off->SetBinContent(ix+1,dVal);
@@ -695,7 +698,7 @@ Bool_t CbmTofFindTracks::WriteHistos()
 	   Double_t dFMean=fRes->Parameter(1);
 	   Double_t dVal  = fhPullT_Smt_Off->GetBinContent(ix+1);
 	            dVal -= dFMean;
-	   LOG(INFO)<<"Update hPullT_Smt_Off "<<ix<<": "
+	   LOG(DEBUG1)<<"Update hPullT_Smt_Off "<<ix<<": "
 		    << fhPullT_Smt_Off->GetBinContent(ix+1) <<" + "
 		    << dFMean <<" -> " << dVal 
 		    <<", Width "<<dRMS
@@ -704,7 +707,7 @@ Bool_t CbmTofFindTracks::WriteHistos()
 	   fhPullT_Smt_Off->SetBinContent(ix+1,dVal);
 	   fhPullT_Smt_Width->SetBinContent(ix+1,dRMS);
 	 }else{
-	   LOG(INFO)<<"Update hPullT_Smt_Off "<<ix<<": insufficient counts: "
+	   LOG(DEBUG1)<<"Update hPullT_Smt_Off "<<ix<<": insufficient counts: "
 		    <<hpy->GetEntries() << FairLogger::endl;
 	 }      
        }
@@ -735,7 +738,7 @@ Bool_t CbmTofFindTracks::WriteHistos()
 	   if(dRMS<0.5) dRMS=0.5;
 	   fhPullX_Smt_Width->SetBinContent(ix+1,dRMS);
 
-	   LOG(INFO)<<"Update hPullX_Smt_Off "<<ix<<": "
+	   LOG(DEBUG1)<<"Update hPullX_Smt_Off "<<ix<<": "
 		    << fhPullX_Smt_Off->GetBinContent(ix+1) <<" + "
 		    << htmp1D->GetBinContent(ix+1)<<" -> " << dVal 
 		    <<", Width "<<dRMS
@@ -769,7 +772,7 @@ Bool_t CbmTofFindTracks::WriteHistos()
 	   if(dRMS<1.) dRMS=1.;
 	   fhPullY_Smt_Width->SetBinContent(ix+1,dRMS);
 
-	   LOG(INFO)<<"Update hPullY_Smt_Off "<<ix<<": "
+	   LOG(DEBUG1)<<"Update hPullY_Smt_Off "<<ix<<": "
 		    << fhPullY_Smt_Off->GetBinContent(ix+1) <<" + "
 		    << htmp1D->GetBinContent(ix+1)<<" -> " << dVal 
 		    <<", Width "<<dRMS
@@ -802,7 +805,7 @@ Bool_t CbmTofFindTracks::WriteHistos()
 	 if(hpy->GetEntries()>100.){
 	   Double_t dRMS = TMath::Abs( hpy->GetRMS() );
 
-	   LOG(INFO)<<"Update hPullZ_Smt_Off "<<ix<<": "
+	   LOG(DEBUG1)<<"Update hPullZ_Smt_Off "<<ix<<": "
 		    << fhPullZ_Smt_Off->GetBinContent(ix+1) <<" + "
 		    << htmp1D->GetBinContent(ix+1)<<" -> " << dVal 
 		    <<", Width "<<dRMS
@@ -843,7 +846,7 @@ Bool_t CbmTofFindTracks::WriteHistos()
 	 Int_t iRpcInd = fMapRpcIdParInd[fMapStationRpcId[iSt]];
 	 Double_t dVal = fhPullT_Smt_Off->GetBinContent(iRpcInd+1);
 	          dVal -= dDOff;
-	 LOG(INFO)<<"Update hPullT_Smt_Off "<<iSt<<", Ind "<<iRpcInd<<": "
+	 LOG(DEBUG1)<<"Update hPullT_Smt_Off "<<iSt<<", Ind "<<iRpcInd<<": "
 		  << fhPullT_Smt_Off->GetBinContent(iRpcInd+1) <<" - "
 		  << dDOff<<" -> " << dVal 
 		  <<", Width "<<dSig
@@ -855,7 +858,6 @@ Bool_t CbmTofFindTracks::WriteHistos()
 		  << hname
 		  << FairLogger::endl;
        }
-
      }
      break;
 

@@ -68,6 +68,8 @@ CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer():
    fMcTracksColl(NULL),
    fTofDigisColl(NULL),
    fbWriteHitsInOut(kTRUE),
+   fbWriteDigisInOut(kTRUE),
+   fTofCalDigisColl(NULL),
    fTofHitsColl(NULL),
    fTofDigiMatchColl(NULL),
    fiNbHits(0),
@@ -208,6 +210,8 @@ CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer(const char *name, Int_t ver
    fMcTracksColl(NULL),
    fTofDigisColl(NULL),
    fbWriteHitsInOut(writeDataInOut),
+   fbWriteDigisInOut(writeDataInOut),
+   fTofCalDigisColl(NULL),
    fTofHitsColl(NULL),
    fTofDigiMatchColl(NULL),
    fiNbHits(0),
@@ -389,12 +393,12 @@ void CbmTofTestBeamClusterizer::SetParContainers()
 void CbmTofTestBeamClusterizer::Exec(Option_t* /*option*/)
 {
    // Clear output arrays 
-   //fTofHitsColl->Clear("C");
-   fTofHitsColl->Delete();  // Computationally costly!, but hopefully safe
+   fTofCalDigisColl->Clear("C");
+   fTofHitsColl->Clear("C");
+   //fTofHitsColl->Delete();  // Computationally costly!, but hopefully safe
    //for (Int_t i=0; i<fTofDigiMatchColl->GetEntries(); i++) ((CbmMatch *)(fTofDigiMatchColl->At(i)))->ClearLinks();  // FIXME, try to tamper memory leak (did not help)
-   //fTofDigiMatchColl->Clear("C+L");
-   fTofDigiMatchColl->Delete();
-
+   fTofDigiMatchColl->Clear("C+L");  // leads to memory leak
+   //fTofDigiMatchColl->Delete();
 
    fiNbHits = 0;
 
@@ -410,7 +414,7 @@ void CbmTofTestBeamClusterizer::Exec(Option_t* /*option*/)
    fdEvent++;
    FillHistos();
 
-   fTofDigisColl->RemoveAll();
+   //   fTofDigisColl->RemoveAll();
 }
 
 /************************************************************************************/
@@ -485,6 +489,12 @@ Bool_t   CbmTofTestBeamClusterizer::RegisterOutputs()
 {
    FairRootManager* rootMgr = FairRootManager::Instance();
 
+   fTofCalDigisColl = new TClonesArray("CbmTofDigiExp");
+
+   // Flag check to control whether digis are written in output root file
+   rootMgr->Register( "TofCalDigi","Tof", fTofCalDigisColl, fbWriteDigisInOut);
+
+
    fTofHitsColl = new TClonesArray("CbmTofHit");
 
    // Flag check to control whether digis are written in output root file
@@ -502,7 +512,7 @@ Bool_t   CbmTofTestBeamClusterizer::InitParameters()
    // Initialize the TOF GeoHandler
    Bool_t isSimulation=kFALSE;
    LOG(INFO)<<"CbmTofTestBeamClusterizer::InitParameters - Geometry, Mapping, ...  ??"
-             <<FairLogger::endl;
+            <<FairLogger::endl;
 
    // Get Base Container
    FairRun* ana = FairRun::Instance();
@@ -1465,8 +1475,8 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
          for (Int_t iLink=0; iLink<digiMatch->GetNofLinks(); iLink+=2){  // loop over digis
            CbmLink L0 = digiMatch->GetLink(iLink);   //vDigish.at(ivDigInd);
            Int_t iDigInd0=L0.GetIndex(); 
-           if (iDigInd0 < fTofDigisColl->GetEntries()){
-            CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
+           if (iDigInd0 < fTofCalDigisColl->GetEntries()){
+            CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofCalDigisColl->At(iDigInd0));
             TotSum += pDig0->GetTot();
            }
          }
@@ -1751,8 +1761,8 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
          for (Int_t iLink=0; iLink<digiMatch->GetNofLinks(); iLink++){  // loop over digis
            CbmLink L0 = digiMatch->GetLink(iLink);   //vDigish.at(ivDigInd);
            Int_t iDigInd0=L0.GetIndex(); 
-           if (iDigInd0 < fTofDigisColl->GetEntries()){
-            CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
+           if (iDigInd0 < fTofCalDigisColl->GetEntries()){
+            CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofCalDigisColl->At(iDigInd0));
             TotSum += pDig0->GetTot();
            }
          }
@@ -1772,9 +1782,9 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
            Int_t iDigInd1=(digiMatch->GetLink(iLink+1)).GetIndex(); //vDigish.at(ivDigInd+1);
            //LOG(DEBUG1)<<" " << iDigInd0<<", "<<iDigInd1<<FairLogger::endl;
 
-           if (iDigInd0 < fTofDigisColl->GetEntries() && iDigInd1 < fTofDigisColl->GetEntries()){
-            CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
-            CbmTofDigiExp *pDig1 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd1));
+           if (iDigInd0 < fTofCalDigisColl->GetEntries() && iDigInd1 < fTofCalDigisColl->GetEntries()){
+            CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofCalDigisColl->At(iDigInd0));
+            CbmTofDigiExp *pDig1 = (CbmTofDigiExp*) (fTofCalDigisColl->At(iDigInd1));
             if((Int_t)pDig0->GetType()!=iSmType){
                 LOG(ERROR)<<Form(" Wrong Digi SmType for Tofhit %d in iDetIndx %d, Ch %d with %3.0f strips at Indx %d, %d",
                                  iHitInd,iDetIndx,iCh,dNstrips,iDigInd0,iDigInd1)
@@ -1892,14 +1902,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
                  LOG(DEBUG1)<<Form(" DelTof for SmT %d, Sm %d, R %d, T %d, dTRef %6.1f, Bx %d, Bx1 %d, DTe %6.1f -> DelT %6.1f",
 				  iSmType, iSm, iRpc, iSel, dTRef-dTTrig[iSel], iBx, iBx1, dDTentry, dDelTof)
                             <<FairLogger::endl;
-                 dTcor=pHit->GetTime()-dDelTof-dTTrig[iSel];  // corrected CbmTofHit time
-                 dTTcor[iSel]=dDelTof;
-               }
-
-	       LOG(DEBUG1)<<" Fill Times of iDetIndx "<<iDetIndx<<" for |y| <"
-			  <<fhRpcCluPosition[iDetIndx]->GetYaxis()->GetXmax()
-			  <<FairLogger::endl;
-	       if(TMath::Abs(hitpos_local[1])< (fhRpcCluPosition[iDetIndx]->GetYaxis()->GetXmax())){
+                 dTcor=pHit->GetTime()-dDelTof-dTTrig[iSel];  
 /*               Double_t dDt=0.5*(pDig0->GetTime()+pDig1->GetTime())-dDelTof-dTTrig[iSel];*/
 		 Double_t dAvTot=0.5*(pDig0->GetTot()+pDig1->GetTot());
 		 /*
@@ -1948,7 +1951,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
            else {
              LOG(ERROR)<<"CbmTofTestBeamClusterizer::FillHistos: invalid digi index "<<iDetIndx
                        <<" digi0,1"<<iDigInd0<<", "<<iDigInd1<<" - max:"
-                       << fTofDigisColl->GetEntries() 
+                       << fTofCalDigisColl->GetEntries() 
                //                       << " in event " << XXX 
                        << FairLogger::endl;  
            }
@@ -2303,11 +2306,11 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
           Int_t iWalkUpd=1;                        // Walk update mode flag
           if(5==iSmType || 8==iSmType || 2==iSmType) iWalkUpd=0; // keep both sides consistent for diamonds and pads 
           for(Int_t iWx=0; iWx<nbClWalkBinX; iWx++){
-           if(iSmType==2)
-             LOG(INFO)<<"Update Walk iSm = "<<iSm<<"("<<iNbRpc<<")," << iWx << ": "
-                      <<fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]<<" + "
-                      <<((TProfile *)htmp0)->GetBinContent(iWx+1)
-                      <<FairLogger::endl;
+           if(iCh==0 && iSmType==9 && iSm==0 && h1tmp0->GetBinContent(iWx+1)>WalkNHmin)
+             LOG(INFO) <<"Update Walk Sm = "<<iSm<<"("<<iNbRpc<<"), Rpc "<< iRpc <<", Bin "<< iWx << ": "
+                       <<fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]<<" + "
+		       <<((TProfile *)htmp0)->GetBinContent(iWx+1) << " - " << dWMean0
+                       <<FairLogger::endl;
            switch(iWalkUpd){
            case 0 :
              if(h1tmp0->GetBinContent(iWx+1)>WalkNHmin && h1tmp1->GetBinContent(iWx+1)>WalkNHmin ){
@@ -2345,9 +2348,15 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
            h1tmp0->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]);
            h1tmp1->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]);
            if( h1tmp0->GetBinContent(iWx+1)!=fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]) {
-           LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! iWx "<<iWx
+           LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: writing not successful! iWx "<<iWx
                      <<" got "<< h1tmp0->GetBinContent(iWx+1)
                      <<", expected "<<fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]
+                     <<FairLogger::endl;         }
+          
+           if( h1tmp1->GetBinContent(iWx+1)!=fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]) {
+           LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: writing not successful! iWx "<<iWx
+                     <<" got "<< h1tmp1->GetBinContent(iWx+1)
+                     <<", expected "<<fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]
                      <<FairLogger::endl;         }
           }
           h1tmp0->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S0_Walk_px", iSmType, iSm, iRpc, iCh ));
@@ -2884,7 +2893,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
     * direction
     */
   if(NULL == fTofDigisColl) {
-    LOG(INFO) <<" No Digis defined ! Check! " << FairLogger::endl;
+    LOG(INFO) <<" No CalDigis defined ! Check! " << FairLogger::endl;
     return kFALSE;
   }
   fiNevtBuild++;
@@ -2986,9 +2995,12 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 
    // Then loop over the digis array and store the Digis in separate vectors for
    // each RPC modules
+
+   // Calibrate RawDigis
    if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
    {
       CbmTofDigiExp *pDigi;
+      CbmTofDigiExp *pCalDigi;
       for( Int_t iDigInd = 0; iDigInd < iNbTofDigi; iDigInd++ )
       {
          pDigi = (CbmTofDigiExp*) fTofDigisColl->At( iDigInd );
@@ -3001,29 +3013,32 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                    <<pDigi->GetSide()<<" "
 		   <<Form("%f",pDigi->GetTime())<<" "
                    <<pDigi->GetTot()
-                   <<FairLogger::endl;
+		   <<FairLogger::endl;
+	 pCalDigi = new((*fTofCalDigisColl)[iDigInd]) CbmTofDigiExp( *pDigi );
+
          if(    fDigiBdfPar->GetNbSmTypes() > pDigi->GetType()  // prevent crash due to misconfiguration 
              && fDigiBdfPar->GetNbSm(  pDigi->GetType()) > pDigi->GetSm()
              && fDigiBdfPar->GetNbRpc( pDigi->GetType()) > pDigi->GetRpc()
              && fDigiBdfPar->GetNbChan(pDigi->GetType(),0) >pDigi->GetChannel() 
                 )
          {
+
          LOG(DEBUG2)<<FairLogger::endl<<" CluCal-Init: "<<pDigi->ToString()<<FairLogger::endl;
          // apply calibration vectors 
-         pDigi->SetTime(pDigi->GetTime()- // calibrate Digi Time 
+         pCalDigi->SetTime(pCalDigi->GetTime()- // calibrate Digi Time 
                         fvCPTOff[pDigi->GetType()]
                        [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
                        [pDigi->GetChannel()]
                        [pDigi->GetSide()]);
-         LOG(DEBUG2)<<" CluCal-TOff: "<<pDigi->ToString()<<FairLogger::endl;
+         LOG(DEBUG2)<<" CluCal-TOff: "<<pCalDigi->ToString()<<FairLogger::endl;
 
-         Double_t dTot = pDigi->GetTot()-  // subtract Offset 
+         Double_t dTot = pCalDigi->GetTot()-  // subtract Offset 
                        fvCPTotOff[pDigi->GetType()]
                        [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
                        [pDigi->GetChannel()]
                        [pDigi->GetSide()];
          if (dTot<1.)  dTot=1;
-         pDigi->SetTot(dTot *  // calibrate Digi ToT 
+         pCalDigi->SetTot(dTot *  // calibrate Digi ToT 
                        fvCPTotGain[pDigi->GetType()]
                        [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
                        [pDigi->GetChannel()]
@@ -3031,87 +3046,87 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 
          // walk correction 
          Double_t dTotBinSize = (fdTOTMax-fdTOTMin)/ nbClWalkBinX;
-         Int_t iWx = (Int_t)((pDigi->GetTot()-fdTOTMin)/dTotBinSize);
+         Int_t iWx = (Int_t)((pCalDigi->GetTot()-fdTOTMin)/dTotBinSize);
          if (0>iWx) iWx=0;
          if (iWx>nbClWalkBinX) iWx=nbClWalkBinX-1;        
-         Double_t dDTot = (pDigi->GetTot()-fdTOTMin)/dTotBinSize-(Double_t)iWx-0.5;
-         Double_t dWT  = fvCPWalk[pDigi->GetType()]
-                         [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-                         [pDigi->GetChannel()]
-                         [pDigi->GetSide()]
+         Double_t dDTot = (pCalDigi->GetTot()-fdTOTMin)/dTotBinSize-(Double_t)iWx-0.5;
+         Double_t dWT  = fvCPWalk[pCalDigi->GetType()]
+                         [pCalDigi->GetSm()*fDigiBdfPar->GetNbRpc( pCalDigi->GetType()) + pCalDigi->GetRpc()]
+                         [pCalDigi->GetChannel()]
+                         [pCalDigi->GetSide()]
                          [iWx];
          if(dDTot > 0) {    // linear interpolation to next bin
-           dWT += dDTot * (fvCPWalk[pDigi->GetType()]
-                          [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-                          [pDigi->GetChannel()]
-                          [pDigi->GetSide()]
+           dWT += dDTot * (fvCPWalk[pCalDigi->GetType()]
+                          [pCalDigi->GetSm()*fDigiBdfPar->GetNbRpc( pCalDigi->GetType()) + pCalDigi->GetRpc()]
+                          [pCalDigi->GetChannel()]
+                          [pCalDigi->GetSide()]
                           [iWx+1]
-                         -fvCPWalk[pDigi->GetType()]
-                          [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-                          [pDigi->GetChannel()]
-                          [pDigi->GetSide()]
+                         -fvCPWalk[pCalDigi->GetType()]
+                          [pCalDigi->GetSm()*fDigiBdfPar->GetNbRpc( pCalDigi->GetType()) + pCalDigi->GetRpc()]
+                          [pCalDigi->GetChannel()]
+                          [pCalDigi->GetSide()]
                           [iWx]); //memory leak???
          }else  // dDTot < 0,  linear interpolation to next bin
          {
-           dWT -= dDTot * (fvCPWalk[pDigi->GetType()]
-                          [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-                          [pDigi->GetChannel()]
-                          [pDigi->GetSide()]
+           dWT -= dDTot * (fvCPWalk[pCalDigi->GetType()]
+                          [pCalDigi->GetSm()*fDigiBdfPar->GetNbRpc( pCalDigi->GetType()) + pCalDigi->GetRpc()]
+                          [pCalDigi->GetChannel()]
+                          [pCalDigi->GetSide()]
                           [iWx-1]
-                         -fvCPWalk[pDigi->GetType()]
-                          [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-                          [pDigi->GetChannel()]
-                          [pDigi->GetSide()]
+                         -fvCPWalk[pCalDigi->GetType()]
+                          [pCalDigi->GetSm()*fDigiBdfPar->GetNbRpc( pCalDigi->GetType()) + pCalDigi->GetRpc()]
+                          [pCalDigi->GetChannel()]
+                          [pCalDigi->GetSide()]
                           [iWx]); //memory leak???
          }
              
-         pDigi->SetTime(pDigi->GetTime() - dWT); // calibrate Digi Time 
-         LOG(DEBUG2)<<" CluCal-Walk: "<<pDigi->ToString()<<FairLogger::endl;
+         pCalDigi->SetTime(pCalDigi->GetTime() - dWT); // calibrate Digi Time 
+         LOG(DEBUG2)<<" CluCal-Walk: "<<pCalDigi->ToString()<<FairLogger::endl;
 
          if(0) {//pDigi->GetType()==7 && pDigi->GetSm()==0){
           LOG(INFO)<<"CbmTofTestBeamClusterizer::BuildClusters: CalDigi "
                     <<iDigInd<<",  T "
-                    <<pDigi->GetType()<<", Sm "
-                    <<pDigi->GetSm()<<", R "
-                    <<pDigi->GetRpc()<<", Ch "
-                    <<pDigi->GetChannel()<<", S "
-                    <<pDigi->GetSide()<<", T "
-                    <<pDigi->GetTime()<<", Tot "
-                    <<pDigi->GetTot()
+                    <<pCalDigi->GetType()<<", Sm "
+                    <<pCalDigi->GetSm()<<", R "
+                    <<pCalDigi->GetRpc()<<", Ch "
+                    <<pCalDigi->GetChannel()<<", S "
+                    <<pCalDigi->GetSide()<<", T "
+                    <<pCalDigi->GetTime()<<", Tot "
+                    <<pCalDigi->GetTot()
                     <<", TotGain "<<
-                       fvCPTotGain[pDigi->GetType()]
-                       [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-                       [pDigi->GetChannel()]
-                       [pDigi->GetSide()]
+                       fvCPTotGain[pCalDigi->GetType()]
+                       [pCalDigi->GetSm()*fDigiBdfPar->GetNbRpc( pCalDigi->GetType()) + pCalDigi->GetRpc()]
+                       [pCalDigi->GetChannel()]
+                       [pCalDigi->GetSide()]
                     <<", TotOff "<<
-                       fvCPTotOff[pDigi->GetType()]
-                       [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-                       [pDigi->GetChannel()]
-                       [pDigi->GetSide()]
+                       fvCPTotOff[pCalDigi->GetType()]
+                       [pCalDigi->GetSm()*fDigiBdfPar->GetNbRpc( pCalDigi->GetType()) + pCalDigi->GetRpc()]
+                       [pCalDigi->GetChannel()]
+                       [pCalDigi->GetSide()]
                     <<", Walk "<<iWx<<": "<<
-                        fvCPWalk[pDigi->GetType()]
-                        [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-                        [pDigi->GetChannel()]
-                        [pDigi->GetSide()]
+                        fvCPWalk[pCalDigi->GetType()]
+                        [pCalDigi->GetSm()*fDigiBdfPar->GetNbRpc( pCalDigi->GetType()) + pCalDigi->GetRpc()]
+                        [pCalDigi->GetChannel()]
+                        [pCalDigi->GetSide()]
                         [iWx]
                    <<FairLogger::endl;
 
           LOG(INFO)<<" dDTot "<<dDTot
                    <<" BinSize: "<<dTotBinSize
-                   <<", CPWalk "<<fvCPWalk[pDigi->GetType()]
-                        [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-                        [pDigi->GetChannel()]
-                        [pDigi->GetSide()]
+                   <<", CPWalk "<<fvCPWalk[pCalDigi->GetType()]
+                        [pCalDigi->GetSm()*fDigiBdfPar->GetNbRpc( pCalDigi->GetType()) + pCalDigi->GetRpc()]
+                        [pCalDigi->GetChannel()]
+                        [pCalDigi->GetSide()]
                         [iWx-1]
-                  <<", "<<fvCPWalk[pDigi->GetType()]
-                        [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-                        [pDigi->GetChannel()]
-                        [pDigi->GetSide()]
+                  <<", "<<fvCPWalk[pCalDigi->GetType()]
+                        [pCalDigi->GetSm()*fDigiBdfPar->GetNbRpc( pCalDigi->GetType()) + pCalDigi->GetRpc()]
+                        [pCalDigi->GetChannel()]
+                        [pCalDigi->GetSide()]
                         [iWx]
-                  <<", "<<fvCPWalk[pDigi->GetType()]
-                        [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-                        [pDigi->GetChannel()]
-                        [pDigi->GetSide()]
+                  <<", "<<fvCPWalk[pCalDigi->GetType()]
+                        [pCalDigi->GetSm()*fDigiBdfPar->GetNbRpc( pCalDigi->GetType()) + pCalDigi->GetRpc()]
+                        [pCalDigi->GetChannel()]
+                        [pCalDigi->GetSide()]
                         [iWx+1]
                   <<" -> dWT = "<< dWT
                   <<FairLogger::endl;
@@ -3127,19 +3142,21 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
            }
       } // for( Int_t iDigInd = 0; iDigInd < nTofDigi; iDigInd++ )
 
-      if(fTofDigisColl->IsSortable())
-	LOG(DEBUG)<<"CbmTofTestBeamClusterizer::BuildClusters: Sort "<<iNbTofDigi<<" digis "
+      if(fTofCalDigisColl->IsSortable())
+	LOG(DEBUG)<<"CbmTofTestBeamClusterizer::BuildClusters: Sort "<<fTofCalDigisColl->GetEntries()<<" calibrated digis "
                    <<FairLogger::endl;
       if(iNbTofDigi>1){
-	fTofDigisColl->Sort(iNbTofDigi); // Time order again, in case modified by the calibration 
-	if(!fTofDigisColl->IsSorted()){
+	fTofCalDigisColl->Sort(iNbTofDigi); // Time order again, in case modified by the calibration 
+	if(!fTofCalDigisColl->IsSorted()){
 	  LOG(WARNING)<<"CbmTofTestBeamClusterizer::BuildClusters: Sorting not successful "
                      <<FairLogger::endl;
 	}
       }
+
+      // Store CalDigis in vectors
       for( Int_t iDigInd = 0; iDigInd < iNbTofDigi; iDigInd++ )
       {
-         pDigi = (CbmTofDigiExp*) fTofDigisColl->At( iDigInd );
+         pDigi = (CbmTofDigiExp*) fTofCalDigisColl->At( iDigInd );
          LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::BuildClusters:AC " // After Calibration
 		    <<Form("%3d",iDigInd)<<" "<<pDigi<<" "
                     <<pDigi->GetType()<<" "
@@ -3176,6 +3193,8 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
    } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
       else
       {
+	return kFALSE; // not implemented properly yet
+	/*
          CbmTofDigi *pDigi;
          for( Int_t iDigInd = 0; iDigInd < iNbTofDigi; iDigInd++ )
          {
@@ -3187,6 +3206,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                      [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
                      [pDigi->GetChannel()].push_back(iDigInd);
          } // for( Int_t iDigInd = 0; iDigInd < nTofDigi; iDigInd++ )
+	*/
       } // else of if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
 
 
@@ -3322,8 +3342,10 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 				       }
 				     else 
 				       {
-					 LOG(WARNING) << "CbmTofTestBeamClusterizer::BuildClusters: digis not properly time ordered "
-					              << FairLogger::endl;
+					 LOG(WARNING) 
+					   << Form("CbmTofTestBeamClusterizer::BuildClusters: Ev %8.0f, digis not properly time ordered, TSRCS %d%d%d%d%d ",
+						   fdEvent,iSmType,iSm,iRpc,iCh,(Int_t)fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0]->GetSide())
+					   << FairLogger::endl;
 				         fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
 					 fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
 				       }
@@ -3562,14 +3584,14 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                                                   <<FairLogger::endl;
 
                                        for (UInt_t i=0; i<vDigiIndRef.size();i++){
-                                          CbmTofDigiExp *pDigiC = (CbmTofDigiExp*) fTofDigisColl->At(vDigiIndRef.at(i));
+                                          CbmTofDigiExp *pDigiC = (CbmTofDigiExp*) fTofCalDigisColl->At(vDigiIndRef.at(i));
                                          LOG(DEBUG)<<" Digi  "<<pDigiC->ToString()<<FairLogger::endl;
                                        }
                                        CbmMatch* digiMatchL=(CbmMatch *)fTofDigiMatchColl->At(fiNbHits-1);
                                        for (Int_t i=0; i<digiMatchL->GetNofLinks();i++){
                                          CbmLink L0 = digiMatchL->GetLink(i);  
                                          Int_t iDigIndL=L0.GetIndex();
-                                         CbmTofDigiExp *pDigiC = (CbmTofDigiExp*) fTofDigisColl->At(iDigIndL);
+                                         CbmTofDigiExp *pDigiC = (CbmTofDigiExp*) fTofCalDigisColl->At(iDigIndL);
                                          LOG(DEBUG)<<" DigiL "<<pDigiC->ToString()<<FairLogger::endl;
                                        }
                                       }
@@ -3587,7 +3609,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 				    */
 				    CbmMatch* digiMatch = new((*fTofDigiMatchColl)[fiNbHits]) CbmMatch();
 				    for (Int_t i=0; i<vDigiIndRef.size();i++){
-				      Double_t dTot = ((CbmTofDigiExp*) (fTofDigisColl->At(vDigiIndRef.at(i))))->GetTot();
+				      Double_t dTot = ((CbmTofDigiExp*) (fTofCalDigisColl->At(vDigiIndRef.at(i))))->GetTot();
 				      digiMatch->AddLink(CbmLink(dTot,vDigiIndRef.at(i)));
 				    }
 				  				    
@@ -3808,7 +3830,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 		     CbmMatch* digiMatch = new((*fTofDigiMatchColl)[fiNbHits]) CbmMatch();
 
                      for (Int_t i=0; i<vDigiIndRef.size();i++){
-		       Double_t dTot = ((CbmTofDigiExp*) (fTofDigisColl->At(vDigiIndRef.at(i))))->GetTot();
+		       Double_t dTot = ((CbmTofDigiExp*) (fTofCalDigisColl->At(vDigiIndRef.at(i))))->GetTot();
 		       digiMatch->AddLink(CbmLink(dTot,vDigiIndRef.at(i)));
 		     }
 
@@ -3904,9 +3926,9 @@ Bool_t   CbmTofTestBeamClusterizer::MergeClusters()
                     CbmLink L0 = digiMatch->GetLink(iLink);  
                     Int_t iDigInd0=L0.GetIndex(); 
                     Int_t iDigInd1=(digiMatch->GetLink(iLink+1)).GetIndex(); 
-                    if (iDigInd0 < fTofDigisColl->GetEntries() && iDigInd1 < fTofDigisColl->GetEntries()){
-                      CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
-                      CbmTofDigiExp *pDig1 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd1));
+                    if (iDigInd0 < fTofCalDigisColl->GetEntries() && iDigInd1 < fTofCalDigisColl->GetEntries()){
+                      CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofCalDigisColl->At(iDigInd0));
+                      CbmTofDigiExp *pDig1 = (CbmTofDigiExp*) (fTofCalDigisColl->At(iDigInd1));
                       dTot += pDig0->GetTot(); 
                       dTot += pDig1->GetTot();
                     } 
@@ -3918,9 +3940,9 @@ Bool_t   CbmTofTestBeamClusterizer::MergeClusters()
                     CbmLink L0 = digiMatch2->GetLink(iLink);  
                     Int_t iDigInd0=L0.GetIndex(); 
                     Int_t iDigInd1=(digiMatch2->GetLink(iLink+1)).GetIndex(); 
-                    if (iDigInd0 < fTofDigisColl->GetEntries() && iDigInd1 < fTofDigisColl->GetEntries()){
-                      CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
-                      CbmTofDigiExp *pDig1 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd1));
+                    if (iDigInd0 < fTofCalDigisColl->GetEntries() && iDigInd1 < fTofCalDigisColl->GetEntries()){
+                      CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofCalDigisColl->At(iDigInd0));
+                      CbmTofDigiExp *pDig1 = (CbmTofDigiExp*) (fTofCalDigisColl->At(iDigInd1));
                       dTot2 += pDig0->GetTot(); 
                       dTot2 += pDig1->GetTot();
                       digiMatch->AddLink(CbmLink(pDig0->GetTot(),iDigInd0));

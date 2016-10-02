@@ -198,8 +198,10 @@ class CbmTofTestBeamClusterizer : public FairTask
 
       // Output variables
       Bool_t                  fbWriteHitsInOut;
+      Bool_t                  fbWriteDigisInOut;
+      TClonesArray          * fTofCalDigisColl;   // Calibrated TOF Digis 
       TClonesArray          * fTofHitsColl;       // TOF hits
-      TClonesArray          * fTofDigiMatchColl;  // TOF Digis
+      TClonesArray          * fTofDigiMatchColl;  // TOF Digi Links
       Int_t  fiNbHits;                            // Index of the CbmTofHit TClonesArray
 
       // Generic
