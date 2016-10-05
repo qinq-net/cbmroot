@@ -43,28 +43,54 @@
 #
 # **************************************************************************** #
 
-#cRun=$1
+cRun=$1
+#cRun='CbmTofPiHd_01Mar1558'
+#cRun='CbmTofPiHd_30Mar1435'
+#cRun='CbmTofPiHd_01Apr1647'
+#cRun='CbmTofPiHd_14Apr1255'
+#cRun='CbmTofPiHd_Plastic_26Jul1744'
+#cRun='CbmTofPiHd_Plastic_27Jul1725'
+#cRun='CbmTofPiHd_Plastic_01Aug1700'
+#cRun='CbmTofPiHd_Plastic_05Aug1913'
 #cRun='CbmTofPiHd_09Aug1533'
 #cRun='CbmTofPiHd_10Aug1728'
 #cRun='CbmTofPiHd_11Aug1224'
+#cRun='CbmTofPiHd_12Aug1744'
 #cRun='CbmTofPiHd_13Aug0855'
-#cRun='CbmTofPiHd_15Aug0818'
-#cRun='CbmTofPiHd_17Aug1724'
-#cRun='CbmTofPiHd_22Aug1616'
-cRun='CbmTofPiHd_29Aug1401'
 
+# Clean up before fresh re-run of init_calib.sh
+if((0)); then
+	rm -r $cRun
+	rm $cRun_*tofTestBeamClust.hst.root
+fi
 
 nIter=1
 echo "Initialize clusterizer calibration for run $cRun, execute $nIter iterations"
-#iDut=901; iMRef=900; iBRef=921;
+#iDut=3; iMRef=9; iBRef=7;
+#iDut=9; iMRef=4; iBRef=3;
+#iDut=9; iMRef=7; iBRef=3;
+#iDut=9; iMRef=3; iBRef=5; 
+#iDut=3; iMRef=9; iBRef=5;
+#iDut=9; iMRef=9; iBRef=5;
+#iDut=3; iMRef=4; iBRef=5;
+#iDut=921; iMRef=920; iBRef=300;
+#iDut=400; iMRef=300; iBRef=500;
+#iDut=921; iMRef=300; iBRef=500;
+#iDut=921; iMRef=920; iBRef=500;
+
+#iDut=6; iMRef=1; iBRef=8; 
+#iDut=6; iMRef=1; iBRef=5; 
+#iDut=1; iMRef=6; iBRef=5; 
+
+#((iSet=$iDut*1000+$iMRef))
 #((iSet=$iDut*1000000+$iMRef*1000+$iBRef))
 
-#iCalSet=$2
+iCalSet=$2
 #iCalSet=iDutiMRefiBRef
 #iCalSet=400900901
+#iCalSet=901900921
+#iCalSet=901900910
 #iCalSet=921900901
-iCalSet=901900921
-
 ((iTmp  = $iCalSet ))
 ((iBRef = $iTmp % 1000))
 ((iTmp  = $iTmp - $iBRef))
@@ -74,37 +100,31 @@ iCalSet=901900921
 ((iTmp  = $iTmp - $iMRef))
 ((iDut  = $iTmp / 1000000))
 
-# ----------------------- Clean Up Before Fresh Re-run ------------------------
-if((1)); then
-rm all_*.par core_dump_* *.pdf
-rm -rf ${cRun}
-rm digi_${cRun}.out.root
-rm ${cRun}_set${iCalSet}_*_0tofTestBeamClust.hst.root
-rm ${cRun}_set${iCalSet}_*_1tofTestBeamClust.hst.root
-fi
-# ------------------------------- End Clean Up --------------------------------
-
 echo "Calib setup is ${iCalSet}, iSet=$iSet, iDut=$iDut, iMRef=$iMRef, iBRef=$iBRef"
+
 #return
 #iSet=0
 #lastOpt=''
-nEvi=10000000
-nEvii=10000000
+
+nEvi=100000
+nEv4=100000
+nEvii=100000
 mkdir ${cRun}
 cp rootlogon.C ${cRun}
 cp .rootrc ${cRun}
 cd ${cRun}
 
 # Global variables, for for-loops. Runs from 1-15 and 16-79 in two for-loops
+iRestart=0
 iStep=0
 iStepLast=0
 
-# ***************************** Starting while Loop ************************* #
+# ************************** Starting while Loop ***************************** #
 while [[ $nIter > 0 ]]; do 
 echo "start from scratch with $nIter iterations"
 
-# ---------------------------- Starting 1st for Loop ------------------------ #
-if((1)); then
+# ------------------ Starting 1st for Loop ------------------ #
+if((0)); then
 # echo "starting first loop with $nIter iterations"
 # inOpt = 'nEvents, calMode, calSel, calSm, RefSel'
 	
@@ -154,12 +174,14 @@ if((1)); then
 
 fi # end if((1))
 
-# ---------------------------- Starting 2nd for Loop ------------------------ #
+
+
+# ------------------ Starting 2nd for Loop ------------------ #
 if((1)); then
 # echo "execute main loop at $nIter iteration"
 # inOpt = 'nEvents, calMode, calSel, calSm, RefSel'
 
-	for inOpt in ''$nEvi',03,0,0,50' ''$nEvi',03,0,0,50' ''$nEvi',03,1,'${iMRef}',0' ''$nEvi',03,0,'${iDut}',0' ''$nEvi',03,1,'${iMRef}',0' ''$nEvi',03,0,'${iDut}',0' ''$nEvi',13,0,0,50' ''$nEvi',13,0,0,50' ''$nEvi',13,1,'${iMRef}',0'  ''$nEvi',13,0,'${iDut}',0' ''$nEvi',13,1,'${iMRef}',0'  ''$nEvi',13,0,'${iDut}',0' ''$nEvi',23,0,0,50' ''$nEvi',23,0,0,50' ''$nEvi',23,1,'${iMRef}',0'  ''$nEvi',23,0,'${iDut}',0' ''$nEvi',23,1,'${iMRef}',0'  ''$nEvi',23,0,'${iDut}',0' ''$nEvi',01,0,'-${iDut}',0' ''$nEvi',01,1,'-${iMRef}',0' ''$nEvi',33,0,0,50' ''$nEvi',33,0,0,50' ''$nEvi',33,1,'${iMRef}',0'  ''$nEvi',33,0,'${iDut}',0' ''$nEvi',04,0,'-${iDut}',0' ''$nEvi',33,0,'${iDut}',0' ''$nEvi',04,1,'-${iMRef}',0' ''$nEvi',33,1,'${iMRef}',0'  ''$nEvi',43,0,0,50' ''$nEvi',43,0,0,50' ''$nEvi',43,1,'${iMRef}',0' ''$nEvi',43,0,'${iDut}',0' ''$nEvi',43,1,'${iMRef}',0' ''$nEvi',43,0,'${iDut}',0' ''$nEvi',43,1,'${iMRef}',0' ''$nEvi',43,0,0,50' ''$nEvi',43,1,'${iMRef}',0' ''$nEvi',43,0,'${iDut}',0' ''$nEvi',53,0,0,50' ''$nEvi',53,0,0,50' ''$nEvi',53,1,'${iMRef}',0' ''$nEvi',53,0,'${iDut}',0' ''$nEvi',53,1,'${iMRef}',0' ''$nEvi',53,0,'${iDut}',0' ''$nEvi',52,0,0,0' ''$nEvi',52,0,0,50' '500000,14,0,-'${iDut}',0' '500000,14,1,-'${iMRef}',0' ''$nEvi',53,0,'${iDut}',0' ''$nEvi',53,1,'${iMRef}',0' ''$nEvi',63,0,'${iDut}',0' ''$nEvi',63,1,'${iMRef}',0' ''$nEvi',73,0,'${iDut}',0' ''$nEvi',73,1,'${iMRef}',0' ''$nEvi',73,0,'${iDut}',0' '500000,24,0,-'${iDut}',0' ''$nEvi',73,1,'${iMRef}',0' '500000,24,1,-'${iMRef}',0' ''$nEvi',83,0,'${iDut}',0' '500000,34,0,-'${iDut}',0' ''$nEvi',83,1,'${iMRef}',0' '500000,34,1,-'${iMRef}',0' ''$nEvi',93,0,'${iDut}',0' ''$nEvi',93,1,'${iMRef}',0'
+	for inOpt in ''$nEvi',0,0,0,50' ''$nEvi',03,0,0,50' ''$nEvi',03,1,'${iMRef}',0' ''$nEvi',03,0,'${iDut}',0' ''$nEvi',03,1,'${iMRef}',0' ''$nEvi',03,0,'${iDut}',0' ''$nEvi',13,0,0,50' ''$nEvi',13,1,'${iMRef}',0'  ''$nEvi',13,0,'${iDut}',0' ''$nEvi',13,0,0,50' ''$nEvi',13,1,'${iMRef}',0'  ''$nEvi',13,0,'${iDut}',0' ''$nEvi',23,0,0,50' ''$nEvi',23,1,'${iMRef}',0'  ''$nEvi',23,0,'${iDut}',0' ''$nEvi',23,0,0,50' ''$nEvi',23,1,'${iMRef}',0'  ''$nEvi',23,0,'${iDut}',0' ''$nEvi',33,0,0,50' ''$nEvi',33,1,'${iMRef}',0'  ''$nEvi',33,0,'${iDut}',0' ''$nEvi',33,0,0,50' ''$nEvi',33,1,'${iMRef}',0' ''$nEvi',33,0,'${iDut}',0' ''$nEvi',43,0,0,50' ''$nEvi',43,1,'${iMRef}',0' ''$nEvi',43,0,'${iDut}',0' ''$nEvi',43,0,0,50' ''$nEvi',43,1,'${iMRef}',0' ''$nEvi',43,0,'${iDut}',0' ''$nEvi',43,1,'${iMRef}',0' ''$nEvi',43,0,0,50' ''$nEvi',43,1,'${iMRef}',0' ''$nEvi',43,0,'${iDut}',0' ''$nEvi',53,0,0,50' ''$nEvi',53,1,'${iMRef}',0' ''$nEvi',53,0,'${iDut}',0' ''$nEvi',53,0,0,50' ''$nEvi',53,1,'${iMRef}',0' ''$nEvi',53,0,'${iDut}',0' ''$nEvi',52,1,0,50' ''$nEvi',52,0,0,50' ''$nEv4',14,0,-'${iDut}',0' ''$nEv4',14,1,-'${iMRef}',0' ''$nEvi',53,0,'${iDut}',0' ''$nEvi',53,1,'${iMRef}',0' ''$nEvi',63,0,'${iDut}',0' ''$nEvi',63,1,'${iMRef}',0' ''$nEvi',73,0,'${iDut}',0' ''$nEvi',73,1,'${iMRef}',0' ''$nEvi',73,0,'${iDut}',0' ''$nEv4',24,0,-'${iDut}',0' ''$nEvi',73,1,'${iMRef}',0' ''$nEv4',24,1,-'${iMRef}',0' ''$nEvi',83,1,'${iMRef}',0' ''$nEvi',83,0,'${iDut}',0' ''$nEv4',34,0,-'${iDut}',0' ''$nEvi',83,1,'${iMRef}',0' ''$nEv4',34,1,-'${iMRef}',0' ''$nEvi',93,0,'${iDut}',0' ''$nEvi',93,1,'${iMRef}',0' ''$nEvi',93,1,0,50' ''$nEvi',93,0,0,50' ''$nEvi',93,0,'${iDut}',0' ''$nEvi',93,1,'${iMRef}',0' ''$nEvi',93,1,0,50' ''$nEvi',93,0,0,50' ''$nEvi',93,0,'${iDut}',0' ''$nEv4',64,0,-'${iDut}',0' ''$nEvi',93,1,'${iMRef}',0' ''$nEv4',64,1,-'${iMRef}',0' ''$nEvi',93,1,'${iMRef}',0'  
 	do
 	((iStepLast = ${iStep}))
 	((iStep += 1))
@@ -175,21 +197,25 @@ if((1)); then
 		#echo `expr index $inOpt , ` = $i1
 		cMode=${inOpt:$i1:2}
 		cSel=${inOpt:$i2:1}
-		echo "Next iteration: cMode=$cMode, cSel=$cSel"
+		echo "Next iteration: cMode=$cMode, cSel=$cSel" in directory `pwd`
 		if [[ ${cSel} = "-" ]];then 
 			cSel=${inOpt:$i2:2}
 			echo cSel=$cSel 
 			cSel="0"
 		fi
 		#copy calibration file 
+		if (($iStep > $iRestart)) ; then 
 		cp -v ../Init${iStepLast}/tofTestBeamClust_${cRun}_set${iCalSet}.hst.root ${cRun}_set${iCalSet}_${cMode}_${cSel}tofTestBeamClust.hst.root
+		fi
 	fi 
 
+	lastOpt=$inOpt
+
+        if (($iStep > $iRestart)) ; then 
 	# generate new calibration file
 	# void ana_digi_cal(nEvents,calMode,calSel,calSm,RefSel,cFileId,iSet,iBRef)
 	root -b -q '../../ana_digi_cal.C('$inOpt',"'${cRun}'",'${iCalSet}','${iBRef}') '
 
-	lastOpt=$inOpt
 
 	cp -v tofTestBeamClust_${cRun}_set${iCalSet}.hst.root ../${cRun}_set${iCalSet}_${cMode}_${cSel}tofTestBeamClust.hst.root
 	cp *pdf ../
@@ -198,7 +224,12 @@ if((1)); then
 	cd .. 
 	rm ../${cRun}_set${iCalSet}_${cMode}_${cSel}tofTestBeamClust.hst.root
 	ln -s ./${cRun}/${cRun}_set${iCalSet}_${cMode}_${cSel}tofTestBeamClust.hst.root ../${cRun}_set${iCalSet}_${cMode}_${cSel}tofTestBeamClust.hst.root
-	
+        echo Init step $iStep with mode ${cMode}, option $inOpt  finished
+	else 
+        cd ..
+        echo Init step $iStep with mode ${cMode}, option $inOpt  skipped
+	fi
+
 	done # end for-loop
 fi # end if((1))
 
