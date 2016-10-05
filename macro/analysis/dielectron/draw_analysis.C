@@ -11,8 +11,8 @@ void draw_analysis() {
 
     Bool_t useMvd = false;
     Bool_t drawSignificance = true;
-    std::string dir = "/Users/slebedev/Development/cbm/data/lmvm/sep15/8gev/geosetup_v1509_8gev/rho0/";
-    std::string fileName = dir + "analysis.auau.8gev.centr.all.root";
+    std::string dir = "/Users/slebedev/Development/cbm/data/lmvm/apr16/apr16_trdtofclustering/8gev/geosetup_v1512_8gev/omegaepem/";
+    std::string fileName = dir + "analysis.trdtofclustering.auau.8gev.centr.all.root";
 
     std::string script = std::string(TString(gSystem->Getenv("SCRIPT")).Data());
     if (script == "yes"){

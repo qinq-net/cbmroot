@@ -17,15 +17,17 @@ void qa_study_lmvm()
    std::string outputDir;
 
    std::string dir = "/Users/slebedev/Development/cbm/data/lmvm/";
-   results.push_back(dir + "mar15_rtcut/8gev/stsv13d/richv14a_1e/trd4/tofv13/1.0field/nomvd/lmvm_results_all/draw_all_hist.root");
-   results.push_back(dir + "mar15_trdclustering/8gev/stsv13d/richv14a_1e/trd4/tofv13/1.0field/nomvd/lmvm_results_all/draw_all_hist.root");
-   results.push_back(dir + "mar15_rtcut/8gev/stsv13d/richv14a_1e/notrd/tofv13/1.0field/nomvd/lmvm_results_all/draw_all_hist.root");
+   results.push_back(dir + "apr16/apr16_trdtofclustering/8gev/geosetup_v1512_8gev/lmvm_results_all/draw_all_hist.root");
+   results.push_back(dir + "apr16/apr16_trdclustering/8gev/geosetup_v1512_8gev//lmvm_results_all/draw_all_hist.root");
+   results.push_back(dir + "apr16/apr16_tofclustering/8gev/geosetup_v1512_8gev//lmvm_results_all/draw_all_hist.root");
+   results.push_back(dir + "apr16/apr16_trdtofsmearing/8gev/geosetup_v1512_8gev//lmvm_results_all/draw_all_hist.root");
 
-   names.push_back("TRD smearing");
+   names.push_back("TRD&TOF clustering");
    names.push_back("TRD clustering");
-   names.push_back("NO TRD");
+   names.push_back("TOF clustering");
+   names.push_back("TRD&TOF smearing");
 
-   outputDir = "/Users/slebedev/Development/cbm/data/lmvm/lmvm_study_report_8gev_trd/";
+   outputDir = "/Users/slebedev/Development/cbm/data/lmvm/apr16_lmvm_study_report_8gev/";
 
    CbmAnaDielectronReports reports;
    reports.CreateStudyReport("LMVM", results, names, outputDir);

@@ -7,11 +7,11 @@
 void draw_analysis_all() {
 	gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
 	loadlibs();
-    gSystem->Load("libAnalysis");
+    //gSystem->Load("libAnalysis");
 
     Bool_t useMvd = false;
-    std::string dir = "/Users/slebedev/Development/cbm/data/lmvm/sep15/8gev/geosetup_v1509_8gev/";
-    std::string fileName = "analysis.auau.8gev.centr.all.root";
+    std::string dir = "/Users/slebedev/Development/cbm/data/lmvm/apr16/apr16_tofclustering/8gev/geosetup_v1512_8gev/";
+    std::string fileName = "analysis.tofclustering.auau.8gev.centr.all.root";
     //std::string fileName = "analysis.pimisid.0.0.auau.8gev.centr.all.root";
 
 
@@ -22,11 +22,12 @@ void draw_analysis_all() {
     }
 
     std::string outputDir = dir + "lmvm_results_all/";
-    std::string fnRho0 = dir + "rho0/" + fileName;
+    std::string fnInmed = dir + "inmed/" + fileName;
+    std::string fnQgp = dir + "qgp/" + fileName;
     std::string fnOmega = dir +"omegaepem/" + fileName;
     std::string fnPhi = dir + "phi/" + fileName;
     std::string fnOmegaD = dir +"omegadalitz/" + fileName;
 
     CbmAnaDielectronTaskDrawAll *draw = new CbmAnaDielectronTaskDrawAll();
-    draw->DrawHistosFromFile(fnRho0, fnOmega, fnPhi, fnOmegaD, outputDir, useMvd);
+    draw->DrawHistosFromFile(fnInmed, fnQgp, fnOmega, fnPhi, fnOmegaD, outputDir, useMvd);
 }
