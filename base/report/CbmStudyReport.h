@@ -67,6 +67,11 @@ public:
          const vector<string>& fileNames,
          const vector<string>& studyNames,
          const string& outputDir);
+    
+    /**
+     * \brief Inherited from CbmReport. Pure abstract function which is called from public Create() function.
+     */
+    virtual void Create() = 0;
 
    /* Accessors */
    const vector<CbmHistManager*>& HM() const { return fHM; }

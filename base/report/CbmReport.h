@@ -79,6 +79,13 @@ protected:
     * It is called only once before report creation.
     */
    virtual void Draw() = 0;
+    
+   /**
+    * \brief Inherited from TObject.
+    * This method is implemented in order to avoid warnings.
+    */
+   void Draw(Option_t*) {;}
+    
 
    /**
     * \brief Create all available report types.

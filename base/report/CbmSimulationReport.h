@@ -60,6 +60,11 @@ public:
    void Create(
 		   const string& fileName,
 		   const string& outputDir);
+    
+   /**
+    * \brief Inherited from CbmReport. Pure abstract function which is called from public Create() function.
+    */
+   virtual void Create() = 0;
 
    /**
     * \brief Return pointer to TH1 histogram.
