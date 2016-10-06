@@ -20,38 +20,38 @@
 class CbmLitFieldQaReport : public CbmSimulationReport
 {
 public:
-   /**
-    * \brief Constructor.
-    */
-   CbmLitFieldQaReport();
-
-   /**
-    * \brief Destructor.
-    */
-   virtual ~CbmLitFieldQaReport();
-
+    /**
+     * \brief Constructor.
+     */
+    CbmLitFieldQaReport();
+    
+    /**
+     * \brief Destructor.
+     */
+    virtual ~CbmLitFieldQaReport();
+    
 private:
-   /**
-    * \brief Inherited from CbmSimulationReport.
-    */
-   virtual void Create();
-
-   /**
-    * \brief Inherited from CbmSimulationReport.
-    */
-   virtual void Draw();
-
-   /**
-    * \brief Draw field map components for each slice.
-    */
-   void DrawFieldSlices();
-
-   /**
-    * \brief Draw field map components along Z coordinate.
-    */
-   void DrawFieldAlongZ();
-
-   ClassDef(CbmLitFieldQaReport, 1)
+    /**
+     * \brief Inherited from CbmSimulationReport.
+     */
+    virtual void Create();
+    
+    /**
+     * \brief Inherited from CbmSimulationReport.
+     */
+    virtual void Draw();
+    
+    /**
+     * \brief Draw field map components for each slice.
+     */
+    void DrawFieldSlices();
+    
+    /**
+     * \brief Draw field map components along Z coordinate.
+     */
+    void DrawFieldAlongZ();
+    
+    ClassDef(CbmLitFieldQaReport, 1)
 };
 
 #endif /* CBMLITFIELDQAREPORT_H_ */
