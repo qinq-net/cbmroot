@@ -36,8 +36,8 @@ vector<string> Split(
 		char delimiter)
 {
 	vector<string> result;
-	Int_t begin = 0;
-	UInt_t end = name.find_first_of(delimiter);
+    std::size_t begin = 0;
+    std::size_t end = name.find_first_of(delimiter);
 	while (end != string::npos) {
 		string str = name.substr(begin, end - begin);
 		if (str[0] == delimiter) str.erase(0, 1);
