@@ -133,9 +133,8 @@ public:
 
 
   /** Screen output **/
-  virtual void Print(Option_t* = "");
+  virtual void Print(Option_t* = "") const;
 	
-
 	
  protected:
 
@@ -196,12 +195,17 @@ public:
   Double_t fHb[2][2];               //! Interpolated field (2-dim)
   Double_t fHc[2];                  //! Interpolated field (1-dim)
 
+  Double_t fBxOrigin;               //! x-component of the field at the origin
+  Double_t fByOrigin;               //! y-component of the field at the origin
+  Double_t fBzOrigin;               //! z-component of the field at the origin
+
  private:
+
 
   CbmFieldMap(const CbmFieldMap&);
   CbmFieldMap& operator=(const CbmFieldMap&);
 
-  ClassDef(CbmFieldMap,1) 
+  ClassDef(CbmFieldMap,2) 
 
 };
 

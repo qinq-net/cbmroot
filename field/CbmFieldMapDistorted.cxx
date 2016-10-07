@@ -166,6 +166,14 @@ void CbmFieldMapDistorted::Init() {
   SetFromParent(fParentField);
   ReadDistortionInformation(fDistortionFilename.Data());
 
+  // Fill values needed in the Print() function. This is needed to allow
+  // a constant Print() function.
+  Double_t po[3],b[3];
+  po[0]=0; po[1]=0; po[2]=0;
+  GetFieldValue(po,b);
+  fBxOrigin=b[0];
+  fByOrigin=b[1];
+  fBzOrigin=b[2];
 }
 // ------------------------------------------------------------------------
 
@@ -421,7 +429,7 @@ Double_t CbmFieldMapDistorted::GetBz(Double_t x, Double_t y, Double_t z) {
     return bz;
 }
 
-void CbmFieldMapDistorted::Print(Option_t*) {
+void CbmFieldMapDistorted::Print(Option_t*) const {
   cout << "=============================================================" << endl;
   cout << "----  " << fTitle << " : " << fName << endl;
 
@@ -451,10 +459,9 @@ void CbmFieldMapDistorted::Print(Option_t*) {
   if (fBzDistortionFormulaAdd)    cout << fBzDistortionFormulaAdd->GetExpFormula("p") << endl;
   cout << "==============================" << endl;
 
-  Double_t po[3],b[3];
-  po[0]=0; po[1]=0; po[2]=0;
-  GetFieldValue(po,b);
-  cout << "----  Distorted field at origin is ( "<< b[0] << ", " << b[1] << ", " << b[2]  << ") kG" << endl;
+
+  cout << "----  Distorted field at origin is ( "<< fBxOrigin << ", " 
+       << fByOrigin << ", " << fBzOrigin  << ") kG" << endl;
 
   cout << "=============================================================" << endl;
 

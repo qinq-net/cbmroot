@@ -51,7 +51,10 @@ CbmFieldMap::CbmFieldMap()
     fNz(0),
     fBx(NULL),
     fBy(NULL),
-    fBz(NULL)
+    fBz(NULL),
+    fBxOrigin(0.),
+    fByOrigin(0.),
+    fBzOrigin(0.)
 {
   // Initilization of arrays is to my knowledge not
   // possible in member initalization lists
@@ -96,7 +99,10 @@ CbmFieldMap::CbmFieldMap(const char* mapName, const char* fileType)
     fNz(0),
     fBx(NULL),
     fBy(NULL),
-    fBz(NULL)
+    fBz(NULL),
+    fBxOrigin(0.),
+    fByOrigin(0.),
+    fBzOrigin(0.)
 {
   // Initilization of arrays is to my knowledge not
   // possible in member initalization lists
@@ -149,7 +155,10 @@ CbmFieldMap::CbmFieldMap(CbmFieldPar* fieldPar)
     fNz(0),
     fBx(NULL),
     fBy(NULL),
-    fBz(NULL)
+    fBz(NULL),
+    fBxOrigin(0.),
+    fByOrigin(0.),
+    fBzOrigin(0.)
 {
   // Initilization of arrays is to my knowledge not
   // possible in member initalization lists
@@ -208,7 +217,10 @@ CbmFieldMap::CbmFieldMap(CbmFieldMapCreator* creator)
     fNz(0),
     fBx(NULL),
     fBy(NULL),
-    fBz(NULL)
+    fBz(NULL),
+    fBxOrigin(0.),
+    fByOrigin(0.),
+    fBzOrigin(0.)
 {
   // Initilization of arrays is to my knowledge not
   // possible in member initalization lists
@@ -273,6 +285,12 @@ void CbmFieldMap::Init() {
 	 << fFileName << ")" << endl;
     Fatal("Init", "No proper file name");
   }
+  // Fill values needed in the Print() function. This is needed to allow
+  // a constant Print() function.
+  fBxOrigin = GetBx(0.,0.,0.);
+  fByOrigin = GetBy(0.,0.,0.);
+  fBzOrigin = GetBz(0.,0.,0.);
+
   Print();
 }
 // ------------------------------------------------------------------------
@@ -494,7 +512,7 @@ void CbmFieldMap::SetPosition(Double_t x, Double_t y, Double_t z) {
 
 
 // ---------   Screen output   --------------------------------------------
-void CbmFieldMap::Print(Option_t*) {
+void CbmFieldMap::Print(Option_t*) const {
   TString type = "Map";
   if ( fType == 2 ) type = "Map sym2";
   if ( fType == 3 ) type = "Map sym3";
@@ -516,12 +534,10 @@ void CbmFieldMap::Print(Option_t*) {
   cout << "----  Field centre position: ( " << setw(6) << fPosX << ", "
        << setw(6) << fPosY << ", " << setw(6) << fPosZ << ") cm" << endl;
   cout << "----  Field scaling factor: " << fScale << endl;
-  Double_t bx = GetBx(0.,0.,0.);
-  Double_t by = GetBy(0.,0.,0.);
-  Double_t bz = GetBz(0.,0.,0.);
   cout << "----" << endl;
-  cout << "----  Field at origin is ( " << setw(6) << bx << ", " << setw(6)
-       << by << ", " << setw(6) << bz << ") kG" << endl;
+  cout << "----  Field at origin is ( " << setw(6) << fBxOrigin << ", " << setw(6)
+       << fByOrigin << ", " << setw(6) << fBzOrigin << ") kG" << endl;
+
  cout << "======================================================" << endl;
 }
 // ------------------------------------------------------------------------  
