@@ -27,6 +27,8 @@
 #include <stdexcept>
 #include "TClonesArray.h"
 
+using std::fstream;
+
 CbmMuchGeoScheme* CbmMuchGeoScheme::fInstance = NULL;
 Bool_t CbmMuchGeoScheme::fInitialized = kFALSE;
 Bool_t CbmMuchGeoScheme::fModulesInitialized = kFALSE;
