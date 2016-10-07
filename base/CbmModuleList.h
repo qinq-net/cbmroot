@@ -15,9 +15,6 @@
 #include "CbmAddress.h"
 
 
-using namespace std;
-
-
 /** Enumerator for system Ids.
  ** Systems are active modules (detectors), the ID of which is used
  ** in the CBM addressing scheme (CbmAddress).
@@ -92,10 +89,10 @@ class CbmModuleList
   private:
 
     /** Map of module identifier to module name **/
-    static map<Int_t, TString> fModules;
+    static std::map<Int_t, TString> fModules;
 
     /** Initialisation of module map **/
-    static map<Int_t, TString> DefineModules();
+    static std::map<Int_t, TString> DefineModules();
 
 };
 

@@ -13,6 +13,7 @@
 #include "CbmStsSensorTypeDssd.h"
 #include "CbmStsStation.h"
 
+using std::stringstream;
 
 // -----   Default constructor   -------------------------------------------
 CbmStsStation::CbmStsStation()

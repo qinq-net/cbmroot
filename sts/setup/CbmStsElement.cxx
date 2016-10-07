@@ -12,7 +12,11 @@
 #include "setup/CbmStsSetup.h"
 #include "setup/CbmStsStation.h"
 
-
+using std::left;
+using std::right;
+using std::setw;
+using std::pair;
+using std::multimap;
 
 // -----   Default constructor   -------------------------------------------
 CbmStsElement::CbmStsElement() : TNamed(),

@@ -8,10 +8,9 @@
 #define CBMLATEXREPORTELEMENT_H_
 
 #include "CbmReportElement.h"
-#include <string>
 
-using std::string;
-using std::vector;
+#include <string>
+#include <vector>
 
 /**
  * \class CbmLatexReportElement
@@ -35,51 +34,51 @@ public:
    /**
     * \brief Inherited from CbmReportElement.
     */
-   virtual string TableBegin(
-         const string& caption,
-         const vector<string>& colNames) const;
+   virtual std::string TableBegin(
+         const std::string& caption,
+         const std::vector<std::string>& colNames) const;
 
    /**
     * \brief Inherited from CbmReportElement.
     */
-   virtual string TableEnd() const;
+   virtual std::string TableEnd() const;
 
    /**
     * \brief Inherited from CbmReportElement.
     */
-   virtual string TableEmptyRow(
+   virtual std::string TableEmptyRow(
          int nofCols,
-         const string& name) const;
+         const std::string& name) const;
 
    /**
     * \brief Inherited from CbmReportElement.
     */
-   virtual string TableRow(
-         const vector<string>& row) const;
+   virtual std::string TableRow(
+         const std::vector<std::string>& row) const;
 
    /**
     * \brief Inherited from CbmReportElement.
     */
-   virtual string Image(
-         const string& title,
-         const string& file) const;
+   virtual std::string Image(
+         const std::string& title,
+         const std::string& file) const;
 
    /**
     * \brief Inherited from CbmReportElement.
     */
-   virtual string DocumentBegin() const;
+   virtual std::string DocumentBegin() const;
 
    /**
     * \brief Inherited from CbmReportElement.
     */
-   virtual string DocumentEnd() const;
+   virtual std::string DocumentEnd() const;
 
    /**
     * \brief Inherited from CbmReportElement.
     */
-   virtual string Title(
+   virtual std::string Title(
          int size,
-         const string& title) const;
+         const std::string& title) const;
 
    ClassDef(CbmLatexReportElement, 1)
 };

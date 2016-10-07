@@ -4,10 +4,13 @@
  * \date 2011
  */
 #include "CbmHtmlReportElement.h"
+
 #include <sstream>
 
 using std::stringstream;
 using std::endl;
+using std::string;
+using std::vector;
 
 CbmHtmlReportElement::CbmHtmlReportElement()
 {

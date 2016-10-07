@@ -27,6 +27,8 @@
 #include <cassert>
 
 using std::stringstream;
+using std::vector;
+using std::string;
 
 /* Set default styles for histograms. */
 void SetDefaultDrawStyle()

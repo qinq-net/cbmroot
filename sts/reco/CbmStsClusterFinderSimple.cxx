@@ -20,6 +20,10 @@
 // --- Includes from STS
 #include "CbmStsModule.h"
 
+using std::pair;
+using std::set;
+using std::get;
+
 // -----   Constructor   ---------------------------------------------------
 CbmStsClusterFinderSimple::CbmStsClusterFinderSimple(Int_t finderModel, Int_t algorithm, Int_t eLossModel) : TObject()
   , fNofClustersWithGap (0)

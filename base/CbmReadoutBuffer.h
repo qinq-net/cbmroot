@@ -17,13 +17,6 @@
 #include "FairRootManager.h"
 #include "FairWriteoutBuffer.h"
 
-using std::max;
-using std::multimap;
-using std::pair;
-using std::vector;
-
-
-
 // The data class must implement the methods Double_t GetTimeStart(),
 // Double_t GetTimeStop(), and void SetTimeStop(Double_t),
 // as well as a copy constructor (default one is fine).
@@ -206,7 +199,7 @@ template <class Data> class CbmReadoutBuffer : public FairWriteoutBuffer {
 			if ( dataFound ) {
 
 				// --- Call Modify method
-				vector<Data*> newDataList;
+				std::vector<Data*> newDataList;
 				Modify(fBufferIt->second, data, newDataList);
 
 				// --- Check return data list for non-interference
@@ -246,7 +239,7 @@ template <class Data> class CbmReadoutBuffer : public FairWriteoutBuffer {
 			// --- No interference; just insert data into buffer
 			else {
 
-				fBuffer.insert(pair<UInt_t, Data*>(address, data));
+				fBuffer.insert(std::pair<UInt_t, Data*>(address, data));
 				LOG(DEBUG4) << "RO: Insert data at address " << address
 						<< ", t = " << data->GetTimeStart()
 						<< " to " << data->GetTimeStop() << FairLogger::endl;
@@ -289,7 +282,7 @@ template <class Data> class CbmReadoutBuffer : public FairWriteoutBuffer {
 
 	  // ---------------------------------------------------------------------
 		virtual Int_t Modify(Data* oldData1, Data* oldData2,
-				                vector<Data*>& newDataList) {
+				                std::vector<Data*>& newDataList) {
 
 			LOG(DEBUG4) << "Modify: old data 1 at t = " << oldData1->GetTimeStart()
 					      << " to " << oldData1->GetTimeStop() << FairLogger::endl;
@@ -305,7 +298,7 @@ template <class Data> class CbmReadoutBuffer : public FairWriteoutBuffer {
 				firstData  = oldData2;
 				secondData = oldData1;
 			}
-			Double_t stopTime = max(oldData1->GetTimeStop(), oldData2->GetTimeStop() );
+			Double_t stopTime = std::max(oldData1->GetTimeStop(), oldData2->GetTimeStop() );
 
 			// Create new data object
 			Data* newData = new Data(*firstData);
@@ -348,7 +341,7 @@ template <class Data> class CbmReadoutBuffer : public FairWriteoutBuffer {
 		 ** The object ownership is passed to the consumer, who is responsible
 		 ** for destroying the data objects in the data vector.
 		 **/
-		Int_t ReadOutData(Double_t time, vector<Data*>& dataList) {
+		Int_t ReadOutData(Double_t time, std::vector<Data*>& dataList) {
 
 			LOG(INFO) << "RO Buffer: read out at t = " << time << ", buffer size "
 					      << fBuffer.size() << FairLogger::endl;
@@ -458,9 +451,9 @@ template <class Data> class CbmReadoutBuffer : public FairWriteoutBuffer {
 
 	protected:
 
-		multimap<UInt_t, Data*> fBuffer; //!
-		typename multimap<UInt_t, Data*>::iterator fBufferIt; //!
-		typename multimap<UInt_t, Data*>::iterator fOldIt; //!
+		std::multimap<UInt_t, Data*> fBuffer; //!
+		typename std::multimap<UInt_t, Data*>::iterator fBufferIt; //!
+		typename std::multimap<UInt_t, Data*>::iterator fOldIt; //!
 		TClonesArray* fArray;   //!
 		Bool_t fWriteToArray;
 };

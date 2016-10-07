@@ -27,11 +27,6 @@
 class TFile;
 class TNamed;
 
-using std::map;
-using std::make_pair;
-using std::string;
-using std::vector;
-
 /**
  * \class CbmHistManager
  * \brief Histogram manager.
@@ -58,9 +53,9 @@ public:
     * \param[in] object Pointer to object.
     */
    void Add(
-         const string& name,
+         const std::string& name,
          TNamed* object) {
-         std::pair<string, TNamed*> newpair = std::make_pair(name, object);
+         std::pair<std::string, TNamed*> newpair = std::make_pair(name, object);
       fMap.insert(newpair);
    }
 
@@ -75,8 +70,8 @@ public:
     * \param[in] maxBin Upper axis limit.
     */
    template<class T> void Create1(
-         const string& name,
-         const string& title,
+         const std::string& name,
+         const std::string& title,
          Int_t nofBins,
          Double_t minBin,
          Double_t maxBin) {
@@ -98,8 +93,8 @@ public:
     * \param[in] maxBinY Upper Y axis limit.
     */
    template<class T> void Create2(
-         const string& name,
-         const string& title,
+         const std::string& name,
+         const std::string& title,
          Int_t nofBinsX,
          Double_t minBinX,
          Double_t maxBinX,
@@ -127,8 +122,8 @@ public:
     * \param[in] maxBinZ Upper Z axis limit.
     */
    template<class T> void Create3(
-         const string& name,
-         const string& title,
+         const std::string& name,
+         const std::string& title,
          Int_t nofBinsX,
          Double_t minBinX,
          Double_t maxBinX,
@@ -148,7 +143,7 @@ public:
     * \return pointer to TH1 histogram.
     */
    TH1* H1(
-         const string& name) const {
+         const std::string& name) const {
       if (fMap.count(name) == 0) { // Temporarily used for debugging
     	  std::cout << "Error: CbmHistManager::H1(name): name=" << name << std::endl;
       }
@@ -161,8 +156,8 @@ public:
     * \param[in] pattern Regex for histogram name.
     * \return Vector of pointers to TH1 histogram.
     */
-   vector<TH1*> H1Vector(
-         const string& pattern) const;
+   std::vector<TH1*> H1Vector(
+         const std::string& pattern) const;
 
    /**
     * \brief Return pointer to TH2 histogram.
@@ -170,7 +165,7 @@ public:
     * \return pointer to TH2 histogram.
     */
    TH2* H2(
-         const string& name) const {
+         const std::string& name) const {
       if (fMap.count(name) == 0) { // Temporarily used for debugging
     	  std::cout << "Error: CbmHistManager::H2(name): name=" << name << std::endl;
       }
@@ -183,8 +178,8 @@ public:
     * \param[in] pattern Regex for histogram name.
     * \return Vector of pointers to TH2 histogram.
     */
-   vector<TH2*> H2Vector(
-         const string& pattern) const;
+   std::vector<TH2*> H2Vector(
+         const std::string& pattern) const;
 
    /**
     * \brief Return pointer to TH3 histogram.
@@ -192,7 +187,7 @@ public:
     * \return pointer to TH3 histogram.
     */
    TH3* H3(
-         const string& name) const {
+         const std::string& name) const {
       if (fMap.count(name) == 0) { // Temporarily used for debugging
     	  std::cout << "Error: CbmHistManager::H3(name): name=" << name << std::endl;
       }
@@ -206,7 +201,7 @@ public:
     * \return pointer to TGraph.
     */
    TGraph* G1(
-         const string& name) const {
+         const std::string& name) const {
       if (fMap.count(name) == 0) { // Temporarily used for debugging
     	  std::cout << "Error: CbmHistManager::G1(name): name=" << name << std::endl;
       }
@@ -219,8 +214,8 @@ public:
     * \param[in] pattern Regex for object name.
     * \return Vector of pointers to TGraph.
     */
-   vector<TGraph*> G1Vector(
-         const string& pattern) const;
+   std::vector<TGraph*> G1Vector(
+         const std::string& pattern) const;
 
    /**
     * \brief Return pointer to TGraph2D.
@@ -228,7 +223,7 @@ public:
     * \return pointer to TGraph.
     */
    TGraph2D* G2(
-         const string& name) const {
+         const std::string& name) const {
       if (fMap.count(name) == 0) { // Temporarily used for debugging
     	  std::cout << "Error: CbmHistManager::G2(name): name=" << name << std::endl;
       }
@@ -241,8 +236,8 @@ public:
     * \param[in] pattern Regex for object name.
     * \return Vector of pointers to TGraph2D.
     */
-   vector<TGraph2D*> G2Vector(
-         const string& pattern) const;
+   std::vector<TGraph2D*> G2Vector(
+         const std::string& pattern) const;
 
    /**
     * \brief Return pointer to TProfile.
@@ -250,7 +245,7 @@ public:
     * \return pointer to TProfile.
     */
    TProfile* P1(
-         const string& name) const {
+         const std::string& name) const {
       if (fMap.count(name) == 0) { // Temporarily used for debugging
         std::cout << "Error: CbmHistManager::P1(name): name=" << name << std::endl;
       }
@@ -263,8 +258,8 @@ public:
     * \param[in] pattern Regex for profile name.
     * \return Vector of pointers to TProfile.
     */
-   vector<TProfile*> P1Vector(
-         const string& pattern) const;
+   std::vector<TProfile*> P1Vector(
+         const std::string& pattern) const;
 
    /**
     * \brief Return pointer to TH2 histogram.
@@ -272,7 +267,7 @@ public:
     * \return pointer to TH1 histogram.
     */
    TProfile2D* P2(
-         const string& name) const {
+         const std::string& name) const {
       if (fMap.count(name) == 0) { // Temporarily used for debugging
         std::cout << "Error: CbmHistManager::P2(name): name=" << name << std::endl;
       }
@@ -285,8 +280,8 @@ public:
     * \param[in] pattern Regex for profile name.
     * \return Vector of pointers to TProfile2D.
     */
-   vector<TProfile2D*> P2Vector(
-         const string& pattern) const;
+   std::vector<TProfile2D*> P2Vector(
+         const std::string& pattern) const;
 
    /**
     * \brief Check existence of histogram in manager.
@@ -294,7 +289,7 @@ public:
     * \return True if histogram exists in manager.
     */
    Bool_t Exists(
-         const string& name) const {
+         const std::string& name) const {
       return (fMap.count(name) == 0) ? false : true;
    }
 
@@ -320,28 +315,28 @@ public:
     * \param[in] histName Name of histogram.
     */
    void ShrinkEmptyBinsH1(
-         const string& histName);
+         const std::string& histName);
 
    /**
     * \brief Shrink empty bins in H1.
     * \param[in] histPatternName Regular expression for histogram name.
     */
    void ShrinkEmptyBinsH1ByPattern(
-         const string& pattern);
+         const std::string& pattern);
 
    /**
     * \brief Shrink empty bins in H2.
     * \param[in] histName Name of histogram.
     */
    void ShrinkEmptyBinsH2(
-         const string& histName);
+         const std::string& histName);
 
    /**
     * \brief Shrink empty bins in H2.
     * \param[in] histPatternName Regular expression for histogram name.
     */
    void ShrinkEmptyBinsH2ByPattern(
-         const string& pattern);
+         const std::string& pattern);
 
    /**
     * \brief Scale histogram.
@@ -349,7 +344,7 @@ public:
     * \param[in] scale Scaling factor.
     */
    void Scale(
-         const string& histName,
+         const std::string& histName,
          Double_t scale);
 
    /**
@@ -358,7 +353,7 @@ public:
     * \param[in] scale Scaling factor.
     */
    void ScaleByPattern(
-         const string& pattern,
+         const std::string& pattern,
          Double_t scale);
 
    /**
@@ -366,14 +361,14 @@ public:
     * \param[in] histName Name of histogram.
     */
    void NormalizeToIntegral(
-         const string& histName);
+         const std::string& histName);
 
    /**
     * \brief Normalize histograms to integral which name matches specified pattern.
     * \param[in] histPatternName Regular expression for histogram name.
     */
    void NormalizeToIntegralByPattern(
-         const string& pattern);
+         const std::string& pattern);
 
    /**
     * \brief Rebin histogram.
@@ -381,7 +376,7 @@ public:
     * \param[in] ngroup Rebining factor.
     */
    void Rebin(
-         const string& histName,
+         const std::string& histName,
          Int_t ngroup);
 
    /**
@@ -390,14 +385,14 @@ public:
     * \param[in] ngroup Rebining factor.
     */
    void RebinByPattern(
-         const string& pattern,
+         const std::string& pattern,
          Int_t ngroup);
 
    /**
     * \brief Return string representation of class.
     * \return string representation of class.
     */
-   string ToString() const;
+   std::string ToString() const;
 
    /**
     * \brief Operator << for convenient output to std::ostream.
@@ -409,11 +404,11 @@ public:
    }
 
 private:
-   template<class T> vector<T> ObjectVector(
-         const string& pattern) const;
+   template<class T> std::vector<T> ObjectVector(
+         const std::string& pattern) const;
 
    // Map of histogram (graph) name to its pointer
-   map<string, TNamed*> fMap;
+   std::map<std::string, TNamed*> fMap;
 
    ClassDef(CbmHistManager, 1)
 };

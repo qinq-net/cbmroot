@@ -8,11 +8,9 @@
 #define CBMREPORTELEMENT_H_
 
 #include "TObject.h"
+
 #include <vector>
 #include <string>
-
-using std::string;
-using std::vector;
 
 /**
  * \class CbmReportElement
@@ -48,15 +46,15 @@ public:
     * \param[in] colNames Names of the columns in table.
     * \return String with table open tag.
     */
-   virtual string TableBegin(
-         const string& caption,
-         const vector<string>& colNames) const = 0;
+   virtual std::string TableBegin(
+         const std::string& caption,
+         const std::vector<std::string>& colNames) const = 0;
 
    /**
     * \brief Return string with table close tag.
     * \return String with table close tag.
     */
-   virtual string TableEnd() const = 0;
+   virtual std::string TableEnd() const = 0;
 
    /**
     * \brief Return string with table row which spans over all columns.
@@ -64,17 +62,17 @@ public:
     * \param[in] name Name of the row.
     * \return string with table row which spans over all columns.
     */
-   virtual string TableEmptyRow(
+   virtual std::string TableEmptyRow(
          int nofCols,
-         const string& name) const = 0;
+         const std::string& name) const = 0;
 
    /**
     * \brief Return string with table row tags.
     * \param[in] data Array of strings with data for each cell in a row.
     * \return string with table row tags.
     */
-   virtual string TableRow(
-         const vector<string>& row) const = 0;
+   virtual std::string TableRow(
+         const std::vector<std::string>& row) const = 0;
 
    /**
     * \brief Return string with image tags.
@@ -82,21 +80,21 @@ public:
     * \param[in] file Name of the image file.
     * \return string with image tags.
     */
-   virtual string Image(
-         const string& title,
-         const string& file) const = 0;
+   virtual std::string Image(
+         const std::string& title,
+         const std::string& file) const = 0;
 
    /**
     * \brief Return string with open tags for document.
     * \return string with open tags for document.
     */
-   virtual string DocumentBegin() const = 0;
+   virtual std::string DocumentBegin() const = 0;
 
    /**
     * \brief Return string with close tags of the document.
     * \return string with close tags of the document.
     */
-   virtual string DocumentEnd() const = 0;
+   virtual std::string DocumentEnd() const = 0;
 
    /**
     * \brief Return string with title.
@@ -104,9 +102,9 @@ public:
     * \param[in] title Title string.
     * \return string with subtitle.
     */
-   virtual string Title(
+   virtual std::string Title(
          int size,
-         const string& title) const = 0;
+         const std::string& title) const = 0;
 
    ClassDef(CbmReportElement, 1)
 };

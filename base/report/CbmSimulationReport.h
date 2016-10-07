@@ -8,12 +8,11 @@
 #define CBMSIMULATIONREPORT_H_
 
 #include "CbmReport.h"
+
 #include "draw/CbmDrawHist.h"
 #include "CbmHistManager.h"
-#include <string>
 
-using std::ostream;
-using std::string;
+#include <string>
 
 /**
  * \class CbmSimulationReport
@@ -47,7 +46,7 @@ public:
     */
    void Create(
 		   CbmHistManager* histManager,
-		   const string& outputDir);
+		   const std::string& outputDir);
 
    /**
     * \brief Main function which creates report data.
@@ -58,8 +57,8 @@ public:
     * \param[in] outputDir Path to directory for output results.
     */
    void Create(
-		   const string& fileName,
-		   const string& outputDir);
+		   const std::string& fileName,
+		   const std::string& outputDir);
     
    /**
     * \brief Inherited from CbmReport. Pure abstract function which is called from public Create() function.
@@ -72,7 +71,7 @@ public:
     * \return pointer to TH1 histogram.
     */
    TH1* H1(
-         const string& name) const {
+         const std::string& name) const {
 	   return HM()->H1(name);
    }
 
@@ -82,7 +81,7 @@ public:
     * \return pointer to TH2 histogram.
     */
    TH2* H2(
-         const string& name) const {
+         const std::string& name) const {
       return HM()->H2(name);
    }
 
@@ -92,7 +91,7 @@ public:
     * \return pointer to TH3 histogram.
     */
    TH3* H3(
-         const string& name) const {
+         const std::string& name) const {
       return HM()->H3(name);
    }
 
@@ -106,15 +105,15 @@ public:
     * \param[in] histNamePattern Name pattern for histogram.
     */
    void DrawH1ByPattern(
-         const string& histNamePattern);
+         const std::string& histNamePattern);
 
    /**
     * \brief Select by pattern TH1 histograms and draw all histograms on the same canvas.
     * \param[in] histNamePattern Name pattern for histogram.
     */
    void DrawH1ByPattern(
-         const string& histNamePattern,
-         string (*labelFormatter)(const string&, const CbmHistManager*));
+         const std::string& histNamePattern,
+         std::string (*labelFormatter)(const std::string&, const CbmHistManager*));
 
    /**
     * \brief Select by pattern TH2 histograms and draw each histogram on separate canvas.
@@ -125,11 +124,11 @@ public:
     * \param[in] drawOpt Other drawing options (see ROOT documentation for details).
     */
    void DrawH2ByPattern(
-         const string& histNamePattern,
+         const std::string& histNamePattern,
          HistScale logx = kLinear,
          HistScale logy = kLinear,
          HistScale logz = kLinear,
-         const string& drawOpt = "");
+         const std::string& drawOpt = "");
 
 private:
    CbmHistManager* fHM; // Histogram manager

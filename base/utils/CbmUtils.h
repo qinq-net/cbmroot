@@ -10,18 +10,12 @@ class TH2D;
 #include <vector>
 #include <string>
 #include <sstream>
-#include <iostream>
-
-using std::string;
-using std::vector;
-using std::cout;
-using std::endl;
 
 namespace Cbm
 {
 
 template <class T>
-string ToString(
+std::string ToString(
    const T& value)
 {
    std::stringstream ss;
@@ -30,11 +24,11 @@ string ToString(
 }
 
 template <class T>
-string NumberToString(
+std::string NumberToString(
    const T& value, int precision = 1)
 {
    // First determine number of digits in float
-   string digis = ToString<int>(value);
+   std::string digis = ToString<int>(value);
    int ndigis = digis.size();
 
    std::stringstream ss;
@@ -57,13 +51,13 @@ void SaveCanvasAsImage(
    const std::string& dir,
    const std::string& option = "eps;png;gif");
 
-string FindAndReplace(
-		const string& name,
-		const string& oldSubstr,
-		const string& newSubstr);
+std::string FindAndReplace(
+		const std::string& name,
+		const std::string& oldSubstr,
+		const std::string& newSubstr);
 
-vector<string> Split(
-		const string& name,
+std::vector<std::string> Split(
+		const std::string& name,
 		char delimiter);
 
 /*
@@ -77,9 +71,9 @@ vector<string> Split(
 TH1D* DivideH1(
 		TH1* h1,
 		TH1* h2,
-		const string& histName = "",
+		const std::string& histName = "",
 		double scale = 100.,
-		const string& titleYaxis = "Efficiency [%]");
+		const std::string& titleYaxis = "Efficiency [%]");
 
 
 /*
@@ -93,9 +87,9 @@ TH1D* DivideH1(
 TH2D* DivideH2(
       TH2* h1,
       TH2* h2,
-	  const string& histName = "",
+	  const std::string& histName = "",
 	  double scale = 100.,
-	  const string& titleZaxis = "Efficiency [%]");
+	  const std::string& titleZaxis = "Efficiency [%]");
 
 }
 

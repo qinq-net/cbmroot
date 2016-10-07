@@ -8,12 +8,9 @@
 #define CBMSTUDYREPORT_H_
 
 #include "CbmReport.h"
+
 #include <string>
 #include <vector>
-
-using std::vector;
-using std::string;
-using std::ostream;
 
 class CbmHistManager;
 
@@ -50,9 +47,9 @@ public:
     * \param[in] outputDir name of the output directory.
     */
    void Create(
-         const vector<CbmHistManager*>& histManagers,
-         const vector<string>& studyNames,
-         const string& outputDir);
+         const std::vector<CbmHistManager*>& histManagers,
+         const std::vector<std::string>& studyNames,
+         const std::string& outputDir);
 
    /**
     * \brief Main function which creates report data.
@@ -64,9 +61,9 @@ public:
     * \param[in] outputDir name of the output directory.
     */
    void Create(
-         const vector<string>& fileNames,
-         const vector<string>& studyNames,
-         const string& outputDir);
+         const std::vector<std::string>& fileNames,
+         const std::vector<std::string>& studyNames,
+         const std::string& outputDir);
     
     /**
      * \brief Inherited from CbmReport. Pure abstract function which is called from public Create() function.
@@ -74,14 +71,14 @@ public:
     virtual void Create() = 0;
 
    /* Accessors */
-   const vector<CbmHistManager*>& HM() const { return fHM; }
+   const std::vector<CbmHistManager*>& HM() const { return fHM; }
    CbmHistManager* HM(Int_t index) const { return fHM[index]; }
-   const vector<string>& GetStudyNames() const { return fStudyNames; }
-   const string& GetStudyName(Int_t index) const { return fStudyNames[index]; }
+   const std::vector<std::string>& GetStudyNames() const { return fStudyNames; }
+   const std::string& GetStudyName(Int_t index) const { return fStudyNames[index]; }
 
 private:
-   vector<CbmHistManager*> fHM; // Histogram managers for each study
-   vector<string> fStudyNames; // Names of studies
+   std::vector<CbmHistManager*> fHM; // Histogram managers for each study
+   std::vector<std::string> fStudyNames; // Names of studies
 
    ClassDef(CbmStudyReport, 1)
 };

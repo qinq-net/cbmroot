@@ -13,6 +13,7 @@
 using boost::assign::list_of;
 using std::endl;
 using std::stringstream;
+using std::vector;
 
 CbmRichGeoTestStudyReport::CbmRichGeoTestStudyReport()
 {

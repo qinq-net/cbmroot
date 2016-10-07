@@ -3,6 +3,7 @@
  **/
 
 #include "CbmMuchFindHitsStraws.h"
+
 #include "CbmMuchDigitizeStraws.h"
 #include "CbmMuchStrawDigi.h"
 #include "CbmMuchDigiMatch.h"
@@ -14,14 +15,19 @@
 #include "CbmMuchStation.h"
 #include "CbmMuchPixelHit.h"
 #include "CbmMuchStrawHit.h"
+
 #include "FairRun.h"
 #include "FairRootManager.h"
 #include "FairGeoRotation.h"
+
 #include "TRandom.h"
 #include "TVector3.h"
 #include "TClonesArray.h"
 
 #include <cassert>
+
+using std::cout;
+using std::endl;
 
 // -------------------------------------------------------------------------
 CbmMuchFindHitsStraws::CbmMuchFindHitsStraws(const char* digiFileName)

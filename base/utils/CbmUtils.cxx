@@ -5,6 +5,13 @@
 #include "TH1D.h"
 #include "TH2D.h"
 
+#include <iostream>
+
+using std::string;
+using std::vector;
+using std::cout;
+using std::endl;
+
 namespace Cbm
 {
 

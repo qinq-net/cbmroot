@@ -17,8 +17,6 @@
 
 #include <string>
 #include <vector>
-using std::string;
-using std::vector;
 
 /**
  * \class CbmDrawingOptions
@@ -93,7 +91,7 @@ void DrawH1(
    TH1* hist,
    HistScale logx = kLinear,
    HistScale logy = kLinear,
-   const string& drawOpt = "",
+   const std::string& drawOpt = "",
    Int_t color = CbmDrawingOptions::Color(0),
    Int_t lineWidth = CbmDrawingOptions::LineWidth(),
    Int_t lineStyle = CbmDrawingOptions::LineStyle(0),
@@ -114,7 +112,7 @@ void DrawH2(
    HistScale logx = kLinear,
    HistScale logy = kLinear,
    HistScale logz = kLinear,
-   const string& drawOpt = "COLZ");
+   const std::string& drawOpt = "COLZ");
 
 
 /**
@@ -132,8 +130,8 @@ void DrawH2(
  * \param[in] drawOpt Draw options for TH1->Draw method.
  */
 void DrawH1(
-   const vector<TH1*>& histos,
-   const vector<string>& histLabels,
+   const std::vector<TH1*>& histos,
+   const std::vector<std::string>& histLabels,
    HistScale logx = kLinear,
    HistScale logy = kLinear,
    Bool_t drawLegend = true,
@@ -141,7 +139,7 @@ void DrawH1(
    Double_t y1 = 0.99,
    Double_t x2 = 0.55,
    Double_t y2 = 0.75,
-   const string& drawOpt = "");
+   const std::string& drawOpt = "");
 
 /**
  * \fn DrawGraph
@@ -160,7 +158,7 @@ void DrawGraph(
    TGraph* graph,
    HistScale logx = kLinear,
    HistScale logy = kLinear,
-   const string& drawOpt = "AC",
+   const std::string& drawOpt = "AC",
    Int_t color = CbmDrawingOptions::Color(0),
    Int_t lineWidth = CbmDrawingOptions::LineWidth(),
    Int_t lineStyle = CbmDrawingOptions::LineStyle(0),
@@ -181,8 +179,8 @@ void DrawGraph(
  * \param[in] y2 Y coordinate of legend in current pad.
  */
 void DrawGraph(
-   const vector<TGraph*>& graphs,
-   const vector<string>& graphLabels,
+   const std::vector<TGraph*>& graphs,
+   const std::vector<std::string>& graphLabels,
    HistScale logx = kLinear,
    HistScale logy = kLinear,
    Bool_t drawLegend = true,
@@ -205,7 +203,7 @@ void DrawGraph2D(
    HistScale logx = kLinear,
    HistScale logy = kLinear,
    HistScale logz = kLinear,
-   const string& drawOpt = "colz");
+   const std::string& drawOpt = "colz");
 
 /**
  * \fn DrawTextOnPad
@@ -217,7 +215,7 @@ void DrawGraph2D(
  * \param[in] y2 Y2 coordinate of legend in current pad.
  */
 void DrawTextOnPad(
-    const string& text,
+    const std::string& text,
 	Double_t x1,
 	Double_t y1,
 	Double_t x2,

@@ -25,6 +25,7 @@
 #include <vector>
 using std::vector;
 using std::pair;
+using std::make_pair;
 
 CbmLitFitQa::CbmLitFitQa():
    fIsFixedBounds(true),

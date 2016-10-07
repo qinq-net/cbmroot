@@ -20,9 +20,6 @@
 class TClonesArray;
 class CbmStsPhysics;
 
-using std::map;
-
-
 /** @class CbmStsModule
  ** @brief Class representing an instance of a readout unit in the CBM-STS.
  ** @author V.Friese <v.friese@gsi.de>
@@ -148,7 +145,7 @@ class CbmStsModule : public CbmStsElement
      /** Pointer to the digi array (map)
       *
       */
-     map<Int_t, pair<CbmStsDigi*, Int_t> >* GetDigiMap() {
+     std::map<Int_t, std::pair<CbmStsDigi*, Int_t> >* GetDigiMap() {
     	 return &fDigis;
      }
 
@@ -165,7 +162,7 @@ class CbmStsModule : public CbmStsElement
      Int_t GetNofDigis() const { return fDigis.size(); }
 
      /** Set of dead channels **/
-     set <Int_t> GetSetOfDeadChannels() const {return fDeadChannels;}
+     std::set <Int_t> GetSetOfDeadChannels() const {return fDeadChannels;}
 
      /** Initialise the analog buffer
       ** The analog buffer contains a std::multiset for each channel, to be
@@ -281,7 +278,7 @@ class CbmStsModule : public CbmStsElement
     Double_t fDeadTime;          ///< Channel dead time [ns]
     Double_t fNoise;             ///< Equivalent noise charge (sigma) [e]
     Bool_t   fIsSet;             ///< Flag whether parameters are set
-    set <Int_t> fDeadChannels;    ///< List of inactive channels
+    std::set <Int_t> fDeadChannels;    ///< List of inactive channels
     CbmStsPhysics* fPhysics;  //!  Pointer to CbmStsPhysics instance
 
     /** Buffer for analog signals, key is channel number.
@@ -291,13 +288,13 @@ class CbmStsModule : public CbmStsElement
      ** Sorting in the multiset is with the less operator of CbmStsSignal,
      ** which compares the time of the signals.
      **/
-    typedef multiset<CbmStsSignal*, CbmStsSignal::Before> sigset;
-    map<Int_t, sigset> fAnalogBuffer;
+    typedef std::multiset<CbmStsSignal*, CbmStsSignal::Before> sigset;
+    std::map<Int_t, sigset> fAnalogBuffer;
 
     /** Map from channel number to pair of (digi, digiIndex).
      ** Used for cluster finding.
      **/
-    map<Int_t, pair<CbmStsDigi*, Int_t> > fDigis;
+    std::map<Int_t, std::pair<CbmStsDigi*, Int_t> > fDigis;
 
     /** Vector of clusters. Used for hit finding. **/
     vector<CbmStsCluster*> fClusters;
@@ -305,11 +302,11 @@ class CbmStsModule : public CbmStsElement
     /** Multimap from channel number to pair or (digi, digi index in TimeSlice).
      ** Used for time-based cluster finding.
      **/
-    multimap<Int_t, pair<CbmStsDigi*, Int_t> > fDigisTb;
-    multimap<Int_t, pair<CbmStsDigi*, Int_t> > fDigisTbtemp;
+    std::multimap<Int_t, std::pair<CbmStsDigi*, Int_t> > fDigisTb;
+    std::multimap<Int_t, std::pair<CbmStsDigi*, Int_t> > fDigisTbtemp;
 
     /** Iterator for time-based clustering **/
-    multimap<Int_t, pair<CbmStsDigi*, Int_t> >::iterator fIt_DigiTb;
+    std::multimap<Int_t, std::pair<CbmStsDigi*, Int_t> >::iterator fIt_DigiTb;
 
     /** Digitise an analog charge signal
      ** @param channel Channel number

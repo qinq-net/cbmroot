@@ -18,6 +18,10 @@
 #include "setup/CbmStsSensorType.h"
 #include "setup/CbmStsSetup.h"
 
+using std::pair;
+using std::multimap;
+using std::multiset;
+using std::cout;
 
 // -----   Default constructor   -------------------------------------------
 CbmStsModule::CbmStsModule() : CbmStsElement(),

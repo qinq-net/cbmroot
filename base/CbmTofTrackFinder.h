@@ -19,10 +19,6 @@
 
 #include "TObject.h"
 
-#include <vector>
-using std::vector;
-
-
 class TClonesArray;
 class CbmTofHit;
 class CbmTofTrack;

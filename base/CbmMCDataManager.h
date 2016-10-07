@@ -14,12 +14,6 @@
 
 class CbmMCDataArray;
 
-
-using std::map;
-using std::list;
-using std::vector;
-
-
 /** @class CbmMCDataManager
  ** @brief Task class creating and managing CbmMCDataArray objects
  ** @author //Dr.Sys <mikhail.prokudin@cern.ch>
@@ -85,10 +79,10 @@ class CbmMCDataManager : public FairTask
 		Int_t fLegacy; ///< If true, use FairRootManager in event-by-event mode
 
 		/** Array of chains, each with a list of file names **/
-    vector<list<TString> > fFileList;		//! Array of filename chains
+    std::vector<std::list<TString> > fFileList;		//! Array of filename chains
 
     /** List of created CbmMCDataArrays **/
-    map<TString, CbmMCDataArray*> fActive;			//!
+    std::map<TString, CbmMCDataArray*> fActive;			//!
 
 
     ClassDef(CbmMCDataManager, 1);

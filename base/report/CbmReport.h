@@ -9,14 +9,13 @@
 #define CBMREPORT_H_
 
 #include "TObject.h"
+
 #include <iostream>
 #include <string>
 #include <vector>
+
 class CbmReportElement;
 class TCanvas;
-using std::string;
-using std::vector;
-using std::ostream;
 
 /**
  * \enumeration ReportType
@@ -53,17 +52,17 @@ public:
    /**
     * \brief All text output goes to this stream.
     */
-   ostream& Out() const { return *fOut; }
+   std::ostream& Out() const { return *fOut; }
 
    /* Setters */
-   void SetReportName(const string& name) { fReportName = name; }
-   void SetReportTitle(const string& title) { fReportTitle = title; }
-   void SetOutputDir(const string& outputDir) { fOutputDir = outputDir; }
+   void SetReportName(const std::string& name) { fReportName = name; }
+   void SetReportTitle(const std::string& title) { fReportTitle = title; }
+   void SetOutputDir(const std::string& outputDir) { fOutputDir = outputDir; }
 
    /* Accessors */
-   const string& GetReportName() const { return fReportName; }
-   const string& GetReportTitle() const { return fReportTitle; }
-   const string& GetOutputDir() const { return fOutputDir; }
+   const std::string& GetReportName() const { return fReportName; }
+   const std::string& GetReportTitle() const { return fReportTitle; }
+   const std::string& GetOutputDir() const { return fOutputDir; }
 
 protected:
    /**
@@ -131,17 +130,17 @@ private:
     */
    void DeleteReportElement();
 
-   string fReportName; // Name of report
-   string fReportTitle; // Title of report
-   string fOutputDir; // Output directory for the report files
+   std::string fReportName; // Name of report
+   std::string fReportTitle; // Title of report
+   std::string fOutputDir; // Output directory for the report files
    ReportType fReportType; // Current report type
    CbmReportElement* fR; // Report element tool
-   mutable ostream* fOut; // Output stream
+   mutable std::ostream* fOut; // Output stream
 
    // Storage for TCanvas. All Canvases in this vector will be automatically saved
    // to image and printed in the report.
    // User can use CreateCanvas function which automatically push created canvas in this vector.
-   vector<TCanvas*> fCanvases;
+   std::vector<TCanvas*> fCanvases;
 
 //private:
 

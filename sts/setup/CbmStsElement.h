@@ -114,7 +114,7 @@ class CbmStsElement : public TNamed
     UInt_t fAddress;                       ///< Unique address
     EStsElementLevel fLevel;               ///< Level in hierarchy
     TGeoPhysicalNode* fNode;               ///< Pointer to geometry
-    vector<CbmStsElement*> fDaughters;     ///< Array of daughters
+    std::vector<CbmStsElement*> fDaughters;     ///< Array of daughters
     CbmStsElement* fMother;                ///< Mother element
 
 

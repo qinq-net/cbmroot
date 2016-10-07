@@ -40,16 +40,16 @@ protected:
     */
    virtual void Draw();
 
-   string PrintResAndPullRow(
-           const string& rowName,
-           const string& histName,
-           const string& propertyName);
+   std::string PrintResAndPullRow(
+           const std::string& rowName,
+           const std::string& histName,
+           const std::string& propertyName);
 
 	void DrawResidualAndPullHistograms(
-	      const string& detName);
+	      const std::string& detName);
 
 	void DrawTrackParams(
-	      const string& detName);
+	      const std::string& detName);
 
 	/**
 	 * \fn DrawHistSigmaRMS

@@ -49,6 +49,7 @@
 using std::cout;
 using std::vector;
 using std::map;
+using std::set;
 using std::binary_search;
 using boost::assign::list_of;
 

@@ -111,8 +111,8 @@ protected:
      * \param[in] efficiencies Vector of efficiency numbers.
      */
     void DrawMeanEfficiencyLines(
-       const vector<TH1*>& histos,
-       const vector<Double_t>& efficiencies);
+       const std::vector<TH1*>& histos,
+       const std::vector<Double_t>& efficiencies);
 
     /**
      * \brief Draw accepted and reconstructed tracks histograms.

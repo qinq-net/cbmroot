@@ -33,6 +33,8 @@
 #include "CbmRichDigi.h"
 #include "CbmRichPoint.h"
 
+using std::vector;
+
 CbmMatchRecoToMC::CbmMatchRecoToMC() :
    FairTask(),
    fIncludeMvdHitsInStsTrack(kFALSE),

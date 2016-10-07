@@ -3,11 +3,13 @@
  ** @date 13.06.2013
  **/
 
-#include "FairLogger.h"
-#include <boost/algorithm/string.hpp>
 #include "CbmModuleList.h"
 
+#include "FairLogger.h"
 
+#include <boost/algorithm/string.hpp>
+
+using std::map;
 
 // -----   Initialisation of the list of modules   -------------------------
 map<Int_t, TString> CbmModuleList::DefineModules() {

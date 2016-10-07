@@ -49,7 +49,7 @@ private:
     *                   "apr" to plot results for field fitter.
     */
    void DrawSlices(
-         const string& component,
+         const std::string& component,
          const std::string& opt);
 
    /**
@@ -57,13 +57,13 @@ private:
     * \param[in] err "rel" for relative errors or "abs" for absolute errors.
     */
    void DrawApr(
-      const string& err);
+      const std::string& err);
 
    /**
     * \brief Return  string with summary table for field QA.
     * \return String with summary table for field QA.
     */
-   string PrintSummaryTable();
+   std::string PrintSummaryTable();
 
    ClassDef(CbmLitFieldApproximationQaReport, 1)
 };

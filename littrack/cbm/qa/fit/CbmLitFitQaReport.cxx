@@ -22,6 +22,8 @@ using boost::assign::list_of;
 using Cbm::NumberToString;
 using Cbm::Split;
 using std::map;
+using std::string;
+using std::vector;
 
 CbmLitFitQaReport::CbmLitFitQaReport():
 		CbmSimulationReport()

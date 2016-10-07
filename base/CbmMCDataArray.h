@@ -15,12 +15,6 @@
 class TChain;
 class TClonesArray;
 
-
-using std::list;
-using std::map;
-using std::vector;
-
-
 /** @class CbmMCDataArray
  ** @brief Access to a MC data branch for time-based analysis
  ** @author //Dr.Sys <mikhail.prokudin@cern.ch>
@@ -94,7 +88,7 @@ class CbmMCDataArray
 		 ** @param fileList     Vector of file list (one for each input source)
 		 **/
 		CbmMCDataArray(const char* branchName,
-						       const vector<list<TString> >& fileList);
+						       const std::vector<std::list<TString> >& fileList);
 
 	  /** Constructor in legacy mode. Gets the branch from FairRootManager.
 	   ** @param branchName  Name of data branch
@@ -128,14 +122,14 @@ class CbmMCDataArray
 		TClonesArray* fLegacyArray;	 //! Pointer to TClonesArray for legacy mode
 		TString fBranchName;				 //! Name of the data branch
 		Int_t fSize;						     //! Number of input file lists (one per source)
-		vector<TChain*> fChains;		 //! Arrays of chains (one per input source)
-		vector<TClonesArray*> fTArr; //! Data arrays from chains (one per input source)
-		vector<Long64_t> fN;				 //! Number of entries in chains
+		std::vector<TChain*> fChains;		 //! Arrays of chains (one per input source)
+		std::vector<TClonesArray*> fTArr; //! Data arrays from chains (one per input source)
+		std::vector<Long64_t> fN;				 //! Number of entries in chains
 
 		/** Cached data arrays. The vector index is the input source number, the map
 		 ** index is the event number.
 		 **/
-		vector<map<Int_t, TClonesArray*> > fArrays;	//!
+		std::vector<std::map<Int_t, TClonesArray*> > fArrays;	//!
 
                 CbmMCDataArray& operator=(const CbmMCDataArray&);
 

@@ -4,9 +4,13 @@
  * \date 2011
  */
 #include "CbmLatexReportElement.h"
+
 #include <sstream>
+
 using std::stringstream;
 using std::endl;
+using std::string;
+using std::vector;
 
 CbmLatexReportElement::CbmLatexReportElement()
 {

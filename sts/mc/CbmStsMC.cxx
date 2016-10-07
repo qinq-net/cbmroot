@@ -23,7 +23,7 @@
 #include "CbmStsPoint.h"
 #include "CbmStsSetup.h"
 
-
+using std::pair;
 
 
 // -----   Constructor   ---------------------------------------------------

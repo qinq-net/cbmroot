@@ -12,9 +12,11 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+
 using std::cout;
 using std::ofstream;
 using std::string;
+using std::vector;
 
 CbmSimulationReport::CbmSimulationReport():
     CbmReport(),

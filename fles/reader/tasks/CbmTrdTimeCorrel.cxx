@@ -19,6 +19,10 @@
 #include <vector>
 #include <iostream>
 #include <stdexcept>
+
+using std::vector;
+using std::string;
+
 // ----              -------------------------------------------------------
 CbmTrdTimeCorrel::CbmTrdTimeCorrel()
   : FairTask("CbmTrdTimeCorrel"),

@@ -4,18 +4,22 @@
  * \date 2011
  */
 #include "CbmStudyReport.h"
+
 #include "CbmReportElement.h"
 #include "CbmHistManager.h"
+
+#include "TFile.h"
+
 #include <cassert>
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <sstream>
-#include "TFile.h"
 
 using std::ofstream;
 using std::vector;
 using std::stringstream;
+using std::string;
 
 CbmStudyReport::CbmStudyReport()
  : CbmReport(),

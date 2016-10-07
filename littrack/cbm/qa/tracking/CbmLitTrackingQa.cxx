@@ -31,6 +31,9 @@
 #include <iostream>
 
 using std::cout;
+using std::list;
+using std::pair;
+using std::make_pair;
 using boost::assign::list_of;
 using Cbm::Split;
 using Cbm::FindAndReplace;

@@ -27,6 +27,10 @@
 #include "CbmStsSensorTypeDssdOrtho.h"
 #include "CbmStsStation.h"
 
+using std::setw;
+using std::right;
+using std::cout;
+using std::endl;
 
 
 // -----   Initialisation of static singleton pointer   --------------------

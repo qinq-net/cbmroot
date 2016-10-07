@@ -158,7 +158,7 @@ class CbmStsSetup : public CbmStsElement
     vector<CbmStsSensor*> fSensors;   ///< Array of sensors
 
     /** Available sensor types **/
-    map<Int_t, CbmStsSensorType*> fSensorTypes;
+    std::map<Int_t, CbmStsSensorType*> fSensorTypes;
 
     /** Default constructor  **/
     CbmStsSetup();

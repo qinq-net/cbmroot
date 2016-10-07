@@ -23,6 +23,7 @@ using std::set;
 using std::endl;
 using std::make_pair;
 using std::pair;
+using std::map;
 using boost::assign::list_of;
 
 string DefaultEfficiencyLabelFormatter(

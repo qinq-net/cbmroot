@@ -14,6 +14,8 @@ using std::setfill;
 using std::endl;
 using std::setw;
 using std::left;
+using std::vector;
+using std::string;
 
 CbmTextReportElement::CbmTextReportElement():
    fColW(25)

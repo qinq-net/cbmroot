@@ -14,7 +14,10 @@
 #include "CbmStsPoint.h"
 
 using std::stringstream;
-
+using std::right;
+using std::setw;
+using std::fixed;
+using std::setprecision;
 
 // -----  Initialisation of static data members   -----------------------------
 Int_t CbmStsAcceptance::fNofInstances = 0;

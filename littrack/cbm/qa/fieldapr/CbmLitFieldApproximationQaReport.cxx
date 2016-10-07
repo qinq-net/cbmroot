@@ -20,6 +20,8 @@ using boost::assign::push_back;
 using Cbm::ToString;
 using Cbm::Split;
 using Cbm::FindAndReplace;
+using std::string;
+using std::vector;
 
 CbmLitFieldApproximationQaReport::CbmLitFieldApproximationQaReport()
 {
