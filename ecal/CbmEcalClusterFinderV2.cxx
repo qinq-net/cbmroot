@@ -348,7 +348,8 @@ void CbmEcalClusterFinderV2::FormClusters()
     if ((Int_t)cluster.size()>MaxSize)
       MaxSize=cluster.size();
     if (max>Maximums) Maximums=max;
-    CbmEcalCluster* cls=new ((*fClusters)[fN]) CbmEcalCluster(fN, cluster, maximums, energy); fN++;
+    new ((*fClusters)[fN]) CbmEcalCluster(fN, cluster, maximums, energy); fN++;
+//    CbmEcalCluster* cls=new ((*fClusters)[fN]) CbmEcalCluster(fN, cluster, maximums, energy); fN++;
  //   cls->Init(cluster);
   }
   if (fVerbose>0)

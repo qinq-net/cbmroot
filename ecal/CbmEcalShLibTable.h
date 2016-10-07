@@ -27,6 +27,9 @@ public:
 private:
   void Add(const char* name);
 
+  /** Silence compiler warnings **/
+  void Add(TTask*) {;}
+
   std::list<TString> fFiles;
   CbmEcalShLibRecord* fRec[10];
 

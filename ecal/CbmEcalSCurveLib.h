@@ -42,6 +42,9 @@ public:
 private:
   void Add(const char* file);
 
+  /** Silence compiler warnings **/
+  void Add(TTask*) {;}
+
   std::list<TString> fFiles;
   /** if fModuleSize==0, load it from CbmEcalInf **/
   void GetModuleSize();

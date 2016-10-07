@@ -47,10 +47,10 @@ If($ENV{ctest_model} MATCHES Nightly OR $ENV{ctest_model} MATCHES Profile)
   # a list created by cmake 
   String(REGEX REPLACE "\n" ";" _result "${FILELIST}")
 
-  ForEach(_file ${_result})
-    String(STRIP "${_file}" _file1)
-    Set(CTEST_NOTES_FILES ${CTEST_NOTES_FILES} "${CTEST_SOURCE_DIRECTORY}/${_file1}")
-  EndForEach(_file ${_result})
+#  ForEach(_file ${_result})
+#    String(STRIP "${_file}" _file1)
+#    Set(CTEST_NOTES_FILES ${CTEST_NOTES_FILES} "${CTEST_SOURCE_DIRECTORY}/${_file1}")
+#  EndForEach(_file ${_result})
 
   CTEST_EMPTY_BINARY_DIRECTORY(${CTEST_BINARY_DIRECTORY})
 
@@ -64,7 +64,7 @@ Ctest_Read_Custom_Files("${CTEST_BINARY_DIRECTORY}")
 Ctest_Start($ENV{ctest_model})
 
 If(NOT $ENV{ctest_model} MATCHES Experimental)
-  Ctest_Update(SOURCE "${CTEST_SOURCE_DIRECTORY}")
+#  Ctest_Update(SOURCE "${CTEST_SOURCE_DIRECTORY}")
 EndIf()
 
 Ctest_Configure(BUILD "${CTEST_BINARY_DIRECTORY}"
@@ -76,17 +76,17 @@ If(NOT _RETVAL)
     CTest_Submit(PARTS Update Configure Build)
   EndIf()
 
-  Ctest_Test(BUILD "${CTEST_BINARY_DIRECTORY}" PARALLEL_LEVEL $ENV{number_of_processors})
-  If($ENV{ctest_model} MATCHES Continuous)
-    CTest_Submit(PARTS Test)
-  EndIf()
+#  Ctest_Test(BUILD "${CTEST_BINARY_DIRECTORY}" PARALLEL_LEVEL $ENV{number_of_processors})
+#  If($ENV{ctest_model} MATCHES Continuous)
+#    CTest_Submit(PARTS Test)
+#  EndIf()
 
-  If(GCOV_COMMAND)
-    Ctest_Coverage(BUILD "${CTEST_BINARY_DIRECTORY}")
-    If($ENV{ctest_model} MATCHES Continuous)
-      CTest_Submit(PARTS Coverage)
-    EndIf()
-  EndIf()
+#  If(GCOV_COMMAND)
+#    Ctest_Coverage(BUILD "${CTEST_BINARY_DIRECTORY}")
+#    If($ENV{ctest_model} MATCHES Continuous)
+#      CTest_Submit(PARTS Coverage)
+#    EndIf()
+#  EndIf()
 
   Ctest_Upload(FILES ${CTEST_NOTES_FILES})
   If(NOT $ENV{ctest_model} MATCHES Continuous)
