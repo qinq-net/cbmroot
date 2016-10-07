@@ -53,6 +53,22 @@ CbmMvdHitfinder::CbmMvdHitfinder(const char* name, Int_t iVerbose)
 }
 // -------------------------------------------------------------------------
 
+// -----   Standard constructor   ------------------------------------------
+CbmMvdHitfinder::CbmMvdHitfinder(const char* name, Int_t mode, Int_t iVerbose)
+  : FairTask(name, iVerbose),
+    fDetector(NULL),
+    fInputDigis(NULL),
+    fInputCluster(NULL),
+    fHits(NULL),
+    fHitfinderPluginNr(0),
+    useClusterfinder(kFALSE),
+    fShowDebugHistos(kFALSE),
+    fTimer()
+{
+    fmode = mode;
+}
+// -------------------------------------------------------------------------
+
 // -----   Destructor   ----------------------------------------------------
 CbmMvdHitfinder::~CbmMvdHitfinder() {
  

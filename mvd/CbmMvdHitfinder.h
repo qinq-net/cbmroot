@@ -29,7 +29,7 @@ class CbmMvdHitfinder : public FairTask
 
   **/
   CbmMvdHitfinder(const char* name,Int_t iVerbose = 1);
-
+  CbmMvdHitfinder(const char* name,Int_t mode, Int_t iVerbose);
 
   /** Destructor **/
   virtual ~CbmMvdHitfinder();
@@ -54,7 +54,8 @@ private:
  UInt_t fHitfinderPluginNr;
  Bool_t useClusterfinder;
  Bool_t fShowDebugHistos; 
-TStopwatch     fTimer;        ///< ROOT timer
+ TStopwatch     fTimer;        ///< ROOT timer
+ Int_t fmode;
 
 // -----   Private methods   ---------------------------------------------
  /** Intialisation **/
