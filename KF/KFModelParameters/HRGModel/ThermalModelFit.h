@@ -12,7 +12,7 @@ struct FitParameter {
 	double xmin, xmax;
 	std::string name;
 	FitParameter(std::string name_="", bool toFit_=true, double val=1., double err=0., double vmin=-2., double vmax=2.):
-		toFit(toFit_), value(val), error(err), xmin(vmin), xmax(vmax), name("") {
+		toFit(toFit_), value(val), error(err), xmin(vmin), xmax(vmax), name(name_) {
 		}
 };
 

@@ -249,13 +249,13 @@ inline void L1Algo::f11(  /// input 1st stage of singlet search
           /// Find the doublets. Reformat data in the portion of doublets.
 inline void L1Algo::f20(  // input
                 int n1, L1Station &stam,
-                L1HitPoint *vStsHits_l, L1HitPoint *vStsHits_m, int NHits_m,
+                L1HitPoint *vStsHits_l, L1HitPoint *vStsHits_m, int /*NHits_m*/,
                 L1TrackPar *T_1, 
                 THitI* hitsl_1,
                   // output
                 int &n2,
                 vector<THitI> &i1_2,
-                int &start_mhit,
+                int& /*start_mhit*/,
 #ifdef DOUB_PERFORMANCE
                 vector<THitI> &hitsl_2,
 #endif // DOUB_PERFORMANCE
@@ -1043,7 +1043,7 @@ inline void L1Algo::TripletsStaPort(   /// creates triplets: input: @istal - sta
                             L1FieldRegion *fld_1,
                             THitI *hitsl_1,
 
-                            int &n_2, unsigned int *portionStopIndex,
+                            int &n_2, unsigned int* /*portionStopIndex*/,
                             vector<THitI> &i1_2,
                             vector<THitI> &hitsm_2,
                             

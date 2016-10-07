@@ -121,7 +121,7 @@ public:
     void SetQBgoal(double QB) { QBgoal = QB; }
     void SetVolume(double Volume) { fVolume = Volume; Parameters.V = Volume; }
     virtual void FixParameters() { }
-    virtual void FixParameters(double QB) { }	// And zero net strangeness
+    virtual void FixParameters(double) { }	// And zero net strangeness
     virtual void CalculateDensities() { }
     virtual double CalculateHadronDensity() = 0;
     virtual double GetParticlePrimordialDensity(int) = 0;

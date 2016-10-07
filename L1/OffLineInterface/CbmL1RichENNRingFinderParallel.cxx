@@ -74,7 +74,7 @@ void CbmL1RichENNRingFinderParallel::Init()
 { 
 }
 
-Int_t CbmL1RichENNRingFinderParallel::DoFind( TClonesArray* HitArray, TClonesArray* ProjArray,
+Int_t CbmL1RichENNRingFinderParallel::DoFind( TClonesArray* HitArray, TClonesArray* /*ProjArray*/,
 				      TClonesArray* RingArray )
 {
   if( !RingArray || !HitArray ) return 0;
@@ -232,7 +232,7 @@ Int_t CbmL1RichENNRingFinderParallel::DoFind( TClonesArray* HitArray, TClonesArr
 
 void CbmL1RichENNRingFinderParallel::ENNRingFinder( const int NHits, nsL1vector<ENNHitV>::TSimd &HitsV, vector<ENNRing> &Rings,
 					    float HitSize, THitIndex MinRingHits, 
-					    fvec RMin, fvec RMax ){  
+					    fvec /*RMin*/, fvec RMax ){  
 #ifdef  PRINT_TIMING
   GetTimer("All").Start(0);
 #endif // PRINT_TIMING 

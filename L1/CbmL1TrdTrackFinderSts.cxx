@@ -258,8 +258,8 @@ void CbmL1TrdTrackFinderSts::Process()
 
 
 // -----------------------------------------------------------------------
-void CbmL1TrdTrackFinderSts::Sts2Trd(Double_t pmin, Double_t pmax,
-				     Double_t chi2min, Double_t chi2max)
+void CbmL1TrdTrackFinderSts::Sts2Trd(Double_t /*pmin*/, Double_t /*pmax*/,
+				     Double_t /*chi2min*/, Double_t /*chi2max*/)
 {
     // Create TRD track from each STS track, that fullfill the selection
     // criteria
@@ -541,7 +541,7 @@ void CbmL1TrdTrackFinderSts::UpdateTrack(Int_t station, CbmTrdTrack* pTrack)
 
 
 // -----------------------------------------------------------------------
-void CbmL1TrdTrackFinderSts::Clear(const Option_t* a)
+void CbmL1TrdTrackFinderSts::Clear(const Option_t*)
 {
     // Delete bad tracks from track array
     CbmTrdTrack *track;

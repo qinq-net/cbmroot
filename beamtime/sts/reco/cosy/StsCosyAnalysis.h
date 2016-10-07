@@ -94,7 +94,7 @@ class StsCosyAnalysis : public FairTask
   
   Double_t fChi2X, fChi2Y;
   Double_t fX[3], fY[3]; // alignment
-  Double_t fXbin, fYbin; // in µm
+  Double_t fXbin, fYbin; // in Xm
   
   TString fAlignName;
   TString fCutName;

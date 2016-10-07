@@ -1450,7 +1450,7 @@ void CbmL1CATrdTrackFinderSA::WriteHistogramms() {
 
 // -----------------------------------------------------------------------
 Double_t CbmL1CATrdTrackFinderSA::FitLinear(CbmTrdTrack *tr,
-					    Int_t var = 1) {
+					    Int_t /*var = 1*/) {
   //fit using a least square method
 
 
@@ -1787,7 +1787,7 @@ Bool_t CbmL1CATrdTrackFinderSA::OverlapsHitsXY(Int_t posA,
 // -----------------------------------------------------------------------
 void CbmL1CATrdTrackFinderSA::TagSegments(vector<CbmL1TrdTracklet4*>& clTrackletsA,
 					  vector<CbmL1TrdTracklet4*>& clTrackletsB,
-					  Int_t noCombSegments) {
+					  Int_t /*noCombSegments*/) {
   //asigning numbers to each segment, 4- highest, 0 - lowest
 
   //  cout << "TagSegments: engaging... " << endl;
@@ -1860,7 +1860,7 @@ void CbmL1CATrdTrackFinderSA::CreateTracks(vector<CbmL1TrdTracklet4*> clTracklet
 					   set<Int_t> &globalSetUsedHits,
 					   Bool_t removeUsedHits,
 					   Bool_t competition,
-					   Int_t nrLoop){
+					   Int_t /*nrLoop*/){
   //create long tracks from previously selected segments
 
   if(fVerbose > 2) {
@@ -2932,7 +2932,7 @@ Double_t CbmL1CATrdTrackFinderSA::Fit(Int_t M[])
 
 // -----------------------------------------------------------------------
 Double_t CbmL1CATrdTrackFinderSA::FitLinear(Int_t M[],
-					    Int_t var = 1) {
+					    Int_t /*var = 1*/) {
   //fit using a least square method
 
 

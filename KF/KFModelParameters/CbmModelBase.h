@@ -28,7 +28,7 @@ class CbmModelBase: public TObject
   CbmModelBase(KFParticleTopoReconstructor* tr=0):fTopoReconstructor(tr) { }
   ~CbmModelBase() { }
 
-  virtual void ReInit(FairRootManager *fManger) { }
+  virtual void ReInit(FairRootManager*) { }
   virtual void Init() { }
   virtual void Exec() { }
   virtual void Finish() { }

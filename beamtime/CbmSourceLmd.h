@@ -135,7 +135,7 @@ class CbmSourceLmd : public FairSource
 
     /** Fill the buffer from the input
      ** @param time  Maximal time of input data
-     ** @return kFALSE if end of input is reached…
+     ** @return kFALSE if end of input is reached
      **/
     Bool_t FillBuffer(ULong_t time);
 
