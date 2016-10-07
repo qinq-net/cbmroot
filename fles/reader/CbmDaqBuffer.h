@@ -7,13 +7,8 @@
 #define CBMDAQBUFFER_H 1
 
 #include <map>
-#include <vector>
 
-//#include "CbmDetectorList.h"
 #include "CbmDigi.h"
-
-using namespace std;
-
 
 
 /** @class CbmDaqBuffer
@@ -93,7 +88,7 @@ class CbmDaqBuffer
 
 
     /** Buffer management **/
-    multimap<Double_t, CbmDigi*> fData;
+    std::multimap<Double_t, CbmDigi*> fData;
 
 
     /** Pointer to singleton instance **/

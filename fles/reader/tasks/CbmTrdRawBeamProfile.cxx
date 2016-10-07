@@ -23,6 +23,10 @@
 #include <map>
 //#include <multimap>
 #include <vector>
+
+using std::cout;
+using std::endl;
+
 // ---- Default constructor -------------------------------------------
 CbmTrdRawBeamProfile::CbmTrdRawBeamProfile()
   : FairTask("CbmTrdRawBeamProfile"),

@@ -12,9 +12,11 @@
 #include "FairLogger.h"
 
 #include "CbmDaqBuffer.h"
-//#include "CbmDetectorList.h"
 
-
+using std::setprecision;
+using std::fixed;
+using std::pair;
+using std::multimap;
 
 // -----   Initialisation of static variables   ------------------------------
 CbmDaqBuffer* CbmDaqBuffer::fgInstance = NULL;

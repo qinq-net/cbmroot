@@ -24,6 +24,10 @@
 #include <map>
 //#include <multimap>
 #include <vector>
+
+using std::cout;
+using std::endl;
+
 // ---- Default constructor -------------------------------------------
 CbmTrdRawBuchData::CbmTrdRawBuchData()
   : FairTask("CbmTrdRawBuchData"),

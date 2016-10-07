@@ -7,13 +7,8 @@
 #define CBMDAQBUFFER_H 1
 
 #include <map>
-#include <vector>
 
-//#include "CbmDetectorList.h"
 #include "CbmSpadicRawMessage.h"
-
-using namespace std;
-
 
 
 /** @Class CbmTrdDaqBuffer
@@ -93,7 +88,7 @@ class CbmTrdDaqBuffer
 
 
     /** Buffer management **/
-    multimap<Double_t, CbmSpadicRawMessage*> fData;
+    std::multimap<Double_t, CbmSpadicRawMessage*> fData;
 
 
     /** Pointer to singleton instance **/
