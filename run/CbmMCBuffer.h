@@ -25,11 +25,6 @@
 
 class TClonesArray;
 
-
-
-using namespace std;
-
-
 /** @class CbmMCBuffer
  ** @author Volker Friese <v.friese@gsi.de>
  ** @date 8 February 2012
@@ -144,7 +139,7 @@ class CbmMCBuffer
 
 
   /** String output **/
-  string ToString() const;
+  std::string ToString() const;
 
 
 

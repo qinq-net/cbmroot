@@ -18,8 +18,6 @@ class TChain;
 class TH3D;
 class TH1D;
 
-using namespace std;
-
 class CbmMCStreamerQa : public FairTask{
 public:
   /** Default constructor **/
@@ -51,7 +49,7 @@ private:
   CbmMCEpoch*   fMcEpoch; //! Pointer to the current MC epoch
   TChain*       fMcChain; //! tree of MC events
   TClonesArray* fPointArrays[kTutDet];       //! Array of MC points per detector
-  map<int,int>  fMapPointsInEvents[kTutDet]; //! map of point counters for each event per detector
+  std::map<int,int>  fMapPointsInEvents[kTutDet]; //! map of point counters for each event per detector
 
   CbmMCStreamerQa(const CbmMCStreamerQa&);
   CbmMCStreamerQa& operator=(const CbmMCStreamerQa&);

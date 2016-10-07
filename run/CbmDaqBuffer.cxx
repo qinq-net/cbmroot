@@ -15,7 +15,12 @@
 #include "CbmDaqBuffer.h"
 #include "CbmDetectorList.h"
 
-
+using std::setprecision;
+using std::stringstream;
+using std::fixed;
+using std::string;
+using std::pair;
+using std::multimap;
 
 // -----   Initialisation of static variables   ------------------------------
 CbmDaqBuffer* CbmDaqBuffer::fgInstance = NULL;

@@ -20,7 +20,6 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/vector.hpp>
 #endif 
-using namespace std;
 
 
 /** @class CbmTimeSlice
@@ -127,16 +126,16 @@ class CbmTimeSlice : public TNamed
 
 
     /** Status to string **/
-    string ToString() const;
+    std::string ToString() const;
 
 
     /** Get vector of much digis
      **
      ** @return MUCH raw data container (vector of digis) 
      */
-    vector<CbmMuchDigi> GetMuchData() {return fMuchData; } 
-    vector<CbmStsDigi>  GetStsData()  {return fStsData; }
-    vector<CbmTofDigiExp>  GetTofData()  {return fTofData; }
+    std::vector<CbmMuchDigi> GetMuchData() {return fMuchData; } 
+    std::vector<CbmStsDigi>  GetStsData()  {return fStsData; }
+    std::vector<CbmTofDigiExp>  GetTofData()  {return fTofData; }
     
 
     template <class Archive>
@@ -151,13 +150,13 @@ class CbmTimeSlice : public TNamed
     
   private:
 
-    Double_t fStartTime;           ///< start time [ns]
-    Double_t fDuration;            ///< duration [ns]
-    Bool_t   fIsEmpty;             ///< Flag for containing no data
-    vector<CbmStsDigi> fStsData;   ///< raw data container for STS
-    vector<CbmMuchDigi> fMuchData; ///< raw data container for MUCH
-    vector<CbmTofDigiExp> fTofData;   ///< raw data container for TOF
-    CbmMatch fMatch;               ///< link time slice to events
+    Double_t fStartTime;                 ///< start time [ns]
+    Double_t fDuration;                  ///< duration [ns]
+    Bool_t   fIsEmpty;                   ///< Flag for containing no data
+    std::vector<CbmStsDigi> fStsData;    ///< raw data container for STS
+    std::vector<CbmMuchDigi> fMuchData;  ///< raw data container for MUCH
+    std::vector<CbmTofDigiExp> fTofData; ///< raw data container for TOF
+    CbmMatch fMatch;                     ///< link time slice to events
 
     
 

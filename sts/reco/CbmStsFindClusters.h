@@ -145,7 +145,7 @@ class CbmStsFindClusters : public FairTask
     Double_t fNoise;               ///< equivalent noise charge (sigma) [ns]
 
     /** Set of active modules in the current event **/
-    set<CbmStsModule*> fActiveModules;
+    std::set<CbmStsModule*> fActiveModules;
 
     /** Map from module address to map of digis in channels **/
 //    map<CbmStsModule*, map<Int_t, CbmStsDigi*> > fDigiMap;

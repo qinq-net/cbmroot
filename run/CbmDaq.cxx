@@ -14,7 +14,12 @@
 #include "CbmDaqBuffer.h"
 #include "CbmTimeSlice.h"
 
-
+using std::setprecision;
+using std::setw;
+using std::fixed;
+using std::right;
+using std::map;
+using std::pair;
 
 // =====   Constructor   =====================================================
 CbmDaq::CbmDaq(Double_t timeSliceSize) : FairTask("Daq"),

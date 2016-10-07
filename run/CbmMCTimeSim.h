@@ -25,11 +25,6 @@ class FairMCEventHeader;
 
 class TClonesArray;
 
-
-
-using namespace std;
-
-
 /** @class CbmMCTimeSim
  ** @author Volker Friese <v.friese@gsi.de>
  ** @date 8 February 2012
@@ -123,7 +118,7 @@ class CbmMCTimeSim : public FairTask
 
   // --- Input
   FairMCEventHeader*     fEvent;       ///< Input of FairMCEventHeader
-  vector<TClonesArray*> fPointArrays;  ///< Input MCPoint arrays
+  std::vector<TClonesArray*> fPointArrays;  ///< Input MCPoint arrays
 
 
   /** Create event time

@@ -1,4 +1,4 @@
-/** @file CbmSetup.cxx
+#/** @file CbmSetup.cxx
  ** @author Volker Friese <v.friese@gsi.de>
  ** @date 13.06.2013
  **/
@@ -24,6 +24,10 @@
 
 #include "CbmFieldMapData.h"
 
+using std::stringstream;
+using std::string;
+using std::setw;
+using std::map;
 
 // -----   Initialise static instance   ------------------------------------
 CbmSetup* CbmSetup::fgInstance = NULL;

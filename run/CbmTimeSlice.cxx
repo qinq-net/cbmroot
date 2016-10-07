@@ -15,7 +15,10 @@
 #include "FairLogger.h"
 
 //#include <iostream>
-
+using std::stringstream;
+using std::fixed;
+using std::string;
+using std::setprecision;
 
 // -----   Default constructor   ---------------------------------------------
 CbmTimeSlice::CbmTimeSlice() 

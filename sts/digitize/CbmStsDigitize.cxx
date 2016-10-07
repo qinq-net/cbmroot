@@ -46,6 +46,10 @@
 #include "digitize/CbmStsSensorTypeDssdIdeal.h"
 #include "digitize/CbmStsSensorTypeDssdReal.h"
 
+using std::fixed;
+using std::right;
+using std::setprecision;
+using std::setw;
 
 // -----   Static member variables   ---------------------------------------
 // The default setting is the fully realistic response.

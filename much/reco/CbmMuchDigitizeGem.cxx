@@ -43,6 +43,8 @@
 
 #include <vector>
 using std::map;
+using std::cout;
+using std::endl;
 
 // -------------------------------------------------------------------------
 CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName) 

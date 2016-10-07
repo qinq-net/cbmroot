@@ -47,6 +47,9 @@
 
 // C++ Classes and includes
 
+using std::endl;
+using std::cout;
+
 // Gauss Integration Constants
 const Int_t    kiNbIntPts = 2;
 Double_t TofChargeDistributions::Gauss1D( Double_t *px, Double_t *par )

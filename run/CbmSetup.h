@@ -16,10 +16,6 @@ class FairModule;
 class FairRunSim;
 class CbmFieldMap;
 
-using namespace std;
-
-
-
 class CbmSetup : public TNamed
 {
   public:
@@ -182,9 +178,9 @@ class CbmSetup : public TNamed
 
     static CbmSetup* fgInstance;            ///< Pointer to static instance
 
-    map<Int_t, TString> fGeoTags;           ///< Geometry version tags
-    map<Int_t, TString> fGeoFileNames;      ///< Geometry file names
-    map<Int_t, Bool_t>  fActive;            ///< Activity tags for the modules
+    std::map<Int_t, TString> fGeoTags;      ///< Geometry version tags
+    std::map<Int_t, TString> fGeoFileNames; ///< Geometry file names
+    std::map<Int_t, Bool_t>  fActive;       ///< Activity tags for the modules
     TString             fFieldTag;          ///< Version tag for magnetic field
     Double_t            fFieldScale;        ///< Field scaling factor
     TVector3            fFieldPosition;     ///< Position of field map origin

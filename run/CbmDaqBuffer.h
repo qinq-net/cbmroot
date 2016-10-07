@@ -13,10 +13,6 @@
 #include "CbmDetectorList.h"
 #include "CbmDigi.h"
 
-using namespace std;
-
-
-
 /** @class CbmDaqBuffer
  ** @author Volker Friese <v.friese@gsi.de>
  ** @date 20 July 2012
@@ -115,14 +111,14 @@ class CbmDaqBuffer
 
 
     /**   Status string  **/
-    string ToString() const;
+    std::string ToString() const;
 
 
   private:
 
 
     /** Buffer management **/
-    multimap<Double_t, CbmDigi*> fData[kNOFDETS];
+    std::multimap<Double_t, CbmDigi*> fData[kNOFDETS];
 
 
     /** Pointer to singleton instance **/

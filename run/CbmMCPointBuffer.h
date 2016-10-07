@@ -18,11 +18,6 @@
 
 #include "CbmDetectorList.h"
 
-
-using namespace std;
-
-
-
 /** @class IsBefore
  ** @author Volker Friese <v.friese@gsi.de>
  ** @date 10 February 2012
@@ -171,23 +166,23 @@ template <class T> class CbmMCPointBuffer
 
   /**  Print the content of the buffer  **/
   void PrintContent() const {
-    typename multiset<T, IsBefore<T> >::iterator iter;
+    typename std::multiset<T, IsBefore<T> >::iterator iter;
     for (iter = fBuffer.begin(); iter != fBuffer.end(); iter++) {
-      cout << "Point: x = " << iter->GetXIn() << ", y = " << (*iter).GetYIn()
+      std::cout << "Point: x = " << iter->GetXIn() << ", y = " << (*iter).GetYIn()
            << ", z = " << (*iter).GetZ() << ", t = " << (*iter).GetTime();
-      cout << endl;
+      std::cout << std::endl;
     }
   }
 
 
   /** Status string output **/
-  string ToString() const {
-    stringstream ss;
-    ss << setw(4) << left << fName << " Buffer: " << setw(8) << right
+  std::string ToString() const {
+    std::stringstream ss;
+    ss << std::setw(4) << std::left << fName << " Buffer: " << std::setw(8) << std::right
        << fBuffer.size() << " points ("
-       << setw(8) << fixed << setprecision(3) << GetSize() << " MB) from "
-       << setw(10) << GetMinTime() << " ns to "
-       << setw(10) << GetMaxTime() << " ns";
+       << std::setw(8) << std::fixed << std::setprecision(3) << GetSize() << " MB) from "
+       << std::setw(10) << GetMinTime() << " ns to "
+       << std::setw(10) << GetMaxTime() << " ns";
      return ss.str();
   }
 
@@ -195,8 +190,8 @@ template <class T> class CbmMCPointBuffer
  private:
 
   const char* fName;
-  multiset<T, IsBefore<T> > fBuffer;
-  typename multiset<T, IsBefore<T> >::iterator fBufferIt;
+  std::multiset<T, IsBefore<T> > fBuffer;
+  typename std::multiset<T, IsBefore<T> >::iterator fBufferIt;
 
 
   CbmMCPointBuffer<T>(const CbmMCPointBuffer<T>&);  

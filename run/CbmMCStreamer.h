@@ -24,9 +24,6 @@ class TClonesArray;
 class CbmMCEpoch;
 
 
-using namespace std;
-
-
 class CbmMCStreamer : public FairTask
 {
 
@@ -92,8 +89,8 @@ class CbmMCStreamer : public FairTask
 
 
   /**   Buffers   **/
-  multimap<Double_t, CbmStsPoint>  stsBuffer;
-  multimap<Double_t, CbmMuchPoint> muchBuffer;
+  std::multimap<Double_t, CbmStsPoint>  stsBuffer;
+  std::multimap<Double_t, CbmMuchPoint> muchBuffer;
 
 
   /**   Activate / dactivate subtasks   **/
