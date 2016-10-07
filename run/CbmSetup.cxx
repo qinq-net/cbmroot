@@ -28,6 +28,7 @@ using std::stringstream;
 using std::string;
 using std::setw;
 using std::map;
+using std::ifstream;
 
 // -----   Initialise static instance   ------------------------------------
 CbmSetup* CbmSetup::fgInstance = NULL;

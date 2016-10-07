@@ -47,6 +47,10 @@
 #include "TDirectory.h"
 #include "TGeoManager.h"
 
+using std::cout;
+using std::endl;
+using std::vector;
+
 const Int_t DetMask = 4194303;
 const Double_t DTDMAX=6000.;   // diamond inspection range in ps  
 

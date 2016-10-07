@@ -47,6 +47,9 @@
 #include "TRandom.h"
 #include "TROOT.h"
 
+using std::cout;
+using std::endl;
+
 //___________________________________________________________________
 //
 // CbmTofTests

@@ -41,6 +41,9 @@
 #include "TRandom.h"
 #include "TROOT.h"
 
+using std::cout;
+using std::endl;
+
 //___________________________________________________________________
 // Constants definitions: Particles list
 const Int_t   kiNbPart = 13;
