@@ -55,8 +55,7 @@ public:
      *@param name  Task name
      *@param mode  0 = no fake digis generation, 1 = generate fake digis
      **/
-    CbmMvdSensorFindHitTask(const char* name,
-		   Int_t mode = 0, Int_t iVerbose = 1);
+    CbmMvdSensorFindHitTask(Int_t mode);
 
 
 
@@ -215,7 +214,7 @@ private:
 
     void SetMvdGeometry(Int_t detId);
     void AddNoiseToDigis(CbmMvdDigi* digi);
-    void GenerateFakeDigis(Double_t pixelSizeX, Double_t pixelSizeY);
+   // void GenerateFakeDigis(Double_t pixelSizeX, Double_t pixelSizeY);
     void CheckForNeighbours(vector<Int_t>* clusterArray, Int_t clusterDigi, TArrayS* pixelUsed);
     
     void CreateHit(vector<Int_t>* clusterArray,  TVector3& pos, TVector3 &dpos);

@@ -54,8 +54,7 @@ public:
      *@param name  Task name
      *@param mode  0 = no fake digis generation, 1 = generate fake digis
      **/
-    CbmMvdSensorClusterfinderTask(const char* name,
-		   Int_t mode = 0, Int_t iVerbose = 1);
+    CbmMvdSensorClusterfinderTask(Int_t mode, Int_t iVerbose);
 
 
 

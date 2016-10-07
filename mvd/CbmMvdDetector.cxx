@@ -87,6 +87,7 @@ CbmMvdDetector::CbmMvdDetector(const char* name)
   if(fInstance) {Fatal(GetName(), " - Error, singleton does already exist.");}
   else {fInstance=this;};
   fepsilon[0]=fepsilon[1]=fepsilon[2]=0;
+  fName = name;
 }
 // -------------------------------------------------------------------------
 
@@ -450,7 +451,24 @@ void CbmMvdDetector::Exec(UInt_t nLevel){
 
 void CbmMvdDetector::ExecFrom(UInt_t nLevel) {
 
-
+      /**
+   * 
+   * execute chain from a spezific plugin on all sensors
+   * 
+   * **/
+  foutput->Clear();
+  fcurrentEvent->Clear();
+  foutputDigis->Clear();
+  foutputDigiMatchs->Clear();
+  foutputHits->Clear();
+  foutputCluster->Clear();
+  
+  Int_t nSensors=fSensorArray->GetEntriesFast();
+  CbmMvdSensor* sensor;
+  for(Int_t i=0; i<nSensors; i++){
+    sensor=(CbmMvdSensor*)fSensorArray->At(i);
+    sensor->ExecFrom(nLevel);
+  }
 }
  //-----------------------------------------------------------------------
 

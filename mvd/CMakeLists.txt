@@ -17,20 +17,14 @@ ${CBMROOT_SOURCE_DIR}/mvd/SensorDataSheets
 #${CBMROOT_SOURCE_DIR}/base 
 
 ${CBMROOT_SOURCE_DIR}/data
-#${CBMROOT_SOURCE_DIR}/data/sts
+${CBMROOT_SOURCE_DIR}/data/sts
 
 ${CBMROOT_SOURCE_DIR}/data/mvd
-#${CBMROOT_SOURCE_DIR}/data/global
-
-
-#${CBMROOT_SOURCE_DIR}/sts
+${CBMROOT_SOURCE_DIR}/data/global
 
 #${CBMROOT_SOURCE_DIR}/KF
 #${CBMROOT_SOURCE_DIR}/KF/Interface 
 
-#${CBMROOT_SOURCE_DIR}/much/geo
-
-#${CBMROOT_SOURCE_DIR}/rich
 
 #${CBMROOT_SOURCE_DIR}/littrack
 #${CBMROOT_SOURCE_DIR}/littrack/cbm
@@ -77,32 +71,36 @@ SensorDataSheets/CbmMvdSensorDataSheet.cxx
 
 tools/CbmMvdGeoHandler.cxx
 
-#qa/CbmMvdQa.cxx
+qa/CbmMvdQa.cxx 
 qa/CbmMvdClusterAna.cxx
 
 CbmMvd.cxx 
-CbmMvdContFact.cxx 
-CbmMvdGeo.cxx 
-CbmMvdGeoPar.cxx 
-CbmMvdDigitizer.cxx  
+ 
+CbmMvdDigitizer.cxx
 CbmMvdPileupManager.cxx  
-CbmMvdPixelCharge.cxx  
+CbmMvdPixelCharge.cxx
 CbmMvdHitfinder.cxx
 CbmMvdStationPar.cxx
 CbmMvdDetector.cxx
 CbmMvdSensor.cxx
 CbmMvdClusterfinder.cxx
+
+
 #CbmMvdReadoutBuffer.h
+#CbmMvdContFact.cxx 
+#CbmMvdGeo.cxx  
+#CbmMvdGeoPar.cxx 
+#CbmMvdMatchTracks.cxx 
 
 #old/CbmMvdStation.cxx
-#old/CbmMvdFindHits.cxx
+#old/CbmMvdFindHits.cxx 
 #old/CbmMvdDigitizeL.cxx 
 #old/CbmMvdHitProducer.cxx 
 #old/MyG4UniversalFluctuationForSi.cxx
 
 
 )
-#CbmMvdMatchTracks.cxx 
+
 
 
 set(LINKDEF CbmMvdLinkDef.h)

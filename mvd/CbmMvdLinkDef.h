@@ -5,11 +5,10 @@
 #pragma link off all functions;
  
 #pragma link C++ class CbmMvd+;
-#pragma link C++ class CbmMvdContFact;
 
-
-#pragma link C++ class CbmMvdGeo+;
-#pragma link C++ class CbmMvdGeoPar;
+//#pragma link C++ class CbmMvdContFact;
+//#pragma link C++ class CbmMvdGeo+;
+//#pragma link C++ class CbmMvdGeoPar;
 
 #pragma link C++ class CbmMvdDigitizer+;
 #pragma link C++ class CbmMvdHitfinder+;
@@ -42,7 +41,7 @@
 
 #pragma link C++ class CbmMvdGeoHandler+;
 
-//#pragma link C++ class CbmMvdQa+;
+#pragma link C++ class CbmMvdQa+;
 #pragma link C++ class CbmMvdClusterAna+;
 
 

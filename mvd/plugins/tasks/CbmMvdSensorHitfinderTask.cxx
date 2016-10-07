@@ -116,8 +116,7 @@ CbmMvdSensorHitfinderTask::CbmMvdSensorHitfinderTask()
 
 
 // -----   Standard constructor   ------------------------------------------
-CbmMvdSensorHitfinderTask::CbmMvdSensorHitfinderTask(const char* name, Int_t iMode,
-			       Int_t iVerbose)
+CbmMvdSensorHitfinderTask::CbmMvdSensorHitfinderTask(Int_t iMode)
   : CbmMvdSensorTask(),
     fAdcDynamic(200),
     fAdcOffset(0),
@@ -208,7 +207,7 @@ void CbmMvdSensorHitfinderTask::InitTask(CbmMvdSensor* mysensor) {
     fPixelChargeHistos=new TObjArray();
 
      fTotalChargeInNpixelsArray = new TObjArray();
- Int_t adcMax = fAdcOffset + fAdcDynamic;
+
     fAdcSteps= (Int_t)TMath::Power(2,fAdcBits);
     fAdcStepSize  = fAdcDynamic/fAdcSteps;
 
@@ -299,10 +298,10 @@ void CbmMvdSensorHitfinderTask::CreateHit(CbmMvdCluster* cluster,  TVector3 &pos
       
  //--------------------------------------------------------------------------     
     
-void CbmMvdSensorHitfinderTask::UpdateDebugHistos(vector<Int_t>* clusterArray, Int_t seedIndexX, Int_t seedIndexY)
+/*void CbmMvdSensorHitfinderTask::UpdateDebugHistos(vector<Int_t>* clusterArray, Int_t seedIndexX, Int_t seedIndexY)
 { 
 ;  
-}
+} */
 
 
 //--------------------------------------------------------------------------
@@ -312,8 +311,6 @@ void CbmMvdSensorHitfinderTask::ComputeCenterOfGravity(CbmMvdCluster* cluster, T
 	Double_t numeratorX  = 0;
 	Double_t numeratorY  = 0;
 	Double_t denominator = 0;
-	Double_t pixelSizeX  = 0;
-	Double_t pixelSizeY  = 0;
 	Int_t charge;
 	Int_t xIndex;
 	Int_t yIndex;

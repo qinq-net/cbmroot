@@ -120,8 +120,7 @@ CbmMvdSensorFindHitTask::CbmMvdSensorFindHitTask()
 
 
 // -----   Standard constructor   ------------------------------------------
-CbmMvdSensorFindHitTask::CbmMvdSensorFindHitTask(const char* name, Int_t iMode,
-			       Int_t iVerbose)
+CbmMvdSensorFindHitTask::CbmMvdSensorFindHitTask(Int_t iMode)
   : CbmMvdSensorTask(),
     fAdcDynamic(200),
     fAdcOffset(0),
@@ -217,7 +216,7 @@ void CbmMvdSensorFindHitTask::InitTask(CbmMvdSensor* mysensor) {
     fPixelChargeHistos=new TObjArray();
 
      fTotalChargeInNpixelsArray = new TObjArray();
- Int_t adcMax = fAdcOffset + fAdcDynamic;
+
     fAdcSteps= (Int_t)TMath::Power(2,fAdcBits);
     fAdcStepSize  = fAdcDynamic/fAdcSteps;
 
@@ -299,7 +298,7 @@ Int_t nDigis = fInputBuffer->GetEntriesFast();
     
     if( fMode == 1 )
       {
-       GenerateFakeDigis(pixelSizeX, pixelSizeY); // -------- Create Fake Digis -
+      // GenerateFakeDigis(pixelSizeX, pixelSizeY); // -------- Create Fake Digis -
 	cout << endl << "generate fake digis" << endl;
       }
 
@@ -430,7 +429,7 @@ void CbmMvdSensorFindHitTask::AddNoiseToDigis(CbmMvdDigi* digi){
 
 
 //--------------------------------------------------------------------------
-void CbmMvdSensorFindHitTask::GenerateFakeDigis( Double_t pixelSizeX, Double_t pixelSizeY){
+//void CbmMvdSensorFindHitTask::GenerateFakeDigis( Double_t pixelSizeX, Double_t pixelSizeY){
 
     //max index of pixels
     //Int_t nx = TMath::Nint(2*fLayerRadius/pixelSizeX);
@@ -480,10 +479,10 @@ void CbmMvdSensorFindHitTask::GenerateFakeDigis( Double_t pixelSizeX, Double_t p
 		}
 	}
     }
-*/
 
 
-}
+
+}*/
 
 //--------------------------------------------------------------------------
 //--------------------------------------------------------------------------
@@ -492,10 +491,6 @@ void CbmMvdSensorFindHitTask::CheckForNeighbours(vector<Int_t>* clusterArray, In
 {
     CbmMvdDigi* seed = (CbmMvdDigi*)fInputBuffer->At(clusterArray->at(clusterDigi));
     //cout << endl << "pixel nr. " << clusterDigi << " is seed" << endl ;
-   
-    CbmMvdDigi* digiOfInterest;
-   
-    	
     // Remove Seed Pixel from list of non-used pixels
     Int_t channelX=seed->GetPixelX();
     Int_t channelY=seed->GetPixelY();
@@ -581,7 +576,6 @@ void CbmMvdSensorFindHitTask::CreateHit(vector<Int_t>* clusterArray,  TVector3 &
         }
     if(thisRefID < 0)
 	LOG(FATAL) << "RefID of this digi is -1 this should not happend checked "<< digiIndex << " digis in this Cluster" << FairLogger::endl;
-    Int_t detId = pixelInCluster->GetDetectorId();
 
     // Calculate the center of gravity of the charge of a cluster
     
@@ -656,7 +650,7 @@ void CbmMvdSensorFindHitTask::CreateHit(vector<Int_t>* clusterArray,  TVector3 &
     currentHit->SetTimeError(fSensor->GetIntegrationtime()/2);
     currentHit->SetRefId(pixelInCluster->GetRefId());
 
-  delete digiArray;
+  delete [] digiArray;
 }
       
  //--------------------------------------------------------------------------     
@@ -732,9 +726,7 @@ void CbmMvdSensorFindHitTask::UpdateDebugHistos(vector<Int_t>* clusterArray, Int
       }
     };
     
-    Int_t counter=0;
-    
-    if(fChargeArraySize<=7){
+     if(fChargeArraySize<=7){
       for(Int_t i=0;i<(fChargeArraySize*fChargeArraySize);i++){
 	((TH1F*) fPixelChargeHistos->At(i))->Fill(chargeArray[i]);
 	//cout << counter++<<" Charge: " << chargeArray[i]<< endl;

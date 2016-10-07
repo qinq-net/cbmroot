@@ -134,6 +134,7 @@ private:
   Bool_t initialized;
   Bool_t fFinished;
 
+  TString fName;
 
   CbmMvdStationPar* fParameter;
 

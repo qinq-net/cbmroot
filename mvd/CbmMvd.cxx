@@ -5,18 +5,18 @@
 
 #include "CbmMvd.h"
 
-#include "CbmMvdGeo.h"
-#include "CbmMvdGeoPar.h"
+//#include "CbmMvdGeo.h"
+//#include "CbmMvdGeoPar.h"
 #include "CbmMvdPoint.h"
 
 #include "CbmDetectorList.h"
 #include "CbmStack.h"
 #include "tools/CbmMvdGeoHandler.h"
 
-#include "FairGeoInterface.h"
-#include "FairGeoLoader.h"
-#include "FairGeoNode.h"
-#include "FairGeoVolume.h"
+//#include "FairGeoInterface.h"
+//#include "FairGeoLoader.h"
+//#include "FairGeoNode.h"
+//#include "FairGeoVolume.h"
 #include "FairRootManager.h"
 #include "FairRun.h"
 #include "FairRuntimeDb.h"
@@ -235,10 +235,11 @@ void CbmMvd::ConstructGeometry()
     	ConstructRootGeometry();
   	}
   else if ( fileName.EndsWith(".geo") ) 
-	{
-    	LOG(INFO) <<  "Constructing MVD  geometry from ASCII file "
-	<< fileName.Data() << FairLogger::endl;
-    	ConstructAsciiGeometry();
+  {
+      LOG(FATAL) << "Don't use old .geo style geometrys for the MVD. Please use a .root geometry" << FairLogger::endl;
+     //   LOG(INFO) <<  "Constructing MVD  geometry from ASCII file "
+      //  << fileName.Data() << FairLogger::endl;
+      //  ConstructAsciiGeometry();
  	}
   else
     LOG(FATAL) <<  "Geometry format of MVD file " << fileName.Data()
@@ -248,7 +249,7 @@ void CbmMvd::ConstructGeometry()
 
 // -----   Virtual public method ConstructAsciiGeometry   -----------------------
 void CbmMvd::ConstructAsciiGeometry() {
-  
+/*
   FairGeoLoader*    geoLoad = FairGeoLoader::Instance();
   FairGeoInterface* geoFace = geoLoad->getGeoInterface();
   CbmMvdGeo*       mvdGeo  = new CbmMvdGeo();
@@ -295,7 +296,7 @@ void CbmMvd::ConstructAsciiGeometry() {
 	   << ", volume name " << volName << FairLogger::endl;
       iStation++;
     }
-  } while ( volId > -1 );
+  } while ( volId > -1 );   */
 
  
 }

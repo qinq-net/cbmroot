@@ -15,9 +15,10 @@
 #include "CbmTrackMatchNew.h"
 #include "CbmMCTrack.h"
 
-#include "base/CbmLitToolFactory.h"
-#include "data/CbmLitTrackParam.h"
-#include "utils/CbmLitConverter.h"
+#include "CbmMvdDetector.h"
+#include "CbmMvdSensor.h"
+
+#include "tools/CbmMvdGeoHandler.h"
 
 
 //-- Include from Fair --//
@@ -52,7 +53,6 @@ CbmMvdQa::CbmMvdQa()
   fMvdResHistoXY(),
   fMatchingEffiHisto(),
   fInfoArray(),
-  fExtrapolator(),
   fPrimVtx(),
   fSecVtx(),
   fminHitReq(0),
@@ -82,14 +82,18 @@ CbmMvdQa::CbmMvdQa(const char* name, Int_t iMode, Int_t iVerbose)
   fMvdResHistoXY(),
   fMatchingEffiHisto(),
   fInfoArray(),
-  fExtrapolator(),
   fPrimVtx(),
   fSecVtx(),
   fminHitReq(0),
   fMvdRecoRatio(0),
   fBadTrack(0),
   fUsedTracks(0),
-  fnrOfMergedHits(0.)
+  fnrOfMergedHits(0.),
+  fDetector(),
+  useMcQa(kFALSE),
+  useDigiQa(kFALSE),
+  useHitQa(kFALSE),
+  useTrackQa(kFALSE)
 {
  ;
 }
@@ -123,59 +127,141 @@ cout << "-----------------------------------------------------------------------
 
     fStsTrackMatches = (TClonesArray*) ioman->GetObject("StsTrackMatch");
     fStsTrackArray   = (TClonesArray*) ioman->GetObject("StsTrack");
+    fGlobalTackArray = (TClonesArray*) ioman->GetObject("GlobalTrack");
+
     if(! fStsTrackArray) {Fatal("CbmMvdQa: StsTrackArray not found (!)"," That's bad. ");}
+
+    fMcPoints        = (TClonesArray*) ioman->GetObject("MvdPileUpMC");  // PileUp Mc points
+    fMvdDigis        = (TClonesArray*) ioman->GetObject("MvdDigi");
+    fMvdCluster      = (TClonesArray*) ioman->GetObject("MvdCluster");
     fMvdHits         = (TClonesArray*) ioman->GetObject("MvdHit");
     fMvdHitMatchArray= (TClonesArray*) ioman->GetObject("MvdHitMatch");
-    fMcPoints       = (TClonesArray*) ioman->GetObject("MvdPoint");
+
     if( fMvdHits->GetEntriesFast() != fMvdHitMatchArray->GetEntriesFast())
 	cout << endl << "MvdHit and MvdHitMatch Arrays do not have the same size" << endl;
     fPrimVtx         = (CbmVertex*) ioman->GetObject("PrimaryVertex");
     fListMCTracks    = (TClonesArray*) ioman->GetObject("MCTrack");
-    fExtrapolator = CbmLitToolFactory::Instance()->CreateTrackExtrapolator("rk4");
 
-    
-
-    // --- all the histogramms --- //
-    fMvdResHistoX=new TH2F("MvdResMom","Mvd Resolution Momentum in x",70,0,10,70,-0.03,0.03);
-    fMvdResHistoX->GetYaxis()->SetTitle("Impactparameter x [cm]");
-    fMvdResHistoX->GetXaxis()->SetTitle("Momentum [GeV/c]");
-
-    fMvdResHistoX->GetYaxis()->SetTitleOffset(1.5);
-    fMvdResHistoX->GetXaxis()->SetTitleOffset(1.5);
+    if(! fMcPoints )
+    {
+        cout << endl << "Mvd Pile Up Mc array missing";
+	return kFATAL;
+    }
+    fDetector = CbmMvdDetector::Instance();
+    fDetector->Init();
 
 
-    fMvdResHistoR=new TH2F("MvdResMom","Mvd Resolution Momentum in r",70,0,10,70, 0,0.05);
-    fMvdResHistoR->GetYaxis()->SetTitle("Impactparameter r [cm]");
-    fMvdResHistoR->GetXaxis()->SetTitle("Momentum [GeV/c]");
+    SetupHistograms();
 
-    fMvdResHistoR->GetYaxis()->SetTitleOffset(1.5);
-    fMvdResHistoR->GetXaxis()->SetTitleOffset(1.5);
+       for(Int_t i = 0; i < 63; i++)
+       {
+	   ioman->Register(Form("BankHistos%d", i), "Histograms of banks on sensor", fMvdMCBank[i], kTRUE);
+       }
+       for(Int_t j = 0; j < 4; j++)
+       {
+	   ioman->Register(Form("MCHistoStation%d",j),"Histogram of MC distribuion on Stations", fMvdMCHitsStations[j], kTRUE);
+       }
+       ioman->Register("MCHitDistribution", "MC Hits per Region", fMvdBankDist, kTRUE);
+       ioman->Register("fWordsPerSuperRegion","words per super Region", fWordsPerSuperRegion, kTRUE);
+
+    cout << "-------------------------------------------------------------------------" << endl
+     << "-I- " << GetName() << "::Init: " 
+     << " Finished Initilisation " << endl
+     << "-------------------------------------------------------------------------" << endl;
+
+}
+
+// -------------------------------------------------------------------------
+void CbmMvdQa::SetupHistograms()
+{
+   // --- all the histogramms --- //
+   fMvdResHistoX=new TH2F("MvdResMom","Mvd Resolution Momentum in x",70,0,10,70,-0.03,0.03);
+   fMvdResHistoX->GetYaxis()->SetTitle("Impactparameter x [cm]");
+   fMvdResHistoX->GetXaxis()->SetTitle("Momentum [GeV/c]");
+
+   fMvdResHistoX->GetYaxis()->SetTitleOffset(1.5);
+   fMvdResHistoX->GetXaxis()->SetTitleOffset(1.5);
+
+
+   fMvdResHistoR=new TH2F("MvdResMom","Mvd Resolution Momentum in r",70,0,10,70, 0,0.05);
+   fMvdResHistoR->GetYaxis()->SetTitle("Impactparameter r [cm]");
+   fMvdResHistoR->GetXaxis()->SetTitle("Momentum [GeV/c]");
+
+   fMvdResHistoR->GetYaxis()->SetTitleOffset(1.5);
+   fMvdResHistoR->GetXaxis()->SetTitleOffset(1.5);
 
 
    fMvdResHistoY=new TH2F("Mvd4ResMom","Mvd Resolution Momentum in y",70,0,10,70,-0.03,0.03);
    fMvdResHistoY->GetYaxis()->SetTitle("Impactparameter y [cm]");
    fMvdResHistoY->GetXaxis()->SetTitle("Momentum [GeV/c]");
 
-    fMvdResHistoY->GetYaxis()->SetTitleOffset(1.5);
-    fMvdResHistoY->GetXaxis()->SetTitleOffset(1.5);
+   fMvdResHistoY->GetYaxis()->SetTitleOffset(1.5);
+   fMvdResHistoY->GetXaxis()->SetTitleOffset(1.5);
 
-    fMvdResHistoXY=new TH2F("MvdResMom","Mvd Resolution Momentum X vs Y",70,-0.03,0.03,70,-0.03,0.03);
-    fMvdResHistoXY->GetYaxis()->SetTitle("Impactparameter x [cm]");
-    fMvdResHistoXY->GetXaxis()->SetTitle("Impactparameter y [cm]");
+   fMvdResHistoXY=new TH2F("MvdResMomXY","Mvd Resolution Momentum X vs Y",70,-0.03,0.03,70,-0.03,0.03);
+   fMvdResHistoXY->GetYaxis()->SetTitle("Impactparameter x [cm]");
+   fMvdResHistoXY->GetXaxis()->SetTitle("Impactparameter y [cm]");
 
-    fMvdResHistoXY->GetYaxis()->SetTitleOffset(1.5);
-    fMvdResHistoXY->GetXaxis()->SetTitleOffset(1.5);
+   fMvdResHistoXY->GetYaxis()->SetTitleOffset(1.5);
+   fMvdResHistoXY->GetXaxis()->SetTitleOffset(1.5);
 
    fMatchingEffiHisto=new TH1F("MvdMatchingEffi","Matching Efficiency",70,0,1.1);
    fMatchingEffiHisto->GetXaxis()->SetTitle("Matching Efficiency");
    fMatchingEffiHisto->GetXaxis()->SetTitleOffset(1.5);
- fMatchingEffiHisto->GetYaxis()->SetTitle("Entrys");
+   fMatchingEffiHisto->GetYaxis()->SetTitle("Entrys");
    fMatchingEffiHisto->GetYaxis()->SetTitleOffset(1.5);
 
-cout << "-------------------------------------------------------------------------" << endl
-     << "-I- " << GetName() << "::Init: " 
-     << " Finished Initilisation " << endl
-     << "-------------------------------------------------------------------------" << endl;
+   fMvdDigiDist1 = new TH2F("MvdDigiDist1","Mvd Digi distribution Station 0",50,-2.5,2.5,50,-2.5,2.5);
+   fMvdDigiDist1->GetYaxis()->SetTitle("x [cm]");
+   fMvdDigiDist1->GetXaxis()->SetTitle("y [cm]");
+
+   fMvdDigiDist2 = new TH2F("MvdDigiDist2","Mvd Digi distribution Station 1",100,-6,6,100,-6,6);
+   fMvdDigiDist2->GetYaxis()->SetTitle("x [cm]");
+   fMvdDigiDist2->GetXaxis()->SetTitle("y [cm]");
+
+   fMvdDigiDist3 = new TH2F("MvdDigiDist3","Mvd Digi distribution Station 2",3000,-9,9,3000,-9,9);
+   fMvdDigiDist3->GetYaxis()->SetTitle("x [cm]");
+   fMvdDigiDist3->GetXaxis()->SetTitle("y [cm]");
+
+   fMvdDigiDist4 = new TH2F("MvdDigiDist4","Mvd Digi distribution Station 3",3500,-12,12,3500,-12,12);
+   fMvdDigiDist4->GetYaxis()->SetTitle("x [cm]");
+   fMvdDigiDist4->GetXaxis()->SetTitle("y [cm]");
+
+   fMvdDigiWorst= new TH2F("MvdDigiWorst","Mvd Digi distribution worst spot",10,-3,0,10,-2,2);
+   fMvdDigiWorst->GetYaxis()->SetTitle("x [cm]");
+   fMvdDigiWorst->GetXaxis()->SetTitle("y [cm]");
+
+   fMvdHitWorst= new TH2F("fMvdHitWorst","Mvd hit distribution worst spot",300,-3,0,1500,-2,2);
+   fMvdHitWorst->GetYaxis()->SetTitle("x [cm]");
+   fMvdHitWorst->GetXaxis()->SetTitle("y [cm]");
+
+
+   fMvdMCHitsStations[0] = new TH2F("fMvdMCStation0","Mvd mc distribution",2,-2.5,-0.5,3,-0.5,2.5);
+   fMvdMCHitsStations[1] = new TH2F("fMvdMCStation1","Mvd mc distribution",4,-4.5,-0.5,6,-0.5,5.5);
+   fMvdMCHitsStations[2] = new TH2F("fMvdMCStation2","Mvd mc distribution",6,-7.5,-1.5,9,-1.5,7.5);
+   fMvdMCHitsStations[3] = new TH2F("fMvdMCStation3","Mvd mc distribution",8,-9.5,-1.5,12,-1.5,10.5);
+
+   fMvdMCWorst= new TH2F("fMvdMCWorst","Mvd mc distribution worst spot",300,-2,0,1500,3.5,0);
+   fMvdMCWorst->GetYaxis()->SetTitle("y [cm]");
+   fMvdMCWorst->GetXaxis()->SetTitle("x [cm]");
+
+   fMvdMCWorstDelta= new TH2F("fMvdMCWorstDelta","Mvd mc distribution worst spot only delta electrons",300,-2,0,1500,3.5,0);
+   fMvdMCWorstDelta->GetYaxis()->SetTitle("y [cm]");
+   fMvdMCWorstDelta->GetXaxis()->SetTitle("x [cm]");
+
+   for(Int_t i = 0; i < 63; i++)
+   {
+    fMvdMCBank[i] = new TH2F(Form("fMvdMCBank%d",i),"Mvd mc distribution worst spot only delta electrons",300,-2,0,1500,3.5,0);
+   }
+
+   fMvdBankDist = new TH2I("fMvdBankDist", "Avarage Hits per Region",63,0,63,50,0,50);
+
+   fWordsPerSuperRegion = new TH1F("fWordsPerSuperRegion","Words send to a super region",1000,0,400);
+
+   fWorstSuperPerEvent = new TH1F("fWorstSuperRegion","Words send to worst super region",1000,0,400);
+
+
+   fMvdTrackQa1F[0] = new TH1F("fMvdTracksQa1","Mvd Hits per Global Track",10,0,5);
 }
 // -------------------------------------------------------------------------
 
@@ -184,8 +270,158 @@ void CbmMvdQa::Exec(Option_t* /*opt*/)
 {
 fEventNumber++;
 
-LOG(INFO) << "CbmMvdQa is running" << FairLogger::endl;
 
+if( fEventNumber%10 == 0)LOG(INFO) << "CbmMvdQa is running Event " << fEventNumber <<  FairLogger::endl;
+
+if(useMcQa)ExecMCQa();
+if(useDigiQa)ExecDigiQa();
+if(useHitQa)ExecHitQa();
+if(useTrackQa)ExecTrackQa();
+
+}
+// -------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------
+void CbmMvdQa::ExecDigiQa()
+{
+    Int_t nrSensor = fDetector->GetSensorArraySize();
+
+for(Int_t n = 0; n < nrSensor; n++)
+{
+    CbmMvdSensor* curSens = fDetector->GetSensor(n);
+
+    for(Int_t i = 0; i < fMvdDigis->GetEntriesFast(); i++)
+    {
+	CbmMvdDigi* curDigi = (CbmMvdDigi*)fMvdDigis->At(i);
+	Double_t lab[3]={0.,0.,0.};
+	if(curSens->GetDetectorID() == curDigi->GetDetectorId())
+	{
+	    curSens->PixelToTop(curDigi->GetPixelX(), curDigi->GetPixelY(), lab);
+	    if(curSens->GetZ() < 6)
+		fMvdDigiDist1->Fill(lab[0], lab[1]);
+            else if(curSens->GetZ() < 11)
+		fMvdDigiDist2->Fill(lab[0], lab[1]);
+            else if(curSens->GetZ() < 16)
+		fMvdDigiDist3->Fill(lab[0], lab[1]);
+            else
+		fMvdDigiDist4->Fill(lab[0], lab[1]);
+
+             if(lab[0]>-2 && lab[0]<=-0.5 && lab[1]>=-1.5 && lab[1]<=1.5)
+	{
+	    fMvdDigiWorst->Fill(lab[0], lab[1]);
+	}
+	}
+       
+    }
+}
+
+
+
+
+}
+// -------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------
+void CbmMvdQa::ExecHitQa()
+{
+for(Int_t k = 0; k < fMvdHits->GetEntriesFast(); k++)
+{
+    CbmMvdHit* curHit = (CbmMvdHit*)fMvdHits->At(k);
+         if(curHit->GetX() > -2 && curHit->GetX() <= -0.5 && curHit->GetY() >= -1.5 && curHit->GetY() <= 1.5)
+	{
+	    fMvdHitWorst->Fill(curHit->GetX(), curHit->GetY());
+	}
+	}
+}
+// -------------------------------------------------------------------------
+// -------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------
+void CbmMvdQa::ExecMCQa()
+{
+    Float_t wordsPerRegion[64] = {0};
+    Float_t wordsPerSuper[16] = {0};
+
+    Float_t yPosMin = -0.73;
+    Float_t yPosMax = 2.5;
+
+for(Int_t k = 0; k < fMcPoints->GetEntriesFast(); k++)
+{
+    CbmMvdPoint* curPoint = (CbmMvdPoint*)fMcPoints->At(k);
+    if(curPoint->GetZ() < 8)
+    {
+         if(curPoint->GetX() > -1.93 && curPoint->GetX() <= -0.55 && curPoint->GetY() >= yPosMin && curPoint->GetY() <= yPosMax)
+	{
+	    fMvdMCWorst->Fill(curPoint->GetX(), curPoint->GetY());
+	    if(curPoint->GetTrackID() == -3) fMvdMCWorstDelta->Fill(curPoint->GetX(), curPoint->GetY());
+	    for(Int_t nBank = 0; nBank < 64; nBank++)
+		{
+		    if( curPoint->GetY() >= (yPosMin+(nBank*0.05)) && curPoint->GetY() < (yPosMin + ((nBank+1)*0.05)) )
+		    {
+			fMvdMCBank[nBank]->Fill(curPoint->GetX(), curPoint->GetY());
+			wordsPerRegion[nBank] = wordsPerRegion[nBank] + 1.5;
+			
+			break;
+		    }
+		}
+
+	}
+    }
+	 if(curPoint->GetZ() < 8)
+	 {
+             if(curPoint->GetX() < -0.5 && curPoint->GetY() > -0.5)
+	     fMvdMCHitsStations[0]->Fill(curPoint->GetX(), curPoint->GetY());
+	 }
+	 else if(curPoint->GetZ() < 13)
+	 {
+             if(curPoint->GetX() < -0.5 && curPoint->GetY() > -1.5)
+	     fMvdMCHitsStations[1]->Fill(curPoint->GetX(), curPoint->GetY());
+	 }
+	 else if(curPoint->GetZ() < 18 )
+	 {
+             if(curPoint->GetX() < -1.5 && curPoint->GetY() > -1.5)
+	     fMvdMCHitsStations[2]->Fill(curPoint->GetX(), curPoint->GetY());
+	 }
+	 else
+	 {
+             if(curPoint->GetX() < -1.5 && curPoint->GetY() > -1.5)
+	     fMvdMCHitsStations[3]->Fill(curPoint->GetX(), curPoint->GetY());
+	 }
+}
+cout << "//--------------- New Event -----------------------\\" << endl;
+
+Int_t i = 0;
+Int_t wordsInWorst = 0;
+
+for(Int_t supReg = 0; supReg < 16; supReg ++)
+{
+    for(Int_t k = 0; k < 4; k++)
+    {
+	wordsPerSuper[supReg] += wordsPerRegion[i];
+	cout << "Words in Region " << i << ": " <<  wordsPerRegion[i] << endl;
+        i++;
+    }
+
+    cout  << " Words in super region " << supReg << ": " << wordsPerSuper[supReg] << endl;
+
+    fWordsPerSuperRegion->Fill(wordsPerSuper[supReg]);
+
+    if(wordsPerSuper[supReg] > wordsInWorst)
+	wordsInWorst = wordsPerSuper[supReg];
+
+    //cout << "Words in worst super regin now: " << wordsInWorst << endl;
+}
+
+fWorstSuperPerEvent->Fill(wordsInWorst);
+
+    cout << "//--------------- End Event -----------------------\\" << endl;
+}
+// -------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------
+void CbmMvdQa::ExecTrackQa(){
+
+/*
 Int_t usedTracks=0;
 Double_t zOut;
 CbmStsTrack* stsTrack;
@@ -242,32 +478,15 @@ for ( Int_t itr=0; itr<nTracks; itr++ )
 	{
         if(mvdHitsInTrack >= fminHitReq && motherID == -1)
 		{
-		fUsedTracks++;
-		//cout << endl << "found good track" << endl;
-                SetMatches(trackIndex, stsTrack);
-		//	if(fMvdRecoRatio != 1) 
-		//		{
-		//		new((*fBadTracks)[fBadTracks->GetEntriesFast()]) CbmStsTrack(*((CbmStsTrack*)stsTrack));
-		//		fBadTrack++;
-		//		continue;
-		//		}
-    		const FairTrackParam *paramIn = stsTrack->GetParamFirst();
-   	 	CbmLitTrackParam litParamIn; // parameter at last attached Hit
-   	 	CbmLitConverter::FairTrackParamToCbmLitTrackParam(paramIn, &litParamIn);
-    		CbmLitTrackParam litParamOut; // parameter at vertex
-	
-   	 	fExtrapolator->Extrapolate(&litParamIn, &litParamOut,0, NULL);
-		fMvdResHistoX->Fill(GetMomentum(litParamOut), GetImpactParameterX(litParamOut));
-		fMvdResHistoR->Fill(GetMomentum(litParamOut), GetImpactParameterRadius(litParamOut));
-		fMvdResHistoY->Fill(GetMomentum(litParamOut),GetImpactParameterY(litParamOut));
-		fMvdResHistoXY->Fill(GetImpactParameterX(litParamOut),GetImpactParameterY(litParamOut));
-		
+		    fUsedTracks++;
+		    SetMatches(trackIndex, stsTrack);
 		}
 
         }
       }
 fStsTrackArray->Clear();
-fStsTrackMatches->Clear();
+fStsTrackMatches->Clear();  */
+
 
 }
 // -------------------------------------------------------------------------
@@ -324,7 +543,7 @@ fMvdRecoRatio = (Float_t)1.0 - (Float_t)counter;
 fMatchingEffiHisto->Fill(fMvdRecoRatio);
 }
 // -------------------------------------------------------------------------
-
+/*
 // -------------------------------------------------------------------------
 Double_t  CbmMvdQa::GetImpactParameterRadius( CbmLitTrackParam t ){
 
@@ -405,31 +624,106 @@ Double_t  CbmMvdQa::GetAngle( CbmLitTrackParam t ){
     return  angle_grad;
 }
 //-----------------------------------------------------------------------------------------
-
+ */
 
 //-----------------------------------------------------------------------------------------
 void CbmMvdQa::Finish()
 {
-Float_t mvdTrackingEffi = (fBadTrack)/(fUsedTracks/100);
-cout << endl << "-I- " << GetName() << " Finished" << endl
-     << "Total of " << fBadTrack << " StsTracks where removed due bad matched hits in the MVD" << endl
-     << "Removed: " << mvdTrackingEffi << " % of all Tracks from Plots" << endl
-     << fnrOfMergedHits << " Hit where merged" << endl;
-TCanvas* c=new TCanvas();
-c->Divide(2,2);
-c->cd(1);
-fMvdResHistoX->Draw("COL");
-fMvdResHistoX->Write();
-c->cd(2);
-fMvdResHistoY->Draw("COL");
-fMvdResHistoY->Write();
-c->cd(3);
-fMvdResHistoXY->Draw("COL");
-fMvdResHistoXY->Write();
-c->cd(4);
-fMvdResHistoR->Draw("COL");
-fMvdResHistoR->Write();
 
+
+if(useMcQa)FinishMCQa();
+if(useDigiQa)FinishDigiQa();
+if(useHitQa)FinishHitQa();
+if(useTrackQa)FinishTrackQa();
+}
+//-----------------------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------------------
+void CbmMvdQa::FinishMCQa()
+{
+Double_t scalingfactor = 0.0005;
+
+TCanvas* mcCanvas1 = new TCanvas();
+mcCanvas1->Divide(2,2);
+for(Int_t iPad = 0; iPad < 4; iPad++)
+   {
+   mcCanvas1->cd(iPad+1);
+   fMvdMCHitsStations[iPad]->Scale(scalingfactor);
+   fMvdMCHitsStations[iPad]->Draw("COLZ");
+   }
+
+TCanvas* mcCanvas2 = new TCanvas();
+mcCanvas2->Divide(1,2);
+mcCanvas2->cd(1);
+fWordsPerSuperRegion->Draw();
+mcCanvas2->cd(2);
+fWorstSuperPerEvent->Draw();
+
+TCanvas* mcCanvas3 = new TCanvas();
+fMvdMCHitsStations[0]->Draw("COLZ");
+
+TCanvas* mcCanvas4 = new TCanvas();
+mcCanvas4->Divide(8,8);
+for(Int_t pad = 0; pad < 63; pad++)
+  {
+      mcCanvas4->cd(pad+1);
+      fMvdMCBank[pad]->Draw("COL");
+      fMvdMCBank[pad]->Write();
+      cout << "Bank " << pad << " avarage Entries " << fMvdMCBank[pad]->GetEntries()/fEventNumber << endl;
+      fMvdBankDist->Fill(pad, fMvdMCBank[pad]->GetEntries()/fEventNumber/2);
+  }
+TCanvas* mcCanvas5 = new TCanvas();
+fMvdBankDist->Draw();
+
+TCanvas* mcCanvas6 = new TCanvas();
+fMvdMCWorst->Draw("COL");
+fMvdMCWorst->Write();
+}
+//-----------------------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------------------
+void CbmMvdQa::FinishDigiQa()
+{
+TCanvas* digiCanvas1 = new TCanvas();
+fMvdDigiDist1->Draw("COL");
+fMvdDigiDist1->Write();
+
+TCanvas* digiCanvas2 = new TCanvas();
+fMvdDigiDist2->Draw("COL");
+fMvdDigiDist2->Write();
+
+TCanvas* digiCanvas3 = new TCanvas();
+fMvdDigiDist3->Draw("COL");
+fMvdDigiDist3->Write();
+
+TCanvas* digiCanvas4 = new TCanvas();
+fMvdDigiDist4->Draw("COL");
+fMvdDigiDist4->Write();
+
+TCanvas* digiCanvas5 = new TCanvas();
+fMvdDigiWorst->Draw("COL");
+fMvdDigiWorst->Write();
+
+TCanvas* digiCanvas6 = new TCanvas();
+fMvdMCWorstDelta->Draw("COL");
+fMvdMCWorstDelta->Write();
+
+}
+//-----------------------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------------------
+void CbmMvdQa::FinishHitQa()
+{
+TCanvas* hitCanvas1 = new TCanvas();
+fMvdHitWorst->Draw("COL");
+fMvdHitWorst->Write();
+}
+//-----------------------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------------------
+void CbmMvdQa::FinishTrackQa()
+{
+TCanvas* TrackCanvas1 = new TCanvas();
 
 }
 //-----------------------------------------------------------------------------------------

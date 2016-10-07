@@ -41,7 +41,7 @@ class CbmMvdClusterAna : public FairTask
 {
 public:
 	CbmMvdClusterAna();
-	CbmMvdClusterAna(const char* name, Int_t iMode = 0, Int_t iVerbose = 0);
+	CbmMvdClusterAna(const char* name, Int_t iVerbose = 0);
 	
 	~CbmMvdClusterAna();
 	

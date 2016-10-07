@@ -258,8 +258,6 @@ void CbmMvdGeoHandler::NavigateTo(
 void CbmMvdGeoHandler::GetPipe()
 {
 TString pipeName = "pipe";
-Int_t pipeID;
-TGeoNode* pipeNode;
 TString motherName;
 Bool_t fail = kTRUE;
 

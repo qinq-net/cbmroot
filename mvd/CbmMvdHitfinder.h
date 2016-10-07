@@ -26,10 +26,9 @@ class CbmMvdHitfinder : public FairTask
 
   /** Standard constructor 
   *@param name  Task name
-  *@param mode  0 = MAPS, 1 = Ideal
+
   **/
-  CbmMvdHitfinder(const char* name, 
-		    Int_t mode = 0, Int_t iVerbose = 1);
+  CbmMvdHitfinder(const char* name,Int_t iVerbose = 1);
 
 
   /** Destructor **/

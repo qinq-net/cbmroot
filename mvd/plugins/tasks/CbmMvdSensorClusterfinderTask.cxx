@@ -71,8 +71,7 @@ CbmMvdSensorClusterfinderTask::~CbmMvdSensorClusterfinderTask()
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
-CbmMvdSensorClusterfinderTask::CbmMvdSensorClusterfinderTask(const char* name, Int_t iMode,
-			       Int_t iVerbose)
+CbmMvdSensorClusterfinderTask::CbmMvdSensorClusterfinderTask(Int_t iMode, Int_t iVerbose)
   : CbmMvdSensorTask(),
     fAdcDynamic(200),
     fAdcOffset(0),
@@ -143,7 +142,7 @@ void CbmMvdSensorClusterfinderTask::InitTask(CbmMvdSensor* mysensor) {
     fPixelChargeHistos=new TObjArray();
 
      fTotalChargeInNpixelsArray = new TObjArray();
- Int_t adcMax = fAdcOffset + fAdcDynamic;
+
     fAdcSteps= (Int_t)TMath::Power(2,fAdcBits);
     fAdcStepSize  = fAdcDynamic/fAdcSteps;
 
@@ -239,15 +238,15 @@ CbmMvdDigi* digi;
     
 Int_t iDigi=0;
 digi = (CbmMvdDigi*) fInputBuffer->At(iDigi);
-Int_t number = 0;
+
     
     if(!digi){
 	cout << "-E- : CbmMvdSensorFindHitTask - Fatal: No Digits found in this event."<< endl;
     }
 
 Int_t nDigis = fInputBuffer->GetEntriesFast();
-Double_t pixelSizeX = digi->GetPixelSizeX();
-Double_t pixelSizeY = digi->GetPixelSizeY();
+
+
 nDigis = fInputBuffer->GetEntriesFast();
 TArrayS* pixelUsed  = new TArrayS(nDigis);
 
@@ -322,8 +321,8 @@ Int_t refId;
 		
 			Int_t i=0;
 			Int_t pixelCharge;
-			Int_t pixelX;
-			Int_t pixelY;
+
+
 			pair<Int_t, Int_t> pixelCoords;
     			Int_t clusterSize=clusterArray->size();
 			Int_t nClusters = fOutputBuffer->GetEntriesFast();
@@ -368,7 +367,7 @@ void CbmMvdSensorClusterfinderTask::CheckForNeighbours(vector<Int_t>* clusterArr
     CbmMvdDigi* seed = (CbmMvdDigi*)fInputBuffer->At(clusterArray->at(clusterDigi));
     //cout << endl << "pixel nr. " << clusterDigi << " is seed" << endl ;
    
-    CbmMvdDigi* digiOfInterest;
+
    
     	
     // Remove Seed Pixel from list of non-used pixels
@@ -525,7 +524,7 @@ void CbmMvdSensorClusterfinderTask::UpdateDebugHistos(CbmMvdCluster* cluster){
       }
     };
     
-    Int_t counter=0;
+
     
     if(fChargeArraySize<=7){
       for(Int_t i=0;i<(fChargeArraySize*fChargeArraySize);i++){

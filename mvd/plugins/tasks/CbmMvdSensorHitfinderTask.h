@@ -56,8 +56,7 @@ public:
      *@param name  Task name
      *@param mode  0 = no fake digis generation, 1 = generate fake digis
      **/
-    CbmMvdSensorHitfinderTask(const char* name,
-		   Int_t mode = 0, Int_t iVerbose = 1);
+    CbmMvdSensorHitfinderTask(Int_t mode);
 
 
 
@@ -215,12 +214,12 @@ private:
 
     void SetMvdGeometry(Int_t detId);
   
-    void GenerateFakeDigis(Double_t pixelSizeX, Double_t pixelSizeY);
+   // void GenerateFakeDigis(Double_t pixelSizeX, Double_t pixelSizeY);
    // void CheckForNeighbours(vector<Int_t>* clusterArray, Int_t clusterDigi, TArrayS* pixelUsed);
     
     void CreateHit(CbmMvdCluster* clusterArray,  TVector3& pos, TVector3 &dpos);
     void ComputeCenterOfGravity(CbmMvdCluster* clusterArray, TVector3& pos, TVector3& dpos);
-    void UpdateDebugHistos(vector<Int_t>* clusterArray, Int_t seedIndexX, Int_t seedIndexY);
+   // void UpdateDebugHistos(vector<Int_t>* clusterArray, Int_t seedIndexX, Int_t seedIndexY);
     
 private:
     CbmMvdSensorHitfinderTask(const CbmMvdSensorHitfinderTask&);

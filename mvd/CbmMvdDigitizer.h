@@ -66,6 +66,8 @@ Bool_t fShowDebugHistos;
  TClonesArray* fInputPoints;
  TClonesArray* fDigis;
  TClonesArray* fDigiMatch;
+ TClonesArray* fMcPileUp;
+
  pair<Float_t, Int_t> fPerformanceDigi;
 
  UInt_t fDigiPluginNr;

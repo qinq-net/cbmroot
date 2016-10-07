@@ -52,7 +52,7 @@ class CbmMvdSensorDigitizerTask : public CbmMvdSensorTask
 
   /** Default constructor **/
   CbmMvdSensorDigitizerTask();
-  CbmMvdSensorDigitizerTask(const char* name, Int_t iMode, Int_t iVerbose);
+  CbmMvdSensorDigitizerTask(Int_t iMode);
 
   /** Destructor **/
   virtual ~CbmMvdSensorDigitizerTask();

@@ -97,6 +97,7 @@ fTimer.Start();
 	
 fDigis->Delete();
 fDigiMatch->Delete();
+fMcPileUp->Delete();
 
 BuildEvent();
 if(fInputPoints->GetEntriesFast() > 0)
@@ -153,6 +154,9 @@ InitStatus CbmMvdDigitizer::Init() {
 
     fDigiMatch = new TClonesArray("CbmMatch", 100000);
     ioman->Register("MvdDigiMatch", "Mvd DigiMatches", fDigiMatch, IsOutputBranchPersistent("MvdDigiMatch"));
+
+    fMcPileUp = new TClonesArray("CbmMvdPoint", 10000);
+    ioman->Register("MvdPileUpMC", "Mvd MC Points after Pile Up", fMcPileUp, IsOutputBranchPersistent("MvdPileUpMC"));
 
    fDetector = CbmMvdDetector::Instance();
 
@@ -301,7 +305,7 @@ void CbmMvdDigitizer::BuildEvent() {
 	point = (CbmMvdPoint*) points->At(iPoint);
 	point->SetTrackID(-2);
 	nPile++;
-new((*fInputPoints)[fInputPoints->GetEntriesFast()]) CbmMvdPoint(*((CbmMvdPoint*)points->At(iPoint)));
+	new((*fInputPoints)[fInputPoints->GetEntriesFast()]) CbmMvdPoint(*((CbmMvdPoint*)points->At(iPoint)));
       }
 
 	
@@ -340,6 +344,9 @@ new((*fInputPoints)[fInputPoints->GetEntriesFast()]) CbmMvdPoint(*((CbmMvdPoint*
     }  // Delta electron event loop
 
   }    // Usage of delta
+
+  for(Int_t i = 0; i < fInputPoints->GetEntriesFast(); i++)
+      new((*fMcPileUp)[i]) CbmMvdPoint(*((CbmMvdPoint*)fInputPoints->At(i)));
 
 
   // ----- At last: Screen output

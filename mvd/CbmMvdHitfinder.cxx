@@ -39,7 +39,7 @@ CbmMvdHitfinder::CbmMvdHitfinder()
 // -------------------------------------------------------------------------
 
 // -----   Standard constructor   ------------------------------------------
-CbmMvdHitfinder::CbmMvdHitfinder(const char* name, Int_t iMode, Int_t iVerbose) 
+CbmMvdHitfinder::CbmMvdHitfinder(const char* name, Int_t iVerbose)
   : FairTask(name, iVerbose),
     fDetector(NULL),
     fInputDigis(NULL),

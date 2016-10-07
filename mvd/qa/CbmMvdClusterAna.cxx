@@ -75,7 +75,7 @@ CbmMvdClusterAna::CbmMvdClusterAna()
 
 
 // -----   Standard constructor   ------------------------------------------
-CbmMvdClusterAna::CbmMvdClusterAna(const char* name, Int_t iMode, Int_t iVerbose) 
+CbmMvdClusterAna::CbmMvdClusterAna(const char* name, Int_t iVerbose) 
   : FairTask(name, iVerbose),
     fMcPoints(NULL),
     fMvdDigis(NULL),
@@ -192,8 +192,8 @@ InitStatus CbmMvdClusterAna::Init()
 	fMvdHisto2[5]	= new TH2F("ang_dy","ang_dy"	,100,0,2,100,-50,50);
 	fMvdHisto2[6]	= new TH2F("dnr_dx","dnr_dx"	,100,0,100,100,-50,50);
 	fMvdHisto2[7]	= new TH2F("dnr_dy","dnr_dy"	,100,0,100,100,-50,50);
-// 	fMvdHisto2[8]	= new TH2F("dxp_dx","dxp_dx"	,50,0,1,100,-50,50);
-// 	fMvdHisto2[9]	= new TH2F("dxp_dy","dxp_dy"	,50,0,1,100,-50,50);
+   	fMvdHisto2[8]	= new TH2F("dxp_dx","dxp_dx"	,50,0,1,100,-50,50);
+        fMvdHisto2[9]	= new TH2F("dxp_dy","dxp_dy"	,50,0,1,100,-50,50);
 	fMvdHisto2[10]	= new TH2F("cha_dx","cha_dx"	,100,0,10000,100,-50,50);
 	fMvdHisto2[11]	= new TH2F("cha_dy","cha_dy"	,100,0,10000,100,-50,50);
 	
@@ -204,10 +204,10 @@ InitStatus CbmMvdClusterAna::Init()
 	fMvdHisto2[15]	= new TH2F("mom_cha","mom_cha"	,100,0,3,1000,0,10000);
 	fMvdHisto2[16]	= new TH2F("ang_cha","ang_cha"	,200,0,2,1000,0,10000);
 	fMvdHisto2[17]	= new TH2F("mom_chacut","mom_chacut"	,100,0,3,1000,0,10000);
-// 	cout << "-------------------------------------------------------------------------" << endl
-// 	<< "-I- " << GetName() << "::Init: " 
-// 	<< " Finished Initilisation " << endl
-// 	<< "-------------------------------------------------------------------------" << endl;
+ 	cout << "-------------------------------------------------------------------------" << endl
+ 	<< "-I- " << GetName() << "::Init: "
+ 	<< " Finished Initilisation " << endl
+ 	<< "-------------------------------------------------------------------------" << endl;
 		
 	fNrMcPointsAll	= 0;
 	fNrHitsAll		= 0;
@@ -229,14 +229,14 @@ void CbmMvdClusterAna::Exec(Option_t* /*opt*/)
 // -------------------
 	Int_t nMcpoints			= fMcPoints			->GetEntriesFast();		// Number of Monte Carlo Points
 	Int_t nDigis			= fMvdDigis			->GetEntriesFast();		// Number of Mvd Digis
-	Int_t nClusters			= fMvdClusters		->GetEntriesFast();		// Number of reconstructed Mvd Clusters
+       // Int_t nClusters			= fMvdClusters		->GetEntriesFast();		// Number of reconstructed Mvd Clusters
 	Int_t nHits				= fMvdHits			->GetEntriesFast();		// Number of reconstructed Mvd Hits
 
-	Int_t nDigisMatch		= fMvdDigisMatch	->GetEntriesFast();		// Number of Matches from Digis to Monte Carlo
-	Int_t nClustersMatch	= fMvdClustersMatch	->GetEntriesFast();		// Number of Matches from Reconstructed Mvd Clusters to Mvd Hits (?)
-	Int_t nHitsMatch		= fMvdHitsMatch		->GetEntriesFast();		// Number of Matches from Reconstructed Mvd Hits to Monte Carlo
+       // Int_t nDigisMatch		= fMvdDigisMatch	->GetEntriesFast();		// Number of Matches from Digis to Monte Carlo
+       // Int_t nClustersMatch	= fMvdClustersMatch	->GetEntriesFast();		// Number of Matches from Reconstructed Mvd Clusters to Mvd Hits (?)
+       // Int_t nHitsMatch		= fMvdHitsMatch		->GetEntriesFast();		// Number of Matches from Reconstructed Mvd Hits to Monte Carlo
 	
-	Int_t nMcTracks 		= fListMCTracks		->GetEntriesFast();
+       // Int_t nMcTracks 		= fListMCTracks		->GetEntriesFast();
 // 	Int_t nTracks			= fStsTrackArray	->GetEntriesFast();		// Number of Tracks
 	
 // 	cout<<"MC Points    : "<< nMcpoints		<<endl;
@@ -260,9 +260,9 @@ void CbmMvdClusterAna::Exec(Option_t* /*opt*/)
 	CbmMvdHitMatch	* mvdHitMatch;		// Hit to MC point
 	
 	CbmMCTrack		* mcTrack;
-	CbmStsTrack		* stsTrack;
-	CbmTrackMatchNew* trackMatch;
-	CbmMatch		* mvdMatch;			// Reco Track to Hit Match
+       // CbmStsTrack		* stsTrack;
+      //  CbmTrackMatchNew* trackMatch;
+      //  CbmMatch		* mvdMatch;			// Reco Track to Hit Match
 // -------------------
 	typedef map<pair<Int_t,Int_t>,Int_t>::iterator it_type;
 	map <pair<Int_t, Int_t>, Int_t >	digiMap;
@@ -315,16 +315,16 @@ void CbmMvdClusterAna::Exec(Option_t* /*opt*/)
 // -------------------
 	std::map<std::pair<std::pair<Int_t,Int_t>,TString>,std::vector<int> > 			DigisMap;
 	std::map<std::pair<std::pair<Int_t,Int_t>,TString>,std::vector<int> > ::iterator	it;
-	std::pair<std::pair<Int_t,Int_t>,TString>										DigiStation;
-	std::pair<Int_t,Int_t>															Digi;
-	std::vector<int>																McContrToHitList;
-	std::vector<int>																McContrList;// vector of Mc Points which contribute to a Digi
-	std::map<Int_t,Int_t>															McInHit;
-	std::map<Int_t,Int_t>::iterator													it2;
-	std::vector<int>																DigisInMc(nMcpoints,0);
-	std::map<Int_t,std::vector<int> >												McsInHit;
-	std::map<Int_t,std::vector<int> >												HitsInMc;
-	std::map<Int_t,std::vector<int> >::iterator										it3;
+	std::pair<std::pair<Int_t,Int_t>,TString>					        DigiStation;
+	std::pair<Int_t,Int_t>								       	Digi;
+	std::vector<int>								       	McContrToHitList;
+	std::vector<int>								       	McContrList;// vector of Mc Points which contribute to a Digi
+	std::map<Int_t,Int_t>								       	McInHit;
+	std::map<Int_t,Int_t>::iterator							       	it2;
+	std::vector<int>								       	DigisInMc(nMcpoints,0);
+	std::map<Int_t,std::vector<int> >						       	McsInHit;
+	std::map<Int_t,std::vector<int> >						       	HitsInMc;
+	std::map<Int_t,std::vector<int> >::iterator					       	it3;
 	
 	DigisMap.clear();
 	McInHit.clear();
@@ -332,13 +332,16 @@ void CbmMvdClusterAna::Exec(Option_t* /*opt*/)
 	HitsInMc.clear();
 	
 // -------------------
-// Analyze Digis: 
+	// Analyze Digis:
+
 	for(int iDigi=0;iDigi<nDigis;iDigi++)
 	{
 		mvdDigi			= (CbmMvdDigi*)			fMvdDigis		->At(iDigi);
 		mvdDigiMatch	= (CbmMvdDigiMatch*)	fMvdDigisMatch	->At(iDigi);
-		
-		mvdPoint	= (CbmMvdPoint*)	fMcPoints->At		( mvdDigiMatch->GetMatchedLink().GetIndex() );	// Get matched MC Point from Digi
+
+		Int_t nMatchedIndex = mvdDigiMatch->GetMatchedLink().GetIndex();
+		    mvdPoint	= (CbmMvdPoint*)	fMcPoints->At (nMatchedIndex);	// Get matched MC Point from Digi
+
 // 		mcTrack		= (CbmMCTrack*)		fListMCTracks->At	( mvdpoint->GetTrackID() );						// Get matched MC Track from MC Point
 		
 		gloMC[0] = (mvdPoint->GetXOut()+mvdPoint->GetX())/2.;
@@ -372,16 +375,20 @@ void CbmMvdClusterAna::Exec(Option_t* /*opt*/)
 // 		{
 // 		}
 	}
+
 // -------------------
-// Analyze Hits and Clusters
+	// Analyze Hits and Clusters
+
 	for(Int_t iHit=0;iHit<nHits;iHit++)
 	{
 		mvdHit			= (CbmMvdHit*)		fMvdHits			->At(iHit);
 		mvdCluster		= (CbmMvdCluster*)	fMvdClusters		->At(iHit);
 		mvdHitMatch		= (CbmMvdHitMatch*)	fMvdHitsMatch		->At(iHit);
 		mvdClusterMatch	= (CbmMatch*)		fMvdClustersMatch	->At(iHit);
-		
-		mvdPoint	= (CbmMvdPoint*)	fMcPoints		->At( mvdHitMatch->GetMatchedLink().GetIndex() );
+
+		Int_t nHitMatch = mvdHitMatch->GetMatchedLink().GetIndex();
+		    mvdPoint	= (CbmMvdPoint*)	fMcPoints		->At(nHitMatch);
+
 		mcTrack		= (CbmMCTrack*)		fListMCTracks	->At( mvdPoint->GetTrackID() );
 		
 		gloMC[0] = (mvdPoint->GetXOut()+mvdPoint->GetX())/2.;
@@ -552,6 +559,7 @@ void CbmMvdClusterAna::Exec(Option_t* /*opt*/)
 		ARR_shape	[iHit] = shape;
 		ARR_charge	[iHit] = charge;
 	}
+
 // -------------------
 	for(Int_t iHit=0;iHit<nHits;iHit++)
 	{
@@ -565,8 +573,8 @@ void CbmMvdClusterAna::Exec(Option_t* /*opt*/)
 		fMvdHisto1[7]->Fill(ARR_dyp[iHit]);
 		fMvdHisto1[8]->Fill(ARR_shape[iHit]);
 		fMvdHisto1[9]->Fill(ARR_charge[iHit]);
-		fMvdHisto1[10+ARR_shape[iHit]]->Fill(ARR_dx[iHit]);
-		fMvdHisto1[20+ARR_shape[iHit]]->Fill(ARR_dy[iHit]);
+	       // fMvdHisto1[10+ARR_shape[iHit]]->Fill(ARR_dx[iHit]);
+	       // fMvdHisto1[20+ARR_shape[iHit]]->Fill(ARR_dy[iHit]);
 		
 		fMvdHisto2[0]->Fill(ARR_dxp[iHit],ARR_dyp[iHit],ARR_digis[iHit]);
 		fMvdHisto2[0]->Fill(ARR_dxp[iHit],-ARR_dyp[iHit],ARR_digis[iHit]);

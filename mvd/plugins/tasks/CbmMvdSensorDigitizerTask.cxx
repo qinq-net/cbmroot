@@ -155,8 +155,7 @@ CbmMvdSensorDigitizerTask::CbmMvdSensorDigitizerTask()
 
 
 // -----   Standard constructor   ------------------------------------------
-CbmMvdSensorDigitizerTask::CbmMvdSensorDigitizerTask(const char* name, Int_t iMode,
-				 Int_t iVerbose)
+CbmMvdSensorDigitizerTask::CbmMvdSensorDigitizerTask(Int_t iMode)
 : CbmMvdSensorTask(),
     fcurrentFrameNumber(0),
     fEpiTh(0.0014),
@@ -529,7 +528,7 @@ void CbmMvdSensorDigitizerTask::ProduceIonisationPoints(CbmMvdPoint* point) {
  //cout << endl << "Computing Point "   << endl;
  //point->Print(opt1);
   
-  Int_t pdgCode = point->GetPdgCode();
+ // Int_t pdgCode = point->GetPdgCode();
 
   //Transform coordinates of the point into sensor frame
   
@@ -655,7 +654,7 @@ void CbmMvdSensorDigitizerTask::ProduceIonisationPoints(CbmMvdPoint* point) {
 
     fEsum = 0.0;
 
-    Double_t segmentLength_update = trackLength/((Double_t)fNumberOfSegments);
+    //Double_t segmentLength_update = trackLength/((Double_t)fNumberOfSegments);
 
     if( lz!=0 ){
 	/**
@@ -984,11 +983,7 @@ void CbmMvdSensorDigitizerTask::InitTask(CbmMvdSensor* mySensor) {
   fSensor = mySensor;
 
  // cout << "-I- " << GetName() << ": Initialisation of sensor " << fSensor->GetName() << endl;
-  
-   FairRootManager* ioman = FairRootManager::Instance();
- 
-  
-  
+
     fDigis = new TClonesArray("CbmMvdDigi", 10000);
     fDigiMatch = new TClonesArray("CbmMatch", 10000);
 
@@ -999,7 +994,7 @@ void CbmMvdSensorDigitizerTask::InitTask(CbmMvdSensor* mySensor) {
     Fatal(GetName(), "Fatal error: Init(CbmMvdSensor*) called without valid pointer, don't know how to proceed.");
   }; 
   
-InitStatus initSuccess=ReadSensorInformation();
+ReadSensorInformation();
  
   // Initialize histogramms used for debugging  
    

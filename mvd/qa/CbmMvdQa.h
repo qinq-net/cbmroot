@@ -18,20 +18,23 @@
 #include "FairTask.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TH3F.h"
 #include "TString.h"
 #include "TNtuple.h"
 #include <iostream>
 #include "TVector3.h"
 #include "TClonesArray.h"
-#include "base/CbmLitPtrTypes.h"
 #include "CbmTrackMatchNew.h"
-#include "CbmStsTrack.h"
+
+
+class CbmStsTrack;
 
 
 class TClonesArray;
 class CbmStsTrack;
 class CbmVertex;
 class FairTrackParam;
+class CbmMvdDetector;
 
 class CbmLitTrackParam;
 
@@ -46,15 +49,6 @@ public:
  
   ~CbmMvdQa();
 
-  Double_t GetImpactParameterRadius(CbmLitTrackParam etrack);
-  Double_t GetImpactParameterX(CbmLitTrackParam etrack);
-  Double_t GetImpactParameterY(CbmLitTrackParam etrack);
-
-  Double_t GetTransverseMomentum(CbmLitTrackParam etrack);
-  Double_t GetMomentum(CbmLitTrackParam etrack);
-  Double_t GetMomentumZ(CbmLitTrackParam etrack);
-  Double_t GetAngle(CbmLitTrackParam etrack);
-
   void     SetMinHitReq(Int_t nrOfHits){fminHitReq = nrOfHits;};
   void     SetMatches(Int_t trackID, CbmStsTrack* stsTrack);
   void     Exec(Option_t* opt); 
@@ -63,6 +57,10 @@ public:
 
   void Finish();
    
+  void SetUseMcQa(){useMcQa = kTRUE;};
+  void SetUseDigiQa(){useDigiQa = kTRUE;};
+  void SetUseHitQa(){useHitQa = kTRUE;};
+  void SetUseTrackQa(){useTrackQa = kTRUE;};
 
 private:
 
@@ -78,12 +76,16 @@ private:
   TClonesArray* fStsTrackArrayP;
   TClonesArray* fStsTrackArrayN;
   TClonesArray* fStsTrackMatches;
-  TClonesArray* fMcPoints; 
+  TClonesArray* fGlobalTackArray;
+ 
 
   TClonesArray* fListMCTracks;
   TClonesArray* fMCTrackArrayP;
   TClonesArray* fMCTrackArrayN;
 
+  TClonesArray* fMcPoints;
+  TClonesArray* fMvdDigis;
+  TClonesArray* fMvdCluster;
   TClonesArray* fMvdHits;
   TClonesArray* fMvdHitMatchArray;
   TClonesArray* fBadTracks;
@@ -95,11 +97,55 @@ private:
   TH2F* fMvdResHistoXY;
   TH1F* fMatchingEffiHisto;
 
+  TH2F* fMvdDigiDist1;
+  TH2F* fMvdDigiDist2;
+  TH2F* fMvdDigiDist3;
+  TH2F* fMvdDigiDist4;
+  TH2F* fMvdDigiWorst;
+  TH2F* fMvdHitWorst;
+  TH2F* fMvdMCWorst;
+  TH2F* fMvdMCWorstDelta;
+  TH2F* fMvdMCBank[63];
+  TH2F* fMvdMCHitsStations[4];
+  TH1F* fWordsPerSuperRegion;
+  TH1F* fWorstSuperPerEvent;
 
-  TrackExtrapolatorPtr fExtrapolator;
+  TH2I* fMvdBankDist;
+
+
+  TH1F* fMvdTrackQa1F[20];
+  TH2F* fMvdTrackQa2F[20];
+
   CbmVertex* fPrimVtx;
   CbmVertex* fSecVtx;
 
+  CbmMvdDetector* fDetector;
+
+  Bool_t useMcQa;
+  Bool_t useDigiQa;
+  Bool_t useHitQa;
+  Bool_t useTrackQa;
+
+ // Double_t GetImpactParameterRadius(CbmLitTrackParam etrack);
+ // Double_t GetImpactParameterX(CbmLitTrackParam etrack);
+ // Double_t GetImpactParameterY(CbmLitTrackParam etrack);
+
+ // Double_t GetTransverseMomentum(CbmLitTrackParam etrack);
+ // Double_t GetMomentum(CbmLitTrackParam etrack);
+ // Double_t GetMomentumZ(CbmLitTrackParam etrack);
+ // Double_t GetAngle(CbmLitTrackParam etrack);
+
+  void SetupHistograms();
+
+  void ExecDigiQa();
+  void ExecHitQa();
+  void ExecMCQa();
+  void ExecTrackQa();
+
+  void FinishMCQa();
+  void FinishDigiQa();
+  void FinishHitQa();
+  void FinishTrackQa();
 
  ClassDef(CbmMvdQa,1);
 };
