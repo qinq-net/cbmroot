@@ -6,14 +6,17 @@
 #cRun=CbmTofPiHd_11Aug1224
 #cRun=CbmTofPiHd_13Aug0855
 #cRun=CbmTofPiHd_15Aug0818
+#cRun=CbmTofPiHd_16Aug1016
 #cRun=CbmTofPiHd_17Aug1724
 #cRun=CbmTofPiHd_22Aug1616
 cRun=CbmTofPiHd_29Aug1401
-
+#cRun=CbmTofPiHd_07Sep1333
+#cRun=CbmTofPiHd_12Sep1601
 # -------------------------------- Cleaning Up --------------------------------
 
 # Removing files: Fresh unpacking
-if((1)); then
+if((0)); then
+rm -rf $cRun/
 rm all_*.par core_dump_* *.pdf
 rm tofMbsUnp.hst.root
 rm tofMbsCal.hst.root
