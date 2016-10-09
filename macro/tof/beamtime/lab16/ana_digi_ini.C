@@ -256,8 +256,17 @@ void ana_digi_ini(Int_t nEvents = 10000, Int_t calMode=0, Int_t calSel=-1, Int_t
 	run->AddTask(tofTestBeamClust);
 
 
+
+
+
+
+
+
+
+
+
 	/* **************************************************************************
-											TOF TestBeam Analysis
+									TOF TestBeam Analysis (Optional)
 	************************************************************************** */
 	CbmTofAnaTestbeam* tofAnaTestbeam = new CbmTofAnaTestbeam("TOF TestBeam Analysis",iVerbose);
 	
@@ -292,6 +301,8 @@ void ana_digi_ini(Int_t nEvents = 10000, Int_t calMode=0, Int_t calSel=-1, Int_t
 	iRSel = (iRSel - iRSelRpc)/10;
 	Int_t iRSelSm = iRSel%10;
 	iRSel = (iRSel - iRSelSm)/10;
+	
+	cout << "dispatch: Set BeamRefId to " << iRSel << ", " << iRSelSm << ", " << iRSelRpc << endl;
 	
 	tofTestBeamClust->SetBeamRefId(iRSel);    			// define Beam reference counter
 	tofTestBeamClust->SetBeamRefSm(iRSelSm);				// define Beam reference counter
@@ -335,6 +346,12 @@ void ana_digi_ini(Int_t nEvents = 10000, Int_t calMode=0, Int_t calSel=-1, Int_t
    tofAnaTestbeam->SetMrpcRefRpc(iRefRpc);    			// Reference RPC (MRef)
 
 	tofAnaTestbeam->SetChi2Lim(100.);             		// initialization of Chi2 selection limit
+	
+	cout << endl;
+	cout << "dispatch: iCalSet = " << iCalSet << ", iSet = " << iSet << ", iBRef = " << iBRef  << endl;
+	cout << "dispatch: iRSel = " << iRSel << ", iRSelSm = " << iRSelSm << ", iRSelRpc = " << iRSelRpc << endl;
+	cout << "dispatch:  iDut = " << iDut << ",  iDutSm = " << iDutSm << ",   iDutRpc = " << iDutRpc << endl;
+	cout << "dispatch:  iRef = " << iRef << ",  iRefSm = " << iRefSm << ",   iRefRpc = " << iRefRpc << endl;
 	
 	/* **************************************************************************
 	Remember in init_calib.sh the parmeter iCalSet=iDutiMRefiBRef==920921400, so
@@ -463,8 +480,8 @@ void ana_digi_ini(Int_t nEvents = 10000, Int_t calMode=0, Int_t calSel=-1, Int_t
 			gInterpreter->ProcessLine("pl_over_clu(9,0,0)");
 			gInterpreter->ProcessLine("pl_over_clu(9,0,1)");
 			gInterpreter->ProcessLine("pl_over_clu(9,1,0)");
-			gInterpreter->ProcessLine("pl_over_clu(9,1,1)");
-			gInterpreter->ProcessLine("pl_over_clu(9,2,0)");
+			//gInterpreter->ProcessLine("pl_over_clu(9,1,1)");
+			//gInterpreter->ProcessLine("pl_over_clu(9,2,0)");
 			gInterpreter->ProcessLine("pl_over_clu(9,2,1)");
 
 			// void pl_over_cluSel(Int_t iSel=0, Int_t iSmT=0, Int_t iSm=0, Int_t iRpc=0)
@@ -481,8 +498,8 @@ void ana_digi_ini(Int_t nEvents = 10000, Int_t calMode=0, Int_t calSel=-1, Int_t
 			gInterpreter->ProcessLine("pl_over_cluSel(0,9,0,0)");
 			gInterpreter->ProcessLine("pl_over_cluSel(0,9,0,1)");
 			gInterpreter->ProcessLine("pl_over_cluSel(0,9,1,0)");
-			gInterpreter->ProcessLine("pl_over_cluSel(0,9,1,1)");
-			gInterpreter->ProcessLine("pl_over_cluSel(0,9,2,0)");
+			//gInterpreter->ProcessLine("pl_over_cluSel(0,9,1,1)");
+			//gInterpreter->ProcessLine("pl_over_cluSel(0,9,2,0)");
 			gInterpreter->ProcessLine("pl_over_cluSel(0,9,2,1)");
 			
 			// void pl_over_cluSel(Int_t iSel=0, Int_t iSmT=0, Int_t iSm=0, Int_t iRpc=0)
@@ -499,8 +516,8 @@ void ana_digi_ini(Int_t nEvents = 10000, Int_t calMode=0, Int_t calSel=-1, Int_t
 			gInterpreter->ProcessLine("pl_over_cluSel(1,9,0,0)");
 			gInterpreter->ProcessLine("pl_over_cluSel(1,9,0,1)");
 			gInterpreter->ProcessLine("pl_over_cluSel(1,9,1,0)");
-			gInterpreter->ProcessLine("pl_over_cluSel(1,9,1,1)");
-			gInterpreter->ProcessLine("pl_over_cluSel(1,9,2,0)");
+			//gInterpreter->ProcessLine("pl_over_cluSel(1,9,1,1)");
+			//gInterpreter->ProcessLine("pl_over_cluSel(1,9,2,0)");
 			gInterpreter->ProcessLine("pl_over_cluSel(1,9,2,1)");
 			
 			// void pl_all_dTSel(Int_t iNSel=2)

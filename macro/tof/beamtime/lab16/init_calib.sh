@@ -43,54 +43,33 @@
 #
 # **************************************************************************** #
 
-cRun=$1
-#cRun='CbmTofPiHd_01Mar1558'
-#cRun='CbmTofPiHd_30Mar1435'
-#cRun='CbmTofPiHd_01Apr1647'
-#cRun='CbmTofPiHd_14Apr1255'
-#cRun='CbmTofPiHd_Plastic_26Jul1744'
-#cRun='CbmTofPiHd_Plastic_27Jul1725'
-#cRun='CbmTofPiHd_Plastic_01Aug1700'
-#cRun='CbmTofPiHd_Plastic_05Aug1913'
+#cRun=$1
 #cRun='CbmTofPiHd_09Aug1533'
 #cRun='CbmTofPiHd_10Aug1728'
 #cRun='CbmTofPiHd_11Aug1224'
 #cRun='CbmTofPiHd_12Aug1744'
 #cRun='CbmTofPiHd_13Aug0855'
-
-# Clean up before fresh re-run of init_calib.sh
-if((0)); then
-	rm -r $cRun
-	rm $cRun_*tofTestBeamClust.hst.root
-fi
+#cRun='CbmTofPiHd_15Aug0818'
+#cRun='CbmTofPiHd_16Aug1016'
+#cRun='CbmTofPiHd_17Aug1724'
+#cRun='CbmTofPiHd_22Aug1616'
+cRun='CbmTofPiHd_29Aug1401'
+#cRun='CbmTofPiHd_07Sep1333'
+#cRun=CbmTofPiHd_12Sep1601'
 
 nIter=1
 echo "Initialize clusterizer calibration for run $cRun, execute $nIter iterations"
-#iDut=3; iMRef=9; iBRef=7;
-#iDut=9; iMRef=4; iBRef=3;
-#iDut=9; iMRef=7; iBRef=3;
-#iDut=9; iMRef=3; iBRef=5; 
-#iDut=3; iMRef=9; iBRef=5;
-#iDut=9; iMRef=9; iBRef=5;
-#iDut=3; iMRef=4; iBRef=5;
-#iDut=921; iMRef=920; iBRef=300;
-#iDut=400; iMRef=300; iBRef=500;
-#iDut=921; iMRef=300; iBRef=500;
-#iDut=921; iMRef=920; iBRef=500;
 
-#iDut=6; iMRef=1; iBRef=8; 
-#iDut=6; iMRef=1; iBRef=5; 
-#iDut=1; iMRef=6; iBRef=5; 
-
+#iDut=901; iMRef=900; iBRef=921;
 #((iSet=$iDut*1000+$iMRef))
 #((iSet=$iDut*1000000+$iMRef*1000+$iBRef))
 
-iCalSet=$2
+#iCalSet=$2
 #iCalSet=iDutiMRefiBRef
-#iCalSet=400900901
 #iCalSet=901900921
 #iCalSet=901900910
-#iCalSet=921900901
+iCalSet=601600921
+
 ((iTmp  = $iCalSet ))
 ((iBRef = $iTmp % 1000))
 ((iTmp  = $iTmp - $iBRef))
@@ -100,6 +79,14 @@ iCalSet=$2
 ((iTmp  = $iTmp - $iMRef))
 ((iDut  = $iTmp / 1000000))
 
+# ----------------------- Clean up before fresh Re-run ------------------------
+if((0)); then
+rm all_*.par core_dump_* *.pdf
+rm -rf $cRun/
+rm ${cRun}_set${iCalSet}_*_0tofTestBeamClust.hst.root
+rm ${cRun}_set${iCalSet}_*_1tofTestBeamClust.hst.root
+fi
+# ------------------------------- End Clean up --------------------------------
 echo "Calib setup is ${iCalSet}, iSet=$iSet, iDut=$iDut, iMRef=$iMRef, iBRef=$iBRef"
 
 #return
@@ -173,8 +160,6 @@ if((0)); then
 	cp -v  ./Init${iStep}/${cRun}_set${iCalSet}_${cMode}_${cSel}tofTestBeamClust.hst.root ${cRun}_set${iCalSet}_03_0tofTestBeamClust.hst.root
 
 fi # end if((1))
-
-
 
 # ------------------ Starting 2nd for Loop ------------------ #
 if((1)); then
