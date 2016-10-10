@@ -76,7 +76,7 @@ private:
   TClonesArray* fStsTrackArrayP;
   TClonesArray* fStsTrackArrayN;
   TClonesArray* fStsTrackMatches;
-  TClonesArray* fGlobalTackArray;
+  TClonesArray* fGlobalTrackArray;
  
 
   TClonesArray* fListMCTracks;
@@ -146,6 +146,9 @@ private:
   void FinishDigiQa();
   void FinishHitQa();
   void FinishTrackQa();
+
+  CbmMvdQa(const CbmMvdQa&);
+  CbmMvdQa& operator=(const CbmMvdQa&);
 
  ClassDef(CbmMvdQa,1);
 };
