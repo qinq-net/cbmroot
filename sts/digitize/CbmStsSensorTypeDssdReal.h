@@ -139,6 +139,15 @@ class CbmStsSensorTypeDssdReal : public CbmStsSensorTypeDssd
 	virtual Int_t ProduceCharge(CbmStsSensorPoint* point, Int_t side,
 		const CbmStsSensor* sensor, std::vector<Double_t> &ELossLayerArray) const;
 
+
+        /**
+         * \brief Inherited from CbmStsSensorTypeDssd. 
+         * This method is implemented in order to avoid warnings.
+         */
+	virtual Int_t ProduceCharge(CbmStsSensorPoint*, Int_t,
+		const CbmStsSensor*) const {return -1;}
+
+
 	
  private:
 	CbmStsSensorTypeDssdReal(const CbmStsSensorTypeDssdReal&);

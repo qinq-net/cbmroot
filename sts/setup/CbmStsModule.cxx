@@ -302,7 +302,11 @@ void CbmStsModule::CreateCluster(Int_t clusterStart, Int_t clusterEnd,
 
 	Double_t error = 0.;
 	Int_t index = -1;
-std:cout.precision(10);
+
+// FU: Don't know why the following line is here. Comment it since the
+// change is global. Probably is was commited by accident with r 9816 
+//std:cout.precision(10);
+
 	//--- Center-of-gravity algorithm
 	if (algorithm == 0) {
 	    for (Int_t channel = clusterStart; channel <= clusterEnd; channel++) {
@@ -633,7 +637,7 @@ Int_t CbmStsModule::SetDeadChannels(Double_t percentage) {
 	fDeadChannels.clear();
 
 	// --- Number of dead channels
-	Int_t nOfDeadChannels = fraction * fNofChannels / 100;
+	UInt_t nOfDeadChannels = fraction * fNofChannels / 100;
 
 	// --- Case percentage < 50: randomise inactive channels
 	// --- N.b.: catches also zero fraction (nOfDeadChannels = 0)
@@ -725,7 +729,7 @@ CbmStsDigi* CbmStsModule::GetDigiTb(Int_t channel, Int_t index) {
 
 // -----   Create cluster in the output array   ----------------------------
 void CbmStsModule::CreateClusterTb(vector<Int_t> digiIndexes, Double_t s1,
-		Double_t s2, Double_t s3, Double_t ts, Bool_t side, TClonesArray* clusterArray) {
+		Double_t s2, Double_t s3, Double_t ts, Bool_t /*side*/, TClonesArray* clusterArray) {
 	CbmStsCluster* cluster = NULL;
 	// --- If output array is specified: Create a new cluster there
 	if ( clusterArray ) {

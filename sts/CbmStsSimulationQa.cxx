@@ -296,8 +296,8 @@ void CbmStsSimulationQa::Exec(Option_t* /*opt*/) {
 	  global[1] = point->GetYIn();
 	  global[2] = point->GetZIn();
 	  node->GetMatrix()->MasterToLocal(global, local);
-	  Double_t x = local[0];
-	  Double_t y = local[1];
+//	  Double_t x = local[0];
+//	  Double_t y = local[1];
 	  Double_t z = local[2];
 	  Double_t dist = TMath::Abs( TMath::Abs(z) - dZ ) * 10000.;
 	  fhDistIn->Fill(dist);
@@ -314,8 +314,8 @@ void CbmStsSimulationQa::Exec(Option_t* /*opt*/) {
 	  global[1] = point->GetYOut();
 	  global[2] = point->GetZOut();
 	  node->GetMatrix()->MasterToLocal(global, local);
-	  Double_t x = local[0];
-	  Double_t y = local[1];
+//	  Double_t x = local[0];
+//	  Double_t y = local[1];
 	  Double_t z = local[2];
 	  Double_t dist = TMath::Abs( TMath::Abs(z) - dZ ) * 10000.;
 	  fhDistOut->Fill(dist);

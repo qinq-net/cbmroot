@@ -86,7 +86,7 @@ void CbmStsSensorTypeDssdOrtho::Diffusion(Double_t x, Double_t y,
 
 // -----   Get channel number in module   ----------------------------------
 Int_t CbmStsSensorTypeDssdOrtho::GetModuleChannel(Int_t strip, Int_t side,
-                                             Int_t sensorId) const {
+                                             Int_t /*sensorId*/) const {
 
   // --- Check side
 	assert ( side == 0 || side == 1 );
@@ -142,7 +142,7 @@ Int_t CbmStsSensorTypeDssdOrtho::GetStripNumber(Double_t x, Double_t y,
 
 
 // -----   Get strip and side from channel number   ------------------------
-void CbmStsSensorTypeDssdOrtho::GetStrip(Int_t channel, Int_t sensorId,
+void CbmStsSensorTypeDssdOrtho::GetStrip(Int_t channel, Int_t /*sensorId*/,
                                     Int_t& strip, Int_t& side) {
 
   Int_t stripNr = -1;
@@ -212,8 +212,8 @@ Int_t CbmStsSensorTypeDssdOrtho::IntersectClusters(CbmStsCluster* clusterF,
 // -----   Set the parameters   --------------------------------------------
 void CbmStsSensorTypeDssdOrtho::SetParameters(Double_t dx, Double_t dy,
                                          Double_t dz, Int_t nStripsF,
-                                         Int_t nStripsB, Double_t stereoF,
-                                         Double_t stereoB) {
+                                         Int_t nStripsB, Double_t /*stereoF*/,
+                                         Double_t /*stereoB*/) {
 
   // --- Set members
   fDx           = dx;

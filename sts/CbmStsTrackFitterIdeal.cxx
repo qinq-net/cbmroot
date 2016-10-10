@@ -81,14 +81,14 @@ void CbmStsTrackFitterIdeal::Init()
 
 
 // ------------------------ Fitting algorithm ------------------------------
-Int_t CbmStsTrackFitterIdeal::DoFit(CbmStsTrack* pTrack, Int_t pidHypo)
+Int_t CbmStsTrackFitterIdeal::DoFit(CbmStsTrack* pTrack, Int_t /*pidHypo*/)
 {
     if(NULL == fArrayStsPoint || NULL == fArrayStsHit ) return 0;
 
     // Parameters at the first plane
     Int_t hitIndex = -1;
     CbmStsHit* hit;
-    Int_t pointIndex;
+    Int_t pointIndex = -1;
     if(pTrack->GetNofStsHits() > 0) {
 	hitIndex = pTrack->GetHitIndex(0);
 	if(hitIndex < 0) return 0;

@@ -179,7 +179,7 @@ void CbmStsTimeBasedQaReport::DrawDigiPerObjectHistograms(const string& type)
   DrawH1(histos, labels, kLinear, kLog, true, 0.65, 0.7, 0.9, 0.9);
 }
 
-void CbmStsTimeBasedQaReport::ScaleHistograms(const string& type)
+void CbmStsTimeBasedQaReport::ScaleHistograms(const string& /*type*/)
 {
   Int_t nofEvents = HM()->H1("hen_EventNo_TimeBasedQa")->GetEntries();
   if ( nofEvents == 0 ) nofEvents = 1;

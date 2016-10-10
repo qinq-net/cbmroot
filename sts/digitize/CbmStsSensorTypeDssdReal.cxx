@@ -150,7 +150,7 @@ void CbmStsSensorTypeDssdReal::DiffusionAndLorentzShift (Double_t delta, Double_
 
     for (Int_t iStrip = roI - 1; iStrip <= roI + 1 ; iStrip ++){
 	if (stripChargeMap[iStrip] > 0){
-	    Int_t iStripReal = iStrip;
+//	    Int_t iStripReal = iStrip;
 	    if (iStrip < 0) iStrip += nStrips;
 	    if (iStrip >= nStrips) iStrip -= nStrips;
 	    stripCharge[iStrip] += stripChargeMap[iStrip];

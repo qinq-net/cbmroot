@@ -488,7 +488,7 @@ void CbmStsSetup::InitDaughters() {
 
 	TGeoNode* mNode = fNode->GetNode();   // This node
 	TString   mPath = fNode->GetName();   // Full path to this node
-	Int_t nDaughters = 0;
+	//Int_t nDaughters = 0;
 	for (Int_t iNode = 0; iNode < mNode->GetNdaughters(); iNode++) {
 		TGeoNode* unitNode = mNode->GetDaughter(iNode);
 		assert(unitNode);

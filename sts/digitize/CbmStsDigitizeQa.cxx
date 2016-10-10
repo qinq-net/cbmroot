@@ -80,7 +80,7 @@ InitStatus CbmStsDigitizeQa::Init(){
     return kSUCCESS;
 }
 
-void CbmStsDigitizeQa::Exec(Option_t* opt){
+void CbmStsDigitizeQa::Exec(Option_t* /*opt*/){
     ProcessDigisAndPoints(fStsDigis, fStsPoints);
     fHM -> H1("h_EventNo_DigitizeQa") -> Fill(0.5);
 }
@@ -177,7 +177,9 @@ void CbmStsDigitizeQa::CreateDigiHistograms(){
     fHM -> Create1<TH1F>("h_PointsInDigiLog", "PointsInDigi;Number of Points;Entries", nofBins, minX, maxX);
     fHM -> Create1<TH1F>("h_DigisByPoint", "DigisByPoint;Number of Digis;Entries" , nofBins, minX, maxX);
     fHM -> Create1<TH1F>("h_DigisByPointLog", "DigisByPoint;Number of Digis;Entries" , nofBins, minX, maxX);
-    Double_t tempD; Int_t tempI, nAdc; 
+    Double_t tempD; 
+//    Int_t tempI;
+    Int_t  nAdc; 
     fDigitizer -> GetParameters(tempD, tempD, nAdc, tempD, tempD, tempD);
     nofBins = nAdc;
     fHM -> Create1<TH1F>("h_DigiCharge", "DigiCharge;Digi Charge, ADC;Entries", nofBins, 0., Double_t(nofBins));
@@ -263,7 +265,7 @@ void CbmStsDigitizeQa::ProcessDigisAndPoints(const TClonesArray* digis, const TC
 	fHM -> H1("h_DigisByPointLog") -> Fill(digisByPoint[*set_it]);
 	fHM -> H1("h_DigisByPointLog") -> Fill(digisByPoint[*set_it + 0.00001]);
     }
-    if ( pointIndexes.size() > fMaxScale ) fMaxScale = pointIndexes.size();
+    if ( pointIndexes.size() > static_cast<size_t>(fMaxScale) ) fMaxScale = pointIndexes.size();
 
     Double_t pointX, pointY, pointZ;
     Double_t pointPX, pointPZ;

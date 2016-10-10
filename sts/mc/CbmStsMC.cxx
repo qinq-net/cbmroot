@@ -137,7 +137,7 @@ void CbmStsMC::Initialize() {
 
 
 // -----   ProcessHits  ----------------------------------------------------
-Bool_t CbmStsMC::ProcessHits(FairVolume* vol) {
+Bool_t CbmStsMC::ProcessHits(FairVolume* /*vol*/) {
 
   // --- If this is the first step for the track in the sensor:
   //     Reset energy loss and store track parameters
@@ -191,7 +191,7 @@ void CbmStsMC::Reset() {
 
 // -----   Screen log   ----------------------------------------------------
 void CbmStsMC::Print(Option_t* /*opt*/) const {
-  Int_t nHits = fStsPoints->GetEntriesFast();
+  //Int_t nHits = fStsPoints->GetEntriesFast();
   LOG(INFO) << fName << ": " << fStsPoints->GetEntriesFast()
             << " points registered in this event." << FairLogger::endl;
 }
@@ -362,7 +362,7 @@ void CbmStsMC::ExpandStsNodes(TGeoNode* fN)
 
 }
 
-Bool_t CbmStsMC::IsNewGeometryFile(TString filename)
+Bool_t CbmStsMC::IsNewGeometryFile(TString /*filename*/)
 {
 
   TFile* f=new TFile(fgeoName);

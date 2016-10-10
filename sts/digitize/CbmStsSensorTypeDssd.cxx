@@ -130,13 +130,13 @@ Int_t CbmStsSensorTypeDssd::FindHits(vector<CbmStsCluster*>& clusters,
 
 	Int_t nClustersF = 0;
 	Int_t nClustersB = 0;
-	Double_t xF = -1.;   // Cluster position on sensor edge
-	Double_t xB = -1.;   // Cluster position on sensor edge
+//	Double_t xF = -1.;   // Cluster position on sensor edge
+//	Double_t xB = -1.;   // Cluster position on sensor edge
 
 	// --- Sort clusters into front and back side
 	vector<Int_t> frontClusters;
 	vector<Int_t> backClusters;
-	Double_t xCluster = -1.;  // cluster position on read-out edge
+//	Double_t xCluster = -1.;  // cluster position on read-out edge
 	Int_t side  = -1;         // front or back side
 	for (Int_t iCluster = 0; iCluster < nClusters; iCluster++) {
 		CbmStsCluster* cluster = clusters[iCluster];
@@ -159,8 +159,8 @@ Int_t CbmStsSensorTypeDssd::FindHits(vector<CbmStsCluster*>& clusters,
 			        << ") " << FairLogger::endl;
 
 	// --- Loop over front and back side clusters
-	Double_t xClusterF = -1.;  // Front cluster position at r/o edge
-	Double_t xClusterB = -1.;  // Back cluster position at r/o edge
+//	Double_t xClusterF = -1.;  // Front cluster position at r/o edge
+//	Double_t xClusterB = -1.;  // Back cluster position at r/o edge
 	for (Int_t iClusterF = 0; iClusterF < nClustersF; iClusterF++) {
 		CbmStsCluster* clusterF = clusters[frontClusters[iClusterF]];
 		for (Int_t iClusterB = 0; iClusterB < nClustersB;	iClusterB++) {
@@ -908,7 +908,7 @@ Int_t CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
   // Stereo angle and strip pitch
   Double_t tanphi = fTanStereo[side];
   Double_t pitch  = fPitch[side];
-  Int_t nStrips   = fNofStrips[side];
+//  Int_t nStrips   = fNofStrips[side];
 
   // Debug output
   LOG(DEBUG3) << GetName() << ": Side " << side << ", dx = " << fDx

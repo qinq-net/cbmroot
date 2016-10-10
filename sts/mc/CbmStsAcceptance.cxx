@@ -61,7 +61,7 @@ void CbmStsAcceptance::Clear(Option_t*) {
 
 
 // -----   Task execution   -------------------------------------------------
-void CbmStsAcceptance::Exec(Option_t* opt) {
+void CbmStsAcceptance::Exec(Option_t* /*opt*/) {
 
 	fTimer.Start();
 

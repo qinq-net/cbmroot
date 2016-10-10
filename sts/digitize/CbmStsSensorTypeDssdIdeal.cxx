@@ -76,9 +76,9 @@ Int_t CbmStsSensorTypeDssdIdeal::ProcessPoint(CbmStsSensorPoint* point,
 
 // -----   Produce charge on the strips   ----------------------------------
 Int_t CbmStsSensorTypeDssdIdeal::ProduceCharge(CbmStsSensorPoint* point,
-																					 		 Int_t side,
-                                               const CbmStsSensor* sensor)
-																						 	 {
+                                               Int_t side,
+                                               const CbmStsSensor* sensor) const
+{
 
   // --- Protect against being called without parameters being set
   if ( ! fIsSet ) LOG(FATAL) << "Parameters of sensor " << fName

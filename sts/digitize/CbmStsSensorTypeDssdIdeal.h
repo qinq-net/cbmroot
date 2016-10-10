@@ -61,7 +61,7 @@ class CbmStsSensorTypeDssdIdeal : public CbmStsSensorTypeDssd
      ** Re-implements CbmStsSensorTypeDssd::ProduceCharge
      **/
     virtual Int_t ProduceCharge(CbmStsSensorPoint* point, Int_t side,
-                                const CbmStsSensor* sensor);
+                                const CbmStsSensor* sensor) const;
 
 
 

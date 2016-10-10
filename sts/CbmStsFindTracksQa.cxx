@@ -588,7 +588,7 @@ InitStatus CbmStsFindTracksQa::GetGeometry() {
 // -----   Get target node   -----------------------------------------------
 void CbmStsFindTracksQa::GetTargetPosition() {
 
-  TGeoNode* target;
+  TGeoNode* target=NULL;
 
   gGeoManager->CdTop();
   TGeoNode* cave = gGeoManager->GetCurrentNode();

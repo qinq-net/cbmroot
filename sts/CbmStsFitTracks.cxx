@@ -36,7 +36,7 @@ CbmStsFitTracks::CbmStsFitTracks()
 
 
 // -----   Standard constructor   ------------------------------------------
-CbmStsFitTracks::CbmStsFitTracks(CbmStsTrackFitter* fitter, Int_t iVerbose) 
+CbmStsFitTracks::CbmStsFitTracks(CbmStsTrackFitter* fitter, Int_t /*iVerbose*/) 
   : FairTask("STSFitTracks"),
     fFitter(fitter),
     fTracks(NULL),

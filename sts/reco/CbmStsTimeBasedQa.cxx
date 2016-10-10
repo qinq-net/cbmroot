@@ -73,7 +73,7 @@ InitStatus CbmStsTimeBasedQa::Init()
   return kSUCCESS;
 }
 
-void CbmStsTimeBasedQa::Exec(Option_t* opt)
+void CbmStsTimeBasedQa::Exec(Option_t* /*opt*/)
 {
   string type;
   if ( fDaq ) {
@@ -254,7 +254,7 @@ void CbmStsTimeBasedQa::Create2dHistograms(const string& type)
 	  nofBinsA, minA, maxA, nofBins, minX, maxX);
 }
 
-void CbmStsTimeBasedQa::ProcessDigisAndPoints(const vector<CbmStsDigi> digis, CbmMCDataArray* points, const string& type)
+void CbmStsTimeBasedQa::ProcessDigisAndPoints(const vector<CbmStsDigi> digis, CbmMCDataArray* /*points*/, const string& type)
 {
   Int_t CellSize = 100;
   Int_t nCells = 1;
@@ -269,7 +269,7 @@ void CbmStsTimeBasedQa::ProcessDigisAndPoints(const vector<CbmStsDigi> digis, Cb
   std::map<Double_t, Int_t> digisByPoint;
   std::map<Double_t, Int_t>::iterator map_it;
   pointIndexes.clear();
-  for(Int_t iDigi = 0; iDigi < digis.size(); iDigi++) {
+  for(UInt_t iDigi = 0; iDigi < digis.size(); iDigi++) {
     const CbmStsDigi stsDigi = digis[iDigi];
     const CbmMatch* digiMatch = static_cast<const CbmMatch*>(stsDigi.GetMatch());
     Int_t stationId = CbmStsAddress::GetElementId(stsDigi.GetAddress(), kStsStation);
@@ -278,7 +278,7 @@ void CbmStsTimeBasedQa::ProcessDigisAndPoints(const vector<CbmStsDigi> digis, Cb
       Double_t index = (1000 * link.GetIndex()) + (link.GetFile()) + (0.0001 * link.GetEntry());
 
       if ( pointIndexes.count(index) == 0 ) {
-        CbmStsPoint* point = (CbmStsPoint*) points->Get(link.GetFile(), link.GetEntry() - 1, link.GetIndex());
+//        CbmStsPoint* point = (CbmStsPoint*) points->Get(link.GetFile(), link.GetEntry() - 1, link.GetIndex());
         Double_t timeD = stsDigi.GetTime();
         Int_t iCell = 0;
         if (fDaq) iCell = (timeD - fTimeSlice->GetStartTime()) / CellSize;
@@ -307,10 +307,10 @@ void CbmStsTimeBasedQa::ProcessDigisAndPoints(const vector<CbmStsDigi> digis, Cb
     fHM->H1("hdo_DigisByPoint_" + type)->Fill(digisByPoint[*set_it]);
     fHM->H1("hdo_DigisByPoint_" + type)->Fill(digisByPoint[*set_it + 0.00001]);
   }
-  if ( pointIndexes.size() > fMaxScale ) fMaxScale = pointIndexes.size();
+  if ( pointIndexes.size() > static_cast<size_t>(fMaxScale) ) fMaxScale = pointIndexes.size();
 }
 
-void CbmStsTimeBasedQa::ProcessDigisAndPoints(const TClonesArray* digis, const CbmMCDataArray* points, const string& type)
+void CbmStsTimeBasedQa::ProcessDigisAndPoints(const TClonesArray* digis, const CbmMCDataArray* /*points*/, const string& type)
 {
   if ( NULL != digis && fHM->Exists("hno_NofObjects_Digis_" + type) )
     fHM->H1("hno_NofObjects_Digis_" + type)->Fill(digis->GetEntriesFast());
@@ -348,7 +348,7 @@ void CbmStsTimeBasedQa::ProcessDigisAndPoints(const TClonesArray* digis, const C
     fHM->H1("hdo_DigisByPoint_" + type)->Fill(digisByPoint[*set_it]);
     fHM->H1("hdo_DigisByPoint_" + type)->Fill(digisByPoint[*set_it + 0.00001]);
   }
-  if ( pointIndexes.size() > fMaxScale ) fMaxScale = pointIndexes.size();
+  if ( pointIndexes.size() > static_cast<size_t>(fMaxScale) ) fMaxScale = pointIndexes.size();
 }
 
 void CbmStsTimeBasedQa::ProcessClusters(const TClonesArray* clusters, const TClonesArray* clusterMatches, CbmMCDataArray* points, const string& type)
@@ -395,7 +395,7 @@ void CbmStsTimeBasedQa::ProcessHits(const TClonesArray* hits, const TClonesArray
   Int_t nofMatchedHits = 0;
   vector<CbmLink> links;
   links.clear();
-  Int_t nofDoubledHits = 0;
+//  Int_t nofDoubledHits = 0;
   for(Int_t iHit = 0; iHit < hits->GetEntriesFast(); iHit++) {
     const CbmStsHit* hit = static_cast<CbmStsHit*>(hits->At(iHit));
     const CbmMatch* hitMatch = static_cast<CbmMatch*>(hitMatches->At(iHit));
@@ -405,7 +405,7 @@ void CbmStsTimeBasedQa::ProcessHits(const TClonesArray* hits, const TClonesArray
     if ( hitMatch->GetNofLinks() == 1 ) {
       const CbmLink& link = static_cast<const CbmLink&>(hitMatch->GetLink(0));
       Bool_t d = kFALSE;
-      for(Int_t i = 0; i < links.size(); i++) {
+      for(UInt_t i = 0; i < links.size(); i++) {
     	  if ( link == links[i] ) {
     		  d = kTRUE;
     		  break;
@@ -434,7 +434,7 @@ void CbmStsTimeBasedQa::ProcessHits(const TClonesArray* hits, const TClonesArray
           const CbmLink backLink = backClusterMatch->GetLink(iBackLink);
           if ( frontLink == backLink ) {
             Bool_t d = kFALSE;
-            for(Int_t i = 0; i < links.size(); i++) {
+            for(UInt_t i = 0; i < links.size(); i++) {
           	  if ( frontLink == links[i] ) {
                 d = kTRUE;
                 break;
@@ -539,7 +539,7 @@ void CbmStsTimeBasedQa::FillResidualAndPullHistograms(
     }
     fHM->H1(nameResX)->Fill(residualX * 10000);
     fHM->H1(nameResY)->Fill(residualY * 10000);
-    std:cout.precision(10);
+//    std:cout.precision(10);
     fHM->H1(namePullX)->Fill(residualX / hit->GetDx());
     fHM->H1(namePullY)->Fill(residualY / hit->GetDy());
     fHM->H1(nameResXvsClusterSize)->Fill(clusterSizeFront, residualX * 10000);

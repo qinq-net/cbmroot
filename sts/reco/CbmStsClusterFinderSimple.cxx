@@ -49,7 +49,7 @@ Int_t CbmStsClusterFinderSimple::FindClustersSimple(CbmStsModule* module) {
 
     // --- Counter and indizes
     Int_t nClusters = 0;
-    Int_t index = -1;       // dummy
+//    Int_t index = -1;       // dummy
     Int_t clusterStart = -1;
     Int_t clusterEnd   = -1;
 
@@ -270,7 +270,7 @@ Int_t CbmStsClusterFinderSimple::FindClustersTb(CbmStsModule* module) {
 		// --- ELSE (digi not found, cluster is open) -> close cluster ---
 		else {
 			if ( digiArray.size() ) {
-				Double_t meanClusterTime = clusterTime / (Double_t)digiArray.size();
+//				Double_t meanClusterTime = clusterTime / (Double_t)digiArray.size();
 				//... close cluster
 				cluster = kFALSE;
 				module->CreateClusterTb(&digiArray, firstChannel, fClusters, 0);

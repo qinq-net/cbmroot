@@ -783,7 +783,7 @@ void CbmStsDigitize::SetSensorTypes() {
 	if ( fDigiModel == 3 ) {
 		LOG(INFO) << GetName() << ": Detector response model SIMPLE OLD"
 				      << FairLogger::endl;
-		Int_t nSensors = fSetup->GetNofSensors();
+//		Int_t nSensors = fSetup->GetNofSensors();
 		for (Int_t iSensor = 0; iSensor < fSetup->GetNofSensors(); iSensor++) {
 			CbmStsSensor* sensor = fSetup->GetSensor(iSensor);
 
@@ -805,7 +805,7 @@ void CbmStsDigitize::SetSensorTypes() {
 			      << ( fDigiModel == 0 ? "IDEAL" : "REAL" ) << FairLogger::endl;
 
 	// --- Loop over sensors in setup
-	Int_t nSensors = fSetup->GetNofSensors();
+//	Int_t nSensors = fSetup->GetNofSensors();
 	for (Int_t iSensor = 0; iSensor < fSetup->GetNofSensors(); iSensor++) {
 		CbmStsSensor* sensor = fSetup->GetSensor(iSensor);
 
