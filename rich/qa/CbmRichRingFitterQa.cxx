@@ -82,8 +82,8 @@ CbmRichRingFitterQa::~CbmRichRingFitterQa()
 
 void CbmRichRingFitterQa::GenerateEllipse()
 {
-	Double_t maxX = 15;
-	Double_t maxY = 15;
+//	Double_t maxX = 15;
+//	Double_t maxY = 15;
 	Int_t nofHits = 50;
 	Double_t A = 6.;
 	Double_t B = 6.;
@@ -147,7 +147,7 @@ void CbmRichRingFitterQa::GenerateEllipse()
    cout << nofBadFit << endl;
 }
 
-void CbmRichRingFitterQa::Draw()
+void CbmRichRingFitterQa::Draw(Option_t*)
 {
 	TCanvas * c = new TCanvas("rich_fitter_errors", "rich_fitter_errors", 900, 600);
 	c->Divide(3,2);

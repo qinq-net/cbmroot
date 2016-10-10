@@ -43,7 +43,7 @@ void CbmRichTrbPulserQa::InitHist()
 }
 
 void CbmRichTrbPulserQa::Exec(
-		Option_t* option)
+		Option_t* /*option*/)
 {
 	fEventNum++;
 	LOG(DEBUG2) << "CbmRichTrbPulserQa : Event #" << fEventNum << FairLogger::endl;

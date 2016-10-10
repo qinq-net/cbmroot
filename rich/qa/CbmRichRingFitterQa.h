@@ -49,7 +49,7 @@ public:
 	/**
 	 * \brief Draw generated and fitted circle/ellipse.
 	 */
-	void Draw();
+	void Draw(Option_t* = "");
 
 private:
 	// ellipse fitting algorithm, errors

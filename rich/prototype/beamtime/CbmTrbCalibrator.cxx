@@ -417,7 +417,7 @@ void CbmTrbCalibrator::GenHistos()
 } // end of method
 
 //TODO draw all 17, not 16 tables
-void CbmTrbCalibrator::Draw()
+void CbmTrbCalibrator::Draw(Option_t*)
 {
    TCanvas* c[4];
    for (int t=0; t<4; t++)

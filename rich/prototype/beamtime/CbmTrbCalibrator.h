@@ -95,7 +95,7 @@ public: // methods
    /*
     * Draw a canvas with the flags indicating whilch channels have been calibrated.
     */
-   void Draw();
+   void Draw(Option_t* ="");
 
    /*
     * Force calibration of all the channels using the data already in the tables no matter what the period is.

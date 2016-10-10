@@ -223,7 +223,7 @@ void CbmRichRingHitsAnalyser::Exec(Option_t* /*option*/)
 	CbmRichTrbParam* param = CbmRichTrbParam::Instance();
 
 	Int_t numOfRings = fRichRings->GetEntriesFast();
-	Int_t numOfHits = fRichHits->GetEntriesFast();
+//	Int_t numOfHits = fRichHits->GetEntriesFast();
 
 	fHM->H1("hNumOfRingInEvent")->Fill(numOfRings);
 
@@ -264,11 +264,11 @@ void CbmRichRingHitsAnalyser::Exec(Option_t* /*option*/)
 		Int_t hitTDCid1;
 		Int_t hitChannel1;
 
-		Int_t hitIndex2;
-		CbmRichHit* curHit2;
-		CbmRichHitInfo* curHitInfo2;
-		Int_t hitTDCid2;
-		Int_t hitChannel2;
+//		Int_t hitIndex2;
+//		CbmRichHit* curHit2;
+//		CbmRichHitInfo* curHitInfo2;
+//		Int_t hitTDCid2;
+//		Int_t hitChannel2;
 
 		TString histoName;
 

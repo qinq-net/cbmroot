@@ -138,7 +138,7 @@ InitStatus CbmRichTestHits::Init()
 }
 
 void CbmRichTestHits::Exec(
-      Option_t* option)
+      Option_t* /*option*/)
 {
    fNEvents++;
 

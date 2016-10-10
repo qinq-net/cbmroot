@@ -9,12 +9,12 @@
 #include "CbmRichHit.h"
 
 CbmRichEventDebug::CbmRichEventDebug()
-	: FairTask(),
-	  fRichHits(NULL),
-	  fRichHitInfos(NULL),
-	  fHM(NULL),
-	  fSingleEventFilled(kFALSE),
-	  fOutHistoFile("")
+  : FairTask(),
+    fRichHits(NULL),
+    fRichHitInfos(NULL),
+    fSingleEventFilled(kFALSE),
+    fOutHistoFile(""),
+    fHM(NULL)
 {
 
 }

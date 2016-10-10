@@ -311,12 +311,12 @@ void CbmRichTrbUnpack::DecodeTdcData(
 
 		UInt_t tdcMarker = (tdcData >> 29) & 0x7; //3 bits
 		if (tdcMarker == 0x1) {// TDC header
-			UInt_t randomCode = (tdcData >> 16) & 0xff; // 8bits
-			UInt_t errorBits = (tdcData) & 0xffff; //16 bits
+		  //			UInt_t randomCode = (tdcData >> 16) & 0xff; // 8bits
+		  //			UInt_t errorBits = (tdcData) & 0xffff; //16 bits
 			//printf("TDC HEADER randomCode:0x%02x, errorBits:0x%04x\n", randomCode, errorBits);
 		} else if (tdcMarker == 0x2) {// DEBUG
-			UInt_t debugMode = (tdcData >> 24) & 0x1f; //5
-			UInt_t debugBits = (tdcData) & 0xffffff;//24 bits
+		  //	UInt_t debugMode = (tdcData >> 24) & 0x1f; //5
+		  //	UInt_t debugBits = (tdcData) & 0xffffff;//24 bits
 			//printf("DEBUG debugMode:%i, debugBits:0x%06x\n", debugMode, debugBits);
 		} else if (tdcMarker == 0x3){ // EPOCH counter
 			curEpochCounter = (tdcData) & 0xfffffff; //28 bits
@@ -450,8 +450,8 @@ Double_t CbmRichTrbUnpack::GetFullTime(UShort_t TDC, UShort_t CH, UInt_t epoch, 
 {
 	Double_t coarseUnit = 5.;
 	Double_t epochUnit = coarseUnit * 0x800;
-	UInt_t trb_index = (TDC >> 4) & 0x00FF - 1;
-	UInt_t tdc_index = (TDC & 0x000F);
+	//	UInt_t trb_index = (TDC >> 4) & 0x00FF - 1;
+	//	UInt_t tdc_index = (TDC & 0x000F);
 	Double_t time = epoch * epochUnit + coarseTime * coarseUnit - CbmTrbCalibrator::Instance()->GetFineTimeCalibrated(TDC, CH, fineTime);
 
 	if (CH != 0){
@@ -511,7 +511,7 @@ void CbmRichTrbUnpack::BuildEvent(Int_t refHitIndex)
 	}
 
 	FindMinMaxIndex(eventTime, EVENT_TIME_WINDOW, fOutputRichHits,&indmin, &indmax);
-	Int_t size = indmax - indmin + 1;
+	//	Int_t size = indmax - indmin + 1;
 	UInt_t nofHitsTrb[TRB_TDC3_NUMBOARDS];
 	for (UInt_t i = 0; i < TRB_TDC3_NUMBOARDS; i++) {
 		nofHitsTrb[i] = 0;
@@ -540,7 +540,7 @@ void CbmRichTrbUnpack::BuildEvent(Int_t refHitIndex)
 	}
 }
 
-void CbmRichTrbUnpack::AddRichHitToOutputArray(UShort_t trbId, CbmRichHitInfo* hitInfo)
+void CbmRichTrbUnpack::AddRichHitToOutputArray(UShort_t /*trbId*/, CbmRichHitInfo* hitInfo)
 {
 	UInt_t counter1 = fRichHits->GetEntries();
 	new((*fRichHits)[counter1]) CbmRichHit();
@@ -583,32 +583,32 @@ void CbmRichTrbUnpack::FindMinMaxIndex(
 
 void CbmRichTrbUnpack::ClearAllBuffers()
 {
-	for (Int_t i = 0; i < fRawRichHits.size(); i++) {
+	for (UInt_t i = 0; i < fRawRichHits.size(); i++) {
 		delete fRawRichHits[i];
 	}
 	fRawRichHits.clear();
 
-	for (Int_t i = 0; i < fRawEventTimeHits.size(); i++) {
+	for (UInt_t i = 0; i < fRawEventTimeHits.size(); i++) {
 		delete fRawEventTimeHits[i];
 	}
 	fRawEventTimeHits.clear();
 
-	for (Int_t i = 0; i < fRawFingerSciHits.size(); i++) {
+	for (UInt_t i = 0; i < fRawFingerSciHits.size(); i++) {
 		delete fRawFingerSciHits[i];
 	}
 	fRawFingerSciHits.clear();
 
-	for (Int_t i = 0; i < fOutputRichHits.size(); i++) {
+	for (UInt_t i = 0; i < fOutputRichHits.size(); i++) {
 		delete fOutputRichHits[i];
 	}
 	fOutputRichHits.clear();
 
-	for (Int_t i = 0; i < fOutputEventTimeHits.size(); i++) {
+	for (UInt_t i = 0; i < fOutputEventTimeHits.size(); i++) {
 		delete fOutputEventTimeHits[i];
 	}
 	fOutputEventTimeHits.clear();
 
-	for (Int_t i = 0; i < fOutputFingerSciHits.size(); i++) {
+	for (UInt_t i = 0; i < fOutputFingerSciHits.size(); i++) {
 		delete fOutputFingerSciHits[i];
 	}
 	fOutputFingerSciHits.clear();
@@ -674,11 +674,11 @@ void CbmRichTrbUnpack::CreateAndDrawQa()
 		}
 	}
 
-	for (int i = 0; i < fRawRichHits.size(); i++) {
+	for (unsigned int i = 0; i < fRawRichHits.size(); i++) {
 		FillRawHitHist(fRawRichHits[i]);
 	}
 
-	for (int i = 0; i < fOutputRichHits.size(); i++) {
+	for (unsigned int i = 0; i < fOutputRichHits.size(); i++) {
 		FillOutputHitHist(fOutputRichHits[i]);
 	}
 
@@ -738,12 +738,12 @@ void CbmRichTrbUnpack::CreateAndDrawEventBuildDisplay()
 	TH1D* hHitTime = new TH1D("hHitTime", "hHitTime;Time [ns];Entries", 10000, 0., maxT - minT);
 	TH1D* hDiffRefTime = new TH1D("hDiffRefTime", "hDiffRefTime;dT [ns];Entries", 2000, -10., 200000);
 	std::sort(fOutputEventTimeHits.begin(), fOutputEventTimeHits.end(), CbmTrbOutputHitLeadingFullTimeComparatorLess());
-	for (int i = 0; i < fOutputEventTimeHits.size(); i++) {
+	for (unsigned int i = 0; i < fOutputEventTimeHits.size(); i++) {
 		hRefTime->Fill(fOutputEventTimeHits[i]->GetLFullTime() - minT);
 
 		if (i != 0) hDiffRefTime->Fill( fOutputEventTimeHits[i]->GetLFullTime() - fOutputEventTimeHits[i-1]->GetLFullTime() );
 	}
-	for (int i = 0; i < fOutputRichHits.size(); i++) {
+	for (unsigned int i = 0; i < fOutputRichHits.size(); i++) {
 		hHitTime->Fill(fOutputRichHits[i]->GetLFullTime() - minT);
 	}
 

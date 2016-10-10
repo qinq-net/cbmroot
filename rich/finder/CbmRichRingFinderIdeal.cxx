@@ -59,7 +59,7 @@ void CbmRichRingFinderIdeal::Init()
 
 Int_t CbmRichRingFinderIdeal::DoFind(
                                      TClonesArray* hitArray,
-                                     TClonesArray* projArray,
+                                     TClonesArray* /*projArray*/,
                                      TClonesArray* ringArray)
 {
     if ( NULL == hitArray) {
@@ -79,7 +79,7 @@ Int_t CbmRichRingFinderIdeal::DoFind(
         CbmRichHit* pRhit = (CbmRichHit*) hitArray->At(iHit);
         if ( NULL == pRhit ) continue;
         vector<Int_t> motherIds = CbmMatchRecoToMC::GetMcTrackMotherIdsForRichHit(pRhit, fRichDigis, fRichPoints, fMcTracks);
-        for (Int_t i = 0; i < motherIds.size(); i++) {
+        for (UInt_t i = 0; i < motherIds.size(); i++) {
             hitMap[motherIds[i]]++;
         }
         //cout << "motherId=" << motherId << " " << hitMap[motherId] << endl;
@@ -107,7 +107,7 @@ Int_t CbmRichRingFinderIdeal::DoFind(
         
         vector<Int_t> motherIds = CbmMatchRecoToMC::GetMcTrackMotherIdsForRichHit(pRhit, fRichDigis, fRichPoints, fMcTracks);
         
-        for (Int_t i = 0; i < motherIds.size(); i++) {
+        for (UInt_t i = 0; i < motherIds.size(); i++) {
             Int_t motherId = motherIds[i];
             if (motherId < 0 || motherId > nMCTracks) continue;
             

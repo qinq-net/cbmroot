@@ -92,7 +92,7 @@ InitStatus CbmRichUrqmdTest::Init()
 }
 
 void CbmRichUrqmdTest::Exec(
-                            Option_t* option)
+                            Option_t* /*option*/)
 {
     fEventNum++;
     
@@ -160,7 +160,7 @@ void CbmRichUrqmdTest::FillRichRingNofHits()
         if (NULL == hit) continue;
         
         vector<Int_t> motherIds = CbmMatchRecoToMC::GetMcTrackMotherIdsForRichHit(hit, fRichDigis, fRichPoints, fMcTracks);
-        for (Int_t i = 0; i < motherIds.size(); i++) {
+        for (UInt_t i = 0; i < motherIds.size(); i++) {
             fNofHitsInRingMap[motherIds[i]]++;
         }
     }
@@ -551,7 +551,7 @@ TCanvas* CbmRichUrqmdTest::CreateCanvas(
 
 void CbmRichUrqmdTest::SaveCanvasToImage()
 {
-    for (int i = 0; i < fCanvas.size(); i++)
+    for (unsigned int i = 0; i < fCanvas.size(); i++)
     {
         Cbm::SaveCanvasAsImage(fCanvas[i], fOutputDir);
     }

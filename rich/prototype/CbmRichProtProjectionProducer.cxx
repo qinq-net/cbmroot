@@ -28,7 +28,7 @@ using std::endl;
 
 
 CbmRichProtProjectionProducer::CbmRichProtProjectionProducer(
-      Int_t zflag):
+      Int_t /*zflag*/):
    fListRICHImPlanePoint(NULL),
 
    fNHits(0),

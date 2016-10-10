@@ -80,7 +80,7 @@ InitStatus CbmRichEventDisplay::Init()
 }
 
 void CbmRichEventDisplay::Exec(
-      Option_t* opt)
+      Option_t* /*opt*/)
 {
    fEventNum++;
    SetDefaultDrawStyle();

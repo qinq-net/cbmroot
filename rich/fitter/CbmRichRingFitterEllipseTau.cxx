@@ -197,7 +197,7 @@ void CbmRichRingFitterEllipseTau::InitMatrices(
 		fZ[i6+5] = fZT[i+numHits5] = 1.;
 	}
 	AMultB(fZT, numHits6, numHits, fZ, numHits6, 6, fM);
-	for (int i = 0; i < numHits6;i++) fM[i] = oneOverNumHits*fM[i];
+	for (unsigned int i = 0; i < numHits6;i++) fM[i] = oneOverNumHits*fM[i];
 
 	for (int i = 0; i < 25; i++) fP[i]=0.;
 

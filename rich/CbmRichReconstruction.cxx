@@ -116,7 +116,7 @@ InitStatus CbmRichReconstruction::Init()
 }
 
 void CbmRichReconstruction::Exec(
-                                 Option_t* opt)
+                                 Option_t* /*opt*/)
 {
     LOG(INFO) << "CbmRichReconstruction Exec" << FairLogger::endl;
     if (fRunExtrapolation) RunExtrapolation();

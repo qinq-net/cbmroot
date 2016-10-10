@@ -36,19 +36,16 @@ CbmRichTrbUnpack2::CbmRichTrbUnpack2() :
       fDataSize(0),
       fTrbIter(NULL),
       fNumPushed(0),
-
-      fHM(NULL),
       fLastSyncTime(0.),
       fMainSyncTime(0.),
       fCorr(0.),
       fMainSyncDefined(kFALSE),
+      fHM(NULL),
       fMessageBuffer(),
       fEventStack(),
-
       inGarbCollMode(kFALSE),
       inFinalCleanup(kFALSE),
       fCurNeventsInBuf(),
-
       fTrbRawHits(new TClonesArray("CbmTrbRawMessage", 10))
 {
 }
@@ -68,19 +65,16 @@ CbmRichTrbUnpack2::CbmRichTrbUnpack2(TString hldFileName) :
       fDataSize(0),
       fTrbIter(NULL),
       fNumPushed(0),
-
-      fHM(NULL),
       fLastSyncTime(0.),
       fMainSyncTime(0.),
       fCorr(0.),
       fMainSyncDefined(kFALSE),
+      fHM(NULL),
       fMessageBuffer(),
       fEventStack(),
-
       inGarbCollMode(kFALSE),
       inFinalCleanup(kFALSE),
       fCurNeventsInBuf(),
-
       fTrbRawHits(new TClonesArray("CbmTrbRawMessage", 10))
 {
    fHldFiles.push_back(hldFileName);
@@ -410,7 +404,7 @@ void CbmRichTrbUnpack2::PushEvent(std::multimap<Double_t, CbmTrbRawMessage*>::it
 void CbmRichTrbUnpack2::ProcessSubEvent(CbmRawSubEvent* subEvent) {
 	UInt_t tdcDataIndex = 0;
 	UInt_t tdcData = 0x0;
-	UInt_t subEventId = subEvent->SubId();
+	//	UInt_t subEventId = subEvent->SubId();
 
 	fLastSyncTime = 0.;
 	fCorr = 0.;
@@ -457,7 +451,7 @@ void CbmRichTrbUnpack2::ProcessSubEvent(CbmRawSubEvent* subEvent) {
 
 }
 
-void CbmRichTrbUnpack2::ProcessSkip(UInt_t* data, UInt_t size, UInt_t subEventId)
+void CbmRichTrbUnpack2::ProcessSkip(UInt_t* /*data*/, UInt_t /*size*/, UInt_t /*subEventId*/)
 {
 #ifdef DEBUGPRINT
 //	for (UInt_t i=0; i<size; i++) { printf ("0x%08x - skip\n", data[i]); }
@@ -583,14 +577,14 @@ void CbmRichTrbUnpack2::ProcessSubSubEvent(UInt_t* data, UInt_t size, UInt_t sub
 
 		UInt_t tdcMarker = (tdcData >> 29) & 0x7; //3 bits
 		if (tdcMarker == 0x1) { // TDC header
-			UInt_t randomCode = (tdcData >> 16) & 0xff; // 8bits
-			UInt_t errorBits = (tdcData) & 0xffff; //16 bits
+		  //	UInt_t randomCode = (tdcData >> 16) & 0xff; // 8bits
+		  //	UInt_t errorBits = (tdcData) & 0xffff; //16 bits
 #ifdef DEBUGPRINT
 //			printf("0x%08x - TDC HEADER randomCode:0x%02x, errorBits:0x%04x\n", tdcData, randomCode, errorBits);
 #endif
 		} else if (tdcMarker == 0x2) { // DEBUG
-			UInt_t debugMode = (tdcData >> 24) & 0x1f; //5 bits
-			UInt_t debugBits = (tdcData) & 0xffffff; //24 bits
+		  //	UInt_t debugMode = (tdcData >> 24) & 0x1f; //5 bits
+		  //	UInt_t debugBits = (tdcData) & 0xffffff; //24 bits
 #ifdef DEBUGPRINT
 //			printf("0x%08x - DEBUG debugMode:%i, debugBits:0x%06x\n", tdcData, debugMode, debugBits);
 #endif

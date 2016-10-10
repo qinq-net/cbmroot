@@ -38,13 +38,11 @@ CbmRichGeoOpt::CbmRichGeoOpt()
     fRichRingMatches(NULL),
     fEventNum(0),
     PMTPointsFilled(0),
-    SensPointsFilled(0),
     fMinNofHits(7),
     nPhotonsNotOnPlane(0),
     nPhotonsNotOnSphere(0),
     nTotalPhorons(0),
     PMTPlanePoints(),
-    SensPlanePoints(),
     PMTPlaneCenter(),
     ReadPMTPlaneCenter(),
     ReadPMTPlaneCenterOrig(),
@@ -55,29 +53,34 @@ CbmRichGeoOpt::CbmRichGeoOpt()
     PMT_r1(),
     PMT_r2(),
     PMT_norm(),
-    Sens_r1(),
-    Sens_r2(),
-    Sens_norm(),
-    PMTPlaneThirdX(0.),
     PMTPlaneCenterX(0.),
     PMTPlaneCenterY(0.),
-    MirrPosition(),
+    PMTPlaneThirdX(0.),
+    MirrPosition(),    
+    SensPointsFilled(0),
+    SensPlanePoints(),
+    Sens_r1(),
+    Sens_r2(),
+    Sens_norm(),    
     H_Diff_LineRefPMT_MomAtPMT(NULL),
     H_Theta_TwoVectors(NULL),
     H_DistancePMTtoMirrCenter(NULL),
     H_DistancePMTtoMirr(NULL),
-    H_MomRing(NULL),
     H_MomPrim(NULL),
     H_PtPrim(NULL),
     H_MomPt(NULL),
-    H_MomPrim_RegularTheta(NULL),
-    H_acc_mom_el_RegularTheta(NULL),
     H_Mom_Theta_MC(NULL),
     H_Pt_Theta_MC(NULL),
     H_Mom_Theta_Rec(NULL),
     H_Pt_Theta_Rec(NULL),
     H_Mom_Theta_Acc(NULL),
     H_Pt_Theta_Acc(NULL),
+    H_MomRing(NULL),
+    H_acc_mom_el(NULL),
+    H_acc_pty_el(NULL),
+    H_Mom_XY_Theta25(NULL),
+    H_MomPrim_RegularTheta(NULL),
+    H_acc_mom_el_RegularTheta(NULL),
     H_Hits_XY(NULL),
     H_Hits_XY_LeftHalf(NULL),
     H_Hits_XY_RightHalf(NULL),
@@ -110,9 +113,6 @@ CbmRichGeoOpt::CbmRichGeoOpt()
     H_Alpha_XYposAtDet_RightHalf(NULL),
     H_Alpha_XYposAtDet_RightThird(NULL),
     H_Alpha_XYposAtDet_Left2Thirds(NULL),
-    H_acc_mom_el(NULL),
-    H_acc_pty_el(NULL),
-    H_Mom_XY_Theta25(NULL),
     H_NofHitsAll(NULL),
     H_NofRings(NULL),
     H_NofRings_NofHits(NULL),
@@ -139,10 +139,10 @@ CbmRichGeoOpt::CbmRichGeoOpt()
     H_RingCenter_Baxis(NULL),  
     H_RingCenter_boa(NULL),
     H_RingCenter_boa_RegularTheta(NULL),
-    H_RingCenter_boa_RightHalf(NULL),
     H_RingCenter_boa_LeftHalf(NULL),
-    H_RingCenter_boa_Left2Thirds(NULL),
+    H_RingCenter_boa_RightHalf(NULL),
     H_RingCenter_boa_RightThird(NULL),
+    H_RingCenter_boa_Left2Thirds(NULL),
     H_RingCenter_dR(NULL),
     H_RingCenter_dR_RegularTheta(NULL),
     H_RingCenter_dR_LeftHalf(NULL),
@@ -195,11 +195,11 @@ InitStatus CbmRichGeoOpt::Init()
    //cout<<" initializing points values -1000"<<endl;
    PMTPlanePoints.resize(3);
    SensPlanePoints.resize(3);
-   for(int p=0;p<PMTPlanePoints.size();p++){
+   for(unsigned int p=0;p<PMTPlanePoints.size();p++){
      PMTPlanePoints[p].SetX(-1000.);PMTPlanePoints[p].SetY(-1000.);PMTPlanePoints[p].SetZ(-1000.);
      SensPlanePoints[p].SetX(-1000.);SensPlanePoints[p].SetY(-1000.);SensPlanePoints[p].SetZ(-1000.);
    }
-   CbmRichRecGeoPar* gp = CbmRichGeoManager::GetInstance().fGP;
+   //   CbmRichRecGeoPar* gp = CbmRichGeoManager::GetInstance().fGP;
     PMTPlaneCenterX = 0.;//-1.*gp->fPmtWidthX/2.;
     PMTPlaneCenterY = 0.;//-1.*gp->fPmtWidthY/2.;
     PMTPlaneThirdX =0.;//-1.*gp->fPmtWidthX/3.;
@@ -215,7 +215,7 @@ void CbmRichGeoOpt::Exec(Option_t* /*option*/)
   // cout << "#################### CbmRichGeoOpt, event No. " <<  fEventNum << endl;
   
   if(PMTPointsFilled==0){
-    for(int p=1;p<PMTPlanePoints.size();p++){
+    for(unsigned int p=1;p<PMTPlanePoints.size();p++){
       if( PMTPlanePoints[p].X() == PMTPlanePoints[p-1].X() ){
 	cout<<"PMTPlanePoints["<<p<<"].X == PMTPlanePoints["<<p-1<<"].X =="<<PMTPlanePoints[p-1].X()<<endl;
 	cout<<"Calling FillPointsAtPMT()"<<endl;
@@ -226,7 +226,7 @@ void CbmRichGeoOpt::Exec(Option_t* /*option*/)
     }
   }
   if(SensPointsFilled==0){
-    for(int p=1;p<SensPlanePoints.size();p++){
+    for(unsigned int p=1;p<SensPlanePoints.size();p++){
       if( SensPlanePoints[p].X() == SensPlanePoints[p-1].X() ){FillPointsAtPMTSensPlane();SensPointsFilled=0;}else{SensPointsFilled=1;}
     }
   }
@@ -243,7 +243,7 @@ void CbmRichGeoOpt::Exec(Option_t* /*option*/)
 
   if(PMTPointsFilled==1){
     if(fEventNum<10){
-      for(int p=0;p<PMTPlanePoints.size();p++){
+      for(unsigned int p=0;p<PMTPlanePoints.size();p++){
 	cout<<"Point "<<p<< ": ("<<PMTPlanePoints[p].X()<<" , "<< PMTPlanePoints[p].Y()<<" , "<< PMTPlanePoints[p].Z()<<")"<<endl;
       }
       
@@ -292,7 +292,7 @@ void CbmRichGeoOpt::HitsAndPoints(){
     
     /////////
     TVector3 MomAtPMT; MomAtPMT.SetX(point->GetPx()); MomAtPMT.SetY(point->GetPy()); MomAtPMT.SetZ(point->GetPz());
-    float MagMomAtPMT=MomAtPMT.Mag(); 
+    //    float MagMomAtPMT=MomAtPMT.Mag(); 
     
     Int_t PointMCTrackId = point->GetTrackID(); if(PointMCTrackId<0) continue;
     CbmMCTrack* PointTrack = static_cast<CbmMCTrack*>(fMcTracks->At(PointMCTrackId));
@@ -611,8 +611,8 @@ void CbmRichGeoOpt::FillMcHist()
 ////////////////////////////////
 void CbmRichGeoOpt::InitHistograms()
 {
-  int nBinsX = 28; double xMin = -110.; double xMax = 110.;  
-  int nBinsY = 40; double yMin = -200; double yMax = 200.;
+  //  int nBinsX = 28; double xMin = -110.; double xMax = 110.;  
+  //  int nBinsY = 40; double yMin = -200; double yMax = 200.;
   
   H_Diff_LineRefPMT_MomAtPMT= new TH1D("H_Diff_LineRefPMT_MomAtPMT", "H_Diff_LineRefPMT_MomAtPMT;#Delta [cm]; Yield", 100, -10., 10.);
 
@@ -851,7 +851,7 @@ CbmRichPoint* CbmRichGeoOpt::GetPMTPoint(int TrackIdOfSensPlane)
 void CbmRichGeoOpt::FillPointsAtPMT()
 {
   
-  for(int p=0;p<PMTPlanePoints.size();p++){
+  for(unsigned int p=0;p<PMTPlanePoints.size();p++){
     if(PMTPlanePoints[p].X() != -1000.){
       if(p==0){continue;}
       else{
@@ -880,7 +880,7 @@ void CbmRichGeoOpt::FillPointsAtPMT()
 void CbmRichGeoOpt::FillPointsAtPMTSensPlane()
 {
   
-  for(int p=0;p<SensPlanePoints.size();p++){
+  for(unsigned int p=0;p<SensPlanePoints.size();p++){
     if(SensPlanePoints[p].X() != -1000.){
       if(p==0){continue;}
       else{
@@ -971,20 +971,20 @@ void CbmRichGeoOpt::GetPMTRotAngels()
 //}
 
 //////////////////////////////////////////////////////
-bool  CbmRichGeoOpt::CheckPointLiesOnSphere(TVector3 Point)
+bool  CbmRichGeoOpt::CheckPointLiesOnSphere(TVector3 /*Point*/)
 {
   return true;
 
 }
 
 //////////////////////////////////////////////////////
-bool  CbmRichGeoOpt::CheckLineIntersectsPlane(TVector3 Point)
+bool  CbmRichGeoOpt::CheckLineIntersectsPlane(TVector3 /*Point*/)
 {
 	return true;
 
 }
 //////////////////////////////////////////////////////
-bool  CbmRichGeoOpt::CheckLineIntersectsSphere(TVector3 Point)
+bool  CbmRichGeoOpt::CheckLineIntersectsSphere(TVector3 /*Point*/)
 {
 	return true;
 

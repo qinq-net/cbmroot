@@ -58,7 +58,7 @@ InitStatus CbmRichDigitizer::Init()
 }
 
 void CbmRichDigitizer::Exec(
-      Option_t* option)
+      Option_t* /*option*/)
 {
 	fEventNum++;
 	LOG(INFO) << "CbmRichDigitizer event  " << fEventNum << FairLogger::endl;
@@ -80,7 +80,8 @@ void CbmRichDigitizer::Exec(
 void CbmRichDigitizer::ProcessPoint(CbmRichPoint* point, Int_t pointId)
 {
    // LOG(INFO) << "ProcessPoint " << pointId << FairLogger::endl;
-	TGeoNode* node = gGeoManager->FindNode(point->GetX(), point->GetY(), point->GetZ());
+//	TGeoNode* node = gGeoManager->FindNode(point->GetX(), point->GetY(), point->GetZ());
+	gGeoManager->FindNode(point->GetX(), point->GetY(), point->GetZ());
 	string path(gGeoManager->GetPath());
 	Int_t address = CbmRichDigiMapManager::GetInstance().GetAdressByPath(path);
    // cout << "address:" << address << " node:" << path << endl;
@@ -122,7 +123,7 @@ void CbmRichDigitizer::AddCrossTalkDigis(
 	vector<Int_t> directPixels = CbmRichDigiMapManager::GetInstance().GetDirectNeighbourPixels(digi->GetAddress());
 	vector<Int_t> diagonalPixels = CbmRichDigiMapManager::GetInstance().GetDiagonalNeighbourPixels(digi->GetAddress());
 
-	for (Int_t i = 0; i < directPixels.size(); i++) {
+	for (UInt_t i = 0; i < directPixels.size(); i++) {
 		if (gRandom->Rndm() < fCrossTalkProbability && !crosstalkDigiDetected) {
 			//FindRichHitPositionMAPMT(0., x + r, y, xHit, yHit, pmtID);
 			crosstalkDigiDetected = true;
@@ -131,7 +132,7 @@ void CbmRichDigitizer::AddCrossTalkDigis(
 	}
 
 	if (!crosstalkDigiDetected) {
-		for (Int_t i = 0; i < diagonalPixels.size(); i++) {
+		for (UInt_t i = 0; i < diagonalPixels.size(); i++) {
 			if (gRandom->Rndm() < fCrossTalkProbability / 4. && !crosstalkDigiDetected) {
 				//FindRichHitPositionMAPMT(0., x + r, y, xHit, yHit, pmtID);
 				crosstalkDigiDetected = true;

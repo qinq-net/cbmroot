@@ -59,7 +59,7 @@ void CbmRichTrackExtrapolationMirrorIdeal::Init()
 void CbmRichTrackExtrapolationMirrorIdeal::DoExtrapolation(
                                                            TClonesArray* globalTracks,
                                                            TClonesArray* extrapolatedTrackParams,
-                                                           double z)
+                                                           double /*z*/)
 {
     if ( NULL == extrapolatedTrackParams ) {
         cout << "-E- CbmRichTrackExtrapolationMirrorIdeal::DoExtrapolate: TrackParam Array missing!" << endl;

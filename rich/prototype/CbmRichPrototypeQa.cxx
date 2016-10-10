@@ -126,7 +126,7 @@ InitStatus CbmRichPrototypeQa::Init()
 }
 
 void CbmRichPrototypeQa::Exec(
-      Option_t* option)
+      Option_t* /*option*/)
 {
 	fEventNum++;
 	cout << "CbmRichPrototypeQa, event No. " <<  fEventNum << endl;
@@ -221,9 +221,9 @@ void CbmRichPrototypeQa::RingParameters()
 		if (!mcTrack) continue;
 		Int_t motherId = mcTrack->GetMotherId();
 		Int_t pdg = TMath::Abs(mcTrack->GetPdgCode());
-		Double_t momentum = mcTrack->GetP();
-      Double_t pt = mcTrack->GetPt();
-      Double_t rapidity = mcTrack->GetRapidity();
+//		Double_t momentum = mcTrack->GetP();
+//      Double_t pt = mcTrack->GetPt();
+//      Double_t rapidity = mcTrack->GetRapidity();
 
       if (motherId != -1) continue; // only primary
 
@@ -250,9 +250,9 @@ void CbmRichPrototypeQa::RingParameters()
 	   if (pdg == 11) hIndex = 0;
 	   if (pdg == 211) hIndex = 1;
       FitAndFillHistCircle(&ringHit, hIndex); //hits
-      double r = ringHit.GetRadius();
-      double xc = ringHit.GetCenterX();
-      double yc = ringHit.GetCenterY();
+//      double r = ringHit.GetRadius();
+//      double xc = ringHit.GetCenterX();
+//      double yc = ringHit.GetCenterY();
 
       if (ringHit.GetRadius() > fMinRadius && ringHit.GetRadius() < fMaxRadius){
          fhNofHitsCircleFit->Fill(ringHit.GetNofHits());
@@ -274,8 +274,8 @@ void CbmRichPrototypeQa::FitAndFillHistEllipse(
    fTauFit->DoFit(ring);
    double axisA = ring->GetAaxis();
    double axisB = ring->GetBaxis();
-   double xcEllipse = ring->GetCenterX();
-   double ycEllipse = ring->GetCenterY();
+//   double xcEllipse = ring->GetCenterX();
+//   double ycEllipse = ring->GetCenterY();
    int nofHitsRing = ring->GetNofHits();
    if (axisA > fMinAaxis && axisA < fMaxAaxis &&  axisB > fMinBaxis && axisB < fMaxBaxis ){
       fhBoverA[hIndex]->Fill(axisB/axisA);
@@ -293,7 +293,7 @@ void CbmRichPrototypeQa::FitAndFillHistCircle(
    double radius = ring->GetRadius();
    double xcCircle = ring->GetCenterX();
    double ycCircle = ring->GetCenterY();
-   int nofHitsRing = ring->GetNofHits();
+//   int nofHitsRing = ring->GetNofHits();
    fhXcYcCircle[hIndex]->Fill(xcCircle, ycCircle);
    fhRadius[hIndex]->Fill(radius);
 
@@ -555,7 +555,7 @@ void CbmRichPrototypeQa::DrawHist()
 void CbmRichPrototypeQa::Finish()
 {
    DrawHist();
-   for (Int_t i = 0; i < fHists.size(); i++){
+   for (UInt_t i = 0; i < fHists.size(); i++){
    //   if (NULL != fHists[i]) fHists[i]->Write();
    }
    SaveCanvasToImage();
@@ -605,7 +605,7 @@ TCanvas* CbmRichPrototypeQa::CreateCanvas(
 
 void CbmRichPrototypeQa::SaveCanvasToImage()
 {
-   for (int i = 0; i < fCanvas.size(); i++)
+   for (unsigned int i = 0; i < fCanvas.size(); i++)
    {
       Cbm::SaveCanvasAsImage(fCanvas[i], fOutputDir);
    }

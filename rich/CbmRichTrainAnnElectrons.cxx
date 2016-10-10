@@ -54,23 +54,17 @@ fRichProj(NULL),
 fStsTrackMatches(NULL),
 fGlobalTracks(NULL),
 fStsTracks(NULL),
-
-fCanvas(),
-fOutputDir("results_images_ann/"),
-
 fMinNofHitsInRichRing(7),
 fQuota(0.6),
 fMaxNofTrainSamples(5000),
-
 fNofPiLikeEl(0),
 fNofElLikePi(0),
 fAnnCut(-0.5),
-
 fhAnnOutput(),
 fhCumProb(),
-
 fRElIdParams(),
-
+fCanvas(),
+fOutputDir("results_images_ann/"),
 fhAaxis(),
 fhBaxis(),
 // fhAaxisCor(),
@@ -83,7 +77,6 @@ fhRadPos(),
 fhAaxisVsMom(),
 fhBaxisVsMom(),
 fhPhiVsRadAng(),
-
 fHists()
 {
     fhAaxis.resize(2);
@@ -181,7 +174,7 @@ InitStatus CbmRichTrainAnnElectrons::Init()
 }
 
 void CbmRichTrainAnnElectrons::Exec(
-                                    Option_t* option)
+                                    Option_t* /*option*/)
 {
     cout << endl <<"-I- CbmRichTrainAnnElectrons, event " << fEventNum << endl;
     DiffElandPi();
@@ -219,8 +212,8 @@ void CbmRichTrainAnnElectrons::DiffElandPi()
         Int_t motherId = track->GetMotherId();
         Double_t momentum = track->GetP();
         
-        Double_t axisACor = ring->GetAaxisCor();
-        Double_t axisBCor= ring->GetBaxisCor();
+	//        Double_t axisACor = ring->GetAaxisCor();
+	//        Double_t axisBCor= ring->GetBaxisCor();
         
         Int_t lFoundHits = richRingMatch->GetNofTrueHits() + richRingMatch->GetNofWrongHits();
         Double_t lPercTrue = 0;
@@ -306,7 +299,7 @@ void CbmRichTrainAnnElectrons::TrainAndTestAnn()
     simu->Branch("xOut", &xOut,"xOut/D");
     
     for (int j = 0; j < 2; j++){
-        for (int i = 0; i < fRElIdParams[j].size(); i++){
+        for (unsigned int i = 0; i < fRElIdParams[j].size(); i++){
             x[0] = fRElIdParams[j][i].fAaxis / 10.;
             x[1] = fRElIdParams[j][i].fBaxis / 10.;
             x[2] = (fRElIdParams[j][i].fPhi + 1.57) / 3.14;
@@ -341,7 +334,7 @@ void CbmRichTrainAnnElectrons::TrainAndTestAnn()
     fNofElLikePi = 0;
     
     for (int j = 0; j < 2; j++){
-        for (int i = 0; i < fRElIdParams[j].size(); i++){
+        for (unsigned int i = 0; i < fRElIdParams[j].size(); i++){
             params[0] = fRElIdParams[j][i].fAaxis / 10.;
             params[1] = fRElIdParams[j][i].fBaxis / 10.;
             params[2] = (fRElIdParams[j][i].fPhi + 1.57) / 3.14;
@@ -369,7 +362,7 @@ void CbmRichTrainAnnElectrons::TrainAndTestAnn()
     }
 }
 
-void CbmRichTrainAnnElectrons::Draw()
+void CbmRichTrainAnnElectrons::Draw(Option_t*)
 {
     cout <<"nof electrons = " << fRElIdParams[0].size() << endl;
     cout <<"nof pions = " << fRElIdParams[1].size() << endl;
@@ -482,7 +475,7 @@ void CbmRichTrainAnnElectrons::FinishTask()
     TrainAndTestAnn();
     Draw();    
     
-    for (int i = 0; i < fHists.size(); i++){
+    for (unsigned int i = 0; i < fHists.size(); i++){
         fHists[i]->Scale(1./fHists[i]->Integral());
         fHists[i]->Write();
     }
@@ -503,7 +496,7 @@ TCanvas* CbmRichTrainAnnElectrons::CreateCanvas(
 
 void CbmRichTrainAnnElectrons::SaveCanvasToImage()
 {
-    for (int i = 0; i < fCanvas.size(); i++)
+    for (unsigned int i = 0; i < fCanvas.size(); i++)
     {
         Cbm::SaveCanvasAsImage(fCanvas[i], fOutputDir);
     }

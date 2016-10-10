@@ -57,7 +57,7 @@ InitStatus CbmRichHitProducer::Init()
 }
 
 void CbmRichHitProducer::Exec(
-                              Option_t* option)
+                              Option_t* /*option*/)
 {
     fEventNum++;
     LOG(INFO) << "CbmRichHitProducer event " << fEventNum << FairLogger::endl;

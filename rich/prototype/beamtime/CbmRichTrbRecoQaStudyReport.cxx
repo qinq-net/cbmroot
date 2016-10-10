@@ -113,7 +113,7 @@ void CbmRichTrbRecoQaStudyReport::FitGausAndDrawH1(
    Int_t nofStudies = HM().size();
    vector<TH1*> histos1(nofStudies);
    vector<string> legendNames;
-   for (UInt_t iStudy = 0; iStudy < nofStudies; iStudy++) {
+   for (Int_t iStudy = 0; iStudy < nofStudies; iStudy++) {
      histos1[iStudy] = HM()[iStudy]->H1(histName);
      histos1[iStudy]->Scale(1./histos1[iStudy]->Integral());
      histos1[iStudy]->SetMaximum(histos1[iStudy]->GetMaximum() * 1.20);
@@ -136,7 +136,7 @@ void CbmRichTrbRecoQaStudyReport::FitGausAndDrawH1(
    }
    DrawH1(histos1, legendNames, kLinear, kLinear, true, .5, .7, .99, .99);
    if (fFitHist) {
-	   for (UInt_t iStudy = 0; iStudy < nofStudies; iStudy++) {
+	   for (Int_t iStudy = 0; iStudy < nofStudies; iStudy++) {
 		  histos1[iStudy]->GetFunction("gaus")->SetLineColor(histos1[iStudy]->GetLineColor());
 	   }
    }
@@ -150,7 +150,7 @@ void CbmRichTrbRecoQaStudyReport::DrawEfficiency()
 	TCanvas* canvas2 = CreateCanvas("rich_report_efficiency", "rich_report_efficiency", 600, 600);
 	vector<TH1*> histos1(nofStudies);
 	vector<string> legendNames;
-	for (UInt_t iStudy = 0; iStudy < nofStudies; iStudy++) {
+	for (Int_t iStudy = 0; iStudy < nofStudies; iStudy++) {
 	    histos1[iStudy] = Cbm::DivideH1(HM()[iStudy]->H1("fhNofHitsInEventWithRing"), HM()[iStudy]->H1("fhNofHitsInEventAll"));
 		TString str;
 		//str.Form(" (%.2f/%.2f)", mean, sigma);

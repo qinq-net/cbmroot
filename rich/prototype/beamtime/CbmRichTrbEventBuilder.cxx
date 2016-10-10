@@ -23,21 +23,21 @@
 
 CbmRichTrbEventBuilder::CbmRichTrbEventBuilder()
   : FairTask(),
-	fRichTrbDigi(NULL),
-	fRichHits(NULL),
-	fRichHitInfos(NULL),
-	fDrawHist(kFALSE),
-	fEventNum(0),
-	fRunTitle(""),
-	fOutputDir(""),
+    fRichTrbDigi(NULL),
+    fRichHits(NULL),
+    fRichHitInfos(NULL),
+    numOfPairs(0),
+    numOfSingleEdges(0),
+    numOfSingleEdgesSync(0),
+    fHM(NULL),
+    fDrawHist(kFALSE),
+    fEventNum(0),
+    fRunTitle(""),
+    fOutputDir(""),
     fOutHistoFile(""),
     fWlsState(""),
-	fHM(NULL),
-	numOfPairs(0),
-	numOfSingleEdges(0),
-	numOfSingleEdgesSync(0),
-	lastTriggerTimestamp(0.),
-	lastRefTime(0.)
+    lastTriggerTimestamp(0.),
+    lastRefTime(0.)
 {
 }
 
@@ -479,7 +479,7 @@ void CbmRichTrbEventBuilder::Exec(Option_t* /*option*/)
 void CbmRichTrbEventBuilder::Finish()
 {
 
-	Double_t k = (Double_t)numOfSingleEdgesSync;
+  //	Double_t k = (Double_t)numOfSingleEdgesSync;
 
 	UInt_t totalMessages = numOfPairs*2 + numOfSingleEdges + numOfSingleEdgesSync;
 

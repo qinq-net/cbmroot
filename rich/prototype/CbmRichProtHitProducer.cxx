@@ -285,7 +285,7 @@ InitStatus CbmRichProtHitProducer::Init()
 }
 
 void CbmRichProtHitProducer::Exec(
-      Option_t* option)
+      Option_t* /*option*/)
 {
    Int_t RichDetID = 0;
 
@@ -472,8 +472,8 @@ void CbmRichProtHitProducer::AddHit(
       TVector3 &posHit,
       TVector3 &posHitErr,
 	   Int_t address,
-	   Int_t pmtID,
-	   Double_t ampl,
+	   Int_t /*pmtID*/,
+	   Double_t /*ampl*/,
 	   Int_t index)
 {
    // Add this hit to existing one, if in the same PMT, otherwise create a new one.

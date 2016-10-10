@@ -219,8 +219,8 @@ void CbmRichProtRingFinderHoughImpl::HoughTransform(
 }
 
 void CbmRichProtRingFinderHoughImpl::HoughTransformGroup(
-      unsigned short int indmin,
-		unsigned short int indmax,
+      unsigned short int /*indmin*/,
+		unsigned short int /*indmax*/,
 		int iPart)
 {
    unsigned short nofHits = fHitInd[iPart].size();
@@ -412,7 +412,7 @@ void CbmRichProtRingFinderHoughImpl::RingSelection()
 	set<unsigned short> usedHitsAll;
 	vector<unsigned short> goodRingIndex;
 	goodRingIndex.reserve(nofRings);
-	CbmRichRingLight* ring2;
+//	CbmRichRingLight* ring2;
 
 	for (int iRing = 0; iRing < nofRings; iRing++){
 		CbmRichRingLight* ring = fFoundRings[iRing];
@@ -432,7 +432,7 @@ void CbmRichProtRingFinderHoughImpl::RingSelection()
 
 		if (isGoodRingAll){
 			fFoundRings[iRing]->SetRecFlag(1);
-			for (int iRSet = 0; iRSet < goodRingIndex.size(); iRSet++){
+			for (unsigned int iRSet = 0; iRSet < goodRingIndex.size(); iRSet++){
 				ReAssignSharedHits(goodRingIndex[iRSet],iRing);
 			}
 			goodRingIndex.push_back(iRing);

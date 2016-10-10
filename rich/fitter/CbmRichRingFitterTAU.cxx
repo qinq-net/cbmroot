@@ -187,7 +187,7 @@ void CbmRichRingFitterTAU::DoFit(
             d.push_back(dist);
          }
 
-         for(int i = 0; i < d.size(); i++){
+         for(unsigned int i = 0; i < d.size(); i++){
             sig1 += w[i]*d[i]*d[i];
             sig2 += w[i];
          }
@@ -198,7 +198,7 @@ void CbmRichRingFitterTAU::DoFit(
          sig2 = 0.;
 
          w.clear();
-         for(int i = 0; i < d.size(); i++){
+         for(unsigned int i = 0; i < d.size(); i++){
             if(fRobust == 1){	//! Tukey's weight function
                if(d[i] <= ctsigma){
                   weight = pow((1 - pow((d[i]/ctsigma), 2)), 2);

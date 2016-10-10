@@ -96,7 +96,7 @@ vector<double> CbmRichRingFitterEllipseMinuit::DoFit(
    // Create initial starting values for parameters
    double xf1 = 0.;
    double yf1 = 0.;
-   for(int i = 0; i < x.size(); i++) {
+   for(unsigned int i = 0; i < x.size(); i++) {
       xf1 += x[i];
       yf1 += y[i];
    }

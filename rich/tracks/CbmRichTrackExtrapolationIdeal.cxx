@@ -57,7 +57,7 @@ void CbmRichTrackExtrapolationIdeal::Init()
 void CbmRichTrackExtrapolationIdeal::DoExtrapolation(
                                                      TClonesArray* globalTracks,
                                                      TClonesArray* extrapolatedTrackParams,
-                                                     double z)
+                                                     double /*z*/)
 {
     if ( NULL == extrapolatedTrackParams ) {
         cout << "-E- CbmRichTrackExtrapolationIdeal::DoExtrapolate: TrackParam Array missing!" << endl;

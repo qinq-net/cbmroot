@@ -43,12 +43,12 @@ CbmRich::CbmRich() :
 FairDetector("RICH", kTRUE, kRICH),
 fPosIndex(0),
 fRegisterPhotonsOnSensitivePlane(false),
+fConstructMirrorSupport(false),
 fRichPoints(new TClonesArray("CbmRichPoint")),
 fRichRefPlanePoints(new TClonesArray("CbmRichPoint")),
 fRichMirrorPoints(new TClonesArray("CbmRichPoint")),
 fRotation(NULL),
-fPositionRotation(NULL),
-fConstructMirrorSupport(false)
+fPositionRotation(NULL)
 {
     /*
      fRichPoints = ;
@@ -72,12 +72,12 @@ CbmRich::CbmRich(
 FairDetector(name, active, kRICH),
 fPosIndex(0),
 fRegisterPhotonsOnSensitivePlane(false),
+fConstructMirrorSupport(false),
 fRichPoints(new TClonesArray("CbmRichPoint")),
 fRichRefPlanePoints(new TClonesArray("CbmRichPoint")),
 fRichMirrorPoints(new TClonesArray("CbmRichPoint")),
 fRotation(new TGeoRotation("", rx, ry, rz)),
-fPositionRotation(new TGeoCombiTrans(px, py, pz, fRotation)),
-fConstructMirrorSupport(false)
+fPositionRotation(new TGeoCombiTrans(px, py, pz, fRotation))
 {
     fVerboseLevel = 1;
 }
@@ -103,10 +103,10 @@ void CbmRich::Initialize()
 {
     //return;
     FairDetector::Initialize();
-    FairRun* sim = FairRun::Instance();
-    FairRuntimeDb* rtdb=sim->GetRuntimeDb();
-    CbmGeoRichPar *par=(CbmGeoRichPar*)(rtdb->getContainer("CbmGeoRichPar"));
-    TObjArray *fSensNodes = par->GetGeoSensitiveNodes();
+    //    FairRun* sim = FairRun::Instance();
+    //    FairRuntimeDb* rtdb=sim->GetRuntimeDb();
+    //    CbmGeoRichPar *par=(CbmGeoRichPar*)(rtdb->getContainer("CbmGeoRichPar"));
+    //    TObjArray *fSensNodes = par->GetGeoSensitiveNodes();
 }
 
 Bool_t CbmRich::CheckIfSensitive(std::string name)
@@ -224,7 +224,7 @@ Bool_t CbmRich::ProcessHits(
 
 void CbmRich::EndOfEvent()
 {
-    if (fVerboseLevel)  Print();
+    if (fVerboseLevel)  Print("");
     Reset();
 }
 
@@ -244,7 +244,7 @@ TClonesArray* CbmRich::GetCollection(
     return NULL;
 }
 
-void CbmRich::Print() const
+void CbmRich::Print(Option_t*) const
 {
     Int_t nHits = fRichPoints->GetEntriesFast();
     LOG(INFO) << fName << ": " << nHits << " points registered in this event." << FairLogger::endl;
@@ -399,7 +399,7 @@ void CbmRich::ExpandNodeForGdml(TGeoNode* node)
                 FairGeoLoader* geoLoad = FairGeoLoader::Instance();
                 FairGeoInterface* geoFace = geoLoad->getGeoInterface();
                 FairGeoMedia* geoMediaBase =  geoFace->getMedia();
-                FairGeoBuilder* geobuild = geoLoad->getGeoBuilder();
+//                FairGeoBuilder* geobuild = geoLoad->getGeoBuilder();
                 
                 FairGeoMedium* curMedInGeo = geoMediaBase->getMedium(medName);
                 if (curMedInGeo == 0)
@@ -412,7 +412,7 @@ void CbmRich::ExpandNodeForGdml(TGeoNode* node)
                 else
                 {
                     LOG(DEBUG) << "    Found media in Geo file" << medName << FairLogger::endl;
-                    Int_t nmed = geobuild->createMedium(curMedInGeo);
+		    //                    Int_t nmed = geobuild->createMedium(curMedInGeo);
                     fFixedMedia[medName] = (TGeoMedium*)gGeoManager->GetListOfMedia()->Last();
                     gGeoManager->RemoveMaterial(curMatOfMedInGeoManager->GetIndex());
                     LOG(DEBUG) << "    removing material " << curMatOfMedInGeoManager->GetName()

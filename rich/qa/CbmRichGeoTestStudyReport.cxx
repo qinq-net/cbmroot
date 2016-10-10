@@ -93,15 +93,15 @@ string CbmRichGeoTestStudyReport::PrintRow(
       const string& name)
 {
    vector<string> n(GetStudyNames().size(), "");
-   for (int i = 0; i < GetStudyNames().size(); i++) {
+   for (unsigned int i = 0; i < GetStudyNames().size(); i++) {
       n[i] = PrintValue(i, property);
    }
    return R()->TableRow(list_of(name).range(n));
 }
 
 string CbmRichGeoTestStudyReport::PrintValue(
-      int studyId,
-      const string& valueName)
+      int /*studyId*/,
+      const string& /*valueName*/)
 {
    stringstream ss;
    ss.precision(3);

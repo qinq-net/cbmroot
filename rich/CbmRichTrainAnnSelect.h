@@ -133,7 +133,7 @@ private:
    /**
     * \brief Draw results.
     */
-   void Draw();
+   void Draw(Option_t* ="");
 
    /**
     * \brief Copy constructor.

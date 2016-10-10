@@ -338,7 +338,7 @@ TClonesArray* CbmRichProt::GetCollection(
   return NULL;
 }
 
-void CbmRichProt::Print() const
+void CbmRichProt::Print(Option_t*) const
 {
    Int_t nHits = fRichCollection->GetEntriesFast();
    cout << "-I- CbmRichProt: " << nHits << " points registered in this event." << endl;

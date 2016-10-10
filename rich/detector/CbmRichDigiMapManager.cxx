@@ -92,14 +92,14 @@ vector<Int_t> CbmRichDigiMapManager::GetAddresses()
     return fAddresses;
 }
 
-vector<Int_t> CbmRichDigiMapManager::GetDirectNeighbourPixels(Int_t address)
+vector<Int_t> CbmRichDigiMapManager::GetDirectNeighbourPixels(Int_t /*address*/)
 {
 	std::vector<Int_t> v;
 
 	return v;
 }
 
-vector<Int_t> CbmRichDigiMapManager::GetDiagonalNeighbourPixels(Int_t address)
+vector<Int_t> CbmRichDigiMapManager::GetDiagonalNeighbourPixels(Int_t /*address*/)
 {
 	std::vector<Int_t> v;
 

@@ -72,7 +72,7 @@ void CbmTrbEdgeMatcher::Exec(Option_t* /*option*/)
 {
    CbmRichTrbParam* param = CbmRichTrbParam::Instance();
 
-   for (UInt_t i=0; i<fTrbRawHits->GetEntries(); i++) { // for loop over the input raw hits
+   for (Int_t i=0; i<fTrbRawHits->GetEntries(); i++) { // for loop over the input raw hits
       CbmTrbRawMessage* curTrbRawHit = static_cast<CbmTrbRawMessage*>(fTrbRawHits->At(i));
 
       UInt_t tdcId = curTrbRawHit->GetSourceAddress();
@@ -80,7 +80,7 @@ void CbmTrbEdgeMatcher::Exec(Option_t* /*option*/)
       UInt_t fine = curTrbRawHit->GetTDCfine();
       UInt_t coarse = curTrbRawHit->GetTDCcoarse();
       UInt_t epoch = curTrbRawHit->GetEpochMarker();
-      Double_t corr = curTrbRawHit->GetCorr();
+//      Double_t corr = curTrbRawHit->GetCorr();
 
       if (param->IsSyncChannel(channel)) {                   // SYNCH MESSAGE PROCESSING
 
@@ -114,8 +114,8 @@ void CbmTrbEdgeMatcher::Exec(Option_t* /*option*/)
 
          // LEADING-TRAILING edges matching
 
-         Double_t timestamp = GetFullTime(tdcId, channel, epoch, coarse, fine) /*+ corr*/;
 #ifdef DEBUGPRINT
+         Double_t timestamp = GetFullTime(tdcId, channel, epoch, coarse, fine) /*+ corr*/;
          printf ("Processing trailing edge. tdc 0x00%x  ch %d  %f\n", tdcId, channel, timestamp);
 #endif
 
@@ -137,7 +137,7 @@ void CbmTrbEdgeMatcher::Exec(Option_t* /*option*/)
             UInt_t lchannel = foundLedge.second.GetChannelID();
             UInt_t lfine = foundLedge.second.GetTDCfine();
             UInt_t lcoarse = foundLedge.second.GetTDCcoarse();
-            Double_t lcorr = foundLedge.second.GetCorr();
+//            Double_t lcorr = foundLedge.second.GetCorr();
 
             Double_t tfullTime = GetFullTime(tdcId, channel, epoch, coarse, fine) /*+ corr*/;
             Double_t lfullTime = GetFullTime(tdcId, lchannel, foundLedge.first, lcoarse, lfine) /*+ lcorr*/;
@@ -180,7 +180,7 @@ void CbmTrbEdgeMatcher::Exec(Option_t* /*option*/)
       UInt_t epoch = iter->GetEpochMarker();
       //Double_t corr = iter->GetCorr();
 
-	  Double_t fullT = GetFullTime(tdcId, channel, epoch, coarse, fine) /*+ corr*/;
+//	  Double_t fullT = GetFullTime(tdcId, channel, epoch, coarse, fine) /*+ corr*/;
 
       //printf ("POSTPROCESSING EVENT: tdc 0x00%x  ch %d time=%f\n", tdcId, channel, fullT);
 
@@ -195,7 +195,7 @@ void CbmTrbEdgeMatcher::Exec(Option_t* /*option*/)
          UInt_t lchannel = foundLedge.second.GetChannelID();
          UInt_t lfine = foundLedge.second.GetTDCfine();
          UInt_t lcoarse = foundLedge.second.GetTDCcoarse();
-         Double_t lcorr = foundLedge.second.GetCorr();
+//         Double_t lcorr = foundLedge.second.GetCorr();
 
          Double_t tfullTime = GetFullTime(tdcId, channel, epoch, coarse, fine) /*+ corr*/;
          Double_t lfullTime = GetFullTime(tdcId, lchannel, foundLedge.first, lcoarse, lfine) /*+ lcorr*/;
@@ -304,7 +304,7 @@ std::pair<UInt_t, CbmTrbRawMessage> CbmTrbEdgeMatcher::FindLeadingEdge(UInt_t td
    UInt_t tFine = tRawMessage.GetTDCfine();
    UInt_t tCoarse = tRawMessage.GetTDCcoarse();
    UInt_t tEpoch = tRawMessage.GetEpochMarker();
-   Double_t tCorr = tRawMessage.GetCorr();
+//   Double_t tCorr = tRawMessage.GetCorr();
 
    Double_t tFullTime = GetFullTime(tdcId, tChannel, tEpoch, tCoarse, tFine) /*+ tCorr*/;
 
@@ -359,7 +359,7 @@ std::pair<UInt_t, CbmTrbRawMessage> CbmTrbEdgeMatcher::FindLeadingEdge(UInt_t td
 
          UInt_t foundLcoarse = foundWord.GetTDCcoarse();
          UInt_t foundLfine = foundWord.GetTDCfine();
-         Double_t foundCorr = foundWord.GetCorr();
+//         Double_t foundCorr = foundWord.GetCorr();
          Double_t lFullTime = GetFullTime(tdcId, lChannel, foundEpoch, foundLcoarse, foundLfine) /*+ foundCorr*/;
 
          if ((tFullTime - lFullTime) < -NEGATIVEPAIRWINDOW || (tFullTime - lFullTime) > POSITIVEPAIRWINDOW) {
@@ -412,7 +412,7 @@ std::pair<UInt_t, CbmTrbRawMessage> CbmTrbEdgeMatcher::FindLeadingEdge(UInt_t td
             foundWord =  PerTDCbufferI->second;
             UInt_t foundLcoarse = foundWord.GetTDCcoarse();
             UInt_t foundLfine = foundWord.GetTDCfine();
-            Double_t foundLcorr = foundWord.GetCorr();
+//            Double_t foundLcorr = foundWord.GetCorr();
             Double_t lFullTime = GetFullTime(tdcId, lChannel, foundEpoch, foundLcoarse, foundLfine) /*+ foundLcorr*/;
 
             if ((tFullTime - lFullTime) >= -NEGATIVEPAIRWINDOW && (tFullTime - lFullTime) <= POSITIVEPAIRWINDOW) {
@@ -495,7 +495,7 @@ void CbmTrbEdgeMatcher::CreateLeadingEdgeOnlyDigi(CbmTrbRawMessage rawMessage)
    UInt_t lepoch = rawMessage.GetEpochMarker();
    UInt_t lcoarse = rawMessage.GetTDCcoarse();
    UInt_t lfine = rawMessage.GetTDCfine();
-   Double_t lcorr = rawMessage.GetCorr();
+//   Double_t lcorr = rawMessage.GetCorr();
 
    Double_t timestamp = GetFullTime(tdcId, lchannel, lepoch, lcoarse, lfine) /*+ lcorr*/;
 

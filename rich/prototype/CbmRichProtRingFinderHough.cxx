@@ -46,7 +46,7 @@ CbmRichProtRingFinderHough::~CbmRichProtRingFinderHough()
 
 Int_t CbmRichProtRingFinderHough::DoFind(
       TClonesArray* rHitArray,
-      TClonesArray* rProjArray,
+      TClonesArray* /*rProjArray*/,
       TClonesArray* rRingArray)
 {
 	fNEvent++;

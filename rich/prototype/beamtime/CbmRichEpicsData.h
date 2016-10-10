@@ -83,7 +83,7 @@ public:
 	/**
 	 * \brief Print EPICS data.
 	 */
-	void Print()
+	void Print(Option_t*) const
 	{
 		cout << "---EPICS DATA---" << endl;
 		cout << "fCBM_BMP180_GetTemp=" << fCBM_BMP180_GetTemp << " degrees C" << endl;

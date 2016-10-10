@@ -62,6 +62,9 @@ public:
 		fPmtTypeId = hitInfo->GetPmtTypeId();
 	}
 
+	// avoid warnings
+        void  Copy(TObject&) const {;}
+	
 	UInt_t GetPmtNum() const {return fPmtNum;}
 	UInt_t GetPixelNum() const {return fPixelNum;}
 	Double_t GetX() const {return fX;}

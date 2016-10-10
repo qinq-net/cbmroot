@@ -109,8 +109,8 @@ void CbmRichProtPrepareExtrapolation::Exec(Option_t* /*option*/)
     Float_t theta, phi;
     Float_t p;
     Float_t px, py, pz;
-    Float_t tx, ty;
-    Float_t qp;
+//    Float_t tx, ty;
+//    Float_t qp;
     Int_t nStsTracks = 0;
     CbmStsTrack *stsTrack;
     Int_t charge;

@@ -73,6 +73,7 @@ fRichRingMatches(NULL),
 fCopFit(NULL),
 fTauFit(NULL),
 fCanvas(),
+fHM(NULL),
 fEventNum(0),
 fMinNofHits(0),
 fMinAaxis(0.),
@@ -81,8 +82,7 @@ fMinBaxis(0.),
 fMaxBaxis(0.),
 fMinRadius(0.),
 fMaxRadius(0.),
-fNofDrawnRings(0),
-fHM(NULL)
+fNofDrawnRings(0)
 {
     fEventNum = 0;
     fNofDrawnRings = 0;
@@ -135,7 +135,7 @@ InitStatus CbmRichGeoTest::Init()
 }
 
 void CbmRichGeoTest::Exec(
-                          Option_t* option)
+                          Option_t* /*option*/)
 {
     fEventNum++;
     cout << "CbmRichGeoTest, event No. " <<  fEventNum << endl;
@@ -451,7 +451,7 @@ void CbmRichGeoTest::HitsAndPoints()
         CbmMatch* digiMatch = digi->GetMatch();
         
         vector<CbmLink> links = digiMatch->GetLinks();
-        for (Int_t i = 0; i < links.size(); i++) {
+        for (UInt_t i = 0; i < links.size(); i++) {
             Int_t pointId = links[i].GetIndex();
             if (pointId < 0) continue; // noise hit
             
@@ -853,7 +853,7 @@ void CbmRichGeoTest::DrawPmts()
     }
     
 
-    for (int i = 0; i < addr.size(); i++){
+    for (unsigned int i = 0; i < addr.size(); i++){
         CbmRichMapData* mapData = CbmRichDigiMapManager::GetInstance().GetDataByAddress(addr[i]);
         TVector3 inPos (mapData->fX, mapData->fY, mapData->fZ);
         TVector3 outPos;
@@ -878,7 +878,7 @@ void CbmRichGeoTest::DrawPmts()
 void CbmRichGeoTest::DrawPmtPoint(const string& options, const vector<Int_t>& addr)
 {
     
-    for (int i = 0; i < addr.size(); i++){
+    for (unsigned int i = 0; i < addr.size(); i++){
         CbmRichMapData* mapData = CbmRichDigiMapManager::GetInstance().GetDataByAddress(addr[i]);
         TVector3 inPos (mapData->fX, mapData->fY, mapData->fZ);
         TVector3 outPos;
@@ -1024,7 +1024,7 @@ TCanvas* CbmRichGeoTest::CreateCanvas(
 
 void CbmRichGeoTest::SaveCanvasToImage()
 {
-    for (int i = 0; i < fCanvas.size(); i++)
+    for (unsigned int i = 0; i < fCanvas.size(); i++)
     {
         Cbm::SaveCanvasAsImage(fCanvas[i], fOutputDir);
     }

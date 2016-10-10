@@ -102,7 +102,7 @@ void CbmRichGeoManager::InitPmtCyl()
             double pmtZ = curNodeTr[2];
             
             double rotY = TMath::ASin(-curNodeRot[2]);          // around Y
-            double rotZ = TMath::ASin(curNodeRot[1]/TMath::Cos(TMath::ASin(-curNodeRot[2]))); // around Z
+//            double rotZ = TMath::ASin(curNodeRot[1]/TMath::Cos(TMath::ASin(-curNodeRot[2]))); // around Z
             //double rotX = TMath::ASin(curNodeRot[5]/TMath::Cos(TMath::ASin(-curNodeRot[2]))); // around X
             double rotX = TMath::ACos(curNodeRot[8]/TMath::Cos(TMath::ASin(-curNodeRot[2]))); // around X
             
@@ -127,7 +127,7 @@ void CbmRichGeoManager::InitPmtCyl()
         Double_t curX = TMath::Abs(it->second.fX);
         int pos = -1;
         //int pos = find(xCoord.begin(), xCoord.end(), curX) - xCoord.begin();
-        for (int i = 0; i < xCoord.size(); i++) {
+        for (unsigned int i = 0; i < xCoord.size(); i++) {
             if (TMath::Abs(curX - xCoord[i]) < 0.1) {
                 pos = i;
                 break;
@@ -190,11 +190,11 @@ void CbmRichGeoManager::InitPmtCyl()
             geoIterator.GetPath(nodePath);
             const TGeoMatrix* curMatrix = geoIterator.GetCurrentMatrix();
             const Double_t* curNodeTr = curMatrix->GetTranslation();
-            const Double_t* curNodeRot = curMatrix->GetRotationMatrix();
+//            const Double_t* curNodeRot = curMatrix->GetRotationMatrix();
             
             double pmtX = curNodeTr[0];
             double pmtY = curNodeTr[1];
-            double pmtZ = curNodeTr[2];
+//            double pmtZ = curNodeTr[2];
             
             if ( pmtX < 0 || pmtY < 0) continue;
             const TGeoBBox* shape = (const TGeoBBox*)(curNode->GetVolume()->GetShape());
@@ -247,7 +247,7 @@ void CbmRichGeoManager::InitPmt()
             if (pmtX > 0. && pmtY > 0) {
                 //printf ("%08f\t%08f\t%08f\t\n", curNodeTranslation[0], curNodeTranslation[1], curNodeTranslation[2]);
                 double rotY = TMath::ASin(-curNodeRot[2]);          // around Y
-                double rotZ = TMath::ASin(curNodeRot[1]/TMath::Cos(TMath::ASin(-curNodeRot[2]))); // around Z
+//                double rotZ = TMath::ASin(curNodeRot[1]/TMath::Cos(TMath::ASin(-curNodeRot[2]))); // around Z
                 //double rotX = TMath::ASin(curNodeRot[5]/TMath::Cos(TMath::ASin(-curNodeRot[2]))); // around X
                 double rotX = TMath::ACos(curNodeRot[8]/TMath::Cos(TMath::ASin(-curNodeRot[2]))); // around X
                 
@@ -398,7 +398,8 @@ void CbmRichGeoManager::RotatePointCyl(
                                        Bool_t noShift)
 {
     if (noTilting == false){
-        TGeoNode* node = gGeoManager->FindNode(inPos->X(), inPos->Y(), inPos->Z());
+//        TGeoNode* node = gGeoManager->FindNode(inPos->X(), inPos->Y(), inPos->Z());
+        gGeoManager->FindNode(inPos->X(), inPos->Y(), inPos->Z());
         string path(gGeoManager->GetPath());
         
         CbmRichRecGeoParPmt pmtPar = fGP->GetGeoRecPmtByBlockPath(path);

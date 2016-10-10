@@ -126,7 +126,7 @@ InitStatus CbmRichTrainAnnSelect::Init()
 }
 
 void CbmRichTrainAnnSelect::Exec(
-      Option_t* option)
+      Option_t* /*option*/)
 {
 	fEventNumber++;
    cout<<"CbmRichRingQa Event No. "<< fEventNumber << endl;
@@ -242,7 +242,7 @@ void CbmRichTrainAnnSelect::TrainAndTestAnn()
    simu->Branch("xOut", &xOut,"xOut/D");
 
    for (int j = 0; j < 2; j++){
-      for (int i = 0; i < fRSParams[j].size(); i++){
+      for (unsigned int i = 0; i < fRSParams[j].size(); i++){
          x[0] = fRSParams[j][i].fNofHits / 45.;
          x[1] = fRSParams[j][i].fAngle / 6.28;
          x[2] = fRSParams[j][i].fHitsOnRing / 45.;
@@ -274,7 +274,7 @@ void CbmRichTrainAnnSelect::TrainAndTestAnn()
    fNofTrueLikeFake = 0;
 
    for (int j = 0; j < 2; j++){
-      for (int i = 0; i < fRSParams[j].size(); i++){
+      for (unsigned int i = 0; i < fRSParams[j].size(); i++){
          params[0] = fRSParams[j][i].fNofHits / 45.;
          params[1] = fRSParams[j][i].fAngle / 6.28;
          params[2] = fRSParams[j][i].fHitsOnRing / 45.;
@@ -299,7 +299,7 @@ void CbmRichTrainAnnSelect::TrainAndTestAnn()
    }
 }
 
-void CbmRichTrainAnnSelect::Draw()
+void CbmRichTrainAnnSelect::Draw(Option_t*)
 {
    cout <<"nof Trues = " << fRSParams[0].size() << endl;
    cout <<"nof Fakes = " << fRSParams[1].size() << endl;
@@ -347,7 +347,7 @@ void CbmRichTrainAnnSelect::FinishTask()
 {
    TrainAndTestAnn();
    Draw();
-    for (int i = 0; i < fHists.size(); i++ ){
+    for (unsigned int i = 0; i < fHists.size(); i++ ){
         fHists[i]->Scale(1./fHists[i]->Integral());
     }
 
@@ -355,7 +355,7 @@ void CbmRichTrainAnnSelect::FinishTask()
    TDirectory *rich = current->mkdir("CbmRichTrainAnnSelect");
    rich->cd();
 
-   for (int i = 0; i < fHists.size(); i++ ){
+   for (unsigned int i = 0; i < fHists.size(); i++ ){
       fHists[i]->Write();
    }
 

@@ -130,7 +130,7 @@ void CbmRichSmallPrototypeQa::InitHistograms()
 }
 
 void CbmRichSmallPrototypeQa::Exec(
-                                   Option_t* option)
+                                   Option_t* /*option*/)
 {
     fEventNum++;
     cout << "CbmRichSmallPrototypeQa, event No. " <<  fEventNum << endl;
@@ -517,7 +517,7 @@ TCanvas* CbmRichSmallPrototypeQa::CreateCanvas(
 
 void CbmRichSmallPrototypeQa::SaveCanvasToImage()
 {
-    for (int i = 0; i < fCanvas.size(); i++)
+    for (unsigned int i = 0; i < fCanvas.size(); i++)
     {
         Cbm::SaveCanvasAsImage(fCanvas[i], fOutputDir, "eps;png");
     }

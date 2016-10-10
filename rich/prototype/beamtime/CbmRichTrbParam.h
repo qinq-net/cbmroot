@@ -66,12 +66,12 @@ public:
       }
    }
 
-   Bool_t IsSyncChannel(UInt_t ch, UInt_t tdcId=0xffff) const {
+   Bool_t IsSyncChannel(UInt_t ch/*, UInt_t tdcId=0xffff*/) const {
       if (ch==0) return kTRUE;
       return kFALSE;
    }
 
-   Bool_t IsLeadingEdgeChannel(UInt_t ch, UInt_t tdcId=0xffff) const {
+   Bool_t IsLeadingEdgeChannel(UInt_t ch/*, UInt_t tdcId=0xffff*/) const {
       #ifdef INVERSEPOLARITY
       if (ch%2==0) return kTRUE;
       #else
@@ -168,7 +168,7 @@ public:
       return (this->isNormalPixel_WLS_off(hitTDCid1, hitChannel1) && this->isNormalPixel_WLS_on(hitTDCid1, hitChannel1));
    }
 
-   UInt_t GetCorrespondingLeadingEdgeChannel(UInt_t ch, UInt_t tdcId=0xffff) const
+   UInt_t GetCorrespondingLeadingEdgeChannel(UInt_t ch, UInt_t /*tdcId=0xffff*/) const
    {
       /*if (tdcId == 0x0110) {
          return ch-1;

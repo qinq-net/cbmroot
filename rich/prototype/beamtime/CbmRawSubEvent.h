@@ -39,7 +39,7 @@ public:
 		printf("\nSUBEVENT - size: 0x%08x  decoding: 0x%08x  id:    0x%08x  trigNr: 0x%08x trigTypeTRB3: 0x%01x\n",
 			Size(), SubDecoding(), SubId(), SubTrigNr(), SubTrigTypeTrb3());
 
-		for (int i = 0; i < SubDataSize() / sizeof(uint32_t); i++) {
+		for (unsigned int i = 0; i < SubDataSize() / sizeof(uint32_t); i++) {
 			if ( i % 4 == 0) {	/* newline and the offset in the subEvt */
 				if(i!=0) printf("\n");
 				printf("%08lx:", i * sizeof(uint32_t));

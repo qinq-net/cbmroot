@@ -23,16 +23,16 @@
 
 CbmRichProtoAnalysis::CbmRichProtoAnalysis()
   : FairTask(),
-	fRichTrbDigi(NULL),
-	fRichHits(NULL),
-	fRichHitInfos(NULL),
-	fRunTitle(""),
-	fOutputDir(""),
-        fOutHistoFile(""),
-	fHM(NULL),
-	numOfPairs(0),
-	numOfSingleEdges(0),
-	numOfSingleEdgesSync(0)
+    fRichTrbDigi(NULL),
+    fRichHits(NULL),
+    fRichHitInfos(NULL),
+    numOfPairs(0),
+    numOfSingleEdges(0),
+    numOfSingleEdgesSync(0),
+    fHM(NULL),
+    fRunTitle(""),
+    fOutputDir(""),
+    fOutHistoFile("")
 {
 }
 

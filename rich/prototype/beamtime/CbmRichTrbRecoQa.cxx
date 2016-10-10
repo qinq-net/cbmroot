@@ -107,7 +107,7 @@ void CbmRichTrbRecoQa::InitHist()
 }
 
 void CbmRichTrbRecoQa::Exec(
-		Option_t* option)
+		Option_t* /*option*/)
 {
 	fEventNum++;
 	LOG(DEBUG2) << "CbmRichTrbRecoQa : Event #" << fEventNum << FairLogger::endl;
@@ -177,7 +177,7 @@ void CbmRichTrbRecoQa::FillHistCircle(
    Double_t radius = ring->GetRadius();
    Double_t xcCircle = ring->GetCenterX();
    Double_t ycCircle = ring->GetCenterY();
-   Int_t nofHitsRing = ring->GetNofHits();
+//   Int_t nofHitsRing = ring->GetNofHits();
    fHM->H2("fhXcYcCircle")->Fill(xcCircle, ycCircle);
    fHM->H1("fhRadiusCircle")->Fill(radius);
    fHM->H1("fhChi2Circle")->Fill(ring->GetChi2()/ring->GetNofHits());
