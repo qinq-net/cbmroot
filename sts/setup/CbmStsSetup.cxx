@@ -346,7 +346,11 @@ Bool_t CbmStsSetup::Init(const char* fileName) {
   LOG(INFO) << "Initialising STS Setup from file " << fileName
   		      << FairLogger::endl;
 
-	TGeoManager* oldGeometry = gGeoManager;
+  // Check for existence of a TGeoManager. If present, exit function.
+  if ( gGeoManager )
+  	LOG(FATAL) << GetName() << ": found existing TGeoManager!"
+  	<< FairLogger::endl;
+
 	TGeoManager* newGeometry = new TGeoManager();
 
 	// --- Open geometry file
