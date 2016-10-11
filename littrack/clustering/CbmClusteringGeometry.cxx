@@ -35,6 +35,7 @@
 
 using std::cout;
 using std::endl;
+using std::vector;
 
 CbmClusteringGeometry::CbmClusteringGeometry():
 		fDetId(),

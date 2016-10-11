@@ -28,8 +28,6 @@
 #include "TF1.h"
 #include "TVector3.h"
 
-using namespace std;
-
 class FairPrimaryGenerator;
 
 class CbmLitPolarizedGenerator : public FairGenerator

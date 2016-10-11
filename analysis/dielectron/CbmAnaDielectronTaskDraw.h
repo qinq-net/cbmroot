@@ -9,9 +9,11 @@
 
 #include "CbmLmvmHist.h"
 #include "CbmLmvmCuts.h"
-#include <string>
 
 #include "TObject.h"
+
+#include <string>
+#include <vector>
 
 class TH1;
 class TH2D;
@@ -20,7 +22,6 @@ class TFile;
 class TCanvas;
 class CbmHistManager;
 
-using namespace std;
 
 class CbmAnaDielectronTaskDraw: public TObject {
 
@@ -39,8 +40,8 @@ public:
      * \param[in] drawSig Do you want to draw significance histograms?
      **/
     void DrawHistFromFile(
-          const string& fileName,
-          const string& outputDir = "",
+          const std::string& fileName,
+          const std::string& outputDir = "",
           Bool_t useMvd = true,
           Bool_t drawSig = true);
 
@@ -52,8 +53,8 @@ private:
     CbmLmvmCuts fCuts; // electron identification and analysis cuts
 
     CbmHistManager* fHM; //histogram manager
-    vector<TCanvas*> fCanvas; // store pointers to all canvas -> save as image
-    string fOutputDir; // output directory for results
+    std::vector<TCanvas*> fCanvas; // store pointers to all canvas -> save as image
+    std::string fOutputDir; // output directory for results
 
     /**
      * \brief Rebin minv histograms for better drawing. Should be called after
@@ -66,14 +67,14 @@ private:
      * \param[in] name Histogram name.
      */
     TH1D* H1(
-          const string& name);
+          const std::string& name);
 
     /**
      * \brief Return TH2D* pointer to the specified histogram.
      * \param[in] name Histogram name.
      */
     TH2D* H2(
-          const string& name);
+          const std::string& name);
 
     /**
      * \brief Create Canvas with specified parameters and add pointer to vector fCanvas.
@@ -84,8 +85,8 @@ private:
      * \param return Created canvas.
      */
     TCanvas* CreateCanvas(
-          const string& name,
-          const string& title,
+          const std::string& name,
+          const std::string& title,
           int width,
           int height);
 
@@ -118,8 +119,8 @@ private:
     TH1D* CreateSignificanceH1D(
           TH1D* s,
           TH1D* bg,
-          const string& name,
-          const string& option);
+          const std::string& name,
+          const std::string& option);
 
     /**
      * Produce 2D significance histogram Significance=S/sqrt(S+BG).
@@ -127,8 +128,8 @@ private:
     TH2D* CreateSignificanceH2D(
           TH2D* signal,
           TH2D* bg,
-          const string& name,
-          const string& title);
+          const std::string& name,
+          const std::string& title);
 
     /**
      * \brief Fit signal histogram using Fit("gaus").
@@ -196,12 +197,12 @@ private:
 
     // Draw distribution and significance of 1D analysis cut
     void Draw1DSourceTypes(
-          const string& hName,
+          const std::string& hName,
           bool doScale = true);
 
      void Draw1DCut(
-           const string& hName,
-           const string& sigOption,
+           const std::string& hName,
+           const std::string& sigOption,
            double cutValue = -999999.);
 
      void DrawElPiMomHis();
@@ -211,7 +212,7 @@ private:
            double yCross);
 
      void Draw2DCut(
-           const string& hist,
+           const std::string& hist,
            double cutCrossX = -999999.,
            double cutCrossY = -999999.);
 
@@ -232,7 +233,7 @@ private:
     void DrawGammaVertex();
 
     void Draw1DHistoForEachAnalysisStep(
-          const string& hist,
+          const std::string& hist,
           Bool_t logy = false);
 
     //Draw Invariant mass distributions after each cut
@@ -259,11 +260,11 @@ private:
 
 
     void DrawBgSource2D(
-          const string& canvasName,
-          const string& histName,
-          const vector<string>& yLabels,
+          const std::string& canvasName,
+          const std::string& histName,
+          const std::vector<std::string>& yLabels,
           double scale,
-          const string& zTitle);
+          const std::string& zTitle);
 
 
     //SOURCE TRACKS

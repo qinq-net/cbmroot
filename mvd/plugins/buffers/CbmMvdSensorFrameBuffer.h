@@ -23,9 +23,6 @@
 
 #include "CbmMvdHit.h"
 
-using std::cout;
-using std::endl;
-
 class TClonesArray;
 class CbmMvdSensorDataSheet;
 
@@ -58,7 +55,7 @@ class CbmMvdSensorFrameBuffer : public CbmMvdSensorBuffer
   virtual void 		ExecChain();
   virtual void 		InitBuffer     	(CbmMvdSensor* mySensor);
   virtual void 		BuildTimeSlice	(Double_t /*tStart*/, Double_t /*tStop*/){
-			cout<<"Do not use " << GetName() << "::BuildTimeSlice()"<< endl;};
+			std::cout<<"Do not use " << GetName() << "::BuildTimeSlice()"<< std::endl;};
   
   /**BuildMimosaFrame: Provides a TClonesArray containing all points related to a frame.
    * Important notes:

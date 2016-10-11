@@ -13,7 +13,6 @@
 #include <TMath.h>
 #include <Math/Vector3D.h>
 
-using namespace std;
 
 class TFitter;
 

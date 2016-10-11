@@ -3,9 +3,9 @@
 #define CBM_ANA_JPSI_CUTS_H
 
 #include "TObject.h"
+
 #include <iostream>
 
-using namespace std;
 
 class CbmAnaJpsiCuts {
 public:
@@ -51,11 +51,11 @@ public:
 	 */
 	void Print()
 	{
-		cout << "Used cuts:" << endl <<
-				"fTrdAnnCut = " << fTrdAnnCut << endl <<
-				"fRichAnnCut = " << fRichAnnCut << endl <<
-				"fChiPrimCut = " << fChiPrimCut << endl <<
-				"fPtCut = " << fPtCut << endl;
+		std::cout << "Used cuts:" << std::endl <<
+				"fTrdAnnCut = " << fTrdAnnCut << std::endl <<
+				"fRichAnnCut = " << fRichAnnCut << std::endl <<
+				"fChiPrimCut = " << fChiPrimCut << std::endl <<
+				"fPtCut = " << fPtCut << std::endl;
 	}
 
 public:

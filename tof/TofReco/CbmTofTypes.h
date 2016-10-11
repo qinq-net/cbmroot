@@ -9,17 +9,16 @@
 #define CBMTOFTYPES_H_
 
 #include <vector>
-using std::vector;
-using std::pair;
+
 class CbmTofHit;
 class CbmTofTrack;
 
-typedef vector<CbmTofHit*> HitPtrVector;
-typedef vector<CbmTofHit*>::iterator HitPtrIterator;
-typedef pair<HitPtrIterator, HitPtrIterator> HitPtrIteratorPair;
-typedef vector<CbmTofHit*>::const_iterator HitPtrConstIterator;
+typedef std::vector<CbmTofHit*> HitPtrVector;
+typedef std::vector<CbmTofHit*>::iterator HitPtrIterator;
+typedef std::pair<HitPtrIterator, HitPtrIterator> HitPtrIteratorPair;
+typedef std::vector<CbmTofHit*>::const_iterator HitPtrConstIterator;
 
-typedef vector<CbmTofTrack*>::iterator TrackPtrIterator;
-typedef vector<CbmTofTrack*> TrackPtrVector;
+typedef std::vector<CbmTofTrack*>::iterator TrackPtrIterator;
+typedef std::vector<CbmTofTrack*> TrackPtrVector;
 
 #endif /* CBMLITTYPES_H_ */

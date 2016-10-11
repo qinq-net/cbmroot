@@ -8,7 +8,6 @@
 
 #include "CbmMuchModuleGem.h"
 #include "vector"
-using std::vector;
 
 class CbmMuchSectorRectangular;
 class CbmMuchPadRectangular;
@@ -23,7 +22,7 @@ class CbmMuchModuleGemRectangular : public CbmMuchModuleGem{
   CbmMuchSectorRectangular* GetSector(Double_t x, Double_t y);
   CbmMuchSectorRectangular* GetSector(Int_t ix, Int_t iy);
   CbmMuchPadRectangular* GetPad(Double_t x, Double_t y);
-  vector<vector<Int_t> > GetGrid() { return fGrid; }
+  std::vector<std::vector<Int_t> > GetGrid() { return fGrid; }
   Int_t GetGridNx() { return fGridNx; }
   Int_t GetGridNy() { return fGridNy; }
   Double_t GetGridDx() { return fGridDx; }
@@ -34,7 +33,7 @@ class CbmMuchModuleGemRectangular : public CbmMuchModuleGem{
   Int_t fGridNy;    // Number of grid values in Y direction
   Double_t fGridDx; // X-width of the grid cell
   Double_t fGridDy; // Y-width of the grid cell
-  vector<vector<Int_t> > fGrid; // 2D-vector of sector indices on the grid
+  std::vector<std::vector<Int_t> > fGrid; // 2D-vector of sector indices on the grid
   
   // Grid related private functions
   void InitNeighbourSectors();

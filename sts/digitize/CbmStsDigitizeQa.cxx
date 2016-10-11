@@ -30,6 +30,7 @@ using std::vector;
 using std::set;
 using std::map;
 using std::pair;
+using std::string;
 
 CbmStsDigitizeQa::CbmStsDigitizeQa(CbmStsDigitize * digitizer):
     fDigitizer(digitizer)

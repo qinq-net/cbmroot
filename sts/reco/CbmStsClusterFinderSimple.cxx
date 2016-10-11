@@ -23,6 +23,8 @@
 using std::pair;
 using std::set;
 using std::get;
+using std::map;
+using std::vector;
 
 // -----   Constructor   ---------------------------------------------------
 CbmStsClusterFinderSimple::CbmStsClusterFinderSimple(Int_t finderModel, Int_t algorithm, Int_t eLossModel) : TObject()

@@ -22,9 +22,6 @@ class CbmMuchSector;
 class CbmMuchDigi;
 class CbmMuchDigiMatch;
 
-#include "vector"
-using std::vector;
-
 class CbmMuchPadRectangular : public CbmMuchPad, public TPave {
 public:
   CbmMuchPadRectangular();

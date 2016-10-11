@@ -256,10 +256,10 @@ class CbmStsModule : public CbmStsElement
      Double_t GetDeadTimeTb() { return fDeadTime; }
 
      /** Create cluster in the output array **/
-     void CreateClusterTb(vector<Int_t> digiIndexes, Double_t s1, Double_t s2,
+     void CreateClusterTb(std::vector<Int_t> digiIndexes, Double_t s1, Double_t s2,
     		 	 	 Double_t s3, Double_t ts, Bool_t side, TClonesArray* clusterArray);
 
-     void CreateClusterTb(vector<Int_t>* digiIndexes, Int_t firstChannel, TClonesArray* clusterArray, Int_t algorithm);
+     void CreateClusterTb(std::vector<Int_t>* digiIndexes, Int_t firstChannel, TClonesArray* clusterArray, Int_t algorithm);
 
      /** Set dead time for time-based hit finding **/
      void SetDeadTime(Double_t dTime) { fDeadTime = dTime; }
@@ -297,7 +297,7 @@ class CbmStsModule : public CbmStsElement
     std::map<Int_t, std::pair<CbmStsDigi*, Int_t> > fDigis;
 
     /** Vector of clusters. Used for hit finding. **/
-    vector<CbmStsCluster*> fClusters;
+    std::vector<CbmStsCluster*> fClusters;
 
     /** Multimap from channel number to pair or (digi, digi index in TimeSlice).
      ** Used for time-based cluster finding.

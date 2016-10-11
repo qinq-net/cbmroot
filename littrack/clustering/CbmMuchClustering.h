@@ -18,6 +18,9 @@
 
 #include "TH1F.h"
 
+#include <map>
+#include <vector>
+
 class TClonesArray;
 
 class CbmMuchClustering: public FairTask
@@ -54,8 +57,8 @@ private:
    CbmMuchGeoScheme* fScheme;               // MuCh geometry scheme
    TString           fDigiFile;             // Digitization file
 
-   vector<CbmClusteringGeometry*> fModulesGeometryArray;
-   map <Int_t, Int_t> fModulesByDetId;
+   std::vector<CbmClusteringGeometry*> fModulesGeometryArray;
+   std::map <Int_t, Int_t> fModulesByDetId;
 
    TClonesArray* fMuchDigi;                 // Input array of CbmMuchDigi
    TClonesArray* fCluster;                  // Output array of CbmMuchCluster

@@ -23,11 +23,7 @@
 #include "CbmLmvmKinematicParams.h"
 #include "CbmRichElectronIdAnn.h"
 
-
-
-
-using namespace std;
-
+#include <vector>
 
 class CbmAnaConversionReco
 {
@@ -40,8 +36,8 @@ public:
 	void InitHistos();
 	void Finish();
 
-	void SetTracklistMC(vector<CbmMCTrack*> MCTracklist);
-	void SetTracklistReco(vector<CbmMCTrack*> MCTracklist, vector<TVector3> RecoTracklist1, vector<TVector3> RecoTracklist2, vector<int> ids, vector<Double_t> chi, vector<Int_t> GlobalTrackId);
+	void SetTracklistMC(std::vector<CbmMCTrack*> MCTracklist);
+	void SetTracklistReco(std::vector<CbmMCTrack*> MCTracklist, std::vector<TVector3> RecoTracklist1, std::vector<TVector3> RecoTracklist2, std::vector<int> ids, std::vector<Double_t> chi, std::vector<Int_t> GlobalTrackId);
 	void InvariantMassMC_all();
 	Double_t Invmass_4particles(const CbmMCTrack* mctrack1, const CbmMCTrack* mctrack2, const CbmMCTrack* mctrack3, const CbmMCTrack* mctrack4);
 	Double_t SmearValue(Double_t value);
@@ -77,23 +73,23 @@ private:
 	CbmLitGlobalElectronId* electronidentifier;
 
 
-	vector<CbmMCTrack*>	fMCTracklist_all;
-	vector<CbmMCTrack*>	fRecoTracklistEPEM;
-	vector<int>			fRecoTracklistEPEM_ids;
-	vector<Double_t>	fRecoTracklistEPEM_chi;
-	vector<Int_t>		fRecoTracklistEPEM_gtid;	// globalTrack Id
-	vector<TVector3>	fRecoMomentum;
-	vector<TVector3>	fRecoRefittedMomentum;
+	std::vector<CbmMCTrack*>	fMCTracklist_all;
+	std::vector<CbmMCTrack*>	fRecoTracklistEPEM;
+	std::vector<int>			fRecoTracklistEPEM_ids;
+	std::vector<Double_t>	fRecoTracklistEPEM_chi;
+	std::vector<Int_t>		fRecoTracklistEPEM_gtid;	// globalTrack Id
+	std::vector<TVector3>	fRecoMomentum;
+	std::vector<TVector3>	fRecoRefittedMomentum;
 	
 
-	vector<TH1*> fHistoList_MC;			// list of all histograms generated with MC data
-	vector<TH1*> fHistoList_reco;		// list of all histograms generated with reconstructed data
-	vector<TH1*> fHistoList_reco_mom;	// list of all histograms of reconstruction data (used momenta)
-	vector<TH1*> fHistoList_gg;
-	vector<TH1*> fHistoList_gee;
-	vector<TH1*> fHistoList_eeee;
-	vector<TH1*> fHistoList_all;
-	vector<TH1*> fHistoList_eta;
+	std::vector<TH1*> fHistoList_MC;			// list of all histograms generated with MC data
+	std::vector<TH1*> fHistoList_reco;		// list of all histograms generated with reconstructed data
+	std::vector<TH1*> fHistoList_reco_mom;	// list of all histograms of reconstruction data (used momenta)
+	std::vector<TH1*> fHistoList_gg;
+	std::vector<TH1*> fHistoList_gee;
+	std::vector<TH1*> fHistoList_eeee;
+	std::vector<TH1*> fHistoList_all;
+	std::vector<TH1*> fHistoList_eta;
 
 
 	TH1D * fhInvariantMass_MC_all;

@@ -14,9 +14,6 @@
 #include "CbmTrdModule.h"
 #include "CbmTrdDigiPar.h"
 #include "TPolyLine.h"
-using std::cout;
-using std::endl;
-using std::flush;
 
 class CbmTrdUtils
 {
@@ -235,7 +232,7 @@ class CbmTrdUtils
       return 48;
     //if (PdgCode == -1)
     //return 49;
-    cout << PdgCode << endl;
+    std::cout << PdgCode << std::endl;
     return 49;
   };
  private:

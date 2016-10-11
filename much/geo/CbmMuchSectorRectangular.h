@@ -14,8 +14,7 @@
 #include "TPave.h"
 #include "TVector3.h"
 #include "TArrayI.h"
-#include "vector"
-using std::vector;
+#include <vector>
 
 class CbmMuchPadRectangular;
 
@@ -37,11 +36,11 @@ public:
   Double_t GetYmin()     const { return fPosition[1]-fSize[1]/2;}
 
 //  TArrayI  GetNeighbours() const { return fNeighbours; }
-  void SetNeighbours(vector<CbmMuchSectorRectangular*> neighbours) { fNeighbours = neighbours; }
+  void SetNeighbours(std::vector<CbmMuchSectorRectangular*> neighbours) { fNeighbours = neighbours; }
   Bool_t Inside(Double_t x, Double_t y) {return x>fX1 && x<fX2 && y>fY1 && y<fY2;}
   Bool_t IsIncomplete() { return kFALSE; }
   
-  vector<CbmMuchSectorRectangular*> GetNeighbours() { return fNeighbours; }
+  std::vector<CbmMuchSectorRectangular*> GetNeighbours() { return fNeighbours; }
   CbmMuchPadRectangular* GetPad(Double_t x, Double_t y);
   void AddPads();
   void DrawPads();
@@ -53,7 +52,7 @@ protected:
   Int_t fPadNy;
   Double_t fPadDx;
   Double_t fPadDy;
-  vector<CbmMuchSectorRectangular*> fNeighbours; //!
+  std::vector<CbmMuchSectorRectangular*> fNeighbours; //!
 
   ClassDef(CbmMuchSectorRectangular,1);
 

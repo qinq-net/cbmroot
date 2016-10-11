@@ -16,6 +16,10 @@
 
 #include "FairTask.h"
 
+#include "CbmVertex.h"
+#include "CbmKFTrack.h"
+#include "CbmAnaHypTrack.h"
+
 class CbmStsTrack;
 class CbmVertex;
 class CbmKF;
@@ -27,13 +31,6 @@ class TClonesArray;
 class TFile;
 class TTree;
 class TVector3;
-
-#include "CbmVertex.h"
-#include <vector>
-#include "CbmKFTrack.h"
-#include "CbmAnaHypTrack.h"
-
-using std::vector;
 
 class CbmAnaHypRecLambda : public FairTask
 {

@@ -18,6 +18,7 @@
 
 using std::cout;
 using std::endl;
+using std::vector;
 
 StsAlignment::StsAlignment() :
   FairTask("StsAlignment",1),

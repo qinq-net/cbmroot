@@ -3,11 +3,12 @@
 
 
 #include "FairTask.h"
-#include <map>
+
 #include "TH1F.h"
 #include "TH2F.h"
 
-using namespace std;
+#include <map>
+#include <vector>
 
 class TClonesArray;
 class CbmStsCosyPoint;
@@ -47,7 +48,7 @@ class StsCosyTrack : public FairTask
   Bool_t TestFit(); 
 
  // Map for layered hits
-  map< Int_t , vector<CbmStsHit*> > fMapPts; //!
+  std::map< Int_t , std::vector<CbmStsHit*> > fMapPts; //!
 
   TH1F* h_resX[5]; 
   TH1F* h_resY[5];

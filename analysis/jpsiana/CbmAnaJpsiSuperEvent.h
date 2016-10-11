@@ -7,17 +7,21 @@
 
 #ifndef ANALYSIS_JPSIANA_CBMANAJPSISUPEREVENT_H_
 #define ANALYSIS_JPSIANA_CBMANAJPSISUPEREVENT_H_
-#include <string>
+
+#include "TObject.h"
+
 #include "CbmAnaJpsiCandidate.h"
 #include "CbmAnaJpsiHist.h"
 #include "CbmAnaJpsiCuts.h"
 #include "CbmAnaJpsiKinematicParams.h"
 #include "CbmHistManager.h"
-#include "TH1D.h"
 #include "CbmSimulationReport.h"
+
+#include "TH1D.h"
 #include "TSystem.h"
 
-using namespace std;
+#include <string>
+#include <vector>
 
 class CbmAnaJpsiSuperEvent  : public TObject
 {
@@ -30,12 +34,12 @@ public:
 	/*
 	 * \brief Add file for super event.
 	 */
-	void AddFile(const string& fileName) { fFileNames.push_back(fileName); }
+	void AddFile(const std::string& fileName) { fFileNames.push_back(fileName); }
 
 	/*
 	 * \brief Set output file.
 	 */
-	void SetOutputFile(const string& fileName) {fOutputFile = fileName;}
+	void SetOutputFile(const std::string& fileName) {fOutputFile = fileName;}
 
 	/*
 	 * \brief Set to true if you want to do super event after ptcut.
@@ -48,11 +52,11 @@ public:
 	void Run();
 
 private:
-	vector<string> fFileNames;
-	vector<CbmAnaJpsiCandidate> fMinusCandidates;
-	vector<CbmAnaJpsiCandidate> fPlusCandidates;
+	std::vector<std::string> fFileNames;
+	std::vector<CbmAnaJpsiCandidate> fMinusCandidates;
+	std::vector<CbmAnaJpsiCandidate> fPlusCandidates;
 
-	string fOutputFile;
+	std::string fOutputFile;
 
 	CbmHistManager* fHM;
 

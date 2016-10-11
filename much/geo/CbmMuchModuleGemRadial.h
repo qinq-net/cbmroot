@@ -10,7 +10,6 @@
 #include "CbmMuchModuleGem.h"
 #include "TVector3.h"
 #include <vector>
-using std::vector;
 
 class CbmMuchSectorRadial;
 class CbmMuchPadRadial;
@@ -29,7 +28,7 @@ class CbmMuchModuleGemRadial : public CbmMuchModuleGem{
   CbmMuchPadRadial* GetPad(Double_t x, Double_t y);
   Bool_t InitModule();
  protected:
-  vector<Double_t> fSectorRadii; //! vector of sector radii
+  std::vector<Double_t> fSectorRadii; //! vector of sector radii
   
   Double_t fDx1;
   Double_t fDx2;

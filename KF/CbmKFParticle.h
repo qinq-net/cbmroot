@@ -14,14 +14,13 @@
 #include "CbmKFVertexInterface.h"
 
 #include <vector>
-using namespace std;
 
 class CbmKFParticle: public TObject {
 
  public:
   int Id() const { return fId; };
   int NDaughters() const { return fDaughtersIds.size(); };
-  const vector<int>& DaughterIds() const { return fDaughtersIds; };
+  const std::vector<int>& DaughterIds() const { return fDaughtersIds; };
   
   void SetId( int id ){ fId = id; } // should be always used (manualy)
   void SetNDaughters( int n ) { fDaughtersIds.reserve(n); }
@@ -31,7 +30,7 @@ class CbmKFParticle: public TObject {
  private:
   
   int fId;                   // id of particle
-  vector<int> fDaughtersIds; // id of particles it created from. if size == 1 then this is id of track. TODO use in functions. why unsigned short int doesn't work???
+  std::vector<int> fDaughtersIds; // id of particles it created from. if size == 1 then this is id of track. TODO use in functions. why unsigned short int doesn't work???
 
   int fPDG; // pdg hypothesis
   
@@ -51,11 +50,11 @@ class CbmKFParticle: public TObject {
 
   // Construction
 
-  void Construct( vector<CbmKFTrackInterface*> &vDaughters, 
+  void Construct( std::vector<CbmKFTrackInterface*> &vDaughters, 
 		  CbmKFVertexInterface *Parent=0, 
 		  Double_t Mass=-1, Double_t CutChi2=-1  );
 
-  void ConstructFromKFParticle( vector<CbmKFParticle*> &vDaughters, CbmKFVertexInterface *Parent=0, Double_t Mass=-1, Double_t CutChi2=-1  );
+  void ConstructFromKFParticle( std::vector<CbmKFParticle*> &vDaughters, CbmKFVertexInterface *Parent=0, Double_t Mass=-1, Double_t CutChi2=-1  );
 
   // Transportation
 

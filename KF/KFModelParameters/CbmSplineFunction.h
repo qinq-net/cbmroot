@@ -20,32 +20,30 @@
 #include <algorithm>
 #include <cmath>
 
-using namespace std;
-
 class SplineFunction
 {
 public:
-    vector< pair<double, double> > vals;
+    std::vector< std::pair<double, double> > vals;
     SplineFunction():vals() { vals.resize(0); }
-    SplineFunction(vector<double> x, vector<double> y):vals()
+    SplineFunction(std::vector<double> x, std::vector<double> y):vals()
     {
         for(unsigned int i=0;i<x.size();++i)
         {
-            vals.push_back(make_pair(x[i], y[i]));
+            vals.push_back(std::make_pair(x[i], y[i]));
         }
         sort(vals.begin(), vals.end());
     }
     void add_val(double x, double val)
     {
-        vals.push_back(make_pair(x, val));
+        vals.push_back(std::make_pair(x, val));
         sort(vals.begin(), vals.end());
     }
     double f(double arg) const
     {
         if (vals.size()<2) return 0.;
 		unsigned int ind = 0;
-        pair<double, double> op = make_pair(arg, 0.);
-        vector< pair<double, double> >::const_iterator it = lower_bound(vals.begin(), vals.end(), op);
+        std::pair<double, double> op = std::make_pair(arg, 0.);
+        std::vector< std::pair<double, double> >::const_iterator it = lower_bound(vals.begin(), vals.end(), op);
         ind = distance(vals.begin(), it);
         if (ind==0) return vals[0].second +
             (arg - vals[0].first) *
@@ -74,20 +72,20 @@ public:
     {
         vals.resize(0);
     }
-    void fill(vector<double> x, vector<double> y)
+    void fill(std::vector<double> x, std::vector<double> y)
     {
         vals.resize(0);
         for(unsigned int i=0;i<x.size();++i)
         {
-            vals.push_back(make_pair(x[i], y[i]));
+            vals.push_back(std::make_pair(x[i], y[i]));
         }
         sort(vals.begin(), vals.end());
     }
     void setConstant(double val)
     {
         vals.resize(0);
-        vals.push_back(make_pair(0., val));
-        vals.push_back(make_pair(1., val));
+        vals.push_back(std::make_pair(0., val));
+        vals.push_back(std::make_pair(1., val));
     }
 };
 

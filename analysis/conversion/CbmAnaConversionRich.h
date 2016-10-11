@@ -20,11 +20,7 @@
 #include "CbmMCTrack.h"
 #include "CbmVertex.h"
 
-
-
-
-using namespace std;
-
+#include <vector>
 
 class CbmAnaConversionRich
 {
@@ -57,7 +53,7 @@ private:
 	TClonesArray* fGlobalTracks;
 	CbmVertex *fPrimVertex;
 
-	vector<TH1*> fHistoList_richrings;	// list of all histograms related to rich rings
+	std::vector<TH1*> fHistoList_richrings;	// list of all histograms related to rich rings
 
 
 

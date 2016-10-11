@@ -22,8 +22,6 @@ class TFile;
 class TCanvas;
 class CbmHistManager;
 
-using namespace std;
-
 enum SignalType {
     kInmed = 0,
     kQgp = 1,
@@ -72,51 +70,51 @@ public:
      * \param useMvd draw histograms related to the MVD detector?
      **/
     void DrawHistosFromFile(
-                            const string& fileNameInmed,
-                            const string& fileNameQgp,
-                            const string& fileNameOmega,
-                            const string& fileNamePhi,
-                            const string& fileNameOmegaDalitz,
-                            const string& outputDir = "",
+                            const std::string& fileNameInmed,
+                            const std::string& fileNameQgp,
+                            const std::string& fileNameOmega,
+                            const std::string& fileNamePhi,
+                            const std::string& fileNameOmegaDalitz,
+                            const std::string& outputDir = "",
                             Bool_t useMvd = false);
     
 private:
     static const int fNofSignals = 5;
     
-    vector<TCanvas*> fCanvas; // store all pointers to TCanvas -> save to images
+    std::vector<TCanvas*> fCanvas; // store all pointers to TCanvas -> save to images
     
     Bool_t fUseMvd; // do you want to draw histograms related to the MVD detector?
     
     //[0]=rho0, [1]=omega, [2]=phi, [3]=omegaDalitz
-    vector<CbmHistManager*> fHM;
+    std::vector<CbmHistManager*> fHM;
     
     // index: AnalysisSteps
-    vector<TH1D*> fh_mean_bg_minv; //mean histograms from all files
-    vector<TH1D*> fh_mean_eta_minv;
-    vector<TH1D*> fh_mean_pi0_minv;
-    vector<TH2D*> fh_mean_eta_minv_pt;
-    vector<TH2D*> fh_mean_pi0_minv_pt;
-    vector<TH1D*> fh_mean_sbg_vs_minv; //Coctail/BG vs. invariant mass for different analysis steps
+    std::vector<TH1D*> fh_mean_bg_minv; //mean histograms from all files
+    std::vector<TH1D*> fh_mean_eta_minv;
+    std::vector<TH1D*> fh_mean_pi0_minv;
+    std::vector<TH2D*> fh_mean_eta_minv_pt;
+    std::vector<TH2D*> fh_mean_pi0_minv_pt;
+    std::vector<TH1D*> fh_mean_sbg_vs_minv; //Coctail/BG vs. invariant mass for different analysis steps
     
     
     // index: AnalysisSteps
-    vector<TH1D*> fh_sum_s_minv; // sum of all signals
+    std::vector<TH1D*> fh_sum_s_minv; // sum of all signals
     
-    string fOutputDir; // output directory for figures
+    std::string fOutputDir; // output directory for figures
     
     TCanvas* CreateCanvas(
-                          const string& name,
-                          const string& title,
+                          const std::string& name,
+                          const std::string& title,
                           int width,
                           int height);
     
     TH1D* H1(
              int signalType,
-             const string& name);
+             const std::string& name);
     
     TH2D* H2(
              int signalType,
-             const string& name);
+             const std::string& name);
     
     /**
      * \brief Create and return cotail vs. minv

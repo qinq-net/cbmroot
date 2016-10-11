@@ -22,10 +22,7 @@
 #include "CbmLmvmKinematicParams.h"
 #include "CbmKFVertex.h"
 
-
-
-
-using namespace std;
+#include <vector>
 
 /*
 class CbmAnaConversionKinematicParams
@@ -84,11 +81,11 @@ private:
 	CbmVertex *fPrimVertex;
 	CbmKFVertex fKFVertex;
 
-	vector<TH1*> fHistoList_photons;	// list of all histograms related to rich rings
-	vector<TH1*> fHistoList_EFG;
-	vector<TH1*> fHistoList_EFG_angle;
-	vector<TH1*> fHistoList_EFG_invmass;
-	vector<TH1*> fHistoList_EFG_energy;
+	std::vector<TH1*> fHistoList_photons;	// list of all histograms related to rich rings
+	std::vector<TH1*> fHistoList_EFG;
+	std::vector<TH1*> fHistoList_EFG_angle;
+	std::vector<TH1*> fHistoList_EFG_invmass;
+	std::vector<TH1*> fHistoList_EFG_energy;
 
 
 	TH1I * fPhotons_nofPerEvent;
@@ -107,15 +104,15 @@ private:
 	TH1D * fPhotonsRest_ptMC_e;
 	TH1D * fPhotonsRest_ptMC_eta;
 
-	vector<CbmMCTrack*>	fMCTracklist;
-	vector<CbmMCTrack*>	fMCTracklist_allElectronsFromGamma;
-	vector<CbmMCTrack*>	fRecoTracklist_allElectronsFromGamma;
-	vector<TVector3>	fRecoTracklist_allElectronsFromGammaMom;
-	vector<CbmMCTrack*>	fRecoTracklist_allElectronsFromPi0;
-	vector<TVector3>	fRecoTracklist_allElectronsFromPi0Mom;
+	std::vector<CbmMCTrack*>	fMCTracklist;
+	std::vector<CbmMCTrack*>	fMCTracklist_allElectronsFromGamma;
+	std::vector<CbmMCTrack*>	fRecoTracklist_allElectronsFromGamma;
+	std::vector<TVector3>	fRecoTracklist_allElectronsFromGammaMom;
+	std::vector<CbmMCTrack*>	fRecoTracklist_allElectronsFromPi0;
+	std::vector<TVector3>	fRecoTracklist_allElectronsFromPi0Mom;
 	
-	vector<CbmMCTrack*>	fMCTracklist_allGammas;
-	vector<CbmMCTrack*>	fMCTracklist_allGammasFromPi0;
+	std::vector<CbmMCTrack*>	fMCTracklist_allGammas;
+	std::vector<CbmMCTrack*>	fMCTracklist_allGammasFromPi0;
 
 	Int_t global_nof_photonsMC;
 	Int_t global_nof_photonsReco;

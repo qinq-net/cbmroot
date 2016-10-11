@@ -16,9 +16,6 @@
 class TClonesArray;
 class CbmStsSetup;
 
-using std::set;
-
-
 /** @class CbmStsFindHits
  ** @brief Task class for finding STS hits
  ** @author Volker Friese <v.friese@gsi.de>
@@ -93,7 +90,7 @@ class CbmStsFindHits : public FairTask
     Double_t fTimeTot;         ///< Total execution time
 
     /** Set of active modules in the current event **/
-    set<CbmStsModule*> fActiveModules;
+    std::set<CbmStsModule*> fActiveModules;
 
     /** Sort clusters into modules
      ** @return Number of clusters sorted

@@ -16,8 +16,7 @@
 #include "TString.h"
 #include "TMath.h"
 
-using namespace std;
-
+#include <utility>
 
 class CbmMvdDigitizer : public FairTask
 {
@@ -68,7 +67,7 @@ Bool_t fShowDebugHistos;
  TClonesArray* fDigiMatch;
  TClonesArray* fMcPileUp;
 
- pair<Float_t, Int_t> fPerformanceDigi;
+ std::pair<Float_t, Int_t> fPerformanceDigi;
 
  UInt_t fDigiPluginNr;
 

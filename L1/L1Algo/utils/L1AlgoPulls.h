@@ -22,10 +22,6 @@ const int NStations = 0;
 #include <vector>
 #include <iostream>
 
-using std::vector;
-using std::cout;
-using std::endl;
-
 struct TL1TrackParameters
 {
   double x,y,tx,ty,qp;
@@ -67,7 +63,7 @@ struct TL1TrackParameters
   }
 
   void Print(){
-    cout << x << " "  << y << " " << tx << " " << ty << " " << qp << endl;
+    std::cout << x << " "  << y << " " << tx << " " << ty << " " << qp << std::endl;
   }
 };
 
@@ -93,11 +89,11 @@ class L1AlgoPulls{
     void makeUpHisto(TH1* hist, TString title, float& sigma);
 
     CbmL1* fL1;
-    vector<TL1TrackParameters> fGPulls;    // pulls for all stations
-    vector<TL1TrackParameters> fStaPulls[NStations]; // pulls for each station
+    std::vector<TL1TrackParameters> fGPulls;    // pulls for all stations
+    std::vector<TL1TrackParameters> fStaPulls[NStations]; // pulls for each station
     TH1F* histoPull[(1+NStations)*TL1TrackParameters::NParameters];
 
-    vector<TL1TrackParameters> fGRes;    // residuals for all stations
+    std::vector<TL1TrackParameters> fGRes;    // residuals for all stations
     TH1F* histoRes[(1+NStations)*TL1TrackParameters::NParameters];
 
     static const float TailCut = 5000.; //
@@ -250,9 +246,9 @@ inline void L1AlgoPulls::AddOne(L1TrackPar& T_, int i, THitI ih)
 
 inline void L1AlgoPulls::Print()
 { // TODO: renew
-  cout << "All pulls:     " << fNAllPulls << endl;
-  cout << "Correct pulls: " << fGPulls.size() << endl;
-  cout  << "x     y    tx    ty    qp" <<  endl;
+  std::cout << "All pulls:     " << fNAllPulls << std::endl;
+  std::cout << "Correct pulls: " << fGPulls.size() << std::endl;
+  std::cout  << "x     y    tx    ty    qp" <<  std::endl;
   for (int i = 0; i < fGPulls.size(); i++){
     TL1TrackParameters& pull = fGPulls[i];
     pull.Print();
@@ -272,7 +268,7 @@ inline void L1AlgoPulls::Build(bool draw)
 #ifdef BUILD_HISTO_FOR_EACH_STANTION
     // station pulls
   for (int iSta = 0; iSta < NStations; iSta++){
-    vector<TL1TrackParameters>& Pulls = fStaPulls[iSta];
+    std::vector<TL1TrackParameters>& Pulls = fStaPulls[iSta];
     for (int i = 0; i < Pulls.size(); i++){
       TL1TrackParameters& pull = Pulls[i];
       for (int ih = 0; ih < TL1TrackParameters::NParameters; ih++){
@@ -323,19 +319,19 @@ inline void L1AlgoPulls::Build(bool draw)
   chdir( ".." );
 
         // --- print information ---
-  cout << "All entries:     " << fNAllPulls << endl;
-  cout << "Correct entries: " << fGPulls.size() << endl;
-  cout << "Pulls sigma & RMS: " << endl;
+  std::cout << "All entries:     " << fNAllPulls << std::endl;
+  std::cout << "Correct entries: " << fGPulls.size() << std::endl;
+  std::cout << "Pulls sigma & RMS: " << std::endl;
   for (int ih = 0; ih < (NStations + 1)*TL1TrackParameters::NParameters; ih++){
     int ipar = ih%TL1TrackParameters::NParameters;
     int ista = ih/TL1TrackParameters::NParameters;
-    if ( (ista > 0) && (ipar == 0) ) cout << "Station " << ista-1 << endl;
-    cout << L1TrackParametersNames[ipar] << "\t" << pulls[ih][0] << "\t" << pulls[ih][1] << endl;
+    if ( (ista > 0) && (ipar == 0) ) std::cout << "Station " << ista-1 << std::endl;
+    std::cout << L1TrackParametersNames[ipar] << "\t" << pulls[ih][0] << "\t" << pulls[ih][1] << std::endl;
   }
-  cout << "Residuals sigma & RMS: " << endl;
+  std::cout << "Residuals sigma & RMS: " << std::endl;
   for (int ih = 0; ih < (0 + 1)*TL1TrackParameters::NParameters; ih++){
     int ipar = ih%TL1TrackParameters::NParameters;
-    cout << L1TrackParametersNames[ipar] << "\t" << residuals[ih][0] << "\t" << residuals[ih][1] << endl;
+    std::cout << L1TrackParametersNames[ipar] << "\t" << residuals[ih][0] << "\t" << residuals[ih][1] << std::endl;
   }
 };
 

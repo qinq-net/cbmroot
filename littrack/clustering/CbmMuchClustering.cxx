@@ -43,6 +43,7 @@
 
 using std::cout;
 using std::endl;
+using std::vector;
 
 CbmMuchClustering::CbmMuchClustering(const char* digiFileName):
 		FairTask(),

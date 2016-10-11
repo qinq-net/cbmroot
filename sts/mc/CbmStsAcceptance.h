@@ -13,9 +13,6 @@
 
 class TClonesArray;
 
-using std::map;
-using std::string;
-
 /** @class CbmStsAcceptance
  ** @brief Singleton task class for easy access to the acceptance in the STS
  ** @author Volker Friese <v.friese@gsi.de>
@@ -109,7 +106,7 @@ class CbmStsAcceptance : public FairTask {
 
 
 		/** Status info **/
-		string ToString() const;
+		std::string ToString() const;
 
 
 
@@ -118,7 +115,7 @@ class CbmStsAcceptance : public FairTask {
 		TClonesArray* fPoints;  ///< Input array of CbmStsPoint objects
 		TClonesArray* fTracks;  ///< Input array of CbmMCTrack objects
 		TStopwatch fTimer;      ///< Performance monitoring
-		static map<Int_t, map<Int_t, Int_t>> fCountMap;  ///< Internal bookkeeping
+		static std::map<Int_t, std::map<Int_t, Int_t>> fCountMap;  ///< Internal bookkeeping
 		static Int_t fNofInstances; ///< Number of instances of this class
 
 	  // --- Run counters

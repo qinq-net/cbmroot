@@ -44,6 +44,7 @@ using std::setw;
 using std::setfill;
 using std::setiosflags;
 using std::setprecision;
+using std::flush;
 
 // ---- Default constructor -------------------------------------------
 CbmTrdHitRateFastQa::CbmTrdHitRateFastQa()

@@ -31,9 +31,6 @@ class CbmMuchModule;
 class CbmMuchModuleGem;
 class CbmMuchPad;
 
-using std::vector;
-using std::map;
-
 class CbmMuchGeoScheme: public TObject {
 
   public:
@@ -97,10 +94,10 @@ class CbmMuchGeoScheme: public TObject {
     void ClearPointArrays();
     void ClearHitArrays();
     void ClearClusterArrays();
-    vector<CbmMuchModule*>    GetModules() const;
-    vector<CbmMuchModuleGem*>    GetGemModules() const;
-    vector<CbmMuchModule*>    GetModules(Int_t iStation) const;
-    vector<CbmMuchLayerSide*> GetLayerSides(Int_t iStation) const;
+    std::vector<CbmMuchModule*>    GetModules() const;
+    std::vector<CbmMuchModuleGem*>    GetGemModules() const;
+    std::vector<CbmMuchModule*>    GetModules(Int_t iStation) const;
+    std::vector<CbmMuchLayerSide*> GetLayerSides(Int_t iStation) const;
     Int_t GetLayerSideNr(Int_t detId) const;
 
     void ReadGeoFile(const char* geoName);
@@ -121,9 +118,9 @@ class CbmMuchGeoScheme: public TObject {
     static Bool_t fInitialized;        // Defines whether the instance was initialized
     static Bool_t fModulesInitialized; // Defines whether grid of the instance was initialized
 
-    vector<vector<CbmMuchModule*> > fModules;      //!
-    vector<vector<CbmMuchLayerSide*> > fSides;     //!
-    map<Int_t,Int_t> fMapSides;
+    std::vector<std::vector<CbmMuchModule*> > fModules;      //!
+    std::vector<std::vector<CbmMuchLayerSide*> > fSides;     //!
+    std::map<Int_t,Int_t> fMapSides;
 
     TObjArray* fStations; //!
     TObjArray* fAbsorbers;//!

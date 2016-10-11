@@ -4,8 +4,6 @@
 #include "FairTask.h"
 #include "TRandom3.h"
 #include <map>
-using std::map;
-using std::pair;
 
 class CbmTrdPoint;
 class CbmTrdDigi;
@@ -102,7 +100,7 @@ class CbmTrdDigitizerPRF : public FairTask {
   CbmTrdModule* fModuleInfo; //!
   CbmTrdRadiator* fRadiator;  //!
 
-  std::map<Int_t, pair<CbmTrdDigi*, CbmMatch*> > fDigiMap; // Temporary storage for digis.
+  std::map<Int_t, std::pair<CbmTrdDigi*, CbmMatch*> > fDigiMap; // Temporary storage for digis.
 
   ClassDef(CbmTrdDigitizerPRF, 3);
 };

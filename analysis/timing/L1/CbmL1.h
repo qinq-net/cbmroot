@@ -66,8 +66,6 @@
 #include <vector>
 #include <algorithm>
 
-using std::vector;
-
 
 class L1Algo;
 class CbmL1ParticlesFinder;
@@ -92,7 +90,7 @@ class CbmL1 : public FairTask
     TClonesArray *listStsHitsAll;
     TClonesArray *sliceArray;
     Int_t fSliceSeperationTime;
-    vector<Int_t> sliceHitIndices;
+    std::vector<Int_t> sliceHitIndices;
 
   public:
   void SetEpoch(Bool_t isEpoch) { fEpoch = isEpoch; }
@@ -101,7 +99,7 @@ class CbmL1 : public FairTask
    L1Algo *algo; // for access to L1 Algorithm from L1::Instance
    CbmL1ParticlesFinder *PF;
 
-   vector<CbmL1Track> vRTracks; // reconstructed tracks
+   std::vector<CbmL1Track> vRTracks; // reconstructed tracks
    
   static CbmL1 *Instance(){ return fInstance; }
 
@@ -128,7 +126,7 @@ class CbmL1 : public FairTask
 //   void SetGhostSuppression( Bool_t b ){ fGhostSuppression= b; }
 //   void SetDetectorEfficiency( Double_t eff ){ fDetectorEfficiency = eff; }
 
-  vector<CbmL1HitStore> vHitStore; // diff hit information
+  std::vector<CbmL1HitStore> vHitStore; // diff hit information
 
   
   friend class L1AlgoDraw;
@@ -203,15 +201,15 @@ class CbmL1 : public FairTask
    TClonesArray *listMvdHitMatches;
 
     /// Used data = Repacked input data
-   vector<CbmL1StsHit>  vStsHits;  // hits with hit-mcpoint match information
-   vector<CbmL1MCPoint> vMCPoints;
-   vector<CbmL1MCTrack> vMCTracks;
-   vector<int>          vHitMCRef; // indices of MCPoints in vMCPoints, indexed by index of hit in algo->vStsHits array. According to StsMatch. Used for IdealResponce
+   std::vector<CbmL1StsHit>  vStsHits;  // hits with hit-mcpoint match information
+   std::vector<CbmL1MCPoint> vMCPoints;
+   std::vector<CbmL1MCTrack> vMCTracks;
+   std::vector<int>          vHitMCRef; // indices of MCPoints in vMCPoints, indexed by index of hit in algo->vStsHits array. According to StsMatch. Used for IdealResponce
 
-  vector<CbmKFParticle>  vRParticles;      // reco particles
-  vector<CbmL1PFMCParticle> vMCParticles;  // MC particles
-  vector<CbmL1TrackMatch> MCtoRParticleId; // array for match
-  vector<CbmL1TrackMatch> RtoMCParticleId; 
+  std::vector<CbmKFParticle>  vRParticles;      // reco particles
+  std::vector<CbmL1PFMCParticle> vMCParticles;  // MC particles
+  std::vector<CbmL1TrackMatch> MCtoRParticleId; // array for match
+  std::vector<CbmL1TrackMatch> RtoMCParticleId; 
   
   TDirectory *histodir;
    

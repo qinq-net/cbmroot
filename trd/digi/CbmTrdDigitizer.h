@@ -13,9 +13,6 @@
 
 #include <map>
 
-using std::map;
-using std::pair;
-
 class TClonesArray;
 
 class CbmTrdDigiPar;
@@ -84,7 +81,7 @@ private:
     CbmTrdRadiator* fRadiator;
     
     // Temporary storage for digis.
-    map<Int_t, pair<CbmTrdDigi*, CbmMatch*> > fDigiMap;
+    std::map<Int_t, std::pair<CbmTrdDigi*, CbmMatch*> > fDigiMap;
 
     ClassDef(CbmTrdDigitizer, 4);
 };

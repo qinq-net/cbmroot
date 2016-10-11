@@ -14,7 +14,10 @@
 #include "CbmTbDaqBuffer.h"
 #include "CbmDetectorList.h"
 
-
+using std::multimap;
+using std::pair;
+using std::fixed;
+using std::setprecision;
 
 // -----   Initialisation of static variables   ------------------------------
 CbmTbDaqBuffer* CbmTbDaqBuffer::fgInstance = NULL;

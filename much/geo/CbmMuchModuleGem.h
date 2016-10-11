@@ -18,9 +18,6 @@
 
 #include <vector>
 #include <map>
-using std::vector;
-using std::multimap;
-using std::pair;
 
 class CbmMuchSector;
 class CbmMuchPad;
@@ -55,7 +52,7 @@ class CbmMuchModuleGem : public CbmMuchModule{
   Int_t GetNSectors() const { return fSectors.size(); }
   
   /** Gets array of pads for this module. */
-  vector<CbmMuchPad*> GetPads();
+  std::vector<CbmMuchPad*> GetPads();
   
   /** */
   Int_t GetNPads();
@@ -74,7 +71,7 @@ class CbmMuchModuleGem : public CbmMuchModule{
   void SetPadFired(Int_t address,Int_t digiIndex,Int_t adcCharge);
   
  protected:
-  vector<CbmMuchSector*> fSectors; // Array of sectors within this module
+  std::vector<CbmMuchSector*> fSectors; // Array of sectors within this module
 
   ClassDef(CbmMuchModuleGem,2);
 };

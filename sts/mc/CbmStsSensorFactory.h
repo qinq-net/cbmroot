@@ -10,9 +10,6 @@
 #include "TGeoVolume.h"
 #include "TNamed.h"
 
-using std::vector;
-
-
 /** @class CbmStsSensorFactory
  ** @brief Creates available sensor types for STS geometry
  ** @author Volker Friese <v.friese@gsi.de>
@@ -97,7 +94,7 @@ class CbmStsSensorFactory : public TNamed {
 
 
 		/** Vector with pointers to available sensor volumes **/
-		vector<TGeoVolume*> fSensors;
+		std::vector<TGeoVolume*> fSensors;
 
 
 		ClassDef(CbmStsSensorFactory,1);

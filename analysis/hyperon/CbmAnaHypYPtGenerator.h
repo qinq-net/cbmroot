@@ -19,8 +19,6 @@
 #include "FairGenerator.h"
 #include "TF1.h"
 
-using namespace std;
-
 class FairPrimaryGenerator;
 
 class CbmAnaHypYPtGenerator : public FairGenerator

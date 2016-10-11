@@ -3,9 +3,7 @@
 
 #include "TObject.h"
 
-#include <iostream>
-
-using namespace std;
+//#include <iostream>
 
 class CbmEcalShLibCorrRecord : public TObject
 {
@@ -81,15 +79,15 @@ inline Float_t CbmEcalShLibCorrRecord::Get(Float_t phi, Float_t theta, Float_t e
   for(;i<fNE;i++)
     if (fE[i]>=e)
       break;
-//  cout << i << endl;
+//  std::cout << i << std::endl;
   if (i==fNE) return GetE(phi, theta, fNE-1);
   if (i==0) return GetE(phi, theta, 0);
   Float_t t=fE[i]-fE[i-1];
   Float_t d=(fE[i]-e)/t;
-//  cout << phi << " " << theta << " " << e << endl;
-//  cout << t << " " << d << endl;
-//  cout <<  GetE(phi, theta, i) << endl;
-//  cout <<  GetE(phi, theta, i-1) << endl;
+//  std::cout << phi << " " << theta << " " << e << std::endl;
+//  std::cout << t << " " << d << std::endl;
+//  std::cout <<  GetE(phi, theta, i) << std::endl;
+//  std::cout <<  GetE(phi, theta, i-1) << std::endl;
   return GetE(phi, theta, i)*(1.0-d)+GetE(phi, theta, i-1)*d;
 }
 
@@ -104,7 +102,7 @@ inline Float_t CbmEcalShLibCorrRecord::GetE(Float_t phi, Float_t theta, Int_t e)
   if (i==0) return GetETheta(phi, 0, e);
   Float_t t=fTheta[i]-fTheta[i-1];
   Float_t d=(fTheta[i]-theta)/t;
-//  cout << i << " --- " << cTheta[i] <<" "<< d << endl;
+//  std::cout << i << " --- " << cTheta[i] <<" "<< d << std::endl;
   return GetETheta(phi, i, e)*(1.0-d)+GetETheta(phi, i-1, e)*d;
 }
 
@@ -124,7 +122,7 @@ inline Float_t CbmEcalShLibCorrRecord::GetETheta(Float_t phi, Int_t theta, Int_t
   }
   Int_t n2=GetN(n+1, theta, e);
 
-//  cout << "Serial numbers " << n1 << " --- " << n2 << ":" << phi << " is " << n << endl;
+//  std::cout << "Serial numbers " << n1 << " --- " << n2 << ":" << phi << " is " << n << std::endl;
   if (fCEnergy)
     return Energy(fData[n1])*(1.0-d)+d*Energy(fData[n2]);
   else

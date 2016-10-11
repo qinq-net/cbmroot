@@ -39,9 +39,12 @@
 #include "TColor.h"
 #include "TStopwatch.h"
 #include "CbmTrdUtils.h"
+
 #include <iostream>
+
 using std::cout;
 using std::endl;
+using std::map;
 
 // ---- Default constructor -------------------------------------------------
 

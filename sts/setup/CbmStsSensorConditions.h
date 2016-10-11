@@ -10,9 +10,6 @@
 #include "TMath.h"
 #include "TObject.h"
 
-using std::string;
-
-
 /** @class CbmStsSensorConditions
  ** @brief Container for operating condition parameters of a sensor
  ** @author Volker Friese <v.friese@gsi.de>
@@ -125,7 +122,7 @@ class CbmStsSensorConditions : public TObject {
 
 
 		/** String output **/
-		string ToString() const;
+		std::string ToString() const;
 
 
 

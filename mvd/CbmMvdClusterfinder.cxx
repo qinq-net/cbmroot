@@ -21,6 +21,13 @@
 #include <iomanip>
 #include <iostream>
 
+using std::setw;
+using std::fixed;
+using std::setprecision;
+using std::ios_base;
+using std::cout;
+using std::endl;
+
 // -----   Default constructor   ------------------------------------------
 CbmMvdClusterfinder::CbmMvdClusterfinder() 
   : FairTask("MVDClusterfinder"),

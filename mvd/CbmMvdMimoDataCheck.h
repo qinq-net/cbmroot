@@ -36,12 +36,7 @@
 #include "CbmMvdMimoData.h"
 #include "CbmMvdMimoStateMatch.h"
 
-using namespace std;
 class FairLogger;
-
-
-
-
 
 class CbmMvdMimoDataCheck : public FairTask
 {

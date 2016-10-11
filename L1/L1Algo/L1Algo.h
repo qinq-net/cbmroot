@@ -41,10 +41,8 @@
 
 #include <iostream>
 #include <vector>
-#include <map>
+//#include <map>
 
-using std::vector;
-using std::map;
 
 #ifdef PULLS
 #define TRIP_PERFORMANCE
@@ -97,14 +95,14 @@ class L1Algo{
     fMomentumCutOff(0)// really doesn't used
   {}
        
-  void Init( const vector<fscal> geo );
+  void Init( const std::vector<fscal> geo );
 #ifdef TBB2
-  void SetData( const vector< L1StsHit >      & StsHits_,
-                const vector< L1Strip >       & StsStrips_,
-                const vector< L1Strip >       & StsStripsB_,
-                const vector< fscal >         & StsZPos_,
-                const vector< unsigned char > & SFlag_,
-                const vector< unsigned char > & SFlagB_,
+  void SetData( const std::vector< L1StsHit >      & StsHits_,
+                const std::vector< L1Strip >       & StsStrips_,
+                const std::vector< L1Strip >       & StsStripsB_,
+                const std::vector< fscal >         & StsZPos_,
+                const std::vector< unsigned char > & SFlag_,
+                const std::vector< unsigned char > & SFlagB_,
                 const THitI* StsHitsStartIndex_,
                 const THitI* StsHitsStopIndex_ );
   void PrintHits();
@@ -124,29 +122,29 @@ class L1Algo{
       NMvdStations; // number of mvd stations
   L1Station vStations[MaxNStations] _fvecalignment; // station info
 
-  vector<L1Material> fRadThick; // material for each station
+  std::vector<L1Material> fRadThick; // material for each station
   
-  vector< L1Strip > vStsStrips,  // strips positions created from hits. Front strips
+  std::vector< L1Strip > vStsStrips,  // strips positions created from hits. Front strips
                     vStsStripsB; // back strips
-  vector< fscal >   vStsZPos;    // all possible z-positions of hits
-  vector< L1StsHit > vStsHits;     // hits as a combination of front-, backstrips and z-position
+  std::vector< fscal >   vStsZPos;    // all possible z-positions of hits
+  std::vector< L1StsHit > vStsHits;     // hits as a combination of front-, backstrips and z-position
   L1Grid vGrid[MaxNStations];     // hits as a combination of front-, backstrips and z-position
-  vector< unsigned char > vSFlag,  // information of hits station & using hits in tracks;
+  std::vector< unsigned char > vSFlag,  // information of hits station & using hits in tracks;
                           vSFlagB;
   THitI StsHitsStartIndex[int(MaxNStations)+1], StsHitsStopIndex[int(MaxNStations)+1]; // station-bounders in vStsHits array
 
    /// --- data used during finding iterations
 
   int isec; // iteration
-  vector< L1StsHit > *vStsHitsUnused;
+  std::vector< L1StsHit > *vStsHitsUnused;
   std::vector< L1HitPoint > *vStsHitPointsUnused;
   THitI *RealIHit; // index in vStsHits indexed by index in vStsHitsUnused
   THitI StsHitsUnusedStartIndex[int(MaxNStations)+1], StsHitsUnusedStopIndex[int(MaxNStations)+1];
   
 
     /// ----- Output data ----- 
-  vector< L1Track > vTracks; // reconstructed tracks
-  vector< THitI > vRecoHits; // packed hits of reconstructed tracks
+  std::vector< L1Track > vTracks; // reconstructed tracks
+  std::vector< THitI > vRecoHits; // packed hits of reconstructed tracks
 
   double CATime; // time of trackfinding
 
@@ -249,13 +247,13 @@ class L1Algo{
                 THitI *hitsl_1,
                   // output
                 int &n2,
-                vector<THitI> &i1_2,
+                std::vector<THitI> &i1_2,
                 int &start_mhit,
 #ifdef DOUB_PERFORMANCE
-                vector<THitI> &hitsl_2,
+                std::vector<THitI> &hitsl_2,
 #endif // DOUB_PERFORMANCE
-                vector<THitI> &hitsm_2,
-                vector<bool> &lmDuplets
+                std::vector<THitI> &hitsm_2,
+                std::vector<bool> &lmDuplets
                 );
            /// Add the middle hits to parameters estimation. Propagate to right station.
           /// Find the triplets (right hit). Reformat data in the portion of triplets.
@@ -268,14 +266,14 @@ class L1Algo{
                 THitI *hitsl_1,
  
                 int n2,
-                vector<THitI> &hitsm_2,
-                vector<THitI> &i1_2,
+                std::vector<THitI> &hitsm_2,
+                std::vector<THitI> &i1_2,
                 
-                const vector<bool> &mrDuplets,
+                const std::vector<bool> &mrDuplets,
                   // output
                 int &n3,
                 nsL1::vector<L1TrackPar>::TSimd &T_3,
-                vector<THitI> &hitsl_3,  vector<THitI> &hitsm_3,  vector<THitI> &hitsr_3,
+                std::vector<THitI> &hitsl_3,  std::vector<THitI> &hitsm_3,  std::vector<THitI> &hitsr_3,
                 nsL1::vector<fvec>::TSimd &u_front_3, nsL1::vector<fvec>::TSimd &u_back_3, nsL1::vector<fvec>::TSimd &z_Pos_3
                 );
           
@@ -292,7 +290,7 @@ class L1Algo{
   void f32( // input
                 int n3, int istal,
                 nsL1::vector<L1TrackPar>::TSimd &T_3,
-                vector<THitI> &hitsl_3,  vector<THitI> &hitsm_3,  vector<THitI> &hitsr_3,
+                std::vector<THitI> &hitsl_3,  std::vector<THitI> &hitsm_3,  std::vector<THitI> &hitsr_3,
                 int nIterations = 0
                          );
   
@@ -300,10 +298,10 @@ class L1Algo{
   void f4(  // input
                 int n3, int istal, int istam, int istar,
                 nsL1::vector<L1TrackPar>::TSimd &T_3,
-                vector<THitI> &hitsl_3,  vector<THitI> &hitsm_3,  vector<THitI> &hitsr_3,
+                std::vector<THitI> &hitsl_3,  std::vector<THitI> &hitsm_3,  std::vector<THitI> &hitsr_3,
                 // output
                 unsigned int &nstaltriplets,
-                vector<L1Triplet> &vTriplets_part,
+                std::vector<L1Triplet> &vTriplets_part,
                 unsigned int *TripStartIndexH, unsigned int *TripStopIndexH
 // #ifdef XXX                
 //                 ,unsigned int &stat_n_trip      
@@ -321,18 +319,18 @@ class L1Algo{
   void DupletsStaPort(  // input
                       int istal, int istam,
                       unsigned int ip,
-                      vector< int>& n_g1, unsigned int *portionStopIndex,
+                      std::vector< int>& n_g1, unsigned int *portionStopIndex,
             
                         // output
                       L1TrackPar *T_1,
                       L1FieldRegion *fld_1,
                       THitI *hitsl_1,
                       
-                      vector<bool> &lmDuplets,
+                      std::vector<bool> &lmDuplets,
                       
                       int &n_2,
-                      vector<THitI> &i1_2,
-                      vector<THitI> &hitsm_2
+                      std::vector<THitI> &i1_2,
+                      std::vector<THitI> &hitsm_2
                       );
   
             /// Find triplets on station
@@ -344,13 +342,13 @@ class L1Algo{
                             THitI *hitsl_1,
 
                             int &n_2, unsigned int *portionStopIndex,
-                            vector<THitI> &i1_2,
-                            vector<THitI> &hitsm_2,
+                            std::vector<THitI> &i1_2,
+                            std::vector<THitI> &hitsm_2,
                               
-                            const vector<bool> &mrDuplets,
+                            const std::vector<bool> &mrDuplets,
                             
                               // output
-                            vector<L1Triplet> *vTriplets_part,
+                            std::vector<L1Triplet> *vTriplets_part,
                             unsigned int *TripStartIndexH, unsigned int *TripStopIndexH
                             );
   
@@ -446,7 +444,7 @@ class L1Algo{
   L1FieldRegion vtxFieldRegion _fvecalignment;// really doesn't used
   L1FieldValue  vtxFieldValue _fvecalignment; // field at teh vertex position.
 
-  vector <L1Triplet> vTriplets; // container for triplets got in finding
+  std::vector <L1Triplet> vTriplets; // container for triplets got in finding
   int TripStartIndex[int(MaxNStations)-2], TripStopIndex[int(MaxNStations)-2]; // containers for stations bounders in vTriplets. indices are from start to stop-1
 
   int fTrackingLevel, fGhostSuppression; // really doesn't used

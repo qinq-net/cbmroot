@@ -17,11 +17,8 @@
 
 
 
-#include <vector>
 #include <map>
 #include "TNamed.h"
-
-using std::map;
 
 class CbmMvdStationPar : public TNamed
 {
@@ -71,15 +68,15 @@ class CbmMvdStationPar : public TNamed
 
   Int_t                   fStationCount;        // Number of Stations, station numbering starts at 0!!!
 
-  map<Int_t , Int_t >  fZPositions;          // map of the z positions of all Stations 
-  map<Int_t , Double_t >  fThicknesses;      // in cm 
-  map<Int_t , Double_t >  fHeights;          // in cm
-  map<Int_t , Double_t >  fWidths;           // in cm
-  map<Int_t , Double_t >  fXResolutions;     // in mu m
-  map<Int_t , Double_t >  fYResolutions;     // in mu m
-  map<Int_t , Double_t >  fRadiationLength;  // in %x0
-  map<Int_t , Double_t >  fBeamHeights;      // in cm 
-  map<Int_t , Double_t >  fBeamWidths;       // in cm
+  std::map<Int_t , Int_t >  fZPositions;          // map of the z positions of all Stations 
+  std::map<Int_t , Double_t >  fThicknesses;      // in cm 
+  std::map<Int_t , Double_t >  fHeights;          // in cm
+  std::map<Int_t , Double_t >  fWidths;           // in cm
+  std::map<Int_t , Double_t >  fXResolutions;     // in mu m
+  std::map<Int_t , Double_t >  fYResolutions;     // in mu m
+  std::map<Int_t , Double_t >  fRadiationLength;  // in %x0
+  std::map<Int_t , Double_t >  fBeamHeights;      // in cm 
+  std::map<Int_t , Double_t >  fBeamWidths;       // in cm
 
 
   ClassDef(CbmMvdStationPar,1);

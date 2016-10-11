@@ -38,10 +38,6 @@ class TRandom3;
 class CbmMvdGeoPar;
 class CbmMvdPileupManager;
 
-
-using std::map;
-using std::pair;
-
 class CbmMvdSensorFindHitTask : public CbmMvdSensorTask
 {
 
@@ -140,8 +136,8 @@ protected:
     Int_t fGausArrayIt;
     Int_t fGausArrayLimit;
 
-    map<pair<Int_t, Int_t>, Int_t> fDigiMap;
-    map<pair<Int_t, Int_t>, Int_t>::iterator fDigiMapIt;
+    std::map<std::pair<Int_t, Int_t>, Int_t> fDigiMap;
+    std::map<std::pair<Int_t, Int_t>, Int_t>::iterator fDigiMapIt;
     
     
     TH2F* h;
@@ -215,11 +211,11 @@ private:
     void SetMvdGeometry(Int_t detId);
     void AddNoiseToDigis(CbmMvdDigi* digi);
    // void GenerateFakeDigis(Double_t pixelSizeX, Double_t pixelSizeY);
-    void CheckForNeighbours(vector<Int_t>* clusterArray, Int_t clusterDigi, TArrayS* pixelUsed);
+    void CheckForNeighbours(std::vector<Int_t>* clusterArray, Int_t clusterDigi, TArrayS* pixelUsed);
     
-    void CreateHit(vector<Int_t>* clusterArray,  TVector3& pos, TVector3 &dpos);
-    void ComputeCenterOfGravity(vector<Int_t>* clusterArray, TVector3& pos, TVector3& dpos);
-    void UpdateDebugHistos(vector<Int_t>* clusterArray, Int_t seedIndexX, Int_t seedIndexY);
+    void CreateHit(std::vector<Int_t>* clusterArray,  TVector3& pos, TVector3 &dpos);
+    void ComputeCenterOfGravity(std::vector<Int_t>* clusterArray, TVector3& pos, TVector3& dpos);
+    void UpdateDebugHistos(std::vector<Int_t>* clusterArray, Int_t seedIndexX, Int_t seedIndexY);
     
 private:
     CbmMvdSensorFindHitTask(const CbmMvdSensorFindHitTask&);

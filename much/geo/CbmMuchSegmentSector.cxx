@@ -31,6 +31,8 @@
 using std::cout;
 using std::endl;
 using std::ifstream;
+using std::string;
+using std::vector;
 
 // -----   Default constructor   -------------------------------------------
 CbmMuchSegmentSector::CbmMuchSegmentSector()

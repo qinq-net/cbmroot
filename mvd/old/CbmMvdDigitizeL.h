@@ -46,8 +46,6 @@ class CbmMvdGeoPar;
 class CbmMvdPileupManager;
 class CbmMvdStation;
 
-using namespace std;
-
 
 class CbmMvdDigitizeL : public FairTask
 {

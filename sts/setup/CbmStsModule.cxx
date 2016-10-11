@@ -22,6 +22,8 @@ using std::pair;
 using std::multimap;
 using std::multiset;
 using std::cout;
+using std::map;
+using std::vector;
 
 // -----   Default constructor   -------------------------------------------
 CbmStsModule::CbmStsModule() : CbmStsElement(),

@@ -25,6 +25,8 @@ using Cbm::Split;
 using std::map;
 using std::endl;
 using std::cout;
+using std::string;
+using std::vector;
 
 CbmAnaJpsiReport::CbmAnaJpsiReport():
 		CbmSimulationReport()

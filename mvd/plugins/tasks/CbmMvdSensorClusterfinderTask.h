@@ -37,10 +37,6 @@ class TClonesArray;
 class TRandom3;
 class CbmMvdGeoPar;
 
-
-using std::map;
-using std::pair;
-
 class CbmMvdSensorClusterfinderTask : public CbmMvdSensorTask
 {
 
@@ -124,8 +120,8 @@ protected:
     Int_t fGausArrayIt;
     Int_t fGausArrayLimit;
 
-    map<pair<Int_t, Int_t>, Int_t> fDigiMap;
-    map<pair<Int_t, Int_t>, Int_t>::iterator fDigiMapIt;
+    std::map<std::pair<Int_t, Int_t>, Int_t> fDigiMap;
+    std::map<std::pair<Int_t, Int_t>, Int_t>::iterator fDigiMapIt;
     
     
     TH2F* h;
@@ -178,7 +174,7 @@ private:
     void Finish();
 
    
-    void CheckForNeighbours(vector<Int_t>* clusterArray, Int_t clusterDigi, TArrayS* pixelUsed);
+    void CheckForNeighbours(std::vector<Int_t>* clusterArray, Int_t clusterDigi, TArrayS* pixelUsed);
 
     /** Reinitialisation **/
     Bool_t ReInit();

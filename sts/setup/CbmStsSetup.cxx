@@ -31,7 +31,7 @@ using std::setw;
 using std::right;
 using std::cout;
 using std::endl;
-
+using std::map;
 
 // -----   Initialisation of static singleton pointer   --------------------
 CbmStsSetup* CbmStsSetup::fgInstance = NULL;

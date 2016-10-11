@@ -23,11 +23,7 @@
 // included from CbmRoot
 #include "CbmMCTrack.h"
 
-
-
-
-using namespace std;
-
+#include <vector>
 
 class CbmAnaConversionTomography
 {
@@ -55,7 +51,7 @@ public:
 private:
 	TClonesArray* fMcTracks;
 
-	vector<TH1*> fHistoList_tomography;	// list of all histograms
+	std::vector<TH1*> fHistoList_tomography;	// list of all histograms
 
 
 	TH1D * fhGammaZ;
@@ -86,8 +82,8 @@ private:
 	TH2D * fhTomography_reco_YZ;
 	TH1D * fhConversion_reco;
 
-	vector<int> electronIDs;
-	vector<int> electronMotherIDs;
+	std::vector<int> electronIDs;
+	std::vector<int> electronMotherIDs;
 	Int_t conversionsInDetector[5];			// 0 = magnet, 1 = sts, 2 = rich, 3 = trd, 4 = tof
 	//Int_t conversionsInDetector_cut[5];		// 0 = magnet, 1 = sts, 2 = rich, 3 = trd, 4 = tof
 	TH1I * fhConversionsPerDetector;

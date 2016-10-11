@@ -22,7 +22,6 @@
 #include "FairRunAna.h"
 
 #include <map>
-#include <vector>
 #include "TNamed.h"
 #include "TString.h"
 #include "SensorDataSheets/CbmMvdSensorDataSheet.h"
@@ -35,8 +34,6 @@
 #include "CbmMvdCluster.h"
 
 #include "plugins/CbmMvdSensorPlugin.h"
-
-using std::vector;
 
 // data classes
 class CbmMvdPoint;

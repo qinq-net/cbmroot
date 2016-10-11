@@ -19,6 +19,8 @@
 #include <algorithm>
 #include "CbmStsAddress.h"
 
+using std::vector;
+
 ClassImp(CbmKFTrErrMCPoints)
 
 CbmKFTrErrMCPoints::CbmKFTrErrMCPoints():

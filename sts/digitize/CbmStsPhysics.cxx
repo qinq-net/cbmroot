@@ -17,7 +17,7 @@
 using std::ifstream;
 using std::right;
 using std::setw;
-
+using std::map;
 
 // -----   Initialisation of static variables   ----------------------------
 CbmStsPhysics* CbmStsPhysics::fgInstance    = NULL;

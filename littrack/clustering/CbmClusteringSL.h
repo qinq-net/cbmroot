@@ -11,6 +11,8 @@
 #include "FairTask.h"
 #include "CbmClusteringGeometry.h"
 
+#include <vector>
+
 class CbmClusteringSL
 {
 public:
@@ -49,7 +51,7 @@ private:
 	   Float_t fY;
 	   UInt_t fCharge;
 	   Int_t fNofPads;
-	   vector<Int_t> fPadsInCluster;
+	   std::vector<Int_t> fPadsInCluster;
    };
    Cluster* fClusters;
 

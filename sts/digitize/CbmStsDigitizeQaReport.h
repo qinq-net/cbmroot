@@ -2,12 +2,9 @@
 #define CBMSTSDIGITIZEQAREPORT_H_
 
 #include "CbmSimulationReport.h"
-#include <string>
 
 class CbmStsSetup;
 class CbmStsDigitize;
-
-using std::string;
 
 class CbmStsDigitizeQaReport : public CbmSimulationReport
 {

@@ -3,10 +3,7 @@
 #define CBMJPSIANATASK
 
 #include "FairTask.h"
-#include "TH1D.h"
-#include "TH2D.h"
-#include "TH3D.h"
-#include "TClonesArray.h"
+
 #include "CbmHistManager.h"
 #include "CbmKFVertex.h"
 #include "CbmVertex.h"
@@ -19,8 +16,12 @@
 #include "CbmTrdTrack.h"
 #include "CbmGlobalTrack.h"
 
+#include "TH1D.h"
+#include "TH2D.h"
+#include "TH3D.h"
+#include "TClonesArray.h"
 
-using namespace std;
+#include <vector>
 
 class CbmAnaJpsiTask : public FairTask
 {
@@ -84,7 +85,7 @@ private:
   CbmVertex* fPrimVertex;
   CbmKFVertex fKFVertex;
 
-  vector<CbmAnaJpsiCandidate> fCandidates; // array of JPsi candidates
+  std::vector<CbmAnaJpsiCandidate> fCandidates; // array of JPsi candidates
 
   CbmAnaJpsiCuts fCuts; //electron identification and analysis cuts
 

@@ -17,10 +17,6 @@
 #include <vector>
 #include <iostream>
 
-using std::vector;
-using std::cout;
-using std::endl;
-
 const int MaxNStations = 10;
 
 template<int NHits>
@@ -93,9 +89,9 @@ class L1MTracklet: public L1Tracklet<NHits>
   
   int mcMotherTrackId;
   float p; // momentum
-  vector<int> recoIds; // indices of reco tracklets in sorted recoArray
+  std::vector<int> recoIds; // indices of reco tracklets in sorted recoArray
 
-  vector<int> hitIds[NHits]; // indices of hits in L1::vStsHits. Separated by stations
+  std::vector<int> hitIds[NHits]; // indices of hits in L1::vStsHits. Separated by stations
  private:
   bool isReconstructable;      // is it reconstructed
 };
@@ -134,8 +130,8 @@ class L1AlgoEfficiencyPerformance{
     
     CbmL1* fL1;
 
-    vector<L1RecoTracklet > recoTracklets;
-    vector<L1MCTracklet > mcTracklets;
+    std::vector<L1RecoTracklet > recoTracklets;
+    std::vector<L1MCTracklet > mcTracklets;
 
     TL1AlgoEfficiencies ntra; // current event efficiencies
     TL1AlgoEfficiencies NTRA; // efficiencies statistic
@@ -163,7 +159,7 @@ void L1AlgoEfficiencyPerformance<NHits>::Init()
 template<int NHits>
 void L1AlgoEfficiencyPerformance<NHits>::FillMC()
 {
-  for ( vector<CbmL1MCTrack>::iterator mtraIt = fL1->vMCTracks.begin(); mtraIt != fL1->vMCTracks.end(); mtraIt++ ) {
+  for ( std::vector<CbmL1MCTrack>::iterator mtraIt = fL1->vMCTracks.begin(); mtraIt != fL1->vMCTracks.end(); mtraIt++ ) {
     CbmL1MCTrack &mtra = *(mtraIt);
 //     if( ! mtra.IsReconstructable() ) continue;
 
@@ -217,7 +213,7 @@ template<int NHits>
   L1RecoTracklet trlet(iHits);
   
     // --- check is all hits belong to one mcTrack ---
-  vector<int> mcIds[NHits];
+  std::vector<int> mcIds[NHits];
 
       // obtain mc data
   for (int iih = 0; iih < NHits; iih++){
@@ -231,8 +227,8 @@ template<int NHits>
 
       // find all reconstructed track id-s
   for (int level = 0; level < NHits-1; level++){
-    vector<int> &mcs1 = mcIds[level];
-    vector<int> &mcs2 = mcIds[level+1];
+    std::vector<int> &mcs1 = mcIds[level];
+    std::vector<int> &mcs2 = mcIds[level+1];
 
       // leave only matched ID-s.
     for (unsigned int i2 = 0; i2 < mcs2.size(); i2++){
@@ -247,7 +243,7 @@ template<int NHits>
   }
 
     // use first found // TODO: save all!!!
-  vector<int> &mcsN = mcIds[NHits-1];
+  std::vector<int> &mcsN = mcIds[NHits-1];
   for (unsigned int i = 0; i < mcsN.size(); i++){
     if (mcsN[i] >= 0){
       trlet.mcTrackId = mcsN[i];
@@ -272,22 +268,22 @@ template<int NHits>
 
   const int NRecoTrlets = recoTracklets.size();
   const int NMCTrlets = mcTracklets.size();
-//   cout << NMCTrlets <<  " " << NRecoTrlets <<  " " << endl;
+//   std::cout << NMCTrlets <<  " " << NRecoTrlets <<  " " << std::endl;
   for (int iReco = 0, iMC = 0; (iReco < NRecoTrlets) && (iMC < NMCTrlets) ; ){
     L1MCTracklet &mcTrlet = mcTracklets[iMC];
     L1RecoTracklet &recoTrlet = recoTracklets[iReco];
 
 //     if (recoTrlet.mcTrackId >= 0)
-//       cout << iMC << " " << mcTrlet.iStation << " "  << mcTrlet.mcTrackId << " "  << mcTrlet.p  << " | " 
-//       << iReco << " " << recoTrlet.iStation << " "  << recoTrlet.mcTrackId << " " << endl;
+//       std::cout << iMC << " " << mcTrlet.iStation << " "  << mcTrlet.mcTrackId << " "  << mcTrlet.p  << " | " 
+//       << iReco << " " << recoTrlet.iStation << " "  << recoTrlet.mcTrackId << " " << std::endl;
 
     if (recoTrlet != mcTrlet){
       if (recoTrlet < mcTrlet) iReco++;
       else iMC++;
     }
     else{
-//       cout << iMC << " " << mcTrlet.iStation << " "  << mcTrlet.mcTrackId << " "  << mcTrlet.p  << " | "
-//            << iReco << " " << recoTrlet.iStation << " "  << recoTrlet.mcTrackId << " " << endl;
+//       std::cout << iMC << " " << mcTrlet.iStation << " "  << mcTrlet.mcTrackId << " "  << mcTrlet.p  << " | "
+//            << iReco << " " << recoTrlet.iStation << " "  << recoTrlet.mcTrackId << " " << std::endl;
         // check if same tracklet has been matched, and save it if not.
       bool flag = 1;
       const int nReco = mcTrlet.recoIds.size();
@@ -331,15 +327,15 @@ template<int NHits>
 
 //               // Debug
 //         if (!reco){
-//           cout << "iMC/N " << iMC << "/" << NMCTrlets << " sta " << mtra.iStation << " trackId " << mtra.mcTrackId << " momentum " << mtra.p << ". MotherTrackId " << mtra.mcMotherTrackId << endl;
+//           std::cout << "iMC/N " << iMC << "/" << NMCTrlets << " sta " << mtra.iStation << " trackId " << mtra.mcTrackId << " momentum " << mtra.p << ". MotherTrackId " << mtra.mcMotherTrackId << std::endl;
 //           for (int iSta2 = 0; iSta2 < NHits; iSta2++){
-//             cout << iSta2 << ": ";
+//             std::cout << iSta2 << ": ";
 //             const int NPointHits = mtra.hitIds[iSta2].size();
 //             for (int iH = 0; iH < NPointHits; iH++){
-//               cout << mtra.hitIds[iSta2][iH] << "";
-//               cout << "(" << fL1->vHitStore[mtra.hitIds[iSta2][iH]].x << "\\" << fL1->vHitStore[mtra.hitIds[iSta2][iH]].y << "= " << fL1->vHitStore[mtra.hitIds[iSta2][iH]].x/fL1->vHitStore[mtra.hitIds[iSta2][iH]].y << " ) ";
+//               std::cout << mtra.hitIds[iSta2][iH] << "";
+//               std::cout << "(" << fL1->vHitStore[mtra.hitIds[iSta2][iH]].x << "\\" << fL1->vHitStore[mtra.hitIds[iSta2][iH]].y << "= " << fL1->vHitStore[mtra.hitIds[iSta2][iH]].x/fL1->vHitStore[mtra.hitIds[iSta2][iH]].y << " ) ";
 //             }
-//             cout << endl;
+//             std::cout << std::endl;
 //           }
 //         }
         
@@ -375,24 +371,24 @@ template<int NHits>
 template<int NHits>
     inline void L1AlgoEfficiencyPerformance<NHits>::Print(TString title, bool stations)
 {
-//   cout << endl;
-//   cout << "-------- Triplets performance ----------" << endl;
+//   std::cout << std::endl;
+//   std::cout << "-------- Triplets performance ----------" << std::endl;
 //   ntra.PrintEff();
 
-  cout << endl;
-  cout << "-------- " << title << " ----------" << endl;
+  std::cout << std::endl;
+  std::cout << "-------- " << title << " ----------" << std::endl;
   NTRA.PrintEff();
-  cout << endl;
+  std::cout << std::endl;
 
   if (stations){
     for (int iSta = 0; iSta < fL1->NStation-NHits+1; iSta++){
       TString title_sta = title;
       title_sta += " station ";
       title_sta += iSta;
-      cout << endl;
-      cout << "-------- " << title_sta << " ----------" << endl;
+      std::cout << std::endl;
+      std::cout << "-------- " << title_sta << " ----------" << std::endl;
       NTRA_STA[iSta].PrintEff();
-      cout << endl;
+      std::cout << std::endl;
     }
   }
 };

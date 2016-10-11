@@ -17,8 +17,6 @@
 #include "SensorDataSheets/CbmMvdMimosa34.h"
 #include "CbmMvdStationPar.h"
 
-using std::map;
-
 class TGeoBBox;
 class TGeoVolume;
 class TGeoHMatrix;
@@ -59,7 +57,7 @@ public:
    Double_t GetZ(const TString& path);
    Int_t    GetStation(const TString& path);
    void     Fill();
-   map<Int_t, Int_t> GetMap() {return fStationMap;};
+   std::map<Int_t, Int_t> GetMap() {return fStationMap;};
    void PrintGeoParameter();
 
 private:
@@ -75,7 +73,7 @@ private:
    CbmMvdDetector* fDetector;
    CbmMvdStationPar* fStationPar;
 
-   map<Int_t, Int_t> fStationMap; 
+   std::map<Int_t, Int_t> fStationMap; 
 
    Bool_t fIsSimulation; //!
 

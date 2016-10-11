@@ -18,8 +18,7 @@ class CbmMuchSector;
 class CbmMuchDigi;
 class CbmMuchDigiMatch;
 #include "CbmMuchModuleGem.h"
-#include "vector"
-using std::vector;
+#include <vector>
 
 class CbmMuchPad {
 
@@ -36,8 +35,8 @@ public:
   Int_t GetDigiIndex()         const { return fDigiIndex; }
   CbmMuchDigi* GetDigi()  const { return fDigi; }
   CbmMuchDigiMatch* GetMatch() const { return fMatch; }
-  vector<CbmMuchPad*> GetNeighbours() const { return fNeighbours; }
-  void SetNeighbours(vector<CbmMuchPad*> neighbours) { fNeighbours = neighbours; }
+  std::vector<CbmMuchPad*> GetNeighbours() const { return fNeighbours; }
+  void SetNeighbours(std::vector<CbmMuchPad*> neighbours) { fNeighbours = neighbours; }
   void SetDigiIndex(Int_t iDigi)             { fDigiIndex = iDigi; }
   virtual void SetFired(Int_t, Int_t, Int_t = 256){}
 
@@ -52,7 +51,7 @@ protected:
   Int_t               fDigiIndex;  // Index of the corresponding CbmMuchDigi (if any)
   CbmMuchDigi*        fDigi;       //! pointer to current digi
   CbmMuchDigiMatch*   fMatch;      //! pointer to current digi match
-  vector<CbmMuchPad*> fNeighbours; //! Array of neighbour pads
+  std::vector<CbmMuchPad*> fNeighbours; //! Array of neighbour pads
 
  private:
   CbmMuchPad(const CbmMuchPad&);

@@ -10,7 +10,7 @@
 
 #include "TObject.h"
 
-using namespace std;
+#include <string>
 
 class CbmHaddBase: public TObject {
 
@@ -23,17 +23,17 @@ public:
 	 *\param nofFiles number Of files to add
 	 */
 	static void AddFilesInDir(
-			const string& dir,
-			const string& fileTemplate,
-			const string& addString,
+			const std::string& dir,
+			const std::string& fileTemplate,
+			const std::string& addString,
 			Int_t nofFiles,
 			Int_t fileSizeLimit = 50000,
 			Int_t nofEvents = 1000);
 
 private:
 	static TFile* CreateAndMergeTempTargetFile(
-			const string& dir,
-			const string& addString,
+			const std::string& dir,
+			const std::string& addString,
 			Int_t targetFileNum,
 			TList* fileList);
 

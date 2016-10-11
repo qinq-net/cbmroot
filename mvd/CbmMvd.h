@@ -34,12 +34,6 @@ class TList;
 class FairVolume;
 class CbmMvdPoint;
 
-using std::cout;
-using std::endl;
-
-
-
-
 class CbmMvd : public FairDetector
 {
 

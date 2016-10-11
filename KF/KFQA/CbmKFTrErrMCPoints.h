@@ -29,8 +29,6 @@
 
 class CbmMCTrack;
 
-using std::vector;
-
 class CbmKFTrErrMCPoints : public TObject {
 
  public:
@@ -74,12 +72,12 @@ class CbmKFTrErrMCPoints : public TObject {
   double GetStsPointPy(int i) {return StsArray[i]->GetPy();}
   double GetStsPointPz(int i) {return StsArray[i]->GetPz();}
 
-  vector<CbmStsPoint*> StsArray;
-  vector<CbmMvdPoint*> MvdArray;
-  vector<CbmTofPoint*> TofArray;
+  std::vector<CbmStsPoint*> StsArray;
+  std::vector<CbmMvdPoint*> MvdArray;
+  std::vector<CbmTofPoint*> TofArray;
   
-  vector<CbmStsHit*> StsHitsArray;
-  vector<CbmMvdHit*> MvdHitsArray;
+  std::vector<CbmStsHit*> StsHitsArray;
+  std::vector<CbmMvdHit*> MvdHitsArray;
   
   ClassDef(CbmKFTrErrMCPoints,1);
 };

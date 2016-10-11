@@ -18,7 +18,6 @@
 #define CbmL1MCPoint_H
 
 #include <vector>
-using std::vector;
 
 struct CbmL1MCPoint
 {
@@ -49,7 +48,7 @@ iStation(0), pointId(-1), hitIds()
     return ( a->ID < b->ID ) || ( ( a->ID == b->ID ) && (a->z < b->z) );
   }
 
-  vector<int> hitIds; // indices of CbmL1StsHits in L1->vStsHits array
+  std::vector<int> hitIds; // indices of CbmL1StsHits in L1->vStsHits array
 };
 
 #endif

@@ -6,6 +6,8 @@
 #include "CbmAnaJpsiHist.h"
 #include "TSystem.h"
 
+#include <string>
+
 class CbmAnaJpsiSuperEventReport : public CbmSimulationReport
 {
 public:
@@ -23,9 +25,9 @@ public:
     * \brief Create report.
     */
    void Create(
-   		const string& fileEventByEvent,
-   		const string& fileSuperEvent,
-   		const string& outputDir);
+   		const std::string& fileEventByEvent,
+   		const std::string& fileSuperEvent,
+   		const std::string& outputDir);
 
 protected:
    /**

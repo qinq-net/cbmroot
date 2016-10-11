@@ -33,7 +33,6 @@
 #include <string>
 
 class TClonesArray;
-using std::string;
 
 class CbmTrdSetTracksPidModWkn : public FairTask
 {
@@ -68,7 +67,7 @@ class CbmTrdSetTracksPidModWkn : public FairTask
   virtual void Finish();
 
   /** Set Type **/
-  void SetType(const string& SISType) { fSISType = SISType;}
+  void SetType(const std::string& SISType) { fSISType = SISType;}
   void SetSIS100() { fSISType="sis100"; }
   void SetSIS300() { fSISType="sis300"; }
   
@@ -94,7 +93,7 @@ class CbmTrdSetTracksPidModWkn : public FairTask
    // Set-up
    // "sis100" - TRD with 10 layers
    // "sis300" - TRD with 4 layers
-   string fSISType;
+   std::string fSISType;
    
   CbmTrdSetTracksPidModWkn(const CbmTrdSetTracksPidModWkn&);
   CbmTrdSetTracksPidModWkn& operator=(const CbmTrdSetTracksPidModWkn&);

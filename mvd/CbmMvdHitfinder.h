@@ -11,10 +11,6 @@
 #include "CbmMvdDetector.h"
 #include "TGeoManager.h"
 
-
-using namespace std;
-
-
 class CbmMvdHitfinder : public FairTask
 {
  

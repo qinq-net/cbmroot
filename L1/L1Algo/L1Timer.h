@@ -14,38 +14,32 @@
 #include <iomanip>
 #include <string>
 #include <vector>
-
-using std::cout;
-using std::endl;
-using std::ios;
-using std::setw;
-using std::string;
-using std::vector;
+#include <map>
 
 class TimerInfo {
  public:
   TimerInfo():fName(""),fReal(0.),fCpu(0.){ };
-  TimerInfo( const string& name ):fName(name),fReal(0.),fCpu(0.){ };
+  TimerInfo( const std::string& name ):fName(name),fReal(0.),fCpu(0.){ };
   
   const TimerInfo& operator =( TStopwatch& sw ) { fReal  = sw.RealTime(); fCpu  = sw.CpuTime(); return *this; };
   void operator+=( TStopwatch& sw ) { fReal += sw.RealTime(); fCpu += sw.CpuTime(); };
   void operator+=( const TimerInfo& t ){ fReal += t.fReal; fCpu += t.fCpu; }
   TimerInfo operator/( const float f ) const { TimerInfo r; r.fName = fName; r.fReal = fReal/f; r.fCpu = fCpu/f; return r; }
   
-  // void Print(){ cout << fReal << "/" << fCpu; };
-  void PrintReal(){ cout << fReal ; };
+  // void Print(){ std::cout << fReal << "/" << fCpu; };
+  void PrintReal(){ std::cout << fReal ; };
   float Real(){ return fReal; };
-  string& Name(){ return fName; };
+  std::string& Name(){ return fName; };
  private:
-  string fName;
+  std::string fName;
   float fReal, fCpu;
 };
 
 class L1CATFIterTimerInfo {
  public:
  L1CATFIterTimerInfo() : fNameToI(), fTIs() {}
-  void Add( string name ) { fNameToI[name] = fTIs.size(); fTIs.push_back(TimerInfo(name)); };
-  TimerInfo& operator[]( string name ) { return fTIs[fNameToI[name]]; };
+  void Add( std::string name ) { fNameToI[name] = fTIs.size(); fTIs.push_back(TimerInfo(name)); };
+  TimerInfo& operator[]( std::string name ) { return fTIs[fNameToI[name]]; };
   TimerInfo& operator[]( int i ) { return fTIs[i]; };
   void operator+=( L1CATFIterTimerInfo& t ){ for( unsigned int i = 0; i < fTIs.size(); ++i ) fTIs[i] += t[i]; }
   L1CATFIterTimerInfo operator/( float f ){
@@ -59,14 +53,14 @@ class L1CATFIterTimerInfo {
   }
   
   void PrintReal( int f = 0 ){
-    if (f) { PrintNames(); cout << endl; }
-    fTIs[0].PrintReal(); for( unsigned int i = 1; i < fTIs.size(); ++i ) { cout << " | " << setw(fTIs[i].Name().size()); fTIs[i].PrintReal(); }
-    if (f) cout << endl;
+    if (f) { PrintNames(); std::cout << std::endl; }
+    fTIs[0].PrintReal(); for( unsigned int i = 1; i < fTIs.size(); ++i ) { std::cout << " | " << std::setw(fTIs[i].Name().size()); fTIs[i].PrintReal(); }
+    if (f) std::cout << std::endl;
   };
-  void PrintNames(){ cout << fTIs[0].Name(); for( unsigned int i = 1; i < fTIs.size(); ++i ) { cout << " | " << fTIs[i].Name(); } };
+  void PrintNames(){ std::cout << fTIs[0].Name(); for( unsigned int i = 1; i < fTIs.size(); ++i ) { std::cout << " | " << fTIs[i].Name(); } };
  private:
-  map< string, int > fNameToI;
-  vector<TimerInfo> fTIs;
+  std::map< std::string, int > fNameToI;
+  std::vector<TimerInfo> fTIs;
 };
 
 class L1CATFTimerInfo {
@@ -74,7 +68,7 @@ class L1CATFTimerInfo {
  L1CATFTimerInfo() : fTIIs(), fTIAll() {};
   void SetNIter( int n ) { fTIIs.resize(n); };
 
-  void Add( string name ) {
+  void Add( std::string name ) {
     for( unsigned int i = 0; i < fTIIs.size(); ++i )
       fTIIs[i].Add(name);
     fTIAll.Add(name);
@@ -100,17 +94,17 @@ class L1CATFTimerInfo {
   
   L1CATFIterTimerInfo& GetAllInfo() { return fTIAll; };
   void PrintReal() {
-    cout.precision(1);
-    cout.setf(ios::fixed);
-    cout << " stage "<< " : "; fTIAll.PrintNames(); cout << endl;
+    std::cout.precision(1);
+    std::cout.setf(std::ios::fixed);
+    std::cout << " stage "<< " : "; fTIAll.PrintNames(); std::cout << std::endl;
     for( unsigned int i = 0; i < fTIIs.size(); ++i ) {
-      cout << " iter " << i << " : "; fTIIs[i].PrintReal(); cout << endl;
+      std::cout << " iter " << i << " : "; fTIIs[i].PrintReal(); std::cout << std::endl;
     }
-    cout << " all   "<< " : "; fTIAll.PrintReal(); cout << endl;
+    std::cout << " all   "<< " : "; fTIAll.PrintReal(); std::cout << std::endl;
     
   };
  private:
-  vector<L1CATFIterTimerInfo> fTIIs;
+  std::vector<L1CATFIterTimerInfo> fTIIs;
   L1CATFIterTimerInfo fTIAll;
 };
 

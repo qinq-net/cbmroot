@@ -62,9 +62,6 @@
 #include <vector>
 #include <algorithm>
 
-using std::vector;
-
-
 class L1Algo;
 class CbmL1ParticlesFinder;
 class L1FieldSlice;
@@ -87,7 +84,7 @@ class CbmL1 : public FairTask
 
    L1Algo *algo; // for access to L1 Algorithm from L1::Instance
 
-   vector<CbmL1Track> vRTracks; // reconstructed tracks
+   std::vector<CbmL1Track> vRTracks; // reconstructed tracks
    
   static CbmL1 *Instance(){ return fInstance; }
 
@@ -117,7 +114,7 @@ class CbmL1 : public FairTask
 //   void SetGhostSuppression( Bool_t b ){ fGhostSuppression= b; }
 //   void SetDetectorEfficiency( Double_t eff ){ fDetectorEfficiency = eff; }
 
-  vector<CbmL1HitStore> vHitStore; // diff hit information
+  std::vector<CbmL1HitStore> vHitStore; // diff hit information
 
   void Reconstruct();
   
@@ -146,10 +143,10 @@ class CbmL1 : public FairTask
    void HistoPerformance();        // fill some histograms and calculate efficiencies
 
       /// STandAlone Package service-functions
-   void WriteSTAPGeoData(vector<float> geo); // create geo_algo.dat
+   void WriteSTAPGeoData(std::vector<float> geo); // create geo_algo.dat
    void WriteSTAPAlgoData(); // create data_algo.dat
    void WriteSTAPPerfData(); // create data_perfo.dat
-   void ReadSTAPGeoData(vector<float> geo, int &size);
+   void ReadSTAPGeoData(std::vector<float> geo, int &size);
    void ReadSTAPAlgoData();
    void ReadSTAPPerfData();
       /// SIMD KF Banchmark service-functions
@@ -188,10 +185,10 @@ class CbmL1 : public FairTask
    TClonesArray *listMvdHitMatches;
 
     /// Used data = Repacked input data
-   vector<CbmL1StsHit>  vStsHits;  // hits with hit-mcpoint match information
-   vector<CbmL1MCPoint> vMCPoints;
-   vector<CbmL1MCTrack> vMCTracks;
-   vector<int>          vHitMCRef; // indices of MCPoints in vMCPoints, indexed by index of hit in algo->vStsHits array. According to StsMatch. Used for IdealResponce
+   std::vector<CbmL1StsHit>  vStsHits;  // hits with hit-mcpoint match information
+   std::vector<CbmL1MCPoint> vMCPoints;
+   std::vector<CbmL1MCTrack> vMCTracks;
+   std::vector<int>          vHitMCRef; // indices of MCPoints in vMCPoints, indexed by index of hit in algo->vStsHits array. According to StsMatch. Used for IdealResponce
   
   TDirectory *histodir;
    

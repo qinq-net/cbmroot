@@ -81,7 +81,7 @@ class CbmKFTrackFitQA :public FairTask
 // Names of files
   TString outfileName;
 
-  vector<int> vStsHitMatch;
+  std::vector<int> vStsHitMatch;
 
 // histograms
 

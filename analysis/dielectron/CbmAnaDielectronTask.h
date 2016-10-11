@@ -27,9 +27,6 @@
 #include <fstream>
 #include <vector>
 #include <string>
-using std::map;
-using std::vector;
-using std::string;
 
 class TClonesArray;
 class TH2D;
@@ -74,10 +71,10 @@ public:
      * \param[in] max Maximum value.
      */
     void CreateAnalysisStepsH1(
-          vector<TH1D*>& hist,
-          const string& name,
-          const string& axisX,
-          const string& axisY,
+          std::vector<TH1D*>& hist,
+          const std::string& name,
+          const std::string& axisX,
+          const std::string& axisY,
           double nBins,
           double min,
           double max);
@@ -98,11 +95,11 @@ public:
      * \param[in] maxY Maximum value for Y axis.
      */
     void CreateAnalysisStepsH2(
-          vector<TH2D*>& hist,
-          const string& name,
-          const string& axisX,
-          const string& axisY,
-          const string& axisZ,
+          std::vector<TH2D*>& hist,
+          const std::string& name,
+          const std::string& axisX,
+          const std::string& axisY,
+          const std::string& axisZ,
           double nBinsX,
           double minX,
           double maxX,
@@ -121,10 +118,10 @@ public:
      * \param[in] max Maximum value.
      */
     void CreateSourceTypesH1(
-          vector<TH1D*>& hist,
-          const string& name,
-          const string& axisX,
-          const string& axisY,
+          std::vector<TH1D*>& hist,
+          const std::string& name,
+          const std::string& axisX,
+          const std::string& axisY,
           double nBins,
           double min,
           double max);
@@ -145,11 +142,11 @@ public:
      * \param[in] maxY Maximum value for Y axis.
      */
     void CreateSourceTypesH2(
-          vector<TH2D*>& hist,
-          const string& name,
-          const string& axisX,
-          const string& axisY,
-          const string& axisZ,
+          std::vector<TH2D*>& hist,
+          const std::string& name,
+          const std::string& axisX,
+          const std::string& axisY,
+          const std::string& axisZ,
           double nBinsX,
           double minX,
           double maxX,
@@ -212,7 +209,7 @@ public:
     void AssignMcToCandidates();
 
     void AssignMcToTopologyCandidates(
-          vector<CbmLmvmCandidate>& cutCandidates);
+          std::vector<CbmLmvmCandidate>& cutCandidates);
 
     void DifferenceSignalAndBg();
 
@@ -232,25 +229,25 @@ public:
      */
     void CheckClosestMvdHit(
     		Int_t mvdStationNum,
-    		vector<TH2D*>& hist,
-         vector<TH1D*>& histQa);
+    		std::vector<TH2D*>& hist,
+         std::vector<TH1D*>& histQa);
 
     /*
      * \brief Set cut values and fill histograms for topology cut
      * \param[in] cutName ST or TT
      */
     void CheckTopologyCut(
-          const string& cutName,
-          const vector<CbmLmvmCandidate>& cutCandidates,
-          const vector<TH2D*>& hcut,
-          const vector<TH2D*>& hcutPion,
-          const vector<TH2D*>& hcutTruepair,
+          const std::string& cutName,
+          const std::vector<CbmLmvmCandidate>& cutCandidates,
+          const std::vector<TH2D*>& hcut,
+          const std::vector<TH2D*>& hcutPion,
+          const std::vector<TH2D*>& hcutTruepair,
           Double_t angleCut,
           Double_t ppCut);
 
     void CalculateNofTopologyPairs(
           TH1D* h_nof_pairs,
-          const string& source);
+          const std::string& source);
 
     void MvdCutMcDistance();
 
@@ -324,10 +321,10 @@ private:
     Bool_t fUseTrd;
     Bool_t fUseTof;
 
-    vector<CbmLmvmCandidate> fCandidates;
-    vector<CbmLmvmCandidate> fSTCandidates; // STCut Segmented tracks, reconstructed only in STS
-    vector<CbmLmvmCandidate> fTTCandidates; // TTCut Reconstructed tracks, reconstructed in all detectors but not identified as electrons
-    vector<CbmLmvmCandidate> fRTCandidates; // RTCut Reconstructed tracks, reconstructed in STS + at least in one of the  detectro (RICH, TRD, TOF)
+    std::vector<CbmLmvmCandidate> fCandidates;
+    std::vector<CbmLmvmCandidate> fSTCandidates; // STCut Segmented tracks, reconstructed only in STS
+    std::vector<CbmLmvmCandidate> fTTCandidates; // TTCut Reconstructed tracks, reconstructed in all detectors but not identified as electrons
+    std::vector<CbmLmvmCandidate> fRTCandidates; // RTCut Reconstructed tracks, reconstructed in STS + at least in one of the  detectro (RICH, TRD, TOF)
 
     Double_t fWeight; //Multiplicity*BR
 
@@ -340,7 +337,7 @@ private:
 
 	CbmRichElectronIdAnn* fElIdAnn;
 
-    vector<TH1*> fHistoList; //list of all histograms
+    std::vector<TH1*> fHistoList; //list of all histograms
 
     // Number of hits in the MC RICH ring
     std::map<Int_t, Int_t> fNofHitsInRingMap;
@@ -356,65 +353,65 @@ private:
    // Vertex of secondary electron from gamma conversion for different analysis step
    //Index is the analysis step: [0]-mc, [1]-acc, [2]-reco, [3]-chi2prim, [4]-elid,
    // [5]-gamma cut, [6]-mvd1cut, [7]-mvd2cut, [8]-stcut, [9]-ttcut, [10]-ptcut.
-   vector<TH2D*> fh_vertex_el_gamma_xz;
-   vector<TH2D*> fh_vertex_el_gamma_yz;
-   vector<TH2D*> fh_vertex_el_gamma_xy;
-   vector<TH2D*> fh_vertex_el_gamma_rz;//r=sqrt(x^2+y^2)
+   std::vector<TH2D*> fh_vertex_el_gamma_xz;
+   std::vector<TH2D*> fh_vertex_el_gamma_yz;
+   std::vector<TH2D*> fh_vertex_el_gamma_xy;
+   std::vector<TH2D*> fh_vertex_el_gamma_rz;//r=sqrt(x^2+y^2)
 
    //Index is the analysis step: [0]-mc, [1]-acc, [2]-reco, [3]-chi2prim, [4]-elid,
    // [5]-gamma cut, [6]-mvd1cut, [7]-mvd2cut, [8]-stcut, [9]-ttcut, [10]-ptcut.
    //Use AnalysisSteps enumeration for access.
    //MC and ACC histograms are not filled sometimes.
-   vector<TH1D*> fh_signal_minv; // Invariant mass for Signal
-   vector<TH1D*> fh_bg_minv; // Invariant mass for BG
-   vector<TH1D*> fh_pi0_minv; // Invariant mass for Pi0
-   vector<TH1D*> fh_eta_minv; // Invariant mass for Eta
-   vector<TH1D*> fh_gamma_minv; // Invariant mass for Eta
-   vector<TH1D*> fh_signal_mom; // Signal momentum distribution
-   vector<TH2D*> fh_signal_pty; // Pt/y distribution for signal
-   vector<TH2D*> fh_signal_minv_pt; // Invariant mass vs. MC Pt
-   vector<TH2D*> fh_eta_minv_pt; // Invariant mass vs. MC Pt
-   vector<TH2D*> fh_pi0_minv_pt; // Invariant mass vs. MC Pt
+   std::vector<TH1D*> fh_signal_minv; // Invariant mass for Signal
+   std::vector<TH1D*> fh_bg_minv; // Invariant mass for BG
+   std::vector<TH1D*> fh_pi0_minv; // Invariant mass for Pi0
+   std::vector<TH1D*> fh_eta_minv; // Invariant mass for Eta
+   std::vector<TH1D*> fh_gamma_minv; // Invariant mass for Eta
+   std::vector<TH1D*> fh_signal_mom; // Signal momentum distribution
+   std::vector<TH2D*> fh_signal_pty; // Pt/y distribution for signal
+   std::vector<TH2D*> fh_signal_minv_pt; // Invariant mass vs. MC Pt
+   std::vector<TH2D*> fh_eta_minv_pt; // Invariant mass vs. MC Pt
+   std::vector<TH2D*> fh_pi0_minv_pt; // Invariant mass vs. MC Pt
 
 
-   vector<TH1D*> fh_bg_truematch_minv; // Invariant mass for truly matched tracks
-   vector<TH1D*> fh_bg_truematch_el_minv; // Invariant mass for truly matched electron tracks
-   vector<TH1D*> fh_bg_truematch_notel_minv; // Invariant mass for truly matched tracks, not 2 electrons
-   vector<TH1D*> fh_bg_mismatch_minv; // Invariant mass for mis matches tracks
+   std::vector<TH1D*> fh_bg_truematch_minv; // Invariant mass for truly matched tracks
+   std::vector<TH1D*> fh_bg_truematch_el_minv; // Invariant mass for truly matched electron tracks
+   std::vector<TH1D*> fh_bg_truematch_notel_minv; // Invariant mass for truly matched tracks, not 2 electrons
+   std::vector<TH1D*> fh_bg_mismatch_minv; // Invariant mass for mis matches tracks
 
    //G-Gamma, P-Pi0, O-other
    //e-e+
    //[0]=G-G, [1]=P-P, [2]=O-O, [3]=G-P, [4]=G-O, [5]=P-O
-   vector<vector<TH1D*> > fh_source_bg_minv; // Invariant mass for different source
+   std::vector<std::vector<TH1D*> > fh_source_bg_minv; // Invariant mass for different source
 
 
    //Index is the source type: [0]-signal, [1]-bg, [2]-pi0, [3]-gamma
    //Use SourceTypes enumeration for access.
-	vector<TH1D*> fh_pt; // Transverse momentum of single track distribution
-   vector<TH1D*> fh_mom; //Momentum of the single track
-   vector<TH1D*> fh_chi2sts; // Chi2 of the STS tracks
-   vector<TH1D*> fh_chi2prim; // Chi2 of the primary vertex
-   vector <TH2D*> fh_ttcut; // TT cut
-   vector <TH2D*> fh_stcut; // ST cut
-   vector <TH2D*> fh_rtcut; // RT cut
-   vector<TH2D*> fh_mvd1cut; // MVD cut at the first station
-   vector<TH2D*> fh_mvd2cut; // MVD cut at the second station
-   vector<TH1D*> fh_richann; // RICH ANN
-   vector<TH1D*> fh_trdann; // TRD ANN
-   vector<TH2D*> fh_tofm2; // TOF m2
-   vector<TH2D*> fh_ttcut_pion;
-   vector<TH2D*> fh_ttcut_truepair;
-   vector<TH2D*> fh_stcut_pion;
-   vector<TH2D*> fh_stcut_truepair;
-   vector<TH2D*> fh_rtcut_pion;
-   vector<TH2D*> fh_rtcut_truepair;
+	std::vector<TH1D*> fh_pt; // Transverse momentum of single track distribution
+   std::vector<TH1D*> fh_mom; //Momentum of the single track
+   std::vector<TH1D*> fh_chi2sts; // Chi2 of the STS tracks
+   std::vector<TH1D*> fh_chi2prim; // Chi2 of the primary vertex
+   std::vector <TH2D*> fh_ttcut; // TT cut
+   std::vector <TH2D*> fh_stcut; // ST cut
+   std::vector <TH2D*> fh_rtcut; // RT cut
+   std::vector<TH2D*> fh_mvd1cut; // MVD cut at the first station
+   std::vector<TH2D*> fh_mvd2cut; // MVD cut at the second station
+   std::vector<TH1D*> fh_richann; // RICH ANN
+   std::vector<TH1D*> fh_trdann; // TRD ANN
+   std::vector<TH2D*> fh_tofm2; // TOF m2
+   std::vector<TH2D*> fh_ttcut_pion;
+   std::vector<TH2D*> fh_ttcut_truepair;
+   std::vector<TH2D*> fh_stcut_pion;
+   std::vector<TH2D*> fh_stcut_truepair;
+   std::vector<TH2D*> fh_rtcut_pion;
+   std::vector<TH2D*> fh_rtcut_truepair;
 
-   vector<TH1D*> fh_nofMvdHits; // number of MVD hits
-   vector<TH1D*> fh_nofStsHits; // number of STS hits
-   vector<TH2D*> fh_mvd1xy; // hit distribution in the first MVD station
-   vector<TH1D*> fh_mvd1r; // r = x^2+y^2
-   vector<TH2D*> fh_mvd2xy; // hit distribution in the second MVD station
-   vector<TH1D*> fh_mvd2r; // r = x^2+y^2
+   std::vector<TH1D*> fh_nofMvdHits; // number of MVD hits
+   std::vector<TH1D*> fh_nofStsHits; // number of STS hits
+   std::vector<TH2D*> fh_mvd1xy; // hit distribution in the first MVD station
+   std::vector<TH1D*> fh_mvd1r; // r = x^2+y^2
+   std::vector<TH2D*> fh_mvd2xy; // hit distribution in the second MVD station
+   std::vector<TH1D*> fh_mvd2r; // r = x^2+y^2
 
    //Distant to MVD hit from the same  MotherId
    TH1D* fh_mvd1cut_mc_dist_gamma;
@@ -422,14 +419,14 @@ private:
    TH1D* fh_mvd2cut_mc_dist_gamma;
    TH1D* fh_mvd2cut_mc_dist_pi0;
 
-   vector<TH1D*> fh_mvd1cut_qa; // MVD 1 cut quality
-   vector<TH1D*> fh_mvd2cut_qa; // MVD 2 cut quality
+   std::vector<TH1D*> fh_mvd1cut_qa; // MVD 1 cut quality
+   std::vector<TH1D*> fh_mvd2cut_qa; // MVD 2 cut quality
 
    //source of BG pairs 2D.
    //second index is the analysis step: [0]-mc, [1]-acc, [2]-reco, [3]-chi2prim, [4]-elid,
    // [5]-gamma cut, [6]-mvd1cut, [7]-mvd2cut, [8]-stcut, [9]-ttcut, [10]-ptcut.
    //Use AnalysisSteps enumeration for access.
-   vector<TH2D*> fh_source_pairs_epem;
+   std::vector<TH2D*> fh_source_pairs_epem;
 
    //X axis: analysis step
    //Y axis: [0]=G-G, [1]=P-P, [2]=O-O, [3]=G-P, [4]=G-O, [5]=P-O
@@ -466,11 +463,11 @@ private:
    // [5]-gamma cut, [6]-mvd1cut, [7]-mvd2cut, [8]-stcut, [9]-ttcut, [10]-ptcut.
    //Use AnalysisSteps enumeration for access.
    //Track momentum distribution for different sources after each cut.
-   vector<vector<TH1D*> > fh_source_mom;
+   std::vector<std::vector<TH1D*> > fh_source_mom;
    //Pt distribution for different sources after each cut.
-   vector<vector<TH1D*> > fh_source_pt;
+   std::vector<std::vector<TH1D*> > fh_source_pt;
    //Opening angle distribution for different sources after each cut.
-   vector<vector<TH1D*> > fh_opening_angle;
+   std::vector<std::vector<TH1D*> > fh_opening_angle;
 
    //Pions vs momentum
    TH1D* fh_pi_mom_mc;

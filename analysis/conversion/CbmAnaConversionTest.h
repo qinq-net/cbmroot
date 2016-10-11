@@ -24,11 +24,7 @@
 #include "CbmGlobalTrack.h"
 #include "CbmLitGlobalElectronId.h"
 
-
-
-
-using namespace std;
-
+#include <vector>
 
 class CbmAnaConversionTest
 {
@@ -75,16 +71,16 @@ private:
 	CbmVertex *fPrimVertex;
 	CbmKFVertex fKFVertex;
 
-	vector<TH1*> fHistoList_test;	// list of all histograms related to rich rings
+	std::vector<TH1*> fHistoList_test;	// list of all histograms related to rich rings
 
 	CbmLitGlobalElectronId* electronidentifier;
 	CbmRichElectronIdAnn* fRichElIdAnn;
 
-	vector<int> fElectrons_gtid;
-	vector<int> fElectrons_mcid;
-	vector<int> fElectrons_richInd;
-	vector<int> fElectrons_pi0mcid;
-	vector<int> fElectrons_same;
+	std::vector<int> fElectrons_gtid;
+	std::vector<int> fElectrons_mcid;
+	std::vector<int> fElectrons_richInd;
+	std::vector<int> fElectrons_pi0mcid;
+	std::vector<int> fElectrons_same;
 
 	TH1I *fElectrons_nofPerPi0;
 	TH1I *fElectrons_nofPerPi0_withRichInd;
@@ -119,28 +115,28 @@ private:
 	TH2D * fhTest_phaseSpace_eta;
 
 	// array with all refitted momenta
-	vector<TVector3>	fVector_AllMomenta;
+	std::vector<TVector3>	fVector_AllMomenta;
 
 
 	// arrays for STS only analysis (i.e. signal only in STS is required, not necessarily in RICH)
-	vector<CbmGlobalTrack*>	fVector_gt;
-	vector<TVector3>		fVector_momenta;
-	vector<double>			fVector_chi;
-	vector<int>				fVector_gtIndex;
-	vector<int>				fVector_richIndex;
-	vector<int>				fVector_mcIndex;
-	vector<bool>			fVector_withRichSignal;
-	vector< vector<int> >	fVector_reconstructedPhotons_FromSTSandRICH;
+	std::vector<CbmGlobalTrack*>	fVector_gt;
+	std::vector<TVector3>		fVector_momenta;
+	std::vector<double>			fVector_chi;
+	std::vector<int>				fVector_gtIndex;
+	std::vector<int>				fVector_richIndex;
+	std::vector<int>				fVector_mcIndex;
+	std::vector<bool>			fVector_withRichSignal;
+	std::vector< std::vector<int> >	fVector_reconstructedPhotons_FromSTSandRICH;
 
 	// arrays for electrons, that have been identified in RICH as electrons
-	vector<CbmGlobalTrack*>	fVector_electronRICH_gt;
-	vector<int>				fVector_electronRICH_gtIndex;
-	vector<int>				fVector_electronRICH_mcIndex;
-	vector<TVector3>		fVector_electronRICH_momenta;
-	vector< vector<int> >	fVector_electronRICH_reconstructedPhotons;
+	std::vector<CbmGlobalTrack*>	fVector_electronRICH_gt;
+	std::vector<int>				fVector_electronRICH_gtIndex;
+	std::vector<int>				fVector_electronRICH_mcIndex;
+	std::vector<TVector3>		fVector_electronRICH_momenta;
+	std::vector< std::vector<int> >	fVector_electronRICH_reconstructedPhotons;
 	
 	// additional arrays, for CombineElectrons_STSonly() and CombinePhotons_STSonly()
-	vector< vector<int> >	fVector_reconstructedPhotons_STSonly;
+	std::vector< std::vector<int> >	fVector_reconstructedPhotons_STSonly;
 	
 
 
@@ -152,18 +148,18 @@ private:
 //	TH1D * fhTest_eventMixing_RICHindex2;
 //	TH1D * fhTest_eventMixing_RICHindex3;
 //	TH1D * fhTest_eventMixing_RICHindex4;
-	vector< vector<TVector3> >	fMixedTest_STSonly_photons;
-	vector<int>					fMixedTest_STSonly_eventno;
-	vector< vector<bool> >		fMixedTest_STSonly_hasRichInd;
+	std::vector< std::vector<TVector3> >	fMixedTest_STSonly_photons;
+	std::vector<int>					fMixedTest_STSonly_eventno;
+	std::vector< std::vector<bool> >		fMixedTest_STSonly_hasRichInd;
 	TH1D * 						fhTest_eventMixing_STSonly_2p2;
 	TH1D * 						fhTest_eventMixing_STSonly_3p1;
 	TH1D * 						fhTest_eventMixing_STSonly_4p0;
 
 //	for other event mixing (3 + 1)
-	vector< vector<TVector3> >	fMixedTest_3p1_photons;
-	vector<int>					fMixedTest_3p1_eventno;
-	vector<int>					fMixedTest_3p1_combined;
-	vector< vector<Double_t> >	fMixedTest_3p1_ann;
+	std::vector< std::vector<TVector3> >	fMixedTest_3p1_photons;
+	std::vector<int>					fMixedTest_3p1_eventno;
+	std::vector<int>					fMixedTest_3p1_combined;
+	std::vector< std::vector<Double_t> >	fMixedTest_3p1_ann;
 	TH1D * 						fhTest_eventMixing_3p1;
 	TH1D * 						fhTest_eventMixing_3p1_pCut;
 	TH1D * 						fhTest_eventMixing_3p1_GGcut;

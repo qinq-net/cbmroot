@@ -470,8 +470,8 @@ class CbmKFPartEfficiencies: public TNamed
   };
 
   void PrintEff(){
-    std::cout.setf(ios::fixed);
-    std::cout.setf(ios::showpoint);
+    std::cout.setf(std::ios::fixed);
+    std::cout.setf(std::ios::showpoint);
     std::cout.precision(3);
     std::cout << "Particle     : "
          << "   Eff "
@@ -486,14 +486,14 @@ class CbmKFPartEfficiencies: public TNamed
     int NCounters = mc.NCounters;
     for (int iC = 0; iC < NCounters; iC++){
         std::cout << names[iC]
-             << "  : " << setw(6) << ratio_reco.counters[iC]              
-             << "  / " << setw(6) << ratio_ghost.counters[iC]  // particles w\o MCParticle
-             << "  / " << setw(6) << ratio_bg.counters[iC]     // particles with incorrect MCParticle
-             << "  / " << setw(6) << ghost.counters[iC]
-             << "  / " << setw(7) << bg.counters[iC]
-             << "  / " << setw(6) << reco.counters[iC]
-             << "  / " << setw(7) << clone.counters[iC]
-             << "  | " << setw(6) << mc.counters[iC]  << std::endl;
+             << "  : " << std::setw(6) << ratio_reco.counters[iC]              
+             << "  / " << std::setw(6) << ratio_ghost.counters[iC]  // particles w\o MCParticle
+             << "  / " << std::setw(6) << ratio_bg.counters[iC]     // particles with incorrect MCParticle
+             << "  / " << std::setw(6) << ghost.counters[iC]
+             << "  / " << std::setw(7) << bg.counters[iC]
+             << "  / " << std::setw(6) << reco.counters[iC]
+             << "  / " << std::setw(7) << clone.counters[iC]
+             << "  | " << std::setw(6) << mc.counters[iC]  << std::endl;
     }
   };
 
@@ -537,7 +537,7 @@ class CbmKFPartEfficiencies: public TNamed
   int partPDG[nParticles];
   TString partName[nParticles];
   TString partTitle[nParticles];
-  vector<vector<int> > partDaughterPdg;
+  std::vector<std::vector<int> > partDaughterPdg;
   float partMHistoMin[nParticles];
   float partMHistoMax[nParticles];
   int partMaxMult[nParticles];
@@ -545,10 +545,10 @@ class CbmKFPartEfficiencies: public TNamed
   ClassDef(CbmKFPartEfficiencies,1);
 
  private:
-  vector<TString> names; // names counters indexed by index of counter
-  map<TString, int> indices; // indices of counters indexed by a counter shortname
+  std::vector<TString> names; // names counters indexed by index of counter
+  std::map<TString, int> indices; // indices of counters indexed by a counter shortname
 
-  map<int, int> fPdgToIndex;
+  std::map<int, int> fPdgToIndex;
 
   TL1TracksCatCounters<double> ratio_reco;
 

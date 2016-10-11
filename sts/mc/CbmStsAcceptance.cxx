@@ -18,6 +18,8 @@ using std::right;
 using std::setw;
 using std::fixed;
 using std::setprecision;
+using std::map;
+using std::string;
 
 // -----  Initialisation of static data members   -----------------------------
 Int_t CbmStsAcceptance::fNofInstances = 0;

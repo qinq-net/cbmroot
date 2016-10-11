@@ -16,10 +16,7 @@
 #include "TObject.h"
 #include "TVector3.h"
 #include "TPave.h"
-#include "map"
-
-using std::multimap;
-using std::pair;
+#include <map>
 
 class CbmMuchModule : public TPave{
 public:
@@ -55,11 +52,11 @@ public:
   void SetHits  (TClonesArray* hits)       { fHits     = hits;     }
   void SetClusters(TClonesArray* clusters) { fClusters = clusters; }
   /** */
-  void AddDigi(Double_t time,Int_t id) { fDigis.insert(pair<Double_t,Int_t>(time,id)); }
+  void AddDigi(Double_t time,Int_t id) { fDigis.insert(std::pair<Double_t,Int_t>(time,id)); }
   /** */
    void ClearDigis() { fDigis.clear(); }
    /** */
-   multimap<Double_t,Int_t> GetDigis() { return fDigis; } 
+   std::multimap<Double_t,Int_t> GetDigis() { return fDigis; } 
 
 protected:
   Int_t                  fDetectorId;            // Unique detector ID
@@ -70,7 +67,7 @@ protected:
   TClonesArray*          fPoints;                //!
   TClonesArray*          fHits;                  //!
   TClonesArray*          fClusters;              //!
-  multimap<Double_t,Int_t> fDigis;               //!
+  std::multimap<Double_t,Int_t> fDigis;               //!
  
  private:
   CbmMuchModule(const CbmMuchModule&);

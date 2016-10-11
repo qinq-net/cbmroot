@@ -6,8 +6,6 @@
 #include "FairGenerator.h"
 
 #include <vector>       // std::vector
-using std::vector;
-
 
 class FairPrimaryGenerator;
 class TParticle;
@@ -48,8 +46,8 @@ class CbmFastDecayer : public FairGenerator {
   CbmStack    *fStack   = NULL;	              //!pointer to CbmStack
   TVirtualMCDecayer  *fDecayer = NULL;        //!pointer to decayer
 
-  vector<int> fDecayPdgCodes;
-  vector<int> fGeantPdgCodes;
+  std::vector<int> fDecayPdgCodes;
+  std::vector<int> fGeantPdgCodes;
 
   CbmFastDecayer(const CbmFastDecayer &EvtGen);
   CbmFastDecayer & operator=(const CbmFastDecayer & rhs);

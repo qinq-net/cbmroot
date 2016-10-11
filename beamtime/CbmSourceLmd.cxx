@@ -29,6 +29,10 @@
 using std::cout;
 using std::endl;
 using std::map;
+using std::setprecision;
+using std::setw;
+using std::fixed;
+using std::right;
 
 CbmSourceLmd::CbmSourceLmd()
   : FairSource(),

@@ -44,6 +44,11 @@ using std::cout;
 using std::endl;
 using std::ios;
 using std::vector;
+using std::setprecision;
+using std::fstream;
+using std::istream;
+using std::ifstream;
+using std::ofstream;
 
 ClassImp(CbmL1)
 

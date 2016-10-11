@@ -13,10 +13,6 @@
 #include <iostream>
 #include <map>
 
-
-using std::map;
-
-
 /** @class CbmStsPhysics
  ** @brief Auxiliary class for simulating physics processes in Silicon
  ** @author Volker Friese <v.friese@gsi.de>
@@ -179,11 +175,11 @@ class CbmStsPhysics : public TObject {
 		Double_t fUrbanR;     ///< Urban model: weight parameter excitation/ionisation
 
 		// --- Data tables for stopping power
-		map<Double_t, Double_t> fStoppingElectron;  ///< E [GeV] -> <-dE/dx> [GeV*g/cm^2]
-		map<Double_t, Double_t> fStoppingProton  ;  ///< E [GeV] -> <-dE/dx> [GeV*g/cm^2]
+		std::map<Double_t, Double_t> fStoppingElectron;  ///< E [GeV] -> <-dE/dx> [GeV*g/cm^2]
+		std::map<Double_t, Double_t> fStoppingProton  ;  ///< E [GeV] -> <-dE/dx> [GeV*g/cm^2]
 
 		// --- Data tables for width of Landau distribution 
-		map<Double_t, Double_t> fLandauWidth; ///< q [e] -> width [e]
+		std::map<Double_t, Double_t> fLandauWidth; ///< q [e] -> width [e]
 
 		/** Interpolate a stopping power value from the data table
 		 ** @param eEquiv  Equivalent kinetic energy [GeV]
@@ -193,7 +189,7 @@ class CbmStsPhysics : public TObject {
 		 ** The eEquiv is below the tabulated range, the first table value is
 		 ** returned; if it is above the range, the last value is returned.
 		 **/
-		Double_t InterpolateDataTable(Double_t eKin, map<Double_t, Double_t>& table);
+		Double_t InterpolateDataTable(Double_t eKin, std::map<Double_t, Double_t>& table);
 
 		/** Read data tables from files Stopping Power **/
 		void ReadDataTablesStoppingPower();

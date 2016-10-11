@@ -2,14 +2,17 @@
 #define CBMANAMUCHBGD_H_ 1
 
 #include "FairTask.h"
+
+#include "CbmStsKFTrackFitter.h"
+
 #include "TString.h"
 #include "TLorentzVector.h"
 #include "TH1D.h"
-#include "CbmStsKFTrackFitter.h"
-#include "vector"
+
+#include <vector>
+
 class TTree;
 
-using std::vector;
 struct CbmMuon{
   Char_t fChunk;
   Short_t fEvent;
@@ -39,7 +42,7 @@ private:
   TClonesArray* fGlobalTracks;
   CbmVertex*    fVertex;
   CbmStsKFTrackFitter* fFitter;
-  vector<CbmMuon> fMuons;
+  std::vector<CbmMuon> fMuons;
   TH1D* fM;
   Int_t fNAll;
   Int_t fNSts;

@@ -7,14 +7,11 @@
 #ifndef CBMSTSCLUSTERFINDERSIMPLE_H
 #define CBMSTSCLUSTERFINDERSIMPLE_H 1
 
-#include <map>
 #include "TObject.h"
 
 class TClonesArray;
 class CbmStsDigi;
 class CbmStsModule;
-
-using std::map;
 
 /** @class CbmStsClusterFinderSimple
  ** @brief Engine for finding STS clusters

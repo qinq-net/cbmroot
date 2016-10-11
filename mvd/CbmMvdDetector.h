@@ -39,8 +39,6 @@
       #include "plugins/buffers/CbmMvdSensorFrameBuffer.h"
       #include "plugins/buffers/CbmMvdSensorTrackingBuffer.h"
 
-using std::vector;
-
 // data classes
 class CbmMvdPoint;
 class CbmMvdSensorDataSheet;

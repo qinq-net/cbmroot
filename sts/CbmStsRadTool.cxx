@@ -13,7 +13,10 @@
 
 #include "CbmStsRadTool.h"
 
-
+using std::cout;
+using std::endl;
+using std::map;
+using std::ifstream;
 
 // =====   Constructor   ==================================================
 CbmStsRadTool::CbmStsRadTool() 

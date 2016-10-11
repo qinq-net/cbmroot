@@ -22,7 +22,6 @@ class CbmMuchPad;
 class TH2I;
 class TCanvas;
 
-using std::vector;
 
 class CbmVisMuchCluster : public TObject{
  ClassDef(CbmVisMuchCluster,1);
@@ -41,10 +40,10 @@ private:
 
   Int_t               fClusterId;
   CbmMuchCluster*     fCluster;
-  vector<CbmMuchPad*> fPads;
-  vector<Double_t> fX;
-  vector<Double_t> fY;
-  vector<Double_t> fC;
+  std::vector<CbmMuchPad*> fPads;
+  std::vector<Double_t> fX;
+  std::vector<Double_t> fY;
+  std::vector<Double_t> fC;
   TCanvas* fCanvas;
   TH2I* fhChargeXY;
 };

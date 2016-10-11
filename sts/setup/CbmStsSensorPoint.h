@@ -9,10 +9,6 @@
 #include <string>
 #include "Rtypes.h"
 
-using std::string;
-
-
-
 /** @class CbmStsSensorPoint
  ** @brief Container class for a local point in a STS sensor
  ** @author V.Friese <v.friese@gsi.de>
@@ -67,7 +63,7 @@ class CbmStsSensorPoint
 
 
 		/** String output **/
-		string ToString() const;
+		std::string ToString() const;
 
 
   private:

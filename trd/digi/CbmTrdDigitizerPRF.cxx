@@ -37,7 +37,7 @@ using std::endl;
 using std::make_pair;
 using std::max;
 using std::fabs;
-
+using std::pair;
 
 CbmTrdDigitizerPRF::CbmTrdDigitizerPRF(CbmTrdRadiator *radiator)
   :FairTask("CbmTrdDigitizerPRF"),

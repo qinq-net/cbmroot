@@ -14,14 +14,10 @@
 #ifndef CBMMVDSENSORPLUGIN_H
 #define CBMMVDSENSORPLUGIN_H 1
 
-#include <iostream>
 #include "CbmMvdPoint.h"
 
 class TClonesArray;
 class CbmMvdSensor;
-
-using std::cout;
-using std::endl;
 
 enum MvdSensorPluginType {task, buffer};
 

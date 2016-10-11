@@ -11,6 +11,9 @@
 #include "FairTask.h"
 #include "CbmMuchGeoScheme.h"
 
+#include <vector>
+#include <map>
+
 class CbmClusteringGeometry
 {
 public:
@@ -48,7 +51,7 @@ public:
    Double_t GetPhi2(Int_t iPad);
    Float_t GetR1(Int_t iPad);
    Float_t GetR2(Int_t iPad);
-   vector<Int_t> GetNeighbors(Int_t iPad);
+   std::vector<Int_t> GetNeighbors(Int_t iPad);
    Long64_t GetChannelID(Int_t iPad);
 
 private:
@@ -63,7 +66,7 @@ private:
    Int_t fDetId;                            //Detector Id of MuchModule
    Int_t fNofActivePads;                    //Number of charged pads in module
 
-   map <Long64_t, Int_t> fPadByChannelId;
+   std::map <Long64_t, Int_t> fPadByChannelId;
    struct PadInformation{                   //Description of single pad
 	   Float_t fX, fY;
 	   Float_t fDx, fDy;
@@ -73,7 +76,7 @@ private:
 	   UInt_t fCharge;
 	   Int_t fNofNeighbors;
 	   Int_t fNofGoodNeighbors;
-	   vector<Int_t> fNeighbors;
+	   std::vector<Int_t> fNeighbors;
 	   Long64_t channelID;
 	   Int_t nSector;
    };

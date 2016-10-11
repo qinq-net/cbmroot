@@ -9,7 +9,7 @@ namespace Acceptance {
 
 	struct AcceptanceFunction {
 	  Double_t dy, dpt;
-	  vector<Double_t> ys, pts, probs;
+	  std::vector<Double_t> ys, pts, probs;
 	  BilinearSplineFunction sfunc;
 	  void setSpline() { sfunc.setData(ys, pts, probs); }
 	  Double_t getAcceptance(const Double_t & y, const Double_t & pt) const;

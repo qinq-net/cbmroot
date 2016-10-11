@@ -1,5 +1,7 @@
 #include "L1Algo.h"
 
+using std::vector;
+
 void L1Algo::Init( const vector<fscal> geo )
 {
   int ind=0;

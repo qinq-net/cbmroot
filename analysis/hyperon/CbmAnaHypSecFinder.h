@@ -1,22 +1,22 @@
 #ifndef CBMANAHYPSECFINDER_H
 #define CBMANAHYPSECFINDER_H
 
+#include "FairTask.h"
+
 #include "CbmStsTrackFinder.h"
 #include "CbmStsKFTrackFitter.h"
-#include <map>
-#include <vector>
 #include "CbmHit.h"
-#include "FairTask.h"
 #include "CbmKFHit.h"
 #include "CbmKFTrack.h"
 #include "CbmStsTrack.h"
 #include "CbmKF.h"
 #include "CbmAnaHypTools.h"
-#include "TMath.h"
 #include "CbmStsHit.h"
 
-using std::map;
-using std::vector;
+#include "TMath.h"
+
+#include <map>
+#include <vector>
 
 class TClonesArray;
 class Hit;
@@ -67,7 +67,7 @@ class CbmAnaHypSecFinder : public FairTask
   TClonesArray* sHitArray;
   TClonesArray* newTrackArray;
 
-  map<int,vector<Hit> > vHits;
+  std::map<int,std::vector<Hit> > vHits;
   Double_t fSt_z [10];
   Double_t fSt_dz[10];
   Double_t fStR1_z[10];
@@ -82,7 +82,7 @@ class CbmAnaHypSecFinder : public FairTask
   CbmStsKFTrackFitter* fFitter;
   Bool_t h_used[100000];
   Bool_t s_used[100000];
-  vector<Hit*> vTrackHits;
+  std::vector<Hit*> vTrackHits;
 
  private:
   CbmAnaHypSecFinder(const CbmAnaHypSecFinder&);
@@ -124,7 +124,7 @@ class CbmKFTrackSec : public CbmKFTrack {
     printf("\n");
   }
 
-  vector<Hit*> hits;
+  std::vector<Hit*> hits;
   Int_t sig;
   Double_t qp0;
 };

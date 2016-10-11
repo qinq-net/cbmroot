@@ -15,6 +15,8 @@
 
 #include <iomanip>
 
+using std::setprecision;
+
 CbmROCUnpackSystemMessage::CbmROCUnpackSystemMessage()
   : CbmROCUnpack(),
     fBuffer(CbmTbDaqBuffer::Instance()),

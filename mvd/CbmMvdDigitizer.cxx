@@ -22,6 +22,14 @@
 #include <iomanip>
 #include <iostream>
 
+using std::setw;
+using std::fixed;
+using std::setprecision;
+using std::ios_base;
+using std::cout;
+using std::endl;
+using std::vector;
+
 // -----   Default constructor   ------------------------------------------
 CbmMvdDigitizer::CbmMvdDigitizer() 
   : FairTask("MVDDigitizer"),

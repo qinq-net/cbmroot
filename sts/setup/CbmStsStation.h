@@ -9,6 +9,7 @@
 
 #include "CbmStsElement.h"
 
+#include <string>
 
 /** @class CbmStsStation
  ** @brief Class representing a station of the StsSystem.
@@ -120,7 +121,7 @@ class CbmStsStation : public CbmStsElement {
 
 
 		/** Info  **/
-		virtual string ToString() const;
+		virtual std::string ToString() const;
 
 
 

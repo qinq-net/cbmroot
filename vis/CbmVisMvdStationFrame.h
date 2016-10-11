@@ -36,8 +36,6 @@ class CbmVisMvd;
 
 #include <map>
 
-using std::map;
-
 //class CbmMuchGeoScheme;
 
 class CbmVisMvdStationFrame: public TGHorizontalFrame{
@@ -91,9 +89,9 @@ private:
   void DrawHits(Int_t stationNr);
   void DrawPoints(Int_t stationNr);
   void DrawDigis(Int_t stationNr);
-  map<Int_t, TObjArray* > fPixels; // Graphic pixel objects
-  map<Int_t, TObjArray*>  fPoints; // Graphic MC-point objects
-  map<Int_t, TObjArray*>  fHits;   // Graphic hit objects
+  std::map<Int_t, TObjArray* > fPixels; // Graphic pixel objects
+  std::map<Int_t, TObjArray*>  fPoints; // Graphic MC-point objects
+  std::map<Int_t, TObjArray*>  fHits;   // Graphic hit objects
 
 
 };

@@ -14,11 +14,6 @@
 class CbmStsPhysics;
 
 
-using std::vector;
-using std::string;
-
-
-
 /** @class CbmStsSensorTypeDssd
  ** @brief Class describing double-sided silicon strip sensors.
  ** @author V.Friese <v.friese@gsi.de>
@@ -191,7 +186,7 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
 
 
     /** String output **/
-    string ToString() const;
+    std::string ToString() const;
 
 /** Get the cluster position at the top edge of the sensor.
      ** @param[in]  centre    Cluster centre in (module) channel units

@@ -12,10 +12,10 @@
 #include "CbmHistManager.h"
 #include "CbmMCDataArray.h"
 
-class TClonesArray;
+#include <string>
+#include <vector>
 
-using std::string;
-using std::vector;
+class TClonesArray;
 
 class CbmStsTimeBasedQa : public FairTask
 {
@@ -30,47 +30,47 @@ public:
 
   virtual void Finish();
 
-  void SetOutputDir(const string& outputDir) { fOutputDir = outputDir; }
+  void SetOutputDir(const std::string& outputDir) { fOutputDir = outputDir; }
 
   void UseDaq(Bool_t daq) { fDaq = daq; }
 
-  void CreateHistograms(const string& type);
+  void CreateHistograms(const std::string& type);
 
-  void CreateNofObjectsHistograms(const string& type);
+  void CreateNofObjectsHistograms(const std::string& type);
 
-  void CreateHitParametersHistograms(const string& type);
+  void CreateHitParametersHistograms(const std::string& type);
 
-  void Create2dHistograms(const string& type);
+  void Create2dHistograms(const std::string& type);
 
   void ProcessDigisAndPoints(
-		  const vector<CbmStsDigi> digis,
+		  const std::vector<CbmStsDigi> digis,
 		   CbmMCDataArray* points,
-		  const string& type);
+		  const std::string& type);
   void ProcessDigisAndPoints(
 		  const TClonesArray* digis,
 		  const CbmMCDataArray* points,
-		  const string& type);
+		  const std::string& type);
   void ProcessClusters(
 		  const TClonesArray* clusters,
 		  const TClonesArray* clusterMatches,
 		  CbmMCDataArray* points,
-		  const string& type);
+		  const std::string& type);
   void ProcessHits(
 		  const TClonesArray* hits,
 		  const TClonesArray* hitMatches,
-		  const string& type);
+		  const std::string& type);
 
   void FillResidualAndPullHistograms(
 		  CbmMCDataArray* points,
 		  const TClonesArray* hits,
 		  const TClonesArray* hitMatches,
-		  const string& type);
+		  const std::string& type);
 
 private:
   void ReadDataBranches();
 
   CbmHistManager* fHM;
-  string fOutputDir;
+  std::string fOutputDir;
 
   CbmTimeSlice* fTimeSlice;
   TClonesArray* fStsDigis;
@@ -79,14 +79,14 @@ private:
   TClonesArray* fStsClusterMatches;
   TClonesArray* fStsHitMatches;
   CbmMCDataArray* fStsPoints;
-  vector<CbmStsDigi> fStsDigiData;
+  std::vector<CbmStsDigi> fStsDigiData;
 
   Bool_t fDaq;
   Int_t fMaxScale;
 
-  vector<Int_t> fMCinCell;
-  vector<Int_t> fHitsinCell;
-  vector<Float_t> fEffinCell;
+  std::vector<Int_t> fMCinCell;
+  std::vector<Int_t> fHitsinCell;
+  std::vector<Float_t> fEffinCell;
 
   CbmStsTimeBasedQa(const CbmStsTimeBasedQa&);
   CbmStsTimeBasedQa& operator=(const CbmStsTimeBasedQa&);

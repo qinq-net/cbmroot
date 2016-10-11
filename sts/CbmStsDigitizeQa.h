@@ -38,8 +38,6 @@ class TH1D;
 class TH2D;
 class TList;
 
-using std::vector;
-
 class CbmStsDigitizeQa : public FairTask
 {
     public :
@@ -110,7 +108,7 @@ class CbmStsDigitizeQa : public FairTask
 	TH1D * fhDigisPMCpoint; 
 	TH1D * fhDigiCharge; 
 	TH1D * fhDigisPEvent; 
-	vector<TH2D * > fhDigisPChannelPModuleAtStation;
+	std::vector<TH2D * > fhDigisPChannelPModuleAtStation;
 
 	/** List of histograms **/
 	TList* fHistoList;

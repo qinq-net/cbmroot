@@ -20,15 +20,15 @@
 
 class BilinearSplineFunction
 {
-	vector<double> xs;
-	vector<SplineFunction> xspls;
+	std::vector<double> xs;
+	std::vector<SplineFunction> xspls;
 public:
 	BilinearSplineFunction(void):xs(), xspls() { xs.resize(0); xspls.resize(0); }
-	BilinearSplineFunction(const vector<double> & x, const vector<double> & y, const vector<double> & vals):xs(), xspls()
+	BilinearSplineFunction(const std::vector<double> & x, const std::vector<double> & y, const std::vector<double> & vals):xs(), xspls()
     {
 		setData(x, y, vals);
     }
-	void setData(const vector<double> & x, const vector<double> & y, const vector<double> & vals) {
+	void setData(const std::vector<double> & x, const std::vector<double> & y, const std::vector<double> & vals) {
 		if (x.size()>0) {
 			xs.resize(0);
 			xspls.resize(0);
@@ -49,7 +49,7 @@ public:
 	double Eval(double x, double y) const {
 		if (xs.size()<2) return -1.;
 		unsigned int indx = 0;
-		vector< double >::const_iterator it = lower_bound(xs.begin(), xs.end(), x);
+		std::vector< double >::const_iterator it = lower_bound(xs.begin(), xs.end(), x);
         indx = distance(xs.begin(), it);
 		int ind1 = 0, ind2 = 0;
 		if (indx==0) {

@@ -21,9 +21,6 @@ class CbmStsSetup;
 class TGeoNode;
 class TGeoCombiTrans;
 
-using std::map;
-
-
 /** @class CbmStsMC
  ** @brief Class for the MC transport of the CBM-STS
  ** @author V.Friese <v.friese@gsi.de>
@@ -145,7 +142,7 @@ class CbmStsMC : public FairDetector
     CbmStsTrackStatus fStatusIn;   //! Track status at entry of sensor
     CbmStsTrackStatus fStatusOut;  //! Track status at exit of sensor
     Double_t          fEloss;      //! Accumulated energy loss for current track
-    map<TString, UInt_t> fAddressMap;  ///< Map from full path to unique address
+    std::map<TString, UInt_t> fAddressMap;  ///< Map from full path to unique address
     TClonesArray*     fStsPoints;  //!  Output array (CbmStsPoint)
     CbmStsSetup*      fSetup;      //! Pointer to static instance of CbmStsSetup
     TGeoCombiTrans*   fCombiTrans;  //! Transformation matrix for geometry positioning

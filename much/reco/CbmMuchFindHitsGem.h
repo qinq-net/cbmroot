@@ -22,12 +22,8 @@
 #define CBMMUCHFINDHITSGEM_H 1
 #include "FairTask.h"
 #include "TString.h"
-#include <map>
 #include <vector>
 #include "CbmMuchDigi.h"
-using std::map;
-using std::pair;
-using std::vector;
 
 class CbmMuchPad;
 class CbmMuchCluster;
@@ -58,21 +54,21 @@ class CbmMuchFindHitsGem: public FairTask {
     Double_t fThresholdRatio;               // Charge threshold ratio relative to max cluster charge
     Int_t fEvent;                           // Event counter
     TClonesArray* fDigis;                   // Input array of CbmMuchDigi
-    vector<Int_t> fClusterCharges;          //!
-    vector<Bool_t> fLocalMax;               //!
-    vector<CbmMuchPad*> fClusterPads;       //!
-    vector<vector<Int_t> >fNeighbours;      //!
+    std::vector<Int_t> fClusterCharges;          //!
+    std::vector<Bool_t> fLocalMax;               //!
+    std::vector<CbmMuchPad*> fClusterPads;       //!
+    std::vector<std::vector<Int_t> >fNeighbours;      //!
     
     TClonesArray* fClusters;                // Output array of CbmMuchCluster objects
     TClonesArray* fHits;                    // Output array of CbmMuchHit
     CbmMuchGeoScheme* fGeoScheme;           // Geometry scheme
     // auxiliary maps and vectors
-    vector<Int_t> fDigiIndices;             //!
-    vector<CbmMuchPad*> fFiredPads;         //!
+    std::vector<Int_t> fDigiIndices;             //!
+    std::vector<CbmMuchPad*> fFiredPads;         //!
     
     Bool_t fDaq;                            // To daq or not to daq // TODO
     CbmTimeSlice* fTimeSlice;               // Time slice object in the DAQ approach
-    vector<CbmMuchDigi> fDigiData;          // Vector of digis
+    std::vector<CbmMuchDigi> fDigiData;          // Vector of digis
     CbmMuchFindHitsGem(const CbmMuchFindHitsGem&);
     CbmMuchFindHitsGem operator=(const CbmMuchFindHitsGem&);
 

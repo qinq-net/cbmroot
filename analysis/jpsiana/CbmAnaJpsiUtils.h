@@ -3,15 +3,17 @@
 #define CBM_ANA_JPSI_UTILS_H
 
 #include "CbmAnaJpsiCandidate.h"
+
 #include "CbmStsTrack.h"
+#include "CbmMCTrack.h"
 #include "CbmKFVertex.h"
 #include "CbmL1PFFitter.h"
 #include "L1Field.h"
-#include <vector>
+
 #include "TDatabasePDG.h"
-#include "CbmMCTrack.h"
 #include "TMCProcess.h"
-using namespace std;
+
+#include <vector>
 
 class CbmAnaJpsiUtils{
 public:
@@ -26,11 +28,11 @@ public:
 		CbmKFVertex& kfVertex)
 	{
 		CbmL1PFFitter fPFFitter;
-		vector<CbmStsTrack> stsTracks;
+		std::vector<CbmStsTrack> stsTracks;
 		stsTracks.resize(1);
 		stsTracks[0] = *stsTrack;
-		vector<L1FieldRegion> vField;
-		vector<float> chiPrim;
+		std::vector<L1FieldRegion> vField;
+		std::vector<float> chiPrim;
 	    fPFFitter.GetChiToVertex(stsTracks, vField, chiPrim, kfVertex, 3e6);
 	    cand->fChi2sts = stsTracks[0].GetChiSq() / stsTracks[0].GetNDF();
 	    cand->fChi2Prim = chiPrim[0];

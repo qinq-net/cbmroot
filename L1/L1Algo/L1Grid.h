@@ -17,8 +17,6 @@
 #include <assert.h>
 #include <cstdio>
 
-using namespace std;
-
    /// Copy to memory block [@dest, @dest+@num] num number of times the value of i of type @T with size @typesize.
   /// uses binary expansion of copied volume for speed up
 template< typename T>
@@ -96,8 +94,8 @@ inline void L1Grid::GetBinBounded( const float &Y, const float &Z, unsigned shor
   const float &yBin = ( Y * fStepYInv - fYMinOverStep );
   const float &zBin = ( Z * fStepZInv - fZMinOverStep );
 
-  *bY = max( 0.f, min( float( fNy - 1 ), yBin ) );
-  *bZ = max( 0.f, min( float( fNz - 1 ), zBin ) );
+  *bY = std::max( 0.f, std::min( float( fNy - 1 ), yBin ) );
+  *bZ = std::max( 0.f, std::min( float( fNz - 1 ), zBin ) );
 }
 
 inline void L1Grid::Create( float yMin, float yMax, float zMin, float zMax, float sy, float sz )

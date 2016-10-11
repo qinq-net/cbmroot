@@ -32,6 +32,7 @@
 #include "setup/CbmStsSetup.h"
 #include "digitize/CbmStsSensorTypeDssd.h"
 
+using std::vector;
 
 
 // -----   Constructor   ---------------------------------------------------

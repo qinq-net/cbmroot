@@ -19,6 +19,9 @@
 #include <algorithm>
 #include <iostream>
 
+using std::vector;
+using std::multimap;
+
 // -------------------------------------------------------------------------
 CbmMuchFindHitsGem::CbmMuchFindHitsGem(const char* digiFileName) 
   : FairTask("MuchFindHitsGem", 1) ,

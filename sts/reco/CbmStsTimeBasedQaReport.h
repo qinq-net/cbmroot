@@ -9,8 +9,6 @@
 #include "CbmSimulationReport.h"
 #include <string>
 
-using std::string;
-
 class CbmStsTimeBasedQaReport : public CbmSimulationReport
 {
 public:
@@ -24,19 +22,19 @@ private:
 
   virtual void Draw();
 
-  void Draw2dHistograms(const string& type);
+  void Draw2dHistograms(const std::string& type);
 
-  void DrawNofObjectsHistograms(const string& type);
+  void DrawNofObjectsHistograms(const std::string& type);
 
-  void DrawResidualAndPullHistograms(const string& type);
+  void DrawResidualAndPullHistograms(const std::string& type);
 
-  void DrawPointsInHitHistograms(const string& type);
+  void DrawPointsInHitHistograms(const std::string& type);
 
-  void DrawDigiPerObjectHistograms(const string& type);
+  void DrawDigiPerObjectHistograms(const std::string& type);
 
-  void DrawHistograms(const string& type);
+  void DrawHistograms(const std::string& type);
 
-  void ScaleHistograms(const string& type);
+  void ScaleHistograms(const std::string& type);
 
   Bool_t fDaq;
 

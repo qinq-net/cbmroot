@@ -14,6 +14,7 @@
 #include "CbmStsStation.h"
 
 using std::stringstream;
+using std::string;
 
 // -----   Default constructor   -------------------------------------------
 CbmStsStation::CbmStsStation()

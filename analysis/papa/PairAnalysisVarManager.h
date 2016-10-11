@@ -64,8 +64,6 @@
 #include "PairAnalysisHelper.h"
 
 #include "assert.h"
-#include "vector"
-using std::vector;
 
 //________________________________________________________________
 class PairAnalysisVarManager : public TNamed {

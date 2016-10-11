@@ -9,10 +9,6 @@
 #include "TMath.h"
 #include "TString.h"
 
-// #include <iostream>
-
-// using namespace std;
-
 class CbmEcalCell;
 class CbmEcalInf;
 

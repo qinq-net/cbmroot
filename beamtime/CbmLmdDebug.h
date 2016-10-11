@@ -14,12 +14,6 @@
 #include "roc/Iterator.h"
 #include "roc/Message.h"
 
-
-using std::map;
-using std::pair;
-
-
-
 /** @class CbmLmdDebug
  ** @brief Read and analyse message stream from lmd file
  ** @author Volker Friese <v.friese@gsi.de>
@@ -57,8 +51,8 @@ class CbmLmdDebug: public TObject {
 
     // Counters
     UInt_t fNofMsgType[8];   ///< Messages per type
-    map<pair<Int_t, Int_t>, UInt_t> fNofHitNxy;  ///<  Hit messages per NXYTER
-    map<Int_t, UInt_t> fNofSync;  ///< Sync messages per ROC
+    std::map<std::pair<Int_t, Int_t>, UInt_t> fNofHitNxy;  ///<  Hit messages per NXYTER
+    std::map<Int_t, UInt_t> fNofSync;  ///< Sync messages per ROC
 
     // Last message info
     Int_t   fLastMsgType;

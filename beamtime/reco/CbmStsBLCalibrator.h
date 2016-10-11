@@ -5,7 +5,6 @@
 
 #include "TH1F.h"
 #include <vector>
-using std::vector;
 
 
 class TClonesArray;
@@ -44,7 +43,7 @@ class CbmStsBLCalibrator : public FairTask
     static const Int_t kBaselineMaxAdc = 4096;
     static const Int_t kBaselineNBins = 4096;
 
-    vector< vector < vector < TH1F * > > > fBaselines;
+    std::vector< std::vector < std::vector < TH1F * > > > fBaselines;
 
     static Double_t GetBlPos( TH1F * hist );
 

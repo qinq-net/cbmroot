@@ -26,11 +26,7 @@
 #include "KFPartMatch.h"
 #include "KFTopoPerformance.h"
 
-
-
-
-using namespace std;
-
+#include <vector>
 
 class CbmAnaConversionKF
 {
@@ -79,7 +75,7 @@ private:
 	
 	const KFParticleTopoReconstructor* fKFtopo;
 	KFTopoPerformance* fKFtopoPerf;
-	vector<int> trackindexarray;
+	std::vector<int> trackindexarray;
 	Int_t particlecounter;
 	Int_t particlecounter_2daughters;
 	Int_t particlecounter_3daughters;
@@ -96,17 +92,17 @@ private:
 	TH1D * fhPi0_mass;
 
 
-	vector<int> fSignalIds;
-	vector<int> fGhostIds;
+	std::vector<int> fSignalIds;
+	std::vector<int> fGhostIds;
 
 
-	vector<TH1*> fHistoList_kfparticle;	// list of all histograms containing results from KFParticle package
+	std::vector<TH1*> fHistoList_kfparticle;	// list of all histograms containing results from KFParticle package
 	
 
-	vector<KFParticle> particlevector;
-	vector<KFPartMatch> particleMatch;
-	vector<int> electronIDs;
-	vector<int> gammaIDs;
+	std::vector<KFParticle> particlevector;
+	std::vector<KFPartMatch> particleMatch;
+	std::vector<int> electronIDs;
+	std::vector<int> gammaIDs;
 	TH1D * fhInvMassPi0WithFullReco;
 
 	TH1D * fhInvMass2Gammas;
@@ -120,7 +116,7 @@ private:
 	TH1D * fhKF_NofPi0_trackvector;
 
 
-	vector< vector<int> > fKF_photon_pairs;
+	std::vector< std::vector<int> > fKF_photon_pairs;
 	TH1D * fhKF_invmass_fullReco;
 
 

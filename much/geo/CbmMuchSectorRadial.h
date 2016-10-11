@@ -16,10 +16,7 @@
 #include "TVector3.h"
 #include "TArrayI.h"
 
-#include <vector>
 class CbmMuchPadRadial;
-
-using std::vector;
 
 class CbmMuchSectorRadial : public CbmMuchSector{
  public:

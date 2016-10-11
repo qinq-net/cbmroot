@@ -22,11 +22,7 @@
 #include "CbmKFVertex.h"
 #include "CbmLitGlobalElectronId.h"
 
-
-
-
-using namespace std;
-
+#include <vector>
 
 class CbmAnaConversionPhotons2
 {
@@ -57,24 +53,24 @@ private:
 	CbmVertex *fPrimVertex;
 	CbmKFVertex fKFVertex;
 
-	vector<TH1*> fHistoList_photons;			// list of all histograms related to rich rings
-	vector<TH1*> fHistoList_photons_withRICH;	// list of all histograms related to rich rings
-	vector<TH1*> fHistoList_photons_withRICH_withChi;	// list of all histograms related to rich rings
-	vector<TH1*> fHistoList_photons_withRICH_fromTarget;	// list of all histograms related to rich rings
+	std::vector<TH1*> fHistoList_photons;			// list of all histograms related to rich rings
+	std::vector<TH1*> fHistoList_photons_withRICH;	// list of all histograms related to rich rings
+	std::vector<TH1*> fHistoList_photons_withRICH_withChi;	// list of all histograms related to rich rings
+	std::vector<TH1*> fHistoList_photons_withRICH_fromTarget;	// list of all histograms related to rich rings
 
 	CbmLitGlobalElectronId* electronidentifier;
 
-	vector<Int_t>			fRecoTracklist_gtIndex;
-	vector<Int_t>			fRecoTracklist_mcIndex;
-	vector<TVector3>		fRecoTracklist_momentum;
-	vector<Double_t>		fRecoTracklist_chi;
-	vector<CbmMCTrack*>		fRecoTracklist_mctrack;
+	std::vector<Int_t>			fRecoTracklist_gtIndex;
+	std::vector<Int_t>			fRecoTracklist_mcIndex;
+	std::vector<TVector3>		fRecoTracklist_momentum;
+	std::vector<Double_t>		fRecoTracklist_chi;
+	std::vector<CbmMCTrack*>		fRecoTracklist_mctrack;
 
-	vector<Int_t>			fRecoTracklist_withRICH_gtIndex;
-	vector<Int_t>			fRecoTracklist_withRICH_mcIndex;
-	vector<TVector3>		fRecoTracklist_withRICH_momentum;
-	vector<Double_t>		fRecoTracklist_withRICH_chi;
-	vector<CbmMCTrack*>		fRecoTracklist_withRICH_mctrack;
+	std::vector<Int_t>			fRecoTracklist_withRICH_gtIndex;
+	std::vector<Int_t>			fRecoTracklist_withRICH_mcIndex;
+	std::vector<TVector3>		fRecoTracklist_withRICH_momentum;
+	std::vector<Double_t>		fRecoTracklist_withRICH_chi;
+	std::vector<CbmMCTrack*>		fRecoTracklist_withRICH_mctrack;
 
 
 
@@ -175,7 +171,7 @@ private:
 
 
 	// crosscheck for full reco, or estimation of signal and background
-	vector< vector<int> > fVector_combinations;
+	std::vector< std::vector<int> > fVector_combinations;
 	TH1I * fh2Electrons_fullrecoCheck;
 
 	// timer

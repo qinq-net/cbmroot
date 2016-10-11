@@ -9,9 +9,8 @@
 #define CBM_LMVM_CUTS_H
 
 #include "TObject.h"
-#include <iostream>
 
-using namespace std;
+#include <iostream>
 
 class CbmLmvmCuts {
 public:
@@ -83,19 +82,19 @@ public:
 	 */
 	void Print()
 	{
-		cout << "Used cuts:" << endl <<
-				"fTrdAnnCut = " << fTrdAnnCut << endl <<
-				"fRichAnnCut = " << fRichAnnCut << endl <<
-				"fChiPrimCut = " << fChiPrimCut << endl <<
-				"fPtCut = " << fPtCut << endl <<
-				"fAngleCut = " << fAngleCut << endl <<
-				"fGammaCut = " << fGammaCut << endl <<
-				"fStCut (ang,pp) = (" << fStCutAngle << "," << fStCutPP << ")" << endl <<
-				"fRtCut (ang,pp) = (" << fRtCutAngle << "," << fRtCutPP << ")" << endl <<
-				"fTtCut (ang,pp) = (" << fTtCutAngle << "," << fTtCutPP << ")" << endl <<
-				"fMvd1Cut (p,d) = (" << fMvd1CutP << "," << fMvd1CutD << ")" << endl <<
-				"fMvd2Cut (p,d) = (" << fMvd2CutP << "," << fMvd2CutD << ")" << endl <<
-			   "fMomentumCut = "<< fMomentumCut <<  endl;
+		std::cout << "Used cuts:" << std::endl <<
+				"fTrdAnnCut = " << fTrdAnnCut << std::endl <<
+				"fRichAnnCut = " << fRichAnnCut << std::endl <<
+				"fChiPrimCut = " << fChiPrimCut << std::endl <<
+				"fPtCut = " << fPtCut << std::endl <<
+				"fAngleCut = " << fAngleCut << std::endl <<
+				"fGammaCut = " << fGammaCut << std::endl <<
+				"fStCut (ang,pp) = (" << fStCutAngle << "," << fStCutPP << ")" << std::endl <<
+				"fRtCut (ang,pp) = (" << fRtCutAngle << "," << fRtCutPP << ")" << std::endl <<
+				"fTtCut (ang,pp) = (" << fTtCutAngle << "," << fTtCutPP << ")" << std::endl <<
+				"fMvd1Cut (p,d) = (" << fMvd1CutP << "," << fMvd1CutD << ")" << std::endl <<
+				"fMvd2Cut (p,d) = (" << fMvd2CutP << "," << fMvd2CutD << ")" << std::endl <<
+			   "fMomentumCut = "<< fMomentumCut <<  std::endl;
 	}
 
 public:

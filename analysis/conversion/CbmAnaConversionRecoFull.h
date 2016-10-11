@@ -24,11 +24,7 @@
 #include "CbmLitGlobalElectronId.h"
 #include "CbmLmvmKinematicParams.h"
 
-
-
-
-using namespace std;
-
+#include <vector>
 
 class CbmAnaConversionRecoFull
 {
@@ -42,7 +38,7 @@ public:
 	void Finish();
 	void Exec();
 
-	void CombineElectrons(vector<CbmGlobalTrack*> gtrack, vector<TVector3> momenta, vector<float> momentaChi, vector<int> mctrackID, vector< vector<int> > reconstructedPhotons, Int_t index);
+	void CombineElectrons(std::vector<CbmGlobalTrack*> gtrack, std::vector<TVector3> momenta, std::vector<float> momentaChi, std::vector<int> mctrackID, std::vector< std::vector<int> > reconstructedPhotons, Int_t index);
 	Double_t Invmass_4particlesRECO(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4);
 	Double_t Pt_4particlesRECO(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4);
 	Double_t Rap_4particlesRECO(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4);
@@ -50,13 +46,13 @@ public:
 	CbmLmvmKinematicParams CalculateKinematicParamsReco(const TVector3 electron1, const TVector3 electron2);
 	CbmLmvmKinematicParams CalculateKinematicParams_4particles(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4);
 	
-	void CombinePhotons(vector<CbmGlobalTrack*> gtrack, vector<TVector3> momenta, vector<float> momentaChi, vector<int> mctrackID, vector< vector<int> > reconstructedPhotons, Int_t index);
-	Double_t OpeningAngleBetweenPhotons2(vector<int> photon1, vector<int> photons2);
-	Double_t OpeningAngleBetweenPhotons(vector<TVector3> momenta, vector<int> photon1, vector<int> photons2);
+	void CombinePhotons(std::vector<CbmGlobalTrack*> gtrack, std::vector<TVector3> momenta, std::vector<float> momentaChi, std::vector<int> mctrackID, std::vector< std::vector<int> > reconstructedPhotons, Int_t index);
+	Double_t OpeningAngleBetweenPhotons2(std::vector<int> photon1, std::vector<int> photons2);
+	Double_t OpeningAngleBetweenPhotons(std::vector<TVector3> momenta, std::vector<int> photon1, std::vector<int> photons2);
 
 	//void CombineElectronsRefit();
 	//void CombinePhotonsRefit();
-	//Double_t OpeningAngleBetweenPhotonsRefit(vector<int> photon1, vector<int> photons2);
+	//Double_t OpeningAngleBetweenPhotonsRefit(std::vector<int> photon1, std::vector<int> photons2);
 
 	void CombinePhotonsDirection();
 
@@ -81,12 +77,12 @@ private:
 	CbmVertex *fPrimVertex;
 	CbmKFVertex fKFVertex;
 
-	vector<TH1*> fHistoList_recofull;
-	vector<TH1*> fHistoList_recofull_1;
-	vector<TH1*> fHistoList_recofull_2;
-	vector<TH1*> fHistoList_recofull_3;
-	vector<TH1*> fHistoList_recofull_4;
-	vector<TH1*> fHistoList_recofull_new[5];
+	std::vector<TH1*> fHistoList_recofull;
+	std::vector<TH1*> fHistoList_recofull_1;
+	std::vector<TH1*> fHistoList_recofull_2;
+	std::vector<TH1*> fHistoList_recofull_3;
+	std::vector<TH1*> fHistoList_recofull_4;
+	std::vector<TH1*> fHistoList_recofull_new[5];
 
 	TH1I * fhElectrons;
 
@@ -98,43 +94,43 @@ private:
 	TH1D * fhMomentumFits_electronRich;
 	TH1D * fhMomentumFits_pi0reco;
 
-	vector<CbmGlobalTrack*> fElectrons_track;
-	vector<TVector3> fElectrons_momenta;
-	vector<float> fElectrons_momentaChi;
-	vector<int> fElectrons_mctrackID;
+	std::vector<CbmGlobalTrack*> fElectrons_track;
+	std::vector<TVector3> fElectrons_momenta;
+	std::vector<float> fElectrons_momentaChi;
+	std::vector<int> fElectrons_mctrackID;
 	
 	
 	
-	vector<CbmGlobalTrack*>	fElectrons_track_1;
-	vector<TVector3>		fElectrons_momenta_1;
-	vector<float>			fElectrons_momentaChi_1;
-	vector<int>				fElectrons_mctrackID_1;
-	vector< vector<int> >	fVector_photons_pairs_1;
+	std::vector<CbmGlobalTrack*>	fElectrons_track_1;
+	std::vector<TVector3>		fElectrons_momenta_1;
+	std::vector<float>			fElectrons_momentaChi_1;
+	std::vector<int>				fElectrons_mctrackID_1;
+	std::vector< std::vector<int> >	fVector_photons_pairs_1;
 	
-	vector<CbmGlobalTrack*>	fElectrons_track_2;
-	vector<TVector3>		fElectrons_momenta_2;
-	vector<float>			fElectrons_momentaChi_2;
-	vector<int>				fElectrons_mctrackID_2;
-	vector< vector<int> >	fVector_photons_pairs_2;
+	std::vector<CbmGlobalTrack*>	fElectrons_track_2;
+	std::vector<TVector3>		fElectrons_momenta_2;
+	std::vector<float>			fElectrons_momentaChi_2;
+	std::vector<int>				fElectrons_mctrackID_2;
+	std::vector< std::vector<int> >	fVector_photons_pairs_2;
 	
-	vector<CbmGlobalTrack*>	fElectrons_track_3;
-	vector<TVector3>		fElectrons_momenta_3;
-	vector<float>			fElectrons_momentaChi_3;
-	vector<int>				fElectrons_mctrackID_3;
-	vector< vector<int> >	fVector_photons_pairs_3;
+	std::vector<CbmGlobalTrack*>	fElectrons_track_3;
+	std::vector<TVector3>		fElectrons_momenta_3;
+	std::vector<float>			fElectrons_momentaChi_3;
+	std::vector<int>				fElectrons_mctrackID_3;
+	std::vector< std::vector<int> >	fVector_photons_pairs_3;
 	
-	vector<CbmGlobalTrack*>	fElectrons_track_4;
-	vector<TVector3>		fElectrons_momenta_4;
-	vector<float>			fElectrons_momentaChi_4;
-	vector<int>				fElectrons_mctrackID_4;
-	vector< vector<int> >	fVector_photons_pairs_4;
+	std::vector<CbmGlobalTrack*>	fElectrons_track_4;
+	std::vector<TVector3>		fElectrons_momenta_4;
+	std::vector<float>			fElectrons_momentaChi_4;
+	std::vector<int>				fElectrons_mctrackID_4;
+	std::vector< std::vector<int> >	fVector_photons_pairs_4;
 	
-	vector<CbmGlobalTrack*>	fElectrons_track_new[5];
-	vector<TVector3>		fElectrons_momenta_new[5];
-	vector<float>			fElectrons_momentaChi_new[5];
-	vector<int>				fElectrons_mctrackID_new[5];
-	vector<int>				fElectrons_globaltrackID_new[5];
-	vector< vector<int> >	fVector_photons_pairs_new[5];
+	std::vector<CbmGlobalTrack*>	fElectrons_track_new[5];
+	std::vector<TVector3>		fElectrons_momenta_new[5];
+	std::vector<float>			fElectrons_momentaChi_new[5];
+	std::vector<int>				fElectrons_mctrackID_new[5];
+	std::vector<int>				fElectrons_globaltrackID_new[5];
+	std::vector< std::vector<int> >	fVector_photons_pairs_new[5];
 
 
 	TH1D * fhElectrons_invmass;
@@ -143,8 +139,8 @@ private:
 	TH1D * fhPhotons_nofPerEvent;
 	
 	
-	vector< vector<int> > fVector_photons_pairs;
-	vector<TVector3> fVector_photons_momenta;
+	std::vector< std::vector<int> > fVector_photons_pairs;
+	std::vector<TVector3> fVector_photons_momenta;
 	TH1D * fhPhotons_invmass;
 	TH1D * fhPhotons_invmass_cut;
 	TH1D * fhPhotons_invmass_cut_chi1;
@@ -184,13 +180,13 @@ private:
 
 
 
-	vector<CbmGlobalTrack*> fElectrons_track_refit;
-	vector<TVector3> fElectrons_momenta_refit;
-	vector< vector<int> > fVector_photons_pairs_refit;
+	std::vector<CbmGlobalTrack*> fElectrons_track_refit;
+	std::vector<TVector3> fElectrons_momenta_refit;
+	std::vector< std::vector<int> > fVector_photons_pairs_refit;
 	TH1D * fhPhotons_invmass_refit;
 	TH1D * fhPhotons_invmass_refit_cut;
 	
-	vector< vector<int> > fVector_photons_pairs_direction;
+	std::vector< std::vector<int> > fVector_photons_pairs_direction;
 	TH1D * fhPhotons_invmass_direction;
 	TH1D * fhPhotons_invmass_direction_cut;
 	TH1D * fhPhotons_boostAngle;
@@ -286,34 +282,34 @@ private:
 
 	// test with mixed event method for estimation of invariant mass background
 		// test1
-	vector<TVector3>		fMixedEventsElectrons[5];
-	vector<CbmGlobalTrack*>	fMixedEventsElectrons_gtrack[5];
+	std::vector<TVector3>		fMixedEventsElectrons[5];
+	std::vector<CbmGlobalTrack*>	fMixedEventsElectrons_gtrack[5];
 	TH1D *					fhMixedEventsTest_invmass[5];
 	
 		// test2
-	vector<TVector3>		fMixedEventsElectrons_list1;
-	vector<TVector3>		fMixedEventsElectrons_list2;
-	vector<TVector3>		fMixedEventsElectrons_list3;
-	vector<TVector3>		fMixedEventsElectrons_list4;
-	vector<CbmGlobalTrack*>	fMixedEventsElectrons_list1_gtrack;
-	vector<CbmGlobalTrack*>	fMixedEventsElectrons_list2_gtrack;
-	vector<CbmGlobalTrack*>	fMixedEventsElectrons_list3_gtrack;
-	vector<CbmGlobalTrack*>	fMixedEventsElectrons_list4_gtrack;
+	std::vector<TVector3>		fMixedEventsElectrons_list1;
+	std::vector<TVector3>		fMixedEventsElectrons_list2;
+	std::vector<TVector3>		fMixedEventsElectrons_list3;
+	std::vector<TVector3>		fMixedEventsElectrons_list4;
+	std::vector<CbmGlobalTrack*>	fMixedEventsElectrons_list1_gtrack;
+	std::vector<CbmGlobalTrack*>	fMixedEventsElectrons_list2_gtrack;
+	std::vector<CbmGlobalTrack*>	fMixedEventsElectrons_list3_gtrack;
+	std::vector<CbmGlobalTrack*>	fMixedEventsElectrons_list4_gtrack;
 	TH1D *					fhMixedEventsTest2_invmass;
 	
 		// test3
-	vector<TVector3>		fMixedTest3_momenta;
-	vector<CbmGlobalTrack*>	fMixedTest3_gtrack;
-	vector<int>				fMixedTest3_eventno;
+	std::vector<TVector3>		fMixedTest3_momenta;
+	std::vector<CbmGlobalTrack*>	fMixedTest3_gtrack;
+	std::vector<int>				fMixedTest3_eventno;
 	Int_t					globalEventNo;
 	TH1D *					fhMixedEventsTest3_invmass;
 	
 		// test4
-	vector< vector<TVector3> >	fMixedTest4_photons;
-	vector< vector<CbmMCTrack*> >	fMixedTest4_mctracks;
-	vector< vector<Bool_t> >	fMixedTest4_isRichElectronAnn0;
-	vector< vector<Double_t> >	fMixedTest4_ElectronAnns;
-	vector<int>					fMixedTest4_eventno;
+	std::vector< std::vector<TVector3> >	fMixedTest4_photons;
+	std::vector< std::vector<CbmMCTrack*> >	fMixedTest4_mctracks;
+	std::vector< std::vector<Bool_t> >	fMixedTest4_isRichElectronAnn0;
+	std::vector< std::vector<Double_t> >	fMixedTest4_ElectronAnns;
+	std::vector<int>					fMixedTest4_eventno;
 	TH1D *						fhMixedEventsTest4_invmass;
 	TH1D *						fhMixedEventsTest4_invmass_ann0;
 	TH2D *						fhMixedEventsTest4_pt_vs_rap;

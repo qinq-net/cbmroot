@@ -16,9 +16,6 @@
 #include "TString.h"
 #include "TMath.h"
 
-using namespace std;
-
-
 class CbmMvdClusterfinder : public FairTask
 {
  

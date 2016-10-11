@@ -7,6 +7,7 @@
 #include <sstream>
 #include "CbmStsSensorPoint.h"
 
+using std::string;
 
 // --- Default constructor   -----------------------------------------------
 CbmStsSensorPoint::CbmStsSensorPoint() : fX1(0.), fY1(0.), fZ1(0.),

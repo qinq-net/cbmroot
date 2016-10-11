@@ -26,6 +26,8 @@
 #include "TSystem.h"
 
 using std::ifstream;
+using std::string;
+using std::vector;
 
 // -----   Default constructor   -------------------------------------------
 CbmMuchSegmentManual::CbmMuchSegmentManual()

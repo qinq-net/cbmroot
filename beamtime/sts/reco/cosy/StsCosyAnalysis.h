@@ -10,13 +10,14 @@
 
 
 #include "FairTask.h"
-#include <map>
+
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TF1.h"
 #include "TTree.h"
 
-using namespace std;
+#include <map>
+#include <vector>
 
 class TClonesArray;
 class CbmStsCosyPoint;
@@ -61,10 +62,11 @@ class StsCosyAnalysis : public FairTask
   Bool_t FindTracks(); 
 
  // Map for layered hits
-  map< Int_t , vector<CbmStsHit*> > fMapPts; //!
+  std::map< Int_t , std::
+  vector<CbmStsHit*> > fMapPts; //!
   
-  vector <Int_t> XY_events, proj_events;
-  vector <Double_t> X_STS1, Y_STS1, X_proj, Y_proj;
+  std::vector <Int_t> XY_events, proj_events;
+  std::vector <Double_t> X_STS1, Y_STS1, X_proj, Y_proj;
   
   TH1F* resX[3]; 
   TH1F* resY[3];

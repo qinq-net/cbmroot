@@ -24,7 +24,7 @@
 #include "CbmStsSetup.h"
 
 using std::pair;
-
+using std::map;
 
 // -----   Constructor   ---------------------------------------------------
 CbmStsMC::CbmStsMC(Bool_t active, const char* name)

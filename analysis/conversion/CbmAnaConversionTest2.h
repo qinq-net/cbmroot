@@ -24,11 +24,7 @@
 #include "CbmGlobalTrack.h"
 #include "CbmLitGlobalElectronId.h"
 
-
-
-
-using namespace std;
-
+#include <vector>
 
 class CbmAnaConversionTest2
 {
@@ -61,7 +57,7 @@ private:
 	CbmVertex *fPrimVertex;
 	CbmKFVertex fKFVertex;
 
-	vector<TH1*> fHistoList_test2;	// list of all histograms related to rich rings
+	std::vector<TH1*> fHistoList_test2;	// list of all histograms related to rich rings
 
 
 	// arrays for CombinePhotons_STSonly()
@@ -75,11 +71,11 @@ private:
 
 
 	// arrays for STS only analysis (i.e. signal only in STS is required, not necessarily in RICH)
-	vector<CbmGlobalTrack*>	fVector_gt;
-	vector<TVector3>		fVector_momenta;
-	vector<CbmMCTrack*>		fVector_mctrack;
-	vector<int>				fVector_gtIndex;
-	vector<int>				fVector_richIndex;
+	std::vector<CbmGlobalTrack*>	fVector_gt;
+	std::vector<TVector3>		fVector_momenta;
+	std::vector<CbmMCTrack*>		fVector_mctrack;
+	std::vector<int>				fVector_gtIndex;
+	std::vector<int>				fVector_richIndex;
 
 
 

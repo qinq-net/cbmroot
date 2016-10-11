@@ -3,9 +3,6 @@
 
 #include "CbmL1Def.h"
 #include <iostream>
-using std::cout;
-using std::ostream;
-using std::endl;
 
 
 class L1FieldValue{
@@ -23,7 +20,7 @@ class L1FieldValue{
       z+= w*( B.z - z );
     }
 
-    friend ostream& operator<<(ostream& out, L1FieldValue &B){
+    friend std::ostream& operator<<(std::ostream& out, L1FieldValue &B){
       return out << B.x[0] << " | " << B.y[0] << " | " << B.z[0];
     };
 } _fvecalignment;

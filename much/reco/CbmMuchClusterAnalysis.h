@@ -14,8 +14,6 @@
 
 #include <vector>
 
-using std::vector;
-
 class CbmMuchGeoScheme;
 class CbmMuchCluster;
 class CbmMuchPad;
@@ -50,12 +48,12 @@ class CbmMuchClusterAnalysis: public FairTask {
 
     // Histograms
     TH1F* fChargeTotal; // Charge on pads distribution for all clusters
-    vector<TH1F*> fClusterSize; // Distributions of cluster sizes
-    vector<vector<TH1F*> > fClusterPoints; // Distributions of number of points in the definite cluster sizes
-    vector<vector<vector<TH1F*> > > fClusterPadsCharge; // Distributions of pad-charge for definite cluster sizes and number of contributed points
-    vector<vector<vector<TH1F*> > > fClusterRadii; // Distributions of cluster radii for definite cluster sizes and number of contributed points
-    vector<vector<vector<TH1F*> > > fClusterMeanEuclide; // Mean Euclidean distance between cluster pads
-    vector<TH1F*> fSingleMuCluster; // Fraction of signal muons which formed single clusters
+    std::vector<TH1F*> fClusterSize; // Distributions of cluster sizes
+    std::vector<std::vector<TH1F*> > fClusterPoints; // Distributions of number of points in the definite cluster sizes
+    std::vector<std::vector<std::vector<TH1F*> > > fClusterPadsCharge; // Distributions of pad-charge for definite cluster sizes and number of contributed points
+    std::vector<std::vector<std::vector<TH1F*> > > fClusterRadii; // Distributions of cluster radii for definite cluster sizes and number of contributed points
+    std::vector<std::vector<std::vector<TH1F*> > > fClusterMeanEuclide; // Mean Euclidean distance between cluster pads
+    std::vector<TH1F*> fSingleMuCluster; // Fraction of signal muons which formed single clusters
 
     /**
      * Mean Euclidean distance between pads in the cluster.
@@ -86,7 +84,7 @@ class CbmMuchClusterAnalysis: public FairTask {
     /**
      * Gets total number of signal muons in each station.
      */
-    vector<Int_t> GetNSignalMuons();
+    std::vector<Int_t> GetNSignalMuons();
 
     CbmMuchClusterAnalysis(const CbmMuchClusterAnalysis&);
     CbmMuchClusterAnalysis& operator=(const CbmMuchClusterAnalysis&);

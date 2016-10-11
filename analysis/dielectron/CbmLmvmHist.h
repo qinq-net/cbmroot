@@ -4,8 +4,6 @@
 #include <vector>
 #include <string>
 
-using namespace std;
-
 /*
  * \brief Enumeration for different sources.
  */
@@ -51,19 +49,19 @@ class CbmLmvmHist
 public:
 
    const static int fNofSourceTypes = 4;
-   const static vector<string> fSourceTypes;
-   const static vector<string> fSourceTypesLatex;
-   const static vector<int> fSourceTypesColor;
+   const static std::vector<std::string> fSourceTypes;
+   const static std::vector<std::string> fSourceTypesLatex;
+   const static std::vector<int> fSourceTypesColor;
 
    const static int fNofAnaSteps = 12;
-   const static vector<string> fAnaSteps;
-   const static vector<string> fAnaStepsLatex;
-   const static vector<int> fAnaStepsColor;
+   const static std::vector<std::string> fAnaSteps;
+   const static std::vector<std::string> fAnaStepsLatex;
+   const static std::vector<int> fAnaStepsColor;
 
-   const static vector<string> fSignalNames;
+   const static std::vector<std::string> fSignalNames;
 
    const static int fNofBgPairSources = 6;
-   const static vector<string> fBgPairSourceLatex;
+   const static std::vector<std::string> fBgPairSourceLatex;
 };
 
 #endif

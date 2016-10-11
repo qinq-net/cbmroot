@@ -9,7 +9,9 @@
 #define CBMANAMUCH_H_ 1
 
 #include "FairTask.h"
+
 #include "TString.h"
+
 #include <map>
 
 class CbmMuchGeoScheme;
@@ -19,7 +21,6 @@ class TClonesArray;
 class CbmTrackMatch;
 class TH1D;
 class TH2D;
-using std::map;
 
 class CbmAnaMuch : public FairTask{
 public:
@@ -69,10 +70,10 @@ private:
   TClonesArray* fMuchTracks;        //!
   TClonesArray* fMuchTrackMatches;  //!
   TClonesArray* fStsTrackMatches;   //!
-  map<Int_t,Int_t> mapAccSts;       //!
-  map<Int_t,Int_t> mapAccMuch;      //!
-  map<Int_t,Int_t> mapRecSts;       //!
-  map<Int_t,Int_t> mapRecMuch;      //!
+  std::map<Int_t,Int_t> mapAccSts;       //!
+  std::map<Int_t,Int_t> mapAccMuch;      //!
+  std::map<Int_t,Int_t> mapRecSts;       //!
+  std::map<Int_t,Int_t> mapRecMuch;      //!
   TH1D* hAllP;                      //!
   TH1D* hAccStsP;                   //!
   TH1D* hAccMuchP;                  //!

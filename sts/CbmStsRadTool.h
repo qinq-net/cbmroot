@@ -16,11 +16,6 @@
 #include "TObject.h"
 
 
-using namespace std;
-
-
-
-
 /** @class CbmStsRadTool
  ** @author Volker Friese <v.friese@gsi.de>
  ** @date 6 December 2011
@@ -99,10 +94,10 @@ class CbmStsRadTool : public TObject
  private:
 
   /** Tables of NIEL factors as fnct. of energy **/
-  map<Double_t, Double_t> niel_neutron;
-  map<Double_t, Double_t> niel_proton;
-  map<Double_t, Double_t> niel_pion;
-  map<Double_t, Double_t> niel_electron;
+  std::map<Double_t, Double_t> niel_neutron;
+  std::map<Double_t, Double_t> niel_proton;
+  std::map<Double_t, Double_t> niel_pion;
+  std::map<Double_t, Double_t> niel_electron;
 
 
   /** Proportionality constant of leakage current and fluence **/
@@ -138,7 +133,7 @@ class CbmStsRadTool : public TObject
    *@param file  File name (in directory input)
    *@param map   Map to be filled
    **/
-  void ReadData(const char* file, map<Double_t, Double_t> &map);
+  void ReadData(const char* file, std::map<Double_t, Double_t> &map);
 
 
   ClassDef(CbmStsRadTool,1);

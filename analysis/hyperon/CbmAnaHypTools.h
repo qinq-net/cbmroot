@@ -2,9 +2,11 @@
 #define CBMANAHYPTOOLS_H
 
 #include "TObject.h"
+
 #include "CbmMCTrack.h"
-#include <map>
+
 #include <vector>
+
 class CbmHit;
 class CbmStsTrack;
 class TClonesArray;
@@ -14,9 +16,6 @@ class CbmVertex;
 class TVector3;
 class TTree;
 class CbmTrackMatch;
-
-using std::vector;
-using std::map;
 
 class CbmAnaHypTools
 {
@@ -83,9 +82,9 @@ class Lambda
 };
 
 struct HitVector{
-  vector<int> vMvd;
-  vector<int> vSts;
-  vector<int> vStationID;
+  std::vector<int> vMvd;
+  std::vector<int> vSts;
+  std::vector<int> vStationID;
   
 HitVector() : vMvd(), vSts(), vStationID() {}
 };

@@ -6,8 +6,14 @@
 
 #include "CbmTrdUtils.h"
 #include "CbmTrdAddress.h"
+
 #include "TMath.h"
 #include "TCanvas.h"
+
+using std::cout;
+using std::endl;
+using std::flush;
+
 CbmTrdUtils::CbmTrdUtils() : fColors(), fZLevel() {}
 CbmTrdUtils::~CbmTrdUtils(){}
 

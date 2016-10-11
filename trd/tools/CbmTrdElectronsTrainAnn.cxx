@@ -31,6 +31,7 @@ using std::cout;
 using std::endl;
 using std::stringstream;
 using std::string;
+using std::vector;
 using boost::assign::list_of;
 
 CbmTrdElectronsTrainAnn::CbmTrdElectronsTrainAnn(

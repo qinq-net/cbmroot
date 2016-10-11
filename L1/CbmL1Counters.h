@@ -7,10 +7,6 @@
 #include <iomanip>
 #include <vector>
 #include <map>
-using std::ios;
-using std::setw;
-using std::vector;
-using std::map;
 
   /// counters used for efficiency calculation
 template <typename T>
@@ -100,7 +96,7 @@ struct TL1TracksCatCounters // counters for different tracks categories
  public:
 
   int NCounters;
-  vector<T> counters;
+  std::vector<T> counters;
 };
 
 struct TL1Efficiencies
@@ -121,8 +117,8 @@ struct TL1Efficiencies
   void PrintEff();
 
   
-  vector<TString> names; // names counters indexed by index of counter
-  map<TString, int> indices; // indices of counters indexed by a counter shortname
+  std::vector<TString> names; // names counters indexed by index of counter
+  std::map<TString, int> indices; // indices of counters indexed by a counter shortname
   
   TL1TracksCatCounters<double> ratio_reco;
   double ratio_ghosts;
@@ -177,10 +173,10 @@ inline void TL1Efficiencies::Inc(bool isReco, TString name)
 };
 
 inline void TL1Efficiencies::PrintEff(){
-  std::cout.setf(ios::fixed);
-  std::cout.setf(ios::showpoint);
+  std::cout.setf(std::ios::fixed);
+  std::cout.setf(std::ios::showpoint);
   std::cout.precision(3);
-  std::cout.setf(ios::right);
+  std::cout.setf(std::ios::right);
   std::cout << "Track category         : " << " Eff "        <<" | "<< "All MC"  << std::endl;
 
   int NCounters = mc.NCounters;

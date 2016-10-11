@@ -11,6 +11,7 @@
 #define CBM_ANA_CONVERSION
 
 #include "FairTask.h"
+
 #include "CbmMCTrack.h"
 #include "CbmLmvmKinematicParams.h"
 #include "CbmKFVertex.h"
@@ -29,6 +30,10 @@
 #include "CbmAnaConversionTest.h"
 #include "CbmAnaConversionTest2.h"
 
+#include "TStopwatch.h"
+
+#include <vector>
+
 class TH1;
 class TH2;
 class TH3;
@@ -41,12 +46,6 @@ class CbmRichRing;
 class TCanvas;
 class TRandom3;
 
-#include <vector>
-#include <map>
-
-#include "TStopwatch.h"
-
-using namespace std;
 
 
 
@@ -215,7 +214,7 @@ private:
    CbmKFParticleFinder* fKFparticle;
    CbmKFParticleFinderQA* fKFparticleFinderQA;
    const KFParticleTopoReconstructor* fKFtopo;
-   vector<int> trackindexarray;
+   std::vector<int> trackindexarray;
    Int_t particlecounter;
    Int_t particlecounter_2daughters;
    Int_t particlecounter_3daughters;
@@ -244,41 +243,41 @@ private:
     */
    void InitHistograms();
    
-   vector<TH1*> fHistoList;				// list of all histograms
-   vector<TH1*> fHistoList_MC;			// list of all histograms generated with MC data
-   vector<TH1*> fHistoList_tomography;	// list of all histograms of tomography data (photon conversion)
-   vector<TH1*> fHistoList_reco;		// list of all histograms of reconstruction data
-   vector<TH1*> fHistoList_reco_mom;	// list of all histograms of reconstruction data (used momenta)
-   vector<TH1*> fHistoList_kfparticle;	// list of all histograms containing results from KFParticle package
-   vector<TH1*> fHistoList_richrings;	// list of all histograms related to rich rings
-   vector<TH1*> fHistoList_furtherAnalyses;	// list of all histograms from further analyses (occurence, etc.)
+   std::vector<TH1*> fHistoList;				// list of all histograms
+   std::vector<TH1*> fHistoList_MC;			// list of all histograms generated with MC data
+   std::vector<TH1*> fHistoList_tomography;	// list of all histograms of tomography data (photon conversion)
+   std::vector<TH1*> fHistoList_reco;		// list of all histograms of reconstruction data
+   std::vector<TH1*> fHistoList_reco_mom;	// list of all histograms of reconstruction data (used momenta)
+   std::vector<TH1*> fHistoList_kfparticle;	// list of all histograms containing results from KFParticle package
+   std::vector<TH1*> fHistoList_richrings;	// list of all histograms related to rich rings
+   std::vector<TH1*> fHistoList_furtherAnalyses;	// list of all histograms from further analyses (occurence, etc.)
    
-   vector<CbmMCTrack*>	fMCTracklist;
-   vector<CbmMCTrack*>	fMCTracklist_all;
-   vector<CbmMCTrack*>	fRecoTracklist;
-   vector<CbmMCTrack*>	fRecoTracklistEPEM;
-   vector<int>			fRecoTracklistEPEM_id; // ids of mctracks from fRecoTracklistEPEM
-   vector<Double_t>		fRecoTracklistEPEM_chi; // chi of fitted momenta from fRecoTracklistEPEM
-   vector<Int_t>		fRecoTracklistEPEM_gtid; // GlobalTrack ID from fRecoTracklistEPEM
+   std::vector<CbmMCTrack*>	fMCTracklist;
+   std::vector<CbmMCTrack*>	fMCTracklist_all;
+   std::vector<CbmMCTrack*>	fRecoTracklist;
+   std::vector<CbmMCTrack*>	fRecoTracklistEPEM;
+   std::vector<int>			fRecoTracklistEPEM_id; // ids of mctracks from fRecoTracklistEPEM
+   std::vector<Double_t>		fRecoTracklistEPEM_chi; // chi of fitted momenta from fRecoTracklistEPEM
+   std::vector<Int_t>		fRecoTracklistEPEM_gtid; // GlobalTrack ID from fRecoTracklistEPEM
    
-   vector<CbmMCTrack*>	fTestTracklist;
-   vector<TVector3>		fTestTracklist_momentum;
-   vector<float>		fTestTracklist_chi;
-   vector<int>			fTestTracklist_richInd;
-   vector<int>			fTestTracklist_ndf;
-   vector<int>			fTestTracklist_nofhits;
+   std::vector<CbmMCTrack*>	fTestTracklist;
+   std::vector<TVector3>		fTestTracklist_momentum;
+   std::vector<float>		fTestTracklist_chi;
+   std::vector<int>			fTestTracklist_richInd;
+   std::vector<int>			fTestTracklist_ndf;
+   std::vector<int>			fTestTracklist_nofhits;
    
-   vector<CbmMCTrack*>	fTestTracklist_noRichInd;
-   vector<int>			fTestTracklist_noRichInd_MCindex;
-   vector<TVector3>		fTestTracklist_noRichInd_momentum;
-   vector<float>		fTestTracklist_noRichInd_chi;
-   vector<int>			fTestTracklist_noRichInd_richInd;
-   vector<int>			fTestTracklist_noRichInd_gTrackId;
-   vector<int>			fTestTracklist_noRichInd_ndf;
-   vector<int>			fTestTracklist_noRichInd_nofhits;
+   std::vector<CbmMCTrack*>	fTestTracklist_noRichInd;
+   std::vector<int>			fTestTracklist_noRichInd_MCindex;
+   std::vector<TVector3>		fTestTracklist_noRichInd_momentum;
+   std::vector<float>		fTestTracklist_noRichInd_chi;
+   std::vector<int>			fTestTracklist_noRichInd_richInd;
+   std::vector<int>			fTestTracklist_noRichInd_gTrackId;
+   std::vector<int>			fTestTracklist_noRichInd_ndf;
+   std::vector<int>			fTestTracklist_noRichInd_nofhits;
    
-   vector<TVector3> fRecoMomentum;
-   vector<TVector3> fRecoRefittedMomentum;
+   std::vector<TVector3> fRecoMomentum;
+   std::vector<TVector3> fRecoRefittedMomentum;
 
 
 	TH1D * fhNofElectrons_4epem;

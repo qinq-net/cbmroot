@@ -4,8 +4,7 @@
 #include "FairTask.h"
 
 #include <map>
-using std::map;
-using std::pair;
+#include <vector>
 
 class CbmTrdPoint;
 class CbmTrdDigi;
@@ -86,7 +85,7 @@ private:
 	CbmTrdModule* fModuleInfo; //!
 	CbmTrdRadiator* fRadiator;  //!
 
-	std::map<Int_t, pair<CbmTrdDigi*, CbmMatch*> > fDigiMap; // Temporary storage for digis
+	std::map<Int_t, std::pair<CbmTrdDigi*, CbmMatch*> > fDigiMap; // Temporary storage for digis
 	std::map<Int_t, std::vector<Int_t> > fTimeAddressMap; // [ns], [address]
 	std::map<Int_t ,Double_t > fAddressTimeMap; //[address], [ns]
 

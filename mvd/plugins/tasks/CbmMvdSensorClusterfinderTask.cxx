@@ -8,6 +8,11 @@
 #include "TObjArray.h"
 #include "FairLogger.h"
 
+using std::cout;
+using std::endl;
+using std::pair;
+using std::vector;
+
 // -----   Default constructor   -------------------------------------------
 CbmMvdSensorClusterfinderTask::CbmMvdSensorClusterfinderTask() 
   : CbmMvdSensorTask(),

@@ -8,7 +8,9 @@
 #define CBMANADIMUONANALYSIS_H_ 1
 
 #include "FairTask.h"
+
 #include "TString.h"
+
 #include <map>
 
 class CbmAnaDimuonAnalysis;
@@ -23,7 +25,6 @@ class CbmMuchTrack;
 class CbmMuchGeoScheme;
 class CbmStsKFTrackFitter;
 class CbmVertex;
-using std::map;
 
 class CbmAnaDimuonAnalysis : public FairTask{
 public:
@@ -76,15 +77,15 @@ private:
   Int_t fTriggerStationIndex;
   Int_t fNLayers;
   
-  map<Int_t,Int_t> mapRecSts;       //!
-  map<Int_t,Int_t> mapRecMuch;      //!
+  std::map<Int_t,Int_t> mapRecSts;       //!
+  std::map<Int_t,Int_t> mapRecMuch;      //!
 
-  map<Int_t,Int_t> mapAllMuPlus;    //!
-  map<Int_t,Int_t> mapAccMuPlus;    //!
-  map<Int_t,Int_t> mapRecMuPlus;    //!
-  map<Int_t,Int_t> mapAllMuMinus;   //!
-  map<Int_t,Int_t> mapAccMuMinus;   //!
-  map<Int_t,Int_t> mapRecMuMinus;   //!
+  std::map<Int_t,Int_t> mapAllMuPlus;    //!
+  std::map<Int_t,Int_t> mapAccMuPlus;    //!
+  std::map<Int_t,Int_t> mapRecMuPlus;    //!
+  std::map<Int_t,Int_t> mapAllMuMinus;   //!
+  std::map<Int_t,Int_t> mapAccMuMinus;   //!
+  std::map<Int_t,Int_t> mapRecMuMinus;   //!
 
   CbmMuchGeoScheme* fGeoScheme;     //!
   Int_t fSignalPairs;               //!

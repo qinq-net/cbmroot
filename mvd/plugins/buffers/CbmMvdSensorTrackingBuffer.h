@@ -21,7 +21,6 @@
 
 class TClonesArray;
 class CbmMvdSensor;
-using namespace std;
 
 class CbmMvdSensorTrackingBuffer : public CbmMvdSensorBuffer
 {

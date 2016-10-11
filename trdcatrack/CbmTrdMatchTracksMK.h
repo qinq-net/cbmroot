@@ -21,8 +21,6 @@
 
 #include <map>
 
-using std::map;
-
 class TClonesArray;
 class TH1F;
 class TH2F;
@@ -54,8 +52,8 @@ class CbmTrdMatchTracksMK : public FairTask
   /** Function for writing histogramms **/
   void WriteHistogramms();
 
-  map<Int_t, Int_t> MC_noPrimRefAll;
-  map<Int_t, Int_t> RECO_noPrimRefAll;
+  std::map<Int_t, Int_t> MC_noPrimRefAll;
+  std::map<Int_t, Int_t> RECO_noPrimRefAll;
 
   Int_t
     NO_TOTAL_MC_REF_TRACKS,
@@ -110,7 +108,7 @@ class CbmTrdMatchTracksMK : public FairTask
 
 
   /** Map from MCTrackID to number of common hits **/
-  map<Int_t, Int_t> fMatchMap;
+  std::map<Int_t, Int_t> fMatchMap;
 
   /** Verbosity level **/
   Int_t fVerbose;

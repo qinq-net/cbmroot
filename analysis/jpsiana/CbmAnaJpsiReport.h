@@ -4,7 +4,11 @@
 
 #include "CbmSimulationReport.h"
 #include "CbmAnaJpsiHist.h"
+
 #include "TSystem.h"
+
+#include <string>
+#include <vector>
 
 class CbmAnaJpsiReport : public CbmSimulationReport
 {
@@ -31,26 +35,26 @@ protected:
    virtual void Draw();
 
    void DrawAnalysisStepsH2(
-         const string& hName,
+         const std::string& hName,
 		 bool DoDrawEfficiency);
 
    void DrawAnalysisStepsH1(
-            const string& hName,
+            const std::string& hName,
             bool doScale,
 			double min = -1.,
 			double max = -1.);
 
    void DrawSourceTypesH1(
-         const string& hName,
+         const std::string& hName,
          bool doScale = false);
 
    void DrawCutH1(
-         const string& hName,
+         const std::string& hName,
          double cutValue,
 		  bool doScale = false);
 
    void Draw2DCut(
-         const string& hist);
+         const std::string& hist);
 
    void DrawCutDistributions();
 
@@ -61,8 +65,8 @@ protected:
 
    void DrawMinvMismatchesAll();
 
-   void DrawEfficiency(const string& h,
-		   const string& hMC);
+   void DrawEfficiency(const std::string& h,
+		   const std::string& hMC);
 
    void DrawPtYEfficiency(
 			int step);
@@ -92,9 +96,9 @@ protected:
    void DrawPairSource();
 
    void DrawBgSource2D(
-         const string& histName,
-         const vector<string>& yLabels,
-         const string& zTitle);
+         const std::string& histName,
+         const std::vector<std::string>& yLabels,
+         const std::string& zTitle);
 
 
 	ClassDef(CbmAnaJpsiReport, 1);

@@ -20,13 +20,6 @@
 #include <algorithm>
 #include <iterator>
 
-
-using std::map;
-using std::vector;
-using std::string;
-using std::stringstream;
-using std::istream_iterator;
-
 class CbmMuchModuleGemRectangular;
 class CbmMuchSectorRectangular;
 class CbmMuchLayerSide;
@@ -102,13 +95,13 @@ class CbmMuchSegmentManual : public FairTask {
     TObjArray*                    fStations;       // Array of stations
     Char_t*                       fInputFileName;  // Name of the file with input parameters
     Char_t*                       fDigiFileName;   // Name of the file with segmentation parameters
-    map<Int_t, Int_t>             fNRegions;       // Map from a station index to a number of circled regions in the station
-    map<Int_t, vector<Double_t> > fRadii;          // Map from a station index to a vector of circled regions radii
-    map<Int_t, vector<Double_t> > fSecLx;          // Map from a station index to a vector of sector widths for each region
-    map<Int_t, vector<Double_t> > fSecLy;          // Map from a station index to a vector of sector lengths for each region
-    map<Int_t, Int_t>             fNChannels;      // Map from a station index to a number of channels per sector
-    map<Int_t, vector<Int_t> >    fNCols;          // Map from a station index to a vector of number of columns in a sector
-    map<Int_t, vector<Int_t> >    fNRows;          // Map from a station index to a vector of number of rows in a sector
+    std::map<Int_t, Int_t>             fNRegions;       // Map from a station index to a number of circled regions in the station
+    std::map<Int_t, std::vector<Double_t> > fRadii;          // Map from a station index to a vector of circled regions radii
+    std::map<Int_t, std::vector<Double_t> > fSecLx;          // Map from a station index to a vector of sector widths for each region
+    std::map<Int_t, std::vector<Double_t> > fSecLy;          // Map from a station index to a vector of sector lengths for each region
+    std::map<Int_t, Int_t>             fNChannels;      // Map from a station index to a number of channels per sector
+    std::map<Int_t, std::vector<Int_t> >    fNCols;          // Map from a station index to a vector of number of columns in a sector
+    std::map<Int_t, std::vector<Int_t> >    fNRows;          // Map from a station index to a vector of number of rows in a sector
     Int_t fDebug;  // Debug info switch
 
     /** Get parameter containers **/
@@ -205,27 +198,27 @@ class CbmMuchSegmentManual : public FairTask {
 
 
     // -------------------- Methods for working with strings --------------------------
-    void Trim(string& str)
+    void Trim(std::string& str)
     {
-      string::size_type pos1 = str.find_first_not_of(' ');
-      string::size_type pos2 = str.find_last_not_of(' ');
-      str = str.substr(pos1 == string::npos ? 0 : pos1,
-        pos2 == string::npos ? str.length() - 1 : pos2 - pos1 + 1);
+      std::string::size_type pos1 = str.find_first_not_of(' ');
+      std::string::size_type pos2 = str.find_last_not_of(' ');
+      str = str.substr(pos1 == std::string::npos ? 0 : pos1,
+        pos2 == std::string::npos ? str.length() - 1 : pos2 - pos1 + 1);
     }
 
-    Bool_t IsDummyLine(string& str){
+    Bool_t IsDummyLine(std::string& str){
       Trim(str);
       return str[0] == '#' || str.length() == 0 || str[0] == '\0' || str[0] == '\n';
     }
 
-    void OmitDummyLines(std::ifstream &infile, string &str){
+    void OmitDummyLines(std::ifstream &infile, std::string &str){
       getline(infile, str);
       while(IsDummyLine(str)) getline(infile, str);
     }
 
-    vector<std::string> &Split(const string &s, char delim, vector<string> &elems) {
-        stringstream ss(s);
-        string item;
+    std::vector<std::string> &Split(const std::string &s, char delim, std::vector<std::string> &elems) {
+        std::stringstream ss(s);
+        std::string item;
         while(getline(ss, item, delim)) {
           if(item.length() != 0) elems.push_back(item);
         }
@@ -233,16 +226,16 @@ class CbmMuchSegmentManual : public FairTask {
     }
 
 
-    vector<string> Split(const string &s, char delim) {
-        vector<string> elems;
+    std::vector<std::string> Split(const std::string &s, char delim) {
+        std::vector<std::string> elems;
         return Split(s, delim, elems);
     }
 
     template<class T>
-    void StrToNum(string &str, T &number){
+    void StrToNum(std::string &str, T &number){
       try
       {
-          stringstream ss(str);
+          std::stringstream ss(str);
           if ((ss >> number).fail() || !(ss >> std::ws).eof())
               throw std::bad_cast();
       }

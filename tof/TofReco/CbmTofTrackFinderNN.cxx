@@ -44,6 +44,8 @@
 #include <vector>
 #include <map>
 using std::map;
+using std::cout;
+using std::endl;
    
 const Int_t DetMask = 4194303; // check for consistency with geometry
 

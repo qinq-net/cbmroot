@@ -9,7 +9,6 @@
 
 #include <vector>
 #include <string>
-#include <map>
 
 #include "CbmLmvmHist.h"
 
@@ -22,8 +21,6 @@ class TFile;
 class TCanvas;
 class CbmHistManager;
 class CbmAnaPTree;
-
-using namespace std;
 
 class CbmAnaLmvmDrawStudy: public TObject {
 
@@ -50,30 +47,30 @@ public:
    * \param[in] useMvd .
    **/
    void DrawFromFile(
-         const vector<string>& fileNames,
-         const vector<string>& fileNamesMean,
-         const vector<string>& studyNames,
-         const string& outputDir = "");
+         const std::vector<std::string>& fileNames,
+         const std::vector<std::string>& fileNamesMean,
+         const std::vector<std::string>& studyNames,
+         const std::string& outputDir = "");
 
 private:
-   vector<TCanvas*> fCanvas; // store all pointers to TCanvas -> save to images
+   std::vector<TCanvas*> fCanvas; // store all pointers to TCanvas -> save to images
    Int_t fNofStudies;
-   vector<string> fStudyNames;
+   std::vector<std::string> fStudyNames;
 
-   vector<CbmHistManager*> fHM; // store pointers to histogram manager for different simulations
+   std::vector<CbmHistManager*> fHM; // store pointers to histogram manager for different simulations
 
-   vector<string> fMeanFiles; // Files mean
+   std::vector<std::string> fMeanFiles; // Files mean
 
-   string fOutputDir; // output directory for figures and .json file
+   std::string fOutputDir; // output directory for figures and .json file
 
    TCanvas* CreateCanvas(
-         const string& name,
-         const string& title,
+         const std::string& name,
+         const std::string& title,
          int width,
          int height);
 
    void DrawTextOnHist(
-         const string& text,
+         const std::string& text,
          Double_t x1,
          Double_t y1,
          Double_t x2,
@@ -81,11 +78,11 @@ private:
 
    TH1D* H1(
          int studyNum,
-         const string& name);
+         const std::string& name);
 
    TH2D* H2(
          int studyNum,
-         const string& name);
+         const std::string& name);
 
    void SaveCanvasToImage();
 
@@ -100,8 +97,8 @@ private:
    void DrawBgSourcePairs();
    void DrawBgSourceMinv();
    void DrawDistributions(
-        const string& canvasName,
-        const string& histName,
+        const std::string& canvasName,
+        const std::string& histName,
         int step,
         int sourceType);
 

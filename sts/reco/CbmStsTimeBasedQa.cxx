@@ -30,6 +30,7 @@ using std::vector;
 using std::set;
 using std::map;
 using std::pair;
+using std::string;
 
 CbmStsTimeBasedQa::CbmStsTimeBasedQa():
     fHM(NULL)

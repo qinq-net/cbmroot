@@ -25,6 +25,7 @@
 
 using std::cout;
 using std::endl;
+using std::vector;
 
 CbmClusteringA1::CbmClusteringA1():
 		fA1(),

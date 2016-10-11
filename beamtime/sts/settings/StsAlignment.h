@@ -9,14 +9,14 @@
 
 
 #include "FairTask.h"
-#include <map>
+
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TF1.h"
 #include "TTree.h"
 #include "TBranch.h"
 
-using namespace std;
+#include <map>
 
 class TClonesArray;
 class CbmStsCosyPoint;
@@ -55,7 +55,7 @@ class StsAlignment : public FairTask
   Bool_t FindTracks(); 
 
  // Map for layered hits
-  map< Int_t , vector<CbmStsHit*> > fMapPts; //!
+  std::map< Int_t , std::vector<CbmStsHit*> > fMapPts; //!
 
   Double_t fTimeLimits[3];
   Double_t fTimeShifts[3];

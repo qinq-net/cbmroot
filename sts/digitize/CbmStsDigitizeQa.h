@@ -11,9 +11,6 @@
 #include <vector>
 class TClonesArray;
 
-using std::string;
-using std::vector;
-
 class CbmStsDigitizeQa : public FairTask
 {
     public:
@@ -27,7 +24,7 @@ class CbmStsDigitizeQa : public FairTask
 
 	virtual void Finish();
 
-	void SetOutputDir(const string& outputDir) { fOutputDir = outputDir; }
+	void SetOutputDir(const std::string& outputDir) { fOutputDir = outputDir; }
 
 	void CreateHistograms();
 
@@ -43,7 +40,7 @@ class CbmStsDigitizeQa : public FairTask
 
 	CbmStsDigitize * fDigitizer;
 	CbmHistManager* fHM;
-	string fOutputDir;
+	std::string fOutputDir;
 	TClonesArray* fStsDigis;
 	TClonesArray* fStsPoints;
 	CbmStsSetup * fSetup;
@@ -51,7 +48,7 @@ class CbmStsDigitizeQa : public FairTask
 
 	Int_t fMaxScale;
 	std::ofstream fOutFile;
-	vector < vector <vector <vector < vector <Int_t>>>>> fnOfDigisChip;
+	std::vector < std::vector <std::vector <std::vector < std::vector <Int_t>>>>> fnOfDigisChip;
 
 	CbmStsDigitizeQa(const CbmStsDigitizeQa&);
 	CbmStsDigitizeQa& operator=(const CbmStsDigitizeQa&);

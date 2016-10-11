@@ -53,8 +53,6 @@ class CbmMvdGeoPar;
 class CbmMvdPileupManager;
 class CbmMvdSensor;
 
-using namespace std;
-
 
 class CbmMvdFullRun : public FairTask
 {

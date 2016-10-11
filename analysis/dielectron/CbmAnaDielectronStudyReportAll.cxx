@@ -11,7 +11,8 @@
 #include <boost/assign/list_of.hpp>
 using boost::assign::list_of;
 using std::stringstream;
-
+using std::string;
+using std::vector;
 
 CbmAnaDielectronStudyReportAll::CbmAnaDielectronStudyReportAll():
 		CbmStudyReport()

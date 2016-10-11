@@ -9,7 +9,9 @@
 #define CBMANAMUCHJPSIPOLARIZATION_H_ 1
 
 #include "FairTask.h"
+
 #include "TString.h"
+
 #include <map>
 
 class CbmAnaMuchJpsiPolarization;
@@ -20,7 +22,6 @@ class TH2D;
 class TH3D;
 class TLorentzVector;
 class CbmMuchTrack;
-using std::map;
 
 class CbmAnaMuchJpsiPolarization : public FairTask{
 public:
@@ -78,15 +79,15 @@ private:
   TH3D* fhJpsiRecYPtCost;
   
   
-  map<Int_t,Int_t> mapRecSts;       //!
-  map<Int_t,Int_t> mapRecMuch;      //!
+  std::map<Int_t,Int_t> mapRecSts;       //!
+  std::map<Int_t,Int_t> mapRecMuch;      //!
 
-  map<Int_t,Int_t> mapAllMuPlus;    //!
-  map<Int_t,Int_t> mapAccMuPlus;    //!
-  map<Int_t,Int_t> mapRecMuPlus;    //!
-  map<Int_t,Int_t> mapAllMuMinus;   //!
-  map<Int_t,Int_t> mapAccMuMinus;   //!
-  map<Int_t,Int_t> mapRecMuMinus;   //!
+  std::map<Int_t,Int_t> mapAllMuPlus;    //!
+  std::map<Int_t,Int_t> mapAccMuPlus;    //!
+  std::map<Int_t,Int_t> mapRecMuPlus;    //!
+  std::map<Int_t,Int_t> mapAllMuMinus;   //!
+  std::map<Int_t,Int_t> mapAccMuMinus;   //!
+  std::map<Int_t,Int_t> mapRecMuMinus;   //!
 
   CbmAnaMuchJpsiPolarization(const CbmAnaMuchJpsiPolarization&);
   CbmAnaMuchJpsiPolarization operator=(const CbmAnaMuchJpsiPolarization&);

@@ -21,9 +21,6 @@
 #include "TNamed.h"
 
 
-using std::vector;
-
-
 class CbmMvdPoint;
 
 
@@ -86,7 +83,7 @@ class CbmMvdStation : public TNamed
   Double32_t   fD;                // Thickness of station
   Double32_t   fRmin;             // Inner radius [cm]
   Double32_t   fRmax;             // Outer radius [cm]
-  vector<CbmMvdPoint*>  fPoints;  // Vector of MvdPoints
+  std::vector<CbmMvdPoint*>  fPoints;  // Vector of MvdPoints
   
 
 

@@ -5,10 +5,10 @@
 #ifndef CBM_MIXED_EVENTS_PRODUCER
 #define CBM_MIXED_EVENTS_PRODUCER
 
-#include <map>
-using namespace std;
 
 #include "FairTask.h"
+
+#include <map>
 
 class TObjArray;
 class TClonesArray;

@@ -3,7 +3,6 @@
 
 #include "CbmL1Def.h"
 #include <vector>
-using std::vector;
 
 class L1MaterialInfo{
  public:
@@ -18,7 +17,7 @@ class L1Material{
 
  L1Material() : table(), NBins(0), RMax(0.), iD(0.) {}
 
-  vector<vector<float> > table;
+  std::vector<std::vector<float> > table;
   
   // static const int NBins = 100; // TODO file?
   // static const float RMax = 60.f;

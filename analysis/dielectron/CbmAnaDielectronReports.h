@@ -11,9 +11,6 @@
 #include <vector>
 #include "TObject.h"
 
-using std::string;
-using std::vector;
-
 /**
  * \class CbmAnaDielectronReports
  * \brief Main class wrapper for report generation.
@@ -36,10 +33,10 @@ public:
    virtual ~CbmAnaDielectronReports();
 
    void CreateStudyReport(
-         const string& title,
-         const vector<string>& fileNames,
-         const vector<string>& studyNames,
-         const string& outputDir);
+         const std::string& title,
+         const std::vector<std::string>& fileNames,
+         const std::vector<std::string>& studyNames,
+         const std::string& outputDir);
 
    ClassDef(CbmAnaDielectronReports, 1);
 

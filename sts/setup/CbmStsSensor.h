@@ -11,7 +11,6 @@
 
 
 #include <vector>
-#include <string>
 #include "CbmStsAddress.h"
 #include "CbmStsCluster.h"
 #include "setup/CbmStsElement.h"
@@ -24,9 +23,6 @@ class CbmLink;
 class CbmStsModule;
 class CbmStsPoint;
 class CbmStsSensorType;
-
-using std::vector;
-
 
 /** @class CbmStsSensor
  ** @brief Class representing an instance of a sensor in the CBM-STS.
@@ -82,7 +78,7 @@ class CbmStsSensor : public CbmStsElement
      ** @param hitArray  TClonesArray to store the hits in
      ** @return Number of created hits
      **/
-    Int_t FindHits(vector<CbmStsCluster*>& clusters,
+    Int_t FindHits(std::vector<CbmStsCluster*>& clusters,
     		           TClonesArray* hitArray, Double_t dTime);
 
 

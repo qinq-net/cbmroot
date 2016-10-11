@@ -22,8 +22,6 @@ class TVector3;
 class CbmTrdHit;
 class CbmTrdRadiator;
 
-using std::vector;
-
 /**
  * \class CbmTrdHitProducerSmearing
  * \brief Smearing hit producer for TRD.
@@ -66,8 +64,8 @@ public:
    virtual void Finish();
 
    /* Setters */
-   void SetSigmaX(const vector<Double_t>& sigmaX) { fSigmaX = sigmaX; }
-   void SetSigmaY(const vector<vector<Double_t> >& sigmaY) { fSigmaY = sigmaY; }
+   void SetSigmaX(const std::vector<Double_t>& sigmaX) { fSigmaX = sigmaX; }
+   void SetSigmaY(const std::vector<std::vector<Double_t> >& sigmaY) { fSigmaY = sigmaY; }
    void SetEfficency(Double_t eff) { fEfficency = eff; }
    void SetHitMergingDistance(Double_t dist) { fHitMergingDistance = dist; }
    void SetGhostRate(Double_t ghost) { fGhostRate = ghost; }
@@ -105,7 +103,7 @@ private:
     * \param[in,out] Array of hits for merging.
     */
    void MergeHits(
-         vector<CbmTrdHit*>& hits);
+         std::vector<CbmTrdHit*>& hits);
 
    /**
     * \brief Return sigma error.
@@ -136,8 +134,8 @@ private:
    CbmTrdModule* fModuleInfo; //! TRD module information
    CbmTrdRadiator* fRadiator; //!
 
-   vector<Double_t> fSigmaX; //! Errors for X coordinate
-   vector<vector<Double_t> > fSigmaY; //! Errors for Y coordinate
+   std::vector<Double_t> fSigmaX; //! Errors for X coordinate
+   std::vector<std::vector<Double_t> > fSigmaY; //! Errors for Y coordinate
    Double_t fEfficency; //! Hit finding efficiency (0-1)
    Double_t fHitMergingDistance; //! Minimum distance between hit which can be separated [cm]. corresponds to 2 pad width dimensions. if == 0 all hits can be separted
    Double_t fGhostRate; //! Rate to produce ghost hits per real hit

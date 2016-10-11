@@ -10,6 +10,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 #include "TStopwatch.h"
 #include "FairTask.h"
 #include "CbmStsDigi.h"
@@ -19,10 +20,6 @@
 class TClonesArray;
 class CbmStsSetup;
 class CbmStsClusterFinderSimple;
-
-using std::map;
-
-
 
 /** @class CbmStsFindClusters
  ** @brief Task class for finding STS clusters
@@ -125,7 +122,7 @@ class CbmStsFindClusters : public FairTask
     Int_t         fELossModel;        ///< Energy loss model, to take propely into position error
     
     CbmTimeSlice* fTimeSlice;         ///< Time slice object in the DAQ approach
-    vector<CbmStsDigi> fDigiData;     ///< Vector of digis for the time slices
+    std::vector<CbmStsDigi> fDigiData;     ///< Vector of digis for the time slices
     Bool_t fDaq;                      ///< Using DAQ
     Bool_t fUseFinderTb;              ///< Using of time based cluster finder
     Double_t fDeadTime;               ///< Dead time for time-based cluster finder
@@ -148,7 +145,7 @@ class CbmStsFindClusters : public FairTask
     std::set<CbmStsModule*> fActiveModules;
 
     /** Map from module address to map of digis in channels **/
-//    map<CbmStsModule*, map<Int_t, CbmStsDigi*> > fDigiMap;
+//    std::map<CbmStsModule*, std::map<Int_t, CbmStsDigi*> > fDigiMap;
 
     /** Sort digis into module digi maps
      ** @return Number of digis sorted

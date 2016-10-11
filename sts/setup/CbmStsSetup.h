@@ -13,6 +13,8 @@
 #include "setup/CbmStsElement.h"
 #include "setup/CbmStsStation.h"
 
+#include <vector>
+
 class TGeoManager;
 class CbmStsDigitize;
 
@@ -154,8 +156,8 @@ class CbmStsSetup : public CbmStsElement
     static const TString fgkLevelName[kStsNofLevels];  ///< Level names
 
     /** These arrays allow convenient loops over all modules or sensors. **/
-    vector<CbmStsModule*> fModules;   ///< Array of modules
-    vector<CbmStsSensor*> fSensors;   ///< Array of sensors
+    std::vector<CbmStsModule*> fModules;   ///< Array of modules
+    std::vector<CbmStsSensor*> fSensors;   ///< Array of sensors
 
     /** Available sensor types **/
     std::map<Int_t, CbmStsSensorType*> fSensorTypes;

@@ -5,7 +5,6 @@
 
 #include "TH1F.h"
 #include <vector>
-using std::vector;
 
 class TClonesArray;
 
@@ -39,7 +38,7 @@ class CbmFiberHodoBLCalibrator : public FairTask
     /** Input array from previous already existing data level **/
     TClonesArray* fBaselineDigis;
 
-    vector< vector < vector < TH1F * > > > fBaselines;
+    std::vector< std::vector < std::vector < TH1F * > > > fBaselines;
 
     static Double_t GetBlPos( TH1F * hist );
 

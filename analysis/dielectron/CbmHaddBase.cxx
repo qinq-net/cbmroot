@@ -11,6 +11,10 @@
 #include "CbmHaddBase.h"
 #include "CbmHaddBase.h"
 
+using std::cout;
+using std::endl;
+using std::string;
+using std::stringstream;
 
 ClassImp(CbmHaddBase);
 

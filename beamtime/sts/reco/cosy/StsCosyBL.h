@@ -8,7 +8,6 @@
 #include "CbmFiberHodoAddress.h"
 #include "CbmFiberHodoDigi.h"
 
-using std::vector;
 class TClonesArray;
 
 class StsCosyBL : public FairTask
@@ -47,8 +46,8 @@ class StsCosyBL : public FairTask
     //    virtual Int_t AddFile( const char* name ); 
     void BLInit();
     void BLClean();
-    void BaseLine(TClonesArray* fBaselineDigis,     vector< vector < vector < double> > > base_line_array);
-    void HodoBaseLine(TClonesArray* fBaselineDigis, vector< vector < vector < double> > > base_line);
+    void BaseLine(TClonesArray* fBaselineDigis,     std::vector< std::vector < std::vector < double> > > base_line_array);
+    void HodoBaseLine(TClonesArray* fBaselineDigis, std::vector< std::vector < std::vector < double> > > base_line);
 
     void SetTriggeredMode(Bool_t mode) { fTriggeredMode = mode; }
     void SetTriggeredStation(Int_t station) { fTriggeredStation = station ; }
@@ -90,8 +89,8 @@ class StsCosyBL : public FairTask
     Int_t  fTriggeredStation;
     Int_t  fNofEvent;
 
-    vector< vector < vector < double> > > base_line_array;
-    vector< vector < vector < double> > > hodo_BL_array;
+    std::vector< std::vector < std::vector < double> > > base_line_array;
+    std::vector< std::vector < std::vector < double> > > hodo_BL_array;
     /** Input array from previous already existing data level **/
     //  TClonesArray* <InputDataLevel>;
 

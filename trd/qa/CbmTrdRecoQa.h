@@ -23,10 +23,8 @@
 #include "FairTask.h"
 
 #include <map>
-using std::map;
 
 #include <vector>
-using std::vector;
 
 class CbmTrdDigiPar;
 class CbmTrdModule;

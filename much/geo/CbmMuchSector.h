@@ -16,7 +16,6 @@
 #include <vector>
 class CbmMuchPad;
 
-using std::vector;
 
 class CbmMuchSector{
 public:
@@ -33,7 +32,7 @@ public:
 protected:
   UInt_t     fAddress;       //  Sector address
   Int_t      fNChannels;     //  Number of channels
-  vector<CbmMuchPad*> fPads; //! Vector of pads
+  std::vector<CbmMuchPad*> fPads; //! Vector of pads
 
   ClassDef(CbmMuchSector,2);
 

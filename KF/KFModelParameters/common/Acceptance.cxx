@@ -2,6 +2,8 @@
 #include "TString.h"
 #include <fstream>
 
+using std::ifstream;
+
 int Acceptance::ReadAcceptanceFunction(Acceptance::AcceptanceFunction & func, TString filename)
 {
   double ymin = 0., ymax = 6.;

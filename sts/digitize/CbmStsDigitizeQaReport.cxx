@@ -18,6 +18,7 @@
 using std::vector;
 using std::endl;
 using std::stringstream;
+using std::string;
 using boost::assign::list_of;
 using Cbm::NumberToString;
 using Cbm::Split;

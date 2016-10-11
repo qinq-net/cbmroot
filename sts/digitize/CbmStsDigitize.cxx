@@ -50,6 +50,7 @@ using std::fixed;
 using std::right;
 using std::setprecision;
 using std::setw;
+using std::string;
 
 // -----   Static member variables   ---------------------------------------
 // The default setting is the fully realistic response.

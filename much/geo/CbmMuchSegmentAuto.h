@@ -22,8 +22,6 @@ class CbmMuchModuleGem;
 class CbmMuchSectorRectangular;
 class TH1D;
 
-using std::vector;
-
 class CbmMuchSegmentAuto : public FairTask{
  public:
 
@@ -55,14 +53,14 @@ class CbmMuchSegmentAuto : public FairTask{
 
   TString           fDigiFileName;          // Digitization file
   CbmGeoMuchPar*    fGeoPar;                // Geometry parameters container
-  vector<Double_t>  fExp0;                  // Fit parameters for EXP distribution for each station
-  vector<Double_t>  fExp1;                  // Fit parameters for EXP distribution for each station
+  std::vector<Double_t>  fExp0;                  // Fit parameters for EXP distribution for each station
+  std::vector<Double_t>  fExp1;                  // Fit parameters for EXP distribution for each station
 
-  vector<Double_t>   fSigmaXmin;        // Minimum sigma in X [mm]
-  vector<Double_t>   fSigmaYmin;        // Minimum sigma in Y [mm]
-  vector<Double_t>   fSigmaXmax;        // Maximum sigma in X [mm]
-  vector<Double_t>   fSigmaYmax;        // Maximum sigma in Y [mm]
-  vector<Double_t>   fOccupancyMax;     // Maximum occupancy
+  std::vector<Double_t>   fSigmaXmin;        // Minimum sigma in X [mm]
+  std::vector<Double_t>   fSigmaYmin;        // Minimum sigma in Y [mm]
+  std::vector<Double_t>   fSigmaXmax;        // Maximum sigma in X [mm]
+  std::vector<Double_t>   fSigmaYmax;        // Maximum sigma in Y [mm]
+  std::vector<Double_t>   fOccupancyMax;     // Maximum occupancy
 
   /** Get parameter containers **/
   virtual void SetParContainers();

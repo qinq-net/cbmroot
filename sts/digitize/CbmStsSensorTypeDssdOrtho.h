@@ -6,18 +6,10 @@
 #ifndef CBMSTSSENSORTYPEDSSDORTHO_H
 #define CBMSTSSENSORTYPEDSSDORTHO_H 1
 
-#include <vector>
-#include <string>
 #include "TArrayD.h"
 #include "CbmStsSensorTypeDssd.h"
 
 class CbmStsPhysics;
-
-
-using std::vector;
-using std::string;
-
-
 
 /** @class CbmStsSensorTypeDssdOrtho
  ** @brief Class describing double-sided silicon strip sensors with orthogonal strips.

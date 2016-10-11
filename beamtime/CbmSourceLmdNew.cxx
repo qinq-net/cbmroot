@@ -26,6 +26,10 @@
 #include <iomanip>
 
 using std::map;
+using std::setprecision;
+using std::setw;
+using std::fixed;
+using std::right;
 
 CbmSourceLmdNew::CbmSourceLmdNew()
   : FairSource(),

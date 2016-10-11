@@ -30,6 +30,7 @@
 using std::make_pair;
 using std::max;
 using std::fabs;
+using std::pair;
 
 const Double_t CbmTrdDigitizerPRF_TB::fDetectorDeadTime = 230.;
 

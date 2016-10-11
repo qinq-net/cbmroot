@@ -7,6 +7,8 @@
 #include <boost/assign/list_of.hpp>
 
 using boost::assign::list_of;
+using std::string;
+using std::vector;
 
 const vector<string> CbmLmvmHist::fSourceTypes =
       list_of("signal")("bg")("pi0")("gamma");

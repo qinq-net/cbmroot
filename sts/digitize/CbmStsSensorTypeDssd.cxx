@@ -25,8 +25,8 @@
 using std::fixed;
 using std::setprecision;
 using std::stringstream;
-
-
+using std::string;
+using std::vector;
 
 // -----   Constructor   ---------------------------------------------------
 CbmStsSensorTypeDssd::CbmStsSensorTypeDssd()

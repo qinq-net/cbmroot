@@ -20,11 +20,7 @@
 
 using std::cout;
 using std::endl;
-
-
-
-
-
+using std::vector;
 
 StsCosyAnalysis::StsCosyAnalysis() :
   FairTask("StsCosyAnalysis",1),

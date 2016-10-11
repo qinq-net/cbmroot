@@ -45,8 +45,6 @@ int clock_gettime(int clk_id, struct timespec *t){
 #define NOF_SIGMAS_SQ NOF_SIGMAS * NOF_SIGMAS
 #define TIME_ERROR 4
 
-using namespace std;
-
 extern Double_t speedOfLight;
 
 struct LxTbBinnedPoint;
