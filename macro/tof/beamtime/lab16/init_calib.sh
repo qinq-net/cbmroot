@@ -111,7 +111,7 @@ while [[ $nIter > 0 ]]; do
 echo "start from scratch with $nIter iterations"
 
 # ------------------ Starting 1st for Loop ------------------ #
-if((0)); then
+if((1)); then
 # echo "starting first loop with $nIter iterations"
 # inOpt = 'nEvents, calMode, calSel, calSm, RefSel'
 	
@@ -182,39 +182,42 @@ if((1)); then
 		#echo `expr index $inOpt , ` = $i1
 		cMode=${inOpt:$i1:2}
 		cSel=${inOpt:$i2:1}
+		
 		echo "Next iteration: cMode=$cMode, cSel=$cSel" in directory `pwd`
 		if [[ ${cSel} = "-" ]];then 
 			cSel=${inOpt:$i2:2}
 			echo cSel=$cSel 
 			cSel="0"
 		fi
+		
 		#copy calibration file 
 		if (($iStep > $iRestart)) ; then 
-		cp -v ../Init${iStepLast}/tofTestBeamClust_${cRun}_set${iCalSet}.hst.root ${cRun}_set${iCalSet}_${cMode}_${cSel}tofTestBeamClust.hst.root
+			cp -v ../Init${iStepLast}/tofTestBeamClust_${cRun}_set${iCalSet}.hst.root ${cRun}_set${iCalSet}_${cMode}_${cSel}tofTestBeamClust.hst.root
 		fi
-	fi 
+		
+	fi #end-if(${lastOpt:+1})
 
 	lastOpt=$inOpt
 
-        if (($iStep > $iRestart)) ; then 
-	# generate new calibration file
-	# void ana_digi_cal(nEvents,calMode,calSel,calSm,RefSel,cFileId,iSet,iBRef)
-	root -b -q '../../ana_digi_cal.C('$inOpt',"'${cRun}'",'${iCalSet}','${iBRef}') '
+   if (($iStep > $iRestart)) ; then 
+		# generate new calibration file
+		# void ana_digi_cal(nEvents,calMode,calSel,calSm,RefSel,cFileId,iSet,iBRef)
+		root -b -q '../../ana_digi_cal.C('$inOpt',"'${cRun}'",'${iCalSet}','${iBRef}') '
 
-
-	cp -v tofTestBeamClust_${cRun}_set${iCalSet}.hst.root ../${cRun}_set${iCalSet}_${cMode}_${cSel}tofTestBeamClust.hst.root
-	cp *pdf ../
-	rm all_*
-	#./screenshot.sh
-	cd .. 
-	rm ../${cRun}_set${iCalSet}_${cMode}_${cSel}tofTestBeamClust.hst.root
-	ln -s ./${cRun}/${cRun}_set${iCalSet}_${cMode}_${cSel}tofTestBeamClust.hst.root ../${cRun}_set${iCalSet}_${cMode}_${cSel}tofTestBeamClust.hst.root
-        echo Init step $iStep with mode ${cMode}, option $inOpt  finished
+		cp -v tofTestBeamClust_${cRun}_set${iCalSet}.hst.root ../${cRun}_set${iCalSet}_${cMode}_${cSel}tofTestBeamClust.hst.root
+		cp *pdf ../
+		rm all_*
+		#./screenshot.sh
+		cd .. 
+		rm ../${cRun}_set${iCalSet}_${cMode}_${cSel}tofTestBeamClust.hst.root
+		ln -s ./${cRun}/${cRun}_set${iCalSet}_${cMode}_${cSel}tofTestBeamClust.hst.root ../${cRun}_set${iCalSet}_${cMode}_${cSel}tofTestBeamClust.hst.root
+   	echo Init step $iStep with mode ${cMode}, option $inOpt  finished
+	
 	else 
-        cd ..
-        echo Init step $iStep with mode ${cMode}, option $inOpt  skipped
-	fi
-
+      cd ..
+      echo Init step $iStep with mode ${cMode}, option $inOpt  skipped
+	fi #end-if($iStep > $iRestart)
+	
 	done # end for-loop
 fi # end if((1))
 
