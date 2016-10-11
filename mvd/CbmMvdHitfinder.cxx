@@ -33,7 +33,8 @@ CbmMvdHitfinder::CbmMvdHitfinder()
     fHitfinderPluginNr(0),
     useClusterfinder(kFALSE),
     fShowDebugHistos(kFALSE),
-    fTimer()
+    fTimer(),
+    fmode(-1)
 {
 }
 // -------------------------------------------------------------------------
@@ -48,7 +49,8 @@ CbmMvdHitfinder::CbmMvdHitfinder(const char* name, Int_t iVerbose)
     fHitfinderPluginNr(0),
     useClusterfinder(kFALSE),
     fShowDebugHistos(kFALSE),
-    fTimer()
+    fTimer(),
+    fmode(-1)
 {
 }
 // -------------------------------------------------------------------------
@@ -63,9 +65,10 @@ CbmMvdHitfinder::CbmMvdHitfinder(const char* name, Int_t mode, Int_t iVerbose)
     fHitfinderPluginNr(0),
     useClusterfinder(kFALSE),
     fShowDebugHistos(kFALSE),
-    fTimer()
+    fTimer(),
+    fmode(mode)
 {
-    fmode = mode;
+//    fmode = mode;
 }
 // -------------------------------------------------------------------------
 
