@@ -255,7 +255,7 @@ void PairAnalysisStyler::Style(TObject *obj, Int_t idx) {
   //
   // style object according to index
   //
-  Int_t id=0;
+//  Int_t id=0;
   if(!obj) return;
 
   // axis attributes
@@ -444,7 +444,7 @@ void PairAnalysisStyler::SetLegendAttributes(TLegend *leg, Bool_t fill)
   Double_t maxhgth   = 0.0;
   Double_t symblwdth = 0.065; //ndc
   Double_t txtsze    = 0.04; //0.025; //gStyle->GetLegendTextSize());
-  Double_t charwdth  = 0.01;//0.01; // own defintion
+//  Double_t charwdth  = 0.01;//0.01; // own defintion
   Double_t entrysep  = 1.25;//1.25;  //entry seperation
 
   // calculate get legend width

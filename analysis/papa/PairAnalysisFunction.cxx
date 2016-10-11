@@ -79,10 +79,10 @@ PairAnalysisFunction::PairAnalysisFunction(const char* name, const char* title) 
 //______________________________________________
 PairAnalysisFunction::PairAnalysisFunction(const PairAnalysisFunction &c) :
   TNamed(c.GetName(), c.GetTitle()),
-  fPOIpdg(c.GetParticleOfInterest()),
   fFitMin(c.GetFitMin()),
-  fFitMax(c.GetFitMax())
-{
+  fFitMax(c.GetFitMax()),
+   fPOIpdg(c.GetParticleOfInterest())
+ {
   //
   // Copy Constructor
   //

@@ -467,7 +467,7 @@ TClonesArray *PairAnalysisEvent::GetCluster(DetectorId det) const {
 }
 
 //______________________________________________
-void PairAnalysisEvent::Clear(Option_t *opt)
+void PairAnalysisEvent::Clear(Option_t* /*opt*/)
 {
   //
   // clear arrays

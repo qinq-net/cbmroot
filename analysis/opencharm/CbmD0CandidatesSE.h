@@ -86,6 +86,8 @@ private:
     void     GetAP( TVector3 &mom1, TVector3 &mom2, Double_t Qp, Double_t &alpha, Double_t &ptt );
     void     FillBuffer( CbmMapsFileManager* BackgroundFile, TObjArray* BackgroundArray );
 
+    // Implemented to avoid warnings
+    void     FillBuffer(char *&) {;}
 
     //Double_t BoostMomentum( TVector3& mom1, TVector3& mom2, CbmD0TrackCandidate* tr1, CbmD0TrackCandidate* tr2 );
     //Double_t GetEnergy1(CbmD0TrackCandidate* tr1);

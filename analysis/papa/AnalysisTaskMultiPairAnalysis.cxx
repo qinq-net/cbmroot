@@ -185,7 +185,7 @@ void AnalysisTaskMultiPairAnalysis::Exec(Option_t*)
   //Fill Event histograms before the event filter for all instances
   TIter nextDie(&fListPairAnalysis);
   PairAnalysis *papa=0;
-  Bool_t hasMC=kFALSE;//TODO:PairAnalysisMC::Instance()->HasMC();
+//  Bool_t hasMC=kFALSE;//TODO:PairAnalysisMC::Instance()->HasMC();
   while ( (papa=static_cast<PairAnalysis*>(nextDie())) ){
     PairAnalysisHistos *h=papa->GetHistoManager();
     if (h) {

@@ -205,7 +205,7 @@ void CbmAnaMuchJpsiPolarization::Exec(Option_t* /*opt*/){
   if (muPlusAccepted==1 && muMinusAccepted==0) fhJpsiAccYPtCost->Fill(yMC,ptMC,costMC);
   
   for (Int_t iTrack=0;iTrack<nStsTracks;iTrack++){
-    CbmStsTrack*   stsTrack      = (CbmStsTrack*) fStsTracks->At(iTrack);
+//    CbmStsTrack*   stsTrack      = (CbmStsTrack*) fStsTracks->At(iTrack);
     CbmTrackMatch* stsTrackMatch = (CbmTrackMatch*) fStsTrackMatches->At(iTrack);
     Int_t trackId = CbmAnaMuch::GetTrackId(stsTrackMatch,fStsTrueHitQuota);
     mapRecSts[trackId]=iTrack;

@@ -70,7 +70,7 @@ CbmAnaMuch::CbmAnaMuch()
 
 
 // -----   Standard constructor   ------------------------------------------
-CbmAnaMuch::CbmAnaMuch(const char* name, TString digiFileName, TString histoFileName)
+CbmAnaMuch::CbmAnaMuch(const char* name, TString /*digiFileName*/, TString /*histoFileName*/)
   : FairTask(name),
     fDigiFileName(""),
     fGeoScheme(CbmMuchGeoScheme::Instance()),
@@ -210,7 +210,7 @@ void CbmAnaMuch::Exec(Option_t* /*opt*/){
   }
   
   for (Int_t iTrack=0;iTrack<nStsTracks;iTrack++){
-    CbmStsTrack*   stsTrack      = (CbmStsTrack*) fStsTracks->At(iTrack);
+//    CbmStsTrack*   stsTrack      = (CbmStsTrack*) fStsTracks->At(iTrack);
     CbmTrackMatch* stsTrackMatch = (CbmTrackMatch*) fStsTrackMatches->At(iTrack);
 //    Int_t mcTrackID = stsTrackMatch->GetMCTrackId();
 //    Int_t trueHits  = stsTrackMatch->GetNofTrueHits();
@@ -289,7 +289,7 @@ void CbmAnaMuch::Exec(Option_t* /*opt*/){
     Int_t nReconstructedMuons=0;
     if (fVerbose>2) printf("Track matches: \n");
     for (Int_t iTrack=0;iTrack<nMuchTracks;iTrack++){
-      CbmMuchTrack*  muchTrack      = (CbmMuchTrack*) fMuchTracks->At(iTrack);
+//      CbmMuchTrack*  muchTrack      = (CbmMuchTrack*) fMuchTracks->At(iTrack);
       CbmTrackMatch* muchTrackMatch = (CbmTrackMatch*) fMuchTrackMatches->At(iTrack);
       Int_t mcTrackID = muchTrackMatch->GetMCTrackId();
       Int_t trueHits  = muchTrackMatch->GetNofTrueHits();
@@ -448,8 +448,8 @@ Bool_t CbmAnaMuch::IsReconstructed(CbmMuchTrack* track){
   Int_t nStations = fGeoScheme->GetNStations();
   Int_t nTriggerLayers = fGeoScheme->GetStation(nStations-1)->GetNLayers();
   Int_t nHits = track->GetNofHits();
-  Int_t* triggerPlaneId = new Int_t[nTriggerLayers];
-  Int_t* triggeredPlanes = new Int_t[nTriggerLayers];
+//  Int_t* triggerPlaneId = new Int_t[nTriggerLayers];
+//  Int_t* triggeredPlanes = new Int_t[nTriggerLayers];
   Int_t* hitsInStations = new Int_t[nStations];
   Int_t* layersInStations = new Int_t[nStations];
   

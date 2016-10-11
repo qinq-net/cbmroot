@@ -329,7 +329,7 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(EDefinedSignal defaultSignal) :
 
 }
 
-void PairAnalysisSignalMC::Print(Option_t * option) const
+void PairAnalysisSignalMC::Print(Option_t* /*option*/) const
 {
   //
   //

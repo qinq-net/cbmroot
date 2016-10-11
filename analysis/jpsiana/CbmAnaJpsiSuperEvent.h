@@ -67,7 +67,7 @@ private:
 
 	void DoSuperEvent();
 
-	void Draw();
+	void Draw(Option_t* ="");
 
         CbmAnaJpsiSuperEvent (const CbmAnaJpsiSuperEvent&);
         CbmAnaJpsiSuperEvent operator=(const CbmAnaJpsiSuperEvent&);

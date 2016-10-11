@@ -182,7 +182,7 @@ class CbmAnaFlow : public FairTask
 	Double_t Range(Double_t phi);         // shift angle modulo 2pi in proper range (here: [-pi, pi])
         Double_t Range2nd(Double_t phi);      // shift angle modulo pi in proper range (here: [-pi/2, pi/2])
 
-	void Write();
+	void WriteOutFile();
 	void Finish();
 
     private:

@@ -45,7 +45,7 @@ public:
   void ResetMetaData()                 { fMetaList.Clear(); }
   const TList* GetMetaData() const { return &fMetaList; }
 
-  TObject* FindObject(const char *name) { return fMetaList.FindObject(name); }
+  TObject* FindObject(const char *name) const { return fMetaList.FindObject(name); }
 
   void DrawSame(TString opt="msb");
 

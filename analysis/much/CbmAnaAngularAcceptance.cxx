@@ -121,7 +121,7 @@ void CbmAnaAngularAcceptance::Exec(Option_t* /*opt*/){
     // get info
     Int_t nAccStsPoints  = mcTrack->GetNPoints(kSTS);
     Int_t nAccMuchPoints = mcTrack->GetNPoints(kMUCH);
-    Int_t pdgCode = mcTrack->GetPdgCode();
+//    Int_t pdgCode = mcTrack->GetPdgCode();
     TLorentzVector pMC;
     mcTrack->Get4Momentum(pMC);
     // set muon momentum and MC track reference

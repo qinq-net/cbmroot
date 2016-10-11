@@ -83,7 +83,7 @@ void PairAnalysisMixingHandler::AddVariable(PairAnalysisVarManager::ValueTypes t
 }
 
 //______________________________________________
-void PairAnalysisMixingHandler::Fill(const PairAnalysisEvent *ev, PairAnalysis *papa)
+void PairAnalysisMixingHandler::Fill(const PairAnalysisEvent* /*ev*/, PairAnalysis *papa)
 {
   //
   // fill event buffers and perform mixing if the pool depth is reached

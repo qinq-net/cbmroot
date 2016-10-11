@@ -67,9 +67,8 @@ CbmD0CandidateSelection::CbmD0CandidateSelection()
      fMF(),
      bTestMode(),
      f_particleIsMCD0(),
-     fcutSVZ(),
-     fcutIPD0()
-
+     fcutIPD0(),
+     fcutSVZ()
 {
     
 Fatal( "CbmD0Candidates: Do not use the standard constructor","Wrong constructor");
@@ -79,8 +78,8 @@ Fatal( "CbmD0Candidates: Do not use the standard constructor","Wrong constructor
 
 // -------------------------------------------------------------------------
 CbmD0CandidateSelection::CbmD0CandidateSelection(char* name, Int_t iVerbose, Double_t cutIPD0, Double_t cutSVZ)
-    :FairTask(),
-     fEventNumber(),
+  :FairTask(name, iVerbose),
+     fEventNumber(0),
      fKaonParticleArray(),
      fPionParticleArray(),
      fKaonTrackArray(),
@@ -99,16 +98,17 @@ CbmD0CandidateSelection::CbmD0CandidateSelection(char* name, Int_t iVerbose, Dou
      fvtx(),
      tools(),
      fMF(),
-     bTestMode(),
+     bTestMode(kFALSE),
      f_particleIsMCD0(),
-     fcutSVZ(),
-     fcutIPD0()
-
+     fcutIPD0(cutIPD0),
+     fcutSVZ(cutSVZ)
 {
+  /*
 fEventNumber = 0;
 fcutIPD0 = cutIPD0;
 fcutSVZ  = cutSVZ;
 bTestMode = kFALSE;
+  */
 }
 // -------------------------------------------------------------------------
 
@@ -156,10 +156,10 @@ InitStatus CbmD0CandidateSelection::Init() {
 
 
  // -------------------------------------------------------------------------
-void CbmD0CandidateSelection::Exec(Option_t* option){
+void CbmD0CandidateSelection::Exec(Option_t* /*option*/){
 
     fEventNumber++;
-    Int_t D0counter;
+    //    Int_t D0counter;
     f_particleIsMCD0 = kFALSE;
     Int_t nAcceptedD0 = 0;
     Int_t crossCheck=0;

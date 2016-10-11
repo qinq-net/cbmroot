@@ -164,7 +164,7 @@ void PairAnalysisPairLV::GetThetaPhiCM(Double_t &thetaHE, Double_t &phiHE, Doubl
 
 
 //______________________________________________
-Double_t PairAnalysisPairLV::PsiPair(Double_t MagField) const
+Double_t PairAnalysisPairLV::PsiPair(Double_t /*MagField*/) const
 {
   //Following idea to use opening of colinear pairs in magnetic field from e.g. PHENIX
   //to ID conversions. Adapted from AliTRDv0Info class
@@ -190,7 +190,7 @@ Double_t PairAnalysisPairLV::PsiPair(Double_t MagField) const
   deltat = TMath::ATan(m2[2]/(TMath::Sqrt(m2[0]*m2[0] + m2[1]*m2[1])+1.e-13))-
     TMath::ATan(m1[2]/(TMath::Sqrt(m1[0]*m1[0] + m1[1]*m1[1])+1.e-13));
 
-  Double_t radiussum = TMath::Sqrt(x*x + y*y) + 50;//radius to which tracks shall be propagated
+//  Double_t radiussum = TMath::Sqrt(x*x + y*y) + 50;//radius to which tracks shall be propagated
 
   Double_t mom1Prop[3]={0.,0.,0.};
   Double_t mom2Prop[3]={0.,0.,0.};

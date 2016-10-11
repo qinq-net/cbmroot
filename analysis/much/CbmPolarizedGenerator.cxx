@@ -3,9 +3,12 @@
 // -----          Created 11/09/09  by E. Kryshen                      -----
 // -------------------------------------------------------------------------
 
-#include "TRandom.h"
 #include "CbmPolarizedGenerator.h"
+
 #include "FairPrimaryGenerator.h"
+#include "FairLogger.h"
+
+#include "TRandom.h"
 #include "TParticlePDG.h"
 #include "TDatabasePDG.h"
 #include "TF1.h"
@@ -119,11 +122,13 @@ Bool_t CbmPolarizedGenerator::GenerateDaughters(
     TVector3 pMother, FairPrimaryGenerator* primGen)
 {
   
-  TParticlePDG* part; 
+  TParticlePDG* part=NULL; 
   if     (fDecayMode==kDiMuon)     part = TDatabasePDG::Instance()->GetParticle("mu+"); 
   else if(fDecayMode==kDiElectron) part = TDatabasePDG::Instance()->GetParticle("e+");
-  else Fatal("GenerateDaughters","Polarized dilepton decay only implemented\n");
-  
+  else {
+     LOG(FATAL) << "Polarized dilepton decay only implemented" << FairLogger::endl;
+  }
+
   // energies and momenta in dilepton rest frame
   Double_t m = part->Mass();
   Double_t e = fPDGMass/2.;

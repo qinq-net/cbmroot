@@ -84,7 +84,8 @@ void PairAnalysisMixedEvent::SetTracks(const TObjArray &arrP, const TObjArray &a
     if (!track) continue;
 
     // buffer track
-    PairAnalysisTrack   *ctrack = new (fArrTrackP[tracks]) PairAnalysisTrack(*track);
+//    PairAnalysisTrack   *ctrack = new (fArrTrackP[tracks]) PairAnalysisTrack(*track);
+    new (fArrTrackP[tracks]) PairAnalysisTrack(*track);
 
     ++tracks;
   }
@@ -96,7 +97,8 @@ void PairAnalysisMixedEvent::SetTracks(const TObjArray &arrP, const TObjArray &a
     if (!track) continue;
 
     //buffer track
-    PairAnalysisTrack   *ctrack = new (fArrTrackN[tracks]) PairAnalysisTrack(*track);
+//    PairAnalysisTrack   *ctrack = new (fArrTrackN[tracks]) PairAnalysisTrack(*track);
+    new (fArrTrackN[tracks]) PairAnalysisTrack(*track);
 
     ++tracks;
   }

@@ -78,6 +78,11 @@ public:
   // Spectrum
   virtual void Draw(const char* varexp, const char* selection="", Option_t* option="");
 
+  // implemented to remove compiler warnings
+  // void Draw(Option_t*) {;}
+  Int_t Write(const char*, Int_t, Int_t) {return -1;}
+  Int_t Write(const char*, Int_t, Int_t) const {return -1;}
+
   void Fit(TString drawoption="L");
 
   // Processing

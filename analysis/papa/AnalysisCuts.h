@@ -17,7 +17,7 @@ class AnalysisCuts : public TNamed
     AnalysisCuts(const AnalysisCuts& obj);
     AnalysisCuts& operator=(const AnalysisCuts& obj);
     virtual ~AnalysisCuts() {;}
-    virtual Bool_t IsSelected(Double_t * const values)  {return kFALSE;}
+    virtual Bool_t IsSelected(Double_t * const /*values*/)  {return kFALSE;}
     virtual Bool_t IsSelected(TObject* /* obj  */ )  {return kFALSE;}
     virtual Bool_t IsSelected(TList*   /* list */ ) = 0;
     virtual void   Init() {;}

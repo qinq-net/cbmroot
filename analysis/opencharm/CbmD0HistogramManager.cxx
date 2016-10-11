@@ -250,7 +250,7 @@ CbmD0HistogramManager::~CbmD0HistogramManager()
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
-void CbmD0HistogramManager::SetHistogramChois(TString group)
+void CbmD0HistogramManager::SetHistogramChois(TString /*group*/)
 {
 
 }
@@ -459,7 +459,7 @@ void CbmD0HistogramManager::Register()
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
-void CbmD0HistogramManager::Exec(Option_t* option = "")
+void CbmD0HistogramManager::Exec(Option_t*)
 {
     LOG(INFO)<<"Executing Event Nr "<<fEventNr << FairLogger::endl;
     fEventNr++;

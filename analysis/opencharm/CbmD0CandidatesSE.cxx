@@ -141,7 +141,7 @@ InitStatus CbmD0CandidatesSE::Init() {
     {
 	Fatal("List of mc Tracks are not available, but TestMode is enabled", "Check Track Selection");
     }
-    CbmKF* fKF = CbmKF::Instance();
+//    CbmKF* fKF = CbmKF::Instance();
 
     fvtx[0] = fPrimVtx->GetX();
     fvtx[1] = fPrimVtx->GetY();
@@ -176,11 +176,11 @@ void CbmD0CandidatesSE::FillBuffer( CbmMapsFileManager* BackgroundFile, TObjArra
 
 
 // -------------------------------------------------------------------------
-void CbmD0CandidatesSE::Exec(Option_t* option){
+void CbmD0CandidatesSE::Exec(Option_t* /*option*/){
   
     fEventNumber++;
     Int_t nAcceptedD0 = 0;
-    Bool_t f_particleIsMCD0;
+//    Bool_t f_particleIsMCD0;
     Int_t crossCheck = 0;
 
     cout << endl;

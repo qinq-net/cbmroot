@@ -510,7 +510,7 @@ void CbmAnaConversionTest::DoSTSonlyAnalysis()
 		vtxTrack_electron->Momentum(refittedMomentum_electron);
 		float result_chi_electron = chiPrim_electron[0];
 		//float result_ndf_electron = stsTracks_electron[0].GetNDF();
-		Double_t stsHits = stsTrack->GetNofHits();
+//		Double_t stsHits = stsTrack->GetNofHits();
 		
 		
 		fVector_AllMomenta.push_back(refittedMomentum_electron);
@@ -787,10 +787,10 @@ void CbmAnaConversionTest::CombinePhotons()
 				CbmMCTrack* mctrack21 = (CbmMCTrack*)fMcTracks->At(fVector_electronRICH_mcIndex[electron21]);
 				CbmMCTrack* mctrack22 = (CbmMCTrack*)fMcTracks->At(fVector_electronRICH_mcIndex[electron22]);
 					
-				Int_t pdg11 = mctrack11->GetPdgCode();	// pdg codes of four leptons
-				Int_t pdg12 = mctrack12->GetPdgCode();
-				Int_t pdg21 = mctrack21->GetPdgCode();
-				Int_t pdg22 = mctrack22->GetPdgCode();
+//				Int_t pdg11 = mctrack11->GetPdgCode();	// pdg codes of four leptons
+//				Int_t pdg12 = mctrack12->GetPdgCode();
+//				Int_t pdg21 = mctrack21->GetPdgCode();
+//				Int_t pdg22 = mctrack22->GetPdgCode();
 					
 				Int_t motherId11 = mctrack11->GetMotherId();	// motherIDs of four leptons
 				Int_t motherId12 = mctrack12->GetMotherId();

@@ -3284,7 +3284,7 @@ void CbmAnaFlow::CalcFlowCoef_phifit(TTree *&t, TString &ALLcut, Float_t* meanFl
     if ( fsel_factor == "2" ) param = 2;
 
     TH1F* h;
-    TF1* fFourier = new TF1("Fourier","[0] * ( 1 + 2*[1]*cos(x) + 2*[2]*cos(2*x) + 2*[3]*cos(3*x) + 2*[4]*cos(4*x) + 2*[5]*cos(5*x) )",-fPi, fPi);
+//    TF1* fFourier = new TF1("Fourier","[0] * ( 1 + 2*[1]*cos(x) + 2*[2]*cos(2*x) + 2*[3]*cos(3*x) + 2*[4]*cos(4*x) + 2*[5]*cos(5*x) )",-fPi, fPi);
     TF1* funct;
 
     N = (double) t->Draw("(fphi_to_" + fEP_meth + ")", ALLcut, "goff");
@@ -3430,7 +3430,7 @@ void CbmAnaFlow::CalcFlowCoef_phifit_1TreeLoop(Int_t &binX, Int_t &binY)
     hN_vs_y_pt->SetBinContent(binX, binY, N);
     hN_vs_y_pt->SetBinError(binX, binY, N_err);
 
-    TF1* fFourier = new TF1("Fourier","[0] * ( 1 + 2*[1]*cos(x) + 2*[2]*cos(2*x) + 2*[3]*cos(3*x) + 2*[4]*cos(4*x) + 2*[5]*cos(5*x) )",-fPi, fPi);
+//    TF1* fFourier = new TF1("Fourier","[0] * ( 1 + 2*[1]*cos(x) + 2*[2]*cos(2*x) + 2*[3]*cos(3*x) + 2*[4]*cos(4*x) + 2*[5]*cos(5*x) )",-fPi, fPi);
     TF1* funct;
 
     if (N != 0)
@@ -3635,7 +3635,7 @@ void CbmAnaFlow::Finish()
     Write(); 
 }
 
-void CbmAnaFlow::Write()
+void CbmAnaFlow::WriteOutFile()
 {
     if (fmode == 0 || fmode == 1 || fmode == 2)
     {

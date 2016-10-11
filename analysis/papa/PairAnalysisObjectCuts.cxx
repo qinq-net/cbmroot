@@ -170,9 +170,9 @@ Bool_t PairAnalysisObjectCuts::IsSelected(Double_t * const values)
 	      (fCutMax[iCut] && fCutMax[iCut]->IsA() == TSpline3::Class()) ) {
       /// TODO: think about poper implementation, how to store the x-variable in the spline
       /// use spline for the cut //
-      TSpline3 *splineN = static_cast<TSpline3*>(fCutMin[iCut]);
+//      TSpline3 *splineN = static_cast<TSpline3*>(fCutMin[iCut]);
       //      if(splineN)  cutMin   = splineN->Eval(xval);
-      TSpline3 *splineM = static_cast<TSpline3*>(fCutMax[iCut]);
+//      TSpline3 *splineM = static_cast<TSpline3*>(fCutMax[iCut]);
       //      if(splineM)  cutMax   = splineM->Eval(xval);
     }
     else {
@@ -359,7 +359,7 @@ void PairAnalysisObjectCuts::Print(const Option_t* /*option*/) const
     Bool_t bCutGraph  = (fCutMin[iCut] && fCutMin[iCut]->IsA() == TGraph::Class());
     Bool_t bCutForm   = (fCutMin[iCut] && fCutMin[iCut]->IsA() == TFormula::Class());
     Bool_t bCutHn     = (fCutMin[iCut] && fCutMin[iCut]->IsA() == THnBase::Class());
-    Bool_t bCutSpline = (fCutMin[iCut] && fCutMin[iCut]->IsA() == TSpline::Class());
+//    Bool_t bCutSpline = (fCutMin[iCut] && fCutMin[iCut]->IsA() == TSpline::Class());
 
     TString dep="";
     // HnBase

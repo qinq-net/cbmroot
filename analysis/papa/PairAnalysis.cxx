@@ -594,7 +594,7 @@ void PairAnalysis::FillHistogramsTracks(TObjArray **tracks)
 
 
 //________________________________________________________________
-void PairAnalysis::FillHistogramsMC(const PairAnalysisEvent *ev, PairAnalysisEvent *ev1)
+void PairAnalysis::FillHistogramsMC(const PairAnalysisEvent* /*ev*/, PairAnalysisEvent* /*ev1*/)
 {
   //
   // Fill Histogram information for MCEvents

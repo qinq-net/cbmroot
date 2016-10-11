@@ -102,7 +102,7 @@ public:
   const KFParticle& GetKFSecondDaughter() const { return fD2;   }
 
   // rotations
-  virtual void RotateTrack(PairAnalysisTrackRotator *rot) { return; }
+  virtual void RotateTrack(PairAnalysisTrackRotator* /*rot*/) { return; }
 
 
 private:

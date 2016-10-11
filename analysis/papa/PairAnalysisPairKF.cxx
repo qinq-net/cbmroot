@@ -195,7 +195,7 @@ void PairAnalysisPairKF::GetThetaPhiCM(Double_t &thetaHE, Double_t &phiHE, Doubl
 
 
 //______________________________________________
-Double_t PairAnalysisPairKF::PsiPair(Double_t MagField) const
+Double_t PairAnalysisPairKF::PsiPair(Double_t /*MagField*/) const
 {
   return 0.;/*
   //Following idea to use opening of colinear pairs in magnetic field from e.g. PHENIX

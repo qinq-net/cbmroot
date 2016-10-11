@@ -216,13 +216,13 @@ Int_t PairAnalysisMC::GetLabelMotherWithPdg(const PairAnalysisTrack *particle1, 
 }
 
 //____________________________________________________________
-void PairAnalysisMC::GetDaughters(const TObject *mother, CbmMCTrack* &d1, CbmMCTrack* &d2)
+void PairAnalysisMC::GetDaughters(const TObject* /*mother*/, CbmMCTrack* &d1, CbmMCTrack* &d2)
 {
   //
   // Get First two daughters of the mother
   // TODO: theres NO connection from mother to daughters
-  Int_t lblD1=-1;
-  Int_t lblD2=-1;
+//  Int_t lblD1=-1;
+//  Int_t lblD2=-1;
   d1=0;
   d2=0;
   if(!fMCArray) return;

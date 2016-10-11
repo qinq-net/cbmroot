@@ -36,7 +36,7 @@ public:
 	}
 
 
-	static Double_t CalcOpeningAngleCutAlt2(Double_t pt)
+	static Double_t CalcOpeningAngleCutAlt2(Double_t /*pt*/)
 	{
 		Double_t cut = 0;
 		cut = 1.8;
@@ -44,7 +44,7 @@ public:
 	}
 
 
-	static Double_t CalcOpeningAngleCutAlt3(Double_t pt)
+	static Double_t CalcOpeningAngleCutAlt3(Double_t /*pt*/)
 	{
 		Double_t cut = 0;
 		cut = 1.5;
@@ -86,7 +86,7 @@ public:
 	}
 
 
-	static Double_t CalcChiCutAlt1(Double_t pt)
+	static Double_t CalcChiCutAlt1(Double_t /*pt*/)
 	{
 		Double_t cut = 0;
 		cut = 3;
@@ -107,7 +107,7 @@ public:
 	}
 
 
-	static Double_t CalcChiCutAlt3(Double_t pt)
+	static Double_t CalcChiCutAlt3(Double_t /*pt*/)
 	{
 		Double_t cut = 0;
 		cut = 4;

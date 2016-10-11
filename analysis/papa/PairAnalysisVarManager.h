@@ -925,7 +925,7 @@ inline void PairAnalysisVarManager::FillVarMuchTrack(const CbmMuchTrack *track, 
   values[kMUCHHitsPixel]  = 0.;
   values[kMUCHHitsStraw]  = 0.;
   for (Int_t ihit=0; ihit < track->GetNofHits(); ihit++){
-    Int_t idx = track->GetHitIndex(ihit);
+//    Int_t idx = track->GetHitIndex(ihit);
       Int_t hitType = track->GetHitType(ihit);
       if      (hitType==kMUCHPIXELHIT) values[kMUCHHitsPixel]++;
       else if (hitType==kMUCHSTRAWHIT) values[kMUCHHitsStraw]++;

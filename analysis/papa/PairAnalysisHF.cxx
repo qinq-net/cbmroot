@@ -168,7 +168,7 @@ void PairAnalysisHF::ReadFromFile(const char* file, const char *task, const char
 }
 
 //______________________________________________
-void PairAnalysisHF::Fill(Int_t label1, Int_t label2, Int_t nSignal)
+void PairAnalysisHF::Fill(Int_t /*label1*/, Int_t /*label2*/, Int_t /*nSignal*/)
 {
   return; //TODO: OBSOLETE?
   /*
@@ -217,7 +217,7 @@ void PairAnalysisHF::Fill(Int_t label1, Int_t label2, Int_t nSignal)
   */
 }
 //______________________________________________
-void PairAnalysisHF::Fill(Int_t pairIndex, const PairAnalysisPair *particle)
+void PairAnalysisHF::Fill(Int_t /*pairIndex*/, const PairAnalysisPair* /*particle*/)
 {
   //
   // fill histograms for event, pair and daughter cuts and pair types
@@ -268,7 +268,8 @@ void PairAnalysisHF::Fill(Int_t pairIndex, const PairAnalysisPair *particle)
 }
 
 //______________________________________________
-void PairAnalysisHF::Fill(Int_t index, Double_t * const valuesPair, Double_t * const valuesLeg1, Double_t * const valuesLeg2)
+void PairAnalysisHF::Fill(Int_t /*index*/, Double_t* const /*valuesPair*/, 
+                          Double_t* const /*valuesLeg1*/, Double_t* const /*valuesLeg2*/)
 {
   //
   // main fill function using index and values as input

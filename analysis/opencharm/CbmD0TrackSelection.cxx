@@ -50,84 +50,87 @@ using namespace std;
 // -------------------------------------------------------------------------
 CbmD0TrackSelection::CbmD0TrackSelection()
  : FairTask(),
-   fNHitsOfLongTracks(),
-   fEventNumber(),
-   fMcPoints(),
-   fStsTrackArray(),
-   fGlobalTracks(),
-   fTrdTracks(),
-   fTofHits(),
-   fRichRings(),
-   fListMCTracks(),
-   fStsTrackArrayP(),
-   fStsTrackArrayN(),
-   fMCTrackArrayP(),
-   fMCTrackArrayN(),
-   fStsTrackMatches(),
-   fKaonParticleArray(),
-   fPionParticleArray(),
-   fMvdHitMatchArray(),
-   fKFParticleArray(),
-   kfpInterface(),
-   fPidMode(),
-    fFit(),
-   fPrimVtx(),
-   bUseMCInfo(),
-   fPVCutPassed(),
-   fPVCutNotPassed(),
-   fNoHPassed(),
-   fNoHNotPassed(),
-    fCutPt(),
-    fCutP(),
-    fCutChi2(),
-    fCutIP(),
-    fField(),
-  fD0KaonTrackArray(),
-  fD0PionTrackArray()
+   fNHitsOfLongTracks(1),
+   fEventNumber(0),
+   fMcPoints(NULL),
+   fStsTrackArray(NULL),
+   fGlobalTracks(NULL),
+   fTrdTracks(NULL),
+   fTofHits(NULL),
+   fRichRings(NULL),
+   fStsTrackArrayP(NULL),
+   fStsTrackArrayN(NULL),
+   fMCTrackArrayP(NULL),
+   fMCTrackArrayN(NULL),
+   fStsTrackMatches(NULL),
+   fKaonParticleArray(NULL),
+   fPionParticleArray(NULL),
+   fListMCTracks(NULL),
+   fMvdHitMatchArray(NULL),
+   fKFParticleArray(NULL),
+   fD0KaonTrackArray(NULL),
+   fD0PionTrackArray(NULL),
+   fvtx(),
+   kfpInterface(NULL),
+   fPidMode(""),
+   fFit(NULL),
+   fPrimVtx(NULL),
+   fField(NULL),
+   bUseMCInfo(kFALSE),
+   fPVCutPassed(0),
+   fPVCutNotPassed(0),
+   fNoHPassed(0),
+   fNoHNotPassed(0),
+   fCutPt(0.),
+   fCutP(0.),
+   fCutChi2(0.),
+   fCutIP(0.)
 {
-    Fatal( "CbmD0TrackSelection: Do not use the standard constructor","Wrong constructor");
+  Fatal( "CbmD0TrackSelection: Do not use the standard constructor","Wrong constructor");
     
-    }
+}
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
 CbmD0TrackSelection::CbmD0TrackSelection(char* name, Int_t iVerbose, Double_t cutP, Double_t cutPt, Double_t cutChi2, Double_t cutIP)
-: FairTask(name, iVerbose),
-  fNHitsOfLongTracks(),
-  fEventNumber(),
-  fMcPoints(),
-  fStsTrackArray(),
-  fGlobalTracks(),
-  fTrdTracks(),
-  fTofHits(),
-  fRichRings(),
-  fListMCTracks(),
-  fStsTrackArrayP(),
-  fStsTrackArrayN(),
-  fMCTrackArrayP(),
-  fMCTrackArrayN(),
-  fStsTrackMatches(),
-  fKaonParticleArray(),
-  fPionParticleArray(),
-  fMvdHitMatchArray(),
-  fKFParticleArray(),
-  kfpInterface(),
-  fPidMode(),
-  fFit(),
-  fPrimVtx(),
-  bUseMCInfo(),
-  fPVCutPassed(),
-  fPVCutNotPassed(),
-  fNoHPassed(),
-  fNoHNotPassed(),
-  fCutPt(),
-  fCutP(),
-  fCutChi2(),
-  fCutIP(),
-  fField(),
-  fD0KaonTrackArray(),
-  fD0PionTrackArray()
+  : FairTask(name, iVerbose),
+    fNHitsOfLongTracks(1),
+    fEventNumber(0),
+    fMcPoints(NULL),
+    fStsTrackArray(NULL),
+    fGlobalTracks(NULL),
+    fTrdTracks(NULL),
+    fTofHits(NULL),
+    fRichRings(NULL),
+    fStsTrackArrayP(NULL),
+    fStsTrackArrayN(NULL),
+    fMCTrackArrayP(NULL),
+    fMCTrackArrayN(NULL),
+    fStsTrackMatches(NULL),
+    fKaonParticleArray(NULL),
+    fPionParticleArray(NULL),
+    fListMCTracks(NULL),
+    fMvdHitMatchArray(NULL),
+    fKFParticleArray(NULL),
+    fD0KaonTrackArray(NULL),
+    fD0PionTrackArray(NULL),
+    fvtx(),
+    kfpInterface(NULL),
+    fPidMode(""),
+    fFit(NULL),
+    fPrimVtx(NULL),
+    fField(NULL),
+    bUseMCInfo(kFALSE),
+    fPVCutPassed(0),
+    fPVCutNotPassed(0),
+    fNoHPassed(0),
+    fNoHNotPassed(0),
+    fCutPt(cutPt),
+    fCutP(cutP),
+    fCutChi2(cutChi2),
+    fCutIP(cutIP)
 {
+  /*
 fEventNumber = 0;
 fPVCutPassed = 0;
 fPVCutNotPassed = 0;
@@ -138,6 +141,7 @@ fCutIP = cutIP;
 fNHitsOfLongTracks=1;
 fNoHPassed=0;
 fNoHNotPassed=0;
+  */
 }
 // -------------------------------------------------------------------------
 
@@ -204,7 +208,7 @@ InitStatus CbmD0TrackSelection::Init() {
     if(! fStsTrackArray) {Fatal("CbmD0TrackSelection: StsTrackArray not found (!)"," That's bad. ");}
     if(! fMvdHitMatchArray) {Fatal("CbmD0TrackSelection: MVDHitMatchArray not found","Good bye");}
 
-    CbmKF* kalman = CbmKF::Instance();
+    //    CbmKF* kalman = CbmKF::Instance();
     fFit          = new CbmL1PFFitter();
     kfpInterface  = new CbmKFParticleInterface();
 
@@ -228,18 +232,18 @@ fD0PionTrackArray->Clear();
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
-void CbmD0TrackSelection::Exec(Option_t* option)
+void CbmD0TrackSelection::Exec(Option_t* /*option*/)
 {
 CbmGlobalTrack*      globalTrack;
 CbmStsTrack*         stsTrack;
-CbmTrackMatchNew*    mcTrackMatch;
+//CbmTrackMatchNew*    mcTrackMatch;
 CbmMCTrack*          mcTrack;
 TVector3             vertex;
-Int_t NAcceptedTrackP = 0;
-Int_t NAcceptedTrackN = 0;
-Int_t count=0;
+//Int_t NAcceptedTrackP = 0;
+//Int_t NAcceptedTrackN = 0;
+//Int_t count=0;
 Int_t pidHypo=211;
-Int_t mcTrackIndex = -1;
+//Int_t mcTrackIndex = -1;
 Int_t i_MCtracksP = -1;
 Int_t i_MCtracksN = -1;
 
@@ -364,13 +368,13 @@ LOG(INFO) << "|| ------------------------  End of event  -----------------------
 // -----------------------------------------------------------------------------------------
 Int_t CbmD0TrackSelection::GetPid(CbmGlobalTrack* globalTrack)
 {
-CbmStsTrack*         stsTrack;
-CbmTrdTrack*         trdTrack;
-CbmRichRing*         richRing;
-CbmTofHit*           tofHit;
-CbmTrackMatchNew*    mcTrackMatch;
-Int_t                mcTrackIndex;
-CbmMCTrack*          mcTrack;
+CbmStsTrack*         stsTrack=NULL;
+CbmTrdTrack*         trdTrack=NULL;
+CbmRichRing*         richRing=NULL;
+CbmTofHit*           tofHit=NULL;
+//CbmTrackMatchNew*    mcTrackMatch;
+//Int_t                mcTrackIndex;
+CbmMCTrack*          mcTrack=NULL;
 
 if(globalTrack->GetStsTrackIndex()!= -1) stsTrack    = (CbmStsTrack*) fStsTrackArray->At(globalTrack->GetStsTrackIndex());
 if(globalTrack->GetTrdTrackIndex()!= -1) trdTrack    = (CbmTrdTrack*) fTrdTracks->At(globalTrack->GetTrdTrackIndex());     else trdTrack = NULL;
@@ -472,7 +476,7 @@ badMatch=0;
 Int_t nrOfMvdHits = stsTrack->GetNofMvdHits();
 Int_t mcTrackId = 0;
 Int_t nrOfLinks = 0;
-Int_t mcPointId = 0;
+//Int_t mcPointId = 0;
 
 const CbmMvdPoint* point = NULL;
 for(Int_t iHit = 0; iHit < nrOfMvdHits; iHit++)	

@@ -1143,7 +1143,7 @@ void CbmAnaConversionRecoFull::Exec()
 
 
 //void CbmAnaConversionRecoFull::CombineElectrons(	vector<CbmGlobalTrack*> gtrack, vector<TVector3> momenta, vector<float> momentaChi, vector<int> mctrackID)
-void CbmAnaConversionRecoFull::CombineElectrons(vector<CbmGlobalTrack*> gtrack, vector<TVector3> momenta, vector<float> momentaChi, vector<int> mctrackID, vector< vector<int> > reconstructedPhotons, Int_t index)
+void CbmAnaConversionRecoFull::CombineElectrons(vector<CbmGlobalTrack*> gtrack, vector<TVector3> momenta, vector<float> /*momentaChi*/, vector<int> /*mctrackID*/, vector< vector<int> > reconstructedPhotons, Int_t index)
 {
 	Int_t nof = momenta.size();
 	fhElectrons_nofPerEvent_new[index]->Fill(nof);

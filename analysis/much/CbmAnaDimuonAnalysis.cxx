@@ -181,9 +181,9 @@ void CbmAnaDimuonAnalysis::Exec(Option_t* /*opt*/){
     // check mother Id for safety
     if (mcTrack->GetMotherId()>=0) { Error("Exec","motherId for signal track >=0"); continue; }
     // get info
-    Int_t nAccStsPoints  = mcTrack->GetNPoints(kSTS);
-    Int_t nAccMuchPoints = mcTrack->GetNPoints(kMUCH);
-    Int_t pdgCode = mcTrack->GetPdgCode();
+//    Int_t nAccStsPoints  = mcTrack->GetNPoints(kSTS);
+//    Int_t nAccMuchPoints = mcTrack->GetNPoints(kMUCH);
+//    Int_t pdgCode = mcTrack->GetPdgCode();
     TLorentzVector pMC;
     mcTrack->Get4Momentum(pMC);
     // set muon momentum and MC track reference
@@ -218,7 +218,7 @@ void CbmAnaDimuonAnalysis::Exec(Option_t* /*opt*/){
     for (Int_t i=0;i<muchTrack->GetNofHits();i++){
       Int_t hitIndex = muchTrack->GetHitIndex(i);
       Int_t hitType = muchTrack->GetHitType(i);
-      CbmHit* hit;
+      CbmHit* hit=NULL;
       if      (hitType==kMUCHPIXELHIT) hit = (CbmHit*) fMuchPixelHits->At(hitIndex);
       else if (hitType==kMUCHSTRAWHIT) hit = (CbmHit*) fMuchStrawHits->At(hitIndex);
       else Fatal("Exec","%i - wrong hit type, must be %i for pixel and %i for straw",hitType,kMUCHPIXELHIT,kMUCHSTRAWHIT);
@@ -236,7 +236,7 @@ void CbmAnaDimuonAnalysis::Exec(Option_t* /*opt*/){
     // Take only tracks with at least 3 trigger hits
     if (fIsTriggerEnabled) if (nTriggerHits<3) continue;
     
-    CbmTrackMatch* muchTrackMatch = (CbmTrackMatch*) fMuchTrackMatches->At(iMuchTrack);
+//    CbmTrackMatch* muchTrackMatch = (CbmTrackMatch*) fMuchTrackMatches->At(iMuchTrack);
 //    Int_t mcMuchTrackId = CbmAnaMuch::GetTrackId(muchTrackMatch,fMuchTrueHitQuota);
     Int_t mcMuchTrackId = GetMCTrackId(iMuchTrack);
     
@@ -297,7 +297,7 @@ Int_t CbmAnaDimuonAnalysis::GetMCTrackId(Int_t iMuchTrack){
   for (Int_t i=0;i<muchTrack->GetNofHits();i++){
     Int_t hitIndex = muchTrack->GetHitIndex(i);
     Int_t hitType = muchTrack->GetHitType(i);
-    CbmHit* hit;
+    CbmHit* hit=NULL;
     if      (hitType==kMUCHPIXELHIT) hit = (CbmHit*) fMuchPixelHits->At(hitIndex);
     else if (hitType==kMUCHSTRAWHIT) hit = (CbmHit*) fMuchStrawHits->At(hitIndex);
     else Fatal("Exec","%i - wrong hit type, must be 6 for pixel and 7 for straw",hitType);

@@ -153,9 +153,12 @@ public:
 
   void Draw(const Option_t* option = "");
 
-  TObject* FindObject(TObjArray *arrhist, PairAnalysis::EPairType type);
+  TObject* FindObject(TObjArray *arrhist, PairAnalysis::EPairType type) const;
   TObject* FindObjectByTitle(TObjArray *arrhist, TString ref);
 
+  // implemented to remove warnings
+  TObject* FindObject(const char *) const {TObject* bla = new TObject(); return bla;}
+  TObject* FindObject(const TObject *) const {TObject* bla = new TObject(); return bla;}
 
 protected:
   TObjArray *fArrHists    = NULL; // array of input histograms
@@ -223,7 +226,7 @@ protected:
   ClassDef(PairAnalysisSignalExt,3) // Class for signal extraction
 };
 
-inline TObject* PairAnalysisSignalExt::FindObject(TObjArray *arrhist, PairAnalysis::EPairType type)
+inline TObject* PairAnalysisSignalExt::FindObject(TObjArray *arrhist, PairAnalysis::EPairType type) const
 {
   //
   // shortcut to find a certain pair type object in array

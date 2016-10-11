@@ -21,8 +21,8 @@ CbmAnaMuchBgd::CbmAnaMuchBgd() : FairTask("AnaDimuonAnalysis"),
   fGlobalTracks(0x0),
   fVertex(0x0),
   fFitter(0x0),
-  fM(0x0),
   fMuons(),
+  fM(0x0),
   fNAll(0),
   fNSts(0),
   fNStsChi(0),
@@ -126,10 +126,10 @@ void CbmAnaMuchBgd::Exec(Option_t* /*opt*/){
   }
   
   
-  for (Int_t i=0;i<fMuons.size();i++){
+  for (UInt_t i=0;i<fMuons.size();i++){
     CbmMuon mp = fMuons[i];
     if (mp.fSign>0) continue;
-    for (Int_t j=0;j<fMuons.size();j++){
+    for (UInt_t j=0;j<fMuons.size();j++){
       CbmMuon mn = fMuons[j];
       if (mn.fSign<0) continue;
       Double_t m = (mp.fP+mn.fP).M();
