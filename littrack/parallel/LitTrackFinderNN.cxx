@@ -193,7 +193,7 @@ void lit::parallel::LitTrackFinderNN::FollowTracks()
       unsigned char nofStations = fLayout.GetNofStations();
       for (int iStation = 0; iStation < nofStations; iStation++) {
          LitTrackParamScal par(track->GetParamLast());
-         const LitStationScal& station = fLayout.GetStation(iStation);
+//         const LitStationScal& station = fLayout.GetStation(iStation);
 
          fscal zMin = fHitData.GetMinZPos(iStation);
          LitLineExtrapolation(par, zMin);
@@ -212,7 +212,7 @@ void lit::parallel::LitTrackFinderNN::FollowTracks()
          map<int, LitTrackParamScal>::iterator itMap;
          for (itMap = binParamMap.begin(); itMap != binParamMap.end(); itMap++) {
             (*itMap).second = par;
-            fscal z = fHitData.GetZPosByBin(iStation, (*itMap).first);
+//            fscal z = fHitData.GetZPosByBin(iStation, (*itMap).first);
             LitTrackParamScal& tpar = (*itMap).second;
             PropagateToStation(iStation, tpar);
 //            LitLineExtrapolation(tpar, z);

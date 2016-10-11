@@ -79,7 +79,7 @@ void DoSortChiSqOverNDF(
 void DoSelectSharedHits(
       vector<LitScalTrack*>& tracks)
 {
-   static const unsigned int NOF_SHARED_HITS = 3;
+   static const int NOF_SHARED_HITS = 3;
    if (tracks.empty()) return;
 
    DoSortNofHits(tracks);
@@ -96,7 +96,7 @@ void DoSelectSharedHits(
 
       int nofSharedHits = 0;
       int nofHits = track->GetNofHits();
-      for(unsigned int iHit = 0; iHit < nofHits; iHit++) {
+      for(int iHit = 0; iHit < nofHits; iHit++) {
          int hitId = track->GetHit(iHit)->refId;
         // LitHitType type = track->GetHit(iHit)->GetType();
         // LitSystemId sysId = track->GetHit(iHit)->GetSystem();

@@ -179,7 +179,7 @@ public:
       for (int iStation = 0; iStation < fNofStations; iStation++) {
          if (fZPosSet[iStation].empty()) continue;
          fscal minZ = *fZPosSet[iStation].begin();
-         fscal maxZ = *fZPosSet[iStation].rbegin();
+//         fscal maxZ = *fZPosSet[iStation].rbegin();
          set<int> binSet;
          set<fscal>::const_iterator it;
          for (it = fZPosSet[iStation].begin(); it != fZPosSet[iStation].end(); it++) {
@@ -191,7 +191,7 @@ public:
          set<int>::const_iterator it2;
          for (it2 = binSet.begin(); it2 != binSet.end(); it2++) {
             int bin = *it2;
-            fscal z = minZ + bin * EPSILON;
+//            fscal z = minZ + bin * EPSILON;
           //  fZPos[iStation].push_back(z);
             fZPosBins[iStation].push_back(bin);
          }
