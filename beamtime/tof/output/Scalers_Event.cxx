@@ -2,7 +2,7 @@
 
 #include "Scalers_Event.h"
 
-void  Scalers_Event::Clear()
+void  Scalers_Event::Clear(Option_t*)
 {
    TObject::Clear();
   // all members should be cleared.

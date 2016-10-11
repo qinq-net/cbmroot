@@ -748,7 +748,7 @@ void TTofTrbTdcUnpacker::FillHistos()
           {
             if( uLeadingMultiplicity == uTrailingMultiplicity )
             {
-              for( Int_t uEvenIndex = 0; uEvenIndex < (tToTEvenEdgeBuffers.at(uChannelIndex)).size(); uEvenIndex++ )
+              for( UInt_t uEvenIndex = 0; uEvenIndex < (tToTEvenEdgeBuffers.at(uChannelIndex)).size(); uEvenIndex++ )
               {
                 const TTofTrbTdcData* leadingData;
                 const TTofTrbTdcData* trailingData;

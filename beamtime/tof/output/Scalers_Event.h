@@ -32,7 +32,7 @@ class Scalers_Event : public TObject {
       ~Scalers_Event(){ Clear(); };
 
       /** Method called by the framework to clear the event element. */
-      void Clear();
+      void Clear(Option_t* ="");
 
       // Oct 12
       Double_t fDTimeSinceFirstEventSecondsTriglog;

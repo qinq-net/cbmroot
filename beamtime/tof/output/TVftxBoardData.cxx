@@ -6,7 +6,7 @@
    #define CLOCK_TIME      5000 //ps
 #endif // WITHGO4ROC
 
-void TVftxBoardData::Clear()
+void TVftxBoardData::Clear(Option_t*)
 {
    iTriggerTime = 0;
    for( Int_t iChan = 0; iChan < FPGA_TDC_NBCHAN; iChan++)

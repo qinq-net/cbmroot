@@ -11,7 +11,7 @@
 #endif // WITHGO4ROC
 
 
-void Rpc_Hit::Clear()
+void Rpc_Hit::Clear(Option_t*)
 {
    iStrip     = -1 ;
    dTimeLeft  = -1 ;
@@ -25,7 +25,7 @@ Double_t Rpc_Hit::PositionCalculation( Double_t dTimeConv )
    return (dTimeRight - dTimeLeft)*dTimeConv/1000.0;
 }
 
-void Rpc_Cluster::Clear()
+void Rpc_Cluster::Clear(Option_t*)
 {
    fHits.clear();
    dX = 0.0;
@@ -91,7 +91,7 @@ void Rpc_Cluster::PositionCalculation(
 }
 
 /* Real Event */
-void  Rpc_Event::Clear()
+void  Rpc_Event::Clear(Option_t*)
 {
   // all members should be cleared.
    fClusters.clear();

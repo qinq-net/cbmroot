@@ -28,7 +28,7 @@ class Rpc_Hit: public TObject {
          fbMultiEdge(kFALSE)
       { Clear(); };
 
-     void Clear(void);
+     void Clear(Option_t* ="");
 
      Double_t PositionCalculation( Double_t dTimeConv );
      Bool_t IsMultiEdge() const { return fbMultiEdge; };
@@ -61,7 +61,7 @@ class Rpc_Cluster: public TObject {
          dMeanStrip(0.0)
       { Clear(); };
 
-     void Clear(void);
+     void Clear(Option_t* ="");
 
      void PositionCalculation( Double_t dMiddleStrip, UInt_t uOrientation,
                                    Double_t dStripWidth, Double_t dTimeConv,
@@ -87,7 +87,7 @@ class Rpc_Event: public TObject {
          { Clear(); };
       ~Rpc_Event(){ Clear(); };
 
-      void Clear(void);
+      void Clear(Option_t* ="");
       Bool_t IsMultiEdge() const { return fbMultiEdgesPresent; };
 
     ClassDef(Rpc_Event, 2)

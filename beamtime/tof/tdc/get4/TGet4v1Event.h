@@ -112,7 +112,7 @@ class TGet4v1MessageExtended : public TObject
       bool operator<(const TGet4v1MessageExtended &rhs) const
          { return (fdFullTime < rhs.fdFullTime); }
 
-      void Clear()
+      void Clear(Option_t* ="")
       {
          fxMessage       = roc::Message();
          fuFulltime      = 0;
@@ -248,6 +248,9 @@ class TGet4v1MessageExtended : public TObject
       void Print( unsigned kind = roc::msg_print_Human ) const;
       void Print32Bit(  unsigned kind = roc::msg_print_Human ) const;
 
+      // Implement to remove warning
+      void        Print(Option_t*) const {;}
+      
       // All Get4 v1.0 24 bit messages
       inline void SetGet4Number( UChar_t ucGet4Index) { fxMessage.setGet4Number(ucGet4Index); }
       inline void SetEpoch2ChipNumber(UChar_t ucGet4Index) { fxMessage.setEpoch2ChipNumber(ucGet4Index); }

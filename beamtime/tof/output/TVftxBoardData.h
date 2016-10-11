@@ -33,7 +33,7 @@ class TVftxBoardData : public TObject {
          TObject(),
          iTriggerTime(0)
          { Clear(); }
-      void Clear();
+      void Clear(Option_t* ="");
       Bool_t   IsHitThere( UInt_t uChan, Int_t iMult ){
               return iMult < iMultiplicity[ uChan ]? kTRUE : kFALSE; };
       Double_t GetCalibratedTime( UInt_t uChan, UInt_t uMult);
