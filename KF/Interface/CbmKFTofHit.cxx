@@ -58,7 +58,7 @@ void CbmKFTofHit::Create(CbmTofHit* hit)
 
 
 //  ------------------------------ Filter --------------------------------
-Int_t CbmKFTofHit::Filter(CbmKFTrackInterface& track, Bool_t downstream,
+Int_t CbmKFTofHit::Filter(CbmKFTrackInterface& track, Bool_t /*downstream*/,
 			  Double_t& QP0)
 {
   Bool_t err = 0;

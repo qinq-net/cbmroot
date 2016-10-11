@@ -75,7 +75,7 @@ using namespace std;
 
 ClassImp(CbmInverseSlope)
 
-CbmInverseSlope::CbmInverseSlope(Int_t recoLevel, Int_t iVerbose, TString Mode, Int_t PDG, TString pname, Int_t EventStats, KFParticleTopoReconstructor* tr, Float_t ekin_):
+CbmInverseSlope::CbmInverseSlope(Int_t recoLevel, Int_t /*iVerbose*/, TString Mode, Int_t PDG, TString pname, Int_t EventStats, KFParticleTopoReconstructor* tr, Float_t ekin_):
   CbmModelBase(tr),
   //ekin(ekin_),
   //fusePID(usePID),

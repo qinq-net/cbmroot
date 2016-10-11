@@ -18,7 +18,7 @@ using std::fabs;
 
 ClassImp(CbmKFSecondaryVertexFinder)
 
-void CbmKFSecondaryVertexFinder::Clear(Option_t* opt)
+void CbmKFSecondaryVertexFinder::Clear(Option_t* /*opt*/)
 {
   vTracks.clear();
   VGuess =0;

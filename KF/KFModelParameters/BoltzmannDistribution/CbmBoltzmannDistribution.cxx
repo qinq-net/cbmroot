@@ -73,7 +73,7 @@ using namespace std;
 
 ClassImp(CbmBoltzmannDistribution)
 
-CbmBoltzmannDistribution::CbmBoltzmannDistribution(Int_t recoLevel, Int_t iVerbose, TString Mode, Int_t PDG, TString pname, Int_t EventStats, KFParticleTopoReconstructor* tr, Float_t ekin_):
+CbmBoltzmannDistribution::CbmBoltzmannDistribution(Int_t recoLevel, Int_t /*iVerbose*/, TString Mode, Int_t PDG, TString pname, Int_t EventStats, KFParticleTopoReconstructor* tr, Float_t ekin_):
   CbmModelBase(tr),
   name(pname),
   //ekin(ekin_),

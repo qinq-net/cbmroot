@@ -180,7 +180,7 @@ Int_t CbmTofTrackFitterKF::DoFit(CbmTofTracklet* pTrack)
 }
 // -----------------------------------------------------------------------
 // -----------------------------------------------------------------------
-Int_t CbmTofTrackFitterKF::DoFit(CbmTofTrack* pTrack)
+Int_t CbmTofTrackFitterKF::DoFit(CbmTofTrack* /*pTrack*/)
 {
   return 0;
 }
@@ -223,7 +223,7 @@ void CbmTofTrackFitterKF::Extrapolate( CbmTofTracklet* track, Double_t z, FairTr
 }
 */
 
-void CbmTofTrackFitterKF::SetKFHits(CbmKFTrack &T, CbmTofTracklet* track){
+void CbmTofTrackFitterKF::SetKFHits(CbmKFTrack &T, CbmTofTracklet* /*track*/){
  
   T.fHits.clear();
   /*

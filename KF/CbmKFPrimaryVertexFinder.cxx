@@ -16,7 +16,7 @@ using std::vector;
 
 ClassImp(CbmKFPrimaryVertexFinder)
 
-void CbmKFPrimaryVertexFinder::Clear(Option_t* opt)
+void CbmKFPrimaryVertexFinder::Clear(Option_t* /*opt*/)
 {
   Tracks.clear();
 }

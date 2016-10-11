@@ -674,7 +674,7 @@ void CbmKFTrackFitQA::FindBackTracks()
   }*/
 }
 
-void CbmKFTrackFitQA::FindBackTracks(CbmKFTrErrMCPoints *mc_points, CbmMCTrack *track_mc, CbmKFTrack *track_kf, int iEvent)
+void CbmKFTrackFitQA::FindBackTracks(CbmKFTrErrMCPoints* /*mc_points*/, CbmMCTrack* /*track_mc*/, CbmKFTrack* /*track_kf*/, int /*iEvent*/)
 {
 /*
   FILE *fBack = fopen("BackTracks.txt","a+");

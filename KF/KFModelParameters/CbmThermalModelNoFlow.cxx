@@ -207,12 +207,12 @@ namespace ThermalModelNoFlowNamespace {
 		return ret / ret2;
 	  }
 	  
-	  static double chi2func(double y, double pt, double m) {
+	  static double chi2func(double /*y*/, double pt, double m) {
 		return sqrt(pt*pt+m*m);//y*y;//pt*pt + m*m;
 	  }
 
 	  // Function to determine temperature
-	  static double tempCrit(double y, double pt, double m) {
+	  static double tempCrit(double /*y*/, double pt, double m) {
 			return sqrt(pt*pt+m*m);//*cosh(y);
 	  }
 	  
@@ -393,7 +393,7 @@ using namespace std;
 
 ClassImp(CbmThermalModelNoFlow)
 
-CbmThermalModelNoFlow::CbmThermalModelNoFlow(Float_t ekin_, Int_t recoLevel, Int_t usePID, Int_t trackNumber, Int_t iVerbose):
+CbmThermalModelNoFlow::CbmThermalModelNoFlow(Float_t ekin_, Int_t recoLevel, Int_t usePID, Int_t trackNumber, Int_t /*iVerbose*/):
   ekin(ekin_),
   ycm(1.),
   fUpdate(true),
@@ -1308,12 +1308,12 @@ void CbmThermalModelNoFlow::Exec()
 }
 
 // Function to test method of moments
-double CbmThermalModelNoFlow::chi2func(double y, double pt, double m) {
+double CbmThermalModelNoFlow::chi2func(double /*y*/, double pt, double m) {
 	return sqrt(pt*pt+m*m);//y*y;//pt*pt + m*m;
 }
 
 // Function to determine temperature
-double CbmThermalModelNoFlow::tempCrit(double y, double pt, double m) {
+double CbmThermalModelNoFlow::tempCrit(double /*y*/, double pt, double m) {
 	return sqrt(pt*pt+m*m);//*cosh(y);
 }
 
@@ -1577,7 +1577,7 @@ double CbmThermalModelNoFlow::getTemperatureDerivAll(double mt, int part, int it
   return fabs((getTemperatureAll(mt+dmt, part, iters) - getTemperatureAll(mt, part, iters))) / dmt;
 }
 
-double CbmThermalModelNoFlow::getTemperatureAllCor(double mt, int part, int iters, TSpline3 *mtT) {
+double CbmThermalModelNoFlow::getTemperatureAllCor(double mt, int /*part*/, int iters, TSpline3 *mtT) {
   double left = 0., right = 0.45, center;
   double valleft = mtT->Eval(left)-mt;//, valright = mtT->Eval(right)-mt, 
   double valcenter;
@@ -1608,7 +1608,8 @@ double CbmThermalModelNoFlow::getTemperatureRapidity(double mt, double mo, int i
   return (left+right) * 0.5 * cosh(y);
 }
 
-double CbmThermalModelNoFlow::getInverseSlope(double mt, double mo, int iters) {
+double CbmThermalModelNoFlow::getInverseSlope(double mt, double mo, int
+/*iters*/) {
   return 0.5*(0.5*mt-mo+sqrt((0.5*mt-mo)*(0.5*mt-mo)+2*mo*(mt-mo)));
 }
 

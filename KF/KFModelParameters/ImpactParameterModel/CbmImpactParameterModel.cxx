@@ -74,7 +74,8 @@ using namespace std;
 
 ClassImp(CbmImpactParameterModel)
 
-CbmImpactParameterModel::CbmImpactParameterModel(Int_t recoLevel, Int_t iVerbose, TString Mode, KFParticleTopoReconstructor* tr, Float_t ekin_, TString InputTable):
+CbmImpactParameterModel::CbmImpactParameterModel(Int_t recoLevel, Int_t
+/*iVerbose*/, TString Mode, KFParticleTopoReconstructor* tr, Float_t ekin_, TString InputTable):
   CbmModelBase(tr),
   //ekin(ekin_),
   //fusePID(usePID),

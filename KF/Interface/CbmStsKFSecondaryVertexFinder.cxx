@@ -15,7 +15,7 @@ using std::vector;
 
 ClassImp(CbmStsKFSecondaryVertexFinder)
 
-void CbmStsKFSecondaryVertexFinder::Clear(Option_t* opt){
+void CbmStsKFSecondaryVertexFinder::Clear(Option_t* /*opt*/){
   Finder.Clear();
   vStsTracks.clear();
   vKFTracks.clear();

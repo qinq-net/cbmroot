@@ -75,7 +75,7 @@ using namespace std;
 
 ClassImp(CbmBlastWave)
 
-CbmBlastWave::CbmBlastWave(Int_t recoLevel, Int_t iVerbose, TString Mode, Int_t PDG, TString pname, Int_t EventStats, KFParticleTopoReconstructor* tr, Float_t ekin_, Double_t Tlong):
+CbmBlastWave::CbmBlastWave(Int_t recoLevel, Int_t /*iVerbose*/, TString Mode, Int_t PDG, TString pname, Int_t EventStats, KFParticleTopoReconstructor* tr, Float_t ekin_, Double_t Tlong):
   CbmModelBase(tr),
   name(pname),
   //ekin(ekin_),

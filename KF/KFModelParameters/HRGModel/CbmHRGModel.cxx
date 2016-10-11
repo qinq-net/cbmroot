@@ -91,7 +91,7 @@ using namespace std;
 
 ClassImp(CbmHRGModel)
 
-CbmHRGModel::CbmHRGModel(Int_t recoLevel, Int_t iVerbose, TString Mode, Int_t EventStats, KFParticleTopoReconstructor* tr,
+CbmHRGModel::CbmHRGModel(Int_t recoLevel, Int_t /*iVerbose*/, TString Mode, Int_t EventStats, KFParticleTopoReconstructor* tr,
 			   Bool_t useWidth,
 			   Bool_t useStatistics,
 			   Double_t rad):

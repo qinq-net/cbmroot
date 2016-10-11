@@ -63,7 +63,7 @@ using std::vector;
 
 ClassImp(CbmModelsQA)
 
-CbmModelsQA::CbmModelsQA(Int_t iVerbose, int findParticlesMode, int perf, KFParticleTopoReconstructor *tr, const char *name, const char *title, float ekin_):
+CbmModelsQA::CbmModelsQA(Int_t iVerbose, int /*findParticlesMode*/, int /*perf*/, KFParticleTopoReconstructor *tr, const char *name, const char* /*title*/, float ekin_):
   FairTask(name,iVerbose),
   fPrimVtx(NULL),
   outfileName("CbmModelsQA.root"),
@@ -199,7 +199,7 @@ void CbmModelsQA::AddHRGAnalysis(int TracksType, double SystError, TString name,
 	Models.push_back(static_cast<CbmModelBase*>(HRGModel));
 }
 
-void CbmModelsQA::AddMultiscatteringAnalysis(int TracksType, double SystError, TString name, int EventStats) {
+void CbmModelsQA::AddMultiscatteringAnalysis(int TracksType, double /*SystError*/, TString name, int EventStats) {
 
 	CbmMultiscatteringModel *MultiscatteringModel = new CbmMultiscatteringModel(TracksType, 1, name, EventStats, fTopoReconstructor, ekin);
 	
@@ -207,7 +207,7 @@ void CbmModelsQA::AddMultiscatteringAnalysis(int TracksType, double SystError, T
 	Models.push_back(static_cast<CbmMultiscatteringModel*>(MultiscatteringModel));
 }
 
-void CbmModelsQA::AddInverseSlopeAnalysis(int PDGID, const char *pname, int TracksType, double SystError, TString name, int EventStats)
+void CbmModelsQA::AddInverseSlopeAnalysis(int PDGID, const char *pname, int TracksType, double /*SystError*/, TString name, int EventStats)
 {
 	//int trackNumber = 1;
 	
@@ -238,7 +238,7 @@ void CbmModelsQA::AddInverseSlopeAnalysis(int PDGID, const char *pname, int Trac
 	Models.push_back(static_cast<CbmInverseSlope*>(InverseSlope));
 }
 
-void CbmModelsQA::AddBoltzmannAnalysis(int PDGID, const char *pname, int TracksType, double SystError, TString name, int EventStats)
+void CbmModelsQA::AddBoltzmannAnalysis(int PDGID, const char *pname, int TracksType, double /*SystError*/, TString name, int EventStats)
 {
 	CbmBoltzmannDistribution *BoltzmannDistribution = new CbmBoltzmannDistribution(TracksType, 1, name, PDGID, TString(pname), EventStats, fTopoReconstructor, ekin);
 
@@ -246,7 +246,7 @@ void CbmModelsQA::AddBoltzmannAnalysis(int PDGID, const char *pname, int TracksT
 	Models.push_back(static_cast<CbmBoltzmannDistribution*>(BoltzmannDistribution));
 }
 
-void CbmModelsQA::AddBlastWaveAnalysis(int PDGID, const char *pname, int TracksType, double SystError, TString name, int EventStats, double Tlong)
+void CbmModelsQA::AddBlastWaveAnalysis(int PDGID, const char *pname, int TracksType, double /*SystError*/, TString name, int EventStats, double Tlong)
 {
 	
 	CbmBlastWave *BlastWave = new CbmBlastWave(TracksType, 1, name, PDGID, TString(pname), EventStats, fTopoReconstructor, ekin, Tlong);
@@ -267,7 +267,7 @@ void CbmModelsQA::AddBlastWaveAnalysis(int PDGID, const char *pname, int TracksT
 	Models.push_back(static_cast<CbmBlastWave*>(BlastWave));
 }
 
-void CbmModelsQA::AddImpactParameterAnalysis(int TracksType, double SystError, TString name, TString InputTable) {
+void CbmModelsQA::AddImpactParameterAnalysis(int TracksType, double /*SystError*/, TString name, TString InputTable) {
 	
 	CbmImpactParameterModel *ImpactParameterModel = new CbmImpactParameterModel(TracksType, 1, name, fTopoReconstructor, ekin, InputTable);
 	

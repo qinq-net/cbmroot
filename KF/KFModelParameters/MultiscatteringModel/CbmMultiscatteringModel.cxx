@@ -70,7 +70,7 @@ using namespace std;
 
 ClassImp(CbmMultiscatteringModel)
 
-CbmMultiscatteringModel::CbmMultiscatteringModel(Int_t recoLevel, Int_t iVerbose, TString Mode, Int_t EventStats, KFParticleTopoReconstructor* tr, Float_t ekin_):
+CbmMultiscatteringModel::CbmMultiscatteringModel(Int_t recoLevel, Int_t /*iVerbose*/, TString Mode, Int_t EventStats, KFParticleTopoReconstructor* tr, Float_t ekin_):
   CbmModelBase(tr),
   //ekin(ekin_),
   //fusePID(usePID),

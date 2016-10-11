@@ -108,7 +108,7 @@ TString CbmKFBox::KFInfo() const
 
 ClassImp(CbmKFCone);
 
-Int_t CbmKFCone::Pass( Double_t ZCross, Double_t ZThick, 
+Int_t CbmKFCone::Pass( Double_t ZCross, Double_t /*ZThick*/, 
 		       CbmKFTrackInterface &track,		    
 		       Bool_t downstream, Double_t &QP0       ){
 
