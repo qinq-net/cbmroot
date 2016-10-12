@@ -7,8 +7,9 @@
 
 #include "CbmMCMatch.h"
 
+#include "FairLogger.h"
+
 #include "TClonesArray.h"
-//#include <iostream>
 
 ClassImp(CbmMCMatch);
 
@@ -52,7 +53,7 @@ void CbmMCMatch::InitStage(Cbm::DataType type, std::string fileName, std::string
 		fList[type] = newStage;
 	}
 	else{
-		std::cout << "-W- CbmMCMatch::InitStage: Stage " << type << " exists already!" << std::endl;
+		LOG(WARNING) << "CbmMCMatch::InitStage: Stage " << type << " exists already!" << FairLogger::endl;
 	}
 }
 
@@ -107,11 +108,11 @@ CbmMCResult CbmMCMatch::GetMCInfoForward(Cbm::DataType start, Cbm::DataType stop
 		result.SetEntry(&fFinalStageML, i);
 		fFinalStageML.Reset();
 		*/
-		std::cout << "FairLink: " << tempLink << std::endl;
+		LOG(INFO) << "FairLink: " << tempLink << FairLogger::endl;
 		CbmMCEntry tempEntry(GetMCInfoForwardSingle(tempLink, stop));
 		tempEntry.SetSource(start);
 		tempEntry.SetPos(i);
-		std::cout << "CbmMCEntry: " << tempEntry << std::endl;
+		LOG(INFO) << "CbmMCEntry: " << tempEntry << FairLogger::endl;
 		result.SetEntry(tempEntry);
 	}
 	return result;
@@ -136,7 +137,7 @@ CbmMCResult CbmMCMatch::GetMCInfoBackward(Cbm::DataType start, Cbm::DataType sto
 	CbmMCResult result(start, stop);
 	CbmMCStage startVec = *(fList[start]);
 	for (int i = 0; i < startVec.GetNEntries(); i++){
-//		std::cout << "Stage: " << i << std::endl;
+//		LOG(INFO) << "Stage: " << i << FairLogger::endl;
 /*		ClearFinalStage();
 		FairMultiLinkedData temp = startVec.GetEntry(i);
 		temp.MultiplyAllWeights(startVec.GetWeight());
@@ -239,7 +240,7 @@ void CbmMCMatch::GetNextStage(FairMultiLinkedData& startStage, Cbm::DataType sto
 		}
 		else{
 			tempStage = GetEntry(startStage.GetLink(i));
-//			std::cout << "Link ";
+//			LOG(INFO) << "Link ";
 			//startStage.GetLink(i).Print();
 
 //			for (int j = 0; j < tempStage.size(); j++){
@@ -252,11 +253,11 @@ void CbmMCMatch::GetNextStage(FairMultiLinkedData& startStage, Cbm::DataType sto
 			else{
 				double tempStageWeight = GetMCStageType(static_cast<Cbm::DataType>(tempStage.GetSource()))->GetWeight();
 				double startLinkWeight = startStage.GetLink(i).GetWeight()/startStage.GetNLinks();
-				//std::cout << " StageWeight: " << tempStageWeight << " startLinkWeight: " << startLinkWeight;
+				//LOG(INFO) << " StageWeight: " << tempStageWeight << " startLinkWeight: " << startLinkWeight;
 				tempStage.MultiplyAllWeights(tempStageWeight);
 
 				if ((tempStageWeight * startLinkWeight) == 0.){
-//					std::cout << " NLinks: " << tempStage.GetNLinks();
+//					LOG(INFO) << " NLinks: " << tempStage.GetNLinks();
 					tempStage.AddAllWeights(startLinkWeight/tempStage.GetNLinks());
 				}
 				else
@@ -264,7 +265,7 @@ void CbmMCMatch::GetNextStage(FairMultiLinkedData& startStage, Cbm::DataType sto
 
 
 			}
-//			std::cout << " TempStage: " << tempStage;
+//			LOG(INFO) << " TempStage: " << tempStage;
 
 			GetNextStage(tempStage, stopStage);
 		}
@@ -315,7 +316,7 @@ bool CbmMCMatch::IsTypeInList(Cbm::DataType type){
 void CbmMCMatch::LoadInMCLists(TClonesArray* myLinkArray){
 	for (int i = 0; i < myLinkArray->GetEntriesFast(); i++){
 		CbmMCEntry* myLink = (CbmMCEntry*)myLinkArray->At(i);
-		//std::cout << "myLink.size(): " << myLink->GetNLinks() << ":";
+		//LOG(INFO) << "myLink.size(): " << myLink->GetNLinks() << ":";
 		if (IsTypeInList((Cbm::DataType)myLink->GetSource())){
 			//fList[(Cbm::DataType)myLink->GetSource()]->ClearEntries();
 			fList[(Cbm::DataType)myLink->GetSource()]->SetEntry(*myLink);

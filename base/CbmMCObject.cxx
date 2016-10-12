@@ -7,6 +7,8 @@
 
 #include "CbmMCObject.h"
 
+#include "FairLogger.h"
+
 ClassImp(CbmMCObject);
 
 CbmMCObject::CbmMCObject() 
@@ -14,7 +16,7 @@ CbmMCObject::CbmMCObject()
     fStage(),
     fStageId()
 {
-	//std::cout << "-I- CbmMCObject::CbmMCObject : Use of default constructor" << std::endl;
+	//LOG(INFO) << "CbmMCObject: Use of default constructor" << FairLogger::endl;
 }
 
 CbmMCObject::~CbmMCObject() {
@@ -24,7 +26,7 @@ CbmMCObject::~CbmMCObject() {
 
 void CbmMCObject::SetEntry(CbmMCEntry entry){
 	if (entry.GetPos() < 0){
-		std::cout << "-E- CbmMCObject::SetEntry(CbmMCEntry): pos " << entry.GetPos() << std::endl;
+		LOG(ERROR) << "CbmMCObject::SetEntry(CbmMCEntry): pos " << entry.GetPos() << FairLogger::endl;
 		return;
 	}
 	AdoptSize(entry.GetPos());
@@ -59,7 +61,7 @@ void CbmMCObject::AddLink(FairLink link, int index)
 {
 	AdoptSize(index);
 	fStage[index].AddLink(link);
-	//std::cout << "AddLink " << index << ": "<< fStageDet[index][fStageDet[index].size()-1] << " " << fStageHit[index][fStageHit[index].size()-1] << std::endl;
+	//LOG(INFO) << "AddLink " << index << ": "<< fStageDet[index][fStageDet[index].size()-1] << " " << fStageHit[index][fStageHit[index].size()-1] << FairLogger::endl;
 }
 
 void CbmMCObject::AdoptSize(int index){

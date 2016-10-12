@@ -9,6 +9,9 @@
 #define CBMHISTMANAGER_H_
 
 #include "TObject.h"
+
+#include "FairLogger.h"
+
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
@@ -16,7 +19,7 @@
 #include "TGraph2D.h"
 #include "TProfile.h"
 #include "TProfile2D.h"
-#include <iostream>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -145,7 +148,7 @@ public:
    TH1* H1(
          const std::string& name) const {
       if (fMap.count(name) == 0) { // Temporarily used for debugging
-    	  std::cout << "Error: CbmHistManager::H1(name): name=" << name << std::endl;
+    	  LOG(ERROR) << "CbmHistManager::H1(name): name=" << name << FairLogger::endl;
       }
       assert(fMap.count(name) != 0);
       return dynamic_cast<TH1*>(fMap.find(name)->second);
@@ -167,7 +170,7 @@ public:
    TH2* H2(
          const std::string& name) const {
       if (fMap.count(name) == 0) { // Temporarily used for debugging
-    	  std::cout << "Error: CbmHistManager::H2(name): name=" << name << std::endl;
+    	  LOG(ERROR) << "CbmHistManager::H2(name): name=" << name << FairLogger::endl;
       }
       assert(fMap.count(name) != 0);
       return dynamic_cast<TH2*>(fMap.find(name)->second);
@@ -189,7 +192,7 @@ public:
    TH3* H3(
          const std::string& name) const {
       if (fMap.count(name) == 0) { // Temporarily used for debugging
-    	  std::cout << "Error: CbmHistManager::H3(name): name=" << name << std::endl;
+    	  LOG(ERROR) << "CbmHistManager::H3(name): name=" << name << FairLogger::endl;
       }
       assert(fMap.count(name) != 0);
       return dynamic_cast<TH3*>(fMap.find(name)->second);
@@ -203,7 +206,7 @@ public:
    TGraph* G1(
          const std::string& name) const {
       if (fMap.count(name) == 0) { // Temporarily used for debugging
-    	  std::cout << "Error: CbmHistManager::G1(name): name=" << name << std::endl;
+    	  LOG(ERROR) << "CbmHistManager::G1(name): name=" << name << FairLogger::endl;
       }
       assert(fMap.count(name) != 0);
       return dynamic_cast<TGraph*>(fMap.find(name)->second);
@@ -225,7 +228,7 @@ public:
    TGraph2D* G2(
          const std::string& name) const {
       if (fMap.count(name) == 0) { // Temporarily used for debugging
-    	  std::cout << "Error: CbmHistManager::G2(name): name=" << name << std::endl;
+    	  LOG(ERROR) << "CbmHistManager::G2(name): name=" << name << FairLogger::endl;
       }
       assert(fMap.count(name) != 0);
       return dynamic_cast<TGraph2D*>(fMap.find(name)->second);
@@ -247,7 +250,7 @@ public:
    TProfile* P1(
          const std::string& name) const {
       if (fMap.count(name) == 0) { // Temporarily used for debugging
-        std::cout << "Error: CbmHistManager::P1(name): name=" << name << std::endl;
+        LOG(ERROR) << "CbmHistManager::P1(name): name=" << name << FairLogger::endl;
       }
       assert(fMap.count(name) != 0);
       return dynamic_cast<TProfile*>(fMap.find(name)->second);
@@ -269,7 +272,7 @@ public:
    TProfile2D* P2(
          const std::string& name) const {
       if (fMap.count(name) == 0) { // Temporarily used for debugging
-        std::cout << "Error: CbmHistManager::P2(name): name=" << name << std::endl;
+        LOG(ERROR) << "CbmHistManager::P2(name): name=" << name << FairLogger::endl;
       }
       assert(fMap.count(name) != 0);
       return dynamic_cast<TProfile2D*>(fMap.find(name)->second);

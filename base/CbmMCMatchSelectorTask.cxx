@@ -8,11 +8,7 @@
 
 // framework includes
 #include "FairRootManager.h"
-
-// libc includes
-#include <iostream>
-using std::cout;
-using std::endl;
+#include "FairLogger.h"
 
 // -----   Default constructor   -------------------------------------------
 CbmMCMatchSelectorTask::CbmMCMatchSelectorTask()
@@ -52,14 +48,12 @@ InitStatus CbmMCMatchSelectorTask::Init()
 
   FairRootManager* ioman = FairRootManager::Instance();
   	if (!ioman) {
-  		cout << "-E- CbmMCMatchSelectorTask::Init: "
-  				<< "RootManager not instantiated!" << endl;
-  		return kFATAL;
+  		LOG(FATAL) << "RootManager not instantiated!" << FairLogger::endl;
   	}
 
   	fMCMatch = (CbmMCMatch*)ioman->GetObject("MCMatch");
 
-	cout << "-I- CbmMCMatchSelectorTask::Init: Initialization successfull" << endl;
+	LOG(INFO) << "CbmMCMatchSelectorTask::Init: Initialization successfull" << FairLogger::endl;
 
 
   return kSUCCESS;
@@ -79,14 +73,14 @@ void CbmMCMatchSelectorTask::SetParContainers()
 // -----   Public method Exec   --------------------------------------------
 void CbmMCMatchSelectorTask::Exec(Option_t* /*opt*/)
 {
-	cout << "Output Selector: " << endl;
+	LOG(INFO) << "Output Selector: " << FairLogger::endl;
 	SetWeights();
-	cout << fMCMatch->GetMCInfo(fStart, fStop);
+	LOG(INFO) << fMCMatch->GetMCInfo(fStart, fStop);
 }
 
 void CbmMCMatchSelectorTask::SetWeights()
 {
-//	cout << "SetWeights: CommonWeight " << fCommonWeight << " NStageWeights " << fStageWeights.size() << endl;
+//	LOG(INFO) << "SetWeights: CommonWeight " << fCommonWeight << " NStageWeights " << fStageWeights.size() << FairLogger::endl;
 	fMCMatch->SetCommonWeightStages(fCommonWeight);
 	for (unsigned int i = 0; i < fStageWeights.size();i++){
 		fMCMatch->GetMCStageType(fStageWeights[i].first)->SetWeight(fStageWeights[i].second);

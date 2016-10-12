@@ -65,7 +65,7 @@ void CbmModule::ExpandNodeForGDML(TGeoNode* curNode)
 		FairGeoMedium* curMedInGeo;
 
 		if (curMedInGeoManager == 0) {
-			std::cout << "[ExpandNodeForGDML] New medium found in gmdl - it is not in gGeoManager list." << std::endl;
+			LOG(ERROR) << "New medium found in gmdl - it is not in gGeoManager list." << FairLogger::endl;
 			//! New medium found in gmdl - it is not in gGeoManager list.
 			//! This should never happen as GDML parser adds medium into the list.
 			//! If happens - something is extremely strange.
@@ -76,7 +76,7 @@ void CbmModule::ExpandNodeForGDML(TGeoNode* curNode)
 			curMedInGeo = geoMediaBase->getMedium(curMedName);
 			if (curMedInGeo == 0)
 			{
-				std::cout << "[ExpandNodeForGDML] Media not found in Geo file." << std::endl;
+				LOG(ERROR) << "Media not found in Geo file." << FairLogger::endl;
 				//! This should not happen.
 				//! This means that somebody uses material in GDML that is not in the media.geo file.
 				//! Most probably this is the sign to the user to check materials' names in the CATIA model.

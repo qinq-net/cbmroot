@@ -6,6 +6,9 @@
  */
 
 #include "CbmHistManager.h"
+
+#include "FairLogger.h"
+
 #include "TH1.h"
 #include "TH2.h"
 #include "TNamed.h"
@@ -17,6 +20,7 @@
 #include "TDirectory.h"
 #include "TKey.h"
 #include "TClass.h"
+
 #include <boost/regex.hpp>
 #include <vector>
 #include <map>
@@ -24,10 +28,9 @@
 #include <cassert>
 #include <iostream>
 #include <algorithm>
+
 using std::string;
 using std::map;
-using std::cout;
-using std::endl;
 using std::vector;
 using std::exception;
 using std::sort;
@@ -72,7 +75,7 @@ template<class T> vector<T> CbmHistManager::ObjectVector(
 
 	}
   } catch (exception& ex) {
-    cout << "Exception in CbmHistManager::ObjectVector: " << ex.what() << endl;
+    LOG(INFO) << "Exception in CbmHistManager::ObjectVector: " << ex.what() << FairLogger::endl;
   }
 
   sort(objects.begin(), objects.end(), CompareTNamedMore());
@@ -127,7 +130,7 @@ void CbmHistManager::ReadFromFile(
       TFile* file)
 {
    assert(file != NULL);
-   cout << "-I- CbmHistManager::ReadFromFile" << endl;
+   LOG(INFO) << "CbmHistManager::ReadFromFile" << FairLogger::endl;
    TDirectory* dir = gDirectory;
    TIter nextkey(dir->GetListOfKeys());
    TKey *key;
@@ -138,7 +141,7 @@ void CbmHistManager::ReadFromFile(
          TNamed* h = (TNamed*) obj;
          TNamed* h1 = (TNamed*)file->Get(h->GetName());
          Add(string(h->GetName()), h1);
-         //cout << c++ << " " << h->GetName()<< endl;
+         //LOG(INFO) << c++ << " " << h->GetName()<< FairLogger::endl;
       }
    }
 }

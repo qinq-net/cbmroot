@@ -11,14 +11,10 @@
 // framework includes
 #include "FairRootManager.h"
 #include "FairMultiLinkedData.h"
+#include "FairLogger.h"
 
 // Root includes
 #include "TClonesArray.h"
-
-// libc includes
-#include <iostream>
-using std::cout;
-using std::endl;
 
 // -----   Default constructor   -------------------------------------------
 CbmMCMatchCreatorTask::CbmMCMatchCreatorTask() 
@@ -56,9 +52,7 @@ InitStatus CbmMCMatchCreatorTask::Init()
 
   FairRootManager* ioman = FairRootManager::Instance();
   	if (!ioman) {
-  		cout << "-E- CbmMCMatchCreatorTask::Init: "
-  				<< "RootManager not instantiated!" << endl;
-  		return kFATAL;
+  		LOG(FATAL) << "RootManager not instantiated!" << FairLogger::endl;
   	}
 
 	fMCLink = new TClonesArray("CbmMCEntry");
@@ -66,7 +60,7 @@ InitStatus CbmMCMatchCreatorTask::Init()
 
 	ioman->Register("MCMatch", "MCMatch", fMCMatch, kFALSE);
 
-	cout << "-I- CbmMCMatchCreatorTask::Init: Initialization successfull" << endl;
+	LOG(INFO) << "CbmMCMatchCreatorTask::Init: Initialization successfull" << FairLogger::endl;
 
 
   return status;
@@ -78,17 +72,15 @@ InitStatus CbmMCMatchCreatorTask::InitBranches()
 	 // Get RootManager
 	FairRootManager* ioman = FairRootManager::Instance();
 	if (!ioman) {
-		cout << "-E- CbmMCMatchCreatorTask::Init: "
-				<< "RootManager not instantiated!" << endl;
-		return kFATAL;
+		LOG(FATAL) << "RootManager not instantiated!" << FairLogger::endl;
 	}
 
 	int NStages = fMCMatch->GetNMCStages();
 	for (int i = NStages-1; i > -1; i--){
 		TClonesArray* myBranch = (TClonesArray*)ioman->GetObject(fMCMatch->GetMCStage(i)->GetBranchName().c_str());
 		if (!myBranch)	{
-			//cout << "NMCStages: " << fMCMatch->GetNMCStages() << endl;
-			cout << "-W- CbmMCMatchCreatorTask::Init: "<< "No "<<fMCMatch->GetMCStage(i)->GetBranchName() << " array!" << endl;
+			//LOG(INFO) << "NMCStages: " << fMCMatch->GetNMCStages() << FairLogger::endl;
+			LOG(WARNING) << "CbmMCMatchCreatorTask::Init: "<< "No "<<fMCMatch->GetMCStage(i)->GetBranchName() << " array!" << FairLogger::endl;
 			fMCMatch->GetMCStage(i)->SetFill(kFALSE); //RemoveStage(fMCMatch->GetMCStage(i)->GetStageId());
 
 			continue;
@@ -118,11 +110,11 @@ void CbmMCMatchCreatorTask::Exec(Option_t* /*opt*/)
 
 	fMCMatch->LoadInMCLists(fMCLink);
 
-	cout << "NMCStages: " << fMCMatch->GetNMCStages() << endl;
+	LOG(INFO) << "NMCStages: " << fMCMatch->GetNMCStages() << FairLogger::endl;
 	for (int i = 0; i < fMCMatch->GetNMCStages(); i++){
 		if (fMCMatch->GetMCStage(i)->GetFill() == kTRUE && fMCMatch->GetMCStage(i)->GetLoaded() == kFALSE){
-			cout << i << ": ";
-			cout << "BranchName: " << fMCMatch->GetMCStage(i)->GetBranchName() << endl;
+			LOG(INFO) << i << ": ";
+			LOG(INFO) << "BranchName: " << fMCMatch->GetMCStage(i)->GetBranchName() << FairLogger::endl;
 			TClonesArray* clArray = fBranches[fMCMatch->GetMCStage(i)->GetBranchName()];
 			for (int j = 0; j < clArray->GetEntries(); j++){
 				FairMultiLinkedData* myData = (FairMultiLinkedData*)clArray->At(j);
@@ -140,7 +132,7 @@ void CbmMCMatchCreatorTask::Exec(Option_t* /*opt*/)
 		for (int indStage = 0; indStage < myStage.GetNEntries(); indStage++){
 
 			CbmMCEntry myLink(myStage.GetMCLink(indStage));
-			//cout << "myLink: " << myStage.GetMCLink(indStage).GetSource() << "/" << myStage.GetMCLink(indStage).GetPos() << endl;
+			//LOG(INFO) << "myLink: " << myStage.GetMCLink(indStage).GetSource() << "/" << myStage.GetMCLink(indStage).GetPos() << FairLogger::endl;
 			new((*fMCLink)[i]) CbmMCEntry(myLink.GetLinks(), myLink.GetSource(), myLink.GetPos());
 			i++;
 		}
@@ -148,7 +140,7 @@ void CbmMCMatchCreatorTask::Exec(Option_t* /*opt*/)
 
 	if (fVerbose > 0){
 		fMCMatch->Print();
-		cout << endl;
+		LOG(INFO) << FairLogger::endl;
 	}
 }
 

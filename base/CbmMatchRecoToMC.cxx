@@ -448,7 +448,7 @@ void CbmMatchRecoToMC::MatchHitsSts(
       CbmMatch* hitMatch = new ((*hitMatches)[iHit]) CbmMatch();
       const CbmMatch* frontClusterMatch = static_cast<const CbmMatch*>(matches->At(hit->GetFrontClusterId()));
       const CbmMatch* backClusterMatch = static_cast<const CbmMatch*>(matches->At(hit->GetBackClusterId()));
-//      std::cout << "hit " << iHit << " " << frontClusterMatch;
+//      LOG(DEBUG) << "hit " << iHit << " " << frontClusterMatch << FairLogger::endl;
       hitMatch->AddLinks(*frontClusterMatch);
       hitMatch->AddLinks(*backClusterMatch);
       hit->SetMatch(hitMatch);
@@ -590,7 +590,7 @@ void CbmMatchRecoToMC::MatchHitsToPoints(
       CbmMatch* hitMatch = new ((*hitMatches)[iHit]) CbmMatch();
       const FairMCPoint* point = static_cast<const FairMCPoint*>(points->At(hit->GetRefId()));
       hitMatch->AddLink(CbmLink(point->GetEnergyLoss(), hit->GetRefId()));
-    //  std::cout << "hit " << iHit << " " << hitMatch->ToString();
+    //  LOG(DEBUG) << "hit " << iHit << " " << hitMatch->ToString() << FairLogger::endl;;
       hit->SetMatch(hitMatch);
    }
 }
@@ -651,7 +651,8 @@ void CbmMatchRecoToMC::MatchTracks(
       }
       trackMatch->SetNofTrueHits(trueCounter);
       trackMatch->SetNofWrongHits(wrongCounter);
-     // std::cout << iTrack << " "; track->Print(); std::cout << " " << trackMatch->ToString();
+     // LOG(DEBUG) << iTrack << " "; track->Print(); LOG(DEBUG) << " " << trackMatch->ToString()
+     // << FairLogger::endl;
    }
 }
 
@@ -748,7 +749,8 @@ void CbmMatchRecoToMC::MatchStsTracks(
       }
       trackMatch->SetNofTrueHits(trueCounter);
       trackMatch->SetNofWrongHits(wrongCounter);
-     // std::cout << iTrack << " "; track->Print(); std::cout << " " << trackMatch->ToString();
+     // LOG(DEBUG) << iTrack << " "; track->Print(); LOG(DEBUG) << " " << trackMatch->ToString()
+     // << FairLogger::endl;
    }
 }
 

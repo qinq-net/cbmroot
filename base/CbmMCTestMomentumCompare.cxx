@@ -3,7 +3,6 @@
 // -----                  Created 18/07/08  by T.Stockmanns        -----
 // -------------------------------------------------------------------------
 // libc includes
-#include <iostream>
 
 // Root includes
 #include "TROOT.h"
@@ -16,7 +15,7 @@
 #include "FairRuntimeDb.h"
 #include "FairHit.h"
 #include "FairMultiLinkedData.h"
-
+#include "FairLogger.h"
 #include "CbmMCTrack.h"
 #include "CbmTrack.h"
 #include "CbmMCEntry.h"
@@ -46,9 +45,7 @@ InitStatus CbmMCTestMomentumCompare::Init()
 
   FairRootManager* ioman = FairRootManager::Instance();
   	if (!ioman) {
-  		std::cout << "-E- CbmMCTestMomentumCompare::Init: "
-  				<< "RootManager not instantiated!" << std::endl;
-  		return kFATAL;
+  	  LOG(FATAL) << "RootManager not instantiated!" << FairLogger::endl;
   	}
 
   	fMCMatch = (CbmMCMatch*)ioman->GetObject("MCMatch");
@@ -56,7 +53,7 @@ InitStatus CbmMCTestMomentumCompare::Init()
   	fTrack = (TClonesArray*)ioman->GetObject("LheGenTrack");
   	fMCTrack = (TClonesArray*)ioman->GetObject("MCTrack");
 
-	std::cout << "-I- CbmMCTestMomentumCompare::Init: Initialization successfull" << std::endl;
+	LOG(INFO)<< "CbmMCTestMomentumCompare: Initialization successfull" << FairLogger::endl;
 
 
   return kSUCCESS;
@@ -79,24 +76,24 @@ void CbmMCTestMomentumCompare::Exec(Option_t* /*opt*/)
 // 	//fMCMatch->CreateArtificialStage(kMCTrack, "", "");
 // 
 // 	CbmMCResult myResult = fMCMatch->GetMCInfo(kTrack, kMCTrack);
-// 	std::cout << myResult;
+// 	LOG(INFO) << myResult;
 // 	for (int i = 0; i < myResult.GetNEntries(); i++){
 // 		CbmMCEntry myLinks = myResult.GetMCLink(i);
 // 		CbmTrack* myTrack = (CbmTrack*)fTrack->At(i);
-// 		std::cout << "TrackMatch for Track " << i << std::endl;
+// 		LOG(INFO) << "TrackMatch for Track " << i << FairLogger::endl;
 // 		//myTrack->Print();
-// 		std::cout << "P: " << myTrack->GetParamFirst().GetSDMomentum().Mag() << std::endl;
-// 		std::cout << "Belongs to: " << std::endl;
+// 		LOG(INFO) << "P: " << myTrack->GetParamFirst().GetSDMomentum().Mag() << FairLogger::endl;
+// 		LOG(INFO) << "Belongs to: " << FairLogger::endl;
 // 		for (int j = 0; j < myLinks.GetNLinks(); j++){
 // 			if (myLinks.GetLink(j).GetType() == kMCTrack){
-// 				std::cout << "MCTrack " << myLinks.GetLink(j).GetIndex() << std::endl;
+// 				LOG(INFO) << "MCTrack " << myLinks.GetLink(j).GetIndex() << FairLogger::endl;
 // 				CbmMCTrack* myMCTrack = (CbmMCTrack*)fMCTrack->At(myLinks.GetLink(j).GetIndex());
 // 				//myMCTrack->Print(myLinks.GetFairLink(j).GetIndex());
-// 				std::cout << "P: " << myMCTrack->GetMomentum().Mag() << " PID: " << myMCTrack->GetPdgCode() << std::endl;
-// 				std::cout << "--------------------------------" << std::endl;
+// 				LOG(INFO) << "P: " << myMCTrack->GetMomentum().Mag() << " PID: " << myMCTrack->GetPdgCode() << FairLogger::endl;
+// 				LOG(INFO) << "--------------------------------" << FairLogger::endl;
 // 			}
 // 		}
-// 		std::cout << std::endl;
+// 		LOG(INFO) << FairLogger::endl;
 // 	}
 }
 

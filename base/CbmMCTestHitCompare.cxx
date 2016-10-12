@@ -18,11 +18,6 @@
 #include "TH2F.h"
 #include "TList.h"
 
-// libc includes
-#include <iostream>
-using std::cout;
-using std::endl;
-
 // -----   Default constructor   -------------------------------------------
 CbmMCTestHitCompare::CbmMCTestHitCompare()
   : FairTask("Creates CbmMC test"),
@@ -53,10 +48,8 @@ InitStatus CbmMCTestHitCompare::Init()
 
 
   FairRootManager* ioman = FairRootManager::Instance();
-  	if (!ioman) {
-  		cout << "-E- CbmMCTestHitCompare::Init: "
-  				<< "RootManager not instantiated!" << endl;
-  		return kFATAL;
+  	if (!ioman) {	
+  		LOG(FATAL) << "RootManager not instantiated!" << FairLogger::endl;
   	}
 
   	fMCMatch = (CbmMCMatch*)ioman->GetObject("MCMatch");
@@ -64,7 +57,7 @@ InitStatus CbmMCTestHitCompare::Init()
   	fStripHit = (TClonesArray*)ioman->GetObject("StsHit");
   	fMCPoint = (TClonesArray*)ioman->GetObject("StsPoint");
 
-	cout << "-I- CbmMCTestHitCompare::Init: Initialization successfull" << endl;
+	LOG(INFO) << "CbmMCTestHitCompare: Initialization successfull" << FairLogger::endl;
   CreateHistos();
   Reset();
 
@@ -88,24 +81,24 @@ void CbmMCTestHitCompare::Exec(Option_t* /*opt*/)
 	//fMCMatch->CreateArtificialStage(kMCTrack, "", "");
 
   CbmMCResult myResult = fMCMatch->GetMCInfo(Cbm::kStsHit, Cbm::kStsPoint);
-	cout << myResult;
+	LOG(INFO) << myResult;
 	for (int i = 0; i < myResult.GetNEntries(); i++){
 		CbmMCEntry myLinks = myResult.GetMCLink(i);
 		CbmStsHit* myHit = (CbmStsHit*)fStripHit->At(i);
 
-		cout << "Hit Match for hit " << i << " at (" << myHit->GetX() << "," << myHit->GetY() << "," << myHit->GetZ() << ")" << endl;
+		LOG(INFO) << "Hit Match for hit " << i << " at (" << myHit->GetX() << "," << myHit->GetY() << "," << myHit->GetZ() << ")" << FairLogger::endl;
 		if (myLinks.GetNLinks()<2){
 		  for (int j = 0; j < myLinks.GetNLinks(); j++){
 		    if (myLinks.GetLink(j).GetType() == Cbm::kStsPoint){
 				
 		      CbmStsPoint* myMCPoint = (CbmStsPoint*)fMCPoint->At(myLinks.GetLink(j).GetIndex());
 		      //myMCTrack->Print(myLinks.GetFairLink(j).GetIndex());
-		      cout << "MCPoint " << myLinks.GetLink(j).GetIndex() << " at (" << myMCPoint->GetX(myMCPoint->GetZ()) << "," << 
+		      LOG(INFO) << "MCPoint " << myLinks.GetLink(j).GetIndex() << " at (" << myMCPoint->GetX(myMCPoint->GetZ()) << "," << 
 		      myMCPoint->GetY(myMCPoint->GetZ()) << "," << 
-		      myMCPoint->GetZ() << ")" <<endl;
+		      myMCPoint->GetZ() << ")" <<FairLogger::endl;
 		      fhHitPointCorrelation -> Fill ( myHit->GetX()-myMCPoint->GetX(myMCPoint->GetZ()),
 						      myHit->GetY()-myMCPoint->GetY(myMCPoint->GetZ()));
-		      cout << "--------------------------------" << endl;
+		      LOG(INFO) << "--------------------------------" << FairLogger::endl;
 		    }
 		  }
 		}
@@ -115,9 +108,9 @@ void CbmMCTestHitCompare::Exec(Option_t* /*opt*/)
 				
 		      CbmStsPoint* myMCPoint = (CbmStsPoint*)fMCPoint->At(myLinks.GetLink(j).GetIndex());
 		      //myMCTrack->Print(myLinks.GetFairLink(j).GetIndex());
-		      cout << "MCPoint " << myLinks.GetLink(j).GetIndex() << " at (" << myMCPoint->GetX(myMCPoint->GetZ()) << "," << 
+		      LOG(INFO) << "MCPoint " << myLinks.GetLink(j).GetIndex() << " at (" << myMCPoint->GetX(myMCPoint->GetZ()) << "," << 
 		      myMCPoint->GetY(myMCPoint->GetZ()) << "," << 
-		      myMCPoint->GetZ() << ")" <<endl;
+		      myMCPoint->GetZ() << ")" <<FairLogger::endl;
 		      if ( TMath::Abs (myHit->GetX()-myMCPoint->GetX(myMCPoint->GetZ())) < 1. && TMath::Abs (myHit->GetY()-myMCPoint->GetY(myMCPoint->GetZ())) < 1.) {
 		        fhHitPointSCorrelationSmall -> Fill( myHit->GetX()-myMCPoint->GetX(myMCPoint->GetZ()),
 						        myHit->GetY()-myMCPoint->GetY(myMCPoint->GetZ()));
@@ -126,11 +119,11 @@ void CbmMCTestHitCompare::Exec(Option_t* /*opt*/)
 			fhHitPointSCorrelationLarge -> Fill( myHit->GetX()-myMCPoint->GetX(myMCPoint->GetZ()),
 						              myHit->GetY()-myMCPoint->GetY(myMCPoint->GetZ()));
 		      }
-		      cout << "--------------------------------" << endl;
+		      LOG(INFO) << "--------------------------------" << FairLogger::endl;
 		    }
 		  }
 		}
-		cout << endl;
+		LOG(INFO) << FairLogger::endl;
 	}
 }
 // -------------------------------------------------------------------------

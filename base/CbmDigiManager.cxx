@@ -9,17 +9,15 @@
 #include "CbmDigi.h"
 
 #include "FairRootManager.h"
+#include "FairLogger.h"
 
 // Includes from ROOT
 #include "TClonesArray.h"
 
 // Includes from c++
-#include <iostream>
 #include <iomanip>
 
 /// pair included
-using std::cout;
-using std::endl;
 using std::left;
 using std::right;
 using std::setw;
@@ -73,10 +71,9 @@ void CbmDigiManager::Exec(Option_t* /*opt*/) {
     for (Int_t iDigi=0; iDigi<nDigis[iSys]; iDigi++) {
       CbmDigi* digi = (CbmDigi*) fDigis[iSys]->At(iDigi);
       if ( digi->GetSystemId() != iSys ) {
-	cout << "-E- " << GetName() << "::Exec: digi with system ID "
+	LOG(FATAL) << "Digi with wrong system ID "
 	     << digi->GetSystemId() << " in digi collection " << iSys
-	     << "(" << fSystem[iSys] << ")" << endl;
-	Fatal("Exec", "Wrong system ID for digi");
+	     << "(" << fSystem[iSys] << ")" << FairLogger::endl;
       }
       Int_t iDet  = digi->GetDetectorId();
       Int_t iChan = digi->GetChannelNr();
@@ -84,9 +81,9 @@ void CbmDigiManager::Exec(Option_t* /*opt*/) {
 
       // Check for existing entries in the map (should not happen)
       if (fDigiMap.find(a) != fDigiMap.end() ) {
-	cout << "-W- " << GetName() << "::Exec: Multiple entry in "
+	LOG(WARNING) << "Multiple entry in "
 	     << fSystem[iSys] << " digi collection; detector " << iDet
-	     << ", channel " << iChan << endl;
+	     << ", channel " << iChan << FairLogger::endl;
 	continue;
       }
 
@@ -100,14 +97,14 @@ void CbmDigiManager::Exec(Option_t* /*opt*/) {
 
   // Control output
   fTimer.Stop();
-  cout << "+ ";
-  cout << setw(15) << left << fName << ": " << setprecision(4) << setw(8)
+  LOG(INFO) << "+ ";
+  LOG(INFO) << setw(15) << left << fName << ": " << setprecision(4) << setw(8)
        << fixed << right << fTimer.RealTime()
        << " s";
   for (Int_t iSys=0; iSys<15; iSys++)
-    if ( fDigis[iSys] ) cout << ", " << fSystem[iSys] 
+    if ( fDigis[iSys] ) LOG(INFO) << ", " << fSystem[iSys] 
 			     << " " << nDigis[iSys];
-  cout << endl;
+  LOG(INFO) << FairLogger::endl;
 
 }
 // -------------------------------------------------------------------------
@@ -133,7 +130,7 @@ CbmDigi* CbmDigiManager::GetDigi(Int_t iDetector, Int_t iChannel) {
 InitStatus CbmDigiManager::Init() {
 
   FairRootManager* ioman = FairRootManager::Instance();
-  if ( ! ioman ) Fatal("Init", "No FairRootManager");
+  if ( ! ioman ) LOG(FATAL) << "No FairRootManager" << FairLogger::endl;
 
   Int_t nColl = 0;
   for (Int_t iSys=0; iSys<16; iSys++) {
@@ -144,10 +141,10 @@ InitStatus CbmDigiManager::Init() {
     if ( fDigis[iSys] ) nColl++;
   }
 
-  cout << "-I- " << GetName() << "::Init: " << nColl 
+  LOG(INFO) << GetName() << "::Init: " << nColl 
        << " digi collection";
-  if ( nColl != 1 ) cout << "s";
-  cout << " found." << endl;
+  if ( nColl != 1 ) LOG(INFO) << "s";
+  LOG(INFO) << " found." << FairLogger::endl;
 
   return kSUCCESS;
 

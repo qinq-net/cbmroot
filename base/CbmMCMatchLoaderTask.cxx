@@ -9,14 +9,10 @@
 
 // framework includes
 #include "FairRootManager.h"
+#include "FairLogger.h"
 
 // Root includes
 #include "TClonesArray.h"
-
-// libc includes
-#include <iostream>
-using std::cout;
-using std::endl;
 
 // -----   Default constructor   -------------------------------------------
 CbmMCMatchLoaderTask::CbmMCMatchLoaderTask() 
@@ -48,9 +44,7 @@ InitStatus CbmMCMatchLoaderTask::Init()
 
   FairRootManager* ioman = FairRootManager::Instance();
   	if (!ioman) {
-  		cout << "-E- CbmMCMatchLoaderTask::Init: "
-  				<< "RootManager not instantiated!" << endl;
-  		return kFATAL;
+  		LOG(FATAL) << "RootManager not instantiated!" << FairLogger::endl;
   	}
 
 	fMCLink = (TClonesArray*)ioman->GetObject("MCLink");
@@ -88,7 +82,7 @@ void CbmMCMatchLoaderTask::Exec(Option_t* /*opt*/)
 	fMCMatch->CreateArtificialStage(Cbm::kMCTrack, "", "");
 
 	fMCMatch->Print();
-	cout << endl;
+	LOG(INFO) << FairLogger::endl;
 }
 
 void CbmMCMatchLoaderTask::Finish()
