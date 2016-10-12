@@ -1,5 +1,6 @@
 #!/bin/bash
 # shell script to iterate Analyzer histograms
+
 cRun=$1
 #cRun='CbmTofPiHd_09Aug1533'
 #cRun='CbmTofPiHd_10Aug1728'
@@ -55,7 +56,7 @@ rm ${cRun}_${cSet}_${iSel}_${iSel2}_tofAnaTestBeam.hst.root
 fi
 # ------------------------------- End Clean up --------------------------------
 
-if((0)); then
+if((1)); then
 
 cd ${cRun}
 mkdir          Ana${cRun}_${cSet}_${iSel}_${cSel2}
