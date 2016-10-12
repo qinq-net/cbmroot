@@ -2508,6 +2508,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
         }
      }
      break;
+
      case 3 :    //update offsets, gains, save walks and DELTOF 
      {     
         Int_t iNbRpc = fDigiBdfPar->GetNbRpc(  iSmType);
@@ -2538,7 +2539,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
             fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0] += -dTYOff + TMean;
             fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1] += +dTYOff + TMean;
           }
-	  LOG(DEBUG)<<Form("Calib: TSRC %d%d%d%d, hits %6.0f, new Off %8.0f,%8.0f ",
+	  LOG(DEBUG3)<<Form("Calib: TSRC %d%d%d%d, hits %6.0f, new Off %8.0f,%8.0f ",
 			  iSmType,iSm,iRpc,iCh,htempTOff_px->GetBinContent(iCh+1),
 			  fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0],
 			  fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1])
@@ -2802,6 +2803,169 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
         }
      }
      break;
+    case 5 :    //update offsets (from positions only), gains, save walks and DELTOF 
+     {     
+        Int_t iNbRpc = fDigiBdfPar->GetNbRpc(  iSmType);
+        Int_t iNbCh  = fDigiBdfPar->GetNbChan( iSmType, iRpc );
+        if((fCalSmAddr < 0) || (fCalSmAddr != iSmAddr) ){     // select detectors for updating offsets
+         LOG(INFO)<<"CbmTofTestBeamClusterizer::WriteHistos (calMode==3): update Offsets and Gains, keep Walk and DelTof for "
+                  <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc<<" with " <<  iNbCh << " channels "
+                   <<" using selector "<<fCalSel
+                  <<FairLogger::endl;
+
+         for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) // update Offset and Gain 
+         {
+          Double_t YMean=((TProfile *)htempPos_pfx)->GetBinContent(iCh+1);  //nh +1 empirical(?)
+          Double_t TMean=0.;
+          Double_t dTYOff=YMean/fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc) ;
+
+
+          if(htempTOff_px->GetBinContent(iCh+1)>WalkNHmin){
+            fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0] += -dTYOff + TMean;
+            fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1] += +dTYOff + TMean;
+          }
+	  LOG(DEBUG3)<<Form("Calib: TSRC %d%d%d%d, hits %6.0f, new Off %8.0f,%8.0f ",
+			  iSmType,iSm,iRpc,iCh,htempTOff_px->GetBinContent(iCh+1),
+			  fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0],
+			  fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1])
+                    <<FairLogger::endl;
+
+          /*
+           Double_t TotMean=((TProfile *)htempTot_pfx)->GetBinContent(iCh+1);  //nh +1 empirical(!)
+          if(1<TotMean){
+            fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][0] *= fdTTotMean / TotMean;
+            fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][1] *= fdTTotMean / TotMean;
+          }
+          */
+          for(Int_t iSide=0; iSide<2; iSide++){
+            Int_t ib=iCh*2+1+iSide;
+            TH1 * hbin=htempTot->ProjectionY(Form("bin%d",ib),ib,ib);
+            if(100>hbin->GetEntries()) continue;  //request min number of entries
+/*            Double_t Ymax=hbin->GetMaximum();*/
+            Int_t iBmax=hbin->GetMaximumBin();
+            TAxis *xaxis = hbin->GetXaxis();
+            Double_t Xmax=xaxis->GetBinCenter(iBmax)/fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][iSide];
+            Double_t XOff=Xmax-fTotPreRange;
+            if(0){//TMath::Abs(XOff - fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh][iSide])>100){
+              LOG(WARNING)<<"XOff changed for "
+                          <<Form("SmT%01d_sm%03d_rpc%03d_Side%d: XOff %f, old %f",iSmType,iSm,iRpc,iSide,XOff,fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh][iSide])
+                          <<FairLogger::endl; 
+            }
+            //            Double_t TotMean=htempTot_Mean->GetBinContent(ib);
+            Double_t TotMean=hbin->GetMean();
+            if(15==iSmType){
+              LOG(WARNING)<<"Gain for "
+                          <<Form("SmT%01d_sm%03d_rpc%03d_Side%d: TotMean %f, prof %f, gain %f, modg %f ",
+                                 iSmType,iSm,iRpc,iSide,TotMean,htempTot_Mean->GetBinContent(ib),
+                                 fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][iSide],fdTTotMean / TotMean)
+                          <<FairLogger::endl;             }
+            if(1<TotMean){
+              fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][iSide] *= fdTTotMean / TotMean;
+            }
+          }
+          if(5==iSmType && 
+            fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0] != fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]) {// diamond 
+            LOG(WARNING)<<"CbmTofTestBeamClusterizer::FillCalHist:" 
+                        <<" SmT "<< iSmType<<" Sm "<<iSm<<" Rpc "<<iRpc<<" Ch "<<iCh
+                        <<": YMean "<<YMean<<", TMean "<< TMean
+                        <<" -> " 
+                        <<Form(" %f %f %f %f ",fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0],
+                                               fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1],
+                                               fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][0],
+                                               fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][1])
+                        <<FairLogger::endl;
+            Double_t dTOff=0.5*(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]+fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]);
+            Double_t dGain=0.5*(fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][0]+fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][1]);        
+            fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]   =dTOff;
+            fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]   =dTOff;
+            fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][0]=dGain;
+            fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][1]=dGain;
+          }   // diamond warning end 
+         }    // for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) 
+        }     // iSmType selection condition  
+
+        htempPos_pfx->Reset();    //reset to store new values 
+        htempTOff_pfx->Reset();
+        htempTot_Mean->Reset();
+        htempTot_Off->Reset();
+        for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) // store new values 
+        {
+	 Double_t YMean=fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc)*0.5
+          *(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]-fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
+         Double_t TMean=0.5*(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]+fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
+         htempPos_pfx->Fill(iCh,YMean);
+         if( ((TProfile *)htempPos_pfx)->GetBinContent(iCh+1)!=YMean) {
+           LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! ch "<<iCh
+                     <<" got "<< htempPos_pfx->GetBinContent(iCh)<<","<<htempPos_pfx->GetBinContent(iCh+1)
+                     <<","<<htempPos_pfx->GetBinContent(iCh+2)
+                     <<", expected "<<YMean
+                     <<FairLogger::endl;
+         }
+         htempTOff_pfx->Fill(iCh,TMean); 
+
+          for(Int_t iSide=0; iSide<2; iSide++){
+           htempTot_Mean->SetBinContent(iCh*2+1+iSide,
+                          fdTTotMean/fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][iSide] );
+           htempTot_Off->SetBinContent(iCh*2+1+iSide,fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh][iSide]);
+          }
+          //         htempTot_pfx->Fill(iCh,fdTTotMean/fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][1]);
+        } // for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) 
+
+
+        LOG(DEBUG1)<<" Updating done ... write to file "<<FairLogger::endl;
+        htempPos_pfx->Write();
+        htempTOff_pfx->Write();
+        htempTot_pfx->Write();
+        htempTot_Mean->Write();
+        htempTot_Off->Write();
+
+        // store old DELTOF histos
+        LOG(DEBUG)<<" Copy old DelTof histos from "<< gDirectory->GetName()<<" to file "<<FairLogger::endl;
+
+        for(Int_t iSel=0; iSel<iNSel; iSel++){
+         // Store DelTof corrections 
+         TDirectory * curdir = gDirectory;
+         gROOT->cd(); //
+         TH1D *hCorDelTof =(TH1D*) gDirectory->FindObjectAny( Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel));
+         gDirectory->cd( curdir->GetPath() );
+         if (NULL!=hCorDelTof) {
+           TH1D *hCorDelTofout=(TH1D*)hCorDelTof->Clone(Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel));
+          hCorDelTofout->Write();
+         }else {
+         LOG(DEBUG)<<" No CorDelTof histo "
+                  <<Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel)<<FairLogger::endl;
+         }
+        }
+
+        LOG(DEBUG)<<" Store old walk histos to file "<<FairLogger::endl;
+        // store walk histos
+        for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) // restore old values 
+        {
+	  if(NULL == fhRpcCluWalk[iDetIndx][iCh][0]) break;
+          TProfile *htmp0 = fhRpcCluWalk[iDetIndx][iCh][0]->ProfileX("_pfx",1,nbClWalkBinY);
+          TProfile *htmp1 = fhRpcCluWalk[iDetIndx][iCh][1]->ProfileX("_pfx",1,nbClWalkBinY);
+          TH1D *h1tmp0    = fhRpcCluWalk[iDetIndx][iCh][0]->ProjectionX("_px",1,nbClWalkBinY);
+          TH1D *h1tmp1    = fhRpcCluWalk[iDetIndx][iCh][1]->ProjectionX("_px",1,nbClWalkBinY);
+          for(Int_t iWx=0; iWx<nbClWalkBinX; iWx++){
+           h1tmp0->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]);
+           h1tmp1->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]);
+           if( h1tmp0->GetBinContent(iWx+1)!=fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]) {
+           LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! iWx "<<iWx
+                     <<" got "<< h1tmp0->GetBinContent(iWx+1)
+                     <<", expected "<<fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]
+                     <<FairLogger::endl;         }
+          }
+          h1tmp0->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S0_Walk_px", iSmType, iSm, iRpc, iCh ));
+          htmp0->Write();
+          h1tmp0->Write();
+          h1tmp1->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S1_Walk_px", iSmType, iSm, iRpc, iCh ));
+          htmp1->Write();
+          h1tmp1->Write();
+        }
+     }
+     break;
+
+
      default: 
          LOG(DEBUG)<<"CbmTofTestBeamClusterizer::WriteHistos: update mode "
                    <<fCalMode<<" not yet implemented"
