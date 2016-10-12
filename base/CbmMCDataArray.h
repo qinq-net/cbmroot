@@ -71,6 +71,20 @@ class CbmMCDataArray
 		 **/
 		Int_t Size(Int_t fileNumber, Int_t eventNumber);
 
+                /** Get a size of TClonesArray . Slow if TClonesArray not in cache
+		 ** @param link	Reference to CbmLink object, index field is ignored
+		 ** @value 	Size of corresponding TClonesArray
+		 **/
+		Int_t Size(const CbmLink& lnk)
+		{ return Size(lnk.GetFile(), lnk.GetEntry()); }
+
+                /** Get a size of TClonesArray . Slow if TClonesArray not in cache
+		 ** @param link	Pointer to CbmLink object, index field is ignored
+		 ** @value 	Size of corresponding TClonesArray
+		 **/
+		Int_t Size(const CbmLink* lnk)
+		{ return Size(lnk->GetFile(), lnk->GetEntry()); }
+
 	private:
 
 		/** Default constructor. Should be called from CbmMCDataManager. **/
@@ -106,6 +120,12 @@ class CbmMCDataArray
 
 		/** Finish event. Delete all arrays to free memory. **/
 		void FinishEvent();
+
+                /** Make TChain number chainNum2 friend of TChain number chainNum2
+		 ** @param chainNum1 a number of chain for which AddFriend is called
+		 ** @param chainNum2 number of chain which became a friend
+		 **/
+		void AddFriend(Int_t chainNum1, Int_t chainNum2);		
 
 
 		/** Get an object in legacy mode

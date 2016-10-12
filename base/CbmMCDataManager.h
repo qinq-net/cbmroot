@@ -54,6 +54,12 @@ class CbmMCDataManager : public FairTask
 		 **/
 		Int_t AddFileToChain(const char* fileName, Int_t chainNumber);
 
+		/** Make TChain number chainNum2 friend of TChain number chainNum2
+		 ** @param chainNum1 a number of chain for which AddFriend is called
+		 ** @param chainNum2 number of chain which became a friend
+		 **/
+		void AddFriend(Int_t chainNum1, Int_t chainNum2)
+		  {fFriends[chainNum1]=chainNum2;}
 
 		/** Execution (empty; just to match FairTask structure) **/
 		virtual void Exec(Option_t* /*option*/) { };
@@ -83,7 +89,8 @@ class CbmMCDataManager : public FairTask
 
     /** List of created CbmMCDataArrays **/
     std::map<TString, CbmMCDataArray*> fActive;			//!
-
+    /** Map of friends **/
+    std::map<Int_t, Int_t> fFriends;					//!
 
     ClassDef(CbmMCDataManager, 1);
 };

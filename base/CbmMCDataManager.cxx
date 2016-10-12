@@ -3,6 +3,7 @@
 #include "CbmMCDataArray.h"
 
 #include "FairRootManager.h"
+#include "FairLogger.h"
 
 #include <iostream>
 
@@ -60,14 +61,13 @@ Int_t CbmMCDataManager::AddFileToChain(const char* name, Int_t number)
   }
   fFileList[number].push_back(name);
 
-  return fFileList[i].size();
+  return fFileList[number].size();
 }
 
 
 // --- End of event action
 void CbmMCDataManager::FinishEvent()
 {
-  cout << "FinishEvent" << endl;
   map<TString, CbmMCDataArray*>::const_iterator p;
 
   for(p=fActive.begin();p!=fActive.end();++p)
@@ -92,19 +92,26 @@ CbmMCDataArray* CbmMCDataManager::InitBranch(const char* brname)
 {
   CbmMCDataArray* arr;
   TString nm=brname;
+  map<Int_t, Int_t>::const_iterator p;
 
   if (fActive.find(nm)!=fActive.end())
   {
-    cout << "InitBranch: " << nm << " " << fActive[nm] << endl; 
+    LOG(INFO) << "InitBranch: " << nm << " " << fActive[nm] << FairLogger::endl; 
     return fActive[nm];
   }  
   if (fLegacy==0)
+  {
     arr=new CbmMCDataArray(brname, fFileList);
+    for(p=fFriends.begin();p!=fFriends.end();++p)
+    {
+      arr->AddFriend(p->first, p->second);
+    }
+  }
   else
     arr=new CbmMCDataArray(brname);
 
   fActive[nm]=arr;
-  cout << "InitBranch: " << nm << " " << arr << endl; 
+  LOG(INFO) << "InitBranch: " << nm << " " << arr << FairLogger::endl; 
   return arr;
 }
 

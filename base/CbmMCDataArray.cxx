@@ -32,7 +32,10 @@ CbmMCDataArray::CbmMCDataArray(const char* branchname,
 
   for(i=0;i<s;i++)
   {
-    fTArr[i]=0;
+    fN[i]=0;
+    fTArr[i]=NULL;
+    fChains[i]=NULL;
+    if (fileList[i].size()==0) continue;
     fChains[i]=new TChain("cbmsim");
     for(p=fileList[i].begin();p!=fileList[i].end();++p)
       fChains[i]->AddFile(*p);
@@ -45,6 +48,26 @@ CbmMCDataArray::CbmMCDataArray(const char* branchname,
     fArrays[i].clear();
 }
 
+// --- Make TChain number chainNum2 friend of TChain number chainNum2
+void CbmMCDataArray::AddFriend(Int_t chainNum1, Int_t chainNum2)
+{
+  if (fLegacy==1)
+  {
+    LOG(ERROR) << "AddFriend method should not be called in legacy mode" << endl;
+    return;
+  }
+  if (chainNum1<0 || chainNum1>=static_cast<Int_t>(fChains.size()) || fChains[chainNum1]==NULL)
+  {
+    LOG(ERROR) << "chainNum1=" << chainNum1 << " is not a correct chain number." << endl;
+    return;
+  }
+  if (chainNum2<0 || chainNum2>=static_cast<Int_t>(fChains.size()) || fChains[chainNum2]==NULL)
+  {
+    LOG(ERROR) << "chainNum2=" << chainNum2 << " is not a correct chain number." << endl;
+    return;
+  }
+  fChains[chainNum1]->AddFriend(fChains[chainNum2]);
+}
 
 // --- Legacy constructor
 CbmMCDataArray::CbmMCDataArray(const char* branchname)
