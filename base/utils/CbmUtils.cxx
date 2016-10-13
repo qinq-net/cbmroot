@@ -19,10 +19,21 @@ void SaveCanvasAsImage(
    const std::string& option)
 {
    if (dir == "") return;
-   gSystem->mkdir(dir.c_str(), true); // create directory if it does not exist
-   if (option.find("eps") != std::string::npos) c->SaveAs(std::string(dir + std::string(c->GetTitle()) + ".eps").c_str());
-   if (option.find("png") != std::string::npos) c->SaveAs(std::string(dir + std::string(c->GetTitle()) + ".png").c_str());
-   if (option.find("gif") != std::string::npos) c->SaveAs(std::string(dir + std::string(c->GetTitle()) + ".gif").c_str());
+   if (option.find("eps") != std::string::npos) {
+	   string dir2 = dir + "/eps/";
+	   gSystem->mkdir(dir2.c_str(), true); // create directory if it does not exist
+	   c->SaveAs(std::string(dir2 + std::string(c->GetTitle()) + ".eps").c_str());
+   }
+   if (option.find("png") != std::string::npos) {
+	   string dir2 = dir + "/png/";
+	   gSystem->mkdir(dir2.c_str(), true);
+	   c->SaveAs(std::string(dir2 + std::string(c->GetTitle()) + ".png").c_str());
+   }
+   if (option.find("gif") != std::string::npos) {
+	   string dir2 = dir + "/gif/";
+	   gSystem->mkdir(dir2.c_str(), true);
+	   c->SaveAs(std::string(dir2 + std::string(c->GetTitle()) + ".gif").c_str());
+   }
 }
 
 string FindAndReplace(

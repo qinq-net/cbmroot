@@ -19,6 +19,7 @@
 #include "TGraph2D.h"
 #include "TProfile.h"
 #include "TProfile2D.h"
+#include "TCanvas.h"
 
 #include <map>
 #include <string>
@@ -406,12 +407,35 @@ public:
       return strm;
    }
 
+   /**
+    * \brief Create and draw TCanvas and store pointer to it.
+    * \param[in] name Name of the canvas.
+    * \param[in] title Title of the canvas.
+    * \param[in] width Width of the canvas.
+    * \param[in] height Height of the canvas.
+    * \return Pointer to the created canvas.
+    */
+   TCanvas* CreateCanvas(
+   		const std::string& name,
+   		const std::string& title,
+   		Int_t width,
+   		Int_t height);
+
+   /**
+    * \brief Save all stored canvases to images.
+    * \param[in] outputDir Path to the output directory (could be relative path).
+    * \param[in] options You can specify image format: eps, png or gif. Example: "gif,eps,png".
+    */
+   void SaveCanvasToImage(
+   		const std::string& outputDir,
+		const std::string& options = "png,eps");
+
 private:
    template<class T> std::vector<T> ObjectVector(
          const std::string& pattern) const;
 
-   // Map of histogram (graph) name to its pointer
-   std::map<std::string, TNamed*> fMap;
+   std::map<std::string, TNamed*> fMap; // Map of histogram (graph) name to its pointer
+   std::vector<TCanvas*> fCanvases; // Pointers to all created canvases
 
    ClassDef(CbmHistManager, 1)
 };

@@ -6,6 +6,7 @@
  */
 
 #include "CbmHistManager.h"
+#include "utils/CbmUtils.h"
 
 #include "FairLogger.h"
 
@@ -291,6 +292,26 @@ string CbmHistManager::ToString() const
 		str += it->first + "\n";
 	}
 	return str;
+}
+
+TCanvas* CbmHistManager::CreateCanvas(
+		const std::string& name,
+		const std::string& title,
+		Int_t width,
+		Int_t height)
+{
+	TCanvas* c = new TCanvas(name.c_str(), title.c_str(), width, height);
+	fCanvases.push_back(c);
+	return c;
+}
+
+void CbmHistManager::SaveCanvasToImage(
+		const std::string& outputDir,
+		const std::string& options)
+{
+	for (unsigned int i = 0; i < fCanvases.size(); i++) {
+		Cbm::SaveCanvasAsImage(fCanvases[i], outputDir, options);
+	}
 }
 
 ClassImp(CbmHistManager)
