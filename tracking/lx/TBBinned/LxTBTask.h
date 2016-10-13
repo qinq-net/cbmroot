@@ -111,7 +111,7 @@ private:
     TClonesArray* fTofDigis;
 #endif//LXTB_QA
     
-//#ifdef LXTB_QA
+#ifdef LXTB_QA
     struct TrackDataHolder
     {
         Int_t pointInds[CUR_NOF_STATIONS];
@@ -131,7 +131,7 @@ private:
     };
     
     std::vector<vector<TrackDataHolder> > fMCTracks;
-//#endif//LXTB_QA
+#endif//LXTB_QA
     bool isEvByEv;
     LxTbBinnedFinder* fFinder;
     list<LxTbBinnedFinder::Chain*> recoTracks;
@@ -151,6 +151,7 @@ private:
     TClonesArray* fStsDigiMatches;
     LxTBBinnedDetector* fDetector;
 #endif//LXTB_TIE
+    int dummy;
 
 ClassDef(LxTBFinder, 1)
 };

@@ -485,6 +485,7 @@ struct LxTbBinnedFinder
         fHasTrd = fHasTrd && fSignalParticle->fHasTrd;
         scaltype E = fSignalParticle->fMinEnergy;// GeV
         scaltype E0 = E;
+        scaltype deltaTheta = 0;
         
         for (int i = 0; i < fNofStations; ++i)
         {
@@ -496,7 +497,7 @@ struct LxTbBinnedFinder
             if (i > 0)
             {
                 scaltype Escat = (E0 + E) / 2;
-                scaltype deltaTheta = CalcThetaPrj(Escat, L, &stations[i].absorber);
+                deltaTheta += CalcThetaPrj(Escat, L, &stations[i].absorber);
                 stations[i].deltaThetaX = deltaTheta;
                 stations[i].deltaThetaY = deltaTheta;
                 scaltype deltaZ = stations[i].z - stations[i - 1].z;

@@ -98,6 +98,23 @@ void LxTBBinnedDetector::TieTracks(LxTbBinnedFinder& fFinder)
       const LxTBBinnedStsTrack& stsTrack = *i;
       CbmGlobalTrack* globalTrack = new ((*fGlobalTracks)[globalTrackNo]) CbmGlobalTrack();
       globalTrack->SetStsTrackIndex(globalTrackNo++);
+      Double_t qp = stsTrack.fPar.GetQp();
+      
+      if (0 == qp)// We want propagate J/psi tracks only.
+         continue;
+      
+      Double_t p = 1 / qp;
+      
+      if (p < 3 )// We want propagate J/psi tracks only.
+         continue;
+      
+      Double_t txSq = stsTrack.fPar.GetTx() * stsTrack.fPar.GetTx();
+      Double_t tySq = stsTrack.fPar.GetTy() * stsTrack.fPar.GetTy();
+      Double_t ptSq = p * p * (txSq + tySq) / (1 + txSq + tySq);
+      
+      if (ptSq < 1)// We want propagate J/psi tracks only.
+         continue;
+      
       Double_t trackChiSq = stsTrack.fChiSq;
       CbmLitTrackParam par;
       CbmLitConverterFairTrackParam::FairTrackParamToCbmLitTrackParam(&stsTrack.fPar, &par);

@@ -14,11 +14,11 @@
 #ifndef LXTBDEFINITIONS_H
 #define LXTBDEFINITIONS_H
 
-#define LXTB_TIE
+//#define LXTB_TIE
 #define LXTB_QA
 
 #ifdef LXTB_QA
-//#define LXTB_EMU_TS
+#define LXTB_EMU_TS
 #endif//LXTB_QA
 
 #endif /* LXTBDEFINITIONS_H */
