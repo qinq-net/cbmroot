@@ -1440,14 +1440,13 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
     fSelAddr =CbmTofAddress::GetUniqueAddress(fSelSm,fSelRpc,0,0,fSelId);
     fSel2Addr=CbmTofAddress::GetUniqueAddress(fSel2Sm,fSel2Rpc,0,0,fSel2Id);
 
-    LOG(DEBUG) <<"CbmTofTestBeamClusterizer::FillHistos() for "<<iNSel<<" triggers, "
+    LOG(DEBUG) <<"CbmTofTestBeamClusterizer::FillHistos() for "<<iNSel<<" triggers"
                <<", Dut "<<fDutId<<", "<<fDutSm<<", "<<fDutRpc<<Form(", 0x%08x",fDutAddr) 
 	       <<", Sel "<<fSelId<<", "<<fSelSm<<", "<<fSelRpc<<Form(", 0x%08x",fSelAddr)
 	       <<", Sel2 "<<fSel2Id<<", "<<fSel2Sm<<", "<<fSel2Rpc<<Form(", 0x%08x",fSel2Addr) 
                <<FairLogger::endl;
-    LOG(DEBUG) <<"CbmTofTestBeamClusterizer::FillHistos: "
-               <<", Muls: "
-               <<", "<<fviClusterMul[fDutId][fDutSm][fDutRpc]
+    LOG(DEBUG) <<"CbmTofTestBeamClusterizer::FillHistos: Muls: "
+                     <<fviClusterMul[fDutId][fDutSm][fDutRpc]
                <<", "<<fviClusterMul[fSelId][fSelSm][fSelRpc]
                <<", "<<fviClusterMul[5][0][0]
                <<", "<<fviClusterMul[5][1][0]
@@ -1494,6 +1493,11 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
        }
       }
    }
+   LOG(DEBUG) <<"CbmTofTestBeamClusterizer::FillHistos: BRefMul: "
+              <<iBeamRefMul
+              <<", "<<iBeamAddRefMul
+              <<FairLogger::endl;
+
    if (iBeamRefMul == 0) return kFALSE;  // don't fill histos without reference time
    if (iBeamAddRefMul<fiBeamAddRefMul) return kFALSE;  // ask for confirmation by other beam counters
 
@@ -1747,8 +1751,8 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
          }
 
          CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchColl->At( iHitInd );
-         LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::FillHistos: got matches: "
-                    <<digiMatch->GetNofLinks()
+         LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::FillHistos: got "
+                    <<digiMatch->GetNofLinks()<< " matches for iCh "<<iCh<<" at iHitInd "<<iHitInd
                     <<FairLogger::endl;
 
          fhRpcCluSize[iDetIndx]->Fill((Double_t)iCh,digiMatch->GetNofLinks()/2.);
@@ -1790,11 +1794,14 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
                                  iHitInd,iDetIndx,iCh,dNstrips,iDigInd0,iDigInd1)
                           << FairLogger::endl; 
             }
-            LOG(DEBUG2)<<" Digi 0 "<<iDigInd0<<": Ch "<<pDig0->GetChannel()<<", Side "<<pDig0->GetSide()
-                       <<" Digi 1 "<<iDigInd1<<": Ch "<<pDig1->GetChannel()<<", Side "<<pDig1->GetSide()<<FairLogger::endl;
+            LOG(DEBUG1)<<" fhRpcCluTot:  Digi 0 "<<iDigInd0<<": Ch "<<pDig0->GetChannel()<<", Side "<<pDig0->GetSide()
+		       <<", StripSide "<<(Double_t)iCh*2.+pDig0->GetSide() 
+                       <<" Digi 1 "<<iDigInd1<<": Ch "<<pDig1->GetChannel()<<", Side "<<pDig1->GetSide()
+		       <<", StripSide "<<(Double_t)iCh*2.+pDig1->GetSide() 
+		       <<", Tot0 " << pDig0->GetTot() <<", Tot1 "<<pDig1->GetTot()<<FairLogger::endl;
 
-            fhRpcCluTot[iDetIndx]->Fill((Double_t)iCh*2+pDig0->GetSide(),pDig0->GetTot());
-            fhRpcCluTot[iDetIndx]->Fill((Double_t)iCh*2+pDig1->GetSide(),pDig1->GetTot());
+            fhRpcCluTot[iDetIndx]->Fill(pDig0->GetChannel()*2.+pDig0->GetSide(),pDig0->GetTot());
+            fhRpcCluTot[iDetIndx]->Fill(pDig1->GetChannel()*2.+pDig1->GetSide(),pDig1->GetTot());
 
             if (digiMatch->GetNofLinks()>2 ) //&& digiMatch->GetNofLinks()<8 ) // FIXME: hardwired limits on CluSize
             {
@@ -1847,9 +1854,15 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
                          -(1.-2.*pDig1->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc)));
             }
 
+            LOG(DEBUG1)<<" fhTRpcCluTot: Digi 0 "<<iDigInd0<<": Ch "<<pDig0->GetChannel()<<", Side "<<pDig0->GetSide()
+		       <<", StripSide "<<(Double_t)iCh*2.+pDig0->GetSide() 
+                       <<" Digi 1 "<<iDigInd1<<": Ch "<<pDig1->GetChannel()<<", Side "<<pDig1->GetSide()
+		       <<", StripSide "<<(Double_t)iCh*2.+pDig1->GetSide() 
+		       <<FairLogger::endl;
+
             for (Int_t iSel=0; iSel<iNSel; iSel++) if(BSel[iSel]){
-                fhTRpcCluTot[iDetIndx][iSel]->Fill((Double_t)iCh*2+pDig0->GetSide(),pDig0->GetTot());
-                fhTRpcCluTot[iDetIndx][iSel]->Fill((Double_t)iCh*2+pDig1->GetSide(),pDig1->GetTot());
+                fhTRpcCluTot[iDetIndx][iSel]->Fill(pDig0->GetChannel()*2.+pDig0->GetSide(),pDig0->GetTot());
+                fhTRpcCluTot[iDetIndx][iSel]->Fill(pDig1->GetChannel()*2.+pDig1->GetSide(),pDig1->GetTot());
             }
 
             for (Int_t iSel=0; iSel<iNSel; iSel++) if(BSel[iSel]){  
@@ -3732,9 +3745,10 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                                     fviClusterMul[iSmType][iSm][iRpc]++; 
 
                                     for (UInt_t i=0; i<vDigiIndRef.size();i++){
-                                      LOG(DEBUG)<<" "<<vDigiIndRef.at(i);
+				      LOG(DEBUG)<<" "<<vDigiIndRef.at(i)<<"(M"<<fviClusterMul[iSmType][iSm][iRpc]<<")";
                                     }
                                     LOG(DEBUG)  <<FairLogger::endl;
+
                                     if(        vDigiIndRef.size() < 2 ){
                                       LOG(WARNING)<<"CbmTofTestBeamClusterizer::BuildClusters: Digi refs for Hit "
                                                     << fiNbHits<<":        vDigiIndRef.size()"
@@ -3960,13 +3974,14 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                        //   dWeightedTime,dWeightedPosY)
                                 <<", DigiSize: "<<vDigiIndRef.size();
                      LOG(DEBUG)<<", DigiInds: ";
+
+                     fviClusterMul[iSmType][iSm][iRpc]++; 
+
                      for (UInt_t i=0; i<vDigiIndRef.size();i++){
-                       LOG(DEBUG)<<" "<<vDigiIndRef.at(i);
+                       LOG(DEBUG)<<" "<<vDigiIndRef.at(i)<<"(M"<<fviClusterMul[iSmType][iSm][iRpc]<<")";
                      }
                      LOG(DEBUG)  <<FairLogger::endl;
                      
-                     fviClusterMul[iSmType][iSm][iRpc]++; 
-
                      if( vDigiIndRef.size() < 2 ){
                       LOG(WARNING)<<"CbmTofTestBeamClusterizer::BuildClusters: Digi refs for Hit "
                                   << fiNbHits<<":        vDigiIndRef.size()"
@@ -4013,7 +4028,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                      vDigiIndRef.clear();
                   } // else of if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
                } // if( 0 < iNbChanInHit)
-               LOG(DEBUG2)<<" Fini-A "<<Form(" %3d %3d %3d ",iSmType, iSm, iRpc)<<FairLogger::endl;
+               LOG(DEBUG2)<<" Fini-A "<<Form(" %3d %3d %3d M%3d",iSmType, iSm, iRpc, fviClusterMul[iSmType][iSm][iRpc])<<FairLogger::endl;
             } // for each sm/rpc pair
                LOG(DEBUG2)<<" Fini-B "<<Form(" %3d ",iSmType)<<FairLogger::endl;
       } // for( Int_t iSmType = 0; iSmType < iNbSmTypes; iSmType++ )
