@@ -37,6 +37,8 @@ using namespace std;
 CbmRichMirrorSortingCorrection::CbmRichMirrorSortingCorrection() :
     	    fEventNb(0),
 			fHM(NULL),
+			fHM2(NULL),
+			fDiffHistoMap(),
 			fCopFit(NULL),
 			fTauFit(NULL),
     		fGlobalTracks(NULL),
@@ -48,7 +50,10 @@ CbmRichMirrorSortingCorrection::CbmRichMirrorSortingCorrection() :
 			fRichProjections(NULL),
 			fTrackParams(NULL),
 			fRichRingMatches(NULL),
-			fStsTrackMatches(NULL)
+			fStsTrackMatches(NULL),
+			fTrackCenterDistanceIdeal(0),
+			fTrackCenterDistanceCorrected(0),
+			fTrackCenterDistanceUncorrected(0)
 {
 }
 
@@ -94,6 +99,8 @@ InitStatus CbmRichMirrorSortingCorrection::Init()
 
 	InitHistProjection();
 
+	InitHistProjectionList();
+
 	return kSUCCESS;
 }
 
@@ -105,21 +112,60 @@ void CbmRichMirrorSortingCorrection::InitHistProjection()
 	// fhDistance => fhDistanceCenterToExtrapolatedTrack.
 	fHM->Create1<TH1D>("fhDistanceCenterToExtrapolatedTrack", "fhDistanceCenterToExtrapolatedTrack;Distance fitted center to extrapolated track;Number of entries", bin, 0., upperScaleLimit);
 	fHM->Create1<TH1D>("fhDistanceCorrected", "fhDistanceCorrected;Distance a [cm];A.U.", bin, 0., upperScaleLimit);
-	fHM->Create1<TH1D>("fhDifferenceX", "fhDifferenceX;Difference in X (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
-	fHM->Create1<TH1D>("fhDifferenceY", "fhDifferenceY;Difference in Y (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fHM->Create1<TH1D>("fhDifferenceX", "fhDifferenceX;Difference in X (fitted center - extrapolated track);A.U.", bin, -upperScaleLimit, upperScaleLimit);
+	fHM->Create1<TH1D>("fhDifferenceY", "fhDifferenceY;Difference in Y (fitted center - extrapolated track);A.U.", bin, -upperScaleLimit, upperScaleLimit);
 
 	fHM->Create1<TH1D>("fhDistanceUncorrected", "fhDistanceUncorrected;Distance a [cm];A.U.", bin, 0., upperScaleLimit);
-	fHM->Create1<TH1D>("fhDifferenceXUncorrected", "fhDifferenceXUncorrected;Difference in X uncorrected [cm];A.U.", bin, 0., upperScaleLimit);
-	fHM->Create1<TH1D>("fhDifferenceYUncorrected", "fhDifferenceYUncorrected;Difference in Y uncorrected [cm];A.U.", bin, 0., upperScaleLimit);
+	fHM->Create1<TH1D>("fhDifferenceXUncorrected", "fhDifferenceXUncorrected;Difference in X uncorrected [cm];A.U.", bin, -upperScaleLimit, upperScaleLimit);
+	fHM->Create1<TH1D>("fhDifferenceYUncorrected", "fhDifferenceYUncorrected;Difference in Y uncorrected [cm];A.U.", bin, -upperScaleLimit, upperScaleLimit);
 
 	fHM->Create1<TH1D>("fhDistanceIdeal", "fhDistanceIdeal;Distance a [cm];A.U.", bin, 0., upperScaleLimit);
-	fHM->Create1<TH1D>("fhDifferenceXIdeal", "fhDifferenceXIdeal;Difference in X ideal [cm];A.U.", bin, 0., upperScaleLimit);
-	fHM->Create1<TH1D>("fhDifferenceYIdeal", "fhDifferenceYIdeal;Difference in Y ideal [cm];A.U.", bin, 0., upperScaleLimit);
+	fHM->Create1<TH1D>("fhDifferenceXIdeal", "fhDifferenceXIdeal;Difference in X ideal [cm];A.U.", bin, -upperScaleLimit, upperScaleLimit);
+	fHM->Create1<TH1D>("fhDifferenceYIdeal", "fhDifferenceYIdeal;Difference in Y ideal [cm];A.U.", bin, -upperScaleLimit, upperScaleLimit);
 
 	fHM->Create1<TH1D>("fHistoDiffX", "fHistoDiffX;Histogram difference between corrected and ideal X positions;A.U.", bin, 0., upperScaleLimit);
 	fHM->Create1<TH1D>("fHistoDiffY", "fHistoDiffY;Histogram difference between corrected and ideal Y positions;A.U.", bin, 0., upperScaleLimit);
 
 	fHM->Create1<TH1D>("fHistoBoA", "fHistoBoA;Histogram B axis over A axis;A.U.", bin, 0., upperScaleLimit);
+}
+
+void CbmRichMirrorSortingCorrection::InitHistProjectionList()
+{
+	//fHM2 = new CbmHistManager();
+
+	Double_t upperScaleLimit = 6., bin = 400.;
+	fDiffHistoMap["DiffCorrX_mirror_tile_2_8"] = new TH1D("fhDifferenceCorrectedX_mirror_tile_2_8", ";Difference in X (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffCorrY_mirror_tile_2_8"] = new TH1D("fhDifferenceCorrectedY_mirror_tile_2_8", ";Difference in Y (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffUncorrX_mirror_tile_2_8"] = new TH1D("fhDifferenceUncorrectedX_mirror_tile_2_8", ";Difference in X (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffUncorrY_mirror_tile_2_8"] = new TH1D("fhDifferenceUncorrectedY_mirror_tile_2_8", ";Difference in Y (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffIdealX_mirror_tile_2_8"] = new TH1D("fhDifferenceIdealX_mirror_tile_2_8", ";Difference in X (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffIdealY_mirror_tile_2_8"] = new TH1D("fhDifferenceIdealY_mirror_tile_2_8", ";Difference in Y (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+
+	fDiffHistoMap["DiffCorrX_mirror_tile_1_3"] = new TH1D("fhDifferenceCorrectedX_mirror_tile_1_3", ";Difference in X (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffCorrY_mirror_tile_1_3"] = new TH1D("fhDifferenceCorrectedY_mirror_tile_1_3", ";Difference in Y (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffUncorrX_mirror_tile_1_3"] = new TH1D("fhDifferenceUncorrectedX_mirror_tile_1_3", ";Difference in X (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffUncorrY_mirror_tile_1_3"] = new TH1D("fhDifferenceUncorrectedY_mirror_tile_1_3", ";Difference in Y (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffIdealX_mirror_tile_1_3"] = new TH1D("fhDifferenceIdealX_mirror_tile_1_3", ";Difference in X (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffIdealY_mirror_tile_1_3"] = new TH1D("fhDifferenceIdealY_mirror_tile_1_3", ";Difference in Y (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+
+	fDiffHistoMap["DiffCorrX_mirror_tile_1_4"] = new TH1D("fhDifferenceCorrectedX_mirror_tile_1_4", ";Difference in X (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffCorrY_mirror_tile_1_4"] = new TH1D("fhDifferenceCorrectedY_mirror_tile_1_4", ";Difference in Y (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffUncorrX_mirror_tile_1_4"] = new TH1D("fhDifferenceUncorrectedX_mirror_tile_1_4", ";Difference in X (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffUncorrY_mirror_tile_1_4"] = new TH1D("fhDifferenceUncorrectedY_mirror_tile_1_4", ";Difference in Y (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffIdealX_mirror_tile_1_4"] = new TH1D("fhDifferenceIdealX_mirror_tile_1_4", ";Difference in X (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffIdealY_mirror_tile_1_4"] = new TH1D("fhDifferenceIdealY_mirror_tile_1_4", ";Difference in Y (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+
+	/*fDiffHistoMap["fhDifferenceX_mirror_tile_2_8"] = "X_mirror_tile_2_8";
+	fDiffHistoMap["fhDifferenceY_mirror_tile_2_8"] = "Y_mirror_tile_2_8";
+	fDiffHistoMap["fhDifferenceX_mirror_tile_1_3"] = "X_mirror_tile_1_3";
+	fDiffHistoMap["fhDifferenceY_mirror_tile_1_3"] = "Y_mirror_tile_1_3";
+	fDiffHistoMap["fhDifferenceX_mirror_tile_1_4"] = "X_mirror_tile_1_4";
+	fDiffHistoMap["fhDifferenceY_mirror_tile_1_4"] = "Y_mirror_tile_1_4";
+
+	for (std::map<string,string>::iterator it=fDiffHistoMap.begin(); it!=fDiffHistoMap.end(); ++it) {			// Initialize all the histograms, using map IDs as inputs.
+		cout << "first: " << it->first << " and second: " << it->second << endl;
+		fHM2->Create1<TH1D>(it->first, it->first + ";Difference in X (fitted center - extrapolated track);A.U.", bin, -upperScaleLimit, upperScaleLimit);
+	}*/
 }
 
 void CbmRichMirrorSortingCorrection::Exec(Option_t* Option)
@@ -248,7 +294,7 @@ void CbmRichMirrorSortingCorrection::Exec(Option_t* Option)
 					CbmRichGeoManager::GetInstance().RotatePoint(&inPosIdeal, &outPosIdeal);
 					cout << "New mirror points coordinates = {" << outPosIdeal.x() << ", " << outPosIdeal.y() << ", " << outPosIdeal.z() << "}" << endl << endl;
 
-					FillHistProjection(outPosIdeal, outPosUnCorr, outPos, ringL, normalPMT, constantePMT);
+					FillHistProjection(outPosIdeal, outPosUnCorr, outPos, ringL, normalPMT, constantePMT, str3);
 				}
 			}
 			else { cout << "Not a mother particle." << endl; }
@@ -374,10 +420,10 @@ void CbmRichMirrorSortingCorrection::ComputeR2(vector<Double_t> &ptR2Center, vec
 				lineCounter++;
 			}
 //			getline(corrFile, strMisX);
-			corrFile >> misX;
+			corrFile >> misY;
 			//cout << "number at line: " << lineCounter+1 << " = " << misX << "." << endl;
 //			getline(corrFile, strMisY);
-			corrFile >> misY;
+			corrFile >> misX;
 			//cout << "number at line: " << lineCounter+2 << " = " << misY << "." << endl;
 
 			/*std::istringstream i1(strMisX);
@@ -398,6 +444,7 @@ void CbmRichMirrorSortingCorrection::ComputeR2(vector<Double_t> &ptR2Center, vec
 
 		//ptCNew.at(0) = TMath::Abs(ptC.at(0) - TMath::Abs(outputFit.at(3)));
 		//ptCNew.at(1) = TMath::Abs(ptC.at(1) - TMath::Abs(outputFit.at(2)));
+		cout << "Correction parameters = " << misX << ", " << misY << endl;
 		ptCNew.at(0) = ptC.at(0) + misX;
 		ptCNew.at(1) = ptC.at(1) + misY;
 		ptCNew.at(2) = ptC.at(2);
@@ -478,9 +525,254 @@ void CbmRichMirrorSortingCorrection::ComputeP(vector<Double_t> &ptPMirr, vector<
 	//cout << "* using reflected point R2, checkCalc = " << checkCalc2 << endl;
 }
 
-void CbmRichMirrorSortingCorrection::FillHistProjection(TVector3 outPosIdeal, TVector3 outPosUnCorr, TVector3 outPos, CbmRichRingLight ringL, vector<Double_t> normalPMT, Double_t constantePMT)
+void CbmRichMirrorSortingCorrection::FillHistProjection(TVector3 outPosIdeal, TVector3 outPosUnCorr, TVector3 outPos, CbmRichRingLight ringL, vector<Double_t> normalPMT, Double_t constantePMT, string str)
 {
-	CbmMCTrack *track2=NULL;
+	Double_t ringCenter[] = {0, 0, 0}, distToExtrapTrackHit = 0, distToExtrapTrackHitInPlane = 0, distToExtrapTrackHitInPlaneUnCorr = 0, distToExtrapTrackHitInPlaneIdeal = 0;
+	string histoNameX = "", histoNameY = "";
+	string nameX = "", nameY = "";
+
+	ringCenter[0] = ringL.GetCenterX();
+	ringCenter[1] = ringL.GetCenterY();
+	ringCenter[2] = -1*((normalPMT.at(0)*ringCenter[0] + normalPMT.at(1)*ringCenter[1] + constantePMT)/normalPMT.at(2));
+
+	// Calculation using the corrected mirror hit/position, using the correction method
+	vector<Double_t> r(3), p(3); // Absolute coordinates of fitted ring Center r and PMT extrapolated point p
+	r.at(0) = ringCenter[0], r.at(1) = ringCenter[1], r.at(2) = ringCenter[2];
+	p.at(0) = outPos.x(), p.at(1) = outPos.y(), p.at(2) = outPos.z();
+	cout << "Ring center coordinates = {" << ringCenter[0] << ", " << ringCenter[1] << ", " << ringCenter[2] << "}" << endl;
+	cout << "Difference in X = " << TMath::Abs(r.at(0) - p.at(0)) << "; \t" << "Difference in Y = " << TMath::Abs(r.at(1) - p.at(1)) << "; \t" << "Difference in Z = " << TMath::Abs(r.at(2) - p.at(2)) << endl;
+
+	nameX = string("DiffCorrX_") + str;
+	nameY = string("DiffCorrY_") + str;
+	for (std::map<string,TH1D*>::iterator it=fDiffHistoMap.begin(); it!=fDiffHistoMap.end(); ++it) {
+		if ( nameX.compare(it->first) == 0 ) {
+			fDiffHistoMap[it->first]->Fill(TMath::Abs(r.at(0) - p.at(0)));
+		}
+		if ( nameY.compare(it->first) == 0 ) {
+			fDiffHistoMap[it->first]->Fill(TMath::Abs(r.at(1) - p.at(1)));
+		}
+	}
+
+	distToExtrapTrackHit = TMath::Sqrt(TMath::Power(r.at(0) - p.at(0),2) + TMath::Power(r.at(1) - p.at(1),2) + TMath::Power(r.at(2) - p.at(2),2));
+	distToExtrapTrackHitInPlane = TMath::Sqrt(TMath::Power(r.at(0) - p.at(0),2) + TMath::Power(r.at(1) - p.at(1),2));
+	fHM->H1("fhDistanceCenterToExtrapolatedTrack")->Fill(distToExtrapTrackHit);
+	fHM->H1("fhDistanceCorrected")->Fill(distToExtrapTrackHitInPlane);
+	//cout << "Distance between fitted ring center and extrapolated track hit = " << distToExtrapTrackHit << endl;
+	cout << "Distance between fitted ring center and extrapolated track hit in plane = " << distToExtrapTrackHitInPlane << endl;
+
+	// Calculation using the uncorrected mirror hit/position
+	vector<Double_t> pUncorr(3); // Absolute coordinates of fitted ring Center r and PMT extrapolated point p
+	pUncorr.at(0) = outPosUnCorr.x(), pUncorr.at(1) = outPosUnCorr.y(), pUncorr.at(2) = outPosUnCorr.z();
+	//cout << "Ring center coordinates = {" << ringCenter[0] << ", " << ringCenter[1] << ", " << ringCenter[2] << "}" << endl;
+	cout << "Difference in X w/o correction = " << TMath::Abs(r.at(0) - pUncorr.at(0)) << "; \t" << "Difference in Y = " << TMath::Abs(r.at(1) - pUncorr.at(1)) << "; \t" << "Difference in Z = " << TMath::Abs(r.at(2) - pUncorr.at(2)) << endl;
+
+	nameX = string("DiffUncorrX_") + str;
+	nameY = string("DiffUncorrY_") + str;
+	for (std::map<string,TH1D*>::iterator it=fDiffHistoMap.begin(); it!=fDiffHistoMap.end(); ++it) {
+		if ( nameX.compare(it->first) == 0 ) {
+			fDiffHistoMap[it->first]->Fill(TMath::Abs(r.at(0) - pUncorr.at(0)));
+		}
+		if ( nameY.compare(it->first) == 0 ) {
+			fDiffHistoMap[it->first]->Fill(TMath::Abs(r.at(1) - pUncorr.at(1)));
+		}
+	}
+
+	distToExtrapTrackHitInPlaneUnCorr = TMath::Sqrt(TMath::Power(r.at(0) - pUncorr.at(0),2) + TMath::Power(r.at(1) - pUncorr.at(1),2));
+	fHM->H1("fhDistanceUncorrected")->Fill(distToExtrapTrackHitInPlaneUnCorr);
+	cout << "Distance between fitted ring center and extrapolated track hit in plane = " << distToExtrapTrackHitInPlaneUnCorr << endl;
+
+	// Calculation using the ideally corrected mirror hit/position
+	vector<Double_t> pIdeal(3); // Absolute coordinates of fitted ring Center r and PMT extrapolated point p
+	pIdeal.at(0) = outPosIdeal.x(), pIdeal.at(1) = outPosIdeal.y(), pIdeal.at(2) = outPosIdeal.z();
+	//cout << "Ring center coordinates = {" << ringCenter[0] << ", " << ringCenter[1] << ", " << ringCenter[2] << "}" << endl;
+	cout << "Difference in X w/ ideal correction = " << TMath::Abs(r.at(0) - pIdeal.at(0)) << "; \t" << "Difference in Y = " << TMath::Abs(r.at(1) - pIdeal.at(1)) << "; \t" << "Difference in Z = " << TMath::Abs(r.at(2) - pIdeal.at(2)) << endl;
+
+	nameX = string("DiffIdealX_") + str;
+	nameY = string("DiffIdealY_") + str;
+	for (std::map<string,TH1D*>::iterator it=fDiffHistoMap.begin(); it!=fDiffHistoMap.end(); ++it) {
+		if ( nameX.compare(it->first) == 0 ) {
+			fDiffHistoMap[it->first]->Fill(TMath::Abs(r.at(0) - pIdeal.at(0)));
+		}
+		if ( nameY.compare(it->first) == 0 ) {
+			fDiffHistoMap[it->first]->Fill(TMath::Abs(r.at(1) - pIdeal.at(1)));
+		}
+	}
+
+	distToExtrapTrackHitInPlaneIdeal = TMath::Sqrt(TMath::Power(r.at(0) - pIdeal.at(0),2) + TMath::Power(r.at(1) - pIdeal.at(1),2));
+	fHM->H1("fhDistanceIdeal")->Fill(distToExtrapTrackHitInPlaneIdeal);
+	cout << "Distance between fitted ring center and extrapolated track hit in plane = " << distToExtrapTrackHitInPlaneIdeal << endl << endl;
+	//}
+	//else { cout << "No identical ring mother ID and mirror track ID ..." << endl;}
+
+	fTrackCenterDistanceCorrected += distToExtrapTrackHitInPlane;
+	fTrackCenterDistanceUncorrected += distToExtrapTrackHitInPlaneUnCorr;
+	fTrackCenterDistanceIdeal += distToExtrapTrackHitInPlaneIdeal;
+}
+
+void CbmRichMirrorSortingCorrection::DrawHistProjection()
+{
+	int counter1 = 1, counter2 = 1, counter3 = 1, counter4 = 1, counter5 = 1, counter6 = 1;
+	Int_t thresh = 50;
+
+/*	TCanvas* can1 = new TCanvas("X_mirror_tile_2_8","X_mirror_tile_2_8",1500,400);
+	can1->Divide(3,1);
+	TCanvas* can2 = new TCanvas("X_mirror_tile_1_3","X_mirror_tile_1_3",1500,400);
+	can2->Divide(3,1);*/
+	TCanvas* can3 = new TCanvas("X_mirror_tile_1_4","X_mirror_tile_1_4",1500,400);
+	can3->Divide(3,1);
+/*	TCanvas* can4 = new TCanvas("Y_mirror_tile_2_8","Y_mirror_tile_2_8",1500,400);
+	can4->Divide(3,1);
+	TCanvas* can5 = new TCanvas("Y_mirror_tile_1_3","Y_mirror_tile_1_3",1500,400);
+	can5->Divide(3,1);*/
+	TCanvas* can6 = new TCanvas("Y_mirror_tile_1_4","Y_mirror_tile_1_4",1500,400);
+	can6->Divide(3,1);
+
+	for (std::map<string,TH1D*>::iterator it=fDiffHistoMap.begin(); it!=fDiffHistoMap.end(); ++it) {
+/*		if ( it->first.find("X_mirror_tile_2_8")!=std::string::npos && it->second->GetEntries() > thresh ) {
+			can1->cd(counter1);
+			fDiffHistoMap[it->first]->Draw();
+			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
+			fDiffHistoMap[it->first]->SetLineColor(counter1+1);
+			fDiffHistoMap[it->first]->SetLineWidth(2);
+			counter1++;
+		}
+		else if ( it->first.find("X_mirror_tile_1_3")!=std::string::npos && it->second->GetEntries() > thresh ) {
+			can2->cd(counter2);
+			fDiffHistoMap[it->first]->Draw();
+			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
+			fDiffHistoMap[it->first]->SetLineColor(counter2+1);
+			fDiffHistoMap[it->first]->SetLineWidth(2);
+			counter2++;
+		}*/
+		if ( it->first.find("X_mirror_tile_1_4")!=std::string::npos && it->second->GetEntries() > thresh ) {
+			can3->cd(counter3);
+			fDiffHistoMap[it->first]->Draw();
+			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
+			fDiffHistoMap[it->first]->SetLineColor(counter3+1);
+			fDiffHistoMap[it->first]->SetLineWidth(2);
+			counter3++;
+		}
+/*		else if ( it->first.find("Y_mirror_tile_2_8")!=std::string::npos && it->second->GetEntries() > thresh ) {
+			can4->cd(counter4);
+			fDiffHistoMap[it->first]->Draw();
+			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
+			fDiffHistoMap[it->first]->SetLineColor(counter4+1);
+			fDiffHistoMap[it->first]->SetLineWidth(2);
+			counter4++;
+		}
+		else if ( it->first.find("Y_mirror_tile_1_3")!=std::string::npos && it->second->GetEntries() > thresh ) {
+			can5->cd(counter5);
+			fDiffHistoMap[it->first]->Draw();
+			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
+			fDiffHistoMap[it->first]->SetLineColor(counter5+1);
+			fDiffHistoMap[it->first]->SetLineWidth(2);
+			counter5++;
+		}*/
+		else if ( it->first.find("Y_mirror_tile_1_4")!=std::string::npos && it->second->GetEntries() > thresh ) {
+			can6->cd(counter6);
+			fDiffHistoMap[it->first]->Draw();
+			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
+			fDiffHistoMap[it->first]->SetLineColor(counter6+1);
+			fDiffHistoMap[it->first]->SetLineWidth(2);
+			counter6++;
+		}
+		else if ( it->second->GetEntries() > thresh ) {
+			TCanvas* can = new TCanvas();
+			fDiffHistoMap[it->first]->Draw();
+			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
+			fDiffHistoMap[it->first]->SetLineColor(4);
+			fDiffHistoMap[it->first]->SetLineWidth(2);
+		}
+	}
+	//Cbm::SaveCanvasAsImage(can1, string(fOutputDir.Data()), "png");
+	//Cbm::SaveCanvasAsImage(can2, string(fOutputDir.Data()), "png");
+	//Cbm::SaveCanvasAsImage(can3, string(fOutputDir.Data()), "png");
+	//Cbm::SaveCanvasAsImage(can4, string(fOutputDir.Data()), "png");
+	//Cbm::SaveCanvasAsImage(can5, string(fOutputDir.Data()), "png");
+	//Cbm::SaveCanvasAsImage(can6, string(fOutputDir.Data()), "png");
+
+/*	char title[128];
+	for (std::map<string,TH1D*>::iterator it=fDiffHistoMap.begin(); it!=fDiffHistoMap.end(); ++it) {
+		TCanvas* can = new TCanvas();
+		fDiffHistoMap[it->first]->Draw();
+		//title = (it->first).c_str();
+		fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
+		fDiffHistoMap[it->first]->SetLineColor(4);
+		fDiffHistoMap[it->first]->SetLineWidth(2);
+		//Cbm::SaveCanvasAsImage(can, string(fOutputDir.Data()), "png");
+	}
+*/
+}
+
+void CbmRichMirrorSortingCorrection::Finish()
+{
+	DrawHistProjection();
+	cout << setprecision(9) << "Mean distance between track hit and ring center ; corrected case = " << fTrackCenterDistanceCorrected/fEventNb << " and total sum = " << fTrackCenterDistanceCorrected << endl;
+	cout << "Mean distance between track hit and ring center ; uncorrected case = " << fTrackCenterDistanceUncorrected/fEventNb << " and total sum = " << fTrackCenterDistanceUncorrected << endl;
+	cout << "Mean distance between track hit and ring center ; ideal case = " << fTrackCenterDistanceIdeal/fEventNb << " and total sum = " << fTrackCenterDistanceIdeal << endl;
+}
+ClassImp(CbmRichMirrorSortingCorrection)
+
+
+/*void CbmRichMirrorSortingCorrection::FillHistProjection(TVector3 outPosIdeal, TVector3 outPosUnCorr, TVector3 outPos, CbmRichRingLight ringL, vector<Double_t> normalPMT, Double_t constantePMT, string str)
+{
+	Double_t ringCenter[] = {0, 0, 0}, distToExtrapTrackHit = 0, distToExtrapTrackHitInPlane = 0, distToExtrapTrackHitInPlaneUnCorr = 0, distToExtrapTrackHitInPlaneIdeal = 0;
+	string histoNameX = "", histoNameY = "";
+	string nameX = "", nameY = "";
+
+	ringCenter[0] = ringL.GetCenterX();
+	ringCenter[1] = ringL.GetCenterY();
+	ringCenter[2] = -1*((normalPMT.at(0)*ringCenter[0] + normalPMT.at(1)*ringCenter[1] + constantePMT)/normalPMT.at(2));
+
+	vector<Double_t> r(3), p(3); // Absolute coordinates of fitted ring Center r and PMT extrapolated point p
+	r.at(0) = ringCenter[0], r.at(1) = ringCenter[1], r.at(2) = ringCenter[2];
+	p.at(0) = outPos.x(), p.at(1) = outPos.y(), p.at(2) = outPos.z();
+	cout << "Ring center coordinates = {" << ringCenter[0] << ", " << ringCenter[1] << ", " << ringCenter[2] << "}" << endl;
+	cout << "Difference in X = " << TMath::Abs(r.at(0) - p.at(0)) << "; \t" << "Difference in Y = " << TMath::Abs(r.at(1) - p.at(1)) << "; \t" << "Difference in Z = " << TMath::Abs(r.at(2) - p.at(2)) << endl;
+
+	nameX = string("X_") + str;
+	nameY = string("Y_") + str;
+	for (std::map<string,string>::iterator it=fDiffHistoMap.begin(); it!=fDiffHistoMap.end(); ++it) {
+			if ( nameX.compare(it->second) == 0 ) {
+				fHM2->H1(it->first)->Fill(TMath::Abs(r.at(0) - p.at(0)));
+			}
+			if ( nameY.compare(it->second) == 0 ) {
+				fHM2->H1(it->first)->Fill(TMath::Abs(r.at(1) - p.at(1)));
+			}
+	}
+
+	distToExtrapTrackHit = TMath::Sqrt(TMath::Power(r.at(0) - p.at(0),2) + TMath::Power(r.at(1) - p.at(1),2) + TMath::Power(r.at(2) - p.at(2),2));
+	distToExtrapTrackHitInPlane = TMath::Sqrt(TMath::Power(r.at(0) - p.at(0),2) + TMath::Power(r.at(1) - p.at(1),2));
+	fHM->H1("fhDistanceCenterToExtrapolatedTrack")->Fill(distToExtrapTrackHit);
+	fHM->H1("fhDistanceCorrected")->Fill(distToExtrapTrackHitInPlane);
+	//cout << "Distance between fitted ring center and extrapolated track hit = " << distToExtrapTrackHit << endl;
+	cout << "Distance between fitted ring center and extrapolated track hit in plane = " << distToExtrapTrackHitInPlane << endl;
+
+	vector<Double_t> pUnCorr(3); // Absolute coordinates of fitted ring Center r and PMT extrapolated point p
+	pUnCorr.at(0) = outPosUnCorr.x(), pUnCorr.at(1) = outPosUnCorr.y(), pUnCorr.at(2) = outPosUnCorr.z();
+	//cout << "Ring center coordinates = {" << ringCenter[0] << ", " << ringCenter[1] << ", " << ringCenter[2] << "}" << endl;
+	cout << "Difference in X w/o correction = " << TMath::Abs(r.at(0) - pUnCorr.at(0)) << "; \t" << "Difference in Y = " << TMath::Abs(r.at(1) - pUnCorr.at(1)) << "; \t" << "Difference in Z = " << TMath::Abs(r.at(2) - pUnCorr.at(2)) << endl;
+	fHM->H1("fhDifferenceXUncorrected")->Fill(TMath::Abs(r.at(0) - pUnCorr.at(0)));
+	fHM->H1("fhDifferenceYUncorrected")->Fill(TMath::Abs(r.at(1) - pUnCorr.at(1)));
+	distToExtrapTrackHitInPlaneUnCorr = TMath::Sqrt(TMath::Power(r.at(0) - pUnCorr.at(0),2) + TMath::Power(r.at(1) - pUnCorr.at(1),2));
+	fHM->H1("fhDistanceUncorrected")->Fill(distToExtrapTrackHitInPlaneUnCorr);
+	cout << "Distance between fitted ring center and extrapolated track hit in plane = " << distToExtrapTrackHitInPlaneUnCorr << endl;
+
+	vector<Double_t> pIdeal(3); // Absolute coordinates of fitted ring Center r and PMT extrapolated point p
+	pIdeal.at(0) = outPosIdeal.x(), pIdeal.at(1) = outPosIdeal.y(), pIdeal.at(2) = outPosIdeal.z();
+	//cout << "Ring center coordinates = {" << ringCenter[0] << ", " << ringCenter[1] << ", " << ringCenter[2] << "}" << endl;
+	cout << "Difference in X w/ ideal correction = " << TMath::Abs(r.at(0) - pIdeal.at(0)) << "; \t" << "Difference in Y = " << TMath::Abs(r.at(1) - pIdeal.at(1)) << "; \t" << "Difference in Z = " << TMath::Abs(r.at(2) - pIdeal.at(2)) << endl;
+	fHM->H1("fhDifferenceXIdeal")->Fill(TMath::Abs(r.at(0) - pIdeal.at(0)));
+	fHM->H1("fhDifferenceYIdeal")->Fill(TMath::Abs(r.at(1) - pIdeal.at(1)));
+	distToExtrapTrackHitInPlaneIdeal = TMath::Sqrt(TMath::Power(r.at(0) - pIdeal.at(0),2) + TMath::Power(r.at(1) - pIdeal.at(1),2));
+	fHM->H1("fhDistanceIdeal")->Fill(distToExtrapTrackHitInPlaneIdeal);
+	cout << "Distance between fitted ring center and extrapolated track hit in plane = " << distToExtrapTrackHitInPlaneIdeal << endl << endl;
+	//}
+	//else { cout << "No identical ring mother ID and mirror track ID ..." << endl;}
+}
+
+/*void CbmRichMirrorSortingCorrection::FillHistProjection(TVector3 outPosIdeal, TVector3 outPosUnCorr, TVector3 outPos, CbmRichRingLight ringL, vector<Double_t> normalPMT, Double_t constantePMT)
+{
 	Double_t ringCenter[] = {0, 0, 0}, distToExtrapTrackHit = 0, distToExtrapTrackHitInPlane = 0, distToExtrapTrackHitInPlaneUnCorr = 0, distToExtrapTrackHitInPlaneIdeal = 0;
 
 	ringCenter[0] = ringL.GetCenterX();
@@ -524,13 +816,52 @@ void CbmRichMirrorSortingCorrection::FillHistProjection(TVector3 outPosIdeal, TV
 	//else { cout << "No identical ring mother ID and mirror track ID ..." << endl;}
 }
 
+
 void CbmRichMirrorSortingCorrection::DrawHistProjection()
 {
 	char leg[128];
 	int colorInd = 1;
+	string diffCorrX = "DiffX_mirror_tile_2_8", diffCorrY = "DiffY_mirror_tile_2_8";
 
-	TCanvas* can3 = new TCanvas("Distance_Histos_", "Distance_Histos_", 1500, 400);
-	can3->SetGrid(1,1);
+	TCanvas* can1 = new TCanvas("Distance_Histos_Difference_X", "Distance_Histos_Difference_X", 1500, 400);
+	can1->SetGrid(1,1);
+	can1->Divide(3,1);
+	can1->cd(1);
+	fHM->H1("fhDifferenceXIdeal")->Draw();
+	fHM->H1("fhDifferenceXIdeal")->SetTitle("Difference in X ideal");
+	fHM->H1("fhDifferenceXIdeal")->SetLineColor(kBlue);
+	fHM->H1("fhDifferenceXIdeal")->SetLineWidth(2);
+	can1->cd(2);
+	fDiffHistoMap[diffCorrX]->Draw();
+	fDiffHistoMap[diffCorrX]->SetTitle("Difference in X corrected");
+	fDiffHistoMap[diffCorrX]->SetLineColor(kRed);
+	fDiffHistoMap[diffCorrX]->SetLineWidth(2);
+	can1->cd(3);
+	fHM->H1("fhDifferenceXUncorrected")->Draw();
+	fHM->H1("fhDifferenceXUncorrected")->SetTitle("Difference in X uncorrected");
+	fHM->H1("fhDifferenceXUncorrected")->SetLineColor(kGreen);
+	fHM->H1("fhDifferenceXUncorrected")->SetLineWidth(2);
+
+	TCanvas* can2 = new TCanvas("Distance_Histos_Difference_Y", "Distance_Histos_Difference_Y", 1500, 400);
+	can2->SetGrid(1,1);
+	can2->Divide(3,1);
+	can2->cd(1);
+	fHM->H1("fhDifferenceYIdeal")->Draw();
+	fHM->H1("fhDifferenceYIdeal")->SetTitle("Difference in Y ideal");
+	fHM->H1("fhDifferenceYIdeal")->SetLineColor(kBlue);
+	fHM->H1("fhDifferenceYIdeal")->SetLineWidth(2);
+	can2->cd(2);
+	fDiffHistoMap[diffCorrY]->Draw();
+	fDiffHistoMap[diffCorrY]->SetTitle("Difference in Y corrected");
+	fDiffHistoMap[diffCorrY]->SetLineColor(kRed);
+	fDiffHistoMap[diffCorrY]->SetLineWidth(2);
+	can2->cd(3);
+	fHM->H1("fhDifferenceYUncorrected")->Draw();
+	fHM->H1("fhDifferenceYUncorrected")->SetTitle("Difference in Y uncorrected");
+	fHM->H1("fhDifferenceYUncorrected")->SetLineColor(kGreen);
+	fHM->H1("fhDifferenceYUncorrected")->SetLineWidth(2);
+
+	/*can3->SetGrid(1,1);
 	can3->Divide(2,1);
 	can3->cd(1)->SetGrid(1,1);
 	can3->cd(2)->SetGrid(1,1);
@@ -659,13 +990,9 @@ void CbmRichMirrorSortingCorrection::DrawHistProjection()
 	sprintf(leg, "Distance ideal");
 	LEG2->AddEntry(CloneDist1, leg, "l");
 	LEG2->Draw();*/
-	gStyle->SetOptStat(000000);
+/*	gStyle->SetOptStat(000000);
 
-	Cbm::SaveCanvasAsImage(can3, string(fOutputDir.Data()), "png");
+	Cbm::SaveCanvasAsImage(can1, string(fOutputDir.Data()), "png");
+	Cbm::SaveCanvasAsImage(can2, string(fOutputDir.Data()), "png");
 }
-
-void CbmRichMirrorSortingCorrection::Finish()
-{
-	DrawHistProjection();
-}
-ClassImp(CbmRichMirrorSortingCorrection)
+*/

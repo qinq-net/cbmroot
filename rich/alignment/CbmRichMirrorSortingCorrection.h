@@ -32,6 +32,8 @@ public:
 
     void InitHistProjection();
 
+    void InitHistProjectionList();
+
     /**
      * \brief Inherited from FairTask.
      */
@@ -47,7 +49,7 @@ public:
     /*
 	 * Function filling the diffX, diffY and distance histograms, from the outPos vector.
 	 */
-    void FillHistProjection(TVector3 outPosIdeal, TVector3 outPosUnCorr, TVector3 outPos, CbmRichRingLight ringLight, vector<Double_t> normalPMT, Double_t constantePMT);
+    void FillHistProjection(TVector3 outPosIdeal, TVector3 outPosUnCorr, TVector3 outPos, CbmRichRingLight ringLight, vector<Double_t> normalPMT, Double_t constantePMT, string str);
 
     void DrawHistProjection();
 
@@ -68,7 +70,11 @@ private:
     CbmRichRingFitterEllipseTau* fTauFit;
     TString fOutputDir;
     TString fStudyName;
-    CbmHistManager* fHM;
+    CbmHistManager* fHM, *fHM2;
+    std::map<string,TH1D*> fDiffHistoMap;
+    Double_t fTrackCenterDistanceIdeal;
+    Double_t fTrackCenterDistanceCorrected;
+    Double_t fTrackCenterDistanceUncorrected;
 
     TClonesArray* fGlobalTracks;
     TClonesArray* fRichRings;

@@ -517,10 +517,12 @@ void CbmRichMirrorSortingAlignment::DrawFitAndExtractAngles(std::map<string, vec
 		sprintf(leg, "Offset = %f", fit->GetParameter(2));
 		LEG->AddEntry("", leg, "l");
 		LEG->Draw();
-		Cbm::SaveCanvasAsImage(can, string(fOutputDir.Data()), "png");
+		Cbm::SaveCanvasAsImage(can, string(fOutputDir.Data()+fStudyName+"_"), "png");
 
-		anglesMap[it->first].push_back(mis_x);
-		anglesMap[it->first].push_back(mis_y);
+		//anglesMap[it->first].push_back(mis_x);
+		//anglesMap[it->first].push_back(mis_y);
+		anglesMap[it->first].push_back(fit->GetParameter(1));
+		anglesMap[it->first].push_back(fit->GetParameter(0));
 		}
 	}
 }
@@ -539,14 +541,18 @@ void CbmRichMirrorSortingAlignment::Finish()
 	// Drawing the obtained thetaCh VS phi histogram ; fitting with sinusoid ; write calculated misalignment angles in anglesMap:
 	DrawFitAndExtractAngles(anglesMap, histoMap);
 
+	TString s = fOutputDir + "correction_param_array_" + fStudyName + ".txt";
+	ofstream corrFile;
+	corrFile.open(s, std::ofstream::trunc);
+	if (corrFile.is_open()) { corrFile.close(); }
+	else { cout << "Error in CbmRichMirrorSortingAlignment::Finish ; unable to open parameter file!" << endl; }
+
 	// Write misalignment angles in output file:
 	for (std::map<string, vector<Double_t>>::iterator it=anglesMap.begin(); it!=anglesMap.end(); ++it) {
 		string mirrorId = it->first;
 		cout << "curMirrorId: " << mirrorId << endl;
 		vector<Double_t> misAngles = it->second;
 		cout << "mirror infos: {" << misAngles[0] << ", " << misAngles[1] << "}" << endl;
-		TString s = fOutputDir + "correction_param_array_" + fStudyName + ".txt";
-		ofstream corrFile;
 		corrFile.open(s, std::ofstream::app);
 		if (corrFile.is_open())
 		{
