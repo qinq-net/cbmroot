@@ -9,15 +9,24 @@
 using std::stringstream;
 using std::endl;
 
-CbmPixelHit::CbmPixelHit():
-	CbmHit(),
-	fX(0.),
-	fY(0.),
-	fDx(0.),
-	fDy(0.),
-	fDxy(0.)
+CbmPixelHit::CbmPixelHit()
+  : CbmPixelHit(-1, 0., 0., 0., 
+                0., 0., 0., 0., -1)		
 {
-	SetType(kPIXELHIT);
+}
+
+CbmPixelHit::CbmPixelHit(
+		Int_t address,
+		const TVector3& pos,
+		const TVector3& err,
+		Double_t dxy,
+		Int_t refId,
+                Double_t time,
+                Double_t timeError)
+  : CbmPixelHit(address, pos.X(), pos.Y(), pos.Z(),
+		err.X(), err.Y(), err.Z(), dxy, refId,
+                time, timeError)
+{
 }
 
 CbmPixelHit::CbmPixelHit(
@@ -29,39 +38,16 @@ CbmPixelHit::CbmPixelHit(
 		Double_t dy,
 		Double_t dz,
 		Double_t dxy,
-		Int_t refId):
-	CbmHit(),
-	fX(x),
-	fY(y),
-	fDx(dx),
-	fDy(dy),
-	fDxy(dxy)
+		Int_t refId,
+                Double_t time,
+                Double_t timeError)
+  : CbmHit(kPIXELHIT, z, dz, refId, address, time, timeError),
+    fX(x),
+    fY(y),
+    fDx(dx),
+    fDy(dy),
+    fDxy(dxy)
 {
-	SetType(kPIXELHIT);
-   SetAddress(address);
-   SetZ(z);
-   SetDz(dz);
-   SetRefId(refId);
-}
-
-CbmPixelHit::CbmPixelHit(
-		Int_t address,
-		const TVector3& pos,
-		const TVector3& err,
-		Double_t dxy,
-		Int_t refId):
-	CbmHit(),
-	fX(pos.X()),
-	fY(pos.Y()),
-	fDx(err.X()),
-	fDy(err.Y()),
-	fDxy(dxy)
-{
-	SetType(kPIXELHIT);
-	SetAddress(address);
-	SetZ(pos.Z());
-	SetDz(err.Z());
-	SetRefId(refId);
 }
 
 CbmPixelHit::~CbmPixelHit()

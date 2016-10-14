@@ -24,16 +24,18 @@ public:
 
 	/**
 	 * \brief Standard constructor.
-	 * \param address Detector unique identifier.
-	 * \param x X position of the hit [cm].
-	 * \param y Y position of the hit [cm].
-	 * \param z Z position of the hit [cm].
-	 * \param dx X position error of the hit [cm].
-	 * \param dy Y position error of the hit [cm].
-	 * \param dz Z position error of the hit [cm].
-	 * \param dxy XY correlation of the hit.
-	 * \param refId Some reference ID.
-	 **/
+	 * \param[in] address Detector unique identifier.
+	 * \param[in] x X position of the hit [cm].
+	 * \param[in] y Y position of the hit [cm].
+	 * \param[in] z Z position of the hit [cm].
+	 * \param[in] dx X position error of the hit [cm].
+	 * \param[in] dy Y position error of the hit [cm].
+	 * \param[in] dz Z position error of the hit [cm].
+	 * \param[in] dxy XY correlation of the hit.
+	 * \param[in] refId Some reference ID.
+         * \param[in] time Hit time [ns].   
+         * \param[in] timeError Error of hit time [ns].         
+ 	 **/
 	CbmPixelHit(
 			Int_t address,
 			Double_t x,
@@ -43,7 +45,10 @@ public:
 			Double_t dy,
 			Double_t dz,
 			Double_t dxy,
-			Int_t refId);
+			Int_t refId,
+ 	                Double_t time = -1.,
+        	        Double_t timeError = -1.
+			);
 
 	/**
 	 * \breif Standard constructor.
@@ -52,13 +57,18 @@ public:
 	 * \param err Position errors of the hit as TVector3 [cm].
 	 * \param dxy XY correlation of the hit.
 	 * \param refId Some reference ID.
+         * \param[in] time Hit time [ns].   
+         * \param[in] timeError Error of hit time [ns].         
 	 **/
 	CbmPixelHit(
 			Int_t address,
 			const TVector3& pos,
 			const TVector3& err,
 			Double_t dxy,
-			Int_t refId);
+			Int_t refId,
+ 	                Double_t time = -1.,
+        	        Double_t timeError = -1.
+			);
 
 	/**
 	 * brief Destructor.
