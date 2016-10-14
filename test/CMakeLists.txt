@@ -1,8 +1,7 @@
-
-
-Add_Subdirectory(testlib)
-Add_Subdirectory(mock)
-Add_Subdirectory(trd)
-Add_Subdirectory(data/trd)
-Add_Subdirectory(base)
+#Add_Subdirectory(testlib)
+#Add_Subdirectory(mock)
+#Add_Subdirectory(trd)
+#Add_Subdirectory(cbmdata/trd)
+Add_Subdirectory(cbmdata)
+#Add_Subdirectory(cbmbase)
 
