@@ -23,7 +23,7 @@
 #include <sys/time.h>
 #define CLOCK_REALTIME 0
 #define CLOCK_MONOTONIC 0
-int clock_gettime(int clk_id, struct timespec *t){
+inline int clock_gettime(int clk_id, struct timespec *t){
     mach_timebase_info_data_t timebase;
     mach_timebase_info(&timebase);
     uint64_t time;
@@ -118,6 +118,14 @@ struct LxTbXBin
     void Clear()
     {
         points.clear();
+    }
+    
+    // New feature 
+    scaltype maxDx;
+    
+    void AddPoint(const LxTbBinnedPoint& point)
+    {
+        points.push_back(point);
     }
 };
 
@@ -493,7 +501,7 @@ struct LxTbBinnedFinder
         {
             stations[i].binSizeX = (stations[i].maxX - stations[i].minX) / stations[i].nofXBins;
             stations[i].binSizeY = (stations[i].maxY - stations[i].minY) / stations[i].nofYBins;
-            scaltype L = stations[i].absorber.width;// / std::cos(3.14159265 * 15 / 180);
+            scaltype L = stations[i].absorber.width;// / cos(3.14159265 * 15 / 180);
             E -= EnergyLoss(E, L, &stations[i].absorber);
             
             if (i > 0)
@@ -514,7 +522,7 @@ struct LxTbBinnedFinder
         {
             trdStation.binSizeX = (trdStation.maxX - trdStation.minX) / trdStation.nofXBins;
             trdStation.binSizeY = (trdStation.maxY - trdStation.minY) / trdStation.nofYBins;
-            scaltype L = trdStation.absorber.width;// / std::cos(3.14159265 * 15 / 180);
+            scaltype L = trdStation.absorber.width;// / cos(3.14159265 * 15 / 180);
             E -= EnergyLoss(E, L, &trdStation.absorber);
             scaltype Escat = (E0 + E) / 2;
             scaltype deltaTheta = CalcThetaPrj(Escat, L, &trdStation.absorber);
@@ -642,21 +650,21 @@ struct LxTbBinnedFinder
                             scaltype ty = lPoint.y / lastZ;
                             scaltype trdPx0 = lPoint.x + tx * deltaZsTrd[0];
                             scaltype trdPy0 = lPoint.y + ty * deltaZsTrd[0];
-                            scaltype trajLen0 = std::sqrt(1 + tx * tx + ty * ty) * deltaZsTrd[0];
+                            scaltype trajLen0 = sqrt(1 + tx * tx + ty * ty) * deltaZsTrd[0];
                             scaltype trdPt0 = lPoint.t + 1.e9 * trajLen0 / c; // 1.e9 to convert to ns.
                             scaltype wX0 = NOF_SIGMAS * trdStation.dispXs[0];
                             scaltype wY0 = NOF_SIGMAS * trdStation.dispYs[0];
-                            scaltype wT0 = NOF_SIGMAS * std::sqrt(2.0) * lPoint.dt;
+                            scaltype wT0 = NOF_SIGMAS * sqrt(2.0) * lPoint.dt;
                             std::list<LxTbBinnedPoint*> results0;
                             FindNeighbours(trdPx0, wX0, trdPy0, wY0, trdPt0, wT0, 0, results0);
 
                             scaltype trdPx1 = lPoint.x + tx * deltaZsTrd[1];
                             scaltype trdPy1 = lPoint.y + ty * deltaZsTrd[1];
-                            scaltype trajLen1 = std::sqrt(1 + tx * tx + ty * ty) * deltaZsTrd[1];
+                            scaltype trajLen1 = sqrt(1 + tx * tx + ty * ty) * deltaZsTrd[1];
                             scaltype trdPt1 = lPoint.t + 1.e9 * trajLen1 / c; // 1.e9 to convert to ns.
                             scaltype wX1 = NOF_SIGMAS * trdStation.dispXs[1];
                             scaltype wY1 = NOF_SIGMAS * trdStation.dispYs[1];
-                            scaltype wT1 = NOF_SIGMAS * std::sqrt(2.0) * lPoint.dt;
+                            scaltype wT1 = NOF_SIGMAS * sqrt(2.0) * lPoint.dt;
                             std::list<LxTbBinnedPoint*> results1;
                             FindNeighbours(trdPx1, wX1, trdPy1, wY1, trdPt1, wT1, 1, results1);
 
@@ -672,11 +680,11 @@ struct LxTbBinnedFinder
 
                                     scaltype trdPx2 = trdPoint1.x + trdTx * (trdStation.Zs[2] - trdStation.Zs[1]);
                                     scaltype trdPy2 = trdPoint1.y + trdTy * (trdStation.Zs[2] - trdStation.Zs[1]);
-                                    scaltype trajLen2 = std::sqrt(1 + trdTx * trdTx + trdTx * trdTx) * (trdStation.Zs[2] - trdStation.Zs[1]);
+                                    scaltype trajLen2 = sqrt(1 + trdTx * trdTx + trdTx * trdTx) * (trdStation.Zs[2] - trdStation.Zs[1]);
                                     scaltype trdPt2 = trdPoint1.t + 1.e9 * trajLen2 / c; // 1.e9 to convert to ns.
                                     scaltype wX2 = 0.35135;
                                     scaltype wY2 = 0.33515;
-                                    scaltype wT2 = NOF_SIGMAS * std::sqrt(2.0) * trdPoint1.dt;
+                                    scaltype wT2 = NOF_SIGMAS * sqrt(2.0) * trdPoint1.dt;
                                     std::list<LxTbBinnedPoint*> results2;
                                     FindNeighbours(trdPx2, wX2, trdPy2, wY2, trdPt2, wT2, 2, results2);
 
@@ -685,11 +693,11 @@ struct LxTbBinnedFinder
 
                                     scaltype trdPx3 = trdPoint1.x + trdTx * (trdStation.Zs[3] - trdStation.Zs[1]);
                                     scaltype trdPy3 = trdPoint1.y + trdTy * (trdStation.Zs[3] - trdStation.Zs[1]);
-                                    scaltype trajLen3 = std::sqrt(1 + trdTx * trdTx + trdTx * trdTx) * (trdStation.Zs[3] - trdStation.Zs[1]);
+                                    scaltype trajLen3 = sqrt(1 + trdTx * trdTx + trdTx * trdTx) * (trdStation.Zs[3] - trdStation.Zs[1]);
                                     scaltype trdPt3 = trdPoint1.t + 1.e9 * trajLen3 / c; // 1.e9 to convert to ns.
                                     scaltype wX3 = 0.909;
                                     scaltype wY3 = 0.8455;
-                                    scaltype wT3 = NOF_SIGMAS * std::sqrt(2.0) * trdPoint1.dt;
+                                    scaltype wT3 = NOF_SIGMAS * sqrt(2.0) * trdPoint1.dt;
                                     std::list<LxTbBinnedPoint*> results3;
                                     FindNeighbours(trdPx3, wX3, trdPy3, wY3, trdPt3, wT3, 3, results3);
 
@@ -760,15 +768,15 @@ struct LxTbBinnedFinder
                             scaltype ty = rPoint.y / rZ;
                             scaltype pX = rPoint.x + tx * deltaZ;
                             scaltype pY = rPoint.y + ty * deltaZ;
-                            scaltype trajLen = std::sqrt(1 + tx * tx + ty * ty) * deltaZ;
+                            scaltype trajLen = sqrt(1 + tx * tx + ty * ty) * deltaZ;
                             timetype pT = rPoint.t + 1.e9 * trajLen / c;// 1.e9 to convert to ns and trajLen is negative.
                             scaltype rDxSq = rPoint.dx * rPoint.dx;
                             scaltype xDiv0 = dispXSq + rDxSq;
-                            scaltype wX = NOF_SIGMAS * std::sqrt(xDiv0 + rDxSq);
+                            scaltype wX = NOF_SIGMAS * sqrt(xDiv0 + rDxSq);
                             scaltype rDySq = rPoint.dy * rPoint.dy;
                             scaltype yDiv0 = dispYSq + rDySq;
-                            scaltype wY = NOF_SIGMAS * std::sqrt(yDiv0 + rDySq);
-                            timetype wT = NOF_SIGMAS * std::sqrt(2.0) * rPoint.dt;
+                            scaltype wY = NOF_SIGMAS * sqrt(yDiv0 + rDySq);
+                            timetype wT = NOF_SIGMAS * sqrt(2.0) * rPoint.dt;
                             
                             if (pX + wX < minX || pX - wX > maxX || pY + wY < minY || pY - wY > maxY || pT + wT < minT || pT - wT > maxT)
                                 continue;
@@ -956,21 +964,21 @@ struct LxTbBinnedFinder
                     scaltype ty = lPoint.y / lastZ;
                     scaltype trdPx0 = lPoint.x + tx * deltaZsTrd[0];
                     scaltype trdPy0 = lPoint.y + ty * deltaZsTrd[0];
-                    scaltype trajLen0 = std::sqrt(1 + tx * tx + ty * ty) * deltaZsTrd[0];
+                    scaltype trajLen0 = sqrt(1 + tx * tx + ty * ty) * deltaZsTrd[0];
                     timetype trdPt0 = lPoint.t + 1.e9 * trajLen0 / c; // 1.e9 to convert to ns.
                     scaltype wX0 = NOF_SIGMAS * sqrt(dispX0Sq + 2 * lPoint.dx * lPoint.dx);
                     scaltype wY0 = NOF_SIGMAS * sqrt(dispY0Sq + 2 * lPoint.dy * lPoint.dy);
-                    timetype wT0 = NOF_SIGMAS * std::sqrt(2.0) * lPoint.dt;
+                    timetype wT0 = NOF_SIGMAS * sqrt(2.0) * lPoint.dt;
                     std::list<LxTbBinnedPoint*> results0;
                     FindNeighbours(trdPx0, wX0, trdPy0, wY0, trdPt0, wT0, 0, results0);
 
                     scaltype trdPx1 = lPoint.x + tx * deltaZsTrd[1];
                     scaltype trdPy1 = lPoint.y + ty * deltaZsTrd[1];
-                    scaltype trajLen1 = std::sqrt(1 + tx * tx + ty * ty) * deltaZsTrd[1];
+                    scaltype trajLen1 = sqrt(1 + tx * tx + ty * ty) * deltaZsTrd[1];
                     timetype trdPt1 = lPoint.t + 1.e9 * trajLen1 / c; // 1.e9 to convert to ns.
                     scaltype wX1 = NOF_SIGMAS * sqrt(dispX1Sq + 2 * lPoint.dx * lPoint.dx);
                     scaltype wY1 = NOF_SIGMAS * sqrt(dispY1Sq + 2 * lPoint.dy * lPoint.dy);
-                    timetype wT1 = NOF_SIGMAS * std::sqrt(2.0) * lPoint.dt;
+                    timetype wT1 = NOF_SIGMAS * sqrt(2.0) * lPoint.dt;
                     std::list<LxTbBinnedPoint*> results1;
                     FindNeighbours(trdPx1, wX1, trdPy1, wY1, trdPt1, wT1, 1, results1);
 
@@ -988,11 +996,11 @@ struct LxTbBinnedFinder
 
                             scaltype trdPx2 = trdPoint1.x + trdTx * trdDeltaZ21;
                             scaltype trdPy2 = trdPoint1.y + trdTy * trdDeltaZ21;
-                            scaltype trajLen2 = std::sqrt(1 + trdTx * trdTx + trdTx * trdTx) * trdDeltaZ21;
+                            scaltype trajLen2 = sqrt(1 + trdTx * trdTx + trdTx * trdTx) * trdDeltaZ21;
                             timetype trdPt2 = trdPoint1.t + 1.e9 * trajLen2 / c; // 1.e9 to convert to ns.
                             scaltype wX2 = NOF_SIGMAS * sqrt(0.0878375 * 0.0878375 + trdDtxSq * trdDeltaZ21Sq + trdPoint1.dx * trdPoint1.dx);//0.35135;
                             scaltype wY2 = NOF_SIGMAS * sqrt(0.0837875 * 0.0837875 + trdDtySq * trdDeltaZ21Sq + trdPoint1.dy * trdPoint1.dy);//0.33515;
-                            timetype wT2 = NOF_SIGMAS * std::sqrt(2.0) * trdPoint1.dt;
+                            timetype wT2 = NOF_SIGMAS * sqrt(2.0) * trdPoint1.dt;
                             std::list<LxTbBinnedPoint*> results2;
                             FindNeighbours(trdPx2, wX2, trdPy2, wY2, trdPt2, wT2, 2, results2);
 
@@ -1001,11 +1009,11 @@ struct LxTbBinnedFinder
 
                             scaltype trdPx3 = trdPoint1.x + trdTx * trdDeltaZ31;
                             scaltype trdPy3 = trdPoint1.y + trdTy * trdDeltaZ31;
-                            scaltype trajLen3 = std::sqrt(1 + trdTx * trdTx + trdTx * trdTx) * trdDeltaZ31;
+                            scaltype trajLen3 = sqrt(1 + trdTx * trdTx + trdTx * trdTx) * trdDeltaZ31;
                             timetype trdPt3 = trdPoint1.t + 1.e9 * trajLen3 / c; // 1.e9 to convert to ns.
                             scaltype wX3 = NOF_SIGMAS * sqrt(0.22725 * 0.22725 + trdDtxSq * trdDeltaZ31Sq + trdPoint1.dx * trdPoint1.dx);//0.909;
                             scaltype wY3 = NOF_SIGMAS * sqrt(0.211375 * 0.211375 + trdDtySq * trdDeltaZ31Sq + trdPoint1.dy * trdPoint1.dy);//0.8455;
-                            timetype wT3 = NOF_SIGMAS * std::sqrt(2.0) * trdPoint1.dt;
+                            timetype wT3 = NOF_SIGMAS * sqrt(2.0) * trdPoint1.dt;
                             std::list<LxTbBinnedPoint*> results3;
                             FindNeighbours(trdPx3, wX3, trdPy3, wY3, trdPt3, wT3, 3, results3);
 

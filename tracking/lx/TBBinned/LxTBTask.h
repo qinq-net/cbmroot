@@ -40,6 +40,40 @@
 class LxTBFinder : public FairTask
 {
 public:
+#ifdef LXTB_QA
+    struct PointDataHolder
+    {
+        Double_t x;
+        Double_t y;
+        Double_t z;
+        Double_t t;
+        Int_t eventId;
+        Int_t trackId;
+        Int_t pointId;
+        Int_t stationNumber;
+        Int_t layerNumber;
+    };
+    
+    struct TrackDataHolder
+    {
+        Int_t pointInds[CUR_NOF_STATIONS];
+        Int_t trdPointInds[CUR_NOF_TRD_LAYERS];
+        bool isSignalShort;
+        bool isSignalLong;
+        bool isPos;
+        
+        TrackDataHolder() : isSignalShort(false), isSignalLong(false), isPos(false)
+        {
+            for (int i = 0; i < CUR_NOF_STATIONS; ++i)
+                pointInds[i] = -1;
+            
+            for (int i = 0; i < CUR_NOF_TRD_LAYERS; ++i)
+                trdPointInds[i] = -1;
+        }
+    };
+#endif//LXTB_QA
+    
+public:
     LxTBFinder();
     InitStatus Init();// Overridden from FairTask
     void Exec(Option_t* opt);// Overridden from FairTask
@@ -80,19 +114,6 @@ private:
     void AddStsTrack(const CbmStsTrack& stsTrack, Int_t selfId);
 #endif//LXTB_TIE
     
-    struct PointDataHolder
-    {
-        Double_t x;
-        Double_t y;
-        Double_t z;
-        Double_t t;
-        Int_t eventId;
-        Int_t trackId;
-        Int_t pointId;
-        Int_t stationNumber;
-        Int_t layerNumber;
-    };
-    
     std::vector<std::vector<PointDataHolder> > fMuchPoints;
     CbmMCDataArray* fMuchMCPoints;
     TClonesArray* fMuchPixelHits;
@@ -111,25 +132,7 @@ private:
     TClonesArray* fTofDigis;
 #endif//LXTB_QA
     
-#ifdef LXTB_QA
-    struct TrackDataHolder
-    {
-        Int_t pointInds[CUR_NOF_STATIONS];
-        Int_t trdPointInds[CUR_NOF_TRD_LAYERS];
-        bool isSignalShort;
-        bool isSignalLong;
-        bool isPos;
-        
-        TrackDataHolder() : isSignalShort(false), isSignalLong(false), isPos(false)
-        {
-            for (int i = 0; i < CUR_NOF_STATIONS; ++i)
-                pointInds[i] = -1;
-            
-            for (int i = 0; i < CUR_NOF_TRD_LAYERS; ++i)
-                trdPointInds[i] = -1;
-        }
-    };
-    
+#ifdef LXTB_QA    
     std::vector<std::vector<TrackDataHolder> > fMCTracks;
 #endif//LXTB_QA
     bool isEvByEv;

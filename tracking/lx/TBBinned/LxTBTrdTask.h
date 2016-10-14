@@ -25,27 +25,7 @@
 class LxTBTrdFinder : public FairTask
 {
 public:
-    LxTBTrdFinder();
-    InitStatus Init();// Overridden from FairTask
-    void Exec(Option_t* opt);// Overridden from FairTask
-    void Finish();// Overridden from FairTask
-    
 #ifdef LXTB_QA
-    void SetNEvents(Int_t v) { fNEvents = v; }
-#endif//LXTB_QA
-    
-private:
-    void HandleGeometry();
-    LxTbBinnedFinder* fFinder;
-    list<LxTbBinnedFinder::Chain*> recoTracks;
-    unsigned int nof_timebins;
-    unsigned int last_timebin;
-    TClonesArray* fTrdHits;
-    TClonesArray* fTrdClusters;
-    TClonesArray* fTrdDigiMatches;
-#ifdef LXTB_QA
-    CbmMCDataArray* fTrdMCPoints;
-    
     struct TrackDataHolder
     {
         Int_t pointInds[CUR_NOF_STATIONS];
@@ -58,8 +38,6 @@ private:
         }
     };
     
-    std::vector<vector<TrackDataHolder> > fMCTracks;
-    
     struct PointDataHolder
     {
         Double_t x;
@@ -71,8 +49,31 @@ private:
         Int_t pointId;
         Int_t layerNumber;
     };
+#endif//LXTB_QA
     
-    std::vector<vector<PointDataHolder> > fTrdPoints;    
+public:
+    LxTBTrdFinder();
+    InitStatus Init();// Overridden from FairTask
+    void Exec(Option_t* opt);// Overridden from FairTask
+    void Finish();// Overridden from FairTask
+    
+#ifdef LXTB_QA
+    void SetNEvents(Int_t v) { fNEvents = v; }
+#endif//LXTB_QA
+    
+private:
+    void HandleGeometry();
+    LxTbBinnedFinder* fFinder;
+    std::list<LxTbBinnedFinder::Chain*> recoTracks;
+    unsigned int nof_timebins;
+    unsigned int last_timebin;
+    TClonesArray* fTrdHits;
+    TClonesArray* fTrdClusters;
+    TClonesArray* fTrdDigiMatches;
+#ifdef LXTB_QA
+    CbmMCDataArray* fTrdMCPoints;
+    std::vector<std::vector<TrackDataHolder> > fMCTracks;
+    std::vector<std::vector<PointDataHolder> > fTrdPoints;    
     Int_t fNEvents;
 #endif//LXTB_QA
 

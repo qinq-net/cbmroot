@@ -21,5 +21,8 @@
 #define LXTB_EMU_TS
 #endif//LXTB_QA
 
+#define scaltype float
+#define timetype double
+
 #endif /* LXTBDEFINITIONS_H */
 

@@ -19,6 +19,17 @@
 #include "CbmMCTrack.h"
 #include "LxTBTask.h"
 
+using std::list;
+using std::pair;
+using std::vector;
+using std::cout;
+using std::endl;
+using std::ofstream;
+using std::ios_base;
+using std::ifstream;
+using std::map;
+using std::set;
+
 ClassImp(LxTBTrdFinder)
 
 LxTBTrdFinder::LxTBTrdFinder() : fFinder(0), nof_timebins(5), last_timebin(nof_timebins - 1), fTrdHits(0), fTrdClusters(0), fTrdDigiMatches(0)
