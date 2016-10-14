@@ -28,6 +28,7 @@
 #pragma link C++ class CbmRichUrqmdTest+;
 #pragma link C++ class CbmRichGeoOpt+;
 #pragma link C++ class CbmRichRingFitterQa+;
+#pragma link C++ class CbmRichRecoQa+;
 
 //prototype
 #pragma link C++ class CbmRichProt+;

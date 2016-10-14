@@ -177,17 +177,7 @@ private:
     void DrawRing(
                   CbmRichRingLight* ringHit,
                   CbmRichRingLight* ringPoint);
-    /**
-     * \brief Creates two histogram. First is mean value vs. x axis,
-     * errors represents RMS. Second is RMS value vs. x axis.
-     * \param[in] hist Input 2D histogram.
-     * \param[out] meanHist Histogram of mean values.
-     * \param[out] rmsHist Histogram of RMS values.
-     */
-    void CreateH2MeanRms(
-                         TH2D* hist,
-                         TH1D** meanHist,
-                         TH1D** rmsHist);
+
     
     void DrawH2MeanRms(
                        TH2* hist,
@@ -209,22 +199,6 @@ private:
                           TH1* histRec,
                           TH1* histAcc);
     
-    TCanvas* CreateCanvas(
-                          const string& name,
-                          const string& title,
-                          int width,
-                          int height);
-    
-    void DrawH3(
-                TH3* h,
-                const string& cName,
-                const string& zAxisTitle,
-                double zMin,
-                double zMax,
-                bool doFit = false);
-    
-    void SaveCanvasToImage();
-    
     /**
      * \brief Copy constructor.
      */
@@ -235,7 +209,7 @@ private:
      */
     CbmRichGeoTest& operator=(const CbmRichGeoTest&);
     
-    string fOutputDir; // output dir for results
+    string fOutputDir; // output directory for results
     
     TClonesArray* fRichHits;
     TClonesArray* fRichRings;
@@ -247,8 +221,6 @@ private:
     // rings will be fitted on a fly
     CbmRichRingFitterCOP* fCopFit;
     CbmRichRingFitterEllipseTau* fTauFit;
-    
-    vector<TCanvas*> fCanvas;
     
     CbmHistManager* fHM; // Histogram manager
     

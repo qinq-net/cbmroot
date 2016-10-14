@@ -1,30 +1,35 @@
 
-#ifndef CBM_RICH_SMALL_PROTOTYPE_QA
-#define CBM_RICH_SMALL_PROTOTYPE_QA
+#ifndef CBM_RICH_RECO_QA
+#define CBM_RICH_RECO_QA
 
 #include "FairTask.h"
 class TClonesArray;
 class CbmRichRing;
+class TCanvas;
 class CbmHistManager;
+class TH1D;
+class TH2D;
+class TH2;
+class TH3;
 
 #include <vector>
 #include <map>
 
 using namespace std;
 
-class CbmRichSmallPrototypeQa : public FairTask
+class CbmRichRecoQa : public FairTask
 {
     
 public:
     /**
      * \brief Standard constructor.
      */
-    CbmRichSmallPrototypeQa();
+    CbmRichRecoQa();
     
     /**
      * \brief Standard destructor.
      */
-    virtual ~CbmRichSmallPrototypeQa() {}
+    virtual ~CbmRichRecoQa() {}
     
     /**
      * \brief Inherited from FairTask.
@@ -62,21 +67,16 @@ private:
      */
     void DrawHist();
     
-    void DrawCircle(
-                    CbmRichRing* ring);
-    
-    void DrawEvent();
-
-    
     /**
      * \brief Copy constructor.
      */
-    CbmRichSmallPrototypeQa(const CbmRichSmallPrototypeQa&);
+    CbmRichRecoQa(const CbmRichRecoQa&);
     
     /**
      * \brief Assignment operator.
      */
-    CbmRichSmallPrototypeQa& operator=(const CbmRichSmallPrototypeQa&);
+    CbmRichRecoQa& operator=(const CbmRichRecoQa&);
+    
     
     CbmHistManager* fHM;
     
@@ -84,17 +84,19 @@ private:
     
     string fOutputDir; // output dir for results
     
-  
-
     TClonesArray* fMCTracks;
-	TClonesArray* fRichPoints;
-	TClonesArray* fRichDigis;
-	TClonesArray* fRichHits;
-	TClonesArray* fRichRings;
+    TClonesArray* fRichPoints;
+    TClonesArray* fRichDigis;
+    TClonesArray* fRichHits;
+    TClonesArray* fRichRings;
     TClonesArray* fRichRingMatches;
-	TClonesArray* fRefPlanePoints;
+    TClonesArray* fGlobalTracks;
+    TClonesArray* fStsTracks;
+    TClonesArray* fStsTrackMatches;
     
-    ClassDef(CbmRichSmallPrototypeQa,1)
+    vector<TCanvas*> fCanvas;
+    
+    ClassDef(CbmRichRecoQa,1)
 };
 
 #endif

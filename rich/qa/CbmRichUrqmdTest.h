@@ -105,14 +105,6 @@ private:
      */
     void DrawHist();
     
-    TCanvas* CreateCanvas(
-                          const string& name,
-                          const string& title,
-                          int width,
-                          int height);
-    
-    void SaveCanvasToImage();
-    
     void PmtXYSource();
     
     /**
@@ -136,9 +128,6 @@ private:
     TClonesArray* fRichRingMatches;
     TClonesArray* fRichProjections;
     TClonesArray* fRichDigis;
-    
-    
-    vector<TCanvas*> fCanvas;
     
     Int_t fEventNum;
     Int_t fMinNofHits; // Min number of hits in ring for detector acceptance calculation.

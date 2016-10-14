@@ -47,7 +47,6 @@ fMcTracks(NULL),
 fRichRingMatches(NULL),
 fRichProjections(NULL),
 fRichDigis(NULL),
-fCanvas(),
 fEventNum(0),
 fMinNofHits(7),
 fNofHitsInRingMap()
@@ -374,7 +373,7 @@ void CbmRichUrqmdTest::DrawHist()
     
     {
         fHM->H1("fh_vertex_z")->Scale(1./fEventNum);
-        TCanvas* c = CreateCanvas("rich_urqmd_vertex_z", "rich_urqmd_vertex_z", 800, 800);
+        fHM->CreateCanvas("rich_urqmd_vertex_z", "rich_urqmd_vertex_z", 800, 800);
         DrawH1(fHM->H1("fh_vertex_z"));
         gPad->SetLogy(true);
     }
@@ -382,25 +381,25 @@ void CbmRichUrqmdTest::DrawHist()
     
     {
         fHM->H2("fh_vertex_xy")->Scale(1./fEventNum);
-        TCanvas* c = CreateCanvas("rich_urqmd_vertex_xy", "rich_urqmd_vertex_xy", 800, 800);
+        fHM->CreateCanvas("rich_urqmd_vertex_xy", "rich_urqmd_vertex_xy", 800, 800);
         DrawH2(fHM->H2("fh_vertex_xy"));
     }
     
     {
         fHM->H2("fh_vertex_xy_z100_180")->Scale(1./fEventNum);
-        TCanvas* c = CreateCanvas("rich_urqmd_vertex_xy_z100_180", "rich_urqmd_vertex_xy_z100_180", 800, 800);
+        fHM->CreateCanvas("rich_urqmd_vertex_xy_z100_180", "rich_urqmd_vertex_xy_z100_180", 800, 800);
         DrawH2(fHM->H2("fh_vertex_xy_z100_180"));
     }
     
     {
         fHM->H2("fh_vertex_xy_z180_370")->Scale(1./fEventNum);
-        TCanvas* c = CreateCanvas("rich_urqmd_vertex_xy_z180_370", "rich_urqmd_vertex_xy_z180_370", 800, 800);
+        fHM->CreateCanvas("rich_urqmd_vertex_xy_z180_370", "rich_urqmd_vertex_xy_z180_370", 800, 800);
         DrawH2(fHM->H2("fh_vertex_xy_z180_370"));
     }
     
     {
         fHM->H1("fh_nof_points_per_event")->Scale(1./fEventNum);
-        TCanvas* c = CreateCanvas("rich_urqmd_nof_points_per_event", "rich_urqmd_nof_points_per_event", 800, 800);
+        fHM->CreateCanvas("rich_urqmd_nof_points_per_event", "rich_urqmd_nof_points_per_event", 800, 800);
         //gStyle->SetPaintTextFormat("4.1f");
         string labels[7] = {"all", "e^{#pm}_{sec} other", "e^{#pm}_{target} from #gamma", "e^{#pm}_{not target} from #gamma", "#pi^{#pm}", "K^{#pm}", "#mu^{#pm}" };
         for (Int_t i = 1; i <= 7; i++){
@@ -412,7 +411,7 @@ void CbmRichUrqmdTest::DrawHist()
     }
     
     {
-        TCanvas* c = CreateCanvas("rich_urqmd_nof_rings", "rich_urqmd_nof_rings", 800, 800);
+        fHM->CreateCanvas("rich_urqmd_nof_rings", "rich_urqmd_nof_rings", 800, 800);
         fHM->H1("fh_nof_rings_1hit")->Scale(1./fHM->H1("fh_nof_rings_1hit")->Integral());
         fHM->H1("fh_nof_rings_7hits")->Scale(1./fHM->H1("fh_nof_rings_7hits")->Integral());
         stringstream ss1, ss2;
@@ -424,7 +423,7 @@ void CbmRichUrqmdTest::DrawHist()
     }
     
     {
-        TCanvas* c = CreateCanvas("rich_urqmd_nof_rings_prim", "rich_urqmd_nof_rings_prim", 800, 800);
+        fHM->CreateCanvas("rich_urqmd_nof_rings_prim", "rich_urqmd_nof_rings_prim", 800, 800);
         fHM->H1("fh_nof_rings_prim_1hit")->Scale(1./fHM->H1("fh_nof_rings_prim_1hit")->Integral());
         fHM->H1("fh_nof_rings_prim_7hits")->Scale(1./fHM->H1("fh_nof_rings_prim_7hits")->Integral());
         stringstream ss1, ss2;
@@ -436,7 +435,7 @@ void CbmRichUrqmdTest::DrawHist()
     }
     
     {
-        TCanvas* c = CreateCanvas("rich_urqmd_nof_rings_target", "rich_urqmd_nof_rings_target", 800, 800);
+        fHM->CreateCanvas("rich_urqmd_nof_rings_target", "rich_urqmd_nof_rings_target", 800, 800);
         fHM->H1("fh_nof_rings_target_1hit")->Scale(1./fHM->H1("fh_nof_rings_target_1hit")->Integral());
         fHM->H1("fh_nof_rings_target_7hits")->Scale(1./fHM->H1("fh_nof_rings_target_7hits")->Integral());
         stringstream ss1, ss2;
@@ -448,7 +447,7 @@ void CbmRichUrqmdTest::DrawHist()
     }
     
     {
-        TCanvas* c = CreateCanvas("rich_urqmd_sources_mom", "rich_urqmd_sources_mom", 800, 800);
+        fHM->CreateCanvas("rich_urqmd_sources_mom", "rich_urqmd_sources_mom", 800, 800);
         fHM->H1("fh_gamma_target_mom")->Scale(1./fEventNum);
         fHM->H1("fh_gamma_nontarget_mom")->Scale(1./fEventNum);
         fHM->H1("fh_secel_mom")->Scale(1./fEventNum);
@@ -473,57 +472,57 @@ void CbmRichUrqmdTest::DrawHist()
     }
     
     {
-        TCanvas *c = CreateCanvas("rich_urqmd_hits_xy", "rich_urqmd_hits_xy", 800, 800);
+        TCanvas *c = fHM->CreateCanvas("rich_urqmd_hits_xy", "rich_urqmd_hits_xy", 800, 800);
         double binArea = fHM->H2("fh_hits_xy")->GetXaxis()->GetBinWidth(1) * fHM->H2("fh_hits_xy")->GetYaxis()->GetBinWidth(1);
         fHM->H2("fh_hits_xy")->Scale(1./(fEventNum * binArea));
         CbmRichDraw::DrawPmtH2(fHM->H2("fh_hits_xy"), c);
     }
     
     {
-        TCanvas *c = CreateCanvas("rich_urqmd_points_xy", "rich_urqmd_points_xy", 800, 800);
+        TCanvas *c = fHM->CreateCanvas("rich_urqmd_points_xy", "rich_urqmd_points_xy", 800, 800);
         fHM->H2("fh_points_xy")->Scale(1./fEventNum);
         CbmRichDraw::DrawPmtH2(fHM->H2("fh_points_xy"), c);
     }
     
     {
-        TCanvas *c = CreateCanvas("rich_urqmd_points_xy_pions", "rich_urqmd_points_xy_pions", 800, 800);
+        TCanvas *c = fHM->CreateCanvas("rich_urqmd_points_xy_pions", "rich_urqmd_points_xy_pions", 800, 800);
         fHM->H2("fh_points_xy_pions")->Scale(1./fEventNum);
         CbmRichDraw::DrawPmtH2(fHM->H2("fh_points_xy_pions"), c);
     }
     
     {
-        TCanvas *c = CreateCanvas("rich_urqmd_points_xy_gamma_target", "rich_urqmd_points_xy_gamma_target", 800, 800);
+        TCanvas *c = fHM->CreateCanvas("rich_urqmd_points_xy_gamma_target", "rich_urqmd_points_xy_gamma_target", 800, 800);
         fHM->H2("fh_points_xy_gamma_target")->Scale(1./fEventNum);
         CbmRichDraw::DrawPmtH2(fHM->H2("fh_points_xy_gamma_target"), c);
     }
     
     {
-        TCanvas *c = CreateCanvas("rich_urqmd_points_xy_gamma_nontarget", "rich_urqmd_points_xy_gamma_nontarget", 800, 800);
+        TCanvas *c = fHM->CreateCanvas("rich_urqmd_points_xy_gamma_nontarget", "rich_urqmd_points_xy_gamma_nontarget", 800, 800);
         fHM->H2("fh_points_xy_gamma_nontarget")->Scale(1./fEventNum);
         CbmRichDraw::DrawPmtH2(fHM->H2("fh_points_xy_gamma_nontarget"), c);
     }
     
     {
-        TCanvas* c = CreateCanvas("rich_urqmd_nof_hits_per_event", "rich_urqmd_nof_hits_per_event", 800, 800);
+        fHM->CreateCanvas("rich_urqmd_nof_hits_per_event", "rich_urqmd_nof_hits_per_event", 800, 800);
         fHM->H1("fh_nof_hits_per_event")->Scale(1./fHM->H1("fh_nof_hits_per_event")->Integral());
         DrawH1andFitGauss(fHM->H1("fh_nof_hits_per_event"));
         cout << "Mean number of hits per event = " << fHM->H1("fh_nof_hits_per_event")->GetMean() << endl;
     }
     
     {
-        TCanvas *c = CreateCanvas("rich_urqmd_hitrate_xy", "rich_urqmd_hitrate_xy", 800, 800);
+        TCanvas *c = fHM->CreateCanvas("rich_urqmd_hitrate_xy", "rich_urqmd_hitrate_xy", 800, 800);
         fHM->H2("fh_hitrate_xy")->Scale(1e7/(fEventNum * 16.));
         CbmRichDraw::DrawPmtH2(fHM->H2("fh_hitrate_xy"), c);
     }
     
     {
-        TCanvas *c = CreateCanvas("rich_urqmd_proj_xy", "rich_urqmd_proj_xy", 800, 800);
+        TCanvas *c = fHM->CreateCanvas("rich_urqmd_proj_xy", "rich_urqmd_proj_xy", 800, 800);
         fHM->H2("fh_proj_xy")->Scale(1./fEventNum);
         CbmRichDraw::DrawPmtH2(fHM->H2("fh_proj_xy"), c);
     }
     
     {
-        TCanvas* c = CreateCanvas("rich_urqmd_nof_proj_per_event", "rich_urqmd_nof_proj_per_event", 800, 800);
+        fHM->CreateCanvas("rich_urqmd_nof_proj_per_event", "rich_urqmd_nof_proj_per_event", 800, 800);
         fHM->H1("fh_nof_proj_per_event")->Scale(1./fEventNum);
         DrawH1andFitGauss(fHM->H1("fh_nof_proj_per_event"));
         cout << "Number of track projections per event = " << fHM->H1("fh_nof_proj_per_event")->GetMean() << endl;
@@ -533,28 +532,8 @@ void CbmRichUrqmdTest::DrawHist()
 void CbmRichUrqmdTest::Finish()
 {
     DrawHist();
-    SaveCanvasToImage();
+    fHM->SaveCanvasToImage(fOutputDir);
     fHM->WriteToFile();
-}
-
-
-TCanvas* CbmRichUrqmdTest::CreateCanvas(
-                                        const string& name,
-                                        const string& title,
-                                        int width,
-                                        int height)
-{
-    TCanvas* c = new TCanvas(name.c_str(), title.c_str(), width, height);
-    fCanvas.push_back(c);
-    return c;
-}
-
-void CbmRichUrqmdTest::SaveCanvasToImage()
-{
-    for (unsigned int i = 0; i < fCanvas.size(); i++)
-    {
-        Cbm::SaveCanvasAsImage(fCanvas[i], fOutputDir);
-    }
 }
 
 ClassImp(CbmRichUrqmdTest)

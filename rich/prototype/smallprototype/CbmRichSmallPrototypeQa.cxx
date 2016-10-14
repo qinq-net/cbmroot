@@ -45,10 +45,7 @@ fRichDigis(NULL),
 fRichHits(NULL),
 fRichRings(NULL),
 fRichRingMatches(NULL),
-fRefPlanePoints(NULL),
-fCanvas()
-//fMinNofHits(7),
-//fNofHitsInRingMap()
+fRefPlanePoints(NULL)
 {
 }
 
@@ -283,7 +280,7 @@ void CbmRichSmallPrototypeQa::DrawHist()
     
     
     {
-        TCanvas* c = CreateCanvas("richsp_nof_rich_hits_points", "richsp_nof_rich_hits_points", 1200, 600);
+        TCanvas* c = fHM->CreateCanvas("richsp_nof_rich_hits_points", "richsp_nof_rich_hits_points", 1200, 600);
         c->Divide(2,1);
         c->cd(1);
         DrawH1andFitGauss(fHM->H1("fh_nof_rich_points"));
@@ -293,13 +290,13 @@ void CbmRichSmallPrototypeQa::DrawHist()
     }
     
     {
-        TCanvas* c=CreateCanvas("richsp_rich_points_xy", "richsp_rich_points_xy", 600, 600);
+        TCanvas* c = fHM->CreateCanvas("richsp_rich_points_xy", "richsp_rich_points_xy", 600, 600);
         c->SetLogz();
         DrawH2(fHM->H2("fh_rich_points_xy"));
         fHM->H2("fh_rich_points_xy")->SetTitle("Rich Points");
     }
     {
-        TCanvas* c=CreateCanvas("rich_hits_xy", "rich_hits_xy", 600, 600);
+        TCanvas* c = fHM->CreateCanvas("rich_hits_xy", "rich_hits_xy", 600, 600);
         c->SetLogz();
         DrawH2(fHM->H2("fh_rich_hits_xy"));
         fHM->H2("fh_rich_hits_xy")->SetTitle("Rich Hits");
@@ -307,7 +304,7 @@ void CbmRichSmallPrototypeQa::DrawHist()
 
     
     {
-        TCanvas* c=CreateCanvas("richsp_refplane_nof_particles_per_event", "richsp_refplane_nof_particles_per_event", 600, 600);
+        fHM->CreateCanvas("richsp_refplane_nof_particles_per_event", "richsp_refplane_nof_particles_per_event", 600, 600);
         DrawH1(fHM->H1("fh_refplane_nof_particles_per_event"));
         fHM->H1("fh_refplane_nof_particles_per_event")->SetTitle("Number of particles on reference plane");
         string labels[6] = {"#pi^{+}", "#pi^{-}", "e^{+}", "e^{-}", "#mu^{+}", "#mu^{-}"};
@@ -317,7 +314,7 @@ void CbmRichSmallPrototypeQa::DrawHist()
     }
     
     {
-        TCanvas* c=CreateCanvas("richsp_rich_hits_xy_dR", "richsp_rich_hits_xy_dR", 1200, 600);
+        TCanvas* c = fHM->CreateCanvas("richsp_rich_hits_xy_dR", "richsp_rich_hits_xy_dR", 1200, 600);
         c->Divide(2,1);
         c->cd(1);
         c->SetLogz();
@@ -331,32 +328,32 @@ void CbmRichSmallPrototypeQa::DrawHist()
     
     
     {
-        TCanvas* c=CreateCanvas("richsp_proton_start_xy", "richsp_proton_start_xy", 600, 600);
+        TCanvas* c = fHM->CreateCanvas("richsp_proton_start_xy", "richsp_proton_start_xy", 600, 600);
         c->SetLogz();
         DrawH2(fHM->H2("fh_proton_start_xy"));
         fHM->H2("fh_proton_start_xy")->SetTitle("Proton start XY");
     }
     
     {
-        TCanvas* c=CreateCanvas("richsp_rich_ring_radius", "richsp_rich_ring_radius", 600, 600);
+        fHM->CreateCanvas("richsp_rich_ring_radius", "richsp_rich_ring_radius", 600, 600);
         DrawH1andFitGauss(fHM->H1("fh_rich_ring_radius"));
         fHM->H1("fh_rich_ring_radius")->SetTitle("Ring Radius");
     }
     
     {
-        TCanvas* c=CreateCanvas("richsp_nof_rich_rings", "richsp_nof_rich_rings", 600, 600);
+        fHM->CreateCanvas("richsp_nof_rich_rings", "richsp_nof_rich_rings", 600, 600);
         DrawH1(fHM->H1("fh_nof_rich_rings"));
         fHM->H1("fh_nof_rich_rings")->SetTitle("Nof Rich Rings");
     }
     
     {
-        TCanvas* c=CreateCanvas("richsp_dR", "richsp_dR", 600, 600);
+    	fHM->CreateCanvas("richsp_dR", "richsp_dR", 600, 600);
         DrawH1andFitGauss(fHM->H1("fh_dR"));
         fHM->H1("fh_dR")->SetTitle("dR");
     }
     
     {
-        TCanvas* c=CreateCanvas("richsp_refplane_xy", "richsp_refplane_xy", 1500, 500);
+        TCanvas* c = fHM->CreateCanvas("richsp_refplane_xy", "richsp_refplane_xy", 1500, 500);
         c->Divide(3,1);
         c->cd(1);
         DrawH2(fHM->H2("fh_refplane_xy_all"));
@@ -371,34 +368,34 @@ void CbmRichSmallPrototypeQa::DrawHist()
     }
     
     {
-        TCanvas* c=CreateCanvas("richsp_nonphoton_pmt_points_xy", "richsp_nonphoton_pmt_points_xy", 600, 600);
+        TCanvas* c = fHM->CreateCanvas("richsp_nonphoton_pmt_points_xy", "richsp_nonphoton_pmt_points_xy", 600, 600);
         c->SetLogz();
         DrawH2(fHM->H2("fh_nonphoton_pmt_points_xy"));
         fHM->H2("fh_nonphoton_pmt_points_xy")->SetTitle("Non photons on PMT plane");
     }
     
     {
-        TCanvas* c=CreateCanvas("richsp_refplane_pdg", "richsp_refplane_pdg", 1200, 600);
+        TCanvas* c = fHM->CreateCanvas("richsp_refplane_pdg", "richsp_refplane_pdg", 1200, 600);
         c->SetLogy();
         DrawH1(fHM->H1("fh_refplane_pdg"));
         fHM->H1("fh_refplane_pdg")->SetTitle("Reference plane, PDG codes");
     }
     
     {
-        TCanvas* c = CreateCanvas("richsp_hits_per_ring", "richsp_hits_per_ring", 600, 600);
+        fHM->CreateCanvas("richsp_hits_per_ring", "richsp_hits_per_ring", 600, 600);
         DrawH1andFitGauss(fHM->H1("fh_hits_per_ring"));
         fHM->H1("fh_hits_per_ring")->SetTitle("Hits per Ring");
     }
     
     {
-        TCanvas* c = CreateCanvas("richsp_ring_center_xy", "richsp_ring_center_xy", 600, 600);
+        TCanvas* c = fHM->CreateCanvas("richsp_ring_center_xy", "richsp_ring_center_xy", 600, 600);
         c->SetLogz();
         DrawH2(fHM->H2("fh_ring_center_xy"));
         fHM->H1("fh_ring_center_xy")->SetTitle("Ring center");
     }
     
     {
-        TCanvas* c=CreateCanvas("richsp_nof_good_rings", "richsp_nof_good_rings", 600, 600);
+        fHM->CreateCanvas("richsp_nof_good_rings", "richsp_nof_good_rings", 600, 600);
         DrawH1(fHM->H1("fh_nof_good_rings"));
         fHM->H1("fh_nof_good_rings")->SetTitle("Nof good Rings");
     }
@@ -409,7 +406,7 @@ void CbmRichSmallPrototypeQa::DrawEvent()
 {
     stringstream ss;
     ss << "richsp_event_display_event_"<< fEventNum;
-    TCanvas *c = CreateCanvas(ss.str().c_str(), ss.str().c_str(), 705, 800);
+    TCanvas *c = fHM->CreateCanvas(ss.str().c_str(), ss.str().c_str(), 705, 800);
     TH2D* pad = new TH2D("event_display_pad", ";X [cm];Y [cm]", 1, -12., 12., 1, -12., 12);
     DrawH2(pad);
     pad->GetYaxis()->SetTitleOffset(0.9);
@@ -499,28 +496,8 @@ void CbmRichSmallPrototypeQa::DrawCircle(
 void CbmRichSmallPrototypeQa::Finish()
 {
     DrawHist();
-    SaveCanvasToImage();
+    fHM->SaveCanvasToImage(fOutputDir);
     fHM->WriteToFile();
-}
-
-
-TCanvas* CbmRichSmallPrototypeQa::CreateCanvas(
-                                               const string& name,
-                                               const string& title,
-                                               int width,
-                                               int height)
-{
-    TCanvas* c = new TCanvas(name.c_str(), title.c_str(), width, height);
-    fCanvas.push_back(c);
-    return c;
-}
-
-void CbmRichSmallPrototypeQa::SaveCanvasToImage()
-{
-    for (unsigned int i = 0; i < fCanvas.size(); i++)
-    {
-        Cbm::SaveCanvasAsImage(fCanvas[i], fOutputDir, "eps;png");
-    }
 }
 
 ClassImp(CbmRichSmallPrototypeQa)

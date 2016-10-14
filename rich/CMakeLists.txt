@@ -120,7 +120,8 @@ prototype/smallprototype/CbmRichSmallPrototypeQa.cxx
 prototype/smallprototype/CbmRichSmallPrototypeStudyReport.cxx
 qa/CbmRichGeoTest.cxx 
 qa/CbmRichUrqmdTest.cxx
-qa/CbmRichGeoTestStudyReport.cxx 
+qa/CbmRichGeoTestStudyReport.cxx
+qa/CbmRichRecoQa.cxx
 prototype/beamtime/CbmRichTrbUnpack.cxx
 prototype/beamtime/CbmRichTrbUnpack2.cxx
 prototype/beamtime/CbmTrbEdgeMatcher.cxx
@@ -167,6 +168,7 @@ prototype/CbmRichPrototypeQa.h
 qa/CbmRichGeoTest.h 
 qa/CbmRichUrqmdTest.h
 qa/CbmRichGeoOpt.h
+qa/CbmRichRecoQa.h
 prototype/beamtime/CbmRichTrbUnpack.h
 prototype/beamtime/CbmRichTrbUnpack2.h
 prototype/beamtime/CbmTrbEdgeMatcher.h
