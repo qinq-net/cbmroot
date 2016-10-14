@@ -12,6 +12,8 @@
 #include "CbmTrdHit.h"
 #include "CbmMuch.h"
 
+using std::list;
+
 void LxTBBinnedDetector::AddStsTrack(const FairTrackParam& par, Double_t chiSq, Double_t time, Int_t selfId/*, Int_t eventId, Int_t fileId*/)
 {
    LxTBBinnedStsTrack stsTrack = { par, chiSq, time, selfId/*, eventId, fileId*/ };

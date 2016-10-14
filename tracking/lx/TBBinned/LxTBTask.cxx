@@ -31,6 +31,17 @@
 #include "CbmStsHit.h"
 #endif//LXTB_QA
 
+using std::list;
+using std::pair;
+using std::vector;
+using std::cout;
+using std::endl;
+using std::ofstream;
+using std::ios_base;
+using std::ifstream;
+using std::map;
+using std::set;
+
 ClassImp(LxTBFinder)
    
 Double_t speedOfLight = 0;

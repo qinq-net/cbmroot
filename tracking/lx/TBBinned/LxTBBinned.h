@@ -17,8 +17,10 @@
 #include "LxTBDefinitions.h"
 #include "LxTBMatEffs.h"
 
+
 #ifdef __MACH__
 #include <mach/mach_time.h>
+#include <sys/time.h>
 #define CLOCK_REALTIME 0
 #define CLOCK_MONOTONIC 0
 int clock_gettime(int clk_id, struct timespec *t){
@@ -74,7 +76,7 @@ struct LxTbBinnedPoint
     timetype t;
     timetype dt;
     bool use;
-    list<LxTbBinnedRay> neighbours;
+    std::list<LxTbBinnedRay> neighbours;
     Int_t refId;
     
 #ifdef LXTB_QA
@@ -89,7 +91,7 @@ struct LxTbBinnedPoint
         Int_t trackId;
     };
     
-    list<PointDesc> mcRefs;
+    std::list<PointDesc> mcRefs;
 #endif//LXTB_QA
     
     LxTbBinnedPoint(scaltype X, scaltype Dx, scaltype Y, scaltype Dy, timetype T, timetype Dt, Int_t ri, bool Use) : x(X), dx(Dx), y(Y), dy(Dy),
@@ -108,7 +110,7 @@ inline LxTbBinnedRay::LxTbBinnedRay(scaltype deltaZ, const LxTbBinnedPoint& rP, 
 
 struct LxTbXBin
 {
-    list<LxTbBinnedPoint> points;
+    std::list<LxTbBinnedPoint> points;
     bool use;
     
     LxTbXBin() : use(false) {}
@@ -301,7 +303,7 @@ struct LxTbBinnedFinder
     
     struct TriggerTimeArray
     {
-        TriggerTimeArray(int noftb, int tbl, timetype& mt) : nofTimebins(noftb), tbLength(tbl), minT(mt), triggerTimeBins(new list<pair<timetype, timetype> > [noftb])
+        TriggerTimeArray(int noftb, int tbl, timetype& mt) : nofTimebins(noftb), tbLength(tbl), minT(mt), triggerTimeBins(new std::list<std::pair<timetype, timetype> > [noftb])
         {
         }
         
@@ -316,7 +318,7 @@ struct LxTbBinnedFinder
                 triggerTimeBins[i].clear();
         }
         
-        void Insert(const pair<timetype, timetype>& v)
+        void Insert(const std::pair<timetype, timetype>& v)
         {
             timetype wT = NOF_SIGMAS * sqrt(2.0) * v.second;
             int minInd = (v.first - wT - minT) / tbLength;
@@ -336,9 +338,9 @@ struct LxTbBinnedFinder
             
             for (int i = minInd; i <= maxInd; ++i)
             {
-                for (list<pair<timetype, timetype> >::const_iterator j = triggerTimeBins[i].begin(); j != triggerTimeBins[i].end(); ++j)
+                for (std::list<std::pair<timetype, timetype> >::const_iterator j = triggerTimeBins[i].begin(); j != triggerTimeBins[i].end(); ++j)
                 {
-                    const pair<timetype, timetype>& p = *j;
+                    const std::pair<timetype, timetype>& p = *j;
                     
                     if (fabs(v.first - p.first) <= NOF_SIGMAS * sqrt(v.second * v.second + p.second * p.second))
                     {
@@ -367,7 +369,7 @@ struct LxTbBinnedFinder
         int nofTimebins;
         int tbLength;
         timetype& minT;
-        list<pair<timetype, timetype> >* triggerTimeBins;
+        std::list<std::pair<timetype, timetype> >* triggerTimeBins;
     };
     
     struct SignalParticle
@@ -386,7 +388,7 @@ struct LxTbBinnedFinder
     LxTbBinnedTrdStation trdStation;
     timetype minT;
     timetype maxT;
-    list<Chain*>* recoTracks;
+    std::list<Chain*>* recoTracks;
     int nofTrackBins;
     bool fHasTrd;
     int fNofTrdLayers;
@@ -400,7 +402,7 @@ struct LxTbBinnedFinder
     TriggerTimeArray triggerTimes_trd1_sign1_dist0;
     TriggerTimeArray triggerTimes_trd1_sign1_dist1;
 #ifdef LXTB_QA
-    set<Int_t> triggerEventNumber;
+    std::set<Int_t> triggerEventNumber;
 #endif//LXTB_QA
 
     int fNofStations;
@@ -410,11 +412,11 @@ struct LxTbBinnedFinder
     int fTimeBinLength;
     int fTimeSliceLength;
     
-    LxTbBinnedFinder(int nofTrdLayers, int nofStations, int nofTimeBins, pair<int, int>* nofSpatBins, int nofTrdXBins, int nofTrdYBins, int timeBinLength) :
+    LxTbBinnedFinder(int nofTrdLayers, int nofStations, int nofTimeBins, std::pair<int, int>* nofSpatBins, int nofTrdXBins, int nofTrdYBins, int timeBinLength) :
         fSignalParticle(&particleDescs[0]),
         stations(reinterpret_cast<LxTbBinnedStation*> (new unsigned char[nofStations * sizeof(LxTbBinnedStation)])),
         trdStation(nofTrdXBins, nofTrdYBins, nofTimeBins), fNofStations(nofStations), fLastStationNumber(nofStations - 1), minT(0), maxT(0),
-        recoTracks(new list<Chain*>[nofTimeBins]), nofTrackBins(nofTimeBins),
+        recoTracks(new std::list<Chain*>[nofTimeBins]), nofTrackBins(nofTimeBins),
         fHasTrd(nofTrdLayers > 0), fNofTrdLayers(nofTrdLayers), fTimeBinLength(timeBinLength), fNofTimeBins(nofTimeBins), fLastTimeBinNumber(nofTimeBins - 1), fTimeSliceLength(nofTimeBins * timeBinLength),
         triggerTimes_trd0_sign0_dist0(nofTimeBins, timeBinLength, minT),
         triggerTimes_trd0_sign0_dist1(nofTimeBins, timeBinLength, minT),
@@ -530,7 +532,7 @@ struct LxTbBinnedFinder
         }
     }
     
-    void FindNeighbours(scaltype x, scaltype wX, scaltype y, scaltype wY, timetype t, timetype wT, int layerIndex, list<LxTbBinnedPoint*>& results)
+    void FindNeighbours(scaltype x, scaltype wX, scaltype y, scaltype wY, timetype t, timetype wT, int layerIndex, std::list<LxTbBinnedPoint*>& results)
     {        
         if (x + wX < trdStation.minX || x - wX > trdStation.maxX || y + wY < trdStation.minY || y - wY > trdStation.maxY || t + wT < minT || t - wT > maxT)
             return;
@@ -591,7 +593,7 @@ struct LxTbBinnedFinder
                 {
                     LxTbXBin& lXBin = lYxBin.xBins[lXind];
 
-                    for (list<LxTbBinnedPoint>::iterator i = lXBin.points.begin(); i != lXBin.points.end(); ++i)
+                    for (std::list<LxTbBinnedPoint>::iterator i = lXBin.points.begin(); i != lXBin.points.end(); ++i)
                     {
                         LxTbBinnedPoint& point = *i;
 
@@ -633,7 +635,7 @@ struct LxTbBinnedFinder
                     {
                         LxTbXBin& lXBin = lYxBin.xBins[k];
 
-                        for (list<LxTbBinnedPoint>::iterator l = lXBin.points.begin(); l != lXBin.points.end(); ++l)
+                        for (std::list<LxTbBinnedPoint>::iterator l = lXBin.points.begin(); l != lXBin.points.end(); ++l)
                         {
                             LxTbBinnedPoint& lPoint = *l;
                             scaltype tx = lPoint.x / lastZ;
@@ -645,7 +647,7 @@ struct LxTbBinnedFinder
                             scaltype wX0 = NOF_SIGMAS * trdStation.dispXs[0];
                             scaltype wY0 = NOF_SIGMAS * trdStation.dispYs[0];
                             scaltype wT0 = NOF_SIGMAS * std::sqrt(2.0) * lPoint.dt;
-                            list<LxTbBinnedPoint*> results0;
+                            std::list<LxTbBinnedPoint*> results0;
                             FindNeighbours(trdPx0, wX0, trdPy0, wY0, trdPt0, wT0, 0, results0);
 
                             scaltype trdPx1 = lPoint.x + tx * deltaZsTrd[1];
@@ -655,14 +657,14 @@ struct LxTbBinnedFinder
                             scaltype wX1 = NOF_SIGMAS * trdStation.dispXs[1];
                             scaltype wY1 = NOF_SIGMAS * trdStation.dispYs[1];
                             scaltype wT1 = NOF_SIGMAS * std::sqrt(2.0) * lPoint.dt;
-                            list<LxTbBinnedPoint*> results1;
+                            std::list<LxTbBinnedPoint*> results1;
                             FindNeighbours(trdPx1, wX1, trdPy1, wY1, trdPt1, wT1, 1, results1);
 
-                            for (list<LxTbBinnedPoint*>::const_iterator m = results0.begin(); m != results0.end(); ++m)
+                            for (std::list<LxTbBinnedPoint*>::const_iterator m = results0.begin(); m != results0.end(); ++m)
                             {
                                 LxTbBinnedPoint& trdPoint0 = *(*m);
 
-                                for (list<LxTbBinnedPoint*>::const_iterator n = results1.begin(); n != results1.end(); ++n)
+                                for (std::list<LxTbBinnedPoint*>::const_iterator n = results1.begin(); n != results1.end(); ++n)
                                 {
                                     LxTbBinnedPoint& trdPoint1 = *(*n);
                                     scaltype trdTx = (trdPoint1.x - trdPoint0.x) / (trdStation.Zs[1] - trdStation.Zs[0]);
@@ -675,7 +677,7 @@ struct LxTbBinnedFinder
                                     scaltype wX2 = 0.35135;
                                     scaltype wY2 = 0.33515;
                                     scaltype wT2 = NOF_SIGMAS * std::sqrt(2.0) * trdPoint1.dt;
-                                    list<LxTbBinnedPoint*> results2;
+                                    std::list<LxTbBinnedPoint*> results2;
                                     FindNeighbours(trdPx2, wX2, trdPy2, wY2, trdPt2, wT2, 2, results2);
 
                                     if (results2.empty())
@@ -688,7 +690,7 @@ struct LxTbBinnedFinder
                                     scaltype wX3 = 0.909;
                                     scaltype wY3 = 0.8455;
                                     scaltype wT3 = NOF_SIGMAS * std::sqrt(2.0) * trdPoint1.dt;
-                                    list<LxTbBinnedPoint*> results3;
+                                    std::list<LxTbBinnedPoint*> results3;
                                     FindNeighbours(trdPx3, wX3, trdPy3, wY3, trdPt3, wT3, 3, results3);
 
                                     if (results3.empty())
@@ -747,7 +749,7 @@ struct LxTbBinnedFinder
                         if (!rXBin.use)
                             continue;
                         
-                        for (list<LxTbBinnedPoint>::iterator m = rXBin.points.begin(); m != rXBin.points.end(); ++m)
+                        for (std::list<LxTbBinnedPoint>::iterator m = rXBin.points.begin(); m != rXBin.points.end(); ++m)
                         {
                             LxTbBinnedPoint& rPoint = *m;
                             
@@ -825,7 +827,7 @@ struct LxTbBinnedFinder
                                     {
                                         LxTbXBin& lXBin = lYxBin.xBins[lXind];
                                         
-                                        for (list<LxTbBinnedPoint>::iterator n = lXBin.points.begin(); n != lXBin.points.end(); ++n)
+                                        for (std::list<LxTbBinnedPoint>::iterator n = lXBin.points.begin(); n != lXBin.points.end(); ++n)
                                         {
                                             LxTbBinnedPoint& lPoint = *n;
                                             scaltype xDiv = xDiv0 + lPoint.dx * lPoint.dx;
@@ -857,7 +859,7 @@ struct LxTbBinnedFinder
                                         lTyxBin.use = true;
                                 }
                             }
-                        }// for (list<LxTbBinnedPoint>::iterator m = rStation
+                        }// for (std::list<LxTbBinnedPoint>::iterator m = rStation
                     }// for (int l = 0; l < NOF_XBINS; ++l)
                 }// for (int k = 0; k < NOF_YBINS; ++k)
             }// for (int j = 0; j < NOF_TIMEBINS; ++j)
@@ -886,15 +888,15 @@ struct LxTbBinnedFinder
                     if (!rXBin.use)
                         continue;
 
-                    for (list<LxTbBinnedPoint>::iterator l = rXBin.points.begin(); l != rXBin.points.end(); ++l)
+                    for (std::list<LxTbBinnedPoint>::iterator l = rXBin.points.begin(); l != rXBin.points.end(); ++l)
                     {
                         LxTbBinnedPoint& rPoint = *l;                        
                         scaltype chi2 = 0;
-                        list<ChainImpl> chains;
+                        std::list<ChainImpl> chains;
                         FindChains(fLastStationNumber, &rPoint, 0, points, chi2, chains);
                         const ChainImpl* bestChain = 0;
                         
-                        for (list<ChainImpl>::const_iterator m = chains.begin(); m != chains.end(); ++m)
+                        for (std::list<ChainImpl>::const_iterator m = chains.begin(); m != chains.end(); ++m)
                         {
                             const ChainImpl& chain = *m;
                             
@@ -917,7 +919,7 @@ struct LxTbBinnedFinder
                             recoTracks[trackBinInd].push_back(new Chain(bestChain->points, fNofStations, chi2));
                         }
                         
-                        for (list<ChainImpl>::iterator m = chains.begin(); m != chains.end(); ++m)
+                        for (std::list<ChainImpl>::iterator m = chains.begin(); m != chains.end(); ++m)
                         {
                             ChainImpl& chain = *m;
                             delete[] chain.points;
@@ -944,9 +946,9 @@ struct LxTbBinnedFinder
             
             for (int i = 0; i < nofTrackBins; ++i)
             {
-                list<Chain*>& recoTracksBin = recoTracks[i];
+                std::list<Chain*>& recoTracksBin = recoTracks[i];
                 
-                for (list<Chain*>::iterator j = recoTracksBin.begin(); j != recoTracksBin.end(); ++j)
+                for (std::list<Chain*>::iterator j = recoTracksBin.begin(); j != recoTracksBin.end(); ++j)
                 {
                     Chain* track = *j;
                     LxTbBinnedPoint& lPoint = *track->points[track->nofPoints - 1];
@@ -959,7 +961,7 @@ struct LxTbBinnedFinder
                     scaltype wX0 = NOF_SIGMAS * sqrt(dispX0Sq + 2 * lPoint.dx * lPoint.dx);
                     scaltype wY0 = NOF_SIGMAS * sqrt(dispY0Sq + 2 * lPoint.dy * lPoint.dy);
                     timetype wT0 = NOF_SIGMAS * std::sqrt(2.0) * lPoint.dt;
-                    list<LxTbBinnedPoint*> results0;
+                    std::list<LxTbBinnedPoint*> results0;
                     FindNeighbours(trdPx0, wX0, trdPy0, wY0, trdPt0, wT0, 0, results0);
 
                     scaltype trdPx1 = lPoint.x + tx * deltaZsTrd[1];
@@ -969,14 +971,14 @@ struct LxTbBinnedFinder
                     scaltype wX1 = NOF_SIGMAS * sqrt(dispX1Sq + 2 * lPoint.dx * lPoint.dx);
                     scaltype wY1 = NOF_SIGMAS * sqrt(dispY1Sq + 2 * lPoint.dy * lPoint.dy);
                     timetype wT1 = NOF_SIGMAS * std::sqrt(2.0) * lPoint.dt;
-                    list<LxTbBinnedPoint*> results1;
+                    std::list<LxTbBinnedPoint*> results1;
                     FindNeighbours(trdPx1, wX1, trdPy1, wY1, trdPt1, wT1, 1, results1);
 
-                    for (list<LxTbBinnedPoint*>::const_iterator k = results0.begin(); k != results0.end(); ++k)
+                    for (std::list<LxTbBinnedPoint*>::const_iterator k = results0.begin(); k != results0.end(); ++k)
                     {
                         LxTbBinnedPoint& trdPoint0 = *(*k);
 
-                        for (list<LxTbBinnedPoint*>::const_iterator l = results1.begin(); l != results1.end(); ++l)
+                        for (std::list<LxTbBinnedPoint*>::const_iterator l = results1.begin(); l != results1.end(); ++l)
                         {
                             LxTbBinnedPoint& trdPoint1 = *(*l);
                             scaltype trdTx = (trdPoint1.x - trdPoint0.x) / trdDeltaZ10;
@@ -991,7 +993,7 @@ struct LxTbBinnedFinder
                             scaltype wX2 = NOF_SIGMAS * sqrt(0.0878375 * 0.0878375 + trdDtxSq * trdDeltaZ21Sq + trdPoint1.dx * trdPoint1.dx);//0.35135;
                             scaltype wY2 = NOF_SIGMAS * sqrt(0.0837875 * 0.0837875 + trdDtySq * trdDeltaZ21Sq + trdPoint1.dy * trdPoint1.dy);//0.33515;
                             timetype wT2 = NOF_SIGMAS * std::sqrt(2.0) * trdPoint1.dt;
-                            list<LxTbBinnedPoint*> results2;
+                            std::list<LxTbBinnedPoint*> results2;
                             FindNeighbours(trdPx2, wX2, trdPy2, wY2, trdPt2, wT2, 2, results2);
 
                             if (results2.empty())
@@ -1004,7 +1006,7 @@ struct LxTbBinnedFinder
                             scaltype wX3 = NOF_SIGMAS * sqrt(0.22725 * 0.22725 + trdDtxSq * trdDeltaZ31Sq + trdPoint1.dx * trdPoint1.dx);//0.909;
                             scaltype wY3 = NOF_SIGMAS * sqrt(0.211375 * 0.211375 + trdDtySq * trdDeltaZ31Sq + trdPoint1.dy * trdPoint1.dy);//0.8455;
                             timetype wT3 = NOF_SIGMAS * std::sqrt(2.0) * trdPoint1.dt;
-                            list<LxTbBinnedPoint*> results3;
+                            std::list<LxTbBinnedPoint*> results3;
                             FindNeighbours(trdPx3, wX3, trdPy3, wY3, trdPt3, wT3, 3, results3);
 
                             if (!results3.empty())
@@ -1031,7 +1033,7 @@ struct LxTbBinnedFinder
     }
     
     void FindChains(int stationIndex, const LxTbBinnedPoint* rPoint, const LxTbBinnedRay* rRay,
-        const LxTbBinnedPoint** points, scaltype chi2, list<ChainImpl>& chains)
+        const LxTbBinnedPoint** points, scaltype chi2, std::list<ChainImpl>& chains)
     {
         points[stationIndex] = rPoint;
         
@@ -1042,7 +1044,7 @@ struct LxTbBinnedFinder
             return;
         }
         
-        for (list<LxTbBinnedRay>::const_iterator i = rPoint->neighbours.begin(); i != rPoint->neighbours.end(); ++i)
+        for (std::list<LxTbBinnedRay>::const_iterator i = rPoint->neighbours.begin(); i != rPoint->neighbours.end(); ++i)
         {
             const LxTbBinnedRay& lRay = *i;
             const LxTbBinnedPoint* lPoint = lRay.lPoint;
@@ -1058,10 +1060,10 @@ struct LxTbBinnedFinder
         }
     }
     
-    void TriggerBin(list<Chain*>& recoTracksBin, list<Chain*>& borderTracks, int i, bool handleBorder)
+    void TriggerBin(std::list<Chain*>& recoTracksBin, std::list<Chain*>& borderTracks, int i, bool handleBorder)
     {
-        list<Chain*>::const_iterator it = handleBorder ? borderTracks.begin() : recoTracksBin.begin();
-        list<Chain*>::const_iterator endIt = handleBorder ? borderTracks.end() : recoTracksBin.end();
+        std::list<Chain*>::const_iterator it = handleBorder ? borderTracks.begin() : recoTracksBin.begin();
+        std::list<Chain*>::const_iterator endIt = handleBorder ? borderTracks.end() : recoTracksBin.end();
         
         for (; it != endIt; ++it)
         {
@@ -1075,8 +1077,8 @@ struct LxTbBinnedFinder
                 borderTracks.push_back(track);
 
             scaltype trackSign = (track->points[1]->x - track->points[0]->x) / (stations[1].z - stations[0].z) - track->points[0]->x / stations[0].z;
-            list<Chain*>::const_iterator it2 = handleBorder ? recoTracksBin.begin() : it;
-            list<Chain*>::const_iterator endIt2 = recoTracksBin.end();
+            std::list<Chain*>::const_iterator it2 = handleBorder ? recoTracksBin.begin() : it;
+            std::list<Chain*>::const_iterator endIt2 = recoTracksBin.end();
             
             if (!handleBorder)
                 ++it2;
@@ -1094,7 +1096,7 @@ struct LxTbBinnedFinder
                 scaltype track2Sign = (track2->points[1]->x - track2->points[0]->x) / (stations[1].z - stations[0].z) - track2->points[0]->x / stations[0].z;
                 scaltype dist = sqrt((track2->points[0]->x - track->points[0]->x) * (track2->points[0]->x - track->points[0]->x) +
                         (track2->points[0]->y - track->points[0]->y) * (track2->points[0]->y - track->points[0]->y));
-                pair<timetype, timetype> pairTime((point->t + point2->t) / 2,
+                std::pair<timetype, timetype> pairTime((point->t + point2->t) / 2,
                     sqrt(dtSq + dt2Sq) / 2);
 
                 if (track->highMom && track2->highMom)
@@ -1137,7 +1139,7 @@ struct LxTbBinnedFinder
     
     void Trigger()
     {
-        list<Chain*> borderTracks;
+        std::list<Chain*> borderTracks;
         
         for (int i = 0; i < nofTrackBins; ++i)
         {            

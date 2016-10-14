@@ -141,7 +141,7 @@ struct LxTBBinndedLayer
                 {
                     LxTbXBin& xBin = yxBin.xBins[xInd];
 
-                    for (list<LxTbBinnedPoint>::iterator i = xBin.points.begin(); i != xBin.points.end(); ++i)
+                    for (std::list<LxTbBinnedPoint>::iterator i = xBin.points.begin(); i != xBin.points.end(); ++i)
                     {
                         LxTbBinnedPoint& point = *i;
                         scaltype xDiv = xDiv0 + point.dx * point.dx;

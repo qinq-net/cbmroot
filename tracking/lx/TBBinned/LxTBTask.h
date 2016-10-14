@@ -93,13 +93,13 @@ private:
         Int_t layerNumber;
     };
     
-    std::vector<vector<PointDataHolder> > fMuchPoints;
+    std::vector<std::vector<PointDataHolder> > fMuchPoints;
     CbmMCDataArray* fMuchMCPoints;
     TClonesArray* fMuchPixelHits;
     TClonesArray* fMuchClusters;
     TClonesArray* fMuchPixelDigiMatches;
     
-    std::vector<vector<PointDataHolder> > fTrdPoints;
+    std::vector<std::vector<PointDataHolder> > fTrdPoints;
     CbmMCDataArray* fTrdMCPoints;
     TClonesArray* fTrdHits;
     TClonesArray* fTrdClusters;
@@ -130,11 +130,11 @@ private:
         }
     };
     
-    std::vector<vector<TrackDataHolder> > fMCTracks;
+    std::vector<std::vector<TrackDataHolder> > fMCTracks;
 #endif//LXTB_QA
     bool isEvByEv;
     LxTbBinnedFinder* fFinder;
-    list<LxTbBinnedFinder::Chain*> recoTracks;
+    std::list<LxTbBinnedFinder::Chain*> recoTracks;
     bool hasTrd;
     bool useTrd;
     bool useIdeal;
@@ -143,7 +143,7 @@ private:
     unsigned int nof_timebins;
     unsigned int last_timebin;
     Int_t fNEvents;
-    vector<Double_t> fEventTimes;
+    std::vector<Double_t> fEventTimes;
 #ifdef LXTB_TIE
     TClonesArray* fStsHits;
     TClonesArray* fStsTracks;
