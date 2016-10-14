@@ -7,16 +7,23 @@
  **/
 #include "CbmHit.h"
 
-CbmHit::CbmHit():
-    TObject(),
-	fType(kHIT),
-	fZ(0.),
-	fDz(0.),
-	fRefId(-1),
-	fAddress(-1),
-	fTime(-1.),
-	fTimeError(-1.),
-	fMatch(NULL)
+CbmHit::CbmHit()
+  : CbmHit(kHIT, 0., 0., -1, -1, -1., -1.)
+{
+}
+
+CbmHit::CbmHit(HitType _type, Double_t _z, Double_t _dz, 
+       Int_t _refId,  Int_t _address, 
+       Double_t _time, Double_t _timeError)
+  : TObject(),
+    fType(_type),
+    fZ(_z),
+    fDz(_dz),
+    fRefId(_refId),
+    fAddress(_address),
+    fTime(_time),
+    fTimeError(_timeError),
+    fMatch(NULL)
 {
 }
 

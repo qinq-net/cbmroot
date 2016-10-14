@@ -42,6 +42,20 @@ public:
 	CbmHit();
 
 	/**
+	 * \brief Constructor with arguments.
+         * \param[in] _type Hit type (see enum HitType).
+	 * \param[in] _z  z position of the hit [cm].
+	 * \param[in] _dz  Error of z position of the hit [cm].
+	 * \param[in] _refId Reference id (usually to cluster, digi or MC point).
+         * \param[in] _address Unique detector identifier.
+	 * \param[in] _time Hit time [ns].   
+	 * \param[in] _timeError Error of hit time [ns].	 
+	 */
+         CbmHit(HitType _type, Double_t _z, Double_t _dz, 
+		Int_t _refId,  Int_t _address, 
+		Double_t _time=-1., Double_t _timeError=-1.);
+
+	/**
 	 * \brief Destructor.
 	 */
 	virtual ~CbmHit();
@@ -84,9 +98,9 @@ public:
 
 protected:
 	/**
-     * \brief Sets hit type.
-     * \param type hit type
-     **/
+         * \brief Sets hit type.
+         * \param type hit type
+        **/
 	void SetType(HitType type) { fType = type; }
 
         CbmHit(const CbmHit&);
@@ -94,14 +108,14 @@ protected:
 
 
 private:
-	HitType fType; ///< hit type
-	Double_t fZ; ///< Z position of hit [cm]
-	Double_t fDz; ///< Z position error [cm]
-	Int_t fRefId; ///< some reference id (usually to cluster, digi or MC point)
-	Int_t fAddress; ///< detector unique identifier
-  Double_t fTime;       ///< Hit time [ns]
-  Double_t fTimeError;  ///< Error of hit time [ns]
-	CbmMatch* fMatch; ///< Monte-Carlo information
+	HitType fType;       ///< hit type
+	Double_t fZ;         ///< Z position of hit [cm]
+	Double_t fDz;        ///< Z position error [cm]
+	Int_t fRefId;        ///< some reference id (usually to cluster, digi or MC point)
+	Int_t fAddress;      ///< detector unique identifier
+        Double_t fTime;      ///< Hit time [ns]
+        Double_t fTimeError; ///< Error of hit time [ns]
+	CbmMatch* fMatch;    ///< Monte-Carlo information
 
 	ClassDef(CbmHit, 3);
 };
