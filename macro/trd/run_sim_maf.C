@@ -24,6 +24,7 @@
 //
 // --------------------------------------------------------------------------
 
+#include "../include/rootalias.C"
 
 
 void run_sim_maf(Int_t nEvents = 1000,
@@ -43,9 +44,11 @@ void run_sim_maf(Int_t nEvents = 1000,
   // -----   In- and output file names   ------------------------------------
   TString inFile = ""; // give here or as argument; otherwise default is taken
   TString outDir  = "/gluster2/cbm/sim/data/";
-  TString outFile = outDir + setupName + "_test.raw.root";
-  TString parFile = outDir + setupName + "_params.root";
-  TString geoFile = outDir + setupName + "_geofile_full.root";
+  TRegexp Nr ("[.][0-9][0-9][0-9][0-9][0-9][.]");
+  TString outFile = outDir + setupName + TString(inputFile)(Nr) + "_test.raw.root";
+  TString parFile = outDir + setupName + TString(inputFile)(Nr) + "_params.root";
+  TString geoFile = outDir + setupName + TString(inputFile)(Nr) + "_geofile_full.root";
+ 
   // ------------------------------------------------------------------------
 
 
