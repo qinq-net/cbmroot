@@ -10,6 +10,7 @@
 #include "TH1.h"
 #include "TH1D.h"
 #include "TH2.h"
+#include "TH3.h"
 #include "TPad.h"
 #include "TLegend.h"
 #include "TGraph.h"
@@ -17,6 +18,8 @@
 
 #include <string>
 #include <vector>
+
+using namespace std;
 
 /**
  * \class CbmDrawingOptions
@@ -237,5 +240,39 @@ void DrawH1andFitGauss(
     Bool_t doScale = true,
     Double_t userRangeMin = 0.,
     Double_t userRangeMax = 0.);
+
+/**
+ * \fn DrawH2WithProfile
+ * \brief Draw TH2 and on top of TH2 draw TProfile with mean and RMS (represented as errors).
+ * \param[in] hist Histogram to be drawn.
+ * \param[in] doGaussFit Set to true if you want to fit each slice with Gauss.
+ * \param[in] drawOnlyMean Set to false if you want to draw RMS/sigma as error bars.
+ * \param[in] drawOpt Other drawing options for TH2 histogram (see ROOT documentation for details).
+ * \param[in] color Color of the H1 Profile histogram.
+ * \param[in] lineWidth Line width of the H1 Profile histogram.
+ */
+void DrawH2WithProfile(
+    TH2* hist,
+	Bool_t doGaussFit = false,
+    Bool_t drawOnlyMean = false,
+    const string& drawOpt = "COLZ",
+    Int_t profileColor = kBlack,
+    Int_t profileLineWidth = 4);
+
+/**
+ * \fn DrawH3Profile
+ * \brief Draw XY profile of the TH3 histogram.
+ * \param[in] h TH3 histogram.
+ * \param[in] drawMean Set to true for Mean values, set to false for RMS/Sigma values.
+ * \param[in] doGaussFit Set to true if you want to fit each slice with Gauss.
+ * \param[in] zMin SetRangeUser minimum for Z axis.
+ * \param[in] zMax SetRangeUser minimum for Z axis.
+ */
+TH2D* DrawH3Profile(
+	TH3* h,
+	Bool_t drawMean = true,
+	Bool_t doGaussFit = false,
+	Double_t zUserRangeMin = 0.,
+	Double_t zUserRangeMax = 0.);
 
 #endif

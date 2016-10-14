@@ -19,6 +19,7 @@
 #include "TF1.h"
 #include "utils/CbmUtils.h"
 #include "TLatex.h"
+#include "TProfile.h"
 
 #include <string>
 #include <limits>
@@ -263,15 +264,15 @@ void DrawTextOnPad(
 }
 
 void DrawH1andFitGauss(
-                       TH1* hist,
-                       Bool_t drawResults,
-                       Bool_t doScale,
-                       Double_t userRangeMin,
-                       Double_t userRangeMax)
+    TH1* hist,
+    Bool_t drawResults,
+    Bool_t doScale,
+    Double_t userRangeMin,
+    Double_t userRangeMax)
 {
     if (hist == NULL) return;
     
-    hist->GetYaxis()->SetTitle("Yield");
+    hist->GetYaxis()->SetTitle("Yield (a.u.)");
     DrawH1(hist);
     if (doScale) hist->Scale(1./ hist->Integral());
     if (!(userRangeMin == 0. && userRangeMax == 0.)) hist->GetXaxis()->SetRangeUser(userRangeMin, userRangeMax);
@@ -289,4 +290,101 @@ void DrawH1andFitGauss(
         text.SetTextSize(0.06);
         text.DrawTextNDC(0.5, 0.92, txt1.c_str());
     }
+}
+
+void DrawH2WithProfile(
+    TH2* hist,
+	Bool_t doGaussFit,
+    Bool_t drawOnlyMean,
+    const string& drawOpt2D,
+    Int_t profileColor,
+    Int_t profileLineWidth)
+{
+    if (hist == NULL) return;
+    
+    // TProfile does not allow to fit individual slice with gauss
+  /*  TProfile* profX = (TProfile*)hist->ProfileX("_pfx", 1, -1, "s")->Clone();
+    DrawH2(hist, kLinear, kLinear, kLinear, drawOpt);
+    if (!drawOnlyMean) {
+        DrawH1(profX, kLinear, kLinear, "same", profileColor, profileLineWidth, 1, 1, kOpenCircle);
+    } else {
+        DrawH1(profX, kLinear, kLinear, "same hist p", profileColor, profileLineWidth, 1, 1, kFullCircle);
+    }*/
+
+    TH1D* hMean = (TH1D*)hist->ProjectionX( (string(hist->GetName()) + "_mean").c_str() )->Clone();
+    string yTitle = (doGaussFit)?"Mean and sigma. ":"Mean and RMS. ";
+    hMean->GetYaxis()->SetTitle( (yTitle + string(hist->GetYaxis()->GetTitle()) ).c_str());
+	for (Int_t i = 1; i <= hist->GetXaxis()->GetNbins(); i++){
+		stringstream ss;
+		ss << string(hist->GetName()) << "_py" << i;
+		TH1D* pr = hist->ProjectionY(ss.str().c_str(), i, i);
+		if (hMean == NULL || pr == NULL) continue;
+
+		Double_t m = 0., s = 0.;
+		if (doGaussFit) {
+			pr->Fit("gaus", "QO");
+			TF1* func = pr->GetFunction("gaus");
+			if (func != NULL) {
+				m = func->GetParameter(1);
+				s = func->GetParameter(2);
+			}
+		} else {
+			m = pr->GetMean();
+			s = pr->GetRMS();
+		}
+
+		hMean->SetBinContent(i, m);
+		if (!drawOnlyMean){
+			hMean->SetBinError(i, s);
+		} else {
+			hMean->SetBinError(i, 0.);
+		}
+	}
+	DrawH2(hist, kLinear, kLinear, kLinear, drawOpt2D);
+	if (!drawOnlyMean) {
+		DrawH1(hMean, kLinear, kLinear, "same", profileColor, profileLineWidth, 1, 1, kOpenCircle);
+	} else {
+		DrawH1(hMean, kLinear, kLinear, "same hist p", profileColor, profileLineWidth, 1, 1, kFullCircle);
+	}
+}
+
+TH2D* DrawH3Profile(
+		TH3* h,
+		Bool_t drawMean,
+		Bool_t doGaussFit,
+		Double_t zMin,
+		Double_t zMax)
+{
+	Int_t nBinsX = h->GetNbinsX();
+	Int_t nBinsY = h->GetNbinsY();
+	TH2D* h2 = (TH2D*) h->Project3D("yx")->Clone();
+
+	for (Int_t x = 1; x <= nBinsX; x++) {
+		for (Int_t y = 1; y <= nBinsY; y++) {
+			stringstream ss;
+			ss << h->GetName() << "_z_" << x << "_" << y;
+			TH1D* hz = h->ProjectionZ(ss.str().c_str(), x, x, y, y);
+			Double_t ms = 0.;
+			if (doGaussFit) {
+				hz->Fit("gaus", "QO");
+				TF1* func = hz->GetFunction("gaus");
+				if (func != NULL) {
+					ms = (drawMean)?func->GetParameter(1):func->GetParameter(2);
+				}
+			} else {
+				ms = (drawMean)?hz->GetMean():hz->GetRMS();
+			}
+			h2->SetBinContent(x, y, ms);
+		}
+	}
+
+	string zAxisTitle = string(h->GetZaxis()->GetTitle());
+	string sigmaRms = (doGaussFit)?"Sigma.":"RMS.";
+	zAxisTitle = (drawMean)?"Mean."+zAxisTitle:sigmaRms+zAxisTitle;
+
+	h2->GetZaxis()->SetTitle(zAxisTitle.c_str());
+	if (zMin < zMax) h2->GetZaxis()->SetRangeUser(zMin, zMax);
+	DrawH2(h2);
+
+	return h2;
 }
