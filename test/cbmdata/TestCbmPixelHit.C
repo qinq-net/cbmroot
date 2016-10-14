@@ -19,7 +19,9 @@ enum HitType {
 enum ConstructorType {
  defaultConstructor,
  standardConstructor,
- standardConstructorTVector
+ standardConstructorTVector,
+ standardConstructorTime,
+ standardConstructorTVectorTime
 };
   
 void CreateTestFile(TString filename, ConstructorType constructor)
@@ -42,6 +44,16 @@ void CreateTestFile(TString filename, ConstructorType constructor)
 	TVector3 pos(0.,0.,0.);
 	TVector3 err(0.,0.,0.);
 	new((*hit)[i]) CbmPixelHit(-1, pos, err, 0., -1);
+	break;
+      }
+    case(standardConstructorTime): 
+      new((*hit)[i]) CbmPixelHit(-1, 0., 0., 0., 0., 0., 0., 0., -1, -2., -2.);
+      break;
+    case(standardConstructorTVectorTime):
+      {
+	TVector3 pos(0.,0.,0.);
+	TVector3 err(0.,0.,0.);
+	new((*hit)[i]) CbmPixelHit(-1, pos, err, 0., -1, -2., -2.);
 	break;
       }
     default:
@@ -187,11 +199,21 @@ int TestCbmPixelHit()
   filename="test2.root";
   CreateTestFile(filename, standardConstructor);
   result = result && TestTestFile(filename, intValues, doubleValues);
-  
+
   filename="test3.root";
   CreateTestFile(filename, standardConstructorTVector);
   result = result && TestTestFile(filename, intValues, doubleValues);
-  
+
+  doubleValues[7] = -2.;
+  doubleValues[8] = -2.;
+  filename="test4.root";
+  CreateTestFile(filename, standardConstructorTime);
+  result = result && TestTestFile(filename, intValues, doubleValues);
+
+  filename="test5.root";
+  CreateTestFile(filename, standardConstructorTVectorTime);
+  result = result && TestTestFile(filename, intValues, doubleValues);
+
   if (result) return 0;
 
   return 1;
