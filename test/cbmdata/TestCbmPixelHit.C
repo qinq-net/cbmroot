@@ -18,32 +18,37 @@ enum HitType {
 
 enum ConstructorType {
  defaultConstructor,
- standardConstructorFull,
- standardConstructor
+ standardConstructor,
+ standardConstructorTVector
 };
   
 void CreateTestFile(TString filename, ConstructorType constructor)
 {
   TTree* outTree =new TTree("cbmsim", "/cbmout", 99);
-  TClonesArray* hit = new TClonesArray("CbmHit");
+  TClonesArray* hit = new TClonesArray("CbmPixelHit");
   
-  outTree->Branch("CbmHit", &hit, 500, 99);
+  outTree->Branch("CbmPixelHit", &hit, 500, 99);
   
   for (Int_t i=0; i<100; ++i) {
     switch(constructor) {
     case(defaultConstructor): 
-      new((*hit)[i]) CbmHit();
+      new((*hit)[i]) CbmPixelHit();
       break;
     case(standardConstructor): 
-      new((*hit)[i]) CbmHit(kHIT, 0., 0., -1, -1);
+      new((*hit)[i]) CbmPixelHit(-1, 0., 0., 0., 0., 0., 0., 0., -1);
       break;
-    case(standardConstructorFull): 
-      new((*hit)[i]) CbmHit(kHIT, 0., 0., -1, -1, -2., -2.);
-      break;
+    case(standardConstructorTVector):
+      {
+	TVector3 pos(0.,0.,0.);
+	TVector3 err(0.,0.,0.);
+	new((*hit)[i]) CbmPixelHit(-1, pos, err, 0., -1);
+	break;
+      }
     default:
-      new((*hit)[i]) CbmHit();
+      new((*hit)[i]) CbmPixelHit();
     }
   }
+  
   outTree->Fill();
   
   TFile* outFile = TFile::Open(filename, "recreate");
@@ -88,10 +93,10 @@ Bool_t TestTestFile(TString filename, Int_t* intValues,
   TTree *t2 = (TTree*)testFile->Get("cbmsim");
   
   // Connect a TClonesArray of class CbmHit with the tree    
-  TClonesArray *hits = new TClonesArray("CbmHit");
-  t2->SetBranchAddress("CbmHit",&hits);
+  TClonesArray *hits = new TClonesArray("CbmPixelHit");
+  t2->SetBranchAddress("CbmPixelHit",&hits);
   
-  CbmHit *testHit = NULL;
+  CbmPixelHit *testHit = NULL;
 
   Bool_t finalResult = kTRUE;
   // Loop over all entries in the TClonesArray
@@ -104,19 +109,20 @@ Bool_t TestTestFile(TString filename, Int_t* intValues,
     Int_t nHits = hits->GetEntriesFast();
     cout << "Number of hits in event " << i << ": " << nHits << endl;
     for (Int_t iHits=0;iHits< nHits ; iHits++) {
-      testHit = (CbmHit*) hits->At(iHits);
+      testHit = (CbmPixelHit*) hits->At(iHits);
 
+      // members from base class
       finalResult = finalResult &&
-	CompareDouble(testHit->GetZ(), doubleValues[0],
+	CompareDouble(testHit->GetZ(), doubleValues[2],
 		      "z position different(found, expected): ");
       finalResult = finalResult &&
-	CompareDouble(testHit->GetDz(), doubleValues[1],
+	CompareDouble(testHit->GetDz(), doubleValues[5],
 		      "z position error different(found, expected): ");
       finalResult = finalResult &&
-	CompareDouble(testHit->GetTime(), doubleValues[2],
+	CompareDouble(testHit->GetTime(), doubleValues[7],
 		      "time different(found, expected): ");
       finalResult = finalResult &&
-	CompareDouble(testHit->GetTimeError(), doubleValues[3],
+	CompareDouble(testHit->GetTimeError(), doubleValues[8],
 		      "time error different(found, expected): ");
       finalResult = finalResult &&
 	CompareInt(testHit->GetType(), intValues[0],
@@ -127,6 +133,23 @@ Bool_t TestTestFile(TString filename, Int_t* intValues,
       finalResult = finalResult &&
 	CompareInt(testHit->GetAddress(), intValues[2],
 		   "address different(found, expected): ");
+
+      // members from derrived class
+      finalResult = finalResult &&
+	CompareDouble(testHit->GetX(), doubleValues[0],
+		      "x position different(found, expected): ");
+      finalResult = finalResult &&
+	CompareDouble(testHit->GetY(), doubleValues[1],
+		      "y position different(found, expected): ");
+      finalResult = finalResult &&
+	CompareDouble(testHit->GetDx(), doubleValues[3],
+		      "x position error different(found, expected): ");
+      finalResult = finalResult &&
+	CompareDouble(testHit->GetDy(), doubleValues[4],
+		      "y position error different(found, expected): ");
+      finalResult = finalResult &&
+	CompareDouble(testHit->GetDxy(), doubleValues[6],
+		      "xy correclation error different(found, expected): ");
     }
   }
 
@@ -146,13 +169,14 @@ Bool_t TestTestFile(TString filename, Int_t* intValues,
 }
 
   
-int TestCbmHit()
+int TestCbmPixelHit()
 {
   // expected values for type, refId, address
-  Int_t intValues[3] = {0, -1, -1};
+  Int_t intValues[3] = {kPIXELHIT, -1, -1};
 
-  // expected values for z, dz, time, time error
-  Double_t doubleValues[4] = {0., 0., -1., -1.};
+  // expected values for x, y, z, dx, dy, dz, dxy, time, time error
+  //                          x   y   z   dx  dy  dz  dxy  t    dt
+  Double_t doubleValues[9] = {0., 0., 0., 0., 0., 0., 0., -1., -1.};
 
   Bool_t result=kTRUE;
   
@@ -165,9 +189,7 @@ int TestCbmHit()
   result = result && TestTestFile(filename, intValues, doubleValues);
   
   filename="test3.root";
-  doubleValues[2]=-2.;
-  doubleValues[3]=-2.;
-  CreateTestFile(filename, standardConstructorFull);
+  CreateTestFile(filename, standardConstructorTVector);
   result = result && TestTestFile(filename, intValues, doubleValues);
   
   if (result) return 0;
