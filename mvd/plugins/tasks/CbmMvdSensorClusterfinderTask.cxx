@@ -313,7 +313,7 @@ Int_t refId;
     		fDigiMapIt = fDigiMap.find(a);
     		fDigiMap.erase(fDigiMapIt);
 
-		for ( Int_t iCluster=0; iCluster<clusterArray->size(); iCluster++ ){
+		for ( ULong64_t iCluster=0; iCluster<clusterArray->size(); iCluster++ ){
 
 		    if( gDebug>0 ){
 			cout << "-I- " << " CbmMvdSensorClusterfinderTask: Calling method CheckForNeighbours()..." << endl;

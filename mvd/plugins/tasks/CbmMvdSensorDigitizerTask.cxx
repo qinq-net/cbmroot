@@ -358,8 +358,7 @@ InitStatus CbmMvdSensorDigitizerTask::ReadSensorInformation() {
 // -----------------------------------------------------------------------------
 
 void CbmMvdSensorDigitizerTask::SetInputArray (TClonesArray* inputStream){
-  
-  CbmMvdPoint* point;
+
   Int_t i=0;
   Int_t nInputs = inputStream->GetEntriesFast();
    while (nInputs > i)   
@@ -899,7 +898,7 @@ Float_t totCharge = (sPoint->charge * fLorentzNorm *(0.5*fPar0*fPar1/TMath::Pi()
 //    cout << endl << "End of loops " << endl;
   std::vector<CbmMvdPixelCharge*>::size_type vectorSize=fPixelChargeShort.size();
 
-    for(Int_t f=0;f<vectorSize; f++)
+    for(ULong64_t f=0;f<vectorSize; f++)
 	{
 	  CbmMvdPixelCharge* pixelCharge =  fPixelChargeShort.at(f);
 	  if(pixelCharge)
