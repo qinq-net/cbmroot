@@ -129,7 +129,7 @@ Int_t CbmStsClusterFinder_test() {
 
    // --- Instantiate cluster finder and find clusters
    TClonesArray clusterArray("CbmStsCluster", 10);
-   CbmStsClusterFinderIdeal finder(&clusterArray);
+   CbmStsClusterFinderGap finder(&clusterArray);
    finder.FindClusters(&module);
    cout << "Found " << clusterArray.GetEntriesFast() << " clusters." << endl;
 

@@ -171,12 +171,22 @@ class CbmStsModule : public CbmStsElement
       ** for this channel arrives. Depending on the occupancy of this channel,
       ** this may happen only after several hundreds of events. Consequently,
       ** the memory consumption will increase for the first events until
-      ** each channel was activated at least once. This beaviour mimicks a
+      ** each channel was activated at least once. This behaviour mimics a
       ** memory leak and makes it harder to detect a real one in other parts
       ** of the code. This is avoided by instantiating each channel multiset
       ** at initialisation time.
       **/
      void InitAnalogBuffer();
+
+
+     /** Check if a channel is active or deactivated.
+      ** @param channel  Channel number
+      ** @value kTRUE if channel is active
+      **/
+     Bool_t IsChannelActive(Int_t channel) {
+    	 return ( fDeadChannels.find(channel) == fDeadChannels.end() );
+     }
+
 
 
      /** Digitise signals in the analog buffer

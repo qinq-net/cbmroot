@@ -41,7 +41,9 @@ digitize/CbmStsDigitizeQaReport.cxx
 set (SRCS_RECO
 reco/CbmStsClusterAnalysis.cxx
 reco/CbmStsClusterFinder.cxx
+reco/CbmStsClusterFinderGap.cxx
 reco/CbmStsClusterFinderIdeal.cxx
+reco/CbmStsClusterFinderReal.cxx
 reco/CbmStsClusterFinderSimple.cxx
 reco/CbmStsFindClusters.cxx
 reco/CbmStsFindHits.cxx
