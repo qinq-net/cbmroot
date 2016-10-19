@@ -32,6 +32,9 @@
 #pragma link C++ class CbmStsSignal;
 
 // Reconstruction
+#pragma link C++ class CbmStsClusterAnalysis;
+#pragma link C++ class CbmStsClusterFinder;
+#pragma link C++ class CbmStsClusterFinderIdeal;
 #pragma link C++ class CbmStsClusterFinderSimple;
 #pragma link C++ class CbmStsFindClusters;
 #pragma link C++ class CbmStsFindHits;

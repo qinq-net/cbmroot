@@ -132,6 +132,11 @@ class CbmStsCluster : public CbmCluster
     void SetSize(Int_t size) { fSize = size; }
 
 
+    /** String output **/
+    virtual std::string ToString() const;
+
+
+
 	private:
 
     Double_t fCharge;        ///< Total charge

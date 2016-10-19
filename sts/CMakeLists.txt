@@ -39,6 +39,9 @@ digitize/CbmStsDigitizeQaReport.cxx
 )
 # --- Sources in reco
 set (SRCS_RECO
+reco/CbmStsClusterAnalysis.cxx
+reco/CbmStsClusterFinder.cxx
+reco/CbmStsClusterFinderIdeal.cxx
 reco/CbmStsClusterFinderSimple.cxx
 reco/CbmStsFindClusters.cxx
 reco/CbmStsFindHits.cxx

@@ -9,6 +9,10 @@
  **/
 #include "CbmStsCluster.h"
 
+#include <sstream>
+
+using namespace std;
+
 
 // --- Constructor
 CbmStsCluster::CbmStsCluster()
@@ -28,6 +32,18 @@ CbmStsCluster::CbmStsCluster()
 CbmStsCluster::~CbmStsCluster()
 {
 }
+
+
+// --- String output
+string CbmStsCluster::ToString() const {
+   stringstream ss;
+   ss << "StsCluster: address " << GetAddress() << " | digis "
+  		<< GetNofDigis() << " | charge " << fCharge << " | time "
+  		<< fTime << " | position " << GetPosition() << " | error "
+  		<< GetPositionError();
+   return ss.str();
+}
+
 
 
 ClassImp(CbmStsCluster)
