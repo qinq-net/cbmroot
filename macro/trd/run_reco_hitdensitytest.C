@@ -72,8 +72,8 @@ void run_reco_hitdensitytest(Int_t nEvents = 2, const char* setupName = "sis100_
   logger->SetLogVerbosityLevel("LOW");
 
 
-  //TString outDir  = "/gluster2/cbm/sim/data/";
-  TString outDir  = "/opt/CBM/Daten/";
+  TString outDir  = "/gluster2/cbm/sim/data/";
+  //TString outDir  = "/opt/CBM/Daten/";
   TRegexp Nr ("[.][0-9][0-9][0-9][0-9][0-9][.]");
   TString inFile  = outDir + setupName + TString(rawfile)(Nr) + "_test.raw.root";
   TString parFile = outDir + setupName + TString(rawfile)(Nr) + "_params.root";
