@@ -39,6 +39,7 @@
 #pragma link C++ class CbmStsClusterFinderReal;
 #pragma link C++ class CbmStsClusterFinderSimple;
 #pragma link C++ class CbmStsFindClusters;
+#pragma link C++ class CbmStsFindClustersEvents;
 #pragma link C++ class CbmStsFindHits;
 
 // Enumerators

@@ -22,6 +22,16 @@ class CbmStsModule;
  ** front and back side of the module/sensor.
  ** For digis with multiple links to MCPoints, the link with the largest
  ** weight is taken.
+ **
+ ** The ideal cluster finder gives a lower number of clusters compared
+ ** to the old implementation in CbmStsClusterFinderSimple, because it
+ ** also clusters strips "around the corner" on the stereo side.
+ ** For time-based input, the number of clusters is slightly higher than
+ ** for event-based input. This is due to the fact that double-hits can be
+ ** resolved by time in the time-based mode.
+ **
+ ** TODO: In principle, double hits can be restored using the MC information
+ ** in the digi match object.
  **/
 class CbmStsClusterFinderIdeal: public CbmStsClusterFinder {
 

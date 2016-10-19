@@ -18,7 +18,12 @@ class CbmStsModule;
  ** @version 1.0
  **
  ** The real cluster finder groups digis belonging to neighbouring
- ** channels within a module into a cluster,
+ ** channels within a module into a cluster.
+ **
+ ** The real cluster finder was checked against the old implementation
+ ** in CbmStsClusterFinderSimple to give exactly the same results.
+ ** It also gives the same number of clusters for time-based and
+ ** event-based input.
  **/
 class CbmStsClusterFinderReal: public CbmStsClusterFinder {
 

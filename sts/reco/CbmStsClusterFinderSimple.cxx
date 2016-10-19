@@ -61,6 +61,9 @@ Int_t CbmStsClusterFinderSimple::FindClustersSimple(CbmStsModule* module) {
     map<Int_t, pair<CbmStsDigi*, Int_t> >* digiMap = module->GetDigiMap();
     map<Int_t, pair<CbmStsDigi*, Int_t> >::iterator digiIt;
 
+    // No action if no digis in the module
+    if ( digiMap->size() == 0 ) return 0;
+
     Bool_t gap = 0;
     Int_t mcIndex = -1;
 
@@ -136,8 +139,9 @@ Int_t CbmStsClusterFinderSimple::FindClustersSimple(CbmStsModule* module) {
 
 		    // --- Neighbouring channel; add to cluster. Avoid clustering channels
 		    // --- on different sensor sides.
-		    if ( channel == clusterEnd + 1  &&  channel != channelHalf )
+		    if ( channel == clusterEnd + 1  &&  channel != channelHalf ) {
 			clusterEnd = channel;
+		    }
 
 		    // --- Not neighbouring; close old cluster and start new one
 		    else {
