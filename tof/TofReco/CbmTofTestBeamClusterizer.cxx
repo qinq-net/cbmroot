@@ -2758,7 +2758,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
         }
 
         // generate/update DelTof corrections 
-        if((fCalSmAddr < 0 && fCalSmAddr != iSmAddr) || (fCalSmAddr == iSmAddr))  // select detectors for determination of DelTof correction
+        if((fCalSmAddr < 0 && -fCalSmAddr != iSmAddr) || (fCalSmAddr == iSmAddr))  // select detectors for determination of DelTof correction
         {
           // if( fiBeamRefType == iSmType ) continue;  // no DelTof correction for Diamonds
 
