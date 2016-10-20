@@ -82,7 +82,7 @@ ${CBMROOT_SOURCE_DIR}/sts
 ${CBMROOT_SOURCE_DIR}/sts/setup
 ${CBMROOT_SOURCE_DIR}/sts/mc
 ${CBMROOT_SOURCE_DIR}/sts/digitize
-${CBMROOT_SOURCE_DIR}/reco
+${CBMROOT_SOURCE_DIR}/sts/reco
 
 # needed by MatchHits???
 ${CBMROOT_SOURCE_DIR}/passive 
