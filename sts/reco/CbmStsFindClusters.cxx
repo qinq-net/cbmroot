@@ -194,6 +194,17 @@ InitStatus CbmStsFindClusters::Init()
     // --- Get STS setup
     fSetup = CbmStsSetup::Instance();
 
+    // --- Set module parameters if not done already
+    // TODO: The module parameters are set by the STS digitiser. However,
+    // this information is not persistent. If the reco run starts from the raw
+    // data file, i.e. the digitiser is not part of the run, the module
+    // parameters are not set. As a workaround, they are set here explicitly.
+    // Obviously, this is not a good solution since consistency with the
+    // parameters used by the digitiser is not assured. A proper treatment
+    // of the STS parameters is needed (parameter file).
+    CbmStsModule* module = fSetup->GetModule(0);
+    if ( ! fSetup->GetModule(0)->IsSet() ) SetModuleParameters();
+
     if (fDaq) SetModuleParameters();
 
     // --- Instantiate StsPhysics

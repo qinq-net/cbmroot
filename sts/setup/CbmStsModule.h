@@ -189,6 +189,13 @@ class CbmStsModule : public CbmStsElement
 
 
 
+     /** Check whether module parameters are set
+      ** @value kTRUE if parameters are set
+      **/
+     Bool_t IsSet() const { return fIsSet; }
+
+
+
      /** Digitise signals in the analog buffer
       ** @param time  readout time [ns]
       ** @return Number of created digis
