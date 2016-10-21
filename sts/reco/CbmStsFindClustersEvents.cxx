@@ -19,7 +19,9 @@
 
 // --- Includes from STS
 #include "CbmEvent.h"
+#include "reco/CbmStsClusterAnalysis.h"
 #include "reco/CbmStsClusterFinder.h"
+#include "reco/CbmStsClusterFinderGap.h"
 #include "reco/CbmStsClusterFinderIdeal.h"
 #include "reco/CbmStsClusterFinderReal.h"
 #include "setup/CbmStsModule.h"
@@ -33,16 +35,16 @@ using namespace std;
 
 
 // -----   Constructor   ---------------------------------------------------
-CbmStsFindClustersEvents::CbmStsFindClustersEvents(Int_t finderModel, Int_t algorithm)
+CbmStsFindClustersEvents::CbmStsFindClustersEvents(Int_t finderModel)
     : FairTask("StsFindClusters", 1)
     , fEvents(NULL)
     , fDigis(NULL)
     , fClusters(NULL)
     , fSetup(NULL)
-    , fFinder(NULL)      
+    , fFinder(NULL)
+    , fAna (NULL)
     , fTimer()
     , fFinderModel(finderModel)
-    , fAlgorithm(algorithm)
     , fELossModel(0)
     , fUseFinderTb(kFALSE)
     , fDeadTime(9999999.)
@@ -102,11 +104,21 @@ void CbmStsFindClustersEvents::ProcessEvent(CbmEvent* event) {
 	set<CbmStsModule*>::iterator it;
 	for (it = fActiveModules.begin(); it != fActiveModules.end(); it++) {
 		Int_t nClusters = 0;
-	  nClusters = fFinder->FindClusters(*it);
-		LOG(INFO) << GetName() << ": Module " << (*it)->GetName()
+	  nClusters = fFinder->FindClusters(*it, event);
+		LOG(DEBUG1) << GetName() << ": Module " << (*it)->GetName()
     			      << ", digis: " << (*it)->GetNofDigis()
    		          << ", clusters " << nClusters << FairLogger::endl;
 		nClustersEvent += nClusters;
+	}
+
+	// --- Analyse the clusters in the event
+	Int_t nClusters = event->GetNofData(Cbm::kStsCluster);
+	for (Int_t iCluster = 0; iCluster < nClusters; iCluster++) {
+		Int_t index = event->GetIndex(Cbm::kStsCluster, iCluster);
+		CbmStsCluster* cluster = (CbmStsCluster*) fClusters->At(index);
+		CbmStsModule* module =
+				(CbmStsModule*) fSetup->GetElement(cluster->GetAddress(), kStsModule);
+		fAna->Analyze(cluster, module, fDigis);
 	}
 
   // --- Counters
@@ -207,8 +219,17 @@ InitStatus CbmStsFindClustersEvents::Init()
     // --- Instantiate StsPhysics
     CbmStsPhysics::Instance();
 
-    // --- Create cluster finder
-    fFinder = new CbmStsClusterFinderIdeal(fClusters);
+    // --- Create cluster finder and analysis
+    switch (fFinderModel) {
+    	case 0: fFinder = new CbmStsClusterFinderIdeal(fClusters); break;
+    	case 1: fFinder = new CbmStsClusterFinderReal(fClusters); break;
+    	case 2: fFinder = new CbmStsClusterFinderGap(fClusters); break;
+    	default: LOG(FATAL) << GetName() << ": Unknown cluster finder model"
+    										  << fFinderModel << FairLogger::endl; break;
+    }
+    LOG(INFO) << GetName() << ": Use cluster finder "
+              << fFinder->GetTitle() << FairLogger::endl;
+    fAna    = new CbmStsClusterAnalysis();
 
     LOG(INFO) << GetName() << ": Initialisation successful"
     		      << FairLogger::endl;

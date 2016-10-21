@@ -42,7 +42,8 @@ class CbmStsClusterFinderReal: public CbmStsClusterFinder {
 		/** Algorithm implementation
 		 ** @param module  Pointer to CbmStsModule to be operated on
 		 */
-		virtual Int_t FindClusters(CbmStsModule* module);
+		virtual Int_t FindClusters(CbmStsModule* module,
+				                       CbmEvent* event = NULL);
 
 	private:
 
@@ -50,9 +51,10 @@ class CbmStsClusterFinderReal: public CbmStsClusterFinder {
 		 ** @param clusterStart  First channel of cluster
 		 ** @param clusterEnd    Last channel of cluster
 		 ** @param module        Pointer to CbmStsModule
+		 ** @param event         Pointer to current event
 		 **/
 		void CreateCluster(Int_t clusterStart, Int_t clusterEnd,
-				               CbmStsModule* module);
+				               CbmStsModule* module, CbmEvent* event = NULL);
 
 
 		ClassDef(CbmStsClusterFinderReal, 1);

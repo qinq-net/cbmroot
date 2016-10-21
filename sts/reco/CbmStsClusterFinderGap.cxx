@@ -7,6 +7,7 @@
 
 #include <cassert>
 #include "TClonesArray.h"
+#include "CbmEvent.h"
 #include "CbmMatch.h"
 #include "CbmStsModule.h"
 
@@ -14,14 +15,15 @@
 // -----   Constructor   ----------------------------------------------------
 CbmStsClusterFinderGap::CbmStsClusterFinderGap(TClonesArray* clusterArray)
 	: CbmStsClusterFinder(clusterArray) {
-	fName = "CbmStsClusterFinder";
+	fName  = "StsClusterFinder";
 	fTitle = "Gap";
 }
 // ---------------------------------------------------------------------------
 
 
 // -----   Cluster finding algorithm   ---------------------------------------
-Int_t CbmStsClusterFinderGap::FindClusters(CbmStsModule* module) {
+Int_t CbmStsClusterFinderGap::FindClusters(CbmStsModule* module,
+		                                       CbmEvent* event) {
 
 	// --- Counter
 	Int_t nClusters = 0;
@@ -59,7 +61,7 @@ Int_t CbmStsClusterFinderGap::FindClusters(CbmStsModule* module) {
   	else if ( channel > clusterEnd + 2) newCluster = kTRUE;
 
   	if ( newCluster ) {  // Close the old cluster and start a new one
-  		CreateCluster(clusterStart, clusterEnd, module);
+  		CreateCluster(clusterStart, clusterEnd, module, event);
   		nClusters++;
   		clusterStart = channel;
   		clusterEnd   = channel;
@@ -70,7 +72,7 @@ Int_t CbmStsClusterFinderGap::FindClusters(CbmStsModule* module) {
   } //# digis in module
 
   // Create last cluster
-  CreateCluster(clusterStart, clusterEnd, module);
+  CreateCluster(clusterStart, clusterEnd, module, event);
 
   return nClusters;
 }
@@ -80,15 +82,18 @@ Int_t CbmStsClusterFinderGap::FindClusters(CbmStsModule* module) {
 
 // -----   Create a cluster   ------------------------------------------------
 void CbmStsClusterFinderGap::CreateCluster(Int_t clusterStart,
-		                                        Int_t clusterEnd,
-		                                        CbmStsModule* module) {
-	Int_t nClusters = fClusters->GetEntriesFast();
-	CbmStsCluster* cluster = new ( (*fClusters)[nClusters] ) CbmStsCluster();
-	Int_t index = -1;  // digi index in TClonesArray
+		                                       Int_t clusterEnd,
+		                                       CbmStsModule* module,
+		                                       CbmEvent* event) {
+	Int_t clusterIndex = fClusters->GetEntriesFast();
+	CbmStsCluster* cluster = new ( (*fClusters)[clusterIndex] ) CbmStsCluster();
+	cluster->SetAddress(module->GetAddress());
+	if ( event ) event->AddData(Cbm::kStsCluster, clusterIndex);
+	Int_t digiIndex = -1;  // digi index in TClonesArray
 	for (Int_t channel = clusterStart; channel <= clusterEnd; channel++) {
-		CbmStsDigi* digi = module->GetDigi(channel, index);
+		CbmStsDigi* digi = module->GetDigi(channel, digiIndex);
 		assert(digi);
-		cluster->AddDigi(index);
+		cluster->AddDigi(digiIndex);
 	} //# channels in cluster
 }
 // ---------------------------------------------------------------------------

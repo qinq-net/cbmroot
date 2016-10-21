@@ -6,6 +6,7 @@
 #include "CbmStsClusterFinderIdeal.h"
 
 #include "TClonesArray.h"
+#include "CbmEvent.h"
 #include "CbmMatch.h"
 #include "CbmStsModule.h"
 
@@ -13,14 +14,15 @@
 // -----   Constructor   ----------------------------------------------------
 CbmStsClusterFinderIdeal::CbmStsClusterFinderIdeal(TClonesArray* clusterArray)
 	: CbmStsClusterFinder(clusterArray) {
-	fName = "CbmStsClusterFinder";
+	fName  = "StsClusterFinder";
 	fTitle = "Ideal";
 }
 // ---------------------------------------------------------------------------
 
 
 // -----   Cluster finding algorithm   ---------------------------------------
-Int_t CbmStsClusterFinderIdeal::FindClusters(CbmStsModule* module) {
+Int_t CbmStsClusterFinderIdeal::FindClusters(CbmStsModule* module,
+		                                         CbmEvent* event) {
 
 	// --- Counter
 	Int_t nClusters = 0;
@@ -54,9 +56,11 @@ Int_t CbmStsClusterFinderIdeal::FindClusters(CbmStsModule* module) {
 
   	// --- If it is the first occurrence of the StsPoint, create a new cluster
   	if ( linkMap.find(link) == linkMap.end() ) {
-  		Int_t size = fClusters->GetEntriesFast();
-  		CbmStsCluster* cluster = new ((*fClusters)[size]) CbmStsCluster();
-  		linkMap[link] = cluster;
+  		Int_t index = fClusters->GetEntriesFast();
+  		CbmStsCluster* cluster = new ((*fClusters)[index]) CbmStsCluster();
+  		cluster->SetAddress(module->GetAddress());
+   		if ( event ) event->AddData(Cbm::kStsCluster, index);
+    	linkMap[link] = cluster;
   		nClusters++;
   	}
 
@@ -81,8 +85,10 @@ Int_t CbmStsClusterFinderIdeal::FindClusters(CbmStsModule* module) {
 
   	// --- If it is the first occurrence of the StsPoint, create a new cluster
   	if ( linkMap.find(link) == linkMap.end() ) {
-  		Int_t size = fClusters->GetEntriesFast();
-  		CbmStsCluster* cluster = new ((*fClusters)[size]) CbmStsCluster();
+  		Int_t index = fClusters->GetEntriesFast();
+  		CbmStsCluster* cluster = new ((*fClusters)[index]) CbmStsCluster();
+   		cluster->SetAddress(module->GetAddress());
+     	if ( event ) event->AddData(Cbm::kStsCluster, index);
   		linkMap[link] = cluster;
   		nClusters++;
   	}

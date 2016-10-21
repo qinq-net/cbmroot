@@ -15,6 +15,7 @@
 #include "TStopwatch.h"
 #include "FairTask.h"
 #include "CbmStsDigi.h"
+#include "reco/CbmStsClusterAnalysis.h"
 #include "setup/CbmStsModule.h"
 #include "CbmTimeSlice.h"
 
@@ -48,13 +49,10 @@ class CbmStsFindClustersEvents : public FairTask
     /** Constructor 
      ** @param finderModel  Cluster finder model.
      **			    0 = ideal: using MC information
-     **			    1 = simple: only neighboring strips
-     **			    2 = with gap: take into account dead channels
-     ** @param algorithm  Cluster finder algorithm.
-     **			    0 = center-of-gravity
-     **			    1 = advanced(for 2-strip and bigger clusters)
+     **			    1 = real : neighbouring strips
+     **			    2 = gap  : allow gaps where dead channels are
      **/
-    CbmStsFindClustersEvents(Int_t finderModel = 1, Int_t algorithm = 1);
+    CbmStsFindClustersEvents(Int_t finderModel = 1);
 
 
     /** Destructor  **/
@@ -115,10 +113,10 @@ class CbmStsFindClustersEvents : public FairTask
     TClonesArray* fDigis;             ///< Input array of CbmStsDigi
     TClonesArray* fClusters;          ///< Output array of CbmStsCluster
     CbmStsSetup*  fSetup;             ///< Instance of STS setup
-    CbmStsClusterFinder* fFinder;     ///< Cluster finder
+    CbmStsClusterFinder* fFinder;     ///< Cluster finder engine
+    CbmStsClusterAnalysis* fAna;      ///< Cluster analysis engine
     TStopwatch    fTimer;             ///< ROOT timer
     Int_t         fFinderModel;       ///< Cluster finder model
-    Int_t         fAlgorithm;         ///< Cluster finder algorithm
     Int_t         fELossModel;        ///< Energy loss model, to take propely into position error
     
     Bool_t fUseFinderTb;              ///< Using of time based cluster finder

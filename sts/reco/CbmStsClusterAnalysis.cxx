@@ -62,8 +62,9 @@ void CbmStsClusterAnalysis::Analyze(CbmStsCluster* cluster,
 		Double_t time = 0.5 * ( digi1->GetTime() + digi2->GetTime());
 
 		// Cluster position
-		Double_t x = x1 + 0.5 * ( 1. + (q2 - q1) / (q2 + q1) );
-		Double_t dX = 7.6336e-3;
+		// The corresponding software note. The number 0.11785113 is 1/sqrt(72).
+		Double_t x = x1 + 0.5 + ( q2 - q1 ) / 3. /  TMath::Max(q1, q2);
+		Double_t dX = 0.11785113 * TMath::Abs(q2 - q1) / TMath::Max(q1, q2);
 
 		// Cluster charge
 		Double_t charge = q1 + q2;

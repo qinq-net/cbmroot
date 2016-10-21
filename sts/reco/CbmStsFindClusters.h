@@ -42,9 +42,9 @@ class CbmStsFindClusters : public FairTask
     /** Constructor 
      ** @param finderModel  Cluster finder model.
      **			    0 = ideal: using MC information
-     **			    1 = simple: only neighboring strips
-     **			    2 = with gap: take into account dead channels
-     ** @param algorithm  Cluster finder algorithm.
+     **			    1 = real:  neighbouring strips
+     **			    2 = gap:   allow gaps whenre inactive channels are
+     **	@param algorithm   Cluster fit algorithm
      **			    0 = center-of-gravity
      **			    1 = advanced(for 2-strip and bigger clusters)
      **/

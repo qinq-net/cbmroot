@@ -49,8 +49,9 @@ class CbmStsClusterFinderIdeal: public CbmStsClusterFinder {
 
 		/** Algorithm implementation
 		 ** @param module  Pointer to CbmStsModule to be operated on
+		 ** @param event   Pointer to current event
 		 */
-		virtual Int_t FindClusters(CbmStsModule* module);
+		virtual Int_t FindClusters(CbmStsModule* module, CbmEvent* event = NULL);
 
 
 		ClassDef(CbmStsClusterFinderIdeal, 1);

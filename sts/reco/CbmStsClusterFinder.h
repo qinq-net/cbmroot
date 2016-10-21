@@ -10,6 +10,7 @@
 
 class TClonesArray;
 class CbmStsCluster;
+class CbmEvent;
 class CbmStsModule;
 
 
@@ -43,8 +44,9 @@ class CbmStsClusterFinder: public TNamed {
 
 		/** Algorithm implementation
 		 ** @param module  Pointer to CbmStsModule to be operated on
+		 ** @param event   Pointer to current event
 		 */
-		virtual Int_t FindClusters(CbmStsModule* module) = 0;
+		virtual Int_t FindClusters(CbmStsModule* module, CbmEvent* = NULL) = 0;
 
 
 	protected:
