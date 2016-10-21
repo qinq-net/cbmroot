@@ -48,6 +48,7 @@ reco/CbmStsClusterFinderSimple.cxx
 reco/CbmStsFindClusters.cxx
 reco/CbmStsFindClustersEvents.cxx
 reco/CbmStsFindHits.cxx
+reco/CbmStsFindHitsEvents.cxx
 reco/CbmStsTimeBasedQa.cxx
 reco/CbmStsTimeBasedQaReport.cxx
 )

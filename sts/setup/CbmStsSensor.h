@@ -19,6 +19,7 @@
 
 class TClonesArray;
 class TGeoPhysicalNode;
+class CbmEvent;
 class CbmLink;
 class CbmStsModule;
 class CbmStsPoint;
@@ -76,10 +77,11 @@ class CbmStsSensor : public CbmStsElement
     /** Find hits in sensor
      ** @param clusters  Vector of clusters
      ** @param hitArray  TClonesArray to store the hits in
+     ** @param event     Pointer to current event for registering of hits
      ** @return Number of created hits
      **/
     Int_t FindHits(std::vector<CbmStsCluster*>& clusters,
-    		           TClonesArray* hitArray, Double_t dTime);
+    		           TClonesArray* hitArray, CbmEvent* event, Double_t dTime);
 
 
     /** Sensor conditions
@@ -149,7 +151,8 @@ class CbmStsSensor : public CbmStsElement
     CbmStsSensorType*       fType;        ///< Pointer to sensor type
     CbmStsSensorConditions  fConditions;  ///< Operating conditions
     CbmLink* fCurrentLink;  ///< Link to currently processed MCPoint
-    TClonesArray* fHits;    ///<  Output array for hits. Used in hit finding.
+    TClonesArray* fHits;    ///< Output array for hits. Used in hit finding.
+    CbmEvent* fEvent;       //! ///< Pointer to current event
 
     /** Prevent usage of copy constructor and assignment operator **/
     CbmStsSensor(const CbmStsSensor&);

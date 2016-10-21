@@ -514,13 +514,13 @@ void CbmStsModule::Digitize(Int_t channel, CbmStsSignal* signal) {
 
 
 // -----   Find hits   -----------------------------------------------------
-Int_t CbmStsModule::FindHits(TClonesArray* hitArray) {
+Int_t CbmStsModule::FindHits(TClonesArray* hitArray, CbmEvent* event) {
 
 	// --- Call FindHits method in each daughter sensor
 	Int_t nHits = 0;
 	for (Int_t iSensor = 0; iSensor < GetNofDaughters(); iSensor++) {
 		CbmStsSensor* sensor = dynamic_cast<CbmStsSensor*>(GetDaughter(iSensor));
-		nHits += sensor->FindHits(fClusters, hitArray, fDeadTime);
+		nHits += sensor->FindHits(fClusters, hitArray, event, fDeadTime);
 	}
 
 	LOG(DEBUG2) << GetName() << ": Clusters " << fClusters.size()

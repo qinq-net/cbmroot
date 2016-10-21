@@ -129,9 +129,10 @@ class CbmStsModule : public CbmStsElement
 
      /** Find hits from clusters
       ** @param hitArray  Array where hits shall be registered
+      ** @param event     Pointer to current event for registering of hits
       ** @return Number of created hits
       **/
-     Int_t FindHits(TClonesArray* hitArray);
+     Int_t FindHits(TClonesArray* hitArray, CbmEvent* event = NULL);
 
 
      /** Get a digi in a channel

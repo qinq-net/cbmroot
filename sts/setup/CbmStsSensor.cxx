@@ -21,6 +21,7 @@
 #include "FairRunAna.h"
 
 // Includes from CbmRoot
+#include "CbmEvent.h"
 #include "CbmLink.h"
 #include "CbmStsHit.h"
 #include "CbmStsPoint.h"
@@ -40,7 +41,8 @@ CbmStsSensor::CbmStsSensor() : CbmStsElement(),
                                fType(NULL),
                                fConditions(),
                                fCurrentLink(NULL),
-                               fHits(NULL)
+                               fHits(NULL),
+                               fEvent(NULL)
 {
 }
 // -------------------------------------------------------------------------
@@ -102,8 +104,8 @@ void CbmStsSensor::CreateHit(Double_t xLocal, Double_t yLocal,
 			0.5 * TMath::Abs(clusterF->GetTime() - clusterB->GetTime());
 
 	// --- Create hit
-	Int_t nHits = fHits->GetEntriesFast();
-	new ( (*fHits)[nHits] )
+	Int_t index = fHits->GetEntriesFast();
+	new ( (*fHits)[index] )
 			CbmStsHit(GetAddress(),          // address
 					      global,                // coordinates
 					      error,                 // coordinate error
@@ -112,6 +114,7 @@ void CbmStsSensor::CreateHit(Double_t xLocal, Double_t yLocal,
 					      clusterB->GetIndex(),  // back cluster index
 					      hitTime,               // hit time
 					      hitTimeError);         // hit time error
+	if ( fEvent) fEvent->AddData(Cbm::kStsHit, index);
 
 	LOG(DEBUG2) << GetName() << ": Creating hit at (" << global[0] << ", "
 			        << global[1] << ", " << global[2] << ")" << FairLogger::endl;
@@ -123,8 +126,10 @@ void CbmStsSensor::CreateHit(Double_t xLocal, Double_t yLocal,
 
 // -----   Find hits in sensor   -------------------------------------------
 Int_t CbmStsSensor::FindHits(vector<CbmStsCluster*>& clusters,
-		                         TClonesArray* hitArray, Double_t dTime) {
+		                         TClonesArray* hitArray, CbmEvent* event,
+		                         Double_t dTime) {
 	fHits = hitArray;
+	fEvent = event;
 	Int_t nHits = fType->FindHits(clusters, this, dTime);
 	LOG(DEBUG2) << GetName() << ": Clusters " << clusters.size()
 			        << ", hits " << nHits << FairLogger::endl;

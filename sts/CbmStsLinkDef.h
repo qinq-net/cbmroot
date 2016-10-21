@@ -22,7 +22,7 @@
 #pragma link C++ class CbmStsSensorFactory;
 #pragma link C++ class CbmStsTrackStatus;
 
-// Digitization
+// Digitisation
 #pragma link C++ class CbmStsDigitize;
 #pragma link C++ class CbmStsPhysics;
 #pragma link C++ class CbmStsSensorTypeDssd;
@@ -41,6 +41,7 @@
 #pragma link C++ class CbmStsFindClusters;
 #pragma link C++ class CbmStsFindClustersEvents;
 #pragma link C++ class CbmStsFindHits;
+#pragma link C++ class CbmStsFindHitsEvents;
 
 // Enumerators
 #pragma link C++ enum EStsElementLevel;
