@@ -67,7 +67,7 @@ Int_t CbmStsClusterFinderReal::FindClusters(CbmStsModule* module,
   } //# digis in module
 
   // Create last cluster
-  CreateCluster(clusterStart, clusterEnd, module);
+  CreateCluster(clusterStart, clusterEnd, module, event);
   nClusters++;
 
   return nClusters;

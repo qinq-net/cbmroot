@@ -79,7 +79,7 @@ void CbmStsFindClustersEvents::Exec(Option_t* opt) {
 
 	// --- Event loop
 	Int_t nEvents = fEvents->GetEntriesFast();
-	LOG(INFO) << GetName() << ": reading time slice with " << nEvents
+	LOG(DEBUG) << GetName() << ": reading time slice with " << nEvents
 			      << " events " << FairLogger::endl;
 	for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
 		CbmEvent* event = static_cast<CbmEvent*> (fEvents->At(iEvent));
