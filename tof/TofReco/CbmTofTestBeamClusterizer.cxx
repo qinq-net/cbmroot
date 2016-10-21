@@ -1915,6 +1915,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
                  LOG(DEBUG1)<<Form(" DelTof for SmT %d, Sm %d, R %d, T %d, dTRef %6.1f, Bx %d, Bx1 %d, DTe %6.1f -> DelT %6.1f",
 				  iSmType, iSm, iRpc, iSel, dTRef-dTTrig[iSel], iBx, iBx1, dDTentry, dDelTof)
                             <<FairLogger::endl;
+		 dTTcor[iSel]=dDelTof;
                  dTcor=pHit->GetTime()-dDelTof-dTTrig[iSel];  
 /*               Double_t dDt=0.5*(pDig0->GetTime()+pDig1->GetTime())-dDelTof-dTTrig[iSel];*/
 		 Double_t dAvTot=0.5*(pDig0->GetTot()+pDig1->GetTot());
@@ -1922,18 +1923,18 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
 		   fhTRpcCluWalk[iDetIndx][iSel][pDig0->GetChannel()][pDig0->GetSide()]->Fill(dAvTot,dDt);
 		   fhTRpcCluWalk[iDetIndx][iSel][pDig1->GetChannel()][pDig1->GetSide()]->Fill(dAvTot,dDt);
 		 */
-               
-		 fhTRpcCluWalk[iDetIndx][iSel][pDig0->GetChannel()][pDig0->GetSide()]->Fill(pDig0->GetTot(),pDig0->GetTime()
+		}
+		fhTRpcCluWalk[iDetIndx][iSel][pDig0->GetChannel()][pDig0->GetSide()]->Fill(pDig0->GetTot(),pDig0->GetTime()
 		 +((1.-2.*pDig0->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc))-dDelTof-dTTrig[iSel]);
-		 fhTRpcCluWalk[iDetIndx][iSel][pDig1->GetChannel()][pDig1->GetSide()]->Fill(pDig1->GetTot(),pDig1->GetTime()
+		fhTRpcCluWalk[iDetIndx][iSel][pDig1->GetChannel()][pDig1->GetSide()]->Fill(pDig1->GetTot(),pDig1->GetTime()
 		 +((1.-2.*pDig1->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc))-dDelTof-dTTrig[iSel]);
 
-		 fhTRpcCluAvWalk[iDetIndx][iSel]->Fill(pDig0->GetTot(),pDig0->GetTime()
+		fhTRpcCluAvWalk[iDetIndx][iSel]->Fill(pDig0->GetTot(),pDig0->GetTime()
 	         +((1.-2.*pDig0->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc))-dDelTof-dTTrig[iSel]);
-		 fhTRpcCluAvWalk[iDetIndx][iSel]->Fill(pDig1->GetTot(),pDig1->GetTime()
+		fhTRpcCluAvWalk[iDetIndx][iSel]->Fill(pDig1->GetTot(),pDig1->GetTime()
                	 +((1.-2.*pDig1->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc))-dDelTof-dTTrig[iSel]);
 
-		 if(iLink==0){          // Fill histo only once (for 1. digi entry)
+		if(iLink==0){          // Fill histo only once (for 1. digi entry)
 		   fhTRpcCluDelTof[iDetIndx][iSel]->Fill(dTRef-dTTrig[iSel],dTcor/dDist);
 		   fhTSmCluTOff[iSmType][iSel]->Fill((Double_t)(iSm*iNbRpc+iRpc),dTcor);
 		   fhTSmCluTRun[iSmType][iSel]->Fill(fdEvent,dTcor);
@@ -1955,9 +1956,8 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
                             <<FairLogger::endl;
 		     */
 		   }
-		 }    // iLink==0 condition end
-	       }      // position condition end  
-              }
+		}    // iLink==0 condition end
+	      }      // position condition end  
              } // Match condition end
             }  // closing of trigger loop
            } 
@@ -2016,7 +2016,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
                        <<FairLogger::endl;
 
             fhClusterSize->Fill( fviClusterSize[iSmType][iRpc][uCluster]);
-            fhClusterSizeType->Fill( fviClusterSize[iSmType][iRpc][uCluster], 40*iSmType + iRpc );
+            fhClusterSizeType->Fill( fviClusterSize[iSmType][iRpc][uCluster], 40*iSmType + iRpc ); //FIXME - hardwired constant
             if( kTRUE == fDigiBdfPar->ClustUseTrackId() )
             {
                fhTrackMul->Fill( fviTrkMul[iSmType][iRpc][uCluster] );
