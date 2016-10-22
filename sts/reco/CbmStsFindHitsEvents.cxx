@@ -153,22 +153,6 @@ Int_t CbmStsFindHitsEvents::ProcessEvent(CbmEvent* event) {
 	// --- Sort clusters into modules
 	Int_t nClusters = SortClusters(event);
 
-	/*
-	// --- Find hits in modules
-	UInt_t address = CbmStsAddress::GetAddress(1, 6, 1, 0);
-	CbmStsModule* module = (CbmStsModule*) fSetup->GetElement(address, kStsModule);
-	LOG(INFO) << "Processing module " << module->GetName() << FairLogger::endl;
-		if ( fDTime ) module->SetDeadTime(fDTime);
-		Int_t nHitsModule = module->FindHits(fHits);
-		LOG(DEBUG1) << GetName() << ": Module " << module->GetName()
-    			      << ", clusters: " << module->GetNofClusters()
-   		          << ", hits: " << nHitsModule << FairLogger::endl;
-		LOG(INFO) << GetName() << ": Module " << module->GetName()
-    			      << ", clusters: " << module->GetNofClusters()
-   		          << ", hits: " << nHitsModule << FairLogger::endl;
-		nHitsEvent += nHitsModule;
-		*/
-
 	// --- Find hits in modules
 	Int_t nHits = 0;
 	set<CbmStsModule*>::iterator it;
@@ -201,8 +185,6 @@ Int_t CbmStsFindHitsEvents::ProcessEvent(CbmEvent* event) {
 
   // --- End-of-event action (clear cluster maps of modules)
   FinishEvent();
-
-  LOG(INFO) << event->ToString() << FairLogger::endl;
 
   return nHitsEvent;
 }
