@@ -5,5 +5,18 @@
  **/
 
 #include "CbmStsDigi.h"
+#include <sstream>
+#include "CbmStsAddress.h"
+
+using namespace std;
+
+// --- String output
+string CbmStsDigi::ToString() const {
+   stringstream ss;
+   ss << "StsDigi: address " << GetAddress() << " | channel "
+  		<< CbmStsAddress::GetElementId(fAddress, kStsChannel)
+      << " | charge " << fCharge << " | time " << fTime;
+   return ss.str();
+}
 
 ClassImp(CbmStsDigi)

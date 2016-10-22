@@ -277,7 +277,7 @@ Int_t CbmStsFindClustersEvents::SortDigis(CbmEvent* event) {
 		fActiveModules.insert(module);
 
 		// --- Add the digi to the module
-	  module->AddDigi(digi, iDigi);
+	  module->AddDigi(digi, index);
 
 	}  // Loop over digi array
 

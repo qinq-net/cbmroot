@@ -78,6 +78,11 @@ class CbmStsDigi : public CbmDigi
     ar& fCharge;
   }
 
+
+  /** String output **/
+  virtual std::string ToString() const;
+
+
  private:
 
 #ifndef __CINT__ // for BOOST serialization
