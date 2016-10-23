@@ -28,6 +28,7 @@
 #include "FairRootManager.h"
 #include "FairDetector.h"
 
+#include "CbmEvent.h"
 #include "CbmMCTrack.h"
 #include "CbmStsPoint.h"
 #include "CbmStsDigi.h"
@@ -116,7 +117,7 @@ class CbmL1 : public FairTask
 
   std::vector<CbmL1HitStore> vHitStore; // diff hit information
 
-  void Reconstruct();
+  void Reconstruct(CbmEvent* event = NULL);
   
   friend class L1AlgoDraw;
   friend class L1AlgoPulls;
@@ -127,7 +128,7 @@ class CbmL1 : public FairTask
    void IdealTrackFinder(); // just copy all reconstructable MCTracks into RecoTracks.
 
     /// Read information about hits, mcPoints and mcTracks into L1 classes
-   void ReadEvent();
+   void ReadEvent(CbmEvent* event = NULL);
    bool ReadMCPoint( CbmL1MCPoint *MC, int iPoint, bool MVD ); // help procedure
 
     /// Input Performance

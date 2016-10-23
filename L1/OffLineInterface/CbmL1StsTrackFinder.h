@@ -23,6 +23,7 @@
 #include "CbmStsTrackFinder.h"
 
 class TClonesArray;
+class CbmEvent;
 
 
 class CbmL1StsTrackFinder : public CbmStsTrackFinder
@@ -46,7 +47,21 @@ class CbmL1StsTrackFinder : public CbmStsTrackFinder
    **/
   virtual Int_t DoFind();
 
+  /** Execute track finding on one event
+   ** @param event  Pointer to event object
+   ** @value Number of created tracks
+   **/
+  virtual Int_t FindTracks(CbmEvent* event);
+
+
  private:
+
+  /** Copy the tracks from the L1-internal format and array
+   ** to the output TClonesArray.
+   ** @value  Number of created tracks
+   **/
+  Int_t CopyL1Tracks(CbmEvent* event = NULL);
+
 
   ClassDef(CbmL1StsTrackFinder,1);
 

@@ -23,6 +23,7 @@
 class TClonesArray;
 class CbmStsDigiScheme;
 class FairField;
+class CbmEvent;
 
 
 class CbmStsTrackFinder : public TNamed
@@ -57,6 +58,13 @@ class CbmStsTrackFinder : public TNamed
    ** class. Executed at the end of the run.
    **/
   virtual void Finish() { };
+
+
+  /** Track finding in one event (abstract)
+   ** @param event    Pointer to event object
+   ** @param nTracks  Number of StsTrack objects created
+   **/
+  virtual Int_t FindTracks(CbmEvent* event) = 0;
 
 
   /** Modifiers **/

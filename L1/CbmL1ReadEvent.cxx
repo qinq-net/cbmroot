@@ -19,6 +19,7 @@
 #include "CbmKF.h"
 #include "CbmMatch.h"
 #include "CbmStsAddress.h"
+#include "CbmDetectorList.h"
 
 #include "CbmMvdHitMatch.h"
 
@@ -74,8 +75,9 @@ struct TmpStrip{
 };
 
   /// Repack data from Clones Arrays to L1 arrays
-void CbmL1::ReadEvent()
+void CbmL1::ReadEvent(CbmEvent* event)
 {
+
   if (fVerbose >= 10) cout << "ReadEvent: start." << endl;
     // clear arrays for next event
   vMCPoints.clear();
@@ -263,7 +265,8 @@ void CbmL1::ReadEvent()
 #else
 
   if( listStsHits ){
-    Int_t nEnt = listStsHits->GetEntries();
+    Int_t nEnt = (event ? event->GetNofData(Cbm::kStsHit)
+    		                : listStsHits->GetEntries());
     Int_t nMC = (listStsPts) ? listStsPts->GetEntries() : 0;
 
     if(listStsPts){
@@ -281,10 +284,13 @@ void CbmL1::ReadEvent()
     }
 
     for(Int_t j = 0; j < nEnt; j++ ){
-      CbmStsHit *sh = L1_DYNAMIC_CAST<CbmStsHit*>( listStsHits->At(j) );
+
+    	Int_t hitIndex = ( event ? event->GetIndex(Cbm::kStsHit, j) : j);
+
+      CbmStsHit *sh = L1_DYNAMIC_CAST<CbmStsHit*>( listStsHits->At(hitIndex) );
       TmpHit th;
       {
-        CbmStsHit *mh = L1_DYNAMIC_CAST<CbmStsHit*>( listStsHits->At(j) );
+        CbmStsHit *mh = L1_DYNAMIC_CAST<CbmStsHit*>( listStsHits->At(hitIndex) );
         th.ExtIndex = j;
         th.iStation = NMvdStations + CbmStsAddress::GetElementId(mh->GetAddress(), kStsStation);//mh->GetStationNr() - 1;
 //if( CbmStsAddress::GetElementId(mh->GetAddress(), kStsStation) > 0 ) continue;

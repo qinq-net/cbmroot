@@ -573,12 +573,12 @@ void CbmL1::Exec(Option_t* /*option*/)
 {
 }
 
-void CbmL1::Reconstruct()
+void CbmL1::Reconstruct(CbmEvent* event)
 {
   static int nevent=0;
   if( fVerbose>1 ) cout << endl << "CbmL1::Exec event " << ++nevent << " ..." << endl << endl;
-    // repack data
-  ReadEvent();
+  // repack data
+  ReadEvent(event);
   
   { // save data for standalone
     if(fSTAPDataMode%2 == 1){ // 1,3

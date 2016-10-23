@@ -104,10 +104,15 @@ void CbmStsFindTracks::Exec(Option_t* /*opt*/) {
 //  }
 
   fTimer.Stop();
-  if ( fVerbose ) 
-    cout << "+ " << setw(15) << left << fName << ": " << setprecision(4) 
-	 << setw(8) << fixed << right << fTimer.RealTime()
-	 << " s, tracks found " << nTracks << endl;
+
+  // --- Event log
+  LOG(INFO) << "+ " << setw(20) << GetName() << ": Event " << setw(6)
+  		      << right << fNEvents
+  		      << ", real time " << fixed << setprecision(6)
+  		      << fTimer.RealTime() << " s, hits: "
+  		      << fStsHits->GetEntriesFast() << ", tracks: "
+  		      << nTracks << FairLogger::endl;
+
 
   fNEvents++;
   fTime    += fTimer.RealTime();
