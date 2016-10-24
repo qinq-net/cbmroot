@@ -6,9 +6,9 @@ void draw_analysis()
 	gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
 	loadlibs();
 
-	TString outputDir = "recoA/";
-	TString runTitle = "run_title_a";
-	TString histFileName = "te14324200946.hld.root";
+	std::string outputDir = "recoA/";
+	std::string runTitle = "run_title_a";
+	std::string histFileName = "results/te14325234809.hld.root";
 
 	TString script = TString(gSystem->Getenv("SCRIPT"));
 
@@ -22,6 +22,7 @@ void draw_analysis()
 	qaReco->SetOutputDir(outputDir);
 	qaReco->SetRunTitle(runTitle);
 	qaReco->SetDrawHist(true);
+	qaReco->SetMaxNofEventsToDraw(10);
 	qaReco->DrawHistFromFile(histFileName);
 }
 

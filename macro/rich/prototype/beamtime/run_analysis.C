@@ -18,28 +18,28 @@ void run_analysis()
    gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
    loadlibs();
 
-   TString hldFileDir = "";//"/mnt/data/WLS/WLS_off/nonstretched/ringH2/offset00250/";
-   TString hldFileName = "/Users/slebedev/Development/cbm/data/cern_beamtime_2014/te14325234809.hld";
-   TString hldFullFileName;
+   std::string hldFileDir = "";//"/mnt/data/WLS/WLS_off/nonstretched/ringH2/offset00250/";
+   std::string hldFileName = "/Users/slebedev/Development/cbm/data/cern_beamtime_2014/te14325234809.hld";
+   std::string hldFullFileName;
    hldFullFileName = hldFileDir + hldFileName;
 
-   TString outRootFileName;
+   std::string outRootFileName;
 
-   TString outDir = "";//"/home/pusan/nov2014res/";
+   std::string outDir = "";//"/home/pusan/nov2014res/";
    outRootFileName = outDir + hldFileName + ".root";
 
-   TString outputDir = "recoqa/";
-   TString runTitle = "123123";
+   std::string outputDir = "recoqa/";
+   std::string runTitle = "123123";
 
    CbmRichAnaTypeEnum anaType = kCbmRichBeamEvent; // Type of analysis you want to perform: kCbmRichBeamEvent, kCbmRichLaserPulserEvent, kCbmRichLedPulserEvent
 
    TString script = TString(gSystem->Getenv("SCRIPT"));
 
    if (script == "yes") {
-	   hldFullFileName = TString(gSystem->Getenv("INPUT_HLD_FILE"));
-	   outRootFileName = TString(gSystem->Getenv("OUTPUT_ROOT_FILE"));
-	   outputDir = TString(gSystem->Getenv("OUTPUT_DIR"));
-	   runTitle = TString(gSystem->Getenv("RUN_TITLE"));
+	   hldFullFileName = std::string(gSystem->Getenv("INPUT_HLD_FILE"));
+	   outRootFileName = std::string(gSystem->Getenv("OUTPUT_ROOT_FILE"));
+	   outputDir = std::string(gSystem->Getenv("OUTPUT_DIR"));
+	   runTitle = std::string(gSystem->Getenv("RUN_TITLE"));
    }
 
    // --- Specify number of events to be produced.
@@ -70,7 +70,7 @@ void run_analysis()
 
    // --- Run
    FairRunOnline *run = new FairRunOnline(source);
-   run->SetOutputFile(outRootFileName);
+   run->SetOutputFile(outRootFileName.c_str());
    //run->SetEventHeader(event);
 
    if (anaType == kCbmRichBeamEvent) {
