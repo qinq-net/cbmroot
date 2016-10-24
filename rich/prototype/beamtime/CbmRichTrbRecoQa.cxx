@@ -238,27 +238,24 @@ void CbmRichTrbRecoQa::FillNofHitsPmt()
 void CbmRichTrbRecoQa::DrawHist()
 {
 	{
-		TCanvas* c = new TCanvas(fRunTitle + "_rich_trb_recoqa_nof_hits_in_event", fRunTitle + "_rich_trb_recoqa_nof_hits_in_event", 600, 600);
+		TCanvas* c = fHM->CreateCanvas(fRunTitle + "_rich_trb_recoqa_nof_hits_in_event", fRunTitle + "_rich_trb_recoqa_nof_hits_in_event", 600, 600);
 		DrawH1(fHM->H1("fhNofHitsInEvent"));
 		FitGaussAndDrawResults(fHM->H1("fhNofHitsInEvent"));
-		Cbm::SaveCanvasAsImage(c, string(fOutputDir.Data()), "png");
 	}
 
 	{
-		TCanvas* c = new TCanvas(fRunTitle + "_rich_trb_recoqa_nof_rings_per_event", fRunTitle + "_rich_trb_recoqa_nof_rings_per_event", 600, 600);
+		TCanvas* c = fHM->CreateCanvas(fRunTitle + "_rich_trb_recoqa_nof_rings_per_event", fRunTitle + "_rich_trb_recoqa_nof_rings_per_event", 600, 600);
 		DrawH1(fHM->H1("fhNofRingsInEvent"));
-		Cbm::SaveCanvasAsImage(c, string(fOutputDir.Data()), "png");
 	}
 
 	{
-		TCanvas* c = new TCanvas(fRunTitle + "_rich_trb_recoqa_nof_hits_per_ring", fRunTitle + "_rich_trb_recoqa_nof_hits_per_ring", 600, 600);
+		TCanvas* c = fHM->CreateCanvas(fRunTitle + "_rich_trb_recoqa_nof_hits_per_ring", fRunTitle + "_rich_trb_recoqa_nof_hits_per_ring", 600, 600);
 		DrawH1(fHM->H1("fhNofHitsInRing"));
 		FitGaussAndDrawResults(fHM->H1("fhNofHitsInRing"));
-		Cbm::SaveCanvasAsImage(c, string(fOutputDir.Data()), "png");
 	}
 
 	{
-		TCanvas* c = new TCanvas(fRunTitle + "_rich_trb_recoqa_ellipse_param", fRunTitle + "_rich_trb_recoqa_ellipse_param", 1200, 800);
+		TCanvas* c = fHM->CreateCanvas(fRunTitle + "_rich_trb_recoqa_ellipse_param", fRunTitle + "_rich_trb_recoqa_ellipse_param", 1200, 800);
 		c->Divide(3, 2);
 		c->cd(1);
 		DrawH1(fHM->H1("fhBaxisEllipse"), kLinear, kLog);
@@ -274,11 +271,10 @@ void CbmRichTrbRecoQa::DrawHist()
 		DrawH2(fHM->H2("fhXcYcEllipse"));
 		c->cd(6);
 		DrawH1(fHM->H1("fhPhiEllipse"));
-		Cbm::SaveCanvasAsImage(c, string(fOutputDir.Data()), "png");
 	}
 
 	{
-		TCanvas* c = new TCanvas(fRunTitle + "_rich_trb_recoqa_circle_param", fRunTitle + "_rich_trb_recoqa_circle_param", 800, 800);
+		TCanvas* c = fHM->CreateCanvas(fRunTitle + "_rich_trb_recoqa_circle_param", fRunTitle + "_rich_trb_recoqa_circle_param", 800, 800);
 		c->Divide(2, 2);
 		c->cd(1);
 		DrawH2(fHM->H2("fhXcYcCircle"));
@@ -290,35 +286,31 @@ void CbmRichTrbRecoQa::DrawHist()
 		c->cd(4);
 		DrawH1(fHM->H1("fhDrCircle"));
 		FitGaussAndDrawResults(fHM->H1("fhDrCircle"));
-		Cbm::SaveCanvasAsImage(c, string(fOutputDir.Data()), "png");
 	}
 
 	{
-		TCanvas* c = new TCanvas(fRunTitle + "_rich_trb_recoqa_hits_xy_pixel", fRunTitle + "_rich_trb_recoqa_hits_xy_pixel", 800, 600);
+		fHM->CreateCanvas(fRunTitle + "_rich_trb_recoqa_hits_xy_pixel", fRunTitle + "_rich_trb_recoqa_hits_xy_pixel", 800, 600);
 		DrawH2(fHM->H2("fhHitsXYPixel"));
-		Cbm::SaveCanvasAsImage(c, string(fOutputDir.Data()), "png");
 	}
 
 	{
-		TCanvas* c = new TCanvas(fRunTitle + "_rich_trb_recoqa_hits_xy_pmt", fRunTitle + "_rich_trb_recoqa_hits_xy_pmt", 800, 600);
+		fHM->CreateCanvas(fRunTitle + "_rich_trb_recoqa_hits_xy_pmt", fRunTitle + "_rich_trb_recoqa_hits_xy_pmt", 800, 600);
 		TH2D* h = (TH2D*)fHM->H2("fhHitsXYPmt")->Clone();
 		gStyle->SetPaintTextFormat("4.1f");
 		h->Scale(100. / h->GetEntries());
 		h->SetMarkerSize(3);
 		h->GetZaxis()->SetTitle("Hits in event per PMT [%]");
 		DrawH2(h, kLinear, kLinear, kLinear, "text COLZ");
-		Cbm::SaveCanvasAsImage(c, string(fOutputDir.Data()), "png");
 	}
 
 	{
-		TCanvas* c = new TCanvas(fRunTitle + "_rich_trb_recoqa_efficiency", fRunTitle + "_rich_trb_recoqa_efficiency", 800, 600);
+		fHM->CreateCanvas(fRunTitle + "_rich_trb_recoqa_efficiency", fRunTitle + "_rich_trb_recoqa_efficiency", 800, 600);
 		TH1D* eff = Cbm::DivideH1(fHM->H1("fhNofHitsInEventWithRing"), fHM->H1("fhNofHitsInEventAll"));
 		DrawH1(eff);
-		Cbm::SaveCanvasAsImage(c, string(fOutputDir.Data()), "png");
 	}
 
 	{ //dashboard histogram
-		TCanvas* c = new TCanvas(fRunTitle + "_rich_trb_recoqa_dashboard", fRunTitle + "_rich_trb_recoqa_dashboard", 1200, 600);
+		TCanvas* c = fHM->CreateCanvas(fRunTitle + "_rich_trb_recoqa_dashboard", fRunTitle + "_rich_trb_recoqa_dashboard", 1200, 600);
 		c->Divide(3, 2);
 		c->cd(1);
 		DrawH1(fHM->H1("fhNofHitsInEvent"));
@@ -338,7 +330,7 @@ void CbmRichTrbRecoQa::DrawHist()
 		c->cd(6);
 		TString str;
 		TLatex* latex = new TLatex();
-		latex->DrawLatex(0.01, 0.9, "Run title: "+fRunTitle);
+		latex->DrawLatex(0.01, 0.9, (string("Run title: ") + fRunTitle).c_str());
 		str.Form("Total number of events %d", (Int_t)fHM->H1("fhNofHitsInEvent")->GetEntries());
 		latex->DrawLatex(0.01, 0.8, str.Data());
 		TH1* hREv = fHM->H1("fhNofRingsInEvent");
@@ -349,25 +341,23 @@ void CbmRichTrbRecoQa::DrawHist()
 		latex->DrawLatex(0.01, 0.6, str.Data());
 		str.Form("Total number of hits %i", (Int_t)fHM->H2("fhHitsXYPixel")->GetEntries());
 		latex->DrawLatex(0.01, 0.5, str.Data());
-		Cbm::SaveCanvasAsImage(c, string(fOutputDir.Data()), "png");
 	}
 
 	{
-		TCanvas* c = new TCanvas(fRunTitle + "_rich_trb_nofhits_in_ring_pmt_all", fRunTitle + "_rich_trb_nofhits_in_ring_pmt_all", 1200, 1200);
+		TCanvas* c = fHM->CreateCanvas(fRunTitle + "_rich_trb_nofhits_in_ring_pmt_all", fRunTitle + "_rich_trb_nofhits_in_ring_pmt_all", 1200, 1200);
 		c->Divide(4, 4);
 		int count = 0;
 		for (int j = 0; j < 4; j++) {
-		for (int i = 0; i < 4; i++) {
-			c->cd(4 - j + 4 * i);
-			TString name;
-			name.Form("fhNofHitsInRingPmt_%i", count);
-			fHM->H1(name.Data());
-			DrawH1(fHM->H1(name.Data()), kLinear, kLinear);
-	        FitGaussAndDrawResults(fHM->H1(name.Data()));
-	        count++;
+			for (int i = 0; i < 4; i++) {
+				c->cd(4 - j + 4 * i);
+				TString name;
+				name.Form("fhNofHitsInRingPmt_%i", count);
+				fHM->H1(name.Data());
+				DrawH1(fHM->H1(name.Data()), kLinear, kLinear);
+				FitGaussAndDrawResults(fHM->H1(name.Data()));
+				count++;
+			}
 		}
-		}
-		Cbm::SaveCanvasAsImage(c, string(fOutputDir.Data()), "png");
 	}
 }
 
@@ -403,7 +393,7 @@ void CbmRichTrbRecoQa::DrawEvent(
    TString ss;
    ss.Form("rich_trb_recoqa_eventdisplay_%d", fNofDrawnEvents);
    fNofDrawnEvents++;
-   TCanvas *c = new TCanvas(ss.Data(), ss.Data(), 800, 800);
+   TCanvas *c = fHM->CreateCanvas(ss.Data(), ss.Data(), 800, 800);
    c->SetGrid(true, true);
    TH2D* pad = new TH2D("pad", ";X [cm];Y [cm]", 1, 0.0, 21., 1, 0.0, 21.);
    DrawH2(pad);
@@ -473,6 +463,7 @@ void CbmRichTrbRecoQa::Finish()
 	if (fDrawHist) {
 		DrawHist();
 	}
+	fHM->SaveCanvasToImage(fOutputDir);
 	fHM->WriteToFile();
 }
 

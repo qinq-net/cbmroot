@@ -5,6 +5,7 @@
 #include "CbmRichRingLight.h"
 #include "CbmHistManager.h"
 #include <vector>
+#include <string>
 
 using namespace std;
 
@@ -99,12 +100,12 @@ public:
     /*
      * Set output directory for images.
      */
-    void SetOutputDir(TString dir) {fOutputDir = dir;}
+    void SetOutputDir(string dir) {fOutputDir = dir;}
 
     /*
      * Set run title. It is also a part of the file name of image files.
      */
-    void SetRunTitle(TString title) {fRunTitle = title;}
+    void SetRunTitle(string title) {fRunTitle = title;}
 
     /*
      * Set to TRUE if you want to draw histograms.
@@ -122,8 +123,8 @@ private:
    UInt_t fEventNum; // Event counter
    UInt_t fNofDrawnEvents; // Number of drawn events
    UInt_t fMaxNofEventsToDraw; // maximum number of events to draw
-   TString fOutputDir; // output directory to store figures
-   TString fRunTitle; // Title of the run
+   string fOutputDir; // output directory to store figures
+   string fRunTitle; // Title of the run
    Bool_t fDrawHist; // if TRUE histogramms are drawn
 
    CbmRichRingFitterCOP* fCopFit;
