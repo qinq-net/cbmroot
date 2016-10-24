@@ -92,6 +92,7 @@ void CbmStsFindTracksEvents::Exec(Option_t* opt) {
 	  		      << fTimer.RealTime() << " s, hits: "
 	  		      << event->GetNofData(Cbm::kStsHit) << ", tracks: "
 	  		      << nTracks << FairLogger::endl;
+	  LOG(DEBUG) << event->ToString() << FairLogger::endl;
 
 	  // --- Counters
 	  fNofEvents++;

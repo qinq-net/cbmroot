@@ -63,14 +63,19 @@ Int_t CbmL1StsTrackFinder::CopyL1Tracks(CbmEvent* event) {
   CbmL1 * L1 = CbmL1::Instance();
   if( ! L1 ) return 0;
 
-  Int_t ntracks = fTracks->GetEntriesFast();
+  Int_t trackIndex = fTracks->GetEntriesFast();
+  Int_t nTracks = 0;
+  LOG(INFO) << "Copy L1 tracks : " << L1->vRTracks.size() << " tracks in L1"
+  		<< FairLogger::endl;
   for (vector<CbmL1Track>::iterator it = L1->vRTracks.begin();
   		 it != L1->vRTracks.end(); ++it)
     {
       CbmL1Track &T = *it;
-      new((*fTracks)[ntracks]) CbmStsTrack();
-      if ( event ) event->AddData(Cbm::kStsTrack, ntracks);
-      CbmStsTrack *t = L1_DYNAMIC_CAST<CbmStsTrack*>( fTracks->At(ntracks++) );
+      new((*fTracks)[trackIndex]) CbmStsTrack();
+      nTracks++;
+      if ( event ) event->AddData(Cbm::kStsTrack, trackIndex);
+      CbmStsTrack *t =
+      		L1_DYNAMIC_CAST<CbmStsTrack*>( fTracks->At(trackIndex++) );
       t->SetFlag(0);
       FairTrackParam fpar(*t->GetParamFirst()), lpar(*t->GetParamLast());
       CbmKFMath::CopyTC2TrackParam( &fpar, T.T, T.C );
@@ -98,7 +103,7 @@ Int_t CbmL1StsTrackFinder::CopyL1Tracks(CbmEvent* event) {
       }
     }
 
-  return ntracks;
+  return nTracks;
 }
 // -------------------------------------------------------------------------
 
