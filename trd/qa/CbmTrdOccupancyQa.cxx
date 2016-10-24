@@ -394,7 +394,7 @@ void CbmTrdOccupancyQa::SwitchToMergedFile()
      for (fModuleOccupancyMapIt = fModuleOccupancyMap.begin();
        fModuleOccupancyMapIt != fModuleOccupancyMap.end(); ++fModuleOccupancyMapIt) {
       TString histName = fModuleOccupancyMapIt->second->GetName();
-  
+      std::cout << histName<<std::endl;;
       fModuleOccupancyMap[fModuleOccupancyMapIt->first] = (TH2I*)Target->Get("TrdOccupancy/Module/" + histName)->Clone(histName+"_result");
     }
   } else {
@@ -537,14 +537,25 @@ void CbmTrdOccupancyQa::CreateLayerView()
     text->Draw("same");
   }
   gDirectory->pwd();
-  if (!gDirectory->Cd("Occupancy")) 
+
+  TDirectoryFile* TopLayerDir;
+  gDirectory->GetObject("Occupancy",TopLayerDir);
+  if (!TopLayerDir) {
+    std::cout << "unknown Directory Occupancy"<< std::endl;
     gDirectory->mkdir("Occupancy");
-  gDirectory->Cd("Occupancy");
+    gDirectory->GetObject("Occupancy",TopLayerDir);
+  }
+  TopLayerDir->cd();
   gDirectory->pwd();
+  TDirectoryFile* Triggerdir;
   title.Form("TH%.2E",fTriggerThreshold);
-  if (!gDirectory->Cd(title)) 
-    gDirectory->mkdir(title);
-  gDirectory->Cd(title);
+  gDirectory->GetObject(title,Triggerdir);
+  if (!Triggerdir){
+      std::cout << "unknown Directory Trigger Dir"<< std::endl;
+      gDirectory->mkdir(title);
+      gDirectory->GetObject(title,Triggerdir);
+  }
+  Triggerdir->cd();
   gDirectory->pwd();
   for (fLayerOccupancyMapIt = fLayerOccupancyMap.begin();
        fLayerOccupancyMapIt != fLayerOccupancyMap.end(); ++fLayerOccupancyMapIt) {
@@ -596,7 +607,7 @@ void CbmTrdOccupancyQa::SaveHistos2File()
   newpath.ReplaceAll("eds","oc_qa");
   newpath.ReplaceAll(":/","");
 
-  TFile *tempFile = new TFile(newpath,"recreate");
+  TFile *tempFile = new TFile(newpath,"Update");
   gDirectory = tempFile->CurrentDirectory();
   gDirectory->pwd();
 
@@ -607,9 +618,14 @@ void CbmTrdOccupancyQa::SaveHistos2File()
     outFile->cd();
   */
   gDirectory->pwd();
-  if (!gDirectory->Cd("TrdOccupancy")) 
-    gDirectory->mkdir("TrdOccupancy");
-  gDirectory->Cd("TrdOccupancy");
+  TDirectoryFile *Basedir;
+  gDirectory->GetObject("TrdOccupancy",Basedir);
+  if (!Basedir) {
+      gDirectory->mkdir("TrdOccupancy");
+      std::cout << "unknown Directory Basedir"<< std::endl;
+      gDirectory->GetObject("TrdOccupancy",Basedir);
+  }
+  Basedir->cd();
   
   fDigiChargeSpectrum->Write("", TObject::kOverwrite);
   /*
@@ -630,9 +646,16 @@ void CbmTrdOccupancyQa::SaveHistos2File()
     }
     gDirectory->Cd("..");
   */
-  if (!gDirectory->Cd("Module1D")) 
-    gDirectory->mkdir("Module1D");
-  gDirectory->Cd("Module1D");
+  TDirectoryFile *Moduledir;
+  gDirectory->GetObject("Module1D",Moduledir);
+  if (!Moduledir) {
+      gDirectory->mkdir("Module1D");
+      std::cout << "unknown Directory Module1D"<< std::endl;
+      gDirectory->GetObject("Module1D",Moduledir);
+  }
+  Moduledir->cd();
+  gDirectory->pwd();
+
   for (fModuleOccupancyMemoryMapIt = fModuleOccupancyMemoryMap.begin();
        fModuleOccupancyMemoryMapIt != fModuleOccupancyMemoryMap.end(); ++fModuleOccupancyMemoryMapIt) {
     fModuleOccupancyMemoryMapIt->second->Write("", TObject::kOverwrite);
