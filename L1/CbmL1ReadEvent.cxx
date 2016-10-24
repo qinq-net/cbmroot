@@ -291,7 +291,7 @@ void CbmL1::ReadEvent(CbmEvent* event)
       TmpHit th;
       {
         CbmStsHit *mh = L1_DYNAMIC_CAST<CbmStsHit*>( listStsHits->At(hitIndex) );
-        th.ExtIndex = j;
+        th.ExtIndex = hitIndex;
         th.iStation = NMvdStations + CbmStsAddress::GetElementId(mh->GetAddress(), kStsStation);//mh->GetStationNr() - 1;
 //if( CbmStsAddress::GetElementId(mh->GetAddress(), kStsStation) > 0 ) continue;
         th.isStrip  = 0;

@@ -65,7 +65,7 @@ Int_t CbmL1StsTrackFinder::CopyL1Tracks(CbmEvent* event) {
 
   Int_t trackIndex = fTracks->GetEntriesFast();
   Int_t nTracks = 0;
-  LOG(INFO) << "Copy L1 tracks : " << L1->vRTracks.size() << " tracks in L1"
+  LOG(DEBUG) << "Copy L1 tracks : " << L1->vRTracks.size() << " tracks in L1"
   		<< FairLogger::endl;
   for (vector<CbmL1Track>::iterator it = L1->vRTracks.begin();
   		 it != L1->vRTracks.end(); ++it)
