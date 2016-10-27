@@ -734,7 +734,6 @@ Bool_t   CbmTofAnaTestbeam::RegisterInputs()
    FairRootManager *fManager = FairRootManager::Instance();
    fTofDigisColl   = (TClonesArray *) fManager->GetObject("TofCalDigi");
 
-   /*
    if( NULL == fTofDigisColl)
      fTofDigisColl   = (TClonesArray *) fManager->GetObject("CbmTofDigiExp");
 
@@ -743,7 +742,6 @@ Bool_t   CbmTofAnaTestbeam::RegisterInputs()
 
    if( NULL == fTofDigisColl)
       fTofDigisColl = (TClonesArray *) fManager->GetObject("TofDigi");
-   */
 
    if( NULL == fTofDigisColl)
    {
