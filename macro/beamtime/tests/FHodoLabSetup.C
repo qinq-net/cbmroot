@@ -40,12 +40,17 @@ void FHodoLabSetup(TString inFile = "hodoTop_source_1000ts_20160422.tsa")
   std::cout << ">>> FHodoLabSetup: Initialising..." << std::endl;
 
   // NXyter Unpacker
-  CbmTSUnpackTest* test_unpacker = new CbmTSUnpackTest();
+  CbmTSUnpackTest*    test_unpacker     = new CbmTSUnpackTest();
+  
+  // Get4 Unpacker
+  CbmTSUnpackTestTof* test_unpacker_tof = new CbmTSUnpackTestTof();
 
   // --- Source task
   CbmFlibTestSource* source = new CbmFlibTestSource();
   source->SetFileName(inFile);
-  source->AddUnpacker(test_unpacker, 0xF0, 10);//HODO 1 + 2
+//  source->AddUnpacker(test_unpacker, 0xF0, 10);//HODO 1 + 2
+  source->AddUnpacker(test_unpacker_tof, 0x60, 20);//gDPB A & B
+  source->AddUnpacker(test_unpacker,     0x10, 10);//nDPB A & B = HODO 1 + 2
 
   // --- Event header
   //  FairEventHeader* event = new CbmTbEvent();
@@ -65,6 +70,8 @@ void FHodoLabSetup(TString inFile = "hodoTop_source_1000ts_20160422.tsa")
   run->Run(nEvents, 0); // run until end of input file
   timer.Stop();
   
+  std::cout << "Processed " << std::dec << source->GetTsCount() << " timeslices" << std::endl;
+    
   // --- End-of-run info
   Double_t rtime = timer.RealTime();
   Double_t ctime = timer.CpuTime();

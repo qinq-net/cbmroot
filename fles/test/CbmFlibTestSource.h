@@ -67,6 +67,8 @@ class CbmFlibTestSource : public FairSource
     void AddFile(const char * name) {       
       fInputFileList.Add(new TObjString(name));
     }
+    
+    UInt_t GetTsCount() { return fTSCounter; }
 
   private:
   

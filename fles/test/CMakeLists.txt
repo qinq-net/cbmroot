@@ -37,6 +37,7 @@ Link_Directories(
 Set(SRCS
   CbmFlibTestSource.cxx   
   CbmTSUnpackTest.cxx
+  CbmTSUnpackTestTof.cxx
 )
 
 Set(NO_DICT_SRCS

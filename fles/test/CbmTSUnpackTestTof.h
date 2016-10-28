@@ -1,12 +1,12 @@
 // -----------------------------------------------------------------------------
 // -----                                                                   -----
-// -----                        CbmTSUnpackTest                            -----
+// -----                        CbmTSUnpackTestTof                            -----
 // -----                 Created 20.06.2016 by F. Uhlig                    -----
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 
-#ifndef CBMTSUNPACKTEST_H
-#define CBMTSUNPACKTEST_H
+#ifndef CbmTSUnpackTestTof_H
+#define CbmTSUnpackTestTof_H
 
 #ifndef __CINT__
   #include "Timeslice.hpp"
@@ -26,12 +26,12 @@
 
 class CbmDigi;
 
-class CbmTSUnpackTest : public CbmTSUnpack
+class CbmTSUnpackTestTof : public CbmTSUnpack
 {
 public:
   
-  CbmTSUnpackTest();
-  virtual ~CbmTSUnpackTest();
+  CbmTSUnpackTestTof();
+  virtual ~CbmTSUnpackTestTof();
     
   virtual Bool_t Init();
 #ifndef __CINT__
@@ -75,12 +75,14 @@ private:
 #ifndef __CINT__
   void FillHitInfo(ngdpb::Message);
   void FillEpochInfo(ngdpb::Message);
+  void PrintSlcInfo(ngdpb::Message);
+  void PrintSysInfo(ngdpb::Message);
 #endif
 
-  CbmTSUnpackTest(const CbmTSUnpackTest&);
-  CbmTSUnpackTest operator=(const CbmTSUnpackTest&);
+  CbmTSUnpackTestTof(const CbmTSUnpackTestTof&);
+  CbmTSUnpackTestTof operator=(const CbmTSUnpackTestTof&);
 
-  ClassDef(CbmTSUnpackTest, 1)
+  ClassDef(CbmTSUnpackTestTof, 1)
 };
 
 #endif
