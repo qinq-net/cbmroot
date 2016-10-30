@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 // -----                                                                   -----
-// -----                        CbmTSUnpackTestTof                            -----
-// -----                 Created 20.06.2016 by F. Uhlig                    -----
+// -----                        CbmTSUnpackTestTof                         -----
+// -----               Created 27.10.2016 by P.-A. Loizeau                 -----
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 
@@ -30,7 +30,7 @@ class CbmTSUnpackTestTof : public CbmTSUnpack
 {
 public:
   
-  CbmTSUnpackTestTof();
+  CbmTSUnpackTestTof( UInt_t uNbGdpb = 1 );
   virtual ~CbmTSUnpackTestTof();
     
   virtual Bool_t Init();
@@ -45,30 +45,31 @@ public:
 
 private:
 
+  UInt_t fuMinNbGdpb;
+  UInt_t fuCurrNbGdpb;
+
   std::vector<int> fMsgCounter;
-
+  std::map<UInt_t, UInt_t> fGdpbIdIndexMap;
+/*
   std::map<int,int> fHodoStationMap;
-  
-  Int_t fHodoFiber[128];  /** Mapping from fiber hodoscope feb channel to fiber number **/
-  Int_t fHodoPlane[128];  /** Mapping from fiber hodoscope feb channel to plane number 1=X, 2=Y **/
-  Int_t fHodoPixel[128];  /** Mapping from fiber hodoscope feb channel to pixel number **/
-
+*/
   CbmHistManager* fHM;  ///< Histogram manager
 
-  std::map<Int_t, UInt_t> fCurrentEpoch; // Current epoch (first epoch in the stream initialises the map item)
+  /** Current epoch marker for each ROC and GET4 (first epoch in the stream initialises the map item) **/
+  std::map<Int_t, std::map<Int_t, UInt_t> > fCurrentEpoch; 
   Int_t fNofEpochs; /** Current epoch marker for each ROC **/
   ULong_t fCurrentEpochTime;     /** Time stamp of current epoch **/
 
   Int_t fEquipmentId;
 
-  TClonesArray* fFiberHodoRaw;
-  TClonesArray* fFiberHodoDigi;
-  CbmNxyterRawMessage* fRawMessage;  
-  CbmFiberHodoDigi* fDigi;  
+//  TClonesArray* fFiberHodoRaw;
+//  TClonesArray* fFiberHodoDigi;
+//  CbmNxyterRawMessage* fRawMessage;  
+//  CbmFiberHodoDigi* fDigi;  
 
   CbmTbDaqBuffer* fBuffer;
 
-  void InitializeFiberHodoMapping();
+//  void InitializeTofMapping();
 
   void CreateHistograms();
 

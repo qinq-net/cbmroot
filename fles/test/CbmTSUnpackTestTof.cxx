@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 // -----                                                                   -----
-// -----                        CbmTSUnpackTestTof                            -----
-// -----               Created 07.11.2014 by F. Uhlig                      -----
+// -----                        CbmTSUnpackTestTof                         -----
+// -----               Created 27.10.2016 by P.-A. Loizeau                 -----
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 
@@ -9,7 +9,7 @@
 
 #include "CbmTbDaqBuffer.h"
 
-#include "CbmFiberHodoAddress.h"
+//#include "CbmFiberHodoAddress.h"
 #include "CbmHistManager.h"
 
 #include "FairLogger.h"
@@ -22,26 +22,30 @@
 #include <stdint.h>
 #include <iomanip>
 
-CbmTSUnpackTestTof::CbmTSUnpackTestTof()
+const UInt_t kuNbChanGet4 = 4;
+
+CbmTSUnpackTestTof::CbmTSUnpackTestTof( UInt_t uNbGdpb )
   : CbmTSUnpack(),
+    fuMinNbGdpb( uNbGdpb ),
+    fuCurrNbGdpb( 0 ),
     fMsgCounter(11,0), // length of enum MessageTypes initialized with 0
-    fHodoStationMap(),
-    fHodoFiber(),
-    fHodoPlane(),
-    fHodoPixel(),
+    fGdpbIdIndexMap(),
+//    fHodoStationMap(),
+//    fHodoFiber(),
+//    fHodoPlane(),
+//    fHodoPixel(),
     fHM(new CbmHistManager()),
     fCurrentEpoch(),
     fNofEpochs(0),
     fCurrentEpochTime(0.),
     fEquipmentId(0),
-    fFiberHodoRaw(new TClonesArray("CbmNxyterRawMessage", 10)),
-    fFiberHodoDigi(new TClonesArray("CbmFiberHodoDigi", 10)),
-    fRawMessage(NULL),  
-    fDigi(NULL),
+//    fFiberHodoRaw(new TClonesArray("CbmNxyterRawMessage", 10)),
+//    fFiberHodoDigi(new TClonesArray("CbmFiberHodoDigi", 10)),
+//    fRawMessage(NULL),  
+//    fDigi(NULL),
     fBuffer(CbmTbDaqBuffer::Instance())
 {
-  fHodoStationMap[23533] = 0; //Roc -> Hodo station
-  InitializeFiberHodoMapping();
+//  InitializeFiberHodoMapping();
 }
 
 CbmTSUnpackTestTof::~CbmTSUnpackTestTof()
@@ -58,7 +62,7 @@ Bool_t CbmTSUnpackTestTof::Init()
   }
 
   //  ioman->Register("FiberHodoRawMessage", "fiberhodo raw data", fFiberHodoRaw, kTRUE);
-  ioman->Register("FiberHodoDigi", "fiber hodo digi", fFiberHodoDigi, kTRUE);
+//  ioman->Register("FiberHodoDigi", "fiber hodo digi", fFiberHodoDigi, kTRUE);
 
   CreateHistograms();
 
@@ -67,12 +71,17 @@ Bool_t CbmTSUnpackTestTof::Init()
 
 void CbmTSUnpackTestTof::CreateHistograms()
 {
-  fHM->Add("Raw_ADC_FrontHodo", 
-           new TH2F("Raw_ADC_FrontHodo", 
-                    "Raw_ADC_FrontHodo;channel;ADC value", 128, 0, 127, 4096, 0, 4095));   
-  fHM->Add("Raw_ADC_RearHodo", 
-           new TH2F("Raw_ADC_RearHodo", 
-                    "Raw_ADC_RearHodo;channel;ADC value", 128, 0, 127, 4096, 0, 4095));   
+   for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
+   {
+      fHM->Add( Form("Raw_Tot_gDPB_%02u", uGdpb),
+           new TH2F( Form("Raw_Tot_gDPB_%02u", uGdpb),
+                     Form("Raw TOT gDPB %02u; channel; TOT [bin]", uGdpb),
+                     96, 0, 95, 256, 0, 255) );
+      fHM->Add( Form("ChCount_gDPB_%02u", uGdpb),
+           new TH1I( Form("ChCount_gDPB_%02u", uGdpb),
+                     Form("Channel counts gDPB %02u; channel; Hits", uGdpb),
+                     96, 0, 95 ) );
+   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
 }
 
 Bool_t CbmTSUnpackTestTof::DoUnpack(const fles::Timeslice& ts, size_t component)
@@ -169,7 +178,16 @@ void CbmTSUnpackTestTof::FillHitInfo(ngdpb::Message mess)
   Int_t get4Id     = mess.getGdpbGenChipId();
   Int_t channel    = mess.getGdpbHitChanId(); 
   Int_t tot        = mess.getGdpbHit32Tot();
-  ULong_t hitTime  = mess.getMsgFullTime(fCurrentEpoch[rocId]);
+  ULong_t hitTime  = mess.getMsgFullTime( 0 );
+             
+  if( fGdpbIdIndexMap.end() != fGdpbIdIndexMap.find( rocId ) )
+  {
+      fHM->H2( Form("Raw_Tot_gDPB_%02u", fGdpbIdIndexMap[ rocId ]) )
+         ->Fill( get4Id*kuNbChanGet4 + channel, tot);
+      fHM->H1( Form("ChCount_gDPB_%02u", fGdpbIdIndexMap[ rocId ]) )
+         ->Fill( get4Id*kuNbChanGet4 + channel );
+      hitTime  = mess.getMsgFullTime(fCurrentEpoch[rocId][get4Id]);
+   }
  
   LOG(DEBUG) << "Hit: " << rocId << ", " << get4Id 
              << ", " << channel << ", " << tot << ", " << hitTime 
@@ -200,15 +218,38 @@ void CbmTSUnpackTestTof::FillHitInfo(ngdpb::Message mess)
 void CbmTSUnpackTestTof::FillEpochInfo(ngdpb::Message mess)
 {
   Int_t rocId          = mess.getRocNumber();
-  fCurrentEpoch[rocId] = mess.getEpoch2Number();
+  Int_t get4Id     = mess.getGdpbGenChipId();
+  fCurrentEpoch[rocId][get4Id] = mess.getEpoch2Number();
+  
+  if( fGdpbIdIndexMap.end() == fGdpbIdIndexMap.find( rocId ) )
+  {
+     fGdpbIdIndexMap[ rocId ] = fuCurrNbGdpb;
+     fuCurrNbGdpb ++;
+     
+     if( fuMinNbGdpb < fuCurrNbGdpb )
+     {
+        // Add new histo
+        fHM->Add( Form("Raw_Tot_gDPB_%02u", fuMinNbGdpb),
+           new TH2F( Form("Raw_Tot_gDPB_%02u", fuMinNbGdpb),
+                     Form("Raw TOT gDPB %02u; channel; TOT [bin]", fuMinNbGdpb),
+                     96, 0, 95, 256, 0, 255) );
+                     
+         fHM->Add( Form("ChCount_gDPB_%02u", fuMinNbGdpb),
+              new TH1I( Form("ChCount_gDPB_%02u", fuMinNbGdpb),
+                        Form("Channel counts gDPB %02u; channel; Hits", fuMinNbGdpb),
+                        96, 0, 95 ) );
+        // increase fuMinNbGdpb
+        fuMinNbGdpb++;
+     } // if( fuMinNbGdpb < fuCurrNbGdpb )
+  } // if( std::map::end == fGdpbIdIndexMap.find( rocId ) )
 
   //  LOG(INFO) << "Epoch message for ROC " << rocId << " with epoch number "
   //            << fCurrentEpoch[rocId] << FairLogger::endl;
 
-  fCurrentEpochTime = mess.getMsgFullTime(fCurrentEpoch[rocId]);
+  fCurrentEpochTime = mess.getMsgFullTime(fCurrentEpoch[rocId][get4Id]);
   fNofEpochs++;
   LOG(DEBUG) << "Epoch message "
-             << fNofEpochs << ", epoch " << static_cast<Int_t>(fCurrentEpoch[rocId])
+             << fNofEpochs << ", epoch " << static_cast<Int_t>(fCurrentEpoch[rocId][get4Id])
              << ", time " << std::setprecision(9) << std::fixed
              << Double_t(fCurrentEpochTime) * 1.e-9 << " s "
              << " for board ID " << std::hex << std::setw(4) << rocId << std::dec
@@ -220,31 +261,35 @@ void CbmTSUnpackTestTof::FillEpochInfo(ngdpb::Message mess)
 void CbmTSUnpackTestTof::PrintSlcInfo(ngdpb::Message mess)
 {
   Int_t rocId          = mess.getRocNumber();
+  Int_t get4Id     = mess.getGdpbGenChipId();
 
-  LOG(INFO) << "GET4 Slow Control message, epoch " << static_cast<Int_t>(fCurrentEpoch[rocId])
-             << ", time " << std::setprecision(9) << std::fixed
-             << Double_t(fCurrentEpochTime) * 1.e-9 << " s "
-             << " for board ID " << std::hex << std::setw(4) << rocId << std::dec
-             << FairLogger::endl
-             << " +++++++ > Chip = " << std::setw(2) << mess.getGdpbGenChipId()
-             << ", Chan = " << std::setw(1) << mess.getGdpbSlcChan()
-             << ", Edge = " << std::setw(1) << mess.getGdpbSlcEdge()
-             << ", Type = " << std::setw(1) << mess.getGdpbSlcType()
-             << ", Data = " << std::hex << std::setw(6) << mess.getGdpbSlcData() << std::dec
-             << ", Type = " << mess.getGdpbSlcCrc()
-             << FairLogger::endl;
+  if( fGdpbIdIndexMap.end() != fGdpbIdIndexMap.find( rocId ) )
+     LOG(INFO) << "GET4 Slow Control message, epoch " << static_cast<Int_t>(fCurrentEpoch[rocId][get4Id])
+                << ", time " << std::setprecision(9) << std::fixed
+                << Double_t(fCurrentEpochTime) * 1.e-9 << " s "
+                << " for board ID " << std::hex << std::setw(4) << rocId << std::dec
+                << FairLogger::endl
+                << " +++++++ > Chip = " << std::setw(2) << mess.getGdpbGenChipId()
+                << ", Chan = " << std::setw(1) << mess.getGdpbSlcChan()
+                << ", Edge = " << std::setw(1) << mess.getGdpbSlcEdge()
+                << ", Type = " << std::setw(1) << mess.getGdpbSlcType()
+                << ", Data = " << std::hex << std::setw(6) << mess.getGdpbSlcData() << std::dec
+                << ", Type = " << mess.getGdpbSlcCrc()
+                << FairLogger::endl;
 
 }
 
 void CbmTSUnpackTestTof::PrintSysInfo(ngdpb::Message mess)
 {
   Int_t rocId          = mess.getRocNumber();
+  Int_t get4Id     = mess.getGdpbGenChipId();
 
-  LOG(INFO) << "GET4 System message,       epoch " << static_cast<Int_t>(fCurrentEpoch[rocId])
-             << ", time " << std::setprecision(9) << std::fixed
-             << Double_t(fCurrentEpochTime) * 1.e-9 << " s "
-             << " for board ID " << std::hex << std::setw(4) << rocId << std::dec
-             << FairLogger::endl;
+  if( fGdpbIdIndexMap.end() != fGdpbIdIndexMap.find( rocId ) )
+     LOG(INFO) << "GET4 System message,       epoch " << static_cast<Int_t>(fCurrentEpoch[rocId][get4Id])
+                << ", time " << std::setprecision(9) << std::fixed
+                << Double_t(fCurrentEpochTime) * 1.e-9 << " s "
+                << " for board ID " << std::hex << std::setw(4) << rocId << std::dec
+                << FairLogger::endl;
              
    switch( mess.getGdpbSysSubType() )
    {
@@ -276,7 +321,7 @@ void CbmTSUnpackTestTof::PrintSysInfo(ngdpb::Message mess)
 void CbmTSUnpackTestTof::Reset()
 {
   //  fFiberHodoRaw->Clear();
-  fFiberHodoDigi->Clear();
+  //fFiberHodoDigi->Clear();
 }
 
 void CbmTSUnpackTestTof::Finish()
@@ -303,11 +348,23 @@ void CbmTSUnpackTestTof::Finish()
   
    LOG(INFO) << "-------------------------------------" << FairLogger::endl;
    for( auto it = fCurrentEpoch.begin(); it != fCurrentEpoch.end(); ++it)
+      for( auto itG = (it->second).begin(); itG != (it->second).end(); ++itG)
       LOG(INFO) << "Last epoch for gDPB: " 
                 << std::hex << std::setw(4) << it->first 
-                << " => " << it->second 
+                << " , GET4  " << std::setw(4) << itG->first 
+                << " => " << itG->second 
                 << FairLogger::endl;
    LOG(INFO) << "-------------------------------------" << FairLogger::endl;
+   
+   
+   gDirectory->mkdir("Tof_Raw_gDPB");
+   gDirectory->cd("Tof_Raw_gDPB");
+   for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
+   {
+      fHM->H2( Form("Raw_Tot_gDPB_%02u", uGdpb) )->Write();
+      fHM->H1( Form("ChCount_gDPB_%02u", uGdpb) )->Write();
+   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
+   gDirectory->cd("..");
 /*
   gDirectory->mkdir("Hodo_Raw_gDPB");
   gDirectory->cd("Hodo_Raw_gDPB");
@@ -321,12 +378,13 @@ void CbmTSUnpackTestTof::Finish()
 void CbmTSUnpackTestTof::FillOutput(CbmDigi* digi)
 {
 
-  new( (*fFiberHodoDigi)[fFiberHodoDigi->GetEntriesFast()] )
-    CbmFiberHodoDigi(*(dynamic_cast<CbmFiberHodoDigi*>(digi)));
+//  new( (*fFiberHodoDigi)[fFiberHodoDigi->GetEntriesFast()] )
+//    CbmFiberHodoDigi(*(dynamic_cast<CbmFiberHodoDigi*>(digi)));
 
 }
 
 // ---------------------------------------------------------------------------
+/*
 void CbmTSUnpackTestTof::InitializeFiberHodoMapping()
 {
   // This code was copied from the Go4 analysis used for previous beamtimes
@@ -399,6 +457,6 @@ void CbmTSUnpackTestTof::InitializeFiberHodoMapping()
   }
 
 }
-
+*/
 
 ClassImp(CbmTSUnpackTestTof)
