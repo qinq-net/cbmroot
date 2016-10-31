@@ -26,6 +26,7 @@ const UInt_t kuNbChanGet4 = 4;
 
 CbmTSUnpackTestTof::CbmTSUnpackTestTof( UInt_t uNbGdpb )
   : CbmTSUnpack(),
+    fuMsAcceptsPercent(100),
     fuMinNbGdpb( uNbGdpb ),
     fuCurrNbGdpb( 0 ),
     fMsgCounter(11,0), // length of enum MessageTypes initialized with 0
@@ -93,6 +94,8 @@ Bool_t CbmTSUnpackTestTof::DoUnpack(const fles::Timeslice& ts, size_t component)
   // Loop over microslices
   for (size_t m = 0; m < ts.num_microslices(component); ++m)
     {
+       if( fuMsAcceptsPercent < m )
+         continue;
 
       constexpr uint32_t kuBytesPerMessage = 8;
 
