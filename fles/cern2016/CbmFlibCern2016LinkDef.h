@@ -5,8 +5,8 @@
 #pragma link off all functions;
 
 #pragma link C++ class CbmFlibTestSource;
-#pragma link C++ class CbmTSUnpackTest;
-#pragma link C++ class CbmTSUnpackTestTof;
+#pragma link C++ class CbmTSUnpackFHodo;
+#pragma link C++ class CbmTSUnpackTof;
 #pragma link C++ class CbmFHodoUnpackPar;
 #pragma link C++ class CbmFlesTestContFact;
 
