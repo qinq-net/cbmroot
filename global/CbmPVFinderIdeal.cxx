@@ -7,6 +7,7 @@
 #include "CbmVertex.h"
 
 #include "CbmMCTrack.h"
+#include "FairLogger.h"
 #include "FairRootManager.h"
 
 #include "TClonesArray.h"
@@ -59,8 +60,7 @@ void CbmPVFinderIdeal::Init() {
 
 
 // -----   Public method FindPrimaryVertex   -------------------------------
-Int_t CbmPVFinderIdeal::FindPrimaryVertex(TClonesArray*,
-					  CbmVertex* vertex) {
+Int_t CbmPVFinderIdeal::FindPrimaryVertex(TClonesArray*, CbmVertex* vertex) {
 
   if ( ! fMCTracks ) return 1;
 
@@ -95,6 +95,18 @@ Int_t CbmPVFinderIdeal::FindPrimaryVertex(TClonesArray*,
   vertex->SetVertex(x, y, z, chi2, ndf, nPrim, covMat);
  
   return 0;
+}
+// -------------------------------------------------------------------------
+
+
+
+// ----   Find event vertex   ----------------------------------------------
+Int_t CbmPVFinderIdeal::FindEventVertex(CbmEvent* event,
+		                                TClonesArray* tracks) {
+	  LOG(FATAL) << GetName()
+			     << ": handling of event objects is not implemented yet. "
+				 << FairLogger::endl;
+	  return 1;
 }
 // -------------------------------------------------------------------------
 

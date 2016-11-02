@@ -4,7 +4,12 @@
 // -------------------------------------------------------------------------
 #include "CbmVertex.h"
 
+#include <iomanip>
+#include <sstream>
 #include "FairLogger.h"
+
+using namespace std;
+
 
 // -----   Default constructor   -------------------------------------------
 CbmVertex::CbmVertex() 
@@ -141,6 +146,19 @@ void CbmVertex::Reset() {
   fNDF = fNTracks = 0;
   for(Int_t i=0; i<6; i++) fCovMatrix[i] = 0;
 }  
+// -------------------------------------------------------------------------
+
+
+
+// --- String output  ------------------------------------------------------
+string CbmVertex::ToString() const {
+
+  Double_t chi2ndf = ( fNDF ? fChi2 / Double_t(fNDF) : 0.);
+  stringstream ss;
+  ss << "Vertex: position (" << fixed << setprecision(4) << fX << ", " << fY << ", " << fZ
+	 << ") cm, chi2/ndf = " << chi2ndf << ", tracks used: " << fNTracks;
+   return ss.str();
+}
 // -------------------------------------------------------------------------
 
 

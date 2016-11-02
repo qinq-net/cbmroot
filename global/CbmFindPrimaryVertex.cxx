@@ -7,22 +7,27 @@
 #include "CbmPrimaryVertexFinder.h"
 #include "CbmVertex.h"
 
+#include "FairLogger.h"
 #include "FairRootManager.h"
 
 #include "TClonesArray.h"
 
 #include <iostream>
+#include <iomanip>
 
-using std::cout;
-using std::endl;
+using namespace std;
 
 // -----   Default constructor   -------------------------------------------
 CbmFindPrimaryVertex::CbmFindPrimaryVertex() 
   : FairTask(),
+	fTimer(),
     fFinder(NULL),
     fTracks(NULL),
-    fPrimVert(NULL)
+    fPrimVert(NULL),
+	fNofEvents(0),
+	fTimeTot(0.)
 {
+	fName = "FindPrimaryVertex";
 }
 // -------------------------------------------------------------------------
 
@@ -31,10 +36,14 @@ CbmFindPrimaryVertex::CbmFindPrimaryVertex()
 // -----   Standard constructor   ------------------------------------------
 CbmFindPrimaryVertex::CbmFindPrimaryVertex(CbmPrimaryVertexFinder* pvFinder)
   : FairTask(),
+	fTimer(),
     fFinder(pvFinder),
     fTracks(NULL),
-    fPrimVert(NULL)
+    fPrimVert(NULL),
+	fNofEvents(0),
+	fTimeTot(0.)
 {
+	fName = "FindPrimaryVertex";
 }
 // -------------------------------------------------------------------------
 
@@ -45,9 +54,12 @@ CbmFindPrimaryVertex::CbmFindPrimaryVertex(const char* name,
 					   const char*, 
 					   CbmPrimaryVertexFinder* finder) 
   : FairTask(name),
+	fTimer(),
     fFinder(finder),
     fTracks(NULL),
-    fPrimVert(NULL)
+    fPrimVert(NULL),
+	fTimeTot(0.),
+	fNofEvents(0)
 {
 }
 // -------------------------------------------------------------------------
@@ -105,6 +117,7 @@ InitStatus CbmFindPrimaryVertex::Init() {
 void CbmFindPrimaryVertex::Exec(Option_t*) {
 
   // Reset primary vertex
+  fTimer.Start();
   fPrimVert->Reset();
 
   // Call find method of vertex finder
@@ -112,12 +125,26 @@ void CbmFindPrimaryVertex::Exec(Option_t*) {
   if (iFind) cout << "-W- CbmFindPrimaryVertex::Exec: "
 		  << "Vertex finder returned " << iFind << endl;
 
+  // --- Event log
+  fTimer.Stop();
+  fNofEvents++;
+  fTimeTot += fTimer.RealTime();
+  LOG(INFO) << "+ " << setw(20) << GetName() << ": Event " << setw(6)
+  		      << right << fNofEvents
+  		      << ", real time " << fixed << setprecision(6)
+  		      << fTimer.RealTime() << " s, tracks used: "
+			  << fPrimVert->GetNTracks()
+  		      << FairLogger::endl;
+  LOG(DEBUG) << fPrimVert->ToString() << FairLogger::endl;
+
   // Print vertex
+  /*
   cout << endl;
   cout << "-------------------------------------------------------" << endl;
   cout << "-I-             Primary Vertex Finder               -I-" << endl;
   fPrimVert->Print();
   cout << "-------------------------------------------------------" << endl;
+  */
 
 }
 // -------------------------------------------------------------------------
@@ -127,6 +154,14 @@ void CbmFindPrimaryVertex::Exec(Option_t*) {
 // -----   Public method Finish   ------------------------------------------
 void CbmFindPrimaryVertex::Finish() {
   fPrimVert->Reset();
+  std::cout << std::endl;
+  LOG(INFO) << "=====================================" << FairLogger::endl;
+  LOG(INFO) << GetName() << ": Run summary" << FairLogger::endl;
+  LOG(INFO) << "Events processed   : " << fNofEvents << FairLogger::endl;
+  LOG(INFO) << "Time per event     : " << setprecision(6)
+		    << fTimeTot / Double_t(fNofEvents) << " s " << FairLogger::endl;
+  LOG(INFO) << "=====================================" << FairLogger::endl;
+
 }
 // -------------------------------------------------------------------------
 

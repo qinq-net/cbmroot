@@ -13,6 +13,7 @@
 #include <TObject.h>
 #include "CbmDetectorList.h"
 #include "CbmMatch.h"
+#include "CbmVertex.h"
 
 
 /** @class CbmEvent
@@ -29,7 +30,7 @@ class CbmEvent: public TObject {
 		/** Default constructor **/
 		CbmEvent() :
 			TObject(), fNumber(-1), fTime(0.),
-			fNofData(0), fMatch(NULL), fIndexMap() {
+			fNofData(0), fVertex(), fMatch(NULL), fIndexMap() {
 		}
 
 
@@ -39,7 +40,7 @@ class CbmEvent: public TObject {
 		 **/
 		CbmEvent(Int_t number, Double_t time = 0.) :
 			TObject(), fNumber(number), fTime(time),
-			fNofData(0), fMatch(NULL), fIndexMap() {
+			fNofData(0), fVertex(), fMatch(NULL), fIndexMap() {
 		}
 
 		/** Destructor **/
@@ -86,6 +87,11 @@ class CbmEvent: public TObject {
 		 **/
 		Int_t GetNumber() const { return fNumber; }
 
+		/** Get event vertex
+		 ** @value Pointer to vertex object
+		 **/
+		CbmVertex* GetVertex() { return &fVertex; }
+
 
 		/** Set a match object
 		 ** @param match  Pointer to a match object
@@ -104,13 +110,14 @@ class CbmEvent: public TObject {
 		Int_t fNumber;   ///< Event number
 		Double_t fTime;  ///< Event time [ns]
 		Int_t fNofData;  ///< Number of data objects in the event
+		CbmVertex fVertex;  ///< Primary Vertex
 		CbmMatch* fMatch; ///< Match object to MCEvent
 
 		/** Arrays of indices to data types **/
 		std::map<Cbm::DataType, std::vector<UInt_t>> fIndexMap;
 
-                CbmEvent(const CbmEvent&);
-                CbmEvent& operator=(const CbmEvent&);
+        CbmEvent(const CbmEvent&);
+        CbmEvent& operator=(const CbmEvent&);
 
 
 		ClassDef(CbmEvent, 1);

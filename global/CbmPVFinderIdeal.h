@@ -41,8 +41,14 @@ class CbmPVFinderIdeal : public CbmPrimaryVertexFinder
 
 
   /** Primary vertex finding **/
-  virtual Int_t FindPrimaryVertex(TClonesArray* tracks,
-				  CbmVertex* vertex);
+  virtual Int_t FindPrimaryVertex(TClonesArray* tracks, CbmVertex* vertex);
+
+  /** Primary vertex finding for one event
+   ** @param event    Pointer to event object
+   ** @param tracks   TClonesArray of CbmStsTracks
+   **/
+  virtual Int_t FindEventVertex(CbmEvent* event, TClonesArray* tracks);
+
 
 
  private:

@@ -39,6 +39,7 @@ CbmEcalTrackingMuch.cxx
 CbmFindGlobalTracks.cxx    
 #CbmFindGlobalTracksQa.cxx  
 CbmFindPrimaryVertex.cxx   
+CbmFindPrimaryVertexEvents.cxx   
 CbmFitGlobalTracks.cxx 
 CbmFitGlobalTracksQa.cxx 
 CbmGlobalTrackFitterIdeal.cxx 

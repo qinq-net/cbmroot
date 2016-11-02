@@ -4,6 +4,7 @@
 #include "CbmKFVertex.h"
 #include "CbmKFPrimaryVertexFinder.h"
 
+#include "CbmEvent.h"
 #include "CbmStsTrack.h"
 
 #include "TClonesArray.h"
@@ -35,3 +36,43 @@ Int_t CbmPVFinderKF::FindPrimaryVertex(TClonesArray* tracks, CbmVertex* vertex )
   delete[] CloneArray;
   return 0;
 }
+
+
+// ----   Find vertex for one event   ---------------------------------------
+Int_t CbmPVFinderKF::FindEventVertex(CbmEvent* event, TClonesArray* tracks) {
+
+  assert(event);
+  CbmKFPrimaryVertexFinder vFinder;
+
+  // Get vertex object
+  CbmVertex* vertex = event->GetVertex();
+
+  // Copy input tracks to KF tracks
+  Int_t nTracks = event->GetNofData(Cbm::kStsTrack);
+  CbmKFTrack* trackArray = new CbmKFTrack[nTracks];
+  for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
+	Int_t trackIndex = event->GetIndex(Cbm::kStsTrack, iTrack);
+	CbmStsTrack* track = (CbmStsTrack*) tracks->At(trackIndex);
+	Int_t nHits = track->GetNofHits();
+	if ( nHits < 4 ) continue;         // use only tracks with at least 4 hits
+	if ( track->GetFlag() ) continue;  // do not use suspicious tracks
+	if ( track->GetChiSq() < 0.        // use only good-quality tracks
+		 || track->GetChiSq() > 12.25 * track->GetNDF() ) continue;
+	CbmKFTrack& kTrack = trackArray[iTrack];
+	kTrack.SetStsTrack(*track);
+	if ( !finite(kTrack.GetTrack()[0])
+         || !finite(kTrack.GetCovMatrix()[0]) ) continue;
+	vFinder.AddTrack(&kTrack);
+  }
+
+  // Do the vertex finding
+  CbmKFVertex v;
+  vFinder.Fit(v);
+
+  // Copy KFVertex into CbmVertex
+  v.GetVertex(*vertex);
+
+  delete[] trackArray;
+  return 0;
+}
+// --------------------------------------------------------------------------

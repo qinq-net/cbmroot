@@ -16,6 +16,7 @@
 #define CBMVERTEX_H 1
 
 
+#include <string>
 #include "TMatrixFSym.h"
 #include "TNamed.h"
 #include "TVector3.h"
@@ -70,6 +71,10 @@ class CbmVertex : public TNamed
   Double_t GetCovariance(Int_t i, Int_t j) const;
 
 
+  /** Reset the member variables **/
+  void Reset();
+
+
   /** Set the member variables
    *@param x         x coordinate [cm]
    *@param y         y coordinate [cm]
@@ -83,8 +88,9 @@ class CbmVertex : public TNamed
 		 Int_t ndf, Int_t nTracks, const TMatrixFSym& covMat);
 
 
-  /** Reset the member variables **/
-  void Reset();
+  /** String output **/
+  virtual std::string ToString() const;
+
 		    
 
  private:

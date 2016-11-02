@@ -20,11 +20,12 @@
 #define CBMFINDPRIMARYVERTEX_H 1
 
 
+#include "TStopwatch.h"
 #include "FairTask.h"
+#include "CbmVertex.h"
 
 class TClonesArray;
 class CbmPrimaryVertexFinder;
-class CbmVertex;
 
 
 
@@ -71,10 +72,13 @@ class CbmFindPrimaryVertex : public FairTask
 
  private:
 
+  TStopwatch              fTimer;
   CbmPrimaryVertexFinder* fFinder;
   TClonesArray*           fTracks;
   CbmVertex*              fPrimVert;
 
+  Int_t     fNofEvents;       ///< Total number of events processed
+  Double_t  fTimeTot;         ///< Total execution time [s]
 
   CbmFindPrimaryVertex(const CbmFindPrimaryVertex&);
   CbmFindPrimaryVertex& operator=(const CbmFindPrimaryVertex&);

@@ -8,6 +8,7 @@
 #include "reco/CbmStsFindClustersEvents.h"
 
 // --- Includes from C++
+#include <cassert>
 #include <iostream>
 
 // --- Includes from ROOT

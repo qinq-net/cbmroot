@@ -14,6 +14,7 @@ ${CBMROOT_SOURCE_DIR}/data/trd
 ${CBMROOT_SOURCE_DIR}/data/tof
 ${CBMROOT_SOURCE_DIR}/data/ecal
 ${CBMROOT_SOURCE_DIR}/data/psd
+${CBMROOT_SOURCE_DIR}/data/global
 
 ${CBMROOT_SOURCE_DIR}/mvd
 ${CBMROOT_SOURCE_DIR}/sts/mc

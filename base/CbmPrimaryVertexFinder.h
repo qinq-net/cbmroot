@@ -22,6 +22,7 @@
 
 
 class TClonesArray;
+class CbmEvent;
 class CbmVertex;
 
 
@@ -50,9 +51,19 @@ class CbmPrimaryVertexFinder : public TObject
    ** method.
    *@param tracks   TClonesArray of CbmStsTracks
    *@param vertex   Primary vertex (output)
+   *@param event    Pointer to event object
    **/
-  virtual Int_t FindPrimaryVertex(TClonesArray* tracks, 
-				  CbmVertex* vertex) = 0;
+  virtual Int_t FindPrimaryVertex(TClonesArray* tracks,
+		                          CbmVertex* vertex) = 0;
+
+
+  /** Execution of PV finding (abstract). To be implemented in
+   ** the derived class. Task: Take the track array and find the vertex.
+   ** Set the event vertex parameters with its SetVertex method.
+   *@param tracks   TClonesArray of CbmStsTracks
+   *@param event    Pointer to event object
+   **/
+  virtual Int_t FindEventVertex(CbmEvent* event, TClonesArray* tracks) = 0;
 
 
   ClassDef(CbmPrimaryVertexFinder,1);
