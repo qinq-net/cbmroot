@@ -9,4 +9,4 @@ If(NOT APPLE)
 EndIf()
 Add_Subdirectory(reader)
 
-Add_Subdirectory(test)
+Add_Subdirectory(cern2016)

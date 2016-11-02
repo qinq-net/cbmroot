@@ -10,8 +10,8 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/data/raw
 
   ${CBMROOT_SOURCE_DIR}/beamtime/base
-  ${CBMROOT_SOURCE_DIR}/fles/test
-  ${CBMROOT_SOURCE_DIR}/fles/test/param
+  ${CBMROOT_SOURCE_DIR}/fles/cern2016
+  ${CBMROOT_SOURCE_DIR}/fles/cern2016/param
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
@@ -65,8 +65,8 @@ Else()
 EndIf()
 
 
-Set(LINKDEF  CbmFlibTestLinkDef.h )
-Set(LIBRARY_NAME CbmFlibTest)
+Set(LINKDEF CbmFlibCern2016LinkDef.h )
+Set(LIBRARY_NAME CbmFlibCern2016)
 Set(DEPENDENCIES
     CbmBase CbmBeamtimeBase fles_ipc Eve Base 
 )
