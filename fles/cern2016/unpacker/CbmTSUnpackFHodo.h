@@ -27,12 +27,12 @@
 class CbmDigi;
 class CbmFHodoUnpackPar;
 
-class CbmTSUnpackTest : public CbmTSUnpack
+class CbmTSUnpackFHodo : public CbmTSUnpack
 {
 public:
   
-  CbmTSUnpackTest();
-  virtual ~CbmTSUnpackTest();
+  CbmTSUnpackFHodo();
+  virtual ~CbmTSUnpackFHodo();
     
   virtual Bool_t Init();
 #ifndef __CINT__
@@ -90,10 +90,10 @@ private:
   void FillEpochInfo(ngdpb::Message);
 #endif
 
-  CbmTSUnpackTest(const CbmTSUnpackTest&);
-  CbmTSUnpackTest operator=(const CbmTSUnpackTest&);
+  CbmTSUnpackFHodo(const CbmTSUnpackFHodo&);
+  CbmTSUnpackFHodo operator=(const CbmTSUnpackFHodo&);
 
-  ClassDef(CbmTSUnpackTest, 1)
+  ClassDef(CbmTSUnpackFHodo, 1)
 };
 
 #endif

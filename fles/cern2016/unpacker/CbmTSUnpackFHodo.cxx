@@ -5,8 +5,7 @@
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 
-#include "CbmTSUnpackTest.h"
-
+#include "CbmTSUnpackFHodo.h"
 #include "CbmFHodoUnpackPar.h"
 
 #include "CbmTbDaqBuffer.h"
@@ -29,7 +28,7 @@
 using std::hex;
 using std::dec;
 
-CbmTSUnpackTest::CbmTSUnpackTest()
+CbmTSUnpackFHodo::CbmTSUnpackFHodo()
   : CbmTSUnpack(),
     fMsgCounter(11,0), // length of enum MessageTypes initialized with 0
     fHodoStationMap(),
@@ -55,11 +54,11 @@ CbmTSUnpackTest::CbmTSUnpackTest()
 	InitializeFiberHodoMapping();
 }
 
-CbmTSUnpackTest::~CbmTSUnpackTest()
+CbmTSUnpackFHodo::~CbmTSUnpackFHodo()
 {
 }
 
-Bool_t CbmTSUnpackTest::Init()
+Bool_t CbmTSUnpackFHodo::Init()
 {
   LOG(INFO) << "Initializing flib nxyter unpacker" << FairLogger::endl;
 
@@ -77,7 +76,7 @@ Bool_t CbmTSUnpackTest::Init()
   return kTRUE;
 }
 
-void CbmTSUnpackTest::SetParContainers()
+void CbmTSUnpackFHodo::SetParContainers()
 {
 	LOG(INFO) << "Setting parameter containers for " << GetName()
 			<< FairLogger::endl;
@@ -85,7 +84,7 @@ void CbmTSUnpackTest::SetParContainers()
 }
 
 
-Bool_t CbmTSUnpackTest::InitContainers()
+Bool_t CbmTSUnpackFHodo::InitContainers()
 {
 	LOG(INFO) << "Init parameter containers for " << GetName()
 			<< FairLogger::endl;
@@ -93,7 +92,7 @@ Bool_t CbmTSUnpackTest::InitContainers()
 
 }
 
-Bool_t CbmTSUnpackTest::ReInitContainers()
+Bool_t CbmTSUnpackFHodo::ReInitContainers()
 {
 	LOG(INFO) << "ReInit parameter containers for " << GetName()
 			<< FairLogger::endl;
@@ -114,7 +113,7 @@ Bool_t CbmTSUnpackTest::ReInitContainers()
 	return kTRUE;
 }
 
-void CbmTSUnpackTest::CreateHistograms()
+void CbmTSUnpackFHodo::CreateHistograms()
 {
   fHM->Add("Raw_ADC_FrontHodo", 
            new TH2F("Raw_ADC_FrontHodo", 
@@ -124,7 +123,7 @@ void CbmTSUnpackTest::CreateHistograms()
                     "Raw_ADC_RearHodo;channel;ADC value", 128, 0, 127, 4096, 0, 4095));   
 }
 
-Bool_t CbmTSUnpackTest::DoUnpack(const fles::Timeslice& ts, size_t component)
+Bool_t CbmTSUnpackFHodo::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
 
   LOG(DEBUG) << "Timeslice contains " << ts.num_microslices(component)
@@ -196,7 +195,7 @@ Bool_t CbmTSUnpackTest::DoUnpack(const fles::Timeslice& ts, size_t component)
   return kTRUE;
 }
 
-void CbmTSUnpackTest::FillHitInfo(ngdpb::Message mess)
+void CbmTSUnpackFHodo::FillHitInfo(ngdpb::Message mess)
 {
   // --- Get absolute time, NXYTER and channel number
   Int_t rocId      = mess.getRocNumber();
@@ -247,7 +246,7 @@ void CbmTSUnpackTest::FillHitInfo(ngdpb::Message mess)
 
 }
 
-void CbmTSUnpackTest::FillEpochInfo(ngdpb::Message mess)
+void CbmTSUnpackFHodo::FillEpochInfo(ngdpb::Message mess)
 {
   Int_t rocId          = mess.getRocNumber();
   fCurrentEpoch[rocId] = mess.getEpochNumber();
@@ -266,7 +265,7 @@ void CbmTSUnpackTest::FillEpochInfo(ngdpb::Message mess)
 
 }
 
-void CbmTSUnpackTest::Reset()
+void CbmTSUnpackFHodo::Reset()
 {
   if (fCreateRawMessage) {
     fFiberHodoRaw->Clear();
@@ -274,7 +273,7 @@ void CbmTSUnpackTest::Reset()
   fFiberHodoDigi->Clear();
 }
 
-void CbmTSUnpackTest::Finish()
+void CbmTSUnpackFHodo::Finish()
 {
   TString message_type;
 
@@ -313,7 +312,7 @@ void CbmTSUnpackTest::Finish()
 }
 
 
-void CbmTSUnpackTest::FillOutput(CbmDigi* digi)
+void CbmTSUnpackFHodo::FillOutput(CbmDigi* digi)
 {
 
   new( (*fFiberHodoDigi)[fFiberHodoDigi->GetEntriesFast()] )
@@ -322,7 +321,7 @@ void CbmTSUnpackTest::FillOutput(CbmDigi* digi)
 }
 
 // ---------------------------------------------------------------------------
-void CbmTSUnpackTest::InitializeFiberHodoMapping()
+void CbmTSUnpackFHodo::InitializeFiberHodoMapping()
 {
   // This code was copied from the Go4 analysis used for previous beamtimes
   for (Int_t i=0; i<128; i++) {
@@ -396,4 +395,4 @@ void CbmTSUnpackTest::InitializeFiberHodoMapping()
 }
 
 
-ClassImp(CbmTSUnpackTest)
+ClassImp(CbmTSUnpackFHodo)

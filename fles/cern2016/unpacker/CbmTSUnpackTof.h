@@ -26,12 +26,12 @@
 
 class CbmDigi;
 
-class CbmTSUnpackTestTof : public CbmTSUnpack
+class CbmTSUnpackTof : public CbmTSUnpack
 {
 public:
   
-  CbmTSUnpackTestTof( UInt_t uNbGdpb = 1 );
-  virtual ~CbmTSUnpackTestTof();
+  CbmTSUnpackTof( UInt_t uNbGdpb = 1 );
+  virtual ~CbmTSUnpackTof();
     
   virtual Bool_t Init();
 #ifndef __CINT__
@@ -91,10 +91,10 @@ private:
   void PrintSysInfo(ngdpb::Message);
 #endif
 
-  CbmTSUnpackTestTof(const CbmTSUnpackTestTof&);
-  CbmTSUnpackTestTof operator=(const CbmTSUnpackTestTof&);
+  CbmTSUnpackTof(const CbmTSUnpackTof&);
+  CbmTSUnpackTof operator=(const CbmTSUnpackTof&);
 
-  ClassDef(CbmTSUnpackTestTof, 1)
+  ClassDef(CbmTSUnpackTof, 1)
 };
 
 #endif

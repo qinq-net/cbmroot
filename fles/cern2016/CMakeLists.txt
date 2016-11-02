@@ -11,6 +11,7 @@ Set(INCLUDE_DIRECTORIES
 
   ${CBMROOT_SOURCE_DIR}/beamtime/base
   ${CBMROOT_SOURCE_DIR}/fles/cern2016
+  ${CBMROOT_SOURCE_DIR}/fles/cern2016/unpacker
   ${CBMROOT_SOURCE_DIR}/fles/cern2016/param
 )
 
@@ -40,8 +41,8 @@ Link_Directories(
 Set(SRCS
   CbmFlibTestSource.cxx   
 
-  CbmTSUnpackTest.cxx
-  CbmTSUnpackTestTof.cxx
+  unpacker/CbmTSUnpackFHodo.cxx
+  unpacker/CbmTSUnpackTof.cxx
 
   param/CbmFHodoUnpackPar.cxx
   param/CbmFlesTestContFact.cxx

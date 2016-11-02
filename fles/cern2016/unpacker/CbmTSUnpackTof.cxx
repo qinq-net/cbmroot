@@ -5,8 +5,7 @@
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 
-#include "CbmTSUnpackTestTof.h"
-
+#include "CbmTSUnpackTof.h"
 #include "CbmTbDaqBuffer.h"
 
 //#include "CbmFiberHodoAddress.h"
@@ -24,7 +23,7 @@
 
 const UInt_t kuNbChanGet4 = 4;
 
-CbmTSUnpackTestTof::CbmTSUnpackTestTof( UInt_t uNbGdpb )
+CbmTSUnpackTof::CbmTSUnpackTof( UInt_t uNbGdpb )
   : CbmTSUnpack(),
     fuMsAcceptsPercent(100),
     fuMinNbGdpb( uNbGdpb ),
@@ -49,11 +48,11 @@ CbmTSUnpackTestTof::CbmTSUnpackTestTof( UInt_t uNbGdpb )
 //  InitializeFiberHodoMapping();
 }
 
-CbmTSUnpackTestTof::~CbmTSUnpackTestTof()
+CbmTSUnpackTof::~CbmTSUnpackTof()
 {
 }
 
-Bool_t CbmTSUnpackTestTof::Init()
+Bool_t CbmTSUnpackTof::Init()
 {
   LOG(INFO) << "Initializing flib nxyter unpacker" << FairLogger::endl;
 
@@ -70,27 +69,27 @@ Bool_t CbmTSUnpackTestTof::Init()
   return kTRUE;
 }
 
-void CbmTSUnpackTestTof::SetParContainers()
+void CbmTSUnpackTof::SetParContainers()
 {
 	LOG(INFO) << "Setting parameter containers for " << GetName()
 			<< FairLogger::endl;
 }
 
-Bool_t CbmTSUnpackTestTof::InitContainers()
+Bool_t CbmTSUnpackTof::InitContainers()
 {
 	LOG(INFO) << "Init parameter containers for " << GetName()
 			<< FairLogger::endl;
 	return kTRUE;
 }
 
-Bool_t CbmTSUnpackTestTof::ReInitContainers()
+Bool_t CbmTSUnpackTof::ReInitContainers()
 {
 	LOG(INFO) << "ReInit parameter containers for " << GetName()
 			<< FairLogger::endl;
 	return kTRUE;
 }
 
-void CbmTSUnpackTestTof::CreateHistograms()
+void CbmTSUnpackTof::CreateHistograms()
 {
    for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
    {
@@ -105,7 +104,7 @@ void CbmTSUnpackTestTof::CreateHistograms()
    } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
 }
 
-Bool_t CbmTSUnpackTestTof::DoUnpack(const fles::Timeslice& ts, size_t component)
+Bool_t CbmTSUnpackTof::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
 
   LOG(DEBUG) << "Timeslice contains " << ts.num_microslices(component)
@@ -194,7 +193,7 @@ Bool_t CbmTSUnpackTestTof::DoUnpack(const fles::Timeslice& ts, size_t component)
   return kTRUE;
 }
 
-void CbmTSUnpackTestTof::FillHitInfo(ngdpb::Message mess)
+void CbmTSUnpackTof::FillHitInfo(ngdpb::Message mess)
 {
   // --- Get absolute time, NXYTER and channel number
   Int_t rocId      = mess.getRocNumber();
@@ -238,7 +237,7 @@ void CbmTSUnpackTestTof::FillHitInfo(ngdpb::Message mess)
 */
 }
 
-void CbmTSUnpackTestTof::FillEpochInfo(ngdpb::Message mess)
+void CbmTSUnpackTof::FillEpochInfo(ngdpb::Message mess)
 {
   Int_t rocId          = mess.getRocNumber();
   Int_t get4Id     = mess.getGdpbGenChipId();
@@ -281,7 +280,7 @@ void CbmTSUnpackTestTof::FillEpochInfo(ngdpb::Message mess)
 
 }
 
-void CbmTSUnpackTestTof::PrintSlcInfo(ngdpb::Message mess)
+void CbmTSUnpackTof::PrintSlcInfo(ngdpb::Message mess)
 {
   Int_t rocId          = mess.getRocNumber();
   Int_t get4Id     = mess.getGdpbGenChipId();
@@ -302,7 +301,7 @@ void CbmTSUnpackTestTof::PrintSlcInfo(ngdpb::Message mess)
 
 }
 
-void CbmTSUnpackTestTof::PrintSysInfo(ngdpb::Message mess)
+void CbmTSUnpackTof::PrintSysInfo(ngdpb::Message mess)
 {
   Int_t rocId          = mess.getRocNumber();
   Int_t get4Id     = mess.getGdpbGenChipId();
@@ -341,13 +340,13 @@ void CbmTSUnpackTestTof::PrintSysInfo(ngdpb::Message mess)
    } // switch( getGdpbSysSubType() )
 }
 
-void CbmTSUnpackTestTof::Reset()
+void CbmTSUnpackTof::Reset()
 {
   //  fFiberHodoRaw->Clear();
   //fFiberHodoDigi->Clear();
 }
 
-void CbmTSUnpackTestTof::Finish()
+void CbmTSUnpackTof::Finish()
 {
   TString message_type;
 
@@ -398,7 +397,7 @@ void CbmTSUnpackTestTof::Finish()
 }
 
 
-void CbmTSUnpackTestTof::FillOutput(CbmDigi* digi)
+void CbmTSUnpackTof::FillOutput(CbmDigi* digi)
 {
 
 //  new( (*fFiberHodoDigi)[fFiberHodoDigi->GetEntriesFast()] )
@@ -482,4 +481,4 @@ void CbmTSUnpackTestTof::InitializeFiberHodoMapping()
 }
 */
 
-ClassImp(CbmTSUnpackTestTof)
+ClassImp(CbmTSUnpackTof)
