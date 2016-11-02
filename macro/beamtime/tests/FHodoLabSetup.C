@@ -21,11 +21,19 @@ void FHodoLabSetup(TString inFile = "hodoTop_source_1000ts_20160422.tsa")
 
   // --- Specify output file name (this is just an example)
   TString outFile = "data/test.root";
+  TString parFile = "data/testparam.root";
 
   // --- Set log output levels
-//  FairLogger::GetLogger()->SetLogScreenLevel("DEBUG");
-  FairLogger::GetLogger()->SetLogScreenLevel("INFO");
-  FairLogger::GetLogger()->SetLogVerbosityLevel("LOW");
+  FairLogger::GetLogger();
+  gLogger->SetLogScreenLevel("INFO");
+  gLogger->SetLogVerbosityLevel("LOW");
+
+  // --- Define parameter files
+  TList *parFileList = new TList();
+  TString paramDir = "./";
+  TString paramFile = paramDir + "FHodoUnpackPar.par";
+  TObjString* tutDetDigiFile = new TObjString(paramFile);
+  parFileList->Add(tutDetDigiFile);
 
   // --- Set debug level
   gDebug = 0;
@@ -41,6 +49,7 @@ void FHodoLabSetup(TString inFile = "hodoTop_source_1000ts_20160422.tsa")
 
   // NXyter Unpacker
   CbmTSUnpackTest*    test_unpacker     = new CbmTSUnpackTest();
+  //  test_unpacker->CreateRawMessageOutput(kTRUE);
   
   // Get4 Unpacker
   CbmTSUnpackTestTof* test_unpacker_tof = new CbmTSUnpackTestTof();
@@ -48,18 +57,27 @@ void FHodoLabSetup(TString inFile = "hodoTop_source_1000ts_20160422.tsa")
   // --- Source task
   CbmFlibTestSource* source = new CbmFlibTestSource();
   source->SetFileName(inFile);
-//  source->AddUnpacker(test_unpacker, 0xF0, 10);//HODO 1 + 2
   source->AddUnpacker(test_unpacker_tof, 0x60, 20);//gDPB A & B
   source->AddUnpacker(test_unpacker,     0x10, 10);//nDPB A & B = HODO 1 + 2
 
   // --- Event header
-  //  FairEventHeader* event = new CbmTbEvent();
-  //  event->SetRunId(260);
+  FairEventHeader* event = new CbmTbEvent();
+  event->SetRunId(1);
 
   // --- Run
   FairRunOnline *run = new FairRunOnline(source);
   run->SetOutputFile(outFile);
-  //  run->SetEventHeader(event);
+  run->SetEventHeader(event);
+  FairRuntimeDb* rtdb = run->GetRuntimeDb();
+
+  // -----   Runtime database   ---------------------------------------------
+  Bool_t kParameterMerged = kTRUE;
+  FairParRootFileIo* parOut = new FairParRootFileIo(kParameterMerged);
+  FairParAsciiFileIo* parIn = new FairParAsciiFileIo();
+  parOut->open(parFile.Data());
+  parIn->open(parFileList, "in");
+  rtdb->setFirstInput(parIn);
+  rtdb->setOutput(parOut);
 
   run->Init();
 

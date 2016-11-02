@@ -99,6 +99,38 @@ Bool_t CbmFlibTestSource::Init()
   return kTRUE;
 }
 
+void CbmFlibTestSource::SetParUnpackers()
+{
+	for (auto it=fUnpackers.begin(); it!=fUnpackers.end(); ++it) {
+		LOG(INFO) << "Set parameter container " << it->second->GetName() <<
+				" for systemID 0x" << std::hex << it->first << std::dec << FairLogger::endl;
+	    it->second->SetParContainers();
+	  }
+
+}
+
+Bool_t CbmFlibTestSource::InitUnpackers()
+{
+	Bool_t result = kTRUE;
+	for (auto it=fUnpackers.begin(); it!=fUnpackers.end(); ++it) {
+		LOG(INFO) << "Initialize parameter container " << it->second->GetName() <<
+				" for systemID 0x" << std::hex << it->first << std::dec << FairLogger::endl;
+	    result = result && it->second->InitContainers();
+	}
+    return result;
+}
+
+Bool_t CbmFlibTestSource::ReInitUnpackers()
+{
+	Bool_t result = kTRUE;
+	for (auto it=fUnpackers.begin(); it!=fUnpackers.end(); ++it) {
+		LOG(INFO) << "Initialize parameter container " << it->second->GetName() <<
+				" for systemID 0x" << std::hex << it->first << std::dec << FairLogger::endl;
+	    result = result && it->second->ReInitContainers();
+	}
+    return result;
+}
+
 Int_t CbmFlibTestSource::ReadEvent(UInt_t) 
 {
 

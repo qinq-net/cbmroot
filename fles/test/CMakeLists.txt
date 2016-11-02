@@ -4,11 +4,14 @@
 
 Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/base
+
   ${CBMROOT_SOURCE_DIR}/data
   ${CBMROOT_SOURCE_DIR}/data/beamtime/fhodo
   ${CBMROOT_SOURCE_DIR}/data/raw
+
   ${CBMROOT_SOURCE_DIR}/beamtime/base
   ${CBMROOT_SOURCE_DIR}/fles/test
+  ${CBMROOT_SOURCE_DIR}/fles/test/param
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
@@ -36,8 +39,12 @@ Link_Directories(
 
 Set(SRCS
   CbmFlibTestSource.cxx   
+
   CbmTSUnpackTest.cxx
   CbmTSUnpackTestTof.cxx
+
+  param/CbmFHodoUnpackPar.cxx
+  param/CbmFlesTestContFact.cxx
 )
 
 Set(NO_DICT_SRCS

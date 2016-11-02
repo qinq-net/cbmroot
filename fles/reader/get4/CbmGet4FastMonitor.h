@@ -50,6 +50,8 @@ public:
 
   virtual void Finish();
 
+  void SetParContainers() {;}
+  
   virtual void FillOutput(CbmDigi*){;}
 
   inline void SetRocNb(  UInt_t uNbRocsIn ) { fuNbRocs = uNbRocsIn; }

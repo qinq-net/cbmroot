@@ -7,6 +7,8 @@
 
 #include "CbmTSUnpackTest.h"
 
+#include "CbmFHodoUnpackPar.h"
+
 #include "CbmTbDaqBuffer.h"
 
 #include "CbmFiberHodoAddress.h"
@@ -14,6 +16,8 @@
 
 #include "FairLogger.h"
 #include "FairRootManager.h"
+#include "FairRun.h"
+#include "FairRuntimeDb.h"
 
 #include "TClonesArray.h"
 #include "TString.h"
@@ -21,6 +25,9 @@
 #include <iostream>
 #include <stdint.h>
 #include <iomanip>
+
+using std::hex;
+using std::dec;
 
 CbmTSUnpackTest::CbmTSUnpackTest()
   : CbmTSUnpack(),
@@ -38,11 +45,14 @@ CbmTSUnpackTest::CbmTSUnpackTest()
     fFiberHodoDigi(new TClonesArray("CbmFiberHodoDigi", 10)),
     fRawMessage(NULL),  
     fDigi(NULL),
-    fBuffer(CbmTbDaqBuffer::Instance())
+    fBuffer(CbmTbDaqBuffer::Instance()),
+	fCreateRawMessage(kFALSE),
+	fUnpackPar(NULL)
 {
-  fHodoStationMap[0x5bed] = 0; //Roc -> Hodo station 0
+/*  fHodoStationMap[0x5bed] = 0; //Roc -> Hodo station 0
   fHodoStationMap[0x6166] = 1; //Roc -> Hodo station 1
-  InitializeFiberHodoMapping();
+*/
+	InitializeFiberHodoMapping();
 }
 
 CbmTSUnpackTest::~CbmTSUnpackTest()
@@ -58,12 +68,50 @@ Bool_t CbmTSUnpackTest::Init()
     LOG(FATAL) << "No FairRootManager instance" << FairLogger::endl;
   }
 
-  //  ioman->Register("FiberHodoRawMessage", "fiberhodo raw data", fFiberHodoRaw, kTRUE);
+  if (fCreateRawMessage) {
+    ioman->Register("FiberHodoRawMessage", "fiberhodo raw data", fFiberHodoRaw, kTRUE);
+  }
   ioman->Register("FiberHodoDigi", "fiber hodo digi", fFiberHodoDigi, kTRUE);
 
   CreateHistograms();
-
   return kTRUE;
+}
+
+void CbmTSUnpackTest::SetParContainers()
+{
+	LOG(INFO) << "Setting parameter containers for " << GetName()
+			<< FairLogger::endl;
+    fUnpackPar = (CbmFHodoUnpackPar*)(FairRun::Instance()->GetRuntimeDb()->getContainer("CbmFHodoUnpackPar"));
+}
+
+
+Bool_t CbmTSUnpackTest::InitContainers()
+{
+	LOG(INFO) << "Init parameter containers for " << GetName()
+			<< FairLogger::endl;
+    return ReInitContainers();
+
+}
+
+Bool_t CbmTSUnpackTest::ReInitContainers()
+{
+	LOG(INFO) << "ReInit parameter containers for " << GetName()
+			<< FairLogger::endl;
+
+	Int_t nrOfModules = fUnpackPar->GetNrOfModules();
+
+	LOG(INFO) << "Nr. of Modules: " << nrOfModules
+    		<< FairLogger::endl;
+
+	fHodoStationMap.clear();
+	for (Int_t i = 0; i< nrOfModules; ++i) {
+	  fHodoStationMap[fUnpackPar->GetModuleId(i)] = i;
+	  LOG(INFO) << "Roc Id of fiber hodo station " << i
+			  << " : " << fUnpackPar->GetModuleId(i)
+			  << FairLogger::endl;
+	}
+
+	return kTRUE;
 }
 
 void CbmTSUnpackTest::CreateHistograms()
@@ -157,41 +205,45 @@ void CbmTSUnpackTest::FillHitInfo(ngdpb::Message mess)
   Int_t charge     = mess.getNxAdcValue();
   ULong_t hitTime  = mess.getMsgFullTime(fCurrentEpoch[rocId]);
 
-  /*
-  fRawMessage = new( (*fFiberHodoRaw)[fFiberHodoRaw->GetEntriesFast()] )
-    CbmNxyterRawMessage(fEquipmentId,
-                        rocId*4 + nxyterId,   //TODO check
-                        nxChannel,
-                        fCurrentEpoch[rocId],             // note the trick
-                        mess.getNxTs(),
-                        charge,
-                        mess.getNxLastEpoch(),
-                        mess.getNxPileup(),
-                        mess.getNxOverflow());
-  */
+  if (fCreateRawMessage) {
+    fRawMessage = new( (*fFiberHodoRaw)[fFiberHodoRaw->GetEntriesFast()] )
+      CbmNxyterRawMessage(fEquipmentId,
+                          rocId*4 + nxyterId,   //TODO check
+                          nxChannel,
+                          fCurrentEpoch[rocId],             // note the trick
+                          mess.getNxTs(),
+                          charge,
+                          mess.getNxLastEpoch(),
+                          mess.getNxPileup(),
+                          mess.getNxOverflow());
+  }
  
   LOG(DEBUG) << "Hit: " << rocId << ", " << nxyterId 
              << ", " << nxChannel << ", " << charge << FairLogger::endl;
 
-  Int_t station = fHodoStationMap[rocId];
-  Int_t plane = fHodoPlane[nxChannel];
-  Int_t fiber = fHodoFiber[nxChannel];
+  if (fHodoStationMap.find(rocId) != fHodoStationMap.end()) {
+    Int_t station = fHodoStationMap[rocId];
+    Int_t plane = fHodoPlane[nxChannel];
+    Int_t fiber = fHodoFiber[nxChannel];
 
-  Int_t address = CbmFiberHodoAddress::GetAddress(station, plane, fiber);
+    Int_t address = CbmFiberHodoAddress::GetAddress(station, plane, fiber);
 
   
-  LOG(DEBUG) << "Create digi with time " << hitTime 
-            << " at epoch " << fCurrentEpoch[rocId] << FairLogger::endl;
+    LOG(DEBUG) << "Create digi with time " << hitTime
+               << " at epoch " << fCurrentEpoch[rocId] << FairLogger::endl;
  
-  fDigi = new CbmFiberHodoDigi(address, charge, hitTime);
+    fDigi = new CbmFiberHodoDigi(address, charge, hitTime);
 
-  fBuffer->InsertData(fDigi);
+    fBuffer->InsertData(fDigi);
 
-  if ( 0 == station ) {
-    fHM->H2("Raw_ADC_FrontHodo")->Fill(nxChannel,charge);
+    if ( 0 == station ) {
+    	fHM->H2("Raw_ADC_FrontHodo")->Fill(nxChannel,charge);
+    } else {
+    	fHM->H2("Raw_ADC_RearHodo")->Fill(nxChannel,charge);
+    }
   } else {
-    fHM->H2("Raw_ADC_RearHodo")->Fill(nxChannel,charge);
-  } 
+	LOG(ERROR) << "Unknown Roc Id " << rocId << FairLogger::endl;
+  }
 
 }
 
@@ -216,7 +268,9 @@ void CbmTSUnpackTest::FillEpochInfo(ngdpb::Message mess)
 
 void CbmTSUnpackTest::Reset()
 {
-  //  fFiberHodoRaw->Clear();
+  if (fCreateRawMessage) {
+    fFiberHodoRaw->Clear();
+  }
   fFiberHodoDigi->Clear();
 }
 

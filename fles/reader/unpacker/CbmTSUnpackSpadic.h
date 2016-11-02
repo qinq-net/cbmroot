@@ -34,6 +34,9 @@ class CbmTSUnpackSpadic : public CbmTSUnpack
   virtual void Reset();
 
   virtual void Finish();
+
+  void SetParContainers() {;}
+
   // protected:
   //  virtual void Register();
 

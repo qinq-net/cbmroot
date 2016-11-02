@@ -41,6 +41,13 @@ public:
 
   virtual void Finish();
 
+  void SetParContainers();
+
+  Bool_t InitContainers();
+
+  Bool_t ReInitContainers();
+
+
   void FillOutput(CbmDigi* digi);
   
   void SetMsLimitLevel( size_t uAcceptBoundaryPct = 100 ) { fuMsAcceptsPercent = uAcceptBoundaryPct; }

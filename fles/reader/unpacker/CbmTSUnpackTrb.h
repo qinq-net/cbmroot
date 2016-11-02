@@ -45,6 +45,8 @@ class CbmTSUnpackTrb : public CbmTSUnpack
 
   virtual void Finish();
 
+  void SetParContainers() {;}
+
   virtual void FillOutput(CbmDigi*){;}
 
  private:

@@ -70,6 +70,26 @@ Bool_t CbmTSUnpackTestTof::Init()
   return kTRUE;
 }
 
+void CbmTSUnpackTestTof::SetParContainers()
+{
+	LOG(INFO) << "Setting parameter containers for " << GetName()
+			<< FairLogger::endl;
+}
+
+Bool_t CbmTSUnpackTestTof::InitContainers()
+{
+	LOG(INFO) << "Init parameter containers for " << GetName()
+			<< FairLogger::endl;
+	return kTRUE;
+}
+
+Bool_t CbmTSUnpackTestTof::ReInitContainers()
+{
+	LOG(INFO) << "ReInit parameter containers for " << GetName()
+			<< FairLogger::endl;
+	return kTRUE;
+}
+
 void CbmTSUnpackTestTof::CreateHistograms()
 {
    for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)

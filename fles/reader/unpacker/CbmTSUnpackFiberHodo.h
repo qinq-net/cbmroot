@@ -38,6 +38,7 @@ class CbmTSUnpackFiberHodo : public CbmTSUnpack
 
   virtual void Finish() {;}
 
+  void SetParContainers() {;}
   // protected:
   //  virtual void Register();
 

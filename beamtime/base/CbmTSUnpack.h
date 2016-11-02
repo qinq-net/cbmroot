@@ -33,6 +33,12 @@ class CbmTSUnpack : public TObject
   // protected:
   //  virtual void Register() = 0;
 
+  virtual void SetParContainers() = 0;
+
+  virtual Bool_t InitContainers() {return kTRUE;}
+
+  virtual Bool_t ReInitContainers() {return kTRUE;}
+
   virtual void FillOutput(CbmDigi*) = 0;
   
   ClassDef(CbmTSUnpack, 0)

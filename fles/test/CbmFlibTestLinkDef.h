@@ -7,5 +7,7 @@
 #pragma link C++ class CbmFlibTestSource;
 #pragma link C++ class CbmTSUnpackTest;
 #pragma link C++ class CbmTSUnpackTestTof;
+#pragma link C++ class CbmFHodoUnpackPar;
+#pragma link C++ class CbmFlesTestContFact;
 
 #endif

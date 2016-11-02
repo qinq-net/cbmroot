@@ -25,6 +25,7 @@
 #include <map>
 
 class CbmDigi;
+class CbmFHodoUnpackPar;
 
 class CbmTSUnpackTest : public CbmTSUnpack
 {
@@ -41,7 +42,15 @@ public:
 
   virtual void Finish();
 
+  void SetParContainers();
+
+  Bool_t InitContainers();
+
+  Bool_t ReInitContainers();
+
   void FillOutput(CbmDigi* digi);
+
+  void CreateRawMessageOutput(Bool_t val) {fCreateRawMessage=val;}
 
 private:
 
@@ -67,6 +76,10 @@ private:
   CbmFiberHodoDigi* fDigi;  
 
   CbmTbDaqBuffer* fBuffer;
+
+  Bool_t fCreateRawMessage;
+
+  CbmFHodoUnpackPar* fUnpackPar;    //!
 
   void InitializeFiberHodoMapping();
 
