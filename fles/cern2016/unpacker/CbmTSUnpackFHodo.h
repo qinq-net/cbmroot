@@ -81,8 +81,6 @@ private:
 
   CbmFHodoUnpackPar* fUnpackPar;    //!
 
-  void InitializeFiberHodoMapping();
-
   void CreateHistograms();
 
 #ifndef __CINT__

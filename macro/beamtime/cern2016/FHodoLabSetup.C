@@ -48,11 +48,11 @@ void FHodoLabSetup(TString inFile = "hodoTop_source_1000ts_20160422.tsa")
   std::cout << ">>> FHodoLabSetup: Initialising..." << std::endl;
 
   // NXyter Unpacker
-  CbmTSUnpackTest*    test_unpacker     = new CbmTSUnpackTest();
+  CbmTSUnpackFHodo*    test_unpacker     = new CbmTSUnpackFHodo();
   //  test_unpacker->CreateRawMessageOutput(kTRUE);
   
   // Get4 Unpacker
-  CbmTSUnpackTestTof* test_unpacker_tof = new CbmTSUnpackTestTof();
+  CbmTSUnpackTof* test_unpacker_tof = new CbmTSUnpackTof();
 
   // --- Source task
   CbmFlibTestSource* source = new CbmFlibTestSource();

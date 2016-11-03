@@ -17,8 +17,12 @@ CbmFHodoUnpackPar::CbmFHodoUnpackPar(const char* name,
 			             const char* title,
 			             const char* context)
   : FairParGenericSet(name, title, context), 
-    fModuleIdArray(),
-    fNrOfModules(-1)
+    fNrOfRocs(-1),
+    fRocIdArray(),
+    fNrOfChannels(-1),
+	fChannelToFiberMap(),
+	fChannelToPixelMap(),
+	fChannelToPlaneMap()
 {
   detName="FHodo";
 }
@@ -46,8 +50,12 @@ void CbmFHodoUnpackPar::clear()
 void CbmFHodoUnpackPar::putParams(FairParamList* l) 
 {
   if (!l) return;
-  l->add("NrOfModules",   fNrOfModules);
-  l->add("ModuleIdArray", fModuleIdArray);
+  l->add("NrOfRocs",          fNrOfRocs);
+  l->add("RocIdArray",        fRocIdArray);
+  l->add("NrOfChannels",      fNrOfRocs);
+  l->add("ChannelToFiberMap", fChannelToFiberMap);
+  l->add("ChannelToPixelMap", fChannelToPixelMap);
+  l->add("ChannelToPlaneMap", fChannelToPlaneMap);
 }
 
 //------------------------------------------------------
@@ -56,10 +64,19 @@ Bool_t CbmFHodoUnpackPar::getParams(FairParamList* l) {
 
   if (!l) return kFALSE;
   
-  if ( ! l->fill("NrOfModules", &fNrOfModules) ) return kFALSE;
+  if ( ! l->fill("NrOfRocs", &fNrOfRocs) ) return kFALSE;
   
-  fModuleIdArray.Set(fNrOfModules);
-  if ( ! l->fill("ModuleIdArray", &fModuleIdArray) ) return kFALSE;
+  fRocIdArray.Set(fNrOfRocs);
+  if ( ! l->fill("RocIdArray", &fRocIdArray) ) return kFALSE;
+
+  if ( ! l->fill("NrOfChannels", &fNrOfChannels) ) return kFALSE;
+
+  fChannelToFiberMap.Set(fNrOfChannels);
+  fChannelToPixelMap.Set(fNrOfChannels);
+  fChannelToPlaneMap.Set(fNrOfChannels);
+  if ( ! l->fill("ChannelToFiberMap", &fChannelToFiberMap) ) return kFALSE;
+  if ( ! l->fill("ChannelToPixelMap", &fChannelToPixelMap) ) return kFALSE;
+  if ( ! l->fill("ChannelToPlaneMap", &fChannelToPlaneMap) ) return kFALSE;
 
   return kTRUE;
 }
