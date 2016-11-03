@@ -61,9 +61,7 @@ private:
 
   std::vector<int> fMsgCounter;
   std::map<UInt_t, UInt_t> fGdpbIdIndexMap;
-/*
-  std::map<int,int> fHodoStationMap;
-*/
+
   CbmHistManager* fHM;  ///< Histogram manager
 
   /** Current epoch marker for each ROC and GET4 (first epoch in the stream initialises the map item) **/
@@ -79,8 +77,6 @@ private:
 //  CbmFiberHodoDigi* fDigi;  
 
   CbmTbDaqBuffer* fBuffer;
-
-//  void InitializeTofMapping();
 
   void CreateHistograms();
 

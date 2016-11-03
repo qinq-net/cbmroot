@@ -49,7 +49,7 @@ Set(SRCS
 )
 
 Set(NO_DICT_SRCS
-  rocMess_wGet4v1.cxx
+  unpacker/rocMess_wGet4v1.cxx
 )
 
 If(_UINT8_T_EXIST)

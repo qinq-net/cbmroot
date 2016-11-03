@@ -30,10 +30,6 @@ CbmTSUnpackTof::CbmTSUnpackTof( UInt_t uNbGdpb )
     fuCurrNbGdpb( 0 ),
     fMsgCounter(11,0), // length of enum MessageTypes initialized with 0
     fGdpbIdIndexMap(),
-//    fHodoStationMap(),
-//    fHodoFiber(),
-//    fHodoPlane(),
-//    fHodoPixel(),
     fHM(new CbmHistManager()),
     fCurrentEpoch(),
     fNofEpochs(0),
@@ -45,7 +41,7 @@ CbmTSUnpackTof::CbmTSUnpackTof( UInt_t uNbGdpb )
 //    fDigi(NULL),
     fBuffer(CbmTbDaqBuffer::Instance())
 {
-//  InitializeFiberHodoMapping();
+
 }
 
 CbmTSUnpackTof::~CbmTSUnpackTof()
@@ -214,27 +210,7 @@ void CbmTSUnpackTof::FillHitInfo(ngdpb::Message mess)
   LOG(DEBUG) << "Hit: " << rocId << ", " << get4Id 
              << ", " << channel << ", " << tot << ", " << hitTime 
              << FairLogger::endl;
-/*
-  Int_t station = fHodoStationMap[rocId];
-  Int_t plane = fHodoPlane[nxChannel];
-  Int_t fiber = fHodoFiber[nxChannel];
 
-  Int_t address = CbmFiberHodoAddress::GetAddress(station, plane, fiber);
-
-  
-  LOG(DEBUG) << "Create digi with time " << hitTime 
-            << " at epoch " << fCurrentEpoch[rocId] << FairLogger::endl;
- 
-  fDigi = new CbmFiberHodoDigi(address, charge, hitTime);
-
-  fBuffer->InsertData(fDigi);
-
-  if ( 0 == station ) {
-    fHM->H2("Raw_ADC_FrontHodo")->Fill(nxChannel,charge);
-  } else {
-    fHM->H2("Raw_ADC_RearHodo")->Fill(nxChannel,charge);
-  } 
-*/
 }
 
 void CbmTSUnpackTof::FillEpochInfo(ngdpb::Message mess)
@@ -387,13 +363,7 @@ void CbmTSUnpackTof::Finish()
       fHM->H1( Form("ChCount_gDPB_%02u", uGdpb) )->Write();
    } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
    gDirectory->cd("..");
-/*
-  gDirectory->mkdir("Hodo_Raw_gDPB");
-  gDirectory->cd("Hodo_Raw_gDPB");
-  fHM->H2("Raw_ADC_FrontHodo_gDPB")->Write();        
-  fHM->H2("Raw_ADC_RearHodo_gDPB")->Write();        
-  gDirectory->cd("..");
-*/
+
 }
 
 
@@ -405,80 +375,5 @@ void CbmTSUnpackTof::FillOutput(CbmDigi* digi)
 
 }
 
-// ---------------------------------------------------------------------------
-/*
-void CbmTSUnpackTestTof::InitializeFiberHodoMapping()
-{
-  // This code was copied from the Go4 analysis used for previous beamtimes
-  for (Int_t i=0; i<128; i++) {
-    fHodoFiber[i] = -1;
-    fHodoPlane[i] = -1;
-    fHodoPixel[i] = -1;
-  }
-  
-  for (Int_t ifiber=1; ifiber<=64; ifiber++) {
-    // Calculate fiber number [1..64] from feb channel
-    // lcn: linearconnectornumber, is the wire number on one of the
-    // flat cables. [1..16]
-    // each 16 fibers go to one connector.
-    // fibersubnr[0..15] linear fiber counter in groups of 16
-
-    Int_t fibersubnr=(ifiber-1)%16;
-
-    Int_t lcn=15-fibersubnr*2;
-    if (fibersubnr>=8) lcn=(fibersubnr-7)*2;
-    
-    Int_t channel=-1;
-    Int_t cable=(ifiber-1)/16+1;
-    Int_t pixel= ((lcn-1)/2)*8 +((lcn-1)%2);
-    if (cable==1) {
-      channel=(lcn-1)*4+0;
-      pixel=pixel+1;
-    }
-    if (cable==2) {
-      channel=(lcn-1)*4+2;
-      pixel=pixel+3;
-    }
-    if (cable==3) {
-      channel=(lcn-1)*4+1;
-      pixel=pixel+5;
-    }
-    if (cable==4) {
-      channel=(lcn-1)*4+3;
-      pixel=pixel+7;
-    }
-    
-    // new code to resolve cabling problem during cern-oct12
-    int ifiber_bis = ifiber;
-    if (ifiber <= 8 )  ifiber_bis = ifiber + 56; else
-      if (ifiber <= 16 ) ifiber_bis = ifiber + 40; else
-        if (ifiber <= 24 ) ifiber_bis = ifiber + 24; else
-          if (ifiber <= 32 ) ifiber_bis = ifiber + 8; else 
-            if (ifiber <= 40 ) ifiber_bis = ifiber - 8; else 
-              if (ifiber <= 48 ) ifiber_bis = ifiber - 24; else
-                if (ifiber <= 56 ) ifiber_bis = ifiber - 40; else
-                  if (ifiber <= 64 ) ifiber_bis = ifiber - 56;
-    
-    // and swap at the end
-    ifiber_bis = 65 - ifiber_bis;
-
-    fHodoFiber[channel] = ifiber_bis - 1;
-    fHodoPlane[channel] = 0;
-    fHodoPixel[channel] = pixel;
-
-    fHodoFiber[channel+64] = ifiber_bis - 1;
-    fHodoPlane[channel+64] = 1;
-    fHodoPixel[channel+64] = pixel;
-
-  }
-
-  for (Int_t i=0; i<128; i++) {
-    LOG(DEBUG) << "Channel[" << i << "]: " << fHodoFiber[i] << ", " 
-              << fHodoPlane[i] << ", " << fHodoPixel[i] 
-              << FairLogger::endl;
-  }
-
-}
-*/
 
 ClassImp(CbmTSUnpackTof)
