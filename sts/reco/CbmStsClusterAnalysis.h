@@ -7,6 +7,7 @@
 #define CBMSTSCLUSTERANALYSIS_H 1
 
 #include "TObject.h"
+#include "CbmStsPhysics.h"
 
 class TClonesArray;
 class CbmStsCluster;
@@ -27,10 +28,9 @@ class CbmStsClusterAnalysis : public TObject
 
 	public:
 
-		/** Constructor
-		 ** @param clusterçrray  Output array for CbmStsCluster objects
-		 **/
-		CbmStsClusterAnalysis() { };
+		/** Constructor **/
+		CbmStsClusterAnalysis() : fPhysics(CbmStsPhysics::Instance()) {
+		};
 
 
 		/** Destructor **/
@@ -47,6 +47,8 @@ class CbmStsClusterAnalysis : public TObject
 
 
 	protected:
+
+		CbmStsPhysics* fPhysics;  //! Instance of physics tool
 
 
 		ClassDef(CbmStsClusterAnalysis, 1);

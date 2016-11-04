@@ -256,6 +256,21 @@ class CbmStsModule : public CbmStsElement
      /** Return number of digis **/
      Int_t GetNofDigisTb() const { return fDigisTb.size(); }
 
+     /** Electronic noise
+      ** @value Electronic noise (r.m.s. in [e])
+      **/
+     Double_t GetNoise() const { return fNoise; }
+
+     /** Number of ADC channels for charge discretisation
+      ** @value Number of ADC channels
+      **/
+     Int_t GetNofAdcChannels() const { return fNofAdcChannels; }
+
+     /** Dynamic range
+      ** @value Dynamic range [e]
+      **/
+     Double_t GetDynamicRange() const { return fDynRange; }
+
      /** Start clustering procedure for the current module **/
      void StartClusteringTb();
 

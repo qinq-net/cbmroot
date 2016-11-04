@@ -20,6 +20,12 @@ void CbmStsClusterAnalysis::Analyze(CbmStsCluster* cluster,
 	assert(module);
 	assert(digiArray);
 
+	// --- Uncertainties of the charge measurements
+	Double_t eNoiseSq = module->GetNoise() * module->GetNoise();
+	Double_t chargePerAdc = module->GetDynamicRange() /
+			                Double_t(module->GetNofAdcChannels());
+	Double_t eDigitSq = chargePerAdc * chargePerAdc / 12.;
+
 
 	// --- For 1-strip clusters
 	if ( cluster->GetNofDigis() == 1 ) {
@@ -55,16 +61,38 @@ void CbmStsClusterAnalysis::Analyze(CbmStsCluster* cluster,
 		UInt_t address2 = digi2->GetAddress();
 		Double_t x1 = Double_t(CbmStsAddress::GetElementId(address1, kStsChannel));
 		Double_t x2 = Double_t(CbmStsAddress::GetElementId(address2, kStsChannel));
+		assert(x2 = x1 + 1); // channels should be in ascending order
 		Double_t q1 = module->AdcToCharge(digi1->GetCharge());
 		Double_t q2 = module->AdcToCharge(digi2->GetCharge());
+
+		// Uncertainties of the charge measurements
+		Double_t width1 = fPhysics->LandauWidth(q1);
+		Double_t eq1sq = width1 * width1 + eNoiseSq + eDigitSq;
+		Double_t width2 = fPhysics->LandauWidth(q2);
+		Double_t eq2sq = width2 * width2 + eNoiseSq + eDigitSq;
 
 		// Cluster time
 		Double_t time = 0.5 * ( digi1->GetTime() + digi2->GetTime());
 
 		// Cluster position
-		// The corresponding software note. The number 0.11785113 is 1/sqrt(72).
+		// See corresponding software note. The number 0.11785113 is 1/sqrt(72).
 		Double_t x = x1 + 0.5 + ( q2 - q1 ) / 3. /  TMath::Max(q1, q2);
-		Double_t dX = 0.11785113 * TMath::Abs(q2 - q1) / TMath::Max(q1, q2);
+
+		// Uncertainty on cluster position. See software note.
+		Double_t ex0sq = 0.;    // error for ideal charge measurements
+		Double_t ex1sq = 0.;    // error from first charge
+		Double_t ex2sq = 0.;    // error from second charge
+		if ( q1 < q2 ) {
+			ex0sq = (q2 - q1) * (q2 -q1) / q2 / q2 / 72.;
+			ex1sq = eq1sq / q2 / 9.;
+			ex2sq = eq2sq * q1 * q1 / q2 / q2 / q2 / q2 / 9.;
+		}
+		else {
+			ex0sq = (q2 - q1) * (q2-q1) / q1 / q1 / 72.;
+			ex1sq = eq1sq * q2 * q2 / q1 / q1 / q1 / q1 / 9.;
+			ex2sq = eq2sq / q1 / 9.;
+		}
+		Double_t dX = TMath::Sqrt( ex0sq + ex1sq + ex2sq);
 
 		// Cluster charge
 		Double_t charge = q1 + q2;
@@ -78,14 +106,20 @@ void CbmStsClusterAnalysis::Analyze(CbmStsCluster* cluster,
 
 
 	// --- For clusters with more than 2 strips
+	// It is assumed that the digis are ordered w.r.t. channel number
 	else {
 
-		Double_t tSum = 0.;
-		Double_t qSum = 0.;
+		Double_t tSum = 0.;  // sum of digi times
+		Double_t eqMidSq = 0.;  // sum of errors of digi charges (middle)
 		Int_t chanF = 9999999;  // first channel in cluster
 		Int_t chanL = -1;  // last channel in cluster
 		Double_t qF = 0.; // charge in first channel
+		Double_t qM = 0.;  // sum of charges in middle channels
 		Double_t qL = 0.; // charge in last cluster
+		Double_t eqFsq = 0.; // uncertainty of qF
+		Double_t eqMsq = 0.;  // uncertainty of qMid
+		Double_t eqLsq = 0.; // uncertainty of qL
+		Double_t prevChannel = 0;
 
 		for (Int_t iDigi = 0; iDigi < cluster->GetNofDigis(); iDigi++) {
 
@@ -95,32 +129,50 @@ void CbmStsClusterAnalysis::Analyze(CbmStsCluster* cluster,
 
 			tSum += digi->GetTime();
 			Double_t charge = module->AdcToCharge(digi->GetCharge());
-			qSum += charge;
+			Double_t lWidth = fPhysics->LandauWidth(charge);
+			Double_t eChargeSq = lWidth*lWidth + eNoiseSq + eDigitSq;
 			UInt_t address = digi->GetAddress();
 			Int_t channel = CbmStsAddress::GetElementId(address, kStsChannel);
 
-			if ( channel < chanF ) {
+			// Check ascending order of channel number
+			if ( iDigi > 0 ) assert(channel == prevChannel + 1);
+			prevChannel = channel;
+
+			if ( iDigi == 0 ) {  // first channel
 				chanF = channel;
 				qF = charge;
+				eqFsq = eChargeSq;
 			}
-			if ( channel > chanL ) {
+			else if ( iDigi == cluster->GetNofDigis()-1) { // last channel
 				chanL = channel;
 				qL = charge;
+				eqLsq = eChargeSq;
+			}
+			else {   // one of the middle channels
+				qM += charge;
+				eqMsq += eChargeSq;
 			}
 
 		} //# digis in cluster
 
-		// Cluster time
+		// Cluster time and total charge
 		tSum = tSum / Double_t(cluster->GetNofDigis());
+		Double_t qSum = qF + qM + qL;
 
 		// Average charge in middle strips
-		Double_t qMid = ( qSum - qF - qL ) / Double_t(cluster->GetNofDigis() - 2);
+		qM /= Double_t(cluster->GetNofDigis() - 2);
+		eqMsq /= Double_t(cluster->GetNofDigis() - 2);
 
 		// Cluster position
-		Double_t x = 0.5 * ( Double_t( chanF + chanL ) + ( qL - qF ) / qMid );
+		Double_t x = 0.5 * ( Double_t( chanF + chanL ) + ( qL - qF ) / qM );
 
 		// Cluster position error
-		Double_t dX = 0.;
+		Double_t exFsq = eqFsq / qM / qM / 4.;  // error from first charge
+		Double_t exMsq = eqMsq * (qL - qF) * (qL - qF) / qM / qM / qM / qM / 4.;
+		Double_t exLsq = eqLsq / qM / qM / 4.;
+		Double_t ex1sq = 0.;    // error from first charge
+		Double_t ex2sq = 0.;    // error from second charge
+		Double_t dX = TMath::Sqrt(exFsq + exMsq + exLsq);
 
 		cluster->SetAddress(module->GetAddress());
 		cluster->SetProperties(qSum, x, 0., tSum);
