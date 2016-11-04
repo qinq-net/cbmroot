@@ -84,13 +84,13 @@ void CbmStsClusterAnalysis::Analyze(CbmStsCluster* cluster,
 		Double_t ex2sq = 0.;    // error from second charge
 		if ( q1 < q2 ) {
 			ex0sq = (q2 - q1) * (q2 -q1) / q2 / q2 / 72.;
-			ex1sq = eq1sq / q2 / 9.;
+			ex1sq = eq1sq / q2 / q2 / 9.;
 			ex2sq = eq2sq * q1 * q1 / q2 / q2 / q2 / q2 / 9.;
 		}
 		else {
 			ex0sq = (q2 - q1) * (q2-q1) / q1 / q1 / 72.;
 			ex1sq = eq1sq * q2 * q2 / q1 / q1 / q1 / q1 / 9.;
-			ex2sq = eq2sq / q1 / 9.;
+			ex2sq = eq2sq / q1 / q1 / 9.;
 		}
 		Double_t dX = TMath::Sqrt( ex0sq + ex1sq + ex2sq);
 
