@@ -175,6 +175,11 @@ struct LxTbTYXBin
 
 struct LxTbBinnedStation
 {
+    struct Q
+    {
+        scaltype Q11, Q12, Q21, Q22;
+    };
+    
     int stationNumber;
     scaltype z;
     int nofXBins;
@@ -194,6 +199,7 @@ struct LxTbBinnedStation
     scaltype dispX;
     scaltype dispY;
     LxTbTYXBin* tyxBins;
+    Q qs[2];
     
     LxTbBinnedStation(int nofxb, int nofyb, int noftb) : nofXBins(nofxb), nofYBins(nofyb), nofTYXBins(noftb), lastXBin(nofxb - 1), lastYBin(nofyb - 1),
         tyxBins(reinterpret_cast<LxTbTYXBin*> (new unsigned char[noftb * sizeof(LxTbTYXBin)]))
@@ -269,6 +275,63 @@ static long fullDuration = 0;
 
 struct LxTbBinnedFinder
 {
+
+    struct KFParamsCoord
+    {
+        scaltype coord, tg, C11, C12, C21, C22;
+    };
+
+    struct KFParams
+    {
+        KFParamsCoord xParams;
+        KFParamsCoord yParams;
+        scaltype chi2;
+    };
+
+    void KFAddPointCoord(KFParamsCoord& param, const KFParamsCoord& prevParam, scaltype m, scaltype V, scaltype& chi2, int stationNumber, int coordNumber)
+    {
+        const LxTbBinnedStation& station = stations[stationNumber];
+        const LxTbBinnedStation::Q& Q = station.qs[coordNumber];
+        scaltype deltaZ = station.z - stations[stationNumber + 1].z;
+        scaltype deltaZSq = deltaZ * deltaZ;
+
+        // Extrapolate.
+        param.coord += prevParam.tg * deltaZ; // params[k].tg is unchanged.
+
+        // Filter.
+        param.C11 += prevParam.C12 * deltaZ + prevParam.C21 * deltaZ + prevParam.C22 * deltaZSq + Q.Q11;
+        param.C12 += prevParam.C22 * deltaZ + Q.Q12;
+        param.C21 += prevParam.C22 * deltaZ + Q.Q21;
+        param.C22 += Q.Q22;
+
+        scaltype S = 1.0 / (V + param.C11);
+        scaltype Kcoord = param.C11 * S;
+        scaltype Ktg = param.C21 * S;
+        scaltype dzeta = m - param.coord;
+        param.coord += Kcoord * dzeta;
+        param.tg += Ktg * dzeta;
+        param.C21 -= param.C11 * Ktg;
+        param.C22 -= param.C12 * Ktg;
+        param.C11 *= 1.0 - Kcoord;
+        param.C12 *= 1.0 - Kcoord;
+        chi2 += dzeta * S * dzeta;
+    }
+
+    void KFAddPoint(KFParams& param, const KFParams& prevParam, scaltype m[2], scaltype V[2], int stationNumber)
+    {
+        /*LxRay* ray = rays[i];
+        LxPoint* point = ray->end;
+        LxStation* station = point->layer->station;
+        scaltype m[2] = { point->x, point->y };
+        scaltype V[2] = { point->dx * point->dx, point->dy * point->dy };
+        KFParams pPrev[2] = { params[0], params[1] };
+        scaltype deltaZ = point->z - prevPoint->z;
+        scaltype deltaZ2 = deltaZ * deltaZ;*/
+
+        KFAddPointCoord(param.xParams, prevParam.xParams, m[0], V[0], param.chi2, stationNumber, 0);
+        KFAddPointCoord(param.yParams, prevParam.yParams, m[1], V[1], param.chi2, stationNumber, 1);
+    }
+    
     struct Chain
     {
         LxTbBinnedPoint** points;
@@ -495,7 +558,6 @@ struct LxTbBinnedFinder
         fHasTrd = fHasTrd && fSignalParticle->fHasTrd;
         scaltype E = fSignalParticle->fMinEnergy;// GeV
         scaltype E0 = E;
-        scaltype deltaTheta = 0;
         
         for (int i = 0; i < fNofStations; ++i)
         {
@@ -507,12 +569,16 @@ struct LxTbBinnedFinder
             if (i > 0)
             {
                 scaltype Escat = (E0 + E) / 2;
-                deltaTheta += CalcThetaPrj(Escat, L, &stations[i].absorber);
+                scaltype deltaTheta = CalcThetaPrj(Escat, L, &stations[i].absorber);
                 stations[i].deltaThetaX = deltaTheta;
                 stations[i].deltaThetaY = deltaTheta;
                 scaltype deltaZ = stations[i].z - stations[i - 1].z;
-                stations[i].dispX = deltaTheta * deltaZ;
-                stations[i].dispY = deltaTheta * deltaZ;
+                stations[i].dispX = stations[i].deltaThetaX * deltaZ;
+                stations[i].dispY = stations[i].deltaThetaY * deltaZ;
+                scaltype q0XSq = stations[i].deltaThetaX * stations[i].deltaThetaX;
+                scaltype q0YSq = stations[i].deltaThetaY * stations[i].deltaThetaY;
+                stations[i].qs[0] = { q0XSq * L * L / 3, q0XSq * L / 2, q0XSq * L / 2, q0XSq };
+                stations[i].qs[1] = { q0YSq * L * L / 3, q0YSq * L / 2, q0YSq * L / 2, q0YSq };
             }
             
             E0 = E;
@@ -532,8 +598,8 @@ struct LxTbBinnedFinder
             for (int i = 0; i < fNofTrdLayers; ++i)
             {
                 scaltype deltaZ = trdStation.Zs[i] - stations[fLastStationNumber].z;
-                trdStation.dispXs[i] = deltaTheta * deltaZ;
-                trdStation.dispYs[i] = deltaTheta * deltaZ;
+                trdStation.dispXs[i] = trdStation.deltaThetaX * deltaZ;
+                trdStation.dispYs[i] = trdStation.deltaThetaY * deltaZ;
             }
             
             E0 = E;
@@ -898,11 +964,19 @@ struct LxTbBinnedFinder
 
                     for (std::list<LxTbBinnedPoint>::iterator l = rXBin.points.begin(); l != rXBin.points.end(); ++l)
                     {
-                        LxTbBinnedPoint& rPoint = *l;                        
-                        scaltype chi2 = 0;
+                        LxTbBinnedPoint& rPoint = *l;
                         std::list<ChainImpl> chains;
-                        FindChains(fLastStationNumber, &rPoint, 0, points, chi2, chains);
+                        
+                        KFParams kfParams =
+                        {
+                            { rPoint.x, rPoint.x / lastStation.z, rPoint.dx * rPoint.dx, 0, 0, 1.0 },
+                            { rPoint.y, rPoint.y / lastStation.z, rPoint.dy * rPoint.dy, 0, 0, 1.0 },
+                            0
+                        };
+                        
+                        FindChains(fLastStationNumber, &rPoint, 0, points, kfParams, chains);
                         const ChainImpl* bestChain = 0;
+                        scaltype chi2 = 0;
                         
                         for (std::list<ChainImpl>::const_iterator m = chains.begin(); m != chains.end(); ++m)
                         {
@@ -1041,13 +1115,13 @@ struct LxTbBinnedFinder
     }
     
     void FindChains(int stationIndex, const LxTbBinnedPoint* rPoint, const LxTbBinnedRay* rRay,
-        const LxTbBinnedPoint** points, scaltype chi2, std::list<ChainImpl>& chains)
+        const LxTbBinnedPoint** points, KFParams kfParamsPrev, std::list<ChainImpl>& chains)
     {
         points[stationIndex] = rPoint;
         
         if (0 == stationIndex)
         {
-            ChainImpl chain(points, fNofStations, chi2);
+            ChainImpl chain(points, fNofStations, kfParamsPrev.chi2);
             chains.push_back(chain);
             return;
         }
@@ -1056,15 +1130,18 @@ struct LxTbBinnedFinder
         {
             const LxTbBinnedRay& lRay = *i;
             const LxTbBinnedPoint* lPoint = lRay.lPoint;
-            scaltype chi2_2 = chi2 + lRay.chi2;
+            /*scaltype chi2_2 = chi2 + lRay.chi2;
             
             if (0 != rRay)
                 //chi2_2 += (lRay.tx - rRay->tx) * (lRay.tx - rRay->tx) / (rRay->dtxSq + lRay.dtxSq) +
                             //(lRay.ty - rRay->ty) * (lRay.ty - rRay->ty) / (rRay->dtySq + lRay.dtySq);
                 chi2_2 += (lRay.tx - rRay->tx) * (lRay.tx - rRay->tx) / (stations[stationIndex].deltaThetaX * stations[stationIndex].deltaThetaX) +
-                        (lRay.ty - rRay->ty) * (lRay.ty - rRay->ty) / (stations[stationIndex].deltaThetaY * stations[stationIndex].deltaThetaY);
-            
-            FindChains(stationIndex - 1, lPoint, &lRay, points, chi2_2, chains);
+                        (lRay.ty - rRay->ty) * (lRay.ty - rRay->ty) / (stations[stationIndex].deltaThetaY * stations[stationIndex].deltaThetaY);*/
+            KFParams kfParams = kfParamsPrev;
+            scaltype m[2] = { lPoint->x, lPoint->y };
+            scaltype V[2] = { lPoint->dx * lPoint->dx, lPoint->dy * lPoint->dy };
+            KFAddPoint(kfParams, kfParamsPrev, m, V, stationIndex - 1);
+            FindChains(stationIndex - 1, lPoint, &lRay, points, kfParams, chains);
         }
     }
     
@@ -1127,7 +1204,6 @@ struct LxTbBinnedFinder
                         
                     triggerTimes_trd1_sign0_dist0.Insert(pairTime);
                 }
-
 
                 if (trackSign * track2Sign < 0)
                 {

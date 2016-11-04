@@ -21,6 +21,7 @@ static scaltype gElectronMass = 0;
 
 struct LxTbAbsorber
 {
+    scaltype zCoord;// Z-coordinate of the absorber beginning.
     scaltype width;
     scaltype radLength;// Radiation length
     scaltype rho;// Density

@@ -1280,6 +1280,7 @@ void LxTBFinder::Exec(Option_t* opt)
    
    int prevTrigTimeSize = triggerTimes_trd1_sign1_dist1.size();// Not very elegant! >---------------------------------------
    SpliceTriggerings(triggerTimes_trd1_sign1_dist1, fFinder->triggerTimes_trd1_sign1_dist1);//                             |
+#ifdef LXTB_TIE
    //                                                                                                                      |
    if (triggerTimes_trd1_sign1_dist1.size() - prevTrigTimeSize > 0)// Triggering event. Do global tracks generation. <------
    {
@@ -1309,6 +1310,7 @@ void LxTBFinder::Exec(Option_t* opt)
       
       fDetector->TieTracks(*fFinder);
    }
+#endif//LXTB_TIE
 #endif//LXTB_EMU_TS
    
 #ifdef LXTB_QA
