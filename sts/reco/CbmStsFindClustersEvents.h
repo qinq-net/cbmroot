@@ -59,43 +59,42 @@ class CbmStsFindClustersEvents : public FairTask
     virtual ~CbmStsFindClustersEvents();
 
 
-    /** Task execution
-     ** Inherited from FairTask.
-     **/
+    /** Task execution **/
     virtual void Exec(Option_t* opt);
 
 
-    /** End-of-run action
-     ** Inherited from FairTask.
-     **/
+    /** End-of-run action **/
     virtual void Finish();
 
 
-    /** End-of-event action
-     ** Inherited from FairTaks
-     **/
+    /** End-of-event action **/
     virtual void FinishEvent();
 
 
-    /** Initialisation
-     ** Inherited from FairTask.
+    /** Get array with CbmStsClusters
+     ** @value Pointer to cluster TClonesArray
      **/
+    TClonesArray* GetClusters() { return fClusters; }
+
+
+    /** Initialisation **/
     virtual InitStatus Init();
-    //void ExecMQ();
-    //bool InitMQ(const std::string& geo_file);
-    //InitStatus SetTimeSlice(CbmTimeSlice* ts);
-    TClonesArray* GetClusters() {return fClusters;}
 
 
-    /** Set energy loss model in order to take it into account in position error **/
-    void SetELossModel(Int_t eLossModel = 1) {fELossModel = eLossModel;}
+    /** Set the parameters for all modules in the CbmSetup.
+     ** Currently, all modules have the same parameters, which are defined
+     ** in the constructor (default) or by the SetParameters() method.
+     **/
+    void SetModuleParameters();
 
-    /** Set parameters for all modules if digitizer and cluster finder
-     ** are used in different macro. Need for time-based case.
+
+    /** Set parameters for all modules if digitiser and cluster finder
+     ** are used in different macro.
+     ** TODO: This has to be solved in a better way without hardcoding.
      **/
     void SetParameters(Double_t dynRange = 75000., Double_t threshold = 3000., Int_t nAdc = 32,
-      		               Double_t timeResolution = 10., Double_t deadTime = 800.,
-      		               Double_t noise = 1000.) {
+      		           Double_t timeResolution = 10., Double_t deadTime = 800.,
+      		           Double_t noise = 1000.) {
          fDynRange       = dynRange;
          fThreshold      = threshold;
          fNofAdcChannels = nAdc;
@@ -104,7 +103,6 @@ class CbmStsFindClustersEvents : public FairTask
          fNoise          = noise;
     }
 
-    void SetModuleParameters();
 
 
     private:
@@ -117,11 +115,7 @@ class CbmStsFindClustersEvents : public FairTask
     CbmStsClusterAnalysis* fAna;      ///< Cluster analysis engine
     TStopwatch    fTimer;             ///< ROOT timer
     Int_t         fFinderModel;       ///< Cluster finder model
-    Int_t         fELossModel;        ///< Energy loss model, to take propely into position error
     
-    Bool_t fUseFinderTb;              ///< Using of time based cluster finder
-    Double_t fDeadTime;               ///< Dead time for time-based cluster finder
-
     // --- Run counters
     Int_t     fNofEvents;       ///< Total number of events processed
     Double_t  fNofDigisTot;     ///< Total number of digis processed
@@ -134,10 +128,12 @@ class CbmStsFindClustersEvents : public FairTask
     Int_t    fNofAdcChannels;      ///< Number of ADC channels
     Double_t fTimeResolution;      ///< Time resolution (sigma) [ns]
     Double_t fNoise;               ///< equivalent noise charge (sigma) [ns]
+    Double_t fDeadTime;            ///< Channel dead time
 
     /** Set of active modules in the current event **/
+    // TODO: This set sorts according to the (random) memory address, which is
+    // very inconvenient for debugging. Maybe a list or a vextor would be better.
     std::set<CbmStsModule*> fActiveModules;
-
 
 
     /** Process one event

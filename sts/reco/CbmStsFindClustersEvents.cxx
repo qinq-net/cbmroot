@@ -31,8 +31,6 @@
 
 using namespace std;
 
-// TODO: General cleanup; flexibility to choose cluster finder
-// (factory scheme)
 
 
 // -----   Constructor   ---------------------------------------------------
@@ -46,8 +44,6 @@ CbmStsFindClustersEvents::CbmStsFindClustersEvents(Int_t finderModel)
     , fAna (NULL)
     , fTimer()
     , fFinderModel(finderModel)
-    , fELossModel(0)
-    , fUseFinderTb(kFALSE)
     , fDeadTime(9999999.)
     , fNofEvents(0.)
     , fNofDigisTot(0.)
@@ -62,6 +58,7 @@ CbmStsFindClustersEvents::CbmStsFindClustersEvents(Int_t finderModel)
 {
 }
 // -------------------------------------------------------------------------
+
 
 
 // -----   Destructor   ----------------------------------------------------
@@ -86,57 +83,6 @@ void CbmStsFindClustersEvents::Exec(Option_t* opt) {
 		CbmEvent* event = static_cast<CbmEvent*> (fEvents->At(iEvent));
 		ProcessEvent(event);
 	}
-
-}
-// -------------------------------------------------------------------------
-
-
-// -----  Process one event   ----------------------------------------------
-void CbmStsFindClustersEvents::ProcessEvent(CbmEvent* event) {
-
-	// Start timer and counter
-	fTimer.Start();
-	Int_t nClustersEvent = 0;
-
-	// --- Sort digis into modules
-	Int_t nDigis = SortDigis(event);
-
-	// --- Find clusters in modules
-	set<CbmStsModule*>::iterator it;
-	for (it = fActiveModules.begin(); it != fActiveModules.end(); it++) {
-		Int_t nClusters = 0;
-	  nClusters = fFinder->FindClusters(*it, event);
-		LOG(DEBUG1) << GetName() << ": Module " << (*it)->GetName()
-    			      << ", digis: " << (*it)->GetNofDigis()
-   		          << ", clusters " << nClusters << FairLogger::endl;
-		nClustersEvent += nClusters;
-	}
-
-	// --- Analyse the clusters in the event
-	Int_t nClusters = event->GetNofData(Cbm::kStsCluster);
-	for (Int_t iCluster = 0; iCluster < nClusters; iCluster++) {
-		Int_t index = event->GetIndex(Cbm::kStsCluster, iCluster);
-		CbmStsCluster* cluster = (CbmStsCluster*) fClusters->At(index);
-		CbmStsModule* module =
-				(CbmStsModule*) fSetup->GetElement(cluster->GetAddress(), kStsModule);
-		fAna->Analyze(cluster, module, fDigis);
-	}
-
-  // --- Counters
-  fTimer.Stop();
-  fNofEvents++;
-  fNofDigisTot    += nDigis;
-  fNofClustersTot += nClustersEvent;
-  fTimeTot        += fTimer.RealTime();
-
-  LOG(INFO) << "+ " << setw(20) << GetName() << ": Event " << setw(6)
-  		      << right << event->GetNumber()
-  		      << ", real time " << fixed << setprecision(6)
-  		      << fTimer.RealTime() << " s, digis: " << nDigis
-  		      << ", clusters: " << nClustersEvent << FairLogger::endl;
-
-  // --- End-of-event action (clear digi maps of modules)
-  FinishEvent();
 
 }
 // -------------------------------------------------------------------------
@@ -237,7 +183,7 @@ InitStatus CbmStsFindClustersEvents::Init()
     	case 1: fFinder = new CbmStsClusterFinderReal(fClusters); break;
     	case 2: fFinder = new CbmStsClusterFinderGap(fClusters); break;
     	default: LOG(FATAL) << GetName() << ": Unknown cluster finder model"
-    										  << fFinderModel << FairLogger::endl; break;
+    						<< fFinderModel << FairLogger::endl; break;
     }
     LOG(INFO) << GetName() << ": Use cluster finder "
               << fFinder->GetTitle() << FairLogger::endl;
@@ -251,50 +197,54 @@ InitStatus CbmStsFindClustersEvents::Init()
 
 
 
+// -----  Process one event   ----------------------------------------------
+void CbmStsFindClustersEvents::ProcessEvent(CbmEvent* event) {
 
-// ----- Sort digis into module digi maps   --------------------------------
-Int_t CbmStsFindClustersEvents::SortDigis(CbmEvent* event) {
+	// Start timer and counter
+	fTimer.Start();
+	Int_t nClustersEvent = 0;
 
-	// --- Counters
-	Int_t nDigis   = event->GetNofData(Cbm::kStsDigi);
+	// --- Sort digis into modules
+	Int_t nDigis = SortDigis(event);
 
-	// --- Loop over digis in event
-	for (Int_t iDigi = 0; iDigi < nDigis; iDigi++) {
-		UInt_t index = event->GetIndex(Cbm::kStsDigi, iDigi);
-		CbmStsDigi* digi = (CbmStsDigi*) fDigis->At(index);
-		assert(digi);
-
-		// --- Get the module
-		UInt_t address = digi->GetAddress();
-		CbmStsModule* module =
-				static_cast<CbmStsModule*>(fSetup->GetElement(address, kStsModule));
-		if ( ! module ) {
-			LOG(FATAL) << GetName() << ": Module " << address
-					       << " not present in STS setup!" << FairLogger::endl;
-			continue;
-		}
-
-		// --- Add module to list of active modules, if not yet present.
-		fActiveModules.insert(module);
-
-		// --- Add the digi to the module
-	  module->AddDigi(digi, index);
-
-	}  // Loop over digi array
-
-	// --- Debug output
-	LOG(DEBUG) << GetName() << ": sorted " << nDigis << " digis into "
-			       << fActiveModules.size() << " module(s)." << FairLogger::endl;
-	if ( FairLogger::GetLogger()->IsLogNeeded(DEBUG3) ) {
-		set<CbmStsModule*>::iterator it;
-		for (it = fActiveModules.begin(); it != fActiveModules.end() ; it++) {
-				LOG(DEBUG3) << GetName() << ": Module " << (*it)->GetName()
-						        << ", digis " << (*it)->GetNofDigis()
-						        << FairLogger::endl;
-		}
+	// --- Find clusters in modules
+	set<CbmStsModule*>::iterator it;
+	for (it = fActiveModules.begin(); it != fActiveModules.end(); it++) {
+		Int_t nClusters = 0;
+		nClusters = fFinder->FindClusters(*it, event);
+		LOG(DEBUG1) << GetName() << ": Module " << (*it)->GetName()
+    			    << ", digis: " << (*it)->GetNofDigis()
+   		            << ", clusters " << nClusters << FairLogger::endl;
+		nClustersEvent += nClusters;
 	}
 
-	return nDigis;
+	// --- Analyse the clusters in the event
+	Int_t nClusters = event->GetNofData(Cbm::kStsCluster);
+	for (Int_t iCluster = 0; iCluster < nClusters; iCluster++) {
+		Int_t index = event->GetIndex(Cbm::kStsCluster, iCluster);
+		CbmStsCluster* cluster = (CbmStsCluster*) fClusters->At(index);
+		CbmStsModule* module =
+				(CbmStsModule*) fSetup->GetElement(cluster->GetAddress(),
+						                           kStsModule);
+		fAna->Analyze(cluster, module, fDigis);
+	}
+
+  // --- Counters
+  fTimer.Stop();
+  fNofEvents++;
+  fNofDigisTot    += nDigis;
+  fNofClustersTot += nClustersEvent;
+  fTimeTot        += fTimer.RealTime();
+
+  LOG(INFO) << "+ " << setw(20) << GetName() << ": Event " << setw(6)
+  		      << right << event->GetNumber()
+  		      << ", real time " << fixed << setprecision(6)
+  		      << fTimer.RealTime() << " s, digis: " << nDigis
+  		      << ", clusters: " << nClustersEvent << FairLogger::endl;
+
+  // --- End-of-event action (clear digi maps of modules)
+  FinishEvent();
+
 }
 // -------------------------------------------------------------------------
 
@@ -333,8 +283,51 @@ void CbmStsFindClustersEvents::SetModuleParameters()
 
 
 
+// ----- Sort digis into module digi maps   --------------------------------
+Int_t CbmStsFindClustersEvents::SortDigis(CbmEvent* event) {
 
+	// --- Counters
+	Int_t nDigis   = event->GetNofData(Cbm::kStsDigi);
 
+	// --- Loop over digis in event
+	for (Int_t iDigi = 0; iDigi < nDigis; iDigi++) {
+		UInt_t index = event->GetIndex(Cbm::kStsDigi, iDigi);
+		CbmStsDigi* digi = (CbmStsDigi*) fDigis->At(index);
+		assert(digi);
+
+		// --- Get the module
+		UInt_t address = digi->GetAddress();
+		CbmStsModule* module =
+				static_cast<CbmStsModule*>(fSetup->GetElement(address, kStsModule));
+		if ( ! module ) {
+			LOG(FATAL) << GetName() << ": Module " << address
+					       << " not present in STS setup!" << FairLogger::endl;
+			continue;
+		}
+
+		// --- Add module to list of active modules, if not yet present.
+		fActiveModules.insert(module);
+
+		// --- Add the digi to the module
+		module->AddDigi(digi, index);
+
+	}  // Loop over digi array
+
+	// --- Debug output
+	LOG(DEBUG) << GetName() << ": sorted " << nDigis << " digis into "
+			       << fActiveModules.size() << " module(s)." << FairLogger::endl;
+	if ( FairLogger::GetLogger()->IsLogNeeded(DEBUG3) ) {
+		set<CbmStsModule*>::iterator it;
+		for (it = fActiveModules.begin(); it != fActiveModules.end() ; it++) {
+				LOG(DEBUG3) << GetName() << ": Module " << (*it)->GetName()
+						        << ", digis " << (*it)->GetNofDigis()
+						        << FairLogger::endl;
+		}
+	}
+
+	return nDigis;
+}
+// -------------------------------------------------------------------------
 
 
 ClassImp(CbmStsFindClustersEvents)
