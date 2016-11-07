@@ -208,7 +208,7 @@ Int_t CbmFlibTestSource::FillBuffer()
       }
       fTSNumber=tsIndex;
 
-      if ( 0 ==fTSNumber%100 ) {
+      if ( 0 ==fTSNumber%1000 ) {
         LOG(INFO) << "Reading Timeslice " << fTSNumber
                   << FairLogger::endl;    
       }
@@ -219,7 +219,7 @@ Int_t CbmFlibTestSource::FillBuffer()
         LOG(DEBUG) << "Found systemID: " << std::hex 
                   << systemID << std::dec << FairLogger::endl;
         
-        if(gLogger->IsLogNeeded(DEBUG)) {
+        if(gLogger->IsLogNeeded(DEBUG1)) {
           PrintMicroSliceDescriptor(ts.descriptor(c, 0));
         }
 

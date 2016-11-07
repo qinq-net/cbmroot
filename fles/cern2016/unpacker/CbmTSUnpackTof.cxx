@@ -6,6 +6,8 @@
 // -----------------------------------------------------------------------------
 
 #include "CbmTSUnpackTof.h"
+#include "CbmTofUnpackPar.h"
+
 #include "CbmTbDaqBuffer.h"
 
 //#include "CbmFiberHodoAddress.h"
@@ -13,6 +15,8 @@
 
 #include "FairLogger.h"
 #include "FairRootManager.h"
+#include "FairRun.h"
+#include "FairRuntimeDb.h"
 
 #include "TClonesArray.h"
 #include "TString.h"
@@ -21,7 +25,9 @@
 #include <stdint.h>
 #include <iomanip>
 
-const UInt_t kuNbChanGet4 = 4;
+const UInt_t kuNbChanGet4 =  4;
+const UInt_t kuNbChanAfck = 96;  // FIXME - should be read from parameter file 
+static Int_t iMess=0;
 
 CbmTSUnpackTof::CbmTSUnpackTof( UInt_t uNbGdpb )
   : CbmTSUnpack(),
@@ -36,12 +42,12 @@ CbmTSUnpackTof::CbmTSUnpackTof( UInt_t uNbGdpb )
     fCurrentEpochTime(0.),
     fEquipmentId(0),
 //    fFiberHodoRaw(new TClonesArray("CbmNxyterRawMessage", 10)),
-//    fFiberHodoDigi(new TClonesArray("CbmFiberHodoDigi", 10)),
+    fTofDigi(new TClonesArray("CbmTofDigi", 10)),
 //    fRawMessage(NULL),  
-//    fDigi(NULL),
-    fBuffer(CbmTbDaqBuffer::Instance())
+    fDigi(NULL),
+    fBuffer(CbmTbDaqBuffer::Instance()),
+    fUnpackPar(NULL)
 {
-
 }
 
 CbmTSUnpackTof::~CbmTSUnpackTof()
@@ -50,7 +56,7 @@ CbmTSUnpackTof::~CbmTSUnpackTof()
 
 Bool_t CbmTSUnpackTof::Init()
 {
-  LOG(INFO) << "Initializing flib nxyter unpacker" << FairLogger::endl;
+  LOG(INFO) << "Initializing flib Get4 unpacker" << FairLogger::endl;
 
   FairRootManager* ioman = FairRootManager::Instance();
   if (ioman == NULL) {
@@ -58,7 +64,7 @@ Bool_t CbmTSUnpackTof::Init()
   }
 
   //  ioman->Register("FiberHodoRawMessage", "fiberhodo raw data", fFiberHodoRaw, kTRUE);
-//  ioman->Register("FiberHodoDigi", "fiber hodo digi", fFiberHodoDigi, kTRUE);
+  ioman->Register("TofDigi", "tof raw digi", fTofDigi, kTRUE);
 
   CreateHistograms();
 
@@ -67,21 +73,43 @@ Bool_t CbmTSUnpackTof::Init()
 
 void CbmTSUnpackTof::SetParContainers()
 {
-	LOG(INFO) << "Setting parameter containers for " << GetName()
-			<< FairLogger::endl;
+  LOG(INFO) << "Setting parameter containers for " << GetName()
+	    << FairLogger::endl;
+  fUnpackPar = (CbmTofUnpackPar*)(FairRun::Instance()->GetRuntimeDb()->getContainer("CbmTofUnpackPar"));
+
 }
 
 Bool_t CbmTSUnpackTof::InitContainers()
 {
 	LOG(INFO) << "Init parameter containers for " << GetName()
 			<< FairLogger::endl;
-	return kTRUE;
+	return ReInitContainers();
 }
 
 Bool_t CbmTSUnpackTof::ReInitContainers()
 {
 	LOG(INFO) << "ReInit parameter containers for " << GetName()
 			<< FairLogger::endl;
+	Int_t nrOfRocs = fUnpackPar->GetNrOfRocs();
+
+	LOG(INFO) << "Nr. of Tof Rocs: " << nrOfRocs
+    		  << FairLogger::endl;
+	
+	fGdpbIdIndexMap.clear();
+	for (Int_t i = 0; i< nrOfRocs; ++i) {
+	  fGdpbIdIndexMap[fUnpackPar->GetRocId(i)] = i;
+	  LOG(INFO) << "Roc Id of TOF  " << i
+			  << " : " << fUnpackPar->GetRocId(i)
+			  << FairLogger::endl;
+	}
+	Int_t NrOfChannels = fUnpackPar->GetNumberOfChannels();
+	LOG(INFO) << "Nr. of mapped Tof channels: " << NrOfChannels;
+	for (Int_t i = 0; i< NrOfChannels; ++i) {
+	  if(i%8 == 0)  LOG(INFO) << FairLogger::endl;
+	  LOG(INFO) << Form(" 0x%08x",fUnpackPar->GetChannelToDetUIdMap(i));
+	}
+	LOG(INFO)  << FairLogger::endl;
+	
 	return kTRUE;
 }
 
@@ -103,7 +131,7 @@ void CbmTSUnpackTof::CreateHistograms()
 Bool_t CbmTSUnpackTof::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
 
-  LOG(DEBUG) << "Timeslice contains " << ts.num_microslices(component)
+  LOG(DEBUG1) << "Timeslice contains " << ts.num_microslices(component)
              << "microslices." << FairLogger::endl;
   
   // Loop over microslices
@@ -119,6 +147,7 @@ Bool_t CbmTSUnpackTof::DoUnpack(const fles::Timeslice& ts, size_t component)
       const uint8_t* msContent = reinterpret_cast<const uint8_t*>(ts.content(component, m));
 
       uint32_t size = msDescriptor.size;
+      if(size>0)
       LOG(DEBUG) << "Microslice: " << msDescriptor.idx 
                 << " has size: " << size << FairLogger::endl; 
 
@@ -151,19 +180,22 @@ Bool_t CbmTSUnpackTof::DoUnpack(const fles::Timeslice& ts, size_t component)
           case ngdpb::MSG_HIT: 
  //           FillHitInfo(mess);
             LOG(ERROR) << "Message type " << mess.getMessageType() 
-                       << " not yet include in unpacker."
+                       << " not yet included in unpacker."
                        << FairLogger::endl;
             break;
           case ngdpb::MSG_EPOCH:
  //           FillEpochInfo(mess);
             LOG(ERROR) << "Message type " << mess.getMessageType() 
-                       << " not yet include in unpacker."
+                       << " not yet included in unpacker."
                        << FairLogger::endl;
             break;
           case ngdpb::MSG_EPOCH2:
             FillEpochInfo(mess);
             break;
-          case ngdpb::MSG_GET4_32B:
+          case ngdpb::MSG_GET4:
+            PrintGenInfo(mess);
+            break;
+	  case ngdpb::MSG_GET4_32B:
             FillHitInfo(mess);
             break;
           case ngdpb::MSG_GET4_SLC:
@@ -172,15 +204,17 @@ Bool_t CbmTSUnpackTof::DoUnpack(const fles::Timeslice& ts, size_t component)
           case ngdpb::MSG_GET4_SYS:
             PrintSysInfo(mess);
             break;
-          default: 
-            LOG(ERROR) << "Message type " << std::hex << std::setw(2) 
+          default:
+	    if(100 > iMess++)
+	      LOG(ERROR) << "Message ("<<iMess<<") type " << std::hex << std::setw(2) 
                        << static_cast< uint16_t >( mess.getMessageType() ) 
-                       << " not yet include in Get4 unpacker."
+                       << " not yet included in Get4 unpacker."
                        << FairLogger::endl;
+	    if(100 == iMess)
+	      LOG(ERROR) << "Stop reporting MSG errors... "
+                         << FairLogger::endl;
           }
           
-
-
         } // for (uint32_t uIdx = 0; uIdx < uNbMessages; uIdx ++)
       
     }
@@ -200,17 +234,29 @@ void CbmTSUnpackTof::FillHitInfo(ngdpb::Message mess)
              
   if( fGdpbIdIndexMap.end() != fGdpbIdIndexMap.find( rocId ) )
   {
-      fHM->H2( Form("Raw_Tot_gDPB_%02u", fGdpbIdIndexMap[ rocId ]) )
-         ->Fill( get4Id*kuNbChanGet4 + channel, tot);
-      fHM->H1( Form("ChCount_gDPB_%02u", fGdpbIdIndexMap[ rocId ]) )
-         ->Fill( get4Id*kuNbChanGet4 + channel );
-      hitTime  = mess.getMsgFullTime(fCurrentEpoch[rocId][get4Id]);
-   }
+    fHM->H2( Form("Raw_Tot_gDPB_%02u", fGdpbIdIndexMap[ rocId ]) )
+       ->Fill( get4Id*kuNbChanGet4 + channel, tot);
+    fHM->H1( Form("ChCount_gDPB_%02u", fGdpbIdIndexMap[ rocId ]) )
+       ->Fill( get4Id*kuNbChanGet4 + channel );
+    hitTime  = mess.getMsgFullTime(fCurrentEpoch[rocId][get4Id]);
+   
  
-  LOG(DEBUG) << "Hit: " << rocId << ", " << get4Id 
+    LOG(DEBUG) << "Hit: " << rocId << ", " << get4Id 
              << ", " << channel << ", " << tot << ", " << hitTime 
              << FairLogger::endl;
+    
+    Int_t iChan    = rocId*kuNbChanAfck + get4Id*kuNbChanGet4 + channel;
+    Int_t iChanUId = fUnpackPar->GetChannelToDetUIdMap( iChan );
+    Double_t dTime = hitTime; // in ns
+    Double_t dTot  = tot;     // in ps
 
+    LOG(DEBUG) << "Create digi with time " << dTime
+      //<< " at epoch " << fCurrentEpoch[rocId]
+	       << FairLogger::endl;
+    fDigi = new CbmTofDigiExp(iChanUId, dTime, dTot);
+
+    fBuffer->InsertData(fDigi);
+  }
 }
 
 void CbmTSUnpackTof::FillEpochInfo(ngdpb::Message mess)
@@ -277,6 +323,19 @@ void CbmTSUnpackTof::PrintSlcInfo(ngdpb::Message mess)
 
 }
 
+void CbmTSUnpackTof::PrintGenInfo(ngdpb::Message mess)
+{
+  Int_t mType        = mess.getMessageType();
+  Int_t rocId          = mess.getRocNumber();
+  Int_t get4Id     = mess.getGdpbGenChipId();
+  Int_t channel    = mess.getGdpbHitChanId();
+  uint64_t            uData = mess.getData(); 
+  if(100 > iMess++)
+  LOG(INFO) << "Get4 MSG type "<<mType<<" from rocId "<<rocId<<", getId "<<get4Id
+	    << ", (hit channel) "<<channel<<Form(" data 0x%08x ",uData)
+            << FairLogger::endl;  
+}
+
 void CbmTSUnpackTof::PrintSysInfo(ngdpb::Message mess)
 {
   Int_t rocId          = mess.getRocNumber();
@@ -319,7 +378,7 @@ void CbmTSUnpackTof::PrintSysInfo(ngdpb::Message mess)
 void CbmTSUnpackTof::Reset()
 {
   //  fFiberHodoRaw->Clear();
-  //fFiberHodoDigi->Clear();
+  fTofDigi->Clear();
 }
 
 void CbmTSUnpackTof::Finish()
@@ -339,6 +398,7 @@ void CbmTSUnpackTof::Finish()
     case 8: message_type ="GET4_SLC"; break;
     case 9: message_type ="GET4_32B"; break;
     case 10: message_type ="GET4_SYS"; break;
+    default:  message_type ="UNKNOWN"; break;
     }
     LOG(INFO) << message_type << " messages: " 
               << fMsgCounter[i] << FairLogger::endl;
@@ -370,8 +430,8 @@ void CbmTSUnpackTof::Finish()
 void CbmTSUnpackTof::FillOutput(CbmDigi* digi)
 {
 
-//  new( (*fFiberHodoDigi)[fFiberHodoDigi->GetEntriesFast()] )
-//    CbmFiberHodoDigi(*(dynamic_cast<CbmFiberHodoDigi*>(digi)));
+ new( (*fTofDigi)[fTofDigi->GetEntriesFast()] )
+    CbmTofDigiExp(*(dynamic_cast<CbmTofDigiExp*>(digi)));
 
 }
 

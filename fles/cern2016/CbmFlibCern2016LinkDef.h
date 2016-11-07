@@ -8,6 +8,7 @@
 #pragma link C++ class CbmTSUnpackFHodo;
 #pragma link C++ class CbmTSUnpackTof;
 #pragma link C++ class CbmFHodoUnpackPar;
+#pragma link C++ class CbmTofUnpackPar;
 #pragma link C++ class CbmFlesTestContFact;
 
 #endif

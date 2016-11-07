@@ -8,6 +8,7 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/data
   ${CBMROOT_SOURCE_DIR}/data/beamtime/fhodo
   ${CBMROOT_SOURCE_DIR}/data/raw
+  ${CBMROOT_SOURCE_DIR}/data/tof
 
   ${CBMROOT_SOURCE_DIR}/beamtime/base
   ${CBMROOT_SOURCE_DIR}/fles/cern2016
@@ -44,6 +45,7 @@ Set(SRCS
   unpacker/CbmTSUnpackFHodo.cxx
   unpacker/CbmTSUnpackTof.cxx
 
+  param/CbmTofUnpackPar.cxx
   param/CbmFHodoUnpackPar.cxx
   param/CbmFlesTestContFact.cxx
 )

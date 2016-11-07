@@ -16,7 +16,8 @@
 #include "CbmTSUnpack.h"
 #include "CbmHistManager.h"
 #include "CbmNxyterRawMessage.h"
-#include "CbmFiberHodoDigi.h"
+#include "CbmTofDigi.h"
+#include "CbmTofDigiExp.h"
 #include "CbmTbDaqBuffer.h"
 
 #include "TClonesArray.h"
@@ -25,6 +26,7 @@
 #include <map>
 
 class CbmDigi;
+class CbmTofUnpackPar;
 
 class CbmTSUnpackTof : public CbmTSUnpack
 {
@@ -72,11 +74,13 @@ private:
   Int_t fEquipmentId;
 
 //  TClonesArray* fFiberHodoRaw;
-//  TClonesArray* fFiberHodoDigi;
+  TClonesArray* fTofDigi;
 //  CbmNxyterRawMessage* fRawMessage;  
-//  CbmFiberHodoDigi* fDigi;  
+  CbmTofDigiExp* fDigi;  
 
   CbmTbDaqBuffer* fBuffer;
+  
+  CbmTofUnpackPar* fUnpackPar;      //!
 
   void CreateHistograms();
 
@@ -85,6 +89,7 @@ private:
   void FillEpochInfo(ngdpb::Message);
   void PrintSlcInfo(ngdpb::Message);
   void PrintSysInfo(ngdpb::Message);
+  void PrintGenInfo(ngdpb::Message);
 #endif
 
   CbmTSUnpackTof(const CbmTSUnpackTof&);

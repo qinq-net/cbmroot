@@ -10,6 +10,8 @@
 
 #include "CbmFHodoUnpackPar.h"
 
+#include "CbmTofUnpackPar.h"
+
 #include "FairRuntimeDb.h"
 
 ClassImp(CbmFlesTestContFact)
@@ -33,7 +35,14 @@ void CbmFlesTestContFact::setAllContainers() {
                                           "TestDefaultContext");
     p->addContext("TestNonDefaultContext");
 
-    containers->Add(p); 
+    containers->Add(p);
+
+    FairContainer* p2= new FairContainer("CbmTofUnpackPar",
+                                          "Tof Unpack Parameters",
+                                          "TestDefaultContext");
+    p2->addContext("TestNonDefaultContext");
+
+    containers->Add(p2); 
 }
 
 FairParSet* CbmFlesTestContFact::createContainer(FairContainer* c) {
@@ -44,6 +53,9 @@ FairParSet* CbmFlesTestContFact::createContainer(FairContainer* c) {
   FairParSet* p=0;
   if (strcmp(name,"CbmFHodoUnpackPar")==0) {
       p=new CbmFHodoUnpackPar(c->getConcatName().Data(),c->GetTitle(),c->getContext());
+  }
+  if (strcmp(name,"CbmTofUnpackPar")==0) {
+      p=new CbmTofUnpackPar(c->getConcatName().Data(),c->GetTitle(),c->getContext());
   }
   return p;
 }
