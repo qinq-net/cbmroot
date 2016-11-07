@@ -3,6 +3,7 @@
  ** @date 14.05.2013
  **/
 
+#include <cmath>
 #include "TClonesArray.h"
 #include "TRandom.h"
 #include "FairLogger.h"
@@ -488,7 +489,7 @@ void CbmStsModule::Digitize(Int_t channel, CbmStsSignal* signal) {
 	// will show up in event-by-event simulations, since the digi times
 	// in this case are mostly below 1 ns.
 	Double_t  deltaT = gRandom->Gaus(0., fTimeResolution);
-	Long64_t dTime = Long64_t(std::round(signal->GetTime() + deltaT));;
+	Long64_t dTime = Long64_t(round(signal->GetTime() + deltaT));;
 
 	// --- Send the message to the digitiser task
 	LOG(DEBUG4) << GetName() << ": charge " << signal->GetCharge()

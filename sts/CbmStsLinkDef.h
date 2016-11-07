@@ -43,6 +43,7 @@
 #pragma link C++ class CbmStsFindHits;
 #pragma link C++ class CbmStsFindHitsEvents;
 #pragma link C++ class CbmStsFindTracksEvents;
+#pragma link C++ class CbmStsTestQa;
 
 // Enumerators
 #pragma link C++ enum EStsElementLevel;
