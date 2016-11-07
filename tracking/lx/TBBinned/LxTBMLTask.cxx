@@ -436,6 +436,16 @@ struct LxTbDetector
       struct KFParamsCoord
       {
          scaltype coord, tg, C11, C12, C21, C22;
+         
+         void Clear()
+         {
+            coord = 0;
+            tg = 0;
+            C11 = 1.0;
+            C12 = 0;
+            C21 = 0;
+            C22 = 0;
+         }
       };
 
       struct KFParams
@@ -443,28 +453,45 @@ struct LxTbDetector
          KFParamsCoord xParams;
          KFParamsCoord yParams;
          scaltype chi2;
+         
+         void Clear()
+         {
+            xParams.Clear();
+            yParams.Clear();
+            chi2 = 0;
+         }
       };
       
       LxTbDetector& detector;
       
       explicit HandleLastPoint(LxTbDetector& parent) : detector(parent) {}
 
-      void KFAddPointCoord(KFParamsCoord& param, const KFParamsCoord& prevParam, scaltype m, scaltype V, scaltype& chi2, int stationNumber, int layerNumber, int coordNumber)
+      KFParamsCoord KFAddPointCoord(KFParamsCoord prevParam, scaltype m, scaltype V, scaltype& chi2, int stationNumber, int layerNumber, int coordNumber)
       {
+         KFParamsCoord param = prevParam;
          const LxTbMLStation& station = detector.fStations[stationNumber];
          const LxTbLayer& layer = station.fLayers[layerNumber];
          const LxTbMLStation::Q& Q = station.qs[coordNumber];
-         scaltype deltaZ = layer.z - detector.fStations[stationNumber + 1].fLayers[0].z;
+         scaltype deltaZ = 2 == layerNumber ? layer.z - detector.fStations[stationNumber + 1].fLayers[0].z : layer.z - station.fLayers[layerNumber + 1].z;
          scaltype deltaZSq = deltaZ * deltaZ;
 
          // Extrapolate.
          param.coord += prevParam.tg * deltaZ; // params[k].tg is unchanged.
 
          // Filter.
-         param.C11 += prevParam.C12 * deltaZ + prevParam.C21 * deltaZ + prevParam.C22 * deltaZSq + Q.Q11;
-         param.C12 += prevParam.C22 * deltaZ + Q.Q12;
-         param.C21 += prevParam.C22 * deltaZ + Q.Q21;
-         param.C22 += Q.Q22;
+         if (2 == layerNumber)
+         {
+            param.C11 += prevParam.C12 * deltaZ + prevParam.C21 * deltaZ + prevParam.C22 * deltaZSq + Q.Q11;
+            param.C12 += prevParam.C22 * deltaZ + Q.Q12;
+            param.C21 += prevParam.C22 * deltaZ + Q.Q21;
+            param.C22 += Q.Q22;
+         }
+         else
+         {
+            param.C11 += prevParam.C12 * deltaZ + prevParam.C21 * deltaZ + prevParam.C22 * deltaZSq;
+            param.C12 += prevParam.C22 * deltaZ;
+            param.C21 += prevParam.C22 * deltaZ;
+         }
 
          scaltype S = 1.0 / (V + param.C11);
          scaltype Kcoord = param.C11 * S;
@@ -477,36 +504,54 @@ struct LxTbDetector
          param.C11 *= 1.0 - Kcoord;
          param.C12 *= 1.0 - Kcoord;
          chi2 += dzeta * S * dzeta;
+         return param;
       }
 
-      void KFAddPoint(KFParams& param, const KFParams& prevParam, scaltype m[2], scaltype V[2], int stationNumber, int layerNumber)
+      KFParams KFAddPoint(KFParams prevParam, scaltype m[2], scaltype V[2], int stationNumber, int layerNumber)
       {
-         KFAddPointCoord(param.xParams, prevParam.xParams, m[0], V[0], param.chi2, stationNumber, layerNumber, 0);
-         KFAddPointCoord(param.yParams, prevParam.yParams, m[1], V[1], param.chi2, stationNumber, layerNumber, 1);
+         KFParams param = { KFAddPointCoord(prevParam.xParams, m[0], V[0], param.chi2, stationNumber, layerNumber, 0),
+            KFAddPointCoord(prevParam.yParams, m[1], V[1], param.chi2, stationNumber, layerNumber, 1) };
+         return param;
       }
-    
-      void HandlePoint(LxTbBinnedPoint* point, LxTbBinnedPoint* trackCandidatePoints[NOF_STATIONS][NOF_LAYERS], list<LxTBMLFinder::Chain>& chains, int level, scaltype chi2)
+      
+      KFParams KFAddTriplet(KFParams param, LxTbBinnedPoint* trackCandidatePoints[NOF_STATIONS][NOF_LAYERS], int level)
+      {
+         LxTbBinnedPoint** points = trackCandidatePoints[level];
+         
+         for (int i = LAST_LAYER; i >= 0; --i)
+         {
+            LxTbBinnedPoint* point = points[i];
+            scaltype m[2] = { point->x, point->y };
+            scaltype V[2] = { point->dx * point->dx, point->dy * point->dy };
+            param = KFAddPoint(param, m, V, level, i);
+         }
+         
+         return param;
+      }
+      
+      void HandleTriplet(LxTbBinnedTriplet* triplet, LxTbBinnedPoint* trackCandidatePoints[NOF_STATIONS][NOF_LAYERS], list<LxTBMLFinder::Chain>& chains, int level, KFParams kfParams)
+      {
+         trackCandidatePoints[level][0] = triplet->lPoint;
+         trackCandidatePoints[level][2] = triplet->rPoint;
+         kfParams = KFAddTriplet(kfParams, trackCandidatePoints, level);
+         
+         if (0 == level)
+            chains.push_back(LxTBMLFinder::Chain(trackCandidatePoints, kfParams.chi2));
+         else
+         {            
+            for (list<LxTbBinnedPoint*>::iterator i = triplet->neighbours.begin(); i != triplet->neighbours.end(); ++i)
+               HandlePoint(*i, trackCandidatePoints, chains, level - 1, kfParams);
+         }
+      }
+      
+      void HandlePoint(LxTbBinnedPoint* point, LxTbBinnedPoint* trackCandidatePoints[NOF_STATIONS][NOF_LAYERS], list<LxTBMLFinder::Chain>& chains, int level, KFParams kfParams)
       {
          trackCandidatePoints[level][1] = point;
          
          for (list<LxTbBinnedTriplet*>::iterator i = point->triplets.begin(); i != point->triplets.end(); ++i)
          {
             LxTbBinnedTriplet* triplet = *i;
-            HandleTriplet(triplet, trackCandidatePoints, chains, level, chi2);
-         }
-      }
-      
-      void HandleTriplet(LxTbBinnedTriplet* triplet, LxTbBinnedPoint* trackCandidatePoints[NOF_STATIONS][NOF_LAYERS], list<LxTBMLFinder::Chain>& chains, int level, scaltype chi2)
-      {
-         trackCandidatePoints[level][0] = triplet->lPoint;
-         trackCandidatePoints[level][2] = triplet->rPoint;
-         
-         if (0 == level)
-            chains.push_back(LxTBMLFinder::Chain(trackCandidatePoints, chi2));
-         else
-         {
-            for (list<LxTbBinnedPoint*>::iterator i = triplet->neighbours.begin(); i != triplet->neighbours.end(); ++i)
-               HandlePoint(*i, trackCandidatePoints, chains, level - 1, chi2);
+            HandleTriplet(triplet, trackCandidatePoints, chains, level, kfParams);
          }
       }
       
@@ -514,8 +559,29 @@ struct LxTbDetector
       {
          LxTbBinnedPoint* trackCandidatePoints[NOF_STATIONS][NOF_LAYERS];
          list<LxTBMLFinder::Chain> chains;
+         KFParams kfParams =
+         {
+            { 0, 0, 1.0, 0, 0, 1.0 },
+            { 0, 0, 1.0, 0, 0, 1.0 },
+            0
+         };
+         HandlePoint(&point, trackCandidatePoints, chains, LAST_STATION, kfParams);
+         const LxTBMLFinder::Chain* bestChain = 0;
          scaltype chi2 = 0;
-         HandlePoint(&point, trackCandidatePoints, chains, LAST_STATION, chi2);
+                        
+         for (list<LxTBMLFinder::Chain>::const_iterator i = chains.begin(); i != chains.end(); ++i)
+         {
+            const LxTBMLFinder::Chain& chain = *i;
+
+            if (0 == bestChain || chain.chi2 < chi2)
+            {
+               bestChain = &chain;
+               chi2 = chain.chi2;
+            }
+         }
+
+         if (0 != bestChain)
+            detector.recoTracks.push_back(new LxTBMLFinder::Chain(*bestChain));
       }
    };
    
@@ -710,18 +776,6 @@ void LxTBMLFinder::Exec(Option_t* opt)
    
    pReconstructor->Reconstruct();
    recoTracks.splice(recoTracks.end(), pReconstructor->recoTracks);
-   
-   LxTbMLStation& station = gStations[0];
-   LxTbLayer& layer = station.fLayers[0];
-   scaltype minX = 0;
-   scaltype maxX = 0;
-   scaltype minY = 0;
-   scaltype maxY = 0;
-   scaltype minT = 0;
-   scaltype maxT = 0;
-   LXTB_ITERATE_LAYER_BEGIN
-   cout << point.x << " " << point.y << " " << point.t << endl;
-   LXTB_ITERATE_LAYER_END
    ++currentEventN;
    tsStartTime += 100;
 }
