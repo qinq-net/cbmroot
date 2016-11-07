@@ -32,7 +32,11 @@ uint64_t ngdpb::Message::getMsgFullTime(uint32_t epoch) const
          return FullTimeStamp2(epoch, getGet4Ts()) / 20 + 512;
       case MSG_SYS:
          return FullTimeStamp(epoch, 0);
-
+      case MSG_GET4_32B:
+         return FullTimeStamp2(epoch, getGdpbHitFullTs()) / 20 + 512;
+      case MSG_GET4_SLC:
+      case MSG_GET4_SYS:
+         return FullTimeStamp2(epoch, 0) / 20 + 512;
    }
    return 0;
 }

@@ -231,7 +231,14 @@ void CbmTSUnpackTof::FillHitInfo(ngdpb::Message mess)
   Int_t channel    = mess.getGdpbHitChanId(); 
   Int_t tot        = mess.getGdpbHit32Tot();
   ULong_t hitTime  = mess.getMsgFullTime( 0 );
-             
+
+  hitTime  = mess.getMsgFullTime(fCurrentEpoch[rocId][get4Id]);
+  LOG(INFO) << "Hit: " << rocId << ", " << get4Id 
+            << ", " << channel << ", " << tot
+	    << ", epoch " << fCurrentEpoch[rocId][get4Id]
+	    << ", time "  << hitTime 
+            << FairLogger::endl;
+      
   if( fGdpbIdIndexMap.end() != fGdpbIdIndexMap.find( rocId ) )
   {
     fHM->H2( Form("Raw_Tot_gDPB_%02u", fGdpbIdIndexMap[ rocId ]) )
@@ -240,11 +247,7 @@ void CbmTSUnpackTof::FillHitInfo(ngdpb::Message mess)
        ->Fill( get4Id*kuNbChanGet4 + channel );
     hitTime  = mess.getMsgFullTime(fCurrentEpoch[rocId][get4Id]);
    
- 
-    LOG(DEBUG) << "Hit: " << rocId << ", " << get4Id 
-             << ", " << channel << ", " << tot << ", " << hitTime 
-             << FairLogger::endl;
-    
+    /*
     Int_t iChan    = rocId*kuNbChanAfck + get4Id*kuNbChanGet4 + channel;
     Int_t iChanUId = fUnpackPar->GetChannelToDetUIdMap( iChan );
     Double_t dTime = hitTime; // in ns
@@ -256,6 +259,7 @@ void CbmTSUnpackTof::FillHitInfo(ngdpb::Message mess)
     fDigi = new CbmTofDigiExp(iChanUId, dTime, dTot);
 
     fBuffer->InsertData(fDigi);
+    */
   }
 }
 
