@@ -33,11 +33,13 @@ CbmStsTrack::~CbmStsTrack() {
 // -----   Debug   ---------------------------------------------------------
 std::string CbmStsTrack::ToString() const {
    stringstream ss;
-   ss << "CbmStsTrack: nof STS hits=" << GetNofStsHits() << ", nof MVD hits="
-         << GetNofMvdHits() << "chiSq=" << GetChiSq() << ", NDF="
-         << GetNDF() << ", pidHypo=" << GetPidHypo() << ", previousTrackId="
-         << GetPreviousTrackId() << ", flag=" << GetFlag() << ", B="
-         << GetB() << "\n";
+   ss << "CbmStsTrack: hits STS " << GetNofStsHits() << " MVD "
+	  << GetNofMvdHits() << " | q/p " << GetParamFirst()->GetQp()
+	  << " | chisq " << GetChiSq() << " | NDF "
+	  << GetNDF() << " | STS hits ";
+   for (Int_t iHit = 0; iHit < GetNofStsHits(); iHit++) {
+	   ss << GetStsHitIndex(iHit) << " ";
+   }
    return ss.str();
 }
 // -------------------------------------------------------------------------

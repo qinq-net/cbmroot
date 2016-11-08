@@ -81,6 +81,7 @@ void CbmBuildEventsIdeal::Exec(Option_t*) {
 	timer.Stop();
 
   // --- Execution log
+  std::cout << std::endl;
   LOG(INFO) << "+ " << setw(20) << GetName() << ": Entry " << setw(6)
   		      << right << fNofEntries << ", real time " << fixed
   		      << setprecision(6) << timer.RealTime() << " s, digis: "

@@ -63,8 +63,7 @@ void CbmStsTestQa::Exec(Option_t* opt) {
 		}
 	}
 
-	else
-		ProcessEvent();
+	else ProcessEvent();
 
 }
 // -------------------------------------------------------------------------
@@ -177,12 +176,14 @@ void CbmStsTestQa::ProcessEvent(CbmEvent* event) {
 		Int_t index = (event ? event->GetIndex(Cbm::kStsTrack, iTrack) : iTrack);
 		CbmStsTrack* track = dynamic_cast<CbmStsTrack*>(fTracks->At(index));
 		assert(track);
-		// Have to find out how to extrapolate the track to the target
+		if ( fFileTracks ) (*fFileTracks) << track->ToString() << "\n";
+		// TODO: Have to find out how to extrapolate the track to the target
 	}
 
 	// Process primary vertices
 	CbmVertex* vertex = (event ? event->GetVertex() : fVertex);
 	assert(vertex);
+	if ( fFileVertices ) (*fFileVertices) << vertex->ToString() << "\n";
 	fHistMan->H1("z PV")->Fill(vertex->GetZ());
 
 	// Event log
