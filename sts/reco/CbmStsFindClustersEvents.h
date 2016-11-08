@@ -130,12 +130,6 @@ class CbmStsFindClustersEvents : public FairTask
     Double_t fNoise;               ///< equivalent noise charge (sigma) [ns]
     Double_t fDeadTime;            ///< Channel dead time
 
-    /** Set of active modules in the current event **/
-    // TODO: This set sorts according to the (random) memory address, which is
-    // very inconvenient for debugging. Maybe a list or a vextor would be better.
-    std::set<CbmStsModule*> fActiveModules;
-
-
     /** Process one event
      ** @param event Pointer to event object
      **/

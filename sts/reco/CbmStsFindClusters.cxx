@@ -82,6 +82,7 @@ void CbmStsFindClusters::Exec(Option_t* /*opt*/) {
 	Int_t nOfDigis = SortDigis();
 
 	// --- Find clusters in modules
+	/*
 	set<CbmStsModule*>::iterator it;
 	for (it = fActiveModules.begin(); it != fActiveModules.end(); it++) {
 		Int_t nClusters = 0;
@@ -93,6 +94,21 @@ void CbmStsFindClusters::Exec(Option_t* /*opt*/) {
 			nClusters = fFinder->FindClustersSimple(*it);
 		LOG(DEBUG1) << GetName() << ": Module " << (*it)->GetName()
     			      << ", digis: " << (*it)->GetNofDigis()
+   		          << ", clusters " << nClusters << FairLogger::endl;
+		nOfClusters += nClusters;
+	}
+	*/
+	for (Int_t iModule = 0; iModule < fSetup->GetNofModules(); iModule++) {
+		CbmStsModule* module = fSetup->GetModule(iModule);
+		if ( module->GetNofDigis() == 0 ) continue;
+		Int_t nClusters = 0;
+		if ( fUseFinderTb ) {
+			module->SetDeadTime(fDeadTime);
+			nClusters = fFinder->FindClustersTb(module);
+		}
+		else nClusters = fFinder->FindClustersSimple(module);
+		LOG(DEBUG1) << GetName() << ": Module " << module->GetName()
+    			      << ", digis: " << module->GetNofDigis()
    		          << ", clusters " << nClusters << FairLogger::endl;
 		nOfClusters += nClusters;
 	}

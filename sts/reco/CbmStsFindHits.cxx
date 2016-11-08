@@ -67,13 +67,10 @@ void CbmStsFindHits::Exec(Option_t* /*opt*/) {
 	// --- Find hits in modules
 	Int_t nHits = 0;
 	set<CbmStsModule*>::iterator it;
-	for (it = fActiveModules.begin(); it != fActiveModules.end(); it++) {
-		CbmStsModule* module = (*it);
-		if ( ! module ) {
-			LOG(FATAL) << GetName() << ": Non-valid module pointer in vector!"
-					       << FairLogger::endl;
-			continue;
-		}
+	//for (it = fActiveModules.begin(); it != fActiveModules.end(); it++) {
+	for (Int_t iModule = 0; iModule < fSetup->GetNofModules(); iModule++) {
+		CbmStsModule* module = fSetup->GetModule(iModule);
+		if ( module->GetNofClusters() == 0 ) continue;
 		if ( fDTime ) module->SetDeadTime(fDTime);
 		Int_t nModuleHits = module->FindHits(fHits);
 		LOG(DEBUG1) << GetName() << ": Module " << module->GetName()

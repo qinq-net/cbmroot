@@ -14,6 +14,7 @@ class CbmEvent;
 class CbmVertex;
 class CbmHistManager;
 class TClonesArray;
+class fstream;
 
 class CbmStsTestQa: public FairTask {
 
@@ -48,6 +49,10 @@ private:
     CbmVertex* fVertex; //!
 
     CbmHistManager* fHistMan;
+    ofstream* fFileClusters; //!
+    ofstream* fFileHits; //!
+    ofstream* fFileTracks; //!
+    ofstream* fFileVertices; //!
 
     void ProcessEvent(CbmEvent* event = NULL);
 

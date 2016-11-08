@@ -30,7 +30,6 @@ CbmStsFindHitsEvents::CbmStsFindHitsEvents()
     , fNofClustersTot(0.)
     , fNofHitsTot(0.)
     , fTimeTot(0.)
-    , fActiveModules()
 {
 }
 // -------------------------------------------------------------------------
@@ -89,12 +88,12 @@ void CbmStsFindHitsEvents::FinishEvent() {
 
 	// --- Clear cluster sets for all active modules
 	Int_t nModules = 0;
-	set<CbmStsModule*>::iterator it;
-	for (it = fActiveModules.begin(); it != fActiveModules.end(); it++) {
-		(*it)->ClearClusters();
+	for (Int_t iModule = 0; iModule < fSetup->GetNofModules(); iModule++) {
+		CbmStsModule* module = fSetup->GetModule(iModule);
+		if ( module->GetNofClusters() == 0 ) continue;
+		module->ClearClusters();
 		nModules++;
 	}
-	fActiveModules.clear();
 
 	LOG(DEBUG) << GetName() << ": Cleared clusters in " << nModules
 			       << " modules. " << FairLogger::endl;
@@ -154,15 +153,9 @@ Int_t CbmStsFindHitsEvents::ProcessEvent(CbmEvent* event) {
 	Int_t nClusters = SortClusters(event);
 
 	// --- Find hits in modules
-	Int_t nHits = 0;
-	set<CbmStsModule*>::iterator it;
-	for (it = fActiveModules.begin(); it != fActiveModules.end(); it++) {
-		CbmStsModule* module = (*it);
-		if ( ! module ) {
-			LOG(FATAL) << GetName() << ": Non-valid module pointer in vector!"
-					       << FairLogger::endl;
-			continue;
-		}
+	for (Int_t iModule = 0; iModule < fSetup->GetNofModules(); iModule++) {
+		CbmStsModule* module = fSetup->GetModule(iModule);
+		if ( module->GetNofClusters() == 0 ) continue;
 		if ( fDTime ) module->SetDeadTime(fDTime);
 		Int_t nHitsModule = module->FindHits(fHits, event);
 		LOG(DEBUG1) << GetName() << ": Module " << module->GetName()
@@ -209,26 +202,25 @@ Int_t CbmStsFindHitsEvents::SortClusters(CbmEvent* event) {
 		CbmStsModule* module =
 				static_cast<CbmStsModule*>(fSetup->GetElement(address, kStsModule));
 
-	  // --- Update set of active modules
-		fActiveModules.insert(module);
-
 		// --- Assign cluster to module
 		module->AddCluster(cluster);
 
 	}  //# clusters in event
 
 	// --- Debug output
-	LOG(DEBUG) << GetName() << ": sorted " << nClusters << " clusters into "
-			       << fActiveModules.size() << " module(s)." << FairLogger::endl;
-	if ( FairLogger::GetLogger()->IsLogNeeded(DEBUG3) ) {
-		set <CbmStsModule*>::iterator it;
-		for (it = fActiveModules.begin(); it != fActiveModules.end() ; it++) {
-			CbmStsModule* module = (*it);
+	if ( FairLogger::GetLogger()->IsLogNeeded(DEBUG) ) {
+		Int_t nActiveModules = 0;
+		for (Int_t iModule = 0; iModule < fSetup->GetNofModules(); iModule++) {
+			CbmStsModule* module = fSetup->GetModule(iModule);
+			if ( module->GetNofClusters() == 0 ) continue;
+			nActiveModules++;
 			LOG(DEBUG3) << GetName() << ": Module " << module->GetName()
-						      << ", clusters " << module->GetNofClusters()
-						      << FairLogger::endl;
-		}  // active module loop
-	}  //? DEBUG 3
+						<< ", clusters " << module->GetNofClusters()
+						<< FairLogger::endl;
+		} //# modules in setup
+		LOG(DEBUG) << GetName() << ": sorted " << nClusters << " clusters into "
+				   << nActiveModules << " module(s)." << FairLogger::endl;
+	} //? DEBUG
 
 	return nClusters;
 }

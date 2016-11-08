@@ -86,9 +86,6 @@ class CbmStsFindHitsEvents : public FairTask
     Double_t fNofHitsTot;      ///< Total number of hits produced
     Double_t fTimeTot;         ///< Total execution time
 
-    /** Set of active modules in the current event **/
-    std::set<CbmStsModule*> fActiveModules;
-
 
     /** Process one event
      ** @param event  Pointer to event object

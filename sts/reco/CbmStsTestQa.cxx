@@ -8,6 +8,7 @@
 #include "CbmStsTestQa.h"
 
 #include <cassert>
+#include <fstream>
 #include <iomanip>
 #include "TClonesArray.h"
 #include "TStopwatch.h"
@@ -28,13 +29,21 @@ CbmStsTestQa::CbmStsTestQa() :
 	fHits(NULL),
 	fTracks(NULL),
 	fVertex(NULL),
-	fHistMan(NULL)
+	fHistMan(NULL),
+	fFileClusters(NULL),
+	fFileHits(NULL),
+	fFileTracks(NULL),
+	fFileVertices(NULL)
 {
 	SetName("StsTestQa");
 }
 
 CbmStsTestQa::~CbmStsTestQa() {
 	if ( fHistMan ) delete fHistMan;
+	if ( fFileClusters ) delete fFileClusters;
+	if ( fFileHits ) delete fFileHits;
+	if ( fFileTracks ) delete fFileTracks;
+	if ( fFileVertices ) delete fFileVertices;
 }
 
 
@@ -66,6 +75,10 @@ void CbmStsTestQa::Exec(Option_t* opt) {
 void CbmStsTestQa::Finish() {
 
 	fHistMan->WriteToFile();
+	if ( fFileClusters ) fFileClusters->close();
+	if ( fFileHits) fFileHits->close();
+	if ( fFileTracks) fFileTracks->close();
+	if ( fFileVertices) fFileVertices->close();
 
 }
 // -------------------------------------------------------------------------
@@ -110,6 +123,14 @@ InitStatus CbmStsTestQa::Init()
 	fHistMan->Create1<TH1F>("pt primary tracks", "pt primary tracks", 100, 0., 5.);
 	fHistMan->Create1<TH1F>("z PV", "z PV", 100., -0.1, 0.1);
 
+	// For debug output into file
+	if ( FairLogger::GetLogger()->IsLogNeeded(DEBUG) ) {
+		fFileClusters = new std::ofstream("clusters.txt");
+		fFileHits     = new std::ofstream("hits.txt");
+		fFileTracks   = new std::ofstream("tracks.txt");
+		fFileVertices = new std::ofstream("vertices.txt");
+	}
+
  return kSUCCESS;
 }
 // -------------------------------------------------------------------------
@@ -133,6 +154,7 @@ void CbmStsTestQa::ProcessEvent(CbmEvent* event) {
 		CbmStsCluster* cluster = dynamic_cast<CbmStsCluster*>(fClusters->At(index));
 		assert(cluster);
 	    fHistMan->H1("Cluster size")->Fill(Float_t(cluster->GetSize()));
+	    if ( fFileClusters ) (*fFileClusters) << cluster->ToString() << "\n";
 	} //# clusters in event
 
 	// Process hits
@@ -143,6 +165,7 @@ void CbmStsTestQa::ProcessEvent(CbmEvent* event) {
 		CbmStsHit* hit = dynamic_cast<CbmStsHit*>(fHits->At(index));
 		assert(hit);
 		Int_t station = CbmStsAddress::GetElementId(hit->GetAddress(), kStsStation);
+	    if ( fFileHits ) (*fFileHits) << hit->ToString() << "\n";
 		if ( station != 7) continue;
 		fHistMan->H1("Hit x in station 8")->Fill(hit->GetX());
 	}

@@ -64,6 +64,8 @@ public:
     Int_t GetFrontClusterId() const { return fFrontClusterId; }
 
 
+    /** Info to string **/
+	virtual std::string ToString() const;
 
 
 private:

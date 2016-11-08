@@ -54,7 +54,6 @@ CbmStsFindClustersEvents::CbmStsFindClustersEvents(Int_t finderModel)
     , fNofAdcChannels(4096)
     , fTimeResolution(5.)
     , fNoise(0.)
-    , fActiveModules()
 {
 }
 // -------------------------------------------------------------------------
@@ -116,12 +115,12 @@ void CbmStsFindClustersEvents::FinishEvent() {
 
 	// --- Clear digi maps for all active modules
 	Int_t nModules = 0;
-	set<CbmStsModule*>::iterator it;
-	for (it = fActiveModules.begin(); it != fActiveModules.end(); it++) {
-		(*it)->ClearDigis();
+	for (Int_t iModule = 0; iModule < fSetup->GetNofModules(); iModule++) {
+		CbmStsModule* module = fSetup->GetModule(iModule);
+		if ( module->GetNofDigis() == 0 ) continue;
+		module->ClearDigis();
 		nModules++;
 	}
-	fActiveModules.clear();
 
 	LOG(DEBUG) << GetName() << ": Cleared digis in " << nModules
 			       << " modules. " << FairLogger::endl;
@@ -208,12 +207,12 @@ void CbmStsFindClustersEvents::ProcessEvent(CbmEvent* event) {
 	Int_t nDigis = SortDigis(event);
 
 	// --- Find clusters in modules
-	set<CbmStsModule*>::iterator it;
-	for (it = fActiveModules.begin(); it != fActiveModules.end(); it++) {
-		Int_t nClusters = 0;
-		nClusters = fFinder->FindClusters(*it, event);
-		LOG(DEBUG1) << GetName() << ": Module " << (*it)->GetName()
-    			    << ", digis: " << (*it)->GetNofDigis()
+	for (Int_t iModule = 0; iModule < fSetup->GetNofModules(); iModule++) {
+		CbmStsModule* module = fSetup->GetModule(iModule);
+		if ( module->GetNofDigis() == 0 ) continue;
+		Int_t nClusters = fFinder->FindClusters(module, event);
+		LOG(DEBUG1) << GetName() << ": Module " << module->GetName()
+    			    << ", digis: " << module->GetNofDigis()
    		            << ", clusters " << nClusters << FairLogger::endl;
 		nClustersEvent += nClusters;
 	}
@@ -305,24 +304,24 @@ Int_t CbmStsFindClustersEvents::SortDigis(CbmEvent* event) {
 			continue;
 		}
 
-		// --- Add module to list of active modules, if not yet present.
-		fActiveModules.insert(module);
-
 		// --- Add the digi to the module
 		module->AddDigi(digi, index);
 
 	}  // Loop over digi array
 
 	// --- Debug output
-	LOG(DEBUG) << GetName() << ": sorted " << nDigis << " digis into "
-			       << fActiveModules.size() << " module(s)." << FairLogger::endl;
-	if ( FairLogger::GetLogger()->IsLogNeeded(DEBUG3) ) {
-		set<CbmStsModule*>::iterator it;
-		for (it = fActiveModules.begin(); it != fActiveModules.end() ; it++) {
-				LOG(DEBUG3) << GetName() << ": Module " << (*it)->GetName()
-						        << ", digis " << (*it)->GetNofDigis()
-						        << FairLogger::endl;
-		}
+	if ( FairLogger::GetLogger()->IsLogNeeded(DEBUG) ) {
+		Int_t nActiveModules = 0;
+		for (Int_t iModule = 0; iModule < fSetup->GetNofModules(); iModule++) {
+			CbmStsModule* module = fSetup->GetModule(iModule);
+			if ( module->GetNofDigis() == 0 ) continue;
+			nActiveModules++;
+			LOG(DEBUG3) << GetName() << ": Module " << module->GetName()
+						<< ", digis " << module->GetNofDigis()
+						<< FairLogger::endl;
+		} //# modules in setup
+		LOG(DEBUG) << GetName() << ": sorted " << nDigis << " digis into "
+				   << nActiveModules << " module(s)." << FairLogger::endl;
 	}
 
 	return nDigis;

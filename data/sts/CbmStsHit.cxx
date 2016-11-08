@@ -9,6 +9,10 @@
 
 #include "CbmStsHit.h"
 
+#include <iomanip>
+#include <sstream>
+
+using namespace std;
 
 // -----   Default constructor
 CbmStsHit::CbmStsHit()
@@ -39,6 +43,17 @@ CbmStsHit::CbmStsHit(Int_t address, const TVector3& pos, const TVector3& dpos,
 // -----   Destructor
 CbmStsHit::~CbmStsHit()
 {
+}
+
+
+// --- String output
+string CbmStsHit::ToString() const {
+   stringstream ss;
+   ss << "StsHit: address " << GetAddress() << " | time " << GetTime()
+      << " | Position (" << std::setprecision(6) << GetX() << ", " << GetY()
+	  << ", " << GetZ() << ") cm | Error (" << GetDx() << ", " << GetDy()
+	  << ", " << GetDz() << ") cm";
+   return ss.str();
 }
 
 
