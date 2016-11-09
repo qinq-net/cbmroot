@@ -214,10 +214,11 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
 
 
     /** Temporary variables to avoid frequent calculations **/
-    Double_t fPitch[2];     //! Strip pitch front/back side [cm]
-    Double_t fTanStereo[2]; //! tangent of stereo angle front/back side
-    Double_t fCosStereo[2]; //! cosine of stereo angle front/back side
-    Int_t   fStripShift[2]; //! Shift in number of strips from bottom to top
+    Double_t fPitch[2];      //! Strip pitch front/back side [cm]
+    Double_t fTanStereo[2];  //! tangent of stereo angle front/back side
+    Double_t fCosStereo[2];  //! cosine of stereo angle front/back side
+    Int_t    fStripShift[2]; //! Shift in number of strips from bottom to top
+    Double_t fErrorFac;      //! Used for calculation of hit errors
 
     /** Analog charge in strips (for front and back side).
      ** Used during analog response simulation. **/
@@ -294,10 +295,15 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
 
 
     /** Intersection point of two strips / cluster centres
-     ** @param xF  x coordinate on read-out edge, front side [cm]
-     ** @param xB  x coordinate on read-out edge, back side  [cm]
-     ** @param x (return)  x coordinate of crossing
-     ** @param y (return)  y coordinate of crossing
+     ** @param[in] xF  x coordinate on read-out edge, front side [cm]
+     ** @param[in] exF  uncertainty on xF [cm]
+     ** @param[in] xB  x coordinate on read-out edge, back side  [cm]
+     ** @param[in] eBF  uncertainty on xB [cm]
+     ** @param[out] x x coordinate of crossing [cm]
+     ** @param[out] y y coordinate of crossing [cm]
+     ** @param[out] varX  Variance in x [cm^2]
+     ** @param[out] varY  Variance in y [cm^2]
+     ** @param[out] varXY Covariance of x and y [cm^2]
      ** @return kTRUE if intersection is inside active area.
      **
      ** This function calculates the intersection point of two
@@ -307,7 +313,9 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
      ** All coordinates are in the sensor frame with the origin in the
      ** bottom left corner of the active area.
      **/
-    Bool_t Intersect(Double_t xF, Double_t xB, Double_t& x, Double_t& y);
+    Bool_t Intersect(Double_t xF, Double_t exF, Double_t xB, Double_t exB,
+    		         Double_t& x, Double_t& y, Double_t& varX, Double_t& varY,
+					 Double_t& varXY);
 
 
     /** Find the intersection points of two clusters.

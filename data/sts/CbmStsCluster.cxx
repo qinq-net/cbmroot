@@ -19,10 +19,10 @@ CbmStsCluster::CbmStsCluster()
     : CbmCluster()
     , fCharge(0.)
     , fSize(0)
-    , fChannelMean(0.)
-    , fChannelError(0.)
-    , fChannelMeanSq(0.)
+    , fPosition(0.)
+    , fPositionError(0.)
     , fTime(0.)
+    , fTimeError(0.)
     , fIndex(-1)
 {
 }
@@ -39,7 +39,8 @@ string CbmStsCluster::ToString() const {
    stringstream ss;
    ss << "StsCluster: address " << GetAddress() << " | digis "
   		<< GetNofDigis() << " | charge " << fCharge << " | time "
-  		<< fTime << " | position " << GetPosition() << " | error "
+  		<< fTime << " +- " << fTimeError
+		<< " | position " << GetPosition() << " | error "
   		<< GetPositionError();
    return ss.str();
 }

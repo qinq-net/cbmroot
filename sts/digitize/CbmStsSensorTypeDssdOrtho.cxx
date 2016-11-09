@@ -183,11 +183,14 @@ Int_t CbmStsSensorTypeDssdOrtho::IntersectClusters(CbmStsCluster* clusterF,
 	Int_t side  = -1;
 	Double_t xF = -1.;
 	Double_t yB = -1.;
-	GetClusterPosition(clusterF->GetCentre(), sensor, xF, side);
+	GetClusterPosition(clusterF->GetPosition(), sensor, xF, side);
 	if ( side != 0 )
 		LOG(FATAL) << GetName() << ": Inconsistent side qualifier " << side
 		           << " for front side cluster! " << FairLogger::endl;
-	GetClusterPosition(clusterB->GetCentre(), sensor, yB, side);
+	Double_t varX = clusterF->GetPositionError() * clusterF->GetPositionError();
+	GetClusterPosition(clusterB->GetPosition(), sensor, yB, side);
+	Double_t varY = clusterB->GetPositionError() * clusterB->GetPositionError();
+	Double_t varXY = 0.;
 	if ( side != 1 )
 		LOG(FATAL) << GetName() << ": Inconsistent side qualifier " << side
 		           << " for back side cluster! " << FairLogger::endl;
@@ -201,7 +204,7 @@ Int_t CbmStsSensorTypeDssdOrtho::IntersectClusters(CbmStsCluster* clusterF,
 	yB -= 0.5 * fDy;
 
 	// --- Send hit information to sensor
-	sensor->CreateHit(xF, yB, clusterF, clusterB);
+	sensor->CreateHit(xF, yB, varX, varY, varXY, clusterF, clusterB);
 
 	return 1;
 }

@@ -196,14 +196,14 @@ void StsCosyHitFinder::Exec(Option_t*)
       Int_t frontClusterId = sts_0n[i];
       const CbmStsCluster* frontCluster = static_cast<const CbmStsCluster*>(stsClusters->At(sts_0n[i]));
       //Double_t frontChannel = frontCluster->GetMean();
-      Double_t frontChannel = frontCluster->GetCentre();
+      Double_t frontChannel = frontCluster->GetPosition();
       Double_t front_time = frontCluster->GetTime();            
       for(UInt_t k=0; k< sts_0p.size(); k++)
 	{
 	  Int_t backClusterId = sts_0p[k];
 	  const CbmStsCluster* backCluster = static_cast<const CbmStsCluster*>(stsClusters->At(sts_0p[k]));
 	  //Double_t backChannel = backCluster->GetMean();
-	  Double_t backChannel = backCluster->GetCentre();
+	  Double_t backChannel = backCluster->GetPosition();
 	  Double_t back_time = backCluster->GetTime();
 	  if(TMath::Abs(back_time - front_time - fTimeShift[0]) < fTimeLimit[0])
 	  {
@@ -244,14 +244,14 @@ void StsCosyHitFinder::Exec(Option_t*)
       Int_t frontClusterId = sts_1n[i];
       const CbmStsCluster* frontCluster = static_cast<const CbmStsCluster*>(stsClusters->At(sts_1n[i]));
       //Double_t frontChannel = frontCluster->GetMean();
-      Double_t frontChannel = frontCluster->GetCentre();
+      Double_t frontChannel = frontCluster->GetPosition();
       Double_t front_time = frontCluster->GetTime();
       for(UInt_t k=0; k< sts_1p.size(); k++)
 	{
 	  Int_t backClusterId = sts_1p[k];
 	  const CbmStsCluster* backCluster = static_cast<const CbmStsCluster*>(stsClusters->At(sts_1p[k]));
 	  //Double_t backChannel = backCluster->GetMean();
-	  Double_t backChannel = backCluster->GetCentre();
+	  Double_t backChannel = backCluster->GetPosition();
 	  if(fSensorId==19)backChannel-=63;
 	  Double_t back_time = backCluster->GetTime();	  
 	  //if ((!fTriggeredMode && TMath::Abs(back_time -front_time - fTimeShift[1]) < fTimeLimit[1]) || fTriggeredMode)
@@ -294,14 +294,14 @@ void StsCosyHitFinder::Exec(Option_t*)
       Int_t frontClusterId = sts_2n[i];
       const CbmStsCluster* frontCluster = static_cast<const CbmStsCluster*>(stsClusters->At(sts_2n[i]));
       //Double_t frontChannel = frontCluster->GetMean();
-      Double_t frontChannel = frontCluster->GetCentre();
+      Double_t frontChannel = frontCluster->GetPosition();
       Double_t front_time = frontCluster->GetTime();
       for(UInt_t k=0; k< sts_2p.size(); k++)
 	{
 	  Int_t backClusterId = sts_2p[k];
 	  const CbmStsCluster* backCluster = static_cast<const CbmStsCluster*>(stsClusters->At(sts_2p[k]));
 	  //Double_t backChannel = backCluster->GetMean();
-	  Double_t backChannel = backCluster->GetCentre();
+	  Double_t backChannel = backCluster->GetPosition();
 	  Double_t back_time = backCluster->GetTime();
 	  if(TMath::Abs(back_time -front_time - fTimeShift[2]) < fTimeLimit[2])
 	    {

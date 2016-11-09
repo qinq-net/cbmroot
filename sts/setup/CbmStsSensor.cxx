@@ -56,7 +56,8 @@ CbmStsSensor::CbmStsSensor(const char* name, const char* title,
                            fType(NULL),
                            fConditions(),
                            fCurrentLink(NULL),
-                           fHits(NULL)
+                           fHits(NULL),
+						   fEvent(NULL)
 {
 }
 // -------------------------------------------------------------------------
@@ -64,9 +65,9 @@ CbmStsSensor::CbmStsSensor(const char* name, const char* title,
 
 
 // -----   Create a new hit   ----------------------------------------------
-void CbmStsSensor::CreateHit(Double_t xLocal, Double_t yLocal,
-		                         CbmStsCluster* clusterF,
-		                         CbmStsCluster* clusterB) {
+void CbmStsSensor::CreateHit(Double_t xLocal, Double_t yLocal, Double_t varX,
+		                     Double_t varY, Double_t varXY,
+		                     CbmStsCluster* clusterF, CbmStsCluster* clusterB) {
 
   // ---  Check clusters and output array
 	if ( ! fHits ) {
@@ -86,11 +87,6 @@ void CbmStsSensor::CreateHit(Double_t xLocal, Double_t yLocal,
 	// --- If a TGeoNode is attached, transform into global coordinate system
 	Double_t local[3] = { xLocal, yLocal, 0.};
 	Double_t global[3];
-
-	//Get pitch assuming that both sides and all sensors in a module have same pitch 
-	Double_t pitch = dynamic_cast<CbmStsSensorTypeDssd*>(this -> GetType()) -> GetPitch(0);
-	Double_t error[3] = {clusterF -> GetPositionError() * pitch, clusterB -> GetPositionError() * pitch, 0. };
-
 	if ( fNode ) fNode->GetMatrix()->LocalToMaster(local, global);
 	else {
 		global[0] = local[0];
@@ -98,10 +94,17 @@ void CbmStsSensor::CreateHit(Double_t xLocal, Double_t yLocal,
 		global[2] = local[2];
 	}
 
+	// We assume here that the local-to-global transformations is only translation
+	// plus maybe rotation upside down or front-side back. In that case, the
+	// global covariance matrix is the same as the local one.
+	Double_t error[3] = { TMath::Sqrt(varX), TMath::Sqrt(varY), 0.};
+
+
 	// --- Calculate hit time (average of cluster times)
 	Double_t hitTime = 0.5 * ( clusterF->GetTime() + clusterB->GetTime());
-	Double_t hitTimeError =
-			0.5 * TMath::Abs(clusterF->GetTime() - clusterB->GetTime());
+	Double_t etF = clusterF->GetTimeError();
+	Double_t etB = clusterB->GetTimeError();
+	Double_t hitTimeError = TMath::Sqrt( (etF*etF + etB*etB) / 2. );
 
 	// --- Create hit
 	Int_t index = fHits->GetEntriesFast();
@@ -109,7 +112,7 @@ void CbmStsSensor::CreateHit(Double_t xLocal, Double_t yLocal,
 			CbmStsHit(GetAddress(),          // address
 					      global,                // coordinates
 					      error,                 // coordinate error
-					      0.,                    // covariance xy
+					      varXY,                 // covariance xy
 					      clusterF->GetIndex(),  // front cluster index
 					      clusterB->GetIndex(),  // back cluster index
 					      hitTime,               // hit time

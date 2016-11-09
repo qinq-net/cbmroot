@@ -36,12 +36,12 @@ void CbmStsClusterAnalysis::Analyze(CbmStsCluster* cluster,
 		UInt_t address = digi->GetAddress();
 		Double_t x = Double_t(CbmStsAddress::GetElementId(address, kStsChannel));
 		Double_t time = digi->GetTime();
+		Double_t timeError = module->GetTimeResolution();
 		Double_t charge = module->AdcToCharge(digi->GetCharge());
 		Double_t xError = 1. / sqrt(24.);
 
 		cluster->SetAddress(module->GetAddress());
-		cluster->SetProperties(charge, x, 0., time);
-		cluster->SetPositionError(xError);
+		cluster->SetProperties(charge, x, xError, time, timeError);
 		cluster->SetSize(1);
 
 	}  //? 1-strip clusters
@@ -73,6 +73,7 @@ void CbmStsClusterAnalysis::Analyze(CbmStsCluster* cluster,
 
 		// Cluster time
 		Double_t time = 0.5 * ( digi1->GetTime() + digi2->GetTime());
+		Double_t timeError = module->GetTimeResolution() * 0.70710678; // 1/sqrt(2)
 
 		// Cluster position
 		// See corresponding software note. The number 0.11785113 is 1/sqrt(72).
@@ -92,14 +93,13 @@ void CbmStsClusterAnalysis::Analyze(CbmStsCluster* cluster,
 			ex1sq = eq1sq * q2 * q2 / q1 / q1 / q1 / q1 / 9.;
 			ex2sq = eq2sq / q1 / q1 / 9.;
 		}
-		Double_t dX = TMath::Sqrt( ex0sq + ex1sq + ex2sq);
+		Double_t xError = TMath::Sqrt( ex0sq + ex1sq + ex2sq);
 
 		// Cluster charge
 		Double_t charge = q1 + q2;
 
 		cluster->SetAddress(module->GetAddress());
-		cluster->SetProperties(charge, x, 0., time);
-		cluster->SetPositionError(dX);
+		cluster->SetProperties(charge, x, xError, time, timeError);
 		cluster->SetSize(2);
 
 	} //? 2-strip cluster
@@ -157,6 +157,8 @@ void CbmStsClusterAnalysis::Analyze(CbmStsCluster* cluster,
 
 		// Cluster time and total charge
 		tSum = tSum / Double_t(cluster->GetNofDigis());
+		Double_t tError = module->GetTimeResolution()
+				        / TMath::Sqrt(Double_t(cluster->GetNofDigis()));
 		Double_t qSum = qF + qM + qL;
 
 		// Average charge in middle strips
@@ -172,11 +174,10 @@ void CbmStsClusterAnalysis::Analyze(CbmStsCluster* cluster,
 		Double_t exLsq = eqLsq / qM / qM / 4.;
 		Double_t ex1sq = 0.;    // error from first charge
 		Double_t ex2sq = 0.;    // error from second charge
-		Double_t dX = TMath::Sqrt(exFsq + exMsq + exLsq);
+		Double_t xError = TMath::Sqrt(exFsq + exMsq + exLsq);
 
 		cluster->SetAddress(module->GetAddress());
-		cluster->SetProperties(qSum, x, 0., tSum);
-		cluster->SetPositionError(dX);
+		cluster->SetProperties(qSum, x, xError, tSum, tError);
 		cluster->SetSize(chanL - chanF);
 
 	} //? n-strip cluster

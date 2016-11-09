@@ -40,18 +40,6 @@ class CbmStsCluster : public CbmCluster
     virtual ~CbmStsCluster();
 
 
-    /** @brief Get cluster centre
-     ** @value Cluster centre in channel units
-     **/
-    Double_t GetCentre() const { return fChannelMean; }
-
-
-    /** Get the channel mean square
-     ** @value Mean square channel number, weighted with charge
-     **/
-    Double_t GetChannelMeanSquare() const { return fChannelMeanSq; }
-
-
     /** @brief Get cluster charge
      ** @value  Total cluster charge [e]
      **
@@ -60,22 +48,22 @@ class CbmStsCluster : public CbmCluster
     Double_t GetCharge() const { return fCharge; }
 
 
+    /** @brief Get cluster index
+     ** @return Index of cluster in cluster array
+     **/
+    Int_t GetIndex() const { return fIndex; }
+
+
     /** @brief Cluster position
      ** @value Cluster position in channel number units
      **/
-    Double_t GetPosition() const { return fChannelMean; }
+    Double_t GetPosition() const { return fPosition; }
 
 
     /** @brief Cluster position error
      ** @value Error (r.m.s.) of cluster position in channel number units
      **/
-    Double_t GetPositionError() const { return fChannelError; }
-
-
-    /** @brief Get cluster index
-     ** @return Index of cluster in cluster array
-     **/
-    Int_t GetIndex() const { return fIndex; }
+    Double_t GetPositionError() const { return fPositionError; }
 
 
     /** @brief Set size of the cluster (number of channels)
@@ -95,6 +83,12 @@ class CbmStsCluster : public CbmCluster
     Double_t GetTime() const { return fTime; }
 
 
+    /** @brief Get error of cluster time
+     ** @return Time error [ns]
+     **/
+    Double_t GetTimeError() const { return fTimeError; }
+
+
     /** @brief Set cluster index
      ** To keep track of the input during hit finding
      ** @param index  Index of cluster in cluster array
@@ -105,21 +99,24 @@ class CbmStsCluster : public CbmCluster
     /** @brief Set the position error
      ** @param error  Position error (r.m.s.) in channel units
      **/
-    void SetPositionError(Double_t error) { fChannelError = error; }
+    void SetPositionError(Double_t error) { fPositionError = error; }
 
 
     /** Set cluster properties (time, charge, mean)
      ** @param charge         Total charge in cluster
-     ** @param channelMean    Charge-weighted mean channel number
-     ** @param channelMeanSq  Charge-weighted mean square channel number
+     ** @param position       Cluster centre in channel units
+     ** @param positionError  Error of cluster centre in channel units
      ** @param time           Cluster time [ns]
+     ** @param timeError      Error of cluster time [ns]
      **/
-    void SetProperties(Double_t charge, Double_t channelMean,
-    		               Double_t channelMeanSq, Double_t time = 0.) {
+    void SetProperties(Double_t charge, Double_t position,
+    		           Double_t positionError, Double_t time = 0.,
+					   Double_t timeError = 0.) {
     	fCharge        = charge;
-    	fChannelMean   = channelMean;
-    	fChannelMeanSq = channelMeanSq;
+    	fPosition      = position;
+    	fPositionError = positionError;
     	fTime          = time;
+    	fTimeError     = timeError;
     }
 
 
@@ -141,18 +138,14 @@ class CbmStsCluster : public CbmCluster
 
     Double_t fCharge;        ///< Total charge
     Int_t    fSize;          ///< Difference between first and last channel
-    Double_t fChannelMean;   ///< Cluster centre in channel number units
-    Double_t fChannelError;  ///< Cluster centre error (r.m.s.) in channel number units
-    Double_t fChannelMeanSq; ///< Charge-weighted mean square channel number
-    Double_t fTime;          ///< Cluster time (average of digi times)
+    Double_t fPosition;      ///< Cluster centre in channel number units
+    Double_t fPositionError; ///< Cluster centre error (r.m.s.) in channel number units
+    Double_t fTime;          ///< Cluster time (average of digi times) [ns]
+    Double_t fTimeError;     ///< Error of cluster time [ns]
     Int_t    fIndex;         ///< Index of cluster in input array
 
-    //TODO: fChannelMeanSq is probably obsolete, since the determination
-    //      of the cluster position is not any longer done by centre of gravity.
-    //      In that case, it shall be removed eventually.
 
-
-    ClassDef(CbmStsCluster, 6);
+    ClassDef(CbmStsCluster, 7);
 };
 
 #endif

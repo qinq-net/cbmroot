@@ -50,6 +50,7 @@ CbmStsHit::~CbmStsHit()
 string CbmStsHit::ToString() const {
    stringstream ss;
    ss << "StsHit: address " << GetAddress() << " | time " << GetTime()
+      << " +- " << GetTimeError()
       << " | Position (" << std::setprecision(6) << GetX() << ", " << GetY()
 	  << ", " << GetZ() << ") cm | Error (" << GetDx() << ", " << GetDy()
 	  << ", " << GetDz() << ") cm";

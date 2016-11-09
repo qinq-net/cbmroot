@@ -34,7 +34,7 @@ CbmStsSensorTypeDssd::CbmStsSensorTypeDssd()
       fDx(-1.), fDy(-1.), fDz(-1.),
       fNofStrips(), fStereo(), fIsSet(kFALSE), fOld(kTRUE),
       fPhysics(NULL), fHitFinderModel(1),
-      fPitch(), fTanStereo(), fCosStereo(), fStripShift(),
+      fPitch(), fTanStereo(), fCosStereo(), fStripShift(), fErrorFac(0.),
       fStripCharge()
       
 {
@@ -140,7 +140,7 @@ Int_t CbmStsSensorTypeDssd::FindHits(vector<CbmStsCluster*>& clusters,
 	Int_t side  = -1;         // front or back side
 	for (Int_t iCluster = 0; iCluster < nClusters; iCluster++) {
 		CbmStsCluster* cluster = clusters[iCluster];
-		side = GetSide( cluster->GetCentre() );
+		side = GetSide( cluster->GetPosition() );
 
 		if ( side == 0) {
 			frontClusters.push_back(iCluster);
@@ -370,8 +370,11 @@ void CbmStsSensorTypeDssd::GetStrip(Int_t channel, Int_t sensorId,
 
 
 // -----   Intersection of two lines along the strips   --------------------
-Bool_t CbmStsSensorTypeDssd::Intersect(Double_t xF, Double_t xB,
-		                                   Double_t& x, Double_t& y) {
+Bool_t CbmStsSensorTypeDssd::Intersect(Double_t xF, Double_t exF,
+		                               Double_t xB, Double_t exB,
+		                               Double_t& x, Double_t& y,
+									   Double_t& varX, Double_t& varY,
+									   Double_t& varXY) {
 
 	// In the coordinate system with origin at the bottom left corner,
 	// a line along the strips with coordinate x0 at the top edge is
@@ -395,6 +398,9 @@ Bool_t CbmStsSensorTypeDssd::Intersect(Double_t xF, Double_t xB,
 	if ( TMath::Abs(fStereo[0]) < 0.001 ) {
 		x = xF;
 		y = fDy - ( xF - xB ) / fTanStereo[1];
+		varX = exF * exF;
+		varY = ( exF * exF + exB * exB ) / fTanStereo[1] / fTanStereo[1];
+		varXY = -1. * exF * exF / fTanStereo[1];
 		return IsInside(x-fDx/2., y-fDy/2.);
 	}
 
@@ -402,6 +408,9 @@ Bool_t CbmStsSensorTypeDssd::Intersect(Double_t xF, Double_t xB,
 	if ( TMath::Abs(fStereo[1]) < 0.001 ) {
 		x = xB;
 		y = fDy - ( xB - xF ) / fTanStereo[0];
+		varX = exB * exB;
+		varY = ( exF * exF + exB * exB) / fTanStereo[0] / fTanStereo[0];
+		varXY = -1. * exB * exB / fTanStereo[0];
 		return IsInside(x-fDx/2., y-fDy/2.);
 	}
 
@@ -409,7 +418,11 @@ Bool_t CbmStsSensorTypeDssd::Intersect(Double_t xF, Double_t xB,
 	x = ( fTanStereo[1] * xF - fTanStereo[0] * xB ) /
 			( fTanStereo[1] - fTanStereo[0]);
 	y = fDy + ( xB - xF ) / ( fTanStereo[1] - fTanStereo[0]);
-
+	varX = fErrorFac * ( exF * exF * fTanStereo[1] * fTanStereo[1]
+					   + exB * exB * fTanStereo[0] * fTanStereo[0] );
+	varY = fErrorFac * ( exF * exF + exB * exB );
+	varXY = -1. * fErrorFac * ( exF * exF * fTanStereo[1]
+							  + exB * exB * fTanStereo[0] );
 
 	// --- Check for being in active area.
 	return IsInside(x-fDx/2., y-fDy/2.);
@@ -474,14 +487,16 @@ Int_t CbmStsSensorTypeDssd::IntersectClusters(CbmStsCluster* clusterF,
 	Int_t side  = -1;
 	Double_t xF = -1.;
 	Double_t xB = -1.;
-	GetClusterPosition(clusterF->GetCentre(), sensor, xF, side);
+	GetClusterPosition(clusterF->GetPosition(), sensor, xF, side);
 	if ( side != 0 )
 		LOG(FATAL) << GetName() << ": Inconsistent side qualifier " << side
 		           << " for front side cluster! " << FairLogger::endl;
-	GetClusterPosition(clusterB->GetCentre(), sensor, xB, side);
+	Double_t exF = clusterF->GetPositionError() * fPitch[0];
+	GetClusterPosition(clusterB->GetPosition(), sensor, xB, side);
 	if ( side != 1 )
 		LOG(FATAL) << GetName() << ": Inconsistent side qualifier " << side
 		           << " for back side cluster! " << FairLogger::endl;
+	Double_t exB = clusterB->GetPositionError() * fPitch[1];
 
 	// --- Should be inside active area
 	if ( ! ( xF >= 0. || xF <= fDx) ) return 0;
@@ -511,13 +526,16 @@ Int_t CbmStsSensorTypeDssd::IntersectClusters(CbmStsCluster* clusterF,
 	// --- Double loop over possible lines
 	Double_t xC = -1.;   // x coordinate of intersection point
 	Double_t yC = -1.;   // y coordinate of intersection point
+	Double_t varX = 0.;  // variance of xC
+	Double_t varY = 0.;  // variance of yC
+	Double_t varXY = 0.; // covariance xC-yC
 	for (Int_t iF = nF1; iF <= nF2; iF++) {
 		Double_t xFi = xF - Double_t(iF) * fDx;
 		for (Int_t iB = nB1; iB <= nB2; iB++) {
 		    Double_t xBi = xB - Double_t(iB) * fDx;
 		    
 		    // --- Intersect the two lines
-		    Bool_t found = Intersect(xFi, xBi, xC, yC);
+		    Bool_t found = Intersect(xFi, exF, xBi, exB, xC, yC, varX, varY, varXY);
 		    LOG(DEBUG4) << GetName() << ": Trying " << xFi << ", " << xBi
 					        << ", intersection ( " << xC << ", " << yC
 					        << " ) " << ( found ? "TRUE" : "FALSE" )
@@ -528,7 +546,7 @@ Int_t CbmStsSensorTypeDssd::IntersectClusters(CbmStsCluster* clusterF,
 				xC -= 0.5 * fDx;
 				yC -= 0.5 * fDy;
 				// --- Send hit information to sensor
-				sensor->CreateHit(xC, yC, clusterF, clusterB);
+				sensor->CreateHit(xC, yC, varX, varY, varXY, clusterF, clusterB);
 				nHits++;
 
 			}  //? Intersection of lines
@@ -820,8 +838,8 @@ void CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
 	// The trajectory is sub-divided into equidistant steps, with a step size
 	// close to 3 micrometer.
 	Double_t stepSizeTarget = 3.e-4;   // targeted step size is 3 micrometer
-  Int_t nSteps = TMath::Nint( trajLength / stepSizeTarget );
-  if ( nSteps == 0 ) nSteps = 1;     // assure at least one step
+    Int_t nSteps = TMath::Nint( trajLength / stepSizeTarget );
+    if ( nSteps == 0 ) nSteps = 1;     // assure at least one step
 	Double_t stepSize  = trajLength / nSteps;
 	Double_t stepSizeX = trajLx / nSteps;
 	Double_t stepSizeY = trajLy / nSteps;
@@ -1175,6 +1193,8 @@ void CbmStsSensorTypeDssd::SetParameters(Double_t dx, Double_t dy,
     fCosStereo[side] = TMath::Cos( fStereo[side] * TMath::DegToRad() );
     fStripShift[side] = TMath::Nint(fDy * fTanStereo[side] / fPitch[side]);
   }
+  fErrorFac = 1. / ( fTanStereo[1] - fTanStereo[0] )
+		         / ( fTanStereo[1] - fTanStereo[0] );
   fStripCharge[0].Set(fNofStrips[0]);
   fStripCharge[1].Set(fNofStrips[1]);
 

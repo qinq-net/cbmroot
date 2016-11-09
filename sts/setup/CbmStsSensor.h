@@ -71,7 +71,8 @@ class CbmStsSensor : public CbmStsElement
      ** @param clusterB pointer to back side cluster
      **/
     void CreateHit(Double_t xLocal, Double_t yLocal,
-    		           CbmStsCluster* clusterF, CbmStsCluster* clusterB);
+    		       Double_t varX, Double_t varY, Double_t varXY,
+    		       CbmStsCluster* clusterF, CbmStsCluster* clusterB);
 
 
     /** Find hits in sensor

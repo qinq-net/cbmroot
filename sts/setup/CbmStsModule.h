@@ -271,6 +271,11 @@ class CbmStsModule : public CbmStsElement
       **/
      Double_t GetDynamicRange() const { return fDynRange; }
 
+     /** Time resolution
+      ** @value Time resolution (r.m.s.) [ns]
+      **/
+     Double_t GetTimeResolution() const { return fTimeResolution; }
+
      /** Start clustering procedure for the current module **/
      void StartClusteringTb();
 
