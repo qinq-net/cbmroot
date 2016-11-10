@@ -4,7 +4,6 @@
  * and open the template in the editor.
  */
 
-#include "LxTBBinned2.h"
 #include "LxTBMLTask.h"
 #include "TGeoCompositeShape.h"
 #include "TGeoArb8.h"
@@ -21,13 +20,15 @@
 #include "CbmMuchPoint.h"
 #include "TRandom3.h"
 #include "TMath.h"
+#include "TDatabasePDG.h"
+#include "CbmMCTrack.h"
 #include "Simple/LxSettings.h"
 
 using namespace std;
 
 ClassImp(LxTBMLFinder)
 
-extern Double_t speedOfLight;
+Double_t speedOfLight = 0;
 
 struct LxTbMLStation
 {
@@ -66,6 +67,13 @@ struct LxTbMLStation
       
       fHandleMPoint.Init();
       fHandleRPoint.Init();
+      fHandleLPoint.Init();
+   }
+   
+   void Clear()
+   {
+      for (int i = 0; i < NOF_LAYERS; ++i)
+         fLayers[i].Clear();
    }
     
    void SetMinT(timetype v)
@@ -90,6 +98,11 @@ struct LxTbMLStation
       
       void operator()(LxTbBinnedPoint& point)
       {
+         int qq = 0;
+         
+         if (station.fLayers[0].z < 300)
+            qq = qq + 12;
+         
          scaltype txR = point.x / station.fLayers[1].z;
          scaltype tyR = point.y / station.fLayers[1].z;
          scaltype pXr = point.x + txR * deltaZr;
@@ -121,6 +134,11 @@ struct LxTbMLStation
       
       void operator()(LxTbBinnedPoint& point)
       {
+         int qq = 0;
+         
+         if (station.fLayers[0].z < 300)
+            qq = qq + 12;
+         
          scaltype txL = (point.x - mPoint->x) / (station.fLayers[2].z - station.fLayers[1].z);
          scaltype tyL = (point.y - mPoint->y) / (station.fLayers[2].z - station.fLayers[1].z);
          scaltype pXl = mPoint->x + txL * deltaZl;
@@ -130,7 +148,7 @@ struct LxTbMLStation
          station.fHandleLPoint.rPoint = &point;
          IterateNeighbourhood(station.fLayers[0], pXl, sqrt(mPoint->dx * mPoint->dx + point.dx * point.dx), 0,
             pYl, sqrt(mPoint->dy * mPoint->dy + point.dy * point.dy), 0,
-            pTl, sqrt(mPoint->dt * mPoint->dt + point.dt * point.dt) / 2,
+            pTl, mPoint->dt/*sqrt(mPoint->dt * mPoint->dt + point.dt * point.dt) / 2*/,
             station.fHandleLPoint);
       }
    };
@@ -146,8 +164,18 @@ struct LxTbMLStation
       
       explicit HandleLPoint(LxTbMLStation& parent) : station(parent), deltaZ(parent.fLayers[2].z - parent.fLayers[0].z), mPoint(0), rPoint(0) {}
       
+      void Init()
+      {
+         deltaZ = station.fLayers[0].z - station.fLayers[2].z;
+      }
+      
       void operator()(LxTbBinnedPoint& point)
       {
+         int qq  = 9;
+         
+         if (0 == &point)
+            qq += 4;
+         
          LxTbBinnedTriplet* triplet = new LxTbBinnedTriplet(&point, rPoint, deltaZ);
          mPoint->triplets.push_back(triplet);
       }
@@ -199,9 +227,19 @@ struct LxTbDetector
    
    void Init()
    {
+      speedOfLight = 100 * TMath::C();// Multiply by 100 to express in centimeters.
+      gMuonMass = TDatabasePDG::Instance()->GetParticle(13)->Mass();
+      gElectronMass = TDatabasePDG::Instance()->GetParticle(11)->Mass();
       HandleGeometry();
+      
+      for (int i = 0; i < NOF_STATIONS; ++i)
+      {
+         LxTbMLStation& station = fStations[i];
+         station.Init();
+      }
+      
       scaltype E = fSignalParticle->fMinEnergy; // GeV
-      //scaltype E0 = E;
+      scaltype E0 = E;
       scaltype totalLength = fStations[0].fAbsorber.zCoord;
       scaltype deltaZs[NOF_STATIONS];
       deltaZs[0] = fStations[0].fLayers[1].z - fStations[0].fAbsorber.zCoord;
@@ -212,24 +250,23 @@ struct LxTbDetector
       for (int i = 0; i < NOF_STATIONS; ++i)
       {
          LxTbMLStation& station = fStations[i];
-         station.Init();
          scaltype L = station.fAbsorber.width; // / cos(3.14159265 * 15 / 180);
          E -= EnergyLoss(E, L, &station.fAbsorber);
-            //scaltype Escat = (E0 + E) / 2;
-         scaltype Escat = E;
+         scaltype Escat = (E0 + E) / 2;
+         //scaltype Escat = E;
          scaltype deltaTheta = CalcThetaPrj(Escat, L, &station.fAbsorber);
          station.fDeltaThetaX = deltaTheta;
          station.fDeltaThetaY = deltaTheta;
          scaltype thetaXSq = 0;
          scaltype thetaYSq = 0;
          
-         for (int j = 0; j < i; ++j)
+         for (int j = 0; j <= i; ++j)
          {
             totalLength = station.fLayers[1].z;
             
             scaltype deltaZsum = 0;
             
-            for (int k = j; k < i; ++k)
+            for (int k = j; k <= i; ++k)
                deltaZsum += deltaZs[k];
             
             thetaXSq += (1 - deltaZsum / totalLength) * (1 - deltaZsum / totalLength) * fStations[j].fDeltaThetaX * fStations[j].fDeltaThetaX;
@@ -253,7 +290,7 @@ struct LxTbDetector
          scaltype q0YSq = station.fDeltaThetaY * station.fDeltaThetaY;
          station.qs[0] = {q0XSq * L * L / 3, q0XSq * L / 2, q0XSq * L / 2, q0XSq};
          station.qs[1] = {q0YSq * L * L / 3, q0YSq * L / 2, q0YSq * L / 2, q0YSq};
-         //E0 = E;
+         E0 = E;
       }
       
       fHandleRPoint.Init();
@@ -262,6 +299,9 @@ struct LxTbDetector
    void Clear()
    {
       recoTracks.clear();
+      
+      for (int i = 0; i < NOF_STATIONS; ++i)
+         fStations[i].Clear();
    }
    
    void SetMinT(timetype v)
@@ -422,6 +462,11 @@ struct LxTbDetector
       
          void operator()(LxTbBinnedPoint& point)
          {
+            int qq = 9;
+            
+            if (0 == &point)
+               qq += 3;
+            
             rTriplet->neighbours.push_back(&point);
          }
       };
@@ -472,14 +517,15 @@ struct LxTbDetector
          const LxTbMLStation& station = detector.fStations[stationNumber];
          const LxTbLayer& layer = station.fLayers[layerNumber];
          const LxTbMLStation::Q& Q = station.qs[coordNumber];
-         scaltype deltaZ = 2 == layerNumber ? layer.z - detector.fStations[stationNumber + 1].fLayers[0].z : layer.z - station.fLayers[layerNumber + 1].z;
+         scaltype deltaZ = LAST_LAYER == layerNumber ? LAST_STATION == stationNumber ? 0 : layer.z - detector.fStations[stationNumber + 1].fLayers[0].z :
+            layer.z - station.fLayers[layerNumber + 1].z;
          scaltype deltaZSq = deltaZ * deltaZ;
 
          // Extrapolate.
          param.coord += prevParam.tg * deltaZ; // params[k].tg is unchanged.
 
          // Filter.
-         if (2 == layerNumber)
+         if (LAST_LAYER == layerNumber)
          {
             param.C11 += prevParam.C12 * deltaZ + prevParam.C21 * deltaZ + prevParam.C22 * deltaZSq + Q.Q11;
             param.C12 += prevParam.C22 * deltaZ + Q.Q12;
@@ -542,6 +588,9 @@ struct LxTbDetector
             for (list<LxTbBinnedPoint*>::iterator i = triplet->neighbours.begin(); i != triplet->neighbours.end(); ++i)
                HandlePoint(*i, trackCandidatePoints, chains, level - 1, kfParams);
          }
+         
+         int qq = 0;
+         qq += 10;
       }
       
       void HandlePoint(LxTbBinnedPoint* point, LxTbBinnedPoint* trackCandidatePoints[NOF_STATIONS][NOF_LAYERS], list<LxTBMLFinder::Chain>& chains, int level, KFParams kfParams)
@@ -614,7 +663,7 @@ struct LxTbDetector
 
 static LxTbMLStation* gStations;
 
-LxTBMLFinder::LxTBMLFinder() : fReconstructor(0), fIsEvByEv(true), fNofXBins(20), fNofYBins(20), fNofTBins(fIsEvByEv ? 5 : 1000)
+LxTBMLFinder::LxTBMLFinder() : fReconstructor(0), fIsEvByEv(true), fNofXBins(20), fNofYBins(20), fNofTBins(fIsEvByEv ? 5 : 1000), fNEvents(1000)
 {
    
 }
@@ -625,6 +674,11 @@ InitStatus LxTBMLFinder::Init()
     
    if (0 == ioman)
       fLogger->Fatal(MESSAGE_ORIGIN, "No FairRootManager");
+   
+   int nofEventsInFile = ioman->CheckMaxEventNo();
+    
+   if (nofEventsInFile < fNEvents)
+      fNEvents = nofEventsInFile;
    
    LxTbDetector* pReconstructor = new LxTbDetector(fNofXBins, fNofYBins, fNofTBins);
    fReconstructor = pReconstructor;
@@ -637,6 +691,81 @@ InitStatus LxTBMLFinder::Init()
     fMuchMCPoints = mcManager->InitBranch("MuchPoint");
     fMuchClusters = static_cast<TClonesArray*> (ioman->GetObject("MuchCluster"));
     fMuchPixelDigiMatches = static_cast<TClonesArray*> (ioman->GetObject("MuchDigiMatch"));
+    CbmMCDataArray* mcTracks = mcManager->InitBranch("MCTrack");
+
+   for (int i = 0; i < fNEvents; ++i)
+   {
+      Int_t evSize = mcTracks->Size(0, i);
+      fMCTracks.push_back(vector<TrackDataHolder>());
+
+      if (0 >= evSize)
+         continue;
+
+      vector<TrackDataHolder>& evTracks = fMCTracks.back();
+      const CbmMCTrack* posTrack = 0;
+      const CbmMCTrack* negTrack = 0;
+
+      for (int j = 0; j < evSize; ++j)
+      {
+         evTracks.push_back(TrackDataHolder());
+         const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*> (mcTracks->Get(0, i, j));
+
+         if (mcTrack->GetPdgCode() == 13 || mcTrack->GetPdgCode() == -13)
+         {
+            Double_t m = mcTrack->GetMass();
+            Int_t motherId = mcTrack->GetMotherId();
+
+            if (motherId >= 0 && static_cast<const CbmMCTrack*> (mcTracks->Get(0, i, motherId))->GetPdgCode() == pReconstructor->fSignalParticle->fPdgCode)
+            {
+               //const CbmMCTrack* motherTrack = static_cast<const CbmMCTrack*> (mcTracks->Get(0, i, motherId));
+
+               //if (fFinder->fSignalParticle->fPdgCode == motherTrack->GetPdgCode())
+               {
+                  evTracks.back().isSignal = true;
+                  evTracks.back().isPos = mcTrack->GetPdgCode() == -13;
+
+                  if (-13 == mcTrack->GetPdgCode())
+                     posTrack = mcTrack;
+                  else
+                     negTrack = mcTrack;
+               }
+            }
+         }
+      }// for (int j = 0; j < evSize; ++j)
+   }// for (int i = 0; i < fNEvents; ++i)
+    
+   fEventTimes.resize(fNEvents); 
+   fEventTimes[0] = 50;
+    
+   for (int i = 1; i < fNEvents; ++i)
+      fEventTimes[i] = fEventTimes[i - 1] + 100;
+
+   for (int i = 0; i < fNEvents; ++i)
+   {
+      Int_t evSize = fMuchMCPoints->Size(0, i);
+      fMuchPoints.push_back(vector<PointDataHolder>());
+
+      if (0 >= evSize)
+         continue;
+
+      //++numEvents;
+      vector<PointDataHolder>& evPoints = fMuchPoints.back();
+
+      for (int j = 0; j < evSize; ++j)
+      {
+         const CbmMuchPoint* pMuchPt = static_cast<const CbmMuchPoint*> (fMuchMCPoints->Get(0, i, j));
+         PointDataHolder muchPt;
+         muchPt.x = (pMuchPt->GetXIn() + pMuchPt->GetXOut()) / 2;
+         muchPt.y = (pMuchPt->GetYIn() + pMuchPt->GetYOut()) / 2;
+         muchPt.t = fEventTimes[i] + pMuchPt->GetTime();
+         muchPt.eventId = i;
+         muchPt.trackId = pMuchPt->GetTrackID();
+         muchPt.pointId = j;
+         muchPt.stationNumber = CbmMuchGeoScheme::GetStationIndex(pMuchPt->GetDetectorId());
+         muchPt.layerNumber = CbmMuchGeoScheme::GetLayerIndex(pMuchPt->GetDetectorId());;
+         evPoints.push_back(muchPt);
+      }
+   }
 #endif//LXTB_QA
     
    return kSUCCESS;//, kERROR, kFATAL
@@ -658,6 +787,8 @@ static list<LxTbBinnedPoint> ts_points;
 void LxTBMLFinder::Exec(Option_t* opt)
 {
    LxTbDetector* pReconstructor = static_cast<LxTbDetector*> (fReconstructor);
+   pReconstructor->Clear();
+   pReconstructor->SetMinT(tsStartTime);
    
    for (int i = 0; i < fMuchPixelHits->GetEntriesFast(); ++i)
    {
@@ -775,6 +906,7 @@ void LxTBMLFinder::Exec(Option_t* opt)
    }// for (int i = 0; i < fMuchPixelHits->GetEntriesFast(); ++i)
    
    pReconstructor->Reconstruct();
+   cout << "In event #" << currentEventN << " reconstructed: " << pReconstructor->recoTracks.size() << " tracks" << endl;
    recoTracks.splice(recoTracks.end(), pReconstructor->recoTracks);
    ++currentEventN;
    tsStartTime += 100;

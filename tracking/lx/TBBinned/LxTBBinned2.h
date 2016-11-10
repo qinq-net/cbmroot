@@ -15,10 +15,14 @@
 #define LXTBBINNED2_H
 
 #include "LxTBDefinitions.h"
-#ifdef LXTB_QA
 #include "CbmPixelHit.h"
-#endif//LXTB_QA
 #include <list>
+
+
+#define NOF_LAYERS 3
+#define LAST_LAYER NOF_LAYERS - 1
+#define NOF_STATIONS 4
+#define LAST_STATION NOF_STATIONS - 1
 
 #define TIMEBIN_LENGTH 100
 #define NOF_SIGMAS 4
@@ -61,6 +65,14 @@ struct LxTbBinnedPoint
 #endif//LXTB_QA
     {}
     
+    LxTbBinnedPoint(const LxTbBinnedPoint& original) : x(original.x), dx(original.dx), y(original.dy), dy(original.dy), t(original.t), dt(original.dt), use(original.use),
+        triplets(), refId(original.refId)
+#ifdef LXTB_QA
+        , pHit(original.pHit), isTrd(original.isTrd), stationNumber(original.stationNumber), layerNumber(original.layerNumber), mcRefs(original.mcRefs)
+#endif//LXTB_QA
+    {
+    }
+    
     ~LxTbBinnedPoint();
 };
 
@@ -75,7 +87,7 @@ struct LxTbBinnedTriplet
     std::list<LxTbBinnedPoint*> neighbours;
 
     LxTbBinnedTriplet(LxTbBinnedPoint* lp, LxTbBinnedPoint* rp, scaltype deltaZ) : lPoint(lp), rPoint(rp),
-        tx((rPoint->x - lPoint->x) / deltaZ), ty((rPoint->y - lPoint->y) / deltaZ),
+        tx((lPoint->x - rPoint->x) / deltaZ), ty((lPoint->y - rPoint->y) / deltaZ),
         dtx(sqrt(lPoint->dx * lPoint->dx + rPoint->dx * rPoint->dx) / deltaZ), dty(sqrt(lPoint->dy * lPoint->dy + rPoint->dy * rPoint->dy) / deltaZ)
     {
     }
@@ -97,6 +109,7 @@ struct LxTbXBin
         maxDx = 0;
         maxDy = 0;
         maxDt = 0;
+        use = false;
     }
     
     void AddPoint(const LxTbBinnedPoint& point)
@@ -133,6 +146,8 @@ struct LxTbYXBin
     {
         for (int i = 0; i < nofXBins; ++i)
             xBins[i].Clear();
+        
+        use = false;
     }
     
     LxTbXBin* xBins;
@@ -157,6 +172,8 @@ struct LxTbTYXBin
     {
         for (int i = 0; i < nofYXBins; ++i)
             yxBins[i].Clear();
+        
+        use = false;
     }
     
     LxTbYXBin* yxBins;
@@ -168,7 +185,11 @@ struct LxTbLayer
 {
     LxTbLayer(int nofxb, int nofyb, int noftb) : tyxBins(reinterpret_cast<LxTbTYXBin*> (new unsigned char[noftb * sizeof(LxTbTYXBin)])), nofTYXBins(noftb),
         nofYXBins(nofyb), nofXBins(nofxb), lastTimeBinNumber(noftb - 1), lastYBinNumber(nofyb - 1), lastXBinNumber(nofxb - 1),
-        minX(0), maxX(0), minY(0), maxY(0), minT(0), maxT(0), xBinLength(0), yBinLength(0), timeBinLength(TIMEBIN_LENGTH), z(0) {}
+        minX(0), maxX(0), minY(0), maxY(0), minT(0), maxT(0), xBinLength(0), yBinLength(0), timeBinLength(TIMEBIN_LENGTH), z(0)
+    {
+        for (int i = 0; i < noftb; ++i)
+            new (&tyxBins[i]) LxTbTYXBin(nofyb, nofxb);
+    }
     
     ~LxTbLayer()
     {
@@ -300,6 +321,8 @@ struct LxTbLayer
         } \
     } \
 } \
+
+#endif// __CINT__
 
 template <class HandlePoint> void IterateLayer(LxTbLayer& layer, HandlePoint handlePoint)
 {
@@ -450,7 +473,5 @@ template <class HandlePoint> void IterateNeighbourhoodConst(LxTbLayer& layer, Ha
 {
     
 }
-
-#endif// __CINT__
 
 #endif /* LXTBBINNED2_H */

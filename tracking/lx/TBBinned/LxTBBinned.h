@@ -118,6 +118,7 @@ struct LxTbXBin
     void Clear()
     {
         points.clear();
+        use = false;
     }
     
     // New feature 
@@ -146,6 +147,8 @@ struct LxTbYXBin
     {
         for (int i = 0; i < nofXBins; ++i)
             xBins[i].Clear();
+        
+        use = false;
     }
 };
 
@@ -170,6 +173,8 @@ struct LxTbTYXBin
     {
         for (int i = 0; i < nofYXBins; ++i)
             yxBins[i].Clear();
+        
+        use = false;
     }
 };
 

@@ -16,11 +16,7 @@
 
 #include "FairTask.h"
 #include "CbmMCDataArray.h"
-
-#define NOF_LAYERS 3
-#define LAST_LAYER NOF_LAYERS - 1
-#define NOF_STATIONS 4
-#define LAST_STATION NOF_STATIONS - 1
+#include "LxTBBinned2.h"
 
 class LxTBMLFinder : public FairTask
 {
@@ -36,6 +32,15 @@ public:
             {
                 for (int j = 0; j < NOF_LAYERS; ++j)
                     points[i][j] = new LxTbBinnedPoint(*pts[i][j]);
+            }
+        }
+        
+        Chain(const Chain& origingal) : chi2(origingal.chi2)
+        {
+            for (int i = 0; i < NOF_STATIONS; ++i)
+            {
+                for (int j = 0; j < NOF_LAYERS; ++j)
+                    points[i][j] = new LxTbBinnedPoint(*origingal.points[i][j]);
             }
         }
 
@@ -91,6 +96,11 @@ public:
         fNofTBins = fIsEvByEv ? 5 : 1000;
     }
     
+    void SetNEvents(int v)
+    {
+        fNEvents = v;
+    }
+    
 private:
     void* fReconstructor;
     bool fIsEvByEv;
@@ -107,7 +117,9 @@ private:
 #ifdef LXTB_QA
     std::vector<std::vector<PointDataHolder> > fMuchPoints;
     std::vector<std::vector<TrackDataHolder> > fMCTracks;
+    std::vector<Double_t> fEventTimes;
 #endif//LXTB_QA
+    int fNEvents;
     
     ClassDef(LxTBMLFinder, 1)
 };
