@@ -3,6 +3,7 @@
  ** @date 01.08.2013
  **/
 #include "CbmTofDigiBdfPar.h"
+#include "CbmTofAddress.h"    // in cbmdata/tof
 
 // TOF Classes and includes
 
@@ -241,6 +242,26 @@ Bool_t CbmTofDigiBdfPar::getParams(FairParamList* l)
    {
       fiChOrientation[iSmType].Set( fiNbRpc[iSmType] );
       if ( ! l->fill( Form("ChOrientation%03d", iSmType), &(fiChOrientation[iSmType]) ) ) return kFALSE;
+   } // for( Int_t iSmType = 0; iSmType < fiNbSmTypes; iSmType ++)
+
+   
+   Int_t nDet=0;
+   for( Int_t iSmType = 0; iSmType < fiNbSmTypes; iSmType ++)
+   {
+     nDet+=GetNbSm(iSmType)*GetNbRpc(iSmType);
+   }
+   fiDetUId.Set( nDet);  // dimension unique identifier array
+   
+   Int_t iDet=0;
+   for( Int_t iSmType = 0; iSmType < fiNbSmTypes; iSmType ++)
+   {
+    for(Int_t iSm=0; iSm<GetNbSm(iSmType); iSm++)
+    {
+      for(Int_t iRpc=0; iRpc<GetNbRpc(iSmType); iRpc++)
+      {
+	fiDetUId[iDet++]=CbmTofAddress::GetUniqueAddress(iSm,iRpc,0,0,iSmType);
+      }
+    }
    } // for( Int_t iSmType = 0; iSmType < fiNbSmTypes; iSmType ++)
 /*
    fiChType.Set(fiNbSmTypes);
@@ -807,4 +828,22 @@ void CbmTofDigiBdfPar::printParams()
    delete [] sChType;
    delete [] sChOrient;
 
+}
+
+Int_t CbmTofDigiBdfPar::GetNbDet() const
+{
+  return fiDetUId.GetSize();
+}
+
+Int_t CbmTofDigiBdfPar::GetDetInd(Int_t iAddr)
+{
+  const Int_t DetMask = 4194303;
+  Int_t iInd=0;
+  while (fiDetUId[iInd] != (iAddr & DetMask) ) iInd++; //FIXME, inefficient and using a numerical constant!
+  return iInd;
+}
+
+Int_t CbmTofDigiBdfPar::GetDetUId(Int_t iInd)
+{
+  return fiDetUId[iInd];
 }

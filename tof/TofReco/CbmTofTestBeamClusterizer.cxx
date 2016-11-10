@@ -23,8 +23,6 @@
 #include "CbmMatch.h"
 
 #include "TTrbHeader.h"
-//#include "TMbsMappingTof.h"   // in unpack/tof/mapping
-#include "TMbsMappingTofPar.h"
 
 // CBMroot classes and includes
 #include "CbmMCTrack.h"
@@ -53,6 +51,8 @@
 #include "CbmTofClusterizersDef.h"
 
 // C++ Classes and includes 
+// Globals 
+Int_t iIndexDut = 0;
 
 /************************************************************************************/
 CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer():
@@ -62,7 +62,6 @@ CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer():
    fDigiPar(NULL),
    fChannelInfo(NULL),
    fDigiBdfPar(NULL),
-   fMbsMappingPar(NULL),
    fTrbHeader(NULL),
    fTofPointsColl(NULL),
    fMcTracksColl(NULL),
@@ -204,7 +203,6 @@ CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer(const char *name, Int_t ver
    fDigiPar(NULL),
    fChannelInfo(NULL),
    fDigiBdfPar(NULL),
-   fMbsMappingPar(NULL),
    fTrbHeader(NULL),
    fTofPointsColl(NULL),
    fMcTracksColl(NULL),
@@ -336,7 +334,6 @@ CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer(const char *name, Int_t ver
    fdMaxSpaceDist(0.),
    fdEvent(0)
 {
-  //  LOG(INFO) << "CbmTofTestBeamClusterizer initializing..."<<FairLogger::endl;
 }
 
 CbmTofTestBeamClusterizer::~CbmTofTestBeamClusterizer()
@@ -350,6 +347,9 @@ CbmTofTestBeamClusterizer::~CbmTofTestBeamClusterizer()
 // FairTasks inherited functions
 InitStatus CbmTofTestBeamClusterizer::Init()
 {
+    LOG(INFO) << "CbmTofTestBeamClusterizer initializing... expect Digis in ns units! "
+              <<FairLogger::endl;
+
    if( kFALSE == RegisterInputs() )
       return kFATAL;
 
@@ -367,6 +367,11 @@ InitStatus CbmTofTestBeamClusterizer::Init()
 
    if( kFALSE == CreateHistos() )
       return kFATAL;
+
+    fDutAddr =CbmTofAddress::GetUniqueAddress(fDutSm,fDutRpc,0,0,fDutId);
+    fSelAddr =CbmTofAddress::GetUniqueAddress(fSelSm,fSelRpc,0,0,fSelId);
+    fSel2Addr=CbmTofAddress::GetUniqueAddress(fSel2Sm,fSel2Rpc,0,0,fSel2Id);
+    iIndexDut=fDigiBdfPar->GetDetInd(fDutAddr);
 
    return kSUCCESS;
 }
@@ -527,14 +532,6 @@ Bool_t   CbmTofTestBeamClusterizer::InitParameters()
    }
    fTofId = new CbmTofDetectorId_v14a();
    
-   // Mapping parameter
-   fMbsMappingPar = (TMbsMappingTofPar*) (rtdb->getContainer("TMbsMappingTofPar"));
-   if( 0 == fMbsMappingPar )
-   {
-      LOG(ERROR)<<"CbmTofTestBeamClusterizer::InitParameters => Could not obtain the TMbsMappingTofPar "<<FairLogger::endl;
-      return kFALSE; 
-   }
-
    fDigiPar = (CbmTofDigiPar*) (rtdb->getContainer("CbmTofDigiPar"));
    if( 0 == fDigiPar )
    {
@@ -595,7 +592,7 @@ Bool_t   CbmTofTestBeamClusterizer::InitParameters()
 Bool_t   CbmTofTestBeamClusterizer::InitCalibParameter()
 {
   // dimension and initialize calib parameter
-/*  Int_t iNbDet=fMbsMappingPar->GetNbMappedDet();*/
+  Int_t iNbDet     = fDigiBdfPar->GetNbDet();
   Int_t iNbSmTypes = fDigiBdfPar->GetNbSmTypes();
 
   if (fTotMean !=0.) fdTTotMean=fTotMean;   // adjust target mean for TTT
@@ -798,8 +795,8 @@ Bool_t   CbmTofTestBeamClusterizer::InitCalibParameter()
 Bool_t   CbmTofTestBeamClusterizer::LoadGeometry()
 {
    LOG(INFO)<<"CbmTofTestBeamClusterizer::LoadGeometry starting for  "
-            <<fMbsMappingPar->GetNbMappedDet() << " mapped detectors, "
-            <<fDigiPar->GetNrOfModules() << " geometrically known ones "
+            <<fDigiBdfPar->GetNbDet() << " described detectors, "
+            <<fDigiPar->GetNrOfModules() << " geometrically known modules "
             <<FairLogger::endl;
 
    //fTRefMode=0x00002016;  // use plastic 1 as time reference 
@@ -836,9 +833,9 @@ Bool_t   CbmTofTestBeamClusterizer::LoadGeometry()
 
    }
 
-   Int_t iNbDet=fMbsMappingPar->GetNbMappedDet();
+   Int_t iNbDet=fDigiBdfPar->GetNbDet();
    for(Int_t iDetIndx=0; iDetIndx<iNbDet; iDetIndx++){
-       Int_t iUniqueId = fMbsMappingPar->GetMappedDetUId( iDetIndx );
+       Int_t iUniqueId = fDigiBdfPar->GetDetUId( iDetIndx );
        Int_t iSmType   = CbmTofAddress::GetSmType( iUniqueId );
        Int_t iSmId     = CbmTofAddress::GetSmId( iUniqueId );
        Int_t iRpcId    = CbmTofAddress::GetRpcId( iUniqueId );
@@ -851,7 +848,7 @@ Bool_t   CbmTofTestBeamClusterizer::LoadGeometry()
          Int_t iUCellId= CbmTofAddress::GetUniqueAddress(iSmId,iRpcId,++iCell,0,iSmType);
          fChannelInfo = fDigiPar->GetCell(iUCellId);
          if (NULL == fChannelInfo) break;
-         LOG(DEBUG1) << " Cell " << iCell << Form(" 0x%08x ",iUCellId)
+         LOG(DEBUG3) << " Cell " << iCell << Form(" 0x%08x ",iUCellId)
                    << Form(", fCh 0x%p ",fChannelInfo)
                    << ", x: " << fChannelInfo->GetX()
                    << ", y: " << fChannelInfo->GetY()
@@ -1034,7 +1031,7 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
      if (fTRefDifMax !=0.) TSumMax=fTRefDifMax;
      fhSmCluTOff[iS] =  new TH2F( 
           Form("cl_SmT%01d_TOff", iS),
-          Form("Clu TimeZero in SmType %d; Sm+Rpc# []; TOff [ps]", iS ),
+          Form("Clu TimeZero in SmType %d; Sm+Rpc# []; TOff [ns]", iS ),
           fDigiBdfPar->GetNbSm(iS)*fDigiBdfPar->GetNbRpc(iS), 0, fDigiBdfPar->GetNbSm(iS)*fDigiBdfPar->GetNbRpc(iS),
           99, -TSumMax,TSumMax );    
 
@@ -1049,19 +1046,19 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
           99, -YDMAX,YDMAX); 
        fhTSmCluTOff[iS][iSel] =  new TH2F( 
           Form("cl_TSmT%01d_Sel%02d_TOff", iS, iSel),
-          Form("Clu TimeZero in SmType %d under Selector %02d; Sm+Rpc# []; TOff [ps]", iS, iSel ),
+          Form("Clu TimeZero in SmType %d under Selector %02d; Sm+Rpc# []; TOff [ns]", iS, iSel ),
           fDigiBdfPar->GetNbSm(iS)*fDigiBdfPar->GetNbRpc(iS), 0, fDigiBdfPar->GetNbSm(iS)*fDigiBdfPar->GetNbRpc(iS),
           99, -TSumMax,TSumMax );    
        fhTSmCluTRun[iS][iSel] =  new TH2F( 
           Form("cl_TSmT%01d_Sel%02d_TRun", iS, iSel),
-          Form("Clu TimeZero in SmType %d under Selector %02d; Event# []; TMean [ps]", iS, iSel ),
+          Form("Clu TimeZero in SmType %d under Selector %02d; Event# []; TMean [ns]", iS, iSel ),
           100, 0, MaxNbEvent,
           99, -TSumMax,TSumMax );    
      }
    }
 
    // RPC related distributions
-   Int_t iNbDet=fMbsMappingPar->GetNbMappedDet();
+   Int_t iNbDet=fDigiBdfPar->GetNbDet();
    LOG(INFO)<<" Define Clusterizer histos for "<<iNbDet<<" detectors "<<FairLogger::endl;
 
    fhRpcDigiCor.resize( iNbDet  );
@@ -1080,7 +1077,7 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
    fhRpcCluWalk.resize( iNbDet );
 
    for(Int_t iDetIndx=0; iDetIndx<iNbDet; iDetIndx++){
-       Int_t iUniqueId = fMbsMappingPar->GetMappedDetUId( iDetIndx );
+       Int_t iUniqueId = fDigiBdfPar->GetDetUId( iDetIndx );
        Int_t iSmType   = CbmTofAddress::GetSmType( iUniqueId );
        Int_t iSmId     = CbmTofAddress::GetSmId( iUniqueId );
        Int_t iRpcId    = CbmTofAddress::GetRpcId( iUniqueId );
@@ -1101,8 +1098,7 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
                  <<FairLogger::endl;
 
        // check access to all channel infos 
-       //       for (Int_t iCh=0; iCh<fMbsMappingPar->GetSmTypeNbCh(iSmType); iCh++){
-       for (Int_t iCh=0; iCh<fDigiBdfPar->GetNbChan( iSmType, 0 ); iCh++){
+       for (Int_t iCh=0; iCh<fDigiBdfPar->GetNbChan( iSmType, iRpcId ); iCh++){
 	 Int_t iCCellId  = CbmTofAddress::GetUniqueAddress(iSmId,iRpcId,iCh,0,iSmType);
 	 fChannelInfo = fDigiPar->GetCell(iCCellId);
 	 if(NULL == fChannelInfo)
@@ -1113,13 +1109,13 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
        fhRpcDigiCor[iDetIndx] =  new TH2I(
           Form("cl_SmT%01d_sm%03d_rpc%03d_DigiCor", iSmType, iSmId, iRpcId ),
           Form("Digi Correlation of Rpc #%03d in Sm %03d of type %d; digi 0; digi 1", iRpcId, iSmId, iSmType ),
-          fMbsMappingPar->GetSmTypeNbCh(iSmType),0,fMbsMappingPar->GetSmTypeNbCh(iSmType),
-          fMbsMappingPar->GetSmTypeNbCh(iSmType),0,fMbsMappingPar->GetSmTypeNbCh(iSmType));
+            fDigiBdfPar->GetNbChan(iSmType,iRpcId),0,fDigiBdfPar->GetNbChan(iSmType,iRpcId),
+            fDigiBdfPar->GetNbChan(iSmType,iRpcId),0,fDigiBdfPar->GetNbChan(iSmType,iRpcId));
 
        fhRpcCluMul[iDetIndx] =  new TH1I(
           Form("cl_SmT%01d_sm%03d_rpc%03d_Mul", iSmType, iSmId, iRpcId ),
           Form("Clu multiplicity of Rpc #%03d in Sm %03d of type %d; M []; Cnts", iRpcId, iSmId, iSmType ),
-          fMbsMappingPar->GetSmTypeNbCh(iSmType),1,fMbsMappingPar->GetSmTypeNbCh(iSmType)+1);
+	      fDigiBdfPar->GetNbChan(iSmType,iRpcId),1,fDigiBdfPar->GetNbChan(iSmType,iRpcId)+1);
 
        Double_t YSCAL=50.;
        if (fPosYMaxScal !=0.) YSCAL=fPosYMaxScal;
@@ -1127,60 +1123,60 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
        fhRpcCluPosition[iDetIndx] =  new TH2F( 
           Form("cl_SmT%01d_sm%03d_rpc%03d_Pos", iSmType, iSmId, iRpcId ),
           Form("Clu position of Rpc #%03d in Sm %03d of type %d; Strip []; ypos [cm]", iRpcId, iSmId, iSmType ),
-          fMbsMappingPar->GetSmTypeNbCh(iSmType), 0, fMbsMappingPar->GetSmTypeNbCh(iSmType),
-          99, -YDMAX,YDMAX); 
+            fDigiBdfPar->GetNbChan(iSmType,iRpcId),0,fDigiBdfPar->GetNbChan(iSmType,iRpcId),
+            99, -YDMAX,YDMAX); 
 
        fhRpcCluDelPos[iDetIndx] =  new TH2F( 
           Form("cl_SmT%01d_sm%03d_rpc%03d_DelPos", iSmType, iSmId, iRpcId ),
           Form("Clu position difference of Rpc #%03d in Sm %03d of type %d; Strip []; #Deltaypos(clu) [cm]", iRpcId, iSmId, iSmType ),
-          fMbsMappingPar->GetSmTypeNbCh(iSmType), 0, fMbsMappingPar->GetSmTypeNbCh(iSmType),
-          99, -10.,10.); 
+            fDigiBdfPar->GetNbChan(iSmType,iRpcId),0,fDigiBdfPar->GetNbChan(iSmType,iRpcId),
+            99, -10.,10.); 
 
        fhRpcCluDelMatPos[iDetIndx] =  new TH2F( 
           Form("cl_SmT%01d_sm%03d_rpc%03d_DelMatPos", iSmType, iSmId, iRpcId ),
           Form("Matched Clu position difference of Rpc #%03d in Sm %03d of type %d; Strip []; #Deltaypos(mat) [cm]", iRpcId, iSmId, iSmType ),
-          fMbsMappingPar->GetSmTypeNbCh(iSmType), 0, fMbsMappingPar->GetSmTypeNbCh(iSmType),
-          99, -5.,5.); 
+            fDigiBdfPar->GetNbChan(iSmType,iRpcId),0,fDigiBdfPar->GetNbChan(iSmType,iRpcId),
+            99, -5.,5.); 
 
-       Double_t TSumMax=1.E4;
+       Double_t TSumMax=1.E3;
        if (fTRefDifMax !=0.) TSumMax=fTRefDifMax;
        fhRpcCluTOff[iDetIndx] =  new TH2F( 
           Form("cl_SmT%01d_sm%03d_rpc%03d_TOff", iSmType, iSmId, iRpcId ),
-          Form("Clu TimeZero of Rpc #%03d in Sm %03d of type %d; Strip []; TOff [ps]", iRpcId, iSmId, iSmType ),
-          fMbsMappingPar->GetSmTypeNbCh(iSmType), 0, fMbsMappingPar->GetSmTypeNbCh(iSmType),
-          99, -TSumMax,TSumMax ); 
+          Form("Clu TimeZero of Rpc #%03d in Sm %03d of type %d; Strip []; TOff [ns]", iRpcId, iSmId, iSmType ),
+            fDigiBdfPar->GetNbChan(iSmType,iRpcId),0,fDigiBdfPar->GetNbChan(iSmType,iRpcId),
+            99, -TSumMax,TSumMax ); 
 
        fhRpcCluDelTOff[iDetIndx] =  new TH2F( 
           Form("cl_SmT%01d_sm%03d_rpc%03d_DelTOff", iSmType, iSmId, iRpcId ),
-          Form("Clu TimeZero Difference of Rpc #%03d in Sm %03d of type %d; Strip []; #DeltaTOff(clu) [ps]", iRpcId, iSmId, iSmType ),
-          fMbsMappingPar->GetSmTypeNbCh(iSmType), 0, fMbsMappingPar->GetSmTypeNbCh(iSmType),
-          99, -600.,600.); 
+          Form("Clu TimeZero Difference of Rpc #%03d in Sm %03d of type %d; Strip []; #DeltaTOff(clu) [ns]", iRpcId, iSmId, iSmType ),
+             fDigiBdfPar->GetNbChan(iSmType,iRpcId),0,fDigiBdfPar->GetNbChan(iSmType,iRpcId),
+             99, -0.6,0.6); 
 
        fhRpcCluDelMatTOff[iDetIndx] =  new TH2F( 
           Form("cl_SmT%01d_sm%03d_rpc%03d_DelMatTOff", iSmType, iSmId, iRpcId ),
-          Form("Clu TimeZero Difference of Rpc #%03d in Sm %03d of type %d; Strip []; #DeltaTOff(mat) [ps]", iRpcId, iSmId, iSmType ),
-          fMbsMappingPar->GetSmTypeNbCh(iSmType), 0, fMbsMappingPar->GetSmTypeNbCh(iSmType),
-          99, -600.,600.); 
+          Form("Clu TimeZero Difference of Rpc #%03d in Sm %03d of type %d; Strip []; #DeltaTOff(mat) [ns]", iRpcId, iSmId, iSmType ),
+            fDigiBdfPar->GetNbChan(iSmType,iRpcId),0,fDigiBdfPar->GetNbChan(iSmType,iRpcId),
+            99, -0.6,0.6); 
 
        fhRpcCluTrms[iDetIndx] =  new TH2F( 
           Form("cl_SmT%01d_sm%03d_rpc%03d_Trms", iSmType, iSmId, iRpcId ),
-          Form("Clu Time RMS of Rpc #%03d in Sm %03d of type %d; Strip []; Trms [ps]", iRpcId, iSmId, iSmType ),
-          fMbsMappingPar->GetSmTypeNbCh(iSmType), 0, fMbsMappingPar->GetSmTypeNbCh(iSmType),
-          99, 0., 500. ); 
+          Form("Clu Time RMS of Rpc #%03d in Sm %03d of type %d; Strip []; Trms [ns]", iRpcId, iSmId, iSmType ),
+            fDigiBdfPar->GetNbChan(iSmType,iRpcId),0,fDigiBdfPar->GetNbChan(iSmType,iRpcId),
+            99, 0., 0.5 ); 
 
        if (fTotMax !=0.) fdTOTMax=fTotMax;
        if (fTotMin !=0.) fdTOTMin=fTotMin;
        fhRpcCluTot[iDetIndx] =  new TH2F( 
           Form("cl_SmT%01d_sm%03d_rpc%03d_Tot", iSmType, iSmId, iRpcId ),
-          Form("Clu Tot of Rpc #%03d in Sm %03d of type %d; StripSide []; TOT [ps]", iRpcId, iSmId, iSmType ),
-          fMbsMappingPar->GetSmTypeNbCh(iSmType)*2, 0, fMbsMappingPar->GetSmTypeNbCh(iSmType)*2,
-          100, fdTOTMin, fdTOTMax);
+          Form("Clu Tot of Rpc #%03d in Sm %03d of type %d; StripSide []; TOT [ns]", iRpcId, iSmId, iSmType ),
+            fDigiBdfPar->GetNbChan(iSmType,iRpcId),0,fDigiBdfPar->GetNbChan(iSmType,iRpcId),
+            100, fdTOTMin, fdTOTMax);
 
        fhRpcCluSize[iDetIndx] =  new TH2F( 
           Form("cl_SmT%01d_sm%03d_rpc%03d_Size", iSmType, iSmId, iRpcId ),
           Form("Clu size of Rpc #%03d in Sm %03d of type %d; Strip []; size [strips]", iRpcId, iSmId, iSmType ),
-          fMbsMappingPar->GetSmTypeNbCh(iSmType), 0, fMbsMappingPar->GetSmTypeNbCh(iSmType),
-          16, 0.5, 16.5); 
+            fDigiBdfPar->GetNbChan(iSmType,iRpcId),0,fDigiBdfPar->GetNbChan(iSmType,iRpcId),
+            16, 0.5, 16.5); 
 
        // Walk histos 
        fhRpcCluAvWalk[iDetIndx] = new TH2F( 
@@ -1191,10 +1187,10 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
        fhRpcCluAvLnWalk[iDetIndx] = new TH2F( 
                           Form("cl_SmT%01d_sm%03d_rpc%03d_AvLnWalk", iSmType, iSmId, iRpcId),
                           Form("Walk in SmT%01d_sm%03d_rpc%03d_AvLnWalk", iSmType, iSmId, iRpcId),
-                          nbClWalkBinX,6.,TMath::Log(fdTOTMax),nbClWalkBinY,-TSumMax,TSumMax);
+                          nbClWalkBinX,TMath::Log(fdTOTMax/50.),TMath::Log(fdTOTMax),nbClWalkBinY,-TSumMax,TSumMax);
 
-       fhRpcCluWalk[iDetIndx].resize( fMbsMappingPar->GetSmTypeNbCh(iSmType) );
-       for( Int_t iCh=0; iCh<fMbsMappingPar->GetSmTypeNbCh(iSmType); iCh++){
+       fhRpcCluWalk[iDetIndx].resize( fDigiBdfPar->GetNbChan(iSmType,iRpcId) );
+       for( Int_t iCh=0; iCh<fDigiBdfPar->GetNbChan(iSmType,iRpcId); iCh++){
          fhRpcCluWalk[iDetIndx][iCh].resize( 2 );
          for (Int_t iSide=0; iSide<2; iSide++)
          {
@@ -1243,7 +1239,7 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
    fhSeldT.resize( iNSel );
    for (Int_t iSel=0; iSel<iNSel; iSel++){
        fhSeldT[iSel] =  new TH2F(  Form("cl_dt_Sel%02d", iSel ),
-                                   Form("Selector time %02d; dT [ps]",iSel ),
+                                   Form("Selector time %02d; dT [ns]",iSel ),
                                    99, -fdDelTofMax*10., fdDelTofMax*10.,
 				   16, -0.5, 15.5 ); 
    }
@@ -1258,25 +1254,26 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
    fhTRpcCludXdY.resize( iNbDet );
    fhTRpcCluWalk.resize( iNbDet );
    for(Int_t iDetIndx=0; iDetIndx<iNbDet; iDetIndx++){
-       Int_t iUniqueId = fMbsMappingPar->GetMappedDetUId( iDetIndx );
+       Int_t iUniqueId = fDigiBdfPar->GetDetUId( iDetIndx );
        Int_t iSmType   = CbmTofAddress::GetSmType( iUniqueId );
        Int_t iSmId     = CbmTofAddress::GetSmId( iUniqueId );
        Int_t iRpcId    = CbmTofAddress::GetRpcId( iUniqueId );
        Int_t iUCellId  = CbmTofAddress::GetUniqueAddress(iSmId,iRpcId,0,0,iSmType);
        fChannelInfo = fDigiPar->GetCell(iUCellId);
        if (NULL==fChannelInfo) {
-         LOG(WARNING)<<"CbmTofTestBeamClusterizer::CreateHistos: No DigiPar for Det "
+         LOG(WARNING)<<"No DigiPar for Det "
                      <<Form("0x%08x", iUCellId)
                  <<FairLogger::endl;
-         break;
+         continue;
        }      
-       LOG(DEBUG1) << "CbmTofTestBeamClusterizer::CreateHistos: DetIndx "<<iDetIndx<<", SmType "<<iSmType<<", SmId "<<iSmId
+       LOG(DEBUG1) << "DetIndx "<<iDetIndx<<", SmType "<<iSmType<<", SmId "<<iSmId
                   << ", RpcId "<<iRpcId<<" => UniqueId "<<Form("(0x%08x, 0x%08x)",iUniqueId,iUCellId)
                  <<", dx "<<fChannelInfo->GetSizex()
                  <<", dy "<<fChannelInfo->GetSizey()
                  <<Form(" poi: 0x%p ",fChannelInfo)
-                  <<", nbCh "<<fMbsMappingPar->GetSmTypeNbCh(iSmType)
+                  <<", nbCh "<<fDigiBdfPar->GetNbChan(iSmType,iRpcId)
                  <<FairLogger::endl;
+
        fhTRpcCluMul[iDetIndx].resize( iNSel  );
        fhTRpcCluPosition[iDetIndx].resize( iNSel  );
        fhTRpcCluTOff[iDetIndx].resize( iNSel  );
@@ -1291,36 +1288,38 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
        fhTRpcCluMul[iDetIndx][iSel] =  new TH1I(
           Form("cl_SmT%01d_sm%03d_rpc%03d_Sel%02d_Mul", iSmType, iSmId, iRpcId, iSel ),
           Form("Clu multiplicity of Rpc #%03d in Sm %03d of type %d under Selector %02d; M []; cnts", iRpcId, iSmId, iSmType, iSel ),
-          fMbsMappingPar->GetSmTypeNbCh(iSmType),1.,fMbsMappingPar->GetSmTypeNbCh(iSmType)+1);
-
+	  fDigiBdfPar->GetNbChan(iSmType,iRpcId),1,fDigiBdfPar->GetNbChan(iSmType,iRpcId)+1);
+      
+       if (NULL == fhTRpcCluMul[iDetIndx][iSel]) LOG(FATAL)<<" Histo not generated !"<<FairLogger::endl; 
+       
        Double_t YSCAL=50.;
        if (fPosYMaxScal !=0.) YSCAL=fPosYMaxScal;
        Double_t YDMAX=TMath::Max(2.,fChannelInfo->GetSizey())*YSCAL;
        fhTRpcCluPosition[iDetIndx][iSel] =  new TH2F( 
           Form("cl_SmT%01d_sm%03d_rpc%03d_Sel%02d_Pos", iSmType, iSmId, iRpcId, iSel ),
           Form("Clu position of Rpc #%03d in Sm %03d of type %d under Selector %02d; Strip []; ypos [cm]", iRpcId, iSmId, iSmType, iSel ),
-          fMbsMappingPar->GetSmTypeNbCh(iSmType), 0, fMbsMappingPar->GetSmTypeNbCh(iSmType),
+          fDigiBdfPar->GetNbChan(iSmType,iRpcId),0,fDigiBdfPar->GetNbChan(iSmType,iRpcId),
           100, -YDMAX,YDMAX ); 
 
        Double_t TSumMax=1.E4;
        if (fTRefDifMax !=0.) TSumMax=fTRefDifMax;
        fhTRpcCluTOff[iDetIndx][iSel] =  new TH2F( 
           Form("cl_SmT%01d_sm%03d_rpc%03d_Sel%02d_TOff", iSmType, iSmId, iRpcId, iSel ),
-          Form("Clu TimeZero of Rpc #%03d in Sm %03d of type %d under Selector %02d; Strip []; TOff [ps]", iRpcId, iSmId, iSmType, iSel ),
-          fMbsMappingPar->GetSmTypeNbCh(iSmType), 0, fMbsMappingPar->GetSmTypeNbCh(iSmType),
+          Form("Clu TimeZero of Rpc #%03d in Sm %03d of type %d under Selector %02d; Strip []; TOff [ns]", iRpcId, iSmId, iSmType, iSel ),
+          fDigiBdfPar->GetNbChan(iSmType,iRpcId),0,fDigiBdfPar->GetNbChan(iSmType,iRpcId),
           99, -TSumMax,TSumMax ); 
 
        if (fTotMax !=0.) fdTOTMax=fTotMax;
        fhTRpcCluTot[iDetIndx][iSel]  =  new TH2F( 
           Form("cl_SmT%01d_sm%03d_rpc%03d_Sel%02d_Tot", iSmType, iSmId, iRpcId, iSel ),
-          Form("Clu Tot of Rpc #%03d in Sm %03d of type %d under Selector %02d; StripSide []; TOT [ps]", iRpcId, iSmId, iSmType, iSel ),
-          fMbsMappingPar->GetSmTypeNbCh(iSmType)*2, 0, fMbsMappingPar->GetSmTypeNbCh(iSmType)*2,
+          Form("Clu Tot of Rpc #%03d in Sm %03d of type %d under Selector %02d; StripSide []; TOT [ns]", iRpcId, iSmId, iSmType, iSel ),
+          fDigiBdfPar->GetNbChan(iSmType,iRpcId)*2, 0, fDigiBdfPar->GetNbChan(iSmType,iRpcId)*2,
           100, fdTOTMin, fdTOTMax);
 
        fhTRpcCluSize[iDetIndx][iSel]  =  new TH2F( 
           Form("cl_SmT%01d_sm%03d_rpc%03d_Sel%02d_Size", iSmType, iSmId, iRpcId, iSel ),
           Form("Clu size of Rpc #%03d in Sm %03d of type %d under Selector %02d; Strip []; size [strips]", iRpcId, iSmId, iSmType, iSel ),
-          fMbsMappingPar->GetSmTypeNbCh(iSmType), 0, fMbsMappingPar->GetSmTypeNbCh(iSmType),
+          fDigiBdfPar->GetNbChan(iSmType,iRpcId),0,fDigiBdfPar->GetNbChan(iSmType,iRpcId),
           16, 0.5, 16.5); 
 
        // Walk histos 
@@ -1341,8 +1340,8 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
           Form("SmT%01d_sm%03d_rpc%03d_Sel%02d_dXdY; #Delta x [cm]; #Delta y [cm];", iSmType, iSmId, iRpcId, iSel),
           nbCldXdYBinX,-dXdYMax,dXdYMax,nbCldXdYBinY,-dXdYMax,dXdYMax);
 
-       fhTRpcCluWalk[iDetIndx][iSel].resize( fMbsMappingPar->GetSmTypeNbCh(iSmType) );
-       for( Int_t iCh=0; iCh<fMbsMappingPar->GetSmTypeNbCh(iSmType); iCh++){
+       fhTRpcCluWalk[iDetIndx][iSel].resize( fDigiBdfPar->GetNbChan(iSmType,iRpcId) );
+       for( Int_t iCh=0; iCh<fDigiBdfPar->GetNbChan(iSmType,iRpcId); iCh++){
          fhTRpcCluWalk[iDetIndx][iSel][iCh].resize( 2 );
          for (Int_t iSide=0; iSide<2; iSide++)
          {
@@ -1368,9 +1367,9 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
       fhTimeResSingHitsB = new TH2I( "Clus_TofTimeResClustB", "Time resolution for TofHits containing Digis from a single MC Track; (1st Mc Point) -tTofHit [ns]",
             5000, -25.0, 25.0,
             6, 0, 6);
-      fhTimePtVsHits = new TH2I( "Clus_TofTimePtVsHit", "Time resolution for TofHits containing Digis from a single MC Track; t(1st Mc Point) -tTofHit [ps]",
-            2000, 0.0, 50000.0,
-            2000, 0.0, 50000.0 );
+      fhTimePtVsHits = new TH2I( "Clus_TofTimePtVsHit", "Time resolution for TofHits containing Digis from a single MC Track; t(1st Mc Point) -tTofHit [ns]",
+            2000, 0.0, 50.0,
+            2000, 0.0, 50.0 );
    }
       else
       {
@@ -1380,8 +1379,8 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
                5000, -25.0, 25.0,
                6, 0, 6);
          fhTimePtVsHits = new TH2I( "Clus_TofTimePtVsHit", "Time resolution for TofHits containing Digis from a single TofPoint; tMcPoint -tTofHit [ps]",
-               2000, 0.0, 50000.0,
-               2000, 0.0, 50000.0 );
+               2000, 0.0, 50.0,
+               2000, 0.0, 50.0 );
       } // else of if( kTRUE == fDigiBdfPar->ClustUseTrackId() )
    fhClusterSize = new TH1I( "Clus_ClusterSize", "Cluster Size distribution; Cluster Size [Strips]",
          100, 0.5, 100.5 );
@@ -1436,9 +1435,6 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
   Double_t dSel2dXdYMin[iNSel];
 
   if(0<iNSel){                  // check software triggers
-    fDutAddr =CbmTofAddress::GetUniqueAddress(fDutSm,fDutRpc,0,0,fDutId);
-    fSelAddr =CbmTofAddress::GetUniqueAddress(fSelSm,fSelRpc,0,0,fSelId);
-    fSel2Addr=CbmTofAddress::GetUniqueAddress(fSel2Sm,fSel2Rpc,0,0,fSel2Id);
 
     LOG(DEBUG) <<"CbmTofTestBeamClusterizer::FillHistos() for "<<iNSel<<" triggers"
                <<", Dut "<<fDutId<<", "<<fDutSm<<", "<<fDutRpc<<Form(", 0x%08x",fDutAddr) 
@@ -1480,7 +1476,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
            }
          }
 	 TotSum /= (0.5 * digiMatch->GetNofLinks());
-	 if( TotSum > fhRpcCluTot[0]->GetYaxis()->GetXmax()) continue; 
+	 if( TotSum > fhRpcCluTot[iIndexDut]->GetYaxis()->GetXmax()) continue; 
 
           fTRefHits=1;
 	  if(pHit->GetTime() < dTRef)  
@@ -1679,8 +1675,8 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
      if( kFALSE == fDigiBdfPar->ClustUseTrackId() ) fhPtsPerHit->Fill(pHit->GetFlag());
      Int_t iDetId = (pHit->GetAddress() & DetMask);
 
-     for(Int_t iDetIndx=0; iDetIndx<fMbsMappingPar->GetNbMappedDet(); iDetIndx++){
-       Int_t iUniqueId = fMbsMappingPar->GetMappedDetUId( iDetIndx );
+     for(Int_t iDetIndx=0; iDetIndx<fDigiBdfPar->GetNbDet(); iDetIndx++){
+       Int_t iUniqueId = fDigiBdfPar->GetDetUId( iDetIndx );
 
        LOG(DEBUG2)<<"CbmTofTestBeamClusterizer::FillHistos: Inspect Hit  "
                   << Form(" %d %08x %08x %d %08x ", iHitInd, pHit->GetAddress(), DetMask, iDetIndx, iUniqueId)
@@ -1943,8 +1939,8 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
 		     hitpos[1]=pHit->GetY()-dzscal*pTrig[iSel]->GetY() + fChannelInfo->GetY();
 		     hitpos[2]=pHit->GetZ();
 		     gGeoManager->MasterToLocal(hitpos, hitpos_local); //  transform into local frame
-		     fhRpcCluDelMatPos[iDetIndx]->Fill(pDig0->GetChannel(),hitpos_local[1]);
-		     fhRpcCluDelMatTOff[iDetIndx]->Fill(pDig0->GetChannel(),dTcor);
+		     fhRpcCluDelMatPos[iDetIndx]->Fill((Double_t)iCh,hitpos_local[1]);
+		     fhRpcCluDelMatTOff[iDetIndx]->Fill((Double_t)iCh,dTcor);
 		     /*
 		     if(iSmType == 4 || iSmType ==3)
 		     LOG(INFO)<<" Match for T "<<iSmType
@@ -2073,7 +2069,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
      }
    }
 
-   for(Int_t iDetIndx=0; iDetIndx< fMbsMappingPar->GetNbMappedDet(); iDetIndx++){
+   for(Int_t iDetIndx=0; iDetIndx< fDigiBdfPar->GetNbDet(); iDetIndx++){
      if(NULL == fhRpcCluMul[iDetIndx]) continue;
      fhRpcCluMul[iDetIndx]->Write();
      fhRpcCluPosition[iDetIndx]->Write();
@@ -2084,8 +2080,10 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
      fhRpcCluTot[iDetIndx]->Write();
      fhRpcCluAvWalk[iDetIndx]->Write();
      fhRpcCluAvLnWalk[iDetIndx]->Write();
-
+     
+     LOG(DEBUG)<<"Write triggered Histos for Det Ind "<<iDetIndx<<Form(", UID 0x%08x",fDigiBdfPar->GetDetUId(iDetIndx))<<FairLogger::endl;
      for (Int_t iSel=0; iSel<iNSel; iSel++){   // Save trigger selected histos 
+       if(NULL == fhTRpcCluMul[iDetIndx][iSel]) continue;
        fhTRpcCluMul[iDetIndx][iSel]->Write();
        fhTRpcCluPosition[iDetIndx][iSel]->Write();
        fhTRpcCluTOff[iDetIndx][iSel]->Write();
@@ -2093,7 +2091,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
        fhTRpcCluAvWalk[iDetIndx][iSel]->Write();
      }
 
-     Int_t iUniqueId = fMbsMappingPar->GetMappedDetUId( iDetIndx );
+     Int_t iUniqueId = fDigiBdfPar->GetDetUId( iDetIndx );
      Int_t iSmAddr   = iUniqueId & DetMask; 
      Int_t iSmType   = CbmTofAddress::GetSmType( iUniqueId );
      Int_t iSm       = CbmTofAddress::GetSmId( iUniqueId );
@@ -2271,8 +2269,9 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
         if(   (fCalSmAddr < 0 && TMath::Abs(fCalSmAddr) != iSmAddr)
            || fCalSmAddr == iSmAddr)  // select detectors for determination of walk correction
 	{
+
         LOG(INFO)<<"CbmTofTestBeamClusterizer::WriteHistos: restore Offsets and Gains and update Walk for "
-                 <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc<<" with "<<fMbsMappingPar->GetSmTypeNbCh(iSmType)<<" channels"
+                 <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc<<" with "<<fDigiBdfPar->GetNbChan(iSmType,iRpc)<<" channels"
                  <<FairLogger::endl;
         for( Int_t iCh=0; iCh< fDigiBdfPar->GetNbChan( iSmType, iRpc ); iCh++){
           TH2 *h2tmp0;
@@ -3096,9 +3095,10 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
          //         <<" Tot " <<pDigi->GetTot()
                  <<FairLogger::endl;
 
-       Int_t iDetIndx= fMbsMappingPar->GetMappedDetInd( pDigi->GetAddress() );
-       if (fMbsMappingPar->GetNbMappedDet()-1<iDetIndx || iDetIndx<0){
-         LOG(DEBUG)<<Form(" Wrong DetIndx %d >< %d,0 ",iDetIndx,fMbsMappingPar->GetNbMappedDet())
+       Int_t iDetIndx= fDigiBdfPar->GetDetInd( pDigi->GetAddress() );
+       
+       if (fDigiBdfPar->GetNbDet()-1<iDetIndx || iDetIndx<0){
+         LOG(DEBUG)<<Form(" Wrong DetIndx %d >< %d,0 ",iDetIndx,fDigiBdfPar->GetNbDet())
                    <<FairLogger::endl;
          break;
        }
@@ -3108,7 +3108,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
        //       for (Int_t iDigI2 =iDigInd+1; iDigI2<iNbTofDigi;iDigI2++){
        for (Int_t iDigI2 =0; iDigI2<iNbTofDigi;iDigI2++){
          CbmTofDigiExp *pDigi2 = (CbmTofDigiExp*) fTofDigisColl->At( iDigI2 );
-         if( iDetIndx == fMbsMappingPar->GetMappedDetInd( pDigi2->GetAddress() )){
+         if( iDetIndx == fDigiBdfPar->GetDetInd( pDigi2->GetAddress() )){
            if(0.==pDigi->GetSide() && 1.==pDigi2->GetSide()){
              fhRpcDigiCor[iDetIndx]->Fill( pDigi->GetChannel(),  pDigi2->GetChannel() );
            }

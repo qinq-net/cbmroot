@@ -62,6 +62,9 @@ class CbmTofDigiBdfPar : public FairParGenericSet
     Int_t    GetNbChan( Int_t iSmType, Int_t iRpc) const;
     Int_t    GetChanType( Int_t iSmType, Int_t iRpc) const;
     Int_t    GetChanOrient( Int_t iSmType, Int_t iRpc) const;
+    Int_t    GetNbDet() const;
+    Int_t    GetDetUId(Int_t iDet);
+    Int_t    GetDetInd(Int_t iAddr);
 
     // Beamtime variables
     TString  GetInputFileName()     const { return fsBeamInputFile; };
@@ -129,6 +132,7 @@ class CbmTofDigiBdfPar : public FairParGenericSet
     std::vector< TArrayI > fiNbCh;           // [fiNbSmTypes][fiNbRpc]
     std::vector< TArrayI > fiChType;         // [fiNbSmTypes][fiNbRpc]
     std::vector< TArrayI > fiChOrientation;  // [fiNbSmTypes][fiNbRpc] -> in parameter? Possibility to Readout from geometry angles?
+    TArrayI                fiDetUId;         // [NbDet]         
 
     // Beamtime variables
     TString                fsBeamInputFile;

@@ -25,7 +25,6 @@ class CbmTofDigiBdfPar;
 class CbmTofCell;
 class CbmTofFindTracks;
 
-class TMbsMappingTofPar;
 class TTofCalibData;
 class TTrbHeader;
 
@@ -188,7 +187,6 @@ class CbmTofTestBeamClusterizer : public FairTask
       CbmTofCell            * fChannelInfo;
       CbmTofDigiBdfPar      * fDigiBdfPar;
 
-      TMbsMappingTofPar     *fMbsMappingPar;
       TTrbHeader            *fTrbHeader;
 
       // Input variables 
