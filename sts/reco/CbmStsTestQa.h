@@ -10,11 +10,12 @@
 
 #include <FairTask.h>
 
+#include <fstream>
+
 class CbmEvent;
 class CbmVertex;
 class CbmHistManager;
 class TClonesArray;
-class ofstream;
 
 class CbmStsTestQa: public FairTask {
 
