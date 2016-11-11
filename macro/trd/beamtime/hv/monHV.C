@@ -16,15 +16,14 @@ Int_t firstDay(0), firstHour(0), firstMin(0), firstSec(0), firstMsec(0);
 //martin: if set true no questions form user required
 Bool_t kohnmode=kFALSE;
 
-Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t, TH1I*>&mCurrent, std::map<Int_t, TGraph*>&mTrendingI, std::map<Int_t, TGraph*>&mTrendingU, TH1I* hTime, TH1I* hChID, TH1I* hDeltaT, TGraph* gTime, TGraph* gCurrentSum1, TH1I* hCurrent, TProfile2D* hCurrentMap, TH1I* hVoltage, TH2I* hVoltageCurrent, Bool_t debug){
+Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t, TH1I*>&mCurrent, std::map<Int_t, TGraph*>&mTrendingI, std::map<Int_t, TGraph*>&mTrendingU, TH1I* hTime, TH1I* hChID, TH1I* hDeltaT, TGraph* gTime, TH1I* hCurrentDrift, TH1I* hCurrentAnode, TProfile2D* hCurrentMap, TH1I* hVoltage, TH2I* hVoltageCurrent, Bool_t debug){
   Bool_t fileStat;
   ifstream in;
   in.open(inFile);
   Int_t year(-1), month(-1), day(-1), hour(-1), min(-1), sec(-1), msec(-1), chID(-1), deltaT(0), lineLength(0), fileTime(0);
   Int_t lastDay(-1), lastHour(-1), lastMin(-1), lastSec(-1), lastMsec(-1);
-  Double_t voltage(0.0), current(0.0), currentSum1(0.0);
-  double voltageIKF[13] = {};
-  Int_t lineColor(1), lineStyle(1);
+  Double_t voltage(0.0), current(0.0);
+  Int_t lineColor(1), lineStyle(1), lineWidth (1);
   TString line("");
   TString sTime(""), sChID(""), sVoltage(""), sCurrent(""), name("");
   char cline[500];
@@ -46,8 +45,6 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
       line.ReplaceAll("= Opaque: Float: ",""); 
 
       if (line.BeginsWith("201")){
-	//gCurrentSum1->SetPoint((gCurrentSum1->GetN()),fileTime,currentSum1); // write summed current to plot and
-	//currentSum1 = 0.; // reset currentSum in a new time bin
 	sTime = line;
 	year  = TString(line( 0,4)).Atoi(); 
 	month = TString(line( 5,2)).Atoi();
@@ -94,31 +91,26 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
 	lineLength = (Int_t)line.Length();
 	sChID = line(0,3);
 	chID = sChID.Atoi();
-	// continue for lv channels
-	if (chID ==312){
-	  gCurrentSum1->SetPoint((gCurrentSum1->GetN()),fileTime,currentSum1); // write summed current to plot and
-	  currentSum1 = 0.; // reset currentSum in a new time bin
-	}
-	if (chID < 200) continue;
-	// continue for empty hv channels
-	if (chID <= 215 && !(chID < 201)) continue;
-	if (chID <= 315 && !(chID < 313)) continue;
-	if (chID <= 407 && !(chID < 401)) continue;
-	if (chID <= 515 && !(chID < 501)) continue;
+	// continue for lv channels:
+	if (chID < 400) continue;
+	// continue for empty hv channels on the CBM TRD Iseg modules:
+	if (chID <= 499 && chID > 404 || chID == 402) continue;
+	if (chID <= 599 && chID > 503) continue;
+	// continue for unused Iseg modules:
+	if (chID >= 600) continue;
 	hChID->Fill(chID);
 	sCurrent = line(4,lineLength-4);
 	current = sCurrent.Atof();
-	// add to currentSum1 if from frankfurt chamber
-	if(chID >=300 && chID < 313) currentSum1 += current;
-	hCurrent->Fill(current);
-	if(chID >=300 && chID < 313) hCurrentMap->Fill(chID,1,(1E6*current)); // IKF channels
-	if(chID >=500 && chID < 501) hCurrentMap->Fill((chID-200),2,(1E6*current)); // IKP Ms channel
-
-	// if(chID >=300 && chID < 313 && currentIKF[chID-300] != 0.) hVoltageCurrent->Fill(voltageIKF[chID-300],current);
-	if(chID >=300 && chID < 313) hVoltageCurrent->Fill(voltageIKF[chID-300],current);
-
-	lineStyle = (Int_t)(chID/100)+1;
+	if(chID >= 400 && chID <= 404 && chID != 402) hCurrentDrift->Fill(current); //drift channels
+	if(chID >= 500 && chID <= 503) hCurrentAnode->Fill(current); //anode channels
+	if(chID >=400 && chID <= 404) hCurrentMap->Fill((chID-400+1),1,(1E6*current)); // drift channels
+	if(chID >=500 && chID <= 503) hCurrentMap->Fill((chID-500+1),2,(1E6*current)); // anode channel
+	
+	if(chID >=500 && chID <= 503) hVoltageCurrent->Fill(voltage,current);
+	
+	lineStyle = 1;
 	lineColor = (chID%100)+3;
+	lineWidth = 5;
 	if(lineColor >= 5) lineColor++;
 	if (mCurrent.find(chID) == mCurrent.end()){
 	  name.Form("hCurrent%03i",chID);
@@ -132,6 +124,7 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
 	  mTrendingI[chID]->GetYaxis()->SetTitle("I (A)");
 	  mTrendingI[chID]->SetLineStyle(lineStyle);
 	  mTrendingI[chID]->SetLineColor(lineColor);
+	  mTrendingI[chID]->SetLineWidth(lineWidth);
 	}
 	mCurrent[chID]->Fill(current);
 	mTrendingI[chID]->SetPoint(mTrendingI[chID]->GetN(),fileTime,current);
@@ -145,21 +138,20 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
 	//sCurrent = "";
 	sChID = line(0,3);
 	chID = sChID.Atoi();  
-	// continue for lv channels
-	if (chID < 200) continue;
-	// continue for empty hv channels
-	if (chID <= 215 && !(chID < 201)) continue;
-	if (chID <= 315 && !(chID < 313)) continue;
-	if (chID <= 407 && !(chID < 401)) continue;
-	if (chID <= 515 && !(chID < 501)) continue;
+	// continue for lv channels:
+	if (chID < 400) continue;
+	// continue for empty hv channels on the CBM TRD Iseg modules:
+	if (chID <= 499 && chID > 404 || chID == 402) continue;
+	if (chID <= 599 && chID > 503) continue;
+	// continue for unused Iseg modules:
+	if (chID >= 600) continue;
 	//	hChID->Fill(chID);
 	voltage = sVoltage.Atof();
 	hVoltage->Fill(voltage);
-
-	if(chID >=300 && chID < 313) voltageIKF[chID-300] = voltage;
-
-	lineStyle = (Int_t)(chID/100)+1;
+	
+	lineStyle = 1;
 	lineColor = (chID%100)+1;
+	lineWidth = 2;
 	if(lineColor >= 5) lineColor++;
 	if (mVoltage.find(chID) == mVoltage.end()){
 	  name.Form("hVoltage%03i",chID);
@@ -173,6 +165,7 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
 	  mTrendingU[chID]->GetYaxis()->SetTitle("U (V)");
 	  mTrendingU[chID]->SetLineStyle(lineStyle);
 	  mTrendingU[chID]->SetLineColor(lineColor);
+	  mTrendingU[chID]->SetLineWidth(lineWidth);
 	}
 	mVoltage[chID]->Fill(voltage);
 	mTrendingU[chID]->SetPoint(mTrendingU[chID]->GetN(),fileTime,voltage);
@@ -183,7 +176,7 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
       }
       if (debug)
 	cout << lineLength << ":   " << line << endl;
-  
+      
       if (debug){
 	cout << "T=" << sTime  << endl;
 	cout << "C=" << chID << endl;
@@ -193,7 +186,7 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
       nLines++;
     }
     cout << endl << "Done" << endl << "Found " << nLines << " lines in file " << inFile << endl;
-
+    
     fileStat = true;
   }
   in.close();
@@ -201,12 +194,12 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
 }
 
 
-void monHV(TString configFile="/data2/cern_nov2015/hv/filename.config")
+void monHV(TString configFile="/data2/cern_nov2016/hv/filename.config")
 {
   TDatime da(2015,10,30,12,00,00);
   gStyle->SetTimeOffset(da.Convert());
   Bool_t debug(false), diffFile(false), nextFile(true);
-  TString inFile("/data/cern2015/hv/2015-11-28_13-43_hv0.log");
+  TString inFile("/data/cern2016/hv/2015-11-28_13-43_hv0.log");
   TString configline("");
 
   char cname[200];
@@ -239,25 +232,26 @@ void monHV(TString configFile="/data2/cern_nov2015/hv/filename.config")
   hDeltaT->SetXTitle("#Deltat (ms)");
   TGraph* gTime = new TGraph();
   gTime->SetTitle("ReadoutTimes");
-  TH1I* hCurrent = new TH1I("hCurrent","hCurrent",100001,-1E-7,8E-6);
-  hCurrent->SetXTitle("I (A)");
+  TH1I* hCurrentDrift = new TH1I("hCurrentDrift","hCurrentDrift",100001,-1E-7,8E-6);
+  TH1I* hCurrentAnode = new TH1I("hCurrentAnode","hCurrentAnode",100001,-1E-7,8E-6);
+  hCurrentDrift->SetXTitle("I (A)");
+  hCurrentAnode->SetXTitle("I (A)");
   // prepare x limits for channel numbers to be filled, z is the current in nanoampere
-  TProfile2D* hCurrentMap = new TProfile2D("hCurrentMap","hCurrentMap",13,299.5,312.5,2,0.5,2.5);
+  TProfile2D* hCurrentMap = new TProfile2D("hCurrentMap","hCurrentMap",5,0.5,5.5,2,0.5,2.5);
   TH1I* hVoltage = new TH1I("hVoltage","hVoltage",200001,-1,2000);
   hVoltage->SetXTitle("U (V)");
-  TH2I* hVoltageCurrent = new TH2I("hVoltageCurrent","hVoltageCurrent",2000,1399,1401,1000,-1E-7,4E-6);
-  TGraph* gCurrentSum1 = new TGraph();
+  TH2I* hVoltageCurrent = new TH2I("hVoltageCurrent","hVoltageCurrent Anodes",2000,1849,1851,1000,-1E-7,6E-6);
   std::map<Int_t, TH1I*> mVoltage;
   std::map<Int_t, TH1I*> mCurrent;
   std::map<Int_t, TGraph*> mTrendingI;
   std::map<Int_t, TGraph*> mTrendingU;
 
   if(kohnmode){
-    readFile(inFile, mVoltage, mCurrent, mTrendingI, mTrendingU, hTime, hChID, hDeltaT, gTime, gCurrentSum1, hCurrent, hCurrentMap, hVoltage, hVoltageCurrent, debug);
+    readFile(inFile, mVoltage, mCurrent, mTrendingI, mTrendingU, hTime, hChID, hDeltaT, gTime, hCurrentDrift, hCurrentAnode, hCurrentMap, hVoltage, hVoltageCurrent, debug);
   }
     else{
     while (nextFile) {
-      readFile(inFile, mVoltage, mCurrent, mTrendingI, mTrendingU, hTime, hChID, hDeltaT, gTime, gCurrentSum1, hCurrent, hCurrentMap, hVoltage, hVoltageCurrent, debug);
+      readFile(inFile, mVoltage, mCurrent, mTrendingI, mTrendingU, hTime, hChID, hDeltaT, gTime, hCurrentDrift, hCurrentAnode, hCurrentMap, hVoltage, hVoltageCurrent, debug);
    
       cout << "Read further file? (1 for yes, 0 for no): ";
       cin >> nextFile;
@@ -267,11 +261,18 @@ void monHV(TString configFile="/data2/cern_nov2015/hv/filename.config")
     }
     }}
     //}
-  TCanvas *c1 = new TCanvas("c1","CurrentDist",800,600);
-  c1->SetLogy(1);
-  hCurrent->DrawCopy();
+  TCanvas *c0 = new TCanvas("c0","CurrentDriftDist",800,600);
+  c0->SetLogy(1);
+  hCurrentDrift->DrawCopy();
   for (std::map<Int_t, TH1I*>::iterator it=mCurrent.begin(); it!=mCurrent.end();it++){
-    it->second->DrawCopy("same");
+    //  it->second-DrawCopy("same");
+  }
+  c0->Update();
+  TCanvas *c1 = new TCanvas("c1","CurrentAnodeDist",800,600);
+  c1->SetLogy(1);
+  hCurrentAnode->DrawCopy();
+  for (std::map<Int_t, TH1I*>::iterator it=mCurrent.begin(); it!=mCurrent.end();it++){
+    //  it->second->DrawCopy("same");
   }
   c1->Update();
   TCanvas *c2 = new TCanvas("c2","VoltageDist",800,600);
@@ -290,32 +291,36 @@ void monHV(TString configFile="/data2/cern_nov2015/hv/filename.config")
   c4->Update();
   TCanvas *c5 = new TCanvas("c5","chIDDist",800,600);
   hChID->DrawCopy();
-  TCanvas *c6 = new TCanvas("c6","CurrentTrend",800,600);
-  c6->SetLogy(0);
-  TMultiGraph *multiI = new TMultiGraph();
-  gCurrentSum1->SetLineColor(kRed);
-  multiI->Add(gCurrentSum1);
+  TCanvas *c6d = new TCanvas("c6d","CurrentDriftTrend",800,600);
+  c6d->SetLogy(0);
+  TMultiGraph *multiIDrift = new TMultiGraph();
   for (std::map<Int_t, TGraph*>::iterator it=mTrendingI.begin(); it!=mTrendingI.end();it++){
-    //    if (it->first == 304 || it->first == 405)
-    //    switch (it->first)
-    //      {
-    //      case 304: case 404: case 405:
-	//      cout << it->first << "blub" << endl;
-    //    if(it->second > 100E-9)    {
-      multiI->Add(it->second);
-      //  }
-      //      break;
-      //    default:
-      //    continue;
-      //      }
+    if (it->first >= 400 && it->first <= 403) {
+      multiIDrift->Add(it->second); // select drift channels by chID
+    }
   }
-  multiI->Draw("AL");
-  multiI->GetYaxis()->SetRangeUser(0.,5E-7);
-  multiI->GetXaxis()->SetTitle("Time (ms)");
-  multiI->GetYaxis()->SetTitle("I (A)");
-  //  c6->Update(); // why doesnt this update the titles and range properly?
-  //multiI->Draw("AL");
-  c6->BuildLegend();
+  multiIDrift->Draw("AL");
+  multiIDrift->GetYaxis()->SetRangeUser(0.,5E-7);
+  multiIDrift->GetXaxis()->SetTitle("Time (ms)");
+  multiIDrift->GetYaxis()->SetTitle("I (A)");
+  //  c6d->Update(); // why doesnt this update the titles and range properly?
+  //multiIDrift->Draw("AL");
+  c6d->BuildLegend(0.5,0.72,0.85,0.88);
+  TCanvas *c6a = new TCanvas("c6a","CurrentAnodeTrend",800,600);
+  c6a->SetLogy(0);
+  TMultiGraph *multiIAnode = new TMultiGraph();
+  for (std::map<Int_t, TGraph*>::iterator it=mTrendingI.begin(); it!=mTrendingI.end();it++){
+    if (it->first >= 500 && it->first <= 504) {
+      multiIAnode->Add(it->second); // select anodes by chID
+    }
+  }
+  multiIAnode->Draw("AL");
+  multiIAnode->GetYaxis()->SetRangeUser(0.,5E-7);
+  multiIAnode->GetXaxis()->SetTitle("Time (ms)");
+  multiIAnode->GetYaxis()->SetTitle("I (A)");
+  //  c6a->Update(); // why doesnt this update the titles and range properly?
+  //multiIAnode->Draw("AL");
+  c6a->BuildLegend(0.5,0.72,0.85,0.88);
   TCanvas *c7 = new TCanvas("c7","VoltageTrend",800,600);
   c7->SetLogy(0);
   TMultiGraph *multiU = new TMultiGraph();
@@ -331,7 +336,7 @@ void monHV(TString configFile="/data2/cern_nov2015/hv/filename.config")
   c8->SetLogz(1);
   hCurrentMap->DrawCopy("COLZ");
   hCurrentMap->GetXaxis()->SetTitle("chID");
-  hCurrentMap->GetYaxis()->SetTitle("chamber");
+  hCurrentMap->GetYaxis()->SetTitle("1=drift / 2=anode");
   hCurrentMap->GetZaxis()->SetTitle("I (#muA)");
   //  c8->Update(); // why does update not update the axis titles? following new drawing neccessary!
   hCurrentMap->DrawCopy("COLZ");
