@@ -129,6 +129,7 @@ class CbmTofTestBeamClusterizer : public FairTask
 
       inline void SetEnableMatchPosScaling(Bool_t bval) { fEnableMatchPosScaling = bval; }
       inline void SetEnableAvWalk(Bool_t bval)          { fEnableAvWalk = bval; }
+      inline void SetPs2Ms(Bool_t bval)                 { fbPs2Ns = bval; }
 
    protected:
 
@@ -339,6 +340,7 @@ class CbmTofTestBeamClusterizer : public FairTask
 
       Bool_t fEnableMatchPosScaling;
       Bool_t fEnableAvWalk;
+      Bool_t fbPs2Ns;  // convert input raw digis from ps to ns 
 
       TString       fCalParFileName;      // name of the file name with Calibration Parameters
       TString       fOutHstFileName;      // name of the histogram output file name with Calibration Parameters

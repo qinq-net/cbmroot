@@ -181,6 +181,7 @@ CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer():
    fMaxTimeDist(0.),
    fEnableMatchPosScaling(kTRUE),
    fEnableAvWalk(kFALSE),
+   fbPs2Ns(kFALSE),
    fCalParFileName(""),
    fOutHstFileName(""),
    fCalParFile(NULL),      
@@ -322,6 +323,7 @@ CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer(const char *name, Int_t ver
    fMaxTimeDist(0.),
    fEnableMatchPosScaling(kTRUE),
    fEnableAvWalk(kFALSE),
+   fbPs2Ns(kFALSE),
    fCalParFileName(""),
    fOutHstFileName(""),
    fCalParFile(NULL),      
@@ -3192,7 +3194,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                    <<pDigi->GetTot()
 		   <<FairLogger::endl;
 	 pCalDigi = new((*fTofCalDigisColl)[iDigInd]) CbmTofDigiExp( *pDigi );
-
+	 if(fbPs2Ns)  pCalDigi->SetTime(pCalDigi->GetTime()/1000.);        // for backward compatibility
          if(    fDigiBdfPar->GetNbSmTypes() > pDigi->GetType()  // prevent crash due to misconfiguration 
              && fDigiBdfPar->GetNbSm(  pDigi->GetType()) > pDigi->GetSm()
              && fDigiBdfPar->GetNbRpc( pDigi->GetType()) > pDigi->GetRpc()

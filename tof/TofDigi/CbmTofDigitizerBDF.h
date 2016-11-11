@@ -88,6 +88,8 @@ class CbmTofDigitizerBDF : public FairTask
       Bool_t   SetHistoFileName( TString sFilenameIn = "./tofDigiBdf.hst.root" );
 
       void SetMonitorHistograms(Bool_t bMonitor = kTRUE) { fbMonitorHistos = bMonitor; }
+
+      inline void SetDigiTimeConvFactor  (Double_t dfac)  { fdDigiTimeConvFactor    = dfac;}
       
    protected:
 
@@ -338,6 +340,7 @@ class CbmTofDigitizerBDF : public FairTask
       Int_t fiCurrentFileId;
       Int_t fiCurrentEventId;
       Double_t fdCurrentEventTime;
+      Double_t fdDigiTimeConvFactor;
 
    ClassDef(CbmTofDigitizerBDF, 3);
 };

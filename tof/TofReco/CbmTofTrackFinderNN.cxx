@@ -805,7 +805,7 @@ void  CbmTofTrackFinderNN::UpdateTrackList( Int_t iTrk)
 
 void CbmTofTrackFinderNN::PrintStatus(char* cComment)
 {
-  LOG(DEBUG)<<Form("<PS %s> for fiNtrks = %d tracks out of %d fTracks.size(() ",cComment,fiNtrks,(int)fTracks.size())
+  LOG(DEBUG)<<Form("<PS %s> for fiNtrks = %d tracks out of %d fTracks.size() ",cComment,fiNtrks,(int)fTracks.size())
             << FairLogger::endl;
 
   for (Int_t it=0; it<fTracks.size(); it++){

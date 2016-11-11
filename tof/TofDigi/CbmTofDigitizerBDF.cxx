@@ -139,7 +139,8 @@ CbmTofDigitizerBDF::CbmTofDigitizerBDF():
    fbTimeBasedOutput(kFALSE),
    fiCurrentFileId(-1),
    fiCurrentEventId(-1),
-   fdCurrentEventTime(0.)
+   fdCurrentEventTime(0.),
+   fdDigiTimeConvFactor(1.)
 {
 
 }
@@ -210,7 +211,8 @@ CbmTofDigitizerBDF::CbmTofDigitizerBDF(const char *name, Int_t verbose):
    fbTimeBasedOutput(kFALSE),
    fiCurrentFileId(-1),
    fiCurrentEventId(-1),
-   fdCurrentEventTime(0.)
+   fdCurrentEventTime(0.),
+   fdDigiTimeConvFactor(1.)
 {
 
 }
@@ -498,15 +500,17 @@ Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
 
             for( Int_t iCh = 0; iCh < iNbCh; iCh++ )
                for( Int_t iSide = 0; iSide < iNbSides; iSide++ )
-                  if( 0 < fdFeeGainSigma )
-               {
+	       { if( 0 < fdFeeGainSigma )
+                 {
                   fdChannelGain[iSmType][iSm*iNbRpc + iRpc][iCh*iNbSides + iSide] =
                         randFeeGain.Gaus( 1.0, fdFeeGainSigma);
                   if( fdChannelGain[iSmType][iSm*iNbRpc + iRpc][iCh*iNbSides + iSide] <0.0 )
                      LOG(ERROR)<<"CbmTofDigitizerBDF::LoadBeamtimeValues => Neg. Gain for SM/Rpc "<<iSm<<"/"<<iRpc
                                <<" "<<fdChannelGain[iSmType][iSm*iNbRpc + iRpc][iCh*iNbSides + iSide]<<FairLogger::endl;
-               } // if( 0 < fdFeeGainSigma )
-                  else fdChannelGain[iSmType][iSm*iNbRpc + iRpc][iCh*iNbSides + iSide] = 1;
+                 } // if( 0 < fdFeeGainSigma )
+                 else fdChannelGain[iSmType][iSm*iNbRpc + iRpc][iCh*iNbSides + iSide] = 1;
+		 if(iSmType==5) fdChannelGain[iSmType][iSm*iNbRpc + iRpc][iCh*iNbSides + iSide] *= 100.; //FIXME, Diamond
+	       }
          } // for( Int_t iRpc = 0; iRpc < iNbRpc; iRpc++ )
       } // for( Int_t iSm = 0; iSm < iNbSm; iSm++ )
    } // for( Int_t iSmType = 0; iSmType < iNbSmTypes; iSmType++ )
@@ -1146,6 +1150,9 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                         new((*fTofDigisColl)[fiNbDigis]) CbmTofDigiExp(
                               *fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] );
 
+			CbmTofDigiExp* tDigi = (CbmTofDigiExp *)fTofDigisColl->At(fiNbDigis);
+			tDigi->SetTime(tDigi->GetTime()*fdDigiTimeConvFactor); // ns -> ps
+
                         LOG(DEBUG1)<<Form("Add digi %d (%zu) match of (%d,%d,%d,%d,%d) at pos %d", 
                               iChosenDigi, fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].size(),
                               iSmType,iSm,iRpc,iCh,iSide,fiNbDigis)<<FairLogger::endl;
@@ -1276,10 +1283,13 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                           fhNbTracksEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbTracks );
                         }
 
-                        LOG(DEBUG1)<<Form(" New Tof Digi ")<<FairLogger::endl;
+			LOG(DEBUG1)<<Form(" New Tof Digi %d %d %d %d %d %d",iSmType,iSm,iRpc,iCh,iSide,iChosenDigi)<<FairLogger::endl;
 
                         new((*fTofDigisColl)[fiNbDigis]) CbmTofDigi(
                               *fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] );
+
+			CbmTofDigiExp* tDigi = (CbmTofDigiExp *)fTofDigisColl->At(fiNbDigis);
+			tDigi->SetTime(tDigi->GetTime()*fdDigiTimeConvFactor); // ns -> ps
 
                         digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi],fiCurrentEventId,fiCurrentFileId ));
                         
@@ -2031,6 +2041,13 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
       Int_t iTrkId = pPoint->GetTrackID();
       pMcTrk = (CbmMCTrack*) fMcTracksColl->At( iTrkId );
 
+      LOG(DEBUG1)<<Form("CbmTofDigitizerBDF => det ID 0x%08x",iDetId) 
+		 <<", GeoVersion "<< fGeoHandler->GetGeoVersion()<<", SMType: "<<iSmType
+		 <<" SModule: "<<iSM<<" of "<<iNbSm+1
+		 <<" Module: "<<iRpc<<" of "<<iNbRpc+1
+		 <<" Gap: "<<iGap
+		 <<" Cell: "<<iChannel<<" of "<<iNbCh+1 <<FairLogger::endl;
+
       // Jump all tracks not making 8 points for test
 //      if( 8 != pMcTrk->GetNPoints(kTOF) )
 //         continue;
@@ -2102,6 +2119,11 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
       // Get TofPoint Position
       pPoint->Position( vPntPos );
       fChannelInfo = fDigiPar->GetCell(iChanId);
+      if (NULL == fChannelInfo) {
+	LOG(WARNING) << "CbmTofDigitizerBDF::DigitizeFlatDisc: No DigPar for iChanId = "
+		     << Form("0x%08x, addr 0x%08x",iChanId,(unsigned int)iDetId)<<FairLogger::endl;
+	continue;
+      }
       // Master -> Local
       TGeoNode *fNode=        // prepare global->local trafo
          gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());

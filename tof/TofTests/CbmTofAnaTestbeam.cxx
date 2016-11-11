@@ -52,7 +52,7 @@ using std::endl;
 using std::vector;
 
 const Int_t DetMask = 4194303;
-const Double_t DTDMAX=6000.;   // diamond inspection range in ps  
+const Double_t DTDMAX=6.;   // diamond inspection range in ns  
 
 Double_t dTDia;
 Double_t dDTD4Min=1.E8;
@@ -928,8 +928,8 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
   // Create histogramms
    Double_t XDMAX=10.;
    Double_t YDMAX=80.;
-   Double_t TDMAX=1000000.;
-   Double_t DTMAX=1000.;
+   Double_t TDMAX=1000.;
+   Double_t DTMAX=1.;
    Double_t DXMAX=10.;
    Double_t DYMAX=10.;
 /*   Double_t XMAX=100.;*/
@@ -951,8 +951,8 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 
    fhBRefMul =  new TH1F( Form("hBRefMul"),Form("Multiplicity in Beam Reference counter ; Mul ()"),
 			  50, 0., 50.); 
-   fhDTD4    =  new TH1F( Form("hDTD4"),Form("reference time ; #Delta tD4 (ps)"),
-			  101, -100000., 100000.); 
+   fhDTD4    =  new TH1F( Form("hDTD4"),Form("reference time ; #Delta tD4 (ns)"),
+			  101, -100., 100.); 
 
    Int_t iNbDet=fMbsMappingPar->GetNbMappedDet();
    fhXYPos.resize( iNbDet  );
@@ -973,8 +973,8 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
           100, -YDMAX, YDMAX, 100, -YDMAX, YDMAX);
     fhDT2 =  new TH1F( 
           Form("hDT2"),
-          Form("Plastic time difference; TPla0 - TPla1 (ps)"),
-          100, -1000., 1000.);
+          Form("Plastic time difference; TPla0 - TPla1 (ns)"),
+          100, -1., 1.);
  
    for (Int_t iDet=0; iDet<2; iDet++)
    {
@@ -984,11 +984,11 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 			       100, -YDMAX, YDMAX, 100, -YDMAX, YDMAX); 
    }
    
-     const Double_t HTMAX=100000.;
+     const Double_t HTMAX=100.;
      const Double_t HYMAX=40.;
-     fhDutDXDYDT =  new TH3F( Form("hDutDXDYDT"),Form("Hits distances; #DeltaX [cm]; #DeltaY [cm];  #DeltaT [ps]"),
+     fhDutDXDYDT =  new TH3F( Form("hDutDXDYDT"),Form("Hits distances; #DeltaX [cm]; #DeltaY [cm];  #DeltaT [ns]"),
 			      101, -HYMAX, HYMAX, 101, -HYMAX, HYMAX, 101, -HTMAX, HTMAX);  
-     fhRefDXDYDT =  new TH3F( Form("hRefDXDYDT"),Form("Hits distances; #DeltaX [cm]; #DeltaY [cm];  #DeltaT [ps]"),
+     fhRefDXDYDT =  new TH3F( Form("hRefDXDYDT"),Form("Hits distances; #DeltaX [cm]; #DeltaY [cm];  #DeltaT [ns]"),
 			      101, -HYMAX, HYMAX, 101, -HYMAX, HYMAX, 101, -HTMAX, HTMAX);    
 
      fhXX04 =  new TH2F( Form("hXX04"),Form("X Position correlation; X0 [cm]; X4 [cm]"),
@@ -999,13 +999,13 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 			       500, -YDMAX, YDMAX, 500, -YDMAX, YDMAX);      
      fhYX04 =  new TH2F( Form("hYX04"),Form("Y Position correlation; Y0 [cm]; X4 [cm]"),
 			       500, -YDMAX, YDMAX, 500, -YDMAX, YDMAX); 
-     fhTT04 =  new TH2F( Form("hTT04"),Form("Time  correlation; T0 [ps]; T0 - T4 [ps]"),
-			       100, -TDMAX, TDMAX, 100, -1000., 1000.); 
+     fhTT04 =  new TH2F( Form("hTT04"),Form("Time  correlation; T0 [ns]; T0 - T4 [ns]"),
+			       100, -TDMAX, TDMAX, 100, -1., 1.); 
      fhDXDY04 = new TH2F( Form("hDXDY04"),Form("position correlation; #Delta x [cm]; #DeltaY [cm]"),
 			       100, -DXMAX, DXMAX, 100, -DYMAX, DYMAX); 
-     fhDXDT04 = new TH2F( Form("hDXDT04"),Form("Time - position correlation; #Delta x [cm]; #DeltaT [ps]"),
+     fhDXDT04 = new TH2F( Form("hDXDT04"),Form("Time - position correlation; #Delta x [cm]; #DeltaT [ns]"),
 			       100, -DXMAX, DXMAX, 100, -DTMAX, DTMAX); 
-     fhDYDT04 = new TH2F( Form("hDYDT04"),Form("Time - position correlation; #Delta y [cm]; #DeltaT [ps]"),
+     fhDYDT04 = new TH2F( Form("hDYDT04"),Form("Time - position correlation; #Delta y [cm]; #DeltaT [ns]"),
 			       100, -DYMAX, DYMAX, 100, -DTMAX, DTMAX); 
      fhChi04 =  new TH1F( Form("hChi04"),Form("Matching Chi2; #chi; Nhits"),
 			  100, 0., fdChi2Lim); 
@@ -1015,10 +1015,10 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 			  100, -10., 10.); 
      fhDYSel24 =  new TH1F( Form("hDYSel24"),Form("Matching Sel24; #Delta y [cm]; Nhits"),
 			  100, -10., 10.); 
-     fhDTSel24 =  new TH1F( Form("hDTSel24"),Form("Matching Sel24; #Delta t_{cor} [ps]; Nhits"),
-			  100, -1000., 1000.); 
-     fhTofSel24 =  new TH1F( Form("hTofSel24"),Form("Matching Sel24; #Delta t [ps]; Nhits"),
-			  100, -10000., 10000.); 
+     fhDTSel24 =  new TH1F( Form("hDTSel24"),Form("Matching Sel24; #Delta t_{cor} [ns]; Nhits"),
+			  100, -1., 1.); 
+     fhTofSel24 =  new TH1F( Form("hTofSel24"),Form("Matching Sel24; #Delta t [ns]; Nhits"),
+			  100, -10., 10.); 
      Int_t iNbinXY=34;
      fhXY0D4best = new TH2F( Form("hXY0D4best"),Form("local position 0;  x [cm]; y [cm]"), iNbinXY, -17., 17., iNbinXY, -17., 17.);
      fhXY4D4best = new TH2F( Form("hXY4D4best"),Form("local position 4;  x [cm]; y [cm]"), iNbinXY, -17., 17., iNbinXY, -17., 17.);
@@ -1031,14 +1031,14 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 
      fhDXDY04best = new TH2F( Form("hDXDY04best"),Form("position correlation; #Delta x [cm]; #DeltaY [cm]"),
 			       100, -DXMAX, DXMAX, 100, -DYMAX, DYMAX); 
-     fhDXDT04best = new TH2F( Form("hDXDT04best"),Form("time - position correlation; #Delta x [cm]; #DeltaT [ps]"),
+     fhDXDT04best = new TH2F( Form("hDXDT04best"),Form("time - position correlation; #Delta x [cm]; #DeltaT [ns]"),
 			       100, -DXMAX, DXMAX, 100, -DTMAX, DTMAX); 
-     fhDYDT04best = new TH2F( Form("hDYDT04best"),Form("time - position correlation; #Delta y [cm]; #DeltaT [ps]"),
+     fhDYDT04best = new TH2F( Form("hDYDT04best"),Form("time - position correlation; #Delta y [cm]; #DeltaT [ns]"),
 			       100, -DYMAX, DYMAX, 100, -DTMAX, DTMAX); 
 
-     fhX0DT04best = new TH2F( Form("hX0DT04best"),Form("time - position correlation; #Delta x [cm]; #DeltaT [ps]"),
+     fhX0DT04best = new TH2F( Form("hX0DT04best"),Form("time - position correlation; #Delta x [cm]; #DeltaT [ns]"),
 			       100, -50., 50., 100, -DTMAX, DTMAX); 
-     fhY0DT04best = new TH2F( Form("hY0DT04best"),Form("time - position correlation; #Delta y [cm]; #DeltaT [ps]"),
+     fhY0DT04best = new TH2F( Form("hY0DT04best"),Form("time - position correlation; #Delta y [cm]; #DeltaT [ns]"),
 			       100, -50., 50., 100, -DTMAX, DTMAX); 
 
      fhChi04best  =  new TH1F( Form("hChi04best"),Form("matching chi2; #chi; Nhits"),
@@ -1048,50 +1048,50 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
      fhDigiMul4best =  new TH1F( Form("hDigiMul4best"),Form("Number of digis in cluster; N_{digi}; "),
 			  20, 0., 20.); 
 
-     fhChiDT04best = new TH2F( Form("hChiDT04best"),Form("Time - Chi correlation; #chi; #DeltaT [ps]"),
+     fhChiDT04best = new TH2F( Form("hChiDT04best"),Form("Time - Chi correlation; #chi; #DeltaT [ns]"),
 			       100, 0., 100., 100, -DTMAX, DTMAX);
 
      fhDXDY04D4best = new TH2F( Form("hDXDY04D4best"),Form("position correlation; #Delta x [cm]; #DeltaY [cm]"),
 			       100, -DXMAX, DXMAX, 100, -DYMAX, DYMAX); 
-     fhDXDT04D4best = new TH2F( Form("hDXDT04D4best"),Form("time - position correlation; #Delta x [cm]; #DeltaT [ps]"),
+     fhDXDT04D4best = new TH2F( Form("hDXDT04D4best"),Form("time - position correlation; #Delta x [cm]; #DeltaT [ns]"),
 			       100, -DXMAX, DXMAX, 100, -DTMAX, DTMAX); 
-     fhDYDT04D4best = new TH2F( Form("hDYDT04D4best"),Form("time - position correlation; #Delta y [cm]; #DeltaT [ps]"),
+     fhDYDT04D4best = new TH2F( Form("hDYDT04D4best"),Form("time - position correlation; #Delta y [cm]; #DeltaT [ns]"),
 			       100, -DYMAX, DYMAX, 100, -DTMAX, DTMAX); 
-     fhDistDT04D4best = new TH2F( Form("hDistDT04D4best"),Form("time - distance correlation; Dist [cm]; #DeltaT [ps]"),
+     fhDistDT04D4best = new TH2F( Form("hDistDT04D4best"),Form("time - distance correlation; Dist [cm]; #DeltaT [ns]"),
 			       100, fdHitDistMin, fdHitDistMin + 30., 100, -DTMAX, DTMAX); 
-     fhTexpDT04D4best = new TH2F( Form("hTexpDT04D4best"),Form("measured - expected time - correlation; Texp [ps]; #DeltaT [ps]"),
-			       100, 0., 500., 100, -DTMAX, DTMAX); 
+     fhTexpDT04D4best = new TH2F( Form("hTexpDT04D4best"),Form("measured - expected time - correlation; Texp [ns]; #DeltaT [ns]"),
+			       100, 0., 1., 100, -DTMAX, DTMAX); 
      fhCluSize0DT04D4best = new TH2F( Form("hCluSize0DT04D4best"),
-	 			     Form("time - CluSize correlation; M_{strips} ; #DeltaT [ps]"),
+	 			     Form("time - CluSize correlation; M_{strips} ; #DeltaT [ns]"),
 				     20, 0.5, 20.5, 100, -DTMAX, DTMAX); 
      fhCluSize4DT04D4best = new TH2F( Form("hCluSize4DT04D4best"),
-	 			     Form("time - CluSize correlation; M_{strips} ; #DeltaT [ps]"),
+	 			     Form("time - CluSize correlation; M_{strips} ; #DeltaT [ns]"),
 				     20, 0.5, 20.5, 100, -DTMAX, DTMAX);
      fhCluSizeSigT0D4best = new TH2F( Form("hCluSizeSigT0D4best"),
-	 			     Form("time spread - CluSize correlation; M_{strips} ; #sigma_{T} [ps]"),
+	 			     Form("time spread - CluSize correlation; M_{strips} ; #sigma_{T} [ns]"),
 				      20, 0.5, 20.5, 100, 0., DTMAX/5.); 
      fhCluSizeSigT4D4best = new TH2F( Form("hCluSizeSigT4D4best"),
-	 			     Form("time spread - CluSize correlation; M_{strips} ; #sigma_{T} [ps]"),
+	 			     Form("time spread - CluSize correlation; M_{strips} ; #sigma_{T} [ns]"),
 				     20, 0.5, 20.5, 100, 0., DTMAX/5.);
      fhTot0DT04D4best = new TH2F( Form("hTot0DT04D4best"),
-	 			     Form("time - Tot correlation; ln TOT0 ; #DeltaT [ps]"),
+	 			     Form("time - Tot correlation; ln TOT0 ; #DeltaT [ns]"),
 				     100, 6.5, 9.5, 100, -DTMAX, DTMAX);  
      fhTot4DT04D4best = new TH2F( Form("hTot4DT04D4best"),
-	 			     Form("time - Tot correlation; ln TOT4 ; #DeltaT [ps]"),
+	 			     Form("time - Tot correlation; ln TOT4 ; #DeltaT [ns]"),
 				     100, 6.5, 9.5, 100, -DTMAX, DTMAX);  
 
-     fhX0DT04D4best = new TH2F( Form("hX0DT04D4best"),Form("time - position correlation; #Delta x [cm]; #DeltaT [ps]"),
+     fhX0DT04D4best = new TH2F( Form("hX0DT04D4best"),Form("time - position correlation; #Delta x [cm]; #DeltaT [ns]"),
 			       100, -50., 50., 100, -DTMAX, DTMAX); 
-     fhY0DT04D4best = new TH2F( Form("hY0DT04D4best"),Form("time - position correlation; #Delta y [cm]; #DeltaT [ps]"),
+     fhY0DT04D4best = new TH2F( Form("hY0DT04D4best"),Form("time - position correlation; #Delta y [cm]; #DeltaT [ns]"),
 			       100, -50., 50., 100, -DTMAX, DTMAX); 
 
-     fhTISDT04D4best = new TH2F( Form("hTISDT04D4best"),Form("time - TIS; time in spill  [s]; #DeltaT [ps]"),
+     fhTISDT04D4best = new TH2F( Form("hTISDT04D4best"),Form("time - TIS; time in spill  [s]; #DeltaT [ns]"),
 			       TISnbins, 0., TISmax, 100, -DTMAX, DTMAX); 
  
      fhChi04D4best  =  new TH1F( Form("hChi04D4best"),Form("matching chi2; #chi; Nhits"),
 			  100, 0., fdChi2Lim); 
-     fhTofD4best  =  new TH1F( Form("hTofD4best"),Form("tof D4; t [ps]; Counts"),
-			  100, 0., 50000.); 
+     fhTofD4best  =  new TH1F( Form("hTofD4best"),Form("tof D4; t [ns]; Counts"),
+			  100, 0., 50.); 
      fhVelD4best  =  new TH1F( Form("hVelD4best"),Form("vel D4; v [cm/ns]; Counts"),
 			  100, 0., 50.); 
 
@@ -1105,37 +1105,37 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 				   20, 0., 20., 20, 0., 20.); 
      fhStrMul04D4best =  new TH2F( Form("hStrMul04D4best"),Form("strip multiplicity ; StrMul0; StrMul4"),
 				   50, 0., 50., 50, 0., 50.); 
-     fhCluMulTSig0D4best =  new TH2F( Form("hCluMulTSig0D4best"),Form("time spread - cluster multiplicity ; Mul0; #sigma_{T} (ps)"),
-				   50, 0., 50., 100, 0., 200000.);      
-     fhCluMulTSig4D4best =  new TH2F( Form("hCluMulTSig4D4best"),Form("time spread - cluster multiplicity ; Mul4; #sigma_{T} (ps)"),
-				   50, 0., 50., 100, 0., 200000.); 
-     fhCluMulTrel0D4best =  new TH2F( Form("hCluMulTrel0D4best"),Form("arrrival time - cluster multiplicity ; Mul0; T_{rel} (ps)"),
-				   50, 0., 50., 99, -10000., 10000.); 
-     fhCluMulTrel4D4best =  new TH2F( Form("hCluMulTrel4D4best"),Form("arrival time - cluster multiplicity ; Mul4; T_{rel} (ps)"),
-				   50, 0., 50., 99, -10000., 10000.); 
-     fhCluSizeTrel0D4best =  new TH2F( Form("hCluSizeTrel0D4best"),Form("arrrival time - cluster size ; CluSize0; T_{rel} (ps)"),
-				   30, 0., 30., 99, -10000., 10000.); 
-     fhCluSizeTrel4D4best =  new TH2F( Form("hCluSizeTrel4D4best"),Form("arrival time - cluster size ; CluSize4; T_{rel} (ps)"),
-				   30, 0., 30., 99, -10000., 10000.);  
+     fhCluMulTSig0D4best =  new TH2F( Form("hCluMulTSig0D4best"),Form("time spread - cluster multiplicity ; Mul0; #sigma_{T} (ns)"),
+				   50, 0., 50., 100, 0., 200.);      
+     fhCluMulTSig4D4best =  new TH2F( Form("hCluMulTSig4D4best"),Form("time spread - cluster multiplicity ; Mul4; #sigma_{T} (ns)"),
+				   50, 0., 50., 100, 0., 200.); 
+     fhCluMulTrel0D4best =  new TH2F( Form("hCluMulTrel0D4best"),Form("arrrival time - cluster multiplicity ; Mul0; T_{rel} (ns)"),
+				   50, 0., 50., 99, -10., 10.); 
+     fhCluMulTrel4D4best =  new TH2F( Form("hCluMulTrel4D4best"),Form("arrival time - cluster multiplicity ; Mul4; T_{rel} (ns)"),
+				   50, 0., 50., 99, -10., 10.); 
+     fhCluSizeTrel0D4best =  new TH2F( Form("hCluSizeTrel0D4best"),Form("arrrival time - cluster size ; CluSize0; T_{rel} (ns)"),
+				   30, 0., 30., 99, -10., 10.); 
+     fhCluSizeTrel4D4best =  new TH2F( Form("hCluSizeTrel4D4best"),Form("arrival time - cluster size ; CluSize4; T_{rel} (ns)"),
+				   30, 0., 30., 99, -10., 10.);  
 
-     fhChiDT04D4best = new TH2F( Form("hChiDT04D4best"),Form("Time - position correlation; #chi; #DeltaT [ps]"),
+     fhChiDT04D4best = new TH2F( Form("hChiDT04D4best"),Form("Time - position correlation; #chi; #DeltaT [ns]"),
 			       100, 0., 100., 100, -DTMAX, DTMAX);
      Double_t dtscal=5.;
      if ( fdChi2Lim>100. ) dtscal *= 50.;
      fhDTD4DT04D4best = new TH2F( Form("hDTD4DT04D4best"),
-			    Form("Time - velocity correlation; #DeltaTD4 [ps]; #DeltaT04 [ps]"),
+			    Form("Time - velocity correlation; #DeltaTD4 [ns]; #DeltaT04 [ns]"),
 			    100, -DTMAX*6., DTMAX*6., 500, -DTMAX*dtscal, DTMAX*dtscal); 
 
 /*     Double_t dXMAX=30.;*/
 /*     Double_t dYMAX=20.;*/
      fhDTMul4D4best = new TH2F( Form("hDTMul4D4best"),
-			    Form("MRef Time - Multiplicity correlation; Mul4 ; #DeltaT04 [ps]"),
+			    Form("MRef Time - Multiplicity correlation; Mul4 ; #DeltaT04 [ns]"),
 			    20, 0., 20., 100, -DTMAX, DTMAX);
      fhDTX4D4best = new TH2F( Form("hDTX4D4best"),
-			    Form("MRef Time - position correlation; X4 [cm]; #DeltaT04 [ps]"),
+			    Form("MRef Time - position correlation; X4 [cm]; #DeltaT04 [ns]"),
 			    50, -17., 17., 100, -DTMAX, DTMAX); 
      fhDTY4D4best = new TH2F( Form("hDTY4D4best"),
-			    Form("MRef Time - position correlation; Y4 [cm]; #DeltaT04 [ps]"),
+			    Form("MRef Time - position correlation; Y4 [cm]; #DeltaT04 [ns]"),
 			    50, -15., 15., 100, -DTMAX, DTMAX); 
      fhDXX4D4best = new TH2F( Form("hDXX4D4best"),
 			    Form("MRef DX - position correlation; X4 [cm]; #DeltaX04 [cm]"),
@@ -1151,13 +1151,13 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 			    50, -15., 15., 50, -10., 10.); 
 
      fhDTMul0D4best = new TH2F( Form("hDTMul0D4best"),
-			    Form("Dut Time - Multiplicity correlation; Mul0 ; #DeltaT04 [ps]"),
+			    Form("Dut Time - Multiplicity correlation; Mul0 ; #DeltaT04 [ns]"),
 			    20, 0., 20., 100, -DTMAX, DTMAX);
      fhDTX0D4best = new TH2F( Form("hDTX0D4best"),
-			    Form("Dut Time - position correlation; X0 [cm]; #DeltaT04 [ps]"),
+			    Form("Dut Time - position correlation; X0 [cm]; #DeltaT04 [ns]"),
 			    50, -17., 17., 100, -DTMAX, DTMAX); 
      fhDTY0D4best = new TH2F( Form("hDTY0D4best"),
-			    Form("Dut Time - position correlation; Y0 [cm]; #DeltaT04 [ps]"),
+			    Form("Dut Time - position correlation; Y0 [cm]; #DeltaT04 [ns]"),
 			    50, -15., 15., 100, -DTMAX, DTMAX); 
      fhDXX0D4best = new TH2F( Form("hDXX0D4best"),
 			    Form("Dut DX - position correlation; X0 [cm]; #DeltaX04 [cm]"),
@@ -1173,38 +1173,38 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 			    50, -15., 15., 50, -15., 15.); 
 
 
-     fhX0DT04D4sbest = new TH2F( Form("hX0DT04D4sbest"),Form("time - position correlation; #Delta x [cm]; #DeltaT [ps]"),
+     fhX0DT04D4sbest = new TH2F( Form("hX0DT04D4sbest"),Form("time - position correlation; #Delta x [cm]; #DeltaT [ns]"),
 			       100, -50., 50., 100, -DTMAX, DTMAX); 
-     fhY0DT04D4sbest = new TH2F( Form("hY0DT04D4sbest"),Form("time - position correlation; #Delta y [cm]; #DeltaT [ps]"),
+     fhY0DT04D4sbest = new TH2F( Form("hY0DT04D4sbest"),Form("time - position correlation; #Delta y [cm]; #DeltaT [ns]"),
 			       100, -50., 50., 100, -DTMAX, DTMAX); 
 
      fhDXDY04D4sbest = new TH2F( Form("hDXDY04D4sbest"),Form("position correlation; #Delta x [cm]; #DeltaY [cm]"),
 			       100, -DXMAX, DXMAX, 100, -DYMAX, DYMAX); 
-     fhDXDT04D4sbest = new TH2F( Form("hDXDT04D4sbest"),Form("time - position correlation; #Delta x [cm]; #DeltaT [ps]"),
+     fhDXDT04D4sbest = new TH2F( Form("hDXDT04D4sbest"),Form("time - position correlation; #Delta x [cm]; #DeltaT [ns]"),
 			       100, -DXMAX, DXMAX, 100, -DTMAX, DTMAX); 
-     fhDYDT04D4sbest = new TH2F( Form("hDYDT04D4sbest"),Form("time - position correlation; #Delta y [cm]; #DeltaT [ps]"),
+     fhDYDT04D4sbest = new TH2F( Form("hDYDT04D4sbest"),Form("time - position correlation; #Delta y [cm]; #DeltaT [ns]"),
 			       100, -DYMAX, DYMAX, 100, -DTMAX, DTMAX); 
-     fhDistDT04D4sbest = new TH2F( Form("hDistDT04D4sbest"),Form("time - distance correlation; Dist [cm]; #DeltaT [ps]"),
+     fhDistDT04D4sbest = new TH2F( Form("hDistDT04D4sbest"),Form("time - distance correlation; Dist [cm]; #DeltaT [ns]"),
 			       100, fdHitDistMin, fdHitDistMin + 30., 100, -DTMAX, DTMAX); 
-     fhTexpDT04D4sbest = new TH2F( Form("hTexpDT04D4sbest"),Form("measured - expected time - correlation; Texp [ps]; #DeltaT [ps]"),
-			       100, 0., 6000., 100, -DTMAX, DTMAX); 
+     fhTexpDT04D4sbest = new TH2F( Form("hTexpDT04D4sbest"),Form("measured - expected time - correlation; Texp [ns]; #DeltaT [ns]"),
+			       100, 0., 6., 100, -DTMAX, DTMAX); 
      fhCluSize0DT04D4sbest = new TH2F( Form("hCluSize0DT04D4sbest"),
-	 			     Form("time - CluSize correlation; N_{strips} ; #DeltaT [ps]"),
+	 			     Form("time - CluSize correlation; N_{strips} ; #DeltaT [ns]"),
 				     20, 0.5, 20.5, 100, -DTMAX, DTMAX); 
      fhCluSize4DT04D4sbest = new TH2F( Form("hCluSize4DT04D4sbest"),
-	 			     Form("time - CluSize correlation; N_{strips} ; #DeltaT [ps]"),
+	 			     Form("time - CluSize correlation; N_{strips} ; #DeltaT [ns]"),
 				     20, 0.5, 20.5, 100, -DTMAX, DTMAX);
      fhTot0DT04D4sbest = new TH2F( Form("hTot0DT04D4sbest"),
-	 			     Form("time - Tot correlation; ln TOT0 ; #DeltaT [ps]"),
+	 			     Form("time - Tot correlation; ln TOT0 ; #DeltaT [ns]"),
 				     100, 6.5, 9.5, 100, -DTMAX, DTMAX);  
      fhTot4DT04D4sbest = new TH2F( Form("hTot4DT04D4sbest"),
-	 			     Form("time - Tot correlation; ln TOT4 ; #DeltaT [ps]"),
+	 			     Form("time - Tot correlation; ln TOT4 ; #DeltaT [ns]"),
 				     100, 6.5, 9.5, 100, -DTMAX, DTMAX); 
 
      fhChi04D4sbest  =  new TH1F( Form("hChi04D4sbest"),Form("matching chi2; #chi; Nhits"),
 			  100, 0., fdChi2Lim);
-     fhTofD4sbest  =  new TH1F( Form("hTofD4sbest"),Form("tof D4; t [ps]; Counts"),
-			  100, 0., 50000.); 
+     fhTofD4sbest  =  new TH1F( Form("hTofD4sbest"),Form("tof D4; t [ns]; Counts"),
+			  100, 0., 50.); 
      fhVelD4sbest  =  new TH1F( Form("hVelD4sbest"),Form("vel D4; v [cm/ns]; Counts"),
 			  100, 0., 50.); 
 
@@ -1215,21 +1215,21 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
      fhCluMul04D4sbest =  new TH2F( Form("hCluMul04D4sbest"),Form("cluster multiplicity ; Mul0; Mul4"),
 				   10, 0., 10., 10, 0., 10.); 
 
-     fhChiDT04D4sbest = new TH2F( Form("hChiDT04D4sbest"),Form("Time - position correlation; #chi; #DeltaT [ps]"),
+     fhChiDT04D4sbest = new TH2F( Form("hChiDT04D4sbest"),Form("Time - position correlation; #chi; #DeltaT [ns]"),
 			       100, 0., 100., 100, -DTMAX, DTMAX);
  
      fhDTD4DT04D4sbest = new TH2F( Form("hDTD4DT04D4sbest"),
-			    Form("Time - velocity correlation; #DeltaTD4 [ps]; #DeltaT04 [ps]"),
+			    Form("Time - velocity correlation; #DeltaTD4 [ns]; #DeltaT04 [ns]"),
 			    100, -DTMAX*6., DTMAX*6., 100, -DTMAX, DTMAX); 
 
      fhDTMul4D4sbest = new TH2F( Form("hDTMul4D4sbest"),
-			    Form("Time - Multiplicity correlation; Mul4 ; #DeltaT04 [ps]"),
+			    Form("Time - Multiplicity correlation; Mul4 ; #DeltaT04 [ns]"),
 			    10, 0., 10., 100, -DTMAX, DTMAX);
      fhDTX4D4sbest = new TH2F( Form("hDTX4D4sbest"),
-			    Form("Time - position correlation; X4 [cm]; #DeltaT04 [ps]"),
+			    Form("Time - position correlation; X4 [cm]; #DeltaT04 [ns]"),
 			    50, -15., 15., 100, -DTMAX, DTMAX); 
      fhDTY4D4sbest = new TH2F( Form("hDTY4D4sbest"),
-			    Form("Time - position correlation; Y4 [cm]; #DeltaT04 [ps]"),
+			    Form("Time - position correlation; Y4 [cm]; #DeltaT04 [ns]"),
 			    50, -15., 15., 100, -DTMAX, DTMAX); 
      fhDXX4D4sbest = new TH2F( Form("hDXX4D4sbest"),
 			    Form("DX - position correlation; X4 [cm]; #DeltaX04 [cm]"),
@@ -1245,13 +1245,13 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 			    50, -15., 15., 50, -10., 10.); 
 
      fhDTMul0D4sbest = new TH2F( Form("hDTMul0D4sbest"),
-			    Form("Time - Multiplicity correlation; Mul0 ; #DeltaT04 [ps]"),
+			    Form("Time - Multiplicity correlation; Mul0 ; #DeltaT04 [ns]"),
 			    10, 0., 10., 100, -DTMAX, DTMAX);
      fhDTX0D4sbest = new TH2F( Form("hDTX0D4sbest"),
-			    Form("Time - position correlation; X0 [cm]; #DeltaT04 [ps]"),
+			    Form("Time - position correlation; X0 [cm]; #DeltaT04 [ns]"),
 			    50, -17., 17., 100, -DTMAX, DTMAX); 
      fhDTY0D4sbest = new TH2F( Form("hDTY0D4sbest"),
-			    Form("Time - position correlation; Y0 [cm]; #DeltaT04 [ps]"),
+			    Form("Time - position correlation; Y0 [cm]; #DeltaT04 [ns]"),
 			    50, -15., 15., 100, -DTMAX, DTMAX); 
      fhDXX0D4sbest = new TH2F( Form("hDXX0D4sbest"),
 			    Form("DX - position correlation; X0 [cm]; #DeltaX04 [cm]"),
@@ -1275,51 +1275,51 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
      fhNMatchD4sel =  new TH1F( Form("hNMatchD4sel"),Form("Number of Matched Hit pairs 0-4; NMatched"),
 			  50, 0., 50.); 
 
-     fhDTD4sel =  new TH1F( Form("hDTD4sel"),Form("Time difference BRef - MrpcRef; #DeltaTD4 (ps)"),
+     fhDTD4sel =  new TH1F( Form("hDTD4sel"),Form("Time difference BRef - MrpcRef; #DeltaTD4 (ns)"),
 			  100, -DTDMAX, DTDMAX); 
 
-     fhTofD4sel =  new TH1F( Form("hTofD4sel"),Form("Time difference BRef - MrpcRef; #DeltaTD4 (ps)"),
+     fhTofD4sel =  new TH1F( Form("hTofD4sel"),Form("Time difference BRef - MrpcRef; #DeltaTD4 (ns)"),
 			  100, -DTDMAX, DTDMAX); 
 
      fhDT04DX0_1 = new TH2F( Form("hDT04DX0_1"),
-			    Form("Time - position correlation; #DeltaX0 [cm]; #DeltaT04 [ps]"),
+			    Form("Time - position correlation; #DeltaX0 [cm]; #DeltaT04 [ns]"),
 			    50, -25., 25., 100, -DTMAX, DTMAX); 
      fhDT04DY0_1 = new TH2F( Form("hDT04DY0_1"),
-			    Form("Time - position correlation; #DeltaY0 [cm]; #DeltaT04 [ps]"),
+			    Form("Time - position correlation; #DeltaY0 [cm]; #DeltaT04 [ns]"),
 			    50, -25., 25., 100, -DTMAX, DTMAX); 
      fhDT04DT0_1 = new TH2F( Form("hDT04DT0_1"),
-			    Form("Time - time correlation; #DeltaT0 [ps]; #DeltaT04 [ps]"),
-			    50, -5000., 5000., 100, -DTMAX, DTMAX); 
+			    Form("Time - time correlation; #DeltaT0 [ns]; #DeltaT04 [ns]"),
+			    50, -5., 5., 100, -DTMAX, DTMAX); 
 
      fhDT04DX4_1 = new TH2F( Form("hDT04DX4_1"),
-			    Form("Time - position correlation; #DeltaX4 [cm]; #DeltaT04 [ps]"),
+			    Form("Time - position correlation; #DeltaX4 [cm]; #DeltaT04 [ns]"),
 			    50, -10., 10., 100, -DTMAX, DTMAX); 
      fhDT04DY4_1 = new TH2F( Form("hDT04DY4_1"),
-			    Form("Time - position correlation; #DeltaY4 [cm]; #DeltaT04 [ps]"),
+			    Form("Time - position correlation; #DeltaY4 [cm]; #DeltaT04 [ns]"),
 			    50, -15., 15., 100, -DTMAX, DTMAX); 
      fhDT04DT4_1 = new TH2F( Form("hDT04DT4_1"),
-			    Form("Time - time correlation; #DeltaT4 [ps]; #DeltaT04 [ps]"),
-			    50, -5000., 5000., 100, -DTMAX, DTMAX); 
+			    Form("Time - time correlation; #DeltaT4 [ns]; #DeltaT04 [ns]"),
+			    50, -5., 5., 100, -DTMAX, DTMAX); 
 
      fhDT04DX0_2 = new TH2F( Form("hDT04DX0_2"),
-			    Form("Time - position correlation; #DeltaX0 [cm]; #DeltaT04 [ps]"),
+			    Form("Time - position correlation; #DeltaX0 [cm]; #DeltaT04 [ns]"),
 			    50, -25., 25., 100, -DTMAX, DTMAX); 
      fhDT04DY0_2 = new TH2F( Form("hDT04DY0_2"),
-			    Form("Time - position correlation; #DeltaY0 [cm]; #DeltaT04 [ps]"),
+			    Form("Time - position correlation; #DeltaY0 [cm]; #DeltaT04 [ns]"),
 			    50, -25., 25., 100, -DTMAX, DTMAX); 
      fhDT04DT0_2 = new TH2F( Form("hDT04DT0_2"),
-			    Form("Time - time correlation; #DeltaT0 [ps]; #DeltaT04 [ps]"),
-			    50, -5000., 5000., 100, -DTMAX, DTMAX); 
+			    Form("Time - time correlation; #DeltaT0 [ns]; #DeltaT04 [ns]"),
+			    50, -5., 5., 100, -DTMAX, DTMAX); 
 
      fhDT04DX4_2 = new TH2F( Form("hDT04DX4_2"),
-			    Form("Time - position correlation; #DeltaX4 [cm]; #DeltaT04 [ps]"),
+			    Form("Time - position correlation; #DeltaX4 [cm]; #DeltaT04 [ns]"),
 			    50, -10., 10., 100, -DTMAX, DTMAX); 
      fhDT04DY4_2 = new TH2F( Form("hDT04DY4_2"),
-			    Form("Time - position correlation; #DeltaY4 [cm]; #DeltaT04 [ps]"),
+			    Form("Time - position correlation; #DeltaY4 [cm]; #DeltaT04 [ns]"),
 			    50, -15., 15., 100, -DTMAX, DTMAX); 
      fhDT04DT4_2 = new TH2F( Form("hDT04DT4_2"),
-			    Form("Time - time correlation; #DeltaT4 [ps]; #DeltaT04 [ps]"),
-			    50, -5000., 5000., 100, -DTMAX, DTMAX); 
+			    Form("Time - time correlation; #DeltaT4 [ns]; #DeltaT04 [ns]"),
+			    50, -5., 5., 100, -DTMAX, DTMAX); 
 
   // Dut histos
      Int_t iDutId=fiDut*100+fiDutSm*10+fiDutRpc;
@@ -1360,7 +1360,7 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 			    Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ); 
 
     fhDutXYDT      = new TH3F( Form("hDutXYDT_%d",iDutId), 
-			    Form("hDutXYDT_%d;  x(cm); y (cm); #Deltat (ps)",iDutId),
+			    Form("hDutXYDT_%d;  x(cm); y (cm); #Deltat (ns)",iDutId),
 			    Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ, Nbins, -DTSIZ, DTSIZ); 
 
    gDirectory->cd( oldir->GetPath() ); // <= To prevent histos from being sucked in by the param file of the TRootManager!
@@ -2048,7 +2048,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      gGeoManager->MasterToLocal(hitpos2, hitpos2_local);
 
      Double_t dTofD4  = fdTOffD4 + dDTD4Min;
-     Double_t dInvVel = dTofD4/pHitRef->GetR(); // in ps/cm
+     Double_t dInvVel = dTofD4/pHitRef->GetR(); // in ns/cm
      Double_t dDTexp  = dDist*dInvVel;
      Double_t dTMin   = fdHitDistAv/0.03;
 
@@ -2215,7 +2215,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 fhCluMul04D4sbest->Fill(dMul0,dMul4);
 
 	 Double_t dTofD44  = fdTOffD4 + pHit4->GetTime()-dTDia;
-	 Double_t dInvVel4 = dTofD44/pHitRef->GetR(); // in ps/cm
+	 Double_t dInvVel4 = dTofD44/pHitRef->GetR(); // in ns/cm
 	 Double_t dDTexp4  = dDist34*dInvVel4;
 	 Double_t dTcor4=0.;
 	 if(fhDTD4DT04D4Off != NULL) dTcor4=(Double_t)fhDTD4DT04D4Off->GetBinContent(fhDTD4DT04D4Off->FindBin(dTDia-pHit4->GetTime()));
