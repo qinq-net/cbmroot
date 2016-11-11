@@ -1,12 +1,12 @@
 // -----------------------------------------------------------------------------
 // -----                                                                   -----
-// -----                        CbmTSUnpackTestTof                         -----
+// -----                        CbmTSUnpackTof                             -----
 // -----               Created 27.10.2016 by P.-A. Loizeau                 -----
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 
-#ifndef CbmTSUnpackTestTof_H
-#define CbmTSUnpackTestTof_H
+#ifndef CbmTSUnpackTof_H
+#define CbmTSUnpackTof_H
 
 #ifndef __CINT__
   #include "Timeslice.hpp"

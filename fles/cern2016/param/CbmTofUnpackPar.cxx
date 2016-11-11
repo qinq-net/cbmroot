@@ -20,7 +20,8 @@ CbmTofUnpackPar::CbmTofUnpackPar(const char* name,
     fNrOfRocs(-1),
     fRocIdArray(),
     fNrOfChannels(-1),
-    fChannelToDetUIdMap()
+    fChannelToDetUIdMap(),
+    fPlotChannelRate(0)
 {
   detName="Tof";
 }
@@ -52,6 +53,7 @@ void CbmTofUnpackPar::putParams(FairParamList* l)
   l->add("RocIdArray",        fRocIdArray);
   l->add("NrOfChannels",      fNrOfRocs);
   l->add("ChannelToDetUIdMap",fChannelToDetUIdMap);
+  l->add("PlotChannelRate",   fPlotChannelRate);
 }
 
 //------------------------------------------------------
@@ -71,6 +73,9 @@ Bool_t CbmTofUnpackPar::getParams(FairParamList* l) {
 
   if ( ! l->fill("ChannelToDetUIdMap", &fChannelToDetUIdMap) ) return kFALSE;
 
+//  if ( ! l->fill("PlotChannelRate", &fPlotChannelRate) ) return kFALSE;
+  l->fill("PlotChannelRate", &fPlotChannelRate); // Optionally read this flag, do not crash if not there
+  
   return kTRUE;
 }
 

@@ -38,6 +38,7 @@ class CbmTofUnpackPar : public FairParGenericSet
   inline Int_t GetRocId(Int_t i) { return fRocIdArray[i]; }
   inline Int_t GetNumberOfChannels() {return fNrOfChannels;}
   inline Int_t GetChannelToDetUIdMap(Int_t channel) {return fChannelToDetUIdMap[channel];}
+  inline Bool_t IsChannelRateEnabled() {return (1 == fPlotChannelRate);}
 
  private:
 
@@ -46,6 +47,8 @@ class CbmTofUnpackPar : public FairParGenericSet
 
   Int_t   fNrOfChannels;
   TArrayI fChannelToDetUIdMap;// Array which stores the corresponding UIDs for each channel
+  
+  Int_t   fPlotChannelRate;
 
   ClassDef(CbmTofUnpackPar,1);
 };
