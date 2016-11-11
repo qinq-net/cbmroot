@@ -295,7 +295,7 @@ void monHV(TString configFile="/data2/cern_nov2016/hv/filename.config")
   c6d->SetLogy(0);
   TMultiGraph *multiIDrift = new TMultiGraph();
   for (std::map<Int_t, TGraph*>::iterator it=mTrendingI.begin(); it!=mTrendingI.end();it++){
-    if (it->first >= 400 && it->first <= 403) {
+    if (it->first >= 400 && it->first <= 404) {
       multiIDrift->Add(it->second); // select drift channels by chID
     }
   }
