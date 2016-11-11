@@ -8,7 +8,7 @@
  */
 
 
-void FHodoLabSetup(TString inFile = "hodoTop_source_1000ts_20160422.tsa")
+void ngDpbMonitor(TString inFile = "hodoTop_source_1000ts_20160422.tsa")
 {
 
   TString srcDir = gSystem->Getenv("VMCWORKDIR");
@@ -35,7 +35,7 @@ void FHodoLabSetup(TString inFile = "hodoTop_source_1000ts_20160422.tsa")
   TObjString* tutDetDigiFile = new TObjString(paramFile);
   parFileList->Add(tutDetDigiFile);
   
-  TString paramFileTof = paramDir + "TofUnpackPar.par";
+  TString paramFileTof = paramDir + "TofMonitorPar.par";
   TObjString* tutDetDigiFileTof = new TObjString(paramFileTof);
   parFileList->Add(tutDetDigiFileTof);
 
@@ -56,12 +56,12 @@ void FHodoLabSetup(TString inFile = "hodoTop_source_1000ts_20160422.tsa")
   //  test_unpacker->CreateRawMessageOutput(kTRUE);
   
   // Get4 Unpacker
-  CbmTSUnpackTof* test_unpacker_tof = new CbmTSUnpackTof();
+  CbmTSMonitorTof* test_monitor_tof = new CbmTSMonitorTof();
 
   // --- Source task
   CbmFlibTestSource* source = new CbmFlibTestSource();
   source->SetFileName(inFile);
-  source->AddUnpacker(test_unpacker_tof, 0x60, 20);//gDPB A & B
+  source->AddUnpacker(test_monitor_tof, 0x60, 20);//gDPB A & B
   source->AddUnpacker(test_unpacker,     0x10, 10);//nDPB A & B = HODO 1 + 2
 
   // --- Event header
