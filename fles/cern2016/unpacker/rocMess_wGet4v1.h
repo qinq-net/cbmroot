@@ -190,12 +190,11 @@ namespace ngdpb {
 
          //! For Hit data: Returns nXYTER number (2 bit field)
          /*!
-          * A ROC can support up to 2 FEBs with a total of 4 nXYTER chips.
-          * This field identifies FEB as well as chip. Each supported
-          * configuration (either 2 x FEB1nx/FEB2nx or a single FEB4nx)
-          * as a unique nXYTER chip numbering.
+          * A nDPB can support up to 4 nXYTER chips.
+          * This field identifies FEB as well as chip..
           */
-         inline uint8_t getNxNumber() const { return getField(6, 2); }
+//         inline uint8_t getNxNumber() const { return getField(6, 2); }
+         inline uint8_t getNxNumber() const { return getField(4, 2); }
 
          //! For Hit data: Returns 3 most significant bits of ROC LTS (3 bit field)
          /*!
@@ -282,6 +281,13 @@ namespace ngdpb {
 
          // ---------- Epoch marker access methods ------------
 
+         //! For Epoch data: Returns nXYTER number (2 bit field)
+         /*!
+          * A nDPB can support up to 4 nXYTER chips.
+          * This field identifies FEB as well as chip.
+          */
+         inline uint8_t getEpochNxNum() const { return getField(4, 2); }
+         
          // 2 bit unused
 
          //! For Epoch data: Returns current epoch number (32 bit field)
@@ -301,6 +307,13 @@ namespace ngdpb {
 
 
          // ---------- Sync marker access methods -------------
+
+         //! For Sync data: Returns nXYTER number (2 bit field)
+         /*!
+          * A nDPB can support up to 4 nXYTER chips.
+          * This field identifies FEB as well as chip.
+          */
+         inline uint8_t getSyncNxNum() const { return getField(4, 2); }
 
          //! For Sync data: Returns sync channel number (2 bit field)
          inline uint8_t getSyncChNum() const { return getField(6, 2); }
@@ -335,6 +348,13 @@ namespace ngdpb {
 
 
          // ---------- AUX marker access methods --------------
+
+         //! For AUX data: Returns nXYTER number (2 bit field)
+         /*!
+          * A nDPB can support up to 4 nXYTER chips.
+          * This field identifies FEB as well as chip.
+          */
+         inline uint8_t getAuxNxNum() const { return getField(4, 2); }
 
          //! For Aux data: Returns aux channel number (7 bit field)
          inline uint8_t getAuxChNum() const { return getField(6, 7); }
@@ -574,11 +594,11 @@ namespace ngdpb {
 
          double getMsgFullTimeD(uint32_t epoch) const;
 
-         //! Expanded timestamp for 250 MHz * 14 bit epochs
+         //! Expanded timestamp for 160 MHz * 14 bit (12 + 2) epochs
          inline static uint64_t FullTimeStamp(uint32_t epoch, uint16_t stamp)
             { return (static_cast<uint64_t>(epoch) << 14) | (stamp & 0x3fff); }
 
-         //! Expanded timestamp for 250/8*5 MHz * 19 bit epochs
+         //! Expanded timestamp for 160 MHz * 19 bit (12 + 7) epochs
          inline static uint64_t FullTimeStamp2(uint32_t epoch, uint32_t stamp)
             { return (static_cast<uint64_t>(epoch) << 19) | (stamp & 0x7ffff); }
 
