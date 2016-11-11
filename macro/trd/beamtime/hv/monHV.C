@@ -94,22 +94,22 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
 	// continue for lv channels:
 	if (chID < 400) continue;
 	// continue for empty hv channels on the CBM TRD Iseg modules:
-	if (chID <= 499 && chID > 404 || chID == 402) continue;
+	if (chID <= 499 && chID > 406 || chID == 400 || chID == 402 || chID == 405 ) continue;
 	if (chID <= 599 && chID > 503) continue;
 	// continue for unused Iseg modules:
 	if (chID >= 600) continue;
 	hChID->Fill(chID);
 	sCurrent = line(4,lineLength-4);
 	current = sCurrent.Atof();
-	if(chID >= 400 && chID <= 404 && chID != 402) hCurrentDrift->Fill(current); //drift channels
+	if(chID >= 401 && chID <= 406 && chID != 402 && chID != 405) hCurrentDrift->Fill(current); //drift channels
 	if(chID >= 500 && chID <= 503) hCurrentAnode->Fill(current); //anode channels
-	if(chID >=400 && chID <= 404) hCurrentMap->Fill((chID-400+1),1,(1E6*current)); // drift channels
+	if(chID >=401 && chID <= 406 && chID != 402 && chID != 405) hCurrentMap->Fill((chID-400+1),1,(1E6*current)); // drift channels
 	if(chID >=500 && chID <= 503) hCurrentMap->Fill((chID-500+1),2,(1E6*current)); // anode channel
 	
 	if(chID >=500 && chID <= 503) hVoltageCurrent->Fill(voltage,current);
 	
 	lineStyle = 1;
-	lineColor = (chID%100)+3;
+	lineColor = (chID%100)+2;
 	lineWidth = 5;
 	if(lineColor >= 5) lineColor++;
 	if (mCurrent.find(chID) == mCurrent.end()){
@@ -141,7 +141,7 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
 	// continue for lv channels:
 	if (chID < 400) continue;
 	// continue for empty hv channels on the CBM TRD Iseg modules:
-	if (chID <= 499 && chID > 404 || chID == 402) continue;
+	if (chID <= 499 && chID > 406 || chID == 400 || chID == 402 || chID == 405 ) continue;
 	if (chID <= 599 && chID > 503) continue;
 	// continue for unused Iseg modules:
 	if (chID >= 600) continue;
@@ -237,7 +237,7 @@ void monHV(TString configFile="/data2/cern_nov2016/hv/filename.config")
   hCurrentDrift->SetXTitle("I (A)");
   hCurrentAnode->SetXTitle("I (A)");
   // prepare x limits for channel numbers to be filled, z is the current in nanoampere
-  TProfile2D* hCurrentMap = new TProfile2D("hCurrentMap","hCurrentMap",5,0.5,5.5,2,0.5,2.5);
+  TProfile2D* hCurrentMap = new TProfile2D("hCurrentMap","hCurrentMap",7,0.5,7.5,2,0.5,2.5);
   TH1I* hVoltage = new TH1I("hVoltage","hVoltage",200001,-1,2000);
   hVoltage->SetXTitle("U (V)");
   TH2I* hVoltageCurrent = new TH2I("hVoltageCurrent","hVoltageCurrent Anodes",2000,1849,1851,1000,-1E-7,6E-6);
@@ -295,7 +295,7 @@ void monHV(TString configFile="/data2/cern_nov2016/hv/filename.config")
   c6d->SetLogy(0);
   TMultiGraph *multiIDrift = new TMultiGraph();
   for (std::map<Int_t, TGraph*>::iterator it=mTrendingI.begin(); it!=mTrendingI.end();it++){
-    if (it->first >= 400 && it->first <= 404) {
+    if (it->first >= 400 && it->first <= 406) {
       multiIDrift->Add(it->second); // select drift channels by chID
     }
   }
