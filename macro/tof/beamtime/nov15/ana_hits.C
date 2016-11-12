@@ -227,14 +227,14 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    tofAnaTestbeam->SetDXMean(0.);
    tofAnaTestbeam->SetDYMean(0.);
    tofAnaTestbeam->SetDTMean(0.);      // in ps
-   tofAnaTestbeam->SetDXWidth(1.0);
+   tofAnaTestbeam->SetDXWidth(0.7);
    tofAnaTestbeam->SetDYWidth(1.0);
    tofAnaTestbeam->SetDTWidth(100.);    // in ps
    tofAnaTestbeam->SetCalParFileName(cAnaFile);
    tofAnaTestbeam->SetPosY4Sel(0.5*dScalFac);   // Y Position selection in fraction of strip length
    tofAnaTestbeam->SetDTDia(0.);       // Time difference to additional diamond
    tofAnaTestbeam->SetMul0Max(20);     // Max Multiplicity in dut 
-   tofAnaTestbeam->SetMul4Max(10);     // Max Multiplicity in Ref - RPC 
+   tofAnaTestbeam->SetMul4Max(20);     // Max Multiplicity in Ref - RPC 
    tofAnaTestbeam->SetMulDMax(20);     // Max Multiplicity in Diamond    
    tofAnaTestbeam->SetTOffD4(10000.);  // initialization
    tofAnaTestbeam->SetDTD4MAX(6000.);  // initialization of Max time difference Ref - BRef
@@ -244,8 +244,8 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    tofAnaTestbeam->SetChS2Sel(0.);      // Center of channel selection window
    tofAnaTestbeam->SetDChS2Sel(100.);   // Width  of channel selection window
    tofAnaTestbeam->SetSel2TOff(450.);   // Shift Sel2 time peak to 0 
-   tofAnaTestbeam->SetChi2Lim(5.);   // initialization of Chi2 selection limit  
-   tofAnaTestbeam->SetChi2Lim2(3.);   // initialization of Chi2 selection limit  
+   tofAnaTestbeam->SetChi2Lim(5.);    // initialization of Chi2 selection limit  
+   tofAnaTestbeam->SetChi2Lim2(2.);   // initialization of Chi2 selection limit for Mref-Sel2 pair   
 
    Int_t iRSel=0;
    Int_t iRSelSm=0;
@@ -253,6 +253,7 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    if(iSel2>=0){
      iRSel=5;      // use diamond
      iRSelSm=0;
+     if(InputDigiFile.Contains("510_")) iRSelSm=1;
    }else{
      iSel2=-iSel2;
      iRSel=iSel2;
@@ -313,14 +314,12 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	   
          case 5:
            //tofTestBeamClust->SetBeamAddRefMul(1);
-	   tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in Diamond    
 	   tofAnaTestbeam->SetTShift(-3000.);     // Shift DTD4 to 0
 	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
 	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
 	   break;
 
          case 9:
-	   tofAnaTestbeam->SetMulDMax(3);      // Max Multiplicity in BeamRef // Diamond    
            //tofTestBeamClust->SetBeamAddRefMul(1);
 	   tofAnaTestbeam->SetTShift(100.);   // Shift DTD4 to 0
 	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
@@ -332,8 +331,6 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      }
      tofAnaTestbeam->SetCh4Sel(15);                // Center of channel selection window
      tofAnaTestbeam->SetDCh4Sel(15*dScalFac);      // Width  of channel selection window
-     tofAnaTestbeam->SetMul0Max(5);                // Max Multiplicity in dut 
-     tofAnaTestbeam->SetMul4Max(10);                // Max Multiplicity in Ref - RPC 
      break;
 
    case 900300:
@@ -351,14 +348,12 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	   
          case 5:
            //tofTestBeamClust->SetBeamAddRefMul(1);
-	   tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in Diamond    
 	   tofAnaTestbeam->SetTShift(-17000.);     // Shift DTD4 to 0
 	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
 	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
 	   break;
 
          case 9:
-	   tofAnaTestbeam->SetMulDMax(3);      // Max Multiplicity in BeamRef // Diamond    
            //tofTestBeamClust->SetBeamAddRefMul(1);
 	   tofAnaTestbeam->SetTShift(100.);   // Shift DTD4 to 0
 	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
@@ -370,9 +365,6 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      }
      tofAnaTestbeam->SetCh4Sel(15);                // Center of channel selection window
      tofAnaTestbeam->SetDCh4Sel(15*dScalFac);      // Width  of channel selection window
-     tofAnaTestbeam->SetMulDMax(1);       // Max Multiplicity in Diamond    
-     tofAnaTestbeam->SetMul0Max(10);      // Max Multiplicity in dut 
-     tofAnaTestbeam->SetMul4Max(10);      // Max Multiplicity in Ref - RPC 
      break;
 
    case 300920:  
@@ -386,9 +378,17 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      cout << "Run with iRSel = "<<iRSel<<endl;
      switch (iRSel){
        case 5:	 
-	 tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in Diamond    
-	 tofAnaTestbeam->SetTShift(3500.);       // Shift DTD4 to 0
-	 tofAnaTestbeam->SetTOffD4(20000.);   // Shift DTD4 to physical value
+	   switch(iRSelSm){
+	   case 0:
+	     tofAnaTestbeam->SetTShift(3500.);       // Shift DTD4 to 0
+	     tofAnaTestbeam->SetTOffD4(20000.);   // Shift DTD4 to physical value
+	     break;
+	   case 1:
+       	     tofAnaTestbeam->SetTShift(2050.);  // Shift DTD4 to 0
+	     tofAnaTestbeam->SetTOffD4(12000.);  // initialization	     
+	     break;   
+	   }
+
 	 switch(iSel2){
 	 case 3:
 	   tofAnaTestbeam->SetSel2TOff(-20.);     // Shift Sel2 time peak to 0
@@ -437,10 +437,19 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	 break;
 
        case 3:
-	 tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in Bref    
 	 tofAnaTestbeam->SetTShift(1950.);  // initialization
 	 tofAnaTestbeam->SetTOffD4(13000.);  // initialization
 	 tofAnaTestbeam->SetSel2TOff(2250.);  // Shift Sel2 time peak to 0
+	 break;
+
+       case 9:
+	 switch(iSel2Sm){
+	 case 0: 
+	     tofAnaTestbeam->SetTShift(-120.);  // initialization
+	     tofAnaTestbeam->SetTOffD4(14000.);  // initialization
+	     tofAnaTestbeam->SetSel2TOff(-140.);  // Shift Sel2 time peak to 0
+	     break;
+	 }
 	 break;
 
        default:
@@ -462,9 +471,17 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	 cout << "Run with iRSel = "<<iRSel<<endl;
 	 switch (iRSel){
 	 case 5:
-	   tofAnaTestbeam->SetTShift(3000.);  // Shift DTD4 to 0
-	   tofAnaTestbeam->SetTOffD4(20000.);  // initialization
-	   tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in Diamond    
+	   switch(iRSelSm){
+	   case 0:
+	     tofAnaTestbeam->SetTShift(3000.);  // Shift DTD4 to 0
+	     tofAnaTestbeam->SetTOffD4(20000.);  // initialization
+	     break;
+	   case 1:
+       	     tofAnaTestbeam->SetTShift(1800.);  // Shift DTD4 to 0
+	     tofAnaTestbeam->SetTOffD4(17000.);  // initialization	     
+	     break;   
+	   }
+
 	   switch(iSel2){
 	   case 3:
 	     tofAnaTestbeam->SetSel2TOff(-100.);  // Shift Sel2 time peak to 0
@@ -488,11 +505,21 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	   break;
 
 	 case 3:
-	   tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in Diamond    
 	   tofAnaTestbeam->SetTShift(1950.);  // initialization
 	   tofAnaTestbeam->SetTOffD4(13000.);  // initialization
 	   tofAnaTestbeam->SetSel2TOff(2070.);  // Shift Sel2 time peak to 0
 	   break;
+
+	 case 9:
+	   switch(iSel2Sm){
+	   case 0: 
+	     tofAnaTestbeam->SetTShift(-120.);  // initialization
+	     tofAnaTestbeam->SetTOffD4(14000.);  // initialization
+	     tofAnaTestbeam->SetSel2TOff(-140.);  // Shift Sel2 time peak to 0
+	     break;
+	   }
+	   break;
+
 	 default:
 	   cout << "Define setup! "<< endl;
 	   return;
@@ -513,7 +540,6 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	 case 5:
 	   tofAnaTestbeam->SetTShift(3500.);  // Shift DTD4 to 0
 	   tofAnaTestbeam->SetTOffD4(20000.);  // initialization
-	   tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in Diamond    
 	   switch(iSel2){
 	   case 3:
 	     tofAnaTestbeam->SetSel2TOff(0.);  // Shift Sel2 time peak to 0
@@ -536,7 +562,6 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	   }
 	   break;
 	 case 3:
-	   tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in Diamond    
 	   tofAnaTestbeam->SetTShift(1950.);  // initialization
 	   tofAnaTestbeam->SetTOffD4(13000.);  // initialization
 	   tofAnaTestbeam->SetSel2TOff(2070.);  // Shift Sel2 time peak to 0
@@ -561,7 +586,6 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	 case 5:
 	   tofAnaTestbeam->SetTShift(3500.);  // Shift DTD4 to 0
 	   tofAnaTestbeam->SetTOffD4(20000.);  // initialization
-	   tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in Diamond    
 	   switch(iSel2){
 	   case 3:
 	     tofAnaTestbeam->SetSel2TOff(0.);  // Shift Sel2 time peak to 0
@@ -584,7 +608,6 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	   }
 	   break;
 	 case 3:
-	   tofAnaTestbeam->SetMulDMax(10);      // Max Multiplicity in Diamond    
 	   tofAnaTestbeam->SetTShift(1950.);  // initialization
 	   tofAnaTestbeam->SetTOffD4(13000.);  // initialization
 	   tofAnaTestbeam->SetSel2TOff(2070.);  // Shift Sel2 time peak to 0
@@ -604,7 +627,6 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    case 910400:
    case 920400:
    case 921400:
-     tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in Diamond / Bref   
      cout << "Run with iRSel = "<<iRSel<<endl;
      switch (iRSel){
          case 3:
@@ -615,7 +637,6 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	   
          case 5:
            //tofTestBeamClust->SetBeamAddRefMul(1);
-	   tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in Diamond    
 	   tofAnaTestbeam->SetTShift(3500.);     // Shift DTD4 to 0
 	   tofAnaTestbeam->SetTOffD4(17000.);   // Shift DTD4 to physical value
 	   switch(iSel2){
@@ -662,7 +683,6 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	   break;
 
          case 9:
-	   tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in BeamRef // Diamond    
 	   tofAnaTestbeam->SetTShift(100.);   // Shift DTD4 to 0
 	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
 	   tofAnaTestbeam->SetSel2TOff(500.);     // Shift Sel2 time peak to 0
@@ -676,8 +696,6 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      }
      tofAnaTestbeam->SetCh4Sel(8);                // Center of channel selection window
      tofAnaTestbeam->SetDCh4Sel(8*dScalFac);      // Width  of channel selection window
-     tofAnaTestbeam->SetMul0Max(10);      // Max Multiplicity in dut 
-     tofAnaTestbeam->SetMul4Max(10);      // Max Multiplicity in Ref - RPC 
      break;
 
    case 100600:
@@ -694,18 +712,27 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    case 804600:
    case 805600:
    case 601600:
-     cout << "Run with iRSel = "<<iRSel<<endl;
+     cout << "Run with iRSel = "<<iRSel<<", iSel2 = "<<iSel2<<endl;
      switch (iRSel){	   
          case 5:
            //tofTestBeamClust->SetBeamAddRefMul(1);
-	   tofAnaTestbeam->SetTShift(-8300.);     // Shift DTD4 to 0
-	   tofAnaTestbeam->SetTOffD4(17000.);      // Shift DTD4 to physical value
-	   tofAnaTestbeam->SetSel2TOff(2900.);     // Shift Sel2 time peak to 0
-	   switch(iSel2){
+	   switch(iRSelSm){
 	   case 0:
+	     tofAnaTestbeam->SetTShift(-8300.);     // Shift DTD4 to 0
+	     tofAnaTestbeam->SetTOffD4(17000.);      // Shift DTD4 to physical value
 	     break;
 	   case 1:
-	     tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
+	     tofAnaTestbeam->SetTShift(200.);     // Shift DTD4 to 0
+	     tofAnaTestbeam->SetTOffD4(17000.);      // Shift DTD4 to physical value	
+	     break;   
+	   }
+
+	   switch(iSel2){
+	   case 0:
+	     tofAnaTestbeam->SetSel2TOff(2900.);     // Shift Sel2 time peak to 0
+	     break;
+	   case 1:
+	     tofAnaTestbeam->SetSel2TOff(-85.);     // Shift Sel2 time peak to 0
 	     break;
 	   case 6:
 	     tofAnaTestbeam->SetSel2TOff(85.);     // Shift Sel2 time peak to 0
@@ -719,22 +746,44 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	   tofAnaTestbeam->SetTShift(2500.);     // Shift DTD4 to 0
 	   tofAnaTestbeam->SetTOffD4(17000.);      // Shift DTD4 to physical value
 	   tofAnaTestbeam->SetSel2TOff(2900.);     // Shift Sel2 time peak to 0
+	   switch(iSel2){
+	   case 0:
+	     tofAnaTestbeam->SetSel2TOff(2900.);     // Shift Sel2 time peak to 0
+	     break;
+	   case 1:
+	     tofAnaTestbeam->SetTShift(0.);     // Shift DTD4 to 0
+	     tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
+	     break;
+	   case 6:
+	     tofAnaTestbeam->SetSel2TOff(85.);     // Shift Sel2 time peak to 0
+	     break;
+	   default:
+	     ;
+	   }      // iSel2 switch end 
 	   break;
          case 6:
            //tofTestBeamClust->SetBeamAddRefMul(1);
-	   tofAnaTestbeam->SetTShift(2500.);     // Shift DTD4 to 0
-	   tofAnaTestbeam->SetTOffD4(17000.);      // Shift DTD4 to physical value
-	   tofAnaTestbeam->SetSel2TOff(2900.);     // Shift Sel2 time peak to 0
+	   tofAnaTestbeam->SetTShift(-70.);     // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(15000.);      // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(-50.);     // Shift Sel2 time peak to 0
 	   break;
+
+         case 7:
+	   switch(iSel2Rpc){
+	   case 0:
+	     tofAnaTestbeam->SetTShift(-38.);     // Shift DTD4 to 0
+	     tofAnaTestbeam->SetTOffD4(15000.);      // Shift DTD4 to physical value
+	     tofAnaTestbeam->SetSel2TOff(-42.);     // Shift Sel2 time peak to 0
+	     break;
+	   }
+	   break;
+
          default:
 	   cout << "Define setup! "<< endl;
 	   return;
      }
      tofAnaTestbeam->SetCh4Sel(16);                // Center of channel selection window
      tofAnaTestbeam->SetDCh4Sel(16*dScalFac);      // Width  of channel selection window
-     tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in Diamond    
-     tofAnaTestbeam->SetMul0Max(10);      // Max Multiplicity in dut 
-     tofAnaTestbeam->SetMul4Max(10);      // Max Multiplicity in Ref - RPC 
      break;
 
    case 100601:
@@ -755,11 +804,19 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      switch (iRSel){	   
          case 5:
            //tofTestBeamClust->SetBeamAddRefMul(1);
-	   tofAnaTestbeam->SetTShift(-5300.);     // Shift DTD4 to 0
-	   tofAnaTestbeam->SetTOffD4(17000.);      // Shift DTD4 to physical value
-	   tofAnaTestbeam->SetSel2TOff(2900.);     // Shift Sel2 time peak to 0
+	   switch(iRSelSm){
+	   case 0:
+	     tofAnaTestbeam->SetTShift(-5300.);     // Shift DTD4 to 0
+	     tofAnaTestbeam->SetTOffD4(17000.);      // Shift DTD4 to physical value
+	     break;
+	   case 1:
+	     tofAnaTestbeam->SetTShift(290.);     // Shift DTD4 to 0
+	     tofAnaTestbeam->SetTOffD4(17000.);      // Shift DTD4 to physical value	
+	     break;   
+	   }
 	   switch(iSel2){
 	   case 0:
+	     tofAnaTestbeam->SetSel2TOff(2900.);     // Shift Sel2 time peak to 0
 	     break;
 	   case 1:
 	     tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
@@ -789,9 +846,6 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      }
      tofAnaTestbeam->SetCh4Sel(16);                // Center of channel selection window
      tofAnaTestbeam->SetDCh4Sel(16*dScalFac);      // Width  of channel selection window
-     tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in Diamond    
-     tofAnaTestbeam->SetMul0Max(10);      // Max Multiplicity in dut 
-     tofAnaTestbeam->SetMul4Max(10);      // Max Multiplicity in Ref - RPC 
      break;
 
    case 200100:
@@ -845,9 +899,6 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 
      tofAnaTestbeam->SetCh4Sel(32);                // Center of channel selection window
      tofAnaTestbeam->SetDCh4Sel(32*dScalFac);      // Width  of channel selection window
-     tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in Diamond    
-     tofAnaTestbeam->SetMul0Max(10);      // Max Multiplicity in dut 
-     tofAnaTestbeam->SetMul4Max(10);      // Max Multiplicity in Ref - RPC 
      break;
    default:
      cout << "Define analysis setup! "<< endl;

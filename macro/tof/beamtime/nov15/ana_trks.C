@@ -276,7 +276,7 @@ void ana_trks(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    tofAnaTestbeam->SetPosY4Sel(0.5);   // Y Position selection in fraction of strip length
    tofAnaTestbeam->SetDTDia(0.);       // Time difference to additional diamond
    tofAnaTestbeam->SetMul0Max(20);     // Max Multiplicity in dut 
-   tofAnaTestbeam->SetMul4Max(10);     // Max Multiplicity in Ref - RPC 
+   tofAnaTestbeam->SetMul4Max(20);     // Max Multiplicity in Ref - RPC 
    tofAnaTestbeam->SetMulDMax(20);     // Max Multiplicity in Diamond    
    tofAnaTestbeam->SetTOffD4(10000.);  // initialization
    tofAnaTestbeam->SetDTD4MAX(6000.);  // initialization of Max time difference Ref - BRef

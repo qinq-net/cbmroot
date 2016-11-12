@@ -42,7 +42,7 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
    parFileList->Add(&tofDigiFile);   
 
    //   TObjString tofDigiBdfFile =  paramDir + "/tof." + FPar + "digibdf.par";
-   TObjString tofDigiBdfFile = workDir  + "/parameters/tof/tof_" + TofGeo +".digibdf.par";
+   TObjString tofDigiBdfFile = workDir  + "/parameters/tof/" + TofGeo +".digibdf.par";
    parFileList->Add(&tofDigiBdfFile);
 
    TString geoDir  = gSystem->Getenv("VMCWORKDIR");
@@ -74,20 +74,21 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
 
    CbmTofTestBeamClusterizer* tofTestBeamClust = new CbmTofTestBeamClusterizer("TOF TestBeam Clusterizer",iVerbose, bOut);
 
+   tofTestBeamClust->SetPs2Ns(kTRUE);           // work with Raw Digis in ps, output will be ns 
    tofTestBeamClust->SetCalMode(calMode);
    tofTestBeamClust->SetCalSel(calSel);
-   tofTestBeamClust->SetCaldXdYMax(2.);         // geometrical matching window in cm 
+   tofTestBeamClust->SetCaldXdYMax(2.);          // geometrical matching window in cm 
    tofTestBeamClust->SetCalCluMulMax(10.);       // Max Counter Cluster Multiplicity for filling calib histos  
    tofTestBeamClust->SetCalRpc(calSm);           // select detector for calibration update  
    tofTestBeamClust->SetTRefId(RefSel);          // reference trigger for offset calculation 
-   tofTestBeamClust->SetTotMax(10000.);          // Tot upper limit for walk corection
-   tofTestBeamClust->SetTotMin(1.); //(12000.);  // Tot lower limit for walk correction
-   tofTestBeamClust->SetTotPreRange(5000.);      // effective lower Tot limit  in ps from peak position
+   tofTestBeamClust->SetTotMax(10.);             // Tot upper limit for walk corection
+   tofTestBeamClust->SetTotMin(0.01);            //(12000.);  // Tot lower limit for walk correction
+   tofTestBeamClust->SetTotPreRange(5.);         // effective lower Tot limit  in ps from peak position
    tofTestBeamClust->SetTotMean(2000.);          // Tot calibration target value in ps 
    tofTestBeamClust->SetMaxTimeDist(500.);       // default cluster range in ps 
    //tofTestBeamClust->SetMaxTimeDist(0.);       //Deb// default cluster range in ps 
-   tofTestBeamClust->SetDelTofMax(6000.);        // acceptance range for cluster correlation  
-   tofTestBeamClust->SetBeamRefMulMax(4);        // limit Multiplicity in beam counter
+   tofTestBeamClust->SetDelTofMax(6.);        // acceptance range for cluster correlation  
+   tofTestBeamClust->SetBeamRefMulMax(40);       // limit Multiplicity in beam counter
 
    Int_t calSelRead = calSel;
    if (calSel<0) calSelRead=0;
@@ -100,123 +101,123 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
 
    switch (calMode) {
    case 0:                                      // initial calibration 
-     tofTestBeamClust->SetTotMax(100000.);      // 100 ns
+     tofTestBeamClust->SetTotMax(10.);      // 100 ns
      //tofTestBeamClust->SetTotMin(1.);
-     tofTestBeamClust->SetTRefDifMax(2000000.); // in ps 
+     tofTestBeamClust->SetTRefDifMax(2000.); // in ps 
      tofTestBeamClust->PosYMaxScal(2000.);      // in % of length 
      tofTestBeamClust->SetMaxTimeDist(0.);      // no cluster building  
      break;
    case 1:                                       // save offsets, update walks, for diamonds 
-     tofTestBeamClust->SetTRefDifMax(50000.);    // in ps 
+     tofTestBeamClust->SetTRefDifMax(50.);    // in ps 
      tofTestBeamClust->PosYMaxScal(0.1);         // in % of length 
      break;
    case 11:
-     tofTestBeamClust->SetTRefDifMax(4000.);    // in ps 
+     tofTestBeamClust->SetTRefDifMax(4.);    // in ps 
      tofTestBeamClust->PosYMaxScal(1.0);        // in % of length 
      break;   
    case 21:
-     tofTestBeamClust->SetTRefDifMax(3000.);    // in ps 
+     tofTestBeamClust->SetTRefDifMax(3.);    // in ps 
      tofTestBeamClust->PosYMaxScal(1.0);        // in % of length 
      break;
    case 31:
-     tofTestBeamClust->SetTRefDifMax(2000.);    // in ps 
+     tofTestBeamClust->SetTRefDifMax(2.);    // in ps 
      tofTestBeamClust->PosYMaxScal(1.0);        // in % of length 
      break;
    case 41:
-     tofTestBeamClust->SetTRefDifMax(1000.);    // in ps 
+     tofTestBeamClust->SetTRefDifMax(1.);    // in ps 
      tofTestBeamClust->PosYMaxScal(0.8);        // in % of length 
      break;   
    case 51:
-     tofTestBeamClust->SetTRefDifMax(700.);     // in ps 
+     tofTestBeamClust->SetTRefDifMax(0.7);     // in ps 
      tofTestBeamClust->PosYMaxScal(0.7);        // in % of length 
      break;
    case 61:
-     tofTestBeamClust->SetTRefDifMax(500.);     // in ps 
+     tofTestBeamClust->SetTRefDifMax(0.5);     // in ps 
      tofTestBeamClust->PosYMaxScal(0.7);        // in % of length 
      break;   
    case 71:
-     tofTestBeamClust->SetTRefDifMax(400.);     // in ps 
+     tofTestBeamClust->SetTRefDifMax(0.4);     // in ps 
      tofTestBeamClust->PosYMaxScal(0.6);        // in % of length 
      break;
 
    case 2:                                      // time difference calibration
-     tofTestBeamClust->SetTRefDifMax(300000.);  // in ps 
+     tofTestBeamClust->SetTRefDifMax(300.);  // in ps 
      tofTestBeamClust->PosYMaxScal(1000.);      //in % of length
      break;
 
    case 3:                                       // time offsets 
-     tofTestBeamClust->SetTRefDifMax(200000.);   // in ps 
+     tofTestBeamClust->SetTRefDifMax(200.);   // in ps 
      tofTestBeamClust->PosYMaxScal(1000.);       //in % of length
      tofTestBeamClust->SetMaxTimeDist(0.);      // no cluster building  
      break;
    case 12:
    case 13:
-     tofTestBeamClust->SetTRefDifMax(100000.);   // in ps 
+     tofTestBeamClust->SetTRefDifMax(100.);   // in ps 
      tofTestBeamClust->PosYMaxScal(100.);        //in % of length
      break;
    case 22:
    case 23:
-     tofTestBeamClust->SetTRefDifMax(50000.);    // in ps 
+     tofTestBeamClust->SetTRefDifMax(50.);    // in ps 
      tofTestBeamClust->PosYMaxScal(50.);         //in % of length
      break;
    case 32:
    case 33:
-     tofTestBeamClust->SetTRefDifMax(25000.);    // in ps 
+     tofTestBeamClust->SetTRefDifMax(25.);    // in ps 
      tofTestBeamClust->PosYMaxScal(20.);         //in % of length
      break;
    case 42:
    case 43:
-     tofTestBeamClust->SetTRefDifMax(12000.);   // in ps 
+     tofTestBeamClust->SetTRefDifMax(12.);   // in ps 
      tofTestBeamClust->PosYMaxScal(10.);        //in % of length
      break;
    case 52:
    case 53:
-     tofTestBeamClust->SetTRefDifMax(5000.);   // in ps 
+     tofTestBeamClust->SetTRefDifMax(5.);   // in ps 
      tofTestBeamClust->PosYMaxScal(4.);        //in % of length
      break;
    case 62:
    case 63:
-     tofTestBeamClust->SetTRefDifMax(2500.);   // in ps 
+     tofTestBeamClust->SetTRefDifMax(2.5);   // in ps 
      tofTestBeamClust->PosYMaxScal(2.);        //in % of length
      break;
    case 72:
    case 73:
-     tofTestBeamClust->SetTRefDifMax(2000.);    // in ps 
+     tofTestBeamClust->SetTRefDifMax(2.);    // in ps 
      tofTestBeamClust->PosYMaxScal(1.0);        //in % of length
      break;
    case 82:
    case 83:
-     tofTestBeamClust->SetTRefDifMax(1000.);    // in ps 
+     tofTestBeamClust->SetTRefDifMax(1.);    // in ps 
      tofTestBeamClust->PosYMaxScal(0.8);        //in % of length   
      break;
    case 92:
    case 93:
-     tofTestBeamClust->SetTRefDifMax(600.);    // in ps 
+     tofTestBeamClust->SetTRefDifMax(0.6);    // in ps 
      tofTestBeamClust->PosYMaxScal(0.8);        //in % of length   
      break;
 
    case 4:                                      // velocity dependence (DelTOF)
-     tofTestBeamClust->SetTRefDifMax(6000.);    // in ps 
+     tofTestBeamClust->SetTRefDifMax(6.);    // in ps 
      tofTestBeamClust->PosYMaxScal(1.5);        //in % of length
      break;
    case 14:
-     tofTestBeamClust->SetTRefDifMax(3000.);   // in ps 
+     tofTestBeamClust->SetTRefDifMax(3.);   // in ps 
      tofTestBeamClust->PosYMaxScal(1.);        //in % of length
      break;
    case 24:
-     tofTestBeamClust->SetTRefDifMax(1500.);   // in ps 
+     tofTestBeamClust->SetTRefDifMax(1.5);   // in ps 
      tofTestBeamClust->PosYMaxScal(0.8);        //in % of length
      break;
    case 44:
-     tofTestBeamClust->SetTRefDifMax(1000.);   // in ps 
+     tofTestBeamClust->SetTRefDifMax(1.);   // in ps 
      tofTestBeamClust->PosYMaxScal(0.8);        //in % of length
      break;
    case 54:
-     tofTestBeamClust->SetTRefDifMax(700.);     // in ps 
+     tofTestBeamClust->SetTRefDifMax(0.7);     // in ps 
      tofTestBeamClust->PosYMaxScal(0.7);        //in % of length
      break;
    case 64:
-     tofTestBeamClust->SetTRefDifMax(500.);     // in ps 
+     tofTestBeamClust->SetTRefDifMax(0.5);     // in ps 
      tofTestBeamClust->PosYMaxScal(0.7);        //in % of length
      break;
    default:
@@ -235,13 +236,13 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
    tofAnaTestbeam->SetDTMean(0.);  // in ps
    tofAnaTestbeam->SetDXWidth(0.4);
    tofAnaTestbeam->SetDYWidth(0.4);
-   tofAnaTestbeam->SetDTWidth(80.); // in ps
+   tofAnaTestbeam->SetDTWidth(0.08); // in ps
    tofAnaTestbeam->SetCalParFileName(cAnaFile);
    tofAnaTestbeam->SetPosY4Sel(0.5); // Y Position selection in fraction of strip length
    tofAnaTestbeam->SetDTDia(0.);   // Time difference to additional diamond
    tofAnaTestbeam->SetCorMode(RefSel); // 1 - DTD4, 2 - X4 
-   tofAnaTestbeam->SetMul0Max(3);      // Max Multiplicity in dut 
-   tofAnaTestbeam->SetMul4Max(3);      // Max Multiplicity in Ref - RPC 
+   tofAnaTestbeam->SetMul0Max(20);      // Max Multiplicity in dut 
+   tofAnaTestbeam->SetMul4Max(20);      // Max Multiplicity in Ref - RPC 
    tofAnaTestbeam->SetMulDMax(10);      // Max Multiplicity in Diamond    
    tofAnaTestbeam->SetHitDistMin(30.);  // initialization
 
@@ -250,7 +251,7 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
    tofAnaTestbeam->SetDChS2Sel(100.);   // Width  of channel selection window
    tofAnaTestbeam->SetTShift(0.);       // Shift DTD4 to 0
    tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0 
-   tofAnaTestbeam->SetTOffD4(13000.);   // Shift DTD4 to physical value
+   tofAnaTestbeam->SetTOffD4(13.);   // Shift DTD4 to physical value
 
    Int_t iBRef=iCalSet%1000;
    Int_t iSet = (iCalSet - iBRef)/1000;
@@ -329,14 +330,14 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
      switch (iRSel){
          case 4:
 	   tofAnaTestbeam->SetTShift(0.);   // Shift DTD4 to 0
-	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetTOffD4(16.);   // Shift DTD4 to physical value
 	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
 	   break;
 	   
          case 5:
            //tofTestBeamClust->SetBeamAddRefMul(1);
-	   tofAnaTestbeam->SetTShift(-3000.);     // Shift DTD4 to 0
-	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetTShift(-3.);     // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16.);   // Shift DTD4 to physical value
 	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
 	   break;
 
@@ -344,9 +345,9 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
 	   tofAnaTestbeam->SetChi2Lim(100.);   // initialization of Chi2 selection limit  
 	   tofAnaTestbeam->SetMulDMax(3);      // Max Multiplicity in BeamRef // Diamond    
            //tofTestBeamClust->SetBeamAddRefMul(1);
-	   tofAnaTestbeam->SetTShift(100.);   // Shift DTD4 to 0
-	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
-	   tofAnaTestbeam->SetSel2TOff(500.);     // Shift Sel2 time peak to 0
+	   tofAnaTestbeam->SetTShift(0.1);   // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(0.5);     // Shift Sel2 time peak to 0
 	   break;
 
          default:
@@ -356,7 +357,7 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
      tofAnaTestbeam->SetChi2Lim(30.);     // initialization of Chi2 selection limit  
      tofAnaTestbeam->SetDXWidth(1.5);
      tofAnaTestbeam->SetDYWidth(1.5);
-     tofAnaTestbeam->SetDTWidth(120.);   // in ps
+     tofAnaTestbeam->SetDTWidth(0.12);   // in ps
      tofAnaTestbeam->SetCh4Sel(15);      // Center of channel selection window
      tofAnaTestbeam->SetDCh4Sel(3);      // Width  of channel selection window
      tofAnaTestbeam->SetPosY4Sel(0.25);  // Y Position selection in fraction of strip length
@@ -371,16 +372,16 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
          case 5:
            //tofTestBeamClust->SetBeamAddRefMul(1);
 	   tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in BeamRef // Diamond    
-	   tofAnaTestbeam->SetTShift(200.);     // Shift DTD4 to 0
-	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetTShift(0.2);     // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16.);   // Shift DTD4 to physical value
 	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
 	   break;
 
          case 9:
            //tofTestBeamClust->SetBeamAddRefMul(1);
-	   tofAnaTestbeam->SetTShift(100.);   // Shift DTD4 to 0
-	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
-	   tofAnaTestbeam->SetSel2TOff(500.);     // Shift Sel2 time peak to 0
+	   tofAnaTestbeam->SetTShift(0.1);   // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(0.5);     // Shift Sel2 time peak to 0
 	   break;
 
          default:
@@ -389,7 +390,7 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
      tofAnaTestbeam->SetChi2Lim(30.);   // initialization of Chi2 selection limit  
      tofAnaTestbeam->SetDXWidth(2.);
      tofAnaTestbeam->SetDYWidth(2.);
-     tofAnaTestbeam->SetDTWidth(200.); // in ps
+     tofAnaTestbeam->SetDTWidth(0.2); // in ps
      tofAnaTestbeam->SetCh4Sel(15);      // Center of channel selection window
      tofAnaTestbeam->SetDCh4Sel(10);      // Width  of channel selection window
      tofAnaTestbeam->SetPosY4Sel(0.5);  // Y Position selection in fraction of strip length
@@ -404,16 +405,16 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
          case 5:
            //tofTestBeamClust->SetBeamAddRefMul(1);
 	   tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in BeamRef // Diamond    
-	   tofAnaTestbeam->SetTShift(200.);     // Shift DTD4 to 0
-	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetTShift(0.2);     // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16.);   // Shift DTD4 to physical value
 	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
 	   break;
 
          case 9:
            //tofTestBeamClust->SetBeamAddRefMul(1);
-	   tofAnaTestbeam->SetTShift(100.);   // Shift DTD4 to 0
-	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
-	   tofAnaTestbeam->SetSel2TOff(500.);     // Shift Sel2 time peak to 0
+	   tofAnaTestbeam->SetTShift(0.1);   // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(0.5);     // Shift Sel2 time peak to 0
 	   break;
 
          default:
@@ -422,7 +423,7 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
      tofAnaTestbeam->SetChi2Lim(30.);   // initialization of Chi2 selection limit  
      tofAnaTestbeam->SetDXWidth(2.);
      tofAnaTestbeam->SetDYWidth(2.);
-     tofAnaTestbeam->SetDTWidth(200.);    // in ps
+     tofAnaTestbeam->SetDTWidth(0.2);    // in ps
      tofAnaTestbeam->SetCh4Sel(8);        // Center of channel selection window
      tofAnaTestbeam->SetDCh4Sel(10);      // Width  of channel selection window
      tofAnaTestbeam->SetPosY4Sel(0.5);    // Y Position selection in fraction of strip length
@@ -434,15 +435,15 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
    case 300920:
      switch (iRSel){
          case 9:
-	   tofAnaTestbeam->SetTShift(-2000.);   // Shift DTD4 to 0
-	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetTShift(-2.);   // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16.);   // Shift DTD4 to physical value
 	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
 	   break;
 
          case 5:
            //tofTestBeamClust->SetBeamAddRefMul(1);
 	   tofAnaTestbeam->SetTShift(0.);     // Shift DTD4 to 0
-	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetTOffD4(16.);   // Shift DTD4 to physical value
 	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
 	   break;
 
@@ -452,7 +453,7 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
      tofAnaTestbeam->SetChi2Lim(1000.);   // initialization of Chi2 selection limit  
      tofAnaTestbeam->SetDXWidth(2.);
      tofAnaTestbeam->SetDYWidth(2.);
-     tofAnaTestbeam->SetDTWidth(500.); // in ps
+     tofAnaTestbeam->SetDTWidth(0.5); // in ps
      tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in Diamond    
      tofAnaTestbeam->SetMul0Max(5);      // Max Multiplicity in dut 
      tofAnaTestbeam->SetMul4Max(5);      // Max Multiplicity in Ref - RPC 
@@ -462,15 +463,15 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
 
      switch (iRSel){
          case 4:
-	   tofAnaTestbeam->SetTShift(-2000.);   // Shift DTD4 to 0
-	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetTShift(-2.);   // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16.);   // Shift DTD4 to physical value
 	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
 	   break;
 
          case 5:
            //tofTestBeamClust->SetBeamAddRefMul(1);
 	   tofAnaTestbeam->SetTShift(0.);     // Shift DTD4 to 0
-	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetTOffD4(16.);   // Shift DTD4 to physical value
 	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
 	   break;
 
@@ -480,7 +481,7 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
      tofAnaTestbeam->SetChi2Lim(10.);   // initialization of Chi2 selection limit  
      tofAnaTestbeam->SetDXWidth(1.);
      tofAnaTestbeam->SetDYWidth(2.);
-     tofAnaTestbeam->SetDTWidth(100.); // in ps
+     tofAnaTestbeam->SetDTWidth(0.1); // in ps
      tofAnaTestbeam->SetMulDMax(1);      // Max Multiplicity in Diamond    
      tofAnaTestbeam->SetMul0Max(15);      // Max Multiplicity in dut 
      tofAnaTestbeam->SetMul4Max(15);      // Max Multiplicity in Ref - RPC 
@@ -493,22 +494,22 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
    case 920921:
      switch (iRSel){
          case 3:
-	   tofAnaTestbeam->SetTShift(-800.);   // Shift DTD4 to 0
-	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
-	   tofAnaTestbeam->SetSel2TOff(-150.);     // Shift Sel2 time peak to 0
+	   tofAnaTestbeam->SetTShift(-8.);   // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(-0.15);     // Shift Sel2 time peak to 0
 	   break;
 
          case 5: // sel2 = 920
            //tofTestBeamClust->SetBeamAddRefMul(1);
-	   tofAnaTestbeam->SetTShift(-5000.);  // Shift DTD4 to 0
-	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
-	   tofAnaTestbeam->SetSel2TOff(100.);  // Shift Sel2 time peak to 0
+	   tofAnaTestbeam->SetTShift(-5.);  // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(0.1);  // Shift Sel2 time peak to 0
 	   break;
 
          case 9:   // sel2 = -920
-	   tofAnaTestbeam->SetTShift(1200.);   // Shift DTD4 to 0
-	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
-	   tofAnaTestbeam->SetSel2TOff(-150.);     // Shift Sel2 time peak to 0
+	   tofAnaTestbeam->SetTShift(1.2);   // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(-0.15);     // Shift Sel2 time peak to 0
 	   break;
 
          default:
@@ -517,7 +518,7 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
      tofAnaTestbeam->SetChi2Lim(10.);   // initialization of Chi2 selection limit  
      tofAnaTestbeam->SetDXWidth(1.0);
      tofAnaTestbeam->SetDYWidth(2.0);
-     tofAnaTestbeam->SetDTWidth(150.); // in ps
+     tofAnaTestbeam->SetDTWidth(0.15); // in ps
      Bool_t BEff=kFALSE;
      //Bool_t BEff=kTRUE;
      if(BEff) {
@@ -532,16 +533,16 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
    case 300900:
      switch (iRSel){
          case 4:
-	   tofAnaTestbeam->SetTShift(-2000.);   // Shift DTD4 to 0
-	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetTShift(-2.);   // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16.);   // Shift DTD4 to physical value
 	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
 	   break;
 
          case 5:
            //tofTestBeamClust->SetBeamAddRefMul(1);
-	   tofAnaTestbeam->SetTShift(-20000.);     // Shift DTD4 to 0
-	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
-	   tofAnaTestbeam->SetSel2TOff(-170.);     // Shift Sel2 time peak to 0
+	   tofAnaTestbeam->SetTShift(-20.);     // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(-0.17);     // Shift Sel2 time peak to 0
 	   break;
 
          default:
@@ -550,14 +551,14 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
      tofAnaTestbeam->SetChi2Lim(40.);   // initialization of Chi2 selection limit  
      tofAnaTestbeam->SetDXWidth(1.0);
      tofAnaTestbeam->SetDYWidth(2.0);
-     tofAnaTestbeam->SetDTWidth(150.); // in ps
+     tofAnaTestbeam->SetDTWidth(0.15); // in ps
      break; 
 
    case 300400:
      switch (iRSel){
          case 9:
-	   tofAnaTestbeam->SetTShift(-2000.);   // Shift DTD4 to 0
-	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetTShift(-2.);   // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16.);   // Shift DTD4 to physical value
 	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
 	   break;
          default:
@@ -568,8 +569,8 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
    case 210200:
      switch (iRSel){
          case 9:
-	   tofAnaTestbeam->SetTShift(-2000.);   // Shift DTD4 to 0
-	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetTShift(-2.);   // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16.);   // Shift DTD4 to physical value
 	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
 	   break;
          default:
@@ -587,14 +588,14 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
    case 601600:
      switch (iRSel){
          case 5:
-	   tofAnaTestbeam->SetTShift(-6000.);   // Shift DTD4 to 0
-	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetTShift(-11.);   // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16.);   // Shift DTD4 to physical value
 	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
 	   break;
 
          case 6:
-	   tofAnaTestbeam->SetTShift(-6000.);   // Shift DTD4 to 0
-	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetTShift(-6.);   // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16.);   // Shift DTD4 to physical value
 	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
 	   break;
          default:
@@ -603,7 +604,7 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
      tofAnaTestbeam->SetChi2Lim(5.);   // initialization of Chi2 selection limit  
      tofAnaTestbeam->SetDXWidth(0.5);
      tofAnaTestbeam->SetDYWidth(1.);
-     tofAnaTestbeam->SetDTWidth(100.); // in ps
+     tofAnaTestbeam->SetDTWidth(0.1); // in ps
      Bool_t BEff=kFALSE;
      if(BEff) {
        tofAnaTestbeam->SetCh4Sel(20);      // Center of channel selection window
@@ -620,15 +621,6 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
 	   return;
 	 ;
    }  // end of different subsets
-
-   switch(cFileId){
-     case " ":
-
-	 break;
-
-     default:
-	 ;
-   }
 
    run->AddTask(tofAnaTestbeam);
    // =========================================================================
