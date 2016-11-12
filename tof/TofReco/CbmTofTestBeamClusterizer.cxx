@@ -554,12 +554,12 @@ Bool_t   CbmTofTestBeamClusterizer::InitParameters()
             << fDigiPar->GetNrOfModules() << " digi cells " <<FairLogger::endl;
 
    
-   fdMaxTimeDist  = fDigiBdfPar->GetMaxTimeDist()*1000.;  // in ps
+   fdMaxTimeDist  = fDigiBdfPar->GetMaxTimeDist();        // in ns
    fdMaxSpaceDist = fDigiBdfPar->GetMaxDistAlongCh();     // in cm
 
    if(fMaxTimeDist!=fdMaxTimeDist) {
      fdMaxTimeDist=fMaxTimeDist;            // modify default
-     fdMaxSpaceDist=fdMaxTimeDist*0.017*0.5; // cut consistently on positions (with default signal velocity)
+     fdMaxSpaceDist=fdMaxTimeDist*fDigiBdfPar->GetSignalSpeed()*0.5; // cut consistently on positions (with default signal velocity)
    }
 
    LOG(INFO)<<" BuildCluster with MaxTimeDist "<<fdMaxTimeDist<<", MaxSpaceDist "
@@ -1166,7 +1166,7 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
             fDigiBdfPar->GetNbChan(iSmType,iRpcId),0,fDigiBdfPar->GetNbChan(iSmType,iRpcId),
             99, 0., 0.5 ); 
 
-       if (fTotMax !=0.) fdTOTMax=fTotMax;
+       if (fTotMax !=0.) fdTOTMax=fTotMax; 
        if (fTotMin !=0.) fdTOTMin=fTotMin;
        fhRpcCluTot[iDetIndx] =  new TH2F( 
           Form("cl_SmT%01d_sm%03d_rpc%03d_Tot", iSmType, iSmId, iRpcId ),
@@ -3194,7 +3194,10 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                    <<pDigi->GetTot()
 		   <<FairLogger::endl;
 	 pCalDigi = new((*fTofCalDigisColl)[iDigInd]) CbmTofDigiExp( *pDigi );
-	 if(fbPs2Ns)  pCalDigi->SetTime(pCalDigi->GetTime()/1000.);        // for backward compatibility
+	 if(fbPs2Ns) {
+	   pCalDigi->SetTime(pCalDigi->GetTime()/1000.);        // for backward compatibility
+	   pCalDigi->SetTot(pCalDigi->GetTot()/1000.);          // for backward compatibility
+	 }
          if(    fDigiBdfPar->GetNbSmTypes() > pDigi->GetType()  // prevent crash due to misconfiguration 
              && fDigiBdfPar->GetNbSm(  pDigi->GetType()) > pDigi->GetSm()
              && fDigiBdfPar->GetNbRpc( pDigi->GetType()) > pDigi->GetRpc()

@@ -129,7 +129,7 @@ class CbmTofTestBeamClusterizer : public FairTask
 
       inline void SetEnableMatchPosScaling(Bool_t bval) { fEnableMatchPosScaling = bval; }
       inline void SetEnableAvWalk(Bool_t bval)          { fEnableAvWalk = bval; }
-      inline void SetPs2Ms(Bool_t bval)                 { fbPs2Ns = bval; }
+      inline void SetPs2Ns(Bool_t bval)                 { fbPs2Ns = bval; }
 
    protected:
 
