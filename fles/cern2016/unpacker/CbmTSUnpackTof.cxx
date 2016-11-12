@@ -29,6 +29,7 @@
 const UInt_t kuNbChanGet4 =  4;
 const UInt_t kuNbChanAfck = 96;  // FIXME - should be read from parameter file 
 static Int_t iMess=0;
+const Double_t FineTimeConvFactor=0.048828;
 
 CbmTSUnpackTof::CbmTSUnpackTof( UInt_t uNbGdpb )
   : CbmTSUnpack(),
@@ -267,7 +268,7 @@ void CbmTSUnpackTof::FillHitInfo(ngdpb::Message mess)
     }
     Int_t iChanUId = fUnpackPar->GetChannelToDetUIdMap( iChan );
     if(0==iChanUId) return;   // Hit not mapped to digi
-    Double_t dTime = hitTime + Ft*0.02; // in ns, FIXME conversion factor, -> missing calibration
+    Double_t dTime = hitTime + Ft*FineTimeConvFactor; // in ns, FIXME conversion factor, -> missing calibration
     Double_t dTot  = tot;     // in ps ?
     if(1){
     LOG(DEBUG) << "Create digi with time " << dTime<<", Tot "<<dTot
