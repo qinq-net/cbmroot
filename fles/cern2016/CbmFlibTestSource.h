@@ -57,6 +57,7 @@ class CbmFlibTestSource : public FairSource
     void SetFileName(TString name) { fFileName = name; fInputFileList.Add(new TObjString(name));}
     void SetHostName(TString name) { fHost = name; }
     void SetPortNumber(Int_t port) { fPort = port; }
+    void SetMaxDeltaT(Double_t dval) { fdMaxDeltaT = dval;}
 
     void AddUnpacker(CbmTSUnpack* unpacker, Int_t flibId, Int_t detId)
     { 
@@ -85,6 +86,7 @@ class CbmFlibTestSource : public FairSource
  
     UInt_t fTSNumber;
     UInt_t fTSCounter;
+    Double_t fdMaxDeltaT;
     TStopwatch fTimer;
 
     Bool_t fBufferFillNeeded; /** True if the input buffer has to be filled again **/  
