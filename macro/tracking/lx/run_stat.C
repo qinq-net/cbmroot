@@ -1,15 +1,17 @@
 void run_stat(int index = -1)
 {
    Int_t nEvents = 1000;
-   const char* setupName = "sis100_muon_jpsi";
+   const char* setupName = "sis100_electron";
+   //const char* setupName = "sis100_muon_jpsi";
    TString system  = "auau";
    TString beam    = "10gev";
    TString trigger = "mbias";//"centr";
    TString part = "jpsi";
-   TString channel = "mpmm";
+   TString channel = "epem";
+   //TString channel = "mpmm";
 
-   bool useSig = false;
-   bool useBg = true;
+   bool useSig = true;
+   bool useBg = false;
    bool sigAscii = false;
 
    if (!useSig && !useBg)
@@ -187,16 +189,9 @@ void run_stat(int index = -1)
    // -----  Parameter database   --------------------------------------------
    FairRuntimeDb* rtdb = run->GetRuntimeDb();
    FairParRootFileIo* parIo1 = new FairParRootFileIo();
-   parIo1->open(inParFile.Data());
+   parIo1->open(globalParFile.Data());
    rtdb->setFirstInput(parIo1);
-
-   //FairParAsciiFileIo* parIo3 = new FairParAsciiFileIo();
-   //parIo3->open(parFileList, "in");
-   //rtdb->setSecondInput(parIo3);
-   
-   FairParRootFileIo* parIo2 = new FairParRootFileIo(kTRUE);
-   parIo2->open(outParFile.Data());
-   rtdb->setOutput(parIo2);   
+   rtdb->setOutput(parIo1);   
    rtdb->saveOutput();
    // ------------------------------------------------------------------------
 
@@ -210,7 +205,6 @@ void run_stat(int index = -1)
    timer.Stop();
    cout << "Macro finished successfully." << endl;
    cout << "Output file is "    << inFile << endl;
-   cout << "Parameter file is " << outParFile << endl;
    cout << "Real time " << timer.RealTime() << " s, CPU time " << timer.CpuTime() << " s" << endl;
    cout << endl;
    // ------------------------------------------------------------------------

@@ -1,18 +1,21 @@
 void run_reco(int index = -1)
 {
-   Int_t nEvents = 100;
+   Int_t nEvents = 1000;
    const char* setupName = "sis100_muon_jpsi";
+   //const char* setupName = "sis100_electron";
    TString system  = "auau";
-   TString beam    = "10gev";
+   TString beam    = "8gev";
    TString trigger = "mbias";
-   TString part = "jpsi";
+   TString part = "omega";
    TString channel = "mpmm";
+   //TString channel = "epem";
 
    bool useSig = true;
    bool useBg = false;
    bool sigAscii = false;
    bool useIdeal = false;
    bool isEvByEv = true;
+   bool isML = true;
 
    if (!useSig && !useBg)
    {
@@ -337,13 +340,32 @@ void run_reco(int index = -1)
    std::cout << "-I- : Added task " << stsFindTracks->GetName() << std::endl;
    // -------------------------------------------------------------------------
 
-   LxTBFinder* lxTbFinder = new LxTBFinder;
-   lxTbFinder->SetEvByEv(isEvByEv);
-   lxTbFinder->SetSignalParticle(part.Data());
-   lxTbFinder->SetUseIdeal(useIdeal);
-   lxTbFinder->SetUseAsciiSig(sigAscii);
-   lxTbFinder->SetNEvents(nEvents);
-   run->AddTask(lxTbFinder);
+   TString setupString(setupName);
+   
+   if (setupString.Contains("electron"))
+   {
+      LxTBTrdFinder* lxTbFinder = new LxTBTrdFinder;
+      run->AddTask(lxTbFinder);
+   }
+   else
+   {
+      if (isML)
+      {
+         LxTBMLFinder* lxTbFinder = new LxTBMLFinder;
+         lxTbFinder->SetEvByEv(isEvByEv);
+         run->AddTask(lxTbFinder);
+      }
+      else
+      {
+         LxTBFinder* lxTbFinder = new LxTBFinder;
+         lxTbFinder->SetEvByEv(isEvByEv);
+         lxTbFinder->SetSignalParticle(part.Data());
+         lxTbFinder->SetUseIdeal(useIdeal);
+         lxTbFinder->SetUseAsciiSig(sigAscii);
+         lxTbFinder->SetNEvents(nEvents);
+         run->AddTask(lxTbFinder);
+      }
+   }
     
 
    // -----  Parameter database   --------------------------------------------

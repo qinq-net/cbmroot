@@ -1,15 +1,17 @@
 void run_mc(int index = -1)
 {
    Int_t nEvents = 1000;
+   //const char* setupName = "sis100_electron";
    const char* setupName = "sis100_muon_jpsi";
    TString system  = "auau";
-   TString beam    = "10gev";
-   TString trigger = "centr";//"centr";
-   TString part = "jpsi";
+   TString beam    = "8gev";
+   TString trigger = "mbias";//"centr";
+   TString part = "omega";
+   //TString channel = "epem";
    TString channel = "mpmm";
 
-   bool useSig = true;
-   bool useBg = false;
+   bool useSig = false;
+   bool useBg = true;
    bool sigAscii = false;
    Bool_t storeTraj = kFALSE;
 
