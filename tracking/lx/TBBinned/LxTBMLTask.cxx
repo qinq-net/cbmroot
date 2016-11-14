@@ -22,6 +22,7 @@
 #include "TMath.h"
 #include "TDatabasePDG.h"
 #include "CbmMCTrack.h"
+#include "TH1F.h"
 #include "Simple/LxSettings.h"
 
 using namespace std;
@@ -61,8 +62,9 @@ struct LxTbMLStation
    {
       for (int i = 0; i < NOF_LAYERS; ++i)
       {
-         fLayers[i].xBinLength = (fLayers[i].maxX - fLayers[i].minX) / fLayers[i].nofXBins;
-         fLayers[i].yBinLength = (fLayers[i].maxY - fLayers[i].minY) / fLayers[i].nofYXBins;
+         //fLayers[i].xBinLength = (fLayers[i].maxX - fLayers[i].minX) / fLayers[i].nofXBins;
+         //fLayers[i].yBinLength = (fLayers[i].maxY - fLayers[i].minY) / fLayers[i].nofYXBins;
+         fLayers[i].Init();
       }
       
       fHandleMPoint.Init();
@@ -97,12 +99,7 @@ struct LxTbMLStation
       }
       
       void operator()(LxTbBinnedPoint& point)
-      {
-         int qq = 0;
-         
-         if (station.fLayers[0].z < 300)
-            qq = qq + 12;
-         
+      {         
          scaltype txR = point.x / station.fLayers[1].z;
          scaltype tyR = point.y / station.fLayers[1].z;
          scaltype pXr = point.x + txR * deltaZr;
@@ -133,12 +130,7 @@ struct LxTbMLStation
       }
       
       void operator()(LxTbBinnedPoint& point)
-      {
-         int qq = 0;
-         
-         if (station.fLayers[0].z < 300)
-            qq = qq + 12;
-         
+      {         
          scaltype txL = (point.x - mPoint->x) / (station.fLayers[2].z - station.fLayers[1].z);
          scaltype tyL = (point.y - mPoint->y) / (station.fLayers[2].z - station.fLayers[1].z);
          scaltype pXl = mPoint->x + txL * deltaZl;
@@ -170,12 +162,7 @@ struct LxTbMLStation
       }
       
       void operator()(LxTbBinnedPoint& point)
-      {
-         int qq  = 9;
-         
-         if (0 == &point)
-            qq += 4;
-         
+      {         
          LxTbBinnedTriplet* triplet = new LxTbBinnedTriplet(&point, rPoint, deltaZ);
          mPoint->triplets.push_back(triplet);
       }
@@ -451,7 +438,8 @@ struct LxTbDetector
             scaltype trajLen = sqrt(1 + triplet->tx * triplet->tx + triplet->ty * triplet->ty) * deltaZ;
             timetype t = point.t + 1.e9 * trajLen / c; // 1.e9 to convert to ns and trajLenL is negative.
             handleLPoint.rTriplet = triplet;
-            IterateNeighbourhood(*lLayer, x, point.dx, rStation->fDeltaThetaX * deltaZ, y, point.dy, rStation->fDeltaThetaY * deltaZ, t, point.dt, handleLPoint);
+            IterateNeighbourhood(*lLayer, x, sqrt(point.dx * point.dx + triplet->dtx * triplet->dtx * deltaZ * deltaZ), rStation->fDeltaThetaX * deltaZ,
+               y, sqrt(point.dy * point.dy + triplet->dty * triplet->dty * deltaZ * deltaZ), rStation->fDeltaThetaY * deltaZ, t, point.dt, handleLPoint);
          }
       }
       
@@ -461,12 +449,7 @@ struct LxTbDetector
          HandleLPoint() : rTriplet(0) {}
       
          void operator()(LxTbBinnedPoint& point)
-         {
-            int qq = 9;
-            
-            if (0 == &point)
-               qq += 3;
-            
+         {            
             rTriplet->neighbours.push_back(&point);
          }
       };
@@ -588,9 +571,6 @@ struct LxTbDetector
             for (list<LxTbBinnedPoint*>::iterator i = triplet->neighbours.begin(); i != triplet->neighbours.end(); ++i)
                HandlePoint(*i, trackCandidatePoints, chains, level - 1, kfParams);
          }
-         
-         int qq = 0;
-         qq += 10;
       }
       
       void HandlePoint(LxTbBinnedPoint* point, LxTbBinnedPoint* trackCandidatePoints[NOF_STATIONS][NOF_LAYERS], list<LxTBMLFinder::Chain>& chains, int level, KFParams kfParams)
@@ -636,12 +616,33 @@ struct LxTbDetector
    
    HandleLastPoint fHandleLastPoint;
    
+   struct Debug
+   {
+      void operator()(LxTbBinnedPoint& point)
+      {
+         cout << "Point Point Point!!!" << endl;
+         
+         for (list<LxTbBinnedTriplet*>::iterator i = point.triplets.begin(); i != point.triplets.end(); ++i)
+            cout << "Triplet Triplet Triplet!!!" << endl;
+      }
+   };
+   
+   Debug debug;
+   
    void Reconstruct()
    {
       for (int i = LAST_STATION; i >= 0; --i)
       {
          LxTbMLStation& rStation = fStations[i];
          rStation.Reconstruct();
+         
+         if (LAST_STATION == i)
+         {
+            cout << "Points and triplets dump for the station #:" << i << endl;
+            IterateLayer(rStation.fLayers[0], debug);
+            IterateLayer(rStation.fLayers[1], debug);
+            IterateLayer(rStation.fLayers[2], debug);
+         }
          
          if (i > 0)
          {
@@ -667,6 +668,9 @@ LxTBMLFinder::LxTBMLFinder() : fReconstructor(0), fIsEvByEv(true), fNofXBins(20)
 {
    
 }
+
+TH1F* deltaXRHisto[NOF_STATIONS];
+TH1F* deltaYRHisto[NOF_STATIONS];
 
 InitStatus LxTBMLFinder::Init()
 {
@@ -762,9 +766,47 @@ InitStatus LxTBMLFinder::Init()
          muchPt.trackId = pMuchPt->GetTrackID();
          muchPt.pointId = j;
          muchPt.stationNumber = CbmMuchGeoScheme::GetStationIndex(pMuchPt->GetDetectorId());
-         muchPt.layerNumber = CbmMuchGeoScheme::GetLayerIndex(pMuchPt->GetDetectorId());;
+         muchPt.layerNumber = CbmMuchGeoScheme::GetLayerIndex(pMuchPt->GetDetectorId());
          evPoints.push_back(muchPt);
+         fMCTracks[muchPt.eventId][muchPt.trackId].pointInds[muchPt.stationNumber][muchPt.layerNumber] = muchPt.pointId;
       }
+   }
+   
+   for (vector<vector<TrackDataHolder> >::iterator i = fMCTracks.begin(); i != fMCTracks.end(); ++i)
+   {
+      vector<TrackDataHolder>& evTracks = *i;
+
+      for (vector<TrackDataHolder>::iterator j = evTracks.begin(); j != evTracks.end(); ++j)
+      {
+         TrackDataHolder& track = *j;
+
+         if (!track.isSignal)
+            continue;
+
+         for (int k = 0; k < NOF_STATIONS; ++k)
+         {
+            for (int l = 0; l < NOF_LAYERS; ++l)
+            {
+               if (track.pointInds[k][l] < 0)
+               {
+                  track.isSignal = false;
+                  break;
+               }
+            }
+            
+            if (!track.isSignal)
+               break;
+         }
+      }
+   }
+   
+   for (int i = 0; i < NOF_STATIONS; ++i)
+   {
+      char buf[64];
+      sprintf(buf, "deltaXRHisto_%d", i);
+      deltaXRHisto[i] = new TH1F(buf, buf, 300, -15., 15.);
+      sprintf(buf, "deltaYRHisto_%d", i);
+      deltaYRHisto[i] = new TH1F(buf, buf, 300, -15., 15.);
    }
 #endif//LXTB_QA
     
@@ -783,6 +825,89 @@ static Double_t min_ts_time = 100000;
 static Double_t max_ts_time = -100000;
 static list<LxTbBinnedPoint> ts_points;
 #endif//LXTB_EMU_TS
+
+#ifdef LXTB_DEBUG
+/*struct LxTbDebug
+   {
+      struct Triplet
+      {
+         Int_t left;
+         Int_t middle;
+         Int_t right;
+         
+         Triplet(Int_t l, Int_t m, Int_t r) : left(l), middle(m), right(r) {}
+      };
+      
+      struct TrLess
+      {
+         bool operator()(const Triplet& a, const Triplet& b) const
+         {
+            if (a.left < b.left)
+               return true;
+            else if (a.middle < b.middle)
+               return true;
+            else if (a.right < b.right)
+               return true;
+            
+            return false;
+         }
+      };
+      
+      map<Triplet, bool, TrLess> triplets[NOF_STATIONS];
+      int stationNumber;
+      
+      explicit LxTbDebug(vector<LxTBMLFinder::TrackDataHolder>& mcTracks) : stationNumber(-1)
+      {
+         for (vector<LxTBMLFinder::TrackDataHolder>::const_iterator i = mcTracks.begin(); i != mcTracks.end(); ++i)
+         {
+            const LxTBMLFinder::TrackDataHolder& track = *i;
+            
+            if (!track.isSignal)
+               continue;
+            
+            for (int j = 0; j < NOF_STATIONS; ++j)
+            {
+               Triplet trip(track.pointInds[j][0], track.pointInds[j][1], track.pointInds[j][2]);
+               triplets[j][trip] = false;
+            }
+         }
+      }
+      
+      void operator()(const LxTbBinnedPoint& point)
+      {
+         if (!point.use)
+            return;
+         
+         for (list<LxTbBinnedTriplet*>::const_iterator i = point.triplets.begin(); i != point.triplets.end(); ++i)
+         {
+            LxTbBinnedTriplet* trip = *i;
+            
+            for (list<LxTbBinnedPoint::PointDesc>::const_iterator j = point.mcRefs.begin(); j != point.mcRefs.end(); ++j)
+            {
+               Int_t mId = j->pointId;
+               
+               for (list<LxTbBinnedPoint::PointDesc>::const_iterator k = trip->rPoint->mcRefs.begin(); k != trip->rPoint->mcRefs.end(); ++k)
+               {
+                  Int_t rId = k->pointId;
+                  
+                  for (list<LxTbBinnedPoint::PointDesc>::const_iterator l = trip->lPoint->mcRefs.begin(); l != trip->lPoint->mcRefs.end(); ++l)
+                  {
+                     Int_t lId = l->pointId;
+                     Triplet mcTrip(lId, mId, rId);
+                     map<Triplet, bool, TrLess>::iterator iter = triplets[stationNumber].find(mcTrip);
+                     
+                     if (iter != triplets[stationNumber].end())
+                     { 
+                        iter->second = true;
+                        cout << stationNumber << " " << iter->first.left << " " << iter->first.middle << " " << iter->first.right << " " << iter->second << endl;
+                     }
+                  }
+               }
+            }
+         }
+      }
+   };*/
+#endif//LXTB_DEBUG
 
 void LxTBMLFinder::Exec(Option_t* opt)
 {
@@ -852,6 +977,8 @@ void LxTBMLFinder::Exec(Option_t* opt)
       t = avT;
 #endif//LXTB_QA
       point.t = t;
+      //point.t = tsStartTime + hit->GetTime();
+      //point.dt = hit->GetTimeError();
    
 #ifdef LXTB_EMU_TS
       ts_points.push_back(point);
@@ -877,7 +1004,7 @@ void LxTBMLFinder::Exec(Option_t* opt)
       else if (tInd > last_timebin)
          tInd = last_timebin;
 
-      LxTbTYXBin& tyxBin = (pReconstructor->fStations[stationNumber].fLayers[layerNumber].tyxBins[tInd]);
+      LxTbTYXBin& tyxBin = pReconstructor->fStations[stationNumber].fLayers[layerNumber].tyxBins[tInd];
       int yInd = (y - minY) / binSizeY;
 
       if (yInd < 0)
@@ -901,11 +1028,254 @@ void LxTBMLFinder::Exec(Option_t* opt)
          xBin.use = true;
          yxBin.use = true;
          tyxBin.use = true;
+         
+         if (0 == layerNumber)
+            xBin.use = true;
+         else if (1 == layerNumber)
+            xBin.use = true;
+         else if (2 == layerNumber)
+            xBin.use = true;
       }
 #endif//LXTB_EMU_TS
    }// for (int i = 0; i < fMuchPixelHits->GetEntriesFast(); ++i)
    
    pReconstructor->Reconstruct();
+   
+#ifdef LXTB_DEBUG
+   static int nofTriplesAll[NOF_STATIONS] = { 0, 0, 0, 0 };
+   static int nofTriplesFound[NOF_STATIONS] = { 0, 0, 0, 0 };
+   
+   struct Debug
+   {
+      struct Triplet
+      {
+         Int_t left;
+         Int_t middle;
+         Int_t right;
+         
+         Triplet(Int_t l, Int_t m, Int_t r) : left(l), middle(m), right(r) {}
+      };
+      
+      struct TrLess
+      {
+         bool operator()(const Triplet& a, const Triplet& b) const
+         {
+            if (a.left < b.left)
+               return true;
+            else if (a.middle < b.middle)
+               return true;
+            else if (a.right < b.right)
+               return true;
+            
+            return false;
+         }
+      };
+      
+      map<Triplet, bool, TrLess> triplets[NOF_STATIONS];
+      int stationNumber;
+      
+      explicit Debug(vector<TrackDataHolder>& mcTracks) : stationNumber(-1)
+      {
+         for (vector<TrackDataHolder>::const_iterator i = mcTracks.begin(); i != mcTracks.end(); ++i)
+         {
+            const TrackDataHolder& track = *i;
+            
+            if (!track.isSignal)
+               continue;
+            
+            for (int j = 0; j < NOF_STATIONS; ++j)
+            {
+               Triplet trip(track.pointInds[j][0], track.pointInds[j][1], track.pointInds[j][2]);
+               triplets[j][trip] = false;
+            }
+         }
+      }
+      
+      void operator()(const LxTbBinnedPoint& point)
+      {
+         if (!point.use)
+            return;
+         
+         for (list<LxTbBinnedTriplet*>::const_iterator i = point.triplets.begin(); i != point.triplets.end(); ++i)
+         {
+            LxTbBinnedTriplet* trip = *i;
+            
+            for (list<LxTbBinnedPoint::PointDesc>::const_iterator j = point.mcRefs.begin(); j != point.mcRefs.end(); ++j)
+            {
+               Int_t mId = j->pointId;
+               
+               for (list<LxTbBinnedPoint::PointDesc>::const_iterator k = trip->rPoint->mcRefs.begin(); k != trip->rPoint->mcRefs.end(); ++k)
+               {
+                  Int_t rId = k->pointId;
+                  
+                  for (list<LxTbBinnedPoint::PointDesc>::const_iterator l = trip->lPoint->mcRefs.begin(); l != trip->lPoint->mcRefs.end(); ++l)
+                  {
+                     Int_t lId = l->pointId;
+                     Triplet mcTrip(lId, mId, rId);
+                     map<Triplet, bool, TrLess>::iterator iter = triplets[stationNumber].find(mcTrip);
+                     
+                     if (iter != triplets[stationNumber].end())
+                        iter->second = true;
+                  }
+               }
+            }
+         }
+      }
+   };
+   
+   Debug debug(fMCTracks[currentEventN]);
+
+   struct DebugTrack
+   {
+      list<Int_t> pointIds[NOF_STATIONS][NOF_LAYERS];
+   };
+   
+   map<Int_t, DebugTrack> debugTracks;
+   
+   struct DebugTrack2
+   {
+      list<LxTbBinnedPoint*> points[NOF_STATIONS][NOF_LAYERS];
+   };
+   
+   map<Int_t, DebugTrack2> debugTracks2;
+   
+   /*for (int i = 0; i < fMuchPixelHits->GetEntriesFast(); ++i)
+   {
+      const CbmMuchPixelHit* hit = static_cast<const CbmMuchPixelHit*> (fMuchPixelHits->At(i));      
+      Int_t stationNumber = CbmMuchGeoScheme::GetStationIndex(hit->GetAddress());
+      Int_t layerNumber = CbmMuchGeoScheme::GetLayerIndex(hit->GetAddress());
+      Int_t clusterId = hit->GetRefId();
+      const CbmCluster* cluster = static_cast<const CbmCluster*> (fMuchClusters->At(clusterId));
+      Int_t nDigis = cluster->GetNofDigis();
+      
+      for (Int_t j = 0; j < nDigis; ++j)
+      {
+         const CbmMatch* digiMatch = static_cast<const CbmMatch*> (fMuchPixelDigiMatches->At(cluster->GetDigi(j)));
+         Int_t nMCs = digiMatch->GetNofLinks();
+
+         for (Int_t k = 0; k < nMCs; ++k)
+         {
+            const CbmLink& lnk = digiMatch->GetLink(k);
+            Int_t pointId = lnk.GetIndex();
+            const FairMCPoint* pMCPt = static_cast<const FairMCPoint*> (fMuchMCPoints->Get(0, currentEventN, pointId));
+            Int_t trackId = pMCPt->GetTrackID();
+            debugTracks[trackId].pointIds[stationNumber][layerNumber].push_back(pointId);
+         }
+      }
+   }*/
+   
+   for (int i = 0; i < NOF_STATIONS; ++i)
+   {
+      for (int j = 0; j < NOF_LAYERS; ++j)
+      {
+         const LxTbLayer& layer = pReconstructor->fStations[i].fLayers[j];
+         
+         for (int k = 0; k < layer.nofTYXBins; ++k)
+         {
+            LxTbTYXBin& tyxBin = layer.tyxBins[k];
+
+            for (int l = 0; l < layer.nofYXBins; ++l)
+            {
+               LxTbYXBin& yxBin = tyxBin.yxBins[l];
+
+               for (int m = 0; m < layer.nofXBins; ++m)
+               {
+                  LxTbXBin& xBin = yxBin.xBins[m];
+
+                  for (std::list<LxTbBinnedPoint>::iterator n = xBin.points.begin(); n != xBin.points.end(); ++n)
+                  {
+                     LxTbBinnedPoint& point = *n;
+                     
+                     for (list<LxTbBinnedPoint::PointDesc>::const_iterator o = point.mcRefs.begin(); o != point.mcRefs.end(); ++o)
+                     {
+                        const LxTbBinnedPoint::PointDesc& pd = *o;
+                        debugTracks[pd.trackId].pointIds[point.stationNumber][point.layerNumber].push_back(pd.pointId);
+                        debugTracks2[pd.trackId].points[point.stationNumber][point.layerNumber].push_back(&point);
+                     }
+                  }
+               }
+            }
+         }
+      }
+   }
+   
+   for (map<Int_t, DebugTrack>::const_iterator i = debugTracks.begin(); i != debugTracks.end(); ++i)
+   {
+      const DebugTrack& dt = i->second;
+      
+      for (int j = 0; j < NOF_STATIONS; ++j)
+      {
+         for (list<Int_t>::const_iterator k = dt.pointIds[j][1].begin(); k != dt.pointIds[j][1].end(); ++k)
+         {
+            Int_t mId = *k;
+            
+            for (list<Int_t>::const_iterator l = dt.pointIds[j][2].begin(); l != dt.pointIds[j][2].end(); ++l)
+            {
+               Int_t rId = *l;
+               
+               for (list<Int_t>::const_iterator m = dt.pointIds[j][0].begin(); m != dt.pointIds[j][0].end(); ++m)
+               {
+                  Int_t lId = *m;
+                  Debug::Triplet mcTrip(lId, mId, rId);
+                  map<Debug::Triplet, bool, Debug::TrLess>::iterator iter = debug.triplets[j].find(mcTrip);
+                     
+                  if (iter != debug.triplets[j].end())
+                     iter->second = true;
+               }
+            }
+         }
+      }
+   }
+   
+   for (map<Int_t, DebugTrack2>::const_iterator i = debugTracks2.begin(); i != debugTracks2.end(); ++i)
+   {
+      const DebugTrack2& dt = i->second;
+      
+      for (int j = 0; j < NOF_STATIONS; ++j)
+      {
+         for (list<LxTbBinnedPoint*>::const_iterator k = dt.points[j][1].begin(); k != dt.points[j][1].end(); ++k)
+         {
+            LxTbBinnedPoint* mPt = *k;
+            scaltype rTx = mPt->x / pReconstructor->fStations[j].fLayers[1].z;
+            scaltype rTy = mPt->y / pReconstructor->fStations[j].fLayers[1].z;
+            scaltype deltaZr = pReconstructor->fStations[j].fLayers[2].z - pReconstructor->fStations[j].fLayers[1].z;
+            scaltype rX = mPt->x + rTx * deltaZr;
+            scaltype rY = mPt->y + rTy * deltaZr;
+            
+            for (list<LxTbBinnedPoint*>::const_iterator l = dt.points[j][2].begin(); l != dt.points[j][2].end(); ++l)
+            {
+               LxTbBinnedPoint* rPt = *l;
+               deltaXRHisto[j]->Fill(rPt->x - rX);
+               deltaYRHisto[j]->Fill(rPt->y - rY);
+               
+               for (list<LxTbBinnedPoint*>::const_iterator m = dt.points[j][0].begin(); m != dt.points[j][0].end(); ++m)
+               {
+                  LxTbBinnedPoint* lPt = *m;
+               }
+            }
+         }
+      }
+   }
+   
+   for (int i = LAST_STATION; i >= 0; --i)
+   {
+      debug.stationNumber = i;
+      IterateLayer(pReconstructor->fStations[i].fLayers[1], debug);
+      
+      nofTriplesAll[i] += debug.triplets[i].size();
+      
+      for (map<Debug::Triplet, bool, Debug::TrLess>::const_iterator j = debug.triplets[i].begin(); j != debug.triplets[i].end(); ++j)
+      {
+         if (j->second)
+            ++nofTriplesFound[i];
+      }
+      
+      double foundPerc = 100 * nofTriplesFound[i];
+      foundPerc /= nofTriplesAll[i];
+      cout << "For station #:" << i << " found triplets: " << foundPerc << " ( " << nofTriplesFound[i] << " / " << nofTriplesAll[i] << " )" << endl;
+   }
+#endif//LXTB_DEBUG
+   
    cout << "In event #" << currentEventN << " reconstructed: " << pReconstructor->recoTracks.size() << " tracks" << endl;
    recoTracks.splice(recoTracks.end(), pReconstructor->recoTracks);
    ++currentEventN;
@@ -1166,6 +1536,27 @@ void LxTBMLFinder::Finish()
    nofTriggerDigisFile << nofTriggerDigis;
    ofstream nofDigisFile("nof_digis.txt", ios_base::out | ios_base::trunc);
    nofDigisFile << nof_digis;*/
+   
+   for (int i = 0; i < NOF_STATIONS; ++i)
+   {
+      TFile* curFile = TFile::CurrentFile();
+      TString histoNameXR = deltaXRHisto[i]->GetName();
+      histoNameXR += ".root";
+      TFile fhXR(histoNameXR.Data(), "RECREATE");
+      deltaXRHisto[i]->Write();
+      fhXR.Close();
+      delete deltaXRHisto[i];
+      TFile::CurrentFile() = curFile;
+      
+      curFile = TFile::CurrentFile();
+      TString histoNameYR = deltaYRHisto[i]->GetName();
+      histoNameYR += ".root";
+      TFile fhYR(histoNameYR.Data(), "RECREATE");
+      deltaYRHisto[i]->Write();
+      fhYR.Close();
+      delete deltaYRHisto[i];
+      TFile::CurrentFile() = curFile;
+   }
 #endif//LXTB_QA
    
    for (list<Chain*>::iterator i = recoTracks.begin(); i != recoTracks.end(); ++i)

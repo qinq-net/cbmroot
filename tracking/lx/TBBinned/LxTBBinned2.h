@@ -88,7 +88,7 @@ struct LxTbBinnedTriplet
 
     LxTbBinnedTriplet(LxTbBinnedPoint* lp, LxTbBinnedPoint* rp, scaltype deltaZ) : lPoint(lp), rPoint(rp),
         tx((lPoint->x - rPoint->x) / deltaZ), ty((lPoint->y - rPoint->y) / deltaZ),
-        dtx(sqrt(lPoint->dx * lPoint->dx + rPoint->dx * rPoint->dx) / deltaZ), dty(sqrt(lPoint->dy * lPoint->dy + rPoint->dy * rPoint->dy) / deltaZ)
+        dtx(-sqrt(lPoint->dx * lPoint->dx + rPoint->dx * rPoint->dx) / deltaZ), dty(-sqrt(lPoint->dy * lPoint->dy + rPoint->dy * rPoint->dy) / deltaZ)
     {
     }
 };
@@ -324,7 +324,7 @@ struct LxTbLayer
 
 #endif// __CINT__
 
-template <class HandlePoint> void IterateLayer(LxTbLayer& layer, HandlePoint handlePoint)
+template <class HandlePoint> void IterateLayer(LxTbLayer& layer, HandlePoint& handlePoint)
 {
     for (int i = 0; i < layer.nofTYXBins; ++i)
     {
@@ -362,7 +362,7 @@ template <class HandlePoint> void IterateLayer(LxTbLayer& layer, HandlePoint han
 }
 
 template <class HandlePoint> void IterateNeighbourhood(LxTbLayer& layer, scaltype x, scaltype dx, scaltype scatX,
-        scaltype y, scaltype dy, scaltype scatY, timetype t, timetype dt, HandlePoint handlePoint)
+        scaltype y, scaltype dy, scaltype scatY, timetype t, timetype dt, HandlePoint& handlePoint)
 {
     scaltype dxSq = dx * dx;
     scaltype scatXSq = scatX * scatX;
@@ -469,7 +469,7 @@ template <class HandlePoint> void IterateNeighbourhood(LxTbLayer& layer, scaltyp
     }
 }
 
-template <class HandlePoint> void IterateNeighbourhoodConst(LxTbLayer& layer, HandlePoint handlePoint)
+template <class HandlePoint> void IterateNeighbourhoodConst(LxTbLayer& layer, HandlePoint& handlePoint)
 {
     
 }
