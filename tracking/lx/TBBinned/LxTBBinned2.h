@@ -65,7 +65,7 @@ struct LxTbBinnedPoint
 #endif//LXTB_QA
     {}
     
-    LxTbBinnedPoint(const LxTbBinnedPoint& original) : x(original.x), dx(original.dx), y(original.dy), dy(original.dy), t(original.t), dt(original.dt), use(original.use),
+    LxTbBinnedPoint(const LxTbBinnedPoint& original) : x(original.x), dx(original.dx), y(original.y), dy(original.dy), t(original.t), dt(original.dt), use(original.use),
         triplets(), refId(original.refId)
 #ifdef LXTB_QA
         , pHit(original.pHit), isTrd(original.isTrd), stationNumber(original.stationNumber), layerNumber(original.layerNumber), mcRefs(original.mcRefs)
