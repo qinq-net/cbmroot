@@ -50,7 +50,7 @@ Int_t CbmEvent::GetNofData(Cbm::DataType type) const {
 std::string CbmEvent::ToString() const
 {
    std::stringstream ss;
-   ss << "Event " << fNumber << " at t = " << fTime
+   ss << "Event " << fNumber << " at t = " << fTimeStart
   		<< " ns. Registered data types: " << fIndexMap.size()
   		<< ", data objects: " << fNofData << "\n";
    for (auto it = fIndexMap.begin(); it != fIndexMap.end(); it++) {

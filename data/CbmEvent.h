@@ -29,7 +29,7 @@ class CbmEvent: public TObject {
 
 		/** Default constructor **/
 		CbmEvent() :
-			TObject(), fNumber(-1), fTime(0.),
+			TObject(), fNumber(-1), fTimeStart(0.), fTimeEnd(0.),
 			fNofData(0), fVertex(), fMatch(NULL), fIndexMap() {
 		}
 
@@ -38,8 +38,8 @@ class CbmEvent: public TObject {
 		 ** @param number  Event number
 		 ** @param time    Event start time [ns]
 		 **/
-		CbmEvent(Int_t number, Double_t time = 0.) :
-			TObject(), fNumber(number), fTime(time),
+		CbmEvent(Int_t number, Double_t startTime = 0., Double_t endTime = 0.) :
+			TObject(), fNumber(number), fTimeStart(startTime), fTimeEnd(endTime),
 			fNofData(0), fVertex(), fMatch(NULL), fIndexMap() {
 		}
 
@@ -54,6 +54,12 @@ class CbmEvent: public TObject {
 		 ** @param Index     Index of the data object in its TClonesArray
 		 */
 		void AddData(Cbm::DataType type, UInt_t index);
+
+
+		/** Add an STS track to the event
+		 ** @param Index of STS track in its TClonesArray
+		 **/
+		void AddStsTrack(UInt_t index) { AddData(Cbm::kStsTrack, index); }
 
 
 		/** Get the index of a data object in its TClonesArray
@@ -82,15 +88,43 @@ class CbmEvent: public TObject {
 		Int_t GetNofData(Cbm::DataType type) const;
 
 
+		/** Get number of STS tracks
+		 ** @value Number of STS tracks in the event. -1 if not registered.
+		 **/
+		Int_t GetNofStsTracks() const { return GetNofData(Cbm::kStsTrack); }
+
+
 		/** Get event number
 		 ** @value Event number
 		 **/
 		Int_t GetNumber() const { return fNumber; }
 
-		/** Get event vertex
-		 ** @value Pointer to vertex object
+
+		/** Get STS track index
+		 ** @param iTrack  Running number of STS track in the event
+		 ** @value index   Index of STS track in TClonesArray
 		 **/
-		CbmVertex* GetVertex() { return &fVertex; }
+		Int_t GetStsTrackIndex(Int_t iTrack) {
+			return GetIndex(Cbm::kStsTrack, iTrack);
+		}
+
+
+		/** Get event end time
+		 ** @value End time of event [ns]
+		 **/
+		Double_t GetEndTime() const { return fTimeEnd; }
+
+
+		/** Get event start time
+		 ** @value Start time of event [ns]
+		 **/
+		Double_t GetStartTime() const { return fTimeStart; }
+
+
+		/** Set end time
+		 ** @param endTime  End time of event [ns]
+		 **/
+		void SetEndTime(Double_t endTime) { fTimeEnd = endTime; }
 
 
 		/** Set a match object
@@ -99,16 +133,40 @@ class CbmEvent: public TObject {
 		void SetMatch(CbmMatch* match) { fMatch = match; }
 
 
-	  /** String output **/
-	  std::string ToString() const;
+		/** Set start time
+		 ** @param endTime  Start time of event [ns]
+		 **/
+		void SetStartTime(Double_t startTime) { fTimeStart = startTime; }
+
+
+		/** Set the STS track index array
+		 ** @brief Sets the index array for STS tracks.
+		 ** Old content will be overwritten.
+		 ** @param indexVector  Vector with indices of STS tracks
+	     **/
+		void SetStsTracks(std::vector<UInt_t>& indexVector) {
+			fIndexMap[Cbm::kStsTrack] = indexVector;
+		}
+
+
+		/** String output **/
+		std::string ToString() const;
+
+
+		/** Get event vertex
+		 ** @value Pointer to vertex object
+		 **/
+		CbmVertex* GetVertex() { return &fVertex; }
+
 
 
 
 	private:
 
-		/** Event metadata **/
+		/** Event meta data **/
 		Int_t fNumber;   ///< Event number
-		Double_t fTime;  ///< Event time [ns]
+		Double_t fTimeStart;  ///< Event start time [ns]
+		Double_t fTimeEnd;    ///< Event end time [ns]
 		Int_t fNofData;  ///< Number of data objects in the event
 		CbmVertex fVertex;  ///< Primary Vertex
 		CbmMatch* fMatch; ///< Match object to MCEvent
@@ -120,7 +178,7 @@ class CbmEvent: public TObject {
         CbmEvent& operator=(const CbmEvent&);
 
 
-		ClassDef(CbmEvent, 1);
+		ClassDef(CbmEvent, 2);
 };
 
 #endif /* CBMEVENT_H_ */
