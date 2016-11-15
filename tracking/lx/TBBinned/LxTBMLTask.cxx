@@ -1458,6 +1458,53 @@ void LxTBMLFinder::Exec(Option_t* opt)
 #endif//LXTB_DEBUG
    
    cout << "In event #" << currentEventN << " reconstructed: " << pReconstructor->recoTracks.size() << " tracks" << endl;
+   
+   static int nofSignals = 0;
+   static int nofTriggerings = 0;
+   static int nofRecoSignals = 0;
+   bool hasPos = false;
+   bool hasNeg = false;
+   
+   for (vector<TrackDataHolder>::const_iterator i = fMCTracks[currentEventN].begin(); i != fMCTracks[currentEventN].end(); ++i)
+   {
+      const TrackDataHolder& dh = *i;
+      
+      if (!dh.isSignal)
+         continue;
+      
+      if (dh.isPos)
+         hasPos = true;
+      else
+         hasNeg = true;
+   }
+   
+   if (hasPos && hasNeg)
+      ++nofSignals;
+   
+   bool hasPos2 = false;
+   bool hasNeg2 = false;
+   
+   for (list<Chain*>::const_iterator i = pReconstructor->recoTracks.begin(); i != pReconstructor->recoTracks.end(); ++i)
+   {
+      const Chain* track = *i;
+      
+      if ((track->points[0][2]->x - track->points[0][0]->x) / (pReconstructor->fStations[0].fLayers[2].z - pReconstructor->fStations[0].fLayers[0].z) - track->points[0][1]->x / pReconstructor->fStations[0].fLayers[1].z > 0)
+         hasPos2 = true;
+      else
+         hasNeg2 = true;
+   }
+   
+   if (hasPos2 && hasNeg2)
+   {
+      ++nofTriggerings;
+      
+      if (hasNeg && hasPos)
+         ++nofRecoSignals;
+   }
+   
+   cout << "The number of triggerings: " << nofTriggerings << endl;
+   cout << "The triggering efficiency: " << (0 == nofSignals ? 100 : 100 * nofRecoSignals / nofSignals ) << " % ( " << nofRecoSignals << " / " << nofSignals << " )" << endl;
+   
    recoTracks.splice(recoTracks.end(), pReconstructor->recoTracks);
    ++currentEventN;
    tsStartTime += 100;
