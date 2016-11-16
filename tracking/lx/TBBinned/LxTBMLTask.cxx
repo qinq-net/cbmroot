@@ -26,6 +26,26 @@
 #include "Simple/LxSettings.h"
 #include "Simple/LxCA.h"
 
+#ifdef __MACH__
+#include <mach/mach_time.h>
+#include <sys/time.h>
+#define CLOCK_REALTIME 0
+#define CLOCK_MONOTONIC 0
+inline int clock_gettime(int clk_id, struct timespec *t){
+    mach_timebase_info_data_t timebase;
+    mach_timebase_info(&timebase);
+    uint64_t time;
+    time = mach_absolute_time();
+    double nseconds = ((double)time * (double)timebase.numer)/((double)timebase.denom);
+    double seconds = ((double)time * (double)timebase.numer)/((double)timebase.denom * 1e9);
+    t->tv_sec = seconds;
+    t->tv_nsec = nseconds;
+    return 0;
+}
+#else
+#include <time.h>
+#endif
+
 using namespace std;
 
 ClassImp(LxTBMLFinder)
@@ -720,6 +740,7 @@ struct LxTbDetector
    
    HandleLastPoint fHandleLastPoint;
    
+#ifdef LXTB_DEBUG   
    struct Debug
    {
       void operator()(LxTbBinnedPoint& point)
@@ -732,6 +753,7 @@ struct LxTbDetector
    };
    
    Debug debug;
+#endif//LXTB_DEBUG
    
    void Reconstruct()
    {
@@ -740,6 +762,7 @@ struct LxTbDetector
          LxTbMLStation& rStation = fStations[i];
          rStation.Reconstruct();
          
+#ifdef LXTB_DEBUG
          if (LAST_STATION == i)
          {
             cout << "Points and triplets dump for the station #:" << i << endl;
@@ -747,6 +770,7 @@ struct LxTbDetector
             IterateLayer(rStation.fLayers[1], debug);
             IterateLayer(rStation.fLayers[2], debug);
          }
+#endif//LXTB_DEBUG
          
          if (i > 0)
          {
@@ -773,6 +797,7 @@ LxTBMLFinder::LxTBMLFinder() : fReconstructor(0), fIsEvByEv(true), fNofXBins(20)
    
 }
 
+#ifdef LXTB_DEBUG
 TH1F* deltaXRHisto[NOF_STATIONS];
 TH1F* deltaYRHisto[NOF_STATIONS];
 TH1F* deltaTRHisto[NOF_STATIONS];
@@ -780,6 +805,7 @@ TH1F* deltaTRHisto[NOF_STATIONS];
 TH1F* deltaXLHisto[NOF_STATIONS];
 TH1F* deltaYLHisto[NOF_STATIONS];
 TH1F* deltaTLHisto[NOF_STATIONS];
+#endif//LXTB_DEBUG
 
 InitStatus LxTBMLFinder::Init()
 {
@@ -912,6 +938,7 @@ InitStatus LxTBMLFinder::Init()
       }
    }
    
+#ifdef LXTB_DEBUG
    for (int i = 0; i < NOF_STATIONS; ++i)
    {
       char buf[64];
@@ -929,6 +956,7 @@ InitStatus LxTBMLFinder::Init()
       sprintf(buf, "deltaTLHisto_%d", i);
       deltaTLHisto[i] = new TH1F(buf, buf, 300, -15., 15.);
    }
+#endif//LXTB_DEBUG
 #endif//LXTB_QA
     
    return kSUCCESS;//, kERROR, kFATAL
@@ -939,6 +967,7 @@ static unsigned long long tsStartTime = 0;
 
 #ifdef LXTB_QA
 static long fullDuration = 0;
+static int nofTriggerings = 0;
 #endif//LXTB_QA
 
 #ifdef LXTB_EMU_TS
@@ -1214,7 +1243,15 @@ void LxTBMLFinder::Exec(Option_t* opt)
    }
 #endif//LXTB_DEBUG
    
+   timespec ts;
+   clock_gettime(CLOCK_REALTIME, &ts);
+   long beginTime = ts.tv_sec * 1000000000 + ts.tv_nsec;
+   
    pReconstructor->Reconstruct();
+   
+   clock_gettime(CLOCK_REALTIME, &ts);
+   long endTime = ts.tv_sec * 1000000000 + ts.tv_nsec;
+   fullDuration += endTime - beginTime;
    
 #ifdef LXTB_DEBUG
    static int nofTriplesAll[NOF_STATIONS] = { 0, 0, 0, 0 };
@@ -1460,7 +1497,6 @@ void LxTBMLFinder::Exec(Option_t* opt)
    cout << "In event #" << currentEventN << " reconstructed: " << pReconstructor->recoTracks.size() << " tracks" << endl;
    
    static int nofSignals = 0;
-   static int nofTriggerings = 0;
    static int nofRecoSignals = 0;
    bool hasPos = false;
    bool hasNeg = false;
@@ -1752,6 +1788,9 @@ void LxTBMLFinder::Finish()
    ofstream nofEventsFile("nof_events.txt", ios_base::out | ios_base::trunc);
    nofEventsFile << currentEventN;
    
+   ofstream nofTriggeringsFile("nof_triggerings.txt", ios_base::out | ios_base::trunc);
+   nofTriggeringsFile << nofTriggerings;
+   
    /*ofstream nofShortSignalsFile("nof_short_signals.txt", ios_base::out | ios_base::trunc);
    nofShortSignalsFile << shortSignalMCTimes.size();
    
@@ -1777,6 +1816,7 @@ void LxTBMLFinder::Finish()
    ofstream nofDigisFile("nof_digis.txt", ios_base::out | ios_base::trunc);
    nofDigisFile << nof_digis;*/
    
+#ifdef LXTB_DEBUG
    for (int i = 0; i < NOF_STATIONS; ++i)
    {
       SaveHisto(deltaXRHisto[i]);
@@ -1786,6 +1826,7 @@ void LxTBMLFinder::Finish()
       SaveHisto(deltaYLHisto[i]);
       SaveHisto(deltaTLHisto[i]);
    }
+#endif//LXTB_DEBUG
 #endif//LXTB_QA
    
    for (list<Chain*>::iterator i = recoTracks.begin(); i != recoTracks.end(); ++i)
