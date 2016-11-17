@@ -8,6 +8,9 @@
 NrOfRocs: Int_t 4
 RocIdArray: Int_t \
 0x00005bed 0x00004efb 0x00006166 0x0000aaaa
+NrOfFebsPerGdpb Int_t 3
+NrOfGet4PerFeb Int_t 8
+NrOfChannelsPerGet4 4
 NrOfChannels: Int_t 384
 ChannelToDetUIdMap: Int_t \
 0x00019006 0x01019006 0x02019006 0x03019006 0x04019006 0x05019006 0x06019006 0x07019006 \
