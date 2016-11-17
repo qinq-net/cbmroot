@@ -26,8 +26,9 @@
 #include <stdint.h>
 #include <iomanip>
 
-const UInt_t kuNbChanGet4 =  4;
-const UInt_t kuNbChanAfck = 96;  // FIXME - should be read from parameter file 
+// is now read from parameter container
+//const UInt_t kuNbChanGet4 =  4;
+//const UInt_t kuNbChanAfck = 96;  // FIXME - should be read from parameter file
 static Int_t iMess=0;
 const Double_t FineTimeConvFactor=0.048828;
 
@@ -36,6 +37,9 @@ CbmTSUnpackTof::CbmTSUnpackTof( UInt_t uNbGdpb )
     fuMsAcceptsPercent(100),
     fuMinNbGdpb( uNbGdpb ),
     fuCurrNbGdpb( 0 ),
+    fNrOfGet4(-1),
+    fNrOfChannelsPerGet4(-1),
+    fNrOfChannelsPerGdpb(-1),
     fMsgCounter(11,0), // length of enum MessageTypes initialized with 0
     fGdpbIdIndexMap(),
     fHM(new CbmHistManager()),
@@ -43,9 +47,7 @@ CbmTSUnpackTof::CbmTSUnpackTof( UInt_t uNbGdpb )
     fNofEpochs(0),
     fCurrentEpochTime(0.),
     fEquipmentId(0),
-//    fFiberHodoRaw(new TClonesArray("CbmNxyterRawMessage", 10)),
     fTofDigi(),
-//    fRawMessage(NULL),  
     fDigi(NULL),
     fBuffer(CbmTbDaqBuffer::Instance()),
     fUnpackPar(NULL)
@@ -94,27 +96,44 @@ Bool_t CbmTSUnpackTof::InitContainers()
 
 Bool_t CbmTSUnpackTof::ReInitContainers()
 {
-	LOG(INFO) << "ReInit parameter containers for " << GetName()
-			<< FairLogger::endl;
-	Int_t nrOfRocs = fUnpackPar->GetNrOfRocs();
+	   Int_t nrOfGdpbs = fUnpackPar->GetNrOfGdpbs();
+	   LOG(INFO) << "Nr. of Tof GDPBs: " << nrOfGdpbs
+	             << FairLogger::endl;
 
-	LOG(INFO) << "Nr. of Tof Rocs: " << nrOfRocs
-    		  << FairLogger::endl;
-	
-	fGdpbIdIndexMap.clear();
-	for (Int_t i = 0; i< nrOfRocs; ++i) {
-	  fGdpbIdIndexMap[fUnpackPar->GetRocId(i)] = i;
-	  LOG(INFO) << "Roc Id of TOF  " << i
-			  << " : " << fUnpackPar->GetRocId(i)
-			  << FairLogger::endl;
-	}
-	Int_t NrOfChannels = fUnpackPar->GetNumberOfChannels();
-	LOG(INFO) << "Nr. of mapped Tof channels: " << NrOfChannels;
-	for (Int_t i = 0; i< NrOfChannels; ++i) {
-	  if(i%8 == 0)  LOG(INFO) << FairLogger::endl;
-	  LOG(INFO) << Form(" 0x%08x",fUnpackPar->GetChannelToDetUIdMap(i));
-	}
-	LOG(INFO)  << FairLogger::endl;
+	   Int_t nrOfFebsPerGdpb = fUnpackPar->GetNrOfFebsPerGdpb();
+	   LOG(INFO) << "Nr. of FEBS per Tof GDPB: " << nrOfFebsPerGdpb
+	             << FairLogger::endl;
+
+	   Int_t nrOfGet4PerFeb = fUnpackPar->GetNrOfGet4PerFeb();
+	   LOG(INFO) << "Nr. of GET4 per Tof FEB: " << nrOfFebsPerGdpb
+	             << FairLogger::endl;
+
+	   fNrOfGet4 = nrOfGdpbs * nrOfFebsPerGdpb * nrOfGet4PerFeb;
+
+	   fNrOfChannelsPerGet4 = fUnpackPar->GetNrOfChannelsPerGet4();
+	   LOG(INFO) << "Nr. of channels per GET4: " << fNrOfGet4
+	             << FairLogger::endl;
+
+	   fNrOfChannelsPerGdpb = nrOfFebsPerGdpb * nrOfGet4PerFeb * fNrOfChannelsPerGet4;
+
+	   fGdpbIdIndexMap.clear();
+	   for (Int_t i = 0; i< nrOfGdpbs; ++i) {
+	     fGdpbIdIndexMap[fUnpackPar->GetGdpbId(i)] = i;
+	     LOG(INFO) << "GDPB Id of TOF  " << i
+	               << " : " << fUnpackPar->GetGdpbId(i)
+	               << FairLogger::endl;
+	   }
+	   Int_t NrOfChannels = fUnpackPar->GetNumberOfChannels();
+	   LOG(INFO) << "Nr. of mapped Tof channels: " << NrOfChannels;
+	   for (Int_t i = 0; i< NrOfChannels; ++i) {
+	      if(i%8 == 0)
+	         LOG(INFO) << FairLogger::endl;
+	      LOG(INFO) << Form(" 0x%08x",fUnpackPar->GetChannelToDetUIdMap(i));
+	   }
+	   LOG(INFO) << FairLogger::endl;
+
+	   LOG(INFO) << "Plot Channel Rate => " << ( fUnpackPar->IsChannelRateEnabled() ? "ON" : "OFF")
+	             << FairLogger::endl;
 	
 	return kTRUE;
 }
@@ -242,9 +261,9 @@ void CbmTSUnpackTof::FillHitInfo(ngdpb::Message mess)
   if( fGdpbIdIndexMap.end() != fGdpbIdIndexMap.find( rocId ) )
   {
     fHM->H2( Form("Raw_Tot_gDPB_%02u", fGdpbIdIndexMap[ rocId ]) )
-       ->Fill( get4Id*kuNbChanGet4 + channel, tot);
+       ->Fill( get4Id*fNrOfChannelsPerGet4 + channel, tot);
     fHM->H1( Form("ChCount_gDPB_%02u", fGdpbIdIndexMap[ rocId ]) )
-       ->Fill( get4Id*kuNbChanGet4 + channel );
+       ->Fill( get4Id*fNrOfChannelsPerGet4 + channel );
     
     hitTime  = mess.getMsgFullTime(fCurrentEpoch[rocId][get4Id]);
     Int_t Ft = mess.getGdpbHitFineTs();
@@ -257,7 +276,7 @@ void CbmTSUnpackTof::FillHitInfo(ngdpb::Message mess)
 	    << ", FineTime " << Ft
             << FairLogger::endl;
   
-    Int_t iChan = fGdpbIdIndexMap[rocId]*kuNbChanAfck + get4Id*kuNbChanGet4 + channel;
+    Int_t iChan = fGdpbIdIndexMap[rocId]*fNrOfChannelsPerGdpb + get4Id*fNrOfChannelsPerGet4 + channel;
     if (iChan >  fUnpackPar->GetNumberOfChannels()){
       LOG(ERROR) << "Invalid mapping index "<<iChan
 		 <<", from " << fGdpbIdIndexMap[rocId]

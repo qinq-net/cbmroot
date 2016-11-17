@@ -61,6 +61,10 @@ private:
   UInt_t fuMinNbGdpb;
   UInt_t fuCurrNbGdpb;
 
+  Int_t fNrOfGet4; // Total number of Get4 chips in the system
+  Int_t fNrOfChannelsPerGet4; // Number of channels in each GET4
+  Int_t fNrOfChannelsPerGdpb; // Number of Channels connected to one GDPB
+
   std::vector<int> fMsgCounter;
   std::map<UInt_t, UInt_t> fGdpbIdIndexMap;
 
