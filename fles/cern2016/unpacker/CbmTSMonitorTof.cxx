@@ -18,30 +18,22 @@
 #include "FairRootManager.h"
 #include "FairRun.h"
 #include "FairRuntimeDb.h"
-#include "FairRunOnline.h"
 
 #include "TClonesArray.h"
 #include "TString.h"
-#include "THttpServer.h"
-#include "Rtypes.h"
-#include "TH1.h"
-#include "TCanvas.h"
 
 #include <iostream>
 #include <stdint.h>
 #include <iomanip>
 
-// is now read from parameter container
-//const UInt_t kuNbChanGet4 =  4;
-//const UInt_t kuNbChanAfck = 96;  // FIXME - should be read from parameter file
+const UInt_t kuNbChanGet4 =  4;
+const UInt_t kuNbChanAfck = 96;  // FIXME - should be read from parameter file 
 static Int_t iMess=0;
 
 CbmTSMonitorTof::CbmTSMonitorTof( UInt_t uNbGdpb )
   : CbmTSUnpack(),
     fuMsAcceptsPercent(100),
     fuMinNbGdpb( uNbGdpb ),
-    fNrOfGet4(-1),
-    fNrOfChannelsPerGet4(-1),
     fuCurrNbGdpb( 0 ),
     fMsgCounter(11,0), // length of enum MessageTypes initialized with 0
     fGdpbIdIndexMap(),
@@ -68,6 +60,8 @@ Bool_t CbmTSMonitorTof::Init()
     LOG(FATAL) << "No FairRootManager instance" << FairLogger::endl;
    }
 
+   CreateHistograms();
+
    return kTRUE;
 }
 
@@ -83,42 +77,23 @@ Bool_t CbmTSMonitorTof::InitContainers()
 {
    LOG(INFO) << "Init parameter containers for " << GetName()
              << FairLogger::endl;
-   Bool_t initOK = ReInitContainers();
-
-   CreateHistograms();
-
-   return initOK;
+   return ReInitContainers();
 }
 
 Bool_t CbmTSMonitorTof::ReInitContainers()
 {
    LOG(INFO) << "ReInit parameter containers for " << GetName()
              << FairLogger::endl;
+   Int_t nrOfRocs = fUnpackPar->GetNrOfRocs();
 
-   Int_t nrOfGdpbs = fUnpackPar->GetNrOfGdpbs();
-   LOG(INFO) << "Nr. of Tof GDPBs: " << nrOfGdpbs
+   LOG(INFO) << "Nr. of Tof Rocs: " << nrOfRocs
              << FairLogger::endl;
-
-   Int_t nrOfFebsPerGdpb = fUnpackPar->GetNrOfFebsPerGdpb();
-   LOG(INFO) << "Nr. of FEBS per Tof GDPB: " << nrOfFebsPerGdpb
-             << FairLogger::endl;
-
-   Int_t nrOfGet4PerFeb = fUnpackPar->GetNrOfGet4PerFeb();
-   LOG(INFO) << "Nr. of GET4 per Tof FEB: " << nrOfFebsPerGdpb
-             << FairLogger::endl;
-
-   fNrOfGet4 = nrOfGdpbs * nrOfFebsPerGdpb * nrOfGet4PerFeb;
-
-   fNrOfChannelsPerGet4 = fUnpackPar->GetNrOfChannelsPerGet4();
-   LOG(INFO) << "Nr. of channels per GET4: " << fNrOfGet4
-             << FairLogger::endl;
-
    
    fGdpbIdIndexMap.clear();
-   for (Int_t i = 0; i< nrOfGdpbs; ++i) {
-     fGdpbIdIndexMap[fUnpackPar->GetGdpbId(i)] = i;
-     LOG(INFO) << "GDPB Id of TOF  " << i
-               << " : " << fUnpackPar->GetGdpbId(i)
+   for (Int_t i = 0; i< nrOfRocs; ++i) {
+     fGdpbIdIndexMap[fUnpackPar->GetRocId(i)] = i;
+     LOG(INFO) << "Roc Id of TOF  " << i
+               << " : " << fUnpackPar->GetRocId(i)
                << FairLogger::endl;
    }
    Int_t NrOfChannels = fUnpackPar->GetNumberOfChannels();
@@ -132,125 +107,45 @@ Bool_t CbmTSMonitorTof::ReInitContainers()
    
    LOG(INFO) << "Plot Channel Rate => " << ( fUnpackPar->IsChannelRateEnabled() ? "ON" : "OFF") 
              << FairLogger::endl;
+
+   if( fUnpackPar->IsChannelRateEnabled() )
+      for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
+      {
+         const Int_t iNbBinsRate = 82;
+         Double_t dBinsRate[iNbBinsRate] = 
+            { 1e0, 2e0, 3e0, 4e0, 5e0, 6e0, 7e0, 8e0, 9e0,
+              1e1, 2e1, 3e1, 4e1, 5e1, 6e1, 7e1, 8e1, 9e1,
+              1e2, 2e2, 3e2, 4e2, 5e2, 6e2, 7e2, 8e2, 9e2,
+              1e3, 2e3, 3e3, 4e3, 5e3, 6e3, 7e3, 8e3, 9e3,
+              1e4, 2e4, 3e4, 4e4, 5e4, 6e4, 7e4, 8e4, 9e4,
+              1e5, 2e5, 3e5, 4e5, 5e5, 6e5, 7e5, 8e5, 9e5,
+              1e6, 2e6, 3e6, 4e6, 5e6, 6e6, 7e6, 8e6, 9e6,
+              1e7, 2e7, 3e7, 4e7, 5e7, 6e7, 7e7, 8e7, 9e7,
+              1e8, 2e8, 3e8, 4e8, 5e8, 6e8, 7e8, 8e8, 9e8,
+              1e9 };
+         fHM->Add( Form("ChannelRate_gDPB_%02u", uGdpb),
+              new TH2F( Form("ChannelRate_gDPB_%02u", uGdpb),
+                        Form("Channel instant rate gDPB %02u; Rate[Hz] ; Channel", uGdpb),
+                           iNbBinsRate-1, dBinsRate, 96, 0, 95) );
+                        
+         LOG(INFO) << "Adding the rate histos" << FairLogger::endl;
+      } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
    
    return kTRUE;
 }
 
 void CbmTSMonitorTof::CreateHistograms()
 {
-#ifdef USE_HTTP_SERVER
-	  THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
-#endif
-
-  TString name = "hMessageType";
-  TString title = "Nb of message for each type; Type";
-  // Test Big Data readout with plotting
-  TH1I* hMessageType = new TH1I(name, title, 16, 0., 16.);
-//  TH1I* hMessageType = new TH1I(name, title, 16, -0.5, 15.5);
-  hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_NOP,      "NOP");
-  hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_HIT,      "HIT");
-  hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_EPOCH,    "EPOCH");
-  hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_SYNC,     "SYNC");
-  hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_AUX,      "AUX");
-  hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_EPOCH2,   "EPOCH2");
-  hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_GET4,     "GET4");
-  hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_SYS,      "SYS");
-  hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_GET4_SLC, "MSG_GET4_SLC");
-  hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_GET4_32B, "MSG_GET4_32B");
-  hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_GET4_SYS, "MSG_GET4_SYS");
-  hMessageType->GetXaxis()->SetBinLabel(1 + 15, "GET4 Hack 32B");
-  hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_NOP,      "NOP");
-  fHM->Add(name.Data(), hMessageType);
-#ifdef USE_HTTP_SERVER
-      server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
-
-  name = "hSysMessType";
-  title = "Nb of system message for each type; System Type";
-  TH1I* hSysMessType = new TH1I(name, title, 17, 0., 17.);
-//  TH1I* hSysMessType = new TH1I(name, title, 17, -0.5, 16.5);
-  hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_DAQ_START,       "DAQ START");
-  hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_DAQ_FINISH,      "DAQ FINISH");
-  hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_NX_PARITY,       "NX PARITY");
-  hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_SYNC_PARITY,     "SYNC PARITY");
-  hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_DAQ_RESUME,      "DAQ RESUME");
-  hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_FIFO_RESET,      "FIFO RESET");
-  hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_USER,            "USER");
-  hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_PCTIME,          "PCTIME");
-  hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_ADC,             "ADC");
-  hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_PACKETLOST,      "PACKET LOST");
-  hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_GET4_EVENT,      "GET4 ERROR");
-  hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_CLOSYSYNC_ERROR, "CLOSYSYNC ERROR");
-  hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_TS156_SYNC,        "TS156 SYNC");
-  hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_GDPB_UNKWN,        "UNKW GET4 MSG");
-  hSysMessType->GetXaxis()->SetBinLabel(1 + 16, "GET4 Hack 32B");
-  fHM->Add(name.Data(), hSysMessType);
-#ifdef USE_HTTP_SERVER
-      server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
-
-  Double_t w = 10;
-  Double_t h = 10;
-
-  TCanvas* c1 = new TCanvas("c1", "Test canvas c1", w, h);
-  c1->Divide( 2, 2 );
-
-  c1->cd(1);
-  gPad->SetLogy();
-  hMessageType->Draw();
-
-  c1->cd(2);
-  hSysMessType->Draw();
-
-/*
-#ifdef USE_HTTP_SERVER
-      server->Register("/Canvas", c1);
-#endif
-*/
-
-  if( fUnpackPar->IsChannelRateEnabled() ) {
-	for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
-	{
-	  const Int_t iNbBinsRate = 82;
-	  Double_t dBinsRate[iNbBinsRate] =
-	        { 1e0, 2e0, 3e0, 4e0, 5e0, 6e0, 7e0, 8e0, 9e0,
-			  1e1, 2e1, 3e1, 4e1, 5e1, 6e1, 7e1, 8e1, 9e1,
-			  1e2, 2e2, 3e2, 4e2, 5e2, 6e2, 7e2, 8e2, 9e2,
-			  1e3, 2e3, 3e3, 4e3, 5e3, 6e3, 7e3, 8e3, 9e3,
-			  1e4, 2e4, 3e4, 4e4, 5e4, 6e4, 7e4, 8e4, 9e4,
-			  1e5, 2e5, 3e5, 4e5, 5e5, 6e5, 7e5, 8e5, 9e5,
-			  1e6, 2e6, 3e6, 4e6, 5e6, 6e6, 7e6, 8e6, 9e6,
-			  1e7, 2e7, 3e7, 4e7, 5e7, 6e7, 7e7, 8e7, 9e7,
-			  1e8, 2e8, 3e8, 4e8, 5e8, 6e8, 7e8, 8e8, 9e8,
-			  1e9 };
-	  name = Form("ChannelRate_gDPB_%02u", uGdpb);
-	  title = Form("Channel instant rate gDPB %02u; Rate[Hz] ; Channel", uGdpb);
-	  fHM->Add(name.Data(), new TH2F(name.Data(), title.Data(),
-			   iNbBinsRate-1, dBinsRate, 96, 0, 95) );
-#ifdef USE_HTTP_SERVER
-      server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
-	  LOG(INFO) << "Adding the rate histos" << FairLogger::endl;
-	} // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
-  }
-
-  for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
-  {
-    name = Form("Raw_Tot_gDPB_%02u", uGdpb);
-    title = Form("Raw TOT gDPB %02u; channel; TOT [bin]", uGdpb);
-    fHM->Add(name.Data(), new TH2F(name.Data(), title.Data(), 96, 0, 95, 256, 0, 255) );
-#ifdef USE_HTTP_SERVER
-    server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
-
-    name = Form("ChCount_gDPB_%02u", uGdpb);
-    title = Form("Channel counts gDPB %02u; channel; Hits", uGdpb);
-    fHM->Add(name.Data(), new TH1I(name.Data(), title.Data(), 96, 0, 95 ) );
-
-
-#ifdef USE_HTTP_SERVER
-    server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
+   for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
+   {
+      fHM->Add( Form("Raw_Tot_gDPB_%02u", uGdpb),
+           new TH2F( Form("Raw_Tot_gDPB_%02u", uGdpb),
+                     Form("Raw TOT gDPB %02u; channel; TOT [bin]", uGdpb),
+                     96, 0, 95, 256, 0, 255) );
+      fHM->Add( Form("ChCount_gDPB_%02u", uGdpb),
+           new TH1I( Form("ChCount_gDPB_%02u", uGdpb),
+                     Form("Channel counts gDPB %02u; channel; Hits", uGdpb),
+                     96, 0, 95 ) );
 /*
       if( fUnpackPar->IsChannelRateEnabled() )
       {
@@ -262,9 +157,7 @@ void CbmTSMonitorTof::CreateHistograms()
                         iNbBinsRate, dBinsRate, 96, 0, 95) );
       } // if( fUnpackPar->IsChannelRateEnabled() )
 */
-  } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
-
-  LOG(INFO) << "Leaving CreateHistograms" << FairLogger::endl;
+   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
 }
 
 Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts, size_t component)
@@ -272,17 +165,7 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts, size_t component)
 
    LOG(DEBUG1) << "Timeslice contains " << ts.num_microslices(component)
                << "microslices." << FairLogger::endl;
-
-
-   // Getting the pointer to the correct histogram needs a lot more time then
-   // the actual filling procedure. If one gets the pointer in a loop this kills
-   // the performance. A test shows that extracting the pointer from the CbmHistManger
-   // is slower by a factor of 20-100 (depending on the number of histos managed by the
-   // CbmHistManager) compared to using the pointer directly
-   // So get the pointer once outside the loop and use it in the loop
-   TH1* histMessType = fHM->H1("hMessageType");
-   TH1* histSysMessType = fHM->H1("hSysMessType");
-
+  
    // Loop over microslices
    for (size_t m = 0; m < ts.num_microslices(component); ++m)
    {
@@ -323,9 +206,7 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts, size_t component)
          }
 
          // Increment counter for different message types 
-         // and fill the corresponding histogram
          fMsgCounter[mess.getMessageType()]++;
-         histMessType->Fill(mess.getMessageType());
 
          switch( mess.getMessageType() ) 
          {
@@ -341,9 +222,6 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts, size_t component)
                           << " not yet included in unpacker."
                           << FairLogger::endl;
                break;
-            case ngdpb::MSG_SYS:
-               histSysMessType->Fill(mess.getSysMesType());
-               break;
             case ngdpb::MSG_EPOCH2:
                FillEpochInfo(mess);
                break;
@@ -357,7 +235,6 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts, size_t component)
                PrintSlcInfo(mess);
                break;
             case ngdpb::MSG_GET4_SYS:
-               histSysMessType->Fill( mess.getGdpbSysSubType() );
                if(100 > iMess++)
                PrintSysInfo(mess);
                break;
@@ -385,13 +262,13 @@ void CbmTSMonitorTof::FillHitInfo(ngdpb::Message mess)
    Int_t channel    = mess.getGdpbHitChanId(); 
    Int_t tot        = mess.getGdpbHit32Tot();
    ULong_t hitTime  = mess.getMsgFullTime( 0 );
-
+      
    if( fGdpbIdIndexMap.end() != fGdpbIdIndexMap.find( rocId ) )
    {
-	  TString name = Form("Raw_Tot_gDPB_%02u", fGdpbIdIndexMap[ rocId ]);
-      fHM->H2(name.Data())->Fill( get4Id*fNrOfChannelsPerGet4 + channel, tot);
-      name = Form("ChCount_gDPB_%02u", fGdpbIdIndexMap[ rocId ]);
-      fHM->H1(name.Data())->Fill( get4Id*fNrOfChannelsPerGet4 + channel );
+      fHM->H2( Form("Raw_Tot_gDPB_%02u", fGdpbIdIndexMap[ rocId ]) )
+         ->Fill( get4Id*kuNbChanGet4 + channel, tot);
+      fHM->H1( Form("ChCount_gDPB_%02u", fGdpbIdIndexMap[ rocId ]) )
+         ->Fill( get4Id*kuNbChanGet4 + channel );
         
       if( fUnpackPar->IsChannelRateEnabled() )
       {
@@ -404,10 +281,10 @@ void CbmTSMonitorTof::FillHitInfo(ngdpb::Message mess)
                // Check if at least one hit before in this channel
                if( fTsLastHit[rocId][get4Id].end() != fTsLastHit[rocId][get4Id].find( channel ) )
                {
-            	  name = Form("ChannelRate_gDPB_%02u", fGdpbIdIndexMap[ rocId ]);
-                  fHM->H2(name.Data())->Fill( 1e9/ ( mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] )
-                                    	- fTsLastHit[rocId][get4Id][channel] ),
-                             	 	 	 get4Id*fNrOfChannelsPerGet4 + channel);
+                  fHM->H2( Form("ChannelRate_gDPB_%02u", fGdpbIdIndexMap[ rocId ]) )
+                     ->Fill( 1e9/ ( mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] ) 
+                                    - fTsLastHit[rocId][get4Id][channel] ), 
+                             get4Id*kuNbChanGet4 + channel);
                } // if( fTsLastHit[rocId][get4Id].end() != fTsLastHit[rocId][get4Id].find( channel ) )
             } // if( fTsLastHit[rocId].end() != fTsLastHit[rocId].find( get4Id ) )
          } // if( fTsLastHit.end() != fTsLastHit.find( rocId ) )
@@ -436,7 +313,6 @@ void CbmTSMonitorTof::FillEpochInfo(ngdpb::Message mess)
    Int_t get4Id     = mess.getGdpbGenChipId();
    fCurrentEpoch[rocId][get4Id] = mess.getEpoch2Number();
 
-   // Create histograms for new ROCs in the data stream
    if( fGdpbIdIndexMap.end() == fGdpbIdIndexMap.find( rocId ) )
    {
       fGdpbIdIndexMap[ rocId ] = fuCurrNbGdpb;
@@ -444,23 +320,16 @@ void CbmTSMonitorTof::FillEpochInfo(ngdpb::Message mess)
      
       if( fuMinNbGdpb < fuCurrNbGdpb )
       {
-#ifdef USE_HTTP_SERVER
-    	  THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
-#endif
-    	  // Add new histo
-    	  TString name = Form("Raw_Tot_gDPB_%02u", fuMinNbGdpb);
-    	  TString title = Form("Raw TOT gDPB %02u; channel; TOT [bin]", fuMinNbGdpb);
-    	  fHM->Add(name.Data(), new TH2F(name.Data(), title.Data(), 96, 0, 95, 256, 0, 255) );
-#ifdef USE_HTTP_SERVER
-          server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
-
-    	  name = Form("ChCount_gDPB_%02u", fuMinNbGdpb);
-    	  title = Form("Channel counts gDPB %02u; channel; Hits", fuMinNbGdpb);
-    	  fHM->Add(name.Data(), new TH1I(name.Data(), title.Data(), 96, 0, 95 ) );
-#ifdef USE_HTTP_SERVER
-          server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
+         // Add new histo
+         fHM->Add( Form("Raw_Tot_gDPB_%02u", fuMinNbGdpb),
+                   new TH2F( Form("Raw_Tot_gDPB_%02u", fuMinNbGdpb),
+                             Form("Raw TOT gDPB %02u; channel; TOT [bin]", fuMinNbGdpb),
+                             96, 0, 95, 256, 0, 255) );
+                     
+         fHM->Add( Form("ChCount_gDPB_%02u", fuMinNbGdpb),
+                   new TH1I( Form("ChCount_gDPB_%02u", fuMinNbGdpb),
+                             Form("Channel counts gDPB %02u; channel; Hits", fuMinNbGdpb),
+                             96, 0, 95 ) );
 
          if( fUnpackPar->IsChannelRateEnabled() )
          {
@@ -476,12 +345,10 @@ void CbmTSMonitorTof::FillEpochInfo(ngdpb::Message mess)
                  1e7, 2e7, 3e7, 4e7, 5e7, 6e7, 7e7, 8e7, 9e7,
                  1e8, 2e8, 3e8, 4e8, 5e8, 6e8, 7e8, 8e8, 9e8,
                  1e9 };
-            name = Form("ChannelRate_gDPB_%02u", fuMinNbGdpb);
-            title = Form("Channel instant rate gDPB %02u; Rate[Hz] ; Channel", fuMinNbGdpb);
-            fHM->Add(name.Data(), new TH2F(name.Data(), title.Data(), iNbBinsRate-1, dBinsRate, 96, 0, 95) );
-#ifdef USE_HTTP_SERVER
-            server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
+            fHM->Add( Form("ChannelRate_gDPB_%02u", fuMinNbGdpb),
+                      new TH2F( Form("ChannelRate_gDPB_%02u", fuMinNbGdpb),
+                                Form("Channel instant rate gDPB %02u; Rate[Hz] ; Channel", fuMinNbGdpb),
+                                iNbBinsRate-1, dBinsRate, 96, 0, 95) );
             LOG(INFO) << "Adding the rate histos" << FairLogger::endl;
          } // if( fUnpackPar->IsChannelRateEnabled() )
       

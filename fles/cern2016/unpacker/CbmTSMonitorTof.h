@@ -15,9 +15,12 @@
 
 #include "CbmTSUnpack.h"
 #include "CbmHistManager.h"
+//#include "CbmNxyterRawMessage.h"
+//#include "CbmTofDigi.h"
+//#include "CbmTofDigiExp.h"
+//#include "CbmTbDaqBuffer.h"
 
 #include "TClonesArray.h"
-#include "Rtypes.h"
 
 #include <vector>
 #include <map>
@@ -33,11 +36,9 @@ public:
    virtual ~CbmTSMonitorTof();
     
    virtual Bool_t Init();
-
-   #ifndef __CINT__
+#ifndef __CINT__
    virtual Bool_t DoUnpack(const fles::Timeslice& ts, size_t component);
 #endif
-
    virtual void Reset();
 
    virtual void Finish();
@@ -60,11 +61,7 @@ private:
    UInt_t fuMinNbGdpb;
    UInt_t fuCurrNbGdpb;
 
-   Int_t fNrOfGet4; // Total number of Get4 chips in the system
-   Int_t fNrOfChannelsPerGet4; // Number of channels in each GET4
-
    std::vector<int> fMsgCounter;
-
    std::map<UInt_t, UInt_t> fGdpbIdIndexMap;
 
    CbmHistManager* fHM;  ///< Histogram manager

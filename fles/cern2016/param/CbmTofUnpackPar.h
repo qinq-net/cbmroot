@@ -34,25 +34,18 @@ class CbmTofUnpackPar : public FairParGenericSet
   void putParams(FairParamList*);
   Bool_t getParams(FairParamList*);
 
-  inline Int_t GetNrOfGdpbs() { return fNrOfGdpb; }
-  inline Int_t GetGdpbId(Int_t i) { return fGdpbIdArray[i]; }
-  inline Int_t GetNrOfFebsPerGdpb() { return fNrOfFebsPerGdpb; }
-  inline Int_t GetNrOfGet4PerFeb() {return fNrOfGet4PerFeb;}
-  inline Int_t GetNrOfChannelsPerGet4() {return fNrOfChannelsPerGet4;}
+  inline Int_t GetNrOfRocs() { return fNrOfRocs; }
+  inline Int_t GetRocId(Int_t i) { return fRocIdArray[i]; }
   inline Int_t GetNumberOfChannels() {return fNrOfChannels;}
   inline Int_t GetChannelToDetUIdMap(Int_t channel) {return fChannelToDetUIdMap[channel];}
   inline Bool_t IsChannelRateEnabled() {return (1 == fPlotChannelRate);}
 
  private:
 
-  Int_t   fNrOfGdpb; // Total number of GDPBs
-  TArrayI fGdpbIdArray; // Array to hold the unique IDs for all Tof GDPBs
+  Int_t   fNrOfRocs; // Total number of Rocs
+  TArrayI fRocIdArray; // Array to hold the unique IDs for all Tof Rocs
 
-  Int_t   fNrOfFebsPerGdpb; // Number of FEBs which are connected to one GDPB
-  Int_t   fNrOfGet4PerFeb;  // Number of GET4 chips which are connected to one FEB
-  Int_t   fNrOfChannelsPerGet4;  // Number of channels per GET4
-
-  Int_t   fNrOfChannels; // Total number of Channels
+  Int_t   fNrOfChannels;
   TArrayI fChannelToDetUIdMap;// Array which stores the corresponding UIDs for each channel
   
   Int_t   fPlotChannelRate;

@@ -16,12 +16,10 @@
 #include "FairLogger.h"
 #include "FairRootManager.h"
 #include "FairRun.h"
-#include "FairRunOnline.h"
 #include "FairRuntimeDb.h"
 
 #include "TClonesArray.h"
 #include "TString.h"
-#include "THttpServer.h"
 
 #include <iostream>
 #include <stdint.h>
@@ -130,12 +128,6 @@ void CbmTSUnpackFHodo::CreateHistograms()
   fHM->Add("Raw_ADC_RearHodo", 
            new TH2F("Raw_ADC_RearHodo", 
                     "Raw_ADC_RearHodo;channel;ADC value", 128, 0, 127, 4096, 0, 4095));   
-#ifdef USE_HTTP_SERVER
-  THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
-  server->Register("/FHODO", fHM->H2("Raw_ADC_FrontHodo"));
-  server->Register("/FHODO", fHM->H2("Raw_ADC_RearHodo"));
-  server->RegisterCommand("/Reset_Raw_ADC_FrontHodo", "/FHODO/Raw_ADC_FrontHodo/->Reset()");
-#endif
 }
 
 Bool_t CbmTSUnpackFHodo::DoUnpack(const fles::Timeslice& ts, size_t component)

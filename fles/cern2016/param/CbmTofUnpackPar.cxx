@@ -17,11 +17,8 @@ CbmTofUnpackPar::CbmTofUnpackPar(const char* name,
 			             const char* title,
 			             const char* context)
   : FairParGenericSet(name, title, context), 
-    fNrOfGdpb(-1),
-    fGdpbIdArray(),
-    fNrOfFebsPerGdpb(-1),
-    fNrOfGet4PerFeb(-1),
-    fNrOfChannelsPerGet4(-1),
+    fNrOfRocs(-1),
+    fRocIdArray(),
     fNrOfChannels(-1),
     fChannelToDetUIdMap(),
     fPlotChannelRate(0)
@@ -52,14 +49,11 @@ void CbmTofUnpackPar::clear()
 void CbmTofUnpackPar::putParams(FairParamList* l) 
 {
   if (!l) return;
-  l->add("NrOfGdpbs",          fNrOfGdpb);
-  l->add("GdpbIdArray",        fGdpbIdArray);
-  l->add("NrOfFebsPerGdpb",    fNrOfFebsPerGdpb);
-  l->add("NrOfGet4PerFeb",     fNrOfGet4PerFeb);
-  l->add("NrOfChannelsPerGet4",fNrOfChannelsPerGet4);
-  l->add("NrOfChannels",       fNrOfChannels);
-  l->add("ChannelToDetUIdMap", fChannelToDetUIdMap);
-  l->add("PlotChannelRate",    fPlotChannelRate);
+  l->add("NrOfRocs",          fNrOfRocs);
+  l->add("RocIdArray",        fRocIdArray);
+  l->add("NrOfChannels",      fNrOfRocs);
+  l->add("ChannelToDetUIdMap",fChannelToDetUIdMap);
+  l->add("PlotChannelRate",   fPlotChannelRate);
 }
 
 //------------------------------------------------------
@@ -68,14 +62,10 @@ Bool_t CbmTofUnpackPar::getParams(FairParamList* l) {
 
   if (!l) return kFALSE;
   
-  if ( ! l->fill("NrOfGdpbs", &fNrOfGdpb) ) return kFALSE;
+  if ( ! l->fill("NrOfRocs", &fNrOfRocs) ) return kFALSE;
   
-  fGdpbIdArray.Set(fNrOfGdpb);
-  if ( ! l->fill("GdpbIdArray", &fGdpbIdArray) ) return kFALSE;
-
-  if ( ! l->fill("NrOfFebsPerGdpb", &fNrOfFebsPerGdpb) ) return kFALSE;
-  if ( ! l->fill("NrOfGet4PerFeb", &fNrOfGet4PerFeb) ) return kFALSE;
-  if ( ! l->fill("NrOfChannelsPerGet4", &fNrOfChannelsPerGet4) ) return kFALSE;
+  fRocIdArray.Set(fNrOfRocs);
+  if ( ! l->fill("RocIdArray", &fRocIdArray) ) return kFALSE;
 
   if ( ! l->fill("NrOfChannels", &fNrOfChannels) ) return kFALSE;
 
