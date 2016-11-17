@@ -51,7 +51,8 @@ CbmFlibTestSource::CbmFlibTestSource(const CbmFlibTestSource& source)
     fBuffer(CbmTbDaqBuffer::Instance()),
     fTSNumber(0),
     fTSCounter(0),
-    fTimer(),
+    fdMaxDeltaT(100.),
+	fTimer(),
     fBufferFillNeeded(kTRUE),
     fSource(NULL)
 {
@@ -134,7 +135,7 @@ Bool_t CbmFlibTestSource::ReInitUnpackers()
 
 Int_t CbmFlibTestSource::ReadEvent(UInt_t iEv) 
 {
-   LOG(DEBUG) << "Request received for "<<iEv<<". event"
+   LOG(INFO) << "Request received for "<<iEv<<". event"
               << FairLogger::endl;
 	      
   while ( 1 ==  GetNextEvent()){   

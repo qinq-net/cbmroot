@@ -31,6 +31,8 @@ class CbmTSUnpackDummy : public CbmTSUnpack
 
   virtual void Finish() { return; }
 
+  void SetParContainers() {;}
+
   virtual void FillOutput(CbmDigi*){;}
 
   ClassDef(CbmTSUnpackDummy, 1)

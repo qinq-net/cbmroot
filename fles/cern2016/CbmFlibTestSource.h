@@ -24,6 +24,7 @@
 #include "TList.h"
 #include "TObjString.h"
 #include "TStopwatch.h"
+#include "Rtypes.h"
 
 #include <memory>
 #include <map>
