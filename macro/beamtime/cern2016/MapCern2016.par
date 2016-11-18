@@ -1,7 +1,8 @@
 [CbmTofUnpackPar]
 //----------------------------------------------------------------------------
 NrOfRocs: Int_t 7
-RocIdArray: Int_t  23528 23563 23472 23533 20219 24934 24897
+RocIdArray: Int_t \
+23528 23563 23472 23533 20219 24934 24897
 NrOfFebsPerGdpb: Int_t 3
 NrOfGet4PerFeb: Int_t 8
 NrOfChannelsPerGet4: Int_t 4
