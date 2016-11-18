@@ -391,6 +391,21 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts, size_t component)
    TH2* histGet4MessType = fHM->H2("hGet4MessType");
    TH2* histGet4ChanErrors = fHM->H2("hGet4ChanErrors");
 
+   std::vector<TH2*> Raw_Tot_gDPB;
+   std::vector<TH1*> ChCount_gDPB;
+   std::vector<TH2*> ChannelRate_gDPB;
+
+   for(Int_t i=0; i<fNrOfGdpbs; ++i) {
+     TString name = Form("Raw_Tot_gDPB_%02u", i);
+     Raw_Tot_gDPB.push_back(fHM->H2(name.Data()));
+     name = Form("ChCount_gDPB_%02u", i);
+     ChCount_gDPB.push_back(fHM->H1(name.Data()));
+  	 name = Form("ChannelRate_gDPB_%02u", i);
+     if( fUnpackPar->IsChannelRateEnabled() ) {
+       ChannelRate_gDPB.push_back(fHM->H2(name.Data()));
+     }
+   }
+
    // Loop over microslices
    for (size_t m = 0; m < ts.num_microslices(component); ++m)
    {
@@ -466,7 +481,7 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts, size_t component)
                break;
             case ngdpb::MSG_GET4_32B:
                histGet4MessType->Fill(get4Nr, ngdpb::GET4_32B_DATA);
-               FillHitInfo(mess);
+               FillHitInfo(mess, Raw_Tot_gDPB, ChCount_gDPB, ChannelRate_gDPB);
                break;
             case ngdpb::MSG_GET4_SLC:
            	   histGet4MessType->Fill(get4Nr, ngdpb::GET4_32B_SLCM);
@@ -559,7 +574,11 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts, size_t component)
    return kTRUE;
 }
 
-void CbmTSMonitorTof::FillHitInfo(ngdpb::Message mess)
+void CbmTSMonitorTof::FillHitInfo(ngdpb::Message mess,
+                                  std::vector<TH2*> Raw_Tot_gDPB,
+                                  std::vector<TH1*> ChCount_gDPB,
+                                  std::vector<TH2*> ChannelRate_gDPB
+)
    {
    // --- Get absolute time, NXYTER and channel number
    Int_t rocId      = mess.getRocNumber();
@@ -570,10 +589,9 @@ void CbmTSMonitorTof::FillHitInfo(ngdpb::Message mess)
 
    if( fGdpbIdIndexMap.end() != fGdpbIdIndexMap.find( rocId ) )
    {
-	  TString name = Form("Raw_Tot_gDPB_%02u", fGdpbIdIndexMap[ rocId ]);
-      fHM->H2(name.Data())->Fill( get4Id*fNrOfChannelsPerGet4 + channel, tot);
-      name = Form("ChCount_gDPB_%02u", fGdpbIdIndexMap[ rocId ]);
-      fHM->H1(name.Data())->Fill( get4Id*fNrOfChannelsPerGet4 + channel );
+	  Int_t gdpbNr = fGdpbIdIndexMap[ rocId ];
+	  Raw_Tot_gDPB[gdpbNr]->Fill( get4Id*fNrOfChannelsPerGet4 + channel, tot);
+	  ChCount_gDPB[gdpbNr]->Fill( get4Id*fNrOfChannelsPerGet4 + channel );
         
       if( fUnpackPar->IsChannelRateEnabled() )
       {
@@ -586,10 +604,9 @@ void CbmTSMonitorTof::FillHitInfo(ngdpb::Message mess)
                // Check if at least one hit before in this channel
                if( fTsLastHit[rocId][get4Id].end() != fTsLastHit[rocId][get4Id].find( channel ) )
                {
-            	  name = Form("ChannelRate_gDPB_%02u", fGdpbIdIndexMap[ rocId ]);
-                  fHM->H2(name.Data())->Fill( 1e9/ ( mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] )
-                                    	- fTsLastHit[rocId][get4Id][channel] ),
-                             	 	 	 get4Id*fNrOfChannelsPerGet4 + channel);
+            	   ChannelRate_gDPB[gdpbNr]->Fill( 1e9/ ( mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] )
+                                     	           - fTsLastHit[rocId][get4Id][channel] ),
+                             	 	 	           get4Id*fNrOfChannelsPerGet4 + channel);
                } // if( fTsLastHit[rocId][get4Id].end() != fTsLastHit[rocId][get4Id].find( channel ) )
             } // if( fTsLastHit[rocId].end() != fTsLastHit[rocId].find( get4Id ) )
          } // if( fTsLastHit.end() != fTsLastHit.find( rocId ) )

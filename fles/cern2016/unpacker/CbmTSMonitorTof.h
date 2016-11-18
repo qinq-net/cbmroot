@@ -90,7 +90,9 @@ private:
    void CreateHistograms();
 
 #ifndef __CINT__
-   void FillHitInfo(ngdpb::Message);
+   void FillHitInfo(ngdpb::Message, std::vector<TH2*>,
+                    std::vector<TH1*>, std::vector<TH2*>
+                   );
    void FillEpochInfo(ngdpb::Message);
    void PrintSlcInfo(ngdpb::Message);
    void PrintSysInfo(ngdpb::Message);
