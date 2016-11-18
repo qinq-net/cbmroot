@@ -133,32 +133,27 @@ Bool_t CbmTSMonitorMuch::ReInitContainers()
 
 void CbmTSMonitorMuch::CreateHistograms()
 {
+	TString sHistName{""};
+    TString title{""};
 	for ( Int_t febId = 0 ; 
          febId < fUnpackPar->GetNrOfnDpbsModA()*fUnpackPar->GetNrOfFebsPerNdpb(); 
          febId++){// looping on all the FEB IDs
-      TString sHistName = Form("Chan_Counts_Much_%02u", febId);
-      fHM->Add( sHistName.Data(), 
-                new TH1F( sHistName.Data(), 
-                          Form("Channel counts Much FEB %02u; channel; Counts", febId), 
-                          128, 0, 127) );  
+		sHistName = Form("Chan_Counts_Much_%02u", febId);
+      title = Form("Channel counts Much FEB %02u; channel; Counts", febId);
+      fHM->Add( sHistName.Data(), new TH1F( sHistName.Data(), title.Data(), 128, 0, 127) );
       
       sHistName = Form("Raw_ADC_Much_%02u", febId);
-      fHM->Add( sHistName.Data(), 
-                new TH2F( sHistName.Data(), 
-                          Form("Raw ADC Much FEB %02u; channel; ADC value", febId), 
-                          128, 0, 127, 4096, 0, 4095) ); 
+      title = Form("Raw ADC Much FEB %02u; channel; ADC value", febId);
+      fHM->Add( sHistName.Data(), new TH2F( sHistName.Data(), title.Data(), 128, 0, 127, 4096, 0, 4095) );
                           
       sHistName = Form("FebRate_%02u", febId);
-      fHM->Add( sHistName.Data(),
-                new TH1F( sHistName.Data(),
-                     Form("Counts per second in FEB%02u; Time[s] ; Counts", febId),
-                        1800, 0, 1800 ) ); 
-	}
+      title = Form("Counts per second in FEB%02u; Time[s] ; Counts", febId);
+      fHM->Add( sHistName.Data(), new TH1F( sHistName.Data(), title.Data(), 1800, 0, 1800 ) );
+    }
  
-   fHM->Add( "Pad_Distribution", 
-            new TH2F("Pad_Distribution", 
-                 "Pad_Distribution; Sectors in Horizontal Direction; Channels in Vertical Direction", 
-                 79, 0, 78, 23, 0, 22) );   
+	sHistName = "Pad_Distribution";
+	title = "Pad_Distribution; Sectors in Horizontal Direction; Channels in Vertical Direction";
+	fHM->Add( sHistName.Data(), new TH2F(sHistName.Data(), title.Data(), 79, 0, 78, 23, 0, 22) );
 }
 
 Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
@@ -167,6 +162,25 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
   LOG(DEBUG) << "Timeslice contains " << ts.num_microslices(component)
              << "microslices." << FairLogger::endl;
   
+  std::vector<TH1*> Chan_Counts_Much;
+  std::vector<TH2*> Raw_ADC_Much;
+  std::vector<TH1*> FebRate;
+
+  TString sHistName{""};
+  TString title{""};
+
+  for ( Int_t febId = 0 ;
+		  febId < fUnpackPar->GetNrOfnDpbsModA()*fUnpackPar->GetNrOfFebsPerNdpb();
+		  febId++){// looping on all the FEB IDs
+      sHistName = Form("Chan_Counts_Much_%02u", febId);
+      Chan_Counts_Much.push_back(fHM->H1(sHistName.Data()));
+      sHistName = Form("Raw_ADC_Much_%02u", febId);
+      Raw_ADC_Much.push_back(fHM->H2(sHistName.Data()));
+      sHistName = Form("FebRate_%02u", febId);
+      FebRate.push_back(fHM->H1(sHistName.Data()));
+  }
+  TH1* histPadDistr = fHM->H2("Pad_Distribution");
+
   // Loop over microslices
   for (size_t m = 0; m < ts.num_microslices(component); ++m)
     {
@@ -208,7 +222,7 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
           
           switch(mess.getMessageType()) {
           case ngdpb::MSG_HIT: 
-            FillHitInfo(mess);
+            FillHitInfo(mess, Chan_Counts_Much, Raw_ADC_Much, FebRate, histPadDistr);
             break;
           case ngdpb::MSG_EPOCH:
             FillEpochInfo(mess);
@@ -236,7 +250,10 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
   return kTRUE;
 }
 
-void CbmTSMonitorMuch::FillHitInfo(ngdpb::Message mess)
+void CbmTSMonitorMuch::FillHitInfo(ngdpb::Message mess, std::vector<TH1*> Chan_Counts_Much,
+                                   std::vector<TH2*> Raw_ADC_Much,
+                                   std::vector<TH1*> FebRate,
+                                   TH1* histPadDistr)
 {
   // --- Get absolute time, NXYTER and channel number
   Int_t rocId      = mess.getRocNumber();
@@ -261,11 +278,10 @@ void CbmTSMonitorMuch::FillHitInfo(ngdpb::Message mess)
 		LOG(ERROR) << "Unknown Roc Id " << rocId << " or nxyterId "<< nxyterId << " or channelId "
                  << nxChannel << FairLogger::endl;
 	}
-	fHM->H1( Form("Chan_Counts_Much_%02u", fNdpbIdIndexMap[rocId]*fUnpackPar->GetNrOfFebsPerNdpb() + nxyterId ) )
-      ->Fill(nxChannel);
-	fHM->H2( Form("Raw_ADC_Much_%02u", fNdpbIdIndexMap[rocId]*fUnpackPar->GetNrOfFebsPerNdpb() + nxyterId ) )
-      ->Fill(nxChannel,charge);
-//	fHM->H2("Pad_Distribution")->Fill(nxChannel,charge);
+	Int_t channelNr = fNdpbIdIndexMap[rocId]*fUnpackPar->GetNrOfFebsPerNdpb() + nxyterId;
+	Chan_Counts_Much[channelNr]->Fill(nxChannel);
+	Raw_ADC_Much[channelNr]->Fill(nxChannel, charge);
+//	histPadDistr->Fill(nxChannel,charge);
 
    if( fCurrentEpoch.end() != fCurrentEpoch.find( rocId ) ) {
       if( fCurrentEpoch[rocId].end() != fCurrentEpoch[rocId].find( nxyterId ) ) {
@@ -281,9 +297,8 @@ void CbmTSMonitorMuch::FillHitInfo(ngdpb::Message mess)
          }
             
          if( 0 < fdStartTime )
-            fHM->H1( Form("FebRate_%02u", fNdpbIdIndexMap[rocId]*fUnpackPar->GetNrOfFebsPerNdpb() + nxyterId ) )
-               ->Fill( 1e-9*( mess.getMsgFullTimeD( fCurrentEpoch[rocId][nxyterId] ) 
-                             - fdStartTime)  );
+        	FebRate[channelNr]->Fill( 1e-9*( mess.getMsgFullTimeD( fCurrentEpoch[rocId][nxyterId] )
+                                      - fdStartTime)  );
      }
    }
 
