@@ -26,7 +26,7 @@ ${CBMROOT_SOURCE_DIR}/KF/KFModelParameters/BoltzmannDistribution
 ${CBMROOT_SOURCE_DIR}/KF/KFModelParameters/BlastWaveModel
 ${CBMROOT_SOURCE_DIR}/KF/KFQA
 ${CBMROOT_SOURCE_DIR}/KF/KFParticle
-${CBMROOT_SOURCE_DIR}/KF/KFParticle/KFPHistogram
+#${CBMROOT_SOURCE_DIR}/KF/KFParticle/KFPHistogram
 ${CBMROOT_SOURCE_DIR}/KF/KFParticlePerformance
 
 ${CBMROOT_SOURCE_DIR}/sts 

@@ -15,7 +15,7 @@ Include_Directories(SYSTEM
   ${Boost_INCLUDE_DIR} 
   ${ZMQ_INCLUDE_DIR}
   ${CBMROOT_SOURCE_DIR}/external/ipc_legacy/ipc/src
-  ${CBMROOT_SOURCE_DIR}/extrenal/flib_dpb/flib_dpb
+  ${CBMROOT_SOURCE_DIR}/external/flib_dpb/flib_dpb
   ${CMAKE_SOURCE_DIR}/external/cppzmq
 )
  
