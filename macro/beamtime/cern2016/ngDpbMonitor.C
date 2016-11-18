@@ -32,7 +32,7 @@ void ngDpbMonitor(TString inFile = "sps2016111302_1945.tsa")
   TList *parFileList = new TList();
   TString paramDir = "./";
 
-  TString paramFileTof = paramDir + "TofMonitorPar.par";
+  TString paramFileTof = paramDir + "MapCern2016.par";
   TObjString* tutDetDigiFileTof = new TObjString(paramFileTof);
   parFileList->Add(tutDetDigiFileTof);
 
@@ -49,8 +49,7 @@ void ngDpbMonitor(TString inFile = "sps2016111302_1945.tsa")
   std::cout << ">>> FHodoLabSetup: Initialising..." << std::endl;
 
   // NXyter Unpacker
-//  CbmTSUnpackFHodo*    test_unpacker     = new CbmTSUnpackFHodo();
-  //  test_unpacker->CreateRawMessageOutput(kTRUE);
+  CbmTSUnpackDummy*    dummy_unpacker     = new CbmTSUnpackDummy();
   
   // Get4 Unpacker
   CbmTSMonitorTof* test_monitor_tof = new CbmTSMonitorTof();
@@ -58,8 +57,9 @@ void ngDpbMonitor(TString inFile = "sps2016111302_1945.tsa")
   // --- Source task
   CbmFlibTestSource* source = new CbmFlibTestSource();
   source->SetFileName(inFile);
-  source->AddUnpacker(test_monitor_tof, 0x60, 20);//gDPB A & B
-//  source->AddUnpacker(test_unpacker,     0x10, 10);//nDPB A & B = HODO 1 + 2
+   source->AddUnpacker(dummy_unpacker, 0x10, 4);//gDPB A & B
+//   source->AddUnpacker(dummy_unpacker, 0x60, 6);//gDPB A & B
+  source->AddUnpacker(test_monitor_tof, 0x60, 6);//gDPB A & B
 
   // --- Event header
   FairEventHeader* event = new CbmTbEvent();
@@ -69,7 +69,7 @@ void ngDpbMonitor(TString inFile = "sps2016111302_1945.tsa")
   FairRunOnline *run = new FairRunOnline(source);
   run->SetOutputFile(outFile);
   run->SetEventHeader(event);
-  run->ActivateHttpServer(10); // refresh each 100 events
+  run->ActivateHttpServer(10000); // refresh each 100 events
   run->SetAutoFinish(kFALSE);
 
   // -----   Runtime database   ---------------------------------------------
