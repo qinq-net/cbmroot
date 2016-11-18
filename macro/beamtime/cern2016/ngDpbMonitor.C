@@ -8,7 +8,7 @@
  */
 
 
-void ngDpbMonitor(TString inFile = "hodoTop_source_1000ts_20160422.tsa")
+void ngDpbMonitor(TString inFile = "sps2016111302_1945.tsa")
 {
 
   TString srcDir = gSystem->Getenv("VMCWORKDIR");
@@ -31,10 +31,7 @@ void ngDpbMonitor(TString inFile = "hodoTop_source_1000ts_20160422.tsa")
   // --- Define parameter files
   TList *parFileList = new TList();
   TString paramDir = "./";
-  TString paramFile = paramDir + "FHodoUnpackPar.par";
-  TObjString* tutDetDigiFile = new TObjString(paramFile);
-  parFileList->Add(tutDetDigiFile);
-  
+
   TString paramFileTof = paramDir + "TofMonitorPar.par";
   TObjString* tutDetDigiFileTof = new TObjString(paramFileTof);
   parFileList->Add(tutDetDigiFileTof);
@@ -52,7 +49,7 @@ void ngDpbMonitor(TString inFile = "hodoTop_source_1000ts_20160422.tsa")
   std::cout << ">>> FHodoLabSetup: Initialising..." << std::endl;
 
   // NXyter Unpacker
-  CbmTSUnpackFHodo*    test_unpacker     = new CbmTSUnpackFHodo();
+//  CbmTSUnpackFHodo*    test_unpacker     = new CbmTSUnpackFHodo();
   //  test_unpacker->CreateRawMessageOutput(kTRUE);
   
   // Get4 Unpacker
@@ -62,7 +59,7 @@ void ngDpbMonitor(TString inFile = "hodoTop_source_1000ts_20160422.tsa")
   CbmFlibTestSource* source = new CbmFlibTestSource();
   source->SetFileName(inFile);
   source->AddUnpacker(test_monitor_tof, 0x60, 20);//gDPB A & B
-  source->AddUnpacker(test_unpacker,     0x10, 10);//nDPB A & B = HODO 1 + 2
+//  source->AddUnpacker(test_unpacker,     0x10, 10);//nDPB A & B = HODO 1 + 2
 
   // --- Event header
   FairEventHeader* event = new CbmTbEvent();
@@ -72,9 +69,11 @@ void ngDpbMonitor(TString inFile = "hodoTop_source_1000ts_20160422.tsa")
   FairRunOnline *run = new FairRunOnline(source);
   run->SetOutputFile(outFile);
   run->SetEventHeader(event);
-  FairRuntimeDb* rtdb = run->GetRuntimeDb();
+  run->ActivateHttpServer(10); // refresh each 100 events
+  run->SetAutoFinish(kFALSE);
 
   // -----   Runtime database   ---------------------------------------------
+  FairRuntimeDb* rtdb = run->GetRuntimeDb();
   Bool_t kParameterMerged = kTRUE;
   FairParRootFileIo* parOut = new FairParRootFileIo(kParameterMerged);
   FairParAsciiFileIo* parIn = new FairParAsciiFileIo();
