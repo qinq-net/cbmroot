@@ -35,19 +35,23 @@ class CbmMuchUnpackPar : public FairParGenericSet
   Bool_t getParams(FairParamList*);
 
   Int_t GetNrOfnDpbsModA() { return fNrOfnDpbsModA; }
+  inline Int_t GetNdpbIdA(Int_t i) { return fnDbpsIdsArrayA[i]; }
+  Int_t GetNrOfFebsPerNdpb() { return fuNbFebPerNdpb; }
   Int_t GetNrOfFebs() { return fNrOfFebs; }
   Int_t GetNrOfChannels() {return fNrOfChannels;}
 
-  Int_t GetPadX(Int_t febid, Int_t channelid) {return fChannelsToPadX[(febid*fNrOfFebs)+channelid];}
-  Int_t GetPadY(Int_t febid, Int_t channelid) {return fChannelsToPadY[(febid*fNrOfFebs)+channelid];}
+  Int_t GetPadX(Int_t febid, Int_t channelid);
+  Int_t GetPadY(Int_t febid, Int_t channelid);
 
 //  Int_t GetChannelToPixelMap(Int_t channel) {return fChannelToPixelMap[channel];}
 //  Int_t GetChannelToPlaneMap(Int_t channel) {return fChannelToPlaneMap[channel];}
+
  private:
 
   Int_t fNrOfnDpbsModA; // Total number of nDPBs in GEM Module 1
-  TArrayI fnDbpsIdsArray; // Array to hold the unique IDs for all GEM nDPBs 
-  Int_t fNrOfFebs; // Number of FEBs for a nDPB
+  TArrayI fnDbpsIdsArrayA; // Array to hold the unique IDs for all GEM nDPBs 
+  Int_t fuNbFebPerNdpb; // Number of FEBs for all nDPB
+  Int_t fNrOfFebs; // Number of FEBs for all nDPB
   TArrayI fnFebsIdsArray; // Array to hold FEB IDs connected to 1 nDPB
   Int_t fNrOfChannels;
   TArrayI fChannelsToPadX; // Array which stores the corresponding x position of PAD of entire module A 

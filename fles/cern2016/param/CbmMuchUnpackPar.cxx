@@ -19,7 +19,8 @@ CbmMuchUnpackPar::CbmMuchUnpackPar(const char* name,
 			             const char* context)
   : FairParGenericSet(name, title, context), 
     fNrOfnDpbsModA(-1),
-    fnDbpsIdsArray(),
+    fnDbpsIdsArrayA(),
+    fuNbFebPerNdpb(-1),
     fNrOfFebs(-1),
     fnFebsIdsArray(),
     fNrOfChannels(-1),
@@ -53,7 +54,8 @@ void CbmMuchUnpackPar::putParams(FairParamList* l)
 {
   if (!l) return;
   l->add("NrOfnDpbsModA",          fNrOfnDpbsModA);
-  l->add("nDbpsIdsArray",        fnDbpsIdsArray);
+  l->add("nDbpsIdsArrayA",        fnDbpsIdsArrayA);
+  l->add("NbFebPerNdpb",      fuNbFebPerNdpb);
   l->add("NrOfFebs",      fNrOfFebs);
   l->add("nFebsIdsArray", fnFebsIdsArray);
   l->add("NrOfChannels", fNrOfChannels);
@@ -71,8 +73,10 @@ Bool_t CbmMuchUnpackPar::getParams(FairParamList* l) {
   if ( ! l->fill("NrOfnDpbsModA", &fNrOfnDpbsModA) ) return kFALSE;
  LOG(INFO)<< " After CbmMuchUnpackPar GetParams at NrOfnDpbs " << FairLogger::endl;
 
-  fnDbpsIdsArray.Set(fNrOfnDpbsModA);
-  if ( ! l->fill("nDbpsIdsArray", &fnDbpsIdsArray) ) return kFALSE;
+  fnDbpsIdsArrayA.Set(fNrOfnDpbsModA);
+  if ( ! l->fill("nDbpsIdsArrayA", &fnDbpsIdsArrayA) ) return kFALSE;
+
+  if ( ! l->fill("NbFebPerNdpb", &fuNbFebPerNdpb) ) return kFALSE;
 
   if ( ! l->fill("NrOfFebs", &fNrOfFebs) ) return kFALSE;
 
@@ -80,14 +84,36 @@ Bool_t CbmMuchUnpackPar::getParams(FairParamList* l) {
 
   if ( ! l->fill("NrOfChannels", &fNrOfChannels) ) return kFALSE;
   
-  fChannelsToPadX.Set(fNrOfChannels);
+  fChannelsToPadX.Set(fNrOfFebs*fNrOfChannels);
   if ( ! l->fill("ChannelsToPadX", &fChannelsToPadX) ) return kFALSE;
 
-  fChannelsToPadY.Set(fNrOfChannels);
+  fChannelsToPadY.Set(fNrOfFebs*fNrOfChannels);
   if ( ! l->fill("ChannelsToPadY", &fChannelsToPadY) ) return kFALSE;
 
   return kTRUE;
 }
 
+
+Int_t CbmMuchUnpackPar::GetPadX(Int_t febid, Int_t channelid)
+{
+   if( fChannelsToPadX.GetSize () <= (febid*fNrOfChannels)+channelid )
+      LOG(FATAL) << "CbmMuchUnpackPar::GetPadX => Index out of bounds: " 
+                 << ((febid*fNrOfChannels)+channelid) << " VS " << fChannelsToPadX.GetSize()
+                 << " (" << febid << " and " << channelid << ")"
+                 << FairLogger::endl;
+      
+   
+   return fChannelsToPadX[(febid*fNrOfChannels)+channelid];
+}
+Int_t CbmMuchUnpackPar::GetPadY(Int_t febid, Int_t channelid)
+{
+   if( fChannelsToPadY.GetSize() <= (febid*fNrOfChannels)+channelid )
+      LOG(FATAL) << "CbmMuchUnpackPar::GetPadY => Index out of bounds: " 
+                 << ((febid*fNrOfChannels)+channelid) << " VS " << fChannelsToPadY.GetSize()
+                 << " (" << febid << " and " << channelid << ")"
+                 << FairLogger::endl;
+                 
+   return fChannelsToPadY[(febid*fNrOfChannels)+channelid];
+}
 
 ClassImp(CbmMuchUnpackPar)

@@ -99,7 +99,9 @@ double ngdpb::Message::getMsgFullTimeD(uint32_t epoch) const
 {
    switch (getMessageType()) {         
       case MSG_HIT:
-         return FullTimeStamp(getNxLastEpoch() ? epoch - 1 : epoch, getNxTs()) * (6.25 / 4.); // ignore the 2 last bits of NX TS (fine-time)
+         if( 0 < epoch )
+            return FullTimeStamp(getNxLastEpoch() ? epoch - 1 : epoch, getNxTs()) * (6.25 / 4.); // ignore the 2 last bits of NX TS (fine-time)
+         else return (getNxLastEpoch() ? -1 : FullTimeStamp( epoch, getNxTs()) * (6.25 / 4.) ); // ignore the 2 last bits of NX TS (fine-time)
       case MSG_EPOCH:
          return FullTimeStamp(getEpochNumber(), 0); // ignore the 2 last bits
       case MSG_SYNC:

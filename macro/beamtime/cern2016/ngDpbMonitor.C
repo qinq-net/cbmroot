@@ -7,6 +7,8 @@
  ** Uses CbmFlibTestSource as source task.
  */
 
+// In order to call later Finish, we make this global
+FairRunOnline *run = NULL;
 
 void ngDpbMonitor(TString inFile = "sps2016111302_1945.tsa")
 {
@@ -32,6 +34,10 @@ void ngDpbMonitor(TString inFile = "sps2016111302_1945.tsa")
   TList *parFileList = new TList();
   TString paramDir = "./";
 
+  TString paramFileMuch = paramDir + "MuchUnpackPar.par";
+  TObjString* tutDetDigiFileMuch = new TObjString(paramFileMuch);
+  parFileList->Add(tutDetDigiFileMuch);
+
   TString paramFileTof = paramDir + "MapCern2016.par";
   TObjString* tutDetDigiFileTof = new TObjString(paramFileTof);
   parFileList->Add(tutDetDigiFileTof);
@@ -40,16 +46,19 @@ void ngDpbMonitor(TString inFile = "sps2016111302_1945.tsa")
   gDebug = 0;
   
   std::cout << std::endl;
-  std::cout << ">>> FHodoLabSetup: output file is " << outFile << std::endl;
+  std::cout << ">>> ngDpbMonitor: output file is " << outFile << std::endl;
 
   // ========================================================================
   // ========================================================================
 
   std::cout << std::endl;
-  std::cout << ">>> FHodoLabSetup: Initialising..." << std::endl;
+  std::cout << ">>> ngDpbMonitor: Initialising..." << std::endl;
 
-  // NXyter Unpacker
-  CbmTSUnpackDummy*    dummy_unpacker     = new CbmTSUnpackDummy();
+  // Dummy Unpacker
+//  CbmTSUnpackDummy*    dummy_unpacker     = new CbmTSUnpackDummy();
+  
+  // Much Monitor
+  CbmTSMonitorMuch* test_monitor_much = new CbmTSMonitorMuch();
   
   // Get4 Unpacker
   CbmTSMonitorTof* test_monitor_tof = new CbmTSMonitorTof();
@@ -57,16 +66,18 @@ void ngDpbMonitor(TString inFile = "sps2016111302_1945.tsa")
   // --- Source task
   CbmFlibTestSource* source = new CbmFlibTestSource();
   source->SetFileName(inFile);
-   source->AddUnpacker(dummy_unpacker, 0x10, 4);//gDPB A & B
+  
+  source->AddUnpacker(test_monitor_tof,  0x60, 6); //gDPBs
+  source->AddUnpacker(test_monitor_much, 0x10, 4); //nDPBs
+//   source->AddUnpacker(dummy_unpacker, 0x10, 4);//gDPB A & B
 //   source->AddUnpacker(dummy_unpacker, 0x60, 6);//gDPB A & B
-  source->AddUnpacker(test_monitor_tof, 0x60, 6);//gDPB A & B
 
   // --- Event header
   FairEventHeader* event = new CbmTbEvent();
   event->SetRunId(1);
 
   // --- Run
-  FairRunOnline *run = new FairRunOnline(source);
+  run = new FairRunOnline(source);
   run->SetOutputFile(outFile);
   run->SetEventHeader(event);
   run->ActivateHttpServer(10000); // refresh each 100 events
@@ -87,7 +98,7 @@ void ngDpbMonitor(TString inFile = "sps2016111302_1945.tsa")
   // --- Start run
   TStopwatch timer;
   timer.Start();
-  std::cout << ">>> FHodoLabSetup: Starting run..." << std::endl;
+  std::cout << ">>> ngDpbMonitor: Starting run..." << std::endl;
   run->Run(nEvents, 0); // run until end of input file
   timer.Stop();
   
@@ -97,9 +108,9 @@ void ngDpbMonitor(TString inFile = "sps2016111302_1945.tsa")
   Double_t rtime = timer.RealTime();
   Double_t ctime = timer.CpuTime();
   std::cout << std::endl << std::endl;
-  std::cout << ">>> FHodoLabSetup: Macro finished successfully." << std::endl;
-  std::cout << ">>> FHodoLabSetup: Output file is " << outFile << std::endl;
-  std::cout << ">>> FHodoLabSetup: Real time " << rtime << " s, CPU time "
+  std::cout << ">>> ngDpbMonitor: Macro finished successfully." << std::endl;
+  std::cout << ">>> ngDpbMonitor: Output file is " << outFile << std::endl;
+  std::cout << ">>> ngDpbMonitor: Real time " << rtime << " s, CPU time "
 	    << ctime << " s" << std::endl;
   std::cout << std::endl;
 
