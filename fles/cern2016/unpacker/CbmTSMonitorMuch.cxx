@@ -140,9 +140,9 @@ void CbmTSMonitorMuch::CreateHistograms()
 #endif
 
 	TString sHistName{""};
-  TString title{""};
-  for ( Int_t febId = 0 ;
-      febId < fUnpackPar->GetNrOfnDpbsModA()*fUnpackPar->GetNrOfFebsPerNdpb();
+    	TString title{""};
+	for ( Int_t febId = 0 ; 
+         febId < fUnpackPar->GetNrOfnDpbsModA()*fUnpackPar->GetNrOfFebsPerNdpb(); 
          febId++){// looping on all the FEB IDs
 		sHistName = Form("Chan_Counts_Much_%02u", febId);
 		title = Form("Channel counts Much FEB %02u; channel; Counts", febId);
@@ -168,7 +168,23 @@ void CbmTSMonitorMuch::CreateHistograms()
 
 	sHistName = "Pad_Distribution";
 	title = "Pad_Distribution; Sectors in Horizontal Direction; Channels in Vertical Direction";
-	fHM->Add( sHistName.Data(), new TH2F(sHistName.Data(), title.Data(), 79, 0, 78, 23, 0, 22) );
+	fHM->Add( sHistName.Data(), new TH2F(sHistName.Data(), title.Data(), 79, -0.5, 78.5, 23, -0.5, 22.5) );
+
+/*	TH2* histPadDistr = fHM->H2("Pad_Distribution");
+	for( Int_t iFeb = 0; iFeb < 15; iFeb ++)
+		for( Int_t iChan = 0; iChan <  128; iChan ++)
+		{
+			Int_t sector  = fUnpackPar->GetPadX(iFeb, iChan);
+			Int_t channel = fUnpackPar->GetPadY(iFeb, iChan);
+			if(!(sector<0||channel<0)){
+	
+			histPadDistr->Fill((78-sector),(22-channel), (iFeb + 1));
+			if (sector==25 && channel==0) cout <<	"Pad X value" << fUnpackPar->GetPadX(iFeb, iChan) << "Pad Y value" << fUnpackPar->GetPadY(iFeb, iChan) << endl;
+		}
+	}
+//	Int_t iFeb = 3, iChan =32;	
+
+*/	
 #ifdef USE_HTTP_SERVER
     if (server) server->Register("/MuchRaw", fHM->H2(sHistName.Data()));
 #endif
@@ -197,7 +213,7 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
       sHistName = Form("FebRate_%02u", febId);
       FebRate.push_back(fHM->H1(sHistName.Data()));
   }
-  TH1* histPadDistr = fHM->H2("Pad_Distribution");
+  TH2* histPadDistr = fHM->H2("Pad_Distribution");
 
   // Loop over microslices
   for (size_t m = 0; m < ts.num_microslices(component); ++m)
@@ -271,7 +287,7 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
 void CbmTSMonitorMuch::FillHitInfo(ngdpb::Message mess, std::vector<TH1*> Chan_Counts_Much,
                                    std::vector<TH2*> Raw_ADC_Much,
                                    std::vector<TH1*> FebRate,
-                                   TH1* histPadDistr)
+                                   TH2* histPadDistr)
 {
   // --- Get absolute time, NXYTER and channel number
   Int_t rocId      = mess.getRocNumber();
@@ -299,7 +315,7 @@ void CbmTSMonitorMuch::FillHitInfo(ngdpb::Message mess, std::vector<TH1*> Chan_C
 	Int_t channelNr = fNdpbIdIndexMap[rocId]*fUnpackPar->GetNrOfFebsPerNdpb() + nxyterId;
 	Chan_Counts_Much[channelNr]->Fill(nxChannel);
 	Raw_ADC_Much[channelNr]->Fill(nxChannel, charge);
-//	histPadDistr->Fill(nxChannel,charge);
+	histPadDistr->Fill(nxChannel,charge);
 
    if( fCurrentEpoch.end() != fCurrentEpoch.find( rocId ) ) {
       if( fCurrentEpoch[rocId].end() != fCurrentEpoch[rocId].find( nxyterId ) ) {
@@ -324,16 +340,21 @@ void CbmTSMonitorMuch::FillHitInfo(ngdpb::Message mess, std::vector<TH1*> Chan_C
 
 Int_t CbmTSMonitorMuch::CreateAddress(Int_t rocId, Int_t febId, Int_t stationId,
 		Int_t layerId, Int_t sideId, Int_t moduleId, Int_t channelId,
-		TH1* histPadDistr)
+		TH2* histPadDistr)
 {
-	Int_t sector  = fUnpackPar->GetPadX(febId, channelId);
-   Int_t channel = fUnpackPar->GetPadY(febId, channelId);
+	Int_t febNr = fNdpbIdIndexMap[rocId]*fUnpackPar->GetNrOfFebsPerNdpb() + febId;
+	Int_t sector  = fUnpackPar->GetPadX(febNr, channelId);
+	Int_t channel = fUnpackPar->GetPadY(febNr, channelId);
    
 	Int_t address = CbmMuchAddress::GetAddress(stationId, layerId, sideId, moduleId, sector, channel);
-	histPadDistr->Fill(sector,channel);
+	if(!(sector<0||channel<0)){
+		
+		histPadDistr->Fill(78-sector,22-channel);
+		
+	}
 //	fHM->H2("Pad_Distribution")->Fill(sector,channel);
-	return(address);
-
+	
+	return address;
 }
 
 void CbmTSMonitorMuch::FillEpochInfo(ngdpb::Message mess)
