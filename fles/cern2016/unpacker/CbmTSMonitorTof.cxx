@@ -407,6 +407,8 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts, size_t component)
      FeetRate_gDPB.push_back(fHM->H2(name.Data()));
    }
 
+
+   Int_t messageType = -111;
    // Loop over microslices
    for (size_t m = 0; m < ts.num_microslices(component); ++m)
    {
@@ -448,24 +450,25 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts, size_t component)
 
          // Increment counter for different message types 
          // and fill the corresponding histogram
-         fMsgCounter[mess.getMessageType()]++;
-         histMessType->Fill(mess.getMessageType());
+         messageType = mess.getMessageType();
+         fMsgCounter[messageType]++;
+         histMessType->Fill(messageType);
 
          Int_t rocId      = fGdpbIdIndexMap[mess.getRocNumber()];
          Int_t get4Id     = mess.getGdpbGenChipId();
          Int_t get4Nr    = (rocId*fNrOfGet4PerGdpb) + get4Id;
 
-         switch( mess.getMessageType() ) 
+         switch( messageType )
          {
             case ngdpb::MSG_HIT: 
                //           FillHitInfo(mess);
-               LOG(ERROR) << "Message type " << mess.getMessageType() 
+               LOG(ERROR) << "Message type " << messageType
                           << " not yet included in unpacker."
                           << FairLogger::endl;
                break;
             case ngdpb::MSG_EPOCH:
                //           FillEpochInfo(mess);
-               LOG(ERROR) << "Message type " << mess.getMessageType() 
+               LOG(ERROR) << "Message type " << messageType
                           << " not yet included in unpacker."
                           << FairLogger::endl;
                break;
@@ -562,7 +565,7 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts, size_t component)
                default:
                if(100 > iMess++)
                   LOG(ERROR) << "Message ("<<iMess<<") type " << std::hex << std::setw(2) 
-                             << static_cast< uint16_t >( mess.getMessageType() ) 
+                             << static_cast< uint16_t >( messageType )
                              << " not yet included in Get4 unpacker."
                              << FairLogger::endl;
                if(100 == iMess)
@@ -643,8 +646,7 @@ void CbmTSMonitorTof::FillHitInfo(ngdpb::Message mess,
          } // if( fCurrentEpoch[rocId].end() != fCurrentEpoch[rocId].find( get4Id ) )
       } // if( fCurrentEpoch.end() != fCurrentEpoch.find( rocId ) ) 
    } // if( fGdpbIdIndexMap.end() != fGdpbIdIndexMap.find( rocId ) )
-      else LOG(WARNING) << "found unmapped rocId w/o epoch yet: " << Form("0x%08x ",rocId) << FairLogger::endl;
-      
+   else LOG(WARNING) << "found unmapped rocId w/o epoch yet: " << Form("0x%08x ",rocId) << FairLogger::endl;
 }
 
 void CbmTSMonitorTof::FillEpochInfo(ngdpb::Message mess)
@@ -653,30 +655,20 @@ void CbmTSMonitorTof::FillEpochInfo(ngdpb::Message mess)
    Int_t get4Id     = mess.getGdpbGenChipId();
    fCurrentEpoch[rocId][get4Id] = mess.getEpoch2Number();
 
-   // Create histograms for new ROCs in the data stream
-   if( fGdpbIdIndexMap.end() == fGdpbIdIndexMap.find( rocId ) )
-   {
-      fGdpbIdIndexMap[ rocId ] = fuCurrNbGdpb;
-      fuCurrNbGdpb ++;
-     
-      if( fuMinNbGdpb < fuCurrNbGdpb )
-      {
-      } // if( fuMinNbGdpb < fuCurrNbGdpb )
-   } // if( std::map::end == fGdpbIdIndexMap.find( rocId ) )
-
    //  LOG(INFO) << "Epoch message for ROC " << rocId << " with epoch number "
    //            << fCurrentEpoch[rocId] << FairLogger::endl;
 
    fCurrentEpochTime = mess.getMsgFullTime(fCurrentEpoch[rocId][get4Id]);
    fNofEpochs++;
-   LOG(DEBUG) << "Epoch message "
+/*
+    LOG(DEBUG) << "Epoch message "
               << fNofEpochs << ", epoch " << static_cast<Int_t>(fCurrentEpoch[rocId][get4Id])
               << ", time " << std::setprecision(9) << std::fixed
               << Double_t(fCurrentEpochTime) * 1.e-9 << " s "
               << " for board ID " << std::hex << std::setw(4) << rocId << std::dec
               << " and chip " << mess.getEpoch2ChipNumber()
               << FairLogger::endl;
-
+*/
 }
 
 void CbmTSMonitorTof::PrintSlcInfo(ngdpb::Message mess)
