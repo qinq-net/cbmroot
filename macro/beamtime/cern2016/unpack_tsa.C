@@ -7,11 +7,12 @@
  ** Uses CbmFlibTestSource as source task.
  */
 
-void unpack_tsa(Int_t nEvt=100, TString FileId = "cosmic_2016110701_safe_4links_4")
+//void unpack_tsa(Int_t nEvt=100, TString FileId = "cosmic_2016110701_safe_4links_4")
+void unpack_tsa(Int_t nEvt=100, TString FileId = "sps2016111302_1945")
 {
 
   TString srcDir = gSystem->Getenv("VMCWORKDIR");
-  TString inDir  = "./data/";
+  TString inDir  = "./input/";
   inFile = inDir + FileId + ".tsa"; 
 
   // --- Specify number of events to be produced.
@@ -60,13 +61,14 @@ void unpack_tsa(Int_t nEvt=100, TString FileId = "cosmic_2016110701_safe_4links_
   //  test_unpacker->CreateRawMessageOutput(kTRUE);
   
   // Get4 Unpacker
-  CbmTSUnpackTof* test_unpacker_tof = new CbmTSUnpackTof(4);
+  CbmTSUnpackTof* test_unpacker_tof = new CbmTSUnpackTof(7);  //argument is number of gDpb
 
   // --- Source task
   CbmFlibTestSource* source = new CbmFlibTestSource();
+  source->SetMaxDeltaT(500.);
   source->SetFileName(inFile);
   source->AddUnpacker(test_unpacker_tof, 0x60, 6);//gDPB A & B
-  //  source->AddUnpacker(test_unpacker,     0x10, 10);//nDPB A & B = HODO 1 + 2
+  //source->AddUnpacker(test_unpacker,     0x10, 10);//nDPB A & B = HODO 1 + 2
 
   // --- Event header
   FairEventHeader* event = new CbmTbEvent();
