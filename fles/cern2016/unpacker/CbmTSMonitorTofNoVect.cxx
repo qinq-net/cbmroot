@@ -635,7 +635,7 @@ void CbmTSMonitorTofNoVect::FillHitInfo(ngdpb::Message mess,
      if( 0 < fdStartTime )
        FeetRate_gDPB[ gdpbNr ]->Fill( 1e-9*( mess.getMsgFullTimeD( curEpochGdpbGet4 )
            - fdStartTime),
-           get4Id / fUnpackPar->GetNrOfFebsPerGdpb() );
+           get4Id / fNrOfGet4PerFeb );
           
      hitTime  = mess.getMsgFullTime(curEpochGdpbGet4);
      Int_t Ft = mess.getGdpbHitFineTs();
