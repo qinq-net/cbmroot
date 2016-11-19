@@ -251,7 +251,9 @@ Bool_t CbmTofDigiBdfPar::getParams(FairParamList* l)
    {
      nDet+=GetNbSm(iSmType)*GetNbRpc(iSmType);
    }
-   fiDetUId.Set( nDet);  // dimension unique identifier array
+
+   fiDetUId.Set( nDet);    // dimension unique identifier array
+   fMapDetInd.clear();  // reset
    
    Int_t iDet=0;
    for( Int_t iSmType = 0; iSmType < fiNbSmTypes; iSmType ++)
@@ -260,7 +262,9 @@ Bool_t CbmTofDigiBdfPar::getParams(FairParamList* l)
     {
       for(Int_t iRpc=0; iRpc<GetNbRpc(iSmType); iRpc++)
       {
-	fiDetUId[iDet++]=CbmTofAddress::GetUniqueAddress(iSm,iRpc,0,0,iSmType);
+	Int_t iAddr = CbmTofAddress::GetUniqueAddress(iSm,iRpc,0,0,iSmType);
+	fMapDetInd[iAddr]=iDet;
+	fiDetUId[iDet++]=iAddr;
       }
     }
    } // for( Int_t iSmType = 0; iSmType < fiNbSmTypes; iSmType ++)
@@ -838,10 +842,18 @@ Int_t CbmTofDigiBdfPar::GetNbDet() const
 
 Int_t CbmTofDigiBdfPar::GetDetInd(Int_t iAddr)
 {
+  
   const Int_t DetMask = 4194303;
+  /*
   Int_t iInd=0;
-  while (fiDetUId[iInd] != (iAddr & DetMask) ) iInd++; //FIXME, inefficient and using a numerical constant!
+  while (fiDetUId[iInd] != (iAddr & DetMask) && iInd<fiDetUId.GetSize()) iInd++; //FIXME, inefficient and using a numerical constant!
+  if(iInd == fiDetUId.GetSize()){
+    LOG(ERROR)<<Form(" detector id 0x%08x unknown ",iAddr) << FairLogger::endl;
+    iInd=0;
+  }
   return iInd;
+  */
+  return fMapDetInd[(iAddr&DetMask)]; 
 }
 
 Int_t CbmTofDigiBdfPar::GetDetUId(Int_t iInd)

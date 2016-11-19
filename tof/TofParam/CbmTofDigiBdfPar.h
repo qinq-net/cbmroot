@@ -18,6 +18,9 @@
 #include "TArrayC.h"
 #include "TArrayI.h"
 #include "TArrayD.h"
+#include <map>
+
+
 class TH1;
 
 class FairParamList;
@@ -133,6 +136,7 @@ class CbmTofDigiBdfPar : public FairParGenericSet
     std::vector< TArrayI > fiChType;         // [fiNbSmTypes][fiNbRpc]
     std::vector< TArrayI > fiChOrientation;  // [fiNbSmTypes][fiNbRpc] -> in parameter? Possibility to Readout from geometry angles?
     TArrayI                fiDetUId;         // [NbDet]         
+    std::map <Int_t,Int_t> fMapDetInd;       // [NbDet]         
 
     // Beamtime variables
     TString                fsBeamInputFile;

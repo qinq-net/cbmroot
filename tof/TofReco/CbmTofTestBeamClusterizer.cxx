@@ -2098,18 +2098,23 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
      Int_t iSmType   = CbmTofAddress::GetSmType( iUniqueId );
      Int_t iSm       = CbmTofAddress::GetSmId( iUniqueId );
      Int_t iRpc      = CbmTofAddress::GetRpcId( iUniqueId );
+     
      Int_t iNent =0;
-     if(fCalSel > -1) 
-      iNent = fhTRpcCluAvWalk[iDetIndx][fCalSel]->GetEntries();
-     else
-      iNent = fhRpcCluAvWalk[iDetIndx]->GetEntries();
-
+     if(fCalSel > -1){ 
+      if(NULL == fhTRpcCluAvWalk[iDetIndx][fCalSel]) continue;
+      iNent = (Int_t) fhTRpcCluAvWalk[iDetIndx][fCalSel]->GetEntries();
+     }
+     else{
+      if(NULL == fhRpcCluAvWalk[iDetIndx]) continue;
+      iNent = (Int_t) fhRpcCluAvWalk[iDetIndx]->GetEntries();
+     }
      if(0==iNent){
        LOG(INFO)<<"CbmTofTestBeamClusterizer::WriteHistos: No entries in Walk histos for " 
                  <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc 
                  <<FairLogger::endl;
        // continue;
      }
+     
      //     if(-1<fCalSmAddr && fcalType != iSmAddr) continue;
 
      TProfile *htempPos_pfx  = NULL;  
@@ -3104,7 +3109,13 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                    <<FairLogger::endl;
          break;
        }
-               
+       
+       if (NULL == fhRpcDigiCor[iDetIndx]) {
+         LOG(WARNING)<<Form(" DigiCor Histo ofr  DetIndx %d not found ",iDetIndx)
+                   <<FairLogger::endl;	 
+	 continue; 
+       } 
+       
        Double_t dTDifMin=dDoubleMax;
        CbmTofDigiExp *pDigi2Min=NULL;
        //       for (Int_t iDigI2 =iDigInd+1; iDigI2<iNbTofDigi;iDigI2++){
@@ -3180,6 +3191,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
    {
       CbmTofDigiExp *pDigi;
       CbmTofDigiExp *pCalDigi;
+      Int_t iDigIndCal=-1;
       for( Int_t iDigInd = 0; iDigInd < iNbTofDigi; iDigInd++ )
       {
          pDigi = (CbmTofDigiExp*) fTofDigisColl->At( iDigInd );
@@ -3193,7 +3205,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 		   <<Form("%f",pDigi->GetTime())<<" "
                    <<pDigi->GetTot()
 		   <<FairLogger::endl;
-	 pCalDigi = new((*fTofCalDigisColl)[iDigInd]) CbmTofDigiExp( *pDigi );
+	 pCalDigi = new((*fTofCalDigisColl)[++iDigIndCal]) CbmTofDigiExp( *pDigi );
 	 if(fbPs2Ns) {
 	   pCalDigi->SetTime(pCalDigi->GetTime()/1000.);        // for backward compatibility
 	   pCalDigi->SetTot(pCalDigi->GetTot()/1000.);          // for backward compatibility
@@ -3267,7 +3279,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 
          if(0) {//pDigi->GetType()==7 && pDigi->GetSm()==0){
           LOG(INFO)<<"CbmTofTestBeamClusterizer::BuildClusters: CalDigi "
-                    <<iDigInd<<",  T "
+                    <<iDigIndCal<<",  T "
                     <<pCalDigi->GetType()<<", Sm "
                     <<pCalDigi->GetSm()<<", R "
                     <<pCalDigi->GetRpc()<<", Ch "
@@ -3322,8 +3334,14 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                      <<" Ch "  <<pDigi->GetChannel()<<" "<<fDigiBdfPar->GetNbChan(pDigi->GetType(),0)
                      <<FairLogger::endl;
            }
+          if(pCalDigi->GetType()==5 || pCalDigi->GetType() == 8) {  // for Pad counters generate fake digi to mockup a strip
+	     CbmTofDigiExp *pCalDigi2 = new((*fTofCalDigisColl)[++iDigIndCal]) CbmTofDigiExp( *pCalDigi );
+             if(pCalDigi->GetSide()==0) pCalDigi2->SetAddress(pCalDigi->GetSm(),pCalDigi->GetRpc(),pCalDigi->GetChannel(),1,pCalDigi->GetType());
+             else                       pCalDigi2->SetAddress(pCalDigi->GetSm(),pCalDigi->GetRpc(),pCalDigi->GetChannel(),0,pCalDigi->GetType());;
+	  }
       } // for( Int_t iDigInd = 0; iDigInd < nTofDigi; iDigInd++ )
-
+      
+      iNbTofDigi = fTofCalDigisColl->GetEntries();  // update because of added duplicted digis
       if(fTofCalDigisColl->IsSortable())
 	LOG(DEBUG)<<"CbmTofTestBeamClusterizer::BuildClusters: Sort "<<fTofCalDigisColl->GetEntries()<<" calibrated digis "
                    <<FairLogger::endl;
