@@ -174,7 +174,7 @@ void CbmTSMonitorTof::CreateHistograms()
   hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_NOP,      "NOP");
   fHM->Add(name.Data(), hMessageType);
 #ifdef USE_HTTP_SERVER
-      server->Register("/TofRaw", fHM->H1(name.Data()));
+      if (server) server->Register("/TofRaw", fHM->H1(name.Data()));
 #endif
 
   name = "hSysMessType";
@@ -198,7 +198,7 @@ void CbmTSMonitorTof::CreateHistograms()
   hSysMessType->GetXaxis()->SetBinLabel(1 + 16, "GET4 Hack 32B");
   fHM->Add(name.Data(), hSysMessType);
 #ifdef USE_HTTP_SERVER
-      server->Register("/TofRaw", fHM->H1(name.Data()));
+  if (server) server->Register("/TofRaw", fHM->H1(name.Data()));
 #endif
 
   name = "hGet4MessType";
@@ -212,7 +212,7 @@ void CbmTSMonitorTof::CreateHistograms()
   hGet4MessType->GetYaxis()->SetBinLabel(1 + ngdpb::GET4_32B_DATA+1,"DATA 24b");
   fHM->Add(name.Data(), hGet4MessType);
 #ifdef USE_HTTP_SERVER
-      server->Register("/TofRaw", fHM->H2(name.Data()));
+  if (server) server->Register("/TofRaw", fHM->H2(name.Data()));
 #endif
 
   name = "hGet4ChanErrors";
@@ -239,7 +239,7 @@ void CbmTSMonitorTof::CreateHistograms()
   hGet4ChanErrors->GetYaxis()->SetBinLabel(18, "Corrupt error or unsupported yet");
   fHM->Add(name.Data(), hGet4ChanErrors);
 #ifdef USE_HTTP_SERVER
-      server->Register("/TofRaw", fHM->H2(name.Data()));
+  if (server) server->Register("/TofRaw", fHM->H2(name.Data()));
 #endif
 
   Double_t w = 10;
@@ -335,7 +335,7 @@ void CbmTSMonitorTof::CreateHistograms()
 	  fHM->Add(name.Data(), new TH2F(name.Data(), title.Data(),
 			   iNbBinsRate-1, dBinsRate, 96, 0, 95) );
 #ifdef USE_HTTP_SERVER
-      server->Register("/TofRaw", fHM->H2(name.Data()));
+	  if (server) server->Register("/TofRaw", fHM->H2(name.Data()));
 #endif
 	  LOG(INFO) << "Adding the rate histos" << FairLogger::endl;
 	} // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
@@ -347,7 +347,7 @@ void CbmTSMonitorTof::CreateHistograms()
     title = Form("Raw TOT gDPB %02u; channel; TOT [bin]", uGdpb);
     fHM->Add(name.Data(), new TH2F(name.Data(), title.Data(), 96, 0, 95, 256, 0, 256) );
 #ifdef USE_HTTP_SERVER
-    server->Register("/TofRaw", fHM->H2(name.Data()));
+    if (server) server->Register("/TofRaw", fHM->H2(name.Data()));
 #endif
 
     name = Form("ChCount_gDPB_%02u", uGdpb);
@@ -355,7 +355,7 @@ void CbmTSMonitorTof::CreateHistograms()
     fHM->Add(name.Data(), new TH1I(name.Data(), title.Data(), 96, 0, 95 ) );
 
 #ifdef USE_HTTP_SERVER
-    server->Register("/TofRaw", fHM->H1(name.Data()));
+    if (server) server->Register("/TofRaw", fHM->H1(name.Data()));
 #endif
 
     name = Form("FeetRate_gDPB_%02u", uGdpb);
@@ -363,7 +363,7 @@ void CbmTSMonitorTof::CreateHistograms()
     fHM->Add(name.Data(), new TH2F( name.Data(), title.Data(), 
                                     1800, 0, 1800, fNrOfFebsPerGdpb, 0, fNrOfFebsPerGdpb ) );
 #ifdef USE_HTTP_SERVER
-    server->Register("/TofRaw", fHM->H2(name.Data()));
+    if (server) server->Register("/TofRaw", fHM->H2(name.Data()));
 #endif
   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
 

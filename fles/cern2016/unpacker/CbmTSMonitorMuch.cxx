@@ -15,10 +15,12 @@
 #include "FairRootManager.h"
 #include "FairRun.h"
 #include "FairRuntimeDb.h"
+#include "FairRunOnline.h"
 
 #include "TClonesArray.h"
 #include "TString.h"
 #include "TRandom.h"
+#include "THttpServer.h"
 
 #include <iostream>
 #include <stdint.h>
@@ -133,27 +135,43 @@ Bool_t CbmTSMonitorMuch::ReInitContainers()
 
 void CbmTSMonitorMuch::CreateHistograms()
 {
+#ifdef USE_HTTP_SERVER
+    THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
+#endif
+
 	TString sHistName{""};
-    TString title{""};
-	for ( Int_t febId = 0 ; 
-         febId < fUnpackPar->GetNrOfnDpbsModA()*fUnpackPar->GetNrOfFebsPerNdpb(); 
+  TString title{""};
+  for ( Int_t febId = 0 ;
+      febId < fUnpackPar->GetNrOfnDpbsModA()*fUnpackPar->GetNrOfFebsPerNdpb();
          febId++){// looping on all the FEB IDs
 		sHistName = Form("Chan_Counts_Much_%02u", febId);
-      title = Form("Channel counts Much FEB %02u; channel; Counts", febId);
-      fHM->Add( sHistName.Data(), new TH1F( sHistName.Data(), title.Data(), 128, 0, 127) );
+		title = Form("Channel counts Much FEB %02u; channel; Counts", febId);
+		fHM->Add( sHistName.Data(), new TH1F( sHistName.Data(), title.Data(), 128, 0, 127) );
+#ifdef USE_HTTP_SERVER
+    if (server) server->Register("/MuchRaw", fHM->H1(sHistName.Data()));
+#endif
       
-      sHistName = Form("Raw_ADC_Much_%02u", febId);
-      title = Form("Raw ADC Much FEB %02u; channel; ADC value", febId);
-      fHM->Add( sHistName.Data(), new TH2F( sHistName.Data(), title.Data(), 128, 0, 127, 4096, 0, 4095) );
-                          
-      sHistName = Form("FebRate_%02u", febId);
-      title = Form("Counts per second in FEB%02u; Time[s] ; Counts", febId);
-      fHM->Add( sHistName.Data(), new TH1F( sHistName.Data(), title.Data(), 1800, 0, 1800 ) );
-    }
- 
+		sHistName = Form("Raw_ADC_Much_%02u", febId);
+		title = Form("Raw ADC Much FEB %02u; channel; ADC value", febId);
+		fHM->Add( sHistName.Data(), new TH2F( sHistName.Data(), title.Data(), 128, 0, 127, 4096, 0, 4095) );
+#ifdef USE_HTTP_SERVER
+    if (server) server->Register("/MuchRaw", fHM->H2(sHistName.Data()));
+#endif
+
+		sHistName = Form("FebRate_%02u", febId);
+		title = Form("Counts per second in FEB%02u; Time[s] ; Counts", febId);
+		fHM->Add( sHistName.Data(), new TH1F( sHistName.Data(), title.Data(), 1800, 0, 1800 ) );
+#ifdef USE_HTTP_SERVER
+    if (server) server->Register("/MuchRaw", fHM->H1(sHistName.Data()));
+#endif
+  }
+
 	sHistName = "Pad_Distribution";
 	title = "Pad_Distribution; Sectors in Horizontal Direction; Channels in Vertical Direction";
 	fHM->Add( sHistName.Data(), new TH2F(sHistName.Data(), title.Data(), 79, 0, 78, 23, 0, 22) );
+#ifdef USE_HTTP_SERVER
+    if (server) server->Register("/MuchRaw", fHM->H2(sHistName.Data()));
+#endif
 }
 
 Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
