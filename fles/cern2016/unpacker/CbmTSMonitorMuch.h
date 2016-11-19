@@ -45,8 +45,6 @@ public:
 
   void FillOutput(CbmDigi* digi);
 
-  Int_t CreateAddress(Int_t rocId, Int_t febId, Int_t stationId, Int_t layerId, Int_t sideId, Int_t moduleId, Int_t channelId);
-
 private:
 
   std::vector<int> fMsgCounter;
@@ -73,6 +71,9 @@ private:
 		  std::vector<TH1*>, TH1*);
   void FillEpochInfo(ngdpb::Message);
 #endif
+
+  Int_t CreateAddress(Int_t rocId, Int_t febId, Int_t stationId, Int_t layerId, Int_t sideId,
+		  Int_t moduleId, Int_t channelId, TH1*);
 
   CbmTSMonitorMuch(const CbmTSMonitorMuch&);
   CbmTSMonitorMuch operator=(const CbmTSMonitorMuch&);

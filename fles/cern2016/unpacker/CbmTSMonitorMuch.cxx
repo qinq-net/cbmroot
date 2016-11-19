@@ -269,7 +269,7 @@ void CbmTSMonitorMuch::FillHitInfo(ngdpb::Message mess, std::vector<TH1*> Chan_C
 
   //here converting channel number into the MUCH Digi.
 
-	Int_t address = CreateAddress(rocId,nxyterId,0, 0, 0, 0, nxChannel);
+	Int_t address = CreateAddress(rocId,nxyterId,0, 0, 0, 0, nxChannel, histPadDistr);
 	if (address){	
 		LOG(DEBUG) << "Create digi with time " << hitTime
                << " at epoch " << fCurrentEpoch[rocId][nxyterId] << FairLogger::endl;
@@ -304,13 +304,16 @@ void CbmTSMonitorMuch::FillHitInfo(ngdpb::Message mess, std::vector<TH1*> Chan_C
 
 }
 
-Int_t CbmTSMonitorMuch::CreateAddress(Int_t rocId, Int_t febId, Int_t stationId, Int_t layerId, Int_t sideId, Int_t moduleId, Int_t channelId)
+Int_t CbmTSMonitorMuch::CreateAddress(Int_t rocId, Int_t febId, Int_t stationId,
+		Int_t layerId, Int_t sideId, Int_t moduleId, Int_t channelId,
+		TH1* histPadDistr)
 {
 	Int_t sector  = fUnpackPar->GetPadX(febId, channelId);
    Int_t channel = fUnpackPar->GetPadY(febId, channelId);
    
 	Int_t address = CbmMuchAddress::GetAddress(stationId, layerId, sideId, moduleId, sector, channel);
-	fHM->H2("Pad_Distribution")->Fill(sector,channel);
+	histPadDistr->Fill(sector,channel);
+//	fHM->H2("Pad_Distribution")->Fill(sector,channel);
 	return(address);
 
 }
