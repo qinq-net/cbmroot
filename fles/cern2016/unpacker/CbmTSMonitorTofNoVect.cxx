@@ -183,7 +183,7 @@ void CbmTSMonitorTofNoVect::CreateHistograms()
   hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_NOP,      "NOP");
   fHM->Add(name.Data(), hMessageType);
 #ifdef USE_HTTP_SERVER
-      server->Register("/TofRaw", fHM->H1(name.Data()));
+      if (server) server->Register("/TofRaw", fHM->H1(name.Data()));
 #endif
 
   name = "hSysMessType";
@@ -207,7 +207,7 @@ void CbmTSMonitorTofNoVect::CreateHistograms()
   hSysMessType->GetXaxis()->SetBinLabel(1 + 16, "GET4 Hack 32B");
   fHM->Add(name.Data(), hSysMessType);
 #ifdef USE_HTTP_SERVER
-      server->Register("/TofRaw", fHM->H1(name.Data()));
+      if (server) server->Register("/TofRaw", fHM->H1(name.Data()));
 #endif
 
   name = "hGet4MessType";
@@ -221,7 +221,7 @@ void CbmTSMonitorTofNoVect::CreateHistograms()
   hGet4MessType->GetYaxis()->SetBinLabel(1 + ngdpb::GET4_32B_DATA+1,"DATA 24b");
   fHM->Add(name.Data(), hGet4MessType);
 #ifdef USE_HTTP_SERVER
-      server->Register("/TofRaw", fHM->H2(name.Data()));
+      if (server) server->Register("/TofRaw", fHM->H2(name.Data()));
 #endif
 
   name = "hGet4ChanErrors";
@@ -248,7 +248,7 @@ void CbmTSMonitorTofNoVect::CreateHistograms()
   hGet4ChanErrors->GetYaxis()->SetBinLabel(18, "Corrupt error or unsupported yet");
   fHM->Add(name.Data(), hGet4ChanErrors);
 #ifdef USE_HTTP_SERVER
-      server->Register("/TofRaw", fHM->H2(name.Data()));
+      if (server) server->Register("/TofRaw", fHM->H2(name.Data()));
 #endif
 
   Double_t w = 10;
@@ -344,7 +344,7 @@ void CbmTSMonitorTofNoVect::CreateHistograms()
 	  fHM->Add(name.Data(), new TH2F(name.Data(), title.Data(),
 			   iNbBinsRate-1, dBinsRate, 96, 0, 95) );
 #ifdef USE_HTTP_SERVER
-      server->Register("/TofRaw", fHM->H2(name.Data()));
+      if (server) server->Register("/TofRaw", fHM->H2(name.Data()));
 #endif
 	  LOG(INFO) << "Adding the rate histos" << FairLogger::endl;
 	} // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
@@ -356,7 +356,7 @@ void CbmTSMonitorTofNoVect::CreateHistograms()
     title = Form("Raw TOT gDPB %02u; channel; TOT [bin]", uGdpb);
     fHM->Add(name.Data(), new TH2F(name.Data(), title.Data(), 96, 0, 95, 256, 0, 256) );
 #ifdef USE_HTTP_SERVER
-    server->Register("/TofRaw", fHM->H2(name.Data()));
+    if (server) server->Register("/TofRaw", fHM->H2(name.Data()));
 #endif
 
     name = Form("ChCount_gDPB_%02u", uGdpb);
@@ -364,7 +364,7 @@ void CbmTSMonitorTofNoVect::CreateHistograms()
     fHM->Add(name.Data(), new TH1I(name.Data(), title.Data(), 96, 0, 95 ) );
 
 #ifdef USE_HTTP_SERVER
-    server->Register("/TofRaw", fHM->H1(name.Data()));
+    if (server) server->Register("/TofRaw", fHM->H1(name.Data()));
 #endif
 
     name = Form("FeetRate_gDPB_%02u", uGdpb);
@@ -372,7 +372,7 @@ void CbmTSMonitorTofNoVect::CreateHistograms()
     fHM->Add(name.Data(), new TH2F( name.Data(), title.Data(), 
                                     1800, 0, 1800, fNrOfFebsPerGdpb, 0, fNrOfFebsPerGdpb ) );
 #ifdef USE_HTTP_SERVER
-    server->Register("/TofRaw", fHM->H2(name.Data()));
+    if (server) server->Register("/TofRaw", fHM->H2(name.Data()));
 #endif
   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
 
@@ -600,8 +600,9 @@ void CbmTSMonitorTofNoVect::FillHitInfo(ngdpb::Message mess,
    Int_t channel    = mess.getGdpbHitChanId(); 
    Int_t tot        = mess.getGdpbHit32Tot();
    ULong_t hitTime  = mess.getMsgFullTime( 0 );
+   Int_t rocNr      = fGdpbIdIndexMap[rocId];
 
-   Int_t curEpochGdpbGet4 = fCurrentEpoch[GetArrayIndex(rocId,get4Id)];
+   Int_t curEpochGdpbGet4 = fCurrentEpoch[GetArrayIndex(rocNr,get4Id)];
    if (curEpochGdpbGet4 != -111) {
      Int_t gdpbNr = fGdpbIdIndexMap[ rocId ];
      Raw_Tot_gDPB[gdpbNr]->Fill( get4Id*fNrOfChannelsPerGet4 + channel, tot);
@@ -656,12 +657,13 @@ void CbmTSMonitorTofNoVect::FillEpochInfo(ngdpb::Message mess)
 {
    Int_t rocId          = mess.getRocNumber();
    Int_t get4Id     = mess.getGdpbGenChipId();
-   fCurrentEpoch[GetArrayIndex(rocId,get4Id)] = mess.getEpoch2Number();
+   Int_t rocNr      = fGdpbIdIndexMap[rocId];
+   fCurrentEpoch[GetArrayIndex(rocNr,get4Id)] = mess.getEpoch2Number();
 
    //  LOG(INFO) << "Epoch message for ROC " << rocId << " with epoch number "
    //            << fCurrentEpoch[rocId] << FairLogger::endl;
 
-   fCurrentEpochTime = mess.getMsgFullTime(fCurrentEpoch[GetArrayIndex(rocId,get4Id)]);
+   fCurrentEpochTime = mess.getMsgFullTime(fCurrentEpoch[GetArrayIndex(rocNr,get4Id)]);
    fNofEpochs++;
 /*
     LOG(DEBUG) << "Epoch message "
@@ -678,9 +680,10 @@ void CbmTSMonitorTofNoVect::PrintSlcInfo(ngdpb::Message mess)
 {
    Int_t rocId      = mess.getRocNumber();
    Int_t get4Id     = mess.getGdpbGenChipId();
+   Int_t rocNr      = fGdpbIdIndexMap[rocId];
 
    if( fGdpbIdIndexMap.end() != fGdpbIdIndexMap.find( rocId ) )
-      LOG(INFO) << "GET4 Slow Control message, epoch " << static_cast<Int_t>(fCurrentEpoch[GetArrayIndex(rocId,get4Id)])
+      LOG(INFO) << "GET4 Slow Control message, epoch " << static_cast<Int_t>(fCurrentEpoch[GetArrayIndex(rocNr,get4Id)])
                 << ", time " << std::setprecision(9) << std::fixed
                 << Double_t(fCurrentEpochTime) * 1.e-9 << " s "
                 << " for board ID " << std::hex << std::setw(4) << rocId << std::dec
@@ -715,9 +718,10 @@ void CbmTSMonitorTofNoVect::PrintSysInfo(ngdpb::Message mess)
 {
    Int_t rocId      = mess.getRocNumber();
    Int_t get4Id     = mess.getGdpbGenChipId();
+   Int_t rocNr      = fGdpbIdIndexMap[rocId];
 
    if( fGdpbIdIndexMap.end() != fGdpbIdIndexMap.find( rocId ) )
-      LOG(DEBUG) << "GET4 System message,       epoch " << static_cast<Int_t>(fCurrentEpoch[GetArrayIndex(rocId,get4Id)])
+      LOG(DEBUG) << "GET4 System message,       epoch " << static_cast<Int_t>(fCurrentEpoch[GetArrayIndex(rocNr,get4Id)])
                 << ", time " << std::setprecision(9) << std::fixed
                 << Double_t(fCurrentEpochTime) * 1.e-9 << " s "
                 << " for board ID " << std::hex << std::setw(4) << rocId << std::dec
