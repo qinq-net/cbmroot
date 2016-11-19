@@ -29,7 +29,7 @@ class CbmTSMonitorTof : public CbmTSUnpack
 {
 public:
   
-   CbmTSMonitorTof( UInt_t uNbGdpb = 1 );
+   CbmTSMonitorTof();
    virtual ~CbmTSMonitorTof();
     
    virtual Bool_t Init();
@@ -78,6 +78,7 @@ private:
    std::map<Int_t, std::map<Int_t, UInt_t> > fCurrentEpoch; 
    Int_t fNofEpochs; /** Current epoch marker for each ROC **/
    ULong_t fCurrentEpochTime;     /** Time stamp of current epoch **/
+   Double_t fdStartTime; /** Time of first valid hit (epoch available), used as reference for evolution plots**/
 
    /** Used only if the channel rate plots are enabled **/
    /** Last Hit time for each ROC/GET4/Channel (first hit in the stream initialises the map item) **/
@@ -91,7 +92,8 @@ private:
 
 #ifndef __CINT__
    void FillHitInfo(ngdpb::Message, std::vector<TH2*>,
-                    std::vector<TH1*>, std::vector<TH2*>
+                    std::vector<TH1*>, std::vector<TH2*>,
+                    std::vector<TH2*>
                    );
    void FillEpochInfo(ngdpb::Message);
    void PrintSlcInfo(ngdpb::Message);

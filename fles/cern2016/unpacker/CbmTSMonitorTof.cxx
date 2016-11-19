@@ -33,10 +33,10 @@
 
 static Int_t iMess=0;
 
-CbmTSMonitorTof::CbmTSMonitorTof( UInt_t uNbGdpb )
+CbmTSMonitorTof::CbmTSMonitorTof()
   : CbmTSUnpack(),
     fuMsAcceptsPercent(100),
-    fuMinNbGdpb( uNbGdpb ),
+    fuMinNbGdpb(),
 	fNrOfGdpbs(-1),
 	fNrOfFebsPerGdpb(-1),
 	fNrOfGet4PerFeb(-1),
@@ -51,6 +51,7 @@ CbmTSMonitorTof::CbmTSMonitorTof( UInt_t uNbGdpb )
     fTsLastHit(),
     fNofEpochs(0),
     fCurrentEpochTime(0.),
+    fdStartTime(-1.),
     fEquipmentId(0),
     fUnpackPar(NULL)
 {
@@ -99,6 +100,7 @@ Bool_t CbmTSMonitorTof::ReInitContainers()
    fNrOfGdpbs = fUnpackPar->GetNrOfRocs();
    LOG(INFO) << "Nr. of Tof GDPBs: " << fNrOfGdpbs
              << FairLogger::endl;
+   fuMinNbGdpb = fNrOfGdpbs;
 
    fNrOfFebsPerGdpb = fUnpackPar->GetNrOfFebsPerGdpb();
    LOG(INFO) << "Nr. of FEBS per Tof GDPB: " << fNrOfFebsPerGdpb
@@ -343,7 +345,7 @@ void CbmTSMonitorTof::CreateHistograms()
   {
     name = Form("Raw_Tot_gDPB_%02u", uGdpb);
     title = Form("Raw TOT gDPB %02u; channel; TOT [bin]", uGdpb);
-    fHM->Add(name.Data(), new TH2F(name.Data(), title.Data(), 96, 0, 95, 256, 0, 255) );
+    fHM->Add(name.Data(), new TH2F(name.Data(), title.Data(), 96, 0, 95, 256, 0, 256) );
 #ifdef USE_HTTP_SERVER
     server->Register("/TofRaw", fHM->H2(name.Data()));
 #endif
@@ -352,21 +354,17 @@ void CbmTSMonitorTof::CreateHistograms()
     title = Form("Channel counts gDPB %02u; channel; Hits", uGdpb);
     fHM->Add(name.Data(), new TH1I(name.Data(), title.Data(), 96, 0, 95 ) );
 
-
 #ifdef USE_HTTP_SERVER
     server->Register("/TofRaw", fHM->H1(name.Data()));
 #endif
-/*
-      if( fUnpackPar->IsChannelRateEnabled() )
-      {
-         const Int_t iNbBinsRate = 10;
-         Double_t dBinsRate[iNbBinsRate] = { 0, 10, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9 };
-         fHM->Add( Form("ChannelRate_gDPB_%02u", uGdpb),
-              new TH2F( Form("ChannelRate_gDPB_%02u", uGdpb),
-                        Form("Channel instant rate gDPB %02u; Rate[Hz] ; Channel", uGdpb),
-                        iNbBinsRate, dBinsRate, 96, 0, 95) );
-      } // if( fUnpackPar->IsChannelRateEnabled() )
-*/
+
+    name = Form("FeetRate_gDPB_%02u", uGdpb);
+    title = Form("Counts per second and FEB in gDPB %02u; Time[s] ; FEET; Counts", uGdpb);
+    fHM->Add(name.Data(), new TH2F( name.Data(), title.Data(), 
+                                    1800, 0, 1800, fNrOfFebsPerGdpb, 0, fNrOfFebsPerGdpb ) );
+#ifdef USE_HTTP_SERVER
+    server->Register("/TofRaw", fHM->H2(name.Data()));
+#endif
   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
 
   LOG(INFO) << "Leaving CreateHistograms" << FairLogger::endl;
@@ -394,16 +392,19 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts, size_t component)
    std::vector<TH2*> Raw_Tot_gDPB;
    std::vector<TH1*> ChCount_gDPB;
    std::vector<TH2*> ChannelRate_gDPB;
+   std::vector<TH2*> FeetRate_gDPB;
 
    for(Int_t i=0; i<fNrOfGdpbs; ++i) {
      TString name = Form("Raw_Tot_gDPB_%02u", i);
      Raw_Tot_gDPB.push_back(fHM->H2(name.Data()));
      name = Form("ChCount_gDPB_%02u", i);
      ChCount_gDPB.push_back(fHM->H1(name.Data()));
-  	 name = Form("ChannelRate_gDPB_%02u", i);
+  	  name = Form("ChannelRate_gDPB_%02u", i);
      if( fUnpackPar->IsChannelRateEnabled() ) {
        ChannelRate_gDPB.push_back(fHM->H2(name.Data()));
      }
+     name = Form("FeetRate_gDPB_%02u", i);
+     FeetRate_gDPB.push_back(fHM->H2(name.Data()));
    }
 
    // Loop over microslices
@@ -481,7 +482,7 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts, size_t component)
                break;
             case ngdpb::MSG_GET4_32B:
                histGet4MessType->Fill(get4Nr, ngdpb::GET4_32B_DATA);
-               FillHitInfo(mess, Raw_Tot_gDPB, ChCount_gDPB, ChannelRate_gDPB);
+               FillHitInfo(mess, Raw_Tot_gDPB, ChCount_gDPB, ChannelRate_gDPB, FeetRate_gDPB);
                break;
             case ngdpb::MSG_GET4_SLC:
            	   histGet4MessType->Fill(get4Nr, ngdpb::GET4_32B_SLCM);
@@ -577,7 +578,8 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts, size_t component)
 void CbmTSMonitorTof::FillHitInfo(ngdpb::Message mess,
                                   std::vector<TH2*> Raw_Tot_gDPB,
                                   std::vector<TH1*> ChCount_gDPB,
-                                  std::vector<TH2*> ChannelRate_gDPB
+                                  std::vector<TH2*> ChannelRate_gDPB,
+                                  std::vector<TH2*> FeetRate_gDPB
 )
    {
    // --- Get absolute time, NXYTER and channel number
@@ -589,43 +591,59 @@ void CbmTSMonitorTof::FillHitInfo(ngdpb::Message mess,
 
    if( fGdpbIdIndexMap.end() != fGdpbIdIndexMap.find( rocId ) )
    {
-	  Int_t gdpbNr = fGdpbIdIndexMap[ rocId ];
-	  Raw_Tot_gDPB[gdpbNr]->Fill( get4Id*fNrOfChannelsPerGet4 + channel, tot);
-	  ChCount_gDPB[gdpbNr]->Fill( get4Id*fNrOfChannelsPerGet4 + channel );
-        
-      if( fUnpackPar->IsChannelRateEnabled() )
+      // Check if at least one epoch before in this gDPB
+      if( fCurrentEpoch.end() != fCurrentEpoch.find( rocId ) )
       {
-         // Check if at least one hit before in this gDPB
-         if( fTsLastHit.end() != fTsLastHit.find( rocId ) )
+         Int_t gdpbNr = fGdpbIdIndexMap[ rocId ];
+         Raw_Tot_gDPB[gdpbNr]->Fill( get4Id*fNrOfChannelsPerGet4 + channel, tot);
+         ChCount_gDPB[gdpbNr]->Fill( get4Id*fNrOfChannelsPerGet4 + channel );
+           
+         // Check if at least one epoch before in this GET4
+         if( fCurrentEpoch[rocId].end() != fCurrentEpoch[rocId].find( get4Id ) )
          {
-            // Check if at least one hit before in this Get4
-            if( fTsLastHit[rocId].end() != fTsLastHit[rocId].find( get4Id ) )
+            if( fUnpackPar->IsChannelRateEnabled() )
             {
-               // Check if at least one hit before in this channel
-               if( fTsLastHit[rocId][get4Id].end() != fTsLastHit[rocId][get4Id].find( channel ) )
+               // Check if at least one hit before in this gDPB
+               if( fTsLastHit.end() != fTsLastHit.find( rocId ) )
                {
-            	   ChannelRate_gDPB[gdpbNr]->Fill( 1e9/ ( mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] )
-                                     	           - fTsLastHit[rocId][get4Id][channel] ),
-                             	 	 	           get4Id*fNrOfChannelsPerGet4 + channel);
-               } // if( fTsLastHit[rocId][get4Id].end() != fTsLastHit[rocId][get4Id].find( channel ) )
-            } // if( fTsLastHit[rocId].end() != fTsLastHit[rocId].find( get4Id ) )
-         } // if( fTsLastHit.end() != fTsLastHit.find( rocId ) )
-             
-         fTsLastHit[rocId][get4Id][channel] = mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] );
-      } // if( fUnpackPar->IsChannelRateEnabled() )
-    
-      hitTime  = mess.getMsgFullTime(fCurrentEpoch[rocId][get4Id]);
-      Int_t Ft = mess.getGdpbHitFineTs();
+                  // Check if at least one hit before in this Get4
+                  if( fTsLastHit[rocId].end() != fTsLastHit[rocId].find( get4Id ) )
+                  {
+                     // Check if at least one hit before in this channel
+                     if( fTsLastHit[rocId][get4Id].end() != fTsLastHit[rocId][get4Id].find( channel ) )
+                     {
+                        ChannelRate_gDPB[gdpbNr]->Fill( 1e9/ ( mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] )
+                                                        - fTsLastHit[rocId][get4Id][channel] ),
+                                                     get4Id*fNrOfChannelsPerGet4 + channel);
+                     } // if( fTsLastHit[rocId][get4Id].end() != fTsLastHit[rocId][get4Id].find( channel ) )
+                  } // if( fTsLastHit[rocId].end() != fTsLastHit[rocId].find( get4Id ) )
+               } // if( fTsLastHit.end() != fTsLastHit.find( rocId ) )
+                   
+               fTsLastHit[rocId][get4Id][channel] = mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] );
+            } // if( fUnpackPar->IsChannelRateEnabled() )
+                
+            if( fdStartTime < 0 )
+               fdStartTime = mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] );
+               
+            if( 0 < fdStartTime )
+               FeetRate_gDPB[ gdpbNr ]->Fill( 1e-9*( mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] ) 
+                                                    - fdStartTime), 
+                                              get4Id / fUnpackPar->GetNrOfFebsPerGdpb() );
+          
+            hitTime  = mess.getMsgFullTime(fCurrentEpoch[rocId][get4Id]);
+            Int_t Ft = mess.getGdpbHitFineTs();
 
-      if(100 > iMess++)
-         LOG(DEBUG) << "Hit: " << Form("0x%08x ",rocId) << ", " << get4Id 
-                    << ", " << channel << ", " << tot
-                    << ", epoch " << fCurrentEpoch[rocId][get4Id]
-                    << ", FullTime " << hitTime 
-                    << ", FineTime " << Ft
-                    << FairLogger::endl;
+            if(100 > iMess++)
+               LOG(DEBUG) << "Hit: " << Form("0x%08x ",rocId) << ", " << get4Id 
+                          << ", " << channel << ", " << tot
+                          << ", epoch " << fCurrentEpoch[rocId][get4Id]
+                          << ", FullTime " << hitTime 
+                          << ", FineTime " << Ft
+                          << FairLogger::endl;
+         } // if( fCurrentEpoch[rocId].end() != fCurrentEpoch[rocId].find( get4Id ) )
+      } // if( fCurrentEpoch.end() != fCurrentEpoch.find( rocId ) ) 
    } // if( fGdpbIdIndexMap.end() != fGdpbIdIndexMap.find( rocId ) )
-      else LOG(WARNING) << "found rocId w/o epoch yet: " << Form("0x%08x ",rocId) << FairLogger::endl;
+      else LOG(WARNING) << "found unmapped rocId w/o epoch yet: " << Form("0x%08x ",rocId) << FairLogger::endl;
       
 }
 
@@ -700,11 +718,11 @@ void CbmTSMonitorTof::PrintGenInfo(ngdpb::Message mess)
 
 void CbmTSMonitorTof::PrintSysInfo(ngdpb::Message mess)
 {
-   Int_t rocId          = mess.getRocNumber();
+   Int_t rocId      = mess.getRocNumber();
    Int_t get4Id     = mess.getGdpbGenChipId();
 
    if( fGdpbIdIndexMap.end() != fGdpbIdIndexMap.find( rocId ) )
-      LOG(INFO) << "GET4 System message,       epoch " << static_cast<Int_t>(fCurrentEpoch[rocId][get4Id])
+      LOG(DEBUG) << "GET4 System message,       epoch " << static_cast<Int_t>(fCurrentEpoch[rocId][get4Id])
                 << ", time " << std::setprecision(9) << std::fixed
                 << Double_t(fCurrentEpochTime) * 1.e-9 << " s "
                 << " for board ID " << std::hex << std::setw(4) << rocId << std::dec
@@ -714,11 +732,26 @@ void CbmTSMonitorTof::PrintSysInfo(ngdpb::Message mess)
    {
       case ngdpb::SYSMSG_GET4_EVENT:
       {
-         LOG(INFO) << " +++++++ > Chip = " << std::setw(2) << mess.getGdpbGenChipId()
+         uint32_t uData = mess.getGdpbSysErrData();
+         if( ngdpb::GET4_V1X_ERR_TOT_OVERWRT == uData ||
+             ngdpb::GET4_V1X_ERR_TOT_RANGE   == uData ||
+             ngdpb::GET4_V1X_ERR_EVT_DISCARD == uData )
+            LOG(DEBUG) << " +++++++ > gDPB: " 
+                      << std::hex << std::setw(4) << rocId << std::dec
+                      << ", Chip = " << std::setw(2) << mess.getGdpbGenChipId()
+                      << ", Chan = " << std::setw(1) << mess.getGdpbSysErrChanId()
+                      << ", Edge = " << std::setw(1) << mess.getGdpbSysErrEdge()
+                      << ", Empt = " << std::setw(1) << mess.getGdpbSysErrUnused()
+                      << ", Data = " << std::hex << std::setw(2) << uData << std::dec
+                      << " -- GET4 V1 Error Event"
+                      << FairLogger::endl;
+            else LOG(INFO) << " +++++++ >gDPB: " 
+                   << std::hex << std::setw(4) << rocId << std::dec
+                   << ", Chip = " << std::setw(2) << mess.getGdpbGenChipId()
                    << ", Chan = " << std::setw(1) << mess.getGdpbSysErrChanId()
                    << ", Edge = " << std::setw(1) << mess.getGdpbSysErrEdge()
                    << ", Empt = " << std::setw(1) << mess.getGdpbSysErrUnused()
-                   << ", Data = " << std::hex << std::setw(2) << mess.getGdpbSysErrData() << std::dec
+                   << ", Data = " << std::hex << std::setw(2) << uData << std::dec
                    << " -- GET4 V1 Error Event"
                    << FairLogger::endl;
          break;
@@ -727,7 +760,7 @@ void CbmTSMonitorTof::PrintSysInfo(ngdpb::Message mess)
          LOG(INFO) << "Closy synchronization error" << FairLogger::endl;
          break;
       case ngdpb::SYSMSG_TS156_SYNC:
-         LOG(INFO) << "156.25MHz timestamp reset" << FairLogger::endl;
+         LOG(DEBUG) << "156.25MHz timestamp reset" << FairLogger::endl;
          break;
       case ngdpb::SYSMSG_GDPB_UNKWN:
          LOG(INFO) << "Unknown GET4 message, data: " << std::hex << std::setw(8)
@@ -770,7 +803,7 @@ void CbmTSMonitorTof::Finish()
    for( auto it = fCurrentEpoch.begin(); it != fCurrentEpoch.end(); ++it)
       for( auto itG = (it->second).begin(); itG != (it->second).end(); ++itG)
       LOG(INFO) << "Last epoch for gDPB: " 
-                << std::hex << std::setw(4) << it->first 
+                << std::hex << std::setw(4) << it->first << std::dec
                 << " , GET4  " << std::setw(4) << itG->first 
                 << " => " << itG->second 
                 << FairLogger::endl;
@@ -785,6 +818,7 @@ void CbmTSMonitorTof::Finish()
       fHM->H1( Form("ChCount_gDPB_%02u", uGdpb) )->Write();
       if( fUnpackPar->IsChannelRateEnabled() )
          fHM->H2( Form("ChannelRate_gDPB_%02u", uGdpb) )->Write();
+      fHM->H2( Form("FeetRate_gDPB_%02u", uGdpb) )->Write();
    } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
    gDirectory->cd("..");
 
