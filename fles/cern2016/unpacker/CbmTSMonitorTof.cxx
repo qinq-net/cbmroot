@@ -631,7 +631,7 @@ void CbmTSMonitorTof::FillHitInfo(ngdpb::Message mess,
             if( 0 < fdStartTime )
                FeetRate_gDPB[ gdpbNr ]->Fill( 1e-9*( mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] ) 
                                                     - fdStartTime), 
-                                              get4Id / fUnpackPar->GetNrOfFebsPerGdpb() );
+                                              get4Id / fNrOfGet4PerFeb );
           
             hitTime  = mess.getMsgFullTime(fCurrentEpoch[rocId][get4Id]);
             Int_t Ft = mess.getGdpbHitFineTs();
