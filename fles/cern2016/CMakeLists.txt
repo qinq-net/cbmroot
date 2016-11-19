@@ -42,6 +42,7 @@ Link_Directories(
 
 Set(SRCS
   CbmFlibTestSource.cxx   
+  CbmFlibCern2016Source.cxx   
 
   unpacker/CbmTSUnpackFHodo.cxx
 #  unpacker/CbmTSUnpackMuch.cxx

@@ -5,6 +5,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class CbmFlibTestSource;
+#pragma link C++ class CbmFlibCern2016Source;
 #pragma link C++ class CbmTSUnpackFHodo;
 #pragma link C++ class CbmTSUnpackTof;
 #pragma link C++ class CbmTSMonitorTof;
