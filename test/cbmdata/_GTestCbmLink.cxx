@@ -56,7 +56,7 @@ TEST(_GTestCbmLink , TestSettersAndGetters)
   EXPECT_EQ(-3,test.GetIndex());
   EXPECT_FLOAT_EQ(-2, test.GetWeight());
 
-  test.SetWeight(-3);
+  test.SetWeight(-3.);
   EXPECT_EQ(-3, test.GetFile());
   EXPECT_EQ(-3,test.GetEntry());
   EXPECT_EQ(-3,test.GetIndex());
@@ -85,11 +85,11 @@ TEST(_GTestCbmLink , CompareEqual)
   CbmLink test4{-2., -2, -1, -2};
   CbmLink test5{-2., -2, -2, -1};
 
-  EXPECT_EQ(true, (test==test1));
-  EXPECT_EQ(true, (test==test2)); //equals only check file, entry, and index ids but not the weight
-  EXPECT_EQ(false, (test==test3));
-  EXPECT_EQ(false, (test==test4));
-  EXPECT_EQ(false, (test==test5));
+  EXPECT_TRUE(test==test1);
+  EXPECT_TRUE(test==test2); //equals only check file, entry, and index ids but not the weight
+  EXPECT_FALSE(test==test3);
+  EXPECT_FALSE(test==test4);
+  EXPECT_FALSE(test==test5);
 }
 
 TEST(_GTestCbmLink , CompareGreater)
@@ -100,13 +100,13 @@ TEST(_GTestCbmLink , CompareGreater)
   CbmLink test3{2., 2, 1, 2};
   CbmLink test4{2., 2, 2, 1};
 
-  EXPECT_EQ(false, (test>test1));
-  EXPECT_EQ(true, (test>test2));
-  EXPECT_EQ(false, (test2>test));
-  EXPECT_EQ(true, (test>test3));
-  EXPECT_EQ(false, (test3>test));
-  EXPECT_EQ(true, (test>test4));
-  EXPECT_EQ(false, (test4>test));
+  EXPECT_FALSE(test>test1);
+  EXPECT_TRUE(test>test2);
+  EXPECT_FALSE(test2>test);
+  EXPECT_TRUE(test>test3);
+  EXPECT_FALSE(test3>test);
+  EXPECT_TRUE(test>test4);
+  EXPECT_FALSE(test4>test);
 }
 
 TEST(_GTestCbmLink , CompareSmaller)
@@ -117,11 +117,11 @@ TEST(_GTestCbmLink , CompareSmaller)
   CbmLink test3{2., 2, 1, 2};
   CbmLink test4{2., 2, 2, 1};
 
-  EXPECT_EQ(false, (test<test1));
-  EXPECT_EQ(false, (test<test2));
-  EXPECT_EQ(true, (test2<test));
-  EXPECT_EQ(false, (test<test3));
-  EXPECT_EQ(true, (test3<test));
-  EXPECT_EQ(false, (test<test4));
-  EXPECT_EQ(true, (test4<test));
+  EXPECT_FALSE(test<test1);
+  EXPECT_FALSE(test<test2);
+  EXPECT_TRUE(test2<test);
+  EXPECT_FALSE(test<test3);
+  EXPECT_TRUE(test3<test);
+  EXPECT_FALSE(test<test4);
+  EXPECT_TRUE(test4<test);
 }

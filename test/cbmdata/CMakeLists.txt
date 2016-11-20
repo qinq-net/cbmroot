@@ -5,8 +5,8 @@ GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/test/cbmdata/TestCbmPixelHit.C)
 # Otherwise the rootalias file is not loaded
 File(COPY ${CBMROOT_SOURCE_DIR}/macro/include/.rootrc DESTINATION ${CBMROOT_BINARY_DIR}/test/cbmdata)
 
-Add_Test(TestCbmHit ${CBMROOT_BINARY_DIR}/test/cbmdata/TestCbmHit.sh)
-Add_Test(TestCbmPixelHit ${CBMROOT_BINARY_DIR}/test/cbmdata/TestCbmPixelHit.sh)
+#Add_Test(TestCbmHit ${CBMROOT_BINARY_DIR}/test/cbmdata/TestCbmHit.sh)
+#Add_Test(TestCbmPixelHit ${CBMROOT_BINARY_DIR}/test/cbmdata/TestCbmPixelHit.sh)
 
 Macro(CreateGTestExeAndAddTest _testname _includeDirs _linkDirs _sources _dependencies)
 
@@ -37,16 +37,22 @@ Set(DEPENDENCIES
 
 Set(CbmHitSources
   _GTestCbmHit.cxx
-  ${CMAKE_SOURCE_DIR}/data/CbmHit.cxx
 )  
 
 CreateGTestExeAndAddTest(_GTestCbmHit "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
                          "${CbmHitSources}" "${DEPENDENCIES}")
 
+
 Set(CbmLinkSources
   _GTestCbmLink.cxx
-  ${CMAKE_SOURCE_DIR}/data/CbmLink.cxx
 )
 
 CreateGTestExeAndAddTest(_GTestCbmLink "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
                          "${CbmLinkSources}" "${DEPENDENCIES}")
+
+Set(CbmMatchSources
+  _GTestCbmMatch.cxx
+)
+
+CreateGTestExeAndAddTest(_GTestCbmMatch "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
+                         "${CbmMatchSources}" "${DEPENDENCIES}")

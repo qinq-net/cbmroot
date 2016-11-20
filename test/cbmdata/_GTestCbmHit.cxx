@@ -6,130 +6,215 @@
 TEST(_GTestCbmHit , CheckDefaultConstructor)
 {
   CbmHit test;
-  // should initialize the Object with the following values
+
+  Int_t retValInt{-111};
+  Float_t retValFloat{-111.};
+
   EXPECT_EQ(kHIT, test.GetType());
-  EXPECT_FLOAT_EQ(0.,test.GetZ());
-  EXPECT_FLOAT_EQ(0.,test.GetDz());
-  EXPECT_EQ(-1, test.GetRefId());
-  EXPECT_EQ(-1, test.GetAddress());
+  retValFloat = test.GetZ();
+  EXPECT_FLOAT_EQ(0., retValFloat);
+  retValFloat = test.GetZ();
+  EXPECT_FLOAT_EQ(0., retValFloat);
+  retValInt = test.GetRefId();
+  EXPECT_EQ(-1, retValInt);
+  retValInt = test.GetAddress();
+  EXPECT_EQ(-1, retValInt);
   EXPECT_EQ(nullptr, test.GetMatch());
-  EXPECT_FLOAT_EQ(-1, test.GetTime());
-  EXPECT_FLOAT_EQ(-1, test.GetTimeError());
+  retValFloat =  test.GetTime();
+  EXPECT_FLOAT_EQ(-1., retValFloat );
+  retValFloat = test.GetTimeError();
+  EXPECT_FLOAT_EQ(-1., retValFloat);
 }
 
 TEST(_GTestCbmHit , CheckStandardConstructor)
 {
   CbmHit test{kHIT, 0., 0., -1, -1};
-  // should initialize the Object with the following values
+
+  Int_t retValInt{-111};
+  Float_t retValFloat{-111.};
+
   EXPECT_EQ(kHIT, test.GetType());
-  EXPECT_FLOAT_EQ(0.,test.GetZ());
-  EXPECT_FLOAT_EQ(0.,test.GetDz());
-  EXPECT_EQ(-1, test.GetRefId());
-  EXPECT_EQ(-1, test.GetAddress());
+  retValFloat = test.GetZ();
+  EXPECT_FLOAT_EQ(0., retValFloat);
+  retValFloat = test.GetZ();
+  EXPECT_FLOAT_EQ(0., retValFloat);
+  retValInt = test.GetRefId();
+  EXPECT_EQ(-1, retValInt);
+  retValInt = test.GetAddress();
+  EXPECT_EQ(-1, retValInt);
   EXPECT_EQ(nullptr, test.GetMatch());
-  EXPECT_FLOAT_EQ(-1, test.GetTime());
-  EXPECT_FLOAT_EQ(-1, test.GetTimeError());
+  retValFloat =  test.GetTime();
+  EXPECT_FLOAT_EQ(-1., retValFloat );
+  retValFloat = test.GetTimeError();
+  EXPECT_FLOAT_EQ(-1., retValFloat);
 }
 
 TEST(_GTestCbmHit , CheckStandardConstructorWithTime)
 {
   CbmHit test{kHIT, 0., 0., -1, -1, -2.,-2.};
-  // should initialize the Object with the following values
+
+  Int_t retValInt{-111};
+  Float_t retValFloat{-111.};
+
   EXPECT_EQ(kHIT, test.GetType());
-  EXPECT_FLOAT_EQ(0.,test.GetZ());
-  EXPECT_FLOAT_EQ(0.,test.GetDz());
-  EXPECT_EQ(-1, test.GetRefId());
-  EXPECT_EQ(-1, test.GetAddress());
+  retValFloat = test.GetZ();
+  EXPECT_FLOAT_EQ(0., retValFloat);
+  retValFloat = test.GetZ();
+  EXPECT_FLOAT_EQ(0., retValFloat);
+  retValInt = test.GetRefId();
+  EXPECT_EQ(-1, retValInt);
+  retValInt = test.GetAddress();
+  EXPECT_EQ(-1, retValInt);
   EXPECT_EQ(nullptr, test.GetMatch());
-  EXPECT_FLOAT_EQ(-2, test.GetTime());
-  EXPECT_FLOAT_EQ(-2, test.GetTimeError());
+  retValFloat =  test.GetTime();
+  EXPECT_FLOAT_EQ(-2., retValFloat );
+  retValFloat = test.GetTimeError();
+  EXPECT_FLOAT_EQ(-2., retValFloat);
 }
 
 TEST(_GTestCbmHit , TestSettersAndGetters)
 {
   CbmHit test;
-  // should initialize the Object with the following values
+
+  Int_t retValInt{-111};
+  Float_t retValFloat{-111.};
+
   EXPECT_EQ(kHIT, test.GetType());
-  EXPECT_FLOAT_EQ(0.,test.GetZ());
-  EXPECT_FLOAT_EQ(0.,test.GetDz());
-  EXPECT_EQ(-1, test.GetRefId());
-  EXPECT_EQ(-1, test.GetAddress());
+  retValFloat = test.GetZ();
+  EXPECT_FLOAT_EQ(0., retValFloat);
+  retValFloat = test.GetDz();
+  EXPECT_FLOAT_EQ(0., retValFloat);
+  retValInt = test.GetRefId();
+  EXPECT_EQ(-1, retValInt);
+  retValInt = test.GetAddress();
+  EXPECT_EQ(-1, retValInt);
   EXPECT_EQ(nullptr, test.GetMatch());
-  EXPECT_FLOAT_EQ(-1, test.GetTime());
-  EXPECT_FLOAT_EQ(-1, test.GetTimeError());
+  retValFloat =  test.GetTime();
+  EXPECT_FLOAT_EQ(-1., retValFloat );
+  retValFloat = test.GetTimeError();
+  EXPECT_FLOAT_EQ(-1., retValFloat);
 
   test.SetZ(-2.);
+
   EXPECT_EQ(kHIT, test.GetType());
-  EXPECT_FLOAT_EQ(-2.,test.GetZ());
-  EXPECT_FLOAT_EQ(0.,test.GetDz());
-  EXPECT_EQ(-1, test.GetRefId());
-  EXPECT_EQ(-1, test.GetAddress());
+  retValFloat = test.GetZ();
+  EXPECT_FLOAT_EQ(-2., retValFloat);
+  retValFloat = test.GetDz();
+  EXPECT_FLOAT_EQ(0., retValFloat);
+  retValInt = test.GetRefId();
+  EXPECT_EQ(-1, retValInt);
+  retValInt = test.GetAddress();
+  EXPECT_EQ(-1, retValInt);
   EXPECT_EQ(nullptr, test.GetMatch());
-  EXPECT_FLOAT_EQ(-1, test.GetTime());
-  EXPECT_FLOAT_EQ(-1, test.GetTimeError());
+  retValFloat =  test.GetTime();
+  EXPECT_FLOAT_EQ(-1., retValFloat );
+  retValFloat = test.GetTimeError();
+  EXPECT_FLOAT_EQ(-1., retValFloat);
 
   test.SetDz(-2.);
+
   EXPECT_EQ(kHIT, test.GetType());
-  EXPECT_FLOAT_EQ(-2.,test.GetZ());
-  EXPECT_FLOAT_EQ(-2.,test.GetDz());
-  EXPECT_EQ(-1, test.GetRefId());
-  EXPECT_EQ(-1, test.GetAddress());
+  retValFloat = test.GetZ();
+  EXPECT_FLOAT_EQ(-2., retValFloat);
+  retValFloat = test.GetDz();
+  EXPECT_FLOAT_EQ(-2., retValFloat);
+  retValInt = test.GetRefId();
+  EXPECT_EQ(-1, retValInt);
+  retValInt = test.GetAddress();
+  EXPECT_EQ(-1, retValInt);
   EXPECT_EQ(nullptr, test.GetMatch());
-  EXPECT_FLOAT_EQ(-1, test.GetTime());
-  EXPECT_FLOAT_EQ(-1, test.GetTimeError());
+  retValFloat =  test.GetTime();
+  EXPECT_FLOAT_EQ(-1., retValFloat );
+  retValFloat = test.GetTimeError();
+  EXPECT_FLOAT_EQ(-1., retValFloat);
 
   test.SetRefId(-2);
-  EXPECT_EQ(kHIT, test.GetType());
-  EXPECT_FLOAT_EQ(-2.,test.GetZ());
-  EXPECT_FLOAT_EQ(-2.,test.GetDz());
-  EXPECT_EQ(-2, test.GetRefId());
-  EXPECT_EQ(-1, test.GetAddress());
-  EXPECT_EQ(nullptr, test.GetMatch());
-  EXPECT_FLOAT_EQ(-1, test.GetTime());
-  EXPECT_FLOAT_EQ(-1, test.GetTimeError());
 
-  test.SetAddress(-2.);
   EXPECT_EQ(kHIT, test.GetType());
-  EXPECT_FLOAT_EQ(-2.,test.GetZ());
-  EXPECT_FLOAT_EQ(-2.,test.GetDz());
-  EXPECT_EQ(-2, test.GetRefId());
-  EXPECT_EQ(-2, test.GetAddress());
+  retValFloat = test.GetZ();
+  EXPECT_FLOAT_EQ(-2., retValFloat);
+  retValFloat = test.GetDz();
+  EXPECT_FLOAT_EQ(-2., retValFloat);
+  retValInt = test.GetRefId();
+  EXPECT_EQ(-2, retValInt);
+  retValInt = test.GetAddress();
+  EXPECT_EQ(-1, retValInt);
   EXPECT_EQ(nullptr, test.GetMatch());
-  EXPECT_FLOAT_EQ(-1, test.GetTime());
-  EXPECT_FLOAT_EQ(-1, test.GetTimeError());
+  retValFloat =  test.GetTime();
+  EXPECT_FLOAT_EQ(-1., retValFloat );
+  retValFloat = test.GetTimeError();
+  EXPECT_FLOAT_EQ(-1., retValFloat);
+
+  test.SetAddress(-2);
+
+  EXPECT_EQ(kHIT, test.GetType());
+  retValFloat = test.GetZ();
+  EXPECT_FLOAT_EQ(-2., retValFloat);
+  retValFloat = test.GetDz();
+  EXPECT_FLOAT_EQ(-2., retValFloat);
+  retValInt = test.GetRefId();
+  EXPECT_EQ(-2, retValInt);
+  retValInt = test.GetAddress();
+  EXPECT_EQ(-2, retValInt);
+  EXPECT_EQ(nullptr, test.GetMatch());
+  retValFloat =  test.GetTime();
+  EXPECT_FLOAT_EQ(-1., retValFloat );
+  retValFloat = test.GetTimeError();
+  EXPECT_FLOAT_EQ(-1., retValFloat);
 
   test.SetTime(-2.);
-  EXPECT_EQ(kHIT, test.GetType());
-  EXPECT_FLOAT_EQ(-2.,test.GetZ());
-  EXPECT_FLOAT_EQ(-2.,test.GetDz());
-  EXPECT_EQ(-2, test.GetRefId());
-  EXPECT_EQ(-2, test.GetAddress());
-  EXPECT_EQ(nullptr, test.GetMatch());
-  EXPECT_FLOAT_EQ(-2, test.GetTime());
-  EXPECT_FLOAT_EQ(-1, test.GetTimeError());
 
+  EXPECT_EQ(kHIT, test.GetType());
+  retValFloat = test.GetZ();
+  EXPECT_FLOAT_EQ(-2., retValFloat);
+  retValFloat = test.GetDz();
+  EXPECT_FLOAT_EQ(-2., retValFloat);
+  retValInt = test.GetRefId();
+  EXPECT_EQ(-2, retValInt);
+  retValInt = test.GetAddress();
+  EXPECT_EQ(-2, retValInt);
+  EXPECT_EQ(nullptr, test.GetMatch());
+  retValFloat =  test.GetTime();
+  EXPECT_FLOAT_EQ(-2., retValFloat );
+  retValFloat = test.GetTimeError();
+  EXPECT_FLOAT_EQ(-1., retValFloat);
 
   test.SetTimeError(-2.);
+
   EXPECT_EQ(kHIT, test.GetType());
-  EXPECT_FLOAT_EQ(-2.,test.GetZ());
-  EXPECT_FLOAT_EQ(-2.,test.GetDz());
-  EXPECT_EQ(-2, test.GetRefId());
-  EXPECT_EQ(-2, test.GetAddress());
+  retValFloat = test.GetZ();
+  EXPECT_FLOAT_EQ(-2., retValFloat);
+  retValFloat = test.GetDz();
+  EXPECT_FLOAT_EQ(-2., retValFloat);
+  retValInt = test.GetRefId();
+  EXPECT_EQ(-2, retValInt);
+  retValInt = test.GetAddress();
+  EXPECT_EQ(-2, retValInt);
   EXPECT_EQ(nullptr, test.GetMatch());
-  EXPECT_FLOAT_EQ(-2, test.GetTime());
-  EXPECT_FLOAT_EQ(-2, test.GetTimeError());
+  retValFloat =  test.GetTime();
+  EXPECT_FLOAT_EQ(-2., retValFloat );
+  retValFloat = test.GetTimeError();
+  EXPECT_FLOAT_EQ(-2., retValFloat);
 
   test.SetTime(-3., -3.);
-  EXPECT_EQ(kHIT, test.GetType());
-  EXPECT_FLOAT_EQ(-2.,test.GetZ());
-  EXPECT_FLOAT_EQ(-2.,test.GetDz());
-  EXPECT_EQ(-2, test.GetRefId());
-  EXPECT_EQ(-2, test.GetAddress());
-  EXPECT_EQ(nullptr, test.GetMatch());
-  EXPECT_FLOAT_EQ(-3, test.GetTime());
-  EXPECT_FLOAT_EQ(-3, test.GetTimeError());
 
-  EXPECT_EQ(-1, test.GetPlaneId());
+  EXPECT_EQ(kHIT, test.GetType());
+  retValFloat = test.GetZ();
+  EXPECT_FLOAT_EQ(-2., retValFloat);
+  retValFloat = test.GetDz();
+  EXPECT_FLOAT_EQ(-2., retValFloat);
+  retValInt = test.GetRefId();
+  EXPECT_EQ(-2, retValInt);
+  retValInt = test.GetAddress();
+  EXPECT_EQ(-2, retValInt);
+  EXPECT_EQ(nullptr, test.GetMatch());
+  retValFloat =  test.GetTime();
+  EXPECT_FLOAT_EQ(-3., retValFloat );
+  retValFloat = test.GetTimeError();
+  EXPECT_FLOAT_EQ(-3., retValFloat);
+
+  retValInt = test.GetPlaneId();
+  EXPECT_EQ(-1, retValInt);
 
   //TODO: Test setter for fMatch
 }
