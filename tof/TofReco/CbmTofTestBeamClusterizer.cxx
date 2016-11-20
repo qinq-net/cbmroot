@@ -3075,6 +3075,8 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
     * FIXME: maybe use the 2D distance (X/Y) as criteria instead of the distance long channel
     * direction
     */
+  Int_t iMess =0;
+   
   if(NULL == fTofDigisColl) {
     LOG(INFO) <<" No CalDigis defined ! Check! " << FairLogger::endl;
     return kFALSE;
@@ -3110,8 +3112,8 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
          break;
        }
        
-       if (NULL == fhRpcDigiCor[iDetIndx]) {
-         LOG(WARNING)<<Form(" DigiCor Histo ofr  DetIndx %d not found ",iDetIndx)
+       if (NULL == fhRpcDigiCor[iDetIndx] && 100<iMess++) {
+         LOG(WARNING)<<Form(" DigiCor Histo for  DetIndx %d derived from 0x%08x not found",iDetIndx,pDigi->GetAddress())
                    <<FairLogger::endl;	 
 	 continue; 
        } 
