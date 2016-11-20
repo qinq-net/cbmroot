@@ -268,7 +268,8 @@ void CbmTSUnpackTof::FillHitInfo(ngdpb::Message mess)
     }
     Int_t iChanUId = fUnpackPar->GetChannelToDetUIdMap( iChan );
     if(0==iChanUId) return;   // Hit not mapped to digi
-    Double_t dTime = hitTime + Ft*FineTimeConvFactor; // in ns, FIXME conversion factor, -> missing calibration
+//    Double_t dTime = hitTime + Ft*FineTimeConvFactor; // in ns, FIXME conversion factor, -> missing calibration
+    Double_t dTime = mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] );
     Double_t dTot  = tot;     // in ps ?
     if(1){
     LOG(DEBUG) << "Create digi with time " << dTime<<", Tot "<<dTot
