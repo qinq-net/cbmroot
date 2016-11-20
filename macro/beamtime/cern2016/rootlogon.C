@@ -1,4 +1,8 @@
 {
+}
+
+void rootlogon_nh()
+{
   cout << " Executing rootlogon.C (nh)" << endl;
   gStyle->SetOptStat(111);
   gStyle->SetLineWidth(2.);
