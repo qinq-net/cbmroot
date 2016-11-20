@@ -70,12 +70,12 @@ void ana_digi_cal(Int_t nEvents = 10000000, Int_t calMode=53, Int_t calSel=-1, I
    tofTestBeamClust->SetTRefId(RefSel);          // reference trigger for offset calculation 
    tofTestBeamClust->SetTotMax(10.);             // Tot upper limit for walk corection
    tofTestBeamClust->SetTotMin(0.01);            //(12000.);  // Tot lower limit for walk correction
-   tofTestBeamClust->SetTotPreRange(5.);         // effective lower Tot limit  in ns from peak position
+   tofTestBeamClust->SetTotPreRange(2.);         // effective lower Tot limit  in ns from peak position
    tofTestBeamClust->SetTotMean(2.);             // Tot calibration target value in ns 
    tofTestBeamClust->SetMaxTimeDist(0.5);        // default cluster range in ns 
    //tofTestBeamClust->SetMaxTimeDist(0.);       //Deb// default cluster range in ns 
-   tofTestBeamClust->SetDelTofMax(6000.);        // acceptance range for cluster correlation  
-   tofTestBeamClust->SetBeamRefMulMax(4);        // limit Multiplicity in beam counter
+   tofTestBeamClust->SetDelTofMax(6.);           // acceptance range for cluster correlation  
+   tofTestBeamClust->SetBeamRefMulMax(10);        // limit Multiplicity in beam counter
 
    Int_t calSelRead = calSel;
    if (calSel<0) calSelRead=0;
@@ -88,8 +88,9 @@ void ana_digi_cal(Int_t nEvents = 10000000, Int_t calMode=53, Int_t calSel=-1, I
 
    switch (calMode) {
    case 0:                                      // initial calibration 
-     tofTestBeamClust->SetTotMax(100.);      // 100 ns
-     //tofTestBeamClust->SetTotMin(1.);
+     tofTestBeamClust->SetTotMax(100.);      // 100 ns 
+     tofTestBeamClust->SetTotPreRange(100.);
+    //tofTestBeamClust->SetTotMin(1.);
      tofTestBeamClust->SetTRefDifMax(1000.); // in ns 
      tofTestBeamClust->PosYMaxScal(1000.);      // in % of length 
      tofTestBeamClust->SetMaxTimeDist(0.);      // no cluster building  
@@ -228,8 +229,8 @@ void ana_digi_cal(Int_t nEvents = 10000000, Int_t calMode=53, Int_t calSel=-1, I
    tofAnaTestbeam->SetPosY4Sel(0.5); // Y Position selection in fraction of strip length
    tofAnaTestbeam->SetDTDia(0.);   // Time difference to additional diamond
    tofAnaTestbeam->SetCorMode(RefSel); // 1 - DTD4, 2 - X4 
-   tofAnaTestbeam->SetMul0Max(3);      // Max Multiplicity in dut 
-   tofAnaTestbeam->SetMul4Max(3);      // Max Multiplicity in Ref - RPC 
+   tofAnaTestbeam->SetMul0Max(10);      // Max Multiplicity in dut 
+   tofAnaTestbeam->SetMul4Max(10);      // Max Multiplicity in Ref - RPC 
    tofAnaTestbeam->SetMulDMax(10);      // Max Multiplicity in Diamond    
    tofAnaTestbeam->SetHitDistMin(30.);  // initialization
 
