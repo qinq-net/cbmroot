@@ -110,12 +110,14 @@ const Float_t CounterZDistance[NofModuleTypes]      = {0.0,     0.0,   0.0,  2.5
 const Float_t CounterRotationAngle[NofModuleTypes]  = {0.,      0.0,   0.0,   0.,  0.0,  0., 0.,  0.,  0.,  0.};
 
 const Float_t ZDist2Target=400.;
+const Float_t MeanTheta=-7.5;
+Float_t TanTheta=TMath::Tan(TMath::DegToRad()*MeanTheta);
 
 const Float_t HDbig_Z_Position=222.;
 const Float_t HDbig_First_Y_Position=-86.;
 const Float_t HDbig_X_Offset=-1.5; //3.95;
 const Float_t HDbig_rotate_Z=-90.;
-const Float_t HDbig_NTypes = 1;
+const Int_t HDbig_NTypes = 1;
 const Float_t HDbig_Types[HDbig_NTypes]  = {0.};
 const Float_t HDbig_Number[HDbig_NTypes] = {1.}; //debugging, V14c
 
@@ -123,15 +125,15 @@ const Float_t HDsmall_Z_Position=445.5;     // HD - P2
 const Float_t HDsmall_First_Y_Position=51;  // HD - P2
 const Float_t HDsmall_X_Offset=4.5;
 const Float_t HDsmall_rotate_Z=-90.;
-const Float_t HDsmall_NTypes = 1;
+const Int_t HDsmall_NTypes = 1;
 const Float_t HDsmall_Types[HDsmall_NTypes]  = {3.};
 const Float_t HDsmall_Number[HDsmall_NTypes] = {1.}; //debugging, V14b
 
 const Float_t HDRef_Z_Position=ZDist2Target+1;        // HD - P5
-const Float_t HDRef_First_Y_Position=39.7;
+const Float_t HDRef_First_Y_Position=HDRef_Z_Position*TanTheta;
 const Float_t HDRef_X_Offset=0.7;
 const Float_t HDRef_rotate_Z=180.;
-const Float_t HDRef_NTypes = 1;
+const Int_t HDRef_NTypes = 1;
 const Float_t HDRef_Types[HDRef_NTypes]  = {4.}; // this is the SmType!
 const Float_t HDRef_Number[HDRef_NTypes] = {1.}; // evtl. double for split signals 
 
@@ -140,7 +142,7 @@ const Float_t Dia_DeltaZ_Position=-4.;
 const Float_t Dia_First_Y_Position=0.;
 const Float_t Dia_X_Offset=2.;
 const Float_t Dia_rotate_Z=0.;
-const Float_t Dia_NTypes = 3;
+const Int_t Dia_NTypes = 3;
 const Float_t Dia_Types[Dia_NTypes]  = {5.,5.,5.};
 const Float_t Dia_Number[Dia_NTypes] = {1.,1.,1.};
 
@@ -148,7 +150,7 @@ const Float_t BucRef_Z_Position=-100.;
 const Float_t BucRef_First_Y_Position=-28.;
 const Float_t BucRef_X_Offset=-5.;
 const Float_t BucRef_rotate_Z=180.;
-const Float_t BucRef_NTypes = 1;
+const Int_t BucRef_NTypes = 1;
 const Float_t BucRef_Types[BucRef_NTypes]  = {1.};
 const Float_t BucRef_Number[BucRef_NTypes] = {1.}; //debugging, V14b
 
@@ -156,23 +158,23 @@ const Float_t Buc2012_Z_Position=461.;
 const Float_t Buc2012_First_Y_Position=-24.2;//-26.;
 const Float_t Buc2012_X_Offset=4.2; 
 const Float_t Buc2012_rotate_Z=0.;
-const Float_t Buc2012_NTypes = 1;
+const Int_t Buc2012_NTypes = 1;
 const Float_t Buc2012_Types[Buc2012_NTypes]  = {7.};
 const Float_t Buc2012_Number[Buc2012_NTypes] = {1.};
 
 const Float_t Buc2015_Z_Position=ZDist2Target+125.;
-const Float_t Buc2015_First_Y_Position=-23.3.;
+const Float_t Buc2015_First_Y_Position=Buc2015_Z_Position*TanTheta;
 const Float_t Buc2015_X_Offset=0.; 
 const Float_t Buc2015_rotate_Z=0.;
-const Float_t Buc2015_NTypes = 1;
+const Int_t Buc2015_NTypes = 1;
 const Float_t Buc2015_Types[Buc2015_NTypes]  = {6.};
 const Float_t Buc2015_Number[Buc2015_NTypes] = {1.};
 
-const Float_t USTC_Z_Position=332.4.4;
+const Float_t USTC_Z_Position=332.4;
 const Float_t USTC_First_Y_Position=61.0;
 const Float_t USTC_X_Offset=0.;
 const Float_t USTC_rotate_Z=90.;
-const Float_t USTC_NTypes = 1;
+const Int_t USTC_NTypes = 1;
 const Float_t USTC_Types[USTC_NTypes]  = {7.};
 const Float_t USTC_Number[USTC_NTypes] = {1.};
 
@@ -180,34 +182,35 @@ const Float_t THU_Z_Position=360.;
 const Float_t THU_First_Y_Position=-19.0;
 const Float_t THU_X_Offset=0.;
 const Float_t THU_rotate_Z=90.;
-const Float_t THU_NTypes = 1;
+const Int_t THU_NTypes = 1;
 const Float_t THU_Types[THU_NTypes]  = {8.};
 const Float_t THU_Number[THU_NTypes] = {1.};
 
-const Float_t Star2_First_Y_Position=41.5;  // 
-const Float_t Star2_Delta_Y_Position=2.5;   // 
+
 //const Float_t Star2_First_Z_Position=423.6;
 //const Float_t Star2_Delta_Z_Position=-23.8;
 const Float_t Star2_First_Z_Position=ZDist2Target+33.;
 const Float_t Star2_Delta_Z_Position=29.0;
+const Float_t Star2_First_Y_Position=Star2_First_Z_Position*TanTheta;  // 
+const Float_t Star2_Delta_Y_Position=Star2_Delta_Z_Position*TanTheta;   // 
 const Float_t Star2_X_Offset=0.;
 const Float_t Star2_rotate_Z=180.;
-const Float_t Star2_NTypes = 1;
+const Int_t Star2_NTypes = 1;
 const Float_t Star2_Types[Star2_NTypes]  = {9.};
 const Float_t Star2_Number[Star2_NTypes] = {3.}; //debugging, V16b
 
-const Float_t Pla_NTypes = 2;
+const Int_t Pla_NTypes = 2;
+const Float_t Pla_Z_Position[Pla_NTypes]={ZDist2Target,(float)(ZDist2Target+179.5)};
 const Float_t Pla_X_Position[Pla_NTypes]={-3.0,-0.5};
-const Float_t Pla_Y_Position[Pla_NTypes]={40.5,67.0};
-const Float_t Pla_Z_Position[Pla_NTypes]={ZDist2Target,ZDist2Target+179.5};
+const Float_t Pla_Y_Position[Pla_NTypes]={(Float_t)(ZDist2Target*TanTheta),(Float_t)((ZDist2Target+179.5)*TanTheta)};
 const Float_t Pla_rotate_Z[Pla_NTypes]={90.,90.};
 const Float_t Pla_Types[Pla_NTypes]  = {2.,2.};
 const Float_t Pla_Number[Pla_NTypes] = {1.,1.};   //V16b
 
-const Float_t Cer_NTypes = 2;
+const Int_t Cer_NTypes = 2;
+const Float_t Cer_Z_Position[Cer_NTypes]={static_cast<Float_t>(ZDist2Target+164.),static_cast<Float_t>(ZDist2Target+190.5)};
 const Float_t Cer_X_Position[Cer_NTypes]={0.,0.};
-const Float_t Cer_Y_Position[Cer_NTypes]={-29.,-29.};
-const Float_t Cer_Z_Position[Cer_NTypes]={ZDist2Target+164.,ZDist2Target+190.5};
+const Float_t Cer_Y_Position[Cer_NTypes]={static_cast<Float_t>((ZDist2Target+164.)*TanTheta),static_cast<Float_t>((ZDist2Target+190.5)*TanTheta)};
 const Float_t Cer_rotate_Z[Cer_NTypes]={0.,0.};
 const Float_t Cer_Types[Cer_NTypes]  = {8.,8.};
 const Float_t Cer_Number[Cer_NTypes] = {1.,1.};   //V16b
@@ -220,7 +223,6 @@ TGeoVolume* gCounter[NumberOfDifferentCounterTypes];
 
 // Forward declarations
 void create_materials_from_media_file();
-TGeoVolume* create_counter(Int_t);
 TGeoVolume* create_new_counter(Int_t);
 TGeoVolume* create_tof_module(Int_t);
 TGeoVolume* create_new_tof_module(Int_t);
@@ -362,119 +364,6 @@ void create_materials_from_media_file()
   geoBuild->createMedium(silicon);
 }
 
-TGeoVolume* create_counter(Int_t modType)
-{
-
-  //glass
-  Float_t gdx=Glass_X[modType]; 
-  Float_t gdy=Glass_Y[modType];
-  Float_t gdz=Glass_Z[modType];
-
-  //gas gap
-  Int_t  nstrips=NumberOfReadoutStrips[modType];
-  Int_t  ngaps=NumberOfGaps[modType];
-
-
-  Float_t ggdx=GasGap_X[modType];  
-  Float_t ggdy=GasGap_Y[modType];
-  Float_t ggdz=GasGap_Z[modType];
-  Float_t gsdx=ggdx/float(nstrips);
-
-  //single stack
-  Float_t dzpos=gdz+ggdz;
-  Float_t startzpos=SingleStackStartPosition_Z[modType];
-
-  // electronics
-  //pcb dimensions 
-  Float_t dxe=Electronics_X[modType]; 
-  Float_t dye=Electronics_Y[modType];
-  Float_t dze=Electronics_Z[modType];
-  Float_t yele=(gdy+0.1)/2.+dye/2.;
- 
-  // needed materials
-  TGeoMedium* glassPlateVolMed   = gGeoMan->GetMedium(GlasMedium);
-  TGeoMedium* noActiveGasVolMed  = gGeoMan->GetMedium(NoActivGasMedium);
-  TGeoMedium* activeGasVolMed    = gGeoMan->GetMedium(ActivGasMedium);
-  TGeoMedium* electronicsVolMed  = gGeoMan->GetMedium(ElectronicsMedium);
-
-  // Single glass plate
-  TGeoBBox* glass_plate = new TGeoBBox("", gdx/2., gdy/2., gdz/2.);
-  TGeoVolume* glass_plate_vol = 
-    new TGeoVolume("tof_glass", glass_plate, glassPlateVolMed);
-  glass_plate_vol->SetLineColor(kYellow); // set line color for the glass plate
-  glass_plate_vol->SetTransparency(90); // set transparency for the TOF
-  TGeoTranslation* glass_plate_trans 
-    = new TGeoTranslation("", 0., 0., 0.);
-
-  // Single gas gap
-  TGeoBBox* gas_gap = new TGeoBBox("", ggdx/2., ggdy/2., ggdz/2.);
-  //TGeoVolume* gas_gap_vol = 
-  //new TGeoVolume("tof_gas_gap", gas_gap, noActiveGasVolMed);
-  TGeoVolume* gas_gap_vol = 
-    new TGeoVolume("tof_gas_active", gas_gap, activeGasVolMed);
-  gas_gap_vol->Divide("Strip",1,nstrips,-ggdx/2.,0);
-
-  gas_gap_vol->SetLineColor(kRed); // set line color for the gas gap
-  gas_gap_vol->SetTransparency(70); // set transparency for the TOF
-  TGeoTranslation* gas_gap_trans 
-    = new TGeoTranslation("", 0., 0., (gdz+ggdz)/2.);
-
- 
-  // Single subdivided active gas gap 
-  /*
-    TGeoBBox* gas_active = new TGeoBBox("", gsdx/2., ggdy/2., ggdz/2.);
-    TGeoVolume* gas_active_vol = 
-    new TGeoVolume("tof_gas_active", gas_active, activeGasVolMed);
-  gas_active_vol->SetLineColor(kBlack); // set line color for the gas gap
-  gas_active_vol->SetTransparency(70); // set transparency for the TOF
-  */
-
-  // Add glass plate, inactive gas gap and active gas gaps to a single stack
-  TGeoVolume* single_stack = new TGeoVolumeAssembly("single_stack");
-  single_stack->AddNode(glass_plate_vol, 0, glass_plate_trans);
-  single_stack->AddNode(gas_gap_vol, 0, gas_gap_trans);
-
-  /*
-  for (Int_t l=0; l<nstrips; l++){
-    TGeoTranslation* gas_active_trans 
-      = new TGeoTranslation("", -ggdx/2+(l+0.5)*gsdx, 0., 0.);
-    gas_gap_vol->AddNode(gas_active_vol, l, gas_active_trans);
-    //    single_stack->AddNode(gas_active_vol, l, gas_active_trans);
-  }
-  */  
-
-  // Add 8 single stacks + one glass plate at the end to a multi stack
-  TGeoVolume* multi_stack = new TGeoVolumeAssembly("multi_stack");
-  for (Int_t l=0; l<ngaps; l++){
-    TGeoTranslation* single_stack_trans 
-      = new TGeoTranslation("", 0., 0., startzpos + l*dzpos);
-    multi_stack->AddNode(single_stack, l, single_stack_trans);
-  }
-  TGeoTranslation* single_glass_back_trans 
-    = new TGeoTranslation("", 0., 0., startzpos + ngaps*dzpos);
-  multi_stack->AddNode(glass_plate_vol, l, single_glass_back_trans);
-  
-  // Add electronics above and below the glass stack to build a complete counter
-  TGeoVolume* counter = new TGeoVolumeAssembly("counter");
-  TGeoTranslation* multi_stack_trans 
-      = new TGeoTranslation("", 0., 0., 0.);
-  counter->AddNode(multi_stack, l, multi_stack_trans);
-
-  TGeoBBox* pcb = new TGeoBBox("", dxe/2., dye/2., dze/2.);
-  TGeoVolume* pcb_vol = 
-    new TGeoVolume("pcb", pcb, electronicsVolMed);
-  pcb_vol->SetLineColor(kCyan); // set line color for the gas gap
-  pcb_vol->SetTransparency(10); // set transparency for the TOF
-  for (Int_t l=0; l<2; l++){
-    yele *= -1.;
-    TGeoTranslation* pcb_trans 
-      = new TGeoTranslation("", 0., yele, 0.);
-    counter->AddNode(pcb_vol, l, pcb_trans);
-  }
-
-  return counter;
-
-}
 
 TGeoVolume* create_new_counter(Int_t modType)
 {
@@ -537,12 +426,11 @@ TGeoVolume* create_new_counter(Int_t modType)
   glass_plate_vol->SetTransparency(98); // set transparency for the TOF
   // define single gas gap volume
   TGeoBBox* gas_gap = new TGeoBBox("", ggdx/2., ggdy/2., ggdz/2.);
+  TGeoVolume* gas_gap_vol=NULL;
   if (modType == 5) {
-  TGeoVolume* gas_gap_vol = 
-    new TGeoVolume("Gap", gas_gap, DiamondVolMed);
+    gas_gap_vol = new TGeoVolume("Gap", gas_gap, DiamondVolMed);
   }else{
-  TGeoVolume* gas_gap_vol = 
-    new TGeoVolume("Gap", gas_gap, activeGasVolMed);
+    gas_gap_vol = new TGeoVolume("Gap", gas_gap, activeGasVolMed);
   }
   gas_gap_vol->Divide("Cell",1,nstrips,-ggdx/2.,0);
   gas_gap_vol->SetLineColor(kYellow); // set line color for the gas gap
