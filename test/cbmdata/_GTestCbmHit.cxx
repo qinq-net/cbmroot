@@ -130,7 +130,12 @@ TEST(_GTestCbmHit , TestSettersAndGetters)
   EXPECT_FLOAT_EQ(-3, test.GetTimeError());
 
   EXPECT_EQ(-1, test.GetPlaneId());
-  EXPECT_STREQ("Has to be implemented in derrived class", test.ToString().c_str());
 
   //TODO: Test setter for fMatch
+}
+
+TEST(_GTestCbmHit , ToString)
+{
+  CbmHit test{kHIT, 0., 0., -1, -1};
+  EXPECT_STREQ("Has to be implemented in derrived class", test.ToString().c_str());
 }

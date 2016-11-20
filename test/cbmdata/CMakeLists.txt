@@ -8,33 +8,45 @@ File(COPY ${CBMROOT_SOURCE_DIR}/macro/include/.rootrc DESTINATION ${CBMROOT_BINA
 Add_Test(TestCbmHit ${CBMROOT_BINARY_DIR}/test/cbmdata/TestCbmHit.sh)
 Add_Test(TestCbmPixelHit ${CBMROOT_BINARY_DIR}/test/cbmdata/TestCbmPixelHit.sh)
 
+Macro(CreateGTestExeAndAddTest _testname _includeDirs _linkDirs _sources _dependencies)
 
-set(INCLUDE_DIRECTORIES
- ${CMAKE_SOURCE_DIR}/data
+  Include_Directories(SYSTEM "${_includeDirs}")
+  Link_Directories("${_linkDirs}")
+
+  Add_Executable(${_testname} "${_sources}")
+  Target_Link_Libraries(${_testname} "${_dependencies}")
+  Add_Test(${_testname} ${PROJECT_BINARY_DIR}/bin/${_testname})
+
+EndMacro(CreateGTestExeAndAddTest)
+
+Set(INCLUDE_DIRECTORIES
+  ${CMAKE_SOURCE_DIR}/data
+  ${BASE_INCLUDE_DIRECTORIES} 
 )
 
-include_directories( ${INCLUDE_DIRECTORIES})
-
-Set(SYSTEM_INCLUDE_DIRECTORIES
-${BASE_INCLUDE_DIRECTORIES} 
+Set(LINK_DIRECTORIES
+  ${ROOT_LIBRARY_DIR}
+  ${FAIRROOT_LIBRARY_DIR}
 )
 
-Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
-
-set(LINK_DIRECTORIES
- ${ROOT_LIBRARY_DIR}
- ${FAIRROOT_LIBRARY_DIR}
+Set(DEPENDENCIES
+  ${ROOT_LIBRARIES} 
+  ${GTEST_BOTH_LIBRARIES}
+  CbmData
 )
 
-link_directories( ${LINK_DIRECTORIES})
+Set(CbmHitSources
+  _GTestCbmHit.cxx
+  ${CMAKE_SOURCE_DIR}/data/CbmHit.cxx
+)  
 
-###############################
-Set ( Sources
-    _GTestCbmHit.cxx
-    ${CMAKE_SOURCE_DIR}/data/CbmHit.cxx
-    )  
+CreateGTestExeAndAddTest(_GTestCbmHit "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
+                         "${CbmHitSources}" "${DEPENDENCIES}")
 
-add_executable(_GTestCbmHit ${Sources})
-target_link_libraries(_GTestCbmHit ${ROOT_LIBRARIES} ${GTEST_BOTH_LIBRARIES} CbmData)
-add_test(_GTestCbmHit ${PROJECT_BINARY_DIR}/bin/_GTestCbmHit)
+Set(CbmLinkSources
+  _GTestCbmLink.cxx
+  ${CMAKE_SOURCE_DIR}/data/CbmLink.cxx
+)
 
+CreateGTestExeAndAddTest(_GTestCbmLink "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
+                         "${CbmLinkSources}" "${DEPENDENCIES}")
