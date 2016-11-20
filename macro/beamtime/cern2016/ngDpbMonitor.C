@@ -10,12 +10,12 @@
 // In order to call later Finish, we make this global
 FairRunOnline *run = NULL;
 
-void ngDpbMonitor(TString inFile = "sps2016111302_1945.tsa")
+void ngDpbMonitor(TString inFile = "")
 {
-
   TString srcDir = gSystem->Getenv("VMCWORKDIR");
   TString inDir  = srcDir + "/input/";
-  inFile = inDir + inFile;
+  if( "" != inFile )
+   inFile = inDir + inFile;
 
   // --- Specify number of events to be produced.
   // --- -1 means run until the end of the input file.
@@ -64,9 +64,15 @@ void ngDpbMonitor(TString inFile = "sps2016111302_1945.tsa")
   CbmTSMonitorTof* test_monitor_tof = new CbmTSMonitorTof();
 
   // --- Source task
-  CbmFlibTestSource* source = new CbmFlibTestSource();
-  source->SetFileName(inFile);
-  
+  CbmFlibCern2016Source* source = new CbmFlibCern2016Source();
+  if( "" != inFile )
+      source->SetFileName(inFile);
+      else
+      {
+         source->SetHostName( "cbmflib20d");
+         source->SetPortNumber( 5556 );
+      }
+
   source->AddUnpacker(test_monitor_tof,  0x60, 6); //gDPBs
   source->AddUnpacker(test_monitor_much, 0x10, 4); //nDPBs
 //   source->AddUnpacker(dummy_unpacker, 0x10, 4);//gDPB A & B
@@ -80,7 +86,7 @@ void ngDpbMonitor(TString inFile = "sps2016111302_1945.tsa")
   run = new FairRunOnline(source);
   run->SetOutputFile(outFile);
   run->SetEventHeader(event);
-  run->ActivateHttpServer(10000); // refresh each 100 events
+  run->ActivateHttpServer(100); // refresh each 100 events
   run->SetAutoFinish(kFALSE);
 
   // -----   Runtime database   ---------------------------------------------
