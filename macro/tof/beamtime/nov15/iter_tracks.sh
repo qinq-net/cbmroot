@@ -8,7 +8,6 @@ cRun='CbmTofSps_01Dec0206'
 #iDut=400; iRef=300; iSel2=921
 iDut=900; iRef=921; iSel2=920
 
-iTraSetup=4;
 
 # what should be done ?
 ((iSel=$iDut*1000+$iRef))
@@ -17,12 +16,13 @@ iTraSetup=4;
 cSet="920921_000";
 #cSet="400300_921";
 
-nEvt=100000
+iTraSetup=6;
+nEvt=50000
 dDTres=200000
 dDTRMSres=200000
 iter=0;
 fRange2=50
-fRange1=16
+fRange1=2
 
 cd ${cRun}
 #rm -v ${cRun}_tofFindTracks.hst.root
@@ -46,6 +46,7 @@ while [[ $nIt > 0 ]]; do
 root -b -q '../ana_trks.C('$nEvt','$iSel','$iCal',"'$cRun'","'$cSet'",'$iSel2','$iTraSetup','$fRange2')'
 cp -v tofFindTracks.hst.root ${cRun}_tofFindTracks.hst.root
 cp -v tofFindTracks.hst.root ${cRun}_tofFindTracks.hst${iter}.root
+#cp -v tofAnaTestBeam.hst.root ${cRun}_TrkAnaTestBeam.hst.root
 ((nIt -= 1))
 done
 
@@ -55,13 +56,15 @@ if((${fRange1}<2));then
 fi
 fi
 
-for iCal in 3 4 5 ; do
+# correction modes: 2 - Tt, 3 - t, 4 - x, 5 - y, 6 - z
+for iCal in 3 10 11 12 13 14 15; do
 nIt=1
 while [[ $nIt > 0 ]]; do
 ((iter += 1))
 root -b -q '../ana_trks.C('$nEvt','$iSel','$iCal',"'$cRun'","'$cSet'",'$iSel2','$iTraSetup','$fRange1')'
 cp -v tofFindTracks.hst.root ${cRun}_tofFindTracks.hst.root
 cp -v tofFindTracks.hst.root ${cRun}_tofFindTracks.hst${iter}.root
+#cp -v tofAnaTestBeam.hst.root ${cRun}_TrkAnaTestBeam.hst.root
 ((nIt -= 1))
 done
 done

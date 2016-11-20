@@ -51,14 +51,14 @@ iStepLast=0
 #for mode in 2 10 2 10 
 #for mode in 4
 #for mode in 5
-#for mode in 1
+for mode in 1
 #for mode in 6 8 2 10 4 5 4
-for mode in 1 6 8 
+#for mode in 1 6 8 
 do
 
 case $mode in 
 1)
-nIter=4
+nIter=5
 alist=`echo '1'$c0'0,93,1,'$iRef'' '1'$c0'0,44,0,-'$iDut''  '1'$c0'0,93,0,'$iDut'' '1'$c0'0,44,1,-'$iRef'' '1'$c0'00,41,1,-'$iRef'' '1'$c0'0,93,0,'$iRef'' '1'$c0'00,41,0,-'$iDut'' '1'$c0'0,93,1,'$iRef''`
 ;;
 2)
@@ -87,7 +87,7 @@ alist=`echo '1'$c0',92,1,4' '1'$c0'00,93,-2,-2' '1'$c0',92,0,3' '1'$c0'00,93,-2,
 ;;
 8)
 nIter=2
-alist=`echo '1'$c0'0,93,1,'$iRef'' '1'$c0'0,92,0,'$iDut'' '1'$c0'00,61,-1,-2' '1'$c0'00,93,-2,2' '1'$c0'0,93,1,'$iRef''`
+alist=`echo '1'$c0'00,93,1,'$iRef'' '1'$c0'0,92,0,'$iDut'' '1'$c0'000,61,-1,-2' '1'$c0'00,93,-2,2' '1'$c0'00,93,1,'$iRef''`
 ;;
 9)
 nIter=2
@@ -103,7 +103,7 @@ alist=`echo '1'$c0',92,1,'$iRef'' '1'$c0'00,93,-3,2' '1'$c0'00,93,-2,2' '1'$c0'0
 ;;
 esac
 
-echo 'Iterate Clusterizer calibration for run '$cRun, Set ${iSet} - execute $nIter iterations of ${alist}
+echo 'Iterate Clusterizer calibration for run '$cRun, Set ${iCalSet} - execute $nIter iterations of ${alist}
 #lastOpt=''
 
 while [[ $nIter > 0 ]]; do
@@ -137,9 +137,9 @@ fi
 #copy calibration file 
 
 if [[ ${iStep} = 1 ]]; then 
-    cp -v ../${cRun}_set${iSet}_${cMode}_${cSel}tofTestBeamClust.hst.root .
+    cp -v ../${cRun}_set${iCalSet}_${cMode}_${cSel}tofTestBeamClust.hst.root .
 else 
-    cp -v ../Iter${iStepLast}/tofTestBeamClust_${cRun}_set${iSet}.hst.root ${cRun}_set${iSet}_${cMode}_${cSel}tofTestBeamClust.hst.root
+    cp -v ../Iter${iStepLast}/tofTestBeamClust_${cRun}_set${iCalSet}.hst.root ${cRun}_set${iCalSet}_${cMode}_${cSel}tofTestBeamClust.hst.root
 fi
 fi 
 
@@ -148,26 +148,26 @@ cSel2=$iSel2;
 if [[ $iSel2 = 0 ]]; then
 cSel2="000"
 fi
-cp -v  ../${cRun}_${iSet}${cSel2}_tofAnaTestBeam.hst.root .
+cp -v  ../${cRun}_${iCalSet}${cSel2}_tofAnaTestBeam.hst.root .
 
 # generate new calibration file
-root -b -q '../../ana_digi.C('$inOpt',0,"'$cRun'",'$iSet',0,'$iSel2') '
+root -b -q '../../ana_digi.C('$inOpt',1,"'$cRun'",'$iCalSet',0,'$iSel2') '
 
 lastOpt=$inOpt
 
 #./screenshot.sh 
-cp -v tofTestBeamClust_${cRun}_set${iSet}.hst.root ../${cRun}_set${iSet}_${cMode}_${cSel}tofTestBeamClust.hst.root
+cp -v tofTestBeamClust_${cRun}_set${iCalSet}.hst.root ../${cRun}_set${iCalSet}_${cMode}_${cSel}tofTestBeamClust.hst.root
 
-cp -v tofAnaTestBeam.hst.root ../${cRun}_${iSet}${cSel2}_tofAnaTestBeam.hst.root
+cp -v tofAnaTestBeam.hst.root ../${cRun}_${iCalSet}${cSel2}_tofAnaTestBeam.hst.root
 cp *pdf ../
 cd .. 
-rm ../${cRun}_set${iSet}_${cMode}_${cSel}tofTestBeamClust.hst.root
-ln -s ./${cRun}/${cRun}_set${iSet}_${cMode}_${cSel}tofTestBeamClust.hst.root ../${cRun}_set${iSet}_${cMode}_${cSel}tofTestBeamClust.hst.root
+rm ../${cRun}_set${iCalSet}_${cMode}_${cSel}tofTestBeamClust.hst.root
+ln -s ./${cRun}/${cRun}_set${iCalSet}_${cMode}_${cSel}tofTestBeamClust.hst.root ../${cRun}_set${iCalSet}_${cMode}_${cSel}tofTestBeamClust.hst.root
 
 done
 (( nIter -= 1))
 done
-#cp -v tofTestBeamClust_${cRun}_set${iSet}.hst.root ${cRun}_set${iSet}_${cMode}_${cSel}${mode}tofTestBeamClust.hst.root
+#cp -v tofTestBeamClust_${cRun}_set${iCalSet}.hst.root ${cRun}_set${iCalSet}_${cMode}_${cSel}${mode}tofTestBeamClust.hst.root
 
 done 
 #
