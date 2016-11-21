@@ -141,6 +141,51 @@ void CbmTSMonitorMuch::CreateHistograms()
 
 	TString sHistName{""};
     	TString title{""};
+
+  sHistName = "hMessageTypeMuch";
+  title = "Nb of message for each type; Type";
+  TH1I* hMessageType = new TH1I(sHistName, title, 16, 0., 16.);
+  hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_NOP,      "NOP");
+  hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_HIT,      "HIT");
+  hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_EPOCH,    "EPOCH");
+  hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_SYNC,     "SYNC");
+  hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_AUX,      "AUX");
+  hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_EPOCH2,   "EPOCH2");
+  hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_GET4,     "GET4");
+  hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_SYS,      "SYS");
+  hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_GET4_SLC, "MSG_GET4_SLC");
+  hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_GET4_32B, "MSG_GET4_32B");
+  hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_GET4_SYS, "MSG_GET4_SYS");
+  hMessageType->GetXaxis()->SetBinLabel(1 + 15, "GET4 Hack 32B");
+  hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_NOP,      "NOP");
+  fHM->Add(sHistName.Data(), hMessageType);
+#ifdef USE_HTTP_SERVER
+      if (server) server->Register("/MuchRaw", fHM->H1(sHistName.Data()));
+#endif
+
+  sHistName = "hSysMessTypeMuch";
+  title = "Nb of system message for each type; System Type";
+  TH1I* hSysMessType = new TH1I(sHistName, title, 17, 0., 17.);
+  hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_DAQ_START,       "DAQ START");
+  hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_DAQ_FINISH,      "DAQ FINISH");
+  hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_NX_PARITY,       "NX PARITY");
+  hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_SYNC_PARITY,     "SYNC PARITY");
+  hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_DAQ_RESUME,      "DAQ RESUME");
+  hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_FIFO_RESET,      "FIFO RESET");
+  hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_USER,            "USER");
+  hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_PCTIME,          "PCTIME");
+  hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_ADC,             "ADC");
+  hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_PACKETLOST,      "PACKET LOST");
+  hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_GET4_EVENT,      "GET4 ERROR");
+  hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_CLOSYSYNC_ERROR, "CLOSYSYNC ERROR");
+  hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_TS156_SYNC,        "TS156 SYNC");
+  hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_GDPB_UNKWN,        "UNKW GET4 MSG");
+  hSysMessType->GetXaxis()->SetBinLabel(1 + 16, "GET4 Hack 32B");
+  fHM->Add(sHistName.Data(), hSysMessType);
+#ifdef USE_HTTP_SERVER
+  if (server) server->Register("/MuchRaw", fHM->H1(sHistName.Data()));
+#endif
+
 	for ( Int_t febId = 0 ; 
          febId < fUnpackPar->GetNrOfnDpbsModA()*fUnpackPar->GetNrOfFebsPerNdpb(); 
          febId++){// looping on all the FEB IDs
@@ -196,6 +241,9 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
   LOG(DEBUG) << "Timeslice contains " << ts.num_microslices(component)
              << "microslices." << FairLogger::endl;
   
+   TH1* histMessType = fHM->H1("hMessageTypeMuch");
+   TH1* histSysMessType = fHM->H1("hSysMessTypeMuch");
+   
   std::vector<TH1*> Chan_Counts_Much;
   std::vector<TH2*> Raw_ADC_Much;
   std::vector<TH1*> FebRate;
@@ -215,6 +263,7 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
   }
   TH2* histPadDistr = fHM->H2("Pad_Distribution");
 
+   Int_t messageType = -111;
   // Loop over microslices
   for (size_t m = 0; m < ts.num_microslices(component); ++m)
     {
@@ -252,9 +301,12 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
           }
 
           // Increment counter for different message types 
-          fMsgCounter[mess.getMessageType()]++;
+          // and fill the corresponding histogram
+          messageType = mess.getMessageType();
+          fMsgCounter[messageType]++;
+          histMessType->Fill(messageType);
           
-          switch(mess.getMessageType()) {
+          switch( messageType ) {
           case ngdpb::MSG_HIT: 
             FillHitInfo(mess, Chan_Counts_Much, Raw_ADC_Much, FebRate, histPadDistr);
             break;
@@ -265,7 +317,8 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
             // Do nothing, this message is just there to make sure we get all Epochs
             break;
           case ngdpb::MSG_SYS:
-            // Do nothing, this message is just there to make sure we get all Epochs
+            // Just keep track of which type of System message we receive
+            histSysMessType->Fill(mess.getSysMesType());
             break;
           default: 
             LOG(ERROR) << "Message type " << std::hex << std::setw(2) 
@@ -294,12 +347,17 @@ void CbmTSMonitorMuch::FillHitInfo(ngdpb::Message mess, std::vector<TH1*> Chan_C
   Int_t nxyterId   = mess.getNxNumber();
   Int_t nxChannel  = mess.getNxChNum(); 
   Int_t charge     = mess.getNxAdcValue();
+
+   // First check if nDPB is mapped
+   if( fNdpbIdIndexMap.end() == fNdpbIdIndexMap.find( rocId ) )
+   {
+		LOG(FATAL) << "Unmapped nDPB Id " << std::hex << rocId << std::dec << FairLogger::endl;
+   } // if( fNdpbIdIndexMap.end() == fNdpbIdIndexMap.find( rocId ) )
  
   ULong_t hitTime  = mess.getMsgFullTime(fCurrentEpoch[rocId][nxyterId]);
  
   LOG(DEBUG) << "Hit: " << rocId << ", " << nxyterId 
              << ", " << nxChannel << ", " << charge << FairLogger::endl;
-
 
   //here converting channel number into the MUCH Digi.
 
@@ -361,6 +419,13 @@ void CbmTSMonitorMuch::FillEpochInfo(ngdpb::Message mess)
 {
   Int_t rocId          = mess.getRocNumber();
   Int_t nxyterId       = mess.getEpochNxNum();
+
+   // First check if nDPB is mapped
+   if( fNdpbIdIndexMap.end() == fNdpbIdIndexMap.find( rocId ) )
+   {
+		LOG(FATAL) << "Unmapped nDPB Id " << std::hex << rocId << std::dec << FairLogger::endl;
+   } // if( fNdpbIdIndexMap.end() == fNdpbIdIndexMap.find( rocId ) )
+   
   fCurrentEpoch[rocId][nxyterId] = mess.getEpochNumber();
 
   //  LOG(INFO) << "Epoch message for ROC " << rocId << " with epoch number "
@@ -373,7 +438,6 @@ void CbmTSMonitorMuch::FillEpochInfo(ngdpb::Message mess)
              << Double_t(fCurrentEpochTime) * 1.e-9 << " s "
              << " for board ID " << std::hex << std::setw(4) << rocId << std::dec
              << FairLogger::endl;
-
 }
 
 void CbmTSMonitorMuch::Reset()
