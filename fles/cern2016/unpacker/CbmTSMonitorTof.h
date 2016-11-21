@@ -95,7 +95,7 @@ private:
                     std::vector<TH1*>, std::vector<TH2*>,
                     std::vector<TH1*>
                    );
-   void FillEpochInfo(ngdpb::Message);
+   void FillEpochInfo(ngdpb::Message, TH2*);
    void PrintSlcInfo(ngdpb::Message);
    void PrintSysInfo(ngdpb::Message);
    void PrintGenInfo(ngdpb::Message);

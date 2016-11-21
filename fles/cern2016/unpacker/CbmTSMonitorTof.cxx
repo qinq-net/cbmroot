@@ -243,6 +243,19 @@ void CbmTSMonitorTof::CreateHistograms()
   if (server) server->Register("/TofRaw", fHM->H2(name.Data()));
 #endif
 
+  name = "hGet4EpochFlags";
+  title = "Epoch flags per GET4; GET4 chip # ; Type";
+  TH2I* hGet4EpochFlags = new TH2I(name, title, fNrOfGet4, 0., fNrOfGet4, 4 , 0., 4.);
+//  hEpochFlags = new TH2I(name, title, uNbFeets*feetv1::kuChipPerFeet, -0.5, uNbFeets*feetv1::kuChipPerFeet -0.5, 4, -0.5, 3.5);
+  hGet4EpochFlags->GetYaxis()->SetBinLabel(1,       "SYNC");
+  hGet4EpochFlags->GetYaxis()->SetBinLabel(2,       "Ep LOSS");
+  hGet4EpochFlags->GetYaxis()->SetBinLabel(3,       "Da LOSS");
+  hGet4EpochFlags->GetYaxis()->SetBinLabel(4,       "MISSMAT");
+  fHM->Add(name.Data(), hGet4EpochFlags);
+#ifdef USE_HTTP_SERVER
+  if (server) server->Register("/TofRaw", fHM->H2(name.Data()));
+#endif
+
   Double_t w = 10;
   Double_t h = 10;
 
@@ -265,14 +278,6 @@ void CbmTSMonitorTof::CreateHistograms()
   hGet4ChanErrors->Draw("colz");
 
  /*
-  hEpochFlags = new TH2I("hEpochFlags",
-		  "Epoch flags per chip; GET4 chip #",
-		  uNbFeets*feetv1::kuChipPerFeet, -0.5, uNbFeets*feetv1::kuChipPerFeet -0.5,
-		  4, -0.5, 3.5);
-  hEpochFlags->GetYaxis()->SetBinLabel(1,       "SYNC");
-  hEpochFlags->GetYaxis()->SetBinLabel(2,       "Ep LOSS");
-  hEpochFlags->GetYaxis()->SetBinLabel(3,       "Da LOSS");
-  hEpochFlags->GetYaxis()->SetBinLabel(4,       "MISSMAT");
 
   hDataAvail = new TH1I( "hDataAvail",
 		  "Data available before readout; # Data Avail [msg]; Checks []",
@@ -373,24 +378,28 @@ void CbmTSMonitorTof::CreateHistograms()
   
   
    /** Create summary Canvases for CERN 2016 **/
-   THStack * stackRateA = new THStack("stackRateA", "Sum of counts vs Time per FEET for gDPB 1");
+   name = "stackRate_g00";
+   THStack * stackRateA = new THStack( name, "Sum of counts vs Time per FEET for gDPB 1");
    fHM->H1( "FeetRate_gDPB_g00_f0" )->SetLineColor( kBlack ); // => Make stack + color!
    stackRateA->Add( fHM->H1( "FeetRate_gDPB_g00_f0" ) );
    fHM->H1( "FeetRate_gDPB_g00_f1" )->SetLineColor( kRed ); // => Make stack + color!
    stackRateA->Add( fHM->H1( "FeetRate_gDPB_g00_f1" ) );
    fHM->H1( "FeetRate_gDPB_g00_f2" )->SetLineColor( kBlue ); // => Make stack + color!
    stackRateA->Add( fHM->H1( "FeetRate_gDPB_g00_f2" ) );
+  fHM->Add(name.Data(), stackRateA);
 #ifdef USE_HTTP_SERVER
    if (server) server->Register("/TofRaw", stackRateA);
 #endif
 
-   THStack * stackRateB = new THStack("stackRateB", "Sum of counts vs Time per FEET for gDPB 2");
+   name = "stackRate_g01";
+   THStack * stackRateB = new THStack( name, "Sum of counts vs Time per FEET for gDPB 2");
    fHM->H1( "FeetRate_gDPB_g01_f0" )->SetLineColor( kBlack ); // => Make stack + color!
    stackRateB->Add( fHM->H1( "FeetRate_gDPB_g01_f0" ) );
    fHM->H1( "FeetRate_gDPB_g01_f1" )->SetLineColor( kRed ); // => Make stack + color!
    stackRateB->Add( fHM->H1( "FeetRate_gDPB_g01_f1" ) );
    fHM->H1( "FeetRate_gDPB_g01_f2" )->SetLineColor( kBlue ); // => Make stack + color!
    stackRateB->Add( fHM->H1( "FeetRate_gDPB_g01_f2" ) );
+  fHM->Add(name.Data(), stackRateB);
 #ifdef USE_HTTP_SERVER
    if (server) server->Register("/TofRaw", stackRateB);
 #endif
@@ -411,15 +420,14 @@ void CbmTSMonitorTof::CreateHistograms()
   gPad->SetLogz();
   hGet4MessType->Draw("colz");
 
-   // 2nd Column: Errors + Channels counts
-   // 1st Column: Messages types
+   // 2nd Column: GET4 Errors + Epoch flags +
   cSummary->cd(2);
   gPad->SetLogz();
   hGet4ChanErrors->Draw("colz");
 
   cSummary->cd(6);
-//  gPad->SetLogy();
-//  hSysMessType->Draw();
+  gPad->SetLogz();
+  hGet4EpochFlags->Draw("colz");
 
   cSummary->cd(10);
 //  gPad->SetLogz();
@@ -439,7 +447,8 @@ void CbmTSMonitorTof::CreateHistograms()
 
   cSummary->cd(7);
   gPad->SetLogy();
-   THStack * stackRateC = new THStack("stackRateC", "Sum of counts vs Time per FEET for gDPB 3");
+   name = "stackRate_g02";
+   THStack * stackRateC = new THStack( name, "Sum of counts vs Time per FEET for gDPB 3");
    fHM->H1( "FeetRate_gDPB_g02_f0" )->SetLineColor( kBlack );// => Make stack + color!
    stackRateC->Add( fHM->H1( "FeetRate_gDPB_g02_f0" ) );
    fHM->H1( "FeetRate_gDPB_g02_f1" )->SetLineColor( kRed );  // => Make stack + color!
@@ -447,13 +456,15 @@ void CbmTSMonitorTof::CreateHistograms()
    fHM->H1( "FeetRate_gDPB_g02_f2" )->SetLineColor( kBlue ); // => Make stack + color!
    stackRateC->Add( fHM->H1( "FeetRate_gDPB_g02_f2" ) );
    stackRateC->Draw("nostack");
+  fHM->Add(name.Data(), stackRateC);
 #ifdef USE_HTTP_SERVER
    if (server) server->Register("/TofRaw", stackRateC);
 #endif
 
   cSummary->cd(8);
   gPad->SetLogy();
-   THStack * stackRateD = new THStack("stackRateD", "Sum of counts vs Time per FEET for gDPB 4");
+   name = "stackRate_g03";
+   THStack * stackRateD = new THStack( name, "Sum of counts vs Time per FEET for gDPB 4");
    fHM->H1( "FeetRate_gDPB_g03_f0" )->SetLineColor( kBlack );// => Make stack + color!
    stackRateD->Add( fHM->H1( "FeetRate_gDPB_g03_f0" ) );
    fHM->H1( "FeetRate_gDPB_g03_f1" )->SetLineColor( kRed );  // => Make stack + color!
@@ -461,13 +472,15 @@ void CbmTSMonitorTof::CreateHistograms()
    fHM->H1( "FeetRate_gDPB_g03_f2" )->SetLineColor( kBlue ); // => Make stack + color!
    stackRateD->Add( fHM->H1( "FeetRate_gDPB_g03_f2" ) );
    stackRateD->Draw("nostack");
+  fHM->Add(name.Data(), stackRateD);
 #ifdef USE_HTTP_SERVER
    if (server) server->Register("/TofRaw", stackRateD);
 #endif
 
   cSummary->cd(11);
   gPad->SetLogy();
-   THStack * stackRateE = new THStack("stackRateE", "Sum of counts vs Time per FEET for gDPB 5");
+   name = "stackRate_g04";
+   THStack * stackRateE = new THStack( name, "Sum of counts vs Time per FEET for gDPB 5");
    fHM->H1( "FeetRate_gDPB_g04_f0" )->SetLineColor( kBlack ); // => Make stack + color!
    stackRateE->Add( fHM->H1( "FeetRate_gDPB_g04_f0" ) );
    fHM->H1( "FeetRate_gDPB_g04_f1" )->SetLineColor( kRed ); // => Make stack + color!
@@ -475,13 +488,15 @@ void CbmTSMonitorTof::CreateHistograms()
    fHM->H1( "FeetRate_gDPB_g04_f2" )->SetLineColor( kBlue ); // => Make stack + color!
    stackRateE->Add( fHM->H1( "FeetRate_gDPB_g04_f2" ) );
    stackRateE->Draw("nostack");
+  fHM->Add(name.Data(), stackRateE);
 #ifdef USE_HTTP_SERVER
    if (server) server->Register("/TofRaw", stackRateE);
 #endif
 
   cSummary->cd(12);
   gPad->SetLogy();
-   THStack * stackRateF = new THStack("stackRateF", "Sum of counts vs Time per FEET for gDPB 6");
+   name = "stackRate_g05";
+   THStack * stackRateF = new THStack( name, "Sum of counts vs Time per FEET for gDPB 6");
    fHM->H1( "FeetRate_gDPB_g05_f0" )->SetLineColor( kBlack ); // => Make stack + color!
    stackRateF->Add( fHM->H1( "FeetRate_gDPB_g05_f0" ) );
    fHM->H1( "FeetRate_gDPB_g05_f1" )->SetLineColor( kRed ); // => Make stack + color!
@@ -489,6 +504,7 @@ void CbmTSMonitorTof::CreateHistograms()
    fHM->H1( "FeetRate_gDPB_g05_f2" )->SetLineColor( kBlue ); // => Make stack + color!
    stackRateF->Add( fHM->H1( "FeetRate_gDPB_g05_f2" ) );
    stackRateF->Draw("nostack");
+  fHM->Add(name.Data(), stackRateF);
 #ifdef USE_HTTP_SERVER
    if (server) server->Register("/TofRaw", stackRateF);
 #endif
@@ -516,6 +532,7 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts, size_t component)
    TH1* histSysMessType = fHM->H1("hSysMessType");
    TH2* histGet4MessType = fHM->H2("hGet4MessType");
    TH2* histGet4ChanErrors = fHM->H2("hGet4ChanErrors");
+   TH2* histGet4EpochFlags = fHM->H2("hGet4EpochFlags");
 
    std::vector<TH2*> Raw_Tot_gDPB;
    std::vector<TH1*> ChCount_gDPB;
@@ -608,7 +625,7 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts, size_t component)
                break;
             case ngdpb::MSG_EPOCH2:
            	   histGet4MessType->Fill(get4Nr, ngdpb::GET4_32B_EPOCH);
-               FillEpochInfo(mess);
+               FillEpochInfo(mess, histGet4EpochFlags);
                break;
             case ngdpb::MSG_GET4:
            	   histGet4MessType->Fill(get4Nr, ngdpb::GET4_32B_DATA + 1);
@@ -780,14 +797,27 @@ void CbmTSMonitorTof::FillHitInfo(ngdpb::Message mess,
    else LOG(WARNING) << "found unmapped rocId w/o epoch yet: " << Form("0x%08x ",rocId) << FairLogger::endl;
 }
 
-void CbmTSMonitorTof::FillEpochInfo(ngdpb::Message mess)
+void CbmTSMonitorTof::FillEpochInfo(ngdpb::Message mess, TH2* EpochFlags)
 {
-   Int_t rocId          = mess.getRocNumber();
-   Int_t get4Id     = mess.getGdpbGenChipId();
+   Int_t rocId  = mess.getRocNumber();
+   Int_t get4Id = mess.getGdpbGenChipId();
+   
+   Int_t gdpbIdx = fGdpbIdIndexMap[rocId];
+   Int_t get4Nr  = (gdpbIdx*fNrOfGet4PerGdpb) + get4Id;
+   
    fCurrentEpoch[rocId][get4Id] = mess.getEpoch2Number();
 
    //  LOG(INFO) << "Epoch message for ROC " << rocId << " with epoch number "
    //            << fCurrentEpoch[rocId] << FairLogger::endl;
+
+   if( 1 == mess.getGdpbEpSync() )
+      EpochFlags->Fill( get4Nr, 0 );
+   if( 1 == mess.getGdpbEpDataLoss() )
+      EpochFlags->Fill( get4Nr, 1 );
+   if( 1 == mess.getGdpbEpEpochLoss() )
+      EpochFlags->Fill( get4Nr, 2 );
+   if( 1 == mess.getGdpbEpMissmatch() )
+      EpochFlags->Fill( get4Nr, 3 );
 
    fCurrentEpochTime = mess.getMsgFullTime(fCurrentEpoch[rocId][get4Id]);
    fNofEpochs++;
