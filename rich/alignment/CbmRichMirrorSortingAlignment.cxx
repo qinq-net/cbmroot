@@ -27,6 +27,7 @@
 class TGeoNode;
 class TGeoMatrix;
 #include "string.h"
+#include "TStyle.h"
 #include "CbmTrackMatchNew.h"
 
 CbmRichMirrorSortingAlignment::CbmRichMirrorSortingAlignment() :
@@ -167,48 +168,52 @@ void CbmRichMirrorSortingAlignment::Exec(Option_t* Option)
 			Int_t trackMotherId = mcTrack->GetMotherId();
 			Int_t pdg = TMath::Abs(mcTrack->GetPdgCode());
 			if (trackMotherId == -1) {
-				//loop on mirrorPoint and compare w/ TrackID->GetTrackId to get correct one
-				for (Int_t iMirrPt=0 ; iMirrPt<fMirrorPoints->GetEntries(); iMirrPt++) {
-					mirrPoint = (CbmRichPoint*) fMirrorPoints->At(iMirrPt);
-					if (mirrPoint == 0) { continue; }
-					//cout << "Mirror point track ID: " << mirrPoint->GetTrackID() << endl;
-					if (mirrPoint->GetTrackID() == mcRichTrackId) { break; }
-				}
-				ptM.at(0) = mirrPoint->GetX(), ptM.at(1) = mirrPoint->GetY(), ptM.at(2) = mirrPoint->GetZ();
-				//cout << "mirrPoint: {" << mirrPoint->GetX() << ", " << mirrPoint->GetY() << ", " << mirrPoint->GetZ() << "}" << endl;
-				mirrNode = gGeoManager->FindNode(ptM.at(0),ptM.at(1),ptM.at(2));
-				//cout << "Mirror node name: " << mirrNode->GetName() << " and full path " << gGeoManager->GetPath() << endl;
-				string str1 = gGeoManager->GetPath(), str2 = "mirror_tile_", str3 = "";
-				std::size_t found = str1.find(str2);
-				if (found!=std::string::npos) {
-					//cout << "first 'mirror_tile_type' found at: " << found << '\n';
-					Int_t end = str2.length() + 3;
-					str3 = str1.substr(found, end);
-				}
-				cout << "Mirror ID: " << str3 << endl;
-				mirrorObject->setMirrorId(str3);
-
-				if (mirrNode) {
-					TGeoNavigator* navi = gGeoManager->GetCurrentNavigator();
-					//cout << "Navigator path: " << navi->GetPath() << endl;
-					ptCIdeal.at(0) = navi->GetCurrentMatrix()->GetTranslation()[0];
-					ptCIdeal.at(1) = navi->GetCurrentMatrix()->GetTranslation()[1];
-					ptCIdeal.at(2) = navi->GetCurrentMatrix()->GetTranslation()[2];
-					cout << "Sphere center coordinates of the aligned mirror tile, ideal = {" << ptCIdeal.at(0) << ", " << ptCIdeal.at(1) << ", " << ptCIdeal.at(2) << "}" << endl;
-					for (Int_t iRefPt=0 ; iRefPt<fRefPlanePoints->GetEntries(); iRefPt++) {
-						refPlanePoint = (CbmRichPoint*) fRefPlanePoints->At(iRefPt);
-						//cout << "Refl plane point track ID: " << refPlanePoint->GetTrackID() << endl;
-						if (refPlanePoint->GetTrackID() == mcRichTrackId) { break; }
+				if (fMirrorPoints->GetEntries() >0) {
+					//loop on mirrorPoint and compare w/ TrackID->GetTrackId to get correct one
+					for (Int_t iMirrPt=0 ; iMirrPt<fMirrorPoints->GetEntries(); iMirrPt++) {
+						//cout << "HERE2" << endl;
+						mirrPoint = (CbmRichPoint*) fMirrorPoints->At(iMirrPt);
+						if (mirrPoint == 0) { continue; }
+						//cout << "Mirror point track ID: " << mirrPoint->GetTrackID() << endl;
+						if (mirrPoint->GetTrackID() == mcRichTrackId) { break; }
 					}
-					ptR1.at(0) = refPlanePoint->GetX(), ptR1.at(1) = refPlanePoint->GetY(), ptR1.at(2) = refPlanePoint->GetZ();
-					cout << "Refl plane point coo = {" << ptR1[0] << ", " << ptR1[1] << ", " << ptR1[2] << "}" << endl;
-					ComputeR2(ptR2Center, ptR2Mirr, ptM, ptC, ptR1, navi, "Uncorrected");
-					ComputeP(ptPMirr, ptPR2, normalPMT, ptM, ptR2Mirr, constantePMT);
-					TVector3 inPos (ptPMirr.at(0), ptPMirr.at(1), ptPMirr.at(2));
-					CbmRichGeoManager::GetInstance().RotatePoint(&inPos, &outPos);
-					cout << "New PMT points coordinates = {" << outPos.x() << ", " << outPos.y() << ", " << outPos.z() << "}" << endl;
-					mirrorObject->setExtrapHit(outPos.x(), outPos.y());
+					ptM.at(0) = mirrPoint->GetX(), ptM.at(1) = mirrPoint->GetY(), ptM.at(2) = mirrPoint->GetZ();
+					//cout << "mirrPoint: {" << mirrPoint->GetX() << ", " << mirrPoint->GetY() << ", " << mirrPoint->GetZ() << "}" << endl;
+					mirrNode = gGeoManager->FindNode(ptM.at(0),ptM.at(1),ptM.at(2));
+					//cout << "Mirror node name: " << mirrNode->GetName() << " and full path " << gGeoManager->GetPath() << endl;
+					string str1 = gGeoManager->GetPath(), str2 = "mirror_tile_", str3 = "";
+					std::size_t found = str1.find(str2);
+					if (found!=std::string::npos) {
+						//cout << "first 'mirror_tile_type' found at: " << found << '\n';
+						Int_t end = str2.length() + 3;
+						str3 = str1.substr(found, end);
+					}
+					cout << "Mirror ID: " << str3 << endl;
+					mirrorObject->setMirrorId(str3);
+
+					if (mirrNode) {
+						TGeoNavigator* navi = gGeoManager->GetCurrentNavigator();
+						//cout << "Navigator path: " << navi->GetPath() << endl;
+						ptCIdeal.at(0) = navi->GetCurrentMatrix()->GetTranslation()[0];
+						ptCIdeal.at(1) = navi->GetCurrentMatrix()->GetTranslation()[1];
+						ptCIdeal.at(2) = navi->GetCurrentMatrix()->GetTranslation()[2];
+						cout << "Sphere center coordinates of the aligned mirror tile, ideal = {" << ptCIdeal.at(0) << ", " << ptCIdeal.at(1) << ", " << ptCIdeal.at(2) << "}" << endl;
+						for (Int_t iRefPt=0 ; iRefPt<fRefPlanePoints->GetEntries(); iRefPt++) {
+							refPlanePoint = (CbmRichPoint*) fRefPlanePoints->At(iRefPt);
+							//cout << "Refl plane point track ID: " << refPlanePoint->GetTrackID() << endl;
+							if (refPlanePoint->GetTrackID() == mcRichTrackId) { break; }
+						}
+						ptR1.at(0) = refPlanePoint->GetX(), ptR1.at(1) = refPlanePoint->GetY(), ptR1.at(2) = refPlanePoint->GetZ();
+						cout << "Refl plane point coo = {" << ptR1[0] << ", " << ptR1[1] << ", " << ptR1[2] << "}" << endl;
+						ComputeR2(ptR2Center, ptR2Mirr, ptM, ptC, ptR1, navi, "Uncorrected");
+						ComputeP(ptPMirr, ptPR2, normalPMT, ptM, ptR2Mirr, constantePMT);
+						TVector3 inPos (ptPMirr.at(0), ptPMirr.at(1), ptPMirr.at(2));
+						CbmRichGeoManager::GetInstance().RotatePoint(&inPos, &outPos);
+						cout << "New PMT points coordinates = {" << outPos.x() << ", " << outPos.y() << ", " << outPos.z() << "}" << endl;
+						mirrorObject->setExtrapHit(outPos.x(), outPos.y());
+					}
 				}
+				else { cout << "No mirror points registered." << endl; }
 			}
 			else { cout << "Not a mother particle." << endl; }
 			//ComputeAngles();
@@ -462,6 +467,7 @@ void CbmRichMirrorSortingAlignment::DrawFitAndExtractAngles(std::map<string, vec
 		if (it->first != "") {
 		TCanvas* can = new TCanvas();
 		can->Divide(3,1);
+		gStyle->SetOptStat(0);
 		can->cd(1);
 		TH2D* histo = it->second;
 		for (Int_t y_bin=1; y_bin<=500; y_bin++) {
@@ -473,12 +479,14 @@ void CbmRichMirrorSortingAlignment::DrawFitAndExtractAngles(std::map<string, vec
 		}
 		histo->Draw("colz");
 		histo->FitSlicesY(0,0,-1,1);
+		histo->Write();
 
 		can->cd(2);
 		string histoName = "CherenkovHitsDistribReduced_" + it->first + "_1";
 		//cout << "HistoName: " << histoName << endl;
 		TH1D *histo_1 = (TH1D*)gDirectory->Get((histoName).c_str());
 		histo_1->Draw();
+		histo_1->Write();
 
 		can->cd(3);
 		TF1 *f1 = new TF1("f1", "[2]+[0]*cos(x)+[1]*sin(x)", -3.5, 3.5);
@@ -491,6 +499,7 @@ void CbmRichMirrorSortingAlignment::DrawFitAndExtractAngles(std::map<string, vec
 		char leg[128];
 		f1->SetLineColor(2);
 		f1->Draw();
+		f1->Write();
 		// ------------------------------ CALCULATION OF MISALIGNMENT ANGLE ------------------------------ //
 		cout << setprecision(6) << endl;
 		q = TMath::ATan(fit->GetParameter(0)/fit->GetParameter(1));
@@ -507,7 +516,7 @@ void CbmRichMirrorSortingAlignment::DrawFitAndExtractAngles(std::map<string, vec
 		LEG->SetBorderSize(1);
 		LEG->SetFillColor(0);
 		LEG->SetMargin(0.2);
-		LEG->SetTextSize(0.03);
+		LEG->SetTextSize(0.04);
 		sprintf(leg, "Fitted sinusoid");
 		LEG->AddEntry(f1, leg, "l");
 		sprintf(leg, "Rotation angle around X = %f", mis_x);
@@ -517,12 +526,12 @@ void CbmRichMirrorSortingAlignment::DrawFitAndExtractAngles(std::map<string, vec
 		sprintf(leg, "Offset = %f", fit->GetParameter(2));
 		LEG->AddEntry("", leg, "l");
 		LEG->Draw();
-		Cbm::SaveCanvasAsImage(can, string(fOutputDir.Data()+fStudyName+"_"), "png");
+		Cbm::SaveCanvasAsImage(can, string(fOutputDir.Data()+fStudyName), "png");
 
-		//anglesMap[it->first].push_back(mis_x);
-		//anglesMap[it->first].push_back(mis_y);
 		anglesMap[it->first].push_back(fit->GetParameter(1));
 		anglesMap[it->first].push_back(fit->GetParameter(0));
+		anglesMap[it->first].push_back(mis_x);
+		anglesMap[it->first].push_back(mis_y);
 		}
 	}
 }
@@ -541,10 +550,34 @@ void CbmRichMirrorSortingAlignment::Finish()
 	// Drawing the obtained thetaCh VS phi histogram ; fitting with sinusoid ; write calculated misalignment angles in anglesMap:
 	DrawFitAndExtractAngles(anglesMap, histoMap);
 
-	TString s = fOutputDir + "correction_param_array_" + fStudyName + ".txt";
+	TString str_correction = fOutputDir + "correction_param_array_" + fStudyName + ".txt";
 	ofstream corrFile;
-	corrFile.open(s, std::ofstream::trunc);
+	corrFile.open(str_correction, std::ofstream::trunc);
 	if (corrFile.is_open()) { corrFile.close(); }
+	else { cout << "Error in CbmRichMirrorSortingAlignment::Finish ; unable to open parameter file!" << endl; }
+
+	// Write correction values in output file:
+	for (std::map<string, vector<Double_t>>::iterator it=anglesMap.begin(); it!=anglesMap.end(); ++it) {
+		string mirrorId = it->first;
+		cout << "curMirrorId: " << mirrorId << endl;
+		vector<Double_t> misAngles = it->second;
+		cout << "mirror correction parameters infos: {" << misAngles[0] << ", " << misAngles[1] << "}" << endl;
+		corrFile.open(str_correction, std::ofstream::app);
+		if (corrFile.is_open())
+		{
+			corrFile << mirrorId << "\n";
+			corrFile << setprecision(7) << misAngles[0] << "\n";
+			corrFile << setprecision(7) << misAngles[1] << "\n";
+			corrFile.close();
+			cout << "Wrote correction parameters to: " << str_correction << endl;
+		}
+		else { cout << "Error in CbmRichMirrorSortingAlignment::Finish ; unable to open parameter file!" << endl; }
+	}
+
+	TString str_angles = fOutputDir + "reconstructed_angles_array_" + fStudyName + ".txt";
+	ofstream anglesFile;
+	anglesFile.open(str_angles, std::ofstream::trunc);
+	if (anglesFile.is_open()) { anglesFile.close(); }
 	else { cout << "Error in CbmRichMirrorSortingAlignment::Finish ; unable to open parameter file!" << endl; }
 
 	// Write misalignment angles in output file:
@@ -552,15 +585,15 @@ void CbmRichMirrorSortingAlignment::Finish()
 		string mirrorId = it->first;
 		cout << "curMirrorId: " << mirrorId << endl;
 		vector<Double_t> misAngles = it->second;
-		cout << "mirror infos: {" << misAngles[0] << ", " << misAngles[1] << "}" << endl;
-		corrFile.open(s, std::ofstream::app);
-		if (corrFile.is_open())
+		cout << "mirror reconstructed angles infos: {" << misAngles[2] << ", " << misAngles[3] << "}" << endl;
+		anglesFile.open(str_angles, std::ofstream::app);
+		if (anglesFile.is_open())
 		{
-			corrFile << mirrorId << "\n";
-			corrFile << setprecision(7) << misAngles[0] << "\n";
-			corrFile << setprecision(7) << misAngles[1] << "\n";
-			corrFile.close();
-			cout << "Wrote correction parameters to: " << s << endl;
+			anglesFile << mirrorId << "\n";
+			anglesFile << setprecision(7) << misAngles[2] << "\n";
+			anglesFile << setprecision(7) << misAngles[3] << "\n";
+			anglesFile.close();
+			cout << "Wrote reconstructed angles to: " << str_angles << endl;
 		}
 		else { cout << "Error in CbmRichMirrorSortingAlignment::Finish ; unable to open parameter file!" << endl; }
 	}

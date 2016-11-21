@@ -75,6 +75,7 @@ private:
     Double_t fTrackCenterDistanceIdeal;
     Double_t fTrackCenterDistanceCorrected;
     Double_t fTrackCenterDistanceUncorrected;
+    TString fCorrectionMatching;
 
     TClonesArray* fGlobalTracks;
     TClonesArray* fRichRings;

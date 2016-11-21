@@ -53,7 +53,8 @@ CbmRichMirrorSortingCorrection::CbmRichMirrorSortingCorrection() :
 			fStsTrackMatches(NULL),
 			fTrackCenterDistanceIdeal(0),
 			fTrackCenterDistanceCorrected(0),
-			fTrackCenterDistanceUncorrected(0)
+			fTrackCenterDistanceUncorrected(0),
+			fCorrectionMatching("")
 {
 }
 
@@ -64,34 +65,34 @@ InitStatus CbmRichMirrorSortingCorrection::Init()
 	FairRootManager* manager = FairRootManager::Instance();
 
 	fGlobalTracks = (TClonesArray*) manager->GetObject("GlobalTrack");
-	if (NULL == fGlobalTracks) { Fatal("CbmRichMirrorSortingAlignment::Init", "No GlobalTrack array!"); }
+	if (NULL == fGlobalTracks) { Fatal("CbmRichMirrorSortingCorrection::Init", "No GlobalTrack array!"); }
 
 	fRichRings = (TClonesArray*) manager->GetObject("RichRing");
-	if (NULL == fRichRings) { Fatal("CbmRichMirrorSortingAlignment::Init", "No RichRing array !"); }
+	if (NULL == fRichRings) { Fatal("CbmRichMirrorSortingCorrection::Init", "No RichRing array !"); }
 
 	fMCTracks = (TClonesArray*) manager->GetObject("MCTrack");
-	if (NULL == fMCTracks) { Fatal("CbmRichMirrorSortingAlignment::Init", "No MCTracks array !"); }
+	if (NULL == fMCTracks) { Fatal("CbmRichMirrorSortingCorrection::Init", "No MCTracks array !"); }
 
 	fMirrorPoints = (TClonesArray*) manager->GetObject("RichMirrorPoint");
-	if (NULL == fMirrorPoints) { Fatal("CbmRichMirrorSortingAlignment::Init", "No RichMirrorPoints array !"); }
+	if (NULL == fMirrorPoints) { Fatal("CbmRichMirrorSortingCorrection::Init", "No RichMirrorPoints array !"); }
 
 	fRefPlanePoints  = (TClonesArray*) manager->GetObject("RefPlanePoint");
-	if (NULL == fRefPlanePoints) { Fatal("CbmRichMirrorSortingAlignment::Init", "No RichRefPlanePoint array !"); }
+	if (NULL == fRefPlanePoints) { Fatal("CbmRichMirrorSortingCorrection::Init", "No RichRefPlanePoint array !"); }
 
 	fPmtPoints = (TClonesArray*) manager->GetObject("RichPoint");
-	if (NULL == fPmtPoints) { Fatal("CbmRichMirrorSortingAlignment::Init", "No RichPoint array !"); }
+	if (NULL == fPmtPoints) { Fatal("CbmRichMirrorSortingCorrection::Init", "No RichPoint array !"); }
 
 	fRichProjections = (TClonesArray*) manager->GetObject("RichProjection");
-	if (NULL == fRichProjections) { Fatal("CbmRichMirrorSortingAlignment::Init", "No RichProjection array !"); }
+	if (NULL == fRichProjections) { Fatal("CbmRichMirrorSortingCorrection::Init", "No RichProjection array !"); }
 
     fTrackParams = (TClonesArray*)manager->GetObject("RichTrackParamZ");
-    if ( NULL == fTrackParams) { Fatal("CbmRichMirrorSortingAlignment::Init", "No RichTrackParamZ array!"); }
+    if ( NULL == fTrackParams) { Fatal("CbmRichMirrorSortingCorrection::Init", "No RichTrackParamZ array!"); }
 
     fRichRingMatches = (TClonesArray*) manager->GetObject("RichRingMatch");
-    if ( NULL == fRichRingMatches) { Fatal("CbmRichMirrorSortingAlignment::Init","No RichRingMatch array!"); }
+    if ( NULL == fRichRingMatches) { Fatal("CbmRichMirrorSortingCorrection::Init","No RichRingMatch array!"); }
 
     fStsTrackMatches = (TClonesArray*) manager->GetObject("StsTrackMatch");
-    if ( NULL == fStsTrackMatches) {Fatal("CbmRichMirrorSortingAlignment::Init", "No StsTrackMatch array!");}
+    if ( NULL == fStsTrackMatches) {Fatal("CbmRichMirrorSortingCorrection::Init", "No StsTrackMatch array!");}
 
 	fCopFit = new CbmRichRingFitterCOP();
 	fTauFit = new CbmRichRingFitterEllipseTau();
@@ -154,6 +155,27 @@ void CbmRichMirrorSortingCorrection::InitHistProjectionList()
 	fDiffHistoMap["DiffUncorrY_mirror_tile_1_4"] = new TH1D("fhDifferenceUncorrectedY_mirror_tile_1_4", ";Difference in Y (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
 	fDiffHistoMap["DiffIdealX_mirror_tile_1_4"] = new TH1D("fhDifferenceIdealX_mirror_tile_1_4", ";Difference in X (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
 	fDiffHistoMap["DiffIdealY_mirror_tile_1_4"] = new TH1D("fhDifferenceIdealY_mirror_tile_1_4", ";Difference in Y (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+
+	fDiffHistoMap["DiffCorrX_mirror_tile_0_8"] = new TH1D("fhDifferenceCorrectedX_mirror_tile_0_8", ";Difference in X (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffCorrY_mirror_tile_0_8"] = new TH1D("fhDifferenceCorrectedY_mirror_tile_0_8", ";Difference in Y (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffUncorrX_mirror_tile_0_8"] = new TH1D("fhDifferenceUncorrectedX_mirror_tile_0_8", ";Difference in X (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffUncorrY_mirror_tile_0_8"] = new TH1D("fhDifferenceUncorrectedY_mirror_tile_0_8", ";Difference in Y (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffIdealX_mirror_tile_0_8"] = new TH1D("fhDifferenceIdealX_mirror_tile_0_8", ";Difference in X (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffIdealY_mirror_tile_0_8"] = new TH1D("fhDifferenceIdealY_mirror_tile_0_8", ";Difference in Y (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+
+	fDiffHistoMap["DiffCorrX_mirror_tile_1_5"] = new TH1D("fhDifferenceCorrectedX_mirror_tile_1_5", ";Difference in X (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffCorrY_mirror_tile_1_5"] = new TH1D("fhDifferenceCorrectedY_mirror_tile_1_5", ";Difference in Y (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffUncorrX_mirror_tile_1_5"] = new TH1D("fhDifferenceUncorrectedX_mirror_tile_1_5", ";Difference in X (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffUncorrY_mirror_tile_1_5"] = new TH1D("fhDifferenceUncorrectedY_mirror_tile_1_5", ";Difference in Y (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffIdealX_mirror_tile_1_5"] = new TH1D("fhDifferenceIdealX_mirror_tile_1_5", ";Difference in X (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffIdealY_mirror_tile_1_5"] = new TH1D("fhDifferenceIdealY_mirror_tile_1_5", ";Difference in Y (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+
+	fDiffHistoMap["DiffCorrX_mirror_tile_0_1"] = new TH1D("fhDifferenceCorrectedX_mirror_tile_0_1", ";Difference in X (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffCorrY_mirror_tile_0_1"] = new TH1D("fhDifferenceCorrectedY_mirror_tile_0_1", ";Difference in Y (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffUncorrX_mirror_tile_0_1"] = new TH1D("fhDifferenceUncorrectedX_mirror_tile_0_1", ";Difference in X (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffUncorrY_mirror_tile_0_1"] = new TH1D("fhDifferenceUncorrectedY_mirror_tile_0_1", ";Difference in Y (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffIdealX_mirror_tile_0_1"] = new TH1D("fhDifferenceIdealX_mirror_tile_0_1", ";Difference in X (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+	fDiffHistoMap["DiffIdealY_mirror_tile_0_1"] = new TH1D("fhDifferenceIdealY_mirror_tile_0_1", ";Difference in Y (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
 
 	/*fDiffHistoMap["fhDifferenceX_mirror_tile_2_8"] = "X_mirror_tile_2_8";
 	fDiffHistoMap["fhDifferenceY_mirror_tile_2_8"] = "Y_mirror_tile_2_8";
@@ -227,12 +249,12 @@ void CbmRichMirrorSortingCorrection::Exec(Option_t* Option)
 			//fTauFit->DoFit(&ringL);
 			cout << "ring Center Coo: " << ringL.GetCenterX() << ", " << ringL.GetCenterY() << endl;
 			mcTrack->GetMomentum(momentum);
-			FairTrackParam* pr = (FairTrackParam*) fRichProjections->At(ringTrackID);
-			if (pr == NULL) {
-				cout << "CbmRichMirrorSortingCorrection::Exec : pr = NULL." << endl;
+			FairTrackParam* pTrack = (FairTrackParam*) fRichProjections->At(ringTrackID);
+			if (pTrack == NULL) {
+				cout << "CbmRichMirrorSortingCorrection::Exec : pTrack = NULL." << endl;
 				continue;
 			}
-			trackX = pr->GetX(), trackY = pr->GetY();
+			trackX = pTrack->GetX(), trackY = pTrack->GetY();
 			cout << "Track: " << trackX << ", " << trackY << endl;
 
 				// ----- PART 2 ----- //
@@ -240,62 +262,78 @@ void CbmRichMirrorSortingCorrection::Exec(Option_t* Option)
 			Int_t trackMotherId = mcTrack->GetMotherId();
 			Int_t pdg = TMath::Abs(mcTrack->GetPdgCode());
 			if (trackMotherId == -1) {
-				//loop on mirrorPoint and compare w/ TrackID->GetTrackId to get correct one
-				for (Int_t iMirrPt=0 ; iMirrPt<fMirrorPoints->GetEntries(); iMirrPt++) {
-					mirrPoint = (CbmRichPoint*) fMirrorPoints->At(iMirrPt);
-					if (mirrPoint == 0) { continue; }
-					//cout << "Mirror point track ID: " << mirrPoint->GetTrackID() << endl;
-					if (mirrPoint->GetTrackID() == mcRichTrackId) { break; }
-				}
-				ptM.at(0) = mirrPoint->GetX(), ptM.at(1) = mirrPoint->GetY(), ptM.at(2) = mirrPoint->GetZ();
-				//cout << "mirrPoint: {" << mirrPoint->GetX() << ", " << mirrPoint->GetY() << ", " << mirrPoint->GetZ() << "}" << endl;
-				mirrNode = gGeoManager->FindNode(ptM.at(0),ptM.at(1),ptM.at(2));
-				//cout << "Mirror node name: " << mirrNode->GetName() << " and full path " << gGeoManager->GetPath() << endl;
-				string str1 = gGeoManager->GetPath(), str2 = "mirror_tile_", str3 = "";
-				std::size_t found = str1.find(str2);
-				if (found!=std::string::npos) {
-					//cout << "first 'mirror_tile_type' found at: " << found << '\n';
-					Int_t end = str2.length() + 3;
-					str3 = str1.substr(found, end);
-				}
-				cout << "Mirror ID: " << str3 << endl;
-
-				if (mirrNode) {
-					TGeoNavigator* navi = gGeoManager->GetCurrentNavigator();
-					//cout << "Navigator path: " << navi->GetPath() << endl;
-					ptCIdeal.at(0) = navi->GetCurrentMatrix()->GetTranslation()[0];
-					ptCIdeal.at(1) = navi->GetCurrentMatrix()->GetTranslation()[1];
-					ptCIdeal.at(2) = navi->GetCurrentMatrix()->GetTranslation()[2];
-					cout << "Sphere center coordinates of the aligned mirror tile, ideal = {" << ptCIdeal.at(0) << ", " << ptCIdeal.at(1) << ", " << ptCIdeal.at(2) << "}" << endl;
-					for (Int_t iRefPt=0 ; iRefPt<fRefPlanePoints->GetEntries(); iRefPt++) {
-						refPlanePoint = (CbmRichPoint*) fRefPlanePoints->At(iRefPt);
-						//cout << "Refl plane point track ID: " << refPlanePoint->GetTrackID() << endl;
-						if (refPlanePoint->GetTrackID() == mcRichTrackId) { break; }
+				if (fMirrorPoints->GetEntries() >0) {
+					//loop on mirrorPoint and compare w/ TrackID->GetTrackId to get correct one
+					for (Int_t iMirrPt=0 ; iMirrPt<fMirrorPoints->GetEntries(); iMirrPt++) {
+						mirrPoint = (CbmRichPoint*) fMirrorPoints->At(iMirrPt);
+						if (mirrPoint == 0) { continue; }
+						//cout << "Mirror point track ID: " << mirrPoint->GetTrackID() << endl;
+						if (mirrPoint->GetTrackID() == mcRichTrackId) { break; }
 					}
-					ptR1.at(0) = refPlanePoint->GetX(), ptR1.at(1) = refPlanePoint->GetY(), ptR1.at(2) = refPlanePoint->GetZ();
-					cout << "Refl plane point coo = {" << ptR1[0] << ", " << ptR1[1] << ", " << ptR1[2] << "}" << endl;
-					ComputeR2(ptR2Center, ptR2Mirr, ptM, ptC, ptR1, navi, "Corrected", str3);
-					ComputeR2(ptR2CenterUnCorr, ptR2MirrUnCorr, ptM, ptC, ptR1, navi, "Uncorrected", str3);
-					ComputeR2(ptR2CenterIdeal, ptR2MirrIdeal, ptM, ptCIdeal, ptR1, navi, "Uncorrected", str3);
-					ComputeP(ptPMirr, ptPR2, normalPMT, ptM, ptR2Mirr, constantePMT);
-					ComputeP(ptPMirrUnCorr, ptPR2UnCorr, normalPMT, ptM, ptR2MirrUnCorr, constantePMT);
-					ComputeP(ptPMirrIdeal, ptPR2Ideal, normalPMT, ptM, ptR2MirrIdeal, constantePMT);
-					cout << "PMT points mirr coordinates before rotation = {" << ptPMirr[0] << ", " << ptPMirr[1] << ", " << ptPMirr[2] << "}" << endl;
-					cout << "PMT points mirr uncorr coordinates before rotation = {" << ptPMirrUnCorr[0] << ", " << ptPMirrUnCorr[1] << ", " << ptPMirrUnCorr[2] << "}" << endl;
-					cout << "PMT points mirr ideal coordinates before rotation = {" << ptPMirrIdeal[0] << ", " << ptPMirrIdeal[1] << ", " << ptPMirrIdeal[2] << "}" << endl;
+					ptM.at(0) = mirrPoint->GetX(), ptM.at(1) = mirrPoint->GetY(), ptM.at(2) = mirrPoint->GetZ();
+					//cout << "mirrPoint: {" << mirrPoint->GetX() << ", " << mirrPoint->GetY() << ", " << mirrPoint->GetZ() << "}" << endl;
+					mirrNode = gGeoManager->FindNode(ptM.at(0),ptM.at(1),ptM.at(2));
+					//cout << "Mirror node name: " << mirrNode->GetName() << " and full path " << gGeoManager->GetPath() << endl;
+					string str1 = gGeoManager->GetPath(), str2 = "mirror_tile_", str3 = "";
+					std::size_t found = str1.find(str2);
+					if (found!=std::string::npos) {
+						//cout << "first 'mirror_tile_type' found at: " << found << '\n';
+						Int_t end = str2.length() + 3;
+						str3 = str1.substr(found, end);
+					}
+					cout << "Mirror ID: " << str3 << endl;
 
-					TVector3 inPos (ptPMirr.at(0), ptPMirr.at(1), ptPMirr.at(2));
-					CbmRichGeoManager::GetInstance().RotatePoint(&inPos, &outPos);
-					cout << endl << "New PMT points coordinates = {" << outPos.x() << ", " << outPos.y() << ", " << outPos.z() << "}" << endl;
-					TVector3 inPosUnCorr (ptPMirrUnCorr.at(0), ptPMirrUnCorr.at(1), ptPMirrUnCorr.at(2));
-					CbmRichGeoManager::GetInstance().RotatePoint(&inPosUnCorr, &outPosUnCorr);
-					cout << "New mirror points coordinates = {" << outPosUnCorr.x() << ", " << outPosUnCorr.y() << ", " << outPosUnCorr.z() << "}" << endl;
-					TVector3 inPosIdeal (ptPMirrIdeal.at(0), ptPMirrIdeal.at(1), ptPMirrIdeal.at(2));
-					CbmRichGeoManager::GetInstance().RotatePoint(&inPosIdeal, &outPosIdeal);
-					cout << "New mirror points coordinates = {" << outPosIdeal.x() << ", " << outPosIdeal.y() << ", " << outPosIdeal.z() << "}" << endl << endl;
+					if (mirrNode) {
+						TGeoNavigator* navi = gGeoManager->GetCurrentNavigator();
+						//cout << "Navigator path: " << navi->GetPath() << endl;
+						ptCIdeal.at(0) = navi->GetCurrentMatrix()->GetTranslation()[0];
+						ptCIdeal.at(1) = navi->GetCurrentMatrix()->GetTranslation()[1];
+						ptCIdeal.at(2) = navi->GetCurrentMatrix()->GetTranslation()[2];
+						cout << "Sphere center coordinates of the aligned mirror tile, ideal = {" << ptCIdeal.at(0) << ", " << ptCIdeal.at(1) << ", " << ptCIdeal.at(2) << "}" << endl;
+						for (Int_t iRefPt=0 ; iRefPt<fRefPlanePoints->GetEntries(); iRefPt++) {
+							refPlanePoint = (CbmRichPoint*) fRefPlanePoints->At(iRefPt);
+							//cout << "Refl plane point track ID: " << refPlanePoint->GetTrackID() << endl;
+							if (refPlanePoint->GetTrackID() == mcRichTrackId) { break; }
+						}
+						ptR1.at(0) = refPlanePoint->GetX(), ptR1.at(1) = refPlanePoint->GetY(), ptR1.at(2) = refPlanePoint->GetZ();
+						cout << "Refl plane point coo = {" << ptR1[0] << ", " << ptR1[1] << ", " << ptR1[2] << "}" << endl;
+						ComputeR2(ptR2Center, ptR2Mirr, ptM, ptC, ptR1, navi, "Corrected", str3);
+						ComputeR2(ptR2CenterUnCorr, ptR2MirrUnCorr, ptM, ptC, ptR1, navi, "Uncorrected", str3);
+						ComputeR2(ptR2CenterIdeal, ptR2MirrIdeal, ptM, ptCIdeal, ptR1, navi, "Uncorrected", str3);
+						ComputeP(ptPMirr, ptPR2, normalPMT, ptM, ptR2Mirr, constantePMT);
+						ComputeP(ptPMirrUnCorr, ptPR2UnCorr, normalPMT, ptM, ptR2MirrUnCorr, constantePMT);
+						ComputeP(ptPMirrIdeal, ptPR2Ideal, normalPMT, ptM, ptR2MirrIdeal, constantePMT);
+						cout << "PMT points mirr coordinates before rotation = {" << ptPMirr[0] << ", " << ptPMirr[1] << ", " << ptPMirr[2] << "}" << endl;
+						cout << "PMT points mirr uncorr coordinates before rotation = {" << ptPMirrUnCorr[0] << ", " << ptPMirrUnCorr[1] << ", " << ptPMirrUnCorr[2] << "}" << endl;
+						cout << "PMT points mirr ideal coordinates before rotation = {" << ptPMirrIdeal[0] << ", " << ptPMirrIdeal[1] << ", " << ptPMirrIdeal[2] << "}" << endl;
 
-					FillHistProjection(outPosIdeal, outPosUnCorr, outPos, ringL, normalPMT, constantePMT, str3);
+						TVector3 inPos (ptPMirr.at(0), ptPMirr.at(1), ptPMirr.at(2));
+						CbmRichGeoManager::GetInstance().RotatePoint(&inPos, &outPos);
+						cout << endl << "New PMT points coordinates = {" << outPos.x() << ", " << outPos.y() << ", " << outPos.z() << "}" << endl;
+						TVector3 inPosUnCorr (ptPMirrUnCorr.at(0), ptPMirrUnCorr.at(1), ptPMirrUnCorr.at(2));
+						CbmRichGeoManager::GetInstance().RotatePoint(&inPosUnCorr, &outPosUnCorr);
+						cout << "New mirror points coordinates = {" << outPosUnCorr.x() << ", " << outPosUnCorr.y() << ", " << outPosUnCorr.z() << "}" << endl;
+						TVector3 inPosIdeal (ptPMirrIdeal.at(0), ptPMirrIdeal.at(1), ptPMirrIdeal.at(2));
+						CbmRichGeoManager::GetInstance().RotatePoint(&inPosIdeal, &outPosIdeal);
+						cout << "New mirror points coordinates = {" << outPosIdeal.x() << ", " << outPosIdeal.y() << ", " << outPosIdeal.z() << "}" << endl << endl;
+
+						if ( fCorrectionMatching == "standard" ) {
+							pTrack->SetX(outPosUnCorr.x());
+							pTrack->SetY(outPosUnCorr.y());
+						}
+						else if ( fCorrectionMatching == "correction" ) {
+							pTrack->SetX(outPos.x());
+							pTrack->SetY(outPos.y());
+						}
+						else if ( fCorrectionMatching == "ideal" ) {
+							pTrack->SetX(outPosIdeal.x());
+							pTrack->SetY(outPosIdeal.y());
+						}
+
+						FillHistProjection(outPosIdeal, outPosUnCorr, outPos, ringL, normalPMT, constantePMT, str3);
+					}
 				}
+				else { cout << "No mirror points registered." << endl; }
 			}
 			else { cout << "Not a mother particle." << endl; }
 			//ComputeAngles();
@@ -519,10 +557,10 @@ void CbmRichMirrorSortingCorrection::ComputeP(vector<Double_t> &ptPMirr, vector<
 	//cout << "* using mirror point M to define \U0001D49F ': {" << ptPMirr.at(0) << ", " << ptPMirr.at(1) << ", " << ptPMirr.at(2) << "}" << endl;
 	//cout << "* using reflected point R2 to define \U0001D49F ': {" << ptPR2.at(0) << ", " << ptPR2.at(1) << ", " << ptPR2.at(2) << "}" << endl;
 	checkCalc1 = ptPMirr.at(0)*normalPMT.at(0) + ptPMirr.at(1)*normalPMT.at(1) + ptPMirr.at(2)*normalPMT.at(2) + constantePMT;
-	//cout << "Check whether extrapolated track point on PMT plane verifies its equation (value should be 0.):" << endl;
+	cout << "Check whether extrapolated track point on PMT plane verifies its equation (value should be 0.):" << endl;
 	//cout << "* using mirror point M, checkCalc = " << checkCalc1 << endl;
 	checkCalc2 = ptPR2.at(0)*normalPMT.at(0) + ptPR2.at(1)*normalPMT.at(1) + ptPR2.at(2)*normalPMT.at(2) + constantePMT;
-	//cout << "* using reflected point R2, checkCalc = " << checkCalc2 << endl;
+	cout << "* using reflected point R2, checkCalc = " << checkCalc2 << endl;
 }
 
 void CbmRichMirrorSortingCorrection::FillHistProjection(TVector3 outPosIdeal, TVector3 outPosUnCorr, TVector3 outPos, CbmRichRingLight ringL, vector<Double_t> normalPMT, Double_t constantePMT, string str)
@@ -604,92 +642,177 @@ void CbmRichMirrorSortingCorrection::FillHistProjection(TVector3 outPosIdeal, TV
 	//}
 	//else { cout << "No identical ring mother ID and mirror track ID ..." << endl;}
 
-	fTrackCenterDistanceCorrected += distToExtrapTrackHitInPlane;
-	fTrackCenterDistanceUncorrected += distToExtrapTrackHitInPlaneUnCorr;
-	fTrackCenterDistanceIdeal += distToExtrapTrackHitInPlaneIdeal;
+	if (distToExtrapTrackHitInPlane < 25. && distToExtrapTrackHitInPlaneUnCorr < 25. && distToExtrapTrackHitInPlaneIdeal < 25.)	{
+		//cout << "SEVERAL: " << distToExtrapTrackHitInPlane << endl << distToExtrapTrackHitInPlaneUnCorr << endl << distToExtrapTrackHitInPlaneIdeal << endl << endl;
+		fTrackCenterDistanceCorrected += distToExtrapTrackHitInPlane;
+		fTrackCenterDistanceUncorrected += distToExtrapTrackHitInPlaneUnCorr;
+		fTrackCenterDistanceIdeal += distToExtrapTrackHitInPlaneIdeal;
+	}
+	else {
+		cout << "Distance hit-ring too high!" << endl;
+		sleep(5);
+	}
 }
 
 void CbmRichMirrorSortingCorrection::DrawHistProjection()
 {
-	int counter1 = 1, counter2 = 1, counter3 = 1, counter4 = 1, counter5 = 1, counter6 = 1;
-	Int_t thresh = 50;
+	int counter1 = 1, counter2 = 1, counter3 = 1, counter4 = 1, counter5 = 1, counter6 = 1, counter7 = 1, counter8 = 1, counter9 = 1, counter10 = 1, counter11 = 1, counter12 = 1;
+	Int_t thresh = 100;
 
-/*	TCanvas* can1 = new TCanvas("X_mirror_tile_2_8","X_mirror_tile_2_8",1500,400);
+	TCanvas* can1 = new TCanvas("X_mirror_tile_0_1","X_mirror_tile_0_1",1500,400);
 	can1->Divide(3,1);
-	TCanvas* can2 = new TCanvas("X_mirror_tile_1_3","X_mirror_tile_1_3",1500,400);
-	can2->Divide(3,1);*/
-	TCanvas* can3 = new TCanvas("X_mirror_tile_1_4","X_mirror_tile_1_4",1500,400);
+	TCanvas* can2 = new TCanvas("Y_mirror_tile_0_1","Y_mirror_tile_0_1",1500,400);
+	can2->Divide(3,1);
+	TCanvas* can3 = new TCanvas("X_mirror_tile_1_5","X_mirror_tile_1_5",1500,400);
 	can3->Divide(3,1);
-/*	TCanvas* can4 = new TCanvas("Y_mirror_tile_2_8","Y_mirror_tile_2_8",1500,400);
+	TCanvas* can4 = new TCanvas("Y_mirror_tile_1_5","Y_mirror_tile_1_5",1500,400);
 	can4->Divide(3,1);
-	TCanvas* can5 = new TCanvas("Y_mirror_tile_1_3","Y_mirror_tile_1_3",1500,400);
-	can5->Divide(3,1);*/
-	TCanvas* can6 = new TCanvas("Y_mirror_tile_1_4","Y_mirror_tile_1_4",1500,400);
+/*	TCanvas* can5 = new TCanvas("X_mirror_tile_2_8","X_mirror_tile_2_8",1500,400);
+	can5->Divide(3,1);
+	TCanvas* can6 = new TCanvas("Y_mirror_tile_2_8","Y_mirror_tile_2_8",1500,400);
 	can6->Divide(3,1);
-
+	TCanvas* can7 = new TCanvas("X_mirror_tile_1_3","X_mirror_tile_1_3",1500,400);
+	can7->Divide(3,1);
+	TCanvas* can8 = new TCanvas("Y_mirror_tile_1_3","Y_mirror_tile_1_3",1500,400);
+	can8->Divide(3,1);
+	TCanvas* can9 = new TCanvas("X_mirror_tile_1_4","X_mirror_tile_1_4",1500,400);
+	can9->Divide(3,1);
+	TCanvas* can10 = new TCanvas("Y_mirror_tile_1_4","Y_mirror_tile_1_4",1500,400);
+	can10->Divide(3,1);
+	TCanvas* can11 = new TCanvas("X_mirror_tile_0_8","X_mirror_tile_0_8",1500,400);
+	can11->Divide(3,1);
+	TCanvas* can12 = new TCanvas("Y_mirror_tile_0_8","Y_mirror_tile_0_8",1500,400);
+	can12->Divide(3,1);
+*/
 	for (std::map<string,TH1D*>::iterator it=fDiffHistoMap.begin(); it!=fDiffHistoMap.end(); ++it) {
-/*		if ( it->first.find("X_mirror_tile_2_8")!=std::string::npos && it->second->GetEntries() > thresh ) {
+		if ( it->first.find("X_mirror_tile_0_1")!=std::string::npos && it->second->GetEntries() > thresh ) {
 			can1->cd(counter1);
 			fDiffHistoMap[it->first]->Draw();
 			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
 			fDiffHistoMap[it->first]->SetLineColor(counter1+1);
 			fDiffHistoMap[it->first]->SetLineWidth(2);
+			fDiffHistoMap[it->first]->Write();
 			counter1++;
 		}
-		else if ( it->first.find("X_mirror_tile_1_3")!=std::string::npos && it->second->GetEntries() > thresh ) {
+		else if ( it->first.find("Y_mirror_tile_0_1")!=std::string::npos && it->second->GetEntries() > thresh ) {
 			can2->cd(counter2);
 			fDiffHistoMap[it->first]->Draw();
 			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
 			fDiffHistoMap[it->first]->SetLineColor(counter2+1);
 			fDiffHistoMap[it->first]->SetLineWidth(2);
+			fDiffHistoMap[it->first]->Write();
 			counter2++;
-		}*/
-		if ( it->first.find("X_mirror_tile_1_4")!=std::string::npos && it->second->GetEntries() > thresh ) {
+		}
+		else if ( it->first.find("X_mirror_tile_1_5")!=std::string::npos && it->second->GetEntries() > thresh ) {
 			can3->cd(counter3);
 			fDiffHistoMap[it->first]->Draw();
 			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
 			fDiffHistoMap[it->first]->SetLineColor(counter3+1);
 			fDiffHistoMap[it->first]->SetLineWidth(2);
+			fDiffHistoMap[it->first]->Write();
 			counter3++;
 		}
-/*		else if ( it->first.find("Y_mirror_tile_2_8")!=std::string::npos && it->second->GetEntries() > thresh ) {
+		else if ( it->first.find("Y_mirror_tile_1_5")!=std::string::npos && it->second->GetEntries() > thresh ) {
 			can4->cd(counter4);
 			fDiffHistoMap[it->first]->Draw();
 			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
 			fDiffHistoMap[it->first]->SetLineColor(counter4+1);
 			fDiffHistoMap[it->first]->SetLineWidth(2);
+			fDiffHistoMap[it->first]->Write();
 			counter4++;
 		}
-		else if ( it->first.find("Y_mirror_tile_1_3")!=std::string::npos && it->second->GetEntries() > thresh ) {
+/*		else if ( it->first.find("X_mirror_tile_2_8")!=std::string::npos && it->second->GetEntries() > thresh ) {
 			can5->cd(counter5);
 			fDiffHistoMap[it->first]->Draw();
 			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
 			fDiffHistoMap[it->first]->SetLineColor(counter5+1);
 			fDiffHistoMap[it->first]->SetLineWidth(2);
+			fDiffHistoMap[it->first]->Write();
 			counter5++;
-		}*/
-		else if ( it->first.find("Y_mirror_tile_1_4")!=std::string::npos && it->second->GetEntries() > thresh ) {
+		}
+		else if ( it->first.find("Y_mirror_tile_2_8")!=std::string::npos && it->second->GetEntries() > thresh ) {
 			can6->cd(counter6);
 			fDiffHistoMap[it->first]->Draw();
 			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
 			fDiffHistoMap[it->first]->SetLineColor(counter6+1);
 			fDiffHistoMap[it->first]->SetLineWidth(2);
+			fDiffHistoMap[it->first]->Write();
 			counter6++;
 		}
-		else if ( it->second->GetEntries() > thresh ) {
+		else if ( it->first.find("X_mirror_tile_1_3")!=std::string::npos && it->second->GetEntries() > thresh ) {
+			can7->cd(counter7);
+			fDiffHistoMap[it->first]->Draw();
+			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
+			fDiffHistoMap[it->first]->SetLineColor(counter7+1);
+			fDiffHistoMap[it->first]->SetLineWidth(2);
+			counter7++;
+		}
+		else if ( it->first.find("Y_mirror_tile_1_3")!=std::string::npos && it->second->GetEntries() > thresh ) {
+			can8->cd(counter8);
+			fDiffHistoMap[it->first]->Draw();
+			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
+			fDiffHistoMap[it->first]->SetLineColor(counter8+1);
+			fDiffHistoMap[it->first]->SetLineWidth(2);
+			counter8++;
+		}
+		else if ( it->first.find("X_mirror_tile_1_4")!=std::string::npos && it->second->GetEntries() > thresh ) {
+			can9->cd(counter9);
+			fDiffHistoMap[it->first]->Draw();
+			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
+			fDiffHistoMap[it->first]->SetLineColor(counter9+1);
+			fDiffHistoMap[it->first]->SetLineWidth(2);
+			fDiffHistoMap[it->first]->Write();
+			counter9++;
+		}
+		else if ( it->first.find("Y_mirror_tile_1_4")!=std::string::npos && it->second->GetEntries() > thresh ) {
+			can10->cd(counter10);
+			//fDiffHistoMap[it->first]->Draw();
+			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
+			fDiffHistoMap[it->first]->SetLineColor(counter10+1);
+			fDiffHistoMap[it->first]->SetLineWidth(2);
+			fDiffHistoMap[it->first]->Write();
+			counter10++;
+		}
+		else if ( it->first.find("X_mirror_tile_0_8")!=std::string::npos && it->second->GetEntries() > thresh ) {
+			can11->cd(counter11);
+			fDiffHistoMap[it->first]->Draw();
+			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
+			fDiffHistoMap[it->first]->SetLineColor(counter11+1);
+			fDiffHistoMap[it->first]->SetLineWidth(2);
+			fDiffHistoMap[it->first]->Write();
+			counter11++;
+		}
+		else if ( it->first.find("Y_mirror_tile_0_8")!=std::string::npos && it->second->GetEntries() > thresh ) {
+			can12->cd(counter12);
+			fDiffHistoMap[it->first]->Draw();
+			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
+			fDiffHistoMap[it->first]->SetLineColor(counter12+1);
+			fDiffHistoMap[it->first]->SetLineWidth(2);
+			fDiffHistoMap[it->first]->Write();
+			counter12++;
+		}
+*/		else if ( it->second->GetEntries() > thresh ) {
 			TCanvas* can = new TCanvas();
 			fDiffHistoMap[it->first]->Draw();
 			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
 			fDiffHistoMap[it->first]->SetLineColor(4);
 			fDiffHistoMap[it->first]->SetLineWidth(2);
+			fDiffHistoMap[it->first]->Write();
 		}
 	}
-	//Cbm::SaveCanvasAsImage(can1, string(fOutputDir.Data()), "png");
-	//Cbm::SaveCanvasAsImage(can2, string(fOutputDir.Data()), "png");
-	//Cbm::SaveCanvasAsImage(can3, string(fOutputDir.Data()), "png");
-	//Cbm::SaveCanvasAsImage(can4, string(fOutputDir.Data()), "png");
-	//Cbm::SaveCanvasAsImage(can5, string(fOutputDir.Data()), "png");
-	//Cbm::SaveCanvasAsImage(can6, string(fOutputDir.Data()), "png");
+
+	Cbm::SaveCanvasAsImage(can1, string(fOutputDir.Data()+fStudyName), "png");
+	Cbm::SaveCanvasAsImage(can2, string(fOutputDir.Data()+fStudyName), "png");
+	Cbm::SaveCanvasAsImage(can3, string(fOutputDir.Data()+fStudyName), "png");
+	Cbm::SaveCanvasAsImage(can4, string(fOutputDir.Data()+fStudyName), "png");
+	//Cbm::SaveCanvasAsImage(can5, string(fOutputDir.Data()+fStudyName), "png");
+	//Cbm::SaveCanvasAsImage(can6, string(fOutputDir.Data()+fStudyName), "png");
+	//Cbm::SaveCanvasAsImage(can7, string(fOutputDir.Data()+fStudyName), "png");
+	//Cbm::SaveCanvasAsImage(can8, string(fOutputDir.Data()+fStudyName), "png");
+	//Cbm::SaveCanvasAsImage(can9, string(fOutputDir.Data()+fStudyName), "png");
+	//Cbm::SaveCanvasAsImage(can10, string(fOutputDir.Data()+fStudyName), "png");
+	//Cbm::SaveCanvasAsImage(can11, string(fOutputDir.Data()+fStudyName), "png");
+	//Cbm::SaveCanvasAsImage(can12, string(fOutputDir.Data()+fStudyName), "png");
 
 /*	char title[128];
 	for (std::map<string,TH1D*>::iterator it=fDiffHistoMap.begin(); it!=fDiffHistoMap.end(); ++it) {
@@ -707,6 +830,19 @@ void CbmRichMirrorSortingCorrection::DrawHistProjection()
 void CbmRichMirrorSortingCorrection::Finish()
 {
 	DrawHistProjection();
+
+	TString s = fOutputDir + "track_ring_distances_" + fStudyName + ".txt";
+	ofstream corrFile;
+	corrFile.open(s, std::ofstream::trunc);
+	if (corrFile.is_open()) {
+		corrFile << "number of events: " << fEventNb << endl;
+		corrFile << setprecision(9) << "Mean distance between track hit and ring center ; corrected case = " << fTrackCenterDistanceCorrected/fEventNb << " and total sum = " << fTrackCenterDistanceCorrected << endl;
+		corrFile << "Mean distance between track hit and ring center ; uncorrected case = " << fTrackCenterDistanceUncorrected/fEventNb << " and total sum = " << fTrackCenterDistanceUncorrected << endl;
+		corrFile << "Mean distance between track hit and ring center ; ideal case = " << fTrackCenterDistanceIdeal/fEventNb << " and total sum = " << fTrackCenterDistanceIdeal << endl;
+	}
+	else { cout << "Error in CbmRichMirrorSortingAlignment::Finish ; unable to open parameter file!" << endl; }
+
+	cout << "number of events: " << fEventNb << endl;
 	cout << setprecision(9) << "Mean distance between track hit and ring center ; corrected case = " << fTrackCenterDistanceCorrected/fEventNb << " and total sum = " << fTrackCenterDistanceCorrected << endl;
 	cout << "Mean distance between track hit and ring center ; uncorrected case = " << fTrackCenterDistanceUncorrected/fEventNb << " and total sum = " << fTrackCenterDistanceUncorrected << endl;
 	cout << "Mean distance between track hit and ring center ; ideal case = " << fTrackCenterDistanceIdeal/fEventNb << " and total sum = " << fTrackCenterDistanceIdeal << endl;

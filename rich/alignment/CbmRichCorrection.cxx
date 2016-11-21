@@ -795,11 +795,12 @@ void CbmRichCorrection::ComputeR2(vector<Double_t> &ptR2Center, vector<Double_t>
 		// Reading misalignment information from correction_param.txt text file.
 		vector<Double_t> outputFit(4);
 		ifstream corr_file;
-		TString str = fOutputDir + "correction_param_" + fNumbAxis + fTile + ".txt";
+		TString str = fOutputDir + "correction_param_array___" + fNumbAxis + fTile + ".txt";
 		corr_file.open(str);
 		if (corr_file.is_open())
 		{
 			for (Int_t i=0; i<4; i++) {corr_file >> outputFit.at(i);}
+			//for (Int_t i=0; i<2; i++) {corr_file >> outputFit.at(i);}
 			corr_file.close();
 		}
 		else {
