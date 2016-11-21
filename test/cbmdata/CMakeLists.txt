@@ -56,3 +56,10 @@ Set(CbmMatchSources
 
 CreateGTestExeAndAddTest(_GTestCbmMatch "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
                          "${CbmMatchSources}" "${DEPENDENCIES}")
+
+Set(CbmDigiSources
+  _GTestCbmDigi.cxx
+)
+
+CreateGTestExeAndAddTest(_GTestCbmDigi "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
+                         "${CbmDigiSources}" "${DEPENDENCIES}")
