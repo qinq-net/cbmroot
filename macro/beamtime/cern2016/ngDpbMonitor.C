@@ -62,6 +62,7 @@ void ngDpbMonitor(TString inFile = "")
   
   // Get4 Unpacker
   CbmTSMonitorTof* test_monitor_tof = new CbmTSMonitorTof();
+  test_monitor_tof->SetDiamondChannels();
 
   // --- Source task
   CbmFlibCern2016Source* source = new CbmFlibCern2016Source();
