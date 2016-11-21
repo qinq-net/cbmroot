@@ -53,6 +53,9 @@ public:
 
    void SetMsLimitLevel( size_t uAcceptBoundaryPct = 100 ) { fuMsAcceptsPercent = uAcceptBoundaryPct; }
    size_t GetMsLimitLevel( ) { return fuMsAcceptsPercent; }
+   
+   void SetDiamondChannels( Int_t iGdpb = 0, Int_t iFeet = 2, Int_t iChannelA = 95, 
+                            Int_t iChannelB = 87, Int_t iChannelC = 79, Int_t iChannelD = 71);
 
 private:
 
@@ -67,6 +70,14 @@ private:
 
    Int_t fNrOfGet4;            // Total number of Get4 chips in the system
    Int_t fNrOfGet4PerGdpb;     // Number of GET4s per GDPB
+   
+   Int_t fDiamondGdpb;
+   Int_t fDiamondFeet;
+   Int_t fDiamondChanA;
+   Int_t fDiamondChanB;
+   Int_t fDiamondChanC;
+   Int_t fDiamondChanD;
+   Int_t fDiamondTimeLastReset;
 
    std::vector<int> fMsgCounter;
 
@@ -93,7 +104,7 @@ private:
 #ifndef __CINT__
    void FillHitInfo(ngdpb::Message, std::vector<TH2*>,
                     std::vector<TH1*>, std::vector<TH2*>,
-                    std::vector<TH1*>
+                    std::vector<TH1*>, TH2*
                    );
    void FillEpochInfo(ngdpb::Message, TH2*);
    void PrintSlcInfo(ngdpb::Message);

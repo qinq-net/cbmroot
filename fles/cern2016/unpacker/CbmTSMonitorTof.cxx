@@ -27,6 +27,7 @@
 #include "TH1.h"
 #include "TCanvas.h"
 #include "THStack.h"
+#include "TROOT.h"
 
 #include <iostream>
 #include <stdint.h>
@@ -44,6 +45,13 @@ CbmTSMonitorTof::CbmTSMonitorTof()
     fNrOfChannelsPerGet4(-1),
 	fNrOfGet4(-1),
 	fNrOfGet4PerGdpb(-1),
+   fDiamondGdpb(-1),
+   fDiamondFeet(-1),
+   fDiamondChanA(-1),
+   fDiamondChanB(-1),
+   fDiamondChanC(-1),
+   fDiamondChanD(-1),
+   fDiamondTimeLastReset(-1),
     fuCurrNbGdpb( 0 ),
     fMsgCounter(11,0), // length of enum MessageTypes initialized with 0
     fGdpbIdIndexMap(),
@@ -339,7 +347,7 @@ void CbmTSMonitorTof::CreateHistograms()
 	  name = Form("ChannelRate_gDPB_%02u", uGdpb);
 	  title = Form("Channel instant rate gDPB %02u; Rate[Hz] ; Channel", uGdpb);
 	  fHM->Add(name.Data(), new TH2F(name.Data(), title.Data(),
-			   iNbBinsRate-1, dBinsRate, 96, 0, 95) );
+			   iNbBinsRate-1, dBinsRate, 96, 0, 96) );
 #ifdef USE_HTTP_SERVER
 	  if (server) server->Register("/TofRaw", fHM->H2(name.Data()));
 #endif
@@ -351,14 +359,14 @@ void CbmTSMonitorTof::CreateHistograms()
   {
     name = Form("Raw_Tot_gDPB_%02u", uGdpb);
     title = Form("Raw TOT gDPB %02u; channel; TOT [bin]", uGdpb);
-    fHM->Add(name.Data(), new TH2F(name.Data(), title.Data(), 96, 0, 95, 256, 0, 256) );
+    fHM->Add(name.Data(), new TH2F(name.Data(), title.Data(), 96, 0, 96, 256, 0, 256) );
 #ifdef USE_HTTP_SERVER
     if (server) server->Register("/TofRaw", fHM->H2(name.Data()));
 #endif
 
     name = Form("ChCount_gDPB_%02u", uGdpb);
     title = Form("Channel counts gDPB %02u; channel; Hits", uGdpb);
-    fHM->Add(name.Data(), new TH1I(name.Data(), title.Data(), 96, 0, 95 ) );
+    fHM->Add(name.Data(), new TH1I(name.Data(), title.Data(), 96, 0, 96 ) );
 
 #ifdef USE_HTTP_SERVER
     if (server) server->Register("/TofRaw", fHM->H1(name.Data()));
@@ -367,7 +375,7 @@ void CbmTSMonitorTof::CreateHistograms()
     for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
     {
        name = Form("FeetRate_gDPB_g%02u_f%1u", uGdpb, uFeet);
-       title = Form("Counts per second in Feet %1u of gDPB %02u; Time[s] ; Counts", uGdpb, uFeet);
+       title = Form("Counts per second in Feet %1u of gDPB %02u; Time[s] ; Counts", uFeet, uGdpb);
        fHM->Add(name.Data(), new TH1F( name.Data(), title.Data(), 
                                        1800, 0, 1800 ) );
 #ifdef USE_HTTP_SERVER
@@ -375,6 +383,10 @@ void CbmTSMonitorTof::CreateHistograms()
 #endif
     } // for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
+
+#ifdef USE_HTTP_SERVER
+      if (server) server->RegisterCommand( "/Reset_ChCount_gDPB_00", "/TofRaw/ChCount_gDPB_00/->Reset()" );
+#endif
   
   
    /** Create summary Canvases for CERN 2016 **/
@@ -508,6 +520,14 @@ void CbmTSMonitorTof::CreateHistograms()
 #ifdef USE_HTTP_SERVER
    if (server) server->Register("/TofRaw", stackRateF);
 #endif
+
+  name = "hDiamond";
+  title = "Counts per diamond in last 10s; X [pad]; Y [pad]; Counts";
+  TH2I* hDiamond = new TH2I(name, title, 2, 0., 2, 2 , 0., 2.);
+  fHM->Add(name.Data(), hDiamond);
+#ifdef USE_HTTP_SERVER
+  if (server) server->Register("/TofRaw", fHM->H2(name.Data()));
+#endif
    
    /*****************************/
 
@@ -554,6 +574,7 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts, size_t component)
        FeetRate_gDPB.push_back(fHM->H1(name.Data()));
      } // for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
    }
+   TH2* histDiamond = fHM->H2("hDiamond");
 
 
    Int_t messageType = -111;
@@ -633,7 +654,7 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts, size_t component)
                break;
             case ngdpb::MSG_GET4_32B:
                histGet4MessType->Fill(get4Nr, ngdpb::GET4_32B_DATA);
-               FillHitInfo(mess, Raw_Tot_gDPB, ChCount_gDPB, ChannelRate_gDPB, FeetRate_gDPB);
+               FillHitInfo(mess, Raw_Tot_gDPB, ChCount_gDPB, ChannelRate_gDPB, FeetRate_gDPB, histDiamond);
                break;
             case ngdpb::MSG_GET4_SLC:
            	   histGet4MessType->Fill(get4Nr, ngdpb::GET4_32B_SLCM);
@@ -730,7 +751,8 @@ void CbmTSMonitorTof::FillHitInfo(ngdpb::Message mess,
                                   std::vector<TH2*> Raw_Tot_gDPB,
                                   std::vector<TH1*> ChCount_gDPB,
                                   std::vector<TH2*> ChannelRate_gDPB,
-                                  std::vector<TH1*> FeetRate_gDPB
+                                  std::vector<TH1*> FeetRate_gDPB,
+                                  TH2* histDiamond
 )
    {
    // --- Get absolute time, NXYTER and channel number
@@ -780,6 +802,26 @@ void CbmTSMonitorTof::FillHitInfo(ngdpb::Message mess,
                FeetRate_gDPB[ (gdpbNr*fNrOfFebsPerGdpb) + (get4Id / fNrOfGet4PerFeb) ]->Fill( 
                            1e-9*( mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] ) 
                                  - fdStartTime) );
+                                 
+            if( fDiamondGdpb == gdpbNr && ( get4Id/fNrOfGet4PerFeb == fDiamondFeet ) )
+            {
+               Int_t iChanInGdpb = get4Id * fNrOfChannelsPerGet4 + channel;
+               if( fDiamondChanA == iChanInGdpb )
+                  histDiamond->Fill( 0., 0.);
+               else if( fDiamondChanB == iChanInGdpb )
+                  histDiamond->Fill( 1., 0.);
+               else if( fDiamondChanC == iChanInGdpb )
+                  histDiamond->Fill( 0., 1.);
+               else if( fDiamondChanD == iChanInGdpb )
+                  histDiamond->Fill( 1., 1.);
+                  
+               if( 10 < ( (mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] )/1e9) - fDiamondTimeLastReset ) )
+               {
+                  histDiamond->Reset();
+                  fDiamondTimeLastReset = mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] )/1e9;
+               } // if( 1e10 < ( mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] ) - fDiamondTimeLastReset )
+               
+            } // if( fDiamondGdpb == gdpbNr && ( get4Id/fNrOfGet4PerFeb == fDiamondFeet ) )
           
             hitTime  = mess.getMsgFullTime(fCurrentEpoch[rocId][get4Id]);
             Int_t Ft = mess.getGdpbHitFineTs();
@@ -818,6 +860,15 @@ void CbmTSMonitorTof::FillEpochInfo(ngdpb::Message mess, TH2* EpochFlags)
       EpochFlags->Fill( get4Nr, 2 );
    if( 1 == mess.getGdpbEpMissmatch() )
       EpochFlags->Fill( get4Nr, 3 );
+   
+/*
+   if( 0 == gdpbIdx && 0 == mess.getEpoch2Number() % 20000 ) // Try to force update every 1s
+   {
+      dynamic_cast< TCanvas * >(gROOT->FindObjectAny( "cSummary" ) )->cd(3);
+      gPad->Modified();
+      gPad->Update();
+   }
+*/
 
    fCurrentEpochTime = mess.getMsgFullTime(fCurrentEpoch[rocId][get4Id]);
    fNofEpochs++;
@@ -982,5 +1033,17 @@ void CbmTSMonitorTof::FillOutput(CbmDigi* /*digi*/)
 {
 }
 
+
+   
+void CbmTSMonitorTof::SetDiamondChannels( Int_t iGdpb, Int_t iFeet, Int_t iChannelA, 
+                            Int_t iChannelB, Int_t iChannelC, Int_t iChannelD)
+{
+   fDiamondGdpb  = iGdpb;
+   fDiamondFeet  = iFeet;
+   fDiamondChanA = iChannelA;
+   fDiamondChanB = iChannelB;
+   fDiamondChanC = iChannelC;
+   fDiamondChanD = iChannelD;
+}
 
 ClassImp(CbmTSMonitorTof)
