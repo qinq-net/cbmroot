@@ -1,5 +1,7 @@
 #include "CbmHit.h"
 
+#include "CbmMatch.h"
+
 #include "gtest/gtest.h"
 #include "gtest/gtest-spi.h"
 
@@ -216,7 +218,27 @@ TEST(_GTestCbmHit , TestSettersAndGetters)
   retValInt = test.GetPlaneId();
   EXPECT_EQ(-1, retValInt);
 
-  //TODO: Test setter for fMatch
+  // Test if we can add an empty CbmMatch, get it back, and extract
+  // the expected values
+  CbmMatch testMatch{};
+
+  Int_t linkLength{-111};
+  Double_t totalWeight{-111};
+
+  linkLength = testMatch.GetNofLinks();
+  EXPECT_EQ(0, linkLength);
+
+  totalWeight = testMatch.GetTotalWeight();
+  EXPECT_FLOAT_EQ(0., totalWeight);
+
+  test.SetMatch(&testMatch);
+  CbmMatch* testMatch1 = test.GetMatch();
+
+  linkLength = testMatch1->GetNofLinks();
+  EXPECT_EQ(0, linkLength);
+
+  totalWeight = testMatch1->GetTotalWeight();
+  EXPECT_FLOAT_EQ(0., totalWeight);
 }
 
 TEST(_GTestCbmHit , ToString)
