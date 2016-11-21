@@ -253,6 +253,7 @@ class CbmTofTestBeamClusterizer : public FairTask
 
       std::vector< TH2* > fhRpcDigiCor;     //[nbDet]
       std::vector< TH1* > fhRpcCluMul;      //[nbDet]
+      std::vector< TH1* > fhRpcCluRate;     //[nbDet]
       std::vector< TH2* > fhRpcCluPosition; //[nbDet]
       std::vector< TH2* > fhRpcCluDelPos;   //[nbDet]
       std::vector< TH2* > fhRpcCluDelMatPos;   //[nbDet]

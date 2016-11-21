@@ -52,7 +52,9 @@
 
 // C++ Classes and includes 
 // Globals 
+
 Int_t iIndexDut = 0;
+Double_t StartAnalysisTime = 0.;
 
 /************************************************************************************/
 CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer():
@@ -107,6 +109,7 @@ CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer():
    fhChDifDifY(NULL),
    fhRpcDigiCor(),
    fhRpcCluMul(),
+   fhRpcCluRate(),
    fhRpcCluPosition(),
    fhRpcCluDelPos(),
    fhRpcCluDelMatPos(),
@@ -249,6 +252,7 @@ CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer(const char *name, Int_t ver
    fhChDifDifY(NULL),
    fhRpcDigiCor(),
    fhRpcCluMul(),
+   fhRpcCluRate(),
    fhRpcCluPosition(),
    fhRpcCluDelPos(),
    fhRpcCluDelMatPos(),
@@ -1065,6 +1069,7 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
 
    fhRpcDigiCor.resize( iNbDet  );
    fhRpcCluMul.resize( iNbDet  );
+   fhRpcCluRate.resize( iNbDet  );
    fhRpcCluPosition.resize( iNbDet  );
    fhRpcCluDelPos.resize( iNbDet  );
    fhRpcCluDelMatPos.resize( iNbDet  );
@@ -1119,6 +1124,11 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
           Form("Clu multiplicity of Rpc #%03d in Sm %03d of type %d; M []; Cnts", iRpcId, iSmId, iSmType ),
 	      fDigiBdfPar->GetNbChan(iSmType,iRpcId),1,fDigiBdfPar->GetNbChan(iSmType,iRpcId)+1);
 
+       fhRpcCluRate[iDetIndx] =  new TH1I(
+          Form("cl_SmT%01d_sm%03d_rpc%03d_rate", iSmType, iSmId, iRpcId ),
+          Form("Clu rate of Rpc #%03d in Sm %03d of type %d; M []; Rate (Hz)", iRpcId, iSmId, iSmType ),
+	      1000.,0.,1000.);
+	      
        Double_t YSCAL=50.;
        if (fPosYMaxScal !=0.) YSCAL=fPosYMaxScal;
        Double_t YDMAX=TMath::Max(2.,fChannelInfo->GetSizey())*YSCAL;
@@ -1673,7 +1683,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
    {
      pHit = (CbmTofHit*) fTofHitsColl->At( iHitInd );
      if(NULL == pHit) continue;
-
+     if (StartAnalysisTime == 0) StartAnalysisTime = pHit->GetTime();
      if( kFALSE == fDigiBdfPar->ClustUseTrackId() ) fhPtsPerHit->Fill(pHit->GetFlag());
      Int_t iDetId = (pHit->GetAddress() & DetMask);
 
@@ -1690,6 +1700,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
          Int_t iNbRpc  = fDigiBdfPar->GetNbRpc( iSmType );
          if(-1<fviClusterMul[iSmType][iSm][iRpc]){           // fill only once per detector 
            fhRpcCluMul[iDetIndx]->Fill(fviClusterMul[iSmType][iSm][iRpc]);
+           fhRpcCluRate[iDetIndx]->Fill((pHit->GetTime() - StartAnalysisTime)/1.E9); //
            for (Int_t iSel=0; iSel<iNSel; iSel++) if(BSel[iSel]){
                fhTRpcCluMul[iDetIndx][iSel]->Fill(fviClusterMul[iSmType][iSm][iRpc]);
            }         
@@ -2074,6 +2085,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
    for(Int_t iDetIndx=0; iDetIndx< fDigiBdfPar->GetNbDet(); iDetIndx++){
      if(NULL == fhRpcCluMul[iDetIndx]) continue;
      fhRpcCluMul[iDetIndx]->Write();
+     fhRpcCluRate[iDetIndx]->Write();
      fhRpcCluPosition[iDetIndx]->Write();
      fhRpcCluDelPos[iDetIndx]->Write();
      fhRpcCluTOff[iDetIndx]->Write();
