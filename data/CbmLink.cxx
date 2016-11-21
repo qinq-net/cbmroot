@@ -15,7 +15,7 @@ CbmLink::CbmLink() :
  fFile(-1),
  fEntry(-1),
  fIndex(-1),
- fWeight(-1)
+ fWeight(-1.)
 {
 
 }

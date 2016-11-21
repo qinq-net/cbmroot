@@ -58,6 +58,23 @@ CbmDigi::~CbmDigi() {
 // -------------------------------------------------------------------------
 
 
+// The following functions are only implemented for the unit tests.
+// They can only be called from a derived class via CbmDigi::GetAddress()
+Int_t CbmDigi::GetAddress() const
+{
+  return -111;
+}
+
+Int_t CbmDigi::GetSystemId() const
+{
+  return -111;
+}
+
+Double_t CbmDigi::GetTime() const
+{
+  return -111.;
+}
+
 
 
 ClassImp(CbmDigi)
