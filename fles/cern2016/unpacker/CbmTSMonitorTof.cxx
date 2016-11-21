@@ -26,6 +26,7 @@
 #include "Rtypes.h"
 #include "TH1.h"
 #include "TCanvas.h"
+#include "THStack.h"
 
 #include <iostream>
 #include <stdint.h>
@@ -358,14 +359,141 @@ void CbmTSMonitorTof::CreateHistograms()
     if (server) server->Register("/TofRaw", fHM->H1(name.Data()));
 #endif
 
-    name = Form("FeetRate_gDPB_%02u", uGdpb);
-    title = Form("Counts per second and FEB in gDPB %02u; Time[s] ; FEET; Counts", uGdpb);
-    fHM->Add(name.Data(), new TH2F( name.Data(), title.Data(), 
-                                    1800, 0, 1800, fNrOfFebsPerGdpb, 0, fNrOfFebsPerGdpb ) );
+    for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
+    {
+       name = Form("FeetRate_gDPB_g%02u_f%1u", uGdpb, uFeet);
+       title = Form("Counts per second in Feet %1u of gDPB %02u; Time[s] ; Counts", uGdpb, uFeet);
+       fHM->Add(name.Data(), new TH1F( name.Data(), title.Data(), 
+                                       1800, 0, 1800 ) );
 #ifdef USE_HTTP_SERVER
-    if (server) server->Register("/TofRaw", fHM->H2(name.Data()));
+      if (server) server->Register("/TofRaw", fHM->H1(name.Data()));
 #endif
+    } // for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
+  
+  
+   /** Create summary Canvases for CERN 2016 **/
+   THStack * stackRateA = new THStack("stackRateA", "Sum of counts vs Time per FEET for gDPB 1");
+   fHM->H1( "FeetRate_gDPB_g00_f0" )->SetLineColor( kBlack ); // => Make stack + color!
+   stackRateA->Add( fHM->H1( "FeetRate_gDPB_g00_f0" ) );
+   fHM->H1( "FeetRate_gDPB_g00_f1" )->SetLineColor( kRed ); // => Make stack + color!
+   stackRateA->Add( fHM->H1( "FeetRate_gDPB_g00_f1" ) );
+   fHM->H1( "FeetRate_gDPB_g00_f2" )->SetLineColor( kBlue ); // => Make stack + color!
+   stackRateA->Add( fHM->H1( "FeetRate_gDPB_g00_f2" ) );
+#ifdef USE_HTTP_SERVER
+   if (server) server->Register("/TofRaw", stackRateA);
+#endif
+
+   THStack * stackRateB = new THStack("stackRateB", "Sum of counts vs Time per FEET for gDPB 2");
+   fHM->H1( "FeetRate_gDPB_g01_f0" )->SetLineColor( kBlack ); // => Make stack + color!
+   stackRateB->Add( fHM->H1( "FeetRate_gDPB_g01_f0" ) );
+   fHM->H1( "FeetRate_gDPB_g01_f1" )->SetLineColor( kRed ); // => Make stack + color!
+   stackRateB->Add( fHM->H1( "FeetRate_gDPB_g01_f1" ) );
+   fHM->H1( "FeetRate_gDPB_g01_f2" )->SetLineColor( kBlue ); // => Make stack + color!
+   stackRateB->Add( fHM->H1( "FeetRate_gDPB_g01_f2" ) );
+#ifdef USE_HTTP_SERVER
+   if (server) server->Register("/TofRaw", stackRateB);
+#endif
+
+  TCanvas* cSummary = new TCanvas("cSummary", "gDPB Monitoring Summary", w, h);
+  cSummary->Divide( 4, 3 );
+
+   // 1st Column: Messages types
+  cSummary->cd(1);
+  gPad->SetLogy();
+  hMessageType->Draw();
+
+  cSummary->cd(5);
+  gPad->SetLogy();
+  hSysMessType->Draw();
+
+  cSummary->cd(9);
+  gPad->SetLogz();
+  hGet4MessType->Draw("colz");
+
+   // 2nd Column: Errors + Channels counts
+   // 1st Column: Messages types
+  cSummary->cd(2);
+  gPad->SetLogz();
+  hGet4ChanErrors->Draw("colz");
+
+  cSummary->cd(6);
+//  gPad->SetLogy();
+//  hSysMessType->Draw();
+
+  cSummary->cd(10);
+//  gPad->SetLogz();
+//  hGet4MessType->Draw("colz");
+
+  cSummary->cd(4);
+  hGet4ChanErrors->Draw("colz");
+
+   // 3rd & 4th Column: Sum of counts vs Time per FEET
+  cSummary->cd(3);
+  gPad->SetLogy();
+   stackRateA->Draw("nostack");
+
+  cSummary->cd(4);
+  gPad->SetLogy();
+   stackRateB->Draw("nostack");
+
+  cSummary->cd(7);
+  gPad->SetLogy();
+   THStack * stackRateC = new THStack("stackRateC", "Sum of counts vs Time per FEET for gDPB 3");
+   fHM->H1( "FeetRate_gDPB_g02_f0" )->SetLineColor( kBlack );// => Make stack + color!
+   stackRateC->Add( fHM->H1( "FeetRate_gDPB_g02_f0" ) );
+   fHM->H1( "FeetRate_gDPB_g02_f1" )->SetLineColor( kRed );  // => Make stack + color!
+   stackRateC->Add( fHM->H1( "FeetRate_gDPB_g02_f1" ) );
+   fHM->H1( "FeetRate_gDPB_g02_f2" )->SetLineColor( kBlue ); // => Make stack + color!
+   stackRateC->Add( fHM->H1( "FeetRate_gDPB_g02_f2" ) );
+   stackRateC->Draw("nostack");
+#ifdef USE_HTTP_SERVER
+   if (server) server->Register("/TofRaw", stackRateC);
+#endif
+
+  cSummary->cd(8);
+  gPad->SetLogy();
+   THStack * stackRateD = new THStack("stackRateD", "Sum of counts vs Time per FEET for gDPB 4");
+   fHM->H1( "FeetRate_gDPB_g03_f0" )->SetLineColor( kBlack );// => Make stack + color!
+   stackRateD->Add( fHM->H1( "FeetRate_gDPB_g03_f0" ) );
+   fHM->H1( "FeetRate_gDPB_g03_f1" )->SetLineColor( kRed );  // => Make stack + color!
+   stackRateD->Add( fHM->H1( "FeetRate_gDPB_g03_f1" ) );
+   fHM->H1( "FeetRate_gDPB_g03_f2" )->SetLineColor( kBlue ); // => Make stack + color!
+   stackRateD->Add( fHM->H1( "FeetRate_gDPB_g03_f2" ) );
+   stackRateD->Draw("nostack");
+#ifdef USE_HTTP_SERVER
+   if (server) server->Register("/TofRaw", stackRateD);
+#endif
+
+  cSummary->cd(11);
+  gPad->SetLogy();
+   THStack * stackRateE = new THStack("stackRateE", "Sum of counts vs Time per FEET for gDPB 5");
+   fHM->H1( "FeetRate_gDPB_g04_f0" )->SetLineColor( kBlack ); // => Make stack + color!
+   stackRateE->Add( fHM->H1( "FeetRate_gDPB_g04_f0" ) );
+   fHM->H1( "FeetRate_gDPB_g04_f1" )->SetLineColor( kRed ); // => Make stack + color!
+   stackRateE->Add( fHM->H1( "FeetRate_gDPB_g04_f1" ) );
+   fHM->H1( "FeetRate_gDPB_g04_f2" )->SetLineColor( kBlue ); // => Make stack + color!
+   stackRateE->Add( fHM->H1( "FeetRate_gDPB_g04_f2" ) );
+   stackRateE->Draw("nostack");
+#ifdef USE_HTTP_SERVER
+   if (server) server->Register("/TofRaw", stackRateE);
+#endif
+
+  cSummary->cd(12);
+  gPad->SetLogy();
+   THStack * stackRateF = new THStack("stackRateF", "Sum of counts vs Time per FEET for gDPB 6");
+   fHM->H1( "FeetRate_gDPB_g05_f0" )->SetLineColor( kBlack ); // => Make stack + color!
+   stackRateF->Add( fHM->H1( "FeetRate_gDPB_g05_f0" ) );
+   fHM->H1( "FeetRate_gDPB_g05_f1" )->SetLineColor( kRed ); // => Make stack + color!
+   stackRateF->Add( fHM->H1( "FeetRate_gDPB_g05_f1" ) );
+   fHM->H1( "FeetRate_gDPB_g05_f2" )->SetLineColor( kBlue ); // => Make stack + color!
+   stackRateF->Add( fHM->H1( "FeetRate_gDPB_g05_f2" ) );
+   stackRateF->Draw("nostack");
+#ifdef USE_HTTP_SERVER
+   if (server) server->Register("/TofRaw", stackRateF);
+#endif
+   
+   /*****************************/
 
   LOG(INFO) << "Leaving CreateHistograms" << FairLogger::endl;
 }
@@ -392,7 +520,7 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts, size_t component)
    std::vector<TH2*> Raw_Tot_gDPB;
    std::vector<TH1*> ChCount_gDPB;
    std::vector<TH2*> ChannelRate_gDPB;
-   std::vector<TH2*> FeetRate_gDPB;
+   std::vector<TH1*> FeetRate_gDPB;
 
    for(Int_t i=0; i<fNrOfGdpbs; ++i) {
      TString name = Form("Raw_Tot_gDPB_%02u", i);
@@ -403,8 +531,11 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts, size_t component)
      if( fUnpackPar->IsChannelRateEnabled() ) {
        ChannelRate_gDPB.push_back(fHM->H2(name.Data()));
      }
-     name = Form("FeetRate_gDPB_%02u", i);
-     FeetRate_gDPB.push_back(fHM->H2(name.Data()));
+     for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
+     {
+       name = Form("FeetRate_gDPB_g%02u_f%1u", i, uFeet);
+       FeetRate_gDPB.push_back(fHM->H1(name.Data()));
+     } // for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
    }
 
 
@@ -582,7 +713,7 @@ void CbmTSMonitorTof::FillHitInfo(ngdpb::Message mess,
                                   std::vector<TH2*> Raw_Tot_gDPB,
                                   std::vector<TH1*> ChCount_gDPB,
                                   std::vector<TH2*> ChannelRate_gDPB,
-                                  std::vector<TH2*> FeetRate_gDPB
+                                  std::vector<TH1*> FeetRate_gDPB
 )
    {
    // --- Get absolute time, NXYTER and channel number
@@ -629,9 +760,9 @@ void CbmTSMonitorTof::FillHitInfo(ngdpb::Message mess,
                fdStartTime = mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] );
                
             if( 0 < fdStartTime )
-               FeetRate_gDPB[ gdpbNr ]->Fill( 1e-9*( mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] ) 
-                                                    - fdStartTime), 
-                                              get4Id / fNrOfGet4PerFeb );
+               FeetRate_gDPB[ (gdpbNr*fNrOfFebsPerGdpb) + (get4Id / fNrOfGet4PerFeb) ]->Fill( 
+                           1e-9*( mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] ) 
+                                 - fdStartTime) );
           
             hitTime  = mess.getMsgFullTime(fCurrentEpoch[rocId][get4Id]);
             Int_t Ft = mess.getGdpbHitFineTs();

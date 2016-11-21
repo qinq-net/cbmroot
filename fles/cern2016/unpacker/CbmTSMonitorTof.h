@@ -93,7 +93,7 @@ private:
 #ifndef __CINT__
    void FillHitInfo(ngdpb::Message, std::vector<TH2*>,
                     std::vector<TH1*>, std::vector<TH2*>,
-                    std::vector<TH2*>
+                    std::vector<TH1*>
                    );
    void FillEpochInfo(ngdpb::Message);
    void PrintSlcInfo(ngdpb::Message);
