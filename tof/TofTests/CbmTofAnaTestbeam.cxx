@@ -954,7 +954,7 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
    fhDTD4    =  new TH1F( Form("hDTD4"),Form("reference time ; #Delta tD4 (ns)"),
 			  101, -100., 100.); 
 
-   Int_t iNbDet=fMbsMappingPar->GetNbMappedDet();
+   Int_t iNbDet=fDigiBdfPar->GetNbDet(); //fMbsMappingPar->GetNbMappedDet();
    fhXYPos.resize( iNbDet  );
    for(Int_t iDet=0; iDet<iNbDet; iDet++){
      fhXYPos[iDet] =  new TH2F( Form("hXY_SmT%d",iDet),
@@ -1520,7 +1520,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
       Int_t iChId = pHit->GetAddress();
       fChannelInfo = fDigiPar->GetCell( iChId );
       Int_t iSmType = CbmTofAddress::GetSmType( iDetId );
-      Int_t iDetInd = fMbsMappingPar->GetMappedDetInd( pHit->GetAddress()); 
+      Int_t iDetInd =  fDigiBdfPar->GetDetInd(iDetId); //fMbsMappingPar->GetMappedDetInd( pHit->GetAddress()); 
       LOG(DEBUG)<<Form("CbmTofAnaTestbeam::FillHistos: process %d.(%d) Tof hit 0x%08x, Ind %d, x = %6.1f, y = %6.1f, z=%6.1f, t=%10.1f",
 		       iHitInd, iNbTofHits, iChId, iDetInd,
 		       pHit->GetX(), pHit->GetY(), pHit->GetZ(), pHit->GetTime())
