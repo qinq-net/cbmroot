@@ -697,7 +697,7 @@ void CbmTrdTimeCorrel::Finish()
 			c.back()->Divide(8, 4);
 			if (spadicName != "") {
 				for (Int_t Channel = 0; Channel < 32; Channel++) {
-					c.back()->cd(Channel + 1);
+					c.back()->cd(Channel + 1)->SetLogz();
 					string HistName = "Signalshape_for_" + spadicName
 							+ "Channel" + std::to_string(Channel);
 					fHM->H2(HistName)->Draw("colz2");
