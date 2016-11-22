@@ -386,6 +386,7 @@ void CbmTSMonitorTof::CreateHistograms()
 
 #ifdef USE_HTTP_SERVER
       if (server) server->RegisterCommand( "/Reset_ChCount_gDPB_00", "/TofRaw/ChCount_gDPB_00/->Reset()" );
+      if (server) server->Restrict("/Reset_ChCount_gDPB_00","allow=admin"); 
 #endif
   
   
@@ -1022,7 +1023,10 @@ void CbmTSMonitorTof::Finish()
       fHM->H1( Form("ChCount_gDPB_%02u", uGdpb) )->Write();
       if( fUnpackPar->IsChannelRateEnabled() )
          fHM->H2( Form("ChannelRate_gDPB_%02u", uGdpb) )->Write();
-      fHM->H2( Form("FeetRate_gDPB_%02u", uGdpb) )->Write();
+      for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
+      {
+        fHM->H1( Form("FeetRate_gDPB_g%02u_f%1u", uGdpb, uFeet) )->Write();
+      }
    } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
    gDirectory->cd("..");
 
