@@ -54,8 +54,8 @@ public:
    void SetMsLimitLevel( size_t uAcceptBoundaryPct = 100 ) { fuMsAcceptsPercent = uAcceptBoundaryPct; }
    size_t GetMsLimitLevel( ) { return fuMsAcceptsPercent; }
    
-   void SetDiamondChannels( Int_t iGdpb = 0, Int_t iFeet = 2, Int_t iChannelA = 95, 
-                            Int_t iChannelB = 87, Int_t iChannelC = 79, Int_t iChannelD = 71);
+   void SetDiamondChannels( Int_t iGdpb = 0, Int_t iFeet = 2, Int_t iChannelA = 78, 
+                            Int_t iChannelB = 70, Int_t iChannelC = 94, Int_t iChannelD = 86 );
 
 private:
 

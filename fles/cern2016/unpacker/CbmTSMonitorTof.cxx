@@ -345,7 +345,7 @@ void CbmTSMonitorTof::CreateHistograms()
 			  1e8, 2e8, 3e8, 4e8, 5e8, 6e8, 7e8, 8e8, 9e8,
 			  1e9 };
 	  name = Form("ChannelRate_gDPB_%02u", uGdpb);
-	  title = Form("Channel instant rate gDPB %02u; Rate[Hz] ; Channel", uGdpb);
+	  title = Form("Channel instant rate gDPB %02u; Dist[ns] ; Channel", uGdpb);
 	  fHM->Add(name.Data(), new TH2F(name.Data(), title.Data(),
 			   iNbBinsRate-1, dBinsRate, 96, 0, 96) );
 #ifdef USE_HTTP_SERVER
@@ -786,7 +786,7 @@ void CbmTSMonitorTof::FillHitInfo(ngdpb::Message mess,
                      // Check if at least one hit before in this channel
                      if( fTsLastHit[rocId][get4Id].end() != fTsLastHit[rocId][get4Id].find( channel ) )
                      {
-                        ChannelRate_gDPB[gdpbNr]->Fill( 1e9/ ( mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] )
+                        ChannelRate_gDPB[gdpbNr]->Fill( ( mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] )
                                                         - fTsLastHit[rocId][get4Id][channel] ),
                                                      get4Id*fNrOfChannelsPerGet4 + channel);
                      } // if( fTsLastHit[rocId][get4Id].end() != fTsLastHit[rocId][get4Id].find( channel ) )
