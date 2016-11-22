@@ -43,5 +43,7 @@ void pl_all_CluRate(Int_t iNSt=5, Double_t Tstart=0., Double_t Tend=1000.)
     if(iRp==10) break;
    }
   }
- } 
+ }
+  can->SaveAs(Form("pl_all_CluRate.pdf"));
+
 } 

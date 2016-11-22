@@ -42,5 +42,7 @@ void pl_all_CluMul(Int_t iNSt=5)
     if(iRp==10) break;
    }
   }
- } 
+ }
+ can->SaveAs(Form("pl_all_CluMul.pdf"));
+
 } 

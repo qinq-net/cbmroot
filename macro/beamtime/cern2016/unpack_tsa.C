@@ -65,7 +65,7 @@ void unpack_tsa(Int_t nEvt=100, TString FileId = "sps2016111302_1945")
 
   // --- Source task
   CbmFlibTestSource* source = new CbmFlibTestSource();
-  source->SetMaxDeltaT(500.);
+  source->SetMaxDeltaT(200.);
   source->SetFileName(inFile);
   source->AddUnpacker(test_unpacker_tof, 0x60, 6);//gDPB A & B
   //source->AddUnpacker(test_unpacker,     0x10, 10);//nDPB A & B = HODO 1 + 2
