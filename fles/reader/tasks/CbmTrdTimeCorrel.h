@@ -117,7 +117,7 @@ class CbmTrdTimeCorrel : public FairTask
   std::vector<Int_t> EpochRegressOffset;
   std::vector<Int_t> EpochRegressCounter;
   inline void FillBaselineHistogram(CbmSpadicRawMessage*);
-  void FillSignalShape(CbmSpadicRawMessage&,std::string Hist="",Bool_t HighBaseline =false);
+  void FillSignalShape(CbmSpadicRawMessage&,std::string Hist="");
   void FillSignalShape(CbmSpadicRawMessage* message){
 	  FillSignalShape(*message);
   }

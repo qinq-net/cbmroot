@@ -398,8 +398,9 @@ void CbmTrdTimeCorrel::Exec(Option_t*)
 	          CbmSpadicRawMessage* tempPtr = new CbmSpadicRawMessage(*raw);
 	          */
 	          fLinearHitBuffer.push_back(raw);
-	          string Histname = "Signalshape_for_"+string(spadicName.Data())+"_Trigger_"+std::to_string(triggerType)+"_StopType_"+std::to_string(stopType);
-	          if(triggerType>0&&(stopType==0||stopType==3)) FillSignalShape(*raw,Histname,false);
+	          string Histname =  "Signalshape_for_" + string(spadicName) + "Channel"
+						+ std::to_string(chID);
+	          if(triggerType==1&&(stopType==0)) FillSignalShape(*raw,Histname);
 	        }
 	    if(fDrawSignalDebugHistograms){
 	    	if (isHit||isHitAborted){
@@ -684,6 +685,34 @@ void CbmTrdTimeCorrel::Finish()
     LOG(INFO) << (*it)->GetTitle() << FairLogger::endl;
     (*it)->SetContour(99);
     }
+
+	std::vector<TCanvas*> c;
+	for (Int_t syscore = 0; syscore < NrOfActiveSyscores; ++syscore) {
+		for (Int_t spadic = 0; spadic < NrOfActiveSpadics; ++spadic) {
+			string spadicName = GetSpadicName(syscore, spadic, kDirectOutput,
+					kFullSpadic).Data();
+			c.push_back(
+					new TCanvas(TString("Canvas_Signalshapes_for_" + spadicName).Data(),
+							TString("Signalshapes_for_" + spadicName).Data(), 1920, 1080));
+			c.back()->Divide(8, 4);
+			if (spadicName != "") {
+				for (Int_t Channel = 0; Channel < 32; Channel++) {
+					c.back()->cd(Channel + 1);
+					string HistName = "Signalshape_for_" + spadicName
+							+ "Channel" + std::to_string(Channel);
+					fHM->H2(HistName)->Draw("colz2");
+				}
+			}
+
+		}
+	}
+	TDirectory *Casvasdir = FairRootManager::Instance()->GetOutFile()->mkdir(
+			"Signalshapes");
+	Casvasdir->cd();
+	for (auto C : c) {
+		C->Write();
+	}
+FairRootManager::Instance()->GetOutFile()->cd();
 {	  vector<TH2*> HitFrequencies = fHM->H2Vector("Clusterfrequency.*");
 	for (auto h : HitFrequencies){
 		h->Sumw2();
@@ -1758,15 +1787,16 @@ void CbmTrdTimeCorrel::CreateHistograms()
 	  }
   }
 	{
-		for(Int_t syscore = 0; syscore < NrOfActiveSyscores; ++syscore) {
-			for(Int_t spadic = 0; spadic < NrOfActiveSpadics; ++spadic) {
-				spadicName = GetSpadicName(syscore, spadic, kDirectOutput,kFullSpadic);
-				for(Int_t TriggerType =1;TriggerType<4;TriggerType++){
-					for(Int_t stopType =0;stopType<4;stopType+=3){
-						histName = "Signalshape_for_"+spadicName+"_Trigger_"+std::to_string(TriggerType)+"_StopType_"+std::to_string(stopType);
-						title = histName + runName;
-						fHM->Create2<TH2I>(histName.Data(), title.Data(),33,-0.5,32.5,512,-256.5,255.5);
-					}
+		for (Int_t syscore = 0; syscore < NrOfActiveSyscores; ++syscore) {
+			for (Int_t spadic = 0; spadic < NrOfActiveSpadics; ++spadic) {
+				spadicName = GetSpadicName(syscore, spadic, kDirectOutput,
+						kFullSpadic);
+				for (Int_t Channel = 0; Channel < 32; Channel++) {
+					histName = "Signalshape_for_" + spadicName + "Channel"
+							+ std::to_string(Channel);
+					title = histName + runName;
+					fHM->Create2<TH2I>(histName.Data(), title.Data(), 33, -0.5,
+							32.5, 512, -256.5, 255.5);
 				}
 			}
 		}
@@ -2424,10 +2454,7 @@ void CbmTrdTimeCorrel::FillBaselineHistogram(CbmSpadicRawMessage* message){
 
 };
 
-void CbmTrdTimeCorrel::FillSignalShape(CbmSpadicRawMessage& message,string Hist,Bool_t /*HighBaseline*/){
-	Int_t SpadicID = GetSpadicID(message.GetSourceAddress());
-	string Detectorname = ((SpadicID/2) == 0 ? "Frankfurt" : "Muenster");
-	//Int_t ChID = message.GetChannelID() + (SpadicID%2)*16;
+void CbmTrdTimeCorrel::FillSignalShape(CbmSpadicRawMessage& message,string Hist){
 	string histName=Hist;
 	if(Hist=="") return;
 	Int_t NrSamples = message.GetNrSamples();
