@@ -1126,7 +1126,7 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
 
        fhRpcCluRate[iDetIndx] =  new TH1I(
           Form("cl_SmT%01d_sm%03d_rpc%03d_rate", iSmType, iSmId, iRpcId ),
-          Form("Clu rate of Rpc #%03d in Sm %03d of type %d; M []; Rate (Hz)", iRpcId, iSmId, iSmType ),
+          Form("Clu rate of Rpc #%03d in Sm %03d of type %d; Time (s); Rate (Hz)", iRpcId, iSmId, iSmType ),
 	      1000.,0.,1000.);
 	      
        Double_t YSCAL=50.;
