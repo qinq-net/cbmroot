@@ -50,6 +50,9 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
     timestampOffsets(),
     fGraph(true),
     fOutputCloneArrays(false),
+    fBaselineMon (
+	new TCanvas (TString ("Canvas_Baselinemonitor").Data (),
+		     TString ("Baselinemonitor").Data (), 1600, 900)),
     fClusterBuffer()
  {
    gStyle->SetNumberContours(99);
@@ -323,7 +326,7 @@ void CbmTrdTimeCorrel::Exec(Option_t*)
     if(isHit||isHitAborted){
     	TString TempName = "Hitfrequency_for_"+GetSpadicName(sysID, spaID, kProcessedData,kFullSpadic);
     	string HistName=TempName.Data();
-    	if(fNrTimeSlices>0)fHM->G1(HistName)->SetPoint(fHM->G1(HistName)->GetN(),static_cast<Double_t>(time)/17500000.0,17500000/std::fabs((static_cast<Double_t>(lastHitTimestamp[spaID*16+raw->GetChannelID()])-static_cast<Double_t>(time))));
+    	if(fNrTimeSlices>0)fHM->G1(HistName)->SetPoint(fHM->G1(HistName)->GetN(),static_cast<Double_t>(time)/15000000.0,15000000/std::fabs((static_cast<Double_t>(lastHitTimestamp[spaID*16+raw->GetChannelID()])-static_cast<Double_t>(time))));
 //    	fHM->H2(HistName+"_linear")->Fill(fNrTimeSlices,17600000/std::fabs((static_cast<Double_t>(lastHitTimestamp[spaID*16+raw->GetChannelID()])-static_cast<Double_t>(time))));
     	lastHitTimestamp[sysID*NrOfHalfSpadics*16+spaID*16+raw->GetChannelID()]=time;
     }
@@ -641,6 +644,10 @@ void CbmTrdTimeCorrel::Exec(Option_t*)
 		  if(fHM->H2(TemphistName.Data())->GetEntries()!=0) LOG(FATAL)<<"Reset Failed for Temp_"+histName;
 	  }
   }
+  for(int i=1;i<=12;i++) {
+      fBaselineMon->cd(i)->Modified();
+  }
+  fBaselineMon->Update();
 
 }
 // ---- Finish  -------------------------------------------------------
@@ -706,13 +713,19 @@ void CbmTrdTimeCorrel::Finish()
 
 		}
 	}
-	TDirectory *Casvasdir = FairRootManager::Instance()->GetOutFile()->mkdir(
-			"Signalshapes");
-	Casvasdir->cd();
-	for (auto C : c) {
-		C->Write();
-	}
-FairRootManager::Instance()->GetOutFile()->cd();
+	TDirectory *Canvasdir = FairRootManager::Instance ()->GetOutFile ()->mkdir (
+	    "Signalshapes");
+	Canvasdir->cd ();
+	for (auto C : c)
+	  {
+	    C->Write ();
+	  }
+	FairRootManager::Instance ()->GetOutFile ()->cd ();
+	Canvasdir = FairRootManager::Instance ()->GetOutFile ()->mkdir ("Baselines");
+	Canvasdir->cd ();
+	fBaselineMon->Write ();
+	FairRootManager::Instance ()->GetOutFile ()->cd ();
+
 {	  vector<TH2*> HitFrequencies = fHM->H2Vector("Clusterfrequency.*");
 	for (auto h : HitFrequencies){
 		h->Sumw2();
@@ -1203,7 +1216,7 @@ void CbmTrdTimeCorrel::ClusterizerTime()
         int spaID=x.GetSpadic();
 	Long64_t time=x.GetFulltime();
         string HistName = "Clusterfrequency_for_"+string(GetSpadicName(0, x.GetSpadic (), kProcessedData,kFullSpadic).Data());
-    	fHM->H2(HistName)->Fill(static_cast<Double_t>(time),17600000/std::fabs((static_cast<Double_t>(lastClusterTimestamp[(spaID%2)*32])-static_cast<Double_t>(time))));
+    	fHM->H2(HistName)->Fill(static_cast<Double_t>(time)/15000000.0,15000000/std::fabs((static_cast<Double_t>(lastClusterTimestamp[(spaID%2)*32])-static_cast<Double_t>(time))));
     	lastClusterTimestamp[(spaID%2)*32]=time;
   }
 }
@@ -1719,6 +1732,20 @@ void CbmTrdTimeCorrel::CreateHistograms()
 		  fHM->Create2<TH2I>(histName.Data(), title.Data(),512,-256.5,255.5,33,-0.5,32.5);
 	  }
   }
+  //Prototype for Online Baseline Monitoring
+	fBaselineMon->Divide(4,3);
+	for (Int_t syscore = 0; syscore < NrOfActiveSyscores; ++syscore)
+	  {
+	    for (Int_t spadic = 0; spadic < NrOfActiveSpadics; ++spadic)
+	      {
+		spadicName = GetSpadicName (syscore, spadic, kDirectOutput,
+						   kFullSpadic).Data ();
+		TString Histname = "Baseline_for_" + spadicName;
+		fBaselineMon->cd (syscore + spadic * 4 + 1)->SetLogz();;
+		fHM->H2 (Histname.Data ())->Draw ("colz2");
+	      }
+	  }
+
   //Cluster Coincidences
   {
 	  histName="Cluster_Coincidences";
@@ -1914,7 +1941,7 @@ void CbmTrdTimeCorrel::FitBaseline() {
 				  if (BaselineProjection->GetEntries() < 50)
 					  continue;
 				  TFitResultPtr Baselinefit = BaselineProjection->Fit("gaus", "MQS", "",
-						  -253, -10);
+						  -253, 253);
 				  TString fitname = "Fit_Baseline_for_"
 						  + spadicName + "_Channel_"
 						  + std::to_string (ChannelID);

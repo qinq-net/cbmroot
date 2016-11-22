@@ -60,11 +60,13 @@ class CbmTrdTimeCorrel : public FairTask
   const Bool_t fDrawSignalDebugHistograms = true;
   const Bool_t fDrawPadResponse = true;
   Bool_t fCalculateBaseline = true;
+  const Bool_t fHitFrequency = true;
   const Int_t  fSignalShapeThreshold = -255	;
   std::vector<Int_t> fBaseline;
   Int_t fClusterThreshhold=0;
   const Bool_t fActivateDeltaTAnalysis = false;
   const Bool_t fDrawClustertypes = true;
+  TCanvas * fBaselineMon;
 
 
   enum kSpadicType{
