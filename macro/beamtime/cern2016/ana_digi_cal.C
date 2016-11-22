@@ -64,7 +64,7 @@
 
    tofTestBeamClust->SetCalMode(calMode);
    tofTestBeamClust->SetCalSel(calSel);
-   tofTestBeamClust->SetCaldXdYMax(2.);          // geometrical matching window in cm 
+   tofTestBeamClust->SetCaldXdYMax(2.);          // geometrical matching window in cm (suggestion: 2.)
    tofTestBeamClust->SetCalCluMulMax(10.);       // Max Counter Cluster Multiplicity for filling calib histos  
    tofTestBeamClust->SetCalRpc(calSm);           // select detector for calibration update  
    tofTestBeamClust->SetTRefId(RefSel);          // reference trigger for offset calculation 
@@ -75,7 +75,7 @@
    tofTestBeamClust->SetMaxTimeDist(0.5);        // default cluster range in ns 
    //tofTestBeamClust->SetMaxTimeDist(0.);       //Deb// default cluster range in ns 
    tofTestBeamClust->SetDelTofMax(6.);           // acceptance range for cluster correlation  
-   tofTestBeamClust->SetBeamRefMulMax(10);        // limit Multiplicity in beam counter
+   tofTestBeamClust->SetBeamRefMulMax(10);       // limit Multiplicity in beam counter
 
    Int_t calSelRead = calSel;
    if (calSel<0) calSelRead=0;
@@ -135,33 +135,33 @@
 
    case 3:                                       // time offsets 
      tofTestBeamClust->SetTRefDifMax(200.);   // in ns 
-     tofTestBeamClust->PosYMaxScal(1000.);       //in % of length
+     tofTestBeamClust->PosYMaxScal(100.);       //in % of length
      tofTestBeamClust->SetMaxTimeDist(0.);      // no cluster building  
      break;
    case 12:
    case 13:
      tofTestBeamClust->SetTRefDifMax(100.);   // in ns 
-     tofTestBeamClust->PosYMaxScal(100.);        //in % of length
+     tofTestBeamClust->PosYMaxScal(50.);        //in % of length
      break;
    case 22:
    case 23:
      tofTestBeamClust->SetTRefDifMax(50.);    // in ns 
-     tofTestBeamClust->PosYMaxScal(50.);         //in % of length
+     tofTestBeamClust->PosYMaxScal(20.);         //in % of length
      break;
    case 32:
    case 33:
      tofTestBeamClust->SetTRefDifMax(25.);    // in ns 
-     tofTestBeamClust->PosYMaxScal(20.);         //in % of length
+     tofTestBeamClust->PosYMaxScal(10.);         //in % of length
      break;
    case 42:
    case 43:
      tofTestBeamClust->SetTRefDifMax(12.);   // in ns 
-     tofTestBeamClust->PosYMaxScal(10.);        //in % of length
+     tofTestBeamClust->PosYMaxScal(5.);        //in % of length
      break;
    case 52:
    case 53:
      tofTestBeamClust->SetTRefDifMax(5.);   // in ns 
-     tofTestBeamClust->PosYMaxScal(4.);        //in % of length
+     tofTestBeamClust->PosYMaxScal(3.);        //in % of length
      break;
    case 62:
    case 63:
@@ -171,17 +171,17 @@
    case 72:
    case 73:
      tofTestBeamClust->SetTRefDifMax(2.);    // in ns 
-     tofTestBeamClust->PosYMaxScal(1.0);        //in % of length
+     tofTestBeamClust->PosYMaxScal(1.5);        //in % of length
      break;
    case 82:
    case 83:
      tofTestBeamClust->SetTRefDifMax(1.);    // in ns 
-     tofTestBeamClust->PosYMaxScal(0.8);        //in % of length   
+     tofTestBeamClust->PosYMaxScal(1.0);        //in % of length   
      break;
    case 92:
    case 93:
      tofTestBeamClust->SetTRefDifMax(0.6);    // in ns 
-     tofTestBeamClust->PosYMaxScal(0.8);        //in % of length   
+     tofTestBeamClust->PosYMaxScal(1.0);        //in % of length   
      break;
 
    case 4:                                      // velocity dependence (DelTOF)
@@ -194,15 +194,15 @@
      break;
    case 24:
      tofTestBeamClust->SetTRefDifMax(3.);   // in ns 
-     tofTestBeamClust->PosYMaxScal(0.8);        //in % of length
+     tofTestBeamClust->PosYMaxScal(1.0);        //in % of length
      break;
    case 34:
      tofTestBeamClust->SetTRefDifMax(2.);   // in ns 
-     tofTestBeamClust->PosYMaxScal(0.8);        //in % of length
+     tofTestBeamClust->PosYMaxScal(1.0);        //in % of length
      break;
    case 44:
      tofTestBeamClust->SetTRefDifMax(1.);   // in ns 
-     tofTestBeamClust->PosYMaxScal(0.8);        //in % of length
+     tofTestBeamClust->PosYMaxScal(1.0);        //in % of length
      break;
    case 54:
      tofTestBeamClust->SetTRefDifMax(0.7);     // in ns 
@@ -539,6 +539,37 @@
      tofAnaTestbeam->SetDTWidth(0.15); // in ps
      break; 
 
+   case 901910:
+   case 911910:
+   case 920910:
+   case 921910:
+   case 600910:
+   case 601910:
+   case 400910:
+   case 300910:
+     switch (iRSel){
+         case 4:
+	   tofAnaTestbeam->SetTShift(-2.);   // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
+	   break;
+
+         case 5:
+           //tofTestBeamClust->SetBeamAddRefMul(1);
+	   tofAnaTestbeam->SetTShift(-20.);     // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(-0.17);     // Shift Sel2 time peak to 0
+	   break;
+
+         default:
+	   ;
+     }
+     tofAnaTestbeam->SetChi2Lim(40.);   // initialization of Chi2 selection limit  
+     tofAnaTestbeam->SetDXWidth(1.0);
+     tofAnaTestbeam->SetDYWidth(2.0);
+     tofAnaTestbeam->SetDTWidth(0.15); // in ns
+     break; 
+     
    case 300400:
      switch (iRSel){
          case 9:

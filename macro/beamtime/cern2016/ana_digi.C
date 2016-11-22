@@ -539,6 +539,37 @@ void ana_digi(Int_t nEvents = 10000000, Int_t calMode=53, Int_t calSel=-1, Int_t
      tofAnaTestbeam->SetDTWidth(0.15); // in ps
      break; 
 
+   case 901910:
+   case 911910:
+   case 920910:
+   case 921910:
+   case 600910:
+   case 601910:
+   case 400910:
+   case 300910:
+     switch (iRSel){
+         case 4:
+	   tofAnaTestbeam->SetTShift(-2.);   // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
+	   break;
+
+         case 5:
+           //tofTestBeamClust->SetBeamAddRefMul(1);
+	   tofAnaTestbeam->SetTShift(-20.);     // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(-0.17);     // Shift Sel2 time peak to 0
+	   break;
+
+         default:
+	   ;
+     }
+     tofAnaTestbeam->SetChi2Lim(40.);   // initialization of Chi2 selection limit  
+     tofAnaTestbeam->SetDXWidth(1.0);
+     tofAnaTestbeam->SetDYWidth(2.0);
+     tofAnaTestbeam->SetDTWidth(0.15); // in ns
+     break;
+     
    case 300400:
      switch (iRSel){
          case 9:

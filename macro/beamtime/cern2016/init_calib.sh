@@ -18,14 +18,14 @@ echo Calib setup is ${iCalSet}, iSet=$iSet, iDut=$iDut, iMRef=$iMRef, iBRef=$iBR
 #return
 #iSet=0
 #lastOpt=''
-nEvi=500000
+nEvi=1000000
 mkdir ${cRun}
 cp rootlogon.C ${cRun}
 cp .rootrc ${cRun}
 cd ${cRun}
 
 # Global variables, for for-loops. Runs from 1-15 and 16-79 in two for-loops
-iRestart=30
+iRestart=0
 iStep=0
 iStepLast=0
 
