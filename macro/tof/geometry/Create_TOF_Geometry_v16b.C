@@ -102,14 +102,14 @@ const Int_t NCounterInModule[NofModuleTypes]    = {1,1,1,1,1,1,2,4,6,2};
 
 // Placement of the counter inside the module
 const Float_t CounterXStartPosition[NofModuleTypes] = {-10.0,   0.0,   2.0,  0.0,  0.0,  0., 0., -15., 0.,  0.};
-const Float_t CounterXDistance[NofModuleTypes]      = {30.0,   30.6,   0.0, 30.0,  0.0,  0.,3.4,  30., 0.,  0.};
+const Float_t CounterXDistance[NofModuleTypes]      = {30.0,   30.6,   0.0, 30.0,  0.0,  0.,-6.4,  30., 0.,  0.};
 const Float_t CounterYStartPosition[NofModuleTypes] = {0.0,     0.0,   0.0,  0.0,  0.0,  0., 0., -4., -7.,  0.};
 const Float_t CounterYDistance[NofModuleTypes]      = {0.0,     0.0,   0.0,  0.0,  0.0,  0., 0.,  8.,  2.2, 0.};
 const Float_t CounterZStartPosition[NofModuleTypes] = {0.0,     0.0,   0.0,  2.5,  0.0,  0.,-2., -8.,  0., -2.};
 const Float_t CounterZDistance[NofModuleTypes]      = {0.0,     0.0,   0.0,  2.5,  0.0,  0., 4.,  5.,  4.,  4.};
 const Float_t CounterRotationAngle[NofModuleTypes]  = {0.,      0.0,   0.0,   0.,  0.0,  0., 0.,  0.,  0.,  0.};
 
-const Float_t ZDist2Target=400.;
+const Float_t ZDist2Target=355.;
 const Float_t MeanTheta=-7.5;
 Float_t TanTheta=TMath::Tan(TMath::DegToRad()*MeanTheta);
 
@@ -194,7 +194,7 @@ const Float_t Star2_Delta_Z_Position=29.0;
 const Float_t Star2_First_Y_Position=Star2_First_Z_Position*TanTheta;  // 
 const Float_t Star2_Delta_Y_Position=Star2_Delta_Z_Position*TanTheta;   // 
 const Float_t Star2_X_Offset=0.;
-const Float_t Star2_rotate_Z=180.;
+const Float_t Star2_rotate_Z=0.;
 const Int_t Star2_NTypes = 1;
 const Float_t Star2_Types[Star2_NTypes]  = {9.};
 const Float_t Star2_Number[Star2_NTypes] = {3.}; //debugging, V16b
