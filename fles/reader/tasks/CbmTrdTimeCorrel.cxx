@@ -2416,7 +2416,7 @@ void CbmTrdTimeCorrel::FillBaselineHistogram(CbmSpadicRawMessage* message){
 	Int_t StopType = message->GetStopType();
 	if (StopType > 0) return;
 	Int_t * Samples=message->GetSamples();
-	if (GetMaxADC(*message,false,&fBaseline)>Samples[0]) return;
+	//if (GetMaxADC(*message,false)>Samples[0]) return;
 	TH2* Histogram = fHM->H2(histName);
 	Int_t ChID =  message->GetChannelID() + ((GetSpadicID(message->GetSourceAddress()) %2 == 1)? 16 : 0);
 	//	Int_t NrSamples = message->GetNrSamples ();
