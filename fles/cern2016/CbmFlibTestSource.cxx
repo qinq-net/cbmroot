@@ -32,7 +32,7 @@ CbmFlibTestSource::CbmFlibTestSource()
     fBuffer(CbmTbDaqBuffer::Instance()),
     fTSNumber(0),
     fTSCounter(0),
-    fdMaxDeltaT(100.),
+    fdMaxDeltaT(500.),
     fTimer(),
     fBufferFillNeeded(kTRUE),
     fSource(NULL)
@@ -135,7 +135,7 @@ Bool_t CbmFlibTestSource::ReInitUnpackers()
 
 Int_t CbmFlibTestSource::ReadEvent(UInt_t iEv) 
 {
-   LOG(INFO) << "Request received for "<<iEv<<". event"
+   LOG(DEBUG) << "Request received for "<<iEv<<". event"
               << FairLogger::endl;
 	      
   while ( 1 ==  GetNextEvent()){   
@@ -229,7 +229,7 @@ Int_t CbmFlibTestSource::FillBuffer()
 
         auto it=fUnpackers.find(systemID);
         if (it == fUnpackers.end()) {
-          LOG(FATAL) << "Could not find unpacker for system id 0x" 
+          LOG(DEBUG) << "Could not find unpacker for system id 0x" 
                      << std::hex << systemID << std::dec 
                      << FairLogger::endl;
         } else {
