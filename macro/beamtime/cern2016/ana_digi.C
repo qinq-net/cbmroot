@@ -76,6 +76,7 @@ void ana_digi(Int_t nEvents = 10000000, Int_t calMode=53, Int_t calSel=-1, Int_t
    //tofTestBeamClust->SetMaxTimeDist(0.);       //Deb// default cluster range in ns 
    tofTestBeamClust->SetDelTofMax(6.);           // acceptance range for cluster correlation  
    tofTestBeamClust->SetBeamRefMulMax(10);       // limit Multiplicity in beam counter
+   tofTestBeamClust->SetChannelDeadtime(50.);    // artificial deadtime in ns 
 
    Int_t calSelRead = calSel;
    if (calSel<0) calSelRead=0;
@@ -707,14 +708,13 @@ void ana_digi(Int_t nEvents = 10000000, Int_t calMode=53, Int_t calSel=-1, Int_t
   // default display 
   TString Display_Status = "pl_over_Mat04D4best.C";
   TString Display_Funct = "pl_over_Mat04D4best()";  
-  //gROOT->LoadMacro(Display_Status);
+  gROOT->LoadMacro(Display_Status);
 
   gROOT->LoadMacro("fit_ybox.h");
-  //gROOT->LoadMacro("pl_over_cluSel.C");
-  //gROOT->LoadMacro("pl_over_clu.C");
-  //gROOT->LoadMacro("pl_all_dTSel.C");
-  //gROOT->LoadMacro("pl_over_MatD4sel.C");
-return;
+  gROOT->LoadMacro("pl_over_cluSel.C");
+  gROOT->LoadMacro("pl_over_clu.C");
+  gROOT->LoadMacro("pl_all_dTSel.C");
+  gROOT->LoadMacro("pl_over_MatD4sel.C");
 
   switch(iSet){
   case 0:
@@ -740,34 +740,35 @@ return;
   case 920300:
   case 921300:
   default:
-    gInterpreter->ProcessLine("pl_over_clu(3)");
+    gInterpreter->ProcessLine("pl_over_clu(2)");
+    gInterpreter->ProcessLine("pl_over_clu(2,1)");
     gInterpreter->ProcessLine("pl_over_clu(4)");
     gInterpreter->ProcessLine("pl_over_clu(5)");
-    gInterpreter->ProcessLine("pl_over_clu(5,1)");
-    gInterpreter->ProcessLine("pl_over_clu(5,2)");
+    gInterpreter->ProcessLine("pl_over_clu(6)");
+    gInterpreter->ProcessLine("pl_over_clu(6,0,1)");
     gInterpreter->ProcessLine("pl_over_clu(9,0,0)");
     gInterpreter->ProcessLine("pl_over_clu(9,0,1)");
     gInterpreter->ProcessLine("pl_over_clu(9,1,0)");
     gInterpreter->ProcessLine("pl_over_clu(9,1,1)");
     gInterpreter->ProcessLine("pl_over_clu(9,2,0)");
     gInterpreter->ProcessLine("pl_over_clu(9,2,1)");
-    gInterpreter->ProcessLine("pl_over_cluSel(0,3)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,2)");
     gInterpreter->ProcessLine("pl_over_cluSel(0,4)");
     gInterpreter->ProcessLine("pl_over_cluSel(0,5,0,0)");
-    gInterpreter->ProcessLine("pl_over_cluSel(0,5,1,0)");
-    gInterpreter->ProcessLine("pl_over_cluSel(0,5,2,0)");
-    gInterpreter->ProcessLine("pl_over_cluSel(0,9,0,0)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,6,0,0)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,6,0,1)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,9,1,1)");
     gInterpreter->ProcessLine("pl_over_cluSel(0,9,0,1)");
     gInterpreter->ProcessLine("pl_over_cluSel(0,9,1,0)");
     gInterpreter->ProcessLine("pl_over_cluSel(0,9,1,1)");
     gInterpreter->ProcessLine("pl_over_cluSel(0,9,2,0)");
     gInterpreter->ProcessLine("pl_over_cluSel(0,9,2,1)");
-    gInterpreter->ProcessLine("pl_over_cluSel(1,3)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,2)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,4)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,5,0,0)");
-    gInterpreter->ProcessLine("pl_over_cluSel(1,5,1,0)");
-    gInterpreter->ProcessLine("pl_over_cluSel(1,5,2,0)");
-    gInterpreter->ProcessLine("pl_over_cluSel(1,9,0,0)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,6,0,0)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,6,0,1)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,9,1,1)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,9,0,1)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,9,1,0)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,9,1,1)");

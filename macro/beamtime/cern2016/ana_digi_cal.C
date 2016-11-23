@@ -76,6 +76,7 @@
    //tofTestBeamClust->SetMaxTimeDist(0.);       //Deb// default cluster range in ns 
    tofTestBeamClust->SetDelTofMax(6.);           // acceptance range for cluster correlation  
    tofTestBeamClust->SetBeamRefMulMax(10);       // limit Multiplicity in beam counter
+   tofTestBeamClust->SetChannelDeadtime(50.);    // in ns, default: 0. 
 
    Int_t calSelRead = calSel;
    if (calSel<0) calSelRead=0;
