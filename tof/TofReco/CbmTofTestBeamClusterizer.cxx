@@ -182,6 +182,7 @@ CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer():
    fdDelTofMax(60000.),
    fTotPreRange(0.),
    fMaxTimeDist(0.),
+   fdChannelDeadtime(0.),
    fEnableMatchPosScaling(kTRUE),
    fEnableAvWalk(kFALSE),
    fbPs2Ns(kFALSE),
@@ -325,6 +326,7 @@ CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer(const char *name, Int_t ver
    fdDelTofMax(60000.),
    fTotPreRange(0.),
    fMaxTimeDist(0.),
+   fdChannelDeadtime(0.),
    fEnableMatchPosScaling(kTRUE),
    fEnableAvWalk(kFALSE),
    fbPs2Ns(kFALSE),
@@ -3204,8 +3206,11 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
    if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
    {
       CbmTofDigiExp *pDigi;
-      CbmTofDigiExp *pCalDigi;
+      CbmTofDigiExp *pCalDigi=NULL;
       Int_t iDigIndCal=-1;
+      // channel deadtime map 
+      std::map<Int_t, Double_t>mChannelDeadTime;
+      
       for( Int_t iDigInd = 0; iDigInd < iNbTofDigi; iDigInd++ )
       {
          pDigi = (CbmTofDigiExp*) fTofDigisColl->At( iDigInd );
@@ -3219,7 +3224,14 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 		   <<Form("%f",pDigi->GetTime())<<" "
                    <<pDigi->GetTot()
 		   <<FairLogger::endl;
-	 pCalDigi = new((*fTofCalDigisColl)[++iDigIndCal]) CbmTofDigiExp( *pDigi );
+		   
+	 Int_t iAddr=pDigi->GetAddress();
+	 Bool_t bValid=kTRUE;
+	 if( (bValid = (pDigi->GetTime() > mChannelDeadTime[iAddr] + fdChannelDeadtime)) )
+	    pCalDigi = new((*fTofCalDigisColl)[++iDigIndCal]) CbmTofDigiExp( *pDigi );
+ 	 mChannelDeadTime[iAddr]=pDigi->GetTime();
+         if ( ! bValid ) continue;
+	 	 
 	 if(fbPs2Ns) {
 	   pCalDigi->SetTime(pCalDigi->GetTime()/1000.);        // for backward compatibility
 	   pCalDigi->SetTot(pCalDigi->GetTot()/1000.);          // for backward compatibility

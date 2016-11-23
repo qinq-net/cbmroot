@@ -120,6 +120,7 @@ class CbmTofTestBeamClusterizer : public FairTask
       inline void SetDelTofMax  (Double_t val)          { fdDelTofMax  = val;}
       inline void SetTotPreRange(Double_t val)          { fTotPreRange = val;}
       inline void SetMaxTimeDist(Double_t val)          { fMaxTimeDist = val;}
+      inline void SetChannelDeadtime(Double_t val)      { fdChannelDeadtime = val;}
       inline void SetSel2Id     (Int_t ival)            { fSel2Id = ival;}
       inline void SetSel2Sm     (Int_t ival)            { fSel2Sm = ival;}
       inline void SetSel2Rpc    (Int_t ival)            { fSel2Rpc = ival;}
@@ -338,7 +339,8 @@ class CbmTofTestBeamClusterizer : public FairTask
       Double_t fdDelTofMax;
       Double_t fTotPreRange;
       Double_t fMaxTimeDist;
-
+      Double_t fdChannelDeadtime;
+      
       Bool_t fEnableMatchPosScaling;
       Bool_t fEnableAvWalk;
       Bool_t fbPs2Ns;  // convert input raw digis from ps to ns 
