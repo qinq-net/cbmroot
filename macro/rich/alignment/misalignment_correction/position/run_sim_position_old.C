@@ -1,4 +1,4 @@
-void run_sim_position(Int_t nEvents = 500000, Int_t Flag = 0)
+void run_sim_position(Int_t nEvents = 200000, TString numb = "00001", Int_t Flag = 0)
 {
     TTree::SetMaxTreeSize(90000000000);
     Int_t iVerbose = 0;
@@ -13,15 +13,15 @@ void run_sim_position(Int_t nEvents = 500000, Int_t Flag = 0)
     //TString outDir = "/data/misalignment_correction/Sim_Outputs/Ring_Track_VS_Position/First/";
     if (Flag == 0) {TString outDir = "/data/misalignment_correction/Sim_Outputs/Ring_Track_VS_Position/Misaligned/";}
     else if (Flag == 1) {TString outDir = "/data/misalignment_correction/Sim_Outputs/Ring_Track_VS_Position/Aligned/";}
-    TString parFile = outDir + "param.root";
-    TString mcFile = outDir + "mc.root";
-	TString geoFile = outDir + "geofilefull.root";
-	TString outFile = outDir + "out.root";
+    TString parFile = outDir + "param." + numb + ".root";
+    TString mcFile = outDir + "mc." + numb + ".root";
+	TString geoFile = outDir + "geofilefull." + numb + ".root";
+	TString outFile = outDir + "out." + numb + ".root";
 
 /*	TString outDir = "/data/misalignment_correction/event_display/test/"; // For eventDisplay and run_rich_event_display macros
-	TString parFile = outDir + "param.root";
-	TString mcFile = outDir + "mc.root";
-	TString geoFile = outDir + "geofilefull.root";
+	TString parFile = outDir + "param." + numb + ".root";
+	TString mcFile = outDir + "mc." + numb + ".root";
+	TString geoFile = outDir + "geofilefull." + numb + ".root";
 */
 	// Set geometries:
 	TString caveGeom = "cave.geo";

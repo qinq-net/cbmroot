@@ -1,4 +1,4 @@
-void run_reco_position(Int_t nEvents = 500000, Int_t Flag = 0)
+void run_reco_position(Int_t nEvents = 500000, TString numb = "00001", Int_t Flag = 0)
 {
    TTree::SetMaxTreeSize(90000000000);
 
@@ -12,9 +12,9 @@ void run_reco_position(Int_t nEvents = 500000, Int_t Flag = 0)
     //TString outDir = "/data/misalignment_correction/Sim_Outputs/Ring_Track_VS_Position/First/";
     if (Flag == 0) {TString outDir = "/data/misalignment_correction/Sim_Outputs/Ring_Track_VS_Position/Misaligned/";}
     else if (Flag == 1) {TString outDir = "/data/misalignment_correction/Sim_Outputs/Ring_Track_VS_Position/Aligned/";}
-	TString parFile = outDir + "param.root";
-	TString mcFile = outDir + "mc.root";
-	TString recoFile = outDir + "reco.root";
+	TString parFile = outDir + "param." + numb + ".root";
+	TString mcFile = outDir + "mc." + numb + ".root";
+	TString recoFile = outDir + "reco." + numb + ".root";
 
 	//TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/geosetup_25gev.C";
 
