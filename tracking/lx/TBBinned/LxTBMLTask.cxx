@@ -345,12 +345,6 @@ struct LxTbDetector
       
       scaltype E = fSignalParticle->fMinEnergy; // GeV
       scaltype E0 = E;
-      scaltype totalLength = fStations[0].fAbsorber.zCoord;
-      scaltype deltaZs[NOF_STATIONS];
-      deltaZs[0] = fStations[0].fLayers[1].z - fStations[0].fAbsorber.zCoord;
-         
-      for (int i = 1; i < NOF_STATIONS; ++i)
-         deltaZs[i] = fStations[i].fLayers[1].z - fStations[i - 1].fLayers[1].z;
 
       for (int i = 0; i < NOF_STATIONS; ++i)
       {
@@ -362,27 +356,6 @@ struct LxTbDetector
          scaltype deltaTheta = CalcThetaPrj(Escat, L, &station.fAbsorber);
          station.fDeltaThetaX = deltaTheta;
          station.fDeltaThetaY = deltaTheta;
-         scaltype thetaXSq = 0;
-         scaltype thetaYSq = 0;
-         
-         for (int j = 0; j <= i; ++j)
-         {
-            totalLength = station.fLayers[1].z;
-            
-            scaltype deltaZsum = 0;
-            
-            for (int k = j; k <= i; ++k)
-               deltaZsum += deltaZs[k];
-            
-            thetaXSq += (1 - deltaZsum / totalLength) * (1 - deltaZsum / totalLength) * fStations[j].fDeltaThetaX * fStations[j].fDeltaThetaX;
-            thetaYSq += (1 - deltaZsum / totalLength) * (1 - deltaZsum / totalLength) * fStations[j].fDeltaThetaY * fStations[j].fDeltaThetaY;
-         }
-         
-         station.fThetaX = sqrt(thetaXSq);
-         station.fThetaY = sqrt(thetaYSq);
-         scaltype deltaZRL = station.fLayers[2].z - station.fLayers[1].z;
-         station.fScatXRL = station.fThetaX * deltaZRL;
-         station.fScatYRL = station.fThetaY * deltaZRL;
          
          if (i > 0)
          {
@@ -396,6 +369,40 @@ struct LxTbDetector
          station.qs[0] = {q0XSq * L * L / 3, q0XSq * L / 2, q0XSq * L / 2, q0XSq};
          station.qs[1] = {q0YSq * L * L / 3, q0YSq * L / 2, q0YSq * L / 2, q0YSq};
          E0 = E;
+      }
+      
+      scaltype Ls[NOF_STATIONS + 1];
+      Ls[0] = fStations[0].fAbsorber.zCoord;
+         
+      for (int i = 1; i < NOF_STATIONS; ++i)
+         Ls[i] = fStations[i].fAbsorber.zCoord - Ls[i - 1];
+      
+      Ls[NOF_STATIONS] = fStations[LAST_STATION].fLayers[1].z - Ls[LAST_STATION];
+      
+      for (int s = 0; s < NOF_STATIONS; ++s)
+      {
+         LxTbMLStation& station = fStations[s];
+         scaltype L = station.fLayers[1].z;
+         int n = s + 1;
+         scaltype thetaXSq = 0;
+         scaltype thetaYSq = 0;
+         
+         for (int i = 1; i <= n; ++i)
+         {
+            scaltype sumLi = 0;
+            
+            for (int j = 0; j < i; ++j)
+               sumLi += Ls[j];
+            
+            thetaXSq += sumLi * sumLi * fStations[s].fDeltaThetaX * fStations[s].fDeltaThetaX;
+            thetaYSq += sumLi * sumLi * fStations[s].fDeltaThetaY * fStations[s].fDeltaThetaY;
+         }
+              
+         station.fThetaX = sqrt(thetaXSq) / L;
+         station.fThetaY = sqrt(thetaYSq) / L;
+         scaltype deltaZRL = station.fLayers[2].z - station.fLayers[1].z;
+         station.fScatXRL = station.fThetaX * deltaZRL;
+         station.fScatYRL = station.fThetaY * deltaZRL;
       }
       
       for (int i = 0; i < NOF_STATIONS; ++i)

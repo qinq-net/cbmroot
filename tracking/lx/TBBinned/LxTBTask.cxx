@@ -46,7 +46,7 @@ ClassImp(LxTBFinder)
    
 Double_t speedOfLight = 0;
 
-LxTbBinnedFinder::SignalParticle LxTbBinnedFinder::particleDescs[] = { { "jpsi", 443, 3.0, true  }, { "omega", 223, 1.5, false }, { "", -1, 0, false } };
+LxTbBinnedFinder::SignalParticle LxTbBinnedFinder::particleDescs[] = { { "jpsi", 443, 3.0, true  }, { "omega", 223, 1.5, true }, { "", -1, 0, false } };
 
 LxTBFinder::LxTBFinder() : fMuchMCPoints(0), fMuchPixelHits(0), fMuchClusters(0), fMuchPixelDigiMatches(0),
    fTrdMCPoints(0), fTrdHits(0), fTrdClusters(0), fTrdDigiMatches(0),
@@ -234,6 +234,8 @@ void LxTBFinder::HandleGeometry()
          
          if (absorberNumber < nofStations)
          {
+            gGeoManager->LocalToMaster(localCoords, globalCoords);
+            fFinder->stations[absorberNumber].absorber.zCoord = globalCoords[2] - absShape->GetDZ();
             fFinder->stations[absorberNumber].absorber.width = 2 * absShape->GetDZ();
             fFinder->stations[absorberNumber].absorber.radLength = absVol->GetMaterial()->GetRadLen();
             fFinder->stations[absorberNumber].absorber.rho = absVol->GetMaterial()->GetDensity();
@@ -349,6 +351,10 @@ static list<pair<timetype, timetype> > triggerTimes_trd1_sign0_dist0;
 static list<pair<timetype, timetype> > triggerTimes_trd1_sign0_dist1;
 static list<pair<timetype, timetype> > triggerTimes_trd1_sign1_dist0;
 static list<pair<timetype, timetype> > triggerTimes_trd1_sign1_dist1;
+static list<pair<timetype, timetype> > triggerTimes_trd05_sign0_dist0;
+static list<pair<timetype, timetype> > triggerTimes_trd05_sign0_dist1;
+static list<pair<timetype, timetype> > triggerTimes_trd05_sign1_dist0;
+static list<pair<timetype, timetype> > triggerTimes_trd05_sign1_dist1;
 #endif//LXTB_QA
 
 InitStatus LxTBFinder::Init()
@@ -1311,6 +1317,10 @@ void LxTBFinder::Exec(Option_t* opt)
       fDetector->TieTracks(*fFinder);
    }
 #endif//LXTB_TIE
+   SpliceTriggerings(triggerTimes_trd05_sign0_dist0, fFinder->triggerTimes_trd05_sign0_dist0);
+   SpliceTriggerings(triggerTimes_trd05_sign0_dist1, fFinder->triggerTimes_trd05_sign0_dist1);
+   SpliceTriggerings(triggerTimes_trd05_sign1_dist0, fFinder->triggerTimes_trd05_sign1_dist0);
+   SpliceTriggerings(triggerTimes_trd05_sign1_dist1, fFinder->triggerTimes_trd05_sign1_dist1);
 #endif//LXTB_EMU_TS
    
 #ifdef LXTB_QA
@@ -1497,6 +1507,10 @@ void LxTBFinder::Finish()
    SpliceTriggerings(triggerTimes_trd1_sign0_dist1, fFinder->triggerTimes_trd1_sign0_dist1);
    SpliceTriggerings(triggerTimes_trd1_sign1_dist0, fFinder->triggerTimes_trd1_sign1_dist0);
    SpliceTriggerings(triggerTimes_trd1_sign1_dist1, fFinder->triggerTimes_trd1_sign1_dist1);
+   SpliceTriggerings(triggerTimes_trd05_sign0_dist0, fFinder->triggerTimes_trd05_sign0_dist0);
+   SpliceTriggerings(triggerTimes_trd05_sign0_dist1, fFinder->triggerTimes_trd05_sign0_dist1);
+   SpliceTriggerings(triggerTimes_trd05_sign1_dist0, fFinder->triggerTimes_trd05_sign1_dist0);
+   SpliceTriggerings(triggerTimes_trd05_sign1_dist1, fFinder->triggerTimes_trd05_sign1_dist1);
 #endif//LXTB_EMU_TS
    cout << "LxTbBinnedFinder::Reconstruct() full duration was: " << fullDuration << endl;
    
@@ -1641,6 +1655,10 @@ void LxTBFinder::Finish()
    PrintTrigger(triggerTimes_trd1_sign0_dist1, longSignalMCTimes, "triggerTimes_trd1_sign0_dist1");
    PrintTrigger(triggerTimes_trd1_sign1_dist0, longSignalMCTimes, "triggerTimes_trd1_sign1_dist0");
    PrintTrigger(triggerTimes_trd1_sign1_dist1, longSignalMCTimes, "triggerTimes_trd1_sign1_dist1", true);
+   PrintTrigger(triggerTimes_trd05_sign0_dist0, longSignalMCTimes, "triggerTimes_trd05_sign0_dist0");
+   PrintTrigger(triggerTimes_trd05_sign0_dist1, longSignalMCTimes, "triggerTimes_trd05_sign0_dist1");
+   PrintTrigger(triggerTimes_trd05_sign1_dist0, longSignalMCTimes, "triggerTimes_trd05_sign1_dist0");
+   PrintTrigger(triggerTimes_trd05_sign1_dist1, longSignalMCTimes, "triggerTimes_trd05_sign1_dist1");
    
    Int_t nofTriggerDigis = 0;
    

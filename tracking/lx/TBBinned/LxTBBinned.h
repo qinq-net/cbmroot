@@ -477,6 +477,10 @@ struct LxTbBinnedFinder
     TriggerTimeArray triggerTimes_trd1_sign0_dist1;
     TriggerTimeArray triggerTimes_trd1_sign1_dist0;
     TriggerTimeArray triggerTimes_trd1_sign1_dist1;
+    TriggerTimeArray triggerTimes_trd05_sign0_dist0;
+    TriggerTimeArray triggerTimes_trd05_sign0_dist1;
+    TriggerTimeArray triggerTimes_trd05_sign1_dist0;
+    TriggerTimeArray triggerTimes_trd05_sign1_dist1;
 #ifdef LXTB_QA
     std::set<Int_t> triggerEventNumber;
 #endif//LXTB_QA
@@ -501,7 +505,11 @@ struct LxTbBinnedFinder
         triggerTimes_trd1_sign0_dist0(nofTimeBins, timeBinLength, minT),
         triggerTimes_trd1_sign0_dist1(nofTimeBins, timeBinLength, minT),
         triggerTimes_trd1_sign1_dist0(nofTimeBins, timeBinLength, minT),
-        triggerTimes_trd1_sign1_dist1(nofTimeBins, timeBinLength, minT)
+        triggerTimes_trd1_sign1_dist1(nofTimeBins, timeBinLength, minT),
+        triggerTimes_trd05_sign0_dist0(nofTimeBins, timeBinLength, minT),
+        triggerTimes_trd05_sign0_dist1(nofTimeBins, timeBinLength, minT),
+        triggerTimes_trd05_sign1_dist0(nofTimeBins, timeBinLength, minT),
+        triggerTimes_trd05_sign1_dist1(nofTimeBins, timeBinLength, minT)
     {
         for (int i = 0; i < fNofStations; ++i)
             new (&stations[i]) LxTbBinnedStation(nofSpatBins[i].first, nofSpatBins[i].second, nofTimeBins);
@@ -548,6 +556,10 @@ struct LxTbBinnedFinder
         triggerTimes_trd1_sign0_dist1.Clear();
         triggerTimes_trd1_sign1_dist0.Clear();
         triggerTimes_trd1_sign1_dist1.Clear();
+        triggerTimes_trd05_sign0_dist0.Clear();
+        triggerTimes_trd05_sign0_dist1.Clear();
+        triggerTimes_trd05_sign1_dist0.Clear();
+        triggerTimes_trd05_sign1_dist1.Clear();
 #ifdef LXTB_QA
         triggerEventNumber.clear();
 #endif//LXTB_QA
@@ -577,9 +589,6 @@ struct LxTbBinnedFinder
                 scaltype deltaTheta = CalcThetaPrj(Escat, L, &stations[i].absorber);
                 stations[i].deltaThetaX = deltaTheta;
                 stations[i].deltaThetaY = deltaTheta;
-                scaltype deltaZ = stations[i].z - stations[i - 1].z;
-                stations[i].dispX = stations[i].deltaThetaX * deltaZ;
-                stations[i].dispY = stations[i].deltaThetaY * deltaZ;
                 scaltype q0XSq = stations[i].deltaThetaX * stations[i].deltaThetaX;
                 scaltype q0YSq = stations[i].deltaThetaY * stations[i].deltaThetaY;
                 stations[i].qs[0] = { q0XSq * L * L / 3, q0XSq * L / 2, q0XSq * L / 2, q0XSq };
@@ -587,6 +596,38 @@ struct LxTbBinnedFinder
             }
             
             E0 = E;
+        }
+        
+        scaltype Ls[fNofStations + 1];
+        Ls[0] = stations[0].absorber.zCoord;
+
+        for (int i = 1; i < fNofStations; ++i)
+            Ls[i] = stations[i].absorber.zCoord - Ls[i - 1];
+
+        Ls[fNofStations] = stations[fLastStationNumber].z - Ls[fLastStationNumber];
+
+        for (int s = 1; s < fNofStations; ++s)
+        {
+            LxTbBinnedStation& station = stations[s];
+            scaltype L = station.z;
+            int n = s + 1;
+            scaltype thetaXSq = 0;
+            scaltype thetaYSq = 0;
+
+            for (int i = 1; i <= n; ++i)
+            {
+                scaltype sumLi = 0;
+
+                for (int j = 0; j < i; ++j)
+                    sumLi += Ls[j];
+
+                thetaXSq += sumLi * sumLi * stations[s].deltaThetaX * stations[s].deltaThetaX;
+                thetaYSq += sumLi * sumLi * stations[s].deltaThetaY * stations[s].deltaThetaY;
+            }
+            
+            scaltype deltaZ = stations[s].z - stations[s - 1].z;
+            station.dispX = deltaZ * sqrt(thetaXSq) / L;
+            station.dispY = deltaZ * sqrt(thetaYSq) / L;
         }
         
         if (fHasTrd)
@@ -1019,6 +1060,8 @@ struct LxTbBinnedFinder
         if (fHasTrd)
         {
             scaltype lastZ = lastStation.z;
+            LxTbBinnedStation& beforeLastStation = stations[fLastStationNumber - 1];
+            scaltype beforeLastZ = beforeLastStation.z;
             scaltype deltaZsTrd[4] = {trdStation.Zs[0] - lastZ, trdStation.Zs[2] - lastZ, trdStation.Zs[2] - lastZ, trdStation.Zs[3] - lastZ};
             scaltype dispX0Sq = trdStation.dispXs[0] * trdStation.dispXs[0];
             scaltype dispY0Sq = trdStation.dispYs[0] * trdStation.dispYs[0];
@@ -1039,8 +1082,9 @@ struct LxTbBinnedFinder
                 {
                     Chain* track = *j;
                     LxTbBinnedPoint& lPoint = *track->points[track->nofPoints - 1];
-                    scaltype tx = lPoint.x / lastZ;
-                    scaltype ty = lPoint.y / lastZ;
+                    LxTbBinnedPoint& lPointL = *track->points[track->nofPoints - 2];
+                    scaltype tx = (lPoint.x - lPointL.x) / (lastZ - beforeLastZ);
+                    scaltype ty = (lPoint.y - lPointL.y) / (lastZ - beforeLastZ);
                     scaltype trdPx0 = lPoint.x + tx * deltaZsTrd[0];
                     scaltype trdPy0 = lPoint.y + ty * deltaZsTrd[0];
                     scaltype trajLen0 = sqrt(1 + tx * tx + ty * ty) * deltaZsTrd[0];
@@ -1208,6 +1252,22 @@ struct LxTbBinnedFinder
                         triggerTimes_trd1_sign0_dist1.Insert(pairTime);
                         
                     triggerTimes_trd1_sign0_dist0.Insert(pairTime);
+                }
+                
+                if (track->highMom || track2->highMom)
+                {
+                    if (trackSign * track2Sign < 0)
+                    {
+                        if (dist >= 50.0)
+                            triggerTimes_trd05_sign1_dist1.Insert(pairTime);
+                        
+                        triggerTimes_trd05_sign1_dist0.Insert(pairTime);
+                    }
+
+                    if (dist >= 50.0)
+                        triggerTimes_trd05_sign0_dist1.Insert(pairTime);
+                        
+                    triggerTimes_trd05_sign0_dist0.Insert(pairTime);
                 }
 
                 if (trackSign * track2Sign < 0)

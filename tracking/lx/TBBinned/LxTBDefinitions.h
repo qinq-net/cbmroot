@@ -18,7 +18,7 @@
 #define LXTB_QA
 
 #ifdef LXTB_QA
-//#define LXTB_EMU_TS
+#define LXTB_EMU_TS
 //#define LXTB_DEBUG
 #endif//LXTB_QA
 
