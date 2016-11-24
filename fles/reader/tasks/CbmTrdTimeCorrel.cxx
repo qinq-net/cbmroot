@@ -404,6 +404,8 @@ void CbmTrdTimeCorrel::Exec(Option_t*)
 	          string Histname =  "Signalshape_for_" + string(spadicName) + "Channel"
 						+ std::to_string(chID);
 	          if(triggerType==1&&(stopType==0)) FillSignalShape(*raw,Histname);
+			  TString graphName = "TSTime_"+GetSpadicName(eqID,sourceA,kRawData,kHalfSpadic);
+			  fHM->G1(graphName.Data())->SetPoint(fHM->G1(graphName.Data())->GetN(),fNrTimeSlices+1,raw->GetFullTime()/1.5E7);
 	        }
 	    if(fDrawSignalDebugHistograms){
 	    	if (isHit||isHitAborted){
@@ -537,6 +539,7 @@ void CbmTrdTimeCorrel::Exec(Option_t*)
       fHM->H2("NrSamples_vs_StopType")->Fill(raw->GetNrSamples(), raw->GetStopType());
       fHM->H2("NrSamples_vs_InfoType")->Fill(raw->GetNrSamples(), raw->GetInfoType());
       fHM->H2("NrSamples_vs_TriggerType")->Fill(raw->GetNrSamples(), raw->GetTriggerType());
+
       //-------------------
       
       /*Extended Message Debugging:
@@ -892,6 +895,8 @@ void CbmTrdTimeCorrel::ClusterizerTime()
 		    Int_t ChID2 = range.first->second->GetChannelID();
 		    Int_t SpaID1 = GetSpadicID(it->second->GetSourceAddress());
 		    Int_t SpaID2 = GetSpadicID(range.first->second->GetSourceAddress());
+		    Int_t SysID1 = GetSyscoreID(it->second->GetEquipmentID());
+		    Int_t SysID2 = GetSyscoreID(range.first->second->GetEquipmentID());
 		    ChID1 += (SpaID1 %2 == 1)? 16 : 0; // Remap the channel IDs of each second Half-Spadic to 16...31
 		    ChID2 += (SpaID2 %2 == 1)? 16 : 0;
 		    // special for SPS2015 data: the chamber with SpaID 2 and 3 was turned by 180 degree with respect to the first one. thus, turn the pad plane number here
@@ -901,16 +906,24 @@ void CbmTrdTimeCorrel::ClusterizerTime()
 		    Int_t SpaPad2 = (Int_t)(SpaID2/2) * 32 + (GetChannelOnPadPlane(ChID2));
 		    if (it!=range.first) { //Exclude Correlations of messages with themselves
 			//TODO:Implement Clusters and fill them
+#ifndef __CINT__
+			    std::pair<TString,TString> Corrmap=std::make_pair(GetSpadicName(SysID1, SpaID1, kProcessedData, kFullSpadic),GetSpadicName(SysID2, SpaID2, kProcessedData, kFullSpadic));
+			    std::cout<< Corrmap.first << " " << Corrmap.second << std::endl;
+			    if(std::count(fCorrmaps.begin(),fCorrmaps.end(),Corrmap)!=0){
+			  	  TString histName="Correlation_Map_"+Corrmap.first+"_"+Corrmap.second;
+			    	auto Map=fHM->H2(histName.Data())->Fill(GetChannelOnPadPlane(ChID1)-GetChannelOnPadPlane(ChID2),static_cast<Long_t>(range.first->second->GetFullTime())-static_cast<Long_t>(it->second->GetFullTime()));
+			    }
+#endif // __CINT__
 			if(fDebugMode){
 			    fHM->H2("Hit_Coincidences")->Fill(SpaPad1,SpaPad2);
 			    // Fill for map of correlations following: require origin from variant TRD chambers to cut on physical correlations between two chambers, which is adressed for the moment just by requiring different SpaID/2
 			    // Furthermore, physical correlations coming from the target require a positve direction from Chamber 1 to Chamber 2, which means ascending SpaIDs
-			    fHM->H2("Correlation_Map")->Fill(SpaPad2-SpaPad1-32,((range.first->second->GetFullTime())-(it->second->GetFullTime())));
+			    fHM->H2("Correlation_Map")->Fill(SpaPad2-SpaPad1-32,(static_cast<Long_t>(range.first->second->GetFullTime())-static_cast<Long_t>(it->second->GetFullTime())));
 			}else{
 			    if (((Int_t)(SpaID1/2) - (Int_t)(SpaID2/2)) != 0) fHM->H2("Hit_Coincidences")->Fill(SpaPad1,SpaPad2);
 			    // Fill for map of correlations following: require origin from variant TRD chambers to cut on physical correlations between two chambers, which is adressed for the moment just by requiring different SpaID/2
 			    // Furthermore, physical correlations coming from the target require a positve direction from Chamber 1 to Chamber 2, which means ascending SpaIDs
-			    if (((Int_t)(SpaID2/2) - (Int_t)(SpaID1/2)) > 0) fHM->H2("Correlation_Map")->Fill(SpaPad2-SpaPad1-32,((range.first->second->GetFullTime())-(it->second->GetFullTime())));
+			    if (((Int_t)(SpaID2/2) - (Int_t)(SpaID1/2)) > 0) fHM->H2("Correlation_Map")->Fill(SpaPad2-SpaPad1-32,(static_cast<Long_t>(range.first->second->GetFullTime())-static_cast<Long_t>(it->second->GetFullTime())));
 			}
 		    }
 		}
@@ -1842,7 +1855,8 @@ void CbmTrdTimeCorrel::CreateHistograms()
 			  "TsCounterInfo_",
 			  "TsCounterEpoch_",
 			  "TsCounterStrange_",
-			  "TsStrangeness_"
+			  "TsStrangeness_",
+			  "TSTime_"
 	  };
 	  std::vector<Int_t> spadicList(NrOfActiveHalfSpadics);
 	  std::iota(spadicList.begin(),spadicList.end(),0);
@@ -1906,6 +1920,15 @@ void CbmTrdTimeCorrel::CreateHistograms()
   fHM->H2("Correlation_Map")->GetXaxis()->SetTitle("#Delta Pad");
   fHM->H2("Correlation_Map")->GetYaxis()->SetTitle("#Delta Time (1 timestamp = 57 ns)");
 
+
+#ifndef  __CINT__
+  for (auto i : fCorrmaps){
+	  histName="Correlation_Map_"+i.first+"_"+i.second;
+	  fHM->Add(histName.Data(), new TH2I(histName.Data(),histName.Data(),63,-31.5,31.5,200,-0.5,20000.5));
+	  fHM->H2(histName.Data())->GetXaxis()->SetTitle("#Delta Pad");
+	  fHM->H2(histName.Data())->GetYaxis()->SetTitle("#Delta Time (1 timestamp = 57 ns)");
+  }
+#endif // __CINT__
 }
 
 // ----              -------------------------------------------------------
@@ -2103,7 +2126,7 @@ Int_t CbmTrdTimeCorrel::GetSpadicID(Int_t sourceA)
 Int_t CbmTrdTimeCorrel::GetSyscoreID(Int_t eqID)
 {
 	Int_t SyscoreID=eqID-BaseEquipmentID;
-	if(SyscoreID<0||SyscoreID>NrOfActiveSyscores){
+	if((SyscoreID<0||SyscoreID>NrOfActiveSyscores)){
 	    LOG(ERROR) << "EqID " << eqID << " not known." << FairLogger::endl;
 	    SyscoreID=-1;
 	}
@@ -2146,8 +2169,8 @@ inline TString CbmTrdTimeCorrel::GetSpadicName(Int_t eqID,Int_t sourceA,kInputTy
 	/*	Get a String of the Form "Syscore_0_Spadic_0" describing the specific SPADIC corresponding to the input parameters.
 	 *  The Parameter InputType allows either the Equipment ID/Source Address or the final Syscore/Spadic ID to be used.
 	 *  	kRawData (default) is the parameter that allows the raw EqID/Source Address to be used, kProcessedData takes Syscore/SpadicID.
-	 *  The Parameter OutputType allows adressing either the corresponding FullSpadic, via kDivideBy2 (default), or the original HalfSpadic,
-	 *  	via kDivideBy2.
+	 *  The Parameter OutputType allows adressing either the corresponding FullSpadic, via kFullSpadic (default), or the original HalfSpadic,
+	 *  	via kHalfSpadic.
 	 * */
   TString spadicName="";
   Int_t SpadicID=0;

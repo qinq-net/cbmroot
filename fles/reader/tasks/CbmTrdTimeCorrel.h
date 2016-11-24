@@ -13,6 +13,9 @@
 #include "TRegexp.h"
 #include <cmath>
 #include <numeric>
+#include <utility>
+#include <vector>
+#include <string>
 
 
 typedef std::map<Int_t, std::map<ULong_t, CbmSpadicRawMessage* > > EpochMap;
@@ -123,8 +126,18 @@ class CbmTrdTimeCorrel : public FairTask
   void FillSignalShape(CbmSpadicRawMessage* message){
 	  FillSignalShape(*message);
   }
+#ifndef __CINT__
+	std::vector<std::pair<TString, TString> > fCorrmaps = { std::make_pair(
+			GetSpadicName(0, 2, kDirectOutput, kFullSpadic),
+			GetSpadicName(1, 2, kDirectOutput, kFullSpadic)), std::make_pair(
+			GetSpadicName(1, 2, kDirectOutput, kFullSpadic),
+			GetSpadicName(3, 2, kDirectOutput, kFullSpadic)), std::make_pair(
+			GetSpadicName(2, 1, kDirectOutput, kFullSpadic),
+			GetSpadicName(3, 1, kDirectOutput, kFullSpadic)), std::make_pair(
+			GetSpadicName(0, 2, kDirectOutput, kFullSpadic),
+			GetSpadicName(3, 2, kDirectOutput, kFullSpadic))};
+#endif // __CINT__
 
-  
   void CreateHistograms();
   void FitBaseline();
   void FitPRF();
