@@ -220,18 +220,18 @@ TEST(_GTestCbmHit , TestSettersAndGetters)
 
   // Test if we can add an empty CbmMatch, get it back, and extract
   // the expected values
-  CbmMatch testMatch{};
+  CbmMatch* testMatch = new CbmMatch();
 
   Int_t linkLength{-111};
   Double_t totalWeight{-111};
 
-  linkLength = testMatch.GetNofLinks();
+  linkLength = testMatch->GetNofLinks();
   EXPECT_EQ(0, linkLength);
 
-  totalWeight = testMatch.GetTotalWeight();
+  totalWeight = testMatch->GetTotalWeight();
   EXPECT_FLOAT_EQ(0., totalWeight);
 
-  test.SetMatch(&testMatch);
+  test.SetMatch(testMatch);
   CbmMatch* testMatch1 = test.GetMatch();
 
   linkLength = testMatch1->GetNofLinks();

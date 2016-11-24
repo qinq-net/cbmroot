@@ -35,15 +35,8 @@ Set(DEPENDENCIES
   CbmData
 )
 
-Set(CbmHitSources
-  _GTestCbmHit.cxx
-)  
-
-CreateGTestExeAndAddTest(_GTestCbmHit "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
-                         "${CbmHitSources}" "${DEPENDENCIES}")
-
-
 Set(CbmLinkSources
+  ${CMAKE_SOURCE_DIR}/data/CbmLink.cxx
   _GTestCbmLink.cxx
 )
 
@@ -51,6 +44,7 @@ CreateGTestExeAndAddTest(_GTestCbmLink "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTOR
                          "${CbmLinkSources}" "${DEPENDENCIES}")
 
 Set(CbmMatchSources
+  ${CMAKE_SOURCE_DIR}/data/CbmMatch.cxx
   _GTestCbmMatch.cxx
 )
 
@@ -58,8 +52,18 @@ CreateGTestExeAndAddTest(_GTestCbmMatch "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTO
                          "${CbmMatchSources}" "${DEPENDENCIES}")
 
 Set(CbmDigiSources
+  ${CMAKE_SOURCE_DIR}/data/CbmDigi.cxx
   _GTestCbmDigi.cxx
 )
 
 CreateGTestExeAndAddTest(_GTestCbmDigi "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
                          "${CbmDigiSources}" "${DEPENDENCIES}")
+
+Set(CbmHitSources
+  ${CMAKE_SOURCE_DIR}/data/CbmHit.cxx
+  _GTestCbmHit.cxx
+)  
+
+CreateGTestExeAndAddTest(_GTestCbmHit "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
+                         "${CbmHitSources}" "${DEPENDENCIES}")
+

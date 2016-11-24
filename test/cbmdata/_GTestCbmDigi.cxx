@@ -5,8 +5,7 @@
 #include "gtest/gtest.h"
 #include "gtest/gtest-spi.h"
 
-#include <utility> // std::move
-#include <iostream>
+#include <utility> // std::forward
 
 // Since CbmDigi is an abstract base class which can't be instantiated directly we have
 // to create a derived class without any data members which simply forwards the function
@@ -22,7 +21,7 @@ class CbmTestDigi : public CbmDigi
     CbmTestDigi(const CbmTestDigi& digi) : CbmDigi(digi) {;}
 
     /** Move constructor  **/
-//    CbmTestDigi(CbmTestDigi&& digi) : CbmDigi(std::move(digi)) {;}
+//    CbmTestDigi(CbmTestDigi&& digi) : CbmDigi(std::forward<CbmTestDigi>(digi)) {;}
 
     /** Destructor  **/
     virtual ~CbmTestDigi() {;}
@@ -38,10 +37,11 @@ class CbmTestDigi : public CbmDigi
     }
 
     /** Move Assignment operator  **/
-/*     CbmTestDigi& operator=(CbmTestDigi&& other)
+/*
+    CbmTestDigi& operator=(CbmTestDigi&& other)
     {
       if (this != &other) {
-        CbmDigi::operator=(std::move(other));
+        CbmDigi::operator=(std::forward<CbmTestDigi>(other));
       }
       return *this;
     }
@@ -140,7 +140,31 @@ TEST(_GTestCbmDigi , CheckCopyConstructor)
   EXPECT_FLOAT_EQ(-111., retValDouble);
 }
 
-TEST(_GTestCbmDigi , CheckAssignmentConstructor)
+/*
+TEST(_GTestCbmDigi , CheckMoveConstructor)
+{
+  // Create abstract base class via derived class
+  // After creation there is no CbmMatch added such
+  // that the pointer is a nullptr
+  CbmTestDigi test;
+  EXPECT_EQ(nullptr, test.GetMatch());
+
+  // After adding a new CbmMatch to CbmDigi
+  // the GetMatch returns the pointer to the object
+  CbmMatch* testMatch = new CbmMatch();
+  test.SetMatch(testMatch);
+  EXPECT_NE(nullptr, test.GetMatch());
+
+  // Create object by move constructing
+  // test2 should now contain the pointer to the CbmMatch object and
+  // test should contain a nullptr
+  CbmTestDigi test2{std::move(test)};
+  EXPECT_NE(nullptr, test2.GetMatch());
+  EXPECT_EQ(nullptr, test.GetMatch());
+}
+*/
+
+TEST(_GTestCbmDigi , CheckAssignmentOperator)
 {
   // Create abstract base class via derived class
   CbmTestDigi test;
@@ -164,7 +188,8 @@ TEST(_GTestCbmDigi , CheckAssignmentConstructor)
 
   // Create object by copy constructing
   // test should be equal to test2 and test should be existing
-  CbmTestDigi test2 = test;
+  CbmTestDigi test2;
+  test2 = test;
 
   // Test if the new object has the same values for all data members
   // as the original object
@@ -197,6 +222,31 @@ TEST(_GTestCbmDigi , CheckAssignmentConstructor)
   retValDouble = test.GetTime();
   EXPECT_FLOAT_EQ(-111., retValDouble);
 }
+
+/*
+TEST(_GTestCbmDigi , CheckAssignmentMoveConstructor)
+{
+  // Create abstract base class via derived class
+  // After creation there is no CbmMatch added such
+  // that the pointer is a nullptr
+  CbmTestDigi test;
+  EXPECT_EQ(nullptr, test.GetMatch());
+
+  // After adding a new CbmMatch to CbmDigi
+  // the GetMatch returns the pointer to the object
+  CbmMatch* testMatch = new CbmMatch();
+  test.SetMatch(testMatch);
+  EXPECT_NE(nullptr, test.GetMatch());
+
+  // Create object by move constructing
+  // test2 should now contain the pointer to the CbmMatch object and
+  // test should contain a nullptr
+  CbmTestDigi test2; // = std::move(test);
+  test2 = std::move(test);
+  EXPECT_NE(nullptr, test2.GetMatch());
+  EXPECT_EQ(nullptr, test.GetMatch());
+}
+*/
 
 TEST(_GTestCbmDigi , CheckSetMatch)
 {

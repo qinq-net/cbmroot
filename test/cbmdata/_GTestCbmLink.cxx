@@ -6,67 +6,146 @@
 TEST(_GTestCbmLink , CheckDefaultConstructor)
 {
   CbmLink test;
-  EXPECT_EQ(-1, test.GetFile());
-  EXPECT_EQ(-1,test.GetEntry());
-  EXPECT_EQ(-1,test.GetIndex());
-  EXPECT_FLOAT_EQ(-1, test.GetWeight());
+
+  Int_t intRetVal{-111};
+  Float_t floatRetVal{-111};
+
+  intRetVal = test.GetFile();
+  EXPECT_EQ(-1, intRetVal);
+
+  intRetVal = test.GetEntry();
+  EXPECT_EQ(-1, intRetVal);
+
+  intRetVal = test.GetIndex();
+  EXPECT_EQ(-1,intRetVal);
+
+  floatRetVal = test.GetWeight();
+  EXPECT_FLOAT_EQ(-1., floatRetVal);
 }
 
 TEST(_GTestCbmLink , CheckStandardConstructor1)
 {
   CbmLink test{-2., -2};
-  EXPECT_EQ(-1, test.GetFile());
-  EXPECT_EQ(-1,test.GetEntry());
-  EXPECT_EQ(-2,test.GetIndex());
-  EXPECT_FLOAT_EQ(-2, test.GetWeight());
+
+  Int_t intRetVal{-111};
+  Float_t floatRetVal{-111};
+
+  intRetVal = test.GetFile();
+  EXPECT_EQ(-1, intRetVal);
+
+  intRetVal = test.GetEntry();
+  EXPECT_EQ(-1, intRetVal);
+
+  intRetVal = test.GetIndex();
+  EXPECT_EQ(-2,intRetVal);
+
+  floatRetVal = test.GetWeight();
+  EXPECT_FLOAT_EQ(-2., floatRetVal);
 }
 
 TEST(_GTestCbmLink , CheckStandardConstructor2)
 {
   CbmLink test{-2., -2, -2, -2};
-  EXPECT_EQ(-2, test.GetFile());
-  EXPECT_EQ(-2,test.GetEntry());
-  EXPECT_EQ(-2,test.GetIndex());
-  EXPECT_FLOAT_EQ(-2, test.GetWeight());
+
+  Int_t intRetVal{-111};
+  Float_t floatRetVal{-111};
+
+  intRetVal = test.GetFile();
+  EXPECT_EQ(-2, intRetVal);
+
+  intRetVal = test.GetEntry();
+  EXPECT_EQ(-2, intRetVal);
+
+  intRetVal = test.GetIndex();
+  EXPECT_EQ(-2,intRetVal);
+
+  floatRetVal = test.GetWeight();
+  EXPECT_FLOAT_EQ(-2., floatRetVal);
 }
 
 TEST(_GTestCbmLink , TestSettersAndGetters)
 {
   CbmLink test{-2., -2, -2, -2};
-  EXPECT_EQ(-2, test.GetFile());
-  EXPECT_EQ(-2,test.GetEntry());
-  EXPECT_EQ(-2,test.GetIndex());
-  EXPECT_FLOAT_EQ(-2, test.GetWeight());
+
+  Int_t intRetVal{-111};
+  Float_t floatRetVal{-111};
+
+  intRetVal = test.GetFile();
+  EXPECT_EQ(-2, intRetVal);
+
+  intRetVal = test.GetEntry();
+  EXPECT_EQ(-2, intRetVal);
+
+  intRetVal = test.GetIndex();
+  EXPECT_EQ(-2,intRetVal);
+
+  floatRetVal = test.GetWeight();
+  EXPECT_FLOAT_EQ(-2., floatRetVal);
 
   test.SetFile(-3);
-  EXPECT_EQ(-3, test.GetFile());
-  EXPECT_EQ(-2,test.GetEntry());
-  EXPECT_EQ(-2,test.GetIndex());
-  EXPECT_FLOAT_EQ(-2, test.GetWeight());
+  intRetVal = test.GetFile();
+  EXPECT_EQ(-3, intRetVal);
+
+  intRetVal = test.GetEntry();
+  EXPECT_EQ(-2, intRetVal);
+
+  intRetVal = test.GetIndex();
+  EXPECT_EQ(-2,intRetVal);
+
+  floatRetVal = test.GetWeight();
+  EXPECT_FLOAT_EQ(-2., floatRetVal);
 
   test.SetEntry(-3);
-  EXPECT_EQ(-3, test.GetFile());
-  EXPECT_EQ(-3,test.GetEntry());
-  EXPECT_EQ(-2,test.GetIndex());
-  EXPECT_FLOAT_EQ(-2, test.GetWeight());
+  intRetVal = test.GetFile();
+  EXPECT_EQ(-3, intRetVal);
+
+  intRetVal = test.GetEntry();
+  EXPECT_EQ(-3, intRetVal);
+
+  intRetVal = test.GetIndex();
+  EXPECT_EQ(-2,intRetVal);
+
+  floatRetVal = test.GetWeight();
+  EXPECT_FLOAT_EQ(-2., floatRetVal);
 
   test.SetIndex(-3);
-  EXPECT_EQ(-3, test.GetFile());
-  EXPECT_EQ(-3,test.GetEntry());
-  EXPECT_EQ(-3,test.GetIndex());
-  EXPECT_FLOAT_EQ(-2, test.GetWeight());
+  intRetVal = test.GetFile();
+  EXPECT_EQ(-3, intRetVal);
+
+  intRetVal = test.GetEntry();
+  EXPECT_EQ(-3, intRetVal);
+
+  intRetVal = test.GetIndex();
+  EXPECT_EQ(-3,intRetVal);
+
+  floatRetVal = test.GetWeight();
+  EXPECT_FLOAT_EQ(-2., floatRetVal);
 
   test.SetWeight(-3.);
-  EXPECT_EQ(-3, test.GetFile());
-  EXPECT_EQ(-3,test.GetEntry());
-  EXPECT_EQ(-3,test.GetIndex());
-  EXPECT_FLOAT_EQ(-3, test.GetWeight());
+  intRetVal = test.GetFile();
+  EXPECT_EQ(-3, intRetVal);
+
+  intRetVal = test.GetEntry();
+  EXPECT_EQ(-3, intRetVal);
+
+  intRetVal = test.GetIndex();
+  EXPECT_EQ(-3,intRetVal);
+
+  floatRetVal = test.GetWeight();
+  EXPECT_FLOAT_EQ(-3., floatRetVal);
 
   test.AddWeight(-3);
-  EXPECT_EQ(-3, test.GetFile());
-  EXPECT_EQ(-3,test.GetEntry());
-  EXPECT_EQ(-3,test.GetIndex());
-  EXPECT_FLOAT_EQ(-6, test.GetWeight());
+  intRetVal = test.GetFile();
+  EXPECT_EQ(-3, intRetVal);
+
+  intRetVal = test.GetEntry();
+  EXPECT_EQ(-3, intRetVal);
+
+  intRetVal = test.GetIndex();
+  EXPECT_EQ(-3,intRetVal);
+
+  floatRetVal = test.GetWeight();
+  EXPECT_FLOAT_EQ(-6., floatRetVal);
 }
 
 TEST(_GTestCbmLink , ToString)
