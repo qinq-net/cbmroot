@@ -545,9 +545,11 @@ void CbmStsDigitize::ProcessMCEvent() {
   	// --- Discard secondaries if the respective flag is set
   	if ( ! fProcessSecondaries ) {
   		Int_t iTrack = point->GetTrackID();
-  		CbmMCTrack* track = (CbmMCTrack*) fTracks->At(iTrack);
-  		assert ( track );
-  		if ( track->GetMotherId() >= 0 ) continue;
+  		if ( iTrack >= 0 ) {  // MC track is present
+  			CbmMCTrack* track = (CbmMCTrack*) fTracks->At(iTrack);
+  			assert ( track );
+  			if ( track->GetMotherId() >= 0 ) continue;
+  		} //? MC track present
   	}
 
   	ProcessPoint(point, eventTime, link);
