@@ -605,6 +605,21 @@ struct LxTbBinnedFinder
             Ls[i] = stations[i].absorber.zCoord - Ls[i - 1];
 
         Ls[fNofStations] = stations[fLastStationNumber].z - Ls[fLastStationNumber];
+        
+        scaltype Ls1[fNofStations + 1];
+        scaltype Ls2[fNofStations + 1];
+        
+        Ls1[0] = 0;
+        Ls2[0] = stations[0].absorber.zCoord;
+        
+        for (int i = 1; i < fNofStations; ++i)
+        {
+            Ls1[i] = stations[i - 1].z - stations[i - 1].absorber.zCoord;
+            Ls2[i] = stations[i].absorber.zCoord - stations[i - 1].z;
+        }
+        
+        Ls1[fNofStations] = stations[fLastStationNumber].z - stations[fLastStationNumber].absorber.zCoord;
+        Ls2[fNofStations] = 0;
 
         for (int s = 1; s < fNofStations; ++s)
         {
@@ -614,20 +629,26 @@ struct LxTbBinnedFinder
             scaltype thetaXSq = 0;
             scaltype thetaYSq = 0;
 
-            for (int i = 1; i <= n; ++i)
+            for (int i = 1; i < n; ++i)
             {
                 scaltype sumLi = 0;
 
                 for (int j = 0; j < i; ++j)
                     sumLi += Ls[j];
 
-                thetaXSq += sumLi * sumLi * stations[s].deltaThetaX * stations[s].deltaThetaX;
-                thetaYSq += sumLi * sumLi * stations[s].deltaThetaY * stations[s].deltaThetaY;
+                thetaXSq += sumLi * sumLi * stations[i].deltaThetaX * stations[i].deltaThetaX;
+                thetaYSq += sumLi * sumLi * stations[i].deltaThetaY * stations[i].deltaThetaY;
             }
             
+            thetaXSq /= L * L;
+            thetaYSq /= L * L;
+            
+            thetaXSq += stations[s].deltaThetaX * stations[s].deltaThetaX * Ls2[n - 1] * Ls2[n - 1] / ((Ls2[n - 1] + Ls1[n]) * (Ls2[n - 1] + Ls1[n]));
+            thetaYSq += stations[s].deltaThetaY * stations[s].deltaThetaY * Ls2[n - 1] * Ls2[n - 1] / ((Ls2[n - 1] + Ls1[n]) * (Ls2[n - 1] + Ls1[n]));
+            
             scaltype deltaZ = stations[s].z - stations[s - 1].z;
-            station.dispX = deltaZ * sqrt(thetaXSq) / L;
-            station.dispY = deltaZ * sqrt(thetaYSq) / L;
+            station.dispX = deltaZ * sqrt(thetaXSq);
+            station.dispY = deltaZ * sqrt(thetaYSq);
         }
         
         if (fHasTrd)

@@ -343,6 +343,7 @@ void LxTBFinder::HandleGeometry()
 #ifdef LXTB_QA
 static list<timetype> shortSignalMCTimes;
 static list<timetype> longSignalMCTimes;
+static list<timetype> middleSignalMCTimes;
 static list<pair<timetype, timetype> > triggerTimes_trd0_sign0_dist0;
 static list<pair<timetype, timetype> > triggerTimes_trd0_sign0_dist1;
 static list<pair<timetype, timetype> > triggerTimes_trd0_sign1_dist0;
@@ -839,6 +840,9 @@ InitStatus LxTBFinder::Init()
             longSignalMCTimes.push_back((posTime + negTime) / 2);
             signalDistHisto->Fill(sqrt((posX - negX) * (posX - negX) + (posY - negY) * (posY - negY)));
          }
+         
+         if (hasLongPos || hasLongNeg)
+            middleSignalMCTimes.push_back((posTime + negTime) / 2);
       }
       
       ++evNum;
@@ -1491,6 +1495,12 @@ void LxTBFinder::Finish()
       v = (v - min_ts_time) * tCoeff;
    }
    
+   for (list<timetype>::iterator i = middleSignalMCTimes.begin(); i != middleSignalMCTimes.end(); ++i)
+   {
+      timetype& v = *i;
+      v = (v - min_ts_time) * tCoeff;
+   }
+   
    for (int i = 0; i < fFinder->nofTrackBins; ++i)
    {
       list<LxTbBinnedFinder::Chain*>& recoTracksBin = fFinder->recoTracks[i];
@@ -1636,6 +1646,7 @@ void LxTBFinder::Finish()
    
    cout << "Have: " << shortSignalMCTimes.size() << " short signaling events" << endl;
    cout << "Have: " << longSignalMCTimes.size() << " long signaling events" << endl;
+   cout << "Have: " << middleSignalMCTimes.size() << " middle signaling events" << endl;
    cout << "Have: " << currentEventN << " events" << endl;
    
    ofstream nofEventsFile("nof_events.txt", ios_base::out | ios_base::trunc);
@@ -1647,6 +1658,9 @@ void LxTBFinder::Finish()
    ofstream nofLongSignalsFile("nof_long_signals.txt", ios_base::out | ios_base::trunc);
    nofLongSignalsFile << longSignalMCTimes.size();
    
+   ofstream nofMiddleSignalsFile("nof_middle_signals.txt", ios_base::out | ios_base::trunc);
+   nofMiddleSignalsFile << middleSignalMCTimes.size();
+   
    PrintTrigger(triggerTimes_trd0_sign0_dist0, shortSignalMCTimes, "triggerTimes_trd0_sign0_dist0");
    PrintTrigger(triggerTimes_trd0_sign0_dist1, shortSignalMCTimes, "triggerTimes_trd0_sign0_dist1");
    PrintTrigger(triggerTimes_trd0_sign1_dist0, shortSignalMCTimes, "triggerTimes_trd0_sign1_dist0");
@@ -1655,10 +1669,10 @@ void LxTBFinder::Finish()
    PrintTrigger(triggerTimes_trd1_sign0_dist1, longSignalMCTimes, "triggerTimes_trd1_sign0_dist1");
    PrintTrigger(triggerTimes_trd1_sign1_dist0, longSignalMCTimes, "triggerTimes_trd1_sign1_dist0");
    PrintTrigger(triggerTimes_trd1_sign1_dist1, longSignalMCTimes, "triggerTimes_trd1_sign1_dist1", true);
-   PrintTrigger(triggerTimes_trd05_sign0_dist0, longSignalMCTimes, "triggerTimes_trd05_sign0_dist0");
-   PrintTrigger(triggerTimes_trd05_sign0_dist1, longSignalMCTimes, "triggerTimes_trd05_sign0_dist1");
-   PrintTrigger(triggerTimes_trd05_sign1_dist0, longSignalMCTimes, "triggerTimes_trd05_sign1_dist0");
-   PrintTrigger(triggerTimes_trd05_sign1_dist1, longSignalMCTimes, "triggerTimes_trd05_sign1_dist1");
+   PrintTrigger(triggerTimes_trd05_sign0_dist0, middleSignalMCTimes, "triggerTimes_trd05_sign0_dist0");
+   PrintTrigger(triggerTimes_trd05_sign0_dist1, middleSignalMCTimes, "triggerTimes_trd05_sign0_dist1");
+   PrintTrigger(triggerTimes_trd05_sign1_dist0, middleSignalMCTimes, "triggerTimes_trd05_sign1_dist0");
+   PrintTrigger(triggerTimes_trd05_sign1_dist1, middleSignalMCTimes, "triggerTimes_trd05_sign1_dist1");
    
    Int_t nofTriggerDigis = 0;
    

@@ -394,8 +394,8 @@ struct LxTbDetector
             for (int j = 0; j < i; ++j)
                sumLi += Ls[j];
             
-            thetaXSq += sumLi * sumLi * fStations[s].fDeltaThetaX * fStations[s].fDeltaThetaX;
-            thetaYSq += sumLi * sumLi * fStations[s].fDeltaThetaY * fStations[s].fDeltaThetaY;
+            thetaXSq += sumLi * sumLi * fStations[i].fDeltaThetaX * fStations[i].fDeltaThetaX;
+            thetaYSq += sumLi * sumLi * fStations[i].fDeltaThetaY * fStations[i].fDeltaThetaY;
          }
               
          station.fThetaX = sqrt(thetaXSq) / L;
