@@ -252,7 +252,7 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	Int_t maxADC(-256), maxTB(-1);
 	for (auto x : mp->samples()) {
 	  sample_values[counter1] = x;
-	  if (x > maxADC){
+	  if (x >= maxADC){
 	    maxADC = x;
 	    maxTB = counter1;
 	  }
@@ -261,11 +261,13 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	if (GetSpadicID(address) > 2 || GetSyscoreID(link) > 3){
 	  printf("link:%i SysCoreID:%i address:%i SpadicID:%i array:%i\n",link,GetSyscoreID(link),address,GetSpadicID(address),GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address));
 	} else {
-	  cName.Form("SysCore_%i_Spadic_%i",GetSyscoreID(link),GetSpadicID(address));     
-	  //h = (TH2I*)fHM->H2(TString("Baseline_"+cName).Data());
-	  //h->Fill(sample_values[0],groupId*16+channel);
-	  fBaseline[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(sample_values[0],groupId*16+channel);	  
-	  fmaxADCmaxTimeBin[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(maxTB,maxADC);
+	  if (triggerType == 1 && stopType == 0){
+	    cName.Form("SysCore_%i_Spadic_%i",GetSyscoreID(link),GetSpadicID(address));     
+	    //h = (TH2I*)fHM->H2(TString("Baseline_"+cName).Data());
+	    //h->Fill(sample_values[0],groupId*16+channel);
+	    fBaseline[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(sample_values[0],groupId*16+channel);	  
+	    fmaxADCmaxTimeBin[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(maxTB,maxADC);
+	  }
 	}
 	//}
 	new( (*fSpadicRaw)[fSpadicRaw->GetEntriesFast()] )
