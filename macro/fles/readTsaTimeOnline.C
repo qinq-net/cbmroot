@@ -9,13 +9,14 @@
  */
 
 
-void readTsaTimeOnline(TString inFile = 
+
+void readTsaTimeOnline()   //TString inFile =
 	      //"data/98_ba2015.tsa"
 	      //"data/129_ba2015.tsa"
-	      "data/22_sps2016.tsa"
+		       //	      "data/22_sps2016.tsa"
 	      //"data/1076_cern2014.tsa"
 	      //"data/test.tsa"
-)
+		       //	      )
 {
 
   // --- Specify input file name (this is just an example)
@@ -27,8 +28,7 @@ void readTsaTimeOnline(TString inFile =
   Int_t nEvents = -1;
 
   // --- Specify output file name (this is just an example)
-  TString outFile = inFile;//"data/test_online.root";
-  outFile.ReplaceAll(".tsa",".root");
+  TString outFile = "/sps/cern2016/online.root";
   // --- Set log output levels
   FairLogger::GetLogger()->SetLogScreenLevel("INFO");
   FairLogger::GetLogger()->SetLogVerbosityLevel("LOW");
@@ -49,27 +49,16 @@ void readTsaTimeOnline(TString inFile =
   // Spadic Unpacker
   CbmTSUnpackSpadic11OnlineMonitor* spadic_unpacker = new CbmTSUnpackSpadic11OnlineMonitor();
 
-  // NXyter Unpacker
-  CbmTSUnpackNxyter* nxyter_unpacker = new CbmTSUnpackNxyter();
-
-  CbmTSUnpackTrb* trb_unpacker = new CbmTSUnpackTrb();
-
   // --- Source task
   CbmFlibFileSourceNew* source = new CbmFlibFileSourceNew();
-  //source->SetHostName("cbmflib01");
-  source->SetFileName(inFile);
+
   //source->AddFile(inFile1);
-  source->AddUnpacker(trb_unpacker, 0xE0);// RICH + REF
-  //source->AddUnpacker(nxyter_unpacker, 0x10);//fhodo or cherenkov or pb glass???
-  source->AddUnpacker(nxyter_unpacker, 0xE1);//HODO 1 + 2
-  source->AddUnpacker(spadic_unpacker, 0x40);// test beam 2014
-  //source->AddUnpacker(spadic_unpacker, 0xE0);  // Lab münster
-  // --- Event header
-  //  FairEventHeader* event = new CbmTbEvent();
-  //  event->SetRunId(260);
+  source->AddUnpacker(spadic_unpacker, 0x40);
+  source->SetHostName("flip00");
 
   // --- Run
   FairRunOnline *run = new FairRunOnline(source);
+  run->SetSource(source);
   run->SetOutputFile(outFile);
   run->ActivateHttpServer(100);
   run->SetAutoFinish(kFALSE);
