@@ -690,6 +690,7 @@ void CbmTrdTimeCorrel::Finish()
   */
   //Buffer (map) or multi SPADIC data streams based analyis have to be done here!!
 
+  /*
   std::vector<TH2*> TH2vector = fHM->H2Vector(".*");
   for (std::vector<TH2*>::iterator it = TH2vector.begin() ; it != TH2vector.end(); ++it){
     LOG(INFO) << (*it)->GetTitle() << FairLogger::endl;
@@ -728,7 +729,7 @@ void CbmTrdTimeCorrel::Finish()
 	Canvasdir->cd ();
 	fBaselineMon->Write ();
 	FairRootManager::Instance ()->GetOutFile ()->cd ();
-
+  */
 {	  vector<TH2*> HitFrequencies = fHM->H2Vector("Clusterfrequency.*");
 	for (auto h : HitFrequencies){
 		h->Sumw2();
