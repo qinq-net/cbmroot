@@ -38,7 +38,8 @@ CbmTSUnpackSpadic11OnlineMonitor::CbmTSUnpackSpadic11OnlineMonitor()
     fSuperEpochArray(),
     fEpochMarker(0),
     fSuperEpoch(0),
-    fLastSuperEpoch({0}),
+    fLastSuperEpochA({0}),
+    fLastSuperEpochB({0}),
     fcB(NULL),
     fcM(NULL),
     fcH(NULL),
@@ -57,7 +58,8 @@ CbmTSUnpackSpadic11OnlineMonitor::CbmTSUnpackSpadic11OnlineMonitor()
     fStrange({NULL}),
     fInfo({NULL}),
     fTSGraph({NULL}),
-    fHitTime({NULL}),
+    fHitTimeA({NULL}),
+    fHitTimeB({NULL}),
     fHM(new CbmHistManager()),
     fNrExtraneousSamples{0}
 {
@@ -282,13 +284,24 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	  groupId = 0;
 	}
 	fHit[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(channel,groupId,1);
-	fHitTime[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(/*fHitTime[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->GetXaxis()->GetNbins()*/0);
-	if(fLastSuperEpoch[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)] < fSuperEpoch){
-	  fLastSuperEpoch[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)] = fSuperEpoch;
-	  for (Int_t i = 1; i < fHitTime[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->GetXaxis()->GetNbins(); i++){
-	    fHitTime[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->SetBinContent(i, fHitTime[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->GetBinContent(i+1));
+	if (groupId == 0){
+	  fHitTimeA[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(0);
+	  if(fLastSuperEpochA[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)] < fSuperEpoch){
+	    fLastSuperEpochA[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)] = fSuperEpoch;
+	    for (Int_t i = 1; i < fHitTimeA[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->GetXaxis()->GetNbins(); i++){
+	      fHitTimeA[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->SetBinContent(i, fHitTimeA[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->GetBinContent(i+1));
+	    }
+	    fHitTimeA[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->SetBinContent(fHitTimeA[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->GetXaxis()->GetNbins(),0);
 	  }
-	  fHitTime[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->SetBinContent(fHitTime[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->GetXaxis()->GetNbins(),0);
+	}else{
+	  fHitTimeB[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(0);	
+	  if(fLastSuperEpochB[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)] < fSuperEpoch){
+	    fLastSuperEpochB[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)] = fSuperEpoch;
+	    for (Int_t i = 1; i < fHitTimeB[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->GetXaxis()->GetNbins(); i++){
+	      fHitTimeB[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->SetBinContent(i, fHitTimeB[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->GetBinContent(i+1));
+	    }
+	    fHitTimeB[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->SetBinContent(fHitTimeB[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->GetXaxis()->GetNbins(),0);
+	  }
 	}
 	/*
 	  fTSGraph[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->SetPoint(fTSGraph[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->GetN(),fTSGraph[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->GetN(),//fSpadicRaw[fSpadicRaw->GetEntriesFast()]->GetFullTime()/1.5E7
@@ -555,8 +568,11 @@ void CbmTSUnpackSpadic11OnlineMonitor::InitHistos()
       //fHM->Add(TString("HitTime_"+histName).Data(),fTSGraph[(iLink)*(NrOfSpadics)+iAddress]);
       //fTSGraph[(iLink)*(NrOfSpadics)+iAddress]->SetNameTitle(TString("HitTime_"+histName).Data(),TString("HitTime_"+histName).Data());
       //fTSGraph[(iLink)*(NrOfSpadics)+iAddress]->GetXaxis()->SetTitle("Timeslice");
-      fHM->Add(TString("HitTime_"+histName).Data(),new TH1I (TString("HitTime_"+histName).Data(),TString("HitTime_"+histName).Data(),300,-299.5,0.5));
-      fHitTime[(iLink)*(NrOfSpadics)+iAddress]=(TH1I*)fHM->H1(TString("HitTime_"+histName).Data()); 
+      fHM->Add(TString("HitTimeA_"+histName).Data(),new TH1I (TString("HitTimeA_"+histName).Data(),TString("HitTimeA_"+histName).Data(),300,-299.5,0.5));
+      fHitTimeA[(iLink)*(NrOfSpadics)+iAddress]=(TH1I*)fHM->H1(TString("HitTimeA_"+histName).Data());
+      fHM->Add(TString("HitTimeB_"+histName).Data(),new TH1I (TString("HitTimeB_"+histName).Data(),TString("HitTimeB_"+histName).Data(),300,-299.5,0.5));
+      fHitTimeB[(iLink)*(NrOfSpadics)+iAddress]=(TH1I*)fHM->H1(TString("HitTimeB_"+histName).Data());
+      fHitTimeB[(iLink)*(NrOfSpadics)+iAddress]->SetLineColor(2);
     }
   }
 }
@@ -612,7 +628,8 @@ void CbmTSUnpackSpadic11OnlineMonitor::InitCanvas()
       fcI->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz(0);
       fInfo[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
       fcTS->cd((iLink)*(NrOfSpadics)+iAddress+1);
-      fHitTime[(iLink)*(NrOfSpadics)+iAddress]->Draw("");
+      fHitTimeA[(iLink)*(NrOfSpadics)+iAddress]->Draw("");
+      fHitTimeB[(iLink)*(NrOfSpadics)+iAddress]->Draw("same");
       //fTSGraph[(iLink)*(NrOfSpadics)+iAddress]->Draw("ALP");
     }
   }
