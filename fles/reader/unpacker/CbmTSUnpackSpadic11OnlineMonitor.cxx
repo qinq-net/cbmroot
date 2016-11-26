@@ -185,6 +185,13 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 			      bufferOverflowCounter, samples, sample_values,
 			      isHit, isInfo, isEpoch, isEpochOutOfSync, isHitAborted, isOverflow, isStrange);
 	delete[] sample_values;
+	channel = GetChannelOnPadPlane(channel,groupId);
+	if (channel > 15){
+	  channel-= 16;
+	  groupId = 1;
+	} else {
+	  groupId = 0;
+	}
 	fLost[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(channel,groupId,bufferOverflowCounter);
       }
       else if ( mp->is_info() ){
@@ -208,6 +215,14 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 			      bufferOverflowCounter, samples, sample_values,
 			      isHit, isInfo, isEpoch, isEpochOutOfSync, isHitAborted, isOverflow, isStrange);
 	delete[] sample_values;
+	
+	channel = GetChannelOnPadPlane(channel,groupId);
+	if (channel > 15){
+	  channel-= 16;
+	  groupId = 1;
+	} else {
+	  groupId = 0;
+	}
 	fInfo[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(channel,groupId,1);
       }
       else if ( mp->is_hit() ) { 
@@ -253,7 +268,14 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 			      bufferOverflowCounter, samples, sample_values,
 			      isHit, isInfo, isEpoch, isEpochOutOfSync, isHitAborted, isOverflow, isStrange);
 	//++counter;
-	delete[] sample_values;
+	delete[] sample_values;	
+	channel = GetChannelOnPadPlane(channel,groupId);
+	if (channel > 15){
+	  channel-= 16;
+	  groupId = 1;
+	} else {
+	  groupId = 0;
+	}
 	fHit[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(channel,groupId,1);
       } 
       else if ( mp->is_hit_aborted()) {
@@ -408,6 +430,19 @@ void CbmTSUnpackSpadic11OnlineMonitor::FillEpochInfo(Int_t link, Int_t addr, Int
     }
   
   }
+Int_t CbmTSUnpackSpadic11OnlineMonitor::GetChannelOnPadPlane(Int_t SpadicChannel, Int_t groupId)
+{
+  SpadicChannel = groupId * 16 + SpadicChannel;
+  Int_t channelMapping[32] = {31,15,30,14,29,13,28,12,27,11,26,10,25, 9,24, 8,
+			      23, 7,22, 6,21, 5,20, 4,19, 3,18, 2,17, 1,16, 0};
+  if (SpadicChannel < 0 || SpadicChannel > 31){
+    if (SpadicChannel !=-1) LOG(ERROR) << "CbmTrdTimeCorrel::GetChannelOnPadPlane ChId " << SpadicChannel << FairLogger::endl;
+    return -1;
+  } else {
+    return channelMapping[SpadicChannel];
+  }
+}
+
 Int_t CbmTSUnpackSpadic11OnlineMonitor::GetSpadicID(Int_t address)
 {
   //TString spadic="";
@@ -483,17 +518,17 @@ void CbmTSUnpackSpadic11OnlineMonitor::InitHistos()
       fBaseline[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("Baseline_"+histName).Data());
       fHM->Add(TString("maxADC_vs_maxTimeBin_"+histName).Data(),new TH2I (TString("maxADC_vs_maxTimeBin_"+histName).Data(),TString("maxADC_vs_maxTimeBin_"+histName).Data(),33,-0.5,32.5, 512,-256.5,255.5));
       fmaxADCmaxTimeBin[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("maxADC_vs_maxTimeBin_"+histName).Data());
-      fHM->Add(TString("Hit_"+histName).Data(),new TH2I (TString("Hit_"+histName).Data(),TString("Hit_"+histName).Data(),16,-0.5,-15.5,2,-0.5,1.5));
+      fHM->Add(TString("Hit_"+histName).Data(),new TH2I (TString("Hit_"+histName).Data(),TString("Hit_"+histName).Data(),16,-0.5,15.5,2,-0.5,1.5));
       fHit[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("Hit_"+histName).Data());
-      fHM->Add(TString("Lost_"+histName).Data(),new TH2I (TString("Lost_"+histName).Data(),TString("Lost_"+histName).Data(),16,-0.5,-15.5,2,-0.5,1.5));
+      fHM->Add(TString("Lost_"+histName).Data(),new TH2I (TString("Lost_"+histName).Data(),TString("Lost_"+histName).Data(),16,-0.5,15.5,2,-0.5,1.5));
       fLost[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("Lost_"+histName).Data());
-      fHM->Add(TString("Epoch_"+histName).Data(),new TH2I (TString("Epoch_"+histName).Data(),TString("Epoch_"+histName).Data(),16,-0.5,-15.5,2,-0.5,1.5));
+      fHM->Add(TString("Epoch_"+histName).Data(),new TH2I (TString("Epoch_"+histName).Data(),TString("Epoch_"+histName).Data(),16,-0.5,15.5,2,-0.5,1.5));
       fEpoch[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("Epoch_"+histName).Data());
-      fHM->Add(TString("OutOfSync_"+histName).Data(),new TH2I (TString("OutOfSync_"+histName).Data(),TString("OutOfSync_"+histName).Data(),16,-0.5,-15.5,2,-0.5,1.5));
+      fHM->Add(TString("OutOfSync_"+histName).Data(),new TH2I (TString("OutOfSync_"+histName).Data(),TString("OutOfSync_"+histName).Data(),16,-0.5,15.5,2,-0.5,1.5));
       fOutOfSync[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("OutOfSync_"+histName).Data());
-      fHM->Add(TString("Strange_"+histName).Data(),new TH2I (TString("Strange_"+histName).Data(),TString("Strange_"+histName).Data(),16,-0.5,-15.5,2,-0.5,1.5));
+      fHM->Add(TString("Strange_"+histName).Data(),new TH2I (TString("Strange_"+histName).Data(),TString("Strange_"+histName).Data(),16,-0.5,15.5,2,-0.5,1.5));
       fStrange[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("Strange_"+histName).Data());
-      fHM->Add(TString("Info_"+histName).Data(),new TH2I (TString("Info_"+histName).Data(),TString("Info_"+histName).Data(),16,-0.5,-15.5,2,-0.5,1.5));
+      fHM->Add(TString("Info_"+histName).Data(),new TH2I (TString("Info_"+histName).Data(),TString("Info_"+histName).Data(),16,-0.5,15.5,2,-0.5,1.5));
       fInfo[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("Info_"+histName).Data());
     }
   }

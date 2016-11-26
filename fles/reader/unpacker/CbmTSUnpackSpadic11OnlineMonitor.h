@@ -56,7 +56,7 @@ class CbmTSUnpackSpadic11OnlineMonitor : public CbmTSUnpack
   static Int_t   GetSpadicID(Int_t address);
   static Int_t   GetSyscoreID(Int_t link);
   inline TString GetSpadicName(Int_t link,Int_t address);
-  
+  Int_t GetChannelOnPadPlane(Int_t SpadicChannel, Int_t groupId);
   Int_t fEpochMarker;
   Int_t fSuperEpoch;
   Int_t fNrExtraneousSamples;
