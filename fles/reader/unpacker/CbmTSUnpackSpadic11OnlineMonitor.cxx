@@ -22,6 +22,10 @@
 #include "TH3.h"
 #include "TMultiGraph.h"
 
+#include "FairRun.h"
+#include "FairRunOnline.h"
+#include "THttpServer.h"
+
 #include <iostream>
 #include <map>
 #include <vector>
@@ -450,6 +454,9 @@ inline TString CbmTSUnpackSpadic11OnlineMonitor::GetSpadicName(Int_t link,Int_t 
 }
 void CbmTSUnpackSpadic11OnlineMonitor::InitHistos()
 {
+#ifdef USE_HTTP_SERVER
+  THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
+#endif
   //cout << "InitHistos" << endl;
   TString histName;
   for (Int_t iLink = 0; iLink < NrOfSyscores; iLink++){
@@ -475,23 +482,24 @@ void CbmTSUnpackSpadic11OnlineMonitor::InitCanvas()
   for (Int_t iLink = 0; iLink < NrOfSyscores; iLink++){
     for (Int_t iAddress = 0; iAddress < NrOfSpadics; iAddress++){
       cName.Form("SysCore_%i_Spadic_%i",iLink,iAddress);      
-      fcB->cd((iLink)*(NrOfSpadics)+iAddress+1);
-      fBaseline[(iLink)*(NrOfSpadics)+iAddress]->DrawCopy("colz");
+      fcB->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz();
+      fBaseline[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
       //h = (TH2I*)fHM->H2(TString("Baseline_"+cName).Data());
-      //h->DrawCopy("colz");
+      //h->Draw("colz");
       fcB->cd((iLink+1)*(NrOfSpadics)+iAddress)->Update();
       
       cName.Form("SysCore_%i_Spadic_%i",iLink,iAddress);
-      fcM->cd((iLink)*(NrOfSpadics)+iAddress+1);
-      fmaxADCmaxTimeBin[(iLink)*(NrOfSpadics)+iAddress]->DrawCopy("colz");
+      fcM->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz();
+      fmaxADCmaxTimeBin[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
       //h = (TH2I*)fHM->H2(TString("maxADC_vs_maxTimeBin_"+cName).Data());
-      //h->DrawCopy("colz");
+      //h->Draw("colz");
       fcM->cd((iLink)*(NrOfSpadics)+iAddress+1)->Update();
     }
   }
 }
 void CbmTSUnpackSpadic11OnlineMonitor::UpdateCanvas()
 {
+  /*
   //cout << "UpdateCanvas" << endl;
   TH2I* h = NULL;
   TString cName;
@@ -499,18 +507,19 @@ void CbmTSUnpackSpadic11OnlineMonitor::UpdateCanvas()
     for (Int_t iAddress = 0; iAddress < NrOfSpadics; iAddress++){
       cName.Form("SysCore_%i_Spadic_%i",iLink,iAddress);
       fcB->cd((iLink)*(NrOfSpadics)+iAddress+1);
-      fBaseline[(iLink)*(NrOfSpadics)+iAddress]->DrawCopy("colz");
+      fBaseline[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
       //h = (TH2I*)fHM->H2(TString("Baseline_"+cName).Data());
-      //h->DrawCopy("colz");
-      fcB->cd((iLink)*(NrOfSpadics)+iAddress+1)->Update();
+      //h->Draw("colz");
+      //fcB->cd((iLink)*(NrOfSpadics)+iAddress+1)->Update();
       cName.Form("SysCore_%i_Spadic_%i",iLink,iAddress);
       fcM->cd((iLink)*(NrOfSpadics)+iAddress+1);
-      fmaxADCmaxTimeBin[(iLink)*(NrOfSpadics)+iAddress]->DrawCopy("colz");
+      fmaxADCmaxTimeBin[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
       //h = (TH2I*)fHM->H2(TString("maxADC_vs_maxTimeBin_"+cName).Data());
-      //h->DrawCopy("colz");
-      fcM->cd((iLink)*(NrOfSpadics)+iAddress+1)->Update();
+      //h->Draw("colz");
+      //fcM->cd((iLink)*(NrOfSpadics)+iAddress+1)->Update();
     }
   }
+  */
 }
   void CbmTSUnpackSpadic11OnlineMonitor::Reset()
   {
