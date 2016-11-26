@@ -452,12 +452,12 @@ void CbmTSUnpackSpadic11OnlineMonitor::FillEpochInfo(Int_t link, Int_t addr, Int
   }
 Int_t CbmTSUnpackSpadic11OnlineMonitor::GetChannelOnPadPlane(Int_t SpadicChannel, Int_t groupId)
 {
-  if(SpadicChannel > 31 || groupId > 1) LOG(ERROR) << "CbmTSUnpackSpadic11OnlineMonitor::                     ChId " << SpadicChannel << "  GroupId: " << groupId << FairLogger::endl;
+  if(SpadicChannel > 31 || groupId > 1) LOG(DEBUG) << "CbmTSUnpackSpadic11OnlineMonitor::                     ChId " << SpadicChannel << "  GroupId: " << groupId << FairLogger::endl;
   SpadicChannel = groupId * 16 + SpadicChannel;
   Int_t channelMapping[32] = {31,15,30,14,29,13,28,12,27,11,26,10,25, 9,24, 8,
 			      23, 7,22, 6,21, 5,20, 4,19, 3,18, 2,17, 1,16, 0};
   if (SpadicChannel < 0 || SpadicChannel > 31){
-    if (SpadicChannel !=-1) LOG(ERROR) << "CbmTSUnpackSpadic11OnlineMonitor::GetChannelOnPadPlane ChId " << SpadicChannel << "  GroupId: " << groupId << FairLogger::endl;
+    if (SpadicChannel !=-1) LOG(DEBUG) << "CbmTSUnpackSpadic11OnlineMonitor::GetChannelOnPadPlane ChId " << SpadicChannel << "  GroupId: " << groupId << FairLogger::endl;
     return -1;
   } else {
     return channelMapping[SpadicChannel];
