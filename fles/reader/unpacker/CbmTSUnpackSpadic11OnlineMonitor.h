@@ -71,6 +71,7 @@ class CbmTSUnpackSpadic11OnlineMonitor : public CbmTSUnpack
   TCanvas* fcO;
   TCanvas* fcS;
   TCanvas* fcI;
+  TCanvas* fcTS;
   void InitHistos();
   void InitCanvas();
   void UpdateCanvas();
@@ -82,6 +83,10 @@ class CbmTSUnpackSpadic11OnlineMonitor : public CbmTSUnpack
   TH2I* fOutOfSync[(NrOfSyscores)*(NrOfSpadics)];
   TH2I* fStrange[(NrOfSyscores)*(NrOfSpadics)];
   TH2I* fInfo[(NrOfSyscores)*(NrOfSpadics)];
+  TH1I* fHitTime[(NrOfSyscores)*(NrOfSpadics)];
+  TGraph* fTSGraph[(NrOfSyscores)*(NrOfSpadics)];
+  Int_t fLastSuperEpoch[(NrOfSyscores)*(NrOfSpadics)];
+  //Int_t fSumHitMessages[(NrOfSyscores)*(NrOfSpadics)];
   CbmTSUnpackSpadic11OnlineMonitor(const CbmTSUnpackSpadic11OnlineMonitor&);
   CbmTSUnpackSpadic11OnlineMonitor operator=(const CbmTSUnpackSpadic11OnlineMonitor&);
 

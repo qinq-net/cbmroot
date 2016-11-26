@@ -38,6 +38,7 @@ CbmTSUnpackSpadic11OnlineMonitor::CbmTSUnpackSpadic11OnlineMonitor()
     fSuperEpochArray(),
     fEpochMarker(0),
     fSuperEpoch(0),
+    fLastSuperEpoch({0}),
     fcB(NULL),
     fcM(NULL),
     fcH(NULL),
@@ -46,6 +47,7 @@ CbmTSUnpackSpadic11OnlineMonitor::CbmTSUnpackSpadic11OnlineMonitor()
     fcO(NULL),
     fcS(NULL),
     fcI(NULL),
+    fcTS(NULL),
     fBaseline({NULL}),
     fmaxADCmaxTimeBin({NULL}),
     fHit({NULL}),
@@ -54,6 +56,8 @@ CbmTSUnpackSpadic11OnlineMonitor::CbmTSUnpackSpadic11OnlineMonitor()
     fOutOfSync({NULL}),
     fStrange({NULL}),
     fInfo({NULL}),
+    fTSGraph({NULL}),
+    fHitTime({NULL}),
     fHM(new CbmHistManager()),
     fNrExtraneousSamples{0}
 {
@@ -277,6 +281,21 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	  groupId = 0;
 	}
 	fHit[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(channel,groupId,1);
+	fHitTime[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(/*fHitTime[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->GetXaxis()->GetNbins()*/0);
+	if(fLastSuperEpoch[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)] < fSuperEpoch){
+	  fLastSuperEpoch[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)] = fSuperEpoch;
+	  for (Int_t i = 1; i < fHitTime[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->GetXaxis()->GetNbins(); i++){
+	    fHitTime[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->SetBinContent(i, fHitTime[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->GetBinContent(i+1));
+	  }
+	  fHitTime[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->SetBinContent(fHitTime[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->GetXaxis()->GetNbins(),0);
+	}
+	/*
+	  fTSGraph[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->SetPoint(fTSGraph[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->GetN(),fTSGraph[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->GetN(),//fSpadicRaw[fSpadicRaw->GetEntriesFast()]->GetFullTime()/1.5E7
+	  ( static_cast<ULong_t>(fSuperEpoch) << 24) | 
+	  ( static_cast<ULong_t>(fEpochMarker) << 12) | 
+	  ( time & 0xfff )
+	  );
+	*/
       } 
       else if ( mp->is_hit_aborted()) {
 	LOG(DEBUG) <<  counter << " This is a hit message was aborted" << FairLogger::endl; 
@@ -514,9 +533,9 @@ void CbmTSUnpackSpadic11OnlineMonitor::InitHistos()
   for (Int_t iLink = 0; iLink < NrOfSyscores; iLink++){
     for (Int_t iAddress = 0; iAddress < NrOfSpadics; iAddress++){
       histName.Form("SysCore_%i_Spadic_%i",iLink,iAddress);
-      fHM->Add(TString("Baseline_"+histName).Data(),new TH2I (TString("Baseline_"+histName).Data(),TString("Baseline_"+histName).Data(), 512,-256.5,255.5,33,-0.5,32.5));
+      fHM->Add(TString("Baseline_"+histName).Data(),new TH2I (TString("Baseline_"+histName).Data(),TString("Baseline_"+histName).Data(), 256,-256.5,255.5,33,-0.5,32.5));
       fBaseline[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("Baseline_"+histName).Data());
-      fHM->Add(TString("maxADC_vs_maxTimeBin_"+histName).Data(),new TH2I (TString("maxADC_vs_maxTimeBin_"+histName).Data(),TString("maxADC_vs_maxTimeBin_"+histName).Data(),33,-0.5,32.5, 512,-256.5,255.5));
+      fHM->Add(TString("maxADC_vs_maxTimeBin_"+histName).Data(),new TH2I (TString("maxADC_vs_maxTimeBin_"+histName).Data(),TString("maxADC_vs_maxTimeBin_"+histName).Data(),33,-0.5,32.5, 256,-256.5,255.5));
       fmaxADCmaxTimeBin[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("maxADC_vs_maxTimeBin_"+histName).Data());
       fHM->Add(TString("Hit_"+histName).Data(),new TH2I (TString("Hit_"+histName).Data(),TString("Hit_"+histName).Data(),16,-0.5,15.5,2,-0.5,1.5));
       fHit[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("Hit_"+histName).Data());
@@ -529,7 +548,13 @@ void CbmTSUnpackSpadic11OnlineMonitor::InitHistos()
       fHM->Add(TString("Strange_"+histName).Data(),new TH2I (TString("Strange_"+histName).Data(),TString("Strange_"+histName).Data(),16,-0.5,15.5,2,-0.5,1.5));
       fStrange[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("Strange_"+histName).Data());
       fHM->Add(TString("Info_"+histName).Data(),new TH2I (TString("Info_"+histName).Data(),TString("Info_"+histName).Data(),16,-0.5,15.5,2,-0.5,1.5));
-      fInfo[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("Info_"+histName).Data());
+      fInfo[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("Info_"+histName).Data());      				 
+      fTSGraph[(iLink)*(NrOfSpadics)+iAddress] = new TGraph();
+      //fHM->Add(TString("HitTime_"+histName).Data(),fTSGraph[(iLink)*(NrOfSpadics)+iAddress]);
+      //fTSGraph[(iLink)*(NrOfSpadics)+iAddress]->SetNameTitle(TString("HitTime_"+histName).Data(),TString("HitTime_"+histName).Data());
+      //fTSGraph[(iLink)*(NrOfSpadics)+iAddress]->GetXaxis()->SetTitle("Timeslice");
+      fHM->Add(TString("HitTime_"+histName).Data(),new TH1I (TString("HitTime_"+histName).Data(),TString("HitTime_"+histName).Data(),120,-119.5,0.5));
+      fHitTime[(iLink)*(NrOfSpadics)+iAddress]=(TH1I*)fHM->H1(TString("HitTime_"+histName).Data()); 
     }
   }
 }
@@ -555,6 +580,8 @@ void CbmTSUnpackSpadic11OnlineMonitor::InitCanvas()
   fcS->Divide(3,4);
   fcI= new TCanvas(TString("InfoMap").Data(),TString("InfoMap").Data(),1600,1200);
   fcI->Divide(3,4);
+  fcTS= new TCanvas(TString("TSGraph").Data(),TString("TSGraph").Data(),1600,1200);
+  fcTS->Divide(3,4);
   for (Int_t iLink = 0; iLink < NrOfSyscores; iLink++){
     for (Int_t iAddress = 0; iAddress < NrOfSpadics; iAddress++){
       cName.Form("SysCore_%i_Spadic_%i",iLink,iAddress);      
@@ -582,6 +609,9 @@ void CbmTSUnpackSpadic11OnlineMonitor::InitCanvas()
       fStrange[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
       fcI->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz(0);
       fInfo[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
+      fcTS->cd((iLink)*(NrOfSpadics)+iAddress+1);
+      fHitTime[(iLink)*(NrOfSpadics)+iAddress]->Draw("");
+      //fTSGraph[(iLink)*(NrOfSpadics)+iAddress]->Draw("ALP");
     }
   }
 }
