@@ -63,10 +63,13 @@ class CbmTSUnpackSpadic11OnlineMonitor : public CbmTSUnpack
   void GetEpochInfo(Int_t link, Int_t addr);
   void FillEpochInfo(Int_t link, Int_t addr, Int_t epoch_count);
   CbmHistManager* fHM;
-  TCanvas* fc[2];
+  TCanvas* fcB;
+  TCanvas* fcM;//[(iLink)*(NrOfHalfSpadics/2)];
   void InitHistos();
   void InitCanvas();
-   void UpdateCanvas();
+  void UpdateCanvas();
+  TH2I* fBaseline[(NrOfSyscores)*(NrOfSpadics)];
+  TH2I* fmaxADCmaxTimeBin[(NrOfSyscores)*(NrOfSpadics)];
   CbmTSUnpackSpadic11OnlineMonitor(const CbmTSUnpackSpadic11OnlineMonitor&);
   CbmTSUnpackSpadic11OnlineMonitor operator=(const CbmTSUnpackSpadic11OnlineMonitor&);
 

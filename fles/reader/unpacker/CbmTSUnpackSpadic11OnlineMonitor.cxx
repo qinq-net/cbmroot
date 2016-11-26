@@ -34,7 +34,10 @@ CbmTSUnpackSpadic11OnlineMonitor::CbmTSUnpackSpadic11OnlineMonitor()
     fSuperEpochArray(),
     fEpochMarker(0),
     fSuperEpoch(0),
-    fc({NULL}),
+    fcB(NULL),
+    fcM(NULL),
+    fBaseline({NULL}),
+    fmaxADCmaxTimeBin({NULL}),
     fHM(new CbmHistManager()),
     fNrExtraneousSamples{0}
 {
@@ -72,7 +75,8 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
   // compare to: https://github.com/spadic/spadic10-software/blob/master/lib/message/message.h
   // or fles/spadic/message/wrap/cpp/message.cpp
   LOG(DEBUG) << "Unpacking Spadic Data" << FairLogger::endl; 
-
+  TH2I* h = NULL;
+  TString cName;
   spadic::TimesliceReader r;
   Int_t counter=0;
 
@@ -198,15 +202,29 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	Int_t bufferOverflowCounter = 0;
 	Int_t samples = mp->samples().size();
 	if(samples>32) {
-	    fNrExtraneousSamples++;
-	    samples=32; //Suppress extraneous Samples, which cannot (!) occur in Raw Data Stream.
+	  fNrExtraneousSamples++;
+	  samples=32; //Suppress extraneous Samples, which cannot (!) occur in Raw Data Stream.
 	}
 	Int_t* sample_values =  new Int_t[samples];
 	Int_t channel = mp->channel_id();
 	Int_t counter1=0;
+	Int_t maxADC(-256), maxTB(-1);
 	for (auto x : mp->samples()) {
 	  sample_values[counter1] = x;
+	  if (x > maxADC){
+	    maxADC = x;
+	    maxTB = counter1;
+	  }
 	  ++counter1;
+	}
+	if (GetSpadicID(address) > 2 || GetSyscoreID(link) > 3){
+	  printf("link:%i SysCoreID:%i address:%i SpadicID:%i array:%i\n",link,GetSyscoreID(link),address,GetSpadicID(address),GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address));
+	} else {
+	  cName.Form("SysCore_%i_Spadic_%i",GetSyscoreID(link),GetSpadicID(address));     
+	  //h = (TH2I*)fHM->H2(TString("Baseline_"+cName).Data());
+	  //h->Fill(sample_values[0],groupId*16+channel);
+	  fBaseline[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(sample_values[0],groupId*16+channel);	  
+	  fmaxADCmaxTimeBin[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(maxTB,maxADC);
 	}
 	//}
 	new( (*fSpadicRaw)[fSpadicRaw->GetEntriesFast()] )
@@ -224,7 +242,7 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	Int_t triggerType = -1;
 	Int_t stopType = -1;
 	Int_t time = mp->timestamp();
-        Int_t infoType = -1;
+	Int_t infoType = -1;
 	Int_t groupId = -1;//mp->group_id();//???
 	Int_t bufferOverflowCounter = 0;
 	Int_t samples = 1;
@@ -248,7 +266,7 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	Int_t triggerType = -1;
 	Int_t stopType = -1;
 	Int_t time = -1;//mp->timestamp();
-        Int_t infoType = -1;
+	Int_t infoType = -1;
 	Int_t groupId = -1;//mp->group_id();
 	Int_t bufferOverflowCounter = 0;
 	Int_t samples = 1;
@@ -285,6 +303,8 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
       }
     }
   }
+  if (fSuperEpoch%1000 == 0)
+    UpdateCanvas();
   return kTRUE;
 }
 
@@ -378,23 +398,23 @@ Int_t CbmTSUnpackSpadic11OnlineMonitor::GetSpadicID(Int_t address)
     break;
   case (SpadicBaseAddress+1):  // first spadic
     //spadic="Spadic0";
-    SpaId = 1;
+    SpaId = 0;
     break;
   case (SpadicBaseAddress+2):  // second spadic
     //spadic="Spadic1";
-    SpaId = 2;
+    SpaId = 1;
     break;
   case (SpadicBaseAddress+3):  // second spadic
     //spadic="Spadic1";
-    SpaId = 3;
+    SpaId = 1;
     break;
   case (SpadicBaseAddress+4):  // third spadic
     //spadic="Spadic2";
-    SpaId = 4;
+    SpaId = 2;
     break;
   case (SpadicBaseAddress+5):  // third spadic
     //spadic="Spadic2";
-    SpaId = 5;
+    SpaId = 2;
     break;
   default:
     LOG(ERROR) << "Source Address " << address << " not known." << FairLogger::endl;
@@ -420,7 +440,7 @@ inline TString CbmTSUnpackSpadic11OnlineMonitor::GetSpadicName(Int_t link,Int_t 
   spadicName="SysCore_"+std::to_string(GetSyscoreID(link))+"_";
   SpadicID=GetSpadicID(address);
   
-  SpadicID/=2;  
+  //SpadicID/=2;  
 
   spadicName += "Spadic_";
 
@@ -432,11 +452,13 @@ void CbmTSUnpackSpadic11OnlineMonitor::InitHistos()
 {
   //cout << "InitHistos" << endl;
   TString histName;
-  for (Int_t iLink = 0; iLink < 4; iLink++){
-    for (Int_t iAddress = 0; iAddress < 3; iAddress++){
+  for (Int_t iLink = 0; iLink < NrOfSyscores; iLink++){
+    for (Int_t iAddress = 0; iAddress < NrOfSpadics; iAddress++){
       histName.Form("SysCore_%i_Spadic_%i",iLink,iAddress);
       fHM->Add(TString("Baseline_"+histName).Data(),new TH2I (TString("Baseline_"+histName).Data(),TString("Baseline_"+histName).Data(), 512,-256.5,255.5,33,-0.5,32.5));
-      fHM->Add(TString("maxADC_vs_maxTimeBin_"+histName).Data(),new TH2I (TString("maxADC_vs_maxTimeBin_"+histName).Data(),TString("maxADC_vs_maxTimeBin_"+histName).Data(), 512,-256.5,255.5,33,-0.5,32.5));
+      fBaseline[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("Baseline_"+histName).Data());
+      fHM->Add(TString("maxADC_vs_maxTimeBin_"+histName).Data(),new TH2I (TString("maxADC_vs_maxTimeBin_"+histName).Data(),TString("maxADC_vs_maxTimeBin_"+histName).Data(),33,-0.5,32.5, 512,-256.5,255.5));
+      fmaxADCmaxTimeBin[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("maxADC_vs_maxTimeBin_"+histName).Data());
     }
   }
 }
@@ -444,24 +466,27 @@ void CbmTSUnpackSpadic11OnlineMonitor::InitCanvas()
 {
   //cout << "InitCanvas" << endl;
   //TCanvas* c[2];
-  TH2I* h = NULL;
+  //TH2I* h = NULL;
   TString cName;
-  fc[0] = new TCanvas(TString("Baseline").Data(),TString("Baseline").Data(),1600,1200);
-  fc[0]->Divide(3,4);
-  fc[1] = new TCanvas(TString("maxADC_vs_maxTimeBin").Data(),TString("maxADC_vs_maxTimeBin").Data(),1600,1200);
-  fc[1]->Divide(3,4);
-  for (Int_t iLink = 0; iLink < 4; iLink++){
-    for (Int_t iAddress = 0; iAddress < 3; iAddress++){
+  fcB = new TCanvas(TString("Baseline").Data(),TString("Baseline").Data(),1600,1200);
+  fcB->Divide(3,4);
+  fcM/*[(iLink)*(NrOfSpadics)+iAddress]*/ = new TCanvas(TString("maxADC_vs_maxTimeBin").Data(),TString("maxADC_vs_maxTimeBin").Data(),1600,1200);
+  fcM->Divide(3,4);
+  for (Int_t iLink = 0; iLink < NrOfSyscores; iLink++){
+    for (Int_t iAddress = 0; iAddress < NrOfSpadics; iAddress++){
+      cName.Form("SysCore_%i_Spadic_%i",iLink,iAddress);      
+      fcB->cd((iLink)*(NrOfSpadics)+iAddress+1);
+      fBaseline[(iLink)*(NrOfSpadics)+iAddress]->DrawCopy("colz");
+      //h = (TH2I*)fHM->H2(TString("Baseline_"+cName).Data());
+      //h->DrawCopy("colz");
+      fcB->cd((iLink+1)*(NrOfSpadics)+iAddress)->Update();
+      
       cName.Form("SysCore_%i_Spadic_%i",iLink,iAddress);
-      fc[0]->cd((iLink)*3+iAddress+1);
-      h = (TH2I*)fHM->H2(TString("Baseline_"+cName).Data());
-      h->DrawCopy("colz");
-      fc[0]->cd((iLink+1)*3+iAddress)->Update();
-      cName.Form("SysCore_%i_Spadic_%i",iLink,iAddress);
-      fc[1]->cd((iLink)*3+iAddress+1);
-      h = (TH2I*)fHM->H2(TString("maxADC_vs_maxTimeBin_"+cName).Data());
-      h->DrawCopy("colz");
-      fc[1]->cd((iLink)*3+iAddress+1)->Update();
+      fcM->cd((iLink)*(NrOfSpadics)+iAddress+1);
+      fmaxADCmaxTimeBin[(iLink)*(NrOfSpadics)+iAddress]->DrawCopy("colz");
+      //h = (TH2I*)fHM->H2(TString("maxADC_vs_maxTimeBin_"+cName).Data());
+      //h->DrawCopy("colz");
+      fcM->cd((iLink)*(NrOfSpadics)+iAddress+1)->Update();
     }
   }
 }
@@ -470,18 +495,20 @@ void CbmTSUnpackSpadic11OnlineMonitor::UpdateCanvas()
   //cout << "UpdateCanvas" << endl;
   TH2I* h = NULL;
   TString cName;
-  for (Int_t iLink = 0; iLink < 4; iLink++){
-    for (Int_t iAddress = 0; iAddress < 3; iAddress++){
+  for (Int_t iLink = 0; iLink < NrOfSyscores; iLink++){
+    for (Int_t iAddress = 0; iAddress < NrOfSpadics; iAddress++){
       cName.Form("SysCore_%i_Spadic_%i",iLink,iAddress);
-      fc[0]->cd((iLink)*3+iAddress+1);
-      h = (TH2I*)fHM->H2(TString("Baseline_"+cName).Data());
-      h->DrawCopy("colz");
-      fc[0]->cd((iLink)*3+iAddress+1)->Update();
+      fcB->cd((iLink)*(NrOfSpadics)+iAddress+1);
+      fBaseline[(iLink)*(NrOfSpadics)+iAddress]->DrawCopy("colz");
+      //h = (TH2I*)fHM->H2(TString("Baseline_"+cName).Data());
+      //h->DrawCopy("colz");
+      fcB->cd((iLink)*(NrOfSpadics)+iAddress+1)->Update();
       cName.Form("SysCore_%i_Spadic_%i",iLink,iAddress);
-      fc[1]->cd((iLink)*3+iAddress+1);
-      h = (TH2I*)fHM->H2(TString("maxADC_vs_maxTimeBin_"+cName).Data());
-      h->DrawCopy("colz");
-      fc[1]->cd((iLink)*3+iAddress+1)->Update();
+      fcM->cd((iLink)*(NrOfSpadics)+iAddress+1);
+      fmaxADCmaxTimeBin[(iLink)*(NrOfSpadics)+iAddress]->DrawCopy("colz");
+      //h = (TH2I*)fHM->H2(TString("maxADC_vs_maxTimeBin_"+cName).Data());
+      //h->DrawCopy("colz");
+      fcM->cd((iLink)*(NrOfSpadics)+iAddress+1)->Update();
     }
   }
 }
@@ -491,19 +518,19 @@ void CbmTSUnpackSpadic11OnlineMonitor::UpdateCanvas()
   }
 void CbmTSUnpackSpadic11OnlineMonitor::FinishEvent()
 {
+  //UpdateCanvas();
+}
+void CbmTSUnpackSpadic11OnlineMonitor::Finish()
+{
+  for (Int_t i=0; i < NrOfSyscores; ++i) { 
+    for (Int_t j=0; j < NrOfHalfSpadics; ++j) { 
+      LOG(DEBUG) << "There have been " << fSuperEpochArray[i][j] 
+		 << " SuperEpochs for Syscore" << i << "_Spadic" 
+		 << j << " in this file" << FairLogger::endl;
+    }
+  }
   UpdateCanvas();
 }
-  void CbmTSUnpackSpadic11OnlineMonitor::Finish()
-  {
-    for (Int_t i=0; i < NrOfSyscores; ++i) { 
-      for (Int_t j=0; j < NrOfHalfSpadics; ++j) { 
-	LOG(DEBUG) << "There have been " << fSuperEpochArray[i][j] 
-		   << " SuperEpochs for Syscore" << i << "_Spadic" 
-		   << j << " in this file" << FairLogger::endl;
-      }
-    }
-
-  }
 
 
   /*
