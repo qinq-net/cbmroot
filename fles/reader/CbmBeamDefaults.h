@@ -12,17 +12,17 @@ enum Exp_Group {kFlesRich=0xE000,
 		kFlesHodo2=0xE005};
 
 /** Maximum number of Syscores which could be in the system **/
-static const Int_t NrOfSyscores = 3;
+static const Int_t NrOfSyscores = 4;
 
 /* Number of Active Syscores in the System */
-static const Int_t NrOfActiveSyscores=1;
+static const Int_t NrOfActiveSyscores=4;
 
 /** Maximum number of Spadics which could attached to one Syscore **/
 static const Int_t NrOfSpadics = 3;
 static const Int_t NrOfHalfSpadics = NrOfSpadics*2;
 
 /* Number of Active Spadics on each Syscore the System */
-static const Int_t NrOfActiveSpadics=2;
+static const Int_t NrOfActiveSpadics=3;
 static const Int_t NrOfActiveHalfSpadics = NrOfActiveSpadics*2;
 
 
@@ -30,7 +30,7 @@ static const Int_t NrOfActiveHalfSpadics = NrOfActiveSpadics*2;
     the first halfspadic which is connected to the Syscore 
     get SpadicBaseAddress+0, the second SpadicBaseAddress +1 ... */
 static const Int_t SpadicBaseAddress = 0;
-static const Int_t BaseEquipmentID = kFlesMuenster;
+static const Int_t BaseEquipmentID = kFlesRich;
 
 
 /*
@@ -42,9 +42,10 @@ static const std::map<Int_t, Int_t> groupToExpMap
 */
 #ifndef __CINT__
 static const std::map<Int_t, Int_t> groupToExpMap = {
-  {kFlesMuenster,0},
-  {kFlesFrankfurt,1},
-  {kFlesBucarest,2}
+  {kFlesRich,0},
+  {kFlesMuenster,1},
+  {kFlesFrankfurt,2},
+  {kFlesBucarest,3}
 };
 #endif
 
