@@ -34,14 +34,26 @@ CbmTSUnpackSpadic11OnlineMonitor::CbmTSUnpackSpadic11OnlineMonitor()
   : CbmTSUnpack(),
     fSpadicRaw(new TClonesArray("CbmSpadicRawMessage", 10)),
     fEpochMarkerArray(),
-	fPreviousEpochMarkerArray(),
+    fPreviousEpochMarkerArray(),
     fSuperEpochArray(),
     fEpochMarker(0),
     fSuperEpoch(0),
     fcB(NULL),
     fcM(NULL),
+    fcH(NULL),
+    fcL(NULL),
+    fcE(NULL),
+    fcO(NULL),
+    fcS(NULL),
+    fcI(NULL),
     fBaseline({NULL}),
     fmaxADCmaxTimeBin({NULL}),
+    fHit({NULL}),
+    fLost({NULL}),
+    fEpoch({NULL}),
+    fOutOfSync({NULL}),
+    fStrange({NULL}),
+    fInfo({NULL}),
     fHM(new CbmHistManager()),
     fNrExtraneousSamples{0}
 {
@@ -103,9 +115,9 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	continue;
 	}
       */
-      Bool_t isInfo(false), isHit(false), isEpoch(false), isEpochOutOfSynch(false), isOverflow(false), isHitAborted(false), isStrange(false);
+      Bool_t isInfo(false), isHit(false), isEpoch(false), isEpochOutOfSync(false), isOverflow(false), isHitAborted(false), isStrange(false);
       if ( mp->is_epoch_out_of_sync() ){
-	isEpochOutOfSynch = true;
+	isEpochOutOfSync = true;
         FillEpochInfo(link, addr, mp->epoch_count());
 	GetEpochInfo(link, addr);
 	Int_t triggerType = -1;
@@ -126,8 +138,9 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	  CbmSpadicRawMessage(link, address, channel, fEpochMarker, time, 
 			      fSuperEpoch, triggerType, infoType, stopType, groupId,
 			      bufferOverflowCounter, samples, sample_values,
-			      isHit, isInfo, isEpoch, isEpochOutOfSynch, isHitAborted, isOverflow, isStrange);
+			      isHit, isInfo, isEpoch, isEpochOutOfSync, isHitAborted, isOverflow, isStrange);
 	delete[] sample_values;
+	fOutOfSync[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(channel,groupId,1);
       }
       else if ( mp->is_epoch_marker() ) { 
 	LOG(DEBUG) <<  counter << " This is an Epoch Marker" << FairLogger::endl; 
@@ -148,8 +161,9 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	  CbmSpadicRawMessage(link, address, channel, fEpochMarker, time, 
 			      fSuperEpoch, triggerType, infoType, stopType, groupId,
 			      bufferOverflowCounter, samples, sample_values,
-			      isHit, isInfo, isEpoch, isEpochOutOfSynch, isHitAborted, isOverflow, isStrange);
+			      isHit, isInfo, isEpoch, isEpochOutOfSync, isHitAborted, isOverflow, isStrange);
 	delete[] sample_values;
+	fEpoch[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(channel,groupId,1);
       } 
       else if ( mp->is_buffer_overflow() ){
 	LOG(DEBUG) <<  counter << " This is a buffer overflow message" << FairLogger::endl; 
@@ -169,8 +183,9 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	  CbmSpadicRawMessage(link, address, channel, fEpochMarker, time, 
 			      fSuperEpoch, triggerType, infoType, stopType, groupId,
 			      bufferOverflowCounter, samples, sample_values,
-			      isHit, isInfo, isEpoch, isEpochOutOfSynch, isHitAborted, isOverflow, isStrange);
+			      isHit, isInfo, isEpoch, isEpochOutOfSync, isHitAborted, isOverflow, isStrange);
 	delete[] sample_values;
+	fLost[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(channel,groupId,bufferOverflowCounter);
       }
       else if ( mp->is_info() ){
 	LOG(DEBUG) <<  counter << " This is a info message" << FairLogger::endl; 
@@ -191,8 +206,9 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	  CbmSpadicRawMessage(link, address, channel, fEpochMarker, time, 
 			      fSuperEpoch, triggerType, infoType, stopType, groupId,
 			      bufferOverflowCounter, samples, sample_values,
-			      isHit, isInfo, isEpoch, isEpochOutOfSynch, isHitAborted, isOverflow, isStrange);
+			      isHit, isInfo, isEpoch, isEpochOutOfSync, isHitAborted, isOverflow, isStrange);
 	delete[] sample_values;
+	fInfo[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(channel,groupId,1);
       }
       else if ( mp->is_hit() ) { 
 	LOG(DEBUG) <<  counter << " This is a hit message" << FairLogger::endl; 
@@ -235,9 +251,10 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	  CbmSpadicRawMessage(link, address, channel, fEpochMarker, time, 
 			      fSuperEpoch, triggerType, infoType, stopType, groupId,
 			      bufferOverflowCounter, samples, sample_values,
-			      isHit, isInfo, isEpoch, isEpochOutOfSynch, isHitAborted, isOverflow, isStrange);
+			      isHit, isInfo, isEpoch, isEpochOutOfSync, isHitAborted, isOverflow, isStrange);
 	//++counter;
 	delete[] sample_values;
+	fHit[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(channel,groupId,1);
       } 
       else if ( mp->is_hit_aborted()) {
 	LOG(DEBUG) <<  counter << " This is a hit message was aborted" << FairLogger::endl; 
@@ -259,7 +276,7 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	  CbmSpadicRawMessage(link, address, channel, fEpochMarker, time, 
 			      fSuperEpoch, triggerType, infoType, stopType, groupId,
 			      bufferOverflowCounter, samples, sample_values,
-			      isHit, isInfo, isEpoch, isEpochOutOfSynch, isHitAborted, isOverflow, isStrange);
+			      isHit, isInfo, isEpoch, isEpochOutOfSync, isHitAborted, isOverflow, isStrange);
 	//++counter;
 	delete[] sample_values;
 
@@ -282,10 +299,10 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	  CbmSpadicRawMessage(link, address, channel, fEpochMarker, time, 
 			      fSuperEpoch, triggerType, infoType, stopType, groupId,
 			      bufferOverflowCounter, samples, sample_values,
-			      isHit, isInfo, isEpoch, isEpochOutOfSynch, isHitAborted, isOverflow, isStrange);
+			      isHit, isInfo, isEpoch, isEpochOutOfSync, isHitAborted, isOverflow, isStrange);
 	//++counter;
 	delete[] sample_values;
-
+	//fStrange[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(channel,groupId);
 	LOG(DEBUG) <<  counter << " This message type is not hit, info, epoch or overflow and will not be stored in the TClonesArray" << FairLogger::endl; 
 	LOG(DEBUG) << " valide:" << mp->is_valid() << " epoch marker:" << fEpochMarker << " super epoch marker:" << fSuperEpoch << " time:" << time << " link:" << link << " address:" << address << FairLogger::endl;
 	LOG(DEBUG) << "Channel ID:" << mp->channel_id() << FairLogger::endl;
@@ -466,6 +483,18 @@ void CbmTSUnpackSpadic11OnlineMonitor::InitHistos()
       fBaseline[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("Baseline_"+histName).Data());
       fHM->Add(TString("maxADC_vs_maxTimeBin_"+histName).Data(),new TH2I (TString("maxADC_vs_maxTimeBin_"+histName).Data(),TString("maxADC_vs_maxTimeBin_"+histName).Data(),33,-0.5,32.5, 512,-256.5,255.5));
       fmaxADCmaxTimeBin[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("maxADC_vs_maxTimeBin_"+histName).Data());
+      fHM->Add(TString("Hit_"+histName).Data(),new TH2I (TString("Hit_"+histName).Data(),TString("Hit_"+histName).Data(),16,-0.5,-15.5,2,-0.5,1.5));
+      fHit[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("Hit_"+histName).Data());
+      fHM->Add(TString("Lost_"+histName).Data(),new TH2I (TString("Lost_"+histName).Data(),TString("Lost_"+histName).Data(),16,-0.5,-15.5,2,-0.5,1.5));
+      fLost[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("Lost_"+histName).Data());
+      fHM->Add(TString("Epoch_"+histName).Data(),new TH2I (TString("Epoch_"+histName).Data(),TString("Epoch_"+histName).Data(),16,-0.5,-15.5,2,-0.5,1.5));
+      fEpoch[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("Epoch_"+histName).Data());
+      fHM->Add(TString("OutOfSync_"+histName).Data(),new TH2I (TString("OutOfSync_"+histName).Data(),TString("OutOfSync_"+histName).Data(),16,-0.5,-15.5,2,-0.5,1.5));
+      fOutOfSync[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("OutOfSync_"+histName).Data());
+      fHM->Add(TString("Strange_"+histName).Data(),new TH2I (TString("Strange_"+histName).Data(),TString("Strange_"+histName).Data(),16,-0.5,-15.5,2,-0.5,1.5));
+      fStrange[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("Strange_"+histName).Data());
+      fHM->Add(TString("Info_"+histName).Data(),new TH2I (TString("Info_"+histName).Data(),TString("Info_"+histName).Data(),16,-0.5,-15.5,2,-0.5,1.5));
+      fInfo[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("Info_"+histName).Data());
     }
   }
 }
@@ -479,6 +508,18 @@ void CbmTSUnpackSpadic11OnlineMonitor::InitCanvas()
   fcB->Divide(3,4);
   fcM/*[(iLink)*(NrOfSpadics)+iAddress]*/ = new TCanvas(TString("maxADC_vs_maxTimeBin").Data(),TString("maxADC_vs_maxTimeBin").Data(),1600,1200);
   fcM->Divide(3,4);
+  fcH= new TCanvas(TString("HitMap").Data(),TString("HitMap").Data(),1600,1200);
+  fcH->Divide(3,4);
+  fcL= new TCanvas(TString("LostMap").Data(),TString("LostMap").Data(),1600,1200);
+  fcL->Divide(3,4);
+  fcE= new TCanvas(TString("EpochMap").Data(),TString("EpochMap").Data(),1600,1200);
+  fcE->Divide(3,4);
+  fcO= new TCanvas(TString("OutOfSyncMap").Data(),TString("OutOfSyncMap").Data(),1600,1200);
+  fcO->Divide(3,4);
+  fcS= new TCanvas(TString("StrangeMap").Data(),TString("StrangeMap").Data(),1600,1200);
+  fcS->Divide(3,4);
+  fcI= new TCanvas(TString("InfoMap").Data(),TString("InfoMap").Data(),1600,1200);
+  fcI->Divide(3,4);
   for (Int_t iLink = 0; iLink < NrOfSyscores; iLink++){
     for (Int_t iAddress = 0; iAddress < NrOfSpadics; iAddress++){
       cName.Form("SysCore_%i_Spadic_%i",iLink,iAddress);      
@@ -486,14 +527,26 @@ void CbmTSUnpackSpadic11OnlineMonitor::InitCanvas()
       fBaseline[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
       //h = (TH2I*)fHM->H2(TString("Baseline_"+cName).Data());
       //h->Draw("colz");
-      fcB->cd((iLink+1)*(NrOfSpadics)+iAddress)->Update();
+      //fcB->cd((iLink+1)*(NrOfSpadics)+iAddress)->Update();
       
       cName.Form("SysCore_%i_Spadic_%i",iLink,iAddress);
       fcM->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz();
       fmaxADCmaxTimeBin[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
       //h = (TH2I*)fHM->H2(TString("maxADC_vs_maxTimeBin_"+cName).Data());
       //h->Draw("colz");
-      fcM->cd((iLink)*(NrOfSpadics)+iAddress+1)->Update();
+      //fcM->cd((iLink)*(NrOfSpadics)+iAddress+1)->Update();
+      fcH->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz(0);
+      fHit[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
+      fcL->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz(0);
+      fLost[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
+      fcE->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz(0);
+      fEpoch[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
+      fcO->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz(0);
+      fOutOfSync[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
+      fcS->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz(0);
+      fStrange[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
+      fcI->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz(0);
+      fInfo[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
     }
   }
 }

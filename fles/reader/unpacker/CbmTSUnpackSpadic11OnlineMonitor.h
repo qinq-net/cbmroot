@@ -65,11 +65,23 @@ class CbmTSUnpackSpadic11OnlineMonitor : public CbmTSUnpack
   CbmHistManager* fHM;
   TCanvas* fcB;
   TCanvas* fcM;//[(iLink)*(NrOfHalfSpadics/2)];
+  TCanvas* fcH;
+  TCanvas* fcL;
+  TCanvas* fcE;
+  TCanvas* fcO;
+  TCanvas* fcS;
+  TCanvas* fcI;
   void InitHistos();
   void InitCanvas();
   void UpdateCanvas();
   TH2I* fBaseline[(NrOfSyscores)*(NrOfSpadics)];
   TH2I* fmaxADCmaxTimeBin[(NrOfSyscores)*(NrOfSpadics)];
+  TH2I* fHit[(NrOfSyscores)*(NrOfSpadics)];
+  TH2I* fLost[(NrOfSyscores)*(NrOfSpadics)];
+  TH2I* fEpoch[(NrOfSyscores)*(NrOfSpadics)];
+  TH2I* fOutOfSync[(NrOfSyscores)*(NrOfSpadics)];
+  TH2I* fStrange[(NrOfSyscores)*(NrOfSpadics)];
+  TH2I* fInfo[(NrOfSyscores)*(NrOfSpadics)];
   CbmTSUnpackSpadic11OnlineMonitor(const CbmTSUnpackSpadic11OnlineMonitor&);
   CbmTSUnpackSpadic11OnlineMonitor operator=(const CbmTSUnpackSpadic11OnlineMonitor&);
 
