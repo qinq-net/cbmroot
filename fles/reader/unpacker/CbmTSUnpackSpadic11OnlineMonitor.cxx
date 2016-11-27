@@ -278,14 +278,7 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	//++counter;
 	delete[] sample_values;
 	
-	channel = GetChannelOnPadPlane(channel,groupId);
-	if (channel > 15){
-	  channel -= 16;
-	  groupId = 1;
-	} else {
-	  groupId = 0;
-	}
-	fHit[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(channel,groupId,1);
+
 	if (groupId == 0){
 	  fHitTimeA[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(0);
 	  if(fLastSuperEpochA[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)] < fSuperEpoch){
@@ -305,6 +298,15 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	    fHitTimeB[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->SetBinContent(fHitTimeB[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->GetXaxis()->GetNbins(),0);
 	  }
 	}
+	Int_t padRow(-1);
+	Int_t padChannel = GetChannelOnPadPlane(channel,groupId);
+	if (padChannel > 15){
+	  padChannel -= 16;
+	  padRow = 1;
+	} else {
+	  padRow = 0;
+	}
+	fHit[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(padChannel,padRow,1);
 	/*
 	  fTSGraph[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->SetPoint(fTSGraph[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->GetN(),fTSGraph[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->GetN(),//fSpadicRaw[fSpadicRaw->GetEntriesFast()]->GetFullTime()/1.5E7
 	  ( static_cast<ULong_t>(fSuperEpoch) << 24) | 
