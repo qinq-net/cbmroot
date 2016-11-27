@@ -4,7 +4,7 @@ void readTsaTimeOffline(TString inFile =
 	      "data/43_sps2016.tsa"
 	      //"data/1076_cern2014.tsa"
 	      //"data/test.tsa"
-			,Bool_t highP = true
+			,Bool_t highP = false
 )
 {
 

@@ -10,7 +10,7 @@
 
 
 
-void readTsaTimeOnline()   //TString inFile =
+void readTsaTimeOnline(Bool_t highP = true)   //TString inFile =
 	      //"data/98_ba2015.tsa"
 	      //"data/129_ba2015.tsa"
 		       //	      "data/22_sps2016.tsa"
@@ -28,7 +28,7 @@ void readTsaTimeOnline()   //TString inFile =
   Int_t nEvents = -1;
 
   // --- Specify output file name (this is just an example)
-  TString outFile = "/sps/cern2016/online.root";
+  TString outFile = "data/online.root";
   // --- Set log output levels
   FairLogger::GetLogger()->SetLogScreenLevel("INFO");
   FairLogger::GetLogger()->SetLogVerbosityLevel("LOW");
@@ -47,7 +47,7 @@ void readTsaTimeOnline()   //TString inFile =
   std::cout << ">>> readTsa: Initialising..." << std::endl;
 
   // Spadic Unpacker
-  CbmTSUnpackSpadic11OnlineMonitor* spadic_unpacker = new CbmTSUnpackSpadic11OnlineMonitor();
+  CbmTSUnpackSpadic11OnlineMonitor* spadic_unpacker = new CbmTSUnpackSpadic11OnlineMonitor(highP);
 
   // --- Source task
   CbmFlibFileSourceNew* source = new CbmFlibFileSourceNew();
