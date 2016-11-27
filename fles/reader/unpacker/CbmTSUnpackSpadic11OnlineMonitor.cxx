@@ -595,7 +595,7 @@ void CbmTSUnpackSpadic11OnlineMonitor::InitHistos()
       fHitTimeB[(iLink)*(NrOfSpadics)+iAddress]=(TH1I*)fHM->H1(TString("HitTimeB_"+histName).Data());
       fHitTimeB[(iLink)*(NrOfSpadics)+iAddress]->GetXaxis()->SetTitle("SuperEpoch count");
       fHitTimeB[(iLink)*(NrOfSpadics)+iAddress]->SetLineColor(2);
-      fHM->Add(TString("HitFrequency_"+histName).Data(),new TH1I (TString("HitFrequency_"+histName).Data(),TString("HitFrequency_"+histName).Data(),100000,0,100000/*,32,-0.5,31.5*/));
+      fHM->Add(TString("HitFrequency_"+histName).Data(),new TH1I (TString("HitFrequency_"+histName).Data(),TString("HitFrequency_"+histName).Data(),100000,1,100000/*,32,-0.5,31.5*/));
       fHitFrequency[(iLink)*(NrOfSpadics)+iAddress]=(TH1I*)fHM->H1(TString("HitFrequency_"+histName).Data());
       fHitFrequency[(iLink)*(NrOfSpadics)+iAddress]->GetXaxis()->SetTitle("Trigger frequency (Hz)");
       fHitFrequency[(iLink)*(NrOfSpadics)+iAddress]->GetYaxis()->SetTitle("Channel ID");
@@ -661,8 +661,8 @@ void CbmTSUnpackSpadic11OnlineMonitor::InitCanvas()
       fHitTimeB[(iLink)*(NrOfSpadics)+iAddress]->Draw("same");
       //fTSGraph[(iLink)*(NrOfSpadics)+iAddress]->Draw("ALP");
       fcF->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogx(1);
-      fcF->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogy(0);
-      fcF->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz(1);
+      fcF->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogy(1);
+      fcF->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz(0);
       fHitFrequency[(iLink)*(NrOfSpadics)+iAddress]->Draw(/*"colz"*/);
     }
   }
