@@ -256,12 +256,15 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	}
 	Int_t* sample_values =  new Int_t[samples];
 	Int_t channel = mp->channel_id();
+	Int_t padRow(-1);
+	Int_t padChannel = GetChannelOnPadPlane(channel,groupId);
+
 	Int_t counter1=0;
 	Int_t maxADC(-256), maxTB(-1);
 	for (auto x : mp->samples()) {
 	  sample_values[counter1] = x;
 	  if (triggerType == 1 && stopType == 0 &&  sample_values[2]>-150) {
-	    if (!fHighPerformance)fPulseShape[(GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address))*32+channel]->Fill(counter1,x);
+	    if (!fHighPerformance)fPulseShape[(GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address))*32+padChannel]->Fill(counter1,x);
 	  }
 	  if (x >= maxADC){
 	    maxADC = x;
@@ -313,8 +316,6 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	    fHitTimeB[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->SetBinContent(fHitTimeB[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->GetXaxis()->GetNbins(),0);
 	  }
 	}
-	Int_t padRow(-1);
-	Int_t padChannel = GetChannelOnPadPlane(channel,groupId);
 	if (padChannel > 15){
 	  padChannel -= 16;
 	  padRow = 1;
