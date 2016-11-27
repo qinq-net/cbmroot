@@ -4,6 +4,7 @@ void readTsaTimeOffline(TString inFile =
 	      "data/43_sps2016.tsa"
 	      //"data/1076_cern2014.tsa"
 	      //"data/test.tsa"
+			,Bool_t highP = true
 )
 {
 
@@ -36,7 +37,7 @@ void readTsaTimeOffline(TString inFile =
   std::cout << ">>> readTsa: Initialising..." << std::endl;
 
   // Spadic Unpacker
-  CbmTSUnpackSpadic11OnlineMonitor* spadic_unpacker = new CbmTSUnpackSpadic11OnlineMonitor();
+  CbmTSUnpackSpadic11OnlineMonitor* spadic_unpacker = new CbmTSUnpackSpadic11OnlineMonitor(highP);
 
   // NXyter Unpacker
   CbmTSUnpackNxyter* nxyter_unpacker = new CbmTSUnpackNxyter();
