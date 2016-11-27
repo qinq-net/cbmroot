@@ -73,6 +73,8 @@ class CbmTSUnpackSpadic11OnlineMonitor : public CbmTSUnpack
   TCanvas* fcI;
   TCanvas* fcTS;
   TCanvas* fcF;
+  TCanvas* fcSp;
+  TCanvas* fcPS[(NrOfSyscores)*(NrOfSpadics)];
   void InitHistos();
   void InitCanvas();
   void UpdateCanvas();
@@ -87,6 +89,8 @@ class CbmTSUnpackSpadic11OnlineMonitor : public CbmTSUnpack
   TH1I* fHitTimeA[(NrOfSyscores)*(NrOfSpadics)];
   TH1I* fHitTimeB[(NrOfSyscores)*(NrOfSpadics)];
   TH1I* fHitFrequency[(NrOfSyscores)*(NrOfSpadics)];
+  TH1I* fSpectrum[(NrOfSyscores)*(NrOfSpadics)];
+  TH2I* fPulseShape[(NrOfSyscores)*(NrOfSpadics)*32];
   TGraph* fTSGraph[(NrOfSyscores)*(NrOfSpadics)];
   Int_t fLastSuperEpochA[(NrOfSyscores)*(NrOfSpadics)];
   Int_t fLastSuperEpochB[(NrOfSyscores)*(NrOfSpadics)];
