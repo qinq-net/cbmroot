@@ -40,6 +40,7 @@ CbmTSUnpackSpadic11OnlineMonitor::CbmTSUnpackSpadic11OnlineMonitor()
     fSuperEpoch(0),
     fLastSuperEpochA({0}),
     fLastSuperEpochB({0}),
+    fLastFullTime({{{0}}}),
     fcB(NULL),
     fcM(NULL),
     fcH(NULL),
@@ -49,6 +50,7 @@ CbmTSUnpackSpadic11OnlineMonitor::CbmTSUnpackSpadic11OnlineMonitor()
     fcS(NULL),
     fcI(NULL),
     fcTS(NULL),
+    fcF(NULL),
     fBaseline({NULL}),
     fmaxADCmaxTimeBin({NULL}),
     fHit({NULL}),
@@ -60,6 +62,7 @@ CbmTSUnpackSpadic11OnlineMonitor::CbmTSUnpackSpadic11OnlineMonitor()
     fTSGraph({NULL}),
     fHitTimeA({NULL}),
     fHitTimeB({NULL}),
+    fHitFrequency({NULL}),
     fHM(new CbmHistManager()),
     fNrExtraneousSamples{0}
 {
@@ -314,6 +317,15 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	  ( time & 0xfff )
 	  );
 	*/
+	ULong_t fullTime =   ( static_cast<ULong_t>(fSuperEpoch) << 24) | 
+	  ( static_cast<ULong_t>(fEpochMarker) << 12) | 
+	  ( time & 0xfff );
+	//if (fLastFullTime[GetSyscoreID(link)][GetSpadicID(address)][channel] < fullTime)
+	//{
+	ULong_t deltaTime = fullTime - fLastFullTime[GetSyscoreID(link)][GetSpadicID(address)][channel];
+	fHitFrequency[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(1./(deltaTime/1.5E7)/*,channel*/);
+	fLastFullTime[GetSyscoreID(link)][GetSpadicID(address)][channel] = fullTime;
+	//}
       } 
       else if ( mp->is_hit_aborted()) {
 	LOG(DEBUG) <<  counter << " This is a hit message was aborted" << FairLogger::endl; 
@@ -552,10 +564,14 @@ void CbmTSUnpackSpadic11OnlineMonitor::InitHistos()
   for (Int_t iLink = 0; iLink < NrOfSyscores; iLink++){
     for (Int_t iAddress = 0; iAddress < NrOfSpadics; iAddress++){
       histName.Form("SysCore_%i_Spadic_%i",iLink,iAddress);
-      fHM->Add(TString("Baseline_"+histName).Data(),new TH2I (TString("Baseline_"+histName).Data(),TString("Baseline_"+histName).Data(), 256,-256.5,255.5,33,-0.5,32.5));
+      fHM->Add(TString("Baseline_"+histName).Data(),new TH2I (TString("Baseline_"+histName).Data(),TString("Baseline_"+histName).Data(), 256,-256.5,255.5,32,-0.5,31.5));
       fBaseline[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("Baseline_"+histName).Data());
-      fHM->Add(TString("maxADC_vs_maxTimeBin_"+histName).Data(),new TH2I (TString("maxADC_vs_maxTimeBin_"+histName).Data(),TString("maxADC_vs_maxTimeBin_"+histName).Data(),33,-0.5,32.5, 256,-256.5,255.5));
+      fBaseline[(iLink)*(NrOfSpadics)+iAddress]->GetXaxis()->SetTitle("ADC");
+      fBaseline[(iLink)*(NrOfSpadics)+iAddress]->GetYaxis()->SetTitle("Channel ID");
+      fHM->Add(TString("maxADC_vs_maxTimeBin_"+histName).Data(),new TH2I (TString("maxADC_vs_maxTimeBin_"+histName).Data(),TString("maxADC_vs_maxTimeBin_"+histName).Data(),32,-0.5,31.5, 256,-256.5,255.5));
       fmaxADCmaxTimeBin[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("maxADC_vs_maxTimeBin_"+histName).Data());
+      fmaxADCmaxTimeBin[(iLink)*(NrOfSpadics)+iAddress]->GetXaxis()->SetTitle("max. Time Bin");
+      fmaxADCmaxTimeBin[(iLink)*(NrOfSpadics)+iAddress]->GetYaxis()->SetTitle("max ADC");
       fHM->Add(TString("Hit_"+histName).Data(),new TH2I (TString("Hit_"+histName).Data(),TString("Hit_"+histName).Data(),16,-0.5,15.5,2,-0.5,1.5));
       fHit[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("Hit_"+histName).Data());
       fHM->Add(TString("Lost_"+histName).Data(),new TH2I (TString("Lost_"+histName).Data(),TString("Lost_"+histName).Data(),16,-0.5,15.5,2,-0.5,1.5));
@@ -574,9 +590,15 @@ void CbmTSUnpackSpadic11OnlineMonitor::InitHistos()
       //fTSGraph[(iLink)*(NrOfSpadics)+iAddress]->GetXaxis()->SetTitle("Timeslice");
       fHM->Add(TString("HitTimeA_"+histName).Data(),new TH1I (TString("HitTimeA_"+histName).Data(),TString("HitTimeA_"+histName).Data(),300,-299.5,0.5));
       fHitTimeA[(iLink)*(NrOfSpadics)+iAddress]=(TH1I*)fHM->H1(TString("HitTimeA_"+histName).Data());
+      fHitTimeA[(iLink)*(NrOfSpadics)+iAddress]->GetXaxis()->SetTitle("SuperEpoch count");
       fHM->Add(TString("HitTimeB_"+histName).Data(),new TH1I (TString("HitTimeB_"+histName).Data(),TString("HitTimeB_"+histName).Data(),300,-299.5,0.5));
       fHitTimeB[(iLink)*(NrOfSpadics)+iAddress]=(TH1I*)fHM->H1(TString("HitTimeB_"+histName).Data());
+      fHitTimeB[(iLink)*(NrOfSpadics)+iAddress]->GetXaxis()->SetTitle("SuperEpoch count");
       fHitTimeB[(iLink)*(NrOfSpadics)+iAddress]->SetLineColor(2);
+      fHM->Add(TString("HitFrequency_"+histName).Data(),new TH1I (TString("HitFrequency_"+histName).Data(),TString("HitFrequency_"+histName).Data(),100000,0,100000/*,32,-0.5,31.5*/));
+      fHitFrequency[(iLink)*(NrOfSpadics)+iAddress]=(TH1I*)fHM->H1(TString("HitFrequency_"+histName).Data());
+      fHitFrequency[(iLink)*(NrOfSpadics)+iAddress]->GetXaxis()->SetTitle("Trigger frequency (Hz)");
+      fHitFrequency[(iLink)*(NrOfSpadics)+iAddress]->GetYaxis()->SetTitle("Channel ID");
     }
   }
 }
@@ -604,6 +626,8 @@ void CbmTSUnpackSpadic11OnlineMonitor::InitCanvas()
   fcI->Divide(3,4);
   fcTS= new TCanvas(TString("TSGraph").Data(),TString("TSGraph").Data(),1600,1200);
   fcTS->Divide(3,4);
+  fcF= new TCanvas(TString("HitFrequency").Data(),TString("HitFrequency").Data(),1600,1200);
+  fcF->Divide(3,4);
   for (Int_t iLink = 0; iLink < NrOfSyscores; iLink++){
     for (Int_t iAddress = 0; iAddress < NrOfSpadics; iAddress++){
       cName.Form("SysCore_%i_Spadic_%i",iLink,iAddress);      
@@ -632,9 +656,14 @@ void CbmTSUnpackSpadic11OnlineMonitor::InitCanvas()
       fcI->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz(0);
       fInfo[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
       fcTS->cd((iLink)*(NrOfSpadics)+iAddress+1);
+      fHitTimeA[(iLink)*(NrOfSpadics)+iAddress]->GetYaxis()->SetRangeUser(0,20000);
       fHitTimeA[(iLink)*(NrOfSpadics)+iAddress]->Draw("");
       fHitTimeB[(iLink)*(NrOfSpadics)+iAddress]->Draw("same");
       //fTSGraph[(iLink)*(NrOfSpadics)+iAddress]->Draw("ALP");
+      fcF->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogx(1);
+      fcF->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogy(0);
+      fcF->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz(1);
+      fHitFrequency[(iLink)*(NrOfSpadics)+iAddress]->Draw(/*"colz"*/);
     }
   }
 }
