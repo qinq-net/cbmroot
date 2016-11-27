@@ -259,7 +259,7 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	Int_t maxADC(-256), maxTB(-1);
 	for (auto x : mp->samples()) {
 	  sample_values[counter1] = x;
-	  if (triggerType == 1 && stopType == 0) {
+	  if (triggerType == 1 && stopType == 0 &&  sample_values[2]>-150) {
 	    fPulseShape[(GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address))*32+channel]->Fill(counter1,x);
 	  }
 	  if (x >= maxADC){
