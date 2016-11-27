@@ -24,7 +24,7 @@ class CbmTSUnpackSpadic11OnlineMonitor : public CbmTSUnpack
 {
  public:
   
-  CbmTSUnpackSpadic11OnlineMonitor();
+  CbmTSUnpackSpadic11OnlineMonitor(Bool_t highPerformance);
   virtual ~CbmTSUnpackSpadic11OnlineMonitor();
     
   virtual Bool_t Init();
@@ -46,6 +46,8 @@ class CbmTSUnpackSpadic11OnlineMonitor : public CbmTSUnpack
 
   TClonesArray* fSpadicRaw;
 
+  Bool_t fHighPerformance;
+  
   Int_t fEpochMarkerArray[NrOfSyscores][NrOfHalfSpadics];
   //Array to store the previous Epoch counter
   Int_t fPreviousEpochMarkerArray[NrOfSyscores][NrOfHalfSpadics];

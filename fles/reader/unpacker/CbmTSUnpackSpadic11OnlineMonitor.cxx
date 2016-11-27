@@ -30,9 +30,10 @@
 #include <map>
 #include <vector>
 
-CbmTSUnpackSpadic11OnlineMonitor::CbmTSUnpackSpadic11OnlineMonitor()
+CbmTSUnpackSpadic11OnlineMonitor::CbmTSUnpackSpadic11OnlineMonitor(Bool_t highPerformance = true)
   : CbmTSUnpack(),
     fSpadicRaw(new TClonesArray("CbmSpadicRawMessage", 10)),
+    fHighPerformance(highPerformance),
     fEpochMarkerArray(),
     fPreviousEpochMarkerArray(),
     fSuperEpochArray(),
@@ -153,7 +154,7 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 			      bufferOverflowCounter, samples, sample_values,
 			      isHit, isInfo, isEpoch, isEpochOutOfSync, isHitAborted, isOverflow, isStrange);
 	delete[] sample_values;
-	fOutOfSync[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(channel,groupId,1);
+	if (!fHighPerformance)fOutOfSync[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(channel,groupId,1);
       }
       else if ( mp->is_epoch_marker() ) { 
 	LOG(DEBUG) <<  counter << " This is an Epoch Marker" << FairLogger::endl; 
@@ -176,7 +177,7 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 			      bufferOverflowCounter, samples, sample_values,
 			      isHit, isInfo, isEpoch, isEpochOutOfSync, isHitAborted, isOverflow, isStrange);
 	delete[] sample_values;
-	fEpoch[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(channel,groupId,1);
+	if (!fHighPerformance)fEpoch[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(channel,groupId,1);
       } 
       else if ( mp->is_buffer_overflow() ){
 	LOG(DEBUG) <<  counter << " This is a buffer overflow message" << FairLogger::endl; 
@@ -236,7 +237,7 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	} else {
 	  groupId = 0;
 	}
-	fInfo[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(channel,groupId,1);
+	if (!fHighPerformance)fInfo[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(channel,groupId,1);
       }
       else if ( mp->is_hit() ) { 
 	LOG(DEBUG) <<  counter << " This is a hit message" << FairLogger::endl; 
@@ -260,7 +261,7 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	for (auto x : mp->samples()) {
 	  sample_values[counter1] = x;
 	  if (triggerType == 1 && stopType == 0 &&  sample_values[2]>-150) {
-	    fPulseShape[(GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address))*32+channel]->Fill(counter1,x);
+	    if (!fHighPerformance)fPulseShape[(GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address))*32+channel]->Fill(counter1,x);
 	  }
 	  if (x >= maxADC){
 	    maxADC = x;
@@ -279,7 +280,7 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	    fmaxADCmaxTimeBin[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(maxTB,maxADC);
 	   
 	    if (maxTB > 0 && maxTB < 5){
-	      fSpectrum[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(maxADC);
+	      if (!fHighPerformance)fSpectrum[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(maxADC);
 	    }
 	  }
 	}
@@ -334,7 +335,7 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	//if (fLastFullTime[GetSyscoreID(link)][GetSpadicID(address)][channel] < fullTime)
 	//{
 	ULong_t deltaTime = fullTime - fLastFullTime[GetSyscoreID(link)][GetSpadicID(address)][channel];
-	fHitFrequency[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(1./(deltaTime/1.5E7)/*,channel*/);
+	if (!fHighPerformance)fHitFrequency[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(1./(deltaTime/1.5E7)/*,channel*/);
 	fLastFullTime[GetSyscoreID(link)][GetSpadicID(address)][channel] = fullTime;
 	//}
       } 
@@ -610,7 +611,7 @@ void CbmTSUnpackSpadic11OnlineMonitor::InitHistos()
       fHitFrequency[(iLink)*(NrOfSpadics)+iAddress]=(TH1I*)fHM->H1(TString("HitFrequency_"+histName).Data());
       fHitFrequency[(iLink)*(NrOfSpadics)+iAddress]->GetXaxis()->SetTitle("Trigger frequency (Hz)");
       fHitFrequency[(iLink)*(NrOfSpadics)+iAddress]->GetYaxis()->SetTitle("Channel ID");
-      fHM->Add(TString("Spectrum_"+histName).Data(),new TH1I (TString("Spectrum_"+histName).Data(),TString("Spectrum_"+histName).Data(),513,-0.5,512.5));
+      fHM->Add(TString("Spectrum_"+histName).Data(),new TH1I (TString("Spectrum_"+histName).Data(),TString("Spectrum_"+histName).Data(),513,-256.5,256.5));
       fSpectrum[(iLink)*(NrOfSpadics)+iAddress]=(TH1I*)fHM->H1(TString("Spectrum_"+histName).Data());
       fSpectrum[(iLink)*(NrOfSpadics)+iAddress]->GetXaxis()->SetTitle("max. ADC (ADC)");
       for (Int_t iCh = 0; iCh < 32; iCh++){
@@ -631,6 +632,20 @@ void CbmTSUnpackSpadic11OnlineMonitor::InitCanvas()
   //TCanvas* c[2];
   //TH2I* h = NULL;
   TString cName;
+  if (!fHighPerformance){
+    fcE= new TCanvas(TString("EpochMap").Data(),TString("EpochMap").Data(),1600,1200);
+    fcE->Divide(3,4);
+    fcO= new TCanvas(TString("OutOfSyncMap").Data(),TString("OutOfSyncMap").Data(),1600,1200);
+    fcO->Divide(3,4);
+    fcS= new TCanvas(TString("StrangeMap").Data(),TString("StrangeMap").Data(),1600,1200);
+    fcS->Divide(3,4);
+    fcI= new TCanvas(TString("InfoMap").Data(),TString("InfoMap").Data(),1600,1200);
+    fcI->Divide(3,4);
+    fcF= new TCanvas(TString("HitFrequency").Data(),TString("HitFrequency").Data(),1600,1200);
+    fcF->Divide(3,4);
+    fcSp= new TCanvas(TString("HitSelfTriggersSpectrum").Data(),TString("HitSelfTriggersSpectrum").Data(),1600,1200);
+    fcSp->Divide(3,4);
+  }
   fcB = new TCanvas(TString("Baseline").Data(),TString("Baseline").Data(),1600,1200);
   fcB->Divide(3,4);
   fcM/*[(iLink)*(NrOfSpadics)+iAddress]*/ = new TCanvas(TString("maxADC_vs_maxTimeBin").Data(),TString("maxADC_vs_maxTimeBin").Data(),1600,1200);
@@ -638,69 +653,53 @@ void CbmTSUnpackSpadic11OnlineMonitor::InitCanvas()
   fcH= new TCanvas(TString("HitMap").Data(),TString("HitMap").Data(),1600,1200);
   fcH->Divide(3,4);
   fcL= new TCanvas(TString("LostMap").Data(),TString("LostMap").Data(),1600,1200);
-  fcL->Divide(3,4);
-  fcE= new TCanvas(TString("EpochMap").Data(),TString("EpochMap").Data(),1600,1200);
-  fcE->Divide(3,4);
-  fcO= new TCanvas(TString("OutOfSyncMap").Data(),TString("OutOfSyncMap").Data(),1600,1200);
-  fcO->Divide(3,4);
-  fcS= new TCanvas(TString("StrangeMap").Data(),TString("StrangeMap").Data(),1600,1200);
-  fcS->Divide(3,4);
-  fcI= new TCanvas(TString("InfoMap").Data(),TString("InfoMap").Data(),1600,1200);
-  fcI->Divide(3,4);
+  fcL->Divide(3,4); 
   fcTS= new TCanvas(TString("TSGraph").Data(),TString("TSGraph").Data(),1600,1200);
   fcTS->Divide(3,4);
-  fcF= new TCanvas(TString("HitFrequency").Data(),TString("HitFrequency").Data(),1600,1200);
-  fcF->Divide(3,4);
-  fcSp= new TCanvas(TString("HitSelfTriggersSpectrum").Data(),TString("HitSelfTriggersSpectrum").Data(),1600,1200);
-  fcSp->Divide(3,4);
+ 
 
   
   for (Int_t iLink = 0; iLink < NrOfSyscores; iLink++){
     for (Int_t iAddress = 0; iAddress < NrOfSpadics; iAddress++){
       cName.Form("SysCore_%i_Spadic_%i",iLink,iAddress);
-       
-      fcPS[(iLink)*(NrOfSpadics)+iAddress] = new TCanvas(TString("PulseShapes_"+cName).Data(),TString("PulseShapes_"+cName).Data(),1600,1200);
-      fcPS[(iLink)*(NrOfSpadics)+iAddress]->Divide(4,8);
-      for(Int_t iCh = 0; iCh < 32; iCh++){
-	fcPS[(iLink)*(NrOfSpadics)+iAddress]->cd(iCh+1);
-	fPulseShape[((iLink)*(NrOfSpadics)+iAddress)*32+iCh]->Draw("colz");
+      if (!fHighPerformance){
+	fcPS[(iLink)*(NrOfSpadics)+iAddress] = new TCanvas(TString("PulseShapes_"+cName).Data(),TString("PulseShapes_"+cName).Data(),1600,1200);
+	fcPS[(iLink)*(NrOfSpadics)+iAddress]->Divide(4,8);
+	for(Int_t iCh = 0; iCh < 32; iCh++){
+	  fcPS[(iLink)*(NrOfSpadics)+iAddress]->cd(iCh+1);
+	  fPulseShape[((iLink)*(NrOfSpadics)+iAddress)*32+iCh]->Draw("colz");
+	}
+	fcE->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz(0);
+	fEpoch[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
+	fcO->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz(0);
+	fOutOfSync[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
+	fcS->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz(0);
+	fStrange[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
+	fcI->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz(0);
+	fInfo[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
+	fcF->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogx(1);
+	fcF->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogy(1);
+	fcF->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz(0);
+	fHitFrequency[(iLink)*(NrOfSpadics)+iAddress]->Draw(/*"colz"*/);
+	fcSp->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogy(1);
+	fSpectrum[(iLink)*(NrOfSpadics)+iAddress]->Draw();
       }
-    
       fcB->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz();
-      fBaseline[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
-      //h = (TH2I*)fHM->H2(TString("Baseline_"+cName).Data());
-      //h->Draw("colz");
-      //fcB->cd((iLink+1)*(NrOfSpadics)+iAddress)->Update();
-      
+      fBaseline[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");      
       cName.Form("SysCore_%i_Spadic_%i",iLink,iAddress);
       fcM->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz();
       fmaxADCmaxTimeBin[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
-      //h = (TH2I*)fHM->H2(TString("maxADC_vs_maxTimeBin_"+cName).Data());
-      //h->Draw("colz");
-      //fcM->cd((iLink)*(NrOfSpadics)+iAddress+1)->Update();
       fcH->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz(0);
       fHit[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
       fcL->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz(0);
       fLost[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
-      fcE->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz(0);
-      fEpoch[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
-      fcO->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz(0);
-      fOutOfSync[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
-      fcS->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz(0);
-      fStrange[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
-      fcI->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz(0);
-      fInfo[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
+    
       fcTS->cd((iLink)*(NrOfSpadics)+iAddress+1);
       fHitTimeA[(iLink)*(NrOfSpadics)+iAddress]->GetYaxis()->SetRangeUser(0,20000);
       fHitTimeA[(iLink)*(NrOfSpadics)+iAddress]->Draw("");
       fHitTimeB[(iLink)*(NrOfSpadics)+iAddress]->Draw("same");
       //fTSGraph[(iLink)*(NrOfSpadics)+iAddress]->Draw("ALP");
-      fcF->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogx(1);
-      fcF->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogy(1);
-      fcF->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz(0);
-      fHitFrequency[(iLink)*(NrOfSpadics)+iAddress]->Draw(/*"colz"*/);
-      fcSp->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogy(1);
-      fSpectrum[(iLink)*(NrOfSpadics)+iAddress]->Draw();
+     
   
     }
   }
