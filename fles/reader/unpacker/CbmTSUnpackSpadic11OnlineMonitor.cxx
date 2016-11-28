@@ -264,7 +264,7 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	for (auto x : mp->samples()) {
 	  sample_values[counter1] = x;
 	  if (triggerType == 1 && stopType == 0 &&  sample_values[2]>-150) {
-	    if (!fHighPerformance)fPulseShape[(GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address))*32+padChannel]->Fill(counter1,x);
+	    if (!fHighPerformance)fPulseShape[(GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address))*32+channel+16*(groupId%2)]->Fill(counter1,x);
 	  }
 	  if (x >= maxADC){
 	    maxADC = x;
@@ -696,7 +696,7 @@ void CbmTSUnpackSpadic11OnlineMonitor::InitCanvas()
       fLost[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
     
       fcTS->cd((iLink)*(NrOfSpadics)+iAddress+1);
-      fHitTimeA[(iLink)*(NrOfSpadics)+iAddress]->GetYaxis()->SetRangeUser(0,20000);
+      fHitTimeA[(iLink)*(NrOfSpadics)+iAddress]->GetYaxis()->SetRangeUser(0,1000);
       fHitTimeA[(iLink)*(NrOfSpadics)+iAddress]->Draw("");
       fHitTimeB[(iLink)*(NrOfSpadics)+iAddress]->Draw("same");
       //fTSGraph[(iLink)*(NrOfSpadics)+iAddress]->Draw("ALP");
