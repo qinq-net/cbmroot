@@ -59,3 +59,6 @@ Set(NumEvents 2)
     EndIf()
   EndIf()
 #EndIf()
+
+### Copy beamtime folder to allow execution of tasks on batch farm after installation
+Install(DIRECTORY cern2016 DESTINATION share/cbmroot/macro/beamtime)
