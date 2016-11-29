@@ -537,6 +537,9 @@ void CbmTSMonitorTof::CreateHistograms()
 
 Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
+#ifdef USE_HTTP_SERVER
+	  THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
+#endif
 
    LOG(DEBUG1) << "Timeslice contains " << ts.num_microslices(component)
                << "microslices." << FairLogger::endl;
