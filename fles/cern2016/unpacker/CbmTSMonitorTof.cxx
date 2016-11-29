@@ -578,6 +578,36 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts, size_t component)
    TH2* histDiamond = fHM->H2("hDiamond");
 
 
+   TString sMsSzName = Form("MsSz_link_%02u", component);
+   TH1* hMsSz = NULL;
+   TProfile* hMsSzTime = NULL;
+   if( fHM->Exists(sMsSzName.Data() ) )
+   {
+      hMsSz = fHM->H1(sMsSzName.Data());
+      sMsSzName = Form("MsSzTime_link_%02u", component);
+      hMsSzTime = fHM->P1(sMsSzName.Data());
+   } // if( fHM->Exists(sMsSzName.Data() ) )
+      else
+      {
+         TString sMsSzTitle = Form("Size of MS for gDPB of link %02u; Ms Size [bytes]", component);
+         fHM->Add(sMsSzName.Data(), new TH1F( sMsSzName.Data(), sMsSzTitle.Data(), 
+                                       160000, 0., 20000. ) );
+         hMsSz = fHM->H1(sMsSzName.Data());
+#ifdef USE_HTTP_SERVER
+         if (server) server->Register("/FlibRaw", hMsSz );
+#endif
+         sMsSzName = Form("MsSzTime_link_%02u", component);
+         sMsSzTitle = Form("Size of MS vs time for gDPB of link %02u; Time[s] ; Ms Size [bytes]", component);
+         fHM->Add(sMsSzName.Data(), new TProfile( sMsSzName.Data(), sMsSzTitle.Data(), 
+                                       15000, 0., 300. ) );
+         hMsSzTime = fHM->P1(sMsSzName.Data());
+#ifdef USE_HTTP_SERVER
+         if (server) server->Register("/FlibRaw", hMsSzTime );
+#endif
+         LOG(INFO) << "Added MS size histo for component: " << component 
+                << " (gDPB)" << FairLogger::endl; 
+      } // else of if( fHM->Exists(sMsSzName.Data() ) )
+
    Int_t messageType = -111;
    // Loop over microslices
    for (size_t m = 0; m < ts.num_microslices(component); ++m)
@@ -595,6 +625,11 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts, size_t component)
       if(size>0)
       LOG(DEBUG) << "Microslice: " << msDescriptor.idx 
       << " has size: " << size << FairLogger::endl; 
+      
+      hMsSz->Fill( size );
+      hMsSzTime->Fill( (1e-9) * static_cast<double>( msDescriptor.idx) , size);
+//      LOG(INFO) << "Test: " << ((1e-9) * static_cast<double>( msDescriptor.idx))
+//      << " s for size: " << size << FairLogger::endl; 
 
       // If not integer number of message in input buffer, print warning/error
       if( 0 != (size % kuBytesPerMessage) )
@@ -1028,6 +1063,20 @@ void CbmTSMonitorTof::Finish()
         fHM->H1( Form("FeetRate_gDPB_g%02u_f%1u", uGdpb, uFeet) )->Write();
       }
    } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
+   gDirectory->cd("..");
+   
+   gDirectory->mkdir("Flib_Raw");
+   gDirectory->cd("Flib_Raw");
+   for( UInt_t uLinks = 0; uLinks < 16; uLinks ++)
+   {
+      TString sMsSzName = Form("MsSz_link_%02u", uLinks);
+      if( fHM->Exists(sMsSzName.Data() ) )
+         fHM->H1( sMsSzName.Data() )->Write();
+         
+      sMsSzName = Form("MsSzTime_link_%02u", uLinks);
+      if( fHM->Exists(sMsSzName.Data() ) )
+         fHM->P1( sMsSzName.Data() )->Write();
+   } // for( UInt_t uLinks = 0; uLinks < 16; uLinks ++)
    gDirectory->cd("..");
 
 }
