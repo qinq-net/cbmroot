@@ -21,7 +21,7 @@
 #include "TH2.h"
 #include "TH3.h"
 #include "TMultiGraph.h"
-
+#include "TMath.h"
 #include "FairRun.h"
 #include "FairRunOnline.h"
 #include "THttpServer.h"
@@ -283,7 +283,7 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	    fmaxADCmaxTimeBin[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(maxTB,maxADC);
 	   
 	    if (maxTB > 0 && maxTB < 5){
-	      if (!fHighPerformance)fSpectrum[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(maxADC);
+	      if (!fHighPerformance)fSpectrum[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(maxADC/*-sample_values[0]*/);
 	    }
 	  }
 	}
@@ -608,7 +608,55 @@ void CbmTSUnpackSpadic11OnlineMonitor::InitHistos()
       fHitTimeB[(iLink)*(NrOfSpadics)+iAddress]=(TH1I*)fHM->H1(TString("HitTimeB_"+histName).Data());
       fHitTimeB[(iLink)*(NrOfSpadics)+iAddress]->GetXaxis()->SetTitle("SuperEpoch count");
       fHitTimeB[(iLink)*(NrOfSpadics)+iAddress]->SetLineColor(2);
-      fHM->Add(TString("HitFrequency_"+histName).Data(),new TH1I (TString("HitFrequency_"+histName).Data(),TString("HitFrequency_"+histName).Data(),100000,1,100000/*,32,-0.5,31.5*/));
+      
+      //const Int_t nBins=70;
+      //auto BinBoarders = [&nBins] (Int_t reBinHigh=32){
+      ////auto BinBoarders = [&nBins] (Int_t reBinLow=32){
+      //const Double_t Threshold = 100.;
+      //const Double_t MaxFreq = (17500000.0);
+      //const Double_t slope=MaxFreq/nBins;
+      //const Int_t iThreshhold=std::ceil((MaxFreq/Threshold-0.5)/static_cast<Double_t>(reBinHigh));
+      //LOG(FATAL) << "iThresshold = " << iThreshhold << FairLogger::endl;
+      //Double_t* Result=new Double_t[nBins+1];
+      //
+      //for(Int_t i=0;i<nBins;i++){
+      //  size_t j=nBins-i;
+      //  //Result[j]=TMath::Power(TMath::E(),i*slope+TMath::Log(2));
+      //  //printf("%d\n",Result[j]);
+      //  Double_t LowEdge = MaxFreq/(reBinHigh*(i*i)+0.5);
+      //  Result[j]=LowEdge;
+      //}/*
+      //   for(Int_t i=0;i<nBins-iThreshhold;i++) {
+      //   size_t j=nBins-iThreshhold-i;
+      //   Double_t LowEdge = MaxFreq/(reBinHigh*(iThreshhold)+0.5+RebinLow*(i));
+      //   Result[j]=LowEdge;
+      //   }*/
+      //Result[0]=0.0;
+      //std::sort(Result,&Result[nBins]);
+      //return Result;
+      //};    
+      //Double_t* freqbins = (BinBoarders());
+      const Int_t nBins = 234;
+      const Double_t maxFreq = (175000000.0);
+      auto BinBoarders = [&nBins] (Int_t reBinHigh=32)
+	{
+	  const Double_t MaxFreq = (175000000.0);
+	  const Double_t slope=10;//MaxFreq/nBins;
+	  Double_t* Result=new Double_t[nBins+1];
+	  for(Int_t i=0;i<nBins;i++)
+	    {
+	      size_t j=nBins-i;
+	      Double_t LowEdge = MaxFreq/(TMath::Power(TMath::E(),(0.1*Int_t(i))));
+	      //printf("LowEdge: %e\n",LowEdge);
+	      Result[j]=LowEdge;
+	      //Result[j]=TMath::Power(TMath::E(),i*slope+TMath::Log(2));
+	    }
+	  Result[0]=0.1;
+	  std::sort(Result,&Result[nBins]);
+	  return Result;
+	};
+      Double_t* freqbins = (BinBoarders());
+      fHM->Add(TString("HitFrequency_"+histName).Data(),new TH1I (TString("HitFrequency_"+histName).Data(),TString("HitFrequency_"+histName).Data(),nBins,freqbins/*100000,1,10000000*/));
       fHitFrequency[(iLink)*(NrOfSpadics)+iAddress]=(TH1I*)fHM->H1(TString("HitFrequency_"+histName).Data());
       fHitFrequency[(iLink)*(NrOfSpadics)+iAddress]->GetXaxis()->SetTitle("Trigger frequency (Hz)");
       fHitFrequency[(iLink)*(NrOfSpadics)+iAddress]->GetYaxis()->SetTitle("Channel ID");
@@ -676,7 +724,7 @@ void CbmTSUnpackSpadic11OnlineMonitor::InitCanvas()
 	fOutOfSync[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
 	fcS->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz(0);
 	fStrange[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
-	fcI->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz(0);
+	fcI->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogx(0);
 	fInfo[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
 	fcF->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogx(1);
 	fcF->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogy(1);
