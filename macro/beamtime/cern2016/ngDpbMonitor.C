@@ -19,7 +19,7 @@ void ngDpbMonitor(TString inFile = "")
 
   // --- Specify number of events to be produced.
   // --- -1 means run until the end of the input file.
-  Int_t nEvents = -1;
+  Int_t nEvents = 10000;
 
   // --- Specify output file name (this is just an example)
   TString outFile = "data/test.root";
