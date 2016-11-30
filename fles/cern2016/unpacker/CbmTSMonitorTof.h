@@ -105,6 +105,8 @@ class CbmTSMonitorTof: public CbmTSUnpack {
     Int_t fNofEpochs; /** Current epoch marker for each ROC **/
     ULong_t fCurrentEpochTime; /** Time stamp of current epoch **/
     Double_t fdStartTime; /** Time of first valid hit (epoch available), used as reference for evolution plots**/
+    Double_t fdStartTimeMsSz; /** Time of first microslice, used as reference for evolution plots**/
+    TCanvas* fcMsSizeAll;
 
     /** Used only if the channel rate plots are enabled **/
     /** Last Hit time for each ROC/GET4/Channel (first hit in the stream initializes the map item) **/

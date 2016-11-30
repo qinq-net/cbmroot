@@ -63,6 +63,8 @@ CbmTSMonitorTof::CbmTSMonitorTof() :
     fNofEpochs(0),
     fCurrentEpochTime(0.),
     fdStartTime(-1.),
+    fdStartTimeMsSz(-1.),
+    fcMsSizeAll(NULL),
     fEquipmentId(0),
     fUnpackPar(NULL)
 {
@@ -300,26 +302,6 @@ void CbmTSMonitorTof::CreateHistograms()
     server->Register("/TofRaw", fHM->H2(name.Data()));
 #endif
 
-  Double_t w = 10;
-  Double_t h = 10;
-
-  TCanvas* c1 = new TCanvas("c1", "Test canvas c1", w, h);
-  c1->Divide(2, 2);
-
-  c1->cd(1);
-  gPad->SetLogy();
-  hMessageType->Draw();
-
-  c1->cd(2);
-  hSysMessType->Draw();
-
-  c1->cd(3);
-  hGet4MessType->Draw("colz");
-  gPad->SetLogz();
-
-  c1->cd(4);
-  hGet4ChanErrors->Draw("colz");
-
   if (fUnpackPar->IsChannelRateEnabled()) {
     for (UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; uGdpb++) {
       const Int_t iNbBinsRate = 82;
@@ -375,162 +357,6 @@ void CbmTSMonitorTof::CreateHistograms()
     } // for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
 
-#ifdef USE_HTTP_SERVER
-  if (server)
-    server->RegisterCommand("/Reset_ChCount_gDPB_00",
-        "/TofRaw/ChCount_gDPB_00/->Reset()");
-  if (server)
-    server->Restrict("/Reset_ChCount_gDPB_00", "allow=admin");
-  if (server)
-    server->RegisterCommand("/Reset_All_TOF", "bResetTofHistos=kTRUE");
-  if (server)
-    server->Restrict("/Reset_All_TOF", "allow=admin");
-#endif
-
-  /** Create summary Canvases for CERN 2016 **/
-  name = "stackRate_g00";
-  THStack * stackRateA = new THStack(name,
-      "Sum of counts vs Time per FEET for gDPB 1");
-  fHM->H1("FeetRate_gDPB_g00_f0")->SetLineColor(kBlack); // => Make stack + color!
-  stackRateA->Add(fHM->H1("FeetRate_gDPB_g00_f0"));
-  fHM->H1("FeetRate_gDPB_g00_f1")->SetLineColor(kRed); // => Make stack + color!
-  stackRateA->Add(fHM->H1("FeetRate_gDPB_g00_f1"));
-  fHM->H1("FeetRate_gDPB_g00_f2")->SetLineColor(kBlue); // => Make stack + color!
-  stackRateA->Add(fHM->H1("FeetRate_gDPB_g00_f2"));
-  fHM->Add(name.Data(), stackRateA);
-#ifdef USE_HTTP_SERVER
-  if (server)
-    server->Register("/TofRaw", stackRateA);
-#endif
-
-  name = "stackRate_g01";
-  THStack * stackRateB = new THStack(name,
-      "Sum of counts vs Time per FEET for gDPB 2");
-  fHM->H1("FeetRate_gDPB_g01_f0")->SetLineColor(kBlack); // => Make stack + color!
-  stackRateB->Add(fHM->H1("FeetRate_gDPB_g01_f0"));
-  fHM->H1("FeetRate_gDPB_g01_f1")->SetLineColor(kRed); // => Make stack + color!
-  stackRateB->Add(fHM->H1("FeetRate_gDPB_g01_f1"));
-  fHM->H1("FeetRate_gDPB_g01_f2")->SetLineColor(kBlue); // => Make stack + color!
-  stackRateB->Add(fHM->H1("FeetRate_gDPB_g01_f2"));
-  fHM->Add(name.Data(), stackRateB);
-#ifdef USE_HTTP_SERVER
-  if (server)
-    server->Register("/TofRaw", stackRateB);
-#endif
-
-  TCanvas* cSummary = new TCanvas("cSummary", "gDPB Monitoring Summary", w, h);
-  cSummary->Divide(4, 3);
-
-  // 1st Column: Messages types
-  cSummary->cd(1);
-  gPad->SetLogy();
-  hMessageType->Draw();
-
-  cSummary->cd(5);
-  gPad->SetLogy();
-  hSysMessType->Draw();
-
-  cSummary->cd(9);
-  gPad->SetLogz();
-  hGet4MessType->Draw("colz");
-
-  // 2nd Column: GET4 Errors + Epoch flags +
-  cSummary->cd(2);
-  gPad->SetLogz();
-  hGet4ChanErrors->Draw("colz");
-
-  cSummary->cd(6);
-  gPad->SetLogz();
-  hGet4EpochFlags->Draw("colz");
-
-  cSummary->cd(10);
-//  gPad->SetLogz();
-//  hGet4MessType->Draw("colz");
-
-  cSummary->cd(4);
-  hGet4ChanErrors->Draw("colz");
-
-  // 3rd & 4th Column: Sum of counts vs Time per FEET
-  cSummary->cd(3);
-  gPad->SetLogy();
-  stackRateA->Draw("nostack");
-
-  cSummary->cd(4);
-  gPad->SetLogy();
-  stackRateB->Draw("nostack");
-
-  cSummary->cd(7);
-  gPad->SetLogy();
-  name = "stackRate_g02";
-  THStack * stackRateC = new THStack(name,
-      "Sum of counts vs Time per FEET for gDPB 3");
-  fHM->H1("FeetRate_gDPB_g02_f0")->SetLineColor(kBlack); // => Make stack + color!
-  stackRateC->Add(fHM->H1("FeetRate_gDPB_g02_f0"));
-  fHM->H1("FeetRate_gDPB_g02_f1")->SetLineColor(kRed); // => Make stack + color!
-  stackRateC->Add(fHM->H1("FeetRate_gDPB_g02_f1"));
-  fHM->H1("FeetRate_gDPB_g02_f2")->SetLineColor(kBlue); // => Make stack + color!
-  stackRateC->Add(fHM->H1("FeetRate_gDPB_g02_f2"));
-  stackRateC->Draw("nostack");
-  fHM->Add(name.Data(), stackRateC);
-#ifdef USE_HTTP_SERVER
-  if (server)
-    server->Register("/TofRaw", stackRateC);
-#endif
-
-  cSummary->cd(8);
-  gPad->SetLogy();
-  name = "stackRate_g03";
-  THStack * stackRateD = new THStack(name,
-      "Sum of counts vs Time per FEET for gDPB 4");
-  fHM->H1("FeetRate_gDPB_g03_f0")->SetLineColor(kBlack); // => Make stack + color!
-  stackRateD->Add(fHM->H1("FeetRate_gDPB_g03_f0"));
-  fHM->H1("FeetRate_gDPB_g03_f1")->SetLineColor(kRed); // => Make stack + color!
-  stackRateD->Add(fHM->H1("FeetRate_gDPB_g03_f1"));
-  fHM->H1("FeetRate_gDPB_g03_f2")->SetLineColor(kBlue); // => Make stack + color!
-  stackRateD->Add(fHM->H1("FeetRate_gDPB_g03_f2"));
-  stackRateD->Draw("nostack");
-  fHM->Add(name.Data(), stackRateD);
-#ifdef USE_HTTP_SERVER
-  if (server)
-    server->Register("/TofRaw", stackRateD);
-#endif
-
-  cSummary->cd(11);
-  gPad->SetLogy();
-  name = "stackRate_g04";
-  THStack * stackRateE = new THStack(name,
-      "Sum of counts vs Time per FEET for gDPB 5");
-  fHM->H1("FeetRate_gDPB_g04_f0")->SetLineColor(kBlack); // => Make stack + color!
-  stackRateE->Add(fHM->H1("FeetRate_gDPB_g04_f0"));
-  fHM->H1("FeetRate_gDPB_g04_f1")->SetLineColor(kRed); // => Make stack + color!
-  stackRateE->Add(fHM->H1("FeetRate_gDPB_g04_f1"));
-  fHM->H1("FeetRate_gDPB_g04_f2")->SetLineColor(kBlue); // => Make stack + color!
-  stackRateE->Add(fHM->H1("FeetRate_gDPB_g04_f2"));
-  stackRateE->Draw("nostack");
-  fHM->Add(name.Data(), stackRateE);
-#ifdef USE_HTTP_SERVER
-  if (server)
-    server->Register("/TofRaw", stackRateE);
-#endif
-
-  cSummary->cd(12);
-  gPad->SetLogy();
-  name = "stackRate_g05";
-  THStack * stackRateF = new THStack(name,
-      "Sum of counts vs Time per FEET for gDPB 6");
-  fHM->H1("FeetRate_gDPB_g05_f0")->SetLineColor(kBlack); // => Make stack + color!
-  stackRateF->Add(fHM->H1("FeetRate_gDPB_g05_f0"));
-  fHM->H1("FeetRate_gDPB_g05_f1")->SetLineColor(kRed); // => Make stack + color!
-  stackRateF->Add(fHM->H1("FeetRate_gDPB_g05_f1"));
-  fHM->H1("FeetRate_gDPB_g05_f2")->SetLineColor(kBlue); // => Make stack + color!
-  stackRateF->Add(fHM->H1("FeetRate_gDPB_g05_f2"));
-  stackRateF->Draw("nostack");
-  fHM->Add(name.Data(), stackRateF);
-#ifdef USE_HTTP_SERVER
-  if (server)
-    server->Register("/TofRaw", stackRateF);
-#endif
-
   name = "hDiamond";
   title = "Counts per diamond in last 10s; X [pad]; Y [pad]; Counts";
   TH2I* hDiamond = new TH2I(name, title, 2, 0., 2, 2, 0., 2.);
@@ -539,6 +365,75 @@ void CbmTSMonitorTof::CreateHistograms()
   if (server)
     server->Register("/TofRaw", fHM->H2(name.Data()));
 #endif
+
+#ifdef USE_HTTP_SERVER
+  if (server)
+    server->RegisterCommand("/Reset_All_TOF", "bResetTofHistos=kTRUE");
+  if (server)
+    server->Restrict("/Reset_All_TOF", "allow=admin");
+#endif
+
+  /** Create summary Canvases for CERN 2016 **/
+  Double_t w = 10;
+  Double_t h = 10;
+  TCanvas* cSummary = new TCanvas("cSummary", "gDPB Monitoring Summary", w, h);
+  cSummary->Divide(2, 3);
+
+  // 1st Column: Messages types
+  cSummary->cd(1);
+  gPad->SetLogy();
+  hMessageType->Draw();
+
+  cSummary->cd(2);
+  gPad->SetLogy();
+  hSysMessType->Draw();
+
+  cSummary->cd(3);
+  gPad->SetLogz();
+  hGet4MessType->Draw("colz");
+
+  // 2nd Column: GET4 Errors + Epoch flags +
+  cSummary->cd(4);
+  gPad->SetLogz();
+  hGet4ChanErrors->Draw("colz");
+
+  cSummary->cd(5);
+  gPad->SetLogz();
+  hGet4EpochFlags->Draw("colz");
+
+  cSummary->cd(6);
+  hDiamond->Draw("coltext");
+  
+  
+  /** Create FEET rates Canvase for CERN 2016 **/
+  TCanvas* cFeeRates = new TCanvas("cFeeRates", "gDPB Monitoring FEET rates", w, h);
+  cFeeRates->Divide(fNrOfFebsPerGdpb, fNrOfGdpbs );
+  
+  TH1* histPnt = NULL;
+  for( UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; ++uGdpb ) {
+    for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; ++uFeet ) {
+      name = Form("FeetRate_gDPB_g%02u_f%1u", uGdpb, uFeet);
+      histPnt = fHM->H1(name.Data());
+      
+      cFeeRates->cd( 1 + uGdpb * fNrOfFebsPerGdpb + uFeet );
+      gPad->SetLogy();
+      
+      histPnt->Draw();
+    } // for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; ++uFeet )
+  } // for( UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; ++uGdpb )
+   
+  /** Recovers/Create Ms Size Canvase for CERN 2016 **/  
+  // Try to recover canvas in case it was created already by another monitor
+  // If not existing, create it
+  fcMsSizeAll = dynamic_cast<TCanvas *>( gROOT->FindObject( "cMsSizeAll" ) );
+  if( NULL == fcMsSizeAll )
+  {
+     fcMsSizeAll = new TCanvas("cMsSizeAll", "Evolution of MS size in last 300 s", w, h);
+     fcMsSizeAll->Divide( 4, 4 );
+      LOG(INFO) << "Created MS size canvas in TOF monitor" << FairLogger::endl; 
+  } // if( NULL == fcMsSizeAll )
+      else LOG(INFO) << "Recovered MS size canvas in TOF monitor" << FairLogger::endl; 
+  /*****************************/
 
 
   fHistMessType = fHM->H1("hMessageType");
@@ -549,7 +444,7 @@ void CbmTSMonitorTof::CreateHistograms()
   fHistDiamond = fHM->H2("hDiamond");
 
   for (Int_t i = 0; i < fNrOfGdpbs; ++i) {
-    TString name = Form("Raw_Tot_gDPB_%02u", i);
+    name = Form("Raw_Tot_gDPB_%02u", i);
     fRaw_Tot_gDPB.push_back(fHM->H2(name.Data()));
     name = Form("ChCount_gDPB_%02u", i);
     fChCount_gDPB.push_back(fHM->H1(name.Data()));
@@ -562,9 +457,8 @@ void CbmTSMonitorTof::CreateHistograms()
       fFeetRate_gDPB.push_back(fHM->H1(name.Data()));
     } // for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
   }
-
   /*****************************/
-
+  
   LOG(INFO) << "Leaving CreateHistograms" << FairLogger::endl;
 }
 
@@ -619,6 +513,12 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts,
     if (server)
       server->Register("/FlibRaw", hMsSzTime);
 #endif
+    if( NULL != fcMsSizeAll )
+    {
+      fcMsSizeAll->cd( 1 + component );
+      gPad->SetLogy();
+      hMsSzTime->Draw("hist le0");
+    } // if( NULL != fcMsSizeAll )
     LOG(INFO) << "Added MS size histo for component: " << component << " (gDPB)"
                  << FairLogger::endl;
   } // else of if( fHM->Exists(sMsSzName.Data() ) )
@@ -641,10 +541,10 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts,
       LOG(DEBUG) << "Microslice: " << msDescriptor.idx << " has size: " << size
                     << FairLogger::endl;
 
+    if( fdStartTimeMsSz < 0 )
+      fdStartTimeMsSz = (1e-9) * static_cast<double>(msDescriptor.idx);
     hMsSz->Fill(size);
-    hMsSzTime->Fill((1e-9) * static_cast<double>(msDescriptor.idx), size);
-//      LOG(INFO) << "Test: " << ((1e-9) * static_cast<double>( msDescriptor.idx))
-//      << " s for size: " << size << FairLogger::endl; 
+    hMsSzTime->Fill((1e-9) * static_cast<double>(msDescriptor.idx) - fdStartTimeMsSz, size);
 
     // If not integer number of message in input buffer, print warning/error
     if (0 != (size % kuBytesPerMessage))
@@ -1119,6 +1019,8 @@ void CbmTSMonitorTof::ResetAllHistos()
     if (fHM->Exists(sMsSzName.Data()))
       fHM->P1(sMsSzName.Data())->Reset();
   } // for( UInt_t uLinks = 0; uLinks < 16; uLinks ++)
+  
+  fdStartTime = -1;
 }
 
 ClassImp(CbmTSMonitorTof)
