@@ -9,7 +9,7 @@
 #pragma link C++ class CbmTSUnpackFHodo;
 #pragma link C++ class CbmTSUnpackTof;
 #pragma link C++ class CbmTSMonitorTofLegacy;
-#pragma link C++ class CbmTSMonitorTofNoVect;
+#pragma link C++ class CbmTSMonitorTof;
 #pragma link C++ class CbmTSMonitorMuch;
 #pragma link C++ class CbmFHodoUnpackPar;
 #pragma link C++ class CbmTofUnpackPar;

@@ -1,11 +1,11 @@
 // -----------------------------------------------------------------------------
 // -----                                                                   -----
-// -----                        CbmTSMonitorTofNoVect                            -----
+// -----                        CbmTSMonitorTof                            -----
 // -----               Created 27.10.2016 by P.-A. Loizeau                 -----
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 
-#include "CbmTSMonitorTofNoVect.h"
+#include "CbmTSMonitorTof.h"
 #include "CbmTofUnpackPar.h"
 //#include "CbmTofDigiExp.h"
 
@@ -37,7 +37,7 @@ static Int_t iMess = 0;
 Bool_t bResetTofHistos = kFALSE;
 
 
-CbmTSMonitorTofNoVect::CbmTSMonitorTofNoVect() :
+CbmTSMonitorTof::CbmTSMonitorTof() :
     CbmTSUnpack(),
     fuMsAcceptsPercent(100),
     fuMinNbGdpb(),
@@ -68,13 +68,13 @@ CbmTSMonitorTofNoVect::CbmTSMonitorTofNoVect() :
 {
 }
 
-CbmTSMonitorTofNoVect::~CbmTSMonitorTofNoVect()
+CbmTSMonitorTof::~CbmTSMonitorTof()
 {
   delete fHM; //TODO: Who deletes the histograms stored in the CbmHistManager???
   delete[] fCurrentEpoch;
 }
 
-Bool_t CbmTSMonitorTofNoVect::Init()
+Bool_t CbmTSMonitorTof::Init()
 {
   LOG(INFO) << "Initializing Get4 monitor" << FairLogger::endl;
 
@@ -86,7 +86,7 @@ Bool_t CbmTSMonitorTofNoVect::Init()
   return kTRUE;
 }
 
-void CbmTSMonitorTofNoVect::SetParContainers()
+void CbmTSMonitorTof::SetParContainers()
 {
   LOG(INFO) << "Setting parameter containers for " << GetName()
                << FairLogger::endl;
@@ -96,7 +96,7 @@ void CbmTSMonitorTofNoVect::SetParContainers()
 
 }
 
-Bool_t CbmTSMonitorTofNoVect::InitContainers()
+Bool_t CbmTSMonitorTof::InitContainers()
 {
   LOG(INFO) << "Init parameter containers for " << GetName()
                << FairLogger::endl;
@@ -114,7 +114,7 @@ Bool_t CbmTSMonitorTofNoVect::InitContainers()
   return initOK;
 }
 
-Bool_t CbmTSMonitorTofNoVect::ReInitContainers()
+Bool_t CbmTSMonitorTof::ReInitContainers()
 {
   LOG(INFO) << "ReInit parameter containers for " << GetName()
                << FairLogger::endl;
@@ -164,7 +164,7 @@ Bool_t CbmTSMonitorTofNoVect::ReInitContainers()
   return kTRUE;
 }
 
-void CbmTSMonitorTofNoVect::CreateHistograms()
+void CbmTSMonitorTof::CreateHistograms()
 {
 #ifdef USE_HTTP_SERVER
   THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
@@ -568,7 +568,7 @@ void CbmTSMonitorTofNoVect::CreateHistograms()
   LOG(INFO) << "Leaving CreateHistograms" << FairLogger::endl;
 }
 
-Bool_t CbmTSMonitorTofNoVect::DoUnpack(const fles::Timeslice& ts,
+Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts,
     size_t component)
 {
 #ifdef USE_HTTP_SERVER
@@ -791,7 +791,7 @@ Bool_t CbmTSMonitorTofNoVect::DoUnpack(const fles::Timeslice& ts,
   return kTRUE;
 }
 
-void CbmTSMonitorTofNoVect::FillHitInfo(ngdpb::Message mess)
+void CbmTSMonitorTof::FillHitInfo(ngdpb::Message mess)
 {
   Int_t channel = mess.getGdpbHitChanId();
   Int_t tot = mess.getGdpbHit32Tot();
@@ -869,7 +869,7 @@ void CbmTSMonitorTofNoVect::FillHitInfo(ngdpb::Message mess)
                     << Form("0x%08x ", fGdpbId) << FairLogger::endl;
 }
 
-void CbmTSMonitorTofNoVect::FillEpochInfo(ngdpb::Message mess)
+void CbmTSMonitorTof::FillEpochInfo(ngdpb::Message mess)
 {
   Int_t epochNr = mess.getEpoch2Number();
   fCurrentEpoch[fGet4Nr] = epochNr;
@@ -900,7 +900,7 @@ void CbmTSMonitorTofNoVect::FillEpochInfo(ngdpb::Message mess)
    */
 }
 
-void CbmTSMonitorTofNoVect::PrintSlcInfo(ngdpb::Message mess)
+void CbmTSMonitorTof::PrintSlcInfo(ngdpb::Message mess)
 {
   if (fGdpbIdIndexMap.end() != fGdpbIdIndexMap.find(fGdpbId))
     LOG(INFO) << "GET4 Slow Control message, epoch "
@@ -918,7 +918,7 @@ void CbmTSMonitorTofNoVect::PrintSlcInfo(ngdpb::Message mess)
 
 }
 
-void CbmTSMonitorTofNoVect::PrintGenInfo(ngdpb::Message mess)
+void CbmTSMonitorTof::PrintGenInfo(ngdpb::Message mess)
 {
   Int_t mType = mess.getMessageType();
   Int_t channel = mess.getGdpbHitChanId();
@@ -932,7 +932,7 @@ void CbmTSMonitorTofNoVect::PrintGenInfo(ngdpb::Message mess)
                  << FairLogger::endl;
 }
 
-void CbmTSMonitorTofNoVect::PrintSysInfo(ngdpb::Message mess)
+void CbmTSMonitorTof::PrintSysInfo(ngdpb::Message mess)
 {
   if (fGdpbIdIndexMap.end() != fGdpbIdIndexMap.find(fGdpbId))
     LOG(DEBUG) << "GET4 System message,       epoch "
@@ -981,11 +981,11 @@ void CbmTSMonitorTofNoVect::PrintSysInfo(ngdpb::Message mess)
   } // switch( getGdpbSysSubType() )
 }
 
-void CbmTSMonitorTofNoVect::Reset()
+void CbmTSMonitorTof::Reset()
 {
 }
 
-void CbmTSMonitorTofNoVect::Finish()
+void CbmTSMonitorTof::Finish()
 {
   TString message_type;
 
@@ -1076,11 +1076,11 @@ void CbmTSMonitorTofNoVect::Finish()
 
 }
 
-void CbmTSMonitorTofNoVect::FillOutput(CbmDigi* /*digi*/)
+void CbmTSMonitorTof::FillOutput(CbmDigi* /*digi*/)
 {
 }
 
-void CbmTSMonitorTofNoVect::SetDiamondChannels(Int_t iGdpb, Int_t iFeet,
+void CbmTSMonitorTof::SetDiamondChannels(Int_t iGdpb, Int_t iFeet,
     Int_t iChannelA, Int_t iChannelB, Int_t iChannelC, Int_t iChannelD)
 {
   fDiamondGdpb = iGdpb;
@@ -1091,7 +1091,7 @@ void CbmTSMonitorTofNoVect::SetDiamondChannels(Int_t iGdpb, Int_t iFeet,
   fDiamondChanD = iChannelD;
 }
 
-void CbmTSMonitorTofNoVect::ResetAllHistos()
+void CbmTSMonitorTof::ResetAllHistos()
 {
   LOG(INFO) << "Reseting all TOF histograms." << FairLogger::endl;
   fHM->H1("hMessageType")->Reset();
@@ -1121,4 +1121,4 @@ void CbmTSMonitorTofNoVect::ResetAllHistos()
   } // for( UInt_t uLinks = 0; uLinks < 16; uLinks ++)
 }
 
-ClassImp(CbmTSMonitorTofNoVect)
+ClassImp(CbmTSMonitorTof)

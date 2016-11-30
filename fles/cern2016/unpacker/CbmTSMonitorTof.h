@@ -5,8 +5,8 @@
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 
-#ifndef CbmTSMonitorTofNoVect_H
-#define CbmTSMonitorTofNoVect_H
+#ifndef CbmTSMonitorTof_H
+#define CbmTSMonitorTof_H
 
 #ifndef __CINT__
 #include "Timeslice.hpp"
@@ -25,11 +25,11 @@
 class CbmDigi;
 class CbmTofUnpackPar;
 
-class CbmTSMonitorTofNoVect: public CbmTSUnpack {
+class CbmTSMonitorTof: public CbmTSUnpack {
   public:
 
-    CbmTSMonitorTofNoVect();
-    virtual ~CbmTSMonitorTofNoVect();
+    CbmTSMonitorTof();
+    virtual ~CbmTSMonitorTof();
 
     virtual Bool_t Init();
 
@@ -140,10 +140,10 @@ class CbmTSMonitorTofNoVect: public CbmTSUnpack {
       return gdpbId * fNrOfGet4PerGdpb + get4Id;
     }
 
-    CbmTSMonitorTofNoVect(const CbmTSMonitorTofNoVect&);
-    CbmTSMonitorTofNoVect operator=(const CbmTSMonitorTofNoVect&);
+    CbmTSMonitorTof(const CbmTSMonitorTof&);
+    CbmTSMonitorTof operator=(const CbmTSMonitorTof&);
 
-  ClassDef(CbmTSMonitorTofNoVect, 1)
+  ClassDef(CbmTSMonitorTof, 1)
 };
 
 #endif

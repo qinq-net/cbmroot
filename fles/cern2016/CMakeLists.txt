@@ -49,7 +49,7 @@ Set(SRCS
   unpacker/CbmTSUnpackTof.cxx
   
   unpacker/CbmTSMonitorTofLegacy.cxx
-  unpacker/CbmTSMonitorTofNoVect.cxx
+  unpacker/CbmTSMonitorTof.cxx
   unpacker/CbmTSMonitorMuch.cxx
 
   param/CbmTofUnpackPar.cxx
