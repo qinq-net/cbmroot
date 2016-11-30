@@ -1,11 +1,11 @@
 // -----------------------------------------------------------------------------
 // -----                                                                   -----
-// -----                        CbmTSMonitorTof                            -----
+// -----                        CbmTSMonitorTofLegacy                            -----
 // -----               Created 27.10.2016 by P.-A. Loizeau                 -----
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 
-#include "CbmTSMonitorTof.h"
+#include "CbmTSMonitorTofLegacy.h"
 #include "CbmTofUnpackPar.h"
 //#include "CbmTofDigiExp.h"
 
@@ -35,7 +35,7 @@
 
 static Int_t iMess=0;
 
-CbmTSMonitorTof::CbmTSMonitorTof()
+CbmTSMonitorTofLegacy::CbmTSMonitorTofLegacy()
   : CbmTSUnpack(),
     fuMsAcceptsPercent(100),
     fuMinNbGdpb(),
@@ -66,11 +66,11 @@ CbmTSMonitorTof::CbmTSMonitorTof()
 {
 }
 
-CbmTSMonitorTof::~CbmTSMonitorTof()
+CbmTSMonitorTofLegacy::~CbmTSMonitorTofLegacy()
 {
 }
 
-Bool_t CbmTSMonitorTof::Init()
+Bool_t CbmTSMonitorTofLegacy::Init()
 {
    LOG(INFO) << "Initializing Get4 monitor" << FairLogger::endl;
 
@@ -82,7 +82,7 @@ Bool_t CbmTSMonitorTof::Init()
    return kTRUE;
 }
 
-void CbmTSMonitorTof::SetParContainers()
+void CbmTSMonitorTofLegacy::SetParContainers()
 {
    LOG(INFO) << "Setting parameter containers for " << GetName()
              << FairLogger::endl;
@@ -90,7 +90,7 @@ void CbmTSMonitorTof::SetParContainers()
 
 }
 
-Bool_t CbmTSMonitorTof::InitContainers()
+Bool_t CbmTSMonitorTofLegacy::InitContainers()
 {
    LOG(INFO) << "Init parameter containers for " << GetName()
              << FairLogger::endl;
@@ -101,7 +101,7 @@ Bool_t CbmTSMonitorTof::InitContainers()
    return initOK;
 }
 
-Bool_t CbmTSMonitorTof::ReInitContainers()
+Bool_t CbmTSMonitorTofLegacy::ReInitContainers()
 {
    LOG(INFO) << "ReInit parameter containers for " << GetName()
              << FairLogger::endl;
@@ -154,7 +154,7 @@ Bool_t CbmTSMonitorTof::ReInitContainers()
    return kTRUE;
 }
 
-void CbmTSMonitorTof::CreateHistograms()
+void CbmTSMonitorTofLegacy::CreateHistograms()
 {
 #ifdef USE_HTTP_SERVER
 	  THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
@@ -537,7 +537,7 @@ void CbmTSMonitorTof::CreateHistograms()
   LOG(INFO) << "Leaving CreateHistograms" << FairLogger::endl;
 }
 
-Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts, size_t component)
+Bool_t CbmTSMonitorTofLegacy::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
 #ifdef USE_HTTP_SERVER
 	  THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
@@ -788,7 +788,7 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts, size_t component)
    return kTRUE;
 }
 
-void CbmTSMonitorTof::FillHitInfo(ngdpb::Message mess,
+void CbmTSMonitorTofLegacy::FillHitInfo(ngdpb::Message mess,
                                   std::vector<TH2*> Raw_Tot_gDPB,
                                   std::vector<TH1*> ChCount_gDPB,
                                   std::vector<TH2*> ChannelRate_gDPB,
@@ -880,7 +880,7 @@ void CbmTSMonitorTof::FillHitInfo(ngdpb::Message mess,
    else LOG(WARNING) << "found unmapped rocId w/o epoch yet: " << Form("0x%08x ",rocId) << FairLogger::endl;
 }
 
-void CbmTSMonitorTof::FillEpochInfo(ngdpb::Message mess, TH2* EpochFlags)
+void CbmTSMonitorTofLegacy::FillEpochInfo(ngdpb::Message mess, TH2* EpochFlags)
 {
    Int_t rocId  = mess.getRocNumber();
    Int_t get4Id = mess.getGdpbGenChipId();
@@ -924,7 +924,7 @@ void CbmTSMonitorTof::FillEpochInfo(ngdpb::Message mess, TH2* EpochFlags)
 */
 }
 
-void CbmTSMonitorTof::PrintSlcInfo(ngdpb::Message mess)
+void CbmTSMonitorTofLegacy::PrintSlcInfo(ngdpb::Message mess)
 {
    Int_t rocId      = mess.getRocNumber();
    Int_t get4Id     = mess.getGdpbGenChipId();
@@ -945,7 +945,7 @@ void CbmTSMonitorTof::PrintSlcInfo(ngdpb::Message mess)
 
 }
 
-void CbmTSMonitorTof::PrintGenInfo(ngdpb::Message mess)
+void CbmTSMonitorTofLegacy::PrintGenInfo(ngdpb::Message mess)
 {
    Int_t mType    = mess.getMessageType();
    Int_t rocId    = mess.getRocNumber();
@@ -961,7 +961,7 @@ void CbmTSMonitorTof::PrintGenInfo(ngdpb::Message mess)
              << FairLogger::endl;  
 }
 
-void CbmTSMonitorTof::PrintSysInfo(ngdpb::Message mess)
+void CbmTSMonitorTofLegacy::PrintSysInfo(ngdpb::Message mess)
 {
    Int_t rocId      = mess.getRocNumber();
    Int_t get4Id     = mess.getGdpbGenChipId();
@@ -1015,11 +1015,11 @@ void CbmTSMonitorTof::PrintSysInfo(ngdpb::Message mess)
    } // switch( getGdpbSysSubType() )
 }
 
-void CbmTSMonitorTof::Reset()
+void CbmTSMonitorTofLegacy::Reset()
 {
 }
 
-void CbmTSMonitorTof::Finish()
+void CbmTSMonitorTofLegacy::Finish()
 {
    TString message_type;
 
@@ -1087,13 +1087,13 @@ void CbmTSMonitorTof::Finish()
 }
 
 
-void CbmTSMonitorTof::FillOutput(CbmDigi* /*digi*/)
+void CbmTSMonitorTofLegacy::FillOutput(CbmDigi* /*digi*/)
 {
 }
 
 
    
-void CbmTSMonitorTof::SetDiamondChannels( Int_t iGdpb, Int_t iFeet, Int_t iChannelA, 
+void CbmTSMonitorTofLegacy::SetDiamondChannels( Int_t iGdpb, Int_t iFeet, Int_t iChannelA, 
                             Int_t iChannelB, Int_t iChannelC, Int_t iChannelD)
 {
    fDiamondGdpb  = iGdpb;
@@ -1104,7 +1104,7 @@ void CbmTSMonitorTof::SetDiamondChannels( Int_t iGdpb, Int_t iFeet, Int_t iChann
    fDiamondChanD = iChannelD;
 }
                    
-void CbmTSMonitorTof::ResetAllHistos()
+void CbmTSMonitorTofLegacy::ResetAllHistos()
 {
    fHM->H1( "hMessageType" )->Reset();
    fHM->H1( "hSysMessType" )->Reset();
@@ -1136,4 +1136,4 @@ void CbmTSMonitorTof::ResetAllHistos()
    } // for( UInt_t uLinks = 0; uLinks < 16; uLinks ++)
 }
    
-ClassImp(CbmTSMonitorTof)
+ClassImp(CbmTSMonitorTofLegacy)

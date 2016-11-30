@@ -5,8 +5,8 @@
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 
-#ifndef CbmTSMonitorTof_H
-#define CbmTSMonitorTof_H
+#ifndef CbmTSMonitorTofLegacy_H
+#define CbmTSMonitorTofLegacy_H
 
 #ifndef __CINT__
   #include "Timeslice.hpp"
@@ -25,12 +25,12 @@
 class CbmDigi;
 class CbmTofUnpackPar;
 
-class CbmTSMonitorTof : public CbmTSUnpack
+class CbmTSMonitorTofLegacy : public CbmTSUnpack
 {
 public:
   
-   CbmTSMonitorTof();
-   virtual ~CbmTSMonitorTof();
+   CbmTSMonitorTofLegacy();
+   virtual ~CbmTSMonitorTofLegacy();
     
    virtual Bool_t Init();
 
@@ -114,10 +114,10 @@ private:
    void PrintGenInfo(ngdpb::Message);
 #endif
 
-   CbmTSMonitorTof(const CbmTSMonitorTof&);
-   CbmTSMonitorTof operator=(const CbmTSMonitorTof&);
+   CbmTSMonitorTofLegacy(const CbmTSMonitorTofLegacy&);
+   CbmTSMonitorTofLegacy operator=(const CbmTSMonitorTofLegacy&);
 
-   ClassDef(CbmTSMonitorTof, 1)
+   ClassDef(CbmTSMonitorTofLegacy, 1)
 };
 
 #endif
