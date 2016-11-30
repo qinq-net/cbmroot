@@ -33,6 +33,10 @@ using namespace std;
 
 CbmTSMonitorMuch::CbmTSMonitorMuch()
   : CbmTSUnpack(),
+    fNrOfNdpbs(0),
+    fNrOfNdpbsA(0),
+    fNrOfNdpbsB(0),
+    fNrOfFebsPerNdpb(0),
     fMsgCounter(11,0), // length of enum MessageTypes initialized with 0
     fNdpbIdIndexMap(),
     fMuchStationMapX(),
@@ -87,20 +91,34 @@ Bool_t CbmTSMonitorMuch::ReInitContainers()
 	LOG(INFO) << "ReInit parameter containers for " << GetName()
 			<< FairLogger::endl;
 
-	Int_t NrOfnDpbsModA = fUnpackPar->GetNrOfnDpbsModA();
-
-	LOG(INFO) << "Nr. of nDPBs Mod. A: " << NrOfnDpbsModA
+	fNrOfNdpbsA = fUnpackPar->GetNrOfnDpbsModA();
+	fNrOfNdpbsB = fUnpackPar->GetNrOfnDpbsModB();
+  fNrOfNdpbs = fNrOfNdpbsA + fNrOfNdpbsB;
+  fNrOfFebsPerNdpb = fUnpackPar->GetNrOfFebsPerNdpb();
+  
+	LOG(INFO) << "Nr. of nDPBs Mod. A: " << fNrOfNdpbsA
+    		<< FairLogger::endl;
+  
+	LOG(INFO) << "Nr. of nDPBs Mod. B: " << fNrOfNdpbsB
     		<< FairLogger::endl;
       
    fNdpbIdIndexMap.clear();
-   for (Int_t i = 0; i< NrOfnDpbsModA; ++i) 
+   for (Int_t i = 0; i< fNrOfNdpbsA; ++i) 
    {
      fNdpbIdIndexMap[fUnpackPar->GetNdpbIdA(i)] = i;
-     LOG(INFO) << "nDPB Id of MUCH  " << i
+     LOG(INFO) << "nDPB Id of MUCH A " << i
                << " : 0x" << std::hex << fUnpackPar->GetNdpbIdA(i)
                << std::dec
                << FairLogger::endl;
    } // for (Int_t i = 0; i< NrOfnDpbsModA; ++i) 
+   for (Int_t i = 0; i< fNrOfNdpbsB; ++i) 
+   {
+     fNdpbIdIndexMap[fUnpackPar->GetNdpbIdB(i)] = i + fNrOfNdpbsA;
+     LOG(INFO) << "nDPB Id of MUCH B " << i
+               << " : 0x" << std::hex << fUnpackPar->GetNdpbIdB(i)
+               << std::dec
+               << FairLogger::endl;
+   } // for (Int_t i = 0; i< NrOfnDpbsModB; ++i) 
 
 	Int_t NrOfFebs = fUnpackPar->GetNrOfFebs();
 
@@ -186,30 +204,62 @@ void CbmTSMonitorMuch::CreateHistograms()
   if (server) server->Register("/MuchRaw", fHM->H1(sHistName.Data()));
 #endif
 
-	for ( Int_t febId = 0 ; 
-         febId < fUnpackPar->GetNrOfnDpbsModA()*fUnpackPar->GetNrOfFebsPerNdpb(); 
-         febId++){// looping on all the FEB IDs
-		sHistName = Form("Chan_Counts_Much_%02u", febId);
-		title = Form("Channel counts Much FEB %02u; channel; Counts", febId);
-		fHM->Add( sHistName.Data(), new TH1F( sHistName.Data(), title.Data(), 128, 0, 127) );
+   for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
+   {// looping on all the nDPBS IDs
+      for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
+      {// looping on all the FEB IDs 
+         if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+         {
+            sHistName = Form("Chan_Counts_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId);
+            title = Form("Channel counts Much nDPB %04X FEB %02u; channel; Counts", 
+                        fUnpackPar->GetNdpbIdA(dpbId), febId);
+         } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+            else 
+            {
+               sHistName = Form("Chan_Counts_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId - fNrOfNdpbsA), febId);
+               title = Form("Channel counts Much nDPB %04X FEB %02u; channel; Counts", 
+                           fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
+            } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+		  fHM->Add( sHistName.Data(), new TH1F( sHistName.Data(), title.Data(), 128, 0, 127) );
 #ifdef USE_HTTP_SERVER
-    if (server) server->Register("/MuchRaw", fHM->H1(sHistName.Data()));
+        if (server) server->Register("/MuchRaw", fHM->H1(sHistName.Data()));
 #endif
       
-		sHistName = Form("Raw_ADC_Much_%02u", febId);
-		title = Form("Raw ADC Much FEB %02u; channel; ADC value", febId);
-		fHM->Add( sHistName.Data(), new TH2F( sHistName.Data(), title.Data(), 128, 0, 127, 4096, 0, 4095) );
+        if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+         {
+            sHistName = Form("Raw_ADC_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId);
+            title = Form("Raw ADC Much nDPB %04X FEB %02u; channel; ADC value",
+                     fUnpackPar->GetNdpbIdA(dpbId), febId);
+         } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+            else  
+            {
+               sHistName = Form("Raw_ADC_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
+               title = Form("Raw ADC Much nDPB %04X FEB %02u; channel; ADC value",
+                           fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
+            } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+		  fHM->Add( sHistName.Data(), new TH2F( sHistName.Data(), title.Data(), 128, 0, 127, 4096, 0, 4095) );
 #ifdef USE_HTTP_SERVER
-    if (server) server->Register("/MuchRaw", fHM->H2(sHistName.Data()));
+        if (server) server->Register("/MuchRaw", fHM->H2(sHistName.Data()));
 #endif
 
-		sHistName = Form("FebRate_%02u", febId);
-		title = Form("Counts per second in FEB%02u; Time[s] ; Counts", febId);
-		fHM->Add( sHistName.Data(), new TH1F( sHistName.Data(), title.Data(), 1800, 0, 1800 ) );
+        if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+         {
+            sHistName = Form("FebRate_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId);
+            title = Form("Counts per second in nDPB %04X FEB %02u; Time[s] ; Counts",
+                           fUnpackPar->GetNdpbIdA(dpbId), febId);
+         } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+            else  
+            {
+               sHistName = Form("FebRate_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
+               title = Form("Counts per second in nDPB %04X FEB %02u; Time[s] ; Counts",
+                           fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
+            } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+		  fHM->Add( sHistName.Data(), new TH1F( sHistName.Data(), title.Data(), 1800, 0, 1800 ) );
 #ifdef USE_HTTP_SERVER
-    if (server) server->Register("/MuchRaw", fHM->H1(sHistName.Data()));
+        if (server) server->Register("/MuchRaw", fHM->H1(sHistName.Data()));
 #endif
-  }
+      } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
+   } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
 
 	sHistName = "Pad_Distribution";
 	title = "Pad_Distribution; Sectors in Horizontal Direction; Channels in Vertical Direction";
@@ -233,6 +283,60 @@ void CbmTSMonitorMuch::CreateHistograms()
 #ifdef USE_HTTP_SERVER
     if (server) server->Register("/MuchRaw", fHM->H2(sHistName.Data()));
 #endif
+
+  Double_t w = 10;
+  Double_t h = 10;
+  Int_t iNbPadsPerDpb = fNrOfFebsPerNdpb/2 + fNrOfFebsPerNdpb%2;
+
+  TCanvas* cMuchChCounts = new TCanvas("cMuchChCounts", "MUCH Channels counts", w, h);
+  cMuchChCounts->Divide( fNrOfNdpbs/2 + fNrOfNdpbs%2, fNrOfFebsPerNdpb );
+
+  TCanvas* cMuchFebRate = new TCanvas("cMuchFebRate", "MUCH FEB rate", w, h);
+  cMuchFebRate->Divide( fNrOfNdpbs/2 + fNrOfNdpbs%2, fNrOfFebsPerNdpb );
+
+   TH1* histPnt = NULL;
+   for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
+   {// looping on all the nDPBS IDs
+      for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
+      {// looping on all the FEB IDs
+         cMuchChCounts->cd( 1 + dpbId * iNbPadsPerDpb + febId/2 );
+         gPad->SetLogy();
+         if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+            sHistName = Form("Chan_Counts_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId);
+            else sHistName = Form("Chan_Counts_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
+         histPnt = fHM->H1(sHistName.Data());
+         
+         if( 0 == febId%2 )
+         {
+            histPnt->SetLineColor( kRed );  // => Change color for 1st of the 2/pad!
+            histPnt->Draw();
+         } // if( 0 == febId%2 )
+            else
+            {
+               histPnt->SetLineColor( kBlue );  // => Change color for 1nd of the 2/pad!
+               histPnt->Draw("same");
+            } // if( 0 == febId%2 )
+            
+         cMuchFebRate->cd( 1 + dpbId * iNbPadsPerDpb + febId/2 );
+         gPad->SetLogy();
+         if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+            sHistName = Form("FebRate_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId);
+            else sHistName = Form("FebRate_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
+         histPnt = fHM->H1(sHistName.Data());
+         
+         if( 0 == febId%2 )
+         {
+            histPnt->SetLineColor( kRed );  // => Change color for 1st of the 2/pad!
+            histPnt->Draw();
+         } // if( 0 == febId%2 )
+            else
+            {
+               histPnt->SetLineColor( kBlue );  // => Change color for 1nd of the 2/pad!
+               histPnt->Draw("same");
+            } // if( 0 == febId%2 )
+      } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
+   } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
+  
 }
 
 Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
@@ -254,16 +358,30 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
   TString sHistName{""};
   TString title{""};
 
-  for ( Int_t febId = 0 ;
-		  febId < fUnpackPar->GetNrOfnDpbsModA()*fUnpackPar->GetNrOfFebsPerNdpb();
-		  febId++){// looping on all the FEB IDs
-      sHistName = Form("Chan_Counts_Much_%02u", febId);
-      Chan_Counts_Much.push_back(fHM->H1(sHistName.Data()));
-      sHistName = Form("Raw_ADC_Much_%02u", febId);
-      Raw_ADC_Much.push_back(fHM->H2(sHistName.Data()));
-      sHistName = Form("FebRate_%02u", febId);
-      FebRate.push_back(fHM->H1(sHistName.Data()));
-  }
+   for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
+   {// looping on all the nDPBS IDs
+      for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
+      {// looping on all the FEB IDs
+         if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+         {
+            sHistName = Form("Chan_Counts_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId);
+            Chan_Counts_Much.push_back(fHM->H1(sHistName.Data()));
+            sHistName = Form("Raw_ADC_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId);
+            Raw_ADC_Much.push_back(fHM->H2(sHistName.Data()));
+            sHistName = Form("FebRate_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId);
+            FebRate.push_back(fHM->H1(sHistName.Data()));
+         } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+            else
+            {
+               sHistName = Form("Chan_Counts_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
+               Chan_Counts_Much.push_back(fHM->H1(sHistName.Data()));
+               sHistName = Form("Raw_ADC_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
+               Raw_ADC_Much.push_back(fHM->H2(sHistName.Data()));
+               sHistName = Form("FebRate_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
+               FebRate.push_back(fHM->H1(sHistName.Data()));
+            } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+      } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
+   } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
   TH2* histPadDistr = fHM->H2("Pad_Distribution");
 
    TString sMsSzName = Form("MsSz_link_%02u", component);
@@ -514,12 +632,25 @@ void CbmTSMonitorMuch::Finish()
 
    gDirectory->mkdir("Much_Raw");
    gDirectory->cd("Much_Raw");
-	for ( Int_t febId = 0 ; 
-         febId < fUnpackPar->GetNrOfnDpbsModA()*fUnpackPar->GetNrOfFebsPerNdpb(); 
-         febId++){// looping on all the FEB IDs
-     fHM->H1( Form("Chan_Counts_Much_%02u", febId) )->Write();
-     fHM->H2( Form("Raw_ADC_Much_%02u", febId) )->Write();  
-   }      
+
+   for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
+   {// looping on all the nDPBS IDs
+      for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
+      {// looping on all the FEB IDs
+         if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+         {
+     fHM->H1( Form("Chan_Counts_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId) )->Write();
+     fHM->H2( Form("Raw_ADC_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId) )->Write();  
+     fHM->H1( Form("FebRate_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId) )->Write();
+        } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+        else
+        {
+     fHM->H1( Form("Chan_Counts_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId) )->Write();
+     fHM->H2( Form("Raw_ADC_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId) )->Write();  
+     fHM->H1( Form("FebRate_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId) )->Write();
+        } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+      } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
+   } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
    fHM->H2("Pad_Distribution")->Write();        
    gDirectory->cd("..");
    

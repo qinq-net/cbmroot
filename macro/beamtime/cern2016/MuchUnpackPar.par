@@ -6,11 +6,15 @@
 //----------------------------------------------------------------------------
 NrOfnDpbsModA: Int_t 4 #ModA means M1 Gem Module 1
 nDbpsIdsArrayA: Int_t \
-  0x4edd  0x4ef6 0x559d 0x6161   # n1:0x4edd n2:0x4ef6 n3: 0x6191 n4: 0x5b7b n5: 0x559d n6: 0x6161 n7:0x4f33 n8: 0x5b75 n9: 0x:55ef
-
+  0x6191  0x4ef6  0x559d  0x6161 # n1:0x4edd n2:0x4ef6 n3: 0x6191 n4: 0x5b7b n5: 0x559d n6: 0x6161 n7:0x4f33 n8: 0x5b75 n9: 0x 55ef
+NrOfnDpbsModB: Int_t 2 #ModA means M1 Gem Module 1
+nDbpsIdsArrayB: Int_t \
+  0x4edd 0x5b7b  # n1:0x4edd n2:0x4ef6 n3: 0x6191 n4: 0x5b7b n5: 0x559d n6: 0x6161 n7:0x4f33 n8: 0x5b75 n9: 0x 55ef
 NbFebPerNdpb: Int_t 4
 NrOfFebs: Int_t 15
-nFebsIdsArray: Int_t \
+nFebsIdsArrayA: Int_t \
+ 0  3  6  9  11  13  14  12  10  8  5  2  1  4  7  #Id for the FEB
+nFebsIdsArrayB: Int_t \
  0  3  6  9  11  13  14  12  10  8  5  2  1  4  7  #Id for the FEB
 NrOfChannels: Int_t 128
 ChannelsToPadY: Int_t \

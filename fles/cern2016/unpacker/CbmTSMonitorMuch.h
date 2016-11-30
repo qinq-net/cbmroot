@@ -46,7 +46,11 @@ public:
   void FillOutput(CbmDigi* digi);
 
 private:
-
+   Int_t fNrOfNdpbs;           // Total number of NDPBs in the system
+   Int_t fNrOfNdpbsA;           // Total number of NDPBs for GEM A
+   Int_t fNrOfNdpbsB;           // Total number of NDPBs for GEM B
+   Int_t fNrOfFebsPerNdpb;     // Number of FEBs per NDPB
+   
   std::vector<int> fMsgCounter;
    std::map<UInt_t, UInt_t> fNdpbIdIndexMap;
 
