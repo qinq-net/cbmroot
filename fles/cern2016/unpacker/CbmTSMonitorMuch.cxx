@@ -21,6 +21,7 @@
 #include "TString.h"
 #include "TRandom.h"
 #include "THttpServer.h"
+#include "TROOT.h"
 
 #include <iostream>
 #include <stdint.h>
@@ -30,6 +31,8 @@ class CbmMuchAddress;
 using std::hex;
 using std::dec;
 using namespace std;
+
+Bool_t bResetMuchHistos = kFALSE;
 
 CbmTSMonitorMuch::CbmTSMonitorMuch()
   : CbmTSUnpack(),
@@ -46,6 +49,8 @@ CbmTSMonitorMuch::CbmTSMonitorMuch()
     fNofEpochs(0),
     fCurrentEpochTime(0.),
     fdStartTime( -1 ),
+    fdStartTimeMsSz(-1.),
+    fcMsSizeAll(NULL),
     fEquipmentId(0),
 	fUnpackPar(NULL)
 {
@@ -284,6 +289,14 @@ void CbmTSMonitorMuch::CreateHistograms()
     if (server) server->Register("/MuchRaw", fHM->H2(sHistName.Data()));
 #endif
 
+#ifdef USE_HTTP_SERVER
+  if (server)
+    server->RegisterCommand("/Reset_All_MUCH", "bResetMuchHistos=kTRUE");
+  if (server)
+    server->Restrict("/Reset_All_Much", "allow=admin");
+#endif
+
+  /** Create summary Canvases for CERN 2016 **/
   Double_t w = 10;
   Double_t h = 10;
   Int_t iNbPadsPerDpb = fNrOfFebsPerNdpb/2 + fNrOfFebsPerNdpb%2;
@@ -336,6 +349,20 @@ void CbmTSMonitorMuch::CreateHistograms()
             } // if( 0 == febId%2 )
       } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
    } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
+   
+  /** Recovers/Create Ms Size Canvase for CERN 2016 **/  
+  // Try to recover canvas in case it was created already by another monitor
+  // If not existing, create it
+  fcMsSizeAll = dynamic_cast<TCanvas *>( gROOT->FindObject( "cMsSizeAll" ) );
+  if( NULL == fcMsSizeAll )
+  {
+     fcMsSizeAll = new TCanvas("cMsSizeAll", "Evolution of MS size in last 300 s", w, h);
+     fcMsSizeAll->Divide( 4, 4 );
+      LOG(INFO) << "Created MS size canvas in MUCH monitor" << FairLogger::endl; 
+  } // if( NULL == fcMsSizeAll )
+      else LOG(INFO) << "Recovered MS size canvas in MUCH monitor" << FairLogger::endl; 
+  
+  /*****************************/
   
 }
 
@@ -344,6 +371,11 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
 #ifdef USE_HTTP_SERVER
 	  THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
 #endif
+
+  if (bResetMuchHistos) {
+    ResetAllHistos();
+    bResetMuchHistos = kFALSE;
+  }
 
   LOG(DEBUG) << "Timeslice contains " << ts.num_microslices(component)
              << "microslices." << FairLogger::endl;
@@ -410,6 +442,12 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
 #ifdef USE_HTTP_SERVER
          if (server) server->Register("/FlibRaw", hMsSzTime );
 #endif
+         if( NULL != fcMsSizeAll )
+         {
+            fcMsSizeAll->cd( 1 + component );
+            gPad->SetLogy();
+            hMsSzTime->Draw("hist le0");
+         } // if( NULL != fcMsSizeAll )
          LOG(INFO) << "Added MS size histo for component: " << component 
                 << " (nDPB)" << FairLogger::endl; 
       } // else of if( fHM->Exists(sMsSzName.Data() ) )
@@ -429,8 +467,10 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
       LOG(DEBUG) << "Microslice: " << msDescriptor.idx 
                 << " has size: " << size << FairLogger::endl; 
       
+       if( fdStartTimeMsSz < 0 )
+         fdStartTimeMsSz = (1e-9) * static_cast<double>(msDescriptor.idx);
       hMsSz->Fill( size );
-      hMsSzTime->Fill( (1e-9) * static_cast<double>( msDescriptor.idx) , size);
+      hMsSzTime->Fill( (1e-9) * static_cast<double>( msDescriptor.idx) - fdStartTimeMsSz, size);
 
       // If not integer number of message in input buffer, print warning/error
       if( 0 != (size % kuBytesPerMessage) )
@@ -673,6 +713,35 @@ void CbmTSMonitorMuch::Finish()
 
 void CbmTSMonitorMuch::FillOutput(CbmDigi* digi)
 {
+}
+
+void CbmTSMonitorMuch::ResetAllHistos()
+{
+  LOG(INFO) << "Reseting all MUCH histograms." << FairLogger::endl;
+  fHM->H1("hMessageTypeMuch")->Reset();
+  fHM->H1("hSysMessTypeMuch")->Reset();
+
+   for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
+   {// looping on all the nDPBS IDs
+      for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
+      {// looping on all the FEB IDs
+         if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+         {
+     fHM->H1( Form("Chan_Counts_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId) )->Reset();
+     fHM->H2( Form("Raw_ADC_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId) )->Reset();  
+     fHM->H1( Form("FebRate_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId) )->Reset();
+        } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+        else
+        {
+     fHM->H1( Form("Chan_Counts_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId) )->Reset();
+     fHM->H2( Form("Raw_ADC_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId) )->Reset();  
+     fHM->H1( Form("FebRate_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId) )->Reset();
+        } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+      } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
+   } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
+   fHM->H2("Pad_Distribution")->Write();   
+  
+  fdStartTime = -1;
 }
 
 ClassImp(CbmTSMonitorMuch)

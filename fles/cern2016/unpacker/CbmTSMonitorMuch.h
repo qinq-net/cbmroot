@@ -45,6 +45,8 @@ public:
 
   void FillOutput(CbmDigi* digi);
 
+    void ResetAllHistos();
+
 private:
    Int_t fNrOfNdpbs;           // Total number of NDPBs in the system
    Int_t fNrOfNdpbsA;           // Total number of NDPBs for GEM A
@@ -63,6 +65,8 @@ private:
   Int_t fNofEpochs; /** Current epoch marker for each ROC **/
   ULong_t fCurrentEpochTime;     /** Time stamp of current epoch **/
   Double_t fdStartTime; /** Time of first valid hit (epoch available), used as reference for evolution plots**/
+  Double_t fdStartTimeMsSz; /** Time of first microslice, used as reference for evolution plots**/
+  TCanvas* fcMsSizeAll;
 
   Int_t fEquipmentId;
 
