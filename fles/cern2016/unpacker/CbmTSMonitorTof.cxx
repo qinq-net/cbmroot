@@ -386,7 +386,9 @@ void CbmTSMonitorTof::CreateHistograms()
 
 #ifdef USE_HTTP_SERVER
       if (server) server->RegisterCommand( "/Reset_ChCount_gDPB_00", "/TofRaw/ChCount_gDPB_00/->Reset()" );
-      if (server) server->Restrict("/Reset_ChCount_gDPB_00","allow=admin"); 
+      if (server) server->Restrict("/Reset_ChCount_gDPB_00","allow=admin");
+      if (server) server->RegisterCommand( "/Reset_All_TOF", "ResetAllHistos()" );
+      if (server) server->Restrict("/Reset_All_TOF","allow=admin"); 
 #endif
   
   
@@ -1064,7 +1066,7 @@ void CbmTSMonitorTof::Finish()
       for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
       {
         fHM->H1( Form("FeetRate_gDPB_g%02u_f%1u", uGdpb, uFeet) )->Write();
-      }
+      } // for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
    } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
    gDirectory->cd("..");
    
@@ -1101,5 +1103,37 @@ void CbmTSMonitorTof::SetDiamondChannels( Int_t iGdpb, Int_t iFeet, Int_t iChann
    fDiamondChanC = iChannelC;
    fDiamondChanD = iChannelD;
 }
-
+                   
+void CbmTSMonitorTof::ResetAllHistos()
+{
+   fHM->H1( "hMessageType" )->Reset();
+   fHM->H1( "hSysMessType" )->Reset();
+   fHM->H2( "hGet4MessType" )->Reset();
+   fHM->H2( "hGet4ChanErrors" )->Reset();
+   fHM->H2( "hGet4EpochFlags")->Reset();
+      
+   for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
+   {
+      fHM->H2( Form("Raw_Tot_gDPB_%02u", uGdpb) )->Reset();
+      fHM->H1( Form("ChCount_gDPB_%02u", uGdpb) )->Reset();
+      if( fUnpackPar->IsChannelRateEnabled() )
+         fHM->H2( Form("ChannelRate_gDPB_%02u", uGdpb) )->Reset();
+      for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
+      {
+        fHM->H1( Form("FeetRate_gDPB_g%02u_f%1u", uGdpb, uFeet) )->Reset();
+      } // for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
+   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
+   
+   for( UInt_t uLinks = 0; uLinks < 16; uLinks ++)
+   {
+      TString sMsSzName = Form("MsSz_link_%02u", uLinks);
+      if( fHM->Exists(sMsSzName.Data() ) )
+         fHM->H1( sMsSzName.Data() )->Reset();
+         
+      sMsSzName = Form("MsSzTime_link_%02u", uLinks);
+      if( fHM->Exists(sMsSzName.Data() ) )
+         fHM->P1( sMsSzName.Data() )->Reset();
+   } // for( UInt_t uLinks = 0; uLinks < 16; uLinks ++)
+}
+   
 ClassImp(CbmTSMonitorTof)

@@ -56,6 +56,8 @@ public:
    
    void SetDiamondChannels( Int_t iGdpb = 0, Int_t iFeet = 2, Int_t iChannelA = 78, 
                             Int_t iChannelB = 70, Int_t iChannelC = 94, Int_t iChannelD = 86 );
+                            
+   void ResetAllHistos();
 
 private:
 
