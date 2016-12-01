@@ -68,8 +68,8 @@ export ENERGY=${coll_energy}
 # cd $workdir
 
 # Run the root simulation
-root -b -l -q "${macro_dir}/run_sim.C(${nevents}, ${Numb}, ${Flag})"
-root -b -l -q "${macro_dir}/run_reco.C(${nevents}, ${Numb}, ${Flag})"
+root -b -l -q "${macro_dir}/run_sim_position.C(${nevents}, ${Numb}, ${Flag})"
+root -b -l -q "${macro_dir}/run_reco_position.C(${nevents}, ${Numb}, ${Flag})"
 #root -b -l -q "${macro_dir}/Compute_distance.C(${Numb}, ${Flag})"
 
 #cp -v ${SGE_STDOUT_PATH} ${outdir}/log/${JOB_ID}.${SGE_TASK_ID}.log
