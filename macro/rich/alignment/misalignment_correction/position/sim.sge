@@ -1,7 +1,7 @@
 #$ -wd /tmp 
 #$ -j y
 # Number of subtasks to start
-#$ -t 1-1000
+#$ -t 1-10
 
 XXXXX=$(printf "%05d" "$SGE_TASK_ID")
 
