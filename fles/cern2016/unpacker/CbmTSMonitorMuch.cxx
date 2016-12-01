@@ -225,7 +225,7 @@ void CbmTSMonitorMuch::CreateHistograms()
                title = Form("Channel counts Much nDPB %04X FEB %02u; channel; Counts", 
                            fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
             } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-		  fHM->Add( sHistName.Data(), new TH1F( sHistName.Data(), title.Data(), 128, 0, 127) );
+		  fHM->Add( sHistName.Data(), new TH1F( sHistName.Data(), title.Data(), 128, 0, 128) );
 #ifdef USE_HTTP_SERVER
         if (server) server->Register("/MuchRaw", fHM->H1(sHistName.Data()));
 #endif
@@ -242,7 +242,7 @@ void CbmTSMonitorMuch::CreateHistograms()
                title = Form("Raw ADC Much nDPB %04X FEB %02u; channel; ADC value",
                            fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
             } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-		  fHM->Add( sHistName.Data(), new TH2F( sHistName.Data(), title.Data(), 128, 0, 127, 4096, 0, 4095) );
+		  fHM->Add( sHistName.Data(), new TH2F( sHistName.Data(), title.Data(), 128, 0, 128, 4096, 0, 4096) );
 #ifdef USE_HTTP_SERVER
         if (server) server->Register("/MuchRaw", fHM->H2(sHistName.Data()));
 #endif
