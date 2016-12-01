@@ -58,6 +58,9 @@ class CbmTSMonitorTof: public CbmTSUnpack {
 
     void SetDiamondChannels(Int_t iGdpb = 0, Int_t iFeet = 2, Int_t iChannelA =
         78, Int_t iChannelB = 70, Int_t iChannelC = 94, Int_t iChannelD = 86);
+    void SetDiamondPerTsSpillOnThr( Int_t iThrIn = 10 ) {  fiDiamSpillOnThr = iThrIn; }
+    void SetDiamondPerTsSpillOffThr( Int_t iThrIn = 3 ) { fiDiamSpillOffThr = iThrIn; }
+    void SetDiamondTsNbSpillOffThr( Int_t iThrIn = 10 ) { fiTsUnderOffThr = iThrIn; }
 
     void ResetAllHistos();
 
@@ -82,6 +85,14 @@ class CbmTSMonitorTof: public CbmTSUnpack {
     Int_t fDiamondChanC;
     Int_t fDiamondChanD;
     Int_t fDiamondTimeLastReset;
+    Int_t fiDiamCountsLastTs;
+    Int_t fiDiamSpillOnThr;
+    Int_t fiDiamSpillOffThr;
+    Int_t fiTsUnderOff;
+    Int_t fiTsUnderOffThr;
+    Double_t fdDiamondLastTime;
+    Double_t fdDiamondTimeLastTs;
+    Bool_t fbSpillOn;
 
     Int_t fGdpbId; // Id (hex number)of the GDPB which is read from the message
     Int_t fGdpbNr; // running number (0 to fNrOfGdpbs) of the GDPB in the
@@ -122,6 +133,8 @@ class CbmTSMonitorTof: public CbmTSUnpack {
     TH2* fHistGet4ChanErrors;
     TH2* fHistGet4EpochFlags;
     TH2* fHistDiamond;
+    TH2* fHistDiamondSpill;
+    TH1* fHistDiamondSpillLength;
 
     std::vector<TH2*> fRaw_Tot_gDPB;
     std::vector<TH1*> fChCount_gDPB;

@@ -28,6 +28,8 @@
 #include "TCanvas.h"
 #include "THStack.h"
 #include "TROOT.h"
+#include "TStyle.h"
+#include "TPaveStats.h"
 
 #include <iostream>
 #include <stdint.h>
@@ -54,6 +56,14 @@ CbmTSMonitorTof::CbmTSMonitorTof() :
     fDiamondChanC(-1),
     fDiamondChanD(-1),
     fDiamondTimeLastReset(-1),
+    fiDiamCountsLastTs(0),
+    fiDiamSpillOnThr(10), 
+    fiDiamSpillOffThr(3),
+    fiTsUnderOff(0),
+    fiTsUnderOffThr(10),
+    fdDiamondLastTime(-1.),
+    fdDiamondTimeLastTs(-1.),
+    fbSpillOn(kFALSE),
     fuCurrNbGdpb(0),
     fMsgCounter(11, 0), // length of enum MessageTypes initialized with 0
     fGdpbIdIndexMap(),
@@ -366,6 +376,24 @@ void CbmTSMonitorTof::CreateHistograms()
     server->Register("/TofRaw", fHM->H2(name.Data()));
 #endif
 
+  name = "hDiamondSpill";
+  title = "Counts per diamond in Current Spill; X [pad]; Y [pad]; Counts";
+  TH2I* hDiamondSpill = new TH2I(name, title, 2, 0., 2, 2, 0., 2.);
+  fHM->Add(name.Data(), hDiamondSpill);
+#ifdef USE_HTTP_SERVER
+  if (server)
+    server->Register("/TofRaw", fHM->H2(name.Data()));
+#endif
+
+  name = "hDiamondSpillLength";
+  title = "Length of spill interval as found from diamond; Length [s]; Counts";
+  TH1* hDiamondSpillLength = new TH1F(name, title, 3000, 0., 300.);
+  fHM->Add(name.Data(), hDiamondSpillLength);
+#ifdef USE_HTTP_SERVER
+  if (server)
+    server->Register("/TofRaw", fHM->H1(name.Data()));
+#endif
+
 #ifdef USE_HTTP_SERVER
   if (server)
     server->RegisterCommand("/Reset_All_TOF", "bResetTofHistos=kTRUE");
@@ -402,7 +430,7 @@ void CbmTSMonitorTof::CreateHistograms()
   hGet4EpochFlags->Draw("colz");
 
   cSummary->cd(6);
-  hDiamond->Draw("coltext");
+  hDiamondSpill->Draw("col text");
   
   
   /** Create FEET rates Canvase for CERN 2016 **/
@@ -433,6 +461,28 @@ void CbmTSMonitorTof::CreateHistograms()
       LOG(INFO) << "Created MS size canvas in TOF monitor" << FairLogger::endl; 
   } // if( NULL == fcMsSizeAll )
       else LOG(INFO) << "Recovered MS size canvas in TOF monitor" << FairLogger::endl; 
+
+  /** Create beam tuning Canvases for CERN 2016 **/
+  TCanvas* cBeamTunning = new TCanvas("cBeamTunning", "USTC D1 rate + DIam Rate + Diam centering", w, h);
+  cBeamTunning->Divide(2, 2);
+  
+  gStyle->Reset();
+
+  cBeamTunning->cd(1);
+  histPnt = fHM->H1( "FeetRate_gDPB_g00_f0" );
+  gPad->SetLogy();
+  histPnt->Draw();
+
+  cBeamTunning->cd(2);
+  histPnt = fHM->H1( "FeetRate_gDPB_g00_f2" );
+  gPad->SetLogy();
+  histPnt->Draw();
+  
+  cBeamTunning->cd(3);
+  hDiamond->Draw("col text");
+
+  cBeamTunning->cd(4);
+  hDiamondSpill->Draw("col text");
   /*****************************/
 
 
@@ -442,6 +492,8 @@ void CbmTSMonitorTof::CreateHistograms()
   fHistGet4ChanErrors = fHM->H2("hGet4ChanErrors");
   fHistGet4EpochFlags = fHM->H2("hGet4EpochFlags");
   fHistDiamond = fHM->H2("hDiamond");
+  fHistDiamondSpill = fHM->H2("hDiamondSpill");
+  fHistDiamondSpillLength = fHM->H1("hDiamondSpillLength");
 
   for (Int_t i = 0; i < fNrOfGdpbs; ++i) {
     name = Form("Raw_Tot_gDPB_%02u", i);
@@ -522,6 +574,9 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts,
     LOG(INFO) << "Added MS size histo for component: " << component << " (gDPB)"
                  << FairLogger::endl;
   } // else of if( fHM->Exists(sMsSzName.Data() ) )
+
+  // Initialize spill detection
+  fiDiamCountsLastTs = 0;
 
   Int_t messageType = -111;
   // Loop over microslices
@@ -688,6 +743,28 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts,
     } // for (uint32_t uIdx = 0; uIdx < uNbMessages; uIdx ++)
   } // for (size_t m = 0; m < ts.num_microslices(component); ++m)
 
+  // Spill detection using Diamond
+  if( !fbSpillOn && (fiDiamSpillOnThr < fiDiamCountsLastTs) )
+  {
+    fbSpillOn = kTRUE;
+    fHistDiamondSpill->Reset();
+    fiTsUnderOff = 0;
+    
+    if( 0 < fdDiamondTimeLastTs )
+      fHistDiamondSpillLength->Fill( fdDiamondLastTime - fdDiamondTimeLastTs );
+    fdDiamondTimeLastTs = fdDiamondLastTime;
+  } // if( !fbSpillOn && (fiDiamSpillOnThr < fiDiamCountsLastTs) )
+  else if( fbSpillOn  )
+  {
+    if( fiDiamCountsLastTs < fiDiamSpillOffThr )
+    {
+      fiTsUnderOff ++;
+      if( fiTsUnderOffThr < fiTsUnderOff )
+        fbSpillOn = kFALSE;
+    } //  if( fiDiamCountsLastTs < fiDiamSpillOffThr )
+      else fiTsUnderOff = 0;
+  } // else if( fbSpillOn  )
+
   return kTRUE;
 }
 
@@ -732,35 +809,47 @@ void CbmTSMonitorTof::FillHitInfo(ngdpb::Message mess)
       fFeetRate_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + (fGet4Id / fNrOfGet4PerFeb)]->Fill(
           1e-9 * (mess.getMsgFullTimeD(curEpochGdpbGet4) - fdStartTime));
 
-        if (fDiamondGdpb == fGdpbNr
-            && (fGet4Id / fNrOfGet4PerFeb == fDiamondFeet)) {
-          Int_t iChanInGdpb = fGet4Id * fNrOfChannelsPerGet4 + channel;
-          if (fDiamondChanA == iChanInGdpb)
-            fHistDiamond->Fill(0., 0.);
-          else if (fDiamondChanB == iChanInGdpb)
-            fHistDiamond->Fill(1., 0.);
-          else if (fDiamondChanC == iChanInGdpb)
-            fHistDiamond->Fill(0., 1.);
-          else if (fDiamondChanD == iChanInGdpb)
-            fHistDiamond->Fill(1., 1.);
+     if (fDiamondGdpb == fGdpbNr
+         && (fGet4Id / fNrOfGet4PerFeb == fDiamondFeet)) {
+       Int_t iChanInGdpb = fGet4Id * fNrOfChannelsPerGet4 + channel;
+       if (fDiamondChanA == iChanInGdpb)
+       {
+         fHistDiamond->Fill(0., 0.);
+         fHistDiamondSpill->Fill(0., 0.);
+       } // if (fDiamondChanA == iChanInGdpb)
+       else if (fDiamondChanB == iChanInGdpb)
+       {
+         fHistDiamond->Fill(1., 0.);
+         fHistDiamondSpill->Fill(1., 0.);
+       } // else if (fDiamondChanB == iChanInGdpb)
+       else if (fDiamondChanC == iChanInGdpb)
+       {
+         fHistDiamond->Fill(0., 1.);
+         fHistDiamondSpill->Fill(0., 1.);
+       } // else if (fDiamondChanC == iChanInGdpb)
+       else if (fDiamondChanD == iChanInGdpb)
+       {
+         fHistDiamond->Fill(1., 1.);
+         fHistDiamondSpill->Fill(1., 1.);
+       } // else if (fDiamondChanD == iChanInGdpb)
+         
+       if( fDiamondChanA == iChanInGdpb || fDiamondChanB == iChanInGdpb ||
+           fDiamondChanC == iChanInGdpb || fDiamondChanD == iChanInGdpb )
+       {
+         fiDiamCountsLastTs ++;
+         fdDiamondLastTime = 1e-9 * mess.getMsgFullTimeD(curEpochGdpbGet4);
+       } // if channel match one of the diamond ones
 
-          if (10
-              < ((mess.getMsgFullTimeD(curEpochGdpbGet4) / 1e9)
-                  - fDiamondTimeLastReset)) {
-            fHistDiamond->Reset();
-            fDiamondTimeLastReset = mess.getMsgFullTimeD(curEpochGdpbGet4) / 1e9;
-          } // if( 1e10 < ( mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] ) - fDiamondTimeLastReset )
+     } // if( fDiamondGdpb == gdpbNr && ( get4Id/fNrOfGet4PerFeb == fDiamondFeet ) )
 
-        } // if( fDiamondGdpb == gdpbNr && ( get4Id/fNrOfGet4PerFeb == fDiamondFeet ) )
+     hitTime = mess.getMsgFullTime(curEpochGdpbGet4);
+     Int_t Ft = mess.getGdpbHitFineTs();
 
-        hitTime = mess.getMsgFullTime(curEpochGdpbGet4);
-        Int_t Ft = mess.getGdpbHitFineTs();
-
-        if (100 > iMess++)
-          LOG(DEBUG) << "Hit: " << Form("0x%08x ", fGdpbId) << ", " << fGet4Id
-                        << ", " << channel << ", " << tot << ", epoch "
-                        << curEpochGdpbGet4 << ", FullTime "
-                        << hitTime << ", FineTime " << Ft << FairLogger::endl;
+     if (100 > iMess++)
+       LOG(DEBUG) << "Hit: " << Form("0x%08x ", fGdpbId) << ", " << fGet4Id
+                     << ", " << channel << ", " << tot << ", epoch "
+                     << curEpochGdpbGet4 << ", FullTime "
+                     << hitTime << ", FineTime " << Ft << FairLogger::endl;
   } // if( fCurrentEpoch[rocId].end() != fCurrentEpoch[rocId].find( get4Id ) )
     //} // if( fCurrentEpoch.end() != fCurrentEpoch.find( rocId ) )
   //} // if( fGdpbIdIndexMap.end() != fGdpbIdIndexMap.find( rocId ) )
@@ -788,6 +877,17 @@ void CbmTSMonitorTof::FillEpochInfo(ngdpb::Message mess)
 
   fCurrentEpochTime = mess.getMsgFullTime(epochNr);
   fNofEpochs++;
+  
+
+  if (fDiamondGdpb == fGdpbNr
+      && (fGet4Id / fNrOfGet4PerFeb == fDiamondFeet)) {
+    if (10
+        < ((mess.getMsgFullTimeD(epochNr) / 1e9)
+            - fDiamondTimeLastReset)) {
+      fHistDiamond->Reset();
+      fDiamondTimeLastReset = mess.getMsgFullTimeD(epochNr) / 1e9;
+    } // if( 1e10 < ( mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] ) - fDiamondTimeLastReset )
+  } // if( fDiamondGdpb == gdpbNr && ( get4Id/fNrOfGet4PerFeb == fDiamondFeet ) )
 
   /*
    LOG(DEBUG) << "Epoch message "
@@ -999,6 +1099,7 @@ void CbmTSMonitorTof::ResetAllHistos()
   fHM->H2("hGet4MessType")->Reset();
   fHM->H2("hGet4ChanErrors")->Reset();
   fHM->H2("hGet4EpochFlags")->Reset();
+  fHM->H2("hDiamondSpillLength")->Reset();
 
   for (UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb++) {
     fHM->H2(Form("Raw_Tot_gDPB_%02u", uGdpb))->Reset();
@@ -1019,7 +1120,7 @@ void CbmTSMonitorTof::ResetAllHistos()
     if (fHM->Exists(sMsSzName.Data()))
       fHM->P1(sMsSzName.Data())->Reset();
   } // for( UInt_t uLinks = 0; uLinks < 16; uLinks ++)
-  
+
   fdStartTime = -1;
 }
 
