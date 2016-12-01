@@ -18,7 +18,8 @@ macro_dir=/u/jbendar/CBMSRC/macro/rich/alignment/misalignment_correction/positio
 export SCRIPT=yes
 
 # Number of events to run
-nevents=1000
+nevents=10
+#nevents=1000
 
 # Create needed directories
 mkdir -p ${outdir}/log
