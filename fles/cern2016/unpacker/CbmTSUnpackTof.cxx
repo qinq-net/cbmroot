@@ -175,7 +175,7 @@ Bool_t CbmTSUnpackTof::DoUnpack(const fles::Timeslice& ts, size_t component)
           uint64_t ulData = static_cast<uint64_t>( pInBuff[uIdx] );
           ngdpb::Message mess( ulData );
 
-          if(gLogger->IsLogNeeded(DEBUG)) {
+          if(gLogger->IsLogNeeded(DEBUG1)) {
             mess.printDataCout();
           }
 
@@ -318,7 +318,7 @@ void CbmTSUnpackTof::FillEpochInfo(ngdpb::Message mess)
 
   fCurrentEpochTime = mess.getMsgFullTime(fCurrentEpoch[rocId][get4Id]);
   fNofEpochs++;
-  LOG(DEBUG) << "Epoch message "
+  LOG(DEBUG1) << "Epoch message "
              << fNofEpochs << ", epoch " << static_cast<Int_t>(fCurrentEpoch[rocId][get4Id])
              << ", time " << std::setprecision(9) << std::fixed
              << Double_t(fCurrentEpochTime) * 1.e-9 << " s "
@@ -358,7 +358,7 @@ void CbmTSUnpackTof::PrintGenInfo(ngdpb::Message mess)
   uint64_t            uData = mess.getData(); 
   if(100 > iMess++)
   LOG(INFO) << "Get4 MSG type "<<mType<<" from rocId "<<rocId<<", getId "<<get4Id
-	    << ", (hit channel) "<<channel<<Form(" data 0x%01Fx ",uData)
+	    << ", (hit channel) "<<channel<<Form(" hex data %0lx ",uData)
             << FairLogger::endl;  
 }
 
