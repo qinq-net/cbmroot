@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 // -----                                                                   -----
-// -----                           CbmTSUnpackSpadic11OnlineMonitor                       -----
-// -----                    Created 07.11.2014 by F. Uhlig                 -----
+// -----                           CbmTSUnpackSpadic11OnlineMonitor        -----
+// -----                    Created 20.12.2016 by C. Bergmann              -----
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 
@@ -77,6 +77,7 @@ class CbmTSUnpackSpadic11OnlineMonitor : public CbmTSUnpack
   TCanvas* fcF;
   TCanvas* fcSp;
   TCanvas* fcPS[(NrOfSyscores)*(NrOfSpadics)];
+  TCanvas* fcMS;
   void InitHistos();
   void InitCanvas();
   void UpdateCanvas();
@@ -93,10 +94,15 @@ class CbmTSUnpackSpadic11OnlineMonitor : public CbmTSUnpack
   TH1I* fHitFrequency[(NrOfSyscores)*(NrOfSpadics)];
   TH1I* fSpectrum[(NrOfSyscores)*(NrOfSpadics)];
   TH2I* fPulseShape[(NrOfSyscores)*(NrOfSpadics)*32];
+  TH1I* fMessageStatistic[(NrOfSyscores)*(NrOfSpadics)];
   TGraph* fTSGraph[(NrOfSyscores)*(NrOfSpadics)];
   Int_t fLastSuperEpochA[(NrOfSyscores)*(NrOfSpadics)];
   Int_t fLastSuperEpochB[(NrOfSyscores)*(NrOfSpadics)];
   ULong_t fLastFullTime[NrOfSyscores][NrOfSpadics][32];
+  TString fMessageTypes[7];
+  TString fTriggerTypes[4];
+  TString fStopTypes[6];
+  TString fInfoTypes[7];
   //Int_t fSumHitMessages[(NrOfSyscores)*(NrOfSpadics)];
   CbmTSUnpackSpadic11OnlineMonitor(const CbmTSUnpackSpadic11OnlineMonitor&);
   CbmTSUnpackSpadic11OnlineMonitor operator=(const CbmTSUnpackSpadic11OnlineMonitor&);

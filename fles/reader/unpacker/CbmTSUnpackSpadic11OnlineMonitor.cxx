@@ -54,6 +54,7 @@ CbmTSUnpackSpadic11OnlineMonitor::CbmTSUnpackSpadic11OnlineMonitor(Bool_t highPe
     fcF(NULL),
     fcSp(NULL),
     fcPS({NULL}),
+    fcMS(NULL),
     fBaseline({NULL}),
     fmaxADCmaxTimeBin({NULL}),
     fHit({NULL}),
@@ -68,13 +69,38 @@ CbmTSUnpackSpadic11OnlineMonitor::CbmTSUnpackSpadic11OnlineMonitor(Bool_t highPe
     fHitFrequency({NULL}),
     fSpectrum({NULL}),
     fPulseShape({NULL}),
+    fMessageStatistic({NULL}),
+      fMessageTypes({"Epoch",
+	"Epoch out of synch",
+	"Hit",
+	"Hit aborted",
+	"Info",
+	"Overflow",
+	"Strange"}),
+    fTriggerTypes({ "Global trigger",
+	  "Self triggered",
+	  "Neighbor triggered",
+	  "Self and neighbor triggered"}),
+    fStopTypes({"Normal end of message", 
+	  "Channel buffer full", 
+	  "Ordering FIFO full", 
+	  "Multi hit", 
+	  "Multi hit and channel buffer full", 
+	  "Multi hit and ordering FIFO full"}),
+    fInfoTypes({"Channel disabled during message building", 
+	       "Next grant timeout", 
+	       "Next request timeout", 
+	       "New grant but channel empty", 
+	       "Corruption in message builder", 
+	       "Empty word", 
+	       "Epoch out of sync"}),
     fHM(new CbmHistManager()),
     fNrExtraneousSamples{0}
 {
   for (Int_t i=0; i < NrOfSyscores; ++i) { 
     for (Int_t j=0; j < NrOfHalfSpadics; ++j) { 
       fEpochMarkerArray[i][j] = 0;
-	  fPreviousEpochMarkerArray[i][j] =0;
+      fPreviousEpochMarkerArray[i][j] =0;
       fSuperEpochArray[i][j] = 0;
     }
   }
@@ -82,23 +108,23 @@ CbmTSUnpackSpadic11OnlineMonitor::CbmTSUnpackSpadic11OnlineMonitor(Bool_t highPe
   InitCanvas();
 }
 
-CbmTSUnpackSpadic11OnlineMonitor::~CbmTSUnpackSpadic11OnlineMonitor()
-{
-  LOG(INFO) << "Number of extraneous Samples "<< fNrExtraneousSamples << FairLogger::endl;
-}
+      CbmTSUnpackSpadic11OnlineMonitor::~CbmTSUnpackSpadic11OnlineMonitor()
+      {
+	LOG(INFO) << "Number of extraneous Samples "<< fNrExtraneousSamples << FairLogger::endl;
+      }
 
-Bool_t CbmTSUnpackSpadic11OnlineMonitor::Init()
-{
-  LOG(INFO) << "Initializing" << FairLogger::endl; 
+      Bool_t CbmTSUnpackSpadic11OnlineMonitor::Init()
+      {
+	LOG(INFO) << "Initializing" << FairLogger::endl; 
 
-  FairRootManager* ioman = FairRootManager::Instance();
-  if (ioman == NULL) {
-    LOG(FATAL) << "No FairRootManager instance" << FairLogger::endl;
-  }
-  ioman->Register("SpadicRawMessage", "spadic raw data", fSpadicRaw, kTRUE);
+	FairRootManager* ioman = FairRootManager::Instance();
+	if (ioman == NULL) {
+	  LOG(FATAL) << "No FairRootManager instance" << FairLogger::endl;
+	}
+	ioman->Register("SpadicRawMessage", "spadic raw data", fSpadicRaw, kTRUE);
 
-  return kTRUE;
-}
+	return kTRUE;
+      }
 
 Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
@@ -132,11 +158,11 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
       Bool_t isInfo(false), isHit(false), isEpoch(false), isEpochOutOfSync(false), isOverflow(false), isHitAborted(false), isStrange(false);
       if ( mp->is_epoch_out_of_sync() ){
 	isEpochOutOfSync = true;
-        FillEpochInfo(link, addr, mp->epoch_count());
+	FillEpochInfo(link, addr, mp->epoch_count());
 	GetEpochInfo(link, addr);
 	Int_t triggerType = -1;
-        Int_t infoType = -1;
-        Int_t stopType = -1;
+	Int_t infoType = -1;
+	Int_t stopType = -1;
 	Int_t groupId = mp->group_id();
 	Int_t channel = mp->channel_id();
 	Int_t time = -1;
@@ -154,16 +180,17 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 			      bufferOverflowCounter, samples, sample_values,
 			      isHit, isInfo, isEpoch, isEpochOutOfSync, isHitAborted, isOverflow, isStrange);
 	delete[] sample_values;
+	fMessageStatistic[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(fMessageTypes[1].Data(),1);
 	if (!fHighPerformance)fOutOfSync[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(channel,groupId,1);
       }
       else if ( mp->is_epoch_marker() ) { 
 	LOG(DEBUG) <<  counter << " This is an Epoch Marker" << FairLogger::endl; 
 	isEpoch = true;
-        FillEpochInfo(link, addr, mp->epoch_count());
+	FillEpochInfo(link, addr, mp->epoch_count());
 	GetEpochInfo(link, addr);
 	Int_t triggerType = -1;
-        Int_t infoType = -1;
-        Int_t stopType = -1;
+	Int_t infoType = -1;
+	Int_t stopType = -1;
 	Int_t groupId = mp->group_id();
 	Int_t channel = mp->channel_id();
 	Int_t time = -1;
@@ -177,6 +204,7 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 			      bufferOverflowCounter, samples, sample_values,
 			      isHit, isInfo, isEpoch, isEpochOutOfSync, isHitAborted, isOverflow, isStrange);
 	delete[] sample_values;
+	fMessageStatistic[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(fMessageTypes[0].Data(),1);
 	if (!fHighPerformance)fEpoch[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(channel,groupId,1);
       } 
       else if ( mp->is_buffer_overflow() ){
@@ -184,12 +212,12 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	isOverflow = true;
 	GetEpochInfo(link, addr);
 	Int_t triggerType = -1;
-        Int_t infoType = -1;
-        Int_t stopType = -1;
+	Int_t infoType = -1;
+	Int_t stopType = -1;
 	Int_t groupId = mp->group_id();
 	Int_t channel = mp->channel_id();
 	Int_t time = mp->timestamp();
-        Int_t bufferOverflowCounter = static_cast<Int_t>(mp->buffer_overflow_count());
+	Int_t bufferOverflowCounter = static_cast<Int_t>(mp->buffer_overflow_count());
 	Int_t samples = 1;
 	Int_t* sample_values = new Int_t[samples];
 	sample_values[0] = -256;
@@ -199,6 +227,7 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 			      bufferOverflowCounter, samples, sample_values,
 			      isHit, isInfo, isEpoch, isEpochOutOfSync, isHitAborted, isOverflow, isStrange);
 	delete[] sample_values;
+	fMessageStatistic[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(fMessageTypes[5].Data(),bufferOverflowCounter);
 	channel = GetChannelOnPadPlane(channel,groupId);
 	if (channel > 15){
 	  channel-= 16;
@@ -213,13 +242,13 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	isInfo = true;
 	GetEpochInfo(link, addr);
 
-        Int_t triggerType = -1;
-        Int_t infoType = static_cast<Int_t>(mp->info_type());
-        Int_t stopType = -1;
+	Int_t triggerType = -1;
+	Int_t infoType = static_cast<Int_t>(mp->info_type());
+	Int_t stopType = -1;
 	Int_t groupId = mp->group_id();
 	Int_t channel = mp->channel_id();
 	Int_t time = mp->timestamp();
-        Int_t bufferOverflowCounter = 0;//mp->buffer_overflow_count();// should be now obsolete
+	Int_t bufferOverflowCounter = 0;//mp->buffer_overflow_count();// should be now obsolete
 	Int_t samples = 1;
 	Int_t* sample_values = new Int_t[samples];
 	sample_values[0] = -256;
@@ -229,7 +258,7 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 			      bufferOverflowCounter, samples, sample_values,
 			      isHit, isInfo, isEpoch, isEpochOutOfSync, isHitAborted, isOverflow, isStrange);
 	delete[] sample_values;
-	
+	fMessageStatistic[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(fInfoTypes[infoType].Data(),1);
 	channel = GetChannelOnPadPlane(channel,groupId);
 	if (channel > 15){
 	  channel-= 16;
@@ -246,7 +275,7 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	Int_t triggerType =  static_cast<Int_t>(mp->hit_type());
 	Int_t stopType = static_cast<Int_t>(mp->stop_type());
 	Int_t time = mp->timestamp();
-        Int_t infoType = -1;
+	Int_t infoType = -1;
 	Int_t groupId = mp->group_id();
 	Int_t bufferOverflowCounter = 0;
 	Int_t samples = mp->samples().size();
@@ -295,8 +324,9 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 			      isHit, isInfo, isEpoch, isEpochOutOfSync, isHitAborted, isOverflow, isStrange);
 	//++counter;
 	delete[] sample_values;
+	fMessageStatistic[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(fStopTypes[stopType].Data(),1);
+	fMessageStatistic[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(fTriggerTypes[triggerType].Data(),1);
 	
-
 	if (groupId == 0){
 	  fHitTimeA[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(0);
 	  if(fLastSuperEpochA[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)] < fSuperEpoch){
@@ -363,7 +393,7 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 			      isHit, isInfo, isEpoch, isEpochOutOfSync, isHitAborted, isOverflow, isStrange);
 	//++counter;
 	delete[] sample_values;
-
+	fMessageStatistic[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(fMessageTypes[3].Data(),1);
       }
       else {
 	isStrange = true;
@@ -386,6 +416,7 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 			      isHit, isInfo, isEpoch, isEpochOutOfSync, isHitAborted, isOverflow, isStrange);
 	//++counter;
 	delete[] sample_values;
+	fMessageStatistic[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(fMessageTypes[6].Data(),1);
 	//fStrange[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(channel,groupId);
 	LOG(DEBUG) <<  counter << " This message type is not hit, info, epoch or overflow and will not be stored in the TClonesArray" << FairLogger::endl; 
 	LOG(DEBUG) << " valide:" << mp->is_valid() << " epoch marker:" << fEpochMarker << " super epoch marker:" << fSuperEpoch << " time:" << time << " link:" << link << " address:" << address << FairLogger::endl;
@@ -413,160 +444,160 @@ Bool_t CbmTSUnpackSpadic11OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
   return kTRUE;
 }
 
-  void CbmTSUnpackSpadic11OnlineMonitor::print_message(const spadic::Message& m)
-  {
-    LOG(INFO) << "v: " << (m.is_valid() ? "o" : "x");
-    LOG(DEBUG) << " / gid: " << static_cast<int>(m.group_id());
-    LOG(DEBUG) << " / chid: " << static_cast<int>(m.channel_id());
-    if ( m.is_hit() ) { 
-      LOG(DEBUG) << " / ts: " << m.timestamp();
-      LOG(DEBUG) << " / samples (" << m.samples().size() << "):";
-      for (auto x : m.samples()) {
-	LOG(DEBUG) << " " << x;
+      void CbmTSUnpackSpadic11OnlineMonitor::print_message(const spadic::Message& m)
+      {
+	LOG(INFO) << "v: " << (m.is_valid() ? "o" : "x");
+	LOG(DEBUG) << " / gid: " << static_cast<int>(m.group_id());
+	LOG(DEBUG) << " / chid: " << static_cast<int>(m.channel_id());
+	if ( m.is_hit() ) { 
+	  LOG(DEBUG) << " / ts: " << m.timestamp();
+	  LOG(DEBUG) << " / samples (" << m.samples().size() << "):";
+	  for (auto x : m.samples()) {
+	    LOG(DEBUG) << " " << x;
+	  }
+	  LOG(DEBUG) << FairLogger::endl;
+	} else {
+	  if ( m.is_epoch_marker() ) { 
+	    LOG(DEBUG) << " This is an Epoch Marker" << FairLogger::endl; 
+	  } else if ( m.is_epoch_out_of_sync() ) { 
+	    LOG(INFO) << " This is an out of sync Epoch Marker" << FairLogger::endl; 
+	  } else {
+	    LOG(INFO) << " This is not known" << FairLogger::endl;
+	  }
+	}
       }
-      LOG(DEBUG) << FairLogger::endl;
-    } else {
-      if ( m.is_epoch_marker() ) { 
-	LOG(DEBUG) << " This is an Epoch Marker" << FairLogger::endl; 
-      } else if ( m.is_epoch_out_of_sync() ) { 
-	LOG(INFO) << " This is an out of sync Epoch Marker" << FairLogger::endl; 
-      } else {
-	LOG(INFO) << " This is not known" << FairLogger::endl;
+
+      void CbmTSUnpackSpadic11OnlineMonitor::FillEpochInfo(Int_t link, Int_t addr, Int_t epoch_count) 
+      {
+	auto it=groupToExpMap.find(link);
+	if (it == groupToExpMap.end()) {
+	  LOG(FATAL) << "Could not find an entry for equipment ID" << 
+	    std::hex << link << std::dec << FairLogger::endl;
+	} else {
+	  /* Check for repeated Epoch Messages, as the repeated Microslices
+	     are not captured by the CbmTsUnpacker. This is to ensure the 
+	     linearity of the GetFullTime() method.
+	  */
+	  // dirty workaround in the following line: only sufficiently big backsteps of Epoch will trigger an upcount of SuperEpoch. this avoids a high sensitivity of the SuperEpoch counting method to overlaps of some epochs, before the overlaps are understood better
+	  if ( epoch_count < (fEpochMarkerArray[it->second][addr] - 3000) )
+	    {
+	      if(SuppressMultipliedEpochMessages)
+		if ( epoch_count != fPreviousEpochMarkerArray[it->second][addr] ){
+		  fSuperEpochArray[it->second][addr]++;
+		} else {
+		  LOG(ERROR)<< "Multiply repeated Epoch Messages at Super Epoch "
+			    << fSuperEpoch << " Epoch "
+			    << epoch_count << " for Syscore"
+			    << it->second << "_Spadic"
+			    << addr << FairLogger::endl;
+		}
+	      else fSuperEpochArray[it->second][addr]++;
+
+	      LOG(DEBUG) << "Overflow of EpochCounter for Syscore" 
+			 << it->second << "_Spadic"  
+			 << addr << FairLogger::endl;
+	    } else if ((epoch_count - fEpochMarkerArray[it->second][addr]) !=1 ) {
+	    LOG(INFO) << "Missed epoch counter for Syscore" 
+		      << it->second << "_Spadic"  
+		      << addr << FairLogger::endl;
+	  } else if (epoch_count == fEpochMarkerArray[it->second][addr]){
+	    LOG(ERROR) << "Identical Epoch Counters for Syscore" 
+		       << it->second << "_Spadic"  
+		       << addr << FairLogger::endl;
+	  }
+	  fPreviousEpochMarkerArray[it->second][addr] = fEpochMarkerArray[it->second][addr];
+	  fEpochMarkerArray[it->second][addr] = epoch_count; 
+	}
+
       }
-    }
-  }
 
-void CbmTSUnpackSpadic11OnlineMonitor::FillEpochInfo(Int_t link, Int_t addr, Int_t epoch_count) 
-{
-  auto it=groupToExpMap.find(link);
-  if (it == groupToExpMap.end()) {
-    LOG(FATAL) << "Could not find an entry for equipment ID" << 
-      std::hex << link << std::dec << FairLogger::endl;
-  } else {
-    /* Check for repeated Epoch Messages, as the repeated Microslices
-       are not captured by the CbmTsUnpacker. This is to ensure the 
-       linearity of the GetFullTime() method.
-     */
-    // dirty workaround in the following line: only sufficiently big backsteps of Epoch will trigger an upcount of SuperEpoch. this avoids a high sensitivity of the SuperEpoch counting method to overlaps of some epochs, before the overlaps are understood better
-    if ( epoch_count < (fEpochMarkerArray[it->second][addr] - 3000) )
-    {
-      if(SuppressMultipliedEpochMessages)
-      if ( epoch_count != fPreviousEpochMarkerArray[it->second][addr] ){
-        fSuperEpochArray[it->second][addr]++;
-      } else {
-        LOG(ERROR)<< "Multiply repeated Epoch Messages at Super Epoch "
-            << fSuperEpoch << " Epoch "
-            << epoch_count << " for Syscore"
-            << it->second << "_Spadic"
-            << addr << FairLogger::endl;
-      }
-      else fSuperEpochArray[it->second][addr]++;
-
-      LOG(DEBUG) << "Overflow of EpochCounter for Syscore" 
-		 << it->second << "_Spadic"  
-		 << addr << FairLogger::endl;
-    } else if ((epoch_count - fEpochMarkerArray[it->second][addr]) !=1 ) {
-      LOG(INFO) << "Missed epoch counter for Syscore" 
-		<< it->second << "_Spadic"  
-		<< addr << FairLogger::endl;
-    } else if (epoch_count == fEpochMarkerArray[it->second][addr]){
-      LOG(ERROR) << "Identical Epoch Counters for Syscore" 
-		 << it->second << "_Spadic"  
-		 << addr << FairLogger::endl;
-    }
-    fPreviousEpochMarkerArray[it->second][addr] = fEpochMarkerArray[it->second][addr];
-    fEpochMarkerArray[it->second][addr] = epoch_count; 
-  }
-
-}
-
-  void CbmTSUnpackSpadic11OnlineMonitor::GetEpochInfo(Int_t link, Int_t addr) 
-  {
-    auto it=groupToExpMap.find(link);
-    if (it == groupToExpMap.end()) {
-      LOG(FATAL) << "Could not find an entry for equipment ID" << 
-	std::hex << link << std::dec << FairLogger::endl;
-    } else {
-      fEpochMarker = fEpochMarkerArray[it->second][addr]; 
-      fSuperEpoch = fSuperEpochArray[it->second][addr]; 
-    }
+      void CbmTSUnpackSpadic11OnlineMonitor::GetEpochInfo(Int_t link, Int_t addr) 
+      {
+	auto it=groupToExpMap.find(link);
+	if (it == groupToExpMap.end()) {
+	  LOG(FATAL) << "Could not find an entry for equipment ID" << 
+	    std::hex << link << std::dec << FairLogger::endl;
+	} else {
+	  fEpochMarker = fEpochMarkerArray[it->second][addr]; 
+	  fSuperEpoch = fSuperEpochArray[it->second][addr]; 
+	}
   
-  }
-Int_t CbmTSUnpackSpadic11OnlineMonitor::GetChannelOnPadPlane(Int_t SpadicChannel, Int_t groupId)
-{
-  if(SpadicChannel > 31 || groupId > 1) LOG(DEBUG) << "CbmTSUnpackSpadic11OnlineMonitor::                     ChId " << SpadicChannel << "  GroupId: " << groupId << FairLogger::endl;
-  SpadicChannel = groupId * 16 + SpadicChannel;
-  Int_t channelMapping[32] = {31,15,30,14,29,13,28,12,27,11,26,10,25, 9,24, 8,
-			      23, 7,22, 6,21, 5,20, 4,19, 3,18, 2,17, 1,16, 0};
-  if (SpadicChannel < 0 || SpadicChannel > 31){
-    if (SpadicChannel !=-1) LOG(DEBUG) << "CbmTSUnpackSpadic11OnlineMonitor::GetChannelOnPadPlane ChId " << SpadicChannel << "  GroupId: " << groupId << FairLogger::endl;
-    return -1;
-  } else {
-    return channelMapping[SpadicChannel];
-  }
-}
+      }
+      Int_t CbmTSUnpackSpadic11OnlineMonitor::GetChannelOnPadPlane(Int_t SpadicChannel, Int_t groupId)
+      {
+	if(SpadicChannel > 31 || groupId > 1) LOG(DEBUG) << "CbmTSUnpackSpadic11OnlineMonitor::                     ChId " << SpadicChannel << "  GroupId: " << groupId << FairLogger::endl;
+	SpadicChannel = groupId * 16 + SpadicChannel;
+	Int_t channelMapping[32] = {31,15,30,14,29,13,28,12,27,11,26,10,25, 9,24, 8,
+				    23, 7,22, 6,21, 5,20, 4,19, 3,18, 2,17, 1,16, 0};
+	if (SpadicChannel < 0 || SpadicChannel > 31){
+	  if (SpadicChannel !=-1) LOG(DEBUG) << "CbmTSUnpackSpadic11OnlineMonitor::GetChannelOnPadPlane ChId " << SpadicChannel << "  GroupId: " << groupId << FairLogger::endl;
+	  return -1;
+	} else {
+	  return channelMapping[SpadicChannel];
+	}
+      }
 
-Int_t CbmTSUnpackSpadic11OnlineMonitor::GetSpadicID(Int_t address)
-{
-  //TString spadic="";
-  Int_t SpaId = -1;
-  switch (address) {
-  case (SpadicBaseAddress+0):  // first spadic
-    //spadic="Spadic0";
-    SpaId = 0;
-    break;
-  case (SpadicBaseAddress+1):  // first spadic
-    //spadic="Spadic0";
-    SpaId = 0;
-    break;
-  case (SpadicBaseAddress+2):  // second spadic
-    //spadic="Spadic1";
-    SpaId = 1;
-    break;
-  case (SpadicBaseAddress+3):  // second spadic
-    //spadic="Spadic1";
-    SpaId = 1;
-    break;
-  case (SpadicBaseAddress+4):  // third spadic
-    //spadic="Spadic2";
-    SpaId = 2;
-    break;
-  case (SpadicBaseAddress+5):  // third spadic
-    //spadic="Spadic2";
-    SpaId = 2;
-    break;
-  default:
-    LOG(ERROR) << "Source Address " << address << " not known." << FairLogger::endl;
-    break;
-  }
-  return SpaId;
-}
-Int_t CbmTSUnpackSpadic11OnlineMonitor::GetSyscoreID(Int_t link)
-{
-  Int_t SyscoreID=link-BaseEquipmentID;
-  if((SyscoreID<0||SyscoreID>3)){
-    LOG(DEBUG) << "EqID " << link << " not known." << FairLogger::endl;
-    SyscoreID=-1;
-  }
-  return SyscoreID;
-}
-// ----              -------------------------------------------------------
+      Int_t CbmTSUnpackSpadic11OnlineMonitor::GetSpadicID(Int_t address)
+      {
+	//TString spadic="";
+	Int_t SpaId = -1;
+	switch (address) {
+	case (SpadicBaseAddress+0):  // first spadic
+	  //spadic="Spadic0";
+	  SpaId = 0;
+	  break;
+	case (SpadicBaseAddress+1):  // first spadic
+	  //spadic="Spadic0";
+	  SpaId = 0;
+	  break;
+	case (SpadicBaseAddress+2):  // second spadic
+	  //spadic="Spadic1";
+	  SpaId = 1;
+	  break;
+	case (SpadicBaseAddress+3):  // second spadic
+	  //spadic="Spadic1";
+	  SpaId = 1;
+	  break;
+	case (SpadicBaseAddress+4):  // third spadic
+	  //spadic="Spadic2";
+	  SpaId = 2;
+	  break;
+	case (SpadicBaseAddress+5):  // third spadic
+	  //spadic="Spadic2";
+	  SpaId = 2;
+	  break;
+	default:
+	  LOG(ERROR) << "Source Address " << address << " not known." << FairLogger::endl;
+	  break;
+	}
+	return SpaId;
+      }
+      Int_t CbmTSUnpackSpadic11OnlineMonitor::GetSyscoreID(Int_t link)
+      {
+	Int_t SyscoreID=link-BaseEquipmentID;
+	if((SyscoreID<0||SyscoreID>3)){
+	  LOG(DEBUG) << "EqID " << link << " not known." << FairLogger::endl;
+	  SyscoreID=-1;
+	}
+	return SyscoreID;
+      }
+      // ----              -------------------------------------------------------
 
-inline TString CbmTSUnpackSpadic11OnlineMonitor::GetSpadicName(Int_t link,Int_t address){
+      inline TString CbmTSUnpackSpadic11OnlineMonitor::GetSpadicName(Int_t link,Int_t address){
 
-  TString spadicName="";
-  Int_t SpadicID=0;
-  spadicName="SysCore_"+std::to_string(GetSyscoreID(link))+"_";
-  SpadicID=GetSpadicID(address);
+	TString spadicName="";
+	Int_t SpadicID=0;
+	spadicName="SysCore_"+std::to_string(GetSyscoreID(link))+"_";
+	SpadicID=GetSpadicID(address);
   
-  //SpadicID/=2;  
+	//SpadicID/=2;  
 
-  spadicName += "Spadic_";
+	spadicName += "Spadic_";
 
-  spadicName+=std::to_string(SpadicID);
+	spadicName+=std::to_string(SpadicID);
 
-  return spadicName;
-}
+	return spadicName;
+      }
 void CbmTSUnpackSpadic11OnlineMonitor::InitHistos()
 {
 #ifdef USE_HTTP_SERVER
@@ -608,7 +639,22 @@ void CbmTSUnpackSpadic11OnlineMonitor::InitHistos()
       fHitTimeB[(iLink)*(NrOfSpadics)+iAddress]=(TH1I*)fHM->H1(TString("HitTimeB_"+histName).Data());
       fHitTimeB[(iLink)*(NrOfSpadics)+iAddress]->GetXaxis()->SetTitle("SuperEpoch count");
       fHitTimeB[(iLink)*(NrOfSpadics)+iAddress]->SetLineColor(2);
-      
+      fHM->Add(TString("MessageStatistic_"+histName).Data(),new TH1I (TString("MessageStatistic_"+histName).Data(),TString("MessageStatistic_"+histName).Data(),24,-0.5,23.5));
+      fMessageStatistic[(iLink)*(NrOfSpadics)+iAddress]=(TH1I*)fHM->H1(TString("MessageStatistic_"+histName).Data());
+      for (Int_t iM = 0; iM < 7; iM++){
+	fMessageStatistic[(iLink)*(NrOfSpadics)+iAddress]->GetXaxis()->SetBinLabel(iM+1,fMessageTypes[iM]);
+      }
+      for (Int_t iT = 0; iT < 4; iT++){
+	fMessageStatistic[(iLink)*(NrOfSpadics)+iAddress]->GetXaxis()->SetBinLabel(7+1+iT,fTriggerTypes[iT]);
+      }
+      for (Int_t iS = 0; iS < 6; iS++){
+	fMessageStatistic[(iLink)*(NrOfSpadics)+iAddress]->GetXaxis()->SetBinLabel(7+4+1+iS,fStopTypes[iS]);   
+      }
+      for (Int_t iI = 0; iI < 7; iI++){
+	fMessageStatistic[(iLink)*(NrOfSpadics)+iAddress]->GetXaxis()->SetBinLabel(7+4+6+1+iI,fInfoTypes[iI]);
+      }
+
+	
       //const Int_t nBins=70;
       //auto BinBoarders = [&nBins] (Int_t reBinHigh=32){
       ////auto BinBoarders = [&nBins] (Int_t reBinLow=32){
@@ -705,8 +751,8 @@ void CbmTSUnpackSpadic11OnlineMonitor::InitCanvas()
   fcL->Divide(3,4); 
   fcTS= new TCanvas(TString("TSGraph").Data(),TString("TSGraph").Data(),1600,1200);
   fcTS->Divide(3,4);
- 
-
+  fcMS= new TCanvas(TString("MessageStatistic").Data(),TString("MessageStatistic").Data(),1600,1200);
+  fcMS->Divide(3,4);
   
   for (Int_t iLink = 0; iLink < NrOfSyscores; iLink++){
     for (Int_t iAddress = 0; iAddress < NrOfSpadics; iAddress++){
@@ -742,7 +788,8 @@ void CbmTSUnpackSpadic11OnlineMonitor::InitCanvas()
       fHit[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
       fcL->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz(0);
       fLost[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
-    
+      fcMS->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogy(1);
+      fMessageStatistic[(iLink)*(NrOfSpadics)+iAddress]->Draw("");
       fcTS->cd((iLink)*(NrOfSpadics)+iAddress+1);
       fHitTimeA[(iLink)*(NrOfSpadics)+iAddress]->GetYaxis()->SetRangeUser(0,1000);
       fHitTimeA[(iLink)*(NrOfSpadics)+iAddress]->Draw("");
