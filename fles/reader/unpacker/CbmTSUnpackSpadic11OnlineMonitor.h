@@ -24,7 +24,7 @@ class CbmTSUnpackSpadic11OnlineMonitor : public CbmTSUnpack
 {
  public:
   
-  CbmTSUnpackSpadic11OnlineMonitor(Bool_t highPerformance);
+  CbmTSUnpackSpadic11OnlineMonitor(Bool_t highPerformancen = true );
   virtual ~CbmTSUnpackSpadic11OnlineMonitor();
     
   virtual Bool_t Init();
