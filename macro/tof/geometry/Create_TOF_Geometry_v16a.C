@@ -466,6 +466,7 @@ void Create_TOF_Geometry_v16a() {
   
   gGeoMan->CloseGeometry();
   gGeoMan->CheckOverlaps(0.00001);
+  gGeoMan->CheckOverlaps(0.00001, "s");
   gGeoMan->PrintOverlaps();
   gGeoMan->Test();
 
