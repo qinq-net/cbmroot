@@ -16,10 +16,18 @@
 
 #include "FairLogger.h"
 
+#include "TSystem.h"
+#include "TList.h"
+#include "TObjString.h"
+#include "TRegexp.h"
+#include "TSystemDirectory.h"
+
 #include <iostream>
 #include <fstream>
 #include <iomanip>
   
+std::vector<CbmDigi*> vdigi;
+
 CbmFlibTestSource::CbmFlibTestSource()
   : FairSource(),
     fFileName(""),
@@ -32,6 +40,7 @@ CbmFlibTestSource::CbmFlibTestSource()
     fBuffer(CbmTbDaqBuffer::Instance()),
     fTSNumber(0),
     fTSCounter(0),
+    fiReqDigiAddr(0),
     fdMaxDeltaT(500.),
     fTimer(),
     fBufferFillNeeded(kTRUE),
@@ -51,8 +60,9 @@ CbmFlibTestSource::CbmFlibTestSource(const CbmFlibTestSource& source)
     fBuffer(CbmTbDaqBuffer::Instance()),
     fTSNumber(0),
     fTSCounter(0),
+    fiReqDigiAddr(0),
     fdMaxDeltaT(100.),
-	fTimer(),
+    fTimer(),
     fBufferFillNeeded(kTRUE),
     fSource(NULL)
 {
@@ -64,7 +74,9 @@ CbmFlibTestSource::~CbmFlibTestSource()
 
 Bool_t CbmFlibTestSource::Init()
 {
-  if ( 0 == fFileName.Length() ) {
+  Int_t fNFiles = fInputFileList.GetEntries();
+  LOG(INFO) << Form("Look for 0x%08x digis in %d input files",fiReqDigiAddr,fNFiles) << FairLogger::endl;
+  if ( 0 == fNFiles ) { //fFileName.Length() ) {
     TString connector = Form("tcp://%s:%i", fHost.Data(), fPort);
     LOG(INFO) << "Open TSPublisher at " << connector << FairLogger::endl;
     fInputFileList.Add(new TObjString(connector));
@@ -101,6 +113,56 @@ Bool_t CbmFlibTestSource::Init()
   return kTRUE;
 }
 
+void CbmFlibTestSource::AddPath(const TString& tFileDirectory,
+                           const TString& tFileNameWildCard)
+{
+
+  FileStat_t tFileStat;
+  if(1 == gSystem->GetPathInfo(tFileDirectory.Data(), tFileStat))
+  {
+    gLogger->Fatal(MESSAGE_ORIGIN,
+                   TString::Format("\nInput data file directory %s does not "
+                                   "exist.",
+                                   tFileDirectory.Data()
+                                  ).Data()
+                  );
+  }
+
+  TRegexp* tRegexp = new TRegexp(tFileNameWildCard.Data(), kTRUE);
+
+  TSystemDirectory* tSystemDirectory = 
+         new TSystemDirectory("dir", tFileDirectory.Data());
+
+  TString tDirectoryName(tFileDirectory);
+
+  if(!tDirectoryName.EndsWith("/"))
+  {
+      tDirectoryName += "/";
+  }
+  TList* tList = tSystemDirectory->GetListOfFiles();
+
+  TIterator* tIter = tList->MakeIterator();
+  TSystemFile* tSystemFile;
+
+  TString tFileName;
+
+  while(NULL != (tSystemFile = (TSystemFile*)tIter->Next()))
+  {
+    tFileName = tSystemFile->GetName();
+
+    if(tFileName.Contains(*tRegexp))
+    {
+      tFileName = tDirectoryName + tFileName;
+
+      LOG(INFO)<<" Add file to input "<<tFileName.Data()<<FairLogger::endl; 
+
+      AddFile(tFileName);
+    }
+  }
+
+  tList->Delete();
+}
+
 void CbmFlibTestSource::SetParUnpackers()
 {
 	for (auto it=fUnpackers.begin(); it!=fUnpackers.end(); ++it) {
@@ -135,16 +197,33 @@ Bool_t CbmFlibTestSource::ReInitUnpackers()
 
 Int_t CbmFlibTestSource::ReadEvent(UInt_t iEv) 
 {
-   LOG(DEBUG) << "Request received for "<<iEv<<". event"
-              << FairLogger::endl;
-	      
+
+  LOG(DEBUG) << "Request received for "<<iEv<<". event "
+             << FairLogger::endl;
+
+    
   while ( 1 ==  GetNextEvent()){   
-    if (fBufferFillNeeded) {
-      Int_t iRet = FillBuffer();
-      if (iRet>0) break;  // no more data
+      if (fBufferFillNeeded) {
+	Int_t iRet = FillBuffer();
+	if (iRet>0) break;  // no more data
+      }
+  }
+
+  if ( fSource->eos() && fFileCounter < fInputFileList.GetEntries()){	  
+    fFileCounter++;
+    TObjString* tmp =
+      dynamic_cast<TObjString*>(fInputFileList.At(fFileCounter));
+    if(NULL != tmp) {
+      fFileName = tmp->GetString();
+      LOG(INFO) << "Open the "<<fFileCounter<<". ("<<fInputFileList.GetEntries()
+		<<") Flib input file " << fFileName << FairLogger::endl;
+      delete(fSource);
+      fSource = new fles::TimesliceInputArchive(fFileName.Data());
+      if ( !fSource) { 
+	LOG(FATAL) << "Could not open input file." << FairLogger::endl;
+      } 
     }
   }
-  
   return fSource->eos(); // no more data; trigger end of run
 }
 
@@ -244,7 +323,11 @@ Int_t CbmFlibTestSource::FillBuffer()
 
 Int_t CbmFlibTestSource::GetNextEvent()
 {
-
+ const Int_t AddrMask=0x0001FFFF;
+ Int_t nDigi=0;
+ Bool_t bOut=kFALSE;
+ while (!bOut)
+ {
   Double_t fTimeBufferOut = fBuffer->GetTimeLast() + fdMaxDeltaT;
   LOG(DEBUG) << "Timeslice contains data from " 
             << std::setprecision(9) << std::fixed 
@@ -258,17 +341,28 @@ Int_t CbmFlibTestSource::GetNextEvent()
 
   LOG(DEBUG) << "Buffer has " << fBuffer->GetSize() << " entries left with digi = " <<digi<< FairLogger::endl;
 
-  if (NULL == digi) return 1;
+  if (NULL == digi) {fBufferFillNeeded=kTRUE; return 1;}
 
   Double_t dTEnd = digi->GetTime() + fdMaxDeltaT;
   //if(dTEnd>fTimeBufferOut) dTEnd=fTimeBufferOut;
   
-  Int_t nDigi=0;
-  while(digi) {
+  nDigi=0;
+  while(digi) { // build digi array
+    if (nDigi == vdigi.size()) vdigi.resize(nDigi+100); 
+    vdigi[nDigi++]=digi;
+    if( (digi->GetAddress() & AddrMask) == fiReqDigiAddr) bOut=kTRUE;
+    //if(bOut) LOG(INFO)<<Form("Found 0x%08x, Req 0x%08x ", digi->GetAddress(), fiReqDigiAddr)<<FairLogger::endl;
+    digi = fBuffer->GetNextData(dTEnd);
+  }
+
+  if(fiReqDigiAddr==0) bOut=kTRUE;
+
+  for(Int_t iDigi=0; iDigi<nDigi; iDigi++){
+    digi=vdigi[iDigi];
     Int_t detId = digi->GetSystemId();
     Int_t flibId = fDetectorSystemMap[detId];
-    LOG(DEBUG) << "Digi has system ID " << detId 
-              << " which maps to FlibId "<< flibId
+    LOG(DEBUG1) << "Digi has system ID " << detId 
+               << " which maps to FlibId "<< flibId
               //<< ", T "<<digi->GetTime()<<" < "<<dTEnd
               << FairLogger::endl;
     std::map<Int_t, CbmTSUnpack*>::iterator it=fUnpackers.find(flibId);
@@ -277,16 +371,19 @@ Int_t CbmFlibTestSource::GetNextEvent()
                  << detId << FairLogger::endl;
       continue;
     } else {
-      nDigi++;
+      //nDigi++;
       //LOG(DEBUG) << "Found unpacker " <<  it->second << FairLogger::endl;
-      it->second->FillOutput(digi);
+      if(bOut)      it->second->FillOutput(digi);
+      else          digi->Delete();
     }
-    digi = fBuffer->GetNextData(dTEnd);
+    //    digi = fBuffer->GetNextData(dTEnd);
   }; 
-  LOG(DEBUG) << "Buffer has " << fBuffer->GetSize() << " entries left, "
-             << nDigi <<" digis in current event. "<< FairLogger::endl;
-  ( fBuffer->GetSize() <= 1 ) ? fBufferFillNeeded=kTRUE : fBufferFillNeeded=kFALSE; 
-  return 0;
+  vdigi.clear();
+ }  // end of bOut condition
+ LOG(DEBUG) << "Buffer has " << fBuffer->GetSize() << " entries left, "
+            << nDigi <<" digis in current event. "<< FairLogger::endl;
+ ( fBuffer->GetSize() <= 1 ) ? fBufferFillNeeded=kTRUE : fBufferFillNeeded=kFALSE; 
+ return 0;
 }
 
 ClassImp(CbmFlibTestSource)
