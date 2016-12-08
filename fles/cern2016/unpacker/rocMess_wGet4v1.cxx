@@ -2,6 +2,9 @@
 
 // Specific headers
 
+// C++11 headers
+#include <cmath>
+
 // std C++ lib headers
 #include <stdio.h>
 #include <string.h>
@@ -63,6 +66,7 @@ bool ngdpb::Message::operator<(const ngdpb::Message& other) const
 
 uint64_t ngdpb::Message::getMsgFullTime(uint32_t epoch) const
 {
+/*   
    switch (getMessageType()) {
       case MSG_HIT:
          return FullTimeStamp(getNxLastEpoch() ? epoch - 1 : epoch, getNxTs());
@@ -89,6 +93,10 @@ uint64_t ngdpb::Message::getMsgFullTime(uint32_t epoch) const
          return FullTimeStamp2(epoch, 0) / 20;
    }
    return 0;
+*/
+   // Quick and dirty fix, maybe need to be carefully checked
+   // Use round to integer, maybe need check on sign?
+   return std::round( getMsgFullTimeD( epoch ) );
 }
 
 //----------------------------------------------------------------------------
@@ -120,7 +128,9 @@ double ngdpb::Message::getMsgFullTimeD(uint32_t epoch) const
       case MSG_GET4_SYS:
          return FullTimeStamp2(epoch, 0) * (6.25 / 128.);
    }
-   return getMsgFullTime(epoch);
+   
+   // If not already dealt with => unknown type
+   return 0.0;
 }
 
 
