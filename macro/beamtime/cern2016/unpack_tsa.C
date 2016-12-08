@@ -8,12 +8,17 @@
  */
 
 //void unpack_tsa(Int_t nEvt=100, TString FileId = "cosmic_2016110701_safe_4links_4")
-void unpack_tsa(Int_t nEvt=100, TString FileId = "sps2016111302_1945")
+void unpack_tsa(Int_t nEvt=100, Double_t dDeltaT=200., Int_t iReqDet=0, TString FileId = "sps2016111302_1945")
 {
 
   TString srcDir = gSystem->Getenv("VMCWORKDIR");
-  TString inDir  = "./input/";
-  inFile = inDir + FileId + ".tsa"; 
+  //  TString inDir  = "./input/";
+  //  TString inDir  = "/lustre/nyx/cbm/prod/beamtime/2016/11/cern/phase1/";
+  //  inFile = inDir + FileId + ".tsa"; 
+  // for Phase2 data
+  //TString inDir  = "/lustre/nyx/cbm/prod/beamtime/2016/11/cern/phase2/" + FileId;
+  TString inDir  = "/lustre/nyx/cbm/prod/beamtime/2016/11/cern/phase3/" + FileId;
+  TString inFile = "*.tsa";
 
   // --- Specify number of events to be produced.
   // --- -1 means run until the end of the input file.
@@ -24,8 +29,10 @@ void unpack_tsa(Int_t nEvt=100, TString FileId = "sps2016111302_1945")
    nEvents = nEvt;
   }
   // --- Specify output file name (this is just an example)
-  TString outFile = "./data/" + FileId + ".root";
-  TString parFile = "./data/" + FileId + ".param.root";
+  TString outDir = srcDir + "/macro/beamtime/cern2016/data/";
+  TString Mode = Form("_DT%d_0x%08x",(Int_t)dDeltaT,iReqDet);
+  TString outFile = outDir + FileId + Mode + ".root";
+  TString parFile = outDir + FileId + Mode + ".params.root";
 
   // --- Set log output levels
   FairLogger::GetLogger();
@@ -65,8 +72,10 @@ void unpack_tsa(Int_t nEvt=100, TString FileId = "sps2016111302_1945")
 
   // --- Source task
   CbmFlibTestSource* source = new CbmFlibTestSource();
-  source->SetMaxDeltaT(200.);
-  source->SetFileName(inFile);
+  source->SetMaxDeltaT(dDeltaT);
+  source->SetReqDigiAddr(iReqDet); //0x00005006);  // request diamond for output events
+  //source->SetFileName(inFile);
+  source->AddPath(inDir,inFile);
   source->AddUnpacker(test_unpacker_tof, 0x60, 6);//gDPB A & B
   //source->AddUnpacker(test_unpacker,     0x10, 10);//nDPB A & B = HODO 1 + 2
 
@@ -77,7 +86,8 @@ void unpack_tsa(Int_t nEvt=100, TString FileId = "sps2016111302_1945")
   // --- Run
   FairRunOnline *run = new FairRunOnline(source);
   run->SetOutputFile(outFile);
-  run->SetEventHeader(event);
+  //  run->SetEventHeader(event);
+
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
 
   // -----   Runtime database   ---------------------------------------------
