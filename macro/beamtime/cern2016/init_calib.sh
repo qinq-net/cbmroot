@@ -18,7 +18,7 @@ echo Calib setup is ${iCalSet}, iSet=$iSet, iDut=$iDut, iMRef=$iMRef, iBRef=$iBR
 #return
 #iSet=0
 #lastOpt=''
-nEvi=1000000
+nEvi=5000000
 mkdir ${cRun}
 cp rootlogon.C ${cRun}
 cp .rootrc ${cRun}
@@ -28,7 +28,6 @@ cd ${cRun}
 iRestart=0
 iStep=0
 iStepLast=0
-
 # ************************** Starting while Loop ***************************** #
 while [[ $nIter > 0 ]]; do 
 echo start from scratch with $nIter iterations 
@@ -80,7 +79,7 @@ fi
 
 echo execute main loop at $nIter. iteration 
 
-for inOpt in ''$nEvi',0,0,0,50' ''$nEvi',03,0,0,50' ''$nEvi',03,1,'${iMRef}',0' ''$nEvi',03,0,'${iDut}',0' ''$nEvi',03,1,'${iMRef}',0' ''$nEvi',03,0,'${iDut}',0' ''$nEvi',13,0,0,50' ''$nEvi',13,0,0,50' ''$nEvi',13,1,'${iMRef}',0'  ''$nEvi',13,0,'${iDut}',0' ''$nEvi',13,1,'${iMRef}',0'  ''$nEvi',13,0,'${iDut}',0' ''$nEvi',23,0,0,50' ''$nEvi',23,0,0,50' ''$nEvi',23,1,'${iMRef}',0'  ''$nEvi',23,0,'${iDut}',0' ''$nEvi',23,1,'${iMRef}',0'  ''$nEvi',23,0,'${iDut}',0' ''$nEvi',33,0,0,50' ''$nEvi',33,0,0,50' ''$nEvi',33,1,'${iMRef}',0'  ''$nEvi',33,0,'${iDut}',0' ''$nEvi',04,0,'-${iDut}',0' ''$nEvi',33,0,'${iDut}',0' ''$nEvi',04,1,'-${iMRef}',0' ''$nEvi',33,1,'${iMRef}',0' ''$nEvi',43,0,0,50' ''$nEvi',43,0,0,50' ''$nEvi',43,1,'${iMRef}',0' ''$nEvi',43,0,'${iDut}',0' ''$nEvi',43,1,'${iMRef}',0' ''$nEvi',43,0,'${iDut}',0' ''$nEvi',43,1,'${iMRef}',0' ''$nEvi',43,0,0,50' ''$nEvi',43,0,0,50' ''$nEvi',43,1,'${iMRef}',0' ''$nEvi',43,0,'${iDut}',0' ''$nEvi',43,1,'${iMRef}',0' ''$nEvi',43,0,'${iDut}',0' ''$nEvi',53,0,0,50' ''$nEvi',53,0,0,50' ''$nEvi',53,1,'${iMRef}',0' ''$nEvi',53,0,'${iDut}',0' ''$nEvi',53,1,'${iMRef}',0' ''$nEvi',53,0,'${iDut}',0' '500000,14,0,-'${iDut}',0' '500000,14,1,-'${iMRef}',0' ''$nEvi',53,0,'${iDut}',0' ''$nEvi',53,1,'${iMRef}',0' ''$nEvi',53,0,'${iDut}',0' ''$nEvi',53,1,'${iMRef}',0' ''$nEvi',63,0,'${iDut}',0' ''$nEvi',63,1,'${iMRef}',0' ''$nEvi',73,0,'${iDut}',0' ''$nEvi',73,1,'${iMRef}',0' ''$nEvi',73,0,'${iDut}',0' '500000,24,0,-'${iDut}',0' ''$nEvi',73,1,'${iMRef}',0' '500000,24,1,-'${iMRef}',0' ''$nEvi',83,0,'${iDut}',0' '500000,34,0,-'${iDut}',0' ''$nEvi',83,1,'${iMRef}',0' '500000,34,1,-'${iMRef}',0' ''$nEvi',93,0,'${iDut}',0' ''$nEvi',93,1,'${iMRef}',0'
+for inOpt in ''$nEvi',0,0,0,50' ''$nEvi',03,0,0,50' ''$nEvi',03,1,'${iMRef}',0' ''$nEvi',03,0,'${iDut}',0' ''$nEvi',03,1,'${iMRef}',0' ''$nEvi',03,0,'${iDut}',0' ''$nEvi',13,0,0,50' ''$nEvi',13,0,0,50' ''$nEvi',13,1,'${iMRef}',0' ''$nEvi',13,0,'${iDut}',0' ''$nEvi',13,1,'${iMRef}',0'  ''$nEvi',13,0,'${iDut}',0' ''$nEvi',23,0,0,50' ''$nEvi',23,0,0,50' ''$nEvi',23,1,'${iMRef}',0'  ''$nEvi',23,0,'${iDut}',0' ''$nEvi',23,1,'${iMRef}',0' ''$nEvi',23,0,'${iDut}',0' ''$nEvi',33,0,0,50' ''$nEvi',33,0,0,50' ''$nEvi',33,1,'${iMRef}',0' ''$nEvi',33,0,'${iDut}',0'  ''$nEvi',33,1,'${iMRef}',0' ''$nEvi',43,0,0,50' ''$nEvi',43,0,0,50' ''$nEvi',43,1,'${iMRef}',0' ''$nEvi',43,0,'${iDut}',0' ''$nEvi',43,1,'${iMRef}',0' ''$nEvi',43,0,'${iDut}',0' ''$nEvi',43,1,'${iMRef}',0' ''$nEvi',43,0,0,50' ''$nEvi',43,0,0,50' ''$nEvi',43,1,'${iMRef}',0' ''$nEvi',43,0,'${iDut}',0' ''$nEvi',43,1,'${iMRef}',0' ''$nEvi',43,0,'${iDut}',0' ''$nEvi',53,0,0,50' ''$nEvi',53,0,0,50' ''$nEvi',53,1,'${iMRef}',0' ''$nEvi',53,0,'${iDut}',0' ''$nEvi',53,1,'${iMRef}',0' ''$nEvi',53,0,'${iDut}',0' '500000,14,0,-'${iDut}',0' '500000,14,1,-'${iMRef}',0' ''$nEvi',53,0,'${iDut}',0' ''$nEvi',53,1,'${iMRef}',0' ''$nEvi',11,0,-'${iDut}',0' ''$nEvi',11,1,-'${iMRef}',0' ''$nEvi',53,0,'${iDut}',0' ''$nEvi',53,1,'${iMRef}',0' ''$nEvi',63,0,'${iDut}',0' ''$nEvi',63,1,'${iMRef}',0' ''$nEvi',63,0,0,50' ''$nEvi',63,0,0,50' ''$nEvi',63,0,'${iDut}',0' ''$nEvi',63,1,'${iMRef}',0' ''$nEvi',21,0,-'${iDut}',0' ''$nEvi',21,1,-'${iMRef}',0' ''$nEvi',63,0,'${iDut}',0' ''$nEvi',63,1,'${iMRef}',0' ''$nEvi',73,0,'${iDut}',0' ''$nEvi',73,1,'${iMRef}',0' ''$nEvi',73,0,0,50' ''$nEvi',73,0,0,50' ''$nEvi',73,0,'${iDut}',0' ''$nEvi',73,1,'${iMRef}',0'  ''$nEvi',31,0,-'${iDut}',0' ''$nEvi',31,1,-'${iMRef}',0' ''$nEvi',73,0,'${iDut}',0' ''$nEvi',73,1,'${iMRef}',0' ''$nEvi',73,0,'${iDut}',0' '500000,24,0,-'${iDut}',0' ''$nEvi',73,1,'${iMRef}',0' '500000,24,1,-'${iMRef}',0' ''$nEvi',73,0,0,50' ''$nEvi',73,0,0,50' ''$nEvi',73,0,'${iDut}',0' ''$nEvi',73,1,'${iMRef}',0' ''$nEvi',83,0,'${iDut}',0'  ''$nEvi',83,1,'${iMRef}',0' ''$nEvi',83,0,0,50' ''$nEvi',83,0,0,50'  ''$nEvi',83,0,'${iDut}',0'  ''$nEvi',83,1,'${iMRef}',0' '500000,34,0,-'${iDut}',0' ''$nEvi',83,1,'${iMRef}',0' '500000,34,1,-'${iMRef}',0' ''$nEvi',93,0,'${iDut}',0' ''$nEvi',93,1,'${iMRef}',0' ''$nEvi',93,0,0,50' ''$nEvi',93,0,0,50' ''$nEvi',93,0,'${iDut}',0'  ''$nEvi',93,1,'${iMRef}',0' ''$nEvi',93,0,0,50' ''$nEvi',93,0,0,50' ''$nEvi',93,0,'${iDut}',0'  ''$nEvi',93,1,'${iMRef}',0' 
 do   
 
 ((iStepLast = ${iStep}))
