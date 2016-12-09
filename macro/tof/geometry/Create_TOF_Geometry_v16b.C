@@ -88,7 +88,7 @@ const Int_t NofModuleTypes = 10;
 // 8 Ceramic
 // 9 Star 2-counter module 
 const Float_t Module_Size_X[NofModuleTypes] = {120.,35., 5., 50., 30., 8., 50., 70., 29., 100.};
-const Float_t Module_Size_Y[NofModuleTypes] = { 74.,18.,20., 49., 16., 5., 30., 35., 33.,  49.};
+const Float_t Module_Size_Y[NofModuleTypes] = { 74.,18.,20., 49., 16., 5., 30., 35., 13.,  49.};
 const Float_t Module_Over_Y[NofModuleTypes] = { 11.,11., 0.,  4.,  0., 0.,  0.,  0.,  0.,   0.};
 const Float_t Module_Size_Z[NofModuleTypes] = { 10.,10., 5., 10., 10., 1., 15., 20., 10.,  11.};
 const Float_t Module_Thick_Alu_X_left = 5.;
@@ -98,18 +98,18 @@ const Float_t Module_Thick_Alu_Z = 0.1;
 
 //Type of Counter for module 
 const Int_t CounterTypeInModule[NofModuleTypes] = {1,3,4,0,2,5,6,7,8,0};
-const Int_t NCounterInModule[NofModuleTypes]    = {1,1,1,1,1,1,2,4,6,2};
+const Int_t NCounterInModule[NofModuleTypes]    = {1,1,1,1,1,1,2,4,1,2};
 
 // Placement of the counter inside the module
 const Float_t CounterXStartPosition[NofModuleTypes] = {-10.0,   0.0,   2.0,  0.0,  0.0,  0., 0., -15., 0.,  0.};
-const Float_t CounterXDistance[NofModuleTypes]      = {30.0,   30.6,   0.0, 30.0,  0.0,  0.,-6.4,  30., 0.,  0.};
-const Float_t CounterYStartPosition[NofModuleTypes] = {0.0,     0.0,   0.0,  0.0,  0.0,  0., 0., -4., -7.,  0.};
-const Float_t CounterYDistance[NofModuleTypes]      = {0.0,     0.0,   0.0,  0.0,  0.0,  0., 0.,  8.,  2.2, 0.};
+const Float_t CounterXDistance[NofModuleTypes]      = {30.0,   30.6,   0.0, 30.0,  0.0,  0.,-6.4, 30., 0.,  0.};
+const Float_t CounterYStartPosition[NofModuleTypes] = {0.0,     0.0,   0.0,  0.0,  0.0,  0., 0., -4.,  0.,  0.};
+const Float_t CounterYDistance[NofModuleTypes]      = {0.0,     0.0,   0.0,  0.0,  0.0,  0., 0.,  8.,  0., 0.};
 const Float_t CounterZStartPosition[NofModuleTypes] = {0.0,     0.0,   0.0,  2.5,  0.0,  0.,-2., -8.,  0., -2.};
 const Float_t CounterZDistance[NofModuleTypes]      = {0.0,     0.0,   0.0,  2.5,  0.0,  0., 4.,  5.,  4.,  4.};
 const Float_t CounterRotationAngle[NofModuleTypes]  = {0.,      0.0,   0.0,   0.,  0.0,  0., 0.,  0.,  0.,  0.};
 
-const Float_t ZDist2Target=355.;
+const Float_t ZDist2Target=353.;
 const Float_t MeanTheta=-7.5;
 Float_t TanTheta=TMath::Tan(TMath::DegToRad()*MeanTheta);
 
@@ -129,7 +129,7 @@ const Int_t HDsmall_NTypes = 1;
 const Float_t HDsmall_Types[HDsmall_NTypes]  = {3.};
 const Float_t HDsmall_Number[HDsmall_NTypes] = {1.}; //debugging, V14b
 
-const Float_t HDRef_Z_Position=ZDist2Target+1;        // HD - P5
+const Float_t HDRef_Z_Position=ZDist2Target+7;        // HD - P5
 const Float_t HDRef_First_Y_Position=HDRef_Z_Position*TanTheta;
 const Float_t HDRef_X_Offset=0.7;
 const Float_t HDRef_rotate_Z=180.;
@@ -163,8 +163,8 @@ const Float_t Buc2012_Types[Buc2012_NTypes]  = {7.};
 const Float_t Buc2012_Number[Buc2012_NTypes] = {1.};
 
 const Float_t Buc2015_Z_Position=ZDist2Target+125.;
-const Float_t Buc2015_First_Y_Position=Buc2015_Z_Position*TanTheta;
-const Float_t Buc2015_X_Offset=0.; 
+const Float_t Buc2015_First_Y_Position=Buc2015_Z_Position*TanTheta - 3.;
+const Float_t Buc2015_X_Offset=5.5; 
 const Float_t Buc2015_rotate_Z=0.;
 const Int_t Buc2015_NTypes = 1;
 const Float_t Buc2015_Types[Buc2015_NTypes]  = {6.};
@@ -193,27 +193,28 @@ const Float_t Star2_First_Z_Position=ZDist2Target+33.;
 const Float_t Star2_Delta_Z_Position=29.0;
 const Float_t Star2_First_Y_Position=Star2_First_Z_Position*TanTheta;  // 
 const Float_t Star2_Delta_Y_Position=Star2_Delta_Z_Position*TanTheta;   // 
-const Float_t Star2_X_Offset=0.;
 const Float_t Star2_rotate_Z=0.;
-const Int_t Star2_NTypes = 1;
-const Float_t Star2_Types[Star2_NTypes]  = {9.};
-const Float_t Star2_Number[Star2_NTypes] = {3.}; //debugging, V16b
+const Int_t Star2_NTypes = 3;
+const Float_t Star2_Types[Star2_NTypes]  = {9.,9.,9.};
+const Float_t Star2_Number[Star2_NTypes] = {1.,1.,1.}; //debugging, V16b
+const Float_t Star2_X_Offset[Star2_NTypes]={2.,0.,0.};
+
 
 const Int_t Pla_NTypes = 2;
-const Float_t Pla_Z_Position[Pla_NTypes]={ZDist2Target,(float)(ZDist2Target+179.5)};
+const Float_t Pla_Z_Position[Pla_NTypes]={(float)ZDist2Target,(float)(ZDist2Target+179.5)};
 const Float_t Pla_X_Position[Pla_NTypes]={-3.0,-0.5};
 const Float_t Pla_Y_Position[Pla_NTypes]={(Float_t)(ZDist2Target*TanTheta),(Float_t)((ZDist2Target+179.5)*TanTheta)};
 const Float_t Pla_rotate_Z[Pla_NTypes]={90.,90.};
 const Float_t Pla_Types[Pla_NTypes]  = {2.,2.};
 const Float_t Pla_Number[Pla_NTypes] = {1.,1.};   //V16b
 
-const Int_t Cer_NTypes = 2;
-const Float_t Cer_Z_Position[Cer_NTypes]={static_cast<Float_t>(ZDist2Target+164.),static_cast<Float_t>(ZDist2Target+190.5)};
-const Float_t Cer_X_Position[Cer_NTypes]={0.,0.};
-const Float_t Cer_Y_Position[Cer_NTypes]={static_cast<Float_t>((ZDist2Target+164.)*TanTheta),static_cast<Float_t>((ZDist2Target+190.5)*TanTheta)};
-const Float_t Cer_rotate_Z[Cer_NTypes]={0.,0.};
-const Float_t Cer_Types[Cer_NTypes]  = {8.,8.};
-const Float_t Cer_Number[Cer_NTypes] = {1.,1.};   //V16b
+const Int_t Cer_NTypes = 3;
+const Float_t Cer_Z_Position[Cer_NTypes]={static_cast<Float_t>(ZDist2Target+164.),static_cast<Float_t>(ZDist2Target+190.5),static_cast<Float_t>(ZDist2Target+210.5)};
+const Float_t Cer_X_Position[Cer_NTypes]={0.,0.,0.};
+const Float_t Cer_Y_Position[Cer_NTypes]={static_cast<Float_t>((ZDist2Target+164.)*TanTheta),static_cast<Float_t>((ZDist2Target+190.5)*TanTheta),static_cast<Float_t>((ZDist2Target+210.5)*TanTheta)};
+const Float_t Cer_rotate_Z[Cer_NTypes]={0.,0.,0.};
+const Float_t Cer_Types[Cer_NTypes]  = {8.,8.,8.};
+const Float_t Cer_Number[Cer_NTypes] = {1.,1.,1.};   //V16b
 
 // some global variables
 TGeoManager* gGeoMan = NULL;  // Pointer to TGeoManager instance
@@ -299,13 +300,13 @@ void Create_TOF_Geometry_v16b() {
   position_Dia(1);
   //  position_HDsmall(1);
   position_HDRef(1);
-  position_Star2(1);
+  position_Star2(3);
   //  position_BucRef(1);
   position_Buc2015(1);
   //position_Buc2012(1);
   //position_THU(1);
   position_pla_modules(2);
-  position_cer_modules(2);
+  position_cer_modules(3);
   
 
   gGeoMan->CloseGeometry();
@@ -585,19 +586,8 @@ TGeoVolume* create_new_tof_module(Int_t modType)
     } else {
       zpos = CounterZStartPosition[modType]+j*dzoff;
     }
-    if(8 == modType) { // ThuPad
-      switch(j){
-      case 0:
-      case 1:
-      case 4:
-      case 5:
-	zpos = dzoff;
-	break;
-      case 2:
-      case 3:
-	zpos = -dzoff;
-	break;
-      }
+    if(8 == modType) { // ITEP Pad
+      ;
     }
     xpos=startxpos + j*dxpos;
     ypos=startypos + j*dypos;
@@ -681,18 +671,18 @@ void position_HDsmall(Int_t modNType)
 void position_Star2(Int_t modNType)
 {
  TGeoTranslation* module_trans=NULL;
- TGeoRotation* module_rot = new TGeoRotation();
- module_rot->RotateZ(Star2_rotate_Z);
+ TGeoRotation* module_rot = new TGeoRotation("Star2",Star2_rotate_Z,-MeanTheta,0.);
+ // module_rot->RotateZ(Star2_rotate_Z);
  TGeoCombiTrans* module_combi_trans = NULL;
 
- Float_t xPos  = Star2_X_Offset;
  Float_t yPos  = Star2_First_Y_Position;
  Float_t zPos  = Star2_First_Z_Position;
  Int_t ii=0; 
 
+ Int_t modNum = 0;
  for (Int_t j=0; j<modNType; j++){
   Int_t modType= Star2_Types[j];
-  Int_t modNum = 0;
+  Float_t xPos  = Star2_X_Offset[j];
   for(Int_t i=0; i<Star2_Number[j]; i++) { 
     ii++; 
     module_trans 
@@ -737,8 +727,8 @@ void position_BucRef(Int_t modNType)
 void position_HDRef(Int_t modNType)
 {
  TGeoTranslation* module_trans=NULL;
- TGeoRotation* module_rot = new TGeoRotation();
- module_rot->RotateZ(HDRef_rotate_Z);
+ TGeoRotation* module_rot = new TGeoRotation("HDRef",HDRef_rotate_Z,MeanTheta,0.);
+ //module_rot->RotateZ(HDRef_rotate_Z);
  TGeoCombiTrans* module_combi_trans = NULL;
 
  //  Int_t numModules=(Int_t)( (Inner_Module_Last_Y_Position-Inner_Module_First_Y_Position)/Module_Size_Y[modType])+1;
@@ -818,8 +808,8 @@ void position_Buc2012(Int_t modNType)
 void position_Buc2015(Int_t modNType)
 {
  TGeoTranslation* module_trans=NULL;
- TGeoRotation* module_rot = new TGeoRotation();
- module_rot->RotateZ(Buc2015_rotate_Z);
+ TGeoRotation* module_rot = new TGeoRotation("Buc2015",Buc2015_rotate_Z,-MeanTheta,0.);
+ // module_rot->RotateZ(Buc2015_rotate_Z);
  TGeoCombiTrans* module_combi_trans = NULL;
 
  //  Int_t numModules=(Int_t)( (Inner_Module_Last_Y_Position-Inner_Module_First_Y_Position)/Module_Size_Y[modType])+1;
@@ -906,9 +896,10 @@ void position_pla_modules(Int_t modNType)
   Float_t yPos  = Pla_Y_Position[j];
   Float_t zPos  = Pla_Z_Position[j];
   TGeoTranslation* module_trans=NULL;
-  TGeoRotation* module_rot = new TGeoRotation();
-  module_rot->RotateZ(Pla_rotate_Z[j]);
+  //module_rot->RotateZ(Pla_rotate_Z[j]);
   TGeoCombiTrans* module_combi_trans = NULL;
+  TGeoRotation* module_rot = new TGeoRotation(Form("Pla%d",j),90.+MeanTheta,90.,90.,0.,-MeanTheta,-90.);
+  //TGeoRotation* module_rot = new TGeoRotation(Form("Pla%d",j),90.,0.,90.,90.,0.,0.);
 
   for(Int_t i=0; i<Pla_Number[j]; i++) { 
     ii++; 
@@ -937,8 +928,8 @@ void position_cer_modules(Int_t modNType)
   Float_t yPos  = Cer_Y_Position[j];
   Float_t zPos  = Cer_Z_Position[j];
   TGeoTranslation* module_trans=NULL;
-  TGeoRotation* module_rot = new TGeoRotation();
-  module_rot->RotateZ(Cer_rotate_Z[j]);
+  TGeoRotation* module_rot = new TGeoRotation(Form("Cer%d",j),Cer_rotate_Z[j],-MeanTheta,0.);
+  // module_rot->RotateZ(Cer_rotate_Z[j]);
   TGeoCombiTrans* module_combi_trans = NULL;
 
   for(Int_t i=0; i<Cer_Number[j]; i++) { 
