@@ -263,6 +263,23 @@ void CbmTSMonitorMuch::CreateHistograms()
 #ifdef USE_HTTP_SERVER
         if (server) server->Register("/MuchRaw", fHM->H1(sHistName.Data()));
 #endif
+
+        if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+         {
+            sHistName = Form("HitMissEvo_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId);
+            title = Form("Minimal hit loss per second in nDPB %04X FEB %02u; Time[s] ; Min Loss",
+                           fUnpackPar->GetNdpbIdA(dpbId), febId);
+         } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+            else  
+            {
+               sHistName = Form("HitMissEvo_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
+               title = Form("Minimal hit loss per second in nDPB %04X FEB %02u; Time[s] ; Min Loss",
+                           fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
+            } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+		  fHM->Add( sHistName.Data(), new TH1F( sHistName.Data(), title.Data(), 1800, 0, 1800 ) );
+#ifdef USE_HTTP_SERVER
+        if (server) server->Register("/MuchRaw", fHM->H1(sHistName.Data()));
+#endif
       } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
    } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
 
@@ -386,6 +403,7 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
   std::vector<TH1*> Chan_Counts_Much;
   std::vector<TH2*> Raw_ADC_Much;
   std::vector<TH1*> FebRate;
+  std::vector<TH1*> HitMissEvo;
 
   TString sHistName{""};
   TString title{""};
@@ -402,6 +420,8 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
             Raw_ADC_Much.push_back(fHM->H2(sHistName.Data()));
             sHistName = Form("FebRate_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId);
             FebRate.push_back(fHM->H1(sHistName.Data()));
+            sHistName = Form("HitMissEvo_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId);
+            HitMissEvo.push_back(fHM->H1(sHistName.Data()));
          } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
             else
             {
@@ -411,6 +431,8 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
                Raw_ADC_Much.push_back(fHM->H2(sHistName.Data()));
                sHistName = Form("FebRate_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
                FebRate.push_back(fHM->H1(sHistName.Data()));
+               sHistName = Form("HitMissEvo_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
+               HitMissEvo.push_back(fHM->H1(sHistName.Data()));
             } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
       } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
    } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
@@ -505,7 +527,7 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
             FillHitInfo(mess, Chan_Counts_Much, Raw_ADC_Much, FebRate, histPadDistr);
             break;
           case ngdpb::MSG_EPOCH:
-            FillEpochInfo(mess);
+            FillEpochInfo(mess, HitMissEvo);
             break;
           case ngdpb::MSG_SYNC:
             // Do nothing, this message is just there to make sure we get all Epochs
@@ -609,7 +631,7 @@ Int_t CbmTSMonitorMuch::CreateAddress(Int_t rocId, Int_t febId, Int_t stationId,
 	return address;
 }
 
-void CbmTSMonitorMuch::FillEpochInfo(ngdpb::Message mess)
+void CbmTSMonitorMuch::FillEpochInfo(ngdpb::Message mess, std::vector<TH1*> HitMissEvo)
 {
   Int_t rocId          = mess.getRocNumber();
   Int_t nxyterId       = mess.getEpochNxNum();
@@ -621,6 +643,13 @@ void CbmTSMonitorMuch::FillEpochInfo(ngdpb::Message mess)
    } // if( fNdpbIdIndexMap.end() == fNdpbIdIndexMap.find( rocId ) )
    
   fCurrentEpoch[rocId][nxyterId] = mess.getEpochNumber();
+  
+  if( fdStartTime <= 0 )
+  {
+    Int_t channelNr = fNdpbIdIndexMap[rocId]*fUnpackPar->GetNrOfFebsPerNdpb() + nxyterId;
+    HitMissEvo[channelNr]->Fill( mess.getMsgFullTimeD( fCurrentEpoch[rocId][nxyterId] ) 
+                                 - fdStartTime);
+  }
 
   //  LOG(INFO) << "Epoch message for ROC " << rocId << " with epoch number "
   //            << fCurrentEpoch[rocId] << FairLogger::endl;
@@ -682,12 +711,14 @@ void CbmTSMonitorMuch::Finish()
      fHM->H1( Form("Chan_Counts_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId) )->Write();
      fHM->H2( Form("Raw_ADC_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId) )->Write();  
      fHM->H1( Form("FebRate_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId) )->Write();
+     fHM->H1( Form("HitMissEvo_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId) )->Write();
         } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
         else
         {
      fHM->H1( Form("Chan_Counts_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId) )->Write();
      fHM->H2( Form("Raw_ADC_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId) )->Write();  
      fHM->H1( Form("FebRate_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId) )->Write();
+     fHM->H1( Form("HitMissEvo_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId) )->Write();
         } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
       } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
    } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
@@ -730,16 +761,28 @@ void CbmTSMonitorMuch::ResetAllHistos()
      fHM->H1( Form("Chan_Counts_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId) )->Reset();
      fHM->H2( Form("Raw_ADC_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId) )->Reset();  
      fHM->H1( Form("FebRate_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId) )->Reset();
+     fHM->H1( Form("HitMissEvo_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId) )->Reset();
         } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
         else
         {
      fHM->H1( Form("Chan_Counts_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId) )->Reset();
      fHM->H2( Form("Raw_ADC_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId) )->Reset();  
      fHM->H1( Form("FebRate_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId) )->Reset();
+     fHM->H1( Form("HitMissEvo_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId) )->Reset();
         } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
       } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
    } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
-   fHM->H2("Pad_Distribution")->Write();   
+   fHM->H2("Pad_Distribution")->Write();  
+
+  for (UInt_t uLinks = 0; uLinks < 16; uLinks++) {
+    TString sMsSzName = Form("MsSz_link_%02u", uLinks);
+    if (fHM->Exists(sMsSzName.Data()))
+      fHM->H1(sMsSzName.Data())->Reset();
+
+    sMsSzName = Form("MsSzTime_link_%02u", uLinks);
+    if (fHM->Exists(sMsSzName.Data()))
+      fHM->P1(sMsSzName.Data())->Reset();
+  } // for( UInt_t uLinks = 0; uLinks < 16; uLinks ++) 
   
   fdStartTime = -1;
 }
