@@ -1127,7 +1127,7 @@ void CbmTSMonitorTof::ResetAllHistos()
   fHM->H2("hGet4MessType")->Reset();
   fHM->H2("hGet4ChanErrors")->Reset();
   fHM->H2("hGet4EpochFlags")->Reset();
-  fHM->H2("hDiamondSpillLength")->Reset();
+  fHM->H1("hDiamondSpillLength")->Reset();
 
   for (UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb++) {
     fHM->H2(Form("Raw_Tot_gDPB_%02u", uGdpb))->Reset();
