@@ -382,7 +382,7 @@ Int_t CbmFlibTestSource::GetNextEvent()
  }  // end of bOut condition
  LOG(DEBUG) << "Buffer has " << fBuffer->GetSize() << " entries left, "
             << nDigi <<" digis in current event. "<< FairLogger::endl;
- ( fBuffer->GetSize() <= 1 ) ? fBufferFillNeeded=kTRUE : fBufferFillNeeded=kFALSE; 
+ ( fBuffer->GetSize() <= 100 ) ? fBufferFillNeeded=kTRUE : fBufferFillNeeded=kFALSE; 
  return 0;
 }
 
