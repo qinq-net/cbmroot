@@ -51,7 +51,9 @@ public:
 
 
   void FillOutput(CbmDigi* digi);
-  
+ 
+  void SetEpochSuppressedMode( Bool_t bEnable = kTRUE ) { fbEpochSuppModeOn = bEnable; }
+ 
   void SetMsLimitLevel( size_t uAcceptBoundaryPct = 100 ) { fuMsAcceptsPercent = uAcceptBoundaryPct; }
   size_t GetMsLimitLevel( ) { return fuMsAcceptsPercent; }
 
@@ -68,7 +70,7 @@ private:
 
   /** Current epoch marker for each ROC and GET4 (first epoch in the stream initialises the map item) **/
   std::map<Int_t, std::map<Int_t, UInt_t> > fCurrentEpoch; 
-  Int_t fNofEpochs; /** Current epoch marker for each ROC **/
+  Int_t fNofEpochs;              /** Current epoch marker for each ROC **/
   ULong_t fCurrentEpochTime;     /** Time stamp of current epoch **/
 
   Int_t fEquipmentId;
@@ -83,8 +85,12 @@ private:
   CbmTofUnpackPar* fUnpackPar;      //!
 
   void CreateHistograms();
+    
+  Bool_t fbEpochSuppModeOn;
 
 #ifndef __CINT__
+  std::vector< std::vector< std::vector < ngdpb::Message > > > fvmEpSupprBuffer;
+
   void FillHitInfo(ngdpb::Message);
   void FillEpochInfo(ngdpb::Message);
   void PrintSlcInfo(ngdpb::Message);

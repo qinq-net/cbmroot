@@ -48,7 +48,9 @@ CbmTSUnpackTof::CbmTSUnpackTof( UInt_t uNbGdpb )
 //    fRawMessage(NULL),  
     fDigi(NULL),
     fBuffer(CbmTbDaqBuffer::Instance()),
-    fUnpackPar(NULL)
+    fUnpackPar(NULL),
+    fbEpochSuppModeOn(kFALSE),
+    fvmEpSupprBuffer()
 {
 }
 
@@ -109,13 +111,21 @@ Bool_t CbmTSUnpackTof::ReInitContainers()
 			  << FairLogger::endl;
 	}
 	Int_t NrOfChannels = fUnpackPar->GetNumberOfChannels();
+	//Int_t fNrOfGet4    = NrOfChannels/4;
 	LOG(INFO) << "Nr. of mapped Tof channels: " << NrOfChannels;
 	for (Int_t i = 0; i< NrOfChannels; ++i) {
 	  if(i%8 == 0)  LOG(INFO) << FairLogger::endl;
 	  LOG(INFO) << Form(" 0x%08x",fUnpackPar->GetChannelToDetUIdMap(i));
 	}
 	LOG(INFO)  << FairLogger::endl;
-	
+	if( fbEpochSuppModeOn )
+	{
+	  fvmEpSupprBuffer.resize( nrOfRocs );	
+	  for (Int_t i = 0; i< nrOfRocs; ++i) {
+	    Int_t nrOfGet4 = fUnpackPar->GetNrOfFebsPerGdpb()*fUnpackPar->GetNrOfGet4PerFeb();
+	    fvmEpSupprBuffer[i].resize( nrOfGet4 );	
+	  }
+	}
 	return kTRUE;
 }
 
@@ -202,7 +212,14 @@ Bool_t CbmTSUnpackTof::DoUnpack(const fles::Timeslice& ts, size_t component)
             PrintGenInfo(mess);
             break;
 	  case ngdpb::MSG_GET4_32B:
-            FillHitInfo(mess);
+	    if( fbEpochSuppModeOn )
+	      {
+		Int_t rocId      = mess.getRocNumber();
+		Int_t get4Id     = mess.getGdpbGenChipId();
+		//		Int_t fGet4Nr    = fGdpbIdIndexMap[rocId]*kuNbChanAfck + get4Id*kuNbChanGet4;
+		fvmEpSupprBuffer[rocId][get4Id].push_back( mess );
+	      }
+	    else   FillHitInfo(mess);
             break;
           case ngdpb::MSG_GET4_SLC:
             PrintSlcInfo(mess);
@@ -286,10 +303,25 @@ void CbmTSUnpackTof::FillHitInfo(ngdpb::Message mess)
 
 void CbmTSUnpackTof::FillEpochInfo(ngdpb::Message mess)
 {
-  Int_t rocId          = mess.getRocNumber();
+  Int_t rocId      = mess.getRocNumber();
   Int_t get4Id     = mess.getGdpbGenChipId();
+  //  Int_t fGet4Nr    = fGdpbIdIndexMap[rocId]*kuNbChanAfck + get4Id*kuNbChanGet4;
   fCurrentEpoch[rocId][get4Id] = mess.getEpoch2Number();
-  
+  if( fbEpochSuppModeOn )
+  {
+    Int_t iBufferSize = fvmEpSupprBuffer[rocId][get4Id].size();
+    if( 0 < iBufferSize )
+    {
+      LOG(DEBUG) << "Now processing stored messages for for get4 " <<  rocId <<", "<<get4Id<< " with epoch number "
+                 << (fCurrentEpoch[rocId][get4Id] - 1) << FairLogger::endl;
+      for( Int_t iMsgIdx = 0; iMsgIdx < iBufferSize; iMsgIdx++ )
+      {
+        FillHitInfo( fvmEpSupprBuffer[rocId][get4Id][ iMsgIdx ] );
+      } // for( Int_t iMsgIdx = 0; iMsgIdx < iBufferSize; iMsgIdx++ )
+      fvmEpSupprBuffer[rocId][get4Id].clear();
+    } // if( 0 < fvmEpSupprBuffer[fGet4Nr] )
+  } // if( fbEpochSuppModeOn )
+
   if( fGdpbIdIndexMap.end() == fGdpbIdIndexMap.find( rocId ) )
   {
      fGdpbIdIndexMap[ rocId ] = fuCurrNbGdpb;
@@ -319,12 +351,12 @@ void CbmTSUnpackTof::FillEpochInfo(ngdpb::Message mess)
   fCurrentEpochTime = mess.getMsgFullTime(fCurrentEpoch[rocId][get4Id]);
   fNofEpochs++;
   LOG(DEBUG1) << "Epoch message "
-             << fNofEpochs << ", epoch " << static_cast<Int_t>(fCurrentEpoch[rocId][get4Id])
-             << ", time " << std::setprecision(9) << std::fixed
-             << Double_t(fCurrentEpochTime) * 1.e-9 << " s "
-             << " for board ID " << std::hex << std::setw(4) << rocId << std::dec
-             << " and chip " << mess.getEpoch2ChipNumber()
-             << FairLogger::endl;
+              << fNofEpochs << ", epoch " << static_cast<Int_t>(fCurrentEpoch[rocId][get4Id])
+              << ", time " << std::setprecision(9) << std::fixed
+              << Double_t(fCurrentEpochTime) * 1.e-9 << " s "
+              << " for board ID " << std::hex << std::setw(4) << rocId << std::dec
+              << " and chip " << mess.getEpoch2ChipNumber()
+              << FairLogger::endl;
 
 }
 
