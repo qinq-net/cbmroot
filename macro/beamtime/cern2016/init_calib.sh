@@ -25,7 +25,7 @@ cp .rootrc ${cRun}
 cd ${cRun}
 
 # Global variables, for for-loops. Runs from 1-15 and 16-79 in two for-loops
-iRestart=75
+iRestart=0
 iStep=0
 iStepLast=0
 # ************************** Starting while Loop ***************************** #
