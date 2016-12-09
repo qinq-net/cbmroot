@@ -891,6 +891,8 @@ void CbmTSMonitorTof::FillEpochInfo(ngdpb::Message mess)
       {
         FillHitInfo( fvmEpSupprBuffer[fGet4Nr][ iMsgIdx ] );
       } // for( Int_t iMsgIdx = 0; iMsgIdx < iBufferSize; iMsgIdx++ )
+      
+      fvmEpSupprBuffer[fGet4Nr].clear();
     } // if( 0 < fvmEpSupprBuffer[fGet4Nr] )
   } // if( fbEpochSuppModeOn )
 
