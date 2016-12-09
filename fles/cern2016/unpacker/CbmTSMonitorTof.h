@@ -61,7 +61,7 @@ class CbmTSMonitorTof: public CbmTSUnpack {
     void SetDiamondPerTsSpillOnThr( Int_t iThrIn = 10 ) {  fiDiamSpillOnThr = iThrIn; }
     void SetDiamondPerTsSpillOffThr( Int_t iThrIn = 3 ) { fiDiamSpillOffThr = iThrIn; }
     void SetDiamondTsNbSpillOffThr( Int_t iThrIn = 10 ) { fiTsUnderOffThr = iThrIn; }
-
+    
     void SetEpochSuppressedMode( Bool_t bEnable = kTRUE ) { fbEpochSuppModeOn = bEnable; }
 
     void ResetAllHistos();
@@ -97,7 +97,9 @@ class CbmTSMonitorTof: public CbmTSUnpack {
     Bool_t fbSpillOn;
     
     Bool_t fbEpochSuppModeOn;
+#ifndef __CINT__
     std::vector< std::vector < ngdpb::Message > > fvmEpSupprBuffer;
+#endif
 
     Int_t fGdpbId; // Id (hex number)of the GDPB which is read from the message
     Int_t fGdpbNr; // running number (0 to fNrOfGdpbs) of the GDPB in the
