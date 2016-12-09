@@ -64,6 +64,8 @@ CbmTSMonitorTof::CbmTSMonitorTof() :
     fdDiamondLastTime(-1.),
     fdDiamondTimeLastTs(-1.),
     fbSpillOn(kFALSE),
+    fbEpochSuppModeOn(kFALSE),
+    fvmEpSupprBuffer(),
     fuCurrNbGdpb(0),
     fMsgCounter(11, 0), // length of enum MessageTypes initialized with 0
     fGdpbIdIndexMap(),
@@ -172,6 +174,9 @@ Bool_t CbmTSMonitorTof::ReInitContainers()
   LOG(INFO) << "Plot Channel Rate => "
                << (fUnpackPar->IsChannelRateEnabled() ? "ON" : "OFF")
                << FairLogger::endl;
+
+  if( fbEpochSuppModeOn )
+      fvmEpSupprBuffer.resize( fNrOfGet4 );
 
   return kTRUE;
 }
@@ -618,7 +623,7 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts,
       uint64_t ulData = static_cast<uint64_t>(pInBuff[uIdx]);
       ngdpb::Message mess(ulData);
 
-      if (gLogger->IsLogNeeded(DEBUG)) {
+      if (gLogger->IsLogNeeded(DEBUG2)) {
         mess.printDataCout();
       }
 
@@ -658,7 +663,9 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts,
           break;
         case ngdpb::MSG_GET4_32B:
           fHistGet4MessType->Fill(fGet4Nr, ngdpb::GET4_32B_DATA);
-          FillHitInfo(mess);
+          if( fbEpochSuppModeOn )
+            fvmEpSupprBuffer[fGet4Nr].push_back( mess );
+            else FillHitInfo(mess);
           break;
         case ngdpb::MSG_GET4_SLC:
           fHistGet4MessType->Fill(fGet4Nr, ngdpb::GET4_32B_SLCM);
@@ -775,8 +782,12 @@ void CbmTSMonitorTof::FillHitInfo(ngdpb::Message mess)
   ULong_t hitTime = mess.getMsgFullTime(0);
 
   Int_t curEpochGdpbGet4 = fCurrentEpoch[fGet4Nr];
+  
   if (curEpochGdpbGet4 != -111) {
 
+    if( fbEpochSuppModeOn )
+      curEpochGdpbGet4 --; // In Ep. Suppr. Mode, receive following epoch instead of previous
+  
     Int_t channelNr = fGet4Id * fNrOfChannelsPerGet4 + channel;
     fRaw_Tot_gDPB[fGdpbNr]->Fill(channelNr, tot);
     fChCount_gDPB[fGdpbNr]->Fill(channelNr);
@@ -854,8 +865,8 @@ void CbmTSMonitorTof::FillHitInfo(ngdpb::Message mess)
     //} // if( fCurrentEpoch.end() != fCurrentEpoch.find( rocId ) )
   //} // if( fGdpbIdIndexMap.end() != fGdpbIdIndexMap.find( rocId ) )
   else
-    LOG(WARNING) << "found unmapped gdpbId w/o epoch yet: "
-                    << Form("0x%08x ", fGdpbId) << FairLogger::endl;
+    LOG(WARNING) << "Found hit in gdpbId w/o epoch yet: "
+                    << Form("0x%08x g4 %02u", fGdpbId, fGet4Nr) << FairLogger::endl;
 }
 
 void CbmTSMonitorTof::FillEpochInfo(ngdpb::Message mess)
@@ -863,8 +874,25 @@ void CbmTSMonitorTof::FillEpochInfo(ngdpb::Message mess)
   Int_t epochNr = mess.getEpoch2Number();
   fCurrentEpoch[fGet4Nr] = epochNr;
 
-  //  LOG(INFO) << "Epoch message for ROC " << gdpbId << " with epoch number "
-  //            << fCurrentEpoch[gdpbId] << FairLogger::endl;
+  if (100 > iMess++)
+      LOG(DEBUG) << "Epoch message for get4 " << fGet4Nr << " with epoch number "
+                 << fCurrentEpoch[fGet4Nr] << FairLogger::endl;
+
+
+  if( fbEpochSuppModeOn )
+  {
+    Int_t iBufferSize = fvmEpSupprBuffer[fGet4Nr].size();
+    if( 0 < iBufferSize )
+    {
+      LOG(DEBUG) << "Now processing stored messages for for get4 " << fGet4Nr << " with epoch number "
+                 << (fCurrentEpoch[fGet4Nr] - 1) << FairLogger::endl;
+
+      for( Int_t iMsgIdx = 0; iMsgIdx < iBufferSize; iMsgIdx++ )
+      {
+        FillHitInfo( fvmEpSupprBuffer[fGet4Nr][ iMsgIdx ] );
+      } // for( Int_t iMsgIdx = 0; iMsgIdx < iBufferSize; iMsgIdx++ )
+    } // if( 0 < fvmEpSupprBuffer[fGet4Nr] )
+  } // if( fbEpochSuppModeOn )
 
   if (1 == mess.getGdpbEpSync())
     fHistGet4EpochFlags->Fill(fGet4Nr, 0);
