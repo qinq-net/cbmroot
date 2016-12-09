@@ -16,8 +16,8 @@
   
    TString workDir    = gSystem->Getenv("VMCWORKDIR");
    TString paramDir   = workDir + "/macro/beamtime/cern2016/";
-   TString ParFile    = paramDir + "input/data/" + cFileId + ".params.root";
-   TString InputFile  = paramDir + "input/data/" + cFileId + ".root";
+   TString ParFile    = paramDir + "data/" + cFileId + ".params.root";
+   TString InputFile  = paramDir + "data/" + cFileId + ".root";
    TString OutputFile = paramDir + "data/digi_" + cFileId + Form("_%09d_%03d",iCalSet,iSel2) + ".out.root";
 
    TList *parFileList = new TList();
