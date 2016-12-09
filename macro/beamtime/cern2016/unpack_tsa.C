@@ -8,16 +8,16 @@
  */
 
 //void unpack_tsa(Int_t nEvt=100, TString FileId = "cosmic_2016110701_safe_4links_4")
-void unpack_tsa(Int_t nEvt=100, Double_t dDeltaT=200., Int_t iReqDet=0, TString FileId = "sps2016111302_1945")
+void unpack_tsa(Int_t nEvt=100, Double_t dDeltaT=200., Int_t iReqDet=0, Bool_t bEpSupp=kFALSE, TString FileId = "sps2016111302_1945")
 {
-
   TString srcDir = gSystem->Getenv("VMCWORKDIR");
   //  TString inDir  = "./input/";
+  TString inDir  = "./input/" + FileId + "/";
   //  TString inDir  = "/lustre/nyx/cbm/prod/beamtime/2016/11/cern/phase1/";
   //  inFile = inDir + FileId + ".tsa"; 
   // for Phase2 data
   //TString inDir  = "/lustre/nyx/cbm/prod/beamtime/2016/11/cern/phase2/" + FileId;
-  TString inDir  = "/lustre/nyx/cbm/prod/beamtime/2016/11/cern/phase3/" + FileId;
+  //TString inDir  = "/lustre/nyx/cbm/prod/beamtime/2016/11/cern/phase3/" + FileId;
   TString inFile = "*.tsa";
 
   // --- Specify number of events to be produced.
@@ -69,6 +69,7 @@ void unpack_tsa(Int_t nEvt=100, Double_t dDeltaT=200., Int_t iReqDet=0, TString 
   
   // Get4 Unpacker
   CbmTSUnpackTof* test_unpacker_tof = new CbmTSUnpackTof(7);  //argument is number of gDpb
+  test_unpacker_tof->SetEpochSuppressedMode(bEpSupp);
 
   // --- Source task
   CbmFlibTestSource* source = new CbmFlibTestSource();
