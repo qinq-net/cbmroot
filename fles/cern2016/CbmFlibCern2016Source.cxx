@@ -62,7 +62,7 @@ CbmFlibCern2016Source::~CbmFlibCern2016Source()
 
 Bool_t CbmFlibCern2016Source::Init()
 {
-  if ( 0 == fFileName.Length() ) {
+  if ( 0 == fFileName.Length() && 0 == fInputFileList.GetSize()) {
     TString connector = Form("tcp://%s:%i", fHost.Data(), fPort);
     LOG(INFO) << "Open TSPublisher at " << connector << FairLogger::endl;
     fInputFileList.Add(new TObjString(connector));
@@ -71,6 +71,7 @@ Bool_t CbmFlibCern2016Source::Init()
       LOG(FATAL) << "Could not connect to publisher." << FairLogger::endl;
     } 
   } else {
+/*     
     // --- Open input file 
     TObjString* tmp =
       dynamic_cast<TObjString*>(fInputFileList.At(fFileCounter));
@@ -87,6 +88,12 @@ Bool_t CbmFlibCern2016Source::Init()
     if ( !fSource) { 
       LOG(FATAL) << "Could not open input file." << FairLogger::endl;
     } 
+*/ 
+    if( kFALSE == OpenNextFile() )
+    {
+      LOG(ERROR) << "Could not open the first file in the list, Doing nothing!" << FairLogger::endl;
+      return kFALSE;
+    } // if( kFALSE == OpenNextFile() )
   }
 
   for (auto it=fUnpackers.begin(); it!=fUnpackers.end(); ++it) {
@@ -144,7 +151,15 @@ Int_t CbmFlibCern2016Source::ReadEvent(UInt_t)
   retVal = GetNextEvent();
 //  LOG(INFO) << "After GetNextEvent: " << retVal << FairLogger::endl;
   
-  Int_t bla = fSource->eos(); // no more data; trigger end of run
+  Int_t bla = 0;
+  // If no more data and file mode, try to read next file in List
+  if( fSource->eos() && 0 < fFileName.Length() )
+  {
+    fFileCounter ++; // Increment file counter to go to next item in List
+    bla = ( kFALSE == OpenNextFile() ? 1 : 0 );
+  } // if( fSource->eos() && 0 < fFileName.Length() )
+  
+//  Int_t bla = fSource->eos(); // no more data; trigger end of run
 //  LOG(INFO) << "After fSource->eos: " << bla << FairLogger::endl;
   return bla; // no more data; trigger end of run
 }
@@ -208,7 +223,7 @@ Int_t CbmFlibCern2016Source::FillBuffer()
       const fles::Timeslice& ts = *timeslice;
       auto tsIndex = ts.index();
       if( (tsIndex != (fTSNumber+1)) &&( fTSNumber != 0) ) {
-        LOG(WARNING) << "Missed Timeslices. Old TS Number was " << fTSNumber 
+        LOG(DEBUG) << "Missed Timeslices. Old TS Number was " << fTSNumber 
                      << " New TS Number is " << tsIndex << FairLogger::endl;
       }
       fTSNumber=tsIndex;
@@ -280,5 +295,44 @@ Int_t CbmFlibCern2016Source::GetNextEvent()
 
   return 0;
 }
+
+Bool_t CbmFlibCern2016Source::OpenNextFile()
+{
+   // First Close and delete existing source
+   if( NULL != fSource )
+      delete fSource;
+
+   if( fFileCounter < fInputFileList.GetSize() )
+   {
+      // --- Open current input file 
+      TObjString* tmp =
+      dynamic_cast<TObjString*>(fInputFileList.At(fFileCounter));
+      fFileName = tmp->GetString();
+
+      LOG(INFO) << "Open the Flib input file " << fFileName << FairLogger::endl;
+      // Check if the input file exist
+      FILE* inputFile = fopen(fFileName.Data(), "r");
+      if ( ! inputFile )  {
+         LOG(ERROR) << "Input file " << fFileName << " doesn't exist." << FairLogger::endl;
+         return kFALSE;
+      }
+      fclose(inputFile);
+      fSource = new fles::TimesliceInputArchive(fFileName.Data());
+      if ( !fSource) { 
+         LOG(ERROR) << "Could not open input file." << FairLogger::endl;
+         return kFALSE;
+      } 
+   } // if( fFileCounter < fInputFileList.GetSize() )
+      else
+      {
+         LOG(INFO) << "End of files list reached: file counter is " << fFileCounter
+                   << " for " << fInputFileList.GetSize() << " entries in the file list."
+                   << FairLogger::endl;
+         return kFALSE;
+      } // else of if( fFileCounter < fInputFileList.GetSize() )
+   
+   return kTRUE;
+}
+
 
 ClassImp(CbmFlibCern2016Source)

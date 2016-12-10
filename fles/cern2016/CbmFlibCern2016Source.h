@@ -97,6 +97,7 @@ class CbmFlibCern2016Source : public FairSource
 
     Int_t FillBuffer();
     Int_t GetNextEvent();
+    Bool_t OpenNextFile();
 
     CbmFlibCern2016Source operator=(const CbmFlibCern2016Source&);
 
