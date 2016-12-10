@@ -356,8 +356,16 @@ void CbmStsDigitize::GetEventInfo(Int_t& inputNr, Int_t& eventNr,
 		FairEventHeader* event = FairRunAna::Instance()->GetEventHeader();
 		assert ( event );
 	  inputNr   = event->GetInputFileId();
-	  eventNr   = event->GetMCEntryNumber();
+	  eventNr   = event->GetMCEntryNumber() - 1;
 	  eventTime = event->GetEventTime();
+
+	  // TODO:The FairEventHeader gives the MCEntryNumber starting from 1.
+	  // The FairRootTeam has been contacted w.r.t. that. Meanwhile,
+	  // we correct this by shifting by one, otherwise the linking does not
+	  // work properly. We check here whether the thing is already corrected
+	  // in FairRoot.
+	  if ( eventNr < 0 ) LOG(FATAL) << GetName() << "MC event number "
+	  		<< eventNr << FairLogger::endl;
 	}
 
 	// --- In a FairRunSim, the input number and event time are always zero;

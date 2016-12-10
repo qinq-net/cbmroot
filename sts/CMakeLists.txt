@@ -50,6 +50,7 @@ reco/CbmStsFindClustersEvents.cxx
 reco/CbmStsFindHits.cxx
 reco/CbmStsFindHitsEvents.cxx
 reco/CbmStsFindTracksEvents.cxx
+reco/CbmStsMatchReco.cxx
 reco/CbmStsTestQa.cxx
 reco/CbmStsTimeBasedQa.cxx
 reco/CbmStsTimeBasedQaReport.cxx
