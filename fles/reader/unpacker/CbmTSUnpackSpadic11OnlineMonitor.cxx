@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 // -----                                                                   -----
-// -----                           CbmTSUnpackSpadic11OnlineMonitor                       -----
-// -----                    Created 07.11.2014 by F. Uhlig                 -----
+// -----                           CbmTSUnpackSpadic11OnlineMonitor        -----
+// -----                    Created 10.12.2016 by C. Bergmann              -----
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 #include "CbmTSUnpackSpadic11OnlineMonitor.h"
