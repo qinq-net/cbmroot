@@ -61,8 +61,12 @@ class CbmTSMonitorTof: public CbmTSUnpack {
     void SetDiamondPerTsSpillOnThr( Int_t iThrIn = 10 ) {  fiDiamSpillOnThr = iThrIn; }
     void SetDiamondPerTsSpillOffThr( Int_t iThrIn = 3 ) { fiDiamSpillOffThr = iThrIn; }
     void SetDiamondTsNbSpillOffThr( Int_t iThrIn = 10 ) { fiTsUnderOffThr = iThrIn; }
-    
+
     void SetEpochSuppressedMode( Bool_t bEnable = kTRUE ) { fbEpochSuppModeOn = bEnable; }
+    
+    void SetBeamTuningMode( Bool_t bEnable = kTRUE ) { fbBeamTuningMode = bEnable; }
+
+    void SetRunStart( Int_t dateIn, Int_t timeIn, Int_t iBinSize = 5 );
 
     void ResetAllHistos();
 
@@ -95,7 +99,9 @@ class CbmTSMonitorTof: public CbmTSUnpack {
     Double_t fdDiamondLastTime;
     Double_t fdDiamondTimeLastTs;
     Bool_t fbSpillOn;
-    
+    UInt_t fSpillIdx;
+    Bool_t fbBeamTuningMode;
+
     Bool_t fbEpochSuppModeOn;
 #ifndef __CINT__
     std::vector< std::vector < ngdpb::Message > > fvmEpSupprBuffer;
@@ -142,11 +148,17 @@ class CbmTSMonitorTof: public CbmTSUnpack {
     TH2* fHistDiamond;
     TH2* fHistDiamondSpill;
     TH1* fHistDiamondSpillLength;
+    TH1* fHistDiamondSpillCount;
+    TH2* fHistDiamondSpillQA;
 
     std::vector<TH2*> fRaw_Tot_gDPB;
     std::vector<TH1*> fChCount_gDPB;
     std::vector<TH2*> fChannelRate_gDPB;
     std::vector<TH1*> fFeetRate_gDPB;
+
+    std::vector<TH1*> fFeetRateDate_gDPB;
+    Int_t             fiRunStartDateTimeSec;
+    Int_t             fiBinSizeDatePlots;
 
     void CreateHistograms();
 
