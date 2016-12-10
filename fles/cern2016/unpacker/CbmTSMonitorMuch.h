@@ -45,6 +45,8 @@ public:
 
   void FillOutput(CbmDigi* digi);
 
+    void SetRunStart( Int_t dateIn, Int_t timeIn, Int_t iBinSize = 5 );
+
     void ResetAllHistos();
 
 private:
@@ -71,6 +73,12 @@ private:
   Int_t fEquipmentId;
 
   CbmMuchUnpackPar* fUnpackPar;    //!
+    
+  std::vector<TH1*> fFebRateDate_nDPB;
+  std::vector<TH2*> fHitDtDate_nDPB;
+  std::vector<Double_t> fdLastHitTime_nDPB;
+  Int_t             fiRunStartDateTimeSec;
+  Int_t             fiBinSizeDatePlots;
 
   void CreateHistograms();
 

@@ -52,7 +52,12 @@ CbmTSMonitorMuch::CbmTSMonitorMuch()
     fdStartTimeMsSz(-1.),
     fcMsSizeAll(NULL),
     fEquipmentId(0),
-	fUnpackPar(NULL)
+	fUnpackPar(NULL),
+    fFebRateDate_nDPB(),
+    fHitDtDate_nDPB(),
+    fdLastHitTime_nDPB(),
+    fiRunStartDateTimeSec( -1 ),
+    fiBinSizeDatePlots( -1 )
 {
 }
 
@@ -209,77 +214,113 @@ void CbmTSMonitorMuch::CreateHistograms()
   if (server) server->Register("/MuchRaw", fHM->H1(sHistName.Data()));
 #endif
 
+   // Number of rqte bins =
+   //      9 for the sub-unit decade
+   //    + 9 for each unit of each decade * 10 for the subdecade range
+   //    + 1 for the closing bin top edge
+   const Int_t iNbDecadesRate    = 9;
+   const Int_t iNbStepsDecade    = 9;
+   const Int_t iNbSubStepsInStep = 10;
+   const Int_t iNbBinsRate = iNbStepsDecade 
+                           + iNbStepsDecade * iNbSubStepsInStep * iNbDecadesRate 
+                           + 1;
+   Double_t dBinsRate[iNbBinsRate];
+      // First fill sub-unit decade
+   for( Int_t iSubU = 0; iSubU < iNbStepsDecade; iSubU ++ )
+      dBinsRate[ iSubU ] = 0.1 * ( 1 + iSubU );
+   std::cout << std::endl;
+      // Then fill the main decades
+   Double_t dSubstepSize = 1.0 / iNbSubStepsInStep;
+   for( Int_t iDecade = 0; iDecade < iNbDecadesRate; iDecade ++)
+   {
+      Double_t dBase = std::pow( 10, iDecade );
+      Int_t iDecadeIdx = iNbStepsDecade 
+                       + iDecade * iNbStepsDecade * iNbSubStepsInStep;
+      for( Int_t iStep = 0; iStep < iNbStepsDecade; iStep++ )
+      {
+         Int_t iStepIdx = iDecadeIdx + iStep * iNbSubStepsInStep;
+         for( Int_t iSubStep = 0; iSubStep < iNbSubStepsInStep; iSubStep++ )
+         {
+            dBinsRate[ iStepIdx + iSubStep ] = dBase * (1 + iStep)
+                                             + dBase * dSubstepSize * iSubStep;
+         } // for( Int_t iSubStep = 0; iSubStep < iNbSubStepsInStep; iSubStep++ )
+      } // for( Int_t iStep = 0; iStep < iNbStepsDecade; iStep++ )
+   } // for( Int_t iDecade = 0; iDecade < iNbDecadesRate; iDecade ++)
+   dBinsRate[ iNbBinsRate - 1 ] = std::pow( 10, iNbDecadesRate );
+   
+   TString sNdpbTag = "";
+	TString sDateHistName{""};
    for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
    {// looping on all the nDPBS IDs
+   
+      if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+      {
+         sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdA(dpbId) );
+      } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+         else 
+         {
+            sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdB(dpbId - fNrOfNdpbsA) );
+         } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+      
       for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
       {// looping on all the FEB IDs 
-         if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-         {
-            sHistName = Form("Chan_Counts_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId);
-            title = Form("Channel counts Much nDPB %04X FEB %02u; channel; Counts", 
-                        fUnpackPar->GetNdpbIdA(dpbId), febId);
-         } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-            else 
-            {
-               sHistName = Form("Chan_Counts_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId - fNrOfNdpbsA), febId);
-               title = Form("Channel counts Much nDPB %04X FEB %02u; channel; Counts", 
-                           fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
-            } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+         sHistName = Form("Chan_Counts_Much_n%s_f%1u", sNdpbTag.Data(), febId);
+         title = Form("Channel counts Much nDPB %s FEB %02u; channel; Counts", 
+                     sNdpbTag.Data(), febId);
 		  fHM->Add( sHistName.Data(), new TH1F( sHistName.Data(), title.Data(), 128, 0, 128) );
 #ifdef USE_HTTP_SERVER
         if (server) server->Register("/MuchRaw", fHM->H1(sHistName.Data()));
 #endif
       
-        if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-         {
-            sHistName = Form("Raw_ADC_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId);
-            title = Form("Raw ADC Much nDPB %04X FEB %02u; channel; ADC value",
-                     fUnpackPar->GetNdpbIdA(dpbId), febId);
-         } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-            else  
-            {
-               sHistName = Form("Raw_ADC_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
-               title = Form("Raw ADC Much nDPB %04X FEB %02u; channel; ADC value",
-                           fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
-            } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+        sHistName = Form("Raw_ADC_Much_n%s_f%1u", sNdpbTag.Data(), febId);
+        title = Form("Raw ADC Much nDPB %s FEB %02u; channel; ADC value",
+               sNdpbTag.Data(), febId);
 		  fHM->Add( sHistName.Data(), new TH2F( sHistName.Data(), title.Data(), 128, 0, 128, 4096, 0, 4096) );
 #ifdef USE_HTTP_SERVER
         if (server) server->Register("/MuchRaw", fHM->H2(sHistName.Data()));
 #endif
 
-        if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-         {
-            sHistName = Form("FebRate_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId);
-            title = Form("Counts per second in nDPB %04X FEB %02u; Time[s] ; Counts",
-                           fUnpackPar->GetNdpbIdA(dpbId), febId);
-         } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-            else  
-            {
-               sHistName = Form("FebRate_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
-               title = Form("Counts per second in nDPB %04X FEB %02u; Time[s] ; Counts",
-                           fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
-            } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+        sHistName = Form("FebRate_n%s_f%1u", sNdpbTag.Data(), febId);
+        title = Form("Counts per second in nDPB %s FEB %02u; Time[s] ; Counts",
+                        sNdpbTag.Data(), febId);
 		  fHM->Add( sHistName.Data(), new TH1F( sHistName.Data(), title.Data(), 1800, 0, 1800 ) );
 #ifdef USE_HTTP_SERVER
         if (server) server->Register("/MuchRaw", fHM->H1(sHistName.Data()));
 #endif
 
-        if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-         {
-            sHistName = Form("HitMissEvo_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId);
-            title = Form("Minimal hit loss per second in nDPB %04X FEB %02u; Time[s] ; Min Loss",
-                           fUnpackPar->GetNdpbIdA(dpbId), febId);
-         } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-            else  
-            {
-               sHistName = Form("HitMissEvo_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
-               title = Form("Minimal hit loss per second in nDPB %04X FEB %02u; Time[s] ; Min Loss",
-                           fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
-            } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+        if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec ) {
+          sDateHistName = Form("FebRateDate_n%s_f%1u", sNdpbTag.Data(), febId);
+          fHM->Add(sDateHistName.Data(), new TH1F(sDateHistName.Data(), title.Data(),
+                        (5400 / fiBinSizeDatePlots), 
+                        fiRunStartDateTimeSec -10, fiRunStartDateTimeSec + 5400 - 10));
+          ( fHM->H1(sDateHistName.Data()) )->GetXaxis()->SetTimeDisplay(1);
+#ifdef USE_HTTP_SERVER
+          if (server)
+            server->Register("/MuchRaw", fHM->H1(sDateHistName.Data()));
+#endif
+
+          sHistName = Form("HitDtDate_n%s_f%1u", sNdpbTag.Data(), febId );
+          title = Form("Inverse Hit distance VS time in second in nDPB %s FEB %02u; Time[s] ; F [Hz]; Counts",
+                     sNdpbTag.Data() );
+          fHM->Add(sHistName.Data(), new TH2F(sHistName.Data(), title.Data(),
+                        (5400 / 2*fiBinSizeDatePlots), 
+                        fiRunStartDateTimeSec -10, fiRunStartDateTimeSec + 5400 - 10,
+                        iNbBinsRate - 1, dBinsRate ));
+          ( fHM->H2(sHistName.Data()) )->GetXaxis()->SetTimeDisplay(1);
+#ifdef USE_HTTP_SERVER
+          if (server)
+            server->Register("/MuchRaw", fHM->H2(sHistName.Data()));
+#endif
+        } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
+
+        sHistName = Form("HitMissEvo_n%s_f%1u", sNdpbTag.Data(), febId);
+        title = Form("Minimal hit loss per second in nDPB %s FEB %02u; Time[s] ; Min Loss",
+                        sNdpbTag.Data(), febId);
 		  fHM->Add( sHistName.Data(), new TH1F( sHistName.Data(), title.Data(), 1800, 0, 1800 ) );
 #ifdef USE_HTTP_SERVER
         if (server) server->Register("/MuchRaw", fHM->H1(sHistName.Data()));
 #endif
+
       } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
    } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
 
@@ -327,13 +368,20 @@ void CbmTSMonitorMuch::CreateHistograms()
    TH1* histPnt = NULL;
    for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
    {// looping on all the nDPBS IDs
+      if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+      {
+         sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdA(dpbId) );
+      } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+         else 
+         {
+            sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdB(dpbId - fNrOfNdpbsA) );
+         } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+
       for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
       {// looping on all the FEB IDs
          cMuchChCounts->cd( 1 + dpbId * iNbPadsPerDpb + febId/2 );
          gPad->SetLogy();
-         if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-            sHistName = Form("Chan_Counts_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId);
-            else sHistName = Form("Chan_Counts_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
+         sHistName = Form("Chan_Counts_Much_n%s_f%1u", sNdpbTag.Data(), febId);
          histPnt = fHM->H1(sHistName.Data());
          
          if( 0 == febId%2 )
@@ -349,9 +397,7 @@ void CbmTSMonitorMuch::CreateHistograms()
             
          cMuchFebRate->cd( 1 + dpbId * iNbPadsPerDpb + febId/2 );
          gPad->SetLogy();
-         if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-            sHistName = Form("FebRate_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId);
-            else sHistName = Form("FebRate_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
+         sHistName = Form("FebRate_n%s_f%1u", sNdpbTag.Data(), febId);
          histPnt = fHM->H1(sHistName.Data());
          
          if( 0 == febId%2 )
@@ -381,6 +427,29 @@ void CbmTSMonitorMuch::CreateHistograms()
   
   /*****************************/
   
+  for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
+  {
+      if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+      {
+         sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdA(dpbId) );
+      } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+         else 
+         {
+            sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdB(dpbId - fNrOfNdpbsA) );
+         } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+      for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
+      {
+         if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec ) {
+            sDateHistName = Form("FebRateDate_n%s_f%1u", sNdpbTag.Data(), febId);
+            fFebRateDate_nDPB.push_back(fHM->H1(sDateHistName.Data()));
+            
+            sHistName = Form("HitDtDate_n%s_f%1u", sNdpbTag.Data(), febId );
+            fHitDtDate_nDPB.push_back(fHM->H2(sHistName.Data()));
+            fdLastHitTime_nDPB.push_back( -1.0 );
+         } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
+         
+      } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
+  } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
 }
 
 Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
@@ -407,33 +476,28 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
 
   TString sHistName{""};
   TString title{""};
+  TString sNdpbTag("");
 
    for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
    {// looping on all the nDPBS IDs
+      if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+      {
+         sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdA(dpbId) );
+      } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+         else 
+         {
+            sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdB(dpbId - fNrOfNdpbsA) );
+         } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
       for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
       {// looping on all the FEB IDs
-         if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-         {
-            sHistName = Form("Chan_Counts_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId);
-            Chan_Counts_Much.push_back(fHM->H1(sHistName.Data()));
-            sHistName = Form("Raw_ADC_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId);
-            Raw_ADC_Much.push_back(fHM->H2(sHistName.Data()));
-            sHistName = Form("FebRate_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId);
-            FebRate.push_back(fHM->H1(sHistName.Data()));
-            sHistName = Form("HitMissEvo_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId);
-            HitMissEvo.push_back(fHM->H1(sHistName.Data()));
-         } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-            else
-            {
-               sHistName = Form("Chan_Counts_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
-               Chan_Counts_Much.push_back(fHM->H1(sHistName.Data()));
-               sHistName = Form("Raw_ADC_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
-               Raw_ADC_Much.push_back(fHM->H2(sHistName.Data()));
-               sHistName = Form("FebRate_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
-               FebRate.push_back(fHM->H1(sHistName.Data()));
-               sHistName = Form("HitMissEvo_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId);
-               HitMissEvo.push_back(fHM->H1(sHistName.Data()));
-            } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+         sHistName = Form("Chan_Counts_Much_n%s_f%1u", sNdpbTag.Data(), febId);
+         Chan_Counts_Much.push_back(fHM->H1(sHistName.Data()));
+         sHistName = Form("Raw_ADC_Much_n%s_f%1u", sNdpbTag.Data(), febId);
+         Raw_ADC_Much.push_back(fHM->H2(sHistName.Data()));
+         sHistName = Form("FebRate_n%s_f%1u", sNdpbTag.Data(), febId);
+         FebRate.push_back(fHM->H1(sHistName.Data()));
+         sHistName = Form("HitMissEvo_n%s_f%1u", sNdpbTag.Data(), febId);
+         HitMissEvo.push_back(fHM->H1(sHistName.Data()));
       } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
    } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
   TH2* histPadDistr = fHM->H2("Pad_Distribution");
@@ -605,8 +669,27 @@ void CbmTSMonitorMuch::FillHitInfo(ngdpb::Message mess, std::vector<TH1*> Chan_C
          }
             
          if( 0 < fdStartTime )
+         {
         	FebRate[channelNr]->Fill( 1e-9*( mess.getMsgFullTimeD( fCurrentEpoch[rocId][nxyterId] )
                                       - fdStartTime)  );
+
+           // General Time (date + time) rate evolution
+           // Add offset of -1H as the filenames were using some times offset by 1 hour (Summer time?!?)
+           if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
+           {
+             fFebRateDate_nDPB[channelNr]->Fill(
+                        1e-9 * ( mess.getMsgFullTimeD( fCurrentEpoch[rocId][nxyterId] )
+                                - fdStartTime ) + fiRunStartDateTimeSec  );
+             if( 0 < fdLastHitTime_nDPB[ fNdpbIdIndexMap[rocId] ] )
+               fHitDtDate_nDPB[ fNdpbIdIndexMap[rocId] ]->Fill(
+                           1e-9 * ( mess.getMsgFullTimeD( fCurrentEpoch[rocId][nxyterId] )
+                                              - fdStartTime ) + fiRunStartDateTimeSec,
+                           1e9/( mess.getMsgFullTimeD( fCurrentEpoch[rocId][nxyterId] )
+                             - fdLastHitTime_nDPB[ fNdpbIdIndexMap[rocId] ] )
+                                            );
+             fdLastHitTime_nDPB[ fNdpbIdIndexMap[rocId] ] = mess.getMsgFullTimeD( fCurrentEpoch[rocId][nxyterId] );
+           } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
+        }
      }
    }
 
@@ -702,24 +785,28 @@ void CbmTSMonitorMuch::Finish()
    gDirectory->mkdir("Much_Raw");
    gDirectory->cd("Much_Raw");
 
+   TString sNdpbTag("");
    for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
    {// looping on all the nDPBS IDs
+      if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+      {
+         sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdA(dpbId) );
+      } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+         else 
+         {
+            sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdB(dpbId - fNrOfNdpbsA) );
+         } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
       for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
       {// looping on all the FEB IDs
-         if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-         {
-     fHM->H1( Form("Chan_Counts_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId) )->Write();
-     fHM->H2( Form("Raw_ADC_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId) )->Write();  
-     fHM->H1( Form("FebRate_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId) )->Write();
-     fHM->H1( Form("HitMissEvo_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId) )->Write();
-        } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-        else
+        fHM->H1( Form("Chan_Counts_Much_n%s_f%1u", sNdpbTag.Data(), febId) )->Write();
+        fHM->H2( Form("Raw_ADC_Much_n%s_f%1u", sNdpbTag.Data(), febId) )->Write();  
+        fHM->H1( Form("FebRate_n%s_f%1u", sNdpbTag.Data(), febId) )->Write();
+        fHM->H1( Form("HitMissEvo_n%s_f%1u", sNdpbTag.Data(), febId) )->Write();
+        if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
         {
-     fHM->H1( Form("Chan_Counts_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId) )->Write();
-     fHM->H2( Form("Raw_ADC_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId) )->Write();  
-     fHM->H1( Form("FebRate_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId) )->Write();
-     fHM->H1( Form("HitMissEvo_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId) )->Write();
-        } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+          fHM->H1( Form("FebRateDate_n%s_f%1u", sNdpbTag.Data(), febId) )->Write();
+          fHM->H2( Form("HitDtDate_n%s_f%1u", sNdpbTag.Data(), febId) )->Write();
+        } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
       } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
    } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
    fHM->H2("Pad_Distribution")->Write();        
@@ -752,24 +839,28 @@ void CbmTSMonitorMuch::ResetAllHistos()
   fHM->H1("hMessageTypeMuch")->Reset();
   fHM->H1("hSysMessTypeMuch")->Reset();
 
+   TString sNdpbTag("");
    for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
    {// looping on all the nDPBS IDs
+      if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+      {
+         sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdA(dpbId) );
+      } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+         else 
+         {
+            sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdB(dpbId - fNrOfNdpbsA) );
+         } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
       for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
       {// looping on all the FEB IDs
-         if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-         {
-     fHM->H1( Form("Chan_Counts_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId) )->Reset();
-     fHM->H2( Form("Raw_ADC_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId) )->Reset();  
-     fHM->H1( Form("FebRate_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId) )->Reset();
-     fHM->H1( Form("HitMissEvo_n%04X_f%1u", fUnpackPar->GetNdpbIdA(dpbId), febId) )->Reset();
-        } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-        else
+        fHM->H1( Form("Chan_Counts_Much_n%s_f%1u", sNdpbTag.Data(), febId) )->Reset();
+        fHM->H2( Form("Raw_ADC_Much_n%s_f%1u", sNdpbTag.Data(), febId) )->Reset();  
+        fHM->H1( Form("FebRate_n%s_f%1u", sNdpbTag.Data(), febId) )->Reset();
+        fHM->H1( Form("HitMissEvo_n%s_f%1u", sNdpbTag.Data(), febId) )->Reset();
+        if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
         {
-     fHM->H1( Form("Chan_Counts_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId) )->Reset();
-     fHM->H2( Form("Raw_ADC_Much_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId) )->Reset();  
-     fHM->H1( Form("FebRate_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId) )->Reset();
-     fHM->H1( Form("HitMissEvo_n%04X_f%1u", fUnpackPar->GetNdpbIdB(dpbId- fNrOfNdpbsA), febId) )->Reset();
-        } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+          fHM->H1( Form("FebRateDate_n%s_f%1u", sNdpbTag.Data(), febId) )->Reset();
+          fHM->H2( Form("HitDtDate_n%%s_f%1u", sNdpbTag.Data(), febId) )->Reset();
+        } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
       } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
    } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
    fHM->H2("Pad_Distribution")->Write();  
@@ -785,6 +876,15 @@ void CbmTSMonitorMuch::ResetAllHistos()
   } // for( UInt_t uLinks = 0; uLinks < 16; uLinks ++) 
   
   fdStartTime = -1;
+}
+
+void CbmTSMonitorMuch::SetRunStart( Int_t dateIn, Int_t timeIn, Int_t iBinSize )
+{
+   TDatime * fRunStartDateTime     = new TDatime( dateIn, timeIn);
+   fiRunStartDateTimeSec = fRunStartDateTime->Convert();
+   fiBinSizeDatePlots    = iBinSize;
+   
+   LOG(INFO) << "Assigned new MUCH Run Start Date-Time: " << fRunStartDateTime->AsString() << FairLogger::endl;
 }
 
 ClassImp(CbmTSMonitorMuch)
