@@ -15,6 +15,10 @@
 #include "MicrosliceContents.hpp"
 
 #include "FairLogger.h"
+#include "FairRunOnline.h"
+
+#include "TH1.h"
+#include "THttpServer.h"
 
 #include <iostream>
 #include <fstream>
@@ -34,6 +38,8 @@ CbmFlibCern2016Source::CbmFlibCern2016Source()
     fTSCounter(0),
     fTimer(),
     fBufferFillNeeded(kTRUE),
+    fHistoMissedTS(NULL),
+    fNofTSSinceLastTS(0),
     fSource(NULL)
 {
 }
@@ -52,6 +58,8 @@ CbmFlibCern2016Source::CbmFlibCern2016Source(const CbmFlibCern2016Source& source
     fTSCounter(0),
     fTimer(),
     fBufferFillNeeded(kTRUE),
+    fHistoMissedTS(NULL),
+    fNofTSSinceLastTS(),
     fSource(NULL)
 {
 }
@@ -103,6 +111,19 @@ Bool_t CbmFlibCern2016Source::Init()
     //    it->second->Register();
   }
   
+#ifdef USE_HTTP_SERVER
+  THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
+//  server->SetJSROOT("https://root.cern.ch/js/latest");
+#endif
+
+  fHistoMissedTS = new TH1I("Missed TS", "Missed TS", 2, 0., 2.);
+
+#ifdef USE_HTTP_SERVER
+  if (server)
+    server->Register("/TofRaw", fHistoMissedTS);
+#endif
+
+
   return kTRUE;
 }
 
@@ -201,7 +222,7 @@ void CbmFlibCern2016Source::Close()
               << std::hex << it->first << std::dec << FairLogger::endl;
     it->second->Finish();
   }
-
+  fHistoMissedTS->Write();
 }
 
 void CbmFlibCern2016Source::Reset()
@@ -225,6 +246,11 @@ Int_t CbmFlibCern2016Source::FillBuffer()
       if( (tsIndex != (fTSNumber+1)) &&( fTSNumber != 0) ) {
         LOG(DEBUG) << "Missed Timeslices. Old TS Number was " << fTSNumber 
                      << " New TS Number is " << tsIndex << FairLogger::endl;
+        fHistoMissedTS->Fill(1, tsIndex-fTSNumber);
+        fNofTSSinceLastTS=tsIndex-fTSNumber;
+      } else {
+        fHistoMissedTS->Fill(0);
+        fNofTSSinceLastTS=1;
       }
       fTSNumber=tsIndex;
 

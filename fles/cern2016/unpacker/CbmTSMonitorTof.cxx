@@ -7,11 +7,8 @@
 
 #include "CbmTSMonitorTof.h"
 #include "CbmTofUnpackPar.h"
-//#include "CbmTofDigiExp.h"
 
-//#include "CbmTbDaqBuffer.h"
-
-//#include "CbmFiberHodoAddress.h"
+#include "CbmFlibCern2016Source.h"
 #include "CbmHistManager.h"
 
 #include "FairLogger.h"
@@ -30,7 +27,6 @@
 #include "TROOT.h"
 #include "TStyle.h"
 #include "TPaveStats.h"
-#include "TDatime.h"
 
 #include <iostream>
 #include <stdint.h>
@@ -65,8 +61,6 @@ CbmTSMonitorTof::CbmTSMonitorTof() :
     fdDiamondLastTime(-1.),
     fdDiamondTimeLastTs(-1.),
     fbSpillOn(kFALSE),
-    fSpillIdx(0),
-    fbBeamTuningMode( kFALSE),
     fbEpochSuppModeOn(kFALSE),
     fvmEpSupprBuffer(),
     fuCurrNbGdpb(0),
@@ -81,10 +75,7 @@ CbmTSMonitorTof::CbmTSMonitorTof() :
     fdStartTimeMsSz(-1.),
     fcMsSizeAll(NULL),
     fEquipmentId(0),
-    fUnpackPar(NULL),
-    fFeetRateDate_gDPB(),
-    fiRunStartDateTimeSec( -1 ),
-    fiBinSizeDatePlots( -1 )
+    fUnpackPar(NULL)
 {
 }
 
@@ -375,19 +366,6 @@ void CbmTSMonitorTof::CreateHistograms()
       if (server)
         server->Register("/TofRaw", fHM->H1(name.Data()));
 #endif
-      if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec ) {
-        name = Form("FeetRateDate_gDPB_g%02u_f%1u", uGdpb, uFeet);
-        title = Form(
-          "Counts per second in Feet %1u of gDPB %02u; Time[s] ; Counts", uFeet,
-          uGdpb);
-        fHM->Add(name.Data(), new TH1F(name.Data(), title.Data(), (5400 / fiBinSizeDatePlots), -10, 5400 - 10));
-        ( fHM->H1(name.Data()) )->GetXaxis()->SetTimeDisplay(1);
-        ( fHM->H1(name.Data()) )->GetXaxis()->SetTimeOffset( fiRunStartDateTimeSec );
-#ifdef USE_HTTP_SERVER
-        if (server)
-          server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
-      } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
     } // for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
 
@@ -416,24 +394,6 @@ void CbmTSMonitorTof::CreateHistograms()
 #ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
-
-  name = "hDiamondSpillCount";
-  title = "Total counts in diamond in each spill; Spill; Counts";
-  TH1* hDiamondSpillCount = new TH1F(name, title, 300, 0., 300.);
-  fHM->Add(name.Data(), hDiamondSpillCount);
-#ifdef USE_HTTP_SERVER
-  if (server)
-    server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
-
-  name = "hDiamondSpillQA";
-  title = "Total counts in diamond per spill VS Spill length; Length [s]; Counts";
-  TH2* hDiamondSpillQA = new TH2F(name, title, 120, 0., 120., 150, 0., 150000.);
-  fHM->Add(name.Data(), hDiamondSpillQA);
-#ifdef USE_HTTP_SERVER
-  if (server)
-    server->Register("/TofRaw", fHM->H2(name.Data()));
 #endif
 
 #ifdef USE_HTTP_SERVER
@@ -536,8 +496,6 @@ void CbmTSMonitorTof::CreateHistograms()
   fHistDiamond = fHM->H2("hDiamond");
   fHistDiamondSpill = fHM->H2("hDiamondSpill");
   fHistDiamondSpillLength = fHM->H1("hDiamondSpillLength");
-  fHistDiamondSpillCount = fHM->H1("hDiamondSpillCount");
-  fHistDiamondSpillQA = fHM->H2("hDiamondSpillQA");
 
   for (Int_t i = 0; i < fNrOfGdpbs; ++i) {
     name = Form("Raw_Tot_gDPB_%02u", i);
@@ -551,10 +509,6 @@ void CbmTSMonitorTof::CreateHistograms()
     for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet++) {
       name = Form("FeetRate_gDPB_g%02u_f%1u", i, uFeet);
       fFeetRate_gDPB.push_back(fHM->H1(name.Data()));
-      if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec ) {
-        name = Form("FeetRateDate_gDPB_g%02u_f%1u", i, uFeet);
-        fFeetRateDate_gDPB.push_back(fHM->H1(name.Data()));
-      } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
     } // for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
   }
   /*****************************/
@@ -681,12 +635,6 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts,
 
       fGet4Id = mess.getGdpbGenChipId();
       fGet4Nr = (fGdpbNr * fNrOfGet4PerGdpb) + fGet4Id;
-      
-      // Jump most data in Beam tuning mode
-      if( fbBeamTuningMode && 
-          ( (fGdpbNr != fDiamondGdpb) || 
-            (fGet4Id / fNrOfGet4PerFeb != fDiamondFeet ) ) )
-         continue;
 
       switch (messageType) {
         case ngdpb::MSG_HIT:
@@ -803,18 +751,12 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts,
   if( !fbSpillOn && (fiDiamSpillOnThr < fiDiamCountsLastTs) )
   {
     fbSpillOn = kTRUE;
+    fHistDiamondSpill->Reset();
     fiTsUnderOff = 0;
 
     if( 0 < fdDiamondTimeLastTs )
-    {
       fHistDiamondSpillLength->Fill( fdDiamondLastTime - fdDiamondTimeLastTs );
-      fHistDiamondSpillCount->Fill( fSpillIdx, fHistDiamondSpill->GetEntries() );
-      fHistDiamondSpillQA->Fill( fdDiamondLastTime - fdDiamondTimeLastTs, 
-                                 fHistDiamondSpill->GetEntries() );
-    } // if( 0 < fdDiamondTimeLastTs )
     fdDiamondTimeLastTs = fdDiamondLastTime;
-    fSpillIdx++;
-    fHistDiamondSpill->Reset();
   } // if( !fbSpillOn && (fiDiamSpillOnThr < fiDiamCountsLastTs) )
   else if( fbSpillOn  )
   {
@@ -868,45 +810,36 @@ void CbmTSMonitorTof::FillHitInfo(ngdpb::Message mess)
           curEpochGdpbGet4);
     } // if( fUnpackPar->IsChannelRateEnabled() )
 
-    // In Run rate evolution
     if (fdStartTime < 0)
       fdStartTime = mess.getMsgFullTimeD(curEpochGdpbGet4);
 
     if (0 < fdStartTime)
-    {
       fFeetRate_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + (fGet4Id / fNrOfGet4PerFeb)]->Fill(
           1e-9 * (mess.getMsgFullTimeD(curEpochGdpbGet4) - fdStartTime));
-          
-       // General Time (date + time) rate evolution
-       // Add offset of -1H as the filenames were using some times offset by 1 hour (Summer time?!?)
-       if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec ) {
-         fFeetRateDate_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + (fGet4Id / fNrOfGet4PerFeb)]->Fill(
-             1e-9 * (mess.getMsgFullTimeD(curEpochGdpbGet4) - fdStartTime)  );
-       } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
-    }
 
      if (fDiamondGdpb == fGdpbNr
          && (fGet4Id / fNrOfGet4PerFeb == fDiamondFeet)) {
        Int_t iChanInGdpb = fGet4Id * fNrOfChannelsPerGet4 + channel;
+       Int_t increment = static_cast<CbmFlibCern2016Source*>(FairRunOnline::Instance()->GetSource())->GetNofTSSinceLastTS();
        if (fDiamondChanA == iChanInGdpb)
        {
-         fHistDiamond->Fill(0., 0.);
-         fHistDiamondSpill->Fill(0., 0.);
+         fHistDiamond->Fill(0., 0., increment);
+         fHistDiamondSpill->Fill(0., 0., increment);
        } // if (fDiamondChanA == iChanInGdpb)
        else if (fDiamondChanB == iChanInGdpb)
        {
-         fHistDiamond->Fill(1., 0.);
-         fHistDiamondSpill->Fill(1., 0.);
+         fHistDiamond->Fill(1., 0., increment);
+         fHistDiamondSpill->Fill(1., 0., increment);
        } // else if (fDiamondChanB == iChanInGdpb)
        else if (fDiamondChanC == iChanInGdpb)
        {
-         fHistDiamond->Fill(0., 1.);
-         fHistDiamondSpill->Fill(0., 1.);
+         fHistDiamond->Fill(0., 1., increment);
+         fHistDiamondSpill->Fill(0., 1., increment);
        } // else if (fDiamondChanC == iChanInGdpb)
        else if (fDiamondChanD == iChanInGdpb)
        {
-         fHistDiamond->Fill(1., 1.);
-         fHistDiamondSpill->Fill(1., 1.);
+         fHistDiamond->Fill(1., 1., increment);
+         fHistDiamondSpill->Fill(1., 1., increment);
        } // else if (fDiamondChanD == iChanInGdpb)
          
        if( fDiamondChanA == iChanInGdpb || fDiamondChanB == iChanInGdpb ||
@@ -1146,9 +1079,6 @@ void CbmTSMonitorTof::Finish()
       fHM->H2(Form("ChannelRate_gDPB_%02u", uGdpb))->Write();
     for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet++) {
       fHM->H1(Form("FeetRate_gDPB_g%02u_f%1u", uGdpb, uFeet))->Write();
-      if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec ) {
-        fHM->H1(Form("FeetRateDate_gDPB_g%02u_f%1u", uGdpb, uFeet))->Write();
-      }
     }
   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
   fHM->H1("hMessageType")->Write();
@@ -1156,9 +1086,6 @@ void CbmTSMonitorTof::Finish()
   fHM->H2("hGet4MessType")->Write();
   fHM->H2("hGet4ChanErrors")->Write();
   fHM->H2("hGet4EpochFlags")->Write();
-  fHM->H1("hDiamondSpillLength")->Write();
-  fHM->H1("hDiamondSpillCount")->Write();
-  fHM->H1("hDiamondSpillQA")->Write();
 
   gDirectory->cd("..");
 
@@ -1200,9 +1127,7 @@ void CbmTSMonitorTof::ResetAllHistos()
   fHM->H2("hGet4MessType")->Reset();
   fHM->H2("hGet4ChanErrors")->Reset();
   fHM->H2("hGet4EpochFlags")->Reset();
-  fHM->H1("hDiamondSpillCount")->Reset();
-  fHM->H1("hDiamondSpillQA")->Reset();
-  fSpillIdx = 0;
+  fHM->H1("hDiamondSpillLength")->Reset();
 
   for (UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb++) {
     fHM->H2(Form("Raw_Tot_gDPB_%02u", uGdpb))->Reset();
@@ -1225,16 +1150,6 @@ void CbmTSMonitorTof::ResetAllHistos()
   } // for( UInt_t uLinks = 0; uLinks < 16; uLinks ++)
 
   fdStartTime = -1;
-  fdStartTimeMsSz = -1;
-}
-
-void CbmTSMonitorTof::SetRunStart( Int_t dateIn, Int_t timeIn, Int_t iBinSize )
-{
-   TDatime * fRunStartDateTime     = new TDatime( dateIn, timeIn);
-   fiRunStartDateTimeSec = fRunStartDateTime->Convert();
-   fiBinSizeDatePlots    = iBinSize;
-   
-   LOG(INFO) << "Assigned new TOF Run Start Date-Time: " << fRunStartDateTime->AsString() << FairLogger::endl;
 }
 
 ClassImp(CbmTSMonitorTof)

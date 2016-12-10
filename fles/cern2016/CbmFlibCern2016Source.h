@@ -28,6 +28,7 @@
 #include <memory>
 #include <map>
 
+class TH1I;
 
 class CbmFlibCern2016Source : public FairSource
 {
@@ -69,6 +70,7 @@ class CbmFlibCern2016Source : public FairSource
     }
     
     UInt_t GetTsCount() { return fTSCounter; }
+    UInt_t GetNofTSSinceLastTS() { return fNofTSSinceLastTS; }
 
   private:
   
@@ -88,6 +90,9 @@ class CbmFlibCern2016Source : public FairSource
     TStopwatch fTimer;
 
     Bool_t fBufferFillNeeded; /** True if the input buffer has to be filled again **/  
+
+    TH1I* fHistoMissedTS;
+    Int_t fNofTSSinceLastTS;
 
 #ifndef __CINT__
     fles::TimesliceSource* fSource; //!
