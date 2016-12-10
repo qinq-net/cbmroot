@@ -21,7 +21,7 @@ class CbmTestDigi : public CbmDigi
     CbmTestDigi(const CbmTestDigi& digi) : CbmDigi(digi) {;}
 
     /** Move constructor  **/
-//    CbmTestDigi(CbmTestDigi&& digi) : CbmDigi(std::forward<CbmTestDigi>(digi)) {;}
+//   CbmTestDigi(CbmTestDigi&& digi) : CbmDigi(std::forward<CbmTestDigi>(digi)) {;}
 
     /** Destructor  **/
     virtual ~CbmTestDigi() {;}
@@ -37,8 +37,7 @@ class CbmTestDigi : public CbmDigi
     }
 
     /** Move Assignment operator  **/
-/*
-    CbmTestDigi& operator=(CbmTestDigi&& other)
+/*    CbmTestDigi& operator=(CbmTestDigi&& other)
     {
       if (this != &other) {
         CbmDigi::operator=(std::forward<CbmTestDigi>(other));
@@ -59,50 +58,84 @@ class CbmTestDigi : public CbmDigi
     Double_t GetTime() const {return CbmDigi::GetTime();}
 };
 
+void compareDigiDataMembers(CbmTestDigi& test, Int_t address, Double_t charge, CbmMatch* match,
+    Int_t systemid, Double_t time)
+{
+  Int_t retValInt{-222};
+  Double_t retValDouble{-222.};
+
+  retValInt = test.GetAddress();
+  EXPECT_EQ(address, retValInt);
+
+  retValDouble = test.GetCharge();
+  EXPECT_FLOAT_EQ(charge, retValDouble);
+
+  EXPECT_EQ(match, test.GetMatch());
+
+  retValInt = test.GetSystemId();
+  EXPECT_EQ(systemid, retValInt);
+
+  retValDouble = test.GetTime();
+  EXPECT_FLOAT_EQ(time, retValDouble);
+}
+
+void compareMatchDataMembers(CbmMatch* testMatch, Int_t noflinks, Double_t weight)
+{
+  Int_t linkLength{-111};
+  Double_t totalWeight{-111.};
+
+  linkLength = testMatch->GetNofLinks();
+  EXPECT_EQ(0, linkLength);
+
+  totalWeight = testMatch->GetTotalWeight();
+  EXPECT_FLOAT_EQ(0., totalWeight);
+}
+
 TEST(_GTestCbmDigi , CheckDefaultConstructor)
 {
   // Create abstract base class via derived class
   CbmTestDigi test;
 
-  Int_t retValInt{-222};
-  Double_t retValDouble{-222.};
-
-  retValInt = test.GetAddress();
-  EXPECT_EQ(-111, retValInt);
-
-  retValDouble = test.GetCharge();
-  EXPECT_FLOAT_EQ(0., retValDouble);
-
-  EXPECT_EQ(nullptr, test.GetMatch());
-
-  retValInt = test.GetSystemId();
-  EXPECT_EQ(-111, retValInt);
-
-  retValDouble = test.GetTime();
-  EXPECT_FLOAT_EQ(-111., retValDouble);
+  compareDigiDataMembers(test, -111, 0., nullptr, -111, -111.);
 }
+
+TEST(_GTestCbmDigi , CheckSetMatch)
+{
+  // Create abstract base class via derived class
+  CbmTestDigi test;
+
+  compareDigiDataMembers(test, -111, 0., nullptr, -111, -111.);
+
+  // Test if we can add an empty CbmMatch, get it back, and extract
+  // the expected values
+  CbmMatch* testMatch = new CbmMatch();
+
+  compareMatchDataMembers(testMatch, 0, 0.);
+
+  test.SetMatch(testMatch);
+
+  CbmMatch* testMatch1 = test.GetMatch();
+
+  EXPECT_NE(nullptr, testMatch1);
+  if (testMatch1) {
+    compareMatchDataMembers(testMatch1, 0, 0.);
+  }
+
+}
+
 
 TEST(_GTestCbmDigi , CheckCopyConstructor)
 {
   // Create abstract base class via derived class
   CbmTestDigi test;
 
-  Int_t retValInt{-222};
-  Double_t retValDouble{-222.};
+  CbmMatch* testMatch = new CbmMatch();
 
-  retValInt = test.GetAddress();
-  EXPECT_EQ(-111, retValInt);
+  compareMatchDataMembers(testMatch, 0, 0.);
 
-  retValDouble = test.GetCharge();
-  EXPECT_FLOAT_EQ(0., retValDouble);
+  test.SetMatch(testMatch);
 
-  EXPECT_EQ(nullptr, test.GetMatch());
-
-  retValInt = test.GetSystemId();
-  EXPECT_EQ(-111, retValInt);
-
-  retValDouble = test.GetTime();
-  EXPECT_FLOAT_EQ(-111., retValDouble);
+  compareDigiDataMembers(test, -111, 0., testMatch, -111, -111.);
 
   // Create object by copy constructing
   // test should be equal to test2 and test should be existing
@@ -110,34 +143,62 @@ TEST(_GTestCbmDigi , CheckCopyConstructor)
 
   // Test if the new object has the same values for all data members
   // as the original object
-  retValInt = test2.GetAddress();
-  EXPECT_EQ(-111, retValInt);
+  CbmMatch* testMatch1 = test2.GetMatch();
 
-  retValDouble = test2.GetCharge();
-  EXPECT_FLOAT_EQ(0., retValDouble);
+  EXPECT_NE(nullptr, testMatch1);
+  if (testMatch1) {
+    compareMatchDataMembers(testMatch1, 0, 0.);
+  }
 
-  EXPECT_EQ(nullptr, test2.GetMatch());
-
-  retValInt = test2.GetSystemId();
-  EXPECT_EQ(-111, retValInt);
-
-  retValDouble = test2.GetTime();
-  EXPECT_FLOAT_EQ(-111., retValDouble);
+  compareDigiDataMembers(test2, -111, 0., testMatch1, -111, -111.);
 
   // Test if the original object wasn't changed
-  retValInt = test.GetAddress();
-  EXPECT_EQ(-111, retValInt);
+  compareDigiDataMembers(test, -111, 0., testMatch, -111, -111.);
+}
 
-  retValDouble = test.GetCharge();
-  EXPECT_FLOAT_EQ(0., retValDouble);
+TEST(_GTestCbmDigi , CheckAssignmentOperator)
+{
+  // Create abstract base class via derived class
+  CbmTestDigi test;
 
-  EXPECT_EQ(nullptr, test.GetMatch());
+  compareDigiDataMembers(test, -111, 0., nullptr, -111, -111.);
 
-  retValInt = test.GetSystemId();
-  EXPECT_EQ(-111, retValInt);
+  // Create object by copy constructing
+  // test should be equal to test2 and test should be existing
+  CbmTestDigi test2;
+  test2 = test;
 
-  retValDouble = test.GetTime();
-  EXPECT_FLOAT_EQ(-111., retValDouble);
+  compareDigiDataMembers(test2, -111, 0., nullptr, -111, -111.);
+
+  // Test if the original object wasn't changed
+  compareDigiDataMembers(test, -111, 0., nullptr, -111, -111.);
+
+  CbmMatch* testMatch = new CbmMatch();
+
+  compareMatchDataMembers(testMatch, 0, 0.);
+
+  test.SetMatch(testMatch);
+
+  compareDigiDataMembers(test, -111, 0., testMatch, -111, -111.);
+
+  // Create object by copy constructing
+  // test should be equal to test2 and test should be existing
+  CbmTestDigi test3;
+  test3 = test;
+
+  // Test if the new object has the same values for all data members
+  // as the original object
+  CbmMatch* testMatch1 = test3.GetMatch();
+
+  EXPECT_NE(nullptr, testMatch1);
+  if (testMatch1) {
+    compareMatchDataMembers(testMatch1, 0, 0.);
+  }
+
+  compareDigiDataMembers(test3, -111, 0., testMatch1, -111, -111.);
+
+  // Test if the original object wasn't changed
+  compareDigiDataMembers(test, -111, 0., testMatch, -111, -111.);
 }
 
 /*
@@ -152,78 +213,31 @@ TEST(_GTestCbmDigi , CheckMoveConstructor)
   // After adding a new CbmMatch to CbmDigi
   // the GetMatch returns the pointer to the object
   CbmMatch* testMatch = new CbmMatch();
+
+  compareMatchDataMembers(testMatch, 0, 0.);
+
   test.SetMatch(testMatch);
-  EXPECT_NE(nullptr, test.GetMatch());
+
+  compareDigiDataMembers(test, -111, 0., testMatch, -111, -111.);
 
   // Create object by move constructing
   // test2 should now contain the pointer to the CbmMatch object and
   // test should contain a nullptr
   CbmTestDigi test2{std::move(test)};
-  EXPECT_NE(nullptr, test2.GetMatch());
-  EXPECT_EQ(nullptr, test.GetMatch());
-}
-*/
 
-TEST(_GTestCbmDigi , CheckAssignmentOperator)
-{
-  // Create abstract base class via derived class
-  CbmTestDigi test;
+  CbmMatch* testMatch1 = test2.GetMatch();
 
-  Int_t retValInt{-222};
-  Double_t retValDouble{-222.};
+  EXPECT_NE(nullptr, testMatch1);
+  if (testMatch1) {
+    compareMatchDataMembers(testMatch1, 0, 0.);
+  }
 
-  retValInt = test.GetAddress();
-  EXPECT_EQ(-111, retValInt);
+  compareDigiDataMembers(test2, -111, 0., testMatch1, -111, -111.);
 
-  retValDouble = test.GetCharge();
-  EXPECT_FLOAT_EQ(0., retValDouble);
+  compareDigiDataMembers(test, -111, 0., nullptr, -111, -111.);
 
-  EXPECT_EQ(nullptr, test.GetMatch());
-
-  retValInt = test.GetSystemId();
-  EXPECT_EQ(-111, retValInt);
-
-  retValDouble = test.GetTime();
-  EXPECT_FLOAT_EQ(-111., retValDouble);
-
-  // Create object by copy constructing
-  // test should be equal to test2 and test should be existing
-  CbmTestDigi test2;
-  test2 = test;
-
-  // Test if the new object has the same values for all data members
-  // as the original object
-  retValInt = test2.GetAddress();
-  EXPECT_EQ(-111, retValInt);
-
-  retValDouble = test2.GetCharge();
-  EXPECT_FLOAT_EQ(0., retValDouble);
-
-  EXPECT_EQ(nullptr, test2.GetMatch());
-
-  retValInt = test2.GetSystemId();
-  EXPECT_EQ(-111, retValInt);
-
-  retValDouble = test2.GetTime();
-  EXPECT_FLOAT_EQ(-111., retValDouble);
-
-  // Test if the original object wasn't changed
-  retValInt = test.GetAddress();
-  EXPECT_EQ(-111, retValInt);
-
-  retValDouble = test.GetCharge();
-  EXPECT_FLOAT_EQ(0., retValDouble);
-
-  EXPECT_EQ(nullptr, test.GetMatch());
-
-  retValInt = test.GetSystemId();
-  EXPECT_EQ(-111, retValInt);
-
-  retValDouble = test.GetTime();
-  EXPECT_FLOAT_EQ(-111., retValDouble);
 }
 
-/*
 TEST(_GTestCbmDigi , CheckAssignmentMoveConstructor)
 {
   // Create abstract base class via derived class
@@ -235,66 +249,28 @@ TEST(_GTestCbmDigi , CheckAssignmentMoveConstructor)
   // After adding a new CbmMatch to CbmDigi
   // the GetMatch returns the pointer to the object
   CbmMatch* testMatch = new CbmMatch();
+
+  compareMatchDataMembers(testMatch, 0, 0.);
+
   test.SetMatch(testMatch);
-  EXPECT_NE(nullptr, test.GetMatch());
+
+  compareDigiDataMembers(test, -111, 0., testMatch, -111, -111.);
 
   // Create object by move constructing
   // test2 should now contain the pointer to the CbmMatch object and
   // test should contain a nullptr
   CbmTestDigi test2; // = std::move(test);
   test2 = std::move(test);
-  EXPECT_NE(nullptr, test2.GetMatch());
-  EXPECT_EQ(nullptr, test.GetMatch());
-}
-*/
 
-TEST(_GTestCbmDigi , CheckSetMatch)
-{
-  // Create abstract base class via derived class
-  CbmTestDigi test;
-
-  Int_t retValInt{-222};
-  Double_t retValDouble{-222.};
-
-  retValInt = test.GetAddress();
-  EXPECT_EQ(-111, retValInt);
-
-  retValDouble = test.GetCharge();
-  EXPECT_FLOAT_EQ(0., retValDouble);
-
-  EXPECT_EQ(nullptr, test.GetMatch());
-
-  retValInt = test.GetSystemId();
-  EXPECT_EQ(-111, retValInt);
-
-  retValDouble = test.GetTime();
-  EXPECT_FLOAT_EQ(-111., retValDouble);
-
-  // Test if we can add an empty CbmMatch, get it back, and extract
-  // the expected values
-  CbmMatch* testMatch = new CbmMatch();
-
-  Int_t linkLength{-111};
-  Double_t totalWeight{-111};
-
-  linkLength = testMatch->GetNofLinks();
-  EXPECT_EQ(0, linkLength);
-
-  totalWeight = testMatch->GetTotalWeight();
-  EXPECT_FLOAT_EQ(0., totalWeight);
-
-  test.SetMatch(testMatch);
-
-  CbmMatch* testMatch1 = test.GetMatch();
+  CbmMatch* testMatch1 = test2.GetMatch();
 
   EXPECT_NE(nullptr, testMatch1);
   if (testMatch1) {
-    linkLength = testMatch1->GetNofLinks();
-    EXPECT_EQ(0, linkLength);
-
-    totalWeight = testMatch1->GetTotalWeight();
-    EXPECT_FLOAT_EQ(0., totalWeight);
+    compareMatchDataMembers(testMatch1, 0, 0.);
   }
 
-}
+  compareDigiDataMembers(test2, -111, 0., testMatch1, -111, -111.);
 
+  compareDigiDataMembers(test, -111, 0., nullptr, -111, -111.);
+}
+*/
