@@ -21,11 +21,10 @@ class CbmTestDigi : public CbmDigi
     CbmTestDigi(const CbmTestDigi& digi) : CbmDigi(digi) {;}
 
     /** Move constructor  **/
-//   CbmTestDigi(CbmTestDigi&& digi) : CbmDigi(std::forward<CbmTestDigi>(digi)) {;}
+    CbmTestDigi(CbmTestDigi&& digi) : CbmDigi(std::forward<CbmTestDigi>(digi)) {;}
 
     /** Destructor  **/
     virtual ~CbmTestDigi() {;}
-
 
     /** Assignment operator  **/
     CbmTestDigi& operator=(const CbmTestDigi& other)
@@ -37,14 +36,13 @@ class CbmTestDigi : public CbmDigi
     }
 
     /** Move Assignment operator  **/
-/*    CbmTestDigi& operator=(CbmTestDigi&& other)
+    CbmTestDigi& operator=(CbmTestDigi&& other)
     {
       if (this != &other) {
         CbmDigi::operator=(std::forward<CbmTestDigi>(other));
       }
       return *this;
     }
-*/
 
     /** Unique channel address  **/
     Int_t GetAddress() const {return CbmDigi::GetAddress();}
@@ -201,7 +199,6 @@ TEST(_GTestCbmDigi , CheckAssignmentOperator)
   compareDigiDataMembers(test, -111, 0., testMatch, -111, -111.);
 }
 
-/*
 TEST(_GTestCbmDigi , CheckMoveConstructor)
 {
   // Create abstract base class via derived class
@@ -273,4 +270,3 @@ TEST(_GTestCbmDigi , CheckAssignmentMoveConstructor)
 
   compareDigiDataMembers(test, -111, 0., nullptr, -111, -111.);
 }
-*/

@@ -48,19 +48,22 @@ class CbmDigi : public TObject
   /** Default constructor  **/
   CbmDigi();
 
-	
   /** Copy constructor  **/
   CbmDigi(const CbmDigi&);
 
+  /** Move constructor  **/
+  CbmDigi(CbmDigi&&);
 
   /** Destructor  **/
   virtual ~CbmDigi();
 
-	
   /** Assignment operator  **/	
   CbmDigi& operator=(const CbmDigi&);
 
+  /** Move Assignment operator  **/
+  CbmDigi& operator=(CbmDigi&&);
 	
+
   /** Unique channel address  **/
   virtual Int_t    GetAddress() const = 0;
 
