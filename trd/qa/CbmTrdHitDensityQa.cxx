@@ -53,7 +53,8 @@ using std::setiosflags;
 
 // ---- Default constructor -------------------------------------------
 CbmTrdHitDensityQa::CbmTrdHitDensityQa()
-  : CbmTrdHitDensityQa(1e-6, 1e7, (1./4.))
+  : CbmTrdHitDensityQa(1e-6, 1e7, 1.0/*used only for minBias events*/
+		       /*(1./4.)used only for central events*/)
 {
 }
 
