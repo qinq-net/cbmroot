@@ -75,6 +75,14 @@ Set(CbmPixelHitSources
 CreateGTestExeAndAddTest(_GTestCbmPixelHit "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
                          "${CbmPixelHitSources}" "${DEPENDENCIES}")
 
+Set(CbmStripHitSources
+  ${CMAKE_SOURCE_DIR}/data/CbmStripHit.cxx
+  _GTestCbmStripHit.cxx
+)  
+
+CreateGTestExeAndAddTest(_GTestCbmStripHit "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
+                         "${CbmStripHitSources}" "${DEPENDENCIES}")
+
 Set(CbmConstantsSources
   _GTestCbmConstants.cxx
 )  
