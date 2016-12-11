@@ -80,6 +80,16 @@ private:
   Int_t             fiRunStartDateTimeSec;
   Int_t             fiBinSizeDatePlots;
 
+  TH1* fHistMessType;
+  TH1* fHistSysMessType;
+   
+  std::vector<TH1*> fChan_Counts_Much;
+  std::vector<TH2*> fRaw_ADC_Much;
+  std::vector<TH1*> fFebRate;
+  std::vector<TH1*> fHitMissEvo;
+  
+  TH2* fHistPadDistr;
+  
   void CreateHistograms();
 
 #ifndef __CINT__

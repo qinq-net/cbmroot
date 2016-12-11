@@ -450,6 +450,43 @@ void CbmTSMonitorMuch::CreateHistograms()
          
       } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
   } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
+  
+  
+  fHistMessType = fHM->H1("hMessageTypeMuch");
+  fHistSysMessType = fHM->H1("hSysMessTypeMuch");
+   
+  std::vector<TH1*> Chan_Counts_Much;
+  std::vector<TH2*> Raw_ADC_Much;
+  std::vector<TH1*> FebRate;
+  std::vector<TH1*> HitMissEvo;
+/*
+  TString sHistName{""};
+  TString title{""};
+  TString sNdpbTag("");
+*/
+   for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
+   {// looping on all the nDPBS IDs
+      if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+      {
+         sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdA(dpbId) );
+      } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+         else 
+         {
+            sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdB(dpbId - fNrOfNdpbsA) );
+         } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+      for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
+      {// looping on all the FEB IDs
+         sHistName = Form("Chan_Counts_Much_n%s_f%1u", sNdpbTag.Data(), febId);
+         fChan_Counts_Much.push_back(fHM->H1(sHistName.Data()));
+         sHistName = Form("Raw_ADC_Much_n%s_f%1u", sNdpbTag.Data(), febId);
+         fRaw_ADC_Much.push_back(fHM->H2(sHistName.Data()));
+         sHistName = Form("FebRate_n%s_f%1u", sNdpbTag.Data(), febId);
+         fFebRate.push_back(fHM->H1(sHistName.Data()));
+         sHistName = Form("HitMissEvo_n%s_f%1u", sNdpbTag.Data(), febId);
+         fHitMissEvo.push_back(fHM->H1(sHistName.Data()));
+      } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
+   } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
+  fHistPadDistr = fHM->H2("Pad_Distribution");
 }
 
 Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
@@ -465,42 +502,6 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
 
   LOG(DEBUG) << "Timeslice contains " << ts.num_microslices(component)
              << "microslices." << FairLogger::endl;
-  
-   TH1* histMessType = fHM->H1("hMessageTypeMuch");
-   TH1* histSysMessType = fHM->H1("hSysMessTypeMuch");
-   
-  std::vector<TH1*> Chan_Counts_Much;
-  std::vector<TH2*> Raw_ADC_Much;
-  std::vector<TH1*> FebRate;
-  std::vector<TH1*> HitMissEvo;
-
-  TString sHistName{""};
-  TString title{""};
-  TString sNdpbTag("");
-
-   for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
-   {// looping on all the nDPBS IDs
-      if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-      {
-         sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdA(dpbId) );
-      } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-         else 
-         {
-            sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdB(dpbId - fNrOfNdpbsA) );
-         } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-      for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
-      {// looping on all the FEB IDs
-         sHistName = Form("Chan_Counts_Much_n%s_f%1u", sNdpbTag.Data(), febId);
-         Chan_Counts_Much.push_back(fHM->H1(sHistName.Data()));
-         sHistName = Form("Raw_ADC_Much_n%s_f%1u", sNdpbTag.Data(), febId);
-         Raw_ADC_Much.push_back(fHM->H2(sHistName.Data()));
-         sHistName = Form("FebRate_n%s_f%1u", sNdpbTag.Data(), febId);
-         FebRate.push_back(fHM->H1(sHistName.Data()));
-         sHistName = Form("HitMissEvo_n%s_f%1u", sNdpbTag.Data(), febId);
-         HitMissEvo.push_back(fHM->H1(sHistName.Data()));
-      } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
-   } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
-  TH2* histPadDistr = fHM->H2("Pad_Distribution");
 
    TString sMsSzName = Form("MsSz_link_%02u", component);
    TH1* hMsSz = NULL;
@@ -584,21 +585,21 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
           // and fill the corresponding histogram
           messageType = mess.getMessageType();
           fMsgCounter[messageType]++;
-          histMessType->Fill(messageType);
+          fHistMessType->Fill(messageType);
           
           switch( messageType ) {
           case ngdpb::MSG_HIT: 
-            FillHitInfo(mess, Chan_Counts_Much, Raw_ADC_Much, FebRate, histPadDistr);
+            FillHitInfo(mess, fChan_Counts_Much, fRaw_ADC_Much, fFebRate, fHistPadDistr);
             break;
           case ngdpb::MSG_EPOCH:
-            FillEpochInfo(mess, HitMissEvo);
+            FillEpochInfo(mess, fHitMissEvo);
             break;
           case ngdpb::MSG_SYNC:
             // Do nothing, this message is just there to make sure we get all Epochs
             break;
           case ngdpb::MSG_SYS:
             // Just keep track of which type of System message we receive
-            histSysMessType->Fill(mess.getSysMesType());
+            fHistSysMessType->Fill(mess.getSysMesType());
             break;
           default: 
             LOG(ERROR) << "Message type " << std::hex << std::setw(2) 
