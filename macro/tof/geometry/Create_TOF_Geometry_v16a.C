@@ -320,12 +320,15 @@ const Float_t Pole_Thick_Z = 0.4;
 const Float_t XLimInner=180.;
 
 
-// Bars (support structure)
-const Float_t Bar_Size_X = 20.;
-const Float_t Bar_Size_Y = 20.;
+// Bars & frame (support structure)
+const Float_t Frame_Size_X = 20.;
+const Float_t Frame_Size_Y = 20.;
 Float_t Bar_Size_Z = 100.;
-const Float_t Bar_XLen = 1400;
-const Float_t Bar_YLen = Pole_Size_Y + 2.*Bar_Size_Y;
+const Float_t Frame_XLen = 1400;
+const Float_t Frame_YLen = Pole_Size_Y + 2.*Frame_Size_Y;
+Float_t Frame_Pos_Z;
+const Float_t Bar_Size_X = 30;
+const Float_t Bar_Size_Y = 20.;
 Float_t Bar_Pos_Z;
 
 const Int_t MaxNumberOfBars=200;
@@ -468,6 +471,7 @@ void Create_TOF_Geometry_v16a() {
   gGeoMan->CheckOverlaps(0.00001);
   gGeoMan->CheckOverlaps(0.00001, "s");
   gGeoMan->PrintOverlaps();
+  gGeoMan->GetListOfOverlaps()->Print();
   gGeoMan->Test();
 
   TFile* outfile = new TFile(FileNameSim,"RECREATE");
@@ -509,6 +513,8 @@ if(!inFile.is_open()){
   return;
 }
 
+ cout << "------------------------------" << endl;
+ cout << "Reading content of TOF_10M.dat" << endl;
  std::string strdummy;
  std::getline(inFile,strdummy);
  cout<<strdummy<<endl;
@@ -1282,30 +1288,35 @@ void position_tof_bars(Int_t modType)
 
     NumberOfBars++;
     i = NumberOfBars;
-    gBar[i]=create_tof_bar(Bar_XLen,Bar_Size_Y,Bar_Size_Y);
+    gBar[i]=create_tof_bar(Frame_XLen,Frame_Size_Y,Frame_Size_Y); // Outer frame big bar along X
     j=i+1;
-    gBar[j]=create_tof_bar(Bar_Size_X,Bar_YLen,Bar_Size_Y);
+    gBar[j]=create_tof_bar(Frame_Size_X,Frame_YLen,Frame_Size_Y); // Outer frame big bar along Y
     Float_t numBarY=0;
     numBars=0;
 
    for(Float_t dZ=-1.; dZ<2.; dZ+=2.)
    {
-    Float_t zPos = Bar_Pos_Z - dZ*Bar_Size_Z/2.;
-    Float_t yPos = Pole_Size_Y/2.+1.5*Bar_Size_Y;
+    Float_t zPos = Frame_Pos_Z - dZ*Bar_Size_Z/2.;
+//    Float_t yPos = Pole_Size_Y/2.+1.5*Bar_Size_Y;
+    Float_t yPos = Frame_YLen/2. + Frame_Size_Y/2; // Make outer frame independent of the inner poles!!!!
 
+    // Outer Frame Top bar
     bar_trans = new TGeoTranslation("", 0., yPos, zPos);
     gGeoMan->GetVolume(geoVersion)->AddNode(gBar[i], numBars, bar_trans);
     numBars++;
 
+    // Outer Frame Bottom bar
     bar_trans = new TGeoTranslation("", 0., -yPos, zPos);
     gGeoMan->GetVolume(geoVersion)->AddNode(gBar[i], numBars, bar_trans);
     numBars++;
 
-    Float_t xPos=Bar_XLen/2-Bar_Size_Y/2.;
+    // Outer Frame Right bar
+    Float_t xPos=Frame_XLen/2-Frame_Size_Y/2.;
     bar_trans = new TGeoTranslation("", xPos, 0., zPos);
     gGeoMan->GetVolume(geoVersion)->AddNode(gBar[j], numBarY, bar_trans);
     numBarY++;
 
+    // Outer Frame Left bar
     bar_trans = new TGeoTranslation("", -xPos, 0., zPos);
     gGeoMan->GetVolume(geoVersion)->AddNode(gBar[j], numBarY, bar_trans);
     numBarY++;
@@ -1493,7 +1504,8 @@ void position_tof_modules(Int_t NModTypes)
     case 7: SignZ=-1;
       break;
     default:
-      cout << endl;
+//      cout << " default SignZ as iLz is " << iLz << endl;
+      break;
     }
 
     Float_t zPosPole = zPos + (Module_Size_Z[j]/2. + Pole_Size_Z/2.)*SignZ;
@@ -1520,9 +1532,9 @@ void position_tof_modules(Int_t NModTypes)
     }
 
     for (Int_t iP=0; iP<NumberOfPoles; iP++){
-      if(TMath::Abs(zPosPole - Pole_ZPos[iP])<zAcc && TMath::Abs(xPosPole - Pole_XPos[iP])<xAcc) {
+      if(TMath::Abs(zPosPole - Pole_ZPos[iP])< Pole_Size_Z && TMath::Abs(xPosPole - Pole_XPos[iP])< Pole_Size_X) {
        	BPexist=kTRUE;
-	break; 
+         break; 
       }
     }
 
@@ -1566,17 +1578,59 @@ void position_tof_modules(Int_t NModTypes)
  }
 
  Bar_Size_Z = BZMax - BZMin;
+ Frame_Pos_Z = (BZMax+BZMin)/2.;
  Bar_Pos_Z  = (BZMax+BZMin)/2.;
 
- //cout << "Place "<< NCol << " bars of z-length "<< Bar_Size_Z <<" at z = "<<Bar_Pos_Z<< endl;
+ cout << "Place "<< NCol << " bars of z-length "<< Bar_Size_Z <<" at z = "<<Bar_Pos_Z<< endl;
 
  Int_t iC;
+ Bool_t bBarExist = kFALSE;
  for (iC=0; iC<NCol; iC++)
  {
-   gBar[NumberOfBars] = create_tof_bar(Bar_Size_X, Bar_Size_Y, Bar_Size_Z);
-   Bar_ZPos[NumberOfBars] = Bar_Pos_Z; //PosPole+Bar_Size_Z/2.-Pole_Size_Z/2.;
-   Bar_XPos[NumberOfBars] = xPosCol[iC];
-   NumberOfBars++;
+   // Check if creating a bar for this pole would not collide with an existing bar
+   bBarExist=kFALSE;
+   for (Int_t iBar = 0; iBar < NumberOfBars; iBar ++)
+   {
+     if( (TMath::Abs(xPosCol[iC] - Bar_XPos[iBar]) < Bar_Size_X ) ) // Original bar
+     {
+       cout << Form( "Rejected bar for col %03d at X= %7.2f due to bar %03d at X= %7.2f", 
+                    iC, xPosCol[iC], iBar, Bar_XPos[iBar])
+           << endl;
+       
+       cout << Form( " ==> Replaced bar %03d at X= %7.2f by a bar at ", iBar, Bar_XPos[iBar]);
+       Bar_XPos[iBar] = (xPosCol[iC] + Bar_XPos[iBar]) / 2.0; // take mean of the 2 positions!!
+       cout << Form( " X= %7.2f (middle of colliding X positions)", Bar_XPos[iBar])
+           << endl;
+       
+       bBarExist=kTRUE;
+	    break; 
+     }
+     
+     if( (TMath::Abs(xPosCol[iC] + Bar_XPos[iBar]) < Bar_Size_X ) )  // Mirrored bar VS original  
+     {
+       cout << Form( "Rejected bar for col %03d at X= %7.2f due to bar %03d at X= %7.2f", 
+                    iC, xPosCol[iC], iBar, Bar_XPos[iBar])
+           << endl;
+       
+       cout << Form( " ==> Replaced bar %03d at X= %7.2f by a bar at ", iBar, Bar_XPos[iBar]);
+       Bar_XPos[iBar] = (Bar_XPos[iBar] - xPosCol[iC]) / 2.0; // take mean of the 2 positions!!
+       cout << Form( " X= %7.2f (middle of colliding X positions)", Bar_XPos[iBar])
+           << endl;
+           
+       bBarExist=kTRUE;
+	    break; 
+     }
+   } //  for (Int_t iP=0; iP<NumberOfPoles; iP++)
+   
+   if(!bBarExist)
+   {
+      gBar[NumberOfBars] = create_tof_bar(Bar_Size_X, Bar_Size_Y, Bar_Size_Z);
+      Bar_ZPos[NumberOfBars] = Bar_Pos_Z; //PosPole+Bar_Size_Z/2.-Pole_Size_Z/2.;
+      Bar_XPos[NumberOfBars] = xPosCol[iC];
+      cout << Form( "Placed bar %03d at X= %7.2f and Z = %7.2f ", NumberOfBars, Bar_XPos[NumberOfBars], Bar_ZPos[NumberOfBars])
+           << endl;
+      NumberOfBars++;
+   } // if(!BPexist)
  }
 }
 
@@ -1707,6 +1761,9 @@ void position_outer_tof_modules(Int_t nCol) //modType, Int_t col1, Int_t col2)
     Bar_ZPos[NumberOfBars] = zPos+Bar_Size_Z/2.-Pole_Size_Z/2.;
     Bar_XPos[NumberOfBars] = xPos + Pole_Offset;
     NumberOfBars++;
+    
+   cout << Form( "Placed Outer module bar %03d at X= %7.2f and Z = %7.2f ", NumberOfBars, Bar_XPos[NumberOfBars], Bar_ZPos[NumberOfBars])
+        << endl;
    }
 
    for (Int_t k=0; k<Outer_Module_NTypes; k++) {
