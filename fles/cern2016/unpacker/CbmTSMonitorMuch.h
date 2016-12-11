@@ -90,6 +90,10 @@ private:
   
   TH2* fHistPadDistr;
   
+  static const Int_t kiMaxNbFlibLinks = 16;
+  TH1*      fhMsSz[kiMaxNbFlibLinks];
+  TProfile* fhMsSzTime[kiMaxNbFlibLinks];
+  
   void CreateHistograms();
 
 #ifndef __CINT__

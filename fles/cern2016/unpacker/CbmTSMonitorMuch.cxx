@@ -487,6 +487,12 @@ void CbmTSMonitorMuch::CreateHistograms()
       } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
    } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
   fHistPadDistr = fHM->H2("Pad_Distribution");
+  
+  for( Int_t component = 0; component < kiMaxNbFlibLinks; component ++ )
+  {
+    fhMsSz[ component ] = NULL;
+    fhMsSzTime[ component ] = NULL;
+  }
 }
 
 Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
@@ -503,41 +509,34 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
   LOG(DEBUG) << "Timeslice contains " << ts.num_microslices(component)
              << "microslices." << FairLogger::endl;
 
-   TString sMsSzName = Form("MsSz_link_%02u", component);
-   TH1* hMsSz = NULL;
-   TProfile* hMsSzTime = NULL;
-   if( fHM->Exists(sMsSzName.Data() ) )
+   if( component < kiMaxNbFlibLinks )
+      if( NULL == fhMsSz[ component ] )
    {
-      hMsSz = fHM->H1(sMsSzName.Data());
+      TString sMsSzName = Form("MsSz_link_%02u", component);
+      TString sMsSzTitle = Form("Size of MS for nDPB of link %02u; Ms Size [bytes]", component);
+      fHM->Add(sMsSzName.Data(), new TH1F( sMsSzName.Data(), sMsSzTitle.Data(), 
+                                    160000, 0., 20000. ) );
+      fhMsSz[ component ] = fHM->H1(sMsSzName.Data());
+#ifdef USE_HTTP_SERVER
+      if (server) server->Register("/FlibRaw", fhMsSz[ component ] );
+#endif
       sMsSzName = Form("MsSzTime_link_%02u", component);
-      hMsSzTime = fHM->P1(sMsSzName.Data());
-   } // if( fHM->Exists(sMsSzName.Data() ) )
-      else
+      sMsSzTitle = Form("Size of MS vs time for gDPB of link %02u; Time[s] ; Ms Size [bytes]", component);
+      fHM->Add(sMsSzName.Data(), new TProfile( sMsSzName.Data(), sMsSzTitle.Data(), 
+                                    15000, 0., 300. ) );
+      fhMsSzTime[ component ] = fHM->P1(sMsSzName.Data());
+#ifdef USE_HTTP_SERVER
+      if (server) server->Register("/FlibRaw", fhMsSzTime[ component ] );
+#endif
+      if( NULL != fcMsSizeAll )
       {
-         TString sMsSzTitle = Form("Size of MS for nDPB of link %02u; Ms Size [bytes]", component);
-         fHM->Add(sMsSzName.Data(), new TH1F( sMsSzName.Data(), sMsSzTitle.Data(), 
-                                       160000, 0., 20000. ) );
-         hMsSz = fHM->H1(sMsSzName.Data());
-#ifdef USE_HTTP_SERVER
-         if (server) server->Register("/FlibRaw", hMsSz );
-#endif
-         sMsSzName = Form("MsSzTime_link_%02u", component);
-         sMsSzTitle = Form("Size of MS vs time for gDPB of link %02u; Time[s] ; Ms Size [bytes]", component);
-         fHM->Add(sMsSzName.Data(), new TProfile( sMsSzName.Data(), sMsSzTitle.Data(), 
-                                       15000, 0., 300. ) );
-         hMsSzTime = fHM->P1(sMsSzName.Data());
-#ifdef USE_HTTP_SERVER
-         if (server) server->Register("/FlibRaw", hMsSzTime );
-#endif
-         if( NULL != fcMsSizeAll )
-         {
-            fcMsSizeAll->cd( 1 + component );
-            gPad->SetLogy();
-            hMsSzTime->Draw("hist le0");
-         } // if( NULL != fcMsSizeAll )
-         LOG(INFO) << "Added MS size histo for component: " << component 
-                << " (nDPB)" << FairLogger::endl; 
-      } // else of if( fHM->Exists(sMsSzName.Data() ) )
+         fcMsSizeAll->cd( 1 + component );
+         gPad->SetLogy();
+         fhMsSzTime[ component ]->Draw("hist le0");
+      } // if( NULL != fcMsSizeAll )
+      LOG(INFO) << "Added MS size histo for component: " << component 
+             << " (nDPB)" << FairLogger::endl; 
+   } // if( NULL == fhMsSz[ component ] )
 
    Int_t messageType = -111;
   // Loop over microslices
@@ -554,10 +553,13 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
       LOG(DEBUG) << "Microslice: " << msDescriptor.idx 
                 << " has size: " << size << FairLogger::endl; 
       
-       if( fdStartTimeMsSz < 0 )
-         fdStartTimeMsSz = (1e-9) * static_cast<double>(msDescriptor.idx);
-      hMsSz->Fill( size );
-      hMsSzTime->Fill( (1e-9) * static_cast<double>( msDescriptor.idx) - fdStartTimeMsSz, size);
+      if( component < kiMaxNbFlibLinks )
+      {
+          if( fdStartTimeMsSz < 0 )
+            fdStartTimeMsSz = (1e-9) * static_cast<double>(msDescriptor.idx);
+         fhMsSz[ component ]->Fill( size );
+         fhMsSzTime[ component ]->Fill( (1e-9) * static_cast<double>( msDescriptor.idx) - fdStartTimeMsSz, size);
+      }
 
       // If not integer number of message in input buffer, print warning/error
       if( 0 != (size % kuBytesPerMessage) )
@@ -815,7 +817,7 @@ void CbmTSMonitorMuch::Finish()
    
    gDirectory->mkdir("Flib_Raw");
    gDirectory->cd("Flib_Raw");
-   for( UInt_t uLinks = 0; uLinks < 16; uLinks ++)
+   for( UInt_t uLinks = 0; uLinks < kiMaxNbFlibLinks; uLinks ++)
    {
       TString sMsSzName = Form("MsSz_link_%02u", uLinks);
       if( fHM->Exists(sMsSzName.Data() ) )
@@ -866,7 +868,7 @@ void CbmTSMonitorMuch::ResetAllHistos()
    } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
    fHM->H2("Pad_Distribution")->Write();  
 
-  for (UInt_t uLinks = 0; uLinks < 16; uLinks++) {
+  for (UInt_t uLinks = 0; uLinks < kiMaxNbFlibLinks; uLinks++) {
     TString sMsSzName = Form("MsSz_link_%02u", uLinks);
     if (fHM->Exists(sMsSzName.Data()))
       fHM->H1(sMsSzName.Data())->Reset();
