@@ -4,113 +4,115 @@
 #include "gtest/gtest.h"
 #include "gtest/gtest-spi.h"
 
+void compareMatchDataMembers(CbmMatch& testMatch, Int_t noflinks, Double_t weight)
+{
+  Int_t linkLength{-111};
+  Double_t totalWeight{-111.};
+
+  std::vector<CbmLink> link = testMatch.GetLinks();
+  linkLength = link.size();
+  EXPECT_EQ(noflinks, linkLength);
+
+  linkLength = testMatch.GetNofLinks();
+  EXPECT_EQ(noflinks, linkLength);
+
+  totalWeight = testMatch.GetTotalWeight();
+  EXPECT_FLOAT_EQ(weight, totalWeight);
+}
+
+void compareLinkDataMembers(CbmLink& test, Int_t file, Int_t entry, Int_t index,
+    Double_t weight)
+{
+  Int_t intRetVal{-111};
+  Float_t floatRetVal{-111};
+
+  intRetVal = test.GetFile();
+  EXPECT_EQ(file, intRetVal);
+
+  intRetVal = test.GetEntry();
+  EXPECT_EQ(entry, intRetVal);
+
+  intRetVal = test.GetIndex();
+  EXPECT_EQ(index,intRetVal);
+
+  floatRetVal = test.GetWeight();
+  EXPECT_FLOAT_EQ(weight, floatRetVal);
+}
+
 TEST(_GTestCbmMatch, CheckDefaultConstructor)
 {
-
   CbmMatch test;
-
-  std::vector<CbmLink> link = test.GetLinks();
-  Int_t linkLength = link.size();
-  EXPECT_EQ(0, linkLength);
-
-  Double_t totalWeight = test.GetTotalWeight();
-  EXPECT_FLOAT_EQ(0., totalWeight);
+  {
+    SCOPED_TRACE("CheckDefaultConstructor");
+    compareMatchDataMembers(test, 0, 0.);
+  }
 }
 
 TEST(_GTestCbmMatch, AddLink1)
 {
-
   CbmMatch test;
-
-  Int_t linkLength{-11};
-  Double_t totalWeight{-11.};
-
-  linkLength = test.GetNofLinks();
-  EXPECT_EQ(0, linkLength);
-
-  totalWeight = test.GetTotalWeight();
-  EXPECT_FLOAT_EQ(0., totalWeight);
+  {
+    SCOPED_TRACE("AddLink1: Initial Test");
+    compareMatchDataMembers(test, 0, 0.);
+  }
 
   test.AddLink(-2., -2);
-
-  linkLength = test.GetNofLinks();
-  EXPECT_EQ(1, linkLength);
-
-  totalWeight = test.GetTotalWeight();
-  EXPECT_FLOAT_EQ(-2., totalWeight);
+  {
+    SCOPED_TRACE("AddLink1: Add first link");
+    compareMatchDataMembers(test, 1, -2.);
+  }
 
   test.AddLink(-2., -2);
-
-  linkLength = test.GetNofLinks();
-  EXPECT_EQ(1, linkLength);
-
-  totalWeight = test.GetTotalWeight();
-  EXPECT_FLOAT_EQ(-4., totalWeight);
+  {
+    SCOPED_TRACE("AddLink1: Add second link");
+    compareMatchDataMembers(test, 1, -4.);
+  }
 
   test.AddLink(-8., -3);
-
-
-  linkLength = test.GetNofLinks();
-  EXPECT_EQ(2, linkLength);
-
-  totalWeight = test.GetTotalWeight();
-  EXPECT_FLOAT_EQ(-12., totalWeight);
-
+  {
+    SCOPED_TRACE("AddLink1: Add third link");
+    compareMatchDataMembers(test, 2, -12.);
+  }
 }
 
 TEST(_GTestCbmMatch, AddLink2)
 {
 
   CbmMatch test;
-
-  Int_t linkLength{-11};
-  Double_t totalWeight{-11.};
-
-  linkLength = test.GetNofLinks();
-  EXPECT_EQ(0, linkLength);
-
-  totalWeight = test.GetTotalWeight();
-  EXPECT_FLOAT_EQ(0., totalWeight);
+  {
+    SCOPED_TRACE("AddLink2: Initial Test");
+    compareMatchDataMembers(test, 0, 0.);
+  }
 
   test.AddLink(-2., -2, -2, -2);
-
-  linkLength = test.GetNofLinks();
-  EXPECT_EQ(1, linkLength);
-
-  totalWeight = test.GetTotalWeight();
-  EXPECT_FLOAT_EQ(-2., totalWeight);
+  {
+    SCOPED_TRACE("AddLink2: Add first link");
+    compareMatchDataMembers(test, 1, -2.);
+  }
 
   test.AddLink(-2., -2, -2, -2);
-
-  linkLength = test.GetNofLinks();
-  EXPECT_EQ(1, linkLength);
-
-  totalWeight = test.GetTotalWeight();
-  EXPECT_FLOAT_EQ(-4., totalWeight);
+  {
+    SCOPED_TRACE("AddLink2: Add second link");
+    compareMatchDataMembers(test, 1, -4.);
+  }
 
   test.AddLink(-8., -3, -2, -2);
-
-  linkLength = test.GetNofLinks();
-  EXPECT_EQ(2, linkLength);
-
-  totalWeight = test.GetTotalWeight();
-  EXPECT_FLOAT_EQ(-12., totalWeight);
+  {
+    SCOPED_TRACE("AddLink2: Add third link");
+    compareMatchDataMembers(test, 2, -12.);
+  }
 
   test.AddLink(8., -3, -3, -2);
-
-  linkLength = test.GetNofLinks();
-  EXPECT_EQ(3, linkLength);
-
-  totalWeight = test.GetTotalWeight();
-  EXPECT_FLOAT_EQ(-4., totalWeight);
+  {
+    SCOPED_TRACE("AddLink2: Add forth link");
+    compareMatchDataMembers(test, 3, -4.);
+  }
 
   test.AddLink(4., -3, -3, -3);
-
-  linkLength = test.GetNofLinks();
-  EXPECT_EQ(4, linkLength);
-
-  totalWeight = test.GetTotalWeight();
-  EXPECT_FLOAT_EQ(0., totalWeight);
+  {
+    SCOPED_TRACE("AddLink2: Add fifth link");
+    compareMatchDataMembers(test, 4, 0.);
+  }
 
 }
 
@@ -124,54 +126,40 @@ CbmMatch TestAddLinks3()
   CbmLink testLink4{8., -3, -3, -2};
   CbmLink testLink5{2., -3, -3, -3};
 
-  Int_t linkLength{-11};
-  Double_t totalWeight{-11.};
-
-  linkLength = test.GetNofLinks();
-  EXPECT_EQ(0, linkLength);
-
-  totalWeight = test.GetTotalWeight();
-  EXPECT_FLOAT_EQ(0., totalWeight);
+  {
+    SCOPED_TRACE("AddLink3: Initial Test");
+    compareMatchDataMembers(test, 0, 0.);
+  }
 
   test.AddLink(testLink1);
-
-  linkLength = test.GetNofLinks();
-  EXPECT_EQ(1, linkLength);
-
-  totalWeight = test.GetTotalWeight();
-  EXPECT_FLOAT_EQ(-1., totalWeight);
+  {
+    SCOPED_TRACE("AddLink3: Add first link");
+    compareMatchDataMembers(test, 1, -1.);
+  }
 
   test.AddLink(testLink2);
-
-  linkLength = test.GetNofLinks();
-  EXPECT_EQ(1, linkLength);
-
-  totalWeight = test.GetTotalWeight();
-  EXPECT_FLOAT_EQ(-2., totalWeight);
+  {
+    SCOPED_TRACE("AddLink3: Add second link");
+    compareMatchDataMembers(test, 1, -2.);
+  }
 
   test.AddLink(testLink3);
-
-  linkLength = test.GetNofLinks();
-  EXPECT_EQ(2, linkLength);
-
-  totalWeight = test.GetTotalWeight();
-  EXPECT_FLOAT_EQ(-10., totalWeight);
+  {
+    SCOPED_TRACE("AddLink3: Add third link");
+    compareMatchDataMembers(test, 2, -10.);
+  }
 
   test.AddLink(testLink4);
-
-  linkLength = test.GetNofLinks();
-  EXPECT_EQ(3, linkLength);
-
-  totalWeight = test.GetTotalWeight();
-  EXPECT_FLOAT_EQ(-2., totalWeight);
+  {
+    SCOPED_TRACE("AddLink3: Add forth link");
+    compareMatchDataMembers(test, 3, -2.);
+  }
 
   test.AddLink(testLink5);
-
-  linkLength = test.GetNofLinks();
-  EXPECT_EQ(4, linkLength);
-
-  totalWeight = test.GetTotalWeight();
-  EXPECT_FLOAT_EQ(0., totalWeight);
+  {
+    SCOPED_TRACE("AddLink3: Add fifth link");
+    compareMatchDataMembers(test, 4, 0.);
+  }
 
   return test;
 }
@@ -179,135 +167,124 @@ CbmMatch TestAddLinks3()
 TEST(_GTestCbmMatch, AddLink3)
 {
 
-  Int_t linkLength{-11};
-  Double_t totalWeight{-11.};
-
   CbmMatch test = TestAddLinks3();
   CbmMatch test2;
 
   test2.AddLinks(test);
+  {
+    SCOPED_TRACE("AddLink3: Add fifth link");
+    compareMatchDataMembers(test2, 4, 0.);
+  }
 
-  linkLength = test2.GetNofLinks();
-  EXPECT_EQ(4, linkLength);
-
-  totalWeight = test2.GetTotalWeight();
-  EXPECT_FLOAT_EQ(0., totalWeight);
 }
 
 TEST(_GTestCbmMatch, ClearLink)
 {
 
-  Int_t linkLength{-11};
-  Double_t totalWeight{-11.};
-
   CbmMatch test = TestAddLinks3();
-
-  linkLength = test.GetNofLinks();
-  EXPECT_EQ(4, linkLength);
-
-  totalWeight = test.GetTotalWeight();
-  EXPECT_FLOAT_EQ(0., totalWeight);
+  {
+    SCOPED_TRACE("ClearLink: Initial Test");
+    compareMatchDataMembers(test, 4, 0.);
+  }
 
   test.ClearLinks();
+  {
+    SCOPED_TRACE("ClearLink: Clear Link");
+    compareMatchDataMembers(test, 0, 0.);
+  }
 
-  linkLength = test.GetNofLinks();
-  EXPECT_EQ(0, linkLength);
-
-  totalWeight = test.GetTotalWeight();
-  EXPECT_FLOAT_EQ(0., totalWeight);
 }
+
 
 TEST(_GTestCbmMatch, GetLink)
 {
 
-  Int_t linkLength{-11};
-  Double_t totalWeight{-11.};
-  Int_t intRetVal{-111};
-  Float_t floatRetVal{-111.};
-
   CbmMatch test = TestAddLinks3();
-
-  linkLength = test.GetNofLinks();
-  EXPECT_EQ(4, linkLength);
-
-  totalWeight = test.GetTotalWeight();
-  EXPECT_FLOAT_EQ(0., totalWeight);
+  {
+    SCOPED_TRACE("GetLink: Initial Test");
+    compareMatchDataMembers(test, 4, 0.);
+  }
 
   CbmLink testLink{};
   testLink = test.GetLink(0);
-
-  intRetVal = testLink.GetEntry();
-  EXPECT_EQ(-1, intRetVal);
-  intRetVal = testLink.GetFile();
-  EXPECT_EQ(-1, intRetVal);
-  intRetVal = testLink.GetIndex();
-  EXPECT_EQ(-1, intRetVal);
-
-  floatRetVal = testLink.GetWeight();
-  EXPECT_FLOAT_EQ(-2., floatRetVal);
+  {
+    SCOPED_TRACE("GetLink: Get Link 0");
+    compareLinkDataMembers(testLink, -1, -1, -1, -2.);
+  }
 
   testLink = test.GetLink(1);
-
-  intRetVal = testLink.GetEntry();
-  EXPECT_EQ(-2, intRetVal);
-  intRetVal = testLink.GetFile();
-  EXPECT_EQ(-2, intRetVal);
-  intRetVal = testLink.GetIndex();
-  EXPECT_EQ(-3, intRetVal);
-
-  floatRetVal = testLink.GetWeight();
-  EXPECT_FLOAT_EQ(-8., floatRetVal);
+  {
+    SCOPED_TRACE("GetLink: Get Link 1");
+    compareLinkDataMembers(testLink, -2, -2, -3, -8.);
+  }
 
   testLink = test.GetLink(2);
-
-  intRetVal = testLink.GetEntry();
-  EXPECT_EQ(-3, intRetVal);
-  intRetVal = testLink.GetFile();
-  EXPECT_EQ(-2, intRetVal);
-  intRetVal = testLink.GetIndex();
-  EXPECT_EQ(-3, intRetVal);
-
-  floatRetVal = testLink.GetWeight();
-  EXPECT_FLOAT_EQ(8., floatRetVal);
+  {
+    SCOPED_TRACE("GetLink: Get Link 2");
+    compareLinkDataMembers(testLink, -2, -3, -3, 8.);
+  }
 
   testLink = test.GetLink(3);
-
-  intRetVal = testLink.GetEntry();
-  EXPECT_EQ(-3, intRetVal);
-  intRetVal = testLink.GetFile();
-  EXPECT_EQ(-3, intRetVal);
-  intRetVal = testLink.GetIndex();
-  EXPECT_EQ(-3, intRetVal);
-
-  floatRetVal = testLink.GetWeight();
-  EXPECT_FLOAT_EQ(2., floatRetVal);
+  {
+    SCOPED_TRACE("GetLink: Get Link 3");
+    compareLinkDataMembers(testLink, -3, -3, -3, 2.);
+  }
 }
 
-//TODO: Create correct test. Have to understand what the function does.
-/*
+TEST(_GTestCbmMatch, GetLinks)
+{
+
+  CbmMatch test = TestAddLinks3();
+  {
+    SCOPED_TRACE("GetLinks: Initial Test");
+    compareMatchDataMembers(test, 4, 0.);
+  }
+
+  std::vector<CbmLink> link = test.GetLinks();
+
+  CbmLink testLink = link[0];
+  {
+    SCOPED_TRACE("GetLinks: Get Link 0");
+    compareLinkDataMembers(testLink, -1, -1, -1, -2.);
+  }
+
+  testLink = link[1];
+  {
+    SCOPED_TRACE("GetLinks: Get Link 1");
+    compareLinkDataMembers(testLink, -2, -2, -3, -8.);
+  }
+
+  testLink = link[2];
+  {
+    SCOPED_TRACE("GetLinks: Get Link 2");
+    compareLinkDataMembers(testLink, -2, -3, -3, 8.);
+  }
+
+  testLink = link[3];
+  {
+    SCOPED_TRACE("GetLinks: Get Link 3");
+    compareLinkDataMembers(testLink, -3, -3, -3, 2.);
+  }
+}
+
 TEST(_GTestCbmMatch, GetMatchedLink)
 {
 
-  Int_t linkLength{-11};
-  Double_t totalWeight{-11.};
-  Int_t intRetVal{-111};
-  Float_t floatRetVal{-111.};
-
   CbmMatch test = TestAddLinks3();
+  {
+    SCOPED_TRACE("GetMatchedLink: Initial Test");
+    compareMatchDataMembers(test, 4, 0.);
+  }
 
+  // Get the link with the highest weight
+  // which is in our test setup Link3
   CbmLink testLink = test.GetMatchedLink();
-
-  intRetVal = testLink.GetEntry();
-  EXPECT_EQ(-1, intRetVal);
-  intRetVal = testLink.GetFile();
-  EXPECT_EQ(-1, intRetVal);
-  intRetVal = testLink.GetIndex();
-  EXPECT_EQ(-1, intRetVal);
-
-  floatRetVal = testLink.GetWeight();
-  EXPECT_FLOAT_EQ(-2., floatRetVal);
+  {
+    SCOPED_TRACE("GetMatchedLink: Test Links");
+    compareLinkDataMembers(testLink, -2, -3, -3, 8);
+  }
 }
-*/
+
 
 TEST(_GTestCbmMatch, CheckToString)
 {
