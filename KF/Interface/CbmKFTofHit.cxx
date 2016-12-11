@@ -11,6 +11,7 @@
 #include "CbmTofHit.h"
 
 #include "TMath.h"
+#include "TVector3.h"
 
 #include <iostream>
 
