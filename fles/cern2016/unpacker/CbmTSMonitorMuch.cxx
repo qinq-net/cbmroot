@@ -647,6 +647,7 @@ void CbmTSMonitorMuch::FillHitInfo(ngdpb::Message mess, UInt_t uNdpbIdx, UInt_t 
 
   //here converting channel number into the MUCH Digi.
 
+/*
 	Int_t address = CreateAddress(uFebBase,nxyterId,0, 0, 0, 0, nxChannel);
 	if (address){	
 		LOG(DEBUG) << "Got address for hit" << FairLogger::endl;
@@ -655,6 +656,7 @@ void CbmTSMonitorMuch::FillHitInfo(ngdpb::Message mess, UInt_t uNdpbIdx, UInt_t 
 		LOG(ERROR) << "Unknown Roc Id " << rocId << " or nxyterId "<< nxyterId << " or channelId "
                  << nxChannel << FairLogger::endl;
 	}
+*/
 	Int_t channelNr = uFebBase + nxyterId;
 	fChan_Counts_Much[channelNr]->Fill(nxChannel);
 	fRaw_ADC_Much[channelNr]->Fill(nxChannel, charge);
