@@ -3,149 +3,90 @@
 #include "gtest/gtest.h"
 #include "gtest/gtest-spi.h"
 
-TEST(_GTestCbmLink , CheckDefaultConstructor)
+void compareLinkDataMembers(CbmLink& test, Int_t file, Int_t entry, Int_t index,
+    Double_t weight)
 {
-  CbmLink test;
-
   Int_t intRetVal{-111};
   Float_t floatRetVal{-111};
 
   intRetVal = test.GetFile();
-  EXPECT_EQ(-1, intRetVal);
+  EXPECT_EQ(file, intRetVal);
 
   intRetVal = test.GetEntry();
-  EXPECT_EQ(-1, intRetVal);
+  EXPECT_EQ(entry, intRetVal);
 
   intRetVal = test.GetIndex();
-  EXPECT_EQ(-1,intRetVal);
+  EXPECT_EQ(index,intRetVal);
 
   floatRetVal = test.GetWeight();
-  EXPECT_FLOAT_EQ(-1., floatRetVal);
+  EXPECT_FLOAT_EQ(weight, floatRetVal);
+}
+
+
+TEST(_GTestCbmLink , CheckDefaultConstructor)
+{
+  CbmLink test;
+  {
+    SCOPED_TRACE("CheckDefaultConstructor");
+    compareLinkDataMembers(test, -1, -1, -1, -1.);
+  }
 }
 
 TEST(_GTestCbmLink , CheckStandardConstructor1)
 {
   CbmLink test{-2., -2};
-
-  Int_t intRetVal{-111};
-  Float_t floatRetVal{-111};
-
-  intRetVal = test.GetFile();
-  EXPECT_EQ(-1, intRetVal);
-
-  intRetVal = test.GetEntry();
-  EXPECT_EQ(-1, intRetVal);
-
-  intRetVal = test.GetIndex();
-  EXPECT_EQ(-2,intRetVal);
-
-  floatRetVal = test.GetWeight();
-  EXPECT_FLOAT_EQ(-2., floatRetVal);
+  {
+    SCOPED_TRACE("CheckStandardConstructor1");
+    compareLinkDataMembers(test, -1, -1, -2, -2.);
+  }
 }
 
 TEST(_GTestCbmLink , CheckStandardConstructor2)
 {
   CbmLink test{-2., -2, -2, -2};
-
-  Int_t intRetVal{-111};
-  Float_t floatRetVal{-111};
-
-  intRetVal = test.GetFile();
-  EXPECT_EQ(-2, intRetVal);
-
-  intRetVal = test.GetEntry();
-  EXPECT_EQ(-2, intRetVal);
-
-  intRetVal = test.GetIndex();
-  EXPECT_EQ(-2,intRetVal);
-
-  floatRetVal = test.GetWeight();
-  EXPECT_FLOAT_EQ(-2., floatRetVal);
+  {
+    SCOPED_TRACE("CheckStandardConstructor2");
+    compareLinkDataMembers(test, -2, -2, -2, -2.);
+  }
 }
 
 TEST(_GTestCbmLink , TestSettersAndGetters)
 {
   CbmLink test{-2., -2, -2, -2};
-
-  Int_t intRetVal{-111};
-  Float_t floatRetVal{-111};
-
-  intRetVal = test.GetFile();
-  EXPECT_EQ(-2, intRetVal);
-
-  intRetVal = test.GetEntry();
-  EXPECT_EQ(-2, intRetVal);
-
-  intRetVal = test.GetIndex();
-  EXPECT_EQ(-2,intRetVal);
-
-  floatRetVal = test.GetWeight();
-  EXPECT_FLOAT_EQ(-2., floatRetVal);
+  {
+    SCOPED_TRACE("TestSettersAndGetters: Initial test");
+    compareLinkDataMembers(test, -2, -2, -2, -2.);
+  }
 
   test.SetFile(-3);
-  intRetVal = test.GetFile();
-  EXPECT_EQ(-3, intRetVal);
-
-  intRetVal = test.GetEntry();
-  EXPECT_EQ(-2, intRetVal);
-
-  intRetVal = test.GetIndex();
-  EXPECT_EQ(-2,intRetVal);
-
-  floatRetVal = test.GetWeight();
-  EXPECT_FLOAT_EQ(-2., floatRetVal);
+  {
+    SCOPED_TRACE("TestSettersAndGetters: Test SetFile");
+    compareLinkDataMembers(test, -3, -2, -2, -2.);
+  }
 
   test.SetEntry(-3);
-  intRetVal = test.GetFile();
-  EXPECT_EQ(-3, intRetVal);
-
-  intRetVal = test.GetEntry();
-  EXPECT_EQ(-3, intRetVal);
-
-  intRetVal = test.GetIndex();
-  EXPECT_EQ(-2,intRetVal);
-
-  floatRetVal = test.GetWeight();
-  EXPECT_FLOAT_EQ(-2., floatRetVal);
+  {
+    SCOPED_TRACE("TestSettersAndGetters: Test SetEntry");
+    compareLinkDataMembers(test, -3, -3, -2, -2.);
+  }
 
   test.SetIndex(-3);
-  intRetVal = test.GetFile();
-  EXPECT_EQ(-3, intRetVal);
-
-  intRetVal = test.GetEntry();
-  EXPECT_EQ(-3, intRetVal);
-
-  intRetVal = test.GetIndex();
-  EXPECT_EQ(-3,intRetVal);
-
-  floatRetVal = test.GetWeight();
-  EXPECT_FLOAT_EQ(-2., floatRetVal);
+  {
+    SCOPED_TRACE("TestSettersAndGetters: Test SetIndex");
+    compareLinkDataMembers(test, -3, -3, -3, -2.);
+  }
 
   test.SetWeight(-3.);
-  intRetVal = test.GetFile();
-  EXPECT_EQ(-3, intRetVal);
-
-  intRetVal = test.GetEntry();
-  EXPECT_EQ(-3, intRetVal);
-
-  intRetVal = test.GetIndex();
-  EXPECT_EQ(-3,intRetVal);
-
-  floatRetVal = test.GetWeight();
-  EXPECT_FLOAT_EQ(-3., floatRetVal);
+  {
+    SCOPED_TRACE("TestSettersAndGetters: Test SetWeight");
+    compareLinkDataMembers(test, -3, -3, -3, -3.);
+  }
 
   test.AddWeight(-3);
-  intRetVal = test.GetFile();
-  EXPECT_EQ(-3, intRetVal);
-
-  intRetVal = test.GetEntry();
-  EXPECT_EQ(-3, intRetVal);
-
-  intRetVal = test.GetIndex();
-  EXPECT_EQ(-3,intRetVal);
-
-  floatRetVal = test.GetWeight();
-  EXPECT_FLOAT_EQ(-6., floatRetVal);
+  {
+    SCOPED_TRACE("TestSettersAndGetters: Test AddWeight");
+    compareLinkDataMembers(test, -3, -3, -3, -6.);
+  }
 }
 
 TEST(_GTestCbmLink , ToString)
