@@ -97,13 +97,12 @@ private:
   void CreateHistograms();
 
 #ifndef __CINT__
-  void FillHitInfo(ngdpb::Message, std::vector<TH1*>, std::vector<TH2*>,
-		  std::vector<TH1*>, TH2*);
-  void FillEpochInfo(ngdpb::Message, std::vector<TH1*>);
+  void FillHitInfo(ngdpb::Message);
+  void FillEpochInfo(ngdpb::Message);
 #endif
 
   Int_t CreateAddress(Int_t rocId, Int_t febId, Int_t stationId, Int_t layerId, Int_t sideId,
-		  Int_t moduleId, Int_t channelId, TH2*);
+		  Int_t moduleId, Int_t channelId);
 
   CbmTSMonitorMuch(const CbmTSMonitorMuch&);
   CbmTSMonitorMuch operator=(const CbmTSMonitorMuch&);

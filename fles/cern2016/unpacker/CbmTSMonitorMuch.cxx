@@ -591,10 +591,10 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
           
           switch( messageType ) {
           case ngdpb::MSG_HIT: 
-            FillHitInfo(mess, fChan_Counts_Much, fRaw_ADC_Much, fFebRate, fHistPadDistr);
+            FillHitInfo(mess);
             break;
           case ngdpb::MSG_EPOCH:
-            FillEpochInfo(mess, fHitMissEvo);
+            FillEpochInfo(mess);
             break;
           case ngdpb::MSG_SYNC:
             // Do nothing, this message is just there to make sure we get all Epochs
@@ -620,10 +620,7 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
   return kTRUE;
 }
 
-void CbmTSMonitorMuch::FillHitInfo(ngdpb::Message mess, std::vector<TH1*> Chan_Counts_Much,
-                                   std::vector<TH2*> Raw_ADC_Much,
-                                   std::vector<TH1*> FebRate,
-                                   TH2* histPadDistr)
+void CbmTSMonitorMuch::FillHitInfo(ngdpb::Message mess)
 {
   // --- Get absolute time, NXYTER and channel number
   Int_t rocId      = mess.getRocNumber();
@@ -644,7 +641,7 @@ void CbmTSMonitorMuch::FillHitInfo(ngdpb::Message mess, std::vector<TH1*> Chan_C
 
   //here converting channel number into the MUCH Digi.
 
-	Int_t address = CreateAddress(rocId,nxyterId,0, 0, 0, 0, nxChannel, histPadDistr);
+	Int_t address = CreateAddress(rocId,nxyterId,0, 0, 0, 0, nxChannel);
 	if (address){	
 		LOG(DEBUG) << "Create digi with time " << hitTime
                << " at epoch " << fCurrentEpoch[rocId][nxyterId] << FairLogger::endl;
@@ -654,9 +651,9 @@ void CbmTSMonitorMuch::FillHitInfo(ngdpb::Message mess, std::vector<TH1*> Chan_C
                  << nxChannel << FairLogger::endl;
 	}
 	Int_t channelNr = fNdpbIdIndexMap[rocId]*fUnpackPar->GetNrOfFebsPerNdpb() + nxyterId;
-	Chan_Counts_Much[channelNr]->Fill(nxChannel);
-	Raw_ADC_Much[channelNr]->Fill(nxChannel, charge);
-	histPadDistr->Fill(nxChannel,charge);
+	fChan_Counts_Much[channelNr]->Fill(nxChannel);
+	fRaw_ADC_Much[channelNr]->Fill(nxChannel, charge);
+	fHistPadDistr->Fill(nxChannel,charge);
 
    if( fCurrentEpoch.end() != fCurrentEpoch.find( rocId ) ) {
       if( fCurrentEpoch[rocId].end() != fCurrentEpoch[rocId].find( nxyterId ) ) {
@@ -673,7 +670,7 @@ void CbmTSMonitorMuch::FillHitInfo(ngdpb::Message mess, std::vector<TH1*> Chan_C
             
          if( 0 < fdStartTime )
          {
-        	FebRate[channelNr]->Fill( 1e-9*( mess.getMsgFullTimeD( fCurrentEpoch[rocId][nxyterId] )
+        	fFebRate[channelNr]->Fill( 1e-9*( mess.getMsgFullTimeD( fCurrentEpoch[rocId][nxyterId] )
                                       - fdStartTime)  );
 
            // General Time (date + time) rate evolution
@@ -699,8 +696,7 @@ void CbmTSMonitorMuch::FillHitInfo(ngdpb::Message mess, std::vector<TH1*> Chan_C
 }
 
 Int_t CbmTSMonitorMuch::CreateAddress(Int_t rocId, Int_t febId, Int_t stationId,
-		Int_t layerId, Int_t sideId, Int_t moduleId, Int_t channelId,
-		TH2* histPadDistr)
+		Int_t layerId, Int_t sideId, Int_t moduleId, Int_t channelId)
 {
 	Int_t febNr = fNdpbIdIndexMap[rocId]*fUnpackPar->GetNrOfFebsPerNdpb() + febId;
 	Int_t sector  = fUnpackPar->GetPadX(febNr, channelId);
@@ -709,7 +705,7 @@ Int_t CbmTSMonitorMuch::CreateAddress(Int_t rocId, Int_t febId, Int_t stationId,
 	Int_t address = CbmMuchAddress::GetAddress(stationId, layerId, sideId, moduleId, sector, channel);
 	if(!(sector<0||channel<0)){
 		
-		histPadDistr->Fill(78-sector,22-channel);
+		fHistPadDistr->Fill(78-sector,22-channel);
 		
 	}
 //	fHM->H2("Pad_Distribution")->Fill(sector,channel);
@@ -717,7 +713,7 @@ Int_t CbmTSMonitorMuch::CreateAddress(Int_t rocId, Int_t febId, Int_t stationId,
 	return address;
 }
 
-void CbmTSMonitorMuch::FillEpochInfo(ngdpb::Message mess, std::vector<TH1*> HitMissEvo)
+void CbmTSMonitorMuch::FillEpochInfo(ngdpb::Message mess)
 {
   Int_t rocId          = mess.getRocNumber();
   Int_t nxyterId       = mess.getEpochNxNum();
@@ -733,7 +729,7 @@ void CbmTSMonitorMuch::FillEpochInfo(ngdpb::Message mess, std::vector<TH1*> HitM
   if( fdStartTime <= 0 )
   {
     Int_t channelNr = fNdpbIdIndexMap[rocId]*fUnpackPar->GetNrOfFebsPerNdpb() + nxyterId;
-    HitMissEvo[channelNr]->Fill( mess.getMsgFullTimeD( fCurrentEpoch[rocId][nxyterId] ) 
+    fHitMissEvo[channelNr]->Fill( mess.getMsgFullTimeD( fCurrentEpoch[rocId][nxyterId] )
                                  - fdStartTime);
   }
 
