@@ -116,7 +116,7 @@ Bool_t CbmFlibCern2016Source::Init()
 //  server->SetJSROOT("https://root.cern.ch/js/latest");
 #endif
 
-  fHistoMissedTS = new TH1I("Missed TS", "Missed TS", 2, 0., 2.);
+  fHistoMissedTS = new TH1I("Missed_TS", "Missed TS", 2, 0., 2.);
 
 #ifdef USE_HTTP_SERVER
   if (server)
@@ -271,11 +271,12 @@ Int_t CbmFlibCern2016Source::FillBuffer()
 
         auto it=fUnpackers.find(systemID);
         if (it == fUnpackers.end()) {
-          LOG(FATAL) << "Could not find unpacker for system id 0x" 
+          LOG(DEBUG) << "Could not find unpacker for system id 0x" 
                      << std::hex << systemID << std::dec 
                      << FairLogger::endl;
         } else {
-          it->second->DoUnpack(ts, c);
+           if( 0 == tsIndex%10 ||  systemID != 0x10 )
+             it->second->DoUnpack(ts, c);
         }
       }
       return 0;
