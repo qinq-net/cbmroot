@@ -65,7 +65,7 @@ private:
 
   std::map<Int_t, std::map<Int_t, UInt_t> > fCurrentEpoch; // Current epoch (first epoch in the stream initialises the map item)
   Int_t fNofEpochs; /** Current epoch marker for each ROC **/
-  ULong_t fCurrentEpochTime;     /** Time stamp of current epoch **/
+  Double_t fCurrentEpochTime;     /** Time stamp of current epoch **/
   Double_t fdStartTime; /** Time of first valid hit (epoch available), used as reference for evolution plots**/
   Double_t fdStartTimeMsSz; /** Time of first microslice, used as reference for evolution plots**/
   TCanvas* fcMsSizeAll;
@@ -97,11 +97,11 @@ private:
   void CreateHistograms();
 
 #ifndef __CINT__
-  void FillHitInfo(ngdpb::Message);
-  void FillEpochInfo(ngdpb::Message);
+  void FillHitInfo(ngdpb::Message, UInt_t uNdpbIdx, UInt_t uFebBase);
+  void FillEpochInfo(ngdpb::Message, UInt_t uNdpbIdx, UInt_t uFebBase);
 #endif
 
-  Int_t CreateAddress(Int_t rocId, Int_t febId, Int_t stationId, Int_t layerId, Int_t sideId,
+  Int_t CreateAddress(Int_t febBase, Int_t febId, Int_t stationId, Int_t layerId, Int_t sideId,
 		  Int_t moduleId, Int_t channelId);
 
   CbmTSMonitorMuch(const CbmTSMonitorMuch&);

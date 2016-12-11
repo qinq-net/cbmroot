@@ -573,11 +573,25 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
       
       // Prepare variables for the loop on contents
       const uint64_t* pInBuff = reinterpret_cast<const uint64_t*>( msContent );
+      UInt_t uNdpbIdx;
+      UInt_t uFebBase;
       for (uint32_t uIdx = 0; uIdx < uNbMessages; uIdx ++)
         {
           // Fill message
           uint64_t ulData = static_cast<uint64_t>( pInBuff[uIdx] );
           ngdpb::Message mess( ulData );
+          
+          if( 0 == uIdx )
+          {
+            Int_t rocId      = mess.getRocNumber();
+            // First check if nDPB is mapped
+            if( fNdpbIdIndexMap.end() == fNdpbIdIndexMap.find( rocId ) )
+            {
+               LOG(FATAL) << "Unmapped nDPB Id " << std::hex << rocId << std::dec << FairLogger::endl;
+            } // if( fNdpbIdIndexMap.end() == fNdpbIdIndexMap.find( rocId ) )
+            uNdpbIdx = fNdpbIdIndexMap[rocId];
+            uFebBase = uNdpbIdx * fUnpackPar->GetNrOfFebsPerNdpb();
+          } // if( 0 == uIdx )
 
           if(gLogger->IsLogNeeded(DEBUG)) {
             mess.printDataCout();
@@ -591,10 +605,10 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
           
           switch( messageType ) {
           case ngdpb::MSG_HIT: 
-            FillHitInfo(mess);
+            FillHitInfo(mess, uNdpbIdx, uFebBase);
             break;
           case ngdpb::MSG_EPOCH:
-            FillEpochInfo(mess);
+            FillEpochInfo(mess, uNdpbIdx, uFebBase);
             break;
           case ngdpb::MSG_SYNC:
             // Do nothing, this message is just there to make sure we get all Epochs
@@ -620,46 +634,39 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
   return kTRUE;
 }
 
-void CbmTSMonitorMuch::FillHitInfo(ngdpb::Message mess)
+void CbmTSMonitorMuch::FillHitInfo(ngdpb::Message mess, UInt_t uNdpbIdx, UInt_t uFebBase)
 {
   // --- Get absolute time, NXYTER and channel number
   Int_t rocId      = mess.getRocNumber();
   Int_t nxyterId   = mess.getNxNumber();
   Int_t nxChannel  = mess.getNxChNum(); 
   Int_t charge     = mess.getNxAdcValue();
-
-   // First check if nDPB is mapped
-   if( fNdpbIdIndexMap.end() == fNdpbIdIndexMap.find( rocId ) )
-   {
-		LOG(FATAL) << "Unmapped nDPB Id " << std::hex << rocId << std::dec << FairLogger::endl;
-   } // if( fNdpbIdIndexMap.end() == fNdpbIdIndexMap.find( rocId ) )
- 
-  ULong_t hitTime  = mess.getMsgFullTime(fCurrentEpoch[rocId][nxyterId]);
  
   LOG(DEBUG) << "Hit: " << rocId << ", " << nxyterId 
              << ", " << nxChannel << ", " << charge << FairLogger::endl;
 
   //here converting channel number into the MUCH Digi.
 
-	Int_t address = CreateAddress(rocId,nxyterId,0, 0, 0, 0, nxChannel);
+	Int_t address = CreateAddress(uFebBase,nxyterId,0, 0, 0, 0, nxChannel);
 	if (address){	
-		LOG(DEBUG) << "Create digi with time " << hitTime
-               << " at epoch " << fCurrentEpoch[rocId][nxyterId] << FairLogger::endl;
+		LOG(DEBUG) << "Got address for hit" << FairLogger::endl;
 	}
 	else {
 		LOG(ERROR) << "Unknown Roc Id " << rocId << " or nxyterId "<< nxyterId << " or channelId "
                  << nxChannel << FairLogger::endl;
 	}
-	Int_t channelNr = fNdpbIdIndexMap[rocId]*fUnpackPar->GetNrOfFebsPerNdpb() + nxyterId;
+	Int_t channelNr = uFebBase + nxyterId;
 	fChan_Counts_Much[channelNr]->Fill(nxChannel);
 	fRaw_ADC_Much[channelNr]->Fill(nxChannel, charge);
 	fHistPadDistr->Fill(nxChannel,charge);
 
    if( fCurrentEpoch.end() != fCurrentEpoch.find( rocId ) ) {
       if( fCurrentEpoch[rocId].end() != fCurrentEpoch[rocId].find( nxyterId ) ) {
+         Double_t dHitFullTime = mess.getMsgFullTimeD( fCurrentEpoch[rocId][nxyterId] );
+         
          if( fdStartTime <= 0 )
          {
-            fdStartTime = mess.getMsgFullTimeD( fCurrentEpoch[rocId][nxyterId] );
+           fdStartTime = dHitFullTime;
             
            LOG(INFO) << "Start time set to " << (fdStartTime/1e9) 
                      << " s using first hit on channel " << nxChannel 
@@ -670,24 +677,20 @@ void CbmTSMonitorMuch::FillHitInfo(ngdpb::Message mess)
             
          if( 0 < fdStartTime )
          {
-        	fFebRate[channelNr]->Fill( 1e-9*( mess.getMsgFullTimeD( fCurrentEpoch[rocId][nxyterId] )
-                                      - fdStartTime)  );
+        	  fFebRate[channelNr]->Fill( 1e-9*( dHitFullTime - fdStartTime)  );
 
            // General Time (date + time) rate evolution
            // Add offset of -1H as the filenames were using some times offset by 1 hour (Summer time?!?)
            if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
            {
              fFebRateDate_nDPB[channelNr]->Fill(
-                        1e-9 * ( mess.getMsgFullTimeD( fCurrentEpoch[rocId][nxyterId] )
-                                - fdStartTime ) + fiRunStartDateTimeSec  );
-             if( 0 < fdLastHitTime_nDPB[ fNdpbIdIndexMap[rocId] ] )
-               fHitDtDate_nDPB[ fNdpbIdIndexMap[rocId] ]->Fill(
-                           1e-9 * ( mess.getMsgFullTimeD( fCurrentEpoch[rocId][nxyterId] )
-                                              - fdStartTime ) + fiRunStartDateTimeSec,
-                           1e9/( mess.getMsgFullTimeD( fCurrentEpoch[rocId][nxyterId] )
-                             - fdLastHitTime_nDPB[ fNdpbIdIndexMap[rocId] ] )
+                        1e-9 * ( dHitFullTime - fdStartTime ) + fiRunStartDateTimeSec  );
+             if( 0 < fdLastHitTime_nDPB[ channelNr ] )
+               fHitDtDate_nDPB[ channelNr ]->Fill(
+                           1e-9 * ( dHitFullTime - fdStartTime ) + fiRunStartDateTimeSec,
+                           1e9/( dHitFullTime - fdLastHitTime_nDPB[ channelNr ] )
                                             );
-             fdLastHitTime_nDPB[ fNdpbIdIndexMap[rocId] ] = mess.getMsgFullTimeD( fCurrentEpoch[rocId][nxyterId] );
+             fdLastHitTime_nDPB[ channelNr ] = dHitFullTime;
            } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
         }
      }
@@ -695,10 +698,10 @@ void CbmTSMonitorMuch::FillHitInfo(ngdpb::Message mess)
 
 }
 
-Int_t CbmTSMonitorMuch::CreateAddress(Int_t rocId, Int_t febId, Int_t stationId,
+Int_t CbmTSMonitorMuch::CreateAddress(Int_t febBase, Int_t febId, Int_t stationId,
 		Int_t layerId, Int_t sideId, Int_t moduleId, Int_t channelId)
 {
-	Int_t febNr = fNdpbIdIndexMap[rocId]*fUnpackPar->GetNrOfFebsPerNdpb() + febId;
+	Int_t febNr = febBase + febId;
 	Int_t sector  = fUnpackPar->GetPadX(febNr, channelId);
 	Int_t channel = fUnpackPar->GetPadY(febNr, channelId);
    
@@ -713,34 +716,26 @@ Int_t CbmTSMonitorMuch::CreateAddress(Int_t rocId, Int_t febId, Int_t stationId,
 	return address;
 }
 
-void CbmTSMonitorMuch::FillEpochInfo(ngdpb::Message mess)
+void CbmTSMonitorMuch::FillEpochInfo(ngdpb::Message mess, UInt_t uNdpbIdx, UInt_t uFebBase)
 {
   Int_t rocId          = mess.getRocNumber();
   Int_t nxyterId       = mess.getEpochNxNum();
-
-   // First check if nDPB is mapped
-   if( fNdpbIdIndexMap.end() == fNdpbIdIndexMap.find( rocId ) )
-   {
-		LOG(FATAL) << "Unmapped nDPB Id " << std::hex << rocId << std::dec << FairLogger::endl;
-   } // if( fNdpbIdIndexMap.end() == fNdpbIdIndexMap.find( rocId ) )
    
-  fCurrentEpoch[rocId][nxyterId] = mess.getEpochNumber();
+  UInt_t uEpochVal = mess.getEpochNumber(); 
+  fCurrentEpoch[rocId][nxyterId] = uEpochVal;
+  fCurrentEpochTime = mess.getMsgFullTimeD( uEpochVal );
   
   if( fdStartTime <= 0 )
   {
-    Int_t channelNr = fNdpbIdIndexMap[rocId]*fUnpackPar->GetNrOfFebsPerNdpb() + nxyterId;
-    fHitMissEvo[channelNr]->Fill( mess.getMsgFullTimeD( fCurrentEpoch[rocId][nxyterId] )
-                                 - fdStartTime);
+    Int_t channelNr = uFebBase + nxyterId;
+    fHitMissEvo[channelNr]->Fill( fCurrentEpochTime - fdStartTime, mess.getEpochMissed() );
   }
 
-  //  LOG(INFO) << "Epoch message for ROC " << rocId << " with epoch number "
-  //            << fCurrentEpoch[rocId] << FairLogger::endl;
-  fCurrentEpochTime = mess.getMsgFullTime(fCurrentEpoch[rocId][nxyterId]);
   fNofEpochs++;
   LOG(DEBUG) << "Epoch message "
-             << fNofEpochs << ", epoch " << static_cast<Int_t>(fCurrentEpoch[rocId][nxyterId])
+             << fNofEpochs << ", epoch " << uEpochVal
              << ", time " << std::setprecision(9) << std::fixed
-             << Double_t(fCurrentEpochTime) * 1.e-9 << " s "
+             << fCurrentEpochTime * 1.e-9 << " s "
              << " for board ID " << std::hex << std::setw(4) << rocId << std::dec
              << FairLogger::endl;
 }
