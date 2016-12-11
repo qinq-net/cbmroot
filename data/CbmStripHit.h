@@ -24,14 +24,17 @@ public:
 
 	/**
 	 * \brief Standard constructor.
-	 * \param address detector unique identifier
-	 * \param u coordinate in the rotated c.s. [cm]
-	 * \param phi strip rotation angle [rad]
-	 * \param z Z position of the hit [cm]
-	 * \param du U measurement error [cm]
-	 * \param dphi PHI measurement error [rad]
-	 * \param z Z position of the hit [cm]
-	 * \param refId some reference ID
+	 * \param[in] address detector unique identifier
+	 * \param[in] u coordinate in the rotated c.s. [cm]
+	 * \param[in] phi strip rotation angle [rad]
+	 * \param[in] z Z position of the hit [cm]
+	 * \param[in] du U measurement error [cm]
+	 * \param[in] dphi PHI measurement error [rad]
+	 * \param[in] z Z position of the hit [cm]
+	 * \param[in] refId some reference ID
+	 * \param[in] time Hit time [ns].
+	 * \param[in] timeError Error of hit time [ns].
+
 	 **/
 	CbmStripHit(
 			Int_t address,
@@ -41,20 +44,26 @@ public:
 			Double_t du,
 			Double_t dphi,
 			Double_t dz,
-			Int_t refId);
+			Int_t refId,
+			Double_t time = -1.,
+			Double_t timeError = -1.);
 
 	/**
 	 * \brief Standard constructor.
-	 * \param address Detector unique identifier.
-	 * \param pos Position of the hit as TVector3 (u, phi, z) [cm].
-	 * \param err Position errors of the hit as TVector3 (du, dphi, dz) [cm].
-	 * \param refId Some reference ID.
+	 * \param[in] address Detector unique identifier.
+	 * \param[in] pos Position of the hit as TVector3 (u, phi, z) [cm].
+	 * \param[in] err Position errors of the hit as TVector3 (du, dphi, dz) [cm].
+	 * \param[in] refId Some reference ID.
+	 * \param[in] time Hit time [ns].
+	 * \param[in] timeError Error of hit time [ns].
 	 **/
 	CbmStripHit(
 			Int_t address,
 			const TVector3& pos,
 			const TVector3& err,
-			Int_t refId);
+			Int_t refId,
+			Double_t time = -1.,
+			Double_t timeError = -1.);
 
 	/**
 	 * \brief Destructor.

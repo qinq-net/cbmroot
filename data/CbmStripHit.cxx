@@ -12,15 +12,26 @@
 using std::stringstream;
 using std::endl;
 
-CbmStripHit::CbmStripHit():
-	CbmHit(),
-	fU(0.),
-	fDu(0.),
-	fPhi(0.),
-	fDphi(0.)
+
+CbmStripHit::CbmStripHit()
+  : CbmStripHit(-1, 0., 0., 0.,
+                0., 0., 0., -1)
 {
-	SetType(kSTRIPHIT);
 }
+
+CbmStripHit::CbmStripHit(
+    Int_t address,
+    const TVector3& pos,
+    const TVector3& err,
+    Int_t refId,
+    Double_t time,
+    Double_t timeError)
+  : CbmStripHit(address, pos.X(), pos.Y(), pos.Z(),
+    err.X(), err.Y(), err.Z(), refId,
+                time, timeError)
+{
+}
+
 
 CbmStripHit::CbmStripHit(
 		Int_t address,
@@ -30,36 +41,16 @@ CbmStripHit::CbmStripHit(
 		Double_t du,
 		Double_t dphi,
 		Double_t dz,
-		Int_t refId):
-	CbmHit(),
+		Int_t refId,
+		Double_t time,
+		Double_t timeError
+   )
+  : CbmHit(kSTRIPHIT, z, dz, refId, address, time, timeError),
 	fU(u),
 	fDu(du),
 	fPhi(phi),
 	fDphi(dphi)
 {
-	SetType(kSTRIPHIT);
-   SetAddress(address);
-   SetZ(z);
-   SetDz(dz);
-   SetRefId(refId);
-}
-
-CbmStripHit::CbmStripHit(
-		Int_t address,
-		const TVector3& pos,
-		const TVector3& err,
-		Int_t refId):
-	CbmHit(),
-	fU(pos.X()),
-	fDu(err.X()),
-	fPhi(pos.Y()),
-	fDphi(err.Y())
-{
-	SetType(kSTRIPHIT);
-   SetAddress(address);
-   SetZ(pos.Z());
-   SetDz(err.Z());
-   SetRefId(refId);
 }
 
 CbmStripHit::~CbmStripHit()
