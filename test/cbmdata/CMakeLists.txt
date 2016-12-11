@@ -59,6 +59,14 @@ Set(CbmDigiSources
 CreateGTestExeAndAddTest(_GTestCbmDigi "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
                          "${CbmDigiSources}" "${DEPENDENCIES}")
 
+Set(CbmClusterSources
+  ${CMAKE_SOURCE_DIR}/data/CbmCluster.cxx
+  _GTestCbmCluster.cxx
+)
+
+CreateGTestExeAndAddTest(_GTestCbmCluster "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
+                         "${CbmClusterSources}" "${DEPENDENCIES}")
+
 Set(CbmHitSources
   ${CMAKE_SOURCE_DIR}/data/CbmHit.cxx
   _GTestCbmHit.cxx
