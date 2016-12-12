@@ -91,6 +91,14 @@ Set(CbmStripHitSources
 CreateGTestExeAndAddTest(_GTestCbmStripHit "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
                          "${CbmStripHitSources}" "${DEPENDENCIES}")
 
+Set(CbmDetectorListSources
+  ${CMAKE_SOURCE_DIR}/data/CbmDetectorList.cxx
+  _GTestCbmDetectorList.cxx
+)  
+
+CreateGTestExeAndAddTest(_GTestCbmDetectorList "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
+                         "${CbmDetectorListSources}" "${DEPENDENCIES}")
+
 Set(CbmConstantsSources
   _GTestCbmConstants.cxx
 )  
