@@ -21,6 +21,7 @@ EndMacro(CreateGTestExeAndAddTest)
 
 Set(INCLUDE_DIRECTORIES
   ${CMAKE_SOURCE_DIR}/data
+  ${CMAKE_SOURCE_DIR}/data/global
   ${BASE_INCLUDE_DIRECTORIES} 
 )
 
@@ -32,6 +33,7 @@ Set(LINK_DIRECTORIES
 Set(DEPENDENCIES
   ${ROOT_LIBRARIES} 
   ${GTEST_BOTH_LIBRARIES}
+  FairTools
   CbmData
 )
 
@@ -99,9 +101,27 @@ Set(CbmDetectorListSources
 CreateGTestExeAndAddTest(_GTestCbmDetectorList "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
                          "${CbmDetectorListSources}" "${DEPENDENCIES}")
 
+#Set(CbmEventSources
+#  ${CMAKE_SOURCE_DIR}/data/CbmEvent.cxx
+#  _GTestCbmEvent.cxx
+#)  
+#
+#CreateGTestExeAndAddTest(_GTestCbmEvent "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
+#                         "${CbmEventSources}" "${DEPENDENCIES}")
+
+
 Set(CbmConstantsSources
   _GTestCbmConstants.cxx
 )  
 
 CreateGTestExeAndAddTest(_GTestCbmConstants "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
                          "${CbmConstantsSources}" "${GTEST_BOTH_LIBRARIES}")
+
+Set(CbmVertexSources
+  ${CMAKE_SOURCE_DIR}/data/global/CbmVertex.cxx
+  global/_GTestCbmVertex.cxx
+)  
+
+CreateGTestExeAndAddTest(_GTestCbmVertex "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
+                         "${CbmVertexSources}" "${DEPENDENCIES}")
+                         
