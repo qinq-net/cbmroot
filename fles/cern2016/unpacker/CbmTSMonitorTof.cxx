@@ -509,16 +509,22 @@ void CbmTSMonitorTof::CreateHistograms()
 
   cBeamTunning->cd(1);
   histPnt = fHM->H1( "FeetRate_gDPB_g00_f0" );
+  gPad->SetGridx();
+  gPad->SetGridy();
   gPad->SetLogy();
   histPnt->Draw();
 
   cBeamTunning->cd(2);
   histPnt = fHM->H1( "FeetRate_gDPB_g00_f2" );
+  gPad->SetGridx();
+  gPad->SetGridy();
   gPad->SetLogy();
   histPnt->Draw();
   
   cBeamTunning->cd(3);
-  hDiamond->Draw("col text");
+  gPad->SetGridx();
+  gPad->SetGridy();
+  hDiamondSpillCount->Draw("text90");
 
   cBeamTunning->cd(4);
   hDiamondSpill->Draw("col text");
@@ -680,10 +686,13 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts,
       fGet4Nr = (fGdpbNr * fNrOfGet4PerGdpb) + fGet4Id;
       
       // Jump most data in Beam tuning mode
-      if( fbBeamTuningMode && 
-          ( (fGdpbNr != fDiamondGdpb) || 
-            (fGet4Id / fNrOfGet4PerFeb != fDiamondFeet ) ) )
-         continue;
+      if( fbBeamTuningMode )
+      { 
+          if( fGdpbNr != fDiamondGdpb )
+            break;
+//          if( fGet4Id / fNrOfGet4PerFeb != fDiamondFeet ) 
+//            continue;
+      } // if( fbBeamTuningMode )
 
       switch (messageType) {
         case ngdpb::MSG_HIT:
