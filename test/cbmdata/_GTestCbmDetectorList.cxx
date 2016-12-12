@@ -76,7 +76,7 @@ TEST(CbmDetectorList, outOfBounds)
   EXPECT_EQ("unknown", retName);
 
   fList.GetSystemNameCaps(-111, retName);
-  EXPECT_EQ("unknown", retName);
+  EXPECT_EQ("UNKNOWN", retName);
 }
 
 TEST_P(CbmDetectorListParamTest, checkUniqueIdCreation)
