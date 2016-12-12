@@ -53,8 +53,8 @@
 // C++ Classes and includes 
 // Globals 
 
-Int_t    iIndexDut = 0;
-Double_t StartAnalysisTime = 0.;
+static Int_t    iIndexDut = 0;
+static Double_t StartAnalysisTime = 0.;
 
 /************************************************************************************/
 CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer():
@@ -1460,6 +1460,39 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
                <<", "<<fviClusterMul[fSelId][fSelSm][fSelRpc]
                <<", "<<fviClusterMul[5][0][0]
                <<FairLogger::endl;
+   // do input distributions first
+   for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)
+   {
+     pHit = (CbmTofHit*) fTofHitsColl->At( iHitInd );
+     if(NULL == pHit) continue;
+     if (StartAnalysisTime == 0.) {
+       StartAnalysisTime = pHit->GetTime();
+       LOG(INFO) << "StartAnalysisTime set to "<<StartAnalysisTime<<" ns. "<<FairLogger::endl;
+     }
+     for(Int_t iDetIndx=0; iDetIndx<fDigiBdfPar->GetNbDet(); iDetIndx++){
+       Int_t iUniqueId = fDigiBdfPar->GetDetUId( iDetIndx );
+       Int_t iDetId = (pHit->GetAddress() & DetMask);
+
+       LOG(DEBUG2)<<"CbmTofTestBeamClusterizer::FillHistos: Inspect Hit  "
+                  << Form(" %d %08x %08x %d %08x ", iHitInd, pHit->GetAddress(), DetMask, iDetIndx, iUniqueId)
+                  <<FairLogger::endl;
+
+       if(iDetId == iUniqueId){    // detector index found
+         Int_t iSmType = CbmTofAddress::GetSmType( iUniqueId );
+         Int_t iSm     = CbmTofAddress::GetSmId( iUniqueId );
+         Int_t iRpc    = CbmTofAddress::GetRpcId( iUniqueId );
+         Int_t iNbRpc  = fDigiBdfPar->GetNbRpc( iSmType );
+         if(-1<fviClusterMul[iSmType][iSm][iRpc]){         
+	   Double_t w=(Double_t)fviClusterMul[iSmType][iSm][iRpc];
+	   if(w==0) w=1.;
+	   fhRpcCluMul[iDetIndx]->Fill(fviClusterMul[iSmType][iSm][iRpc]); //,1./w); //
+	   Double_t dTimeAna=(pHit->GetTime() - StartAnalysisTime)/1.E9;
+	   LOG(DEBUG)<<"TimeAna"<<StartAnalysisTime<<", "<< pHit->GetTime()<<", "<<dTimeAna<<FairLogger::endl;
+           fhRpcCluRate[iDetIndx]->Fill(dTimeAna); //      
+         }
+       }
+     }
+   }
 
    // do reference first 
    dTRef = dDoubleMax;
@@ -1683,10 +1716,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
    {
      pHit = (CbmTofHit*) fTofHitsColl->At( iHitInd );
      if(NULL == pHit) continue;
-     if (StartAnalysisTime == 0.) {
-       StartAnalysisTime = pHit->GetTime();
-       LOG(INFO) << "StartAnalysisTime set to "<<StartAnalysisTime<<" ns. "<<FairLogger::endl;
-     }
+
      if( kFALSE == fDigiBdfPar->ClustUseTrackId() ) fhPtsPerHit->Fill(pHit->GetFlag());
      Int_t iDetId = (pHit->GetAddress() & DetMask);
 
@@ -1702,12 +1732,6 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
          Int_t iRpc    = CbmTofAddress::GetRpcId( iUniqueId );
          Int_t iNbRpc  = fDigiBdfPar->GetNbRpc( iSmType );
          if(-1<fviClusterMul[iSmType][iSm][iRpc]){         
-	   Double_t w=(Double_t)fviClusterMul[iSmType][iSm][iRpc];
-	   if(w==0) w=1.;
-	   fhRpcCluMul[iDetIndx]->Fill(fviClusterMul[iSmType][iSm][iRpc]); //,1./w); //
-	   Double_t dTimeAna=(pHit->GetTime() - StartAnalysisTime)/1.E9;
-	   LOG(DEBUG)<<"TimeAna"<<StartAnalysisTime<<", "<< pHit->GetTime()<<", "<<dTimeAna<<FairLogger::endl;
-           fhRpcCluRate[iDetIndx]->Fill(dTimeAna); //
            for (Int_t iSel=0; iSel<iNSel; iSel++) if(BSel[iSel]){
                fhTRpcCluMul[iDetIndx][iSel]->Fill(fviClusterMul[iSmType][iSm][iRpc]);
            }         
