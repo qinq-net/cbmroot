@@ -28,15 +28,12 @@ class CbmEvent: public TObject {
 	public:
 
 		/** Default constructor **/
-		CbmEvent() :
-			TObject(), fNumber(-1), fTimeStart(0.), fTimeEnd(0.),
-			fNofData(0), fVertex(), fMatch(NULL), fIndexMap() {
-		}
-
+		CbmEvent() : CbmEvent(-1, 0., 0.) {};
 
 		/** Constructor with event number and time
-		 ** @param number  Event number
-		 ** @param time    Event start time [ns]
+		 ** @param[in] number    Event number
+		 ** @param[in] startTime Event start time [ns]
+		 ** @param[in] endTime   Event start time [ns]
 		 **/
 		CbmEvent(Int_t number, Double_t startTime = 0., Double_t endTime = 0.) :
 			TObject(), fNumber(number), fTimeStart(startTime), fTimeEnd(endTime),
