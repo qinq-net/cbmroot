@@ -19,7 +19,8 @@ void ngDpbMonitor(TString inFile = "")
 
   // --- Specify number of events to be produced.
   // --- -1 means run until the end of the input file.
-  Int_t nEvents = 10000;
+//  Int_t nEvents = 10000;
+  Int_t nEvents = -1;
 
   // --- Specify output file name (this is just an example)
   TString outFile = "data/test.root";
@@ -28,6 +29,7 @@ void ngDpbMonitor(TString inFile = "")
   // --- Set log output levels
   FairLogger::GetLogger();
   gLogger->SetLogScreenLevel("INFO");
+//  gLogger->SetLogScreenLevel("DEBUG");
   gLogger->SetLogVerbosityLevel("LOW");
 
   // --- Define parameter files
@@ -62,7 +64,12 @@ void ngDpbMonitor(TString inFile = "")
   
   // Get4 Unpacker
   CbmTSMonitorTof* test_monitor_tof = new CbmTSMonitorTof();
-  test_monitor_tof->SetDiamondChannels();
+//  test_monitor_tof->SetDiamondChannels(); // Up to 10/12/2016 17:30
+  test_monitor_tof->SetDiamondChannels( 0, 2, 77,  70, 94, 86); // Starting from 10/12/2016 17:30
+  test_monitor_tof->SetDiamondPerTsSpillOnThr(  50 ); // 2 at 600 mV, 10 at 500 mV, 50 at 400 mV
+  test_monitor_tof->SetDiamondPerTsSpillOffThr( 10 ); // 1 at 600-500 mV, 10 at 400 mV
+  test_monitor_tof->SetDiamondTsNbSpillOffThr(  50 );
+  test_monitor_tof->SetEpochSuppressedMode();
 
   // --- Source task
   CbmFlibCern2016Source* source = new CbmFlibCern2016Source();
@@ -72,10 +79,12 @@ void ngDpbMonitor(TString inFile = "")
       {
          source->SetHostName( "cbmflib20d");
          source->SetPortNumber( 5556 );
+//         source->SetPortNumber( 5560 );
       }
 
   source->AddUnpacker(test_monitor_tof,  0x60, 6); //gDPBs
   source->AddUnpacker(test_monitor_much, 0x10, 4); //nDPBs
+  source->SetDataReductionMuch( 20 );
 //   source->AddUnpacker(dummy_unpacker, 0x10, 4);//gDPB A & B
 //   source->AddUnpacker(dummy_unpacker, 0x60, 6);//gDPB A & B
 
