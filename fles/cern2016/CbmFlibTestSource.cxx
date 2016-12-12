@@ -161,6 +161,8 @@ void CbmFlibTestSource::AddPath(const TString& tFileDirectory,
   }
 
   tList->Delete();
+  if(0==fInputFileList.GetEntries())
+  LOG(FATAL)<<" did not find any valid input file at "<<tFileDirectory.Data()<<FairLogger::endl; 
 }
 
 void CbmFlibTestSource::SetParUnpackers()
