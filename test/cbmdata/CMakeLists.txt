@@ -101,13 +101,13 @@ Set(CbmDetectorListSources
 CreateGTestExeAndAddTest(_GTestCbmDetectorList "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
                          "${CbmDetectorListSources}" "${DEPENDENCIES}")
 
-#Set(CbmEventSources
-#  ${CMAKE_SOURCE_DIR}/data/CbmEvent.cxx
-#  _GTestCbmEvent.cxx
-#)  
-#
-#CreateGTestExeAndAddTest(_GTestCbmEvent "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
-#                         "${CbmEventSources}" "${DEPENDENCIES}")
+Set(CbmEventSources
+  ${CMAKE_SOURCE_DIR}/data/CbmEvent.cxx
+  _GTestCbmEvent.cxx
+)  
+
+CreateGTestExeAndAddTest(_GTestCbmEvent "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
+                         "${CbmEventSources}" "${DEPENDENCIES}")
 
 
 Set(CbmConstantsSources
@@ -124,4 +124,11 @@ Set(CbmVertexSources
 
 CreateGTestExeAndAddTest(_GTestCbmVertex "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
                          "${CbmVertexSources}" "${DEPENDENCIES}")
+                         
+
+#GENERATE_ROOT_TEST_SCRIPT(${CMAKE_SOURCE_DIR}/test/cbmdata/load_all_libs.C)
+#  Add_Test(load_all_libs
+#          ${CMAKE_BINARY_DIR}/test/cbmdata/load_all_libs.sh)
+#  Set_Tests_Properties(load_all_libs PROPERTIES TIMEOUT "30")
+#  Set_Tests_Properties(load_all_libs PROPERTIES PASS_REGULAR_EXPRESSION "Macro finished succesfully")
                          
