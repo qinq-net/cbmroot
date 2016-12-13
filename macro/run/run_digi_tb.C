@@ -117,8 +117,7 @@ void run_digi_tb(Int_t nEvents = 2, const char* setupName = "sis100_electron")
 
 
   // ---- Set the log level 	
-  FairLogger* gLogger = FairLogger::GetLogger();
-  gLogger->SetLogScreenLevel(logLevel.Data());
+  FairLogger::GetLogger()->SetLogScreenLevel(logLevel.Data());
 
 
   // ----- STS digitiser

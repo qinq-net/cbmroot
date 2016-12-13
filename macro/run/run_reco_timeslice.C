@@ -90,8 +90,7 @@ gSystem->Load("libMinuit2"); // Nedded for rich ellipse fitter
   run->AddTask(evManager);
 
   // ---- Set the log level 	
-  FairLogger* gLogger = FairLogger::GetLogger();
-  gLogger->SetLogScreenLevel(logLevel.Data());
+  FairLogger::GetLogger()->SetLogScreenLevel(logLevel.Data());
 
   // =========================================================================
   // ===                      STS local reconstruction                     ===

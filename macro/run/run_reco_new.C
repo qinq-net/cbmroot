@@ -135,9 +135,8 @@ void run_reco_new(Int_t nEvents = 2,
 
 
   // -----   Logger settings   ----------------------------------------------
-  FairLogger* gLogger = FairLogger::GetLogger();
-  gLogger->SetLogScreenLevel(logLevel.Data());
-  gLogger->SetLogVerbosityLevel(logVerbosity.Data());
+  FairLogger::GetLogger()->SetLogScreenLevel(logLevel.Data());
+  FairLogger::GetLogger()->SetLogVerbosityLevel(logVerbosity.Data());
   // ------------------------------------------------------------------------
 
 

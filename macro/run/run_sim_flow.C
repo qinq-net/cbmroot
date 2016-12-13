@@ -114,9 +114,8 @@ void run_sim_flow(Int_t nEvents = 2, Int_t En=25, const char* setupName = "sis30
 
 
   // -----   Logger settings   ----------------------------------------------
-  FairLogger* gLogger = FairLogger::GetLogger();
-  gLogger->SetLogScreenLevel(logLevel.Data());
-  gLogger->SetLogVerbosityLevel(logVerbosity.Data());
+  FairLogger::GetLogger()->SetLogScreenLevel(logLevel.Data());
+  FairLogger::GetLogger()->SetLogVerbosityLevel(logVerbosity.Data());
   // ------------------------------------------------------------------------
 
 
