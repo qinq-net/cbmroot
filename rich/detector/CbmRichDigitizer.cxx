@@ -87,7 +87,9 @@ void CbmRichDigitizer::ProcessPoint(CbmRichPoint* point, Int_t pointId)
    // cout << "address:" << address << " node:" << path << endl;
 
 	Int_t trackId = point->GetTrackID();
+	if (trackId < 0) return;
 	CbmMCTrack* p = (CbmMCTrack*) fMcTracks->At(trackId);
+	if (p == NULL) return;
 	Int_t gcode = TMath::Abs(p->GetPdgCode());
 
 	CbmLink link(1., pointId);
