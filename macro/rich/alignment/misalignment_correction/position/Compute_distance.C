@@ -9,8 +9,8 @@ void Compute_distance(TString geom_nb = "00001", Int_t Flag = 0)
 {
     LoadLibs();
 
-    if (Flag == 0) {TString outDir = "/data/misalignment_correction/Sim_Outputs/Ring_Track_VS_Position/Misaligned/";}
-    else if (Flag == 1) {TString outDir = "/data/misalignment_correction/Sim_Outputs/Ring_Track_VS_Position/Aligned/";}
+    if (Flag == 0) {TString outDir = "/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned/";}
+    else if (Flag == 1) {TString outDir = "/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Aligned/";}
     LoadSimFiles(geom_nb, outDir);
     PrepareHistos();
 
@@ -170,7 +170,7 @@ void PrepareHistos()
 {
     TString HistText1 = "Track-Ring Distance";
     H_distance = new TH1D(HistText1,HistText1,2001,0,5);
-    
+
     TString HistText2 = "Track-Ring VS PMT position";
     H_position = new TH2D(HistText2,HistText2,2001, -100., 100.,2001,-200.,200.);
 
@@ -179,9 +179,12 @@ void PrepareHistos()
 
 // ------------------------------------------------------------------- //
 
-void WriteHistos(TString& outDir)
+void WriteHistos(TString& outDir, Int_t Flag = 0)
 {
-    TString HistosFile = outDir + "Ring-Track_Study" + ".root";
+    TString buff = "";
+    if (Flag = 0) { buff = "Misaligned"; }
+    else if (Flag = 1) { buff = "Aligned"; }
+    TString HistosFile = outDir + "Ring-Track_Study" + buff + ".root";
     TFile *Histos = new TFile(HistosFile, "RECREATE");
 
     cout << endl << "Writing Histograms in the following file: " << HistosFile << endl;

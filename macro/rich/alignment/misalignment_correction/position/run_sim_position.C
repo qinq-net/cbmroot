@@ -9,10 +9,9 @@ void run_sim_position(Int_t nEvents = 500000, Int_t Flag = 0)
     //gRandom->SetSeed(10);
 
 	TString urqmdFile = "/data/Cbm_Root/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root";
-    
-    //TString outDir = "/data/misalignment_correction/Sim_Outputs/Ring_Track_VS_Position/First/";
-    if (Flag == 0) {TString outDir = "/data/misalignment_correction/Sim_Outputs/Ring_Track_VS_Position/Misaligned/";}
-    else if (Flag == 1) {TString outDir = "/data/misalignment_correction/Sim_Outputs/Ring_Track_VS_Position/Aligned/";}
+
+    if (Flag == 0) {TString outDir = "/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned/";}
+    else if (Flag == 1) {TString outDir = "/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Aligned/";}
     TString parFile = outDir + "param.root";
     TString mcFile = outDir + "mc.root";
 	TString geoFile = outDir + "geofilefull.root";
@@ -30,7 +29,7 @@ void run_sim_position(Int_t nEvents = 500000, Int_t Flag = 0)
 	TString fieldMap = "field_v12b";
 	TString stsGeom = "sts/sts_v15c.geo.root";
 	if (Flag == 0) {TString richGeom = "rich/Rich_jan2016_aligned.root";}
-    else if (Flag == 1) {TString richGeom = "rich/Rich_jan2016_misalign_5mradXY_Tile1_3.root";}
+	else if (Flag == 1) {TString richGeom = "rich/Rich_jan2016_misalign_5mradXY_Tile1_3.root";}
 	TString trdGeom = ""; //"trd_v15a_1e.geo.root";
 	TString tofGeom = ""; //"tof_v16a_1e.geo.root";
 	TString mvdGeom = ""; //"mvd_v15a.geo.root";
