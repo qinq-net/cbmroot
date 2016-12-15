@@ -1,29 +1,11 @@
 #!/bin/bash
-# Task name
-#SBATCH -J test
-# Run time limit
-#SBATCH --time=4:00:00
-# Working directory on shared storage
-#SBATCH -D /lustre/nyx/hpc/jdow
-# Standard and error output in different files
-#SBATCH -o %j_%N.out.log
-#SBATCH -e %j_%N.err.log
-# Execute application code
-hostname ; uptime ; sleep 30 ; uname -a
 
-#$ -wd /tmp 
-#$ -j y
-# Number of subtasks to start
-#$ -t 1-10
-
-XXXXX=$(printf "%05d" "$SGE_TASK_ID")
+XXXXX=$(printf "%05d" "$SLURM_ARRAY_TASK_ID")
 
 # Specify input and output directories
-if [ ${Flag} = "0" ] ; then
-	outdir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned/
-elif [ ${Flag} = "1" ] ; then
-	outdir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Aligned/
-fi
+# outdir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned/
+outdir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Aligned/
+
 cbmroot_config_path=/lustre/nyx/cbm/users/jbendar/CBMINSTALL/bin/CbmRootConfig.sh
 macro_dir=/u/jbendar/CBMSRC/macro/rich/alignment/misalignment_correction/position/
 
@@ -32,7 +14,9 @@ export SCRIPT=yes
 
 # Number of events to run
 nevents=10
-#nevents=1000
+# nevents=1000
+# Flag=0 # Misaligned
+Flag=1 # Aligned
 
 # Create needed directories
 mkdir -p ${outdir}/log
@@ -42,7 +26,7 @@ mkdir -p ${outdir}/results/${XXXXX}/
 
 # Setup the run environment
 source ${cbmroot_config_path}
- 
+
 # This line is needed, otherwise root will crash
 export DISPLAY=localhost:0.0
 
@@ -64,7 +48,7 @@ export NOF_POSITRONS=1
 export URQMD=no
 # If "yes" PLUTO particles will be embedded
 export PLUTO=no
-#Collision energy: 25gev or 8gev -> set proper weight into analysis
+# Collision energy: 25gev or 8gev -> set proper weight into analysis
 export ENERGY=${coll_energy}
 
 # Geometry setup macro
@@ -83,8 +67,8 @@ export ENERGY=${coll_energy}
 # Run the root simulation
 root -b -l -q "${macro_dir}/run_sim_position.C(${nevents}, ${Flag})"
 root -b -l -q "${macro_dir}/run_reco_position.C(${nevents}, ${Flag})"
-#root -b -l -q "${macro_dir}/Compute_distance.C(${Numb}, ${Flag})"
+# root -b -l -q "${macro_dir}/Compute_distance.C(${Numb}, ${Flag})"
 
-#cp -v ${SGE_STDOUT_PATH} ${outdir}/log/${JOB_ID}.${SGE_TASK_ID}.log
+# cp -v ${SGE_STDOUT_PATH} ${outdir}/log/${JOB_ID}.${SGE_TASK_ID}.log
 
 export SCRIPT=no
