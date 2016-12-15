@@ -16,6 +16,7 @@
 //class CbmTofPoint;
 class CbmTofDigi;
 class CbmTofDigiExp;
+class CbmTofHit;
 class CbmMatch;
    // Geometry
 class CbmTofGeoHandler;
@@ -121,6 +122,7 @@ class CbmTofTestBeamClusterizer : public FairTask
       inline void SetTotPreRange(Double_t val)          { fTotPreRange = val;}
       inline void SetMaxTimeDist(Double_t val)          { fMaxTimeDist = val;}
       inline void SetChannelDeadtime(Double_t val)      { fdChannelDeadtime = val;}
+      inline void SetMemoryTime (Double_t val)          { fdMemoryTime = val;}
       inline void SetSel2Id     (Int_t ival)            { fSel2Id = ival;}
       inline void SetSel2Sm     (Int_t ival)            { fSel2Sm = ival;}
       inline void SetSel2Rpc    (Int_t ival)            { fSel2Rpc = ival;}
@@ -252,24 +254,24 @@ class CbmTofTestBeamClusterizer : public FairTask
       TH2* fhChDifDifX;
       TH2* fhChDifDifY;
 
-      std::vector< TH2* > fhRpcDigiCor;     //[nbDet]
-      std::vector< TH1* > fhRpcCluMul;      //[nbDet]
-      std::vector< TH1* > fhRpcCluRate;     //[nbDet]
-      std::vector< TH2* > fhRpcCluPosition; //[nbDet]
-      std::vector< TH2* > fhRpcCluDelPos;   //[nbDet]
+      std::vector< TH2* > fhRpcDigiCor;        //[nbDet]
+      std::vector< TH1* > fhRpcCluMul;         //[nbDet]
+      std::vector< TH1* > fhRpcCluRate;        //[nbDet]
+      std::vector< TH2* > fhRpcCluPosition;    //[nbDet]
+      std::vector< TH2* > fhRpcCluDelPos;      //[nbDet]
       std::vector< TH2* > fhRpcCluDelMatPos;   //[nbDet]
       std::vector< TH2* > fhRpcCluTOff;        //[nbDet] 
       std::vector< TH2* > fhRpcCluDelTOff;     //[nbDet] 
       std::vector< TH2* > fhRpcCluDelMatTOff;  //[nbDet] 
-      std::vector< TH2* > fhRpcCluTrms;     //[nbDet] 
-      std::vector< TH2* > fhRpcCluTot;      // [nbDet]
-      std::vector< TH2* > fhRpcCluSize;     // [nbDet]
-      std::vector< TH2* > fhRpcCluAvWalk;   // [nbDet]
-      std::vector< TH2* > fhRpcCluAvLnWalk; // [nbDet]
+      std::vector< TH2* > fhRpcCluTrms;        //[nbDet] 
+      std::vector< TH2* > fhRpcCluTot;         //[nbDet]
+      std::vector< TH2* > fhRpcCluSize;        //[nbDet]
+      std::vector< TH2* > fhRpcCluAvWalk;      //[nbDet]
+      std::vector< TH2* > fhRpcCluAvLnWalk;    //[nbDet]
       std::vector< std::vector< std::vector<TH2 *> > >fhRpcCluWalk; // [nbDet][nbCh][nSide]
-
       std::vector< TH2* > fhSmCluPosition; //[nbSmTypes]
       std::vector< TH2* > fhSmCluTOff; 
+      std::vector< TH1* > fhRpcDTLastHits;     //[nbDet]
 
       std::vector< std::vector< TH1* > > fhTRpcCluMul;      //[nbDet][nbSel]
       std::vector< std::vector< TH2* > > fhTRpcCluPosition; //[nbDet][nbSel]
@@ -284,6 +286,9 @@ class CbmTofTestBeamClusterizer : public FairTask
       std::vector< std::vector< TH2* > > fhTSmCluPosition; //[nbSmTypes][nbSel]
       std::vector< std::vector< TH2* > > fhTSmCluTOff;     //[nbSmTypes][nbSel]
       std::vector< std::vector< TH2* > > fhTSmCluTRun;     //[nbSmTypes][nbSel]
+      std::vector< std::vector< TH2* > > fhTRpcCluTOffDTLastHits;
+      std::vector< std::vector< TH2* > > fhTRpcCluTotDTLastHits;
+      std::vector< std::vector< TH2* > > fhTRpcCluSizeDTLastHits;
 
       std::vector< TH1* > fhSeldT;  //[nbSel] 
 
@@ -292,6 +297,8 @@ class CbmTofTestBeamClusterizer : public FairTask
       std::vector< std::vector< std::vector< std::vector< Double_t > > > > fvCPTotGain;  //[nSMT][nRpc][nCh][nbSide]
       std::vector< std::vector< std::vector< std::vector< Double_t > > > > fvCPTotOff;  //[nSMT][nRpc][nCh][nbSide]
       std::vector< std::vector< std::vector< std::vector< std::vector< Double_t > > > > > fvCPWalk; //[nSMT][nRpc][nCh][nbSide][nbWalkBins]
+
+      std::vector< std::vector< std::vector< std::vector< std::vector< CbmTofHit * > > > > >  fvLastHits;  //[nSMT[nSm][nRpc][nCh][NHits]
 
       // Digis quality
       Int_t fiNbSameSide;
@@ -323,6 +330,7 @@ class CbmTofTestBeamClusterizer : public FairTask
       Int_t    fiBeamRefType;
       Int_t    fiBeamRefSm;
       Int_t    fiBeamRefDet;
+      Int_t    fiBeamRefAddr;
       Int_t    fiBeamRefMulMax;
       Int_t    fiBeamAddRefMul;
       Int_t    fSel2Id;
@@ -340,6 +348,7 @@ class CbmTofTestBeamClusterizer : public FairTask
       Double_t fTotPreRange;
       Double_t fMaxTimeDist;
       Double_t fdChannelDeadtime;
+      Double_t fdMemoryTime;
       
       Bool_t fEnableMatchPosScaling;
       Bool_t fEnableAvWalk;
