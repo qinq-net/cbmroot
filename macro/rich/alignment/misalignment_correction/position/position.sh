@@ -3,20 +3,17 @@
 XXXXX=$(printf "%05d" "$SLURM_ARRAY_TASK_ID")
 
 # Specify input and output directories
-# outdir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned/
-outdir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Aligned/
+if [ $1 -eq 0 ] ; then
+        outdir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned/
+elif [ $1 -eq 1 ] ; then
+        outdir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Aligned/
+fi
 
 cbmroot_config_path=/lustre/nyx/cbm/users/jbendar/CBMINSTALL/bin/CbmRootConfig.sh
-macro_dir=/u/jbendar/CBMSRC/macro/rich/alignment/misalignment_correction/position/
+macro_dir=/u/jbendar/CBMSRC/macro/rich/alignment/misalignment_correction/position
 
 # Needed to run macro via script
 export SCRIPT=yes
-
-# Number of events to run
-nevents=10
-# nevents=1000
-# Flag=0 # Misaligned
-Flag=1 # Aligned
 
 # Create needed directories
 mkdir -p ${outdir}/log
@@ -31,11 +28,11 @@ source ${cbmroot_config_path}
 export DISPLAY=localhost:0.0
 
 # Define urqmd and output files
-export URQMD_FILE=/lustre/nyx/cbm/prod/gen/urqmd/auau/${coll_energy}/centr/urqmd.auau.${coll_energy}.centr.${XXXXX}.root
-export MC_FILE=${outdir}/mc.${Numb}.root
-export PAR_FILE=${outdir}/params.${Numb}.root
-export RECO_FILE=${outdir}/reco.${Numb}.root
-export ANALYSIS_FILE=${outdir}/analysis.${Numb}.root
+export URQMD_FILE=/lustre/nyx/cbm/prod/gen/urqmd/auau/${3}/centr/urqmd.auau.${3}.centr.${XXXXX}.root
+export MC_FILE=${outdir}/mc.root
+export PAR_FILE=${outdir}/params.root
+export RECO_FILE=${outdir}/reco.root
+export ANALYSIS_FILE=${outdir}/analysis.root
 export RESULT_DIR=${outdir}
 
 #Simulation parameters
@@ -49,7 +46,7 @@ export URQMD=no
 # If "yes" PLUTO particles will be embedded
 export PLUTO=no
 # Collision energy: 25gev or 8gev -> set proper weight into analysis
-export ENERGY=${coll_energy}
+export ENERGY=${3}
 
 # Geometry setup macro
 #export GEO_SETUP_FILE=${setupMacro}
@@ -64,10 +61,13 @@ export ENERGY=${coll_energy}
 # mkdir -p $workdir
 # cd $workdir
 
+export OUT_DIR=${outdir}
+echo ${outdir}
+echo ${macro_dir}
 # Run the root simulation
-root -b -l -q "${macro_dir}/run_sim_position.C(${nevents}, ${Flag})"
-root -b -l -q "${macro_dir}/run_reco_position.C(${nevents}, ${Flag})"
-# root -b -l -q "${macro_dir}/Compute_distance.C(${Numb}, ${Flag})"
+root -b -l -q "${macro_dir}/run_sim_position.C(${2}, ${1})"
+root -b -l -q "${macro_dir}/run_reco_position.C(${2}, ${1})"
+# root -b -l -q "${macro_dir}/Compute_distance.C(${2}, ${1})"
 
 # cp -v ${SGE_STDOUT_PATH} ${outdir}/log/${JOB_ID}.${SGE_TASK_ID}.log
 

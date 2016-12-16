@@ -8,14 +8,14 @@ void run_sim_position(Int_t nEvents = 500000, Int_t Flag = 0)
 
     //gRandom->SetSeed(10);
 
-	TString urqmdFile = "/data/Cbm_Root/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root";
+    TString urqmdFile = "/data/Cbm_Root/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root";
 
-    if (Flag == 0) {TString outDir = "/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned/";}
-    else if (Flag == 1) {TString outDir = "/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Aligned/";}
-    TString parFile = outDir + "param.root";
+    outDir = TString(gSystem->Getenv("OUT_DIR"));
+//    if (Flag == 0) {TString outDir = "/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned/";}
+//    else if (Flag == 1) {TString outDir = "/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Aligned/";}
     TString mcFile = outDir + "mc.root";
-	TString geoFile = outDir + "geofilefull.root";
-	TString outFile = outDir + "out.root";
+    TString geoFile = outDir + "geofilefull.root";
+    TString outFile = outDir + "out.root";
 
 /*	TString outDir = "/data/misalignment_correction/event_display/test/"; // For eventDisplay and run_rich_event_display macros
 	TString parFile = outDir + "param.root";
@@ -51,6 +51,7 @@ void run_sim_position(Int_t nEvents = 500000, Int_t Flag = 0)
         urqmdFile = TString(gSystem->Getenv("URQMD_FILE"));
         mcFile = TString(gSystem->Getenv("MC_FILE"));
         parFile = TString(gSystem->Getenv("PAR_FILE"));
+	cout << "mcFile: " << TString(gSystem->Getenv("MC_FILE")) << endl << "parFile: " << TString(gSystem->Getenv("PAR_FILE")) << endl << "urqmdFile: " << TString(gSystem->Getenv("URQMD_FILE")) << endl;
 
         //geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/" + TString(gSystem->Getenv("GEO_SETUP_FILE"));
 

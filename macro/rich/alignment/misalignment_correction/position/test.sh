@@ -13,9 +13,15 @@
 #SBATCH -o %j_%N.out.log
 #SBATCH -e %j_%N.err.log
 
-#SBATCH --array=1-3
+# #SBATCH --array=1-3
 # #SBATCH --ntasks 2
 
 # Execute application code
 hostname ; uptime ; sleep 5 ; uname -a
 echo 'task ID: ' $SLURM_ARRAY_TASK_ID
+if [ $1 = "1" ] ; then
+        echo 'It works: FLAG = ' $1
+elif [ $1 != "1" ] ; then
+	echo 'Does not work: FLAG = ' $1
+fi
+# echo 'param2: ' $2 			# second parameter value
