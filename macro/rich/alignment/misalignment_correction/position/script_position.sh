@@ -1,5 +1,8 @@
 #!/bin/bash
 
+cbmroot_config_path=/lustre/nyx/cbm/users/jbendar/CBMINSTALL/bin/CbmRootConfig.sh
+source ${cbmroot_config_path}
+
 nEvs=10
 NUM="00001"
 
