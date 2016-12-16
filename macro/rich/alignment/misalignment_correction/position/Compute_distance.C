@@ -5,12 +5,12 @@
 
 /* Draw histograms of radius, dR, a, b and b over a, on a same canvass. */
 
-void Compute_distance(TString geom_nb = "00001", Int_t Flag = 0)
+void Compute_distance(TString geom_nb = "", Int_t Flag = 0)
 {
     LoadLibs();
 
-    if (Flag == 0) {TString outDir = "/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned/";}
-    else if (Flag == 1) {TString outDir = "/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Aligned/";}
+    if (Flag == 0) {TString outDir = "/u/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned/";}
+    else if (Flag == 1) {TString outDir = "/u/jbendar/Sim_Outputs/Ring_Track_VS_Position/Aligned/";}
     LoadSimFiles(geom_nb, outDir);
     PrepareHistos();
 
@@ -151,9 +151,13 @@ void LoadLibs()
 
 void LoadSimFiles(TString geom_nb, TString outDir)
 {
-    TString ParFileTxt = outDir + "param." + geom_nb + ".root";
-    TString McFileTxt = outDir + "mc." + geom_nb + ".root";
-    TString RecoFileTxt = outDir + "reco." + geom_nb + ".root";
+//    TString ParFileTxt = outDir + "param." + geom_nb + ".root";
+//    TString McFileTxt = outDir + "mc." + geom_nb + ".root";
+//    TString RecoFileTxt = outDir + "reco." + geom_nb + ".root";
+
+    TString ParFileTxt = outDir + "param." + geom_nb + "root";
+    TString McFileTxt = outDir + "mc." + geom_nb + "root";
+    TString RecoFileTxt = outDir + "reco." + geom_nb + "root";
 
     ParFile = new TFile(ParFileTxt);
     McFile = new TFile(McFileTxt);
