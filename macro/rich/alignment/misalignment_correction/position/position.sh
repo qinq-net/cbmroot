@@ -2,15 +2,16 @@
 
 XXXXX=$(printf "%05d" "$SLURM_ARRAY_TASK_ID")
 
+cbmroot_config_path=/lustre/nyx/cbm/users/jbendar/CBMINSTALL/bin/CbmRootConfig.sh
+# macro_dir=/u/jbendar/CBMSRC/macro/rich/alignment/misalignment_correction/position
+macro_dir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position
+
 # Specify input and output directories
 if [ $1 -eq 0 ] ; then
-        outdir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned/
+        outdir=${macro_dir}/Misaligned
 elif [ $1 -eq 1 ] ; then
-        outdir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Aligned/
+        outdir=${macro_dir}/Aligned
 fi
-
-cbmroot_config_path=/lustre/nyx/cbm/users/jbendar/CBMINSTALL/bin/CbmRootConfig.sh
-macro_dir=/u/jbendar/CBMSRC/macro/rich/alignment/misalignment_correction/position
 
 # Needed to run macro via script
 export SCRIPT=yes
@@ -23,6 +24,7 @@ mkdir -p ${outdir}/results/${XXXXX}/
 
 # Setup the run environment
 source ${cbmroot_config_path}
+echo ${VMCWORKDIR}
 
 # This line is needed, otherwise root will crash
 export DISPLAY=localhost:0.0
@@ -65,8 +67,8 @@ export OUT_DIR=${outdir}
 echo ${outdir}
 echo ${macro_dir}
 # Run the root simulation
-root -b -l -q "${macro_dir}/run_sim_position.C(${2}, ${1})"
-root -b -l -q "${macro_dir}/run_reco_position.C(${2}, ${1})"
+root -b -l -q "${macro_dir}/run_sim_position2.C(${2}, ${1})"
+# root -b -l -q "${macro_dir}/run_reco_position.C(${2}, ${1})"
 # root -b -l -q "${macro_dir}/Compute_distance.C(${2}, ${1})"
 
 # cp -v ${SGE_STDOUT_PATH} ${outdir}/log/${JOB_ID}.${SGE_TASK_ID}.log
