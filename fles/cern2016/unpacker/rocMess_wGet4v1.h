@@ -22,7 +22,8 @@ namespace ngdpb {
       MSG_SYS      =  7,
       MSG_GET4_SLC =  8,
       MSG_GET4_32B =  9,
-      MSG_GET4_SYS = 10
+      MSG_GET4_SYS = 10,
+      MSG_STAR_TRI = 0xD
    };
 
    enum SysMessageTypes {
@@ -138,6 +139,9 @@ namespace ngdpb {
 
          inline uint64_t getData() const { return data; }
          inline void setData( uint64_t value) { data = value; }
+
+         inline uint64_t getFieldLong(uint32_t shift, uint32_t len) const
+            { return (data >> shift) & (((static_cast<uint64_t>(1)) << len) - 1); }
 
          inline uint32_t getField(uint32_t shift, uint32_t len) const
             { return (data >> shift) & (((static_cast<uint32_t>(1)) << len) - 1); }
@@ -546,6 +550,22 @@ namespace ngdpb {
          // ---------- Get4 gDPB unknown msg type access methods -------------------
          inline uint32_t getGdpbSysUnkwData()    const { return getField(  4, 32); }
 
+         // ---------- STAR Trigger messages access methods ------------------------
+         inline uint16_t getStarTrigMsgIndex() const { return getField(      4,  4 ); }
+         //++++//
+         inline uint64_t getGdpbTsMsbStarA()   const { return getFieldLong(  8, 40 ); }
+         //++++//
+         inline uint64_t getGdpbTsLsbStarB()   const { return getFieldLong( 24, 24 ); }
+         inline uint64_t getStarTsMsbStarB()   const { return getFieldLong(  8, 16 ); }
+         //++++//
+         inline uint64_t getStarTsMidStarC()   const { return getFieldLong(  8, 40 ); }
+         //++++//
+         inline uint64_t getStarTsLsbStarD()   const { return getFieldLong( 40,  8 ); }
+         /// 12 bits in between are set to 0
+         inline uint32_t getStarTokenStarD()   const { return getField(      8, 12 ); }
+         inline uint32_t getStarDaqCmdStarD()  const { return getField(     20,  4 ); }
+         inline uint32_t getStarTrigCmdStarD() const { return getField(     24,  4 ); }
+
          // ---------- Common functions -----------------------
 
          //! Returns \a true is message type is #MSG_NOP (filler message)
@@ -570,6 +590,8 @@ namespace ngdpb {
          inline bool isGet4Hit32Msg() const { return getMessageType() == MSG_GET4_32B; }
          //! Returns \a true is message type is #MSG_GET4_SYS (GET4 system message)
          inline bool isGet4SysMsg() const { return getMessageType() == MSG_GET4_SYS; }
+         //! Returns \a true is message type is #MSG_STAR_TRI (STAR Trigger message)
+         inline bool isStarTrigger() const { return getMessageType() == MSG_STAR_TRI;}
          //! Returns \a true is message type is #MSG_SYS (system message) and subtype is 32bHack
          inline bool isGet4Hack32Msg() const { return
                ( (getMessageType() == MSG_SYS) &&
