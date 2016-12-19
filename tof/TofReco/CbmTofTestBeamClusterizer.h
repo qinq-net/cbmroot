@@ -42,6 +42,7 @@ class TString;
 
 // C++ Classes and includes
 #include <vector>
+#include <map>
 
 class CbmTofTestBeamClusterizer : public FairTask
 {
@@ -337,6 +338,7 @@ class CbmTofTestBeamClusterizer : public FairTask
       Int_t    fSel2Sm;
       Int_t    fSel2Rpc;
       Int_t    fSel2Addr;
+      std::map<UInt_t, UInt_t> fDetIdIndexMap;
 
       Double_t fPosYMaxScal;
       Double_t fTRefDifMax;
