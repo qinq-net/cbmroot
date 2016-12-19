@@ -41,6 +41,7 @@ CbmTSMonitorTof::CbmTSMonitorTof() :
     CbmTSUnpack(),
     fuMsAcceptsPercent(100),
     fuMinNbGdpb(),
+    fuCurrNbGdpb(0),
     fNrOfGdpbs(-1),
     fNrOfFebsPerGdpb(-1),
     fNrOfGet4PerFeb(-1),
@@ -66,19 +67,36 @@ CbmTSMonitorTof::CbmTSMonitorTof() :
     fbBeamTuningMode( kFALSE),
     fbEpochSuppModeOn(kFALSE),
     fvmEpSupprBuffer(),
-    fuCurrNbGdpb(0),
+    fGdpbId(0),
+    fGdpbNr(0),
+    fGet4Id(0),
+    fGet4Nr(0),
     fMsgCounter(11, 0), // length of enum MessageTypes initialized with 0
     fGdpbIdIndexMap(),
     fHM(new CbmHistManager()),
     fCurrentEpoch(NULL),
-    fTsLastHit(),
     fNofEpochs(0),
     fCurrentEpochTime(0.),
     fdStartTime(-1.),
     fdStartTimeMsSz(-1.),
     fcMsSizeAll(NULL),
+    fTsLastHit(),
     fEquipmentId(0),
     fUnpackPar(NULL),
+    fHistMessType(NULL),
+    fHistSysMessType(NULL),
+    fHistGet4MessType(NULL),
+    fHistGet4ChanErrors(NULL),
+    fHistGet4EpochFlags(NULL),
+    fHistDiamond(NULL),
+    fHistDiamondSpill(NULL),
+    fHistDiamondSpillLength(NULL),
+    fHistDiamondSpillCount(NULL),
+    fHistDiamondSpillQA(NULL),
+    fRaw_Tot_gDPB(),
+    fChCount_gDPB(),
+    fChannelRate_gDPB(),
+    fFeetRate_gDPB(),
     fFeetRateDate_gDPB(),
     fiRunStartDateTimeSec( -1 ),
     fiBinSizeDatePlots( -1 )
@@ -587,17 +605,17 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts,
   // CbmHistManager) compared to using the pointer directly
   // So get the pointer once outside the loop and use it in the loop
 
-  TString sMsSzName = Form("MsSz_link_%02u", component);
+  TString sMsSzName = Form("MsSz_link_%02lu", component);
   TH1* hMsSz = NULL;
   TProfile* hMsSzTime = NULL;
   if (fHM->Exists(sMsSzName.Data())) {
     hMsSz = fHM->H1(sMsSzName.Data());
-    sMsSzName = Form("MsSzTime_link_%02u", component);
+    sMsSzName = Form("MsSzTime_link_%02lu", component);
     hMsSzTime = fHM->P1(sMsSzName.Data());
   } // if( fHM->Exists(sMsSzName.Data() ) )
   else {
     TString sMsSzTitle = Form(
-        "Size of MS for gDPB of link %02u; Ms Size [bytes]", component);
+        "Size of MS for gDPB of link %02lu; Ms Size [bytes]", component);
     fHM->Add(sMsSzName.Data(),
         new TH1F(sMsSzName.Data(), sMsSzTitle.Data(), 160000, 0., 20000.));
     hMsSz = fHM->H1(sMsSzName.Data());
@@ -605,9 +623,9 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts,
     if (server)
       server->Register("/FlibRaw", hMsSz);
 #endif
-    sMsSzName = Form("MsSzTime_link_%02u", component);
+    sMsSzName = Form("MsSzTime_link_%02lu", component);
     sMsSzTitle = Form(
-        "Size of MS vs time for gDPB of link %02u; Time[s] ; Ms Size [bytes]",
+        "Size of MS vs time for gDPB of link %02lu; Time[s] ; Ms Size [bytes]",
         component);
     fHM->Add(sMsSzName.Data(),
         new TProfile(sMsSzName.Data(), sMsSzTitle.Data(), 15000, 0., 300.));
