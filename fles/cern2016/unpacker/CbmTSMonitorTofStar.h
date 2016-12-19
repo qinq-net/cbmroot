@@ -63,6 +63,17 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     void SetEpochSuppressedMode( Bool_t bEnable = kTRUE ) { fbEpochSuppModeOn = bEnable; }
 
     void SetRunStart( Int_t dateIn, Int_t timeIn, Int_t iBinSize = 5 );
+    
+
+    inline void SetGet4v20Mode( Bool_t inGet4v20Mode = kTRUE ) { fbGet4v20 = inGet4v20Mode; }
+    inline void SetPulserMode( Bool_t inPulserMode = kTRUE ) { fbPulserMode = inPulserMode; SetPulserChans(); }
+    inline void SetPulserFee( UInt_t inPulserGdpb, UInt_t inPulserFee ) { fuPulserGdpb = inPulserGdpb; fuPulserFee = inPulserFee; }
+           void SetPulserChans( UInt_t inPulserChanA =  0, UInt_t inPulserChanB =  1, UInt_t inPulserChanC =  2,
+                                UInt_t inPulserChanD =  3, UInt_t inPulserChanE =  4, UInt_t inPulserChanF =  5,
+                                UInt_t inPulserChanG =  6, UInt_t inPulserChanH =  7, UInt_t inPulserChanI =  8,
+                                UInt_t inPulserChanJ =  9, UInt_t inPulserChanK = 10, UInt_t inPulserChanL = 11,
+                                UInt_t inPulserChanM = 12, UInt_t inPulserChanN = 13, UInt_t inPulserChanO = 14,
+                                UInt_t inPulserChanP = 15 );
 
     void ResetAllHistos();
 
@@ -76,7 +87,8 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     Int_t fNrOfFebsPerGdpb;     // Number of FEBs per GDPB
     Int_t fNrOfGet4PerFeb;      // Number of GET4s per FEB
     Int_t fNrOfChannelsPerGet4; // Number of channels in each GET4
-
+    
+    Int_t fNrOfChannelsPerFeet; // Number of channels in each FEET
     Int_t fNrOfGet4;            // Total number of Get4 chips in the system
     Int_t fNrOfGet4PerGdpb;     // Number of GET4s per GDPB
 
@@ -120,9 +132,9 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     Double_t fdStartTimeMsSz; /** Time of first microslice, used as reference for evolution plots**/
     TCanvas* fcMsSizeAll;
 
-    /** Used only if the channel rate plots are enabled **/
-    /** Last Hit time for each ROC/GET4/Channel (first hit in the stream initializes the map item) **/
-    std::map<Int_t, std::map<Int_t, std::map<Int_t, Double_t> > > fTsLastHit; // * 6.25 ns
+    /** Used only if the channel rate or pulse hit difference plots are enabled **/
+    /** Last Hit time for each gDPB/GET4/Channel **/
+    std::vector< std::vector< std::vector< Double_t > > > fTsLastHit; // * 6.25 ns
 
     Int_t fEquipmentId;
 
@@ -157,6 +169,19 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     UInt_t    fuStarTokenLast;
     UInt_t    fuStarDaqCmdLast;
     UInt_t    fuStarTrigCmdLast;
+    
+    ///* STAR and pulser monitoring *///
+    static const UInt_t kuNbChanTest = 16;
+    Bool_t fbGet4v20;
+    Bool_t fbPulserMode;
+    UInt_t fuPulserGdpb;
+    UInt_t fuPulserFee;
+    UInt_t fuPulserChan[kuNbChanTest]; //! Always in first gDPB !!!
+    std::vector<TH1 *> fhTimeDiffPulserChosenFee; 
+    TH1 * fhTimeDiffPulserChosenChPairs[ kuNbChanTest - 1 ];
+    TH2 * fhTimeRmsPulserChosenFee;
+    TH1 * fhTimeRmsPulserChosenChPairs;
+    Double_t fdLastRmsUpdateTime;
 
     void CreateHistograms();
 

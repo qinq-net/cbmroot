@@ -36,15 +36,47 @@
 static Int_t iMess = 0;
 Bool_t bResetTofStarHistos = kFALSE;
 
+namespace get4v1x {
+   // Size of one clock cycle (=1 coarse bin)
+   const double   kdClockCycleSize  = 6250.0; //[ps]
+   // TODO:For now make 100ps default, maybe need later an option for it
+   const double   kdTotBinSize      =   50.0; //ps
+
+   const uint32_t kuFineTime    = 0x0000007F; // Fine Counter value
+   const uint32_t kuFtShift     =          0; // Fine Counter offset
+   const uint32_t kuCoarseTime  = 0x0007FF80; // Coarse Counter value
+   const uint32_t kuCtShift     =          7; // Coarse Counter offset
+
+   const uint32_t kuFineCounterSize    = ( (kuFineTime>>kuFtShift)+1 );
+   const uint32_t kuCoarseCounterSize  = ( (kuCoarseTime>>kuCtShift)+1 );
+   const uint32_t kuCoarseOverflowTest = kuCoarseCounterSize / 2 ; // Limit for overflow check
+   const uint32_t kuTotCounterSize     = 256;
+
+   // Nominal bin size of NL are neglected
+   const double   kdBinSize     = kdClockCycleSize / static_cast<double>(kuFineCounterSize);
+   // Epoch Size in bins
+   const uint32_t kuEpochInBins = kuFineTime + kuCoarseTime + 1;
+   // Epoch Size in ps
+   // alternatively: (kiCoarseTime>>kiCtShift + 1)*kdClockCycleSize
+   const double   kdEpochInPs   = kuEpochInBins*kdBinSize;
+}
+
+// Defautl value for nb bins in Pulser time difference histos
+const UInt_t kuNbBinsDt    = 5000;
+Double_t dMinDt     = -1.*(kuNbBinsDt*get4v1x::kdBinSize/2.) - get4v1x::kdBinSize/2.;
+Double_t dMaxDt     =  1.*(kuNbBinsDt*get4v1x::kdBinSize/2.) + get4v1x::kdBinSize/2.;
+
 
 CbmTSMonitorTofStar::CbmTSMonitorTofStar() :
     CbmTSUnpack(),
     fuMsAcceptsPercent(100),
     fuMinNbGdpb(),
+    fuCurrNbGdpb(0),
     fNrOfGdpbs(-1),
     fNrOfFebsPerGdpb(-1),
     fNrOfGet4PerFeb(-1),
     fNrOfChannelsPerGet4(-1),
+    fNrOfChannelsPerFeet(-1),
     fNrOfGet4(-1),
     fNrOfGet4PerGdpb(-1),
     fiCountsLastTs(0),
@@ -58,22 +90,55 @@ CbmTSMonitorTofStar::CbmTSMonitorTofStar() :
     fSpillIdx(0),
     fbEpochSuppModeOn(kFALSE),
     fvmEpSupprBuffer(),
-    fuCurrNbGdpb(0),
+    fGdpbId(0),
+    fGdpbNr(0),
+    fGet4Id(0),
+    fGet4Nr(0),
     fMsgCounter(11, 0), // length of enum MessageTypes initialized with 0
     fGdpbIdIndexMap(),
     fHM(new CbmHistManager()),
     fCurrentEpoch(NULL),
-    fTsLastHit(),
     fNofEpochs(0),
     fCurrentEpochTime(0.),
     fdStartTime(-1.),
     fdStartTimeMsSz(-1.),
     fcMsSizeAll(NULL),
+    fTsLastHit(),
     fEquipmentId(0),
     fUnpackPar(NULL),
+    fHistMessType(NULL),
+    fHistSysMessType(NULL),
+    fHistGet4MessType(NULL),
+    fHistGet4ChanErrors(NULL),
+    fHistGet4EpochFlags(NULL),
+    fHistSpill(NULL),
+    fHistSpillLength(NULL),
+    fHistSpillCount(NULL),
+    fHistSpillQA(NULL),
+    fRaw_Tot_gDPB(),
+    fChCount_gDPB(),
+    fChannelRate_gDPB(),
+    fFeetRate_gDPB(),
     fFeetRateDate_gDPB(),
     fiRunStartDateTimeSec( -1 ),
-    fiBinSizeDatePlots( -1 )
+    fiBinSizeDatePlots( -1 ),
+    fulGdpbTsMsb(0),
+    fulGdpbTsLsb(0),
+    fulStarTsMsb(0),
+    fulStarTsMid(0),
+    fulGdpbTsFullLast(0),
+    fulStarTsFullLast(0),
+    fuStarTokenLast(0),
+    fuStarDaqCmdLast(0),
+    fuStarTrigCmdLast(0),
+    fbGet4v20( kFALSE ),
+    fbPulserMode( kFALSE ),
+    fuPulserGdpb(0),
+    fuPulserFee(0),
+    fhTimeDiffPulserChosenFee(),
+    fhTimeRmsPulserChosenFee(NULL),
+    fhTimeRmsPulserChosenChPairs(NULL),
+    fdLastRmsUpdateTime(-1)
 {
 }
 
@@ -142,6 +207,10 @@ Bool_t CbmTSMonitorTofStar::ReInitContainers()
 
   fNrOfChannelsPerGet4 = fUnpackPar->GetNrOfChannelsPerGet4();
   LOG(INFO) << "Nr. of channels per GET4: " << fNrOfChannelsPerGet4
+               << FairLogger::endl;
+               
+  fNrOfChannelsPerFeet = fNrOfGet4PerFeb * fNrOfChannelsPerGet4;
+  LOG(INFO) << "Nr. of channels per FEET: " << fNrOfChannelsPerFeet
                << FairLogger::endl;
 
   fNrOfGet4 = fNrOfGdpbs * fNrOfFebsPerGdpb * fNrOfGet4PerFeb;
@@ -312,6 +381,22 @@ void CbmTSMonitorTofStar::CreateHistograms()
     server->Register("/TofRaw", fHM->H2(name.Data()));
 #endif
 
+   // Prepare storing of hit time info
+   if( fUnpackPar->IsChannelRateEnabled() || fbPulserMode )
+   {
+      fTsLastHit.resize( fNrOfGdpbs );
+      for( UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; uGdpb++)
+      {
+         fTsLastHit[ uGdpb ].resize( fNrOfGet4PerGdpb );
+         for( UInt_t uGet4 = 0; uGet4 < fNrOfGet4PerGdpb; uGet4++)
+         {
+            fTsLastHit[ uGdpb ][ uGet4 ].resize( fNrOfChannelsPerGet4 );
+            for( UInt_t uCh = 0; uCh < fNrOfChannelsPerGet4; uCh++)
+               fTsLastHit[ uGdpb ][ uGet4 ][ uCh ] = -1;
+         } // for( UInt_t uGet4 = 0; uGet4 < fNrOfGet4PerGdpb; uGet4++)
+      } // for( UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; uGdpb++)
+   } // if( fUnpackPar->IsChannelRateEnabled() || fbPulserMode )
+
   if (fUnpackPar->IsChannelRateEnabled()) {
     for (UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; uGdpb++) {
       const Int_t iNbBinsRate = 82;
@@ -334,6 +419,55 @@ void CbmTSMonitorTofStar::CreateHistograms()
       LOG(INFO) << "Adding the rate histos" << FairLogger::endl;
     } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
   }
+  
+  if( fbPulserMode )
+  {
+      // Full Fee time difference test
+      UInt_t uNbBinsDt = kuNbBinsDt + 1; // To account for extra bin due to shift by 1/2 bin of both ranges
+      for( UInt_t uChanFeeA = 0; uChanFeeA < fNrOfChannelsPerFeet; uChanFeeA++)
+      {
+         for( UInt_t uChanFeeB = uChanFeeA + 1; uChanFeeB < fNrOfChannelsPerFeet; uChanFeeB++)
+         {
+            fhTimeDiffPulserChosenFee.push_back( 
+               new TH1I(
+                  Form("hTimeDiffPulserChosenFee_%03u_%03u", uChanFeeA, uChanFeeB),
+                  Form("Time difference for channels %03u and %03u in chosen Fee; DeltaT [ps]; Counts",
+                        uChanFeeA, uChanFeeB),
+                  uNbBinsDt, dMinDt, dMaxDt) );
+         } // for any unique pair of channel in chosen Fee
+      } // for( UInt_t uChanFeeA = 0; uChanFeeA < kuNbChanFee; uChanFeeA++)
+      
+      // Selected channels test
+      for( UInt_t uChan = 0; uChan < kuNbChanTest - 1; uChan++)
+      {
+         fhTimeDiffPulserChosenChPairs[uChan]  = new TH1I(
+               Form("hTimeDiffPulserChosenChPairs_%03u_%03u", fuPulserChan[uChan], fuPulserChan[uChan+1]),
+               Form("Time difference for selected channels %03u and %03u in the first gDPB; DeltaT [ps]; Counts",
+                     fuPulserChan[uChan], fuPulserChan[uChan+1]),
+               uNbBinsDt, dMinDt, dMaxDt);
+      } // for( UInt_t uChan = 0; uChan < kuNbChanTest - 1; uChan++)
+      
+      name = "hTimeRmsFeePulserChosen";
+      fhTimeRmsPulserChosenFee = new TH2D( name.Data(),
+            "Time difference RMS for any channels pair in chosen Fee; Ch A; Ch B; RMS [ps]",
+            fNrOfChannelsPerFeet - 1, -0.5, fNrOfChannelsPerFeet - 1.5,
+            fNrOfChannelsPerFeet - 1,  0.5, fNrOfChannelsPerFeet - 0.5);
+      fHM->Add( name.Data(), fhTimeRmsPulserChosenFee);
+#ifdef USE_HTTP_SERVER
+      if (server)
+        server->Register("/TofRaw", fHM->H2( name.Data() ) );
+#endif
+
+      name = "hTimeRmsPairsPulserChosenCh";
+      fhTimeRmsPulserChosenChPairs = new TH1D( name.Data(),
+            "Time difference RMS for chosen channels pairs; Pair # ; [ps]",
+            kuNbChanTest - 1, -0.5, kuNbChanTest - 1.5);
+      fHM->Add( name.Data(), fhTimeRmsPulserChosenChPairs);
+#ifdef USE_HTTP_SERVER
+      if (server)
+        server->Register("/TofRaw", fHM->H1( name.Data() ) );
+#endif
+  } // if( fbPulserMode )
 
   for (UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; uGdpb++) {
     name = Form("Raw_Tot_gDPB_%02u", uGdpb);
@@ -423,7 +557,7 @@ void CbmTSMonitorTofStar::CreateHistograms()
     server->Restrict("/Reset_All_TOF", "allow=admin");
 #endif
 
-  /** Create summary Canvases for CERN 2016 **/
+  /** Create summary Canvases for STAR 2017 **/
   Double_t w = 10;
   Double_t h = 10;
   TCanvas* cSummary = new TCanvas("cSummary", "gDPB Monitoring Summary", w, h);
@@ -453,9 +587,10 @@ void CbmTSMonitorTofStar::CreateHistograms()
 
   cSummary->cd(6);
   hSpill->Draw("col text");
+  /*****************************/
   
   
-  /** Create FEET rates Canvase for CERN 2016 **/
+  /** Create FEET rates Canvase for STAR 2017 **/
   TCanvas* cFeeRates = new TCanvas("cFeeRates", "gDPB Monitoring FEET rates", w, h);
   cFeeRates->Divide(fNrOfFebsPerGdpb, fNrOfGdpbs );
   
@@ -471,8 +606,9 @@ void CbmTSMonitorTofStar::CreateHistograms()
       histPnt->Draw();
     } // for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; ++uFeet )
   } // for( UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; ++uGdpb )
+  /*****************************/
    
-  /** Recovers/Create Ms Size Canvase for CERN 2016 **/  
+  /** Recovers/Create Ms Size Canvase for STAR 2017 **/  
   // Try to recover canvas in case it was created already by another monitor
   // If not existing, create it
   fcMsSizeAll = dynamic_cast<TCanvas *>( gROOT->FindObject( "cMsSizeAll" ) );
@@ -485,7 +621,7 @@ void CbmTSMonitorTofStar::CreateHistograms()
       else LOG(INFO) << "Recovered MS size canvas in TOF monitor" << FairLogger::endl; 
   /*****************************/
 
-
+  /** Store pointers to histograms for STAR 2017 **/  
   fHistMessType = fHM->H1("hMessageType");
   fHistSysMessType = fHM->H1("hSysMessType");
   fHistGet4MessType = fHM->H2("hGet4MessType");
@@ -541,17 +677,17 @@ Bool_t CbmTSMonitorTofStar::DoUnpack(const fles::Timeslice& ts,
   // CbmHistManager) compared to using the pointer directly
   // So get the pointer once outside the loop and use it in the loop
 
-  TString sMsSzName = Form("MsSz_link_%02u", component);
+  TString sMsSzName = Form("MsSz_link_%02lu", component);
   TH1* hMsSz = NULL;
   TProfile* hMsSzTime = NULL;
   if (fHM->Exists(sMsSzName.Data())) {
     hMsSz = fHM->H1(sMsSzName.Data());
-    sMsSzName = Form("MsSzTime_link_%02u", component);
+    sMsSzName = Form("MsSzTime_link_%02lu", component);
     hMsSzTime = fHM->P1(sMsSzName.Data());
   } // if( fHM->Exists(sMsSzName.Data() ) )
   else {
     TString sMsSzTitle = Form(
-        "Size of MS for gDPB of link %02u; Ms Size [bytes]", component);
+        "Size of MS for gDPB of link %02lu; Ms Size [bytes]", component);
     fHM->Add(sMsSzName.Data(),
         new TH1F(sMsSzName.Data(), sMsSzTitle.Data(), 160000, 0., 20000.));
     hMsSz = fHM->H1(sMsSzName.Data());
@@ -559,12 +695,12 @@ Bool_t CbmTSMonitorTofStar::DoUnpack(const fles::Timeslice& ts,
     if (server)
       server->Register("/FlibRaw", hMsSz);
 #endif
-    sMsSzName = Form("MsSzTime_link_%02u", component);
+    sMsSzName = Form("MsSzTime_link_%02lu", component);
     sMsSzTitle = Form(
-        "Size of MS vs time for gDPB of link %02u; Time[s] ; Ms Size [bytes]",
+        "Size of MS vs time for gDPB of link %02lu; Time[s] ; Ms Size [bytes]",
         component);
     fHM->Add(sMsSzName.Data(),
-        new TProfile(sMsSzName.Data(), sMsSzTitle.Data(), 15000, 0., 300.));
+        new TProfile(sMsSzName.Data(), sMsSzTitle.Data(), 180000, 0., 3600.));
     hMsSzTime = fHM->P1(sMsSzName.Data());
 #ifdef USE_HTTP_SERVER
     if (server)
@@ -584,8 +720,9 @@ Bool_t CbmTSMonitorTofStar::DoUnpack(const fles::Timeslice& ts,
   fiCountsLastTs = 0;
 
   Int_t messageType = -111;
+  Double_t dTsStartTime = -1;
   // Loop over microslices
-  for (size_t m = 0; m < ts.num_microslices(component); ++m) {
+  for (size_t m = 0; m < ts.num_microslices(component); ++m) {     
     if (fuMsAcceptsPercent < m)
       continue;
 
@@ -600,6 +737,9 @@ Bool_t CbmTSMonitorTofStar::DoUnpack(const fles::Timeslice& ts,
     if (size > 0)
       LOG(DEBUG) << "Microslice: " << msDescriptor.idx << " has size: " << size
                     << FairLogger::endl;
+
+    if( 0 == m )
+      dTsStartTime = (1e-9) * static_cast<double>(msDescriptor.idx);
 
     if( fdStartTimeMsSz < 0 )
       fdStartTimeMsSz = (1e-9) * static_cast<double>(msDescriptor.idx);
@@ -782,6 +922,32 @@ Bool_t CbmTSMonitorTofStar::DoUnpack(const fles::Timeslice& ts,
       else fiTsUnderOff = 0;
   } // else if( fbSpillOn  )
 
+   if( kTRUE == fbPulserMode )
+   {
+      // Update RMS plots only every 10s in data
+      if( 10.0 < dTsStartTime - fdLastRmsUpdateTime )
+      {
+         // Reset summary histograms for safety
+         fhTimeRmsPulserChosenFee->Reset();
+         fhTimeRmsPulserChosenChPairs->Reset();
+
+         UInt_t uHistoFeeIdx = 0;
+         for( UInt_t uChanFeeA = 0; uChanFeeA < fNrOfChannelsPerFeet; uChanFeeA++)
+         {
+            for( UInt_t uChanFeeB = uChanFeeA + 1; uChanFeeB < fNrOfChannelsPerFeet; uChanFeeB++)
+            {
+               fhTimeRmsPulserChosenFee->Fill(uChanFeeA, uChanFeeB, fhTimeDiffPulserChosenFee[uHistoFeeIdx]->GetRMS() );
+               uHistoFeeIdx++;
+            } // for( UInt_t uChanFeeB = uChanFeeA + 1; uChanFeeB < fNrOfChannelsPerFeet; uChanFeeB++)
+         } // for( UInt_t uChanFeeA = 0; uChanFeeA < fNrOfChannelsPerFeet; uChanFeeA++)
+         for( UInt_t uChan = 0; uChan < kuNbChanTest - 1; uChan++)
+         {
+            fhTimeRmsPulserChosenChPairs->Fill( uChan, fhTimeDiffPulserChosenChPairs[uChan]->GetRMS() );
+         } // for( UInt_t uChan = 0; uChan < kuNbChanTest - 1; uChan++)
+         fdLastRmsUpdateTime = dTsStartTime;
+      } // if( 10.0 < dTsStartTime - fdLastRmsUpdateTime )
+   } // if( kTRUE == fbPulserMode )
+
   return kTRUE;
 }
 
@@ -803,25 +969,20 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
     fChCount_gDPB[fGdpbNr]->Fill(channelNr);
 
     if (fUnpackPar->IsChannelRateEnabled()) {
-      // Check if at least one hit before in this gDPB
-      if (fTsLastHit.end() != fTsLastHit.find(fGdpbNr)) {
-        // Check if at least one hit before in this Get4
-        if (fTsLastHit[fGdpbNr].end() != fTsLastHit[fGdpbNr].find(fGet4Id)) {
-          // Check if at least one hit before in this channel
-          if (fTsLastHit[fGdpbNr][fGet4Id].end()
-              != fTsLastHit[fGdpbNr][fGet4Id].find(channel)) {
-            fChannelRate_gDPB[fGdpbNr]->Fill(
-                1e9
-                    / (mess.getMsgFullTimeD(curEpochGdpbGet4)
-                        - fTsLastHit[fGdpbNr][fGet4Id][channel]),
-                fGet4Id * fNrOfChannelsPerGet4 + channel);
-          } // if( fTsLastHit[gdpbId][get4Id].end() != fTsLastHit[gdpbId][get4Id].find( channel ) )
-        } // if( fTsLastHit[gdpbId].end() != fTsLastHit[gdpbId].find( get4Id ) )
-      } // if( fTsLastHit.end() != fTsLastHit.find( gdpbId ) )
+      // Check if at least one hit before in this channel
+      if( -1 < fTsLastHit[fGdpbNr][fGet4Id][channel] )
+      {
+         fChannelRate_gDPB[fGdpbNr]->Fill(
+             1e9 / (mess.getMsgFullTimeD(curEpochGdpbGet4)
+                     - fTsLastHit[fGdpbNr][fGet4Id][channel]),
+             fGet4Id * fNrOfChannelsPerGet4 + channel);
+      } // if( -1 < fTsLastHit[fGdpbNr][fGet4Id][channel] )
+    } // if( fUnpackPar->IsChannelRateEnabled() )
 
+   // Save last hist time if channel rate histos or pulser mode enabled
+   if( fUnpackPar->IsChannelRateEnabled() || fbPulserMode )
       fTsLastHit[fGdpbNr][fGet4Id][channel] = mess.getMsgFullTimeD(
           curEpochGdpbGet4);
-    } // if( fUnpackPar->IsChannelRateEnabled() )
 
     // In Run rate evolution
     if (fdStartTime < 0)
@@ -904,6 +1065,58 @@ void CbmTSMonitorTofStar::FillEpochInfo(ngdpb::Message mess)
   fCurrentEpochTime = mess.getMsgFullTime(epochNr);
   fNofEpochs++;
 
+   // Fill Pulser test histos if needed
+   if( fbPulserMode && 0 == (fGet4Id % fNrOfGet4PerFeb) // GET4 index in FEET
+         && fuPulserFee == (fGet4Nr / fNrOfGet4PerFeb)) // FEET index in full system
+   {
+      // Fill the time difference for all channels pairs in
+      // the chosen Fee
+      UInt_t uHistoFeeIdx = 0;
+      
+      UInt_t uOffsetChip = fuPulserFee * fNrOfGet4PerFeb;
+      for( UInt_t uChanFeeA = 0; uChanFeeA < fNrOfChannelsPerFeet; uChanFeeA++)
+      {
+         UInt_t uChipA = uChanFeeA / fNrOfChannelsPerGet4 + uOffsetChip;
+         UInt_t uChanA = uChanFeeA % fNrOfChannelsPerGet4;
+         
+         for( UInt_t uChanFeeB = uChanFeeA + 1; uChanFeeB < fNrOfChannelsPerFeet; uChanFeeB++)
+         {
+            UInt_t uChipB = uChanFeeB / fNrOfChannelsPerGet4 + uOffsetChip;
+            UInt_t uChanB = uChanFeeB % fNrOfChannelsPerGet4;
+            
+            Double_t dTimeDiff =
+                  fTsLastHit[ fuPulserGdpb ][ uChipB ][ uChanB ] 
+                - fTsLastHit[ fuPulserGdpb ][ uChipA ][ uChanA ];
+            if( ( 10.0 * dMinDt < dTimeDiff ) && ( dTimeDiff < 10.0 * dMaxDt ) &&
+                ( 0 < fTsLastHit[ fuPulserGdpb ][ uChipA ][ uChanA ] ) && 
+                ( 0 < fTsLastHit[ fuPulserGdpb ][ uChipB ][ uChanB ] ) )
+            {
+               fhTimeDiffPulserChosenFee[uHistoFeeIdx]->Fill( dTimeDiff );
+            } // if both channels have already 1 hit and these are not too far away
+            
+            uHistoFeeIdx++;
+         } // for( UInt_t uChanFeeB = uChanFeeA + 1; uChanFeeB < fNrOfChannelsPerFeet; uChanFeeB++)
+      } // for( UInt_t uChanFeeA = 0; uChanFeeA < fNrOfChannelsPerFeet; uChanFeeA++)
+
+      // Fill the time difference for the chosen channel pairs
+      for( UInt_t uChan = 0; uChan < kuNbChanTest - 1; uChan++)
+      {
+         UInt_t uChipA = fuPulserChan[ uChan     ] / fNrOfChannelsPerGet4;
+         UInt_t uChanA = fuPulserChan[ uChan     ] % fNrOfChannelsPerGet4;
+         UInt_t uChipB = fuPulserChan[ uChan + 1 ] / fNrOfChannelsPerGet4;
+         UInt_t uChanB = fuPulserChan[ uChan + 1 ] % fNrOfChannelsPerGet4;
+         
+         Double_t dTimeDiff =
+               fTsLastHit[0][uChipB][ uChanB ] - fTsLastHit[0][uChipA][ uChanA ];
+         if( ( 10.0 * dMinDt < dTimeDiff ) && ( dTimeDiff < 10.0 * dMaxDt ) &&
+             ( 0 < fTsLastHit[0][uChipA][ uChanA ] ) && 
+             ( 0 < fTsLastHit[0][uChipB][ uChanB ] ) )
+         {
+            fhTimeDiffPulserChosenChPairs[uChan]->Fill( dTimeDiff );
+         } // if both channels have already 1 hit and these are not too far away
+      } // for( UInt_t uChan = 0; uChan < kuNbChanTest - 1; uChan++)
+   } // if( fbPulserMode && First GET4 on chosen FEET )
+   
   /*
    LOG(DEBUG) << "Epoch message "
    << fNofEpochs << ", epoch " << static_cast<Int_t>(fCurrentEpoch[gdpbId][get4Id])
@@ -987,7 +1200,7 @@ void CbmTSMonitorTofStar::PrintSysInfo(ngdpb::Message mess)
       LOG(INFO) << "Closy synchronization error" << FairLogger::endl;
       break;
     case ngdpb::SYSMSG_TS156_SYNC:
-      LOG(DEBUG) << "156.25MHz timestamp reset" << FairLogger::endl;
+      LOG(DEBUG) << "160.00 MHz timestamp reset" << FairLogger::endl;
       break;
     case ngdpb::SYSMSG_GDPB_UNKWN:
       LOG(INFO) << "Unknown GET4 message, data: " << std::hex << std::setw(8)
@@ -1183,6 +1396,30 @@ void CbmTSMonitorTofStar::SetRunStart( Int_t dateIn, Int_t timeIn, Int_t iBinSiz
    fiBinSizeDatePlots    = iBinSize;
    
    LOG(INFO) << "Assigned new TOF Run Start Date-Time: " << fRunStartDateTime->AsString() << FairLogger::endl;
+}
+
+void CbmTSMonitorTofStar::SetPulserChans(
+      UInt_t inPulserChanA, UInt_t inPulserChanB, UInt_t inPulserChanC, UInt_t inPulserChanD,
+      UInt_t inPulserChanE, UInt_t inPulserChanF, UInt_t inPulserChanG, UInt_t inPulserChanH,
+      UInt_t inPulserChanI, UInt_t inPulserChanJ, UInt_t inPulserChanK, UInt_t inPulserChanL,
+      UInt_t inPulserChanM, UInt_t inPulserChanN, UInt_t inPulserChanO, UInt_t inPulserChanP )
+{
+   fuPulserChan[ 0] = inPulserChanA;
+   fuPulserChan[ 1] = inPulserChanB;
+   fuPulserChan[ 2] = inPulserChanC;
+   fuPulserChan[ 3] = inPulserChanD;
+   fuPulserChan[ 4] = inPulserChanE;
+   fuPulserChan[ 5] = inPulserChanF;
+   fuPulserChan[ 6] = inPulserChanG;
+   fuPulserChan[ 7] = inPulserChanH;
+   fuPulserChan[ 8] = inPulserChanI;
+   fuPulserChan[ 9] = inPulserChanJ;
+   fuPulserChan[10] = inPulserChanK;
+   fuPulserChan[11] = inPulserChanL;
+   fuPulserChan[12] = inPulserChanM;
+   fuPulserChan[13] = inPulserChanN;
+   fuPulserChan[14] = inPulserChanO;
+   fuPulserChan[15] = inPulserChanP;
 }
 
 ClassImp(CbmTSMonitorTofStar)
