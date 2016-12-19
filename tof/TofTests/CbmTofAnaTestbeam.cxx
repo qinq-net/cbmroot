@@ -1768,9 +1768,9 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 		     BSel[0]=kTRUE;
 		   } else { // request presence of coincident fiMrpcSel2 hit!
 		     Double_t dzscal=1.;
-		     if(fEnableMatchPosScaling) dzscal=zPos1/pHit2->GetZ();
-		     Double_t xPos2=dzscal*pHit2->GetX();
-		     Double_t yPos2=dzscal*pHit2->GetY();
+		     Double_t xPos2=pHit2->GetX();
+		     Double_t yPos2=pHit2->GetY();
+		     Double_t zPos2=pHit2->GetZ();
 		     Double_t tof2 =pHit2->GetTime();
 		     Double_t dTcor=0.;
 		     Double_t xPos3B=0.;
@@ -1784,66 +1784,69 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 
 		     for( Int_t iHitInd3 = 0; iHitInd3 < iNbTofHits; iHitInd3++) 
 		     {
-		     LOG(DEBUG2)<<Form("inspect %d. Sel2, Ind %d, Ind2 %d ",
+		       LOG(DEBUG2)<<Form("inspect %d. Sel2, Ind %d, Ind2 %d ",
 					 iHitInd3,iHitInd,iHitInd2)
+				  <<FairLogger::endl;
+
+		       //if(iHitInd3 != iHitInd && iHitInd3 != iHitInd2)
+		       if(iHitInd3 != iHitInd2)
+		       {
+		         pHit3 = (CbmTofHit*) fTofHitsColl->At( iHitInd3 );
+		         if(pHit3==NULL) continue;
+		         Int_t iDetId3 = (pHit3->GetAddress() & DetMask);
+		         Int_t iChId3  = pHit3->GetAddress();
+		         fChannelInfo3 = fDigiPar->GetCell( iChId3 );
+		         if(NULL == fChannelInfo3){
+			   LOG(DEBUG) << "Invalid Channel Pointer for ChId3 "
+			  	      << Form(" 0x%08x ",iChId3)
+				      <<FairLogger::endl;
+			   continue;
+		         }
+		         LOG(DEBUG2)<<Form("CbmTofAnaTestbeam:FillHisto: inspect %d. Sel2 0x%08x",iHitInd3,iDetId3)
 				    <<FairLogger::endl;
 
-		     //if(iHitInd3 != iHitInd && iHitInd3 != iHitInd2)
-		     if(iHitInd3 != iHitInd2)
-		     {
-		       pHit3 = (CbmTofHit*) fTofHitsColl->At( iHitInd3 );
-		       if(pHit3==NULL) continue;
-		       Int_t iDetId3 = (pHit3->GetAddress() & DetMask);
-		       Int_t iChId3  = pHit3->GetAddress();
-		       fChannelInfo3 = fDigiPar->GetCell( iChId3 );
-		       if(NULL == fChannelInfo3){
-			 LOG(DEBUG) << "CbmTofAnaTestbeam::FillHistos: Invalid Channel Pointer for ChId3 "
-				    << Form(" 0x%08x ",iChId3)
-				    <<FairLogger::endl;
-			 continue;
-		       }
-		       LOG(DEBUG2)<<Form("CbmTofAnaTestbeam:FillHisto: inspect %d. Sel2 0x%08x",iHitInd3,iDetId3)
-				    <<FairLogger::endl;
-
-		       if( fiMrpcSel2Addr == iDetId3 ) { //CbmTofAddress::GetSmType( iDetId3 )){   // Sel2 RPC hit
-			 LOG(DEBUG1)<<Form("CbmTofAnaTestbeam:FillHisto: found Sel2 0x%08x",fiMrpcSel2Addr)
-				    <<FairLogger::endl;
-			 if(TMath::Abs(CbmTofAddress::GetChannelId( iChId3 ) - fdChS2Sel) < fdDChS2Sel) {
-			   /*TGeoNode *fNode3= */       // prepare global->local trafo
+		         if( fiMrpcSel2Addr == iDetId3 ) { //CbmTofAddress::GetSmType( iDetId3 )){   // Sel2 RPC hit
+			   LOG(DEBUG1)<<Form("found Sel2 0x%08x, z-info: %7.1f, %7.1f",fiMrpcSel2Addr,dzscal,zPos1)
+			 	      <<FairLogger::endl;
+			   if(TMath::Abs(CbmTofAddress::GetChannelId( iChId3 ) - fdChS2Sel) < fdDChS2Sel) {
+			     /*TGeoNode *fNode3= */       // prepare global->local trafo
 			     gGeoManager->FindNode(fChannelInfo3->GetX(),fChannelInfo3->GetY(),fChannelInfo3->GetZ());
-			   hitpos3[0]=pHit3->GetX();
-			   hitpos3[1]=pHit3->GetY();
-			   hitpos3[2]=pHit3->GetZ(); 
-			   /*TGeoNode* cNode3=*/ gGeoManager->GetCurrentNode();
-			   gGeoManager->MasterToLocal(hitpos3, hitpos3_local);
-			   if( TMath::Abs(hitpos3_local[1]-fdPosYS2SelOff)<fdPosYS2Sel*fChannelInfo3->GetSizey() ){
-			     if(fEnableMatchPosScaling) dzscal=zPos1/pHit3->GetZ();
-			     Double_t xPos3=dzscal*pHit3->GetX();
-			     Double_t yPos3=dzscal*pHit3->GetY();
-			     Double_t tof3 =pHit3->GetTime();	
+			     hitpos3[0]=pHit3->GetX();
+			     hitpos3[1]=pHit3->GetY();
+			     hitpos3[2]=pHit3->GetZ(); 
+			     /*TGeoNode* cNode3=*/ gGeoManager->GetCurrentNode();
+			     gGeoManager->MasterToLocal(hitpos3, hitpos3_local);
+			     if( TMath::Abs(hitpos3_local[1]-fdPosYS2SelOff)<fdPosYS2Sel*fChannelInfo3->GetSizey() ){
+			       if(fEnableMatchPosScaling) dzscal=zPos2/pHit3->GetZ();
+			       Double_t xPos3=dzscal*pHit3->GetX();
+			       Double_t yPos3=dzscal*pHit3->GetY();
+			       Double_t tof3 =pHit3->GetTime();	
 	       
-			     Double_t Chi2Match =TMath::Power((xPos3-xPos2)/fdDXWidth,2.)
-	                        +TMath::Power((yPos3-yPos2)/fdDYWidth,2.)
-	                        +TMath::Power((tof3-tof2-dTcor-fdSel2TOff)/fdDTWidth,2.);
+			       Double_t Chi2Match=TMath::Power((xPos3-xPos2)/fdDXWidth,2.)
+	                                         +TMath::Power((yPos3-yPos2)/fdDYWidth,2.)
+	                                         +TMath::Power((tof3-tof2-dTcor-fdSel2TOff)/fdDTWidth,2.);
 
-			     Chi2Match /= 3;
-			     LOG(DEBUG1)<<Form("CbmTofAnaTestbeam:FillHisto: valid Sel2 0x%08x with Chi2 %7.1f, %7.1f",
-					       fiMrpcSel2Addr,Chi2Match,Chi2Max)
-				    <<FairLogger::endl;
+			       Chi2Match /= 3;
+			       LOG(DEBUG1)<<Form("valid Sel2 0x%08x with Chi2 %7.1f, %7.1f, %7.1f, %7.1f, %7.1f, %7.1f",
+						 fiMrpcSel2Addr,Chi2Match,Chi2Max,dzscal,xPos3,yPos3,tof3)
+				          <<FairLogger::endl;
 			     
-			     if (Chi2Match < Chi2Max) {
-			       xPos3B=xPos3;
-			       yPos3B=yPos3;
-			       tof3B=tof3;
-			       Chi2Max = Chi2Match;
-			       BSel[0] = kTRUE;
-			       pHitSel2= pHit3;
-			       fChannelInfoSel2=fChannelInfo3;
+			       if (Chi2Match < Chi2Max) {
+			         xPos3B=xPos3;
+			         yPos3B=yPos3;
+			         tof3B=tof3;
+			         Chi2Max = Chi2Match;
+			         BSel[0] = kTRUE;
+			         pHitSel2= pHit3;
+			         fChannelInfoSel2=fChannelInfo3;
+			         LOG(DEBUG)<<Form("CbmTofAnaTestbeam:FillHisto: better Sel2 0x%08x with Chi2 %7.1f, x %7.1f, Deltax %7.1f",
+						   fiMrpcSel2Addr,Chi2Max,xPos3B,xPos3B-xPos2)
+				           <<FairLogger::endl;
+			       }
 			     }
 			   }
-			 }
+		         }
 		       }
-		     }
 		     } // loop over third hit end
 		 
 		     if(BSel[0]){
