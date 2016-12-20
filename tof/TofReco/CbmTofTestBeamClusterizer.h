@@ -35,6 +35,7 @@ class TTrbHeader;
 
 // ROOT Classes and includes
 class TClonesArray;
+class TF1;
 class TH1;
 class TH2;
 class TString;
@@ -134,6 +135,10 @@ class CbmTofTestBeamClusterizer : public FairTask
       inline void SetEnableMatchPosScaling(Bool_t bval) { fEnableMatchPosScaling = bval; }
       inline void SetEnableAvWalk(Bool_t bval)          { fEnableAvWalk = bval; }
       inline void SetPs2Ns(Bool_t bval)                 { fbPs2Ns = bval; }
+
+      //static Double_t  f1_xboxe(double *x, double *par); // Fit function 
+      virtual void     fit_ybox(const char *hname);        // Fit
+      virtual void     fit_ybox(TH1 *h, Double_t dy);      // Fit
 
    protected:
 

@@ -1097,10 +1097,10 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 				     20, 0.5, 20.5, 100, 0., DTMAX/5.);
      fhTot0DT04D4best = new TH2F( Form("hTot0DT04D4best"),
 	 			     Form("time - Tot correlation; ln TOT0 ; #DeltaT [ns]"),
-				     100, -2.5, 2.5, 100, -DTMAX, DTMAX);  
+				     100, -2.5, 3.0, 100, -DTMAX, DTMAX);  
      fhTot4DT04D4best = new TH2F( Form("hTot4DT04D4best"),
 	 			     Form("time - Tot correlation; ln TOT4 ; #DeltaT [ns]"),
-				     100, -2.5, 2.5, 100, -DTMAX, DTMAX);  
+				     100, -2.5, 3.0, 100, -DTMAX, DTMAX);  
 
      fhX0DT04D4best = new TH2F( Form("hX0DT04D4best"),Form("time - position correlation; #Delta x [cm]; #DeltaT [ns]"),
 			       100, -50., 50., 100, -DTMAX, DTMAX); 

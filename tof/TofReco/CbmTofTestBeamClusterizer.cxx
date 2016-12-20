@@ -38,6 +38,7 @@
 #include "TMath.h"
 #include "TLine.h"
 #include "TRandom3.h"
+#include "TF1.h"
 #include "TF2.h"
 #include "TVector3.h"
 #include "TH1.h"
@@ -405,8 +406,8 @@ InitStatus CbmTofTestBeamClusterizer::Init()
 
 void CbmTofTestBeamClusterizer::SetParContainers()
 {
-   LOG(INFO)<<" CbmTofTestBeamClusterizer::SetParContainers => Get the digi parameters for tof"<<FairLogger::endl;
-   LOG(WARNING)<<" CbmTofTestBeamClusterizer::SetParContainers: Return without action"<<FairLogger::endl;
+   LOG(INFO)<<"=> Get the digi parameters for tof"<<FairLogger::endl;
+   LOG(WARNING)<<"Return without action"<<FairLogger::endl;
    return;
    // Get Base Container
    FairRunAna* ana = FairRunAna::Instance();
@@ -414,7 +415,7 @@ void CbmTofTestBeamClusterizer::SetParContainers()
 
    fDigiPar = (CbmTofDigiPar*) (rtdb->getContainer("CbmTofDigiPar"));
 
-   LOG(INFO)<<"  CbmTofTestBeamClusterizer::SetParContainers found " 
+   LOG(INFO)<<"found " 
             << fDigiPar->GetNrOfModules() << " cells " <<FairLogger::endl;
    fDigiBdfPar = (CbmTofDigiBdfPar*)
               (rtdb->getContainer("CbmTofDigiBdfPar"));
@@ -2226,8 +2227,9 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
      }
      
      //     if(-1<fCalSmAddr && fcalType != iSmAddr) continue;
-
+     TH2      *htempPos      = NULL;
      TProfile *htempPos_pfx  = NULL;  
+     TH1      *htempPos_py   = NULL;
      TProfile *htempTOff_pfx = NULL;
      TH1      *htempTOff_px  = NULL;
      TProfile *hAvPos_pfx    = NULL;  
@@ -2239,7 +2241,10 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
      TH1      *htempTot_Off  = NULL; 
 
      if(-1<fCalSel){
-       htempPos_pfx  = fhTRpcCluPosition[iDetIndx][fCalSel]->ProfileX("_pfx",1,fhTRpcCluPosition[iDetIndx][fCalSel]->GetNbinsY());
+       htempPos      = fhRpcCluPosition[iDetIndx]; // use untriggered distributions for position  
+       htempPos_pfx  = fhRpcCluPosition[iDetIndx]->ProfileX("_pfx",1,fhRpcCluPosition[iDetIndx]->GetNbinsY());
+       //htempPos      = fhTRpcCluPosition[iDetIndx][fCalSel];
+       //htempPos_pfx  = fhTRpcCluPosition[iDetIndx][fCalSel]->ProfileX("_pfx",1,fhTRpcCluPosition[iDetIndx][fCalSel]->GetNbinsY());
        htempTOff     = fhTRpcCluTOff[iDetIndx][fCalSel]; // -> Comment to remove warning because set but never used
        htempTOff_pfx = htempTOff->ProfileX("_pfx",1,fhTRpcCluTOff[iDetIndx][fCalSel]->GetNbinsY());
        htempTOff_px  = htempTOff->ProjectionX("_px",1,fhTRpcCluTOff[iDetIndx][fCalSel]->GetNbinsY());
@@ -2249,6 +2254,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
        hAvTOff_pfx   = fhTSmCluTOff[iSmType][fCalSel]->ProfileX("_pfx",1,fhTSmCluTOff[iSmType][fCalSel]->GetNbinsY(),"s");
      }else  // all triggers
      {
+       htempPos      = fhRpcCluPosition[iDetIndx];
        htempTot      = fhRpcCluTot[iDetIndx];
        htempTot_pfx  = fhRpcCluTot[iDetIndx]->ProfileX("_pfx",1,fhRpcCluTot[iDetIndx]->GetNbinsY());
        hAvPos_pfx    = fhSmCluPosition[iSmType]->ProfileX("_pfx",1,fhSmCluPosition[iSmType]->GetNbinsY());
@@ -2655,7 +2661,39 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
          */
          for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) // update Offset and Gain 
          {
-          Double_t YMean=((TProfile *)htempPos_pfx)->GetBinContent(iCh+1);  //nh +1 empirical(?)
+          Double_t YMean=((TProfile *)htempPos_pfx)->GetBinContent(iCh+1);  //set default
+	  htempPos_py=htempPos->ProjectionY(Form("%s_py%02d",htempPos->GetName(),iCh),iCh+1,iCh+1);
+	  const Double_t YFITMIN=500.;
+	  if(htempPos_py->GetEntries() > YFITMIN) {
+	    LOG(DEBUG1)<<Form("Determine YMean in %s of channel %d by fit to %d entries",
+			    htempPos->GetName(),iCh,(Int_t)htempPos_py->GetEntries()) 
+		       <<FairLogger::endl;
+	    CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh);
+	    Int_t iChId = fTofId->SetDetectorInfo( xDetInfo );
+	    fChannelInfo = fDigiPar->GetCell( iChId );
+	    if(NULL == fChannelInfo){
+	      LOG(WARNING)<<Form("invalid ChannelInfo for 0x%08x",iChId)<<FairLogger::endl;
+	      continue;
+	    }
+            fit_ybox(htempPos_py,0.5*fChannelInfo->GetSizey());
+	    TF1 *ff=htempPos_py->GetFunction("YBox");
+	    if(NULL != ff){              
+              LOG(INFO) << "FRes YBox "<<htempPos_py->GetEntries()<<" entries in "<<htempPos_py->GetName()
+			<<", chi2 = "<<ff->GetChisquare()
+			<< Form(", striplen (nom %5.2f): %7.2f +/- %5.2f, pos res %5.2f +/- %5.2f at y_cen = %5.2f +/- %5.2f",
+				fChannelInfo->GetSizey(),
+				2.*ff->GetParameter(1),2.*ff->GetParError(1),
+				ff->GetParameter(2),ff->GetParError(2),
+				ff->GetParameter(3),ff->GetParError(3))
+			<< FairLogger::endl;	    
+	      if( TMath::Abs(fChannelInfo->GetSizey()-2.*ff->GetParameter(1))/fChannelInfo->GetSizey()<0.2 ) 
+		//	 &&  ff->GetChisquare() < 500.)   //FIXME - constants!
+	      {                  
+		YMean=ff->GetParameter(3);
+	      }
+	    }
+	  } 
+                   
           Double_t TMean=((TProfile *)htempTOff_pfx)->GetBinContent(iCh+1);
           Double_t dTYOff=YMean/fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc) ;
 
@@ -3585,7 +3623,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
             {
                Int_t iNbCh = fDigiBdfPar->GetNbChan( iSmType, iRpc );
                Int_t iChType = fDigiBdfPar->GetChanType( iSmType, iRpc );
-               LOG(DEBUG2)<<"CbmTofTestBeamClusterizer::BuildClusters: RPC - Loop  "
+               LOG(DEBUG2)<<"RPC - Loop  "
                          << Form(" %3d %3d %3d %3d ",iSmType,iSm,iRpc,iChType)
                          <<FairLogger::endl;
                fviClusterMul[iSmType][iSm][iRpc]=0; 
@@ -3605,7 +3643,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 //                  dLastPosX = 0.0; // -> Comment to remove warning because set but never used
                   dLastPosY = 0.0;
                   dLastTime = 0.0;
-                  LOG(DEBUG2)<<"CbmTofTestBeamClusterizer::BuildClusters: ChanOrient "
+                  LOG(DEBUG2)<<"ChanOrient "
                              << Form(" %3d %3d %3d %3d %3d ",iSmType,iSm,iRpc,fDigiBdfPar->GetChanOrient( iSmType, iRpc ),iNbCh)
                              <<FairLogger::endl;
 
@@ -3618,7 +3656,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                         // Vertical strips => Y comes from bottom top time difference
                         for( Int_t iCh = 0; iCh < iNbCh; iCh++ )
                         {
-                          LOG(DEBUG3)<<"CbmTofTestBeamClusterizer::BuildClusters: VDigisize "
+                          LOG(DEBUG3)<<"VDigisize "
                              << Form(" T %3d Sm %3d R %3d Ch %3d Size %3lu ",
                                 iSmType,iSm,iRpc,iCh,fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size())
                              <<FairLogger::endl;
@@ -3634,7 +3672,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                                  // Not one Digi of each end!
                                  fiNbSameSide++;
 				 if(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size()>2) {
-				   LOG(DEBUG) << "CbmTofTestBeamClusterizer::BuildClusters: SameSide Digis! on "
+				   LOG(DEBUG) << "SameSide Digis! on "
 					     << iSmType<<iSm<<iRpc<<iCh<<", Times: "
 					      <<Form("%f",(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0])->GetTime())
 					      << ", "<<Form("%f",(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][1])->GetTime())
@@ -3644,7 +3682,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 					     <<FairLogger::endl;
 				   if (     fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][2]->GetSide() 
 					 == fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0]->GetSide() ) {
-				     LOG(DEBUG) << "CbmTofTestBeamClusterizer::BuildClusters: 3 consecutive SameSide Digis! on "
+				     LOG(DEBUG) << "3 consecutive SameSide Digis! on "
 					       << iSmType<<iSm<<iRpc<<iCh<<", Times: "
 					       <<   (fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0])->GetTime()
 					       << ", "<<(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][1])->GetTime()
@@ -3666,7 +3704,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 				     else 
 				       {
 					 LOG(WARNING) 
-					   << Form("CbmTofTestBeamClusterizer::BuildClusters: Ev %8.0f, digis not properly time ordered, TSRCS %d%d%d%d%d ",
+					   << Form("Ev %8.0f, digis not properly time ordered, TSRCS %d%d%d%d%d ",
 						   fdEvent,iSmType,iSm,iRpc,iCh,(Int_t)fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0]->GetSide())
 					   << FairLogger::endl;
 				         fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
@@ -3674,7 +3712,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 				       }
 				   }
 				 }else{
-				   LOG(DEBUG2)<<" SameSide Erase fStor entries(d) "<<iSmType<<", SR "<<iSm*iNbRpc+iRpc<<", Ch"<<iCh
+				   LOG(DEBUG2)<<"SameSide Erase fStor entries(d) "<<iSmType<<", SR "<<iSm*iNbRpc+iRpc<<", Ch"<<iCh
                                               <<FairLogger::endl;
 				   fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
 				   fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
@@ -3683,7 +3721,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                                  continue;  
                               }
 
-                              LOG(DEBUG2) << "CbmTofTestBeamClusterizer::BuildClusters: digis processing for " 
+                              LOG(DEBUG2) << "digis processing for " 
                                           << Form(" SmT %3d Sm %3d Rpc %3d Ch %3d # %3lu ",iSmType,iSm,iRpc,iCh,
                                                   fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size())
                                             <<FairLogger::endl;
@@ -3996,9 +4034,8 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                               } // if( 0 < iNbChanInHit)
                                  else
                                  {
-                                     LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::BuildClusters: "
-                                               <<Form("1.Hit on channel %d, time: %f",iCh,dTime) 
-                                               <<FairLogger::endl;
+                                     LOG(DEBUG1)<<Form("1.Hit on channel %d, time: %f",iCh,dTime) 
+						<<FairLogger::endl;
 
                                     // first fired strip in this RPC
                                     dWeightedTime = dTime*dTotS;
@@ -4041,14 +4078,14 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                            fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].clear();
                            fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].clear();
                         } // for( Int_t iCh = 0; iCh < iNbCh; iCh++ )
-			LOG(DEBUG2)<<"CbmTofTestBeamClusterizer::BuildClusters: finished V-RPC"
+			LOG(DEBUG2)<<"finished V-RPC"
 				   << Form(" %3d %3d %3d %d %f %fx",iSmType,iSm,iRpc,fTofHitsColl->GetEntries(),dLastPosX,dLastPosY)
 				   <<FairLogger::endl;
                      } // else of if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
                } // if( 0 == iChType)
                   else
                   {
-                     LOG(ERROR)<<"CbmTofTestBeamClusterizer::BuildClusters => Cluster building "
+                     LOG(ERROR)<<"=> Cluster building "
                            <<"from digis to hits not implemented for pads, Sm type "
                            <<iSmType<<" Rpc "<<iRpc<<FairLogger::endl;
                      return kFALSE;
@@ -4058,17 +4095,17 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                // and save it if it's the case
                if( 0 < iNbChanInHit)
                {
-                   LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::BuildClusters: Process cluster " 
+                   LOG(DEBUG1)<<"Process cluster " 
                               <<iNbChanInHit<<FairLogger::endl;
 
                   // Check orientation to properly assign errors
                   if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
                   {
-                     LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::BuildClusters: H-Hit " <<FairLogger::endl;
+                     LOG(DEBUG1)<<"H-Hit " <<FairLogger::endl;
                   } // if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
                   else
                   {
-                     LOG(DEBUG2)<<"CbmTofTestBeamClusterizer::BuildClusters: V-Hit " <<FairLogger::endl;
+                     LOG(DEBUG2)<<"V-Hit " <<FairLogger::endl;
                      // Save Hit
                      dWeightedTime /= dWeightsSum;
                      dWeightedPosX /= dWeightsSum;
@@ -4119,7 +4156,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                      Int_t iDetId = CbmTofAddress::GetUniqueAddress(iSm,iRpc,iChm,0,iSmType);
                      Int_t iRefId = 0; // Index of the correspondng TofPoint
                      if(NULL != fTofPointsColl) iRefId = fTofPointsColl->IndexOf( vPtsRef[0] );
-                     LOG(DEBUG)<<"CbmTofTestBeamClusterizer::BuildClusters: Save V-Hit  "
+                     LOG(DEBUG)<<"Save V-Hit  "
                      << Form(" %3d %3d 0x%08x %3d 0x%08x", // %3d %3d 
                              fiNbHits,iNbChanInHit,iDetId,iLastChan,iRefId) //vPtsRef.size(),vPtsRef[0])
                        //   dWeightedTime,dWeightedPosY)
@@ -4134,14 +4171,14 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                      LOG(DEBUG)  <<FairLogger::endl;
                      
                      if( vDigiIndRef.size() < 2 ){
-                      LOG(WARNING)<<"CbmTofTestBeamClusterizer::BuildClusters: Digi refs for Hit "
+                      LOG(WARNING)<<"Digi refs for Hit "
                                   << fiNbHits<<":        vDigiIndRef.size()"
                                   <<FairLogger::endl;
                      }        
                      if(fiNbHits>0){
                        CbmTofHit *pHitL = (CbmTofHit*) fTofHitsColl->At(fiNbHits-1);
                        if(iDetId == pHitL->GetAddress() && dWeightedTime==pHitL->GetTime())
-                          LOG(DEBUG)<<"CbmTofTestBeamClusterizer::BuildClusters: Store Hit twice? "
+                          LOG(DEBUG)<<"Store Hit twice? "
                                     <<" fiNbHits "<<fiNbHits<<", "<<Form("0x%08x",iDetId)
                                     <<FairLogger::endl;
                      }
@@ -4323,4 +4360,48 @@ Bool_t   CbmTofTestBeamClusterizer::MergeClusters()
      }
   }
   return kTRUE;
+}
+
+static Double_t f1_xboxe(double *x, double *par){
+  double xx    = x[0];
+  double wx    = 1. - par[4]*TMath::Power(xx+par[5],2);
+  double xboxe = par[0]*0.25*(1.+TMath::Erf(( xx+par[1]-par[3])/par[2]))
+                            *(1.+TMath::Erf((-xx+par[1]+par[3])/par[2]));
+  return xboxe*wx ;
+}
+
+void CbmTofTestBeamClusterizer::fit_ybox(const char *hname)
+{
+ TH1 *h1;
+ h1=(TH1 *)gROOT->FindObjectAny(hname);
+ if(NULL != h1){
+   fit_ybox(h1,0.);
+ }
+}
+
+void CbmTofTestBeamClusterizer::fit_ybox(TH1 *h1, Double_t ysize)
+{
+   TAxis *xaxis = h1->GetXaxis();
+   Double_t Ymin= xaxis->GetXmin();
+   Double_t Ymax= xaxis->GetXmax();
+   TF1 *f1=new TF1("YBox",f1_xboxe,Ymin,Ymax,6);
+   Double_t yini=(h1->GetMaximum()+h1->GetMinimum())*0.5;
+   if (ysize==0.) ysize=Ymax*0.8;
+   f1->SetParameters(yini,ysize,1.,0.,0.,0.);
+   h1->Fit("YBox","Q");
+
+   double res[10];
+   double err[10];
+   res[9]=f1->GetChisquare();
+
+   for (int i=0; i<6; i++)
+   {
+     res[i]=f1->GetParameter(i);
+     err[i]=f1->GetParError(i);
+     //cout << " FPar "<< i << ": " << res[i] << ", " << err[i] << endl;  
+   }
+   LOG(INFO) << "YBox Fit of "<<h1->GetName()<<" ended with chi2 = "<<res[9]
+	     << Form(", strip length %7.2f +/- %5.2f, position resolution %7.2f +/- %5.2f at y_cen = %7.2f +/- %5.2f",
+	 	 2.*res[1],2.*err[1],res[2],err[2],res[3],err[3])
+	      << FairLogger::endl;
 }
