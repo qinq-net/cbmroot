@@ -3,7 +3,7 @@
 cbmroot_config_path=/lustre/nyx/cbm/users/jbendar/CBMINSTALL/bin/CbmRootConfig.sh
 source ${cbmroot_config_path}
 
-nEvs=10
+nEvs=500000
 NUM="00001"
 
 for FLAG in 0 1
