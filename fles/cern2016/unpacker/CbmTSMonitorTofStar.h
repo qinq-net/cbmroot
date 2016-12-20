@@ -169,6 +169,7 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     UInt_t    fuStarTokenLast;
     UInt_t    fuStarDaqCmdLast;
     UInt_t    fuStarTrigCmdLast;
+    TH1 *     fhTriggerRate;
     
     ///* STAR and pulser monitoring *///
     static const UInt_t kuNbChanTest = 16;

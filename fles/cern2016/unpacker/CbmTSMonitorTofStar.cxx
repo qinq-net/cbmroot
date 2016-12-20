@@ -61,11 +61,13 @@ namespace get4v1x {
    const double   kdEpochInPs   = kuEpochInBins*kdBinSize;
 }
 
-// Defautl value for nb bins in Pulser time difference histos
+// Default value for nb bins in Pulser time difference histos
 const UInt_t kuNbBinsDt    = 5000;
 Double_t dMinDt     = -1.*(kuNbBinsDt*get4v1x::kdBinSize/2.) - get4v1x::kdBinSize/2.;
 Double_t dMaxDt     =  1.*(kuNbBinsDt*get4v1x::kdBinSize/2.) + get4v1x::kdBinSize/2.;
 
+// Default number of FEET per channels histograms
+UInt_t uNbFeetPlot = 2;
 
 CbmTSMonitorTofStar::CbmTSMonitorTofStar() :
     CbmTSUnpack(),
@@ -131,6 +133,7 @@ CbmTSMonitorTofStar::CbmTSMonitorTofStar() :
     fuStarTokenLast(0),
     fuStarDaqCmdLast(0),
     fuStarTrigCmdLast(0),
+    fhTriggerRate(NULL),
     fbGet4v20( kFALSE ),
     fbPulserMode( kFALSE ),
     fuPulserGdpb(0),
@@ -407,15 +410,44 @@ void CbmTSMonitorTofStar::CreateHistograms()
           5e5, 6e5, 7e5, 8e5, 9e5, 1e6, 2e6, 3e6, 4e6, 5e6, 6e6, 7e6, 8e6, 9e6,
           1e7, 2e7, 3e7, 4e7, 5e7, 6e7, 7e7, 8e7, 9e7, 1e8, 2e8, 3e8, 4e8, 5e8,
           6e8, 7e8, 8e8, 9e8, 1e9 };
-      name = Form("ChannelRate_gDPB_%02u", uGdpb);
+      name = Form("ChannelRate_gDPB_%02u_0", uGdpb);
       title = Form("Channel instant rate gDPB %02u; Dist[ns] ; Channel", uGdpb);
       fHM->Add(name.Data(),
-          new TH2F(name.Data(), title.Data(), iNbBinsRate - 1, dBinsRate, 96, 0,
-              96));
+          new TH2F( name.Data(), title.Data(), iNbBinsRate - 1, dBinsRate, 
+                    uNbFeetPlot*fNrOfChannelsPerFeet, 0, uNbFeetPlot*fNrOfChannelsPerFeet));
 #ifdef USE_HTTP_SERVER
       if (server)
         server->Register("/TofRaw", fHM->H2(name.Data()));
 #endif
+      if( uNbFeetPlot < fNrOfFebsPerGdpb  )
+      {
+         name = Form("ChannelRate_gDPB_%02u_1", uGdpb);
+         title = Form("Channel instant rate gDPB %02u; Dist[ns] ; Channel", uGdpb);
+         fHM->Add(name.Data(),
+             new TH2F( name.Data(), title.Data(), iNbBinsRate - 1, dBinsRate, 
+                        uNbFeetPlot*fNrOfChannelsPerFeet, 
+                        uNbFeetPlot*fNrOfChannelsPerFeet, 
+                        2*uNbFeetPlot*fNrOfChannelsPerFeet));
+#ifdef USE_HTTP_SERVER
+         if (server)
+           server->Register("/TofRaw", fHM->H2(name.Data()));
+#endif
+      } // if( uNbFeetPlot < fNrOfFebsPerGdpb  )
+      if( 2 * uNbFeetPlot < fNrOfFebsPerGdpb )
+      {
+         name = Form("ChannelRate_gDPB_%02u_2", uGdpb);
+         title = Form("Channel instant rate gDPB %02u; Dist[ns] ; Channel", uGdpb);
+         fHM->Add(name.Data(),
+             new TH2F( name.Data(), title.Data(), iNbBinsRate - 1, dBinsRate, 
+                        uNbFeetPlot*fNrOfChannelsPerFeet, 
+                        2*uNbFeetPlot*fNrOfChannelsPerFeet, 
+                        3*uNbFeetPlot*fNrOfChannelsPerFeet));
+#ifdef USE_HTTP_SERVER
+         if (server)
+           server->Register("/TofRaw", fHM->H2(name.Data()));
+#endif
+      } // if( 2 * uNbFeetPlot < fNrOfFebsPerGdpb )
+      
       LOG(INFO) << "Adding the rate histos" << FairLogger::endl;
     } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
   }
@@ -470,18 +502,51 @@ void CbmTSMonitorTofStar::CreateHistograms()
   } // if( fbPulserMode )
 
   for (UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; uGdpb++) {
-    name = Form("Raw_Tot_gDPB_%02u", uGdpb);
+    name = Form("Raw_Tot_gDPB_%02u_0", uGdpb);
     title = Form("Raw TOT gDPB %02u; channel; TOT [bin]", uGdpb);
     fHM->Add(name.Data(),
-        new TH2F(name.Data(), title.Data(), 96, 0, 96, 256, 0, 256));
+        new TH2F(name.Data(), title.Data(), 
+                 uNbFeetPlot*fNrOfChannelsPerFeet, 0, uNbFeetPlot*fNrOfChannelsPerFeet, 
+                 256, 0, 256));
 #ifdef USE_HTTP_SERVER
     if (server)
       server->Register("/TofRaw", fHM->H2(name.Data()));
 #endif
+    if( uNbFeetPlot < fNrOfFebsPerGdpb )
+    {
+      name = Form("Raw_Tot_gDPB_%02u_1", uGdpb);
+      title = Form("Raw TOT gDPB %02u; channel; TOT [bin]", uGdpb);
+      fHM->Add(name.Data(),
+               new TH2F(name.Data(), title.Data(), 
+                  uNbFeetPlot*fNrOfChannelsPerFeet, 
+                  uNbFeetPlot*fNrOfChannelsPerFeet, 
+                  2*uNbFeetPlot*fNrOfChannelsPerFeet, 
+                  256, 0, 256));
+#ifdef USE_HTTP_SERVER
+      if (server)
+         server->Register("/TofRaw", fHM->H2(name.Data()));
+#endif
+    } // if( uNbFeetPlot < fNrOfFebsPerGdpb  ) 
+    if( 2 * uNbFeetPlot < fNrOfFebsPerGdpb )
+    {
+      name = Form("Raw_Tot_gDPB_%02u_2", uGdpb);
+      title = Form("Raw TOT gDPB %02u; channel; TOT [bin]", uGdpb);
+      fHM->Add(name.Data(),
+               new TH2F(name.Data(), title.Data(), 
+                  uNbFeetPlot*fNrOfChannelsPerFeet, 
+                  2*uNbFeetPlot*fNrOfChannelsPerFeet, 
+                  3*uNbFeetPlot*fNrOfChannelsPerFeet, 
+                  256, 0, 256));
+#ifdef USE_HTTP_SERVER
+      if (server)
+         server->Register("/TofRaw", fHM->H2(name.Data()));
+#endif
+    } // if( 2 * uNbFeetPlot < fNrOfFebsPerGdpb )
 
     name = Form("ChCount_gDPB_%02u", uGdpb);
     title = Form("Channel counts gDPB %02u; channel; Hits", uGdpb);
-    fHM->Add(name.Data(), new TH1I(name.Data(), title.Data(), 96, 0, 96));
+    fHM->Add(name.Data(), new TH1I(name.Data(), title.Data(), 
+             fNrOfFebsPerGdpb*fNrOfChannelsPerFeet, 0, fNrOfFebsPerGdpb*fNrOfChannelsPerFeet));
 
 #ifdef USE_HTTP_SERVER
     if (server)
@@ -516,7 +581,7 @@ void CbmTSMonitorTofStar::CreateHistograms()
 
   name = "hSpill";
   title = "Counts per channel in Current Spill; X [Strip]; Y [End]; Counts";
-  TH2I* hSpill = new TH2I(name, title, 32, 0., 32., 2, 0., 2.);
+  TH2I* hSpill = new TH2I(name, title, fNrOfChannelsPerFeet, 0., fNrOfChannelsPerFeet, 2, 0., 2.);
   fHM->Add(name.Data(), hSpill);
 #ifdef USE_HTTP_SERVER
   if (server)
@@ -548,6 +613,15 @@ void CbmTSMonitorTofStar::CreateHistograms()
 #ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H2(name.Data()));
+#endif
+
+  name = "hTriggerRate";
+  title = "STAR trigger signals per second; Time[s] ; Counts";
+  fhTriggerRate = new TH1F(name, title, 1800, 0, 1800);
+  fHM->Add(name.Data(), fhTriggerRate);
+#ifdef USE_HTTP_SERVER
+  if (server)
+    server->Register("/TofRaw", fHM->H1(name.Data()));
 #endif
 
 #ifdef USE_HTTP_SERVER
@@ -590,7 +664,7 @@ void CbmTSMonitorTofStar::CreateHistograms()
   /*****************************/
   
   
-  /** Create FEET rates Canvase for STAR 2017 **/
+  /** Create FEET rates Canvas for STAR 2017 **/
   TCanvas* cFeeRates = new TCanvas("cFeeRates", "gDPB Monitoring FEET rates", w, h);
   cFeeRates->Divide(fNrOfFebsPerGdpb, fNrOfGdpbs );
   
@@ -607,8 +681,45 @@ void CbmTSMonitorTofStar::CreateHistograms()
     } // for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; ++uFeet )
   } // for( UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; ++uGdpb )
   /*****************************/
+  
+  /** Create TOT Canvas(es) for STAR 2017 **/
+  TCanvas* cTotPnt = NULL;
+  for( UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; ++uGdpb ) {
+     
+    cTotPnt = new TCanvas( Form("cTotPnt_g%02u", uGdpb), 
+                           Form("gDPB %02u TOT distributions", uGdpb), 
+                           w, h);
+    cTotPnt->Divide( fNrOfFebsPerGdpb/uNbFeetPlot );
+    TH2* histPntTot = NULL;
+    for (UInt_t uFeetPlot = 0; uFeetPlot < fNrOfFebsPerGdpb/uNbFeetPlot; ++uFeetPlot ) {
+      name = Form("Raw_Tot_gDPB_%02u_%1u", uGdpb, uFeetPlot);
+      histPntTot = fHM->H2(name.Data());
+      
+      cTotPnt->cd( 1 + uFeetPlot );
+      gPad->SetGridx();
+      gPad->SetGridy();
+      gPad->SetLogz();
+      
+      histPntTot->Draw( "colz" );
+    } // for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; ++uFeet )
+  } // for( UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; ++uGdpb )
+  /*****************************/
    
-  /** Recovers/Create Ms Size Canvase for STAR 2017 **/  
+  /** Create Pulser mode Canvas for STAR 2017 **/
+  if( fbPulserMode )
+  {
+     TCanvas* cPulserRms = new TCanvas("cPulserRms", "Time difference RMS for chosen FEE and channels in pulser mode", w, h);
+     cPulserRms->Divide( 2 );
+     
+     cPulserRms->cd(1);
+     fhTimeRmsPulserChosenFee->Draw( "colz" );
+     
+     cPulserRms->cd(2);
+     fhTimeRmsPulserChosenChPairs->Draw( "colz" );
+  } // if( fbPulserMode )
+  /*****************************/
+     
+  /** Recovers/Create Ms Size Canvas for STAR 2017 **/  
   // Try to recover canvas in case it was created already by another monitor
   // If not existing, create it
   fcMsSizeAll = dynamic_cast<TCanvas *>( gROOT->FindObject( "cMsSizeAll" ) );
@@ -633,14 +744,37 @@ void CbmTSMonitorTofStar::CreateHistograms()
   fHistSpillQA = fHM->H2("hSpillQA");
 
   for (Int_t i = 0; i < fNrOfGdpbs; ++i) {
-    name = Form("Raw_Tot_gDPB_%02u", i);
+    name = Form("Raw_Tot_gDPB_%02u_0", i);
     fRaw_Tot_gDPB.push_back(fHM->H2(name.Data()));
+    if( uNbFeetPlot < fNrOfFebsPerGdpb )
+    {
+       name = Form("Raw_Tot_gDPB_%02u_1", i);
+       fRaw_Tot_gDPB.push_back(fHM->H2(name.Data()));
+    } // if( uNbFeetPlot < fNrOfFebsPerGdpb )
+    if( 2 * uNbFeetPlot < fNrOfFebsPerGdpb )
+    {
+       name = Form("Raw_Tot_gDPB_%02u_2", i);
+       fRaw_Tot_gDPB.push_back(fHM->H2(name.Data()));
+    } // if( 2 * uNbFeetPlot < fNrOfFebsPerGdpb )
+    
     name = Form("ChCount_gDPB_%02u", i);
     fChCount_gDPB.push_back(fHM->H1(name.Data()));
-    name = Form("ChannelRate_gDPB_%02u", i);
+    
     if (fUnpackPar->IsChannelRateEnabled()) {
+      name = Form("ChannelRate_gDPB_%02u_0", i);
       fChannelRate_gDPB.push_back(fHM->H2(name.Data()));
-    }
+      if( uNbFeetPlot < fNrOfFebsPerGdpb )
+      {
+        name = Form("ChannelRate_gDPB_%02u_1", i);
+        fChannelRate_gDPB.push_back(fHM->H2(name.Data()));
+      } // if( uNbFeetPlot < fNrOfFebsPerGdpb )
+      if( 2 * uNbFeetPlot < fNrOfFebsPerGdpb )
+      {
+        name = Form("ChannelRate_gDPB_%02u_2", i);
+        fChannelRate_gDPB.push_back(fHM->H2(name.Data()));
+      } // if( 2 * uNbFeetPlot < fNrOfFebsPerGdpb )
+    } // if (fUnpackPar->IsChannelRateEnabled())
+    
     for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet++) {
       name = Form("FeetRate_gDPB_g%02u_f%1u", i, uFeet);
       fFeetRate_gDPB.push_back(fHM->H1(name.Data()));
@@ -965,14 +1099,15 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
       curEpochGdpbGet4 --; // In Ep. Suppr. Mode, receive following epoch instead of previous
   
     Int_t channelNr = fGet4Id * fNrOfChannelsPerGet4 + channel;
-    fRaw_Tot_gDPB[fGdpbNr]->Fill(channelNr, tot);
+    Int_t iFeetNr   = (fGet4Id / fNrOfGet4PerFeb);
+    fRaw_Tot_gDPB[fGdpbNr + iFeetNr/uNbFeetPlot]->Fill(channelNr, tot);
     fChCount_gDPB[fGdpbNr]->Fill(channelNr);
 
     if (fUnpackPar->IsChannelRateEnabled()) {
       // Check if at least one hit before in this channel
       if( -1 < fTsLastHit[fGdpbNr][fGet4Id][channel] )
       {
-         fChannelRate_gDPB[fGdpbNr]->Fill(
+         fChannelRate_gDPB[fGdpbNr + iFeetNr/uNbFeetPlot]->Fill(
              1e9 / (mess.getMsgFullTimeD(curEpochGdpbGet4)
                      - fTsLastHit[fGdpbNr][fGet4Id][channel]),
              fGet4Id * fNrOfChannelsPerGet4 + channel);
@@ -990,13 +1125,13 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
 
     if (0 < fdStartTime)
     {
-      fFeetRate_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + (fGet4Id / fNrOfGet4PerFeb)]->Fill(
+      fFeetRate_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + iFeetNr]->Fill(
           1e-9 * (mess.getMsgFullTimeD(curEpochGdpbGet4) - fdStartTime));
           
        // General Time (date + time) rate evolution
        // Add offset of -1H as the filenames were using some times offset by 1 hour (Summer time?!?)
        if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec ) {
-         fFeetRateDate_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + (fGet4Id / fNrOfGet4PerFeb)]->Fill(
+         fFeetRateDate_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + iFeetNr]->Fill(
              1e-9 * (mess.getMsgFullTimeD(curEpochGdpbGet4) - fdStartTime)  );
        } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
     }
@@ -1235,7 +1370,11 @@ void CbmTSMonitorTofStar::FillStarTrigInfo(ngdpb::Message mess)
          fuStarDaqCmdLast  = mess.getStarDaqCmdStarD();
          fuStarTrigCmdLast = mess.getStarTrigCmdStarD();
          
-         LOG(INFO) << "Found full Star Trigger with gDPB TS " << Form("%16llu", fulGdpbTsFullLast)
+         if( 0 < fdStartTime )
+            fhTriggerRate->Fill(
+               1e-9 * ( fulGdpbTsFullLast * 6.25 - fdStartTime ) );
+         
+         LOG(DEBUG) << "Found full Star Trigger with gDPB TS " << Form("%16llu", fulGdpbTsFullLast)
                     << " STAR TS " << Form("%16llu", fulStarTsFullLast)
                     << " token " << Form("%8u", fuStarTokenLast)
                     << " DAQ CMD " << Form("%1X", fuStarDaqCmdLast)
@@ -1311,10 +1450,10 @@ void CbmTSMonitorTofStar::Finish()
   gDirectory->mkdir("Tof_Raw_gDPB");
   gDirectory->cd("Tof_Raw_gDPB");
   for (UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb++) {
-    fHM->H2(Form("Raw_Tot_gDPB_%02u", uGdpb))->Write();
+//    fHM->H2(Form("Raw_Tot_gDPB_%02u", uGdpb))->Write();
     fHM->H1(Form("ChCount_gDPB_%02u", uGdpb))->Write();
-    if (fUnpackPar->IsChannelRateEnabled())
-      fHM->H2(Form("ChannelRate_gDPB_%02u", uGdpb))->Write();
+//    if (fUnpackPar->IsChannelRateEnabled())
+//      fHM->H2(Form("ChannelRate_gDPB_%02u", uGdpb))->Write();
     for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet++) {
       fHM->H1(Form("FeetRate_gDPB_g%02u_f%1u", uGdpb, uFeet))->Write();
       if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec ) {
@@ -1331,6 +1470,8 @@ void CbmTSMonitorTofStar::Finish()
   fHM->H1("hSpillCount")->Write();
   fHM->H1("hSpillQA")->Write();
 
+  fHM->H1("hTriggerRate")->Write();
+  
   gDirectory->cd("..");
 
   gDirectory->mkdir("Flib_Raw");
@@ -1366,14 +1507,16 @@ void CbmTSMonitorTofStar::ResetAllHistos()
   fSpillIdx = 0;
 
   for (UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb++) {
-    fHM->H2(Form("Raw_Tot_gDPB_%02u", uGdpb))->Reset();
+//    fHM->H2(Form("Raw_Tot_gDPB_%02u", uGdpb))->Reset();
     fHM->H1(Form("ChCount_gDPB_%02u", uGdpb))->Reset();
-    if (fUnpackPar->IsChannelRateEnabled())
-      fHM->H2(Form("ChannelRate_gDPB_%02u", uGdpb))->Reset();
+//    if (fUnpackPar->IsChannelRateEnabled())
+//      fHM->H2(Form("ChannelRate_gDPB_%02u", uGdpb))->Reset();
     for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet++) {
       fHM->H1(Form("FeetRate_gDPB_g%02u_f%1u", uGdpb, uFeet))->Reset();
     } // for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
+  
+  fHM->H1("hTriggerRate")->Reset();
 
   for (UInt_t uLinks = 0; uLinks < 16; uLinks++) {
     TString sMsSzName = Form("MsSz_link_%02u", uLinks);
