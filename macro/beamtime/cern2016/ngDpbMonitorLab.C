@@ -63,6 +63,8 @@ void ngDpbMonitorLab(TString inFile = "")
   
   // Get4 Unpacker
   CbmTSMonitorTofStar* test_monitor_tof = new CbmTSMonitorTofStar();
+  test_monitor_tof->SetPulserMode();
+  test_monitor_tof->SetPulserFee(0, 2);
 
   // --- Source task
   CbmFlibCern2016Source* source = new CbmFlibCern2016Source();

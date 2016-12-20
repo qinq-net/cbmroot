@@ -2,8 +2,8 @@
 //----------------------------------------------------------------------------
 NrOfRocs: Int_t 1
 RocIdArray: Int_t \
-0x00005b98
-NrOfFebsPerGdpb: Int_t 3
+0x5b98
+NrOfFebsPerGdpb: Int_t 4
 NrOfGet4PerFeb: Int_t 8
 NrOfChannelsPerGet4: Int_t 4
 NrOfChannels: Int_t 32
