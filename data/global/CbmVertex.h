@@ -68,7 +68,7 @@ class CbmVertex : public TNamed
   Int_t GetNTracks() const { return fNTracks; };  // nof tracks used
   void Position(TVector3& pos) const { pos.SetXYZ(fX,fY,fZ); };
   void CovMatrix(TMatrixFSym& covMat) const;
-  Double_t GetCovariance(Int_t i, Int_t j) const;
+  Double_t GetCovariance(Int_t i, Int_t j) const  { return fCovMatrix(i,j); }
 
 
   /** Reset the member variables **/
@@ -110,7 +110,8 @@ class CbmVertex : public TNamed
   /** Covariance matrix for x, y, and z stored in an array. The
    ** sequence is a[0,0], a[0,1], a[0,2], a[1,1], a[1,2], a[2,2]
    **/
-  Double32_t fCovMatrix[6];
+  //Double32_t fCovMatrix[6];
+  TMatrixFSym fCovMatrix;
 
 
   ClassDef(CbmVertex,1);

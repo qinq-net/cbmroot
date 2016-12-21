@@ -22,7 +22,6 @@ CbmVertex::CbmVertex()
     fNTracks(0),
     fCovMatrix()
 {
-  for(Int_t i=0; i<6; i++) fCovMatrix[i] = 0;
 }
 // -------------------------------------------------------------------------
 
@@ -37,7 +36,6 @@ CbmVertex::CbmVertex(const char* name, const char* title)
     fNTracks(0),
     fCovMatrix()
 {
-  for(Int_t i=0; i<6; i++) fCovMatrix[i] = 0;
 }
 // -------------------------------------------------------------------------
   
@@ -55,7 +53,7 @@ CbmVertex::CbmVertex(const char* name, const char* title,
     fChi2(chi2),
     fNDF(ndf),
     fNTracks(nTracks),
-    fCovMatrix()
+    fCovMatrix(covMat)
 {
   /*
   fTitle   = title;
@@ -66,10 +64,6 @@ CbmVertex::CbmVertex(const char* name, const char* title,
   fNDF     = ndf;
   fNTracks = nTracks;
   */
-  Int_t index = 0;
-  for (Int_t i=0; i<3; i++) {
-    for (Int_t j=i; j<3; j++) fCovMatrix[index++] = covMat[i][j];
-  }
 }
 // -------------------------------------------------------------------------
 
@@ -96,27 +90,17 @@ void CbmVertex::Print(Option_t*) const {
 
 // -----   Accessor to covariance matrix    --------------------------------
 void CbmVertex::CovMatrix(TMatrixFSym& covMat) const {
-  Int_t index = 0;
-  for (int i=0; i<3; i++) {
-    for (int j=i; j<3; j++) {
-      covMat[i][j] = fCovMatrix[index];
-      covMat[j][i] = fCovMatrix[index];
-      index++;
-    }
-  }
+	covMat = fCovMatrix;
 }
 // -------------------------------------------------------------------------
 
 
 
 // -----   Accessor to covariance matrix elements   ------------------------
-Double_t CbmVertex::GetCovariance(Int_t i, Int_t j) const {
-  TMatrixFSym* mat = new TMatrixFSym(3);
-  CovMatrix(*mat);
-  Double_t element = (*mat)[i][j];
-  delete mat;
-  return element;
+/*Double_t CbmVertex::GetCovariance(Int_t i, Int_t j) const {
+	return fCovMatrix(i,j);
 }
+*/
 // -------------------------------------------------------------------------
 
 
@@ -131,10 +115,7 @@ void CbmVertex::SetVertex(Double_t x, Double_t y, Double_t z, Double_t chi2,
   fChi2    = chi2;
   fNDF     = ndf;
   fNTracks = nTracks;
-  Int_t index = 0;
-  for (Int_t i=0; i<3; i++) {
-    for (Int_t j=i; j<3; j++) fCovMatrix[index++] = covMat[i][j];
-  }
+  fCovMatrix = covMat;
 }
 // -------------------------------------------------------------------------
 
@@ -144,7 +125,7 @@ void CbmVertex::SetVertex(Double_t x, Double_t y, Double_t z, Double_t chi2,
 void CbmVertex::Reset() {
   fX = fY = fZ = fChi2 = 0.;
   fNDF = fNTracks = 0;
-  for(Int_t i=0; i<6; i++) fCovMatrix[i] = 0;
+  fCovMatrix.Clear();
 }  
 // -------------------------------------------------------------------------
 
