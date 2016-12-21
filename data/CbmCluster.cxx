@@ -31,6 +31,12 @@ CbmCluster::~CbmCluster()
 
 }
 
+void CbmCluster::SetMatch(CbmMatch* match) {
+	 if ( fMatch ) delete fMatch;
+	 fMatch = match;
+}
+
+
 string CbmCluster::ToString() const
 {
    stringstream ss;

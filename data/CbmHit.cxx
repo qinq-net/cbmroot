@@ -6,6 +6,7 @@
  * Former name CbmBaseHit. Renamed 11 May 2015.
  **/
 #include "CbmHit.h"
+#include "CbmMatch.h"
 
 CbmHit::CbmHit()
   : CbmHit(kHIT, 0., 0., -1, -1, -1., -1.)
@@ -54,13 +55,19 @@ CbmHit& CbmHit::operator=(const CbmHit& rhs)
     fAddress = rhs.fAddress;
     fTime = rhs.fTime;
     fTimeError = rhs.fTimeError;
-    fMatch = rhs.fMatch;
+    fMatch = NULL;
   }
   return *this;
 }
 
 CbmHit::~CbmHit()
 {
+	if ( fMatch ) delete fMatch;
+}
+
+void CbmHit::SetMatch(CbmMatch* match) {
+	if ( fMatch ) delete fMatch;
+	fMatch = match;
 }
 
 ClassImp(CbmHit);

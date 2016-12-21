@@ -75,7 +75,7 @@ public:
 	void SetDz(Double_t dz) { fDz = dz; }
 	void SetRefId(Int_t refId) { fRefId = refId; }
 	void SetAddress(Int_t address) { fAddress = address; }
-	void SetMatch(CbmMatch* match) { fMatch = match; }
+	void SetMatch(CbmMatch* match);
 	void SetTime(Double_t time) { fTime = time; }
 	void SetTime(Double_t time, Double_t error) {
 		fTime = time; fTimeError = error;
@@ -102,9 +102,9 @@ protected:
          * \param type hit type
         **/
 	void SetType(HitType type) { fType = type; }
+  CbmHit(const CbmHit&);
+  CbmHit& operator=(const CbmHit&);
 
-        CbmHit(const CbmHit&);
-        CbmHit& operator=(const CbmHit&);
 
 
 private:

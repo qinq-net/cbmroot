@@ -79,7 +79,7 @@ public:
 
    /** Modifiers **/
    void SetAddress(Int_t address) { fAddress = address; }
-   void SetMatch(CbmMatch* match) { fMatch = match; }
+   void SetMatch(CbmMatch* match);
 
    /**
     * \brief Return string representation of the object.
