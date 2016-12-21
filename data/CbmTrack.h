@@ -68,7 +68,7 @@ public:
 	void SetPreviousTrackId(Int_t previousTrackId) { fPreviousTrackId = previousTrackId; }
 	void SetParamFirst(const FairTrackParam* par) { fParamFirst = *par; }
 	void SetParamLast(const FairTrackParam* par){ fParamLast  = *par; }
-   void SetMatch(CbmMatch* match) { fMatch = match; }
+   void SetMatch(CbmMatch* match);
 
 	virtual std::string ToString() const;
 

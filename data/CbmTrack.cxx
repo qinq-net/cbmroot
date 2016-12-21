@@ -56,13 +56,14 @@ CbmTrack& CbmTrack::operator=(const CbmTrack& rhs)
     fChiSq = rhs.fChiSq;
     fNDF = rhs.fNDF;
     fPreviousTrackId = rhs.fPreviousTrackId;
-    fMatch = rhs.fMatch;
+    fMatch = NULL;
   }
   return *this;
 }
 
 CbmTrack::~CbmTrack()
 {
+  if ( fMatch ) delete fMatch;
 }
 
 void CbmTrack::AddHit(
@@ -71,6 +72,11 @@ void CbmTrack::AddHit(
 {
 	fHitIndex.push_back(index);
 	fHitType.push_back(type);
+}
+
+void CbmTrack::SetMatch(CbmMatch* match) {
+  if ( fMatch ) delete fMatch;
+  fMatch = match;
 }
 
 std::string CbmTrack::ToString() const
