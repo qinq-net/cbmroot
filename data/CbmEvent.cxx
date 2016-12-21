@@ -46,6 +46,15 @@ Int_t CbmEvent::GetNofData(Cbm::DataType type) const {
 
 
 
+// -----   Set the vertex parameters   -------------------------------------
+void CbmEvent::SetVertex(Double_t x, Double_t y, Double_t z, Double_t chi2,
+	 Int_t ndf, Int_t nTracks, const TMatrixFSym& covMat) {
+	fVertex.SetVertex(x, y, z, chi2, ndf, nTracks, covMat);
+}
+// -------------------------------------------------------------------------
+
+
+
 // -----   String output   -------------------------------------------------
 std::string CbmEvent::ToString() const
 {

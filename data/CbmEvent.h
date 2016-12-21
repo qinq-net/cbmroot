@@ -142,8 +142,23 @@ class CbmEvent: public TObject {
 		 ** @param indexVector  Vector with indices of STS tracks
 	     **/
 		void SetStsTracks(std::vector<UInt_t>& indexVector) {
+			fNofData -= fIndexMap[Cbm::kStsTrack].size();
 			fIndexMap[Cbm::kStsTrack] = indexVector;
+			fNofData += fIndexMap[Cbm::kStsTrack].size();
 		}
+
+
+	  /** Set the event vertex variables
+	   *@param x         x coordinate [cm]
+	   *@param y         y coordinate [cm]
+	   *@param z         z coordinate [cm]
+	   *@param chi2      chi square of vertex fit
+	   *@param ndf       Number of degrees of freedom of vertex fit
+	   *@param nTracks   Number of tracks used for vertex fit
+	   *@param covMat    Covariance Matrix (symmetric, 3x3)
+	   **/
+	  void SetVertex(Double_t x, Double_t y, Double_t z, Double_t chi2,
+			 Int_t ndf, Int_t nTracks, const TMatrixFSym& covMat);
 
 
 		/** String output **/
