@@ -14,6 +14,8 @@ gStyle->SetOptStat(kTRUE);
  TH1 *h;
  TH1 *h1;
  TH2 *h2;
+ void fit_ybox(const char *hname);
+
  // if (h!=NULL) h->Delete();
 
 can->cd(1);
@@ -24,7 +26,7 @@ can->cd(1);
   h2->Draw("colz");
   h2->ProfileX()->Draw("same");
   gPad->SetLogz();
- }else { cout << hname1 << " not found" << endl; }
+ }else { cout << hname1 << " not found -> return" << endl; return;}
  
 can->cd(2);
  gROOT->cd();
@@ -40,7 +42,7 @@ TString hname2=Form("cl_SmT%d_sm%03d_rpc%03d_Pos",SmT,iSm,iRpc);
   h2y=h2->ProjectionY();
   //gROOT->LoadMacro("fit_ybox.h");
   cout <<" Fit with ybox "<<h2y->GetName()<<endl;
-  fit_ybox(h2y->GetName());
+  fit_ybox((const char *)(h2y->GetName()));
 
  }else { cout << hname2 << " not found" << endl; }
 

@@ -1,10 +1,10 @@
-void pl_all_DigiCor(Int_t iNDet=5)
+void pl_all_DigiCor(Int_t iNDet=6)
 {
   //  TCanvas *can = new TCanvas("can22","can22");
   //  can->Divide(2,2); 
   //  TCanvas *can = new TCanvas("can","can",48,55,700,900);
   TCanvas *can = new TCanvas("can","can",48,56,900,700);
-  can->Divide(4,3,0.01,0.01); 
+  can->Divide(4,4,0.01,0.01); 
   //  can->Divide(2,2,0,0); 
   Float_t lsize=0.07;
 
@@ -18,9 +18,9 @@ void pl_all_DigiCor(Int_t iNDet=5)
 
  TH1 *h;
  TH2 *h2;
- Int_t iType[5]  ={2,4,6,5,9};
- Int_t iNumSm[5] ={2,1,1,1,3};
- Int_t iNumRpc[5]={1,1,2,1,2};
+ Int_t iType[6]  ={2,4,6,5,9,8};
+ Int_t iNumSm[6] ={2,1,1,1,3,2};
+ Int_t iNumRpc[6]={1,1,2,1,2,1};
  Int_t iCanv=0;
  // if (h!=NULL) h->Delete();
 
@@ -38,4 +38,5 @@ void pl_all_DigiCor(Int_t iNDet=5)
     }
   }
  } 
+ can->SaveAs(Form("pl_all_DigiCor.pdf"));
 } 

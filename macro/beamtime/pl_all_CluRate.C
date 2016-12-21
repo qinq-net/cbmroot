@@ -1,12 +1,12 @@
-void pl_all_CluRate(Int_t iNSt=5, Double_t Tstart=0., Double_t Tend=1000.)
+void pl_all_CluRate(Int_t iNSt=6, Double_t Tstart=0., Double_t Tend=1000.)
 {
   //  TCanvas *can = new TCanvas("can22","can22");
   //  can->Divide(2,2); 
   //  TCanvas *can = new TCanvas("can","can",48,55,700,900);
   TCanvas *can = new TCanvas("can","can",48,56,900,900);
-  can->Divide(4,3,0.01,0.01); 
+  can->Divide(4,4,0.01,0.01); 
   //  can->Divide(2,2,0,0); 
-  Float_t lsize=0.07;
+  Float_t lsize=0.06;
 
  gPad->SetFillColor(0);
  gStyle->SetPalette(1);
@@ -15,12 +15,14 @@ void pl_all_CluRate(Int_t iNSt=5, Double_t Tstart=0., Double_t Tend=1000.)
  //gStyle->SetOptStat(kTRUE);
  //gROOT->cd();
  //gROOT->SetDirLevel(2);
+ gStyle->SetPadLeftMargin(0.4);
+ gStyle->SetTitleOffset(1.7, "y");
 
  TH1 *h;
  TH2 *h2;
- const Int_t   iType[5]={5,4,6,2,9};
- const Int_t  iSmNum[5]={1,1,1,2,3};
- const Int_t iRpcNum[5]={1,1,2,1,2};
+ const Int_t   iType[6]={5,4,6,2,9,8};
+ const Int_t  iSmNum[6]={1,1,1,2,3,3};
+ const Int_t iRpcNum[6]={1,1,2,1,2,1};
  
  Int_t iCanv=0;
  // if (h!=NULL) h->Delete();
@@ -38,6 +40,7 @@ void pl_all_CluRate(Int_t iNSt=5, Double_t Tstart=0., Double_t Tend=1000.)
     if (h!=NULL) {
      h->GetXaxis()->SetRange(Tstart,Tend);
      h->Draw("");
+     h->UseCurrentStyle();
      //     gPad->SetLogy();
     }else{cout<<"Histogram "<<hname<<" not existing. "<<endl;}
     if(iRp==10) break;

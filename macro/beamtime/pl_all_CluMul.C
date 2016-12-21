@@ -1,10 +1,10 @@
-void pl_all_CluMul(Int_t iNSt=5)
+void pl_all_CluMul(Int_t iNSt=6)
 {
   //  TCanvas *can = new TCanvas("can22","can22");
   //  can->Divide(2,2); 
   //  TCanvas *can = new TCanvas("can","can",48,55,700,900);
   TCanvas *can = new TCanvas("can","can",48,56,900,900);
-  can->Divide(4,3,0.01,0.01); 
+  can->Divide(4,4,0.01,0.01); 
   //  can->Divide(2,2,0,0); 
   Float_t lsize=0.07;
 
@@ -18,9 +18,9 @@ void pl_all_CluMul(Int_t iNSt=5)
 
  TH1 *h;
  TH2 *h2;
- const Int_t   iType[5]={5,4,6,2,9};
- const Int_t  iSmNum[5]={1,1,1,2,3};
- const Int_t iRpcNum[5]={1,1,2,1,2};
+ const Int_t   iType[6]={5,4,6,2,9,8};
+ const Int_t  iSmNum[6]={1,1,1,2,3,3};
+ const Int_t iRpcNum[6]={1,1,2,1,2,1};
  
  Int_t iCanv=0;
  // if (h!=NULL) h->Delete();

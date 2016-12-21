@@ -14,6 +14,7 @@ gStyle->SetOptFit(kTRUE);
  // cout << " DirLevel "<< gROOT->GetDirLevel()<< endl;
 
  TH1 *h;
+ TH1 *h1;
  TH1 *hDT04;
  TH1 *h2px;
  TH1 *h2py;
@@ -44,26 +45,28 @@ can->cd(1);
  gROOT->cd();
  TString hname="hDXDY04D4best";
  h2=(TH2 *)gROOT->FindObjectAny(hname);
+ if( NULL == h2 ) return;
+ if(100 > h2->GetEntries()) {
+   cout << "Insufficient number of events " << h2->GetEntries() << endl;
+  return;
+ }
  if (h2!=NULL) {
   h2->Draw("colz");
 
-  if(100 > h2->GetEntries()) return;
   gPad->SetLogz();
   can->cd(2);
   h2px=h2->ProjectionX(); 
   
-  TFitResultPtr fResx=h2px->Fit("gaus","S","",-2.,2.);
+  TFitResultPtr fResx=h2px->Fit("gaus","S","",-2.*h2px->GetRMS(),2.*h2px->GetRMS());
   dMeanX=fResx->Parameter(1);
   dSigX=fResx->Parameter(2);
   h2py=h2->ProjectionY(); 
-  TFitResultPtr fResy=h2py->Fit("gaus","S","",-2.,2.);
+  TFitResultPtr fResy=h2py->Fit("gaus","S","",-2.*h2py->GetRMS(),2.*h2py->GetRMS());
   dMeanY=fResy->Parameter(1);
   dSigY=fResy->Parameter(2);
   
  }else {  cout << hname << " not found" << endl;  }
 }
-
-return;
 
 can->cd(2);
 {
@@ -405,7 +408,7 @@ can->cd(29);
 }
  //report summary
  Double_t dEff=NFinalHits/NEvents;
- cout << Form("<IRes> Efficiency: %6.3f(%7.0f) of %7.0f events, mean Dt %6.1f ps, 1-sig time res: %6.1f ps, RMS: %6.1f ps, DX %5.2f, DY %5.2f, SigX %5.2f, SigY %5.2f, CluSize %4.1f,%4.1f ",
+ cout << Form("<IRes> Efficiency: %6.3f(%7.0f) of %7.0f events, mean Dt %6.4f ps, 1-sig time res: %6.4f ns, RMS: %6.4f ns, DX %5.2f, DY %5.2f, SigX %5.2f, SigY %5.2f, CluSize %4.1f,%4.1f ",
 	      dEff,NFinalHits,NEvents,dTMean,dTRes,dTRMS,dMeanX,dMeanY,dSigX,dSigY,dMeanCluSize0,dMeanCluSize4) <<endl; 
 
  // cout << Form("    D4best 1-sigma timing resolution at lower index %d: %6.1f ps, RMS: %6.1f ps from  %6.0f entries of %6.0f (%6.3f)",BL,BRes,Brms,BEntries,NSel,BEntries/NSel) <<endl; 
