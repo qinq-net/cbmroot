@@ -17,7 +17,7 @@
 #include "CbmNxyterRawMessage.h"
 //#include "CbmSpsMuchDigi.h" //Created a new Much Digi File for the SPS beamtime2016
 
-#include "/home/pmd/daqsoft/cbmroot_trunk/data/much/CbmMuchBeamTimeDigi.h" //Created a new Much Digi File for the SPS beamtime2016
+#include "CbmMuchBeamTimeDigi.h" //Created a new Much Digi File for the SPS beamtime2016
 #include "CbmTbDaqBuffer.h"
 
 #include "TClonesArray.h"

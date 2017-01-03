@@ -8,6 +8,7 @@
 #pragma link C++ class CbmFlibCern2016Source;
 #pragma link C++ class CbmTSUnpackFHodo;
 #pragma link C++ class CbmTSUnpackTof;
+#pragma link C++ class CbmTSUnpackMuch;
 #pragma link C++ class CbmTSMonitorTofLegacy;
 #pragma link C++ class CbmTSMonitorTof;
 #pragma link C++ class CbmTSMonitorTofStar;

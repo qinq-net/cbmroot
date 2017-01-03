@@ -45,7 +45,7 @@ Set(SRCS
   CbmFlibCern2016Source.cxx   
 
   unpacker/CbmTSUnpackFHodo.cxx
-#  unpacker/CbmTSUnpackMuch.cxx
+  unpacker/CbmTSUnpackMuch.cxx
   unpacker/CbmTSUnpackTof.cxx
   
   unpacker/CbmTSMonitorTofLegacy.cxx
