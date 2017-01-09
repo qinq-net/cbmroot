@@ -172,15 +172,15 @@ Int_t CbmTofTrackFinderNN::DoFind(
   Int_t iNTrks=0;
   Int_t iSt0=-1;
   Int_t iSt1=0;
-  while(iSt0 < fFindTracks->GetNofStations()-2){        // seed loop, all combinations as seeds 
+  while(iSt0 < fFindTracks->GetNofStations()-fFindTracks->GetMinNofHits()){        // seed loop, all combinations as seeds 
    iSt0++; iSt1=iSt0;
-   while(iSt1 < fFindTracks->GetNofStations()-1){
+   while(iSt1 < fFindTracks->GetNofStations()-fFindTracks->GetMinNofHits()+1){
     iSt1++;
     for (Int_t iHit=0; iHit<fHits->GetEntries(); iHit++) { // loop over Hits 
      CbmTofHit* pHit = (CbmTofHit*) fHits->At( iHit );
      Int_t iAddr   = (pHit->GetAddress() & DetMask );
      Int_t iSmType = CbmTofAddress::GetSmType( iAddr );
-     if(HitUsed(iHit)==1 && iAddr==fFindTracks->GetBeamCounter()) continue; // skip used Hits except for BeamCounter
+     if(HitUsed(iHit)==1 && iAddr!=fFindTracks->GetBeamCounter()) continue; // skip used Hits except for BeamCounter
      LOG(DEBUG1) << Form("<I> TofTracklet Chkseed St0 %2d, St1 %2d, Mul %2d, Hit %2d, addr = 0x%08x - X %6.2f, Y %6.2f Z %6.2f R %6.2f T %6.2f TM %lu",
 			 iSt0,iSt1,fiNtrks,iHit,pHit->GetAddress(),pHit->GetX(),pHit->GetY(),pHit->GetZ(),pHit->GetR(),pHit->GetTime(), fvTrkVec[iHit].size() )
  	         <<FairLogger::endl; 
@@ -249,16 +249,17 @@ Int_t CbmTofTrackFinderNN::DoFind(
 	  }
 	  Double_t dDT = 0.;
 	  if(iSmType>0) dDT = pHit1->GetTime()- pHit->GetTime();
-     
+	  if(dDT<0.) continue;  // request forward propagation in time  
+
 	  Double_t dLz =  pHit1->GetZ()   - pHit->GetZ();
 	  Double_t dTx = (pHit1->GetX()   - pHit->GetX())/dLz;
 	  Double_t dTy = (pHit1->GetY()   - pHit->GetY())/dLz;
 
-	  LOG(DEBUG1) << Form("<I> TofTracklet %d, Hits %d, %d check, add = 0x%08x,0x%08x - DT %6.2f, Tx %6.2f Ty %6.2f Tt %6.2f pos %6.2f ",
-			      fiNtrks,iHit,iHit1,pHit->GetAddress(),pHit1->GetAddress(), dDT, dTx, dTy, dDT/dLz, hitpos1_local[1] )
+	  LOG(DEBUG1) << Form("<I> TofTracklet %d, Hits %d, %d, add = 0x%08x,0x%08x - DT %6.2f, Tx %6.2f Ty %6.2f Tt %6.2f pos %6.2f %6.2f %6.2f ",
+			      fiNtrks,iHit,iHit1,pHit->GetAddress(),pHit1->GetAddress(), dDT, dTx, dTy, dDT/dLz, hitpos1_local[0],hitpos1_local[1],hitpos1_local[2] )
 	   	      <<FairLogger::endl; 
-          LOG(DEBUG3) << Form(" Pair selection parameter:  %6.2f, %6.2f, %6.2f, %6.2f, %6.2f, %6.2f",
-			      dSizey1,fPosYMaxScal,fMaxTofTimeDifference,fTxLIM,fTyMean,fTyLIM)
+          LOG(DEBUG3) << Form("    selection: y %6.2f < %6.2f, T %6.2f < %6.2f, dTpos %6.2f < %6.2f, Abs(%6.2f - %6.2f) < %6.2f",
+			      hitpos1_local[1],dSizey1*fPosYMaxScal,dDT/dLz,fMaxTofTimeDifference,dTx,fTxLIM,dTy,fTyMean,fTyLIM)
   	   	      <<FairLogger::endl; 
 
 	  if(    TMath::Abs(hitpos1_local[1])<dSizey1*fPosYMaxScal)
@@ -296,10 +297,10 @@ Int_t CbmTofTrackFinderNN::DoFind(
 	    tPar->SetTx(dTx);
 	    tPar->SetTy(dTy);
 
-	    LOG(DEBUG) << Form("<I> TofTracklet %d, Hits %d, %d initialized, add 0x%08x,0x%08x, time %6.1f,%6.1f ",
-			       fiNtrks,iHit,iHit1,
+	    LOG(DEBUG) << Form("<I> TofTracklet %d, %p,%p Hits %d, %d initialized, add 0x%08x,0x%08x, time %6.1f,%6.1f ",
+			       fiNtrks,pTrk,fTracks.back(),iHit,iHit1,
 			       pHit->GetAddress(), pHit1->GetAddress(), pTrk->GetT0(), pTrk->GetTt())
-		      << tPar->ToString()
+	      //		      << tPar->ToString()
 	   	      <<FairLogger::endl; 
 	  }
 	}
@@ -487,7 +488,7 @@ Int_t CbmTofTrackFinderNN::DoFind(
 	  // update inverse velocity
 	  Double_t dTt=pTrk->GetTt();
 
-	  LOG(DEBUG)   << Form("<Res> TofTracklet %d, HMul %d, Hits %d, %d, %d, NDF %d,  Chi2 %6.2f, T %6.2f, Tt %6.2f ",
+	  LOG(DEBUG)   << Form("<Res> TofTracklet %d, HMul %d, Hits %d, %d, %d, NDF %d,  Chi2 %6.2f, T %6.2f, Tt %6.4f ",
 				 iTrk,pTrk->GetNofHits(),iHit0,iHit1,iHit, pTrk->GetNDF(), pTrk->GetChiSq(), pTrk->GetTime(), dTt)
 		       << FairLogger::endl;
     
@@ -533,6 +534,13 @@ Int_t CbmTofTrackFinderNN::DoFind(
     CbmTofTracklet* pTrk = new((*fTofTracks)[fiNtrks++]) CbmTofTracklet (*fTracks[iTr]);
   }
   PrintStatus((char*)"<D> Final result");
+
+  for(Int_t iTr=0; iTr<fTracks.size(); iTr++){
+    fTracks[iTr]->Delete();
+    LOG(DEBUG) << Form("<I> TofTracklet %d, %p deleted",
+			    iTr,fTracks[iTr] )
+	       <<FairLogger::endl;
+  }
   fTracks.resize(0); //cleanup 
   // fFindTracks->PrintSetup();
   return 0;
@@ -605,7 +613,7 @@ void  CbmTofTrackFinderNN::TrklSeed(Int_t iHit)
 
           pTrk->SetTime(pHit->GetTime());       // define reference time from 2. plane   
 	  Double_t dR  = pHit->GetR() - pHit1->GetR();
-	  Double_t dTt = 1000./30. ; // assume speed of light:  1 / 30 cm/ns
+	  Double_t dTt = 1./30. ; // assume speed of light:  1 / 30 cm/ns
 	  if( 0 == iSmType) pHit1->SetTime(pHit->GetTime() - dTt * dR);
 	  dTt = (pHit->GetTime() - pHit1->GetTime())/dR;
 	  pTrk->SetTt(dTt); 
@@ -690,10 +698,13 @@ void  CbmTofTrackFinderNN::UpdateTrackList( Int_t iTrk)
 	     LOG(DEBUG2) <<"   --- iHitInd "<<iHitInd<<"("<<fvTrkVec.size()<<"), size "<<fvTrkVec[iHitInd].size()
 			 <<" - iH "
 			 <<iH<<"("<<(*iT)->GetNofHits()<<"), iHi "<<iHi<<" Hi vec size "<<fvTrkVec[iHi].size()
-			 <<Form(" poi %p, iTpoi %p, SmAddr 0x%08x ", pTrk, *iT, (*iT)->GetTofHitPointer(iH)->GetAddress())
+			 <<Form(" poi %p, iTpoi %p, SmAddr 0x%08x, 0x%08x, 0x%08x ", pTrk, *iT, (*iT)->GetTofHitPointer(iH)->GetAddress(),iAddri,fFindTracks->GetBeamCounter())
 			 << FairLogger::endl;
-	     if(iAddri==fFindTracks->GetBeamCounter()) continue; 
 
+	     if(iAddri==fFindTracks->GetBeamCounter()) {
+	       LOG(DEBUG2) <<" Hit in beam counter, continue ..."<<FairLogger::endl;
+	       continue; 
+	     }
 	     if(fvTrkVec[iHi].size()==0) {
 	       LOG(FATAL)<<"CbmTofTrackFinderNN::UpdateTrackList no track "
 			 <<" for hit "<<iH<<", Hind "<<iHi
@@ -704,7 +715,7 @@ void  CbmTofTrackFinderNN::UpdateTrackList( Int_t iTrk)
 	     else{       // loop over tracks  referenced by hit iHi 
 	       for(std::vector<CbmTofTracklet*>::iterator it=fvTrkVec[iHi].begin();  it!=fvTrkVec[iHi].end(); it++){
 		 LOG(DEBUG2) << "    UpdateTrackList for pTrk "<<pTrk<<" <-> "<<*iT<<" <-> "<<*it<<", clean "<<iterClean
-			     <<", size "<<fvTrkVec[iHi].size()
+			     << ", hit "<<iHi<<", size "<<fvTrkVec[iHi].size()
 			     << FairLogger::endl;                 
 		 if(*it != pTrk) { 
 		   Int_t iTr=0;;
@@ -747,7 +758,7 @@ void  CbmTofTrackFinderNN::UpdateTrackList( Int_t iTrk)
 			   //  it =fvTrkVec[iHi].begin();
 			   break;
 			 }else {
-			   itt=fvTrkVec[iHI].erase(itt);
+			   itt=fvTrkVec[iHI].erase(itt); // costly operation
 			   break;
 			 }
 		       }

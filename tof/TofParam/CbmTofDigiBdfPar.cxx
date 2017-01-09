@@ -45,6 +45,7 @@ CbmTofDigiBdfPar::CbmTofDigiBdfPar( const char* name,
   fiChType(),
   fiChOrientation(),
   fiDetUId(),
+  fMapDetInd(),
   fsBeamInputFile(""),	
   fiClusterRadiusModel(-1),
   fiSmTypeInpMapp(),
@@ -548,6 +549,18 @@ Double_t CbmTofDigiBdfPar::GetSigVel( Int_t iSmType, Int_t iSm, Int_t iRpc) cons
          else return 0.0;
    } // if( iSmType < fiNbSmTypes )
       else return 0.0;
+}
+void CbmTofDigiBdfPar::SetSigVel( Int_t iSmType, Int_t iSm, Int_t iRpc, Double_t vel)
+{
+  if(iSmType>-1 && iSmType < fiNbSmTypes){
+    if( iSm < fiNbSm[iSmType] && iRpc < fiNbRpc[iSmType] )
+       fdSigVel[iSmType][iSm*fiNbRpc[iSmType]+iRpc]=vel;
+    else{
+      LOG(ERROR)<<"Invalid iSm "<<iSm<<", iRpc "<<iRpc<<FairLogger::endl;
+    }
+  }else{
+    LOG(ERROR)<<"Invalid SMType "<<iSmType<<FairLogger::endl;
+  }
 }
 Int_t    CbmTofDigiBdfPar::GetNbChan( Int_t iSmType, Int_t iRpc) const
 {

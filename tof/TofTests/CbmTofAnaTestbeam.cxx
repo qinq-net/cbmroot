@@ -56,6 +56,9 @@ const Double_t DTDMAX=6.;   // diamond inspection range in ns
 
 Double_t dTDia;
 Double_t dDTD4Min=1.E8;
+static Double_t StartAnalysisTime = 0.;
+static Double_t StartSpillTime    = 0.;
+const  Double_t SpillDuration     = 15.; // in seconds
 
 //___________________________________________________________________
 //
@@ -256,6 +259,10 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam()
     fhDutXY_Found(NULL),     
     fhDutXY_Missed(NULL), 
     fhDutXYDT(NULL),
+    fhTrklNofHitsRate(NULL),
+    fhTrklDetHitRate(NULL),
+    fhTrklNofHitsRateInSpill(NULL),
+    fhTrklDetHitRateInSpill(NULL),
     fStart(),
     fStop(),
     fCalParFileName(""),
@@ -516,6 +523,10 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fhDutXY_Found(NULL),     
     fhDutXY_Missed(NULL), 
     fhDutXYDT(NULL),
+    fhTrklNofHitsRate(NULL),
+    fhTrklDetHitRate(NULL),
+    fhTrklNofHitsRateInSpill(NULL),
+    fhTrklDetHitRateInSpill(NULL),
     fStart(),
     fStop(),
     fCalParFileName(""),
@@ -619,7 +630,7 @@ InitStatus CbmTofAnaTestbeam::Init()
   if (NULL == fFindTracks) {
     //fdTShift   += fChannelInfoDut->GetZ()/30.;  // in ns 
     //if ( NULL != fChannelInfoSel2 ) fdSel2TOff += fChannelInfoSel2->GetZ()/30.;
-    LOG(WARNING) << Form("CbmTofAnaTestbeam::Init : no FindTracks instance found, use TShift = %8.3f, Sel2 = %8.3f",fdTShift,fdSel2TOff)
+    LOG(WARNING) << Form("CbmTofAnaTestbeam::Init : no FindTracks instance found, use TShift = %8.3f, Sel2Toff = %8.3f",fdTShift,fdSel2TOff)
 	         << FairLogger::endl;
   }
   else{  // reinitialize Offsets 
@@ -1384,6 +1395,26 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
     fhDutXYDT      = new TH3F( Form("hDutXYDT_%d",iDutId), 
 			    Form("hDutXYDT_%d;  x(cm); y (cm); #Deltat (ns)",iDutId),
 			    Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ, Nbins, -DTSIZ, DTSIZ); 
+    // rate histos
+    Double_t TRange = 600.; //in seconds
+    Double_t NStations=10.;
+    if (NULL != fFindTracks) NStations=fFindTracks->GetNStations();
+
+    fhTrklNofHitsRate = new TH2F( Form("hTrklNofHitsRate"),
+			    Form("hTrklNofHitsRate;  Time (s); NofHits "),
+				  (Int_t)TRange, 0., TRange, 10, 1., 11.);
+    fhTrklDetHitRate  = new TH2F( Form("hTrklDetHitRate"),
+			    Form("hTrklDetHitRate;  Time (s); DetIndx "),
+				  (Int_t)TRange, 0., TRange, NStations, 0., NStations);
+
+    // spill histos 
+    Double_t TRangeSpill = 10.; //in seconds
+    fhTrklNofHitsRateInSpill = new TH2F( Form("hTrklNofHitsRateInSpill"),
+			    Form("hTrklNofHitsRateInSpill;  Time (s); NofHits "),
+				(Int_t)TRangeSpill*10, 0., TRangeSpill, 10, 1., 11.);
+    fhTrklDetHitRateInSpill  = new TH2F( Form("hTrklDetHitRateInSpill"),
+			    Form("hTrklDetHitRateInSpill;  Time (s); DetIndx "),
+				  (Int_t)TRangeSpill*10, 0., TRangeSpill, NStations, 0., NStations);
 
    gDirectory->cd( oldir->GetPath() ); // <= To prevent histos from being sucked in by the param file of the TRootManager!
 
@@ -2374,10 +2405,9 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
        }
      }
     } // end of if(iNbMatchedHits>0)
-   }
+   }  // BSel[0] condition end 
 
  // Tracklet based analysis
-
 
    if(NULL!=fTofTrackColl){
      iNbTofTracks  = fTofTrackColl->GetEntries();
@@ -2406,6 +2436,22 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
        for (Int_t iTrk=0; iTrk<iNbTofTracks;iTrk++) { // loop over all Tracklets
 	 CbmTofTracklet *pTrk = (CbmTofTracklet*)fTofTrackColl->At(iTrk);
 	 if(NULL == pTrk) continue;
+	 //Monitor tracklet related rates
+	 if (StartAnalysisTime == 0.) StartAnalysisTime = pTrk->GetTime();
+	 if( pTrk->GetTime() - StartSpillTime > SpillDuration*1.E9 ) StartSpillTime=pTrk->GetTime();
+
+	 fhTrklNofHitsRate->Fill((pTrk->GetTime()-StartAnalysisTime)/1.E9,pTrk->GetNofHits());   // Monitor tracklet size
+	 for (Int_t iTH=0; iTH<pTrk->GetNofHits(); iTH++){                                       // Loop over Tracklet hits
+	   fhTrklDetHitRate->Fill((pTrk->GetTime()-StartAnalysisTime)/1.E9,                      // Station hit rate
+				  fFindTracks->GetStationOfAddr( pTrk->GetTofHitPointer(iTH)->GetAddress() & DetMask ) ); 
+	 }
+
+	 fhTrklNofHitsRateInSpill->Fill((pTrk->GetTime()-StartSpillTime)/1.E9,pTrk->GetNofHits());   // Monitor tracklet size
+	 for (Int_t iTH=0; iTH<pTrk->GetNofHits(); iTH++){                                       // Loop over Tracklet hits
+	   fhTrklDetHitRateInSpill->Fill((pTrk->GetTime()-StartSpillTime)/1.E9,                      // Station hit rate
+				  fFindTracks->GetStationOfAddr( pTrk->GetTofHitPointer(iTH)->GetAddress() & DetMask ) ); 
+	 }
+
 	 if (pTrk->GetNofHits() < NStations) continue;  
 
 	 // Calculate positions and time in Dut plane
@@ -2548,7 +2594,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      } // #tracklets > 0 end
    }  // TclonesArray existing end
    return kTRUE;  
-}  //FillHistos
+}  //FillHistos end 
 // ------------------------------------------------------------------
 
 Bool_t CbmTofAnaTestbeam::WriteHistos()
@@ -2579,7 +2625,7 @@ Bool_t CbmTofAnaTestbeam::WriteHistos()
        for (Int_t ix=0; ix<nx; ix++){
 	 Double_t dVal=htmp1D->GetBinContent(ix) + fhDTD4DT04D4Off->GetBinContent(ix);
 	 // Double_t dVal=fhDTD4DT04D4Off->GetBinContent(ix);
-	 LOG(DEBUG1)<<"Update hDTD4DT04D4best "<<ix<<": "<<htmp1D->GetBinContent(ix)<<" + "
+	 LOG(DEBUG2)<<"Update hDTD4DT04D4best "<<ix<<": "<<htmp1D->GetBinContent(ix)<<" + "
 		  << fhDTD4DT04D4Off->GetBinContent(ix) << " -> " << dVal << FairLogger::endl;
 	 htmp1D->SetBinContent(ix,dVal);
        }

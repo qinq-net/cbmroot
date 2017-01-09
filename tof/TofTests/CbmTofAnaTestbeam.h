@@ -400,6 +400,11 @@ class CbmTofAnaTestbeam : public FairTask {
  
       // Rates and data rates
 
+      TH2 * fhTrklNofHitsRate;
+      TH2 * fhTrklDetHitRate;
+      TH2 * fhTrklNofHitsRateInSpill;
+      TH2 * fhTrklDetHitRateInSpill;
+
       // Performances check
  
       // Control

@@ -38,12 +38,14 @@ class TClonesArray;
 class TF1;
 class TH1;
 class TH2;
+class TProfile;
 class TString;
 #include "TTimeStamp.h"
 
 // C++ Classes and includes
 #include <vector>
 #include <map>
+#include <list>
 
 class CbmTofTestBeamClusterizer : public FairTask
 {
@@ -137,8 +139,9 @@ class CbmTofTestBeamClusterizer : public FairTask
       inline void SetPs2Ns(Bool_t bval)                 { fbPs2Ns = bval; }
 
       //static Double_t  f1_xboxe(double *x, double *par); // Fit function 
-      virtual void     fit_ybox(const char *hname);        // Fit
-      virtual void     fit_ybox(TH1 *h, Double_t dy);      // Fit
+      virtual void fit_ybox(const char *hname);        // Fit
+      virtual void fit_ybox(TH1 *h, Double_t dy);      // Fit
+      virtual void CheckLHMemory();                    // Check consistency of stored last hits
 
    protected:
 
@@ -277,6 +280,7 @@ class CbmTofTestBeamClusterizer : public FairTask
       std::vector< std::vector< std::vector<TH2 *> > >fhRpcCluWalk; // [nbDet][nbCh][nSide]
       std::vector< TH2* > fhSmCluPosition; //[nbSmTypes]
       std::vector< TH2* > fhSmCluTOff; 
+      std::vector< TProfile* > fhSmCluSvel; 
       std::vector< TH1* > fhRpcDTLastHits;     //[nbDet]
 
       std::vector< std::vector< TH1* > > fhTRpcCluMul;      //[nbDet][nbSel]
@@ -304,7 +308,7 @@ class CbmTofTestBeamClusterizer : public FairTask
       std::vector< std::vector< std::vector< std::vector< Double_t > > > > fvCPTotOff;  //[nSMT][nRpc][nCh][nbSide]
       std::vector< std::vector< std::vector< std::vector< std::vector< Double_t > > > > > fvCPWalk; //[nSMT][nRpc][nCh][nbSide][nbWalkBins]
 
-      std::vector< std::vector< std::vector< std::vector< std::vector< CbmTofHit * > > > > >  fvLastHits;  //[nSMT[nSm][nRpc][nCh][NHits]
+      std::vector< std::vector< std::vector< std::vector< std::list< CbmTofHit * > > > > >  fvLastHits;  //[nSMT[nSm][nRpc][nCh][NHits]
 
       // Digis quality
       Int_t fiNbSameSide;
@@ -343,7 +347,9 @@ class CbmTofTestBeamClusterizer : public FairTask
       Int_t    fSel2Sm;
       Int_t    fSel2Rpc;
       Int_t    fSel2Addr;
+
       std::map<UInt_t, UInt_t> fDetIdIndexMap;
+      std::vector< Int_t >  fviDetId;
 
       Double_t fPosYMaxScal;
       Double_t fTRefDifMax;

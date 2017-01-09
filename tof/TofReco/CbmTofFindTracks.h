@@ -103,6 +103,7 @@ class CbmTofFindTracks : public FairTask
   void PrintSetup();
 
   inline Int_t GetAddrOfStation(Int_t iVal) {return fMapStationRpcId[iVal]; } 
+  inline Int_t GetDetIndSize()              {return fMapRpcIdParInd.size(); }
   Int_t GetStationOfAddr(Int_t iAddr);
 
   inline Int_t GetStationType(Int_t i) { return fStationType[i]; }

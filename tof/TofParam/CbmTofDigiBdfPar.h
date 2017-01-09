@@ -62,6 +62,7 @@ class CbmTofDigiBdfPar : public FairParGenericSet
     Int_t    GetNbGaps( Int_t iSmType, Int_t iRpc) const;
     Double_t GetGapSize( Int_t iSmType, Int_t iRpc) const;
     Double_t GetSigVel( Int_t iSmType, Int_t iSm, Int_t iRpc) const;
+    void     SetSigVel( Int_t iSmType, Int_t iSm, Int_t iRpc, Double_t dvel);
     Int_t    GetNbChan( Int_t iSmType, Int_t iRpc) const;
     Int_t    GetChanType( Int_t iSmType, Int_t iRpc) const;
     Int_t    GetChanOrient( Int_t iSmType, Int_t iRpc) const;

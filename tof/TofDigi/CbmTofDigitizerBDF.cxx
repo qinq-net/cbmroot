@@ -477,7 +477,7 @@ Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
          fvdSignalVelocityRpc[iSmType][iSm].resize( iNbRpc );
          for( Int_t iRpc = 0; iRpc < iNbRpc; iRpc++ )
             if( 0.0 < fDigiBdfPar->GetSigVel( iSmType, iSm, iRpc ) )
-               fvdSignalVelocityRpc[iSmType][iSm][iRpc]      = 1000.0 * fDigiBdfPar->GetSigVel( iSmType, iSm, iRpc ); // convert in cm/ns
+               fvdSignalVelocityRpc[iSmType][iSm][iRpc]      = fDigiBdfPar->GetSigVel( iSmType, iSm, iRpc ); // convert into cm/ns if necessary (FIXME)
             else fvdSignalVelocityRpc[iSmType][iSm][iRpc] = fdSignalPropSpeed;
       }
 
@@ -509,7 +509,7 @@ Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
                                <<" "<<fdChannelGain[iSmType][iSm*iNbRpc + iRpc][iCh*iNbSides + iSide]<<FairLogger::endl;
                  } // if( 0 < fdFeeGainSigma )
                  else fdChannelGain[iSmType][iSm*iNbRpc + iRpc][iCh*iNbSides + iSide] = 1;
-		 if(iSmType==5) fdChannelGain[iSmType][iSm*iNbRpc + iRpc][iCh*iNbSides + iSide] *= 100.; //FIXME, Diamond
+		 //if(iSmType==5) fdChannelGain[iSmType][iSm*iNbRpc + iRpc][iCh*iNbSides + iSide] *= 10.; //FIXME, Diamond
 	       }
          } // for( Int_t iRpc = 0; iRpc < iNbRpc; iRpc++ )
       } // for( Int_t iSm = 0; iSm < iNbSm; iSm++ )
@@ -2286,9 +2286,11 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 	       //	       tofDigi->GetMatch()->AddLink(1., iPntInd);
                fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].push_back( tofDigi );
 	       fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].push_back( iPntInd );
-	       LOG(DEBUG1)<<Form("Digimatch (%d,%d,%d,%d): size %zu, MCp %d, MCt %d, TA %6.2f, TotA %6.1f",
+	       LOG(DEBUG1)<<Form("Digimatch (%d,%d,%d,%d): size %zu, MCp %d, MCt %d, TA %6.2f, TotA %6.1f, Ypos %6.1f, Vsig %6.1f ",
 				iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].size(),iPntInd,iTrackID,dTimeA,
-				dChargeCentral*fdChannelGain[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1]/2.0)
+				dChargeCentral*fdChannelGain[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1]/2.0,
+                poipos_local[1],fvdSignalVelocityRpc[iSmType][iSM][iRpc]
+                            )
 			 <<FairLogger::endl;
 
             } // charge ok, TimeA
