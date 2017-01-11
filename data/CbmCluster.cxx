@@ -5,6 +5,9 @@
  */
 
 #include "CbmCluster.h"
+
+#include "CbmMatch.h"
+
 #include <sstream>
 
 using namespace std;

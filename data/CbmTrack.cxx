@@ -6,6 +6,8 @@
 
 #include "CbmTrack.h"
 
+#include "CbmMatch.h"
+
 #include <sstream>
 using std::stringstream;
 using std::endl;
