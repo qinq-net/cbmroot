@@ -1,8 +1,10 @@
 #include "CbmMuchPad.h"
 #include "CbmMuchGeoScheme.h"
 #include "CbmMuchModuleGem.h"
-#include "CbmMuchDigi.h"
-#include "CbmMuchDigiMatch.h"
+
+//Can be removed as we will Buffer Digi in the CbmMuchReadoutBuffer
+//#include "CbmMuchDigi.h"
+//#include "CbmMuchDigiMatch.h"
 
 // -------------------------------------------------------------------------
 CbmMuchPad::CbmMuchPad() 
@@ -12,8 +14,8 @@ CbmMuchPad::CbmMuchPad()
     fDx(0.),
     fDy(0.),
     fDigiIndex(-1),
-    fDigi(NULL),
-    fMatch(NULL),
+    	//fDigi(NULL),
+    	//fMatch(NULL),
     fNeighbours()
 {
   fNeighbours.resize(20);
@@ -28,8 +30,9 @@ CbmMuchPad::CbmMuchPad (Int_t address, Double_t x, Double_t y, Double_t dx, Doub
     fDx(dx),
     fDy(dy),
     fDigiIndex(-1),
-    fDigi(new CbmMuchDigi(address)),
-    fMatch(new CbmMuchDigiMatch()),
+    ////Can be removed as we will Buffer Digi in the CbmMuchReadoutBuffer
+    //fDigi(new CbmMuchDigi(address)),
+    //fMatch(new CbmMuchDigiMatch()),
     fNeighbours()
 {
   fNeighbours.resize(20);

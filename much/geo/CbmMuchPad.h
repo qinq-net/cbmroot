@@ -15,8 +15,12 @@
 #include "TArrayL64.h"
 #include "CbmMuchAddress.h"
 class CbmMuchSector;
-class CbmMuchDigi;
-class CbmMuchDigiMatch;
+
+//Can be removed as we will Buffer Digi in the CbmMuchReadoutBuffer
+//class CbmMuchDigi;
+//class CbmMuchDigiMatch;
+
+
 #include "CbmMuchModuleGem.h"
 #include <vector>
 
@@ -32,11 +36,14 @@ public:
   Double_t GetDx()             const { return fDx; }
   Double_t GetDy()             const { return fDy; }
   Double_t GetDxy()            const { return 0.; }
+  //Can be removed as we will Buffer Digi in the CbmMuchReadoutBuffer
   Int_t GetDigiIndex()         const { return fDigiIndex; }
-  CbmMuchDigi* GetDigi()  const { return fDigi; }
-  CbmMuchDigiMatch* GetMatch() const { return fMatch; }
+  //CbmMuchDigi* GetDigi()  const { return fDigi; }
+  //CbmMuchDigiMatch* GetMatch() const { return fMatch; }
+  
   std::vector<CbmMuchPad*> GetNeighbours() const { return fNeighbours; }
   void SetNeighbours(std::vector<CbmMuchPad*> neighbours) { fNeighbours = neighbours; }
+  //Can be removed as we will Buffer Digi in the CbmMuchReadoutBuffer
   void SetDigiIndex(Int_t iDigi)             { fDigiIndex = iDigi; }
   virtual void SetFired(Int_t, Int_t, Int_t = 256){}
 
@@ -49,9 +56,15 @@ protected:
   Double_t            fDx;         // X-pad width
   Double_t            fDy;         // Y-pad width
   Int_t               fDigiIndex;  // Index of the corresponding CbmMuchDigi (if any)
-  CbmMuchDigi*        fDigi;       //! pointer to current digi
-  CbmMuchDigiMatch*   fMatch;      //! pointer to current digi match
+//  CbmMuchDigi*        fDigi;       //! pointer to current digi
+//  CbmMuchDigiMatch*   fMatch;      //! pointer to current digi match
   std::vector<CbmMuchPad*> fNeighbours; //! Array of neighbour pads
+
+ // CbmMuchDigi*        fDigi;       //! pointer to current digi
+ // CbmMuchDigiMatch*   fMatch;      //! pointer to current digi match
+  
+
+// vector<CbmMuchPad*> fNeighbours; //! Array of neighbour pads
 
  private:
   CbmMuchPad(const CbmMuchPad&);

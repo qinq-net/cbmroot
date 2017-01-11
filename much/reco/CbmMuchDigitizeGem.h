@@ -1,4 +1,7 @@
 /** CbmMuchDigitizeGem.h
+ *@author Vikas Singhal <vikas@vecc.gov.in>
+ *@since 01.10.16
+ *@version 3.0
  *@author Evgeny Kryshen <e.kryshen@gsi.de>
  *@since 01.05.11
  *@version 2.0
@@ -26,6 +29,7 @@
 #include "CbmMuchDigi.h"
 #include "CbmMuchDigiMatch.h"
 #include "CbmMuchGeoScheme.h"
+#include "CbmMuchSignal.h"
 #include "TF1.h"
 #include <map>
 
@@ -52,6 +56,7 @@ static double l_e         = 0.47;
 static double l_not_e     = 0.36;
 
 static const Double_t gkResponsePeriod = 400.;
+//static const Int_t gkResponseBin = 1;
 
 class CbmMuchDigitizeGem : public FairTask{
   public:
@@ -128,7 +133,11 @@ class CbmMuchDigitizeGem : public FairTask{
      **/
     Double_t MPV_n_e(Double_t Tkin, Double_t mass);
     
-    void SetDaq(Bool_t daq) {fDaq = daq;}
+    void ReadAndRegister(); //Read from CbmMuchReadoutBuffer and Register as per mode
+
+    CbmMuchDigi* ConvertSignalToDigi(CbmMuchSignal*); //Converting Analog Signal to Digital Digi
+
+    void SetDaq(Bool_t daq) {fDaq = daq;} // Setting Event by event mode by fDaq =0 and Time based by fDaq=1
     void SetMcChain(TChain* mcChain) {fMcChain=mcChain;}
     void SetDeadTime(Double_t deadTime) {fDeadTime = deadTime; } 
     void SetDriftVelocity(Double_t velocity) {fDriftVelocity = velocity; }
@@ -189,7 +198,7 @@ class CbmMuchDigitizeGem : public FairTask{
      *@param height Height.
      **/
 
-    Bool_t AddDigi(CbmMuchPad* pad);
+   // Bool_t AddDigi(CbmMuchPad* pad);
     inline Int_t GasGain();
     CbmMuchDigitizeGem(const CbmMuchDigitizeGem&);
     CbmMuchDigitizeGem& operator=(const CbmMuchDigitizeGem&);
@@ -197,6 +206,18 @@ class CbmMuchDigitizeGem : public FairTask{
     Double_t GetNPrimaryElectronsPerCm(const CbmMuchPoint* point);
     Bool_t AddCharge(CbmMuchSectorRadial* s,UInt_t ne, Int_t iPoint, Double_t time, Double_t driftTime, Double_t phi1, Double_t phi2);
     void AddCharge(CbmMuchPad* pad, UInt_t charge, Int_t iPoint, Double_t time, Double_t driftTime);
+
+ /** Get event information
+  ** @param[out]  eventNumber  Number of MC event
+  ** @param[out]  inputNumber  Number of input
+  ** @param[out]  eventTime    Start time of event [ns]
+  **
+  ** In case of being run with FairRunAna, this information
+  ** is taken from FairEventHeader. If the task is run with
+  ** FairRunSim, the FairEventHeader is not filled, so the
+  ** respective information is taken from FairMCEventHeader.
+ **/
+  void GetEventInfo(Int_t& inputNr, Int_t& eventNr, Double_t& eventTime);
 
     ClassDef(CbmMuchDigitizeGem,1)
 };

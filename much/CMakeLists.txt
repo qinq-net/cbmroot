@@ -64,6 +64,8 @@ geo/CbmMuchSegmentManual.cxx
 geo/CbmMuchSegmentSector.cxx
 geo/CbmMuchStation.cxx
 reco/CbmMuchDigitizeGem.cxx
+reco/CbmMuchReadoutBuffer.cxx
+reco/CbmMuchSignal.cxx
 reco/CbmMuchDigitizeStraws.cxx
 reco/CbmMuchFindHitsGem.cxx
 reco/CbmMuchFindHitsStraws.cxx

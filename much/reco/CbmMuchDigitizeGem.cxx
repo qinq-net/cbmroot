@@ -1,4 +1,7 @@
 /** CbmMuchDigitizeGem.cxx
+ *@author Vikas Singhal <vikas@vecc.gov.in>
+ *@since 01.10.16
+ *@version 2.0
  *@author Evgeny Kryshen <e.kryshen@gsi.de>
  *@since 01.05.11
  *@version 2.0
@@ -6,7 +9,7 @@
  *@since 19.03.07
  *@version 1.0
  **
- ** CBM task class for digitizing MUCH
+ ** CBM task class for digitizing MUCH for both Event by event and Time based mode.
  ** Task level RECO
  ** Produces objects of type CbmMuchDigi out of CbmMuchPoint.
  **/
@@ -25,14 +28,22 @@
 #include "CbmMuchSectorRadial.h"
 #include "CbmMuchSectorRectangular.h"
 #include "CbmMuchDigi.h"
+#include "CbmMuchReadoutBuffer.h"
 
 // Includes from base
 #include "FairRootManager.h"
+#include "FairEventHeader.h"
+#include "FairMCEventHeader.h"
 #include "FairMCPoint.h"
+#include "FairRunAna.h"
+#include "FairRunSim.h"
+
+// Includes from Cbm
 #include "CbmMCTrack.h"
 #include "CbmMCEpoch.h"
-#include "CbmMCBuffer.h"
+//#include "CbmMCBuffer.h"
 #include "CbmDaqBuffer.h"
+
 
 // Includes from ROOT
 #include "TObjArray.h"
@@ -41,11 +52,9 @@
 #include "TRandom.h"
 #include "TChain.h"
 
+#include <cassert>
 #include <vector>
 using std::map;
-using std::cout;
-using std::endl;
-using std::vector;
 
 // -------------------------------------------------------------------------
 CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName) 
@@ -83,7 +92,7 @@ CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName)
     fTotalDriftTime(0.4/fDriftVelocity*10000), // 40 ns
     fSigma(),
     fMPV(),
-    fIsLight(kTRUE) // fIsLight = 1 (default) Store Light CbmMuchDigiMatch in output branch, fIsLight = 0 Create Heavy CbmMuchDigiMatch with fSignalShape info.  
+    fIsLight(1) // fIsLight = 1 (default) Store Light CbmMuchDigiMatch in output branch, fIsLight = 0 Create Heavy CbmMuchDigiMatch with fSignalShape info.  
 {
   fSigma[0] = new TF1("sigma_e","pol6",-5,10);
   fSigma[0]->SetParameters(sigma_e);
@@ -115,6 +124,20 @@ CbmMuchDigitizeGem::~CbmMuchDigitizeGem() {
     fDigiMatches->Delete();
     delete fDigiMatches;
   }
+  if (fSigma) {
+//    fSigma->Delete();
+    delete fSigma[0];
+    delete fSigma[1];
+    delete fSigma[2];
+    //delete[] fSigma;
+  }
+  if (fMPV) {
+//    fMPV->Delete();
+    delete fMPV[0];
+    delete fMPV[1];
+    delete fMPV[2];
+    //delete[] fMPV;
+  }
 }
 // -------------------------------------------------------------------------
 
@@ -145,26 +168,40 @@ InitStatus CbmMuchDigitizeGem::Init() {
     break;
   }
   fTotalDriftTime = driftVolumeWidth/fDriftVelocity*10000; // [ns];
-  
-  if (!fDaq){
-    // Get input array of MuchPoints
-    fPoints = (TClonesArray*) ioman->GetObject("MuchPoint");
-    // Get input array of MC tracks
-    fMCTracks = (TClonesArray*) ioman->GetObject("MCTrack");
+  //Reading MC point as Event by event for time based digi generation also.  
+  // Get input array of MuchPoints
+  fPoints = (TClonesArray*) ioman->GetObject("MuchPoint");
+  // Get input array of MC tracks
+  fMCTracks = (TClonesArray*) ioman->GetObject("MCTrack");
+  //For event by event mode output will be stored via ioman 
+  if(!fDaq){
     // Register output array MuchDigi
     fDigis = new TClonesArray("CbmMuchDigi", 1000);
-    ioman->Register("MuchDigi", "Digital response in MUCH", fDigis, IsOutputBranchPersistent("MuchDigi"));
+    ioman->Register("MuchDigi", "Digital response in MUCH", fDigis, kTRUE);
     // Register output array MuchDigiMatches
     fDigiMatches = new TClonesArray("CbmMuchDigiMatch", 1000);
-    ioman->Register("MuchDigiMatch", "Digi Match in MUCH", fDigiMatches, IsOutputBranchPersistent("MuchDigiMatch"));
-  } else {
-    if ( ! ( CbmMCBuffer::Instance() && CbmDaqBuffer::Instance() ) ) {
-      fLogger->Fatal(MESSAGE_ORIGIN, "No MCBuffer or DaqBuffer present!");
-      return kFATAL;
-    } 
-    fMCTracks = (TClonesArray*) ioman->GetObject("MCTrack");
+    ioman->Register("MuchDigiMatch", "Digi Match in MUCH", fDigiMatches, kTRUE);
+  }
+  else{
+	FairTask* daq     = FairRun::Instance()->GetTask("Daq");
+        if ( daq ) {
+        LOG(INFO) << GetName() << ": Using stream mode."
+                              << FairLogger::endl;
+        //fMode = 0;
+  	}  //? stream mode
+
+	if (!CbmDaqBuffer::Instance() )  {
+		fLogger->Fatal(MESSAGE_ORIGIN, "No CbmDaqBuffer present for building TimeSlice!");
+		return kFATAL;
+	} 
+    //    fMCTracks = (TClonesArray*) ioman->GetObject("MCTrack");
   }
 
+
+  //fgDeltaResponse is used in the CbmMuchSignal for analysing the Signal Shape,
+  //it is generated once in the digitizer and then be used by each CbmMuchSignal.
+  //For reducing the time therefore generated once in the CbmMuchDigitize Gem and
+  //not generated in the CbmMuchSignal
   // Set response on delta function
   Int_t nShapeTimeBins=Int_t(gkResponsePeriod/gkResponseBin);
   fgDeltaResponse.Set(nShapeTimeBins);
@@ -180,89 +217,114 @@ InitStatus CbmMuchDigitizeGem::Init() {
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmMuchDigitizeGem::Exec(Option_t* /*opt*/) {
-  // get current event to revert back at the end of exec
-  Int_t currentEvent = FairRootManager::Instance()->GetInTree()->GetBranch("MCTrack")->GetReadEntry();
-  cout << "Event Number is "<< currentEvent << endl;
-  fTimer.Start();
-  fNdigis = 0;
-  Int_t nPoints=0;
+void CbmMuchDigitizeGem::Exec(Option_t* opt) {
   
-  if (!fDaq){
-    fDigis->Clear();
-    fDigiMatches->Delete();
-    CbmMCBuffer::Instance()->Clear();
-    CbmMCBuffer::Instance()->Fill(fPoints,kMUCH,0,0);
-    CbmMCBuffer::Instance()->SetEndOfRun();
+	// get current event to revert back at the end of exec
+	Int_t currentEvent = FairRootManager::Instance()->GetInTree()->GetBranch("MCTrack")->GetReadEntry();
+	LOG(INFO) << "Event Number is "<< currentEvent << FairLogger::endl;
+	fTimer.Start();
+  	fNdigis = 0;
+  	Int_t nPoints=0;
+	
+	//Storing digi->Time < EventStartTime
+	ReadAndRegister();
+	//	cout<< "Exec Started and came out from first ReadAndRegister"<< endl;
+	// --- Loop over all MuchPoints and execute the ExecPoint method for both Event by event and Time Based Digitization
+     
+  	for (Int_t iPoint=0; iPoint<fPoints->GetEntriesFast(); iPoint++) {
+		const CbmMuchPoint* point = (const CbmMuchPoint*) fPoints->At(iPoint);
+  		nPoints++;
+		ExecPoint(point, iPoint);
+	}  // MuchPoint loop
+	// Add remaining digis
+	
+	//For event by event mode read all the data from CbmMuchReadoutBuffer and register in the Output.
+	//Read the Signal, convert into Digi And Register into output
+  	ReadAndRegister();
+ 	fTimer.Stop();
+  	gLogger->Info(MESSAGE_ORIGIN,"MuchDigitizeGem: %5.2f s, %i points, %i digis",fTimer.RealTime(),nPoints,fNdigis);
 
-    // Timur: to fix problem with cleanup between events <
-    vector<CbmMuchModule*> modules = fGeoScheme->GetModules();
-
-    for (vector<CbmMuchModule*>::iterator i = modules.begin(); i != modules.end(); ++i)
-    {
-      CbmMuchModuleGemRadial* module = static_cast<CbmMuchModuleGemRadial*> (*i);
-      if (module->GetDetectorType() == 2) continue; //AZ - skip straws
-
-      vector<CbmMuchPad*> pads = module->GetPads();
-
-      for (vector<CbmMuchPad*>::iterator j = pads.begin(); j != pads.end(); ++j)
-      {
-        CbmMuchDigiMatch* match = static_cast<CbmMuchDigiMatch*>((*j)->GetMatch());
-        match->ClearLinks();
-      }
-    }
-    // Timur >
-  }
-
-  // --- Loop over all MuchPoints and execute the ExecPoint method added by Vikas for Event by event digitization
-  if(!fDaq){
-  for (Int_t iPoint=0; iPoint<fPoints->GetEntriesFast(); iPoint++) {
-	const CbmMuchPoint* point = (const CbmMuchPoint*) fPoints->At(iPoint);
-  	nPoints++;
-	ExecPoint(point, iPoint);
-	}  // StsPoint loop
-  //
-  } // For time based digitization according to CbmMCBuffer based on Volker's Approch. Vikas
-	else {
-  const CbmMuchPoint* point = dynamic_cast<const CbmMuchPoint*>(CbmMCBuffer::Instance()->GetNextPoint(kMUCH));
-  while (point) {
-    nPoints++;
-    //Index of the point will be taken in the ExecPoint Funcution.
-	ExecPoint(point,0);
-    point = dynamic_cast<const CbmMuchPoint*>(CbmMCBuffer::Instance()->GetNextPoint(kMUCH));
-  }
-  }
-  // Add remaining digis
-  vector<CbmMuchModule*> modules = fGeoScheme->GetModules();
-  for (UInt_t im=0;im<modules.size();im++){
-    if (modules[im]->GetDetectorType()!=1 && modules[im]->GetDetectorType()!=3) continue;
-    CbmMuchModuleGem* module = (CbmMuchModuleGem*) modules[im];
-    vector<CbmMuchPad*> pads = module->GetPads();
-    for (UInt_t ip=0;ip<pads.size();ip++) AddDigi(pads[ip]);
-  }
-
-  fTimer.Stop();
-  gLogger->Info(MESSAGE_ORIGIN,"MuchDigitizeGem: %5.2f s, %i points, %i digis",fTimer.RealTime(),nPoints,fNdigis);
-
-  // revert branch to "current event"
-  FairRootManager::Instance()->GetInTree()->GetBranch("MCTrack")->GetEntry(currentEvent);
+  	// revert branch to "current event"
+  	FairRootManager::Instance()->GetInTree()->GetBranch("MCTrack")->GetEntry(currentEvent);
 }
+
+
 // -------------------------------------------------------------------------
+	//Read all the Signal from CbmMuchReadoutBuffer, convert the analog signal into the digital response  and register Output according to event by event mode and Time based mode.
+void CbmMuchDigitizeGem::ReadAndRegister(){
+	std::vector<CbmMuchSignal*> SignalList;
+	
+	Double_t eventTime = -1.;
+	if(fDaq){
+		eventTime = FairRun::Instance()->GetEventHeader()->GetEventTime();
+  	}
+	
+	Int_t ReadOutSignal = CbmMuchReadoutBuffer::Instance()->ReadOutData(eventTime,SignalList);
+	LOG(INFO)<< "Number of digi's read out from Buffer "<< ReadOutSignal << FairLogger::endl;
+
+    	for (std::vector<CbmMuchSignal*>::iterator LoopOver= SignalList.begin(); LoopOver != SignalList.end(); LoopOver++)
+	{
+		CbmMuchDigi* digi = ConvertSignalToDigi(*LoopOver);
+		//assert(digi);
+		if (!digi){
+			gLogger->Debug1(MESSAGE_ORIGIN,"Digi not created as signal is below threshold.");
+		}
+		else {
+			gLogger->Debug1(MESSAGE_ORIGIN,"New digi: sector=%i channel=%i",CbmMuchAddress::GetSectorIndex(digi->GetAddress()),CbmMuchAddress::GetChannelIndex(digi->GetAddress()));
+			if(fDaq)
+				//Buffer these digi's in CbmDaqBuffer for Timeslice building.
+				CbmDaqBuffer::Instance()->InsertData(digi);
+			else{
+  				new ((*fDigis)[fDigis->GetEntriesFast()]) CbmMuchDigi(digi);
+				//Above syntax is equivalent as below:-
+				//Int_t nDigis = fDigis->GetEntriesFast();
+				//CbmMuchDigi* digi = new ((*fDigis)[nDigis]) CbmMuchDigi(digi)
+  				new ((*fDigiMatches)[fDigiMatches->GetEntriesFast()]) CbmMuchDigiMatch((CbmMuchDigiMatch*)digi->GetMatch());
+				
+				// Match object will be deleted in the digi destructor.	
+				delete digi;
+			}
+			fNdigis++;
+		}
+	}
+}
+
+
+//Convert Signal into the Digi with appropriate methods.
+
+CbmMuchDigi* CbmMuchDigitizeGem::ConvertSignalToDigi(CbmMuchSignal* signal){
+		Int_t TimeStamp = signal->GetTimeStamp(fQThreshold);
+		if (TimeStamp < 0) return (NULL);//entire signal is below threshold, no digi generation.
+
+		CbmMuchDigi *digi = new CbmMuchDigi();
+		digi->SetAddress(signal->GetAddress());
+		//Charge in number of electrons, need to be converted in ADC value
+	
+		digi->SetAdc((signal->GetCharge())*fNADCChannels/fQMax);//Charge should be computed as per Electronics Response.
+		digi->SetTime(TimeStamp);
+		digi->SetMatch(signal->GetMatch());
+
+	//	digi->SetPileUp();
+	//	digi->SetDiffEvent();
+		return(digi);
+}
+
 
 
 // -------------------------------------------------------------------------
 void CbmMuchDigitizeGem::Finish(){
-  if (fDaq) Exec("");
+  //if (fDaq) Exec("");
+  //Store all the remaining digi's in the buffer into the CbmDaqBuffer
+
+   if (fDaq)	ReadAndRegister();
+             
 }
 // -------------------------------------------------------------------------
 
 
 // ------- Private method ExecAdvanced -------------------------------------
 Bool_t CbmMuchDigitizeGem::ExecPoint(const CbmMuchPoint* point, Int_t iPoint) {
-  // TODO workaround to extract point index - to be reconsidered
   
-  //Added if in the beginning of the below line for getting correct iPoint number.
-  if(fDaq)iPoint = (point->GetLink(0)).GetIndex();
   TVector3 v1,v2,dv;
   point->PositionIn(v1);
   point->PositionOut(v2);
@@ -338,29 +400,29 @@ Bool_t CbmMuchDigitizeGem::ExecPoint(const CbmMuchPoint* point, Int_t iPoint) {
   
   if (module->GetDetectorType()==3) {
     CbmMuchModuleGemRadial* module3 = (CbmMuchModuleGemRadial*) module;
-    CbmMuchSectorRadial* sFirst = (CbmMuchSectorRadial*) module3->GetSectorByIndex(0);
-    CbmMuchSectorRadial* sLast  = (CbmMuchSectorRadial*) module3->GetSectorByIndex(module3->GetNSectors()-1);
+    CbmMuchSectorRadial* sFirst = (CbmMuchSectorRadial*) module3->GetSectorByIndex(0);  //First sector
+    CbmMuchSectorRadial* sLast  = (CbmMuchSectorRadial*) module3->GetSectorByIndex(module3->GetNSectors()-1); //Last sector
 
-    Double_t rMin = sFirst->GetR1();
-    Double_t rMax = sLast->GetR2();
+    Double_t rMin = sFirst->GetR1(); //Mimimum radius of the Sector
+    Double_t rMax = sLast->GetR2();  //Maximum radius of the Sector
 
-    for (Int_t i=0;i<nElectrons;i++) {
+    for (Int_t i=0;i<nElectrons;i++) { //Looping over all the primary electrons
       Double_t aL   = gRandom->Rndm();
       Double_t driftTime = -1;
-      while(driftTime < 0) driftTime = (1-aL)*fTotalDriftTime + gRandom->Gaus(0, fDTime);
+      while(driftTime < 0) driftTime = (1-aL)*fTotalDriftTime + gRandom->Gaus(0, fDTime); //Finding drifttime with random factor of Detector Time Resolution
       TVector3 ve   = v1 + dv*aL;
-      UInt_t ne     = GasGain();
-      Double_t r    = ve.Perp();
+      UInt_t ne     = GasGain(); //Number of secondary electrons
+      Double_t r    = ve.Perp(); //
       Double_t phi  = ve.Phi();
-      Double_t r1   = r-fSpotRadius;
+      Double_t r1   = r-fSpotRadius; 
       Double_t r2   = r+fSpotRadius;
       Double_t phi1 = phi-fSpotRadius/r;
       Double_t phi2 = phi+fSpotRadius/r;
-      if (r1<rMin && r2>rMin) {
+      if (r1<rMin && r2>rMin) {//Adding charge to the pad which is on Lower Boundary 
         AddCharge(sFirst,UInt_t(ne*(r2-rMin)/(r2-r1)),iPoint,time,driftTime,phi1,phi2);
         continue;
       }  
-      if (r1<rMax && r2>rMax) {
+      if (r1<rMax && r2>rMax) {//Adding charge to the pad which is on Upper Boundary
         AddCharge(sLast,UInt_t(ne*(rMax-r1)/(r2-r1)),iPoint,time,driftTime,phi1,phi2);
         continue;
       }
@@ -368,7 +430,7 @@ Bool_t CbmMuchDigitizeGem::ExecPoint(const CbmMuchPoint* point, Int_t iPoint) {
       CbmMuchSectorRadial* s1 = module3->GetSectorByRadius(r1);
       CbmMuchSectorRadial* s2 = module3->GetSectorByRadius(r2);
       if (s1==s2) AddCharge(s1,ne,iPoint,time,driftTime,phi1,phi2); 
-      else {
+      else {//Adding praportionate charge to both the pad 
         AddCharge(s1,UInt_t(ne*(s1->GetR2()-r1)/(r2-r1)),iPoint,time,driftTime,phi1,phi2);
         AddCharge(s2,UInt_t(ne*(r2-s2->GetR1())/(r2-r1)),iPoint,time,driftTime,phi1,phi2);
       }
@@ -485,66 +547,67 @@ Bool_t CbmMuchDigitizeGem::AddCharge(CbmMuchSectorRadial* s,UInt_t ne, Int_t iPo
 
 // -------------------------------------------------------------------------
 void CbmMuchDigitizeGem::AddCharge(CbmMuchPad* pad, UInt_t charge, Int_t iPoint, Double_t time, Double_t driftTime){
-  if (!pad) return;
-  CbmMuchDigiMatch* match = static_cast<CbmMuchDigiMatch*>(pad->GetMatch());
-  CbmMuchDigi* digi = pad->GetDigi();
-  
-  if (match->GetNofLinks()==0) {
-    digi->SetTime(time);
-    match->SetDeadTime(fDeadTime);
-  }
-  if ((time>digi->GetTime()+match->GetDeadTime())||(time<digi->GetTime()-match->GetDeadTime())) {
-    AddDigi(pad);
-    digi->SetTime(time);	
-    match->SetDeadTime(fDeadTime);
-  }
-  match->AddCharge(iPoint,charge,time+driftTime,fgDeltaResponse,time);
+  	if (!pad) return;
+  	
+	Double_t eventTime = 0.;
+  	if (fDaq) eventTime = FairRun::Instance()->GetEventHeader()->GetEventTime();
+  	//LOG(DEBUG) << GetName() << ": Readout time is " << readoutTime << " ns"<< FairLogger::endl;
+	UInt_t	AbsTime = eventTime + time + driftTime;
+  	
+	//Creating a new Signal, it will be deleted by CbmReadoutBuffer()
+  	CbmMuchSignal* signal = new CbmMuchSignal(pad->GetAddress());
+	signal->SetTimeStart(AbsTime);
+	signal->SetTimeStop(AbsTime+fDeadTime);
+	signal->MakeSignalShape(charge,fgDeltaResponse);
+	signal->AddNoise(fMeanNoise);
+	UInt_t address = pad->GetAddress();
+	Int_t    inputNr   = 0;
+	Int_t    eventNr   = 0;
+	GetEventInfo(inputNr, eventNr, eventTime);
+	LOG(DEBUG) << GetName() << ": Processing event " << eventNr
+            << " from input " << inputNr << " at t = " << eventTime
+            << " ns with " << fPoints->GetEntriesFast() << " MuchPoints "
+                               << FairLogger::endl;
+	//match->AddCharge(iPoint,charge,time+driftTime,fgDeltaResponse,time,eventNr,inputNr);
+	CbmLink link(charge,iPoint,eventNr,inputNr);
+	//std::cout<<"Before AddLink"<< endl;
+	(signal->GetMatch())->AddLink(link);
+	//std::cout<<"After AddLink"<< endl;
+	//Adding all these temporary signal into the CbmMuchReadoutBuffer
+	CbmMuchReadoutBuffer::Instance()->Fill(address, signal);
+	LOG(DEBUG4)<<" Registered the CbmMuchSignal into the CbmMuchReadoutBuffer "<<FairLogger::endl;
+
 }
 // -------------------------------------------------------------------------
 
 
+// -----   Get event information   -----------------------------------------
+void CbmMuchDigitizeGem::GetEventInfo(Int_t& inputNr, Int_t& eventNr,
+                                              Double_t& eventTime) {
 
-// -------------------------------------------------------------------------
-Bool_t CbmMuchDigitizeGem::AddDigi(CbmMuchPad* pad) {
-  CbmMuchDigiMatch* match = static_cast<CbmMuchDigiMatch*>(pad->GetMatch());
-  CbmMuchDigi* digi = pad->GetDigi();
-  match->AddNoise(fMeanNoise);
-  Double_t  max_charge = match->GetMaxCharge();
-  Double_t t1 = match->GetTimeStamp(fQThreshold);
-  Double_t  dt = match->GetTimeOverThreshold(fQThreshold);
+	// --- In a FairRunAna, take the information from FairEventHeader
+	if ( FairRunAna::Instance() ) {
+                FairEventHeader* event = FairRunAna::Instance()->GetEventHeader();
+                assert ( event );
+          inputNr   = event->GetInputFileId();
+          eventNr   = event->GetMCEntryNumber();
+          eventTime = event->GetEventTime();
+        }
+ 	// --- In a FairRunSim, the input number and event time are always zero;
+	 // --- only the event number is retrieved.
+     else {
+                if ( ! FairRunSim::Instance() )
+                        LOG(FATAL) << GetName() << ": neither SIM nor ANA run."
+                                               << FairLogger::endl;
+                FairMCEventHeader* event = FairRunSim::Instance()->GetMCEventHeader();
+                assert ( event );
+                inputNr   = 0;
+                eventNr   = event->GetEventID();
+                eventTime = 0.;
+        }
 
-  // Check for threshold 
-  if (t1<0) {
-    match->Reset();
-    return kFALSE;
-  }
-  
-  
-  Int_t adc = 0;
-  Double_t nBinsInNs = 1;
-  if (fTOT) adc = Int_t(dt/nBinsInNs);             // if time over threshold
-  else      adc = max_charge*fNADCChannels/fQMax;  // if max amplitude
-  // if overflow
-  if (adc >= (1<<12)) adc = (1<<12) - 1;
-
-  digi->SetAdc(adc);
-  digi->SetTime(t1);
-  gLogger->Debug1(MESSAGE_ORIGIN,"Pad: sector=%i channel=%i",pad->GetSectorIndex(),pad->GetChannelIndex());
-  gLogger->Debug1(MESSAGE_ORIGIN,"New digi: sector=%i channel=%i",CbmMuchAddress::GetSectorIndex(digi->GetAddress()),CbmMuchAddress::GetChannelIndex(digi->GetAddress()));
-  
-  if (fDaq){
-    CbmMuchDigi* digLight = new CbmMuchDigi(digi,match);
-    CbmDaqBuffer::Instance()->InsertData(digLight);
-  } else {
-    new ((*fDigis)[fDigis->GetEntriesFast()]) CbmMuchDigi(digi);
-    new ((*fDigiMatches)[fDigiMatches->GetEntriesFast()]) CbmMuchDigiMatch(match, fIsLight);
-  }
-  match->Reset();
-  fNdigis++;
-  return kTRUE;
 }
-// -------------------------------------------------------------------------
-
+	// -------------------------------------------------------------------------
 
 ClassImp(CbmMuchDigitizeGem)
 

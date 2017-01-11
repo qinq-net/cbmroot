@@ -12,7 +12,8 @@
 #pragma link C++ class  CbmMuchContFact;
 #pragma link C++ class  CbmMuchGeoScheme+;
 #pragma link C++ class  CbmMuchDigitizeGem+;
-#pragma link C++ class  CbmMuchDigitizeGem+;
+#pragma link C++ class  CbmMuchReadoutBuffer+;
+#pragma link C++ class  CbmMuchSignal+;
 #pragma link C++ class  CbmMuchDigitizeStraws+;
 #pragma link C++ class  CbmMuchFindHitsGem+;
 #pragma link C++ class  CbmMuchFindHitsGem+;
