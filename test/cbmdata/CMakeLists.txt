@@ -8,7 +8,7 @@ File(COPY ${CBMROOT_SOURCE_DIR}/macro/include/.rootrc DESTINATION ${CBMROOT_BINA
 #Add_Test(TestCbmHit ${CBMROOT_BINARY_DIR}/test/cbmdata/TestCbmHit.sh)
 #Add_Test(TestCbmPixelHit ${CBMROOT_BINARY_DIR}/test/cbmdata/TestCbmPixelHit.sh)
 
-Macro(CreateGTestExeAndAddTest _testname _includeDirs _linkDirs _sources _dependencies)
+Macro(CreateGTestExeAndAddTest _testname _includeDirs _linkDirs _sources _dependencies _testdepend)
 
   Include_Directories(SYSTEM "${_includeDirs}")
   Link_Directories("${_linkDirs}")
@@ -16,7 +16,9 @@ Macro(CreateGTestExeAndAddTest _testname _includeDirs _linkDirs _sources _depend
   Add_Executable(${_testname} "${_sources}")
   Target_Link_Libraries(${_testname} "${_dependencies}")
   Add_Test(${_testname} ${PROJECT_BINARY_DIR}/bin/${_testname})
-
+  If(NOT ${_testdepend} STREQUAL "")
+    Set_Tests_Properties(${_testname} PROPERTIES DEPENDS ${_testdepend})
+  EndIf()  
 EndMacro(CreateGTestExeAndAddTest)
 
 Set(INCLUDE_DIRECTORIES
@@ -43,7 +45,7 @@ Set(CbmLinkSources
 )
 
 CreateGTestExeAndAddTest(_GTestCbmLink "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
-                         "${CbmLinkSources}" "${DEPENDENCIES}")
+                         "${CbmLinkSources}" "${DEPENDENCIES}" "")
 
 Set(CbmMatchSources
   ${CMAKE_SOURCE_DIR}/data/CbmMatch.cxx
@@ -51,7 +53,7 @@ Set(CbmMatchSources
 )
 
 CreateGTestExeAndAddTest(_GTestCbmMatch "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
-                         "${CbmMatchSources}" "${DEPENDENCIES}")
+                         "${CbmMatchSources}" "${DEPENDENCIES}" "_GTestCbmLink")
 
 Set(CbmDigiSources
   ${CMAKE_SOURCE_DIR}/data/CbmDigi.cxx
@@ -59,7 +61,7 @@ Set(CbmDigiSources
 )
 
 CreateGTestExeAndAddTest(_GTestCbmDigi "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
-                         "${CbmDigiSources}" "${DEPENDENCIES}")
+                         "${CbmDigiSources}" "${DEPENDENCIES}" "_GTestCbmMatch")
 
 Set(CbmClusterSources
   ${CMAKE_SOURCE_DIR}/data/CbmCluster.cxx
@@ -67,7 +69,7 @@ Set(CbmClusterSources
 )
 
 CreateGTestExeAndAddTest(_GTestCbmCluster "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
-                         "${CbmClusterSources}" "${DEPENDENCIES}")
+                         "${CbmClusterSources}" "${DEPENDENCIES}" "_GTestCbmDigi")
 
 Set(CbmHitSources
   ${CMAKE_SOURCE_DIR}/data/CbmHit.cxx
@@ -75,7 +77,7 @@ Set(CbmHitSources
 )  
 
 CreateGTestExeAndAddTest(_GTestCbmHit "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
-                         "${CbmHitSources}" "${DEPENDENCIES}")
+                         "${CbmHitSources}" "${DEPENDENCIES}" "_GTestCbmCluster")
 
 Set(CbmPixelHitSources
   ${CMAKE_SOURCE_DIR}/data/CbmPixelHit.cxx
@@ -83,7 +85,7 @@ Set(CbmPixelHitSources
 )  
 
 CreateGTestExeAndAddTest(_GTestCbmPixelHit "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
-                         "${CbmPixelHitSources}" "${DEPENDENCIES}")
+                         "${CbmPixelHitSources}" "${DEPENDENCIES}" "_GTestCbmHit")
 
 Set(CbmStripHitSources
   ${CMAKE_SOURCE_DIR}/data/CbmStripHit.cxx
@@ -91,7 +93,7 @@ Set(CbmStripHitSources
 )  
 
 CreateGTestExeAndAddTest(_GTestCbmStripHit "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
-                         "${CbmStripHitSources}" "${DEPENDENCIES}")
+                         "${CbmStripHitSources}" "${DEPENDENCIES}" "_GTestCbmPixelHit")
 
 Set(CbmDetectorListSources
   ${CMAKE_SOURCE_DIR}/data/CbmDetectorList.cxx
@@ -99,7 +101,7 @@ Set(CbmDetectorListSources
 )  
 
 CreateGTestExeAndAddTest(_GTestCbmDetectorList "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
-                         "${CbmDetectorListSources}" "${DEPENDENCIES}")
+                         "${CbmDetectorListSources}" "${DEPENDENCIES}" "_GTestCbmStripHit")
 
 Set(CbmEventSources
   ${CMAKE_SOURCE_DIR}/data/CbmEvent.cxx
@@ -107,7 +109,7 @@ Set(CbmEventSources
 )  
 
 CreateGTestExeAndAddTest(_GTestCbmEvent "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
-                         "${CbmEventSources}" "${DEPENDENCIES}")
+                         "${CbmEventSources}" "${DEPENDENCIES}" "_GTestCbmDetectorList")
 
 
 Set(CbmConstantsSources
@@ -115,7 +117,15 @@ Set(CbmConstantsSources
 )  
 
 CreateGTestExeAndAddTest(_GTestCbmConstants "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
-                         "${CbmConstantsSources}" "${GTEST_BOTH_LIBRARIES}")
+                         "${CbmConstantsSources}" "${GTEST_BOTH_LIBRARIES}" "_GTestCbmEvent")
+
+#Set(CbmTrackSources
+#  ${CMAKE_SOURCE_DIR}/data/CbmTrack.cxx
+#  _GTestCbmTrack.cxx
+#)  
+
+#CreateGTestExeAndAddTest(_GTestCbmTrack "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
+#                         "${CbmTrackSources}" "${DEPENDENCIES}" "_GTestCbmConstants")
 
 Set(CbmVertexSources
   ${CMAKE_SOURCE_DIR}/data/global/CbmVertex.cxx
@@ -123,7 +133,8 @@ Set(CbmVertexSources
 )  
 
 CreateGTestExeAndAddTest(_GTestCbmVertex "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
-                         "${CbmVertexSources}" "${DEPENDENCIES}")
+                         "${CbmVertexSources}" "${DEPENDENCIES}" "_GTestCbmConstants")
+#                         "${CbmVertexSources}" "${DEPENDENCIES}" "_GTestCbmTrack")
                          
 
 #GENERATE_ROOT_TEST_SCRIPT(${CMAKE_SOURCE_DIR}/test/cbmdata/load_all_libs.C)
