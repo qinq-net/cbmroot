@@ -1,9 +1,11 @@
-// TODO comment to be changed
 /** CbmMuchDigi.cxx
  **@author M.Ryzhinskiy <m.ryzhinskiy@gsi.de>
  **@since 19.03.07
  **@version 1.0
  **
+ **@author Vikas Singhal <vikas@vecc.gov.in>
+ **@since 17/05/16
+ **@version 2.0
  ** Data class for digital MUCH information
  ** Data level: RAW
  **
@@ -15,68 +17,30 @@
 
 #include <memory>
 
-// -------------------------------------------------------------------------
-const Int_t CbmMuchDigi::fgkCharBits = 12;
-const Int_t CbmMuchDigi::fgkTimeBits = 14;
-const Int_t CbmMuchDigi::fgkAddrBits = 32;
-// -------------------------------------------------------------------------
-
-// -----   Bit shift for charge and time stamp   ---------------------------
-const Int_t CbmMuchDigi::fgkAddrShift = 0;
-const Int_t CbmMuchDigi::fgkCharShift = CbmMuchDigi::fgkAddrShift + CbmMuchDigi::fgkAddrBits;
-const Int_t CbmMuchDigi::fgkTimeShift = CbmMuchDigi::fgkCharShift + CbmMuchDigi::fgkCharBits;
-// -------------------------------------------------------------------------
-
-// -----   Bit masks for charge and time stamp   ---------------------------
-const Long64_t CbmMuchDigi::fgkAddrMask = (1LL << CbmMuchDigi::fgkAddrBits) - 1;
-const Long64_t CbmMuchDigi::fgkCharMask = (1LL << CbmMuchDigi::fgkCharBits) - 1;
-const Long64_t CbmMuchDigi::fgkTimeMask = (1LL << CbmMuchDigi::fgkTimeBits) - 1;
-// -------------------------------------------------------------------------
-
-
-// -------------------------------------------------------------------------
-CbmMuchDigi::CbmMuchDigi() 
-  : CbmDigi(),
-    fData(0)
-{
-}
-// -------------------------------------------------------------------------
-
-
-// -------------------------------------------------------------------------
-CbmMuchDigi::CbmMuchDigi(Int_t address, Int_t charge, Int_t time)
-  : CbmDigi(),
-    fData(0)
-{
-  fData |= (address & fgkAddrMask) << fgkAddrShift;
-  fData |= (charge  & fgkCharMask) << fgkCharShift;
-  fData |= (time    & fgkTimeMask) << fgkTimeShift;
-}
-// -------------------------------------------------------------------------
-
 CbmMuchDigi::CbmMuchDigi(CbmMuchDigi* digi)
-  : CbmDigi(*digi),
-    fData(digi->fData)
+	: CbmDigi(*digi),
+	fAddress(digi->fAddress),
+	fCharge(digi->fCharge),
+	fTime(digi->fTime)
 { 
 }
 
 CbmMuchDigi::CbmMuchDigi(CbmMuchDigi* digi,CbmMuchDigiMatch* match)
   : CbmDigi(*digi),
-    fData(digi->fData)
+	fAddress(digi->fAddress),
+	fCharge(digi->fCharge),
+	fTime(digi->fTime)
 {  
-  fMatch = new CbmMuchDigiMatch(match);
+	SetMatch(match);
 }
 
 
 CbmMuchDigi::CbmMuchDigi(const CbmMuchDigi& rhs)
- : CbmDigi(rhs),
-   fData(rhs.fData)
+	: CbmDigi(rhs),
+	fAddress(rhs.fAddress),
+	fCharge(rhs.fCharge),
+	fTime(rhs.fTime)
 {
-/*
-  if (NULL != rhs.fMatch) {
-     fMatch = new CbmMuchDigiMatch(*(rhs.fMatch));
-   }
-*/
 }
 
 CbmMuchDigi& CbmMuchDigi::operator=(const CbmMuchDigi& rhs)
@@ -84,49 +48,32 @@ CbmMuchDigi& CbmMuchDigi::operator=(const CbmMuchDigi& rhs)
 
   if (this != &rhs) {
     CbmDigi::operator=(rhs);
-    fData = rhs.fData;
-/*
-    if (NULL != rhs.fMatch) {
-      std::unique_ptr<CbmMuchDigiMatch> tmp(new CbmMuchDigiMatch(*rhs.fMatch));
-      delete fMatch;
-      fMatch = tmp.release();
-    } else {
-      fMatch = NULL;
-    }
-*/
+    fAddress = rhs.fAddress;
+    fCharge = rhs.fCharge;
+    fTime = rhs.fTime;
   }
   return *this;
 }
 
-
-// -----   Add charge   ----------------------------------------------------
-void CbmMuchDigi::AddAdc(Int_t adc) {
-  Int_t newAdc = GetAdc() + adc;
-  if (newAdc > fgkCharMask) newAdc = fgkCharMask;
-  SetAdc(newAdc);
-}
-// -------------------------------------------------------------------------
-
-
 // -----   Set new charge   ------------------------------------------------
 void CbmMuchDigi::SetAdc(Int_t adc) {
-  // reset to 0
-  fData &= ~(fgkCharMask << fgkCharShift);
-  // set new value
-  fData |=  (adc & fgkCharMask) << fgkCharShift;
+	//ADC value should not be more than saturation
+	fCharge=adc;	
+	// if Saturation
+	Int_t saturation = (1<<12); //2 ^ 12 - 1;	
+	if(fCharge >= saturation){
+		fCharge=saturation-1;
+		fSaturationFlag=1;
+	}
+	if(fCharge < 0) fCharge=0;
 }
 // -------------------------------------------------------------------------
 
 
 // -------------------------------------------------------------------------
-void CbmMuchDigi::SetTime(Int_t time) { 
-  // reset to 0
-  fData &= ~(fgkTimeMask << fgkTimeShift);
-  // set new value
-  fData |= (time    & fgkTimeMask) << fgkTimeShift; 
+void CbmMuchDigi::SetTime(ULong64_t time) { 
+  	fTime = time;
 }
 // -------------------------------------------------------------------------
-
-
 
 ClassImp(CbmMuchDigi)
