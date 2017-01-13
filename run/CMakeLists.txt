@@ -54,7 +54,7 @@ CbmBuildEventsQA.cxx
 CbmEvBuildSource.cxx
 CbmDaq.cxx
 CbmDaqNew.cxx
-CbmDaqQa.cxx
+#CbmDaqQa.cxx
 CbmDaqBuffer.cxx
 CbmMCBuffer.cxx
 CbmMCTimeSim.cxx
