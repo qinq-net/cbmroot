@@ -6,6 +6,7 @@
 
 #include <iomanip>
 #include <sstream>
+
 #include "FairLogger.h"
 
 using namespace std;
@@ -19,7 +20,7 @@ CbmVertex::CbmVertex() :
         fChi2(0.),
         fNDF(0),
         fNTracks(0),
-        fCovMatrix() {
+        fCovMatrix(3) {
 }
 // -------------------------------------------------------------------------
 
@@ -32,7 +33,7 @@ CbmVertex::CbmVertex(const char* name, const char* title) :
         fChi2(0.),
         fNDF(0),
         fNTracks(0),
-        fCovMatrix() {
+        fCovMatrix(3) {
 }
 // -------------------------------------------------------------------------
 
@@ -47,7 +48,13 @@ CbmVertex::CbmVertex(const char* name, const char* title, Double_t x,
         fChi2(chi2),
         fNDF(ndf),
         fNTracks(nTracks),
-        fCovMatrix(covMat) {
+        fCovMatrix(3)
+{
+  if ( (covMat.GetNrows() != 3) && (covMat.GetNcols() != 3) ) {
+    LOG(ERROR) << "Wrong dimension of passed covariance matrix. Clear the covariance matrix." << FairLogger::endl;
+  } else {
+    fCovMatrix = covMat;
+  }
 }
 // -------------------------------------------------------------------------
 
@@ -66,7 +73,16 @@ void CbmVertex::SetVertex(Double_t x, Double_t y, Double_t z, Double_t chi2,
   fChi2 = chi2;
   fNDF = ndf;
   fNTracks = nTracks;
-  fCovMatrix = covMat;
+  if ( (covMat.GetNrows() != 3) && (covMat.GetNcols() != 3) ) {
+    for(Int_t i=0; i<3; ++i) {
+      for(Int_t j=0; j<3; ++j) {
+        fCovMatrix(i,j)= 0.;
+      }
+    }
+    LOG(ERROR) << "Wrong dimension of passed covariance matrix. Clear the covariance matrix." << FairLogger::endl;
+  }  else {
+    fCovMatrix = covMat;
+  }
 }
 // -------------------------------------------------------------------------
 
@@ -74,7 +90,13 @@ void CbmVertex::SetVertex(Double_t x, Double_t y, Double_t z, Double_t chi2,
 void CbmVertex::Reset() {
   fX = fY = fZ = fChi2 = 0.;
   fNDF = fNTracks = 0;
-  fCovMatrix.Clear();
+  // Clear loescht das komplette Objekt anstatt die Werte auf Null zu setzen
+  //  fCovMatrix.Clear();
+  for(Int_t i=0; i<3; ++i) {
+    for(Int_t j=0; j<3; ++j) {
+      fCovMatrix(i,j)= 0.;
+    }
+  }
 }
 // -------------------------------------------------------------------------
 
