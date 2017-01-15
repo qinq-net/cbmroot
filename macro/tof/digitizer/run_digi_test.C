@@ -115,6 +115,7 @@ void run_digi_test(Int_t nEvents = 2, const char* setup = "sis100_electron")
   tofDigitizerBdf->SetOutputBranchPersistent("TofDigi",            kFALSE);
   tofDigitizerBdf->SetOutputBranchPersistent("TofDigiMatchPoints", kFALSE);
   tofDigitizerBdf->SetInputFileName( paramDir + "tof/test_bdf_input.root"); // Required as input file name not read anymore by param class
+  tofDigitizerBdf->UseMcTrackMonitoring(); // Enable the Mc Track Usage in the digitizer
   run->AddTask(tofDigitizerBdf);
 
 
@@ -126,6 +127,7 @@ void run_digi_test(Int_t nEvents = 2, const char* setup = "sis100_electron")
   CbmTofSimpClusterizer* tofSimpClust = new CbmTofSimpClusterizer("TOF Simple Clusterizer",iVerbose);
   tofSimpClust->SetOutputBranchPersistent("TofHit",          kFALSE);
   tofSimpClust->SetOutputBranchPersistent("TofDigiMatch",    kFALSE);
+  tofSimpClust->UseMcTrackMonitoring(); // Enable the Mc Track Usage in the clusterizer
   run->AddTask(tofSimpClust);
 
   // ------   TOF hit producer   ---------------------------------------------

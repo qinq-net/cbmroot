@@ -88,6 +88,8 @@ class CbmTofDigitizerBDF : public FairTask
       Bool_t   SetHistoFileName( TString sFilenameIn = "./tofDigiBdf.hst.root" );
 
       void SetMonitorHistograms(Bool_t bMonitor = kTRUE) { fbMonitorHistos = bMonitor; }
+      
+      void UseMcTrackMonitoring(Bool_t bMcTrkMonitor = kTRUE) { fbMcTrkMonitor = bMcTrkMonitor; }
 
       inline void SetDigiTimeConvFactor  (Double_t dfac)  { fdDigiTimeConvFactor    = dfac;}
       
@@ -335,6 +337,7 @@ class CbmTofDigitizerBDF : public FairTask
       TString fsBeamInputFile;
 
       Bool_t fbMonitorHistos;
+      Bool_t fbMcTrkMonitor;
       Bool_t fbTimeBasedOutput;
 
       Int_t fiCurrentFileId;

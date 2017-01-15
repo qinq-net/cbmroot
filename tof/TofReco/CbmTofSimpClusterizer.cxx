@@ -160,7 +160,8 @@ CbmTofSimpClusterizer::CbmTofSimpClusterizer():
    fTotMin(0.),
    fOutTimeFactor(1.),
    fCalParFileName(""),
-   fCalParFile(NULL)
+   fCalParFile(NULL),
+   fbMcTrkMonitor(kFALSE)
 {
 }
 
@@ -255,7 +256,8 @@ CbmTofSimpClusterizer::CbmTofSimpClusterizer(const char *name, Int_t verbose):
    fTotMin(0.),
    fOutTimeFactor(1.),
    fCalParFileName(""),
-   fCalParFile(NULL)
+   fCalParFile(NULL),
+   fbMcTrkMonitor(kFALSE)
 
 {
 }
@@ -870,27 +872,31 @@ Bool_t   CbmTofSimpClusterizer::FillHistos()
    fhClustBuildTime->Fill( fStop.GetSec() - fStart.GetSec()
                            + (fStop.GetNanoSec() - fStart.GetNanoSec())/1e9 );
    Int_t iNbTofHits  = fTofHitsColl->GetEntries();
-   Int_t iNbTracks   = fMcTracksColl->GetEntries();
-
-   // Trakcs Info
-   Int_t iNbTofTracks     = 0;
-   Int_t iNbTofTracksPrim = 0;
-   CbmMCTrack  *pMcTrk;
-   for(Int_t iTrkInd = 0; iTrkInd < iNbTracks; iTrkInd++)
+   
+   if( fbMcTrkMonitor )
    {
-      pMcTrk = (CbmMCTrack*) fMcTracksColl->At( iTrkInd );
+      Int_t iNbTracks   = fMcTracksColl->GetEntries();
 
-      if( 0 < pMcTrk->GetNPoints(kTOF) )
+      // Trakcs Info
+      Int_t iNbTofTracks     = 0;
+      Int_t iNbTofTracksPrim = 0;
+      CbmMCTrack  *pMcTrk;
+      for(Int_t iTrkInd = 0; iTrkInd < iNbTracks; iTrkInd++)
       {
-         iNbTofTracks++;
-      }
-      if( 0 < pMcTrk->GetNPoints(kTOF) && -1 == pMcTrk->GetMotherId() )
-         iNbTofTracksPrim++;
+         pMcTrk = (CbmMCTrack*) fMcTracksColl->At( iTrkInd );
 
-   } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
+         if( 0 < pMcTrk->GetNPoints(kTOF) )
+         {
+            iNbTofTracks++;
+         }
+         if( 0 < pMcTrk->GetNPoints(kTOF) && -1 == pMcTrk->GetMotherId() )
+            iNbTofTracksPrim++;
 
-   if( 0 < iNbTofTracks )
-      fhHitsPerTracks->Fill( (Double_t)iNbTofHits/(Double_t)iNbTofTracks );
+      } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
+
+      if( 0 < iNbTofTracks )
+         fhHitsPerTracks->Fill( (Double_t)iNbTofHits/(Double_t)iNbTofTracks );
+   } // if( fbMcTrkMonitor )
 
    CbmTofHit  *pHit;
    for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)

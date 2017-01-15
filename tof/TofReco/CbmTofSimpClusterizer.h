@@ -89,6 +89,8 @@ class CbmTofSimpClusterizer : public FairTask
 
       inline void SetCalParFileName(TString CalParFileName) { fCalParFileName = CalParFileName; }
       Bool_t   SetHistoFileName( TString sFilenameIn = "./tofSimpClust.hst.root" );
+      
+      void UseMcTrackMonitoring(Bool_t bMcTrkMonitor = kTRUE) { fbMcTrkMonitor = bMcTrkMonitor; }
 
    protected:
 
@@ -265,7 +267,9 @@ class CbmTofSimpClusterizer : public FairTask
       Double_t fOutTimeFactor;
 
       TString       fCalParFileName;      // name of the file name with Calibration Parameters
-      TFile*        fCalParFile;          // pointer to Calibration Parameter file 
+      TFile*        fCalParFile;          // pointer to Calibration Parameter file
+       
+      Bool_t fbMcTrkMonitor;
 
    ClassDef(CbmTofSimpClusterizer, 2);
 };

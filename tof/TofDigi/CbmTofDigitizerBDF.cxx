@@ -136,6 +136,7 @@ CbmTofDigitizerBDF::CbmTofDigitizerBDF():
    fdMergeTime(0.),
    fsBeamInputFile(""),
    fbMonitorHistos(kTRUE),
+   fbMcTrkMonitor(kFALSE),
    fbTimeBasedOutput(kFALSE),
    fiCurrentFileId(-1),
    fiCurrentEventId(-1),
@@ -823,30 +824,34 @@ Bool_t   CbmTofDigitizerBDF::FillHistos()
    Int_t nTofPoint = fTofPointsColl->GetEntries();
    Int_t nTracks   = fMcTracksColl->GetEntries();
    Int_t nTofDigi  = fTofDigisColl->GetEntries();
+   Int_t iNbTofTracks     = 0;
    Double_t nTofFired  = 0;
    Double_t dProcessTime = fdDigitizeTime + fdMergeTime;
-   // Trakcs Info
-   Int_t iNbTofTracks     = 0;
-   Int_t iNbTofTracksPrim = 0;
+   
+   // Tracks Info
    CbmMCTrack  *pMcTrk;
-   for(Int_t iTrkInd = 0; iTrkInd < nTracks; iTrkInd++)
+   if( fbMcTrkMonitor )
    {
-      pMcTrk = (CbmMCTrack*) fMcTracksColl->At( iTrkInd );
-      // Jump all tracks not making 8 points for test
-//      if( 8 != pMcTrk->GetNPoints(kTOF) )
-//         continue;
-      if( 0 < pMcTrk->GetNPoints(kTOF) )
+      Int_t iNbTofTracksPrim = 0;
+      for(Int_t iTrkInd = 0; iTrkInd < nTracks; iTrkInd++)
       {
-         iNbTofTracks++;
-         fhTofPointsPerTrack->Fill( pMcTrk->GetNPoints(kTOF) );
-         /*
-         fhTofPointsPerTrackVsPdg->Fill( pMcTrk->GetPdgCode(), pMcTrk->GetNPoints(kTOF) );
-         */
-      }
-      if( 0 < pMcTrk->GetNPoints(kTOF) && -1 == pMcTrk->GetMotherId() )
-         iNbTofTracksPrim++;
+         pMcTrk = (CbmMCTrack*) fMcTracksColl->At( iTrkInd );
+         // Jump all tracks not making 8 points for test
+   //      if( 8 != pMcTrk->GetNPoints(kTOF) )
+   //         continue;
+         if( 0 < pMcTrk->GetNPoints(kTOF) )
+         {
+            iNbTofTracks++;
+            fhTofPointsPerTrack->Fill( pMcTrk->GetNPoints(kTOF) );
+            /*
+            fhTofPointsPerTrackVsPdg->Fill( pMcTrk->GetPdgCode(), pMcTrk->GetNPoints(kTOF) );
+            */
+         }
+         if( 0 < pMcTrk->GetNPoints(kTOF) && -1 == pMcTrk->GetMotherId() )
+            iNbTofTracksPrim++;
 
-   } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
+      } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
+   } // if( fbMcTrkMonitor )
 
    // Tof Points info
    CbmTofPoint  *pTofPt;
@@ -854,30 +859,35 @@ Bool_t   CbmTofDigitizerBDF::FillHistos()
    {
       pTofPt = (CbmTofPoint*) fTofPointsColl->At( iPtInd );
       fhPtTime->Fill( pTofPt->GetTime() );
+      
+      if( fbMcTrkMonitor )
+      {
+         Int_t iDetId  = pTofPt->GetDetectorID();
+         Int_t iGap    = fGeoHandler->GetGap(iDetId);
 
-      Int_t iDetId  = pTofPt->GetDetectorID();
-      Int_t iGap    = fGeoHandler->GetGap(iDetId);
-      pMcTrk = (CbmMCTrack*) fMcTracksColl->At( pTofPt->GetTrackID() );
+         pMcTrk = (CbmMCTrack*) fMcTracksColl->At( pTofPt->GetTrackID() );
 
-      fhTofPtsInTrkVsGapInd->Fill( pMcTrk->GetNPoints(kTOF), iGap );
-      if( -1 == pMcTrk->GetMotherId() )
-         fhTofPtsInTrkVsGapIndPrm->Fill( pMcTrk->GetNPoints(kTOF), iGap );
-      else if( 11 != pMcTrk->GetPdgCode() ) // Remove electrons
-         fhTofPtsInTrkVsGapIndSec->Fill( pMcTrk->GetNPoints(kTOF), iGap );
+         fhTofPtsInTrkVsGapInd->Fill( pMcTrk->GetNPoints(kTOF), iGap );
+         if( -1 == pMcTrk->GetMotherId() )
+            fhTofPtsInTrkVsGapIndPrm->Fill( pMcTrk->GetNPoints(kTOF), iGap );
+         else if( 11 != pMcTrk->GetPdgCode() ) // Remove electrons
+            fhTofPtsInTrkVsGapIndSec->Fill( pMcTrk->GetNPoints(kTOF), iGap );
 
-      // Get TofPoint Position
-      TVector3 vPntPos;
-      pTofPt->Position( vPntPos );
-      if( 8-pMcTrk->GetNPoints(kTOF) <= iGap &&
-            pMcTrk->GetNPoints(kTOF) < 8 &&
-            -1 != pMcTrk->GetMotherId() )
-      fhTofPtsPosVsGap[iGap]->Fill(  vPntPos.X(),  vPntPos.Y() );
-   }
+         // Get TofPoint Position
+         TVector3 vPntPos;
+         pTofPt->Position( vPntPos );
+         if( 8-pMcTrk->GetNPoints(kTOF) <= iGap &&
+               pMcTrk->GetNPoints(kTOF) < 8 &&
+               -1 != pMcTrk->GetMotherId() )
+         fhTofPtsPosVsGap[iGap]->Fill(  vPntPos.X(),  vPntPos.Y() );
+      } // if( fbMcTrkMonitor )
+   } // for(Int_t iPtInd = 0; iPtInd < nTofPoint; iPtInd++)
 
    fhDigiMergeTime->Fill( fdMergeTime );
    fhEvtProcTime->Fill( dProcessTime );
    fhProcTimeEvtSize->Fill( nTofPoint, dProcessTime );
-   fhMeanDigiPerTrack->Fill( (Double_t)nTofDigi/(Double_t)iNbTofTracks );
+   if( fbMcTrkMonitor )
+      fhMeanDigiPerTrack->Fill( (Double_t)nTofDigi/(Double_t)iNbTofTracks );
 //   fhMeanDigiPerPoint->Fill( (Double_t)nTofDigi/(Double_t)nTofPoint );
 //   fhMeanPointPerTrack->Fill( (Double_t)nTofPoint/(Double_t)iNbTofTracks);
 //   fhMeanPointPerTrack2d->Fill( iNbTofTracks, (Double_t)nTofPoint/(Double_t)iNbTofTracks);
@@ -1434,14 +1444,6 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
    Int_t nTofPoint = fTofPointsColl->GetEntries();
    Int_t nMcTracks = fMcTracksColl ->GetEntries();
 
-   // Debug Info printout
-   Int_t iNbTofTracks     = 0;
-   Int_t iNbTofTracksPrim = 0;
-
-   LOG(DEBUG1) << "CbmTofDigitizerBDF::DigitizeDirectClusterSize: " << nTofPoint
-              << " points in Tof for this event with " << nMcTracks
-              << " MC tracks "<< FairLogger::endl;
-
    // Prepare the temporary storing of the Track/Point/Digi info
    if( kTRUE == fDigiBdfPar->UseOneGapPerTrk() )
    {
@@ -1457,18 +1459,32 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
          fvlTrckRpcAddr[iTrkInd].clear();
          fvlTrckRpcTime[iTrkInd].clear();
       } // if( kTRUE == fDigiBdfPar->UseOneGapPerTrk() )
-      pMcTrk = (CbmMCTrack*) fMcTracksColl->At( iTrkInd );
-      if( 0 < pMcTrk->GetNPoints(kTOF) )
-         iNbTofTracks++;
-      if( 0 < pMcTrk->GetNPoints(kTOF) && -1 == pMcTrk->GetMotherId() )
-         iNbTofTracksPrim++;
    } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
+   
+   if( fbMcTrkMonitor )
+   {
+      // Debug Info printout
+      Int_t iNbTofTracks     = 0;
+      Int_t iNbTofTracksPrim = 0;
 
-   //Some numbers on TOF distributions
-   LOG(DEBUG1) << "CbmTofDigitizerBDF::DigitizeDirectClusterSize: " << iNbTofTracks
-              << " tracks in Tof " << FairLogger::endl;
-   LOG(DEBUG1) << "CbmTofDigitizerBDF::DigitizeDirectClusterSize: " << iNbTofTracksPrim
-              << " tracks in Tof from vertex" << FairLogger::endl;
+      LOG(DEBUG1) << "CbmTofDigitizerBDF::DigitizeDirectClusterSize: " << nTofPoint
+                 << " points in Tof for this event with " << nMcTracks
+                 << " MC tracks "<< FairLogger::endl;
+      for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
+      {
+         pMcTrk = (CbmMCTrack*) fMcTracksColl->At( iTrkInd );
+         if( 0 < pMcTrk->GetNPoints(kTOF) )
+            iNbTofTracks++;
+         if( 0 < pMcTrk->GetNPoints(kTOF) && -1 == pMcTrk->GetMotherId() )
+            iNbTofTracksPrim++;
+      } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
+
+      //Some numbers on TOF distributions
+      LOG(DEBUG1) << "CbmTofDigitizerBDF::DigitizeDirectClusterSize: " << iNbTofTracks
+                 << " tracks in Tof " << FairLogger::endl;
+      LOG(DEBUG1) << "CbmTofDigitizerBDF::DigitizeDirectClusterSize: " << iNbTofTracksPrim
+                 << " tracks in Tof from vertex" << FairLogger::endl;
+   } // if( fbMcTrkMonitor )
 
    // Tof Point Info
    Int_t    iDetId, iSmType, iSM, iRpc, iChannel, iGap;
@@ -1530,15 +1546,18 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
       iNbRpc  = fDigiBdfPar->GetNbRpc( iSmType);
       iNbCh   = fDigiBdfPar->GetNbChan( iSmType, iRpc );
       iChType = fDigiBdfPar->GetChanType( iSmType, iRpc );
-
-      // Get pointer to the MC-Track info
       Int_t iTrkId = pPoint->GetTrackID();
-      pMcTrk = (CbmMCTrack*) fMcTracksColl->At( iTrkId );
 
-      // Keep only primaries
-      if( kTRUE == fDigiBdfPar->UseOnlyPrimaries() )
-         if( -1 != pMcTrk->GetMotherId() )
-            continue;
+      if( fbMcTrkMonitor )
+      {
+         // Get pointer to the MC-Track info
+         pMcTrk = (CbmMCTrack*) fMcTracksColl->At( iTrkId );
+
+         // Keep only primaries
+         if( kTRUE == fDigiBdfPar->UseOnlyPrimaries() )
+            if( -1 != pMcTrk->GetMotherId() )
+               continue;
+      } // if( fbMcTrkMonitor )
 
       if(   iSmType  < 0. || iNbSmTypes <= iSmType
          || iSM      < 0. || iNbSm      <= iSM
@@ -1942,14 +1961,6 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
    Int_t nTofPoint = fTofPointsColl->GetEntries();
    Int_t nMcTracks = fMcTracksColl ->GetEntries();
 
-   // Debug Info printout
-   Int_t iNbTofTracks     = 0;
-   Int_t iNbTofTracksPrim = 0;
-
-   LOG(DEBUG1) << "CbmTofDigitizerBDF::DigitizeFlatDisc: " << nTofPoint
-              << " points in Tof for this event with " << nMcTracks
-              << " MC tracks "<< FairLogger::endl;
-
    // Prepare the temporary storing of the Track/Point/Digi info
    if( kTRUE == fDigiBdfPar->UseOneGapPerTrk() )
    {
@@ -1965,18 +1976,32 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
          fvlTrckRpcAddr[iTrkInd].clear();
          fvlTrckRpcTime[iTrkInd].clear();
       } // if( kTRUE == fDigiBdfPar->UseOneGapPerTrk() )
-      pMcTrk = (CbmMCTrack*) fMcTracksColl->At( iTrkInd );
-      if( 0 < pMcTrk->GetNPoints(kTOF) )
-         iNbTofTracks++;
-      if( 0 < pMcTrk->GetNPoints(kTOF) && -1 == pMcTrk->GetMotherId() )
-         iNbTofTracksPrim++;
    } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
+   
+   if( fbMcTrkMonitor )
+   {
+      // Debug Info printout
+      Int_t iNbTofTracks     = 0;
+      Int_t iNbTofTracksPrim = 0;
 
-   //Some numbers on TOF distributions
-   LOG(DEBUG1) << "CbmTofDigitizerBDF::DigitizeFlatDisc: " << iNbTofTracks
-              << " tracks in Tof " << FairLogger::endl;
-   LOG(DEBUG1) << "CbmTofDigitizerBDF::DigitizeFlatDisc: " << iNbTofTracksPrim
-              << " tracks in Tof from vertex" << FairLogger::endl;
+      LOG(DEBUG1) << "CbmTofDigitizerBDF::DigitizeFlatDisc: " << nTofPoint
+                 << " points in Tof for this event with " << nMcTracks
+                 << " MC tracks "<< FairLogger::endl;
+      for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
+      {
+         pMcTrk = (CbmMCTrack*) fMcTracksColl->At( iTrkInd );
+         if( 0 < pMcTrk->GetNPoints(kTOF) )
+            iNbTofTracks++;
+         if( 0 < pMcTrk->GetNPoints(kTOF) && -1 == pMcTrk->GetMotherId() )
+            iNbTofTracksPrim++;
+      } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
+
+      //Some numbers on TOF distributions
+      LOG(DEBUG1) << "CbmTofDigitizerBDF::DigitizeFlatDisc: " << iNbTofTracks
+                  << " tracks in Tof " << FairLogger::endl;
+      LOG(DEBUG1) << "CbmTofDigitizerBDF::DigitizeFlatDisc: " << iNbTofTracksPrim
+                  << " tracks in Tof from vertex" << FairLogger::endl;
+   } // if( fbMcTrkMonitor )
 
    // Tof Point Info
    Int_t    iDetId, iSmType, iSM, iRpc, iChannel, iGap;
@@ -2036,26 +2061,29 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
       iNbRpc  = fDigiBdfPar->GetNbRpc( iSmType);
       iNbCh   = fDigiBdfPar->GetNbChan( iSmType, iRpc );
       iChType = fDigiBdfPar->GetChanType( iSmType, iRpc );
-
-      // Get pointer to the MC-Track info
       Int_t iTrkId = pPoint->GetTrackID();
-      pMcTrk = (CbmMCTrack*) fMcTracksColl->At( iTrkId );
 
-      LOG(DEBUG1)<<Form("CbmTofDigitizerBDF => det ID 0x%08x",iDetId) 
-		 <<", GeoVersion "<< fGeoHandler->GetGeoVersion()<<", SMType: "<<iSmType
-		 <<" SModule: "<<iSM<<" of "<<iNbSm+1
-		 <<" Module: "<<iRpc<<" of "<<iNbRpc+1
-		 <<" Gap: "<<iGap
-		 <<" Cell: "<<iChannel<<" of "<<iNbCh+1 <<FairLogger::endl;
+      if( fbMcTrkMonitor )
+      {
+         // Get pointer to the MC-Track info
+         pMcTrk = (CbmMCTrack*) fMcTracksColl->At( iTrkId );
 
-      // Jump all tracks not making 8 points for test
-//      if( 8 != pMcTrk->GetNPoints(kTOF) )
-//         continue;
+         LOG(DEBUG1)<<Form("CbmTofDigitizerBDF => det ID 0x%08x",iDetId) 
+          <<", GeoVersion "<< fGeoHandler->GetGeoVersion()<<", SMType: "<<iSmType
+          <<" SModule: "<<iSM<<" of "<<iNbSm+1
+          <<" Module: "<<iRpc<<" of "<<iNbRpc+1
+          <<" Gap: "<<iGap
+          <<" Cell: "<<iChannel<<" of "<<iNbCh+1 <<FairLogger::endl;
 
-      // Keep only primaries
-      if( kTRUE == fDigiBdfPar->UseOnlyPrimaries() )
-         if( -1 != pMcTrk->GetMotherId() )
-            continue;
+         // Jump all tracks not making 8 points for test
+   //      if( 8 != pMcTrk->GetNPoints(kTOF) )
+   //         continue;
+
+         // Keep only primaries
+         if( kTRUE == fDigiBdfPar->UseOnlyPrimaries() )
+            if( -1 != pMcTrk->GetMotherId() )
+               continue;
+      } // if( fbMcTrkMonitor )
 
       if(   iSmType  < 0. || iNbSmTypes <= iSmType
          || iSM      < 0. || iNbSm      <= iSM
@@ -2866,14 +2894,6 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
    Int_t nTofPoint = fTofPointsColl->GetEntries();
    Int_t nMcTracks = fMcTracksColl ->GetEntries();
 
-   // Debug Info printout
-   Int_t iNbTofTracks     = 0;
-   Int_t iNbTofTracksPrim = 0;
-
-   LOG(DEBUG1) << "CbmTofDigitizerBDF::DigitizeGaussCharge: " << nTofPoint
-              << " points in Tof for this event with " << nMcTracks
-              << " MC tracks "<< FairLogger::endl;
-
    // Prepare the temporary storing of the Track/Point/Digi info
    if( kTRUE == fDigiBdfPar->UseOneGapPerTrk() )
    {
@@ -2889,18 +2909,32 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
          fvlTrckRpcAddr[iTrkInd].clear();
          fvlTrckRpcTime[iTrkInd].clear();
       } // if( kTRUE == fDigiBdfPar->UseOneGapPerTrk() )
-      pMcTrk = (CbmMCTrack*) fMcTracksColl->At( iTrkInd );
-      if( 0 < pMcTrk->GetNPoints(kTOF) )
-         iNbTofTracks++;
-      if( 0 < pMcTrk->GetNPoints(kTOF) && -1 == pMcTrk->GetMotherId() )
-         iNbTofTracksPrim++;
    } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
+   
+   if( fbMcTrkMonitor )
+   {
+      // Debug Info printout
+      Int_t iNbTofTracks     = 0;
+      Int_t iNbTofTracksPrim = 0;
 
-   //Some numbers on TOF distributions
-   LOG(DEBUG1) << "CbmTofDigitizerBDF::DigitizeGaussCharge: " << iNbTofTracks
-              << " tracks in Tof " << FairLogger::endl;
-   LOG(DEBUG1) << "CbmTofDigitizerBDF::DigitizeGaussCharge: " << iNbTofTracksPrim
-              << " tracks in Tof from vertex" << FairLogger::endl;
+      LOG(DEBUG1) << "CbmTofDigitizerBDF::DigitizeGaussCharge: " << nTofPoint
+                 << " points in Tof for this event with " << nMcTracks
+                 << " MC tracks "<< FairLogger::endl;
+      for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
+      {
+         pMcTrk = (CbmMCTrack*) fMcTracksColl->At( iTrkInd );
+         if( 0 < pMcTrk->GetNPoints(kTOF) )
+            iNbTofTracks++;
+         if( 0 < pMcTrk->GetNPoints(kTOF) && -1 == pMcTrk->GetMotherId() )
+            iNbTofTracksPrim++;
+      } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
+
+      //Some numbers on TOF distributions
+      LOG(DEBUG1) << "CbmTofDigitizerBDF::DigitizeGaussCharge: " << iNbTofTracks
+                 << " tracks in Tof " << FairLogger::endl;
+      LOG(DEBUG1) << "CbmTofDigitizerBDF::DigitizeGaussCharge: " << iNbTofTracksPrim
+                 << " tracks in Tof from vertex" << FairLogger::endl;
+   } // if( fbMcTrkMonitor )
 
    // Tof Point Info
    Int_t    iDetId, iSmType, iSM, iRpc, iChannel, iGap;
@@ -2959,15 +2993,18 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
       iNbRpc  = fDigiBdfPar->GetNbRpc( iSmType);
       iNbCh   = fDigiBdfPar->GetNbChan( iSmType, iRpc );
       iChType = fDigiBdfPar->GetChanType( iSmType, iRpc );
-
-      // Get pointer to the MC-Track info
       Int_t iTrkId = pPoint->GetTrackID();
-      pMcTrk = (CbmMCTrack*) fMcTracksColl->At( iTrkId );
 
-      // Keep only primaries
-      if( kTRUE == fDigiBdfPar->UseOnlyPrimaries() )
-         if( -1 != pMcTrk->GetMotherId() )
-            continue;
+      if( fbMcTrkMonitor )
+      {
+         // Get pointer to the MC-Track info
+         pMcTrk = (CbmMCTrack*) fMcTracksColl->At( iTrkId );
+
+         // Keep only primaries
+         if( kTRUE == fDigiBdfPar->UseOnlyPrimaries() )
+            if( -1 != pMcTrk->GetMotherId() )
+               continue;
+      } // if( fbMcTrkMonitor )
 
       if(   iSmType  < 0. || iNbSmTypes < iSmType
          || iSM      < 0. || iNbSm      < iSM
