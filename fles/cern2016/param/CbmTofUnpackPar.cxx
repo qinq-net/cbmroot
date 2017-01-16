@@ -24,7 +24,11 @@ CbmTofUnpackPar::CbmTofUnpackPar(const char* name,
     fNrOfChannelsPerGet4(-1),
     fNrOfChannels(-1),
     fChannelToDetUIdMap(),
-    fPlotChannelRate(0)
+    fPlotChannelRate(0),
+    fiStarSortAndCut(0),
+    fiStarActiveMasksArray(),
+    fdStarTriggerDelay(),
+    fdStarTriggerWinSize()
 {
   detName="Tof";
 }
@@ -60,6 +64,10 @@ void CbmTofUnpackPar::putParams(FairParamList* l)
   l->add("NrOfChannels",       fNrOfChannels);
   l->add("ChannelToDetUIdMap", fChannelToDetUIdMap);
   l->add("PlotChannelRate",    fPlotChannelRate);
+  l->add("StarSortAndCut",       fiStarSortAndCut);
+  l->add("StarActiveMasksArray", fiStarActiveMasksArray);
+  l->add("StarTriggerDelay",     fdStarTriggerDelay);
+  l->add("StarTriggerWinSize",   fdStarTriggerWinSize);
 }
 
 //------------------------------------------------------
@@ -85,6 +93,17 @@ Bool_t CbmTofUnpackPar::getParams(FairParamList* l) {
 
 //  if ( ! l->fill("PlotChannelRate", &fPlotChannelRate) ) return kFALSE;
   l->fill("PlotChannelRate", &fPlotChannelRate); // Optionally read this flag, do not crash if not there
+  
+  l->fill("StarSortAndCut", &fiStarSortAndCut); // Optionally read this value, do not crash if not there
+  if( IsStarSortAndCutEnabled() )
+  {
+     fiStarActiveMasksArray.Set(fNrOfGdpb);
+     fdStarTriggerDelay.Set(fNrOfGdpb);
+     fdStarTriggerWinSize.Set(fNrOfGdpb);
+     l->fill("StarActiveMasksArray", &fiStarActiveMasksArray); // Optionally read this value, do not crash if not there
+     l->fill("StarTriggerDelay",     &fdStarTriggerDelay); // Optionally read this value, do not crash if not there
+     l->fill("StarTriggerWinSize",   &fdStarTriggerWinSize); // Optionally read this value, do not crash if not there
+  } // if( IsStarSortAndCutEnabled() )
   
   return kTRUE;
 }

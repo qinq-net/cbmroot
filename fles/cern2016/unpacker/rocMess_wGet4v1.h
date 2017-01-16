@@ -562,6 +562,7 @@ namespace ngdpb {
          //++++//
          inline uint64_t getStarTsLsbStarD()   const { return getFieldLong( 40,  8 ); }
          /// 12 bits in between are set to 0
+         inline uint32_t getStarFillerD()      const { return getField(     28, 12 ); } // Should be always 0
          inline uint32_t getStarTokenStarD()   const { return getField(      8, 12 ); }
          inline uint32_t getStarDaqCmdStarD()  const { return getField(     20,  4 ); }
          inline uint32_t getStarTrigCmdStarD() const { return getField(     24,  4 ); }

@@ -11,6 +11,7 @@
 #ifndef __CINT__
 #include "Timeslice.hpp"
 #include "rocMess_wGet4v1.h"
+#include "CbmTofStarData.h"
 #endif
 
 #include "CbmTSUnpack.h"
@@ -76,6 +77,7 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
                                 UInt_t inPulserChanP = 15 );
 
     void ResetAllHistos();
+    void CyclePulserFee();
 
   private:
 
@@ -170,6 +172,7 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     UInt_t    fuStarDaqCmdLast;
     UInt_t    fuStarTrigCmdLast;
     TH1 *     fhTriggerRate;
+    TH2 *     fhCmdDaqVsTrig;
     
     ///* STAR and pulser monitoring *///
     static const UInt_t kuNbChanTest = 16;
@@ -184,6 +187,24 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     TH1 * fhTimeRmsPulserChosenChPairs;
     Double_t fdLastRmsUpdateTime;
 
+    ///* STAR event building/cutting *///
+    Bool_t  fbStarSortAndCutMode;
+    std::vector< Int_t >    fiStarActiveAsicMask;
+    std::vector< Double_t > fdStarTriggerDelay;
+    std::vector< Double_t > fdStarTriggerWinSize;
+    std::vector< UInt_t >   fuCurrentEpGdpb;
+    std::vector< Int_t >    fiStarCurrentEpFound;
+    std::vector< Int_t >    fiStarNextBufferUse;
+    std::vector< Double_t > fdStarLastTrigTimeG;
+    std::vector< Int_t >    fiStarBuffIdxPrev;
+    std::vector< Int_t >    fiStarBuffIdxCurr;
+    std::vector< Int_t >    fiStarBuffIdxNext;
+#ifndef __CINT__
+//    std::vector< std::vector< Int_t > >    fvGdpbEpIdxBuffer; //! Dims: [gDPB][buffer], 1 value for Prev, Curr and Next Buff
+    std::vector< std::vector< std::vector < ngdpb::Message > > >    fvGdpbEpMsgBuffer; //! Dims: [gDPB][buffer][msgs], 1 buff. for Prev, Curr and Next
+    std::vector< std::vector< std::vector < CbmTofStarTrigger > > > fvGdpbEpTrgBuffer; //! Dims: [gDPB][buffer][trig], 1 buff. for Prev, Curr and Next
+#endif
+    
     void CreateHistograms();
 
 #ifndef __CINT__
@@ -194,6 +215,9 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     void PrintGenInfo(ngdpb::Message);
     void FillStarTrigInfo(ngdpb::Message);
 #endif
+
+    Bool_t StarSort( Int_t iGdpbIdx );
+    Bool_t StarSelect( Int_t iGdpbIdx );
 
     inline Int_t GetArrayIndex(Int_t gdpbId, Int_t get4Id) {
       return gdpbId * fNrOfGet4PerGdpb + get4Id;

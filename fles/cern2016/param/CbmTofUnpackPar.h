@@ -9,6 +9,7 @@
 #include "FairParGenericSet.h"
 
 #include "TArrayI.h"
+#include "TArrayD.h"
 
 class FairParIo;
 class FairParamList;
@@ -42,6 +43,10 @@ class CbmTofUnpackPar : public FairParGenericSet
   inline Int_t GetNumberOfChannels() {return fNrOfChannels;}
   inline Int_t GetChannelToDetUIdMap(Int_t channel) {return fChannelToDetUIdMap[channel];}
   inline Bool_t IsChannelRateEnabled() {return (1 == fPlotChannelRate);}
+  inline Bool_t IsStarSortAndCutEnabled() {return (1 == fiStarSortAndCut);}
+  inline Int_t  GetStarActiveMask(Int_t gdpb) { return (IsStarSortAndCutEnabled() ? fiStarActiveMasksArray[gdpb] : 0); }
+  inline Double_t GetStarTriggDelay(Int_t gdpb) { return (IsStarSortAndCutEnabled() ? fdStarTriggerDelay[gdpb] : 0.0);}
+  inline Double_t GetStarTriggWinSize(Int_t gdpb) { return (IsStarSortAndCutEnabled() ? fdStarTriggerWinSize[gdpb] : 0.0);}
 
  private:
 
@@ -55,7 +60,12 @@ class CbmTofUnpackPar : public FairParGenericSet
   Int_t   fNrOfChannels; // Total number of Channels
   TArrayI fChannelToDetUIdMap;// Array which stores the corresponding UIDs for each channel
   
-  Int_t   fPlotChannelRate;
+  Int_t   fPlotChannelRate; // Flag controlling wether rate plots for individual channels are filled
+  
+  Int_t   fiStarSortAndCut; // STAR: Flag controlling wether data are time sorted and cut relative to a received STAR trigger
+  TArrayI fiStarActiveMasksArray; // STAR: Array to hold the GET4s masks for each gDPB, used to wait for epoch index
+  TArrayD fdStarTriggerDelay; // STAR: Array to hold for each gDPB the Delay in us to subtract when looking for beginning of coincidence of data with trigger window
+  TArrayD fdStarTriggerWinSize; // STAR: Array to hold for each gDPB the Size of the trigger window in us
 
   ClassDef(CbmTofUnpackPar,1);
 };

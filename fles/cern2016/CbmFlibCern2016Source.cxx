@@ -40,6 +40,7 @@ CbmFlibCern2016Source::CbmFlibCern2016Source()
     fBufferFillNeeded(kTRUE),
     fHistoMissedTS(NULL),
     fNofTSSinceLastTS(0),
+    fuTsReduction(1),
     fSource(NULL)
 {
 }
@@ -275,7 +276,7 @@ Int_t CbmFlibCern2016Source::FillBuffer()
                      << std::hex << systemID << std::dec 
                      << FairLogger::endl;
         } else {
-           if( 0 == tsIndex%10 ||  systemID != 0x10 )
+           if( 0 == tsIndex%fuTsReduction ||  systemID != 0x10 )
              it->second->DoUnpack(ts, c);
         }
       }

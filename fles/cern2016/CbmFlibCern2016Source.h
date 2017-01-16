@@ -72,6 +72,8 @@ class CbmFlibCern2016Source : public FairSource
     UInt_t GetTsCount() { return fTSCounter; }
     UInt_t GetNofTSSinceLastTS() { return fNofTSSinceLastTS; }
 
+    void SetDataReductionMuch( UInt_t uTsReduction = 15 ) { fuTsReduction = uTsReduction; }
+
   private:
   
     TString fFileName;
@@ -93,6 +95,8 @@ class CbmFlibCern2016Source : public FairSource
 
     TH1I* fHistoMissedTS;
     Int_t fNofTSSinceLastTS;
+    
+    UInt_t fuTsReduction;
 
 #ifndef __CINT__
     fles::TimesliceSource* fSource; //!

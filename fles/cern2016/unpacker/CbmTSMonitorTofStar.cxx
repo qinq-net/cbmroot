@@ -35,6 +35,7 @@
 
 static Int_t iMess = 0;
 Bool_t bResetTofStarHistos = kFALSE;
+Bool_t bTofCyclePulserFee  = kFALSE;
 
 namespace get4v1x {
    // Size of one clock cycle (=1 coarse bin)
@@ -62,9 +63,13 @@ namespace get4v1x {
 }
 
 // Default value for nb bins in Pulser time difference histos
-const UInt_t kuNbBinsDt    = 5000;
+//const UInt_t kuNbBinsDt    = 5000;
+const UInt_t kuNbBinsDt    = 150;
 Double_t dMinDt     = -1.*(kuNbBinsDt*get4v1x::kdBinSize/2.) - get4v1x::kdBinSize/2.;
 Double_t dMaxDt     =  1.*(kuNbBinsDt*get4v1x::kdBinSize/2.) + get4v1x::kdBinSize/2.;
+//const UInt_t kuNbBinsDt    = 299;
+//Double_t dMinDt     = -1.*((kuNbBinsDt+1)*get4v1x::kdBinSize/2.);
+//Double_t dMaxDt     =  1.*((kuNbBinsDt+1)*get4v1x::kdBinSize/2.);
 
 // Default number of FEET per channels histograms
 UInt_t uNbFeetPlot = 2;
@@ -134,6 +139,7 @@ CbmTSMonitorTofStar::CbmTSMonitorTofStar() :
     fuStarDaqCmdLast(0),
     fuStarTrigCmdLast(0),
     fhTriggerRate(NULL),
+    fhCmdDaqVsTrig(NULL),
     fbGet4v20( kFALSE ),
     fbPulserMode( kFALSE ),
     fuPulserGdpb(0),
@@ -141,7 +147,20 @@ CbmTSMonitorTofStar::CbmTSMonitorTofStar() :
     fhTimeDiffPulserChosenFee(),
     fhTimeRmsPulserChosenFee(NULL),
     fhTimeRmsPulserChosenChPairs(NULL),
-    fdLastRmsUpdateTime(-1)
+    fdLastRmsUpdateTime(-1),
+    fbStarSortAndCutMode(kFALSE),
+    fiStarActiveAsicMask(),
+    fdStarTriggerDelay(),
+    fdStarTriggerWinSize(),
+    fuCurrentEpGdpb(),
+    fiStarCurrentEpFound(),
+    fiStarNextBufferUse(),
+    fdStarLastTrigTimeG(),
+    fiStarBuffIdxPrev(),
+    fiStarBuffIdxCurr(),
+    fiStarBuffIdxNext(),
+    fvGdpbEpMsgBuffer(),
+    fvGdpbEpTrgBuffer()
 {
 }
 
@@ -244,6 +263,37 @@ Bool_t CbmTSMonitorTofStar::ReInitContainers()
 
   if( fbEpochSuppModeOn )
       fvmEpSupprBuffer.resize( fNrOfGet4 );
+      
+  if( fbStarSortAndCutMode )
+  {
+    fuCurrentEpGdpb.resize( fNrOfGdpbs );
+    fiStarActiveAsicMask.resize( fNrOfGdpbs );
+    fiStarCurrentEpFound.resize( fNrOfGdpbs );
+    fiStarNextBufferUse.resize( fNrOfGdpbs );
+    fdStarTriggerDelay.resize(   fNrOfGdpbs );
+    fdStarTriggerWinSize.resize( fNrOfGdpbs );
+    fdStarLastTrigTimeG.resize( fNrOfGdpbs );
+    fiStarBuffIdxPrev.resize(    fNrOfGdpbs );
+    fiStarBuffIdxCurr.resize(    fNrOfGdpbs );
+    fiStarBuffIdxNext.resize(    fNrOfGdpbs );
+    fvGdpbEpMsgBuffer.resize(      fNrOfGdpbs );
+    fvGdpbEpTrgBuffer.resize(      fNrOfGdpbs );
+    for (Int_t iGdpb = 0; iGdpb < fNrOfGdpbs; ++iGdpb)
+    {
+       fuCurrentEpGdpb[ iGdpb ] = 0;
+       fiStarActiveAsicMask[ iGdpb ] = fUnpackPar->GetStarActiveMask( iGdpb );
+       fiStarCurrentEpFound[ iGdpb ] = 0;
+       fiStarNextBufferUse[ iGdpb ] = 0;
+       fdStarTriggerDelay[ iGdpb ]   = fUnpackPar->GetStarTriggDelay( iGdpb );
+       fdStarTriggerWinSize[ iGdpb ] = fUnpackPar->GetStarTriggWinSize( iGdpb );
+       fdStarLastTrigTimeG[ iGdpb ]  = -1.0;
+       fiStarBuffIdxPrev[ iGdpb ] = -1;
+       fiStarBuffIdxCurr[ iGdpb ] =  0;
+       fiStarBuffIdxNext[ iGdpb ] =  1;
+       fvGdpbEpMsgBuffer[ iGdpb ].resize( 3 ); // 1 buff. for Prev, Curr and Next
+       fvGdpbEpTrgBuffer[ iGdpb ].resize( 3 ); // 1 buff. for Prev, Curr and Next
+    } // for (Int_t iGdpb = 0; iGdpb < fNrOfGdpbs; ++iGdpb)
+  } // if( fbStarSortAndCutMode )
 
   return kTRUE;
 }
@@ -277,6 +327,8 @@ void CbmTSMonitorTofStar::CreateHistograms()
       "MSG_GET4_32B");
   hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_GET4_SYS,
       "MSG_GET4_SYS");
+  hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_STAR_TRI,
+      "MSG_STAR_TRI");
   hMessageType->GetXaxis()->SetBinLabel(1 + 15, "GET4 Hack 32B");
   hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_NOP, "NOP");
   fHM->Add(name.Data(), hMessageType);
@@ -477,9 +529,13 @@ void CbmTSMonitorTofStar::CreateHistograms()
                Form("Time difference for selected channels %03u and %03u in the first gDPB; DeltaT [ps]; Counts",
                      fuPulserChan[uChan], fuPulserChan[uChan+1]),
                uNbBinsDt, dMinDt, dMaxDt);
+#ifdef USE_HTTP_SERVER
+         if (server)
+           server->Register("/TofRaw", fhTimeDiffPulserChosenChPairs[uChan] );
+#endif
       } // for( UInt_t uChan = 0; uChan < kuNbChanTest - 1; uChan++)
       
-      name = "hTimeRmsFeePulserChosen";
+      name = "hTimeRmsPulserChosenFee";
       fhTimeRmsPulserChosenFee = new TH2D( name.Data(),
             "Time difference RMS for any channels pair in chosen Fee; Ch A; Ch B; RMS [ps]",
             fNrOfChannelsPerFeet - 1, -0.5, fNrOfChannelsPerFeet - 1.5,
@@ -490,7 +546,7 @@ void CbmTSMonitorTofStar::CreateHistograms()
         server->Register("/TofRaw", fHM->H2( name.Data() ) );
 #endif
 
-      name = "hTimeRmsPairsPulserChosenCh";
+      name = "hTimeRmsPulserChosenChPairs";
       fhTimeRmsPulserChosenChPairs = new TH1D( name.Data(),
             "Time difference RMS for chosen channels pairs; Pair # ; [ps]",
             kuNbChanTest - 1, -0.5, kuNbChanTest - 1.5);
@@ -624,9 +680,52 @@ void CbmTSMonitorTofStar::CreateHistograms()
     server->Register("/TofRaw", fHM->H1(name.Data()));
 #endif
 
+  name = "hCmdDaqVsTrig";
+  title = "STAR daq command VS STAR trigger command; DAQ ; TRIGGER";
+  fhCmdDaqVsTrig = new TH2I(name, title, 16, 0, 16, 16, 0, 16 );
+  fhCmdDaqVsTrig->GetXaxis()->SetBinLabel( 1, "0x0: no-trig "); // idle link 
+  fhCmdDaqVsTrig->GetXaxis()->SetBinLabel( 2, "0x1: clear   "); // clears redundancy counters on the readout boards
+  fhCmdDaqVsTrig->GetXaxis()->SetBinLabel( 3, "0x2: mast-rst"); // general reset of the whole front-end logic
+  fhCmdDaqVsTrig->GetXaxis()->SetBinLabel( 4, "0x3: spare   "); // reserved
+  fhCmdDaqVsTrig->GetXaxis()->SetBinLabel( 5, "0x4: trigg. 0"); // Default physics readout, all det support required
+  fhCmdDaqVsTrig->GetXaxis()->SetBinLabel( 6, "0x5: trigg. 1"); // 
+  fhCmdDaqVsTrig->GetXaxis()->SetBinLabel( 7, "0x6: trigg. 2"); // 
+  fhCmdDaqVsTrig->GetXaxis()->SetBinLabel( 8, "0x7: trigg. 3"); // 
+  fhCmdDaqVsTrig->GetXaxis()->SetBinLabel( 9, "0x8: puls.  0"); // 
+  fhCmdDaqVsTrig->GetXaxis()->SetBinLabel(10, "0x9: puls.  1"); // 
+  fhCmdDaqVsTrig->GetXaxis()->SetBinLabel(11, "0xA: puls.  2"); // 
+  fhCmdDaqVsTrig->GetXaxis()->SetBinLabel(12, "0xB: puls.  3"); // 
+  fhCmdDaqVsTrig->GetXaxis()->SetBinLabel(13, "0xC: config  "); // housekeeping trigger: return geographic info of FE
+  fhCmdDaqVsTrig->GetXaxis()->SetBinLabel(14, "0xD: abort   "); // aborts and clears an active event
+  fhCmdDaqVsTrig->GetXaxis()->SetBinLabel(15, "0xE: L1accept"); // 
+  fhCmdDaqVsTrig->GetXaxis()->SetBinLabel(16, "0xF: L2accept"); // 
+  fhCmdDaqVsTrig->GetYaxis()->SetBinLabel( 1, "0x0:  0"); // To be filled at STAR
+  fhCmdDaqVsTrig->GetYaxis()->SetBinLabel( 2, "0x1:  1"); // To be filled at STAR
+  fhCmdDaqVsTrig->GetYaxis()->SetBinLabel( 3, "0x2:  2"); // To be filled at STAR
+  fhCmdDaqVsTrig->GetYaxis()->SetBinLabel( 4, "0x3:  3"); // To be filled at STAR
+  fhCmdDaqVsTrig->GetYaxis()->SetBinLabel( 5, "0x4:  4"); // To be filled at STAR
+  fhCmdDaqVsTrig->GetYaxis()->SetBinLabel( 6, "0x5:  5"); // To be filled at STAR
+  fhCmdDaqVsTrig->GetYaxis()->SetBinLabel( 7, "0x6:  6"); // To be filled at STAR
+  fhCmdDaqVsTrig->GetYaxis()->SetBinLabel( 8, "0x7:  7"); // To be filled at STAR
+  fhCmdDaqVsTrig->GetYaxis()->SetBinLabel( 9, "0x8:  8"); // To be filled at STAR
+  fhCmdDaqVsTrig->GetYaxis()->SetBinLabel(10, "0x9:  9"); // To be filled at STAR
+  fhCmdDaqVsTrig->GetYaxis()->SetBinLabel(11, "0xA: 10"); // To be filled at STAR
+  fhCmdDaqVsTrig->GetYaxis()->SetBinLabel(12, "0xB: 11"); // To be filled at STAR
+  fhCmdDaqVsTrig->GetYaxis()->SetBinLabel(13, "0xC: 12"); // To be filled at STAR
+  fhCmdDaqVsTrig->GetYaxis()->SetBinLabel(14, "0xD: 13"); // To be filled at STAR
+  fhCmdDaqVsTrig->GetYaxis()->SetBinLabel(15, "0xE: 14"); // To be filled at STAR
+  fhCmdDaqVsTrig->GetYaxis()->SetBinLabel(16, "0xF: 15"); // To be filled at STAR
+  fHM->Add(name.Data(), fhCmdDaqVsTrig);
+#ifdef USE_HTTP_SERVER
+  if (server)
+    server->Register("/TofRaw", fHM->H1(name.Data()));
+#endif
+
 #ifdef USE_HTTP_SERVER
   if (server)
     server->RegisterCommand("/Reset_All_TOF", "bResetTofStarHistos=kTRUE");
+  if (server)
+    server->RegisterCommand("/Cycle_Pulser_FEE", "bTofCyclePulserFee=kTRUE");
   if (server)
     server->Restrict("/Reset_All_TOF", "allow=admin");
 #endif
@@ -799,6 +898,10 @@ Bool_t CbmTSMonitorTofStar::DoUnpack(const fles::Timeslice& ts,
   if (bResetTofStarHistos) {
     ResetAllHistos();
     bResetTofStarHistos = kFALSE;
+  }
+  if (bTofCyclePulserFee) {
+     CyclePulserFee();
+     bTofCyclePulserFee = kFALSE;
   }
 
   LOG(DEBUG1) << "Timeslice contains " << ts.num_microslices(component)
@@ -1114,8 +1217,8 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
       } // if( -1 < fTsLastHit[fGdpbNr][fGet4Id][channel] )
     } // if( fUnpackPar->IsChannelRateEnabled() )
 
-   // Save last hist time if channel rate histos or pulser mode enabled
-   if( fUnpackPar->IsChannelRateEnabled() || fbPulserMode )
+    // Save last hist time if channel rate histos or pulser mode enabled
+    if( fUnpackPar->IsChannelRateEnabled() || fbPulserMode )
       fTsLastHit[fGdpbNr][fGet4Id][channel] = mess.getMsgFullTimeD(
           curEpochGdpbGet4);
 
@@ -1142,13 +1245,23 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
     // if condition to find the right strip/end index
       fHistSpill->Fill(0., 0., increment);
 */      
-      fiCountsLastTs ++;
-      fdDetLastTime = 1e-9 * mess.getMsgFullTimeD(curEpochGdpbGet4);
+    fiCountsLastTs ++;
+    fdDetLastTime = 1e-9 * mess.getMsgFullTimeD(curEpochGdpbGet4);
 
-     hitTime = mess.getMsgFullTime(curEpochGdpbGet4);
-     Int_t Ft = mess.getGdpbHitFineTs();
 
-     if (100 > iMess++)
+    ///* STAR event building/cutting *///
+    if( fbStarSortAndCutMode )
+    {
+      /// If chip is already ready for current epoch, save the message in the buffer for the next epoch
+      if( 0x1 & ( fiStarNextBufferUse[ fGdpbNr ] >> fGet4Id ) )
+         fvGdpbEpMsgBuffer[ fGdpbNr ][ fiStarBuffIdxNext[ fGdpbNr ] ].push_back( mess );
+         else fvGdpbEpMsgBuffer[ fGdpbNr ][ fiStarBuffIdxCurr[ fGdpbNr ] ].push_back( mess );
+    } // if( fbStarSortAndCutMode )
+
+    hitTime = mess.getMsgFullTime(curEpochGdpbGet4);
+    Int_t Ft = mess.getGdpbHitFineTs();
+
+    if (100 > iMess++)
        LOG(DEBUG) << "Hit: " << Form("0x%08x ", fGdpbId) << ", " << fGet4Id
                      << ", " << channel << ", " << tot << ", epoch "
                      << curEpochGdpbGet4 << ", FullTime "
@@ -1222,6 +1335,7 @@ void CbmTSMonitorTofStar::FillEpochInfo(ngdpb::Message mess)
             Double_t dTimeDiff =
                   fTsLastHit[ fuPulserGdpb ][ uChipB ][ uChanB ] 
                 - fTsLastHit[ fuPulserGdpb ][ uChipA ][ uChanA ];
+            dTimeDiff *= 1e3;  // ns -> ps
             if( ( 10.0 * dMinDt < dTimeDiff ) && ( dTimeDiff < 10.0 * dMaxDt ) &&
                 ( 0 < fTsLastHit[ fuPulserGdpb ][ uChipA ][ uChanA ] ) && 
                 ( 0 < fTsLastHit[ fuPulserGdpb ][ uChipB ][ uChanB ] ) )
@@ -1243,6 +1357,7 @@ void CbmTSMonitorTofStar::FillEpochInfo(ngdpb::Message mess)
          
          Double_t dTimeDiff =
                fTsLastHit[0][uChipB][ uChanB ] - fTsLastHit[0][uChipA][ uChanA ];
+            dTimeDiff *= 1e3;  // ns -> ps
          if( ( 10.0 * dMinDt < dTimeDiff ) && ( dTimeDiff < 10.0 * dMaxDt ) &&
              ( 0 < fTsLastHit[0][uChipA][ uChanA ] ) && 
              ( 0 < fTsLastHit[0][uChipB][ uChanB ] ) )
@@ -1252,6 +1367,130 @@ void CbmTSMonitorTofStar::FillEpochInfo(ngdpb::Message mess)
       } // for( UInt_t uChan = 0; uChan < kuNbChanTest - 1; uChan++)
    } // if( fbPulserMode && First GET4 on chosen FEET )
    
+   
+   ///* STAR event building/cutting *///
+   if( fbStarSortAndCutMode )
+   {
+      if( 0 == fuCurrentEpGdpb[fGdpbNr] )
+      {
+         /// First epoch for this gDPB board => initialize everything
+         fuCurrentEpGdpb[ fGdpbNr ] = epochNr;
+         fiStarCurrentEpFound[ fGdpbNr ] = 0;
+         fiStarBuffIdxPrev[ fGdpbNr ] = 0;
+         fiStarBuffIdxCurr[ fGdpbNr ] = 1;
+         fiStarBuffIdxNext[ fGdpbNr ] = 2;
+         
+         // Clear data from before as we are not sure they belong to the epoch before
+         fvGdpbEpMsgBuffer[ fGdpbNr ][ fiStarBuffIdxPrev[fGdpbNr] ].clear();
+         fvGdpbEpTrgBuffer[ fGdpbNr ][ fiStarBuffIdxPrev[fGdpbNr] ].clear();
+      } // if( 0 == fuCurrentEpGdpb[fGdpbNr] )
+      else if( epochNr == fuCurrentEpGdpb[ fGdpbNr ] )
+      {
+         /// Epoch currently waiting for all GET4s to be ready
+         /// => This one is ready and starts storing its data in Next buffer
+         fiStarCurrentEpFound[ fGdpbNr ] |= 0x1 << fGet4Id; // !!! This implies a limit to 32 GET4 per gDPB !!!
+         fiStarNextBufferUse[ fGdpbNr ]  |= 0x1 << fGet4Id; // !!! This implies a limit to 32 GET4 per gDPB !!!
+      } // else if( epochNr == fuCurrentEpGdpb[ fGdpbNr ] )
+      else if( epochNr == (fuCurrentEpGdpb[ fGdpbNr ] + 1) )
+      {
+         if( 0 == fiStarCurrentEpFound[ fGdpbNr ] )
+         {
+            /// First GET4 sending its message for the Epoch currently waiting for all GET4s to be ready
+            fuCurrentEpGdpb[ fGdpbNr ] = epochNr;
+            /// => This one is ready and starts storing its data in Next buffer
+            fiStarCurrentEpFound[ fGdpbNr ] |= 0x1 << fGet4Id; // !!! This implies a limit to 32 GET4 per gDPB !!!
+            fiStarNextBufferUse[ fGdpbNr ]  |= 0x1 << fGet4Id; // !!! This implies a limit to 32 GET4 per gDPB !!!
+         } // if( 0 == fiStarCurrentEpFound[ fGdpbNr ] )
+            else
+            {
+               /// Message for next epoch received before all GET4s sent the messages for the current one
+               /// => Either some GET4s are missing or we are in epoch suppressed mode
+               if( !fbEpochSuppModeOn )
+               {
+                  /// If not in epoch suppressed mode, print error for the missing GET4s
+                  for( Int_t iGet4 = 0; iGet4 < fNrOfGet4PerGdpb; iGet4++)
+                     if( !( 0x1 & ( fiStarCurrentEpFound[ fGdpbNr ] >> fGet4Id ) ) )
+                     {
+                        LOG(ERROR) << "In STAR sort and cut mode, gDPB " << Form("0x%08x,", fGdpbId)
+                                   << " found epoch " << Form( "%12u", epochNr) 
+                                   << " for get4 "<< Form( "%2u", fGet4Id) 
+                                   << " while waiting for epoch " 
+                                   << Form( "%12u", fuCurrentEpGdpb[ fGdpbNr ]) 
+                                   << " for get4 "<< Form( "%2u", iGet4) 
+                                   << FairLogger::endl;
+                     } // if( !( 0x1 & ( fiStarCurrentEpFound[ fGdpbNr ] >> fGet4Id ) )
+               } // if( !fbEpochSuppModeOn )
+               
+               /// => In both cases, for processing of current epoch buffer + go to next
+               StarSort( fGdpbNr );
+               StarSelect( fGdpbNr);
+               
+               /// Then update flags and indices to be ready for next epoch
+               fuCurrentEpGdpb[ fGdpbNr ] = epochNr;
+               fiStarCurrentEpFound[ fGdpbNr ] = 0;
+               fiStarBuffIdxPrev[ fGdpbNr ] = (fiStarBuffIdxPrev[ fGdpbNr ] + 1)%3;
+               fiStarBuffIdxCurr[ fGdpbNr ] = (fiStarBuffIdxCurr[ fGdpbNr ] + 1)%3;
+               fiStarBuffIdxNext[ fGdpbNr ] = (fiStarBuffIdxNext[ fGdpbNr ] + 1)%3;
+               
+            } // else of if( 0 == fiStarCurrentEpFound[ fGdpbNr ] )
+      } // else if( epochNr == (fuCurrentEpGdpb[ fGdpbNr ] + 1) )
+      else if( epochNr > (fuCurrentEpGdpb[ fGdpbNr ] + 1) )
+      {
+         /// Message for later epoch received before all GET4s sent the messages for the current one
+         /// => Either some GET4s and/or messages are missing or we are in epoch suppressed mode
+         if( !fbEpochSuppModeOn )
+         {
+            /// If not in epoch suppressed mode, print error for the missing GET4s
+            for( Int_t iGet4 = 0; iGet4 < fNrOfGet4PerGdpb; iGet4++)
+            {
+               LOG(ERROR) << "In STAR sort and cut mode, gDPB " << Form("0x%08x,", fGdpbId)
+                          << " found epoch " << Form( "%12u", epochNr) 
+                          << " for get4 "<< Form( "%2u", fGet4Id) 
+                          << " while waiting for epoch " 
+                          << Form( "%12u", fuCurrentEpGdpb[ fGdpbNr ]) 
+                          << " for get4 "<< Form( "%2u", iGet4) 
+                          << FairLogger::endl;
+            } // for( Int_t iGet4 = 0; iGet4 < fNrOfGet4PerGdpb; iGet4++)
+         } // if( !fbEpochSuppModeOn )
+         
+         /// => In both cases, do processing of current epoch buffer + go to next
+         StarSort( fGdpbNr );
+         StarSelect( fGdpbNr);
+         
+         /// => Then go to next (incomplete) buffer
+         fiStarBuffIdxPrev[ fGdpbNr ] = (fiStarBuffIdxPrev[ fGdpbNr ] + 1)%3;
+         fiStarBuffIdxCurr[ fGdpbNr ] = (fiStarBuffIdxCurr[ fGdpbNr ] + 1)%3;
+         fiStarBuffIdxNext[ fGdpbNr ] = (fiStarBuffIdxNext[ fGdpbNr ] + 1)%3;
+         
+         /// => In both cases, do processing of this epoch buffer also
+         StarSort( fGdpbNr );
+         StarSelect( fGdpbNr);
+         
+         /// Then update flags and indices to be ready for next epoch
+         fuCurrentEpGdpb[ fGdpbNr ] = epochNr;
+         fiStarCurrentEpFound[ fGdpbNr ] = 0;
+         fiStarBuffIdxPrev[ fGdpbNr ] = (fiStarBuffIdxPrev[ fGdpbNr ] + 1)%3;
+         fiStarBuffIdxCurr[ fGdpbNr ] = (fiStarBuffIdxCurr[ fGdpbNr ] + 1)%3;
+         fiStarBuffIdxNext[ fGdpbNr ] = (fiStarBuffIdxNext[ fGdpbNr ] + 1)%3;
+      } // else if( epochNr > (fuCurrentEpGdpb[ fGdpbNr ] + 1) )
+      else
+      {
+         LOG(FATAL) << "In STAR sort and cut mode, gDPB " << Form("0x%08x,", fGdpbId)
+                    << " found epoch " << Form( "%12u", epochNr) 
+                    << " for get4 "<< Form( "%2u", fGet4Id) 
+                    << " while waiting for epoch " 
+                    << Form( "%12u", fuCurrentEpGdpb[ fGdpbNr ]) 
+                    << FairLogger::endl 
+                    << " -----> GET4 active mask is 0x" << std::hex 
+                    << fiStarActiveAsicMask[ fGdpbNr ] << " and GET4 ready flags is "
+                    << fiStarCurrentEpFound[ fGdpbNr ]
+                    << FairLogger::endl
+                    << " => corrupted epoch number ordering, exiting now!" 
+                    << FairLogger::endl;
+      } // else of many ifs => Correspond to epochNr < fuCurrentEpGdpb[ fGdpbNr ]
+      
+   } // if( fbStarSortAndCutMode )
+         
   /*
    LOG(DEBUG) << "Epoch message "
    << fNofEpochs << ", epoch " << static_cast<Int_t>(fCurrentEpoch[gdpbId][get4Id])
@@ -1370,16 +1609,29 @@ void CbmTSMonitorTofStar::FillStarTrigInfo(ngdpb::Message mess)
          fuStarDaqCmdLast  = mess.getStarDaqCmdStarD();
          fuStarTrigCmdLast = mess.getStarTrigCmdStarD();
          
+
+         ///* STAR event building/cutting *///
+         if( fbStarSortAndCutMode )
+         {
+            CbmTofStarTrigger newTrig( fulGdpbTsFullLast, fulStarTsFullLast, fuStarTokenLast, 
+                                       fuStarDaqCmdLast, fuStarTrigCmdLast );
+            fvGdpbEpTrgBuffer[ fGdpbNr ][ fiStarBuffIdxCurr[fGdpbNr] ].push_back( newTrig );
+         } // if( fbStarSortAndCutMode )
+         
          if( 0 < fdStartTime )
             fhTriggerRate->Fill(
                1e-9 * ( fulGdpbTsFullLast * 6.25 - fdStartTime ) );
-         
-         LOG(DEBUG) << "Found full Star Trigger with gDPB TS " << Form("%16llu", fulGdpbTsFullLast)
+            else fdStartTime = fulGdpbTsFullLast * 6.25;
+         fhCmdDaqVsTrig->Fill( fuStarDaqCmdLast, fuStarTrigCmdLast );
+/*
+         LOG(INFO) << "Found full Star Trigger with gDPB TS " << Form("%16llu", fulGdpbTsFullLast)
                     << " STAR TS " << Form("%16llu", fulStarTsFullLast)
                     << " token " << Form("%8u", fuStarTokenLast)
                     << " DAQ CMD " << Form("%1X", fuStarDaqCmdLast)
                     << " TRIG CMD " << Form("%1X", fuStarTrigCmdLast)
+                    << " Filler " << Form("%2X", mess.getStarFillerD())
                     << FairLogger::endl;
+*/
          break;
       default:
          LOG(FATAL) << "Unknown Star Trigger messageindex: " << iMsgIndex << FairLogger::endl;
@@ -1471,6 +1723,7 @@ void CbmTSMonitorTofStar::Finish()
   fHM->H1("hSpillQA")->Write();
 
   fHM->H1("hTriggerRate")->Write();
+  fHM->H1("hCmdDaqVsTrig")->Write();
   
   gDirectory->cd("..");
 
@@ -1507,8 +1760,11 @@ void CbmTSMonitorTofStar::ResetAllHistos()
   fSpillIdx = 0;
 
   for (UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb++) {
-//    fHM->H2(Form("Raw_Tot_gDPB_%02u", uGdpb))->Reset();
     fHM->H1(Form("ChCount_gDPB_%02u", uGdpb))->Reset();
+    
+    for (UInt_t uFeetPlot = 0; uFeetPlot < fNrOfFebsPerGdpb/uNbFeetPlot; ++uFeetPlot )
+      fHM->H2(Form("Raw_Tot_gDPB_%02u_%1u", uGdpb, uFeetPlot))->Reset();
+      
 //    if (fUnpackPar->IsChannelRateEnabled())
 //      fHM->H2(Form("ChannelRate_gDPB_%02u", uGdpb))->Reset();
     for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet++) {
@@ -1516,7 +1772,9 @@ void CbmTSMonitorTofStar::ResetAllHistos()
     } // for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
   
+  
   fHM->H1("hTriggerRate")->Reset();
+  fHM->H1("hCmdDaqVsTrig")->Reset();
 
   for (UInt_t uLinks = 0; uLinks < 16; uLinks++) {
     TString sMsSzName = Form("MsSz_link_%02u", uLinks);
@@ -1527,10 +1785,57 @@ void CbmTSMonitorTofStar::ResetAllHistos()
     if (fHM->Exists(sMsSzName.Data()))
       fHM->P1(sMsSzName.Data())->Reset();
   } // for( UInt_t uLinks = 0; uLinks < 16; uLinks ++)
+  
+  if( fbPulserMode )
+  {
+     fHM->H2("hTimeRmsPulserChosenFee")->Reset();
+     fHM->H1("hTimeRmsPulserChosenChPairs")->Reset();
+     fdLastRmsUpdateTime = -1;
+  
+      // Full Fee time difference test
+      UInt_t uHistoFeeIdx = 0;
+      for( UInt_t uChanFeeA = 0; uChanFeeA < fNrOfChannelsPerFeet; uChanFeeA++)
+      {
+         for( UInt_t uChanFeeB = uChanFeeA + 1; uChanFeeB < fNrOfChannelsPerFeet; uChanFeeB++)
+         {
+            fhTimeDiffPulserChosenFee[uHistoFeeIdx]->Reset();
+            uHistoFeeIdx++;
+         } // for any unique pair of channel in chosen Fee
+      } // for( UInt_t uChanFeeA = 0; uChanFeeA < kuNbChanFee; uChanFeeA++)
+      
+      // Selected channels test
+      for( UInt_t uChan = 0; uChan < kuNbChanTest - 1; uChan++)
+         fhTimeDiffPulserChosenChPairs[uChan]->Reset();
+  } // if( fbPulserMode )
 
   fdStartTime = -1;
   fdStartTimeMsSz = -1;
 }
+void CbmTSMonitorTofStar::CyclePulserFee()
+{
+  if( fbPulserMode )
+  {
+     fHM->H2("hTimeRmsPulserChosenFee")->Reset();
+     fdLastRmsUpdateTime = -1;
+  
+      // Full Fee time difference test
+      UInt_t uHistoFeeIdx = 0;
+      for( UInt_t uChanFeeA = 0; uChanFeeA < fNrOfChannelsPerFeet; uChanFeeA++)
+      {
+         for( UInt_t uChanFeeB = uChanFeeA + 1; uChanFeeB < fNrOfChannelsPerFeet; uChanFeeB++)
+         {
+            fhTimeDiffPulserChosenFee[uHistoFeeIdx]->Reset();
+            uHistoFeeIdx++;
+         } // for any unique pair of channel in chosen Fee
+      } // for( UInt_t uChanFeeA = 0; uChanFeeA < kuNbChanFee; uChanFeeA++)
+      
+      // Cycle the chosen FEE index within the current chosen gDPB
+      fuPulserFee = (fuPulserFee + 1)%fNrOfFebsPerGdpb;
+      
+      LOG(INFO) << "FEE index for pulser RMS histo changed to : " << fuPulserFee << FairLogger::endl;
+  } // if( fbPulserMode )
+}
+
 
 void CbmTSMonitorTofStar::SetRunStart( Int_t dateIn, Int_t timeIn, Int_t iBinSize )
 {
@@ -1563,6 +1868,23 @@ void CbmTSMonitorTofStar::SetPulserChans(
    fuPulserChan[13] = inPulserChanN;
    fuPulserChan[14] = inPulserChanO;
    fuPulserChan[15] = inPulserChanP;
+}
+
+    ///* STAR event building/cutting *///
+Bool_t CbmTSMonitorTofStar::StarSort( Int_t iGdpbIdx )
+{
+   return kTRUE;
+}
+Bool_t CbmTSMonitorTofStar::StarSelect( Int_t iGdpbIdx )
+{
+   
+   /// Data from the Prev buffer needed only for triggers in beginning of Current
+   /// Triggers from the Prev buffer needed only until Current buffer is ready
+   /// => Both ok, clear the Prev buffer so that it can be re-used of Next buffer later
+   fvGdpbEpMsgBuffer[ fGdpbNr ][ fiStarBuffIdxPrev[ fGdpbNr ] ].clear();
+   fvGdpbEpTrgBuffer[ fGdpbNr ][ fiStarBuffIdxPrev[ fGdpbNr ] ].clear();
+   
+   return kTRUE;
 }
 
 ClassImp(CbmTSMonitorTofStar)
