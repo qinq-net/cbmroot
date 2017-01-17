@@ -57,8 +57,19 @@ private:
           const TClonesArray* clusters,
           TClonesArray* clusterMatches);
 
+
+    /** @brief Match STS clusters, using digi match objects
+     ** @param digis   TClonesArray with CbnStsDigi
+     ** @param clusters  TClonesArray with CbmStsCluster
+     ** @param clusterMatches  TClonesArray with cluster matches (to be filled)
+     **
+     ** The cluster match is constructed by adding up the digi matches from all
+     ** digis belonging to the cluster. In contrast to the method MatchClusters,
+     ** the digi match is retrieved from the digi object itself, not from a
+     ** separate TClonesArray.
+     **/
     void MatchStsClusters(
-          const TClonesArray* digiMatches,
+          const TClonesArray* digis,
           const TClonesArray* clusters,
           TClonesArray* clusterMatches);
 
@@ -67,8 +78,19 @@ private:
           const TClonesArray* hits,
           TClonesArray* hitMatches);
 
+    /** @brief Match STS hits, using cluster match objects
+     ** @param clusterMatches   TClonesArray with cluster matches
+     ** @param hits             TClonesArray with CbmStsHit
+     ** @param hitMatches       TClonesArray with hit matches (to be filled)
+     **
+     ** Since a StsHit is constructed from two StsClusters (from front and back
+     ** side of a sensor), its match object must also be constructed from the two
+     ** match objects corresponding to the clusters. This makes it different from
+     ** the method MatchHits, which just copies the cluster match object to the
+     ** hit match object.
+     */
     void MatchHitsSts(
-          const TClonesArray* matches,
+          const TClonesArray* clusterMmatches,
           const TClonesArray* hits,
           TClonesArray* hitMatches);
 

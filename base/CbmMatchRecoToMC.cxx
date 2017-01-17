@@ -396,8 +396,7 @@ void CbmMatchRecoToMC::MatchClusters(
       for (Int_t iDigi = 0; iDigi < nofDigis; iDigi++) {
          const CbmMatch* digiMatch = static_cast<const CbmMatch*>(digiMatches->At(cluster->GetDigi(iDigi)));
          clusterMatch->AddLinks(*digiMatch);
-      }  //# digis
-      cluster->SetMatch(clusterMatch);
+      }  //# digis in cluster
    } //# clusters
 }
 
@@ -415,8 +414,7 @@ void CbmMatchRecoToMC::MatchStsClusters(
       for (Int_t iDigi = 0; iDigi < nofDigis; iDigi++) {
          const CbmMatch* digiMatch = (static_cast<const CbmDigi*>(digi->At(cluster->GetDigi(iDigi))))->GetMatch();
          clusterMatch->AddLinks(*digiMatch);
-      } //# digis
-      cluster->SetMatch(clusterMatch);
+      } //# digis in cluster
    }
 }
 
@@ -432,26 +430,23 @@ void CbmMatchRecoToMC::MatchHits(
       CbmMatch* hitMatch = new ((*hitMatches)[iHit]) CbmMatch();
       const CbmMatch* clusterMatch = static_cast<const CbmMatch*>(matches->At(hit->GetRefId()));
       hitMatch->AddLinks(*clusterMatch);
-      hit->SetMatch(hitMatch);
    }
 }
 
 void CbmMatchRecoToMC::MatchHitsSts(
-      const TClonesArray* matches,
+      const TClonesArray* cluMatches,
       const TClonesArray* hits,
       TClonesArray* hitMatches)
 {
-   if (!(matches && hits && hitMatches)) return;
+   if (!(cluMatches && hits && hitMatches)) return;
    Int_t nofHits = hits->GetEntriesFast();
    for (Int_t iHit = 0; iHit < nofHits; iHit++) {
       CbmStsHit* hit = static_cast<CbmStsHit*>(hits->At(iHit));
       CbmMatch* hitMatch = new ((*hitMatches)[iHit]) CbmMatch();
-      const CbmMatch* frontClusterMatch = static_cast<const CbmMatch*>(matches->At(hit->GetFrontClusterId()));
-      const CbmMatch* backClusterMatch = static_cast<const CbmMatch*>(matches->At(hit->GetBackClusterId()));
-//      LOG(DEBUG) << "hit " << iHit << " " << frontClusterMatch << FairLogger::endl;
+      const CbmMatch* frontClusterMatch = static_cast<const CbmMatch*>(cluMatches->At(hit->GetFrontClusterId()));
+      const CbmMatch* backClusterMatch = static_cast<const CbmMatch*>(cluMatches->At(hit->GetBackClusterId()));
       hitMatch->AddLinks(*frontClusterMatch);
       hitMatch->AddLinks(*backClusterMatch);
-      hit->SetMatch(hitMatch);
    }
 }
 
@@ -467,7 +462,6 @@ void CbmMatchRecoToMC::MatchHitsMvd(
     CbmMatch* hitMatch = new ((*hitMatches)[iHit]) CbmMatch();
     const CbmMatch* digiMatch = static_cast<const CbmMatch*>(matches->At(hit->GetRefId()));
     hitMatch->AddLinks(*digiMatch);
-    hit->SetMatch(hitMatch);
   }
 }
 
@@ -521,7 +515,6 @@ void CbmMatchRecoToMC::MatchHitsTof(
                                               lPoint.GetFile())); // Point whose Digi was hidden by True one
          } // for( Int_t iPoint = 0; iPoint < iNbPointsDigi; iPoint ++)
       } // for (Int_t iDigi = 0; iDigi < iNbDigisHit; iDigi++)
-      hit->SetMatch(hitMatch);
    } // for (Int_t iHit = 0; iHit < nofHits; iHit++)
 }
 void CbmMatchRecoToMC::MatchHitsTofDigiExp(
@@ -574,8 +567,7 @@ void CbmMatchRecoToMC::MatchHitsTofDigiExp(
                                               lPoint.GetFile())); // Point whose Digi was hidden by True one
          } // for( Int_t iPoint = 0; iPoint < iNbPointsDigi; iPoint ++)
       } // for (Int_t iDigi = 0; iDigi < iNbDigisHit; iDigi++)
-      hit->SetMatch(hitMatch);
-   } // for (Int_t iHit = 0; iHit < nofHits; iHit++)
+    } // for (Int_t iHit = 0; iHit < nofHits; iHit++)
 }
 
 void CbmMatchRecoToMC::MatchHitsToPoints(
@@ -590,8 +582,6 @@ void CbmMatchRecoToMC::MatchHitsToPoints(
       CbmMatch* hitMatch = new ((*hitMatches)[iHit]) CbmMatch();
       const FairMCPoint* point = static_cast<const FairMCPoint*>(points->At(hit->GetRefId()));
       hitMatch->AddLink(CbmLink(point->GetEnergyLoss(), hit->GetRefId()));
-    //  LOG(DEBUG) << "hit " << iHit << " " << hitMatch->ToString() << FairLogger::endl;;
-      hit->SetMatch(hitMatch);
    }
 }
 
