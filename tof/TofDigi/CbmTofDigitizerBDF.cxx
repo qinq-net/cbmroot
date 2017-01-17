@@ -1578,6 +1578,10 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
       if( kTRUE == fDigiBdfPar->UseOneGapPerTrk() )
       {
          Bool_t bFoundIt = kFALSE;
+         // Check if this track ID is bigger than size of McTracks TClonesArray (maybe happen with PSD cut!!)
+         // If yes, resize the array to  reach the appropriate number of fields
+         if( fvlTrckChAddr.size() <= iTrkId )
+            fvlTrckChAddr.resize( iTrkId + 1 ); 
          for( UInt_t uTrkMainCh = 0; uTrkMainCh < fvlTrckChAddr[iTrkId].size(); uTrkMainCh ++)
             if( uAddr == fvlTrckChAddr[iTrkId][uTrkMainCh])
             {
@@ -1933,7 +1937,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
    // Clear the Track to channel temporary storage
    if( kTRUE == fDigiBdfPar->UseOneGapPerTrk() )
    {
-      for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
+      for(Int_t iTrkInd = 0; iTrkInd < fvlTrckChAddr.size(); iTrkInd++)
       {
          fvlTrckChAddr[iTrkInd].clear();
          fvlTrckRpcAddr[iTrkInd].clear();
@@ -2108,6 +2112,10 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
       if( kTRUE == fDigiBdfPar->UseOneGapPerTrk() )
       {
          Bool_t bFoundIt = kFALSE;
+         // Check if this track ID is bigger than size of McTracks TClonesArray (maybe happen with PSD cut!!)
+         // If yes, resize the array to  reach the appropriate number of fields
+         if( fvlTrckChAddr.size() <= iTrkId )
+            fvlTrckChAddr.resize( iTrkId + 1 ); 
          for( UInt_t uTrkMainCh = 0; uTrkMainCh < fvlTrckChAddr[iTrkId].size(); uTrkMainCh ++)
             if( uAddr == fvlTrckChAddr[iTrkId][uTrkMainCh])
             {
@@ -2866,7 +2874,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
    if( kTRUE == fDigiBdfPar->UseOneGapPerTrk() )
    {
       // Clear the Track to channel temporary storage
-      for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
+      for(Int_t iTrkInd = 0; iTrkInd < fvlTrckChAddr.size(); iTrkInd++)
       {
          fvlTrckChAddr[iTrkInd].clear();
          fvlTrckRpcAddr[iTrkInd].clear();
@@ -3025,6 +3033,10 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
       if( kTRUE == fDigiBdfPar->UseOneGapPerTrk() )
       {
          Bool_t bFoundIt = kFALSE;
+         // Check if this track ID is bigger than size of McTracks TClonesArray (maybe happen with PSD cut!!)
+         // If yes, resize the array to  reach the appropriate number of fields
+         if( fvlTrckChAddr.size() <= iTrkId )
+            fvlTrckChAddr.resize( iTrkId + 1 ); 
          for( UInt_t uTrkMainCh = 0; uTrkMainCh < fvlTrckChAddr[iTrkId].size(); uTrkMainCh ++)
             if( uAddr == fvlTrckChAddr[iTrkId][uTrkMainCh])
             {
@@ -3835,7 +3847,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
    if( kTRUE == fDigiBdfPar->UseOneGapPerTrk() )
    {
       // Clear the Track to channel temporary storage
-      for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
+      for(Int_t iTrkInd = 0; iTrkInd < fvlTrckChAddr.size(); iTrkInd++)
       {
          fvlTrckChAddr[iTrkInd].clear();
          fvlTrckRpcAddr[iTrkInd].clear();
