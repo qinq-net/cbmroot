@@ -1,8 +1,5 @@
 #!/bin/bash
 
-cp -i ./run_sim_position2.C /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/macros/.
-# cp -i ./run_reco_position.C /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/macros/.
-
 # param1=1
 # param2='test'
 # sbatch --array=1-3 -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position ./test.sh $param1
