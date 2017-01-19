@@ -4,13 +4,14 @@ XXXXX=$(printf "%05d" "$SLURM_ARRAY_TASK_ID")
 
 cbmroot_config_path=/lustre/nyx/cbm/users/jbendar/CBMINSTALL/bin/CbmRootConfig.sh
 # macro_dir=/u/jbendar/CBMSRC/macro/rich/alignment/misalignment_correction/position
-macro_dir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position
+output_dir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position
+macro_dir=/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/macro/rich
 
 # Specify input and output directories
 if [ $1 -eq 0 ] ; then
-        outdir=${macro_dir}/Misaligned
+        outdir=${output_dir}/Misaligned
 elif [ $1 -eq 1 ] ; then
-        outdir=${macro_dir}/Aligned
+        outdir=${output_dir}/Aligned
 fi
 
 # Needed to run macro via script
@@ -35,14 +36,18 @@ export MC_FILE=${outdir}/mc.root
 export PAR_FILE=${outdir}/params.root
 export RECO_FILE=${outdir}/reco.root
 export ANALYSIS_FILE=${outdir}/analysis.root
-export RESULT_DIR=${outdir}
+export LIT_RESULT_DIR=${outdir}
 
 #Simulation parameters
 #--------------------------------------------------
+# set generation of primary electrons
+export ELECTRONS=yes
 # number of embedded electrons
 export NOF_ELECTRONS=1
+export NELECTRONS=1
 # number of embedded positrons
 export NOF_POSITRONS=1
+export NPOSITRONS=1
 # If "yes" then UrQMD will be used as background
 export URQMD=no
 # If "yes" PLUTO particles will be embedded
@@ -63,13 +68,14 @@ export ENERGY=${3}
 # mkdir -p $workdir
 # cd $workdir
 
-export OUT_DIR=${outdir}
-echo ${outdir}
+echo ${output_dir}
 echo ${macro_dir}
+echo ${outdir}
+export OUT_DIR=${outdir}
 # Run the root simulation
-root -b -l -q "${macro_dir}/macros/run_sim_position2.C(${2}, ${1})"
-# root -b -l -q "${macro_dir}/macros/run_reco_position.C(${2}, ${1})"
-# root -b -l -q "${macro_dir}/Compute_distance.C(${2}, ${1})"
+root -b -l -q "${macro_dir}/position/run_sim_position2.C(${2}, ${1})"
+# root -b -l -q "${macro_dir}/position/run_reco_position.C(${2}, ${1})"
+# root -b -l -q "${macro_dir}/position/Compute_distance.C(${2}, ${1})"
 
 # cp -v ${SGE_STDOUT_PATH} ${outdir}/log/${JOB_ID}.${SGE_TASK_ID}.log
 

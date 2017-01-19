@@ -10,8 +10,9 @@ void run_reco_position(Int_t nEvents = 500000, Int_t Flag = 0)
 	gRandom->SetSeed(10);
 
     //TString outDir = "/data/misalignment_correction/Sim_Outputs/Ring_Track_VS_Position/First/";
-    if (Flag == 0) {TString outDir = "/u/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned/";}
-    else if (Flag == 1) {TString outDir = "/u/jbendar/Sim_Outputs/Ring_Track_VS_Position/Aligned/";}
+    outDir = TString(gSystem->Getenv("OUT_DIR"));
+//    if (Flag == 0) {TString outDir = "/u/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned/";}
+//    else if (Flag == 1) {TString outDir = "/u/jbendar/Sim_Outputs/Ring_Track_VS_Position/Aligned/";}
 	TString parFile = outDir + "param.root";
 	TString mcFile = outDir + "mc.root";
 	TString recoFile = outDir + "reco.root";
@@ -26,7 +27,7 @@ void run_reco_position(Int_t nEvents = 500000, Int_t Flag = 0)
 		recoFile = TString(gSystem->Getenv("RECO_FILE"));
 		parFile = TString(gSystem->Getenv("PAR_FILE"));
 		resultDir = TString(gSystem->Getenv("LIT_RESULT_DIR"));
-		geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/" + TString(gSystem->Getenv("GEO_SETUP_FILE"));
+//		geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/" + TString(gSystem->Getenv("GEO_SETUP_FILE"));
 	}
 
 	remove(recoFile.Data());
