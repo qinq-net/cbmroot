@@ -1,4 +1,4 @@
-void run_sim_matching(Int_t nEvents = 5000, TString numb = "00001", Int_t Flag = 0)
+void run_sim_matching(Int_t nEvents = 500000, Int_t Flag = 0)
 {
     TTree::SetMaxTreeSize(90000000000);
     Int_t iVerbose = 0;
@@ -9,29 +9,31 @@ void run_sim_matching(Int_t nEvents = 5000, TString numb = "00001", Int_t Flag =
     //gRandom->SetSeed(10);
 
 	TString urqmdFile = "/data/Cbm_Root/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root";
-    
-    if (Flag == 0) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/reference/"; }
-    else if (Flag == 1) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/misaligned_1pt5/"; }
-    else if (Flag == 2) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/test/"; }
-    TString parFile = outDir + "param." + numb + ".root";
-    TString mcFile = outDir + "mc." + numb + ".root";
-	TString geoFile = outDir + "geofilefull." + numb + ".root";
-	TString outFile = outDir + "out." + numb + ".root";
+
+	outDir = TString(gSystem->Getenv("OUT_DIR"));
+//	if (Flag == 0) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/reference/"; }
+//	else if (Flag == 1) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/misaligned_1pt5/"; }
+//	else if (Flag == 2) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/test/"; }
+	TString parFile = outDir + "param.root";
+	TString mcFile = outDir + "mc.root";
+	TString geoFile = outDir + "geofilefull.root";
+	TString outFile = outDir + "out.root";
 
 /*	TString outDir = "/data/misalignment_correction/event_display/test/"; // For eventDisplay and run_rich_event_display macros
-	TString parFile = outDir + "param." + numb + ".root";
-	TString mcFile = outDir + "mc." + numb + ".root";
-	TString geoFile = outDir + "geofilefull." + numb + ".root";
+	TString parFile = outDir + "param.root";
+	TString mcFile = outDir + "mc.root";
+	TString geoFile = outDir + "geofilefull.root";
 */
 	// Set geometries:
-	TString caveGeom = "cave.geo";
-	TString pipeGeom = "pipe/pipe_v14l.root";
-	TString magnetGeom = "magnet/magnet_v15a.geo.root";
+	TString caveGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/cave.geo";
+	TString pipeGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/pipe/pipe_v14l.root";
+	TString magnetGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/magnet/magnet_v15a.geo.root";
 	TString fieldMap = "field_v12b";
-	TString stsGeom = "sts/sts_v15c.geo.root";
-	if (Flag == 0) { TString richGeom = "rich/Rich_jan2016_aligned.root"; }
-    else if (Flag == 1) { TString richGeom = "rich/Rich_jan2016_misalign_1pt5.root"; }
-    else if (Flag == 2) { TString richGeom = "rich/Rich_jan2016_aligned.root"; }
+	TString stsGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/sts/sts_v15c.geo.root";
+	if (Flag == 0) { TString richGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/rich/Rich_jan2016_aligned.root"; }
+	else if (Flag == 1) { TString richGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/rich/Rich_jan2016_misalign_5mradXY_Tile1_5.root"; }
+//	else if (Flag == 1) { TString richGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/rich/Rich_jan2016_misalign_5mradXY_Tile0_1.root"; }
+	else if (Flag == 2) { TString richGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/rich/Rich_jan2016_corrected.root"; }
 	TString trdGeom = ""; //"trd_v15a_1e.geo.root";
 	TString tofGeom = ""; //"tof_v16a_1e.geo.root";
 	TString mvdGeom = ""; //"mvd_v15a.geo.root";
@@ -54,15 +56,15 @@ void run_sim_matching(Int_t nEvents = 5000, TString numb = "00001", Int_t Flag =
         mcFile = TString(gSystem->Getenv("MC_FILE"));
         parFile = TString(gSystem->Getenv("PAR_FILE"));
 
-        geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/" + TString(gSystem->Getenv("GEO_SETUP_FILE"));
+//        geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/" + TString(gSystem->Getenv("GEO_SETUP_FILE"));
 
         NELECTRONS = TString(gSystem->Getenv("NELECTRONS")).Atoi();
         NPOSITRONS = TString(gSystem->Getenv("NPOSITRONS")).Atoi();
         electrons = TString(gSystem->Getenv("ELECTRONS"));
         urqmd = TString(gSystem->Getenv("URQMD"));
-        pluto = TString(gSystem->Getenv("PLUTO"));
-        plutoFile = TString(gSystem->Getenv("PLUTO_FILE"));
-        plutoParticle = TString(gSystem->Getenv("PLUTO_PARTICLE"));
+//        pluto = TString(gSystem->Getenv("PLUTO"));
+//        plutoFile = TString(gSystem->Getenv("PLUTO_FILE"));
+//        plutoParticle = TString(gSystem->Getenv("PLUTO_PARTICLE"));
     }
 
     remove(parFile.Data());
@@ -77,7 +79,7 @@ void run_sim_matching(Int_t nEvents = 5000, TString numb = "00001", Int_t Flag =
     //gROOT->LoadMacro(geoSetupFile);
     //init_geo_setup();
 
-    gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
+    gROOT->LoadMacro("/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/macro/littrack/loadlibs.C");
     loadlibs();
 
     //Logger settings
