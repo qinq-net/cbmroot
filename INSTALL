@@ -46,9 +46,9 @@ GCC  : >= 4.8
   or
 Clang: >= 3.4
 
-FairSoft: nov15p7
+FairSoft: may16p1
 
-FairRoot: v-15.11f
+FairRoot: v-16.06b
 
 
 3. Automatic installation

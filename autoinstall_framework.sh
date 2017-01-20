@@ -29,8 +29,8 @@ export ROOTVER=5
 export FSOFTDEV=may16p1
 export FROOTDEV=v-16.06b
 
-export FSOFTPRO=nov15p7
-export FROOTPRO=v-15.11f
+export FSOFTPRO=may16p1
+export FROOTPRO=v-16.06b
 
 # former versions
 # fairsoft: mar15p2
