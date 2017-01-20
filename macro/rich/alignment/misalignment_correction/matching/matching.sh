@@ -34,11 +34,11 @@ export DISPLAY=localhost:0.0
 
 # Define urqmd and output files
 export URQMD_FILE=/lustre/nyx/cbm/prod/gen/urqmd/auau/${3}/centr/urqmd.auau.${3}.centr.${XXXXX}.root
-export MC_FILE=${outdir}/mc.root
-export PAR_FILE=${outdir}/params.root
-export RECO_FILE=${outdir}/reco.root
-export ANALYSIS_FILE=${outdir}/analysis.root
-export LIT_RESULT_DIR=${outdir}
+export MC_FILE=${outdir}/mc.${XXXXX}.root
+export PAR_FILE=${outdir}/params.${XXXXX}.root
+export RECO_FILE=${outdir}/reco.${XXXXX}.root
+export ANALYSIS_FILE=${outdir}/analysis.${XXXXX}.root
+export LIT_RESULT_DIR=${outdir}/${XXXXX}
 
 #Simulation parameters
 #--------------------------------------------------
