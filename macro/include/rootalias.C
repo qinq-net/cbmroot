@@ -42,9 +42,13 @@ Bool_t Has_Fair_Monitor()
 
   // FairMonitor is part of FairSoft since v-15.11
   if (major.Atoi() >= 15) {
-    if (minor.Atoi() >= 11) {
+    if (major.Atoi() > 15) {
       return kTRUE;
-    } 
+    } else {
+      if (minor.Atoi() >= 11) {
+        return kTRUE;
+      } 
+    }
   }
   return kFALSE;
 }
