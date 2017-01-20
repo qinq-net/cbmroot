@@ -1,53 +1,88 @@
+/** @file CbmBuildEventsSimple.cxx
+ ** @author //Dr.Sys <Mikhail.Prokudin@cern.ch>
+ ** @date 07.12.2016
+ **/
+
 #include "CbmBuildEventsSimple.h"
 
-#include "CbmTimeSlice.h"
-#include "CbmDigi.h"
+#include "TClonesArray.h"
+#include "TStopwatch.h"
 
+#include "FairLogger.h"
+#include "FairRootManager.h"
+
+#include "CbmDetectorList.h"
+#include "CbmEvent.h"
+#include "CbmLink.h"
+#include "CbmMatch.h"
 #include "CbmStsDigi.h"
 #include "CbmStsAddress.h"
 
-#include "FairRootManager.h"
-#include "FairLogger.h"
-
-#include "TClonesArray.h"
-
+#include <cassert>
+#include <iomanip>
 #include <iostream>
-#include <list>
+#include <map>
 
 using namespace std;
 
-CbmBuildEventsSimple::CbmBuildEventsSimple()
-  : FairTask(), fSlice(NULL), fSTSDigi(NULL),
-    fNSTSDigis(0), fEv(0), fSliceN(0), fNDigis(0),
+
+// =====   Constructor   =====================================================
+CbmBuildEventsSimple::CbmBuildEventsSimple() :
+  FairTask("BuildEventsSimple"), fStsDigis(NULL), fEvents(NULL),
+    fNDigis(0), fEv(0), fSliceN(0),
     fSN(-1111), fST(-1111),
-    fWindDur(2), fMinusDeltaT(2), fPlusDeltaT(5), fDeadT(10),
-    fMinHitStations(8), fMinDigis(5000)
+    fWindDur(5), fMinusDeltaT(10), fPlusDeltaT(15), fDeadT(10),
+    fMinHitStations(8), fMinDigis(2000)
+
 {
+  ;
+}
+// ===========================================================================
+
+
+
+// =====   Destructor   ======================================================
+CbmBuildEventsSimple::~CbmBuildEventsSimple()
+{
+  ;
+}
+// ===========================================================================
+
+
+// =====   FillEvent method   ================================================
+void CbmBuildEventsSimple::FillEvent(Int_t st, Int_t end)
+{
+  Int_t i;
+//  CbmStsDigi* digi;
+  Int_t nev=fEvents->GetEntriesFast();
+  CbmEvent* event=new ((*fEvents)[nev]) CbmEvent(fEv++);
+
+  for(i=st;i<=end;i++)
+  {
+//    digi=(CbmStsDigi*)fStsDigis->At(i);
+    event->AddData(Cbm::kStsDigi, i);
+  }
+  FairRootManager::Instance()->Fill();
+  LOG(INFO) << "CbmBuildEventsSimple:	Event constructed. Digis used from " << st << " to " << end << "." << FairLogger::endl;
 }
 
-CbmBuildEventsSimple::CbmBuildEventsSimple(const char* name, Int_t iVerbose)
-  : FairTask(name, iVerbose), fSlice(NULL), fSTSDigi(NULL),
-    fNSTSDigis(0), fEv(0), fSliceN(0), fNDigis(0),
-    fSN(-1111), fST(-1111),
-    fWindDur(2), fMinusDeltaT(2), fPlusDeltaT(5), fDeadT(10),
-    fMinHitStations(8), fMinDigis(5000)
-{
-}
+// ===========================================================================
 
+// =====   Task execution   ==================================================
 void CbmBuildEventsSimple::Exec(Option_t*)
 {
   Int_t i=0;
   Int_t j=0;
 //  Int_t n=0;
   Int_t k;
-  Int_t nsts=fSlice->GetDataSize(kSTS);
+  Int_t nsts=fStsDigis->GetEntriesFast();
   Double_t t;
   CbmStsDigi* digi;
   CbmStsDigi* digi2;
   Int_t n0;
   Int_t n1;
 
-  LOG(INFO) << "CbmBuildEventsSimple:	Sts digis in slice " << nsts << ". Slice start: " << fSlice->GetStartTime() << FairLogger::endl;
+  LOG(INFO) << "CbmBuildEventsSimple:	Sts digis in slice " << nsts << FairLogger::endl;
   fNDigis=0;
   for(i=0;i<16;i++) fNStsDigis[i]=0;
   fSN=0;
@@ -55,7 +90,7 @@ void CbmBuildEventsSimple::Exec(Option_t*)
   
   for(i=0;i<nsts;i++)
   {
-    digi=(CbmStsDigi*)fSlice->GetData(kSTS, i);
+    digi=(CbmStsDigi*)fStsDigis->At(i);
     if (digi==NULL) continue;
     t=digi->GetTime();
     fNDigis++;
@@ -66,7 +101,7 @@ void CbmBuildEventsSimple::Exec(Option_t*)
     {
       for(j=fSN;j<i;j++)
       {
-        digi2=(CbmStsDigi*)fSlice->GetData(kSTS, j);
+        digi2=(CbmStsDigi*)fStsDigis->At(j); 
         if (digi2==NULL) continue;
 	fST=digi2->GetTime();
         if (t-fST<=fWindDur) { fSN=j; break; }
@@ -87,14 +122,14 @@ void CbmBuildEventsSimple::Exec(Option_t*)
 	// Reached required number of digis and hit stations
         for(j=i;j>-1;j--)
 	{
-	  digi2=(CbmStsDigi*)fSlice->GetData(kSTS, j);
+          digi2=(CbmStsDigi*)fStsDigis->At(j); 
           if (digi2==NULL) continue;
 	  if (fST-digi2->GetTime()>fMinusDeltaT) break;
 	}
 	n0=j+1;
 	for(j=i+1;j<nsts;j++)
 	{
-	  digi2=(CbmStsDigi*)fSlice->GetData(kSTS, j);
+          digi2=(CbmStsDigi*)fStsDigis->At(j); 
           if (digi2==NULL) continue;
 	  if (digi2->GetTime()-t>fPlusDeltaT) break;
 	}
@@ -107,7 +142,7 @@ void CbmBuildEventsSimple::Exec(Option_t*)
 	}
 	for(j=n1+1;j<nsts;j++)
 	{
-	  digi2=(CbmStsDigi*)fSlice->GetData(kSTS, j);
+          digi2=(CbmStsDigi*)fStsDigis->At(j); 
           if (digi2==NULL) continue;
 	  if (digi2->GetTime()-t>fPlusDeltaT+fDeadT) break;
 	}
@@ -119,7 +154,7 @@ void CbmBuildEventsSimple::Exec(Option_t*)
 	i=j-1;
 	for(j=0;j<16;j++) fNStsDigis[j]=0;
 	fNDigis=0; fSN=i+1; 
-        digi2=(CbmStsDigi*)fSlice->GetData(kSTS, i+1);
+	digi2=(CbmStsDigi*)fStsDigis->At(i+1);
 	fST=digi2->GetTime();
 /*	
 	cout << "--> ";
@@ -139,57 +174,29 @@ void CbmBuildEventsSimple::Exec(Option_t*)
   }
   fSliceN++;
 }
+// ===========================================================================
 
-/** Fills Stsdigis array. STS separate, because start and end] end digi is known. **/
-void CbmBuildEventsSimple::FillEvent(Int_t st, Int_t end)
-{
-  Int_t i;
-  CbmStsDigi* digi;
 
-  fNSTSDigis=0; fSTSDigi->Delete(); fEv++;
-  for(i=st;i<=end;i++)
-  {
-    digi=(CbmStsDigi*)fSlice->GetData(kSTS, i);
-    new ((*fSTSDigi)[fNSTSDigis])CbmStsDigi(*digi);
-    fNSTSDigis++;
-//    cout << fSTSDigi->GetEntries() << " " << fNSTSDigis << endl;
-  }
-  FairRootManager::Instance()->Fill();
-  LOG(INFO) << "CbmBuildEventsSimple:	Event constructed. Digis used from " << st << " to " << end << "." << FairLogger::endl;
-}
 
-void CbmBuildEventsSimple::Finish()
-{
-  LOG(INFO) << "CbmBuildEventsSimple:	Events constructed: " << fEv << ". Slices processed: " << fSliceN << FairLogger::endl;
-}
-
+// =====   Task initialisation   =============================================
 InitStatus CbmBuildEventsSimple::Init()
 {
-  FairRootManager* mgr=FairRootManager::Instance();
+  // --- Get FairRootManager instance
+  FairRootManager* ioman = FairRootManager::Instance();
+  assert ( ioman );
 
-  if (mgr==NULL)
-  {
-    LOG(FATAL) << "Can't find root manager in the system." << FairLogger::endl;
-    return kFATAL;
-  }
-  fSlice=(CbmTimeSlice*)mgr->GetObject("TimeSlice.");
-  if (fSlice==NULL)
-  {
-    LOG(FATAL) << "No timeslice object in the system" << FairLogger::endl;
-    return kFATAL;
-  }
+  // --- Get input array (CbmStsDigi)
+  fStsDigis = (TClonesArray*) ioman->GetObject("StsDigi");
+  assert ( fStsDigis );
 
-  fSTSDigi=new TClonesArray("CbmStsDigi", 10000);
-  mgr->Register("StsDigi", "Digital response in STS" ,fSTSDigi, IsOutputBranchPersistent("StsDigi"));
-  fSTSDigi->Delete(); fNSTSDigis=0;
+  // Register output array (CbmStsDigi)
+  fEvents = new TClonesArray("CbmEvent",100);
+  ioman->Register("Event", "CbmEvent", fEvents, IsOutputBranchPersistent("Event"));
 
   return kSUCCESS;
 }
+// ===========================================================================
 
-CbmBuildEventsSimple::~CbmBuildEventsSimple()
-{
-  ;
-}
 
 ClassImp(CbmBuildEventsSimple)
 
