@@ -12,7 +12,7 @@ void run_sim_position2(Int_t nEvents = 500000, Int_t Flag = 0)
     TString urqmdFile = "/data/Cbm_Root/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root";
 
     outDir = TString(gSystem->Getenv("OUT_DIR"));
-    outDir = "~/CBMSRC/macro/rich/alignment/misalignment_correction/position/test/";
+//    outDir = "~/CBMSRC/macro/rich/alignment/misalignment_correction/position/test/";
 //    if (Flag == 0) {TString outDir = "/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned/";}
 //    else if (Flag == 1) {TString outDir = "/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Aligned/";}
     TString mcFile = outDir + "mc.root";
