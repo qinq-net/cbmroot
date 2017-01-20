@@ -34,7 +34,8 @@
 #include <iostream>
 #include <cmath>
 
-CbmLitFindGlobalTracks::CbmLitFindGlobalTracks():
+CbmLitFindGlobalTracks::CbmLitFindGlobalTracks()
+ : FairTask("CbmLitFindGlobalTracks"),
    fDet(),
 
    fStsTracks(NULL),

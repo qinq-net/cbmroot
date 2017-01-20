@@ -36,7 +36,7 @@
 using std::vector;
 
 CbmMatchRecoToMC::CbmMatchRecoToMC() :
-   FairTask(),
+   FairTask("CbmMatchRecoToMC"),
    fIncludeMvdHitsInStsTrack(kFALSE),
    fMCTracks(NULL),
    fMCTracksArray(NULL),
