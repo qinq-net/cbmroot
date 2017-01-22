@@ -51,9 +51,6 @@ Set(SRCS
   unpacker/CbmTSMonitorTofLegacy.cxx
   unpacker/CbmTSMonitorTof.cxx
   unpacker/CbmTSMonitorMuch.cxx
-
-  unpacker/CbmTofStarData.cxx
-  unpacker/CbmTSMonitorTofStar.cxx
   
   param/CbmTofUnpackPar.cxx
   param/CbmFHodoUnpackPar.cxx

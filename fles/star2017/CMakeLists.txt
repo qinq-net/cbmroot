@@ -6,15 +6,17 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/base
 
   ${CBMROOT_SOURCE_DIR}/data
-  ${CBMROOT_SOURCE_DIR}/data/beamtime/fhodo
   ${CBMROOT_SOURCE_DIR}/data/raw
   ${CBMROOT_SOURCE_DIR}/data/tof
-  ${CBMROOT_SOURCE_DIR}/data/much
 
   ${CBMROOT_SOURCE_DIR}/beamtime/base
   ${CBMROOT_SOURCE_DIR}/fles/cern2016
   ${CBMROOT_SOURCE_DIR}/fles/cern2016/unpacker
   ${CBMROOT_SOURCE_DIR}/fles/cern2016/param
+  
+  ${CBMROOT_SOURCE_DIR}/fles/star2017
+  ${CBMROOT_SOURCE_DIR}/fles/star2017/unpacker
+  ${CBMROOT_SOURCE_DIR}/fles/star2017/param
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
@@ -34,10 +36,6 @@ Set(LINK_DIRECTORIES
   ${ROOT_LIBRARY_DIR}
   ${FAIRROOT_LIBRARY_DIR}
   ${Boost_LIBRARY_DIRS}
-  
-  ## Only for CBM eTOF @ STAR, to be moved away later!!!!
-  ### ====> Do NOT commit to cbmroot trunk as is!!!!
-  /RTS/TONKO/cvs/online/RTS/src/RHICF/
 )
  
 Link_Directories( 
@@ -45,31 +43,12 @@ Link_Directories(
 )
 
 Set(SRCS
-  CbmFlibTestSource.cxx   
-  CbmFlibCern2016Source.cxx   
-
-  unpacker/CbmTSUnpackFHodo.cxx
-  unpacker/CbmTSUnpackMuch.cxx
-  unpacker/CbmTSUnpackTof.cxx
-  
-  unpacker/CbmTSMonitorTofLegacy.cxx
-  unpacker/CbmTSMonitorTof.cxx
-  unpacker/CbmTSMonitorMuch.cxx
-
   unpacker/CbmTofStarData.cxx
   unpacker/CbmTSMonitorTofStar.cxx
-  
-  param/CbmTofUnpackPar.cxx
-  param/CbmFHodoUnpackPar.cxx
-  param/CbmMuchUnpackPar.cxx
-  param/CbmFlesTestContFact.cxx
 )
 
 Set(NO_DICT_SRCS
-  unpacker/rocMess_wGet4v1.cxx
-  ## Only for CBM eTOF @ STAR, to be moved away later!!!!
-  ### ====> Do NOT commit to cbmroot trunk as is!!!
-  /RTS/TONKO/cvs/online/RTS/src/RHICF/star_rhicf.c
+#  unpacker/star_rhicf.c
 )
 
 If(_UINT8_T_EXIST)
@@ -91,10 +70,10 @@ If(FairRoot_VERSION VERSION_GREATER 16.06.1)
 EndIf()
 
 
-Set(LINKDEF CbmFlibCern2016LinkDef.h )
-Set(LIBRARY_NAME CbmFlibCern2016)
+Set(LINKDEF CbmFlibStar2017LinkDef.h )
+Set(LIBRARY_NAME CbmFlibStar2017)
 Set(DEPENDENCIES
-    CbmBase CbmBeamtimeBase fles_ipc Eve Base
+    CbmFlibCern2016 CbmBase CbmBeamtimeBase fles_ipc Eve Base
 )
 
 GENERATE_LIBRARY()

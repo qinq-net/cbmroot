@@ -11,7 +11,6 @@
 #pragma link C++ class CbmTSUnpackMuch;
 #pragma link C++ class CbmTSMonitorTofLegacy;
 #pragma link C++ class CbmTSMonitorTof;
-#pragma link C++ class CbmTSMonitorTofStar;
 #pragma link C++ class CbmTSMonitorMuch;
 #pragma link C++ class CbmFHodoUnpackPar;
 #pragma link C++ class CbmTofUnpackPar;
