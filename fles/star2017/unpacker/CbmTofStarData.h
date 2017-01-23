@@ -86,12 +86,14 @@ class CbmTofStarSubevent
    private:
       CbmTofStarTrigger             fTrigger;
       UInt_t                        fuEventStatusFlags;
+#ifndef __CINT__
       std::vector< ngdpb::Message > fvMsgBuffer;
+#endif
       ULong64_t *                   fpulBuff;
       
    
-//      CbmTofStarSubevent(const CbmTofStarTrigger&);
-//      CbmTofStarSubevent operator=(const CbmTofStarTrigger&);
+      CbmTofStarSubevent(const CbmTofStarSubevent&);
+      CbmTofStarSubevent operator=(const CbmTofStarSubevent&);
     
 //   ClassDef(CbmTofStarSubevent, 1)
 };
