@@ -1634,14 +1634,29 @@ void CbmTSMonitorTofStar::FillStarTrigInfo(ngdpb::Message mess)
          UInt_t uNewDaqCmd  = mess.getStarDaqCmdStarD();
          UInt_t uNewTrigCmd = mess.getStarTrigCmdStarD();
 
+         if( ( uNewToken == fuStarTokenLast ) && ( ulNewGdpbTsFull == fulGdpbTsFullLast ) &&
+             ( ulNewStarTsFull == fulStarTsFullLast ) && ( uNewDaqCmd == fuStarDaqCmdLast ) &&
+             ( uNewTrigCmd == fuStarTrigCmdLast ) )
+         {
+            LOG(INFO) << "Possible error: identical STAR tokens found twice in a row => ignore 2nd! " 
+                         << Form("token = %5u ", fuStarTokenLast )
+                         << Form("gDPB ts  = %12llu ", fulGdpbTsFullLast )
+                         << Form("STAR ts = %12llu ", fulStarTsFullLast )
+                         << Form("DAQ cmd = %2u ", fuStarDaqCmdLast )
+                         << Form("TRG cmd = %2u ", fuStarTrigCmdLast )
+                         << FairLogger::endl;
+            return;
+         } // if exactly same message repeated
        
-		 if( (uNewToken != fuStarTokenLast + 1) && 0 < fulGdpbTsFullLast && 0 < fulStarTsFullLast )
-			LOG(WARNING) << "Possible error: STAR token did not increase by exactly 1! " 
-			             << Form("old = %5u vs new = %5u ", fuStarTokenLast,   uNewToken)
-			             << Form("old = %12llu vs new = %12llu ", fulGdpbTsFullLast, ulNewGdpbTsFull)
-			             << Form("old = %12llu vs new = %12llu ", fulStarTsFullLast, ulNewStarTsFull)
-			             << Form("old = %2u vs new = %2u ", fuStarDaqCmdLast,  uNewDaqCmd)
-			             << Form("old = %2u vs new = %2u ", fuStarTrigCmdLast, uNewTrigCmd)
+         if( (uNewToken != fuStarTokenLast + 1) && 
+             0 < fulGdpbTsFullLast && 0 < fulStarTsFullLast &&
+             ( 4095 != fuStarTokenLast || 1 != uNewToken)  )
+            LOG(WARNING) << "Possible error: STAR token did not increase by exactly 1! " 
+                         << Form("old = %5u vs new = %5u ", fuStarTokenLast,   uNewToken)
+                         << Form("old = %12llu vs new = %12llu ", fulGdpbTsFullLast, ulNewGdpbTsFull)
+                         << Form("old = %12llu vs new = %12llu ", fulStarTsFullLast, ulNewStarTsFull)
+                         << Form("old = %2u vs new = %2u ", fuStarDaqCmdLast,  uNewDaqCmd)
+                         << Form("old = %2u vs new = %2u ", fuStarTrigCmdLast, uNewTrigCmd)
                          << FairLogger::endl;
 
       
@@ -1651,7 +1666,6 @@ void CbmTSMonitorTofStar::FillStarTrigInfo(ngdpb::Message mess)
          fuStarDaqCmdLast  = uNewDaqCmd;
          fuStarTrigCmdLast = uNewTrigCmd;
          
-
          ///* STAR event building/cutting *///
          if( fbStarSortAndCutMode )
          {
@@ -1659,35 +1673,35 @@ void CbmTSMonitorTofStar::FillStarTrigInfo(ngdpb::Message mess)
                                        fuStarDaqCmdLast, fuStarTrigCmdLast );
             fvGdpbEpTrgBuffer[ fGdpbNr ][ fiStarBuffIdxCurr[fGdpbNr] ].push_back( newTrig );
                     
-                    
-            /// => For testing, generate imediately sub-event
-            CbmTofStarSubevent subEvent( newTrig );
-            
-            // Add fake data messages for the time being: 33 messages of 2 words, counting from 42 ;)
-            for( ULong64_t uFakeData = 0; uFakeData < 33; uFakeData++ )
-            {
-               ngdpb::Message msg( uFakeData + 42 );
-               subEvent.AddMsg( msg );
-            } // for( ULong64_t uFakeData = 0; uFakeData < 33; uFakeData++ )
-            
-            /*
-             ** Function to send sub-event block to the STAR DAQ system
-             *       trg_word received is packed as:
-             *
-             *       trg_cmd|daq_cmd|tkn_hi|tkn_mid|tkn_lo
-             */
-            /** TODO: clarify how we deal with multiple sub-events (eg one for each gDPB) **/
-            Int_t  iBuffSzByte = 0;
-            void * pDataBuff = subEvent.BuildOutput( iBuffSzByte );
-#ifdef STAR_SUBEVT_BUILDER
-            star_rhicf_write( subEvent.GetTrigger().GetStarTrigerWord(), 
-                              pDataBuff, iBuffSzByte );
-#endif // STAR_SUBEVT_BUILDER
-
-            LOG(INFO) << "Sent STAR event with size " << iBuffSzByte << " Bytes"
-                       << FairLogger::endl;
+//                    
+//            /// => For testing, generate imediately sub-event
+//            CbmTofStarSubevent subEvent( newTrig );
+//            
+//            // Add fake data messages for the time being: 33 messages of 2 words, counting from 42 ;)
+//            for( ULong64_t uFakeData = 0; uFakeData < 33; uFakeData++ )
+//            {
+//               ngdpb::Message msg( uFakeData + 42 );
+//               subEvent.AddMsg( msg );
+//            } // for( ULong64_t uFakeData = 0; uFakeData < 33; uFakeData++ )
+//           
+//            /*
+//             ** Function to send sub-event block to the STAR DAQ system
+//             *       trg_word received is packed as:
+//             *
+//             *       trg_cmd|daq_cmd|tkn_hi|tkn_mid|tkn_lo
+//             */
+//            /** TODO: clarify how we deal with multiple sub-events (eg one for each gDPB) **/
+//            Int_t  iBuffSzByte = 0;
+//            void * pDataBuff = subEvent.BuildOutput( iBuffSzByte );
+//#ifdef STAR_SUBEVT_BUILDER
+//            star_rhicf_write( subEvent.GetTrigger().GetStarTrigerWord(), 
+//                              pDataBuff, iBuffSzByte );
+//#endif // STAR_SUBEVT_BUILDER
+//
+//            LOG(INFO) << "Sent STAR event with size " << iBuffSzByte << " Bytes"
+//                       << FairLogger::endl;
          } // if( fbStarSortAndCutMode )
-         
+
          if( 0 <= fdStartTime )
          {
             fhTriggerRate->Fill(
@@ -1698,7 +1712,7 @@ void CbmTSMonitorTofStar::FillStarTrigInfo(ngdpb::Message mess)
 		   } // if( 0 < fdStartTime )
             else fdStartTime = fulGdpbTsFullLast * 6.25;
          fhCmdDaqVsTrig->Fill( fuStarDaqCmdLast, fuStarTrigCmdLast );
-
+/*
          LOG(INFO) << "Found full Star Trigger with gDPB TS " << Form("%16llu", fulGdpbTsFullLast)
                     << " STAR TS " << Form("%16llu", fulStarTsFullLast)
                     << " token " << Form("%8u", fuStarTokenLast)
@@ -1706,7 +1720,7 @@ void CbmTSMonitorTofStar::FillStarTrigInfo(ngdpb::Message mess)
                     << " TRIG CMD " << Form("%1X", fuStarTrigCmdLast)
                     << " Filler " << Form("%2X", mess.getStarFillerD())
                     << FairLogger::endl;
-
+*/
          break;
 	  } // case 3
       default:
@@ -2001,6 +2015,10 @@ Bool_t CbmTSMonitorTofStar::StarSelect( Int_t iGdpbIdx )
       star_rhicf_write( subEvent.GetTrigger().GetStarTrigerWord(), 
                         pDataBuff, iBuffSzByte );
 #endif // STAR_SUBEVT_BUILDER
+
+      LOG(INFO) << "Sent STAR event with size " << iBuffSzByte << " Bytes"
+                << " and token " << subEvent.GetTrigger().GetStarToken()
+                 << FairLogger::endl;
    } // Loop on triggers in current buffer
     
    

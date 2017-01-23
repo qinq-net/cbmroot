@@ -7,6 +7,8 @@
 
 #include "CbmTofStarData.h"
 
+#include <algorithm>
+
 /********************** CbmTofStarTrigger *****************************/
 CbmTofStarTrigger::CbmTofStarTrigger( ULong64_t ulGdpbTsFullIn, ULong64_t ulStarTsFullIn,
                      UInt_t    uStarTokenIn,   UInt_t    uStarDaqCmdIn, 
@@ -60,7 +62,11 @@ void * CbmTofStarSubevent::BuildOutput( Int_t & iOutputSizeBytes )
                        + (static_cast< ULong64_t >( fTrigger.GetStarDaqCmd() ) << 16)
                        + (static_cast< ULong64_t >( fTrigger.GetStarTrigCmd() )     );
    
-   iOutputSizeBytes = 4;
+   // Size of output is
+   // 3 * Long64 for Header Star Token Info
+   // 1 * Long64 for Header Event Status Flags (version, bad/good, ...)
+   // n * Long64 for the n messages in Buffer: 1 Epoch + messages + 1 extra epoch in-between if needed
+   iOutputSizeBytes = 4 + fvMsgBuffer.size();
    
    // Do loop to find the size 
    
@@ -73,6 +79,13 @@ void * CbmTofStarSubevent::BuildOutput( Int_t & iOutputSizeBytes )
                 + (static_cast< ULong64_t >( fTrigger.GetStarDaqCmd() ) << 16)
                 + (static_cast< ULong64_t >( fTrigger.GetStarTrigCmd() )     );
    pulBuff[3] = static_cast< ULong64_t >(fuEventStatusFlags);
+  
+   // does not work due to "error: cannot convert ‘ngdpb::Message’ to ‘long unsigned int’ in assignment"
+//  std::copy( fvMsgBuffer.begin(), fvMsgBuffer.end(), pulBuff + 4 );
+
+   // Unoptimized replacement: item by item copy
+   for( UInt_t uMsgIdx = 0; uMsgIdx < fvMsgBuffer.size(); uMsgIdx++)
+      pulBuff[4 + uMsgIdx] = fvMsgBuffer[uMsgIdx].getData();
    
    iOutputSizeBytes *= sizeof( ULong64_t );
    
