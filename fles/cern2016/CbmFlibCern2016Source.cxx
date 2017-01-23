@@ -60,7 +60,8 @@ CbmFlibCern2016Source::CbmFlibCern2016Source(const CbmFlibCern2016Source& source
     fTimer(),
     fBufferFillNeeded(kTRUE),
     fHistoMissedTS(NULL),
-    fNofTSSinceLastTS(),
+    fNofTSSinceLastTS(0),
+    fuTsReduction(1),
     fSource(NULL)
 {
 }

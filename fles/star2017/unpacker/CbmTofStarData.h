@@ -72,12 +72,16 @@ class CbmTofStarSubevent
       // Setters
       inline void SetTrigger( CbmTofStarTrigger triggerIn ){ fTrigger = triggerIn; }
       inline void SetBadEventFlag(  Bool_t bFlagState = kTRUE ){ bFlagState ? (fuEventStatusFlags |= 0x1) : (fuEventStatusFlags &= ~(0x1)); }
+#ifndef __CINT__
       inline void AddMsg( ngdpb::Message & msgIn){ fvMsgBuffer.push_back( msgIn ); }
+#endif
       
       // Accessors
       inline CbmTofStarTrigger GetTrigger()  const { return fTrigger;}
       inline Bool_t            GetBadEventFlag() const { return (fuEventStatusFlags & 0x1); }
+#ifndef __CINT__
       inline ngdpb::Message    GetMsg( UInt_t uMsgIdx ) const;
+#endif
       inline UInt_t            GetMsgBuffSize() const { return fvMsgBuffer.size();}
       
       // Sub-event output

@@ -39,6 +39,7 @@ CbmTSMonitorTofLegacy::CbmTSMonitorTofLegacy()
   : CbmTSUnpack(),
     fuMsAcceptsPercent(100),
     fuMinNbGdpb(),
+    fuCurrNbGdpb( 0 ),
 	fNrOfGdpbs(-1),
 	fNrOfFebsPerGdpb(-1),
 	fNrOfGet4PerFeb(-1),
@@ -52,15 +53,14 @@ CbmTSMonitorTofLegacy::CbmTSMonitorTofLegacy()
    fDiamondChanC(-1),
    fDiamondChanD(-1),
    fDiamondTimeLastReset(-1),
-    fuCurrNbGdpb( 0 ),
     fMsgCounter(11,0), // length of enum MessageTypes initialized with 0
     fGdpbIdIndexMap(),
     fHM(new CbmHistManager()),
     fCurrentEpoch(),
-    fTsLastHit(),
     fNofEpochs(0),
     fCurrentEpochTime(0.),
     fdStartTime(-1.),
+    fTsLastHit(),
     fEquipmentId(0),
     fUnpackPar(NULL)
 {
@@ -583,26 +583,26 @@ Bool_t CbmTSMonitorTofLegacy::DoUnpack(const fles::Timeslice& ts, size_t compone
    TH2* histDiamond = fHM->H2("hDiamond");
 
 
-   TString sMsSzName = Form("MsSz_link_%02u", component);
+   TString sMsSzName = Form("MsSz_link_%02lu", component);
    TH1* hMsSz = NULL;
    TProfile* hMsSzTime = NULL;
    if( fHM->Exists(sMsSzName.Data() ) )
    {
       hMsSz = fHM->H1(sMsSzName.Data());
-      sMsSzName = Form("MsSzTime_link_%02u", component);
+      sMsSzName = Form("MsSzTime_link_%02lu", component);
       hMsSzTime = fHM->P1(sMsSzName.Data());
    } // if( fHM->Exists(sMsSzName.Data() ) )
       else
       {
-         TString sMsSzTitle = Form("Size of MS for gDPB of link %02u; Ms Size [bytes]", component);
+         TString sMsSzTitle = Form("Size of MS for gDPB of link %02lu; Ms Size [bytes]", component);
          fHM->Add(sMsSzName.Data(), new TH1F( sMsSzName.Data(), sMsSzTitle.Data(), 
                                        160000, 0., 20000. ) );
          hMsSz = fHM->H1(sMsSzName.Data());
 #ifdef USE_HTTP_SERVER
          if (server) server->Register("/FlibRaw", hMsSz );
 #endif
-         sMsSzName = Form("MsSzTime_link_%02u", component);
-         sMsSzTitle = Form("Size of MS vs time for gDPB of link %02u; Time[s] ; Ms Size [bytes]", component);
+         sMsSzName = Form("MsSzTime_link_%02lu", component);
+         sMsSzTitle = Form("Size of MS vs time for gDPB of link %02lu; Time[s] ; Ms Size [bytes]", component);
          fHM->Add(sMsSzName.Data(), new TProfile( sMsSzName.Data(), sMsSzTitle.Data(), 
                                        15000, 0., 300. ) );
          hMsSzTime = fHM->P1(sMsSzName.Data());
