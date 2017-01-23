@@ -1638,8 +1638,8 @@ void CbmTSMonitorTofStar::FillStarTrigInfo(ngdpb::Message mess)
 		 if( (uNewToken != fuStarTokenLast + 1) && 0 < fulGdpbTsFullLast && 0 < fulStarTsFullLast )
 			LOG(WARNING) << "Possible error: STAR token did not increase by exactly 1! " 
 			             << Form("old = %5u vs new = %5u ", fuStarTokenLast,   uNewToken)
-			             << Form("old = %12lu vs new = %12lu ", fulGdpbTsFullLast, ulNewGdpbTsFull)
-			             << Form("old = %12lu vs new = %12lu ", fulStarTsFullLast, ulNewStarTsFull)
+			             << Form("old = %12llu vs new = %12llu ", fulGdpbTsFullLast, ulNewGdpbTsFull)
+			             << Form("old = %12llu vs new = %12llu ", fulStarTsFullLast, ulNewStarTsFull)
 			             << Form("old = %2u vs new = %2u ", fuStarDaqCmdLast,  uNewDaqCmd)
 			             << Form("old = %2u vs new = %2u ", fuStarTrigCmdLast, uNewTrigCmd)
                          << FairLogger::endl;
