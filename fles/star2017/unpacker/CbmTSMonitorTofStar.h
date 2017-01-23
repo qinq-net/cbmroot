@@ -26,6 +26,16 @@
 class CbmDigi;
 class CbmTofUnpackPar;
 
+#ifdef STAR_SUBEVT_BUILDER
+   /*
+    ** Function to send sub-event block to the STAR DAQ system
+    *       trg_word received is packed as:
+    *
+    *       trg_cmd|daq_cmd|tkn_hi|tkn_mid|tkn_lo
+   */
+   extern "C" int star_rhicf_write(unsigned int trg_word, void *dta, int bytes);
+#endif // STAR_SUBEVT_BUILDER
+
 class CbmTSMonitorTofStar: public CbmTSUnpack {
   public:
 
@@ -62,6 +72,7 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     void SetTsNbSpillOffThr( Int_t iThrIn = 10 ) { fiTsUnderOffThr = iThrIn; }
 
     void SetEpochSuppressedMode( Bool_t bEnable = kTRUE ) { fbEpochSuppModeOn = bEnable; }
+    void SetStarSortAndCutMode( Bool_t bEnable = kTRUE ) { fbStarSortAndCutMode = bEnable; }
 
     void SetRunStart( Int_t dateIn, Int_t timeIn, Int_t iBinSize = 5 );
     
@@ -173,6 +184,7 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     UInt_t    fuStarTrigCmdLast;
     TH1 *     fhTriggerRate;
     TH2 *     fhCmdDaqVsTrig;
+    TH2 *     fhStarTokenEvo; 
     
     ///* STAR and pulser monitoring *///
     static const UInt_t kuNbChanTest = 16;

@@ -47,9 +47,12 @@ Set(SRCS
   unpacker/CbmTSMonitorTofStar.cxx
 )
 
+If( STAR_SUBEVT_BUILDER )
 Set(NO_DICT_SRCS
-#  unpacker/star_rhicf.c
+  # STAR sub-event writer source code
+  unpacker/star_rhicf.c
 )
+EndIf()
 
 If(_UINT8_T_EXIST)
   Add_Definitions(-DHAVE_UINT8_T_HEADER_FILE)
