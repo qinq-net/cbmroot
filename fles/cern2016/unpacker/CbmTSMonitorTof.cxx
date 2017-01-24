@@ -40,6 +40,7 @@ Bool_t bResetTofHistos = kFALSE;
 CbmTSMonitorTof::CbmTSMonitorTof() :
     CbmTSUnpack(),
     fuMsAcceptsPercent(100),
+    fuOverlapMsNb(0),
     fuMinNbGdpb(),
     fuCurrNbGdpb(0),
     fNrOfGdpbs(-1),
@@ -649,8 +650,13 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts,
 
   Int_t messageType = -111;
   // Loop over microslices
-  for (size_t m = 0; m < ts.num_microslices(component); ++m) {
+  size_t numCompMsInTs = ts.num_microslices(component);
+  for (size_t m = 0; m < numCompMsInTs; ++m) {  
     if (fuMsAcceptsPercent < m)
+      continue;
+      
+    // Ignore overlap ms if number defined by user
+    if( numCompMsInTs - fuOverlapMsNb <= m )
       continue;
 
     constexpr uint32_t kuBytesPerMessage = 8;

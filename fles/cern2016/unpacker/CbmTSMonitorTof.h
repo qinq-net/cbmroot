@@ -56,6 +56,13 @@ class CbmTSMonitorTof: public CbmTSUnpack {
       return fuMsAcceptsPercent;
     }
 
+    void SetMsOverlap(size_t uOverlapMsNb = 1) {
+      fuOverlapMsNb = uOverlapMsNb;
+    }
+    size_t GetMsOverlap() {
+      return fuOverlapMsNb;
+    }
+
     void SetDiamondChannels(Int_t iGdpb = 0, Int_t iFeet = 2, Int_t iChannelA =
         78, Int_t iChannelB = 70, Int_t iChannelC = 94, Int_t iChannelD = 86);
     void SetDiamondPerTsSpillOnThr( Int_t iThrIn = 10 ) {  fiDiamSpillOnThr = iThrIn; }
@@ -73,6 +80,7 @@ class CbmTSMonitorTof: public CbmTSUnpack {
   private:
 
     size_t fuMsAcceptsPercent; /** Reject Ms with index inside TS above this, assumes 100 MS per TS **/
+    size_t fuOverlapMsNb;      /** Ignore Overlap Ms: all fuOverlapMsNb MS at the end of timeslice **/
     UInt_t fuMinNbGdpb;
     UInt_t fuCurrNbGdpb;
 
