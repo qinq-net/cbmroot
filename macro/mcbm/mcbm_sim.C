@@ -66,7 +66,7 @@ void mcbm_sim(Int_t nEvents = 20, const char* setup = "sis18_mcbm")
   TString parFile = outDir + setup + "_params.root";
   TString geoFile = outDir + setup + "_geofile_full.root";
 
-  TString setupFile = inDir + "/geometry/setup/" + setup + "_setup.C";
+  TString setupFile = inDir + "/geometry/setup/legacy/" + setup + "_setup.C";
   TString setupFunct = setup;
   setupFunct += "_setup()";
   
