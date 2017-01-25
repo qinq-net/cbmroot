@@ -136,8 +136,8 @@ class CbmTofStarSubevent
       UInt_t                        fuEventStatusFlags;
 #ifndef __CINT__
       std::vector< ngdpb::Message > fvMsgBuffer;
-#endif
       ULong64_t                     fpulBuff[kuMaxOutputSize];
+#endif
       
    
       CbmTofStarSubevent(const CbmTofStarSubevent&);
