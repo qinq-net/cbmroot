@@ -16,6 +16,7 @@
 
 #include <vector>
 
+#ifndef __CINT__
 namespace get4v1x {
    // Size of one clock cycle (=1 coarse bin)
    const double   kdClockCycleSize    = 6250.0; //[ps]
@@ -42,6 +43,7 @@ namespace get4v1x {
    // alternatively: (kiCoarseTime>>kiCtShift + 1)*kdClockCycleSize
    const double   kdEpochInPs   = kuEpochInBins*kdBinSize;
 }
+#endif
 
 class CbmTofStarTrigger
 {
