@@ -44,7 +44,7 @@ class CbmTofUnpackPar : public FairParGenericSet
   inline Int_t GetChannelToDetUIdMap(Int_t channel) {return fChannelToDetUIdMap[channel];}
   inline Bool_t IsChannelRateEnabled() {return (1 == fPlotChannelRate);}
   inline Bool_t IsStarSortAndCutEnabled() {return (1 == fiStarSortAndCut);}
-  inline Int_t  GetStarActiveMask(Int_t gdpb) { return (IsStarSortAndCutEnabled() ? fiStarActiveMasksArray[gdpb] : 0); }
+  inline UInt_t GetStarActiveMask(Int_t gdpb) { return (IsStarSortAndCutEnabled() ? static_cast<UInt_t>(fiStarActiveMasksArray[gdpb]) : 0); }
   inline Double_t GetStarTriggDelay(Int_t gdpb) { return (IsStarSortAndCutEnabled() ? fdStarTriggerDelay[gdpb] : 0.0);}
   inline Double_t GetStarTriggWinSize(Int_t gdpb) { return (IsStarSortAndCutEnabled() ? fdStarTriggerWinSize[gdpb] : 0.0);}
 

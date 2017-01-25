@@ -396,7 +396,7 @@ void ngdpb::Message::printData(unsigned outType, unsigned kind, uint32_t epoch, 
    }
 
    if (kind & msg_print_Prefix) {
-      snprintf(buf, sizeof(buf), "Msg:%u Roc:%04x ", getMessageType(), getRocNumber());
+      snprintf(buf, sizeof(buf), "Msg:%2u Roc:%04x ", getMessageType(), getRocNumber());
 //      os << buf;
       if( msg_print_Cout == outType)
          std::cout << buf;
@@ -563,7 +563,11 @@ void ngdpb::Message::printData(unsigned outType, unsigned kind, uint32_t epoch, 
                case SYSMSG_GDPB_UNKWN:
                   snprintf(sysbuf, sizeof(sysbuf), "Unknown GET4 message, data: 0x%08x", getGdpbSysUnkwData());
                   break;
+               default:
+                  snprintf(sysbuf, sizeof(sysbuf), "unknown system message type %u", getGdpbSysSubType());
             } // switch( getGdpbSysSubType() )
+            snprintf(buf, sizeof(buf), "%s", sysbuf);
+            
             break;
          } // case MSG_GET4_SYS:
          default:

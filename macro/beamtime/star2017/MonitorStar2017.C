@@ -13,7 +13,8 @@ FairRunOnline *run = NULL;
 void MonitorStar2017(TString inFile = "")
 {
   TString srcDir = gSystem->Getenv("VMCWORKDIR");
-  TString inDir  = srcDir + "/input/";
+//  TString inDir  = srcDir + "/input/";
+  TString inDir  = "/home/mework/star/";
   if( "" != inFile )
    inFile = inDir + inFile;
 
@@ -59,6 +60,9 @@ void MonitorStar2017(TString inFile = "")
   test_monitor_tof->SetPulserChans(   0,   8,  16,  24,  32,  40,  48,  56, 
                                      64,  72,  80,  88,  96, 104, 112, 120 );
 */
+   test_monitor_tof->SetMsOverlap(1);
+   test_monitor_tof->SetEpochSuppressedMode();
+   test_monitor_tof->SetStarSortAndCutMode();
 
   // --- Source task
   CbmFlibCern2016Source* source = new CbmFlibCern2016Source();
@@ -102,6 +106,8 @@ void MonitorStar2017(TString inFile = "")
   run->Run(nEvents, 0); // run until end of input file
   timer.Stop();
   
+//  run->Finish();
+
   std::cout << "Processed " << std::dec << source->GetTsCount() << " timeslices" << std::endl;
     
   // --- End-of-run info

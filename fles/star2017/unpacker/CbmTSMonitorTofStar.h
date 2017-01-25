@@ -67,6 +67,13 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
       return fuMsAcceptsPercent;
     }
 
+    void SetMsOverlap(size_t uOverlapMsNb = 1) {
+      fuOverlapMsNb = uOverlapMsNb;
+    }
+    size_t GetMsOverlap() {
+      return fuOverlapMsNb;
+    }
+
     void SetPerTsSpillOnThr( Int_t iThrIn = 10 ) { fiSpillOnThr = iThrIn; }
     void SetPerTsSpillOffThr( Int_t iThrIn = 3 ) { fiSpillOffThr = iThrIn; }
     void SetTsNbSpillOffThr( Int_t iThrIn = 10 ) { fiTsUnderOffThr = iThrIn; }
@@ -93,6 +100,7 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
   private:
 
     size_t fuMsAcceptsPercent; /** Reject Ms with index inside TS above this, assumes 100 MS per TS **/
+    size_t fuOverlapMsNb;      /** Ignore Overlap Ms: all fuOverlapMsNb MS at the end of timeslice **/
     UInt_t fuMinNbGdpb;
     UInt_t fuCurrNbGdpb;
 
@@ -167,6 +175,7 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     std::vector<TH1*> fChCount_gDPB;
     std::vector<TH2*> fChannelRate_gDPB;
     std::vector<TH1*> fFeetRate_gDPB;
+    std::vector<TH1*> fFeetErrorRate_gDPB;
 
     std::vector<TH1*> fFeetRateDate_gDPB;
     Int_t             fiRunStartDateTimeSec;
@@ -201,21 +210,27 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
 
     ///* STAR event building/cutting *///
     Bool_t  fbStarSortAndCutMode;
-    std::vector< Int_t >    fiStarActiveAsicMask;
+    std::vector< UInt_t >   fuStarActiveAsicMask;
     std::vector< Double_t > fdStarTriggerDelay;
     std::vector< Double_t > fdStarTriggerWinSize;
     std::vector< UInt_t >   fuCurrentEpGdpb;
-    std::vector< Int_t >    fiStarCurrentEpFound;
-    std::vector< Int_t >    fiStarNextBufferUse;
+    std::vector< UInt_t >   fuStarCurrentEpFound;
+    std::vector< UInt_t >   fuStarNextBufferUse;
     std::vector< Double_t > fdStarLastTrigTimeG;
     std::vector< Int_t >    fiStarBuffIdxPrev;
     std::vector< Int_t >    fiStarBuffIdxCurr;
     std::vector< Int_t >    fiStarBuffIdxNext;
 #ifndef __CINT__
-//    std::vector< std::vector< Int_t > >    fvGdpbEpIdxBuffer; //! Dims: [gDPB][buffer], 1 value for Prev, Curr and Next Buff
     std::vector< std::vector< std::vector < ngdpb::Message > > >    fvGdpbEpMsgBuffer; //! Dims: [gDPB][buffer][msgs], 1 buff. for Prev, Curr and Next
+    std::vector< std::vector< std::vector < ngdpb::Message > > >    fvGdpbEpHitBuffer; //! Dims: [gDPB][buffer][msgs], 1 buff. for Prev, Curr and Next
     std::vector< std::vector< std::vector < CbmTofStarTrigger > > > fvGdpbEpTrgBuffer; //! Dims: [gDPB][buffer][trig], 1 buff. for Prev, Curr and Next
+    CbmTofStarSubevent      fStarSubEvent;
 #endif
+    std::vector<TH2*> fhStarEpToTrig_gDPB;
+    std::vector<TH1*> fhStarHitToTrigAll_gDPB;
+    std::vector<TH1*> fhStarHitToTrigWin_gDPB;
+    std::vector<TH1*> fhStarEventSize_gDPB;
+    std::vector<TH2*> fhStarEventSizeTime_gDPB;
     
     void CreateHistograms();
 
