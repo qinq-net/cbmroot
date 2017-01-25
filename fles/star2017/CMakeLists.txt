@@ -48,6 +48,8 @@ Set(SRCS
 )
 
 If( STAR_SUBEVT_BUILDER )
+  ADD_DEFINITIONS(-DSTAR_SUBEVT_BUILDER)
+  Message(STATUS "Compiling with support for STAR DAQ Event writing")
 Set(NO_DICT_SRCS
   # STAR sub-event writer source code
   unpacker/star_rhicf.c

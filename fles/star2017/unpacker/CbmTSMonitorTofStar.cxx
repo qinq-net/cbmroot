@@ -741,8 +741,8 @@ void CbmTSMonitorTofStar::CreateHistograms()
        title = Form("Time to trigger for all hits gDPB %02u; Epoch nb; t(Hit) - t(Trigg) [ns]", uGdpb);
        fHM->Add(name.Data(),
            new TH2I(name.Data(), title.Data(), 
-                    1000, 2662000, 2663000,
-                    5000, -10000000.0, 0.0) ); // TODO make offset parameter
+                    100, 2662000, 2663000,
+                    500, -10000000.0, 0.0) ); // TODO make offset parameter
 #ifdef USE_HTTP_SERVER
        if (server)
          server->Register("/StarRaw", fHM->H2(name.Data()));
@@ -755,8 +755,8 @@ void CbmTSMonitorTofStar::CreateHistograms()
        title = Form("Time to trigger for all hits gDPB %02u; t(Hit) - t(Trigg) [ns]", uGdpb);
        fHM->Add(name.Data(),
            new TH1I(name.Data(), title.Data(), 
-//                    4000, -50000.0, 50000.0) ); // TODO make offset parameter
-                    4000, -800000.0, 0.0) ); // TODO make offset parameter
+                    5000, -100000.0, 50000.0) ); // TODO make offset parameter
+//                    4000, -800000.0, 0.0) ); // TODO make offset parameter
 #ifdef USE_HTTP_SERVER
        if (server)
          server->Register("/StarRaw", fHM->H1(name.Data()));
@@ -1158,9 +1158,6 @@ Bool_t CbmTSMonitorTofStar::DoUnpack(const fles::Timeslice& ts,
 
       fGet4Id = mess.getGdpbGenChipId();
       fGet4Nr = (fGdpbNr * fNrOfGet4PerGdpb) + fGet4Id;
-      
-      if( 2662000 < fuCurrentEpGdpb[fGdpbNr] && fuCurrentEpGdpb[fGdpbNr] < 2663000 )
-        mess.printDataCout();
 
       switch (messageType) {
         case ngdpb::MSG_HIT:
@@ -1444,7 +1441,7 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
 void CbmTSMonitorTofStar::FillEpochInfo(ngdpb::Message mess)
 {
   Int_t epochNr = mess.getEpoch2Number();
-  
+/*  
   if( epochNr < fCurrentEpoch[fGet4Nr] ) 
       LOG(WARNING) << "Epoch message for get4 " << Form("%3u", fGet4Nr ) 
                  << " with epoch number " << Form("%9u", epochNr ) 
@@ -1455,6 +1452,7 @@ void CbmTSMonitorTofStar::FillEpochInfo(ngdpb::Message mess)
                  << " with epoch number " << Form("%9u", epochNr ) 
                  << " same as previous epoch number for same chip: "
                  << Form("%9u", fCurrentEpoch[fGet4Nr] ) << FairLogger::endl;
+*/ 
   fCurrentEpoch[fGet4Nr] = epochNr;
 
   if (100 > iMess++)
@@ -1487,6 +1485,7 @@ void CbmTSMonitorTofStar::FillEpochInfo(ngdpb::Message mess)
       /// => no need to use fuStarActiveAsicMask
       if( fbStarSortAndCutMode )
       {
+         Bool_t bEpochOk = kTRUE;
          if( 0 == fuCurrentEpGdpb[fGdpbNr] )
          {
             /// First epoch for this gDPB board => initialize everything
@@ -1539,7 +1538,7 @@ void CbmTSMonitorTofStar::FillEpochInfo(ngdpb::Message mess)
          } // else if( epochNr > (fuCurrentEpGdpb[ fGdpbNr ] + 1) )
          else
          {
-            LOG(FATAL) << "In STAR sort and cut mode, gDPB " << Form("0x%08x,", fGdpbId)
+            LOG(ERROR) << "In STAR sort and cut mode, gDPB " << Form("0x%08x,", fGdpbId)
                        << " found epoch " << Form( "%12u", epochNr) 
                        << " for get4 "<< Form( "%2u", fGet4Id) 
                        << " while waiting for epoch " 
@@ -1548,32 +1547,42 @@ void CbmTSMonitorTofStar::FillEpochInfo(ngdpb::Message mess)
                        << " -----> GET4 active mask is 0x" << std::hex 
                        << fuStarActiveAsicMask[ fGdpbNr ] << " and GET4 ready flags is "
                        << fuStarCurrentEpFound[ fGdpbNr ]
+                       << std::dec
                        << std::endl
                        << " => corrupted epoch number ordering, exiting now!" 
                        << FairLogger::endl;
+            bEpochOk = kFALSE;
          } // else of many ifs => Correspond to epochNr < fuCurrentEpGdpb[ fGdpbNr ]
          
-         /// Save the epoch message corresponding to the current buffer:
-         fvGdpbEpMsgBuffer[ fGdpbNr ][ fiStarBuffIdxCurr[ fGdpbNr ] ].push_back( mess );
-         
-         /// Save content of current GET4 hit buffer in Current buffer!
-         Int_t iBufferSize = fvmEpSupprBuffer[fGet4Nr].size();
-         if( 0 < iBufferSize )
+         if( bEpochOk )
          {
-            for( Int_t iMsgIdx = 0; iMsgIdx < iBufferSize; iMsgIdx++ )
+            /// Save the epoch message corresponding to the current buffer:
+            fvGdpbEpMsgBuffer[ fGdpbNr ][ fiStarBuffIdxCurr[ fGdpbNr ] ].push_back( mess );
+            
+            /// Save content of current GET4 hit buffer in Current buffer!
+            Int_t iBufferSize = fvmEpSupprBuffer[fGet4Nr].size();
+            if( 0 < iBufferSize )
             {
-               FillHitInfo( fvmEpSupprBuffer[fGet4Nr][ iMsgIdx ] );
-            } // for( Int_t iMsgIdx = 0; iMsgIdx < iBufferSize; iMsgIdx++ )
+               for( Int_t iMsgIdx = 0; iMsgIdx < iBufferSize; iMsgIdx++ )
+               {
+                  FillHitInfo( fvmEpSupprBuffer[fGet4Nr][ iMsgIdx ] );
+               } // for( Int_t iMsgIdx = 0; iMsgIdx < iBufferSize; iMsgIdx++ )
 
-            fvmEpSupprBuffer[fGet4Nr].clear();
-         } // if( 0 < iBufferSize )
-         
-         
-         /// Epoch currently waiting for all GET4s to be ready
-         /// => This one is ready and starts "storing" its data in Next buffer 
-         //// (no real effect as in this mode we dalay processing of hits)
-         fuStarCurrentEpFound[ fGdpbNr ] |= 0x1 << fGet4Id; // !!! This implies a limit to 32 GET4 per gDPB !!!
-         fuStarNextBufferUse[ fGdpbNr ]  |= 0x1 << fGet4Id; // !!! This implies a limit to 32 GET4 per gDPB !!!
+               fvmEpSupprBuffer[fGet4Nr].clear();
+            } // if( 0 < iBufferSize )
+            
+            
+            /// Epoch currently waiting for all GET4s to be ready
+            /// => This one is ready and starts "storing" its data in Next buffer 
+            //// (no real effect as in this mode we dalay processing of hits)
+            fuStarCurrentEpFound[ fGdpbNr ] |= 0x1 << fGet4Id; // !!! This implies a limit to 32 GET4 per gDPB !!!
+            fuStarNextBufferUse[ fGdpbNr ]  |= 0x1 << fGet4Id; // !!! This implies a limit to 32 GET4 per gDPB !!!
+         } // if( bEpochOk )
+            else
+            {
+               /// Bad epoch for whatever reason: just jump it and do nothing with it
+               fvmEpSupprBuffer[fGet4Nr].clear();
+            } // else of if( bEpochOk )
       } // if( fbStarSortAndCutMode )
          else 
          {
@@ -1918,7 +1927,7 @@ void CbmTSMonitorTofStar::FillStarTrigInfo(ngdpb::Message mess)
                          << FairLogger::endl;
             return;
          } // if exactly same message repeated
-       
+/*
          if( (uNewToken != fuStarTokenLast + 1) && 
              0 < fulGdpbTsFullLast && 0 < fulStarTsFullLast &&
              ( 4095 != fuStarTokenLast || 1 != uNewToken)  )
@@ -1929,8 +1938,8 @@ void CbmTSMonitorTofStar::FillStarTrigInfo(ngdpb::Message mess)
                          << Form("old = %2u vs new = %2u ", fuStarDaqCmdLast,  uNewDaqCmd)
                          << Form("old = %2u vs new = %2u ", fuStarTrigCmdLast, uNewTrigCmd)
                          << FairLogger::endl;
-
-      
+*/
+         ULong64_t ulGdpbTsDiff = ulNewGdpbTsFull - fulGdpbTsFullLast;
          fulGdpbTsFullLast = ulNewGdpbTsFull;
          fulStarTsFullLast = ulNewStarTsFull;
          fuStarTokenLast   = uNewToken;
@@ -1961,7 +1970,8 @@ void CbmTSMonitorTofStar::FillStarTrigInfo(ngdpb::Message mess)
                     << " token " << Form("%8u", fuStarTokenLast)
                     << " DAQ CMD " << Form("%1X", fuStarDaqCmdLast)
                     << " TRIG CMD " << Form("%1X", fuStarTrigCmdLast)
-                    << " Filler " << Form("%2X", mess.getStarFillerD())
+//                    << " Filler " << Form("%2X", mess.getStarFillerD())
+                    << "GDPB DIFF " << Form("%8llu", ulGdpbTsDiff)
                     << FairLogger::endl;
 */
          break;
@@ -2304,12 +2314,7 @@ Bool_t CbmTSMonitorTofStar::StarSelect( Int_t iGdpbIdx )
       
 //      if( uTriggerEpIdx != uEpochIdx )
       if( uTriggerEpIdx < uEpochIdx -1 || uTriggerEpIdx > uEpochIdx +1 )
-      {
-         if( 2662000 < uEpochIdx && uEpochIdx < 2663000 )
-            LOG(INFO) << "Ignoring trigger " << uTrigIdx << " for epoch " << uEpochIdx 
-                      << " because its epoch is "<< uTriggerEpIdx << "!!! "
-                            << FairLogger::endl;
-         
+      {         
          /*
           ** Function to send sub-event block to the STAR DAQ system
           *       trg_word received is packed as:
@@ -2325,6 +2330,11 @@ Bool_t CbmTSMonitorTofStar::StarSelect( Int_t iGdpbIdx )
 #ifdef STAR_SUBEVT_BUILDER
             star_rhicf_write( fStarSubEvent.GetTrigger().GetStarTrigerWord(), 
                               pDataBuff, iBuffSzByte );
+/*                              
+            LOG(INFO) << "Sent STAR event with size " << iBuffSzByte << " Bytes"
+                      << " and token " << fStarSubEvent.GetTrigger().GetStarToken()
+                      << FairLogger::endl;
+*/ 
 #endif // STAR_SUBEVT_BUILDER
          } // if( NULL != pDataBuff )
             else LOG(ERROR) << "Invalid STAR SubEvent Output, can only happen if trigger "
@@ -2345,11 +2355,6 @@ Bool_t CbmTSMonitorTofStar::StarSelect( Int_t iGdpbIdx )
          fStarSubEvent.ClearSubEvent();
          continue;
       } // if( uTriggerEpIdx != uEpochIdx )
-             
-      if( 2662000 < uEpochIdx && uEpochIdx < 2663000 )
-         LOG(INFO) << "Accepting trigger " << uTrigIdx << " for epoch " << uEpochIdx 
-                   << " because its epoch is "<< uTriggerEpIdx << "!!! "
-                         << FairLogger::endl;      
                          
       /// Then scan to find the hit messages fitting the event window of this trigger
       /// For now brute force loop, later start index could be smartly determined
@@ -2414,6 +2419,11 @@ Bool_t CbmTSMonitorTofStar::StarSelect( Int_t iGdpbIdx )
 #ifdef STAR_SUBEVT_BUILDER
          star_rhicf_write( fStarSubEvent.GetTrigger().GetStarTrigerWord(), 
                            pDataBuff, iBuffSzByte );
+/*
+         LOG(INFO) << "Sent STAR event with size " << iBuffSzByte << " Bytes"
+                << " and token " << fStarSubEvent.GetTrigger().GetStarToken()
+                 << FairLogger::endl;
+*/
 #endif // STAR_SUBEVT_BUILDER
       } // if( NULL != pDataBuff )
          else LOG(ERROR) << "Invalid STAR SubEvent Output, can only happen if trigger "
