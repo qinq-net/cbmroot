@@ -114,7 +114,9 @@ class CbmTofStarSubevent
       inline ngdpb::Message    GetMsg( UInt_t uMsgIdx ) const;
 #endif
       inline UInt_t            GetMsgBuffSize() const { return fvMsgBuffer.size();}
+#ifndef __CINT__
       inline static uint32_t   GetMaxOutputSize() { return kuMaxOutputSize;}
+#endif
       
       // Content clearing
       void   ClearSubEvent();
@@ -123,9 +125,11 @@ class CbmTofStarSubevent
       void * BuildOutput( Int_t & iOutputSizeBytes );
       
    private:
+#ifndef __CINT__
       static const uint32_t         kuMaxOutputSize = 131072; // 2^17
       static const uint32_t         kuMaxNbMsgs     =  16380; // 4 * 64b in header => floor( (2^17 / 8 ) - 4)
       static const uint64_t         kulFlagBadEvt   = 0x1 << 0;
+#endif
    
       Bool_t                        fbTriggerSet;
       CbmTofStarTrigger             fTrigger;
