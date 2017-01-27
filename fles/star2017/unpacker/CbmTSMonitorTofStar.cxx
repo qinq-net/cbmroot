@@ -116,6 +116,7 @@ CbmTSMonitorTofStar::CbmTSMonitorTofStar() :
     fuStarTokenLast(0),
     fuStarDaqCmdLast(0),
     fuStarTrigCmdLast(0),
+    fhTokenMsgType(NULL),
     fhTriggerRate(NULL),
     fhCmdDaqVsTrig(NULL),
     fhStarTokenEvo(NULL),
@@ -138,6 +139,7 @@ CbmTSMonitorTofStar::CbmTSMonitorTofStar() :
     fiStarBuffIdxPrev(),
     fiStarBuffIdxCurr(),
     fiStarBuffIdxNext(),
+    fuLastTriggerFullTs(),
     fvGdpbEpMsgBuffer(),
     fvGdpbEpHitBuffer(),
     fvGdpbEpTrgBuffer(),
@@ -262,6 +264,7 @@ Bool_t CbmTSMonitorTofStar::ReInitContainers()
     fiStarBuffIdxPrev.resize(    fNrOfGdpbs );
     fiStarBuffIdxCurr.resize(    fNrOfGdpbs );
     fiStarBuffIdxNext.resize(    fNrOfGdpbs );
+    fuLastTriggerFullTs.resize(    fNrOfGdpbs );
     fvGdpbEpMsgBuffer.resize(      fNrOfGdpbs );
     fvGdpbEpHitBuffer.resize(      fNrOfGdpbs );
     fvGdpbEpTrgBuffer.resize(      fNrOfGdpbs );
@@ -284,6 +287,10 @@ Bool_t CbmTSMonitorTofStar::ReInitContainers()
        LOG(INFO) << "STAR trigger par of gDPB  " << iGdpb << " are: mask " << fuStarActiveAsicMask[ iGdpb ]
                  << " Delay " << fdStarTriggerDelay[ iGdpb ] 
                  << " and WinSz " << fdStarTriggerWinSize[ iGdpb ] 
+                    << FairLogger::endl;
+       if( fdStarTriggerDelay[ iGdpb ] < fdStarTriggerWinSize[ iGdpb ] )
+         LOG(FATAL) << "STAR trigger window should end at latest on token itself!"
+                    << " => Delay has to be greater or equal with window size!"
                     << FairLogger::endl;
     } // for (Int_t iGdpb = 0; iGdpb < fNrOfGdpbs; ++iGdpb)
   } // if( fbStarSortAndCutMode )
@@ -387,8 +394,8 @@ void CbmTSMonitorTofStar::CreateHistograms()
   title = "Error messages per GET4 channel; GET4 channel # ; Error";
   TH2I* hGet4ChanErrors = new TH2I(name, title,
       fNrOfGet4 * fNrOfChannelsPerGet4, 0., fNrOfGet4 * fNrOfChannelsPerGet4,
-      32, 0., 32.);
-//  TH2I* hGet4ChanErrors    = new TH2I(name, title, uNbFeets*feetv1::kuChanPerFeet*2, -0.5, uNbFeets*feetv1::kuChanPerFeet -0.5, 32, -0.5, 31.5);
+      18, 0., 18.);
+//      32, 0., 32.);
   hGet4ChanErrors->GetYaxis()->SetBinLabel(1, "0x00: Readout Init    ");
   hGet4ChanErrors->GetYaxis()->SetBinLabel(2, "0x01: Sync            ");
   hGet4ChanErrors->GetYaxis()->SetBinLabel(3, "0x02: Epoch count sync");
@@ -406,8 +413,7 @@ void CbmTSMonitorTofStar::CreateHistograms()
   hGet4ChanErrors->GetYaxis()->SetBinLabel(15, "0x12: ToT out of range");
   hGet4ChanErrors->GetYaxis()->SetBinLabel(16, "0x13: Event Discarded ");
   hGet4ChanErrors->GetYaxis()->SetBinLabel(17, "0x7f: Unknown         ");
-  hGet4ChanErrors->GetYaxis()->SetBinLabel(18,
-      "Corrupt error or unsupported yet");
+  hGet4ChanErrors->GetYaxis()->SetBinLabel(18, "Corrupt error or unsupported yet");
   fHM->Add(name.Data(), hGet4ChanErrors);
 #ifdef USE_HTTP_SERVER
   if (server)
@@ -673,6 +679,19 @@ void CbmTSMonitorTofStar::CreateHistograms()
 #ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H2(name.Data()));
+#endif
+
+  name = "hTokenMsgType";
+  title = "STAR trigger Messages type; Type ; Counts";
+  fhTokenMsgType = new TH1F(name, title, 4, 0, 4);
+  fhTokenMsgType->GetXaxis()->SetBinLabel( 1, "A"); // gDPB TS high 
+  fhTokenMsgType->GetXaxis()->SetBinLabel( 2, "B"); // gDPB TS low, STAR TS high
+  fhTokenMsgType->GetXaxis()->SetBinLabel( 3, "C"); // STAR TS mid
+  fhTokenMsgType->GetXaxis()->SetBinLabel( 4, "D"); // STAR TS low, token, CMDs
+  fHM->Add(name.Data(), fhTokenMsgType);
+#ifdef USE_HTTP_SERVER
+  if (server)
+    server->Register("/StarRaw", fHM->H1(name.Data()));
 #endif
 
   name = "hTriggerRate";
@@ -1201,7 +1220,7 @@ Bool_t CbmTSMonitorTofStar::DoUnpack(const fles::Timeslice& ts,
                fFeetErrorRate_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + iFeetNr]->Fill(
                   1e-9 * (mess.getMsgFullTimeD(fCurrentEpoch[fGet4Nr]) - fdStartTime));
             
-            Int_t dFullChId =  fGet4Nr * fNrOfChannelsPerGet4 + mess.getGdpbHitChanId();
+            Int_t dFullChId =  fGet4Nr * fNrOfChannelsPerGet4 + mess.getGdpbSysErrChanId();
             switch (mess.getGdpbSysErrData()) {
               case ngdpb::GET4_V1X_ERR_READ_INIT:
                 fHistGet4ChanErrors->Fill(dFullChId, 0);
@@ -1495,6 +1514,22 @@ void CbmTSMonitorTofStar::FillEpochInfo(ngdpb::Message mess)
             fiStarBuffIdxPrev[ fGdpbNr ] = 0;
             fiStarBuffIdxCurr[ fGdpbNr ] = 1;
             fiStarBuffIdxNext[ fGdpbNr ] = 2;
+            
+            UInt_t uNbInitialStarTokens = 0;
+            /// Previous epoch buffer
+            UInt_t uNbEpochTrgs = fvGdpbEpTrgBuffer[ fGdpbNr ][ fiStarBuffIdxPrev[ fGdpbNr ] ].size();
+            for( UInt_t uTrigIdx = 0; uTrigIdx < uNbEpochTrgs; uTrigIdx ++)
+            {
+               StarGenEmptyEvt( fGdpbNr,
+                                fvGdpbEpTrgBuffer[ fGdpbNr ]
+                                                 [ fiStarBuffIdxPrev[ fGdpbNr ] ]
+                                                 [ uTrigIdx ] );
+               uNbInitialStarTokens++;
+            } // for( UInt_t uTrigIdx = 0; uTrigIdx < uNbEpochTrgs; uTrigIdx ++)
+            
+            LOG(INFO) << "Generated empty STAR events for the " << uNbInitialStarTokens
+                      << " first tokens which arrived before the first epoch"
+                      << FairLogger::endl;
             
             /// Clear data from before as we are not sure they belong to the epoch before
             fvGdpbEpHitBuffer[ fGdpbNr ][ fiStarBuffIdxPrev[fGdpbNr] ].clear();
@@ -1891,20 +1926,26 @@ void CbmTSMonitorTofStar::FillStarTrigInfo(ngdpb::Message mess)
 {
   Int_t iMsgIndex = mess.getStarTrigMsgIndex();
   
+//  mess.printDataCout();
+  
   switch( iMsgIndex )
   {
       case 0:
+         fhTokenMsgType->Fill(0);
          fulGdpbTsMsb = mess.getGdpbTsMsbStarA();
          break;
       case 1:
+         fhTokenMsgType->Fill(1);
          fulGdpbTsLsb = mess.getGdpbTsLsbStarB();
          fulStarTsMsb = mess.getStarTsMsbStarB();
          break;
       case 2:
+         fhTokenMsgType->Fill(2);
          fulStarTsMid = mess.getStarTsMidStarC();
          break;
       case 3:
-      {  
+      {
+         fhTokenMsgType->Fill(3);
          ULong64_t ulNewGdpbTsFull = ( fulGdpbTsMsb << 24 )
                            + ( fulGdpbTsLsb       );
          ULong64_t ulNewStarTsFull = ( fulStarTsMsb << 48 )
@@ -1987,8 +2028,53 @@ void CbmTSMonitorTofStar::Reset()
 
 void CbmTSMonitorTofStar::Finish()
 {
+   /// Generate empty events for each remaining trigger in the buffers
+   if( fbEpochSuppModeOn )
+   {
+      UInt_t uNbFinalStarTokens = 0;
+      /** TODO: clarify how we deal with multiple sub-events (eg one for each gDPB) **/
+      for( Int_t iGdpbIdx = 0; iGdpbIdx < fNrOfGdpbs; ++iGdpbIdx )
+      {
+         /// Previous epoch buffer
+         UInt_t uNbEpochTrgs = fvGdpbEpTrgBuffer[ iGdpbIdx ][ fiStarBuffIdxPrev[ iGdpbIdx ] ].size();
+         for( UInt_t uTrigIdx = 0; uTrigIdx < uNbEpochTrgs; uTrigIdx ++)
+         {
+            StarGenEmptyEvt( iGdpbIdx,
+                             fvGdpbEpTrgBuffer[ iGdpbIdx ]
+                                              [ fiStarBuffIdxPrev[ iGdpbIdx ] ]
+                                              [ uTrigIdx ] );
+            uNbFinalStarTokens++;
+         } // for( UInt_t uTrigIdx = 0; uTrigIdx < uNbEpochTrgs; uTrigIdx ++)
+                                              
+         /// Current epoch buffer
+         uNbEpochTrgs = fvGdpbEpTrgBuffer[ iGdpbIdx ][ fiStarBuffIdxCurr[ iGdpbIdx ] ].size();
+         for( UInt_t uTrigIdx = 0; uTrigIdx < uNbEpochTrgs; uTrigIdx ++)
+         {
+            StarGenEmptyEvt( iGdpbIdx,
+                             fvGdpbEpTrgBuffer[ iGdpbIdx ]
+                                              [ fiStarBuffIdxCurr[ iGdpbIdx ] ]
+                                              [ uTrigIdx ] );
+            uNbFinalStarTokens++;
+         } // for( UInt_t uTrigIdx = 0; uTrigIdx < uNbEpochTrgs; uTrigIdx ++)
+                                              
+         /// Next epoch buffer
+         uNbEpochTrgs = fvGdpbEpTrgBuffer[ iGdpbIdx ][ fiStarBuffIdxNext[ iGdpbIdx ] ].size();
+         for( UInt_t uTrigIdx = 0; uTrigIdx < uNbEpochTrgs; uTrigIdx ++)
+         {
+            StarGenEmptyEvt( iGdpbIdx,
+                             fvGdpbEpTrgBuffer[ iGdpbIdx ]
+                                              [ fiStarBuffIdxNext[ iGdpbIdx ] ]
+                                              [ uTrigIdx ] );
+            uNbFinalStarTokens++;
+         } // for( UInt_t uTrigIdx = 0; uTrigIdx < uNbEpochTrgs; uTrigIdx ++)
+      } // for( Int_t iGdpbIdx = 0; iGdpbIdx < fNrOfGdpbs; ++iGdpbIdx )
+       LOG(INFO) << "Generated empty STAR events for the " << uNbFinalStarTokens
+                 << " Last tokens without data in epoch"
+                 << FairLogger::endl;
+   } // if( fbEpochSuppModeOn )
+   
+   // Printout some stats on what was unpacked
   TString message_type;
-
   for (unsigned int i = 0; i < fMsgCounter.size(); ++i) {
     switch (i) {
       case 0:
@@ -2071,6 +2157,7 @@ void CbmTSMonitorTofStar::Finish()
   ///* STAR event building/cutting *///
   gDirectory->mkdir("Star_Raw");
   gDirectory->cd("Star_Raw");
+  fhTokenMsgType->Write();
   fHM->H1("hTriggerRate")->Write();
   fHM->H1("hCmdDaqVsTrig")->Write();
   fHM->H1("hStarTokenEvo")->Write();
@@ -2165,6 +2252,7 @@ void CbmTSMonitorTofStar::ResetAllHistos()
   } // if( fbPulserMode )
   
   ///* STAR event building/cutting *///
+  fhTokenMsgType->Reset();
   fHM->H1("hTriggerRate")->Reset();
   fHM->H1("hCmdDaqVsTrig")->Reset();
   fHM->H1("hStarTokenEvo")->Reset();
@@ -2259,68 +2347,66 @@ Bool_t CbmTSMonitorTofStar::StarSelect( Int_t iGdpbIdx )
    /** Read the triggers one by one and for each scan the messages until one outside of the 
     ** event window is found
     **/
-//   /**** Start with the remaining trigger in the previous buffer (ones that could have data in current) ****/
-//   for( UInt_t uTrigIdx = 0; 
-//        uTrigIdx < fvGdpbEpTrgBuffer[ iGdpbIdx ][ fiStarBuffIdxPrev[ iGdpbIdx ] ].size();
-//        uTrigIdx ++)
-//   {
-//      ULong64_t ulTriggerTime = fvGdpbEpTrgBuffer[ iGdpbIdx ][ fiStarBuffIdxPrev[ iGdpbIdx ] ][uTrigIdx].GetFullGdpbTs();
-//      
-//   } // Loop on remaining triggers in previous buffer
+    
+   /// Reload the value of the End of the trigger window from last trigger
+   Double_t dLastTriggerWinEnd  =  get4v1x::kdClockCycleSizeNs * fuLastTriggerFullTs[ iGdpbIdx ]
+                                 - fdStarTriggerDelay[ iGdpbIdx ]
+                                 + fdStarTriggerWinSize[ iGdpbIdx ];
 
-   /**** Then process all triggers in the current buffer (ones that could have data in current) ****/
+   /**** Process all triggers in the current buffer (ones that could have data in current) 
+    **** This includes for the first ones looking if they do not need data from the previous buffer ****/
+   UInt_t uNbPrevEpochMsgs = fvGdpbEpMsgBuffer[ iGdpbIdx ][ fiStarBuffIdxPrev[ iGdpbIdx ] ].size();
+   UInt_t uNbPrevEpochHits = fvGdpbEpHitBuffer[ iGdpbIdx ][ fiStarBuffIdxPrev[ iGdpbIdx ] ].size();
+   UInt_t uNbPrevEpochTrgs = fvGdpbEpTrgBuffer[ iGdpbIdx ][ fiStarBuffIdxPrev[ iGdpbIdx ] ].size();
    UInt_t uNbEpochMsgs = fvGdpbEpMsgBuffer[ iGdpbIdx ][ fiStarBuffIdxCurr[ iGdpbIdx ] ].size();
    UInt_t uNbEpochHits = fvGdpbEpHitBuffer[ iGdpbIdx ][ fiStarBuffIdxCurr[ iGdpbIdx ] ].size();
+   UInt_t uNbEpochTrgs = fvGdpbEpTrgBuffer[ iGdpbIdx ][ fiStarBuffIdxCurr[ iGdpbIdx ] ].size();
    Bool_t bFirstHitFound = kFALSE;
+   UInt_t uFirstHitIdxPrevTrgPrevBuf = 0;
    UInt_t uFirstHitIdxPrevTrigg = 0;
-   for( UInt_t uTrigIdx = 0; 
-        uTrigIdx < fvGdpbEpTrgBuffer[ iGdpbIdx ][ fiStarBuffIdxCurr[ iGdpbIdx ] ].size();
-        uTrigIdx ++)
+   for( UInt_t uTrigIdx = 0; uTrigIdx < uNbEpochTrgs; uTrigIdx ++)
    {
+      Bool_t bFullPrevEvent = kFALSE; // default is event with hits in this buffer
+      
+      /// In any case, associate this trigger to its subevent
       fStarSubEvent.SetTrigger( fvGdpbEpTrgBuffer[ iGdpbIdx ][ fiStarBuffIdxCurr[ iGdpbIdx ] ][uTrigIdx] );
-
-/*      
-      // Add fake data messages for the time being: 33 messages of 2 words, counting from 42 ;)
-      for( ULong64_t uFakeData = 0; uFakeData < 33; uFakeData++ )
-      {
-         ngdpb::Message msg( uFakeData + 42 );
-         fStarSubEvent.AddMsg( msg );
-      } // for( ULong64_t uFakeData = 0; uFakeData < 33; uFakeData++ )
-*/
-      /// First add all the epoch messages for this block to this SubEvent
-      for( UInt_t uEpochMsg = 0; uEpochMsg < uNbEpochMsgs; uEpochMsg++ )
-         fStarSubEvent.AddMsg( fvGdpbEpMsgBuffer[ iGdpbIdx ][ fiStarBuffIdxCurr[ iGdpbIdx ] ][ uEpochMsg ] );
-         
+      
       if( 0 == uNbEpochMsgs && 0 < uNbEpochHits )
          LOG(FATAL) << "In star Sort and cut, some hit messages were found without corresponding epoch message(s)" 
                     << std::endl
                     << "====> This sould NEVER happen, code broken or corrupt data!!!"
                     << FairLogger::endl;
       
-      /// Ignore Trigger stored but not corresponding to this epoch
+      /// Ignore Trigger stored but not corresponding to this epoch and the previous one
+      /// Triggers with higher epoch numbers are shifted to next buffer!
       /// This should happen only on epoch suppressed mode
-      Double_t dTriggerTime = get4v1x::kdClockCycleSizeNs * 
-//            static_cast< Double_t >( fvGdpbEpTrgBuffer[ iGdpbIdx ]
+      Double_t dTriggerTime     = get4v1x::kdClockCycleSizeNs * 
                                    ( fvGdpbEpTrgBuffer[ iGdpbIdx ]
                                                       [ fiStarBuffIdxCurr[ iGdpbIdx ] ]
                                                       [ uTrigIdx ].GetFullGdpbTs() );
-      Double_t dEpochTime       = 
-                   fvGdpbEpMsgBuffer[ iGdpbIdx ][ fiStarBuffIdxCurr[ iGdpbIdx ] ][ 0 ].getMsgFullTimeD( 0 );
-      UInt_t uTriggerEpIdx = 
-                   fvGdpbEpTrgBuffer[ iGdpbIdx ][ fiStarBuffIdxCurr[ iGdpbIdx ] ][uTrigIdx].GetFullGdpbEpoch();
-      UInt_t uEpochIdx = fvGdpbEpMsgBuffer[ iGdpbIdx ][ fiStarBuffIdxCurr[ iGdpbIdx ] ][ 0 ].getEpoch2Number();
+      UInt_t uTriggerEpIdx      = fvGdpbEpTrgBuffer[ iGdpbIdx ]
+                                                   [ fiStarBuffIdxCurr[ iGdpbIdx ] ]
+                                                   [uTrigIdx].GetFullGdpbEpoch();
+      Double_t dTriggerWinStart = dTriggerTime - fdStarTriggerDelay[ iGdpbIdx ];
+      Double_t dTriggerWinStop  = dTriggerTime - fdStarTriggerDelay[ iGdpbIdx ]
+                                               + fdStarTriggerWinSize[ iGdpbIdx ];
+      Double_t dEpochTime       = fvGdpbEpMsgBuffer[ iGdpbIdx ]
+                                                   [ fiStarBuffIdxCurr[ iGdpbIdx ] ]
+                                                   [ 0 ].getMsgFullTimeD( 0 );
+      UInt_t uEpochIdx          = fvGdpbEpMsgBuffer[ iGdpbIdx ]
+                                                   [ fiStarBuffIdxCurr[ iGdpbIdx ] ]
+                                                   [ 0 ].getEpoch2Number();
       
       fhStarEpToTrig_gDPB[ iGdpbIdx ]->Fill( uEpochIdx,  dEpochTime - dTriggerTime );
       
-//      if( uTriggerEpIdx != uEpochIdx )
-      if( uTriggerEpIdx < uEpochIdx -1 || uTriggerEpIdx > uEpochIdx +1 )
-      {         
-         /*
-          ** Function to send sub-event block to the STAR DAQ system
-          *       trg_word received is packed as:
-          *
-          *       trg_cmd|daq_cmd|tkn_hi|tkn_mid|tkn_lo
-          */
+      /// Trigger windows overlap is not allowed!!!
+      /// Any trigger with a window overlaping the previous one is sent to STAR as empty event
+      /// with the overlap event flag
+      if( dTriggerWinStart < dLastTriggerWinEnd )
+      {
+         fStarSubEvent.SetBadEventFlag();
+         fStarSubEvent.SetOverlapEventFlag();
+         
          /** TODO: clarify how we deal with multiple sub-events (eg one for each gDPB) **/
          Int_t  iBuffSzByte = 0;
          void * pDataBuff = fStarSubEvent.BuildOutput( iBuffSzByte );
@@ -2328,6 +2414,12 @@ Bool_t CbmTSMonitorTofStar::StarSelect( Int_t iGdpbIdx )
          {
             /// Valid output, do stuff with it!
 #ifdef STAR_SUBEVT_BUILDER
+            /*
+             ** Function to send sub-event block to the STAR DAQ system
+             *       trg_word received is packed as:
+             *
+             *       trg_cmd|daq_cmd|tkn_hi|tkn_mid|tkn_lo
+             */
             star_rhicf_write( fStarSubEvent.GetTrigger().GetStarTrigerWord(), 
                               pDataBuff, iBuffSzByte );
 /*                              
@@ -2346,70 +2438,175 @@ Bool_t CbmTSMonitorTofStar::StarSelect( Int_t iGdpbIdx )
          /// Fill plot of event size as function of trigger time
          if( 0 < fdStartTime )
             fhStarEventSizeTime_gDPB[ iGdpbIdx ]->Fill( 1e-9 *(dTriggerTime - fdStartTime), iBuffSzByte );
-   /*
-         LOG(INFO) << "Sent STAR event with size " << iBuffSzByte << " Bytes"
-                   << " and token " << fStarSubEvent.GetTrigger().GetStarToken()
-                    << FairLogger::endl;
-   */      
+     
          /// Now clear the sub-event
          fStarSubEvent.ClearSubEvent();
          continue;
-      } // if( uTriggerEpIdx != uEpochIdx )
-                         
-      /// Then scan to find the hit messages fitting the event window of this trigger
-      /// For now brute force loop, later start index could be smartly determined
-      /// using the previous trigger
-      Double_t dTriggerWinStart = dTriggerTime - fdStarTriggerDelay[ iGdpbIdx ];
-      Double_t dTriggerWinStop  = dTriggerTime - fdStarTriggerDelay[ iGdpbIdx ]
-                                               + fdStarTriggerWinSize[ iGdpbIdx ];
-               
-      bFirstHitFound = kFALSE;
-      Double_t dTimeFirstHit = -1;
-      for( UInt_t uEpochHit = uFirstHitIdxPrevTrigg; uEpochHit < uNbEpochHits; uEpochHit++ )
-      {
-         Double_t dHitTime = fvGdpbEpHitBuffer[ iGdpbIdx ]
-                                              [ fiStarBuffIdxCurr[ iGdpbIdx ] ]
-                                              [ uEpochHit ]. getMsgFullTimeD( uEpochIdx );
-                                              
-         /// Fill plot of Hit time - Trigger time for all hits
-         fhStarHitToTrigAll_gDPB[ iGdpbIdx ]->Fill( dHitTime - dTriggerTime );
-         
-         /// Check trigger window
-         if( dTriggerWinStart < dHitTime )
-         {
-            /// Hit Time after beginning of trigger window
-            if( dHitTime < dTriggerWinStop )
-            {
-               /// First hit for next trigger cannot be before first hit for this trigger
-               /// as they are time sorted
-               if( !bFirstHitFound  )
-               {
-                  uFirstHitIdxPrevTrigg = uEpochHit;
-               } // if( !bFirstHitFound  )
-               
-               /// Fill plot for Hit time - Trigger time for hits within trigger window
-               fhStarHitToTrigWin_gDPB[ iGdpbIdx ]->Fill( dHitTime - dTriggerTime );
-               
-               /// Add hit message to SubEvent
-               fStarSubEvent.AddMsg( fvGdpbEpHitBuffer[ iGdpbIdx ][ fiStarBuffIdxCurr[ iGdpbIdx ] ][ uEpochHit ] );
-            } // if( dHitTime < dTriggerWinStop )
-         } // if( dTriggerWinStart < dHitTime )
-/*
-         if( 0 == uTrigIdx )
-         {
-            if( dTimeFirstHit < 0 )
-               dTimeFirstHit = dHitTime;
-               else fhStarHitToTrigAll_gDPB[ iGdpbIdx ]->Fill( dTimeFirstHit - dHitTime );
-         }
-*/
-      } // for( UInt_t uEpochHit = 0; uEpochHit < uNbEpochHits; uEpochHit++ )
+      } // if( dTriggerWinStart < dLastTriggerWinEnd )
       
-      /*
-       ** Function to send sub-event block to the STAR DAQ system
-       *       trg_word received is packed as:
-       *
-       *       trg_cmd|daq_cmd|tkn_hi|tkn_mid|tkn_lo
-       */
+      /// Triggers from old epochs ending up here are just ignored and sent to STAR as empty events
+      /// Triggers from next epochs are shifted to the next buffer for later processing
+      if( uTriggerEpIdx < uEpochIdx )
+      {
+         /** TODO: clarify how we deal with multiple sub-events (eg one for each gDPB) **/
+         Int_t  iBuffSzByte = 0;
+         void * pDataBuff = fStarSubEvent.BuildOutput( iBuffSzByte );
+         if( NULL != pDataBuff )
+         {
+            /// Valid output, do stuff with it!
+#ifdef STAR_SUBEVT_BUILDER
+            /*
+             ** Function to send sub-event block to the STAR DAQ system
+             *       trg_word received is packed as:
+             *
+             *       trg_cmd|daq_cmd|tkn_hi|tkn_mid|tkn_lo
+             */
+            star_rhicf_write( fStarSubEvent.GetTrigger().GetStarTrigerWord(), 
+                              pDataBuff, iBuffSzByte );
+/*                              
+            LOG(INFO) << "Sent STAR event with size " << iBuffSzByte << " Bytes"
+                      << " and token " << fStarSubEvent.GetTrigger().GetStarToken()
+                      << FairLogger::endl;
+*/ 
+#endif // STAR_SUBEVT_BUILDER
+         } // if( NULL != pDataBuff )
+            else LOG(ERROR) << "Invalid STAR SubEvent Output, can only happen if trigger "
+                            << " object was not set => Do Nothing more with it!!! "
+                            << FairLogger::endl;
+                            
+         /// Fill plot of event size
+         fhStarEventSize_gDPB[ iGdpbIdx ]->Fill( iBuffSzByte );
+         /// Fill plot of event size as function of trigger time
+         if( 0 < fdStartTime )
+            fhStarEventSizeTime_gDPB[ iGdpbIdx ]->Fill( 1e-9 *(dTriggerTime - fdStartTime), iBuffSzByte );
+    
+         /// Now clear the sub-event
+         fStarSubEvent.ClearSubEvent();
+         continue;
+      } // if( uTriggerEpIdx < uEpochIdx )
+         else if( uTriggerEpIdx > uEpochIdx )
+         {
+            /// shift to next buffer then continue
+            fvGdpbEpTrgBuffer[ iGdpbIdx ][ fiStarBuffIdxNext[ iGdpbIdx ] ].push_back(
+                 fvGdpbEpTrgBuffer[ iGdpbIdx ][ fiStarBuffIdxCurr[ iGdpbIdx ] ][uTrigIdx] );
+            continue;
+         } // else if( uTriggerEpIdx > uEpochIdx )
+          
+      /// This trigger matches the epoch in this buffer
+      
+      /// First check if it may include hits from the previous epoch buffer
+      if( dTriggerWinStart < dEpochTime )
+      {
+         /// Check if the previous buffer end time fits with the window start
+         /// (Equivalent to checking that previous buffer contains the previous epoch)
+         Double_t dPrevBufferEndTime = get4v1x::kdEpochInNs + 
+                      fvGdpbEpMsgBuffer[ iGdpbIdx ][ fiStarBuffIdxPrev[ iGdpbIdx ] ][ 0 ].getMsgFullTimeD( 0 );
+         if( dTriggerWinStart < dPrevBufferEndTime )
+         {
+            /// Then add all the epoch messages from the previous buffer to this SubEvent
+            for( UInt_t uEpochMsg = 0; uEpochMsg < uNbPrevEpochMsgs; uEpochMsg++ )
+               fStarSubEvent.AddMsg( fvGdpbEpMsgBuffer[ iGdpbIdx ][ fiStarBuffIdxPrev[ iGdpbIdx ] ][ uEpochMsg ] );
+               
+            /// Then scan to find the hit messages  in prev buff fitting the event window of this trigger
+            bFirstHitFound = kFALSE;
+            Double_t dTimeFirstHit = -1;
+            UInt_t uEpochHit;
+            for( uEpochHit = uFirstHitIdxPrevTrgPrevBuf; uEpochHit < uNbPrevEpochHits; uEpochHit++ )
+            {
+               Double_t dHitTime = fvGdpbEpHitBuffer[ iGdpbIdx ]
+                                                    [ fiStarBuffIdxPrev[ iGdpbIdx ] ]
+                                                    [ uEpochHit ]. getMsgFullTimeD( uEpochIdx );
+                                                    
+               /// Fill plot of Hit time - Trigger time for all hits
+               fhStarHitToTrigAll_gDPB[ iGdpbIdx ]->Fill( dHitTime - dTriggerTime );
+               
+               /// Check trigger window
+               if( dTriggerWinStart < dHitTime )
+               {
+                  /// Hit Time after beginning of trigger window
+                  if( dHitTime < dTriggerWinStop )
+                  {
+                     /// First hit for next trigger cannot be before first hit for this trigger
+                     /// as they are time sorted
+                     if( !bFirstHitFound  )
+                     {
+                        uFirstHitIdxPrevTrgPrevBuf = uEpochHit;
+                     } // if( !bFirstHitFound  )
+                     
+                     /// Fill plot for Hit time - Trigger time for hits within trigger window
+                     fhStarHitToTrigWin_gDPB[ iGdpbIdx ]->Fill( dHitTime - dTriggerTime );
+                     
+                     /// Add hit message to SubEvent
+                     fStarSubEvent.AddMsg( fvGdpbEpHitBuffer[ iGdpbIdx ][ fiStarBuffIdxPrev[ iGdpbIdx ] ][ uEpochHit ] );
+                  } // if( dHitTime < dTriggerWinStop )
+                     else break;
+               } // if( dTriggerWinStart < dHitTime )
+/*
+               if( 0 == uTrigIdx )
+               {
+                  if( dTimeFirstHit < 0 )
+                     dTimeFirstHit = dHitTime;
+                     else fhStarHitToTrigAll_gDPB[ iGdpbIdx ]->Fill( dTimeFirstHit - dHitTime );
+               }
+*/
+            } // for( UInt_t uEpochHit = 0; uEpochHit < uNbEpochHits; uEpochHit++ )
+            
+            /// If hits after end of window found, we don't need to go to the following buffer
+            if( uEpochHit < uNbPrevEpochHits )
+               bFullPrevEvent = kTRUE;
+         } // if( dTriggerWinStart < dPrevBufferEndTime )
+      } // if( dTriggerWinStart < dEpochTime )
+      
+      if( kFALSE == bFullPrevEvent )
+      {
+         /// Then add all the epoch messages for this block to this SubEvent
+         for( UInt_t uEpochMsg = 0; uEpochMsg < uNbEpochMsgs; uEpochMsg++ )
+            fStarSubEvent.AddMsg( fvGdpbEpMsgBuffer[ iGdpbIdx ][ fiStarBuffIdxCurr[ iGdpbIdx ] ][ uEpochMsg ] );
+            
+         /// Then scan to find the hit messages fitting the event window of this trigger
+         bFirstHitFound = kFALSE;
+         Double_t dTimeFirstHit = -1;
+         for( UInt_t uEpochHit = uFirstHitIdxPrevTrigg; uEpochHit < uNbEpochHits; uEpochHit++ )
+         {
+            Double_t dHitTime = fvGdpbEpHitBuffer[ iGdpbIdx ]
+                                                 [ fiStarBuffIdxCurr[ iGdpbIdx ] ]
+                                                 [ uEpochHit ]. getMsgFullTimeD( uEpochIdx );
+                                                 
+            /// Fill plot of Hit time - Trigger time for all hits
+            fhStarHitToTrigAll_gDPB[ iGdpbIdx ]->Fill( dHitTime - dTriggerTime );
+            
+            /// Check trigger window
+            if( dTriggerWinStart < dHitTime )
+            {
+               /// Hit Time after beginning of trigger window
+               if( dHitTime < dTriggerWinStop )
+               {
+                  /// First hit for next trigger cannot be before first hit for this trigger
+                  /// as they are time sorted
+                  if( !bFirstHitFound  )
+                  {
+                     uFirstHitIdxPrevTrigg = uEpochHit;
+                  } // if( !bFirstHitFound  )
+                  
+                  /// Fill plot for Hit time - Trigger time for hits within trigger window
+                  fhStarHitToTrigWin_gDPB[ iGdpbIdx ]->Fill( dHitTime - dTriggerTime );
+                  
+                  /// Add hit message to SubEvent
+                  fStarSubEvent.AddMsg( fvGdpbEpHitBuffer[ iGdpbIdx ][ fiStarBuffIdxCurr[ iGdpbIdx ] ][ uEpochHit ] );
+               } // if( dHitTime < dTriggerWinStop )
+                        else break;
+            } // if( dTriggerWinStart < dHitTime )
+/*
+            if( 0 == uTrigIdx )
+            {
+               if( dTimeFirstHit < 0 )
+                  dTimeFirstHit = dHitTime;
+                  else fhStarHitToTrigAll_gDPB[ iGdpbIdx ]->Fill( dTimeFirstHit - dHitTime );
+            }
+*/
+         } // for( UInt_t uEpochHit = 0; uEpochHit < uNbEpochHits; uEpochHit++ )
+      } // if( kFALSE == bFullPrevEvent )
+      
       /** TODO: clarify how we deal with multiple sub-events (eg one for each gDPB) **/
       Int_t  iBuffSzByte = 0;
       void * pDataBuff = fStarSubEvent.BuildOutput( iBuffSzByte );
@@ -2417,6 +2614,12 @@ Bool_t CbmTSMonitorTofStar::StarSelect( Int_t iGdpbIdx )
       {
          /// Valid output, do stuff with it!
 #ifdef STAR_SUBEVT_BUILDER
+         /*
+          ** Function to send sub-event block to the STAR DAQ system
+          *       trg_word received is packed as:
+          *
+          *       trg_cmd|daq_cmd|tkn_hi|tkn_mid|tkn_lo
+          */
          star_rhicf_write( fStarSubEvent.GetTrigger().GetStarTrigerWord(), 
                            pDataBuff, iBuffSzByte );
 /*
@@ -2435,16 +2638,40 @@ Bool_t CbmTSMonitorTofStar::StarSelect( Int_t iGdpbIdx )
       /// Fill plot of event size as function of trigger time
       if( 0 < fdStartTime )
          fhStarEventSizeTime_gDPB[ iGdpbIdx ]->Fill( 1e-9 *(dTriggerTime - fdStartTime), iBuffSzByte );
-/*
-      LOG(INFO) << "Sent STAR event with size " << iBuffSzByte << " Bytes"
-                << " and token " << fStarSubEvent.GetTrigger().GetStarToken()
-                 << FairLogger::endl;
-*/      
+              
       /// Now clear the sub-event
       fStarSubEvent.ClearSubEvent();
    } // Loop on triggers in current buffer
-    
    
+   /// Clears hits which cannot make it into a trigger window of tokens in the next epoch
+   //// Next two lines will always work as we checked with a FATAL before that we have at least 
+   //// 1 epoch message
+   Double_t dNextEpochTime = get4v1x::kdEpochInNs + 
+                fvGdpbEpMsgBuffer[ iGdpbIdx ][ fiStarBuffIdxCurr[ iGdpbIdx ] ][ 0 ].getMsgFullTimeD( 0 );
+                
+   UInt_t uEpochIdx = fvGdpbEpMsgBuffer[ iGdpbIdx ][ fiStarBuffIdxCurr[ iGdpbIdx ] ][ 0 ].getEpoch2Number();
+   
+   Double_t dEarliestNextWinStart = dNextEpochTime - fdStarTriggerDelay[ iGdpbIdx ];
+   
+   UInt_t uFirstHitToKeep = 0;
+   for( UInt_t uEpochHit = 0; uEpochHit < uNbEpochHits; uEpochHit++ )
+   {
+      Double_t dHitTime = fvGdpbEpHitBuffer[ iGdpbIdx ]
+                                           [ fiStarBuffIdxCurr[ iGdpbIdx ] ]
+                                           [ uEpochHit ]. getMsgFullTimeD( uEpochIdx );
+      if( dHitTime < dEarliestNextWinStart )
+         uFirstHitToKeep = uEpochHit + 1;
+   } // for( UInt_t uEpochHit = 0; uEpochHit < uNbEpochHits; uEpochHit++ )
+   
+   if( uFirstHitToKeep == uNbEpochHits )
+      fvGdpbEpHitBuffer[ iGdpbIdx ][ fiStarBuffIdxCurr[ iGdpbIdx ] ].clear();
+      else fvGdpbEpHitBuffer[ iGdpbIdx ][ fiStarBuffIdxCurr[ iGdpbIdx ] ].erase(
+              fvGdpbEpHitBuffer[ iGdpbIdx ][ fiStarBuffIdxCurr[ iGdpbIdx ] ].begin(),
+              fvGdpbEpHitBuffer[ iGdpbIdx ][ fiStarBuffIdxCurr[ iGdpbIdx ] ].begin() + uFirstHitToKeep );
+              
+   /// No need to store extra triggers as windows extending after trigger itself are forbidden
+   fvGdpbEpTrgBuffer[ iGdpbIdx ][ fiStarBuffIdxCurr[ iGdpbIdx ] ].clear();
+      
    /// Data from the Prev buffer needed only for triggers in beginning of Current
    /// Triggers from the Prev buffer needed only until Current buffer is ready
    /// => Both ok, clear the Prev buffer so that it can be re-used of Next buffer later
@@ -2452,6 +2679,51 @@ Bool_t CbmTSMonitorTofStar::StarSelect( Int_t iGdpbIdx )
    fvGdpbEpHitBuffer[ iGdpbIdx ][ fiStarBuffIdxPrev[ iGdpbIdx ] ].clear();
    fvGdpbEpTrgBuffer[ iGdpbIdx ][ fiStarBuffIdxPrev[ iGdpbIdx ] ].clear();
 
+   return kTRUE;
+}
+Bool_t CbmTSMonitorTofStar::StarGenEmptyEvt( Int_t iGdpbIdx, CbmTofStarTrigger triggerIn )
+{
+   /// In any case, associate this trigger to its subevent
+   fStarSubEvent.SetTrigger( triggerIn );
+   fStarSubEvent.SetEmptyEventFlag( );
+   
+   Double_t dTriggerTime = get4v1x::kdClockCycleSizeNs * ( triggerIn.GetFullGdpbTs() );
+                                                   
+   /** TODO: clarify how we deal with multiple sub-events (eg one for each gDPB) **/
+   Int_t  iBuffSzByte = 0;
+   void * pDataBuff = fStarSubEvent.BuildOutput( iBuffSzByte );
+   if( NULL != pDataBuff )
+   {
+      /// Valid output, do stuff with it!
+#ifdef STAR_SUBEVT_BUILDER
+      /*
+       ** Function to send sub-event block to the STAR DAQ system
+       *       trg_word received is packed as:
+       *
+       *       trg_cmd|daq_cmd|tkn_hi|tkn_mid|tkn_lo
+       */
+      star_rhicf_write( fStarSubEvent.GetTrigger().GetStarTrigerWord(), 
+                        pDataBuff, iBuffSzByte );
+/*                              
+      LOG(INFO) << "Sent STAR event with size " << iBuffSzByte << " Bytes"
+                << " and token " << fStarSubEvent.GetTrigger().GetStarToken()
+                << FairLogger::endl;
+*/ 
+#endif // STAR_SUBEVT_BUILDER
+   } // if( NULL != pDataBuff )
+      else LOG(ERROR) << "Invalid STAR SubEvent Output, can only happen if trigger "
+                      << " object was not set => Do Nothing more with it!!! "
+                      << FairLogger::endl;
+                      
+   /// Fill plot of event size
+   fhStarEventSize_gDPB[ iGdpbIdx ]->Fill( iBuffSzByte );
+   /// Fill plot of event size as function of trigger time
+   if( 0 < fdStartTime )
+      fhStarEventSizeTime_gDPB[ iGdpbIdx ]->Fill( 1e-9 *(dTriggerTime - fdStartTime), iBuffSzByte );
+
+   /// Now clear the sub-event
+   fStarSubEvent.ClearSubEvent();
+   
    return kTRUE;
 }
 

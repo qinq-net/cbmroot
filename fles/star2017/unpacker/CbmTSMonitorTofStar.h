@@ -191,6 +191,7 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     UInt_t    fuStarTokenLast;
     UInt_t    fuStarDaqCmdLast;
     UInt_t    fuStarTrigCmdLast;
+    TH1 *     fhTokenMsgType;
     TH1 *     fhTriggerRate;
     TH2 *     fhCmdDaqVsTrig;
     TH2 *     fhStarTokenEvo; 
@@ -210,16 +211,17 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
 
     ///* STAR event building/cutting *///
     Bool_t  fbStarSortAndCutMode;
-    std::vector< UInt_t >   fuStarActiveAsicMask;
-    std::vector< Double_t > fdStarTriggerDelay;
-    std::vector< Double_t > fdStarTriggerWinSize;
-    std::vector< UInt_t >   fuCurrentEpGdpb;
-    std::vector< UInt_t >   fuStarCurrentEpFound;
-    std::vector< UInt_t >   fuStarNextBufferUse;
-    std::vector< Double_t > fdStarLastTrigTimeG;
-    std::vector< Int_t >    fiStarBuffIdxPrev;
-    std::vector< Int_t >    fiStarBuffIdxCurr;
-    std::vector< Int_t >    fiStarBuffIdxNext;
+    std::vector< UInt_t >    fuStarActiveAsicMask;
+    std::vector< Double_t >  fdStarTriggerDelay;
+    std::vector< Double_t >  fdStarTriggerWinSize;
+    std::vector< UInt_t >    fuCurrentEpGdpb;
+    std::vector< UInt_t >    fuStarCurrentEpFound;
+    std::vector< UInt_t >    fuStarNextBufferUse;
+    std::vector< Double_t >  fdStarLastTrigTimeG;
+    std::vector< Int_t >     fiStarBuffIdxPrev;
+    std::vector< Int_t >     fiStarBuffIdxCurr;
+    std::vector< Int_t >     fiStarBuffIdxNext;
+    std::vector< ULong64_t > fuLastTriggerFullTs;
 #ifndef __CINT__
     std::vector< std::vector< std::vector < ngdpb::Message > > >    fvGdpbEpMsgBuffer; //! Dims: [gDPB][buffer][msgs], 1 buff. for Prev, Curr and Next
     std::vector< std::vector< std::vector < ngdpb::Message > > >    fvGdpbEpHitBuffer; //! Dims: [gDPB][buffer][msgs], 1 buff. for Prev, Curr and Next
@@ -245,6 +247,7 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
 
     Bool_t StarSort( Int_t iGdpbIdx );
     Bool_t StarSelect( Int_t iGdpbIdx );
+    Bool_t StarGenEmptyEvt( Int_t iGdpbIdx, CbmTofStarTrigger triggerIn );
 
     inline Int_t GetArrayIndex(Int_t gdpbId, Int_t get4Id) {
       return gdpbId * fNrOfGet4PerGdpb + get4Id;

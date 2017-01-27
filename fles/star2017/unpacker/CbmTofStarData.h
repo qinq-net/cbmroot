@@ -42,6 +42,7 @@ namespace get4v1x {
    // Epoch Size in ps
    // alternatively: (kiCoarseTime>>kiCtShift + 1)*kdClockCycleSize
    const double   kdEpochInPs   = kuEpochInBins*kdBinSize;
+   const double   kdEpochInNs   = kdEpochInPs / 1000.0;
 }
 #endif
 
@@ -102,14 +103,24 @@ class CbmTofStarSubevent
    
       // Setters
       inline void SetTrigger( CbmTofStarTrigger triggerIn ){ fTrigger = triggerIn; fbTriggerSet = kTRUE; }
-      inline void SetBadEventFlag(  Bool_t bFlagState = kTRUE ){ bFlagState ? (fuEventStatusFlags |= 0x1) : (fuEventStatusFlags &= ~(0x1)); }
+      inline void SetBadEventFlag(  Bool_t bFlagState = kTRUE ){ 
+                        bFlagState ? (fuEventStatusFlags |= kulFlagBadEvt) : 
+                                     (fuEventStatusFlags &= ~(kulFlagBadEvt) ); }
+      inline void SetOverlapEventFlag(  Bool_t bFlagState = kTRUE ){ 
+                        bFlagState ? (fuEventStatusFlags |= kulFlagOverlapEvt) : 
+                                     (fuEventStatusFlags &= ~(kulFlagOverlapEvt) ); }
+      inline void SetEmptyEventFlag(  Bool_t bFlagState = kTRUE ){ 
+                        bFlagState ? (fuEventStatusFlags |= kulFlagEmptyEvt) : 
+                                     (fuEventStatusFlags &= ~(kulFlagEmptyEvt) ); }
 #ifndef __CINT__
       inline void AddMsg( ngdpb::Message & msgIn){ fvMsgBuffer.push_back( msgIn ); }
 #endif
       
       // Accessors
       inline CbmTofStarTrigger GetTrigger()  const { return fTrigger;}
-      inline Bool_t            GetBadEventFlag() const { return (fuEventStatusFlags & 0x1); }
+      inline Bool_t            GetBadEventFlag() const { return (fuEventStatusFlags & kulFlagBadEvt); }
+      inline Bool_t            GetOverlapEventFlag() const { return (fuEventStatusFlags & kulFlagOverlapEvt); }
+      inline Bool_t            GetEmptyEventFlag() const { return (fuEventStatusFlags & kulFlagEmptyEvt); }
 #ifndef __CINT__
       inline ngdpb::Message    GetMsg( UInt_t uMsgIdx ) const;
 #endif
@@ -126,9 +137,11 @@ class CbmTofStarSubevent
       
    private:
 #ifndef __CINT__
-      static const uint32_t         kuMaxOutputSize = 131072; // 2^17
-      static const uint32_t         kuMaxNbMsgs     =  16380; // 4 * 64b in header => floor( (2^17 / 8 ) - 4)
-      static const uint64_t         kulFlagBadEvt   = 0x1 << 0;
+      static const uint32_t         kuMaxOutputSize   = 131072; // 2^17
+      static const uint32_t         kuMaxNbMsgs       =  16380; // 4 * 64b in header => floor( (2^17 / 8 ) - 4)
+      static const uint64_t         kulFlagBadEvt     = 0x1 << 0;
+      static const uint64_t         kulFlagOverlapEvt = 0x1 << 1;
+      static const uint64_t         kulFlagEmptyEvt   = 0x1 << 2;
 #endif
    
       Bool_t                        fbTriggerSet;
