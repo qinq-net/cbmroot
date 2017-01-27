@@ -254,13 +254,16 @@ void ngdpb::Message::printData(unsigned outType, unsigned kind, uint32_t epoch, 
    char buf[256];
    if (kind & msg_print_Hex) {
       const uint8_t* arr = reinterpret_cast<const uint8_t*> ( &data );
-      snprintf(buf, sizeof(buf), "%02X:%02X:%02X:%02X:%02X:%02X ",
-               arr[0], arr[1], arr[2], arr[3], arr[4], arr[5]);
+      snprintf(buf, sizeof(buf), "BE= %02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X LE= %02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X ",
+               arr[0], arr[1], arr[2], arr[3], arr[4], arr[5], arr[6], arr[7],
+               arr[7], arr[6], arr[5], arr[4], arr[3], arr[2], arr[1], arr[0] );
 //      os << buf;
       if( msg_print_Cout == outType)
          std::cout << buf;
       else if( msg_print_File == outType )
          os << buf;
+         
+      snprintf(buf, sizeof(buf), " ");
    }
 
    if (kind & msg_print_Human) {
@@ -570,6 +573,44 @@ void ngdpb::Message::printData(unsigned outType, unsigned kind, uint32_t epoch, 
             
             break;
          } // case MSG_GET4_SYS:
+         case MSG_STAR_TRI:
+         {
+            // STAR trigger token, spread over 4 messages
+            switch( getStarTrigMsgIndex() )
+            {
+               case 0:
+               {
+                  snprintf(buf, sizeof(buf),
+                    "STAR token A, gDPB TS MSB bits: 0x%010lx000000",
+                    getGdpbTsMsbStarA() );
+                  break;
+               } // case 1st message:
+               case 1:
+               {
+                  snprintf(buf, sizeof(buf),
+                    "STAR token B, gDPB TS LSB bits: 0x0000000000%06lx, STAR TS MSB bits: 0x%04lx000000000000",
+                    getGdpbTsLsbStarB(), getStarTsMsbStarB() );
+                  break;
+               } // case 2nd message:
+               case 2:
+               {
+                  snprintf(buf, sizeof(buf),
+                    "STAR token C,                                     , STAR TS Mid bits: 0x0000%010lx00",
+                    getStarTsMidStarC() );
+                  break;
+               } // case 3rd message:
+               case 3:
+               {
+                  snprintf(buf, sizeof(buf),
+                    "STAR token D,                                     , STAR TS LSB bits: 0x00000000000000%02lx"
+                    ", Token: %03x, DAQ: %1x; TRG:%1x",
+                    getStarTsLsbStarD(), getStarTokenStarD(), getStarDaqCmdStarD(), getStarTrigCmdStarD() );
+                  break;
+               } // case 4th message:
+            } // switch( getStarTrigMsgIndex() )
+
+            break;
+         } // case MSG_STAR_TRI:
          default:
            snprintf(buf, sizeof(buf), "Error - unexpected MessageType: %1x, full data %08X::%08X",
                                       getMessageType(), getField(32, 32), getField(0, 32) );
