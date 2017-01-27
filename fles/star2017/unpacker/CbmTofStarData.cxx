@@ -48,14 +48,14 @@ UInt_t CbmTofStarTrigger::GetFullGdpbEpoch() const
 CbmTofStarSubevent::CbmTofStarSubevent() :
    fbTriggerSet( kFALSE ),
    fTrigger( CbmTofStarTrigger( 0, 0, 0, 0, 0) ),
-   fuEventStatusFlags( 0 ),
+   fulEventStatusFlags( 0 ),
    fvMsgBuffer()
 {
 }
 CbmTofStarSubevent::CbmTofStarSubevent( CbmTofStarTrigger triggerIn ) :
    fbTriggerSet( kTRUE ),
    fTrigger( triggerIn ),
-   fuEventStatusFlags( 0 ),
+   fulEventStatusFlags( 0 ),
    fvMsgBuffer()
 {
 }
@@ -66,7 +66,7 @@ CbmTofStarSubevent::~CbmTofStarSubevent()
 void CbmTofStarSubevent::ClearSubEvent()
 {
    fbTriggerSet = kFALSE;
-   fuEventStatusFlags = 0;
+   fulEventStatusFlags = 0;
    fvMsgBuffer.clear();
 }
 void * CbmTofStarSubevent::BuildOutput( Int_t & iOutputSizeBytes )
@@ -94,7 +94,7 @@ void * CbmTofStarSubevent::BuildOutput( Int_t & iOutputSizeBytes )
    {
       iOutputSizeBytes = kuMaxOutputSize;
       uMsgsToRead      = kuMaxNbMsgs;
-      fuEventStatusFlags |= kulFlagBadEvt;
+      fulEventStatusFlags |= kulFlagBadEvt;
    } // if( kuMaxOutputSize < iOutputSizeBytes )
    
    // Fills header info
@@ -103,7 +103,7 @@ void * CbmTofStarSubevent::BuildOutput( Int_t & iOutputSizeBytes )
    fpulBuff[2] =  (static_cast< ULong64_t >( fTrigger.GetStarToken() )  << 32)
                 + (static_cast< ULong64_t >( fTrigger.GetStarDaqCmd() ) << 16)
                 + (static_cast< ULong64_t >( fTrigger.GetStarTrigCmd() )     );
-   fpulBuff[3] = static_cast< ULong64_t >(fuEventStatusFlags);
+   fpulBuff[3] = fulEventStatusFlags;
   
    // does not work due to "error: cannot convert ‘ngdpb::Message’ to ‘long unsigned int’ in assignment"
 //  std::copy( fvMsgBuffer.begin(), fvMsgBuffer.begin() + uMsgsToRead, pulBuff + 4 );
@@ -113,6 +113,42 @@ void * CbmTofStarSubevent::BuildOutput( Int_t & iOutputSizeBytes )
       fpulBuff[4 + uMsgIdx] = fvMsgBuffer[uMsgIdx].getData();
    
    return static_cast< void * >( fpulBuff );
+}
+Bool_t CbmTofStarSubevent::LoadInput( void * pBuff, Int_t iInputSizeBytes )
+{
+   // Check input variables are properly defined
+   if( NULL == pBuff || 0 == iInputSizeBytes)
+      return kFALSE;
+    
+   Int_t iRestBytes = iInputSizeBytes % sizeof( ULong64_t );
+   Int_t iInputSzLg = iInputSizeBytes / sizeof( ULong64_t );
+   
+   
+   // Check event header is complete and buffer is multiple of 64b
+   if( iInputSzLg < 4 || 0 < iRestBytes )
+      return kFALSE;
+      
+   // First clear subEvent content
+   ClearSubEvent();
+   
+   // Read the header to the SubEvent members
+   ULong64_t * pulLongBuff = static_cast< ULong64_t * >(pBuff);
+   ULong64_t ulTrgGdpbFullTs = pulLongBuff[0];
+   ULong64_t ulTrgStarFullTs = pulLongBuff[1];
+   UInt_t    uStarToken      = (pulLongBuff[2] >> 32) & 0xFFF;
+   UInt_t    uStarDaqCmdIn   = (pulLongBuff[2] >> 16) & 0x00F;
+   UInt_t    uStarTrigCmdIn  = (pulLongBuff[2]      ) & 0x00F;
+   fulEventStatusFlags       = pulLongBuff[3];
+   
+   // Read as many messages as left in the buffer and store them in the vector
+   UInt_t uMsgsToRead = iInputSzLg - 4;
+   for( UInt_t uMsgIdx = 0; uMsgIdx < uMsgsToRead; uMsgIdx++)
+   {
+      ngdpb::Message mess( pulLongBuff[4 + uMsgIdx] );
+      fvMsgBuffer.push_back( mess );
+   } // for( UInt_t uMsgIdx = 0; uMsgIdx < uMsgsToRead; uMsgIdx++)
+
+   return kTRUE;
 }
 //ClassImp(CbmTofStarTrigger)
 /**********************************************************************/
