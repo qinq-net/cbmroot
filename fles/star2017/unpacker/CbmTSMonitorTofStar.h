@@ -243,6 +243,7 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     void PrintSysInfo(ngdpb::Message);
     void PrintGenInfo(ngdpb::Message);
     void FillStarTrigInfo(ngdpb::Message);
+    void FillTrigEpochInfo(ngdpb::Message);
 #endif
 
     Bool_t StarSort( Int_t iGdpbIdx );
