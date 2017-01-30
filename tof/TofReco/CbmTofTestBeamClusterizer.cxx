@@ -109,6 +109,7 @@ CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer():
    fhClustSizeDifY(NULL),
    fhChDifDifX(NULL),
    fhChDifDifY(NULL),
+   fhCluMulCorDutSel(NULL),
    fhRpcDigiCor(),
    fhRpcCluMul(),
    fhRpcCluRate(),
@@ -143,6 +144,7 @@ CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer():
    fhTRpcCluTOffDTLastHits(),
    fhTRpcCluTotDTLastHits(),
    fhTRpcCluSizeDTLastHits(),
+   fhTRpcCluMemMulDTLastHits(),
    fhSeldT(),
    fvCPDelTof(),
    fvCPTOff(),
@@ -263,6 +265,7 @@ CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer(const char *name, Int_t ver
    fhClustSizeDifY(NULL),
    fhChDifDifX(NULL),
    fhChDifDifY(NULL),
+   fhCluMulCorDutSel(NULL),
    fhRpcDigiCor(),
    fhRpcCluMul(),
    fhRpcCluRate(),
@@ -297,6 +300,7 @@ CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer(const char *name, Int_t ver
    fhTRpcCluTOffDTLastHits(),
    fhTRpcCluTotDTLastHits(),
    fhTRpcCluSizeDTLastHits(),
+   fhTRpcCluMemMulDTLastHits(),
    fhSeldT(),
    fvCPDelTof(),
    fvCPTOff(),
@@ -403,6 +407,7 @@ InitStatus CbmTofTestBeamClusterizer::Init()
     fSel2Addr=CbmTofAddress::GetUniqueAddress(fSel2Sm,fSel2Rpc,0,0,fSel2Id);
     fiBeamRefAddr=CbmTofAddress::GetUniqueAddress(fiBeamRefSm,fiBeamRefDet,0,0,fiBeamRefType);
     iIndexDut=fDigiBdfPar->GetDetInd(fDutAddr);
+    iIndexDut=fDigiBdfPar->GetDetInd(fSelAddr);
 
    return kSUCCESS;
 }
@@ -459,6 +464,7 @@ void CbmTofTestBeamClusterizer::Finish()
    WriteHistos();
    // Prevent them from being sucked in by the CbmHadronAnalysis WriteHistograms method
    // DeleteHistos();
+   if(fdMemoryTime>0.) CleanLHMemory();
 }
 
 void CbmTofTestBeamClusterizer::Finish(Double_t calMode)
@@ -602,8 +608,8 @@ Bool_t   CbmTofTestBeamClusterizer::InitParameters()
 
    LOG(INFO)<<" Hst Output filename = "<<fOutHstFileName
              <<FairLogger::endl;
-
-   if(fiBeamRefType == 0) {  // initialize defaults of sep14
+   /*
+   if(fiBeamRefAddr == 0) {  // initialize defaults of sep14
      fiBeamRefType  = 5;
      fiBeamRefSm    = 1;
      fiBeamRefDet   = 0;
@@ -612,6 +618,7 @@ Bool_t   CbmTofTestBeamClusterizer::InitParameters()
    if(fSelId == 0) {  // initialize defaults of sep14
      fSelId=4;
    }
+   */
 
    LOG(INFO)<<"<I>  BeamRefType = "<<fiBeamRefType<<", Sm "<<fiBeamRefSm<<", Det "<<fiBeamRefDet
 	    <<", MulMax "<<fiBeamRefMulMax
@@ -1067,7 +1074,7 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
      Int_t iUCellId  = CbmTofAddress::GetUniqueAddress(0,0,0,0,iS);
      fChannelInfo = fDigiPar->GetCell(iUCellId);
      if(NULL == fChannelInfo){
-         LOG(WARNING)<<"CbmTofTestBeamClusterizer::CreateHistos: No DigiPar for SmType "
+         LOG(WARNING)<<"No DigiPar for SmType "
                    <<Form("%d, 0x%08x", iS, iUCellId)
                    <<FairLogger::endl;
          continue;     
@@ -1155,12 +1162,12 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
        Int_t iUCellId  = CbmTofAddress::GetUniqueAddress(iSmId,iRpcId,0,0,iSmType);
        fChannelInfo = fDigiPar->GetCell(iUCellId);
        if (NULL==fChannelInfo) {
-         LOG(WARNING)<<"CbmTofTestBeamClusterizer::CreateHistos: No DigiPar for Det "
+         LOG(WARNING)<<"No DigiPar for Det "
                      <<Form("0x%08x", iUCellId)
                      <<FairLogger::endl;
          continue;
        }      
-       LOG(INFO) << "CbmTofTestBeamClusterizer::CreateHistos: DetIndx "<<iDetIndx<<", SmType "<<iSmType<<", SmId "<<iSmId
+       LOG(INFO) << "DetIndx "<<iDetIndx<<", SmType "<<iSmType<<", SmId "<<iSmId
                   << ", RpcId "<<iRpcId<<" => UniqueId "<<Form("(0x%08x, 0x%08x)",iUniqueId,iUCellId)
                  <<", dx "<<fChannelInfo->GetSizex()
                  <<", dy "<<fChannelInfo->GetSizey()
@@ -1173,7 +1180,7 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
 	 Int_t iCCellId  = CbmTofAddress::GetUniqueAddress(iSmId,iRpcId,iCh,0,iSmType);
 	 fChannelInfo = fDigiPar->GetCell(iCCellId);
 	 if(NULL == fChannelInfo)
-           LOG(WARNING)<<Form("CreateHisto: missing ChannelInfo for ch %d addr 0x%08x",iCh,iCCellId)<<FairLogger::endl;
+           LOG(WARNING)<<Form("missing ChannelInfo for ch %d addr 0x%08x",iCh,iCCellId)<<FairLogger::endl;
        }
 
        fChannelInfo = fDigiPar->GetCell(iUCellId);
@@ -1191,7 +1198,7 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
        fhRpcCluRate[iDetIndx] =  new TH1F(
           Form("cl_SmT%01d_sm%03d_rpc%03d_rate", iSmType, iSmId, iRpcId ),
           Form("Clu rate of Rpc #%03d in Sm %03d of type %d; Time (s); Rate (Hz)", iRpcId, iSmId, iSmType ),
-	      1000.,0.,1000.);
+	      3600.,0.,3600.); 
 
        fhRpcDTLastHits[iDetIndx] =  new TH1F(
           Form("cl_SmT%01d_sm%03d_rpc%03d_DTLastHits", iSmType, iSmId, iRpcId ),
@@ -1289,6 +1296,11 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
    // Clusterizing monitoring 
 
    LOG(INFO)<<" Define Clusterizer monitoring histos "<<FairLogger::endl;
+
+   fhCluMulCorDutSel = new TH2F(Form("hCluMulCorDutSel"),
+		       	 Form("Cluster Multiplicity Correlation of Dut %d%d%d with Sel %d%d%d; Mul(Sel); Mul(Dut)", 
+			      fDutId, fDutSm, fDutRpc, fSelId, fSelSm, fSelRpc ),
+			      32,0,32,32,0,32);
  
    fhDigSpacDifClust = new TH1I( "Clus_DigSpacDifClust",
          "Space difference along channel direction between Digi pairs on adjacent channels; PosCh i - Pos Ch i+1 [cm]",
@@ -1337,6 +1349,8 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
    fhTRpcCluTOffDTLastHits.resize( iNbDet  );
    fhTRpcCluTotDTLastHits.resize( iNbDet  );
    fhTRpcCluSizeDTLastHits.resize( iNbDet  );
+   fhTRpcCluMemMulDTLastHits.resize( iNbDet  );
+
    for(Int_t iDetIndx=0; iDetIndx<iNbDet; iDetIndx++){
        Int_t iUniqueId = fDigiBdfPar->GetDetUId( iDetIndx );
        Int_t iSmType   = CbmTofAddress::GetSmType( iUniqueId );
@@ -1370,6 +1384,7 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
        fhTRpcCluTOffDTLastHits[iDetIndx].resize( iNSel  );
        fhTRpcCluTotDTLastHits[iDetIndx].resize( iNSel  );
        fhTRpcCluSizeDTLastHits[iDetIndx].resize( iNSel  );
+       fhTRpcCluMemMulDTLastHits[iDetIndx].resize( iNSel  );
 
        for (Int_t iSel=0; iSel<iNSel; iSel++){
        fhTRpcCluMul[iDetIndx][iSel] =  new TH1F(
@@ -1453,6 +1468,11 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
           Form("cl_SmT%01d_sm%03d_rpc%03d_Sel%02d_Size_DTLH", iSmType, iSmId, iRpcId, iSel ),
           Form("Clu size of Rpc #%03d in Sm %03d of type %d under Selector %02d; ln(#DeltaT (ns)); size [strips]", iRpcId, iSmId, iSmType, iSel ),
           100, 0., 18., 10, 0.5, 10.5); 
+
+       fhTRpcCluMemMulDTLastHits[iDetIndx][iSel] =  new TH2F( 
+          Form("cl_SmT%01d_sm%03d_rpc%03d_Sel%02d_MemMul_DTLH", iSmType, iSmId, iRpcId, iSel ),
+          Form("Clu Memorized Multiplicity of Rpc #%03d in Sm %03d of type %d under Selector %02d; ln(#DeltaT (ns)); TOff [ns]", iRpcId, iSmId, iSmType, iSel ),
+          100, 0., 18., 10, 0, 10 ); 
       }
      }
    }
@@ -1561,6 +1581,8 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
      fhRpcCluMul[iDetIndx]->Fill(fviClusterMul[iSmType][iSm][iRpc]); //
    }
 
+   fhCluMulCorDutSel->Fill(fviClusterMul[fSelId][fSelSm][fSelRpc],fviClusterMul[fDutId][fDutSm][fDutRpc]);
+
    // do input distributions first
    for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)
    {
@@ -1586,7 +1608,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
      fhRpcCluRate[iDetIndx]->Fill(dTimeAna);       
      
      if(fdMemoryTime>0. && fvLastHits[iSmType][iSm][iRpc][iCh].size()==0)
-       LOG(FATAL)<<Form(" error hit not stored in memory for TSRC %d%d%d%d",
+       LOG(FATAL)<<Form(" <E> hit not stored in memory for TSRC %d%d%d%d",
 			  iSmType,iSm,iRpc,iCh)
 		   <<FairLogger::endl;
 
@@ -1609,9 +1631,8 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
 		   <<FairLogger::endl;
 
        //       while( (*((std::list<CbmTofHit *>::iterator) fvLastHits[iSmType][iSm][iRpc][iCh].begin()))->GetTime()+fdMemoryTime < pHit->GetTime()
-       while(    
-	       fvLastHits[iSmType][iSm][iRpc][iCh].size() > 2.
-	    || fvLastHits[iSmType][iSm][iRpc][iCh].front()->GetTime()+fdMemoryTime < pHit->GetTime()
+       while( //fvLastHits[iSmType][iSm][iRpc][iCh].size() > 2. ||
+	      fvLastHits[iSmType][iSm][iRpc][iCh].front()->GetTime()+fdMemoryTime < pHit->GetTime()
 	     )
 	      
        {
@@ -1628,7 +1649,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
 			  fvLastHits[iSmType][iSm][iRpc][iCh].front()->GetAddress(),
 			  fvLastHits[iSmType][iSm][iRpc][iCh].front()->GetTime())
 		   <<FairLogger::endl;
-
+	 fvLastHits[iSmType][iSm][iRpc][iCh].front()->Delete();
 	 fvLastHits[iSmType][iSm][iRpc][iCh].pop_front();
        }     
      }
@@ -2209,7 +2230,8 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
 	   if(fvLastHits[iSmType][iSm][iRpc][iCh].size()>1){     // check for previous hits in memory time interval 
 	     std::list<CbmTofHit *>::iterator itL=fvLastHits[iSmType][iSm][iRpc][iCh].end(); 
 	     itL--; 
-	     for(Int_t iH=0; iH<fvLastHits[iSmType][iSm][iRpc][iCh].size()-1; iH++){
+	     for(Int_t iH=0; iH<1; iH++){  // use only last hit
+	       //  for(Int_t iH=0; iH<fvLastHits[iSmType][iSm][iRpc][iCh].size()-1; iH++){//fill for all memorized hits 
 	       itL--; 	     
 	       Double_t dTsinceLast = pHit->GetTime()-(*itL)->GetTime();
                if(dTsinceLast > fdMemoryTime)
@@ -2220,6 +2242,8 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
 
 	       fhTRpcCluTOffDTLastHits[iDetIndx][iSel]->Fill(TMath::Log(dTsinceLast),
 		                                            pHit->GetTime()-dTTrig[iSel]);
+	       fhTRpcCluMemMulDTLastHits[iDetIndx][iSel]->Fill(TMath::Log(dTsinceLast),
+		                                             fvLastHits[iSmType][iSm][iRpc][iCh].size()-1);
 	     }      
 	   }
          }
@@ -2339,7 +2363,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
       iNent = (Int_t) fhRpcCluAvWalk[iDetIndx]->GetEntries();
      }
      if(0==iNent){
-       LOG(INFO)<<"CbmTofTestBeamClusterizer::WriteHistos: No entries in Walk histos for " 
+       LOG(INFO)<<"WriteHistos: No entries in Walk histos for " 
                  <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc 
                  <<FairLogger::endl;
        // continue;
@@ -2402,7 +2426,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
      }
 
      if(NULL == htempPos_pfx) {
-       LOG(INFO)<<"CbmTofTestBeamClusterizer::WriteHistos: Projections not available, continue " 
+       LOG(INFO)<<"WriteHistos: Projections not available, continue " 
                 << FairLogger::endl;
        continue;
      }
@@ -2456,7 +2480,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
      {
         Int_t iNbRpc = fDigiBdfPar->GetNbRpc( iSmType);
         Int_t iNbCh = fDigiBdfPar->GetNbChan( iSmType, iRpc );
-        LOG(INFO)<<"CbmTofTestBeamClusterizer::WriteHistos: restore Offsets and Gains and save Walk for "
+        LOG(INFO)<<"WriteHistos: restore Offsets and Gains and save Walk for "
                  <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc
 		 <<" and calSmAddr = "<<Form(" 0x%08x ",TMath::Abs(fCalSmAddr)) 
                  <<FairLogger::endl;
@@ -2471,7 +2495,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
          Double_t TMean=0.5*(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]+fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
          htempPos_pfx->Fill(iCh,YMean);
          if( ((TProfile *)htempPos_pfx)->GetBinContent(iCh+1)!=YMean) {
-           LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! ch "<<iCh
+           LOG(ERROR)<<"WriteHistos: restore unsuccessful! ch "<<iCh
                      <<" got "<< htempPos_pfx->GetBinContent(iCh)<<","<<htempPos_pfx->GetBinContent(iCh+1)
                      <<","<<htempPos_pfx->GetBinContent(iCh+2)
                      <<", expected "<<YMean
@@ -2512,7 +2536,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
            || fCalSmAddr == iSmAddr)  // select detectors for determination of walk correction
 	{
 
-        LOG(INFO)<<"CbmTofTestBeamClusterizer::WriteHistos: restore Offsets and Gains and update Walk for "
+        LOG(INFO)<<"WriteHistos: restore Offsets and Gains and update Walk for "
                  <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc<<" with "<<fDigiBdfPar->GetNbChan(iSmType,iRpc)<<" channels"
                  <<FairLogger::endl;
         for( Int_t iCh=0; iCh< fDigiBdfPar->GetNbChan( iSmType, iRpc ); iCh++){
@@ -2535,7 +2559,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
             h2tmp1=fhRpcCluAvWalk[iDetIndx];
            }	  }
           if(NULL == h2tmp0){
-            LOG(INFO)<<Form("CbmTofTestBeamClusterizer::WriteHistos: Walk histo not available for SmT %d, Sm %d, Rpc %d, Ch %d",iSmType,iSm,iRpc,iCh)
+            LOG(INFO)<<Form("WriteHistos: Walk histo not available for SmT %d, Sm %d, Rpc %d, Ch %d",iSmType,iSm,iRpc,iCh)
                      <<FairLogger::endl;
             continue;
           }
@@ -2602,13 +2626,13 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
            h1tmp0->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]);
            h1tmp1->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]);
            if( h1tmp0->GetBinContent(iWx+1)!=fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]) {
-           LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: writing not successful! iWx "<<iWx
+           LOG(ERROR)<<"WriteHistos: writing not successful! iWx "<<iWx
                      <<" got "<< h1tmp0->GetBinContent(iWx+1)
                      <<", expected "<<fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]
                      <<FairLogger::endl;         }
           
            if( h1tmp1->GetBinContent(iWx+1)!=fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]) {
-           LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: writing not successful! iWx "<<iWx
+           LOG(ERROR)<<"WriteHistos: writing not successful! iWx "<<iWx
                      <<" got "<< h1tmp1->GetBinContent(iWx+1)
                      <<", expected "<<fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]
                      <<FairLogger::endl;         }
@@ -2634,7 +2658,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
            h1tmp0->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]);
            h1tmp1->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]);
            if( h1tmp0->GetBinContent(iWx+1)!=fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]) {
-           LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! iWx "<<iWx
+           LOG(ERROR)<<"WriteHistos: restore unsuccessful! iWx "<<iWx
                      <<" got "<< h1tmp0->GetBinContent(iWx+1)
                      <<", expected "<<fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]
                      <<FairLogger::endl;         }
@@ -2656,7 +2680,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
         Int_t iNbCh = fDigiBdfPar->GetNbChan( iSmType, iRpc );
 
         if((fCalSmAddr < 0) || (fCalSmAddr != iSmAddr)){   // select detectors for updating offsets
-         LOG(INFO)<<"CbmTofTestBeamClusterizer::WriteHistos: (case 2) update Offsets and keep Gains, Walk and DELTOF for "
+         LOG(INFO)<<"WriteHistos: (case 2) update Offsets and keep Gains, Walk and DELTOF for "
                   <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc 
                   <<FairLogger::endl;
          Int_t iB=iSm*iNbRpc+iRpc;
@@ -2741,7 +2765,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
           Double_t TMean=0.5*(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]+fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
           htempPos_pfx->Fill(iCh,YMean);
           if( ((TProfile *)htempPos_pfx)->GetBinContent(iCh+1)!=YMean) {
-           LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! ch "<<iCh
+           LOG(ERROR)<<"WriteHistos: restore unsuccessful! ch "<<iCh
                      <<" got "<< htempPos_pfx->GetBinContent(iCh)<<","<<htempPos_pfx->GetBinContent(iCh+1)
                      <<","<<htempPos_pfx->GetBinContent(iCh+2)
                      <<", expected "<<YMean
@@ -2792,7 +2816,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
            h1tmp0->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]);
            h1tmp1->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]);
            if( h1tmp0->GetBinContent(iWx+1)!=fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]) {
-           LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! iWx "<<iWx
+           LOG(ERROR)<<"WriteHistos: restore unsuccessful! iWx "<<iWx
                      <<" got "<< h1tmp0->GetBinContent(iWx+1)
                      <<", expected "<<fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]
                      <<FairLogger::endl;         }
@@ -2812,7 +2836,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
         Int_t iNbRpc = fDigiBdfPar->GetNbRpc(  iSmType);
         Int_t iNbCh  = fDigiBdfPar->GetNbChan( iSmType, iRpc );
         if((fCalSmAddr < 0) || (fCalSmAddr != iSmAddr) ){     // select detectors for updating offsets
-         LOG(INFO)<<"CbmTofTestBeamClusterizer::WriteHistos (calMode==3): update Offsets and Gains, keep Walk and DelTof for "
+         LOG(INFO)<<"WriteHistos (calMode==3): update Offsets and Gains, keep Walk and DelTof for "
                   <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc<<" with " <<  iNbCh << " channels "
                    <<" using selector "<<fCalSel
                   <<FairLogger::endl;
@@ -2951,7 +2975,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
          Double_t TMean=0.5*(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]+fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
          htempPos_pfx->Fill(iCh,YMean);
          if( ((TProfile *)htempPos_pfx)->GetBinContent(iCh+1)!=YMean) {
-           LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! ch "<<iCh
+           LOG(ERROR)<<"WriteHistos: restore unsuccessful! ch "<<iCh
                      <<" got "<< htempPos_pfx->GetBinContent(iCh)<<","<<htempPos_pfx->GetBinContent(iCh+1)
                      <<","<<htempPos_pfx->GetBinContent(iCh+2)
                      <<", expected "<<YMean
@@ -3006,7 +3030,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
            h1tmp0->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]);
            h1tmp1->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]);
            if( h1tmp0->GetBinContent(iWx+1)!=fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]) {
-           LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! iWx "<<iWx
+           LOG(ERROR)<<"WriteHistos: restore unsuccessful! iWx "<<iWx
                      <<" got "<< h1tmp0->GetBinContent(iWx+1)
                      <<", expected "<<fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]
                      <<FairLogger::endl;         }
@@ -3024,7 +3048,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
      {    
         Int_t iNbRpc = fDigiBdfPar->GetNbRpc( iSmType);
         Int_t iNbCh = fDigiBdfPar->GetNbChan( iSmType, iRpc );
-        LOG(INFO)<<"CbmTofTestBeamClusterizer::WriteHistos: restore Offsets, Gains and Walk, save DelTof for "
+        LOG(INFO)<<"WriteHistos: restore Offsets, Gains and Walk, save DelTof for "
                  <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc 
                  <<FairLogger::endl;
         htempPos_pfx->Reset();    //reset to restore mean of original histos
@@ -3038,7 +3062,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
          Double_t TMean=0.5*(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]+fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
          htempPos_pfx->Fill(iCh,YMean);
          if( ((TProfile *)htempPos_pfx)->GetBinContent(iCh+1)!=YMean) {
-           LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! ch "<<iCh
+           LOG(ERROR)<<"WriteHistos: restore unsuccessful! ch "<<iCh
                      <<" got "<< htempPos_pfx->GetBinContent(iCh)<<","<<htempPos_pfx->GetBinContent(iCh+1)
                      <<","<<htempPos_pfx->GetBinContent(iCh+2)
                      <<", expected "<<YMean
@@ -3072,7 +3096,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
            h1tmp0->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]);
            h1tmp1->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]);
            if( h1tmp0->GetBinContent(iWx+1)!=fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]) {
-           LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! iWx "<<iWx
+           LOG(ERROR)<<"WriteHistos: restore unsuccessful! iWx "<<iWx
                      <<" got "<< h1tmp0->GetBinContent(iWx+1)
                      <<", expected "<<fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]
                      <<FairLogger::endl;         }
@@ -3093,7 +3117,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
           for(Int_t iSel=0; iSel<iNSel; iSel++){
           TH2 *h2tmp=fhTRpcCluDelTof[iDetIndx][iSel];
           if(NULL == h2tmp){
-           LOG(INFO)<<Form("CbmTofTestBeamClusterizer::WriteHistos:  histo not available for SmT %d, Sm %d, Rpc %d",
+           LOG(INFO)<<Form("WriteHistos:  histo not available for SmT %d, Sm %d, Rpc %d",
                           iSmType,iSm,iRpc)
                      <<FairLogger::endl;
             break;
@@ -3149,7 +3173,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
         Int_t iNbRpc = fDigiBdfPar->GetNbRpc(  iSmType);
         Int_t iNbCh  = fDigiBdfPar->GetNbChan( iSmType, iRpc );
         if((fCalSmAddr < 0) || (fCalSmAddr != iSmAddr) ){     // select detectors for updating offsets
-         LOG(INFO)<<"CbmTofTestBeamClusterizer::WriteHistos (calMode==3): update Offsets and Gains, keep Walk and DelTof for "
+         LOG(INFO)<<"WriteHistos (calMode==3): update Offsets and Gains, keep Walk and DelTof for "
                   <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc<<" with " <<  iNbCh << " channels "
                    <<" using selector "<<fCalSel
                   <<FairLogger::endl;
@@ -3236,7 +3260,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
          Double_t TMean=0.5*(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]+fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
          htempPos_pfx->Fill(iCh,YMean);
          if( ((TProfile *)htempPos_pfx)->GetBinContent(iCh+1)!=YMean) {
-           LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! ch "<<iCh
+           LOG(ERROR)<<"WriteHistos: restore unsuccessful! ch "<<iCh
                      <<" got "<< htempPos_pfx->GetBinContent(iCh)<<","<<htempPos_pfx->GetBinContent(iCh+1)
                      <<","<<htempPos_pfx->GetBinContent(iCh+2)
                      <<", expected "<<YMean
@@ -3291,7 +3315,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
            h1tmp0->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]);
            h1tmp1->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]);
            if( h1tmp0->GetBinContent(iWx+1)!=fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]) {
-           LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! iWx "<<iWx
+           LOG(ERROR)<<"WriteHistos: restore unsuccessful! iWx "<<iWx
                      <<" got "<< h1tmp0->GetBinContent(iWx+1)
                      <<", expected "<<fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]
                      <<FairLogger::endl;         }
@@ -3308,11 +3332,13 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
 
 
      default: 
-         LOG(DEBUG)<<"CbmTofTestBeamClusterizer::WriteHistos: update mode "
+         LOG(DEBUG)<<"WriteHistos: update mode "
                    <<fCalMode<<" not yet implemented"
                    <<FairLogger::endl;
      }
    }
+
+   fhCluMulCorDutSel->Write();
 
    fhDigSpacDifClust->Write();
    fhDigTimeDifClust->Write();
@@ -3543,7 +3569,9 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
          std::map<Int_t, Double_t>::iterator it;
 	 it = mChannelDeadTime.find(iAddr);
          if( it != mChannelDeadTime.end() ) {
-	   LOG(DEBUG1)<<"CCT found valid ChannelDeadtime entry "<<mChannelDeadTime[iAddr]<<FairLogger::endl;
+	   LOG(DEBUG1)<<"CCT found valid ChannelDeadtime entry "<<mChannelDeadTime[iAddr]
+		      <<", DeltaT "<<pDigi->GetTime()-mChannelDeadTime[iAddr]
+		      <<FairLogger::endl;
 	   if( (bValid = (pDigi->GetTime() > mChannelDeadTime[iAddr] + fdChannelDeadtime)) )
 	     pCalDigi = new((*fTofCalDigisColl)[++iDigIndCal]) CbmTofDigiExp( *pDigi );
 	 }else {
@@ -3869,7 +3897,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                                  // Not one Digi of each end!
                                  fiNbSameSide++;
 				 if(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size()>2) {
-				   LOG(DEBUG) << "SameSide Digis! on "
+				   LOG(DEBUG) << "SameSide Digis! on TSRC "
 					     << iSmType<<iSm<<iRpc<<iCh<<", Times: "
 					      <<Form("%f",(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0])->GetTime())
 					      << ", "<<Form("%f",(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][1])->GetTime())
@@ -3879,7 +3907,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 					     <<FairLogger::endl;
 				   if (     fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][2]->GetSide() 
 					 == fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0]->GetSide() ) {
-				     LOG(DEBUG) << "3 consecutive SameSide Digis! on "
+				     LOG(DEBUG) << "3 consecutive SameSide Digis! on TSRC "
 					       << iSmType<<iSm<<iRpc<<iCh<<", Times: "
 					       <<   (fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0])->GetTime()
 					       << ", "<<(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][1])->GetTime()
@@ -3929,8 +3957,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                               CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh);
                               iChId = fTofId->SetDetectorInfo( xDetInfo );
                               Int_t iUCellId=CbmTofAddress::GetUniqueAddress(iSm,iRpc,iCh,0,iSmType);
-                              LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::BuildClusters:" 
-                                         << Form(" T %3d Sm %3d R %3d Ch %3d size %3lu ",
+                              LOG(DEBUG1)<< Form(" TSRC %d%d%d%d size %3lu ",
                                                  iSmType,iSm,iRpc,iCh,fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size())
                                          << Form(" ChId: 0x%08x 0x%08x ",iChId,iUCellId)
                                          <<FairLogger::endl;
@@ -3984,7 +4011,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                                 dPosY += -fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc) * dTimeDif * 0.5;
 
                               LOG(DEBUG1)
-                                   <<"CbmTofTestBeamClusterizer::BuildClusters: NbChanInHit  "
+                                   <<"NbChanInHit  "
                                    << Form(" %3d %3d %3d %3d %3d 0x%p %1.0f Time %f PosX %f PosY %f Svel %f ",
                                            iNbChanInHit,iSmType,iRpc,iCh,iLastChan,xDigiA,xDigiA->GetSide(),
                                            dTime,dPosX,dPosY,fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc))
@@ -4116,7 +4143,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                                     if(NULL != fTofPointsColl) {
                                       iRefId = fTofPointsColl->IndexOf( vPtsRef[0] );
                                     }
-                                    LOG(DEBUG)<<"CbmTofTestBeamClusterizer::BuildClusters: Save Hit  "
+                                    LOG(DEBUG)<<"Save Hit  "
                                                << Form(" %3d %3d 0x%08x %3d %3d %3d %f %f",
                                                        fiNbHits,iNbChanInHit,iDetId,iChm,iLastChan,iRefId,
                                                        dWeightedTime,dWeightedPosY)
@@ -4131,14 +4158,14 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                                     LOG(DEBUG)  <<FairLogger::endl;
 
                                     if(        vDigiIndRef.size() < 2 ){
-                                      LOG(WARNING)<<"CbmTofTestBeamClusterizer::BuildClusters: Digi refs for Hit "
+                                      LOG(WARNING)<<"Digi refs for Hit "
                                                     << fiNbHits<<":        vDigiIndRef.size()"
                                                   <<FairLogger::endl;
                                     }                            
                                     if(fiNbHits>0){
                                       CbmTofHit *pHitL = (CbmTofHit*) fTofHitsColl->At(fiNbHits-1);
                                       if(iDetId == pHitL->GetAddress() && dWeightedTime==pHitL->GetTime()){
-                                      LOG(DEBUG)<<"CbmTofTestBeamClusterizer::BuildClusters: Store Hit twice? "
+                                      LOG(DEBUG)<<"Store Hit twice? "
                                                   <<" fiNbHits "<<fiNbHits<<", "<<Form("0x%08x",iDetId)
                                                   <<FairLogger::endl;
 
@@ -4175,7 +4202,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 						       dWeightedTime)
 						  <<FairLogger::endl;
 				      }else{
-					Double_t deltaTime=dWeightedTime - fvLastHits[iSmType][iSm][iRpc][iChm].back()->GetTime();
+					Double_t deltaTime=dWeightedTime - fvLastHits[iSmType][iSm][iRpc][iChm].front()->GetTime();
 					LOG(WARNING)<<Form(" insert LH from Ev  %8.0f for TSRC %d%d%d%d, size %lu, addr 0x%08x, delta time %f ",
 						       fdEvent,
 						       iSmType,iSm,iRpc,iChm,fvLastHits[iSmType][iSm][iRpc][iChm].size(),
@@ -4185,6 +4212,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 					fvLastHits[iSmType][iSm][iRpc][iChm].pop_back();
 					if(deltaTime==0.){
 					  // remove hit, otherwise double entry?
+					  pHit->Delete();
 					}else{
 					  fvLastHits[iSmType][iSm][iRpc][iChm].push_front(pHit);			 
 					}
@@ -4425,7 +4453,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 				       dWeightedTime)
 			  	   <<FairLogger::endl;
 		       }else{
-			 Double_t deltaTime=dWeightedTime - fvLastHits[iSmType][iSm][iRpc][iChm].back()->GetTime();
+			 Double_t deltaTime=dWeightedTime - fvLastHits[iSmType][iSm][iRpc][iChm].front()->GetTime();
 			 LOG(WARNING)<<Form(" insert LH from Ev  %8.0f for TSRC %d%d%d%d, size %lu, addr 0x%08x, delta time %f ",
 						       fdEvent,
 						       iSmType,iSm,iRpc,iChm,fvLastHits[iSmType][iSm][iRpc][iChm].size(),
@@ -4434,7 +4462,8 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 				     <<FairLogger::endl; 
 			 fvLastHits[iSmType][iSm][iRpc][iChm].pop_back();
 			 if(deltaTime==0.){
-			    // remove hit, otherwise double entry?
+			   // remove hit, otherwise double entry?
+			   pHit->Delete();
 			 }else{
 			   fvLastHits[iSmType][iSm][iRpc][iChm].push_front(pHit);			 
 			 }
@@ -4690,6 +4719,45 @@ void CbmTofTestBeamClusterizer::CheckLHMemory()
     }
   }
   LOG(DEBUG) << Form("LH check passed for event %8.0f",fdEvent)
-	     <<FairLogger::endl;
-        
+	     <<FairLogger::endl;       
+}
+
+void CbmTofTestBeamClusterizer::CleanLHMemory()
+{
+  if(fvLastHits.size() != fDigiBdfPar->GetNbSmTypes())
+    LOG(FATAL)<<Form("Inconsistent LH Smtype size %lu, %d ",fvLastHits.size(),fDigiBdfPar->GetNbSmTypes())
+	      <<FairLogger::endl;
+  for (Int_t iSmType=0; iSmType<fDigiBdfPar->GetNbSmTypes(); iSmType++ ){
+    if(fvLastHits[iSmType].size() != fDigiBdfPar->GetNbSm( iSmType ))
+      LOG(FATAL)<<Form("Inconsistent LH Sm size %lu, %d T %d",fvLastHits[iSmType].size(),fDigiBdfPar->GetNbSm( iSmType ), iSmType)
+		<<FairLogger::endl;
+    for( Int_t iSm = 0; iSm < fDigiBdfPar->GetNbSm(  iSmType); iSm++ ){
+      if(fvLastHits[iSmType][iSm].size() != fDigiBdfPar->GetNbRpc( iSmType ))
+	LOG(FATAL)<<Form("Inconsistent LH Rpc size %lu, %d TS %d%d ",fvLastHits[iSmType][iSm].size(),fDigiBdfPar->GetNbRpc( iSmType ),iSmType,iSm)
+		  <<FairLogger::endl;
+      for( Int_t iRpc = 0; iRpc < fDigiBdfPar->GetNbRpc( iSmType); iRpc++ ){
+	if(fvLastHits[iSmType][iSm][iRpc].size() != fDigiBdfPar->GetNbChan( iSmType, iRpc ))
+	  LOG(FATAL)<<Form("Inconsistent LH RpcChannel size %lu, %d TSR %d%d%d ",fvLastHits[iSmType][iSm][iRpc].size(),
+			   fDigiBdfPar->GetNbChan( iSmType, iRpc ),iSmType,iSm,iRpc)
+		    <<FairLogger::endl;	
+	for (Int_t iCh=0; iCh< fDigiBdfPar->GetNbChan( iSmType, iRpc ); iCh++ )
+	  while(fvLastHits[iSmType][iSm][iRpc][iCh].size()>0){
+	    CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh);
+	    Int_t iAddr = fTofId->SetDetectorInfo( xDetInfo );	     
+	    if( fvLastHits[iSmType][iSm][iRpc][iCh].front()->GetAddress() != iAddr )
+	      LOG(FATAL)<<Form("Inconsistent address for Ev %8.0f in list of size %lu for TSRC %d%d%d%d: 0x%08x, time  %f",
+			       fdEvent,
+			       fvLastHits[iSmType][iSm][iRpc][iCh].size(),
+			       iSmType,iSm,iRpc,iCh,
+			       fvLastHits[iSmType][iSm][iRpc][iCh].front()->GetAddress(),
+			       fvLastHits[iSmType][iSm][iRpc][iCh].front()->GetTime())
+		        <<FairLogger::endl;
+	    fvLastHits[iSmType][iSm][iRpc][iCh].front()->Delete();
+	    fvLastHits[iSmType][iSm][iRpc][iCh].pop_front();
+	  }
+      }
+    }
+  }
+  LOG(INFO) << Form("LH cleaning done after %8.0f events",fdEvent)
+	    << FairLogger::endl;       
 }

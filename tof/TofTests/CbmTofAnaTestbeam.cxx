@@ -842,7 +842,7 @@ Bool_t   CbmTofAnaTestbeam::InitParameters()
             << fDigiPar->GetNrOfModules() << " digi cells " <<FairLogger::endl;
 
    // set defaults for backward compatibility to sep14
-   if(0 == fiBeamRefSmType) {
+   if(0 == fiBeamRefAddr) {
    LOG(INFO)<<"CbmTofAnaTestbeam::InitParameter: set beam ref to default (sep14) "
 	    <<FairLogger::endl;
      fiBeamRefSmType=5;
@@ -2473,18 +2473,18 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	      Int_t iCnt=0;
 	      for ( std::map<Double_t,Int_t>::iterator it=vHitMap[iTrk].begin(); it!=vHitMap[iTrk].end(); it++){
 		iCnt++;
-		// LOG(DEBUG)<<Form(" HitMap[%d]: cnt %d, check %d, %6.2f > %6.2f ?",iTrk,iCnt, it->second,it->first,dChi)
-		// << FairLogger::endl;
+		LOG(DEBUG)<<Form(" HitMap[%d]: cnt %d, check %d, %6.2f > %6.2f ?",iTrk,iCnt, it->second,it->first,dChi)
+			  << FairLogger::endl;
                 if(it->first > dChi) {
 		  vHitMap[iTrk].insert(--it,std::pair<Double_t, Int_t>(dChi,i));
-		  //LOG(DEBUG)<<Form(" HitMap[%d]: ins at %d:  %d, %6.2f ",iTrk,iCnt,it->second,it->first)<< FairLogger::endl;
+		  LOG(DEBUG)<<Form(" HitMap[%d]: ins at %d:  %d, %6.2f ",iTrk,iCnt,it->second,it->first)<< FairLogger::endl;
 		  break;
 		}
 	      }
 	    }
 	    else{
 	      vHitMap[iTrk].insert(std::pair<Double_t, Int_t>(dChi,i));
-	      //LOG(DEBUG)<<Form(" HitMap[%d]:ins  %d, %6.2f ",iTrk,i,dChi)<< FairLogger::endl;
+	      LOG(DEBUG)<<Form(" HitMap[%d]:ins  %d, %6.2f ",iTrk,i,dChi)<< FairLogger::endl;
 	    }
 
             if(vTrkMap[i].size()>0) {
@@ -2516,7 +2516,8 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 if(vTrkMap[iHit].size()>0){ 
 	   Int_t iTrk=vTrkMap[iHit].begin()->second;     // hit was assigned best to track iTrk
 	   if(vHitMap[iTrk].begin()->second == iHit) {   // unique/consistent assignment
-	     LOG(DEBUG)<<Form(" Hit %d -> HitMap[%d]: uni %d, %6.4f ",iHit,iTrk,vHitMap[iTrk].begin()->second,vHitMap[iTrk].begin()->first)
+	     LOG(DEBUG)<<Form(" Hit %d -> HitMap[%d]: uni %d, %6.4f ",
+			      iHit,iTrk,vHitMap[iTrk].begin()->second,vHitMap[iTrk].begin()->first)
 		       <<FairLogger::endl;
 	     // remove all other assignments of this hit and this track
 	     for ( std::map<Double_t,Int_t>::iterator it=vTrkMap[iHit].begin()++; it != vTrkMap[iHit].end(); it++){
@@ -2567,8 +2568,8 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 hitpos[2]=dDutzPos;
 	 gGeoManager->MasterToLocal(hitpos, hitpos_local);
 	 if(vHitMap[iTrk].size()>0){  // matched hit found 
-	   LOG(DEBUG)<<Form(" Fill/process Trk %d, HMul %d,  with DutHitMap.size:  %d,  best hit %d, %6.2f ",
-			    iTrk,pTrk->GetNofHits(),(int)vHitMap[iTrk].size(),vHitMap[iTrk].begin()->second,vHitMap[iTrk].begin()->first)
+	   LOG(DEBUG )<<Form(" Event %d : process complete Trkl %d, HMul %d,  with DutHitMap.size:  %d,  best hit %d, %6.2f ",
+		   fEvents,iTrk,pTrk->GetNofHits(),(int)vHitMap[iTrk].size(),vHitMap[iTrk].begin()->second,vHitMap[iTrk].begin()->first)
 		     <<FairLogger::endl;
 
 	   pHit = vDutHit[vHitMap[iTrk].begin()->second];

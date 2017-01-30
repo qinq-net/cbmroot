@@ -212,7 +212,7 @@ Int_t CbmTofTrackFinderNN::DoFind(
 	gGeoManager->MasterToLocal(hitpos, hitpos_local);
 	dSizey=fChannelInfo->GetSizey();
 	LOG(DEBUG2) << Form("<D> TofTracklet start %d, Hit %d - yloc %6.2f, dy %6.2f, Scal %6.2f -> station 0x%08x",
-			    fiNtrks,iHit,hitpos_local[1],dSizey,fPosYMaxScal,fFindTracks->GetAddrOfStation(1) )
+			    fiNtrks,iHit,hitpos_local[1],dSizey,fPosYMaxScal,fFindTracks->GetAddrOfStation(iSt0) )
 	        <<FairLogger::endl; 
       }
       }
@@ -249,7 +249,7 @@ Int_t CbmTofTrackFinderNN::DoFind(
 	  }
 	  Double_t dDT = 0.;
 	  if(iSmType>0) dDT = pHit1->GetTime()- pHit->GetTime();
-	  if(dDT<0.) continue;  // request forward propagation in time  
+	  //if(dDT<0.) continue;  // request forward propagation in time  
 
 	  Double_t dLz =  pHit1->GetZ()   - pHit->GetZ();
 	  Double_t dTx = (pHit1->GetX()   - pHit->GetX())/dLz;
@@ -375,9 +375,9 @@ Int_t CbmTofTrackFinderNN::DoFind(
 	    Double_t dTex = pTrk->GetTex(pHit);
 	    // pTrk->GetFitT(pHit->GetR());
 
-	    Double_t dChi = TMath::Sqrt(TMath::Power(TMath::Abs(dTex-pHit->GetTime())/fFindTracks->GetSigT(iAddr),2)
-				       +TMath::Power(TMath::Abs(dXex-pHit->GetX())/fFindTracks->GetSigX(iAddr),2)
-				       +TMath::Power(TMath::Abs(dYex-pHit->GetY())/fFindTracks->GetSigY(iAddr),2))/3;
+	    Double_t dChi = TMath::Sqrt((TMath::Power(TMath::Abs(dTex-pHit->GetTime())/fFindTracks->GetSigT(iAddr),2)
+				        +TMath::Power(TMath::Abs(dXex-pHit->GetX())/fFindTracks->GetSigX(iAddr),2)
+					+TMath::Power(TMath::Abs(dYex-pHit->GetY())/fFindTracks->GetSigY(iAddr),2))/3);
 
 	    LOG(DEBUG1)<<Form("<IP> TofTracklet %d, HMul %d, Hits %d, %d check %d, Station 0x%08x: DT %f, DX %f, DY %f, Chi %f",
 			    iTrk,pTrk->GetNofHits(),iHit0,iHit1,iHit,iAddr,
@@ -424,7 +424,8 @@ Int_t CbmTofTrackFinderNN::DoFind(
 
 	  } // hit y position check end 
 	}   // hit loop end
-	if(iNCand>0){  // at least one matching hit found
+
+	if(iNCand>0) {  // at least one matching hit found
 	  LOG(DEBUG) << Form("CbmTofTrackFinderNN::DoFind Hits %d match to %d. TofTracklet",iNCand,iTrk);
 	  for (Int_t iM=0; iM<iNCand; iM++) {
 	    LOG(DEBUG) << Form(", Hit %d with chi2 %f (%f)", iHitInd[iM],  dChi2[iM], pTrk->GetMatChi2(fFindTracks->GetAddrOfStation(iDet)));
@@ -445,12 +446,20 @@ Int_t CbmTofTrackFinderNN::DoFind(
 	    LOG(DEBUG1) <<Form("    -D- Add hit %d at %p, Addr 0x%08x, Chi2 %6.2f",iHit,pHit,iAddr,dChi2[0])<< FairLogger::endl;
 	    pTrk->AddTofHitIndex(iHit,iAddr,pHit,dChi2[0]); // store next Hit index with matching chi2
 	    fvTrkVec[iHit].push_back(pTrk);
+	    Line3Dfit(pTrk);                   // full MINUIT fit for debugging overwrites ParamLast!
+	    if(pTrk->GetChiSq() > fChiMaxAccept) {
+	      LOG(DEBUG) <<Form("Add hit %d invalidates tracklet with Chi %6.2f -> undo ",iHit,pTrk->GetChiSq())
+                         << FairLogger::endl;
+              fvTrkVec[iHit].pop_back();
+	      pTrk->RemoveTofHitIndex(iHit,iAddr,pHit,dChi2[0]); 
+	      Line3Dfit(pTrk);                //restore old status
+	    }
 	    PrintStatus((char*)"after Add hit");
 	    UpdateTrackList(iTrk);  
 	  }
 	  else {
 	    if ( dChi2[0]<dLastChi2 ) { // replace hit index
-	      LOG(DEBUG1) <<Form("    -D- Replace %d, Addr 0x%08x, at %p, Chi2 %6.2f",iHit,iAddr,pHit,dChi2[0])<< FairLogger::endl;
+	      LOG(FATAL) <<Form("-D- Replace %d, Addr 0x%08x, at %p, Chi2 %6.2f",iHit,iAddr,pHit,dChi2[0])<< FairLogger::endl;
 	      //cout << " -D- Replace " << endl;
 	      pTrk->ReplaceTofHitIndex(iHit,iAddr,pHit,dChi2[0]);
 	      // TODO remove tracklet assigment of old hit! FIXME
@@ -462,16 +471,12 @@ Int_t CbmTofTrackFinderNN::DoFind(
 		break;
 	    }
 	  }
-	  // pTrk->SetParamLast(tPar);   // Initialize FairTrackParam for KF 
-	  //fFitter->DoFit(pTrk);       //whatever that means ... KF - Fitting
-	  LOG(DEBUG) << Form("<IRes> TofTracklet %d, HMul %d, Hits %d, %d, %d, NDF %d,  Chi2 %10.2f ",
-			       iTrk,pTrk->GetNofHits(),iHit0,iHit1,iHit, pTrk->GetNDF(), pTrk->GetChiSq())
-		     << tPar->ToString()
-		     <<FairLogger::endl;
-	  //pTrk->GetFairTrackParamLast();     // transfer fit result to CbmTofTracklet
-	  //pTrk->SetTime(pHit->GetTime());    // update reference time
+	  // pTrk->SetParamLast(tPar);       // Initialize FairTrackParam for KF 
+	  //fFitter->DoFit(pTrk);            //whatever that means ... KF - Fitting
+	  //pTrk->GetFairTrackParamLast();   // transfer fit result to CbmTofTracklet
+	  //pTrk->SetTime(pHit->GetTime());  // update reference time
 	  
-	  Line3Dfit(pTrk);                   // full MINUIT fit for debugging overwrites ParamLast!
+	  //Line3Dfit(pTrk);                   // full MINUIT fit for debugging overwrites ParamLast!
 	  
 	  pTrk->SetTime(pTrk->UpdateT0());   // update reference time (and fake hit time) 
 
@@ -488,7 +493,7 @@ Int_t CbmTofTrackFinderNN::DoFind(
 	  // update inverse velocity
 	  Double_t dTt=pTrk->GetTt();
 
-	  LOG(DEBUG)   << Form("<Res> TofTracklet %d, HMul %d, Hits %d, %d, %d, NDF %d,  Chi2 %6.2f, T %6.2f, Tt %6.4f ",
+	  LOG(DEBUG)   << Form("<Res> TofTracklet %d, HMul %d, Hits %d, %d, %d, NDF %d,  Chi2 %6.2f, T0 %6.2f, Tt %6.4f ",
 				 iTrk,pTrk->GetNofHits(),iHit0,iHit1,iHit, pTrk->GetNDF(), pTrk->GetChiSq(), pTrk->GetTime(), dTt)
 		       << FairLogger::endl;
     
@@ -532,6 +537,12 @@ Int_t CbmTofTrackFinderNN::DoFind(
     if(fTracks[iTr]->GetNofHits() < 3) continue;            // request minimum number of hits (3) 
     if(fTracks[iTr]->GetChiSq() > fChiMaxAccept) continue;  // request minimum ChiSq (3) 
     CbmTofTracklet* pTrk = new((*fTofTracks)[fiNtrks++]) CbmTofTracklet (*fTracks[iTr]);
+    for(Int_t iHit=0; iHit<pTrk->GetNofHits(); iHit++){ // mark used Hit
+      CbmTofHit* pHit = (CbmTofHit*) fHits->At( pTrk->GetHitIndex(iHit) );
+      pHit->SetFlag(pHit->GetFlag()+1);
+      LOG(DEBUG) << Form(" hit %d at %d flagged to %d ",iHit, pTrk->GetHitIndex(iHit), pHit->GetFlag())
+		 <<FairLogger::endl;
+    }
   }
   PrintStatus((char*)"<D> Final result");
 
@@ -882,7 +893,9 @@ void CbmTofTrackFinderNN::Line3Dfit(CbmTofTracklet*  pTrk)
    gr->Delete();
    Double_t* dRes;
    dRes=fMinuit.GetParFit();
-   LOG(DEBUG) <<  "Line3Dfit result: "<<dRes[0]<<", "<<dRes[1]<<", "<<dRes[2]<<", "<<dRes[3]<<FairLogger::endl;
+   LOG(DEBUG) << "Line3Dfit result: "<<dRes[0]<<", "<<dRes[1]<<", "<<dRes[2]<<", "<<dRes[3]
+	      << ", Chi2DoF: "<< fMinuit.GetChi2DoF()
+	      <<FairLogger::endl;
    (pTrk->GetTrackParameter())->SetX( dRes[0] );
    (pTrk->GetTrackParameter())->SetY( dRes[2] );
    (pTrk->GetTrackParameter())->SetZ( 0. );

@@ -57,6 +57,7 @@ CbmTofFindTracks::CbmTofFindTracks()  : FairTask(),
     fFitter(NULL),
     fTofHitArray(NULL),
     fTrackArray(NULL),
+    fTofUHitArray(NULL),
     fMinNofHits(-1),
     fNofTracks(-1),
     fNTofStations(-1),
@@ -154,6 +155,7 @@ CbmTofFindTracks::CbmTofFindTracks(const char* name,
     fFitter(NULL),
     fTofHitArray(NULL),
     fTrackArray(NULL),
+    fTofUHitArray(NULL),
     fMinNofHits(-1),
     fNofTracks(-1),
     fNTofStations(-1),
@@ -289,11 +291,15 @@ InitStatus CbmTofFindTracks::Init()
   // Create and register TofTrack array
   fTrackArray = new TClonesArray("CbmTofTracklet",100);
   fTrackArray->BypassStreamer(kTRUE);
-  ioman->Register("TofTracks", "TOF", fTrackArray, kFALSE); //FIXME 
-  //ioman->Register("TofTracks", "TOF", fTrackArray, kTRUE); //FIXME, does not work ! 
+  //ioman->Register("TofTracks", "TOF", fTrackArray, kFALSE); //FIXME 
+  ioman->Register("TofTracks", "TOF", fTrackArray, kTRUE); //FIXME, does not work ! 
     cout << "-I- CbmTofFindTracks::Init:TofTrack array registered"
 	 << endl;
 
+  // Create and register TofUHit array for unused Hits
+  fTofUHitArray = new TClonesArray("CbmTofHit",100);
+  ioman->Register("TofUHit", "TOF", fTofUHitArray, kTRUE); 
+ 
   // Call the Init method of the track finder
   fFinder->Init();
 
@@ -725,7 +731,7 @@ Bool_t CbmTofFindTracks::WriteHistos()
 
      break;
 
-   case 4 : // correct mean deviation from fit (Pull), extract width
+   case 4 : // correct mean deviation from fit (Pull), extract width for x direction
     {
      TProfile *htmp=fhPullX_Smt->ProfileX();
      TH1D *htmp1D=htmp->ProjectionX();
@@ -759,7 +765,7 @@ Bool_t CbmTofFindTracks::WriteHistos()
 
      break;
 
-   case 5 : // correct mean deviation from fit (Pull), extract width
+   case 5 : // correct mean deviation from fit (Pull), extract width for Y direction
     {
      TProfile *htmp=fhPullY_Smt->ProfileX();
      TH1D *htmp1D=htmp->ProjectionX();
@@ -891,7 +897,8 @@ void CbmTofFindTracks::Exec(Option_t* /*opt*/)
 {
   fiEvent++;
   ResetStationsFired();
-  if(NULL != fTrackArray) fTrackArray->Delete();  // reset
+  if(NULL != fTofUHitArray) fTofUHitArray->Clear("C");
+  if(NULL != fTrackArray)   fTrackArray->Delete();  // reset
 
   // recalibrate hits and count trackable hits
   for (Int_t iHit=0; iHit<fTofHitArray->GetEntries(); iHit++){
@@ -921,7 +928,10 @@ void CbmTofFindTracks::Exec(Option_t* /*opt*/)
       TVector3 hitPosErr(0.5,0.5,0.5);  // including positioning uncertainty 
       pHit->SetPosition(hitPos);
       pHit->SetPositionError(hitPosErr);
-    }
+    } else {
+      TVector3 hitPosErr(fSIGX,fSIGY,fSIGZ);  // include positioning uncertainty 
+      pHit->SetPositionError(hitPosErr);
+    } 
     Int_t iSt=GetStationOfAddr(iDetId);
     MarkStationFired(iSt);
 
@@ -934,10 +944,9 @@ void CbmTofFindTracks::Exec(Option_t* /*opt*/)
 
   if (GetNStationsFired()<GetMinNofHits()) {
     fInspectEvent=kFALSE;          // mark event as non trackable
-    return;
   } else fInspectEvent=kTRUE;
 
-  if (fNTofStations > 1){
+  if (fInspectEvent && fNTofStations > 1){
     fStart.Set();
     //fTrackArray->Clear("C+C");
     fNofTracks = fFinder->DoFind(fTofHitArray, fTrackArray);
@@ -949,11 +958,14 @@ void CbmTofFindTracks::Exec(Option_t* /*opt*/)
     LOG(DEBUG) << Form("CbmTofFindTracks::Exec found %d Tracklets in %f sec",
 		     fTrackArray->GetEntriesFast(),fdTrackingTime)
 	       <<FairLogger::endl;
-
+    
     FindVertex();
 
     FillHistograms();
   }
+
+  FillUHits(); // put unused hits into TClonesArray
+
 }
 // -------------------------------------------------------------------------
 
@@ -1104,13 +1116,13 @@ void CbmTofFindTracks::CreateHistograms(){
   for (Int_t iSt=0; iSt<fNTofStations; iSt++){
     vhPullX[iSt]=new TH1F(  Form("hPullX_Station_%d",iSt),
 			    Form("hPullX_Station_%d;  #DeltaX",iSt),
-			    100, -10., 10.);  
+			    100, -DX0MAX, DX0MAX);  
     vhPullY[iSt]=new TH1F(  Form("hPullY_Station_%d",iSt),
 			    Form("hPullY_Station_%d;  #DeltaY",iSt),
-			    100, -10., 10.);  
+			    100, -DY0MAX, DY0MAX);  
     vhPullZ[iSt]=new TH1F(  Form("hPullZ_Station_%d",iSt),
 			    Form("hPullZ_Station_%d;  #DeltaZ",iSt),
-			    100, -200., 200.);  
+			    100, -50., 50.);  
     vhPullT[iSt]=new TH1F(  Form("hPullT_Station_%d",iSt),
 			    Form("hPullT_Station_%d;  #DeltaT",iSt),
 			    200, -fT0MAX, fT0MAX); 
@@ -1294,6 +1306,7 @@ void CbmTofFindTracks::FillHistograms(){
     } // condition on NofHits>2 end 
 
    if( pTrk->GetNofHits() == fNTofStations ){   // all possible hits are there
+     LOG(DEBUG) << "Complete Tracklet in event "<<fiEvent<<FairLogger::endl;
      for (Int_t iSt=0; iSt<fNTofStations; iSt++){
        Int_t iH  = pTrk->GetStationHitIndex(fMapStationRpcId[iSt]); // Station Hit index
        if(iH<0) {
@@ -1511,4 +1524,13 @@ Int_t CbmTofFindTracks::GetNStationsFired(){
 
 void CbmTofFindTracks::ResetStationsFired(){
   for(Int_t iSt=0; iSt<fNTofStations; iSt++) fStationHMul[iSt]=0;
+}
+
+void CbmTofFindTracks::FillUHits(){
+  Int_t iNbUHits=0;
+  for (Int_t iHit=0; iHit<fTofHitArray->GetEntries(); iHit++){
+    CbmTofHit* pHit = (CbmTofHit*) fTofHitArray->At(iHit);
+    if(pHit->GetFlag() == 0) 
+    new((*fTofUHitArray)[iNbUHits++]) CbmTofHit(*pHit);
+  }
 }

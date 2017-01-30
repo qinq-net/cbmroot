@@ -77,6 +77,8 @@ class CbmTofFindTracks : public FairTask
 
   virtual void CreateHistograms();
 
+  virtual void FillUHits();
+
   virtual void FindVertex();
 
   virtual void FillHistograms();
@@ -145,6 +147,7 @@ class CbmTofFindTracks : public FairTask
   CbmTofTrackFitter* fFitter;    // Pointer to TrackFitter concrete class
   TClonesArray* fTofHitArray;    // Input array of TOF hits
   TClonesArray* fTrackArray;     // Output array of CbmTofTracks 
+  TClonesArray* fTofUHitArray;   // Output array of unused TOF hits
 
   Int_t fMinNofHits;             // minimal number of Tof Hits for filling histos 
   Int_t fNofTracks;              // Number of tracks created

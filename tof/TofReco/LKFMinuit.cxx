@@ -104,6 +104,7 @@ double LKFMinuit::SumDistance2(double par[]) {
    double * z = gr->GetZ();
    int npoints = gr->GetN();
    double sum = 0;
+   first = false;
    for (int i  = 0; i < npoints; ++i) { 
       double d = distance2(x[i],y[i],z[i],par); 
       sum += d;
@@ -117,7 +118,6 @@ double LKFMinuit::SumDistance2(double par[]) {
    }
    if (first) 
       std::cout << " -D- LKFMinuit::SumDistance2: Total sum2 = " << sum << std::endl;
-   first = false;
    return sum;
 }
 

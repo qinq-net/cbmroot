@@ -142,6 +142,7 @@ class CbmTofTestBeamClusterizer : public FairTask
       virtual void fit_ybox(const char *hname);        // Fit
       virtual void fit_ybox(TH1 *h, Double_t dy);      // Fit
       virtual void CheckLHMemory();                    // Check consistency of stored last hits
+      virtual void CleanLHMemory();                    // Cleanup
 
    protected:
 
@@ -262,6 +263,7 @@ class CbmTofTestBeamClusterizer : public FairTask
       TH2* fhClustSizeDifY;
       TH2* fhChDifDifX;
       TH2* fhChDifDifY;
+      TH2* fhCluMulCorDutSel;
 
       std::vector< TH2* > fhRpcDigiCor;        //[nbDet]
       std::vector< TH1* > fhRpcCluMul;         //[nbDet]
@@ -299,6 +301,7 @@ class CbmTofTestBeamClusterizer : public FairTask
       std::vector< std::vector< TH2* > > fhTRpcCluTOffDTLastHits;
       std::vector< std::vector< TH2* > > fhTRpcCluTotDTLastHits;
       std::vector< std::vector< TH2* > > fhTRpcCluSizeDTLastHits;
+      std::vector< std::vector< TH2* > > fhTRpcCluMemMulDTLastHits;
 
       std::vector< TH1* > fhSeldT;  //[nbSel] 
 
