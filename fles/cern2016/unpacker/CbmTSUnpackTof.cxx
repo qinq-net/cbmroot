@@ -26,10 +26,15 @@
 #include <stdint.h>
 #include <iomanip>
 
-const UInt_t kuNbChanGet4 =  4;
-const UInt_t kuNbChanAfck = 96;  // FIXME - should be read from parameter file 
+const  UInt_t kuNbChanGet4 =  4;
+static UInt_t kuNbChanAfck = 128; //96;  // FIXME - should be read from parameter file 
 static Int_t iMess=0;
-const Double_t FineTimeConvFactor=0.048828;
+const  Double_t FineTimeConvFactor=0.048828;
+static Double_t RefTime=0.;
+static Double_t LastDigiTime=0.; 
+static Double_t FirstDigiTimeDif=0.; 
+const  Int_t DetMask = 0x0001FFFF;
+
 
 CbmTSUnpackTof::CbmTSUnpackTof( UInt_t uNbGdpb )
   : CbmTSUnpack(),
@@ -43,6 +48,7 @@ CbmTSUnpackTof::CbmTSUnpackTof( UInt_t uNbGdpb )
     fNofEpochs(0),
     fCurrentEpochTime(0.),
     fEquipmentId(0),
+    fdTShiftRef(0.),
 //    fFiberHodoRaw(new TClonesArray("CbmNxyterRawMessage", 10)),
     fTofDigi(),
 //    fRawMessage(NULL),  
@@ -74,6 +80,8 @@ Bool_t CbmTSUnpackTof::Init()
   //  ioman->Register("FiberHodoRawMessage", "fiberhodo raw data", fFiberHodoRaw, kTRUE);
   ioman->Register("CbmTofDigi", "Tof raw Digi", fTofDigi, kTRUE);
 
+  fUnpackPar = (CbmTofUnpackPar*)(FairRun::Instance());
+
   CreateHistograms();
 
   return kTRUE;
@@ -99,8 +107,11 @@ Bool_t CbmTSUnpackTof::ReInitContainers()
 	LOG(INFO) << "ReInit parameter containers for " << GetName()
 			<< FairLogger::endl;
 	Int_t nrOfRocs = fUnpackPar->GetNrOfRocs();
-
+        kuNbChanAfck = fUnpackPar->GetNrOfFebsPerGdpb()
+	             * fUnpackPar->GetNrOfGet4PerFeb()
+                     * fUnpackPar->GetNrOfChannelsPerGet4();  
 	LOG(INFO) << "Nr. of Tof Rocs: " << nrOfRocs
+		  << ", Nr of Channel/Roc: "<< kuNbChanAfck
     		  << FairLogger::endl;
 	
 	fGdpbIdIndexMap.clear();
@@ -131,16 +142,33 @@ Bool_t CbmTSUnpackTof::ReInitContainers()
 
 void CbmTSUnpackTof::CreateHistograms()
 {
+   LOG(INFO) << "create Histos for " << fuMinNbGdpb <<" Rocs "
+	    << FairLogger::endl;
+
+     fHM->Add( Form("Raw_TDig-Ref"),
+           new TH1F( Form("Raw_TDig-Ref"),
+                     Form("Raw digi time difference to Ref ; time [ns]; cts"),
+                     5000, 0, 5000) );  
+
+     fHM->Add( Form("Raw_TRef-Dig0"),
+           new TH1F( Form("Raw_TRef-Dig0"),
+                     Form("Raw Ref time difference to Last digi  ; time [ns]; cts"),
+                     9999, -500000000, 500000000) );   
+     fHM->Add( Form("Raw_TRef-Dig1"),
+           new TH1F( Form("Raw_TRef-Dig1"),
+                     Form("Raw Ref time difference to Last digi  ; time [ns]; cts"),
+                     9999, -5000000, 5000000) );   
+
    for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
    {
       fHM->Add( Form("Raw_Tot_gDPB_%02u", uGdpb),
            new TH2F( Form("Raw_Tot_gDPB_%02u", uGdpb),
                      Form("Raw TOT gDPB %02u; channel; TOT [bin]", uGdpb),
-                     96, 0, 95, 256, 0, 255) );
+                     kuNbChanAfck, 0, kuNbChanAfck, 256, 0, 255) );
       fHM->Add( Form("ChCount_gDPB_%02u", uGdpb),
            new TH1I( Form("ChCount_gDPB_%02u", uGdpb),
                      Form("Channel counts gDPB %02u; channel; Hits", uGdpb),
-                     96, 0, 95 ) );
+                     kuNbChanAfck, 0, kuNbChanAfck ) );
    } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
 }
 
@@ -228,6 +256,11 @@ Bool_t CbmTSUnpackTof::DoUnpack(const fles::Timeslice& ts, size_t component)
 	    if(100 > iMess++)
             PrintSysInfo(mess);
             break;
+	    
+	  case ngdpb::MSG_STAR_TRI:
+	    FillStarTrigInfo(mess);
+	    break;
+	    
           default:
 	    if(100 > iMess++)
 	      LOG(ERROR) << "Message ("<<iMess<<") type " << std::hex << std::setw(2) 
@@ -262,10 +295,11 @@ void CbmTSUnpackTof::FillHitInfo(ngdpb::Message mess)
        ->Fill( get4Id*kuNbChanGet4 + channel, tot);
     fHM->H1( Form("ChCount_gDPB_%02u", fGdpbIdIndexMap[ rocId ]) )
        ->Fill( get4Id*kuNbChanGet4 + channel );
+
     
     hitTime  = mess.getMsgFullTime(fCurrentEpoch[rocId][get4Id]);
     Int_t Ft = mess.getGdpbHitFineTs();
-    
+
     if(100 > iMess++)
     LOG(DEBUG) << "Hit: " << Form("0x%08x ",rocId) << ", " << get4Id 
             << ", " << channel << ", " << tot
@@ -288,14 +322,18 @@ void CbmTSUnpackTof::FillHitInfo(ngdpb::Message mess)
 //    Double_t dTime = hitTime + Ft*FineTimeConvFactor; // in ns, FIXME conversion factor, -> missing calibration
     Double_t dTime = mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] );
     Double_t dTot  = tot;     // in ps ?
-    if(1){
-    LOG(DEBUG) << "Create digi with time " << dTime<<", Tot "<<dTot
+
+    LastDigiTime = dTime;
+
+    if( (iChanUId & DetMask) == 0x00005006 ) dTime += fdTShiftRef;
+
+    LOG(DEBUG) << Form("Insert 0x%08x digi with time ",iChanUId)<< dTime<<", Tot "<<dTot
       //<< " at epoch " << fCurrentEpoch[rocId]
 	       << FairLogger::endl;
     fDigi = new CbmTofDigiExp(iChanUId, dTime, dTot);
 
     fBuffer->InsertData(fDigi);
-    }
+
   }else
     LOG(WARNING) << "found rocId: " << Form("0x%08x ",rocId) << FairLogger::endl;
       
@@ -333,12 +371,12 @@ void CbmTSUnpackTof::FillEpochInfo(ngdpb::Message mess)
         fHM->Add( Form("Raw_Tot_gDPB_%02u", fuMinNbGdpb),
            new TH2F( Form("Raw_Tot_gDPB_%02u", fuMinNbGdpb),
                      Form("Raw TOT gDPB %02u; channel; TOT [bin]", fuMinNbGdpb),
-                     96, 0, 95, 256, 0, 255) );
+                     kuNbChanAfck, 0, kuNbChanAfck, 256, 0, 255) );
                      
          fHM->Add( Form("ChCount_gDPB_%02u", fuMinNbGdpb),
               new TH1I( Form("ChCount_gDPB_%02u", fuMinNbGdpb),
                         Form("Channel counts gDPB %02u; channel; Hits", fuMinNbGdpb),
-                        96, 0, 95 ) );
+                        kuNbChanAfck, 0, kuNbChanAfck ) );
 	 LOG(INFO)<<" Add histos for gDPB "<<fuMinNbGdpb<<", rocID "<<rocId<<FairLogger::endl;
         // increase fuMinNbGdpb
         fuMinNbGdpb++;
@@ -475,6 +513,9 @@ void CbmTSUnpackTof::Finish()
    
    gDirectory->mkdir("Tof_Raw_gDPB");
    gDirectory->cd("Tof_Raw_gDPB");
+   fHM->H1( Form("Raw_TDig-Ref") )->Write();
+   fHM->H1( Form("Raw_TRef-Dig0") )->Write();
+   fHM->H1( Form("Raw_TRef-Dig1") )->Write();
    for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
    {
       fHM->H2( Form("Raw_Tot_gDPB_%02u", uGdpb) )->Write();
@@ -488,16 +529,113 @@ void CbmTSUnpackTof::Finish()
 void CbmTSUnpackTof::FillOutput(CbmDigi* digi)
 {
  if(100 > iMess++)
- LOG(DEBUG) << "Fill digi TClonesarray at " << (Int_t)fTofDigi->GetEntriesFast()
-           << FairLogger::endl;
+ LOG(DEBUG) << "Fill digi TClonesarray with "
+	    <<Form("0x%08x",digi->GetAddress())
+	    <<" at " << (Int_t)fTofDigi->GetEntriesFast()
+	    << FairLogger::endl;
 
  new( (*fTofDigi)[fTofDigi->GetEntriesFast()] )
     CbmTofDigiExp(*(dynamic_cast<CbmTofDigiExp*>(digi)));
     //CbmTofDigiExp((CbmTofDigiExp *)digi);
     
+ if( (digi->GetAddress() & DetMask) != 0x00005006 )
+       fHM->H1( Form("Raw_TDig-Ref") )
+	  ->Fill( digi->GetTime() - RefTime);
+ else  RefTime=digi->GetTime();
+
  digi->Delete();
 
 }
 
+static    ULong64_t fulGdpbTsMsb;
+static    ULong64_t fulGdpbTsLsb;
+static    ULong64_t fulStarTsMsb;
+static    ULong64_t fulStarTsMid;
+static    ULong64_t fulGdpbTsFullLast;
+static    ULong64_t fulStarTsFullLast;
+static    UInt_t    fuStarTokenLast;
+static    UInt_t    fuStarDaqCmdLast;
+static    UInt_t    fuStarTrigCmdLast;
+
+void CbmTSUnpackTof::FillStarTrigInfo(ngdpb::Message mess)
+{
+  Int_t iMsgIndex = mess.getStarTrigMsgIndex();
+  
+  switch( iMsgIndex )
+  {
+      case 0:
+         fulGdpbTsMsb = mess.getGdpbTsMsbStarA();
+         break;
+      case 1:
+         fulGdpbTsLsb = mess.getGdpbTsLsbStarB();
+         fulStarTsMsb = mess.getStarTsMsbStarB();
+         break;
+      case 2:
+         fulStarTsMid = mess.getStarTsMidStarC();
+         break;
+      case 3:
+      {  
+         ULong64_t ulNewGdpbTsFull = ( fulGdpbTsMsb << 24 )
+                           + ( fulGdpbTsLsb       );
+         ULong64_t ulNewStarTsFull = ( fulStarTsMsb << 48 )
+                           + ( fulStarTsMid <<  8 )
+                           + mess.getStarTsLsbStarD();
+         UInt_t uNewToken  = mess.getStarTokenStarD();
+         UInt_t uNewDaqCmd  = mess.getStarDaqCmdStarD();
+         UInt_t uNewTrigCmd = mess.getStarTrigCmdStarD();
+         if( ( uNewToken == fuStarTokenLast ) && ( ulNewGdpbTsFull == fulGdpbTsFullLast ) &&
+             ( ulNewStarTsFull == fulStarTsFullLast ) && ( uNewDaqCmd == fuStarDaqCmdLast ) &&
+             ( uNewTrigCmd == fuStarTrigCmdLast ) )
+         {
+            LOG(DEBUG) << "Possible error: identical STAR tokens found twice in a row => ignore 2nd! " 
+                         << Form("token = %5u ", fuStarTokenLast )
+                         << Form("gDPB ts  = %12llu ", fulGdpbTsFullLast )
+                         << Form("STAR ts = %12llu ", fulStarTsFullLast )
+                         << Form("DAQ cmd = %2u ", fuStarDaqCmdLast )
+                         << Form("TRG cmd = %2u ", fuStarTrigCmdLast )
+                         << FairLogger::endl;
+            return;
+         } // if exactly same message repeated
+
+         if( (uNewToken != fuStarTokenLast + 1) && 
+             0 < fulGdpbTsFullLast && 0 < fulStarTsFullLast &&
+             ( 4095 != fuStarTokenLast || 1 != uNewToken)  )
+            LOG(WARNING) << "Possible error: STAR token did not increase by exactly 1! " 
+                         << Form("old = %5u vs new = %5u ", fuStarTokenLast,   uNewToken)
+                         << Form("old = %12llu vs new = %12llu ", fulGdpbTsFullLast, ulNewGdpbTsFull)
+                         << Form("old = %12llu vs new = %12llu ", fulStarTsFullLast, ulNewStarTsFull)
+                         << Form("old = %2u vs new = %2u ", fuStarDaqCmdLast,  uNewDaqCmd)
+                         << Form("old = %2u vs new = %2u ", fuStarTrigCmdLast, uNewTrigCmd)
+                         << FairLogger::endl;
+
+         fulGdpbTsFullLast = ulNewGdpbTsFull;
+         fulStarTsFullLast = ulNewStarTsFull;
+         fuStarTokenLast   = uNewToken;
+         fuStarDaqCmdLast  = uNewDaqCmd;
+         fuStarTrigCmdLast = uNewTrigCmd;
+	 Double_t dTot = 1.;
+	 Double_t dTime = fulGdpbTsFullLast * 6.25;    
+	 if (FirstDigiTimeDif==0. && LastDigiTime!=0.) {
+	   FirstDigiTimeDif=dTime-LastDigiTime; 
+	   LOG(INFO) << "Default fake digi time shift initialized to " << FirstDigiTimeDif
+		     <<FairLogger::endl;
+	 }	 
+	 dTime -= FirstDigiTimeDif; 
+	 dTime += fdTShiftRef;
+	 LOG(DEBUG) << "Insert fake digi with time " << dTime<<", Tot "<<dTot
+		    <<FairLogger::endl;
+         fHM->H1( Form("Raw_TRef-Dig0") )
+	    ->Fill( dTime - LastDigiTime);
+         fHM->H1( Form("Raw_TRef-Dig1") )
+	    ->Fill( dTime - LastDigiTime);
+
+	 fDigi = new CbmTofDigiExp(0x00005006, dTime, dTot); // fake start counter signal
+	 fBuffer->InsertData(fDigi);
+         break;
+	  } // case 3
+      default:
+         LOG(FATAL) << "Unknown Star Trigger messageindex: " << iMsgIndex << FairLogger::endl;
+  } // switch( iMsgIndex )
+}
 
 ClassImp(CbmTSUnpackTof)

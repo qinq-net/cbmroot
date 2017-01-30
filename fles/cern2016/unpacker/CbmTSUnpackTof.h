@@ -57,6 +57,8 @@ public:
   void SetMsLimitLevel( size_t uAcceptBoundaryPct = 100 ) { fuMsAcceptsPercent = uAcceptBoundaryPct; }
   size_t GetMsLimitLevel( ) { return fuMsAcceptsPercent; }
 
+  inline void SetTShiftRef(Double_t val) {fdTShiftRef = val;}
+
 private: 
 
   size_t fuMsAcceptsPercent; /** Reject Ms with index inside TS above this, assumes 100 MS per TS **/
@@ -74,6 +76,7 @@ private:
   ULong_t fCurrentEpochTime;     /** Time stamp of current epoch **/
 
   Int_t fEquipmentId;
+  Double_t fdTShiftRef;
 
 //  TClonesArray* fFiberHodoRaw;
   TClonesArray* fTofDigi;
@@ -92,6 +95,7 @@ private:
   std::vector< std::vector< std::vector < ngdpb::Message > > > fvmEpSupprBuffer;
 
   void FillHitInfo(ngdpb::Message);
+  void FillStarTrigInfo(ngdpb::Message);
   void FillEpochInfo(ngdpb::Message);
   void PrintSlcInfo(ngdpb::Message);
   void PrintSysInfo(ngdpb::Message);

@@ -141,25 +141,31 @@ void CbmFlibTestSource::AddPath(const TString& tFileDirectory,
   }
   TList* tList = tSystemDirectory->GetListOfFiles();
 
-  TIterator* tIter = tList->MakeIterator();
-  TSystemFile* tSystemFile;
+  for (Int_t iRun=0; iRun<100; iRun++) {
+    
+    Char_t* cRun = Form("_%04d",iRun);
+    TIterator* tIter = tList->MakeIterator();
+    TSystemFile* tSystemFile;
+    TString tFileName;
+    
 
-  TString tFileName;
-
-  while(NULL != (tSystemFile = (TSystemFile*)tIter->Next()))
-  {
-    tFileName = tSystemFile->GetName();
-
-    if(tFileName.Contains(*tRegexp))
+    while(NULL != (tSystemFile = (TSystemFile*)tIter->Next()))
     {
-      tFileName = tDirectoryName + tFileName;
+      tFileName = tSystemFile->GetName();
 
-      LOG(INFO)<<" Add file to input "<<tFileName.Data()<<FairLogger::endl; 
+      //LOG(INFO)<<" Check file  "<<tFileName.Data()<<" for "<<cRun<<FairLogger::endl;
+ 
+      if( tFileName.Contains(*tRegexp) && tFileName.Contains(cRun) )
+      {
+	tFileName = tDirectoryName + tFileName;
 
-      AddFile(tFileName);
+	LOG(INFO)<<" Add file to input "<<tFileName.Data()<<FairLogger::endl; 
+
+	AddFile(tFileName);
+	break;
+      }
     }
   }
-
   tList->Delete();
   if(0==fInputFileList.GetEntries())
   LOG(FATAL)<<" did not find any valid input file at "<<tFileDirectory.Data()<<FairLogger::endl; 
@@ -293,7 +299,7 @@ Int_t CbmFlibTestSource::FillBuffer()
       }
       fTSNumber=tsIndex;
 
-      if ( 0 ==fTSNumber%1000 ) {
+      if ( 0 ==fTSNumber%10000 ) {
         LOG(INFO) << "Reading Timeslice " << fTSNumber
                   << FairLogger::endl;    
       }
@@ -328,25 +334,31 @@ Int_t CbmFlibTestSource::GetNextEvent()
  const Int_t AddrMask=0x0001FFFF;
  Int_t nDigi=0;
  Bool_t bOut=kFALSE;
+ Double_t fTimeBufferOut=0.;
+ //Double_t dTLast=0.;
  while (!bOut)
  {
-  Double_t fTimeBufferOut = fBuffer->GetTimeLast() + fdMaxDeltaT;
-  LOG(DEBUG) << "Timeslice contains data from " 
+  fTimeBufferOut = fBuffer->GetTimeLast(); 
+  LOG(DEBUG) << "Buffer has " << fBuffer->GetSize() << " entries and contains data from " 
             << std::setprecision(9) << std::fixed 
             << static_cast<Double_t>(fBuffer->GetTimeFirst()) * 1.e-9 << " to "
             << std::setprecision(9) << std::fixed 
             << static_cast<Double_t>(fBuffer->GetTimeLast()) * 1.e-9 << " s" << FairLogger::endl;
-
-  LOG(DEBUG) << "Buffer has " << fBuffer->GetSize() << " entries." << FairLogger::endl;
+  if(fTimeBufferOut - fBuffer->GetTimeFirst()<1.E6) {fBufferFillNeeded=kTRUE; return 1;} // store 1 msec of data in memory
 
   CbmDigi* digi = fBuffer->GetNextData(fTimeBufferOut);
+  if (NULL == digi)         {fBufferFillNeeded=kTRUE; return 1;}
 
-  LOG(DEBUG) << "Buffer has " << fBuffer->GetSize() << " entries left with digi = " <<digi<< FairLogger::endl;
-
-  if (NULL == digi) {fBufferFillNeeded=kTRUE; return 1;}
+  LOG(DEBUG) << "Buffer has " << fBuffer->GetSize() << " entries left for digitime = " <<digi->GetTime()<< FairLogger::endl;
 
   Double_t dTEnd = digi->GetTime() + fdMaxDeltaT;
-  //if(dTEnd>fTimeBufferOut) dTEnd=fTimeBufferOut;
+
+  if(dTEnd > fTimeBufferOut)  {
+    LOG(WARNING) <<Form("Remaining buffer < %f with %d entries is not sufficient for digi ending at %f -> skipped ",
+			fTimeBufferOut, fBuffer->GetSize(), dTEnd ) 
+		 <<  FairLogger::endl; 
+    fBufferFillNeeded=kTRUE; return 1;
+  }
   
   nDigi=0;
   while(digi) { // build digi array
@@ -356,6 +368,10 @@ Int_t CbmFlibTestSource::GetNextEvent()
     //if(bOut) LOG(INFO)<<Form("Found 0x%08x, Req 0x%08x ", digi->GetAddress(), fiReqDigiAddr)<<FairLogger::endl;
     digi = fBuffer->GetNextData(dTEnd);
   }
+
+  LOG(DEBUG) << nDigi << " digis associated to dTEnd = " <<dTEnd<< FairLogger::endl;
+
+  //dTLast = vdigi[nDigi-1]->GetTime();
 
   if(fiReqDigiAddr==0) bOut=kTRUE;
 
@@ -384,7 +400,8 @@ Int_t CbmFlibTestSource::GetNextEvent()
  }  // end of bOut condition
  LOG(DEBUG) << "Buffer has " << fBuffer->GetSize() << " entries left, "
             << nDigi <<" digis in current event. "<< FairLogger::endl;
- ( fBuffer->GetSize() <= 100 ) ? fBufferFillNeeded=kTRUE : fBufferFillNeeded=kFALSE; 
+ //( fBuffer->GetSize() <= 100000 ) ? fBufferFillNeeded=kTRUE : fBufferFillNeeded=kFALSE; 
+ //((dTLast + 1.E10) >  fTimeBufferOut) ? fBufferFillNeeded=kTRUE : fBufferFillNeeded=kFALSE;  // store 10 sec in memory 
  return 0;
 }
 
