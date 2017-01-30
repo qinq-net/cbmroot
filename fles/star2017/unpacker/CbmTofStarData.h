@@ -43,6 +43,9 @@ namespace get4v1x {
    // alternatively: (kiCoarseTime>>kiCtShift + 1)*kdClockCycleSize
    const double   kdEpochInPs   = kuEpochInBins*kdBinSize;
    const double   kdEpochInNs   = kdEpochInPs / 1000.0;
+   
+   // Epoch counter size in epoch
+   const uint32_t kuEpochCounterSz = 0x7FFFFFFF;
 }
 #endif
 

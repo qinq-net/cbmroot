@@ -39,7 +39,8 @@ UInt_t CbmTofStarTrigger::GetStarTrigerWord() const
 UInt_t CbmTofStarTrigger::GetFullGdpbEpoch() const
 {
    // trg_cmd|daq_cmd|tkn_hi|tkn_mid|tkn_lo
-   UInt_t uEpochIndex =  (fulGdpbTsFull >> get4v1x::kuCtSize) & 0x7FFFFFFF;
+   UInt_t uEpochIndex =  (fulGdpbTsFull >> get4v1x::kuCtSize) 
+                       & get4v1x::kuEpochCounterSz;
    return uEpochIndex;
 }
 //ClassImp(CbmTofStarTrigger)

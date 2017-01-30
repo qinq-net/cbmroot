@@ -142,10 +142,14 @@ int star_rhicf_write(unsigned int trg_word, void *dta, int bytes)
 	bytes_expect = sizeof(bh) + bytes ;
 
 	if(b_write(desc,(char *)&bh,sizeof(bh))<0) {
+      close( desc );
+      desc = -1;
 		goto err_ret ;
 	}
 
 	if(b_write(desc,dta,bytes)<0) {
+      close( desc );
+      desc = -1;
 		goto err_ret ;
 	}
 

@@ -1459,7 +1459,7 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
 
 void CbmTSMonitorTofStar::FillEpochInfo(ngdpb::Message mess)
 {
-  Int_t epochNr = mess.getEpoch2Number();
+  Int_t epochNr = mess.getGdpbEpEpochNb();
 /*  
   if( epochNr < fCurrentEpoch[fGet4Nr] ) 
       LOG(WARNING) << "Epoch message for get4 " << Form("%3u", fGet4Nr ) 
@@ -1557,7 +1557,11 @@ void CbmTSMonitorTofStar::FillEpochInfo(ngdpb::Message mess)
             fiStarBuffIdxCurr[ fGdpbNr ] = (fiStarBuffIdxCurr[ fGdpbNr ] + 1)%3;
             fiStarBuffIdxNext[ fGdpbNr ] = (fiStarBuffIdxNext[ fGdpbNr ] + 1)%3;
          } // else if( epochNr == (fuCurrentEpGdpb[ fGdpbNr ] + 1) )
-         else if( epochNr > (fuCurrentEpGdpb[ fGdpbNr ] + 1) )
+         else if( ( epochNr > (fuCurrentEpGdpb[ fGdpbNr ] + 1) ) ||
+                  ( ( epochNr < fuCurrentEpGdpb[ fGdpbNr ] ) && 
+                    ( get4v1x::kuEpochCounterSz / 2 < fuCurrentEpGdpb[ fGdpbNr ] - epochNr  )
+                  ) // Epoch counter cycle!!!!
+                )
          {
             /// => Do processing of current epoch buffer + go to next
             StarSort( fGdpbNr );
@@ -1852,6 +1856,13 @@ void CbmTSMonitorTofStar::FillStarTrigInfo(ngdpb::Message mess)
                          << Form("old = %2u vs new = %2u ", fuStarTrigCmdLast, uNewTrigCmd)
                          << FairLogger::endl;
 */
+         // STAR TS counter reset detection
+         if( ulNewStarTsFull < fulStarTsFullLast )
+            LOG(DEBUG) << "Probable reset of the STAR TS: old = " << Form("%16llu", fulStarTsFullLast)
+                       << " new = " << Form("%16llu", ulNewStarTsFull)
+                       << " Diff = -" << Form("%8llu", fulStarTsFullLast - ulNewStarTsFull)
+                       << FairLogger::endl;
+                    
          ULong64_t ulGdpbTsDiff = ulNewGdpbTsFull - fulGdpbTsFullLast;
          fulGdpbTsFullLast = ulNewGdpbTsFull;
          fulStarTsFullLast = ulNewStarTsFull;
@@ -1912,7 +1923,7 @@ void CbmTSMonitorTofStar::FillStarTrigInfo(ngdpb::Message mess)
 }
 void CbmTSMonitorTofStar::FillTrigEpochInfo(ngdpb::Message mess)
 {
-  Int_t epochNr = mess.getEpoch2Number();
+  Int_t epochNr = mess.getGdpbEpEpochNb();
   fGet4Id = mess.getGdpbGenChipId();
   fGet4Nr = (fGdpbNr * fNrOfGet4PerGdpb) + fGet4Id;
 
@@ -2416,7 +2427,7 @@ Bool_t CbmTSMonitorTofStar::StarSelect( Int_t iGdpbIdx )
                                                       [ uTrigIdx ].GetFullGdpbTs() );
       UInt_t uTriggerEpIdx      = fvGdpbEpTrgBuffer[ iGdpbIdx ]
                                                    [ fiStarBuffIdxCurr[ iGdpbIdx ] ]
-                                                   [uTrigIdx].GetFullGdpbEpoch();
+                                                   [ uTrigIdx ].GetFullGdpbEpoch();
       Double_t dTriggerWinStart = dTriggerTime - fdStarTriggerDelay[ iGdpbIdx ];
       Double_t dTriggerWinStop  = dTriggerTime - fdStarTriggerDelay[ iGdpbIdx ]
                                                + fdStarTriggerWinSize[ iGdpbIdx ];
@@ -2425,7 +2436,7 @@ Bool_t CbmTSMonitorTofStar::StarSelect( Int_t iGdpbIdx )
                                                    [ 0 ].getMsgFullTimeD( 0 );
       UInt_t uEpochIdx          = fvGdpbEpMsgBuffer[ iGdpbIdx ]
                                                    [ fiStarBuffIdxCurr[ iGdpbIdx ] ]
-                                                   [ 0 ].getEpoch2Number();
+                                                   [ 0 ].getGdpbEpEpochNb();
       
       fhStarEpToTrig_gDPB[ iGdpbIdx ]->Fill( uEpochIdx,  dEpochTime - dTriggerTime );
       
@@ -2679,7 +2690,7 @@ Bool_t CbmTSMonitorTofStar::StarSelect( Int_t iGdpbIdx )
    Double_t dNextEpochTime = get4v1x::kdEpochInNs + 
                 fvGdpbEpMsgBuffer[ iGdpbIdx ][ fiStarBuffIdxCurr[ iGdpbIdx ] ][ 0 ].getMsgFullTimeD( 0 );
                 
-   UInt_t uEpochIdx = fvGdpbEpMsgBuffer[ iGdpbIdx ][ fiStarBuffIdxCurr[ iGdpbIdx ] ][ 0 ].getEpoch2Number();
+   UInt_t uEpochIdx = fvGdpbEpMsgBuffer[ iGdpbIdx ][ fiStarBuffIdxCurr[ iGdpbIdx ] ][ 0 ].getGdpbEpEpochNb();
    
    Double_t dEarliestNextWinStart = dNextEpochTime - fdStarTriggerDelay[ iGdpbIdx ];
    

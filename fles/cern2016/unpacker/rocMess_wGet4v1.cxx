@@ -435,9 +435,9 @@ void ngdpb::Message::printData(unsigned outType, unsigned kind, uint32_t epoch, 
                     getAuxFalling(), getAuxOverflow());
             break;
          case MSG_EPOCH2:
-            snprintf(buf, sizeof(buf), "Get4:0x%02x Epoche2:0x%08x StampTime:0x%x Sync:%x Dataloss:%x Epochloss:%x Epochmissmatch:%x", 
-                     getEpoch2ChipNumber(), getEpoch2Number(), getEpoch2StampTime(), getEpoch2Sync(),
-                     getEpoch2DataLost(), getEpoch2EpochLost(), getEpoch2EpochMissmatch());
+            snprintf(buf, sizeof(buf), "Get4:0x%02x Link: %1u Epoche2:0x%08x StampTime:0x%x Sync:%x Dataloss:%x Epochloss:%x Epochmissmatch:%x", 
+                     getGdpbGenChipId(), getGdpbEpLinkId(), getGdpbEpEpochNb(), getGdpbEpStampTs(), getGdpbEpSync(),
+                     getGdpbEpDataLoss(), getGdpbEpEpochLoss(), getGdpbEpMissmatch());
             break;
          case MSG_GET4:
             snprintf(buf, sizeof(buf), "Get4:0x%02x Chn:%1x Edge:%1x Ts:0x%05x CRC8:0x%02x",
