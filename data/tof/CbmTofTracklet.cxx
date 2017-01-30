@@ -169,7 +169,7 @@ Double_t CbmTofTracklet::GetTex(CbmTofHit* pHit){
   Double_t dR = TMath::Sqrt(dR2);
   */
   Double_t dR = pHit->GetR();
-  LOG(DEBUG) <<Form(" CbmTofTracklet::GetTex T0 %7.1f dR %7.1f, Tt %7.1f => Tex %7.1f ",
+  LOG(DEBUG) <<Form(" CbmTofTracklet::GetTex T0 %7.1f dR %7.1f, Tt %7.4f => Tex %7.3f ",
 		    fT0,dR,fTt,fT0 + dR*fTt)
 	     << FairLogger::endl;
   return   fT0 + dR*fTt;
@@ -201,7 +201,7 @@ Double_t CbmTofTracklet::UpdateT0(){ //returns estimated time at R=0
     if( fTofDet[iHit]>0) {                        // exlude faked hits
       aR[nValidHits]=fpHit[iHit].GetR();
       at[nValidHits]=fpHit[iHit].GetTime();
-      ae[nValidHits]=100.;                        // const timing error, FIXME
+      ae[nValidHits]=0.1;                         // const timing error, FIXME
       nValidHits++;
     } else iHit0=iHit;
   }
@@ -266,21 +266,24 @@ Double_t CbmTofTracklet::GetTdif(Int_t iDetId, CbmTofHit* pHit){
   Double_t Nref=0;
   Double_t dTt=0.;
   Int_t iNt=0;
-  for (UInt_t iHL=0; iHL<fpHit.size()-1; iHL++){
+  if(0){
+    for (UInt_t iHL=0; iHL<fpHit.size()-1; iHL++){
      if (iDetId == fTofDet[iHL] || 0 == fTofDet[iHL]) continue;           // exclude faked hits 
      for (UInt_t iHH=iHL+1; iHH<fpHit.size(); iHH++){
        if (iDetId == fTofDet[iHH] || 0 == fTofDet[iHH]) continue;           // exclude faked hits 
 	dTt+=(fpHit[iHH].GetTime()-fpHit[iHL].GetTime())/(fpHit[iHH].GetR()-fpHit[iHL].GetR());
 	iNt++;
      }
-  }
+    }
   
-  if (iNt==0) {
-    LOG(ERROR) << "No valid hit pair "<<FairLogger::endl;
-    return 1.E20; 
+    if (iNt==0) {
+      LOG(ERROR) << "No valid hit pair "<<FairLogger::endl;
+      return 1.E20; 
+    }
+    dTt/=(Double_t)iNt;
+  }else{
+    dTt=fTt;
   }
-  dTt/=(Double_t)iNt;
-
   for (UInt_t iHit=0; iHit<fTofHit.size(); iHit++){
     if (iDetId == fTofDet[iHit] || 0 == fTofDet[iHit]) continue;  
     dTref += fpHit[iHit].GetTime() - dTt*(fpHit[iHit].GetR()-pHit->GetR());

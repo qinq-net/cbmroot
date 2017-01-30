@@ -69,7 +69,10 @@ class CbmTofTracklet : public TObject {
 
 	Double_t GetT0() const {return fT0; }
 	Double_t GetTt() const {return fTt; }
-
+	Double_t GetTheta() const {return 
+	         TMath::ATan(fTrackPar.GetTy()); }
+	Double_t GetPhi()   const {return 
+	         TMath::ATan(fTrackPar.GetTy()/fTrackPar.GetTx()); }
 	Int_t    GetStationHitIndex(Int_t iSm) const {
 	  for (Int_t i=0; i< (Int_t) fTofHit.size();i++) 
 	    if(fTofDet[i]==iSm) return fTofHit[i]; 
@@ -186,6 +189,17 @@ class CbmTofTracklet : public TObject {
 	      fTofHit[iHit]=tofHitIndex;
 	      fpHit[iHit]=*pHit;
 	      fMatChi[iHit]=chi2;
+	      break;
+	    }
+	  }
+	}
+
+	inline void RemoveTofHitIndex(Int_t tofHitIndex, Int_t iDet, CbmTofHit* pHit, Double_t chi2) { 
+	  for (Int_t iHit=0; iHit<(Int_t)fTofHit.size(); iHit++){
+	    if (iDet == fTofDet[iHit]) {
+	      fTofHit.erase(fTofHit.begin()+iHit);
+	      fpHit.erase(fpHit.begin()+iHit);
+	      fMatChi.erase(fMatChi.begin()+iHit);
 	      break;
 	    }
 	  }
