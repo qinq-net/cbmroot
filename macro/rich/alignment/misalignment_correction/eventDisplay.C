@@ -43,6 +43,6 @@ void eventDisplay(const char* setup = "sis100_electron")
   fMan->AddTask(EcalPoint);
 
   //  fMan->Init(1,4,10000);
-  fMan->Init(1,5,10000);  // make STS visible by default
+  fMan->Init(1,7,10000);  // make STS visible by default
   //  fMan->Init(1,6,10000);  // make MVD visible by default
 }

@@ -24,10 +24,10 @@ void run_mirror_sim(Int_t nEvents = 2000)
 	TString geoFile = outDir + "geofilefull." + numb + axis + tile + ".root";
 	TString outFile = outDir + "out." + numb + axis + tile + ".root";
 
-/*	TString outDir = "/data/misalignment_correction/event_display/test/"; // For eventDisplay and run_rich_event_display macros
+	TString outDir = "/data/misalignment_correction/event_display/test/"; // For eventDisplay and run_rich_event_display macros
 	TString numb = ".00001";
 	TString parFile = outDir + "param" + numb + ".root";
-	TString mcFile = outDir + "mc" + numb + ".root";*/
+	TString mcFile = outDir + "mc" + numb + ".root";
 
 	// Set geometries:
 	TString caveGeom = "cave.geo";
@@ -35,13 +35,17 @@ void run_mirror_sim(Int_t nEvents = 2000)
 	TString magnetGeom = "magnet/magnet_v15a.geo.root";
 	TString fieldMap = "field_v12b";
 	TString stsGeom = "sts/sts_v15c.geo.root";
-	TString richGeom = "rich/Rich_jan2016_misalign_MirrorStudy.root";
+//	TString richGeom = "rich/Rich_jan2016_misalign_MirrorStudy.root";
 //	TString richGeom = "rich/rich_v16a_1e.root";
+	TString richGeom = "rich/RICH_21Nov2016_simplified_test.root";
 	TString trdGeom = ""; //"trd_v15a_1e.geo.root";
 	TString tofGeom = ""; //"tof_v16a_1e.geo.root";
 	TString mvdGeom = ""; //"mvd_v15a.geo.root";
+	Double_t fieldZ       = 40.;            // field centre z position
+	Double_t fieldScale   =  1.;            // field scaling factor
+	Double_t fieldSymType =  3;
 
-    TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/geosetup_25gev.C";
+//    TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/geosetup_25gev.C";
 
     TString electrons = "yes"; // If "yes" then primary electrons will be generated
     Int_t NELECTRONS = 1; // number of e- to be generated
@@ -75,9 +79,9 @@ void run_mirror_sim(Int_t nEvents = 2000)
     timer.Start();
 
     //setup all geometries from macro
-    cout << "geoSetupName:" << geoSetupFile << endl;
-    gROOT->LoadMacro(geoSetupFile);
-    init_geo_setup();
+    //cout << "geoSetupName:" << geoSetupFile << endl;
+    //gROOT->LoadMacro(geoSetupFile);
+    //init_geo_setup();
 
     gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
     loadlibs();
@@ -108,8 +112,8 @@ void run_mirror_sim(Int_t nEvents = 2000)
     fRun->SetGenerateRunInfo(kTRUE);
     FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
 
-    gLogger->SetLogScreenLevel(logLevel.Data());
-    gLogger->SetLogVerbosityLevel(logVerbosity.Data());
+    //gLogger->SetLogScreenLevel(logLevel.Data());
+    //gLogger->SetLogVerbosityLevel(logVerbosity.Data());
 
     fRun->SetMaterials("media.geo"); // Materials
 

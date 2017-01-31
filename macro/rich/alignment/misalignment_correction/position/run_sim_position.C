@@ -14,6 +14,7 @@ void run_sim_position(Int_t nEvents = 500000, Int_t Flag = 0)
     if (Flag == 0) {TString outDir = "/u/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned/";}
     else if (Flag == 1) {TString outDir = "/u/jbendar/Sim_Outputs/Ring_Track_VS_Position/Aligned/";}
     TString mcFile = outDir + "mc.root";
+outDir = "/home/aghoehne/Desktop/";
     TString parFile = outDir + "param.root";
     TString geoFile = outDir + "geofilefull.root";
     TString outFile = outDir + "out.root";

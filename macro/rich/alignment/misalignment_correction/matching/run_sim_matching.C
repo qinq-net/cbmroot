@@ -10,6 +10,14 @@ void run_sim_matching(Int_t nEvents = 500000, Int_t Flag = 0)
 
 	TString urqmdFile = "/data/Cbm_Root/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root";
 
+    if (Flag == 0) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/reference/"; }
+    else if (Flag == 1) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/misaligned_1pt5/"; }
+    else if (Flag == 2) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/test/"; }
+    TString parFile = outDir + "param." + numb + ".root";
+    TString mcFile = outDir + "mc." + numb + ".root";
+	TString geoFile = outDir + "geofilefull." + numb + ".root";
+	TString outFile = outDir + "out." + numb + ".root";
+
 	outDir = TString(gSystem->Getenv("OUT_DIR"));
 //	if (Flag == 0) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/reference/"; }
 //	else if (Flag == 1) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/misaligned_1pt5/"; }
