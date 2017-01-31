@@ -114,7 +114,7 @@ const Bool_t IncludePadplane    = true;  // false;  // true, if padplane is incl
 const Bool_t IncludeBackpanel   = true;  // false;  // true, if backpanel is included in geometry
 
 const Bool_t IncludeFebs        = true;  // false;  // true, if FEBs are included in geometry
-const Bool_t IncludeRobs        = false; // false;  // true, if ROBs are included in geometry
+const Bool_t IncludeRobs        = true;  // false;  // true, if ROBs are included in geometry
 const Bool_t IncludeAsics       = true;  // false;  // true, if ASICs are included in geometry
 const Bool_t IncludeSupports    = true;  // support structure must be there, otherwise there are no TRDpoints in sim
 const Bool_t IncludeLabels      = true;  // false;  // true, if TRD (I, II, III) labels are plotted in (VisLevel 5)
@@ -278,11 +278,16 @@ const Int_t NofModuleTypes = 8;
 const Int_t ModuleType[NofModuleTypes]    = {  0,  0,  0,  0,  1,  1,  1,  1 }; // 0 = small module, 1 = large module
 
 // GBTx ROB definitions
-const Int_t RobsPerModule[NofModuleTypes] = {  2,  2,  1,  1,  2,  2,  1,  1 }; // number of GBTx ROBs on module
-const Int_t GbtxPerRob[NofModuleTypes]    = {107,105,105,103,107,105,105,103 }; // number of GBTx ASICs on ROB
+const Int_t RobsPerModule[NofModuleTypes] = {  3,  2,  1,  1,  2,  2,  1,  1 }; // number of GBTx ROBs on module
+const Int_t GbtxPerRob[NofModuleTypes]    = {105,105,105,103,107,105,105,103 }; // number of GBTx ASICs on ROB
 
-const Int_t GbtxPerModule[NofModuleTypes] = { 14,  8,  5,  0,  0, 10,  5,  3 }; // for .geo.info - TODO: merge with above GbtxPerRob
-const Int_t RobTypeOnModule[NofModuleTypes] = { 77, 53,  5,  0,  0, 55,  5,  3 }; // for .geo.info - TODO: merge with above GbtxPerRob
+const Int_t GbtxPerModule[NofModuleTypes] = { 15,  8,  5,  0,  0, 10,  5,  3 }; // for .geo.info - TODO: merge with above GbtxPerRob
+const Int_t RobTypeOnModule[NofModuleTypes] = {555, 53,  5,  0,  0, 55,  5,  3 }; // for .geo.info - TODO: merge with above GbtxPerRob
+
+//const Int_t RobsPerModule[NofModuleTypes] = {  2,  2,  1,  1,  2,  2,  1,  1 }; // number of GBTx ROBs on module
+//const Int_t GbtxPerRob[NofModuleTypes]    = {107,105,105,103,107,105,105,103 }; // number of GBTx ASICs on ROB
+//const Int_t GbtxPerModule[NofModuleTypes] = { 14,  8,  5,  0,  0, 10,  5,  3 }; // for .geo.info - TODO: merge with above GbtxPerRob
+//const Int_t RobTypeOnModule[NofModuleTypes] = { 77, 53,  5,  0,  0, 55,  5,  3 }; // for .geo.info - TODO: merge with above GbtxPerRob
 
 // super density for type 1 modules - 2017 - 540 mm
 const Int_t FebsPerModule[NofModuleTypes] = {  9,  5,  6,  4, 12,  8,  4,  3 }; // number of FEBs on backside
@@ -1028,15 +1033,21 @@ void dump_info_file()
       total_rob7[iModule]++;
     if ((RobTypeOnModule[iModule] / 10) == 7)
       total_rob7[iModule]++;
+    if ((RobTypeOnModule[iModule] / 100) == 7)
+      total_rob7[iModule]++;
 
     if ((RobTypeOnModule[iModule] % 10) == 5)
       total_rob5[iModule]++;
     if ((RobTypeOnModule[iModule] / 10) == 5)
       total_rob5[iModule]++;
+    if ((RobTypeOnModule[iModule] / 100) == 5)
+      total_rob5[iModule]++;
 
     if ((RobTypeOnModule[iModule] % 10) == 3)
       total_rob3[iModule]++;
     if ((RobTypeOnModule[iModule] / 10) == 3)
+      total_rob3[iModule]++;
+    if ((RobTypeOnModule[iModule] / 100) == 3)
       total_rob3[iModule]++;
   }
 
@@ -1782,8 +1793,8 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
       if (IncludeRobs) 
       {
         // GBTx ROBs
-        Double_t rob_size_x =  9.0; //  4.5; //  45 mm
-        Double_t rob_size_y = 20.0; // 13.0; // 130 mm
+        Double_t rob_size_x = 20.0; // 13.0; // 130 mm
+        Double_t rob_size_y =  9.0; //  4.5; //  45 mm
         Double_t rob_thickness = feb_thickness;
   
         TGeoVolumeAssembly* trd_rob_box = new TGeoVolumeAssembly("robbox");  // volume for inclined FEBs, then shifted along y
@@ -1817,32 +1828,31 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
   //      nofGbtxs   = 7;
   //      groupGbtxs = 1;
   
-        Int_t nofGbtxX = 2;
-        Int_t nofGbtxY = (nofGbtxs - 1) / 2. + 1; // +1 is for GBTx master
+        Int_t nofGbtxX = (nofGbtxs - 1) / 2. + 1; // +1 is for GBTx master
+        Int_t nofGbtxY = 2;
   
         Double_t gbtx_distance = 0.4;
         Int_t iGbtx = 1;
   
-        for (Int_t iGbtxY = 0; iGbtxY < nofGbtxY; iGbtxY++) 
+        for (Int_t iGbtxX = 0; iGbtxX < nofGbtxX; iGbtxX++) 
         {
+          gbtx_pos   = (iGbtxX + 0.5) / nofGbtxX - 0.5;   // equal spacing of GBTXs on the FEB, e.g. for no=3 : -1/3, 0, +1/3
+          gbtx_pos_x = -gbtx_pos * rob_size_x;
   
-          gbtx_pos   = (iGbtxY + 0.5) / nofGbtxY - 0.5;   // equal spacing of GBTXs on the FEB, e.g. for no=3 : -1/3, 0, +1/3
-          gbtx_pos_y = -gbtx_pos * rob_size_y;
-  
-          if (iGbtxY > 0)
-            for (Int_t iGbtxX = 0; iGbtxX < nofGbtxX; iGbtxX++) 
+          if (iGbtxX > 0)
+            for (Int_t iGbtxY = 0; iGbtxY < nofGbtxY; iGbtxY++) 
             {
-              gbtx_pos   = (iGbtxX + 0.5) / nofGbtxX - 0.5;   // equal spacing of GBTXs on the FEB, e.g. for no=3 : -1/3, 0, +1/3
-              gbtx_pos_x = gbtx_pos * rob_size_x;
+              gbtx_pos   = (iGbtxY + 0.5) / nofGbtxY - 0.5;   // equal spacing of GBTXs on the FEB, e.g. for no=3 : -1/3, 0, +1/3
+              gbtx_pos_y = gbtx_pos * rob_size_y;
   
-              trd_gbtx_trans1     = new TGeoTranslation("", gbtx_pos_x, gbtx_pos_y, rob_thickness/2.+gbtx_thickness/2.);  // move gbtx on top of ROB
+	      trd_gbtx_trans1     = new TGeoTranslation("", gbtx_pos_x, gbtx_pos_y, rob_thickness/2.+gbtx_thickness/2.);  // move gbtx on top of ROB
               trd_rob_box->AddNode(trdmod1_gbtx, iGbtx++, trd_gbtx_trans1);  // now we have GBTXs on the ROB
             }
           else
             {
-              gbtx_pos_x = 0;
+              gbtx_pos_y = 0;
      
-              trd_gbtx_trans1     = new TGeoTranslation("", gbtx_pos_x, gbtx_pos_y, rob_thickness/2.+gbtx_thickness/2.);  // move gbtx on top of ROB
+	      trd_gbtx_trans1     = new TGeoTranslation("", gbtx_pos_x, gbtx_pos_y, rob_thickness/2.+gbtx_thickness/2.);  // move gbtx on top of ROB
               trd_rob_box->AddNode(trdmod1_gbtx, iGbtx++, trd_gbtx_trans1);  // now we have GBTXs on the ROB
             }
   
