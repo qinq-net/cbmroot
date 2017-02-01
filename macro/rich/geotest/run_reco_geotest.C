@@ -6,9 +6,9 @@ void run_reco_geotest(Int_t nEvents = 10000)
    gRandom->SetSeed(10);
 
    TString outDir = "/Users/slebedev/Development/cbm/data/simulations/rich/geotest/";
-   TString mcFile = outDir + "mc.0005.root";
-   TString parFile = outDir + "param.0005.root";
-   TString recoFile = outDir + "reco.0005.root";
+   TString mcFile = outDir + "mc.00000.root";
+   TString parFile = outDir + "param.00000.root";
+   TString recoFile = outDir + "reco.00000.root";
    std::string resultDir = "results_geotest/";
 
    if (script == "yes") {

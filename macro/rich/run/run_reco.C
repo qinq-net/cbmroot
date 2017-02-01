@@ -13,9 +13,9 @@ void run_reco(Int_t nEvents = 1000)
 	TString parFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/param.00000.root";
 	TString recoFile ="/Users/slebedev/Development/cbm/data/simulations/rich/richreco/reco.00000.root";
 
-	TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/geosetup_25gev_newrich.C";
+	TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/geosetup_8gev.C";
 
-	std::string resultDir = "recqa_0001/";
+	std::string resultDir = "cyl_rich_reco_qa/";
 
 	if (script == "yes") {
 		mcFile = TString(gSystem->Getenv("MC_FILE"));
@@ -38,6 +38,9 @@ void run_reco(Int_t nEvents = 1000)
 	TObjString tofDigiFile = parDir + "/" + tofDigi;
 	if (trdDigiFile.GetString() != "") parFileList->Add(&trdDigiFile);
 	parFileList->Add(&tofDigiFile);
+    
+    TObjString* tofBdfFile = new TObjString(parDir + "/tof/tof_v16a_3e.digibdf.par");
+    parFileList->Add(tofBdfFile);
 
 	// material budget for STS and MVD
 	TString mvdMatBudgetFileName = "";
@@ -172,9 +175,19 @@ void run_reco(Int_t nEvents = 1000)
 	// ===                     TOF local reconstruction                      ===
 	// =========================================================================
 	if (isTof) {
-		CbmTofHitProducerNew* tofHitProd = new CbmTofHitProducerNew("CbmTofHitProducer", 1);
-		tofHitProd->SetInitFromAscii(kFALSE);
-		run->AddTask(tofHitProd);
+        CbmTofDigitizerBDF* tofDigi = new CbmTofDigitizerBDF("TOF Digitizer BDF",0);
+        tofDigi->SetOutputBranchPersistent("TofDigi",            kFALSE);
+        tofDigi->SetOutputBranchPersistent("TofDigiMatchPoints", kFALSE);
+        TString paramDir = gSystem->Getenv("VMCWORKDIR");
+        tofDigi->SetInputFileName( paramDir + "/parameters/tof/test_bdf_input.root"); // Required as input file name not read anymore by param class
+        // tofDigi->SetHistoFileName( digiOutFile ); // Uncomment to save control histograms
+        run->AddTask(tofDigi);
+        
+        CbmTofSimpClusterizer* tofSimpClust = new CbmTofSimpClusterizer("TOF Simple Clusterizer", 0);
+        //tofSimpClust->SetOutputBranchPersistent("TofHit",        kTRUE);
+        //tofSimpClust->SetOutputBranchPersistent("TofDigiMatch",  kTRUE);
+        // tofSimpClust->SetHistoFileName( clustOutFile ); // Uncomment to save control histograms
+        run->AddTask(tofSimpClust);
 	} //isTof
 
 	// =========================================================================
@@ -209,9 +222,9 @@ void run_reco(Int_t nEvents = 1000)
 		run->AddTask(richHitProd);
 
 		CbmRichReconstruction* richReco = new CbmRichReconstruction();
-        richReco->SetRunExtrapolation(true);
-        richReco->SetRunProjection(true);
-        richReco->SetRunTrackAssign(true);
+       // richReco->SetRunExtrapolation(true);
+       // richReco->SetRunProjection(true);
+       // richReco->SetRunTrackAssign(true);
         //richReco->SetFinderName("ideal");
         //richReco->SetProjectionName("tgeo");
        // richReco->SetFitterName("circle_cop");;
@@ -221,6 +234,11 @@ void run_reco(Int_t nEvents = 1000)
 
 	CbmMatchRecoToMC* matchRecoToMc = new CbmMatchRecoToMC();
 	run->AddTask(matchRecoToMc);
+    
+    // RICH reco QA
+    CbmRichRecoQa* richRecoQa = new CbmRichRecoQa();
+    richRecoQa->SetOutputDir(resultDir);
+    run->AddTask(richRecoQa);
 
 	// Reconstruction Qa
 	CbmLitTrackingQa* trackingQa = new CbmLitTrackingQa();
@@ -249,7 +267,7 @@ void run_reco(Int_t nEvents = 1000)
 
 	CbmLitFitQa* fitQa = new CbmLitFitQa();
 	fitQa->SetMvdMinNofHits(0);
-	fitQa->SetStsMinNofHits(4);
+	fitQa->SetStsMinNofHits(6);
 	fitQa->SetMuchMinNofHits(10);
 	fitQa->SetTrdMinNofHits(minNofPointsTrd);
 	fitQa->SetOutputDir(resultDir);

@@ -1,4 +1,4 @@
-void run_sim(Int_t nEvents = 2000)
+void run_sim(Int_t nEvents = 1000)
 {
     TTree::SetMaxTreeSize(90000000000);
     Int_t iVerbose = 0;
@@ -9,15 +9,15 @@ void run_sim(Int_t nEvents = 2000)
     //gRandom->SetSeed(10);
     
     TString urqmdFile = "/Users/slebedev/Development/cbm/data/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root";
-    TString parFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/param.00001.root";
-    TString geoFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/geofilefull.00001.root";
-    TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/mc.00001.root";
+    TString parFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/param.00000.root";
+    TString geoFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/geofilefull.00000.root";
+    TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/mc.00000.root";
     
-    TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/geosetup_25gev_newrich.C";
+    TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/geosetup_8geV.C";
     
     TString electrons = "yes"; // If "yes" than primary electrons will be generated
-    Int_t NELECTRONS = 1; // number of e- to be generated
-    Int_t NPOSITRONS = 1; // number of e+ to be generated
+    Int_t NELECTRONS = 5; // number of e- to be generated
+    Int_t NPOSITRONS = 5; // number of e+ to be generated
     TString urqmd = "no"; // If "yes" than UrQMD will be used as background
     TString pluto = "no"; // If "yes" PLUTO particles will be embedded
     TString plutoFile = "";
@@ -80,8 +80,8 @@ void run_sim(Int_t nEvents = 2000)
     fRun->SetGenerateRunInfo(kTRUE);
     FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
     
-    gLogger->SetLogScreenLevel(logLevel.Data());
-    gLogger->SetLogVerbosityLevel(logVerbosity.Data());
+  //  gLogger->SetLogScreenLevel(logLevel.Data());
+   // gLogger->SetLogVerbosityLevel(logVerbosity.Data());
     
     fRun->SetMaterials("media.geo"); // Materials
     

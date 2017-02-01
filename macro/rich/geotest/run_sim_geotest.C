@@ -8,13 +8,13 @@ void run_sim_geotest(Int_t nEvents = 10000)
     TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
     
     TString outDir = "/Users/slebedev/Development/cbm/data/simulations/rich/geotest/";
-    TString parFile =  outDir + "param.0005.root";
-    TString mcFile = outDir + "mc.0005.root";
+    TString parFile =  outDir + "param.00000.root";
+    TString mcFile = outDir + "mc.00000.root";
     TString caveGeom = "cave.geo";
     TString pipeGeom   = "pipe/pipe_v14n.root";
     TString magnetGeom = "magnet/magnet_v15a.geo.root";
     TString stsGeom = "sts/sts_v15c.geo.root";
-    TString richGeom= "rich/Rich_jan2016.gdml";
+    TString richGeom= "rich/RICH_10Nov2016_ver3.root"; //"rich/Rich_cyl_camera_fix.gdml";;//"rich/rich_v16a_1e.geo.root";//"rich/RICH_10Nov2016_ver2.root"
     TString fieldMap = "field_v12b";
     Double_t fieldZ = 40.; // field center z position
     Double_t fieldScale =  1.0; // field scaling factor
@@ -151,7 +151,7 @@ void run_sim_geotest(Int_t nEvents = 10000)
      primGen->AddGenerator(boxGen2);*/
     
     fRun->SetGenerator(primGen);
-    
+    fRun->SetStoreTraj(kTRUE);
     fRun->Init();
     
     // -----   Runtime database   ---------------------------------------------
