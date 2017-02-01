@@ -544,7 +544,8 @@ void dump_digi_file()
 
   const Double_t PadHeightInSector[NofModuleTypes][NofSectors] =  // pad height
         { {  1.50,  1.50,  1.50 },   // module type 1 -  1.01 mm2
-          {  2.75,  2.50,  2.75 },   // module type 2 -  1.86 mm2
+          {  2.25,  2.25,  2.25 },   // module type 2 -  1.52 mm2
+//          {  2.75,  2.50,  2.75 },   // module type 2 -  1.86 mm2
           {  4.50,  4.50,  4.50 },   // module type 3 -  3.04 mm2
           {  6.75,  6.75,  6.75 },   // module type 4 -  4.56 mm2
 
@@ -558,8 +559,9 @@ void dump_digi_file()
 
   const Int_t NofRowsInSector[NofModuleTypes][NofSectors] =   // number of rows per sector
         { {  12,  12,  12 },         // module type 1
-          {   8,   4,   8 },         // module type 2
-          {   1,  10,   1 },         // module type 3
+          {   8,   8,   8 },         // module type 2
+//          {   8,   4,   8 },         // module type 2
+          {   4,   4,   4 },         // module type 3
           {   2,   4,   2 },         // module type 4
 
           {   8,   8,   8 },         // module type 5
@@ -1038,21 +1040,21 @@ void dump_info_file()
   {
     if ((RobTypeOnModule[iModule] % 10) == 7)
       total_rob7[iModule]++;
-    if ((RobTypeOnModule[iModule] / 10) == 7)
+    if ((RobTypeOnModule[iModule] / 10 % 10) == 7)
       total_rob7[iModule]++;
     if ((RobTypeOnModule[iModule] / 100) == 7)
       total_rob7[iModule]++;
 
     if ((RobTypeOnModule[iModule] % 10) == 5)
       total_rob5[iModule]++;
-    if ((RobTypeOnModule[iModule] / 10) == 5)
+    if ((RobTypeOnModule[iModule] / 10 % 10) == 5)
       total_rob5[iModule]++;
     if ((RobTypeOnModule[iModule] / 100) == 5)
       total_rob5[iModule]++;
 
     if ((RobTypeOnModule[iModule] % 10) == 3)
       total_rob3[iModule]++;
-    if ((RobTypeOnModule[iModule] / 10) == 3)
+    if ((RobTypeOnModule[iModule] / 10 % 10) == 3)
       total_rob3[iModule]++;
     if ((RobTypeOnModule[iModule] / 100) == 3)
       total_rob3[iModule]++;
