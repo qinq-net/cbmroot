@@ -282,8 +282,8 @@ const Int_t ModuleType[NofModuleTypes]    = {  0,  0,  0,  0,  1,  1,  1,  1 }; 
 const Int_t RobsPerModule[NofModuleTypes] = {  3,  2,  1,  1,  2,  2,  1,  1 }; // number of GBTx ROBs on module
 const Int_t GbtxPerRob[NofModuleTypes]    = {105,105,105,103,107,105,105,103 }; // number of GBTx ASICs on ROB
 
-const Int_t GbtxPerModule[NofModuleTypes] = { 15,  8,  5,  0,  0, 10,  5,  3 }; // for .geo.info - TODO: merge with above GbtxPerRob
-const Int_t RobTypeOnModule[NofModuleTypes] = {555, 53,  5,  0,  0, 55,  5,  3 }; // for .geo.info - TODO: merge with above GbtxPerRob
+const Int_t GbtxPerModule[NofModuleTypes] = { 15, 10,  5,  0,  0, 10,  5,  3 }; // for .geo.info - TODO: merge with above GbtxPerRob
+const Int_t RobTypeOnModule[NofModuleTypes]={555, 55,  5,  0,  0, 55,  5,  3 }; // for .geo.info - TODO: merge with above GbtxPerRob
 
 //const Int_t RobsPerModule[NofModuleTypes] = {  2,  2,  1,  1,  2,  2,  1,  1 }; // number of GBTx ROBs on module
 //const Int_t GbtxPerRob[NofModuleTypes]    = {107,105,105,103,107,105,105,103 }; // number of GBTx ASICs on ROB
@@ -291,7 +291,8 @@ const Int_t RobTypeOnModule[NofModuleTypes] = {555, 53,  5,  0,  0, 55,  5,  3 }
 //const Int_t RobTypeOnModule[NofModuleTypes] = { 77, 53,  5,  0,  0, 55,  5,  3 }; // for .geo.info - TODO: merge with above GbtxPerRob
 
 // super density for type 1 modules - 2017 - 540 mm
-const Int_t FebsPerModule[NofModuleTypes] = {  9,  5,  6,  4, 12,  8,  4,  3 }; // number of FEBs on backside
+//const Int_t FebsPerModule[NofModuleTypes] = {  9,  5,  6,  4, 12,  8,  4,  3 }; // number of FEBs on backside
+const Int_t FebsPerModule[NofModuleTypes] = {  9,  6,  6,  4, 12,  8,  4,  3 }; // number of FEBs on backside
 const Int_t AsicsPerFeb[NofModuleTypes]   = {210,210,105,105,108,108,108,108 }; // %100 gives number of ASICs on FEB, /100 gives grouping
 //// ultimate density - 540 mm
 //const Int_t FebsPerModule[NofModuleTypes] = {  6,  5,  6,  4, 12,  8,  4,  3 }; // number of FEBs on backside - reduced FEBs (64 ch ASICs)
