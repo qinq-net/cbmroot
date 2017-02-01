@@ -92,9 +92,9 @@ const TString tagVersion   = "v16a";
 //const TString subVersion   = "_3e";
 //const TString subVersion   = "_3m";
 
+const Int_t setupid = 1;  // 1e is the default
 const Double_t zfront[5]  = { 260., 410., 360., 410., 550. };
 const TString setupVer[5] = { "_1h", "_1e", "_1m", "_3e", "_3m" };
-const Int_t setupid = 1;
 const TString subVersion = setupVer[setupid];
 
 const TString geoVersion   = "trd_" + tagVersion + subVersion;
@@ -163,7 +163,8 @@ const Int_t   MaxLayers = 10;   // max layers
 //
 //const Int_t    ShowLayer[MaxLayers] = { 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 };  // SIS100-4l  // 1: plot, 0: hide
 //const Int_t    ShowLayer[MaxLayers] = { 0, 0, 0, 0, 1, 1, 1, 1, 1, 1 };  // SIS300-mu  // 1: plot, 0: hide
-const Int_t    ShowLayer[MaxLayers] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };  // SIS300-e   // 1: plot, 0: hide
+//const Int_t    ShowLayer[MaxLayers] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };  // SIS300-e   // 1: plot, 0: hide
+Int_t    ShowLayer[MaxLayers] = { 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 };  // SIS100-4l is default
 
 Int_t    PlaneId[MaxLayers]; // automatically filled with layer ID
 
@@ -432,7 +433,12 @@ void dump_digi_file();
 //void Create_TRD_Geometry_v16a(const Int_t setupid = 1) {
 void Create_TRD_Geometry_v16a() {
 
-  // Load needed material definition from media.geo file
+  // declare TRD layer layout  
+  if (setupid > 2)
+    for (Int_t i = 0; i < MaxLayers; i++) 
+      ShowLayer[i]=1;  // show all layers
+  
+// Load needed material definition from media.geo file
   create_materials_from_media_file();
 
   // Position the layers in z
