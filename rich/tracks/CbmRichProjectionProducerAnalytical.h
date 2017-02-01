@@ -63,6 +63,10 @@ public:
                                          const TVector3* ref,
                                          TVector3* outPoint);
     
+    /*
+     * Find the intersection point with cylindrical PMT plane.
+     *
+     */
     void GetPmtIntersectionPointCyl(
                                     const TVector3* centerP,
                                     const TVector3* crossP,

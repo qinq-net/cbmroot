@@ -14,6 +14,7 @@
 #include <iostream>
 #include "TMath.h"
 #include <map>
+#include "TVector3.h"
 
 using namespace std;
 
@@ -158,15 +159,32 @@ public:
         cout << "Mirror rotation angle: " << fMirrorTheta*180./TMath::Pi() << " degrees" << endl << endl;
     }
     
-    CbmRichRecGeoParPmt GetGeoRecPmtByBlockPath(const string& path) {
+    CbmRichRecGeoParPmt GetGeoRecPmtByBlockPathOrClosest(const string& path, TVector3* pos) {
         typedef map<string, CbmRichRecGeoParPmt>::iterator it_type;
-        for(it_type iterator = fPmtMap.begin(); iterator != fPmtMap.end(); iterator++) {
-            if (path.find(iterator->first) != std::string::npos) {
-                return iterator->second;
+        for(it_type it = fPmtMap.begin(); it != fPmtMap.end(); it++) {
+            if (path.find(it->first) != std::string::npos) {
+                return it->second;
             }
         }
-        CbmRichRecGeoParPmt emptyPar;
-        return emptyPar;
+        // if nothing is found we search for the closest strip block
+        // closest we define by X position
+        double minDist = 999999999.;
+        it_type minIt;
+        for(it_type it = fPmtMap.begin(); it != fPmtMap.end(); it++) {
+             double x = it->second.fPlaneX;
+             double y = it->second.fPlaneY;
+             if ((pos->Y() > 0) == (y > 0)) {
+            	 double d = TMath::Abs( x - pos->X() );
+            	 if (d < minDist) {
+            		 minDist = d;
+            		 minIt = it;
+            	 }
+             }
+        }
+        cout << "minIt->first :" << minIt->first << endl;
+        cout << "pos:" << pos->X() << " " << pos->Y() << " " << pos->Z() << " plane:" << minIt->second.fPlaneX << " " << minIt->second.fPlaneY << " " << minIt->second.fPlaneZ  << endl;
+
+        return minIt->second;
     }
     
     

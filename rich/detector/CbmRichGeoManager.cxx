@@ -59,7 +59,8 @@ void CbmRichGeoManager::DetectGeometryType()
     while ((curNode=geoIterator())) {
         TString nodeName(curNode->GetName());
         TString nodePath;
-        if (curNode->GetVolume()->GetName() == TString("camera_two_quarters")) {
+       // if (curNode->GetVolume()->GetName() == TString("camera_two_quarters")) {
+        if (curNode->GetVolume()->GetName() == TString("camera_strip")) {
             fGP->fGeometryType = CbmRichGeometryTypeCylindrical;
             return;
         }
@@ -89,23 +90,31 @@ void CbmRichGeoManager::InitPmtCyl()
     while ((curNode=geoIterator())) {
         TString nodeName(curNode->GetName());
         TString nodePath;
-        if (curNode->GetVolume()->GetName() == TString("pmt_block_strip")) {
-            
+       // if (curNode->GetVolume()->GetName() == TString("pmt_block_strip")) {
+        if (curNode->GetVolume()->GetName() == TString("camera_strip")) {
             geoIterator.GetPath(nodePath);
+            cout << "nodePath:" << nodePath << endl;
             const TGeoMatrix* curMatrix = geoIterator.GetCurrentMatrix();
             const Double_t* curNodeTr = curMatrix->GetTranslation();
             const Double_t* curNodeRot = curMatrix->GetRotationMatrix();
             
+            curMatrix->Print();
             
             double pmtX = curNodeTr[0];
             double pmtY = curNodeTr[1];
             double pmtZ = curNodeTr[2];
-            
+
             double rotY = TMath::ASin(-curNodeRot[2]);          // around Y
 //            double rotZ = TMath::ASin(curNodeRot[1]/TMath::Cos(TMath::ASin(-curNodeRot[2]))); // around Z
             //double rotX = TMath::ASin(curNodeRot[5]/TMath::Cos(TMath::ASin(-curNodeRot[2]))); // around X
             double rotX = TMath::ACos(curNodeRot[8]/TMath::Cos(TMath::ASin(-curNodeRot[2]))); // around X
-            
+
+
+			//double rotX = TMath::ATan2(curNodeRot[5], curNodeRot[8]);          // around Y
+			//double c2 = TMath::Sqrt(curNodeRot[0]*curNodeRot[0] + curNodeRot[1]*curNodeRot[1]);
+			//double rotY = TMath::ATan2(-curNodeRot[2], c2); // around X
+
+
             fGP->fPmtMap[string(nodePath.Data())].fTheta = rotX;
             fGP->fPmtMap[string(nodePath.Data())].fPhi = rotY;
             const TGeoBBox* shape = (const TGeoBBox*)(curNode->GetVolume()->GetShape());
@@ -151,7 +160,9 @@ void CbmRichGeoManager::InitPmtCyl()
             
             
             string nodePathStr = string(nodePath.Data());
-            size_t foundIndex1 = nodePathStr.find("pmt_block_strip");
+            //size_t foundIndex1 = nodePathStr.find("pmt_block_strip");
+            size_t foundIndex1 = nodePathStr.find("camera_strip");
+
             if (foundIndex1 == string::npos) continue;
             size_t foundIndex2 = nodePathStr.find("/", foundIndex1  + 1);
             if (foundIndex2 == string::npos) continue;
@@ -174,8 +185,9 @@ void CbmRichGeoManager::InitPmtCyl()
         it->second.fPlaneY = mapPmtPlaneMinMax[it->first].GetMeanY();
         it->second.fPlaneZ = mapPmtPlaneMinMax[it->first].GetMeanZ();
         
-        // cout << "name:" << it->first << " strip(x,y,z):" <<it->second.fX << "," << it->second.fY << "," << it->second.fZ <<
-        // " pmtPlane(z,y,z)" <<it->second.fPlaneX << "," << it->second.fPlaneY << "," << it->second.fPlaneZ << endl;
+         cout << "name:" << it->first << " strip(x,y,z):" <<it->second.fX << "," << it->second.fY << "," << it->second.fZ <<
+         " pmtPlane(z,y,z)" <<it->second.fPlaneX << "," << it->second.fPlaneY << "," << it->second.fPlaneZ << ", " <<
+         "theta:" << it->second.fTheta << ", phi:" << it->second.fPhi << endl;
     }
     
     
@@ -185,7 +197,8 @@ void CbmRichGeoManager::InitPmtCyl()
     while ((curNode=geoIterator())) {
         TString nodeName(curNode->GetName());
         TString nodePath;
-        if (curNode->GetVolume()->GetName() == TString("pmt_block_strip")) {
+        //if (curNode->GetVolume()->GetName() == TString("pmt_block_strip")) {
+        if (curNode->GetVolume()->GetName() == TString("camera_strip")) {
             
             geoIterator.GetPath(nodePath);
             const TGeoMatrix* curMatrix = geoIterator.GetCurrentMatrix();
@@ -218,7 +231,7 @@ void CbmRichGeoManager::InitPmtCyl()
     double dist = TMath::Sqrt( (master1[0] - master2[0]) * (master1[0] - master2[0]) +
                               (master1[1] - master2[1]) * (master1[1] - master2[1]) +
                               (master1[2] - master2[2]) * (master1[2] - master2[2]) );
-    fGP->fPmtStripGap =  dist;
+    fGP->fPmtStripGap =  0.3346;//dist;
 }
 
 void CbmRichGeoManager::InitPmt()
@@ -402,7 +415,7 @@ void CbmRichGeoManager::RotatePointCyl(
         gGeoManager->FindNode(inPos->X(), inPos->Y(), inPos->Z());
         string path(gGeoManager->GetPath());
         
-        CbmRichRecGeoParPmt pmtPar = fGP->GetGeoRecPmtByBlockPath(path);
+        CbmRichRecGeoParPmt pmtPar = fGP->GetGeoRecPmtByBlockPathOrClosest(path, inPos);
         
         RotatePointImpl(inPos, outPos, -TMath::Abs(pmtPar.fPhi), TMath::Abs(pmtPar.fTheta), TMath::Abs(pmtPar.fX), TMath::Abs(pmtPar.fY), TMath::Abs(pmtPar.fZ));
         

@@ -177,14 +177,21 @@ void CbmRichProjectionProducerAnalytical::DoProjection(
             
             if ( gp->fGeometryType == CbmRichGeometryTypeCylindrical ) {
                 GetPmtIntersectionPointCyl(&centerP, &crossP, &ref, &inPos);
+                // Transform intersection point in same way as MCPoints were transformed in HitProducer before stored as Hit
+                // For the cylindrical geometry we also pass the path to the strip block
+                CbmRichGeoManager::GetInstance().RotatePoint(&inPos, &outPos);
+
+                cout << "inPoint:" << inPos.X() << " " << inPos.Y() << " " << inPos.Z() << " outPoint:" << outPos.X() << " " << outPos.Y() << " " << outPos.Z()  << endl;
+
+
             } else if (gp->fGeometryType == CbmRichGeometryTypeTwoWings) {
                 GetPmtIntersectionPointTwoWings(&centerP, &crossP, &ref, &inPos);
+                // Transform intersection point in same way as MCPoints were transformed in HitProducer before stored as Hit
+                CbmRichGeoManager::GetInstance().RotatePoint(&inPos, &outPos);
             } else {
                 Fatal("CbmRichProjectionProducerAnalytical ", "unnown geometry type");
             }
             
-            // Transform intersection point in same way as MCPoints were transformed in HitProducer before stored as Hit
-            CbmRichGeoManager::GetInstance().RotatePoint(&inPos, &outPos);
             Bool_t isInsidePmt = CbmRichGeoManager::GetInstance().IsPointInsidePmt(&outPos);
             
             if ( isInsidePmt) {
@@ -282,14 +289,14 @@ void CbmRichProjectionProducerAnalytical::GetPmtIntersectionPointCyl(
     Double_t yY;
     Double_t zZ;
     Double_t maxDist = 0.;
-    
+
     for ( map<string, CbmRichRecGeoParPmt>::iterator it = gp->fPmtMap.begin(); it != gp->fPmtMap.end(); it++) {
         Double_t pmtPlaneX = it->second.fPlaneX;
         Double_t pmtPlaneY = it->second.fPlaneY;
         Double_t pmtPlaneZ = it->second.fPlaneZ;
         Double_t pmtPhi = it->second.fPhi;
         Double_t pmtTheta = it->second.fTheta;
-        
+
         if ( !(pmtPlaneX >= 0 && pmtPlaneY >= 0)) continue;
         
         double rho2 = 0.;
@@ -307,7 +314,6 @@ void CbmRichProjectionProducerAnalytical::GetPmtIntersectionPointCyl(
             (-TMath::Sin(pmtPhi)*ref->x()-TMath::Sin(-pmtTheta)*TMath::Cos(pmtPhi)*ref->y() + TMath::Cos(-pmtTheta)*TMath::Cos(pmtPhi)*ref->z());
         }
         
-        //rho2 = -1*(crossP.z() - fDetZ)/refZ;    // only for theta = 0, phi=0
         Double_t cxX = crossP->x() + ref->x() * rho2;
         Double_t cyY = crossP->y() + ref->y() * rho2;
         Double_t czZ = crossP->z() + ref->z() * rho2;

@@ -103,8 +103,8 @@ void CbmRichRecoQa::InitHistograms()
     double yMax = 208.;
     int nBinsY = 52;
 
-    fHM->Create2<TH2D>("fh_ring_track_distance_vs_mom_truematch", "fh_ring_track_distance_vs_mom_truematch;P [GeV/c];Ring-track distance [cm];Yield (a.u.)", 20, 0., 10., 100, 0., 5.);
-    fHM->Create2<TH2D>("fh_ring_track_distance_vs_mom_wrongmatch", "fh_ring_track_distance_vs_mom_wrongmatch;P [GeV/c];Ring-track distance [cm];Yield (a.u.)", 20, 0., 10., 100, 0., 5.);
+    fHM->Create2<TH2D>("fh_ring_track_distance_vs_mom_truematch", "fh_ring_track_distance_vs_mom_truematch;P [GeV/c];Ring-track distance [cm];Yield (a.u.)", 20, 0., 10., 1000, 0., 170.);
+    fHM->Create2<TH2D>("fh_ring_track_distance_vs_mom_wrongmatch", "fh_ring_track_distance_vs_mom_wrongmatch;P [GeV/c];Ring-track distance [cm];Yield (a.u.)", 20, 0., 10., 1000, 0., 170.);
     
     fHM->Create3<TH3D>("fh_ring_track_distance_vs_xy_truematch", "fh_ring_track_distance_vs_xy_truematch;X [cm];Y [cm];Ring-track distance [cm];Yield (a.u.)", nBinsX, xMin, xMax, nBinsY, yMin, yMax, 100, 0., 5.);
 

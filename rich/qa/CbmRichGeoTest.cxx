@@ -478,6 +478,7 @@ void CbmRichGeoTest::HitsAndPoints()
         TVector3 inPos(point->GetX(), point->GetY(), point->GetZ());
         TVector3 outPos;
         CbmRichGeoManager::GetInstance().RotatePoint(&inPos, &outPos);
+      //  fHM->H2("fhPointsXY")->Fill(inPos.X(), inPos.Y());
         fHM->H2("fhPointsXY")->Fill(outPos.X(), outPos.Y());
         fHM->H1("fhPointsZ")->Fill(point->GetZ());
     }
@@ -953,7 +954,7 @@ void CbmRichGeoTest::CreateStudyReport(
 void CbmRichGeoTest::Finish()
 {
     DrawHist();
-    //DrawPmts();
+    DrawPmts();
     //fHM->WriteToFile();
     fHM->SaveCanvasToImage(fOutputDir);
 }
