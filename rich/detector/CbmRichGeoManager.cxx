@@ -93,7 +93,7 @@ void CbmRichGeoManager::InitPmtCyl()
        // if (curNode->GetVolume()->GetName() == TString("pmt_block_strip")) {
         if (curNode->GetVolume()->GetName() == TString("camera_strip")) {
             geoIterator.GetPath(nodePath);
-            cout << "nodePath:" << nodePath << endl;
+            //cout << "nodePath:" << nodePath << endl;
             const TGeoMatrix* curMatrix = geoIterator.GetCurrentMatrix();
             const Double_t* curNodeTr = curMatrix->GetTranslation();
             const Double_t* curNodeRot = curMatrix->GetRotationMatrix();
@@ -185,9 +185,9 @@ void CbmRichGeoManager::InitPmtCyl()
         it->second.fPlaneY = mapPmtPlaneMinMax[it->first].GetMeanY();
         it->second.fPlaneZ = mapPmtPlaneMinMax[it->first].GetMeanZ();
         
-         cout << "name:" << it->first << " strip(x,y,z):" <<it->second.fX << "," << it->second.fY << "," << it->second.fZ <<
-         " pmtPlane(z,y,z)" <<it->second.fPlaneX << "," << it->second.fPlaneY << "," << it->second.fPlaneZ << ", " <<
-         "theta:" << it->second.fTheta << ", phi:" << it->second.fPhi << endl;
+         //cout << "name:" << it->first << " strip(x,y,z):" <<it->second.fX << "," << it->second.fY << "," << it->second.fZ <<
+         //" pmtPlane(z,y,z)" <<it->second.fPlaneX << "," << it->second.fPlaneY << "," << it->second.fPlaneZ << ", " <<
+         //"theta:" << it->second.fTheta << ", phi:" << it->second.fPhi << endl;
     }
     
     

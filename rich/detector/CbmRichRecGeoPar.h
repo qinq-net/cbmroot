@@ -181,8 +181,8 @@ public:
             	 }
              }
         }
-        cout << "minIt->first :" << minIt->first << endl;
-        cout << "pos:" << pos->X() << " " << pos->Y() << " " << pos->Z() << " plane:" << minIt->second.fPlaneX << " " << minIt->second.fPlaneY << " " << minIt->second.fPlaneZ  << endl;
+        //cout << "minIt->first :" << minIt->first << endl;
+       // cout << "pos:" << pos->X() << " " << pos->Y() << " " << pos->Z() << " plane:" << minIt->second.fPlaneX << " " << minIt->second.fPlaneY << " " << minIt->second.fPlaneZ  << endl;
 
         return minIt->second;
     }

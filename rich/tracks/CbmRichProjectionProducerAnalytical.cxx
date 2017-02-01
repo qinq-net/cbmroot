@@ -181,7 +181,7 @@ void CbmRichProjectionProducerAnalytical::DoProjection(
                 // For the cylindrical geometry we also pass the path to the strip block
                 CbmRichGeoManager::GetInstance().RotatePoint(&inPos, &outPos);
 
-                cout << "inPoint:" << inPos.X() << " " << inPos.Y() << " " << inPos.Z() << " outPoint:" << outPos.X() << " " << outPos.Y() << " " << outPos.Z()  << endl;
+                //cout << "inPoint:" << inPos.X() << " " << inPos.Y() << " " << inPos.Z() << " outPoint:" << outPos.X() << " " << outPos.Y() << " " << outPos.Z()  << endl;
 
 
             } else if (gp->fGeometryType == CbmRichGeometryTypeTwoWings) {
