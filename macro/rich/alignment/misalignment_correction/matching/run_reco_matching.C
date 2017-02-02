@@ -9,8 +9,9 @@ void run_reco_matching(Int_t nEvents = 5000, TString numb = "00001", Bool_t b = 
 
 	gRandom->SetSeed(10);
 
-    if (b == 0) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/reference/"; }
-    else if (b == 1) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/misaligned_1pt5/"; }
+	if (b == 0) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/reference/"; }
+	else if (b == 1) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/misaligned_1pt5/"; }
+	else if (b == 2) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/misaligned_1pt5/"}
 	TString runTitle = "Matching_Efficiency";
 	TString parFile = outDir + "param." + numb + ".root";
 	TString mcFile = outDir + "mc." + numb + ".root";
