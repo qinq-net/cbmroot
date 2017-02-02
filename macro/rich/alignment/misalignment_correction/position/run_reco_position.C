@@ -9,8 +9,8 @@ void run_reco_position(Int_t nEvents = 500000, Int_t Flag = 0)
 
 	gRandom->SetSeed(10);
 
-    //TString outDir = "/data/misalignment_correction/Sim_Outputs/Ring_Track_VS_Position/First/";
-    outDir = TString(gSystem->Getenv("OUT_DIR"));
+//	TString outDir = "/data/misalignment_correction/Sim_Outputs/Ring_Track_VS_Position/First/";
+	outDir = TString(gSystem->Getenv("OUT_DIR"));
 //    if (Flag == 0) {TString outDir = "/u/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned/";}
 //    else if (Flag == 1) {TString outDir = "/u/jbendar/Sim_Outputs/Ring_Track_VS_Position/Aligned/";}
 	TString parFile = outDir + "param.root";

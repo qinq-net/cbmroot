@@ -74,7 +74,7 @@ echo ${outdir}
 export OUT_DIR=${outdir}
 # Run the root simulation
 root -b -l -q "${macro_dir}/position/run_sim_position2.C(${2}, ${1})"
-# root -b -l -q "${macro_dir}/position/run_reco_position.C(${2}, ${1})"
+root -b -l -q "${macro_dir}/position/run_reco_position.C(${2}, ${1})"
 # root -b -l -q "${macro_dir}/position/Compute_distance.C(${2}, ${1})"
 
 # cp -v ${SGE_STDOUT_PATH} ${outdir}/log/${JOB_ID}.${SGE_TASK_ID}.log

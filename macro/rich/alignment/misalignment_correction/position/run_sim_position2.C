@@ -211,7 +211,7 @@ void run_sim_position2(Int_t nEvents = 500000, Int_t Flag = 0)
         FairBoxGenerator* boxGen1 = new FairBoxGenerator(-11, NPOSITRONS);
         boxGen1->SetPRange(1., 9.);
         //boxGen1->SetPtRange(0., 3.);
-        boxGen1->SetPhiRange(0.1, 179.9);
+        boxGen1->SetPhiRange(0.5, 179.5);
         boxGen1->SetThetaRange(2.5, 25);
         boxGen1->SetCosTheta();
         boxGen1->Init();
@@ -220,7 +220,7 @@ void run_sim_position2(Int_t nEvents = 500000, Int_t Flag = 0)
         FairBoxGenerator* boxGen2 = new FairBoxGenerator(11, NELECTRONS);
         boxGen2->SetPRange(1., 9.);
         //boxGen1->SetPtRange(0., 3.);
-        boxGen2->SetPhiRange(0.1, 179.9);
+        boxGen2->SetPhiRange(0.5, 179.5);
         boxGen2->SetThetaRange(2.5, 25);
         boxGen2->SetCosTheta();
         boxGen2->Init();
