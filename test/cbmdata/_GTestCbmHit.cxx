@@ -10,6 +10,7 @@
 // which simply forwards the function
 // calls to the base class
 
+
 class CbmTestHit : public CbmHit
 {
   public:
@@ -31,6 +32,19 @@ class CbmTestHit : public CbmHit
     }
 };
 
+void compareMatchDataMembers(CbmMatch* testMatch, Int_t noflinks, Double_t weight)
+{
+  Int_t linkLength{-111};
+  Double_t totalWeight{-111.};
+
+  linkLength = testMatch->GetNofLinks();
+  EXPECT_EQ(0, linkLength);
+
+  totalWeight = testMatch->GetTotalWeight();
+  EXPECT_FLOAT_EQ(0., totalWeight);
+}
+
+
 void compareHitDataMembers(CbmHit& test, HitType type, Double_t z, Double_t dz,
     Int_t refid, Int_t address, CbmMatch* match, Double_t time, Double_t errortime)
 {
@@ -51,7 +65,11 @@ void compareHitDataMembers(CbmHit& test, HitType type, Double_t z, Double_t dz,
   retValInt = test.GetAddress();
   EXPECT_EQ(address, retValInt);
 
-  EXPECT_EQ(match, test.GetMatch());
+  if (match !=nullptr) {
+    compareMatchDataMembers(test.GetMatch(), match->GetNofLinks(), match->GetTotalWeight());
+  } else {
+    EXPECT_EQ(match, test.GetMatch());
+  }
 
   retValFloat =  test.GetTime();
   EXPECT_FLOAT_EQ(time, retValFloat );
@@ -59,19 +77,6 @@ void compareHitDataMembers(CbmHit& test, HitType type, Double_t z, Double_t dz,
   retValFloat = test.GetTimeError();
   EXPECT_FLOAT_EQ(errortime, retValFloat);
 }
-
-void compareMatchDataMembers(CbmMatch* testMatch, Int_t noflinks, Double_t weight)
-{
-  Int_t linkLength{-111};
-  Double_t totalWeight{-111.};
-
-  linkLength = testMatch->GetNofLinks();
-  EXPECT_EQ(0, linkLength);
-
-  totalWeight = testMatch->GetTotalWeight();
-  EXPECT_FLOAT_EQ(0., totalWeight);
-}
-
 
 TEST(_GTestCbmHit, CheckDefaultConstructor)
 {
