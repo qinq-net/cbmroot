@@ -209,7 +209,7 @@ void run_reco_matching_correction(Int_t nEvents = 5000, Int_t Flag = 0)
 	run->AddTask(trackingQa);
 */
 	CbmRichMirrorSortingCorrection* mirror = new CbmRichMirrorSortingCorrection();
-	mirror->setOutputDir(outDir);
+	mirror->setOutputDir(outDir + "/corr_params");
 	TString studyName = "Matching_Efficiency";
 	mirror->setStudyName(studyName);
 	run->AddTask(mirror);

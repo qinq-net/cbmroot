@@ -184,7 +184,7 @@ void run_reco_matching_alignment(Int_t nEvents = 500000, Int_t Flag = 1)
 	run->AddTask(matchRecoToMc);
 
 	CbmRichMirrorSortingAlignment* mirror = new CbmRichMirrorSortingAlignment();
-	mirror->setOutputDir(outDir);
+	mirror->setOutputDir(outDir + "/corr_params");
 	TString studyName = "Matching_Efficiency";
 	mirror->setStudyName(studyName);
 	run->AddTask(mirror);

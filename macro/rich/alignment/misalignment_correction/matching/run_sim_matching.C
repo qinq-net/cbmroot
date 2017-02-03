@@ -242,7 +242,7 @@ void run_sim_matching(Int_t nEvents = 500000, Int_t Flag = 0)
     }
 
     fRun->SetGenerator(primGen);
-    fRun->SetStoreTraj(kTRUE);
+//    fRun->SetStoreTraj(kTRUE);
     fRun->Init();
 
     // -----   Runtime database   ---------------------------------------------
