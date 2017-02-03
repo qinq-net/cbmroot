@@ -9,35 +9,42 @@ void run_reco_matching(Int_t nEvents = 5000, TString numb = "00001", Bool_t b = 
 
 	gRandom->SetSeed(10);
 
-	if (b == 0) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/reference/"; }
+/*	if (b == 0) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/reference/"; }
 	else if (b == 1) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/misaligned_1pt5/"; }
 	else if (b == 2) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/misaligned_1pt5/"}
+*/
+	outDir = TString(gSystem->Getenv("OUT_DIR"));
 	TString runTitle = "Matching_Efficiency";
-	TString parFile = outDir + "param." + numb + ".root";
-	TString mcFile = outDir + "mc." + numb + ".root";
-	TString recoFile = outDir + "reco." + numb + ".root";
+	TString parFile = outDir + "param.root";
+	TString mcFile = outDir + "mc.root";
+	TString recoFile = outDir + "reco.root";
 
-	TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/geosetup_25gev.C";
+//	TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/geosetup_25gev.C";
 
 	//std::string resultDir = "recqa_0001/";
-	std::string resultDir = "outDir";
+	std::string resultDir = outDir;
 
 	if (script == "yes") {
 		mcFile = TString(gSystem->Getenv("MC_FILE"));
 		recoFile = TString(gSystem->Getenv("RECO_FILE"));
 		parFile = TString(gSystem->Getenv("PAR_FILE"));
 		resultDir = TString(gSystem->Getenv("LIT_RESULT_DIR"));
-		geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/" + TString(gSystem->Getenv("GEO_SETUP_FILE"));
+//		geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/" + TString(gSystem->Getenv("GEO_SETUP_FILE"));
 	}
 
 	remove(recoFile.Data());
 
 	//setup all geometries from macro
-	cout << "geoSetupName:" << geoSetupFile << endl;
-	gROOT->LoadMacro(geoSetupFile);
-	init_geo_setup();
+//	cout << "geoSetupName:" << geoSetupFile << endl;
+//	gROOT->LoadMacro(geoSetupFile);
+//	init_geo_setup();
 
 	// digi parameters
+        TString trdTag, tofTag, trdDigi, tofDigi;
+        trdTag       = "v15a_3e";
+        tofTag       = "v16a_3e";
+        trdDigi      = "trd/trd_" + trdTag + ".digi.par";
+        tofDigi      = "tof/tof_" + tofTag + ".digi.par";
 	TList *parFileList = new TList();
 	TObjString trdDigiFile = parDir + "/" + trdDigi;
 	TObjString tofDigiFile = parDir + "/" + tofDigi;
@@ -45,6 +52,9 @@ void run_reco_matching(Int_t nEvents = 5000, TString numb = "00001", Bool_t b = 
 	parFileList->Add(&tofDigiFile);
 
 	// material budget for STS and MVD
+        TString stsTag, stsMatBudget;
+        stsTag       = "v15a";
+        stsMatBudget = "sts/sts_matbudget_" + stsTag + ".root";
 	TString mvdMatBudgetFileName = "";
 	TString stsMatBudgetFileName = parDir + "/" + stsMatBudget;
 
@@ -175,6 +185,8 @@ void run_reco_matching(Int_t nEvents = 5000, TString numb = "00001", Bool_t b = 
 	run->AddTask(matchRecoToMc);
 
 	// Reconstruction Qa
+        Int_t minNofPointsTrd = 6;
+        trdAnnCut = 0.85;
 	CbmLitTrackingQa* trackingQa = new CbmLitTrackingQa();
 	trackingQa->SetMinNofPointsSts(4);
 	trackingQa->SetUseConsecutivePointsInSts(true);

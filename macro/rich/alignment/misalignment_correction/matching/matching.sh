@@ -75,9 +75,18 @@ echo ${macro_dir}
 echo ${outdir}
 export OUT_DIR=${outdir}
 # Run the root simulation
-root -b -l -q "${macro_dir}/matching/run_sim_matching.C(${2}, ${1})"
-# root -b -l -q "${macro_dir}/matching/run_reco_matching_alignment.C(${2}, ${1})"
-# root -b -l -q "${macro_dir}/matching/run_reco_matching_correction.C(${2}, ${1})"
+if [ $1 -eq 0 ] ; then
+        root -b -l -q "${macro_dir}/matching/run_sim_matching.C(${2}, ${1})"
+        root -b -l -q "${macro_dir}/matching/run_reco_matching.C(${2}, ${1})"
+elif [ $1 -eq 1 ] ; then
+	root -b -l -q "${macro_dir}/matching/run_sim_matching.C(${2}, ${1})"
+        root -b -l -q "${macro_dir}/matching/run_reco_matching.C(${2}, ${1})"
+	root -b -l -q "${macro_dir}/matching/run_reco_matching_alignment.C(${2}, ${1})"
+	root -b -l -q "${macro_dir}/matching/run_reco_matching_correction.C(${2}, ${1})"
+elif [ $1 -eq 2 ] ; then
+	root -b -l -q "${macro_dir}/matching/run_sim_matching.C(${2}, ${1})"
+	root -b -l -q "${macro_dir}/matching/run_reco_matching.C(${2}, ${1})"
+fi
 
 # cp -v ${SGE_STDOUT_PATH} ${outdir}/log/${JOB_ID}.${SGE_TASK_ID}.log
 
