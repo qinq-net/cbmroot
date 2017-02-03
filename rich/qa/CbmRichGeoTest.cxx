@@ -178,6 +178,9 @@ void CbmRichGeoTest::InitHistograms()
         fHM->Create2<TH2D>("fhRadiusVsMom"+t, "fhRadiusVsMom"+t+";p [GeV/c];Radius [cm];Yield", 40, 0., 10, 200, 0., 10.);
         fHM->Create2<TH2D>("fhChi2CircleVsMom"+t, "fhChi2CircleVsMom"+t+";p [GeV/c];#Chi^{2};Yield", 40, 0., 10., 50, 0., .5);
         fHM->Create2<TH2D>("fhDRVsMom"+t, "fhDRVsMom"+t+";p [GeV/c];dR [cm];Yield", 40, 0, 10, 200, -2., 2.);
+
+        fHM->Create1<TH1D>("fhBaxisUpHalf"+t, "fhBaxisUpHalf"+t+"B axis [cm];Yield", 200, 0., 10.);
+        fHM->Create1<TH1D>("fhBaxisDownHalf"+t, "fhBaxisDownHalf"+t+"B axis [cm];Yield", 200, 0., 10.);
     }
     
     fHM->Create1<TH1D>("fhNofPhotonsPerHit", "fhNofPhotonsPerHit;Number of photons per hit;Yield", 10, -0.5, 9.5);
@@ -227,6 +230,34 @@ void CbmRichGeoTest::InitHistograms()
     fHM->Create3<TH3D>("fhAaxisXYZ", "fhAaxisXYZ;X [cm];Y [cm];A axis [cm]", nBinsX, xMin, xMax, nBinsY, yMin, yMax, 80, 3., 7.);
     fHM->Create3<TH3D>("fhRadiusXYZ", "fhRadiusXYZ;X [cm];Y [cm];Radius [cm]", nBinsX, xMin, xMax, nBinsY, yMin, yMax, 80, 3., 7.);
     fHM->Create3<TH3D>("fhdRXYZ", "fhdRXYZ;X [cm];Y [cm];dR [cm]", nBinsX, xMin, xMax, nBinsY, yMin, yMax, 100, -1., 1.);
+
+    int nBinsX1 = 60;
+    int xMin1 = -120;
+    int xMax1 = 120;
+    int nBinsY1 = 25;
+    int yMin1 = 100;
+    int yMax1 = 200;
+    // Numbers in dependence X or Y position onto the photodetector plane
+    fHM->Create2<TH2D>("fhNofHitsVsX", "fhNofHitsVsX;X [cm];Nof hits in ring", nBinsX1, xMin1, xMax1, 50, 0., 50);
+    fHM->Create2<TH2D>("fhNofHitsVsY", "fhNofHitsVsY;Abs(Y) [cm];Nof hits in ring", nBinsY1, yMin1, yMax1, 50, 0., 50);
+
+    fHM->Create2<TH2D>("fhNofPointsVsX", "fhNofPointsVsX;X [cm];Nof points in ring", nBinsX1, xMin1, xMax1, 50, 100., 300.);
+    fHM->Create2<TH2D>("fhNofPointsVsY", "fhNofPointsVsY;Abs(Y) [cm];Nof points in ring", nBinsY1, yMin1, yMax1, 50, 100., 300.);
+
+    fHM->Create2<TH2D>("fhBoverAVsX", "fhBoverAVsX;X [cm];B/A", nBinsX1, xMin1, xMax1, 100, 0., 1.);
+    fHM->Create2<TH2D>("fhBoverAVsY", "fhBoverAVsY;Abs(Y) [cm];B/A", nBinsY1, yMin1, yMax1, 100, 0., 1.);
+
+    fHM->Create2<TH2D>("fhBaxisVsX", "fhBaxisVsX;X [cm];B axis [cm]", nBinsX1, xMin1, xMax1, 80, 3., 7.);
+    fHM->Create2<TH2D>("fhBaxisVsY", "fhBaxisVsY;Abs(Y) [cm];B axis [cm]", nBinsY1, yMin1, yMax1, 80, 3., 7.);
+
+    fHM->Create2<TH2D>("fhAaxisVsX", "fhAaxisVsX;X [cm];A axis [cm]", nBinsX1, xMin1, xMax1, 80, 3., 7.);
+    fHM->Create2<TH2D>("fhAaxisVsY", "fhAaxisVsY;Abs(Y) [cm];A axis [cm]", nBinsY1, yMin1, yMax1, 80, 3., 7.);
+
+    fHM->Create2<TH2D>("fhRadiusVsX", "fhRadiusVsX;X [cm];Radius [cm]", nBinsX1, xMin1, xMax1, 80, 3., 7.);
+    fHM->Create2<TH2D>("fhRadiusVsY", "fhRadiusVsY;Abs(Y) [cm];Radius [cm]", nBinsY1, yMin1, yMax1, 80, 3., 7.);
+
+    fHM->Create2<TH2D>("fhdRVsX", "fhdRVsX;X [cm];dR [cm]", nBinsX1, xMin1, xMax1, 100, -1., 1.);
+    fHM->Create2<TH2D>("fhdRVsY", "fhdRVsY;Abs(Y) [cm];dR [cm]", nBinsY1, yMin1, yMax1, 100, -1., 1.);
 }
 
 void CbmRichGeoTest::FillMcHist()
@@ -341,11 +372,27 @@ void CbmRichGeoTest::RingParameters()
             fHM->H3("fhAaxisXYZ")->Fill(xc, yc, a);
             fHM->H3("fhRadiusXYZ")->Fill(xc, yc, r);
             
+            fHM->H2("fhNofHitsVsX")->Fill(xc, nh);
+            fHM->H2("fhNofPointsVsX")->Fill(xc, np);
+            fHM->H2("fhBoverAVsX")->Fill(xc, b/a);
+            fHM->H2("fhBaxisVsX")->Fill(xc, b);
+            fHM->H2("fhAaxisVsX")->Fill(xc, a);
+            fHM->H2("fhRadiusVsX")->Fill(xc, r);
+
+            fHM->H2("fhNofHitsVsY")->Fill(abs(yc), nh);
+            fHM->H2("fhNofPointsVsY")->Fill(abs(yc), np);
+            fHM->H2("fhBoverAVsY")->Fill(abs(yc), b/a);
+            fHM->H2("fhBaxisVsY")->Fill(abs(yc), b);
+            fHM->H2("fhAaxisVsY")->Fill(abs(yc), a);
+            fHM->H2("fhRadiusVsY")->Fill(abs(yc), r);
+
             for (int iH = 0; iH < ringHit.GetNofHits(); iH++){
                 double xh = ringHit.GetHit(iH).fX;
                 double yh = ringHit.GetHit(iH).fY;
                 double dr = r - sqrt((xc - xh)*(xc - xh) + (yc - yh)*(yc - yh));
                 fHM->H3("fhdRXYZ")->Fill(xc, yc, dr);
+                fHM->H2("fhdRVsX")->Fill(xc, dr);
+                fHM->H2("fhdRVsY")->Fill(abs(yc), dr);
             }
         }
     }// iR
@@ -373,6 +420,13 @@ void CbmRichGeoTest::FitAndFillHistEllipse(
         fHM->H2("fhXcYcEllipse"+t)->Fill(xcEllipse, ycEllipse);
     }
     fHM->H1("fhNofHits"+t)->Fill(nofHitsRing);
+
+    if (ycEllipse > 149 || ycEllipse < -149) {
+    	fHM->H1("fhBaxisUpHalf"+t)->Fill(axisB);
+    } else {
+    	fHM->H1("fhBaxisDownHalf"+t)->Fill(axisB);
+    }
+
     fHM->H2("fhBaxisVsMom"+t)->Fill(momentum, axisB);
     fHM->H2("fhAaxisVsMom"+t)->Fill(momentum, axisA);
     fHM->H2("fhChi2EllipseVsMom"+t)->Fill(momentum, ring->GetChi2()/ring->GetNofHits());
@@ -617,6 +671,15 @@ void CbmRichGeoTest::DrawHist()
         DrawH2MeanRms((TH2D*)fHM->H2("fhBaxisVsMom"+t), "richgeo" + t + "_b_vs_mom");
         
         {
+        	TCanvas *c = fHM->CreateCanvas(("richgeo" + t + "_b_up_down_halves").c_str(), ("richgeo" + t + "_b_up_down_halves").c_str(), 800, 400);
+			c->Divide(2,1);
+			c->cd(1);
+			DrawH1andFitGauss((TH1D*)fHM->H1("fhBaxisUpHalf"+t)->Clone(), true, true, 3., 6.);
+			c->cd(2);
+			DrawH1andFitGauss((TH1D*)fHM->H1("fhBaxisDownHalf"+t)->Clone(), true, true, 3., 6.);
+        }
+
+        {
 			TCanvas *c = fHM->CreateCanvas(("richgeo" + t + "_circle").c_str(), ("richgeo" + t + "_circle").c_str(), 800, 400);
 			c->Divide(2,1);
 			c->cd(1);
@@ -787,40 +850,87 @@ void CbmRichGeoTest::DrawHist()
     
     // Draw number vs position onto the photodetector plane
     {
-    	fHM->CreateCanvas("richgeo_numbers_vs_xy_hits", "richgeo_numbers_vs_xy_hits", 600, 600);
+    	TCanvas* c = fHM->CreateCanvas("richgeo_numbers_vs_xy_hits", "richgeo_numbers_vs_xy_hits", 1800, 600);
+    	c->Divide(3, 1);
+    	c->cd(1);
     	DrawH3Profile(fHM->H3("fhNofHitsXYZ"), true, false, 10, 30);
+    	c->cd(2);
+    	DrawH2WithProfile(fHM->H2("fhNofHitsVsX"), false, true);
+    	c->cd(3);
+    	DrawH2WithProfile(fHM->H2("fhNofHitsVsY"), false, true);
     }
 
     {
-    	fHM->CreateCanvas("richgeo_numbers_vs_xy_points", "richgeo_numbers_vs_xy_points", 600, 600);
+    	TCanvas* c = fHM->CreateCanvas("richgeo_numbers_vs_xy_points", "richgeo_numbers_vs_xy_points", 1800, 600);
+    	c->Divide(3, 1);
+    	c->cd(1);
     	DrawH3Profile(fHM->H3("fhNofPointsXYZ"), true, false, 100., 300.);
+    	c->cd(2);
+    	DrawH2WithProfile(fHM->H2("fhNofPointsVsX"), false, true);
+       	c->cd(3);
+       	DrawH2WithProfile(fHM->H2("fhNofPointsVsY"), false, true);
     }
 
     {
-    	fHM->CreateCanvas("richgeo_numbers_vs_xy_boa", "richgeo_numbers_vs_xy_boa", 600, 600);
+    	TCanvas* c = fHM->CreateCanvas("richgeo_numbers_vs_xy_boa", "richgeo_numbers_vs_xy_boa", 1800, 600);
+    	c->Divide(3, 1);
+    	c->cd(1);
     	DrawH3Profile(fHM->H3("fhBoverAXYZ"), true, false, 0.75, 1.0);
+    	c->cd(2);
+    	DrawH2WithProfile(fHM->H2("fhBoverAVsX"), false, true);
+    	fHM->H2("fhBoverAVsX")->GetYaxis()->SetRangeUser(0.75, 1.0);
+    	c->cd(3);
+    	DrawH2WithProfile(fHM->H2("fhBoverAVsY"), false, true);
+    	fHM->H2("fhBoverAVsY")->GetYaxis()->SetRangeUser(0.75, 1.0);
     }
 
     {
-    	fHM->CreateCanvas("richgeo_numbers_vs_xy_b", "richgeo_numbers_vs_xy_b", 600, 600);
+    	TCanvas* c = fHM->CreateCanvas("richgeo_numbers_vs_xy_b", "richgeo_numbers_vs_xy_b", 1800, 600);
+    	c->Divide(3, 1);
+    	c->cd(1);
     	DrawH3Profile(fHM->H3("fhBaxisXYZ"), true, false, 4., 5.);
+    	c->cd(2);
+    	DrawH2WithProfile(fHM->H2("fhBaxisVsX"), false, true);
+    	c->cd(3);
+    	DrawH2WithProfile(fHM->H2("fhBaxisVsY"), false, true);
     }
 
     {
-    	fHM->CreateCanvas("richgeo_numbers_vs_xy_a", "richgeo_numbers_vs_xy_a", 600, 600);
+    	TCanvas* c = fHM->CreateCanvas("richgeo_numbers_vs_xy_a", "richgeo_numbers_vs_xy_a", 1800, 600);
+    	c->Divide(3, 1);
+    	c->cd(1);
     	DrawH3Profile(fHM->H3("fhAaxisXYZ"), true, false, 4.4, 5.7);
+    	c->cd(2);
+    	DrawH2WithProfile(fHM->H2("fhAaxisVsX"), false, true);
+    	c->cd(3);
+    	DrawH2WithProfile(fHM->H2("fhAaxisVsY"), false, true);
     }
 
     {
-    	fHM->CreateCanvas("richgeo_numbers_vs_xy_r", "richgeo_numbers_vs_xy_r", 600, 600);
+    	TCanvas* c = fHM->CreateCanvas("richgeo_numbers_vs_xy_r", "richgeo_numbers_vs_xy_r", 1800, 600);
+    	c->Divide(3, 1);
+    	c->cd(1);
     	DrawH3Profile(fHM->H3("fhRadiusXYZ"), true, false, 4.2, 5.2);
+    	c->cd(2);
+    	DrawH2WithProfile(fHM->H2("fhRadiusVsX"), false, true);
+       	c->cd(3);
+       	DrawH2WithProfile(fHM->H2("fhRadiusVsY"), false, true);
     }
 
     {
-    	fHM->CreateCanvas("richgeo_numbers_vs_xy_dr", "richgeo_numbers_vs_xy_dr", 600, 600);
+    	TCanvas* c = fHM->CreateCanvas("richgeo_numbers_vs_xy_dr", "richgeo_numbers_vs_xy_dr", 1800, 600);
+    	c->Divide(3, 1);
+    	c->cd(1);
     	DrawH3Profile(fHM->H3("fhdRXYZ"), false, false, 0., .5);
+    	c->cd(2);
+    	DrawH2WithProfile(fHM->H2("fhdRVsX"), false, false);
+    	c->cd(3);
+    	DrawH2WithProfile(fHM->H2("fhdRVsY"), false, false);
     }
     
+
+
+
     {
 		fHM->CreateCanvas("richgeo_acc_vs_min_nof_hits", "richgeo_acc_vs_min_nof_hits", 600, 600);
 		TH1D* h = CreateAccVsMinNofHitsHist();

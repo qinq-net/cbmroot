@@ -103,10 +103,23 @@ void CbmRichRecoQa::InitHistograms()
     double yMax = 208.;
     int nBinsY = 52;
 
-    fHM->Create2<TH2D>("fh_ring_track_distance_vs_mom_truematch", "fh_ring_track_distance_vs_mom_truematch;P [GeV/c];Ring-track distance [cm];Yield (a.u.)", 20, 0., 10., 1000, 0., 170.);
-    fHM->Create2<TH2D>("fh_ring_track_distance_vs_mom_wrongmatch", "fh_ring_track_distance_vs_mom_wrongmatch;P [GeV/c];Ring-track distance [cm];Yield (a.u.)", 20, 0., 10., 1000, 0., 170.);
+    fHM->Create2<TH2D>("fh_ring_track_distance_vs_mom_truematch", "fh_ring_track_distance_vs_mom_truematch;P [GeV/c];Ring-track distance [cm];Yield (a.u.)", 20, 0., 10., 100, 0., 5.);
+    fHM->Create2<TH2D>("fh_ring_track_distance_vs_mom_wrongmatch", "fh_ring_track_distance_vs_mom_wrongmatch;P [GeV/c];Ring-track distance [cm];Yield (a.u.)", 20, 0., 10., 100, 0., 5.);
     
-    fHM->Create3<TH3D>("fh_ring_track_distance_vs_xy_truematch", "fh_ring_track_distance_vs_xy_truematch;X [cm];Y [cm];Ring-track distance [cm];Yield (a.u.)", nBinsX, xMin, xMax, nBinsY, yMin, yMax, 100, 0., 5.);
+
+    fHM->Create2<TH2D>("fh_ring_track_distance_vs_nofHits_truematch", "fh_ring_track_distance_vs_nofHits_truematch;Nof hits in found ring;Ring-track distance [cm];Yield (a.u.)", 40, -.5, 39.5, 100, 0., 5.);
+    fHM->Create2<TH2D>("fh_ring_track_distance_vs_nofHits_wrongmatch", "fh_ring_track_distance_vs_nofHits_wrongmatch;Nof hits in found ring;Ring-track distance [cm];Yield (a.u.)", 40, -.5, 39.5, 100, 0., 5.);
+
+    int nBinsX1 = 60;
+    int xMin1 = -120;
+    int xMax1 = 120;
+    int nBinsY1 = 25;
+    int yMin1 = 100;
+    int yMax1 = 200;
+    fHM->Create3<TH3D>("fh_ring_track_distance_vs_xy_truematch", "fh_ring_track_distance_vs_xy_truematch;X [cm];Y [cm];Ring-track distance [cm]", nBinsX, xMin, xMax, nBinsY, yMin, yMax, 100, 0., 5.);
+    fHM->Create2<TH2D>("fh_ring_track_distance_vs_x_truematch", "fh_ring_track_distance_vs_x_truematch;X [cm];Ring-track distance [cm]", nBinsX1, xMin1, xMax1, 100, 0., 5.);
+    fHM->Create2<TH2D>("fh_ring_track_distance_vs_y_truematch", "fh_ring_track_distance_vs_y_truematch;Abs(Y) [cm];Ring-track distance [cm]", nBinsY1, yMin1, yMax1, 100, 0., 5.);
+
 
 }
 
@@ -137,6 +150,7 @@ void CbmRichRecoQa::Exec(
         double rtDistance = ring->GetDistance();
         double xc = ring->GetCenterX();
         double yc = ring->GetCenterY();
+        int nofHits = ring->GetNofHits();
         
         CbmMCTrack* mctrack = static_cast<CbmMCTrack*>(fMCTracks->At(stsMcTrackId));
         if (mctrack == NULL) continue;
@@ -145,8 +159,13 @@ void CbmRichRecoQa::Exec(
         if (stsMcTrackId == richMcTrackId) {
             fHM->H2("fh_ring_track_distance_vs_mom_truematch")->Fill(mom, rtDistance);
             fHM->H3("fh_ring_track_distance_vs_xy_truematch")->Fill(xc, yc, rtDistance);
+            fHM->H2("fh_ring_track_distance_vs_x_truematch")->Fill(xc, rtDistance);
+            fHM->H2("fh_ring_track_distance_vs_y_truematch")->Fill(abs(yc), rtDistance);
+            fHM->H2("fh_ring_track_distance_vs_nofHits_truematch")->Fill(nofHits, rtDistance);
+
         } else {
             fHM->H2("fh_ring_track_distance_vs_mom_wrongmatch")->Fill(mom, rtDistance);
+            fHM->H2("fh_ring_track_distance_vs_nofHits_wrongmatch")->Fill(nofHits, rtDistance);
         }
     }
 }
@@ -159,11 +178,13 @@ void CbmRichRecoQa::DrawHist()
     SetDefaultDrawStyle();
     //fHM->ScaleByPattern("fh_.*", 1./fEventNum);
     {
-        TCanvas* c = fHM->CreateCanvas("fh_ring_track_distance_vs_mom_truematch", "fh_ring_track_distance_vs_mom_truematch", 1200, 600);
-        c->Divide(2,1);
+        TCanvas* c = fHM->CreateCanvas("fh_ring_track_distance_truematch", "fh_ring_track_distance__truematch", 1800, 600);
+        c->Divide(3,1);
         c->cd(1);
-        DrawH2WithProfile(fHM->H2("fh_ring_track_distance_vs_mom_truematch"), true);
+        DrawH2WithProfile(fHM->H2("fh_ring_track_distance_vs_mom_truematch"), false, true);
         c->cd(2);
+        DrawH2WithProfile(fHM->H2("fh_ring_track_distance_vs_nofHits_truematch"), false, true);
+        c->cd(3);
         TH1D* py = (TH1D*)(fHM->H2("fh_ring_track_distance_vs_mom_truematch")->ProjectionY("fh_ring_track_distance_vs_mom_truematch_py")->Clone());
         DrawH1(py);
         double overflow = py->GetBinContent(py->GetNbinsX() + 1);
@@ -172,14 +193,17 @@ void CbmRichRecoQa::DrawHist()
         gPad->SetLogy(true);
         
         fHM->H2("fh_ring_track_distance_vs_mom_truematch")->GetYaxis()->SetRangeUser(0., 3.);
+        fHM->H2("fh_ring_track_distance_vs_nofHits_truematch")->GetYaxis()->SetRangeUser(0., 3.);
     }
     
     {
-        TCanvas* c = fHM->CreateCanvas("fh_ring_track_distance_vs_mom_wrongmatch", "fh_ring_track_distance_vs_mom_wrongmatch", 1200, 600);
-        c->Divide(2,1);
+        TCanvas* c = fHM->CreateCanvas("fh_ring_track_distance_vs_wrongmatch", "fh_ring_track_distance_vs_wrongmatch", 1800, 600);
+        c->Divide(3,1);
         c->cd(1);
-        DrawH2WithProfile(fHM->H2("fh_ring_track_distance_vs_mom_wrongmatch"), true);
+        DrawH2WithProfile(fHM->H2("fh_ring_track_distance_vs_mom_wrongmatch"), false, true);
         c->cd(2);
+        DrawH2WithProfile(fHM->H2("fh_ring_track_distance_vs_mom_wrongmatch"), false, true);
+        c->cd(3);
         TH1D* py = (TH1D*)(fHM->H2("fh_ring_track_distance_vs_mom_wrongmatch")->ProjectionY("fh_ring_track_distance_vs_mom_wrongmatch_py")->Clone());
         DrawH1(py);
         double overflow = py->GetBinContent(py->GetNbinsX() + 1);
@@ -188,11 +212,20 @@ void CbmRichRecoQa::DrawHist()
         gPad->SetLogy(true);
         
         fHM->H2("fh_ring_track_distance_vs_mom_wrongmatch")->GetYaxis()->SetRangeUser(0., 3.);
+        fHM->H2("fh_ring_track_distance_vs_nofHits_wrongmatch")->GetYaxis()->SetRangeUser(0., 3.);
     }
     
     {
-    	fHM->CreateCanvas("fh_ring_track_distance_vs_xy_truematch", "fh_ring_track_distance_vs_xy_truematch", 600, 600);
-    	DrawH3Profile(fHM->H3("fh_ring_track_distance_vs_xy_truematch"), false, false, 0., .1);
+    	TCanvas* c = fHM->CreateCanvas("fh_ring_track_distance_vs_xy_truematch", "fh_ring_track_distance_vs_xy_truematch", 1800, 600);
+    	c->Divide(3, 1);
+    	c->cd(1);
+    	DrawH3Profile(fHM->H3("fh_ring_track_distance_vs_xy_truematch"), true, false, 0., .4);
+    	c->cd(2);
+    	DrawH2WithProfile(fHM->H2("fh_ring_track_distance_vs_x_truematch"), false, true);
+    	fHM->H2("fh_ring_track_distance_vs_x_truematch")->GetYaxis()->SetRangeUser(0., 2.);
+    	c->cd(3);
+    	DrawH2WithProfile(fHM->H2("fh_ring_track_distance_vs_y_truematch"), false, true);
+    	fHM->H2("fh_ring_track_distance_vs_y_truematch")->GetYaxis()->SetRangeUser(0., 2.);
     }
 }
 
