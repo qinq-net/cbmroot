@@ -30,7 +30,7 @@ void FHodoLabSetup(TString inFile = "hodoTop_source_1000ts_20160422.tsa")
 
   // --- Define parameter files
   TList *parFileList = new TList();
-  TString paramDir = "./";
+  TString paramDir = srcDir + "/macro/beamtime/cern2016/";
   TString paramFile = paramDir + "FHodoUnpackPar.par";
   TObjString* tutDetDigiFile = new TObjString(paramFile);
   parFileList->Add(tutDetDigiFile);
