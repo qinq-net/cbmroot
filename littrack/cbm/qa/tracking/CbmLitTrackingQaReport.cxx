@@ -252,8 +252,10 @@ void CbmLitTrackingQaReport::DrawEfficiencyHistos()
 
 	// Draw RICH efficiency in dependence on different parameters
 	DrawEfficiency("tracking_qa_local_tracking_efficiency_Rich_RingNh", "hte_Rich_Rich_Electron_Eff_RingNh", DefaultEfficiencyLabelFormatter);
-   DrawEfficiency("tracking_qa_local_tracking_efficiency_Rich_BoA", "hte_Rich_Rich_Electron_Eff_BoA", DefaultEfficiencyLabelFormatter);
-   DrawYPt("tracking_qa_Rich_Rich_Electron_Eff_RingXcYc", "hte_Rich_Rich_Electron_Eff_RingXcYc", true);
+    DrawEfficiency("tracking_qa_local_tracking_efficiency_Rich_BoA", "hte_Rich_Rich_Electron_Eff_BoA", DefaultEfficiencyLabelFormatter);
+    DrawEfficiency("tracking_qa_local_tracking_efficiency_Rich_RingXc", "hte_Rich_Rich_Electron_Eff_RingXc", DefaultEfficiencyLabelFormatter);
+    DrawEfficiency("tracking_qa_local_tracking_efficiency_Rich_RingYc", "hte_Rich_Rich_Electron_Eff_RingYc", DefaultEfficiencyLabelFormatter);
+    DrawYPt("tracking_qa_Rich_Rich_Electron_Eff_RingXcYc", "hte_Rich_Rich_Electron_Eff_RingXcYc", true);
 
 	// Draw local accepted and reconstructed tracks vs number of points
 	HM()->ShrinkEmptyBinsH1ByPattern("hte_.+_.+_.+_.+_Np");

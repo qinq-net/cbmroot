@@ -555,6 +555,7 @@ void CbmLitTrackingQa::CreateHistograms()
       CreateH1Efficiency(histName, "Angle", "Polar angle [deg]", fAngleRangeBins, fAngleRangeMin, fAngleRangeMax, "track");
       CreateH2Efficiency(histName, "YPt", "Rapidity", "P_{t} [GeV/c]", fYRangeBins, fYRangeMin, fYRangeMax, fPtRangeBins, fPtRangeMin, fPtRangeMax, "track");
    }
+
    // RICH
    if (fDet.GetDet(kRICH)) {
       CreateH1Efficiency("hte_Rich_Rich", "p", "P [GeV/c]", fPRangeBins, fPRangeMin, fPRangeMax, "ring");
@@ -562,6 +563,8 @@ void CbmLitTrackingQa::CreateHistograms()
       CreateH1Efficiency("hte_Rich_Rich", "pt", "P_{t} [GeV/c]", fPtRangeBins, fPtRangeMin, fPtRangeMax, "ring");
       CreateH1Efficiency("hte_Rich_Rich", "RingNh", "Number of hits", nofBinsPoints, minNofPoints, maxNofPoints, "ring");
       CreateH1Efficiency("hte_Rich_Rich", "BoA", "B/A", 50, 0.0, 1.0, "ring");
+      CreateH1Efficiency("hte_Rich_Rich", "RingXc", "X [cm]", 60, -120, 120, "ring");
+      CreateH1Efficiency("hte_Rich_Rich", "RingYc", "Y [cm]", 25, 100, 200, "ring");
      // CreateH1Efficiency("hte_Rich_Rich", "RadPos", "Radial position [cm]", 50, 0., 150., "ring");
       CreateH2Efficiency("hte_Rich_Rich", "RingXcYc", "X [cm]", "Y [cm]", 14, -110., 110, 60, -300, 300, "ring");
       CreateH2Efficiency("hte_Rich_Rich", "YPt", "Rapidity", "P_{t} [GeV/c]", fYRangeBins, fYRangeMin, fYRangeMax, fPtRangeBins, fPtRangeMin, fPtRangeMax, "ring");
@@ -929,6 +932,12 @@ void CbmLitTrackingQa::ProcessMcTracks()
 
       vector<Double_t> tmp5 = list_of(boa);
       parMap["BoA"] = tmp5;
+
+      vector<Double_t> tmp5X = list_of(ringX);
+      parMap["RingXc"] = tmp5X;
+
+      vector<Double_t> tmp5Y = list_of(std::abs(ringY));
+      parMap["RingYc"] = tmp5Y;
 
       vector<Double_t> tmp6 = list_of(ringX)(ringY);
       parMap["RingXcYc"] = tmp6;
