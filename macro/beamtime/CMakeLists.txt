@@ -16,10 +16,8 @@ Set(NumEvents 2)
 
   If(EXISTS ${CBMROOT_SOURCE_DIR}/input/hodoTop_source_1000ts_20160422.tsa)
     # STS Lab Setup => TSA
-#    GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/beamtime/tests/FHodoLabSetup.C)
-#    add_test(StsLabSetup ${CBMROOT_BINARY_DIR}/macro/beamtime/tests/FHodoLabSetup.sh)
-    GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/beamtime/cern2016/FHodoLabSetup.C)
-    add_test(StsLabSetup ${CBMROOT_BINARY_DIR}/macro/beamtime/cern2016/FHodoLabSetup.sh)
+    GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/beamtime/tests/FHodoLabSetup.C)
+    add_test(StsLabSetup ${CBMROOT_BINARY_DIR}/macro/beamtime/tests/FHodoLabSetup.sh)
     SET_TESTS_PROPERTIES(StsLabSetup PROPERTIES TIMEOUT "60")
     SET_TESTS_PROPERTIES(StsLabSetup PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   EndIf()
