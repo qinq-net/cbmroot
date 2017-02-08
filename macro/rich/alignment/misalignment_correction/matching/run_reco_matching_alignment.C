@@ -1,4 +1,4 @@
-void run_reco_matching_alignment(Int_t nEvents = 500000, Int_t Flag = 1)
+void run_reco_matching_alignment(Int_t nEvents = 5000, Int_t Flag = 1)
 {
    TTree::SetMaxTreeSize(90000000000);
 
@@ -13,6 +13,7 @@ void run_reco_matching_alignment(Int_t nEvents = 500000, Int_t Flag = 1)
 //	else if (Flag == 1) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/misaligned_1pt5/"; }
 //	else if (Flag == 2) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/test/"; }
 	outDir = TString(gSystem->Getenv("OUT_DIR"));
+	TString outDir = "/u/jbendar/CBMSRC/macro/rich/alignment/misalignment_correction/matching/5mrad_correction_study/";
 	TString runTitle = "Matching_Efficiency";
 	TString parFile = outDir + "param.root";
 	TString mcFile = outDir + "mc.root";

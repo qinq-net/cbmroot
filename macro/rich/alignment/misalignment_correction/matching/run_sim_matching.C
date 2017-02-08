@@ -1,4 +1,4 @@
-void run_sim_matching(Int_t nEvents = 500000, Int_t Flag = 0)
+void run_sim_matching(Int_t nEvents = 5000, Int_t Flag = 1)
 {
     TTree::SetMaxTreeSize(90000000000);
     Int_t iVerbose = 0;
@@ -14,6 +14,7 @@ void run_sim_matching(Int_t nEvents = 500000, Int_t Flag = 0)
 //	if (Flag == 0) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/reference/"; }
 //	else if (Flag == 1) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/misaligned_1pt5/"; }
 //	else if (Flag == 2) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/test/"; }
+	TString outDir = "/u/jbendar/CBMSRC/macro/rich/alignment/misalignment_correction/matching/5mrad_correction_study/";
 	TString parFile = outDir + "param.root";
 	TString mcFile = outDir + "mc.root";
 	TString geoFile = outDir + "geofilefull.root";
@@ -31,7 +32,7 @@ void run_sim_matching(Int_t nEvents = 500000, Int_t Flag = 0)
 	TString fieldMap = "field_v12b";
 	TString stsGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/sts/sts_v15c.geo.root";
 	if (Flag == 0) { TString richGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/rich/Rich_jan2016_aligned.root"; }
-	else if (Flag == 1) { TString richGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/rich/Rich_jan2016_misalign_5mradXY_Tile1_5.root"; }
+	else if (Flag == 1) { TString richGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/rich/Rich_jan2016_misalign_5mrad_Tiles_1_5_0_1.root"; }
 //	else if (Flag == 1) { TString richGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/rich/Rich_jan2016_misalign_5mradXY_Tile0_1.root"; }
 	else if (Flag == 2) { TString richGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/rich/Rich_jan2016_corrected.root"; }
 	TString trdGeom = ""; //"trd_v15a_1e.geo.root";
@@ -205,7 +206,7 @@ void run_sim_matching(Int_t nEvents = 500000, Int_t Flag = 0)
 
     if (electrons == "yes"){
         FairBoxGenerator* boxGen1 = new FairBoxGenerator(-11, NPOSITRONS);
-        boxGen1->SetPRange(8.,9.5);
+        boxGen1->SetPRange(2.,9.);
         //boxGen1->SetPtRange(2.,3.);
         boxGen1->SetPhiRange(phi1 - 3., phi1 + 3.);
         boxGen1->SetThetaRange(theta1 - 1., theta1 + 1.);
@@ -214,7 +215,7 @@ void run_sim_matching(Int_t nEvents = 500000, Int_t Flag = 0)
         primGen->AddGenerator(boxGen1);
 
         FairBoxGenerator* boxGen2 = new FairBoxGenerator(11, NELECTRONS);
-        boxGen2->SetPRange(8.,9.5);
+        boxGen2->SetPRange(2.,9.);
         //boxGen2->SetPtRange(2.,3.);
         boxGen2->SetPhiRange(phi2 - 1.5, phi2 + 1.75);
         boxGen2->SetThetaRange(theta2 - 1.25, theta2 + 1.5);
