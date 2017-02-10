@@ -28,9 +28,9 @@ using std::vector;
 CbmRichRingTrackAssignClosestD::CbmRichRingTrackAssignClosestD():
    fGlobalTracks(NULL),
    fTrdTracks(NULL),
-
    fTrdAnnCut(-0.5),
-   fUseTrd(false)
+   fUseTrd(false),
+   fAlgorithmType(TrackRing)
 {
 
 }
@@ -55,9 +55,21 @@ void CbmRichRingTrackAssignClosestD::DoAssign(
       TClonesArray* rings,
       TClonesArray* richProj)
 {
+	if (fAlgorithmType == RingTrack) {
+		DoAssignRingTrack(rings, richProj);
+	} // RingTrack algorithm
+
+	else if (fAlgorithmType == TrackRing) {
+		DoAssignTrackRing(rings, richProj);
+	} // TrackRing
+}
+
+void CbmRichRingTrackAssignClosestD::DoAssignRingTrack(
+      TClonesArray* rings,
+      TClonesArray* richProj)
+{
     Int_t nofTracks = richProj->GetEntriesFast();
 	Int_t nofRings = rings->GetEntriesFast();
-
 	vector<Int_t> trackIndex;
 	vector<Double_t> trackDist;
 	trackIndex.resize(nofRings);
@@ -86,7 +98,7 @@ void CbmRichRingTrackAssignClosestD::DoAssign(
 				FairTrackParam* pTrack = (FairTrackParam*)richProj->At(iTrack);
 				Double_t xTrack = pTrack->GetX();
 				Double_t yTrack = pTrack->GetY();
-	         //cout << "xT:" << xTrack << " yT:" << yTrack << endl;
+			 //cout << "xT:" << xTrack << " yT:" << yTrack << endl;
 				// no projection onto the photodetector plane
 				if (xTrack == 0 && yTrack == 0) continue;
 
@@ -125,11 +137,48 @@ void CbmRichRingTrackAssignClosestD::DoAssign(
 		CbmRichRing* pRing = (CbmRichRing*)rings->At(i);
 		pRing->SetTrackID(trackIndex[i]);
 		pRing->SetDistance(trackDist[i]);
-       // cout << "trackIndex[i]:" << trackIndex[i] << " trackDist[i]:" << trackDist[i] << " r:" << pRing->GetRadius() << " x:" << pRing->GetCenterX() << " y:" << pRing->GetCenterY()<< endl;
+	   // cout << "trackIndex[i]:" << trackIndex[i] << " trackDist[i]:" << trackDist[i] << " r:" << pRing->GetRadius() << " x:" << pRing->GetCenterX() << " y:" << pRing->GetCenterY()<< endl;
 		if (trackIndex[i] == -1) continue;
 		CbmGlobalTrack* gTrack = (CbmGlobalTrack*) fGlobalTracks->At(trackIndex[i]);
 		gTrack->SetRichRingIndex(i);
 	}
+}
+
+void CbmRichRingTrackAssignClosestD::DoAssignTrackRing(
+      TClonesArray* rings,
+      TClonesArray* richProj)
+{
+    Int_t nofTracks = richProj->GetEntriesFast();
+	Int_t nofRings = rings->GetEntriesFast();
+
+	for (Int_t iTrack=0; iTrack < nofTracks; iTrack++) {
+		FairTrackParam* pTrack = (FairTrackParam*)richProj->At(iTrack);
+		Double_t xTrack = pTrack->GetX();
+		Double_t yTrack = pTrack->GetY();
+		if (xTrack == 0 && yTrack == 0) continue;
+		if (fUseTrd && fTrdTracks != NULL && !IsTrdElectron(iTrack)) continue;
+		Double_t rMin = 999.;
+		Int_t iRingMin = -1;
+		for (Int_t iRing=0; iRing < nofRings; iRing++) {
+			CbmRichRing* pRing = (CbmRichRing*)rings->At(iRing);
+			if (NULL == pRing) continue;
+			if (pRing->GetNofHits() < fMinNofHitsInRing) continue;
+
+			Double_t xRing = pRing->GetCenterX();
+			Double_t yRing = pRing->GetCenterY();
+			Double_t dist = TMath::Sqrt( (xRing-xTrack)*(xRing-xTrack) + (yRing-yTrack)*(yRing-yTrack) );
+			if (dist < rMin) {
+				rMin = dist;
+				iRingMin = iRing;
+			}
+		} // loop rings
+		if (iRingMin < 0) continue;
+		CbmRichRing* pRing = (CbmRichRing*)rings->At(iRingMin);
+		pRing->SetTrackID(iTrack);
+		pRing->SetDistance(rMin);
+		CbmGlobalTrack* gTrack = (CbmGlobalTrack*) fGlobalTracks->At(iTrack);
+		gTrack->SetRichRingIndex(iRingMin);
+	}//loop tracks
 }
 
 Bool_t CbmRichRingTrackAssignClosestD::IsTrdElectron(

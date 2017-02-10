@@ -134,24 +134,21 @@ void CbmRichRecoQa::InitHistograms()
 		fHM->Create2<TH2D>("fh_ring_track_distance_vs_y_truematch"+s, "fh_ring_track_distance_vs_y_truematch"+s+";Abs(Y) [cm];Ring-track distance [cm]", nBinsY1, yMin1, yMax1, 100, 0., 5.);
     }
 
-    fHM->Create1<TH1D>("fh_mismatch_source", "fh_mismatch_source;Global track category;% from MC", 15, -0.5, 14.5);
+    fHM->Create1<TH1D>("fh_mismatch_source", "fh_mismatch_source;Global track category;% from MC", 13, -0.5, 12.5);
 
-
-    fHM->Create1<TH1D>("fh_mismatch_source_mom_mc", "fh_mismatch_source_mom_mc;Momentum [GeV/c];Yield", 20, 0., 10.);
-    fHM->Create1<TH1D>("fh_mismatch_source_mom_sts", "fh_mismatch_source_mom_sts;Momentum [GeV/c];Yield", 20, 0., 10.);
-    fHM->Create1<TH1D>("fh_mismatch_source_mom_stsAccRich", "fh_mismatch_source_mom_stsAccRich;Momentum [GeV/c];Yield", 20, 0., 10.);
-    fHM->Create1<TH1D>("fh_mismatch_source_mom_stsRich", "fh_mismatch_source_mom_stsRich;Momentum [GeV/c];Yield", 20, 0., 10.);
-    fHM->Create1<TH1D>("fh_mismatch_source_mom_stsRichTrue", "fh_mismatch_source_mom_stsRichTrue;Momentum [GeV/c];Yield", 20, 0., 10.);
-    fHM->Create1<TH1D>("fh_mismatch_source_mom_stsNoRich", "fh_mismatch_source_mom_stsNoRich;Momentum [GeV/c];Yield", 20, 0., 10.);
-    fHM->Create1<TH1D>("fh_mismatch_source_mom_stsNoRichRF", "fh_mismatch_source_mom_stsNoRichRF;Momentum [GeV/c];Yield", 20, 0., 10.);
-    fHM->Create1<TH1D>("fh_mismatch_source_mom_stsNoRichRM", "fh_mismatch_source_mom_stsNoRichRM;Momentum [GeV/c];Yield", 20, 0., 10.);
-    fHM->Create1<TH1D>("fh_mismatch_source_mom_stsNoRichNoRF", "fh_mismatch_source_mom_stsNoRichNoRF;Momentum [GeV/c];Yield", 20, 0., 10.);
-    fHM->Create1<TH1D>("fh_mismatch_source_mom_stsNoRichProj", "fh_mismatch_source_mom_stsNoRichProj;Momentum [GeV/c];Yield", 20, 0., 10.);
-    fHM->Create1<TH1D>("fh_mismatch_source_mom_stsNoRichNoProj", "fh_mismatch_source_mom_stsNoRichNoProj;Momentum [GeV/c];Yield", 20, 0., 10.);
-    fHM->Create1<TH1D>("fh_mismatch_source_mom_stsNoRichRFProj", "fh_mismatch_source_mom_stsNoRichRFProj;Momentum [GeV/c];Yield", 20, 0., 10.);
-    fHM->Create1<TH1D>("fh_mismatch_source_mom_stsRichWrong", "fh_mismatch_source_mom_stsRichWrong;Momentum [GeV/c];Yield", 20, 0., 10.);
-    fHM->Create1<TH1D>("fh_mismatch_source_mom_stsRichWrongRF", "fh_mismatch_source_mom_stsRichWrongRF;Momentum [GeV/c];Yield", 20, 0., 10.);
-    fHM->Create1<TH1D>("fh_mismatch_source_mom_stsRichWrongRM", "fh_mismatch_source_mom_stsRichWrongRM;Momentum [GeV/c];Yield", 20, 0., 10.);
+    fHM->Create1<TH1D>("fh_mismatch_source_mom_mc", "fh_mismatch_source_mom_mc;Momentum [GeV/c];Yield", 40, 0., 10.);
+    fHM->Create1<TH1D>("fh_mismatch_source_mom_sts", "fh_mismatch_source_mom_sts;Momentum [GeV/c];Yield", 40, 0., 10.);
+    fHM->Create1<TH1D>("fh_mismatch_source_mom_stsAccRich", "fh_mismatch_source_mom_stsAccRich;Momentum [GeV/c];Yield", 40, 0., 10.);
+    fHM->Create1<TH1D>("fh_mismatch_source_mom_stsRich", "fh_mismatch_source_mom_stsRich;Momentum [GeV/c];Yield", 40, 0., 10.);
+    fHM->Create1<TH1D>("fh_mismatch_source_mom_stsRichTrue", "fh_mismatch_source_mom_stsRichTrue;Momentum [GeV/c];Yield", 40, 0., 10.);
+    fHM->Create1<TH1D>("fh_mismatch_source_mom_stsNoRich", "fh_mismatch_source_mom_stsNoRich;Momentum [GeV/c];Yield", 40, 0., 10.);
+    fHM->Create1<TH1D>("fh_mismatch_source_mom_stsNoRichRF", "fh_mismatch_source_mom_stsNoRichRF;Momentum [GeV/c];Yield", 40, 0., 10.);
+    fHM->Create1<TH1D>("fh_mismatch_source_mom_stsNoRichRM", "fh_mismatch_source_mom_stsNoRichRM;Momentum [GeV/c];Yield", 40, 0., 10.);
+    fHM->Create1<TH1D>("fh_mismatch_source_mom_stsNoRichNoRF", "fh_mismatch_source_mom_stsNoRichNoRF;Momentum [GeV/c];Yield", 40, 0., 10.);
+    fHM->Create1<TH1D>("fh_mismatch_source_mom_stsNoRichNoProj", "fh_mismatch_source_mom_stsNoRichNoProj;Momentum [GeV/c];Yield", 40, 0., 10.);
+    fHM->Create1<TH1D>("fh_mismatch_source_mom_stsRichWrong", "fh_mismatch_source_mom_stsRichWrong;Momentum [GeV/c];Yield", 40, 0., 10.);
+    fHM->Create1<TH1D>("fh_mismatch_source_mom_stsRichWrongRF", "fh_mismatch_source_mom_stsRichWrongRF;Momentum [GeV/c];Yield", 40, 0., 10.);
+    fHM->Create1<TH1D>("fh_mismatch_source_mom_stsRichWrongRM", "fh_mismatch_source_mom_stsRichWrongRM;Momentum [GeV/c];Yield", 40, 0., 10.);
 }
 
 void CbmRichRecoQa::Exec(
@@ -248,21 +245,10 @@ void CbmRichRecoQa::RingTrackMismatchSource()
 				fHM->H1("fh_mismatch_source_mom_stsNoRichRM")->Fill(mom);
 			}
 
-			if (hasProj) {
-				//STS-NoRich Proj
-				fHM->H1("fh_mismatch_source")->Fill(9);
-				fHM->H1("fh_mismatch_source_mom_stsNoRichProj")->Fill(mom);
-			} else {
+			if (!hasProj) {
 				//STS-NoRich NoProj
-				fHM->H1("fh_mismatch_source")->Fill(10);
+				fHM->H1("fh_mismatch_source")->Fill(9);
 				fHM->H1("fh_mismatch_source_mom_stsNoRichNoProj")->Fill(mom);
-			}
-
-
-			if (ringFound && hasProj) {
-				//STS-NoRich RF Proj
-				fHM->H1("fh_mismatch_source")->Fill(11);
-				fHM->H1("fh_mismatch_source_mom_stsNoRichRFProj")->Fill(mom);
 			}
 
 			continue;
@@ -284,17 +270,17 @@ void CbmRichRecoQa::RingTrackMismatchSource()
 			fHM->H1("fh_mismatch_source_mom_stsRichTrue")->Fill(mom);
 		} else {
 			//STS-RICH wrong
-			fHM->H1("fh_mismatch_source")->Fill(12);
+			fHM->H1("fh_mismatch_source")->Fill(10);
 			fHM->H1("fh_mismatch_source_mom_stsRichWrong")->Fill(mom);
 			if (WasRingFound(stsMcTrackId)) {
 				//STS-RICH wrong RF
-				fHM->H1("fh_mismatch_source")->Fill(13);
+				fHM->H1("fh_mismatch_source")->Fill(11);
 				fHM->H1("fh_mismatch_source_mom_stsRichWrongRF")->Fill(mom);
 			}
 
 			if (WasRingFound(stsMcTrackId)) {
 				//STS-RICH wrong RM
-				fHM->H1("fh_mismatch_source")->Fill(14);
+				fHM->H1("fh_mismatch_source")->Fill(12);
 				fHM->H1("fh_mismatch_source_mom_stsRichWrongRM")->Fill(mom);
 			}
 		}
@@ -466,7 +452,7 @@ void CbmRichRecoQa::DrawHist()
 		fHM->H1("fh_mismatch_source")->SetMarkerSize(1.9);
 
 		vector<string> labels = {"MC", "STS", "STS-Acc RICH", "STS-RICH", "STS-RICH true", "STS-NoRICH", "STS-NoRICH RF", "STS-NoRICH RM", "STS-NoRICH NoRF",
-				"STS-NoRICH Prj", "STS-NoRICH NoPrj", "STS-NoRICH RF-Prj", "STS-RICH wrong", "STS-RICH wrong RF", "STS-RICH wrong RM"};
+				"STS-NoRICH NoPrj", "STS-RICH wrong", "STS-RICH wrong RF", "STS-RICH wrong RM"};
 		for (int i = 0; i < labels.size(); i++) {
 			fHM->H1("fh_mismatch_source")->GetXaxis()->SetBinLabel(i+1, labels[i].c_str());
 		}
@@ -476,12 +462,12 @@ void CbmRichRecoQa::DrawHist()
 	{
 		TCanvas* c = fHM->CreateCanvas("fh_mismatch_source_mom", "fh_mismatch_source_mom", 1000, 800);
 		vector<string> labels = {"MC", "STS", "STS-Acc RICH", "STS-RICH", "STS-RICH true", "STS-NoRICH", "STS-NoRICH RF","STS-NoRICH RM",
-				"STS-NoRICH NoRF",  "STS-NoRICH Prj", "STS-NoRICH NoPrj",  "STS-NoRICH RF-Prj", "STS-RICH wrong", "STS-RICH wrong RF", "STS-RICH wrong RM"};
+				"STS-NoRICH NoRF", "STS-NoRICH NoPrj", "STS-RICH wrong", "STS-RICH wrong RF", "STS-RICH wrong RM"};
 		vector<TH1*> hists = {fHM->H1("fh_mismatch_source_mom_mc"), fHM->H1("fh_mismatch_source_mom_sts"), fHM->H1("fh_mismatch_source_mom_stsAccRich"),
 				fHM->H1("fh_mismatch_source_mom_stsRich"), fHM->H1("fh_mismatch_source_mom_stsRichTrue"), fHM->H1("fh_mismatch_source_mom_stsNoRich"),
 				fHM->H1("fh_mismatch_source_mom_stsNoRichRF"), fHM->H1("fh_mismatch_source_mom_stsNoRichRM"), fHM->H1("fh_mismatch_source_mom_stsNoRichNoRF"),
-				fHM->H1("fh_mismatch_source_mom_stsNoRichProj"), fHM->H1("fh_mismatch_source_mom_stsNoRichNoProj"), fHM->H1("fh_mismatch_source_mom_stsNoRichRFProj"),
-				fHM->H1("fh_mismatch_source_mom_stsRichWrong"),fHM->H1("fh_mismatch_source_mom_stsRichWrongRF"),fHM->H1("fh_mismatch_source_mom_stsRichWrongRM")  };
+				fHM->H1("fh_mismatch_source_mom_stsNoRichNoProj"), fHM->H1("fh_mismatch_source_mom_stsRichWrong"),fHM->H1("fh_mismatch_source_mom_stsRichWrongRF"),
+				fHM->H1("fh_mismatch_source_mom_stsRichWrongRM")  };
 
 		DrawH1(hists, labels, kLinear, kLog, true, 0.8, 0.35, 0.99, 0.99);
 		fHM->H1("fh_mismatch_source_mom_mc")->SetMinimum(0.9);

@@ -28,7 +28,7 @@ public:
     */
    CbmRichRingTrackAssignBase():
       fMaxDistance(999.),
-      fMinNofHitsInRing(5)
+      fMinNofHitsInRing(1)
    {
 
    }
