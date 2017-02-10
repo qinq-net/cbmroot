@@ -32,8 +32,9 @@ class CbmDrawingOptions
 public:
 
    static Int_t Color(Int_t colorIndex) {
-      static const Int_t nofColors = 6;
-      static Int_t colors[nofColors] = {kRed, kBlue + 1, kGreen + 3, kMagenta + 4, kYellow + 2, kViolet};
+      static const Int_t nofColors = 15;
+      static Int_t colors[nofColors] = {kRed, kBlue + 1, kGreen + 3, kMagenta + 4, kYellow + 2, kViolet, kOrange - 5, kOrange + 3, kRed - 8, kPink + 9,
+      kBlue - 6, kCyan + 1, kGreen - 6, kYellow -1, kGray + 1 };
       return (colorIndex < nofColors) ? colors[colorIndex] : colorIndex;
    }
 
