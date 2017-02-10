@@ -234,6 +234,10 @@ void CbmLitTrackingQaReport::DrawEfficiencyHistos()
 		//DrawEfficiency("tracking_qa_global_tracking_efficiency_" + variant + "_pt", "hte_Sts.*_" + variant + "_All_Eff_pt");
 		//DrawEfficiency("tracking_qa_global_tracking_efficiency_" + variant + "_y", "hte_Sts.*_" + variant + "_All_Eff_y");
 		DrawEfficiency("tracking_qa_global_tracking_efficiency_" + variant + "_angle", "hte_Sts.*_" + variant + "_All_Eff_Angle", DefaultEfficiencyLabelFormatter);
+		if (variant.find("Rich") != string::npos) {
+			DrawEfficiency("tracking_qa_global_tracking_efficiency_electron_" + variant + "_RingXc", "hte_Sts.*_" + variant + "_Electron_Eff_RingXc", DefaultEfficiencyLabelFormatter);
+			DrawEfficiency("tracking_qa_global_tracking_efficiency_electron_" + variant + "_RingYc", "hte_Sts.*_" + variant + "_Electron_Eff_RingYc", DefaultEfficiencyLabelFormatter);
+		}
 	}
 
 	// Draw local tracking efficiency

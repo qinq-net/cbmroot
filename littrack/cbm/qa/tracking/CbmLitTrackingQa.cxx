@@ -564,7 +564,7 @@ void CbmLitTrackingQa::CreateHistograms()
       CreateH1Efficiency("hte_Rich_Rich", "RingNh", "Number of hits", nofBinsPoints, minNofPoints, maxNofPoints, "ring");
       CreateH1Efficiency("hte_Rich_Rich", "BoA", "B/A", 50, 0.0, 1.0, "ring");
       CreateH1Efficiency("hte_Rich_Rich", "RingXc", "X [cm]", 60, -120, 120, "ring");
-      CreateH1Efficiency("hte_Rich_Rich", "RingYc", "Y [cm]", 25, 100, 200, "ring");
+      CreateH1Efficiency("hte_Rich_Rich", "RingYc", "|Y| [cm]", 25, 100, 200, "ring");
      // CreateH1Efficiency("hte_Rich_Rich", "RadPos", "Radial position [cm]", 50, 0., 150., "ring");
       CreateH2Efficiency("hte_Rich_Rich", "RingXcYc", "X [cm]", "Y [cm]", 14, -110., 110, 60, -300, 300, "ring");
       CreateH2Efficiency("hte_Rich_Rich", "YPt", "Rapidity", "P_{t} [GeV/c]", fYRangeBins, fYRangeMin, fYRangeMax, fPtRangeBins, fPtRangeMin, fPtRangeMax, "ring");
@@ -580,6 +580,12 @@ void CbmLitTrackingQa::CreateHistograms()
       CreateH1Efficiency(name, "y", "Rapidity", fYRangeBins, fYRangeMin, fYRangeMax, opt);
       CreateH1Efficiency(name, "pt", "P_{t} [GeV/c]", fPtRangeBins, fPtRangeMin, fPtRangeMax, opt);
       CreateH2Efficiency(name, "YPt", "Rapidity", "P_{t} [GeV/c]", fYRangeBins, fYRangeMin, fYRangeMax, fPtRangeBins, fPtRangeMin, fPtRangeMax, opt);
+
+      //Global efficiency vs. RingXc or RingYc
+      if (name.find("Rich") != string::npos) {
+    	  CreateH1Efficiency(name, "RingXc", "Ring Xc [cm]", 60, -120, 120, opt);
+    	  CreateH1Efficiency(name, "RingYc", "|Ring Yc| [cm]", 25, 100, 200, opt);
+      }
       // PID
       opt += "_pid";
       CreateH1Efficiency(FindAndReplace(name, "hte_", "hpe_"), "p", "P [GeV/c]", fPRangeBins, fPRangeMin, fPRangeMax, opt);
