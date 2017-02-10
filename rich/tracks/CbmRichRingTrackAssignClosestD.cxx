@@ -67,7 +67,7 @@ void CbmRichRingTrackAssignClosestD::DoAssign(
 		trackDist[i] = 999.;
 	}
 
-	for (Int_t iIter = 0; iIter < 4; iIter++){
+	for (Int_t iIter = 0; iIter < 6; iIter++){
 		for (Int_t iRing=0; iRing < nofRings; iRing++) {
 			if (trackIndex[iRing] != -1) continue;
 			CbmRichRing* pRing = (CbmRichRing*)rings->At(iRing);

@@ -544,8 +544,8 @@ Bool_t CbmRichGeoManager::IsPointInsidePmt(
         CbmRichRecGeoPar* gp = CbmRichGeoManager::GetInstance().fGP;
         Double_t pmtPlaneX = gp->fPmt.fPlaneX;
         Double_t pmtPlaneY = gp->fPmt.fPlaneY;
-        Double_t pmtWidth = gp->fPmt.fWidth;
-        Double_t pmtHeight = gp->fPmt.fHeight;
+        Double_t pmtWidth = gp->fPmt.fWidth; // half width
+        Double_t pmtHeight = gp->fPmt.fHeight; // half height
         
         Double_t marginX = 2.; // [cm]
         Double_t marginY = 2.; // [cm]
@@ -561,7 +561,47 @@ Bool_t CbmRichGeoManager::IsPointInsidePmt(
         
         return (isXOk && isYOk);
     } else if (fGP->fGeometryType == CbmRichGeometryTypeCylindrical) {
-        return true;
+    	CbmRichRecGeoPar* gp = CbmRichGeoManager::GetInstance().fGP;
+    	map<string, CbmRichRecGeoParPmt> pmtMap = gp->fPmtMap;
+
+    	int maxIndex = -1;
+    	string maxKey = "";
+    	for(auto const& entPmt : pmtMap) {
+    	    if (maxIndex < entPmt.second.fPmtPositionIndexX && entPmt.second.fX > 0 && entPmt.second.fY > 0) {
+    	    	maxKey = entPmt.first;
+				maxIndex = entPmt.second.fPmtPositionIndexX;
+    	    }
+    	}
+    	CbmRichRecGeoParPmt pmtPar = pmtMap[maxKey];
+		Double_t pmtPlaneX = pmtPar.fPlaneX;
+		Double_t pmtPlaneY = pmtPar.fPlaneY;
+		Double_t pmtPlaneZ = pmtPar.fPlaneZ;
+		Double_t pmtWidth = pmtPar.fWidth; // full width of the strip
+		Double_t pmtHeight = pmtPar.fHeight; // full height
+
+		//cout << "IsPointInsidePmt" << endl;
+		//cout << "maxIndex:" << maxIndex << " maxKey:" << maxKey << endl;
+		//cout << "pmtPlaneX:"<< pmtPlaneX << " pmtPlaneY:" << pmtPlaneY << " pmtPlaneZ:" << pmtPlaneZ<< " pmtWidth:" << pmtWidth << " pmtHeight:" <<pmtHeight << endl;
+		TVector3 inPmt(pmtPlaneX, pmtPlaneY, pmtPlaneZ), outPmt(0., 0., 0.);
+		CbmRichGeoManager::GetInstance().RotatePoint(&inPmt, &outPmt);
+		//cout << "Rotated pmtPlaneX:"<< outPmt.X() << " pmtPlaneY:" << outPmt.Y() << " pmtPlaneZ:" << outPmt.Z()<< endl;
+
+		Double_t marginX = 2.; // [cm]
+		Double_t marginY = 2.; // [cm]
+		// upper pmt planes
+		Double_t pmtYTop = TMath::Abs(outPmt.Y()) + 0.5 * pmtHeight + marginY;
+		Double_t pmtYBottom = TMath::Abs(outPmt.Y()) - 0.5 * pmtHeight - marginY;
+		//cout << "pmtYTop:"<< pmtYTop << " pmtYBottom:" << pmtYBottom << endl;
+		Double_t absYDet = TMath::Abs(rotatedPoint->y());
+		Bool_t isYOk = (absYDet <= pmtYTop && absYDet >= pmtYBottom);
+
+		Double_t pmtXMin = -TMath::Abs(outPmt.X()) - 0.5 * pmtWidth - marginX;
+		Double_t pmtXMax = TMath::Abs(outPmt.X()) + 0.5 * pmtWidth + marginX;
+		//cout << "pmtXMin:"<< pmtXMin << " pmtXMax:" << pmtXMax << endl;
+		Bool_t isXOk = (rotatedPoint->x() >= pmtXMin && rotatedPoint->x() <= pmtXMax);
+
+		return (isXOk && isYOk);
+       // return true;
     } else {
         return false;
     }
