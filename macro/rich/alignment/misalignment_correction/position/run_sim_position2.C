@@ -1,3 +1,40 @@
+static TString caveGeom;
+static TString pipeGeom;
+static TString magnetGeom;
+static TString mvdGeom;
+static TString stsGeom;
+static TString richGeom;
+static TString muchGeom;
+static TString shieldGeom;
+static TString trdGeom;
+static TString tofGeom;
+
+static TString mvdTag;
+static TString stsTag;
+static TString trdTag;
+static TString tofTag;
+
+static TString trdDigi;
+static TString tofDigi;
+
+static TString trdHitProducerType;
+
+static TString mvdMatBudget;
+static TString stsMatBudget;
+
+static TString  fieldMap;
+static Double_t fieldZ;
+static Double_t fieldScale;
+static Int_t    fieldSymType;
+
+static int nofNoiseHitsInRich;
+static double collectionEff;
+static double sigmaErrorRich;
+static double crosstalkRich;
+
+static Double_t trdAnnCut;
+static Int_t minNofPointsTrd;
+
 void run_sim_position2(Int_t nEvents = 100, Int_t Flag = 0)
 {
     TTree::SetMaxTreeSize(90000000000);
@@ -49,7 +86,7 @@ void run_sim_position2(Int_t nEvents = 100, Int_t Flag = 0)
     Double_t fieldScale   =  1.;            // field scaling factor
     Double_t fieldSymType =  3;
 
-    //TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/geosetup_25gev.C";
+    TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/geosetup_25gev.C";
 
     TString electrons = "yes"; // If "yes" then primary electrons will be generated
     Int_t NELECTRONS = 1; // number of e- to be generated
@@ -84,9 +121,9 @@ void run_sim_position2(Int_t nEvents = 100, Int_t Flag = 0)
     timer.Start();
 
     //setup all geometries from macro
-    //cout << "geoSetupName:" << geoSetupFile << endl;
-    //gROOT->LoadMacro(geoSetupFile);
-    //init_geo_setup();
+    cout << "geoSetupName:" << geoSetupFile << endl;
+    gROOT->LoadMacro(geoSetupFile);
+    gROOT->ProcessLine("init_geo_setup()");
 
 //    gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
 //    gROOT->LoadMacro("/u/jbendar/CBMSRC/macro/littrack/loadlibs.C");
@@ -244,10 +281,12 @@ void run_sim_position2(Int_t nEvents = 100, Int_t Flag = 0)
         //      polGen->Init();
         //      primGen->AddGenerator(polGen);
 
+/*
     if (pluto == "yes") {
         CbmPlutoGenerator *plutoGen= new CbmPlutoGenerator(plutoFile);
         primGen->AddGenerator(plutoGen);
     }
+*/
 
     fRun->SetGenerator(primGen);
 //    fRun->SetStoreTraj(kTRUE);
