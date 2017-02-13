@@ -9,9 +9,11 @@ macro_dir=/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/macro/rich
 
 # Specify input and output directories
 if [ $1 -eq 0 ] ; then
-        outdir=${output_dir}/Misaligned
-elif [ $1 -eq 1 ] ; then
         outdir=${output_dir}/Aligned
+elif [ $1 -eq 1 ] ; then
+        outdir=${output_dir}/Misaligned
+elif [ $1 -eq 2 ] ; then
+        outdir=${output_dir}/Standard
 fi
 
 # Needed to run macro via script

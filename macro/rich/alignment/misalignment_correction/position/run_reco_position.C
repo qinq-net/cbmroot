@@ -9,10 +9,11 @@ void run_reco_position(Int_t nEvents = 500000, Int_t Flag = 0)
 
 	gRandom->SetSeed(10);
 
-//	TString outDir = "/data/misalignment_correction/Sim_Outputs/Ring_Track_VS_Position/First/";
+/*	TString outDir = "/data/misalignment_correction/Sim_Outputs/Ring_Track_VS_Position/First/";
+	if (Flag == 0) {TString outDir = "/u/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned/";}
+	else if (Flag == 1) {TString outDir = "/u/jbendar/Sim_Outputs/Ring_Track_VS_Position/Aligned/";}
+*/
 	outDir = TString(gSystem->Getenv("OUT_DIR"));
-//    if (Flag == 0) {TString outDir = "/u/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned/";}
-//    else if (Flag == 1) {TString outDir = "/u/jbendar/Sim_Outputs/Ring_Track_VS_Position/Aligned/";}
 	TString parFile = outDir + "param.root";
 	TString mcFile = outDir + "mc.root";
 	TString recoFile = outDir + "reco.root";
@@ -182,53 +183,53 @@ void run_reco_position(Int_t nEvents = 500000, Int_t Flag = 0)
 	CbmMatchRecoToMC* matchRecoToMc = new CbmMatchRecoToMC();
 	run->AddTask(matchRecoToMc);
 
-    // Reconstruction Qa
-    Int_t minNofPointsTrd = 6;
-    trdAnnCut = 0.85;
-    CbmLitTrackingQa* trackingQa = new CbmLitTrackingQa();
-    trackingQa->SetMinNofPointsSts(4);
-    trackingQa->SetUseConsecutivePointsInSts(true);
-    trackingQa->SetMinNofPointsTrd(minNofPointsTrd);
-    trackingQa->SetMinNofPointsMuch(10);
-    trackingQa->SetMinNofPointsTof(1);
-    trackingQa->SetQuota(0.7);
-    trackingQa->SetMinNofHitsTrd(minNofPointsTrd);
-    trackingQa->SetMinNofHitsMuch(10);
-    trackingQa->SetVerbose(0);
-    trackingQa->SetMinNofHitsRich(7);
-    trackingQa->SetQuotaRich(0.6);
-    trackingQa->SetOutputDir(resultDir);
-    trackingQa->SetPRange(20, 0., 10.);
-    trackingQa->SetTrdAnnCut(trdAnnCut);
-    std::vector<std::string> trackCat, richCat;
-    trackCat.push_back("All");
-    trackCat.push_back("Electron");
-    richCat.push_back("Electron");
-    richCat.push_back("ElectronReference");
-    trackingQa->SetTrackCategories(trackCat);
-    trackingQa->SetRingCategories(richCat);
-    run->AddTask(trackingQa);
+	// Reconstruction Qa
+	Int_t minNofPointsTrd = 6;
+	trdAnnCut = 0.85;
+	CbmLitTrackingQa* trackingQa = new CbmLitTrackingQa();
+	trackingQa->SetMinNofPointsSts(4);
+	trackingQa->SetUseConsecutivePointsInSts(true);
+	trackingQa->SetMinNofPointsTrd(minNofPointsTrd);
+	trackingQa->SetMinNofPointsMuch(10);
+	trackingQa->SetMinNofPointsTof(1);
+	trackingQa->SetQuota(0.7);
+	trackingQa->SetMinNofHitsTrd(minNofPointsTrd);
+	trackingQa->SetMinNofHitsMuch(10);
+	trackingQa->SetVerbose(0);
+	trackingQa->SetMinNofHitsRich(7);
+	trackingQa->SetQuotaRich(0.6);
+	trackingQa->SetOutputDir(resultDir);
+	trackingQa->SetPRange(20, 0., 10.);
+	trackingQa->SetTrdAnnCut(trdAnnCut);
+	std::vector<std::string> trackCat, richCat;
+	trackCat.push_back("All");
+	trackCat.push_back("Electron");
+	richCat.push_back("Electron");
+	richCat.push_back("ElectronReference");
+	trackingQa->SetTrackCategories(trackCat);
+	trackingQa->SetRingCategories(richCat);
+	run->AddTask(trackingQa);
 
-    // RICH reco QA
-    CbmRichRecoQa* richRecoQa = new CbmRichRecoQa();
-    richRecoQa->SetOutputDir(resultDir);
-    run->AddTask(richRecoQa);
+	// RICH reco QA
+	CbmRichRecoQa* richRecoQa = new CbmRichRecoQa();
+	richRecoQa->SetOutputDir(resultDir);
+	run->AddTask(richRecoQa);
 
-    CbmLitFitQa* fitQa = new CbmLitFitQa();
-    fitQa->SetMvdMinNofHits(0);
-    fitQa->SetStsMinNofHits(4);
-    fitQa->SetMuchMinNofHits(10);
-    fitQa->SetTrdMinNofHits(minNofPointsTrd);
-    fitQa->SetOutputDir(resultDir);
-    //run->AddTask(fitQa);
+	CbmLitFitQa* fitQa = new CbmLitFitQa();
+	fitQa->SetMvdMinNofHits(0);
+	fitQa->SetStsMinNofHits(4);
+	fitQa->SetMuchMinNofHits(10);
+	fitQa->SetTrdMinNofHits(minNofPointsTrd);
+	fitQa->SetOutputDir(resultDir);
+	//run->AddTask(fitQa);
 
-    CbmLitClusteringQa* clusteringQa = new CbmLitClusteringQa();
-    clusteringQa->SetOutputDir(resultDir);
-    //run->AddTask(clusteringQa);
+	CbmLitClusteringQa* clusteringQa = new CbmLitClusteringQa();
+	clusteringQa->SetOutputDir(resultDir);
+	//run->AddTask(clusteringQa);
 
-    CbmLitTofQa* tofQa = new CbmLitTofQa();
-    tofQa->SetOutputDir(std::string(resultDir));
-    //run->AddTask(tofQa);
+	CbmLitTofQa* tofQa = new CbmLitTofQa();
+	tofQa->SetOutputDir(std::string(resultDir));
+	//run->AddTask(tofQa);
 
 	// -----  Parameter database   --------------------------------------------
 	FairRuntimeDb* rtdb = run->GetRuntimeDb();

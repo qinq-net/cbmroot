@@ -1,4 +1,4 @@
-void run_sim_position2(Int_t nEvents = 500000, Int_t Flag = 0)
+void run_sim_position2(Int_t nEvents = 100, Int_t Flag = 0)
 {
     TTree::SetMaxTreeSize(90000000000);
     Int_t iVerbose = 0;
@@ -11,10 +11,11 @@ void run_sim_position2(Int_t nEvents = 500000, Int_t Flag = 0)
 
     TString urqmdFile = "/data/Cbm_Root/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root";
 
-    outDir = TString(gSystem->Getenv("OUT_DIR"));
+//    outDir = TString(gSystem->Getenv("OUT_DIR"));
 //    outDir = "~/CBMSRC/macro/rich/alignment/misalignment_correction/position/test/";
 //    if (Flag == 0) {TString outDir = "/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned/";}
 //    else if (Flag == 1) {TString outDir = "/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Aligned/";}
+	TString outDir = "/u/jbendar/CBMSRC/macro/rich/alignment/misalignment_correction/position/test/";
     TString mcFile = outDir + "mc.root";
     TString geoFile = outDir + "geofilefull.root";
     TString outFile = outDir + "out.root";
@@ -29,16 +30,18 @@ void run_sim_position2(Int_t nEvents = 500000, Int_t Flag = 0)
 //	TString caveGeom = "cave.geo";
 	TString caveGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/cave.geo";
 //	TString pipeGeom = "pipe/pipe_v14l.root";
-	TString pipeGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/pipe/pipe_v14l.root";
+	TString pipeGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/pipe/pipe_v16c_1e.geo.root";
 //	TString magnetGeom = "magnet/magnet_v15a.geo.root";
 	TString magnetGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/magnet/magnet_v15a.geo.root";
 	TString fieldMap = "field_v12b";
 //	TString stsGeom = "sts/sts_v15c.geo.root";
-	TString stsGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/sts/sts_v15c.geo.root";
+	TString stsGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/sts/sts_v17a.geo.root";
 //	if (Flag == 0) {TString richGeom = "rich/Rich_jan2016_aligned.root";}
 //	else if (Flag == 1) {TString richGeom = "rich/Rich_jan2016_misalign_5mradXY_Tile1_3.root";}
-	if (Flag == 0) {TString richGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/rich/Rich_jan2016_aligned.root";}
-	else if (Flag == 1) {TString richGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/rich/Rich_jan2016_misalign_5mradXY_Tile1_3.root";}
+	if (Flag == 0) {TString richGeom = "rich/position/Aligned.root";}
+//	if (Flag == 0) {TString richGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/rich/position/Aligned.root";}
+	else if (Flag == 1) {TString richGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/rich/position/Misaligned_5mrad.root";}
+	else if (Flag == 2) {TString richGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/rich/position/rich_v16a_1e.root";}
 	TString trdGeom = ""; //"trd_v15a_1e.geo.root";
 	TString tofGeom = ""; //"tof_v16a_1e.geo.root";
 	TString mvdGeom = ""; //"mvd_v15a.geo.root";
@@ -86,7 +89,8 @@ void run_sim_position2(Int_t nEvents = 500000, Int_t Flag = 0)
     //init_geo_setup();
 
 //    gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
-    gROOT->LoadMacro("/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/macro/littrack/loadlibs.C");
+    gROOT->LoadMacro("/u/jbendar/CBMSRC/macro/littrack/loadlibs.C");
+//    gROOT->LoadMacro("/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/macro/littrack/loadlibs.C");
     loadlibs();
 
     //Logger settings
