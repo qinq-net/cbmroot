@@ -17,13 +17,7 @@
 
 // =====   default constructor   ===============================================
 CbmHldSource::CbmHldSource()
-#ifdef VERSION_LESS_151102
-  : FairSource(),
-    fUnpackers(new TObjArray()),
-    fNUnpackers(0),
-#else
-  : FairOnlineSource(),
-#endif
+  : FairMbsSource(),
     fFileNames(new TList()),
     fNFiles(0),
     fCurrentFile(0),
@@ -40,16 +34,11 @@ CbmHldSource::CbmHldSource()
 // =============================================================================
 CbmHldSource::~CbmHldSource()
 {
-#ifdef VERSION_LESS_151102
-  fUnpackers->Delete(); //TODO: look into object ownership (optional)
-  delete fUnpackers;
-#endif
-
   fFileNames->Delete(); //TODO: does it delete the TObjString instances?
   delete fFileNames;
 
   delete fFileStream;
-
+ 
   delete[] fDataBuffer;
 }
 // =============================================================================
@@ -58,45 +47,6 @@ CbmHldSource::~CbmHldSource()
 Bool_t CbmHldSource::Init()
 {
   fNFiles = fFileNames->GetEntries();
-
-#ifdef VERSION_LESS_151102
-  fNUnpackers = fUnpackers->GetEntriesFast();
-
-
-  if(!fNUnpackers)
-  {
-    // TODO: the same logging functionality is provided by the LOG(level)
-    // macro which encapsulates the method below
-    gLogger->Error(MESSAGE_ORIGIN,
-                   TString::Format("\nNo FairUnpack instance registered with "
-                                   "the data source. Please register at least "
-                                   "one FairUnpack instance by calling "
-                                   "CbmHldSource::AddUnpacker prior to calling "
-                                   "FairRunOnline::Init."
-                                  ).Data()
-                  );
-
-    return kFALSE;
-  }
-
-  for(Int_t i = 0; i < fNUnpackers; i++)
-  {
-    FairUnpack* tUnpacker = (FairUnpack*)fUnpackers->At(i);
-
-    if (!tUnpacker->Init())
-    {
-      gLogger->Error(MESSAGE_ORIGIN,
-                     TString::Format("\nInitialisation of FairUnpack instance "
-                                     "indexed %u of type %s failed.",
-                                     i,
-                                     tUnpacker->ClassName()
-                                    ).Data()
-                    );
-
-      return kFALSE;
-    }
-  }
-#endif
 
   if(!fNFiles)
   {
@@ -314,7 +264,6 @@ Int_t CbmHldSource::ReadEvent(UInt_t)
                      );
 
       for (Int_t i = 0; i < fUnpackers->GetEntriesFast(); i++) 
-      //for(Int_t i = 0; i < fNUnpackers; i++)
       {
         FairUnpack* tUnpacker = (FairUnpack*)fUnpackers->At(i);
 
@@ -428,18 +377,6 @@ Int_t CbmHldSource::ReadEvent(UInt_t)
   }
 
 }
-// =============================================================================
-
-// =============================================================================
-#ifdef VERSION_LESS_151102
-void CbmHldSource::Reset()
-{
-  for(Int_t i = 0; i < fNUnpackers; i++)
-  {
-    ((FairUnpack *)fUnpackers->At(i))->Reset();
-  }
-}
-#endif
 // =============================================================================
 
 // =============================================================================
@@ -580,6 +517,7 @@ void CbmHldSource::AddPath(const TString& tFileDirectory,
   }
 
   TList* tList = tSystemDirectory->GetListOfFiles();
+  tList->Sort();
 
   TIterator* tIter = tList->MakeIterator();
   TSystemFile* tSystemFile;

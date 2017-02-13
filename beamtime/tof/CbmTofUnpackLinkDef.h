@@ -12,9 +12,9 @@
 #pragma link C++ class hadaq::LocalStampConverter+;
 #pragma link C++ class hadaq::TdcIterator+;
 #pragma link C++ struct hadaq::TdcMessage+;
-#ifdef BUILD_TOF_BEAMTIME
+//#ifdef BUILD_TOF_BEAMTIME
  #pragma link C++ class CbmHldSource+;
-#endif // NOT BUILD_BEAMTIME
+//#endif // NOT BUILD_BEAMTIME
 
 #pragma link C++ class TMbsUnpackTofPar+;
 #pragma link C++ class TMbsUnpackTofContFact+;

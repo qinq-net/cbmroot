@@ -6,15 +6,9 @@
 #ifndef CBMHLDSOURCE_H
 #define CBMHLDSOURCE_H 1
 
-#ifdef VERSION_LESS_151102
-#include "FairSource.h"
-#else
-#include "FairOnlineSource.h"
-#endif
+#include "FairMbsSource.h"
 
-#include "FairUnpack.h"
-
-#include "TObjArray.h"
+//#include "TObjArray.h" // already included in "FairMbsSource.h"
 #include "TString.h"
 
 namespace hadaq
@@ -22,14 +16,7 @@ namespace hadaq
   struct RawEvent;
 }
 
-class FairUnpack;
-
 class TList;
-
-//namespace std
-//{
-//  class ifstream;
-//}
 
 
 /** @class CbmHldSource
@@ -40,11 +27,7 @@ class TList;
  ** ...
  **
  **/
-#ifdef VERSION_LESS_151102
-class CbmHldSource : public FairSource
-#else
-class CbmHldSource : public FairOnlineSource
-#endif
+class CbmHldSource : public FairMbsSource
 {
   public:
 
@@ -57,18 +40,8 @@ class CbmHldSource : public FairOnlineSource
     /** inherited pure virtual methods from FairSource **/
     Bool_t Init();
     Int_t ReadEvent(UInt_t = 0);
-
-#ifdef VERSION_LESS_151102
-    enum Source_Type {kONLINE, kFILE};
-#endif
-
-    Source_Type GetSourceType() {return kONLINE;}
-    
     void Close();
-#ifdef VERSION_LESS_151102
-    void Reset();
-#endif
-    void AddUnpacker(FairUnpack* unpacker) { fUnpackers->Add(unpacker); }
+
     void AddFile(const TString& tFileName);
     void AddPath(const TString& tFileDirectory,
                  const TString& tFileNameWildCard);
@@ -89,10 +62,6 @@ class CbmHldSource : public FairOnlineSource
 
     /**private members*/
     
-#ifdef VERSION_LESS_151102
-    TObjArray* fUnpackers;
-    Int_t fNUnpackers;
-#endif
     TList* fFileNames;
     Int_t fNFiles;
     Int_t fCurrentFile;
@@ -103,7 +72,7 @@ class CbmHldSource : public FairOnlineSource
     Char_t* fDataBuffer;
     Bool_t fNoMoreEvents;
 
-    ClassDef(CbmHldSource,1)
+    ClassDef(CbmHldSource,2)
 };
 
 #endif
