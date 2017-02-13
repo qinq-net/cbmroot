@@ -16,10 +16,10 @@ void run_sim_position2(Int_t nEvents = 100, Int_t Flag = 0)
 //    if (Flag == 0) {TString outDir = "/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned/";}
 //    else if (Flag == 1) {TString outDir = "/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Aligned/";}
 	TString outDir = "/u/jbendar/CBMSRC/macro/rich/alignment/misalignment_correction/position/test/";
-    TString mcFile = outDir + "mc.root";
-    TString geoFile = outDir + "geofilefull.root";
-    TString outFile = outDir + "out.root";
-    TString parFile = outDir + "param.root";
+	TString mcFile = outDir + "mc.root";
+	TString geoFile = outDir + "geofilefull.root";
+	TString outFile = outDir + "out.root";
+	TString parFile = outDir + "param.root";
 
 /*	TString outDir = "/data/misalignment_correction/event_display/test/"; // For eventDisplay and run_rich_event_display macros
 	TString parFile = outDir + "param.root";
@@ -89,9 +89,9 @@ void run_sim_position2(Int_t nEvents = 100, Int_t Flag = 0)
     //init_geo_setup();
 
 //    gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
-    gROOT->LoadMacro("/u/jbendar/CBMSRC/macro/littrack/loadlibs.C");
+//    gROOT->LoadMacro("/u/jbendar/CBMSRC/macro/littrack/loadlibs.C");
 //    gROOT->LoadMacro("/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/macro/littrack/loadlibs.C");
-    loadlibs();
+//    loadlibs();
 
     //Logger settings
     TString logLevel = "INFO";   // "DEBUG";
