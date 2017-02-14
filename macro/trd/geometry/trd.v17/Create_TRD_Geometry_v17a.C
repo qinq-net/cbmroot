@@ -292,8 +292,8 @@ const Int_t RobTypeOnModule[NofModuleTypes]={555, 55,  5,  0,  0, 55,  5,  3 }; 
 
 // super density for type 1 modules - 2017 - 540 mm
 //const Int_t FebsPerModule[NofModuleTypes] = {  9,  5,  6,  4, 12,  8,  4,  3 }; // number of FEBs on backside
-const Int_t FebsPerModule[NofModuleTypes] = {  9,  6,  6,  4, 12,  8,  4,  3 }; // number of FEBs on backside
-const Int_t AsicsPerFeb[NofModuleTypes]   = {210,210,105,105,108,108,108,108 }; // %100 gives number of ASICs on FEB, /100 gives grouping
+const Int_t FebsPerModule[NofModuleTypes] = {  9,  6,  3,  4, 12,  8,  4,  3 }; // number of FEBs on backside
+const Int_t AsicsPerFeb[NofModuleTypes]   = {210,210,210,105,108,108,108,108 }; // %100 gives number of ASICs on FEB, /100 gives grouping
 //// ultimate density - 540 mm
 //const Int_t FebsPerModule[NofModuleTypes] = {  6,  5,  6,  4, 12,  8,  4,  3 }; // number of FEBs on backside - reduced FEBs (64 ch ASICs)
 //const Int_t AsicsPerFeb[NofModuleTypes]   = {315,210,105,105,108,108,108,108 }; //  %100 gives number of ASICs on FEB, /100 gives grouping
