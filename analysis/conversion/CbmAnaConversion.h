@@ -192,7 +192,6 @@ private:
    TClonesArray* fStsTrackMatches;
    TClonesArray* fGlobalTracks;
    
-	CbmRichElectronIdAnn* fRichElIdAnn;
 	TH1D * fhANN_output_electrons;
 	TH1D * fhANN_output_electrons2;
 	TH1D * fhANN_output_electrons_chiCut;

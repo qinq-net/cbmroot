@@ -367,7 +367,9 @@ Bool_t CbmDileptonAssignPid::GetRichPid(Bool_t switchRichMom, Bool_t switchRichS
     if(!richRing) return kFALSE;
 
     //distance cut
-    Double_t distance = richRing->GetDistance();
+	// CbmRichRing::GetDistance() method is no longer supported
+	// If you wan to use cuts update code using CbmRichUtil::GetRingTrackDistance()
+    Double_t distance = 1.;
 
     if(fVerbose>2)  cout<<"-I- CbmDileptonAssignPid::GetRichPid(): mom, ring-track distance : "<<momentum.Mag()<<" "<<distance<<endl;
 

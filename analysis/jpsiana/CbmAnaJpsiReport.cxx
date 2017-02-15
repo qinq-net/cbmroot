@@ -18,6 +18,7 @@
 #include "CbmAnaJpsiCuts.h"
 #include "TLine.h"
 #include "TStyle.h"
+#include "cbm/elid/CbmLitGlobalElectronId.h"
 
 using boost::assign::list_of;
 using Cbm::NumberToString;
@@ -260,8 +261,8 @@ void CbmAnaJpsiReport::DrawCutDistributions()
 	DrawCutH1("fh_track_chi2sts", -999999., false);
 	DrawCutH1("fh_track_rapidity", -999999., false);
 	DrawCutH1("fh_track_pt", cuts.fPtCut, false);
-	DrawCutH1("fh_track_rich_ann", cuts.fRichAnnCut, false);
-	DrawCutH1("fh_track_trd_ann", cuts.fTrdAnnCut, false);
+	DrawCutH1("fh_track_rich_ann", CbmLitGlobalElectronId::GetInstance().GetRichAnnCut(), false);
+	DrawCutH1("fh_track_trd_ann", CbmLitGlobalElectronId::GetInstance().GetTrdAnnCut(), false);
 	Draw2DCut("fh_track_tof_m2");
 }
 

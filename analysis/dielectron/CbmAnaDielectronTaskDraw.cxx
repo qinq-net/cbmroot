@@ -17,6 +17,7 @@
 #include <sstream>
 
 #include <boost/assign/list_of.hpp>
+#include "cbm/elid/CbmLitGlobalElectronId.h"
 
 #include "TText.h"
 #include "TH1.h"
@@ -467,8 +468,8 @@ void CbmAnaDielectronTaskDraw::Draw1DCut(
 
 void CbmAnaDielectronTaskDraw::DrawCutDistributions()
 {
-   Draw1DCut("fh_richann", "left", fCuts.fRichAnnCut);
-   Draw1DCut("fh_trdann", "left", fCuts.fTrdAnnCut);
+   Draw1DCut("fh_richann", "left", CbmLitGlobalElectronId::GetInstance().GetRichAnnCut());
+   Draw1DCut("fh_trdann", "left", CbmLitGlobalElectronId::GetInstance().GetTrdAnnCut());
    Draw2DCut("fh_tofm2");
 
    Draw1DCut("fh_chi2prim", "right", fCuts.fChiPrimCut);

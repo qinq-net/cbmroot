@@ -58,8 +58,6 @@ private:
 	std::vector<TH1*> fHistoList_photons_withRICH_withChi;	// list of all histograms related to rich rings
 	std::vector<TH1*> fHistoList_photons_withRICH_fromTarget;	// list of all histograms related to rich rings
 
-	CbmLitGlobalElectronId* electronidentifier;
-
 	std::vector<Int_t>			fRecoTracklist_gtIndex;
 	std::vector<Int_t>			fRecoTracklist_mcIndex;
 	std::vector<TVector3>		fRecoTracklist_momentum;

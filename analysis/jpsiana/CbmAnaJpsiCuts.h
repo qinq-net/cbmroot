@@ -10,15 +10,6 @@
 class CbmAnaJpsiCuts {
 public:
 	CbmAnaJpsiCuts():
-		fTrdAnnCut(0.),
-		fRichAnnCut(0.),
-		fMeanA(0.),
-		fMeanB(0.),
-		fRmsA(0.),
-		fRmsB(0.),
-		fRmsCoeff(0.),
-		fDistCut(0.),
-		fUseRichAnn(kTRUE),
 		fChiPrimCut(0.),
 		fPtCut(0.)
 	{
@@ -30,16 +21,7 @@ public:
 	 */
 	void SetDefaultCuts()
 	{
-		//electron ID cuts
-		fTrdAnnCut = 0.8;//0.35;//0.6;//0.85;
-		fRichAnnCut = 0.7;//0.2;//0.6;
-		fUseRichAnn = true;
-		fMeanA = -1.;
-		fMeanB = -1.;
-		fRmsA = -1.;
-		fRmsB = -1.;
-		fRmsCoeff = -1.;
-		fDistCut = -1.;
+		//electron ID cuts, we use CbmLitGlobalElectronId
 
 		// analysis cuts
 		fPtCut = 1.;//1.0;//1.5;
@@ -52,23 +34,12 @@ public:
 	void Print()
 	{
 		std::cout << "Used cuts:" << std::endl <<
-				"fTrdAnnCut = " << fTrdAnnCut << std::endl <<
-				"fRichAnnCut = " << fRichAnnCut << std::endl <<
 				"fChiPrimCut = " << fChiPrimCut << std::endl <<
 				"fPtCut = " << fPtCut << std::endl;
 	}
 
 public:
-	 // ID cuts
-	Double_t fTrdAnnCut;
-	Double_t fRichAnnCut;
-	Double_t fMeanA;
-	Double_t fMeanB;
-	Double_t fRmsA;
-	Double_t fRmsB;
-	Double_t fRmsCoeff;
-	Double_t fDistCut;
-	Bool_t fUseRichAnn;
+	 // ID cuts, we use CbmLitGlobalElectronId
 
 	// Analysis cuts
 	Double_t fChiPrimCut;

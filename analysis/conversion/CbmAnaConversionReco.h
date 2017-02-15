@@ -68,9 +68,6 @@ private:
 	TClonesArray* fGlobalTracks;
 	TClonesArray* fRichRings;
 	TClonesArray* fRichHits;
-	CbmRichElectronIdAnn* fRichElIdAnn;
-
-	CbmLitGlobalElectronId* electronidentifier;
 
 
 	std::vector<CbmMCTrack*>	fMCTracklist_all;

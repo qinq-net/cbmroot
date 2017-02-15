@@ -22,6 +22,7 @@
 #include "CbmTrackMatchNew.h"
 #include "CbmAnaJpsiKinematicParams.h"
 #include "CbmAnaJpsiCuts.h"
+#include "cbm/elid/CbmLitGlobalElectronId.h"
 
 using namespace std;
 
@@ -51,7 +52,6 @@ CbmAnaJpsiTask::CbmAnaJpsiTask()
 	  fKFVertex(),
 	  fCandidates(),
 	  fCuts(),
-	  fElIdAnn(NULL),
 	  fWeight(1.14048e-6),
 	  fHM(NULL),
 	  fUseTrd(kTRUE),
@@ -136,11 +136,6 @@ InitStatus CbmAnaJpsiTask::Init()
    ioman->Register("JpsiCandidates","Jpsi", fJpsiCandidates, IsOutputBranchPersistent("JpsiCandidates"));
 
    InitHist();
-
-   if (fCuts.fUseRichAnn){
-      fElIdAnn = new CbmRichElectronIdAnn();
-      fElIdAnn->Init();
-   }
 
    return kSUCCESS;
 }
@@ -412,12 +407,12 @@ void CbmAnaJpsiTask::FillCandidates()
 	fCandidates.clear();
 	Int_t nofGlobalTracks = fGlobalTracks->GetEntriesFast();
 
-	for (Int_t i=0;i<nofGlobalTracks;i++) {
+	for (Int_t iGTrack = 0; iGTrack <  nofGlobalTracks; iGTrack++) {
 		// create candidate, in which we will store some parameters of reconstructed global track
     	CbmAnaJpsiCandidate cand;
 
 		//get GlobalTrack from array
-		CbmGlobalTrack* globalTrack = (CbmGlobalTrack*) fGlobalTracks->At(i);
+		CbmGlobalTrack* globalTrack = (CbmGlobalTrack*) fGlobalTracks->At(iGTrack);
 		if (NULL == globalTrack) continue;
 
 		// get StsTrack from global track
@@ -450,7 +445,7 @@ void CbmAnaJpsiTask::FillCandidates()
         CbmTofHit* tofHit = (CbmTofHit*) fTofHits->At(cand.fTofInd);
         if (tofHit == NULL) continue;
 
-        IsElectron(richRing, cand.fMomentum.Mag(), trdTrack, globalTrack, &cand);
+        IsElectron(iGTrack, cand.fMomentum.Mag(), &cand);
         IsRecoTrackAccepted(&cand);
         if (!cand.fIsRecoTrackAccepted) continue;
         // push candidate to the array
@@ -892,117 +887,23 @@ void CbmAnaJpsiTask::SignalAndBgReco()
 }
 
 void CbmAnaJpsiTask::IsElectron(
-		CbmRichRing* ring,
+		Int_t globalTrackIndex,
 		Double_t momentum,
-		CbmTrdTrack* trdTrack,
-	    CbmGlobalTrack * gTrack,
 		CbmAnaJpsiCandidate* cand)
 {
-	Bool_t richEl = IsRichElectron(ring, momentum, cand);
-	Bool_t trdEl = (trdTrack != NULL)?IsTrdElectron(trdTrack, cand):true;
-//	Double_t annRich = cand->fRichAnn;
-//	Double_t annTrd = cand->fTrdAnn;
-	Bool_t tofEl = IsTofElectron(gTrack, momentum, cand);
+	Bool_t richEl = CbmLitGlobalElectronId::GetInstance().IsRichElectron(globalTrackIndex, momentum);
+	cand->fRichAnn = CbmLitGlobalElectronId::GetInstance().GetRichAnn(globalTrackIndex, momentum);
+
+	Bool_t trdEl = CbmLitGlobalElectronId::GetInstance().IsTrdElectron(globalTrackIndex, momentum);
+	cand->fTrdAnn = CbmLitGlobalElectronId::GetInstance().GetTrdAnn(globalTrackIndex, momentum);
+
+	Bool_t tofEl = CbmLitGlobalElectronId::GetInstance().IsTofElectron(globalTrackIndex, momentum);
 	//Bool_t momCut = (fCuts.fMomentumCut > 0.)?(momentum < fCuts.fMomentumCut):true;
 
-	if (richEl) {cand->fIsRichEl = true;}
-	else {cand->fIsRichEl = false;}
-
-	if (trdEl) {cand->fIsTrdEl = true;}
-	else {cand->fIsTrdEl = false;}
-
-	if (fUseTof == false) {
-		tofEl=true;
-	}
-		if (tofEl) {cand->fIsTofEl = true;}
-		else {cand->fIsTofEl = false;}
-
-	if (richEl && trdEl && tofEl)
-	{
-	     cand->fIsElectron = true;
-	} else
-	{
-	     cand->fIsElectron = false;
-	}
-
-} // IsElectron
-
-
-
-Bool_t CbmAnaJpsiTask::IsRichElectron(CbmRichRing* ring,
-		Double_t momentum,
-		CbmAnaJpsiCandidate* cand)
-{
-	if (fCuts.fUseRichAnn == false)
-	{
-		Bool_t axisA= ring->GetAaxis();
-		Bool_t axisB= ring->GetBaxis();
-		Double_t dist= ring->GetDistance();
-		if ( fabs(axisA-fCuts.fMeanA) < fCuts.fRmsCoeff*fCuts.fRmsA &&fabs(axisB-fCuts.fMeanB) < fCuts.fRmsCoeff*fCuts.fRmsB && dist < fCuts.fDistCut){
-		            return true;
-		        } else {
-		            return false;
-		        }
-	 } else
-	 {
-	    Double_t ann = fElIdAnn->DoSelect(ring, momentum);
-	    cand->fRichAnn = ann;
-	    if (ann > fCuts.fRichAnnCut) return true;
-	    else  return false;
-	 }
-}//IsRichElectron
-
-
-
-Bool_t CbmAnaJpsiTask::IsTrdElectron(
-      CbmTrdTrack* trdTrack,
-	  CbmAnaJpsiCandidate* cand)
-{
-    Double_t ann = trdTrack->GetPidANN();
-    cand->fTrdAnn = ann;
-    if (ann > fCuts.fTrdAnnCut) return true;
-    else return false;
-
-}
-
-
-Bool_t CbmAnaJpsiTask::IsTofElectron(
-      CbmGlobalTrack* gTrack,
-      Double_t momentum,
-	  CbmAnaJpsiCandidate* cand)
-{
-	Double_t trackLength = gTrack->GetLength() / 100. ;
-
-	//calculate Time Of Flight of TOF Hit
-	Int_t tofIndex = gTrack->GetTofHitIndex();
-	CbmTofHit* tofHit = (CbmTofHit*) fTofHits->At(tofIndex);
-	if (tofHit == NULL)
-	{
-		cand->fMass2 = 100.;
-		return false;
-	}
-
-	Double_t time= 0.2998 * tofHit->GetTime(); // time in ns -> transfrom to ct in m
-
-    // Calculate mass squared
-	Double_t mass2 = TMath::Power(momentum,2.)* (TMath::Power(time/ trackLength, 2) - 1);
-	cand->fMass2 = mass2;
-
-	if (momentum >= 1.5)
-		{
-			if (mass2 < (0.077*momentum-0.1155))	//(0.013*momentum - 0.003))
-				{
-					return true;
-			    }
-			else {
-					return false;
-				}
-		} else
-			{
-			      return false;
-			}
-
-	return false;
+	cand->fIsRichEl = richEl;
+	cand->fIsTrdEl = trdEl;
+	cand->fIsTofEl = (fUseTof)?tofEl:true;
+	cand->fIsElectron = (richEl && trdEl && tofEl);
 }
 
 

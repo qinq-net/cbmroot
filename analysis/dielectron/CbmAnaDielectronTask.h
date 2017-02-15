@@ -18,7 +18,6 @@
 #include "CbmTrdTrack.h"
 #include "CbmMCTrack.h"
 #include "CbmGlobalTrack.h"
-#include "CbmRichElectronIdAnn.h"
 #include "CbmKFVertex.h"
 #include "cbm/qa/mc/CbmLitMCTrackCreator.h"
 #include "CbmLmvmCuts.h"
@@ -270,24 +269,8 @@ private:
     		CbmLmvmCandidate* cand);
 
     void IsElectron(
-    	CbmRichRing * ring,
+    	Int_t globalTrackIndex,
     	Double_t momentum,
-    	CbmTrdTrack* trdTrack,
-    	CbmGlobalTrack * gTrack,
-		CbmLmvmCandidate* cand);
-
-    Bool_t IsRichElectron(
-        CbmRichRing* ring, 
-        Double_t momentum, 
-		CbmLmvmCandidate* cand);
-
-    Bool_t IsTrdElectron(
-        CbmTrdTrack* trdTrack, 
-		CbmLmvmCandidate* cand);
-
-    Bool_t IsTofElectron(
-        CbmGlobalTrack* gTrack, 
-        Double_t momentum, 
 		CbmLmvmCandidate* cand);
 
 
@@ -334,8 +317,6 @@ private:
     //Bool_t fUseMcMomentum;
 
     CbmLmvmCuts fCuts; // electorn identification and analisys cuts
-
-	CbmRichElectronIdAnn* fElIdAnn;
 
     std::vector<TH1*> fHistoList; //list of all histograms
 
@@ -497,9 +478,6 @@ public:
    void SetUseTrd(Bool_t use){fUseTrd = use;};
    void SetUseTof(Bool_t use){fUseTof = use;};
    void SetWeight(Double_t weight){fWeight = weight;};
-
-   // ID cuts
-   void SetTrdAnnCut(Double_t par){fCuts.fTrdAnnCut = par;}
 
    void SetPionMisidLevel(Double_t level) {fPionMisidLevel = level;}
   // void SetMomentumCut(Double_t mom) {fMomentumCut = mom;}

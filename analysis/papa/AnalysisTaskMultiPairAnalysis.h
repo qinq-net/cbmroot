@@ -50,7 +50,6 @@ protected:
   TList fListPairAnalysis;                    //  List of papa framework instances
   TList fListHistos;                          //! List of histogram manager lists in the framework classes
 
-  CbmRichElectronIdAnn *fgRichElIdAnn = NULL; // neural network for Rich electron ID
   Double_t fBeamEnergy  = 0.;                 // beam energy in GeV (set by hand)
 
   AnalysisCuts      *fEventFilter = NULL;     // event filter

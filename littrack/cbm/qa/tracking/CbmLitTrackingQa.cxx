@@ -20,6 +20,7 @@
 #include "CbmStsTrack.h"
 #include "CbmMvdHitMatch.h"
 #include "CbmTrackMatchNew.h"
+#include "utils/CbmRichUtil.h"
 
 #include "TH1.h"
 #include "TH2F.h"
@@ -80,7 +81,6 @@ CbmLitTrackingQa::CbmLitTrackingQa():
    fTrdMatches(NULL),
    fTofPoints(NULL),
    fTofMatches(NULL),
-   fElectronId(NULL),
    fRichAnnCut(0.25),
    fTrdAnnCut(0.85)
 {
@@ -116,10 +116,8 @@ InitStatus CbmLitTrackingQa::Init()
       fMcToRecoMap.insert(make_pair(trackVariants[i], multimap<Int_t, Int_t>()));
    }
 
-   fElectronId = new CbmLitGlobalElectronId();
-   fElectronId->SetTrdAnnCut(fTrdAnnCut);
-   fElectronId->SetRichAnnCut(fRichAnnCut);
-   fElectronId->Init();
+   CbmLitGlobalElectronId::GetInstance().SetTrdAnnCut(fTrdAnnCut);
+   CbmLitGlobalElectronId::GetInstance().SetRichAnnCut(fRichAnnCut);
 
    return kSUCCESS;
 }
@@ -699,6 +697,7 @@ void CbmLitTrackingQa::ProcessGlobalTracks()
       Bool_t isTofOk = tofId > -1 && fDet.GetDet(kTOF);
       Bool_t isRichOk = richId > -1 && fDet.GetDet(kRICH);
 
+      Double_t rtDistance = CbmRichUtil::GetRingTrackDistance(iTrack);
       // check the quality of track segments
       const CbmTrackMatchNew* stsTrackMatch;
       if (isStsOk) {
@@ -713,7 +712,7 @@ void CbmLitTrackingQa::ProcessGlobalTracks()
             if (isRichOk){
                const CbmRichRing* ring = static_cast<const CbmRichRing*>(fRichRings->At(richId));
                if (NULL != ring){
-                  if (ring->GetDistance() < 1.) fHM->H1("hng_NofGhosts_StsRichMatching_Nh")->Fill(nofHits);
+                  if (CbmRichUtil::GetRingTrackDistance(iTrack) < 1.) fHM->H1("hng_NofGhosts_StsRichMatching_Nh")->Fill(nofHits);
                }
             }
          } else {
@@ -762,17 +761,17 @@ void CbmLitTrackingQa::ProcessGlobalTracks()
                // ghost ring distribution vs position on photodetector plane
                fHM->H1("hng_NofGhosts_Rich_RingXcYc")->Fill(ring->GetCenterX(), ring->GetCenterY());
 
-
                 // calculate number of ghost after STS matching and electron identification
-               if (ring->GetDistance() < 1.) fHM->H1("hng_NofGhosts_RichStsMatching_Nh")->Fill(nofHits);
+               if (rtDistance < 1.) fHM->H1("hng_NofGhosts_RichStsMatching_Nh")->Fill(nofHits);
 
                Double_t momentumMc = 0.;
                if (stsTrackMatch != NULL) {
                   const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(fMCTracks->At(stsTrackMatch->GetMatchedLink().GetIndex()));
                   if (mcTrack != NULL) momentumMc = mcTrack->GetP();
                 }
-                if (ring->GetDistance() < 1. && fElectronId->IsRichElectron(iTrack, momentumMc))
+                if (rtDistance < 1. && CbmLitGlobalElectronId::GetInstance().IsRichElectron(iTrack, momentumMc)){
                    fHM->H1("hng_NofGhosts_RichElId_Nh")->Fill(nofHits);
+                }
             }
          }
       }
@@ -1063,9 +1062,9 @@ Bool_t CbmLitTrackingQa::ElectronId(
    const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(fMCTracks->At(mcId));
    TVector3 mom;
    mcTrack->GetMomentum(mom);
-   Bool_t isRichElectron = (fDet.GetDet(kRICH) && (effName.find("Rich") != string::npos)) ? fElectronId->IsRichElectron(globalTrackIndex, mom.Mag()) : true;
-   Bool_t isTrdElectron = (fDet.GetDet(kTRD) && (effName.find("Trd") != string::npos)) ? fElectronId->IsRichElectron(globalTrackIndex, mom.Mag()) : true;
-   Bool_t isTofElectron = (fDet.GetDet(kTOF) && (effName.find("Tof") != string::npos)) ? fElectronId->IsRichElectron(globalTrackIndex, mom.Mag()) : true;
+   Bool_t isRichElectron = (fDet.GetDet(kRICH) && (effName.find("Rich") != string::npos)) ? CbmLitGlobalElectronId::GetInstance().IsRichElectron(globalTrackIndex, mom.Mag()) : true;
+   Bool_t isTrdElectron = (fDet.GetDet(kTRD) && (effName.find("Trd") != string::npos)) ? CbmLitGlobalElectronId::GetInstance().IsRichElectron(globalTrackIndex, mom.Mag()) : true;
+   Bool_t isTofElectron = (fDet.GetDet(kTOF) && (effName.find("Tof") != string::npos)) ? CbmLitGlobalElectronId::GetInstance().IsRichElectron(globalTrackIndex, mom.Mag()) : true;
    return isRichElectron && isTrdElectron && isTofElectron;
 }
 
@@ -1096,9 +1095,9 @@ void CbmLitTrackingQa::PionSuppression()
       Double_t p = mom.Mag();
       Int_t pdgSts = mcTrack->GetPdgCode();
       if (std::abs(pdgSts) == 211) {
-         Bool_t isRichElectron = (fDet.GetDet(kRICH)) ? fElectronId->IsRichElectron(iGT, p) : true;
-         Bool_t isTrdElectron = (fDet.GetDet(kTRD)) ? fElectronId->IsTrdElectron(iGT, p) : true;
-         Bool_t isTofElectron = (fDet.GetDet(kTOF)) ? fElectronId->IsTofElectron(iGT, p) : true;
+         Bool_t isRichElectron = (fDet.GetDet(kRICH)) ? CbmLitGlobalElectronId::GetInstance().IsRichElectron(iGT, p) : true;
+         Bool_t isTrdElectron = (fDet.GetDet(kTRD)) ? CbmLitGlobalElectronId::GetInstance().IsTrdElectron(iGT, p) : true;
+         Bool_t isTofElectron = (fDet.GetDet(kTOF)) ? CbmLitGlobalElectronId::GetInstance().IsTofElectron(iGT, p) : true;
 
          for (Int_t iHist = 0; iHist < nofHistos; iHist++) {
             histos[iHist]->Fill(p); // Fill RecPions histogramm

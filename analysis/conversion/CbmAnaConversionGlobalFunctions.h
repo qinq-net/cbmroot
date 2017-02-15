@@ -31,10 +31,6 @@ public:
 		TClonesArray *fRichRings = (TClonesArray*) ioman->GetObject("RichRing");
 		if (NULL == fRichRings) return -2;
 		
-		CbmRichElectronIdAnn *fRichElIdAnn = new CbmRichElectronIdAnn();
-		fRichElIdAnn->Init();
-		
-		
 		//if (NULL == fGlobalTracks || NULL == fRichRings) return -2;
 		//CbmGlobalTrack* globalTrack = (CbmGlobalTrack*) fGlobalTracks->At(globalTrackIndex);
 		const CbmGlobalTrack* globalTrack = static_cast<const CbmGlobalTrack*>(fGlobalTracks->At(globalTrackIndex));
@@ -43,7 +39,7 @@ public:
 		CbmRichRing* ring = static_cast<CbmRichRing*> (fRichRings->At(richId));
 		if (NULL == ring) return -2;
 
-		Double_t ann = fRichElIdAnn->DoSelect(ring, momentum);
+		Double_t ann = CbmRichElectronIdAnn::GetInstance().CalculateAnnValue(globalTrackIndex, momentum);
 		return ann;
 	}
 
@@ -58,11 +54,7 @@ public:
 		if (NULL == fGlobalTracks) return -2;
 		TClonesArray *fRichRings = (TClonesArray*) ioman->GetObject("RichRing");
 		if (NULL == fRichRings) return -2;
-		
-		CbmRichElectronIdAnn *fRichElIdAnn = new CbmRichElectronIdAnn();
-		fRichElIdAnn->Init();
-		
-		
+
 		
 		//if (NULL == fGlobalTracks || NULL == fRichRings) return -2;
 		//CbmGlobalTrack* globalTrack = (CbmGlobalTrack*) fGlobalTracks->At(globalTrackIndex);
@@ -72,7 +64,7 @@ public:
 		CbmRichRing* ring = static_cast<CbmRichRing*> (fRichRings->At(richId));
 		if (NULL == ring) return -2;
 
-		Double_t ann = fRichElIdAnn->DoSelect(ring, momentum);
+		Double_t ann = CbmRichElectronIdAnn::GetInstance().CalculateAnnValue(globalTrackIndex, momentum);
 		if(ann > ANNcut) return true;
 		else return false;
 	}

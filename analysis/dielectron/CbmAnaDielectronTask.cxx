@@ -22,7 +22,7 @@
 #include "CbmTrdTrack.h"
 #include "CbmTrdHit.h"
 #include "CbmTofHit.h"
-
+#include "cbm/elid/CbmLitGlobalElectronId.h"
 #include "FairTrackParam.h"
 #include "CbmKF.h"
 
@@ -201,7 +201,6 @@ fWeight(0.),
 fPionMisidLevel(-1.),
 fRandom3(new TRandom3(0)),
 fCuts(),
-fElIdAnn(NULL),
 fHistoList(),
 fNofHitsInRingMap(),
 fh_mc_mother_pdg(NULL),
@@ -599,16 +598,7 @@ InitStatus CbmAnaDielectronTask::Init()
     
     fKFFitter.Init();
     
-    //cout << "I'm HERE" <<endl;
-    
     CbmLitMCTrackCreator::Instance();
-    
-    //cout << "I'm HERE end" << endl;
-    
-    if (fCuts.fUseRichAnn){
-        fElIdAnn = new CbmRichElectronIdAnn();
-        fElIdAnn->Init();
-    }
     
     // if TRD detector us not used the momentum cut at 5.5GeV/c are used
     if (!fUseTrd){
@@ -944,10 +934,10 @@ void CbmAnaDielectronTask::FillTopologyCandidates()
     fRTCandidates.clear();
     Int_t ngTracks = fGlobalTracks->GetEntriesFast();
     
-    for (Int_t i = 0; i < ngTracks; i++) {
+    for (Int_t iGTrack = 0; iGTrack < ngTracks; iGTrack++) {
         CbmLmvmCandidate cand;
         
-        CbmGlobalTrack* gTrack  = (CbmGlobalTrack*) fGlobalTracks->At(i);
+        CbmGlobalTrack* gTrack  = (CbmGlobalTrack*) fGlobalTracks->At(iGTrack);
         if(NULL == gTrack) continue;
         
         cand.fStsInd = gTrack->GetStsTrackIndex();
@@ -975,7 +965,7 @@ void CbmAnaDielectronTask::FillTopologyCandidates()
         if ( isRichRT ){
             CbmRichRing* richRing = (CbmRichRing*) fRichRings->At(cand.fRichInd);
             if (richRing == NULL) isRichRT = false;
-            if ( isRichRT ) isRichRT = IsRichElectron(richRing, cand.fMomentum.Mag(), &cand);
+            if ( isRichRT ) isRichRT = CbmLitGlobalElectronId::GetInstance().IsRichElectron(iGTrack, cand.fMomentum.Mag());
         }
         
         // TRD
@@ -984,7 +974,7 @@ void CbmAnaDielectronTask::FillTopologyCandidates()
         if ( isTrdRT ) {
             CbmTrdTrack* trdTrack = (CbmTrdTrack*) fTrdTracks->At(cand.fTrdInd);
             if (trdTrack == NULL) isTrdRT = false;
-            if ( isTrdRT ) isTrdRT = IsTrdElectron(trdTrack, &cand);
+            if ( isTrdRT ) isTrdRT = CbmLitGlobalElectronId::GetInstance().IsTrdElectron(iGTrack, cand.fMomentum.Mag());
         }
         
         // ToF
@@ -992,7 +982,7 @@ void CbmAnaDielectronTask::FillTopologyCandidates()
         if (isTofRT) {
             CbmTofHit* tofHit = (CbmTofHit*) fTofHits->At(cand.fTofInd);
             if (tofHit == NULL) isTofRT = false;
-            if (isTofRT) isTofRT = IsTofElectron(gTrack, cand.fMomentum.Mag(), &cand);
+            if (isTofRT) isTofRT = CbmLitGlobalElectronId::GetInstance().IsTofElectron(iGTrack, cand.fMomentum.Mag());
         }
         
         if (isRichRT || isTrdRT || isTofRT ) {
@@ -1015,7 +1005,7 @@ void CbmAnaDielectronTask::FillCandidates()
     Int_t nGTracks = fGlobalTracks->GetEntriesFast();
     fCandidates.reserve(nGTracks);
     
-    for (Int_t i = 0; i < nGTracks; i++){
+    for (Int_t iGTrack = 0; iGTrack < nGTracks; iGTrack++){
         CbmLmvmCandidate cand;
         cand.fIsElectron = false;
         cand.fIsGamma = false;
@@ -1025,7 +1015,7 @@ void CbmAnaDielectronTask::FillCandidates()
         cand.fIsMvd1CutElectron = true;
         cand.fIsMvd2CutElectron = true;
         
-        CbmGlobalTrack* gTrack  = (CbmGlobalTrack*) fGlobalTracks->At(i);
+        CbmGlobalTrack* gTrack  = (CbmGlobalTrack*) fGlobalTracks->At(iGTrack);
         if(NULL == gTrack) continue;
         // STS
         cand.fStsInd = gTrack->GetStsTrackIndex();
@@ -1047,11 +1037,11 @@ void CbmAnaDielectronTask::FillCandidates()
             Int_t pdg = TMath::Abs(mcTrack1->GetPdgCode());
             
             //check that pion track has track projection onto the photodetector plane
-            const FairTrackParam* richProjection = (FairTrackParam*)(fRichProj->At(i));
+            const FairTrackParam* richProjection = (FairTrackParam*)(fRichProj->At(iGTrack));
             if (richProjection == NULL || richProjection->GetX() == 0 || richProjection->GetY() == 0) continue;
             
             if (pdg == 211){
-                IsElectron(NULL, cand.fMomentum.Mag(), NULL, gTrack, &cand);
+                IsElectron(iGTrack, cand.fMomentum.Mag(), &cand);
                 fCandidates.push_back(cand);
                 continue;
             }
@@ -1077,7 +1067,7 @@ void CbmAnaDielectronTask::FillCandidates()
         CbmTofHit* tofHit = (CbmTofHit*) fTofHits->At(cand.fTofInd);
         if (tofHit == NULL) continue;
         
-        IsElectron(richRing, cand.fMomentum.Mag(), trdTrack, gTrack, &cand);
+        IsElectron(iGTrack, cand.fMomentum.Mag(), &cand);
         
         fCandidates.push_back(cand);
         if (!cand.fIsElectron && cand.fChi2Prim < fCuts.fChiPrimCut) fTTCandidates.push_back(cand);
@@ -1631,18 +1621,18 @@ Bool_t CbmAnaDielectronTask::IsGhost(
 }
 
 void CbmAnaDielectronTask::IsElectron(
-                                      CbmRichRing * ring,
+                                      Int_t globalTrackIndex,
                                       Double_t momentum,
-                                      CbmTrdTrack* trdTrack,
-                                      CbmGlobalTrack * gTrack,
                                       CbmLmvmCandidate* cand)
 {
     if (fPionMisidLevel < 0.){
-        Bool_t richEl = IsRichElectron(ring, momentum, cand);
-        Bool_t trdEl = (trdTrack != NULL)?IsTrdElectron(trdTrack, cand):true;
-        //      Double_t annRich = cand->fRichAnn;
-        //      Double_t annTrd = cand->fTrdAnn;
-        Bool_t tofEl = IsTofElectron(gTrack, momentum, cand);
+        Bool_t richEl = CbmLitGlobalElectronId::GetInstance().IsRichElectron(globalTrackIndex, momentum);
+        cand->fRichAnn = CbmLitGlobalElectronId::GetInstance().GetRichAnn(globalTrackIndex, momentum);
+
+        Bool_t trdEl = CbmLitGlobalElectronId::GetInstance().IsTrdElectron(globalTrackIndex, momentum);
+        cand->fTrdAnn = CbmLitGlobalElectronId::GetInstance().GetTrdAnn(globalTrackIndex, momentum);
+
+        Bool_t tofEl = CbmLitGlobalElectronId::GetInstance().IsTofElectron(globalTrackIndex, momentum);
         Bool_t momCut = (fCuts.fMomentumCut > 0.)?(momentum < fCuts.fMomentumCut):true;
         
         if (richEl && trdEl && tofEl && momCut) {
@@ -1671,71 +1661,6 @@ void CbmAnaDielectronTask::IsElectron(
     }
 }
 
-Bool_t CbmAnaDielectronTask::IsRichElectron(
-                                            CbmRichRing *ring,
-                                            Double_t momentum,
-                                            CbmLmvmCandidate* cand)
-{
-    if (fCuts.fUseRichAnn == false){
-        Double_t axisA = ring->GetAaxis();
-        Double_t axisB = ring->GetBaxis();
-        Double_t dist = ring->GetDistance();
-        if ( fabs(axisA-fCuts.fMeanA) < fCuts.fRmsCoeff*fCuts.fRmsA &&fabs(axisB-fCuts.fMeanB) < fCuts.fRmsCoeff*fCuts.fRmsB && dist < fCuts.fDistCut){
-            return true;
-        } else {
-            return false;
-        }
-    } else {
-        Double_t ann = fElIdAnn->DoSelect(ring, momentum);
-        cand->fRichAnn = ann;
-        if (ann > fCuts.fRichAnnCut) return true;
-        else  return false;
-    }
-}
-
-
-Bool_t CbmAnaDielectronTask::IsTrdElectron(
-                                           CbmTrdTrack* trdTrack,
-                                           CbmLmvmCandidate* cand)
-{
-    Double_t ann = trdTrack->GetPidANN();
-    cand->fTrdAnn = ann;
-    if (ann > fCuts.fTrdAnnCut) return true;
-    else return false;
-    
-}
-
-Bool_t CbmAnaDielectronTask::IsTofElectron(
-                                           CbmGlobalTrack* gTrack,
-                                           Double_t momentum,
-                                           CbmLmvmCandidate* cand)
-{
-    Double_t trackLength = gTrack->GetLength() / 100.;
-    
-    // Calculate time of flight from TOF hit
-    Int_t tofIndex = gTrack->GetTofHitIndex();
-    CbmTofHit* tofHit = (CbmTofHit*) fTofHits->At(tofIndex);
-    if (NULL == tofHit){
-        cand->fMass2 = 100.;
-        return false;
-    }
-    Double_t time = 0.2998 * tofHit->GetTime(); // time in ns -> transfrom to ct in m
-    
-    // Calculate mass squared
-    Double_t mass2 = TMath::Power(momentum, 2.) * (TMath::Power(time/ trackLength, 2) - 1);
-    cand->fMass2 = mass2;
-    
-    if (momentum >= 1.) {
-        if (mass2 < (0.013*momentum - 0.003)){
-            return true;
-        }
-    } else {
-        if (mass2 < 0.01){
-            return true;//fTofM2
-        }
-    }
-    return false;
-}
 
 void CbmAnaDielectronTask::DifferenceSignalAndBg()
 {

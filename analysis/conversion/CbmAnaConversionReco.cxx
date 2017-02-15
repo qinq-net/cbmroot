@@ -24,6 +24,7 @@
 #include "CbmRichElectronIdAnn.h"
 #include "CbmRichRingLight.h"
 #include "CbmRichHit.h"
+#include "utils/CbmRichUtil.h"
 
 #include "CbmAnaConversionCutSettings.h"
 #include "CbmAnaConversionGlobalFunctions.h"
@@ -38,8 +39,6 @@ CbmAnaConversionReco::CbmAnaConversionReco()
 	fGlobalTracks(NULL),
 	fRichRings(NULL),
 	fRichHits(NULL),
-	fRichElIdAnn(NULL),
-    electronidentifier(NULL),
     fMCTracklist_all(),
     fRecoTracklistEPEM(),
     fRecoTracklistEPEM_ids(),
@@ -187,11 +186,6 @@ void CbmAnaConversionReco::Init()
 
 
 	InitHistos();
-	electronidentifier = new CbmLitGlobalElectronId();
-	electronidentifier->Init();
-	
-	fRichElIdAnn = new CbmRichElectronIdAnn();
-	fRichElIdAnn->Init();
 }
 
 
@@ -1569,10 +1563,10 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 						
 						CutEfficiencyStudies(i, j, k, l, motherId1, motherId2, motherId3, motherId4);
 						
-						//Bool_t IsRichElectron1 = electronidentifier->IsRichElectron(fRecoTracklistEPEM_gtid[i], fRecoRefittedMomentum[i].Mag());
-						//Bool_t IsRichElectron2 = electronidentifier->IsRichElectron(fRecoTracklistEPEM_gtid[j], fRecoRefittedMomentum[j].Mag());
-						//Bool_t IsRichElectron3 = electronidentifier->IsRichElectron(fRecoTracklistEPEM_gtid[k], fRecoRefittedMomentum[k].Mag());
-						//Bool_t IsRichElectron4 = electronidentifier->IsRichElectron(fRecoTracklistEPEM_gtid[l], fRecoRefittedMomentum[l].Mag());
+						//Bool_t IsRichElectron1 = CbmLitGlobalElectronId::GetInstance().IsRichElectron(fRecoTracklistEPEM_gtid[i], fRecoRefittedMomentum[i].Mag());
+						//Bool_t IsRichElectron2 = CbmLitGlobalElectronId::GetInstance().IsRichElectron(fRecoTracklistEPEM_gtid[j], fRecoRefittedMomentum[j].Mag());
+						//Bool_t IsRichElectron3 = CbmLitGlobalElectronId::GetInstance().IsRichElectron(fRecoTracklistEPEM_gtid[k], fRecoRefittedMomentum[k].Mag());
+						//Bool_t IsRichElectron4 = CbmLitGlobalElectronId::GetInstance().IsRichElectron(fRecoTracklistEPEM_gtid[l], fRecoRefittedMomentum[l].Mag());
 						
 						Bool_t IsRichElectron1ann = IsRichElectronANN(fRecoTracklistEPEM_gtid[i], fRecoRefittedMomentum[i].Mag());
 						Bool_t IsRichElectron2ann = IsRichElectronANN(fRecoTracklistEPEM_gtid[j], fRecoRefittedMomentum[j].Mag());
@@ -1706,10 +1700,10 @@ void CbmAnaConversionReco::CutEfficiencyStudies(int e1, int e2, int e3, int e4, 
 	Bool_t AllWithinChiCut = (IsWithinChiCut1 && IsWithinChiCut2 && IsWithinChiCut3 && IsWithinChiCut4);
 	
 	
-	//Bool_t IsRichElectron1 = electronidentifier->IsRichElectron(fRecoTracklistEPEM_gtid[i], fRecoRefittedMomentum[i].Mag());
-	//Bool_t IsRichElectron2 = electronidentifier->IsRichElectron(fRecoTracklistEPEM_gtid[j], fRecoRefittedMomentum[j].Mag());
-	//Bool_t IsRichElectron3 = electronidentifier->IsRichElectron(fRecoTracklistEPEM_gtid[k], fRecoRefittedMomentum[k].Mag());
-	//Bool_t IsRichElectron4 = electronidentifier->IsRichElectron(fRecoTracklistEPEM_gtid[l], fRecoRefittedMomentum[l].Mag());
+	//Bool_t IsRichElectron1 = CbmLitGlobalElectronId::GetInstance().IsRichElectron(fRecoTracklistEPEM_gtid[i], fRecoRefittedMomentum[i].Mag());
+	//Bool_t IsRichElectron2 = CbmLitGlobalElectronId::GetInstance().IsRichElectron(fRecoTracklistEPEM_gtid[j], fRecoRefittedMomentum[j].Mag());
+	//Bool_t IsRichElectron3 = CbmLitGlobalElectronId::GetInstance().IsRichElectron(fRecoTracklistEPEM_gtid[k], fRecoRefittedMomentum[k].Mag());
+	//Bool_t IsRichElectron4 = CbmLitGlobalElectronId::GetInstance().IsRichElectron(fRecoTracklistEPEM_gtid[l], fRecoRefittedMomentum[l].Mag());
 	
 	Bool_t IsRichElectron1ann = IsRichElectronANN(fRecoTracklistEPEM_gtid[e1], fRecoRefittedMomentum[e1].Mag());
 	Bool_t IsRichElectron2ann = IsRichElectronANN(fRecoTracklistEPEM_gtid[e2], fRecoRefittedMomentum[e2].Mag());
@@ -1773,7 +1767,9 @@ void CbmAnaConversionReco::CutEfficiencyStudies(int e1, int e2, int e3, int e4, 
 			fhEPEM_missingLepton_nofRingHits->Fill(nofringhits);
 			fhEPEM_missingLepton_ringMid->Fill(richRing->GetCenterX(), richRing->GetCenterY() );
 			fhEPEM_missingLepton_ringRadius->Fill(richRing->GetRadius() );
-			fhEPEM_missingLepton_distance->Fill(richRing->GetDistance() );
+			// CbmRichRing::GetDistance() method is no longer supported
+			// If you wan to use cuts update code using CbmRichUtil::GetRingTrackDistance()
+			fhEPEM_missingLepton_distance->Fill(1./*richRing->GetDistance()*/ );
 			fhEPEM_missingLepton_selectionNN->Fill(richRing->GetSelectionNN() );
 			if(IsRichElectron1ann == 0) {
 				fhEPEM_missingLepton_radius_vs_p->Fill(fRecoRefittedMomentum[e1].Mag(), richRing->GetRadius() );
@@ -1810,7 +1806,9 @@ void CbmAnaConversionReco::CutEfficiencyStudies(int e1, int e2, int e3, int e4, 
 			fhEPEM_identifiedLepton_nofRingHits->Fill(nofringhits);
 			fhEPEM_identifiedLepton_ringMid->Fill(richRing->GetCenterX(), richRing->GetCenterY() );
 			fhEPEM_identifiedLepton_ringRadius->Fill(richRing->GetRadius() );
-			fhEPEM_identifiedLepton_distance->Fill(richRing->GetDistance() );
+			// CbmRichRing::GetDistance() method is no longer supported
+			// If you wan to use cuts update code using CbmRichUtil::GetRingTrackDistance()
+			fhEPEM_identifiedLepton_distance->Fill(1./*richRing->GetDistance()*/ );
 			fhEPEM_identifiedLepton_selectionNN->Fill(richRing->GetSelectionNN() );
 			fhEPEM_identifiedLepton_radius_vs_p->Fill(fRecoRefittedMomentum[e1].Mag(), richRing->GetRadius() );
 			fhEPEM_identifiedLepton_ANNvalue->Fill(ANNvalueE1);
@@ -1823,7 +1821,9 @@ void CbmAnaConversionReco::CutEfficiencyStudies(int e1, int e2, int e3, int e4, 
 			fhEPEM_identifiedLepton_nofRingHits->Fill(nofringhits);
 			fhEPEM_identifiedLepton_ringMid->Fill(richRing->GetCenterX(), richRing->GetCenterY() );
 			fhEPEM_identifiedLepton_ringRadius->Fill(richRing->GetRadius() );
-			fhEPEM_identifiedLepton_distance->Fill(richRing->GetDistance() );
+			// CbmRichRing::GetDistance() method is no longer supported
+			// If you wan to use cuts update code using CbmRichUtil::GetRingTrackDistance()
+			fhEPEM_identifiedLepton_distance->Fill(1./*richRing->GetDistance()*/ );
 			fhEPEM_identifiedLepton_selectionNN->Fill(richRing->GetSelectionNN() );
 			fhEPEM_identifiedLepton_radius_vs_p->Fill(fRecoRefittedMomentum[e2].Mag(), richRing->GetRadius() );
 			fhEPEM_identifiedLepton_ANNvalue->Fill(ANNvalueE2);
@@ -1836,7 +1836,9 @@ void CbmAnaConversionReco::CutEfficiencyStudies(int e1, int e2, int e3, int e4, 
 			fhEPEM_identifiedLepton_nofRingHits->Fill(nofringhits);
 			fhEPEM_identifiedLepton_ringMid->Fill(richRing->GetCenterX(), richRing->GetCenterY() );
 			fhEPEM_identifiedLepton_ringRadius->Fill(richRing->GetRadius() );
-			fhEPEM_identifiedLepton_distance->Fill(richRing->GetDistance() );
+			// CbmRichRing::GetDistance() method is no longer supported
+			// If you wan to use cuts update code using CbmRichUtil::GetRingTrackDistance()
+			fhEPEM_identifiedLepton_distance->Fill(1./*richRing->GetDistance() */);
 			fhEPEM_identifiedLepton_selectionNN->Fill(richRing->GetSelectionNN() );
 			fhEPEM_identifiedLepton_radius_vs_p->Fill(fRecoRefittedMomentum[e3].Mag(), richRing->GetRadius() );
 			fhEPEM_identifiedLepton_ANNvalue->Fill(ANNvalueE3);
@@ -1849,7 +1851,9 @@ void CbmAnaConversionReco::CutEfficiencyStudies(int e1, int e2, int e3, int e4, 
 			fhEPEM_identifiedLepton_nofRingHits->Fill(nofringhits);
 			fhEPEM_identifiedLepton_ringMid->Fill(richRing->GetCenterX(), richRing->GetCenterY() );
 			fhEPEM_identifiedLepton_ringRadius->Fill(richRing->GetRadius() );
-			fhEPEM_identifiedLepton_distance->Fill(richRing->GetDistance() );
+			// CbmRichRing::GetDistance() method is no longer supported
+			// If you wan to use cuts update code using CbmRichUtil::GetRingTrackDistance()
+			fhEPEM_identifiedLepton_distance->Fill(1./*richRing->GetDistance()*/ );
 			fhEPEM_identifiedLepton_selectionNN->Fill(richRing->GetSelectionNN() );
 			fhEPEM_identifiedLepton_radius_vs_p->Fill(fRecoRefittedMomentum[e4].Mag(), richRing->GetRadius() );
 			fhEPEM_identifiedLepton_ANNvalue->Fill(ANNvalueE4);
@@ -2237,7 +2241,7 @@ Bool_t CbmAnaConversionReco::IsRichElectronANN(Int_t globalTrackIndex, Double_t 
    if (NULL == ring) return false;
 
    Double_t fRichAnnCut = -0.8;
-   Double_t ann = fRichElIdAnn->DoSelect(ring, momentum);
+   Double_t ann = CbmRichElectronIdAnn::GetInstance().CalculateAnnValue(globalTrackIndex, momentum);
    if (ann > fRichAnnCut) return true;
    else return false;   
 }
@@ -2254,7 +2258,7 @@ Double_t CbmAnaConversionReco::ElectronANNvalue(Int_t globalTrackIndex, Double_t
    CbmRichRing* ring = static_cast<CbmRichRing*> (fRichRings->At(richId));
    if (NULL == ring) return -2;
 
-   Double_t ann = fRichElIdAnn->DoSelect(ring, momentum);
+   Double_t ann = CbmRichElectronIdAnn::GetInstance().CalculateAnnValue(globalTrackIndex, momentum);
    return ann;
 }
 
@@ -2272,7 +2276,7 @@ Bool_t CbmAnaConversionReco::IsRichElectronNormal(Int_t globalTrackIndex, Double
 
    Double_t axisA = ring->GetAaxis();
    Double_t axisB = ring->GetBaxis();
-   Double_t dist = ring->GetDistance();
+   Double_t dist = CbmRichUtil::GetRingTrackDistance(globalTrackIndex);
             
    Double_t fMeanA = 4.95;
    Double_t fMeanB = 4.54;

@@ -88,9 +88,6 @@ void CbmRichRingTrackAssignIdeal::DoAssign(
 
          if (pTrackMatch->GetMatchedLink().GetIndex() == ringID){
             gTrack -> SetRichRingIndex(iRing);
-            pRing -> SetTrackID(iTrack);
-            Double_t dist = TMath::Sqrt( (xRing-xTrack)*(xRing-xTrack)+(yRing-yTrack)*(yRing-yTrack) );
-            pRing->SetDistance(dist);
          } // ideal assignement
       } // loop tracks
    } // loop rings

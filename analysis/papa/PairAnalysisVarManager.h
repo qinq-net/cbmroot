@@ -367,7 +367,6 @@ public:
   static void SetEvent(          PairAnalysisEvent * const ev);
   static void SetEventData(const Double_t data[PairAnalysisVarManager::kNMaxValuesMC]);
   static void SetValue(          ValueTypes   var, Double_t val) { fgData[var]  =val; }
-  static void SetRichPidResponse(CbmRichElectronIdAnn  *pid)     { fgRichElIdAnn=pid; }
 
   // Getter
   static PairAnalysisEvent* GetCurrentEvent()  { return fgEvent;       }
@@ -401,7 +400,6 @@ private:
   //  static CbmL1PFFitter      *fgL1Fitter;                   // L1 fitter
   static TBits              *fgFillMap;                    // map for filling variables
   static Int_t               fgCurrentRun;                 // current run number
-  static CbmRichElectronIdAnn *fgRichElIdAnn;              // NN electron pid for Rich
 
   // fill functions
   static Bool_t Req(ValueTypes var) { return (fgFillMap ? fgFillMap->TestBitNumber(var) : kTRUE); }
@@ -770,7 +768,8 @@ inline void PairAnalysisVarManager::FillVarRichRing(const CbmRichRing *track, Do
   if(!track) return;
 
   // Set
-  values[kRICHPidANN]      = fgRichElIdAnn->DoSelect(const_cast<CbmRichRing*>(track), values[kP]); // PID value ANN method
+  //Do Select is no longer supported use CbmRichElectronIdAnn::GetInstance().CalculateAnnValue(globalTrackIndex, momentum);
+  values[kRICHPidANN]      = -1; // fgRichElIdAnn->DoSelect(const_cast<CbmRichRing*>(track), values[kP]); // PID value ANN method
   values[kRICHHitsOnRing]  = track->GetNofHitsOnRing();
   values[kRICHHits]        = track->GetNofHits();
   values[kRICHChi2NDF]     = (track->GetNDF()>0. ? track->GetChi2()/track->GetNDF() : -999.);
@@ -779,7 +778,9 @@ inline void PairAnalysisVarManager::FillVarRichRing(const CbmRichRing *track, Do
   values[kRICHAxisB]       = track->GetBaxis();
   values[kRICHCenterX]     = track->GetCenterX();
   values[kRICHCenterY]     = track->GetCenterY();
-  values[kRICHDistance]    = track->GetDistance();
+	// CbmRichRing::GetDistance() method is no longer supported
+	// If you wan to use cuts update code using CbmRichUtil::GetRingTrackDistance()
+  values[kRICHDistance]    = 1.;
   values[kRICHRadialPos]   = track->GetRadialPosition();
   values[kRICHRadialAngle] = track->GetRadialAngle();
   values[kRICHPhi]         = track->GetPhi();

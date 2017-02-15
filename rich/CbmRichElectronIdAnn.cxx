@@ -11,6 +11,11 @@
 #include "TTree.h"
 #include "TMath.h"
 #include "TSystem.h"
+#include "FairLogger.h"
+#include "CbmRichUtil.h"
+#include "TClonesArray.h"
+#include "FairRootManager.h"
+#include "CbmGlobalTrack.h"
 
 #include <iostream>
 
@@ -19,9 +24,11 @@ using std::endl;
 
 CbmRichElectronIdAnn::CbmRichElectronIdAnn():
    fAnnWeights(""),
-   fNN(NULL)
+   fNN(NULL),
+   fGlobalTracks(NULL),
+   fRichRings(NULL)
 {
-   fAnnWeights = string(gSystem->Getenv("VMCWORKDIR")) + "/parameters/rich/rich_elid_ann_weights.txt";
+	Init();
 }
 
 CbmRichElectronIdAnn::~CbmRichElectronIdAnn()
@@ -31,6 +38,12 @@ CbmRichElectronIdAnn::~CbmRichElectronIdAnn()
 
 void CbmRichElectronIdAnn::Init()
 {
+	if (fNN != NULL) {
+		delete fNN;
+	}
+
+	fAnnWeights = string(gSystem->Getenv("VMCWORKDIR")) + "/parameters/rich/rich_elid_ann_weights.txt";
+
    TTree *simu = new TTree ("MonteCarlo","MontecarloData");
    Double_t x[9];
    Double_t xOut;
@@ -49,31 +62,56 @@ void CbmRichElectronIdAnn::Init()
    fNN = new TMultiLayerPerceptron("x0,x1,x2,x3,x4,x5,x6,x7,x8:18:xOut",simu);
    cout << "-I- CbmRichElIdAnn: get NeuralNet weight parameters from: " << fAnnWeights << endl;
    fNN->LoadWeights(fAnnWeights.c_str());
+
+   FairRootManager* ioman = FairRootManager::Instance();
+   if (ioman != NULL) {
+	   fRichRings = (TClonesArray*) ioman->GetObject("RichRing");
+	   if (fRichRings == NULL){LOG(ERROR) << "CbmRichElectronIdAnn::Init() fRichRings == NULL" << FairLogger::endl;}
+	   fGlobalTracks = (TClonesArray*) ioman->GetObject("GlobalTrack");
+	   if (fGlobalTracks == NULL){LOG(ERROR) << "CbmRichElectronIdAnn::Init() fGlobalTracks == NULL" << FairLogger::endl;}
+   } else {
+	   LOG(ERROR) << "FairRootManager::Instance() == NULL" << FairLogger::endl;
+   }
 }
 
-double CbmRichElectronIdAnn::DoSelect(
-      CbmRichRing* ring,
+double CbmRichElectronIdAnn::CalculateAnnValue(
+      int globalTrackIndex,
       double momentum)
 {
-    if (ring->GetAaxis() >= 10. || ring->GetAaxis() <= 0. ||
-        ring->GetBaxis() >= 10. || ring->GetBaxis() <= 0. ||
-        ring->GetNofHits() <= 5. ||
-        ring->GetDistance() <= 0. || ring->GetDistance() >= 999. ||
-        ring->GetRadialPosition() <= 0. || ring->GetRadialPosition() >= 999. ||
-        ring->GetPhi() <= -6.5 || ring->GetPhi() >= 6.5 ||
-        ring->GetRadialAngle() <=-6.5 || ring->GetRadialAngle() >= 6.5 ){
+	double errorValue = -1.;
+	if (globalTrackIndex < 0) return errorValue;
+
+	if (fGlobalTracks == NULL || fRichRings == NULL) return -1;
+
+	const CbmGlobalTrack* globalTrack = static_cast<const CbmGlobalTrack*>(fGlobalTracks->At(globalTrackIndex));
+	if (globalTrack == NULL) return errorValue;
+
+	Int_t richId = globalTrack->GetRichRingIndex();
+	if (richId == -1) return errorValue;
+	const CbmRichRing* richRing = static_cast<const CbmRichRing*>(fRichRings->At(richId));
+	if (richRing == NULL) return errorValue;
+
+	double rtDistance = CbmRichUtil::GetRingTrackDistance(globalTrackIndex);
+
+    if (richRing->GetAaxis() >= 10. || richRing->GetAaxis() <= 0. ||
+    	richRing->GetBaxis() >= 10. || richRing->GetBaxis() <= 0. ||
+		richRing->GetNofHits() <= 5. ||
+		rtDistance <= 0. || rtDistance >= 999. ||
+		richRing->GetRadialPosition() <= 0. || richRing->GetRadialPosition() >= 999. ||
+		richRing->GetPhi() <= -6.5 || richRing->GetPhi() >= 6.5 ||
+		richRing->GetRadialAngle() <=-6.5 || richRing->GetRadialAngle() >= 6.5 ){
 
         return -1.;
     }
     double params[9];
-    params[0] = ring->GetAaxis() / 10.;
-    params[1] = ring->GetBaxis() / 10.;
-    params[2] = (ring->GetPhi() + 1.57) / 3.14;
-    params[3] = ring->GetRadialAngle() / 6.28;
-    params[4] = (ring->GetChi2()/ring->GetNDF()) / 1.2;
-    params[5] = ring->GetRadialPosition() / 110.;
-    params[6] = ring->GetNofHits() / 45.;
-    params[7] = ring->GetDistance() / 5.;
+    params[0] = richRing->GetAaxis() / 10.;
+    params[1] = richRing->GetBaxis() / 10.;
+    params[2] = (richRing->GetPhi() + 1.57) / 3.14;
+    params[3] = richRing->GetRadialAngle() / 6.28;
+    params[4] = (richRing->GetChi2()/richRing->GetNDF()) / 1.2;
+    params[5] = richRing->GetRadialPosition() / 110.;
+    params[6] = richRing->GetNofHits() / 45.;
+    params[7] = rtDistance / 5.;
     params[8] =  momentum / 15.;
 
     for (int k = 0; k < 9; k++){

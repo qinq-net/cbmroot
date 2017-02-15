@@ -73,9 +73,6 @@ private:
 
 	std::vector<TH1*> fHistoList_test;	// list of all histograms related to rich rings
 
-	CbmLitGlobalElectronId* electronidentifier;
-	CbmRichElectronIdAnn* fRichElIdAnn;
-
 	std::vector<int> fElectrons_gtid;
 	std::vector<int> fElectrons_mcid;
 	std::vector<int> fElectrons_richInd;

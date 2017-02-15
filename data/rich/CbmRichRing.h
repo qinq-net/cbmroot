@@ -64,8 +64,6 @@ public:
 							 Double_t a, Double_t b,
 							 Double_t phi);
 	void SetPhi(Double_t phi) {fPhi = phi;}
-	void SetTrackID(Int_t track) {fTrackID = track;}
-	void SetDistance(Double_t d) {fDistance = d;}
 	void SetChi2(Double_t chi2) {fChi2 = chi2;}
 	void SetRecFlag (Int_t recflag) {fRecFlag = recflag;}
 	void SetAngle( Double_t angle) {fAngle = angle;}
@@ -94,10 +92,8 @@ public:
 	Double_t GetXF2() const;
 	Double_t GetYF2() const;
 
-	Int_t GetTrackID() const {return fTrackID;}
 
 	Double_t GetSelectionNN() const {return fSelectionNN;}
-	Double_t GetDistance() const {return fDistance;}
 	Double_t GetChi2() const {return fChi2;}
 	Double_t GetNDF() const {return GetNofHits()-5;}
 	Float_t GetRadialPosition() const;
@@ -130,9 +126,6 @@ protected:
 
 	Double_t fPhi; // rotation angle
 
-	Int_t fTrackID; // ID of the matched track, set after track matching
-
-	Double_t fDistance; // Distance to track matched to this ring
 	Double_t fChi2;
 	Double_t fAngle;
 	Int_t fNofHitsOnRing;

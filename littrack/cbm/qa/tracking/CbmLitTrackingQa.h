@@ -15,7 +15,6 @@
 class CbmHistManager;
 class CbmTrackMatchNew;
 class CbmLitMCTrackCreator;
-class CbmLitGlobalElectronId;
 
 using std::string;
 using std::vector;
@@ -343,8 +342,6 @@ private:
    map<string, LitRingAcceptanceFunction> fRingAcceptanceFunctions; // maps ring category name to ring acceptance function
    map<string, LitPiSuppAcceptanceFunction> fPiSuppAcceptanceFunctions; // maps pion supp. category name to piSupp acceptance function
 #endif
-
-   CbmLitGlobalElectronId* fElectronId; // Electron identification tool
    Double_t fTrdAnnCut;
    Double_t fRichAnnCut;
 

@@ -1580,7 +1580,10 @@ void CbmTrdPhotonAnalysis::Exec(Option_t* /*option*/)
       fHistoMap["RICH_GT_radius_KF_P"]->Fill(sqrt(pow(cand.momentum[0],2) + pow(cand.momentum[1],2) + pow(cand.momentum[2],2)),richRing->GetRadius());
       fHistoMap["RICH_HitNr_PidMC"]->Fill(richRing->GetNofHits()/*GetNofHitsOnRing()*/, PdgToGeant(mcRICHtrack->GetPdgCode()));
       fHistoMap["RICH_Radius_PidMC"]->Fill(richRing->GetRadius(), PdgToGeant(mcRICHtrack->GetPdgCode()));
-      fHistoMap["RICH_Ring2TrackDist_PidMC"]->Fill(richRing->GetDistance(), PdgToGeant(mcRICHtrack->GetPdgCode()));
+
+      // CbmRichRing::GetDistance() method is no longer supported
+      // If you wan to use cuts update code using CbmRichUtil::GetRingTrackDistance()
+      fHistoMap["RICH_Ring2TrackDist_PidMC"]->Fill(1./*richRing->GetDistance()*/, PdgToGeant(mcRICHtrack->GetPdgCode()));
       if (IsRichElec(richRing, cand.momentum.Mag(), &cand)) {
 	fHistoMap["KF_PID_RICH_MC_PID"]->Fill(PdgToGeant(mcRICHtrack->GetPdgCode()), PdgToGeant(-11 * cand.charge));
 	fHistoMap["RICH_GT_radiusA_KF_P_true"]->Fill(sqrt(pow(cand.momentum[0],2) + pow(cand.momentum[1],2) + pow(cand.momentum[2],2)),richRing->GetAaxis());
@@ -2538,31 +2541,33 @@ void CbmTrdPhotonAnalysis::Exec(Option_t* /*option*/)
       }*/
   }
 
-  Bool_t CbmTrdPhotonAnalysis::IsRichElec(CbmRichRing * ring, Double_t momentum, ElectronCandidate* cand)
-  {
-    Double_t axisA = ring->GetAaxis();
-    Double_t axisB = ring->GetBaxis();
-    Double_t dist = ring->GetDistance();
-    Int_t NofHitsOnRing = ring->GetNofHitsOnRing();
-    if (fUseRichAnn == false){
-      if ( 
-	  fabs(axisA-fMeanA) < fRmsCoeff*fRmsA && 
-	  fabs(axisB-fMeanB) < fRmsCoeff*fRmsB && 
-	  dist < fDistCut
-	   ){
-	return true;
-      } else {
-	return false;
-      }
-    } else {
-	
-      Double_t ann = fElIdAnn->DoSelect(ring, momentum);
-      cand->richAnn = ann;
-      //fHistoMap[""]->Fill(ann);
-      if (ann > fRichAnnCut) return true;
-      else  return false;
-    }
-  }
+Bool_t CbmTrdPhotonAnalysis::IsRichElec(CbmRichRing * ring, Double_t momentum, ElectronCandidate* cand) {
+//	Double_t axisA = ring->GetAaxis();
+//	Double_t axisB = ring->GetBaxis();
+//	Double_t dist = ring->GetDistance();
+//	Int_t NofHitsOnRing = ring->GetNofHitsOnRing();
+//	if (fUseRichAnn == false) {
+//		if (fabs(axisA - fMeanA) < fRmsCoeff * fRmsA
+//				&& fabs(axisB - fMeanB) < fRmsCoeff * fRmsB
+//				&& dist < fDistCut) {
+//			return true;
+//		} else {
+//			return false;
+//		}
+//	} else {
+
+	// always use ANN
+	// CbmRichRing::GetDistance() method is no longer supported
+	// If you wan to use cuts update code using CbmRichUtil::GetRingTrackDistance()
+	Double_t ann = fElIdAnn->DoSelect(ring, momentum);
+	cand->richAnn = ann;
+	//fHistoMap[""]->Fill(ann);
+	if (ann > fRichAnnCut)
+		return true;
+	else
+		return false;
+//	}
+}
 
 
   Bool_t CbmTrdPhotonAnalysis::IsTrdElec(CbmTrdTrack* trdTrack, ElectronCandidate* cand)

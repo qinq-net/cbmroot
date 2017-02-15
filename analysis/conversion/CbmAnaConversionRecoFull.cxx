@@ -56,9 +56,6 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
     fHistoList_recofull_4(),
     fHistoList_recofull_new(),
     fhElectrons(NULL),
-    electronidentifier(NULL),
-    electronidentifier_ann0(NULL),
-    fRichElIdAnn(NULL),
     fhMomentumFits(NULL),
 	fhMomentumFits_electronRich(NULL),
 	fhMomentumFits_pi0reco(NULL),
@@ -279,15 +276,7 @@ void CbmAnaConversionRecoFull::Init()
 
 
 	InitHistos();
-	electronidentifier = new CbmLitGlobalElectronId();
-	electronidentifier->Init();
-	electronidentifier->SetRichAnnCut(-0.8);
-	
-	electronidentifier_ann0 = new CbmLitGlobalElectronId();
-	electronidentifier_ann0->Init();
-	
-	fRichElIdAnn = new CbmRichElectronIdAnn();
-	fRichElIdAnn->Init();
+	CbmLitGlobalElectronId::GetInstance().SetRichAnnCut(-0.8);
 
 	globalEventNo = 0;
 }
@@ -925,7 +914,7 @@ void CbmAnaConversionRecoFull::Exec()
 
 
 
-		Bool_t electron_rich2 = electronidentifier->IsRichElectron(iG, refittedMomentum.Mag());
+		Bool_t electron_rich2 = CbmLitGlobalElectronId::GetInstance().IsRichElectron(iG, refittedMomentum.Mag());
 		
 		
 		Double_t chiCut = CbmAnaConversionCutSettings::CalcChiCut(refittedMomentum.Perp() );
@@ -1009,10 +998,10 @@ void CbmAnaConversionRecoFull::Exec()
 
 
 
-		Bool_t electron_rich = electronidentifier->IsRichElectron(iG, refittedMomentum.Mag());
+		Bool_t electron_rich = CbmLitGlobalElectronId::GetInstance().IsRichElectron(iG, refittedMomentum.Mag());
 		//Bool_t electron_rich = (pdg == 11);
-		Bool_t electron_trd = electronidentifier->IsTrdElectron(iG, refittedMomentum.Mag());
-		Bool_t electron_tof = electronidentifier->IsTofElectron(iG, refittedMomentum.Mag());
+		Bool_t electron_trd = CbmLitGlobalElectronId::GetInstance().IsTrdElectron(iG, refittedMomentum.Mag());
+		Bool_t electron_tof = CbmLitGlobalElectronId::GetInstance().IsTofElectron(iG, refittedMomentum.Mag());
 
 
 
@@ -1259,8 +1248,8 @@ void CbmAnaConversionRecoFull::CombineElectrons(vector<CbmGlobalTrack*> gtrack, 
 						fMixedTest4_mctracks.push_back(pair_mctracks);
 						
 						vector<Bool_t> IsRichElectronAnn0;
-						IsRichElectronAnn0.push_back(electronidentifier_ann0->IsRichElectron(fElectrons_globaltrackID_new[index][a], momenta[a].Mag() ));
-						IsRichElectronAnn0.push_back(electronidentifier_ann0->IsRichElectron(fElectrons_globaltrackID_new[index][b], momenta[b].Mag() ));
+						IsRichElectronAnn0.push_back(CbmLitGlobalElectronId::GetInstance().IsRichElectron(fElectrons_globaltrackID_new[index][a], momenta[a].Mag() ));
+						IsRichElectronAnn0.push_back(CbmLitGlobalElectronId::GetInstance().IsRichElectron(fElectrons_globaltrackID_new[index][b], momenta[b].Mag() ));
 						fMixedTest4_isRichElectronAnn0.push_back(IsRichElectronAnn0);
 						
 						vector<Double_t> electronANNs;
@@ -1502,10 +1491,10 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 				
 				CbmAnaConversionKinematicParams paramsTest = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(momenta[electron11], momenta[electron12], momenta[electron21], momenta[electron22]);
 				
-				Bool_t IsRichElectron_ann0_e11 = electronidentifier_ann0->IsRichElectron(fElectrons_globaltrackID_new[index][electron11], momenta[electron11].Mag() );
-				Bool_t IsRichElectron_ann0_e12 = electronidentifier_ann0->IsRichElectron(fElectrons_globaltrackID_new[index][electron12], momenta[electron12].Mag() );
-				Bool_t IsRichElectron_ann0_e21 = electronidentifier_ann0->IsRichElectron(fElectrons_globaltrackID_new[index][electron21], momenta[electron21].Mag() );
-				Bool_t IsRichElectron_ann0_e22 = electronidentifier_ann0->IsRichElectron(fElectrons_globaltrackID_new[index][electron22], momenta[electron22].Mag() );
+				Bool_t IsRichElectron_ann0_e11 = CbmLitGlobalElectronId::GetInstance().IsRichElectron(fElectrons_globaltrackID_new[index][electron11], momenta[electron11].Mag() );
+				Bool_t IsRichElectron_ann0_e12 = CbmLitGlobalElectronId::GetInstance().IsRichElectron(fElectrons_globaltrackID_new[index][electron12], momenta[electron12].Mag() );
+				Bool_t IsRichElectron_ann0_e21 = CbmLitGlobalElectronId::GetInstance().IsRichElectron(fElectrons_globaltrackID_new[index][electron21], momenta[electron21].Mag() );
+				Bool_t IsRichElectron_ann0_e22 = CbmLitGlobalElectronId::GetInstance().IsRichElectron(fElectrons_globaltrackID_new[index][electron22], momenta[electron22].Mag() );
 				
 				Double_t ANNe11 = ElectronANNvalue(fElectrons_globaltrackID_new[index][electron11], momenta[electron11].Mag() );
 				Double_t ANNe12 = ElectronANNvalue(fElectrons_globaltrackID_new[index][electron12], momenta[electron12].Mag() );
@@ -2760,7 +2749,7 @@ Double_t CbmAnaConversionRecoFull::ElectronANNvalue(Int_t globalTrackIndex, Doub
    CbmRichRing* ring = static_cast<CbmRichRing*> (fRichRings->At(richId));
    if (NULL == ring) return -2;
 
-   Double_t ann = fRichElIdAnn->DoSelect(ring, momentum);
+   Double_t ann = CbmRichElectronIdAnn::GetInstance().CalculateAnnValue(globalTrackIndex, momentum);
    return ann;
 }
 

@@ -23,6 +23,7 @@
 #include "TH2D.h"
 #include "TClonesArray.h"
 #include "TMultiLayerPerceptron.h"
+#include "CbmRichUtil.h"
 
 #include "CbmUtils.h"
 
@@ -230,7 +231,7 @@ void CbmRichTrainAnnElectrons::DiffElandPi()
         p.fChi2 = ring->GetChi2()/ring->GetNDF();
         p.fRadPos = ring->GetRadialPosition();
         p.fNofHits = ring->GetNofHits();
-        p.fDistance = ring->GetDistance();
+        p.fDistance = CbmRichUtil::GetRingTrackDistance(iTrack);
         p.fMomentum = momentum;
         
         if (p.fAaxis > 9. || p.fBaxis > 9.) continue;

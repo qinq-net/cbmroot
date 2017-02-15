@@ -12,7 +12,6 @@
 #include "CbmAnaJpsiHist.h"
 #include "CbmAnaJpsiKinematicParams.h"
 #include "CbmRichRing.h"
-#include "CbmRichElectronIdAnn.h"
 #include "CbmTrdTrack.h"
 #include "CbmGlobalTrack.h"
 
@@ -22,6 +21,9 @@
 #include "TClonesArray.h"
 
 #include <vector>
+#include <string>
+
+using namespace std;
 
 class CbmAnaJpsiTask : public FairTask
 {
@@ -88,8 +90,6 @@ private:
   std::vector<CbmAnaJpsiCandidate> fCandidates; // array of JPsi candidates
 
   CbmAnaJpsiCuts fCuts; //electron identification and analysis cuts
-
-  CbmRichElectronIdAnn* fElIdAnn;
 
   Double_t fWeight; // Multiplicity * Branching Ratio of J/Psi;
 
@@ -248,32 +248,13 @@ private:
     void SignalAndBgReco();
 
     /**
-         * \brief  Identifies particle as Electron (or not)
-         */
+     * \brief  Identifies particle as Electron (or not)
+     */
     void IsElectron(
-    		CbmRichRing* ring,
+    		Int_t globalTrackIndex,
     		Double_t momentum,
-    		CbmTrdTrack* trdTrack,
-    	    CbmGlobalTrack* gTrack,
     		CbmAnaJpsiCandidate* cand);
 
-    /**
-     * \brief  find rich electron
-     */
-    Bool_t IsRichElectron(
-    		CbmRichRing* ring,
-			Double_t momentum,
-			CbmAnaJpsiCandidate* cand);
-
-    Bool_t IsTrdElectron(
-          CbmTrdTrack* trdTrack,
-    	  CbmAnaJpsiCandidate* cand);
-
-
-    Bool_t IsTofElectron(
-    	      CbmGlobalTrack* gTrack,
-    	      Double_t momentum,
-    		  CbmAnaJpsiCandidate* cand);
 
     void IsMismatch(
     		CbmAnaJpsiCandidate* cand);

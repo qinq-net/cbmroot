@@ -22,6 +22,8 @@ ${CBMROOT_SOURCE_DIR}/L1/L1Algo
 ${CBMROOT_SOURCE_DIR}/L1/ParticleFinder 
 
 ${CBMROOT_SOURCE_DIR}/rich
+
+${CBMROOT_SOURCE_DIR}/littrack
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})

@@ -128,7 +128,6 @@ CbmAnaConversion::CbmAnaConversion()
     fStsTracks(NULL),
     fStsTrackMatches(NULL),
     fGlobalTracks(NULL),
-    fRichElIdAnn(),
     fhANN_output_electrons(NULL),
     fhANN_output_electrons2(NULL),
     fhANN_output_electrons_chiCut(NULL),
@@ -293,10 +292,6 @@ InitStatus CbmAnaConversion::Init()
 	
 	fNofGeneratedPi0_allEvents = 0;
 	fNofPi0_kfparticle_allEvents = 0;
-	
-	
-	fRichElIdAnn = new CbmRichElectronIdAnn();
-	fRichElIdAnn->Init();
 	
 	
 	DoTomography = 1;
@@ -915,8 +910,8 @@ void CbmAnaConversion::Exec(Option_t*)
 
 	Int_t ngTracks = fGlobalTracks->GetEntriesFast();
 	fhNofTracks_globaltrack->Fill(ngTracks);
-	for (Int_t i = 0; i < ngTracks; i++) {
-		CbmGlobalTrack* gTrack = (CbmGlobalTrack*) fGlobalTracks->At(i);
+	for (Int_t iGTrack = 0; iGTrack < ngTracks; iGTrack++) {
+		CbmGlobalTrack* gTrack = (CbmGlobalTrack*) fGlobalTracks->At(iGTrack);
 		if(NULL == gTrack) continue;
 		int stsInd = gTrack->GetStsTrackIndex();
 		int richInd = gTrack->GetRichRingIndex();
@@ -990,7 +985,7 @@ void CbmAnaConversion::Exec(Option_t*)
 		fTestTracklist_noRichInd_momentum.push_back(refittedMomentum_electron);
 		fTestTracklist_noRichInd_chi.push_back(result_chi_electron);
 		fTestTracklist_noRichInd_richInd.push_back(richInd);
-		fTestTracklist_noRichInd_gTrackId.push_back(i);
+		fTestTracklist_noRichInd_gTrackId.push_back(iGTrack);
 		fTestTracklist_noRichInd_ndf.push_back(result_ndf_electron);
 		fTestTracklist_noRichInd_nofhits.push_back(nofhits_sts);
 
@@ -1001,7 +996,8 @@ void CbmAnaConversion::Exec(Option_t*)
 		Int_t pdg = mcTrack1->GetPdgCode();
 		CbmRichRing* ring = static_cast<CbmRichRing*> (fRichRings->At(richInd));
 		if (NULL != ring) {
-			Double_t ann = fRichElIdAnn->DoSelect(ring, refittedMomentum_electron.Mag() );
+			Double_t ann = CbmRichElectronIdAnn::GetInstance().CalculateAnnValue(iGTrack, refittedMomentum_electron.Mag());
+
 			if(TMath::Abs(pdg) == 11) {
 				fhANN_output_electrons->Fill(ann);
 				if(result_chi_electron <= CbmAnaConversionCutSettings::CalcChiCut(refittedMomentum_electron.Perp() )) {
@@ -1035,7 +1031,7 @@ void CbmAnaConversion::Exec(Option_t*)
        
 
 		// Fill tracklists containing momenta from mc-true, measured in sts, refitted at primary
-		Bool_t isFilled = FillRecoTracklistEPEM(mcTrack1, stsMomentumVec, refittedMomentum, stsMcTrackId, result_chi, i);
+		Bool_t isFilled = FillRecoTracklistEPEM(mcTrack1, stsMomentumVec, refittedMomentum, stsMcTrackId, result_chi, iGTrack);
 		if(isFilled) nofElectrons4epem++;
 
 		
@@ -1052,7 +1048,7 @@ void CbmAnaConversion::Exec(Option_t*)
 		if(stsMcTrackId == richMcTrackId) {
 			//CbmRichRing* ring = static_cast<CbmRichRing*> (fRichRings->At(richInd));
 			if (NULL != ring) {
-				Double_t ann = fRichElIdAnn->DoSelect(ring, refittedMomentum_electron.Mag() );
+				Double_t ann = CbmRichElectronIdAnn::GetInstance().CalculateAnnValue(iGTrack, refittedMomentum_electron.Mag());
 				if(TMath::Abs(pdg) == 11) {
 					fhANN_output_electrons2->Fill(ann);
 					fhANN_output_electrons_vs_p->Fill(refittedMomentum_electron.Mag(),ann);

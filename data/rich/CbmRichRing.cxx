@@ -65,8 +65,6 @@ CbmRichRing::CbmRichRing()
     fAaxisCor(0.),
     fBaxisCor(0.),
     fPhi(0.),
-    fTrackID(-1),
-    fDistance(99.),
     fChi2(0.),
     fAngle(0.),
     fNofHitsOnRing(-1),
@@ -98,8 +96,6 @@ CbmRichRing::CbmRichRing ( Float_t x,
     fAaxisCor(0.),
     fBaxisCor(0.),
     fPhi(0.),
-    fTrackID(-1),
-    fDistance(99.),
     fChi2(0.),
     fAngle(0.),
     fNofHitsOnRing(-1),
@@ -191,7 +187,6 @@ void CbmRichRing::Print(Option_t*) const {
 			", NofHits = " << GetNofHits() <<
 			", RadialPosition = " << GetRadialPosition() <<
 			", Chi2 = " << GetChi2() <<
-			", RingTrackDistance = "<< GetDistance() <<
 			", Angle() = " << GetAngle() <<
 			", NofHitsOnRing = " << GetNofHitsOnRing() 
                    << FairLogger::endl;

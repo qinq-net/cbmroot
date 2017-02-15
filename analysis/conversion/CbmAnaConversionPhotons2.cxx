@@ -51,7 +51,6 @@ CbmAnaConversionPhotons2::CbmAnaConversionPhotons2()
     fHistoList_photons_withRICH(),
     fHistoList_photons_withRICH_withChi(),
     fHistoList_photons_withRICH_fromTarget(),
-    electronidentifier(),
     fRecoTracklist_gtIndex(),
 	fRecoTracklist_mcIndex(),
 	fRecoTracklist_momentum(),
@@ -164,8 +163,6 @@ void CbmAnaConversionPhotons2::Init()
 
 
 	InitHistos();
-	electronidentifier = new CbmLitGlobalElectronId();
-	electronidentifier->Init();
 }
 
 
@@ -771,8 +768,8 @@ void CbmAnaConversionPhotons2::AnalyseElectronsRecoWithRICH()
 			int motherID_j = fRecoTracklist_withRICH_mctrack[j]->GetMotherId();
 			
 			
-			Bool_t electron_rich1 = electronidentifier->IsRichElectron(fRecoTracklist_withRICH_gtIndex[i], fRecoTracklist_withRICH_momentum[i].Mag() );
-			Bool_t electron_rich2 = electronidentifier->IsRichElectron(fRecoTracklist_withRICH_gtIndex[j], fRecoTracklist_withRICH_momentum[j].Mag() );
+			Bool_t electron_rich1 = CbmLitGlobalElectronId::GetInstance().IsRichElectron(fRecoTracklist_withRICH_gtIndex[i], fRecoTracklist_withRICH_momentum[i].Mag() );
+			Bool_t electron_rich2 = CbmLitGlobalElectronId::GetInstance().IsRichElectron(fRecoTracklist_withRICH_gtIndex[j], fRecoTracklist_withRICH_momentum[j].Mag() );
 			
 			
 			// then all false combinations are analysed, after that "continue" of loop, i.e. break

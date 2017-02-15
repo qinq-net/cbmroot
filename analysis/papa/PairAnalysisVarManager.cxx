@@ -307,7 +307,6 @@ TBits*          PairAnalysisVarManager::fgFillMap          = 0x0;
 Int_t           PairAnalysisVarManager::fgCurrentRun = -1;
 Double_t        PairAnalysisVarManager::fgData[PairAnalysisVarManager::kNMaxValuesMC] = {0.};
 TFormula*       PairAnalysisVarManager::fgFormula[kNMaxValuesMC] = {0x0};
-CbmRichElectronIdAnn* PairAnalysisVarManager::fgRichElIdAnn=0x0;
 
 //________________________________________________________________
 PairAnalysisVarManager::PairAnalysisVarManager() :

@@ -85,10 +85,6 @@ private:
 	std::vector<TH1*> fHistoList_recofull_new[5];
 
 	TH1I * fhElectrons;
-
-	CbmLitGlobalElectronId* electronidentifier;
-	CbmLitGlobalElectronId* electronidentifier_ann0;
-	CbmRichElectronIdAnn* fRichElIdAnn;
 	
 	TH1D * fhMomentumFits;
 	TH1D * fhMomentumFits_electronRich;

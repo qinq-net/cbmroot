@@ -11,6 +11,7 @@
 #include "CbmTrdTrack.h"
 #include "CbmRichRing.h"
 #include "CbmMuchTrack.h"
+#include "utils/CbmRichUtil.h"
 
 #include "FairRunAna.h"
 
@@ -260,7 +261,7 @@ void CbmKFParticleFinderPID::SetRecoPID()
           {
             Double_t axisA = richRing->GetAaxis();
             Double_t axisB = richRing->GetBaxis();
-            Double_t dist = richRing->GetDistance();
+            Double_t dist = CbmRichUtil::GetRingTrackDistance(igt);
             
             Double_t fMeanA = 4.95;
             Double_t fMeanB = 4.54;

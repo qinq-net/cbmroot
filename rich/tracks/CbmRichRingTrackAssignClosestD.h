@@ -14,7 +14,7 @@
 
 class TClonesArray;
 
-enum CbmRichRingTrackAssignClosestDAlgorithmEnum { TrackRing, RingTrack };
+enum CbmRichRingTrackAssignClosestDAlgorithmEnum { TrackRing, RingTrack, Combined };
 
 /**
 * \class CbmRichRingTrackAssignClosestD

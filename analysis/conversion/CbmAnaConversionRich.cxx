@@ -14,6 +14,7 @@
 #include "CbmStsTrack.h"
 #include "CbmRichRing.h"
 #include "CbmTrackMatchNew.h"
+#include "utils/CbmRichUtil.h"
 
 #include <algorithm>
 #include <map>
@@ -306,7 +307,9 @@ void CbmAnaConversionRich::AnalyseRICHdata()
 			if(richRing == NULL) continue;
 			fRichRings_Aaxis->Fill(richRing->GetAaxis());
 			fRichRings_Baxis->Fill(richRing->GetBaxis());
-			fRichRings_distance->Fill(richRing->GetDistance());
+			// CbmRichRing::GetDistance() method is no longer supported
+			// If you wan to use cuts update code using CbmRichUtil::GetRingTrackDistance()
+			fRichRings_distance->Fill(1./*richRing->GetDistance()*/);
 			fRichRings_radius->Fill(richRing->GetRadius());
 		}
 
@@ -488,8 +491,8 @@ void CbmAnaConversionRich::AnalyseRICHdata()
 	// plot momentum vs ring radius/Axis+Baxis
 	//cout << "CbmAnaConversionRich: further ring analyses..." << endl;
 	Int_t nGTracks = fGlobalTracks->GetEntriesFast();
-	for (Int_t i = 0; i < nGTracks; i++){
-		CbmGlobalTrack* gTrack  = (CbmGlobalTrack*) fGlobalTracks->At(i);
+	for (Int_t iGTrack = 0; iGTrack < nGTracks; iGTrack++){
+		CbmGlobalTrack* gTrack  = (CbmGlobalTrack*) fGlobalTracks->At(iGTrack);
 		if(NULL == gTrack) continue;
 		int stsInd = gTrack->GetStsTrackIndex();
 		int richInd = gTrack->GetRichRingIndex();
@@ -510,7 +513,7 @@ void CbmAnaConversionRich::AnalyseRICHdata()
 		Double_t radius = richRing->GetRadius();
 		Double_t axisA = richRing->GetAaxis();
 		Double_t axisB = richRing->GetBaxis();
-		Double_t distance = richRing->GetDistance();
+		Double_t distance = CbmRichUtil::GetRingTrackDistance(iGTrack);
 		
 		fhRingtest->Fill(momentum, radius);
 		fhRichRings_AaxisVSmom->Fill(momentum, axisA);

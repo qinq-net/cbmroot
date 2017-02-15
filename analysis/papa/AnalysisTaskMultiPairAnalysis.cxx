@@ -82,7 +82,6 @@ AnalysisTaskMultiPairAnalysis::~AnalysisTaskMultiPairAnalysis()
   fListPairAnalysis.SetOwner();
   ((TList*)fMetaData.GetMetaData())->SetOwner(kFALSE);
   fListHistos.SetOwner(kFALSE);
-  if(fgRichElIdAnn)    { delete fgRichElIdAnn;    fgRichElIdAnn=0; }
   if(fInputEvent)      { delete fInputEvent;      fInputEvent=0; }
 }
 
@@ -137,11 +136,6 @@ InitStatus AnalysisTaskMultiPairAnalysis::Init()
 
   // Connect the MC event
   PairAnalysisMC::Instance()->ConnectMCEvent();
-
-  // init the RICH ANN-Pid repsonse
-  fgRichElIdAnn = new CbmRichElectronIdAnn();
-  fgRichElIdAnn->Init();
-  PairAnalysisVarManager::SetRichPidResponse(fgRichElIdAnn);
 
   // set the beam energy to the varmanager
   PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kEbeam, fBeamEnergy);

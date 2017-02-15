@@ -62,6 +62,11 @@ void CbmRichRingTrackAssignClosestD::DoAssign(
 	else if (fAlgorithmType == TrackRing) {
 		DoAssignTrackRing(rings, richProj);
 	} // TrackRing
+
+	else if (fAlgorithmType == Combined) {
+		DoAssignRingTrack(rings, richProj);
+		DoAssignTrackRing(rings, richProj);
+	} // Combined
 }
 
 void CbmRichRingTrackAssignClosestD::DoAssignRingTrack(
@@ -79,7 +84,7 @@ void CbmRichRingTrackAssignClosestD::DoAssignRingTrack(
 		trackDist[i] = 999.;
 	}
 
-	for (Int_t iIter = 0; iIter < 6; iIter++){
+	for (Int_t iIter = 0; iIter < 4; iIter++){
 		for (Int_t iRing=0; iRing < nofRings; iRing++) {
 			if (trackIndex[iRing] != -1) continue;
 			CbmRichRing* pRing = (CbmRichRing*)rings->At(iRing);
@@ -98,14 +103,12 @@ void CbmRichRingTrackAssignClosestD::DoAssignRingTrack(
 				FairTrackParam* pTrack = (FairTrackParam*)richProj->At(iTrack);
 				Double_t xTrack = pTrack->GetX();
 				Double_t yTrack = pTrack->GetY();
-			 //cout << "xT:" << xTrack << " yT:" << yTrack << endl;
 				// no projection onto the photodetector plane
 				if (xTrack == 0 && yTrack == 0) continue;
 
 				if (fUseTrd && fTrdTracks != NULL && !IsTrdElectron(iTrack)) continue;
 
-				Double_t dist = TMath::Sqrt( (xRing-xTrack)*(xRing-xTrack) +
-						(yRing-yTrack)*(yRing-yTrack) );
+				Double_t dist = TMath::Sqrt( (xRing-xTrack)*(xRing-xTrack) + (yRing-yTrack)*(yRing-yTrack) );
 
 				if (dist < rMin) {
 					rMin = dist;
@@ -135,8 +138,6 @@ void CbmRichRingTrackAssignClosestD::DoAssignRingTrack(
 	// fill global tracks
 	for (UInt_t i = 0; i < trackIndex.size(); i++){
 		CbmRichRing* pRing = (CbmRichRing*)rings->At(i);
-		pRing->SetTrackID(trackIndex[i]);
-		pRing->SetDistance(trackDist[i]);
 	   // cout << "trackIndex[i]:" << trackIndex[i] << " trackDist[i]:" << trackDist[i] << " r:" << pRing->GetRadius() << " x:" << pRing->GetCenterX() << " y:" << pRing->GetCenterY()<< endl;
 		if (trackIndex[i] == -1) continue;
 		CbmGlobalTrack* gTrack = (CbmGlobalTrack*) fGlobalTracks->At(trackIndex[i]);
@@ -152,6 +153,10 @@ void CbmRichRingTrackAssignClosestD::DoAssignTrackRing(
 	Int_t nofRings = rings->GetEntriesFast();
 
 	for (Int_t iTrack=0; iTrack < nofTracks; iTrack++) {
+		CbmGlobalTrack* gTrack = (CbmGlobalTrack*) fGlobalTracks->At(iTrack);
+		// track already has rich segment
+		if (gTrack == NULL || gTrack->GetRichRingIndex() >= 0) continue;
+
 		FairTrackParam* pTrack = (FairTrackParam*)richProj->At(iTrack);
 		Double_t xTrack = pTrack->GetX();
 		Double_t yTrack = pTrack->GetY();
@@ -174,9 +179,6 @@ void CbmRichRingTrackAssignClosestD::DoAssignTrackRing(
 		} // loop rings
 		if (iRingMin < 0) continue;
 		CbmRichRing* pRing = (CbmRichRing*)rings->At(iRingMin);
-		pRing->SetTrackID(iTrack);
-		pRing->SetDistance(rMin);
-		CbmGlobalTrack* gTrack = (CbmGlobalTrack*) fGlobalTracks->At(iTrack);
 		gTrack->SetRichRingIndex(iRingMin);
 	}//loop tracks
 }

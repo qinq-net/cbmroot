@@ -15,15 +15,6 @@
 class CbmLmvmCuts {
 public:
 	CbmLmvmCuts():
-		fTrdAnnCut(0.),
-		fRichAnnCut(0.),
-		fMeanA(0.),
-		fMeanB(0.),
-		fRmsA(0.),
-		fRmsB(0.),
-		fRmsCoeff(0.),
-		fDistCut(0.),
-		fUseRichAnn(kTRUE),
 		fMomentumCut(0.),
 		fChiPrimCut(0.),
 		fPtCut(0.),
@@ -48,16 +39,7 @@ public:
 	 */
 	void SetDefaultCuts()
 	{
-		//electron ID cuts
-		fTrdAnnCut = 0.85;
-		fRichAnnCut = -0.4;
-		fUseRichAnn = true;
-		fMeanA = -1.;
-		fMeanB = -1.;
-		fRmsA = -1.;
-		fRmsB = -1.;
-		fRmsCoeff = -1.;
-		fDistCut = -1.;
+		//electron ID cuts, we use CbmLitGlobalElectronId for identification
 		fMomentumCut = -1.; // if cut < 0 it is not used
 
 		// analysis cuts
@@ -83,8 +65,6 @@ public:
 	void Print()
 	{
 		std::cout << "Used cuts:" << std::endl <<
-				"fTrdAnnCut = " << fTrdAnnCut << std::endl <<
-				"fRichAnnCut = " << fRichAnnCut << std::endl <<
 				"fChiPrimCut = " << fChiPrimCut << std::endl <<
 				"fPtCut = " << fPtCut << std::endl <<
 				"fAngleCut = " << fAngleCut << std::endl <<
@@ -98,16 +78,7 @@ public:
 	}
 
 public:
-	 // ID cuts
-	Double_t fTrdAnnCut;
-	Double_t fRichAnnCut;
-	Double_t fMeanA;
-	Double_t fMeanB;
-	Double_t fRmsA;
-	Double_t fRmsB;
-	Double_t fRmsCoeff;
-	Double_t fDistCut;
-	Bool_t fUseRichAnn;
+	 // ID cuts, we use CbmLitGlobalElectronId for identification
 	Double_t fMomentumCut; // if cut < 0 then it will not be used
 
 	// Analysis cuts
