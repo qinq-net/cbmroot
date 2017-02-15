@@ -59,12 +59,12 @@ const Float_t Wall_Z_ReferenceSmPos = 200; // target distance of setup
 //
 const Int_t NumberOfDifferentCounterTypes = 10;
 const Float_t Glass_X[NumberOfDifferentCounterTypes] = {32.,  52., 15.04, 18.,  2.,   0.2,  40.4, 28.8, 17.4, 25.};
-const Float_t Glass_Y[NumberOfDifferentCounterTypes] = {26.9, 53.,  4.,    4.6, 10.,  0.2,  9.6,   9.6,  2.0, 26.7};
+const Float_t Glass_Y[NumberOfDifferentCounterTypes] = {26.9, 53.,  4.,    4.6, 8.,  0.2,  9.6,   9.6,  2.0, 26.7};
 const Float_t Glass_Z[NumberOfDifferentCounterTypes] = {0.1,   0.1, 0.1,   0.1, 0.01, 0.1,  0.05,  0.05, 0.07, 0.1};
 
 const Float_t GasGap_X[NumberOfDifferentCounterTypes] = {32., 52., 15.04, 18.,    2.,  0.2,  40.4, 28.8,  17.4, 25.};
-const Float_t GasGap_Y[NumberOfDifferentCounterTypes] = {26.9,53.,  4.,    4.6,  10.,  0.2, 9.6,  9.6,   2.0, 26.7};
-const Float_t GasGap_Z[NumberOfDifferentCounterTypes] = {0.022,0.022,0.022,0.014, 2.,  0.1, 0.014,0.014, 0.025, 0.025};
+const Float_t GasGap_Y[NumberOfDifferentCounterTypes] = {26.9,53.,  4.,    4.6,   8.,  0.2, 9.6,  9.6,   2.0, 26.7};
+const Float_t GasGap_Z[NumberOfDifferentCounterTypes] = {0.022,0.022,0.022,0.014, 1.,  0.1, 0.014,0.014, 0.025, 0.025};
 
 const Int_t NumberOfGaps[NumberOfDifferentCounterTypes] = {8,8,6,10,1,1,10,8,10,10};
 const Int_t NumberOfReadoutStrips[NumberOfDifferentCounterTypes] = {32,56,16,72,1,16,40,40,8,24};
@@ -110,7 +110,7 @@ const Float_t CounterZDistance[NofModuleTypes]      = {0.0,     0.0,   0.0,  2.5
 const Float_t CounterRotationAngle[NofModuleTypes]  = {0.,      0.0,   0.0,   0.,  0.0,  0., 0.,  0.,  0.,  0.};
 
 const Float_t ZDist2Target=353.;
-const Float_t MeanTheta=-7.5;
+const Float_t MeanTheta=-7.0; // -7.5 //initial
 Float_t TanTheta=TMath::Tan(TMath::DegToRad()*MeanTheta);
 
 const Float_t HDbig_Z_Position=222.;
@@ -131,7 +131,7 @@ const Float_t HDsmall_Number[HDsmall_NTypes] = {1.}; //debugging, V14b
 
 const Float_t HDRef_Z_Position=ZDist2Target+7;        // HD - P5
 const Float_t HDRef_First_Y_Position=HDRef_Z_Position*TanTheta;
-const Float_t HDRef_X_Offset=0.7;
+const Float_t HDRef_X_Offset=-1.5; //0.7;
 const Float_t HDRef_rotate_Z=180.;
 const Int_t HDRef_NTypes = 1;
 const Float_t HDRef_Types[HDRef_NTypes]  = {4.}; // this is the SmType!
@@ -163,7 +163,7 @@ const Float_t Buc2012_Types[Buc2012_NTypes]  = {7.};
 const Float_t Buc2012_Number[Buc2012_NTypes] = {1.};
 
 const Float_t Buc2015_Z_Position=ZDist2Target+125.;
-const Float_t Buc2015_First_Y_Position=Buc2015_Z_Position*TanTheta - 3.;
+const Float_t Buc2015_First_Y_Position=Buc2015_Z_Position*TanTheta + 0.5;
 const Float_t Buc2015_X_Offset=5.5; 
 const Float_t Buc2015_rotate_Z=0.;
 const Int_t Buc2015_NTypes = 1;
@@ -202,7 +202,7 @@ const Float_t Star2_X_Offset[Star2_NTypes]={2.,0.,0.};
 
 const Int_t Pla_NTypes = 2;
 const Float_t Pla_Z_Position[Pla_NTypes]={(float)ZDist2Target,(float)(ZDist2Target+179.5)};
-const Float_t Pla_X_Position[Pla_NTypes]={-3.0,-0.5};
+const Float_t Pla_X_Position[Pla_NTypes]={1.0,-1.};
 const Float_t Pla_Y_Position[Pla_NTypes]={(Float_t)(ZDist2Target*TanTheta),(Float_t)((ZDist2Target+179.5)*TanTheta)};
 const Float_t Pla_rotate_Z[Pla_NTypes]={90.,90.};
 const Float_t Pla_Types[Pla_NTypes]  = {2.,2.};
@@ -210,7 +210,7 @@ const Float_t Pla_Number[Pla_NTypes] = {1.,1.};   //V16b
 
 const Int_t Cer_NTypes = 3;
 const Float_t Cer_Z_Position[Cer_NTypes]={static_cast<Float_t>(ZDist2Target+164.),static_cast<Float_t>(ZDist2Target+190.5),static_cast<Float_t>(ZDist2Target+210.5)};
-const Float_t Cer_X_Position[Cer_NTypes]={0.,0.,0.};
+const Float_t Cer_X_Position[Cer_NTypes]={0.,6.,0.};
 const Float_t Cer_Y_Position[Cer_NTypes]={static_cast<Float_t>((ZDist2Target+164.)*TanTheta),static_cast<Float_t>((ZDist2Target+190.5)*TanTheta),static_cast<Float_t>((ZDist2Target+210.5)*TanTheta)};
 const Float_t Cer_rotate_Z[Cer_NTypes]={0.,0.,0.};
 const Float_t Cer_Types[Cer_NTypes]  = {8.,8.,8.};
