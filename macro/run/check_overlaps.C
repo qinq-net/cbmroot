@@ -18,7 +18,7 @@ void check_overlaps(const char* setup = "sis100_electron")
   Int_t benchmarkNumber = 0;
 
   TString outDir  = "data/";
-  TString geoFile = outDir + setup + "_geofile_full.root";
+  TString geoFile = "/Users/slebedev/Development/cbm/data/sim/rich/reco/geofilefull.00000.root";
   TFile* f = new TFile(geoFile);
 
   gGeoManager = (TGeoManager*) f->Get("FAIRGeom"); 

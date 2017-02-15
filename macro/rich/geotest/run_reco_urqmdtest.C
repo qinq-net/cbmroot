@@ -1,5 +1,5 @@
 
-void run_reco_urqmdtest(Int_t nEvents = 200)
+void run_reco_urqmdtest(Int_t nEvents = 10)
 {
     TTree::SetMaxTreeSize(90000000000);
 
@@ -12,20 +12,13 @@ void run_reco_urqmdtest(Int_t nEvents = 200)
 	TString mcFile = outDir + "25gev.centr.mc.root";
 	TString recoFile = outDir + "25gev.centr.reco.root";
 
-	TString stsMatBudgetFileName = parDir + "/sts/sts_matbudget_v15c.root"; // Material budget file for L1 STS tracking
+	TString stsMatBudgetFileName = parDir + "/sts/sts_matbudget_v16x.root"; // Material budget file for L1 STS tracking
 	std::string resultDir = "results_urqmd_25gev_centr_al_1/";
 
 	if (script == "yes") {
 		mcFile = TString(gSystem->Getenv("MC_FILE"));
 		parFile = TString(gSystem->Getenv("PAR_FILE"));
 		recoFile = TString(gSystem->Getenv("RECO_FILE"));
-		caveGeom = TString(gSystem->Getenv("CAVE_GEOM"));
-		pipeGeom = TString(gSystem->Getenv("PIPE_GEOM"));
-		stsGeom = TString(gSystem->Getenv("STS_GEOM"));
-		richGeom = TString(gSystem->Getenv("RICH_GEOM"));
-		fieldMap = TString(gSystem->Getenv("FIELD_MAP"));
-		magnetGeom = TString(gSystem->Getenv("MAGNET_GEOM"));
-		fieldScale = TString(gSystem->Getenv("FIELD_MAP_SCALE")).Atof();
 		stsMatBudgetFileName =  parDir + TString(gSystem->Getenv("STS_MATERIAL_BUDGET_FILE_NAME"));
 		resultDir = std::string(gSystem->Getenv("RESULT_DIR"));
 	}
@@ -93,24 +86,12 @@ void run_reco_urqmdtest(Int_t nEvents = 200)
     FairTask* stsFindTracks = new CbmStsFindTracks(1, stsTrackFinder);
     run->AddTask(stsFindTracks);
 
-   // =========================================================================
-   	// ===                     TRD local reconstruction                      ===
-   	// =========================================================================
-	//Bool_t simpleTR = kTRUE; // use fast and simple version for TR production
-	//CbmTrdRadiator *radiator = new CbmTrdRadiator(simpleTR , "H++");
-	//CbmTrdHitProducerSmearing* trdHitProd = new CbmTrdHitProducerSmearing(radiator);
-	//trdHitProd->SetUseDigiPar(false);
-	//run->AddTask(trdHitProd);
-
     
     CbmLitFindGlobalTracks* finder = new CbmLitFindGlobalTracks();
     finder->SetTrackingType(std::string("branch"));
     finder->SetMergerType("nearest_hit");
     run->AddTask(finder);
-    
-    //CbmPrimaryVertexFinder* pvFinder = new CbmPVFinderKF();
-    //CbmFindPrimaryVertex* findVertex = new CbmFindPrimaryVertex(pvFinder);
-    //run->AddTask(findVertex);
+
 
     CbmRichDigitizer* richDigi  = new CbmRichDigitizer();
     richDigi->SetNofNoiseHits(0); // We do not need noise hits for UrqmdTest

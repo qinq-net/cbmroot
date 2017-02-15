@@ -7,12 +7,12 @@ void run_sim_urqmdtest(Int_t nEvents = 20)
     TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
     
     TString inFile = "/Users/slebedev/Development/cbm/data/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root";
-    TString outDir = "/Users/slebedev/Development/cbm/data/simulations/rich/urqmdtest/";
+    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/urqmdtest/";
     TString parFile =  outDir + "25gev.centr.param.root";
     TString outFile = outDir + "25gev.centr.mc.root";
     
     TString caveGeom = "cave.geo";
-    TString pipeGeom   = "pipe/pipe_v14n.root";
+    TString pipeGeom   = "pipe/pipe_v16b_1e.geo.root";
     TString magnetGeom = "magnet/magnet_v15a.geo.root";
     TString stsGeom = "sts/sts_v15c.geo.root";
     TString richGeom= "rich/Rich_jan2016.gdml";//"rich/Rich_dec_2015_ver2.gdml";
@@ -102,11 +102,6 @@ void run_sim_urqmdtest(Int_t nEvents = 20)
         fRun->AddModule(rich);
     }
     
-    /*if ( trdGeom != "" ) {
-     FairDetector* trd = new CbmTrd("TRD",kTRUE );
-     trd->SetGeometryFileName(trdGeom);
-     fRun->AddModule(trd);
-     }*/
     
     // Create magnetic field
     cout <<"fieldSymType=" << fieldSymType << endl;

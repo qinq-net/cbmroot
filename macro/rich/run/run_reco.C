@@ -1,4 +1,4 @@
-void run_reco(Int_t nEvents = 1000)
+void run_reco(Int_t nEvents = 2000)
 {
    TTree::SetMaxTreeSize(90000000000);
 
@@ -9,9 +9,9 @@ void run_reco(Int_t nEvents = 1000)
 
 	gRandom->SetSeed(10);
 
-	TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/mc.00000.root";
-	TString parFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/param.00000.root";
-	TString recoFile ="/Users/slebedev/Development/cbm/data/simulations/rich/richreco/reco.00000.root";
+	TString mcFile = "/Users/slebedev/Development/cbm/data/sim/rich/reco/mc.0.root";
+	TString parFile = "/Users/slebedev/Development/cbm/data/sim/rich/reco/param.0.root";
+	TString recoFile ="/Users/slebedev/Development/cbm/data/sim/rich/reco/reco.0.root";
 
 	TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/geosetup_8gev.C";
 
@@ -277,8 +277,8 @@ void run_reco(Int_t nEvents = 1000)
 	clusteringQa->SetOutputDir(resultDir);
 	//run->AddTask(clusteringQa);
 
-	CbmLitTofQa* tofQa = new CbmLitTofQa();
-	tofQa->SetOutputDir(std::string(resultDir));
+	//CbmLitTofQa* tofQa = new CbmLitTofQa();
+	//tofQa->SetOutputDir(std::string(resultDir));
 	//run->AddTask(tofQa);
 
 	// -----  Parameter database   --------------------------------------------

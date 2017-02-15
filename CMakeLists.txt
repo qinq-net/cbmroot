@@ -74,14 +74,14 @@ If(${POS_C++11} EQUAL -1)
   Message(FATAL_ERROR "FairSoft wasn't compiled with c++11 support. Please recompile FairSoft with a compiler which supports c++11.")
 EndIf()
 
-Execute_process(COMMAND $ENV{SIMPATH}/bin/fairsoft-config --root-version OUTPUT_VARIABLE _res_root_version OUTPUT_STRIP_TRAILING_WHITESPACE)
-String(FIND ${_res_root_version} "Usage" POS_USAGE)
-If(${POS_USAGE} EQUAL 1) 
-  Message(FATAL_ERROR "FairSoft version to old. At least nov15 compiled with ROOT6 is needed.")
-EndIf()
-If(NOT ${_res_root_version} EQUAL 6)
-  Message(FATAL_ERROR "FairSoft was not compiled with ROOT6. At least FairSoft nov15 compiled with ROOT6 is needed.")
-EndIf()
+#Execute_process(COMMAND $ENV{SIMPATH}/bin/fairsoft-config --root-version OUTPUT_VARIABLE _res_root_version OUTPUT_STRIP_TRAILING_WHITESPACE)
+#String(FIND ${_res_root_version} "Usage" POS_USAGE)
+#If(${POS_USAGE} EQUAL 1) 
+#  Message(FATAL_ERROR "FairSoft version to old. At least nov15 compiled with ROOT6 is needed.")
+#EndIf()
+#If(NOT ${_res_root_version} EQUAL 6)
+#  Message(FATAL_ERROR "FairSoft was not compiled with ROOT6. At least FairSoft nov15 compiled with ROOT6 is needed.")
+#EndIf()
 
 # Extract the FairRoot version from fairroot-config
 # The version info is of the form Major.Minor.Patch e.g. 15.11.1 and

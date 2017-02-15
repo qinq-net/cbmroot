@@ -17,7 +17,7 @@ export NELECTRONS=5
 export NPOSITRONS=5
 
 # If "yes" than UrQMD will be used as background
-export URQMD=no
+export URQMD=yes
 
 # If "yes" than primary electrons will be generated
 export ELECTRONS=yes
@@ -29,13 +29,13 @@ export PLUTO=no
 export GEO_SETUP_FILE=geosetup_25gev.C
 
 #number of events for each thread
-export NEVENTS=5000
+export NEVENTS=1000
 
-for Z in 0 1; do
+for Z in 1; do
 
-   export DIR=/Users/slebedev/Development/cbm/data/simulations/rich/newrich/
-   export LIT_RESULT_DIR=recqa_bfield_${Z}/
-   mkdir -p ${LIT_RESULT_DIR}
+export DIR=/Users/slebedev/Development/cbm/data/sim/rich/reco/
+ #export LIT_RESULT_DIR=recqa_cyl_${Z}/
+ #  mkdir -p ${LIT_RESULT_DIR}
    
    export IN_FILE=/Users/slebedev/Development/cbm/data/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root
    export MC_FILE=${DIR}/mc.${Z}.root
@@ -43,13 +43,34 @@ for Z in 0 1; do
    export RECO_FILE=$DIR/reco.${Z}.root
 
     if [ ${Z} = "0" ] ; then
-        export GEO_SETUP_FILE=geosetup_25gev.C
-        export IN_FILE=/Users/slebedev/Development/cbm/data/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root
+        export GEO_SETUP_FILE=geosetup_test_full.C
+        export NEVENTS=50000
+        export NELECTRONS=1
+		export NPOSITRONS=1
+		export URQMD=no
+        export IN_FILE=/Users/slebedev/Development/cbm/data/urqmd/auau/8gev/centr/urqmd.auau.8gev.centr.00001.root
+        export LIT_RESULT_DIR=recqa_cyl_electrons_full/
+		mkdir -p ${LIT_RESULT_DIR}
 
     elif [ ${Z} = "1" ]; then
-        export GEO_SETUP_FILE=geosetup_25gev_newfield.C
+    	export URQMD=yes
+    	export NEVENTS=200
+    	export NELECTRONS=5
+		export NPOSITRONS=5
+        export GEO_SETUP_FILE=geosetup_test_full.C
+        export IN_FILE=/Users/slebedev/Development/cbm/data/urqmd/auau/8gev/centr/urqmd.auau.8gev.centr.00001.root
+		export LIT_RESULT_DIR=recqa_cyl_8gev_full_newRTDist/
+		mkdir -p ${LIT_RESULT_DIR}
+		
+	elif [ ${Z} = "2" ]; then
+		export URQMD=yes
+		export NEVENTS=1000
+		export NELECTRONS=5
+		export NPOSITRONS=5
+        export GEO_SETUP_FILE=geosetup_test_nobpmt.C
         export IN_FILE=/Users/slebedev/Development/cbm/data/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root
-
+		export LIT_RESULT_DIR=recqa_cyl_25gev_nobpmt/
+		mkdir -p ${LIT_RESULT_DIR}
     fi
  
   #. ./sim.sh

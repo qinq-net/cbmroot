@@ -1,14 +1,14 @@
 
-void run_reco_geotest(Int_t nEvents = 10000)
+void run_reco_geotest(Int_t nEvents = 5000)
 {
    TTree::SetMaxTreeSize(90000000000);
    TString script = TString(gSystem->Getenv("SCRIPT"));
    gRandom->SetSeed(10);
 
-   TString outDir = "/Users/slebedev/Development/cbm/data/simulations/rich/geotest/";
-   TString mcFile = outDir + "mc.00000.root";
-   TString parFile = outDir + "param.00000.root";
-   TString recoFile = outDir + "reco.00000.root";
+   TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/geotest/";
+   TString mcFile = outDir + "mc.0.root";
+   TString parFile = outDir + "param.0.root";
+   TString recoFile = outDir + "reco.0.root";
    std::string resultDir = "results_geotest/";
 
    if (script == "yes") {

@@ -6,21 +6,21 @@ void Import_GDML_Export_ROOT()
 
 	TGDMLParse parser;
 	// Define your input GDML file HERE
-	TGeoVolume* gdmlTop = parser.GDMLReadFile (vmcDir + "/geometry/rich/RICH_10Nov2016_ver3.gdml");
+	TGeoVolume* gdmlTop = parser.GDMLReadFile (vmcDir + "/geometry/rich/test_nobpmt.gdml");
 	TGeoVolume* rootTop = new TGeoVolumeAssembly("TOP");
 
 	gGeoManager->SetTopVolume(rootTop);
 
 	// Define your position HERE
 	TGeoRotation* rot = new TGeoRotation ("rot", 0., 0., 0.);
-	TGeoCombiTrans* posrot = new TGeoCombiTrans (0., 0., 270., rot);
+	TGeoCombiTrans* posrot = new TGeoCombiTrans (0., 0., 258.75, rot); // v16a - 270
 
 	rootTop->AddNode (gdmlTop, 1, posrot);
 
 	gGeoManager->CloseGeometry();
 
 	// Define you output ROOT file HERE
-	TFile* outfile = new TFile(vmcDir + "/geometry/rich/RICH_10Nov2016_ver3.root", "RECREATE");
+	TFile* outfile = new TFile(vmcDir + "/geometry/rich/test_nobpmt.root", "RECREATE");
 	rootTop->Write();
 	outfile->Close();
 }

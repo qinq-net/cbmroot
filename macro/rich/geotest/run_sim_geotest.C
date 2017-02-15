@@ -1,21 +1,21 @@
 #include <stdio.h>
 
-void run_sim_geotest(Int_t nEvents = 10000)
+void run_sim_geotest(Int_t nEvents = 10)
 {
     TTree::SetMaxTreeSize(90000000000);
     
     TString script = TString(gSystem->Getenv("SCRIPT"));
     TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
     
-    TString outDir = "/Users/slebedev/Development/cbm/data/simulations/rich/geotest/";
+    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/geotest/";
     TString parFile =  outDir + "param.00000.root";
     TString mcFile = outDir + "mc.00000.root";
     TString caveGeom = "cave.geo";
-    TString pipeGeom   = "pipe/pipe_v14n.root";
+    TString pipeGeom   = "pipe/pipe_v16b_1e.geo.root";
     TString magnetGeom = "magnet/magnet_v15a.geo.root";
-    TString stsGeom = "sts/sts_v15c.geo.root";
-    TString richGeom= "rich/RICH_10Nov2016_ver3.root"; //"rich/Rich_cyl_camera_fix.gdml";;//"rich/rich_v16a_1e.geo.root";//"rich/RICH_10Nov2016_ver2.root"
-    TString fieldMap = "field_v12b";
+    TString stsGeom = "sts/sts_v16x.geo.root";
+    TString richGeom= "rich/test_nobpmt.root"; //"rich/RICH_10Nov2016_ver3.gdml";;//"rich/rich_v16a_1e.geo.root";
+    TString fieldMap = "field_v16a";
     Double_t fieldZ = 40.; // field center z position
     Double_t fieldScale =  1.0; // field scaling factor
     Int_t fieldSymType =  3;

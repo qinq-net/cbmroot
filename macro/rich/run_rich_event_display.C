@@ -12,11 +12,11 @@ void run_rich_event_display()
    gROOT->LoadMacro("$VMCWORKDIR/macro/rich/cbmlibs.C");
    cbmlibs();
     
-    TString outDir = "/Users/slebedev/Development/cbm/data/simulations/rich/urqmdtest/";
-    TString paramFile =  outDir + "param.newrich.3.root";
-    TString mcFile = outDir + "mc.newrich.3.root";
-    TString recoFile = outDir + "reco.newrich.3.root";
-    TString outFile = outDir + "ed.newrich.3.root";
+    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/urqmdtest/";
+    TString paramFile =  outDir + "param.3.root";
+    TString mcFile = outDir + "mc.3.root";
+    TString recoFile = outDir + "reco.3.root";
+    TString outFile = outDir + "ed.3.root";
     
     //TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/mc.00000.root";
     //TString paramFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/param.00000.root";
@@ -34,7 +34,7 @@ void run_rich_event_display()
 
 
    CbmRichEventDisplay *ed = new CbmRichEventDisplay();
-   ed->SetDrawRings(true);
+   ed->SetDrawRings(false);
    ed->SetDrawHits(true);
    ed->SetDrawPoints(false);
    ed->SetDrawProjections(true);
