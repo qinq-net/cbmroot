@@ -30,10 +30,11 @@ void pl_eff_XY(Int_t iMode=0)
 
  Double_t Npredicted=0;
  Double_t Nfound=0.;
+ TString hname="";
 
  can->cd(1);
    gROOT->cd();
-   TString hname=Form("hXY4D4sel");
+   hname=Form("hXY4D4sel");
    hs4=(TH2 *)gROOT->FindObjectAny(hname);
    if (hs4!=NULL) {
      hs4->UseCurrentStyle(); hs4->GetYaxis()->SetLabelSize(lsize);
@@ -42,7 +43,7 @@ void pl_eff_XY(Int_t iMode=0)
 
  can->cd(2);
    gROOT->cd();
-   TString hname=Form("hXYSel2D4sel");
+   hname=Form("hXYSel2D4sel");
    hsS=(TH2 *)gROOT->FindObjectAny(hname);
    if (hsS!=NULL) {
      hsS->UseCurrentStyle(); hsS->GetYaxis()->SetLabelSize(lsize);
@@ -51,7 +52,7 @@ void pl_eff_XY(Int_t iMode=0)
 
  can->cd(3);
    gROOT->cd();
-   TString hname=Form("hXY0D4sel");
+   hname=Form("hXY0D4sel");
    hs0=(TH2 *)gROOT->FindObjectAny(hname);
    if (hs0!=NULL) {
      hs0->UseCurrentStyle(); hs0->GetYaxis()->SetLabelSize(lsize);
@@ -61,7 +62,7 @@ void pl_eff_XY(Int_t iMode=0)
 
  can->cd(4);
    gROOT->cd();
-   TString hname=Form("hXY4D4best");
+   hname=Form("hXY4D4best");
    h2=(TH2 *)gROOT->FindObjectAny(hname);
    if (h2!=NULL) {
      h2->UseCurrentStyle(); h2->GetYaxis()->SetLabelSize(lsize);
@@ -74,7 +75,7 @@ void pl_eff_XY(Int_t iMode=0)
 
  can->cd(5);
    gROOT->cd();
-   TString hname=Form("hXYSel2D4best");
+   hname=Form("hXYSel2D4best");
    h2=(TH2 *)gROOT->FindObjectAny(hname);
    if (h2!=NULL) {
      h2->UseCurrentStyle(); h2->GetYaxis()->SetLabelSize(lsize);
@@ -87,7 +88,7 @@ void pl_eff_XY(Int_t iMode=0)
 
  can->cd(6);
    gROOT->cd();
-   TString hname=Form("hXY0D4best");
+   hname=Form("hXY0D4best");
    h2=(TH2 *)gROOT->FindObjectAny(hname);
    if (h2!=NULL) {
      h2->UseCurrentStyle(); h2->GetYaxis()->SetLabelSize(lsize);

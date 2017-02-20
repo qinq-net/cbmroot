@@ -4,7 +4,7 @@ void pl_all_dTSel(Int_t iNSel=2)
   //  can->Divide(2,2);  
   //  TCanvas *can = new TCanvas("can","can",48,55,700,900);
   TCanvas *can = new TCanvas("can","can",0,0,900,900);
-  can->Divide(2,2,0.01,0.01); 
+  can->Divide(2,3,0.01,0.01); 
   //  can->Divide(2,2,0,0); 
   Float_t lsize=0.03;
 
@@ -43,5 +43,16 @@ void pl_all_dTSel(Int_t iNSel=2)
      gPad->SetLogy();
    }else{cout<<"Histogram "<<hname<<" not existing. "<<endl;}
  }
+
+  can->cd(5);  // does not really belong here
+   gROOT->cd();
+   TString hname=Form("hCluMulCorDutSel");
+   h2=(TH2 *)gROOT->FindObjectAny(hname);
+   if (h2!=NULL) {
+     h2->UseCurrentStyle(); h2->GetYaxis()->SetLabelSize(lsize);
+     h2->Draw("colz");
+     gPad->SetLogz();
+   }else{cout<<"Histogram "<<hname<<" not existing. "<<endl;}
+
  can->SaveAs(Form("pl_all_dTSel.pdf"));
 } 

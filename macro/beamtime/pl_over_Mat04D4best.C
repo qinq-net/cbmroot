@@ -408,10 +408,10 @@ can->cd(29);
 }
  //report summary
  Double_t dEff=NFinalHits/NEvents;
- cout << Form("<IRes> Efficiency: %6.3f(%7.0f) of %7.0f events, mean Dt %6.4f ps, 1-sig time res: %6.4f ns, RMS: %6.4f ns, DX %5.2f, DY %5.2f, SigX %5.2f, SigY %5.2f, CluSize %4.1f,%4.1f ",
+ cout << Form("<IRes> Efficiency: %6.3f(%7.0f) of %7.0f events, mean Dt %6.4f ns, 1-sig time res: %6.4f ns, RMS: %6.4f ns, DX %5.2f, DY %5.2f, SigX %5.2f, SigY %5.2f, CluSize %4.1f,%4.1f ",
 	      dEff,NFinalHits,NEvents,dTMean,dTRes,dTRMS,dMeanX,dMeanY,dSigX,dSigY,dMeanCluSize0,dMeanCluSize4) <<endl; 
 
- // cout << Form("    D4best 1-sigma timing resolution at lower index %d: %6.1f ps, RMS: %6.1f ps from  %6.0f entries of %6.0f (%6.3f)",BL,BRes,Brms,BEntries,NSel,BEntries/NSel) <<endl; 
+ // cout << Form("    D4best 1-sigma timing resolution at lower index %d: %6.1f ns, RMS: %6.1f ns from  %6.0f entries of %6.0f (%6.3f)",BL,BRes,Brms,BEntries,NSel,BEntries/NSel) <<endl; 
  if (iLog != 0) 
  gROOT->ProcessLine(Form(".! echo %f  > Test.res", dTRes)); 
 
