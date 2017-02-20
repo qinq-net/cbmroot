@@ -58,7 +58,7 @@ Double_t dTDia;
 Double_t dDTD4Min=1.E8;
 static Double_t StartAnalysisTime = 0.;
 static Double_t StartSpillTime    = 0.;
-const  Double_t SpillDuration     = 15.; // in seconds
+const  Double_t SpillDuration     = 10.; // in seconds
 
 //___________________________________________________________________
 //
@@ -977,10 +977,10 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
    fhTriggerPattern = new TH1I("tof_trb_trigger_pattern", "CTS trigger pattern", 16, 0, 16);
    fhTriggerType = new TH1I("tof_trb_trigger_types", "CTS trigger types", 16, 0, 16);
    fhTimeInSpill = new TH1I("tof_trb_time_in_spill", "Time in Spill", TISnbins, 0, TISmax);
-   fhTIS_all  = new TH1F("TIS_all", "Time in Spill (all)", TISnbins, 0, TISmax);
-   fhTIS_sel  = new TH1F("TIS_sel", "Time in Spill (sel)", TISnbins, 0, TISmax);
-   fhTIS_sel1 = new TH1F("TIS_sel1", "Time in Spill (sel1)", TISnbins, 0, TISmax);
-   fhTIS_sel2 = new TH1F("TIS_sel2", "Time in Spill (sel2)", TISnbins, 0, TISmax);
+   fhTIS_all  = new TH1F("TIS_all", "Time in Spill (all); t (sec)", TISnbins, 0, TISmax);
+   fhTIS_sel  = new TH1F("TIS_sel", "Time in Spill (sel); t (sec)", TISnbins, 0, TISmax);
+   fhTIS_sel1 = new TH1F("TIS_sel1", "Time in Spill (sel1); t (sec)", TISnbins, 0, TISmax);
+   fhTIS_sel2 = new TH1F("TIS_sel2", "Time in Spill (sel2); t (sec)", TISnbins, 0, TISmax);
 
    fhBRefMul =  new TH1F( Form("hBRefMul"),Form("Multiplicity in Beam Reference counter ; Mul ()"),
 			  50, 0., 50.); 
@@ -1154,7 +1154,7 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
      fhChiDT04D4best = new TH2F( Form("hChiDT04D4best"),Form("Time - position correlation; #chi; #DeltaT [ns]"),
 			       100, 0., 100., 100, -DTMAX, DTMAX);
      Double_t dtscal=5.;
-     if ( fdChi2Lim>100. ) dtscal *= 10.;
+     if ( fdChi2Lim>100. ) dtscal *= 2.;
      fhDTD4DT04D4best = new TH2F( Form("hDTD4DT04D4best"),
 			    Form("Time - velocity correlation; #DeltaTD4 [ns]; #DeltaT04 [ns]"),
 			    100, -DTMAX*6., DTMAX*6., 500, -DTMAX*dtscal, DTMAX*dtscal); 
@@ -1455,6 +1455,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      fhTimeInSpill->Fill(fTrbHeader->GetTimeInSpill());
    }
 
+
 /*   Int_t iNbTofDigis;*/
    Int_t iNbTofHits, iNbTofTracks;
 
@@ -1561,6 +1562,17 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	     <<Form(", inspect Dut 0x%08x, Ref 0x%08x, Sel2  0x%08x, Sel3  0x%08x ",fiDutAddr,
 		    fiMrpcRefAddr,fiMrpcSel2Addr,fiMrpcSel3Addr)
 	     <<FairLogger::endl;
+
+   if( iNbTofHits > 10 ) { // FIXME hard wired constant in code
+     if( StartAnalysisTime == 0. ) {
+       StartAnalysisTime=dTDia;
+       LOG(INFO) << "StartAnalysisTime from TDia set to "<<StartAnalysisTime<<" ns. "<<FairLogger::endl;
+     }
+     if( dTDia - StartSpillTime > SpillDuration*1.E9 ) {
+       StartSpillTime=dTDia;
+       LOG(INFO) << "StartSpillTime from TDia set to "<<StartSpillTime<<" ns. "<<FairLogger::endl;
+     }
+   }
 
    // process counter hits, fill Chi2List, check selector
 
@@ -1881,11 +1893,11 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 		     } // loop over third hit end
 		 
 		     if(BSel[0]){
-			       fhChiSel24->Fill(Chi2Max);
-			       fhDXSel24->Fill(xPos3B-xPos2);
-			       fhDYSel24->Fill(yPos3B-yPos2);
-			       fhDTSel24->Fill(tof3B-tof2-dTcor-fdSel2TOff);
-			       fhTofSel24->Fill(tof3B-tof2-fdSel2TOff);
+		       fhChiSel24->Fill(Chi2Max);
+		       fhDXSel24->Fill(xPos3B-xPos2);
+		       fhDYSel24->Fill(yPos3B-yPos2);
+		       fhDTSel24->Fill(tof3B-tof2-dTcor-fdSel2TOff);
+		       fhTofSel24->Fill(tof3B-tof2-fdSel2TOff);
 		     }
 		   }		   
 		 }		  
@@ -1894,6 +1906,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	   }	//LOG(INFO)<<" TDia="<<dTDia<<FairLogger::endl;
       }  // diamond condition end 
    } // for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)
+
 
    if(dMul4>dM4Max || dMulD>dMDMax || dMul0>dM0Max)
    {
@@ -1918,7 +1931,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
    Double_t dRefTMean=0.;
    Double_t dRefTMean2=0.;
    Int_t iNRefHits=vRefHit.size();
-   for (UInt_t i=0; i<iNRefHits;i++){ // loop over Dut Hits
+   for (UInt_t i=0; i<iNRefHits;i++){ // loop over Ref Hits
      dRefTMean  += vRefHit[i]->GetTime();
      dRefTMean2 += vRefHit[i]->GetTime()*vRefHit[i]->GetTime();
    }
@@ -1945,16 +1958,20 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
    //  normalisation distributions 
    fhNMatch04->Fill(iNbMatchedHits);
    if(fTrbHeader != NULL) fhTIS_all->Fill(fTrbHeader->GetTimeInSpill());
+   else                   fhTIS_all->Fill((dRefTMean-StartSpillTime)/1.E9);
 
    LOG(DEBUG)<<Form(" FoundMatches: %d with first chi2s = %12.1f, %12.1f, %12.1f, %12.1f",iNbMatchedHits,
 		    Chi2List[0],Chi2List[1],Chi2List[2],Chi2List[3])
 	     <<Form(", Muls %4.0f, %4.0f, %4.0f",dMulD, dMul0, dMul4)
  	     <<FairLogger::endl;
+
    // selector 0 distributions 
    if(BSel[0]){
     LOG(DEBUG)<<Form(" Found valid selector ")<<FairLogger::endl;
     fhNMatchD4sel->Fill(iNbMatchedHits);  // use as normalisation
+
     if(fTrbHeader != NULL) fhTIS_sel->Fill(fTrbHeader->GetTimeInSpill());
+    else                   fhTIS_sel->Fill((dRefTMean-StartSpillTime)/1.E9);
     fhTofD4sel->Fill(pHitRef->GetTime()-pDia->GetTime());           //  general normalisation
     fhDTD4sel->Fill(dDTD4Min);                                      //  general normalisation
     
@@ -1999,6 +2016,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
       fhXYSel2D4sel->Fill(hitpos3_local[0],hitpos3_local[1]);
 
       if(fTrbHeader != NULL) fhTIS_sel2->Fill(fTrbHeader->GetTimeInSpill());
+      else                   fhTIS_sel2->Fill((dRefTMean-StartSpillTime)/1.E9);
     }
 
     if(iNbMatchedHits>0){
@@ -2057,6 +2075,8 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      Double_t tof2=pHit2->GetTime();
 
      if(fTrbHeader != NULL) fhTIS_sel1->Fill(fTrbHeader->GetTimeInSpill());
+     else                   fhTIS_sel1->Fill((dRefTMean-StartSpillTime)/1.E9);
+
      fhXX04->Fill(xPos1,xPos2);
      fhYY04->Fill(yPos1,yPos2);
      fhXY04->Fill(xPos1,yPos2);
@@ -2233,6 +2253,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      fhX0DT04D4best->Fill(hitpos1_local[0],dToD);
      fhY0DT04D4best->Fill(hitpos1_local[1],dToD);
      if(fTrbHeader != NULL) fhTISDT04D4best->Fill(fTrbHeader->GetTimeInSpill(),dToD);
+     else                   fhTISDT04D4best->Fill((dRefTMean-StartSpillTime)/1.E9,dToD);
 
      if(iNbMatchedHits>1){
        LOG(DEBUG)<<Form(" Matches>1: %d with first chi2s = %12.1f, %12.1f, %12.1f, %12.1f",iNbMatchedHits,
@@ -2437,9 +2458,16 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 CbmTofTracklet *pTrk = (CbmTofTracklet*)fTofTrackColl->At(iTrk);
 	 if(NULL == pTrk) continue;
 	 //Monitor tracklet related rates
-	 if (StartAnalysisTime == 0.) StartAnalysisTime = pTrk->GetTime();
-	 if( pTrk->GetTime() - StartSpillTime > SpillDuration*1.E9 ) StartSpillTime=pTrk->GetTime();
-
+	 /*
+	 if (StartAnalysisTime == 0.) {
+	   StartAnalysisTime = pTrk->GetTime();
+	   LOG(INFO) << "StartAnalysisTime (from Trkls) set to "<<StartAnalysisTime<<" ns. "<<FairLogger::endl;
+	 }
+	 if( pTrk->GetTime() - StartSpillTime > SpillDuration*1.E9 ) {
+	   StartSpillTime=pTrk->GetTime();
+	   LOG(INFO) << "StartSpillTime (from Trkls) set to "<<StartSpillTime<<" ns. "<<FairLogger::endl;
+	 }
+	 */
 	 fhTrklNofHitsRate->Fill((pTrk->GetTime()-StartAnalysisTime)/1.E9,pTrk->GetNofHits());   // Monitor tracklet size
 	 for (Int_t iTH=0; iTH<pTrk->GetNofHits(); iTH++){                                       // Loop over Tracklet hits
 	   fhTrklDetHitRate->Fill((pTrk->GetTime()-StartAnalysisTime)/1.E9,                      // Station hit rate
