@@ -220,8 +220,8 @@ InitStatus CbmMuchDigitizeGem::Init() {
 void CbmMuchDigitizeGem::Exec(Option_t* opt) {
   
 	// get current event to revert back at the end of exec
-	Int_t currentEvent = FairRootManager::Instance()->GetInTree()->GetBranch("MCTrack")->GetReadEntry();
-	LOG(INFO) << "Event Number is "<< currentEvent << FairLogger::endl;
+	//Int_t currentEvent = FairRootManager::Instance()->GetInTree()->GetBranch("MCTrack")->GetReadEntry();
+	//LOG(DEBUG) << GetName() << ": Event Number is "<< currentEvent << FairLogger::endl;
 	fTimer.Start();
   	fNdigis = 0;
   	Int_t nPoints=0;
@@ -233,6 +233,11 @@ void CbmMuchDigitizeGem::Exec(Option_t* opt) {
      
   	for (Int_t iPoint=0; iPoint<fPoints->GetEntriesFast(); iPoint++) {
 		const CbmMuchPoint* point = (const CbmMuchPoint*) fPoints->At(iPoint);
+		LOG(DEBUG) << GetName() << ": Processing MCPoint " << iPoint << FairLogger::endl;
+    		if(!point){
+			LOG(DEBUG) << GetName() << ":Not Processing MCPoint " << iPoint <<"as MCPoint is NULL."<< point << FairLogger::endl;
+			return;
+		}
   		nPoints++;
 		ExecPoint(point, iPoint);
 	}  // MuchPoint loop
@@ -245,7 +250,7 @@ void CbmMuchDigitizeGem::Exec(Option_t* opt) {
   	gLogger->Info(MESSAGE_ORIGIN,"MuchDigitizeGem: %5.2f s, %i points, %i digis",fTimer.RealTime(),nPoints,fNdigis);
 
   	// revert branch to "current event"
-  	FairRootManager::Instance()->GetInTree()->GetBranch("MCTrack")->GetEntry(currentEvent);
+  	//FairRootManager::Instance()->GetInTree()->GetBranch("MCTrack")->GetEntry(currentEvent);
 }
 
 
@@ -260,17 +265,17 @@ void CbmMuchDigitizeGem::ReadAndRegister(){
   	}
 	
 	Int_t ReadOutSignal = CbmMuchReadoutBuffer::Instance()->ReadOutData(eventTime,SignalList);
-	LOG(INFO)<< "Number of digi's read out from Buffer "<< ReadOutSignal << FairLogger::endl;
+	LOG(DEBUG) << GetName() << ": Number of digi's read out from Buffer "<< ReadOutSignal << " and SignalList contain " << SignalList.size() << " entries."<<FairLogger::endl;
 
     	for (std::vector<CbmMuchSignal*>::iterator LoopOver= SignalList.begin(); LoopOver != SignalList.end(); LoopOver++)
 	{
 		CbmMuchDigi* digi = ConvertSignalToDigi(*LoopOver);
 		//assert(digi);
 		if (!digi){
-			gLogger->Debug1(MESSAGE_ORIGIN,"Digi not created as signal is below threshold.");
+			LOG(DEBUG)<< GetName() << ": Digi not created as signal is below threshold."<<FairLogger::endl;
 		}
 		else {
-			gLogger->Debug1(MESSAGE_ORIGIN,"New digi: sector=%i channel=%i",CbmMuchAddress::GetSectorIndex(digi->GetAddress()),CbmMuchAddress::GetChannelIndex(digi->GetAddress()));
+			LOG(DEBUG)<< GetName() << ": New digi: sector = "<< CbmMuchAddress::GetSectorIndex(digi->GetAddress()) <<" channel= " << CbmMuchAddress::GetChannelIndex(digi->GetAddress())<< FairLogger::endl;
 			if(fDaq)
 				//Buffer these digi's in CbmDaqBuffer for Timeslice building.
 				CbmDaqBuffer::Instance()->InsertData(digi);
@@ -330,6 +335,7 @@ Bool_t CbmMuchDigitizeGem::ExecPoint(const CbmMuchPoint* point, Int_t iPoint) {
   point->PositionOut(v2);
   dv = v2-v1;
 
+  Bool_t Status;
   Int_t detectorId = point->GetDetectorID();
   CbmMuchModule* module = fGeoScheme->GetModuleByDetId(detectorId);
   
@@ -399,17 +405,33 @@ Bool_t CbmMuchDigitizeGem::ExecPoint(const CbmMuchPoint* point, Int_t iPoint) {
   }
   
   if (module->GetDetectorType()==3) {
+    fAddressCharge.clear();
     CbmMuchModuleGemRadial* module3 = (CbmMuchModuleGemRadial*) module;
+    if(!module3){
+	LOG(DEBUG) << GetName() << ": Not Processing MCPoint " << iPoint <<" because it is not on any GEM module."<< FairLogger::endl;
+	return 1;
+	}
     CbmMuchSectorRadial* sFirst = (CbmMuchSectorRadial*) module3->GetSectorByIndex(0);  //First sector
+    if(!sFirst){
+	LOG(DEBUG) << GetName() << ": Not Processing MCPoint " << iPoint <<" because it is on the module " << module3 <<"  but not the first sector. "<< sFirst << FairLogger::endl;
+	return 1;
+	}
     CbmMuchSectorRadial* sLast  = (CbmMuchSectorRadial*) module3->GetSectorByIndex(module3->GetNSectors()-1); //Last sector
 
+    if(!sLast){
+	LOG(DEBUG) << GetName() << ": Not Processing MCPoint " << iPoint <<" because it is not the last sector of module."<< module3 << FairLogger::endl;
+	return 1;
+	}
     Double_t rMin = sFirst->GetR1(); //Mimimum radius of the Sector
     Double_t rMax = sLast->GetR2();  //Maximum radius of the Sector
-
+    //Calculating drifttime once for one track or one MCPoint, not for all the Primary Electrons generated during DriftGap.
+    Double_t aL   = gRandom->Rndm();
+    Double_t driftTime = -1;
+    while(driftTime < 0) driftTime = (1-aL)*fTotalDriftTime + gRandom->Gaus(0, fDTime); //Finding drifttime with random factor of Detector Time Resolution
     for (Int_t i=0;i<nElectrons;i++) { //Looping over all the primary electrons
-      Double_t aL   = gRandom->Rndm();
-      Double_t driftTime = -1;
-      while(driftTime < 0) driftTime = (1-aL)*fTotalDriftTime + gRandom->Gaus(0, fDTime); //Finding drifttime with random factor of Detector Time Resolution
+      //Double_t aL   = gRandom->Rndm();
+      //Double_t driftTime = -1;
+      //while(driftTime < 0) driftTime = (1-aL)*fTotalDriftTime + gRandom->Gaus(0, fDTime); //Finding drifttime with random factor of Detector Time Resolution
       TVector3 ve   = v1 + dv*aL;
       UInt_t ne     = GasGain(); //Number of secondary electrons
       Double_t r    = ve.Perp(); //
@@ -419,22 +441,33 @@ Bool_t CbmMuchDigitizeGem::ExecPoint(const CbmMuchPoint* point, Int_t iPoint) {
       Double_t phi1 = phi-fSpotRadius/r;
       Double_t phi2 = phi+fSpotRadius/r;
       if (r1<rMin && r2>rMin) {//Adding charge to the pad which is on Lower Boundary 
-        AddCharge(sFirst,UInt_t(ne*(r2-rMin)/(r2-r1)),iPoint,time,driftTime,phi1,phi2);
+        Status = AddCharge(sFirst,UInt_t(ne*(r2-rMin)/(r2-r1)),iPoint,time,driftTime,phi1,phi2);
+	if(!Status)LOG(DEBUG) << GetName() << ": Processing MCPoint " << iPoint <<" in which Primary Electron : "<<i<< " not contributed charge. "<< FairLogger::endl;
         continue;
       }  
       if (r1<rMax && r2>rMax) {//Adding charge to the pad which is on Upper Boundary
-        AddCharge(sLast,UInt_t(ne*(rMax-r1)/(r2-r1)),iPoint,time,driftTime,phi1,phi2);
-        continue;
+        Status = AddCharge(sLast,UInt_t(ne*(rMax-r1)/(r2-r1)),iPoint,time,driftTime,phi1,phi2);
+	if(!Status)LOG(DEBUG) << GetName() << ": Processing MCPoint " << iPoint <<" in which Primary Electron : "<<i<< " not contributed charge. "<< FairLogger::endl;
+	  continue;
       }
 
       CbmMuchSectorRadial* s1 = module3->GetSectorByRadius(r1);
       CbmMuchSectorRadial* s2 = module3->GetSectorByRadius(r2);
-      if (s1==s2) AddCharge(s1,ne,iPoint,time,driftTime,phi1,phi2); 
+      if (s1==s2) {Status = AddCharge(s1,ne,iPoint,time,driftTime,phi1,phi2); 
+			if(!Status)LOG(DEBUG) << GetName() << ": Processing MCPoint " << iPoint <<" in which Primary Electron : "<<i<< " not contributed charge. "<< FairLogger::endl;
+		}
       else {//Adding praportionate charge to both the pad 
-        AddCharge(s1,UInt_t(ne*(s1->GetR2()-r1)/(r2-r1)),iPoint,time,driftTime,phi1,phi2);
-        AddCharge(s2,UInt_t(ne*(r2-s2->GetR1())/(r2-r1)),iPoint,time,driftTime,phi1,phi2);
+	Status = AddCharge(s1,UInt_t(ne*(s1->GetR2()-r1)/(r2-r1)),iPoint,time,driftTime,phi1,phi2);
+	if(!Status)LOG(DEBUG) << GetName() << ": Processing MCPoint " << iPoint <<" in which Primary Electron : "<<i<< " not contributed charge. "<< FairLogger::endl;
+        Status = AddCharge(s2,UInt_t(ne*(r2-s2->GetR1())/(r2-r1)),iPoint,time,driftTime,phi1,phi2);
+	if(!Status)LOG(DEBUG) << GetName() << ": Processing MCPoint " << iPoint <<" in which Primary Electron : "<<i<< " not contributed charge. "<< FairLogger::endl;
       }
     }
+    //Generate CbmMuchSignal for each entry of fAddressCharge and store in the CbmMuchReadoutBuffer
+      if(!BufferSignals(iPoint,time,driftTime)) 
+	LOG(DEBUG) << GetName() << ": Processing MCPoint " << iPoint <<" nothing is buffered. "<< FairLogger::endl;
+    fAddressCharge.clear();
+    LOG(DEBUG) << GetName() << ": fAddressCharge size is " << fAddressCharge.size() <<" Cleared fAddressCharge. "<< FairLogger::endl;
   }
 
   return kTRUE;
@@ -531,53 +564,123 @@ Double_t CbmMuchDigitizeGem::GetNPrimaryElectronsPerCm(const CbmMuchPoint* point
 Bool_t CbmMuchDigitizeGem::AddCharge(CbmMuchSectorRadial* s,UInt_t ne, Int_t iPoint, Double_t time, Double_t driftTime, 
     Double_t phi1, Double_t phi2){
   CbmMuchPadRadial* pad1 = s->GetPadByPhi(phi1);
+  if(!pad1) return kFALSE;
+  //assert(pad1); has to check if any pad address is NULL
   CbmMuchPadRadial* pad2 = s->GetPadByPhi(phi2);
-  if (pad1==pad2) 
-    AddCharge(pad1,ne,iPoint,time,driftTime);
+  if(!pad2) return kFALSE;
+  //assert(pad2); has to check if any pad address is NULL
+  if (pad1==pad2){
+	 UInt_t address = pad1->GetAddress();
+         //Finding that if for the same address if already charge stored then add the charge.
+         std::map<UInt_t,UInt_t>::iterator it=fAddressCharge.find(address);
+         if(it!=fAddressCharge.end()) it->second=it->second+ne;
+         else fAddressCharge.insert(std::pair<UInt_t,UInt_t>(address,ne));
+        //    AddChargePerMC(pad1,ne,iPoint,time,driftTime);
+  }
   else {
     Double_t phi = pad1 ? pad1->GetPhi2() : pad2 ? pad2->GetPhi1() : 0;
     UInt_t pad1_ne = UInt_t(ne*(phi-phi1)/(phi2-phi1));
-    AddCharge(pad1,pad1_ne   ,iPoint,time,driftTime);
-    AddCharge(pad2,ne-pad1_ne,iPoint,time,driftTime);
+
+	UInt_t address = pad1->GetAddress();
+        //Finding that if for the same address if already charge stored then add the charge.
+        std::map<UInt_t,UInt_t>::iterator it=fAddressCharge.find(address);
+        if(it!=fAddressCharge.end()) it->second=it->second+pad1_ne;
+        else fAddressCharge.insert (std::pair<UInt_t,UInt_t>(address,pad1_ne));
+        //    AddChargePerMC(pad1,pad1_ne   ,iPoint,time,driftTime);
+ 
+
+	// Getting some segmentation fault a
+	address = pad2->GetAddress();
+        //Finding that if for the same address if already charge stored then add the charge.
+        it=fAddressCharge.find(address);
+        if(it!=fAddressCharge.end()) it->second=it->second+ne-pad1_ne;
+        else fAddressCharge.insert (std::pair<UInt_t,UInt_t>(address,ne-pad1_ne));
+	// AddChargePerMC(pad2,ne-pad1_ne,iPoint,time,driftTime);
   }
-  return kFALSE;
+  return kTRUE;
 }
 // -------------------------------------------------------------------------
 
 
 // -------------------------------------------------------------------------
+//Will remove this AddCharge, only used for simple and Rectangular Geometry.
 void CbmMuchDigitizeGem::AddCharge(CbmMuchPad* pad, UInt_t charge, Int_t iPoint, Double_t time, Double_t driftTime){
   	if (!pad) return;
-  	
+
 	Double_t eventTime = 0.;
-  	if (fDaq) eventTime = FairRun::Instance()->GetEventHeader()->GetEventTime();
-  	//LOG(DEBUG) << GetName() << ": Readout time is " << readoutTime << " ns"<< FairLogger::endl;
-	UInt_t	AbsTime = eventTime + time + driftTime;
-  	
-	//Creating a new Signal, it will be deleted by CbmReadoutBuffer()
-  	CbmMuchSignal* signal = new CbmMuchSignal(pad->GetAddress());
-	signal->SetTimeStart(AbsTime);
-	signal->SetTimeStop(AbsTime+fDeadTime);
-	signal->MakeSignalShape(charge,fgDeltaResponse);
-	signal->AddNoise(fMeanNoise);
-	UInt_t address = pad->GetAddress();
-	Int_t    inputNr   = 0;
-	Int_t    eventNr   = 0;
-	GetEventInfo(inputNr, eventNr, eventTime);
-	LOG(DEBUG) << GetName() << ": Processing event " << eventNr
+        if (fDaq) eventTime = FairRun::Instance()->GetEventHeader()->GetEventTime();
+        //LOG(DEBUG) << GetName() << ": Readout time is " << readoutTime << " ns"<< FairLogger::endl;
+	UInt_t  AbsTime = eventTime + time + driftTime;
+
+        //Creating a new Signal, it will be deleted by CbmReadoutBuffer()
+	CbmMuchSignal* signal = new CbmMuchSignal(pad->GetAddress());
+        signal->SetTimeStart(AbsTime);
+        signal->SetTimeStop(AbsTime+fDeadTime);
+        signal->MakeSignalShape(charge,fgDeltaResponse);
+        signal->AddNoise(fMeanNoise);
+        UInt_t address = pad->GetAddress();
+        Int_t    inputNr   = 0;
+        Int_t    eventNr   = 0;
+        GetEventInfo(inputNr, eventNr, eventTime);
+        LOG(DEBUG) << GetName() << ": Processing event " << eventNr
             << " from input " << inputNr << " at t = " << eventTime
             << " ns with " << fPoints->GetEntriesFast() << " MuchPoints "
                                << FairLogger::endl;
-	//match->AddCharge(iPoint,charge,time+driftTime,fgDeltaResponse,time,eventNr,inputNr);
-	CbmLink link(charge,iPoint,eventNr,inputNr);
-	//std::cout<<"Before AddLink"<< endl;
-	(signal->GetMatch())->AddLink(link);
-	//std::cout<<"After AddLink"<< endl;
-	//Adding all these temporary signal into the CbmMuchReadoutBuffer
-	CbmMuchReadoutBuffer::Instance()->Fill(address, signal);
-	LOG(DEBUG4)<<" Registered the CbmMuchSignal into the CbmMuchReadoutBuffer "<<FairLogger::endl;
+        //match->AddCharge(iPoint,charge,time+driftTime,fgDeltaResponse,time,eventNr,inputNr);
+        CbmLink link(charge,iPoint,eventNr,inputNr);
+        //std::cout<<"Before AddLink"<< endl;
+        (signal->GetMatch())->AddLink(link);
+        //std::cout<<"After AddLink"<< endl;
+        //Adding all these temporary signal into the CbmMuchReadoutBuffer
+        CbmMuchReadoutBuffer::Instance()->Fill(address, signal);
+        LOG(DEBUG4)<<" Registered the CbmMuchSignal into the CbmMuchReadoutBuffer "<<FairLogger::endl;
 
-}
+}//end of AddCharge 
+
+
+
+//----------------------------------------------------------
+Bool_t CbmMuchDigitizeGem::BufferSignals(Int_t iPoint,Double_t time, Double_t driftTime){
+
+	if(!fAddressCharge.size()) { LOG(DEBUG) << "Buffering MC Point " << iPoint
+            << " but fAddressCharge size is " << fAddressCharge.size() << "so nothing to Buffer for this MCPoint." << FairLogger::endl;
+		return kFALSE;
+	}
+	//fetching event time and event info
+	
+	Double_t eventTime = 0.;
+        if (fDaq) eventTime = FairRun::Instance()->GetEventHeader()->GetEventTime();
+        // LOG(DEBUG) << GetName() << ": Readout time is " << readoutTime << " ns"<< FairLogger::endl;
+        UInt_t  AbsTime = eventTime + time + driftTime;
+        Int_t    inputNr   = 0;
+        Int_t    eventNr   = 0;
+        GetEventInfo(inputNr, eventNr, eventTime);
+        LOG(DEBUG) << GetName() << ": Processing event " << eventNr
+            << " from input " << inputNr << " at t = " << eventTime
+            << " ns with " << fPoints->GetEntriesFast() << " MuchPoints "
+	    << " and Number of pad hit is "<< fAddressCharge.size()<<"." 
+                               << FairLogger::endl;
+        //Loop on the fAddressCharge to store all the Signals into the CbmReadoutBuffer()
+	//Generate one by one CbmMuchSignal from the fAddressCharge and store them into the CbmMuchReadoutBuffer.
+	for(auto it=fAddressCharge.begin();it!=fAddressCharge.end();++it){
+		UInt_t address = it->first;
+	        //Creating a new Signal, it will be deleted by CbmReadoutBuffer()
+		CbmMuchSignal* signal = new CbmMuchSignal(address);
+        	signal->SetTimeStart(AbsTime);
+        	signal->SetTimeStop(AbsTime+fDeadTime);
+        	signal->MakeSignalShape(it->second,fgDeltaResponse);
+        	signal->AddNoise(fMeanNoise);
+		CbmLink link(signal->GetMaxCharge(),iPoint,eventNr,inputNr);
+		(signal->GetMatch())->AddLink(link);
+		//Adding all these temporary signal into the CbmMuchReadoutBuffer
+		CbmMuchReadoutBuffer::Instance()->Fill(address, signal);
+		LOG(DEBUG)<<" Registered the CbmMuchSignal into the CbmMuchReadoutBuffer "<<FairLogger::endl;
+	}
+	
+	LOG(DEBUG) << GetName() << ": For MC Point " << iPoint
+            << " buffered " << fAddressCharge.size() << " CbmMuchSignal into the CbmReadoutBuffer." << FairLogger::endl;
+	return kTRUE;
+}//end of BufferSignals
 // -------------------------------------------------------------------------
 
 

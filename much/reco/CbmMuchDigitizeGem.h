@@ -135,6 +135,8 @@ class CbmMuchDigitizeGem : public FairTask{
     
     void ReadAndRegister(); //Read from CbmMuchReadoutBuffer and Register as per mode
 
+    //Iteriate on each element of fAddressCharge, create a CbmMuchSignal and store in CbmMuchReadoutBuffer.
+    Bool_t BufferSignals(Int_t,Double_t,Double_t);
     CbmMuchDigi* ConvertSignalToDigi(CbmMuchSignal*); //Converting Analog Signal to Digital Digi
 
     void SetDaq(Bool_t daq) {fDaq = daq;} // Setting Event by event mode by fDaq =0 and Time based by fDaq=1
@@ -218,7 +220,9 @@ class CbmMuchDigitizeGem : public FairTask{
   ** respective information is taken from FairMCEventHeader.
  **/
   void GetEventInfo(Int_t& inputNr, Int_t& eventNr, Double_t& eventTime);
-
+    //Storing all the charges which is generated from the same MCPoint in a map<address, charge>
+    std::map<UInt_t, UInt_t> fAddressCharge;
+    
     ClassDef(CbmMuchDigitizeGem,1)
 };
 #endif
