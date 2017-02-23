@@ -48,11 +48,11 @@ void run_sim_position2(Int_t nEvents = 100, Int_t Flag = 0)
 
     TString urqmdFile = "/data/Cbm_Root/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root";
 
-//    outDir = TString(gSystem->Getenv("OUT_DIR"));
+    outDir = TString(gSystem->Getenv("OUT_DIR"));
 //    outDir = "~/CBMSRC/macro/rich/alignment/misalignment_correction/position/test/";
 //    if (Flag == 0) {TString outDir = "/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned/";}
 //    else if (Flag == 1) {TString outDir = "/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Aligned/";}
-	TString outDir = "/u/jbendar/CBMSRC/macro/rich/alignment/misalignment_correction/position/test/";
+//	TString outDir = "/u/jbendar/CBMSRC/macro/rich/alignment/misalignment_correction/position/test/";
 	TString mcFile = outDir + "mc.root";
 	TString geoFile = outDir + "geofilefull.root";
 	TString outFile = outDir + "out.root";
@@ -75,10 +75,11 @@ void run_sim_position2(Int_t nEvents = 100, Int_t Flag = 0)
 	TString stsGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/sts/sts_v17a.geo.root";
 //	if (Flag == 0) {TString richGeom = "rich/Rich_jan2016_aligned.root";}
 //	else if (Flag == 1) {TString richGeom = "rich/Rich_jan2016_misalign_5mradXY_Tile1_3.root";}
-	if (Flag == 0) {TString richGeom = "rich/position/Aligned.root";}
-//	if (Flag == 0) {TString richGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/rich/position/Aligned.root";}
+//	if (Flag == 0) {TString richGeom = "rich/position/Aligned.root";}
+	if (Flag == 0) {TString richGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/rich/position/Aligned.root";}
 	else if (Flag == 1) {TString richGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/rich/position/Misaligned_5mrad.root";}
 	else if (Flag == 2) {TString richGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/rich/position/rich_v16a_1e.root";}
+	else if {TString richGeom = "";}
 	TString trdGeom = ""; //"trd_v15a_1e.geo.root";
 	TString tofGeom = ""; //"tof_v16a_1e.geo.root";
 	TString mvdGeom = ""; //"mvd_v15a.geo.root";

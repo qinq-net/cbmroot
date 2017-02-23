@@ -11,7 +11,7 @@ macro_dir=/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/macro/rich
 if [ $1 -eq 0 ] ; then
         outdir=${output_dir}/Aligned
 elif [ $1 -eq 1 ] ; then
-        outdir=${output_dir}/Misaligned
+        outdir=${output_dir}/Misaligned_Full
 elif [ $1 -eq 2 ] ; then
         outdir=${output_dir}/Standard
 fi
@@ -58,7 +58,18 @@ export PLUTO=no
 export ENERGY=${3}
 
 # Geometry setup macro
-#export GEO_SETUP_FILE=${setupMacro}
+if [ $1 -eq 0 ] ; then
+        setupMacro=setup_align.C
+	setupName=setup_align
+elif [ $1 -eq 1 ] ; then
+        setupMacro=setup_misalign.C
+	setupName=setup_misalign
+elif [ $1 -eq 2 ] ; then
+        setupMacro=setup_standard.C
+	setupName=setup_standard
+fi
+export GEO_SETUP_FILE=${setupMacro}
+export SETUP_NAME=${setupName}
 
 # If "yes" DELTA electrons will be embedded
 #export DELTA=no
@@ -75,8 +86,8 @@ echo ${macro_dir}
 echo ${outdir}
 export OUT_DIR=${outdir}
 # Run the root simulation
-root -b -l -q "${macro_dir}/position/run_sim_position2.C(${2}, ${1})"
-root -b -l -q "${macro_dir}/position/run_reco_position.C(${2}, ${1})"
+root -b -l -q "${macro_dir}/position/run_sim_position3.C(${2}, ${1})"
+root -b -l -q "${macro_dir}/position/run_reco_position3.C(${2}, ${1})"
 # root -b -l -q "${macro_dir}/position/Compute_distance.C(${2}, ${1})"
 
 # cp -v ${SGE_STDOUT_PATH} ${outdir}/log/${JOB_ID}.${SGE_TASK_ID}.log

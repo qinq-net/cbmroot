@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd ../../../../../../build
+cd ../../../../../../BUILD/
 make install -j8
 ### make install -j8 Rich
 cd -
