@@ -1,50 +1,127 @@
-// --------------------------------------------------------------------------
-//
-// Macro for standard transport simulation using UrQMD input and GEANT3
-//
-// V. Friese   22/02/2007
-//
-// Version 2016-02-05
-//
-// For the setup (geometry and field), predefined setups can be chosen
-// by the second argument. A list of available setups is given below.
-// The input file can be defined explicitly in this macro or by the
-// third argument. If none of these options are chosen, a default
-// input file distributed with the source code is selected.
-//
-// --------------------------------------------------------------------------
+static TString  fieldMap;
+static Double_t fieldZ;
+static Double_t fieldScale;
 
 
-void run_mc(Int_t nEvents = 2, const char* inputFile = "")
+void run_sim_position4(Int_t nEvents = 100)
 {
+    TTree::SetMaxTreeSize(90000000000);
+    Int_t iVerbose = 0;
 
-    const char* setupName = "sis100_electron",
-//    const char* setupName = "sis100_debug",
-//    const char* setupName = "sis100_hadron",
-//    const char* setupName = "sis100_muon_jpsi",
-//    const char* setupName = "sis100_muon_lmvm",
-
-    // ========================================================================
-    //          Adjust this part according to your requirements
-
-    // -----   Environment   --------------------------------------------------
-    TString myName = "run_sim";  // this macro's name for screen output
-    TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
-    // ------------------------------------------------------------------------
+    TString script = TString(gSystem->Getenv("SCRIPT"));
+    const char* setupName = "";
+    if ( script == "yes" ) {
+	setupName = TString(gSystem->Getenv("SETUP_NAME"));
+    }
+    else {
+        setupName = "setup_align";
+    }
 
 
     // -----   In- and output file names   ------------------------------------
-    TString inFile = ""; // give here or as argument; otherwise default is taken
-    TString outDir  = "/lustre/nyx/cbm/users/jbendar/Sim_Outputs/test/";
-    TString outFile = outDir + setupName + "_test.mc.root";
-    TString parFile = outDir + setupName + "_params.root";
-    TString geoFile = outDir + setupName + "_geofile_full.root";
+    TString outDir = "";
+    if (script == "yes") {
+	outDir = TString(gSystem->Getenv("OUT_DIR"));
+    }
+    else {
+	outDir = "/lustre/nyx/cbm/users/jbendar/Sim_Outputs/test/";
+    }
+    TString mcFile = outDir + setupName + "_mc.root";
+    TString geoFile = outDir + setupName + "_geofilefull.root";
+    TString outFile = outDir + setupName + "_out.root";
+    TString parFile = outDir + setupName + "_param.root";
+
+    TString geoSetupFile = "";
+
+    TString electrons = "yes"; // If "yes" then primary electrons will be generated
+    Int_t NELECTRONS = 1; // number of e- to be generated
+    Int_t NPOSITRONS = 1; // number of e+ to be generated
+    TString urqmd = "no"; // If "yes" then UrQMD will be used as background
+    TString urqmdFile = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/input/urqmd.auau.10gev.centr.root";
+    TString pluto = "no"; // If "yes" PLUTO particles will be embedded
+    TString plutoFile = "";
+    TString plutoParticle = "";
     // ------------------------------------------------------------------------
 
 
-    // --- Logger settings ----------------------------------------------------
-    TString logLevel     = "INFO";
+    // -----   Script initialization   ----------------------------------------
+    if (script == "yes") {
+        urqmdFile = TString(gSystem->Getenv("URQMD_FILE"));
+        mcFile = TString(gSystem->Getenv("MC_FILE"));
+        parFile = TString(gSystem->Getenv("PAR_FILE"));
+	cout << "mcFile: " << TString(gSystem->Getenv("MC_FILE")) << endl << "parFile: " << TString(gSystem->Getenv("PAR_FILE")) << endl << "urqmdFile: " << TString(gSystem->Getenv("URQMD_FILE")) << endl;
+
+	TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/" + TString(gSystem->Getenv("GEO_SETUP_FILE"));
+
+        NELECTRONS = TString(gSystem->Getenv("NELECTRONS")).Atoi();
+        NPOSITRONS = TString(gSystem->Getenv("NPOSITRONS")).Atoi();
+        electrons = TString(gSystem->Getenv("ELECTRONS"));
+        urqmd = TString(gSystem->Getenv("URQMD"));
+//        pluto = TString(gSystem->Getenv("PLUTO"));
+//        plutoFile = TString(gSystem->Getenv("PLUTO_FILE"));
+//        plutoParticle = TString(gSystem->Getenv("PLUTO_PARTICLE"));
+    }
+
+    remove(parFile.Data());
+    remove(mcFile.Data());
+
+    gDebug = 0;
+    TStopwatch timer;
+    timer.Start();
+
+
+    // -----   Create simulation run   ----------------------------------------
+    FairRunSim* fRun = new FairRunSim();
+    fRun->SetName("TGeant3");                     // Transport engine
+    fRun->SetOutputFile(mcFile);                  // Output file
+    fRun->SetGenerateRunInfo(kTRUE);              // Create FairRunInfo file
+    FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
+    // ------------------------------------------------------------------------
+
+
+    // -----   Logger settings   ----------------------------------------------
+    //Logger settings
+    TString logLevel = "INFO";   // "DEBUG";
     TString logVerbosity = "LOW";
+    // ------------------------------------------------------------------------
+
+
+    // -----   Load the geometry setup   -------------------------------------
+    if ( script != "yes" ) {
+	geoSetupFile = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/macro/rich/geosetup/setup_align.C";
+	std::cout << "-I- using not script, following geoSetupFile name used: "
+	    << geoSetupFile << std::endl;
+    }
+    TString setupFunct = "";
+    setupFunct = setupFunct + setupName + "()";
+    std::cout << "-I- geoSetupName: " << geoSetupFile << std::endl
+	<< "-I- setupFunct: " << setupFunct << std::endl;
+    gROOT->LoadMacro(geoSetupFile);
+    gROOT->ProcessLine(setupFunct);
+    std::cout << "Geometry initialized!" << std::endl;
+    // ------------------------------------------------------------------------
+
+
+    // creation of the primary vertex
+    Bool_t smearVertexXY = kTRUE;
+    Bool_t smearVertexZ  = kTRUE;
+    Double_t beamWidthX   = 1.;  // Gaussian sigma of the beam profile in x [cm]
+    Double_t beamWidthY   = 1.;  // Gaussian sigma of the beam profile in y [cm]
+    // ------------------------------------------------------------------------
+
+
+    // -----   Create media   -------------------------------------------------
+    fRun->SetMaterials("media.geo"); // Materials
+    // ------------------------------------------------------------------------
+
+    // -----   Create and register modules   ----------------------------------
+    std::cout << std::endl;
+    //TString macroName = gSystem->Getenv("VMCWORKDIR");
+    //macroName += "/macro/run/modules/registerSetup.C";
+    TString macroName = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/macro/run/modules/registerSetup.C";
+    std::cout << "Loading macro " << macroName << std::endl;
+    gROOT->LoadMacro(macroName);
+    gROOT->ProcessLine("registerSetup()");
     // ------------------------------------------------------------------------
 
 
@@ -59,179 +136,111 @@ void run_mc(Int_t nEvents = 2, const char* inputFile = "")
     // created by the placement of the target.
     //
     TString  targetElement   = "Gold";
-    Double_t targetThickness = 0.025;  // full thickness in cm
+    Double_t targetThickness = 0.025; // 250 mum, full thickness in cm
     Double_t targetDiameter  = 2.5;    // diameter in cm
     Double_t targetPosX      = 0.;     // target x position in global c.s. [cm]
     Double_t targetPosY      = 0.;     // target y position in global c.s. [cm]
     Double_t targetPosZ      = 0.;     // target z position in global c.s. [cm]
     Double_t targetRotY      = 0.;     // target rotation angle around the y axis [deg]
-    // ------------------------------------------------------------------------
-
-
-    // --- Define the creation of the primary vertex   ------------------------
-    //
-    // By default, the primary vertex point is sampled from a Gaussian
-    // distribution in both x and y with the specified beam profile width,
-    // and from a flat distribution in z over the extension of the target.
-    // By setting the respective flags to kFALSE, the primary vertex will always
-    // at the (0., 0.) in x and y and in the z centre of the target, respectively.
-    //
-    Bool_t smearVertexXY = kTRUE;
-    Bool_t smearVertexZ  = kTRUE;
-    Double_t beamWidthX   = 1.;  // Gaussian sigma of the beam profile in x [cm]
-    Double_t beamWidthY   = 1.;  // Gaussian sigma of the beam profile in y [cm]
-    // ------------------------------------------------------------------------
-
-
-    // In general, the following parts need not be touched
-    // ========================================================================
-
-
-    // -----   Timer   --------------------------------------------------------
-    TStopwatch timer;
-    timer.Start();
-    // ------------------------------------------------------------------------
-
-
-    // ----    Debug option   -------------------------------------------------
-    gDebug = 0;
-    // ------------------------------------------------------------------------
-
-
-    // -----   Remove old CTest runtime dependency file   ---------------------
-    TString depFile = Remove_CTest_Dependency_File(outDir, "run_mc" , setupName);
-    // ------------------------------------------------------------------------
-
-
-
-    // -----   Create simulation run   ----------------------------------------
-    FairRunSim* run = new FairRunSim();
-    run->SetName("TGeant3");              // Transport engine
-    run->SetOutputFile(outFile);          // Output file
-    run->SetGenerateRunInfo(kTRUE);       // Create FairRunInfo file
-    // ------------------------------------------------------------------------
-
-
-    // -----   Logger settings   ----------------------------------------------
-    FairLogger::GetLogger()->SetLogScreenLevel(logLevel.Data());
-    FairLogger::GetLogger()->SetLogVerbosityLevel(logVerbosity.Data());
-    // ------------------------------------------------------------------------
-
-
-    // -----   Load the geometry setup   -------------------------------------
-    std::cout << std::endl;
-    TString setupFile = srcDir + "/geometry/setup/setup_" + setupName + ".C";
-    TString setupFunct = "setup_";
-    setupFunct = setupFunct + setupName + "()";
-    std::cout << "-I- " << myName << ": Loading macro " << setupFile << std::endl;
-    gROOT->LoadMacro(setupFile);
-    gROOT->ProcessLine(setupFunct);
-    // ------------------------------------------------------------------------
-
-
-    // -----   Input file   ---------------------------------------------------
-    std::cout << std::endl;
-    TString defaultInputFile = srcDir + "/input/urqmd.auau.10gev.centr.root";
-    if ( inFile.IsNull() ) {  // Not defined in the macro explicitly
-	if ( strcmp(inputFile, "") == 0 ) {  // not given as argument to the macro
-	    inFile = defaultInputFile;
-	}
-	else inFile = inputFile;
-    }
-    std::cout << "-I- " << myName << ": Using input file " << inFile << std::endl;
-    // ------------------------------------------------------------------------
-
-
-    // -----   Create media   -------------------------------------------------
-    std::cout << std::endl;
-    std::cout << "-I- " << myName << ": Setting media file" << std::endl;
-    run->SetMaterials("media.geo");       // Materials
-    // ------------------------------------------------------------------------
-
-
-    // -----   Create and register modules   ----------------------------------
-    std::cout << std::endl;
-    TString macroName = gSystem->Getenv("VMCWORKDIR");
-    macroName += "/macro/run/modules/registerSetup.C";
-    std::cout << "Loading macro " << macroName << std::endl;
-    gROOT->LoadMacro(macroName);
-    gROOT->ProcessLine("registerSetup()");
-    // ------------------------------------------------------------------------
-
 
     // -----   Create and register the target   -------------------------------
-    std::cout << std::endl;
-    std::cout << "-I- " << myName << ": Registering target" << std::endl;
-    CbmTarget* target = new CbmTarget(targetElement.Data(),
-				      targetThickness,
-				      targetDiameter);
+    CbmTarget* target = new CbmTarget(targetElement.Data(), targetThickness, targetDiameter);
     target->SetPosition(targetPosX, targetPosY, targetPosZ);
     target->SetRotation(targetRotY);
     target->Print();
-    run->AddModule(target);
+    fRun->AddModule(target);
     // ------------------------------------------------------------------------
 
 
     // -----   Create magnetic field   ----------------------------------------
-    std::cout << std::endl;
-    std::cout << "-I- " << myName << ": Registering magnetic field" << std::endl;
+    Double_t fieldZ       = 40.;            // field centre z position
+    Double_t fieldScale   =  1.;            // field scaling factor
     CbmFieldMap* magField = CbmSetup::Instance()->CreateFieldMap();
     if ( ! magField ) {
-	std::cout << "-E- run_sim_new: No valid field!";
-	return;
+	std::cout << "-E- run_sim_new: No valid field!" << std::endl;
+  	return;
     }
-    run->SetField(magField);
+    magField->SetPosition(0., 0., fieldZ);
+    magField->SetScale(fieldScale);
+    fRun->SetField(magField);
     // ------------------------------------------------------------------------
 
 
     // -----   Create PrimaryGenerator   --------------------------------------
-    std::cout << std::endl;
-    std::cout << "-I- " << myName << ": Registering event generators" << std::endl;
     FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
-    // --- Uniform distribution of event plane angle
-    primGen->SetEventPlane(0., 2. * TMath::Pi());
-    // --- Get target parameters
     Double_t tX = 0.;
     Double_t tY = 0.;
     Double_t tZ = 0.;
     Double_t tDz = 0.;
     if ( target ) {
-	target->GetPosition(tX, tY, tZ);
-	tDz = target->GetThickness();
+        target->GetPosition(tX, tY, tZ);
+        tDz = target->GetThickness();
     }
     primGen->SetTarget(tZ, tDz);
     primGen->SetBeam(0., 0., beamWidthX, beamWidthY);
     primGen->SmearGausVertexXY(smearVertexXY);
     primGen->SmearVertexZ(smearVertexZ);
-    //
-    // TODO: Currently, there is no guaranteed consistency of the beam profile
-    // and the transversal target dimension, i.e., that the sampled primary
-    // vertex falls into the target volume. This would require changes
-    // in the FairPrimaryGenerator class.
-    // ------------------------------------------------------------------------
 
-    // Use the CbmUnigenGenrator for the input
-    CbmUnigenGenerator*  uniGen = new CbmUnigenGenerator(inFile);
-    primGen->AddGenerator(uniGen);
-    run->SetGenerator(primGen);
+    if (urqmd == "yes"){
+        CbmUnigenGenerator*  uniGen = new CbmUnigenGenerator(urqmdFile);
+        uniGen->SetEventPlane(0. , 360.);
+        primGen->AddGenerator(uniGen);
+    }
+
+    if (electrons == "yes"){
+        FairBoxGenerator* boxGen1 = new FairBoxGenerator(-11, NPOSITRONS);
+        boxGen1->SetPRange(1., 9.);
+        //boxGen1->SetPtRange(0., 3.);
+        boxGen1->SetPhiRange(0.5, 179.5);
+        boxGen1->SetThetaRange(2.5, 25);
+        boxGen1->SetCosTheta();
+        boxGen1->Init();
+        primGen->AddGenerator(boxGen1);
+
+        FairBoxGenerator* boxGen2 = new FairBoxGenerator(11, NELECTRONS);
+        boxGen2->SetPRange(1., 9.);
+        //boxGen1->SetPtRange(0., 3.);
+        boxGen2->SetPhiRange(0.5, 179.5);
+        boxGen2->SetThetaRange(2.5, 25);
+        boxGen2->SetCosTheta();
+        boxGen2->Init();
+        primGen->AddGenerator(boxGen2);
+    }
+
+        //      CbmLitPolarizedGenerator *polGen;
+        //      polGen = new CbmLitPolarizedGenerator(443, NELECTRONS);
+        //      polGen->SetDistributionPt(0.176);        // 25 GeV
+        //      polGen->SetDistributionY(1.9875,0.228);  // 25 GeV
+        //      polGen->SetRangePt(0.,3.);
+        //      polGen->SetRangeY(1.,3.);
+        //      polGen->SetBox(0);
+        //      polGen->SetRefFrame(CbmLitPolarizedGenerator::kHelicity);
+        //      polGen->SetDecayMode(CbmLitPolarizedGenerator::kDiElectron);
+        //      polGen->SetAlpha(0);
+        //      polGen->Init();
+        //      primGen->AddGenerator(polGen);
+
+/*
+    if (pluto == "yes") {
+        CbmPlutoGenerator *plutoGen= new CbmPlutoGenerator(plutoFile);
+        primGen->AddGenerator(plutoGen);
+    }
+    */
     // ------------------------------------------------------------------------
 
 
     // -----   Run initialisation   -------------------------------------------
-    std::cout << std::endl;
-    std::cout << "-I- " << myName << ": Initialise run" << std::endl;
-    run->Init();
+    fRun->SetGenerator(primGen);
+    fRun->SetStoreTraj(kTRUE);
+    fRun->Init();
     // ------------------------------------------------------------------------
 
 
     // -----   Runtime database   ---------------------------------------------
-    std::cout << std::endl << std::endl;
-    std::cout << "-I- " << myName << ": Set runtime DB" << std::endl;
-    FairRuntimeDb* rtdb = run->GetRuntimeDb();
     CbmFieldPar* fieldPar = (CbmFieldPar*) rtdb->getContainer("CbmFieldPar");
     fieldPar->SetParameters(magField);
     fieldPar->setChanged();
-    fieldPar->setInputVersion(run->GetRunId(),1);
+    fieldPar->setInputVersion(fRun->GetRunId(),1);
     Bool_t kParameterMerged = kTRUE;
     FairParRootFileIo* parOut = new FairParRootFileIo(kParameterMerged);
     parOut->open(parFile.Data());
@@ -242,49 +251,21 @@ void run_mc(Int_t nEvents = 2, const char* inputFile = "")
 
 
     // -----   Start run   ----------------------------------------------------
-    std::cout << std::endl << std::endl;
-    std::cout << "-I- " << myName << ": Starting run" << std::endl;
-    run->Run(nEvents);
+    fRun->Run(nEvents);
     // ------------------------------------------------------------------------
 
 
     // -----   Finish   -------------------------------------------------------
-    run->CreateGeometryFile(geoFile);
+    fRun->CreateGeometryFile(geoFile);
     timer.Stop();
     Double_t rtime = timer.RealTime();
     Double_t ctime = timer.CpuTime();
-    std::cout << std::endl << std::endl;
-    std::cout << "Macro finished successfully." << std::endl;
-    std::cout << "Output file is "    << outFile << std::endl;
-    std::cout << "Parameter file is " << parFile << std::endl;
-    std::cout << "Geometry file is "  << geoFile << std::endl;
-    std::cout << "Real time " << rtime << " s, CPU time " << ctime
-	<< "s" << std::endl << std::endl;
-    // ------------------------------------------------------------------------
+    cout << endl << endl;
+    cout << "Macro finished succesfully." << endl;
+    cout << "Output file is "    << mcFile << endl;
+    cout << "Parameter file is " << parFile << endl;
+    cout << "Real time " << rtime << " s, CPU time " << ctime << "s" << endl << endl;
 
-
-    // -----   Resource monitoring   ------------------------------------------
-    if ( Has_Fair_Monitor() ) {      // FairRoot Version >= 15.11
-	// Extract the maximal used memory an add is as Dart measurement
-	// This line is filtered by CTest and the value send to CDash
-	FairSystemInfo sysInfo;
-	Float_t maxMemory=sysInfo.GetMaxMemory();
-	std::cout << "<DartMeasurement name=\"MaxMemory\" type=\"numeric/double\">";
-	std::cout << maxMemory;
-	std::cout << "</DartMeasurement>" << std::endl;
-
-	Float_t cpuUsage=ctime/rtime;
-	std::cout << "<DartMeasurement name=\"CpuLoad\" type=\"numeric/double\">";
-	std::cout << cpuUsage;
-	std::cout << "</DartMeasurement>" << std::endl;
-    }
-
-    std::cout << " Test passed" << std::endl;
-    std::cout << " All ok " << std::endl;
-
-    // Function needed for CTest runtime dependency
-    Generate_CTest_Dependency_File(depFile);
-    // ------------------------------------------------------------------------
-
+    cout << " Test passed" << endl;
+    cout << " All ok " << endl;
 }
-
