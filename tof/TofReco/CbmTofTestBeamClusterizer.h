@@ -283,7 +283,9 @@ class CbmTofTestBeamClusterizer : public FairTask
       std::vector< TH2* > fhSmCluPosition; //[nbSmTypes]
       std::vector< TH2* > fhSmCluTOff; 
       std::vector< TProfile* > fhSmCluSvel; 
-      std::vector< TH1* > fhRpcDTLastHits;     //[nbDet]
+      std::vector< TH1* > fhRpcDTLastHits;         //[nbDet]
+      std::vector< TH1* > fhRpcDTLastHits_Tot;     //[nbDet]
+      std::vector< TH1* > fhRpcDTLastHits_CluSize; //[nbDet]
 
       std::vector< std::vector< TH1* > > fhTRpcCluMul;      //[nbDet][nbSel]
       std::vector< std::vector< TH2* > > fhTRpcCluPosition; //[nbDet][nbSel]
