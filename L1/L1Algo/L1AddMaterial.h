@@ -8,7 +8,8 @@
 //#define cnst static const fvec
 #define cnst const fvec
 
-const fvec PipeRadThick = 1.068e-2f; // 0.7 mm Aluminium
+const fvec PipeRadThick = 7.87e-3f; // 0.7 mm Aluminium
+const fvec TargetRadThick = 3.73e-2f; // 125 mum Gold
 
 inline fvec ApproximateBetheBloch( const fvec &bg2 )
 {
@@ -53,7 +54,7 @@ inline fvec ApproximateBetheBloch( const fvec &bg2 )
   init = (x > x0) & (x1 > x);
   d2 = fvec(init & (lhwI + x - 0.5f + ( 0.5f - lhwI - x0 ) * r * r * r)) + fvec( (!init) & d2);
 
-  return mK*mZA*( fvec( 1.f ) + bg2 ) / bg2*( 0.5f*log( maxT * maxT / ( mI*mI ) ) - bg2 / ( fvec( 1.f ) + bg2 ) - d2 );
+  return mK*mZA*( fvec( 1.f ) + bg2 ) / bg2*( 0.5f*log( _2me*bg2*maxT/(mI*mI) ) - bg2 / ( fvec( 1.f ) + bg2 ) - d2 );
 }
 
 inline void EnergyLossCorrection(L1TrackPar& T, const fvec& mass2, const fvec& radThick, fvec& qp0, fvec direction, fvec w = 1)
@@ -63,7 +64,9 @@ inline void EnergyLossCorrection(L1TrackPar& T, const fvec& mass2, const fvec& r
 
   const fvec& bethe = ApproximateBetheBloch( p2/mass2 );
 
-  const fvec& dE = bethe * radThick * 2.33f * 9.34961f;
+  fvec tr = sqrt(fvec(1.f) + T.tx*T.tx + T.ty*T.ty) ;
+  
+  const fvec& dE = bethe * radThick*tr * 2.33f * 9.34961f;
 
   const fvec& E2Corrected = (sqrt(E2) + direction*dE) * (sqrt(E2) + direction*dE);
   fvec corr = sqrt( p2/( E2Corrected - mass2 ) );
@@ -178,7 +181,30 @@ inline void L1AddPipeMaterial( L1TrackPar &T, fvec qp0, fvec w = 1, fvec mass2 =
 
   T.C22 += w*txtx1*a;
   T.C32 += w*tx*ty*a; T.C33 += w*(ONE+tyty)*a;
+}
 
+inline void L1AddTargetMaterial( L1TrackPar &T, fvec qp0, fvec w = 1, fvec mass2 = 0.1395679f*0.1395679f )
+{
+  cnst  ONE = 1.f;
+
+  const fscal logRadThick=log(TargetRadThick[0]);
+  fvec tx = T.tx;
+  fvec ty = T.ty;
+  fvec txtx = tx*tx;
+  fvec tyty = ty*ty;
+  fvec txtx1 = txtx + ONE;
+  fvec h = txtx + tyty;
+  fvec t = sqrt(txtx1 + tyty);
+  fvec h2 = h*h;
+  fvec qp0t = qp0*t;
+
+  cnst c1=0.0136f, c2=c1*0.038f, c3=c2*0.5f, c4=-c3/2.0f, c5=c3/3.0f, c6=-c3/4.0f;
+  fvec s0 = (c1+c2*fvec(logRadThick) + c3*h + h2*(c4 + c5*h +c6*h2) )*qp0t;
+  //fvec a = ( (ONE+mass2*qp0*qp0t)*RadThick*s0*s0 );
+  fvec a = ( (t+mass2*qp0*qp0t)*TargetRadThick*s0*s0 );
+
+  T.C22 += w*txtx1*a;
+  T.C32 += w*tx*ty*a; T.C33 += w*(ONE+tyty)*a;
 }
 
 #undef cnst

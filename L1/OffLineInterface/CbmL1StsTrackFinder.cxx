@@ -85,6 +85,8 @@ Int_t CbmL1StsTrackFinder::CopyL1Tracks(CbmEvent* event) {
       t->SetChiSq(T.chi2);
       t->SetNDF(T.NDF);
       t->SetPidHypo( T.T[4]>=0 ?211 :-211 );
+//       t->time = T.Tpv[6];
+//       t->timeEr = T.Cpv[20];
 
       for (vector<int>::iterator ih = it->StsHits.begin();
       		ih != it->StsHits.end(); ++ih)

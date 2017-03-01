@@ -64,6 +64,8 @@ void CbmL1::TrackMatch(){
   const int nRTracks = vRTracks.size();
   for (int iR = 0; iR < nRTracks; iR++){
     CbmL1Track* prtra = &(vRTracks[iR]);
+    
+              //  cout<<iR<<" iR"<<endl;
 
     int hitsum  = prtra->StsHits.size(); // number of hits in track
 
@@ -74,6 +76,8 @@ void CbmL1::TrackMatch(){
       const int nMCPoints = vStsHits[*ih].mcPointIds.size();
       for (int iP = 0; iP < nMCPoints; iP++){
         int iMC = vStsHits[*ih].mcPointIds[iP];
+        
+   //     cout<<iMC<<" iMC"<<endl;
         int ID = -1;
         if (iMC >= 0) ID = vMCPoints[iMC].ID;
         if(hitmap.find(ID) == hitmap.end())
@@ -327,6 +331,7 @@ void CbmL1::EfficienciesPerformance()
       }
     }
     else { // separate all efficiecies from short eff
+      
 
       ntra.Inc(reco, killed, ratio_length, ratio_fakes, nclones, mc_length, mc_length_hits, "total");
 
@@ -665,7 +670,8 @@ void CbmL1::HistoPerformance() // TODO: check if works correctly. Change vHitRef
 //     float r = sqrt(x*x+y*y);
 //     h_hit_density[hIt->iStation]->Fill(r, 1.0/(2.0*3.1415*r));
 //   }
-
+cout<<vMCPoints.size()<< " vMCPoints"<<endl;
+cout<<vMCTracks.size()<< " vMCTracks"<<endl;
 
   //
   for (vector<CbmL1Track>::iterator rtraIt = vRTracks.begin(); rtraIt != vRTracks.end(); ++rtraIt){
@@ -928,17 +934,17 @@ void CbmL1::HistoPerformance() // TODO: check if works correctly. Change vHitRef
   } // for mcTracks
 
   int NFakes = 0;
-  for( unsigned int ih=0; ih<algo->vStsHits.size(); ih++){
+  for( unsigned int ih=0; ih<algo->vStsHits->size(); ih++){
     int iMC = vHitMCRef[ih]; // TODO2: adapt to linking
     if (iMC < 0) NFakes++;
   }
 
   h_reco_time->Fill(algo->CATime);
   h_reco_timeNtr->Fill(mc_total,algo->CATime);
-  h_reco_timeNhit->Fill(algo->vStsHits.size(),algo->CATime);
+  h_reco_timeNhit->Fill(algo->vStsHits->size(),algo->CATime);
 
   h_reco_fakeNtr->Fill(mc_total,NFakes);
-  h_reco_fakeNhit->Fill(algo->vStsHits.size()-NFakes,NFakes);
+  h_reco_fakeNhit->Fill(algo->vStsHits->size()-NFakes,NFakes);
 
 
   h_reg_MCmom->Scale(1.f/NEvents);

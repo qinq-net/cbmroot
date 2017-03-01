@@ -10,7 +10,7 @@ class L1Station{
 
  public:
   L1Station():
-  z(0), Rmin(0), Rmax(0), Sy(0),
+  z(0), Rmin(0), Rmax(0), Sy(0), /// z-position, min & max station radius, field integral
   materialInfo(),
   fieldSlice(),
   frontInfo(), backInfo(), xInfo(), yInfo(),

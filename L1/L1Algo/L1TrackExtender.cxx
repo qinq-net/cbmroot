@@ -25,45 +25,45 @@ using std::vector;
    /// initialize - should be params ititialized. 1 - yes.
 void L1Algo::BranchFitterFast(const L1Branch &t, L1TrackPar& T, const bool dir, const fvec qp0, const bool initParams)
 {
-  L1_assert(t.StsHits.size() >= 3);
+  L1_assert(t.NHits >= 3);
   
     // get hits of current track
   const std::vector<THitI>& hits = t.StsHits; // array of indeses of hits of current track
-  const int nHits = t.StsHits.size();
+  const int nHits = t.NHits;
 
   const signed short int step = -2*static_cast<int>(dir) + 1; // increment for station index
   const int iFirstHit = (dir) ? nHits-1 : 0;
   const int iLastHit  = (dir) ? 0 : nHits-1;
   
-  L1StsHit &hit0 = vStsHits[hits[iFirstHit]];
-  L1StsHit &hit1 = vStsHits[hits[iFirstHit + step]];
-  L1StsHit &hit2 = vStsHits[hits[iFirstHit + 2*step]];
+  const L1StsHit &hit0 = (*vStsHits)[hits[iFirstHit]];
+  const L1StsHit &hit1 = (*vStsHits)[hits[iFirstHit + step]];
+  const L1StsHit &hit2 = (*vStsHits)[hits[iFirstHit + 2*step]];
 
-  int ista0 = GetFStation(vSFlag[hit0.f]);
-  int ista1 = GetFStation(vSFlag[hit1.f]);
-  int ista2 = GetFStation(vSFlag[hit2.f]);
+  int ista0 = GetFStation((*vSFlag)[hit0.f]);
+  int ista1 = GetFStation((*vSFlag)[hit1.f]);
+  int ista2 = GetFStation((*vSFlag)[hit2.f]);
 
   L1Station &sta0 = vStations[ista0];
   L1Station &sta1 = vStations[ista1];
   L1Station &sta2 = vStations[ista2];
 
-  fvec u0  = static_cast<fscal>( vStsStrips[hit0.f] );
-  fvec v0  = static_cast<fscal>( vStsStripsB[hit0.b] );
+  fvec u0  = static_cast<fscal>( (*vStsStrips)[hit0.f] );
+  fvec v0  = static_cast<fscal>( (*vStsStripsB)[hit0.b] );
   fvec x0,y0;
   StripsToCoor(u0, v0, x0, y0, sta0);
-  fvec z0 = vStsZPos[hit0.iz];
+  fvec z0 = (*vStsZPos)[hit0.iz];
 
-  fvec u1  = static_cast<fscal>( vStsStrips[hit1.f] );
-  fvec v1  = static_cast<fscal>( vStsStripsB[hit1.b] );
+  fvec u1  = static_cast<fscal>( (*vStsStrips)[hit1.f] );
+  fvec v1  = static_cast<fscal>( (*vStsStripsB)[hit1.b] );
   fvec x1,y1;
   StripsToCoor(u1, v1, x1, y1, sta1);
-  fvec z1 = vStsZPos[hit1.iz];
+  fvec z1 = (*vStsZPos)[hit1.iz];
 
-  fvec u2  = static_cast<fscal>( vStsStrips[hit2.f] );
-  fvec v2  = static_cast<fscal>( vStsStripsB[hit2.b] );
+  fvec u2  = static_cast<fscal>( (*vStsStrips)[hit2.f] );
+  fvec v2  = static_cast<fscal>( (*vStsStripsB)[hit2.b] );
   fvec x2,y2;
   StripsToCoor(u2, v2, x2, y2, sta2);
-//   fvec z2 = vStsZPos[hit2.iz];
+  fvec z2 = (*vStsZPos)[hit2.iz];
 
   fvec dzi = 1./(z1-z0);
 
@@ -77,6 +77,8 @@ void L1Algo::BranchFitterFast(const L1Branch &t, L1TrackPar& T, const bool dir, 
   }
 
   T.z  = z0;
+  
+  T.t[0]=(hit0.t_reco+hit1.t_reco+hit2.t_reco)/3;
   T.chi2 = 0.;
   T.NDF = 2.;
   T.C00 = sta0.XYInfo.C00;
@@ -91,7 +93,7 @@ void L1Algo::BranchFitterFast(const L1Branch &t, L1TrackPar& T, const bool dir, 
 
   L1FieldValue fB0, fB1, fB2 _fvecalignment;
   L1FieldRegion fld _fvecalignment;
-  fvec fz0 = sta1.z; // suppose field is smooth
+  fvec fz0 = sta1.z; // suppose field is smoth
   fvec fz1 = sta2.z;
   fvec fz2 = sta0.z;
 
@@ -106,19 +108,19 @@ void L1Algo::BranchFitterFast(const L1Branch &t, L1TrackPar& T, const bool dir, 
   int ista = ista2;
 
   for( int i = iFirstHit + step; step*i <= step*iLastHit; i += step){
-    L1StsHit &hit = vStsHits[hits[i]];
+    const L1StsHit &hit = (*vStsHits)[hits[i]];
     ista_prev = ista;
-    ista = GetFStation(vSFlag[hit.f]);
+    ista = GetFStation((*vSFlag)[hit.f]);
 
     L1Station &sta = vStations[ista];
           
-    L1Extrapolate( T, vStsZPos[hit.iz], qp0, fld );
+    L1Extrapolate( T, (*vStsZPos)[hit.iz], qp0, fld );
     L1AddMaterial( T, sta.materialInfo, qp0 );
     if ( (step*ista <= step*(NMvdStations + (step+1)/2 - 1)) && (step*ista_prev >= step*(NMvdStations + (step+1)/2 - 1 - step)) )
       L1AddPipeMaterial( T, qp0 );
   
-    fvec u = static_cast<fscal>( vStsStrips[hit.f] );
-    fvec v = static_cast<fscal>( vStsStripsB[hit.b] );
+    fvec u = static_cast<fscal>( (*vStsStrips)[hit.f] );
+    fvec v = static_cast<fscal>( (*vStsStripsB)[hit.b] );
     L1Filter( T, sta.frontInfo, u );
     L1Filter( T, sta.backInfo,  v );
     fB0 = fB1;
@@ -151,47 +153,49 @@ void L1Algo::BranchFitter(const L1Branch &t, L1TrackPar& T, const bool dir, cons
    /// dir - 0 - forward, 1 - backward
    /// qp0 - momentum for extrapolation
    /// initialize - should be params ititialized. 1 - yes.
-void L1Algo::FindMoreHits(L1Branch &t, L1TrackPar& T, const bool dir, const fvec qp0) // TODO take into account pipe
+void L1Algo::FindMoreHits(L1Branch &t, L1TrackPar& T, const bool dir, const fvec qp0, fvec n) // TODO take into account pipe
 {
   std::vector<THitI> newHits;
   newHits.clear();
+  newHits.reserve(5);
   
   const signed short int step = - 2*static_cast<int>(dir) + 1; // increment for station index
-  const int iFirstHit = (dir) ? 2 : t.StsHits.size()-3;
-//  int ista = GetFStation(vSFlag[vStsHits[t.StsHits[iFirstHit]].f]) + 2*step; // current station. set to the end of track
+  const int iFirstHit = (dir) ? 2 : t.NHits-3;
+//  int ista = GetFStation((*vSFlag)[(*vStsHits)[t.StsHits[iFirstHit]].f]) + 2*step; // current station. set to the end of track
 
-  const L1StsHit &hit0 = vStsHits[t.StsHits[iFirstHit         ]]; // optimize
-  const L1StsHit &hit1 = vStsHits[t.StsHits[iFirstHit + step  ]];
-  const L1StsHit &hit2 = vStsHits[t.StsHits[iFirstHit + 2*step]];
+  const L1StsHit &hit0 = (*vStsHits)[t.StsHits[iFirstHit         ]]; // optimize
+  const L1StsHit &hit1 = (*vStsHits)[t.StsHits[iFirstHit + step  ]];
+  const L1StsHit &hit2 = (*vStsHits)[t.StsHits[iFirstHit + 2*step]];
 
-  const int ista0 = GetFStation(vSFlag[hit0.f]);
-  const int ista1 = GetFStation(vSFlag[hit1.f]);
-  const int ista2 = GetFStation(vSFlag[hit2.f]);
+  const int ista0 = GetFStation((*vSFlag)[hit0.f]);
+  const int ista1 = GetFStation((*vSFlag)[hit1.f]);
+  const int ista2 = GetFStation((*vSFlag)[hit2.f]);
 
   const L1Station &sta0 = vStations[ista0];
   const L1Station &sta1 = vStations[ista1];
   const L1Station &sta2 = vStations[ista2];
 
-  fvec u0  = static_cast<fscal>( vStsStrips[hit0.f] );
-  fvec v0  = static_cast<fscal>( vStsStripsB[hit0.b] );
+  fvec u0  = static_cast<fscal>( (*vStsStrips)[hit0.f] );
+  fvec v0  = static_cast<fscal>( (*vStsStripsB)[hit0.b] );
   fvec x0,y0;
 
-  StripsToCoor(u0, v0, x0, y0, sta0);
-//   fvec z0 = vStsZPos[hit0.iz];
 
-  fvec u1  = static_cast<fscal>( vStsStrips[hit1.f] );
-  fvec v1  = static_cast<fscal>( vStsStripsB[hit1.b] );
+  StripsToCoor(u0, v0, x0, y0, sta0);
+ // fvec z0 = (*vStsZPos)[hit0.iz];
+
+  fvec u1  = static_cast<fscal>( (*vStsStrips)[hit1.f] );
+  fvec v1  = static_cast<fscal>( (*vStsStripsB)[hit1.b] );
   fvec x1,y1;
   StripsToCoor(u1, v1, x1, y1, sta1);
-//   fvec z1 = vStsZPos[hit1.iz];
+ // fvec z1 = (*vStsZPos)[hit1.iz];
 
-  fvec u2  = static_cast<fscal>( vStsStrips[hit2.f] );
-  fvec v2  = static_cast<fscal>( vStsStripsB[hit2.b] );
+  fvec u2  = static_cast<fscal>( (*vStsStrips)[hit2.f] );
+  fvec v2  = static_cast<fscal>( (*vStsStripsB)[hit2.b] );
   fvec x2,y2;
   StripsToCoor(u2, v2, x2, y2, sta2);
-//   fvec z2 = vStsZPos[hit2.iz];
+//  fvec z2 = (*vStsZPos)[hit2.iz];
 
-//   fvec dzi = 1./(z1-z0);
+  //fvec dzi = 1./(z1-z0);
 
   L1FieldValue fB0, fB1, fB2 _fvecalignment;
   L1FieldRegion fld _fvecalignment;
@@ -206,10 +210,12 @@ void L1Algo::FindMoreHits(L1Branch &t, L1TrackPar& T, const bool dir, const fvec
   fld.Set( fB2, fz2, fB1, fz1, fB0, fz0 );
 
   int ista = ista2 + 2*step; // skip one station. if there would be hit it has to be found on previous stap
+
   if (ista2 == FIRSTCASTATION) 
     ista = ista2 + step;
 
   const fvec Pick_gather2 = Pick_gather*Pick_gather;
+
   for( ; (ista < NStations) && (ista >= 0); ista += step ){ // CHECKME why ista2?
 
     L1Station &sta = vStations[ista];
@@ -220,13 +226,22 @@ void L1Algo::FindMoreHits(L1Branch &t, L1TrackPar& T, const bool dir, const fvec
     int iHit_best = -1;  // index of the best hit
 
     const fscal iz = 1/T.z[0];
-    L1HitArea area( vGrid[ ista ], T.x[0]*iz, T.y[0]*iz, (sqrt(Pick_gather*(T.C00 + sta.XYInfo.C00))+MaxDZ*fabs(T.tx))[0]*iz, (sqrt(Pick_gather*(T.C11 + sta.XYInfo.C11))+MaxDZ*fabs(T.ty))[0]*iz );
+
+
+      L1HitAreaTime area(vGridTime[ ista ], T.x[0]*iz, T.y[0]*iz, (sqrt(Pick_gather*(T.C00 + sta.XYInfo.C00))+MaxDZ*fabs(T.tx))[0]*iz, (sqrt(Pick_gather*(T.C11 + sta.XYInfo.C11))+MaxDZ*fabs(T.ty))[0]*iz, T.t[0], sqrt(T.C55[0]+2.9*2.9) );
+     
+     //    L1HitArea area( vGrid[ ista ], T.x[0]*iz, T.y[0]*iz, (sqrt(Pick_gather*(T.C00 + sta.XYInfo.C00))+MaxDZ*fabs(T.tx))[0]*iz, (sqrt(Pick_gather*(T.C11 + sta.XYInfo.C11))+MaxDZ*fabs(T.ty))[0]*iz );
+    //L1HitArea area( vGrid[ ista ], T.x[0]*iz, T.y[0]*iz, (sqrt(Pick_gather*(T.C00 + sta.XYInfo.C00))+MaxDZ*fabs(T.tx))[0]*iz, (sqrt(Pick_gather*(T.C11 + sta.XYInfo.C11))+MaxDZ*fabs(T.ty))[0]*iz );
     THitI ih = 0;
     while( area.GetNext( ih ) ) {
-      ih += StsHitsUnusedStartIndex[ista];
-      L1StsHit &hit = (*vStsHitsUnused)[ih];
 
-      if( GetFUsed( vSFlag[hit.f] | vSFlagB[hit.b] ) ) continue; // if used
+      ih += StsHitsUnusedStartIndex[ista];
+      const L1StsHit &hit = (*vStsHitsUnused)[ih];
+      if (fabs(hit.t_reco-T.t[0])>sqrt(T.C55[0]+2.9*2.9)*3) continue;
+      
+
+     // if (hit.n!=n[0]) continue; // if used
+      if( GetFUsed( (*vSFlag)[hit.f] | (*vSFlagB)[hit.b] ) ) continue; // if used
 
       fscal xh, yh, zh;
       GetHitCoor(hit, xh, yh, zh, sta); // faster
@@ -236,10 +251,10 @@ void L1Algo::FindMoreHits(L1Branch &t, L1TrackPar& T, const bool dir, const fvec
       fvec y, C11;
       L1ExtrapolateYC11Line( T, zh, y, C11 );
         
-      fscal dym_est = ( Pick_gather*sqrt(fabs(C11+sta.XYInfo.C11)) )[0];
+      fscal dym_est = ( Pick_gather*sqrt(fabs(C11[0]+sta.XYInfo.C11[0])) );
       fscal y_minus_new = y[0] - dym_est;
-      if (yh < y_minus_new) continue;  // CHECKME take into account overlaping?
-
+     // if (yh < y_minus_new) continue;  // CHECKME take into account overlaping?
+   
       fvec x, C00;
       L1ExtrapolateXC00Line( T, zh, x, C00 );
       
@@ -256,14 +271,14 @@ void L1Algo::FindMoreHits(L1Branch &t, L1TrackPar& T, const bool dir, const fvec
     }
     if( iHit_best < 0 ) break;
     
-    newHits.push_back(RealIHit[iHit_best]);
+    newHits.push_back((*RealIHitP)[iHit_best]);
 
-    L1StsHit &hit = (*vStsHitsUnused)[iHit_best];
-    fvec u = static_cast<fvec>(vStsStrips[hit.f]);
-    fvec v = static_cast<fvec>(vStsStripsB[hit.b]);
+    const L1StsHit &hit = (*vStsHitsUnused)[iHit_best];
+    fvec u = static_cast<fvec>((*vStsStrips)[hit.f]);
+    fvec v = static_cast<fvec>((*vStsStripsB)[hit.b]);
     fvec x, y, z;
     StripsToCoor(u, v, x, y, sta);
-    z = vStsZPos[hit.iz];
+    z = (*vStsZPos)[hit.iz];
       
     L1ExtrapolateLine( T, z );
     L1AddMaterial( T, sta.materialInfo, qp0 );
@@ -281,9 +296,10 @@ void L1Algo::FindMoreHits(L1Branch &t, L1TrackPar& T, const bool dir, const fvec
 
     // save hits
   if (dir) { // backward
-    const unsigned int NOldHits = t.StsHits.size();
+    const unsigned int NOldHits = t.NHits;
     const unsigned int NNewHits = newHits.size();
-    t.StsHits.resize(NNewHits + NOldHits);
+  //  t.StsHits.resize(NNewHits + NOldHits);
+    t.NHits=(NNewHits + NOldHits);
     for (int i = NOldHits-1; i >= 0 ; i--) { 
       t.StsHits[NNewHits+i] = t.StsHits[i];
     }
@@ -292,8 +308,8 @@ void L1Algo::FindMoreHits(L1Branch &t, L1TrackPar& T, const bool dir, const fvec
     }
   }
   else { // forward
-    const unsigned int NOldHits = t.StsHits.size();
-    t.StsHits.resize(newHits.size()+NOldHits);
+    const unsigned int NOldHits = t.NHits;
+    t.NHits=(newHits.size()+NOldHits);
     for (unsigned int i = 0; i < newHits.size(); i++) { 
       t.StsHits[NOldHits+i] = (newHits[i]);
     }
@@ -304,8 +320,8 @@ void L1Algo::FindMoreHits(L1Branch &t, L1TrackPar& T, const bool dir, const fvec
   /// Try to extrapolate and find additional hits on other stations
 fscal L1Algo::BranchExtender(L1Branch &t) // TODO Simdize
 {
-  //  const unsigned int minNHits = 3;
-  
+    const unsigned int minNHits = 3;
+
   L1TrackPar T;
 
     // forward
@@ -314,15 +330,15 @@ fscal L1Algo::BranchExtender(L1Branch &t) // TODO Simdize
   BranchFitter (t, T, dir);
   // BranchFitterFast (t, T, dir, 0, true);
   
-//  if (t.StsHits.size() < minNHits) return T.chi2[0];
-  FindMoreHits(t, T, dir, T.qp);
+ // if (t.NHits < minNHits) return T.chi2[0];
+  FindMoreHits(t, T, dir, T.qp, 0);
 
     // backward
   dir = 1;
   BranchFitterFast (t, T, dir, T.qp, false); // 577
 
 
-  FindMoreHits(t, T, dir, T.qp);
+  FindMoreHits(t, T, dir, T.qp, 0);
 
   return T.chi2[0];
 }

@@ -70,9 +70,11 @@ void CbmL1PFFitter::FilterFirst( L1TrackPar &track,fvec &x, fvec &y, L1Station &
 }
 
 void CbmL1PFFitter::Fit(vector<CbmStsTrack> &Tracks, vector<int>& pidHypo)
-{      
+{   
+
   L1FieldValue fB0, fB1, fB2 _fvecalignment;
   L1FieldRegion fld _fvecalignment;
+
 
   FairRootManager *fManger = FairRootManager::Instance();
   TClonesArray *listStsHits = (TClonesArray *)  fManger->GetObject("StsHit");
@@ -105,6 +107,7 @@ void CbmL1PFFitter::Fit(vector<CbmStsTrack> &Tracks, vector<int>& pidHypo)
 
   unsigned short N_vTracks = Tracks.size();
 
+
   for(unsigned short itrack = 0; itrack < N_vTracks; itrack++)
   {
     Tracks[itrack].SetPidHypo(pidHypo[itrack]);
@@ -114,6 +117,7 @@ void CbmL1PFFitter::Fit(vector<CbmStsTrack> &Tracks, vector<int>& pidHypo)
     
   for(unsigned short itrack = 0; itrack < N_vTracks; itrack+=fvecLen)
   {
+
     if(N_vTracks - itrack < static_cast<unsigned short>(fvecLen))
       nTracks_SIMD = N_vTracks - itrack;
     for(i=0; i<nTracks_SIMD; i++)
@@ -480,7 +484,7 @@ void CbmL1PFFitter::GetChiToVertex(vector<CbmStsTrack> &Tracks, vector<L1FieldRe
       }
     }
     
-    fB[0] = CbmL1::Instance()->algo->GetvtxFieldValue();
+    fB[0] = CbmL1::Instance()->algo->GetVtxFieldValue();
     zField[0] = 0;
     fld.Set( fB[2], zField[2], fB[1], zField[1], fB[0], zField[0] );
     field.push_back(fld);
@@ -629,7 +633,7 @@ void CbmL1PFFitter::CalculateFieldRegion(vector<CbmStsTrack> &Tracks, vector<L1F
       }
     }
 
-    fB[0] = CbmL1::Instance()->algo->GetvtxFieldValue();
+    fB[0] = CbmL1::Instance()->algo->GetVtxFieldValue();
     zField[0] = 0;
     fld.Set( fB[2], zField[2], fB[1], zField[1], fB[0], zField[0] );
     field.push_back(fld);

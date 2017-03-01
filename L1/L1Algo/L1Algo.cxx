@@ -1,9 +1,33 @@
 #include "L1Algo.h"
+#include "L1Grid.h"
+#include "L1HitPoint.h"
 
-using std::vector;
-
-void L1Algo::Init( const vector<fscal> geo )
+void L1Algo::Init( const vector<fscal>& geo )
 {
+   
+  for(int iProc=0; iProc<4; iProc++)
+  {
+    for(int i=0; i<8; i++){ 
+      threadNumberToCpuMap[2*i+0 + iProc*20] = 4*i + iProc; 
+      threadNumberToCpuMap[2*i+1 + iProc*20] = 4*i + 32 + iProc;
+      
+    }
+    for(int i=0; i<2; i++){
+      threadNumberToCpuMap[2*i+0 + 16 + iProc*20] = 4*i + iProc + 64; 
+      threadNumberToCpuMap[2*i+1 + 16 + iProc*20] = 4*i + 8 + iProc + 64;
+      
+    }
+     
+  }
+  
+ //lxir039
+//  for (int i=0; i<8; i++){ 
+//     threadNumberToCpuMap[2*i+0] = 15-i;
+//     threadNumberToCpuMap[2*i+1] = 15-(i+8);
+//   }
+  
+  
+  
   int ind=0;
   {
     L1FieldValue B[3];
@@ -105,7 +129,7 @@ void L1Algo::Init( const vector<fscal> geo )
   fGhostSuppression = static_cast<int>( geo[ind++] );
 
   {
-//     fvec By0 = vStations[NStations-1].fieldSlice.cy[0];
+    fvec By0 = vStations[NStations-1].fieldSlice.cy[0];
     fvec z0  = vStations[NStations-1].z;
     fvec sy = 0., Sy = 0.;
     for( int i=NStations-1; i>=0; i-- ){
@@ -118,12 +142,19 @@ void L1Algo::Init( const vector<fscal> geo )
       z0 = st.z;
     }
   }
+//    for( int iS = 0; iS < NStations; ++iS ) {     /// Grid is created for each station with the same step: xStep,yStep
+//       L1Grid &grid = vGrid[iS];
+//      
+//      // grid.Create(-1,1,-0.6,0.6,xStep,yStep);
+//       grid.Create(-1,1,-0.6,0.6,0.00317899,0.00105966);
+//     }
+  
 #ifndef TBB2
   std::cout<<"L1Algo initialized"<<std::endl;
 #endif // TBB2
 }
 
-#ifdef TBB2
+
 void L1Algo::SetData( const vector< L1StsHit >      & StsHits_,
                       const vector< L1Strip >       & StsStrips_,
                       const vector< L1Strip >       & StsStripsB_,
@@ -131,45 +162,91 @@ void L1Algo::SetData( const vector< L1StsHit >      & StsHits_,
                       const vector< unsigned char > & SFlag_,
                       const vector< unsigned char > & SFlagB_,
                       const THitI* StsHitsStartIndex_,
-                      const THitI* StsHitsStopIndex_ )
+                      const THitI* StsHitsStopIndex_                    
+)
 {
+  
+   vStsHits = & StsHits_;
+ vStsStrips = & StsStrips_;
+ vStsStripsB = & StsStripsB_;
+  vStsZPos = & StsZPos_;
+  vSFlag = & SFlag_;
+  vSFlagB = & SFlagB_;
+
+  
+   StsHitsStartIndex = StsHitsStartIndex_;
+   StsHitsStopIndex = StsHitsStopIndex_;
+  
+  
+/*  
+  
+  
   vStsHits.resize(StsHits_.size());
-  vStsStrips.resize(StsStrips_.size());
-  vStsStripsB.resize(StsStripsB_.size());
+ vStsStrips.resize(StsStrips_.size());
+ vStsStripsB.resize(StsStripsB_.size());
   vStsZPos.resize(StsZPos_.size());
   vSFlag.resize(SFlag_.size());
   vSFlagB.resize(SFlagB_.size());
   
-  for(unsigned int i=0; i<StsHits_.size(); ++i ) vStsHits[i] = StsHits_[i];
-  for(unsigned int i=0; i<StsStrips_.size(); ++i ) vStsStrips[i] = StsStrips_[i];
-  for(unsigned int i=0; i<StsStripsB_.size(); ++i ) vStsStripsB[i] = StsStripsB_[i];
-  for(unsigned int i=0; i<StsZPos_.size(); ++i ) vStsZPos[i] = StsZPos_[i];
-  for(unsigned int i=0; i<SFlag_.size(); ++i ) vSFlag[i] = SFlag_[i];
-  for(unsigned int i=0; i<SFlagB_.size(); ++i ) vSFlagB[i] = SFlagB_[i];
+  for(Tindex i=0; i< static_cast<Tindex>(StsHits_.size()); ++i ) vStsHits[i] = StsHits_[i];
+  for(Tindex i=0; i< static_cast<Tindex>(StsStrips_.size()); ++i ) vStsStrips[i] = StsStrips_[i];
+  for(Tindex i=0; i< static_cast<Tindex>(StsStripsB_.size()); ++i ) vStsStripsB[i] = StsStripsB_[i];
+  for(Tindex i=0; i< static_cast<Tindex>(StsZPos_.size()); ++i ) vStsZPos[i] = StsZPos_[i];
+  for(Tindex i=0; i< static_cast<Tindex>(SFlag_.size()); ++i ) vSFlag[i] = SFlag_[i];
+  for(Tindex i=0; i< static_cast<Tindex>(SFlagB_.size()); ++i ) vSFlagB[i] = SFlagB_[i];
 
-  for(unsigned int i=0; i<MaxNStations+1; ++i) StsHitsStartIndex[i] = StsHitsStartIndex_[i];
-  for(unsigned int i=0; i<MaxNStations+1; ++i) StsHitsStopIndex[i]  = StsHitsStopIndex_[i];
+  for(Tindex i=0; i<MaxNStations+1; ++i) StsHitsStartIndex[i] = StsHitsStartIndex_[i];
+  for(Tindex i=0; i<MaxNStations+1; ++i) StsHitsStopIndex[i]  = StsHitsStopIndex_[i];*/
+
+  
+  
+  
 }
-#endif
+
+
+void L1Algo::GetHitCoor(const L1StsHit& _h, fscal &_x, fscal &_y, char iS)
+{
+  
+  L1Station &sta = vStations[int(iS)];
+  const L1Strip &u = (*vStsStrips)[_h.f];
+  const L1Strip &v = (*vStsStripsB)[_h.b];
+    
+ // const fscal &z = (*vStsZPos)[_h.iz];
+ // fscal x, y;
+    _x = (sta.xInfo.sin_phi[0]*u + sta.xInfo.cos_phi[0]*v)/(*vStsZPos)[_h.iz];
+    _y = (sta.yInfo.cos_phi[0]*u + sta.yInfo.sin_phi[0]*v)/(*vStsZPos)[_h.iz];
+  
+}
 
 void L1Algo::GetHitCoor(const L1StsHit& _h, fscal &_x, fscal &_y, fscal &_z, const L1Station &sta)
 {
-  fscal u = vStsStrips[_h.f];
-  fscal v = vStsStripsB[_h.b];
+  fscal u = (*vStsStrips)[_h.f];
+  fscal v = (*vStsStripsB)[_h.b];
   fscal x,y;
   StripsToCoor(u,v,x,y,sta);
   _x = x;
   _y = y;
-  _z = vStsZPos[_h.iz];
+  _z =(*vStsZPos)[_h.iz];
 }
 
-  /// convert strip positions to coordinates
 void L1Algo::StripsToCoor(const fscal &u, const fscal &v, fscal &_x, fscal &_y, const L1Station &sta) const// TODO: Actually sta.yInfo.sin_phi is same for all stations, so ...
 {
-  fvec x,y;
-  StripsToCoor(u,v,x,y,sta);
-  _x = x[0];
-  _y = y[0];
+    //  fvec x,y;
+    //  StripsToCoor(u,v,x,y,sta);
+    //  _x = x[0];
+    //  _y = y[0];
+    _x = sta.xInfo.sin_phi[0]*u + sta.xInfo.cos_phi[0]*v;
+    _y = sta.yInfo.cos_phi[0]*u + sta.yInfo.sin_phi[0]*v;
+}
+  /// convert strip positions to coordinates
+void L1Algo::StripsToCoor(const fscal &u, const fscal &v, fvec &_x, fvec &_y, const L1Station &sta) const// TODO: Actually sta.yInfo.sin_phi is same for all stations, so ...
+{
+//  fvec x,y;
+//  StripsToCoor(u,v,x,y,sta);
+//  _x = x[0];
+//  _y = y[0];
+    _x = sta.xInfo.sin_phi*u + sta.xInfo.cos_phi*v;
+    _y = sta.yInfo.cos_phi*u + sta.yInfo.sin_phi*v;
 }
 
 void L1Algo::StripsToCoor(const fvec &u, const fvec &v, fvec &x, fvec &y, const L1Station &sta) const// TODO: Actually sta.yInfo.sin_phi is same for all stations, so ...
@@ -181,16 +258,55 @@ void L1Algo::StripsToCoor(const fvec &u, const fvec &v, fvec &x, fvec &y, const 
   y = sta.yInfo.cos_phi*u + sta.yInfo.sin_phi*v;
 }
 
-  /// full the hit point by hit information.
+  /// full the hit point by hit information: takes hit as input (2 strips) and creates hit_point with all coordinates (x,y,z,u,v, n - event number);
 L1HitPoint L1Algo::CreateHitPoint(const L1StsHit &hit, char ista)
+/// hit and station number 
 {
   L1Station &sta = vStations[int(ista)];
-  L1Strip &u = vStsStrips[hit.f];
-  L1Strip &v = vStsStripsB[hit.b];
+  const L1Strip &u = (*vStsStrips)[hit.f];
+  const L1Strip &v = (*vStsStripsB)[hit.b];
   fscal x, y;
   StripsToCoor( u, v, x, y, sta);
-  fscal z = vStsZPos[hit.iz];
-
-  return  L1HitPoint(x,y,z,v,u,hit.n);
+  const float &z = (*vStsZPos)[hit.iz];
+  const int &n1 = hit.n;
+  const float &time = hit.t_reco;
+  return  L1HitPoint(x,y,z,v,u, time, n1, hit.time1);
 }
 
+void L1Algo::CreateHitPoint(const L1StsHit &hit, char ista, L1HitPoint &point)
+/// hit and station number
+{
+    L1Station &sta = vStations[int(ista)];
+    const L1Strip &u = (*vStsStrips)[hit.f];
+    const L1Strip &v = (*vStsStripsB)[hit.b];
+    fscal x, y;
+    StripsToCoor( u, v, x, y, sta);
+    const float &z = (*vStsZPos)[hit.iz];
+    const float &time = hit.t_reco;
+    const int &n1 = hit.n;
+    
+    point.Set(x,y,z,v.f,u.f, time, n1, hit.time1, hit.t_er );
+}
+
+//   bool L1Algo::SortTrip(TripSort const& a, TripSort const& b) {
+//       return   ( a.trip.GetLevel() >  b.trip.GetLevel() );
+// }
+// 
+// bool L1Algo::SortCand(CandSort const& a, CandSort const& b) {
+//     if (a.cand.Lengtha != b.cand.Lengtha) return (a.cand.Lengtha > b.cand.Lengtha);
+//     
+//     if (a.cand.ista != b.cand.ista ) return (a.cand.ista  < b.cand.ista );
+//     
+//     if (a.cand.chi2  != b.cand.chi2 )return (a.cand.chi2  < b.cand.chi2 );
+//     //return (a->chi2  < b->chi2 );
+//     //   return (a->CandIndex < b->CandIndex );
+//    // return (a.cand.CandIndex > b.cand.CandIndex );
+// }
+
+  inline int L1Algo::PackIndex(const int& a, const int& b, const int& c) {
+      return   (a) + ((b)*10000) + (c*100000000);
+}
+
+  inline int L1Algo::UnPackIndex(const int& i, int& a, int& b, int& c) {
+      return   (a) + ((b)*10000) + (c*100000000);
+}

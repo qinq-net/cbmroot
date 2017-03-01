@@ -18,12 +18,13 @@
 
 #include "TObject.h"
 #include <vector>
+using std::vector;
 
 class CbmL1MCTrack;
 
 struct McVector
 {
-  std::vector< CbmL1MCTrack* >  mcTracks;
+  vector< CbmL1MCTrack* >  mcTracks;
 };
 
 struct McTrackFind

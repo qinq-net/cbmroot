@@ -70,6 +70,20 @@ void CbmL1MCTrack::Init()
   CalculateIsReconstructable();
 } // void CbmL1MCTrack::Init()
 
+
+ float CbmL1MCTrack::Fraction_MC()
+  {
+//     if ( Points.size() == 0 ) return 0;
+
+     CbmL1* L1 = CbmL1::Instance();
+     int counter = 0;
+     for(unsigned int iP = 0; iP < Points.size(); iP++){
+       if (L1->vMCPoints_in_Time_Slice[Points[iP]] > 0) counter++;};
+     return ( Points.size() > 0 ) ?  float(counter)/float(Points.size()) : 0;
+  }
+
+
+
 void CbmL1MCTrack::CalculateMCCont()
 {
   CbmL1* L1 = CbmL1::Instance();
@@ -102,9 +116,10 @@ void CbmL1MCTrack::CalculateHitCont()
   {
     for( int ih=0; ih<nhits; ih++ ){
       int jh = StsHits[ih];
-      L1StsHit &h = algo->vStsHits[jh];
-      int ista = algo->vSFlag[h.f]/4;
-      if (ista - istaold == 1) ncont++;
+     const L1StsHit &h = (*algo->vStsHits)[jh];
+      int ista = (*algo->vSFlag)[h.f]/4;
+     
+      if (ista - istaold == 1) ncont++;     
       else if(ista - istaold > 1){
         if( nHitContStations < ncont ) nHitContStations = ncont;
         ncont = 1;
@@ -119,6 +134,8 @@ void CbmL1MCTrack::CalculateHitCont()
     }
   }
   if( nHitContStations<ncont ) nHitContStations=ncont;
+
+
 }; // void CbmL1MCTrack::CalculateHitCont()
 
 void CbmL1MCTrack::CalculateMaxNStaHits()
@@ -183,6 +200,7 @@ void CbmL1MCTrack::CalculateMaxNStaMC()
 //   cout << pdg << " " << p << " " << Points.size() << " > " << maxNStaMC << " " << maxNSensorMC << endl;
 }; // void CbmL1MCTrack::CalculateMaxNStaMC()
 
+
 void CbmL1MCTrack::CalculateIsReconstructable()
 {
   CbmL1* L1 = CbmL1::Instance();
@@ -198,7 +216,7 @@ void CbmL1MCTrack::CalculateIsReconstructable()
     //   f &= (maxNStaHits <= 4);
   f &= (maxNStaMC <= 4);
     //   f &= (maxNSensorMC <= 1);
-  
+  if (L1->fPerformance == 4) isReconstructable = f & (nMCContStations  >= CbmL1Constants::MinNStations) & (Fraction_MC() > 0.5);
   if (L1->fPerformance == 3) isReconstructable = f & (nMCContStations  >= CbmL1Constants::MinNStations); // L1-MC
   if (L1->fPerformance == 2) isReconstructable = f & (nStations        >= CbmL1Constants::MinNStations); // QA definition
   if (L1->fPerformance == 1) isReconstructable = f & (nHitContStations >= CbmL1Constants::MinNStations); // L1 definition

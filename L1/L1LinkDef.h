@@ -9,7 +9,7 @@
 #pragma link C++ class  CbmL1+;
 #pragma link C++ class  CbmL1RichENNRingFinder+;
 #pragma link C++ class  CbmL1StsTrackFinder+;
-#pragma link C++ class  CbmL1TrdTrackFinderSts+;
+//#pragma link C++ class  CbmL1TrdTrackFinderSts+;
 #pragma link C++ class  CbmL1TrackMerger+;
 #pragma link C++ class  CbmL1TofMerger+;
 //#pragma link C++ class  CbmL1MuchFinder+;

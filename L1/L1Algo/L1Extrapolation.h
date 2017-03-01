@@ -5,6 +5,7 @@
 #include "L1Field.h"
 #include "L1TrackPar.h"
 
+
 //#define cnst static const fvec
 #define cnst const fvec  
 
@@ -626,6 +627,8 @@ inline void L1Extrapolate0
     c2i = 1./2., c3i = 1./3., c6i = 1./6., c12i = 1./12.;
 
   const fvec qp = T.qp;
+
+  
   const fvec dz = (z_out - T.z);
   const fvec dz2 = dz*dz;
 
@@ -633,6 +636,7 @@ inline void L1Extrapolate0
 
   const fvec x   = T.tx;
   const fvec y   = T.ty;
+  const fvec z   = T.z;
   const fvec xx  = x*x;
   const fvec xy = x*y;
   const fvec yy = y*y;
@@ -667,6 +671,7 @@ inline void L1Extrapolate0
   T.tx+=j24*qp;
   T.ty+=j34*qp;
   T.z  += dz;
+  //T.t += sqrt((x-T.x)*(x-T.x)+(y-T.y)*(y-T.y)+dz*dz)/29.9792458f;
 
   //          covariance matrix transport 
 
@@ -707,6 +712,40 @@ inline void L1Extrapolate0
   T.C32 = cj32  + j34*T.C42 ;
   T.C33 = cj33  + j34*T.C43 ;
 
+}
+
+
+inline void L1ExtrapolateTime
+( 
+ L1TrackPar &T, // input track parameters (x,y,tx,ty,Q/p) and cov.matrix
+ fvec       dz   // extrapolate to this z position
+ )
+{
+
+  cnst c_light = 29.9792458;
+
+  T.t += sqrt((T.tx*T.tx)+(T.ty*T.ty)+1)*dz/c_light;
+  
+  const fvec k1 = T.tx*dz/(c_light*sqrt((T.tx*T.tx)+(T.ty*T.ty)+1));
+  const fvec k2 = T.ty*dz/(c_light*sqrt((T.tx*T.tx)+(T.ty*T.ty)+1));
+
+  fvec c52 = T.C52;
+  fvec c53 = T.C53; 
+  
+//   cout<<k1<<" k1 "<<k2<<" k2 "<<endl;
+  
+  fvec ha = T.C53;
+  fvec ha2 = T.C54;
+  
+  T.C50 += k1*T.C20 + k2*T.C30 ;
+  T.C51 += k1*T.C21 + k2*T.C31 ;
+  T.C52 += k1*T.C22 + k2*T.C32 ;
+  T.C53 += k1*T.C32 + k2*T.C33 ;
+  T.C54 += k1*T.C42 + k2*T.C43 ;
+  T.C55 += k1*(T.C52 + c52) + k2*(T.C53 + c53);
+  
+//   cout<<ha<<" c53 "<<T.C53<<endl;
+//     cout<<ha2<<" c54 "<<T.C54<<endl;
 }
 
 inline void L1ExtrapolateLine( L1TrackPar &T, fvec z_out)

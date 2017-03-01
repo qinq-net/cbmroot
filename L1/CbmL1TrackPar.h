@@ -15,7 +15,7 @@ struct CbmL1TrackPar : public CbmKFTrackInterface{
   double GetMass(){ return mass; }
   bool   IsElectron(){ return is_electron; }
 
-  double T[6], C[15], chi2 ;
+  double T[7], C[21], chi2 ;
   int NDF ;
   double mass; // mass hypothesis
   bool is_electron;

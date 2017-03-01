@@ -1,28 +1,32 @@
 #ifndef L1TrackPar_h
 #define L1TrackPar_h 1
 
-#include "CbmL1Def.h"
+#include "../CbmL1Def.h"
 
 class L1TrackPar{
 
   public:
 
     fvec
-      x,y,tx,ty,qp,z,
+      x,y,tx,ty,qp,z, t,
       C00,
       C10, C11,
       C20, C21, C22,
       C30, C31, C32, C33,
       C40, C41, C42, C43, C44,
-      chi2, NDF                ;
+      C50, C51, C52, C53, C54, C55,
+      chi2, NDF, time, time1, t_er                ;
+      fvec n;
+    
 
     L1TrackPar():
-        x(0),y(0),tx(0),ty(0),qp(0),z(0),
+        x(0),y(0),tx(0),ty(0),qp(0),z(0), t(0),
     C00(0),
     C10(0), C11(0),
     C20(0), C21(0), C22(0),
     C30(0), C31(0), C32(0), C33(0),
     C40(0), C41(0), C42(0), C43(0), C44(0),
+    C50(0), C51(0), C52(0), C53(0), C54(0), C55(0),
     chi2(0), NDF(0)
     {};
     L1TrackPar(double *T, double *C):
@@ -32,6 +36,7 @@ class L1TrackPar{
       ty(T[3]),
       qp(T[4]),
       z(T[5]),
+      t(T[6]),
 
       C00(C[0]),
       C10(C[1]),
@@ -48,7 +53,13 @@ class L1TrackPar{
       C42(C[12]),
       C43(C[13]),
       C44(C[14]),
-      chi2(0), NDF(0)
+      C50(C[15]),
+      C51(C[16]),
+      C52(C[17]),
+      C53(C[18]),
+      C54(C[19]),
+      C55(C[20]),
+      chi2(0), NDF(0), time(0)
       {};
       
     void SetOneEntry( const int i0, const L1TrackPar &T1, const int i1 );
@@ -104,6 +115,7 @@ inline void L1TrackPar::SetOneEntry( const int i0, const L1TrackPar &T1, const i
   ty[i0] = T1.ty[i1];
   qp[i0] = T1.qp[i1];
   z[i0] = T1.z[i1];
+  t[i0] = T1.t[i1];
   C00[i0] = T1.C00[i1];
   C10[i0] = T1.C10[i1];
   C11[i0] = T1.C11[i1];
@@ -119,9 +131,19 @@ inline void L1TrackPar::SetOneEntry( const int i0, const L1TrackPar &T1, const i
   C42[i0] = T1.C42[i1];
   C43[i0] = T1.C43[i1];
   C44[i0] = T1.C44[i1];
+  C50[i0] = T1.C50[i1];
+  C51[i0] = T1.C51[i1];
+  C52[i0] = T1.C52[i1];
+  C53[i0] = T1.C53[i1];
+  C54[i0] = T1.C54[i1];
+  C55[i0] = T1.C55[i1];
    
   chi2[i0] = T1.chi2[i1];
   NDF[i0] = T1.NDF[i1];
+  time[i0] = T1.time[i1];
+  n[i0] = T1.n[i1];
+  time1[i0] = T1.time1[i1];
+  t_er[i0] = T1.t_er[i1];
 } // SetOneEntry
 
 #endif

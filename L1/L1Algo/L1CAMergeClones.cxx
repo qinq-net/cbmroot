@@ -214,30 +214,31 @@ void L1Algo::CAMergeClones()
   vector<bool> IsUsed;
 
   vector< L1Track > vTracksNew;
-  vTracksNew.reserve(vTracks.size());
+  vTracksNew.reserve(NTracksIsecAll);
   vector< THitI > vRecoHitsNew;
   vRecoHitsNew.reserve(vRecoHits.size());
 
-  FirstHit.resize(vTracks.size());
-  LastHit.resize(vTracks.size());
-  FirstHitIndex.resize(vTracks.size());
-  LastHitIndex.resize(vTracks.size());
-  IsUsed.resize(vTracks.size());
-  TrackChi2.resize(vTracks.size());
-  Neighbour.resize(vTracks.size());
-  IsNext.resize(vTracks.size());
+  FirstHit.resize(NTracksIsecAll);
+  LastHit.resize(NTracksIsecAll);
+  FirstHitIndex.resize(NTracksIsecAll);
+  LastHitIndex.resize(NTracksIsecAll);
+  IsUsed.resize(NTracksIsecAll);
+  TrackChi2.resize(NTracksIsecAll);
+  Neighbour.resize(NTracksIsecAll);
+  IsNext.resize(NTracksIsecAll);
 
   THitI start_hit = 0;
   unsigned short ista = 0;
 
-  for(unsigned short iTr = 0; iTr < vTracks.size(); iTr++)
+    //#pragma omp parallel for
+  for(unsigned short iTr = 0; iTr < NTracksIsecAll; iTr++)
   {
     FirstHitIndex[iTr] = start_hit;
-    ista = vSFlag[vStsHits[vRecoHits[start_hit]].f]/4;
+    ista = (*vSFlag)[(*vStsHits)[vRecoHits[start_hit]].f]/4;
     FirstHit[iTr]=ista;
     start_hit += vTracks[iTr].NHits-1;
     LastHitIndex[iTr] = start_hit;
-    ista = vSFlag[vStsHits[vRecoHits[start_hit]].f]/4;
+    ista = (*vSFlag)[(*vStsHits)[vRecoHits[start_hit]].f]/4;
     LastHit[iTr]=ista;
     start_hit++;
 
@@ -254,14 +255,20 @@ void L1Algo::CAMergeClones()
   L1TrackPar Tf;
   L1FieldValue fBm, fBb, fBf _fvecalignment;
   L1FieldRegion fld _fvecalignment;
-
-  for(int iTr = 0; iTr < static_cast<unsigned short>(vTracks.size()); iTr++)
+  
+ // #pragma omp parallel for
+  for(int iTr = 0; iTr < static_cast<unsigned short>(NTracksIsecAll); iTr++)
   {
     if(static_cast<int>(vTracks[iTr].NHits) > 6) continue;
-    for(int jTr = 0; jTr < static_cast<unsigned short>(vTracks.size()); jTr++)
+    for(int jTr = 0; jTr < static_cast<unsigned short>(NTracksIsecAll); jTr++)
     {
+      if(static_cast<int>(vTracks[jTr].NHits) > 6) continue;
+     
       if(iTr == jTr) continue;
-      if(static_cast<int>(vTracks[iTr].NHits) > 6) continue;
+    //  if(vTracks[iTr].n != vTracks[jTr].n) continue;
+
+      
+    //  if (fabs(vTracks[iTr].fTrackTime - vTracks[jTr].fTrackTime) > 3) continue;
 
       unsigned short dist = 0;
       unsigned short stab=0, staf=0;
@@ -275,7 +282,7 @@ void L1Algo::CAMergeClones()
         stab = FirstHit[iTr];
         staf = LastHit[jTr];
         IsNextTemp = 1;
-
+        
         Tb.x  = vTracks[iTr].TFirst[0];
         Tb.y  = vTracks[iTr].TFirst[1];
         Tb.tx = vTracks[iTr].TFirst[2];
@@ -297,7 +304,7 @@ void L1Algo::CAMergeClones()
         Tb.C42 = vTracks[iTr].CFirst[12];
         Tb.C43 = vTracks[iTr].CFirst[13];
         Tb.C44 = vTracks[iTr].CFirst[14];
-
+        
         Tf.x  = vTracks[jTr].TLast[0];
         Tf.y  = vTracks[jTr].TLast[1];
         Tf.tx = vTracks[jTr].TLast[2];
@@ -321,61 +328,62 @@ void L1Algo::CAMergeClones()
         Tf.C44 = vTracks[jTr].CLast[14];
 //std::cout << "!!!!!!! Chi2 !!!!!!      "<<vTracks[iTr].TFirst[0]<<"  "<<vTracks[jTr].TLast[0]<<std::endl;
       }
-      if(FirstHit[jTr] > LastHit[iTr])
-      {
-        dist = FirstHit[jTr] - LastHit[iTr];
-
-        stab = FirstHit[jTr];
-        staf = LastHit[iTr];
-
-        Tb.x  = vTracks[jTr].TFirst[0];
-        Tb.y  = vTracks[jTr].TFirst[1];
-        Tb.tx = vTracks[jTr].TFirst[2];
-        Tb.ty = vTracks[jTr].TFirst[3];
-        Tb.qp = vTracks[jTr].TFirst[4];
-        Tb.z  = vTracks[jTr].TFirst[5];
-        Tb.C00 = vTracks[jTr].CFirst[0];
-        Tb.C10 = vTracks[jTr].CFirst[1];
-        Tb.C11 = vTracks[jTr].CFirst[2];
-        Tb.C20 = vTracks[jTr].CFirst[3];
-        Tb.C21 = vTracks[jTr].CFirst[4];
-        Tb.C22 = vTracks[jTr].CFirst[5];
-        Tb.C30 = vTracks[jTr].CFirst[6];
-        Tb.C31 = vTracks[jTr].CFirst[7];
-        Tb.C32 = vTracks[jTr].CFirst[8];
-        Tb.C33 = vTracks[jTr].CFirst[9];
-        Tb.C40 = vTracks[jTr].CFirst[10];
-        Tb.C41 = vTracks[jTr].CFirst[11];
-        Tb.C42 = vTracks[jTr].CFirst[12];
-        Tb.C43 = vTracks[jTr].CFirst[13];
-        Tb.C44 = vTracks[jTr].CFirst[14];
-
-        Tf.x  = vTracks[iTr].TLast[0];
-        Tf.y  = vTracks[iTr].TLast[1];
-        Tf.tx = vTracks[iTr].TLast[2];
-        Tf.ty = vTracks[iTr].TLast[3];
-        Tf.qp = vTracks[iTr].TLast[4];
-        Tf.z  = vTracks[iTr].TLast[5];
-        Tf.C00 = vTracks[iTr].CLast[0];
-        Tf.C10 = vTracks[iTr].CLast[1];
-        Tf.C11 = vTracks[iTr].CLast[2];
-        Tf.C20 = vTracks[iTr].CLast[3];
-        Tf.C21 = vTracks[iTr].CLast[4];
-        Tf.C22 = vTracks[iTr].CLast[5];
-        Tf.C30 = vTracks[iTr].CLast[6];
-        Tf.C31 = vTracks[iTr].CLast[7];
-        Tf.C32 = vTracks[iTr].CLast[8];
-        Tf.C33 = vTracks[iTr].CLast[9];
-        Tf.C40 = vTracks[iTr].CLast[10];
-        Tf.C41 = vTracks[iTr].CLast[11];
-        Tf.C42 = vTracks[iTr].CLast[12];
-        Tf.C43 = vTracks[iTr].CLast[13];
-        Tf.C44 = vTracks[iTr].CLast[14];
-      }
+//       if(FirstHit[jTr] > LastHit[iTr])
+//       {
+//         dist = FirstHit[jTr] - LastHit[iTr];
+// 
+//         stab = FirstHit[jTr];
+//         staf = LastHit[iTr];
+// 
+//         Tb.x  = vTracks[jTr].TFirst[0];
+//         Tb.y  = vTracks[jTr].TFirst[1];
+//         Tb.tx = vTracks[jTr].TFirst[2];
+//         Tb.ty = vTracks[jTr].TFirst[3];
+//         Tb.qp = vTracks[jTr].TFirst[4];
+//         Tb.z  = vTracks[jTr].TFirst[5];
+//         Tb.C00 = vTracks[jTr].CFirst[0];
+//         Tb.C10 = vTracks[jTr].CFirst[1];
+//         Tb.C11 = vTracks[jTr].CFirst[2];
+//         Tb.C20 = vTracks[jTr].CFirst[3];
+//         Tb.C21 = vTracks[jTr].CFirst[4];
+//         Tb.C22 = vTracks[jTr].CFirst[5];
+//         Tb.C30 = vTracks[jTr].CFirst[6];
+//         Tb.C31 = vTracks[jTr].CFirst[7];
+//         Tb.C32 = vTracks[jTr].CFirst[8];
+//         Tb.C33 = vTracks[jTr].CFirst[9];
+//         Tb.C40 = vTracks[jTr].CFirst[10];
+//         Tb.C41 = vTracks[jTr].CFirst[11];
+//         Tb.C42 = vTracks[jTr].CFirst[12];
+//         Tb.C43 = vTracks[jTr].CFirst[13];
+//         Tb.C44 = vTracks[jTr].CFirst[14];
+// 
+//         Tf.x  = vTracks[iTr].TLast[0];
+//         Tf.y  = vTracks[iTr].TLast[1];
+//         Tf.tx = vTracks[iTr].TLast[2];
+//         Tf.ty = vTracks[iTr].TLast[3];
+//         Tf.qp = vTracks[iTr].TLast[4];
+//         Tf.z  = vTracks[iTr].TLast[5];
+//         Tf.C00 = vTracks[iTr].CLast[0];
+//         Tf.C10 = vTracks[iTr].CLast[1];
+//         Tf.C11 = vTracks[iTr].CLast[2];
+//         Tf.C20 = vTracks[iTr].CLast[3];
+//         Tf.C21 = vTracks[iTr].CLast[4];
+//         Tf.C22 = vTracks[iTr].CLast[5];
+//         Tf.C30 = vTracks[iTr].CLast[6];
+//         Tf.C31 = vTracks[iTr].CLast[7];
+//         Tf.C32 = vTracks[iTr].CLast[8];
+//         Tf.C33 = vTracks[iTr].CLast[9];
+//         Tf.C40 = vTracks[iTr].CLast[10];
+//         Tf.C41 = vTracks[iTr].CLast[11];
+//         Tf.C42 = vTracks[iTr].CLast[12];
+//         Tf.C43 = vTracks[iTr].CLast[13];
+//         Tf.C44 = vTracks[iTr].CLast[14];
+//       }
 
       if(dist == 0) continue;
       //if(((Tf.qp - Tb.qp)*(Tf.qp - Tb.qp)/(Tb.C44+Tf.C44))[0] > 25*10*7) continue;
-
+       if (fabs (Tf.t[0] - Tb.t[0]) > sqrt(Tf.C55[0] + Tb.C55[0])) continue;
+     // if (fabs (Tf.time[0] - Tb.time[0]) > 500000) continue;    
       unsigned short stam;
 
       vStations[staf].fieldSlice.GetFieldValue( Tf.x, Tf.y, fBf );
@@ -395,10 +403,9 @@ void L1Algo::CAMergeClones()
 
       fvec Chi2Tracks = 0.f;
       FilterTracks(&(Tf.x),&(Tf.C00),&(Tb.x),&(Tb.C00),0,0,&Chi2Tracks);
-      if(Chi2Tracks[0] > 50 ) continue;
+     if(Chi2Tracks[0] > 50 ) continue;
       if(Chi2Tracks[0] < TrackChi2[iTr] || Chi2Tracks[0] < TrackChi2[jTr])
       {
-//std::cout << "!!!!!!! Chi2 !!!!!!      "<<Chi2Tracks<<"     " <<iTr<<"  " <<jTr<< std::endl;
         if(Neighbour[iTr] < static_cast<unsigned short>(50000))
         {
           Neighbour[Neighbour[iTr]] = 50000;
@@ -420,7 +427,7 @@ void L1Algo::CAMergeClones()
       }
     }
   }
-  for(int iTr = 0; iTr < static_cast<unsigned short>(vTracks.size()); iTr++)
+  for(int iTr = 0; iTr < static_cast<unsigned short>(NTracksIsecAll); iTr++)
   {
     if(IsUsed[iTr]) continue;
 
@@ -441,12 +448,18 @@ void L1Algo::CAMergeClones()
       for(THitI HI = FirstHitIndex[iTr]; HI <= LastHitIndex[iTr]; HI++)
         vRecoHitsNew.push_back(vRecoHits[HI]);
   }
-  vTracks.resize(vTracksNew.size());
+  //vTracks.resize(vTracksNew.size());
   for(unsigned short iTr=0; iTr < vTracksNew.size(); iTr++)
     vTracks[iTr] = vTracksNew[iTr];
-  vRecoHits.resize(vRecoHitsNew.size());
+ // vRecoHits.resize(vRecoHitsNew.size());
   for(THitI iHi=0; iHi < vRecoHitsNew.size(); iHi++)
     vRecoHits[iHi] = vRecoHitsNew[iHi];
+  
+  cout<<NTracksIsecAll<<" NTracksIsecAll "<<vTracksNew.size()<<" vTracksNew.size()"<<endl;
+  
+  NHitsIsecAll=vRecoHitsNew.size();
+  NTracksIsecAll=vTracksNew.size();
+  
 
 //std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!   new "<<vTracksNew.size()<<"  old "<< vTracks.size()<<std::endl;
 }

@@ -2,6 +2,7 @@
 #define L1Portion_H
 
 #include <vector>
+using std::vector;
 // class for portions organization
 
 template <typename T> class L1Portion;
@@ -11,7 +12,7 @@ class L1Portion<L1TrackPar>
 {
   public:
     typedef L1TrackPar T;
-//     typedef std::vector<T> vType;
+//     typedef vector<T> vType;
     typedef nsL1::vector<T>::TSimd vType;
 
     L1Portion():a(),dataSize(0){};
@@ -43,7 +44,7 @@ class L1Portion<L1TrackPar>
     };
 
   private:
-    std::vector<vType> a;
+    vector<vType> a;
 //   int mainSize; // size of a
     int dataSize; // size of vType
 };
@@ -86,7 +87,7 @@ template <>
     };
 
   private:
-    std::vector<vType> a;
+    vector<vType> a;
 //   int mainSize; // size of a
     int dataSize; // size of vType
 };
@@ -96,7 +97,7 @@ template <typename T>
 class L1Portion
 {
  public:
-  typedef std::vector<T> vType;
+  typedef vector<T> vType;
 
   L1Portion():a(),dataSize(0) { };
   L1Portion(int size):a(),dataSize(0) { reserve(size); };
@@ -127,7 +128,7 @@ class L1Portion
   };
 
  private:
-  std::vector<vType> a;
+  vector<vType> a;
 //   int mainSize; // size of a
   int dataSize; // size of vType
 };

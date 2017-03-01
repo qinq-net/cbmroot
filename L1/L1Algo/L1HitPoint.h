@@ -4,9 +4,12 @@
 		/// contain strips positions and coordinates of hit
 #if 1
 struct L1HitPoint{
-L1HitPoint() :     x(0.), y(0.), z(0.), u(0.), v(0.), n(0){};
-  L1HitPoint(fscal x_, fscal y_, fscal z_, fscal v_, fscal u_, unsigned short int n_ = 0):
-    x(x_), y(y_), z(z_), u(u_), v(v_), n(n_){};
+  L1HitPoint(){};
+  L1HitPoint(fscal x_, fscal y_, fscal z_, fscal v_, fscal u_, float time_, unsigned short int n_ = 0, float timeEv1_=0, float timeEr_=0):
+    x(x_), y(y_), z(z_), u(u_), v(v_), time(time_) , n(n_), timeEv(timeEv1_), timeEr(timeEr_){};
+    
+  //  L1HitPoint(fscal x_, fscal y_, fscal z_, fscal v_, fscal u_, fscal time_, unsigned short int n_ = 0):
+  //  x(x_), y(y_), z(z_), u(u_), v(v_), time(time_){};
 
   fscal Xs() const { return X()/Z(); }
   fscal Ys() const { return Y()/Z(); } // value to sort hits by
@@ -16,15 +19,39 @@ L1HitPoint() :     x(0.), y(0.), z(0.), u(0.), v(0.), n(0){};
   fscal Z() const { return z; }
   fscal U() const { return u; }
   fscal V() const { return v; }
-
-  unsigned short int N() const { return n; }
+ // unsigned short int N() const { return n; }
+ // int GetSortIndex() const { return SortIndex; }
+  void SetX(fscal X1) { x = X1; }
+  void SetY(fscal Y1) { y = Y1; }
+  void SetZ(fscal Z1) { z = Z1; }
+  void SetU(fscal U1) { u = U1; }
+  void SetV(fscal V1) { v = V1; }
+    
+  void Set(fscal &x1, fscal &y1, const float &z1, const fscal &v1, const fscal &u1, const float &time1, const short int &n1, float timeEv1, float timeEr1) {
+      x = x1;
+      y = y1;
+      z = z1;
+      u = u1;
+      v = v1;
+      time = time1;
+      n = n1;
+      timeEv =timeEv1;
+      timeEr =timeEr1;
+  }
+  void SetN(unsigned short int N1) { n = N1; }
+//  void SetSortIndex(int SortIndex1) { SortIndex = SortIndex1; }
+  
  private:
   
   float x, y;
   float z; // TODO: may be we should use iz
   float u, v; // x\u, v - front and back strips; x, y, z - coordinates of hits
         
-  unsigned short int n; // number of event
+ 
+//  int SortIndex;
+  public:
+    float time, timeEv, timeEr;
+    short int n; // number of event
 };
 #else
 
@@ -69,6 +96,8 @@ struct L1HitPoint{
   unsigned short int u, v; // x\u, v - front and back strips; x, y, z - coordinates of hits
         
   unsigned short int n; // number of event
+  
+ 
 };
 
 #endif

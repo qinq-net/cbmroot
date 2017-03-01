@@ -1,7 +1,7 @@
 #ifndef L1UMeasurementInfo_h
 #define L1UMeasurementInfo_h 1
 
-#include "CbmL1Def.h"
+#include "../CbmL1Def.h"
 
 
 class L1UMeasurementInfo{

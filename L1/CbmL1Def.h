@@ -3,12 +3,14 @@
 
 // #define FAST_CODE // FAST_CODE = more unsafe
 
-#include <assert.h>
+using namespace std;
 
+#include "TStopwatch.h"
+#include <assert.h>
+#include <vector>
+#include <iostream>
 #ifdef HAVE_SSE
   #include "vectors/P4_F32vec4.h"
-//  #include "vectors/P4_F64vec2.h"
-
 #else
   #include "vectors/PSEUDO_F32vec4.h"
   #error NoSseFound
@@ -16,7 +18,8 @@
 
 //#include "vectors/PSEUDO_F64vec1.h"
 
-
+template< typename T>
+T finite(T x) { return std::isfinite(x); }
 
 #ifdef FAST_CODE
 
@@ -52,8 +55,68 @@ if (v) {} else { \
 
 
 
+typedef int index_type;
 
 
+template <typename T> class L1Vector: public std::vector<T>
+{
+ public:
+  
+   L1Vector(): std::vector<T>(), fSize(0) {}; 
+   L1Vector(const unsigned int n): std::vector<T>(n), fSize(0) {}; 
+    L1Vector(const unsigned int n, const unsigned int value): std::vector<T>(n, value), fSize(0) {}; 
 
+   
+   unsigned int  Size() const { return fSize; } // Size() return number    
+   void Reset() { fSize = 0; }
+   
+   void Resize(const unsigned int n)
+   { 
+     if(n > std::vector<T>::size())
+     {
+       #pragma omp critical
+       std::vector<T>::resize(n);
+     }
+     
+     fSize = n;
+   }
+   
+   void Store(const T& element)
+   {
+     if(fSize >= std::vector<T>::size())
+     {
+       #pragma omp critical
+       std::vector<T>::push_back(element);
+     }
+     else
+       std::vector<T>::at(fSize) = element;
+     
+     fSize++;
+   }
+   
+   
+   T& operator[] (const size_t index)
+   { 
+     if(index >= std::vector<T>::size())
+     {
+#pragma omp critical
+       std::vector<T>::resize(index+1);
+       std::cout<<index<<" index "<<std::endl;
+     }
+     if(index>=fSize)
+       fSize = index + 1;
+       
+     return std::vector<T>::operator[](index);
+   }
+   
+   const T& operator[] (const size_t index) const
+   { 
+   
+     return std::vector<T>::operator[](index);
+   }
+   
+ private:
+  unsigned int fSize;
+};
 
 #endif // CbmL1Def_h

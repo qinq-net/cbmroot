@@ -18,6 +18,7 @@
 #define CbmL1MCPoint_H
 
 #include <vector>
+using std::vector;
 
 struct CbmL1MCPoint
 {
@@ -27,7 +28,7 @@ xIn(0),  yIn(0),  zIn(0),  pxIn(0),  pyIn(0),  pzIn(0),
 xOut(0), yOut(0), zOut(0), pxOut(0), pyOut(0), pzOut(0),
 p(0), q(0), mass(0), time(0),
 pdg(0), ID(0), mother_ID(0),
-iStation(0), pointId(-1), hitIds()
+iStation(0), pointId(-1), file(-1), event(-1), hitIds()
   {}
   
   double x, y, z, px, py, pz;
@@ -37,7 +38,8 @@ iStation(0), pointId(-1), hitIds()
   int pdg, ID, mother_ID;
   int iStation;
   int pointId;
-
+  int file;
+  int event; 
   static bool compareIDz( const CbmL1MCPoint &a, const CbmL1MCPoint &b )
   {
     return ( a.ID < b.ID ) || ( ( a.ID == b.ID ) && (a.z < b.z) );
@@ -48,7 +50,7 @@ iStation(0), pointId(-1), hitIds()
     return ( a->ID < b->ID ) || ( ( a->ID == b->ID ) && (a->z < b->z) );
   }
 
-  std::vector<int> hitIds; // indices of CbmL1StsHits in L1->vStsHits array
+  vector<int> hitIds; // indices of CbmL1StsHits in L1->vStsHits array
 };
 
 #endif

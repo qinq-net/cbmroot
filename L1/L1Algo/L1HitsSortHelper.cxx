@@ -9,9 +9,9 @@
 
 using std::vector;
 
-L1HitsSortHelper::L1HitsSortHelper( vector<L1StsHit> &hits, vector<L1HitPoint> &points, vector<THitI> &indices, const L1Grid* grid, THitI* iStart, THitI* iStop, int nStations ): fD(), fHits(hits), fPoints(points), fIndices(indices), fGrid(grid), fStsHitsUnusedStartIndex( iStart ), fStsHitsUnusedStopIndex( iStop ), fNStations(nStations) {
+L1HitsSortHelper::L1HitsSortHelper( vector<L1StsHit> &hits, vector<L1HitPoint> &points, vector<THitI> &indices, const L1Grid* grid, THitI* iStart, THitI* iStop, int nStations, int  nDontUsedHits): fD(), fHits(hits), fPoints(points), fIndices(indices), fGrid(grid), fStsHitsUnusedStartIndex( iStart ), fStsHitsUnusedStopIndex( iStop ), fNStations(nStations), fnDontUsedHits(nDontUsedHits) {
   L1_ASSERT( hits.size() ==  points.size(), hits.size() << " " << points.size() );
-  const int NHits = hits.size();
+  const int NHits = fnDontUsedHits;
   fD.resize( NHits );
   for ( int iS = 0; iS < fNStations; ++iS )
     for( THitI i = fStsHitsUnusedStartIndex[iS]; i < fStsHitsUnusedStopIndex[iS]; i++ )

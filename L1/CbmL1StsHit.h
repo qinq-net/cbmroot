@@ -2,6 +2,7 @@
 #define _CbmL1StsHit_h_
 
 #include <vector>
+using std::vector;
 
   // hits with hit-mcpoint match information
 class CbmL1StsHit
@@ -13,7 +14,12 @@ class CbmL1StsHit
 
   int hitId;              // index of L1StsHit in algo->vStsHits array. Should be equal to index of this in L1->vStsHits
   int extIndex;          // index of hit in the TClonesArray array
-  std::vector<int> mcPointIds; // indices of CbmL1MCPoint in L1->vMCPoints array
+  vector<int> mcPointIds; // indices of CbmL1MCPoint in L1->vMCPoints array
+  
+  int fake;
+  
+  int file;
+  int event;
 };
 
 #endif

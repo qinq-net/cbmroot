@@ -15,14 +15,14 @@ class ParalleledDup {
 		// input
 	int isec;
 	L1Station *vStations; int NStations;
-	int *StsHitsStartIndex; int *StsHitsStopIndex;
+	Tindex *StsHitsStartIndex; Tindex *StsHitsStopIndex;
 	vector<unsigned char> &vSFlag; vector<unsigned char> &vSFlagB;
 	std::vector<L1HitPoint> &vStsHits;
 	double Pick_r;
 	double Pick_m; double MaxInvMom;
 	fvec targX; fvec targY; fvec targZ; L1FieldValue &targB; L1XYMeasurementInfo &TargetXYInfo;
 
-	int *n_g1; unsigned *portionStopIndex;
+	Tindex *n_g1; unsigned *portionStopIndex;
 	L1TrackPar *T_g1;
 	L1FieldRegion *fld_g1;
 	THitI *hitsl_g1;
@@ -30,7 +30,7 @@ class ParalleledDup {
 		// output
 	THitI *Duplets_start; THitI *Duplets_hits;
 
-	int *n_g2;
+	Tindex *n_g2;
 	THitI *i1_g2;
 // 	L1TrackPar *T_g2;
 // 	L1FieldRegion *fld_g2;
@@ -46,14 +46,14 @@ class ParalleledDup {
 									// input
 								int isec_,
 								L1Station *vStations_, int NStations_,
-								int *StsHitsStartIndex_, int *StsHitsStopIndex_,
+								Tindex *StsHitsStartIndex_, Tindex *StsHitsStopIndex_,
 								vector<unsigned char> &vSFlag_, vector<unsigned char> &vSFlagB_,
 								std::vector<L1HitPoint> &vStsHits_,
 								double Pick_r_,
 								double Pick_m_, double MaxInvMom_,
 								fvec targX_, fvec targY_, fvec targZ_, L1FieldValue &targB_, L1XYMeasurementInfo &TargetXYInfo_,
 
-								int *n_g1_, unsigned *portionStopIndex_,
+								Tindex *n_g1_, unsigned *portionStopIndex_,
 								L1TrackPar *T_g1_,
 								L1FieldRegion *fld_g1_,
 								THitI *hitsl_g1_,
@@ -61,7 +61,7 @@ class ParalleledDup {
 									// output
 								THitI *Duplets_start_, THitI *Duplets_hits_,
 
-								int *n_g2_,
+								Tindex *n_g2_,
 								THitI *i1_g2_,
 // 								L1TrackPar *T_g2_,
 // 								L1FieldRegion *fld_g2_,
@@ -102,7 +102,7 @@ class ParalleledDup {
 
 void ParalleledDup::operator()( const blocked_range<size_t>& r ) const {
 
-    for(int istal = r.begin(); istal < (int)r.end(); ++istal ){
+    for(Tindex istal = r.begin(); istal < (Tindex)r.end(); ++istal ){
 // 		cout<< " ParalleledDup::operator(). Station: " << istal << endl;
 			DupletsStaPort(	// input
 											isec,
@@ -136,16 +136,16 @@ class ParalleledTrip {
 // input
 	int isec;
 	L1Station *vStations; int NStations;
-	int *StsHitsStartIndex; int *StsHitsStopIndex;
+	Tindex *StsHitsStartIndex; Tindex *StsHitsStopIndex;
 	std::vector<L1HitPoint> &svStsHits;
 	double Pick_r; double TRACK_CHI2_CUT; double MaxInvMom;
 
-														int *n_g1;
+														Tindex *n_g1;
 														L1TrackPar *T_g1;
 														L1FieldRegion *fld_g1;
 														THitI *hitsl_g1;
 
-	int *n_g2; unsigned *portionStopIndex;
+	Tindex *n_g2; unsigned *portionStopIndex;
 	THitI *i1_g2;
 /*	L1FieldRegion *fld_g2;
 	fvec *u_front_g2; fvec *u_back_g2;
@@ -165,16 +165,16 @@ class ParalleledTrip {
 // input
 								int isec_,
 								L1Station *vStations_, int NStations_,
-								int *StsHitsStartIndex_, int *StsHitsStopIndex_,
+								Tindex *StsHitsStartIndex_, Tindex *StsHitsStopIndex_,
 								std::vector<L1HitPoint> &vStsHits_,
 								double Pick_r_, double TRACK_CHI2_CUT_, double MaxInvMom_,
 
-														int *n_g1_,
+														Tindex *n_g1_,
 														L1TrackPar *T_g1_,
 														L1FieldRegion *fld_g1_,
 														THitI *hitsl_g1_,
 
-								int *n_g2_, unsigned *portionStopIndex_,
+								Tindex *n_g2_, unsigned *portionStopIndex_,
 								THitI *i1_g2_,
 								/*L1FieldRegion *fld_g2_,
 								fvec *u_front_g2_, fvec *u_back_g2_,
@@ -218,7 +218,7 @@ class ParalleledTrip {
 
 void ParalleledTrip::operator()( const blocked_range<size_t>& r ) const {
 
-    for(int istal = r.begin(); istal < (int)r.end(); ++istal ){
+    for(Tindex istal = r.begin(); istal < (Tindex)r.end(); ++istal ){
 // 		cout<< " ParalleledTrip::operator(). Station: " << istal << endl;
 			TripletsStaPort(	// input
 											isec,

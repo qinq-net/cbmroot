@@ -1,21 +1,20 @@
 #ifndef L1MaterialInfo_h
 #define L1MaterialInfo_h
 
-#include "CbmL1Def.h"
+#include "../CbmL1Def.h"
 #include <vector>
 
 class L1MaterialInfo{
  public:
- L1MaterialInfo(): thick(0), RL(0),  RadThick(0), logRadThick(0) {};
+   L1MaterialInfo(): thick(0), RL(0),  RadThick(0), logRadThick(0){};
    
   fvec thick, RL,  RadThick, logRadThick;
 } _fvecalignment;
 
-
 class L1Material{
  public:
 
- L1Material() : table(), NBins(0), RMax(0.), iD(0.) {}
+ L1Material() : table(0), NBins(0), RMax(0.), iD(0.) {};
 
   std::vector<std::vector<float> > table;
   
