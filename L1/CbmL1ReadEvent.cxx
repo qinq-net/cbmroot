@@ -734,7 +734,7 @@ void CbmL1::HitMatch()
       for(Int_t i=0; i < iEvent1.size(); i++)
       {
         hit.event = iEvent1[i];
-        sh->event = iEvent1[i];
+//         sh->event = iEvent1[i];
       }
 
       if ( iP >  vMCPoints.size() )
@@ -743,7 +743,13 @@ void CbmL1::HitMatch()
       hit.event=vMCPoints[iP].event;
       hit.mcPointIds.push_back( iP );
       vMCPoints[iP].hitIds.push_back(iH);
-    }  else {fake_hits++;  hit.event = -1; sh->event = -1;}
+    }  
+    else 
+    {
+      fake_hits++;  
+      hit.event = -1; 
+//       sh->event = -1;
+    }
   } // for hits
 }
 
