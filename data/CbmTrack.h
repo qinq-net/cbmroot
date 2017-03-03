@@ -60,6 +60,7 @@ public:
 	const FairTrackParam* GetParamLast() const { return &fParamLast; }
     CbmMatch* GetMatch() const { return fMatch; }
     Double_t GetTime() const { return fTime; }
+    Double_t GetTimeError() const { return fTimeError; }
 
 	/** Modifiers  **/
 	void SetPidHypo(Int_t pid){ fPidHypo = pid; }
@@ -71,6 +72,7 @@ public:
 	void SetParamLast(const FairTrackParam* par){ fParamLast  = *par; }
     void SetMatch(CbmMatch* match);
     void SetTime(Double_t time) { fTime = time; }
+    void SetTimeError(Double_t error) { fTimeError = error; }
 
 	virtual std::string ToString() const;
 
@@ -90,6 +92,7 @@ private:
 
 	/** Track start time **/
 	Double_t fTime;
+	Double_t fTimeError;
 
 	/** Quality flag **/
 	Int_t fFlag;
