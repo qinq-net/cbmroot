@@ -30,7 +30,7 @@ class L1Triplet
    
    
    
-  std::vector<unsigned int> neighbours;
+//  std::vector<unsigned int> neighbours;
 
   static bool compare(const L1Triplet *a, const L1Triplet *b){ // sort in back order 
     return  ( ( a->GetLHit() >  b->GetLHit() ) ) ||

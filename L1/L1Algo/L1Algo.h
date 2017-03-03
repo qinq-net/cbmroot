@@ -45,8 +45,6 @@ class L1AlgoDraw;
 #include "L1HitsSortHelper.h"
 
 
-
-
 #include <iostream>
 #include <iomanip>
 #include <vector>
@@ -71,7 +69,7 @@ typedef int Tindex;
 class L1Algo{
  public:
 //  L1Algo(int nThreads=7):
-  L1Algo(int nThreads=1, int TypicalSize=20000000):
+  L1Algo(int nThreads=1, int TypicalSize=200000):
     NStations(0),    // number of all detector stations
     NMvdStations(0), // number of mvd stations
     fRadThick(),
@@ -84,8 +82,8 @@ class L1Algo{
     CATime(0), // time of trackfinding
     vStripToTrack(TypicalSize),
     vStripToTrackB(TypicalSize),
-    vTracks(500000), // reconstructed tracks
-    vRecoHits(20000000),// packed hits of reconstructed tracks
+    vTracks(50000), // reconstructed tracks
+    vRecoHits(200000),// packed hits of reconstructed tracks
     vStsDontUsedHits_A(TypicalSize),
     vStsDontUsedHits_B(TypicalSize),
     vStsDontUsedHits_Buf(TypicalSize),
@@ -118,15 +116,14 @@ class L1Algo{
     fTrackingLevel(0), fGhostSuppression(0), // really doesn't used
     fMomentumCutOff(0)// really doesn't used
   {    
-    
     TimePrecision = 3*2.9f*2.9f;
     n_g1.resize(100000);
     
     for (int i=0; i<fNThreads; i++)
     {     
 
-      vTracks_local[i].resize(100000);
-      vRecoHits_local[i].resize(2400000);
+      vTracks_local[i].resize(50000);
+      vRecoHits_local[i].resize(200000);
       
       
       
@@ -147,7 +144,7 @@ class L1Algo{
       fz_pos3[i].reserve(MaxPortionTriplets/fvecLen);
       fTimeR[i].reserve(MaxPortionTriplets/fvecLen);
       
-      for (int j=0; j<8; j++) TripletsLocal1[j][i].resize(20000000);
+      for (int j=0; j<8; j++) TripletsLocal1[j][i].resize(200000);
     }
     
     for (int i=0; i<MaxNStations; i++) vGridTime[i].AllocateMemory(fNThreads);
@@ -160,13 +157,11 @@ class L1Algo{
     }
 
         
-         for(int i=0; i<20; i++)
-               for(int k=0; k<8; k++)
-      nTripletsThread[k][i]=0;
+    for(int i=0; i<nThreads; i++)
+      for(int k=0; k<8; k++)
+        nTripletsThread[k][i]=0;
 
-
-
-    NTracksIsecAll=500000;
+    NTracksIsecAll=50000;
     NHitsIsecAll=TypicalSize;
 
 
@@ -179,20 +174,22 @@ class L1Algo{
     Neighbour.resize(NTracksIsecAll);
     IsNext.resize(NTracksIsecAll);
   }
+  
+  static const int nTh = 1;
 
-   L1Vector <L1Triplet> TripletsLocal1[8][20];
-   L1Vector <L1Branch> CandidatesTrack[80];
+   L1Vector <L1Triplet> TripletsLocal1[8][nTh];
+   L1Vector <L1Branch> CandidatesTrack[nTh];
 
   Tindex portionStopIndex[8];
   L1Vector <Tindex> n_g1;
 
 
-  int SavedCand[20];
-  int SavedHits[20];
+  int SavedCand[nTh];
+  int SavedHits[nTh];
 
-  int  numberCandidateThread [20];
+  int  numberCandidateThread [nTh];
   
-  int  nTripletsThread [8][20];
+  int  nTripletsThread [8][nTh];
   
     //for merger
   L1Vector<unsigned short> FirstHit;
@@ -308,11 +305,11 @@ class L1Algo{
  fvec zPos[Portion/fvecLen];
  fvec HitTime[Portion/fvecLen];
     
-    nsL1::vector<L1TrackPar>::TSimd fT_3[20];
+    nsL1::vector<L1TrackPar>::TSimd fT_3[nTh];
     
-    vector<THitI> fhitsl_3[20], fhitsm_3[20], fhitsr_3[20];
+    vector<THitI> fhitsl_3[nTh], fhitsm_3[nTh], fhitsr_3[nTh];
     
-    nsL1::vector<fvec>::TSimd fu_front3[20], fu_back3[20], fz_pos3[20], fTimeR[20];
+    nsL1::vector<fvec>::TSimd fu_front3[nTh], fu_back3[nTh], fz_pos3[nTh], fTimeR[nTh];
          vector< float >  fMcDataHit2;
     vector< float >  fMcDataHit;
 
@@ -333,8 +330,8 @@ class L1Algo{
   vector< L1HitPoint > vStsDontUsedHitsxy_A; 
   vector< L1HitPoint > vStsDontUsedHitsxy_buf; 
   vector< L1HitPoint > vStsDontUsedHitsxy_B;
-  L1Vector< L1Track > vTracks_local[20];
-  L1Vector< THitI > vRecoHits_local[20];
+  L1Vector< L1Track > vTracks_local[nTh];
+  L1Vector< THitI > vRecoHits_local[nTh];
 
   vector<THitI> RealIHit_v;
   vector<THitI> RealIHit_v_buf;
@@ -346,8 +343,8 @@ class L1Algo{
   L1Vector< int > vStripToTrack;
   L1Vector< int > vStripToTrackB;
 
-  fvec EventTime[20][20];
-  fvec Err[20][20];
+  fvec EventTime[nTh][nTh];
+  fvec Err[nTh][nTh];
     
   friend class CbmL1;
 

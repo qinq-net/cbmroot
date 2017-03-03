@@ -112,7 +112,7 @@ void L1Grid::AllocateMemory( int NThreads )
    // fFirstHitInBinArray.resize(fNThreads, 0);
     
     
-    int binsGrid = 40000000;
+    int binsGrid = 600000;
     
     fFirstHitInBin.resize(binsGrid, 0);
     fHitsInBin.resize(binsGrid, 0);

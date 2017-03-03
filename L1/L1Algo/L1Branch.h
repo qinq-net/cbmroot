@@ -49,9 +49,9 @@ struct L1Branch
   char Lengtha;
   unsigned char ista;
   int location;
-  int check;
+ // int check;
   
-  float time_dif;
+//  float time_dif;
 
 
 //   L1Branch* BestCandidateP;

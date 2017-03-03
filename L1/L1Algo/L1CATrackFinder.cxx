@@ -83,14 +83,11 @@ inline void L1Algo::f10(  // input
     Tindex i1_V= i1/fvecLen;
     Tindex i1_4= i1%fvecLen;
     L1HitPoint &hitl = StsHits_l[ilh];
-    
-    
-    static int hits =0;
-    hits++;
         
 #ifdef USE_EVENT_NUMBER        
     Event_l[i1_V][i1_4]=hitl.n;
 #endif 
+    
     HitTime_l[i1_V][i1_4]=hitl.time;
 
     hitsl[i1] = ilh;
@@ -174,7 +171,7 @@ inline void L1Algo::f11(  /// input 1st stage of singlet search
     if ( (isec == kAllSecIter) || (isec == kAllSecEIter) || (isec == kAllSecJumpIter) ) T.NDF = 0;
     T.tx = tx;
     T.ty = ty;
-    // T.t = time;
+
     T.qp = 0.;
     T.C20 = T.C21 = 0;
     T.C30 = T.C31 = T.C32 = 0;
@@ -211,7 +208,6 @@ inline void L1Algo::f11(  /// input 1st stage of singlet search
     
     T.x  = targX;
     T.y  = targY;
-//     T.t  = time - sqrt((targX-xl)*(targX-xl)+(targY-yl)*(targY-yl)+(targZ-zl)*(targZ-zl))/29.9792458f;
     
     T.z  = targZ;
     T.C00 = TargetXYInfo.C00;
@@ -267,7 +263,7 @@ inline void L1Algo::f11(  /// input 1st stage of singlet search
 #endif
       if ( (istam >= NMvdStations) && (istal <= NMvdStations - 1) )  L1AddPipeMaterial( T, MaxInvMom, 1, 0.000511f*0.000511f );
     }
-//        fvec dz = zstam - T.z;
+    fvec dz = zstam - T.z;
   //  L1ExtrapolateTime( T, dz);
     L1Extrapolate0( T, zstam, fld0 ); // TODO: fld1 doesn't work!
   }// i1_V
@@ -327,7 +323,7 @@ inline void L1Algo::f20(  // input
       L1TrackPar T1_new = T1;
       fvec dz = fvec(zm) -T1.z;
       
-//      L1ExtrapolateTime( T1_new, dz);
+     // L1ExtrapolateTime( T1_new, dz);
       
       fvec y, C11;
       L1ExtrapolateYC11Line( T1, zm, y, C11 );
@@ -353,14 +349,14 @@ inline void L1Algo::f20(  // input
       if (isec!=TRACKS_FROM_TRIPLETS_ITERATION)
 #endif
       if ( chi2[i1_4] > DOUBLET_CHI2_CUT ) continue;
-      T1.time[i1_4] = hitm.time;
+   //   T1.t[i1_4] = hitm.time;
       
 #ifdef USE_EVENT_NUMBER
       T1.n[i1_4] = hitm.n;
 #endif 
       L1FilterChi2( stam.backInfo,  x, y, C00, C10, C11, chi2, hitm.V() );
       
-    //   FilterTime( T1_new, hitm.time, sqrt(TimePrecision));
+    //  FilterTime( T1_new, hitm.time, sqrt(TimePrecision));
       
 #ifdef DO_NOT_SELECT_TRIPLETS
       if (isec!=TRACKS_FROM_TRIPLETS_ITERATION)
@@ -460,7 +456,7 @@ inline void L1Algo::f30(  // input
       L1ExtrapolateLine( T2, zPos_2 );
       L1Filter( T2, stam.frontInfo, u_front_2 );      
       L1Filter( T2, stam.backInfo,  u_back_2 );
-    //   FilterTime( T2, timeM, sqrt(TimePrecision));
+ //     FilterTime( T2, timeM, sqrt(TimePrecision));
 
       if ( ( isec != kAllPrimEIter ) && ( isec != kAllSecEIter ) ) 
       {
@@ -482,14 +478,14 @@ inline void L1Algo::f30(  // input
       }
       
       fvec dz2 = star.z - T2.z;
-    //   L1ExtrapolateTime( T2, dz2);
+    //  L1ExtrapolateTime( T2, dz2);
       // extrapolate to the right hit station
       L1Extrapolate( T2, star.z, T2.qp, f2 );
 
       // ---- Find the triplets(right hit). Reformat data in the portion of triplets. ----
       for (Tindex i2_4 = 0; i2_4 < n2_4; ++i2_4)
       {   
-        //  if ( T2.C00[i2_4] < 0 ||  T2.C11[i2_4] < 0 ||  T2.C22[i2_4] < 0 ||  T2.C33[i2_4] < 0 ||  T2.C44[i2_4] < 0  ||  T2.C55[i2_4] < 0 ) continue;   
+       //   if ( T2.C00[i2_4] < 0 ||  T2.C11[i2_4] < 0 ||  T2.C22[i2_4] < 0 ||  T2.C33[i2_4] < 0 ||  T2.C44[i2_4] < 0  ||  T2.C55[i2_4] < 0 ) continue;   
         if ( T2.C00[i2_4] < 0 ||  T2.C11[i2_4] < 0 ||  T2.C22[i2_4] < 0 ||  T2.C33[i2_4] < 0 ||  T2.C44[i2_4] < 0  ) continue;
           
         const fvec &Pick_r22 = (TRIPLET_CHI2_CUT - T2.chi2);  
@@ -504,8 +500,7 @@ inline void L1Algo::f30(  // input
 #endif
         const fscal &iz = 1/T2.z[i2_4];
         L1HitAreaTime area( vGridTime[ &star - vStations ], T2.x[i2_4]*iz, T2.y[i2_4]*iz, (sqrt(Pick_r22*(T2.C00 + stam.XYInfo.C00))+MaxDZ*fabs(T2.tx))[i2_4]*iz, (sqrt(Pick_r22*(T2.C11 + stam.XYInfo.C11))+MaxDZ*fabs(T2.ty))[i2_4]*iz, time, sqrt(timeError) );
-          
-        //    L1HitAreaTime area( vGridTime[ &star - vStations ], T2.x[i2_4]*iz, T2.y[i2_4]*iz, (sqrt(Pick_r22*(T2.C00 + stam.XYInfo.C00))+MaxDZ*fabs(T2.tx))[i2_4]*iz, (sqrt(Pick_r22*(T2.C11 + stam.XYInfo.C11))+MaxDZ*fabs(T2.ty))[i2_4]*iz, time, 100 );
+
           
         THitI irh = 0;
           
@@ -521,6 +516,9 @@ inline void L1Algo::f30(  // input
           const fscal &zr = hitr.Z();
           const fscal &yr = hitr.Y();
           
+          fvec dz2 = zr - T2.z;
+          L1ExtrapolateTime( T2, dz2);
+          
           // - check whether hit belong to the window ( track position +\- errors ) -
           // check lower boundary
           fvec y, C11;
@@ -529,8 +527,6 @@ inline void L1Algo::f30(  // input
           const fscal &dy = yr - y[i2_4];
           const fscal &dy2 = dy*dy;
           if ( dy2 > dy_est2 && dy < 0 ) continue; // if (yr < y_minus_new[i2_4]) continue;
-          
-          //   cout<<irh<<" irh 2"<<endl;
           
           // check upper boundary
           if ( dy2 > dy_est2 ) continue; // if (yr > y_plus_new [i2_4] ) continue;
@@ -544,14 +540,19 @@ inline void L1Algo::f30(  // input
           fvec C10;
           L1ExtrapolateC10Line( T2, zr, C10 );
           fvec chi2 = T2.chi2;
-          //    cout<<chi2[i2_4]<<" T2"<<endl;
+
           L1FilterChi2XYC00C10C11( star.frontInfo, x, y, C00, C10, C11, chi2, hitr.U() );
           L1FilterChi2           ( star.backInfo,  x, y, C00, C10, C11, chi2, hitr.V() );
+          
+          L1TrackPar T = T2;
+          
+          FilterTime( T, hitr.time, sqrt(TimePrecision));
 #ifdef DO_NOT_SELECT_TRIPLETS
           if (isec!=TRACKS_FROM_TRIPLETS_ITERATION)
 #endif
 
-              if ( chi2[i2_4] > TRIPLET_CHI2_CUT || C00[i2_4] < 0 || C11[i2_4] < 0) continue; // chi2_triplet < CHI2_CUT
+             // if ( chi2[i2_4] > TRIPLET_CHI2_CUT || C00[i2_4] < 0 || C11[i2_4] < 0|| T.C55[i2_4] < 0) continue; // chi2_triplet < CHI2_CUT
+               if ( chi2[i2_4] > TRIPLET_CHI2_CUT || C00[i2_4] < 0 || C11[i2_4] < 0) continue; // chi2_triplet < CHI2_CUT
 
           // pack triplet
           L1TrackPar &T3 = T_3[n3_V];
@@ -599,11 +600,11 @@ inline void L1Algo::f31(  // input
   {
     fvec dz = z_Pos[i3_V] - T_3[i3_V].z;
           
-    //  L1ExtrapolateTime( T_3[i3_V], dz);
+   // L1ExtrapolateTime( T_3[i3_V], dz);
     L1ExtrapolateLine( T_3[i3_V], z_Pos[i3_V] );
     L1Filter( T_3[i3_V], star.frontInfo, u_front[i3_V] );    // 2.1/100 sec
     L1Filter( T_3[i3_V], star.backInfo,  u_back [i3_V] );   // 2.0/100 sec
-    // FilterTime( T_3[i3_V], timeR[i3_V], sqrt(TimePrecision));
+  //  FilterTime( T_3[i3_V], timeR[i3_V], sqrt(TimePrecision));
   }
 }
 
@@ -1025,7 +1026,7 @@ inline void L1Algo::f5(  // input
             if (level == jlevel + 1) neighCands.push_back(Location);
           }
           
-          trip->neighbours.resize(0);
+        //  trip->neighbours.resize(0);
           
           for (unsigned int in = 0; in < neighCands.size(); in++) 
           {
@@ -1036,7 +1037,7 @@ inline void L1Algo::f5(  // input
             int Triplet = (Location- Station*100000000-Thread*1000000);
             
             const int nLevel = TripletsLocal1[Station][Thread][Triplet].GetLevel();
-            if (level == nLevel + 1) trip->neighbours.push_back(Location);
+       //     if (level == nLevel + 1) trip->neighbours.push_back(Location);
           }
           nlevel[level]++;
         }// vTriplets

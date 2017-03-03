@@ -77,8 +77,9 @@ void L1Algo::BranchFitterFast(const L1Branch &t, L1TrackPar& T, const bool dir, 
   }
 
   T.z  = z0;
+  T.t = hit0.t_reco;
   
-  T.t[0]=(hit0.t_reco+hit1.t_reco+hit2.t_reco)/3;
+ // T.t[0]=(hit0.t_reco+hit1.t_reco+hit2.t_reco)/3;
   T.chi2 = 0.;
   T.NDF = 2.;
   T.C00 = sta0.XYInfo.C00;
@@ -88,8 +89,10 @@ void L1Algo::BranchFitterFast(const L1Branch &t, L1TrackPar& T, const bool dir, 
   T.C20 = T.C21 = 0;
   T.C30 = T.C31 = T.C32 = 0;
   T.C40 = T.C41 = T.C42 = T.C43 = 0;
+  T.C50 = T.C51 = T.C52 = T.C53 = T.C54 = 0;
   T.C22 = T.C33 = vINF;
   T.C44 = 1.;
+  T.C55 = TimePrecision;
 
   L1FieldValue fB0, fB1, fB2 _fvecalignment;
   L1FieldRegion fld _fvecalignment;
@@ -113,16 +116,31 @@ void L1Algo::BranchFitterFast(const L1Branch &t, L1TrackPar& T, const bool dir, 
     ista = GetFStation((*vSFlag)[hit.f]);
 
     L1Station &sta = vStations[ista];
+    
+    float z_sta = (*vStsZPos)[hit.iz];
+    
+    fvec dz = z_sta - T.z;
+    
+    
           
     L1Extrapolate( T, (*vStsZPos)[hit.iz], qp0, fld );
+    
+    L1ExtrapolateTime( T, dz);
+    
     L1AddMaterial( T, sta.materialInfo, qp0 );
     if ( (step*ista <= step*(NMvdStations + (step+1)/2 - 1)) && (step*ista_prev >= step*(NMvdStations + (step+1)/2 - 1 - step)) )
       L1AddPipeMaterial( T, qp0 );
   
     fvec u = static_cast<fscal>( (*vStsStrips)[hit.f] );
     fvec v = static_cast<fscal>( (*vStsStripsB)[hit.b] );
+    
+    
+    
     L1Filter( T, sta.frontInfo, u );
     L1Filter( T, sta.backInfo,  v );
+    
+    FilterTime( T, hit.t_reco, sqrt(TimePrecision));
+
     fB0 = fB1;
     fB1 = fB2;
     fz0 = fz1;
@@ -181,21 +199,19 @@ void L1Algo::FindMoreHits(L1Branch &t, L1TrackPar& T, const bool dir, const fvec
 
 
   StripsToCoor(u0, v0, x0, y0, sta0);
- // fvec z0 = (*vStsZPos)[hit0.iz];
+
 
   fvec u1  = static_cast<fscal>( (*vStsStrips)[hit1.f] );
   fvec v1  = static_cast<fscal>( (*vStsStripsB)[hit1.b] );
   fvec x1,y1;
   StripsToCoor(u1, v1, x1, y1, sta1);
- // fvec z1 = (*vStsZPos)[hit1.iz];
+
 
   fvec u2  = static_cast<fscal>( (*vStsStrips)[hit2.f] );
   fvec v2  = static_cast<fscal>( (*vStsStripsB)[hit2.b] );
   fvec x2,y2;
   StripsToCoor(u2, v2, x2, y2, sta2);
-//  fvec z2 = (*vStsZPos)[hit2.iz];
 
-  //fvec dzi = 1./(z1-z0);
 
   L1FieldValue fB0, fB1, fB2 _fvecalignment;
   L1FieldRegion fld _fvecalignment;
@@ -219,6 +235,10 @@ void L1Algo::FindMoreHits(L1Branch &t, L1TrackPar& T, const bool dir, const fvec
   for( ; (ista < NStations) && (ista >= 0); ista += step ){ // CHECKME why ista2?
 
     L1Station &sta = vStations[ista];
+    
+    fvec dz = sta.z - T.z;
+    
+    L1ExtrapolateTime( T, dz);
           
     L1Extrapolate( T, sta.z, qp0, fld );
 
@@ -228,25 +248,19 @@ void L1Algo::FindMoreHits(L1Branch &t, L1TrackPar& T, const bool dir, const fvec
     const fscal iz = 1/T.z[0];
 
 
-      L1HitAreaTime area(vGridTime[ ista ], T.x[0]*iz, T.y[0]*iz, (sqrt(Pick_gather*(T.C00 + sta.XYInfo.C00))+MaxDZ*fabs(T.tx))[0]*iz, (sqrt(Pick_gather*(T.C11 + sta.XYInfo.C11))+MaxDZ*fabs(T.ty))[0]*iz, T.t[0], sqrt(T.C55[0]+2.9*2.9) );
+      L1HitAreaTime area(vGridTime[ ista ], T.x[0]*iz, T.y[0]*iz, (sqrt(Pick_gather*(T.C00 + sta.XYInfo.C00))+MaxDZ*fabs(T.tx))[0]*iz, (sqrt(Pick_gather*(T.C11 + sta.XYInfo.C11))+MaxDZ*fabs(T.ty))[0]*iz, T.t[0], sqrt(T.C55[0]) );
      
-     //    L1HitArea area( vGrid[ ista ], T.x[0]*iz, T.y[0]*iz, (sqrt(Pick_gather*(T.C00 + sta.XYInfo.C00))+MaxDZ*fabs(T.tx))[0]*iz, (sqrt(Pick_gather*(T.C11 + sta.XYInfo.C11))+MaxDZ*fabs(T.ty))[0]*iz );
-    //L1HitArea area( vGrid[ ista ], T.x[0]*iz, T.y[0]*iz, (sqrt(Pick_gather*(T.C00 + sta.XYInfo.C00))+MaxDZ*fabs(T.tx))[0]*iz, (sqrt(Pick_gather*(T.C11 + sta.XYInfo.C11))+MaxDZ*fabs(T.ty))[0]*iz );
     THitI ih = 0;
     while( area.GetNext( ih ) ) {
 
       ih += StsHitsUnusedStartIndex[ista];
       const L1StsHit &hit = (*vStsHitsUnused)[ih];
-      if (fabs(hit.t_reco-T.t[0])>sqrt(T.C55[0]+2.9*2.9)*3) continue;
+      if (fabs(hit.t_reco-T.t[0])>sqrt(T.C55[0]+TimePrecision)*3) continue;
       
-
-     // if (hit.n!=n[0]) continue; // if used
       if( GetFUsed( (*vSFlag)[hit.f] | (*vSFlagB)[hit.b] ) ) continue; // if used
 
       fscal xh, yh, zh;
       GetHitCoor(hit, xh, yh, zh, sta); // faster
-      // L1HitPoint &point = (*vStsHitPointsUnused)[ih];
-      // fscal xh = point.x, yh = point.y, zh = point.z;
       
       fvec y, C11;
       L1ExtrapolateYC11Line( T, zh, y, C11 );
@@ -279,11 +293,17 @@ void L1Algo::FindMoreHits(L1Branch &t, L1TrackPar& T, const bool dir, const fvec
     fvec x, y, z;
     StripsToCoor(u, v, x, y, sta);
     z = (*vStsZPos)[hit.iz];
+    
+    fvec dz1 = z - T.z;
+    
+    L1ExtrapolateTime( T, dz1);
       
     L1ExtrapolateLine( T, z );
     L1AddMaterial( T, sta.materialInfo, qp0 );
     L1Filter( T, sta.frontInfo, u );
     L1Filter( T, sta.backInfo,  v );
+    
+    FilterTime( T, hit.t_reco, sqrt(TimePrecision));
 
     fB0 = fB1;
     fB1 = fB2;
