@@ -104,17 +104,17 @@ GapSize005: Double_t \
 // !!!! this parameter HAS to match the value used in the geometry !!!!                                                             
 //  0    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15                                                    
 SigVel000: Double_t \
- 0.018 0.018 0.018 0.018 0.018
+ 18. 18. 18. 18. 18.
 SigVel001: Double_t \
- 0.018 0.018 0.018 0.018 0.018
+ 18. 18. 18. 18. 18.
 SigVel002: Double_t \
- 0.018 0.018 0.018
+ 18. 18. 18.
 SigVel003: Double_t \
- 0.018 0.018 0.018 0.018 0.018
+ 18. 18. 18. 18. 18.
 SigVel004: Double_t \
- 0.018 0.018 0.018 0.018 0.018
+ 18. 18. 18. 18. 18.
 SigVel005: Double_t \
- 0.018 0.018
+ 18. 18.
 // Number of channels per RPC for each SM type                                                                                      
 // 1 line per SM type, the number of entries for each line should match                                                             
 // the number of RPCs defined in (2)                                                                                                
