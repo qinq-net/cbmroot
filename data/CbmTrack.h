@@ -58,7 +58,8 @@ public:
 	Int_t GetPreviousTrackId() const { return fPreviousTrackId; }
 	const FairTrackParam* GetParamFirst() const { return &fParamFirst; }
 	const FairTrackParam* GetParamLast() const { return &fParamLast; }
-   CbmMatch* GetMatch() const { return fMatch; }
+    CbmMatch* GetMatch() const { return fMatch; }
+    Double_t GetTime() const { return fTime; }
 
 	/** Modifiers  **/
 	void SetPidHypo(Int_t pid){ fPidHypo = pid; }
@@ -68,7 +69,8 @@ public:
 	void SetPreviousTrackId(Int_t previousTrackId) { fPreviousTrackId = previousTrackId; }
 	void SetParamFirst(const FairTrackParam* par) { fParamFirst = *par; }
 	void SetParamLast(const FairTrackParam* par){ fParamLast  = *par; }
-   void SetMatch(CbmMatch* match);
+    void SetMatch(CbmMatch* match);
+    void SetTime(Double_t time) { fTime = time; }
 
 	virtual std::string ToString() const;
 
@@ -86,6 +88,9 @@ private:
 	FairTrackParam fParamFirst;
 	FairTrackParam fParamLast;
 
+	/** Track start time **/
+	Double_t fTime;
+
 	/** Quality flag **/
 	Int_t fFlag;
 
@@ -99,7 +104,7 @@ private:
 	/** Monte-Carlo information **/
    CbmMatch* fMatch;
 
-	ClassDef(CbmTrack, 3);
+	ClassDef(CbmTrack, 4);
 };
 
 #endif
