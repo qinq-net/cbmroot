@@ -143,6 +143,8 @@ class CbmTofTestBeamClusterizer : public FairTask
       virtual void fit_ybox(TH1 *h, Double_t dy);      // Fit
       virtual void CheckLHMemory();                    // Check consistency of stored last hits
       virtual void CleanLHMemory();                    // Cleanup
+      virtual Bool_t AddNextChan(Int_t iSmType, Int_t iSm, Int_t iRpc, Int_t iLastChan, Double_t dLastPosX,  Double_t dLastPosY, Double_t dLastTime, Double_t dLastTot); // needed time based data  
+      virtual void LH_store(Int_t iSmType, Int_t iSm,  Int_t iRpc, Int_t iChm, CbmTofHit *pHit);
 
    protected:
 
