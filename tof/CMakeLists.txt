@@ -83,6 +83,7 @@ TofReco/LKFMinuit.cxx
 
 TofTests/CbmTofTests.cxx 
 
+TofQA/CbmTofGeometryQa.cxx
 TofQA/CbmTofHitFinderQa.cxx
 
   ${TOF_BEAM_SOURCES}

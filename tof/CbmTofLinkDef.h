@@ -29,6 +29,7 @@
 
 #pragma link C++ class CbmTofTests+;
 
+#pragma link C++ class CbmTofGeometryQa+;
 #pragma link C++ class CbmTofHitFinderQa+;
 
 #ifdef BUILD_TOF_BEAMTIME
