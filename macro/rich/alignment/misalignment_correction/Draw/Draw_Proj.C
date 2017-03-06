@@ -8,8 +8,8 @@ void Draw_Proj()
 //	cout << "vmc: " << vmc << endl;
 	gROOT->LoadMacro(vmc + "/macro/littrack/loadlibs.C");
 	loadlibs();
-	gROOT->LoadMacro(vmc + "/macro/littrack/cbmrootlibs.C");
-	cbmrootlibs();
+	gROOT->LoadMacro(vmc + "/macro/littrack/cbmrootlibs2.C");
+	cbmrootlibs2();
 
 	TH3D *Histo;
 	TString Histo_Name_1 = "fhRingTrackDistVsXYTruematchPi";
