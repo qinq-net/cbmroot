@@ -15,19 +15,11 @@ void Draw_Proj()
 	TString Path_Histo = "/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned_5mrad_Full/merge.root";
 	TFile* Histograms = new TFile(Path_Histo, "READ");
 	// cout << Histograms << endl;
-	Histo = (TH3D*) gDirectory->Get(Histo_Name_1);
+	Histo_1 = (TH3D*) gDirectory->Get(Histo_Name_1);
+	Histo_2 = (TH3D*) gDirectory->Get(Histo_Name_2);
 
-	Draw(Histo);
-
-/*	TCanvas *Can = new TCanvas("Can","Can", 10, 10, 1010, 510);
-	Can->Divide(2,1);
-	Can->cd(1);
-	Histo->Draw();
-	TH2D *Proj;
-	Proj = DrawH3Profile(Histo, false, false, 0., 1.);
-	Can->cd(2);
-	Proj->Draw("colz");
-*/
+	Draw(Histo_1);
+	Draw(Histo_2);
 }
 
 void Draw(TH3D* Histo)
