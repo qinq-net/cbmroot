@@ -4,9 +4,12 @@
 
 void Draw_Proj()
 {
-//	gROOT->LoadMacro("/lustre/nyx/cbm/users/jbendar/CBMINSTALL_Root5/share/cbmroot/macro/littrack/loadlibs.C");
-	gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
+	TString vmc = TString(gSystem->Getenv("VMCWORKDIR"));
+//	cout << "vmc: " << vmc << endl;
+	gROOT->LoadMacro(vmc + "/macro/littrack/loadlibs.C");
 	loadlibs();
+	gROOT->LoadMacro(vmc + "/macro/littrack/cbmrootlibs.C");
+	cbmrootlibs();
 
 	TH3D *Histo;
 	TString Histo_Name_1 = "fhRingTrackDistVsXYTruematchPi";
