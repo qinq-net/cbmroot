@@ -283,8 +283,8 @@ const Int_t ModuleType[NofModuleTypes]    = {  0,  0,  0,  0,  1,  1,  1,  1 }; 
 const Int_t RobsPerModule[NofModuleTypes] = {  5,  3,  2,  1,  2,  3,  2,  1 }; // number of GBTx ROBs on module
 const Int_t GbtxPerRob[NofModuleTypes]    = {103,103,103,103,107,103,103,103 }; // number of GBTx ASICs on ROB
 
-const Int_t GbtxPerModule[NofModuleTypes] = { 15, 10,  5,  0,  0, 10,  5,  3 }; // for .geo.info - TODO: merge with above GbtxPerRob
-const Int_t RobTypeOnModule[NofModuleTypes]={555, 55,  5,  0,  0, 55,  5,  3 }; // for .geo.info - TODO: merge with above GbtxPerRob
+const Int_t GbtxPerModule[NofModuleTypes] = {   15,  9,  6,  0,  0,  9,  6,  3 }; // for .geo.info - TODO: merge with above GbtxPerRob
+const Int_t RobTypeOnModule[NofModuleTypes]={33333,333, 33,  0,  0,333, 33,  3 }; // for .geo.info - TODO: merge with above GbtxPerRob
 
 //v17a // GBTx ROB definitions
 //v17a const Int_t RobsPerModule[NofModuleTypes] = {  3,  2,  1,  1,  2,  2,  1,  1 }; // number of GBTx ROBs on module
@@ -1094,7 +1094,11 @@ void dump_info_file()
       total_rob3[iModule]++;
     if ((RobTypeOnModule[iModule] / 10 % 10) == 3)
       total_rob3[iModule]++;
-    if ((RobTypeOnModule[iModule] / 100) == 3)
+    if ((RobTypeOnModule[iModule] / 100 % 10) == 3)
+      total_rob3[iModule]++;
+    if ((RobTypeOnModule[iModule] / 1000 % 10) == 3)
+      total_rob3[iModule]++;
+    if ((RobTypeOnModule[iModule] / 10000 % 10) == 3)
       total_rob3[iModule]++;
   }
 

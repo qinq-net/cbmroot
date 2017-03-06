@@ -68,12 +68,12 @@ GBTX readout boards are : included
       100       60       40       20       96       63       42       21            ASICs per module
      3200     1440     1600        0        0     1512     1344     1008    10104   number of ASICs
 # gbtx
-       15       10        5        0        0       10        5        3            GBTXs per module
-      480      240      200        0        0      240      160      144     1464   number of GBTXs
-      555       55        5        0        0       55        5        3            GBTX ROB types on Module
+       15        9        6        0        0        9        6        3            GBTXs per module
+      480      216      240        0        0      216      192      144     1488   number of GBTXs
+    33333      333       33        0        0      333       33        3            GBTX ROB types on Module
         0        0        0        0        0        0        0        0        0   number of GBTX ROB7
-       96       48       40        0        0       48       32        0      264   number of GBTX ROB5
-        0        0        0        0        0        0        0       48       48   number of GBTX ROB3
+        0        0        0        0        0        0        0        0        0   number of GBTX ROB5
+      160       72       80        0        0       72       64       48      496   number of GBTX ROB3
 # channels
      3200     1920     1280      640     3072        0        0        0            channels per module
       320      320      320      160      256        0        0        0            channels per feb
