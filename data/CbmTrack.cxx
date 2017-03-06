@@ -19,6 +19,8 @@ CbmTrack::CbmTrack() :
     fPidHypo(0),
     fParamFirst(),
     fParamLast(),
+    fTime(0.),
+    fTimeError(0.),
     fFlag(0),
     fChiSq(0.),
     fNDF(0),
@@ -35,6 +37,8 @@ CbmTrack::CbmTrack(const CbmTrack& rhs)
    fPidHypo(rhs.fPidHypo),
    fParamFirst(rhs.fParamFirst),
    fParamLast(rhs.fParamLast),
+   fTime(rhs.fTime),
+   fTimeError(rhs.fTimeError),
    fFlag(rhs.fFlag),
    fChiSq(rhs.fChiSq),
    fNDF(rhs.fNDF),
@@ -54,6 +58,8 @@ CbmTrack& CbmTrack::operator=(const CbmTrack& rhs)
     fPidHypo = rhs.fPidHypo;
     fParamFirst = rhs.fParamFirst;
     fParamLast = rhs.fParamLast;
+    fTime = rhs.fTime;
+    fTimeError = rhs.fTimeError;
     fFlag = rhs.fFlag;
     fChiSq = rhs.fChiSq;
     fNDF = rhs.fNDF;

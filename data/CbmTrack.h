@@ -76,7 +76,7 @@ public:
 
 	virtual std::string ToString() const;
 
-private:
+protected:
 	/** Array contains the hit indices of the hits attached to the track **/
 	std::vector<Int_t> fHitIndex;
 
