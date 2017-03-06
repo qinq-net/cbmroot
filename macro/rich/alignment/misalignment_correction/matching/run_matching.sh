@@ -8,12 +8,13 @@
 # for FLAG in 0 1
 # do
 # WORK_DIR=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Aligned
-FLAG=0		# (= 0) for Reference ; (= 1) for misaligned w/o corrections ; (= 2) for misaligned w/ corrections
+FLAG=0		# (== 0) for Reference ; (== 1) for misaligned w/o corrections ; (== 2) for misaligned w/ corrections ; (== 3) to calculate correction parameters
 NEVTS=5000	# nb of events to run
 COLL_ENERGY=8gev
-	sbatch -J matching -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Matching/Reference -o %j_%N.out.log -e %j_%N.err.log --time=2:00:00 --array=1-200 ./matching.sh $FLAG $NEVTS $COLL_ENERGY
-##	sbatch -J matching -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Matching/WO_Corrections -o %j_%N.out.log -e %j_%N.err.log --time=2:00:00 --array=1-200 ./matching.sh $FLAG $NEVTS $COLL_ENERGY
-##	sbatch -J matching -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Matching/W_Corrections -o %j_%N.out.log -e %j_%N.err.log --time=2:00:00 --array=1-200 ./matching.sh $FLAG $NEVTS $COLL_ENERGY
-##	sbatch -J matching -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Matching/Test -o %j_%N.out.log -e %j_%N.err.log --time=0:15:00 --array=1-1 ./matching.sh $FLAG $NEVTS $COLL_ENERGY
+##	sbatch -J matching -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Matching/Reference --time=2:00:00 --array=1-200 ./matching.sh $FLAG $NEVTS $COLL_ENERGY
+##	sbatch -J matching -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Matching/WO_Corrections --time=2:00:00 --array=1-200 ./matching.sh $FLAG $NEVTS $COLL_ENERGY
+##	sbatch -J matching -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Matching/W_Corrections --time=2:00:00 --array=1-200 ./matching.sh $FLAG $NEVTS $COLL_ENERGY
+##	sbatch -J matching -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Matching/Compute_Corrections --time=2:00:00 --array=1-2 ./matching.sh $FLAG $NEVTS $COLL_ENERGY
+	sbatch -J matching -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Matching/Test --time=0:15:00 --array=1-2 ./matching.sh $FLAG $NEVTS $COLL_ENERGY
 
 # done

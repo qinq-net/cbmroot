@@ -1,108 +1,139 @@
-void run_reco_matching_alignment(Int_t nEvents = 5000, Int_t Flag = 1)
+TString caveGeom="";
+TString pipeGeom="";
+TString magnetGeom="";
+TString stsGeom="";
+TString richGeom="";
+TString shieldGeom="";
+TString platformGeom="";
+
+TString stsTag="";
+TString richTag="";
+
+TString stsDigi="";
+TString richDigi="";
+TString trdDigi="";
+TString tofDigi="";
+TString tofDigiBdf="";
+
+TString mvdMatBudget="";
+TString stsMatBudget="";
+
+TString  fieldMap="";
+Double_t fieldZ=0.;
+Double_t fieldScale=0.;
+Int_t    fieldSymType=0;
+
+TString defaultInputFile="";
+
+
+void run_reco_matching_alignment(Int_t nEvents = 100)
 {
-   TTree::SetMaxTreeSize(90000000000);
+    TTree::SetMaxTreeSize(90000000000);
 
-	Int_t iVerbose = 0;
+    Int_t iVerbose = 0;     // Verbosity level (0=quiet, 1=event level, 2=track level, 3=debug)
+    FairLogger* logger = FairLogger::GetLogger();
+    logger->SetLogScreenLevel("INFO");
+    logger->SetLogVerbosityLevel("LOW");
+    gRandom->SetSeed(10);
 
-	TString script = TString(gSystem->Getenv("SCRIPT"));
-	TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters/");
+    TString script = TString(gSystem->Getenv("SCRIPT"));
+    TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters/");
 
-	gRandom->SetSeed(10);
+    // -----   In- and output file names   ------------------------------------
+    TString setupName = "";
+    setupName = "setup_align";
 
-//	if (Flag == 0) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/reference/"; }
-//	else if (Flag == 1) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/misaligned_1pt5/"; }
-//	else if (Flag == 2) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/test/"; }
+    TString outDir = "";
+    if (script == "yes") {
 	outDir = TString(gSystem->Getenv("OUT_DIR"));
-	TString outDir = "/u/jbendar/CBMSRC/macro/rich/alignment/misalignment_correction/matching/5mrad_correction_study/";
-	TString runTitle = "Matching_Efficiency";
-	TString parFile = outDir + "param.root";
-	TString mcFile = outDir + "mc.root";
-	TString recoFile = outDir + "reco.root";
+    }
+    else {
+	outDir = "/lustre/nyx/cbm/users/jbendar/Sim_Outputs/test/";
+    }
+    TString parFile = outDir + setupName + "_param.root";
+    TString mcFile = outDir + setupName + "_mc.root";
+    TString recoFile = outDir + setupName + "_reco.root";
+    //TString resultDir = "recqa_0001/";
+    TString resultDir = outDir;
 
-//	TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/geosetup_25gev.C";
-
-	//std::string resultDir = "recqa_0001/";
-	std::string resultDir = outDir;
-
-	if (script == "yes") {
-		mcFile = TString(gSystem->Getenv("MC_FILE"));
-		recoFile = TString(gSystem->Getenv("RECO_FILE"));
-		parFile = TString(gSystem->Getenv("PAR_FILE"));
-		resultDir = TString(gSystem->Getenv("LIT_RESULT_DIR"));
-//		geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/" + TString(gSystem->Getenv("GEO_SETUP_FILE"));
-	}
-
-	remove(recoFile.Data());
-
-	//setup all geometries from macro
-//	cout << "geoSetupName:" << geoSetupFile << endl;
-//	gROOT->LoadMacro(geoSetupFile);
-//	init_geo_setup();
-
-	// digi parameters
-        TString trdTag, tofTag, trdDigi, tofDigi;
-        trdTag       = "v15a_3e";
-        tofTag       = "v16a_3e";
-        trdDigi      = "trd/trd_" + trdTag + ".digi.par";
-        tofDigi      = "tof/tof_" + tofTag + ".digi.par";
-	TList *parFileList = new TList();
-	TObjString trdDigiFile = parDir + "/" + trdDigi;
-	TObjString tofDigiFile = parDir + "/" + tofDigi;
-	if (trdDigiFile.GetString() != "") parFileList->Add(&trdDigiFile);
-	parFileList->Add(&tofDigiFile);
-
-	// material budget for STS and MVD
-        TString stsTag, stsMatBudget;
-        stsTag       = "v15a";
-        stsMatBudget = "sts/sts_matbudget_" + stsTag + ".root";
-	TString mvdMatBudgetFileName = "";
-	TString stsMatBudgetFileName = parDir + "/" + stsMatBudget;
-
-	gDebug = 0;
-
-	TStopwatch timer;
-	timer.Start();
-
-	// ----  Load libraries   -------------------------------------------------
-	gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
-	loadlibs();
-	gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/determine_setup.C");
-
-	// -----   Reconstruction run   -------------------------------------------
-	FairRunAna *run= new FairRunAna();
-	if (mcFile != "") run->SetInputFile(mcFile);
-	if (recoFile != "") run->SetOutputFile(recoFile);
-
-	// ----- MC Data Manager   ------------------------------------------------
-	CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
-	mcManager->AddFile(mcFile);
-	run->AddTask(mcManager);
-
-	Bool_t isMvd = IsMvd(parFile);
-	Bool_t isTrd = IsTrd(parFile);
-	Bool_t isRich = IsRich(parFile);
-	Bool_t isTof = IsTof(parFile);
-
-	Bool_t useMvdInTracking = kFALSE;
-	if (isMvd) {
-        CbmMvdDigitizer* mvdDigitise = new CbmMvdDigitizer("MVD Digitiser", 0, iVerbose);
-        run->AddTask(mvdDigitise);
-
-        CbmMvdClusterfinder* mvdCluster = new CbmMvdClusterfinder("MVD Clusterfinder", 0, iVerbose);
-        run->AddTask(mvdCluster);
+    TString geoSetupFile = "";
+    geoSetupFile = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/macro/rich/geosetup/setup_align.C";
+    // ------------------------------------------------------------------------
 
 
-        CbmMvdHitfinder* mvdHitfinder = new CbmMvdHitfinder("MVD Hit Finder", 0, iVerbose);
-        mvdHitfinder->UseClusterfinder(kTRUE);
-        run->AddTask(mvdHitfinder);
+    // -----   Script initialization   ----------------------------------------
+    if (script == "yes") {
+	mcFile = TString(gSystem->Getenv("MC_FILE"));
+	recoFile = TString(gSystem->Getenv("RECO_FILE"));
+	parFile = TString(gSystem->Getenv("PAR_FILE"));
+	resultDir = TString(gSystem->Getenv("LIT_RESULT_DIR"));
 
-        useMvdInTracking = kTRUE;
-        mvdMatBudgetFileName = parDir + "/" + mvdMatBudget;
-	}
+	geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/geosetup/" + TString(gSystem->Getenv("GEO_SETUP_FILE"));
+	setupName = TString(gSystem->Getenv("SETUP_NAME"));
+    }
+    // ------------------------------------------------------------------------
 
-	// =========================================================================
-	// ===                      STS local reconstruction                     ===
-	// =========================================================================
+
+    remove(recoFile.Data());
+
+
+    // -----   Load the geometry setup   --------------------------------------
+    const char* setupName2 = setupName;
+    TString setupFunct = "";
+    setupFunct = setupFunct + setupName2 + "()";
+    std::cout << "setupFile: " << geoSetupFile << " and setupFunct: " << setupFunct << std::endl;
+    gROOT->LoadMacro(geoSetupFile);
+    gInterpreter->ProcessLine(setupFunct);
+    // ------------------------------------------------------------------------
+
+
+    // -----   Digi parameters   ----------------------------------------------
+    TList *parFileList = new TList();
+
+    TObjString trdDigiFile(parDir + trdDigi);
+    parFileList->Add(&trdDigiFile);
+    TObjString tofDigiFile(parDir + tofDigi);
+    parFileList->Add(&tofDigiFile);
+    TObjString tofDigiBdfFile(parDir + tofDigiBdf);
+    parFileList->Add(&tofDigiBdfFile);
+    // ------------------------------------------------------------------------
+
+
+    // ----    Debug option   -------------------------------------------------
+    gDebug = 0;
+    // ------------------------------------------------------------------------
+
+
+    // -----   Timer   --------------------------------------------------------
+    TStopwatch timer;
+    timer.Start();
+    // ------------------------------------------------------------------------
+
+
+    // -----   Reconstruction run   -------------------------------------------
+    FairRunAna *run= new FairRunAna();
+    if (mcFile != "") run->SetInputFile(mcFile);
+    if (recoFile != "") run->SetOutputFile(recoFile);
+    run->SetGenerateRunInfo(kTRUE);
+    // ------------------------------------------------------------------------
+
+
+    // ----- MC Data Manager   ------------------------------------------------
+    CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
+    mcManager->AddFile(mcFile);
+    run->AddTask(mcManager);
+    // ------------------------------------------------------------------------
+
+
+    // =========================================================================
+    // ===             Detector Response Simulation (Digitiser)              ===
+    // ===                          (where available)                        ===
+    // =========================================================================
+
+    // -----   STS digitizer   -------------------------------------------------
+    // -----   The parameters of the STS digitizer are set such as to match
+    // -----   those in the old digitizer. Change them only if you know what you
+    // -----   are doing.
     Double_t dynRange       =   40960.;  // Dynamic range [e]
     Double_t threshold      =    4000.;  // Digitisation threshold [e]
     Int_t nAdc              =    4096;   // Number of ADC channels (12 bit)
@@ -122,88 +153,163 @@ void run_reco_matching_alignment(Int_t nEvents = 5000, Int_t Flag = 1)
     stsDigi->SetProcesses(eLossModel, useLorentzShift, useDiffusion, useCrossTalk);
     stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution, deadTime, noise);
     run->AddTask(stsDigi);
-
-	FairTask* stsClusterFinder = new CbmStsFindClusters();
-	run->AddTask(stsClusterFinder);
-
-	FairTask* stsFindHits = new CbmStsFindHits();
-	run->AddTask(stsFindHits);
-
-	CbmKF* kalman = new CbmKF();
-	run->AddTask(kalman);
-	CbmL1* l1 = new CbmL1();
-	l1->SetStsMaterialBudgetFileName(stsMatBudgetFileName.Data());
-	if (mvdMatBudgetFileName != "") l1->SetMvdMaterialBudgetFileName(mvdMatBudgetFileName.Data());
-	run->AddTask(l1);
-
-	CbmStsTrackFinder* stsTrackFinder = new CbmL1StsTrackFinder();
-	FairTask* stsFindTracks = new CbmStsFindTracks(1, stsTrackFinder);
-	run->AddTask(stsFindTracks);
-
-	// =========================================================================
-	// ===                        Global tracking                            ===
-	// =========================================================================
-
-	CbmLitFindGlobalTracks* finder = new CbmLitFindGlobalTracks();
-	finder->SetTrackingType(std::string("branch"));
-	finder->SetMergerType("nearest_hit");
-	run->AddTask(finder);
-
-	CbmPrimaryVertexFinder* pvFinder = new CbmPVFinderKF();
-	CbmFindPrimaryVertex* findVertex = new CbmFindPrimaryVertex(pvFinder);
-	run->AddTask(findVertex);
+    // -------------------------------------------------------------------------
 
 
-	if (isTrd) {
-		CbmTrdSetTracksPidANN* trdSetTracksPidAnnTask = new CbmTrdSetTracksPidANN("CbmTrdSetTracksPidANN","CbmTrdSetTracksPidANN");
-		trdSetTracksPidAnnTask->SetTRDGeometryType("h++");
-		run->AddTask(trdSetTracksPidAnnTask);
-	}//isTrd
+    // =========================================================================
+    // ===                      STS local reconstruction                     ===
+    // =========================================================================
+
+    // -----   STS Cluster Finder   --------------------------------------------
+    FairTask* stsClusterFinder = new CbmStsFindClusters();
+    run->AddTask(stsClusterFinder);
+    // -------------------------------------------------------------------------
+
+    // -----   STS hit finder   ------------------------------------------------
+    FairTask* stsFindHits = new CbmStsFindHits();
+    run->AddTask(stsFindHits);
+    // -------------------------------------------------------------------------
+
+    // ---  STS track finding   ------------------------------------------------
+    CbmKF* kalman = new CbmKF();
+    run->AddTask(kalman);
+    CbmL1* l1 = new CbmL1();
+    mvdMatBudget = "mvd_matbudget_v15a.root";
+    stsMatBudget = "sts_matbudget_v17a.root";
+    TString mvdMatBudgetFileName = parDir + "sts/" + mvdMatBudget;
+    TString stsMatBudgetFileName = parDir + "sts/" + stsMatBudget;
+    l1->SetStsMaterialBudgetFileName(stsMatBudgetFileName.Data());
+    l1->SetMvdMaterialBudgetFileName(mvdMatBudgetFileName.Data());
+    run->AddTask(l1);
+
+    CbmStsTrackFinder* stsTrackFinder = new CbmL1StsTrackFinder();
+    FairTask* stsFindTracks = new CbmStsFindTracks(iVerbose, stsTrackFinder);
+    run->AddTask(stsFindTracks);
+    // -------------------------------------------------------------------------
+
+    // ===                 End of STS local reconstruction                   ===
+    // =========================================================================
+
+
+    // =========================================================================
+    // ===                        Global tracking                            ===
+    // =========================================================================
+
+    // -----   Primary vertex finding   ---------------------------------------
+    CbmPrimaryVertexFinder* pvFinder = new CbmPVFinderKF();
+    CbmFindPrimaryVertex* findVertex = new CbmFindPrimaryVertex(pvFinder);
+    run->AddTask(findVertex);
+    // ------------------------------------------------------------------------
+
+    CbmLitFindGlobalTracks* finder = new CbmLitFindGlobalTracks();
+    finder->SetTrackingType("branch");
+    finder->SetMergerType("nearest_hit");
+    run->AddTask(finder);
+
+    // ===                      End of global tracking                       ===
+    // =========================================================================
+
 
     // =========================================================================
     // ===                        RICH reconstruction                        ===
     // =========================================================================
-	if (isRich){
-	CbmRichDigitizer* richDigitizer = new CbmRichDigitizer();
-        //richDigitizer->SetNofNoiseHits(0);
-	run->AddTask(richDigitizer);
 
-	CbmRichHitProducer* richHitProd	= new CbmRichHitProducer();
-	run->AddTask(richHitProd);
+    CbmRichDigitizer* richDigitizer = new CbmRichDigitizer();
+    //richDigitizer->SetNofNoiseHits(0);
+    run->AddTask(richDigitizer);
 
-	CbmRichReconstruction* richReco = new CbmRichReconstruction();
-	richReco->SetRunExtrapolation(true);
-	richReco->SetRunProjection(true);
-	richReco->SetRunTrackAssign(true);
-//	richReco->SetFinderName("ideal");     // To do matching Sts-Ring
-//	richReco->SetProjectionName("analytical2"); // Set to analytical2 to test my class.
-	//richReco->SetFitterName("circle_cop");;
-	run->AddTask(richReco);
-	}//isRich
+    CbmRichHitProducer* richHitProd	= new CbmRichHitProducer();
+    run->AddTask(richHitProd);
 
-	CbmMatchRecoToMC* matchRecoToMc = new CbmMatchRecoToMC();
-	run->AddTask(matchRecoToMc);
+    CbmRichReconstruction* richReco = new CbmRichReconstruction();
+    richReco->SetRunExtrapolation(true);
+    richReco->SetRunProjection(true);
+    richReco->SetRunTrackAssign(true);
+    //	richReco->SetFinderName("ideal");     // To do matching Sts-Ring
+    //	richReco->SetProjectionName("analytical2"); // Set to analytical2 to test my class.
+    //richReco->SetFitterName("circle_cop");;
+    run->AddTask(richReco);
 
-	CbmRichMirrorSortingAlignment* mirror = new CbmRichMirrorSortingAlignment();
-	mirror->setOutputDir(outDir + "/corr_params");
-	TString studyName = "Matching_Efficiency";
-	mirror->setStudyName(studyName);
-	run->AddTask(mirror);
+    CbmMatchRecoToMC* matchRecoToMc = new CbmMatchRecoToMC();
+    run->AddTask(matchRecoToMc);
 
-	// -----  Parameter database   --------------------------------------------
-	FairRuntimeDb* rtdb = run->GetRuntimeDb();
-	FairParRootFileIo* parIo1 = new FairParRootFileIo();
-	FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
-	parIo1->open(parFile.Data());
-	parIo2->open(parFileList, "in");
-	rtdb->setFirstInput(parIo1);
-	rtdb->setSecondInput(parIo2);
-	rtdb->setOutput(parIo1);
-	rtdb->saveOutput();
+    // Reconstruction Qa
+    Int_t minNofPointsTrd = 6;
+    trdAnnCut = 0.85;
+    CbmLitTrackingQa* trackingQa = new CbmLitTrackingQa();
+    trackingQa->SetMinNofPointsSts(4);
+    trackingQa->SetUseConsecutivePointsInSts(true);
+    trackingQa->SetMinNofPointsTrd(minNofPointsTrd);
+    trackingQa->SetMinNofPointsMuch(10);
+    trackingQa->SetMinNofPointsTof(1);
+    trackingQa->SetQuota(0.7);
+    trackingQa->SetMinNofHitsTrd(minNofPointsTrd);
+    trackingQa->SetMinNofHitsMuch(10);
+    trackingQa->SetVerbose(0);
+    trackingQa->SetMinNofHitsRich(7);
+    trackingQa->SetQuotaRich(0.6);
+    trackingQa->SetOutputDir(std::string(resultDir));
+    trackingQa->SetPRange(20, 0., 10.);
+    trackingQa->SetTrdAnnCut(trdAnnCut);
+    std::vector<std::string> trackCat, richCat;
+    trackCat.push_back("All");
+    trackCat.push_back("Electron");
+    richCat.push_back("Electron");
+    richCat.push_back("ElectronReference");
+    trackingQa->SetTrackCategories(trackCat);
+    trackingQa->SetRingCategories(richCat);
+    //run->AddTask(trackingQa);
 
+    // RICH reco QA
+    CbmRichRecoQa* richRecoQa = new CbmRichRecoQa();
+    richRecoQa->SetOutputDir(std::string(resultDir));
+    //run->AddTask(richRecoQa);
+
+    CbmRichMirrorSortingAlignment* mirror = new CbmRichMirrorSortingAlignment();
+    mirror->setOutputDir(outDir + "/corr_params");
+    TString studyName = "Matching_Efficiency";
+    mirror->setStudyName(studyName);
+    run->AddTask(mirror);
+
+    CbmLitFitQa* fitQa = new CbmLitFitQa();
+    fitQa->SetMvdMinNofHits(0);
+    fitQa->SetStsMinNofHits(4);
+    fitQa->SetMuchMinNofHits(10);
+    fitQa->SetTrdMinNofHits(minNofPointsTrd);
+    fitQa->SetOutputDir(std::string(resultDir));
+    //run->AddTask(fitQa);
+
+    CbmLitClusteringQa* clusteringQa = new CbmLitClusteringQa();
+    clusteringQa->SetOutputDir(std::string(resultDir));
+    //run->AddTask(clusteringQa);
+
+    CbmLitTofQa* tofQa = new CbmLitTofQa();
+    tofQa->SetOutputDir(std::string(resultDir));
+    //run->AddTask(tofQa);
+
+    // ===                 End of RICH local reconstruction                  ===
+    // =========================================================================
+
+
+    // -----  Parameter database   --------------------------------------------
+    FairRuntimeDb* rtdb = run->GetRuntimeDb();
+    FairParRootFileIo* parIo1 = new FairParRootFileIo();
+    FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
+    parIo1->open(parFile.Data());
+    parIo2->open(parFileList, "in");
+    rtdb->setFirstInput(parIo1);
+    rtdb->setSecondInput(parIo2);
+    rtdb->setOutput(parIo1);
+    rtdb->saveOutput();
+    // ------------------------------------------------------------------------
+
+
+    // -----   Intialize and run   --------------------------------------------
     run->Init();
     cout << "Starting run" << endl;
     run->Run(0,nEvents);
+    // ------------------------------------------------------------------------
+
 
     // -----   Finish   -------------------------------------------------------
     timer.Stop();
@@ -215,6 +321,8 @@ void run_reco_matching_alignment(Int_t nEvents = 5000, Int_t Flag = 1)
     cout << "Parameter file is " << parFile << endl;
     cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << endl;
     cout << endl;
+    // ------------------------------------------------------------------------
+
 
     cout << " Test passed" << endl;
     cout << " All ok " << endl;
