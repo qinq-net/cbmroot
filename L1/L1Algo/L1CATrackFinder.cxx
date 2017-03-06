@@ -28,7 +28,6 @@
 #include "L1Portion.h"
 #include "omp.h"
 #include "pthread.h"
-#include <parallel/algorithm>
 #include "L1HitsSortHelper.h"
 
 
