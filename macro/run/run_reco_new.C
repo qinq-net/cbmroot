@@ -139,6 +139,11 @@ void run_reco_new(Int_t nEvents = 2,
   FairLogger::GetLogger()->SetLogVerbosityLevel(logVerbosity.Data());
   // ------------------------------------------------------------------------
 
+  // ----- Mc Data Manager   ------------------------------------------------
+  CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
+  mcManager->AddFile(inFile);
+  run->AddTask(mcManager);
+  // ------------------------------------------------------------------------
 
   // -----   Digitisers   ---------------------------------------------------
   std::cout << std::endl;
@@ -229,6 +234,5 @@ void run_reco_new(Int_t nEvents = 2,
 
   // Function needed for CTest runtime dependency
   Generate_CTest_Dependency_File(depFile);
-
   RemoveGeoManager();
 }
