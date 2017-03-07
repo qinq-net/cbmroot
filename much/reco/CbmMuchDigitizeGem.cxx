@@ -225,6 +225,11 @@ void CbmMuchDigitizeGem::Exec(Option_t* opt) {
 	fTimer.Start();
   	fNdigis = 0;
   	Int_t nPoints=0;
+	//Clearing the fDigis and fDigiMatches 
+	if(!fDaq){
+		fDigis->Clear();
+	        fDigiMatches->Clear();
+	}
 	
 	//Storing digi->Time < EventStartTime
 	ReadAndRegister();
@@ -247,7 +252,7 @@ void CbmMuchDigitizeGem::Exec(Option_t* opt) {
 	//Read the Signal, convert into Digi And Register into output
   	ReadAndRegister();
  	fTimer.Stop();
-  	gLogger->Info(MESSAGE_ORIGIN,"MuchDigitizeGem: %5.2f s, %i points, %i digis",fTimer.RealTime(),nPoints,fNdigis);
+  	gLogger->Info(MESSAGE_ORIGIN,"MuchDigitizeGem: %5.2f s, %i points, %i digis",fTimer.RealTime(),nPoints,fDigis->GetEntriesFast());
 
   	// revert branch to "current event"
   	//FairRootManager::Instance()->GetInTree()->GetBranch("MCTrack")->GetEntry(currentEvent);
