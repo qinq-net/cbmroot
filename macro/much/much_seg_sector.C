@@ -7,24 +7,24 @@
  * @param inDigiFile   Input file name containing initial segmentation parameters
  * @param outDigiFile  Output file name containing segmentation parameters
  */
-void much_seg_sector(char* mcFile = "",
-                     char* inDigiFile = "",
-                     char* outDigiFile = "")
+void much_seg_sector(TString mcFile = "",
+                     TString inDigiFile = "",
+                     TString outDigiFile = "")
 {
   // ========================================================================
   //          Adjust this part according to your requirements
 
   //  if (mcFile == "") {
-  if (strcmp (mcFile,"") == 0) {
+  if (mcFile == "") {
     mcFile = "data/mc.root";
   }
   //  if (inDigiFile == "") {
-  if (strcmp (inDigiFile,"") == 0) {
+  if (inDigiFile == "") {
     inDigiFile = "data/much_digi_sector_4station.seg";
     //    inDigiFile = "data/much_digi_sector.seg";
   }
   //  if (outDigiFile == "") {
-  if (strcmp (outDigiFile,"") == 0) {
+  if (outDigiFile=="") {
     outDigiFile = "data/much_digi_sector.root";
   }
 
@@ -56,7 +56,7 @@ void much_seg_sector(char* mcFile = "",
   // ------------------------------------------------------------------------
 
   // -----  Segmentation task  ----------------------------------------------
-  CbmMuchSegmentSector* seg = new CbmMuchSegmentSector(inDigiFile, outDigiFile);
+  CbmMuchSegmentSector* seg = new CbmMuchSegmentSector(inDigiFile.Data(), outDigiFile.Data());
   //  seg->DebugSwitchOn();
   fRun->AddTask(seg);
   // ------------------------------------------------------------------------

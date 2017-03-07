@@ -40,7 +40,7 @@ CbmMuchSegmentSector::CbmMuchSegmentSector()
     fGeoPar(NULL),
     fNStations(0),
     fStations(NULL),
-    fInputFileName((char*)"much.digi.root"),
+    fInputFileName("much.digi.root"),
     fDigiFileName(),
     fNRegions(),
     fRadii(),
@@ -56,13 +56,13 @@ CbmMuchSegmentSector::CbmMuchSegmentSector()
 // -------------------------------------------------------------------------
 
 // -----   Standard constructor   ------------------------------------------
-CbmMuchSegmentSector::CbmMuchSegmentSector(char* inputFileName, char* digiFileName)
+CbmMuchSegmentSector::CbmMuchSegmentSector(TString inputFileName, TString digiFileName)
   : FairTask(),
     fGeoPar(NULL),
     fNStations(0),
     fStations(NULL),
-    fInputFileName(inputFileName),
-    fDigiFileName(digiFileName),
+    fInputFileName(inputFileName.Data()),
+    fDigiFileName(digiFileName.Data()),
     fNRegions(),
     fRadii(),
     fAngles(),

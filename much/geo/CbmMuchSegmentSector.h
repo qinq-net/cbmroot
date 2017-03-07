@@ -1,4 +1,6 @@
 /** CbmMuchSegmentSector.h
+ *@author Vikas Singhal <vikas@vecc.gov.in>
+ *@since 07.03.16
  *@author Evgeny Kryshen <e.kryshen@gsi.de>
  *@since 05.02.12
  *@version 1.0
@@ -38,8 +40,9 @@ class CbmMuchSegmentSector : public FairTask {
     /** Standard constructor.
      * @param inputFile     Name of the input parameters file
      * @param digiFileName  Name of the output file with segmentation parameters
+     * for C++11 compatible mode char* changed to TString.
      */
-    CbmMuchSegmentSector(char* inputFile, char* digiFileName);
+    CbmMuchSegmentSector(TString inputFile, TString digiFileName);
 
     /** Initialization. */
     virtual InitStatus Init();
@@ -53,8 +56,8 @@ class CbmMuchSegmentSector : public FairTask {
     CbmGeoMuchPar*                fGeoPar;         // Geometry parameters container
     Int_t                         fNStations;      // Number of stations
     TObjArray*                    fStations;       // Array of stations
-    Char_t*                       fInputFileName;  // Name of the file with input parameters
-    Char_t*                       fDigiFileName;   // Name of the file with segmentation parameters
+    TString                       fInputFileName;  // Name of the file with input parameters
+    TString                       fDigiFileName;   // Name of the file with segmentation parameters
     std::map<Int_t, Int_t>             fNRegions;       // Map from a station index to a number of circled regions in the station
     std::map<Int_t, std::vector<Double_t> > fRadii;          // Map from a station index to a vector of circled regions radii
     std::map<Int_t, std::vector<Double_t> > fAngles;         // Map from a station index to a vector of single pad angles for given regions
