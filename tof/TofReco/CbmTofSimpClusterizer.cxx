@@ -428,7 +428,7 @@ Bool_t   CbmTofSimpClusterizer::InitCalibParameter()
       fvCPSigPropSpeed[iT].resize(iNbRpc);
       for (Int_t iRpc=0; iRpc<iNbRpc; iRpc++)
 	if( 0.0 < fDigiBdfPar->GetSigVel( iT, 0, iRpc ) )
-	   fvCPSigPropSpeed[iT][iRpc]      = 1000.0 * fDigiBdfPar->GetSigVel( iT, 0, iRpc ); // convert in cm/ns
+	   fvCPSigPropSpeed[iT][iRpc]      = fDigiBdfPar->GetSigVel( iT, 0, iRpc );
             else fvCPSigPropSpeed[iT][iRpc] = fDigiBdfPar->GetSignalSpeed();
   } // for (Int_t iT=0; iT<iNbSmTypes; iT++)
 
