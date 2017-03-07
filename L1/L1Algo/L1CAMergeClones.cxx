@@ -229,8 +229,10 @@ void L1Algo::CAMergeClones()
 
   THitI start_hit = 0;
   unsigned short ista = 0;
-
-    //#pragma omp parallel for
+#ifdef OMP 
+    #pragma omp parallel for
+#endif   
+  
   for(unsigned short iTr = 0; iTr < NTracksIsecAll; iTr++)
   {
     FirstHitIndex[iTr] = start_hit;
@@ -255,8 +257,9 @@ void L1Algo::CAMergeClones()
   L1TrackPar Tf;
   L1FieldValue fBm, fBb, fBf _fvecalignment;
   L1FieldRegion fld _fvecalignment;
-  
- // #pragma omp parallel for
+#ifdef OMP  
+  #pragma omp parallel for
+#endif  
   for(int iTr = 0; iTr < static_cast<unsigned short>(NTracksIsecAll); iTr++)
   {
     if(static_cast<int>(vTracks[iTr].NHits) > 6) continue;

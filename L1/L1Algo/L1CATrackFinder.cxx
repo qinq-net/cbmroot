@@ -1,12 +1,12 @@
 /*
  *=====================================================
  *
- *  CBM Level 1 Reconstruction
+ *  CBM Level 1 4D Reconstruction
  *
- *  Authors: I.Kisel,  S.Gorbunov, I.Kulakov, M.Zyzak
- * Documentation: V.Akishina
+ *  Authors: V.Akishina, I.Kisel,  S.Gorbunov, I.Kulakov, M.Zyzak
+ *  Documentation: V.Akishina
  *
- *  e-mail : i.kulakov@gsi.de
+ *  e-mail : v.akishina@gsi.de
  *
  *=====================================================
  *
@@ -26,8 +26,12 @@
 #include "L1Grid.h"
 #include "L1HitArea.h"
 #include "L1Portion.h"
+
+#ifdef OMP
 #include "omp.h"
 #include "pthread.h"
+#endif
+
 #include "L1HitsSortHelper.h"
 
 
@@ -818,15 +822,20 @@ inline void L1Algo::f4(  // input
 
     
     Station = istal;
+    
+#ifdef OMP   
     Thread = omp_get_thread_num();
+#else
+    Thread = 0;   
+#endif     
     
-    TripletsLocal1[Station][Thread][nTripletsThread[istal][omp_get_thread_num()]].SetLevel(0);
+    TripletsLocal1[Station][Thread][nTripletsThread[istal][Thread]].SetLevel(0);
     
-    TripletsLocal1[Station][Thread][nTripletsThread[istal][omp_get_thread_num()]].first_neighbour=0;
-    TripletsLocal1[Station][Thread][nTripletsThread[istal][omp_get_thread_num()]].last_neighbour=0;
+    TripletsLocal1[Station][Thread][nTripletsThread[istal][Thread]].first_neighbour=0;
+    TripletsLocal1[Station][Thread][nTripletsThread[istal][Thread]].last_neighbour=0;
     
     static int maxtrip = 0;
-    Triplet = nTripletsThread[istal][omp_get_thread_num()];
+    Triplet = nTripletsThread[istal][Thread];
     
     // PackLocation(Location, Triplet, Station, Thread);
     
@@ -880,7 +889,7 @@ if (isec!=TRACKS_FROM_TRIPLETS_ITERATION)
     
             
     
-    L1Triplet & tr1=TripletsLocal1[Station][Thread][nTripletsThread[istal][omp_get_thread_num()]];
+    L1Triplet & tr1=TripletsLocal1[Station][Thread][nTripletsThread[istal][Thread]];
 
     
     tr1.SetLevel(0);
@@ -892,9 +901,9 @@ if (isec!=TRACKS_FROM_TRIPLETS_ITERATION)
 
 
         ++nstaltriplets;
-        nTripletsThread[istal][omp_get_thread_num()]++;
+        nTripletsThread[istal][Thread]++;
         
-        Triplet=nTripletsThread[istal][omp_get_thread_num()];
+        Triplet=nTripletsThread[istal][Thread];
         
         Location = Triplet+Station*100000000 +Thread*1000000;
         
@@ -1182,14 +1191,21 @@ inline void L1Algo::TripletsStaPort(  /// creates triplets: input: @istal - star
     
     /// Add the middle hits to parameters estimation. Propagate to right station.
     
-    nsL1::vector<L1TrackPar>::TSimd &T_3 = fT_3[omp_get_thread_num()];
-    vector<THitI> &hitsl_3 = fhitsl_3[omp_get_thread_num()];
-    vector<THitI> &hitsm_3 = fhitsm_3[omp_get_thread_num()];
-    vector<THitI> &hitsr_3 = fhitsr_3[omp_get_thread_num()];
-    nsL1::vector<fvec>::TSimd &u_front3 = fu_front3[omp_get_thread_num()];
-    nsL1::vector<fvec>::TSimd &u_back3 = fu_back3[omp_get_thread_num()];
-    nsL1::vector<fvec>::TSimd &z_pos3 = fz_pos3[omp_get_thread_num()];
-    nsL1::vector<fvec>::TSimd &timeR = fTimeR[omp_get_thread_num()];
+    
+#ifdef OMP   
+    int Thread = omp_get_thread_num();
+#else
+    int Thread = 0;   
+#endif
+    
+    nsL1::vector<L1TrackPar>::TSimd &T_3 = fT_3[Thread];
+    vector<THitI> &hitsl_3 = fhitsl_3[Thread];
+    vector<THitI> &hitsm_3 = fhitsm_3[Thread];
+    vector<THitI> &hitsr_3 = fhitsr_3[Thread];
+    nsL1::vector<fvec>::TSimd &u_front3 = fu_front3[Thread];
+    nsL1::vector<fvec>::TSimd &u_back3 = fu_back3[Thread];
+    nsL1::vector<fvec>::TSimd &z_pos3 = fz_pos3[Thread];
+    nsL1::vector<fvec>::TSimd &timeR = fTimeR[Thread];
     
     T_3.clear();
     hitsl_3.clear();
@@ -1316,7 +1332,11 @@ inline void L1Algo::TripletsStaPort(  /// creates triplets: input: @istal - star
 
 void L1Algo::CATrackFinder()
 {
+  
+#ifdef OMP   
   omp_set_num_threads(fNThreads);
+#endif
+
   
 #ifdef PULLS
   static L1AlgoPulls *l1Pulls_ = new L1AlgoPulls();
@@ -1453,7 +1473,11 @@ void L1Algo::CATrackFinder()
         
   for(int ista = 0; ista < NStations; ++ista)
   {
+
+    
+#ifdef OMP   
 #pragma omp parallel for schedule(dynamic, 5)
+#endif    
     for(THitI ih = StsHitsStartIndex[ista]; ih < StsHitsStopIndex[ista]; ++ih)
       CreateHitPoint(vStsDontUsedHits_Buf[ih],ista, vStsDontUsedHitsxy_B[ih]);
   }
@@ -1669,7 +1693,10 @@ void L1Algo::CATrackFinder()
         
     for (int istal = NStations-2; istal >= FIRSTCASTATION; istal--) //  //start downstream chambers
     {
+      
+#ifdef OMP   
 #pragma omp parallel for firstprivate(T_1, fld_1, hitsl_1, hitsm_2, i1_2, TG_1, fldG_1, hitslG_1, hitsmG_2, i1G_2) //schedule(dynamic, 2)
+#endif      
       for(Tindex ip = portionStopIndex[istal+1]; ip < portionStopIndex[istal]; ++ip )
       {         
         Tindex n_2; /// number of doublets in portion
@@ -1837,13 +1864,21 @@ void L1Algo::CATrackFinder()
         numberCandidateThread [i]=0;
             
       for( int istaF = FIRSTCASTATION; istaF <= NStations-3-ilev; ++istaF )
-      {      
-        #pragma omp parallel for firstprivate(curr_tr, new_tr, best_tr, curr_chi2, best_chi2, best_L, curr_L, ndf ) // schedule(dynamic, 10)
+      {  
+        
+#ifdef OMP   
+#pragma omp parallel for firstprivate(curr_tr, new_tr, best_tr, curr_chi2, best_chi2, best_L, curr_L, ndf ) // schedule(dynamic, 10)
+#endif  
         for( Tindex ip=0; ip<fNThreads; ++ip )
         {
           for( Tindex itrip=0; itrip<nTripletsThread[istaF][ip]; ++itrip )
           {
+            
+#ifdef OMP             
             int thread_num = omp_get_thread_num();
+#else       
+            int thread_num=0;
+#endif            
             L1Triplet &first_trip = (TripletsLocal1[istaF][ip][itrip]);
             
             // ghost supression !!!
@@ -1917,7 +1952,9 @@ void L1Algo::CATrackFinder()
                   phitIt != tr.StsHits.begin()+tr.NHits; ++phitIt)
             {
               const L1StsHit &h =(*vStsHits)[*phitIt];
+#ifdef OMP              
               omp_set_lock(&hitToBestTrackB[h.b]);
+#endif              
               int &strip1 = (vStripToTrackB)[h.b];
               
               if (strip1!=-1)
@@ -1933,17 +1970,23 @@ void L1Algo::CATrackFinder()
                 else 
                 {
                   check=0; 
-                  omp_unset_lock(&hitToBestTrackB[h.b]); break;
+#ifdef OMP                   
+                  omp_unset_lock(&hitToBestTrackB[h.b]);
+#endif                  
+                  break;
                 }
               }
               else 
                 strip1 = tr.CandIndex;
-              
+#ifdef OMP              
               omp_unset_lock(&hitToBestTrackB[h.b]);
+#endif              
 
               if (check) 
               {
+#ifdef OMP                
                 omp_set_lock(&hitToBestTrackF[h.f]);
+#endif                
                 int &strip2 = (vStripToTrack)[h.f];
                 if (strip2!=-1)
                 {
@@ -1956,14 +1999,18 @@ void L1Algo::CATrackFinder()
                     
                   }
                   else {check=0; 
-                    omp_unset_lock(&hitToBestTrackF[h.f]); break;
+#ifdef OMP                    
+                    omp_unset_lock(&hitToBestTrackF[h.f]); 
+#endif                    
+                    break;
                     
                   }    
                 }              
                 else 
                   strip2 = tr.CandIndex;
-              
+#ifdef OMP               
                 omp_unset_lock(&hitToBestTrackF[h.f]);
+#endif                 
               }
             }
                             
@@ -1984,8 +2031,10 @@ void L1Algo::CATrackFinder()
       for (int i=0; i<fNThreads; ++i)
       {
         L1Track t;
-                      
+
+#ifdef OMP           
         #pragma omp parallel for  schedule(dynamic, 10)  firstprivate(t)
+#endif         
         for ( Tindex iCandidate = 0; iCandidate < numberCandidateThread [i]; ++iCandidate )
         {
           L1Branch &tr = CandidatesTrack[i][iCandidate];
@@ -2012,6 +2061,17 @@ void L1Algo::CATrackFinder()
 #endif
               float  sumTime = 0;
               
+              
+#ifdef OMP
+
+int num_thread = omp_get_thread_num();                  
+                  
+#else 
+
+int num_thread = 0;
+                  
+#endif                
+              
               for (vector<THitI>::iterator phIt = tr.StsHits.begin();/// used strips are marked
                     phIt != tr.StsHits.begin()+tr.NHits; ++phIt)
               {
@@ -2020,12 +2080,12 @@ void L1Algo::CATrackFinder()
                 
                   SetFUsed( const_cast<unsigned char&>((*vSFlag)[h.f]));
                   SetFUsed( const_cast<unsigned char&>((*vSFlagB)[h.b]));
-
                 
                 
-                vRecoHits_local [omp_get_thread_num()][SavedHits[omp_get_thread_num()]]=(*phIt);
                 
-                SavedHits[omp_get_thread_num()]++;
+                vRecoHits_local [num_thread][SavedHits[num_thread]]=(*phIt);
+                
+                SavedHits[num_thread]++;
                 
                 const   L1StsHit &hit = (*vStsHits)[*phIt];
                 
@@ -2043,8 +2103,8 @@ void L1Algo::CATrackFinder()
               t.Momentum = tr.Momentum;
               t.fTrackTime = sumTime/t.NHits;
 
-              vTracks_local [omp_get_thread_num()][SavedCand[omp_get_thread_num()]]=(t);
-              SavedCand[omp_get_thread_num()]++;
+              vTracks_local [num_thread][SavedCand[num_thread]]=(t);
+              SavedCand[num_thread]++;
             }
           }   
         }
@@ -2069,8 +2129,9 @@ void L1Algo::CATrackFinder()
         NTracksIsecAll+=SavedCand[i];
         NHitsIsecAll+=SavedHits[i];
       }
-              
+#ifdef OMP               
   #pragma omp parallel for
+#endif  
       for (int i=0; i<fNThreads; ++i)
       {
         for ( Tindex iC = 0; iC < SavedCand[i]; ++iC )
