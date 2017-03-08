@@ -18,6 +18,8 @@ private:
     TClonesArray* fTrdPoints;
     TH1F* xHistos[4][3];
     TH1F* yHistos[4][3];
+    TH1F* trdDeltaThetaXHistos[3];
+    TH1F* trdDeltaThetaYHistos[3];
     
 ClassDef(LxCalcStats, 1)        
 };

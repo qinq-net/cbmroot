@@ -43,7 +43,9 @@ Link_Directories( ${LINK_DIRECTORIES})
 
 Set(SRCS
   TBBinned/LxTBTask.cxx
+#  TBBinned/LxTBMLTask.cxx
   TBBinned/LxTBTieTracks.cxx
+  TBBinned/LxTBTrdTask.cxx
   GenNoiseElectrons/GenNoiseElectrons.cxx
   CalcStats/CalcStats.cxx
 )

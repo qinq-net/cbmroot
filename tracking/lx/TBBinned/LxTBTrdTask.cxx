@@ -139,8 +139,11 @@ static bool GetHistoRMS(const char*  name, Double_t& retVal)
    return result;
 }
 
+static TH1F* signalDistanceHisto = 0;
+
 InitStatus LxTBTrdFinder::Init()
 {
+   signalDistanceHisto = new TH1F("signalDistanceHisto", "signalDistanceHisto", 200, 0., 800.);
    speedOfLight = 100 * TMath::C();// Multiply by 100 to express in centimeters.
    nof_timebins = 5;// Corresponds to event by event mode.
    pair<int, int> stSpatLimits[] = { { 20, 20 }, { 20, 20 }, { 20, 20 }, { 20, 20 } };
@@ -209,6 +212,8 @@ InitStatus LxTBTrdFinder::Init()
       {
          evTracks.push_back(TrackDataHolder());
          const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*> (mcTracks->Get(0, i, j));
+         evTracks.back().pdg = mcTrack->GetPdgCode();
+         evTracks.back().z = mcTrack->GetStartZ();
 
          if (mcTrack->GetPdgCode() == 11 || mcTrack->GetPdgCode() == -11)
          {
@@ -255,13 +260,55 @@ InitStatus LxTBTrdFinder::Init()
    for (vector<vector<TrackDataHolder> >::iterator i = fMCTracks.begin(); i != fMCTracks.end(); ++i)
    {
       vector<TrackDataHolder>& evTracks = *i;
+      TrackDataHolder* posTrack = 0;
+      TrackDataHolder* negTrack = 0;
+      list<TrackDataHolder*> eles;
+      list<TrackDataHolder*> poss;
 
       for (vector<TrackDataHolder>::iterator j = evTracks.begin(); j != evTracks.end(); ++j)
       {
          TrackDataHolder& track = *j;
+         
+         if (11 == track.pdg && 15 > track.z)
+         {
+            bool use = true;
+            
+            for (int k = 0; k < CUR_NOF_STATIONS; ++k)
+            {
+               if (track.pointInds[k] < 0)
+               {
+                  use = false;
+                  break;
+               }
+            }
+            
+            if (use)
+               eles.push_back(&track);
+         }
+         else if (-11 == track.pdg && 15 > track.z)
+         {
+            bool use = true;
+            
+            for (int k = 0; k < CUR_NOF_STATIONS; ++k)
+            {
+               if (track.pointInds[k] < 0)
+               {
+                  use = false;
+                  break;
+               }
+            }
+            
+            if (use)
+               poss.push_back(&track);
+         }
 
          if (!track.isSignal)
             continue;
+         
+         /*if (11 == track.pdg)
+            negTrack = &track;
+         else
+            posTrack = &track;*/
 
          for (int k = 0; k < CUR_NOF_STATIONS; ++k)
          {
@@ -271,6 +318,34 @@ InitStatus LxTBTrdFinder::Init()
                break;
             }
          }
+         
+         /*if (track.isSignal)
+         {
+            if (11 == track.pdg)
+               negTrack = &track;
+            else
+               posTrack = &track;
+         }*/
+      }
+      
+      /*if (0 != posTrack && 0 != negTrack && posTrack->pointInds[0] >= 0 && negTrack->pointInds[0] >= 0)
+      {
+         const PointDataHolder& posPt = fTrdPoints[eventId][posTrack->pointInds[0]];
+         const PointDataHolder& negPt = fTrdPoints[eventId][negTrack->pointInds[0]];
+         signalDistanceHisto->Fill(sqrt((posPt.x - negPt.x) * (posPt.x - negPt.x) + (posPt.y - negPt.y) * (posPt.y - negPt.y)));
+      }*/
+      
+      for (list<TrackDataHolder*>::const_iterator k = eles.begin(); k != eles.end(); ++k)
+      {
+         const TrackDataHolder* negTrack = *k;
+         
+         for (list<TrackDataHolder*>::const_iterator l = poss.begin(); l != poss.end(); ++l)
+         {
+            const TrackDataHolder* posTrack = *l;
+            const PointDataHolder& posPt = fTrdPoints[eventId][posTrack->pointInds[0]];
+            const PointDataHolder& negPt = fTrdPoints[eventId][negTrack->pointInds[0]];
+            signalDistanceHisto->Fill(sqrt((posPt.x - negPt.x) * (posPt.x - negPt.x) + (posPt.y - negPt.y) * (posPt.y - negPt.y)));
+         }  
       }
 
       ++eventId;
@@ -428,6 +503,18 @@ struct RTDLess
     }
 };
 
+static void SaveHisto(TH1* histo)
+{
+   TFile* curFile = TFile::CurrentFile();
+   TString histoName = histo->GetName();
+   histoName += ".root";
+   TFile fh(histoName.Data(), "RECREATE");
+   histo->Write();
+   fh.Close();
+   delete histo;
+   TFile::CurrentFile() = curFile;
+}
+
 void LxTBTrdFinder::Finish()
 {
    int nofRecoTracks = recoTracks.size();   
@@ -488,6 +575,7 @@ void LxTBTrdFinder::Finish()
    cout << "Reconstruction efficiency is: " << eff << "% [ " << nofRecoSignalTracks << " / " << nofSignalTracks << " ]" << endl;
    
    int nofRightRecoTracks = 0;
+   map<Int_t, pair<list<LxTbBinnedPoint*>, list<LxTbBinnedPoint*> > > elecPositrons;
    
    for (list<LxTbBinnedFinder::Chain*>::const_iterator i = recoTracks.begin(); i != recoTracks.end(); ++i)
    {
@@ -511,6 +599,7 @@ void LxTBTrdFinder::Finish()
       }
         
       int nofPoints = 0;
+      const RecoTrackData* bestMCTrack = 0;
         
       for (map<RecoTrackData, int, RTDLess>::const_iterator j = nofTracks.begin(); j != nofTracks.end(); ++j)
       {
@@ -523,14 +612,60 @@ void LxTBTrdFinder::Finish()
          }
          
          if (nofp > nofPoints)
+         {
             nofPoints = nofp;
+            bestMCTrack = &j->first;
+         }
       }
         
       if (nofPoints >= CUR_NOF_STATIONS - 1)
+      {
          ++nofRightRecoTracks;
+         
+         if (35 > fMCTracks[bestMCTrack->eventId][bestMCTrack->trackId].z)
+         {
+            if (11 == fMCTracks[bestMCTrack->eventId][bestMCTrack->trackId].pdg)
+               elecPositrons[bestMCTrack->eventId].first.push_back(chain->points[0]);
+            else if (-11 == fMCTracks[bestMCTrack->eventId][bestMCTrack->trackId].pdg)
+               elecPositrons[bestMCTrack->eventId].second.push_back(chain->points[0]);
+         }
+      }
    }
    
    eff = 0 == recoTracks.size() ? 100 : 100.0 * nofRightRecoTracks / nofRecoTracks;
    cout << "Non ghosts are: " << eff << "% [ " << nofRightRecoTracks << " / " << nofRecoTracks << " ]" << endl;
+   
+   int nofTriggPairs = 0;
+   
+   for (map<Int_t, pair<list<LxTbBinnedPoint*>, list<LxTbBinnedPoint*> > >::iterator i = elecPositrons.begin(); i != elecPositrons.end(); ++i)
+   {
+      list<LxTbBinnedPoint*>& evEls = i->second.first;
+      list<LxTbBinnedPoint*>& evPos = i->second.second;
+      bool trigPair = false;
+      
+      for (list<LxTbBinnedPoint*>::const_iterator j = evEls.begin(); j != evEls.end(); ++j)
+      {
+         const LxTbBinnedPoint* elp = *j;
+         scaltype negX = elp->x;
+         scaltype negY = elp->y;
+      
+         for (list<LxTbBinnedPoint*>::const_iterator k = evPos.begin(); k != evPos.end(); ++k)
+         {
+            const LxTbBinnedPoint* pop = *k;      
+            scaltype posX = pop->x;
+            scaltype posY = pop->y;
+            
+            if (sqrt((posX - negX) * (posX - negX) + (posY - negY) * (posY - negY)) > 200)
+               trigPair = true;
+         }
+      }
+      
+      if (trigPair)
+         ++nofTriggPairs;
+   }
+   
+   cout << "NOF triggering events: " << nofTriggPairs << endl;
+   
+   SaveHisto(signalDistanceHisto);
 #endif//LXTB_QA
 }

@@ -2,10 +2,13 @@
 #include "FairLogger.h"
 #include "TClonesArray.h"
 #include "CbmMuchPoint.h"
+#include "CbmTrdPoint.h"
 #include <list>
 #include <map>
 #include "CbmMuchGeoScheme.h"
+#include "CbmTrdAddress.h"
 #include "CbmMCTrack.h"
+#include "CbmMCTestHitCompare.h"
 
 ClassImp(LxCalcStats)
 
@@ -13,7 +16,8 @@ using namespace std;
 
 struct LxStatTrack
 {
-   list<Int_t> points[4][3];
+   list<Int_t> muchPoints[4][3];
+   list<Int_t> trdPoints[4];
 };
 
 LxCalcStats::LxCalcStats() : fMCTracks(0), fMuchPoints(0), fTrdPoints(0)
@@ -31,7 +35,7 @@ InitStatus LxCalcStats::Init()
    fMuchPoints = static_cast<TClonesArray*> (ioman->GetObject("MuchPoint"));
    fTrdPoints = static_cast<TClonesArray*> (ioman->GetObject("TrdPoint"));
    
-   if (0 == fMCTracks || 0 == fMuchPoints)
+   if (0 == fMCTracks || (0 == fMuchPoints && 0 == fTrdPoints))
       fLogger->Fatal(MESSAGE_ORIGIN, "No MC tracks or points");
    
    char buf[128];
@@ -47,13 +51,21 @@ InitStatus LxCalcStats::Init()
       }
    }
    
+   for (int i = 1; i < 4; ++i)
+   {
+      sprintf(buf, "trdDeltaThetaX_%d", i);
+      trdDeltaThetaXHistos[i - 1] = new TH1F(buf, buf, 100, -1.0, 1.0);
+      sprintf(buf, "trdDeltaThetaY_%d", i);
+      trdDeltaThetaYHistos[i - 1] = new TH1F(buf, buf, 100, -1.0, 1.0);
+   }
+   
    return kSUCCESS;
 }
 
 void LxCalcStats::Exec(Option_t* opt)
 {
-   map<Int_t, LxStatTrack> tracks;
-   Int_t nofMuchPoints = fMuchPoints->GetEntriesFast();
+   map<Int_t, LxStatTrack> eNoiseTracks;
+   Int_t nofMuchPoints = 0 == fMuchPoints ? 0 : fMuchPoints->GetEntriesFast();
    
    for (Int_t i = 0; i < nofMuchPoints; ++i)
    {
@@ -61,12 +73,12 @@ void LxCalcStats::Exec(Option_t* opt)
       Int_t stationNumber = CbmMuchGeoScheme::GetStationIndex(point->GetDetectorId());
       Int_t layerNumber = CbmMuchGeoScheme::GetLayerIndex(point->GetDetectorId());
       Int_t trackId = point->GetTrackID();
-      map<Int_t, LxStatTrack>::iterator trIt = tracks.find(trackId);
+      map<Int_t, LxStatTrack>::iterator trIt = eNoiseTracks.find(trackId);
       
-      if (trIt == tracks.end())
-         tracks[trackId] = LxStatTrack();
+      if (trIt == eNoiseTracks.end())
+         eNoiseTracks[trackId] = LxStatTrack();
       
-      tracks[trackId].points[stationNumber][layerNumber].push_back(i);
+      eNoiseTracks[trackId].muchPoints[stationNumber][layerNumber].push_back(i);
    }
    
    for (Int_t i = 0; i < nofMuchPoints; ++i)
@@ -87,7 +99,7 @@ void LxCalcStats::Exec(Option_t* opt)
          while (parentId >= 0)
          {
             const CbmMCTrack* parent = static_cast<const CbmMCTrack*> (fMCTracks->At(parentId));
-            const list<Int_t> parentPts = tracks[parentId].points[stationNumber][layerNumber];
+            const list<Int_t> parentPts = eNoiseTracks[parentId].muchPoints[stationNumber][layerNumber];
             
             for (list<Int_t>::const_iterator j = parentPts.begin(); j != parentPts.end(); ++j)
             {
@@ -100,6 +112,71 @@ void LxCalcStats::Exec(Option_t* opt)
             }
             
             parentId = parent->GetMotherId();
+         }
+      }
+   }
+   
+   map<Int_t, LxStatTrack> jPsiMuTracks;
+   Int_t nofTrdPoints = 0 == fTrdPoints ? 0 : fTrdPoints->GetEntriesFast();
+   
+   for (Int_t i = 0; i < nofTrdPoints; ++i)
+   {
+      const CbmTrdPoint* point = static_cast<const CbmTrdPoint*> (fTrdPoints->At(i));
+      Int_t layerNumber = CbmTrdAddress::GetLayerId(point->GetModuleAddress());
+      Int_t trackId = point->GetTrackID();
+      const CbmMCTrack* track = static_cast<const CbmMCTrack*> (fMCTracks->At(trackId));
+      
+      if (-11 != track->GetPdgCode() && 11 != track->GetPdgCode())
+         continue;
+      
+      Int_t motherId = track->GetMotherId();
+      
+      if (0 > motherId)
+         continue;
+      
+      const CbmMCTrack* mother = static_cast<const CbmMCTrack*> (fMCTracks->At(motherId));
+      
+      if (443 != mother->GetPdgCode())
+         continue;
+      
+      map<Int_t, LxStatTrack>::iterator trIt = jPsiMuTracks.find(trackId);
+      
+      if (trIt == jPsiMuTracks.end())
+         jPsiMuTracks[trackId] = LxStatTrack();
+      
+      jPsiMuTracks[trackId].trdPoints[layerNumber].push_back(i);
+   }
+   
+   for (map<Int_t, LxStatTrack>::const_iterator i = jPsiMuTracks.begin(); i != jPsiMuTracks.end(); ++i)
+   {
+      const LxStatTrack& track = i->second;
+      
+      for (int j = 1; j < 4; ++j)
+      {
+         const list<Int_t>& lPoints = track.trdPoints[j - 1];
+         const list<Int_t>& rPoints = track.trdPoints[j];
+         
+         for (list<Int_t>::const_iterator k = rPoints.begin(); k!= rPoints.end(); ++k)
+         {
+            const CbmTrdPoint* rPoint = static_cast<const CbmTrdPoint*> (fTrdPoints->At(*k));
+            Double_t rX = (rPoint->GetXIn() + rPoint->GetXOut()) / 2;
+            Double_t rY = (rPoint->GetYIn() + rPoint->GetYOut()) / 2;
+            Double_t rZ = (rPoint->GetZIn() + rPoint->GetZOut()) / 2;
+            Double_t rTx = rX / rZ;
+            Double_t rTy = rY / rZ;
+            
+            for (list<Int_t>::const_iterator l = lPoints.begin(); l!= lPoints.end(); ++l)
+            {
+               const CbmTrdPoint* lPoint = static_cast<const CbmTrdPoint*> (fTrdPoints->At(*l));
+               Double_t lX = (lPoint->GetXIn() + lPoint->GetXOut()) / 2;
+               Double_t lY = (lPoint->GetYIn() + lPoint->GetYOut()) / 2;
+               Double_t lZ = (lPoint->GetZIn() + lPoint->GetZOut()) / 2;
+               Double_t deltaZ = lZ - rZ;
+               Double_t x = rX + rTx * deltaZ;
+               Double_t y = rY + rTy * deltaZ;
+               trdDeltaThetaXHistos[j - 1]->Fill((lX - x) / deltaZ);
+               trdDeltaThetaYHistos[j - 1]->Fill((lY - y) / deltaZ);
+            }
          }
       }
    }
@@ -126,5 +203,11 @@ void LxCalcStats::Finish()
          SaveHisto(xHistos[i][j]);
          SaveHisto(yHistos[i][j]);
       }
+   }
+   
+   for (int i = 0; i < 3; ++i)
+   {
+      SaveHisto(trdDeltaThetaXHistos[i]);
+      SaveHisto(trdDeltaThetaYHistos[i]);
    }
 }

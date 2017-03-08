@@ -30,8 +30,10 @@ public:
     {
         Int_t pointInds[CUR_NOF_STATIONS];
         bool isSignal;
+        Int_t pdg;
+        Double_t z;
         
-        TrackDataHolder() : isSignal(false)
+        TrackDataHolder() : isSignal(false), pdg(-1), z(0)
         {
             for (int i = 0; i < CUR_NOF_STATIONS; ++i)
                 pointInds[i] = -1;

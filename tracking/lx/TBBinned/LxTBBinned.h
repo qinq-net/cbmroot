@@ -43,7 +43,7 @@ inline int clock_gettime(int clk_id, struct timespec *t){
 #include "CbmPixelHit.h"
 #include <set>
 
-#define NOF_SIGMAS 4
+#define NOF_SIGMAS 1
 #define NOF_SIGMAS_SQ NOF_SIGMAS * NOF_SIGMAS
 #define TIME_ERROR 4
 
