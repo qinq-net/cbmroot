@@ -16,7 +16,9 @@
 
 #include <assert.h>
 #include <cstdio>
+#ifdef _OPENMP
 #include "omp.h"
+#endif
 #include "L1StsHit.h"
 #include "L1HitPoint.h"
 

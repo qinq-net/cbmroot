@@ -27,7 +27,7 @@
 #include "L1HitArea.h"
 #include "L1Portion.h"
 
-#ifdef OMP
+#ifdef _OPENMP
 #include "omp.h"
 #include "pthread.h"
 #endif
@@ -823,7 +823,7 @@ inline void L1Algo::f4(  // input
     
     Station = istal;
     
-#ifdef OMP   
+#ifdef _OPENMP   
     Thread = omp_get_thread_num();
 #else
     Thread = 0;   
@@ -1192,7 +1192,7 @@ inline void L1Algo::TripletsStaPort(  /// creates triplets: input: @istal - star
     /// Add the middle hits to parameters estimation. Propagate to right station.
     
     
-#ifdef OMP   
+#ifdef _OPENMP   
     int Thread = omp_get_thread_num();
 #else
     int Thread = 0;   
@@ -1333,7 +1333,7 @@ inline void L1Algo::TripletsStaPort(  /// creates triplets: input: @istal - star
 void L1Algo::CATrackFinder()
 {
   
-#ifdef OMP   
+#ifdef _OPENMP   
   omp_set_num_threads(fNThreads);
 #endif
 
@@ -1475,7 +1475,7 @@ void L1Algo::CATrackFinder()
   {
 
     
-#ifdef OMP   
+#ifdef _OPENMP   
 #pragma omp parallel for schedule(dynamic, 5)
 #endif    
     for(THitI ih = StsHitsStartIndex[ista]; ih < StsHitsStopIndex[ista]; ++ih)
@@ -1694,7 +1694,7 @@ void L1Algo::CATrackFinder()
     for (int istal = NStations-2; istal >= FIRSTCASTATION; istal--) //  //start downstream chambers
     {
       
-#ifdef OMP   
+#ifdef _OPENMP   
 #pragma omp parallel for firstprivate(T_1, fld_1, hitsl_1, hitsm_2, i1_2, TG_1, fldG_1, hitslG_1, hitsmG_2, i1G_2) //schedule(dynamic, 2)
 #endif      
       for(Tindex ip = portionStopIndex[istal+1]; ip < portionStopIndex[istal]; ++ip )
@@ -1866,7 +1866,7 @@ void L1Algo::CATrackFinder()
       for( int istaF = FIRSTCASTATION; istaF <= NStations-3-ilev; ++istaF )
       {  
         
-#ifdef OMP   
+#ifdef _OPENMP   
 #pragma omp parallel for firstprivate(curr_tr, new_tr, best_tr, curr_chi2, best_chi2, best_L, curr_L, ndf ) // schedule(dynamic, 10)
 #endif  
         for( Tindex ip=0; ip<fNThreads; ++ip )
@@ -1874,7 +1874,7 @@ void L1Algo::CATrackFinder()
           for( Tindex itrip=0; itrip<nTripletsThread[istaF][ip]; ++itrip )
           {
             
-#ifdef OMP             
+#ifdef _OPENMP             
             int thread_num = omp_get_thread_num();
 #else       
             int thread_num=0;
@@ -1952,7 +1952,7 @@ void L1Algo::CATrackFinder()
                   phitIt != tr.StsHits.begin()+tr.NHits; ++phitIt)
             {
               const L1StsHit &h =(*vStsHits)[*phitIt];
-#ifdef OMP              
+#ifdef _OPENMP              
               omp_set_lock(&hitToBestTrackB[h.b]);
 #endif              
               int &strip1 = (vStripToTrackB)[h.b];
@@ -1970,7 +1970,7 @@ void L1Algo::CATrackFinder()
                 else 
                 {
                   check=0; 
-#ifdef OMP                   
+#ifdef _OPENMP                   
                   omp_unset_lock(&hitToBestTrackB[h.b]);
 #endif                  
                   break;
@@ -1978,13 +1978,13 @@ void L1Algo::CATrackFinder()
               }
               else 
                 strip1 = tr.CandIndex;
-#ifdef OMP              
+#ifdef _OPENMP              
               omp_unset_lock(&hitToBestTrackB[h.b]);
 #endif              
 
               if (check) 
               {
-#ifdef OMP                
+#ifdef _OPENMP                
                 omp_set_lock(&hitToBestTrackF[h.f]);
 #endif                
                 int &strip2 = (vStripToTrack)[h.f];
@@ -1999,7 +1999,7 @@ void L1Algo::CATrackFinder()
                     
                   }
                   else {check=0; 
-#ifdef OMP                    
+#ifdef _OPENMP                    
                     omp_unset_lock(&hitToBestTrackF[h.f]); 
 #endif                    
                     break;
@@ -2008,7 +2008,7 @@ void L1Algo::CATrackFinder()
                 }              
                 else 
                   strip2 = tr.CandIndex;
-#ifdef OMP               
+#ifdef _OPENMP               
                 omp_unset_lock(&hitToBestTrackF[h.f]);
 #endif                 
               }
@@ -2032,7 +2032,7 @@ void L1Algo::CATrackFinder()
       {
         L1Track t;
 
-#ifdef OMP           
+#ifdef _OPENMP           
         #pragma omp parallel for  schedule(dynamic, 10)  firstprivate(t)
 #endif         
         for ( Tindex iCandidate = 0; iCandidate < numberCandidateThread [i]; ++iCandidate )
@@ -2062,7 +2062,7 @@ void L1Algo::CATrackFinder()
               float  sumTime = 0;
               
               
-#ifdef OMP
+#ifdef _OPENMP
 
 int num_thread = omp_get_thread_num();                  
                   
@@ -2129,7 +2129,7 @@ int num_thread = 0;
         NTracksIsecAll+=SavedCand[i];
         NHitsIsecAll+=SavedHits[i];
       }
-#ifdef OMP               
+#ifdef _OPENMP               
   #pragma omp parallel for
 #endif  
       for (int i=0; i<fNThreads; ++i)

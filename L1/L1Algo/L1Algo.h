@@ -50,7 +50,7 @@ class L1AlgoDraw;
 #include <vector>
 #include <map>
 
-#ifdef OMP
+#ifdef _OPENMP
 #include "omp.h"
 #endif
 
@@ -97,7 +97,7 @@ class L1Algo{
     RealIHit_v(TypicalSize),
     RealIHit_v_buf(TypicalSize),
     RealIHit_v_buf2(TypicalSize),
-#ifdef OMP    
+#ifdef _OPENMP    
     hitToBestTrackF(TypicalSize),
     hitToBestTrackB(TypicalSize),
 #endif    
@@ -155,7 +155,7 @@ class L1Algo{
     
     for (int i=0; i<MaxNStations; i++) vGridTime[i].AllocateMemory(fNThreads);
 
-#ifdef OMP    
+#ifdef _OPENMP    
     
     for (int j=0; j<hitToBestTrackB.size(); j++)
     {
@@ -346,7 +346,7 @@ class L1Algo{
   vector<THitI> RealIHit_v_buf;
   vector<THitI> RealIHit_v_buf2;
   
-#ifdef OMP   
+#ifdef _OPENMP   
     
   L1Vector<omp_lock_t> hitToBestTrackB;
   L1Vector<omp_lock_t> hitToBestTrackF;

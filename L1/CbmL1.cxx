@@ -674,7 +674,9 @@ void CbmL1::Reconstruct(CbmEvent* event)
   }
 
   if( fVerbose>1 ) cout << endl << "CbmL1::Exec event " << ++nevent << " ..." << endl << endl;
+#ifdef _OPENMP
   omp_set_num_threads(1);
+#endif
     // repack data
 
   fData->Clear();

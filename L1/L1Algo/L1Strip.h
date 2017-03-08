@@ -2,7 +2,10 @@
 #define _L1Strip_h_
 
 #include "../CbmL1Def.h"
+
+#ifdef _OPENMP
 #include "omp.h"
+#endif
 
 struct L1Branch;
 
@@ -28,19 +31,25 @@ struct L1StripSelectTracks{
   L1StripSelectTracks(){   
   //  Candidates.resize(70);
    // Candidates2.resize(70);
+#ifdef _OPENMP
     omp_init_lock(&Occupied); 
+#endif
     Cand = -1;
   }
   
   ~L1StripSelectTracks()
   {
+#ifdef _OPENMP
     omp_destroy_lock(&Occupied);
+#endif
   }
   
 //  L1Vector <L1Branch*> Candidates;
 //  L1Vector <int> Candidates2;
   int Cand;
+#ifdef _OPENMP
   omp_lock_t Occupied;
+#endif
 };
 
 typedef unsigned /*short*/ int TStripI; // strip index type
