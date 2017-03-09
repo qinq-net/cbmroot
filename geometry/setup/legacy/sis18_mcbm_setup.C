@@ -37,7 +37,7 @@ void sis18_mcbm_setup()
   stsGeom      = "sts/msts_" + stsTag + ".geo.root";
   richGeom     = ""; //no reco// "rich/mrich_prototype_v18b.geo";
   muchGeom     = "much/mmuch_v18a.geo";  // no reco // patch CbmMuch.cxx for mCBM first
-  // patch much/geom/CbmMuch.cxx macro/mcbm/CbmMuch.cxx_to_McbmGeo.patch
+  // patch much/geo/CbmMuch.cxx macro/mcbm/CbmMuch.cxx_to_McbmGeo.patch
   // make -j3 -C build	   
   shieldGeom   = "";
   platformGeom = ""; // "passive/platform_v13a.geo";
