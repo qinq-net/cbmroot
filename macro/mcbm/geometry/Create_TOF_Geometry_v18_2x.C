@@ -49,7 +49,8 @@ const TString FileNameGeo  = geoVersion + "_geo.root";
 const TString FileNameInfo = geoVersion + ".geo.info";
 
 // TOF_Z_Front corresponds to front cover of outer super module towers
-const Float_t TOF_Z_Front =  250;  // SIS 100 hadron
+const Float_t TOF_Z_Front =  130;  // mCBM@SIS18
+//const Float_t TOF_Z_Front =  250;  // SIS 100 hadron
 //const Float_t TOF_Z_Front =  450;  // SIS 100 hadron
 //const Float_t TOF_Z_Front =  600;  // SIS 100 electron
 //const Float_t TOF_Z_Front =  650;  // SIS 100 muon
