@@ -2,38 +2,38 @@
 ##   trd_v18c_1e information file
 #
 
-# created 20160204
+# created 20170310
 
 # envelope
- 170 cm   start of TRD (z)
- 230 cm   end   of TRD (z)
+120.000000 cm   start of TRD (z)
+180.000000 cm   end   of TRD (z)
 
 # thickness
-  15 cm   per single layer (z)
+15.000000 cm   per single layer (z)
 
 # extra gaps
-   0   0   0   0    extra gaps in z (cm)
+ 0.000000 0.000000 0.000000 0.000000    extra gaps in z (cm)
 
 # generated TRD layers
   1  2  3  4    planeID
 
 # dimensions in x
- -332 cm to   332 cm x-dimension of layer  1
- -332 cm to   332 cm x-dimension of layer  2
- -332 cm to   332 cm x-dimension of layer  3
- -332 cm to   332 cm x-dimension of layer  4
+-332.500000 cm to 332.500000 cm x-dimension of layer  1
+-332.500000 cm to 332.500000 cm x-dimension of layer  2
+-332.500000 cm to 332.500000 cm x-dimension of layer  3
+-332.500000 cm to 332.500000 cm x-dimension of layer  4
 
 # dimensions in y
- -237 cm to   237 cm y-dimension of layer  1
- -237 cm to   237 cm y-dimension of layer  2
- -237 cm to   237 cm y-dimension of layer  3
- -237 cm to   237 cm y-dimension of layer  4
+-237.500000 cm to 237.500000 cm y-dimension of layer  1
+-237.500000 cm to 237.500000 cm y-dimension of layer  2
+-237.500000 cm to 237.500000 cm y-dimension of layer  3
+-237.500000 cm to 237.500000 cm y-dimension of layer  4
 
 # z-positions of layer front
-  170 cm   z-position of layer  1
-  185 cm   z-position of layer  2
-  200 cm   z-position of layer  3
-  215 cm   z-position of layer  4
+120.000000 cm   z-position of layer  1
+135.000000 cm   z-position of layer  2
+150.000000 cm   z-position of layer  3
+165.000000 cm   z-position of layer  4
 
 # flags
 support structure is    : included
@@ -90,20 +90,20 @@ GBTX readout boards are : included
  907.37 ch/m2   channels per m2 active area
 
 # gas volume position
-  171.6000 cm   position of gas volume - layer  1
-  186.6000 cm   position of gas volume - layer  2
-  201.6000 cm   position of gas volume - layer  3
-  216.6000 cm   position of gas volume - layer  4
+  121.6000 cm   position of gas volume - layer  1
+  136.6000 cm   position of gas volume - layer  2
+  151.6000 cm   position of gas volume - layer  3
+  166.6000 cm   position of gas volume - layer  4
 
 # angles of acceptance
-v: 54.05 deg, h: 62.62 deg - vertical/horizontal - layer  1
-v: 51.75 deg, h: 60.62 deg - vertical/horizontal - layer  2
-v: 49.59 deg, h: 58.69 deg - vertical/horizontal - layer  3
-v: 47.55 deg, h: 56.84 deg - vertical/horizontal - layer  4
+v: 62.77 deg, h: 69.82 deg - vertical/horizontal - layer  1
+v: 59.98 deg, h: 67.57 deg - vertical/horizontal - layer  2
+v: 57.34 deg, h: 65.40 deg - vertical/horizontal - layer  3
+v: 54.85 deg, h: 63.30 deg - vertical/horizontal - layer  4
 
 # inner aperture
-v:  9.40 deg, h:  9.40 deg - vertical/horizontal - layer  1
-v:  8.66 deg, h:  8.66 deg - vertical/horizontal - layer  2
-v:  8.02 deg, h:  8.02 deg - vertical/horizontal - layer  3
-v:  7.47 deg, h:  7.47 deg - vertical/horizontal - layer  4
+v: 13.13 deg, h: 13.13 deg - vertical/horizontal - layer  1
+v: 11.73 deg, h: 11.73 deg - vertical/horizontal - layer  2
+v: 10.60 deg, h: 10.60 deg - vertical/horizontal - layer  3
+v:  9.67 deg, h:  9.67 deg - vertical/horizontal - layer  4
 

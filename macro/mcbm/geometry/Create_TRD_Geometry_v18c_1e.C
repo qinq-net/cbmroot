@@ -170,7 +170,8 @@ const Int_t   LayerType[MaxLayers]        = { 10, 11, 10, 11, 20, 21, 20, 21, 30
 const Int_t   LayerNrInStation[MaxLayers] = { 1, 2, 3, 4, 1, 2, 3, 4, 1, 2 };
 
 // 5x z-positions from 260 till 550 cm
-Double_t LayerPosition[MaxLayers] = { 170. }; // start position - 2015-07-03 - DE - v18 - mCBM @ SIS 18
+Double_t LayerPosition[MaxLayers] = { 120. }; // start position - 2015-07-03 - DE - v18 - mCBM @ SIS 18
+//Double_t LayerPosition[MaxLayers] = { 170. }; // start position - 2015-07-03 - DE - v18 - mCBM @ SIS 18
 //Double_t LayerPosition[MaxLayers] = { 200. }; // start position - 2015-07-03 - DE - v18 - mCBM @ SIS 18
 //Double_t LayerPosition[MaxLayers] = { 400. }; // start position - 2015-07-03 - DE - v18 - mCBM @ SIS 18
 //Double_t LayerPosition[MaxLayers] = { 260. }; // start position - 2013-10-28 - DE - v14_1h - SIS 100 hadron         ( 4 layers, z = 2600 )
