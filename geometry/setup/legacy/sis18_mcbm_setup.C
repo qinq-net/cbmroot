@@ -30,17 +30,19 @@ void sis18_mcbm_setup()
   stsMatBudget = "mcbm/sts_" + stsTag + "_matbudget.root";
 
   // -----  Geometries  -----------------------------------------------------
-  caveGeom     = "mcbm/cave_mcbm.geo";
-  pipeGeom     = "mcbm/pipe_v18c.root";
-  magnetGeom   = ""; // magnet/magnet_v15a.geo.root";
-  mvdGeom      = "mcbm/mvd_" + mvdTag + ".geo.root";
-  stsGeom      = "mcbm/sts_" + stsTag + ".geo.root";
-  richGeom     = ""; //no reco// "mcbm/rich_prototype_v18b.geo";
-  muchGeom     = ""; //no reco// "mcbm/much_v18a.geo";
+  caveGeom     = "mcave_mcbm.geo";
+  pipeGeom     = "pipe/mpipe_v18c.root";
+  magnetGeom   = "";
+  mvdGeom      = "mvd/mmvd_" + mvdTag + ".geo.root";
+  stsGeom      = "sts/msts_" + stsTag + ".geo.root";
+  richGeom     = ""; //no reco// "rich/mrich_prototype_v18b.geo";
+  muchGeom     = "much/mmuch_v18a.geo";  // no reco // patch CbmMuch.cxx for mCBM first
+  // patch much/geom/CbmMuch.cxx macro/mcbm/CbmMuch.cxx_to_McbmGeo.patch
+  // make -j3 -C build	   
   shieldGeom   = "";
   platformGeom = ""; // "passive/platform_v13a.geo";
-  trdGeom      = "mcbm/trd_" + trdTag + ".geo.root";
-  tofGeom      = "mcbm/tof_" + tofTag + ".geo.root";
+  trdGeom      = "trd/mtrd_" + trdTag + ".geo.root";
+  tofGeom      = "tof/mtof_" + tofTag + ".geo.root";
   ecalGeom     = "";
   psdGeom      = ""; // "psd_geo_xy.txt";
   psdZpos = 800.;
