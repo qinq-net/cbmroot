@@ -64,10 +64,10 @@ void setup_sis100_muon_lmvm()
   setup->SetModule(kPipe, pipeGeoTag);
   setup->SetModule(kSts, stsGeoTag);
   setup->SetModule(kMuch, muchGeoTag);
-  setup->SetModule(kShield, shieldGeoTag);
-  setup->SetModule(kTrd, trdGeoTag);
-  setup->SetModule(kTof, tofGeoTag);
-  setup->SetModule(kPlatform, platGeoTag);
+  //  setup->SetModule(kShield, shieldGeoTag);
+  //  setup->SetModule(kTrd, trdGeoTag);
+  //  setup->SetModule(kTof, tofGeoTag);
+  //  setup->SetModule(kPlatform, platGeoTag);
   setup->SetField(fieldTag, fieldScale, 0., 0., fieldZ);
   // ------------------------------------------------------------------------
 

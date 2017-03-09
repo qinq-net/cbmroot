@@ -22,21 +22,21 @@
 MuchCave Zin position [cm]  :     160
 Acceptance tangent min      :     0.1
 Acceptance tangent max      :   0.466
-Number of absorbers         :       4
-Number of stations          :       4
+Number of absorbers         :       0
+Number of stations          :       1
 
 # Absorber specification
-Absorber Zin position [cm]  :       0      55      105    155
-Absorber thickness [cm]     :      25      20      20      30
-Absorber material           :       C       I       I       I
+Absorber Zin position [cm]  :       0
+Absorber thickness [cm]     :      25
+Absorber material           :       C
 
 # Station specification
-Station Zceneter [cm]       :      40      90     140     200
-Number of layers            :       3       3       3       3
-Detector type               :       3       3       3       3
-Distance between layers [cm]:      10      10      10      10
-Support thickness [cm]      :     1.5     1.5     1.5     1.5
-Use module design (0/1)     :       1       1       1       1
+Station Zceneter [cm]       :      40
+Number of layers            :       3
+Detector type               :       3
+Distance between layers [cm]:      10
+Support thickness [cm]      :     1.5
+Use module design (0/1)     :       1
 
 # GEM module specification (type 1)
 Active volume lx [cm]       :    25.6
@@ -50,7 +50,7 @@ Overlap along y axis [cm]   :       2
 Straw thickness [cm]        :     0.4
 
 # Sector-type GEM module specification (type 3)
-Number of sectors/layer     :      14      18      22      26
+Number of sectors/layer     :      14
 Active volume lz [cm]       :     0.3
 Spacer in r [cm]            :       2
 Spacer in phi [cm]          :       2
