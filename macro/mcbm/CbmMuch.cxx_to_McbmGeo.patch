@@ -67,8 +67,8 @@
               Double_t angle =  phi0*(2*iModule+iSide);
               Int_t krot;
               gMC->Matrix(krot,90,angle-90,90,angle,0,0);
-!             gGeoManager->Node(activeName,0,layerName,pos[0]-60.,pos[1],pos[2]-layer->GetZ()-100.,krot,kTRUE,buf,0);
-!             gGeoManager->Node(spacerName,0,layerName,pos[0]-60.,pos[1],pos[2]-layer->GetZ()-100.,krot,kTRUE,buf,0);
+!             gGeoManager->Node(activeName,0,layerName,pos[0]-60.,pos[1],pos[2]-layer->GetZ()-120.,krot,kTRUE,buf,0);
+!             gGeoManager->Node(spacerName,0,layerName,pos[0]-60.,pos[1],pos[2]-layer->GetZ()-120.,krot,kTRUE,buf,0);
               AddSensitiveVolume(voActive);
               continue;
             }
