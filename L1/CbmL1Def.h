@@ -74,7 +74,9 @@ template <typename T> class L1Vector: public std::vector<T>
    { 
      if(n > std::vector<T>::size())
      {
+       #ifdef _OPENMP
        #pragma omp critical
+       #endif
        std::vector<T>::resize(n);
      }
      
@@ -85,7 +87,9 @@ template <typename T> class L1Vector: public std::vector<T>
    {
      if(fSize >= std::vector<T>::size())
      {
+       #ifdef _OPENMP
        #pragma omp critical
+       #endif
        std::vector<T>::push_back(element);
      }
      else
@@ -99,7 +103,9 @@ template <typename T> class L1Vector: public std::vector<T>
    { 
      if(index >= std::vector<T>::size())
      {
-#pragma omp critical
+       #ifdef _OPENMP
+       #pragma omp critical
+       #endif
        std::vector<T>::resize(index+1);
        std::cout<<index<<" index "<<std::endl;
      }
