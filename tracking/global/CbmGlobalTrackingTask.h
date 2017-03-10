@@ -72,10 +72,15 @@ public:
 private:
     CbmGlobalTrackingTofGeometry fTofGeometry;
     TClonesArray* fTofHits;
+    TClonesArray* fStsTracks;
     
 #ifdef CBM_GLOBALTB_QA
     TClonesArray* fTofHitDigiMatches;
     TClonesArray* fTofDigis;
+    TClonesArray* fStsHitDigiMatches;
+    TClonesArray* fStsHits;
+    TClonesArray* fStsClusters;
+    TClonesArray* fStsDigis;
     CbmMCDataArray* fMCTracks;
     CbmMCDataArray* fStsMCPoints;
     CbmMCDataArray* fTrdMCPoints;
@@ -84,6 +89,7 @@ private:
     CbmMCEventList* fEventList;
     std::vector<std::vector<TrackData> > fTracks;
     std::vector<std::vector<PointData> > fTofPoints;
+    std::vector<std::vector<PointData> > fStsPoints;
     Int_t fNofEvents;
 #endif//CBM_GLOBALTB_QA
     

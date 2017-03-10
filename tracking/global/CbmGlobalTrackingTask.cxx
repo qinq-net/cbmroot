@@ -14,6 +14,9 @@
 #include "CbmTrdPoint.h"
 #include "CbmTofPoint.h"
 #include "TH1F.h"
+#include "CbmStsTrack.h"
+#include "CbmStsHit.h"
+#include "CbmStsCluster.h"
 
 #ifdef __MACH__
 #include <mach/mach_time.h>
@@ -43,12 +46,12 @@ using std::cout;
 using std::endl;
 using std::set;
 
-CbmGlobalTrackingTask::CbmGlobalTrackingTask() : fTofGeometry(), fTofHits(0)
+CbmGlobalTrackingTask::CbmGlobalTrackingTask() : fTofGeometry(), fTofHits(0), fStsTracks(0)
 #ifdef CBM_GLOBALTB_QA
-, fTofHitDigiMatches(0), fTofDigis(0), fMCTracks(0), fStsMCPoints(0), fTrdMCPoints(0), fTofMCPoints(0),
+, fTofHitDigiMatches(0), fTofDigis(0), fStsHitDigiMatches(0), fStsHits(0), fStsClusters(0), fStsDigis(0), fMCTracks(0), fStsMCPoints(0), fTrdMCPoints(0), fTofMCPoints(0),
    fNofEvents(1000), fTimeSlice(0), fEventList(0)
 #endif//CBM_GLOBALTB_QA
-, fTracks(), fTofPoints()
+, fTracks(), fTofPoints(), fStsPoints()
 {
 }
 
@@ -71,6 +74,13 @@ InitStatus CbmGlobalTrackingTask::Init()
    
    fTofGeometry.SetTofHits(fTofHits);
    
+   fStsTracks = static_cast<TClonesArray*> (ioman->GetObject("StsTrack"));
+   
+   if (0 == fStsTracks)
+      fLogger->Fatal(MESSAGE_ORIGIN, "No STS tracks");
+   
+   fTofGeometry.SetTofHits(fTofHits);
+   
 #ifdef CBM_GLOBALTB_QA
    hitVSTrackDeltaT = new TH1F("hitVSTrackDeltaT", "hitVSTrackDeltaT", 1000, -1000., 1000.);
    
@@ -83,6 +93,26 @@ InitStatus CbmGlobalTrackingTask::Init()
    
    if (0 == fTofDigis)
       fLogger->Fatal(MESSAGE_ORIGIN, "No ToF digis");
+   
+   //fStsHitDigiMatches = static_cast<TClonesArray*> (ioman->GetObject("StsDigiMatch"));
+   
+   //if (0 == fStsHitDigiMatches)
+      //fLogger->Fatal(MESSAGE_ORIGIN, "No STS hit digi matches");
+   
+   fStsHits = static_cast<TClonesArray*> (ioman->GetObject("StsHit"));
+   
+   if (0 == fStsHits)
+      fLogger->Fatal(MESSAGE_ORIGIN, "No STS hits");
+   
+   fStsClusters = static_cast<TClonesArray*> (ioman->GetObject("StsCluster"));
+   
+   if (0 == fStsClusters)
+      fLogger->Fatal(MESSAGE_ORIGIN, "No STS clusters");
+   
+   fStsDigis = static_cast<TClonesArray*> (ioman->GetObject("StsDigi"));
+   
+   if (0 == fStsDigis)
+      fLogger->Fatal(MESSAGE_ORIGIN, "No STS digis");
        
    fTimeSlice = static_cast<CbmTimeSlice*> (ioman->GetObject("TimeSlice."));
    
@@ -132,15 +162,31 @@ InitStatus CbmGlobalTrackingTask::Init()
    if (0 == fStsMCPoints)
       fLogger->Fatal(MESSAGE_ORIGIN, "No STS MC points");
    
+   fStsPoints.resize(fNofEvents);
+   
    for (int i = 0; i < fNofEvents; ++i)
    {
       int nofStsPoints = fStsMCPoints->Size(0, i);
       
+      if (nofStsPoints > 0)
+         fStsPoints[i].resize(nofStsPoints);
+      
+      vector<PointData>& evPoints = fStsPoints[i];
+      
       for (int j = 0; j < nofStsPoints; ++j)
       {
-         const CbmStsPoint* point = static_cast<const CbmStsPoint*> (fStsMCPoints->Get(0, i, j));
-         Int_t trackId = point->GetTrackID();
+         PointData& point = evPoints[j];
+         point.evN = i;
+         point.ind = j;
+         const CbmStsPoint* stsPoint = static_cast<const CbmStsPoint*> (fStsMCPoints->Get(0, i, j));
+         Int_t trackId = stsPoint->GetTrackID();
          fTracks[i][trackId].hasSts = true;
+         TrackData& track = fTracks[i][trackId];
+         point.track = &track;
+         point.x = (stsPoint->GetXIn() + stsPoint->GetXOut()) / 2;
+         point.y = (stsPoint->GetYIn() + stsPoint->GetYOut()) / 2;
+         point.z = (stsPoint->GetZIn() + stsPoint->GetZOut()) / 2;
+         point.t = stsPoint->GetTime();
       }
    }
    
@@ -232,7 +278,7 @@ void CbmGlobalTrackingTask::Exec(Option_t* opt)
 
    //Double_t endTime = fTimeSlice->GetEndTime();
    //Double_t duration = fTimeSlice->GetDuration();
-   
+#if 0
    set<TrackData*> mcTracks;
    Int_t nofHits = fTofHits->GetEntriesFast();
    
@@ -344,6 +390,122 @@ void CbmGlobalTrackingTask::Exec(Option_t* opt)
       if (isMatch)
          ++nofMergedTracks;
    }
+   
+#else// 0 or 1
+   Double_t startTime = fTimeSlice->GetStartTime();
+   fTofGeometry.Prepare(startTime);
+   int nofStsTracks = fStsTracks->GetEntriesFast();
+   
+   for (int i = 0; i < nofStsTracks; ++i)
+   {
+      ++nofReferenceTracks;
+      const CbmStsTrack* track = static_cast<const CbmStsTrack*> (fStsTracks->At(i));
+      Int_t tofHitInd;
+      const FairTrackParam* param = track->GetParamLast();
+      fTofGeometry.Find(param->GetX(), param->GetCovariance(0, 0), param->GetY(), param->GetCovariance(1, 1), param->GetZ(),
+         track->GetTime(), track->GetTimeError(), param->GetTx(), TMath::Sqrt(param->GetCovariance(2, 2)), param->GetTy(), TMath::Sqrt(param->GetCovariance(3, 3)), tofHitInd);
+      
+      if (tofHitInd < 0)
+         continue;
+      
+      ++nofMergedTracks2;
+      
+      set<TrackData*> tofMCTrackInds;
+      
+      const CbmMatch* tofHitMatch = static_cast<const CbmMatch*> (fTofHitDigiMatches->At(tofHitInd));
+      int nofTofDigis = tofHitMatch->GetNofLinks();
+
+      for (int j = 0; j < nofTofDigis; ++j)
+      {
+         const CbmLink& lnk = tofHitMatch->GetLink(j);
+         Int_t digiInd = lnk.GetIndex();
+         CbmTofDigiExp* pDigi = static_cast<CbmTofDigiExp*> (fTofDigis->At(digiInd));
+         
+         const CbmMatch* pPointMatch = pDigi->GetMatch();
+         Int_t nofPoints = pPointMatch->GetNofLinks();
+         
+         for (Int_t k = 0; k < nofPoints; ++k)
+         {
+            const CbmLink& pointLnk = pPointMatch->GetLink(k);
+            Int_t evN = pointLnk.GetEntry() - 1;
+            Int_t pointInd = pointLnk.GetIndex();
+            tofMCTrackInds.insert(fTofPoints[evN][pointInd].track);
+         }
+      }
+      
+      set<TrackData*> stsMCTrackInds;
+      int nofStsHits = track->GetNofHits();
+      
+      for (int j = 0; j < nofStsHits; ++j)
+      {
+         int stsHitInd = track->GetHitIndex(j);
+         const CbmStsHit* stsHit = static_cast<const CbmStsHit*> (fStsHits->At(stsHitInd));
+         int frontClusterInd = stsHit->GetFrontClusterId();
+         int backClusterInd = stsHit->GetBackClusterId();
+         const CbmStsCluster* frontCluster = static_cast<const CbmStsCluster*> (fStsClusters->At(frontClusterInd));
+         const CbmStsCluster* backCluster = static_cast<const CbmStsCluster*> (fStsClusters->At(backClusterInd));
+         int nofFrontDigis = frontCluster->GetNofDigis();
+         
+         for (int k = 0; k < nofFrontDigis; ++k)
+         {
+            int stsDigiInd = frontCluster->GetDigi(k);
+            const CbmStsDigi* stsDigi = static_cast<const CbmStsDigi*> (fStsDigis->At(stsDigiInd));
+            const CbmMatch* match = stsDigi->GetMatch();
+            int nofLinks = match->GetNofLinks();
+            
+            for (int l = 0; l < nofLinks; ++l)
+            {
+               const CbmLink& link = match->GetLink(l);
+               int eventId = link.GetEntry();
+               int mcPointId = link.GetIndex();
+               stsMCTrackInds.insert(fStsPoints[eventId][mcPointId].track);
+            }
+         }
+         
+         int nofBackDigis = backCluster->GetNofDigis();
+         
+         for (int k = 0; k < nofBackDigis; ++k)
+         {
+            int stsDigiInd = backCluster->GetDigi(k);
+            const CbmStsDigi* stsDigi = static_cast<const CbmStsDigi*> (fStsDigis->At(stsDigiInd));
+            const CbmMatch* match = stsDigi->GetMatch();
+            int nofLinks = match->GetNofLinks();
+            
+            for (int l = 0; l < nofLinks; ++l)
+            {
+               const CbmLink& link = match->GetLink(l);
+               int eventId = link.GetEntry();
+               int mcPointId = link.GetIndex();
+               stsMCTrackInds.insert(fStsPoints[eventId][mcPointId].track);
+            }
+         }
+      }// for (int j = 0; j < nofStsHits; ++j)
+      
+      bool isMatched = false;
+      
+      for(set<TrackData*>::const_iterator j = tofMCTrackInds.begin(); j != tofMCTrackInds.end(); ++j)
+      {
+         const TrackData* tofMCTrack = *j;
+         
+         for(set<TrackData*>::const_iterator k = stsMCTrackInds.begin(); k != stsMCTrackInds.end(); ++k)
+         {
+            const TrackData* stsMCTrack = *k;
+            
+            if (tofMCTrack == stsMCTrack)
+            {
+               isMatched = true;
+               break;
+            }
+         }
+         
+         if (isMatched)
+            break;
+      }
+      
+      if (isMatched)
+         ++nofMergedTracks;
+   }
+#endif// 0 or 1
 }
 
 static void SaveHisto(TH1* histo)

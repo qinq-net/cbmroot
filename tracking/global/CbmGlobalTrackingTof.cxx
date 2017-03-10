@@ -792,7 +792,9 @@ int nofToFIntersections = 0;
 int nofMRPCIntersectionsT = 0;
 
 //void CbmGlobalTrackingTofGeometry::Find(const FairTrackParam& trackParams)
-void CbmGlobalTrackingTofGeometry::Find(scaltype x0, scaltype errX, scaltype y0, scaltype errY, scaltype z0, scaltype t0, scaltype errT,
+//void CbmGlobalTrackingTofGeometry::Find(scaltype x0, scaltype errX, scaltype y0, scaltype errY, scaltype z0, scaltype t0, scaltype errT,
+   //scaltype tx, scaltype errTx, scaltype ty, scaltype errTy, Int_t& tofHitInd)
+void CbmGlobalTrackingTofGeometry::Find(scaltype x0, scaltype errXSq, scaltype y0, scaltype errYSq, scaltype z0, scaltype t0, scaltype errT,
    scaltype tx, scaltype errTx, scaltype ty, scaltype errTy, Int_t& tofHitInd)
 {
    tofHitInd = -1;
@@ -936,7 +938,7 @@ void CbmGlobalTrackingTofGeometry::Find(scaltype x0, scaltype errX, scaltype y0,
                   //double L01 = TMath::Sqrt(L01Sq);
                   double L02 = (hit->GetX() - x0) * line.cosX + (hit->GetY() - y0) * line.cosY + (hit->GetZ() - z0) * line.cosZ;
                   double extT2 = t0 + L02 / fC;
-                  double chi2 = (L01Sq - L02 * L02) / (errX * errX + hit->GetDx() * hit->GetDx() + errY * errY + hit->GetDy() * hit->GetDy()) +
+                  double chi2 = (L01Sq - L02 * L02) / (errXSq + hit->GetDx() * hit->GetDx() + errYSq + hit->GetDy() * hit->GetDy()) +
                      (hit->GetTime() - extT2) * (hit->GetTime() - extT2) / (errT * errT + hit->GetTimeError() * hit->GetTimeError());
             
                   if (chi2 < minChi2)
