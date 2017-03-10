@@ -16,7 +16,7 @@ C       wx=1.
        xboxe=xboxe*wx
   */
 }
-void fit_ybox(TString hname)
+void fit_ybox(const char *hname)
 {
  TH1 *h1;
  TH2 *h2;
