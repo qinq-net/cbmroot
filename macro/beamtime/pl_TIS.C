@@ -103,5 +103,7 @@ can->cd(6);
  TH1D *h2pfxes=(TH1D *)h2pfx->ProjectionX("hTISDT04D4best_RMS","C=E");
  h2pfxes->Draw("");
  h2pfxes->GetYaxis()->SetTitle("RMS(#Deltat) [ps]");
+
+ can->SaveAs(Form("pl_TIS.pdf"));
 }
 

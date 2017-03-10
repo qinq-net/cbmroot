@@ -37,7 +37,7 @@ void pl_all_CluMul(Int_t iNSt=6)
     h=(TH1 *)gROOT->FindObjectAny(hname);
     if (h!=NULL) {
      h->Draw("");
-     //     gPad->SetLogy();
+     gPad->SetLogy();
     }else{cout<<"Histogram "<<hname<<" not existing. "<<endl;}
     if(iRp==10) break;
    }
