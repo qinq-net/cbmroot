@@ -1486,7 +1486,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
    */
    // Hits info
    Int_t iNbMatchedHits = 0;
-   Int_t iNbMaxMatch=100;
+   Int_t iNbMaxMatch=500;
    //   Double_t Zref=300.;
 /*   Double_t Chi2MatchMin=1.E8;*/
    Double_t Chi2List[iNbMaxMatch];
@@ -1516,7 +1516,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
    Double_t hitpos1[3], hitpos2[3], hitpos3[3], hitpos4[3];
    Double_t hitpos1_local[3], hitpos2_local[3], hitpos3_local[3], hitpos4_local[3];
    std::vector<CbmTofHit * > vDiaHit; 
-   Double_t DDiaAvLim = 200; // average width for fastest diamond hits 
+   Double_t DDiaAvLim = 0.2; // average width for fastest diamond hits in ns 
    Double_t dMulDAv=0;
 
    // find diamond reference (BRef)
@@ -1563,12 +1563,12 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 		    fiMrpcRefAddr,fiMrpcSel2Addr,fiMrpcSel3Addr)
 	     <<FairLogger::endl;
 
-   if( iNbTofHits > 10 ) { // FIXME hard wired constant in code
+   if( iNbTofHits > 3 ) { // FIXME hard wired constant in code
      if( StartAnalysisTime == 0. ) {
        StartAnalysisTime=dTDia;
        LOG(INFO) << "StartAnalysisTime from TDia set to "<<StartAnalysisTime<<" ns. "<<FairLogger::endl;
      }
-     if( dTDia - StartSpillTime > SpillDuration*1.E9 ) {
+     if( dTDia<1.E300 && dTDia - StartSpillTime > SpillDuration*1.E9 ) {
        StartSpillTime=dTDia;
        LOG(INFO) << "StartSpillTime from TDia set to "<<StartSpillTime<<" ns. "<<FairLogger::endl;
      }
@@ -2049,6 +2049,8 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
        }
        if (iM0 == iNbMatchedHits) {
 	 LOG(WARNING)<<Form("no valid match for HitRef in Addr 0x%08x found ",pHitRef->GetAddress())<< FairLogger::endl;
+       if(gLogger->IsLogNeeded(DEBUG))
+	 LOG(FATAL)<<"Check for consistemcuy!"<<FairLogger::endl;
 	 return 0;
        }
      }
@@ -2128,7 +2130,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      Double_t dTofD4  = fdTOffD4 + dDTD4Min;
      Double_t dInvVel = dTofD4/pHitRef->GetR(); // in ns/cm
      Double_t dDTexp  = dDist*dInvVel;
-     Double_t dTMin   = fdHitDistAv/0.03;
+     Double_t dTMin   = fdHitDistAv/30.; // in ns 
      CbmMatch* digiMatch0=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit1));
      Double_t dTot0   = 0.;
      for (Int_t iLink=0; iLink<digiMatch0->GetNofLinks(); iLink++){  // loop over digis
