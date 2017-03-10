@@ -36,7 +36,7 @@
 165.000000 cm   z-position of layer  4
 
 # flags
-support structure is    : included
+support structure is    : NOT included
 radiator is             : NOT included
 lattice grid is         : included
 kapton window is        : included
