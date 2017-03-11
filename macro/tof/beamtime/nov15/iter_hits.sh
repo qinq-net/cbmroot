@@ -36,7 +36,7 @@ while [[ $dDTres > 0 ]]; do
 for iCal in 1 2 3 5 6 1
 do
 rm Test.res
-root -b -q '../../ana_hits.C(10000000,'$iSel','$iCal',"'$cRun'","'$cSet'",'$iSel2','$iTraSetup','$dScalFac')'
+root -b -q '../../ana_hits.C(1000000,'$iSel','$iCal',"'$cRun'","'$cSet'",'$iSel2','$iTraSetup','$dScalFac')'
 
 mv -v tofAnaTestBeam.hst.root ${cRun}_${cSet}_${iSel}_${cSel2}_tofAnaTestBeam.hst.root
 cp -v ${cRun}_${cSet}_${iSel}_${cSel2}_tofAnaTestBeam.hst.root ../../
@@ -49,7 +49,7 @@ done
 
 Tres=`cat Test.res`
 dTdif=`echo "$dDTres - $Tres" | bc`
-dDTres=`echo "$dDTres - 0.5" | bc`
+dDTres=`echo "$dDTres - 0.001" | bc`
 compare_result=`echo "$Tres < $dDTres" | bc`
 
 echo got Tres = $Tres, compare to $dDTres, dTdif = $dTdif, compare_result = $compare_result
@@ -62,7 +62,7 @@ fi
 
 done
 # final action -> scan full statistics 
-root -b -q '../../ana_hits.C(1000000000,'$iSel',1,"'$cRun'","'$cSet'",'$iSel2','$iTraSetup','$dScalFac')'
+root -b -q '../../ana_hits.C(-1,'$iSel',1,"'$cRun'","'$cSet'",'$iSel2','$iTraSetup','$dScalFac')'
 #echo copy results from `pwd` ?
 #cp -v ./hst/* ../../hst/
 rm all_*
