@@ -1,8 +1,8 @@
-void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Cern", char *cSet="345", Int_t iSel2=0, Int_t iTrackingSetup=0, Double_t dScalFac=1.) 
+void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, TString cFileId="Cern", TString cSet="345", Int_t iSel2=0, Int_t iTrackingSetup=0, Double_t dScalFac=1.) 
 {
    Int_t iVerbose = 1;
    // Specify log level (INFO, DEBUG, DEBUG1, ...)
-   TString logLevel = "FATAL";
+   //TString logLevel = "FATAL";
    //TString logLevel = "ERROR";
    TString logLevel = "INFO";
    //TString logLevel = "DEBUG"; 
@@ -14,11 +14,11 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    TString paramDir      = workDir  + "/macro/tof/beamtime/nov15";
    TString ParFile       = paramDir + "/unpack_" + cFileId + ".params.root";
    TString InputFile     = paramDir + "/unpack_" + cFileId + ".out.root";
-   TString InputDigiFile = paramDir + "/digi_" + cFileId + Form("_%s",cSet) + ".out.root";
-   TString OutputFile    = paramDir + "/hits_" + cFileId + Form("_%s_%06d_%03d",cSet,iSel,iSel2) + ".out.root";
-   TString cAnaFile=Form("%s_%s_%06d_%03d_tofAnaTestBeam.hst.root",cFileId,cSet,iSel,iSel2);
-   TString cHstFile=paramDir + Form("/hst/%s_%s_%06d_%03d_%04.1f_tofAna.hst.root",cFileId,cSet,iSel,iSel2,dScalFac);
-   TString cTrkFile=Form("%s_tofFindTracks.hst.root",cFileId);
+   TString InputDigiFile = paramDir + "/data/digi_" + cFileId + Form("_%s",cSet.Data()) + ".out.root";
+   TString OutputFile    = paramDir + "/data/hits_" + cFileId + Form("_%s_%06d_%03d",cSet.Data(),iSel,iSel2) + ".out.root";
+   TString cAnaFile=Form("%s_%s_%06d_%03d_tofAnaTestBeam.hst.root",cFileId.Data(),cSet.Data(),iSel,iSel2);
+   TString cHstFile=paramDir + Form("/hst/%s_%s_%06d_%03d_%04.1f_tofAna.hst.root",cFileId.Data(),cSet.Data(),iSel,iSel2,dScalFac);
+   TString cTrkFile=Form("%s_tofFindTracks.hst.root",cFileId.Data());
 
    cout << " InputDigiFile = "
 	<< InputDigiFile
@@ -26,8 +26,8 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 
    TList *parFileList = new TList();
 
-   TObjString mapParFile = paramDir + "/parMapCernNov2015.txt";
-   parFileList->Add(&mapParFile);
+   TObjString *mapParFile = new TObjString(paramDir + "/parMapCernNov2015.txt");
+   parFileList->Add(mapParFile);
 
    TString TofGeo="v15c";  //default
    TString FId=cFileId;
@@ -46,13 +46,13 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      FPar="tsu.";
    }
 
-   TObjString tofDigiFile = workDir + "/parameters/tof/tof_" + TofGeo + ".digi.par"; // TOF digi file
-   parFileList->Add(&tofDigiFile);   
+   TObjString *tofDigiFile = new TObjString(workDir + "/parameters/tof/tof_" + TofGeo + ".digi.par"); // TOF digi file
+   parFileList->Add(tofDigiFile);   
 
    // TObjString tofDigiBdfFile =  paramDir + "/tof.digibdf.par";
    // TObjString tofDigiBdfFile =  paramDir + "/tof." + FPar + "digibdf.par";
-   TObjString tofDigiBdfFile = workDir  + "/parameters/tof/tof_" + TofGeo +".digibdf.par";
-   parFileList->Add(&tofDigiBdfFile);
+   TObjString *tofDigiBdfFile = new TObjString(workDir  + "/parameters/tof/tof_" + TofGeo +".digibdf.par");
+   parFileList->Add(tofDigiBdfFile);
 
    TString geoDir  = gSystem->Getenv("VMCWORKDIR");
    TString geoFile = geoDir + "/geometry/tof/geofile_tof_" + TofGeo + ".root";
@@ -229,21 +229,21 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    tofAnaTestbeam->SetDTMean(0.);      // in ps
    tofAnaTestbeam->SetDXWidth(0.7);
    tofAnaTestbeam->SetDYWidth(1.0);
-   tofAnaTestbeam->SetDTWidth(100.);    // in ps
+   tofAnaTestbeam->SetDTWidth(0.1);    // in ps
    tofAnaTestbeam->SetCalParFileName(cAnaFile);
    tofAnaTestbeam->SetPosY4Sel(0.5*dScalFac);   // Y Position selection in fraction of strip length
    tofAnaTestbeam->SetDTDia(0.);       // Time difference to additional diamond
-   tofAnaTestbeam->SetMul0Max(20);     // Max Multiplicity in dut 
-   tofAnaTestbeam->SetMul4Max(20);     // Max Multiplicity in Ref - RPC 
+   tofAnaTestbeam->SetMul0Max(200);     // Max Multiplicity in dut 
+   tofAnaTestbeam->SetMul4Max(3);     // Max Multiplicity in Ref - RPC 
    tofAnaTestbeam->SetMulDMax(20);     // Max Multiplicity in Diamond    
-   tofAnaTestbeam->SetTOffD4(10000.);  // initialization
-   tofAnaTestbeam->SetDTD4MAX(6000.);  // initialization of Max time difference Ref - BRef
+   tofAnaTestbeam->SetTOffD4(10.);  // initialization
+   tofAnaTestbeam->SetDTD4MAX(6.);  // initialization of Max time difference Ref - BRef
 
    //tofAnaTestbeam->SetTShift(-28000.);// initialization
    tofAnaTestbeam->SetPosYS2Sel(0.5);   // Y Position selection in fraction of strip length
    tofAnaTestbeam->SetChS2Sel(0.);      // Center of channel selection window
    tofAnaTestbeam->SetDChS2Sel(100.);   // Width  of channel selection window
-   tofAnaTestbeam->SetSel2TOff(450.);   // Shift Sel2 time peak to 0 
+   tofAnaTestbeam->SetSel2TOff(0.);   // Shift Sel2 time peak to 0 
    tofAnaTestbeam->SetChi2Lim(5.);    // initialization of Chi2 selection limit  
    tofAnaTestbeam->SetChi2Lim2(2.);   // initialization of Chi2 selection limit for Mref-Sel2 pair   
 
@@ -299,7 +299,7 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    tofAnaTestbeam->SetMrpcRefSm(iRefSm);      // Reference RPC     
    tofAnaTestbeam->SetMrpcRefRpc(iRefRpc);    // Reference RPC  
 
-   cout<< "dispatch iSel = "<<iSel<<", iSel2 = "<<iSel2<<endl;
+   cout<< "dispatch iSel = "<<iSel<<", iSel2 = "<<iSel2<<", iRSel = "<<iRSel<<endl;
 
    switch (iSel) {
    case 0:                                 // upper part of setup: P2 - P5
@@ -338,26 +338,25 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    case 910300:
    case 920300:
    case 921300:
-     cout << "Run with iRSel = "<<iRSel<<endl;
      switch (iRSel){
          case 4:
 	   tofAnaTestbeam->SetTShift(0.);   // Shift DTD4 to 0
-	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetTOffD4(16.);   // Shift DTD4 to physical value
 	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
 	   break;
 	   
          case 5:
            //tofTestBeamClust->SetBeamAddRefMul(1);
-	   tofAnaTestbeam->SetTShift(-17000.);     // Shift DTD4 to 0
-	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetTShift(2.5);     // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16.);   // Shift DTD4 to physical value
 	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
 	   break;
 
          case 9:
            //tofTestBeamClust->SetBeamAddRefMul(1);
-	   tofAnaTestbeam->SetTShift(100.);   // Shift DTD4 to 0
-	   tofAnaTestbeam->SetTOffD4(16000.);   // Shift DTD4 to physical value
-	   tofAnaTestbeam->SetSel2TOff(500.);     // Shift Sel2 time peak to 0
+	   tofAnaTestbeam->SetTShift(0.1);   // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(16.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetSel2TOff(0.5);     // Shift Sel2 time peak to 0
 	   break;
 
          default:
@@ -380,21 +379,21 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
        case 5:	 
 	   switch(iRSelSm){
 	   case 0:
-	     tofAnaTestbeam->SetTShift(3500.);       // Shift DTD4 to 0
-	     tofAnaTestbeam->SetTOffD4(20000.);   // Shift DTD4 to physical value
+	     tofAnaTestbeam->SetTShift(3.5);       // Shift DTD4 to 0
+	     tofAnaTestbeam->SetTOffD4(20.);   // Shift DTD4 to physical value
 	     break;
 	   case 1:
-       	     tofAnaTestbeam->SetTShift(2050.);  // Shift DTD4 to 0
-	     tofAnaTestbeam->SetTOffD4(12000.);  // initialization	     
+       	     tofAnaTestbeam->SetTShift(2.5);  // Shift DTD4 to 0
+	     tofAnaTestbeam->SetTOffD4(16.0);  // initialization	     
 	     break;   
 	   }
 
 	 switch(iSel2){
 	 case 3:
-	   tofAnaTestbeam->SetSel2TOff(-20.);     // Shift Sel2 time peak to 0
+	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
 	   break;
 	 case 4:
-	   tofAnaTestbeam->SetSel2TOff(-50.);     // Shift Sel2 time peak to 0	   break
+	   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0	   break
 	   break;
 
 	 case 9:
@@ -402,10 +401,10 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	     case 2:
 	       switch(iSel2Rpc){
 	       case 0:
-		 tofAnaTestbeam->SetSel2TOff(30.);     // Shift Sel2 time peak to 0
+		 tofAnaTestbeam->SetSel2TOff(-0.08);     // Shift Sel2 time peak to 0
 		 break;
 	       case 1:
-		 tofAnaTestbeam->SetSel2TOff(140.);     // Shift Sel2 time peak to 0	   break  //921
+		 tofAnaTestbeam->SetSel2TOff(0.04);     // Shift Sel2 time peak to 0  //921
 		 break;
 	       default:
 		 cout << "Counter "<<iSel2<<", "<<iSel2Sm<<", "<<iSel2Rpc<<" not configured yet as iSel2"<<endl;
@@ -418,7 +417,7 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 		 tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
 		 break;
 	       case 1:
-		 tofAnaTestbeam->SetSel2TOff(-10.);     // Shift Sel2 time peak to 0
+		 tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0
 		 break;
 	       default:
 		 cout << "Counter "<<iSel2<<", "<<iSel2Sm<<", "<<iSel2Rpc<<" not configured yet as iSel2"<<endl;
@@ -437,17 +436,17 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	 break;
 
        case 3:
-	 tofAnaTestbeam->SetTShift(1950.);  // initialization
-	 tofAnaTestbeam->SetTOffD4(13000.);  // initialization
-	 tofAnaTestbeam->SetSel2TOff(2250.);  // Shift Sel2 time peak to 0
+	 tofAnaTestbeam->SetTShift(1.950);  // initialization
+	 tofAnaTestbeam->SetTOffD4(13.000);  // initialization
+	 tofAnaTestbeam->SetSel2TOff(2.250);  // Shift Sel2 time peak to 0
 	 break;
 
        case 9:
 	 switch(iSel2Sm){
 	 case 0: 
-	     tofAnaTestbeam->SetTShift(-120.);  // initialization
-	     tofAnaTestbeam->SetTOffD4(14000.);  // initialization
-	     tofAnaTestbeam->SetSel2TOff(-140.);  // Shift Sel2 time peak to 0
+	     tofAnaTestbeam->SetTShift(-0.12);  // initialization
+	     tofAnaTestbeam->SetTOffD4(14.);  // initialization
+	     tofAnaTestbeam->SetSel2TOff(-0.140);  // Shift Sel2 time peak to 0
 	     break;
 	 }
 	 break;
@@ -467,32 +466,33 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    case 900921:  
    case 901921:  
    case 910921:  
+   case 911921:  
    case 920921:  
 	 cout << "Run with iRSel = "<<iRSel<<endl;
 	 switch (iRSel){
 	 case 5:
 	   switch(iRSelSm){
 	   case 0:
-	     tofAnaTestbeam->SetTShift(3000.);  // Shift DTD4 to 0
-	     tofAnaTestbeam->SetTOffD4(20000.);  // initialization
+	     tofAnaTestbeam->SetTShift(4.);  // Shift DTD4 to 0
+	     tofAnaTestbeam->SetTOffD4(20.);  // initialization
 	     break;
 	   case 1:
-       	     tofAnaTestbeam->SetTShift(1800.);  // Shift DTD4 to 0
-	     tofAnaTestbeam->SetTOffD4(17000.);  // initialization	     
+       	     tofAnaTestbeam->SetTShift(2.6);  // Shift DTD4 to 0
+	     tofAnaTestbeam->SetTOffD4(17.);  // initialization	     
 	     break;   
 	   }
 
 	   switch(iSel2){
 	   case 3:
-	     tofAnaTestbeam->SetSel2TOff(-100.);  // Shift Sel2 time peak to 0
+	     tofAnaTestbeam->SetSel2TOff(0.);  // Shift Sel2 time peak to 0
 	     break;
 	   case 4:
-	     tofAnaTestbeam->SetSel2TOff(-100.);  // Shift Sel2 time peak to 0
+	     tofAnaTestbeam->SetSel2TOff(0.);  // Shift Sel2 time peak to 0
 	     break;
 	   case 9:
 	     switch(iSel2Sm){
 	     case 2:
-	       tofAnaTestbeam->SetSel2TOff(-170.);  // Shift Sel2 time peak to 0   //920
+	       tofAnaTestbeam->SetSel2TOff(-0.07);  // Shift Sel2 time peak to 0   //920
 	       break;
 	     default:
 	       cout << "Counter "<<iSel2<<", "<<iSel2Sm<<", "<<iSel2Rpc<<" not configured yet as iSel2"<<endl;
@@ -630,28 +630,28 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      cout << "Run with iRSel = "<<iRSel<<endl;
      switch (iRSel){
          case 3:
-	   tofAnaTestbeam->SetTShift(2500.);     // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTShift(2.5);     // Shift DTD4 to 0
 	   tofAnaTestbeam->SetTOffD4(0.);   // Shift DTD4 to physical value
-	   tofAnaTestbeam->SetSel2TOff(2760.);     // Shift Sel2 time peak to 0
+	   tofAnaTestbeam->SetSel2TOff(2.76);     // Shift Sel2 time peak to 0
 	   break;
 	   
          case 5:
            //tofTestBeamClust->SetBeamAddRefMul(1);
-	   tofAnaTestbeam->SetTShift(3500.);     // Shift DTD4 to 0
-	   tofAnaTestbeam->SetTOffD4(17000.);   // Shift DTD4 to physical value
+	   tofAnaTestbeam->SetTShift(2.5);     // Shift DTD4 to 0
+	   tofAnaTestbeam->SetTOffD4(17.);   // Shift DTD4 to physical value
 	   switch(iSel2){
 	   case 3:
-	     tofAnaTestbeam->SetSel2TOff(-45.);     // Shift Sel2 time peak to 0
+	     tofAnaTestbeam->SetSel2TOff(-0.045);     // Shift Sel2 time peak to 0
 	     break;
 	   case 9:
 	     switch(iSel2Sm){
 	     case 2:
 	       switch(iSel2Rpc){
 	       case 0:
-		 tofAnaTestbeam->SetSel2TOff(30.);     // Shift Sel2 time peak to 0
+		 tofAnaTestbeam->SetSel2TOff(0.0);     // Shift Sel2 time peak to 0
 		 break;
 	       case 1:
-		 tofAnaTestbeam->SetSel2TOff(124.);     // Shift Sel2 time peak to 0
+		 tofAnaTestbeam->SetSel2TOff(0.024);     // Shift Sel2 time peak to 0
 		 break;
 	       default:
 		 cout << "Counter "<<iSel2<<", "<<iSel2Sm<<", "<<iSel2Rpc<<" not configured yet as iSel2"<<endl;
@@ -905,13 +905,6 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      return;
    }  // end of different subsets
 
-   switch(cFileId){
-     case "CernSps01Mar2203":
-	 break;
-
-     default:
-	 ;
-   }
    cout << " Initialize TSHIFT to "<<tofAnaTestbeam->GetTShift()<<endl;
    run->AddTask(tofAnaTestbeam);
 
@@ -961,9 +954,13 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
   gROOT->LoadMacro("pl_over_MatD4sel.C");
   gROOT->LoadMacro("pl_over_trk.C");
   gROOT->LoadMacro("pl_calib_trk.C");
+  gROOT->LoadMacro("pl_TIS.C");
+  gROOT->LoadMacro("pl_eff_XY.C");
   gROOT->LoadMacro("save_hst.C");
   
   gInterpreter->ProcessLine("pl_over_MatD4sel()");
+  gInterpreter->ProcessLine("pl_TIS()");
+  gInterpreter->ProcessLine("pl_eff_XY()");
   //gInterpreter->ProcessLine("pl_over_trk(9)");
   //gInterpreter->ProcessLine("pl_calib_trk()");
   TString SaveToHstFile = "save_hst(\"" + cHstFile + "\")";
