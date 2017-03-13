@@ -9,10 +9,15 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/base 
   ${CBMROOT_SOURCE_DIR}/data 
   ${CBMROOT_SOURCE_DIR}/data/sts
+  ${CBMROOT_SOURCE_DIR}/data/mvd
   ${CBMROOT_SOURCE_DIR}/data/tof
   ${CBMROOT_SOURCE_DIR}/data/much
   ${CBMROOT_SOURCE_DIR}/data/trd
+  ${CBMROOT_SOURCE_DIR}/data/global
+  ${CBMROOT_SOURCE_DIR}/much/geo
   ${CBMROOT_SOURCE_DIR}/run
+  ${CBMROOT_SOURCE_DIR}/littrack/std
+  ${CBMROOT_SOURCE_DIR}/littrack/cbm
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})

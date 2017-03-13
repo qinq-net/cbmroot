@@ -45,6 +45,7 @@ using std::list;
 using std::cout;
 using std::endl;
 using std::set;
+using std::map;
 
 CbmGlobalTrackingTask::CbmGlobalTrackingTask() : fTofGeometry(), fTofHits(0), fStsTracks(0)
 #ifdef CBM_GLOBALTB_QA
@@ -392,35 +393,19 @@ void CbmGlobalTrackingTask::Exec(Option_t* opt)
    }
    
 #else// 0 or 1
-   Double_t startTime = fTimeSlice->GetStartTime();
-   fTofGeometry.Prepare(startTime);
-   int nofStsTracks = fStsTracks->GetEntriesFast();
+   Int_t nofHits = fTofHits->GetEntriesFast();
    
-   for (int i = 0; i < nofStsTracks; ++i)
+   for (int i = 0; i < nofHits; ++i)
    {
-      ++nofReferenceTracks;
-      const CbmStsTrack* track = static_cast<const CbmStsTrack*> (fStsTracks->At(i));
-      Int_t tofHitInd;
-      const FairTrackParam* param = track->GetParamLast();
-      fTofGeometry.Find(param->GetX(), param->GetCovariance(0, 0), param->GetY(), param->GetCovariance(1, 1), param->GetZ(),
-         track->GetTime(), track->GetTimeError(), param->GetTx(), TMath::Sqrt(param->GetCovariance(2, 2)), param->GetTy(), TMath::Sqrt(param->GetCovariance(3, 3)), tofHitInd);
+      const CbmTofHit* tofHit = static_cast<const CbmTofHit*> (fTofHits->At(i));
+      const CbmMatch* hitMatch = static_cast<const CbmMatch*> (fTofHitDigiMatches->At(i));
+      int nofDigis = hitMatch->GetNofLinks();
       
-      if (tofHitInd < 0)
-         continue;
-      
-      ++nofMergedTracks2;
-      
-      set<TrackData*> tofMCTrackInds;
-      
-      const CbmMatch* tofHitMatch = static_cast<const CbmMatch*> (fTofHitDigiMatches->At(tofHitInd));
-      int nofTofDigis = tofHitMatch->GetNofLinks();
-
-      for (int j = 0; j < nofTofDigis; ++j)
+      for (int j = 0; j < nofDigis; ++j)
       {
-         const CbmLink& lnk = tofHitMatch->GetLink(j);
+         const CbmLink& lnk = hitMatch->GetLink(j);
          Int_t digiInd = lnk.GetIndex();
          CbmTofDigiExp* pDigi = static_cast<CbmTofDigiExp*> (fTofDigis->At(digiInd));
-         
          const CbmMatch* pPointMatch = pDigi->GetMatch();
          Int_t nofPoints = pPointMatch->GetNofLinks();
          
@@ -429,12 +414,38 @@ void CbmGlobalTrackingTask::Exec(Option_t* opt)
             const CbmLink& pointLnk = pPointMatch->GetLink(k);
             Int_t evN = pointLnk.GetEntry() - 1;
             Int_t pointInd = pointLnk.GetIndex();
-            tofMCTrackInds.insert(fTofPoints[evN][pointInd].track);
+            const PointData& point = fTofPoints[evN][pointInd];
+            point.track->tofHits.insert(tofHit);
          }
       }
+   }
+   
+   Double_t startTime = fTimeSlice->GetStartTime();
+   fTofGeometry.Prepare(startTime);
+   int nofStsTracks = fStsTracks->GetEntriesFast();
+   
+   for (int i = 0; i < nofStsTracks; ++i)
+   {
+      const CbmStsTrack* track = static_cast<const CbmStsTrack*> (fStsTracks->At(i));
+      Int_t tofHitInd;
+      const FairTrackParam* param = track->GetParamLast();
+#ifdef CBM_GLOBALTB_QA
+      timespec ts;
+      clock_gettime(CLOCK_REALTIME, &ts);
+      long beginTime = ts.tv_sec * 1000000000 + ts.tv_nsec;
+#endif//CBM_GLOBALTB_QA
+      //fTofGeometry.Find(param->GetX(), param->GetCovariance(0, 0), param->GetY(), param->GetCovariance(1, 1), param->GetZ(),
+         //track->GetTime(), track->GetTimeError(), param->GetTx(), TMath::Sqrt(param->GetCovariance(2, 2)), param->GetTy(), TMath::Sqrt(param->GetCovariance(3, 3)), tofHitInd);
+      fTofGeometry.Find(*param, track->GetTime(), track->GetTimeError(), tofHitInd);
+#ifdef CBM_GLOBALTB_QA
+      clock_gettime(CLOCK_REALTIME, &ts);
+      long endTime = ts.tv_sec * 1000000000 + ts.tv_nsec;
+      fullDuration += endTime - beginTime;
+#endif//CBM_GLOBALTB_QA
       
-      set<TrackData*> stsMCTrackInds;
+      map<TrackData*, int> stsMCTracks;
       int nofStsHits = track->GetNofHits();
+      int nofStsMatches = 0;
       
       for (int j = 0; j < nofStsHits; ++j)
       {
@@ -458,7 +469,13 @@ void CbmGlobalTrackingTask::Exec(Option_t* opt)
                const CbmLink& link = match->GetLink(l);
                int eventId = link.GetEntry();
                int mcPointId = link.GetIndex();
-               stsMCTrackInds.insert(fStsPoints[eventId][mcPointId].track);
+               ++nofStsMatches;
+               map<TrackData*, int>::iterator iter = stsMCTracks.find(fStsPoints[eventId][mcPointId].track);
+               
+               if (iter != stsMCTracks.end())
+                  ++iter->second;
+               else
+                  stsMCTracks[fStsPoints[eventId][mcPointId].track] = 1;
             }
          }
          
@@ -476,20 +493,68 @@ void CbmGlobalTrackingTask::Exec(Option_t* opt)
                const CbmLink& link = match->GetLink(l);
                int eventId = link.GetEntry();
                int mcPointId = link.GetIndex();
-               stsMCTrackInds.insert(fStsPoints[eventId][mcPointId].track);
+               ++nofStsMatches;
+               map<TrackData*, int>::iterator iter = stsMCTracks.find(fStsPoints[eventId][mcPointId].track);
+               
+               if (iter != stsMCTracks.end())
+                  ++iter->second;
+               else
+                  stsMCTracks[fStsPoints[eventId][mcPointId].track] = 1;
             }
          }
       }// for (int j = 0; j < nofStsHits; ++j)
       
+      if (stsMCTracks.empty())
+         continue;
+      
+      map<TrackData*, int>::iterator lastStsTrackIter = stsMCTracks.end();
+      --lastStsTrackIter;
+      
+      if (lastStsTrackIter->second < 0.7 * nofStsMatches)
+         continue;
+      
+      if (lastStsTrackIter->first->tofPoints.empty() || lastStsTrackIter->first->tofHits.empty())
+         continue;
+      
+      ++nofReferenceTracks;
+      
+      if (tofHitInd < 0)
+         continue;
+      
+      ++nofMergedTracks2;
+      
+      set<TrackData*> tofMCTracks;
+      
+      const CbmMatch* tofHitMatch = static_cast<const CbmMatch*> (fTofHitDigiMatches->At(tofHitInd));
+      int nofTofDigis = tofHitMatch->GetNofLinks();
+
+      for (int j = 0; j < nofTofDigis; ++j)
+      {
+         const CbmLink& lnk = tofHitMatch->GetLink(j);
+         Int_t digiInd = lnk.GetIndex();
+         CbmTofDigiExp* pDigi = static_cast<CbmTofDigiExp*> (fTofDigis->At(digiInd));
+         
+         const CbmMatch* pPointMatch = pDigi->GetMatch();
+         Int_t nofPoints = pPointMatch->GetNofLinks();
+         
+         for (Int_t k = 0; k < nofPoints; ++k)
+         {
+            const CbmLink& pointLnk = pPointMatch->GetLink(k);
+            Int_t evN = pointLnk.GetEntry() - 1;
+            Int_t pointInd = pointLnk.GetIndex();
+            tofMCTracks.insert(fTofPoints[evN][pointInd].track);
+         }
+      }
+      
       bool isMatched = false;
       
-      for(set<TrackData*>::const_iterator j = tofMCTrackInds.begin(); j != tofMCTrackInds.end(); ++j)
+      for(set<TrackData*>::const_iterator j = tofMCTracks.begin(); j != tofMCTracks.end(); ++j)
       {
          const TrackData* tofMCTrack = *j;
          
-         for(set<TrackData*>::const_iterator k = stsMCTrackInds.begin(); k != stsMCTrackInds.end(); ++k)
+         for(map<TrackData*, int>::const_iterator k = stsMCTracks.begin(); k != stsMCTracks.end(); ++k)
          {
-            const TrackData* stsMCTrack = *k;
+            const TrackData* stsMCTrack = k->first;
             
             if (tofMCTrack == stsMCTrack)
             {

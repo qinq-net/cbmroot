@@ -18,6 +18,8 @@
 #include "CbmGlobalTrackingDefs.h"
 #include "FairTrackParam.h"
 #include "TClonesArray.h"
+#include <set>
+#include <map>
 
 #define CBM_GLOBALTB_TOF_3D
 
@@ -104,9 +106,10 @@ public:
     
     void Clear();
     void Prepare(timetype startTime);
-    //void Find(const FairTrackParam& trackParams);
-    void Find(scaltype x0, scaltype errX, scaltype y0, scaltype errY, scaltype z0, scaltype t0, scaltype errT,
-                scaltype tx, scaltype errTx, scaltype ty, scaltype errTy, Int_t& tofHitInd);
+    void Find(const FairTrackParam& trackParams, timetype trackTime, timetype errT, Int_t& tofHitInd);
+    void Find(scaltype x1, scaltype y1, scaltype z1, scaltype tx, scaltype ty, std::map<int, std::map<int, std::map<int, scaltype> > >& inds);
+    //void Find(scaltype x0, scaltype errX, scaltype y0, scaltype errY, scaltype z0, scaltype t0, scaltype errT,
+                //scaltype tx, scaltype errTx, scaltype ty, scaltype errTy, Int_t& tofHitInd);
     
 private:
     scaltype fC;
