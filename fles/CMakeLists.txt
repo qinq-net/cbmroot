@@ -11,3 +11,4 @@ Add_Subdirectory(reader)
 
 Add_Subdirectory(cern2016)
 Add_Subdirectory(star2017)
+Add_Subdirectory(cosy2017)
