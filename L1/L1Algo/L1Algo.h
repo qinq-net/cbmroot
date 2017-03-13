@@ -86,7 +86,7 @@ class L1Algo{
     CATime(0), // time of trackfinding
     vStripToTrack(TypicalSize),
     vStripToTrackB(TypicalSize),
-    vTracks(50000), // reconstructed tracks
+    vTracks(20000), // reconstructed tracks
     vRecoHits(200000),// packed hits of reconstructed tracks
     vStsDontUsedHits_A(TypicalSize),
     vStsDontUsedHits_B(TypicalSize),
@@ -122,7 +122,7 @@ class L1Algo{
     fTrackingLevel(0), fGhostSuppression(0), // really doesn't used
     fMomentumCutOff(0)// really doesn't used
   {    
-    TimePrecision = 3*2.9f*2.9f;
+    TimePrecision = 2.9f*2.9f;
     n_g1.resize(100000);
     
     for (int i=0; i<fNThreads; i++)
@@ -139,7 +139,7 @@ class L1Algo{
       
       TripForHit[0].resize(TypicalSize);
       TripForHit[1].resize(TypicalSize);
-      CandidatesTrack[i].resize(1000000);
+      CandidatesTrack[i].resize(10000);
       
       fT_3[i].reserve(MaxPortionTriplets/fvecLen);
       fhitsl_3[i].reserve(MaxPortionTriplets);
@@ -150,7 +150,7 @@ class L1Algo{
       fz_pos3[i].reserve(MaxPortionTriplets/fvecLen);
       fTimeR[i].reserve(MaxPortionTriplets/fvecLen);
       
-      for (int j=0; j<8; j++) TripletsLocal1[j][i].resize(200000);
+      for (int j=0; j<12; j++) TripletsLocal1[j][i].resize(200000);
     }
     
     for (int i=0; i<MaxNStations; i++) vGridTime[i].AllocateMemory(fNThreads);
@@ -167,10 +167,10 @@ class L1Algo{
 
         
     for(int i=0; i<nThreads; i++)
-      for(int k=0; k<8; k++)
+      for(int k=0; k<12; k++)
         nTripletsThread[k][i]=0;
 
-    NTracksIsecAll=50000;
+    NTracksIsecAll=20000;
     NHitsIsecAll=TypicalSize;
 
 
@@ -186,10 +186,10 @@ class L1Algo{
   
   static const int nTh = 1;
 
-   L1Vector <L1Triplet> TripletsLocal1[8][nTh];
+   L1Vector <L1Triplet> TripletsLocal1[12][nTh];
    L1Vector <L1Branch> CandidatesTrack[nTh];
 
-  Tindex portionStopIndex[8];
+  Tindex portionStopIndex[12];
   L1Vector <Tindex> n_g1;
 
 
@@ -198,7 +198,7 @@ class L1Algo{
 
   int  numberCandidateThread [nTh];
   
-  int  nTripletsThread [8][nTh];
+  int  nTripletsThread [12][nTh];
   
     //for merger
   L1Vector<unsigned short> FirstHit;
@@ -257,7 +257,7 @@ class L1Algo{
 
   void SetNThreads(int n=1) {fNThreads = n;}
       
-  enum{ MaxNStations = 10 };
+  enum{ MaxNStations = 12 };
 
   int NStations,    // number of all detector stations
       NMvdStations; // number of mvd stations
@@ -674,7 +674,7 @@ class L1Algo{
 
  // vector <L1Triplet> vTriplets; // container for triplets got in finding
  // vector<L1Triplet*> vTripletsP;
-   int numPortions[8];
+   int numPortions[12];
    vector<L1Triplet*> *TripletsLocal[MaxNStations-2];
 
   

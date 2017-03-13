@@ -106,14 +106,6 @@ fExtrapolateToTheEndOfSTS(false),
 fTimesliceMode(0)
 {
   if( !fInstance ) fInstance = this;
-  fTopoPerformance = new KFTopoPerformance;
-    TDirectory *curr = gDirectory;
-  TFile *currentFile = gFile;
-  
-  fPerfFile = new TFile("FLESQA.root","RECREATE");
-
-  gFile = currentFile;
-  gDirectory = curr;
 }
 
 CbmL1::CbmL1(const char *name, Int_t iVerbose, Int_t _fPerformance, int fSTAPDataMode_, TString fSTAPDataDir_, int findParticleMode_):FairTask(name,iVerbose),
@@ -241,6 +233,8 @@ InitStatus CbmL1::Init()
     LOG(FATAL) << GetName() << ": No CbmMCDataManager!" << FairLogger::endl;
   
   fStsPoints = mcManager->InitBranch("StsPoint");
+  if(!fTimesliceMode)
+    fMvdPoints = mcManager->InitBranch("MvdPoint");
   fMCTracks = mcManager->InitBranch("MCTrack");
   if ( NULL == fStsPoints )
     LOG(FATAL) << GetName() << ": No StsPoint data!" << FairLogger::endl;
@@ -283,7 +277,7 @@ InitStatus CbmL1::Init()
       listMvdPts = 0;
       listMvdHitMatches = 0;
     } else {
-      //listMvdPts = L1_DYNAMIC_CAST<TClonesArray*>(  fManger->GetObject("MvdPoint") );
+      listMvdPts = L1_DYNAMIC_CAST<TClonesArray*>(  fManger->GetObject("MvdPoint") );
       listMvdDigiMatches = L1_DYNAMIC_CAST<TClonesArray*>(  fManger->GetObject("MvdDigiMatch") );
       listMvdHitMatches = L1_DYNAMIC_CAST<TClonesArray*>(  fManger->GetObject("MvdHitMatch") );
       
@@ -525,7 +519,10 @@ InitStatus CbmL1::Init()
 
   algo->Init(geo);
   geo.clear();
+
+  
   algo->fRadThick.resize(algo->NStations);
+
   // Read STS and MVD Radiation Thickness table
   TString stationName = "Radiation Thickness [%], Station";
   if ( fUseMVD ) {
@@ -631,6 +628,7 @@ void CbmL1::Reconstruct(CbmEvent* event)
   static int nevent=0;
   vFileEvent.clear();
 
+
   if ( fTimesliceMode )
   {
     listStsDigi.clear();
@@ -674,9 +672,7 @@ void CbmL1::Reconstruct(CbmEvent* event)
   }
 
   if( fVerbose>1 ) cout << endl << "CbmL1::Exec event " << ++nevent << " ..." << endl << endl;
-#ifdef _OPENMP
   omp_set_num_threads(1);
-#endif
     // repack data
 
   fData->Clear();
@@ -759,12 +755,15 @@ const_cast<L1Strip &> ((*algo->vStsStripsB)[h.b]) = idet * ( - sta.yInfo.cos_phi
     } 
   } 
 
+
   if (fPerformance)
   {
     HitMatch();
     // calculate the max number of Hits\mcPoints on continuous(consecutive) stations
+
     for( vector<CbmL1MCTrack>::iterator it = vMCTracks.begin(); it != vMCTracks.end(); ++it)
       it->Init();
+
   }
 
   if(fSTAPDataMode%2 == 1){ // 1,3
@@ -773,11 +772,13 @@ const_cast<L1Strip &> ((*algo->vStsStripsB)[h.b]) = idet * ( - sta.yInfo.cos_phi
   };
   if(fSTAPDataMode >= 2){  // 2,3
     //ReadSTAPAlgoData();
+
     ReadSTAPPerfData();
   };
-  
+
   if ((fPerformance)&&(fSTAPDataMode < 2)) {
     InputPerformance();
+
   }
 
 //  FieldApproxCheck();

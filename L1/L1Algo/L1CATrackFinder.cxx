@@ -267,7 +267,7 @@ inline void L1Algo::f11(  /// input 1st stage of singlet search
       if ( (istam >= NMvdStations) && (istal <= NMvdStations - 1) )  L1AddPipeMaterial( T, MaxInvMom, 1, 0.000511f*0.000511f );
     }
     fvec dz = zstam - T.z;
-  //  L1ExtrapolateTime( T, dz);
+    L1ExtrapolateTime( T, dz);
     L1Extrapolate0( T, zstam, fld0 ); // TODO: fld1 doesn't work!
   }// i1_V
 }
@@ -314,9 +314,10 @@ inline void L1Algo::f20(  // input
     while( areaTime.GetNext( imh ) ) 
     {
       const L1HitPoint &hitm = vStsHits_m[imh];
+      
         
       // check y-boundaries
-      if (fabs(time-hitm.time)>sqrt(timeError+hitm.timeEr)*3) continue;        
+    //  if (fabs(time-hitm.time)>sqrt(timeError+hitm.timeEr*hitm.timeEr)*4) continue;        
         
 #ifdef USE_EVENT_NUMBER
       if ((Event[i1_V][i1_4]!=hitm.n)) continue;
@@ -326,14 +327,22 @@ inline void L1Algo::f20(  // input
       L1TrackPar T1_new = T1;
       fvec dz = fvec(zm) -T1.z;
       
-     // L1ExtrapolateTime( T1_new, dz);
+      L1ExtrapolateTime( T1_new, dz);
+      
+      if (fabs(T1_new.t[i1_4]-hitm.time)>sqrt(T1_new.C55[i1_4]+hitm.timeEr*hitm.timeEr)*4) continue;        
+//       const fscal &dt_est2 = Pick_m22[i1_4] * fabs(T1_new.C55[i1_4] + hitm.timeEr*hitm.timeEr);      
+//       const fscal &dt = hitm.time - T1_new.t[i1_4];
+//       if ( dt*dt > dt_est2 && dt < 0  ) continue;
+      
       
       fvec y, C11;
       L1ExtrapolateYC11Line( T1, zm, y, C11 );
-
+      
       const fscal &dy_est2 = Pick_m22[i1_4] * fabs(C11[i1_4] + stam.XYInfo.C11[i1_4]);      
       const fscal &dy = hitm.Y() - y[i1_4];
       if ( dy*dy > dy_est2 && dy < 0  ) continue;
+
+
 
       // check x-boundaries
       fvec x, C00;
@@ -359,8 +368,8 @@ inline void L1Algo::f20(  // input
 #endif 
       L1FilterChi2( stam.backInfo,  x, y, C00, C10, C11, chi2, hitm.V() );
       
-    //  FilterTime( T1_new, hitm.time, sqrt(TimePrecision));
-      
+      FilterTime( T1_new, hitm.time, sqrt(TimePrecision));
+     
 #ifdef DO_NOT_SELECT_TRIPLETS
       if (isec!=TRACKS_FROM_TRIPLETS_ITERATION)
 #endif
@@ -454,12 +463,12 @@ inline void L1Algo::f30(  // input
        
       fvec dz = zPos_2 -T2.z;
       
-    //  L1ExtrapolateTime( T2, dz);
+      L1ExtrapolateTime( T2, dz);
       // add middle hit
       L1ExtrapolateLine( T2, zPos_2 );
       L1Filter( T2, stam.frontInfo, u_front_2 );      
       L1Filter( T2, stam.backInfo,  u_back_2 );
- //     FilterTime( T2, timeM, sqrt(TimePrecision));
+      FilterTime( T2, timeM, sqrt(TimePrecision));
 
       if ( ( isec != kAllPrimEIter ) && ( isec != kAllSecEIter ) ) 
       {
@@ -481,15 +490,15 @@ inline void L1Algo::f30(  // input
       }
       
       fvec dz2 = star.z - T2.z;
-    //  L1ExtrapolateTime( T2, dz2);
+      L1ExtrapolateTime( T2, dz2);
       // extrapolate to the right hit station
       L1Extrapolate( T2, star.z, T2.qp, f2 );
 
       // ---- Find the triplets(right hit). Reformat data in the portion of triplets. ----
       for (Tindex i2_4 = 0; i2_4 < n2_4; ++i2_4)
       {   
-       //   if ( T2.C00[i2_4] < 0 ||  T2.C11[i2_4] < 0 ||  T2.C22[i2_4] < 0 ||  T2.C33[i2_4] < 0 ||  T2.C44[i2_4] < 0  ||  T2.C55[i2_4] < 0 ) continue;   
-        if ( T2.C00[i2_4] < 0 ||  T2.C11[i2_4] < 0 ||  T2.C22[i2_4] < 0 ||  T2.C33[i2_4] < 0 ||  T2.C44[i2_4] < 0  ) continue;
+        if ( T2.C00[i2_4] < 0 ||  T2.C11[i2_4] < 0 ||  T2.C22[i2_4] < 0 ||  T2.C33[i2_4] < 0 ||  T2.C44[i2_4] < 0  ||  T2.C55[i2_4] < 0 ) continue;   
+     //   if ( T2.C00[i2_4] < 0 ||  T2.C11[i2_4] < 0 ||  T2.C22[i2_4] < 0 ||  T2.C33[i2_4] < 0 ||  T2.C44[i2_4] < 0  ) continue;
           
         const fvec &Pick_r22 = (TRIPLET_CHI2_CUT - T2.chi2);  
         const float &timeError = T2.C55[i2_4];
@@ -511,7 +520,7 @@ inline void L1Algo::f30(  // input
         {
           const L1HitPoint &hitr = vStsHits_r[irh];
           //  if (fabs(T2.time[i2_4]-hitr.time)>35) continue;
-          if (fabs(time-hitr.time)>sqrt(timeError+hitr.timeEr)*3) continue;
+          
               
 #ifdef USE_EVENT_NUMBER
           if ((T2.n[i2_4]!=hitr.n)) continue;
@@ -521,6 +530,8 @@ inline void L1Algo::f30(  // input
           
           fvec dz2 = zr - T2.z;
           L1ExtrapolateTime( T2, dz2);
+          
+          if (fabs(T2.t[i2_4]-hitr.time)>sqrt(T2.C55[i2_4]+hitr.timeEr)*4) continue;
           
           // - check whether hit belong to the window ( track position +\- errors ) -
           // check lower boundary
@@ -554,8 +565,8 @@ inline void L1Algo::f30(  // input
           if (isec!=TRACKS_FROM_TRIPLETS_ITERATION)
 #endif
 
-             // if ( chi2[i2_4] > TRIPLET_CHI2_CUT || C00[i2_4] < 0 || C11[i2_4] < 0|| T.C55[i2_4] < 0) continue; // chi2_triplet < CHI2_CUT
-               if ( chi2[i2_4] > TRIPLET_CHI2_CUT || C00[i2_4] < 0 || C11[i2_4] < 0) continue; // chi2_triplet < CHI2_CUT
+              if ( chi2[i2_4] > TRIPLET_CHI2_CUT || C00[i2_4] < 0 || C11[i2_4] < 0|| T.C55[i2_4] < 0) continue; // chi2_triplet < CHI2_CUT
+//                if ( chi2[i2_4] > TRIPLET_CHI2_CUT || C00[i2_4] < 0 || C11[i2_4] < 0) continue; // chi2_triplet < CHI2_CUT
 
           // pack triplet
           L1TrackPar &T3 = T_3[n3_V];
@@ -603,11 +614,11 @@ inline void L1Algo::f31(  // input
   {
     fvec dz = z_Pos[i3_V] - T_3[i3_V].z;
           
-   // L1ExtrapolateTime( T_3[i3_V], dz);
+    L1ExtrapolateTime( T_3[i3_V], dz);
     L1ExtrapolateLine( T_3[i3_V], z_Pos[i3_V] );
     L1Filter( T_3[i3_V], star.frontInfo, u_front[i3_V] );    // 2.1/100 sec
     L1Filter( T_3[i3_V], star.backInfo,  u_back [i3_V] );   // 2.0/100 sec
-  //  FilterTime( T_3[i3_V], timeR[i3_V], sqrt(TimePrecision));
+    FilterTime( T_3[i3_V], timeR[i3_V], sqrt(TimePrecision));
   }
 }
 
@@ -1500,7 +1511,7 @@ void L1Algo::CATrackFinder()
     n_g1.assign(n_g1.size(), Portion);
       
     for (int n=0; n<fNThreads; n++)        
-      for (int j=0; j<8; j++)  nTripletsThread[j][n]=0;
+      for (int j=0; j<12; j++)  nTripletsThread[j][n]=0;
         
     /// isec - number of current iterations, fNFindIterations - number of all iterations    
 #ifdef COUNTERS
@@ -1531,22 +1542,24 @@ void L1Algo::CATrackFinder()
         // if ( (isec == kAllSecIter) || (isec == kAllSecEIter) || (isec == kAllSecJumpIter) )
         //   FIRSTCASTATION = 2;
         
-        DOUBLET_CHI2_CUT = 2.706; // prob = 0.1
-        TRIPLET_CHI2_CUT = 5;
+        DOUBLET_CHI2_CUT = 11.3449*2.f/3.f; // prob = 0.1
+
+        TRIPLET_CHI2_CUT = 21.1075; // prob = 0.01%
+        
         switch ( isec ) {
           case kFastPrimIter:
-            TRIPLET_CHI2_CUT = 7.815;// prob = 0.05
+            TRIPLET_CHI2_CUT = 7.815* 3;// prob = 0.05
             break;
           case kAllPrimIter:
           case kAllPrimEIter:
-            TRIPLET_CHI2_CUT = 7.815; // prob = 0.05
+            TRIPLET_CHI2_CUT = 7.815* 3; // prob = 0.05
             break;
           case kAllPrimJumpIter:
-            TRIPLET_CHI2_CUT = 6.252; // prob = 0.1
+            TRIPLET_CHI2_CUT = 6.252* 3; // prob = 0.1
             break;
           case kAllSecIter:
           case kAllSecEIter:
-            TRIPLET_CHI2_CUT = 6.252;//2.706; // prob = 0.1
+            TRIPLET_CHI2_CUT = 6.252* 3;//2.706; // prob = 0.1
             break;
         }
         
@@ -1667,7 +1680,8 @@ void L1Algo::CATrackFinder()
     TStopwatch c_time;
     c_timer.Start();
 #endif
-        
+
+      
         
     const Tindex vPortion = Portion/fvecLen;
     L1TrackPar T_1[vPortion];
@@ -1836,7 +1850,7 @@ void L1Algo::CATrackFinder()
     // //    if (isec == -1) min_level = NStations-3 - 3; //only the longest tracks
     
     L1Branch curr_tr;
-    L1Branch new_tr[8];
+    L1Branch new_tr[MaxNStations];
     L1Branch best_tr;
     fscal curr_chi2 = 0;
     
@@ -2057,7 +2071,7 @@ void L1Algo::CATrackFinder()
             if (check)  
             {
 #ifdef EXTEND_TRACKS
-              if (tr.NHits!=8) BranchExtender(tr);
+              if (tr.NHits!=NStations) BranchExtender(tr);
 #endif
               float  sumTime = 0;
               

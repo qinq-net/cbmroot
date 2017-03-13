@@ -112,41 +112,74 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData)
     // get STS hits
   int nStsHits = 0;
 
-
   if (fPerformance)
   {
     Fill_vMCTracks();
+    
     for( DFSET::iterator set_it = vFileEvent.begin(); set_it!=vFileEvent.end(); ++set_it){
       Int_t iFile = set_it->first;
       Int_t iEvent = set_it->second;
      
-      Int_t nMC =  fStsPoints->Size(iFile, iEvent);
-      Int_t nMCT =fMCTracks->Size(iFile, iEvent);  
-      
-      for(Int_t iMC = 0; iMC < nMC; iMC++){
-        CbmL1MCPoint MC;
-        
-        MC.event = iEvent;
- 
-        if( ! ReadMCPoint( &MC, iMC, iFile, iEvent, 0 ) ){
-          MC.iStation = -1;
-          L1Station *sta = algo->vStations + NMvdStations;
-          for(Int_t iSt=0; iSt < NStsStations; iSt++)
-            MC.iStation = (MC.z > sta[iSt].z[0] - 2.5) ? (NMvdStations + iSt) : MC.iStation;
-
-          Double_t dtrck =dFEI(iFile, iEvent, MC.ID);
-          DFEI2I::iterator trk_it = dFEI2vMCTracks.find(dtrck);
-          if (trk_it==dFEI2vMCTracks.end()) continue;
-          Int_t IND_Track = trk_it->second;
-          vMCTracks[IND_Track].Points.push_back(vMCPoints.size()); 
-
-          MC.ID = trk_it->second;
-          vMCPoints.push_back(MC);
-          vMCPoints_in_Time_Slice.push_back(0);
+      if(fMvdPoints && listMvdPts)
+      {
+        Int_t nMvdPointsInEvent =  fMvdPoints->Size(iFile, iEvent);
+        for(Int_t iMC = 0; iMC < nMvdPointsInEvent; iMC++){
+          CbmL1MCPoint MC;
           
-          dFEI2vMCPoints.insert( DFEI2I::value_type(dFEI(iFile,iEvent,iMC), vMCPoints.size()-1) );
+          MC.event = iEvent;
+  
+          if( ! ReadMCPoint( &MC, iMC, iFile, iEvent, 1 ) ){
+            MC.iStation = -1;
+            L1Station *sta = algo->vStations;
+            for(Int_t iSt=0; iSt < NStsStations; iSt++)
+              MC.iStation = (MC.z > sta[iSt].z[0] - 1) ? iSt : MC.iStation;
+
+            Double_t dtrck =dFEI(iFile, iEvent, MC.ID);
+            DFEI2I::iterator trk_it = dFEI2vMCTracks.find(dtrck);
+            if (trk_it==dFEI2vMCTracks.end()) continue;
+            Int_t IND_Track = trk_it->second;
+            vMCTracks[IND_Track].Points.push_back(vMCPoints.size()); 
+
+            MC.ID = trk_it->second;
+            
+  //           vMCTracks[MC.ID].Points.push_back(vMCPoints.size()); 
+            
+            vMCPoints.push_back(MC);
+            vMCPoints_in_Time_Slice.push_back(0);
+            
+            dFEI2vMCPoints.insert( DFEI2I::value_type(dFEI(iFile,iEvent,iMC), vMCPoints.size()-1) );
+            nMvdPoints++;
+          }
         }
       }
+        
+        Int_t nMC =  fStsPoints->Size(iFile, iEvent);
+        
+        for(Int_t iMC = 0; iMC < nMC; iMC++){
+          CbmL1MCPoint MC;
+          
+          MC.event = iEvent;
+  
+          if( ! ReadMCPoint( &MC, iMC, iFile, iEvent, 0 ) ){
+            MC.iStation = -1;
+            L1Station *sta = algo->vStations + NMvdStations;
+            for(Int_t iSt=0; iSt < NStsStations; iSt++)
+              MC.iStation = (MC.z > sta[iSt].z[0] - 2.5) ? (NMvdStations + iSt) : MC.iStation;
+
+            Double_t dtrck =dFEI(iFile, iEvent, MC.ID);
+            DFEI2I::iterator trk_it = dFEI2vMCTracks.find(dtrck);
+            if (trk_it==dFEI2vMCTracks.end()) continue;
+            Int_t IND_Track = trk_it->second;
+            vMCTracks[IND_Track].Points.push_back(vMCPoints.size()); 
+
+            MC.ID = trk_it->second;
+            vMCPoints.push_back(MC);
+            vMCPoints_in_Time_Slice.push_back(0);
+            
+            dFEI2vMCPoints.insert( DFEI2I::value_type(dFEI(iFile,iEvent,iMC+nMvdPoints), vMCPoints.size()-1) );
+
+          }
+        }
     } //time_slice
 
     for (Int_t iTr = 0; iTr < vMCTracks.size(); iTr++) 
@@ -166,6 +199,122 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData)
     if (fVerbose >= 10) cout << "Points in vMCTracks are sorted." << endl;
 
   } //fPerformance
+
+  
+      // get MVD hits
+
+  if( listMvdHits ){
+
+    Int_t nEnt  = listMvdHits->GetEntries();
+
+//     if(listMvdPts)
+//     {
+//       isUsedMvdPoint.resize(nMC);
+//       for(int iMc=0; iMc<nMC; iMc++) isUsedMvdPoint[iMc]=0;
+//     }
+
+    for (int j=0; j <nEnt; j++ ){
+      TmpHit th;
+      {
+        CbmMvdHit *mh = L1_DYNAMIC_CAST<CbmMvdHit*>( listMvdHits->At(j) );
+        th.ExtIndex = -(1+j);
+        th.iStation = mh->GetStationNr() ;
+     //   th.iSector  = 0;
+        th.isStrip  = 0;
+        th.iStripF = j;
+        th.iStripB = -1;
+        if( th.iStripF<0 ) continue;
+        if( th.iStripF>=0 && th.iStripB>=0 ) th.isStrip  = 1;
+        if( th.iStripB <0 ) th.iStripB = th.iStripF;
+  
+        TVector3 pos, err;
+        mh->Position(pos);
+        mh->PositionError(err);
+
+        th.x = pos.X();
+        th.y = pos.Y();
+  
+        L1Station &st = algo->vStations[th.iStation];
+        th.u_front = th.x*st.frontInfo.cos_phi[0] + th.y*st.frontInfo.sin_phi[0];
+        th.u_back  = th.x* st.backInfo.cos_phi[0] + th.y*st.backInfo.sin_phi[0];
+      }
+      th.iMC=-1;
+      int iMC = -1;
+//   int iMCTr = -1;
+//   if( listMvdHitMatches ){
+//     CbmMvdHitMatch *match = (CbmMvdHitMatch*) listMvdHitMatches->At(j);
+//     if( match){
+//       iMC = match->GetPointId();
+//       iMCTr = match->GetTrackId();
+//     }
+//   }
+      if (fPerformance)
+      {
+      if( listMvdHitMatches ){
+        CbmMatch *mvdHitMatch = L1_DYNAMIC_CAST<CbmMatch*>( listMvdHitMatches->At(j) );
+        
+//         cout<<mvdHitMatch<<" mvdHitMatch"<<endl;
+//         
+//         cout<<mvdHitMatch->GetNofLinks()<<" mvdHitMatch->GetNofLinks()"<<endl;
+//         cout<<mvdHitMatch->GetLink(0).GetIndex()<<" mvdHitMatch->GetLink(0).GetIndex()"<<endl;
+//         cout<<nMvdPoints<<" nMvdPoints"<<endl;
+        
+        if( mvdHitMatch->GetNofLinks() > 0 )
+          if( mvdHitMatch->GetLink(0).GetIndex() < nMvdPoints )
+          {
+            iMC = mvdHitMatch->GetLink(0).GetIndex();
+            th.iMC = iMC;
+          }
+          
+   //       cout<<iMC<<" iMC"<<endl;
+//         if( match){
+//           iMC = match->GetPointId();
+//           
+//           cout<<iMC<<" iMC"<<endl;
+//         }
+      }
+//       if( listMvdPts && iMC>=0 ){ // TODO1: don't need this with FairLinks
+//         CbmL1MCPoint MC;
+//         if( ! ReadMCPoint( &MC, iMC, 1 ) ){
+//           MC.iStation = th.iStation;
+//       //    isUsedMvdPoint[iMC] = 1;
+// 
+// //       MC.ID = iMCTr; // because atch->GetPointId() == 0 !!! and ReadMCPoint don't work
+// //       MC.z = th.iStation; // for sort in right order
+//       
+//           vMCPoints.push_back( MC );
+//           nMvdPoints++;
+//           vMCPoints_in_Time_Slice.push_back(0);
+//           th.iMC = vMCPoints.size()-1;
+//         }
+//         Int_t iFile =-1;
+//         Int_t iEvent=-1;
+//         
+//         
+//                if ( !fTimesliceMode )
+//         {
+//           iFile  = vFileEvent.begin()->first;
+//           iEvent = vFileEvent.begin()->second;
+//         } 
+//         
+//       Double_t dtrck =dFEI(iFile, iEvent, iMC);
+//       DFEI2I::iterator trk_it = dFEI2vMCPoints.find(dtrck);
+//       if (trk_it==dFEI2vMCPoints.end()) continue;
+//       iMC = trk_it->second;  
+//         
+//       } // if listStsPts
+      
+      
+      }
+  //if(  h.MC_Point >=0 ) // DEBUG !!!!
+      {
+        tmpHits.push_back(th);
+        nMvdHits++;
+      }
+    } // for j
+  } // if listMvdHits
+  if (fVerbose >= 10) cout << "ReadEvent: mvd hits are gotten." << endl;
+
 
   if( listStsHits )
   {
@@ -234,7 +383,9 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData)
                 bestWeight = stsHitMatch.GetLink(iLink).GetWeight();
                 Int_t iFile  = stsHitMatch.GetLink(iLink).GetFile();
                 Int_t iEvent = stsHitMatch.GetLink(iLink).GetEntry() - 1;
-                Int_t iIndex = stsHitMatch.GetLink(iLink).GetIndex();
+                if(!fTimesliceMode) //TODO Fix the event number in links
+                  iEvent+=1;
+                Int_t iIndex = stsHitMatch.GetLink(iLink).GetIndex() + nMvdPoints;
                 Double_t dtrck =dFEI(iFile, iEvent, iIndex);
                 DFEI2I::iterator trk_it = dFEI2vMCPoints.find(dtrck);
                 if (trk_it==dFEI2vMCPoints.end()) continue;
@@ -247,7 +398,8 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData)
           iMC = sh->GetRefId(); // TODO1: don't need this with FairLinks
       } //fPerformance
 
-      th.iMC = iMC + nMvdPoints;
+      if(iMC > -1)
+        th.iMC = iMC;
 
       tmpHits.push_back(th);
       nStsHits++;
@@ -255,6 +407,80 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData)
     } // for j
   } // if listStsHits
   if (fVerbose >= 10) cout << "ReadEvent: sts hits are gotten." << endl;
+    
+  
+  if( listMvdHits )
+  {
+    Int_t nEnt  = listMvdHits->GetEntries();
+
+//     if(listMvdPts){
+//       Int_t nMC = listMvdPts->GetEntriesFast();
+//       for(Int_t iMC = 0; iMC < nMC; iMC++){
+//         CbmL1MCPoint MC;
+//         MC.event=0;
+//         if( ! ReadMCPoint(&MC, iMC,0,0, 1) ){
+//           MC.iStation = -1;
+//           L1Station *sta = algo->vStations;
+//           for(Int_t iSt = 0; iSt < NMvdStations; iSt++)
+//             MC.iStation = (MC.z > sta[iSt].z[0] - 1) ? iSt : MC.iStation;
+// //           MC.ID = 
+//           
+// 
+//           vMCTracks[MC.ID].Points.push_back(vMCPoints.size()); 
+//           
+//           vMCPoints.push_back( MC );
+//           
+// //             dFEI2vMCPoints.insert( DFEI2I::value_type(dFEI(0,0,iMC), vMCPoints.size()-1) );
+//           nMvdPoints++;
+//         }
+//       }
+//     }
+/*
+    for (Int_t j = 0; j < nEnt; j++ ){
+      TmpHit th;
+      {
+        CbmMvdHit *mh = L1_DYNAMIC_CAST<CbmMvdHit*>( listMvdHits->At(j) );
+        th.ExtIndex = -(1+j);
+        th.iStation = mh->GetStationNr();// - 1;
+        th.isStrip  = 0;
+        th.iStripF = j;
+        th.iStripB = -1;
+        if( th.iStripF <  0 ) continue;
+        if( th.iStripF >= 0 && th.iStripB>=0 ) th.isStrip  = 1;
+        if( th.iStripB <  0 ) th.iStripB = th.iStripF;
+
+        TVector3 pos, err;
+        mh->Position(pos);
+        mh->PositionError(err);
+
+        th.x = pos.X();
+        th.y = pos.Y();
+
+        L1Station &st = algo->vStations[th.iStation];
+        th.u_front = th.x*st.frontInfo.cos_phi[0] + th.y*st.frontInfo.sin_phi[0];
+        th.u_back  = th.x*st.backInfo.cos_phi[0] + th.y*st.backInfo.sin_phi[0];
+      }
+
+      th.iMC = -1;
+      Int_t iMC = -1;
+  
+      if( listMvdHitMatches )
+      {
+        CbmMatch *mvdHitMatch = L1_DYNAMIC_CAST<CbmMatch*>( listMvdHitMatches->At(j) );
+
+        std::cout << "mvdHitMatch " << mvdHitMatch << " mvdHitMatch->GetNofLinks() " << mvdHitMatch->GetNofLinks() << " mvdHitMatch->GetLink(0).GetIndex() " << mvdHitMatch->GetLink(0).GetIndex() << " nMvdPoints " << nMvdPoints << std::endl;
+
+        if( mvdHitMatch->GetNofLinks() > 0 )
+          if( mvdHitMatch->GetLink(0).GetIndex() < nMvdPoints )
+            iMC = mvdHitMatch->GetLink(0).GetIndex();
+          
+        std::cout << "iMC " << iMC << std::endl;
+      }
+      th.iMC = iMC;
+      tmpHits.push_back(th);
+      nMvdHits++;
+    } // for j*/
+  } // if listMvdHits
 
     // sort hits
   int nHits = nMvdHits + nStsHits;
@@ -327,6 +553,7 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData)
     fData->vStsStripsB.push_back(ts.u);
     fData->vSFlagB.push_back(flag);
   }
+
 
   if (fVerbose >= 10) cout << "ReadEvent: strips are read." << endl;
   
@@ -406,13 +633,17 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData)
     
     vHitStore.push_back(s);
     vHitMCRef.push_back(th.iMC);
+
   }
+  
+
   for(int i = 0; i < NStation; i++){
 
      if (fData->StsHitsStartIndex[i] == static_cast<THitI>(-1)) fData->StsHitsStartIndex[i] = fData->StsHitsStopIndex[i];
   }
 
   if (fVerbose >= 10) cout << "ReadEvent: mvd and sts are saved." << endl;
+
   
     // sort z-pos
   if (vStsZPos_temp.size() != 0){
@@ -477,6 +708,7 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData)
   }
 
   if (fVerbose >= 10) cout << "ReadEvent is done." << endl;
+
 
 } // void CbmL1::ReadEvent()
 
@@ -655,19 +887,26 @@ void CbmL1::HitMatch()
   for (int iH = 0; iH < NHits; iH++)
   {
     CbmL1StsHit& hit = vStsHits[iH];
+    
+   const bool isMvd = (hit.extIndex < 0);
+   if (  !isMvd){
     CbmStsHit *sh = L1_DYNAMIC_CAST<CbmStsHit*>( listStsHits->At(vStsHits[iH].extIndex) );
+
     int iP = -1;  
      
     vector <int> iEvent1;
+
      
     if(listStsClusterMatch)
     {
+
       const CbmMatch* frontClusterMatch = static_cast<const CbmMatch*>(listStsClusterMatch->At(sh->GetFrontClusterId()));
       const CbmMatch* backClusterMatch  = static_cast<const CbmMatch*>(listStsClusterMatch->At(sh->GetBackClusterId()));
       CbmMatch stsHitMatch;
 
       Float_t Sum_of_front = 0;
       Float_t Sum_of_back = 0;
+
 
       for(Int_t iFrontLink = 0; iFrontLink<frontClusterMatch->GetNofLinks(); iFrontLink++)
       {
@@ -707,13 +946,17 @@ void CbmL1::HitMatch()
         Int_t iIndex = stsHitMatch.GetLink(iLink).GetIndex();
         
         iEvent1.push_back(iEvent);
+
     
         if ( !fTimesliceMode )
         {
           iFile  = vFileEvent.begin()->first;
           iEvent = vFileEvent.begin()->second;
         }
-        Double_t dtrck =dFEI(iFile, iEvent, iIndex);
+        int nMvdPoints = 0;
+        if(listMvdPts)
+          nMvdPoints = listMvdPts->GetEntriesFast();
+        Double_t dtrck =dFEI(iFile, iEvent, iIndex+nMvdPoints);
         DFEI2I::iterator trk_it = dFEI2vMCPoints.find(dtrck);
         
         if (trk_it==dFEI2vMCPoints.end()) continue;
@@ -722,10 +965,11 @@ void CbmL1::HitMatch()
         if( stsHitMatch.GetLink(iLink).GetWeight() > bestWeight)
         {
           bestWeight = stsHitMatch.GetLink(iLink).GetWeight();
-          iP = trk_it->second + nMvdPoints;
+          iP = trk_it->second;
         }
       }
     } //mach cluster
+
 
     if ( iP >= 0 )
     {
@@ -736,9 +980,10 @@ void CbmL1::HitMatch()
         hit.event = iEvent1[i];
 //         sh->event = iEvent1[i];
       }
+/*
 
       if ( iP >  vMCPoints.size() )
-        cout <<  " iP  "  << iP << "  vMCPoints.size() " <<   vMCPoints.size() << endl;
+        cout <<  " iP  "  << iP << "  vMCPoints.size() " <<   vMCPoints.size() << endl;*/
 
       hit.event=vMCPoints[iP].event;
       hit.mcPointIds.push_back( iP );
@@ -748,8 +993,22 @@ void CbmL1::HitMatch()
     {
       fake_hits++;  
       hit.event = -1; 
-//       sh->event = -1;
+      int iP = vHitMCRef[iH];
+      if (iP >= 0){
+        hit.mcPointIds.push_back( iP );
+        vMCPoints[iP].hitIds.push_back(iH);
+      }
+    } // if no clusters 
+  }
+  else{ // if no use Links or this is mvd hit
+
+      int iP = vHitMCRef[iH];
+      if (iP >= 0){
+        hit.mcPointIds.push_back( iP );
+        vMCPoints[iP].hitIds.push_back(iH);
+      }
     }
+
   } // for hits
 }
 

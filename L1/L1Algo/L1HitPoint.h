@@ -4,8 +4,8 @@
 		/// contain strips positions and coordinates of hit
 #if 1
 struct L1HitPoint{
-  L1HitPoint(){};
-  L1HitPoint(fscal x_, fscal y_, fscal z_, fscal v_, fscal u_, float time_, unsigned short int n_ = 0, float timeEv1_=0, float timeEr_=0):
+  L1HitPoint(): x(0.f), y(0.f), z(0.f), u(0.f), v(0.f), time(0.f) , n(-1), timeEv(0.f), timeEr(2.9f){};
+  L1HitPoint(fscal x_, fscal y_, fscal z_, fscal v_, fscal u_, float time_, unsigned short int n_ = 0, float timeEv1_=0, float timeEr_=2.9f):
     x(x_), y(y_), z(z_), u(u_), v(v_), time(time_) , n(n_), timeEv(timeEv1_), timeEr(timeEr_){};
     
   //  L1HitPoint(fscal x_, fscal y_, fscal z_, fscal v_, fscal u_, fscal time_, unsigned short int n_ = 0):

@@ -285,7 +285,8 @@ void L1Algo::CreateHitPoint(const L1StsHit &hit, char ista, L1HitPoint &point)
     const float &time = hit.t_reco;
     const int &n1 = hit.n;
     
-    point.Set(x,y,z,v.f,u.f, time, n1, hit.time1, hit.t_er );
+//     point.Set(x,y,z,v.f,u.f, time, n1, hit.time1, hit.t_er );
+    point.Set(x,y,z,v.f,u.f, time, n1, hit.time1, 2.9 ); // TODO put correct time error from the hit
 }
 
 //   bool L1Algo::SortTrip(TripSort const& a, TripSort const& b) {

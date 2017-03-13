@@ -289,6 +289,8 @@ void CbmL1::EfficienciesPerformance()
     double ratio_length = 0;
     double ratio_fakes  = 0;
     double mc_length_hits = mtra.NStations();
+
+    
     int mc_length = mtra.NMCStations();
     if (reco){
       for (unsigned int irt = 0; irt < rTracks.size(); irt++) {
@@ -1637,9 +1639,13 @@ void CbmL1::InputPerformance()
 
     }
   } // sts
+  
+
+
   if( listMvdHits && listMvdHitMatches){
     Int_t nEnt = listMvdHits->GetEntries();
     for (int j=0; j < nEnt; j++ ){
+
       CbmMvdHit *sh = L1_DYNAMIC_CAST<CbmMvdHit*>( listMvdHits->At(j) );
       CbmMatch *hm = L1_DYNAMIC_CAST<CbmMatch*>( listMvdHitMatches->At(j) );
 
@@ -1656,14 +1662,18 @@ void CbmL1::InputPerformance()
       if( hm->GetNofLinks() > 0 )
         iMC = hm->GetLink(0).GetIndex();
 
+
       if( iMC < 0 ) continue;
         // hit pulls and residuals
+
 
       TVector3 hitPos, mcPos, hitErr;
       sh->Position(hitPos);
       sh->PositionError(hitErr);
+
       CbmMvdPoint *pt = 0;
       nMC = listMvdPts->GetEntriesFast();
+
       if( iMC >= 0 && iMC < nMC) pt = L1_DYNAMIC_CAST<CbmMvdPoint*>( listMvdPts->At(iMC) );
 
       if ( !pt ){
