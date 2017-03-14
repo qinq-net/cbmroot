@@ -37,6 +37,14 @@ struct ZBin;
 class CbmGlobalTrackingTofGeometry
 {
 public:
+    struct Rect
+    {
+        scaltype minX;
+        scaltype maxX;
+        scaltype minY;
+        scaltype maxY;
+    };
+    
     CbmGlobalTrackingTofGeometry();
     ~CbmGlobalTrackingTofGeometry();
     bool Read();

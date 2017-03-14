@@ -837,11 +837,7 @@ void CbmGlobalTrackingTofGeometry::Find(scaltype x1, scaltype y1, scaltype z1, s
    else
       return;
    
-#ifdef CBM_GLOBALTB_TOF_3D_CUBOIDS
-   set<const Cuboid*> cuboidSet;
-#else//CBM_GLOBALTB_TOF_3D_CUBOIDS
    Line line = { x1, y1, z1, tx / normLen, ty / normLen, 1 / normLen };
-#endif//CBM_GLOBALTB_TOF_3D_CUBOIDS
    
    int zMinInd = GetZInd(fMinZ);
    int zMaxInd = GetZInd(zMax);
@@ -955,12 +951,21 @@ void CbmGlobalTrackingTofGeometry::Find(const FairTrackParam& trackParams, timet
    double zMax;
    
    map<int, map<int, map<int, double> > > inds;
+   
+   /*for (int i = 0; i < 25; ++i)
+   {
+      double val = litTrackParams.GetCovariance(i);
+      int qq = 0;
+   }*/
+   
    double deltaX = 4 * TMath::Sqrt(litTrackParams.GetCovariance(0));
-   double deltaY = 4 * TMath::Sqrt(litTrackParams.GetCovariance(6));
-   Find(x1 - deltaX, y1 - deltaY, z1, tx, ty, inds);
-   Find(x1 + deltaX, y1 - deltaY, z1, tx, ty, inds);
-   Find(x1 - deltaX, y1 + deltaY, z1, tx, ty, inds);
-   Find(x1 + deltaX, y1 + deltaY, z1, tx, ty, inds);
+   double deltaY = 4 * TMath::Sqrt(litTrackParams.GetCovariance(5));
+   double deltaT = 4 * errT;
+   //Find(x1 - deltaX, y1 - deltaY, z1, tx, ty, inds);
+   //Find(x1 + deltaX, y1 - deltaY, z1, tx, ty, inds);
+   //Find(x1 - deltaX, y1 + deltaY, z1, tx, ty, inds);
+   //Find(x1 + deltaX, y1 + deltaY, z1, tx, ty, inds);
+
    
    if (fMinX <= xMax && xMax <= fMaxX && fMinY <= yMax && yMax <= fMaxY)
       zMax = fMaxZ;
@@ -1000,6 +1005,8 @@ void CbmGlobalTrackingTofGeometry::Find(const FairTrackParam& trackParams, timet
    Line line = { x1, y1, z1, tx / normLen, ty / normLen, 1 / normLen };
 #endif//CBM_GLOBALTB_TOF_3D_CUBOIDS
    
+   set<const TBin*> neighbourhood;
+   
    int zMinInd = GetZInd(fMinZ);
    int zMaxInd = GetZInd(zMax);
    
@@ -1008,11 +1015,11 @@ void CbmGlobalTrackingTofGeometry::Find(const FairTrackParam& trackParams, timet
       const ZBin& zBin = fZBins[zInd];
       double startZ = fMinZ + zInd * fZBinSize;
       double stopZ = startZ + fZBinSize;
-      double startY = y1 + (startZ - z1) * ty;
-      double stopY = y1 + (stopZ - z1) * ty;
+      int yIndDelta = ty < 0 ? -1 : 1;
+      double startY = y1 + (startZ - z1) * ty;// - yIndDelta * deltaY;
+      double stopY = y1 + (stopZ - z1) * ty;// + yIndDelta * deltaY;
       int yStartInd = GetYInd(startY);
       int yStopInd = GetYInd(stopY);
-      int yIndDelta = ty < 0 ? -1 : 1;
       
       for (int yInd = yStartInd; true; yInd += yIndDelta)
       {
@@ -1042,19 +1049,81 @@ void CbmGlobalTrackingTofGeometry::Find(const FairTrackParam& trackParams, timet
          if (stopZy > stopZ)
             stopZy = stopZ;
          
-         double startX = x1 + (startZy - z1) * tx;
-         double stopX = x1 + (stopZy - z1) * tx;
+         int xIndDelta = tx < 0 ? -1 : 1;
+         double startX = x1 + (startZy - z1) * tx;// - xIndDelta * deltaX;
+         double stopX = x1 + (stopZy - z1) * tx;// + xIndDelta * deltaX;
          int xStartInd = GetXInd(startX);
          int xStopInd = GetXInd(stopX);
-         int xIndDelta = tx < 0 ? -1 : 1;
-#ifndef CBM_GLOBALTB_TOF_3D_CUBOIDS
+//#ifndef CBM_GLOBALTB_TOF_3D_CUBOIDS
          double extLen = ((startZy + stopZy) / 2 - z1) * normLen;
          double extT = t1 + extLen / fC;
-         int tInd = (extT - fStartTime) / fTBinSize;
+         //int tInd = (extT - fStartTime) / fTBinSize;
+         int tLowInd = (extT - deltaT - fStartTime) / fTBinSize;
+         int tHighInd = (extT + deltaT - fStartTime) / fTBinSize;
          
+         if (tHighInd >= 0 || tLowInd < fNofTBins)
+         {
+            if (tLowInd < 0)
+               tLowInd = 0;
+            
+            if (tHighInd >= fNofTBins)
+               tHighInd = fNofTBins - 1;
+            
+            double startY2 = startY < stopY ? startY - deltaY : stopY - deltaY;
+            double stopY2 = startY < stopY ? stopY + deltaY : startY + deltaY;
+            int yStartInd2 = GetYInd(startY2);
+            int yStopInd2 = GetYInd(stopY2);
+            double startX2 = startX < stopX ? startX - deltaX : stopX - deltaX;
+            double stopX2 = startX < stopX ? stopX + deltaX : startX + deltaX;
+            int xStartInd2 = GetXInd(startX2);
+            int xStopInd2 = GetXInd(stopX2);
+            
+            for (int yInd2 = yStartInd2; yInd2 <= yStopInd2; ++yInd2)
+            {
+               const YBin& yBin2 = zBin.fYBins[yInd2];
+               
+               for (int xInd2 = xStartInd2; xInd2 <= xStopInd2; ++xInd2)
+               {
+                  const XBin& xBin2 = yBin2.fXBins[xInd2];
+                  
+                  for (int tInd2 = tLowInd; tInd2 <= tHighInd; ++tInd2)
+                     neighbourhood.insert(&xBin2.fTBins[tInd2]);
+               }
+            }
+         }
+         
+         if (yInd == yStopInd)
+            break;
+      }
+   }
+   
+   for (set<const TBin*>::const_iterator tBinIter = neighbourhood.begin(); tBinIter != neighbourhood.end(); ++tBinIter)
+   {
+      const TBin* tBin = *tBinIter;
+      
+      for (list<Int_t>::const_iterator hitIndIter = tBin->fHitInds.begin(); hitIndIter != tBin->fHitInds.end(); ++hitIndIter)
+      {
+         Int_t hitInd = *hitIndIter;
+         const CbmTofHit* hit = static_cast<const CbmTofHit*> (fTofHits->At(hitInd));
+         double L01Sq = (hit->GetX() - x1) * (hit->GetX() - x1) + (hit->GetY() - y1) * (hit->GetY() - y1) + (hit->GetZ() - z1) * (hit->GetZ() - z1);
+         //double L01 = TMath::Sqrt(L01Sq);
+         double L02 = (hit->GetX() - x1) * line.cosX + (hit->GetY() - y1) * line.cosY + (hit->GetZ() - z1) * line.cosZ;
+         double extT2 = t1 + L02 / fC;
+         double chi2 = (L01Sq - L02 * L02) / (litTrackParams.GetCovariance(0) + hit->GetDx() * hit->GetDx() + litTrackParams.GetCovariance(5) + hit->GetDy() * hit->GetDy()) +
+            (hit->GetTime() - extT2) * (hit->GetTime() - extT2) / (errT * errT + hit->GetTimeError() * hit->GetTimeError());
+
+         if (chi2 < minChi2)
+         {
+            tofHitInd = hitInd;
+            minChi2 = chi2;
+         }
+      }
+   }
+         
+#if 0
          if (tInd >= 0 && tInd < fNofTBins)
          {
-#endif//CBM_GLOBALTB_TOF_3D_CUBOIDS
+//#endif//CBM_GLOBALTB_TOF_3D_CUBOIDS
             for (int xInd = xStartInd; true; xInd += xIndDelta)
             {
                const XBin& xBin = yBin.fXBins[xInd];
@@ -1095,6 +1164,10 @@ void CbmGlobalTrackingTofGeometry::Find(const FairTrackParam& trackParams, timet
             break;
       }
    }
+#endif// 0
+   
+   /*double minChi2 = std::numeric_limits<double>::max();
+   Line line = { x1, y1, z1, tx / normLen, ty / normLen, 1 / normLen };
    
    for (map<int, map<int, map<int, double> > >::const_iterator i = inds.begin(); i != inds.end(); ++i)
    {
@@ -1107,9 +1180,29 @@ void CbmGlobalTrackingTofGeometry::Find(const FairTrackParam& trackParams, timet
          for (map<int, double>::const_iterator k = xInds.begin(); k != xInds.end(); ++k)
          {
             const XBin& xBin = fZBins[i->first].fYBins[j->first].fXBins[k->first];
+            double extT = t1 + k->second / fC;
+            int tInd = (extT - fStartTime) / fTBinSize;
+            const TBin& tBin = xBin.fTBins[tInd];
+
+            for (list<Int_t>::const_iterator hitIndIter = tBin.fHitInds.begin(); hitIndIter != tBin.fHitInds.end(); ++hitIndIter)
+            {
+               Int_t hitInd = *hitIndIter;
+               const CbmTofHit* hit = static_cast<const CbmTofHit*> (fTofHits->At(hitInd));
+               double L01Sq = (hit->GetX() - x1) * (hit->GetX() - x1) + (hit->GetY() - y1) * (hit->GetY() - y1) + (hit->GetZ() - z1) * (hit->GetZ() - z1);
+               //double L01 = TMath::Sqrt(L01Sq);
+               double L02 = (hit->GetX() - x1) * line.cosX + (hit->GetY() - y1) * line.cosY + (hit->GetZ() - z1) * line.cosZ;
+               double extT2 = t1 + L02 / fC;
+               double chi2 = (L01Sq - L02 * L02) / (litTrackParams.GetCovariance(0) + hit->GetDx() * hit->GetDx() + litTrackParams.GetCovariance(6) + hit->GetDy() * hit->GetDy()) +
+                  (hit->GetTime() - extT2) * (hit->GetTime() - extT2) / (errT * errT + hit->GetTimeError() * hit->GetTimeError());
+
+               if (chi2 < minChi2) {
+                  tofHitInd = hitInd;
+                  minChi2 = chi2;
+               }
+            }
          }
       }
-   }
+   }*/
    
 #ifdef CBM_GLOBALTB_TOF_3D_CUBOIDS
    if (cuboidSet.empty())

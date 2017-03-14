@@ -193,26 +193,29 @@ InitStatus CbmGlobalTrackingTask::Init()
    
    fTrdMCPoints = mcManager->InitBranch("TrdPoint");
    
-   if (0 == fTrdMCPoints)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No TRD MC points");
+   //if (0 == fTrdMCPoints)
+      //fLogger->Fatal(MESSAGE_ORIGIN, "No TRD MC points");
    
-   for (int i = 0; i < fNofEvents; ++i)
+   if (false && 0 != fTrdMCPoints)
    {
-      int nofTrdPoints = fTrdMCPoints->Size(0, i);
-      
-      for (int j = 0; j < nofTrdPoints; ++j)
+      for (int i = 0; i < fNofEvents; ++i)
       {
-         const CbmTrdPoint* point = static_cast<const CbmTrdPoint*> (fTrdMCPoints->Get(0, i, j));
-         Double_t z = (point->GetZIn() + point->GetZOut()) / 2;
-         Int_t trackId = point->GetTrackID();
-         TrackData& track = fTracks[i][trackId];
-         
-         if (track.hasSts && track.z < z)
+         int nofTrdPoints = fTrdMCPoints->Size(0, i);
+
+         for (int j = 0; j < nofTrdPoints; ++j)
          {
-            track.x = (point->GetXIn() + point->GetXOut()) / 2;
-            track.y = (point->GetYIn() + point->GetYOut()) / 2;
-            track.z = z;
-            track.t = point->GetTime();
+            const CbmTrdPoint* point = static_cast<const CbmTrdPoint*> (fTrdMCPoints->Get(0, i, j));
+            Double_t z = (point->GetZIn() + point->GetZOut()) / 2;
+            Int_t trackId = point->GetTrackID();
+            TrackData& track = fTracks[i][trackId];
+
+            if (track.hasSts && track.z < z)
+            {
+               track.x = (point->GetXIn() + point->GetXOut()) / 2;
+               track.y = (point->GetYIn() + point->GetYOut()) / 2;
+               track.z = z;
+               track.t = point->GetTime();
+            }
          }
       }
    }
