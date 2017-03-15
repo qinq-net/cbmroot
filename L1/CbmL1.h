@@ -164,7 +164,7 @@ class CbmL1 : public FairTask
    void IdealTrackFinder(); // just copy all reconstructable MCTracks into RecoTracks.
 
     /// Read information about hits, mcPoints and mcTracks into L1 classes
-   void ReadEvent(L1AlgoInputData *);
+   void ReadEvent(L1AlgoInputData *, CbmEvent* event = NULL);
    bool ReadMCPoint( CbmL1MCPoint *MC, int iPoint, bool MVD ); // help procedure
    bool ReadMCPoint(CbmL1MCPoint *MC, int iPoint, int file, int event, bool MVD );
 //   static bool compareZ(const int &a, const int &b );

@@ -25,6 +25,7 @@
 #include "L1Algo/L1Branch.h"
 #include "L1Algo/L1Field.h"
 
+
 #include "FairRunAna.h"
 #include "CbmStsFindTracks.h"
 #include "CbmKF.h"
@@ -62,7 +63,7 @@ static L1Algo algo_static _fvecalignment;
 CbmL1 *CbmL1::fInstance = 0;
 
 
-CbmL1::CbmL1():
+CbmL1::CbmL1(): FairTask("L1"),
     algo(0), // for access to L1 Algorithm from L1::Instance
 vRTracks(), // reconstructed tracks
 vHitStore(),
@@ -248,23 +249,21 @@ InitStatus CbmL1::Init()
 
   listStsPts = L1_DYNAMIC_CAST<TClonesArray*>(  fManger->GetObject("StsPoint") );
 
-  fTimeSlice = 0;
-  fTimesliceMode = 0;
-  fTimeSlice = (CbmTimeSlice*) fManger->GetObject("TimeSlice.");
-  if ( fTimeSlice == NULL )
-    std::cout << GetName() << ": Running in the event by event mode." << FairLogger::endl;
-  else
-  {
-    fTimesliceMode = 1;
-    std::cout << GetName() << ": Running in the timeslice mode." << FairLogger::endl;
-  }
-
-  if ( fTimesliceMode )
-  {
+  if ( fTimesliceMode ) {  //  Time-slice mode selected
+    LOG(INFO) << GetName() << ": running in time-slice mode."
+        << FairLogger::endl;
+    fTimeSlice = NULL;
+    fTimeSlice = (CbmTimeSlice*) fManger->GetObject("TimeSlice.");
+    if ( fTimeSlice == NULL ) LOG(FATAL) << GetName()
+        << ": No time slice branch in tree!" << FairLogger::endl;
     fEventList =  (CbmMCEventList*) fManger->GetObject("MCEventList.");
     if ( NULL == fEventList)
         LOG(FATAL) << GetName() << ": No MCEventList data!" << FairLogger::endl;
-  }
+  } //? time-slice mode
+
+  else   // event mode
+    LOG(INFO) << GetName() << ": running in event mode." << FairLogger::endl;
+
 
   listStsClusters = L1_DYNAMIC_CAST<TClonesArray*>( fManger->GetObject("StsCluster") );
   listStsHitMatch = L1_DYNAMIC_CAST<TClonesArray*>( fManger->GetObject("StsHitMatch") );
@@ -693,7 +692,7 @@ void CbmL1::Reconstruct(CbmEvent* event)
     );
   }
   else 
-    ReadEvent(fData);
+    ReadEvent(fData, event);
 
   if(0){  // correct hits on MC // dbg 
     TRandom3 random; 

@@ -76,7 +76,7 @@ struct TmpStrip{
 };
 
   /// Repack data from Clones Arrays to L1 arrays
-void CbmL1::ReadEvent(L1AlgoInputData* fData)
+void CbmL1::ReadEvent(L1AlgoInputData* fData, CbmEvent* event)
 {
   if (fVerbose >= 10) cout << "ReadEvent: start." << endl;
 
@@ -318,11 +318,15 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData)
 
   if( listStsHits )
   {
-    Int_t nEnt = listStsHits->GetEntries(); 
-    
+    Int_t nEnt = 0;
+    if ( fTimesliceMode ) nEnt = listStsHits->GetEntries();
+    else nEnt = (event ? event->GetNofData(Cbm::kStsHit) : listStsHits->GetEntries());
+
     for(Int_t j = 0; j < nEnt; j++ )
     {
-      Int_t hitIndex =  j;
+      Int_t hitIndex = 0;
+      if ( fTimesliceMode ) hitIndex = j;
+      else hitIndex = (event ? event->GetIndex(Cbm::kStsHit, j) : j);
 
       CbmStsHit *sh = L1_DYNAMIC_CAST<CbmStsHit*>( listStsHits->At(hitIndex) );
       
