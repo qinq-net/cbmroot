@@ -57,7 +57,7 @@ void run_reco_matching(Int_t nEvents = 100)
     TString resultDir = outDir;
 
     TString geoSetupFile = "";
-    geoSetupFile = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/macro/rich/geosetup/setup_align.C";
+    geoSetupFile = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/macro/rich/matching/geosetup/setup_align.C";
     // ------------------------------------------------------------------------
 
 
@@ -159,7 +159,7 @@ void run_reco_matching(Int_t nEvents = 100)
     // =========================================================================
     // ===                      STS local reconstruction                     ===
     // =========================================================================
-
+/*
     // -----   STS Cluster Finder   --------------------------------------------
     FairTask* stsClusterFinder = new CbmStsFindClusters();
     run->AddTask(stsClusterFinder);
@@ -186,7 +186,7 @@ void run_reco_matching(Int_t nEvents = 100)
     FairTask* stsFindTracks = new CbmStsFindTracks(iVerbose, stsTrackFinder);
     run->AddTask(stsFindTracks);
     // -------------------------------------------------------------------------
-
+*/
     // ===                 End of STS local reconstruction                   ===
     // =========================================================================
 

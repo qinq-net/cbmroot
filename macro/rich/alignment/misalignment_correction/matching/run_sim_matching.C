@@ -191,14 +191,14 @@ void run_sim_matching(Int_t nEvents = 100)
         boxGen1->SetPRange(1., 9.);
         //boxGen1->SetPtRange(0., 3.);
         boxGen1->SetPhiRange(phi1 - 3, phi1 + 3);
-        boxGen1->SetThetaRange(theta - 1, theta1 + 1);
+        boxGen1->SetThetaRange(theta1 - 1, theta1 + 1);
         boxGen1->SetCosTheta();
         boxGen1->Init();
         primGen->AddGenerator(boxGen1);
 
         FairBoxGenerator* boxGen2 = new FairBoxGenerator(11, NELECTRONS);
         boxGen2->SetPRange(1., 9.);
-        //boxGen1->SetPtRange(0., 3.);
+        //boxGen2->SetPtRange(0., 3.);
         boxGen2->SetPhiRange(phi2 - 1.75, phi2 + 1.75);
         boxGen2->SetThetaRange(theta2 - 1.25, theta2 + 1.5);
         boxGen2->SetCosTheta();

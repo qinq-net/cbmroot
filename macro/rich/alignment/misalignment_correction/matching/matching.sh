@@ -8,7 +8,8 @@ macro_dir=/lustre/nyx/cbm/users/jbendar/CBMINSTALL_Root5/share/cbmroot/macro/ric
 
 # Specify input and output directories
 if [ $1 -eq 0 ] ; then
-        outdir=${output_dir}/Reference
+##        outdir=${output_dir}/Reference
+	outdir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/test_matching
 elif [ $1 -eq 1 ] ; then
         outdir=${output_dir}/WO_Corrections
 elif [ $1 -eq 2 ] ; then
@@ -93,13 +94,10 @@ echo ${setupMacro}
 echo ${setupName}
 
 # Run the root simulation
-if [ $1 -eq 0 ] ; then
-        root -b -l -q "${macro_dir}/matching/run_sim_matching.C(${2})"
-        root -b -l -q "${macro_dir}/matching/run_reco_matching.C(${2})"
-if [ $1 -eq 1 ] ; then
-        root -b -l -q "${macro_dir}/matching/run_sim_matching.C(${2})"
-        root -b -l -q "${macro_dir}/matching/run_reco_matching.C(${2})"
-if [ $1 -eq 2 ] ; then
+## root -b -l -q "${macro_dir}/matching/run_sim_matching.C(${2})"
+## root -b -l -q "${macro_dir}/matching/run_reco_matching.C(${2})"
+
+if [ $1 -eq 0 ] || [ $1 -eq 1 ] || [ $1 -eq 2 ] ; then
         root -b -l -q "${macro_dir}/matching/run_sim_matching.C(${2})"
         root -b -l -q "${macro_dir}/matching/run_reco_matching.C(${2})"
 elif [ $1 -eq 3 ] ; then
