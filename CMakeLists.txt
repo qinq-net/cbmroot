@@ -287,6 +287,7 @@ add_subdirectory (L1)
 add_subdirectory (KF)
 add_subdirectory (littrack) 
 add_subdirectory (tracking)
+add_subdirectory (eventbuilder)
 
 ### Analysis directories
 add_subdirectory (analysis)

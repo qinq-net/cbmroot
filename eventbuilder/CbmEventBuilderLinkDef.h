@@ -7,7 +7,7 @@
 
 #pragma link C++ class CbmBuildEventsFromTracksIdeal+;
 #pragma link C++ class CbmBuildEventsFromTracksReal+;
-#pragma link C++ class CbmEventBuilderQA+;
+//#pragma link C++ class CbmEventBuilderQA+;
 
 #endif
 
