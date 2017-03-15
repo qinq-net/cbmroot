@@ -65,7 +65,7 @@ link_directories( ${LINK_DIRECTORIES})
 set(SRCS
 CbmBuildEventsFromTracksIdeal.cxx
 CbmBuildEventsFromTracksReal.cxx
-#CbmEventBuilderQA.cxx
+CbmEventBuilderQA.cxx
 )
 
 

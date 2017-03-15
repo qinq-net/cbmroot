@@ -269,9 +269,7 @@ void CbmEventBuilderQA::Exec(Option_t* /*opt*/)
       
     fTimeHisto[3]->Fill(hit_time);
       
-    int iCol = (hit->event)%5;
     
-    if (iCol>=0) fTimeHisto[16+iCol]->Fill(hit_time);
       
     CbmMatch* stsHitMatch = (CbmMatch*) fStsHitMatch->At(iHit);
     if(stsHitMatch -> GetNofLinks() == 0) continue;
@@ -290,9 +288,15 @@ void CbmEventBuilderQA::Exec(Option_t* /*opt*/)
         bestWeight = stsHitMatch->GetLink(iLink).GetWeight();
         iMCPoint = stsHitMatch->GetLink(iLink).GetIndex();
         link = stsHitMatch->GetLink(iLink);
+        mcEvent = link.GetEntry();
       }
     }
     if(bestWeight/totalWeight < 0.7|| iMCPoint < 0) continue;
+    
+    
+    int iCol = (mcEvent)%5;
+    
+    if (iCol>=0) fTimeHisto[16+iCol]->Fill(hit_time);
 
     CbmStsPoint* stsMcPoint = (CbmStsPoint*) fStsPoints->Get(link.GetFile(),link.GetEntry(),link.GetIndex());
     double mcTime = stsMcPoint->GetTime() + fEventList->GetEventTime(link.GetEntry()+1, link.GetFile());
