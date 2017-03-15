@@ -100,7 +100,7 @@ void CbmStsFindClusters::Exec(Option_t* /*opt*/) {
 	*/
 	for (Int_t iModule = 0; iModule < fSetup->GetNofModules(); iModule++) {
 		CbmStsModule* module = fSetup->GetModule(iModule);
-		if ( module->GetNofDigis() == 0 ) continue;
+		if ( module->GetNofDigisTb() == 0 ) continue;
 		Int_t nClusters = 0;
 		if ( fUseFinderTb ) {
 			module->SetDeadTime(fDeadTime);
@@ -245,19 +245,11 @@ Int_t CbmStsFindClusters::SortDigis() {
 	// --- Counters
 	Int_t nDigis   = 0;
 
-	fDigiData.clear();
-	if ( fDaq ) fDigiData = fTimeSlice->GetStsData();
-
 	// --- Loop over digis in input array
 	CbmStsDigi* digi = NULL;
-	Int_t nofDigis = 0;
-	if ( fDaq ) nofDigis = fDigiData.size();
-	else nofDigis = fDigis->GetEntriesFast();
+	Int_t nofDigis = fDigis->GetEntriesFast();
 	for (Int_t iDigi = 0; iDigi < nofDigis; iDigi++) {
-		if ( fDaq )
-			digi = static_cast<CbmStsDigi*> (&fDigiData[iDigi]);
-		else
-			digi = static_cast<CbmStsDigi*> (fDigis->At(iDigi));
+		digi = static_cast<CbmStsDigi*> (fDigis->At(iDigi));
 		if ( ! digi ) {
 			LOG(FATAL) << GetName() << ": Invalid digi pointer!"
 					       << FairLogger::endl;
