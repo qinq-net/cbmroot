@@ -9,16 +9,11 @@ void run_sim_position4(Int_t nEvents = 100)
     Int_t iVerbose = 0;
 
     TString script = TString(gSystem->Getenv("SCRIPT"));
-    const char* setupName = "";
-    if ( script == "yes" ) {
-	setupName = TString(gSystem->Getenv("SETUP_NAME"));
-    }
-    else {
-        setupName = "setup_align";
-    }
-
 
     // -----   In- and output file names   ------------------------------------
+    TString setupName = "";
+    setupName = "setup_align";
+
     TString outDir = "";
     if (script == "yes") {
 	outDir = TString(gSystem->Getenv("OUT_DIR"));
@@ -32,6 +27,7 @@ void run_sim_position4(Int_t nEvents = 100)
     TString parFile = outDir + setupName + "_param.root";
 
     TString geoSetupFile = "";
+    geoSetupFile = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/macro/rich/position/geosetup/setup_align.C";
 
     TString electrons = "yes"; // If "yes" then primary electrons will be generated
     Int_t NELECTRONS = 1; // number of e- to be generated
@@ -51,7 +47,8 @@ void run_sim_position4(Int_t nEvents = 100)
         parFile = TString(gSystem->Getenv("PAR_FILE"));
 	cout << "mcFile: " << TString(gSystem->Getenv("MC_FILE")) << endl << "parFile: " << TString(gSystem->Getenv("PAR_FILE")) << endl << "urqmdFile: " << TString(gSystem->Getenv("URQMD_FILE")) << endl;
 
-	TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/" + TString(gSystem->Getenv("GEO_SETUP_FILE"));
+	geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/position/geosetup/" + TString(gSystem->Getenv("GEO_SETUP_FILE"));
+	setupName = TString(gSystem->Getenv("SETUP_NAME"));
 
         NELECTRONS = TString(gSystem->Getenv("NELECTRONS")).Atoi();
         NPOSITRONS = TString(gSystem->Getenv("NPOSITRONS")).Atoi();
@@ -61,6 +58,9 @@ void run_sim_position4(Int_t nEvents = 100)
 //        plutoFile = TString(gSystem->Getenv("PLUTO_FILE"));
 //        plutoParticle = TString(gSystem->Getenv("PLUTO_PARTICLE"));
     }
+
+    std::cout << "-I- using geoSetupFile: " << geoSetupFile << " and setupName: "
+	<< setupName << std::endl;
 
     remove(parFile.Data());
     remove(mcFile.Data());
@@ -86,14 +86,10 @@ void run_sim_position4(Int_t nEvents = 100)
     // ------------------------------------------------------------------------
 
 
-    // -----   Load the geometry setup   -------------------------------------
-    if ( script != "yes" ) {
-	geoSetupFile = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/macro/rich/geosetup/setup_align.C";
-	std::cout << "-I- using not script, following geoSetupFile name used: "
-	    << geoSetupFile << std::endl;
-    }
+    // -----   Load the geometry setup   --------------------------------------
+    const char* setupName2 = setupName;
     TString setupFunct = "";
-    setupFunct = setupFunct + setupName + "()";
+    setupFunct = setupFunct + setupName2 + "()";
     std::cout << "-I- geoSetupName: " << geoSetupFile << std::endl
 	<< "-I- setupFunct: " << setupFunct << std::endl;
     gROOT->LoadMacro(geoSetupFile);
@@ -199,7 +195,7 @@ void run_sim_position4(Int_t nEvents = 100)
 
         FairBoxGenerator* boxGen2 = new FairBoxGenerator(11, NELECTRONS);
         boxGen2->SetPRange(1., 9.);
-        //boxGen1->SetPtRange(0., 3.);
+        //boxGen2->SetPtRange(0., 3.);
         boxGen2->SetPhiRange(0.5, 179.5);
         boxGen2->SetThetaRange(2.5, 25);
         boxGen2->SetCosTheta();

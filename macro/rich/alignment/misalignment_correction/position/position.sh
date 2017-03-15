@@ -2,19 +2,22 @@
 
 XXXXX=$(printf "%05d" "$SLURM_ARRAY_TASK_ID")
 
-cbmroot_config_path=/lustre/nyx/cbm/users/jbendar/CBMINSTALL/bin/CbmRootConfig.sh
-# macro_dir=/u/jbendar/CBMSRC/macro/rich/alignment/misalignment_correction/position
+cbmroot_config_path=/lustre/nyx/cbm/users/jbendar/CBMINSTALL_Root5/bin/CbmRootConfig.sh
 output_dir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position
-macro_dir=/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/macro/rich
+macro_dir=/lustre/nyx/cbm/users/jbendar/CBMINSTALL_Root5/share/cbmroot/macro/rich
 
 # Specify input and output directories
 if [ $1 -eq 0 ] ; then
-        outdir=${output_dir}/Aligned
+##        outdir=${output_dir}/Aligned
+	outdir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/test_position
 elif [ $1 -eq 1 ] ; then
-        outdir=${output_dir}/Misaligned_Full
+        outdir=${output_dir}/Misaligned_5mrad_Full
 elif [ $1 -eq 2 ] ; then
+	outdir=${output_dir}/Misaligned_1mrad_Full
+elif [ $1 -eq 3 ] ; then
         outdir=${output_dir}/Standard
 fi
+export OUT_DIR=${outdir}
 
 # Needed to run macro via script
 export SCRIPT=yes
@@ -32,12 +35,29 @@ echo ${VMCWORKDIR}
 # This line is needed, otherwise root will crash
 export DISPLAY=localhost:0.0
 
+# Geometry setup macro
+if [ $1 -eq 0 ] ; then
+        setupMacro=setup_align.C
+	setupName=setup_align
+elif [ $1 -eq 1 ] ; then
+        setupMacro=setup_misalign_5mrad.C
+	setupName=setup_misalign_5mrad
+elif [ $1 -eq 2 ] ; then
+	setupMacro=setup_misalign_1mrad.C
+	setupName=setup_misalign_1mrad
+elif [ $1 -eq 3 ] ; then
+        setupMacro=setup_standard.C
+	setupName=setup_standard
+fi
+export GEO_SETUP_FILE=${setupMacro}
+export SETUP_NAME=${setupName}
+
 # Define urqmd and output files
 export URQMD_FILE=/lustre/nyx/cbm/prod/gen/urqmd/auau/${3}/centr/urqmd.auau.${3}.centr.${XXXXX}.root
-export MC_FILE=${outdir}/mc.${XXXXX}.root
-export PAR_FILE=${outdir}/params.${XXXXX}.root
-export RECO_FILE=${outdir}/reco.${XXXXX}.root
-export ANALYSIS_FILE=${outdir}/analysis.${XXXXX}.root
+export MC_FILE=${outdir}/${setupName}_mc.${XXXXX}.root
+export PAR_FILE=${outdir}/${setupName}_params.${XXXXX}.root
+export RECO_FILE=${outdir}/${setupName}_reco.${XXXXX}.root
+export ANALYSIS_FILE=${outdir}/${setupName}_analysis.${XXXXX}.root
 export LIT_RESULT_DIR=${outdir}/${XXXXX}
 
 #Simulation parameters
@@ -57,20 +77,6 @@ export PLUTO=no
 # Collision energy: 25gev or 8gev -> set proper weight into analysis
 export ENERGY=${3}
 
-# Geometry setup macro
-if [ $1 -eq 0 ] ; then
-        setupMacro=setup_align.C
-	setupName=setup_align
-elif [ $1 -eq 1 ] ; then
-        setupMacro=setup_misalign.C
-	setupName=setup_misalign
-elif [ $1 -eq 2 ] ; then
-        setupMacro=setup_standard.C
-	setupName=setup_standard
-fi
-export GEO_SETUP_FILE=${setupMacro}
-export SETUP_NAME=${setupName}
-
 # If "yes" DELTA electrons will be embedded
 #export DELTA=no
 #export DELTA_FILE=/lustre/cbm/user/ebelolap/aug11/sep12/${ENERGY}/${FIELDDIR}/deltasource/mc.delta.root
@@ -81,13 +87,15 @@ export SETUP_NAME=${setupName}
 # mkdir -p $workdir
 # cd $workdir
 
-echo ${output_dir}
-echo ${macro_dir}
-echo ${outdir}
-export OUT_DIR=${outdir}
+## echo ${output_dir}
+## echo ${macro_dir}
+## echo ${outdir}
+echo ${setupMacro}
+echo ${setupName}
+
 # Run the root simulation
-root -b -l -q "${macro_dir}/position/run_sim_position3.C(${2}, ${1})"
-root -b -l -q "${macro_dir}/position/run_reco_position3.C(${2}, ${1})"
+root -b -l -q "${macro_dir}/position/run_sim_position4.C(${2})"
+root -b -l -q "${macro_dir}/position/run_reco_position4.C(${2})"
 # root -b -l -q "${macro_dir}/position/Compute_distance.C(${2}, ${1})"
 
 # cp -v ${SGE_STDOUT_PATH} ${outdir}/log/${JOB_ID}.${SGE_TASK_ID}.log
