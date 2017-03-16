@@ -545,8 +545,8 @@ void dump_digi_file()
 
   const Double_t PadHeightInSector[NofModuleTypes][NofSectors] =  // pad height
         { {  1.50,  1.50,  1.50 },   // module type 1 -  1.01 mm2
-          {  2.25,  2.25,  2.25 },   // module type 2 -  1.52 mm2
-//          {  2.75,  2.50,  2.75 },   // module type 2 -  1.86 mm2
+//          {  2.25,  2.25,  2.25 },   // module type 2 -  1.52 mm2
+          {  2.75,  2.50,  2.75 },   // module type 2 -  1.86 mm2
           {  4.50,  4.50,  4.50 },   // module type 3 -  3.04 mm2
           {  6.75,  6.75,  6.75 },   // module type 4 -  4.56 mm2
 
@@ -560,8 +560,8 @@ void dump_digi_file()
 
   const Int_t NofRowsInSector[NofModuleTypes][NofSectors] =   // number of rows per sector
         { {  12,  12,  12 },         // module type 1
-          {   8,   8,   8 },         // module type 2
-//          {   8,   4,   8 },         // module type 2
+//          {   8,   8,   8 },         // module type 2
+          {   8,   4,   8 },         // module type 2
           {   4,   4,   4 },         // module type 3
           {   2,   4,   2 },         // module type 4
 
