@@ -5,7 +5,7 @@
 #include "CbmTrackParam.h"
 #include "TMath.h"
 
-void CbmTrackParam::Set(const FairTrackParam& ftp)
+void CbmTrackParam::Set(const FairTrackParam& ftp, Double_t time, Double_t timeError)
 {
     SetX(ftp.GetX());
     SetY(ftp.GetY());
@@ -13,6 +13,8 @@ void CbmTrackParam::Set(const FairTrackParam& ftp)
     SetTx(ftp.GetTx());
     SetTy(ftp.GetTy());
     SetQp(ftp.GetQp());
+    fTime = time;
+    fDTime = timeError;
     Double_t cov[15];
     ftp.CovMatrix(cov);
     SetCovMatrix(cov);
