@@ -561,8 +561,8 @@ void dump_digi_file()
           {  6.75,  6.75,  6.75 },   // module type 4 -
 
           {  3.75,  4.00,  3.75 },   // module type 5 -
-          {  3.75,  4.00,  3.75 },   // module type 6 -  3.28 cm2
-          {  7.50,  7.75,  7.50 },   // module type 7 -  6.36 cm2
+          {  5.00,  5.50,  5.00 },   // module type 6 -  4.52 cm2
+          {  7.50,  7.75,  7.50 },   // module type 7 -  6.37 cm2
           { 15.25, 15.50, 15.25 } }; // module type 8 - 12.73 cm2
 
   const Int_t NofRowsInSector[NofModuleTypes][NofSectors] =   // number of rows per sector
@@ -572,7 +572,7 @@ void dump_digi_file()
           {   2,   4,   2 },         // module type 4
 
           {   8,   8,   8 },         // module type 5
-          {   8,   8,   8 },         // module type 6
+          {   7,   4,   7 },         // module type 6
           {   2,   8,   2 },         // module type 7
           {   2,   2,   2 } };       // module type 8
 
