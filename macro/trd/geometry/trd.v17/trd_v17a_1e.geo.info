@@ -2,7 +2,7 @@
 ##   trd_v17a_1e information file
 #
 
-# created 20170306
+# created 20170316
 
 # envelope
 0.000000 cm   start of TRD (z)
@@ -58,15 +58,15 @@ GBTX readout boards are : included
 ---------------------------------------------------------------------------------
        32       24       40        0        0       24       32       48      200   number of modules
 # febs
-        9s       6s       3s       4       12        8        4        3            FEBs per module
+        9s       6s       3s       4       12        8        4        2            FEBs per module
                                                                                 0   ultimate  FEBs
       288s     144s     120s                                                  552   super     FEBs
-                                   0        0      192      128      144      464   regular   FEBs
-      288      144      120        0        0      192      128      144     1016   number of FEBs
+                                   0        0      192      128       96      416   regular   FEBs
+      288      144      120        0        0      192      128       96      968   number of FEBs
 # asics
        10       10       10        5        8        8        8        8            ASICs per FEB
-       90       60       30       20       96       64       32       24            ASICs per module
-     2880     1440     1200        0        0     1536     1024     1152     9232   number of ASICs
+       90       60       30       20       96       64       32       16            ASICs per module
+     2880     1440     1200        0        0     1536     1024      768     8848   number of ASICs
 # gbtx
        15       10        5        0        0       10        5        3            GBTXs per module
       480      240      200        0        0      240      160      144     1464   number of GBTXs
@@ -75,19 +75,19 @@ GBTX readout boards are : included
        96       48       40        0        0       48       32        0      264   number of GBTX ROB5
         0        0        0        0        0        0        0       48       48   number of GBTX ROB3
 # channels
-     2880     1920      960      640     3072     2048     1024      768            channels per module
+     2880     1920      960      640     3072     2048     1024      512            channels per module
       320      320      320      160      256      256      256      256            channels per feb
-    92160    46080    38400        0        0    49152    32768    36864   295424   channels used
-    92160s   46080s   38400s       0        0    49152    32768    36864   295424   channels available
-     0.0%u   59.8%s   40.2%r                                                        channel ratio
+    92160    46080    38400        0        0    49152    32768    24576   283136   channels used
+    92160s   46080s   38400s       0        0    49152    32768    24576   283136   channels available
+     0.0%u   62.4%s   37.6%r                                                        channel ratio
 
    100.0%   channel efficiency
 
  125.05 m2      total surface    
  116.02 m2      total active area
    1.39 m3      total gas volume 
-   3.93 cm2/ch  average channel size
-2546.34 ch/m2   channels per m2 active area
+   4.10 cm2/ch  average channel size
+2440.42 ch/m2   channels per m2 active area
 
 # gas volume position
    31.6000 cm   position of gas volume - layer  1

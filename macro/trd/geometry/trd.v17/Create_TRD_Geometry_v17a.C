@@ -292,7 +292,7 @@ const Int_t RobTypeOnModule[NofModuleTypes]={555, 55,  5,  0,  0, 55,  5,  3 }; 
 
 // super density for type 1 modules - 2017 - 540 mm
 //const Int_t FebsPerModule[NofModuleTypes] = {  9,  5,  6,  4, 12,  8,  4,  3 }; // number of FEBs on backside
-const Int_t FebsPerModule[NofModuleTypes] = {  9,  6,  3,  4, 12,  8,  4,  3 }; // number of FEBs on backside
+const Int_t FebsPerModule[NofModuleTypes] = {  9,  6,  3,  4, 12,  8,  4,  2 }; // number of FEBs on backside
 const Int_t AsicsPerFeb[NofModuleTypes]   = {210,210,210,105,108,108,108,108 }; // %100 gives number of ASICs on FEB, /100 gives grouping
 //// ultimate density - 540 mm
 //const Int_t FebsPerModule[NofModuleTypes] = {  6,  5,  6,  4, 12,  8,  4,  3 }; // number of FEBs on backside - reduced FEBs (64 ch ASICs)
@@ -552,7 +552,8 @@ void dump_digi_file()
           {  3.75,  4.00,  3.75 },   // module type 5 -  2.84 mm2
           {  5.75,  5.75,  5.75 },   // module type 6 -  4.13 mm2
           { 11.50, 11.50, 11.50 },   // module type 7 -  8.26 mm2
-          { 15.25, 15.50, 15.25 } }; // module type 8 - 11.14 mm2
+	  //          { 15.25, 15.50, 15.25 } }; // module type 8 - 11.14 mm2
+          { 23.00, 23.00, 23.00 } };     // module type 8 - 16.52 mm2
 //          {  7.50,  7.75,  7.50 },   // module type 6 -  5.51 mm2
 //          {  5.50,  5.75,  5.50 },   // module type 6 -  4.09 mm2
 //          { 11.25, 11.50, 11.25 },   // module type 7 -  8.18 mm2
@@ -567,7 +568,8 @@ void dump_digi_file()
           {   8,   8,   8 },         // module type 5
           {   4,   8,   4 },         // module type 6
           {   2,   4,   2 },         // module type 7
-          {   2,   2,   2 } };       // module type 8
+//          {   2,   2,   2 } };       // module type 8
+          {   1,   2,   1 } };       // module type 8
 //          {  10,   4,  10 },         // module type 5
 //          {   4,   4,   4 },         // module type 6
 //          {   2,  12,   2 },         // module type 6
