@@ -2,7 +2,7 @@
 ##   trd_v17b_1e information file
 #
 
-# created 20170306
+# created 20170316
 
 # envelope
 0.000000 cm   start of TRD (z)
@@ -75,19 +75,19 @@ GBTX readout boards are : included
         0        0        0        0        0        0        0        0        0   number of GBTX ROB5
       160       72       80        0        0       72       64       48      496   number of GBTX ROB3
 # channels
-     3200     1920     1280      640     3072        0        0        0            channels per module
-      320      320      320      160      256        0        0        0            channels per feb
-   102400    46080    51200        0        0        0        0        0   199680   channels used
+     3200     1920     1280      640     3072     2016     1344      672            channels per module
+      320      320      320      160      256      224      224      224            channels per feb
+   102400    46080    51200        0        0    48384    43008    32256   323328   channels used
    102400s   46080s   51200s       0        0    48384    43008    32256   323328   channels available
      0.0%u   61.8%s   38.2%r                                                        channel ratio
 
-    61.8%   channel efficiency
+   100.0%   channel efficiency
 
  125.05 m2      total surface    
  116.02 m2      total active area
    1.39 m3      total gas volume 
-   5.81 cm2/ch  average channel size
-1721.09 ch/m2   channels per m2 active area
+   3.59 cm2/ch  average channel size
+2786.85 ch/m2   channels per m2 active area
 
 # gas volume position
    31.6000 cm   position of gas volume - layer  1

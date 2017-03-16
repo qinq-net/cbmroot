@@ -1163,6 +1163,11 @@ void dump_info_file()
       channels_per_feb[iModule] = 128 * 2;   // rows
       channels_per_module[iModule] = channels_per_feb[iModule] * FebsPerModule[iModule];
     }
+    if ((AsicsPerFeb[iModule] %100) ==  7)
+    {
+      channels_per_feb[iModule] = 112 * 2;   // rows
+      channels_per_module[iModule] = channels_per_feb[iModule] * FebsPerModule[iModule];
+    }
   }
 
   for (Int_t iModule = 0; iModule < NofModuleTypes; iModule++)
