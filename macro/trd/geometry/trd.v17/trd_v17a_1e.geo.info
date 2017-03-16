@@ -70,6 +70,8 @@ GBTX readout boards are : included
 # gbtx
        15       10        5        0        0       10        5        3            GBTXs per module
       480      240      200        0        0      240      160      144     1464   number of GBTXs
+    85.7%    85.7%    85.7%        -        -    91.4%    91.4%    76.2%    86.3%   e-link efficiency
+
       555       55        5        0        0       55        5        3            GBTX ROB types on Module
         0        0        0        0        0        0        0        0        0   number of GBTX ROB7
        96       48       40        0        0       48       32        0      264   number of GBTX ROB5

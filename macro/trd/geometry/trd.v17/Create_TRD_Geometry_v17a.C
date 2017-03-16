@@ -1031,6 +1031,20 @@ void dump_info_file()
   fprintf(ifile," %8d", total_gbtx[NofModuleTypes]);
   fprintf(ifile,"   number of GBTXs\n");
 
+
+  // e-link efficiency
+  for (Int_t iModule = 0; iModule < NofModuleTypes; iModule++)
+  {
+    if (total_gbtx[iModule]!=0)
+      fprintf(ifile," %7.1f%%", (float)total_asics[iModule] *2 / (total_gbtx[iModule] *14) *100);
+    else 
+      fprintf(ifile,"        -");
+  }
+  if (total_gbtx[NofModuleTypes]!=0)
+    fprintf(ifile," %7.1f%%", (float)total_asics[NofModuleTypes] *2 / (total_gbtx[NofModuleTypes] *14) *100);
+  fprintf(ifile,"   e-link efficiency\n\n");
+
+
   // GBTX ROB types per module type
   for (Int_t iModule = 0; iModule < NofModuleTypes; iModule++)
   {
