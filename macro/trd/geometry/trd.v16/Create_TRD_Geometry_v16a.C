@@ -1070,6 +1070,33 @@ void dump_info_file()
   fprintf(ifile,"   number of GBTX ROB3\n");
 
   //------------------------------------------------------------------------------
+  fprintf(ifile,"# e-links\n");
+
+  // e-links used
+  for (Int_t iModule = 0; iModule < NofModuleTypes; iModule++)
+    fprintf(ifile," %8d", asics_per_module[iModule] *2);
+  fprintf(ifile," %8d", total_asics[NofModuleTypes] *2);
+  fprintf(ifile,"   e-links used\n");
+
+  // e-links available
+  for (Int_t iModule = 0; iModule < NofModuleTypes; iModule++)
+    fprintf(ifile," %8d", GbtxPerModule[iModule] *14);
+  fprintf(ifile," %8d", total_gbtx[NofModuleTypes] *14);
+  fprintf(ifile,"   e-links available\n");
+
+  // e-link efficiency
+  for (Int_t iModule = 0; iModule < NofModuleTypes; iModule++)
+    {
+      if (total_gbtx[iModule]!=0)
+	fprintf(ifile," %7.1f%%", (float)total_asics[iModule] *2 / (total_gbtx[iModule] *14) *100);
+      else
+	fprintf(ifile,"        -");
+    }
+  if (total_gbtx[NofModuleTypes]!=0)
+    fprintf(ifile," %7.1f%%", (float)total_asics[NofModuleTypes] *2 / (total_gbtx[NofModuleTypes] *14) *100);
+  fprintf(ifile,"   e-link efficiency\n\n");
+
+  //------------------------------------------------------------------------------
 
   // number of channels
   fprintf(ifile,"# channels\n");
