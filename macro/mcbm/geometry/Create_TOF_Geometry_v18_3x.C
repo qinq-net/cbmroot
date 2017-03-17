@@ -5,6 +5,7 @@
 
 // Changelog
 //
+// 2017-03-17 - DE - add mTOF geometry consisting of 3 TOF STAR modules
 // 2013-10-16 - DE - prepare tof_v13_5a geometry - SIS 100 hadron  : TOF_Z_Front =  450 cm
 // 2013-10-16 - DE - prepare tof_v13_5b geometry - SIS 100 electron: TOF_Z_Front =  600 cm
 // 2013-10-16 - DE - prepare tof_v13_5c geometry - SIS 100 muon    : TOF_Z_Front =  650 cm
@@ -38,15 +39,15 @@
 #include <iostream>
 
 // Name of geometry version and output file
-const TString geoVersion = "tof_v13_6a";
+const TString geoVersion = "tof_v13_7a";
 //const TString geoVersion = "tof_v13_5a";
 //const TString geoVersion = "tof_v13-5b";
 //const TString geoVersion = "tof_v13-5c";
 //const TString geoVersion = "tof_v13-5d";
 //const TString geoVersion = "tof_v13-5e";
-const TString FileNameSim  = geoVersion + ".geo.root";
-const TString FileNameGeo  = geoVersion + "_geo.root";
-const TString FileNameInfo = geoVersion + ".geo.info";
+const TString FileNameSim  = "m" + geoVersion + ".geo.root";
+const TString FileNameGeo  = "m" + geoVersion + "_geo.root";
+const TString FileNameInfo = "m" + geoVersion + ".geo.info";
 
 // TOF_Z_Front corresponds to front cover of outer super module towers
 const Float_t TOF_Z_Front =  130;  // mCBM@SIS18
@@ -248,7 +249,8 @@ void Create_TOF_Geometry_v18_3x() {
 
   //  position_side_tof_modules(1);  // keep order !!
   //  position_inner_tof_modules(2);
-  position_inner_tof_modules(3);
+  // DE no inner modules anymore 03/2017
+  //  position_inner_tof_modules(3);
   cout << "Outer Types "<<Outer_Module_Types[0][0]<<", "<<Outer_Module_Types[1][0]
        <<", col=1:  "<<Outer_Module_Types[0][1]<<", "<<Outer_Module_Types[1][1]
        <<endl;
@@ -259,8 +261,8 @@ void Create_TOF_Geometry_v18_3x() {
   //  position_outer_tof_modules(2);
   //  position_outer_tof_modules(3);
   position_outer_tof_modules(4);
-  position_tof_poles(0);
-  position_tof_bars(0);
+//DE  position_tof_poles(0);
+//DE  position_tof_bars(0);
   
   gGeoMan->CloseGeometry();
   gGeoMan->CheckOverlaps(0.001);
@@ -1007,7 +1009,11 @@ void position_outer_tof_modules(Int_t nCol) //modType, Int_t col1, Int_t col2)
   //  for(Int_t j=0; j<nCol; j++){ 
   for(Int_t j=3; j<nCol; j++){   // DE only plot lagrest modules, not the inner ones
     //   Float_t xPos = Outer_Module_X_Offset + ((j+1)*DxColl);
-   Float_t xPos = Outer_Module_X_Offset + ((j+1-3)*DxColl);  // DE reduce offset
+    //   Float_t xPos = Outer_Module_X_Offset + ((j+1-3)*DxColl);  // DE reduce offset
+
+    //    Float_t xPos = Outer_Module_X_Offset;
+   Float_t xPos = 7;  // DE for centered position of modules in x
+
    Last_Size_Y=0.;
    Last_Over_Y=0.;
    Float_t yPos = 0.;
@@ -1022,7 +1028,7 @@ void position_outer_tof_modules(Int_t nCol) //modType, Int_t col1, Int_t col2)
      }
    }   
 
-   zPos -= 2.*DzPos; //((j+1)*2*Module_Size_Z[modType]);
+   //DE   zPos -= 2.*DzPos; //((j+1)*2*Module_Size_Z[modType]);
 
    Pole_ZPos[NumberOfPoles] = zPos;
    Pole_Col[NumberOfPoles] = j+1;
@@ -1051,6 +1057,9 @@ void position_outer_tof_modules(Int_t nCol) //modType, Int_t col1, Int_t col2)
          <<" at z = "<<zPos<<", DzPos = "<<DzPos<<endl;    
     for(Int_t i=0; i<numModules; i++) {  
       ii++; 
+
+      cout <<" DE: xPos "<< xPos <<endl;    
+
       cout << "Outer ii "<<ii<<" Last "<<Last_Size_Y<<","<<Last_Over_Y<<endl;
       Float_t DeltaY=Module_Size_Y[modType]+Last_Size_Y-2.*(Module_Over_Y[modType]+Last_Over_Y);      
       if (ii>1){yPos += DeltaY;}
@@ -1060,9 +1069,13 @@ void position_outer_tof_modules(Int_t nCol) //modType, Int_t col1, Int_t col2)
            <<"(#"<<modNum[modType]<<") "<<" at Y = "<<yPos<<" Ysize = "<<Module_Size_Y[modType]
   	   <<" DeltaY = "<<DeltaY<<endl;
 
-      module_trans = new TGeoTranslation("", xPos, yPos, zPos);
-      gGeoMan->GetVolume(geoVersion)->AddNode(gModules[modType], modNum[modType], module_trans);
-      modNum[modType]++;
+      if (ii==1)  // print only 1 module upstream
+      {
+	//        module_trans = new TGeoTranslation("", xPos, yPos, zPos);
+        module_trans = new TGeoTranslation("", xPos, yPos, zPos+DzPos);
+        gGeoMan->GetVolume(geoVersion)->AddNode(gModules[modType], modNum[modType], module_trans);
+        modNum[modType]++;
+      }
        
 //      module_trans = new TGeoTranslation("", -xPos, yPos, zPos);
 //      module_combi_trans = new TGeoCombiTrans(*module_trans, *module_rot);
@@ -1082,8 +1095,8 @@ void position_outer_tof_modules(Int_t nCol) //modType, Int_t col1, Int_t col2)
 //	modNum[modType]++;
 
 	// second layer
-	module_trans 
-	  = new TGeoTranslation("", xPos, yPos-DeltaY/2., zPos+DzPos);
+	//	module_trans = new TGeoTranslation("", xPos, yPos-DeltaY/2., zPos+DzPos);
+	module_trans = new TGeoTranslation("", xPos, yPos-DeltaY/2., zPos);
 	gGeoMan->GetVolume(geoVersion)->AddNode(gModules[modType], modNum[modType], module_trans);
 	modNum[modType]++;
 //	module_trans 
@@ -1092,8 +1105,8 @@ void position_outer_tof_modules(Int_t nCol) //modType, Int_t col1, Int_t col2)
 //	gGeoMan->GetVolume(geoVersion)->AddNode(gModules[modType], modNum[modType], module_combi_trans);
 //	modNum[modType]++;
 
-	module_trans 
-	  = new TGeoTranslation("", xPos, -(yPos-DeltaY/2.), zPos+DzPos);
+//	module_trans = new TGeoTranslation("", xPos, -(yPos-DeltaY/2.), zPos+DzPos);
+	module_trans = new TGeoTranslation("", xPos, -(yPos-DeltaY/2.), zPos);
 	gGeoMan->GetVolume(geoVersion)->AddNode(gModules[modType], modNum[modType], module_trans);
 	modNum[modType]++;
 //	module_trans 
