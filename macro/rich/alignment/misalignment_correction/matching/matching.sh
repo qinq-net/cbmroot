@@ -8,8 +8,8 @@ macro_dir=/lustre/nyx/cbm/users/jbendar/CBMINSTALL_Root5/share/cbmroot/macro/ric
 
 # Specify input and output directories
 if [ $1 -eq 0 ] ; then
-##        outdir=${output_dir}/Reference
-	outdir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/test_matching
+        outdir=${output_dir}/Reference
+##	outdir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/test_matching
 elif [ $1 -eq 1 ] ; then
         outdir=${output_dir}/WO_Corrections
 elif [ $1 -eq 2 ] ; then
