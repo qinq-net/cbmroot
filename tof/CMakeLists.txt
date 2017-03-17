@@ -80,6 +80,7 @@ TofReco/CbmTofSimpClusterizer.cxx
 TofReco/CbmTofFindTracks.cxx 
 TofReco/CbmTofTrackFinderNN.cxx 
 TofReco/LKFMinuit.cxx 
+TofReco/CbmTofTBClusterizer.cxx
 
 TofTests/CbmTofTests.cxx 
 

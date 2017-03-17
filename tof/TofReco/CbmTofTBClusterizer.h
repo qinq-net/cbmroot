@@ -22,25 +22,29 @@
 #include "CbmTofDigiPar.h"
 #include "CbmTofCell.h"
 #include "CbmTofDigiBdfPar.h"
+#include "TClonesArray.h"
+
 
 class CbmTofTBClusterizer : public FairTask
 {
 public:
+
     struct ChannelDigis
     {
-        struct DigiDesc
-        {
-            CbmTofDigiExp* pDigi;
-            Int_t digiInd;
-        };
-        
-        struct DigiPair
-        {
-            Double_t y;
-            DigiDesc topDigi;
-            DigiDesc bottomDigi;
-        };
-        
+
+      struct DigiDesc
+      {
+          CbmTofDigiExp* pDigi;
+          Int_t digiInd;
+      };
+
+      struct DigiPair
+      {
+          Double_t y;
+          DigiDesc topDigi;
+          DigiDesc bottomDigi;
+      };
+
         std::map<Double_t, DigiDesc> topDigis;
         std::map<Double_t, DigiDesc> bottomDigis;
         std::map<Double_t, DigiPair> digiPairs;

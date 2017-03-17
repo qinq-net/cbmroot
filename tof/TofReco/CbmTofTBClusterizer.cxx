@@ -248,16 +248,11 @@ InitStatus CbmTofTBClusterizer::Init()
    if (0 == ioman)
       fLogger->Fatal(MESSAGE_ORIGIN, "No FairRootManager");
    
-   fTofDigis = static_cast<TClonesArray*> (ioman->GetObject("TofDigi"));
+   fTofDigis = static_cast<TClonesArray*> (ioman->GetObject("TofDigiExp"));
    
    if (0 == fTofDigis)
       fLogger->Fatal(MESSAGE_ORIGIN, "No TofDigi array found");
-   
-   fTofPoints = static_cast<TClonesArray*> (ioman->GetObject("TofPoint"));
-   
-   if (0 == fTofPoints)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No TofPoint array found");
-   
+
    fGeoHandler = new CbmTofGeoHandler;
    Bool_t isSimulation=kFALSE;
    Int_t iGeoVersion = fGeoHandler->Init(isSimulation);
@@ -301,6 +296,7 @@ InitStatus CbmTofTBClusterizer::Init()
    
    Int_t iNbSmTypes = fDigiBdfPar->GetNbSmTypes();
    fStorDigiExp.resize(iNbSmTypes);
+   LOG(INFO) << "Number of supermodule types is " << iNbSmTypes << FairLogger::endl;
    
    for (Int_t iSmType = 0; iSmType < iNbSmTypes; ++iSmType)
    {
@@ -360,6 +356,9 @@ void CbmTofTBClusterizer::Exec(Option_t* option)
 	Int_t    iEventNr   = 0;
 	Double_t dEventTime = 0.;
 	GetEventInfo(iInputNr, iEventNr, dEventTime);
+	LOG(DEBUG) << GetName() << ": Input " << iInputNr << ", event "
+	    << iEventNr << ", event time " << dEventTime << " ns"
+	    << FairLogger::endl;
    
    fTofHits->Clear("C");
    //fTofHits->Delete();
@@ -371,7 +370,11 @@ void CbmTofTBClusterizer::Exec(Option_t* option)
    Double_t dMaxSpaceDist = fDigiBdfPar->GetMaxDistAlongCh();   
    Int_t iNbTofDigi  = fTofDigis->GetEntries();
    
-   /*map<pair<Int_t, Int_t>, list<Int_t> > tofPointDigiInds;
+   LOG(DEBUG) << GetName() << ": Input " << iInputNr << ", event "
+        << iEventNr << ", event time " << dEventTime << " ns"
+        << ", TOF digis: " << iNbTofDigi
+        << FairLogger::endl;
+  /*map<pair<Int_t, Int_t>, list<Int_t> > tofPointDigiInds;
    
    Int_t nofTofPoints = fTofPoints->GetEntries();
    
@@ -443,14 +446,46 @@ void CbmTofTBClusterizer::Exec(Option_t* option)
    for(Int_t iDigInd = 0; iDigInd < iNbTofDigi; ++iDigInd)
    {
       CbmTofDigiExp* pDigi = static_cast<CbmTofDigiExp*> (fTofDigis->At(iDigInd));
+      LOG(DEBUG) << GetName() << ": digi " << iDigInd << " pointer " << pDigi
+          << FairLogger::endl;
       digiTimeHisto->Fill(pDigi->GetTime());
       
-      if (0 == pDigi->GetSide())// 0 - top side
-         fStorDigiExp[pDigi->GetType()][pDigi->GetSm() * fDigiBdfPar->GetNbRpc(pDigi->GetType()) + pDigi->GetRpc()][pDigi->GetChannel()].topDigis[pDigi->GetTime()] =
-            { pDigi, iDigInd };
-      else
+      if (0 == pDigi->GetSide()) {// 0 - top side
+        LOG(DEBUG) << "top side" << FairLogger::endl;
+        LOG(DEBUG) << "Type" << pDigi->GetType() << FairLogger::endl;
+        LOG(DEBUG) << "RPC" << pDigi->GetRpc() << FairLogger::endl;
+        LOG(DEBUG) << "Channel" << pDigi->GetChannel() << FairLogger::endl;
+        LOG(DEBUG) << "Time" << pDigi->GetTime() << FairLogger::endl;
+        LOG(DEBUG) << "SM " << pDigi->GetSm() << FairLogger::endl;
+        LOG(DEBUG) << "NbRpc " << fDigiBdfPar->GetNbRpc(pDigi->GetType())
+            << FairLogger::endl;
+        Int_t type = pDigi->GetType();
+        Int_t superModule = pDigi->GetSm();
+        Int_t rpc = pDigi->GetRpc();
+        Int_t nofRpc = fDigiBdfPar->GetNbRpc(type + rpc);
+        Int_t channel = pDigi->GetChannel();
+        Double_t time = pDigi->GetTime();
+        Int_t index1 = type;
+        Int_t index2 = superModule * nofRpc;
+        Int_t index3 = channel;
+        LOG(DEBUG) << "Index 1 " << index1 << FairLogger::endl;
+        LOG(DEBUG) << "Index 2 " << index2 << FairLogger::endl;
+        LOG(DEBUG) << "Index 2 " << index3 << FairLogger::endl;
+
+        LOG(DEBUG) << "Size 1 " << fStorDigiExp.size() << FairLogger::endl;
+        LOG(DEBUG) << "Size 2 " << fStorDigiExp[index1].size() << FairLogger::endl;
+        LOG(DEBUG) << "Size 3 " << fStorDigiExp[index1][index2].size() << FairLogger::endl;
+
+
+        fStorDigiExp[pDigi->GetType()][pDigi->GetSm() * fDigiBdfPar->GetNbRpc(pDigi->GetType()) + pDigi->GetRpc()][pDigi->GetChannel()].topDigis[pDigi->GetTime()] =
+           { pDigi, iDigInd };
+        LOG(DEBUG) << "done" << FairLogger::endl;
+      }
+      else {
+        LOG(DEBUG) << "bottom side" << FairLogger::endl;
          fStorDigiExp[pDigi->GetType()][pDigi->GetSm() * fDigiBdfPar->GetNbRpc(pDigi->GetType()) + pDigi->GetRpc()][pDigi->GetChannel()].bottomDigis[pDigi->GetTime()] =
             { pDigi, iDigInd };
+      }
       
       // apply calibration vectors 
       /*pDigi->SetTime(pDigi->GetTime() - // calibrate Digi Time 
@@ -512,6 +547,8 @@ void CbmTofTBClusterizer::Exec(Option_t* option)
       pDigi->SetTime(pDigi->GetTime() - dWT); // calibrate Digi Time*/
    }// iDigiInd
    
+   LOG(DEBUG) << GetName() << ": TOF digis sorted" << FairLogger::endl;
+
    Double_t hitpos_local[3];
    Double_t hitpos[3];
    Int_t fiNbHits = 0;

@@ -23,6 +23,7 @@
 #pragma link C++ class CbmTofDigitizerBDF+;
 
 #pragma link C++ class CbmTofSimpClusterizer+;
+#pragma link C++ class CbmTofTBClusterizer;
 #pragma link C++ class CbmTofFindTracks+;
 #pragma link C++ class CbmTofTrackFinderNN+;
 #pragma link C++ class LKFMinuit+;
