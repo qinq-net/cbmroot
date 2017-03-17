@@ -8,6 +8,7 @@
 
 #include <cassert>
 #include <iomanip>
+#include <utility>
 
 #include "TClonesArray.h"
 #include "FairEventHeader.h"
@@ -38,7 +39,9 @@ CbmDaqNew::CbmDaqNew(Double_t timeSliceSize) : FairTask("Daq"),
                    fTimeDigiLast(-1.),
                    fTimeSliceFirst(-1.),
                    fTimeSliceLast(-1.),
-                   fStsDigis(),
+                   fStsDigis(NULL),
+                   fMuchDigis(NULL),
+                   fTofDigis(NULL),
                    fTimeSlice(NULL),
                    fBuffer(NULL),
                    fEventList(),
@@ -61,13 +64,15 @@ void CbmDaqNew::CloseTimeSlice() {
 
   // --- Time slice status
   if ( fTimeSlice->IsEmpty() ) {
-    LOG(DEBUG) << GetName() << ": closing " << fTimeSlice->ToString()
-                  << FairLogger::endl;
+    LOG(DEBUG) << GetName() << ": closing time slice from " << fTimeSlice->GetStartTime()
+                  << " to " << fTimeSlice->GetEndTime() << " ns " <<  FairLogger::endl;
     fNofTimeSlicesEmpty++;
   } //? empty time slice
   else
-  LOG(INFO) << GetName() << ": closing " << fTimeSlice->ToString()
-               << FairLogger::endl;
+  LOG(INFO) << GetName() << ": closing time slice from " << fTimeSlice->GetStartTime()
+    << " to " << fTimeSlice->GetEndTime() << " ns, data: STS " << fStsDigis->GetEntriesFast()
+    << " MUCH " << fMuchDigis->GetEntriesFast() << " TOF " << fTofDigis->GetEntriesFast()
+    << FairLogger::endl;
 
   // --- Fill current time slice into tree (if required)
   if ( fStoreEmptySlices || (!fTimeSlice->IsEmpty()) ) {
@@ -194,6 +199,22 @@ void CbmDaqNew::FillData(CbmDigi* data) {
       CbmStsDigi* digi = static_cast<CbmStsDigi*>(data);
       Int_t nDigis = fStsDigis->GetEntriesFast();
       new ( (*fStsDigis)[nDigis] ) CbmStsDigi(*digi);
+      fTimeSlice->SetEmpty(kFALSE);
+      break;
+    }
+
+    case kMUCH: {
+      CbmMuchDigi* digi = static_cast<CbmMuchDigi*>(data);
+      Int_t nDigis = fMuchDigis->GetEntriesFast();
+      new ( (*fMuchDigis)[nDigis] ) CbmMuchDigi(*digi);
+      fTimeSlice->SetEmpty(kFALSE);
+      break;
+    }
+
+    case kTOF: {
+      CbmTofDigiExp* digi = static_cast<CbmTofDigiExp*>(data);
+      Int_t nDigis = fTofDigis->GetEntriesFast();
+      new ( (*fTofDigis)[nDigis] ) CbmTofDigiExp(*digi);
       fTimeSlice->SetEmpty(kFALSE);
       break;
     }
@@ -328,9 +349,18 @@ InitStatus CbmDaqNew::Init() {
 
   // Register output array (CbmStsDigi)
   fStsDigis = new TClonesArray("CbmStsDigi",1000);
-  FairRootManager::Instance()->Register("StsDigi", "Digital response in STS",
+  FairRootManager::Instance()->Register("StsDigi", "STS raw data",
   		            fStsDigis, IsOutputBranchPersistent("StsDigi"));
 
+  // Register output array (CbmMuchDigi)
+  fMuchDigis = new TClonesArray("CbmMuchDigi",1000);
+  FairRootManager::Instance()->Register("MuchDigi", "MUCH raw data",
+                    fMuchDigis, IsOutputBranchPersistent("MuchDigi"));
+
+  // Register output array (CbmStsDigi)
+  fTofDigis = new TClonesArray("CbmTofDigiExp",1000);
+  FairRootManager::Instance()->Register("TofDigiExp", "TOF raw data",
+                    fTofDigis, IsOutputBranchPersistent("TofDigiExp"));
 
   // Get Daq Buffer
   fBuffer = CbmDaqBuffer::Instance();

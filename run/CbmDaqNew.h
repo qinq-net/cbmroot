@@ -75,6 +75,8 @@ class CbmDaqNew : public FairTask
 
     /** Output array (digis) **/
     TClonesArray* fStsDigis;
+    TClonesArray* fMuchDigis;
+    TClonesArray* fTofDigis;
 
 
     /** Pointer to current time slice **/
