@@ -445,7 +445,8 @@ void CbmTsMonitorSts::CreateHistograms()
          TCanvas* cStsFebAdcStats = new TCanvas( Form("AdcStats_n%s_f%1u", sNdpbTag.Data(), febId), 
                                                   Form("ADC statistical properties n%s f%1u", sNdpbTag.Data(), febId), 
                                                   w, h);
-         cStsFebAdcStats->Divide( 2, 3 );
+//         cStsFebAdcStats->Divide( 2, 3 );
+         cStsFebAdcStats->Divide( 2, 2 );
          
          cStsFebAdcStats->cd(1);
          gPad->SetGridx();
@@ -476,7 +477,7 @@ void CbmTsMonitorSts::CreateHistograms()
          sHistName = Form("ADC_Rms_Sts_n%s_f%1u", sNdpbTag.Data(), febId);
          histPnt = fHM->H1(sHistName.Data());
          histPnt->Draw("hist");
-         
+/*         
          cStsFebAdcStats->cd(5);
          gPad->SetGridx();
          gPad->SetGridy();
@@ -490,6 +491,7 @@ void CbmTsMonitorSts::CreateHistograms()
          sHistName = Form("ADC_Kurt_Sts_n%s_f%1u", sNdpbTag.Data(), febId);
          histPnt = fHM->H1(sHistName.Data());
          histPnt->Draw("hist");
+*/ 
       } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
    } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
    
@@ -867,6 +869,7 @@ void CbmTsMonitorSts::Finish()
                 << FairLogger::endl;
    LOG(INFO) << "-------------------------------------" << FairLogger::endl;
    
+   UpdateAdcStatHistos();
    SaveAllHistos();
 }
 
