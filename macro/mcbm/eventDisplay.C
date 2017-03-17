@@ -20,9 +20,10 @@ void eventDisplay(const char* setup = "sis18_mcbm")
   FairMCTracks     *Track = new FairMCTracks ("Monte-Carlo Tracks");
 
   FairMCPointDraw  *MvdPoint      = new FairMCPointDraw ("MvdPoint",      kBlack,  kFullSquare);
-  FairMCPointDraw  *StsPoint      = new FairMCPointDraw ("StsPoint",      kBlue,   kFullSquare);
-  FairMCPointDraw  *RichPoint     = new FairMCPointDraw ("RichPoint",     kOrange, kFullSquare);
-  FairMCPointDraw  *TrdPoint      = new FairMCPointDraw ("TrdPoint",      kRed,    kFullSquare);
+  FairMCPointDraw  *StsPoint      = new FairMCPointDraw ("StsPoint",      kGreen,  kFullSquare);
+  FairMCPointDraw  *MuchPoint     = new FairMCPointDraw ("MuchPoint",     kOrange, kFullSquare);
+  FairMCPointDraw  *RichPoint     = new FairMCPointDraw ("RichPoint",     kRed,    kFullSquare);
+  FairMCPointDraw  *TrdPoint      = new FairMCPointDraw ("TrdPoint",      kBlue,   kFullSquare);
   FairMCPointDraw  *TofPoint      = new FairMCPointDraw ("TofPoint",      kGreen,  kFullSquare);
   FairMCPointDraw  *EcalPoint     = new FairMCPointDraw ("EcalPoint",     kYellow, kFullSquare);
   FairMCPointDraw  *RefPlanePoint = new FairMCPointDraw ("RefPlanePoint", kPink,   kFullSquare);
@@ -31,6 +32,7 @@ void eventDisplay(const char* setup = "sis18_mcbm")
   
   fMan->AddTask(MvdPoint);
   fMan->AddTask(StsPoint);
+  fMan->AddTask(MuchPoint);
   fMan->AddTask(RichPoint);
   fMan->AddTask(TrdPoint);
   fMan->AddTask(TofPoint);   
