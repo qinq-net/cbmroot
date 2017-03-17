@@ -92,9 +92,9 @@ const TString subVersion   = "_1e";
 //const TString subVersion   = "_3e";
 //const TString subVersion   = "_3m";
 const TString geoVersion   = "trd_" + tagVersion + subVersion;
-const TString FileNameSim  = geoVersion + ".geo.root";
-const TString FileNameGeo  = geoVersion + "_geo.root";
-const TString FileNameInfo = geoVersion + ".geo.info";
+const TString FileNameSim  = "m" + geoVersion + ".geo.root";
+const TString FileNameGeo  = "m" + geoVersion + "_geo.root";
+const TString FileNameInfo = "m" + geoVersion + ".geo.info";
 const TString FileNamePads = "CbmTrdPads_" + tagVersion + ".h";
 
 // display switches
