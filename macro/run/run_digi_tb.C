@@ -2,52 +2,17 @@
 //
 // Macro for time-based digitisation
 //
-// Includes (currently) only the STS digitiser
-
-// !!! Be sure to have only STS in simulation. Otherwise, the MC Buffer
-// !!! will overflow, since MCPOint other than STS wil not be processed.
-// (will be catched later)
+// Includes digitizer tasks for STS and TOF
 //
-// V. Friese   01/02/2013
-// Version     01/02/2013 (V. Friese)
+// Run the macro run_mc.C before.
 //
+// Default settings here are: 
+// Very large time slice, to have all events in one time slice
+// Very small interaction rate (10 kHz), so the results should be
+// comparable to the event-by-event simulation.
+// 
 // --------------------------------------------------------------------------
 
-TString caveGeom="";
-TString pipeGeom="";
-TString magnetGeom="";
-TString mvdGeom="";
-TString stsGeom="";
-TString richGeom="";
-TString muchGeom="";
-TString shieldGeom="";
-TString trdGeom="";
-TString tofGeom="";
-TString ecalGeom="";
-TString platformGeom="";
-TString psdGeom="";
-Double_t psdZpos=0.;
-Double_t psdXpos=0.;
-
-TString mvdTag="";
-TString stsTag="";
-TString trdTag="";
-TString tofTag="";
-
-TString stsDigi="";
-TString muchDigi="";
-TString trdDigi="";
-TString tofDigi="";
-
-TString mvdMatBudget="";
-TString stsMatBudget="";
-
-TString  fieldMap="";
-Double_t fieldZ=0.;
-Double_t fieldScale=0.;
-Int_t    fieldSymType=0;
-
-TString defaultInputFile="";
 
 void run_digi_tb(Int_t nEvents = 2, const char* setupName = "sis100_electron")
 {
@@ -60,10 +25,10 @@ void run_digi_tb(Int_t nEvents = 2, const char* setupName = "sis100_electron")
   TString outFile = outDir + setupName + "_test.raw.root";  // Output file
   
   // Specify interaction rate in 1/s
-  Double_t eventRate = 1.e6;
+  Double_t eventRate = 1.e4;
   
   // Specify duration of time slices in output [ns]
-  Double_t timeSliceSize = 1000.;
+  Double_t timeSliceSize = 100000000.;
   
   // Specify log level (INFO, DEBUG, DEBUG1, ...)
   TString logLevel = "INFO";
@@ -148,7 +113,7 @@ void run_digi_tb(Int_t nEvents = 2, const char* setupName = "sis100_electron")
   run->AddTask(tofDigi);
  
   // ----- DAQ
-  FairTask* daq = new CbmDaq(timeSliceSize);
+  FairTask* daq = new CbmDaqNew(timeSliceSize);
   run->AddTask(daq);
   
  
@@ -165,6 +130,7 @@ void run_digi_tb(Int_t nEvents = 2, const char* setupName = "sis100_electron")
   rtdb->setSecondInput(parIo2);
   rtdb->setOutput(parIo1);
   rtdb->saveOutput();
+  rtdb->print();
   // ------------------------------------------------------------------------
 
 
@@ -208,4 +174,5 @@ void run_digi_tb(Int_t nEvents = 2, const char* setupName = "sis100_electron")
 
   cout << " Test passed" << endl;
   cout << " All ok " << endl;
+  RemoveGeoManager();
 }

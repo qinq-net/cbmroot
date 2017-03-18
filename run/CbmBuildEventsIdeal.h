@@ -37,16 +37,17 @@ class CbmBuildEventsIdeal: public FairTask {
 	private:
 
 		TClonesArray* fStsDigis;   ///< Input array (class CbmStsDigi)
+		TClonesArray* fTofDigis;   ///< Input array (class CbmTofDigiExp)
 		TClonesArray* fEvents;     ///< Output array (class CbmEvent)
 		Int_t fNofEntries;         ///< Number of processed entries
 
 		/** Task initialisation **/
 		virtual InitStatus Init();
 
-                CbmBuildEventsIdeal(const CbmBuildEventsIdeal&);
-                CbmBuildEventsIdeal& operator=(const CbmBuildEventsIdeal&);
+		CbmBuildEventsIdeal(const CbmBuildEventsIdeal&);
+		CbmBuildEventsIdeal& operator=(const CbmBuildEventsIdeal&);
 
-		ClassDef(CbmBuildEventsIdeal, 1);
+		ClassDef(CbmBuildEventsIdeal, 2);
 
 };
 

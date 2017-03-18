@@ -37,7 +37,8 @@ enum DataType {kUnknown,
 	       kStsDigi, 
 	       kStsCluster, 
 	       kStsHit,
-	       kStsTrack};
+	       kStsTrack,
+	       kTofDigi};
 }
 
 

@@ -44,6 +44,7 @@
 #pragma link C++ class CbmStsFindHitsEvents;
 #pragma link C++ class CbmStsFindTracksEvents;
 #pragma link C++ class CbmStsMatchReco;
+#pragma link C++ class CbmStsRecoQa;
 #pragma link C++ class CbmStsTestQa;
 
 // Enumerators

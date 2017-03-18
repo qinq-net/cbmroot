@@ -44,7 +44,7 @@ private:
     Double_t fDpz;
     Double_t fTime;
     Double_t fDTime;
-  ClassDef(CbmTrackParam, 1);  
+  ClassDef(CbmTrackParam, 2);
 };
 
 
