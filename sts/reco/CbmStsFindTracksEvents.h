@@ -93,6 +93,10 @@ class CbmStsFindTracksEvents : public FairTask
   virtual void Finish();
 
 
+  /** Process one event **/
+  void ProcessEvent(CbmEvent* event);
+
+
   /** Prevent usage of copy constructor and assignment operator **/
   CbmStsFindTracksEvents(const CbmStsFindTracksEvents&);
   CbmStsFindTracksEvents operator=(const CbmStsFindTracksEvents&);

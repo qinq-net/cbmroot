@@ -35,7 +35,7 @@ using namespace std;
 
 // -----   Constructor   ---------------------------------------------------
 CbmStsFindClustersEvents::CbmStsFindClustersEvents(Int_t finderModel)
-    : FairTask("StsFindClusters", 1)
+    : FairTask("StsFindClustersEvents", 1)
     , fEvents(NULL)
     , fDigis(NULL)
     , fClusters(NULL)
@@ -74,14 +74,21 @@ void CbmStsFindClustersEvents::Exec(Option_t* opt) {
 	// --- Clear output array
 	fClusters->Delete();
 
-	// --- Event loop
-	Int_t nEvents = fEvents->GetEntriesFast();
-	LOG(DEBUG) << GetName() << ": reading time slice with " << nEvents
-			      << " events " << FairLogger::endl;
-	for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
-		CbmEvent* event = static_cast<CbmEvent*> (fEvents->At(iEvent));
+	// --- Event loop (from event objects)
+	if ( fEvents ) {
+	  Int_t nEvents = fEvents->GetEntriesFast();
+	  LOG(DEBUG) << GetName() << ": reading time slice with " << nEvents
+	      << " events " << FairLogger::endl;
+	  for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
+	    CbmEvent* event = static_cast<CbmEvent*> (fEvents->At(iEvent));
+		LOG(INFO) << GetName() << ": event pointer is " << event << FairLogger::endl;
+		LOG(INFO) << event->ToString() << FairLogger::endl;
 		ProcessEvent(event);
-	}
+	  } //# events
+	} //? event branch present
+
+	else // Old event-by-event simulation without event branch
+	  ProcessEvent(NULL);
 
 }
 // -------------------------------------------------------------------------
@@ -141,15 +148,16 @@ InitStatus CbmStsFindClustersEvents::Init()
     }
 
     // --- Get input array (Events)
-    fEvents = (TClonesArray*) ioman->GetObject("Event");
-		if (NULL == fEvents) {
-			LOG(FATAL) << GetName() << ": No event array!" << FairLogger::endl;
-			return kERROR;
-		}
+    fEvents = dynamic_cast<TClonesArray*>(ioman->GetObject("Event"));
+    if ( ! fEvents ) {
+      LOG(WARNING) << GetName()
+          << ": No event array! Will process entire tree."
+          << FairLogger::endl;
+	}
 
     // --- Get input array (StsDigis)
-    fDigis = (TClonesArray*) ioman->GetObject("StsDigi");
-		if (NULL == fDigis) {
+    fDigis = dynamic_cast<TClonesArray*>(ioman->GetObject("StsDigi"));
+		if ( ! fDigis) {
 			LOG(ERROR) << GetName() << ": No StsDigi array!" << FairLogger::endl;
 			return kERROR;
 		}
@@ -216,11 +224,13 @@ void CbmStsFindClustersEvents::ProcessEvent(CbmEvent* event) {
    		            << ", clusters " << nClusters << FairLogger::endl;
 		nClustersEvent += nClusters;
 	}
+	LOG(INFO) << "Cluster finding done" << FairLogger::endl;
 
 	// --- Analyse the clusters in the event
-	Int_t nClusters = event->GetNofData(Cbm::kStsCluster);
+	Int_t nClusters = (event ? event->GetNofData(Cbm::kStsCluster)
+	    : fClusters->GetEntriesFast());
 	for (Int_t iCluster = 0; iCluster < nClusters; iCluster++) {
-		Int_t index = event->GetIndex(Cbm::kStsCluster, iCluster);
+		Int_t index = (event ? event->GetIndex(Cbm::kStsCluster, iCluster) : iCluster );
 		CbmStsCluster* cluster = (CbmStsCluster*) fClusters->At(index);
 		CbmStsModule* module =
 				(CbmStsModule*) fSetup->GetElement(cluster->GetAddress(),
@@ -236,7 +246,7 @@ void CbmStsFindClustersEvents::ProcessEvent(CbmEvent* event) {
   fTimeTot        += fTimer.RealTime();
 
   LOG(INFO) << "+ " << setw(20) << GetName() << ": Event " << setw(6)
-  		      << right << event->GetNumber()
+  		      << right << (event ? event->GetNumber() : 0)
   		      << ", real time " << fixed << setprecision(6)
   		      << fTimer.RealTime() << " s, digis: " << nDigis
   		      << ", clusters: " << nClustersEvent << FairLogger::endl;
@@ -286,11 +296,15 @@ void CbmStsFindClustersEvents::SetModuleParameters()
 Int_t CbmStsFindClustersEvents::SortDigis(CbmEvent* event) {
 
 	// --- Counters
-	Int_t nDigis   = event->GetNofData(Cbm::kStsDigi);
+    Int_t nDigis = 0;
+    if ( event ) nDigis = event->GetNofData(Cbm::kStsDigi);
+    else         nDigis = fDigis->GetEntriesFast();
+	LOG(INFO) << GetName() << ": event " << (event ? event->GetNumber() : 0)
+	    << ", digis " << nDigis << FairLogger::endl;
 
 	// --- Loop over digis in event
 	for (Int_t iDigi = 0; iDigi < nDigis; iDigi++) {
-		UInt_t index = event->GetIndex(Cbm::kStsDigi, iDigi);
+	    UInt_t index = (event ? event->GetIndex(Cbm::kStsDigi, iDigi) : iDigi);
 		CbmStsDigi* digi = (CbmStsDigi*) fDigis->At(index);
 		assert(digi);
 

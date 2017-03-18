@@ -73,34 +73,19 @@ void CbmStsFindTracksEvents::Exec(Option_t* opt) {
 	// --- Clear output array
 	fTracks->Delete();
 
-	// --- Event loop
-	Int_t nEvents = fEvents->GetEntriesFast();
-	LOG(DEBUG) << GetName() << ": reading time slice with " << nEvents
-			      << " events " << FairLogger::endl;
-	for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
-		CbmEvent* event = static_cast<CbmEvent*> (fEvents->At(iEvent));
+    // --- Event loop (from event objects)
+    if ( fEvents ) {
+      Int_t nEvents = fEvents->GetEntriesFast();
+      LOG(DEBUG) << GetName() << ": reading time slice with " << nEvents
+          << " events " << FairLogger::endl;
+      for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
+        CbmEvent* event = static_cast<CbmEvent*> (fEvents->At(iEvent));
+        ProcessEvent(event);
+      } //# events
+    } //? event branch present
 
-		// --- Call track finder
-		fTimer.Start();
-		Int_t nTracks = fFinder->FindTracks(event);
-		fTimer.Stop();
-
-		// --- Event log
-	  LOG(INFO) << "+ " << setw(20) << GetName() << ": Event " << setw(6)
-	  		      << right << event->GetNumber()
-	  		      << ", real time " << fixed << setprecision(6)
-	  		      << fTimer.RealTime() << " s, hits: "
-	  		      << event->GetNofData(Cbm::kStsHit) << ", tracks: "
-	  		      << nTracks << FairLogger::endl;
-	  LOG(DEBUG) << event->ToString() << FairLogger::endl;
-
-	  // --- Counters
-	  fNofEvents++;
-	  fNofHits   += Double_t(event->GetNofData(Cbm::kStsHit));
-	  fNofTracks += Double_t(nTracks);
-	  fTime      += fTimer.RealTime();
-
-	} //# event loop
+    else // Old event-by-event simulation without event branch
+      ProcessEvent(NULL);
 
 }
 // -------------------------------------------------------------------------
@@ -117,11 +102,15 @@ InitStatus CbmStsFindTracksEvents::Init() {
   FairRootManager* ioman = FairRootManager::Instance();
   assert(ioman);
 
-  // Event array
-  fEvents = (TClonesArray*) ioman->GetObject("Event");
-  assert(fEvents);
+  // --- Get input array (Events)
+  fEvents = dynamic_cast<TClonesArray*>(ioman->GetObject("Event"));
+  if ( ! fEvents ) {
+    LOG(WARNING) << GetName()
+        << ": No event array! Will process entire tree."
+        << FairLogger::endl;
+  }
 
-  // Array of StsHits
+  // --- Get input array (StsHits)
   fStsHits = (TClonesArray*) ioman->GetObject("StsHit");
   assert(fStsHits);
 
@@ -183,6 +172,36 @@ void CbmStsFindTracksEvents::Finish() {
 	LOG(INFO) << "=====================================" << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
+
+
+
+// ------   Process one event   --------------------------------------------
+void CbmStsFindTracksEvents::ProcessEvent(CbmEvent* event) {
+
+  // --- Call track finder
+  fTimer.Start();
+  Int_t nTracks = fFinder->FindTracks(event);
+  fTimer.Stop();
+
+  // --- Event log
+  Int_t eventNumber = (event ? event->GetNumber() : fNofEvents);
+  Int_t nHits = (event ? event->GetNofData(Cbm::kStsHit) : fStsHits->GetEntriesFast());
+  LOG(INFO) << "+ " << setw(20) << GetName() << ": Event " << setw(6)
+            << right << eventNumber
+            << ", real time " << fixed << setprecision(6)
+            << fTimer.RealTime() << " s, hits: "
+            << nHits << ", tracks: "
+            << nTracks << FairLogger::endl;
+
+  // --- Counters
+  fNofEvents++;
+  fNofHits   += Double_t(nHits);
+  fNofTracks += Double_t(nTracks);
+  fTime      += fTimer.RealTime();
+
+}
+// -------------------------------------------------------------------------
+
 
 
 

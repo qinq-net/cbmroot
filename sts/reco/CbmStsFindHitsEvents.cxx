@@ -48,14 +48,19 @@ void CbmStsFindHitsEvents::Exec(Option_t* opt) {
   // --- Clear output arrays
 	fHits->Delete();
 
-	// --- Event loop
-	Int_t nEvents = fEvents->GetEntriesFast();
-	LOG(DEBUG) << GetName() << ": reading time slice with " << nEvents
-			      << " events " << FairLogger::endl;
-	for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
-		CbmEvent* event = static_cast<CbmEvent*> (fEvents->At(iEvent));
-		ProcessEvent(event);
-	}
+    // --- Event loop (from event objects)
+    if ( fEvents ) {
+      Int_t nEvents = fEvents->GetEntriesFast();
+      LOG(DEBUG) << GetName() << ": reading time slice with " << nEvents
+          << " events " << FairLogger::endl;
+      for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
+        CbmEvent* event = static_cast<CbmEvent*> (fEvents->At(iEvent));
+        ProcessEvent(event);
+      } //# events
+    } //? event branch present
+
+    else // Old event-by-event simulation without event branch
+      ProcessEvent(NULL);
 
 }
 // -------------------------------------------------------------------------
@@ -113,15 +118,16 @@ InitStatus CbmStsFindHitsEvents::Init()
     }
 
     // --- Get input array (Events)
-    fEvents = (TClonesArray*) ioman->GetObject("Event");
-		if (NULL == fEvents) {
-			LOG(FATAL) << GetName() << ": No event array!" << FairLogger::endl;
-			return kERROR;
-		}
+    fEvents = dynamic_cast<TClonesArray*>(ioman->GetObject("Event"));
+    if ( ! fEvents ) {
+      LOG(WARNING) << GetName()
+          << ": No event array! Will process entire tree."
+          << FairLogger::endl;
+    }
 
     // --- Get input array (StsCluster)
-    fClusters = (TClonesArray*)ioman->GetObject("StsCluster");
-    if (NULL == fClusters) {
+    fClusters = dynamic_cast<TClonesArray*>(ioman->GetObject("StsCluster"));
+    if ( ! fClusters) {
     	LOG(ERROR) << GetName() << ": No StsCluster array!" << FairLogger::endl;
     	return kERROR;
     }
@@ -172,7 +178,7 @@ Int_t CbmStsFindHitsEvents::ProcessEvent(CbmEvent* event) {
   fTimeTot        += fTimer.RealTime();
 
   LOG(INFO) << "+ " << setw(20) << GetName() << ": Event " << setw(6)
-  		      << right << event->GetNumber() << ", real time " << fixed
+  		      << right << (event ? event->GetNumber() : 0) << ", real time " << fixed
   		      << setprecision(6) << fTimer.RealTime() << " s, clusters: "
   		      << nClusters << ", hits: " << nHitsEvent << FairLogger::endl;
 
@@ -184,15 +190,19 @@ Int_t CbmStsFindHitsEvents::ProcessEvent(CbmEvent* event) {
 // -------------------------------------------------------------------------
 
 
-// ----- Sort digis into module digi maps   --------------------------------
+// ----- Sort clusters into module cluster maps   --------------------------------
 Int_t CbmStsFindHitsEvents::SortClusters(CbmEvent* event) {
 
 	// --- Counters
-	Int_t nClusters = event->GetNofData(Cbm::kStsCluster);
+    Int_t nClusters = 0;
+    if ( event ) nClusters = event->GetNofData(Cbm::kStsCluster);
+    else         nClusters = fClusters->GetEntriesFast();
+    LOG(INFO) << GetName() << ": event " << (event ? event->GetNumber() : 0)
+      << ", clusters " << nClusters << FairLogger::endl;
 
 	// --- Loop over clusters in event
 	for (Int_t iCluster = 0; iCluster < nClusters; iCluster++) {
-		UInt_t index = event->GetIndex(Cbm::kStsCluster, iCluster);
+      UInt_t index = (event ? event->GetIndex(Cbm::kStsCluster, iCluster) : iCluster);
 		CbmStsCluster* cluster =
 				static_cast<CbmStsCluster*> (fClusters->At(index));
 		assert(cluster);

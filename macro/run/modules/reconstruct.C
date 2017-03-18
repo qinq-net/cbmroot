@@ -52,11 +52,11 @@ Bool_t reconstruct()
   // -----   Local reconstruction in STS   ----------------------------------
   if ( setup->IsActive(kSts) ) {
 
-  	FairTask* stsCluster = new CbmStsFindClusters();
+  	FairTask* stsCluster = new CbmStsFindClustersEvents();
   	run->AddTask(stsCluster);
     std::cout << "-I- : Added task " << stsCluster->GetName() << std::endl;
 
-  	FairTask* stsHit = new CbmStsFindHits();
+  	FairTask* stsHit = new CbmStsFindHitsEvents();
   	run->AddTask(stsHit);
     std::cout << "-I- : Added task " << stsHit->GetName() << std::endl;
 
@@ -149,7 +149,7 @@ Bool_t reconstruct()
   std::cout << "-I- : Added task " << l1->GetName() << std::endl;
 
   CbmStsTrackFinder* stsTrackFinder = new CbmL1StsTrackFinder();
-  FairTask* stsFindTracks = new CbmStsFindTracks(0, stsTrackFinder, setup->IsActive(kMvd));
+  FairTask* stsFindTracks = new CbmStsFindTracksEvents(stsTrackFinder, setup->IsActive(kMvd));
   run->AddTask(stsFindTracks);
   std::cout << "-I- : Added task " << stsFindTracks->GetName() << std::endl;
   // -------------------------------------------------------------------------
