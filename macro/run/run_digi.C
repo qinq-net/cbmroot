@@ -1,7 +1,10 @@
 /** Macro for detector response simulation (digitisation)
  **
  ** The input is a file with MC data, produced by a transport simulation
- ** (e.g., with run_sim.C). The output is a file with raw data (digis).
+ ** (e.g., with run_mc.C). The output is a file with raw data (digis).
+ ** Define the input file explicitly in the macro (line 32) or through the
+ ** third argument to the macro call. If neither is done, the standard
+ ** input file for the regular tests will be used.
  **
  ** The user has to assure that this macro is called with the same CbmSetup
  ** object as used for the transport, e.g. by using the predefined setups.
@@ -203,6 +206,7 @@ void run_digi(Int_t nEvents = 2,
 
   // Function needed for CTest runtime dependency
   Generate_CTest_Dependency_File(depFile);
+  RemoveGeoManager();
   // ------------------------------------------------------------------------
 
 } // End of macro

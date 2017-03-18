@@ -337,6 +337,7 @@ void run_sim(Int_t nEvents = 2,
 
   // Function needed for CTest runtime dependency
   Generate_CTest_Dependency_File(depFile);
+  RemoveGeoManager();
   // ------------------------------------------------------------------------
 
 }
