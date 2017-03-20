@@ -33,6 +33,7 @@
 #include <iostream>
 #include <stdint.h>
 #include <iomanip>
+#include <ctime>
 
 static Int_t iMess = 0;
 Bool_t bResetTofStarHistos = kFALSE;
@@ -148,7 +149,10 @@ CbmTSMonitorTofStar::CbmTSMonitorTofStar() :
     fhStarHitToTrigAll_gDPB(),
     fhStarHitToTrigWin_gDPB(),
     fhStarEventSize_gDPB(),
-    fhStarEventSizeTime_gDPB()
+    fhStarEventSizeTime_gDPB(),
+    fulNbStarEvent(0),
+    fulNbStarEventLastPrintout(0),
+    fTimeLastPrintoutNbStarEvent()
 {
 }
 
@@ -1056,6 +1060,28 @@ Bool_t CbmTSMonitorTofStar::DoUnpack(const fles::Timeslice& ts,
      CyclePulserFee();
      bTofCyclePulserFee = kFALSE;
   }
+  
+  // Printout of nb star events log
+  std::chrono::time_point<std::chrono::system_clock> timeCurrent = std::chrono::system_clock::now();
+  std::chrono::duration<double> elapsed_seconds = timeCurrent - fTimeLastPrintoutNbStarEvent;
+  if( 0 == fTimeLastPrintoutNbStarEvent.time_since_epoch().count() )
+  {
+     fTimeLastPrintoutNbStarEvent = timeCurrent;
+     fulNbStarEventLastPrintout   = fulNbStarEvent;
+  } // if( 0 == fTimeLastPrintoutNbStarEvent.time_since_epoch().count() )
+  else if( 300 < elapsed_seconds.count() )
+  {
+     std::time_t cTimeCurrent = std::chrono::system_clock::to_time_t( timeCurrent );
+     char tempBuff[80];
+     std::strftime( tempBuff, 80, "%F %T", localtime (&cTimeCurrent) );
+     LOG(INFO) << "CbmTSMonitorTofStar::DoUnpack => " << tempBuff
+               << " Total number of STAR events: " << std::setw(9) << fulNbStarEvent
+               << ", " << std::setw(9) << (fulNbStarEvent - fulNbStarEventLastPrintout)
+               << " events in last " << std::setw(4) << elapsed_seconds.count() << " s"
+               << FairLogger::endl;
+     fTimeLastPrintoutNbStarEvent = timeCurrent;
+     fulNbStarEventLastPrintout   = fulNbStarEvent;
+  } // else if( 300 < elapsed_seconds.count() )
 
   LOG(DEBUG1) << "Timeslice contains " << ts.num_microslices(component)
                  << "microslices." << FairLogger::endl;
@@ -2463,6 +2489,7 @@ Bool_t CbmTSMonitorTofStar::StarSelect( Int_t iGdpbIdx )
              */
             star_rhicf_write( fStarSubEvent.GetTrigger().GetStarTrigerWord(), 
                               pDataBuff, iBuffSzByte );
+            fulNbStarEvent++;
 /*                              
             LOG(INFO) << "Sent STAR event with size " << iBuffSzByte << " Bytes"
                       << " and token " << fStarSubEvent.GetTrigger().GetStarToken()
@@ -2504,6 +2531,7 @@ Bool_t CbmTSMonitorTofStar::StarSelect( Int_t iGdpbIdx )
              */
             star_rhicf_write( fStarSubEvent.GetTrigger().GetStarTrigerWord(), 
                               pDataBuff, iBuffSzByte );
+            fulNbStarEvent++;
 /*                              
             LOG(INFO) << "Sent STAR event with size " << iBuffSzByte << " Bytes"
                       << " and token " << fStarSubEvent.GetTrigger().GetStarToken()
@@ -2663,6 +2691,7 @@ Bool_t CbmTSMonitorTofStar::StarSelect( Int_t iGdpbIdx )
           */
          star_rhicf_write( fStarSubEvent.GetTrigger().GetStarTrigerWord(), 
                            pDataBuff, iBuffSzByte );
+         fulNbStarEvent++;
 /*
          LOG(INFO) << "Sent STAR event with size " << iBuffSzByte << " Bytes"
                 << " and token " << fStarSubEvent.GetTrigger().GetStarToken()
@@ -2745,6 +2774,7 @@ Bool_t CbmTSMonitorTofStar::StarGenEmptyEvt( Int_t iGdpbIdx, CbmTofStarTrigger t
        */
       star_rhicf_write( fStarSubEvent.GetTrigger().GetStarTrigerWord(), 
                         pDataBuff, iBuffSzByte );
+      fulNbStarEvent++;
 /*                              
       LOG(INFO) << "Sent STAR event with size " << iBuffSzByte << " Bytes"
                 << " and token " << fStarSubEvent.GetTrigger().GetStarToken()

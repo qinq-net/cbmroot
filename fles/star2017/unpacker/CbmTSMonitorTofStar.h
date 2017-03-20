@@ -22,6 +22,7 @@
 
 #include <vector>
 #include <map>
+#include <chrono>
 
 class CbmDigi;
 class CbmTofUnpackPar;
@@ -249,6 +250,9 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     Bool_t StarSort( Int_t iGdpbIdx );
     Bool_t StarSelect( Int_t iGdpbIdx );
     Bool_t StarGenEmptyEvt( Int_t iGdpbIdx, CbmTofStarTrigger triggerIn );
+    ULong64_t fulNbStarEvent;
+    ULong64_t fulNbStarEventLastPrintout;
+    std::chrono::time_point<std::chrono::system_clock> fTimeLastPrintoutNbStarEvent;
 
     inline Int_t GetArrayIndex(Int_t gdpbId, Int_t get4Id) {
       return gdpbId * fNrOfGet4PerGdpb + get4Id;
