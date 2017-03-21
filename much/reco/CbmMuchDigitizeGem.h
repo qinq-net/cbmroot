@@ -133,7 +133,9 @@ class CbmMuchDigitizeGem : public FairTask{
      **/
     Double_t MPV_n_e(Double_t Tkin, Double_t mass);
     
-    void ReadAndRegister(); //Read from CbmMuchReadoutBuffer and Register as per mode
+    void ReadAndRegister(Double_t); //Read from CbmMuchReadoutBuffer and Register as per mode
+    /** Get number of signals **/
+    Int_t GetNofSignals() const {return fNofSignals;}
 
     //Iteriate on each element of fAddressCharge, create a CbmMuchSignal and store in CbmMuchReadoutBuffer.
     Bool_t BufferSignals(Int_t,Double_t,Double_t);
@@ -178,7 +180,7 @@ class CbmMuchDigitizeGem : public FairTask{
     Double_t           fRemainderTime; // Remainder time = t_r [ns]: remainder is simulated as exp(-t/t_r)
     Double_t           fTimeBinWidth;  // Width of the bin for signal shape simulation
     Int_t              fNTimeBins;     // Number of bins for signal shape simulation
-    Int_t              fNdigis;        // Number of created digis
+    //    Int_t              fNdigis;        // Number of created digis
     Bool_t             fTOT;           // Flag to switch between time over threshold/direct amplitude measurement
     Double_t           fTotalDriftTime;// Total drift time (calculated from drift velocity and drift volume width)
 
@@ -186,6 +188,23 @@ class CbmMuchDigitizeGem : public FairTask{
     TF1*               fMPV[3];
     Bool_t             fIsLight;       //Default fIsLight = 1
 
+    // --- Time of last processed Much Point (for time mode)
+    Double_t fTimePointLast;
+ 
+    // --- Digi times (for stream mode, in each step)
+    Double_t fTimeDigiFirst;      ///< Time of first digi sent to DAQ
+    Double_t fTimeDigiLast;       ///< Time of last digi sent to DAQ
+    // --- Event counters
+    Int_t          fNofPoints;    ///< Number of points processed in Exec
+    Int_t          fNofSignals;   ///< Number of signals
+    Int_t          fNofDigis;     ///< Number of created digis in Exec
+
+    // --- Run counters
+    Int_t          fNofEvents;      ///< Total number of events processed
+    Double_t       fNofPointsTot;   ///< Total number of points processed
+    Double_t       fNofSignalsTot;  ///< Total Number of signals
+    Double_t       fNofDigisTot;    ///< Total number of digis created
+    Double_t       fTimeTot;        ///< Total execution time
 
     /** Initialization. **/
     virtual InitStatus Init();
@@ -208,7 +227,7 @@ class CbmMuchDigitizeGem : public FairTask{
     Double_t GetNPrimaryElectronsPerCm(const CbmMuchPoint* point);
     Bool_t AddCharge(CbmMuchSectorRadial* s,UInt_t ne, Int_t iPoint, Double_t time, Double_t driftTime, Double_t phi1, Double_t phi2);
     void AddCharge(CbmMuchPad* pad, UInt_t charge, Int_t iPoint, Double_t time, Double_t driftTime);
-
+    void Reset();
  /** Get event information
   ** @param[out]  eventNumber  Number of MC event
   ** @param[out]  inputNumber  Number of input

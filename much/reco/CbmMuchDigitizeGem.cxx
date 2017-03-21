@@ -37,6 +37,7 @@
 #include "FairMCPoint.h"
 #include "FairRunAna.h"
 #include "FairRunSim.h"
+#include "FairLogger.h"
 
 // Includes from Cbm
 #include "CbmMCTrack.h"
@@ -54,6 +55,16 @@
 
 #include <cassert>
 #include <vector>
+#include <iostream>
+#include <iomanip>
+#include <cstring>
+#include <sstream>
+
+using std::fixed;
+using std::right;
+using std::setprecision;
+using std::setw;
+using std::string;
 using std::map;
 
 // -------------------------------------------------------------------------
@@ -78,7 +89,6 @@ CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName)
     fMeanGasGain(1e4),
     fDTime(3),
     fDeadPadsFrac(0),
-    fTimer(),
     fDaq(0),
     fMcChain(NULL),
     fDeadTime(400),
@@ -87,7 +97,18 @@ CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName)
     fRemainderTime(40),
     fTimeBinWidth(1),
     fNTimeBins(200),
-    fNdigis(0),
+    fTimer(),
+    fTimePointLast(-1.),
+    fTimeDigiFirst(-1.),
+    fTimeDigiLast(-1.),
+    fNofPoints(0),
+    fNofSignals(0),
+    fNofDigis(0),
+    fNofEvents(0),
+    fNofPointsTot(0.),
+    fNofSignalsTot(0.),
+    fNofDigisTot(0.),
+    fTimeTot(),
     fTOT(0),
     fTotalDriftTime(0.4/fDriftVelocity*10000), // 40 ns
     fSigma(),
@@ -111,6 +132,7 @@ CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName)
 
   fMPV[2]   = new TF1("mpv_p","pol6",-5,10);
   fMPV[2]->SetParameters(mpv_p);
+  Reset();
 }
 // -------------------------------------------------------------------------
 
@@ -138,8 +160,24 @@ CbmMuchDigitizeGem::~CbmMuchDigitizeGem() {
     delete fMPV[2];
     //delete[] fMPV;
   }
+  Reset();
 }
 // -------------------------------------------------------------------------
+
+
+// -----   Private method Reset   -------------------------------------------
+void CbmMuchDigitizeGem::Reset() {
+  fTimeDigiFirst = fTimeDigiLast = -1.;
+  fNofPoints = fNofSignals = fNofDigis = 0;
+  if ( fDigis ) fDigis->Delete();
+  if ( fDigiMatches ) fDigiMatches->Delete();
+}
+// -------------------------------------------------------------------------
+
+
+
+
+
 
 // -----   Private method Init   -------------------------------------------
 InitStatus CbmMuchDigitizeGem::Init() {
@@ -171,8 +209,11 @@ InitStatus CbmMuchDigitizeGem::Init() {
   //Reading MC point as Event by event for time based digi generation also.  
   // Get input array of MuchPoints
   fPoints = (TClonesArray*) ioman->GetObject("MuchPoint");
+  assert( fPoints );
+
   // Get input array of MC tracks
   fMCTracks = (TClonesArray*) ioman->GetObject("MCTrack");
+  assert( fMCTracks );
   //For event by event mode output will be stored via ioman 
   if(!fDaq){
     // Register output array MuchDigi
@@ -182,6 +223,7 @@ InitStatus CbmMuchDigitizeGem::Init() {
     fDigiMatches = new TClonesArray("CbmMuchDigiMatch", 1000);
     ioman->Register("MuchDigiMatch", "Digi Match in MUCH", fDigiMatches, kTRUE);
   }
+  //For time based mode output will be stored via CbmDaq  
   else{
 	FairTask* daq     = FairRun::Instance()->GetTask("Daq");
         if ( daq ) {
@@ -222,17 +264,19 @@ void CbmMuchDigitizeGem::Exec(Option_t* opt) {
 	// get current event to revert back at the end of exec
 	//Int_t currentEvent = FairRootManager::Instance()->GetInTree()->GetBranch("MCTrack")->GetReadEntry();
 	//LOG(DEBUG) << GetName() << ": Event Number is "<< currentEvent << FairLogger::endl;
+	// --- Start timer and reset counters
 	fTimer.Start();
-  	fNdigis = 0;
-  	Int_t nPoints=0;
-	//Clearing the fDigis and fDigiMatches 
-	if(!fDaq){
-		fDigis->Clear();
-	        fDigiMatches->Clear();
-	}
-	
+	Reset();
 	//Storing digi->Time < EventStartTime
-	ReadAndRegister();
+	Double_t eventTime = -1.;
+	if(fDaq){
+		eventTime = FairRun::Instance()->GetEventHeader()->GetEventTime();
+		//For the Time based mode ReadAndRegister should be called in beginning of the event.
+		//ReadAndRegister(eventTime);
+  	}
+	LOG(DEBUG) << GetName() << ": Readout time is " << eventTime << " ns"
+                               << FairLogger::endl;
+	ReadAndRegister(eventTime);
 	//	cout<< "Exec Started and came out from first ReadAndRegister"<< endl;
 	// --- Loop over all MuchPoints and execute the ExecPoint method for both Event by event and Time Based Digitization
      
@@ -243,16 +287,30 @@ void CbmMuchDigitizeGem::Exec(Option_t* opt) {
 			LOG(DEBUG) << GetName() << ":Not Processing MCPoint " << iPoint <<"as MCPoint is NULL."<< point << FairLogger::endl;
 			return;
 		}
-  		nPoints++;
+  		fNofPoints++;
 		ExecPoint(point, iPoint);
 	}  // MuchPoint loop
 	// Add remaining digis
 	
 	//For event by event mode read all the data from CbmMuchReadoutBuffer and register in the Output.
 	//Read the Signal, convert into Digi And Register into output
-  	ReadAndRegister();
+	if(!fDaq)  	ReadAndRegister(eventTime);
+	
+	LOG(INFO) << "+ " << setw(20) << GetName() << ": Event " << setw(6)
+                      << right << fNofEvents << ", real time " << fixed
+                      << setprecision(6) << fTimer.RealTime() << " s, points: "
+                      << fNofPoints << ", signals: " << fNofSignals 
+		      <<", digis: " << fNofDigis << FairLogger::endl;
+
  	fTimer.Stop();
-  	gLogger->Info(MESSAGE_ORIGIN,"MuchDigitizeGem: %5.2f s, %i points, %i digis",fTimer.RealTime(),nPoints,fDigis->GetEntriesFast());
+	fNofEvents++;
+	fNofPointsTot   += fNofPoints;
+	fNofSignalsTot  += fNofSignals;
+  	fNofDigisTot    += fNofDigis;
+	fTimeTot        += fTimer.RealTime();
+
+
+  	//gLogger->Info(MESSAGE_ORIGIN,"MuchDigitizeGem: %5.2f s, %i points, %i digis",fTimer.RealTime(),nPoints,fDigis->GetEntriesFast());
 
   	// revert branch to "current event"
   	//FairRootManager::Instance()->GetInTree()->GetBranch("MCTrack")->GetEntry(currentEvent);
@@ -261,16 +319,16 @@ void CbmMuchDigitizeGem::Exec(Option_t* opt) {
 
 // -------------------------------------------------------------------------
 	//Read all the Signal from CbmMuchReadoutBuffer, convert the analog signal into the digital response  and register Output according to event by event mode and Time based mode.
-void CbmMuchDigitizeGem::ReadAndRegister(){
+void CbmMuchDigitizeGem::ReadAndRegister(Double_t eventTime){
 	std::vector<CbmMuchSignal*> SignalList;
-	
-	Double_t eventTime = -1.;
+	//Event Time should be passed with the Call	
+	/*Double_t eventTime = -1.;
 	if(fDaq){
 		eventTime = FairRun::Instance()->GetEventHeader()->GetEventTime();
-  	}
+  	}*/
 	
 	Int_t ReadOutSignal = CbmMuchReadoutBuffer::Instance()->ReadOutData(eventTime,SignalList);
-	LOG(DEBUG) << GetName() << ": Number of digi's read out from Buffer "<< ReadOutSignal << " and SignalList contain " << SignalList.size() << " entries."<<FairLogger::endl;
+	LOG(DEBUG) << GetName() << ": Number of Signals read out from Buffer "<< ReadOutSignal << " and SignalList contain " << SignalList.size() << " entries."<<FairLogger::endl;
 
     	for (std::vector<CbmMuchSignal*>::iterator LoopOver= SignalList.begin(); LoopOver != SignalList.end(); LoopOver++)
 	{
@@ -294,18 +352,28 @@ void CbmMuchDigitizeGem::ReadAndRegister(){
 				// Match object will be deleted in the digi destructor.	
 				delete digi;
 			}
-			fNdigis++;
+			fNofDigis++;
 		}
 	}
-}
+	LOG(DEBUG) << GetName() << ": " << fNofDigis
+                       << ( fNofDigis == 1 ? " digi " :  " digis " )
+                       << "created and sent to DAQ ";
+	if ( fNofDigis ) LOG(DEBUG) << "( from " << fixed
+                     << setprecision(3) << fTimeDigiFirst << " ns to "
+                         << fTimeDigiLast << " ns )";
+  LOG(DEBUG) << FairLogger::endl;
 
+}
+//----ReadAndRegister -------
 
 //Convert Signal into the Digi with appropriate methods.
 
 CbmMuchDigi* CbmMuchDigitizeGem::ConvertSignalToDigi(CbmMuchSignal* signal){
 		Int_t TimeStamp = signal->GetTimeStamp(fQThreshold);
+		 //
 		if (TimeStamp < 0) return (NULL);//entire signal is below threshold, no digi generation.
 
+		
 		CbmMuchDigi *digi = new CbmMuchDigi();
 		digi->SetAddress(signal->GetAddress());
 		//Charge in number of electrons, need to be converted in ADC value
@@ -313,6 +381,9 @@ CbmMuchDigi* CbmMuchDigitizeGem::ConvertSignalToDigi(CbmMuchSignal* signal){
 		digi->SetAdc((signal->GetCharge())*fNADCChannels/fQMax);//Charge should be computed as per Electronics Response.
 		digi->SetTime(TimeStamp);
 		digi->SetMatch(signal->GetMatch());
+   	        // Update times of first and last digi
+		fTimeDigiFirst = fNofDigis ? TMath::Min(fTimeDigiFirst, Double_t(TimeStamp)) : TimeStamp;
+                fTimeDigiLast  = TMath::Max(fTimeDigiLast, Double_t(TimeStamp));
 
 	//	digi->SetPileUp();
 	//	digi->SetDiffEvent();
@@ -324,9 +395,45 @@ CbmMuchDigi* CbmMuchDigitizeGem::ConvertSignalToDigi(CbmMuchSignal* signal){
 // -------------------------------------------------------------------------
 void CbmMuchDigitizeGem::Finish(){
   //if (fDaq) Exec("");
-  //Store all the remaining digi's in the buffer into the CbmDaqBuffer
+  	fTimer.Start();
+  	std::cout << std::endl;
+	LOG(DEBUG) << GetName() << ": Finish run" << FairLogger::endl;
+  	//LOG(DEBUG) << GetName() << ": " << BufferStatus() << FairLogger::endl;
+  	//Store all the remaining digi's in the buffer into the CbmDaqBuffer for the Time based mode.
+  	Reset();
+	ReadAndRegister(-1.); // -1 means process all data
+	//LOG(DEBUG) << GetName() << ": " << BufferStatus() << FairLogger::endl;
+	fTimer.Stop();
+	fNofPointsTot  += fNofPoints;
+	fNofSignalsTot += fNofSignals;
+	//fNofSignalsBTot += fNofSignalsB;
+	fNofDigisTot   += fNofDigis;
+	fTimeTot       += fTimer.RealTime();
 
-   if (fDaq)	ReadAndRegister();
+        std::cout << std::endl;
+        LOG(INFO) << "=====================================" << FairLogger::endl;
+        LOG(INFO) << GetName() << ": Run summary" << FairLogger::endl;
+        LOG(INFO) << "Events processed    : " << fNofEvents << FairLogger::endl;
+        LOG(INFO) << "MuchPoint / event    : " << setprecision(1)
+                              << fNofPointsTot / Double_t(fNofEvents)
+                              << FairLogger::endl;
+        LOG(INFO) << "MuchSignals / event     : "
+                              << fNofSignalsTot / Double_t(fNofEvents)
+                              //<< " / " << fNofSignalsBTot / Double_t(fNofEvents)
+                              << FairLogger::endl;
+        LOG(INFO) << "MuchDigi / event     : "
+                              << fNofDigisTot  / Double_t(fNofEvents) << FairLogger::endl;
+        LOG(INFO) << "Digis per point     : " << setprecision(6)
+                              << fNofDigisTot / fNofPointsTot << FairLogger::endl;
+        LOG(INFO) << "Digis per signal    : "
+                              << fNofDigisTot / fNofSignalsTot
+                              << FairLogger::endl;
+        LOG(INFO) << "Real time per event : " << fTimeTot / Double_t(fNofEvents)
+                              << " s" << FairLogger::endl;
+        LOG(INFO) << "=====================================" << FairLogger::endl;
+
+
+  //if (fDaq)	ReadAndRegister(-1.);
              
 }
 // -------------------------------------------------------------------------
@@ -638,6 +745,8 @@ void CbmMuchDigitizeGem::AddCharge(CbmMuchPad* pad, UInt_t charge, Int_t iPoint,
         //std::cout<<"After AddLink"<< endl;
         //Adding all these temporary signal into the CbmMuchReadoutBuffer
         CbmMuchReadoutBuffer::Instance()->Fill(address, signal);
+	//Increasing number of signal by one.
+	fNofSignals++;
         LOG(DEBUG4)<<" Registered the CbmMuchSignal into the CbmMuchReadoutBuffer "<<FairLogger::endl;
 
 }//end of AddCharge 
@@ -679,6 +788,8 @@ Bool_t CbmMuchDigitizeGem::BufferSignals(Int_t iPoint,Double_t time, Double_t dr
 		(signal->GetMatch())->AddLink(link);
 		//Adding all these temporary signal into the CbmMuchReadoutBuffer
 		CbmMuchReadoutBuffer::Instance()->Fill(address, signal);
+		//Increasing number of signal by one.
+		fNofSignals++;
 		LOG(DEBUG)<<" Registered the CbmMuchSignal into the CbmMuchReadoutBuffer "<<FairLogger::endl;
 	}
 	
