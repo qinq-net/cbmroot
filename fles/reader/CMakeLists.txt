@@ -82,7 +82,11 @@ Set(SRCS
   get4/CbmGet4EventBuilder.cxx
   get4/CbmGet4EventBuffer.cxx
 
+#  tasks/tools/CbmTrdBeamtimeTools.cxx
+
   tasks/CbmSpadicTriggerComp.cxx
+  tasks/CbmTrdQABase.cxx
+  tasks/CbmTrdQAHit.cxx
   tasks/CbmTrdRawBeamProfile.cxx
   tasks/CbmTrdRawBuchData.cxx
   tasks/CbmTrdRawPulseMonitor.cxx
