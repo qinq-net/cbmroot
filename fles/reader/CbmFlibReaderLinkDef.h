@@ -34,6 +34,7 @@
 #pragma link C++ class CbmDaqBuffer;
 #pragma link C++ class CbmFiberHodoMapping;
 #pragma link C++ class CbmSpadicTriggerComp;
+#pragma link C++ class CbmTrdTestBeamTools;
 #pragma link C++ class CbmTrdQABase;
 #pragma link C++ class CbmTrdQAHit;
 #pragma link C++ class CbmTrdRawBeamProfile;

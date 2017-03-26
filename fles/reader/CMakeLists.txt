@@ -12,6 +12,7 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/fles/reader
   ${CBMROOT_SOURCE_DIR}/fles/reader/unpacker
   ${CBMROOT_SOURCE_DIR}/fles/reader/tasks
+  ${CBMROOT_SOURCE_DIR}/fles/reader/tasks/tools
   ${CBMROOT_SOURCE_DIR}/fles/reader/get4
 )
 
@@ -82,8 +83,8 @@ Set(SRCS
   get4/CbmGet4EventBuilder.cxx
   get4/CbmGet4EventBuffer.cxx
 
-#  tasks/tools/CbmTrdBeamtimeTools.cxx
-
+  tasks/tools/CbmTrdTestBeamTools.cxx
+  
   tasks/CbmSpadicTriggerComp.cxx
   tasks/CbmTrdQABase.cxx
   tasks/CbmTrdQAHit.cxx

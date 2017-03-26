@@ -75,7 +75,6 @@ void CbmTrdQAHit::Exec(Option_t*)
   //first Loop for TriggerType_vs_StopType:
   for (Int_t iSpadicMessage=0; iSpadicMessage < nSpadicMessages; ++iSpadicMessage){
     CbmSpadicRawMessage *raw= static_cast<CbmSpadicRawMessage*>(fRaw->At(iSpadicMessage));
-    if(raw->GetHit()||raw->GetHitAborted())
       HistogramArray.at(GetRobID(raw)*NrOfActiveSpadics+GetSpadicID(raw)%2)->Fill(raw->GetTriggerType(),raw->GetStopType());
   }
   LOG(INFO)<<this->GetName()<<": Loop for TriggerType_vs_StopType done"<<FairLogger::endl;

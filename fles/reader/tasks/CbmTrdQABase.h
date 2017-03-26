@@ -2,6 +2,7 @@
 #define CBMTRDQABASE_H
 
 #include "FairTask.h"
+#include "CbmTrdTestBeamTools.h"
 #include <CbmHistManager.h>
 #include "CbmSpadicRawMessage.h"
 #include "TClonesArray.h"
@@ -10,12 +11,22 @@
 class CbmTrdQABase : public FairTask
 {
     protected:
-    /** Constructor with parameters (Optional) **/
-    CbmTrdQABase(TString ClassName);
-    public:
+
+    /** Input array from previous already existing data level **/
+    TClonesArray* fRaw;
+    TClonesArray* fInput;
+    CbmTrdTestBeamTools* fBT;
+    CbmHistManager* fHm;
+
+
+ public:
+  /** Constructor with parameters (Optional) **/
+     CbmTrdQABase(TString ClassName):CbmTrdQABase(nullptr,ClassName){};
+
+    CbmTrdQABase(CbmTrdTestBeamTools*,TString);
 
     /** Default constructor **/
-    CbmTrdQABase():CbmTrdQABase("CbmTrdQABase"){};
+ CbmTrdQABase():CbmTrdQABase(nullptr,TString("CbmTrdQABase")){};
 
     /** Destructor **/
     ~CbmTrdQABase();
@@ -48,10 +59,15 @@ class CbmTrdQABase : public FairTask
 */
 //    inline Int_t GetSpadicID(Int_t sourceA);
     //Functions to analyze Spadic Messages
-    //TODO: Implement indirectly in terms of Beamtime tools
-    virtual TString GetSpadicName(Int_t RobID,Int_t SpadicID,TString,Bool_t);
-    virtual Int_t GetRobID(CbmSpadicRawMessage* raw);
-    virtual Int_t GetSpadicID(CbmSpadicRawMessage* raw);
+    TString GetSpadicName(Int_t RobID,Int_t SpadicID,TString RobName="SysCore",Bool_t FullSpadic=true){
+      return fBT->GetSpadicName(RobID,SpadicID,RobName,FullSpadic);  
+    };
+    Int_t GetRobID(CbmSpadicRawMessage* raw){
+      return fBT->GetRobID(raw);
+    };
+    Int_t GetSpadicID(CbmSpadicRawMessage* raw){
+      return fBT->GetSpadicID(raw);
+    };
     inline TString GetTriggerName(Int_t Triggertype){
       TString triggerTypes[4] = { "Global_ trigger",
 				  "Self_triggered",
@@ -76,26 +92,26 @@ class CbmTrdQABase : public FairTask
       }
       return stopTypes[Stoptype];
     }
-
-    /*    virtual Int_t GetModuleID(CbmSpadicRawMessage* raw);
-    virtual Int_t GetLayerID(CbmSpadicRawMessage* raw);
-    virtual Int_t GetSectorID(CbmSpadicRawMessage* raw);
-    virtual Int_t GetRowID(CbmSpadicRawMessage* raw);
-    virtual Int_t GetColumnID(CbmSpadicRawMessage* raw);
-    virtual Int_t GetCombiID(CbmSpadicRawMessage* raw);
-    virtual Int_t GetChannelOnPadPlane(Int_t SpadicChannel);
-    virtual Bool_t FragmentedPulseTest(CbmSpadicRawMessage* raw);
-    virtual Int_t GetMaximumAdc(CbmSpadicRawMessage* raw);
-    virtual Float_t GetIntegratedCharge(CbmSpadicRawMessage* raw);
-    */
-
-  protected:
-
-    /** Input array from previous already existing data level **/
-    TClonesArray* fRaw;
-    TClonesArray* fInput;
+    Int_t GetModuleID(CbmSpadicRawMessage* raw){
+      return fBT->GetModuleID(raw);}
+    ;
+    Int_t GetLayerID(CbmSpadicRawMessage* raw){
+      return fBT->GetLayerID(raw);
+    };
+    Int_t GetRowID(CbmSpadicRawMessage* raw){
+      return fBT->GetRowID(raw);
+    };
+    Int_t GetColumnID(CbmSpadicRawMessage* raw){
+      return fBT->GetColumnID(raw);
+    };
+    Int_t GetChannelOnPadPlane(CbmSpadicRawMessage* raw){
+      return fBT->GetChannelOnPadPlane(raw);
+    };
+    Int_t GetMaximumAdc(CbmSpadicRawMessage* raw){
+      return fBT->GetMaximumAdc(raw);
+    };
+    //    virtual Float_t GetIntegratedCharge(CbmSpadicRawMessage* raw);
     
-    CbmHistManager* fHm;
 
 
   public:

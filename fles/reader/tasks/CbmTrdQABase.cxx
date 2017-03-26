@@ -5,6 +5,7 @@
  */
 #include "CbmTrdQABase.h"
 #include "CbmSpadicRawMessage.h"
+#include "CbmTrdTestBeamTools.h"
 #include "CbmBeamDefaults.h"
 
 #include "FairLogger.h"
@@ -24,8 +25,8 @@ const  Int_t NrSpadics=3;
 
 
 // ---- Default constructor -------------------------------------------
-CbmTrdQABase::CbmTrdQABase (TString ClassName) :
-  FairTask (ClassName.Data()), fInput (nullptr), fRaw(nullptr), fHm(new CbmHistManager)
+CbmTrdQABase::CbmTrdQABase (CbmTrdTestBeamTools*ptr,TString ClassName) :
+  FairTask (ClassName.Data()), fInput (nullptr), fRaw(nullptr),fBT(CbmTrdTestBeamTools::Instance(ptr)), fHm(new CbmHistManager)
 {
   LOG(INFO) << TString("Default Constructor of ")+TString(this->GetName())
 		<< FairLogger::endl;
@@ -120,22 +121,10 @@ void CbmTrdQABase::Exec (Option_t*)
     }
   }
 }
-
-Int_t CbmTrdQABase::GetRobID(CbmSpadicRawMessage* raw)
-  {
-  Int_t eqID=raw->GetEquipmentID();
-  Int_t SyscoreID=eqID-BaseEquipmentID;
-	if((SyscoreID<0||SyscoreID>NrOfActiveSyscores)){
-	    LOG(ERROR) << "EqID " << eqID << " not known." << FairLogger::endl;
-	    SyscoreID=-1;
-	}
-	return SyscoreID;
-
-}
 // ---- Create Histograms----------------------------------------------
 void CbmTrdQABase::CreateHistograms()
 {
-  //TODO: Implement with Beamtimetools
+  //TODO: Implement with CbmTrdTestBeamTools
   fHm->Add("TSCounter",new TGraph);
   fHm->G1("TSCounter")->SetNameTitle("TSCounter","TSCounter");
   fHm->G1("TSCounter")->GetXaxis()->SetTitle("TS Number");
@@ -150,26 +139,7 @@ void CbmTrdQABase::CreateHistograms()
     }
   }
 }
-TString CbmTrdQABase::GetSpadicName(Int_t RobID,Int_t SpadicID,TString RobName="SysCore",Bool_t FullSpadic=true)
-{
-	/*	Get a String of the Form "Syscore_0_Spadic_0" describing the specific SPADIC corresponding to the input parameters.
-	 *  The Parameter InputType allows either the Equipment ID/Source Address or the final Syscore/Spadic ID to be used.
-	 *  	kRawData (default) is the parameter that allows the raw EqID/Source Address to be used, kProcessedData takes Syscore/SpadicID.
-	 *  The Parameter OutputType allows adressing either the corresponding FullSpadic, via kFullSpadic (default), or the original HalfSpadic,
-	 *  	via kHalfSpadic.
-	 * */
-  TString spadicName="";
-  spadicName=RobName+"_"+std::to_string(RobID)+"_";
-  if(FullSpadic){
-	  spadicName += "Spadic_";
-  }else{
-	  spadicName += "Half_Spadic_";
 
-  }
-  spadicName+=std::to_string(SpadicID);
-
-  return spadicName;
-}
 
 
   
@@ -181,18 +151,6 @@ TString CbmTrdQABase::GetSpadicName(Int_t RobID,Int_t SpadicID,TString RobName="
   fProcSpadic->Clear ();
 }*/
 
-Int_t CbmTrdQABase::GetSpadicID(CbmSpadicRawMessage*raw)
-{
-  //TString spadic="";
-  Int_t sourceA = raw->GetSourceAddress();
-  sourceA -= SpadicBaseAddress;
-  if(sourceA<0||sourceA>5)
-  {
-    LOG(ERROR) << "Source Address " << sourceA+SpadicBaseAddress << " not known." << FairLogger::endl;
-    sourceA = -1;
-  }
-  return sourceA;
-}
 // ---- Finish --------------------------------------------------------
 void CbmTrdQABase::Finish ()
 {
