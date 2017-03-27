@@ -8,14 +8,14 @@ macro_dir=/lustre/nyx/cbm/users/jbendar/CBMINSTALL_Root5/share/cbmroot/macro/ric
 
 # Specify input and output directories
 if [ $1 -eq 0 ] ; then
-        outdir=${output_dir}/Aligned
+        outdir=${output_dir}/Aligned/
 elif [ $1 -eq 1 ] ; then
-##        outdir=${output_dir}/Misaligned_5mrad_Full
-	outdir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/test/test_position
+        outdir=${output_dir}/Misaligned_5mrad_Full/
+##	outdir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/test/test_position
 elif [ $1 -eq 2 ] ; then
-	outdir=${output_dir}/Misaligned_1mrad_Full
+	outdir=${output_dir}/Misaligned_1mrad_Full/
 elif [ $1 -eq 3 ] ; then
-        outdir=${output_dir}/Standard
+        outdir=${output_dir}/Standard/
 fi
 export OUT_DIR=${outdir}
 
@@ -27,6 +27,7 @@ mkdir -p ${outdir}/log
 
 # Create directory for output results
 mkdir -p ${outdir}/results/${XXXXX}/
+cd ${outdir}/results/${XXXXX}/
 
 # Setup the run environment
 source ${cbmroot_config_path}
