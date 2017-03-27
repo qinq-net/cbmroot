@@ -1,6 +1,7 @@
 #!/bin/bash
 
-XXXXX=$(printf "%05d" "$SLURM_ARRAY_TASK_ID")
+##XXXXX=$(printf "%05d" "$SLURM_ARRAY_TASK_ID")
+XXXXX=$4
 
 cbmroot_config_path=/lustre/nyx/cbm/users/jbendar/CBMINSTALL_Root5/bin/CbmRootConfig.sh
 output_dir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Matching
@@ -8,14 +9,14 @@ macro_dir=/lustre/nyx/cbm/users/jbendar/CBMINSTALL_Root5/share/cbmroot/macro/ric
 
 # Specify input and output directories
 if [ $1 -eq 0 ] ; then
-        outdir=${output_dir}/Reference
-##	outdir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/test_matching
+        outdir=${output_dir}/Reference/
 elif [ $1 -eq 1 ] ; then
-        outdir=${output_dir}/WO_Corrections
+        outdir=${output_dir}/WO_Corrections/
+##	outdir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/test/test_matching/
 elif [ $1 -eq 2 ] ; then
-        outdir=${output_dir}/W_Corrections
+        outdir=${output_dir}/W_Corrections/
 elif [ $1 -eq 3 ] ; then
-        outdir=${output_dir}/Compute_Corrections
+        outdir=${output_dir}/Compute_Corrections/
 fi
 export OUT_DIR=${outdir}
 
@@ -27,6 +28,7 @@ mkdir -p ${outdir}/log
 
 # Create directory for output results
 mkdir -p ${outdir}/results/${XXXXX}/
+cd ${outdir}/results/${XXXXX}
 
 # Setup the run environment
 source ${cbmroot_config_path}

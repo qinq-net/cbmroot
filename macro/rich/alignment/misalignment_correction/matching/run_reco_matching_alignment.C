@@ -46,11 +46,15 @@ void run_reco_matching_alignment(Int_t nEvents = 100)
     TString outDir = "";
     if (script == "yes") {
 	outDir = TString(gSystem->Getenv("OUT_DIR"));
-	TString outDir = "/data/cbm/cbmroot_new/macro/rich/alignment/misalignment_correction/matching/5mrad_correction_study/";
-	TString runTitle = "Matching_Efficiency";
-	TString parFile = outDir + "param.root";
-	TString mcFile = outDir + "mc.root";
-	TString recoFile = outDir + "reco.root";
+    }
+    else {
+	outDir = "/lustre/nyx/cbm/users/jbendar/Sim_Outputs/test/";
+    }
+    TString parFile = outDir + setupName + "_param.root";
+    TString mcFile = outDir + setupName + "_mc.root";
+    TString recoFile = outDir + setupName + "_reco.root";
+    //TString resultDir = "recqa_0001/";
+    TString resultDir = outDir;
 
     TString geoSetupFile = "";
     geoSetupFile = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/macro/rich/geosetup/setup_align.C";
