@@ -17,17 +17,36 @@ void run_sim_matching(Int_t nEvents = 100)
     TString outDir = "";
     if (script == "yes") {
 	outDir = TString(gSystem->Getenv("OUT_DIR"));
-    }
-    else {
-	outDir = "/lustre/nyx/cbm/users/jbendar/Sim_Outputs/test/";
-    }
-    TString mcFile = outDir + setupName + "_mc.root";
-    TString geoFile = outDir + setupName + "_geofilefull.root";
-    TString outFile = outDir + setupName + "_out.root";
-    TString parFile = outDir + setupName + "_param.root";
+//	if (Flag == 0) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/reference/"; }
+//	else if (Flag == 1) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/misaligned_1pt5/"; }
+//	else if (Flag == 2) { TString outDir = "/data/misalignment_correction/Sim_Outputs/Matching/test/test/"; }
+	TString outDir = "/data/cbm/cbmroot_new/macro/rich/alignment/misalignment_correction/matching/5mrad_correction_study/";
+	TString parFile = outDir + "param.root";
+	TString mcFile = outDir + "mc.root";
+	TString geoFile = outDir + "geofilefull.root";
+	TString outFile = outDir + "out.root";
 
-    TString geoSetupFile = "";
-    geoSetupFile = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/macro/rich/geosetup/setup_align.C";
+/*	TString outDir = "/data/misalignment_correction/event_display/test/"; // For eventDisplay and run_rich_event_display macros
+	TString parFile = outDir + "param.root";
+	TString mcFile = outDir + "mc.root";
+	TString geoFile = outDir + "geofilefull.root";
+*/
+	// Set geometries:
+	TString caveGeom = "/data/cbm/cbmroot_new/geometry/cave.geo";
+	TString pipeGeom = "/data/cbm/cbmroot_new/geometry/pipe/pipe_v14l.root";
+	TString magnetGeom = "/data/cbm/cbmroot_new/geometry/magnet/magnet_v15a.geo.root";
+	TString fieldMap = "field_v12b";
+	TString stsGeom = "/data/cbm/cbmroot_new/geometry/sts/sts_v15c.geo.root";
+	if (Flag == 0) { TString richGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/rich/Rich_jan2016_aligned.root"; }
+	else if (Flag == 1) { TString richGeom = "/data/cbm/cbmroot_new/geometry/rich/Rich_jan2016_misalign_5mrad_Tiles_1_5_0_1.root"; }
+//	else if (Flag == 1) { TString richGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/rich/Rich_jan2016_misalign_5mradXY_Tile0_1.root"; }
+	else if (Flag == 2) { TString richGeom = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/rich/Rich_jan2016_corrected.root"; }
+	TString trdGeom = ""; //"trd_v15a_1e.geo.root";
+	TString tofGeom = ""; //"tof_v16a_1e.geo.root";
+	TString mvdGeom = ""; //"mvd_v15a.geo.root";
+    Double_t fieldZ       = 40.;            // field centre z position
+    Double_t fieldScale   =  1.;            // field scaling factor
+    Double_t fieldSymType =  3;
 
     TString electrons = "yes"; // If "yes" then primary electrons will be generated
     Int_t NELECTRONS = 1; // number of e- to be generated
@@ -70,13 +89,8 @@ void run_sim_matching(Int_t nEvents = 100)
     timer.Start();
 
 
-    // -----   Create simulation run   ----------------------------------------
-    FairRunSim* fRun = new FairRunSim();
-    fRun->SetName("TGeant3");                     // Transport engine
-    fRun->SetOutputFile(mcFile);                  // Output file
-    fRun->SetGenerateRunInfo(kTRUE);              // Create FairRunInfo file
-    FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
-    // ------------------------------------------------------------------------
+    gROOT->LoadMacro("/data/cbm/cbmroot_new/macro/littrack/loadlibs.C");
+    loadlibs();
 
 
     // -----   Logger settings   ----------------------------------------------

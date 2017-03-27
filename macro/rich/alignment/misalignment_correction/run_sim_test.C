@@ -1,4 +1,4 @@
-void run_sim(Int_t nEvents = 5000, TString Rot = "5")
+void run_sim_test(Int_t nEvents = 10, TString Rot = "5")
 // !!! DEFINE NEW ROTATION ANGLE IN THE GEO FILE AND RUN IMPORT_EXPORT_GEO MACRO BEFORE RUNNING RUN_SIM !!!
 {
     TTree::SetMaxTreeSize(90000000000);
@@ -11,20 +11,12 @@ void run_sim(Int_t nEvents = 5000, TString Rot = "5")
 
 	TString urqmdFile = "/data/Cbm_Root/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root";
 
-	TString outDir = "/data/misalignment_correction/Sim_Outputs/Alignment_Correction/Outer_Region_Study/Tile_1_4/" + Rot + "mradXY/";
-//	TString outDir = "/data/misalignment_correction/Sim_Outputs/Alignment_Correction/Outer_Region_Study/Tile_2_1/" + Rot + "mradX/";
-//	TString outDir = "/data/misalignment_correction/Sim_Outputs/Alignment_Correction/Test/";
-//	TString outDir = "/data/misalignment_correction/Sim_Outputs/Mirror_Sorting/First/";
-	TString numb = Rot + "_";
-	TString axis = "XY_";
-//	TString tile = "TILE";
-	TString tile = "1_4";
-//	TString tile = "0_8";
-//	numb = "", axis = "", tile = "";
-        TString parFile = outDir + "param." + numb + axis + tile + ".root";
-        TString mcFile = outDir + "mc." + numb + axis + tile + ".root";
-	TString geoFile = outDir + "geofilefull." + numb + axis + tile + ".root";
-	TString outFile = outDir + "out." + numb + axis + tile + ".root";
+	TString outDir = "/data/misalignement_correction/Sim_Outputs/test/";
+
+        TString parFile = outDir + "param.root";
+        TString mcFile = outDir + "mc.root";
+	TString geoFile = outDir + "geofilefull.root";
+	TString outFile = outDir + "out.root";
 
 /*	TString outDir = "/data/misalignment_correction/event_display/test/"; // For eventDisplay and run_rich_event_display macros
 	TString numb = "00001";
@@ -37,12 +29,12 @@ void run_sim(Int_t nEvents = 5000, TString Rot = "5")
 	TString magnetGeom = "magnet/magnet_v15a.geo.root";
 	TString fieldMap = "field_v12b";
 	TString stsGeom = "sts/sts_v15c.geo.root";
-	TString richGeom = "rich/Rich_jan2016_misalign.root";
+	TString richGeom = "rich/rich_v16a_1e_test.geo.root";
 	TString trdGeom = ""; //"trd_v15a_1e.geo.root";
 	TString tofGeom = ""; //"tof_v16a_1e.geo.root";
 	TString mvdGeom = ""; //"mvd_v15a.geo.root";
 
-    TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/geosetup_25gev.C";
+    TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/geosetup_test.C";
 
     TString electrons = "yes"; // If "yes" then primary electrons will be generated
     Int_t NELECTRONS = 1; // number of e- to be generated
