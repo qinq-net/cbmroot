@@ -521,6 +521,8 @@ void CbmTSUnpackMuch::FillOutput(CbmDigi* digi)
   
   new( (*fMuchDigi)[fMuchDigi->GetEntriesFast()] ) CbmMuchBeamTimeDigi(*(dynamic_cast<CbmMuchBeamTimeDigi*>(digi)));
   
+  // Delete object pointed by digi after using it
+  digi->Delete();
 }
 
 ClassImp(CbmTSUnpackMuch)
