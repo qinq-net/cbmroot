@@ -1028,8 +1028,7 @@ void CbmTSMonitorTof::FillEpochInfo(ngdpb::Message mess)
 
 void CbmTSMonitorTof::PrintSlcInfo(ngdpb::Message mess)
 {
-  if (fGdpbIdIndexMap.end() != fGdpbIdIndexMap.find(fGdpbId))
-    LOG(INFO) << "GET4 Slow Control message, epoch "
+  LOG(INFO) << "GET4 Slow Control message, epoch "
                  << static_cast<Int_t>(fCurrentEpoch[fGet4Nr]) << ", time " << std::setprecision(9)
                  << std::fixed << Double_t(fCurrentEpochTime) * 1.e-9 << " s "
                  << " for board ID " << std::hex << std::setw(4) << fGdpbId
@@ -1060,8 +1059,7 @@ void CbmTSMonitorTof::PrintGenInfo(ngdpb::Message mess)
 
 void CbmTSMonitorTof::PrintSysInfo(ngdpb::Message mess)
 {
-  if (fGdpbIdIndexMap.end() != fGdpbIdIndexMap.find(fGdpbId))
-    LOG(DEBUG) << "GET4 System message,       epoch "
+  LOG(DEBUG) << "GET4 System message,       epoch "
                   << static_cast<Int_t>(fCurrentEpoch[fGet4Nr]) << ", time " << std::setprecision(9)
                   << std::fixed << Double_t(fCurrentEpochTime) * 1.e-9 << " s "
                   << " for board ID " << std::hex << std::setw(4) << fGdpbId

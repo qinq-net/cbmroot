@@ -39,6 +39,7 @@ const  Int_t DetMask = 0x0001FFFF;
 CbmTSUnpackTof::CbmTSUnpackTof( UInt_t uNbGdpb )
   : CbmTSUnpack(),
     fuMsAcceptsPercent(100),
+    fuOverlapMsNb(0),
     fuMinNbGdpb( uNbGdpb ),
     fuCurrNbGdpb( 0 ),
     fMsgCounter(11,0), // length of enum MessageTypes initialized with 0
@@ -176,13 +177,18 @@ Bool_t CbmTSUnpackTof::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
 
   LOG(DEBUG1) << "Timeslice contains " << ts.num_microslices(component)
-             << "microslices." << FairLogger::endl;
+              << " microslices." << FairLogger::endl;
   
   // Loop over microslices
-  for (size_t m = 0; m < ts.num_microslices(component); ++m)
+  size_t numCompMsInTs = ts.num_microslices(component);
+  for (size_t m = 0; m < numCompMsInTs; ++m)
     {
        if( fuMsAcceptsPercent < m )
          continue;
+
+      // Ignore overlap ms if number defined by user
+      if( numCompMsInTs - fuOverlapMsNb <= m )
+        continue;
 
       constexpr uint32_t kuBytesPerMessage = 8;
 
@@ -297,7 +303,11 @@ void CbmTSUnpackTof::FillHitInfo(ngdpb::Message mess)
        ->Fill( get4Id*kuNbChanGet4 + channel );
 
     
-    hitTime  = mess.getMsgFullTime(fCurrentEpoch[rocId][get4Id]);
+    Int_t curEpochGdpbGet4 = fCurrentEpoch[rocId][get4Id];
+    if( fbEpochSuppModeOn )
+      curEpochGdpbGet4 --; // In Ep. Suppr. Mode, receive following epoch instead of previous
+    hitTime  = mess.getMsgFullTime(curEpochGdpbGet4);
+      
     Int_t Ft = mess.getGdpbHitFineTs();
 
     if(100 > iMess++)
@@ -319,8 +329,8 @@ void CbmTSUnpackTof::FillHitInfo(ngdpb::Message mess)
     }
     Int_t iChanUId = fUnpackPar->GetChannelToDetUIdMap( iChan );
     if(0==iChanUId) return;   // Hit not mapped to digi
-//    Double_t dTime = hitTime + Ft*FineTimeConvFactor; // in ns, FIXME conversion factor, -> missing calibration
-    Double_t dTime = mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] );
+    
+    Double_t dTime = mess.getMsgFullTimeD( curEpochGdpbGet4 );
     Double_t dTot  = tot;     // in ps ?
 
     LastDigiTime = dTime;

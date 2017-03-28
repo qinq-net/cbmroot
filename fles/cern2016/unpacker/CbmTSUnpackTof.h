@@ -57,11 +57,15 @@ public:
   void SetMsLimitLevel( size_t uAcceptBoundaryPct = 100 ) { fuMsAcceptsPercent = uAcceptBoundaryPct; }
   size_t GetMsLimitLevel( ) { return fuMsAcceptsPercent; }
 
+  void SetMsOverlap(size_t uOverlapMsNb = 1) { fuOverlapMsNb = uOverlapMsNb; }
+  size_t GetMsOverlap()                      { return fuOverlapMsNb; }
+    
   inline void SetTShiftRef(Double_t val) {fdTShiftRef = val;}
 
 private: 
 
   size_t fuMsAcceptsPercent; /** Reject Ms with index inside TS above this, assumes 100 MS per TS **/
+  size_t fuOverlapMsNb;      /** Ignore Overlap Ms: all fuOverlapMsNb MS at the end of timeslice **/
   UInt_t fuMinNbGdpb;
   UInt_t fuCurrNbGdpb;
 
