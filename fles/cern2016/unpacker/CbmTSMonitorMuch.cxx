@@ -36,6 +36,7 @@ Bool_t bResetMuchHistos = kFALSE;
 
 CbmTSMonitorMuch::CbmTSMonitorMuch()
   : CbmTSUnpack(),
+    fuOverlapMsNb(0),
     fNrOfNdpbs(0),
     fNrOfNdpbsA(0),
     fNrOfNdpbsB(0),
@@ -301,7 +302,7 @@ void CbmTSMonitorMuch::CreateHistograms()
 
           sHistName = Form("HitDtDate_n%s_f%1u", sNdpbTag.Data(), febId );
           title = Form("Inverse Hit distance VS time in second in nDPB %s FEB %02u; Time[s] ; F [Hz]; Counts",
-                     sNdpbTag.Data() );
+                     sNdpbTag.Data(), febId  );
           fHM->Add(sHistName.Data(), new TH2F(sHistName.Data(), title.Data(),
                         (5400 / 2*fiBinSizeDatePlots), 
                         fiRunStartDateTimeSec -10, fiRunStartDateTimeSec + 5400 - 10,
@@ -512,16 +513,16 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
    if( component < kiMaxNbFlibLinks )
       if( NULL == fhMsSz[ component ] )
    {
-      TString sMsSzName = Form("MsSz_link_%02u", component);
-      TString sMsSzTitle = Form("Size of MS for nDPB of link %02u; Ms Size [bytes]", component);
+      TString sMsSzName = Form("MsSz_link_%02lu", component);
+      TString sMsSzTitle = Form("Size of MS for nDPB of link %02lu; Ms Size [bytes]", component);
       fHM->Add(sMsSzName.Data(), new TH1F( sMsSzName.Data(), sMsSzTitle.Data(), 
                                     160000, 0., 20000. ) );
       fhMsSz[ component ] = fHM->H1(sMsSzName.Data());
 #ifdef USE_HTTP_SERVER
       if (server) server->Register("/FlibRaw", fhMsSz[ component ] );
 #endif
-      sMsSzName = Form("MsSzTime_link_%02u", component);
-      sMsSzTitle = Form("Size of MS vs time for gDPB of link %02u; Time[s] ; Ms Size [bytes]", component);
+      sMsSzName = Form("MsSzTime_link_%02lu", component);
+      sMsSzTitle = Form("Size of MS vs time for gDPB of link %02lu; Time[s] ; Ms Size [bytes]", component);
       fHM->Add(sMsSzName.Data(), new TProfile( sMsSzName.Data(), sMsSzTitle.Data(), 
                                     15000, 0., 300. ) );
       fhMsSzTime[ component ] = fHM->P1(sMsSzName.Data());
@@ -540,8 +541,12 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
 
    Int_t messageType = -111;
   // Loop over microslices
-  for (size_t m = 0; m < ts.num_microslices(component); ++m)
+  size_t numCompMsInTs = ts.num_microslices(component);
+  for (size_t m = 0; m < numCompMsInTs; ++m)
     {
+      // Ignore overlap ms if number defined by user
+      if( numCompMsInTs - fuOverlapMsNb <= m )
+        continue;
 
       constexpr uint32_t kuBytesPerMessage = 8;
 
@@ -855,7 +860,7 @@ void CbmTSMonitorMuch::ResetAllHistos()
         if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
         {
           fHM->H1( Form("FebRateDate_n%s_f%1u", sNdpbTag.Data(), febId) )->Reset();
-          fHM->H2( Form("HitDtDate_n%%s_f%1u", sNdpbTag.Data(), febId) )->Reset();
+          fHM->H2( Form("HitDtDate_n%s_f%1u", sNdpbTag.Data(), febId) )->Reset();
         } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
       } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
    } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)

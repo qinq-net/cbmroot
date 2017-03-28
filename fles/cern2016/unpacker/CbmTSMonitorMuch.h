@@ -49,7 +49,12 @@ public:
 
     void ResetAllHistos();
 
+  void SetMsOverlap(size_t uOverlapMsNb = 1) { fuOverlapMsNb = uOverlapMsNb; }
+  size_t GetMsOverlap()                      { return fuOverlapMsNb; }
+
 private:
+  size_t fuOverlapMsNb;      /** Ignore Overlap Ms: all fuOverlapMsNb MS at the end of timeslice **/
+  
    Int_t fNrOfNdpbs;           // Total number of NDPBs in the system
    Int_t fNrOfNdpbsA;           // Total number of NDPBs for GEM A
    Int_t fNrOfNdpbsB;           // Total number of NDPBs for GEM B

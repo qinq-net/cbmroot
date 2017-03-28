@@ -55,8 +55,12 @@ class CbmTSUnpackMuch: public CbmTSUnpack
   void CreateRawMessageOutput(Bool_t val) {fCreateRawMessage=val;}
   
   //  Int_t CreateAddress(Int_t rocId, Int_t febId, Int_t stationId, Int_t layerId, Int_t sideId, Int_t moduleId, Int_t channelId);
+
+  void SetMsOverlap(size_t uOverlapMsNb = 1) { fuOverlapMsNb = uOverlapMsNb; }
+  size_t GetMsOverlap()                      { return fuOverlapMsNb; }
   
  private:
+  size_t fuOverlapMsNb;      /** Ignore Overlap Ms: all fuOverlapMsNb MS at the end of timeslice **/
   
   std::vector<int> fMsgCounter;
   std::map<UInt_t, UInt_t> fNdpbIdIndexMapA;

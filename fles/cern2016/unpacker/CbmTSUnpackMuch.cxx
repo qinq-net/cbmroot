@@ -26,6 +26,7 @@ using namespace std;
 
 CbmTSUnpackMuch::CbmTSUnpackMuch()
   : CbmTSUnpack(),
+    fuOverlapMsNb(0),
     fMsgCounter(11,0), // length of enum MessageTypes initialized with 0
     fNdpbIdIndexMapA(),
     fNdpbIdIndexMapB(),
@@ -162,12 +163,16 @@ Bool_t CbmTSUnpackMuch::ReInitContainers()
 Bool_t CbmTSUnpackMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
   LOG(DEBUG) << "Timeslice contains " << ts.num_microslices(component)
-             << "microslices." << FairLogger::endl;
+             << " microslices." << FairLogger::endl;
   
   Int_t messageType = -111;
   // Loop over microslices
-  for (size_t m = 0; m < ts.num_microslices(component); ++m)
-    {
+  size_t numCompMsInTs = ts.num_microslices(component);
+  for (size_t m = 0; m < numCompMsInTs; ++m)
+  {
+    // Ignore overlap ms if number defined by user
+    if( numCompMsInTs - fuOverlapMsNb <= m )
+      continue;
       
       constexpr uint32_t kuBytesPerMessage = 8;
       auto msDescriptor = ts.descriptor(component, m);
