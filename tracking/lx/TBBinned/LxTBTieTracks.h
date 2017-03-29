@@ -18,6 +18,8 @@
 #include "LxTBBinned.h"
 #include "FairTrackParam.h"
 
+class TClonesArray;
+
 struct LxTBBinndedLayer
 {
     scaltype z;

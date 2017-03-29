@@ -9,6 +9,7 @@
 
 class CbmKFTrack;
 class CbmVertex;
+class TClonesArray;
 
 class CbmStsKFTrackFitter : public CbmStsTrackFitter{
 

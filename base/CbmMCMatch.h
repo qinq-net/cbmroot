@@ -22,6 +22,7 @@
 #include <map>
 
 class FairMultiLinkedData;
+class TClonesArray;
 
 typedef std::map<Cbm::DataType, CbmMCStage*>::iterator TListIterator;
 typedef std::map<Cbm::DataType, CbmMCStage*>::const_iterator TListIteratorConst;

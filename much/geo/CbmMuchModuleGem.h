@@ -21,6 +21,7 @@
 
 class CbmMuchSector;
 class CbmMuchPad;
+class TClonesArray;
 
 class CbmMuchModuleGem : public CbmMuchModule{
  public:

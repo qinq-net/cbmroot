@@ -18,6 +18,8 @@
 #include "TPave.h"
 #include <map>
 
+class TClonesArray;
+
 class CbmMuchModule : public TPave{
 public:
   /** Default constructor **/
