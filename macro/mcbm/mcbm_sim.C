@@ -5,6 +5,7 @@
 //
 // V. Friese   22/02/2007
 //
+// 2017-03-30 - DE - add mcbm_sim.C to CTests
 // 2014-06-30 - DE - available setups from geometry/setup:
 // 2014-06-30 - DE - sis100_hadron
 // 2014-06-30 - DE - sis100_electron
@@ -51,7 +52,8 @@ Int_t    fieldSymType=0;
 
 TString defaultInputFile="";
 
-void mcbm_sim(Int_t nEvents = 20, const char* setup = "sis18_mcbm")
+//void mcbm_sim(Int_t nEvents = 20, const char* setup = "sis18_mcbm")
+void mcbm_sim(Int_t nEvents = 2, const char* setup = "sis18_mcbm")
 {
 
   // ========================================================================
@@ -75,8 +77,8 @@ void mcbm_sim(Int_t nEvents = 20, const char* setup = "sis18_mcbm")
 
   TString inFile  = inDir + defaultInputFile;
 
-//  // Function needed for CTest runtime dependency
-//  TString depFile = Remove_CTest_Dependency_File(outDir, "run_sim" , setup);
+  // Function needed for CTest runtime dependency
+  TString depFile = Remove_CTest_Dependency_File(outDir, "mcbm_sim" , setup);
 
 //  Bool_t hasFairMonitor = Has_Fair_Monitor();
 
@@ -393,8 +395,7 @@ void mcbm_sim(Int_t nEvents = 20, const char* setup = "sis18_mcbm")
   std::cout << " Test passed" << std::endl;
   std::cout << " All ok " << std::endl;
 
-//  // Function needed for CTest runtime dependency
-//  Generate_CTest_Dependency_File(depFile);
-
+  // Function needed for CTest runtime dependency
+  Generate_CTest_Dependency_File(depFile);
 }
 
