@@ -1,4 +1,5 @@
 add_subdirectory(run)
+add_subdirectory(mcbm)
 #add_subdirectory(htrack)
 add_subdirectory(much)
 add_subdirectory(tof)
