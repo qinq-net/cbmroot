@@ -83,9 +83,8 @@ class CbmTofGeometryQa : public FairTask {
       std::vector< std::vector< std::vector< Int_t > > > fvRpcChOffs;  // Offset in channel index for first channel of each RPC
     
       // Parameters
-      CbmTofDigiPar    * fDigiPar;
-      CbmTofDigiBdfPar * fDigiBdfPar;
 
+      // Data IO
       FairMCEventHeader     * fMCEventHeader; // MC event header
 //      TClonesArray          * fStsPointsColl; // STS MC points
       TClonesArray          * fTofPointsColl; // TOF MC points
@@ -164,26 +163,6 @@ class CbmTofGeometryQa : public FairTask {
       std::vector<TH2 *> fvhPtmRapSecGenTrkTofPnt;
       std::vector<TH1 *> fvhPlabSecGenTrkTofPnt;
       std::vector<TH1 *> fvhPlabSecStsTrkTofPnt;
-
-         // Integrated TofHit Efficiency
-      std::vector<ULong64_t> fvulIdxTracksWithPnt;
-      TH1* fhIntegratedHitPntEff;
-      std::vector<ULong64_t> fvulIdxPrimTracksWithPnt;
-      TH1* fhIntegratedHitPntEffPrim;
-      std::vector<ULong64_t> fvulIdxSecTracksWithPnt;
-      TH1* fhIntegratedHitPntEffSec;
-      
-         // Efficiency dependence on nb crossed gaps
-      UInt_t fuMaxCrossedGaps = 20;
-      std::vector< std::vector<ULong64_t> > fvulIdxTracksWithPntGaps;
-      TH2* fhIntegratedHitPntEffGaps;
-      std::vector< std::vector<ULong64_t> > fvulIdxPrimTracksWithPntGaps;
-      TH2* fhIntegratedHitPntEffPrimGaps;
-      std::vector< std::vector<ULong64_t> > fvulIdxSecTracksWithPntGaps;
-      TH2* fhIntegratedHitPntEffSecGaps;
-      
-         // TOF Debug checks
-      TH1 * fhPointMatchWeight;
       
       ClassDef(CbmTofGeometryQa, 1);
 };

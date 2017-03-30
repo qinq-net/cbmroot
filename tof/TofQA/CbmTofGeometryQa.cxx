@@ -134,13 +134,7 @@ CbmTofGeometryQa::CbmTofGeometryQa()
     fvhPlabStsTrkTofPnt(),
     fvhPtmRapSecGenTrkTofPnt(),
     fvhPlabSecGenTrkTofPnt(),
-    fvhPlabSecStsTrkTofPnt(),
-    fvulIdxTracksWithPnt(),
-    fvulIdxPrimTracksWithPnt(),
-    fvulIdxSecTracksWithPnt(),
-    fvulIdxTracksWithPntGaps(),
-    fvulIdxPrimTracksWithPntGaps(),
-    fvulIdxSecTracksWithPntGaps()
+    fvhPlabSecStsTrkTofPnt()
 {
   cout << "CbmTofGeometryQa: Task started " << endl;
 }
@@ -215,13 +209,7 @@ CbmTofGeometryQa::CbmTofGeometryQa(const char* name, Int_t verbose)
     fvhPlabStsTrkTofPnt(),
     fvhPtmRapSecGenTrkTofPnt(),
     fvhPlabSecGenTrkTofPnt(),
-    fvhPlabSecStsTrkTofPnt(),
-    fvulIdxTracksWithPnt(),
-    fvulIdxPrimTracksWithPnt(),
-    fvulIdxSecTracksWithPnt(),
-    fvulIdxTracksWithPntGaps(),
-    fvulIdxPrimTracksWithPntGaps(),
-    fvulIdxSecTracksWithPntGaps()
+    fvhPlabSecStsTrkTofPnt()
 {
 }
 // ------------------------------------------------------------------
@@ -286,11 +274,6 @@ void CbmTofGeometryQa::SetParContainers()
    // Get Base Container
    FairRunAna* ana = FairRunAna::Instance();
    FairRuntimeDb* rtdb=ana->GetRuntimeDb();
-/*
-   fDigiPar = (CbmTofDigiPar*) (rtdb->getContainer("CbmTofDigiPar"));
-
-   fDigiBdfPar = (CbmTofDigiBdfPar*) (rtdb->getContainer("CbmTofDigiBdfPar"));
-*/
 }
 
 void CbmTofGeometryQa::Exec(Option_t* /*option*/)
@@ -728,11 +711,6 @@ Bool_t CbmTofGeometryQa::CreateHistos()
                               iNbBinsPlab, dMinPlab, dMaxPlab);
    } // for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
    
-         // Efficiency dependence on nb crossed gaps
-   fvulIdxTracksWithPntGaps.resize( fuMaxCrossedGaps );
-   fvulIdxPrimTracksWithPntGaps.resize( fuMaxCrossedGaps );
-   fvulIdxSecTracksWithPntGaps.resize( fuMaxCrossedGaps );
-   
    gDirectory->cd( oldir->GetPath() ); // <= To prevent histos from being sucked in by the param file of the TRootManager!
 
    return kTRUE;
@@ -752,16 +730,6 @@ Bool_t CbmTofGeometryQa::FillHistos()
    if( kTRUE == fbRealPointAvail )
       iNbTofRealPts = fRealTofPointsColl->GetEntriesFast();
       else iNbTofRealPts = 0;
-   
-   fvulIdxTracksWithPnt.clear();
-   fvulIdxPrimTracksWithPnt.clear();
-   fvulIdxSecTracksWithPnt.clear();
-   for( UInt_t uNbGaps = 0; uNbGaps < fuMaxCrossedGaps; uNbGaps++)
-   {
-      fvulIdxTracksWithPntGaps[uNbGaps].clear();
-      fvulIdxPrimTracksWithPntGaps[uNbGaps].clear();
-      fvulIdxSecTracksWithPntGaps[uNbGaps].clear();
-   } // for( UInt_t uNbGaps = 0; uNbGaps < fuMaxCrossedGaps; uNbGaps++)
           
    // Tracks Info
    Int_t iNbTofTracks     = 0;
@@ -799,26 +767,13 @@ Bool_t CbmTofGeometryQa::FillHistos()
       {
          iNbTofTracks++;
          // Keep track of MC tracks with at least one TOF Point
-         fvulIdxTracksWithPnt.push_back(iTrkInd);
          
          UInt_t uNbTofPnt = pMcTrk->GetNPoints(kTOF) -1;
-         if( uNbTofPnt < fuMaxCrossedGaps )
-            fvulIdxTracksWithPntGaps[uNbTofPnt].push_back(iTrkInd);
          
          if( -1 == pMcTrk->GetMotherId() )
          {
             iNbTofTracksPrim++;
-            fvulIdxPrimTracksWithPnt.push_back(iTrkInd);
-            if( uNbTofPnt < fuMaxCrossedGaps )
-               fvulIdxPrimTracksWithPntGaps[uNbTofPnt].push_back(iTrkInd);
          } // if( -1 == pMcTrk->GetMotherId() )
-            else
-            {
-               fvulIdxSecTracksWithPnt.push_back(iTrkInd);
-               
-               if( uNbTofPnt < fuMaxCrossedGaps )
-                  fvulIdxSecTracksWithPntGaps[uNbTofPnt].push_back(iTrkInd);
-            } // else of if( -1 == pMcTrk->GetMotherId() )
       } // if( 0 < pMcTrk->GetNPoints(kTOF) )
          
       // tracks mapping: Only when creating normalization histos
@@ -1042,22 +997,6 @@ Bool_t CbmTofGeometryQa::FillHistos()
          fhRealPointMapSph->Fill( dTheta, dPhi );
       } // if( 2212 == iPdgCode )
    } // for (Int_t iPntInd = 0; iPntInd < iNbTofRealPts; iPntInd++ )
-
-   LOG(DEBUG2)<<"CbmTofGeometryQa::FillHistos => nb prim trk w/ pnt: "
-            << fvulIdxPrimTracksWithPnt.size()
-            << FairLogger::endl;
-         // Efficiency dependence on nb crossed gaps
-   TString sHead = "CbmTofGeometryQa::FillHistos =>                N pnt:       ";
-   TString sPnt  = "CbmTofGeometryQa::FillHistos => nb prim trk w/ N pnt:       ";
-   TString sHit  = "CbmTofGeometryQa::FillHistos => nb prim trk w/ N pnt & hit: ";
-   for( UInt_t uNbGaps = 0; uNbGaps < fuMaxCrossedGaps; uNbGaps++)
-   {
-      sHead += Form("%4u ", uNbGaps);
-      sPnt  += Form("%4lu ", fvulIdxPrimTracksWithPntGaps[uNbGaps].size() );
-   } // for( UInt_t uNbGaps = 0; uNbGaps < fuMaxCrossedGaps; uNbGaps++)
-   LOG(DEBUG2)<< sHead << FairLogger::endl;
-   LOG(DEBUG2)<< sPnt  << FairLogger::endl;
-   LOG(DEBUG2)<< sHit  << FairLogger::endl;
 
    return kTRUE;
 }

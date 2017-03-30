@@ -209,6 +209,7 @@ CbmTofDigitizerBDF::CbmTofDigitizerBDF(const char *name, Int_t verbose):
    fdMergeTime(0.),
    fsBeamInputFile(""),
    fbMonitorHistos(kTRUE),
+   fbMcTrkMonitor(kFALSE),
    fbTimeBasedOutput(kFALSE),
    fiCurrentFileId(-1),
    fiCurrentEventId(-1),
