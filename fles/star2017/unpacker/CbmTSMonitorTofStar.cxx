@@ -126,6 +126,7 @@ CbmTSMonitorTofStar::CbmTSMonitorTofStar() :
     fuPulserGdpb(0),
     fuPulserFee(0),
     fhTimeDiffPulserChosenFee(),
+    fhTimeDiffPulserChosenChPairs(),
     fhTimeRmsPulserChosenFee(NULL),
     fhTimeRmsPulserChosenChPairs(NULL),
     fdLastRmsUpdateTime(-1),
@@ -525,6 +526,7 @@ void CbmTSMonitorTofStar::CreateHistograms()
       } // for( UInt_t uChanFeeA = 0; uChanFeeA < kuNbChanFee; uChanFeeA++)
       
       // Selected channels test
+      fhTimeDiffPulserChosenChPairs.resize( kuNbChanTest - 1 );
       for( UInt_t uChan = 0; uChan < kuNbChanTest - 1; uChan++)
       {
          fhTimeDiffPulserChosenChPairs[uChan]  = new TH1I(

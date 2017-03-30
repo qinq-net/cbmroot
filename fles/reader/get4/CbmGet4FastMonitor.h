@@ -203,7 +203,7 @@ private:
   TH1 * fhTimeResAllPairs;
   TH2 * fhTimeRmsAllCombi;
   TH2 * fhTimeResAllCombi;
-  TH1 * fhTimeResPairs[kuNbChanTest - 1];
+  TH1 * fhTimeResPairs[kuNbChanTest - 1]; //!
   TH1 * fhTimeResCombi[kuNbChanComb*(kuNbChanComb-1)/2]; //!
   TH2 * fhTimeResPairsTot[(kuNbChanTest - 1)*2]; //!
   TH2 * fhTimeResCombiTot[(kuNbChanComb*(kuNbChanComb-1)/2)*2]; //!

@@ -205,7 +205,7 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     UInt_t fuPulserFee;
     UInt_t fuPulserChan[kuNbChanTest]; //! Always in first gDPB !!!
     std::vector<TH1 *> fhTimeDiffPulserChosenFee; 
-    TH1 * fhTimeDiffPulserChosenChPairs[ kuNbChanTest - 1 ];
+    std::vector<TH1 *> fhTimeDiffPulserChosenChPairs;
     TH2 * fhTimeRmsPulserChosenFee;
     TH1 * fhTimeRmsPulserChosenChPairs;
     Double_t fdLastRmsUpdateTime;
