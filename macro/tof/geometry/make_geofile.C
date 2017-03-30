@@ -27,8 +27,8 @@ void make_geofile(TString stofGeom = "tof_v16a_1e" )
   //TString pipeGeom   = "pipe_standard.geo";
   TString targetGeom = "";
   TString pipeGeom   = "";
-  TString magnetGeom = "magnet/magnet_v15a.geo.root";
-  TString stsGeom    = "sts/sts_v15a.geo.root";
+  TString magnetGeom = "";
+  TString stsGeom    = "";
   //  TString tofGeom    = "tof/tof_V13-2b.geo";
   TString tofGeom    = "tof/"+ stofGeom +".geo.root";
   
@@ -107,10 +107,12 @@ void make_geofile(TString stofGeom = "tof_v16a_1e" )
 
 
   // -----   Create magnetic field   ----------------------------------------
+  /*
   CbmFieldMap* magField = new CbmFieldMapSym3(fieldMap);
   magField->SetPosition(0., 0., fieldZ);
   magField->SetScale(fieldScale);
   fRun->SetField(magField);
+  */
   // ------------------------------------------------------------------------
 
   // Use the experiment specific MC Event header instead of the default one
@@ -162,10 +164,12 @@ void make_geofile(TString stofGeom = "tof_v16a_1e" )
   //trajFilter->SetStoreSecondaries(kTRUE);
 
   // -----   Runtime database   ---------------------------------------------
+  /*
   CbmFieldPar* fieldPar = (CbmFieldPar*) rtdb->getContainer("CbmFieldPar");
   fieldPar->SetParameters(magField);
   fieldPar->setChanged();
   fieldPar->setInputVersion(fRun->GetRunId(),1);
+  */
   Bool_t kParameterMerged = kTRUE;
   FairParRootFileIo* parOut = new FairParRootFileIo(kParameterMerged);
   parOut->open(parFile.Data());
