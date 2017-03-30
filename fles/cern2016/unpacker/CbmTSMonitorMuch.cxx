@@ -58,7 +58,14 @@ CbmTSMonitorMuch::CbmTSMonitorMuch()
     fHitDtDate_nDPB(),
     fdLastHitTime_nDPB(),
     fiRunStartDateTimeSec( -1 ),
-    fiBinSizeDatePlots( -1 )
+    fiBinSizeDatePlots( -1 ),
+    fHistMessType(NULL),
+    fHistSysMessType(NULL),
+    fChan_Counts_Much(),
+    fRaw_ADC_Much(),
+    fFebRate(),
+    fHitMissEvo(),
+    fHistPadDistr(NULL)
 {
 }
 
