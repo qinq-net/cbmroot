@@ -459,9 +459,10 @@ void CbmTrdElectronsTrainAnn::DoTrain()
       //factory->BookMethod(TMVA::Types::kTMlpANN, "TMlpANN","!H:!V:NCycles=50:HiddenLayers=N+1");
       stringstream ss;
       ss << "nTrain_Signal=" << fNofTrainSamples - 500 <<":nTrain_Background=" << fNofTrainSamples - 500 <<":nTest_Signal=0:nTest_Background=0";
-      factory->PrepareTrainingAndTestTree("", ss.str().c_str());
-      factory->BookMethod(TMVA::Types::kBDT, "BDT", "!H:!V:NTrees=400:BoostType=AdaBoost:SeparationType=GiniIndex:nCuts=20:PruneMethod=CostComplexity:PruneStrength=4.5");
-      factory->TrainAllMethods();
+      //TMVA_API
+//      factory->PrepareTrainingAndTestTree("", ss.str().c_str());
+//      factory->BookMethod(TMVA::Types::kBDT, "BDT", "!H:!V:NTrees=400:BoostType=AdaBoost:SeparationType=GiniIndex:nCuts=20:PruneMethod=CostComplexity:PruneStrength=4.5");
+//      factory->TrainAllMethods();
    }
 }
 
@@ -679,12 +680,13 @@ TMVA::Factory* CbmTrdElectronsTrainAnn::CreateFactory(TTree* simu)
 
 	TCut piCut = "xOut<0";
 	TCut elCut = "xOut>0";
-
-	factory->SetInputTrees(simu, elCut, piCut);
+	//TMVA_API
+	//factory->SetInputTrees(simu, elCut, piCut);
 	char txt1[100];
 	for (Int_t i = 0; i < fNofTrdLayers; i++){
 		sprintf(txt1, "x%d",i);
-		factory->AddVariable(txt1, 'F');
+		////TMVA_API
+		//factory->AddVariable(txt1, 'F');
 	}
 
 	return factory;
