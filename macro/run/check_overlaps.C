@@ -36,4 +36,14 @@ void check_overlaps(const char* setup = "sis100_electron")
     cout << " Test passed" << endl;
     cout << " All ok " << endl;
   }
+
+//  gGeoManager->CheckOverlaps(0.0001, "s");
+
+//  overlapArray = gGeoManager->GetListOfOverlaps();
+//  numOverlaps = overlapArray->GetEntries();
+//  gGeoManager->PrintOverlaps();
+
+  RemoveGeoManager();
+//  gGeoManager->CheckGeometry();
+//  gGeoManager->CheckGeometryFull();
 }
