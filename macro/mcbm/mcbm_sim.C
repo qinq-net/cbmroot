@@ -397,5 +397,6 @@ void mcbm_sim(Int_t nEvents = 2, const char* setup = "sis18_mcbm")
 
   // Function needed for CTest runtime dependency
   Generate_CTest_Dependency_File(depFile);
+  RemoveGeoManager();
 }
 
