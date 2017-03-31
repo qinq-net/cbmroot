@@ -17,6 +17,42 @@
 //
 // --------------------------------------------------------------------------
 
+TString caveGeom="";
+TString pipeGeom="";
+TString magnetGeom="";
+TString mvdGeom="";
+TString stsGeom="";
+TString richGeom="";
+TString muchGeom="";
+TString shieldGeom="";
+TString trdGeom="";
+TString tofGeom="";
+TString ecalGeom="";
+TString platformGeom="";
+TString psdGeom="";
+Double_t psdZpos=0.;
+Double_t psdXpos=0.;
+
+TString mvdTag="";
+TString stsTag="";
+TString trdTag="";
+TString tofTag="";  
+
+TString stsDigi="";
+TString muchDigi="";
+TString trdDigi="";
+TString tofDigi="";
+
+TString mvdMatBudget="";
+TString stsMatBudget="";
+
+TString  fieldMap="";
+Double_t fieldZ=0.;
+Double_t fieldScale=0.;
+Int_t    fieldSymType=0;
+
+TString defaultInputFile="";
+
 
 void mcbm_reco(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
 {
@@ -43,7 +79,7 @@ void mcbm_reco(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   TString inDir = gSystem->Getenv("VMCWORKDIR");
   TString paramDir = inDir + "/parameters/";
 
-  TString setupFile = inDir + "/geometry/setup/" + setup + "_setup.C";
+  TString setupFile = inDir + "/geometry/setup/legacy/" + setup + "_setup.C";
   TString setupFunct = setup;
   setupFunct += "_setup()";
 
@@ -56,12 +92,17 @@ void mcbm_reco(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   //parFileList->Add(&stsDigiFile);
   //cout << "macro/run/run_reco.C using: " << stsDigi << endl;
 
-  TObjString trdDigiFile = paramDir + trdDigi;
-  parFileList->Add(&trdDigiFile);
+  TObjString* trdDigiFile = new TObjString(paramDir + trdDigi);
+  parFileList->Add(trdDigiFile);
+
+//  TObjString trdDigiFile(paramDir + trdDigi);
+//  parFileList->Add(&trdDigiFile);
   cout << "macro/run/run_reco.C using: " << trdDigi << endl;
 
-  TObjString tofDigiFile = paramDir + tofDigi;
-  parFileList->Add(&tofDigiFile);
+  TObjString* tofDigiFile = new TObjString(paramDir + tofDigi);
+  parFileList->Add(tofDigiFile);
+//  TObjString tofDigiFile = paramDir + tofDigi;
+//  parFileList->Add(&tofDigiFile);
   cout << "macro/run/run_reco.C using: " << tofDigi << endl;
 
 
@@ -174,8 +215,8 @@ void mcbm_reco(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   CbmL1* l1 = new CbmL1();
   TString mvdMatBudgetFileName = paramDir + mvdMatBudget;
   TString stsMatBudgetFileName = paramDir + stsMatBudget;
-  l1->SetStsMaterialBudgetFileName(stsMatBudgetFileName.Data());
-  l1->SetMvdMaterialBudgetFileName(mvdMatBudgetFileName.Data());
+//  l1->SetStsMaterialBudgetFileName(stsMatBudgetFileName.Data());
+//  l1->SetMvdMaterialBudgetFileName(mvdMatBudgetFileName.Data());
   run->AddTask(l1);
 
   CbmStsTrackFinder* stsTrackFinder = new CbmL1StsTrackFinder();
@@ -206,6 +247,26 @@ void mcbm_reco(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   // ===                     TRD local reconstruction                      ===
   // =========================================================================
 
+
+  CbmTrdRadiator *radiator = new CbmTrdRadiator(kTRUE,"K++");
+  FairTask* trdDigi = new CbmTrdDigitizerPRF(radiator);
+  run->AddTask(trdDigi);
+
+  Double_t triggerThreshold = 0.5e-6;   // SIS100
+  Bool_t   triangularPads = false;      // Bucharest triangular pad-plane layout
+  CbmTrdClusterFinderFast* trdCluster = new CbmTrdClusterFinderFast();
+  trdCluster->SetNeighbourTrigger(true);
+  trdCluster->SetTriggerThreshold(triggerThreshold);
+  trdCluster->SetNeighbourRowTrigger(false);
+  trdCluster->SetPrimaryClusterRowMerger(true);
+  trdCluster->SetTriangularPads(triangularPads);
+  run->AddTask(trdCluster);
+
+  CbmTrdHitProducerCluster* trdHit = new CbmTrdHitProducerCluster();
+  trdHit->SetTriangularPads(triangularPads);
+  run->AddTask(trdHit);
+
+/*
   Bool_t  simpleTR  = kTRUE;  // use fast and simple version for TR production
   CbmTrdRadiator *radiator = new CbmTrdRadiator(simpleTR,"K++");
   //"K++" : micro structured POKALON
@@ -233,7 +294,7 @@ void mcbm_reco(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   CbmTrdHitProducerCluster* trdHit = new CbmTrdHitProducerCluster();
   trdHit->SetTriangularPads(triangularPads);
   run->AddTask(trdHit);
-
+*/
   // -------------------------------------------------------------------------
   // ===                 End of TRD local reconstruction                   ===
   // =========================================================================
@@ -243,11 +304,23 @@ void mcbm_reco(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   // ===                     TOF local reconstruction                      ===
   // =========================================================================
 
+  CbmTofDigitizerBDF* tofDigi = new CbmTofDigitizerBDF("TOF Digitizer BDF",iVerbose);
+  tofDigi->SetOutputBranchPersistent("TofDigi",            kFALSE);
+  tofDigi->SetOutputBranchPersistent("TofDigiMatchPoints", kFALSE);
+  tofDigi->SetInputFileName( paramDir + "/tof/test_bdf_input.root");
+//      tofDigi->SetHistoFileName( digiOutFile ); // Uncomment to save control histograms
+  run->AddTask(tofDigi);
+
+  CbmTofSimpClusterizer* tofCluster
+          = new CbmTofSimpClusterizer("TOF Simple Clusterizer", 0);
+  tofCluster->SetOutputBranchPersistent("TofHit",          kTRUE);
+  tofCluster->SetOutputBranchPersistent("TofDigiMatch",    kTRUE);
+  run->AddTask(tofCluster);
 
   // ------   TOF hit producer   ---------------------------------------------
-  CbmTofHitProducerNew* tofHitProd = new CbmTofHitProducerNew("TOF HitProducerNew",iVerbose); 
-  tofHitProd->SetInitFromAscii(kFALSE);
-  run->AddTask(tofHitProd);
+//  CbmTofHitProducerNew* tofHitProd = new CbmTofHitProducerNew("TOF HitProducerNew",iVerbose); 
+//  tofHitProd->SetInitFromAscii(kFALSE);
+//  run->AddTask(tofHitProd);
   // -------------------------------------------------------------------------
 
   // ===                   End of TOF local reconstruction                 ===
@@ -271,7 +344,7 @@ void mcbm_reco(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   // "nearest_hit" - assigns nearest hit to the track
   finder->SetMergerType("nearest_hit");
 
-  run->AddTask(finder);
+//  run->AddTask(finder);
 
   // -----   Primary vertex finding   ---------------------------------------
   CbmPrimaryVertexFinder* pvFinder = new CbmPVFinderKF();
@@ -287,13 +360,13 @@ void mcbm_reco(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   // ----------- TRD track Pid Wkn ----------------------
   CbmTrdSetTracksPidWkn* trdSetTracksPidTask = new CbmTrdSetTracksPidWkn(
   		"trdFindTracks", "trdFindTracks");
-  run->AddTask(trdSetTracksPidTask);
+//  run->AddTask(trdSetTracksPidTask);
   // ----------------------------------------------------
 
   // ----------- TRD track Pid Ann ----------------------
   CbmTrdSetTracksPidANN* trdSetTracksPidAnnTask = new CbmTrdSetTracksPidANN(
   		"Ann", "Ann");
-  run->AddTask(trdSetTracksPidAnnTask);
+//  run->AddTask(trdSetTracksPidAnnTask);
   // ----------------------------------------------------
 
   // ----------- TRD track Pid Like ----------------------
@@ -313,12 +386,17 @@ void mcbm_reco(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   if (richGeom.Length() != 0)  // if RICH is defined
     {
   // ---------------------RICH Hit Producer ----------------------------------
+    CbmRichHitProducer* richHitProd     = new CbmRichHitProducer();
+    run->AddTask(richHitProd);
+
+/*
   CbmRichHitProducer* richHitProd  = new CbmRichHitProducer();
   richHitProd->SetDetectorType(4);
   richHitProd->SetNofNoiseHits(220);
   richHitProd->SetCollectionEfficiency(1.0);
   richHitProd->SetSigmaMirror(0.06);
   run->AddTask(richHitProd);
+*/
   //--------------------------------------------------------------------------
 
   //--------------------- RICH Reconstruction ----------------------------------
@@ -326,8 +404,8 @@ void mcbm_reco(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   run->AddTask(richReco);
 
   // ------------------- RICH Ring matching  ---------------------------------
-  CbmRichMatchRings* matchRings = new CbmRichMatchRings();
-  run->AddTask(matchRings);
+//  CbmRichMatchRings* matchRings = new CbmRichMatchRings();
+//  run->AddTask(matchRings);
   // -------------------------------------------------------------------------
     }
   // ===                 End of RICH local reconstruction                  ===
@@ -353,8 +431,8 @@ void mcbm_reco(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   // =========================================================================
   // ===                    Matching to Monte-carlo                        ===
   // =========================================================================
-  CbmMatchRecoToMC* matchTask = new CbmMatchRecoToMC();
-  run->AddTask(matchTask);
+//  CbmMatchRecoToMC* matchTask = new CbmMatchRecoToMC();
+//  run->AddTask(matchTask);
   // ===                  End of matching to Monte-Carlo                   ===
   // =========================================================================
 
@@ -393,4 +471,5 @@ void mcbm_reco(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
 
   cout << " Test passed" << endl;
   cout << " All ok " << endl;
+  RemoveGeoManager();
 }
