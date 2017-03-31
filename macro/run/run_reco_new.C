@@ -230,6 +230,9 @@ void run_reco_new(Int_t nEvents = 2,
     std::cout << "<DartMeasurement name=\"CpuLoad\" type=\"numeric/double\">";
     std::cout << cpuUsage;
     std::cout << "</DartMeasurement>" << std::endl;
+
+    FairMonitor* tempMon = FairMonitor::GetMonitor();
+    tempMon->Print();
   }
 
   // Function needed for CTest runtime dependency
