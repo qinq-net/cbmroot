@@ -20,7 +20,7 @@ void setup_sis18_mcbm()
   TString mvdGeoTag       = "v18b";
   TString stsGeoTag       = "v18e";
   TString trdGeoTag       = "v18b_1e";
-  TString tofGeoTag       = "v13a_6a";
+  TString tofGeoTag       = "v13_6a";
   TString psdGeoTag       = "psd_geo_xy.txt";
   // ------------------------------------------------------------------------
 
