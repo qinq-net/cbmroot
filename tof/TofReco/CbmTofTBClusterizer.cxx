@@ -20,6 +20,26 @@
 #include "FairMCEventHeader.h"
 #include "CbmDetectorList.h"
 
+#ifdef __MACH__
+#include <mach/mach_time.h>
+#include <sys/time.h>
+#define CLOCK_REALTIME 0
+#define CLOCK_MONOTONIC 0
+inline int clock_gettime(int clk_id, struct timespec *t){
+    mach_timebase_info_data_t timebase;
+    mach_timebase_info(&timebase);
+    uint64_t time;
+    time = mach_absolute_time();
+    double nseconds = ((double)time * (double)timebase.numer)/((double)timebase.denom);
+    double seconds = ((double)time * (double)timebase.numer)/((double)timebase.denom * 1e9);
+    t->tv_sec = seconds;
+    t->tv_nsec = nseconds;
+    return 0;
+}
+#else
+#include <time.h>
+#endif
+
 ClassImp(CbmTofTBClusterizer)
 
 const Int_t nbClWalkBinX = 20;
@@ -33,6 +53,8 @@ using std::pair;
 using std::map;
 using std::list;
 using std::set;
+using std::cout;
+using std::endl;
 
 CbmTofTBClusterizer::CbmTofTBClusterizer() : fGeoHandler(0), fTofId(0), fDigiPar(0), fChannelInfo(0), fDigiBdfPar(0),
    fvCPSigPropSpeed(), fvCPDelTof(), fvCPTOff(), fvCPTotGain(), fvCPWalk(), fTofDigis(0), fTofPoints(0),
@@ -349,9 +371,13 @@ static void AddPts(set<pair<Int_t, Int_t> >& sPtsRef, const CbmTofDigiExp* digi)
 }
 
 static Int_t currentEvN = 0;
+static long fullDuration = 0;
 
 void CbmTofTBClusterizer::Exec(Option_t* option)
 {
+   timespec ts;
+   clock_gettime(CLOCK_REALTIME, &ts);
+   long beginTime = ts.tv_sec * 1000000000 + ts.tv_nsec;
    // --- MC Event info (input file, entry number, start time)
 	Int_t    iInputNr   = 0;
 	Int_t    iEventNr   = 0;
@@ -740,6 +766,9 @@ void CbmTofTBClusterizer::Exec(Option_t* option)
    }// for (Int_t iSmType = 0; iSmType < iNbSmTypes; ++iSmType)
    
    ++currentEvN;
+   clock_gettime(CLOCK_REALTIME, &ts);
+   long endTime = ts.tv_sec * 1000000000 + ts.tv_nsec;
+   fullDuration += endTime - beginTime;
 }
 
 static void SaveHisto(TH1* histo)
@@ -760,6 +789,7 @@ void CbmTofTBClusterizer::Finish()
    SaveHisto(deltaPointTHisto);
    SaveHisto(nofChannelsTHisto);
    SaveHisto(digiTimeHisto);
+   cout << "ToF Time Based clustering runtime: " << fullDuration << endl;
 }
 
 void CbmTofTBClusterizer::GetEventInfo(Int_t& inputNr, Int_t& eventNr,

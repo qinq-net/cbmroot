@@ -21,6 +21,9 @@ ${CBMROOT_SOURCE_DIR}/base
 ${CBMROOT_SOURCE_DIR}/eventdisplay
 
 ${CBMROOT_SOURCE_DIR}/data
+${CBMROOT_SOURCE_DIR}/data/mvd
+${CBMROOT_SOURCE_DIR}/data/much
+${CBMROOT_SOURCE_DIR}/data/sts
 ${CBMROOT_SOURCE_DIR}/data/tof
 
 ${CBMROOT_SOURCE_DIR}/run
@@ -86,6 +89,7 @@ TofTests/CbmTofTests.cxx
 
 TofQA/CbmTofGeometryQa.cxx
 TofQA/CbmTofHitFinderQa.cxx
+TofQA/CbmTofHitFinderTBQA.cxx
 
   ${TOF_BEAM_SOURCES}
 )

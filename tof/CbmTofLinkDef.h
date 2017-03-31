@@ -32,6 +32,7 @@
 
 #pragma link C++ class CbmTofGeometryQa+;
 #pragma link C++ class CbmTofHitFinderQa+;
+#pragma link C++ class CbmTofHitFinderTBQA+;
 
 #ifdef BUILD_TOF_BEAMTIME
  #pragma link C++ class CbmTofTestBeamClusterizer+;
