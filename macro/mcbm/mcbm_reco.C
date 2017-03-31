@@ -42,6 +42,7 @@ TString stsDigi="";
 TString muchDigi="";
 TString trdDigi="";
 TString tofDigi="";
+TString tofDigiBdf="";
 
 TString mvdMatBudget="";
 TString stsMatBudget="";
@@ -101,10 +102,11 @@ void mcbm_reco(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
 
   TObjString* tofDigiFile = new TObjString(paramDir + tofDigi);
   parFileList->Add(tofDigiFile);
+
+  TObjString* tofDigiBdfFile = new TObjString(paramDir + tofDigiBdf);
+  parFileList->Add(tofDigiBdfFile);
 //  TObjString tofDigiFile = paramDir + tofDigi;
 //  parFileList->Add(&tofDigiFile);
-  cout << "macro/run/run_reco.C using: " << tofDigi << endl;
-
 
   // In general, the following parts need not be touched
   // ========================================================================

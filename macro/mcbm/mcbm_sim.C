@@ -41,6 +41,7 @@ TString stsDigi="";
 TString muchDigi="";
 TString trdDigi="";
 TString tofDigi="";
+TString tofDigiBdf="";
 
 TString mvdMatBudget="";
 TString stsMatBudget="";
