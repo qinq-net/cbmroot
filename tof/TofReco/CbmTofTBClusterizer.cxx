@@ -34,8 +34,9 @@ using std::map;
 using std::list;
 using std::set;
 
-CbmTofTBClusterizer::CbmTofTBClusterizer() : fGeoHandler(0), fTofId(0), fDigiPar(0), fChannelInfo(0), fDigiBdfPar(0), fTofDigis(0), fTofPoints(0),
-   fTofHits(0), fTofDigiMatchs(0), fStorDigiExp(), fOutTimeFactor(1)
+CbmTofTBClusterizer::CbmTofTBClusterizer() : fGeoHandler(0), fTofId(0), fDigiPar(0), fChannelInfo(0), fDigiBdfPar(0),
+   fvCPSigPropSpeed(), fvCPDelTof(), fvCPTOff(), fvCPTotGain(), fvCPWalk(), fTofDigis(0), fTofPoints(0),
+   fTofHits(0), fTofDigiMatchs(0), fStorDigiExp(), fStorDigiExpOld(), fOutTimeFactor(1)
 {
 }
 

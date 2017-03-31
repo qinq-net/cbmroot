@@ -31,7 +31,10 @@ public:
 
     struct ChannelDigis
     {
-
+      ChannelDigis() : 
+        topDigis(), bottomDigis(), digiPairs() 
+        {};
+         
       struct DigiDesc
       {
           CbmTofDigiExp* pDigi;
@@ -107,6 +110,10 @@ private:
     > > > fStorDigiExpOld;//[nbType][nbSm*nbRpc][nbCh]<[->|nTopDigis][->|nBottomDigis]>
 #endif//__CINT__
     Double_t fOutTimeFactor;
+    
+    /** Make copy constructor and copy operator private to avoid warning due to pointer members **/
+    CbmTofTBClusterizer(const CbmTofTBClusterizer&);
+    CbmTofTBClusterizer& operator=(const CbmTofTBClusterizer&);
     
     ClassDef(CbmTofTBClusterizer, 1);
 };
