@@ -326,6 +326,8 @@ InitStatus CbmTofTBClusterizer::Init()
       Int_t iNbSm  = fDigiBdfPar->GetNbSm(iSmType);
       Int_t iNbRpc = fDigiBdfPar->GetNbRpc(iSmType);
       fStorDigiExp[iSmType].resize(iNbSm * iNbRpc);
+      LOG(INFO) << "For the supermodule with the type: " << iSmType << ", the number of such supermodules is: " << iNbSm << ", and the number of Rpc is: " <<
+         iNbRpc << FairLogger::endl;
       
       for(Int_t iSm = 0; iSm < iNbSm; ++iSm)
       {
