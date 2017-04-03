@@ -18,6 +18,8 @@
 #include "TMath.h"
 #include "CbmMCTrack.h"
 #include "LxTBTask.h"
+#include "CbmTrdTrack.h"
+#include "CbmGlobalTrack.h"
 
 using std::list;
 using std::pair;
@@ -32,7 +34,8 @@ using std::set;
 
 ClassImp(LxTBTrdFinder)
 
-LxTBTrdFinder::LxTBTrdFinder() : fFinder(0), nof_timebins(5), last_timebin(nof_timebins - 1), fTrdHits(0), fTrdClusters(0), fTrdDigiMatches(0)
+LxTBTrdFinder::LxTBTrdFinder() : fFinder(0), nof_timebins(5), last_timebin(nof_timebins - 1), fTrdHits(0), fTrdClusters(0), fTrdDigiMatches(0),
+   fTrdTracks(0), fGlobalTracks(0)
 #ifdef LXTB_QA
    , fTrdMCPoints(0), fNEvents(1000)
 #endif//LXTB_QA
@@ -191,6 +194,14 @@ InitStatus LxTBTrdFinder::Init()
    
    fTrdHits = static_cast<TClonesArray*> (ioman->GetObject("TrdHit"));
    
+   fTrdTracks = new TClonesArray("CbmTrdTrack", 100);
+   LOG(INFO) << "IsOutputBranchPersistent(TrdTrack) is: " << (IsOutputBranchPersistent("TrdTrack") ? "true" : "false") << FairLogger::endl;
+   ioman->Register("TrdTrack", "Trd", fTrdTracks, IsOutputBranchPersistent("TrdTrack"));
+   
+   fGlobalTracks = new TClonesArray("CbmGlobalTrack", 100);
+   LOG(INFO) << "IsOutputBranchPersistent(GlobalTrack) is: " << (IsOutputBranchPersistent("GlobalTrack") ? "true" : "false") << FairLogger::endl;
+   ioman->Register("GlobalTrack", "Global", fGlobalTracks, IsOutputBranchPersistent("GlobalTrack"));
+   
 #ifdef LXTB_QA
    CbmMCDataManager* mcManager = static_cast<CbmMCDataManager*> (ioman->GetObject("MCDataManager"));
    fTrdMCPoints = mcManager->InitBranch("TrdPoint");
@@ -260,8 +271,6 @@ InitStatus LxTBTrdFinder::Init()
    for (vector<vector<TrackDataHolder> >::iterator i = fMCTracks.begin(); i != fMCTracks.end(); ++i)
    {
       vector<TrackDataHolder>& evTracks = *i;
-      TrackDataHolder* posTrack = 0;
-      TrackDataHolder* negTrack = 0;
       list<TrackDataHolder*> eles;
       list<TrackDataHolder*> poss;
 
@@ -460,13 +469,31 @@ void LxTBTrdFinder::Exec(Option_t* opt)
    fFinder->Reconstruct();
    
    //recoTracks.clear();
+   fTrdTracks->Delete();
+   fGlobalTracks->Clear();
+   int trdTrackNo = 0;
    
    for (int i = 0; i < fFinder->nofTrackBins; ++i)
    {
       list<LxTbBinnedFinder::Chain*>& recoTracksBin = fFinder->recoTracks[i];
       
       for (list<LxTbBinnedFinder::Chain*>::const_iterator j = recoTracksBin.begin(); j != recoTracksBin.end(); ++j)
-         recoTracks.push_back(*j);
+      {
+         LxTbBinnedFinder::Chain* chain = *j;
+         recoTracks.push_back(chain);
+         
+         CbmTrdTrack* track = new ((*fTrdTracks)[trdTrackNo]) CbmTrdTrack();
+         
+         for (int k = 0; k < chain->nofPoints; ++k)
+            track->AddHit(chain->points[k]->refId, kTRDHIT);
+         
+         track->SetChiSq(chain->chi2);
+         track->SetNDF(2 * chain->nofPoints - 5);
+         
+         CbmGlobalTrack* globalTrack = new ((*fGlobalTracks)[trdTrackNo]) CbmGlobalTrack();
+         globalTrack->SetTrdTrackIndex(trdTrackNo);
+         ++trdTrackNo;
+      }
    }
    
    //cout << "In the event #: " << currentEventN << " " << recoTracks.size() << " reconstructed" << endl;
@@ -622,7 +649,7 @@ void LxTBTrdFinder::Finish()
       {
          ++nofRightRecoTracks;
          
-         if (35 > fMCTracks[bestMCTrack->eventId][bestMCTrack->trackId].z)
+         //if (35 > fMCTracks[bestMCTrack->eventId][bestMCTrack->trackId].z)
          {
             if (11 == fMCTracks[bestMCTrack->eventId][bestMCTrack->trackId].pdg)
                elecPositrons[bestMCTrack->eventId].first.push_back(chain->points[0]);

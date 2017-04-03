@@ -118,8 +118,10 @@ void LxTBBinnedDetector::TieTracks(LxTbBinnedFinder& fFinder)
          continue;
       
       Double_t trackChiSq = stsTrack.fChiSq;
+      CbmTrackParam cbmPar;
+      cbmPar.Set(stsTrack.fPar, stsTrack.fTime, 2);
       CbmLitTrackParam par;
-      CbmLitConverterFairTrackParam::FairTrackParamToCbmLitTrackParam(&stsTrack.fPar, &par);
+      CbmLitConverterFairTrackParam::FairTrackParamToCbmLitTrackParam(&cbmPar, &par);
       CbmLitTrackParam prevPar;
       CbmLitTrackParam firstPar;
       bool firstTime = true;

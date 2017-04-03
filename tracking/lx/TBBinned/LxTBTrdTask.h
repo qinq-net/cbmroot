@@ -72,6 +72,8 @@ private:
     TClonesArray* fTrdHits;
     TClonesArray* fTrdClusters;
     TClonesArray* fTrdDigiMatches;
+    TClonesArray* fTrdTracks;
+    TClonesArray* fGlobalTracks;
 #ifdef LXTB_QA
     CbmMCDataArray* fTrdMCPoints;
     std::vector<std::vector<TrackDataHolder> > fMCTracks;
