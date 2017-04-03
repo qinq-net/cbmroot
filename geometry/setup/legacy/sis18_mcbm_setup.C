@@ -15,35 +15,34 @@ void sis18_mcbm_setup()
   fieldSymType =  3;
 
   // -----  Tags  -----------------------------------------------------------
-  mvdTag       = "v18b";     // "v18a";
-  stsTag       = "v18e";     // "v18d";
-  trdTag       = "v18d_1e";  // "v18c_1e";  // "v18b_1e";  // "v18a_1e";
-  tofTag       = "v13_7a";   // "v13_6a";   // "v13_5a"; 
+  mvdTag       = "v18b_mcbm";     // "v18a";
+  stsTag       = "v18e_mcbm";     // "v18d";
+  trdTag       = "v18d_1e_mcbm";  // "v18c_1e";  // "v18b_1e";  // "v18a_1e";
+  tofTag       = "v13-7a_mcbm";   // "v13_6a";   // "v13_5a";
   
   // -----  DigiFiles  ------------------------------------------------------
-  stsDigi      = "mcbm/sts_" + stsTag + "_std.digi.par";
-  trdDigi      = "trd/mtrd_" + trdTag + ".digi.par";
-  tofDigi      = "tof/mtof_" + tofTag + ".digi.par";
-  tofDigiBdf   = "tof/mtof_" + tofTag + ".digibdf.par";
+  stsDigi      = "std/sts_" + stsTag + "_std.digi.par";
+  trdDigi      = "trd/trd_" + trdTag + ".digi.par";
+  tofDigi      = "tof/tof_" + tofTag + ".digi.par";
 
   // -----  Material budget files -------------------------------------------
-  mvdMatBudget = "mcbm/mvd_" + mvdTag + "_matbudget.root";
-  stsMatBudget = "mcbm/sts_" + stsTag + "_matbudget.root";
+  mvdMatBudget = "mvd/mvd_" + mvdTag + "_matbudget.root";
+  stsMatBudget = "sts/sts_" + stsTag + "_matbudget.root";
 
   // -----  Geometries  -----------------------------------------------------
-  caveGeom     = "mcave_mcbm.geo";
-  pipeGeom     = "pipe/mpipe_v18c.root";
+  caveGeom     = "cave_mcbm.geo";
+  pipeGeom     = "pipe/pipe_v18c_mcbm.geo.root";
   magnetGeom   = "";
-  mvdGeom      = "mvd/mmvd_" + mvdTag + ".geo.root";
-  stsGeom      = "sts/msts_" + stsTag + ".geo.root";
+  mvdGeom      = "mvd/mvd_" + mvdTag + ".geo.root";
+  stsGeom      = "sts/sts_" + stsTag + ".geo.root";
   richGeom     = ""; //no reco// "rich/mrich_prototype_v18b.geo";
-  muchGeom     = "much/mmuch_v18a.geo";  // no reco // patch CbmMuch.cxx for mCBM first
+  muchGeom     = "much/much_v18a_mcbm.geo";  // no reco // patch CbmMuch.cxx for mCBM first
   // patch much/geo/CbmMuch.cxx macro/mcbm/CbmMuch.cxx_to_McbmGeo.patch
   // make -j3 -C build	   
   shieldGeom   = "";
   platformGeom = ""; // "passive/platform_v13a.geo";
-  trdGeom      = "trd/mtrd_" + trdTag + ".geo.root";
-  tofGeom      = "tof/mtof_" + tofTag + ".geo.root";
+  trdGeom      = "trd/trd_" + trdTag + ".geo.root";
+  tofGeom      = "tof/tof_" + tofTag + ".geo.root";
   ecalGeom     = "";
   psdGeom      = ""; // "psd_geo_xy.txt";
   psdZpos = 800.;
@@ -52,7 +51,6 @@ void sis18_mcbm_setup()
   // ------ Input file ------------------------------------------------------
 
   defaultInputFile = "/input/urqmd.agag.1.65gev.centr.00001.root";
-
   //  defaultInputFile = "/input/urqmd.agag.1.65gev.mbias.00001.root";
   //
   //  defaultInputFile = "/input/urqmd.niau.1.93gev.centr.00001.root";

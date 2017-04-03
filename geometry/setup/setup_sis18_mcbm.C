@@ -16,26 +16,18 @@ void setup_sis18_mcbm()
 {
 
   // -----  Geometry Tags  --------------------------------------------------
-  TString pipeGeoTag      = "v18b";
-  TString mvdGeoTag       = "v18b";
-  TString stsGeoTag       = "v18e";
-  TString trdGeoTag       = "v18b_1e";
-  TString tofGeoTag       = "v13_6a";
-  TString psdGeoTag       = "psd_geo_xy.txt";
-  // ------------------------------------------------------------------------
+  TString pipeGeoTag      = "v18c_mcbm";
+  TString mvdGeoTag       = "v18b_mcbm";
+  TString stsGeoTag       = "v18e_mcbm";
+  TString trdGeoTag       = "v18d_1e_mcbm";
+  TString tofGeoTag       = "v13-7a_mcbm";
+ // ------------------------------------------------------------------------
 
 
   // -----  Magnetic field  -------------------------------------------------
   TString fieldTag      = "v12b";
   Double_t fieldZ       = 40.;            // field centre z position
-  Double_t fieldScale   =  1.;            // field scaling factor
-  // ------------------------------------------------------------------------
-
-
-  // -----  PSD  ------------------------------------------------------------
-  TString  psdGeoFile = "psd_geo_xy.txt";
-  Double_t psdZpos = 800.;
-  Double_t psdXpos = 11.;
+  Double_t fieldScale   =  0.;            // field scaling factor
   // ------------------------------------------------------------------------
 
 
@@ -52,7 +44,6 @@ void setup_sis18_mcbm()
   setup->SetModule(kSts, stsGeoTag);
   setup->SetModule(kTrd, trdGeoTag);
   setup->SetModule(kTof, tofGeoTag);
-  setup->SetPsd(psdGeoFile, psdZpos, psdXpos);
   setup->SetField(fieldTag, fieldScale, 0., 0., fieldZ);
   // ------------------------------------------------------------------------
 
