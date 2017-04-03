@@ -24,6 +24,7 @@ void sis18_mcbm_setup()
   stsDigi      = "std/sts_" + stsTag + "_std.digi.par";
   trdDigi      = "trd/trd_" + trdTag + ".digi.par";
   tofDigi      = "tof/tof_" + tofTag + ".digi.par";
+  tofDigiBdf   = "tof/tof_" + tofTag + ".digibdf.par";
 
   // -----  Material budget files -------------------------------------------
   mvdMatBudget = "mvd/mvd_" + mvdTag + "_matbudget.root";
