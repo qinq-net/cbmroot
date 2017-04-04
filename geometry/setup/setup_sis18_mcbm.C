@@ -21,7 +21,7 @@ void setup_sis18_mcbm()
   TString stsGeoTag       = "v18e_mcbm";
   TString trdGeoTag       = "v18d_1e_mcbm";
   TString tofGeoTag       = "v13-7a_mcbm";
-  //TString muchGeoTag      = "v18a_mcbm";  // MUCH does not work yet.
+  TString muchGeoTag      = "v18a_mcbm";  // MUCH does not work yet.
  // ------------------------------------------------------------------------
 
 
@@ -45,7 +45,7 @@ void setup_sis18_mcbm()
   setup->SetModule(kSts, stsGeoTag);
   setup->SetModule(kTrd, trdGeoTag);
   setup->SetModule(kTof, tofGeoTag);
- // setup->SetModule(kMuch, muchGeoTag);
+  setup->SetModule(kMuch, muchGeoTag);
   setup->SetField(fieldTag, fieldScale, 0., 0., fieldZ);
   // ------------------------------------------------------------------------
 
