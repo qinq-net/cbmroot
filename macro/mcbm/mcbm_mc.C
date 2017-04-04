@@ -19,6 +19,16 @@
 
 void mcbm_mc(Int_t nEvents = 2, const char* setupName = "sis18_mcbm",
              const char* inputFile ="")
+
+// available input files
+// inputFile = "/input/urqmd.agag.1.65gev.centr.00001.root";
+// inputFile = "/input/urqmd.agag.1.65gev.mbias.00001.root";
+// inputFile = "/input/urqmd.niau.1.93gev.centr.00001.root";
+// inputFile = "/input/urqmd.niau.1.93gev.mbias.00001.root";
+// inputFile = "/input/urqmd.nini.1.93gev.centr.00001.root";
+// inputFile = "/input/urqmd.nini.1.93gev.mbias.00001.root";
+// inputFile = "/input/urqmd.pau.4.5gev.mbias.00001.root";
+
 {
 
   // ========================================================================
