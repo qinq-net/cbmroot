@@ -622,7 +622,7 @@ void CbmTofTBClusterizer::Exec(Option_t* option)
                   {
                      Double_t deltaT = bottomDigiIter->first - topTime;
                      
-                     if (deltaT > dMaxPairTimeDist)
+                     if (deltaT > dMaxPairTimeDist && bottomDigiIter != bottomDigis.begin())
                         --bottomDigiIter;
                      else
                      {
@@ -697,7 +697,7 @@ void CbmTofTBClusterizer::Exec(Option_t* option)
                      
                      if (neighIter == neighDigiPairs.end())
                         --neighIter;
-                     else if (neighIter->first > chTime)
+                     else if (neighIter->first > chTime && neighIter != neighDigiPairs.begin())
                      {
                         Double_t deltaTHigh = neighIter->first - chTime;
                         map<Double_t, ChannelDigis::DigiPair>::iterator neighIter_1 = neighIter;
