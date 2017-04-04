@@ -1,4 +1,21 @@
 #
+##   Howto run macros in macro/mcbm
+#
+
+# by David Emschermann
+# 04.04.2017
+
+# to initially convert MUCH inteo miniMUCH run the following sctript
+mcbm_with_much.sh
+# it modifies the much geometry class
+
+# then either run
+root -l run_mc.C
+# or
+root -l run_sim.C
+
+
+#
 ##   UrQMD input files for mCBM energies
 #
 
