@@ -97,6 +97,11 @@ public:
         return ind;
     }
     
+    void SetNofTBins(int v)
+    {
+        fNofTBins = v;
+    }
+    
     void SetTBinSize(scaltype v)
     {
         fStartTime = v;

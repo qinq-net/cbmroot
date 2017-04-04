@@ -504,7 +504,7 @@ CbmGlobalTrackingTofGeometry::CbmGlobalTrackingTofGeometry() : fC(0),
 #ifdef CBM_GLOBALTB_TOF_3D_CUBOIDS
    fCuboids(),
 #endif//CBM_GLOBALTB_TOF_3D_CUBOIDS
-   fNofTBins(10), fNofXBins(60), fNofYBins(60), fNofZBins(5), fZBins(0), fTBinSize(1000),
+   fNofTBins(1000), fNofXBins(60), fNofYBins(60), fNofZBins(5), fZBins(0), fTBinSize(100),
    fMinX(1000000), fMaxX(-1000000), fXBinSize(0), fMinY(1000000), fMaxY(-1000000), fYBinSize(0), fMinZ(1000000), fMaxZ(-1000000), fZBinSize(0),
    fStartTime(0), fEndTime(0), fTofHits(0)//, fPropagator()
 {
@@ -534,7 +534,7 @@ static void FindGeoChild(TGeoNode* node, const char* name, list<TGeoNode*>& resu
 
 bool CbmGlobalTrackingTofGeometry::Read()
 {
-   fC = 100 * TMath::C();
+   fC = 1.e-7 * TMath::C();
    fPropagator = CbmLitToolFactory::CreateTrackPropagator("lit");
    TGeoNavigator* pNavigator = gGeoManager->GetCurrentNavigator();
    gGeoManager->cd("/cave_1");   
@@ -928,10 +928,12 @@ void CbmGlobalTrackingTofGeometry::Find(const FairTrackParam& trackParams, timet
    //double x1 = x0 + tx * deltaZ1;
    //double y1 = y0 + ty * deltaZ1;
    double z1 = fMinZ;
+   CbmTrackParam cbmTrackParams;
+   cbmTrackParams.Set(trackParams, trackTime, errT);
    CbmLitTrackParam litTrackParams;
-   CbmLitConverterFairTrackParam::FairTrackParamToCbmLitTrackParam(&trackParams, &litTrackParams);
+   CbmLitConverterFairTrackParam::FairTrackParamToCbmLitTrackParam(&cbmTrackParams, &litTrackParams);
    
-   if (fPropagator->Propagate(&litTrackParams, z1, 13) == kLITERROR)
+   if (fPropagator->Propagate(&litTrackParams, z1, 211) == kLITERROR)
       return;
    
    double x1 = litTrackParams.GetX();
@@ -947,7 +949,8 @@ void CbmGlobalTrackingTofGeometry::Find(const FairTrackParam& trackParams, timet
    double ty = litTrackParams.GetTy();
    double yMax = y1 + ty * deltaZMax;
    double normLen = TMath::Sqrt(1 + tx * tx + ty * ty);
-   double t1 = trackTime + (z1 - trackParams.GetZ()) * normLen / fC;
+   double t1 = trackTime + z1 * normLen / fC;
+   //double t1 = litTrackParams.GetTime();
    double zMax;
    
    map<int, map<int, map<int, double> > > inds;
@@ -960,7 +963,8 @@ void CbmGlobalTrackingTofGeometry::Find(const FairTrackParam& trackParams, timet
    
    double deltaX = 4 * TMath::Sqrt(litTrackParams.GetCovariance(0));
    double deltaY = 4 * TMath::Sqrt(litTrackParams.GetCovariance(5));
-   double deltaT = 4 * errT;
+   //double deltaT = 4 * errT;
+   double deltaT = 4 * litTrackParams.GetTimeError();
    //Find(x1 - deltaX, y1 - deltaY, z1, tx, ty, inds);
    //Find(x1 + deltaX, y1 - deltaY, z1, tx, ty, inds);
    //Find(x1 - deltaX, y1 + deltaY, z1, tx, ty, inds);
@@ -1109,8 +1113,12 @@ void CbmGlobalTrackingTofGeometry::Find(const FairTrackParam& trackParams, timet
          //double L01 = TMath::Sqrt(L01Sq);
          double L02 = (hit->GetX() - x1) * line.cosX + (hit->GetY() - y1) * line.cosY + (hit->GetZ() - z1) * line.cosZ;
          double extT2 = t1 + L02 / fC;
+         /*double x = x1 + L02 * line.cosX;
+         double y = y1 + L02 * line.cosY;
+         double z = z1 + L02 * line.cosZ;
+         double extT2 = t1 + TMath::Sqrt(x * x + y * y + z * z) / fC;*/
          double chi2 = (L01Sq - L02 * L02) / (litTrackParams.GetCovariance(0) + hit->GetDx() * hit->GetDx() + litTrackParams.GetCovariance(5) + hit->GetDy() * hit->GetDy()) +
-            (hit->GetTime() - extT2) * (hit->GetTime() - extT2) / (errT * errT + hit->GetTimeError() * hit->GetTimeError());
+            (hit->GetTime() - extT2) * (hit->GetTime() - extT2) / (/*litTrackParams.GetTimeError() * litTrackParams.GetTimeError()*/errT * errT + hit->GetTimeError() * hit->GetTimeError());
 
          if (chi2 < minChi2)
          {
@@ -1119,6 +1127,9 @@ void CbmGlobalTrackingTofGeometry::Find(const FairTrackParam& trackParams, timet
          }
       }
    }
+   
+   if (minChi2 > 75)
+      tofHitInd = -1;
          
 #if 0
          if (tInd >= 0 && tInd < fNofTBins)
@@ -1143,7 +1154,7 @@ void CbmGlobalTrackingTofGeometry::Find(const FairTrackParam& trackParams, timet
                   double L02 = (hit->GetX() - x1) * line.cosX + (hit->GetY() - y1) * line.cosY + (hit->GetZ() - z1) * line.cosZ;
                   double extT2 = t1 + L02 / fC;
                   double chi2 = (L01Sq - L02 * L02) / (litTrackParams.GetCovariance(0) + hit->GetDx() * hit->GetDx() + litTrackParams.GetCovariance(6) + hit->GetDy() * hit->GetDy()) +
-                     (hit->GetTime() - extT2) * (hit->GetTime() - extT2) / (errT * errT + hit->GetTimeError() * hit->GetTimeError());
+                     (hit->GetTime() - extT2) * (hit->GetTime() - extT2) / (litTrackParams.GetTimeError() * litTrackParams.GetTimeError() + hit->GetTimeError() * hit->GetTimeError());
             
                   if (chi2 < minChi2)
                   {
@@ -1245,7 +1256,7 @@ void CbmGlobalTrackingTofGeometry::Find(const FairTrackParam& trackParams, timet
             const CbmTofHit* hit = static_cast<const CbmTofHit*> (fTofHits->At(hitInd));
             double chi2 = (hit->GetX() - extX) * (hit->GetX() - extX) / (errX * errX + hit->GetDx() * hit->GetDx()) +
                (hit->GetY() - extY) * (hit->GetY() - extY) / (errY * errY + hit->GetDy() * hit->GetDy()) +
-               (hit->GetTime() - extT) * (hit->GetTime() - extT) / (errT * errT + hit->GetTimeError() * hit->GetTimeError());
+               (hit->GetTime() - extT) * (hit->GetTime() - extT) / (litTrackParams.GetTimeError() * litTrackParams.GetTimeError() + hit->GetTimeError() * hit->GetTimeError());
             
             if (chi2 < minChi2)
             {

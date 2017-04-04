@@ -17,6 +17,7 @@
 #include "CbmStsTrack.h"
 #include "CbmStsHit.h"
 #include "CbmStsCluster.h"
+#include "CbmGlobalTrack.h"
 
 #ifdef __MACH__
 #include <mach/mach_time.h>
@@ -47,7 +48,7 @@ using std::endl;
 using std::set;
 using std::map;
 
-CbmGlobalTrackingTask::CbmGlobalTrackingTask() : fTofGeometry(), fTofHits(0), fStsTracks(0)
+CbmGlobalTrackingTask::CbmGlobalTrackingTask() : fTofGeometry(), fTofHits(0), fStsTracks(0), fGlobalTracks(0)
 #ifdef CBM_GLOBALTB_QA
 , fTofHitDigiMatches(0), fTofDigis(0), fStsHitDigiMatches(0), fStsHits(0), fStsClusters(0), fStsDigis(0), fMCTracks(0), fStsMCPoints(0), fTrdMCPoints(0), fTofMCPoints(0),
    fNofEvents(1000), fTimeSlice(0), fEventList(0)
@@ -80,7 +81,8 @@ InitStatus CbmGlobalTrackingTask::Init()
    if (0 == fStsTracks)
       fLogger->Fatal(MESSAGE_ORIGIN, "No STS tracks");
    
-   fTofGeometry.SetTofHits(fTofHits);
+   fGlobalTracks = new TClonesArray("CbmGlobalTrack",100);
+   ioman->Register("GlobalTrack", "Global", fGlobalTracks, IsOutputBranchPersistent("GlobalTrack"));
    
 #ifdef CBM_GLOBALTB_QA
    hitVSTrackDeltaT = new TH1F("hitVSTrackDeltaT", "hitVSTrackDeltaT", 1000, -1000., 1000.);
@@ -90,7 +92,7 @@ InitStatus CbmGlobalTrackingTask::Init()
    if (0 == fTofHitDigiMatches)
       fLogger->Fatal(MESSAGE_ORIGIN, "No ToF hit digi matches");
    
-   fTofDigis = static_cast<TClonesArray*> (ioman->GetObject("TofDigi"));
+   fTofDigis = static_cast<TClonesArray*> (ioman->GetObject("TofDigiExp"));
    
    if (0 == fTofDigis)
       fLogger->Fatal(MESSAGE_ORIGIN, "No ToF digis");
@@ -155,6 +157,13 @@ InitStatus CbmGlobalTrackingTask::Init()
          track.evN = i;
          track.ind = j;
          track.used = false;
+         const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*> (fMCTracks->Get(0, i, j));
+         int motherId = mcTrack->GetMotherId();
+         
+         if (motherId < 0)
+            track.parent = 0;
+         else
+            track.parent = &evTracks[motherId];
       }
    }
    
@@ -249,7 +258,7 @@ InitStatus CbmGlobalTrackingTask::Init()
          point.y = tofPoint->GetY();
          point.z = tofPoint->GetZ();
          point.t = tofPoint->GetTime();
-         track.tofPoints.push_back(&point);
+         track.InsertTofPoint(&point);//track.tofPoints.push_back(&point);
          
          if (track.z > 0 && !track.use)
          {
@@ -269,8 +278,11 @@ InitStatus CbmGlobalTrackingTask::Init()
 //static int endEventNumber = 0;
 
 static int nofReferenceTracks = 0;
+static int nofNonTofTracks = 0;
 static int nofMergedTracks = 0;
 static int nofMergedTracks2 = 0;
+static int nofNonMergedTracks = 0;
+static int nofMergedNonTof = 0;
 
 #ifdef CBM_GLOBALTB_QA
 static long fullDuration = 0;
@@ -278,6 +290,7 @@ static long fullDuration = 0;
 
 void CbmGlobalTrackingTask::Exec(Option_t* opt)
 {
+   fGlobalTracks->Clear();
    // This is a temporary code to emulate reconstructed STS tracks with MC tracks
 
    //Double_t endTime = fTimeSlice->GetEndTime();
@@ -418,7 +431,7 @@ void CbmGlobalTrackingTask::Exec(Option_t* opt)
             Int_t evN = pointLnk.GetEntry() - 1;
             Int_t pointInd = pointLnk.GetIndex();
             const PointData& point = fTofPoints[evN][pointInd];
-            point.track->tofHits.insert(tofHit);
+            point.track->InsertTofHit(tofHit);//point.track->tofHits.insert(tofHit);
          }
       }
    }
@@ -430,6 +443,8 @@ void CbmGlobalTrackingTask::Exec(Option_t* opt)
    for (int i = 0; i < nofStsTracks; ++i)
    {
       const CbmStsTrack* track = static_cast<const CbmStsTrack*> (fStsTracks->At(i));
+      CbmGlobalTrack* globalTrack = new ((*fGlobalTracks)[i]) CbmGlobalTrack();
+      globalTrack->SetStsTrackIndex(i);
       Int_t tofHitInd;
       const FairTrackParam* param = track->GetParamLast();
 #ifdef CBM_GLOBALTB_QA
@@ -440,6 +455,7 @@ void CbmGlobalTrackingTask::Exec(Option_t* opt)
       //fTofGeometry.Find(param->GetX(), param->GetCovariance(0, 0), param->GetY(), param->GetCovariance(1, 1), param->GetZ(),
          //track->GetTime(), track->GetTimeError(), param->GetTx(), TMath::Sqrt(param->GetCovariance(2, 2)), param->GetTy(), TMath::Sqrt(param->GetCovariance(3, 3)), tofHitInd);
       fTofGeometry.Find(*param, track->GetTime(), track->GetTimeError(), tofHitInd);
+      globalTrack->SetTofHitIndex(tofHitInd);
 #ifdef CBM_GLOBALTB_QA
       clock_gettime(CLOCK_REALTIME, &ts);
       long endTime = ts.tv_sec * 1000000000 + ts.tv_nsec;
@@ -516,13 +532,24 @@ void CbmGlobalTrackingTask::Exec(Option_t* opt)
       if (lastStsTrackIter->second < 0.7 * nofStsMatches)
          continue;
       
+      if (lastStsTrackIter->first->tofPoints2.empty())
+      {
+         ++nofNonTofTracks;
+         
+         if (tofHitInd >= 0)
+            ++nofMergedNonTof;
+      }
+      
       if (lastStsTrackIter->first->tofPoints.empty() || lastStsTrackIter->first->tofHits.empty())
          continue;
       
       ++nofReferenceTracks;
       
       if (tofHitInd < 0)
+      {
+         ++nofNonMergedTracks;
          continue;
+      }
       
       ++nofMergedTracks2;
       
@@ -606,6 +633,12 @@ void CbmGlobalTrackingTask::Finish()
    eff = 100 * nofMergedTracks2;
    eff /= nofReferenceTracks;
    cout << "The efficiency2: " << eff << " %" << endl;
+   eff = 100 * nofNonMergedTracks;
+   eff /= nofReferenceTracks;
+   cout << "The non merged: " << eff << " %" << endl;
+   eff = 100 * nofMergedNonTof;
+   eff /= nofNonTofTracks;
+   cout << "The number of wrongly merged tracks: " << eff << " % [" << nofMergedNonTof << " / " << nofNonTofTracks << " ]" << endl;
    cout << "nofMRPCIntersections: " << nofMRPCIntersections << endl;
    cout << "nofToFIntersections: " << nofToFIntersections << endl;
    cout << "nofMRPCIntersectionsT: " << nofMRPCIntersectionsT << endl;
