@@ -110,6 +110,9 @@ namespace ngdpb {
       GET4_V1X_ERR_TOT_OVERWRT = 0x11,
       GET4_V1X_ERR_TOT_RANGE   = 0x12,
       GET4_V1X_ERR_EVT_DISCARD = 0x13,
+      GET4_V1X_ERR_ADD_RIS_EDG = 0x14,
+      GET4_V1X_ERR_UNPAIR_FALL = 0x15,
+      GET4_V1X_ERR_SEQUENCE_ER = 0x16,
       GET4_V1X_ERR_UNKNOWN     = 0x7F
    };
 

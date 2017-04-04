@@ -119,7 +119,7 @@ double ngdpb::Message::getMsgFullTimeD(uint32_t epoch) const
       case MSG_EPOCH2:
          return FullTimeStamp2(getEpoch2Number(), 0) * (6.25 / 128.);
       case MSG_GET4:
-         return FullTimeStamp2(epoch, getGet4Ts()) * (6.25 / 128.);
+         return FullTimeStamp2(epoch, getGdpbHitFullTs()) * (6.25 / 128.);
       case MSG_SYS:
          return FullTimeStamp(epoch, 0) * (6.25 / 4.); // Assume same internal TS as NX TS
       case MSG_GET4_32B:
