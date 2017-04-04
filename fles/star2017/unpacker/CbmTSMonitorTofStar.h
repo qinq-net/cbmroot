@@ -83,8 +83,8 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     void SetStarSortAndCutMode( Bool_t bEnable = kTRUE ) { fbStarSortAndCutMode = bEnable; }
 
     void SetRunStart( Int_t dateIn, Int_t timeIn, Int_t iBinSize = 5 );
-    
 
+    inline void SetGet4Mode24b( Bool_t inGet4Mode24b = kTRUE ) { fbGet4M24b = inGet4Mode24b; }
     inline void SetGet4v20Mode( Bool_t inGet4v20Mode = kTRUE ) { fbGet4v20 = inGet4v20Mode; }
     inline void SetPulserMode( Bool_t inPulserMode = kTRUE ) { fbPulserMode = inPulserMode; SetPulserChans(); }
     inline void SetPulserFee( UInt_t inPulserGdpb, UInt_t inPulserFee ) { fuPulserGdpb = inPulserGdpb; fuPulserFee = inPulserFee; }
@@ -199,6 +199,7 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     
     ///* STAR and pulser monitoring *///
     static const UInt_t kuNbChanTest = 16;
+    Bool_t fbGet4M24b;
     Bool_t fbGet4v20;
     Bool_t fbPulserMode;
     UInt_t fuPulserGdpb;
@@ -209,6 +210,18 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     TH2 * fhTimeRmsPulserChosenFee;
     TH1 * fhTimeRmsPulserChosenChPairs;
     Double_t fdLastRmsUpdateTime;
+    std::vector<TH2 *> fhFtDistribPerCh;
+    std::vector<TH1*> fChCountFall_gDPB;
+    std::vector<TH2 *> fhFtDistribPerChFall;
+    std::vector< std::vector<Int_t> > fviFtLastRise24b;
+    std::vector< std::vector<Int_t> > fviFtLastFall24b;
+    std::vector< std::vector<Double_t> > fvdTimeLastRise24b;
+    std::vector< std::vector<Double_t> > fvdTimeLastFall24b;
+    UInt_t fuRiseFallChSel;
+    std::vector<TH2 *> fhFtLastRiseCurrFall;
+    std::vector<TH2 *> fhFtCurrRiseLastFall;
+    std::vector<TH2 *> fhFtLastRiseDistRise;
+    std::vector<TH2 *> fhFtLastRiseDistFall;
 
     ///* STAR event building/cutting *///
     Bool_t  fbStarSortAndCutMode;

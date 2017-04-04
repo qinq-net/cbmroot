@@ -121,6 +121,7 @@ CbmTSMonitorTofStar::CbmTSMonitorTofStar() :
     fhTriggerRate(NULL),
     fhCmdDaqVsTrig(NULL),
     fhStarTokenEvo(NULL),
+    fbGet4M24b( kFALSE ),
     fbGet4v20( kFALSE ),
     fbPulserMode( kFALSE ),
     fuPulserGdpb(0),
@@ -130,6 +131,18 @@ CbmTSMonitorTofStar::CbmTSMonitorTofStar() :
     fhTimeRmsPulserChosenFee(NULL),
     fhTimeRmsPulserChosenChPairs(NULL),
     fdLastRmsUpdateTime(-1),
+    fhFtDistribPerCh(),
+    fChCountFall_gDPB(),
+    fhFtDistribPerChFall(),
+    fviFtLastRise24b(),
+    fviFtLastFall24b(),
+    fvdTimeLastRise24b(),
+    fvdTimeLastFall24b(),
+    fuRiseFallChSel(0),
+    fhFtLastRiseCurrFall(),
+    fhFtCurrRiseLastFall(),
+    fhFtLastRiseDistRise(),
+    fhFtLastRiseDistFall(),
     fbStarSortAndCutMode(kFALSE),
     fuStarActiveAsicMask(),
     fdStarTriggerDelay(),
@@ -397,28 +410,60 @@ void CbmTSMonitorTofStar::CreateHistograms()
 
   name = "hGet4ChanErrors";
   title = "Error messages per GET4 channel; GET4 channel # ; Error";
-  TH2I* hGet4ChanErrors = new TH2I(name, title,
+  TH2I* hGet4ChanErrors = NULL;
+  if( kTRUE == fbGet4v20 )
+  {
+     /// Possible errors changed after introduction of Bubbles correction/detection
+     hGet4ChanErrors = new TH2I(name, title,
       fNrOfGet4 * fNrOfChannelsPerGet4, 0., fNrOfGet4 * fNrOfChannelsPerGet4,
-      18, 0., 18.);
+      21, 0., 21.);
 //      32, 0., 32.);
-  hGet4ChanErrors->GetYaxis()->SetBinLabel(1, "0x00: Readout Init    ");
-  hGet4ChanErrors->GetYaxis()->SetBinLabel(2, "0x01: Sync            ");
-  hGet4ChanErrors->GetYaxis()->SetBinLabel(3, "0x02: Epoch count sync");
-  hGet4ChanErrors->GetYaxis()->SetBinLabel(4, "0x03: Epoch           ");
-  hGet4ChanErrors->GetYaxis()->SetBinLabel(5, "0x04: FIFO Write      ");
-  hGet4ChanErrors->GetYaxis()->SetBinLabel(6, "0x05: Lost event      ");
-  hGet4ChanErrors->GetYaxis()->SetBinLabel(7, "0x06: Channel state   ");
-  hGet4ChanErrors->GetYaxis()->SetBinLabel(8, "0x07: Token Ring state");
-  hGet4ChanErrors->GetYaxis()->SetBinLabel(9, "0x08: Token           ");
-  hGet4ChanErrors->GetYaxis()->SetBinLabel(10, "0x09: Error Readout   ");
-  hGet4ChanErrors->GetYaxis()->SetBinLabel(11, "0x0a: SPI             ");
-  hGet4ChanErrors->GetYaxis()->SetBinLabel(12, "0x0b: DLL Lock error  "); // <- From GET4 v1.2
-  hGet4ChanErrors->GetYaxis()->SetBinLabel(13, "0x0c: DLL Reset invoc."); // <- From GET4 v1.2
-  hGet4ChanErrors->GetYaxis()->SetBinLabel(14, "0x11: Overwrite       ");
-  hGet4ChanErrors->GetYaxis()->SetBinLabel(15, "0x12: ToT out of range");
-  hGet4ChanErrors->GetYaxis()->SetBinLabel(16, "0x13: Event Discarded ");
-  hGet4ChanErrors->GetYaxis()->SetBinLabel(17, "0x7f: Unknown         ");
-  hGet4ChanErrors->GetYaxis()->SetBinLabel(18, "Corrupt error or unsupported yet");
+     hGet4ChanErrors->GetYaxis()->SetBinLabel( 1, "0x00: Readout Init    ");
+     hGet4ChanErrors->GetYaxis()->SetBinLabel( 2, "0x01: Sync            ");
+     hGet4ChanErrors->GetYaxis()->SetBinLabel( 3, "0x02: Epoch count sync");
+     hGet4ChanErrors->GetYaxis()->SetBinLabel( 4, "0x03: Epoch           ");
+     hGet4ChanErrors->GetYaxis()->SetBinLabel( 5, "0x04: FIFO Write      ");
+     hGet4ChanErrors->GetYaxis()->SetBinLabel( 6, "0x05: Lost event      ");
+     hGet4ChanErrors->GetYaxis()->SetBinLabel( 7, "0x06: Channel state   ");
+     hGet4ChanErrors->GetYaxis()->SetBinLabel( 8, "0x07: Token Ring state");
+     hGet4ChanErrors->GetYaxis()->SetBinLabel( 9, "0x08: Token           ");
+     hGet4ChanErrors->GetYaxis()->SetBinLabel(10, "0x09: Error Readout   ");
+     hGet4ChanErrors->GetYaxis()->SetBinLabel(11, "0x0a: SPI             ");
+     hGet4ChanErrors->GetYaxis()->SetBinLabel(12, "0x0b: DLL Lock error  "); // <- From GET4 v1.2
+     hGet4ChanErrors->GetYaxis()->SetBinLabel(13, "0x0c: DLL Reset invoc."); // <- From GET4 v1.2
+     hGet4ChanErrors->GetYaxis()->SetBinLabel(14, "0x11: Overwrite       ");
+     hGet4ChanErrors->GetYaxis()->SetBinLabel(15, "0x12: ToT out of range");
+     hGet4ChanErrors->GetYaxis()->SetBinLabel(16, "0x13: Event Discarded ");
+     hGet4ChanErrors->GetYaxis()->SetBinLabel(17, "0x14: Add. Rising edge"); // <- From GET4 v1.3
+     hGet4ChanErrors->GetYaxis()->SetBinLabel(18, "0x15: Unpaired Falling"); // <- From GET4 v1.3
+     hGet4ChanErrors->GetYaxis()->SetBinLabel(19, "0x16: Sequence error  "); // <- From GET4 v1.3
+     hGet4ChanErrors->GetYaxis()->SetBinLabel(20, "0x7f: Unknown         ");
+     hGet4ChanErrors->GetYaxis()->SetBinLabel(21, "Corrupt/unsuprtd error");
+  } // if( kTRUE == fbGet4v20 )
+     else
+     {
+        hGet4ChanErrors = new TH2I(name, title,
+         fNrOfGet4 * fNrOfChannelsPerGet4, 0., fNrOfGet4 * fNrOfChannelsPerGet4,
+         18, 0., 18.);
+   //      32, 0., 32.);
+        hGet4ChanErrors->GetYaxis()->SetBinLabel( 1, "0x00: Readout Init    ");
+        hGet4ChanErrors->GetYaxis()->SetBinLabel( 2, "0x01: Sync            ");
+        hGet4ChanErrors->GetYaxis()->SetBinLabel( 3, "0x02: Epoch count sync");
+        hGet4ChanErrors->GetYaxis()->SetBinLabel( 4, "0x03: Epoch           ");
+        hGet4ChanErrors->GetYaxis()->SetBinLabel( 5, "0x04: FIFO Write      ");
+        hGet4ChanErrors->GetYaxis()->SetBinLabel( 6, "0x05: Lost event      ");
+        hGet4ChanErrors->GetYaxis()->SetBinLabel( 7, "0x06: Channel state   ");
+        hGet4ChanErrors->GetYaxis()->SetBinLabel( 8, "0x07: Token Ring state");
+        hGet4ChanErrors->GetYaxis()->SetBinLabel( 9, "0x08: Token           ");
+        hGet4ChanErrors->GetYaxis()->SetBinLabel(10, "0x09: Error Readout   ");
+        hGet4ChanErrors->GetYaxis()->SetBinLabel(11, "0x0a: SPI             ");
+        hGet4ChanErrors->GetYaxis()->SetBinLabel(12, "0x0b: DLL Lock error  "); // <- From GET4 v1.2
+        hGet4ChanErrors->GetYaxis()->SetBinLabel(13, "0x0c: DLL Reset invoc."); // <- From GET4 v1.2
+        hGet4ChanErrors->GetYaxis()->SetBinLabel(14, "0x11: Overwrite       ");
+        hGet4ChanErrors->GetYaxis()->SetBinLabel(15, "0x12: ToT out of range");
+        hGet4ChanErrors->GetYaxis()->SetBinLabel(16, "0x13: Event Discarded ");
+        hGet4ChanErrors->GetYaxis()->SetBinLabel(17, "0x7f: Unknown         ");
+     } // else of if( kTRUE == fbGet4v20 )
   fHM->Add(name.Data(), hGet4ChanErrors);
 #ifdef USE_HTTP_SERVER
   if (server)
@@ -561,6 +606,14 @@ void CbmTSMonitorTofStar::CreateHistograms()
         server->Register("/TofRaw", fHM->H1( name.Data() ) );
 #endif
   } // if( fbPulserMode )
+  
+  if( fbGet4M24b )
+  {
+     fviFtLastRise24b.resize( fNrOfGdpbs * fNrOfFebsPerGdpb );
+     fviFtLastFall24b.resize( fNrOfGdpbs * fNrOfFebsPerGdpb );
+     fvdTimeLastRise24b.resize( fNrOfGdpbs * fNrOfFebsPerGdpb );
+     fvdTimeLastFall24b.resize( fNrOfGdpbs * fNrOfFebsPerGdpb );
+  } // if( fbGet4M24b )
 
   for (UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; uGdpb++) {
     name = Form("Raw_Tot_gDPB_%02u_0", uGdpb);
@@ -648,6 +701,96 @@ void CbmTSMonitorTofStar::CreateHistograms()
           server->Register("/TofRaw", fHM->H1(name.Data()));
 #endif
       } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
+      
+      name = Form("FtDistribPerCh_gDPB_g%02u_f%1u", uGdpb, uFeet);
+      title = Form(
+          "FT distribution per channel in Feet %1u of gDPB %02u; Channel [] ; FT [bin]; Counts []", uFeet,
+          uGdpb);
+      fHM->Add(name.Data(), new TH2I( name.Data(), title.Data(), 
+                                      fNrOfChannelsPerFeet, 0, fNrOfChannelsPerFeet,
+                                      get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize));
+#ifdef USE_HTTP_SERVER
+      if (server)
+        server->Register("/TofRaw", fHM->H2(name.Data()));
+#endif
+
+      if( fbGet4M24b )
+      {
+          name = Form("ChCountFall_gDPB_%02u", uGdpb);
+          title = Form("Channel falling edge counts gDPB %02u; channel; Hits", uGdpb);
+          fHM->Add(name.Data(), new TH1I(name.Data(), title.Data(), 
+                   fNrOfFebsPerGdpb*fNrOfChannelsPerFeet, 0, fNrOfFebsPerGdpb*fNrOfChannelsPerFeet));
+#ifdef USE_HTTP_SERVER
+          if (server)
+            server->Register("/TofRaw", fHM->H1(name.Data()));
+#endif
+         
+         name = Form("FtDistribPerChFall_gDPB_g%02u_f%1u", uGdpb, uFeet);
+         title = Form(
+          "FT distribution per channel, falling edge, in Feet %1u of gDPB %02u; Channel [] ; FT Fall [bin]; Counts []", uFeet,
+          uGdpb);
+         fHM->Add(name.Data(), new TH2I( name.Data(), title.Data(), 
+                                      fNrOfChannelsPerFeet, 0, fNrOfChannelsPerFeet,
+                                      get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize));
+#ifdef USE_HTTP_SERVER
+         if (server)
+         server->Register("/TofRaw", fHM->H2(name.Data()));
+#endif
+
+        fviFtLastRise24b[ uGdpb * fNrOfFebsPerGdpb + uFeet ].resize( fNrOfChannelsPerFeet, -1 );
+        fviFtLastFall24b[ uGdpb * fNrOfFebsPerGdpb + uFeet ].resize( fNrOfChannelsPerFeet, -1 );
+        fvdTimeLastRise24b[ uGdpb * fNrOfFebsPerGdpb + uFeet ].resize( fNrOfChannelsPerFeet, -1 );
+        fvdTimeLastFall24b[ uGdpb * fNrOfFebsPerGdpb + uFeet ].resize( fNrOfChannelsPerFeet, -1 );
+         
+         name = Form("FtLastRiseCurrFall_gDPB_g%02u_f%1u", uGdpb, uFeet);
+         title = Form(
+          "FT distribution last rising vs falling edge, in Feet %1u of gDPB %02u; FT last Rise [bin] ; FT Fall [bin]; Counts []", uFeet,
+          uGdpb);
+         fHM->Add(name.Data(), new TH2I( name.Data(), title.Data(), 
+                                      get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize,
+                                      get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize));
+#ifdef USE_HTTP_SERVER
+         if (server)
+         server->Register("/TofRaw", fHM->H2(name.Data()));
+#endif
+         
+         name = Form("FtCurrRiseLastFall_gDPB_g%02u_f%1u", uGdpb, uFeet);
+         title = Form(
+          "FT distribution rising vs last falling edge, in Feet %1u of gDPB %02u; FT Rise [bin] ; FT last Fall [bin]; Counts []", uFeet,
+          uGdpb);
+         fHM->Add(name.Data(), new TH2I( name.Data(), title.Data(), 
+                                      get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize,
+                                      get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize));
+#ifdef USE_HTTP_SERVER
+         if (server)
+         server->Register("/TofRaw", fHM->H2(name.Data()));
+#endif
+         
+         name = Form("FtLastRiseDistRise_gDPB_g%02u_f%1u", uGdpb, uFeet);
+         title = Form(
+          "Time between rising edges vs rising edge FT, in Feet %1u of gDPB %02u; FT last Rise [] ; Trise - TriseLast[ns]; Counts []", uFeet,
+          uGdpb);
+         fHM->Add(name.Data(), new TH2I( name.Data(), title.Data(), 
+                                      get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize,
+                                      500, 0.0, 25.0 ));
+#ifdef USE_HTTP_SERVER
+         if (server)
+         server->Register("/TofRaw", fHM->H2(name.Data()));
+#endif
+         
+         name = Form("FtLastRiseDistFall_gDPB_g%02u_f%1u", uGdpb, uFeet);
+         title = Form(
+          "Time between falling edges vs rising edge FT, in Feet %1u of gDPB %02u; FT last Rise [] ; Tfall - TfallLast[ns]; Counts []", uFeet,
+          uGdpb);
+         fHM->Add(name.Data(), new TH2I( name.Data(), title.Data(), 
+                                      get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize,
+                                      500, 0.0, 25.0 ));
+#ifdef USE_HTTP_SERVER
+         if (server)
+         server->Register("/TofRaw", fHM->H2(name.Data()));
+#endif
+        
+      } // if( fbGet4M24b )
     } // for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
 
@@ -842,6 +985,8 @@ void CbmTSMonitorTofStar::CreateHistograms()
     server->Restrict("/Reset_All_TOF", "allow=admin");
 #endif
 
+   LOG(INFO) << "Done with histo creation, now doing canvases" << FairLogger::endl; 
+
   /** Create summary Canvases for STAR 2017 **/
   Double_t w = 10;
   Double_t h = 10;
@@ -920,6 +1065,75 @@ void CbmTSMonitorTofStar::CreateHistograms()
     } // for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; ++uFeet )
   } // for( UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; ++uGdpb )
   /*****************************/
+  
+  /** Create FT Canvas(es) for STAR 2017 **/
+  TCanvas* cFtPnt = NULL;
+  for( UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; ++uGdpb ) {
+     
+    cFtPnt = new TCanvas( Form("cFtPnt_g%02u", uGdpb), 
+                           Form("gDPB %02u FineTime distributions", uGdpb), 
+                           w, h);
+    cFtPnt->Divide( fNrOfFebsPerGdpb );
+    TH2* histPntFt = NULL;
+    for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++) {
+      name = Form("FtDistribPerCh_gDPB_g%02u_f%1u", uGdpb, uFeet);
+      histPntFt = fHM->H2(name.Data());
+      
+      cFtPnt->cd( 1 + uFeet );
+      gPad->SetGridx();
+      gPad->SetGridy();
+      gPad->SetLogz();
+      
+      histPntFt->Draw( "colz" );
+    } // for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; ++uFeet )
+  } // for( UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; ++uGdpb )
+  /*****************************/
+  
+  
+  /** Create 24b mode Canvas(es) for STAR 2017 **/
+  if( fbGet4M24b )
+  {
+     TCanvas* cFt24b = NULL;
+     for( UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; ++uGdpb ) {
+        
+       cFt24b = new TCanvas( Form("cFt24b_g%02u", uGdpb), 
+                              Form("gDPB %02u 24b mode FineTime distributions", uGdpb), 
+                              w, h);
+       cFt24b->Divide( 2, 2 );
+       TH2* histPntFt = NULL;
+         
+       cFt24b->cd( 1  );
+       gPad->SetGridx();
+       gPad->SetGridy();
+       gPad->SetLogz();
+       name = Form("FtDistribPerCh_gDPB_g%02u_f%1u", uGdpb, 0);
+       histPntFt = fHM->H2(name.Data());
+       histPntFt->Draw( "colz" );
+         
+       cFt24b->cd( 2  );
+       gPad->SetGridx();
+       gPad->SetGridy();
+       gPad->SetLogz();
+       name = Form("FtDistribPerChFall_gDPB_g%02u_f%1u", uGdpb, 0);
+       histPntFt = fHM->H2(name.Data());
+       histPntFt->Draw( "colz" );
+       
+       cFt24b->cd( 3 );
+       gPad->SetGridx();
+       gPad->SetGridy();
+       gPad->SetLogz();
+       name = Form("ChCount_gDPB_%02u", uGdpb);
+       fHM->H1(name.Data())->Draw();
+       
+       cFt24b->cd( 4 );
+       gPad->SetGridx();
+       gPad->SetGridy();
+       gPad->SetLogz();
+       name = Form("ChCountFall_gDPB_%02u", uGdpb);
+       fHM->H1(name.Data())->Draw();
+     } // for( UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; ++uGdpb )
+  } // if( fbGet4M24b )
+  /*****************************/
    
   /** Create Pulser mode Canvas for STAR 2017 **/
   if( fbPulserMode )
@@ -988,6 +1202,8 @@ void CbmTSMonitorTofStar::CreateHistograms()
       else LOG(INFO) << "Recovered MS size canvas in TOF monitor" << FairLogger::endl; 
   /*****************************/
 
+   LOG(INFO) << "Done with canvases creation" << FairLogger::endl; 
+   
   /** Store pointers to histograms for STAR 2017 **/  
   fHistMessType = fHM->H1("hMessageType");
   fHistSysMessType = fHM->H1("hSysMessType");
@@ -1040,6 +1256,25 @@ void CbmTSMonitorTofStar::CreateHistograms()
         name = Form("FeetRateDate_gDPB_g%02u_f%1u", i, uFeet);
         fFeetRateDate_gDPB.push_back(fHM->H1(name.Data()));
       } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
+      name = Form("FtDistribPerCh_gDPB_g%02u_f%1u", i, uFeet);
+      fhFtDistribPerCh.push_back(fHM->H2(name.Data()));
+      if( fbGet4M24b )
+      {
+         name = Form("ChCountFall_gDPB_%02u", i);
+         fChCountFall_gDPB.push_back(fHM->H1(name.Data()));
+         name = Form("FtDistribPerChFall_gDPB_g%02u_f%1u", i, uFeet);
+         fhFtDistribPerChFall.push_back(fHM->H2(name.Data()));
+         
+         name = Form("FtLastRiseCurrFall_gDPB_g%02u_f%1u", i, uFeet);
+         fhFtLastRiseCurrFall.push_back(fHM->H2(name.Data()));
+         name = Form("FtCurrRiseLastFall_gDPB_g%02u_f%1u", i, uFeet);
+         fhFtCurrRiseLastFall.push_back(fHM->H2(name.Data()));
+         
+         name = Form("FtLastRiseDistRise_gDPB_g%02u_f%1u", i, uFeet);
+         fhFtLastRiseDistRise.push_back(fHM->H2(name.Data()));
+         name = Form("FtLastRiseDistFall_gDPB_g%02u_f%1u", i, uFeet);
+         fhFtLastRiseDistFall.push_back(fHM->H2(name.Data()));
+      } // if( fbGet4M24b )
     } // for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
   }
   /*****************************/
@@ -1226,7 +1461,9 @@ Bool_t CbmTSMonitorTofStar::DoUnpack(const fles::Timeslice& ts,
           break;
         case ngdpb::MSG_GET4:
           fHistGet4MessType->Fill(fGet4Nr, ngdpb::GET4_32B_DATA + 1);
-          PrintGenInfo(mess);
+          if( fbGet4M24b )
+            FillHitInfo(mess);
+            else PrintGenInfo(mess);
           break;
         case ngdpb::MSG_GET4_32B:
           fHistGet4MessType->Fill(fGet4Nr, ngdpb::GET4_32B_DATA);
@@ -1298,11 +1535,30 @@ Bool_t CbmTSMonitorTofStar::DoUnpack(const fles::Timeslice& ts,
               case ngdpb::GET4_V1X_ERR_EVT_DISCARD:
                 fHistGet4ChanErrors->Fill(dFullChId, 15);
                 break;
+              case ngdpb::GET4_V1X_ERR_ADD_RIS_EDG:
+                if( kTRUE == fbGet4v20 )
+                  fHistGet4ChanErrors->Fill(dFullChId, 16);
+                  else fHistGet4ChanErrors->Fill(dFullChId, 17);
+                break;
+              case ngdpb::GET4_V1X_ERR_UNPAIR_FALL:
+                if( kTRUE == fbGet4v20 )
+                  fHistGet4ChanErrors->Fill(dFullChId, 17);
+                  else fHistGet4ChanErrors->Fill(dFullChId, 17);
+                break;
+              case ngdpb::GET4_V1X_ERR_SEQUENCE_ER:
+                if( kTRUE == fbGet4v20 )
+                  fHistGet4ChanErrors->Fill(dFullChId, 18);
+                  else fHistGet4ChanErrors->Fill(dFullChId, 17);
+                break;
               case ngdpb::GET4_V1X_ERR_UNKNOWN:
-                fHistGet4ChanErrors->Fill(dFullChId, 16);
+                if( kTRUE == fbGet4v20 )
+                  fHistGet4ChanErrors->Fill(dFullChId, 19);
+                  else fHistGet4ChanErrors->Fill(dFullChId, 16);
                 break;
               default: // Corrupt error or not yet supported error
-                fHistGet4ChanErrors->Fill(dFullChId, 17);
+                if( kTRUE == fbGet4v20 )
+                  fHistGet4ChanErrors->Fill(dFullChId, 20);
+                  else fHistGet4ChanErrors->Fill(dFullChId, 17);
                 break;
             } // Switch( mess.getGdpbSysErrData() )
 
@@ -1399,8 +1655,79 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
   
     Int_t channelNr = fGet4Id * fNrOfChannelsPerGet4 + channel;
     Int_t iFeetNr   = (fGet4Id / fNrOfGet4PerFeb);
-    fRaw_Tot_gDPB[fGdpbNr + iFeetNr/uNbFeetPlot]->Fill(channelNr, tot);
-    fChCount_gDPB[fGdpbNr]->Fill(channelNr);
+    
+    if( !fbGet4M24b )
+    {
+       fRaw_Tot_gDPB[fGdpbNr + iFeetNr/uNbFeetPlot]->Fill(channelNr, tot);
+       fChCount_gDPB[fGdpbNr]->Fill(channelNr);
+
+      /// Finetime monitoring
+      fhFtDistribPerCh[(fGdpbNr * fNrOfFebsPerGdpb) + iFeetNr]->Fill(
+            fGet4Id * fNrOfChannelsPerGet4 + channel,
+            mess.getGdpbHitFineTs()
+         );
+    } // if( !fbGet4M24b )
+      else
+      {
+/*
+         fGet4Id = mess.getGet4Number();
+         channel = mess.getGet4ChNum();
+         UInt_t Fts  = mess.getGet4FineTs();
+         UInt_t edge = mess.getGet4Edge();
+*/
+         Int_t Fts  = mess.getGdpbHitFineTs();
+         Int_t edge = mess.getGdpbHit24Edge();
+
+         channelNr = fGet4Id * fNrOfChannelsPerGet4 + channel;
+         iFeetNr   = (fGet4Id / fNrOfGet4PerFeb);
+         Int_t iFullFebIdx = (fGdpbNr * fNrOfFebsPerGdpb) + iFeetNr;
+         
+         Double_t dHitTime = mess.getMsgFullTimeD(curEpochGdpbGet4);
+         
+         if( edge )
+         {
+            fChCountFall_gDPB[fGdpbNr]->Fill(channelNr);
+            
+
+            /// Finetime monitoring
+            fhFtDistribPerChFall[iFullFebIdx]->Fill( channelNr, Fts );
+            if( 0 <= fviFtLastRise24b[iFullFebIdx][channelNr] && 
+                fuRiseFallChSel == channelNr)
+               fhFtLastRiseCurrFall[iFullFebIdx]->Fill( 
+                     fviFtLastRise24b[iFullFebIdx][channelNr],
+                     Fts);
+            if( 0 <= fviFtLastRise24b[iFullFebIdx][channelNr] &&
+                0 <= fvdTimeLastFall24b[iFullFebIdx][channelNr] && 
+                fuRiseFallChSel == channelNr)
+               fhFtLastRiseDistFall[iFullFebIdx]->Fill( 
+                     fviFtLastRise24b[iFullFebIdx][channelNr],
+                     dHitTime - fvdTimeLastFall24b[iFullFebIdx][channelNr]);
+            
+            fviFtLastFall24b[iFullFebIdx][channelNr] = Fts;
+            fvdTimeLastFall24b[iFullFebIdx][channelNr] = dHitTime;
+         } // if( edge )
+            else
+            {
+               fChCount_gDPB[fGdpbNr]->Fill(channelNr);
+
+               /// Finetime monitoring
+               fhFtDistribPerCh[iFullFebIdx]->Fill( channelNr, Fts );
+               if( 0 <= fviFtLastFall24b[iFullFebIdx][channelNr] && 
+                  fuRiseFallChSel == channelNr)
+                  fhFtCurrRiseLastFall[iFullFebIdx]->Fill( 
+                        Fts, 
+                        fviFtLastFall24b[iFullFebIdx][channelNr] );
+            if( 0 <= fviFtLastRise24b[iFullFebIdx][channelNr] &&
+                0 <= fvdTimeLastRise24b[iFullFebIdx][channelNr] && 
+                fuRiseFallChSel == channelNr)
+               fhFtLastRiseDistRise[iFullFebIdx]->Fill( 
+                     fviFtLastRise24b[iFullFebIdx][channelNr],
+                     dHitTime - fvdTimeLastRise24b[iFullFebIdx][channelNr]);
+               
+               fviFtLastRise24b[iFullFebIdx][channelNr] = Fts;
+               fvdTimeLastRise24b[iFullFebIdx][channelNr] = dHitTime;
+            } // else of if( edge )
+      } // else of if( !fbGet4M24b )
 
     if (fUnpackPar->IsChannelRateEnabled()) {
       // Check if at least one hit before in this channel
@@ -1443,7 +1770,6 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
 */      
     fiCountsLastTs ++;
     fdDetLastTime = 1e-9 * mess.getMsgFullTimeD(curEpochGdpbGet4);
-
 
     ///* STAR event building/cutting *///
     if( fbStarSortAndCutMode )
@@ -1791,7 +2117,11 @@ void CbmTSMonitorTofStar::PrintSysInfo(ngdpb::Message mess)
       uint32_t uData = mess.getGdpbSysErrData();
       if (ngdpb::GET4_V1X_ERR_TOT_OVERWRT == uData
           || ngdpb::GET4_V1X_ERR_TOT_RANGE == uData
-          || ngdpb::GET4_V1X_ERR_EVT_DISCARD == uData)
+          || ngdpb::GET4_V1X_ERR_EVT_DISCARD == uData
+          || ngdpb::GET4_V1X_ERR_ADD_RIS_EDG == uData
+          || ngdpb::GET4_V1X_ERR_UNPAIR_FALL == uData
+          || ngdpb::GET4_V1X_ERR_SEQUENCE_ER == uData
+          )
         LOG(DEBUG) << " +++++++ > gDPB: " << std::hex << std::setw(4) << fGdpbId
                       << std::dec << ", Chip = " << std::setw(2)
                       << mess.getGdpbGenChipId() << ", Chan = " << std::setw(1)
@@ -1821,7 +2151,10 @@ void CbmTSMonitorTofStar::PrintSysInfo(ngdpb::Message mess)
       break;
     case ngdpb::SYSMSG_GDPB_UNKWN:
       LOG(INFO) << "Unknown GET4 message, data: " << std::hex << std::setw(8)
-                   << mess.getGdpbSysUnkwData() << std::dec << FairLogger::endl;
+                   << mess.getGdpbSysUnkwData() << std::dec 
+                   <<" Full message: " << std::hex << std::setw(16)
+                   << mess.getData() << std::dec 
+                   << FairLogger::endl;
       break;
   } // switch( getGdpbSysSubType() )
 }
@@ -2200,8 +2533,14 @@ void CbmTSMonitorTofStar::Finish()
   gDirectory->mkdir("Tof_Raw_gDPB");
   gDirectory->cd("Tof_Raw_gDPB");
   for (UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb++) {
-//    fHM->H2(Form("Raw_Tot_gDPB_%02u", uGdpb))->Write();
+
+    for (UInt_t uFeetPlot = 0; uFeetPlot < fNrOfFebsPerGdpb/uNbFeetPlot; ++uFeetPlot )
+      fHM->H2(Form("Raw_Tot_gDPB_%02u_%1u", uGdpb, uFeetPlot))->Write();
+      
     fHM->H1(Form("ChCount_gDPB_%02u", uGdpb))->Write();
+    if( fbGet4M24b )
+      fHM->H1(Form("ChCountFall_gDPB_%02u", uGdpb))->Write();
+      
 //    if (fUnpackPar->IsChannelRateEnabled())
 //      fHM->H2(Form("ChannelRate_gDPB_%02u", uGdpb))->Write();
     for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet++) {
@@ -2210,6 +2549,9 @@ void CbmTSMonitorTofStar::Finish()
       if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec ) {
         fHM->H1(Form("FeetRateDate_gDPB_g%02u_f%1u", uGdpb, uFeet))->Write();
       }
+      fHM->H2(Form("FtDistribPerCh_gDPB_g%02u_f%1u", uGdpb, uFeet))->Write();
+      if( fbGet4M24b )
+         fHM->H2(Form("FtDistribPerChFall_gDPB_g%02u_f%1u", uGdpb, uFeet))->Write();
     }
   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
   fHM->H1("hMessageType")->Write();
@@ -2276,6 +2618,8 @@ void CbmTSMonitorTofStar::ResetAllHistos()
 
   for (UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb++) {
     fHM->H1(Form("ChCount_gDPB_%02u", uGdpb))->Reset();
+    if( fbGet4M24b )
+      fHM->H1(Form("ChCountFall_gDPB_%02u", uGdpb))->Reset();
     
     for (UInt_t uFeetPlot = 0; uFeetPlot < fNrOfFebsPerGdpb/uNbFeetPlot; ++uFeetPlot )
       fHM->H2(Form("Raw_Tot_gDPB_%02u_%1u", uGdpb, uFeetPlot))->Reset();
@@ -2285,6 +2629,15 @@ void CbmTSMonitorTofStar::ResetAllHistos()
     for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet++) {
       fHM->H1(Form("FeetRate_gDPB_g%02u_f%1u", uGdpb, uFeet))->Reset();
       fHM->H1(Form("FeetErrorRate_gDPB_g%02u_f%1u", uGdpb, uFeet))->Reset();
+      fHM->H2(Form("FtDistribPerCh_gDPB_g%02u_f%1u", uGdpb, uFeet))->Reset();
+      if( fbGet4M24b )
+      {
+         fHM->H2(Form("FtDistribPerChFall_gDPB_g%02u_f%1u", uGdpb, uFeet))->Reset();
+         fHM->H2(Form("FtLastRiseCurrFall_gDPB_g%02u_f%1u", uGdpb, uFeet))->Reset();
+         fHM->H2(Form("FtCurrRiseLastFall_gDPB_g%02u_f%1u", uGdpb, uFeet))->Reset();
+         fHM->H2(Form("FtLastRiseDistRise_gDPB_g%02u_f%1u", uGdpb, uFeet))->Reset();
+         fHM->H2(Form("FtLastRiseDistFall_gDPB_g%02u_f%1u", uGdpb, uFeet))->Reset();
+      } // if( fbGet4M24b )
     } // for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
 
@@ -2362,6 +2715,29 @@ void CbmTSMonitorTofStar::CyclePulserFee()
       
       LOG(INFO) << "FEE index for pulser RMS histo changed to : " << fuPulserFee << FairLogger::endl;
   } // if( fbPulserMode )
+  
+  if( fbGet4M24b )
+  {  
+      // Full Fee time difference test
+      UInt_t uHistoFeeIdx = 0;
+      for (UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb++)
+      {
+         for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet++)
+         {
+            fhFtLastRiseCurrFall[uHistoFeeIdx]->Reset();
+            fhFtCurrRiseLastFall[uHistoFeeIdx]->Reset();
+            fhFtLastRiseDistRise[uHistoFeeIdx]->Reset();
+            fhFtLastRiseDistFall[uHistoFeeIdx]->Reset();
+            uHistoFeeIdx++;
+         } // for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet++)
+      } // for (UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb++)
+      
+      // Cycle the chosen FEE index within the current chosen gDPB
+      fuRiseFallChSel = (fuRiseFallChSel + 1)%fNrOfChannelsPerFeet;
+      
+      LOG(INFO) << "Channel index for 24b FT Rise vs FT Fall histo changed to : " << fuRiseFallChSel << FairLogger::endl;
+  } //
+  
 }
 
 
