@@ -33,10 +33,10 @@ void rates_unpacking(TString sLmdFolder = "", TString sLmdName = "", Int_t nEven
    
    TString paramDir = gSystem->Getenv("PWD");
 
-   TObjString unpParFile = paramDir + "/parUnpack_rates.txt";
-   parFileList->Add(&unpParFile);
-   TObjString calParFile = paramDir + "/parCalib_rates.txt";
-   parFileList->Add(&calParFile);
+   TObjString * unpParFile = new TObjString( paramDir + "/parUnpack_rates.txt" );
+   parFileList->Add(unpParFile);
+   TObjString * calParFile = new TObjString( paramDir + "/parCalib_rates.txt" );
+   parFileList->Add(calParFile);
 
    // Parameter file output
    TString parFile = paramDir + "/out/unpack_" + sLmdName + ".params.root";

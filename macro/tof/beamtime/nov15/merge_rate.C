@@ -39,10 +39,10 @@ void merge_rate()
 
    TClonesArray* tArray = new TClonesArray("TTofCalibScaler");
    tBranchScal->SetAddress(&tArray);
-   TTofCalibScaler* tCalibTriglog;
 */
    TClonesArray* tArray = new TClonesArray("TTofCalibScaler");
    inputChain->SetBranchAddress("TofCalibScaler", &tArray);
+   TTofCalibScaler* tCalibTriglog;
 
    //Create a new file + a clone of old tree in new file
    TFile *outfile = new TFile("out/unpack_rate_all.out.root","recreate");
