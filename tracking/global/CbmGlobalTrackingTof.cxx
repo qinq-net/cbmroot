@@ -964,7 +964,10 @@ void CbmGlobalTrackingTofGeometry::Find(const FairTrackParam& trackParams, timet
    double deltaX = 4 * TMath::Sqrt(litTrackParams.GetCovariance(0));
    double deltaY = 4 * TMath::Sqrt(litTrackParams.GetCovariance(5));
    //double deltaT = 4 * errT;
-   double deltaT = 4 * litTrackParams.GetTimeError();
+   // FIXME: The following line does not compile. Replaced it with a dummy.
+   // To be fixed properly.
+   //double deltaT = 4 * litTrackParams.GetTimeError();
+   double deltaT = 4 * 5.; // V.F., to get the thing compiled
    //Find(x1 - deltaX, y1 - deltaY, z1, tx, ty, inds);
    //Find(x1 + deltaX, y1 - deltaY, z1, tx, ty, inds);
    //Find(x1 - deltaX, y1 + deltaY, z1, tx, ty, inds);
