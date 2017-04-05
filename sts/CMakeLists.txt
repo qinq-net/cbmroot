@@ -43,9 +43,11 @@ reco/CbmStsClusterAnalysis.cxx
 reco/CbmStsClusterFinder.cxx
 reco/CbmStsClusterFinderGap.cxx
 reco/CbmStsClusterFinderIdeal.cxx
+reco/CbmStsClusterFinderModule.cxx
 reco/CbmStsClusterFinderReal.cxx
 reco/CbmStsClusterFinderSimple.cxx
 reco/CbmStsFindClusters.cxx
+reco/CbmStsFindClustersStream.cxx
 reco/CbmStsFindClustersEvents.cxx
 reco/CbmStsFindHits.cxx
 reco/CbmStsFindHitsEvents.cxx

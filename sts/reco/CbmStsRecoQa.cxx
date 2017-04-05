@@ -59,10 +59,13 @@ void CbmStsRecoQa::Exec(Option_t* opt) {
 		}
 	}
 
-	else LOG(FATAL) << GetName() << " no event branch ! " << FairLogger::endl;
+	// If there is no event brnahc, process the entire tree
+	else {
+	  ProcessEvent();
+	  fNofEvents++;
+	}
 
 	fNofTs++;
-
 }
 // -------------------------------------------------------------------------
 
@@ -122,21 +125,18 @@ InitStatus CbmStsRecoQa::Init()
 // -----   Process one event   ---------------------------------------------
 void CbmStsRecoQa::ProcessEvent(CbmEvent* event) {
 
-    assert(event);
-
 	// Timer
 	TStopwatch timer;
 	timer.Start();
-	Int_t eventNr = event->GetNumber();
-	Int_t nTracks = event->GetNofData(Cbm::kStsTrack);
+	Int_t eventNr = ( event ? event->GetNumber() : fNofEvents );
+	Int_t nTracks = ( event ? event->GetNofData(Cbm::kStsTrack)
+	    : fTracks->GetEntriesFast() );
 	LOG(DEBUG) << GetName() << ": event " << eventNr << ", STS tracks: "
 	    << nTracks << FairLogger::endl;
 
-
-
 	// Track loop
 	for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
-		Int_t index = event->GetIndex(Cbm::kStsTrack, iTrack);
+	  Int_t index = ( event ? event->GetIndex(Cbm::kStsTrack, iTrack) : iTrack );
 		CbmStsTrack* track = dynamic_cast<CbmStsTrack*>(fTracks->At(index));
 		assert(track);
 
