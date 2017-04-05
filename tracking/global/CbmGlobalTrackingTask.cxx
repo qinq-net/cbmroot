@@ -163,7 +163,10 @@ InitStatus CbmGlobalTrackingTask::Init()
          if (motherId < 0)
             track.parent = 0;
          else
+         {
             track.parent = &evTracks[motherId];
+            evTracks[motherId].offsprings.push_back(&track);
+         }
       }
    }
    
@@ -258,7 +261,7 @@ InitStatus CbmGlobalTrackingTask::Init()
          point.y = tofPoint->GetY();
          point.z = tofPoint->GetZ();
          point.t = tofPoint->GetTime();
-         track.InsertTofPoint(&point);//track.tofPoints.push_back(&point);
+         track.tofPoints.push_back(&point);
          
          if (track.z > 0 && !track.use)
          {
@@ -283,9 +286,75 @@ static int nofMergedTracks = 0;
 static int nofMergedTracks2 = 0;
 static int nofNonMergedTracks = 0;
 static int nofMergedNonTof = 0;
+static int nofMergedNonTof2 = 0;
+static int nofSemiTofTracks = 0;
+static int nofMergedSemiTofTracks = 0;
+static int nofMergedSemiTofTracks2 = 0;
+static int nofMergedSemiTofTracks3 = 0;
 
 #ifdef CBM_GLOBALTB_QA
 static long fullDuration = 0;
+
+bool CbmGlobalTrackingTask::CheckMatch(const TrackData* stsMCTrack, Int_t tofHitInd, bool deepSearch) const
+{
+   set<TrackData*> tofMCTracks;
+
+   const CbmMatch* tofHitMatch = static_cast<const CbmMatch*> (fTofHitDigiMatches->At(tofHitInd));
+   int nofTofDigis = tofHitMatch->GetNofLinks();
+
+   for (int i = 0; i < nofTofDigis; ++i)
+   {
+      const CbmLink& lnk = tofHitMatch->GetLink(i);
+      Int_t digiInd = lnk.GetIndex();
+      CbmTofDigiExp* pDigi = static_cast<CbmTofDigiExp*> (fTofDigis->At(digiInd));
+
+      const CbmMatch* pPointMatch = pDigi->GetMatch();
+      Int_t nofPoints = pPointMatch->GetNofLinks();
+
+      for (Int_t j = 0; j < nofPoints; ++j)
+      {
+         const CbmLink& pointLnk = pPointMatch->GetLink(j);
+         Int_t evN = pointLnk.GetEntry() - 1;
+         Int_t pointInd = pointLnk.GetIndex();
+         tofMCTracks.insert(fTofPoints[evN][pointInd].track);
+      }
+   }
+
+   bool isMatched = false;
+
+   for (set<TrackData*>::const_iterator i = tofMCTracks.begin(); i != tofMCTracks.end(); ++i)
+   {
+      const TrackData* tofMCTrack = *i;
+
+      if (deepSearch)
+      {
+         for (const TrackData* mcTrack = tofMCTrack; 0 != mcTrack; mcTrack = mcTrack->parent)
+         {
+            if (mcTrack == stsMCTrack)
+               return true;
+         }
+      }
+      else if (tofMCTrack == stsMCTrack)
+         return true;
+   }
+   
+   return false;
+}
+
+bool CbmGlobalTrackingTask::SemiTofTrack(const TrackData* mcTrack) const
+{
+   if (!mcTrack->tofPoints.empty())
+      return true;
+   
+   for (list<TrackData*>::const_iterator i = mcTrack->offsprings.begin(); i != mcTrack->offsprings.end(); ++i)
+   {
+      if (SemiTofTrack(*i))
+         return true;
+   }
+   
+   return false;
+}
+
 #endif//CBM_GLOBALTB_QA
 
 void CbmGlobalTrackingTask::Exec(Option_t* opt)
@@ -431,7 +500,7 @@ void CbmGlobalTrackingTask::Exec(Option_t* opt)
             Int_t evN = pointLnk.GetEntry() - 1;
             Int_t pointInd = pointLnk.GetIndex();
             const PointData& point = fTofPoints[evN][pointInd];
-            point.track->InsertTofHit(tofHit);//point.track->tofHits.insert(tofHit);
+            point.track->tofHits.insert(tofHit);
          }
       }
    }
@@ -532,12 +601,31 @@ void CbmGlobalTrackingTask::Exec(Option_t* opt)
       if (lastStsTrackIter->second < 0.7 * nofStsMatches)
          continue;
       
-      if (lastStsTrackIter->first->tofPoints2.empty())
-      {
-         ++nofNonTofTracks;
+      if (lastStsTrackIter->first->tofPoints.empty())
+      {         
+         if (SemiTofTrack(lastStsTrackIter->first))
+         {
+            ++nofSemiTofTracks;
+            
+            if (tofHitInd >= 0)
+            {               
+               if (CheckMatch(lastStsTrackIter->first, tofHitInd, true))
+                  ++nofMergedSemiTofTracks;
+               else
+                  ++nofMergedSemiTofTracks2;
+            }
+            else
+               ++nofMergedSemiTofTracks3;
+         }
+         else
+         {
+            ++nofNonTofTracks;
          
-         if (tofHitInd >= 0)
-            ++nofMergedNonTof;
+            if (tofHitInd >= 0)
+               ++nofMergedNonTof;
+            else
+               ++nofMergedNonTof2;
+         }
       }
       
       if (lastStsTrackIter->first->tofPoints.empty() || lastStsTrackIter->first->tofHits.empty())
@@ -551,54 +639,10 @@ void CbmGlobalTrackingTask::Exec(Option_t* opt)
          continue;
       }
       
-      ++nofMergedTracks2;
-      
-      set<TrackData*> tofMCTracks;
-      
-      const CbmMatch* tofHitMatch = static_cast<const CbmMatch*> (fTofHitDigiMatches->At(tofHitInd));
-      int nofTofDigis = tofHitMatch->GetNofLinks();
-
-      for (int j = 0; j < nofTofDigis; ++j)
-      {
-         const CbmLink& lnk = tofHitMatch->GetLink(j);
-         Int_t digiInd = lnk.GetIndex();
-         CbmTofDigiExp* pDigi = static_cast<CbmTofDigiExp*> (fTofDigis->At(digiInd));
-         
-         const CbmMatch* pPointMatch = pDigi->GetMatch();
-         Int_t nofPoints = pPointMatch->GetNofLinks();
-         
-         for (Int_t k = 0; k < nofPoints; ++k)
-         {
-            const CbmLink& pointLnk = pPointMatch->GetLink(k);
-            Int_t evN = pointLnk.GetEntry() - 1;
-            Int_t pointInd = pointLnk.GetIndex();
-            tofMCTracks.insert(fTofPoints[evN][pointInd].track);
-         }
-      }
-      
-      bool isMatched = false;
-      
-      for(set<TrackData*>::const_iterator j = tofMCTracks.begin(); j != tofMCTracks.end(); ++j)
-      {
-         const TrackData* tofMCTrack = *j;
-         
-         for(map<TrackData*, int>::const_iterator k = stsMCTracks.begin(); k != stsMCTracks.end(); ++k)
-         {
-            const TrackData* stsMCTrack = k->first;
-            
-            if (tofMCTrack == stsMCTrack)
-            {
-               isMatched = true;
-               break;
-            }
-         }
-         
-         if (isMatched)
-            break;
-      }
-      
-      if (isMatched)
+      if (CheckMatch(lastStsTrackIter->first, tofHitInd))
          ++nofMergedTracks;
+      else
+         ++nofMergedTracks2;
    }
 #endif// 0 or 1
 }
@@ -629,16 +673,28 @@ void CbmGlobalTrackingTask::Finish()
    cout << "Nof merged track2: " << nofMergedTracks2 << endl;
    double eff = 100 * nofMergedTracks;
    eff /= nofReferenceTracks;
-   cout << "The efficiency: " << eff << " %" << endl;
+   cout << "The correctly merged reference tracks: " << eff << " % [" << nofMergedTracks << " / " << nofReferenceTracks << " ]" << endl;
    eff = 100 * nofMergedTracks2;
    eff /= nofReferenceTracks;
-   cout << "The efficiency2: " << eff << " %" << endl;
+   cout << "The incorrectly merged reference tracks: " << eff << " % [" << nofMergedTracks2 << " / " << nofReferenceTracks << " ]" << endl;
    eff = 100 * nofNonMergedTracks;
    eff /= nofReferenceTracks;
-   cout << "The non merged: " << eff << " %" << endl;
+   cout << "The not merged reference tracks: " << eff << " % [" << nofNonMergedTracks << " / " << nofReferenceTracks << " ]" << endl;
    eff = 100 * nofMergedNonTof;
    eff /= nofNonTofTracks;
-   cout << "The number of wrongly merged tracks: " << eff << " % [" << nofMergedNonTof << " / " << nofNonTofTracks << " ]" << endl;
+   cout << "The number of merged non ToF tracks: " << eff << " % [" << nofMergedNonTof << " / " << nofNonTofTracks << " ]" << endl;
+   eff = 100 * nofMergedNonTof2;
+   eff /= nofNonTofTracks;
+   cout << "The number of not merged non ToF tracks: " << eff << " % [" << nofMergedNonTof2 << " / " << nofNonTofTracks << " ]" << endl;
+   eff = 100 * nofMergedSemiTofTracks;
+   eff /= nofSemiTofTracks;
+   cout << "The number of the correctly merged semi ToF tracks: " << eff << " % [" << nofMergedSemiTofTracks << " / " << nofSemiTofTracks << " ]" << endl;
+   eff = 100 * nofMergedSemiTofTracks2;
+   eff /= nofSemiTofTracks;
+   cout << "The number of the incorrectly merged semi ToF tracks: " << eff << " % [" << nofMergedSemiTofTracks2 << " / " << nofSemiTofTracks << " ]" << endl;
+   eff = 100 * nofMergedSemiTofTracks3;
+   eff /= nofSemiTofTracks;
+   cout << "The number of the not merged semi ToF tracks: " << eff << " % [" << nofMergedSemiTofTracks3 << " / " << nofSemiTofTracks << " ]" << endl;
    cout << "nofMRPCIntersections: " << nofMRPCIntersections << endl;
    cout << "nofToFIntersections: " << nofToFIntersections << endl;
    cout << "nofMRPCIntersectionsT: " << nofMRPCIntersectionsT << endl;

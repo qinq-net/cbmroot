@@ -41,35 +41,13 @@ public:
         scaltype tx;
         scaltype ty;
         std::list<PointData*> tofPoints;
-        std::list<PointData*> tofPoints2;
         bool use;
         int evN;
         int ind;
         std::set<const CbmTofHit*> tofHits;
         bool used;
         TrackData* parent;
-        
-        void InsertTofPoint2(PointData* pd)
-        {
-            tofPoints2.push_back(pd);
-            
-            if (0 != parent)
-                parent->InsertTofPoint2(pd);
-        }
-        
-        void InsertTofPoint(PointData* pd)
-        {
-            tofPoints.push_back(pd);
-            InsertTofPoint2(pd);
-        }
-        
-        void InsertTofHit(const CbmTofHit* h)
-        {
-            tofHits.insert(h);
-            
-            //if (0 != parent)
-                //parent->InsertTofHit(h);
-        }
+        std::list<TrackData*> offsprings;
     };
     
     struct PointData
@@ -102,6 +80,12 @@ public:
     {
         fTofGeometry.SetTBinSize(v);
     }
+    
+private:
+#ifdef CBM_GLOBALTB_QA
+    bool CheckMatch(const TrackData* stsMCTrack, Int_t tofHitInd, bool deepSearch = false) const;
+    bool SemiTofTrack(const TrackData* mcTrack) const;
+#endif//CBM_GLOBALTB_QA
     
 private:
     CbmGlobalTrackingTofGeometry fTofGeometry;

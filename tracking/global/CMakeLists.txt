@@ -38,6 +38,7 @@ Link_Directories( ${LINK_DIRECTORIES})
 
 Set(SRCS
   CbmGlobalTrackingTask.cxx
+  CbmGlobalTrackingQA.cxx
 )
 
 Set(NO_DICT_SRCS
