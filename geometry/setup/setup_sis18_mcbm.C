@@ -14,15 +14,15 @@
 
 void setup_sis18_mcbm()
 {
-
+  
   // -----  Geometry Tags  --------------------------------------------------
   TString pipeGeoTag      = "v18c_mcbm";
-  TString mvdGeoTag       = "v18b_mcbm";
-  TString stsGeoTag       = "v18e_mcbm";
-  TString trdGeoTag       = "v18d_1e_mcbm";
-  TString tofGeoTag       = "v13-7a_mcbm";
-  TString muchGeoTag      = "v18a_mcbm";  // MUCH does not work yet.
- // ------------------------------------------------------------------------
+  TString mvdGeoTag       = "v18b_mcbm";    // "v18a_mcbm";						  
+  TString stsGeoTag       = "v18e_mcbm";    // "v18d_mcbm";						  
+  TString muchGeoTag      = "v18a_mcbm";
+  TString trdGeoTag       = "v18d_1e_mcbm"; // "v18c_1e_mcbm";  // "v18b_1e_mcbm";  // "v18a_1e_mcbm";
+  TString tofGeoTag       = "v13-7a_mcbm";  // "v13_6a_mcbm";   // "v13_5a_mcbm";
+  // ------------------------------------------------------------------------
 
 
   // -----  Magnetic field  -------------------------------------------------
@@ -43,9 +43,9 @@ void setup_sis18_mcbm()
   setup->SetModule(kPipe, pipeGeoTag);
   setup->SetModule(kMvd, mvdGeoTag);
   setup->SetModule(kSts, stsGeoTag);
+  setup->SetModule(kMuch, muchGeoTag);
   setup->SetModule(kTrd, trdGeoTag);
   setup->SetModule(kTof, tofGeoTag);
-  setup->SetModule(kMuch, muchGeoTag);
   setup->SetField(fieldTag, fieldScale, 0., 0., fieldZ);
   // ------------------------------------------------------------------------
 
