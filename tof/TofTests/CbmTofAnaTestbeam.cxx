@@ -266,6 +266,7 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam()
     fStart(),
     fStop(),
     fCalParFileName(""),
+    fCalOutFileName("./tofAnaTestBeam.hst.root"),
     fCalParFile(NULL),
     fhDTD4DT04D4Off(NULL),
     fhDTX4D4Off(NULL),
@@ -530,6 +531,7 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fStart(),
     fStop(),
     fCalParFileName(""),
+    fCalOutFileName("./tofAnaTestBeam.hst.root"),
     fCalParFile(NULL),
     fhDTD4DT04D4Off(NULL),
     fhDTX4D4Off(NULL),
@@ -2637,7 +2639,7 @@ Bool_t CbmTofAnaTestbeam::WriteHistos()
 
    // Write histogramms to the file
    TDirectory * oldir = gDirectory;
-   TFile *fHist = new TFile("./tofAnaTestBeam.hst.root","RECREATE");
+   TFile *fHist = new TFile(fCalOutFileName,"RECREATE");
    fHist->cd();
 
    switch(fiCorMode){

@@ -765,7 +765,7 @@ Bool_t   CbmTofTestBeamClusterizer::InitCalibParameter()
  
                 for(Int_t iSide=0; iSide<2; iSide++){
                   Double_t TotMean=htempTot_Mean->GetBinContent(iCh*2+1+iSide);  //nh +1 empirical(?)
-                  if(1<TotMean){
+                  if(0.001 < TotMean){
                     fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][iSide] *= fdTTotMean / TotMean;
                   }
                   fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh][iSide]=htempTot_Off->GetBinContent(iCh*2+1+iSide);
@@ -2343,44 +2343,44 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
    TFile *fHist;
    fHist = new TFile(fOutHstFileName,"RECREATE");
    fHist->cd();
-   fhClustBuildTime->Write();
+//   fhClustBuildTime->Write();
 
    for (Int_t iS=0; iS< fDigiBdfPar->GetNbSmTypes(); iS++){
      if (NULL == fhSmCluPosition[iS]) continue; 
-     fhSmCluPosition[iS]->Write();
-     fhSmCluTOff[iS]->Write();
+//     fhSmCluPosition[iS]->Write();
+//     fhSmCluTOff[iS]->Write();
      fhSmCluSvel[iS]->Write();
      for (Int_t iSel=0; iSel<iNSel; iSel++){  // Loop over selectors 
-       fhTSmCluPosition[iS][iSel]->Write();
-       fhTSmCluTOff[iS][iSel]->Write();
-       fhTSmCluTRun[iS][iSel]->Write();
+//       fhTSmCluPosition[iS][iSel]->Write();
+//       fhTSmCluTOff[iS][iSel]->Write();
+//       fhTSmCluTRun[iS][iSel]->Write();
      }
    }
 
    for(Int_t iDetIndx=0; iDetIndx< fDigiBdfPar->GetNbDet(); iDetIndx++){
      if(NULL == fhRpcCluMul[iDetIndx]) continue;
-     fhRpcCluMul[iDetIndx]->Write();
-     fhRpcCluRate[iDetIndx]->Write();
-     fhRpcCluPosition[iDetIndx]->Write();
-     fhRpcCluDelPos[iDetIndx]->Write();
-     fhRpcCluTOff[iDetIndx]->Write();
-     fhRpcCluDelTOff[iDetIndx]->Write();
-     fhRpcCluTrms[iDetIndx]->Write();
-     fhRpcCluTot[iDetIndx]->Write();
-     fhRpcCluAvWalk[iDetIndx]->Write();
-     fhRpcCluAvLnWalk[iDetIndx]->Write();
-     fhRpcDTLastHits[iDetIndx]->Write();
-     fhRpcDTLastHits_Tot[iDetIndx]->Write();
-     fhRpcDTLastHits_CluSize[iDetIndx]->Write();
+//     fhRpcCluMul[iDetIndx]->Write();
+//     fhRpcCluRate[iDetIndx]->Write();
+//     fhRpcCluPosition[iDetIndx]->Write();
+//     fhRpcCluDelPos[iDetIndx]->Write();
+//     fhRpcCluTOff[iDetIndx]->Write();
+//     fhRpcCluDelTOff[iDetIndx]->Write();
+//     fhRpcCluTrms[iDetIndx]->Write();
+//     fhRpcCluTot[iDetIndx]->Write();
+//     fhRpcCluAvWalk[iDetIndx]->Write();
+//     fhRpcCluAvLnWalk[iDetIndx]->Write();
+//     fhRpcDTLastHits[iDetIndx]->Write();
+//     fhRpcDTLastHits_Tot[iDetIndx]->Write();
+//     fhRpcDTLastHits_CluSize[iDetIndx]->Write();
      
      LOG(DEBUG)<<"Write triggered Histos for Det Ind "<<iDetIndx<<Form(", UID 0x%08x",fDigiBdfPar->GetDetUId(iDetIndx))<<FairLogger::endl;
      for (Int_t iSel=0; iSel<iNSel; iSel++){   // Save trigger selected histos 
        if(NULL == fhTRpcCluMul[iDetIndx][iSel]) continue;
-       fhTRpcCluMul[iDetIndx][iSel]->Write();
-       fhTRpcCluPosition[iDetIndx][iSel]->Write();
-       fhTRpcCluTOff[iDetIndx][iSel]->Write();
-       fhTRpcCluTot[iDetIndx][iSel]->Write();
-       fhTRpcCluAvWalk[iDetIndx][iSel]->Write();
+//       fhTRpcCluMul[iDetIndx][iSel]->Write();
+//       fhTRpcCluPosition[iDetIndx][iSel]->Write();
+//       fhTRpcCluTOff[iDetIndx][iSel]->Write();
+//       fhTRpcCluTot[iDetIndx][iSel]->Write();
+//       fhTRpcCluAvWalk[iDetIndx][iSel]->Write();
      }
 
      Int_t iUniqueId = fDigiBdfPar->GetDetUId( iDetIndx );
@@ -2507,7 +2507,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
        }
        htempPos_pfx->Write();
        htempTOff_pfx->Write();
-       htempTot_pfx->Write();
+//       htempTot_pfx->Write();
        htempTot_Mean->Write();
        htempTot_Off->Write();
      }
@@ -2549,7 +2549,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
         LOG(DEBUG1)<<" Offset, gain restoring done ... "<<FairLogger::endl;
         htempPos_pfx->Write();
         htempTOff_pfx->Write();
-        htempTot_pfx->Write();
+//        htempTot_pfx->Write();
         htempTot_Mean->Write();
         htempTot_Off->Write();
 
@@ -2605,8 +2605,8 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
                           iSmType,iSm,iRpc,iCh,fCalSel,iNEntries)
                      <<FairLogger::endl;
 
-         h2tmp0->Write();
-         h2tmp1->Write();
+//         h2tmp0->Write();
+//         h2tmp1->Write();
          if(-1<iNEntries){  // always done 
           TProfile *htmp0 = h2tmp0->ProfileX("_pfx",1,h2tmp0->GetNbinsY());
           TProfile *htmp1 = h2tmp1->ProfileX("_pfx",1,h2tmp1->GetNbinsY());
@@ -2675,11 +2675,11 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
           }
           h1tmp0->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S0_Walk_px", iSmType, iSm, iRpc, iCh ));
           h1tmp0->Smooth(iNWalkSmooth);
-          htmp0->Write();
+//          htmp0->Write();
           h1tmp0->Write();
           h1tmp1->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S1_Walk_px", iSmType, iSm, iRpc, iCh ));
           h1tmp1->Smooth(iNWalkSmooth);
-          htmp1->Write();
+//          htmp1->Write();
           h1tmp1->Write();
          }
 	}
@@ -2700,10 +2700,10 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
                      <<FairLogger::endl;         }
           }
           h1tmp0->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S0_Walk_px", iSmType, iSm, iRpc, iCh ));
-          htmp0->Write();
+//          htmp0->Write();
           h1tmp0->Write();
           h1tmp1->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S1_Walk_px", iSmType, iSm, iRpc, iCh ));
-          htmp1->Write();
+//          htmp1->Write();
           h1tmp1->Write();
          }
         }     
@@ -2819,7 +2819,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
         LOG(DEBUG1)<<" Updating done ... write to file "<<FairLogger::endl;
         htempPos_pfx->Write();
         htempTOff_pfx->Write();
-        htempTot_pfx->Write();
+//        htempTot_pfx->Write();
         htempTot_Mean->Write();
         htempTot_Off->Write();
 
@@ -2858,10 +2858,10 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
                      <<FairLogger::endl;         }
           }
           h1tmp0->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S0_Walk_px", iSmType, iSm, iRpc, iCh ));
-          htmp0->Write();
+//          htmp0->Write();
           h1tmp0->Write();
           h1tmp1->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S1_Walk_px", iSmType, iSm, iRpc, iCh ));
-          htmp1->Write();
+//          htmp1->Write();
           h1tmp1->Write();
         }
      }
@@ -2948,7 +2948,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
 
           /*
            Double_t TotMean=((TProfile *)htempTot_pfx)->GetBinContent(iCh+1);  //nh +1 empirical(!)
-          if(1<TotMean){
+          if(0.001 < TotMean){
             fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][0] *= fdTTotMean / TotMean;
             fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][1] *= fdTTotMean / TotMean;
           }
@@ -2975,7 +2975,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
                                  iSmType,iSm,iRpc,iSide,TotMean,htempTot_Mean->GetBinContent(ib),
                                  fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][iSide],fdTTotMean / TotMean)
                           <<FairLogger::endl;             }
-            if(1<TotMean){
+            if(0.001 < TotMean){
               fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][iSide] *= fdTTotMean / TotMean;
             }
           }
@@ -3031,7 +3031,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
         LOG(DEBUG1)<<" Updating done ... write to file "<<FairLogger::endl;
         htempPos_pfx->Write();
         htempTOff_pfx->Write();
-        htempTot_pfx->Write();
+//        htempTot_pfx->Write();
         htempTot_Mean->Write();
         htempTot_Off->Write();
 
@@ -3072,10 +3072,10 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
                      <<FairLogger::endl;         }
           }
           h1tmp0->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S0_Walk_px", iSmType, iSm, iRpc, iCh ));
-          htmp0->Write();
+//          htmp0->Write();
           h1tmp0->Write();
           h1tmp1->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S1_Walk_px", iSmType, iSm, iRpc, iCh ));
-          htmp1->Write();
+//          htmp1->Write();
           h1tmp1->Write();
         }
      }
@@ -3116,7 +3116,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
         LOG(DEBUG1)<<" Restoring of Offsets and Gains done ... "<<FairLogger::endl;
         htempPos_pfx->Write();
         htempTOff_pfx->Write();
-        htempTot_pfx->Write();
+//        htempTot_pfx->Write();
         htempTot_Mean->Write();
         htempTot_Off->Write();
 
@@ -3138,10 +3138,10 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
                      <<FairLogger::endl;         }
           }
           h1tmp0->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S0_Walk_px", iSmType, iSm, iRpc, iCh ));
-          htmp0->Write();
+//          htmp0->Write();
           h1tmp0->Write();
           h1tmp1->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S1_Walk_px", iSmType, iSm, iRpc, iCh ));
-          htmp1->Write();
+//          htmp1->Write();
           h1tmp1->Write();
         }
 
@@ -3160,7 +3160,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
           }
           Int_t iNEntries=h2tmp->GetEntries();
 
-          h2tmp->Write();
+//          h2tmp->Write();
           TProfile *htmp = h2tmp->ProfileX("_pfx",1,h2tmp->GetNbinsY());
           TH1D *h1tmp    = h2tmp->ProjectionX("_px",1,h2tmp->GetNbinsY());
 /*          TH1D *h1ytmp   = h2tmp->ProjectionY("_py",1,h2tmp->GetNbinsX());*/
@@ -3233,7 +3233,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
 
           /*
            Double_t TotMean=((TProfile *)htempTot_pfx)->GetBinContent(iCh+1);  //nh +1 empirical(!)
-          if(1<TotMean){
+          if(0.001 < TotMean){
             fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][0] *= fdTTotMean / TotMean;
             fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][1] *= fdTTotMean / TotMean;
           }
@@ -3260,7 +3260,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
                                  iSmType,iSm,iRpc,iSide,TotMean,htempTot_Mean->GetBinContent(ib),
                                  fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][iSide],fdTTotMean / TotMean)
                           <<FairLogger::endl;             }
-            if(1<TotMean){
+            if(0.001 < TotMean){
               fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][iSide] *= fdTTotMean / TotMean;
             }
           }
@@ -3316,7 +3316,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
         LOG(DEBUG1)<<" Updating done ... write to file "<<FairLogger::endl;
         htempPos_pfx->Write();
         htempTOff_pfx->Write();
-        htempTot_pfx->Write();
+//        htempTot_pfx->Write();
         htempTot_Mean->Write();
         htempTot_Off->Write();
 
@@ -3357,10 +3357,10 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
                      <<FairLogger::endl;         }
           }
           h1tmp0->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S0_Walk_px", iSmType, iSm, iRpc, iCh ));
-          htmp0->Write();
+//          htmp0->Write();
           h1tmp0->Write();
           h1tmp1->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S1_Walk_px", iSmType, iSm, iRpc, iCh ));
-          htmp1->Write();
+//          htmp1->Write();
           h1tmp1->Write();
         }
      }
@@ -3374,40 +3374,40 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
      }
    }
 
-   fhCluMulCorDutSel->Write();
+//   fhCluMulCorDutSel->Write();
 
-   fhDigSpacDifClust->Write();
-   fhDigTimeDifClust->Write();
-   fhDigDistClust->Write();
+//   fhDigSpacDifClust->Write();
+//   fhDigTimeDifClust->Write();
+//   fhDigDistClust->Write();
 
-   fhClustSizeDifX->Write();
-   fhClustSizeDifY->Write();
+//   fhClustSizeDifX->Write();
+//   fhClustSizeDifY->Write();
 
-   fhChDifDifX->Write();
-   fhChDifDifY->Write();
+//   fhChDifDifX->Write();
+//   fhChDifDifY->Write();
 
-   fhNbSameSide->Write();
-   fhNbDigiPerChan->Write();
+//   fhNbSameSide->Write();
+//   fhNbDigiPerChan->Write();
 
 
-   fhHitsPerTracks->Write();
+//   fhHitsPerTracks->Write();
    if( kFALSE == fDigiBdfPar->ClustUseTrackId() )
-      fhPtsPerHit->Write();
-   fhTimeResSingHits->Write();
-   fhTimeResSingHitsB->Write();
-   fhTimePtVsHits->Write();
-   fhClusterSize->Write();
-   fhClusterSizeType->Write();
+//      fhPtsPerHit->Write();
+//   fhTimeResSingHits->Write();
+//   fhTimeResSingHitsB->Write();
+//   fhTimePtVsHits->Write();
+//   fhClusterSize->Write();
+//   fhClusterSizeType->Write();
    if( kTRUE == fDigiBdfPar->ClustUseTrackId() )
    {
-      fhTrackMul->Write();
-      fhClusterSizeMulti->Write();
-      fhTrk1MulPos->Write();
-      fhHiTrkMulPos->Write();
-      fhAllTrkMulPos->Write();
-      fhMultiTrkProbPos->Divide( fhHiTrkMulPos, fhAllTrkMulPos);
-      fhMultiTrkProbPos->Scale( 100.0 );
-      fhMultiTrkProbPos->Write();
+//      fhTrackMul->Write();
+//      fhClusterSizeMulti->Write();
+//      fhTrk1MulPos->Write();
+//      fhHiTrkMulPos->Write();
+//      fhAllTrkMulPos->Write();
+//      fhMultiTrkProbPos->Divide( fhHiTrkMulPos, fhAllTrkMulPos);
+//      fhMultiTrkProbPos->Scale( 100.0 );
+//      fhMultiTrkProbPos->Write();
    } // if( kTRUE == fDigiBdfPar->ClustUseTrackId() )
 
 
@@ -3653,7 +3653,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                        [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
                        [pDigi->GetChannel()]
                        [pDigi->GetSide()];
-         if (dTot<1.)  dTot=1;
+         if (dTot < 0.001)  dTot=0.001;
          pCalDigi->SetTot(dTot *  // calibrate Digi ToT 
                        fvCPTotGain[pDigi->GetType()]
                        [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]

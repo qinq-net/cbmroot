@@ -155,6 +155,7 @@ class CbmTofAnaTestbeam : public FairTask {
       inline void SetReqTrg (Int_t ival)                { fiReqTrg = ival;}
 
       inline void SetCalParFileName(TString CalParFileName) { fCalParFileName = CalParFileName; }
+      inline void SetCalOutFileName(TString CalOutFileName) { fCalOutFileName = CalOutFileName; }
 
       inline void SetSIGLIM ( Double_t val ) { fSIGLIM = val; }
       inline void SetSIGT   ( Double_t val ) { fSIGT = val; }
@@ -412,6 +413,7 @@ class CbmTofAnaTestbeam : public FairTask {
       TTimeStamp fStop;
 
       TString       fCalParFileName;      // name of the file name with Calibration Parameters
+      TString       fCalOutFileName;
       TFile*        fCalParFile;          // pointer to Calibration Parameter file 
       TH1      *fhDTD4DT04D4Off;          // 'calibration' histo
       TH1          *fhDTX4D4Off;          // 'calibration' histo
