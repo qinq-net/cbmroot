@@ -103,7 +103,7 @@ void mcbm_mc(Int_t nEvents = 2, const char* setupName = "sis18_mcbm",
 
 
   // -----   Remove old CTest runtime dependency file   ---------------------
-  TString depFile = Remove_CTest_Dependency_File(outDir, "run_mc" , setupName);
+  TString depFile = Remove_CTest_Dependency_File(outDir, "mcbm_mc" , setupName);
   // ------------------------------------------------------------------------
 
 
@@ -332,8 +332,5 @@ void mcbm_mc(Int_t nEvents = 2, const char* setupName = "sis18_mcbm",
   Generate_CTest_Dependency_File(depFile);
   RemoveGeoManager();
   // ------------------------------------------------------------------------
-
-  // Function needed for CTest runtime dependency
-  Generate_CTest_Dependency_File(depFile);
 }
 
