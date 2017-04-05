@@ -5,10 +5,12 @@
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 
-void create_calib(Int_t nEvents = 100000000, char *cFileId="CbmTofSps_01Dec0427")
+void create_calib(Long64_t nEvents = 100000000, TString cFileId="CbmTofSps_01Dec0427")
 {
   TStopwatch timer;
   timer.Start();
+
+  FairLogger::GetLogger();
 
 //  gLogger->SetLogScreenLevel("FATAL");
   gLogger->SetLogScreenLevel("ERROR");
@@ -23,15 +25,17 @@ void create_calib(Int_t nEvents = 100000000, char *cFileId="CbmTofSps_01Dec0427"
   gLogger->SetLogVerbosityLevel("MEDIUM");
 //  gLogger->SetLogVerbosityLevel("HIGH");
 
-  TString workDir = gSystem->Getenv("VMCWORKDIR");
-  TString paramDir = workDir + "/macro/tof/beamtime/nov15";
+  TString srcDir = gSystem->Getenv("VMCWORKDIR");
+  TString paramDir = srcDir + "/macro/tof/beamtime/nov15";
 
-  TObjString unpParFile = paramDir + "/parUnpCernNov2015.txt";
-  TObjString calParFile = paramDir + "/parCalib_batch.txt";
+  TObjString unpParFile = (paramDir + "/parUnpCernNov2015.txt").Data();
+  TObjString calParFile = (paramDir + "/parCalib_batch.txt").Data();
 
   TList *parFileList = new TList();
   parFileList->Add(&unpParFile);
   parFileList->Add(&calParFile);
+
+  FairRunOnline* run = new FairRunOnline();
 
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
   
@@ -39,15 +43,12 @@ void create_calib(Int_t nEvents = 100000000, char *cFileId="CbmTofSps_01Dec0427"
   parIo1->open(parFileList, "in");
   rtdb->setFirstInput(parIo1);
 
-  TString cOutfileId = Form("%s",cFileId);
+  TString cOutfileId = Form("%s",cFileId.Data());
 
-  TString outFile = paramDir + "/unpack_" + cOutfileId + ".calib.root";
+  TString outFile = "./unpack_" + cOutfileId + ".calib.root";
 
-   CbmHldSource* source = new CbmHldSource();
-   source->AddPath("/mnt/nas-herrmann2/cern-nov15/production/",Form("%s*.hld",cFileId));
-//   source->AddFile("/mnt/nas-herrmann2/cern-nov15/production/CbmTofSps_01Dec0427_15335042707.hld");
-//   source->AddFile("/mnt/nas-herrmann2/cern-nov15/production/CbmTofSps_27Nov2115_15331211514.hld");
-//   source->AddFile("/mnt/nas-herrmann2/cern-nov15/production/CbmTofSps_01Dec0427_15335045953.hld"); // epoch overflow in spill break
+  CbmHldSource* source = new CbmHldSource();
+  source->AddPath("/lustre/nyx/cbm/prod/beamtime/2015/11/cern/data/production/",Form("%s*.hld",cFileId.Data()));
 
   TTrbUnpackTof* tofTrbDataUnpacker = new TTrbUnpackTof(10,1,31,0,0);
   tofTrbDataUnpacker->SetInspection(kTRUE);

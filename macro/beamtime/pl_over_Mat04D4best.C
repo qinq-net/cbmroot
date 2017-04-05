@@ -58,13 +58,26 @@ can->cd(1);
   h2px=h2->ProjectionX(); 
   
   TFitResultPtr fResx=h2px->Fit("gaus","S","",-2.*h2px->GetRMS(),2.*h2px->GetRMS());
-  dMeanX=fResx->Parameter(1);
-  dSigX=fResx->Parameter(2);
+  if( static_cast<Int_t>(fResx) )
+  {
+    cout << "res X fit failed" <<endl;
+  }
+  else
+  {
+    dMeanX=fResx->Parameter(1);
+    dSigX=fResx->Parameter(2);
+  }
   h2py=h2->ProjectionY(); 
   TFitResultPtr fResy=h2py->Fit("gaus","S","",-2.*h2py->GetRMS(),2.*h2py->GetRMS());
-  dMeanY=fResy->Parameter(1);
-  dSigY=fResy->Parameter(2);
-  
+  if( static_cast<Int_t>(fResy) )
+  {
+    cout << "res Y fit failed" <<endl;
+  }
+  else
+  {
+    dMeanY=fResy->Parameter(1);
+    dSigY=fResy->Parameter(2);
+  }
  }else {  cout << hname << " not found" << endl;  }
 }
 
@@ -142,8 +155,15 @@ can->cd(7);
  gPad->SetLogy();
  TFitResultPtr fRes=hDT04->Fit("gaus","S");
  // fRes->Print();
- dTMean=fRes->Parameter(1);
- dTRes=fRes->Parameter(2);
+  if( static_cast<Int_t>(fRes) )
+  {
+    cout << "res T fit failed" <<endl;
+  }
+  else
+  {
+    dTMean=fRes->Parameter(1);
+    dTRes=fRes->Parameter(2);
+  }
  dTRMS=hDT04->GetRMS();
 }
 
