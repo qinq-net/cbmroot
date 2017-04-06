@@ -17,7 +17,5 @@
 #define scaltype double
 #define timetype double
 
-#define CBM_GLOBALTB_QA
-
 #endif /* CBMGLOBALTRACKINGDEFS_H */
 
