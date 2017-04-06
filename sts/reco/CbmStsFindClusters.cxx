@@ -100,7 +100,9 @@ void CbmStsFindClusters::Exec(Option_t* /*opt*/) {
 	*/
 	for (Int_t iModule = 0; iModule < fSetup->GetNofModules(); iModule++) {
 		CbmStsModule* module = fSetup->GetModule(iModule);
-		if ( module->GetNofDigisTb() == 0 ) continue;
+		if ( fUseFinderTb && module->GetNofDigisTb() == 0 ) continue;
+		if ( ! fUseFinderTb && module->GetNofDigis() == 0 ) continue;
+
 		Int_t nClusters = 0;
 		if ( fUseFinderTb ) {
 			module->SetDeadTime(fDeadTime);
