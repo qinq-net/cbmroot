@@ -49,7 +49,11 @@ class TString;
 
 class CbmTofTestBeamClusterizer : public FairTask
 {
+
+   friend class CbmTofAnaTestbeam;
+
    public:
+      inline static CbmTofTestBeamClusterizer *Instance(){ return fInstance; }
 
       /**
        ** @brief Constructor.
@@ -149,6 +153,7 @@ class CbmTofTestBeamClusterizer : public FairTask
    protected:
 
    private:
+      static CbmTofTestBeamClusterizer *fInstance;
       /**
        ** @brief Copy constructor.
        **/
