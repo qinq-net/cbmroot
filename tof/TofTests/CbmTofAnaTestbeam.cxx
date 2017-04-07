@@ -103,6 +103,11 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam()
     fhTIS_sel(NULL),
     fhTIS_sel1(NULL),
     fhTIS_sel2(NULL),
+    fhDTLH_all(NULL),
+    fhDTLH_sel(NULL),
+    fhDTLH_sel1(NULL),
+    fhDTLH_sel2(NULL),
+    fhDTLH_DStrip(NULL),
     fhDT2(NULL),
     fhXX2(NULL),
     fhYY2(NULL),
@@ -325,7 +330,8 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam()
     fSIGX(1.),
     fSIGY(1.),
     fEnableMatchPosScaling(kTRUE),
-    fFindTracks(NULL)
+    fFindTracks(NULL),
+    fClusterizer(NULL)
 {
   cout << "CbmTofTests: Task started " << endl;
 }
@@ -368,6 +374,11 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fhTIS_sel(NULL),
     fhTIS_sel1(NULL),
     fhTIS_sel2(NULL),
+    fhDTLH_all(NULL),
+    fhDTLH_sel(NULL),
+    fhDTLH_sel1(NULL),
+    fhDTLH_sel2(NULL),
+    fhDTLH_DStrip(NULL),
     fhDT2(NULL),
     fhXX2(NULL),
     fhYY2(NULL),
@@ -590,7 +601,9 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fSIGX(1.),
     fSIGY(1.),
     fEnableMatchPosScaling(kTRUE),
-    fFindTracks(NULL)
+    fFindTracks(NULL),
+    fClusterizer(NULL)
+
 {
 }
 // ------------------------------------------------------------------
@@ -629,6 +642,8 @@ InitStatus CbmTofAnaTestbeam::Init()
 		  << FairLogger::endl;
 
   fFindTracks = CbmTofFindTracks::Instance();
+  fClusterizer= CbmTofTestBeamClusterizer::Instance();
+
   if (NULL == fFindTracks) {
     //fdTShift   += fChannelInfoDut->GetZ()/30.;  // in ns 
     //if ( NULL != fChannelInfoSel2 ) fdSel2TOff += fChannelInfoSel2->GetZ()/30.;
@@ -689,13 +704,15 @@ Bool_t   CbmTofAnaTestbeam::LoadGeometry()
        fiDutNch++;
        if(fChannelInfo->GetX() > dDutXmax) dDutXmax=fChannelInfo->GetX();
        if(fChannelInfo->GetX() < dDutXmin) dDutXmin=fChannelInfo->GetX();
-       if(fiDutNch == 1) fChannelInfoDut = fChannelInfo; 
-       LOG(DEBUG) <<Form(" DutId 0x%08x ",cellId) 
-		  << "  got cell " << smtype << ", " << smodule << ", " << module 
-		  << ", x-size "<< fChannelInfo->GetSizex() 
-		  << ", y-size "<< fChannelInfo->GetSizey()
-		  <<", # "<<fiDutNch<<", Xmin "<<dDutXmin<<", Xmax "<<dDutXmax
-		  << FairLogger::endl;
+       if(fiDutNch == 1){
+	 fChannelInfoDut = fChannelInfo; 
+	 LOG(INFO) <<Form(" DutId 0x%08x ",cellId) 
+		   << "  got cell " << smtype << ", " << smodule << ", " << module 
+		   << ", x-size "<< fChannelInfoDut->GetSizex() 
+		   << ", y-size "<< fChannelInfoDut->GetSizey()
+		   <<", # "<<fiDutNch<<", Xmin "<<dDutXmin<<", Xmax "<<dDutXmax
+		   << FairLogger::endl;
+       }
      }
    }
    if (fiDutNch > 0){
@@ -716,14 +733,14 @@ Bool_t   CbmTofAnaTestbeam::LoadGeometry()
 void CbmTofAnaTestbeam::Exec(Option_t* /*option*/)
 {
   // Task execution
-  if(NULL != fFindTracks){
-   if(!fFindTracks->InspectEvent()) return;
+   if(NULL != fFindTracks){
+     if(!fFindTracks->InspectEvent()) return;
 
-   LOG(DEBUG)<<" CbmTofAnaTestbeam::Exec => New event with "
-	     <<fFindTracks->GetNStationsFired()<<" fired stations for "
-	     <<fFindTracks->GetMinNofHits()<<" requested hits"
-	     <<FairLogger::endl;
-  }
+     LOG(DEBUG)<<" CbmTofAnaTestbeam::Exec => New event with "
+	       <<fFindTracks->GetNStationsFired()<<" fired stations for "
+	       <<fFindTracks->GetMinNofHits()<<" requested hits"
+	       <<FairLogger::endl;
+   } 
    fStart.Set();
    FillHistos();
    fStop.Set();
@@ -765,9 +782,9 @@ Bool_t   CbmTofAnaTestbeam::RegisterInputs()
 
    if( NULL == fTofDigisColl)
    {
-      LOG(ERROR)<<"CbmTofAnaTestbeam::RegisterInputs => Could not get the TofDigi TClonesArray!!!"<<FairLogger::endl;
-      return kFALSE;
-   } // if( NULL == fTofDigisColl)
+    LOG(WARNING)<<"CbmTofAnaTestbeam::RegisterInputs => Could not get the TofDigi TClonesArray!!! ... continuing with incomplete input "<<FairLogger::endl;
+    // return kFALSE;
+   }// if( NULL == fTofDigisColl)
 
    fTofHitsColl   = (TClonesArray *) fManager->GetObject("TofHit");
    if( NULL == fTofHitsColl)
@@ -984,6 +1001,13 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
    fhTIS_sel1 = new TH1F("TIS_sel1", "Time in Spill (sel1); t (sec)", TISnbins, 0, TISmax);
    fhTIS_sel2 = new TH1F("TIS_sel2", "Time in Spill (sel2); t (sec)", TISnbins, 0, TISmax);
 
+   fhDTLH_all  =  new TH1F("hDTLH_all", "Time to last hit in Dut(all); log( #DeltaT (ns)); counts",100.,0.,10.);
+   fhDTLH_sel  =  new TH1F("hDTLH_sel", "Time to last hit in Dut(sel); log( #DeltaT (ns)); counts",100.,0.,10.);
+   fhDTLH_sel1 =  new TH1F("hDTLH_sel1","Time to last hit in Dut(sel1); log( #DeltaT (ns)); counts",100.,0.,10.);
+   fhDTLH_sel2 =  new TH1F("hDTLH_sel2","Time to last hit in Dut(sel2); log( #DeltaT (ns)); counts",100.,0.,10.);
+   fhDTLH_DStrip =  new TH2F("hDTLH_DStrip","Time to last hit strip matching Dut(sel1); strip ; Channel-PredictedChannel",
+			     32, 0, 31, 7., -3.5, 3.5);
+
    fhBRefMul =  new TH1F( Form("hBRefMul"),Form("Multiplicity in Beam Reference counter ; Mul ()"),
 			  50, 0., 50.); 
    fhDTD4    =  new TH1F( Form("hDTD4"),Form("reference time ; #Delta tD4 (ns)"),
@@ -1079,9 +1103,9 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
      fhChi04best  =  new TH1F( Form("hChi04best"),Form("matching chi2; #chi; Nhits"),
 			  100, 0., fdChi2Lim);      
      fhDigiMul0best =  new TH1F( Form("hDigiMul0best"),Form("Number of digis in cluster; N_{digi}; "),
-			  20, 0., 20.); 
+			  40, 0., 40.); 
      fhDigiMul4best =  new TH1F( Form("hDigiMul4best"),Form("Number of digis in cluster; N_{digi}; "),
-			  20, 0., 20.); 
+			  40, 0., 40.); 
 
      fhChiDT04best = new TH2F( Form("hChiDT04best"),Form("Time - Chi correlation; #chi; #DeltaT [ns]"),
 			       100, 0., 100., 100, -DTMAX, DTMAX);
@@ -1131,13 +1155,13 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 			  100, 0., 50.); 
 
      fhDigiMul0D4best =  new TH2F( Form("hDigiMul0D4best"),Form("Number of digis in cluster; Mul0; N_{strips}; "),
-				   20, 0., 20., 20, 0., 20.); 
+				   40, 0., 40., 40, 0., 40.); 
      fhDigiMul4D4best =  new TH2F( Form("hDigiMul4D4best"),Form("Number of digis in cluster; Mul4; N_{strips}; "),
-				   20, 0., 20., 20, 0., 20.); 
+				   40, 0., 40., 40, 0., 40.); 
      fhCluSize04D4best =  new TH2F( Form("hCluSize04D4best"),Form("cluster multiplicity ; CluSize0; CluSize4"),
-				   20, 0., 20., 20, 0., 20.); 
+				   40, 0., 40., 40, 0., 40.); 
      fhCluMul04D4best =  new TH2F( Form("hCluMul04D4best"),Form("cluster size correlation ; Mul0; Mul4"),
-				   20, 0., 20., 20, 0., 20.); 
+				   40, 0., 40., 20, 0., 20.); 
      fhStrMul04D4best =  new TH2F( Form("hStrMul04D4best"),Form("strip multiplicity ; StrMul0; StrMul4"),
 				   50, 0., 50., 50, 0., 50.); 
      fhCluMulTSig0D4best =  new TH2F( Form("hCluMulTSig0D4best"),Form("time spread - cluster multiplicity ; Mul0; #sigma_{T} (ns)"),
@@ -1187,7 +1211,7 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 
      fhDTMul0D4best = new TH2F( Form("hDTMul0D4best"),
 			    Form("Dut Time - Multiplicity correlation; Mul0 ; #DeltaT04 [ns]"),
-			    20, 0., 20., 100, -DTMAX, DTMAX);
+			    40, 0., 40., 100, -DTMAX, DTMAX);
      fhDTX0D4best = new TH2F( Form("hDTX0D4best"),
 			    Form("Dut Time - position correlation; X0 [cm]; #DeltaT04 [ns]"),
 			    50, -17., 17., 100, -DTMAX, DTMAX); 
@@ -1358,63 +1382,63 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 
   // Dut histos
      Int_t iDutId=fiDut*100+fiDutSm*10+fiDutRpc;
-    fhDutPullX=new TH1F(  Form("hDutPullX_Sm_%d",iDutId),
+     fhDutPullX=new TH1F(  Form("hDutPullX_Sm_%d",iDutId),
 			    Form("hDutPullX_Sm_%d;  #DeltaX",iDutId),
 			    100, -10., 10.);  
-    fhDutPullY=new TH1F(  Form("hDutPullY_Sm_%d",iDutId),
+     fhDutPullY=new TH1F(  Form("hDutPullY_Sm_%d",iDutId),
 			    Form("hDutPullY_Sm_%d;  #DeltaY",iDutId),
 			    100, -10., 10.);  
-    fhDutPullZ=new TH1F(  Form("hDutPullZ_Sm_%d",iDutId),
+     fhDutPullZ=new TH1F(  Form("hDutPullZ_Sm_%d",iDutId),
 			    Form("hDutPullZ_Sm_%d;  #DeltaZ",iDutId),
 			    100, -200., 200.);  
-    fhDutPullT=new TH1F(  Form("hDutPullT_Sm_%d",iDutId),
+     fhDutPullT=new TH1F(  Form("hDutPullT_Sm_%d",iDutId),
 			    Form("hDutPullT_Sm_%d;  #DeltaT",iDutId),
 			    100, -500., 500.); 
-    fhDutPullTB=new TH1F( Form("hDutPullTB_Sm_%d",iDutId),
+     fhDutPullTB=new TH1F( Form("hDutPullTB_Sm_%d",iDutId),
 			    Form("hDutPullTB_Sm_%d;  #DeltaT",iDutId),
 			    150, -750., 750.); 
 
-    fhDutChiFound=new TH1F(  Form("hDutChi_Found_Sm_%d",iDutId),
+     fhDutChiFound=new TH1F(  Form("hDutChi_Found_Sm_%d",iDutId),
 			    Form("hDutChi_Found_Sm_%d;  #chi",iDutId),
 			    50, 0., 10.);  
-    fhDutChiMissed=new TH1F(  Form("hDutChi_Missed_Sm_%d",iDutId),
+     fhDutChiMissed=new TH1F(  Form("hDutChi_Missed_Sm_%d",iDutId),
 			    Form("hDutChi_Missed_Sm_%d;  #chi",iDutId),
 			    50, 0., 10.);  
 
-    fhDutChiMatch=new TH1F(  Form("hDutChi_Match_Sm_%d",iDutId),
+     fhDutChiMatch=new TH1F(  Form("hDutChi_Match_Sm_%d",iDutId),
 			    Form("hDutChi_Match_Sm_%d;  #chi",iDutId),
 			    50, 0., 10.);  
-    Double_t XSIZ=20.; 
-    Double_t DTSIZ=500;
-    Int_t Nbins=40.;
-    fhDutXY_Found = new TH2F( Form("hDutXY_Found_%d",iDutId),
+     Double_t XSIZ=20.; 
+     Double_t DTSIZ=500;
+     Int_t Nbins=40.;
+     fhDutXY_Found = new TH2F( Form("hDutXY_Found_%d",iDutId),
 			    Form("hDutXY_Found_%d;  x(cm); y (cm)",iDutId),
 			    Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ); 
-    fhDutXY_Missed = new TH2F( Form("hDutXY_Missed_%d",iDutId),
+     fhDutXY_Missed = new TH2F( Form("hDutXY_Missed_%d",iDutId),
 			    Form("hDutXY_Missed_%d;  x(cm); y (cm)",iDutId),
 			    Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ); 
 
-    fhDutXYDT      = new TH3F( Form("hDutXYDT_%d",iDutId), 
+     fhDutXYDT      = new TH3F( Form("hDutXYDT_%d",iDutId), 
 			    Form("hDutXYDT_%d;  x(cm); y (cm); #Deltat (ns)",iDutId),
 			    Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ, Nbins, -DTSIZ, DTSIZ); 
-    // rate histos
-    Double_t TRange = 600.; //in seconds
-    Double_t NStations=10.;
-    if (NULL != fFindTracks) NStations=fFindTracks->GetNStations();
+     // rate histos
+     Double_t TRange = 600.; //in seconds
+     Double_t NStations=10.;
+     if (NULL != fFindTracks) NStations=fFindTracks->GetNStations();
 
-    fhTrklNofHitsRate = new TH2F( Form("hTrklNofHitsRate"),
+     fhTrklNofHitsRate = new TH2F( Form("hTrklNofHitsRate"),
 			    Form("hTrklNofHitsRate;  Time (s); NofHits "),
 				  (Int_t)TRange, 0., TRange, 10, 1., 11.);
-    fhTrklDetHitRate  = new TH2F( Form("hTrklDetHitRate"),
+     fhTrklDetHitRate  = new TH2F( Form("hTrklDetHitRate"),
 			    Form("hTrklDetHitRate;  Time (s); DetIndx "),
 				  (Int_t)TRange, 0., TRange, NStations, 0., NStations);
 
-    // spill histos 
-    Double_t TRangeSpill = 10.; //in seconds
-    fhTrklNofHitsRateInSpill = new TH2F( Form("hTrklNofHitsRateInSpill"),
+     // spill histos 
+     Double_t TRangeSpill = 10.; //in seconds
+     fhTrklNofHitsRateInSpill = new TH2F( Form("hTrklNofHitsRateInSpill"),
 			    Form("hTrklNofHitsRateInSpill;  Time (s); NofHits "),
 				(Int_t)TRangeSpill*10, 0., TRangeSpill, 10, 1., 11.);
-    fhTrklDetHitRateInSpill  = new TH2F( Form("hTrklDetHitRateInSpill"),
+     fhTrklDetHitRateInSpill  = new TH2F( Form("hTrklDetHitRateInSpill"),
 			    Form("hTrklDetHitRateInSpill;  Time (s); DetIndx "),
 				  (Int_t)TRangeSpill*10, 0., TRangeSpill, NStations, 0., NStations);
 
@@ -1757,7 +1781,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	      dDDia= pHit1->GetTime()-dTDia;
 	    }
 	  }
- 	  LOG(DEBUG)<<Form("CbmTofAnaTestbeam:FillHisto: DDia %f",dDDia)<<FairLogger::endl; 
+ 	  LOG(DEBUG)<<Form("DDia %f",dDDia)<<FairLogger::endl; 
 	  if (dDDia==0.) continue;
 	} // 2 diamond condition end 
 
@@ -1772,12 +1796,12 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	   Int_t iChId2 = pHit2->GetAddress();
 	   fChannelInfo2 = fDigiPar->GetCell( iChId2 );
 	   if(NULL == fChannelInfo2){
-	     LOG(DEBUG) << "CbmTofAnaTestbeam::FillHistos: Invalid Channel Pointer for ChId2 "
+	     LOG(DEBUG) << "Invalid Channel Pointer for ChId2 "
 			<< Form(" 0x%08x ",iChId2)
 			<<FairLogger::endl;
 	     continue;
 	   }
-	   LOG(DEBUG2)<<Form("CbmTofAnaTestbeam:FillHisto: TDia %f, THit %f",dTDia,pHit2->GetTime())
+	   LOG(DEBUG2)<<Form("TDia %f, THit %f",dTDia,pHit2->GetTime())
 		      <<FairLogger::endl;
 
 	   if(  fiMrpcRefAddr  == iDetId2  // Beam - Ref coincidence
@@ -1785,13 +1809,13 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	     dDTD4=pHit2->GetTime() - dTDia + fdTShift;
 	     fhDTD4->Fill(dDTD4);
 
-	     LOG(DEBUG1)<<Form("CbmTofAnaTestbeam:FillHisto: dDTD4 %8.4e, min: %8.4e",dDTD4,dDTD4Min)
+	     LOG(DEBUG1)<<Form("dDTD4 %8.4e, min: %8.4e",dDTD4,dDTD4Min)
 			<<FairLogger::endl;
 
 	     if( TMath::Abs(dDTD4)<fdDTD4MAX &&        // single selection scheme, selector 0
 	         TMath::Abs(CbmTofAddress::GetChannelId( iChId2 ) - fdCh4Sel) < fdDCh4Sel     )
 	       {
-		 LOG(DEBUG1)<<Form("CbmTofAnaTestbeam:FillHisto: Valid Mrpc hit 0x%08x",iChId2)
+		 LOG(DEBUG1)<<Form("Valid Mrpc hit 0x%08x",iChId2)
 			<<FairLogger::endl;
 		 /*TGeoNode *fNode=*/        // prepare global->local trafo
 		   gGeoManager->FindNode(fChannelInfo2->GetX(),fChannelInfo2->GetY(),fChannelInfo2->GetZ());
@@ -1847,7 +1871,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 				      <<FairLogger::endl;
 			   continue;
 		         }
-		         LOG(DEBUG2)<<Form("CbmTofAnaTestbeam:FillHisto: inspect %d. Sel2 0x%08x",iHitInd3,iDetId3)
+		         LOG(DEBUG2)<<Form("inspect %d. Sel2 0x%08x",iHitInd3,iDetId3)
 				    <<FairLogger::endl;
 
 		         if( fiMrpcSel2Addr == iDetId3 ) { //CbmTofAddress::GetSmType( iDetId3 )){   // Sel2 RPC hit
@@ -1884,7 +1908,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 			         BSel[0] = kTRUE;
 			         pHitSel2= pHit3;
 			         fChannelInfoSel2=fChannelInfo3;
-			         LOG(DEBUG)<<Form("CbmTofAnaTestbeam:FillHisto: better Sel2 0x%08x with Chi2 %7.1f, x %7.1f, Deltax %7.1f",
+			         LOG(DEBUG)<<Form("better Sel2 0x%08x with Chi2 %7.1f, x %7.1f, Deltax %7.1f",
 						   fiMrpcSel2Addr,Chi2Max,xPos3B,xPos3B-xPos2)
 				           <<FairLogger::endl;
 			       }
@@ -1977,6 +2001,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
     fhTofD4sel->Fill(pHitRef->GetTime()-pDia->GetTime());           //  general normalisation
     fhDTD4sel->Fill(dDTD4Min);                                      //  general normalisation
     
+    Int_t iDutCh=0;
     if(fChannelInfoDut != NULL){
      // Project into Dut reference frame
      /*TGeoNode *fNodeDut=*/        // prepare global->local trafo
@@ -1991,6 +2016,20 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      //hitpos1_local[0] -= fiDutNch/2 * fChannelInfoDut->GetSizex();
      fhXY0D4sel->Fill(hitpos1_local[0],hitpos1_local[1]);
 
+     iDutCh=TMath::Floor( hitpos1_local[0]/fChannelInfoDut->GetSizex() ) + fiDutNch/2; // FIXME: needs proper calculation
+      if(iDutCh<0 || iDutCh>fiDutNch-1)
+      LOG(INFO)<<"Predicted ch "<<iDutCh<<" from x = "<<hitpos1_local[0]<<", Sizex ="<<fChannelInfoDut->GetSizex()
+	       <<", Memory "<<fClusterizer->fdMemoryTime
+	       <<FairLogger::endl;
+     if(fClusterizer->fdMemoryTime>0) {
+      if(iDutCh<0) iDutCh=0;
+      if(iDutCh>fiDutNch-1) iDutCh=fiDutNch-1;
+      if(fClusterizer->fvLastHits[fiDut][fiDutSm][fiDutRpc][iDutCh].size()>1){
+	std::list<CbmTofHit *>::iterator itL=fClusterizer->fvLastHits[fiDut][fiDutSm][fiDutRpc][iDutCh].end(); 
+	itL--;        
+	fhDTLH_sel->Fill(TMath::Log10(pHitRef->GetTime()-(*itL)->GetTime()));
+      }
+     }
     }
 
     // Monitor selected Reference Hit position
@@ -2019,6 +2058,14 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 
       if(fTrbHeader != NULL) fhTIS_sel2->Fill(fTrbHeader->GetTimeInSpill());
       else                   fhTIS_sel2->Fill((dRefTMean-StartSpillTime)/1.E9);
+
+      if(fClusterizer->fdMemoryTime>0) {
+	if(fClusterizer->fvLastHits[fiDut][fiDutSm][fiDutRpc][iDutCh].size()>1){
+	  std::list<CbmTofHit *>::iterator itL=fClusterizer->fvLastHits[fiDut][fiDutSm][fiDutRpc][iDutCh].end(); 
+	  itL--;        
+	  fhDTLH_sel2->Fill(TMath::Log10(pHitRef->GetTime()-(*itL)->GetTime()));
+	}
+      }
     }
 
     if(iNbMatchedHits>0){
@@ -2032,8 +2079,8 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
        fhXYSel2D4best->Fill(hitpos3_local[0],hitpos3_local[1]);
      }
 
-     pHit1=pChi2Hit1[0];
-     pHit2=pChi2Hit2[0];
+     pHit1=pChi2Hit1[0]; //Dut
+     pHit2=pChi2Hit2[0]; //MRpcRef
      Int_t iM0=0;
      if (pHit2 != pHitRef ) {
        LOG(DEBUG)<<" selector hit does not match reference hit for best match, chi2best "
@@ -2050,9 +2097,9 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 }
        }
        if (iM0 == iNbMatchedHits) {
-	 LOG(WARNING)<<Form("no valid match for HitRef in Addr 0x%08x found ",pHitRef->GetAddress())<< FairLogger::endl;
-       if(gLogger->IsLogNeeded(DEBUG))
-	 LOG(FATAL)<<"Check for consistemcuy!"<<FairLogger::endl;
+	 LOG(DEBUG)<<Form("no valid match in %d hits for Addr 0x%08x found ",iNbMatchedHits,pHitRef->GetAddress())<< FairLogger::endl;
+       if(gLogger->IsLogNeeded(DEBUG1))
+	 LOG(FATAL)<<"Check for consistency!"<<FairLogger::endl;
 	 return 0;
        }
      }
@@ -2080,6 +2127,23 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 
      if(fTrbHeader != NULL) fhTIS_sel1->Fill(fTrbHeader->GetTimeInSpill());
      else                   fhTIS_sel1->Fill((dRefTMean-StartSpillTime)/1.E9);
+
+     if(fClusterizer->fdMemoryTime>0) {
+       Int_t iDut = CbmTofAddress::GetSmType( pHit1->GetAddress() );
+       if(fiDut != iDut)
+       LOG(FATAL)<<"inconsistent Dut - type "<<iDut<<" != "<<fiDut<<FairLogger::endl;
+
+       Int_t iCh  = CbmTofAddress::GetChannelId( pHit1->GetAddress() );
+       if(iDutCh != iCh) 
+       LOG(DEBUG)<<"Inconsistent Dut strip #: "<<iCh<<" != "<<iDutCh<<FairLogger::endl;
+       fhDTLH_DStrip->Fill((Double_t)iCh,(Double_t)(iCh-iDutCh));
+       if(fClusterizer->fvLastHits[fiDut][fiDutSm][fiDutRpc][iDutCh].size()>1){
+	  std::list<CbmTofHit *>::iterator itL=fClusterizer->fvLastHits[fiDut][fiDutSm][fiDutRpc][iDutCh].end(); 
+	  itL--;  
+	  LOG(DEBUG)<<"DTLH_sel1: "<< pHit1->GetTime() <<" - " << (*itL)->GetTime() << FairLogger::endl;    
+	  fhDTLH_sel1->Fill(TMath::Log10(pHit2->GetTime()-(*itL)->GetTime()));
+       }
+     }
 
      fhXX04->Fill(xPos1,xPos2);
      fhYY04->Fill(yPos1,yPos2);
@@ -2135,6 +2199,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      Double_t dTMin   = fdHitDistAv/30.; // in ns 
      CbmMatch* digiMatch0=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit1));
      Double_t dTot0   = 0.;
+     if(NULL != fTofDigisColl)
      for (Int_t iLink=0; iLink<digiMatch0->GetNofLinks(); iLink++){  // loop over digis
          CbmLink L0 = digiMatch0->GetLink(iLink);  
 	 Int_t iDigInd0=L0.GetIndex();
@@ -2149,6 +2214,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 
      CbmMatch* digiMatch4=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit2));
      Double_t dTot4   = 0.;
+     if(NULL != fTofDigisColl)
      for (Int_t iLink=0; iLink<digiMatch4->GetNofLinks(); iLink++){  // loop over digis
          CbmLink L0 = digiMatch4->GetLink(iLink);  
 	 Int_t iDigInd0=L0.GetIndex();
@@ -2193,6 +2259,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      fhCluSize4DT04D4best->Fill(digiMatch2->GetNofLinks()/2.,dToD);
 
      Double_t dTot = 0.;
+     if(NULL != fTofDigisColl)
      for (Int_t iLink=0; iLink<digiMatch2->GetNofLinks(); iLink++){  // loop over digis
          CbmLink L0 = digiMatch2->GetLink(iLink);  
 	 Int_t iDigInd0=L0.GetIndex();
@@ -2209,6 +2276,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      fhCluSize0DT04D4best->Fill(digiMatch0->GetNofLinks()/2.,dToD);
 
      dTot = 0.;
+     if(NULL != fTofDigisColl)
      for (Int_t iLink=0; iLink<digiMatch0->GetNofLinks(); iLink++){  // loop over digis
          CbmLink L0 = digiMatch0->GetLink(iLink);  
 	 Int_t iDigInd0=L0.GetIndex();
@@ -2253,7 +2321,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      fhDXDT04D4best->Fill(xPos1-xPos2,dToD);
      fhDYDT04D4best->Fill(yPos1-yPos2,dToD);
      fhDistDT04D4best->Fill(dDist,dToD);
-     fhTexpDT04D4best->Fill(dDTexp,dToD-dTMin);
+     fhTexpDT04D4best->Fill(dDTexp-dTMin,dToD);
      fhX0DT04D4best->Fill(hitpos1_local[0],dToD);
      fhY0DT04D4best->Fill(hitpos1_local[1],dToD);
      if(fTrbHeader != NULL) fhTISDT04D4best->Fill(fTrbHeader->GetTimeInSpill(),dToD);
@@ -2352,6 +2420,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 fhCluSize4DT04D4sbest->Fill(digiMatch4->GetNofLinks()/2.,tof3-tof4-dTcor4);
 
 	 dTot4 = 0.;
+	 if(NULL != fTofDigisColl)
 	 for (Int_t iLink=0; iLink<digiMatch4->GetNofLinks(); iLink++){  // loop over digis
 	   CbmLink L0 = digiMatch4->GetLink(iLink);  
 	   Int_t iDigInd0=L0.GetIndex();
@@ -2368,6 +2437,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 fhCluSize0DT04D4sbest->Fill(digiMatch3->GetNofLinks()/2.,tof3-tof4-dTcor4);
 
 	 Double_t dTot3 = 0.;
+	 if(NULL != fTofDigisColl)
 	 for (Int_t iLink=0; iLink<digiMatch3->GetNofLinks(); iLink++){  // loop over digis
 	   CbmLink L0 = digiMatch3->GetLink(iLink);  
 	   Int_t iDigInd0=L0.GetIndex();
@@ -2655,7 +2725,7 @@ Bool_t CbmTofAnaTestbeam::WriteHistos()
        // fhDTD4DT04D4Off->Write();
        //LOG(INFO)<<"Update hDTD4DT04D4best"<<FairLogger::endl;
        Double_t nx=htmp1D->GetNbinsX();
-       for (Int_t ix=0; ix<nx; ix++){
+       for (Int_t ix=1; ix<=nx; ix++){
 	 Double_t dVal=htmp1D->GetBinContent(ix) + fhDTD4DT04D4Off->GetBinContent(ix);
 	 // Double_t dVal=fhDTD4DT04D4Off->GetBinContent(ix);
 	 LOG(DEBUG2)<<"Update hDTD4DT04D4best "<<ix<<": "<<htmp1D->GetBinContent(ix)<<" + "
@@ -2683,7 +2753,7 @@ Bool_t CbmTofAnaTestbeam::WriteHistos()
      TH1D *htmpx1D=htmpx->ProjectionX();
      if(fhDTX4D4Off != NULL){
        Double_t nx=htmpx1D->GetNbinsX();
-       for (Int_t ix=0; ix<nx; ix++){
+       for (Int_t ix=1; ix<=nx; ix++){
 	 Double_t dVal=htmpx1D->GetBinContent(ix) + fhDTX4D4Off->GetBinContent(ix);
 	 LOG(DEBUG1)<<"Update hDTX4D4best "<<ix<<": "<<htmpx1D->GetBinContent(ix)<<" + "
 		    << fhDTX4D4Off->GetBinContent(ix) << " -> " << dVal << FairLogger::endl;
@@ -2710,7 +2780,7 @@ Bool_t CbmTofAnaTestbeam::WriteHistos()
      TH1D *htmpx1D=htmpx->ProjectionX();
      if(fhDTY4D4Off != NULL){
        Double_t nx=htmpx1D->GetNbinsX();
-       for (Int_t ix=0; ix<nx; ix++){
+       for (Int_t ix=1; ix<=nx; ix++){
 	 Double_t dVal=htmpx1D->GetBinContent(ix) + fhDTY4D4Off->GetBinContent(ix);
 	 LOG(DEBUG1)<<"Update hDTY4D4best "<<ix<<": "<<htmpx1D->GetBinContent(ix)<<" + "
 		    << fhDTY4D4Off->GetBinContent(ix) << " -> " << dVal << FairLogger::endl;
@@ -2737,7 +2807,7 @@ Bool_t CbmTofAnaTestbeam::WriteHistos()
      TH1D *htmpx1D=htmpx->ProjectionX();
      if(fhDTTexpD4Off != NULL){
        Double_t nx=htmpx1D->GetNbinsX();
-       for (Int_t ix=0; ix<nx; ix++){
+       for (Int_t ix=1; ix<=nx; ix++){
 	 Double_t dVal=htmpx1D->GetBinContent(ix) + fhDTTexpD4Off->GetBinContent(ix);
 	 LOG(DEBUG1)<<"Update hDTTexpD4best "<<ix<<": "<<htmpx1D->GetBinContent(ix)<<" + "
 		    << fhDTTexpD4Off->GetBinContent(ix) << " -> " << dVal << FairLogger::endl;
@@ -2764,7 +2834,7 @@ Bool_t CbmTofAnaTestbeam::WriteHistos()
      TH1D *htmpx1D=htmpx->ProjectionX();
      if(fhCluSize0DT04D4Off != NULL){
        Double_t nx=htmpx1D->GetNbinsX();
-       for (Int_t ix=0; ix<nx; ix++){
+       for (Int_t ix=1; ix<=nx; ix++){
 	 Double_t dVal=htmpx1D->GetBinContent(ix) + fhCluSize0DT04D4Off->GetBinContent(ix);
 	 LOG(DEBUG1)<<"Update hCluSize0DT04D4best "<<ix<<": "<<htmpx1D->GetBinContent(ix)<<" + "
 		    << fhCluSize0DT04D4Off->GetBinContent(ix) << " -> " << dVal << FairLogger::endl;
@@ -2791,7 +2861,7 @@ Bool_t CbmTofAnaTestbeam::WriteHistos()
      TH1D *htmpx1D=htmpx->ProjectionX();
      if(fhCluSize4DT04D4Off != NULL){
        Double_t nx=htmpx1D->GetNbinsX();
-       for (Int_t ix=0; ix<nx; ix++){
+       for (Int_t ix=1; ix<=nx; ix++){
 	 Double_t dVal=htmpx1D->GetBinContent(ix) + fhCluSize4DT04D4Off->GetBinContent(ix);
 	 LOG(DEBUG1)<<"Update hCluSize4DT04D4best "<<ix<<": "<<htmpx1D->GetBinContent(ix)<<" + "
 		    << fhCluSize4DT04D4Off->GetBinContent(ix) << " -> " << dVal << FairLogger::endl;
@@ -2818,7 +2888,7 @@ Bool_t CbmTofAnaTestbeam::WriteHistos()
      TH1D *htmpx1D=htmpx->ProjectionX();
      if(fhTot0DT04D4Off != NULL){
        Double_t nx=htmpx1D->GetNbinsX();
-       for (Int_t ix=0; ix<nx; ix++){
+       for (Int_t ix=1; ix<=nx; ix++){
 	 Double_t dVal=htmpx1D->GetBinContent(ix) + fhTot0DT04D4Off->GetBinContent(ix);
 	 LOG(DEBUG1)<<"Update hTot0DT04D4best "<<ix<<": "<<htmpx1D->GetBinContent(ix)<<" + "
 		    << fhTot0DT04D4Off->GetBinContent(ix) << " -> " << dVal << FairLogger::endl;
@@ -2845,7 +2915,7 @@ Bool_t CbmTofAnaTestbeam::WriteHistos()
      TH1D *htmpx1D=htmpx->ProjectionX();
      if(fhTot4DT04D4Off != NULL){
        Double_t nx=htmpx1D->GetNbinsX();
-       for (Int_t ix=0; ix<nx; ix++){
+       for (Int_t ix=1; ix<=nx; ix++){
 	 Double_t dVal=htmpx1D->GetBinContent(ix) + fhTot4DT04D4Off->GetBinContent(ix);
 	 LOG(DEBUG1)<<"Update hTot4DT04D4best "<<ix<<": "<<htmpx1D->GetBinContent(ix)<<" + "
 		    << fhTot4DT04D4Off->GetBinContent(ix) << " -> " << dVal << FairLogger::endl;

@@ -6,7 +6,7 @@
 #define _CBMTOFANATESTBEAM_H_ 1
 
 #include "CbmTofFindTracks.h"
-
+#include "CbmTofTestBeamClusterizer.h"
 
 class CbmTofGeoHandler;
 class CbmTofCell;
@@ -32,6 +32,7 @@ class TTrbHeader;
 
 class CbmTofAnaTestbeam : public FairTask {
    friend class CbmTofFindTracks;
+   friend class CbmTofTestbeamClusterizer;
    public:
        CbmTofAnaTestbeam();
        CbmTofAnaTestbeam(const char* name, Int_t verbose = 1);
@@ -234,6 +235,11 @@ class CbmTofAnaTestbeam : public FairTask {
       TH1 *fhTIS_sel;
       TH1 *fhTIS_sel1;
       TH1 *fhTIS_sel2;
+      TH1 *fhDTLH_all;
+      TH1 *fhDTLH_sel;
+      TH1 *fhDTLH_sel1;
+      TH1 *fhDTLH_sel2;
+      TH2 *fhDTLH_DStrip;
       TH1 *fhDT2;
       TH2 *fhXX2;
       TH2 *fhYY2;
@@ -477,7 +483,8 @@ class CbmTofAnaTestbeam : public FairTask {
 
       Bool_t   fEnableMatchPosScaling;
 
-      CbmTofFindTracks*  fFindTracks;  // Pointer to Task 
+      CbmTofFindTracks*           fFindTracks;   // Pointer to Task 
+      CbmTofTestBeamClusterizer*  fClusterizer;  // Pointer to Task 
 
       ClassDef(CbmTofAnaTestbeam, 1);
 };
