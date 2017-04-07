@@ -69,10 +69,10 @@ void run_reco_urqmdtest(Int_t nEvents = 10)
     run->AddTask(stsDigi);
     
     
-    FairTask* stsClusterFinder = new CbmStsFindClusters();
+    FairTask* stsClusterFinder = new CbmStsFindClustersEvents();
     run->AddTask(stsClusterFinder);
     
-    FairTask* stsFindHits = new CbmStsFindHits();
+    FairTask* stsFindHits = new CbmStsFindHitsEvents();
     run->AddTask(stsFindHits);
     
     CbmKF* kalman = new CbmKF();

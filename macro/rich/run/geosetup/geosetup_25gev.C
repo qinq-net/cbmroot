@@ -42,14 +42,14 @@ static Int_t minNofPointsTrd;
 void init_geo_setup()
 {
   // -----   Magnetic field   -----------------------------------------------
-  fieldMap     = "field_v12b";   // name of field map
+  fieldMap     = "field_v16a";   // name of field map
   fieldZ       = 40.;            // field centre z position
   fieldScale   =  1.;            // field scaling factor
   fieldSymType =  3;
 
   // -----  Tags  -----------------------------------------------------------
   mvdTag       = "";
-  stsTag       = "v15a";
+  stsTag       = "v16x";
   trdTag       = "v15a_3e";
   tofTag       = "v16a_3e";
 
@@ -70,9 +70,9 @@ void init_geo_setup()
   magnetGeom   = "magnet/magnet_v15a.geo.root";
   mvdGeom      = "";
   stsGeom      = "sts/sts_" + stsTag + ".geo.root";
-  richGeom     = "rich/rich_v16a_3e.geo.root";//"rich/rich_v14a_3e.root";
-  trdGeom      = "trd/trd_" + trdTag + ".geo.root";
-  tofGeom      =  "tof/tof_" + tofTag + ".geo.root";
+  richGeom     = "rich/rich_v17a_3e.geo.root";
+  trdGeom      = "";//"trd/trd_" + trdTag + ".geo.root";
+  tofGeom      =  "";//"tof/tof_" + tofTag + ".geo.root";
 
   // rich parameters
   nofNoiseHitsInRich = 220;

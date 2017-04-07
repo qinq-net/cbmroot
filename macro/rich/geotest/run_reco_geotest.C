@@ -1,5 +1,5 @@
 
-void run_reco_geotest(Int_t nEvents = 5000)
+void run_reco_geotest(Int_t nEvents = 1000)
 {
    TTree::SetMaxTreeSize(90000000000);
    TString script = TString(gSystem->Getenv("SCRIPT"));

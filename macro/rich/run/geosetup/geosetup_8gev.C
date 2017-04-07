@@ -48,7 +48,7 @@ void init_geo_setup()
 
   // -----  Tags  -----------------------------------------------------------
   mvdTag       = "";
-  stsTag       = "v15a";
+  stsTag       = "v16x";
   trdTag       = "v15a_1e";
   tofTag       = "v16a_1e";
 
@@ -65,11 +65,11 @@ void init_geo_setup()
 
   // -----  Geometries  -----------------------------------------------------
   caveGeom     = "cave.geo";
-  pipeGeom     = "pipe/pipe_v14l.root";
+  pipeGeom     = "pipe/pipe_v16b_1e.geo.root";
   magnetGeom   = "magnet/magnet_v15a.geo.root";
   mvdGeom      = "";
   stsGeom      = "sts/sts_" + stsTag + ".geo.root";
-  richGeom     = "rich/RICH_10Nov2016_ver3.root"; //rich_v16a_1e.geo.root";//Rich_cyl_camera_fix.gdml
+  richGeom     = "rich/rich_v16a_1e.geo.root"; //rich_v16a_1e.geo.root";//Rich_cyl_camera_fix.gdml
   trdGeom      = "";//"trd/trd_" + trdTag + ".geo.root";
   tofGeom      = "";//"tof/tof_" + tofTag + ".geo.root";
 

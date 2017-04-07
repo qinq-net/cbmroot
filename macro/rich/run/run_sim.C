@@ -1,4 +1,4 @@
-void run_sim(Int_t nEvents = 2)
+void run_sim(Int_t nEvents = 10)
 {
     TTree::SetMaxTreeSize(90000000000);
     Int_t iVerbose = 0;
@@ -13,7 +13,7 @@ void run_sim(Int_t nEvents = 2)
     TString geoFile = "/Users/slebedev/Development/cbm/data/sim/rich/reco/geofilefull.00000.root";
     TString mcFile = "/Users/slebedev/Development/cbm/data/sim/rich/reco/mc.00000.root";
     
-    TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/geosetup_test_full.C";
+    TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/geosetup_25gev.C";
     
     TString electrons = "yes"; // If "yes" than primary electrons will be generated
     Int_t NELECTRONS = 5; // number of e- to be generated

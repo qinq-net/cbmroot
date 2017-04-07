@@ -1,4 +1,4 @@
-=#!/bin/sh
+#!/bin/sh
 
 #Macro will be running via script
 export SCRIPT=yes
@@ -38,28 +38,28 @@ export DIR=/Users/slebedev/Development/cbm/data/sim/rich/reco/
  #  mkdir -p ${LIT_RESULT_DIR}
    
    export IN_FILE=/Users/slebedev/Development/cbm/data/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root
-   export MC_FILE=${DIR}/mc.${Z}.root
-   export PAR_FILE=$DIR/param.${Z}.root
-   export RECO_FILE=$DIR/reco.${Z}.root
+export MC_FILE=${DIR}/mc.v16a.${Z}.root
+export PAR_FILE=$DIR/param.v16a.${Z}.root
+export RECO_FILE=$DIR/reco.v16a.${Z}.root
 
     if [ ${Z} = "0" ] ; then
-        export GEO_SETUP_FILE=geosetup_test_full.C
-        export NEVENTS=50000
+        export GEO_SETUP_FILE=geosetup_8gev.C
+        export NEVENTS=20000
         export NELECTRONS=1
 		export NPOSITRONS=1
 		export URQMD=no
         export IN_FILE=/Users/slebedev/Development/cbm/data/urqmd/auau/8gev/centr/urqmd.auau.8gev.centr.00001.root
-        export LIT_RESULT_DIR=recqa_cyl_electrons_full/
+        export LIT_RESULT_DIR=results_v16a/recqa_electrons_v16a_1e_rich_TrackRing/
 		mkdir -p ${LIT_RESULT_DIR}
 
     elif [ ${Z} = "1" ]; then
     	export URQMD=yes
-    	export NEVENTS=200
+    	export NEVENTS=1000
     	export NELECTRONS=5
 		export NPOSITRONS=5
-        export GEO_SETUP_FILE=geosetup_test_full.C
+        export GEO_SETUP_FILE=geosetup_8gev.C
         export IN_FILE=/Users/slebedev/Development/cbm/data/urqmd/auau/8gev/centr/urqmd.auau.8gev.centr.00001.root
-		export LIT_RESULT_DIR=recqa_cyl_8gev_full_newRTDist/
+		export LIT_RESULT_DIR=results_v16a/recqa_8gev_v16a_1e_rich_TrackRing/
 		mkdir -p ${LIT_RESULT_DIR}
 		
 	elif [ ${Z} = "2" ]; then
@@ -67,9 +67,9 @@ export DIR=/Users/slebedev/Development/cbm/data/sim/rich/reco/
 		export NEVENTS=1000
 		export NELECTRONS=5
 		export NPOSITRONS=5
-        export GEO_SETUP_FILE=geosetup_test_nobpmt.C
+        export GEO_SETUP_FILE=geosetup_25gev.C
         export IN_FILE=/Users/slebedev/Development/cbm/data/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root
-		export LIT_RESULT_DIR=recqa_cyl_25gev_nobpmt/
+		export LIT_RESULT_DIR=results_v16a/recqa_25gev_v16a_3e_rich_TrackRing/
 		mkdir -p ${LIT_RESULT_DIR}
     fi
  

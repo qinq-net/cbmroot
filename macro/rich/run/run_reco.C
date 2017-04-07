@@ -1,4 +1,4 @@
-void run_reco(Int_t nEvents = 2000)
+void run_reco(Int_t nEvents = 10)
 {
    TTree::SetMaxTreeSize(90000000000);
 
@@ -9,11 +9,11 @@ void run_reco(Int_t nEvents = 2000)
 
 	gRandom->SetSeed(10);
 
-	TString mcFile = "/Users/slebedev/Development/cbm/data/sim/rich/reco/mc.0.root";
-	TString parFile = "/Users/slebedev/Development/cbm/data/sim/rich/reco/param.0.root";
-	TString recoFile ="/Users/slebedev/Development/cbm/data/sim/rich/reco/reco.0.root";
+	TString mcFile = "/Users/slebedev/Development/cbm/data/sim/rich/reco/mc.00000.root";
+	TString parFile = "/Users/slebedev/Development/cbm/data/sim/rich/reco/param.00000.root";
+	TString recoFile ="/Users/slebedev/Development/cbm/data/sim/rich/reco/reco.00000.root";
 
-	TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/geosetup_8gev.C";
+	TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/geosetup_25gev.C";
 
 	std::string resultDir = "cyl_rich_reco_qa/";
 
@@ -112,10 +112,11 @@ void run_reco(Int_t nEvents = 2000)
     run->AddTask(stsDigi);
 
 
-	FairTask* stsClusterFinder = new CbmStsFindClusters();
+	FairTask* stsClusterFinder = new CbmStsFindClustersEvents();
+
 	run->AddTask(stsClusterFinder);
 
-	FairTask* stsFindHits = new CbmStsFindHits();
+	FairTask* stsFindHits = new CbmStsFindHitsEvents();
 	run->AddTask(stsFindHits);
 
 	CbmKF* kalman = new CbmKF();
@@ -153,8 +154,8 @@ void run_reco(Int_t nEvents = 2000)
 			Double_t trdNoiseSigma_keV = 0.1; //default best matching to test beam PRF
 
 			CbmTrdDigitizerPRF* trdDigiPrf = new CbmTrdDigitizerPRF(radiator);
-			trdDigiPrf->SetTriangularPads(triangularPads);
-			trdDigiPrf->SetNoiseLevel(trdNoiseSigma_keV);
+			//trdDigiPrf->SetTriangularPads(triangularPads);
+			//trdDigiPrf->SetNoiseLevel(trdNoiseSigma_keV);
 			run->AddTask(trdDigiPrf);
 
 			CbmTrdClusterFinderFast* trdCluster = new CbmTrdClusterFinderFast();
@@ -183,9 +184,10 @@ void run_reco(Int_t nEvents = 2000)
         // tofDigi->SetHistoFileName( digiOutFile ); // Uncomment to save control histograms
         run->AddTask(tofDigi);
         
+
         CbmTofSimpClusterizer* tofSimpClust = new CbmTofSimpClusterizer("TOF Simple Clusterizer", 0);
-        //tofSimpClust->SetOutputBranchPersistent("TofHit",        kTRUE);
-        //tofSimpClust->SetOutputBranchPersistent("TofDigiMatch",  kTRUE);
+        tofSimpClust->SetOutputBranchPersistent("TofHit",        kTRUE);
+        tofSimpClust->SetOutputBranchPersistent("TofDigiMatch",  kTRUE);
         // tofSimpClust->SetHistoFileName( clustOutFile ); // Uncomment to save control histograms
         run->AddTask(tofSimpClust);
 	} //isTof
@@ -238,7 +240,7 @@ void run_reco(Int_t nEvents = 2000)
     // RICH reco QA
     CbmRichRecoQa* richRecoQa = new CbmRichRecoQa();
     richRecoQa->SetOutputDir(resultDir);
-    run->AddTask(richRecoQa);
+    //run->AddTask(richRecoQa);
 
 	// Reconstruction Qa
 	CbmLitTrackingQa* trackingQa = new CbmLitTrackingQa();
