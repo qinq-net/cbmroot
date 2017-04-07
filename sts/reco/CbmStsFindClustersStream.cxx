@@ -9,8 +9,10 @@
 // --- Includes from C++
 #include <cassert>
 
-// --- Includes from ROOT
+// --- Includes from ROOT and FairRoot
 #include "TClonesArray.h"
+#include "FairEventHeader.h"
+#include "FairRun.h"
 
 // --- Include from CBMROOT
 #include "CbmEvent.h"
@@ -76,7 +78,7 @@ CbmStsFindClustersStream::~CbmStsFindClustersStream() {
 // -----   Task execution   ------------------------------------------------
 void CbmStsFindClustersStream::Exec(Option_t* opt) {
 
-  if ( fEventMode ) LOG(INFO) << GetName() << ": Processing time slice "
+  if ( fEventMode && ! fLegacy) LOG(INFO) << GetName() << ": Processing time slice "
       << fNofEntries << FairLogger::endl;
 
   // --- Reset output array
@@ -233,6 +235,9 @@ InitStatus CbmStsFindClustersStream::Init()
 // -----   Process one time slice or event   -------------------------------
 void CbmStsFindClustersStream::ProcessData(CbmEvent* event) {
 
+  // --- Event or time slice number
+  Int_t unitId = ( event ? event->GetNumber() : fNofUnits);
+
   // --- Reset all cluster finder modules
   fTimer.Start();
   for (auto it = fModules.begin(); it != fModules.end(); it++)
@@ -302,7 +307,7 @@ void CbmStsFindClustersStream::ProcessData(CbmEvent* event) {
       << ", process buffers " << time3 << ", analyse " << time4 << ", register "
       << time5 << FairLogger::endl;
   LOG(INFO) << "+ " << setw(20) << GetName() << ": " << unit << setw(6)
-              << right << fNofUnits-1 << ", real time " << fixed << setprecision(6)
+              << right << unitId << ", real time " << fixed << setprecision(6)
               << realTime << " s, digis: " << nDigis
               << ", clusters: " << nClusters << FairLogger::endl;
 
@@ -340,6 +345,10 @@ void CbmStsFindClustersStream::ProcessDigi(Int_t index) {
 
 // -----   Process a legacy event   ----------------------------------------
 void CbmStsFindClustersStream::ProcessLegacyEvent() {
+
+  // --- Event number. Note that the FairRun counting start with 1.
+  Int_t eventNumber =
+      FairRun::Instance()->GetEventHeader()->GetMCEntryNumber() - 1;
 
   // --- Reset output array
   fClusters->Delete();
@@ -409,7 +418,7 @@ void CbmStsFindClustersStream::ProcessLegacyEvent() {
       << ", process digis " << time3 << ", process buffers " << time4
       << ", analyse " << time5  << FairLogger::endl;
   LOG(INFO) << "+ " << setw(20) << GetName() << ": Event " << setw(6)
-              << right << fNofUnits-1 << ", real time " << fixed << setprecision(6)
+              << right << eventNumber << ", real time " << fixed << setprecision(6)
               << realTime << " s, digis: " << nDigis
               << ", clusters: " << nClusters << FairLogger::endl;
 

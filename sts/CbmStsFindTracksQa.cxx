@@ -3,46 +3,40 @@
 // -----                  Created 11/01/06  by V. Friese               -----
 // -------------------------------------------------------------------------
 
-// Includes from sts
+// Includes class header
 #include "CbmStsFindTracksQa.h"
 
+// Includes from C++
+#include <cassert>
+
+// Includes from ROOT
+#include "TClonesArray.h"
+#include "TGeoManager.h"
+#include "TH1F.h"
+
+// Includes from FairRoot
+#include "FairEventHeader.h"
+#include "FairLogger.h"
+#include "FairRunAna.h"
+#include "FairRuntimeDb.h"
+
+// Includes from CbmRoot
+#include "CbmEvent.h"
+#include "CbmGeoPassivePar.h"
+#include "CbmMCDataArray.h"
+#include "CbmMCDataManager.h"
+#include "CbmMCTrack.h"
 #include "CbmStsHit.h"
 #include "CbmStsPoint.h"
 #include "CbmStsSetup.h"
 #include "CbmStsTrack.h"
-#include "CbmTrackMatch.h"
+#include "CbmTrackMatchNew.h"
 
-// Includes from base
-#include "FairGeoNode.h"
-#include "CbmGeoPassivePar.h"
-#include "FairGeoVector.h"
-#include "CbmMCTrack.h"
-#include "FairRootManager.h"
-#include "FairRunAna.h"
-#include "FairRuntimeDb.h"
 
-// Includes from ROOT
-#include "TCanvas.h"
-#include "TClonesArray.h"
-#include "TFile.h"
-#include "TGeoManager.h"
-#include "TH1F.h"
-#include "TList.h"
-#include "TVector3.h"
-#include "TGeoMatrix.h"
-
-// Includes from C++
-#include <iostream>
-#include <iomanip>
-
-using std::cout;
-using std::endl;
-using std::cerr;
-using std::setw;
-using std::left;
-using std::right;
 using std::fixed;
+using std::right;
 using std::setprecision;
+using std::setw;
 
 
 // -----   Default constructor   -------------------------------------------
@@ -51,15 +45,18 @@ CbmStsFindTracksQa::CbmStsFindTracksQa(Int_t iVerbose)
     fHitMap(),
     fMatchMap(),
     fQualiMap(),
+    fEvents(),
     fMCTracks(NULL),
     fStsPoints(NULL),
     fStsHits(NULL),
+    fStsHitMatch(NULL),
     fStsTracks(NULL),
     fMatches(NULL),
+    fLegacy(kFALSE),
     fPassGeo(NULL),
     fTargetPos(0.,0.,0.),
     fNStations(0),
-    fMinHits(4),
+    fMinStations(3),
     fQuota(0.7),
     fhMomAccAll(new TH1F()),
     fhMomRecAll(new TH1F()),
@@ -106,21 +103,24 @@ CbmStsFindTracksQa::CbmStsFindTracksQa(Int_t iVerbose)
 
 
 // -----   Standard constructor   ------------------------------------------
-CbmStsFindTracksQa::CbmStsFindTracksQa(Int_t minHits, Double_t quota,
+CbmStsFindTracksQa::CbmStsFindTracksQa(Int_t minStations, Double_t quota,
 				       Int_t iVerbose)
   : FairTask("STSFindTracksQA", iVerbose),
     fHitMap(),
     fMatchMap(),
     fQualiMap(),
+    fEvents(NULL),
     fMCTracks(NULL),
     fStsPoints(NULL),
     fStsHits(NULL),
+    fStsHitMatch(NULL),
     fStsTracks(NULL),
     fMatches(NULL),
+    fLegacy(kFALSE),
     fPassGeo(NULL),
     fTargetPos(0.,0.,0.),
     fNStations(0),
-    fMinHits(minHits),
+    fMinStations(minStations),
     fQuota(quota),
     fhMomAccAll(new TH1F()),
     fhMomRecAll(new TH1F()),
@@ -175,35 +175,48 @@ CbmStsFindTracksQa::~CbmStsFindTracksQa() {
 
 
 
+// -----   Task execution   ------------------------------------------------
+void CbmStsFindTracksQa::Exec(Option_t* opt) {
+
+  // If there is an event branch: do the event loop
+  if ( fEvents ) {
+      Int_t nEvents = fEvents->GetEntriesFast();
+      LOG(DEBUG) << GetName() << ": found time slice with " << nEvents
+                 << " events." << FairLogger::endl;
+
+      for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
+          CbmEvent* event = dynamic_cast<CbmEvent*>(fEvents->At(iEvent));
+          assert(event);
+          ProcessEvent(event);
+      }
+  }
+
+  // If there is no event branch, process the entire tree
+  else {
+    ProcessEvent();
+  }
+
+}
+// -------------------------------------------------------------------------
+
+
+
 // -----   Public method SetParContainers   --------------------------------
 void CbmStsFindTracksQa::SetParContainers() {
 
-  cout << GetName() << ": SetParContainers" << endl;
+  LOG(INFO) << GetName() << ": SetParContainers" << FairLogger::endl;
 
   // Get Run
   FairRunAna* run = FairRunAna::Instance();
-  if ( ! run ) {
-    cout << "-E- " << GetName() << "::SetParContainers: No FairRunAna!"
-	 << endl;
-    return;
-  }
+  assert(run);
 
   // Get Runtime Database
   FairRuntimeDb* runDb = run->GetRuntimeDb();
-  if ( ! run ) {
-    cout << "-E- " << GetName() << "::SetParContainers: No runtime database!"
-	 << endl;
-    return;
-  }
+  assert(runDb);
 
   // Get passive geometry parameters
   fPassGeo = (CbmGeoPassivePar*) runDb->getContainer("CbmGeoPassivePar");
-  if ( ! fPassGeo ) {
-    cout << "-E- " << GetName() << "::SetParContainers: "
-	 << "No passive geometry parameters!" << endl;
-    return;
-  }
-  cout << "Passive :" << fPassGeo << endl;
+  assert(fPassGeo);
 }
 // -------------------------------------------------------------------------
 
@@ -212,60 +225,52 @@ void CbmStsFindTracksQa::SetParContainers() {
 // -----   Public method Init   --------------------------------------------
 InitStatus CbmStsFindTracksQa::Init() {
 
-  cout << "==========================================================="
-       << endl;;
-  cout << GetName() << ": Initialising..." << endl;
+  LOG(INFO) << "\n\n===================================================="
+       << FairLogger::endl;
+  LOG(INFO) << GetName() << ": Initialising..." << FairLogger::endl;
 
   // Get RootManager
   FairRootManager* ioman = FairRootManager::Instance();
-  if (! ioman) {
-    cout << "-E- " << GetName() << "::Init: "
-	 << "RootManager not instantised!" << endl;
-    return kFATAL;
-  }
+  assert(ioman);
+
+  // Get MCDataManager
+  CbmMCDataManager* mcManager =
+      dynamic_cast<CbmMCDataManager*>(ioman->GetObject("MCDataManager"));
+  assert(mcManager);
 
   // Get MCTrack array
-  fMCTracks = (TClonesArray*) ioman->GetObject("MCTrack");
-  if ( ! fMCTracks ) {
-    cout << "-E- " << GetName() << "::Init: No MCTrack array!" << endl;
-    return kFATAL;
-  }
+  fMCTracks = mcManager->InitBranch("MCTrack");
+  assert(fMCTracks);
 
   // Get StsPoint array
-  fStsPoints = (TClonesArray*) ioman->GetObject("StsPoint");
-  if ( ! fStsPoints ) {
-    cout << "-E- " << GetName() << "::Init: No StsPoint array!" << endl;
-    return kFATAL;
-  }
+  fStsPoints = mcManager->InitBranch("StsPoint");
+  assert(fStsPoints);
+
+  // Get Event array
+  fEvents = dynamic_cast<TClonesArray*>(ioman->GetObject("Event"));
 
   // Get StsHit array
   fStsHits = (TClonesArray*) ioman->GetObject("StsHit");
-  if ( ! fStsHits ) {
-    cout << "-E- " << GetName() << "::Init: No StsHit array!" << endl;
-    return kFATAL;
-  }
+  assert(fStsHits);
+
+  // Get StsHitMatch array
+  fStsHitMatch = (TClonesArray*) ioman->GetObject("StsHitMatch");
+  assert(fStsHitMatch);
 
   // Get StsTrack array
   fStsTracks = (TClonesArray*) ioman->GetObject("StsTrack");
-  if ( ! fStsTracks ) {
-    cout << "-E- " << GetName() << "::Init: No StsTrack array!" << endl;
-    return kERROR;
-  }
+  assert(fStsTracks);
 
   // Get StsTrackMatch array
   fMatches = (TClonesArray*) ioman->GetObject("StsTrackMatch");
-  if ( ! fMatches ) {
-    cout << "-E- " << GetName() << "::Init: No StsTrackMatch array!"
-	 << endl;
-    return kERROR;
-  }
+  assert(fMatches);
 
 
   // Get the geometry of target and STS
   InitStatus geoStatus = GetGeometry();
   if ( geoStatus != kSUCCESS ) {
-    cout << "-E- " << GetName() << "::Init: Error in reading geometry!"
-	 << endl;
+    LOG(ERROR) << GetName() << "::Init: Error in reading geometry!"
+	 << FairLogger::endl;
     return geoStatus;
   }
 
@@ -274,17 +279,19 @@ InitStatus CbmStsFindTracksQa::Init() {
   Reset();
 
   // Output
-  cout << "   Minimum number of STS hits   : " << fMinHits << endl;
-  cout << "   Matching quota               : " << fQuota << endl;
-  cout << "   Target position ( " << fTargetPos.X() << ", "
-       << fTargetPos.Y() << ", " << fTargetPos.Z() << ") " << endl;
-  cout << "   Number of STS stations : " << fNStations << endl;
-  if (fActive) cout << "   *****   Task is ACTIVE   *****" << endl;
-  cout << "==========================================================="
-       << endl << endl;
+  LOG(INFO) << "   Number of STS stations : " << fNStations
+      << FairLogger::endl;
+  LOG(INFO) << "   Target position ( " << fTargetPos.X() << ", "
+       << fTargetPos.Y() << ", " << fTargetPos.Z() << ") cm"
+       << FairLogger::endl;
+  LOG(INFO) << "   Minimum number of STS stations   : " << fMinStations
+      << FairLogger::endl;
+  LOG(INFO) << "   Matching quota               : " << fQuota
+      << FairLogger::endl;
+  LOG(INFO) << "===================================================="
+       << FairLogger::endl;
 
   return geoStatus;
-
 }
 // -------------------------------------------------------------------------
 
@@ -293,25 +300,30 @@ InitStatus CbmStsFindTracksQa::Init() {
 // -----   Public method ReInit   ------------------------------------------
 InitStatus CbmStsFindTracksQa::ReInit() {
 
-  cout << "==========================================================="
-       << endl;;
-  cout << GetName() << ": Reinitialising..." << endl;
+  LOG(INFO) << "\n\n===================================================="
+       << FairLogger::endl;
+  LOG(INFO) << GetName() << ": Re-initialising..." << FairLogger::endl;
 
   // Get the geometry of target and STS
   InitStatus geoStatus = GetGeometry();
   if ( geoStatus != kSUCCESS ) {
-    cout << "-E- " << GetName() << "::ReInit: Error in reading geometry!"
-	 << endl;
+    LOG(ERROR) << GetName() << "::Init: Error in reading geometry!"
+     << FairLogger::endl;
     return geoStatus;
   }
 
-  // Output
-  cout << "   Target position ( " << fTargetPos.X() << ", "
-       << fTargetPos.Y() << ", " << fTargetPos.Z() << ") " << endl;
-  cout << "   Number of STS stations : " << fNStations << endl;
-  if (fActive) cout << "   *****   Task is ACTIVE   *****" << endl;
-  cout << "==========================================================="
-       << endl << endl;
+  // --- Screen log
+  LOG(INFO) << "   Number of STS stations : " << fNStations
+      << FairLogger::endl;
+  LOG(INFO) << "   Target position ( " << fTargetPos.X() << ", "
+       << fTargetPos.Y() << ", " << fTargetPos.Z() << ") cm"
+       << FairLogger::endl;
+  LOG(INFO) << "   Minimum number of STS stations   : " << fMinStations
+      << FairLogger::endl;
+  LOG(INFO) << "   Matching quota               : " << fQuota
+      << FairLogger::endl;
+  LOG(INFO) << "===================================================="
+       << FairLogger::endl;
 
   return geoStatus;
 
@@ -321,53 +333,56 @@ InitStatus CbmStsFindTracksQa::ReInit() {
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmStsFindTracksQa::Exec(Option_t* /*opt*/) {
+void CbmStsFindTracksQa::ProcessEvent(CbmEvent* event) {
+
+  // --- Event number. Note that the FairRun counting start with 1.
+  Int_t eventNumber = ( event ? event->GetNumber()
+      : FairRun::Instance()->GetEventHeader()->GetMCEntryNumber() - 1);
 
   // Timer
   fTimer.Start();
 
   // Eventwise counters
-  Int_t nRec     = 0;
-  Int_t nGhosts  = 0;
-  Int_t nClones  = 0;
-  Int_t nAll     = 0;
-  Int_t nAcc     = 0;
-  Int_t nRecAll  = 0;
-  Int_t nPrim    = 0;
-  Int_t nRecPrim = 0;
-  Int_t nRef     = 0;
-  Int_t nRecRef  = 0;
-  Int_t nSec     = 0;
-  Int_t nRecSec  = 0;
+  Int_t nMCTracks = 0;
+  Int_t nTracks   = 0;
+  Int_t nGhosts   = 0;
+  Int_t nClones   = 0;
+  Int_t nAll      = 0;
+  Int_t nAcc      = 0;
+  Int_t nRecAll   = 0;
+  Int_t nPrim     = 0;
+  Int_t nRecPrim  = 0;
+  Int_t nRef      = 0;
+  Int_t nRecRef   = 0;
+  Int_t nSec      = 0;
+  Int_t nRecSec   = 0;
   TVector3 momentum;
   TVector3 vertex;
 
   // Fill hit and track maps
-  FillHitMap();
-  FillMatchMap(nRec, nGhosts, nClones);
+  FillHitMap(event);
+  FillMatchMap(event, nTracks, nGhosts, nClones);
 
   // Loop over MCTracks
-  Int_t nMC = fMCTracks->GetEntriesFast();
-  for (Int_t iMC=0; iMC<nMC; iMC++) {
-    CbmMCTrack* mcTrack = (CbmMCTrack*) fMCTracks->At(iMC);
-    if ( ! mcTrack ) {
-      cout << "-E- " << GetName() << "::Exec: "
-	   << "No MCTrack at index " << iMC
-	   << endl;
-      Fatal("Exec", "No MCTrack in array");
-    }
+  Int_t nMcTracks = fMCTracks->Size(0, eventNumber);
+  for (Int_t mcTrackId = 0; mcTrackId < nMcTracks; mcTrackId++) {
+    CbmMCTrack* mcTrack =
+        dynamic_cast<CbmMCTrack*>(fMCTracks->Get(0, eventNumber, mcTrackId));
+    assert(mcTrack);
 
-    // Check reconstructability; continue only for reconstructable tracks
+    // Continue only for reconstructible tracks
     nAll++;
-    if ( fHitMap.find(iMC) == fHitMap.end() ) continue; // No hits
-    Int_t nHits = fHitMap[iMC];
-    if ( nHits < fMinHits ) continue;                   // Too few hits
+    if ( fHitMap.find(mcTrackId) == fHitMap.end() ) continue; // No hits
+    Int_t nStations = fHitMap[mcTrackId].size();
+    if ( nStations < fMinStations ) continue;        // Too few stations
     nAcc++;
 
     // Check origin of MCTrack
+    // TODO: Track origin should rather be compared to MC event vertex
+    // But that is not available from MCDataManager
     mcTrack->GetStartVertex(vertex);
     Bool_t isPrim = kFALSE;
-    if ( (vertex-fTargetPos).Mag() < 1. ) {
+    if ( TMath::Abs( vertex.Z() - fTargetPos.Z() ) < 1. ) {
       isPrim = kTRUE;
       nPrim++;
     }
@@ -382,61 +397,43 @@ void CbmStsFindTracksQa::Exec(Option_t* /*opt*/) {
       nRef++;
     }
 
-    // Fill histograms for reconstructable tracks
+    // Fill histograms for reconstructible tracks
     fhMomAccAll->Fill(mom);
-    fhNpAccAll->Fill(Double_t(nHits));
+    fhNpAccAll->Fill(Double_t(nStations));
     if ( isPrim) {
       fhMomAccPrim->Fill(mom);
-      fhNpAccPrim->Fill(Double_t(nHits));
+      fhNpAccPrim->Fill(Double_t(nStations));
     }
     else {
       fhMomAccSec->Fill(mom);
-      fhNpAccSec->Fill(Double_t(nHits));
+      fhNpAccSec->Fill(Double_t(nStations));
       fhZAccSec->Fill(vertex.Z());
     }
 
     // Get matched StsTrack
-    Int_t    iRec  = -1;
-    Double_t quali =  0.;
-    Bool_t   isRec = kFALSE;
-    if (fMatchMap.find(iMC) != fMatchMap.end() ) {
-      iRec  = fMatchMap[iMC];
+    Int_t    trackId  = -1;
+    Double_t quali    =  0.;
+    Bool_t   isRec    = kFALSE;
+    if (fMatchMap.find(mcTrackId) != fMatchMap.end() ) {
+      trackId  = fMatchMap[mcTrackId];
       isRec = kTRUE;
-      CbmStsTrack* stsTrack = (CbmStsTrack*) fStsTracks->At(iRec);
-      if ( ! stsTrack ) {
-	cout << "-E- " << GetName() << "::Exec: "
-	     << "No StsTrack for matched MCTrack " << iMC << endl;
-	Fatal("Exec", "No StsTrack for matched MCTrack");
-      }
-      quali = fQualiMap[iMC];
-      if ( quali < fQuota ) {
-	cout << "-E- " << GetName() << "::Exec: "
-	     << "Matched StsTrack " << iRec << " is below matching "
-	     << "criterion ( " << quali << ")" << endl;
-	Fatal("Exec", "Match below matching quota");
-      }
-      CbmTrackMatch* match = (CbmTrackMatch*) fMatches->At(iRec);
-      if ( ! match ) {
-	cout << "-E- " << GetName() << "::Exec: "
-	     << "No StsTrackMatch for matched MCTrack " << iMC << endl;
-	Fatal("Exec", "No StsTrackMatch for matched MCTrack");
-      }
+      CbmStsTrack* stsTrack = (CbmStsTrack*) fStsTracks->At(trackId);
+      assert(stsTrack);
+      quali = fQualiMap[mcTrackId];
+      assert ( quali >= fQuota );
+      CbmTrackMatchNew* match = (CbmTrackMatchNew*) fMatches->At(trackId);
+      assert(match);
       Int_t nTrue  = match->GetNofTrueHits();
       Int_t nWrong = match->GetNofWrongHits();
-      Int_t nFake  = match->GetNofFakeHits();
+      //Int_t nFake  = match->GetNofFakeHits();
+      Int_t nFake  = 0;
       Int_t nAllHits  = stsTrack->GetNofStsHits();
-      if ( nTrue + nWrong + nFake != nAllHits ) {
-	cout << "True " << nTrue << " wrong " << nWrong << " Fake "
-	     << nFake << " Hits " << nAllHits << endl;
-	Fatal("Exec", "Wrong number of hits");
-      }
+      assert ( nTrue + nWrong + nFake == nAllHits );
 
       // Verbose output
-      if ( fVerbose > 1 )
-	cout << "-I- " << GetName() << ": "
-	     << "MCTrack " << iMC << ", hits "
-	     << nHits << ", StsTrack " << iRec << ", hits " << nAllHits
-	     << ", true hits " << nTrue << endl;
+      LOG(DEBUG1) << GetName() << ": MCTrack " << mcTrackId << ", stations "
+          << nStations << ", hits " << nAllHits << ", true hits " << nTrue
+          << FairLogger::endl;
 
       // Fill histograms for reconstructed tracks
       nRecAll++;
@@ -466,29 +463,32 @@ void CbmStsFindTracksQa::Exec(Option_t* /*opt*/) {
   Double_t effRef  = Double_t(nRecRef)  / Double_t(nRef);
   Double_t effSec  = Double_t(nRecSec)  / Double_t(nSec);
 
+  fTimer.Stop();
+
 
   // Event summary
-  if ( fVerbose > 0 ) {
-    cout << "----------   StsFindTracksQa : Event summary   ------------"
-	 << endl;
-    cout << "MCTracks   : " << nAll << ", reconstructable: " << nAcc
-	 << ", reconstructed: " << nRecAll << endl;
-    cout << "Vertex     : reconstructable: " << nPrim << ", reconstructed: "
-	 << nRecPrim << ", efficiency " << effPrim*100. << "%" << endl;
-    cout << "Reference  : reconstructable: " << nRef  << ", reconstructed: "
-	 << nRecRef  << ", efficiency " << effRef*100. << "%" << endl;
-    cout << "Non-vertex : reconstructable: " << nSec << ", reconstructed: "
-	 << nRecSec << ", efficiency " << effSec*100. << "%" << endl;
-    cout << "STSTracks " << nRec << ", ghosts " << nGhosts
-	 << ", clones " << nClones << endl;
-    cout << "-----------------------------------------------------------"
-	 << endl;
-    cout << endl;
+  LOG(INFO) << "+ " << setw(20) << GetName() << ": Event " << setw(6)
+    << right << fNEvents << ", real time " << fixed << setprecision(6)
+    << fTimer.RealTime() << " s, MC tracks: all " << nMcTracks
+    << ", acc. " << nAcc << ", rec. " << nRecAll << ", eff. "
+    << setprecision(2) << 100.*effAll << " %" << FairLogger::endl;
+  if ( FairLogger::GetLogger()->IsLogNeeded(DEBUG) ) {
+    LOG(DEBUG) << "----------   StsFindTracksQa : Event summary   ------------"
+	 << FairLogger::endl;
+    LOG(DEBUG) << "MCTracks   : " << nAll << ", reconstructible: " << nAcc
+	 << ", reconstructed: " << nRecAll << FairLogger::endl;
+    LOG(DEBUG) << "Vertex     : reconstructible: " << nPrim << ", reconstructed: "
+	 << nRecPrim << ", efficiency " << effPrim*100. << "%" << FairLogger::endl;
+    LOG(DEBUG) << "Reference  : reconstructible: " << nRef  << ", reconstructed: "
+	 << nRecRef  << ", efficiency " << effRef*100. << "%" << FairLogger::endl;
+    LOG(DEBUG) << "Non-vertex : reconstructible: " << nSec << ", reconstructed: "
+	 << nRecSec << ", efficiency " << effSec*100. << "%" << FairLogger::endl;
+    LOG(DEBUG) << "STSTracks " << nTracks << ", ghosts " << nGhosts
+	 << ", clones " << nClones << FairLogger::endl;
+    LOG(DEBUG) << "-----------------------------------------------------------\n"
+	 << FairLogger::endl;
   }
-  else  cout << "+ " << setw(15) << left << fName << ": " << setprecision(4)
-       << setw(8) << fixed << right << fTimer.RealTime()
-       << " s, efficiency all " << effAll*100. << " %, vertex "
-       << effPrim*100. << " %, reference " << effRef*100. << " %" << endl;
+
 
   // Increase counters
   fNAccAll  += nAcc;
@@ -536,28 +536,26 @@ void CbmStsFindTracksQa::Finish() {
   Double_t rateClones = Double_t(fNClones) / Double_t(fNEvents);
 
   // Run summary to screen
-  cout << endl;
-  cout << "============================================================"
-       << endl;
-  cout << "=====   " << fName << ": Run summary " << endl;
-  cout << "===== " << endl;
-  cout << "===== Good events   : " << setw(6) << fNEvents << endl;
-  cout << "===== Failed events : " << setw(6) << fNEventsFailed << endl;
-  cout << "===== Average time  : " << setprecision(4) << setw(8) << right
-       << fTime / Double_t(fNEvents)  << " s" << endl;
-  cout << "===== " << endl;
-  cout << "===== Efficiency all tracks       : " << effAll*100 << " % ("
-       << fNRecAll << "/" << fNAccAll <<")" << endl;
-  cout << "===== Efficiency vertex tracks    : " << effPrim*100 << " % ("
-       << fNRecPrim << "/" << fNAccPrim <<")" << endl;
-  cout << "===== Efficiency reference tracks : " << effRef*100 << " % ("
-       << fNRecRef << "/" << fNAccRef <<")" << endl;
-  cout << "===== Efficiency secondary tracks : " << effSec*100 << " % ("
-       << fNRecSec << "/" << fNAccSec <<")" << endl;
-  cout << "===== Ghost rate " << rateGhosts << " per event" << endl;
-  cout << "===== Clone rate " << rateClones << " per event" << endl;
-  cout << "============================================================"
-       << endl;
+  std::cout << std::endl;
+  LOG(INFO) << "=====================================" << FairLogger::endl;
+  LOG(INFO) << fName << ": Run summary " << FairLogger::endl;
+  LOG(INFO) << "Events processed      : " << fNEvents
+      << setprecision(2) << FairLogger::endl;
+  LOG(INFO) << "Eff. all tracks       : " << effAll*100 << " % ("
+       << fNRecAll << "/" << fNAccAll <<")" << FairLogger::endl;
+  LOG(INFO) << "Eff. vertex tracks    : " << effPrim*100 << " % ("
+       << fNRecPrim << "/" << fNAccPrim <<")" << FairLogger::endl;
+  LOG(INFO) << "Eff. reference tracks : " << effRef*100 << " % ("
+       << fNRecRef << "/" << fNAccRef <<")" << FairLogger::endl;
+  LOG(INFO) << "Eff. secondary tracks : " << effSec*100 << " % ("
+       << fNRecSec << "/" << fNAccSec <<")" << FairLogger::endl;
+  LOG(INFO) << "Ghost rate            : " << rateGhosts
+      << " per event" << FairLogger::endl;
+  LOG(INFO) << "Clone rate            : " << rateClones
+      << " per event" << FairLogger::endl;
+  LOG(INFO) << "Time per event        : " << setprecision(6)
+    << fTime / Double_t(fNEvents)  << " s" << FairLogger::endl;
+  LOG(INFO) << "=====================================" << FairLogger::endl;
 
   // Write histos to output
   gDirectory->mkdir("STSFindTracksQA");
@@ -751,25 +749,40 @@ void CbmStsFindTracksQa::Reset() {
 
 
 // -----   Private method FillHitMap   -------------------------------------
-void CbmStsFindTracksQa::FillHitMap() {
+void CbmStsFindTracksQa::FillHitMap(CbmEvent* event) {
+
+  // --- Event number. Note that the FairRun counting starts with 1.
+  Int_t eventNumber = ( event ? event->GetNumber()
+      : FairRun::Instance()->GetEventHeader()->GetMCEntryNumber() - 1 );
+
+  // --- Fill hit map ( mcTrack -> ( station -> number of hits ) )
   fHitMap.clear();
-  Int_t nHits = fStsHits->GetEntriesFast();
-  for (Int_t iHit=0; iHit<nHits; iHit++) {
-    CbmStsHit* hit = (CbmStsHit*) fStsHits->At(iHit);
-    Int_t iMc = hit->GetRefId();
-    if ( iMc < 0 ) continue;
-    CbmStsPoint* stsPoint = (CbmStsPoint*) fStsPoints->At(iMc);
-    Int_t iTrack = stsPoint->GetTrackID();
-    fHitMap[iTrack]++;
+  Int_t nHits = (event ? event->GetNofData(Cbm::kStsHit)
+      : fStsHits->GetEntriesFast());
+  LOG(DEBUG) << GetName() << ": event " << eventNumber << " with " << nHits
+      << " STS hits." << FairLogger::endl;
+  for (Int_t iHit = 0; iHit < nHits; iHit++) {
+    Int_t hitIndex = (event ? event->GetIndex(Cbm::kStsHit, iHit) : iHit);
+    CbmStsHit* hit = (CbmStsHit*) fStsHits->At(hitIndex);
+    CbmMatch* hitMatch = (CbmMatch*) fStsHitMatch->At(hitIndex);
+    Int_t pointIndex = hitMatch->GetMatchedLink().GetIndex();
+    assert(pointIndex >= 0);
+    CbmStsPoint* stsPoint =
+        dynamic_cast<CbmStsPoint*>(fStsPoints->Get(0, eventNumber, pointIndex));
+    Int_t mcTrackIndex = stsPoint->GetTrackID();
+    Int_t station = CbmStsAddress::GetElementId(hit->GetAddress(), kStsStation);
+    fHitMap[mcTrackIndex][station]++;
   }
+  LOG(DEBUG) << GetName() << ": Filled hit map for " << fHitMap.size()
+      << " MCTracks." << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 
 
 
 // ------   Private method FillMatchMap   ----------------------------------
-void CbmStsFindTracksQa::FillMatchMap(Int_t& nRec, Int_t& nGhosts,
-				      Int_t& nClones) {
+void CbmStsFindTracksQa::FillMatchMap(CbmEvent* event, Int_t& nRec,
+                                      Int_t& nGhosts, Int_t& nClones) {
 
   // Clear matching maps
   fMatchMap.clear();
@@ -778,37 +791,28 @@ void CbmStsFindTracksQa::FillMatchMap(Int_t& nRec, Int_t& nGhosts,
   // Loop over StsTracks. Check matched MCtrack and fill maps.
   nGhosts = 0;
   nClones = 0;
-  nRec    = fStsTracks->GetEntriesFast();
-  Int_t nMtc = fMatches->GetEntriesFast();
-  if ( nMtc != nRec ) {
-    cout << "-E- " << GetName() << "::Exec: Number of StsMatches ("
-	 << nMtc << ") does not equal number of StsTracks ("
-	 << nRec << ")" << endl;
-    Fatal("Exec", "Inequal number of StsTrack and StsTrackMatch");
-  }
-  for (Int_t iRec=0; iRec<nRec; iRec++) {
+  Int_t nTracks  = (event ? event->GetNofData(Cbm::kStsTrack)
+                          : fStsTracks->GetEntriesFast());
+  Int_t nMatches = fMatches->GetEntriesFast();
 
-    CbmStsTrack* stsTrack = (CbmStsTrack*) fStsTracks->At(iRec);
-    if ( ! stsTrack ) {
-      cout << "-E- " << GetName() << "::Exec: "
-	   << "No StsTrack at index " << iRec << endl;
-      Fatal("Exec", "No StsTrack in array");
-      }
+  for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
+
+    // --- StsTrack
+    Int_t trackIndex = (event ? event->GetIndex(Cbm::kStsTrack, iTrack)
+                              : iTrack);
+    CbmStsTrack* stsTrack = (CbmStsTrack*) fStsTracks->At(trackIndex);
+    assert(stsTrack);
     Int_t nHits = stsTrack->GetNofStsHits();
 
-    CbmTrackMatch* match = (CbmTrackMatch*) fMatches->At(iRec);
-    if ( ! match ) {
-      cout << "-E- " << GetName() << "::Exec: "
-	   << "No StsTrackMatch at index " << iRec << endl;
-      Fatal("Exec", "No StsTrackMatch in array");
-    }
+    // --- TrackMatch
+    CbmTrackMatchNew* match = (CbmTrackMatchNew*) fMatches->At(trackIndex);
+    assert(match);
     Int_t nTrue = match->GetNofTrueHits();
 
-    Int_t iMC = match->GetMCTrackId();
-    if (iMC == -1 ) {       // no common point with MC, really ghastly!
-      if ( fVerbose > 1 )
-	cout << "-I- " << GetName() << ":"
-	     << "No MC match for StsTrack " << iRec << endl;
+    // --- Matched MCTrack
+    Int_t mcTrackId = match->GetMatchedLink().GetIndex();
+    assert(mcTrackId >= 0);
+    if ( mcTrackId < 0 ) {
       fhNhGhosts->Fill(nHits);
       nGhosts++;
       continue;
@@ -819,44 +823,35 @@ void CbmStsFindTracksQa::FillMatchMap(Int_t& nRec, Int_t& nGhosts,
     if ( quali >= fQuota ) {
 
       // No previous match for this MCTrack
-      if ( fMatchMap.find(iMC) == fMatchMap.end() ) {
-	fMatchMap[iMC] = iRec;
-	fQualiMap[iMC] = quali;
-      }
+      if ( fMatchMap.find(mcTrackId) == fMatchMap.end() ) {
+        fMatchMap[mcTrackId] = iTrack;
+        fQualiMap[mcTrackId] = quali;
+      } //? no previous match
 
       // Previous match; take the better one
       else {
-	if ( fVerbose > 1 )
-	  cout << "-I- " << GetName() << ": "
-	       << "MCTrack " << iMC << " doubly matched."
-	       << "Current match " << iRec
-	       << ", previous match " << fMatchMap[iMC]
-	       << endl;
-	if ( fQualiMap[iMC] < quali ) {
-	  CbmStsTrack* oldTrack
-	    = (CbmStsTrack*) fStsTracks->At(fMatchMap[iMC]);
-	  fhNhClones->Fill(Double_t(oldTrack->GetNofStsHits()));
-	  fMatchMap[iMC] = iRec;
-	  fQualiMap[iMC] = quali;
-	}
-	else fhNhClones->Fill(nHits);
-	nClones++;
-      }
+        if ( fQualiMap[mcTrackId] < quali ) {
+          CbmStsTrack* oldTrack
+          = (CbmStsTrack*) fStsTracks->At(fMatchMap[mcTrackId]);
+          fhNhClones->Fill(Double_t(oldTrack->GetNofStsHits()));
+          fMatchMap[mcTrackId] = iTrack;
+          fQualiMap[mcTrackId] = quali;
+        } //? new track matches better to MCTrack
 
-    }
+        else fhNhClones->Fill(nHits);
+        nClones++;
+      } //? previous match found
+
+    } //? true match ratio > quota
 
     // If not matched, it's a ghost
     else {
-      if ( fVerbose > 1 )
-	cout << "-I- " << GetName() << ":"
-	     << "StsTrack " << iRec << " below matching criterion "
-	     << "(" << quali << ")" << endl;
       fhNhGhosts->Fill(nHits);
       nGhosts++;
     }
 
   }   // Loop over StsTracks
-
+  nRec = nTracks;
 }
 // -------------------------------------------------------------------------
 
@@ -867,18 +862,20 @@ void CbmStsFindTracksQa::DivideHistos(TH1* histo1, TH1* histo2,
 				      TH1* histo3) {
 
   if ( !histo1 || !histo2 || !histo3 ) {
-    cout << "-E- " << GetName() << "::DivideHistos: "
-	 << "NULL histogram pointer" << endl;
-    Fatal("DivideHistos", "Null histo pointer");
+    LOG(FATAL) << GetName() << "::DivideHistos: "
+	 << "NULL histogram pointer" << FairLogger::endl;
   }
 
   Int_t nBins = histo1->GetNbinsX();
   if ( histo2->GetNbinsX() != nBins || histo3->GetNbinsX() != nBins ) {
-    cout << "-E- " << GetName() << "::DivideHistos: "
-	 << "Different bin numbers in histos" << endl;
-    cout << histo1->GetName() << " " << histo1->GetNbinsX() << endl;
-    cout << histo2->GetName() << " " << histo2->GetNbinsX() << endl;
-    cout << histo3->GetName() << " " << histo3->GetNbinsX() << endl;
+    LOG(ERROR) << GetName() << "::DivideHistos: "
+	 << "Different bin numbers in histos" << FairLogger::endl;
+    LOG(ERROR) << histo1->GetName() << " " << histo1->GetNbinsX()
+        << FairLogger::endl;
+    LOG(ERROR) << histo2->GetName() << " " << histo2->GetNbinsX()
+        << FairLogger::endl;
+    LOG(ERROR) << histo3->GetName() << " " << histo3->GetNbinsX()
+        << FairLogger::endl;
    return;
   }
 

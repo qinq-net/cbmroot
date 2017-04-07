@@ -15,20 +15,15 @@
 #define CBMSTSTRACKFINDERQA_H 1
 
 
-#include <map>
-
+//#include <map>
 #include "TStopwatch.h"
 #include "TVector3.h"
-
 #include "FairTask.h"
 
-class TCanvas;
-class TClonesArray;
-class TGeoNode;
-class TH1;
 class TH1F;
-class TList;
 class CbmGeoPassivePar;
+class CbmEvent;
+class CbmMCDataArray;
 
 
 
@@ -92,7 +87,7 @@ class CbmStsFindTracksQa : public FairTask
 
 
   /** Fill a map from MCTrack index to number of corresponding StsHits **/
-  void FillHitMap();
+  void FillHitMap(CbmEvent* event);
 
 
   /** Fill a map from MCTrack index to matched StsTrack index
@@ -100,7 +95,7 @@ class CbmStsFindTracksQa : public FairTask
    *@param nGhosts  Number of ghost tracks (return)
    *@param nClones  Number of clone tracks (return)
    **/
-  void FillMatchMap(Int_t& nRec, Int_t& nGhosts, Int_t& nClones);
+  void FillMatchMap(CbmEvent* event, Int_t& nRec, Int_t& nGhosts, Int_t& nClones);
 
 
   /** Divide histograms (reco/all) with correct error for the efficiency
@@ -111,8 +106,17 @@ class CbmStsFindTracksQa : public FairTask
   void DivideHistos(TH1* histo1, TH1* histo2, TH1* histo3);
 
 
-  /** Map from MCTrack index to number of attached StsHits **/
-  std::map<Int_t, Int_t> fHitMap;
+  /** Process one event
+   ** @param event  Pointer to event object
+   **
+   ** If a NULL pointer is given, the entire input array is processed
+   ** (legacy mode)
+   */
+  void ProcessEvent(CbmEvent* event = NULL);
+
+
+  /** Map from MCTrack index to number of attached StsHits in each station **/
+  std::map<Int_t, std::map<Int_t, Int_t>> fHitMap;
 
 
   /** Map from MCTrack index to matched StsTrack index **/
@@ -124,22 +128,26 @@ class CbmStsFindTracksQa : public FairTask
 
 
   /** Pointers to data arrays **/
-  TClonesArray* fMCTracks;           // MCtrack
-  TClonesArray* fStsPoints;          // StsPoints
-  TClonesArray* fStsHits;            // StsHits
-  TClonesArray* fStsTracks;          // StsTrack
-  TClonesArray* fMatches;            // StsTrackMatch
+  TClonesArray* fEvents;             //! Event
+  CbmMCDataArray* fMCTracks;         //! MCtrack
+  CbmMCDataArray* fStsPoints;        //! StsPoints
+  TClonesArray* fStsHits;            //! StsHits
+  TClonesArray* fStsHitMatch;        //! StsHitMatch
+  TClonesArray* fStsTracks;          //! StsTrack
+  TClonesArray* fMatches;            //! StsTrackMatch
+
+  /** Flag for legacy mode (event-by-event w/o event objects) **/
+  Bool_t fLegacy;
 
 
   /** Geometry parameters **/
-  CbmGeoPassivePar* fPassGeo;             // Passive geometry parameters
-
+  CbmGeoPassivePar* fPassGeo;             //! Passive geometry parameters
   TVector3 fTargetPos;                    // Target centre position
   Int_t fNStations;                       // Number of STS stations
 
 
   /** Task parameters **/
-  Int_t fMinHits;   // Minimal number of StsHits for considered MCTrack
+  Int_t fMinStations;   // Minimal number of stations with hits for considered MCTrack
   Double_t fQuota;  // True/all hits for track to be considered reconstructed
 
 

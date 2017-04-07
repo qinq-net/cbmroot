@@ -61,7 +61,7 @@ void CbmStsRecoQa::Exec(Option_t* opt) {
 
 	// If there is no event brnahc, process the entire tree
 	else {
-	  ProcessEvent();
+ 	  ProcessEvent();
 	  fNofEvents++;
 	}
 
@@ -76,18 +76,18 @@ void CbmStsRecoQa::Finish() {
   std::cout << std::endl;
   LOG(INFO) << "=====================================" << FairLogger::endl;
   LOG(INFO) << GetName() << ": Run summary" << FairLogger::endl;
-  LOG(INFO) << "Events processed  : " << fNofEvents << FairLogger::endl;
-  LOG(INFO) << "Tracks / event  : " << fixed << setprecision(3)
+  LOG(INFO) << "Events processed    : " << fNofEvents << FairLogger::endl;
+  LOG(INFO) << "Tracks / event      : " << fixed << setprecision(3)
                 << fNofTracksTot / Double_t(fNofEvents) << FairLogger::endl;
-  LOG(INFO) << "Good tracks / event  : " << fixed << setprecision(3)
+  LOG(INFO) << "Good tracks / event : " << fixed << setprecision(3)
                 << fNofGoodTracks / Double_t(fNofEvents) << FairLogger::endl;
-  LOG(INFO) << "Average number of hits per track    : " << fixed << setprecision(3)
+  LOG(INFO) << "Av. hits / track    : " << fixed << setprecision(3)
                 << fNofHitsTot / Double_t(fNofTracksTot)
                 << FairLogger::endl;
-  LOG(INFO) << "Average momentum  : " << fixed << setprecision(3)
+  LOG(INFO) << "Average momentum    : " << fixed << setprecision(3)
             << fPTot / Double_t(fNofGoodTracks) << " GeV"
             << FairLogger::endl;
-  LOG(INFO) << "Time per event    : " << fixed << setprecision(6)
+  LOG(INFO) << "Time per event      : " << fixed << setprecision(6)
             << fTimeTot / Double_t(fNofEvents) << " s"
             << " " << FairLogger::endl;
   LOG(INFO) << "=====================================" << FairLogger::endl;
@@ -110,13 +110,13 @@ InitStatus CbmStsRecoQa::Init()
     }
 
     // --- Get input array (events)
-    fEvents = (TClonesArray*) ioman->GetObject("Event");
+    fEvents = dynamic_cast<TClonesArray*>(ioman->GetObject("Event"));
 
     // --- Get input array (tracks)
-	fTracks = (TClonesArray*) ioman->GetObject("StsTrack");
+	fTracks = dynamic_cast<TClonesArray*>(ioman->GetObject("StsTrack"));
 	assert(fTracks);
 
- return kSUCCESS;
+	return kSUCCESS;
 }
 // -------------------------------------------------------------------------
 
@@ -125,7 +125,7 @@ InitStatus CbmStsRecoQa::Init()
 // -----   Process one event   ---------------------------------------------
 void CbmStsRecoQa::ProcessEvent(CbmEvent* event) {
 
-	// Timer
+ 	// Timer
 	TStopwatch timer;
 	timer.Start();
 	Int_t eventNr = ( event ? event->GetNumber() : fNofEvents );
