@@ -326,7 +326,7 @@ void CbmRichTrainAnnElectrons::TrainAndTestAnn()
     TMultiLayerPerceptron network("x0,x1,x2,x3,x4,x5,x6,x7,x8:18:xOut",simu,"Entry$+1");
     //network.LoadWeights("");
     network.Train(300,"text,update=10");
-    network.DumpWeights("rich_elid_ann_weights.txt");
+    network.DumpWeights("rich_v17a_elid_ann_weights.txt");
     //network.Export();
     
     Double_t params[9];

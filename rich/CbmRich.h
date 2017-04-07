@@ -52,7 +52,7 @@ public:
     * \param[in] active Sensitivity flag.
     * \param[in] px Position X.
     * \param[in] py Position Y.
-    * \param[in] pz Position Z from target to the center of the RICH detector.
+    * \param[in] pz Position Z from target to the center of the RICH detector. Z coordinate for v16a = 270, for v17a = 258.75
     * \param[in] rx Rotation around X.
     * \param[in] ry Rotation around Y.
     * \param[in] rz Rotation around Z.
@@ -62,7 +62,7 @@ public:
          Bool_t active,
          Double_t px=0.,
          Double_t py=0.,
-         Double_t pz=270.,
+         Double_t pz=270., // Z coordinate for v16a = 270, for v17a = 258.75
          Double_t rx=0.,
          Double_t ry=0.,
          Double_t rz=0.);
@@ -174,18 +174,12 @@ public:
     */
    void SetRegisterPhotonsOnSensitivePlane(Bool_t b) {fRegisterPhotonsOnSensitivePlane = b;}
 
-   void SetConstructMirrorSupport(Bool_t b) {fConstructMirrorSupport = b;}
-
 private:
 
    Int_t fPosIndex;
    // set to true if you want to register photons onto the sensitive gas plane,
    // if false then only charged particles are registered
    Bool_t fRegisterPhotonsOnSensitivePlane;
-
-   // only for .geo geometry
-   // if true: the mirror support will be added to .geo geometry
-   Bool_t fConstructMirrorSupport;
 
    TClonesArray* fRichPoints; // MC points onto the photodetector plane
    TClonesArray* fRichRefPlanePoints; // points on the reference plane

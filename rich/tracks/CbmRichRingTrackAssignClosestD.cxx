@@ -30,7 +30,7 @@ CbmRichRingTrackAssignClosestD::CbmRichRingTrackAssignClosestD():
    fTrdTracks(NULL),
    fTrdAnnCut(-0.5),
    fUseTrd(false),
-   fAlgorithmType(TrackRing)
+   fAlgorithmType(RingTrack)
 {
 
 }

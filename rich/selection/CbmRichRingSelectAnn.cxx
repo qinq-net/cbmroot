@@ -1,7 +1,7 @@
 #include "CbmRichRingSelectAnn.h"
 #include "CbmRichRingLight.h"
 #include "CbmRichRingSelectImpl.h"
-
+#include "CbmRichGeoManager.h"
 #include "TTree.h"
 #include "TSystem.h"
 #include "TMultiLayerPerceptron.h"
@@ -16,7 +16,13 @@ CbmRichRingSelectAnn::CbmRichRingSelectAnn ():
    fNN(NULL),
    fSelectImpl(NULL)
 {
-   fAnnWeights = string(gSystem->Getenv("VMCWORKDIR"))  +"/parameters/rich/rich_select_ann_weights.txt";
+	if (CbmRichGeoManager::GetInstance().fGP->fGeometryType == CbmRichGeometryTypeCylindrical) {
+		fAnnWeights = string(gSystem->Getenv("VMCWORKDIR"))  +"/parameters/rich/rich_v17a_select_ann_weights.txt";
+	} else if (CbmRichGeoManager::GetInstance().fGP->fGeometryType == CbmRichGeometryTypeTwoWings) {
+		fAnnWeights = string(gSystem->Getenv("VMCWORKDIR"))  +"/parameters/rich/rich_v16a_select_ann_weights.txt";
+	} else {
+		fAnnWeights = string(gSystem->Getenv("VMCWORKDIR"))  +"/parameters/rich/rich_v17a_select_ann_weights.txt";
+	}
 }
 
 CbmRichRingSelectAnn::~CbmRichRingSelectAnn()
@@ -41,7 +47,7 @@ void CbmRichRingSelectAnn::Init ()
     simu->Branch("xOut", &xOut,"xOut/D");
 
     fNN = new TMultiLayerPerceptron("x0,x1,x2,x3,x4,x5:10:xOut", simu);
-    cout << "-I- CbmRichRingSelectNeuralNet: get NeuralNet weight parameters from: " << fAnnWeights << endl;
+    cout << "-I- CbmRichRingSelectAnn: get ANN weight parameters from: " << fAnnWeights << endl;
     fNN->LoadWeights(fAnnWeights.c_str());
 
 }

@@ -265,7 +265,7 @@ void CbmRichTrainAnnSelect::TrainAndTestAnn()
    TMultiLayerPerceptron network("x0,x1,x2,x3,x4,x5:10:xOut",simu,"Entry$+1");
    //network.LoadWeights("/u/slebedev/JUL09/trunk/parameters/rich/NeuralNet_RingSelection_Weights_Compact.txt");
    network.Train(300,"text,update=10");
-   network.DumpWeights("rich_select_ann_weights.txt");
+   network.DumpWeights("rich_v17a_select_ann_weights.txt");
    //network.Export();
 
    Double_t params[6];

@@ -16,6 +16,7 @@
 #include "TClonesArray.h"
 #include "FairRootManager.h"
 #include "CbmGlobalTrack.h"
+#include "CbmRichGeoManager.h"
 
 #include <iostream>
 
@@ -42,7 +43,13 @@ void CbmRichElectronIdAnn::Init()
 		delete fNN;
 	}
 
-	fAnnWeights = string(gSystem->Getenv("VMCWORKDIR")) + "/parameters/rich/rich_elid_ann_weights.txt";
+	if (CbmRichGeoManager::GetInstance().fGP->fGeometryType == CbmRichGeometryTypeCylindrical) {
+		fAnnWeights = string(gSystem->Getenv("VMCWORKDIR"))  +"/parameters/rich/rich_v17a_elid_ann_weights.txt";
+	} else if (CbmRichGeoManager::GetInstance().fGP->fGeometryType == CbmRichGeometryTypeTwoWings) {
+		fAnnWeights = string(gSystem->Getenv("VMCWORKDIR"))  +"/parameters/rich/rich_v16a_elid_ann_weights.txt";
+	} else {
+		fAnnWeights = string(gSystem->Getenv("VMCWORKDIR"))  +"/parameters/rich/rich_v17a_elid_ann_weights.txt";
+	}
 
    TTree *simu = new TTree ("MonteCarlo","MontecarloData");
    Double_t x[9];

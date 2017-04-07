@@ -185,19 +185,18 @@ void CbmRichGeoManager::InitPmtCyl()
         it->second.fPlaneY = mapPmtPlaneMinMax[it->first].GetMeanY();
         it->second.fPlaneZ = mapPmtPlaneMinMax[it->first].GetMeanZ();
         
-         //cout << "name:" << it->first << " strip(x,y,z):" <<it->second.fX << "," << it->second.fY << "," << it->second.fZ <<
-         //" pmtPlane(z,y,z)" <<it->second.fPlaneX << "," << it->second.fPlaneY << "," << it->second.fPlaneZ << ", " <<
-         //"theta:" << it->second.fTheta << ", phi:" << it->second.fPhi << endl;
+//        cout << "name:" << it->first << " strip(x,y,z):" <<it->second.fX << "," << it->second.fY << "," << it->second.fZ <<
+//         " pmtPlane(z,y,z)" <<it->second.fPlaneX << "," << it->second.fPlaneY << "," << it->second.fPlaneZ << ", " <<
+//         "theta:" << it->second.fTheta << ", phi:" << it->second.fPhi << endl;
     }
     
     
-    // Calculate gap between pmt_block_strips
+    // Calculate gap between camera_strip
     geoIterator.Reset();
     double master1[3], master2[3];
     while ((curNode=geoIterator())) {
         TString nodeName(curNode->GetName());
         TString nodePath;
-        //if (curNode->GetVolume()->GetName() == TString("pmt_block_strip")) {
         if (curNode->GetVolume()->GetName() == TString("camera_strip")) {
             
             geoIterator.GetPath(nodePath);
@@ -212,16 +211,17 @@ void CbmRichGeoManager::InitPmtCyl()
             if ( pmtX < 0 || pmtY < 0) continue;
             const TGeoBBox* shape = (const TGeoBBox*)(curNode->GetVolume()->GetShape());
             
+
             double loc[3];
             if (fGP->fPmtMap[string(nodePath.Data())].fPmtPositionIndexX == 1) {
-                loc[0] = shape->GetDX();
-                loc[1] = shape->GetDY();
-                loc[2] = shape->GetDZ();
+                loc[0] = shape->GetDX() + shape->GetOrigin()[0];
+                loc[1] = shape->GetDY() + shape->GetOrigin()[1];
+                loc[2] = shape->GetDZ() + shape->GetOrigin()[2];
                 curMatrix->LocalToMaster(loc, master1);
             } else if (fGP->fPmtMap[string(nodePath.Data())].fPmtPositionIndexX == 2) {
-                loc[0] = -shape->GetDX();
-                loc[1] = shape->GetDY();
-                loc[2] = shape->GetDZ();
+                loc[0] = -shape->GetDX() + shape->GetOrigin()[0];
+                loc[1] = shape->GetDY() + shape->GetOrigin()[1];
+                loc[2] = shape->GetDZ() + shape->GetOrigin()[2];
                 curMatrix->LocalToMaster(loc, master2);
             }
         }
@@ -231,7 +231,8 @@ void CbmRichGeoManager::InitPmtCyl()
     double dist = TMath::Sqrt( (master1[0] - master2[0]) * (master1[0] - master2[0]) +
                               (master1[1] - master2[1]) * (master1[1] - master2[1]) +
                               (master1[2] - master2[2]) * (master1[2] - master2[2]) );
-    fGP->fPmtStripGap =  0.3346;//dist;
+    //cout << "Gap:" << dist << endl;
+    fGP->fPmtStripGap =  dist; // v17a = 0.3083394
 }
 
 void CbmRichGeoManager::InitPmt()
