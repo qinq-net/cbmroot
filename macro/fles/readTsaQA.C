@@ -13,7 +13,8 @@ void readTsaQA(TString inFile =
 	      //"data/98_ba2015.tsa"
 	      //"data/129_ba2015.tsa"
 	      //"/data/cern2015/flesnet/159_cern-fex.tsa"
-              "/opt/CBM/Daten/121_cern-fex.tsa"
+              //"/opt/CBM/Daten/16_sps2016.tsa"
+	      "/opt/CBM/Daten/121_cern-fex.tsa"
 	      //"data/1076_cern2014.tsa"
 	      //"data/test.tsa"
 )
@@ -59,6 +60,8 @@ void readTsaQA(TString inFile =
   //  FairEventHeader* event = new CbmTbEvent();
   //  event->SetRunId(260);
 
+  CbmTrdTestBeamTools::Instance(new CbmTrdTestBeamTools); 
+  //CbmTrdTestBeamTools::Instance(new CbmTrdLabTools); 
 
   // --- Run
   FairRunOnline *run = new FairRunOnline(source);
@@ -71,7 +74,20 @@ void readTsaQA(TString inFile =
 
   FairTask* HitAnalysis = new CbmTrdQAHit();
   run->AddTask(HitAnalysis);
-  
+  /*  
+  FairTask* Baseline=new CbmTrdQABaseline();
+  run->AddTask(Baseline);
+  */
+   FairTask* digitize=new CbmTrdSimpleDigitizer();
+  run->AddTask(digitize);
+  /*
+  FairTask* Clusterrize=new CbmTrdSimpleClusterizer();
+  //  run->AddTask(Clusterrize);
+
+  FairTask* ClusterAnalysis=new CbmTrdClusterAnalysis();
+  //  run->AddTask(ClusterAnalysis);
+  */
+
   run->Init();
 
   
