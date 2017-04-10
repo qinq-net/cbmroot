@@ -178,7 +178,7 @@ void CbmStsClusterAnalysis::Analyze(CbmStsCluster* cluster,
 
 		cluster->SetAddress(module->GetAddress());
 		cluster->SetProperties(qSum, x, xError, tSum, tError);
-		cluster->SetSize(chanL - chanF);
+		cluster->SetSize(chanL - chanF + 1);
 
 	} //? n-strip cluster
 

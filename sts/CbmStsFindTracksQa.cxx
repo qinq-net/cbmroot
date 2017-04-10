@@ -339,6 +339,8 @@ void CbmStsFindTracksQa::ProcessEvent(CbmEvent* event) {
   Int_t eventNumber = ( event ? event->GetNumber()
       : FairRun::Instance()->GetEventHeader()->GetMCEntryNumber() - 1);
 
+  LOG(DEBUG) << GetName() << ": Process event " << eventNumber << FairLogger::endl;
+
   // Timer
   fTimer.Start();
 
@@ -759,7 +761,7 @@ void CbmStsFindTracksQa::FillHitMap(CbmEvent* event) {
   fHitMap.clear();
   Int_t nHits = (event ? event->GetNofData(Cbm::kStsHit)
       : fStsHits->GetEntriesFast());
-  LOG(DEBUG) << GetName() << ": event " << eventNumber << " with " << nHits
+  LOG(INFO) << GetName() << ": event " << eventNumber << " with " << nHits
       << " STS hits." << FairLogger::endl;
   for (Int_t iHit = 0; iHit < nHits; iHit++) {
     Int_t hitIndex = (event ? event->GetIndex(Cbm::kStsHit, iHit) : iHit);
@@ -773,8 +775,8 @@ void CbmStsFindTracksQa::FillHitMap(CbmEvent* event) {
     Int_t station = CbmStsAddress::GetElementId(hit->GetAddress(), kStsStation);
     fHitMap[mcTrackIndex][station]++;
   }
-  LOG(DEBUG) << GetName() << ": Filled hit map for " << fHitMap.size()
-      << " MCTracks." << FairLogger::endl;
+  LOG(DEBUG) << GetName() << ": Filled hit map from " << nHits
+      << " STS hits for " << fHitMap.size() << " MCTracks." << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 
@@ -793,7 +795,6 @@ void CbmStsFindTracksQa::FillMatchMap(CbmEvent* event, Int_t& nRec,
   nClones = 0;
   Int_t nTracks  = (event ? event->GetNofData(Cbm::kStsTrack)
                           : fStsTracks->GetEntriesFast());
-  Int_t nMatches = fMatches->GetEntriesFast();
 
   for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
 
@@ -810,8 +811,8 @@ void CbmStsFindTracksQa::FillMatchMap(CbmEvent* event, Int_t& nRec,
     Int_t nTrue = match->GetNofTrueHits();
 
     // --- Matched MCTrack
-    Int_t mcTrackId = match->GetMatchedLink().GetIndex();
-    assert(mcTrackId >= 0);
+    Int_t mcTrackId = -1;
+    if ( nTrue > 0 ) mcTrackId = match->GetMatchedLink().GetIndex();
     if ( mcTrackId < 0 ) {
       fhNhGhosts->Fill(nHits);
       nGhosts++;
@@ -852,6 +853,9 @@ void CbmStsFindTracksQa::FillMatchMap(CbmEvent* event, Int_t& nRec,
 
   }   // Loop over StsTracks
   nRec = nTracks;
+  LOG(DEBUG) << GetName() << ": Filled match map for " << nRec
+      << " STS tracks. Ghosts " << nGhosts << " Clones " << nClones
+      << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 
