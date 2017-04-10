@@ -18,6 +18,8 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/run
   ${CBMROOT_SOURCE_DIR}/littrack/std
   ${CBMROOT_SOURCE_DIR}/littrack/cbm
+  ${CBMROOT_SOURCE_DIR}/KF
+  ${CBMROOT_SOURCE_DIR}/KF/Interface
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})

@@ -19,6 +19,8 @@
 #include "TClonesArray.h"
 #include "CbmTimeSlice.h"
 #include "CbmTofHit.h"
+#include "CbmKFTrack.h"
+#include "CbmVertex.h"
 
 class CbmGlobalTrackingTask : public FairTask
 {
@@ -39,11 +41,18 @@ public:
     }
     
 private:
+    Double_t CalcStsTrackLength(const CbmStsTrack* track);
+    
+private:
     CbmGlobalTrackingTofGeometry fTofGeometry;
     CbmTimeSlice* fTimeSlice;
     TClonesArray* fTofHits;
     TClonesArray* fStsTracks;
+    TClonesArray* fStsHits;
+    TClonesArray* fMvdHits;
     TClonesArray* fGlobalTracks;
+    CbmKFTrack fKFTrack;
+    CbmVertex* fPrimVertex;
     
 ClassDef(CbmGlobalTrackingTask, 1)        
 };

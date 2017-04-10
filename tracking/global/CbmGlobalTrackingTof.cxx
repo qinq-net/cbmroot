@@ -902,13 +902,15 @@ void CbmGlobalTrackingTofGeometry::Find(scaltype x1, scaltype y1, scaltype z1, s
    }
 }
 
-void CbmGlobalTrackingTofGeometry::Find(const FairTrackParam& trackParams, timetype trackTime, timetype errT, Int_t& tofHitInd)
+void CbmGlobalTrackingTofGeometry::Find(const FairTrackParam& trackParams, timetype trackTime, timetype errT, Int_t& tofHitInd, Double_t& length)
 //void CbmGlobalTrackingTofGeometry::Find(scaltype x0, scaltype errX, scaltype y0, scaltype errY, scaltype z0, scaltype t0, scaltype errT,
    //scaltype tx, scaltype errTx, scaltype ty, scaltype errTy, Int_t& tofHitInd)
 //void CbmGlobalTrackingTofGeometry::Find(scaltype x0, scaltype errXSq, scaltype y0, scaltype errYSq, scaltype z0, scaltype t0, scaltype errT,
    //scaltype tx, scaltype errTx, scaltype ty, scaltype errTy, Int_t& tofHitInd)
 {
    tofHitInd = -1;
+   Double_t stsTrackLength = length;
+   length = 0;
    //double x0 = trackParams.GetX();
    
    //if (x0 < fMinX || x0 > fMaxX)
@@ -933,8 +935,11 @@ void CbmGlobalTrackingTofGeometry::Find(const FairTrackParam& trackParams, timet
    CbmLitTrackParam litTrackParams;
    CbmLitConverterFairTrackParam::FairTrackParamToCbmLitTrackParam(&cbmTrackParams, &litTrackParams);
    
-   if (fPropagator->Propagate(&litTrackParams, z1, 211) == kLITERROR)
+   if (fPropagator->Propagate(&litTrackParams, z1, 211, 0, &length) == kLITERROR)
+   {
+      length = 0;
       return;
+   }
    
    double x1 = litTrackParams.GetX();
    double y1 = litTrackParams.GetY();
@@ -949,7 +954,8 @@ void CbmGlobalTrackingTofGeometry::Find(const FairTrackParam& trackParams, timet
    double ty = litTrackParams.GetTy();
    double yMax = y1 + ty * deltaZMax;
    double normLen = TMath::Sqrt(1 + tx * tx + ty * ty);
-   double t1 = trackTime + z1 * normLen / fC;
+   //double t1 = trackTime + z1 * normLen / fC;
+   double t1 = trackTime + (stsTrackLength + length) / fC;
    //double t1 = litTrackParams.GetTime();
    double zMax;
    
@@ -1006,6 +1012,7 @@ void CbmGlobalTrackingTofGeometry::Find(const FairTrackParam& trackParams, timet
    set<const Cuboid*> cuboidSet;
 #else//CBM_GLOBALTB_TOF_3D_CUBOIDS
    double minChi2 = std::numeric_limits<double>::max();
+   double deltaLength = 0;
    Line line = { x1, y1, z1, tx / normLen, ty / normLen, 1 / normLen };
 #endif//CBM_GLOBALTB_TOF_3D_CUBOIDS
    
@@ -1124,12 +1131,18 @@ void CbmGlobalTrackingTofGeometry::Find(const FairTrackParam& trackParams, timet
          {
             tofHitInd = hitInd;
             minChi2 = chi2;
+            deltaLength = L02;
          }
       }
    }
    
    if (minChi2 > 75)
+   {
       tofHitInd = -1;
+      length = 0;
+   }
+   else
+      length += deltaLength;
          
 #if 0
          if (tInd >= 0 && tInd < fNofTBins)

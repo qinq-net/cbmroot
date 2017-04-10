@@ -119,7 +119,7 @@ public:
     
     void Clear();
     void Prepare(timetype startTime);
-    void Find(const FairTrackParam& trackParams, timetype trackTime, timetype errT, Int_t& tofHitInd);
+    void Find(const FairTrackParam& trackParams, timetype trackTime, timetype errT, Int_t& tofHitInd, Double_t& length);
     void Find(scaltype x1, scaltype y1, scaltype z1, scaltype tx, scaltype ty, std::map<int, std::map<int, std::map<int, scaltype> > >& inds);
     //void Find(scaltype x0, scaltype errX, scaltype y0, scaltype errY, scaltype z0, scaltype t0, scaltype errT,
                 //scaltype tx, scaltype errTx, scaltype ty, scaltype errTy, Int_t& tofHitInd);
