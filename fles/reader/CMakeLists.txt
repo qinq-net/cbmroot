@@ -84,10 +84,15 @@ Set(SRCS
   get4/CbmGet4EventBuffer.cxx
 
   tasks/tools/CbmTrdTestBeamTools.cxx
+  tasks/tools/CbmTrdLabTools.cxx
+#  tasks/tools/CbmTrdClusterTools.cxx
   
   tasks/CbmSpadicTriggerComp.cxx
   tasks/CbmTrdQABase.cxx
   tasks/CbmTrdQAHit.cxx
+#  tasks/CbmTrdQABaseline.cxx
+  tasks/CbmTrdSimpleDigitizer.cxx
+#  tasks/CbmTrdSimpleClusterizer.cxx
   tasks/CbmTrdRawBeamProfile.cxx
   tasks/CbmTrdRawBuchData.cxx
   tasks/CbmTrdRawPulseMonitor.cxx

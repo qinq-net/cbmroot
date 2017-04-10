@@ -20,8 +20,7 @@
 #include <vector>
 
 ClassImp(CbmTrdQABase)
-const  Int_t NrRobs=4;
-const  Int_t NrSpadics=3;
+
 
 
 // ---- Default constructor -------------------------------------------
@@ -73,12 +72,12 @@ InitStatus CbmTrdQABase::Init ()
   TClonesArray* tempArray=static_cast<TClonesArray*> (ioman->GetObject ("TrdDigi"));
   if (tempArray){
     LOG(INFO) << "Digi Input Available"<< FairLogger::endl;
-    fInput=tempArray;
+    fDigis=tempArray;
   }
   tempArray=static_cast<TClonesArray*> (ioman->GetObject ("TrdCluster"));
   if (tempArray){
     LOG(INFO) << "Switched to Cluster Input"<< FairLogger::endl;
-    fInput=tempArray;
+    fClusters=tempArray;
     }
   CreateHistograms();
   return kSUCCESS;
@@ -104,20 +103,20 @@ void CbmTrdQABase::Exec (Option_t*)
   Int_t nSpadicMessages = fRaw->GetEntriesFast (); //SPADIC messages per TimeSlice
   TGraph* EinzelHistogram=fHm->G1("TSCounter");
   std::vector<TGraph*> HistogramArray;
-  for(Int_t RobID=0;RobID<NrRobs;RobID++){
-    for(Int_t SpadicID=0;SpadicID<NrSpadics*2;SpadicID++){
+  for(Int_t RobID=0;RobID<fBT->GetNrRobs();RobID++){
+    for(Int_t SpadicID=0;SpadicID<fBT->GetNrSpadics()*2;SpadicID++){
       HistogramArray.push_back(fHm->G1(TString("TSCounter"+GetSpadicName(RobID,SpadicID,"Syscore",false)).Data()));
     }
   }
   EinzelHistogram->SetPoint(NrTimeSlice,NrTimeSlice,nSpadicMessages);
-  std::vector<Int_t> MessageCounters(NrRobs*NrSpadics*2,0);
+  std::vector<Int_t> MessageCounters(fBT->GetNrRobs()*fBT->GetNrSpadics()*2,0);
   for (Int_t iSpadicMessage=0; iSpadicMessage < nSpadicMessages; ++iSpadicMessage){
     CbmSpadicRawMessage *raw= static_cast<CbmSpadicRawMessage*>(fRaw->At(iSpadicMessage));
-    MessageCounters.at(GetRobID(raw)*NrSpadics*2+GetSpadicID(raw))++;
+    MessageCounters.at(GetRobID(raw)*fBT->GetNrSpadics()*2+GetSpadicID(raw))++;
   }
-  for(Int_t RobID=0;RobID<NrRobs;RobID++){
-    for(Int_t SpadicID=0;SpadicID<NrSpadics*2;SpadicID++){
-      HistogramArray.at(RobID*NrSpadics*2+SpadicID)->SetPoint(NrTimeSlice,NrTimeSlice,MessageCounters.at(RobID*NrSpadics*2+SpadicID));
+  for(Int_t RobID=0;RobID<fBT->GetNrRobs();RobID++){
+    for(Int_t SpadicID=0;SpadicID<fBT->GetNrSpadics()*2;SpadicID++){
+      HistogramArray.at(RobID*fBT->GetNrSpadics()*2+SpadicID)->SetPoint(NrTimeSlice,NrTimeSlice,MessageCounters.at(RobID*fBT->GetNrSpadics()*2+SpadicID));
     }
   }
 }
@@ -129,8 +128,8 @@ void CbmTrdQABase::CreateHistograms()
   fHm->G1("TSCounter")->SetNameTitle("TSCounter","TSCounter");
   fHm->G1("TSCounter")->GetXaxis()->SetTitle("TS Number");
   fHm->G1("TSCounter")->GetYaxis()->SetTitle("Message Counter");
-  for(Int_t RobID=0;RobID<NrRobs;RobID++){
-    for(Int_t SpadicID=0;SpadicID<NrSpadics*2;SpadicID++){
+  for(Int_t RobID=0;RobID<fBT->GetNrRobs();RobID++){
+    for(Int_t SpadicID=0;SpadicID<fBT->GetNrSpadics()*2;SpadicID++){
       fHm->Add(TString("TSCounter"+GetSpadicName(RobID,SpadicID,"Syscore",false)).Data(),new TGraph);
       TString GraphName="TSCounter"+GetSpadicName(RobID,SpadicID,"Syscore",false);
       fHm->G1(GraphName.Data())->SetNameTitle(GraphName.Data(),GraphName.Data());
