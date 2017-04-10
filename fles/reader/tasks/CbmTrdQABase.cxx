@@ -25,7 +25,7 @@ ClassImp(CbmTrdQABase)
 
 // ---- Default constructor -------------------------------------------
 CbmTrdQABase::CbmTrdQABase (CbmTrdTestBeamTools*ptr,TString ClassName) :
-  FairTask (ClassName.Data()), fInput (nullptr), fRaw(nullptr),fBT(CbmTrdTestBeamTools::Instance(ptr)), fHm(new CbmHistManager)
+  FairTask (ClassName.Data()), fRaw(nullptr),fBT(CbmTrdTestBeamTools::Instance(ptr)), fHm(new CbmHistManager)
 {
   LOG(INFO) << TString("Default Constructor of ")+TString(this->GetName())
 		<< FairLogger::endl;
@@ -60,10 +60,8 @@ InitStatus CbmTrdQABase::Init ()
   FairRootManager* ioman = FairRootManager::Instance ();
 
   // Get a pointer to the previous already existing data level
-  fInput =
-      static_cast<TClonesArray*> (ioman->GetObject ("SpadicRawMessage"));
-  fRaw=fInput;
-  if (!fInput)
+  fRaw = static_cast<TClonesArray*> (ioman->GetObject ("SpadicRawMessage"));
+  if (!fRaw)
     {
       LOG(FATAL)
 	<< "No InputDataLevelName array!\n "<<this->GetName() << " will be inactive"  << FairLogger::endl;
