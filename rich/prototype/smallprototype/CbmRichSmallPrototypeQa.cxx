@@ -9,6 +9,10 @@
 #include "TStyle.h"
 #include "TEllipse.h"
 #include "TMarker.h"
+#include "TGeoNode.h"
+#include "TGeoManager.h"
+#include "TGeoBBox.h"
+
 
 #include "CbmMCTrack.h"
 #include "FairTrackParam.h"
@@ -84,46 +88,73 @@ InitStatus CbmRichSmallPrototypeQa::Init()
     return kSUCCESS;
 }
 
+vector<Double_t> CbmRichSmallPrototypeQa::GetHistBins(Bool_t isX)
+{
+	set<Double_t> setBins;
+	TGeoIterator geoIterator(gGeoManager->GetTopNode()->GetVolume());
+	TGeoNode* curNode;
+	TString pixelNameStr("pmt_pixel");
+	geoIterator.Reset();
+	Double_t halfPixelSize = 0.;
+	while ((curNode=geoIterator())) {
+		TString nodeName(curNode->GetName());
+		TString nodePath;
+		if (TString(curNode->GetVolume()->GetName()).Contains(pixelNameStr)) {
+			geoIterator.GetPath(nodePath);
+			const TGeoMatrix* curMatrix = geoIterator.GetCurrentMatrix();
+			const Double_t* curNodeTr = curMatrix->GetTranslation();
+            const TGeoBBox* shape = (const TGeoBBox*)(curNode->GetVolume()->GetShape());
+            Double_t lowEdge, upEdge;
+            if (isX) {
+            	halfPixelSize = shape->GetDX();
+            	lowEdge = curNodeTr[0] - halfPixelSize;
+            	upEdge = curNodeTr[0] + halfPixelSize;
+            } else {
+            	halfPixelSize = shape->GetDY();
+            	lowEdge = curNodeTr[1] - halfPixelSize;
+            	upEdge = curNodeTr[1] + halfPixelSize;
+            }
+            setBins.insert(lowEdge);
+            setBins.insert(upEdge);
+		}
+	}
+
+	vector<double> bins(setBins.begin(), setBins.end());
+	sort (bins.begin(), bins.end());
+
+	return bins;
+}
+
 void CbmRichSmallPrototypeQa::InitHistograms()
 {
     fHM = new CbmHistManager();
     
-    
     //RICH
-    fHM->Create1<TH1D>("fh_nof_rich_points", "fh_nof_rich_points;# RICH Points per event;Yield (a.u.)", 1000, -.5, 999.5);
-    fHM->Create1<TH1D>("fh_nof_rich_digis", "fh_nof_rich_digis;# RICH Digis per event;Yield (a.u.)", 200, -.5, 199.5);
-    fHM->Create1<TH1D>("fh_nof_rich_hits", "fh_nof_rich_hits;# RICH hits per event;Yield (a.u.)", 100, -.5, 99.5);
-    fHM->Create1<TH1D>("fh_nof_rich_rings", "fh_nof_rich_rings;# RICH rings;# per event", 5, -0.5, 4.5);
-    fHM->Create1<TH1D>("fh_nof_good_rings", "fh_nof_good_rings;Nof good rings;# per event", 5, -0.5, 4.5);
-    fHM->Create1<TH1D>("fh_rich_ring_radius","fh_rich_ring_radius;Ring Radius [cm];Yield (a.u.)", 300, 4., 7.);
-    fHM->Create2<TH2D>("fh_rich_points_xy", "fh_rich_points_xy;X [cm];Y [cm];Yield (a.u.)", 1000, -10., 10., 700, -10., 10.);
+    fHM->Create1<TH1D>("fh_nof_rich_points", "fh_nof_rich_points;Nof RICH Points per event;Yield (a.u.)", 250, -.5, 499.5);
+    fHM->Create1<TH1D>("fh_nof_rich_hits", "fh_nof_rich_hits;Nof RICH hits per event;Yield (a.u.)", 100, -.5, 99.5);
+    fHM->Create1<TH1D>("fh_nof_rich_rings", "fh_nof_rich_rings;Nof RICH rings;# per event", 5, -0.5, 4.5);
+    fHM->Create1<TH1D>("fh_rich_ring_radius","fh_rich_ring_radius;Ring radius [cm];Yield (a.u.)", 100, 4.5, 6.5);
+    fHM->Create2<TH2D>("fh_rich_points_xy", "fh_rich_points_xy;X [cm];Y [cm];Yield (a.u.)", 250, -10., 10., 250, -10., 10.);
     
-    Float_t XBins[] = {-7.725, -7.11875, -6.5125, -5.90625, -5.3, -4.69375, -4.0875, -3.48125, -2.875, -2.425, -1.81875, -1.2125, -0.60625, 0., 0.60625, 1.2125, 1.81875, 2.425, 2.875, 3.48125, 4.0875, 4.69375, 5.3, 5.90625, 6.5125, 7.11875, 7.725};
-    Float_t YBins[] = {-12.075, -11.46875, -10.8625, -10.25625, -9.65, -9.04375, -8.4375, -7.83125, -7.225, -6.775, -6.16875, -5.5625, -4.95625, -4.35, -3.74375, -3.1375, -2.53125, -1.925, 1.925, 2.53125, 3.1375, 3.74375, 4.35, 4.95625, 5.5625, 6.16875, 6.775, 7.225, 7.83125, 8.4375, 9.04375, 9.65, 10.25625, 10.8625, 11.46875, 12.075};
-    Int_t NBinsX = sizeof(XBins)/sizeof(Float_t) - 1;
-    Int_t NBinsY = sizeof(YBins)/sizeof(Float_t) - 1;
-    fHM->Add("fh_rich_hits_xy", new TH2D("fh_rich_hits_xy", "fh_rich_hits_xy;X [cm];Y [cm];Yield (a.u.)", NBinsX, XBins, NBinsY, YBins));
-    
-    fHM->Add("fh_rich_hits_xy_dR>", new TH2D("fh_rich_hits_xy_dR>", "fh_rich_hits_xy_dR>;X [cm];Y [cm];Yield (a.u.)", NBinsX, XBins, NBinsY, YBins));
-
-    fHM->Add("fh_rich_hits_xy_dR<", new TH2D("fh_rich_hits_xy_dR<", "fh_rich_hits_xy_dR<;X [cm];Y [cm];Yield (a.u.)", NBinsX, XBins, NBinsY, YBins));
+    vector<Double_t> xbins = GetHistBins(true);
+    vector<Double_t> ybins = GetHistBins(false);
+    fHM->Add("fh_rich_hits_xy", new TH2D("fh_rich_hits_xy", "fh_rich_hits_xy;X [cm];Y [cm];Yield (a.u.)", xbins.size() - 1, &xbins[0], ybins.size() - 1, &ybins[0]));
     
     fHM->Create2<TH2D>("fh_nonphoton_pmt_points_xy","fh_nonphoton_pmt_points_xy;X [cm];Y [cm];Yield (a.u.)", 50, -10., 10., 50, -10., 10.);
     
-
     fHM->Create1<TH1D>("fh_hits_per_ring", "fh_hits_per_ring;Hits per Ring;Yield (a.u.)", 58, 2.5, 60.5);
     
-    fHM->Create2<TH2D>("fh_ring_center_xy","fh_ring_center_xy;X [cm];Y [cm];Yield (a.u.)", 100, -10, 10, 100, -10, 10);
+    fHM->Create2<TH2D>("fh_ring_center_xy","fh_ring_center_xy;X [cm];Y [cm];Yield (a.u.)", 100, -5., 5., 100, -5., 5.);
     
     fHM->Create2<TH2D>("fh_proton_start_xy","fh_proton_start_xy;X [cm];Y [cm];Yield (a.u.)", 100, -2., 2., 100, -2., 2.);
-    fHM->Create1<TH1D>("fh_dR","fh_dR;dR [cm];Yield(a.u.)", 80, -0.8, 0.8);
+    fHM->Create1<TH1D>("fh_dR","fh_dR;dR [cm];Yield (a.u.)", 80, -0.8, 0.8);
     
     fHM->Create2<TH2D>("fh_refplane_xy_all", "fh_refplane_xy_all;X [cm];Y [cm];# per event", 100, -10., 10, 100, -10., 10.);
     fHM->Create2<TH2D>("fh_refplane_xy_prim", "fh_refplane_xy_prim;X [cm];Y [cm];# per event", 100, -10., 10., 100, -10., 10.);
     fHM->Create2<TH2D>("fh_refplane_xy_sec", "fh_refplane_xy_sec;X [cm];Y [cm];# per event", 100, -10., 10., 100, -10., 10.);
     fHM->Create1<TH1D>("fh_refplane_pdg", "fh_refplane_pdg;PDG Code;# per event", 6000, -3000., 3000.);
     
-    fHM->Create1<TH1D>("fh_refplane_nof_particles_per_event", "fh_refplane_nof_particles_per_event;Particle;# per event", 6, -0.5, 5.5);
+    fHM->Create1<TH1D>("fh_refplane_sources", "fh_refplane_sources;Particle;# per event", 6, -0.5, 5.5);
 }
 
 void CbmRichSmallPrototypeQa::Exec(
@@ -140,7 +171,6 @@ void CbmRichSmallPrototypeQa::Exec(
     Int_t nofRefPlanePoints = fRefPlanePoints->GetEntriesFast();
     
     fHM->H1("fh_nof_rich_points")->Fill(nofRichPoints);
-    fHM->H1("fh_nof_rich_digis")->Fill(nofRichDigis);
     fHM->H1("fh_nof_rich_hits")->Fill(nofRichHits);
     fHM->H1("fh_nof_rich_rings")->Fill(nofRichRings);
     
@@ -158,6 +188,7 @@ void CbmRichSmallPrototypeQa::Exec(
         Int_t trackid = point->GetTrackID();
         if (trackid < 0) continue;
         CbmMCTrack* mctrack= static_cast<CbmMCTrack*>(fMCTracks->At(trackid));
+        if (mctrack == NULL) continue;
         Int_t pdg = mctrack->GetPdgCode();
         if(pdg != 50000050) {
             fHM->H2("fh_nonphoton_pmt_points_xy")->Fill(point->GetX(), point->GetY());
@@ -190,10 +221,6 @@ void CbmRichSmallPrototypeQa::Exec(
         if (!(motherId == -1 && pdg == 2212)) continue;
         if (nofHits > 40) continue;
         
-        if(nofHits>2) {
-            fHM->H1("fh_nof_good_rings")->Fill(iR+1);
-        }
-        
         Double_t cX = ring->GetCenterX();
         Double_t cY = ring->GetCenterY();
         fHM->H2("fh_ring_center_xy")->Fill(cX,cY);
@@ -211,22 +238,6 @@ void CbmRichSmallPrototypeQa::Exec(
             if(hitX<3.0 && hitX>-3.0 && hitY<3.0 && hitY>-3.0) continue;
             Double_t dR = radius - TMath::Sqrt( (cX - hitX)*( cX - hitX) + (cY - hitY)*(cY - hitY) );
             fHM->H1("fh_dR")->Fill(dR);
-            
-            if(dR>0)
-            {
-                for(int i = 0; i < nofRichHits; i++)
-                {
-                    
-                    fHM->H2("fh_rich_hits_xy_dR>")->Fill(hitX, hitY);
-                }
-            }
-            if(dR<0)
-            {
-                for(int j = 0; j < nofRichHits; j++)
-                {
-                    fHM->H2("fh_rich_hits_xy_dR<")->Fill(hitX, hitY);
-                }
-            }
         }
         
     }
@@ -244,17 +255,17 @@ void CbmRichSmallPrototypeQa::Exec(
         fHM->H1("fh_refplane_pdg")->Fill(pdg);
         
         if(pdg == 211) {
-            fHM->H1("fh_refplane_nof_particles_per_event")->Fill(0);
+            fHM->H1("fh_refplane_sources")->Fill(0);
         } else if(pdg == -211) {
-            fHM->H1("fh_refplane_nof_particles_per_event")->Fill(1);
+            fHM->H1("fh_refplane_sources")->Fill(1);
         } else if(pdg == 11) {
-            fHM->H1("fh_refplane_nof_particles_per_event")->Fill(2);
+            fHM->H1("fh_refplane_sources")->Fill(2);
         } else if(pdg == -11) {
-            fHM->H1("fh_refplane_nof_particles_per_event")->Fill(3);
+            fHM->H1("fh_refplane_sources")->Fill(3);
         } else if(pdg == 13) {
-            fHM->H1("fh_refplane_nof_particles_per_event")->Fill(4);
+            fHM->H1("fh_refplane_sources")->Fill(4);
         } else if(pdg == -13) {
-            fHM->H1("fh_refplane_nof_particles_per_event")->Fill(5);
+            fHM->H1("fh_refplane_sources")->Fill(5);
         }
 
         fHM->H2("fh_refplane_xy_all")->Fill(point->GetX(), point->GetY());
@@ -280,50 +291,24 @@ void CbmRichSmallPrototypeQa::DrawHist()
     
     
     {
-        TCanvas* c = fHM->CreateCanvas("richsp_nof_rich_hits_points", "richsp_nof_rich_hits_points", 1200, 600);
-        c->Divide(2,1);
+        TCanvas* c = fHM->CreateCanvas("richsp_nof_rich_hits_points", "richsp_nof_rich_hits_points", 1200, 1200);
+        c->Divide(2,2);
         c->cd(1);
         DrawH1andFitGauss(fHM->H1("fh_nof_rich_points"));
-        //gPad->SetLogy(true);
         c->cd(2);
         DrawH1andFitGauss(fHM->H1("fh_nof_rich_hits"));
-    }
-    
-    {
-        TCanvas* c = fHM->CreateCanvas("richsp_rich_points_xy", "richsp_rich_points_xy", 600, 600);
-        c->SetLogz();
-        DrawH2(fHM->H2("fh_rich_points_xy"));
-        fHM->H2("fh_rich_points_xy")->SetTitle("Rich Points");
-    }
-    {
-        TCanvas* c = fHM->CreateCanvas("rich_hits_xy", "rich_hits_xy", 600, 600);
-        c->SetLogz();
-        DrawH2(fHM->H2("fh_rich_hits_xy"));
-        fHM->H2("fh_rich_hits_xy")->SetTitle("Rich Hits");
-    }
+        c->cd(3);
+        DrawH1andFitGauss(fHM->H1("fh_hits_per_ring"));
 
-    
-    {
-        fHM->CreateCanvas("richsp_refplane_nof_particles_per_event", "richsp_refplane_nof_particles_per_event", 600, 600);
-        DrawH1(fHM->H1("fh_refplane_nof_particles_per_event"));
-        fHM->H1("fh_refplane_nof_particles_per_event")->SetTitle("Number of particles on reference plane");
-        string labels[6] = {"#pi^{+}", "#pi^{-}", "e^{+}", "e^{-}", "#mu^{+}", "#mu^{-}"};
-        for (Int_t i = 1; i <= 6; i++){
-            fHM->H1("fh_refplane_nof_particles_per_event")->GetXaxis()->SetBinLabel(i, labels[i-1].c_str());
-        }
     }
     
     {
-        TCanvas* c = fHM->CreateCanvas("richsp_rich_hits_xy_dR", "richsp_rich_hits_xy_dR", 1200, 600);
-        c->Divide(2,1);
+        TCanvas* c = fHM->CreateCanvas("richsp_rich_points_hits_xy", "richsp_rich_points_hits_xy", 1200, 600);
+        c->Divide(2, 1);
         c->cd(1);
-        c->SetLogz();
-        DrawH2(fHM->H2("fh_rich_hits_xy_dR>"));
-        fHM->H2("fh_rich_hits_xy_dR>")->SetTitle("Rich Hits dR>");
+        DrawH2(fHM->H2("fh_rich_points_xy"));
         c->cd(2);
-        c->SetLogz();
-        DrawH2(fHM->H2("fh_rich_hits_xy_dR<"));
-        fHM->H2("fh_rich_hits_xy_dR<")->SetTitle("Rich Hits dR<");
+        DrawH2(fHM->H2("fh_rich_hits_xy"));
     }
     
     
@@ -331,7 +316,6 @@ void CbmRichSmallPrototypeQa::DrawHist()
         TCanvas* c = fHM->CreateCanvas("richsp_proton_start_xy", "richsp_proton_start_xy", 600, 600);
         c->SetLogz();
         DrawH2(fHM->H2("fh_proton_start_xy"));
-        fHM->H2("fh_proton_start_xy")->SetTitle("Proton start XY");
     }
     
     {
@@ -340,6 +324,7 @@ void CbmRichSmallPrototypeQa::DrawHist()
         fHM->H1("fh_rich_ring_radius")->SetTitle("Ring Radius");
     }
     
+
     {
         fHM->CreateCanvas("richsp_nof_rich_rings", "richsp_nof_rich_rings", 600, 600);
         DrawH1(fHM->H1("fh_nof_rich_rings"));
@@ -353,8 +338,16 @@ void CbmRichSmallPrototypeQa::DrawHist()
     }
     
     {
-        TCanvas* c = fHM->CreateCanvas("richsp_refplane_xy", "richsp_refplane_xy", 1500, 500);
-        c->Divide(3,1);
+        TCanvas* c = fHM->CreateCanvas("richsp_ring_center_xy", "richsp_ring_center_xy", 600, 600);
+        c->SetLogz();
+        DrawH2(fHM->H2("fh_ring_center_xy"));
+        fHM->H1("fh_ring_center_xy")->SetTitle("Ring center");
+    }
+
+
+    {
+        TCanvas* c = fHM->CreateCanvas("richsp_refplane", "richsp_refplane", 1200, 1200);
+        c->Divide(2,2);
         c->cd(1);
         DrawH2(fHM->H2("fh_refplane_xy_all"));
         DrawTextOnPad("All particles", 0.1, 0.9, .7, .99);
@@ -365,6 +358,12 @@ void CbmRichSmallPrototypeQa::DrawHist()
         c->cd(3);
         DrawH2(fHM->H2("fh_refplane_xy_sec"));
         DrawTextOnPad("Secondary particle", 0.1, 0.9, .7, .99);
+        c->cd(4);
+        DrawH1(fHM->H1("fh_refplane_sources"));
+        string labels[6] = {"#pi^{+}", "#pi^{-}", "e^{+}", "e^{-}", "#mu^{+}", "#mu^{-}"};
+        for (Int_t i = 1; i <= 6; i++){
+        	fHM->H1("fh_refplane_sources")->GetXaxis()->SetBinLabel(i, labels[i-1].c_str());
+        }
     }
     
     {
@@ -379,25 +378,6 @@ void CbmRichSmallPrototypeQa::DrawHist()
         c->SetLogy();
         DrawH1(fHM->H1("fh_refplane_pdg"));
         fHM->H1("fh_refplane_pdg")->SetTitle("Reference plane, PDG codes");
-    }
-    
-    {
-        fHM->CreateCanvas("richsp_hits_per_ring", "richsp_hits_per_ring", 600, 600);
-        DrawH1andFitGauss(fHM->H1("fh_hits_per_ring"));
-        fHM->H1("fh_hits_per_ring")->SetTitle("Hits per Ring");
-    }
-    
-    {
-        TCanvas* c = fHM->CreateCanvas("richsp_ring_center_xy", "richsp_ring_center_xy", 600, 600);
-        c->SetLogz();
-        DrawH2(fHM->H2("fh_ring_center_xy"));
-        fHM->H1("fh_ring_center_xy")->SetTitle("Ring center");
-    }
-    
-    {
-        fHM->CreateCanvas("richsp_nof_good_rings", "richsp_nof_good_rings", 600, 600);
-        DrawH1(fHM->H1("fh_nof_good_rings"));
-        fHM->H1("fh_nof_good_rings")->SetTitle("Nof good Rings");
     }
 }
 

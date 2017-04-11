@@ -62,6 +62,11 @@ private:
      */
     void DrawHist();
     
+    /**
+     * Return low edges of the histogram bins which matches pixel structure.
+     */
+    vector<Double_t> GetHistBins(Bool_t isX);
+
     void DrawCircle(
                     CbmRichRing* ring);
     
