@@ -13,6 +13,7 @@
 #include "CbmGlobalTrack.h"
 #include "CbmMvdHit.h"
 #include "CbmKFStsHit.h"
+#include "CbmKFParticleInterface.h"
 
 #define CBM_GLOBALTB_PRINT_PERF
 
@@ -112,7 +113,7 @@ void CbmGlobalTrackingTask::Exec(Option_t* opt)
       Int_t tofHitInd;
       Double_t stsTrackLength = CalcStsTrackLength(track);
       Double_t trackLength = stsTrackLength;
-      const FairTrackParam* param = track->GetParamLast();
+      FairTrackParam param = *track->GetParamLast();
 #ifdef CBM_GLOBALTB_PRINT_PERF
       timespec ts;
       clock_gettime(CLOCK_REALTIME, &ts);
@@ -120,9 +121,19 @@ void CbmGlobalTrackingTask::Exec(Option_t* opt)
 #endif//CBM_GLOBALTB_PRINT_PERF
       //fTofGeometry.Find(param->GetX(), param->GetCovariance(0, 0), param->GetY(), param->GetCovariance(1, 1), param->GetZ(),
          //track->GetTime(), track->GetTimeError(), param->GetTx(), TMath::Sqrt(param->GetCovariance(2, 2)), param->GetTy(), TMath::Sqrt(param->GetCovariance(3, 3)), tofHitInd);
-      fTofGeometry.Find(*param, track->GetTime(), track->GetTimeError(), tofHitInd, trackLength);
+      fTofGeometry.Find(param, track->GetTime(), track->GetTimeError(), tofHitInd, trackLength);
       globalTrack->SetTofHitIndex(tofHitInd);
       globalTrack->SetLength(stsTrackLength + trackLength);
+      globalTrack->SetParamFirst(track->GetParamFirst());
+      globalTrack->SetParamLast(&param);
+      
+      if (fPrimVertex)
+      {
+         FairTrackParam vtxTrackParam;
+         float chiSqPrimary = 0;
+         CbmKFParticleInterface::ExtrapolateTrackToPV(track, fPrimVertex, &vtxTrackParam, chiSqPrimary);
+         globalTrack->SetParamPrimaryVertex(&vtxTrackParam);
+      }
 #ifdef CBM_GLOBALTB_PRINT_PERF
       clock_gettime(CLOCK_REALTIME, &ts);
       long endTime = ts.tv_sec * 1000000000 + ts.tv_nsec;
