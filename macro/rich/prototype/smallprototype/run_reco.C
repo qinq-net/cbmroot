@@ -16,9 +16,9 @@ void run_reco(Int_t nEvents = 500)
 	//TString parFile = "/data/cbm/Gregor/param.01001.root";
 	//TString recoFile ="/data/cbm/Gregor/reco.01001.root";
     
-    TString parFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/param.00001.root";
-    TString recoFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/reco.00001.root";
-    TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/richprototype/mc.00001.root";
+    TString parFile = "/Users/slebedev/Development/cbm/data/sim/rich/richprototype/param.00001.root";
+    TString recoFile = "/Users/slebedev/Development/cbm/data/sim/rich/richprototype/reco.00001.root";
+    TString mcFile = "/Users/slebedev/Development/cbm/data/sim/rich/richprototype/mc.00001.root";
 
 	remove(recoFile.Data());
 
