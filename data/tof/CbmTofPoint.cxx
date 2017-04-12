@@ -8,6 +8,7 @@
 
 #include "CbmTofPoint.h"
 
+#include <bitset>
 #include <cassert>
 #include <limits>
 #include <sstream>
