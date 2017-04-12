@@ -46,6 +46,8 @@ class CbmTof : public FairDetector
   /** Destructor **/
   virtual ~CbmTof();
 
+  virtual void PreTrack();
+  virtual void FinishEvent();
 
   /** Virtual method ProcessHits
    **
@@ -110,6 +112,8 @@ class CbmTof : public FairDetector
   /** Do all initilization for the TOF detector **/
   virtual void Initialize();
 
+  void GenerateOnePointPerTrack( Bool_t bOnePointPerTrack = kTRUE ) { fbOnePointPerTrack = bOnePointPerTrack; }
+
  private:
 
   /** Track information to be stored until the track leaves the
@@ -129,6 +133,9 @@ class CbmTof : public FairDetector
    TGeoCombiTrans*   fCombiTrans;  //! Transformation matrix for geometry positioning
 
    std::string fVolumeName;    //! Name of Volume to be imported
+
+  Bool_t fbOnePointPerTrack;
+  Bool_t fbIsNewTrack;
 
   /** Private method AddHit
    **
@@ -167,7 +174,7 @@ class CbmTof : public FairDetector
   CbmTof& operator=(const CbmTof&);
 
 
-  ClassDef(CbmTof,2)
+  ClassDef(CbmTof,3)
 
 };
 

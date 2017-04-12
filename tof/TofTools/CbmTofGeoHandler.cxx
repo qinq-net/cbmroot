@@ -176,6 +176,66 @@ Int_t CbmTofGeoHandler::GetUniqueDetectorId()
 
 }
 
+
+Int_t CbmTofGeoHandler::GetUniqueCounterId()
+{
+
+  Int_t smtype=0;
+  Int_t smodule=0;
+  Int_t counter=0;
+  Int_t gap=0;
+  Int_t cell=0;
+  TString Volname;
+
+
+  if (fGeoVersion == k07a) {
+    Volname = CurrentVolName();
+    smtype = Volname[5]-'0';
+    CurrentVolOffID(2, counter);
+    CurrentVolOffID(1, cell);
+    CurrentVolID(gap);
+  } else if (fGeoVersion == k12b) {
+    Volname = CurrentVolOffName(4);
+    smtype = Volname[7]-'0';
+    CurrentVolOffID(4, smodule);
+    CurrentVolOffID(2, counter);
+    CurrentVolOffID(1, gap);
+    CurrentVolID(cell);
+  } else if (fGeoVersion == k14a) { // test beam  
+    Volname = CurrentVolOffName(4);
+    smtype = Volname[7]-'0';
+    CurrentVolOffID(4, smodule);
+    CurrentVolOffID(2, counter);
+    CurrentVolOffID(1, gap);
+    CurrentVolID(cell);
+    //    counter=smodule;  // necessary for plastics 
+    //    smodule=smtype;   // for test beam setup
+  }
+
+  cell=0;
+
+  fDetectorInfoArray = CbmTofDetectorInfo(kTOF, smtype, smodule, counter, gap, cell);
+
+  gap=0;
+
+  LOG(DEBUG1)<<"GeoHand: ";
+  LOG(DEBUG1)<<" Volname: "<<Volname<<", "<<CurrentVolOffName(3)<<", "<<CurrentVolOffName(2)<<", "<<CurrentVolOffName(1)<<", "<<CurrentVolOffName(0);
+  LOG(DEBUG1)<<" SMtype: "<<smtype;
+  LOG(DEBUG1)<<" SModule: "<<smodule;
+  LOG(DEBUG1)<<" Counter: "<<counter;
+  LOG(DEBUG1)<<" Gap: "<<gap;
+  LOG(DEBUG1)<<" Cell: "<<cell;
+
+  CbmTofDetectorInfo detInfo(kTOF, smtype, smodule, counter, gap, cell);
+
+  Int_t result=fTofId->SetDetectorInfo(detInfo);
+  fLastUsedDetectorID = result;
+  LOG(DEBUG1)<<" Unique ID: "<< Form("0x%08x",result) << FairLogger::endl;
+//  return fTofId->SetDetectorInfo(detInfo);
+  return result;
+
+}
+
 /*
 void CbmTofGeoHandler::FillInternalStructures()
 {

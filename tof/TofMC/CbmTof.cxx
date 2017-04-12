@@ -48,7 +48,9 @@ CbmTof::CbmTof()
     fTofCollection(new TClonesArray("CbmTofPoint")),
     fGeoHandler(new CbmTofGeoHandler()),
     fCombiTrans(),
-    fVolumeName("")
+    fVolumeName(""),
+    fbOnePointPerTrack(kFALSE),
+    fbIsNewTrack(kFALSE)
 {
   fVerboseLevel = 1;
 }
@@ -70,7 +72,9 @@ CbmTof::CbmTof(const char* name, Bool_t active)
     fTofCollection(new TClonesArray("CbmTofPoint")),
     fGeoHandler(new CbmTofGeoHandler()),
     fCombiTrans(),
-    fVolumeName("")
+    fVolumeName(""),
+    fbOnePointPerTrack(kFALSE),
+    fbIsNewTrack(kFALSE)
 {
   fVerboseLevel = 1;
 }
@@ -102,59 +106,188 @@ void CbmTof::Initialize()
 
 }
 
+void CbmTof::PreTrack()
+{
+  if( fbOnePointPerTrack )
+  {
+    fbIsNewTrack = kTRUE;
+  }
+}
+
+void CbmTof::FinishEvent()
+{
+  // method is called right before FairRootManager::Fill, once per FairDetector per event
+
+  if( fbOnePointPerTrack )
+  {
+    // loop over all MC points (1 point per counter) created by all tracks in the event
+    for( Int_t iPoint = 0; iPoint < fTofCollection->GetEntriesFast(); iPoint++ )
+    {
+      CbmTofPoint* tCurrentPoint = dynamic_cast<CbmTofPoint*>(fTofCollection->At(iPoint));
+
+      // average all point properties except for the energy loss in the gaps
+      Int_t iNCells = tCurrentPoint->GetNCells();
+      tCurrentPoint->SetTime( tCurrentPoint->GetTime() / iNCells );
+      tCurrentPoint->SetLength( tCurrentPoint->GetLength() / iNCells );
+      tCurrentPoint->SetX( tCurrentPoint->GetX() / iNCells );
+      tCurrentPoint->SetY( tCurrentPoint->GetY() / iNCells );
+      tCurrentPoint->SetZ( tCurrentPoint->GetZ() / iNCells );
+      tCurrentPoint->SetPx( tCurrentPoint->GetPx() / iNCells );
+      tCurrentPoint->SetPy( tCurrentPoint->GetPy() / iNCells );
+      tCurrentPoint->SetPz( tCurrentPoint->GetPz() / iNCells );
+    }
+  }
+}
+
 // -----   Public method ProcessHits  --------------------------------------
 Bool_t  CbmTof::ProcessHits(FairVolume* /*vol*/)
 {
+  if( fbOnePointPerTrack )
+  {
+    // create/update CbmTofPoint objects for any charged particle or geantinos/rootinos
+    if( 0 != gMC->TrackCharge() || 0 == gMC->TrackPid() )
+    {
+      Int_t iCounterID = fGeoHandler->GetUniqueCounterId();
+      Int_t iTrackID = gMC->GetStack()->GetCurrentTrackNumber();
 
-  // Set parameters at entrance of volume. Reset ELoss.
-  if ( gMC->IsTrackEntering() ) {
-    fELoss  = 0.;
-    fTime   = gMC->TrackTime() * 1.0e09;
-    fLength = gMC->TrackLength();
-    gMC->TrackPosition(fPos);
-    gMC->TrackMomentum(fMom);
+      Double_t dTrackEnergyDeposit = gMC->Edep();
+
+      CbmTofPoint* tCounterPoint(0);
+      Bool_t bCounterPointExists = kFALSE;
+
+      // scan the MC point array only if an existing point may be found
+      if( !fbIsNewTrack )
+      {
+        // loop over all MC points (1 point per counter) created by all tracks in the event so far
+        // in reverse order to find the proper MC point immediately
+        for( Int_t iPoint = fTofCollection->GetEntriesFast() - 1; iPoint >= 0; iPoint-- )
+        {
+          tCounterPoint = dynamic_cast<CbmTofPoint*>(fTofCollection->At(iPoint));
+
+          if( tCounterPoint->GetDetectorID() == iCounterID && tCounterPoint->GetTrackID() == iTrackID )
+          {
+            bCounterPointExists = kTRUE;
+            break;
+          }
+        }
+      }
+      else
+      {
+        fbIsNewTrack = kFALSE;
+      }
+
+      // first step of the track in the current gas gap (cell)
+      if( gMC->IsTrackEntering() )
+      {
+        Double_t dTrackTime = gMC->TrackTime() * 1.0e09;
+        Double_t dTrackLength = gMC->TrackLength();
+        Double_t dTrackPositionX(0.);
+        Double_t dTrackPositionY(0.);
+        Double_t dTrackPositionZ(0.);
+        gMC->TrackPosition(dTrackPositionX, dTrackPositionY, dTrackPositionZ);
+        Double_t dTrackMomentumX(0.);
+        Double_t dTrackMomentumY(0.);
+        Double_t dTrackMomentumZ(0.);
+        Double_t dTrackEnergy(0.);
+        gMC->TrackMomentum(dTrackMomentumX, dTrackMomentumY, dTrackMomentumZ, dTrackEnergy);
+
+        if( bCounterPointExists )
+        {
+          tCounterPoint->SetTime( tCounterPoint->GetTime() + dTrackTime );
+          tCounterPoint->SetLength( tCounterPoint->GetLength() + dTrackLength );
+          tCounterPoint->SetEnergyLoss( tCounterPoint->GetEnergyLoss() + dTrackEnergyDeposit );
+          tCounterPoint->SetX( tCounterPoint->GetX() + dTrackPositionX );
+          tCounterPoint->SetY( tCounterPoint->GetY() + dTrackPositionY );
+          tCounterPoint->SetZ( tCounterPoint->GetZ() + dTrackPositionZ );
+          tCounterPoint->SetPx( tCounterPoint->GetPx() + dTrackMomentumX );
+          tCounterPoint->SetPy( tCounterPoint->GetPy() + dTrackMomentumY );
+          tCounterPoint->SetPz( tCounterPoint->GetPz() + dTrackMomentumZ );
+          tCounterPoint->SetNCells( tCounterPoint->GetNCells() + 1 );
+        }
+        else
+        {
+          tCounterPoint = new( (*fTofCollection)[fTofCollection->GetEntriesFast()] ) CbmTofPoint();
+          tCounterPoint->SetTrackID( iTrackID );
+          tCounterPoint->SetDetectorID( iCounterID );
+
+          tCounterPoint->SetTime( dTrackTime );
+          tCounterPoint->SetLength( dTrackLength );
+          tCounterPoint->SetEnergyLoss( dTrackEnergyDeposit );
+          tCounterPoint->SetX( dTrackPositionX );
+          tCounterPoint->SetY( dTrackPositionY );
+          tCounterPoint->SetZ( dTrackPositionZ );
+          tCounterPoint->SetPx( dTrackMomentumX );
+          tCounterPoint->SetPy( dTrackMomentumY );
+          tCounterPoint->SetPz( dTrackMomentumZ );
+          tCounterPoint->SetNCells( 1 );
+
+          // Increment number of tof points for TParticle
+          CbmStack* stack = dynamic_cast<CbmStack*>(gMC->GetStack());
+          stack->AddPoint(kTOF);
+        }
+
+        tCounterPoint->SetGap( fGeoHandler->GetGap( iCounterID ) );
+      }
+      else
+      {
+        tCounterPoint->SetEnergyLoss( tCounterPoint->GetEnergyLoss() + dTrackEnergyDeposit );
+      }
+
+    }
   }
+  else
+  {
+    // Set parameters at entrance of volume. Reset ELoss.
+    if ( gMC->IsTrackEntering() ) {
+      fELoss  = 0.;
+      fTime   = gMC->TrackTime() * 1.0e09;
+      fLength = gMC->TrackLength();
+      gMC->TrackPosition(fPos);
+      gMC->TrackMomentum(fMom);
+    }
 
-  // Sum energy loss for all steps in the active volume
-  fELoss += gMC->Edep();
+    // Sum energy loss for all steps in the active volume
+    fELoss += gMC->Edep();
 
-  // Create CbmTofPoint at exit of active volume
-  if (((0 == gMC->GetStack()->GetCurrentTrack()->GetPdgCode()) || // Add geantinos/rootinos
-       (gMC->TrackCharge()!=0) )&&
-      (gMC->IsTrackExiting()    ||
-       gMC->IsTrackStop()       ||
-       gMC->IsTrackDisappeared()) 
-       ) {
+    // Create CbmTofPoint at exit of active volume
+    if (((0 == gMC->GetStack()->GetCurrentTrack()->GetPdgCode()) || // Add geantinos/rootinos
+         (gMC->TrackCharge()!=0) )&&
+        (gMC->IsTrackExiting()    ||
+         gMC->IsTrackStop()       ||
+         gMC->IsTrackDisappeared()) 
+         ) {
 
-    fTrackID  = gMC->GetStack()->GetCurrentTrackNumber();
+      fTrackID  = gMC->GetStack()->GetCurrentTrackNumber();
 
-    fVolumeID = fGeoHandler->GetUniqueDetectorId();
+      fVolumeID = fGeoHandler->GetUniqueDetectorId();
 
-    LOG(DEBUG2)<<"CbmTof::TID: "<<fTrackID;
-    LOG(DEBUG2)<<" TofVol: "<<fVolumeID;
-    LOG(DEBUG2)<<" DetSys: "<<fGeoHandler->GetDetSystemId(fVolumeID);
-    LOG(DEBUG2)<<" SMtype: "<<fGeoHandler->GetSMType(fVolumeID);
-    LOG(DEBUG2)<<" SModule: "<<fGeoHandler->GetSModule(fVolumeID);
-    LOG(DEBUG2)<<" Counter: "<<fGeoHandler->GetCounter(fVolumeID);
-    LOG(DEBUG2)<<" Gap: "<<fGeoHandler->GetGap(fVolumeID);
-    LOG(DEBUG2)<<" Cell: "<<fGeoHandler->GetCell(fVolumeID);
-    LOG(DEBUG2)<<Form(" x: %6.2f",fPos.X());
-    LOG(DEBUG2)<<Form(" y: %6.2f",fPos.Y());
-    LOG(DEBUG2)<<Form(" z: %6.2f",fPos.Z())<<FairLogger::endl;
-    //   LOG(DEBUG2)<<"Region: "<<fGeoHandler->GetRegion(fVolumeID)<<FairLogger::endl;
-    //   LOG(DEBUG2)<<"*************"<<FairLogger::endl;
+      LOG(DEBUG2)<<"CbmTof::TID: "<<fTrackID;
+      LOG(DEBUG2)<<" TofVol: "<<fVolumeID;
+      LOG(DEBUG2)<<" DetSys: "<<fGeoHandler->GetDetSystemId(fVolumeID);
+      LOG(DEBUG2)<<" SMtype: "<<fGeoHandler->GetSMType(fVolumeID);
+      LOG(DEBUG2)<<" SModule: "<<fGeoHandler->GetSModule(fVolumeID);
+      LOG(DEBUG2)<<" Counter: "<<fGeoHandler->GetCounter(fVolumeID);
+      LOG(DEBUG2)<<" Gap: "<<fGeoHandler->GetGap(fVolumeID);
+      LOG(DEBUG2)<<" Cell: "<<fGeoHandler->GetCell(fVolumeID);
+      LOG(DEBUG2)<<Form(" x: %6.2f",fPos.X());
+      LOG(DEBUG2)<<Form(" y: %6.2f",fPos.Y());
+      LOG(DEBUG2)<<Form(" z: %6.2f",fPos.Z())<<FairLogger::endl;
+      //   LOG(DEBUG2)<<"Region: "<<fGeoHandler->GetRegion(fVolumeID)<<FairLogger::endl;
+      //   LOG(DEBUG2)<<"*************"<<FairLogger::endl;
 
-    //fVolumeID = ((region-1)<<24) + ((module-1)<<14) + ((cell-1)<<4) + (gap-1);
+      //fVolumeID = ((region-1)<<24) + ((module-1)<<14) + ((cell-1)<<4) + (gap-1);
 
-    AddHit(fTrackID, fVolumeID, TVector3(fPos.X(),  fPos.Y(),  fPos.Z()),
-	   TVector3(fMom.Px(), fMom.Py(), fMom.Pz()), fTime, fLength, 
-	   fELoss);
+      AddHit(fTrackID, fVolumeID, TVector3(fPos.X(),  fPos.Y(),  fPos.Z()),
+	     TVector3(fMom.Px(), fMom.Py(), fMom.Pz()), fTime, fLength, 
+	     fELoss);
 
-    // Increment number of tof points for TParticle
-    CbmStack* stack = (CbmStack*) gMC->GetStack();
-    stack->AddPoint(kTOF);
+      // Increment number of tof points for TParticle
+      CbmStack* stack = (CbmStack*) gMC->GetStack();
+      stack->AddPoint(kTOF);
 
-    ResetParameters();
+      ResetParameters();
+    }
+
   }
 
   return kTRUE;

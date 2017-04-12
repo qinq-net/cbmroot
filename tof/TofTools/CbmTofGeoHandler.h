@@ -40,6 +40,7 @@ class CbmTofGeoHandler : public TObject {
   ~CbmTofGeoHandler() {};
 
   Int_t GetUniqueDetectorId();
+  Int_t GetUniqueCounterId();
   Int_t GetUniqueDetectorId(TString volName);
 
   Int_t GetCellId(Int_t uniqueId);
