@@ -1,16 +1,24 @@
+/** @file CbmTofPoint.cxx
+ ** @author Volker Friese <v.friese@gsi.de>
+ ** @author Christian Simon <c.simon@physi.uni-heidelberg.de>
+ ** @since 16.06.2014
+ ** @date 11.04.2017
+ **/
 
-// -------------------------------------------------------------------------
-// -----                      CbmTofPoint source file                  -----
-// -----                   Created  28/07/04  by V. Friese             -----
-// -----                   Modified 30/08/06  by D. Gonzalez           -----
-// -------------------------------------------------------------------------
 
 #include "CbmTofPoint.h"
 
-#include "FairLogger.h"
+#include <cassert>
+#include <limits>
+#include <sstream>
+
+using std::endl;
+using std::string;
+using std::stringstream;
+
 
 // -----   Default constructor   -------------------------------------------
-CbmTofPoint::CbmTofPoint() : FairMCPoint() { }
+CbmTofPoint::CbmTofPoint() : FairMCPoint(), fNofCells(0), fGapMask(0) { }
 // -------------------------------------------------------------------------
 
 
@@ -19,7 +27,8 @@ CbmTofPoint::CbmTofPoint() : FairMCPoint() { }
 CbmTofPoint::CbmTofPoint(Int_t trackID, Int_t detID, TVector3 pos, 
 			 TVector3 mom, Double_t tof, Double_t length, 
 			 Double_t eLoss)
-  : FairMCPoint(trackID, detID, pos, mom, tof, length, eLoss) { }
+  : FairMCPoint(trackID, detID, pos, mom, tof, length, eLoss),
+    fNofCells(0), fGapMask(0) { }
 // -------------------------------------------------------------------------
 
 
@@ -28,17 +37,87 @@ CbmTofPoint::~CbmTofPoint() { }
 // -------------------------------------------------------------------------
 
 
+// -----   Get the number of gaps   ----------------------------------------
+Int_t CbmTofPoint::GetNGaps() const
+{
+  Int_t iNGaps(0);
 
-// -----   Public method Print   -------------------------------------------
-void CbmTofPoint::Print(const Option_t* /*opt*/) const {
-  LOG(INFO) << "TOF point for track " << fTrackID 
-       << " in detector " << fDetectorID << FairLogger::endl;
-  LOG(INFO) << "    Position (" << fX << ", " << fY << ", " << fZ
-       << ") cm" << FairLogger::endl;
-  LOG(INFO) << "    Momentum (" << fPx << ", " << fPy << ", " << fPz
-       << ") GeV" << FairLogger::endl;
-  LOG(INFO) << "    Time " << fTime << " ns,  Length " << fLength 
-       << " cm,  Energy loss " << fELoss*1.0e06 << " keV" << FairLogger::endl;
+  for( Int_t iGapBit = 0; iGapBit < std::numeric_limits<UShort_t>::digits;
+       iGapBit++ )
+  {
+    if( fGapMask & ( 0x1 << iGapBit ) )
+    {
+      iNGaps++;
+    }
+  }
+
+  return iNGaps;
 }
+// -------------------------------------------------------------------------
+
+
+// -----   Get the index of the first gap   --------------------------------
+Int_t CbmTofPoint::GetFirstGap() const
+{
+  for( Int_t iGapBit = 0; iGapBit < std::numeric_limits<UShort_t>::digits;
+       iGapBit++ )
+  {
+    if( fGapMask & ( 0x1 << iGapBit ) )
+    {
+      return iGapBit;
+    }
+  }
+
+  return -1;
+}
+// -------------------------------------------------------------------------
+
+
+// -----   Get the index of the last gap   ---------------------------------
+Int_t CbmTofPoint::GetLastGap() const
+{
+  Int_t iLastGap(-1);
+
+  for( Int_t iGapBit = 0; iGapBit < std::numeric_limits<UShort_t>::digits;
+       iGapBit++ )
+  {
+    if( fGapMask & ( 0x1 << iGapBit ) )
+    {
+      iLastGap = iGapBit;
+    }
+  }
+
+  return iLastGap;
+}
+// -------------------------------------------------------------------------
+
+
+// -----   Add one gap to the gap mask   -----------------------------------
+void CbmTofPoint::SetGap(Int_t iGap)
+{
+  assert( 0 <= iGap && std::numeric_limits<UShort_t>::digits > iGap );
+  fGapMask |= 0x1 << iGap;
+}
+// -------------------------------------------------------------------------
+
+
+// -----   String output   -------------------------------------------------
+string CbmTofPoint::ToString() const
+{
+   stringstream ss;
+   ss << "STofPoint: track ID " << fTrackID << ", detector ID "
+      << fDetectorID << "\n";
+   ss << "    Position (" << fX << ", " << fY << ", " << fZ
+      << ") cm \n";
+   ss << "    Momentum (" << fPx << ", " << fPy << ", " << fPz
+      << ") GeV \n";
+   ss << "    Time " << fTime << " ns,  Length " << fLength
+       << " cm,  Energy loss " << fELoss*1.0e06 << " keV \n";
+   ss << "    Number of cells " << fNofCells << ", gap mask "
+      << std::bitset<std::numeric_limits<UShort_t>::digits>(fGapMask)
+      << endl;
+   return ss.str();
+}
+// -------------------------------------------------------------------------
 
 ClassImp(CbmTofPoint)
