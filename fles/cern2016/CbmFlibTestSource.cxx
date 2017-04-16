@@ -40,7 +40,7 @@ CbmFlibTestSource::CbmFlibTestSource()
     fBuffer(CbmTbDaqBuffer::Instance()),
     fTSNumber(0),
     fTSCounter(0),
-    fiReqDigiAddr(0),
+    fiReqDigiAddr(),
     fdMaxDeltaT(500.),
     fTimer(),
     fBufferFillNeeded(kTRUE),
@@ -60,7 +60,7 @@ CbmFlibTestSource::CbmFlibTestSource(const CbmFlibTestSource& source)
     fBuffer(CbmTbDaqBuffer::Instance()),
     fTSNumber(0),
     fTSCounter(0),
-    fiReqDigiAddr(0),
+    fiReqDigiAddr(),
     fdMaxDeltaT(100.),
     fTimer(),
     fBufferFillNeeded(kTRUE),
@@ -75,7 +75,9 @@ CbmFlibTestSource::~CbmFlibTestSource()
 Bool_t CbmFlibTestSource::Init()
 {
   Int_t fNFiles = fInputFileList.GetEntries();
-  LOG(INFO) << Form("Look for 0x%08x digis in %d input files",fiReqDigiAddr,fNFiles) << FairLogger::endl;
+  if ( fiReqDigiAddr.size()>0 )
+  for(Int_t i=0; i<fiReqDigiAddr.size(); i++)
+  LOG(INFO) << Form("Look for 0x%08x digis in %d input files",fiReqDigiAddr[i],fNFiles) << FairLogger::endl;
   if ( 0 == fNFiles ) { //fFileName.Length() ) {
     TString connector = Form("tcp://%s:%i", fHost.Data(), fPort);
     LOG(INFO) << "Open TSPublisher at " << connector << FairLogger::endl;
@@ -143,7 +145,7 @@ void CbmFlibTestSource::AddPath(const TString& tFileDirectory,
 
   for (Int_t iRun=0; iRun<100; iRun++) {
     
-    Char_t* cRun = Form("_%04d",iRun);
+    Char_t* cRun = Form("_%04d.t",iRun);
     TIterator* tIter = tList->MakeIterator();
     TSystemFile* tSystemFile;
     TString tFileName;
@@ -308,7 +310,7 @@ Int_t CbmFlibTestSource::FillBuffer()
         auto systemID = static_cast<int>(ts.descriptor(c, 0).sys_id);
 
         LOG(DEBUG) << "Found systemID: " << std::hex 
-                  << systemID << std::dec << FairLogger::endl;
+                   << systemID << std::dec << FairLogger::endl;
         
         if(gLogger->IsLogNeeded(DEBUG1)) {
           PrintMicroSliceDescriptor(ts.descriptor(c, 0));
@@ -344,6 +346,7 @@ Int_t CbmFlibTestSource::GetNextEvent()
             << static_cast<Double_t>(fBuffer->GetTimeFirst()) * 1.e-9 << " to "
             << std::setprecision(9) << std::fixed 
             << static_cast<Double_t>(fBuffer->GetTimeLast()) * 1.e-9 << " s" << FairLogger::endl;
+
   if(fTimeBufferOut - fBuffer->GetTimeFirst()<1.E6) {fBufferFillNeeded=kTRUE; return 1;} // store 1 msec of data in memory
 
   CbmDigi* digi = fBuffer->GetNextData(fTimeBufferOut);
@@ -360,20 +363,30 @@ Int_t CbmFlibTestSource::GetNextEvent()
     fBufferFillNeeded=kTRUE; return 1;
   }
   
+  Bool_t bDet[fiReqDigiAddr.size()];
+  for(Int_t i=0; i<fiReqDigiAddr.size(); i++) bDet[i]=kFALSE; //initialize
+
   nDigi=0;
   while(digi) { // build digi array
     if (nDigi == vdigi.size()) vdigi.resize(nDigi+100); 
     vdigi[nDigi++]=digi;
-    if( (digi->GetAddress() & AddrMask) == fiReqDigiAddr) bOut=kTRUE;
+    for(Int_t i=0; i<fiReqDigiAddr.size(); i++)
+    if( (digi->GetAddress() & AddrMask) == fiReqDigiAddr[i]) bDet[i]=kTRUE;
     //if(bOut) LOG(INFO)<<Form("Found 0x%08x, Req 0x%08x ", digi->GetAddress(), fiReqDigiAddr)<<FairLogger::endl;
     digi = fBuffer->GetNextData(dTEnd);
   }
 
   LOG(DEBUG) << nDigi << " digis associated to dTEnd = " <<dTEnd<< FairLogger::endl;
+  if( fiReqDigiAddr.size() > 1)
+    LOG(DEBUG) << "Found Req coinc in event with " <<nDigi << " digis, dTEnd = " <<dTEnd<< FairLogger::endl;
 
   //dTLast = vdigi[nDigi-1]->GetTime();
 
-  if(fiReqDigiAddr==0) bOut=kTRUE;
+  for(Int_t i=0; i<fiReqDigiAddr.size(); i++) 
+    if(bDet[i]==kFALSE) break;
+    else if( i == fiReqDigiAddr.size()-1 ) bOut=kTRUE;
+
+  if(fiReqDigiAddr.size()==0) bOut=kTRUE;
 
   for(Int_t iDigi=0; iDigi<nDigi; iDigi++){
     digi=vdigi[iDigi];
@@ -405,4 +418,10 @@ Int_t CbmFlibTestSource::GetNextEvent()
  return 0;
 }
 
+void CbmFlibTestSource::AddReqDigiAddr(Int_t iAddr)
+{
+  Int_t iNReq=fiReqDigiAddr.size();
+  fiReqDigiAddr.resize(iNReq+1); // hopefully the old entries are preserved ...
+  fiReqDigiAddr[iNReq]=iAddr;
+}
 ClassImp(CbmFlibTestSource)
