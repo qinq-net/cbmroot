@@ -6,6 +6,7 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/base
 
   ${CBMROOT_SOURCE_DIR}/data
+  ${CBMROOT_SOURCE_DIR}/data/beamtime
   ${CBMROOT_SOURCE_DIR}/data/beamtime/fhodo
   ${CBMROOT_SOURCE_DIR}/data/raw
   ${CBMROOT_SOURCE_DIR}/data/tof
