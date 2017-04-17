@@ -8,6 +8,7 @@
 #include "CbmTSUnpackTof.h"
 #include "CbmTofUnpackPar.h"
 #include "CbmTofDigiExp.h"
+#include "CbmTbEvent.h"
 
 #include "CbmTbDaqBuffer.h"
 
@@ -26,13 +27,14 @@
 #include <stdint.h>
 #include <iomanip>
 
-const  UInt_t kuNbChanGet4 =  4;
+const  UInt_t kuNbChanGet4 =   4;
 static UInt_t kuNbChanAfck = 128; //96;  // FIXME - should be read from parameter file 
 static Int_t iMess=0;
 const  Double_t FineTimeConvFactor=0.048828;
 static Double_t RefTime=0.;
 static Double_t LastDigiTime=0.; 
 static Double_t FirstDigiTimeDif=0.; 
+static Double_t EvTime0=0.; 
 const  Int_t DetMask = 0x0001FFFF;
 
 
@@ -78,8 +80,14 @@ Bool_t CbmTSUnpackTof::Init()
   if (fTofDigi == NULL) {
     LOG(FATAL) << "No Digi TClonesarray " << FairLogger::endl;
   }
-  //  ioman->Register("FiberHodoRawMessage", "fiberhodo raw data", fFiberHodoRaw, kTRUE);
   ioman->Register("CbmTofDigi", "Tof raw Digi", fTofDigi, kTRUE);
+
+  /*
+  CbmTbEvent * fEventHeader = (CbmTbEvent *)ioman->GetObject("EventHeader.");
+  if (NULL == fEventHeader) {
+    LOG(FATAL) << "No EventHeader TClonesarray " << FairLogger::endl;
+  }
+  */
 
   fUnpackPar = (CbmTofUnpackPar*)(FairRun::Instance());
 
@@ -146,18 +154,32 @@ void CbmTSUnpackTof::CreateHistograms()
    LOG(INFO) << "create Histos for " << fuMinNbGdpb <<" Rocs "
 	    << FairLogger::endl;
 
+     fHM->Add( Form("Raw_TDig-EvT0"),
+           new TH1F( Form("Raw_TDig-EvT0"),
+                     Form("Raw digi time difference to 1st digi ; time [ns]; cts"),
+                     100, 0, 50.) ); 
+
+     fHM->Add( Form("Raw_TDig-Ref0"),
+           new TH1F( Form("Raw_TDig-Ref0"),
+                     Form("Raw digi time difference to Ref ; time [ns]; cts"),
+                     5000, 0, 500000) );  
+
      fHM->Add( Form("Raw_TDig-Ref"),
            new TH1F( Form("Raw_TDig-Ref"),
                      Form("Raw digi time difference to Ref ; time [ns]; cts"),
-                     5000, 0, 5000) );  
+                     5000, 0, 50000) );  
 
      fHM->Add( Form("Raw_TRef-Dig0"),
            new TH1F( Form("Raw_TRef-Dig0"),
-                     Form("Raw Ref time difference to Last digi  ; time [ns]; cts"),
+                     Form("Raw Ref time difference to last digi  ; time [ns]; cts"),
                      9999, -500000000, 500000000) );   
      fHM->Add( Form("Raw_TRef-Dig1"),
            new TH1F( Form("Raw_TRef-Dig1"),
-                     Form("Raw Ref time difference to Last digi  ; time [ns]; cts"),
+                     Form("Raw Ref time difference to last digi  ; time [ns]; cts"),
+                     9999, -5000000, 5000000) );  
+     fHM->Add( Form("Raw_Digi-LastDigi"),
+           new TH1F( Form("Raw_Digi-LastDigi"),
+                     Form("Raw Digi time difference to last digi  ; time [ns]; cts"),
                      9999, -5000000, 5000000) );   
 
    for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
@@ -176,15 +198,14 @@ void CbmTSUnpackTof::CreateHistograms()
 Bool_t CbmTSUnpackTof::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
 
-  LOG(DEBUG1) << "Timeslice contains " << ts.num_microslices(component)
-              << " microslices." << FairLogger::endl;
+  LOG(DEBUG) << "Timeslice contains " << ts.num_microslices(component)
+             << " microslices of component " << component << FairLogger::endl;
   
   // Loop over microslices
   size_t numCompMsInTs = ts.num_microslices(component);
   for (size_t m = 0; m < numCompMsInTs; ++m)
     {
-       if( fuMsAcceptsPercent < m )
-         continue;
+      // if( fuMsAcceptsPercent < m )         continue;
 
       // Ignore overlap ms if number defined by user
       if( numCompMsInTs - fuOverlapMsNb <= m )
@@ -198,7 +219,7 @@ Bool_t CbmTSUnpackTof::DoUnpack(const fles::Timeslice& ts, size_t component)
 
       uint32_t size = msDescriptor.size;
       if(size>0)
-      LOG(DEBUG) << "Microslice: " << msDescriptor.idx 
+	LOG(DEBUG1) << "Microslice "<<m<<": " << msDescriptor.idx 
                 << " has size: " << size << FairLogger::endl; 
 
       // If not integer number of message in input buffer, print warning/error
@@ -333,12 +354,17 @@ void CbmTSUnpackTof::FillHitInfo(ngdpb::Message mess)
     Double_t dTime = mess.getMsgFullTimeD( curEpochGdpbGet4 );
     Double_t dTot  = tot;     // in ps ?
 
+    fHM->H1( Form("Raw_Digi-LastDigi") )
+       ->Fill( dTime - LastDigiTime);
+
     LastDigiTime = dTime;
 
     if( (iChanUId & DetMask) == 0x00005006 ) dTime += fdTShiftRef;
 
-    LOG(DEBUG) << Form("Insert 0x%08x digi with time ",iChanUId)<< dTime<<", Tot "<<dTot
-      //<< " at epoch " << fCurrentEpoch[rocId]
+    LOG(DEBUG) << Form("Insert 0x%08x digi with time ",iChanUId)<< dTime<<Form(", Tot %4.0f",dTot)
+	       << " into buffer with "<<fBuffer->GetSize()<<" data from "
+	       <<Form("%11.1f to %11.1f ",fBuffer->GetTimeFirst(),fBuffer->GetTimeLast())
+               << " at epoch " << fCurrentEpoch[rocId][get4Id]
 	       << FairLogger::endl;
     fDigi = new CbmTofDigiExp(iChanUId, dTime, dTot);
 
@@ -360,7 +386,7 @@ void CbmTSUnpackTof::FillEpochInfo(ngdpb::Message mess)
     Int_t iBufferSize = fvmEpSupprBuffer[fGdpbIdIndexMap[rocId]][get4Id].size();
     if( 0 < iBufferSize )
     { 
-      LOG(DEBUG) << "Now processing stored messages for for get4 " <<  rocId <<", "<<get4Id<< " with epoch number "
+      LOG(DEBUG) << "Now processing stored messages for roc " <<rocId<<", get4 "<<get4Id<< " with epoch number "
                  << (fCurrentEpoch[fGdpbIdIndexMap[rocId]][get4Id] - 1) << FairLogger::endl;
       for( Int_t iMsgIdx = 0; iMsgIdx < iBufferSize; iMsgIdx++ )
       {
@@ -523,9 +549,11 @@ void CbmTSUnpackTof::Finish()
    
    gDirectory->mkdir("Tof_Raw_gDPB");
    gDirectory->cd("Tof_Raw_gDPB");
+   fHM->H1( Form("Raw_TDig-Ref0") )->Write();
    fHM->H1( Form("Raw_TDig-Ref") )->Write();
    fHM->H1( Form("Raw_TRef-Dig0") )->Write();
    fHM->H1( Form("Raw_TRef-Dig1") )->Write();
+   fHM->H1( Form("Raw_Digi-LastDigi") )->Write();
    for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
    {
       fHM->H2( Form("Raw_Tot_gDPB_%02u", uGdpb) )->Write();
@@ -544,13 +572,22 @@ void CbmTSUnpackTof::FillOutput(CbmDigi* digi)
 	    <<" at " << (Int_t)fTofDigi->GetEntriesFast()
 	    << FairLogger::endl;
 
+
  new( (*fTofDigi)[fTofDigi->GetEntriesFast()] )
     CbmTofDigiExp(*(dynamic_cast<CbmTofDigiExp*>(digi)));
     //CbmTofDigiExp((CbmTofDigiExp *)digi);
-    
- if( (digi->GetAddress() & DetMask) != 0x00005006 )
+
+ if(0==fTofDigi->GetEntriesFast()) EvTime0=digi->GetTime();
+ else 
+       fHM->H1( Form("Raw_TDig-EvT0") )
+	   ->Fill( digi->GetTime() - EvTime0);   
+
+ if( (digi->GetAddress() & DetMask) != 0x00005006 ) {
+       fHM->H1( Form("Raw_TDig-Ref0") )
+	  ->Fill( digi->GetTime() - RefTime);
        fHM->H1( Form("Raw_TDig-Ref") )
 	  ->Fill( digi->GetTime() - RefTime);
+ }
  else  RefTime=digi->GetTime();
 
  digi->Delete();
