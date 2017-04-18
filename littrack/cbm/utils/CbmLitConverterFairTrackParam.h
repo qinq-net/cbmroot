@@ -17,7 +17,7 @@
 //#include "CbmHit.h"
 //#include "CbmPixelHit.h"
 //#include "CbmStripHit.h"
-#include "FairTrackParam.h"
+#include "CbmTrackParam.h"
 //#include "CbmStsTrack.h"
 //#include "CbmTrdTrack.h"
 //#include "CbmMuchStrawHit.h"
@@ -41,7 +41,7 @@ class CbmLitConverterFairTrackParam
 public:
     
     static void FairTrackParamToCbmLitTrackParam(
-                                                 const FairTrackParam* par,
+                                                 const CbmTrackParam* par,
                                                  CbmLitTrackParam* litPar)
     {
         litPar->SetX((litfloat)par->GetX());
@@ -50,11 +50,13 @@ public:
         litPar->SetTx((litfloat)par->GetTx());
         litPar->SetTy((litfloat)par->GetTy());
         litPar->SetQp((litfloat)par->GetQp());
+        litPar->SetTime((litfloat)par->GetTime());
         Double_t cov[15];
         par->CovMatrix(cov);
         std::vector<litfloat> covVec(15);
         for (UInt_t i = 0; i < 15; ++i) { covVec[i] = (litfloat) cov[i]; }
         litPar->SetCovMatrix(covVec);
+        litPar->SetTimeError((litfloat)par->GetDTime());
     }
     
     static void CbmLitTrackParamToFairTrackParam(

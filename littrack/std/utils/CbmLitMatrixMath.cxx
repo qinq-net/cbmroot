@@ -261,7 +261,7 @@ bool Mult25On5(
    const std::vector<litfloat>& b,
    std::vector<litfloat>& c)
 {
-   if (a.size() != 25 || b.size() != 5 || c.size() != 5) {
+   if (a.size() != 25 || b.size() != 7 || c.size() != 7) {
       std::cout << "-E- Mult25On5: size is not correct" << std::endl;
       return false;
    }
@@ -278,7 +278,7 @@ bool Mult15On5(
    const std::vector<litfloat>& b,
    std::vector<litfloat>& c)
 {
-   if (a.size() != 15 || b.size() != 5 || c.size() != 5) {
+   if (a.size() != 15 || b.size() != 7 || c.size() != 7) {
       std::cout << "-E- Mult15On5: size is not correct" << std::endl;
       return false;
    }

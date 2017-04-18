@@ -46,6 +46,10 @@ LitStatus CbmLitLineTrackExtrapolator::Extrapolate(
    par->SetY(X[1]);
 
    std::vector<litfloat> C = par->GetCovMatrix();
+   litfloat txSq = std::pow(X[2], 2);
+   litfloat tySq = std::pow(X[3], 2);
+   litfloat timeError = std::sqrt(std::pow(par->GetTimeError(), 2) +
+      (txSq * C[9] + tySq * C[12]) * std::pow(dz / CbmLitTrackParam::fSpeedOfLight, 2) / (1 + txSq + tySq));
    //transport covariance matrix F*C*F.T()
    litfloat t3 = C[2] + dz * C[9];
    litfloat t7 = dz * C[10];
@@ -63,6 +67,8 @@ LitStatus CbmLitLineTrackExtrapolator::Extrapolate(
 
    par->SetCovMatrix(C);
    par->SetZ(zOut);
+   par->SetTime(par->GetTime() + std::sqrt(1 + std::pow(X[2], 2) + std::pow(X[3], 2)) * dz / CbmLitTrackParam::fSpeedOfLight);
+   par->SetTimeError(timeError);
 
    // Transport matrix calculation
    if (F != NULL) {

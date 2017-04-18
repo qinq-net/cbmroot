@@ -34,6 +34,8 @@ public:
       fHitType(kLITPIXELHIT),
       fZ(0.),
       fDz(0.),
+      fT(0.),
+      fDt(0.),
       fDetectorId(0) { }
 
    /**
@@ -46,6 +48,8 @@ public:
    LitHitType GetType() const { return fHitType; }
    litfloat GetZ() const { return fZ; }
    litfloat GetDz() const { return fDz; }
+   litfloat GetT() const { return fT; }
+   litfloat GetDt() const { return fDt; }
    LitSystemId GetSystem() const {
 	   return LitSystemId((fDetectorId & (WL_SYSTEM << SB_SYSTEM)) >> SB_SYSTEM);
    }
@@ -58,6 +62,8 @@ public:
    void SetHitType(LitHitType hitType) { fHitType = hitType; }
    void SetZ(litfloat z) { fZ = z; }
    void SetDz(litfloat dz) { fDz = dz; }
+   void SetT(litfloat t) { fT = t; }
+   void SetDt(litfloat dt) { fDt = dt; }
    void SetDetectorId(LitSystemId sysId, Int_t station) {
 	   fDetectorId = (sysId << SB_SYSTEM) | (station << SB_STATION);
    }
@@ -73,6 +79,8 @@ private:
    LitHitType fHitType; // type of the hit (strip, pixel, etc). Used to safely cast to the proper type.
    litfloat fZ; // Z position of the hit [cm]
    litfloat fDz; // Z position error of the hit [cm]
+   litfloat fT;
+   litfloat fDt;
 
    // The detector ID consists of:
    // system ID            (0-15),    bits 0-3

@@ -58,7 +58,8 @@ protected:
       litfloat zIn,
       std::vector<litfloat>& xOut,
       litfloat zOut,
-      std::vector<litfloat>& derivs) const;
+      std::vector<litfloat>& derivs,
+      litfloat& length) const;
 
    /* TODO: add comment */
    litfloat CalcOut(

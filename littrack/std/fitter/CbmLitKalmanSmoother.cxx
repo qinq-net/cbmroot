@@ -87,10 +87,10 @@ void CbmLitKalmanSmoother::Smooth(
    const std::vector<litfloat>& prevSmoothedX = prevNode->GetSmoothedParam()->GetStateVector();
    const std::vector<litfloat>& prevPredX = prevNode->GetPredictedParam()->GetStateVector();
 
-   std::vector<litfloat> temp2(5), temp3(5);
+   std::vector<litfloat> temp2(7), temp3(7);
    Subtract(prevSmoothedX, prevPredX, temp2);
    Mult25On5(A, temp2, temp3);
-   std::vector<litfloat> thisSmoothedX(5);
+   std::vector<litfloat> thisSmoothedX(7);
    Add(thisUpdX, temp3, thisSmoothedX);
 
 

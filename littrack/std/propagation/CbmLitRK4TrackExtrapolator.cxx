@@ -8,6 +8,7 @@
 #include "interface/CbmLitField.h"
 
 #include <cmath>
+#include <complex>
 
 CbmLitRK4TrackExtrapolator::CbmLitRK4TrackExtrapolator(
    CbmLitField* field):
@@ -37,14 +38,17 @@ LitStatus CbmLitRK4TrackExtrapolator::Extrapolate(
    litfloat zIn = par->GetZ();
 
    std::vector<litfloat> xIn = par->GetStateVector();
-   std::vector<litfloat> xOut(5, 0.);
+   std::vector<litfloat> xOut(7, 0.);
    std::vector<litfloat> F1(25, 0.);
 
-   RK4Order(xIn, zIn, xOut, zOut, F1);
+   litfloat length;
+   RK4Order(xIn, zIn, xOut, zOut, F1, length);
 
    std::vector<litfloat> cIn = par->GetCovMatrix();
    std::vector<litfloat> cOut(15);
    TransportC(cIn, F1, cOut);
+   xOut[6] = std::sqrt(std::pow(xIn[6], 2) + (std::pow(xIn[2], 2) * cIn[9] + std::pow(xIn[3], 2) * cIn[12]) *
+      std::pow(std::pow(zOut - zIn, 2) / length / CbmLitTrackParam::fSpeedOfLight, 2));
 
    par->SetStateVector(xOut);
    par->SetCovMatrix(cOut);
@@ -60,7 +64,8 @@ void CbmLitRK4TrackExtrapolator::RK4Order(
    litfloat zIn,
    std::vector<litfloat>& xOut,
    litfloat zOut,
-   std::vector<litfloat>& derivs) const
+   std::vector<litfloat>& derivs,
+   litfloat& length) const
 {
    const litfloat fC = 0.000299792458;
 
@@ -113,6 +118,8 @@ void CbmLitRK4TrackExtrapolator::RK4Order(
 
    for (unsigned int i = 0; i < 4; i++) { xOut[i] = CalcOut(xIn[i], k[i]); }
    xOut[4] = xIn[4];
+   length = std::sqrt(std::pow(xOut[0] - xIn[0], 2) + std::pow(xOut[1] - xIn[1], 2) + std::pow(zOut - zIn, 2));
+   xOut[5] = xIn[5] + length / CbmLitTrackParam::fSpeedOfLight;
 
    // Calculation of the derivatives
 
