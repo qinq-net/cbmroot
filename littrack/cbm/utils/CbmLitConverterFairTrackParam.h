@@ -41,6 +41,25 @@ class CbmLitConverterFairTrackParam
 public:
     
     static void FairTrackParamToCbmLitTrackParam(
+                                                 const FairTrackParam* par,
+                                                 CbmLitTrackParam* litPar)
+    {
+        litPar->SetX((litfloat)par->GetX());
+        litPar->SetY((litfloat)par->GetY());
+        litPar->SetZ((litfloat)par->GetZ());
+        litPar->SetTx((litfloat)par->GetTx());
+        litPar->SetTy((litfloat)par->GetTy());
+        litPar->SetQp((litfloat)par->GetQp());
+        litPar->SetTime(0);
+        Double_t cov[15];
+        par->CovMatrix(cov);
+        std::vector<litfloat> covVec(15);
+        for (UInt_t i = 0; i < 15; ++i) { covVec[i] = (litfloat) cov[i]; }
+        litPar->SetCovMatrix(covVec);
+        litPar->SetTimeError(4);
+    }
+    
+    static void FairTrackParamToCbmLitTrackParam(
                                                  const CbmTrackParam* par,
                                                  CbmLitTrackParam* litPar)
     {
