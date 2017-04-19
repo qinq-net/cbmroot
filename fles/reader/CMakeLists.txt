@@ -77,7 +77,8 @@ Set(SRCS
   unpacker/CbmTSUnpackTrb.cxx
   unpacker/CbmGet4v1xHackDef.cxx
   unpacker/CbmTSUnpackGet4v1x.cxx
-  
+  unpacker/CbmTSUnpackSpadicOnlineFex.cxx
+
   get4/CbmGet4FastMonitor.cxx
   get4/CbmGet4EpochBuffer.cxx
   get4/CbmGet4EventBuilder.cxx

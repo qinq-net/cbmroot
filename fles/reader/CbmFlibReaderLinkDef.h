@@ -20,6 +20,7 @@
 #pragma link C++ class get4v1x::Message;
 #pragma link C++ class get4v1x::FullMessage;
 #pragma link C++ class CbmTSUnpackGet4v1x;
+#pragma link C++ class CbmTSUnpackSpadicOnlineFex;
 
 #pragma link C++ class CbmGet4FastMonitor;
 #pragma link C++ class CbmGet4EpochBuffer;
