@@ -388,7 +388,7 @@ public:
         static TClonesArray* mvdHits = 0;
         static TrackPropagatorPtr propagator;
         static TrackUpdatePtr filter;
-        bool init = false;
+        static bool init = false;
         static Int_t pdg = 211;
         
         if (!init)
@@ -407,16 +407,11 @@ public:
             filter = CbmLitToolFactory::CreateTrackUpdate("kalman");
         }
             
-        //Double_t length = 0;
-        //Double_t* T = fKFTrack.GetTrack();
         Double_t xVert = primVertex ? primVertex->GetX() : 0;
         Double_t yVert = primVertex ? primVertex->GetY() : 0;
         Double_t zVert = primVertex ? primVertex->GetZ() : 0;
-        //const FairTrackParam* paramFirst = track->GetParamFirst();
-        //const FairTrackParam* paramLast = track->GetParamLast();
         CbmLitTrackParam paramFirst;
         CbmLitTrackParam paramLast;
-        //fKFTrack.SetTrackParam(*paramFirst);
         CbmTrackParam cbmParamFirst;
         cbmParamFirst.Set(*track->GetParamFirst(), track->GetTime(), track->GetTimeError());
         CbmLitConverterFairTrackParam::FairTrackParamToCbmLitTrackParam(&cbmParamFirst, &paramFirst);
@@ -447,9 +442,6 @@ public:
             Int_t hitInd = track->GetHitIndex(i);
             HitType hitType = track->GetHitType(i);
             CbmPixelHit* hit = static_cast<CbmPixelHit*> (kMVDHIT == hitType ? mvdHits->At(hitInd) : stsHits->At(hitInd));
-            //Double_t xOld = x;
-            //Double_t yOld = y;
-            //Double_t zOld = z;
 
             if (i == nofHits - 1)
                 z = paramLast.GetZ();
@@ -462,8 +454,6 @@ public:
                 break;
             }
             
-            //x = par.GetX();
-            //y = par.GetY();
             CbmLitPixelHit litHit;
             CbmPixelHitToCbmLitPixelHit(hit, hitInd, &litHit);
             litfloat chi = 0;

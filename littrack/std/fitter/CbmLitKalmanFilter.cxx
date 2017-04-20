@@ -65,9 +65,6 @@ LitStatus CbmLitKalmanFilter::Update(
    // calculate residuals
    litfloat dx = hit->GetX() - par->GetX();
    litfloat dy = hit->GetY() - par->GetY();
-   litfloat dz = hit->GetZ() - par->GetZ();
-   litfloat ds = TMath::Sqrt(dx * dx + dy * dy + dz * dz);
-   litfloat dt = ds / 100 / TMath::C();
 
    // Calculate and inverse residual covariance matrix
    litfloat t = ONE / (dxx * dyy + dxx * cIn[5] + dyy * cIn[0] + cIn[0] * cIn[5] -
@@ -125,11 +122,7 @@ LitStatus CbmLitKalmanFilter::Update(
    par->SetTx(xOut[2]);
    par->SetTy(xOut[3]);
    par->SetQp(xOut[4]);
-   par->SetTime(par->GetTime() + dt);
    par->SetCovMatrix(cOut);
-   litfloat ddsSq = cOut[0] + cOut[5] + (cOut[9] + cOut[12]) * dz * dz;
-   litfloat ddtSq = ddsSq / 100 / 100 / TMath::C() / TMath::C();
-   par->SetTimeError(TMath::Sqrt(par->GetTimeError() * par->GetTimeError() + ddtSq));
 
    // Calculate chi-square
    litfloat xmx = hit->GetX() - par->GetX();
@@ -142,7 +135,8 @@ LitStatus CbmLitKalmanFilter::Update(
               - dxy * dxy + 2 * dxy * C1 - C1 * C1;
 
    chiSq = ((xmx * (dyy - C5) - ymy * (dxy - C1)) * xmx
-            +(-xmx * (dxy - C1) + ymy * (dxx - C0)) * ymy) / norm;
+            +(-xmx * (dxy - C1) + ymy * (dxx - C0)) * ymy) / norm +
+      (hit->GetT() - par->GetTime()) * (hit->GetT() - par->GetTime()) / (hit->GetDt() * hit->GetDt() + par->GetTimeError() * par->GetTimeError());
 
    return kLITSUCCESS;
 }
