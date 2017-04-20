@@ -227,7 +227,7 @@ void run_sim_position4(Int_t nEvents = 100)
 
     // -----   Run initialisation   -------------------------------------------
     fRun->SetGenerator(primGen);
-    fRun->SetStoreTraj(kTRUE);
+//    fRun->SetStoreTraj(kTRUE);
     fRun->Init();
     // ------------------------------------------------------------------------
 

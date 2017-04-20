@@ -38,9 +38,10 @@ void setup_align()
 
   // -----  Geometry Tags  --------------------------------------------------
   TString magnetGeoTag    = "v15a";
-  TString pipeGeoTag      = "v16c_1e";
+  TString pipeGeoTag      = "v16b_1e";
   TString mvdGeoTag       = "v15a";
-  TString stsGeoTag       = "v17a";
+  TString stsGeoTag       = "v16x";
+//  TString stsGeoTag       = "v17a";
 //  TString richGeoTag      = "v16a_1e";		//"v16a_3e"
   TString richGeoTag	  = "v16a_align";
   TString trdGeoTag       = "v15a_3e";

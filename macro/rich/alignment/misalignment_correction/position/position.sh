@@ -1,6 +1,8 @@
 #!/bin/bash
 
-XXXXX=$(printf "%05d" "$SLURM_ARRAY_TASK_ID")
+XXXX=$(printf "%04d" "$SLURM_ARRAY_TASK_ID")
+YYYY=$(printf "%08d" "$SLURM_ARRAY_JOB_ID")
+##XXXX=$4
 
 cbmroot_config_path=/lustre/nyx/cbm/users/jbendar/CBMINSTALL_Root5/bin/CbmRootConfig.sh
 output_dir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position
@@ -10,12 +12,23 @@ macro_dir=/lustre/nyx/cbm/users/jbendar/CBMINSTALL_Root5/share/cbmroot/macro/ric
 if [ $1 -eq 0 ] ; then
         outdir=${output_dir}/Aligned/
 elif [ $1 -eq 1 ] ; then
-        outdir=${output_dir}/Misaligned_5mrad_Full/
-##	outdir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/test/test_position
-elif [ $1 -eq 2 ] ; then
 	outdir=${output_dir}/Misaligned_1mrad_Full/
-elif [ $1 -eq 3 ] ; then
-        outdir=${output_dir}/Standard/
+elif [ $1 -eq 2 ] ; then
+        outdir=${output_dir}/Misaligned_2mrad_Full/
+elif [ $1 -eq 30 ] ; then
+        outdir=${output_dir}/Misaligned_3mrad_XY_Full/
+elif [ $1 -eq 31 ] ; then
+        outdir=${output_dir}/Misaligned_3mrad_minX_Full/
+elif [ $1 -eq 32 ] ; then
+        outdir=${output_dir}/Misaligned_3mrad_minY_Full/
+elif [ $1 -eq 33 ] ; then
+        outdir=${output_dir}/Misaligned_3mrad_minXY_Full/
+elif [ $1 -eq 4 ] ; then
+	outdir=${output_dir}/Misaligned_4mrad_Full/
+elif [ $1 -eq 5 ] ; then
+        outdir=${output_dir}/Misaligned_5mrad_Full/
+elif [ $1 -eq 6 ] ; then
+        outdir=${output_dir}/Misaligned_OFF/
 fi
 export OUT_DIR=${outdir}
 
@@ -26,8 +39,8 @@ export SCRIPT=yes
 mkdir -p ${outdir}/log
 
 # Create directory for output results
-mkdir -p ${outdir}/results/${XXXXX}/
-cd ${outdir}/results/${XXXXX}/
+mkdir -p ${outdir}/results/${YYYY}_${XXXX}/
+cd ${outdir}/results/${YYYY}_${XXXX}/
 
 # Setup the run environment
 source ${cbmroot_config_path}
@@ -41,25 +54,43 @@ if [ $1 -eq 0 ] ; then
         setupMacro=setup_align.C
 	setupName=setup_align
 elif [ $1 -eq 1 ] ; then
-        setupMacro=setup_misalign_5mrad.C
-	setupName=setup_misalign_5mrad
-elif [ $1 -eq 2 ] ; then
 	setupMacro=setup_misalign_1mrad.C
 	setupName=setup_misalign_1mrad
-elif [ $1 -eq 3 ] ; then
-        setupMacro=setup_standard.C
-	setupName=setup_standard
+elif [ $1 -eq 2 ] ; then
+        setupMacro=setup_misalign_2mrad.C
+	setupName=setup_misalign_2mrad
+elif [ $1 -eq 30 ] ; then
+        setupMacro=setup_misalign_3mrad_XY.C
+	setupName=setup_misalign_3mrad_XY
+elif [ $1 -eq 31 ] ; then
+        setupMacro=setup_misalign_3mrad_minX.C
+	setupName=setup_misalign_3mrad_minX
+elif [ $1 -eq 32 ] ; then
+        setupMacro=setup_misalign_3mrad_minY.C
+	setupName=setup_misalign_3mrad_minY
+elif [ $1 -eq 33 ] ; then
+        setupMacro=setup_misalign_3mrad_minXY.C
+	setupName=setup_misalign_3mrad_minXY
+elif [ $1 -eq 4 ] ; then
+	setupMacro=setup_misalign_4mrad.C
+	setupName=setup_misalign_4mrad
+elif [ $1 -eq 5 ] ; then
+        setupMacro=setup_misalign_5mrad.C
+	setupName=setup_misalign_5mrad
+elif [ $1 -eq 6 ] ; then
+        setupMacro=setup_misalign_OFF.C
+	setupName=setup_misalign_OFF
 fi
 export GEO_SETUP_FILE=${setupMacro}
 export SETUP_NAME=${setupName}
 
 # Define urqmd and output files
-export URQMD_FILE=/lustre/nyx/cbm/prod/gen/urqmd/auau/${3}/centr/urqmd.auau.${3}.centr.${XXXXX}.root
-export MC_FILE=${outdir}/${setupName}_mc.${XXXXX}.root
-export PAR_FILE=${outdir}/${setupName}_params.${XXXXX}.root
-export RECO_FILE=${outdir}/${setupName}_reco.${XXXXX}.root
-export ANALYSIS_FILE=${outdir}/${setupName}_analysis.${XXXXX}.root
-export LIT_RESULT_DIR=${outdir}/${XXXXX}
+export URQMD_FILE=/lustre/nyx/cbm/prod/gen/urqmd/auau/${3}/centr/urqmd.auau.${3}.centr.${YYYY}_${XXXX}.root
+export MC_FILE=${outdir}/${setupName}_mc.${YYYY}_${XXXX}.root
+export PAR_FILE=${outdir}/${setupName}_params.${YYYY}_${XXXX}.root
+export RECO_FILE=${outdir}/${setupName}_reco.${YYYY}_${XXXX}.root
+export ANALYSIS_FILE=${outdir}/${setupName}_analysis.${YYYY}_${XXXX}.root
+export LIT_RESULT_DIR=${outdir}/${YYYY}_${XXXX}
 
 #Simulation parameters
 #--------------------------------------------------

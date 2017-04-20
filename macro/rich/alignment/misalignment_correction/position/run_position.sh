@@ -8,14 +8,35 @@
 # for FLAG in 0 1
 # do
 # WORK_DIR=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Aligned
-FLAG=0		# select geometry	# (== 0) for aligned case ; (== 1) for misaligned 5 mrad case ; (== 2) for misaligned 1 mrad case ; (== 3) for standard v16a_1e geo
+GEO=33		# select geometry	# (== 0) for aligned case ; (== 1) for misaligned 1 mrad case ; (== 2) for misaligned 2 mrad case ; (== 30) for misaligned 3 mrad XY case ;
+		# (== 31) for misaligned 3 mrad -X case ; (== 32) for misaligned 3 mrad -Y case ; (== 33) for misaligned 3 mrad -XY case ; (== 4) for misaligned 4 mrad case ;
+		# (== 5) for misaligned 5 mrad case ; (== 6) for misaligned OFF case
 NEVTS=1250	# select nb of events to run
 COLL_ENERGY=8gev
-	sbatch -J position -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Aligned --time=1:00:00 --array=1-800 ./position.sh $FLAG $NEVTS $COLL_ENERGY
-##	sbatch -J position -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned_5mrad_Full --time=1:00:00 --array=1-800 ./position.sh $FLAG $NEVTS $COLL_ENERGY
-##	sbatch -J position -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned_1mrad_Full --time=1:00:00 --array=1-800 ./position.sh $FLAG $NEVTS $COLL_ENERGY
-##	sbatch -J position -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/test/test_position/ --time=3:00:00 --array=1-800 ./position.sh $FLAG $NEVTS $COLL_ENERGY
+ARRAY=800
+
+if [ $GEO -eq 0 ] ; then
+	sbatch -J position -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Aligned --time=1:00:00 --array=1-$ARRAY ./position.sh $GEO $NEVTS $COLL_ENERGY
+elif [ $GEO -eq 1 ] ; then
+	sbatch -J position -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned_1mrad_Full --time=1:00:00 --array=1-$ARRAY ./position.sh $GEO $NEVTS $COLL_ENERGY
+elif [ $GEO -eq 2 ] ; then
+	sbatch -J position -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned_2mrad_Full --time=1:00:00 --array=1-$ARRAY ./position.sh $GEO $NEVTS $COLL_ENERGY
+elif [ $GEO -eq 30 ] ; then
+	sbatch -J position -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned_3mrad_XY_Full --time=1:00:00 --array=1-$ARRAY ./position.sh $GEO $NEVTS $COLL_ENERGY
+elif [ $GEO -eq 31 ] ; then
+	sbatch -J position -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned_3mrad_minX_Full --time=1:00:00 --array=1-$ARRAY ./position.sh $GEO $NEVTS $COLL_ENERGY
+elif [ $GEO -eq 32 ] ; then
+	sbatch -J position -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned_3mrad_minY_Full --time=1:00:00 --array=1-$ARRAY ./position.sh $GEO $NEVTS $COLL_ENERGY
+elif [ $GEO -eq 33 ] ; then
+	sbatch -J position -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned_3mrad_minXY_Full --time=1:00:00 --array=1-$ARRAY ./position.sh $GEO $NEVTS $COLL_ENERGY
+elif [ $GEO -eq 4 ] ; then
+	sbatch -J position -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned_4mrad_Full --time=1:00:00 --array=1-$ARRAY ./position.sh $GEO $NEVTS $COLL_ENERGY
+elif [ $GEO -eq 5 ] ; then
+	sbatch -J position -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned_5mrad_Full --time=1:00:00 --array=1-$ARRAY ./position.sh $GEO $NEVTS $COLL_ENERGY
+elif [ $GEO -eq 6 ] ; then
+	sbatch -J position -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned_OFF --time=1:00:00 --array=1-$ARRAY ./position.sh $GEO $NEVTS $COLL_ENERGY
+fi
 # done
 
-##	sbatch -J test_posi -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Aligned -o %j_%N.out.log -e %j_%N.err.log --time=2:00:00 --array=1-200 ./position.sh $FLAG $NEVTS $COLL_ENERGY
-##	sbatch -J test_posi -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/test_position --time=2:00:00 --array=1-200 ./position.sh $FLAG $NEVTS $COLL_ENERGY
+##	sbatch -J test_posi -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Aligned -o %j_%N.out.log -e %j_%N.err.log --time=2:00:00 --array=1-200 ./position.sh $GEO1 $NEVTS $COLL_ENERGY
+##	sbatch -J test_posi -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/test_position --time=2:00:00 --array=1-200 ./position.sh $GEO1 $NEVTS $COLL_ENERGY
