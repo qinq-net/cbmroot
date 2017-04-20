@@ -59,6 +59,11 @@ public:
     void Exec(Option_t* opt);// Overridden from FairTask
     void Finish();// Overridden from FairTask
     
+    void SetTrigDistance(Double_t v)
+    {
+        fTrigDistance = v;
+    }
+    
 #ifdef LXTB_QA
     void SetNEvents(Int_t v) { fNEvents = v; }
 #endif//LXTB_QA
@@ -66,6 +71,7 @@ public:
 private:
     void HandleGeometry();
     LxTbBinnedFinder* fFinder;
+    Double_t fTrigDistance;
     std::list<LxTbBinnedFinder::Chain*> recoTracks;
     unsigned int nof_timebins;
     unsigned int last_timebin;

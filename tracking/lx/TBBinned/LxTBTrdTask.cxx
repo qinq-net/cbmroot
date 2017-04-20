@@ -34,7 +34,7 @@ using std::set;
 
 ClassImp(LxTBTrdFinder)
 
-LxTBTrdFinder::LxTBTrdFinder() : fFinder(0), nof_timebins(5), last_timebin(nof_timebins - 1), fTrdHits(0), fTrdClusters(0), fTrdDigiMatches(0),
+LxTBTrdFinder::LxTBTrdFinder() : fFinder(0), fTrigDistance(200), nof_timebins(5), last_timebin(nof_timebins - 1), fTrdHits(0), fTrdClusters(0), fTrdDigiMatches(0),
    fTrdTracks(0), fGlobalTracks(0)
 #ifdef LXTB_QA
    , fTrdMCPoints(0), fNEvents(1000)
@@ -682,7 +682,7 @@ void LxTBTrdFinder::Finish()
             scaltype posX = pop->x;
             scaltype posY = pop->y;
             
-            if (sqrt((posX - negX) * (posX - negX) + (posY - negY) * (posY - negY)) > 200)
+            if (sqrt((posX - negX) * (posX - negX) + (posY - negY) * (posY - negY)) > fTrigDistance)
                trigPair = true;
          }
       }
