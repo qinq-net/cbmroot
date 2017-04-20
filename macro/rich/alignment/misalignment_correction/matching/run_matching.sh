@@ -8,14 +8,30 @@
 # for FLAG in 0 1
 # do
 # WORK_DIR=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Aligned
-FLAG=1		# select geometry	# (== 0) for Reference ; (== 1) for misaligned w/o corrections ; (== 2) for misaligned w/ corrections ; (== 3) to calculate correction parameters
+GEO=0		# select geometry	# (== 0) for Reference ; (== 1) for misaligned w/o corrections 1 mrad ; (== 2) for misaligned w/o corrections 2 mrad ;
+		# (== 3) for misaligned w/o corrections 3 mrad ; (== 4) for misaligned w/o corrections 4 mrad ; (== 5) for misaligned w/o corrections 5 mrad ;
+		# (== 6) to calculate correction parameters ; (== 7) to run Matching with corrected parameters
 NEVTS=1250	# select nb of events to run
 COLL_ENERGY=8gev
-##	sbatch -J matching -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Matching/Reference --time=1:00:00 --array=1-800 --partition=main ./matching.sh $FLAG $NEVTS $COLL_ENERGY
-	sbatch -J matching -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Matching/WO_Corrections --time=1:00:00 --array=1-800 ./matching.sh $FLAG $NEVTS $COLL_ENERGY
-##	sbatch -J matching -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Matching/W_Corrections --time=1:00:00 --array=1-800 ./matching.sh $FLAG $NEVTS $COLL_ENERGY
-##	sbatch -J matching -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Matching/Compute_Corrections --time=0:30:00 --array=1-2 ./matching.sh $FLAG $NEVTS $COLL_ENERGY
+ARRAY=800
 
-##	sbatch -J test_match -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/test/test_matching --time=1:00:00 --array=1-800 ./matching.sh $FLAG $NEVTS $COLL_ENERGY
+if [ $GEO -eq 0 ] ; then
+	sbatch -J matching -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Matching/Reference --time=1:00:00 --array=1-$ARRAY --partition=main ./matching.sh $GEO $NEVTS $COLL_ENERGY
+if [ $GEO -eq 1 ] ; then
+	sbatch -J matching -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Matching/WO_Corrections_1mrad --time=1:00:00 --array=1-$ARRAY ./matching.sh $GEO $NEVTS $COLL_ENERGY
+if [ $GEO -eq 2 ] ; then
+	sbatch -J matching -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Matching/WO_Corrections_2mrad --time=1:00:00 --array=1-$ARRAY ./matching.sh $GEO $NEVTS $COLL_ENERGY
+if [ $GEO -eq 3 ] ; then
+	sbatch -J matching -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Matching/WO_Corrections_3mrad --time=1:00:00 --array=1-$ARRAY ./matching.sh $GEO $NEVTS $COLL_ENERGY
+if [ $GEO -eq 4 ] ; then
+	sbatch -J matching -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Matching/WO_Corrections_4mrad --time=1:00:00 --array=1-$ARRAY ./matching.sh $GEO $NEVTS $COLL_ENERGY
+if [ $GEO -eq 5 ] ; then
+	sbatch -J matching -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Matching/WO_Corrections_5mrad --time=1:00:00 --array=1-$ARRAY ./matching.sh $GEO $NEVTS $COLL_ENERGY
+if [ $GEO -eq 6 ] ; then
+##	sbatch -J matching -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Matching/Compute_Corrections --time=0:30:00 --array=1-$ARRAY ./matching.sh $GEO $NEVTS $COLL_ENERGY
+if [ $GEO -eq 7 ] ; then
+##	sbatch -J matching -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Matching/W_Corrections --time=1:00:00 --array=1-$ARRAY ./matching.sh $GEO $NEVTS $COLL_ENERGY
+
+##	sbatch -J test_match -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/test/test_matching --time=1:00:00 --array=1-$ARRAY ./matching.sh $GEO $NEVTS $COLL_ENERGY
 
 # done

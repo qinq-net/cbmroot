@@ -161,12 +161,12 @@ void run_reco_matching(Int_t nEvents = 100)
     // =========================================================================
 
     // -----   STS Cluster Finder   --------------------------------------------
-    FairTask* stsClusterFinder = new CbmStsFindClusters();
+    FairTask* stsClusterFinder = new CbmStsFindClustersEvents();
     run->AddTask(stsClusterFinder);
     // -------------------------------------------------------------------------
 
     // -----   STS hit finder   ------------------------------------------------
-    FairTask* stsFindHits = new CbmStsFindHits();
+    FairTask* stsFindHits = new CbmStsFindHitsEvents();
     run->AddTask(stsFindHits);
     // -------------------------------------------------------------------------
 

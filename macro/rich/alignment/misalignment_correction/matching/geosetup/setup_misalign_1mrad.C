@@ -40,7 +40,7 @@ void setup_misalign_1mrad()
   TString magnetGeoTag    = "v15a";
   TString pipeGeoTag      = "v16c_1e";
   TString mvdGeoTag       = "v15a";
-  TString stsGeoTag       = "v17a";
+  TString stsGeoTag       = "v16x";
 //  TString richGeoTag      = "v16a_1e";		//"v16a_3e"
   TString richGeoTag	  = "v16a_matching_1mrad";
   TString trdGeoTag       = "v15a_3e";

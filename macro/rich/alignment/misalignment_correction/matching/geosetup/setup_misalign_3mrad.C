@@ -33,7 +33,7 @@
 //
 
 
-void setup_align()
+void setup_misalign_3mrad()
 {
 
   // -----  Geometry Tags  --------------------------------------------------
@@ -42,7 +42,7 @@ void setup_align()
   TString mvdGeoTag       = "v15a";
   TString stsGeoTag       = "v16x";
 //  TString richGeoTag      = "v16a_1e";		//"v16a_3e"
-  TString richGeoTag	  = "v16a_align";
+  TString richGeoTag	  = "v16a_matching_3mrad";
   TString trdGeoTag       = "v15a_3e";
   TString tofGeoTag       = "v16a_3e";
   TString psdGeoTag       = "psd_geo_xy.txt";
