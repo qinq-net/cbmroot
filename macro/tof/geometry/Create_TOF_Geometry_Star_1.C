@@ -89,7 +89,7 @@ const Float_t Module_X_Position=170.;
 const Float_t Module_Y_Position=0.;
 const Float_t Module_Z_Position=Wall_Z_Position;
 
-const Float_t Module_NTypes = 1;
+const Int_t Module_NTypes = 1;
 const Float_t Module_Types[Module_NTypes]  = {0.};  // Module Type specifier
 const Float_t Module_Number[Module_NTypes] = {36.}; //debugging,
 
