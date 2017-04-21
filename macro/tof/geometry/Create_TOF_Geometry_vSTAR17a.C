@@ -92,8 +92,8 @@ const Float_t Module_Size_Y[NofModuleTypes] = { 74.,18.,20., 49., 16., 5., 30., 
 const Float_t Module_Over_Y[NofModuleTypes] = { 11.,11., 0.,  4.,  0., 0.,  0.,  0.,  0.,   0.};
 const Float_t Module_Size_Z[NofModuleTypes] = { 10.,10., 5., 10., 10., 1., 15., 20., 10.,  11.};
 const Float_t Module_Thick_Alu_X_left = 1.;
-const Float_t Module_Thick_Alu_X_right = 0.1.;
-const Float_t Module_Thick_Alu_Y = 0.1.;
+const Float_t Module_Thick_Alu_X_right = 0.1;
+const Float_t Module_Thick_Alu_Y = 0.1;
 const Float_t Module_Thick_Alu_Z = 0.1;
 
 //Type of Counter for module 
@@ -109,7 +109,7 @@ const Float_t CounterZStartPosition[NofModuleTypes] = {0.0,     0.0,   0.0,  2.5
 const Float_t CounterZDistance[NofModuleTypes]      = {0.0,     0.0,   0.0,  2.5,  0.0,  0., 4.,  5.,  4.,  4.};
 const Float_t CounterRotationAngle[NofModuleTypes]  = {0.,      0.0,   0.0,   0.,  0.0,  0., 0.,  0.,  0.,  0.};
 
-const Float_t Module_NTypes = 1;
+const Int_t Module_NTypes = 1;
 const Float_t Module_Types[Module_NTypes]  = {9.};  // Module Type specifier
 const Float_t Module_Number[Module_NTypes] = {36.}; //debugging,
 const Double_t RING_DelPhi = 30.;
