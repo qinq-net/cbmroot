@@ -8,8 +8,8 @@ void draw_lit_reco_qa_matching(bool lit, bool reco)
 	string dir = "/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Matching/";
 	string fileName = "", outputDirTracking = "", outputDirRecoQa = "";
 
-//	for ( int j=1; j<6; j++ )
-	int j=1;
+	for ( int j=1; j<6; j++ )
+//	int j=1;
 	{
 		PrepareInputs(j, dir, fileName, outputDirTracking, outputDirRecoQa);
 		gSystem->mkdir(outputDirTracking.c_str(), true);
