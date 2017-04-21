@@ -177,7 +177,7 @@ void run_sim_position4(Int_t nEvents = 100)
     primGen->SmearGausVertexXY(smearVertexXY);
     primGen->SmearVertexZ(smearVertexZ);
 
-    if (urqmd == "yes"){
+    if (urqmd == "yes") {
         CbmUnigenGenerator*  uniGen = new CbmUnigenGenerator(urqmdFile);
         uniGen->SetEventPlane(0. , 360.);
         primGen->AddGenerator(uniGen);
