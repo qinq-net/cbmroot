@@ -1,8 +1,8 @@
 #!/bin/bash
 
-XXXX=$(printf "%05d" "$SLURM_ARRAY_TASK_ID")
-YYYY=$(printf "%08d" "$SLURM_ARRAY_JOB_ID")
+XXXX=$(printf "%04d" "$SLURM_ARRAY_TASK_ID")
 ##XXXX=$4
+YYYY=$(printf "%08d" "$SLURM_ARRAY_JOB_ID")
 
 cbmroot_config_path=/lustre/nyx/cbm/users/jbendar/CBMINSTALL_Root5/bin/CbmRootConfig.sh
 output_dir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Matching
@@ -119,11 +119,11 @@ echo ${setupName}
 ## root -b -l -q "${macro_dir}/matching/run_sim_matching.C(${2})"
 ## root -b -l -q "${macro_dir}/matching/run_reco_matching.C(${2})"
 
-if [ $1 -eq 0 ] || [ $1 -eq 1 ] || [ $1 -eq 2 ] ; then
-        root -b -l -q "${macro_dir}/matching/run_sim_matching.C(${2})"
+if [ $1 -eq 0 ] || [ $1 -eq 1 ] || [ $1 -eq 2 ] || [ $1 -eq 3 ] || [ $1 -eq 4 ] || [ $1 -eq 5 ] ; then
+        root -b -l -q "${macro_dir}/matching/run_sim_matching2.C(${2})"
         root -b -l -q "${macro_dir}/matching/run_reco_matching.C(${2})"
-elif [ $1 -eq 3 ] ; then
-	root -b -l -q "${macro_dir}/matching/run_sim_matching.C(${2})"
+elif [ $1 -eq 6 ] || [ $1 -eq 7 ] ; then
+	root -b -l -q "${macro_dir}/matching/run_sim_matching2.C(${2})"
 	root -b -l -q "${macro_dir}/matching/run_reco_matching_alignment.C(${2})"
 	root -b -l -q "${macro_dir}/matching/run_reco_matching_correction.C(${2})"
 fi

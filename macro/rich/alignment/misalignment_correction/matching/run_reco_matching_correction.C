@@ -53,7 +53,7 @@ void run_reco_matching_correction(Int_t nEvents = 100)
 	TString recoFile = outDir + "reco.root";
 
     TString geoSetupFile = "";
-    geoSetupFile = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/macro/rich/geosetup/setup_align.C";
+    geoSetupFile = "/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/macro/rich/matching/geosetup/setup_align.C";
     // ------------------------------------------------------------------------
 
 
@@ -64,7 +64,7 @@ void run_reco_matching_correction(Int_t nEvents = 100)
 	parFile = TString(gSystem->Getenv("PAR_FILE"));
 	resultDir = TString(gSystem->Getenv("LIT_RESULT_DIR"));
 
-	geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/geosetup/" + TString(gSystem->Getenv("GEO_SETUP_FILE"));
+	geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/matching/geosetup/" + TString(gSystem->Getenv("GEO_SETUP_FILE"));
 	setupName = TString(gSystem->Getenv("SETUP_NAME"));
     }
     // ------------------------------------------------------------------------
