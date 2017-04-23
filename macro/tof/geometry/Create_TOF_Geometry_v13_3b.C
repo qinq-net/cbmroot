@@ -86,8 +86,6 @@ const Float_t Pole_Thick_X = 5.;
 const Float_t Pole_Thick_Y = 5.;
 const Float_t Pole_Thick_Z = 5.;
 
-Float_t Pole_ZPos[MaxNumberOfPoles];
-
 
 // Bars (support structure)
 const Float_t Bar_Size_X = 20.;
@@ -108,7 +106,7 @@ const Float_t Pole_Offset=90.0+Pole_Size_X/2.;
 const Float_t Inner_Module_First_Y_Position=16.;
 const Float_t Inner_Module_Last_Y_Position=480.;
 const Float_t Inner_Module_X_Offset=2.;
-const Float_t Inner_Module_NTypes = 3;
+const Int_t Inner_Module_NTypes = 3;
 const Float_t Inner_Module_Types[Inner_Module_NTypes]  = {4.,3.,0.};
 const Float_t Inner_Module_Number[Inner_Module_NTypes] = {2.,2.,6.}; //V13_3a
 //const Float_t Inner_Module_Number[Inner_Module_NTypes] = {0.,0.,0.}; //debugging
@@ -122,8 +120,8 @@ const Float_t InnerSide_Module_Number[Inner_Module_NTypes] = {2.};  //v13_3a
 const Float_t Outer_Module_First_Y_Position=0.;
 const Float_t Outer_Module_Last_Y_Position=480.;
 const Float_t Outer_Module_X_Offset=3.;
-const Float_t Outer_Module_Col = 4;
-const Float_t Outer_Module_NTypes = 2;
+const Int_t Outer_Module_Col = 4;
+const Int_t Outer_Module_NTypes = 2;
 const Float_t Outer_Module_Types [Outer_Module_NTypes][Outer_Module_Col] = {1.,1.,1.,1.,  2.,2.,2.,2.};
 const Float_t Outer_Module_Number[Outer_Module_NTypes][Outer_Module_Col] = {9.,9.,2.,0.,  0.,0.,3.,4.};//V13_3a
 //const Float_t Outer_Module_Number[Outer_Module_NTypes][Outer_Module_Col] = {1.,1.,0.,0.,  0.,0.,0.,0.};//debug
@@ -154,11 +152,11 @@ void position_outer_tof_modules(Int_t);
 
 void Create_TOF_Geometry_v13_3b() {
   // Load the necessary FairRoot libraries 
-  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-  basiclibs();
-  gSystem->Load("libGeoBase");
-  gSystem->Load("libParBase");
-  gSystem->Load("libBase");
+//  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
+//  basiclibs();
+//  gSystem->Load("libGeoBase");
+//  gSystem->Load("libParBase");
+//  gSystem->Load("libBase");
 
   // Load needed material definition from media.geo file
   create_materials_from_media_file();
@@ -260,6 +258,7 @@ void create_materials_from_media_file()
 
 TGeoVolume* create_counter(Int_t modType)
 {
+  Int_t l=0;
 
   //glass
   Float_t gdx=Glass_X[modType]; 
@@ -341,7 +340,7 @@ TGeoVolume* create_counter(Int_t modType)
 
   // Add 8 single stacks + one glass plate at the end to a multi stack
   TGeoVolume* multi_stack = new TGeoVolumeAssembly("multi_stack");
-  for (Int_t l=0; l<ngaps; l++){
+  for (l=0; l<ngaps; l++){
     TGeoTranslation* single_stack_trans 
       = new TGeoTranslation("", 0., 0., startzpos + l*dzpos);
     multi_stack->AddNode(single_stack, l, single_stack_trans);
@@ -699,11 +698,17 @@ void position_tof_bars(Int_t modType)
   TGeoTranslation* bar_trans=NULL;
 
   Int_t numBars=0;
-  for (Int_t i=0; i<NumberOfBars; i++){
+  Int_t i=0;
 
-     Float_t xPos=Bar_XPos[i];
-     Float_t zPos=Bar_ZPos[i];
-     Float_t yPos=Pole_Size_Y/2.+Bar_Size_Y/2.;
+  Float_t xPos=0;
+  Float_t yPos=0;
+  Float_t zPos=0;
+
+  for (i=0; i<NumberOfBars; i++){
+
+     xPos=Bar_XPos[i];
+     zPos=Bar_ZPos[i];
+     yPos=Pole_Size_Y/2.+Bar_Size_Y/2.;
 
      bar_trans = new TGeoTranslation("", xPos, yPos, zPos);
      gGeoMan->GetVolume(geoVersion)->AddNode(gBar[i], numBars, bar_trans);
@@ -725,7 +730,7 @@ void position_tof_bars(Int_t modType)
    cout << " Position Bar "<< numBars<<" at z="<< Bar_ZPos[i] << endl;
 
    // horizontal frame bars 
-   Int_t i = NumberOfBars;
+   i = NumberOfBars;
    NumberOfBars++;
    gBar[i]=create_tof_bar(2.*xPos+Pole_Size_X,Bar_Size_Y,Bar_Size_Y);
 

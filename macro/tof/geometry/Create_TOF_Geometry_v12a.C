@@ -111,11 +111,11 @@ void position_outer_tof_modules();
 
 void Create_TOF_Geometry_v12a() {
   // Load the necessary FairRoot libraries 
-  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-  basiclibs();
-  gSystem->Load("libGeoBase");
-  gSystem->Load("libParBase");
-  gSystem->Load("libBase");
+//  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
+//  basiclibs();
+//  gSystem->Load("libGeoBase");
+//  gSystem->Load("libParBase");
+//  gSystem->Load("libBase");
 
   // Load needed material definition from media.geo file
   create_materials_from_media_file();
@@ -200,6 +200,8 @@ void create_materials_from_media_file()
 TGeoVolume* create_counter(Int_t modType)
 {
 
+  Int_t l=0;
+
   //glass
   Float_t gdx=Glass_X[modType]; 
   Float_t gdy=Glass_Y[modType];
@@ -280,7 +282,7 @@ TGeoVolume* create_counter(Int_t modType)
 
   // Add 8 single stacks + one glass plate at the end to a multi stack
   TGeoVolume* multi_stack = new TGeoVolumeAssembly("multi_stack");
-  for (Int_t l=0; l<ngaps; l++){
+  for (l=0; l<ngaps; l++){
     TGeoTranslation* single_stack_trans 
       = new TGeoTranslation("", 0., 0., startzpos + l*dzpos);
     multi_stack->AddNode(single_stack, l, single_stack_trans);
