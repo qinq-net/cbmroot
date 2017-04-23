@@ -125,7 +125,7 @@ const Float_t Pole_Thick_X = 5.;
 const Float_t Pole_Thick_Y = 5.;
 const Float_t Pole_Thick_Z = 5.;
 
-Float_t Pole_ZPos[MaxNumberOfPoles];
+//Float_t Pole_ZPos[MaxNumberOfPoles];
 
 
 // Bars (support structure)
@@ -147,7 +147,7 @@ const Float_t Pole_Offset=90.0+Pole_Size_X/2.;
 const Float_t Inner_Module_First_Y_Position=20.;
 const Float_t Inner_Module_Last_Y_Position=40.;
 const Float_t Inner_Module_X_Offset=2.;
-const Float_t Inner_Module_NTypes = 3;
+const Int_t Inner_Module_NTypes = 3;
 const Float_t Inner_Module_Types[Inner_Module_NTypes]  = {0.,5.,0.};
 const Float_t Inner_Module_Number[Inner_Module_NTypes] = {1.,2.,0.}; //debugging, V14a
 
@@ -155,7 +155,7 @@ const Float_t HDbig_Z_Position=222.;
 const Float_t HDbig_First_Y_Position=-86.;
 const Float_t HDbig_X_Offset=-1.5; //3.95;
 const Float_t HDbig_rotate_Z=-90.;
-const Float_t HDbig_NTypes = 1;
+const Int_t HDbig_NTypes = 1;
 const Float_t HDbig_Types[HDbig_NTypes]  = {0.};
 const Float_t HDbig_Number[HDbig_NTypes] = {1.}; //debugging, V14a
 
@@ -164,7 +164,7 @@ const Float_t HDsmall_Z_Position=220.;
 const Float_t HDsmall_First_Y_Position=-65.;  // TSU
 const Float_t HDsmall_X_Offset=0.;
 const Float_t HDsmall_rotate_Z=90.;
-const Float_t HDsmall_NTypes = 1;
+const Int_t HDsmall_NTypes = 1;
 const Float_t HDsmall_Types[HDsmall_NTypes]  = {3.};
 const Float_t HDsmall_Number[HDsmall_NTypes] = {1.}; //debugging, V14a
 
@@ -172,7 +172,7 @@ const Float_t BucRef_Z_Position=234.;
 const Float_t BucRef_First_Y_Position=0.;
 const Float_t BucRef_X_Offset=30.5;
 const Float_t BucRef_rotate_Z=0.;
-const Float_t BucRef_NTypes = 1;
+const Int_t BucRef_NTypes = 1;
 const Float_t BucRef_Types[BucRef_NTypes]  = {1.};
 const Float_t BucRef_Number[BucRef_NTypes] = {1.}; //debugging, V14a
 
@@ -180,15 +180,15 @@ const Float_t HDRef_Z_Position=246.;
 const Float_t HDRef_First_Y_Position=-76.;
 const Float_t HDRef_X_Offset=-2.;
 const Float_t HDRef_rotate_Z=180.;
-const Float_t HDRef_NTypes = 1;
+const Int_t HDRef_NTypes = 1;
 const Float_t HDRef_Types[HDRef_NTypes]  = {4.}; // this is the SmType!
 const Float_t HDRef_Number[HDRef_NTypes] = {1.}; // evtl. double for split signals 
 
-const Float_t Dia_Z_Position=-2..;
+const Float_t Dia_Z_Position=-2.;
 const Float_t Dia_First_Y_Position=0.;
 const Float_t Dia_X_Offset=0.;
 const Float_t Dia_rotate_Z=0.;
-const Float_t Dia_NTypes = 3;
+const Int_t Dia_NTypes = 3;
 const Float_t Dia_Types[Dia_NTypes]  = {5.,5.,5.};
 const Float_t Dia_Number[Dia_NTypes] = {1.,1.,1.};
 
@@ -196,7 +196,7 @@ const Float_t Buc2013_Z_Position=203.3;
 const Float_t Buc2013_First_Y_Position=0.;
 const Float_t Buc2013_X_Offset=26.;
 const Float_t Buc2013_rotate_Z=0.;
-const Float_t Buc2013_NTypes = 1;
+const Int_t Buc2013_NTypes = 1;
 const Float_t Buc2013_Types[Buc2013_NTypes]  = {6.};
 const Float_t Buc2013_Number[Buc2013_NTypes] = {1.};
 
@@ -204,11 +204,11 @@ const Float_t USTC_Z_Position=200.;
 const Float_t USTC_First_Y_Position=0.;
 const Float_t USTC_X_Offset=80.;
 const Float_t USTC_rotate_Z=90.;
-const Float_t USTC_NTypes = 1;
+const Int_t USTC_NTypes = 1;
 const Float_t USTC_Types[USTC_NTypes]  = {7.};
 const Float_t USTC_Number[USTC_NTypes] = {1.};
 
-const Float_t Pla_NTypes = 4;
+const Int_t Pla_NTypes = 4;
 const Float_t Pla_X_Position[Pla_NTypes]={0.,0.,25.,33.7};
 const Float_t Pla_Y_Position[Pla_NTypes]={-60.,-80.,0.,0.};
 const Float_t Pla_Z_Position[Pla_NTypes]={191.,263.,191.8,258.5};
@@ -217,18 +217,18 @@ const Float_t Pla_Types[Pla_NTypes]  = {2.,2.,2.,2.};
 const Float_t Pla_Number[Pla_NTypes] = {1.,1.,1.,1.};   //V14a
 
 const Float_t InnerSide_Module_X_Offset=51.;
-const Float_t InnerSide_Module_NTypes = 1;
+const Int_t InnerSide_Module_NTypes = 1;
 const Float_t InnerSide_Module_Types[Inner_Module_NTypes]  = {5.};
-const Float_t InnerSide_Module_Number[Inner_Module_NTypes] = {2.};  //v13_3a
+//const Float_t InnerSide_Module_Number[Inner_Module_NTypes] = {2.};  //v13_3a
 const Float_t InnerSide_Module_Number[Inner_Module_NTypes] = {0.};  //debug, V14a
 
 const Float_t Outer_Module_First_Y_Position=0.;
 const Float_t Outer_Module_Last_Y_Position=480.;
 const Float_t Outer_Module_X_Offset=2.;  //3.
-const Float_t Outer_Module_Col = 4;
-const Float_t Outer_Module_NTypes = 2;
+const Int_t Outer_Module_Col = 4;
+const Int_t Outer_Module_NTypes = 2;
 const Float_t Outer_Module_Types [Outer_Module_NTypes][Outer_Module_Col] = {1.,1.,1.,1.,  2.,2.,2.,2.};
-const Float_t Outer_Module_Number[Outer_Module_NTypes][Outer_Module_Col] = {9.,9.,2.,0.,  0.,0.,3.,4.};//V13_3a
+//const Float_t Outer_Module_Number[Outer_Module_NTypes][Outer_Module_Col] = {9.,9.,2.,0.,  0.,0.,3.,4.};//V13_3a
 const Float_t Outer_Module_Number[Outer_Module_NTypes][Outer_Module_Col] = {1.,1.,0.,0.,  0.,0.,0.,0.};//V14a
 const Float_t DxColl[Outer_Module_Col] = { 153, 147, 126, 93 }; //158.
 
@@ -385,6 +385,7 @@ void create_materials_from_media_file()
 
 TGeoVolume* create_counter(Int_t modType)
 {
+  Int_t l=0;
 
   //glass
   Float_t gdx=Glass_X[modType]; 
@@ -466,7 +467,7 @@ TGeoVolume* create_counter(Int_t modType)
 
   // Add 8 single stacks + one glass plate at the end to a multi stack
   TGeoVolume* multi_stack = new TGeoVolumeAssembly("multi_stack");
-  for (Int_t l=0; l<ngaps; l++){
+  for (l=0; l<ngaps; l++){
     TGeoTranslation* single_stack_trans 
       = new TGeoTranslation("", 0., 0., startzpos + l*dzpos);
     multi_stack->AddNode(single_stack, l, single_stack_trans);
@@ -826,12 +827,17 @@ void position_tof_bars(Int_t modType)
 
   TGeoTranslation* bar_trans=NULL;
 
-  Int_t numBars=0;
-  for (Int_t i=0; i<NumberOfBars; i++){
+  Float_t xPos=0;
+  Float_t yPos=0;
+  Float_t zPos=0;
 
-     Float_t xPos=Bar_XPos[i];
-     Float_t zPos=Bar_ZPos[i];
-     Float_t yPos=Pole_Size_Y/2.+Bar_Size_Y/2.;
+  Int_t numBars=0;
+  Int_t i=0;
+  for (i=0; i<NumberOfBars; i++){
+
+     xPos=Bar_XPos[i];
+     zPos=Bar_ZPos[i];
+     yPos=Pole_Size_Y/2.+Bar_Size_Y/2.;
 
      bar_trans = new TGeoTranslation("", xPos, yPos, zPos);
      gGeoMan->GetVolume(geoVersion)->AddNode(gBar[i], numBars, bar_trans);
@@ -853,7 +859,7 @@ void position_tof_bars(Int_t modType)
    cout << " Position Bar "<< numBars<<" at z="<< Bar_ZPos[i] << endl;
 
    // horizontal frame bars 
-   Int_t i = NumberOfBars;
+   i = NumberOfBars;
    NumberOfBars++;
    gBar[i]=create_tof_bar(2.*xPos+Pole_Size_X,Bar_Size_Y,Bar_Size_Y);
 
@@ -1255,7 +1261,10 @@ void position_side_tof_modules(Int_t modNType)
  TGeoCombiTrans* module_combi_trans = NULL;
 
  //  Int_t numModules=(Int_t)( (Inner_Module_Last_Y_Position-Inner_Module_First_Y_Position)/Module_Size_Y[modType])+1;
+ Float_t xPos=0.;
  Float_t yPos=0.; //Inner_Module_First_Y_Position;
+ Float_t zPos=0.;
+
  Int_t ii=0; 
  for (Int_t j=0; j<modNType; j++){
   Int_t modType= InnerSide_Module_Types[j];
@@ -1270,8 +1279,8 @@ void position_side_tof_modules(Int_t modNType)
     if (ii>1){yPos += DeltaY;}
     Last_Size_Y=Module_Size_Y[modType];
     Last_Over_Y=Module_Over_Y[modType];
-    Float_t xPos  = InnerSide_Module_X_Offset;
-    Float_t zPos  = Wall_Z_Position;
+    xPos  = InnerSide_Module_X_Offset;
+    zPos  = Wall_Z_Position;
     cout <<"Position InnerSide Module "<<i<<" of "<<InnerSide_Module_Number[j]<<" Type "<<modType
          <<" at Y = "<<yPos<<" Ysize = "<<Module_Size_Y[modType]
 	 <<" DeltaY = "<<DeltaY<<endl;
