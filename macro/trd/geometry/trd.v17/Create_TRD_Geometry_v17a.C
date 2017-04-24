@@ -120,8 +120,6 @@ const Bool_t IncludeSupports    = true;  // support structure must be there, oth
 const Bool_t IncludeLabels      = true;  // false;  // true, if TRD (I, II, III) labels are plotted in (VisLevel 5)
 const Bool_t IncludeFieldVector = false;  // true, if magnetic field vector to be shown (in the magnet)
 
-const Double_t feb_rotation_angle = 45; //0.1; // 65.; // 70.; // 0.;   // rotation around x-axis, should be < 90 degrees  
-
 // positioning switches
 const Bool_t DisplaceRandom  = false;  // true; // false;  // add random displacement of modules for alignment study
 const Bool_t RotateRandom    = false;  // true; // false;  // add random rotation of modules for alignment study
@@ -278,6 +276,10 @@ const Int_t layer3o[9][11] = { { 823,  823,  823,  823,  823,  821,  821,  821, 
 const Int_t NofModuleTypes = 8;
 const Int_t ModuleType[NofModuleTypes]    = {  0,  0,  0,  0,  1,  1,  1,  1 }; // 0 = small module, 1 = large module
 
+// FEB inclination angle
+const Double_t feb_rotation_angle[NofModuleTypes] = { 70,  90,  90,  80,  80,  90,  90,  90 }; // rotation around x-axis, 0 = vertical, 90 = horizontal
+//const Double_t feb_rotation_angle[NofModuleTypes] = { 45,  45,  45,  45,  45,  45,  45,  45 }; // rotation around x-axis, 0 = vertical, 90 = horizontal
+
 // GBTx ROB definitions
 const Int_t RobsPerModule[NofModuleTypes] = {  3,  2,  1,  1,  2,  2,  1,  1 }; // number of GBTx ROBs on module
 const Int_t GbtxPerRob[NofModuleTypes]    = {105,105,105,103,107,105,105,103 }; // number of GBTx ASICs on ROB
@@ -338,13 +340,10 @@ const Int_t ColsPerConnector[NofModuleTypes]  = { 16, 16, 16, 16, 16, 16, 16, 16
 
 
 const Double_t feb_z_offset = 0.1;  // 1 mm - offset in z of FEBs to backpanel
-const Double_t asic_offset  = 0.2;  // 2 mm - offset of ASICs to FEBs to avoid overlaps
+const Double_t asic_offset  = 0.1;  // 1 mm - offset of ASICs to FEBs to avoid overlaps
 
 // ASIC parameters
-const Double_t asic_thickness = 0.25; // asic_thickness; // 2.5 mm
-const Double_t asic_width     = 3.0;  // 2.0;  1.0;   // 1 cm
-//const Double_t asic_distance  = 0.4;  // 0.40; // a factor of width for ASIC pairs
-Double_t asic_distance; //  = 0.40; // for 10 ASICs - a factor of width for ASIC pairs
+Double_t asic_distance;
 
 //const Double_t FrameWidth[2]    = { 1.5, 2.0 };   // Width of detector frames in cm
 const Double_t FrameWidth[2]    = { 1.5, 1.5 };   // Width of detector frames in cm
@@ -397,9 +396,14 @@ const Double_t honeycomb_position     =  padplane_position + padplane_thickness/
 const Double_t carbon_position        =  honeycomb_position + honeycomb_thickness/2. + carbon_thickness/2.;
 
 // readout boards
-const  Double_t febvol_thickness      =  10.0;    // 10 cm length of FEBs
-const  Double_t febvol_position       =  carbon_position + carbon_thickness/2. + febvol_thickness/2.;
+//const  Double_t feb_width           =  10.0;    // width of FEBs in cm
+const  Double_t feb_width             =   8.5;    // width of FEBs in cm
 const  Double_t feb_thickness         =   0.25;  // light //  2.5 mm thickness of FEBs
+const  Double_t febvolume_position    =  carbon_position + carbon_thickness/2. + feb_width/2.;
+
+// ASIC parameters
+const Double_t asic_thickness         =   0.25; // 2.5 mm asic_thickness
+const Double_t asic_width             =   3.0;  // 2.0;  1.0;   // 1 cm
 
 
 
@@ -1678,8 +1682,8 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
 
       // translations + rotations
       TGeoTranslation *trd_feb_trans1;     // center to corner
-      TGeoRotation    *trd_feb_rotation;   // rotation around x axis
       TGeoTranslation *trd_feb_trans2;     // corner back
+      TGeoRotation    *trd_feb_rotation;   // rotation around x axis
       TGeoTranslation *trd_feb_y_position; // shift to y position on TRD
 //      TGeoTranslation *trd_feb_null;       // no displacement
 
@@ -1687,15 +1691,15 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
 //  //      Double_t yback, zback;
 //  //      TGeoCombiTrans  *trd_feb_placement;
 //  //      // fix Z back offset 0.3 at some point
-//  //      yback = -    sin(feb_rotation_angle/180*3.141)  * febvol_thickness /2.;
-//  //      zback = - (1-cos(feb_rotation_angle/180*3.141)) * febvol_thickness /2. + 0.3;
+//  //      yback = -    sin(feb_rotation_angle/180*3.141)  * feb_width /2.;
+//  //      zback = - (1-cos(feb_rotation_angle/180*3.141)) * feb_width /2. + 0.3;
 //  //      trd_feb_placement = new TGeoCombiTrans(0, feb_pos_y + yback, zback, trd_feb_rotation);
 //  //      trd_feb_box->AddNode(trdmod1_feb, iFeb+1, trd_feb_placement);
 
 //      trd_feb_null       = new TGeoTranslation("", 0., 0., 0.);  // empty operation
-      trd_feb_trans1     = new TGeoTranslation("", 0.,-feb_thickness/2.,-febvol_thickness/2.);  // move bottom right corner to center
-      trd_feb_trans2     = new TGeoTranslation("", 0., feb_thickness/2., febvol_thickness/2.);  // move bottom right corner back
-      trd_feb_rotation   = new TGeoRotation(); trd_feb_rotation->RotateX(feb_rotation_angle);
+      trd_feb_trans1     = new TGeoTranslation("", 0.,-feb_thickness/2.,-feb_width/2.);  // move bottom right corner to center
+      trd_feb_trans2     = new TGeoTranslation("", 0., feb_thickness/2., feb_width/2.);  // move bottom right corner back
+      trd_feb_rotation   = new TGeoRotation(); trd_feb_rotation->RotateX(feb_rotation_angle[moduleType-1]);
 
       TGeoHMatrix *incline_feb = new TGeoHMatrix("");
 
@@ -1712,7 +1716,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
       (*incline_feb) = (*trd_feb_trans1) * (*trd_feb_rotation) * (*trd_feb_trans2);  // OK
 
       // Create all FEBs and place them in an assembly which will be added to the TRD module
-      TGeoBBox* trd_feb = new TGeoBBox("trd_feb", activeAreaX/2., feb_thickness/2., febvol_thickness/2.);   // the FEB itself - as a cuboid
+      TGeoBBox* trd_feb = new TGeoBBox("trd_feb", activeAreaX/2., feb_thickness/2., feb_width/2.);   // the FEB itself - as a cuboid
       TGeoVolume* trdmod1_feb = new TGeoVolume("feb", trd_feb, febVolMed);  // the FEB made of a certain medium
       //      TGeoVolume* trdmod1_feb = new TGeoVolume(Form("module%d_feb", moduleType), trd_feb, febVolMed);  // the FEB made of a certain medium
       //      TGeoVolume* trdmod1_feb = new TGeoVolume(Form("trd1mod%dfeb", moduleType), trd_feb, febVolMed);  // the FEB made of a certain medium
@@ -1721,13 +1725,21 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
       // now we have an inclined FEB
 
       // ASICs
-      Double_t asic_pos;
-      Double_t asic_pos_x;
-      TGeoTranslation *trd_asic_trans1;     // center to corner
-
       if (IncludeAsics) 
       {
-        TGeoHMatrix *incline_asic;
+        Double_t asic_pos;
+        Double_t asic_pos_x;
+        TGeoTranslation *trd_asic_trans0;     // ASIC on FEB x position
+        TGeoTranslation *trd_asic_trans1;     // center to corner
+	TGeoTranslation *trd_asic_trans2;     // corner back
+	TGeoRotation    *trd_asic_rotation;   // rotation around x axis
+	
+        trd_asic_trans1     = new TGeoTranslation("", 0., -(feb_thickness + asic_offset + asic_thickness/2.), -feb_width/2.);  // move ASIC center to FEB corner
+	trd_asic_trans2     = new TGeoTranslation("", 0.,   feb_thickness + asic_offset + asic_thickness/2. ,  feb_width/2.);  // move FEB corner back to asic center
+	trd_asic_rotation   = new TGeoRotation(); trd_asic_rotation->RotateX(feb_rotation_angle[moduleType-1]);
+
+	TGeoHMatrix *incline_asic;
+
         // put many ASICs on each inclined FEB
         TGeoBBox* trd_asic = new TGeoBBox("trd_asic", asic_width/2., asic_thickness/2., asic_width/2.);              // ASIC dimensions
         // TODO: use Silicon as ASICs material
@@ -1752,10 +1764,9 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
 
             // ASIC 1
             asic_pos_x = asic_pos * activeAreaX;
-	    //            trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2., 0.);  // move asic on top of FEB
-            trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB
+            trd_asic_trans0     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB
             incline_asic = new TGeoHMatrix("");
-            (*incline_asic) = (*trd_asic_trans1) * (*incline_feb);
+	    (*incline_asic) = (*trd_asic_trans0) * (*trd_asic_trans1) * (*trd_asic_rotation) * (*trd_asic_trans2);  // OK
             trd_feb_box->AddNode(trdmod1_asic, iAsic+1, incline_asic);  // now we have ASICs on the inclined FEB
           }
 
@@ -1765,18 +1776,16 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
 
             // ASIC 1
             asic_pos_x = asic_pos * activeAreaX + (0.5 + asic_distance/2.) * asic_width;
-	    //            trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2., 0.);  // move asic on top of FEB
-            trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB);
+            trd_asic_trans0     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB);
             incline_asic = new TGeoHMatrix("");
-            (*incline_asic) = (*trd_asic_trans1) * (*incline_feb);
+	    (*incline_asic) = (*trd_asic_trans0) * (*trd_asic_trans1) * (*trd_asic_rotation) * (*trd_asic_trans2);  // OK
             trd_feb_box->AddNode(trdmod1_asic, 2*iAsic+1, incline_asic);  // now we have ASICs on the inclined FEB
 
             // ASIC 2
             asic_pos_x = asic_pos * activeAreaX - (0.5 + asic_distance/2.) * asic_width;
-	    //            trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2., 0.);  // move asic on top of FEB
-            trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB
+            trd_asic_trans0     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB
             incline_asic = new TGeoHMatrix("");
-            (*incline_asic) = (*trd_asic_trans1) * (*incline_feb);
+	    (*incline_asic) = (*trd_asic_trans0) * (*trd_asic_trans1) * (*trd_asic_rotation) * (*trd_asic_trans2);  // OK
             trd_feb_box->AddNode(trdmod1_asic, 2*iAsic+2, incline_asic);  // now we have ASICs on the inclined FEB
           }
 
@@ -1786,23 +1795,23 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
 
             // ASIC 1
             asic_pos_x = asic_pos * activeAreaX + 1.1 * asic_width; // (0.5 + asic_distance/2.) * asic_width;
-            trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB);
+            trd_asic_trans0     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB);
             incline_asic = new TGeoHMatrix("");
-            (*incline_asic) = (*trd_asic_trans1) * (*incline_feb);
+	    (*incline_asic) = (*trd_asic_trans0) * (*trd_asic_trans1) * (*trd_asic_rotation) * (*trd_asic_trans2);  // OK
             trd_feb_box->AddNode(trdmod1_asic, 3*iAsic+1, incline_asic);  // now we have ASICs on the inclined FEB
 
             // ASIC 2
             asic_pos_x = asic_pos * activeAreaX;
-            trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB
+            trd_asic_trans0     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB
             incline_asic = new TGeoHMatrix("");
-            (*incline_asic) = (*trd_asic_trans1) * (*incline_feb);
+	    (*incline_asic) = (*trd_asic_trans0) * (*trd_asic_trans1) * (*trd_asic_rotation) * (*trd_asic_trans2);  // OK
             trd_feb_box->AddNode(trdmod1_asic, 3*iAsic+2, incline_asic);  // now we have ASICs on the inclined FEB
 
             // ASIC 3
             asic_pos_x = asic_pos * activeAreaX - 1.1 * asic_width; // (0.5 + asic_distance/2.) * asic_width;
-            trd_asic_trans1     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB
+            trd_asic_trans0     = new TGeoTranslation("", asic_pos_x, feb_thickness/2.+asic_thickness/2.+asic_offset, 0.);  // move asic on top of FEB
             incline_asic = new TGeoHMatrix("");
-            (*incline_asic) = (*trd_asic_trans1) * (*incline_feb);
+	    (*incline_asic) = (*trd_asic_trans0) * (*trd_asic_trans1) * (*trd_asic_rotation) * (*trd_asic_trans2);  // OK
             trd_feb_box->AddNode(trdmod1_asic, 3*iAsic+3, incline_asic);  // now we have ASICs on the inclined FEB
           }
  
@@ -1819,13 +1828,14 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
       for (Int_t iFeb = 0; iFeb < nofFebs; iFeb++) 
       {
         feb_pos   = (iFeb + 0.5) / nofFebs - 0.5;   // equal spacing of FEBs on the backpanel
+	// cout << "feb_pos " << iFeb << ": " << feb_pos << endl;
         feb_pos_y = feb_pos * activeAreaY;
+        feb_pos_y += feb_width/2. * sin( feb_rotation_angle[moduleType-1] * acos(-1.)/180.);
 
         // shift inclined FEB in y to its final position
         trd_feb_y_position = new TGeoTranslation("", 0., feb_pos_y, feb_z_offset);  // with additional fixed offset in z direction
 	//        trd_feb_y_position = new TGeoTranslation("", 0., feb_pos_y, 0.0);  // touching the backpanel with the corner
         trd_feb_vol->AddNode(trd_feb_box, iFeb+1, trd_feb_y_position);  // position FEB in y
-
       }
 
       if (IncludeRobs) 
@@ -1833,6 +1843,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
         // GBTx ROBs
         Double_t rob_size_x = 20.0; // 13.0; // 130 mm
         Double_t rob_size_y =  9.0; //  4.5; //  45 mm
+        Double_t rob_offset =  1.2;
         Double_t rob_thickness = feb_thickness;
   
         TGeoVolumeAssembly* trd_rob_box = new TGeoVolumeAssembly("robbox");  // volume for inclined FEBs, then shifted along y
@@ -1841,9 +1852,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
         trdmod1_rob->SetLineColor(kRed);    // set color
   
         //      TGeoHMatrix *incline_rob = new TGeoHMatrix("");
-        trd_rob_box->AddNode(trdmod1_rob, 1);//, "" ); // incline_feb);  
-  
-  
+        trd_rob_box->AddNode(trdmod1_rob, 1);
   
         // GBTXs
         Double_t gbtx_pos;
@@ -1887,12 +1896,12 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
               trd_rob_box->AddNode(trdmod1_gbtx, iGbtx++, trd_gbtx_trans1);  // now we have GBTXs on the ROB
             }
           else
-            {
-              gbtx_pos_y = 0;
+          {
+            gbtx_pos_y = 0;
      
-	      trd_gbtx_trans1     = new TGeoTranslation("", gbtx_pos_x, gbtx_pos_y, rob_thickness/2.+gbtx_thickness/2.);  // move gbtx on top of ROB
-              trd_rob_box->AddNode(trdmod1_gbtx, iGbtx++, trd_gbtx_trans1);  // now we have GBTXs on the ROB
-            }
+	    trd_gbtx_trans1     = new TGeoTranslation("", gbtx_pos_x, gbtx_pos_y, rob_thickness/2.+gbtx_thickness/2.);  // move gbtx on top of ROB
+            trd_rob_box->AddNode(trdmod1_gbtx, iGbtx++, trd_gbtx_trans1);  // now we have GBTXs on the ROB
+          }
   
         }
 
@@ -1908,16 +1917,18 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
           rob_pos_y = rob_pos * activeAreaY;
   
           // shift inclined ROB in y to its final position
-          trd_rob_y_position = new TGeoTranslation("", 0., rob_pos_y, febvol_thickness/2. - rob_thickness);  // approximate pos at end of feb volume
+          if ( feb_rotation_angle[moduleType-1] == 90 )
+            trd_rob_y_position = new TGeoTranslation("", 0., rob_pos_y, -feb_width/2. + rob_offset);  // place ROBs close to FEBs
+          else
+            trd_rob_y_position = new TGeoTranslation("", 0., rob_pos_y, feb_width/2. - rob_thickness);  // place ROBs at end of feb volume
           trd_feb_vol->AddNode(trd_rob_box, iRob+1, trd_rob_y_position);  // position FEB in y
-  
         }
 
       }  // IncludeGbtx
 
       // put FEB box on module
-      TGeoTranslation* trd_febvol_trans = new TGeoTranslation("", 0., 0., febvol_position);
-      gGeoMan->GetVolume(name)->AddNode(trd_feb_vol, 1, trd_febvol_trans);  // put febvol at correct z position wrt to the module
+      TGeoTranslation* trd_febvolume_trans = new TGeoTranslation("", 0., 0., febvolume_position);
+      gGeoMan->GetVolume(name)->AddNode(trd_feb_vol, 1, trd_febvolume_trans);  // put febvolume at correct z position wrt to the module
    }
 
    return module;
