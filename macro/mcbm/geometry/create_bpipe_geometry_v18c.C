@@ -26,6 +26,7 @@
 #include <iomanip>
 #include <iostream>
 #include "TGeoManager.h"
+#include "TGeoPcon.h"
 
 
 using namespace std;
@@ -46,6 +47,11 @@ TString rootFileName = "pipe_v18c.root";
 TString pipeName = "pipe_v18c";
 // ----------------------------------------------------------------------------
 
+TGeoVolume* MakePipe(Int_t iPart, Int_t nSects, Double_t* z, Double_t* rin, 
+		     Double_t* rout, TGeoMedium* medium, fstream* infoFile);
+
+TGeoVolume* MakeVacuum(Int_t iPart, Int_t nSects, Double_t* z, Double_t* rin, 
+		       Double_t* rout, TGeoMedium* medium, fstream* infoFile);
 
 // ============================================================================
 // ======                         Main function                           =====
@@ -124,11 +130,11 @@ void create_bpipe_geometry_v18c()
   // --------------------------------------------------------------------------
 
   // -------------  Load the necessary FairRoot libraries   -------------------
-  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-  basiclibs();
-  gSystem->Load("libGeoBase");
-  gSystem->Load("libParBase");
-  gSystem->Load("libBase");
+//  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
+//  basiclibs();
+//  gSystem->Load("libGeoBase");
+//  gSystem->Load("libParBase");
+//  gSystem->Load("libBase");
   // --------------------------------------------------------------------------
 
 
