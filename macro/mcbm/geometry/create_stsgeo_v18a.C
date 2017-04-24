@@ -106,6 +106,12 @@
 #include <iostream>
 #include "TGeoManager.h"
 
+#include "TGeoCompositeShape.h"
+#include "TGeoPara.h"
+#include "TGeoTube.h"
+#include "TGeoCone.h"
+#include "TGeoTrd2.h"
+
 
 // -------------   Steering variables       -----------------------------------
 
@@ -160,8 +166,31 @@ TGeoMedium*    gStsMedium        = NULL;  // will be set later
 TGeoManager*   gGeoMan           = NULL;  // will be set later
 // ----------------------------------------------------------------------------
 
-
-
+Int_t CreateSensors();
+Int_t CreateSectors();
+Int_t CreateLadders();
+void CheckVolume(TGeoVolume* volume);
+void CheckVolume(TGeoVolume* volume, fstream& file);
+Double_t BeamPipeRadius(Double_t z);
+TGeoVolume* ConstructCone(Double_t coneDz);
+TGeoVolume* ConstructFrameBox(const TString& name, TGeoVolume* frameBoxVol, Double_t x);
+TGeoVolume* ConstructFrameElement(const TString& name, TGeoVolume* frameBoxVol, Double_t x);
+TGeoVolume* ConstructSmallCone(Double_t coneDz);
+TGeoVolume* ConstructBigCone(Double_t coneDz);
+TGeoVolume* ConstructHalfLadder(const TString& name,
+                                Int_t nSectors,
+                                Int_t* sectorTypes,
+                                char align);
+TGeoVolume* ConstructLadder(const char* name,
+			    TGeoVolume* halfLadderU,
+			    TGeoVolume* halfLadderD,
+			    Double_t shiftZ);
+TGeoVolume* ConstructLadderWithGap(const char* name,
+                                   TGeoVolume* halfLadderU,
+                                   TGeoVolume* halfLadderD,
+                                   Double_t gapY);
+TGeoVolume* ConstructStation(const char* name, Int_t iStation, Int_t nLadders,
+			     Int_t* ladderTypes, Double_t rHole);
 
 // ============================================================================
 // ======                         Main function                           =====
@@ -316,10 +345,11 @@ void create_stsgeo_v18a(const char* geoTag="v18a")
   cout << endl << endl;
   cout << "===> Creating sectors...." << endl;
   infoFile << endl << "Sectors: " << endl;
+  TString name = "";
   Int_t nSectors = CreateSectors();
   for (Int_t iSector = 1; iSector <= nSectors; iSector++) {
     cout << endl;
-    TString name = Form("Sector%02d", iSector);
+    name = Form("Sector%02d", iSector);
     TGeoVolume* sector = gGeoMan->GetVolume(name);
     CheckVolume(sector);
     CheckVolume(sector, infoFile);
@@ -348,11 +378,11 @@ void create_stsgeo_v18a(const char* geoTag="v18a")
 
 
   // ----------------   Create stations   -------------------------------------
-  Int_t statPos[8] = {30., 40., 50., 60., 70., 80., 90., 100.};
+  Float_t statPos[8] = {30., 40., 50., 60., 70., 80., 90., 100.};
   cout << endl << endl;
   cout << "===> Creating stations...." << endl;
   infoFile << endl << "Stations: ";
-  Int_t nLadders = 0;
+  nLadders = 0;
   Int_t ladderTypes[20];
   Double_t statZ = 0.;
   Double_t rHole = 0.;
@@ -671,7 +701,7 @@ void create_stsgeo_v18a(const char* geoTag="v18a")
   TString geoFileName_ = "sts_";
   geoFileName_ = geoFileName_ + geoTag + "_geo.root";
 
-  TFile* geoFile = new TFile(geoFileName_, "RECREATE");
+  geoFile = new TFile(geoFileName_, "RECREATE");
   gGeoMan->Write();  // use this is you want GeoManager format in the output
   geoFile->Close();
 
@@ -708,7 +738,7 @@ Int_t CreateMedia() {
   Double_t density = 0.;
 
   // --- Material air
-  density = 1.205e-3.;  // [g/cm^3]
+  density = 1.205e-3;  // [g/cm^3]
   TGeoMixture* matAir = new TGeoMixture("sts_air", 3, density);
   matAir->AddElement(14.0067, 7, 0.755);      // Nitrogen
   matAir->AddElement(15.999,  8, 0.231);      // Oxygen
@@ -1378,7 +1408,7 @@ TGeoVolume* ConstructModule(const char* name,
     TGeoNode* sensor = sector->GetNode(iSensor);
 
     // --- Calculate position of sensor in module
-    Double_t* xSensTrans = sensor->GetMatrix()->GetTranslation();
+    const Double_t* xSensTrans = sensor->GetMatrix()->GetTranslation();
     Double_t sensorXpos = 0.;
     Double_t sensorYpos = sectorYpos + xSensTrans[1];
     Double_t sensorZpos = 0.;
@@ -1469,8 +1499,8 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
 			      sectorTypes[iSector]);
     TGeoVolume* sector = gGeoMan->GetVolume(sectorName);
     if ( ! sector )
-      Fatal("ConstructHalfLadder", Form("Volume %s not found", sectorName));
-    TGeoBBox* box = sector->GetShape();
+      Fatal("ConstructHalfLadder", Form("Volume %s not found", sectorName. Data()));
+    TGeoBBox* box = (TGeoBBox *)sector->GetShape();
     // --- Ladder x size equals largest sector x size
     ladderX = TMath::Max(ladderX, 2. * box->GetDX());
     // --- Ladder y size is sum of sector ysizes
@@ -1546,10 +1576,10 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
  **            halfLadderD      pointer to lower half ladder
  **            shiftZ           relative displacement along the z axis
  **/
- TGeoVolume* ConstructLadder(const char* name,
-			     TGeoVolume* halfLadderU,
-			     TGeoVolume* halfLadderD,
-			     Double_t shiftZ) {
+TGeoVolume* ConstructLadder(const char* name,
+			    TGeoVolume* halfLadderU,
+			    TGeoVolume* halfLadderD,
+			    Double_t shiftZ) {
 
   // --- Some variables
   TGeoBBox* shape = NULL;
@@ -1607,10 +1637,10 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
  **            halfLadderD      pointer to lower half ladder
  **            gapY             vertical gap
  **/
- TGeoVolume* ConstructLadderWithGap(const char* name,
-				    TGeoVolume* halfLadderU,
-				    TGeoVolume* halfLadderD,
-				    Double_t gapY) {
+TGeoVolume* ConstructLadderWithGap(const char* name,
+				   TGeoVolume* halfLadderU,
+				   TGeoVolume* halfLadderD,
+				   Double_t gapY) {
 
   // --- Some variables
   TGeoBBox* shape = NULL;
@@ -1673,12 +1703,13 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
  **            ladderTypes      array of ladder types
  **            rHole            radius of inner hole
  **/
- TGeoVolume* ConstructStation(const char* name, Int_t iStation, Int_t nLadders,
-			      Int_t* ladderTypes, Double_t rHole) {
+TGeoVolume* ConstructStation(const char* name, Int_t iStation, Int_t nLadders,
+			     Int_t* ladderTypes, Double_t rHole) {
 
   // --- Some local variables
   TGeoShape* statShape  = NULL;
   TGeoBBox* ladderShape = NULL;
+  TGeoBBox* shape       = NULL;
   TGeoVolume* ladder    = NULL;
   TString ladderName;
 
@@ -1693,8 +1724,8 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
     Int_t ladderType = ladderTypes[iLadder];
     ladderName = Form("Ladder%02d", ladderType);
     ladder = gGeoManager->GetVolume(ladderName);
-    if ( ! ladder ) Fatal("ConstructStation", 
-			  Form("Volume %s not found", ladderName.Data()));
+    if ( ! ladder )
+      Fatal("ConstructStation", Form("Volume %s not found", ladderName.Data()));
     shape = (TGeoBBox*) ladder->GetShape();
     statX += 2. * shape->GetDX();
     statY = TMath::Max(statY, 2. * shape->GetDY());
@@ -1801,7 +1832,7 @@ void CheckVolume(TGeoVolume* volume) {
 	   << setw(6) << 2. * shape->GetDY() << " x " 
 	   << setw(6) << 2. * shape->GetDZ() << ", position ( ";
       TGeoMatrix* matrix = node->GetMatrix();
-      Double_t* pos = matrix->GetTranslation();
+      const Double_t* pos = matrix->GetTranslation();
       cout << setfill(' ');
       cout << fixed << setw(8) << pos[0] << ", " 
 	   << setw(8) << pos[1] << ", "
