@@ -149,9 +149,10 @@ TGeoVolume* ConstructLadder(Int_t LadderIndex,
 			     Double_t gapY,
                              Double_t shiftZ);
 TGeoVolume* ConstructStation(Int_t iStation, 
-                             Int_t nLadders,
-                             Int_t* ladderTypes, 
-                             Double_t rHole);
+                              Int_t nLadders,
+			      Int_t* ladderTypes, 
+                              Double_t rHole,
+                              Int_t zStation);
 void CheckVolume(TGeoVolume* volume);
 void CheckVolume(TGeoVolume* volume, fstream& file);
 Double_t BeamPipeRadius(Double_t z);
