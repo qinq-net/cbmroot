@@ -705,13 +705,18 @@ void CbmL1::Reconstruct(CbmEvent* event)
     for( unsigned int iH = 0; iH < (*algo->vStsHits).size(); ++iH ) 
     { 
       L1StsHit &h = const_cast<L1StsHit &>( (*algo->vStsHits)[iH] );
-      
+
+#ifdef USE_EVENT_NUMBER        
       h.n = -1;
+#endif      
+      
       if (vStsHits[iH].mcPointIds.size() == 0) continue; 
 
       const CbmL1MCPoint &mcp = vMCPoints[vStsHits[iH].mcPointIds[0]]; 
 
+#ifdef USE_EVENT_NUMBER 
       h.n = mcp.event;
+#endif      
       
       const int ista = (*algo->vSFlag)[h.f]/4; 
       const L1Station &sta = algo->vStations[ista]; 
@@ -787,12 +792,18 @@ const_cast<L1Strip &> ((*algo->vStsStripsB)[h.b]) = idet * ( - sta.yInfo.cos_phi
 
   for( unsigned int iH = 0; iH < (*algo->vStsHits).size(); ++iH ) 
   {   
-    L1StsHit &h = const_cast<L1StsHit &>( (*algo->vStsHits)[iH] );    
-    h.n = -1;
+    L1StsHit &h = const_cast<L1StsHit &>( (*algo->vStsHits)[iH] );  
 
+#ifdef USE_EVENT_NUMBER    
+    h.n = -1;
+#endif 
+    
     if (vStsHits[iH].mcPointIds.size() == 0) continue; 
     const CbmL1MCPoint &mcp = vMCPoints[vStsHits[iH].mcPointIds[0]]; 
+    
+#ifdef USE_EVENT_NUMBER    
     h.n = mcp.event;
+#endif     
   } 
 
   for( vector<CbmL1MCTrack>::iterator i = vMCTracks.begin(); i != vMCTracks.end(); ++i){
@@ -1073,7 +1084,10 @@ void CbmL1::WriteSTAPAlgoData()  // must be called after ReadEvent
     for (int i = 0; i < n; i++){
       fadata  << static_cast<int>((*algo->vStsHits)[i].f) << " ";
       fadata  << static_cast<int>((*algo->vStsHits)[i].b) << " ";
+#ifdef USE_EVENT_NUMBER        
       fadata  << static_cast<unsigned short int>((*algo->vStsHits)[i].n) << " ";
+#endif       
+      
       fadata  << static_cast<int>((*algo->vStsHits)[i].iz)<< " ";
      // fadata  << (*algo->vStsHits)[i].time << endl;
 

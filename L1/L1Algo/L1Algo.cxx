@@ -268,9 +268,15 @@ L1HitPoint L1Algo::CreateHitPoint(const L1StsHit &hit, char ista)
   fscal x, y;
   StripsToCoor( u, v, x, y, sta);
   const float &z = (*vStsZPos)[hit.iz];
-  const int &n1 = hit.n;
+  
+  int n1 =0;
+  
+#ifdef USE_EVENT_NUMBER   
+   n1 = hit.n;
+#endif   
+  
   const float &time = hit.t_reco;
-  return  L1HitPoint(x,y,z,v,u, time, n1, hit.time1);
+  return  L1HitPoint(x,y,z,v,u, time, n1, hit.t_reco);
 }
 
 void L1Algo::CreateHitPoint(const L1StsHit &hit, char ista, L1HitPoint &point)
@@ -283,10 +289,19 @@ void L1Algo::CreateHitPoint(const L1StsHit &hit, char ista, L1HitPoint &point)
     StripsToCoor( u, v, x, y, sta);
     const float &z = (*vStsZPos)[hit.iz];
     const float &time = hit.t_reco;
-    const int &n1 = hit.n;
     
-//     point.Set(x,y,z,v.f,u.f, time, n1, hit.time1, hit.t_er );
-    point.Set(x,y,z,v.f,u.f, time, n1, hit.time1, 2.9 ); // TODO put correct time error from the hit
+    int n1 =0;
+
+    
+#ifdef USE_EVENT_NUMBER     
+    const int &n1 = hit.n;
+#endif    
+    
+     point.Set(x,y,z,v.f,u.f, 
+time, n1, 
+//hit.t_reco,
+hit.t_er );
+  //  point.Set(x,y,z,v.f,u.f, time, n1, hit.time1, 2.9 ); // TODO put correct time error from the hit
 }
 
 //   bool L1Algo::SortTrip(TripSort const& a, TripSort const& b) {

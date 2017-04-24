@@ -14,25 +14,34 @@ class L1StsHit
   public:
   TStripI f, b; // front and back strip indices
   TZPosI iz; // index of z coor. in L1Algo::vStsZPos
+  
+#ifdef USE_EVENT_NUMBER   
     int n;
-//    std::vector<L1Branch*> CandidatesB;
-//    std::vector<L1Branch*> CandidatesF;
-// short int CandF;
-// short int CandB;
-    bool used;
+#endif 
+    
     float t_reco;
     float t_er;
-    float t_mc;
-    int ista;
-    float time1, time2;
-   
- // unsigned short int n; // number of event
+
+   // int ista;
+
   
-  L1StsHit():f(0),b(0),iz(0), n(0),used(0),t_reco(0.f),ista(-1){
-//   CandidatesB.resize(0, 0);
-//   CandidatesF.resize(0, 0);
+  L1StsHit():f(0),b(0),iz(0), 
+  
+#ifdef USE_EVENT_NUMBER  
+  n(0),
+#endif  
+  
+  
+  t_reco(0.f){
+
   }
-  L1StsHit(L1StsHit &h,  /*short*/ int sh, /*short*/ int shB):f(h.f + sh),b(h.b + shB),iz(0), n(0),used(0),t_reco(0.f),ista(-1) {}
+  L1StsHit(L1StsHit &h,  /*short*/ int sh, /*short*/ int shB):f(h.f + sh),b(h.b + shB),iz(0), 
+  
+#ifdef USE_EVENT_NUMBER     
+  n(0),
+#endif   
+  
+t_reco(0.f) {}
 
 };
 

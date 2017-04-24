@@ -24,7 +24,7 @@ class L1AlgoDraw;
 #ifndef TRACKS_FROM_TRIPLETS
 #define EXTEND_TRACKS
 #endif
-#define USE_EVENT_NUMBER
+//#define USE_EVENT_NUMBER
 //#endif
 #define MERGE_CLONES
 
@@ -149,6 +149,7 @@ class L1Algo{
       fu_back3[i].reserve(MaxPortionTriplets/fvecLen);
       fz_pos3[i].reserve(MaxPortionTriplets/fvecLen);
       fTimeR[i].reserve(MaxPortionTriplets/fvecLen);
+      fTimeREr[i].reserve(MaxPortionTriplets/fvecLen);
       
       for (int j=0; j<12; j++) TripletsLocal1[j][i].resize(200000);
     }
@@ -318,7 +319,7 @@ class L1Algo{
     
     vector<THitI> fhitsl_3[nTh], fhitsm_3[nTh], fhitsr_3[nTh];
     
-    nsL1::vector<fvec>::TSimd fu_front3[nTh], fu_back3[nTh], fz_pos3[nTh], fTimeR[nTh];
+    nsL1::vector<fvec>::TSimd fu_front3[nTh], fu_back3[nTh], fz_pos3[nTh], fTimeR[nTh], fTimeREr[nTh];
          vector< float >  fMcDataHit2;
     vector< float >  fMcDataHit;
 
@@ -446,7 +447,8 @@ class L1Algo{
                 Tindex start_lh, Tindex n1_l,  L1HitPoint *StsHits_l, 
                   // output
                 fvec *u_front_l, fvec *u_back_l,  fvec *zPos_l,
-                THitI *hitsl, fvec *HitTime_l, fvec *Event_l
+                THitI *hitsl, fvec *HitTime_l, fvec *Event_l,
+                fvec *HitTimeEr_l
                 );
 
           /// Get the field approximation. Add the target to parameters estimation. Propagate to middle station.
@@ -456,7 +458,8 @@ class L1Algo{
 
                 fvec *u_front_l, fvec *u_back_l,  fvec *zPos_l, fvec *HitTime_l,
                   // output
-                L1TrackPar *T_1, L1FieldRegion *fld_1
+                L1TrackPar *T_1, L1FieldRegion *fld_1,
+                fvec *HitTimeEr_l
                );
   
           /// Find the doublets. Reformat data in the portion of doublets.
@@ -497,7 +500,7 @@ class L1Algo{
                 nsL1::vector<L1TrackPar>::TSimd &T_3,
                 vector<THitI> &hitsl_3,  vector<THitI> &hitsm_3,  vector<THitI> &hitsr_3,
                 nsL1::vector<fvec>::TSimd &u_front_3, nsL1::vector<fvec>::TSimd &u_back_3, nsL1::vector<fvec>::TSimd &z_Pos_3,
-                nsL1::vector<fvec>::TSimd &timeR
+                nsL1::vector<fvec>::TSimd &timeR,  nsL1::vector<fvec>::TSimd &timeREr
                 );
           
           /// Add the right hits to parameters estimation.
@@ -507,7 +510,8 @@ class L1Algo{
                 nsL1::vector<fvec>::TSimd &u_front_3, nsL1::vector<fvec>::TSimd &u_back_3, nsL1::vector<fvec>::TSimd &z_Pos_3,
                 nsL1::vector<fvec>::TSimd &timeR,
                   // output
-                nsL1::vector<L1TrackPar>::TSimd &T_3
+                nsL1::vector<L1TrackPar>::TSimd &T_3,
+                nsL1::vector<fvec>::TSimd &timeREr
                );
 
           /// Refit Triplets.
@@ -591,7 +595,7 @@ class L1Algo{
   void GuessVec( L1TrackParFit &t, fvec *xV, fvec *yV, fvec *zV, fvec *Sy, fvec *wV, int NHits, fvec *zCur = 0 );
   
   void FilterFirst( L1TrackPar &track,fvec &x, fvec &y, L1Station &st );
-  void FilterFirst( L1TrackParFit &track,fvec &x, fvec &y, fvec& t, L1Station &st );
+  void FilterFirst( L1TrackParFit &track,fvec &x, fvec &y, fvec& t, fvec& dt, L1Station &st );
   
 #ifdef TBB
   enum { 

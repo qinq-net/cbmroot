@@ -76,7 +76,7 @@ inline void L1Algo::f10(  // input
                         Tindex start_lh, Tindex n1_l,  L1HitPoint *StsHits_l,
                         // output
                         fvec *u_front_l, fvec *u_back_l, fvec *zPos_l,
-                        THitI* hitsl, fvec *HitTime_l, fvec *Event_l
+                        THitI* hitsl, fvec *HitTime_l, fvec *Event_l, fvec *HitTimeEr_l
                         )
 {
   const Tindex &end_lh = start_lh+n1_l;
@@ -93,6 +93,7 @@ inline void L1Algo::f10(  // input
 #endif 
     
     HitTime_l[i1_V][i1_4]=hitl.time;
+    HitTimeEr_l[i1_V][i1_4]=hitl.timeEr;
 
     hitsl[i1] = ilh;
     u_front_l[i1_V][i1_4] = hitl.U();
@@ -111,7 +112,8 @@ inline void L1Algo::f11(  /// input 1st stage of singlet search
                         // output
                         //                 L1TrackPar *T_1,
                         L1TrackPar *T_1,
-                        L1FieldRegion *fld_1
+                        L1FieldRegion *fld_1,
+                        fvec *HitTimeEr_l
                         )
 {
   L1Station &stal = vStations[istal];
@@ -135,6 +137,7 @@ inline void L1Algo::f11(  /// input 1st stage of singlet search
     fvec xl, yl; // left(1-st) hit coor
     fvec zl = zPos_l   [i1_V];
     fvec &time = HitTime_l[i1_V];
+    fvec &timeEr = HitTimeEr_l[i1_V];
     const fvec &dzli = 1./(zl-targZ);
     
     StripsToCoor(u, v, xl, yl, stal);
@@ -183,7 +186,7 @@ inline void L1Algo::f11(  /// input 1st stage of singlet search
     T.C50 = T.C51 = T.C52 = T.C53 = T.C54 = 0;
     T.C22 = T.C33 = MaxSlope*MaxSlope/9.; 
     T.C44 = MaxInvMom/3.*MaxInvMom/3.;
-    T.C55 = TimePrecision;
+    T.C55 = timeEr*timeEr;
     
     T.t = time;
     
@@ -318,7 +321,7 @@ inline void L1Algo::f20(  // input
       
         
       // check y-boundaries
-    //  if (fabs(time-hitm.time)>sqrt(timeError+hitm.timeEr*hitm.timeEr)*4) continue;        
+      if (fabs(time-hitm.time)>sqrt(timeError+hitm.timeEr*hitm.timeEr)*4) continue;        
         
 #ifdef USE_EVENT_NUMBER
       if ((Event[i1_V][i1_4]!=hitm.n)) continue;
@@ -330,8 +333,8 @@ inline void L1Algo::f20(  // input
       
       L1ExtrapolateTime( T1_new, dz);
       
-      if (fabs(T1_new.t[i1_4]-hitm.time)>sqrt(T1_new.C55[i1_4]+hitm.timeEr*hitm.timeEr)*4) continue; 
-      if (fabs(T1_new.t[i1_4]-hitm.time)>sqrt(2.9*2.9)) continue; 
+   //   if (fabs(T1_new.t[i1_4]-hitm.time)>sqrt(T1_new.C55[i1_4]+hitm.timeEr*hitm.timeEr)*4) continue; 
+   //   if (fabs(T1_new.t[i1_4]-hitm.time)>sqrt(2.9*2.9)*4) continue; 
 //       const fscal &dt_est2 = Pick_m22[i1_4] * fabs(T1_new.C55[i1_4] + hitm.timeEr*hitm.timeEr);      
 //       const fscal &dt = hitm.time - T1_new.t[i1_4];
 //       if ( dt*dt > dt_est2 && dt < 0  ) continue;
@@ -370,7 +373,7 @@ inline void L1Algo::f20(  // input
 #endif 
       L1FilterChi2( stam.backInfo,  x, y, C00, C10, C11, chi2, hitm.V() );
       
-      FilterTime( T1_new, hitm.time, sqrt(TimePrecision));
+      FilterTime( T1_new, hitm.time, hitm.timeEr);
      
 #ifdef DO_NOT_SELECT_TRIPLETS
       if (isec!=TRACKS_FROM_TRIPLETS_ITERATION)
@@ -407,7 +410,7 @@ inline void L1Algo::f30(  // input
                         nsL1::vector<L1TrackPar>::TSimd &T_3,
                         vector<THitI> &hitsl_3,  vector<THitI> &hitsm_3,  vector<THitI> &hitsr_3,
                         nsL1::vector<fvec>::TSimd &u_front_3, nsL1::vector<fvec>::TSimd &u_back_3, nsL1::vector<fvec>::TSimd &z_Pos_3,
-                        nsL1::vector<fvec>::TSimd &timeR
+                        nsL1::vector<fvec>::TSimd &timeR, nsL1::vector<fvec>::TSimd &timeREr
                         )
 {
   THitI hitsl_2[fvecLen];
@@ -428,6 +431,7 @@ inline void L1Algo::f30(  // input
   fvec u_back_2;
   fvec zPos_2;
   fvec timeM;
+  fvec timeMEr;
 
 
   // ---- Add the middle hits to parameters estimation. Propagate to right station. ----
@@ -459,6 +463,7 @@ inline void L1Algo::f30(  // input
         u_back_2 [n2_4] = hitm.V();
         zPos_2   [n2_4] = hitm.Z();
         timeM    [n2_4] = hitm.time;
+        timeMEr  [n2_4] = hitm.timeEr;
         
         hitsl_2[n2_4] = hitsl_1[i1];
         hitsm_2_tmp[n2_4] = hitsm_2[i2];
@@ -471,7 +476,7 @@ inline void L1Algo::f30(  // input
       L1ExtrapolateLine( T2, zPos_2 );
       L1Filter( T2, stam.frontInfo, u_front_2 );      
       L1Filter( T2, stam.backInfo,  u_back_2 );
-      FilterTime( T2, timeM, sqrt(TimePrecision));
+      FilterTime( T2, timeM, timeMEr);
 
       if ( ( isec != kAllPrimEIter ) && ( isec != kAllSecEIter ) ) 
       {
@@ -537,7 +542,7 @@ inline void L1Algo::f30(  // input
           
           if (fabs(T2.t[i2_4]-hitr.time)>sqrt(T2.C55[i2_4]+hitr.timeEr)*4) continue;
           
-          if (fabs(T2.t[i2_4]-hitr.time)>sqrt(2.9*2.9)) continue;
+       //   if (fabs(T2.t[i2_4]-hitr.time)>sqrt(2.9*2.9)*4) continue;
           
           // - check whether hit belong to the window ( track position +\- errors ) -
           // check lower boundary
@@ -566,7 +571,7 @@ inline void L1Algo::f30(  // input
           
           L1TrackPar T = T2;
           
-          FilterTime( T, hitr.time, sqrt(TimePrecision));
+          FilterTime( T, hitr.time, hitr.timeEr);
 #ifdef DO_NOT_SELECT_TRIPLETS
           if (isec!=TRACKS_FROM_TRIPLETS_ITERATION)
 #endif
@@ -588,6 +593,7 @@ inline void L1Algo::f30(  // input
           u_back_3 [n3_V][n3_4] = hitr.V();
           z_Pos_3  [n3_V][n3_4] = zr;
           timeR    [n3_V][n3_4] = hitr.time;
+          timeREr  [n3_V][n3_4] = hitr.timeEr;
           
           n3++;
           n3_V = n3/fvecLen;
@@ -613,7 +619,8 @@ inline void L1Algo::f31(  // input
                         nsL1::vector<fvec>::TSimd &timeR,
                         // output
                         //                L1TrackPar *T_3
-                        nsL1::vector<L1TrackPar>::TSimd &T_3
+                        nsL1::vector<L1TrackPar>::TSimd &T_3,
+                        nsL1::vector<fvec>::TSimd &timeREr
                         )
 {
   for( Tindex i3_V=0; i3_V<n3_V; ++i3_V)
@@ -624,7 +631,7 @@ inline void L1Algo::f31(  // input
     L1ExtrapolateLine( T_3[i3_V], z_Pos[i3_V] );
     L1Filter( T_3[i3_V], star.frontInfo, u_front[i3_V] );    // 2.1/100 sec
     L1Filter( T_3[i3_V], star.backInfo,  u_back [i3_V] );   // 2.0/100 sec
-    FilterTime( T_3[i3_V], timeR[i3_V], sqrt(TimePrecision));
+    FilterTime( T_3[i3_V], timeR[i3_V], timeREr[i3_V]);
   }
 }
 
@@ -1114,6 +1121,7 @@ inline void L1Algo::DupletsStaPort(  /// creates duplets: input: @istal - start 
     fvec u_front[Portion/fvecLen], u_back[Portion/fvecLen];
     fvec zPos[Portion/fvecLen];
     fvec HitTime[Portion/fvecLen];
+    fvec HitTimeEr[Portion/fvecLen];
     fvec Event[Portion/fvecLen];
     
     /// prepare the portion of left hits data    
@@ -1123,7 +1131,7 @@ inline void L1Algo::DupletsStaPort(  /// creates duplets: input: @istal - start 
         (ip - portionStopIndex[istal+1]) * Portion, n1, vStsHits_l,
         // output
         u_front, u_back, zPos,
-        hitsl_1, HitTime, Event
+        hitsl_1, HitTime, Event, HitTimeEr
         );
     
     for (Tindex i = 0; i < n1; ++i)
@@ -1139,7 +1147,7 @@ inline void L1Algo::DupletsStaPort(  /// creates duplets: input: @istal - start 
         
         u_front, u_back, zPos, HitTime,
         // output
-        T_1, fld_1
+        T_1, fld_1, HitTimeEr
         );
     
     /// Find the doublets. Reformat data in the portion of doublets.
@@ -1239,6 +1247,7 @@ inline void L1Algo::TripletsStaPort(  /// creates triplets: input: @istal - star
     nsL1::vector<fvec>::TSimd &u_back3 = fu_back3[Thread];
     nsL1::vector<fvec>::TSimd &z_pos3 = fz_pos3[Thread];
     nsL1::vector<fvec>::TSimd &timeR = fTimeR[Thread];
+    nsL1::vector<fvec>::TSimd &timeREr = fTimeR[Thread];
     
     T_3.clear();
     hitsl_3.clear();
@@ -1248,6 +1257,7 @@ inline void L1Algo::TripletsStaPort(  /// creates triplets: input: @istal - star
     u_back3.clear();
     z_pos3.clear();
     timeR.clear();
+    timeREr.clear();
     
     /// Find the triplets(right hit). Reformat data in the portion of triplets.
     
@@ -1269,7 +1279,7 @@ inline void L1Algo::TripletsStaPort(  /// creates triplets: input: @istal - star
         T_3,
         hitsl_3, hitsm_3, hitsr_3,
         u_front3, u_back3, z_pos3,
-        timeR
+        timeR, timeREr
         );
     
 
@@ -1291,7 +1301,7 @@ inline void L1Algo::TripletsStaPort(  /// creates triplets: input: @istal - star
         u_front3, u_back3, z_pos3,
         timeR,
         // output
-        T_3
+        T_3, timeREr
         );
 
     
@@ -1482,15 +1492,15 @@ void L1Algo::CATrackFinder()
 #endif
     
     
-  float yStep = 0.5/sqrt( nDontUsedHits); // empirics. 0.01*sqrt(2374) ~= 0.5
+  float yStep = 0.55/sqrt( nDontUsedHits/10); // empirics. 0.01*sqrt(2374) ~= 0.5
   if (yStep > 0.3) yStep = 0.3;
   float xStep = yStep*3;
   //  const float hitDensity = sqrt( nDontUsedHits );
         
   //     float yStep = 0.7*4/hitDensity; // empirics. 0.01*sqrt(2374) ~= 0.5
   //     if (yStep > 0.3)
-  //      yStep = 1.25;
-  //      xStep = 2.05;
+//         yStep = 1.25;
+//         xStep = 2.05;
         
   vStsHitsUnused = &vStsDontUsedHits_Buf;
         
@@ -1702,11 +1712,7 @@ void L1Algo::CATrackFinder()
         
     ///   stage for triplets creation
         
-#ifdef XXX
-    TStopwatch c_timer;
-    TStopwatch c_time;
-    c_timer.Start();
-#endif
+
 
       
         
@@ -1731,6 +1737,12 @@ void L1Algo::CATrackFinder()
     
     hitsmG_2.reserve(800);
     i1G_2.reserve(800);
+    
+    #ifdef XXX
+    TStopwatch c_timer;
+    TStopwatch c_time;
+    c_timer.Start();
+#endif
         
     for (int istal = NStations-2; istal >= FIRSTCASTATION; istal--) //  //start downstream chambers
     {
@@ -1747,6 +1759,12 @@ void L1Algo::CATrackFinder()
                 
         hitsm_2.clear();
         i1_2.clear();
+        
+        TStopwatch timerP;
+        
+
+     
+     timerP.Start();
         
         
                 
@@ -1769,6 +1787,9 @@ void L1Algo::CATrackFinder()
                         );
         
 
+        
+        
+
 
         Tindex nstaltriplets=0;
                 
@@ -1789,6 +1810,11 @@ void L1Algo::CATrackFinder()
                         ip-portionStopIndex[istal+1]
                         );
         
+     timerP.Stop();
+     ti[isec]["save"] = timerP;        
+     timerP.Start();    
+
+        
 
                 
         if ( (isec == kFastPrimJumpIter) || (isec == kAllPrimJumpIter) || (isec == kAllSecJumpIter) ) 
@@ -1796,6 +1822,7 @@ void L1Algo::CATrackFinder()
           Tindex nG_2;
           hitsmG_2.clear();
           i1G_2.clear();
+               timerP.Start();
               
           DupletsStaPort(  // input
                           istal, istal + 2,
@@ -1812,6 +1839,10 @@ void L1Algo::CATrackFinder()
                           i1G_2,
                           hitsmG_2
                           );
+          
+                       timerP.Stop();
+     ti[isec]["copy"] = timerP;        
+     timerP.Start();
           
           TripletsStaPort(  // input
                           istal, istal + 1,  istal + 3,
@@ -1840,7 +1871,28 @@ void L1Algo::CATrackFinder()
                           lmDuplets[istal+2],
                           ip-portionStopIndex[istal+1]
                           );
-        }                 
+          
+                                 timerP.Stop();
+     ti[isec]["delete"] = timerP;        
+     timerP.Start();
+        }   
+        
+//         static int size1 =  0;
+//         static int size2 =  0;
+//         static int size3 =  0;
+//         static int size4 =  0;
+//         
+//         if (hitsm_2.size()>size1) size1=hitsm_2.size();
+//          if (i1_2.size()>size2) size2=i1_2.size();
+//         
+//         cout<<size1<<" hitsm_2.size()"<<endl;
+//         cout<<size2<<" i1_2.size()"<<endl;
+//         
+//         if (hitsmG_2.size()>size3) size3=hitsmG_2.size();
+//         if (i1G_2.size()>size4) size4=i1G_2.size();
+//         
+//         cout<<size3<<" hitsmG_2.size()"<<endl;
+//         cout<<size4<<" i1G_2.size()"<<endl;
       }//
     }
         
