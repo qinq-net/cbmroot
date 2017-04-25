@@ -18,11 +18,7 @@
 #include "CbmStsHit.h"
 #include "CbmStsDigi.h"
 
-#include "CbmMCDataArray.h"
-#include "CbmMCDataManager.h"
-#include "CbmMCTrack.h"
-#include "CbmMCEventList.h"
-#include "CbmTrackMatchNew.h"
+
 
 using namespace std;
 
@@ -30,8 +26,6 @@ using namespace std;
 // =====   Constructor   =====================================================
 CbmBuildEventsFromTracksReal::CbmBuildEventsFromTracksReal() :
 	FairTask("CbmBuildEventsFromTracksReal"),
-	fStsDigis(NULL),
-	fMCTracks(NULL),
 	fStsTracks(NULL),
 	fEvents(NULL)
 	//fNofEntries(0)
@@ -55,30 +49,8 @@ InitStatus CbmBuildEventsFromTracksReal::Init() {
   FairRootManager* ioman = FairRootManager::Instance();
   assert ( ioman );
 
-  CbmMCDataManager* mcManager = (CbmMCDataManager*) ioman->GetObject("MCDataManager");
-  if( mcManager == NULL )
-    LOG(FATAL) << GetName() << ": No CbmMCDataManager!" << FairLogger::endl;
-  
-  fMCTracks = (CbmMCDataArray*) mcManager->InitBranch("MCTrack");
-  if ( fMCTracks == NULL )
-    LOG(FATAL) << GetName() << ": No MCTrack data!" << FairLogger::endl;
-  
-  fEventList = (CbmMCEventList*) ioman->GetObject("MCEventList.");
-  if(fEventList==0)
-  {
-    Error("CbmKFParticleFinderQA::Init","MC Event List not found!");
-    return kERROR;
-  }
-
   fStsTracks=(TClonesArray*) ioman->GetObject("StsTrack");
   assert ( fStsTracks );
-
-  fStsTrackMatchArray = (TClonesArray*) ioman->GetObject("StsTrackMatch");
-  if(fStsTrackMatchArray==0)
-  {
-    Error("CbmKFParticleFinderQA::Init","track match array not found!");
-    return kERROR;
-  }
   
 
   // Register output array (CbmStsDigi)
@@ -216,23 +188,6 @@ void CbmBuildEventsFromTracksReal::Exec(Option_t*) {
 
   timer.Stop();
 }
-
-
-
-struct CbmBuildEventMCTrack
-{
-  CbmBuildEventMCTrack():
-    fMCFileId(-1), fMCEventId(-1), fMCTrackId(-1), fRecoTrackId(), fRecoEventId()
-  {
-  }
-  
-  int fMCFileId;
-  int fMCEventId;
-  int fMCTrackId;
-  
-  vector<int> fRecoTrackId;
-  vector<int> fRecoEventId;
-};
 
 ClassImp(CbmBuildEventsFromTracksReal)
 
