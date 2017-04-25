@@ -19,7 +19,7 @@ class TClonesArray;
 class TH1F;
 class TH2F;
 class TString;
-
+class CbmMCDataArray;
 
 class CbmHadronAnalysis : public FairTask {
 
@@ -44,13 +44,18 @@ private:
     CbmTofGeoHandler *fGeoHandler;
     CbmTofCell       *fCellInfo;
 
-    TClonesArray *fMCTracks;      // MC tracks
-    TClonesArray *fStsPoints;     // STS points
-    TClonesArray *fStsHits;       // STS hits
-    TClonesArray *fStsTracks;     // STS tracks
-    TClonesArray *fTofPoints;     // TOF points
-    TClonesArray *fTofHits;       // TOF hits
-    TClonesArray *fTofDigis;      // TOF Digis
+    CbmMCDataArray *fMCTracks;      // MC tracks
+    CbmMCDataArray *fStsPoints;     // STS points
+    TClonesArray *fMCTracksColl;    // MC tracks
+    TClonesArray *fStsPointsColl;   // STS points
+    TClonesArray *fStsHits;         // STS hits
+    TClonesArray *fStsClusters;     // STS clusters
+    TClonesArray *fStsTracks;       // STS tracks
+    TClonesArray *fStsDigis;        // STS digis
+    TClonesArray *fStsDigiMatchColl;  // TOF Matched Digis
+    TClonesArray *fTofPoints;       // TOF points
+    TClonesArray *fTofHits;         // TOF hits
+    TClonesArray *fTofDigis;        // TOF Digis
     TClonesArray *fTofDigiMatchColl;  // TOF Matched Digis
     TClonesArray *fTofDigiMatchPointsColl;  // TOF Matched Digi Points    
     TClonesArray *fGlobalTracks;  // Global tracks
@@ -416,9 +421,12 @@ private:
     TH1F* fhTofTrkDxsel;
     TH1F* fhTofTrkDysel;
 
+    Bool_t bRecSec;
+
     void CreateHistogramms();
     InitStatus ReadPdfFile();
     InitStatus ReadFlowFile();
+    void ReconstructSecondaries();
 
     CbmHadronAnalysis(const CbmHadronAnalysis&);
     CbmHadronAnalysis operator=(const CbmHadronAnalysis&);
@@ -452,6 +460,8 @@ public:
     inline Float_t GetFlowMinPtm() const{ return fFlowMinPtm; }
     inline Float_t GetBSelMin() const   { return fBSelMin; }
     inline Float_t GetBSelMax() const   { return fBSelMax; }
+
+    inline void SetRecSec(Bool_t val)   { bRecSec=val; }
 
     ClassDef(CbmHadronAnalysis, 1);
 };

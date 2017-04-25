@@ -16,9 +16,18 @@ using namespace std;
 
 #include "FairRootManager.h"
 #include "FairMCEventHeader.h"
+#include "FairMCPoint.h"
+#include "CbmCluster.h"
+#include "CbmDetectorList.h"
+#include "CbmDigi.h"
+#include "CbmLink.h"
+#include "CbmMCDataArray.h"
+#include "CbmMCDataManager.h"
 #include "CbmMCTrack.h"
 #include "CbmStsTrack.h"
 #include "CbmStsHit.h"
+#include "CbmStsCluster.h"
+#include "CbmStsDigi.h"
 #include "CbmStsPoint.h"
 #include "CbmTofPoint.h"
 #include "CbmTofHit.h"
@@ -42,6 +51,12 @@ TClonesArray* fTofTracks; // CbmTofTrack array
 #define M2PROT 0.88035435
 #define clight 29.9792
 #define MinWallDist 550.
+
+    Int_t nMCTracks=0, nTofPoints=0, nTofHits=0;
+    Int_t nTofTracks=0;
+    Int_t nGlobTracks=0;
+    Int_t NMASS=3;
+    Float_t refMass[3]={0.139, 0.494, 0.938};
 
 //___________________________________________________________________
 //
@@ -68,10 +83,15 @@ CbmHadronAnalysis::CbmHadronAnalysis()
     fMCEventHeader(NULL),
     fGeoHandler(NULL),
     fCellInfo(NULL),
-    fMCTracks(NULL),
+    fMCTracks(NULL), 
     fStsPoints(NULL),
+    fMCTracksColl(NULL),
+    fStsPointsColl(NULL),
     fStsHits(NULL),
+    fStsClusters(NULL),
     fStsTracks(NULL),
+    fStsDigis(NULL),
+    fStsDigiMatchColl(NULL),
     fTofPoints(NULL),
     fTofHits(NULL),
     fTofDigis(NULL),
@@ -397,7 +417,8 @@ CbmHadronAnalysis::CbmHadronAnalysis()
     fhTofTrkDx(NULL),
     fhTofTrkDy(NULL),
     fhTofTrkDxsel(NULL),
-    fhTofTrkDysel(NULL)
+    fhTofTrkDysel(NULL),
+    bRecSec(kFALSE)
 {
   CreateHistogramms();
   cout << "CbmHadronAnalysis: Task started " << endl;
@@ -425,8 +446,13 @@ CbmHadronAnalysis::CbmHadronAnalysis(const char* name, Int_t verbose)
     fCellInfo(NULL),
     fMCTracks(NULL),
     fStsPoints(NULL),
+    fMCTracksColl(NULL),
+    fStsPointsColl(NULL),
     fStsHits(NULL),
+    fStsClusters(NULL),
     fStsTracks(NULL),
+    fStsDigis(NULL),
+    fStsDigiMatchColl(NULL),
     fTofPoints(NULL),
     fTofHits(NULL),
     fTofDigis(NULL),
@@ -752,7 +778,8 @@ CbmHadronAnalysis::CbmHadronAnalysis(const char* name, Int_t verbose)
     fhTofTrkDx(NULL),
     fhTofTrkDy(NULL),
     fhTofTrkDxsel(NULL),
-    fhTofTrkDysel(NULL)
+    fhTofTrkDysel(NULL),
+    bRecSec(kFALSE)
 {
     CreateHistogramms();
 }
@@ -1211,12 +1238,6 @@ InitStatus CbmHadronAnalysis::Init()
 	    << "no MC Header Info" << endl;
     }
 
-    fMCTracks = (TClonesArray*) rootMgr->GetObject("MCTrack");
-    if(NULL == fMCTracks) {
-	cout << "-W- CbmHadronAnalysis::Init : "
-            << "no MC track array!" << endl;
-    }
-
     fTofPoints = (TClonesArray*) rootMgr->GetObject("TofPoint");
     if(NULL == fTofPoints) {
 	cout << "-W- CbmHadronAnalysis::Init : "
@@ -1228,7 +1249,7 @@ InitStatus CbmHadronAnalysis::Init()
    {
       LOG(ERROR)<<"CbmHadronAnalysis::RegisterInputs => Could not get the TofDigi TClonesArray!!!"<<FairLogger::endl;
    } // if( NULL == fTofDigis)
-
+   else {
     fTofDigiMatchColl = (TClonesArray*) rootMgr->GetObject("TofDigiMatch");
     if(NULL == fTofDigiMatchColl) {
 	cout << "-I- CbmHadronAnalysis::Init : "
@@ -1239,7 +1260,9 @@ InitStatus CbmHadronAnalysis::Init()
     if(NULL == fTofDigiMatchPointsColl) {
 	cout << "-I- CbmHadronAnalysis::Init : "
 	    << "no TOF digiMatchPoints array!" << endl;
+
     }
+   }
 
     fTofHits = (TClonesArray*) rootMgr->GetObject("TofHit");
     if(NULL == fTofHits) {
@@ -1275,15 +1298,48 @@ InitStatus CbmHadronAnalysis::Init()
 	cout << "-W- CbmHadronAnalysis::Init : "
 	    << "no STS Hit array!" << endl;
     }
-    fStsPoints = (TClonesArray*) rootMgr->GetObject("StsPoint");
-    if(NULL == fStsPoints) {
+    fStsClusters = (TClonesArray*) rootMgr->GetObject("StsCluster");
+    if(NULL == fStsClusters) {
 	cout << "-W- CbmHadronAnalysis::Init : "
-	    << "no STS Point array!" << endl;
+	    << "no STS Cluster array!" << endl;
     }
+    fStsDigis = (TClonesArray*) rootMgr->GetObject("StsDigi");
+    if(NULL == fStsDigis) {
+	cout << "-W- CbmHadronAnalysis::Init : "
+	    << "no STS Digi array!" << endl;
+    }
+    fStsDigiMatchColl = (TClonesArray*) rootMgr->GetObject("StsDigiMatch");
+    if(NULL == fStsDigiMatchColl) {
+	cout << "-W- CbmHadronAnalysis::Init : "
+	    << "no STS DigiMatch array!" << endl;
+    }
+
     fPrimVertex = (CbmVertex*) rootMgr->GetObject("PrimaryVertex");
     if(NULL == fPrimVertex){
 	cout << "-W- CbmHadronAnalysis::Init : "
 	    << "no primary vertex!" << endl;
+    }
+
+    // --- MC data manager
+    CbmMCDataManager* mcManager =
+  		(CbmMCDataManager*)rootMgr->GetObject("MCDataManager");
+
+    if(NULL != mcManager){
+    // --- Data arrays
+      fMCTracks    = mcManager->InitBranch("MCTrack");
+      fStsPoints   = mcManager->InitBranch("StsPoint");
+    }
+  
+    fMCTracksColl = (TClonesArray*) rootMgr->GetObject("MCTrack");
+    if(NULL == fMCTracks) {
+	cout << "-W- CbmHadronAnalysis::Init : "
+            << "no MC track array!" << endl;
+    }
+  
+    fStsPointsColl = (TClonesArray*) rootMgr->GetObject("StsPoint");
+    if(NULL == fStsPointsColl) {
+	cout << "-W- CbmHadronAnalysis::Init : "
+	    << "no STS Point array!" << endl;
     }
 
     fTrackFitter.Init();
@@ -1321,33 +1377,28 @@ void CbmHadronAnalysis::Exec(Option_t*)
 {
     // Task execution
 
-  cout << "<D> HadronAnalysis::Exec starting "<<endl;
-
     // Declare variables outside the loop
-    CbmMCTrack  *MCTrack;
-    CbmStsTrack *StsTrack;
-    CbmTofPoint *TofPoint;
-    CbmTofHit   *TofHit;
-    CbmTofTrack *TofTrack;
+    CbmMCTrack  *MCTrack=NULL;
+    CbmStsTrack *StsTrack=NULL;
+    CbmTofPoint *TofPoint=NULL;
+    CbmTofHit   *TofHit=NULL;
+    CbmTofTrack *TofTrack=NULL;
 //    CbmTofTrack *TofTrackh;
-    CbmTofTrack *BestTofTrack;
-    CbmGlobalTrack *GlobTrack;
+    CbmTofTrack *BestTofTrack=NULL;
+    CbmGlobalTrack *GlobTrack=NULL;
 //    CbmMatch *tofHitMatch;
 
-    Int_t nMCTracks, nTofPoints, nTofHits, nTofTracks, nGlobTracks;
+
     Int_t pdgCode, Np1, Np2;
     Float_t Qx1, Qy1, Qx2, Qy2, phirp1, phirp2, phirp, delrp, rp_weight;
     Float_t RADDEG=57.29577951;
     Float_t p_MC, px_MC, py_MC, pz_MC;
-    Float_t mfrag;
+    Float_t mfrag=0.;
     Float_t MaxT0=0.1;
 
     Int_t TrackP[100000];
     Float_t t_hit;
     Bool_t use_pions_for_flow=kTRUE;
-
-    Int_t NMASS=3;
-    Float_t refMass[3]={0.139, 0.494, 0.938};
   
     Int_t verbose=1;
 
@@ -1361,24 +1412,27 @@ void CbmHadronAnalysis::Exec(Option_t*)
 
     Float_t yrp_mid=GetMidY();  // midrapidity -> update from simulation!	
 
-    nMCTracks   = fMCTracks->GetEntriesFast();
+    nMCTracks   = fMCTracksColl->GetEntriesFast();
     nTofPoints  = fTofPoints->GetEntriesFast();
     nTofHits    = fTofHits->GetEntriesFast();
-    nTofTracks  = fTofTracks->GetEntriesFast();
-    nGlobTracks = fGlobalTracks->GetEntriesFast();
+    if(fTofTracks != NULL)     nTofTracks  = fTofTracks->GetEntriesFast();
+    if(fGlobalTracks != NULL)  nGlobTracks = fGlobalTracks->GetEntriesFast();
 
 
     if(verbose>0){ //nh-debug 
-      cout << "<D> HadronAnalysis::Exec starting with MCtrks "<<nMCTracks
-	   << ", TofPoi " << nTofPoints
-	   << ", TofHit " << nTofHits
-	   << ", TofTrk " << nTofTracks
-	   << ", GlbTrk " << nGlobTracks
-	   << endl;
-      cout << "-D- b = "<<fMCEventHeader->GetB()<< ", phi = " << fMCEventHeader->GetRotZ() << endl;
+      LOG(DEBUG) << "<D> HadronAnalysis::Exec starting with MCtrks "<<nMCTracks
+        << ", TofPoi " << nTofPoints
+        << ", TofHit " << nTofHits
+        << ", TofTrk " << nTofTracks
+        << ", GlbTrk " << nGlobTracks
+	<< ", StsHit " << fStsHits->GetEntriesFast()
+        << FairLogger::endl;
+      LOG(DEBUG) << "-D- b = "<<fMCEventHeader->GetB()<< ", phi = " << fMCEventHeader->GetRotZ() << FairLogger::endl;
     }
-    // some local arrays 
 
+    if (bRecSec && nTofHits > 1) ReconstructSecondaries(); // independent method
+
+    // some local arrays 
     Int_t MAXNHT=50;
     Int_t NTHMUL[nGlobTracks];                       // number of candidate TofTracks 
     Int_t IndTHMUL[nGlobTracks][MAXNHT];             // ordered array of candidate number of TofTrack indices  
@@ -1393,7 +1447,7 @@ void CbmHadronAnalysis::Exec(Option_t*)
     Qx1=0.; Qy1=0.; Np1=0; Qx2=0.; Qy2=0.; Np2=0; 
     for (Int_t k=0; k< nMCTracks; k++) { // inspect MCTracks 
 			
-	MCTrack = (CbmMCTrack*) fMCTracks->At(k);
+	MCTrack = (CbmMCTrack*) fMCTracksColl->At(k);
 			
 	if (MCTrack->GetMotherId()!=-1) continue;    // primary particles only
 
@@ -1411,14 +1465,14 @@ void CbmHadronAnalysis::Exec(Option_t*)
 	                                   // where is the proper mass stored ? 
 	}
 
-        Float_t Phip = RADDEG*atan2(MCTrack->GetPy(),MCTrack->GetPx());
-        Float_t dphi = Phip - RADDEG*fMCEventHeader->GetRotZ();
+    Float_t Phip = RADDEG*atan2(MCTrack->GetPy(),MCTrack->GetPx());
+    Float_t dphi = Phip - RADDEG*fMCEventHeader->GetRotZ();
 	if(dphi<-180.) {dphi +=360.;};
 	if(dphi> 180.) {dphi -=360.;};
 	dphi = dphi/RADDEG;
 	rp_weight = 0.;
 
-        //cout << " Track k="<<k<<", pdgCode = "<<pdgCode<<
+    //cout << " Track k="<<k<<", pdgCode = "<<pdgCode<<
 	//  " Mass " << MCTrack->GetMass()<<","<<mfrag<<" Y " << MCTrack->GetRapidity() <<
 	//  " Pt " << MCTrack->GetPt() <<endl;
 
@@ -1575,16 +1629,16 @@ void CbmHadronAnalysis::Exec(Option_t*)
           break;
 	};
 	}
-        if (rp_weight != 0.) {
-	   if(gRandom->Uniform(1)>0.5)  { //subdivide events into 2 random subevents
+    if (rp_weight != 0.) {
+	  if(gRandom->Uniform(1)>0.5)  { //subdivide events into 2 random subevents
 	    Np1++;
-            Qx1=Qx1+rp_weight*MCTrack->GetPx();
-            Qy1=Qy1+rp_weight*MCTrack->GetPy();
-	   }else{
+        Qx1=Qx1+rp_weight*MCTrack->GetPx();
+        Qy1=Qy1+rp_weight*MCTrack->GetPy();
+      }else{
 	    Np2++;
-            Qx2=Qx2+rp_weight*MCTrack->GetPx();
-            Qy2=Qy2+rp_weight*MCTrack->GetPy();	   
-	   }
+        Qx2=Qx2+rp_weight*MCTrack->GetPx();
+        Qy2=Qy2+rp_weight*MCTrack->GetPy();	   
+      }
 	}
     }
 
@@ -1595,7 +1649,7 @@ void CbmHadronAnalysis::Exec(Option_t*)
        TH1F *phirp_gen_fpar = (TH1F *)fflowFile->Get("phirps_gen_fpar");
        Float_t dphir=0.;
        for (int j=0; j<4; j++){
-	 Float_t i = (float)(j+1);
+	     Float_t i = (float)(j+1);
          dphir += (-phirp_gen_fpar->GetBinContent(j)  *TMath::Cos(i*phirp1) 
 	           +phirp_gen_fpar->GetBinContent(j+4)*TMath::Sin(i*phirp1))/i;
        }
@@ -1603,7 +1657,7 @@ void CbmHadronAnalysis::Exec(Option_t*)
 
        dphir=0.;
        for (int j=0; j<4; j++){
-	 Float_t i = (float)(j+1);
+	     Float_t i = (float)(j+1);
          dphir += (-phirp_gen_fpar->GetBinContent(j)  *TMath::Cos(i*phirp2) 
 	           +phirp_gen_fpar->GetBinContent(j+4)*TMath::Sin(i*phirp2))/i;
        }
@@ -1614,7 +1668,7 @@ void CbmHadronAnalysis::Exec(Option_t*)
       fa_phirps_gen->Fill(phirp1*RADDEG);          // 1D histo
       fa_phirps_gen->Fill(phirp2*RADDEG);          // 1D histo
       if(0){ //nh-debug 
-       cout << "<D-gen> Impact parameter "<<fMCEventHeader->GetB()<< ", delrp = "<< delrp << endl;
+        cout << "<D-gen> Impact parameter "<<fMCEventHeader->GetB()<< ", delrp = "<< delrp << endl;
       }
       fa_cdrp_b_gen->Fill(fMCEventHeader->GetB(),TMath::Cos(delrp));
       delrp=delrp*RADDEG;
@@ -1626,20 +1680,20 @@ void CbmHadronAnalysis::Exec(Option_t*)
       while(phirp<-180.) {phirp+=360.;}
       while(phirp>180.)  {phirp-=360.;}
       if (fflowFile!=NULL) { // RP flattening 
-       TH1F *phirp_gen_fpar = (TH1F *)fflowFile->Get("phirp_gen_fpar");
-       Float_t dphir=0.;
-       for (int j=0; j<4; j++){
-	 Float_t i = (float)(j+1);
-	 //cout << " RP flat par "<< i << ","<<j<< " par " << phirp_gen_fpar->GetBinContent(j) 
-	 //     << ","<< phirp_gen_fpar->GetBinContent(j+4) << " phirp "<<phirp<<" dphir "<< dphir << endl;
-         dphir += (( -phirp_gen_fpar->GetBinContent(j)  *TMath::Cos(i*phirp/RADDEG) 
+        TH1F *phirp_gen_fpar = (TH1F *)fflowFile->Get("phirp_gen_fpar");
+        Float_t dphir=0.;
+        for (int j=0; j<4; j++){
+	      Float_t i = (float)(j+1);
+	      //cout << " RP flat par "<< i << ","<<j<< " par " << phirp_gen_fpar->GetBinContent(j) 
+	      //     << ","<< phirp_gen_fpar->GetBinContent(j+4) << " phirp "<<phirp<<" dphir "<< dphir << endl;
+          dphir += (( -phirp_gen_fpar->GetBinContent(j)  *TMath::Cos(i*phirp/RADDEG) 
 	             +phirp_gen_fpar->GetBinContent(j+4)*TMath::Sin(i*phirp/RADDEG))/i);
-       }
-       //cout << " phirp " << phirp << " dphir " << dphir*RADDEG << endl; 
+        }
+        //cout << " phirp " << phirp << " dphir " << dphir*RADDEG << endl; 
 
-       phirp+=dphir*RADDEG;
-       while(phirp<-180.) {phirp+=360.;}
-       while(phirp>180.)  {phirp-=360.;}
+        phirp+=dphir*RADDEG;
+        while(phirp<-180.) {phirp+=360.;}
+        while(phirp>180.)  {phirp-=360.;}
       } // RP flattening end 
       delrp=phirp - RADDEG*fMCEventHeader->GetRotZ();
       while(delrp<-180.) {delrp+=360.;}
@@ -1664,7 +1718,7 @@ void CbmHadronAnalysis::Exec(Option_t*)
     for (Int_t l =0; l<nTofPoints; l++) {
       TofPoint = (CbmTofPoint*) fTofPoints->At(l);
       Int_t k = TofPoint->GetTrackID();
-      MCTrack = (CbmMCTrack*) fMCTracks->At(k);
+      MCTrack = (CbmMCTrack*) fMCTracksColl->At(k);
       pdgCode = MCTrack->GetPdgCode();
       if (pdgCode>100000000){
 	  mfrag=(pdgCode%1000)/10 * .931494028; // ignoring binding energies ...
@@ -2016,6 +2070,10 @@ void CbmHadronAnalysis::Exec(Option_t*)
        CbmLink L0 = digiMatch->GetLink(0); 
        Int_t iDigInd0=L0.GetIndex(); 
        CbmMatch* poiMatch=(CbmMatch *)fTofDigiMatchPointsColl->At(iDigInd0);
+       if(NULL == poiMatch) {
+	 LOG(WARNING)<<"No MC point found for hit "<<j<<", digi "<<iDigInd0<<FairLogger::endl;
+	 continue;
+       }
        CbmLink LP = poiMatch->GetMatchedLink(); 
        lp=LP.GetIndex();
        /*
@@ -2039,7 +2097,7 @@ void CbmHadronAnalysis::Exec(Option_t*)
       //cout << "<D-hit> k= " << k << endl;
       //      cout << Form("HadronAnalysis:: hit %d, digi %d, poi %d, MCt %d ",j,iDigInd0,lp,k) << endl;
 
-      MCTrack = (CbmMCTrack*) fMCTracks->At(k);			
+      MCTrack = (CbmMCTrack*) fMCTracksColl->At(k);			
 
       if(0){ //nh-debug 
 	cout << "<D-hit> " << j << "," << l << "," << k << endl; 
@@ -2383,7 +2441,7 @@ void CbmHadronAnalysis::Exec(Option_t*)
     Qx1=0.; Qy1=0.; Np1=0; Qx2=0.; Qy2=0.; Np2=0; 
     fa_mul_b_glo->Fill(fMCEventHeader->GetB(),nGlobTracks);
 
-    Int_t NReas=100;
+    Int_t NReas=0; //100;  // activate reassignment of hits to global tracks
     Int_t NRIt=0; 
     while(NReas>0){
      NRIt++;
@@ -2428,7 +2486,7 @@ void CbmHadronAnalysis::Exec(Option_t*)
 	cout<<"<E> Invalid StsTrack PID "<< StsTrack->GetPidHypo()<<" at "<<s<<endl;
 	continue;
       }
-      /*
+      
       FairTrackParam paramExtr;
       fTrackFitter.FitToVertex(StsTrack, fPrimVertex, &paramExtr);
       // GlobTrack -> SetParamFirst(&paramExtr);         // nh: attach track parameter to global track
@@ -2440,7 +2498,7 @@ void CbmHadronAnalysis::Exec(Option_t*)
 	  	    i,fPrimVertex->GetZ(),vtxb)<<endl;
         //GlobTrack->GetParamFirst()->Print();
       }           
-      */
+      
 
       Float_t momf = 1./tparf->GetQp();  
       if(momf<0.) momf=-momf;  // positive momentum at vertex
@@ -2469,9 +2527,10 @@ void CbmHadronAnalysis::Exec(Option_t*)
 	    cout << "<E>  invalid dist for gt " << i << ",  tt " << tt << ", d:" << dist << endl;
             break; 
 	  }
-
+	  /*
 	  fhTofTrkDx->Fill(TofTrack->GetTrackDx());
 	  fhTofTrkDy->Fill(TofTrack->GetTrackDy());
+	  */
 
 	  //dist=TMath::Abs(TMath::Abs(dist)-0.5);
 
@@ -2771,7 +2830,7 @@ void CbmHadronAnalysis::Exec(Option_t*)
       }
       const FairTrackParam *tparf = GlobTrack->GetParamFirst();
       if (0==tparf->GetQp()) {
-        if(verbose>0)
+        if(verbose>10)
 	cout << "<W2> Global Track " << i << " without Qp!, take from Sts " << s << endl;
         StsTrack = (CbmStsTrack *) fStsTracks->At(s);
         GlobTrack->SetParamFirst(StsTrack->GetParamFirst());
@@ -2786,10 +2845,10 @@ void CbmHadronAnalysis::Exec(Option_t*)
       // STS 
       Double_t  vtxb=100.; 
       Int_t smc=-1;
-      Int_t StsMCt[10];
-      Int_t NStsMCc[10]={10*0};
-      Int_t NStsMCt=-1;
-      if (s>-1) {   // STS Track analysis 
+      Int_t StsMCt[100];            // array of MC track indices for current StsTrack
+      Int_t NStsMCc[100]={100*0};   // number of contributions 
+      Int_t NStsMCt=0;              // number of MC tracks contributing to this Ststrack
+      if ( s>-1 ) {   // STS Track analysis, disable, bad referencing to StsHits
        StsTrack = (CbmStsTrack *) fStsTracks->At(s);
 
        FairTrackParam paramExtr;
@@ -2800,51 +2859,106 @@ void CbmHadronAnalysis::Exec(Option_t*)
        Int_t NStsHits = StsTrack->GetNofStsHits();
        //if(NStsHits<8) continue; // nh-debugging
        for(Int_t ih = 0; ih < NStsHits; ih++) {
-        CbmStsHit* hit = (CbmStsHit*) fStsHits->At(StsTrack->GetHitIndex(ih));
-        Int_t sh = hit->GetRefId();
-        if(sh>-1) {
-	 if(sh > fStsPoints->GetEntries()){
-	   cout<<"<E> Invalid index in StsPoints TClArray "<<sh<<"("<<fStsPoints->GetEntries()<<")"<<endl;
-	   break;
-	 }
-         CbmStsPoint* poi =  (CbmStsPoint*) fStsPoints->At(sh);
-         if(smc!=poi->GetTrackID()){
-          smc = poi->GetTrackID();
-	  if(smc>-1){
-	   NStsMCt++;
-	   StsMCt[NStsMCt]=smc;
-           NStsMCc[NStsMCt]++;
-	   //	   cout << "-I- STS Track info: " << s<<", #hits: "<< NStsHits << " Hit #:"<<ih<<" Ref "<< sh 
-	   //                <<" MCTrackIndex:" << smc <<" NStsMCt "<<NStsMCt<< endl;
-	  } else {
-	    cout << "-W- No STS - MC point for STS Hit "<<sh<<"("<<NStsHits<<")"<<endl;
+	Int_t iHind=StsTrack->GetHitIndex(ih);
+	LOG(DEBUG1)<<" inspect STS track "<<s<<", hit "<<ih<<", hitindex "<<iHind<<FairLogger::endl;
+	if(NULL == fStsHits) LOG(FATAL)<<" No STS Hits available "<<FairLogger::endl;
+	//CbmStsHit* hit = (CbmStsHit*) fStsHits->At(iHind); // still valid ? - ok?
+        CbmStsHit* hit = dynamic_cast<CbmStsHit*>(fStsHits->At(iHind));
+	if(NULL == hit) continue;
+	LOG(DEBUG1)<<" valid hit "<<ih<<", hitindex "<<iHind
+		  <<" cluster index f:  "<<hit->GetFrontClusterId() 
+		  <<", b:  "<<hit->GetBackClusterId() 
+		  <<FairLogger::endl;
+
+	CbmStsCluster *fclu=(CbmStsCluster *)fStsClusters->At( hit->GetFrontClusterId() );
+	CbmStsCluster *bclu=(CbmStsCluster *)fStsClusters->At( hit->GetBackClusterId() );
+	LOG(DEBUG1)<<" Mul f: "<< fclu->GetNofDigis()<<" (";
+	for (Int_t iDigi=0; iDigi< fclu->GetNofDigis(); iDigi++) {
+	  LOG(DEBUG1)<<fclu->GetDigi(iDigi)<<" ";
+	  CbmStsDigi* stsdigi      = (CbmStsDigi*) fStsDigis->At( fclu->GetDigi(iDigi) );
+	  CbmMatch*   stsdigiMatch = (CbmMatch*)   fStsDigiMatchColl->At( fclu->GetDigi(iDigi) );
+	  LOG(DEBUG1)<<stsdigiMatch->GetNofLinks()<<" ";
+	  for(Int_t iL=0; iL<stsdigiMatch->GetNofLinks();iL++){
+	    const CbmLink& link = stsdigiMatch->GetLink(iL);
+	    CbmStsPoint* poi =  (CbmStsPoint*) fStsPointsColl->At(link.GetIndex());
+	    if(NULL == poi) continue;
+	    Int_t MCInd=poi->GetTrackID();
+	    LOG(DEBUG1)<< " MCInd "<<poi->GetTrackID()<<" ";
+	    Int_t iMCt=0;
+	    for ( ; iMCt<NStsMCt; iMCt++){
+	      if (MCInd == StsMCt[iMCt]) { 
+		NStsMCc[iMCt]++;
+		break;
+	      }
+	    }
+	    if(iMCt == NStsMCt) {
+	      LOG(DEBUG)<<"contribution by new MC track: "<<MCInd<<FairLogger::endl;
+	      StsMCt[iMCt]=MCInd;
+	      NStsMCc[iMCt]=1;
+	      NStsMCt++;
+	    }
+
 	  }
-	 }else {
-           NStsMCc[NStsMCt]++;          
-	 }
-	}else {
-	  //	  cout << "-E- StsPoint not available" << endl;
 	}
+
+	for (Int_t iDigi=0; iDigi< bclu->GetNofDigis(); iDigi++) {
+	  LOG(DEBUG1)<<bclu->GetDigi(iDigi)<<" ";
+	  CbmStsDigi* stsdigi      = (CbmStsDigi*) fStsDigis->At( bclu->GetDigi(iDigi) );
+	  CbmMatch*   stsdigiMatch = (CbmMatch*)   fStsDigiMatchColl->At( bclu->GetDigi(iDigi) );
+	  LOG(DEBUG1)<<stsdigiMatch->GetNofLinks()<<" ";
+	  for(Int_t iL=0; iL<stsdigiMatch->GetNofLinks();iL++){
+	    const CbmLink& link = stsdigiMatch->GetLink(iL);
+	    CbmStsPoint* poi =  (CbmStsPoint*) fStsPointsColl->At(link.GetIndex());
+	    Int_t MCInd=poi->GetTrackID();
+	    LOG(DEBUG1)<< " MCInd "<<poi->GetTrackID()<<" ";
+	    Int_t iMCt=0;
+	    for ( ; iMCt<NStsMCt; iMCt++){
+	      if (MCInd == StsMCt[iMCt]) { 
+		NStsMCc[iMCt]++;
+		break;
+	      }
+	    }
+	    if(iMCt == NStsMCt) {
+	      LOG(DEBUG)<<"contribution by new back MC track: "<<MCInd<<FairLogger::endl;
+	      StsMCt[iMCt]=MCInd;
+	      NStsMCc[iMCt]=1;
+	      NStsMCt++;
+	    }
+
+	  }
+	}
+
+	LOG(DEBUG1)<<"), mul b: "<<  bclu->GetNofDigis()
+		  <<FairLogger::endl;
        } // loop over STS hits finished 
-       if(++NStsMCt==0){
+
+	LOG(DEBUG) << "STS summary: NStsMCt ="<<NStsMCt;
+	for(Int_t iT=0; iT<NStsMCt; iT++) {
+	  LOG(DEBUG) << " iT "<<iT<<" NMCc "<< NStsMCc[iT]<<" MCt "<< StsMCt[iT];
+	}
+	LOG(DEBUG) << FairLogger::endl;
+
+       if(NStsMCt==0){
          smc=-1;
-	 cout << "-W- CbmHadronAnalysis: StsTrack "<< s <<" with "<<NStsHits
-              << " Hits without  StsPoints ??? from Global Track "<< i
-	      << ", TofHit "<< j << endl;
+	 LOG(DEBUG) << "StsTrack "<< s <<" with "<<NStsHits
+              << " Hits without StsPoints ??? from Global Track "<< i
+		    << ", TofHit "<< j << FairLogger::endl;
        }else { // find most probable MCtrack
          smc=-1;
+	 Int_t iMaxCount=0;
 	 for (Int_t k=0; k<NStsMCt; k++){
-	   if (NStsMCc[k]>NStsMCt/2) {
+	   if (NStsMCc[k]>iMaxCount) {
 	    smc=StsMCt[k];
+	    iMaxCount=NStsMCc[k];
 	    //            cout << "-D- STS Track "<<smc<<" with "<<NStsMCc[k]<<"("<< NStsMCt<<") matches "
 	    //                 <<" in "<<k<<". position"<<endl;
-	    continue;
+	    // continue;
 	  }
 	 }
        }
        // analysis of STS tracks   
        if (-1<smc) {
-       MCTrack = (CbmMCTrack*) fMCTracks->At(smc);			
+       MCTrack = (CbmMCTrack*) fMCTracksColl->At(smc);			
        pdgCode = MCTrack->GetPdgCode();
        px_MC = MCTrack->GetPx();
        py_MC = MCTrack->GetPy();
@@ -2916,13 +3030,12 @@ void CbmHadronAnalysis::Exec(Option_t*)
        TofHit   = (CbmTofHit*) fTofHits->At(j);
 //       Int_t l = TofHit->GetRefId();
        Int_t l = j; // One CbmMatch per Hit and in the same order!!!!
-       Int_t k;
-       if (verbose>10) {
-         cout << "<Dj> gt "<<i<<", th "<<j<<", l "<<l<<", DMC "<<fTofDigiMatchColl<<endl;
-       }
+       Int_t k = -1;
+
        if (NULL == fTofDigiMatchColl){
-        TofPoint = (CbmTofPoint*) fTofPoints->At(l);
-        k = TofPoint->GetTrackID();       
+	LOG(FATAL) << "No Digi Info available for TofHit !?? "<<FairLogger::endl; 
+        //TofPoint = (CbmTofPoint*) fTofPoints->At( TofHit->GetRefId() );
+        //k = TofPoint->GetTrackID();       
        }
        else{
         CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchColl->At(l);
@@ -2965,10 +3078,8 @@ void CbmHadronAnalysis::Exec(Option_t*)
         TofPoint = (CbmTofPoint*) fTofPoints->At(iPoiArr[0]);
         k = iTrkArr[0];
        }
-       if (verbose>10) {
-         cout << "<Dk> gt "<<i<<", th "<<j<<", l "<<l<<", k "<<k<<", smc "<<smc<<endl;
-       }
-       MCTrack = (CbmMCTrack*) fMCTracks->At(k);			
+
+       MCTrack = (CbmMCTrack*) fMCTracksColl->At(k);			
        pdgCode = MCTrack->GetPdgCode();
        px_MC = MCTrack->GetPx();
        py_MC = MCTrack->GetPy();
@@ -2984,7 +3095,7 @@ void CbmHadronAnalysis::Exec(Option_t*)
        }
        Double_t mom = 1./tpar->GetQp();
        if(mom<0.) mom=-mom;
-       Float_t vel=TofHit->GetR()/TofHit->GetTime(); // GetR() instead of len
+       Float_t vel = TofHit->GetR()/TofHit->GetTime(); // GetR() instead of len
        Float_t bet = vel / clight;  
        Double_t m2 = mom*mom*(1./bet/bet - 1.);
 
@@ -3016,10 +3127,10 @@ void CbmHadronAnalysis::Exec(Option_t*)
          fa_LenMcLenGlomom_glo->Fill(mom,len-TofPoint->GetLength());
          fa_LenMcDismom_glo->Fill(mom,TofPoint->GetLength()-TofHit->GetR());
        }
-
+       /*
        fhTofTrkDxsel->Fill(TofTrack->GetTrackDx());
        fhTofTrkDysel->Fill(TofTrack->GetTrackDy());
-
+       */
        if(vtxb<fVtxBMax) {
 	 fa_tm_glovtxb->Fill(mom,tofmass);
 	 fa_m2mom_glovtxb->Fill(mom*TMath::Sign(1.,tpar->GetQp()),m2);
@@ -3126,14 +3237,14 @@ void CbmHadronAnalysis::Exec(Option_t*)
 	  fa_LenDismom_glo_p->Fill(mom,len-TofHit->GetR());
 
 	  // reaction plane determination 
-         if(TMath::Abs((MCTrack->GetRapidity()-yrp_mid)/yrp_mid)>GetDY()
+          if(TMath::Abs((MCTrack->GetRapidity()-yrp_mid)/yrp_mid)>GetDY()
 	     &&MCTrack->GetPt()/MCTrack->GetMass()>GetFlowMinPtm()){
            if (MCTrack->GetRapidity()>yrp_mid){ // set weights for reaction plane 
 	    rp_weight =  1.;}
            else {
 	    rp_weight = -1.;
            }
-	  }else{
+	   }else{
 	    rp_weight = 0.;
 	  }
 	  break;
@@ -3331,9 +3442,9 @@ void CbmHadronAnalysis::Exec(Option_t*)
 // Hadron level 
 
 
-    if(0 == (fEvents%1)) {
-	cout << "-I- CbmHadronAnalysis::Exec : "
-             << "event " << fEvents << " processed." << endl;
+    if(0 == (fEvents%1000)) {
+	LOG(INFO) << "-I- CbmHadronAnalysis::Exec : "
+             << "event " << fEvents << " processed." << FairLogger::endl;
     }
     fEvents += 1;
 }
@@ -3379,14 +3490,327 @@ void CbmHadronAnalysis::WriteHistogramms()
   while( (obj= (TObject*)next()) ){
       if(obj->InheritsFrom(TH1::Class())){
          h = (TH1*)obj;
-         cout << "Write histo " << h->GetTitle() << endl;
+         //cout << "Write histo " << h->GetTitle() << endl;
          h->Write();
       }
   }
  }
- fHist->ls();
+ //fHist->ls();
  fHist->Close();
 }
 // ------------------------------------------------------------------
+static Int_t iCandEv=0;
+void CbmHadronAnalysis::ReconstructSecondaries()
+{
+#include "TLorentzVector.h"
+#include "TVector3.h"
+
+  static TH1F* fhDperp;
+  static TH1F* fhDperp2;
+  static TH1F* fhDperpS;
+  static TH1F* fhD0prim;
+  static TH1F* fhOpAng;
+  static TH1F* fhDCA;
+  static TH1F* fhMinv;
+  static TH1F* fhPathLen;
+  static TH1F* fhMMom;
+  static TH1F* fhMCLamMom;
+
+  Double_t dDistPrimLim =1.5;  // Ext Parameter: Max Tof-Sts trans distance for primaries 
+  Double_t dDistPrimLim2=0.3;  // Ext Parameter: Max Sts-Sts trans distance for primaries 
+  Double_t dDistSecLim2=0.5;   // Ext Parameter: Max Sts-Sts trans distance from TOF direction for secondaries  
+  Double_t dD0ProtLim=0.4;     // Ext Parameter: Min impact parameter for secondary proton 
+  Double_t dOpAngMin=0.01;     // Ext Parameter: Min opening angle for accepting pair
+  Double_t dDCALim=0.2;        // Ext Parameter: Max DCA for accepting pair
+  Double_t dVLenMax=25.;       // Ext Parameter: Max Lambda flight path length for accepting pair
+
+  Int_t nStsHits=fStsHits->GetEntriesFast();
+
+  LOG(DEBUG)<<"Secondaries from "<<nTofHits<<" TofHits and "<<nStsHits
+	   <<" StsHits in event "<<iCandEv<<FairLogger::endl;
+
+  if(iCandEv==0) { //initialize
+    // define some histograms
+    fhDperp  = new TH1F( Form("hDperp"),  Form("transverse matching distance; d [cm]"), 100, 0., 5.);   
+    fhDperp2 = new TH1F( Form("hDperp2"), Form("transverse matching distance (prim); d [cm]"), 100, 0., 1.);   
+    fhDperpS = new TH1F( Form("hDperpS"), Form("transverse matching distance (sec); d [cm]"), 100, 0., 1.);   
+    fhD0prim = new TH1F( Form("hD0prim"), Form("transverse distance to primary vertex; d [cm]"), 100, 0., 2.);   
+    fhOpAng  = new TH1F( Form("hOpAng"),  Form("opening angle; #alpha [rad]"), 100, 0., 0.1);   
+    fhDCA    = new TH1F( Form("hDCA"),    Form("distance of closest approach; d [cm]"), 100, 0., 2.);   
+    fhMinv   = new TH1F( Form("hMinv"),   Form("invariant mass; M_{inv} [GeV]"), 100, 1., 1.3);   
+    fhPathLen= new TH1F( Form("hPathLen"),Form("path length; L [cm]"), 100, 0., 30.);   
+    fhMMom   = new TH1F( Form("hMMom"),   Form("momentum of mother ; p [GeV]"), 100, 0., 5.);   
+    fhMCLamMom = new TH1F( Form("hMCLamMom"),   Form("MC lambda momentum; p [GeV]"), 100, 0., 5.);   
+  }
+  iCandEv++;                   // count events locally
+
+  // fill generator distributions for reference  
+  for (Int_t k=0; k< nMCTracks; k++) { // inspect MCTracks 			
+     CbmMCTrack* MCTrack = (CbmMCTrack*) fMCTracksColl->At(k);
+     Int_t pdgCode = MCTrack->GetPdgCode();
+     if(pdgCode == 3122) {
+       fhMCLamMom->Fill(MCTrack->GetP());
+     }
+  }
+
+  TLorentzVector P[nTofHits];  // define array of Lorentzvectors
+  TVector3 X0[nTofHits];       // first measured point of line 
+  TVector3 DX[nTofHits];       // direction of line 
+
+  Double_t dStsDistMin[nTofHits];
+  Double_t dSts2DistMin[nTofHits];
+  Double_t dTofDistMin[nStsHits];
+  Double_t dTofDist2Min[nStsHits];
+  Int_t    iTofMin[nStsHits];
+  for (Int_t j=0; j<nStsHits; j++) {
+    iTofMin[j]     =-1;    //initialize
+    dTofDistMin[j] =100.;  //initialize
+    dTofDist2Min[j]=100.;  //initialize
+  }
+  //1. find tof silicon match
+  for (Int_t i=0; i<nTofHits; i++) {
+     CbmTofHit* pTofHit   = (CbmTofHit*) fTofHits->At(i);
+     dStsDistMin[i] =1.E3;
+     dSts2DistMin[i]=1.E3;
+     for (Int_t j=0; j<nStsHits; j++) {
+       CbmStsHit* pStsHit   = (CbmStsHit*) fStsHits->At(j);
+       // Check for primary track
+       Double_t sPosZ    = pStsHit->GetZ();
+       Double_t sPosXext = pTofHit->GetX()*sPosZ/pTofHit->GetZ();
+       Double_t sPosYext = pTofHit->GetY()*sPosZ/pTofHit->GetZ();
+       Double_t dDist2   = TMath::Power(pStsHit->GetX()-sPosXext,2) + TMath::Power(pStsHit->GetY()-sPosYext,2); 
+       Double_t dDist    = TMath::Sqrt(dDist2);
+       fhDperp->Fill(dDist);
+       LOG(DEBUG) << "Tof "<<i<<", Sts "<<j<<Form(" -> dist %6.3f, Min %6.3f ",dDist, dStsDistMin[i] )
+		 <<FairLogger::endl;
+ 
+       if(dDist<dDistPrimLim && dDist<dStsDistMin[i]) { // primary or proton candidate
+	 if ( iTofMin[j] > -1 ) {
+	   LOG(DEBUG) <<Form("Sts hit %d already assigned to tof hit %d with dist= %6.3f, prev %6.3f",
+			    j, iTofMin[j],dDist,dTofDistMin[j])
+		     <<FairLogger::endl;
+	   if(dDist >  dTofDistMin[j]) continue; // previous assignment was better 
+	 }
+	 dStsDistMin[i]=dDist;
+	 iTofMin[j]=i;
+	 dTofDistMin[j]=dDist;
+	 LOG(DEBUG) << "Prim Track cand from Tof "<<i<<", Sts "<<j
+		   <<Form(": dist %6.3f, Min %6.3f at z = %4.1f",dDist, dStsDistMin[i], sPosZ)
+		   <<FairLogger::endl;
+       }
+     } // for (Int_t j=0; j<nStsHits; j++) {
+  } //for (Int_t i=0; i<nTofHits; i++) {
+
+  //2.: find second silicon hit for primary tracks 
+  for (Int_t j=0; j<nStsHits; j++) {
+    if(	 iTofMin[j]<0) continue;
+    Int_t i=iTofMin[j];  // index of Tof Hit
+    CbmStsHit* pStsHit   = (CbmStsHit*) fStsHits->At(j);
+    // Check for confirmation of primary track 
+    for (Int_t k=0; k<nStsHits; k++) {
+      if(j==k) continue;
+      CbmStsHit* pSts2Hit   = (CbmStsHit*) fStsHits->At(k);
+      Double_t sPos2Z    = pSts2Hit->GetZ();
+      Double_t sPos2Xext = pStsHit->GetX()*sPos2Z/pStsHit->GetZ();
+      Double_t sPos2Yext = pStsHit->GetY()*sPos2Z/pStsHit->GetZ();
+      Double_t dDist2    = TMath::Power(pSts2Hit->GetX()-sPos2Xext,2) + TMath::Power(pSts2Hit->GetY()-sPos2Yext,2); 
+      Double_t dDist     = TMath::Sqrt(dDist2);
+      fhDperp2->Fill(dDist);
+      LOG(DEBUG) << "Tof "<<i<<", Sts "<<j<<Form(" Sts2 %d -> dist %6.3f, Min %6.3f at z = %4.1f",
+						k, dDist, dSts2DistMin[i],sPos2Z)
+		<<FairLogger::endl;
+
+      if(dDist<dDistPrimLim2 && dDist<dSts2DistMin[i]) { // primary or proton candidate
+	if ( iTofMin[k] > -1 ) {
+	   LOG(DEBUG) <<Form("Sts2hit %d already assigned to tof hit %d with dist= %6.3f, prev %6.3f",
+			    k, iTofMin[k],dDist,dTofDistMin[k])
+		     <<FairLogger::endl;
+	   if(dDist >  dTofDist2Min[k]) continue; // previous assignment was better 
+	}
+	dSts2DistMin[i]=dDist;
+	iTofMin[k]=i;
+	dTofDistMin[k]=dDist;
+	LOG(DEBUG) << "Prim Track cand extended for Tof "<<i<<", Sts "<<j<<", Sts2 "<<k
+		  << Form(": dist %6.3f, Min %6.3f at z = %4.1f",dDist, dSts2DistMin[i], sPos2Z)
+		  << FairLogger::endl;
+	Double_t dDx = pStsHit->GetX() - pSts2Hit->GetX();
+	Double_t dDy = pStsHit->GetY() - pSts2Hit->GetY();
+	Double_t dDz = pStsHit->GetZ() - pSts2Hit->GetZ();
+	// Extrapolate to z=0 (from Si information)
+	Double_t dX0 = pSts2Hit->GetX() - dDx/dDz * pSts2Hit->GetZ();
+	Double_t dY0 = pSts2Hit->GetY() - dDy/dDz * pSts2Hit->GetZ();
+	Double_t dD0 = TMath::Sqrt(dX0*dX0 + dY0*dY0);
+	fhD0prim->Fill(dD0);
+	if(dD0 > dD0ProtLim) { // secondary proton canditate, memorize relevant quantities
+	  CbmTofHit* pTofHit   = (CbmTofHit*) fTofHits->At(i);
+	  Double_t dDd = TMath::Sqrt(dDx*dDx + dDy*dDy + dDz*dDz);
+	  Double_t vel = pTofHit->GetR() / pTofHit->GetTime();
+	  Double_t bet = vel/ clight;
+	  if(bet > 0.9999) continue;   // bet=0.9999;
+	  Double_t m    = refMass[2];  // assume proton
+	  Double_t pmag = m * bet / TMath::Sqrt(1. - bet*bet); // natural units    
+	  Double_t pz   = pmag * dDz / dDd;
+	  Double_t px   = pmag * dDx / dDd;
+	  Double_t py   = pmag * dDy / dDd;
+	  Double_t E=TMath::Sqrt(pmag*pmag + m*m);
+	  P[i].SetPxPyPzE(px,py,pz,E);	 
+	  LOG(DEBUG)<<"Init LV at ind "<<i<<" with beta = "<<bet<<", minv = "<< P[i].M()
+		   << FairLogger::endl;
+	  X0[i].SetXYZ(pSts2Hit->GetX(),pSts2Hit->GetY(),pSts2Hit->GetZ());
+	  DX[i].SetXYZ(dDx,dDy,dDz);
+	}
+      }
+    } 
+  } // for (Int_t j=0; j<nStsHits; j++) {
+
+  //3. find tof silicon match for secondaries
+  for (Int_t i=0; i<nTofHits; i++) {
+    LOG(DEBUG) << "Tof "<<i<<Form(" ? sec cand Min %6.3f ", dStsDistMin[i] )
+	      << FairLogger::endl;    
+    if( dStsDistMin[i] > dDistPrimLim) {  // Tof hit not in the primary class
+      Double_t dDistMin=100.;
+      Int_t jbest=-1;
+      Int_t kbest=-1;
+      CbmTofHit* pTofHit   = (CbmTofHit*) fTofHits->At(i);
+      for (Int_t j=0; j<nStsHits; j++) {
+	LOG(DEBUG) << "Tof "<<i<<", Sts "<<j<<Form(" ? sec cand %6.3f Min %6.3f ", dTofDistMin[j], dDistPrimLim)
+		  << FairLogger::endl;
+	if( dTofDistMin[j] > dDistPrimLim) {  // Sts hit not in the primary class
+	  CbmStsHit* pStsHit   = (CbmStsHit*) fStsHits->At(j);
+	  // check for extension of pair to 2nd silicon plane 
+	  Double_t dDx = pTofHit->GetX() - pStsHit->GetX();
+	  Double_t dDy = pTofHit->GetY() - pStsHit->GetY();
+	  Double_t dDz = pTofHit->GetZ() - pStsHit->GetZ();
+
+	  for (Int_t k=0; k<nStsHits; k++) {
+	    if(j==k) continue;
+	    CbmStsHit* pSts2Hit   = (CbmStsHit*) fStsHits->At(k);
+	    Double_t sPos2Z    = pSts2Hit->GetZ();
+	    Double_t sPos2Xext = pStsHit->GetX()+ dDx/dDz * (sPos2Z - pStsHit->GetZ());
+	    Double_t sPos2Yext = pStsHit->GetY()+ dDy/dDz * (sPos2Z - pStsHit->GetZ());
+	    Double_t dDist2    = TMath::Power(pSts2Hit->GetX()-sPos2Xext,2) + TMath::Power(pSts2Hit->GetY()-sPos2Yext,2); 
+	    Double_t dDist     = TMath::Sqrt(dDist2);
+	    fhDperpS->Fill(dDist);
+	    LOG(DEBUG) << "Sec Tof "<<i<<", Sts "<<j<<Form(" Sts2 %d -> dist %6.3f at z = %4.1f",
+						      k, dDist,sPos2Z)
+		      <<FairLogger::endl;
+	    if(dDist<dDistSecLim2 && dDist<dDistMin) { // secondary or pion candidate
+	      dDistMin=dDist;
+	      jbest=j;
+	      kbest=k;
+	      ;
+	    }
+	  } // for (Int_t k=0; k<nStsHits; k++) {
+	} //if( dTofDistMin[j] > dDistPrimLim) {  // Sts hit not in the primary class
+      } // for (Int_t j=0; j<nStsHits; j++) {
+      if(dDistMin < 100.) { // secondary candidate found, store vectors
+	CbmStsHit* pStsHit   = (CbmStsHit*) fStsHits->At(jbest);
+	CbmStsHit* pSts2Hit  = (CbmStsHit*) fStsHits->At(kbest);
+	if( pSts2Hit-> GetZ() > pStsHit->GetZ() ) { // swap order
+	  pStsHit   = (CbmStsHit*) fStsHits->At(kbest);
+	  pSts2Hit  = (CbmStsHit*) fStsHits->At(jbest); 
+	}
+	Double_t dDx = pStsHit->GetX() - pSts2Hit->GetX();
+	Double_t dDy = pStsHit->GetY() - pSts2Hit->GetY();
+	Double_t dDz = pStsHit->GetZ() - pSts2Hit->GetZ();
+	Double_t dDd = TMath::Sqrt(dDx*dDx + dDy*dDy + dDz*dDz);
+	Double_t vel = pTofHit->GetR() / pTofHit->GetTime();  // approximation, ignoring decay kinematics
+	Double_t bet = vel / clight;
+	if(bet > 0.9999) continue; //bet=0.9999;
+	Double_t m    = refMass[0];  // assume pion
+	Double_t pmag = m * bet / TMath::Sqrt(1. - bet*bet); // natural units    
+	Double_t pz   = pmag * dDz / dDd;
+	Double_t px   = pmag * dDx / dDd;
+	Double_t py   = pmag * dDy / dDd;
+	Double_t E=TMath::Sqrt(pmag*pmag + m*m);
+	P[i].SetPxPyPzE(px,py,pz,E);	 
+	LOG(DEBUG)<<"Init LV at ind "<<i<<" with beta = "<<bet<<", minv = "<< P[i].M()
+	         << FairLogger::endl;
+	X0[i].SetXYZ(pSts2Hit->GetX(),pSts2Hit->GetY(),pSts2Hit->GetZ());
+	DX[i].SetXYZ(dDx,dDy,dDz);
+      }
+    } //if( dStsDistMin[i] > dDistPrimLim) {  // Sts hit not in the primary class
+  } //for (Int_t i=0; i<nTofHits; i++) {
+
+  //4. do combinatorics 
+  for (Int_t i=0; i<nTofHits; i++) {
+    if(TMath::Abs(P[i].M() - refMass[2])<0.01 ) { // proton candidate
+      for (Int_t j=0; j<nTofHits; j++) {
+	if(TMath::Abs(P[j].M() - refMass[0])<0.01 ) { // pion candidate
+	  //request minimul opening angle
+	  Double_t dOpAngle = DX[i].Angle(DX[j]);
+	  fhOpAng->Fill(dOpAngle);
+	  if(dOpAngle < dOpAngMin) continue;
+	  // calculate decay vertex
+	  TVector3 N=DX[i].Cross(DX[j]);
+	  if(N.Mag() == 0.) continue;
+	  N.SetMag(1.);
+	  Double_t dDCA = TMath::Abs((X0[i]-X0[j])*N);
+	  fhDCA->Fill(dDCA);
+	  LOG(DEBUG)<<"DCA at ind i "<<i<<", j "<<j<<": "<< dDCA
+		   << FairLogger::endl;
+	  if(dDCA == 0.) continue;
+	  if(dDCA<dDCALim){
+	    // vertex position 
+	    TVector3 D =dDCA*N;
+	    TVector3 Ni=DX[i].Cross(N);
+	    Double_t cj=-(X0[j]-X0[i]-D)*Ni / (DX[j]*Ni);
+	    TVector3 V=X0[j]+cj*DX[j]-0.5*D; // Vertex vector 
+	    Double_t dVLen=V.Mag();          // Lambda flight pathlength
+	    if(dVLen>dVLenMax) continue;
+	    TLorentzVector PM=P[i]+P[j];
+	    TVector3 PV=TVector3(PM.Px(),PM.Py(),PM.Pz());
+	    Double_t TofM=dVLen/PM.Beta()/clight; // flight time of M in ns
+
+	    Double_t TofMLast=100.;
+	    Int_t Niter=0;
+	    while(TMath::Abs(TofM - TofMLast) > 0.001 && Niter++<5){
+	      LOG(DEBUG)<<"MinvI at ind i "<<i<<", j "<<j<<": "<< PM.M()
+		       <<", vertex: "<<V[0]<<" "<<V[1]<<" "<<V[2]<<", Len "<<dVLen 
+		       <<", mom = "<<PV.Mag()<<", tof "<<TofM
+		       << FairLogger::endl;
+
+	    // update momentum calculation 
+	      for (Int_t ii=0; ii<2; ii++){
+		Int_t k;
+		if(ii==0) k=i;
+		if(ii==1) k=j;
+		CbmTofHit* pTofHit = (CbmTofHit*) fTofHits->At(k);
+		Double_t dDx = pTofHit->GetX() - V[0];
+		Double_t dDy = pTofHit->GetY() - V[1];
+		Double_t dDz = pTofHit->GetZ() - V[2];
+		Double_t dDd = TMath::Sqrt(dDx*dDx + dDy*dDy + dDz*dDz);
+		Double_t vel = dDd / (pTofHit->GetTime()-TofM);
+		Double_t bet = vel/ clight;
+		if(bet > 0.9999) bet=0.9999;
+		Double_t m    = P[k].M(); 
+		Double_t pmag = m * bet / TMath::Sqrt(1. - bet*bet); // natural units    
+		Double_t pz   = pmag * dDz / dDd;
+		Double_t px   = pmag * dDx / dDd;
+		Double_t py   = pmag * dDy / dDd;
+		Double_t E=TMath::Sqrt(pmag*pmag + m*m);
+		P[k].SetPxPyPzE(px,py,pz,E);
+	      }
+	      PM=P[i]+P[j];
+	      PV=TVector3(PM.Px(),PM.Py(),PM.Pz());
+	      TofMLast=TofM;
+	      TofM=dVLen/PM.Beta()/clight; // flight time of M in ns
+	    }
+	    Double_t minv=PM.M();
+	    fhMinv->Fill(minv);
+	    fhPathLen->Fill(dVLen);
+	    fhMMom->Fill(PV.Mag());
+
+	    LOG(INFO)<<"MinvII in event "<<fEvents<<" at ind i "<<i<<", j "<<j<<": "<< minv
+		     <<", vertex: "<<V[0]<<" "<<V[1]<<" "<<V[2]<<", Len "<<dVLen 
+		     <<", mom = "<<PV.Mag()<<", tof "<<TofM
+		     << FairLogger::endl;
+	  
+	  }
+	}
+      }
+    }
+  }
+}//void CbmHadronAnalysis::ReconstructSecondaries()
 
 ClassImp(CbmHadronAnalysis);
