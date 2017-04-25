@@ -421,7 +421,15 @@ private:
     TH1F* fhTofTrkDxsel;
     TH1F* fhTofTrkDysel;
 
-    Bool_t bRecSec;
+    Bool_t   bRecSec;
+    Double_t fdDistPrimLim;// =1.5;  // Ext Parameter: Max Tof-Sts trans distance for primaries 
+    Double_t fdDistPrimLim2;//=0.3;  // Ext Parameter: Max Sts-Sts trans distance for primaries 
+    Double_t fdDistSecLim2;//=0.5;   // Ext Parameter: Max Sts-Sts trans distance from TOF direction for secondaries  
+    Double_t fdD0ProtLim;//=0.4;     // Ext Parameter: Min impact parameter for secondary proton 
+    Double_t fdOpAngMin;//=0.01;     // Ext Parameter: Min opening angle for accepting pair
+    Double_t fdDCALim;//=0.2;        // Ext Parameter: Max DCA for accepting pair
+    Double_t fdVLenMax;//=25.;       // Ext Parameter: Max Lambda flight path length for accepting pair
+    UInt_t   fNMixedEvents;//=10;    // Number of events to be mixed with 
 
     void CreateHistogramms();
     InitStatus ReadPdfFile();
@@ -461,7 +469,15 @@ public:
     inline Float_t GetBSelMin() const   { return fBSelMin; }
     inline Float_t GetBSelMax() const   { return fBSelMax; }
 
-    inline void SetRecSec(Bool_t val)   { bRecSec=val; }
+    inline void SetRecSec(Bool_t val)           { bRecSec=val; }
+    inline void SetDistPrimLim(Double_t val)    { fdDistPrimLim =val; }
+    inline void SetDistPrimLim2(Double_t val)   { fdDistPrimLim2=val; }
+    inline void SetDistSecLim2(Double_t val)    { fdDistSecLim2=val; }
+    inline void SetD0ProtLim(Double_t val)      { fdD0ProtLim=val; }
+    inline void SetOpAngMin(Double_t val)       { fdOpAngMin=val; }
+    inline void SetDCALim(Double_t val)         { fdDCALim=val; }
+    inline void SetVLenMax(Double_t val)        { fdVLenMax=val; }
+    inline void SetNMixedEvents(UInt_t val)     { fNMixedEvents=val; }
 
     ClassDef(CbmHadronAnalysis, 1);
 };
