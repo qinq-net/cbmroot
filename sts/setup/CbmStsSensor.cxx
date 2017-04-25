@@ -104,7 +104,7 @@ void CbmStsSensor::CreateHit(Double_t xLocal, Double_t yLocal, Double_t varX,
 	Double_t hitTime = 0.5 * ( clusterF->GetTime() + clusterB->GetTime());
 	Double_t etF = clusterF->GetTimeError();
 	Double_t etB = clusterB->GetTimeError();
-	Double_t hitTimeError = TMath::Sqrt( (etF*etF + etB*etB) / 2. );
+	Double_t hitTimeError = 0.5 * TMath::Sqrt( etF*etF + etB*etB );
 
 	// --- Create hit
 	Int_t index = fHits->GetEntriesFast();
