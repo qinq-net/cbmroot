@@ -2,7 +2,7 @@
 ##   trd_v17a_1e information file
 #
 
-# created 20170316
+# created 20170426
 
 # envelope
 0.000000 cm   start of TRD (z)
@@ -43,6 +43,7 @@ kapton window is        : included
 gas frame is            : included
 padplane is             : included
 backpanel is            : included
+services is            : included
 asics are               : included
 front-end boards are    : included
 GBTX readout boards are : included

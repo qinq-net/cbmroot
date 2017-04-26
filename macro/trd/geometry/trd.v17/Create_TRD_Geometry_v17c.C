@@ -3,6 +3,7 @@
 /// \brief Generates TRD geometry in Root format.
 ///                                             
 
+// 2017-04-26 - DE - v17     - add copper bus bars as mock-up of services
 // 2017-04-25 - DE - v17c_3e - reduce the number of FEBs on the small modules from 10, 6, 4 to 8, 4 and 2
 // 2017-02-14 - DE - v17b_3e - build TRD from ROB-3 only, optimise layout
 // 2017-01-10 - DE - v17a_3e - replace 6 ultimate density by 9 super density FEBs for TRD type 1 modules
@@ -114,6 +115,7 @@ const Bool_t IncludeKaptonFoil  = true;  // false;  // true, if entrance window 
 const Bool_t IncludeGasFrame    = true;  // false;  // true, if frame around gas volume is included in geometry
 const Bool_t IncludePadplane    = true;  // false;  // true, if padplane is included in geometry
 const Bool_t IncludeBackpanel   = true;  // false;  // true, if backpanel is included in geometry
+const Bool_t IncludeServices    = true;  // false;
 
 const Bool_t IncludeFebs        = true;  // false;  // true, if FEBs are included in geometry
 const Bool_t IncludeRobs        = true;  // false;  // true, if ROBs are included in geometry
@@ -431,11 +433,17 @@ const Double_t honeycomb_thickness    =   2.3 - kapton_thickness - padcopper_thi
 const Double_t honeycomb_position     =  padplane_position + padplane_thickness/2. + honeycomb_thickness/2.;
 const Double_t carbon_position        =  honeycomb_position + honeycomb_thickness/2. + carbon_thickness/2.;
 
+// services thickness
+const Double_t services_thickness     =   1.0; // crossbar of 1 x 1 cm at every module edge
+const Double_t services_width         =   1.0; // crossbar of 1 x 1 cm at every module edge
+const Double_t services_position      =  carbon_position + carbon_thickness/2. + services_thickness/2.;
+
 // readout boards
 //const  Double_t feb_width           =  10.0;    // width of FEBs in cm
 const  Double_t feb_width             =   8.5;    // width of FEBs in cm
 const  Double_t feb_thickness         =   0.25;  // light //  2.5 mm thickness of FEBs
-const  Double_t febvolume_position    =  carbon_position + carbon_thickness/2. + feb_width/2.;
+const  Double_t febvolume_position    =  services_position + services_thickness/2. + feb_width/2.;
+//const  Double_t febvolume_position    =  carbon_position + carbon_thickness/2. + feb_width/2.;
 
 // ASIC parameters
 const Double_t asic_thickness         =   0.25; // 2.5 mm asic_thickness
@@ -458,6 +466,7 @@ const TString FebVolumeMedium         = "TRDG10";    // todo - put correct FEB m
 const TString AsicVolumeMedium        = "air";       // todo - put correct ASIC material here
 const TString TextVolumeMedium        = "air";       // leave as air
 const TString FrameVolumeMedium       = "TRDG10";
+const TString ServicesVolumeMedium    = "TRDcopper";
 const TString AluminiumVolumeMedium   = "aluminium";
 //const TString MylarVolumeMedium       = "mylar";
 //const TString RadiatorVolumeMedium    = "polypropylene";
@@ -924,6 +933,10 @@ void dump_info_file()
 
   fprintf(ifile,"backpanel is            : ");
   if (!IncludeBackpanel ) fprintf(ifile,"NOT ");
+  fprintf(ifile,"included\n");
+
+  fprintf(ifile,"services is            : ");
+  if (!IncludeServices ) fprintf(ifile,"NOT ");
   fprintf(ifile,"included\n");
 
   fprintf(ifile,"asics are               : ");
@@ -1441,6 +1454,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
 //  TGeoMedium* mylarVolMed       = gGeoMan->GetMedium(MylarVolumeMedium);
 //  TGeoMedium* electronicsVolMed = gGeoMan->GetMedium(ElectronicsVolumeMedium);
   TGeoMedium* frameVolMed       = gGeoMan->GetMedium(FrameVolumeMedium);
+  TGeoMedium* servicesVolMed    = gGeoMan->GetMedium(ServicesVolumeMedium);
   TGeoMedium* febVolMed         = gGeoMan->GetMedium(FebVolumeMedium);
   TGeoMedium* asicVolMed        = gGeoMan->GetMedium(AsicVolumeMedium);
 //  TGeoMedium* aluminiumVolMed   = gGeoMan->GetMedium(AluminiumVolumeMedium);
@@ -1680,8 +1694,6 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
      // frame1
      TGeoBBox* trd_frame1 = new TGeoBBox("trd_frame1", sizeX /2., frameWidth /2., frame_thickness/2.);
      TGeoVolume* trdmod1_frame1vol = new TGeoVolume("frame1", trd_frame1, frameVolMed);
-     //   TGeoVolume* trdmod1_frame1vol = new TGeoVolume(Form("module%d_frame1", moduleType), trd_frame1, frameVolMed);
-     //   TGeoVolume* trdmod1_frame1vol = new TGeoVolume(Form("trd1mod%dframe1", moduleType), trd_frame1, frameVolMed);
      trdmod1_frame1vol->SetLineColor(kRed);
      
      // translations 
@@ -1694,8 +1706,6 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
      // frame2
      TGeoBBox* trd_frame2 = new TGeoBBox("trd_frame2", frameWidth /2., activeAreaY /2., frame_thickness /2.);
      TGeoVolume* trdmod1_frame2vol = new TGeoVolume("frame2", trd_frame2, frameVolMed);
-     //   TGeoVolume* trdmod1_frame2vol = new TGeoVolume(Form("module%d_frame2", moduleType), trd_frame2, frameVolMed);
-     //   TGeoVolume* trdmod1_frame2vol = new TGeoVolume(Form("trd1mod%dframe2", moduleType), trd_frame2, frameVolMed);
      trdmod1_frame2vol->SetLineColor(kRed);
      
      // translations 
@@ -1745,6 +1755,32 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
      trdmod1_carbonvol->SetLineColor(kGreen);
      TGeoTranslation* trd_carbon_trans = new TGeoTranslation("", 0., 0., carbon_position);
      module->AddNode(trdmod1_carbonvol, 1, trd_carbon_trans);
+   }
+
+   if(IncludeServices)
+   {
+     // services1
+     TGeoBBox* trd_services1 = new TGeoBBox("trd_services1", sizeY /2., services_width /2., services_thickness /2.);
+     TGeoVolume* trdmod1_services1vol = new TGeoVolume("services1", trd_services1, servicesVolMed);
+     trdmod1_services1vol->SetLineColor(kBlue);
+     
+     // translations 
+     TGeoTranslation* trd_services1_trans = new TGeoTranslation("", 0., sizeY /2. - services_width /2., services_position);
+     module->AddNode(trdmod1_services1vol, 1, trd_services1_trans);
+     trd_services1_trans = new TGeoTranslation("", 0., -(sizeY /2. - services_width /2.), services_position);
+     module->AddNode(trdmod1_services1vol, 2, trd_services1_trans);
+     
+     
+     // services2
+     TGeoBBox* trd_services2 = new TGeoBBox("trd_services2", services_width /2., sizeY /2. - services_width, services_thickness /2.);
+     TGeoVolume* trdmod1_services2vol = new TGeoVolume("services2", trd_services2, servicesVolMed);
+     trdmod1_services2vol->SetLineColor(kBlue);
+     
+     // translations 
+     TGeoTranslation* trd_services2_trans = new TGeoTranslation("", sizeX /2. - services_width /2., 0., services_position);
+     module->AddNode(trdmod1_services2vol, 1, trd_services2_trans);
+     trd_services2_trans = new TGeoTranslation("", -(sizeX /2. - services_width /2.), 0., services_position);
+     module->AddNode(trdmod1_services2vol, 2, trd_services2_trans);
    }
 
    // FEBs
@@ -1995,11 +2031,20 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
           rob_pos_y = rob_pos * activeAreaY;
   
           // shift inclined ROB in y to its final position
-          if ( feb_rotation_angle[moduleType-1] == 90 )
+          if ( feb_rotation_angle[moduleType-1] == 90 )  // if FEB parallel to backpanel
             trd_rob_y_position = new TGeoTranslation("", 0., rob_pos_y, -feb_width/2. + rob_offset);  // place ROBs close to FEBs
           else
-            trd_rob_y_position = new TGeoTranslation("", 0., rob_pos_y, feb_width/2. - rob_thickness);  // place ROBs at end of feb volume
-          trd_feb_vol->AddNode(trd_rob_box, iRob+1, trd_rob_y_position);  // position FEB in y
+	  {
+//	    Int_t rob_z_pos = 0.;  // test where ROB is placed by default
+	    Int_t rob_z_pos = -feb_width/2. + feb_width * cos( feb_rotation_angle[moduleType-1] * acos(-1.)/180. ) + rob_offset;
+            if (rob_z_pos > feb_width/2.)  // if the rob is too far out
+	    {
+	      rob_z_pos = feb_width/2. - rob_thickness;  // place ROBs at end of feb volume
+              std::cout << "GBTx ROB was outside of the FEB volume, check overlap with FEB" << std::endl;
+            }
+	    trd_rob_y_position = new TGeoTranslation("", 0., rob_pos_y, rob_z_pos);
+          }
+	  trd_feb_vol->AddNode(trd_rob_box, iRob+1, trd_rob_y_position);  // position FEB in y
         }
 
       }  // IncludeGbtx
