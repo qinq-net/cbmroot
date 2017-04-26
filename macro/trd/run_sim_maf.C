@@ -27,7 +27,7 @@
 #include "../include/rootalias.C"
 
 
-void run_sim_maf(Int_t nEvents = 1000,
+void run_sim_maf(Int_t nEvents = 10,
 		         const char* setupName = "sis100_electron",
 		         const char* inputFile = "")
 {
@@ -42,8 +42,10 @@ void run_sim_maf(Int_t nEvents = 1000,
 
 
   // -----   In- and output file names   ------------------------------------
-  TString inFile = ""; // give here or as argument; otherwise default is taken
-  TString outDir  = "/gluster2/cbm/sim/data/";
+  TString inFile = inputFile; // give here or as argument; otherwise default is taken
+  //TString outDir  = "/gluster2/cbm/sim/data/";
+  TString outDir  = inFile;//"/opt/CBM/Daten/";
+  outDir.Resize(outDir.Last('/'));
   TRegexp Nr ("[.][0-9][0-9][0-9][0-9][0-9][.]");
   TString outFile = outDir + setupName + TString(inputFile)(Nr) + "_test.raw.root";
   TString parFile = outDir + setupName + TString(inputFile)(Nr) + "_params.root";
