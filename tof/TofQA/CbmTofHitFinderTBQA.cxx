@@ -288,7 +288,8 @@ void CbmTofHitFinderTBQA::Exec(Option_t* option)
    {
       const CbmTofHit* hit = static_cast<const CbmTofHit*> (fTofHits->At(i));
       const CbmMatch* hitMatch = static_cast<const CbmMatch*> (fTofDigiMatchs->At(i));
-      evHits[i] = { hit->GetX(), hit->GetDx(), hit->GetY(), hit->GetDy(), hit->GetTime(), hit->GetTimeError(), {}, {}, CbmTofAddress::GetModFullId(hit->GetAddress()) } ;
+//      evHits[i] = { hit->GetX(), hit->GetDx(), hit->GetY(), hit->GetDy(), hit->GetTime(), hit->GetTimeError(), {}, {}, CbmTofAddress::GetModFullId(hit->GetAddress()) } ;
+      evHits[i] = std::move( QAHit{hit->GetX(), hit->GetDx(), hit->GetY(), hit->GetDy(), hit->GetTime(), hit->GetTimeError(), set<const QAMCPoint*>{}, set<const QAMCTrack*>{} , CbmTofAddress::GetModFullId(hit->GetAddress()) } ) ;
       QAHit& lastHit = evHits[i];
       
       int nofDigis = hitMatch->GetNofLinks();
