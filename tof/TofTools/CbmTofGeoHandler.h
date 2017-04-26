@@ -75,6 +75,8 @@ class CbmTofGeoHandler : public TObject {
   Int_t VolIdGeo(const char *name) const;
   const char* CurrentVolName() const;
   const char* CurrentVolOffName(Int_t off) const;
+  const char* CurrentNodeName() const;
+  const char* CurrentNodeOffName(Int_t off) const;
 
   Int_t CheckGeometryVersion(); 
 

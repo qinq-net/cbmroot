@@ -147,7 +147,7 @@ Int_t CbmTofGeoHandler::GetUniqueDetectorId()
     CurrentVolOffID(1, gap);
     CurrentVolID(cell);
   } else if (fGeoVersion == k14a) { // test beam  
-    Volname = CurrentVolOffName(4);
+    Volname = CurrentNodeOffName(4);
     smtype = Volname[7]-'0';
     CurrentVolOffID(4, smodule);
     CurrentVolOffID(2, counter);
@@ -202,7 +202,7 @@ Int_t CbmTofGeoHandler::GetUniqueCounterId()
     CurrentVolOffID(1, gap);
     CurrentVolID(cell);
   } else if (fGeoVersion == k14a) { // test beam  
-    Volname = CurrentVolOffName(4);
+    Volname = CurrentNodeOffName(4);
     smtype = Volname[7]-'0';
     CurrentVolOffID(4, smodule);
     CurrentVolOffID(2, counter);
@@ -395,6 +395,29 @@ const char* CbmTofGeoHandler::CurrentVolOffName(Int_t off) const
   }
 }
 
+//_____________________________________________________________________________
+const char* CbmTofGeoHandler::CurrentNodeName() const
+{
+  //
+  // Returns the current node name
+  //
+  if (gGeoManager->IsOutside()) return gGeoManager->GetTopNode()->GetName();
+  return gGeoManager->GetCurrentNode()->GetName();
+}
+
+//_____________________________________________________________________________
+const char* CbmTofGeoHandler::CurrentNodeOffName(Int_t off) const
+{
+  //
+  // Return the current node "off" upward in the geometrical tree
+  // if name=0 no name is returned
+  //
+  if (off<0 || off>gGeoManager->GetLevel()) return 0;
+  if (off==0) return CurrentNodeName();
+  TGeoNode *node = gGeoManager->GetMother(off);
+  if (!node) return 0;
+  return node->GetName();
+}
 
 void CbmTofGeoHandler::FillDetectorInfoArray(Int_t uniqueId) 
 {

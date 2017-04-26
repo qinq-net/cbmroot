@@ -156,7 +156,7 @@ NbCh003: Int_t \
 NbCh004: Int_t \                                                                                                                    
    16      
 NbCh005: Int_t \                                                                                                                    
-   16   16   16  
+    4   16   16  
 NbCh006: Int_t \                                                                                                                    
    40   40  
 NbCh007: Int_t \                                                                                                                    
