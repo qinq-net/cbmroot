@@ -11,6 +11,7 @@
 #include <CbmTrdQABase.h>
 #include "CbmTrdDigi.h"
 
+ClassImp (CbmTrdDigiAnalysis)
 
 class CbmTrdDigiAnalysis : public CbmTrdQABase
 {

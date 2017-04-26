@@ -65,3 +65,5 @@ CbmTrdDigiAnalysis::Exec (Option_t*)
                << " Digis " << FairLogger::endl;
 
 }
+
+ClassImp(CbmTrdDigiAnalysis)
