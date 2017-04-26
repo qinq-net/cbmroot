@@ -935,7 +935,7 @@ void dump_info_file()
   if (!IncludeBackpanel ) fprintf(ifile,"NOT ");
   fprintf(ifile,"included\n");
 
-  fprintf(ifile,"services is            : ");
+  fprintf(ifile,"services are            : ");
   if (!IncludeServices ) fprintf(ifile,"NOT ");
   fprintf(ifile,"included\n");
 
