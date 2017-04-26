@@ -1,3 +1,4 @@
+#include <numeric>
 #include "CbmTrdSimpleDigitizer.h"
 #include "CbmTrdDigi.h"
 #include "CbmTrdAddress.h"
