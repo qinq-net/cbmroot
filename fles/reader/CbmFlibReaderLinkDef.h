@@ -42,6 +42,8 @@
 #pragma link C++ class CbmTrdQAHit;
 //#pragma link C++ class CbmTrdQABaseline;
 #pragma link C++ class CbmTrdSimpleDigitizer;
+//#pragma link C++ class CbmTrdAdvDigitizer;
+#pragma link C++ class CbmTrdDigiAnalysis;
 //#pragma link C++ class CbmTrdSimpleClusterizer;
 #pragma link C++ class CbmTrdRawBeamProfile;
 #pragma link C++ class CbmTrdRawBuchData;

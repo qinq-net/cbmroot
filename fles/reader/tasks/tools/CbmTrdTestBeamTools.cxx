@@ -160,16 +160,18 @@ std::vector<Int_t> CbmTrdTestBeamTools::GetChannelMap(CbmSpadicRawMessage* raw){
 Int_t CbmTrdTestBeamTools::GetBaseline(CbmSpadicRawMessage* raw)
 {
   /*
-   * Get the signal baseline. Returns either the lowest ADC value in the first three samples,
-   * or the last three samples, depending on which one is lower.
+   * Estimate the signal baseline. Returns the lowest ADC value in the first two samples.
    */
-  Int_t Base =*std::min_element(raw->GetSamples(),raw->GetSamples()+3);
-  Int_t Basecand=*std::min_element(raw->GetSamples()+raw->GetNrSamples()-3,raw->GetSamples()+raw->GetNrSamples());
-  return (Base<Basecand)?Base:Basecand;
+  Int_t Base =*std::min_element(raw->GetSamples(),raw->GetSamples()+1);
+  //Int_t Basecand=*std::min_element(raw->GetSamples()+raw->GetNrSamples()-3,raw->GetSamples()+raw->GetNrSamples());
+  return Base;//(Base<Basecand)?Base:Basecand;
 };
-Int_t CbmTrdTestBeamTools::GetMaximumAdc(CbmSpadicRawMessage* raw)
+Int_t CbmTrdTestBeamTools::GetMaximumAdc(CbmSpadicRawMessage* raw,Double_t Base)
 {
-
+  /*
+   * Calculate message charge using the Maximum ADC method.
+   * This is zero suppressed data, if a baseline is given.
+   */
   Int_t MaxADC=-255;
   for (int i=0;i<raw->GetNrSamples();i++){
     if (raw->GetSamples()[i]>MaxADC)
@@ -183,9 +185,9 @@ Float_t CbmTrdTestBeamTools::GetIntegratedCharge(CbmSpadicRawMessage* raw,Double
    * Get the integrated charge of raw, with Base subtracted.
    * Includes correction for unequal message lengths.
    */
-  Float_t Integral=0;
+  Double_t Integral=0;
   Int_t Baseline=GetBaseline(raw);
-  if(Baseline>Base)
+  if(Base!=0.0)
     Baseline = Base;
   Int_t NrSamples=raw->GetNrSamples();
   if(NrSamples<4)
@@ -193,11 +195,38 @@ Float_t CbmTrdTestBeamTools::GetIntegratedCharge(CbmSpadicRawMessage* raw,Double
   for (int i=0;i<NrSamples;i++){
     Integral+=raw->GetSamples()[i]-Baseline;
   }
-  Float_t CorrectionFactor;
+  Double_t CorrectionFactor;
+  Double_t Shape=GetShapingTime(),Sample=GetSamplingTime();
+  for (Int_t i=0;i<raw->GetNrSamples()-1;i++)
   {
-    Float_t Shape=GetShapingTime(),Sample=GetSamplingTime();
-    //Calculate integral of the impulse response of the spadic.
-    CorrectionFactor=(Shape-TMath::Exp(-(NrSamples-2)*Shape/Sample)*(Shape+NrSamples*Sample)/Shape);
+      //Calculate integral of the impulse response of the spadic.
+      CorrectionFactor+=(TMath::Exp(-(NrSamples+0.25)*Sample/Shape)*((NrSamples+0.25)*Sample)/(Shape*Shape));
   }
-  return Integral/CorrectionFactor;
+  if (CorrectionFactor<=0.0)
+    return 0;
+  return static_cast<Float_t>(Integral/CorrectionFactor);
+};
+
+Float_t CbmTrdTestBeamTools::GetIntegratedCharge(Float_t* Samples,Int_t NrSamples)
+{
+  /*
+   * Get the integrated charge of raw, with Base subtracted.
+   * Includes correction for unequal message lengths.
+   */
+  Double_t Integral=0;
+  if(NrSamples<3)
+    return 0;
+  for (int i=1;i<NrSamples;i++){
+    Integral+=Samples[i];
+  }
+  Double_t CorrectionFactor;
+  Double_t Shape=GetShapingTime(),Sample=GetSamplingTime();
+  for (Int_t i=0;i<NrSamples-1;i++)
+  {
+      //Calculate integral of the impulse response of the spadic.
+      CorrectionFactor+=(TMath::Exp(-(NrSamples+0.25)*Sample/Shape)*((NrSamples+0.25)*Sample)/(Shape*Shape));
+  }
+  if (CorrectionFactor<=0.0)
+    return 0;
+  return static_cast<Float_t>(Integral/CorrectionFactor);
 };

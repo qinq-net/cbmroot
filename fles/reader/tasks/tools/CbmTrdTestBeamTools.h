@@ -38,18 +38,32 @@ class CbmTrdTestBeamTools: public TObject
     return 90;
   };
 
+  virtual Int_t GetNrLayers(){
+    return GetNrRobs();
+  };
+  virtual Int_t GetNrRows(Int_t Layer=0){
+    //Get the Number of active Rows in the corresponding Layer
+    return 2;
+  };
+  virtual Int_t GetNrColumns(Int_t Layer=0){
+    //Get the Number of active Columns in the corresponding Layer
+    return 16*GetNrSpadics();
+  }
   virtual Int_t GetNrRobs(){
+    //Get the Number of active ROBS in the Setup;
     return NrOfActiveSyscores;
   };
-  virtual Int_t GetNrSpadics(){
+  virtual Int_t GetNrSpadics(Int_t RobID=0){
+    //Get the Number of active Spadics on a ROB
     return NrOfActiveSpadics;
   }
   virtual std::vector<Int_t> GetChannelMap(CbmSpadicRawMessage* raw);
   TString GetSpadicName(Int_t,Int_t,TString,Bool_t);
   Int_t GetBaseline(CbmSpadicRawMessage* raw);
-  virtual Int_t GetMaximumAdc(CbmSpadicRawMessage* raw);
+  virtual Int_t GetMaximumAdc(CbmSpadicRawMessage*,Double_t Base=0.0);
   Float_t GetIntegratedCharge(CbmSpadicRawMessage*,Double_t Base=0.0);
-  
+  Float_t GetIntegratedCharge(Float_t* Samples,Int_t NrSamples=32);
+
   CbmTrdTestBeamTools(const CbmTrdTestBeamTools&);
   CbmTrdTestBeamTools operator=(const CbmTrdTestBeamTools&);
  public:

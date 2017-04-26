@@ -93,6 +93,8 @@ Set(SRCS
   tasks/CbmTrdQAHit.cxx
 #  tasks/CbmTrdQABaseline.cxx
   tasks/CbmTrdSimpleDigitizer.cxx
+#  tasks/CbmTrdAdvDigitizer.cxx
+  tasks/CbmTrdDigiAnalysis.cxx
 #  tasks/CbmTrdSimpleClusterizer.cxx
   tasks/CbmTrdRawBeamProfile.cxx
   tasks/CbmTrdRawBuchData.cxx

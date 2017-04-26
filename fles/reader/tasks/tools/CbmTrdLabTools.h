@@ -17,6 +17,10 @@ class CbmTrdLabTools: public CbmTrdTestBeamTools
   virtual Int_t GetNrSpadics(){
     return 1;
   }
+  virtual Int_t GetLayerID(CbmSpadicRawMessage* raw)
+  {
+    return 0;
+  };
   
   CbmTrdLabTools(const CbmTrdLabTools&);
   CbmTrdLabTools operator=(const CbmTrdLabTools&);

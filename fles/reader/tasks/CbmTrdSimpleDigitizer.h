@@ -3,6 +3,11 @@
 
 
 #include "CbmTrdQABase.h"
+#include <boost/circular_buffer.hpp>
+#include <cstdint>
+#include <algorithm>
+#include <cmath>
+
 class CbmTrdSimpleDigitizer : public CbmTrdQABase
 {
   void StatelessDigitizer();
