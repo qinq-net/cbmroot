@@ -11,7 +11,6 @@
 #include <CbmTrdQABase.h>
 #include "CbmTrdDigi.h"
 
-ClassImp (CbmTrdDigiAnalysis)
 
 class CbmTrdDigiAnalysis : public CbmTrdQABase
 {
@@ -21,6 +20,9 @@ class CbmTrdDigiAnalysis : public CbmTrdQABase
     void Exec (Option_t*);
     virtual
     ~CbmTrdDigiAnalysis ();
+
+    ClassDef(CbmTrdDigiAnalysis,1);
+
 };
 
 #endif /* FLES_READER_TASKS_CBMTRDDIGIANALYSIS_H_ */

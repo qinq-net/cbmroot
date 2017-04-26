@@ -7,6 +7,7 @@
 
 #include <CbmTrdDigiAnalysis.h>
 
+ClassImp(CbmTrdDigiAnalysis)
 
 CbmTrdDigiAnalysis::CbmTrdDigiAnalysis ()
     : CbmTrdQABase ("CbmTrdDigiAnalysis")
@@ -66,4 +67,3 @@ CbmTrdDigiAnalysis::Exec (Option_t*)
 
 }
 
-ClassImp(CbmTrdDigiAnalysis)
