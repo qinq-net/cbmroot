@@ -434,13 +434,18 @@ public:
         paramFirst.SetTime(paramFirst.GetTime() + deltaTFirst);
         firstTime = paramFirst.GetTime();
         par = paramFirst;
-        int nofHits = track->GetNofHits();
+        //int nofHits = track->GetNofHits();
+        int nofMvdHits = track->GetNofMvdHits();
+        int nofStsHits = track->GetNofStsHits();
+        int nofHits = nofMvdHits + nofStsHits;
         Double_t deltaTLast = 0;
 
         for (int i = 1; i < nofHits; ++i)
         {
-            Int_t hitInd = track->GetHitIndex(i);
-            HitType hitType = track->GetHitType(i);
+            //HitType hitType = track->GetHitType(i);
+            HitType hitType = (i < nofMvdHits) ? kMVDHIT : kSTSHIT;
+            //Int_t hitInd = track->GetHitIndex(i);
+            Int_t hitInd = (i < nofMvdHits) ? track->GetMvdHitIndex(i) : track->GetStsHitIndex(i - nofMvdHits);
             CbmPixelHit* hit = static_cast<CbmPixelHit*> (kMVDHIT == hitType ? mvdHits->At(hitInd) : stsHits->At(hitInd));
 
             if (i == nofHits - 1)
