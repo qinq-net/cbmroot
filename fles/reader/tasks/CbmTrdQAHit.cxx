@@ -39,6 +39,19 @@ void CbmTrdQAHit::CreateHistograms(){
       fHm->H2(HistName.Data())->GetYaxis()->SetTitle("StopType");
     }
   }
+  //Triggertype vs Channel:
+  for (Int_t syscore = 0; syscore < fBT->GetNrRobs (); ++syscore)
+    {
+      for (Int_t spadic = 0; spadic < fBT->GetNrSpadics (); ++spadic)
+        {
+          TString spadicName = GetSpadicName(syscore, spadic, "SysCore",true);
+          TString HistName="TriggerType_vs_Channel_"+spadicName;
+          fHm->Add(HistName.Data(), new TH2I(HistName.Data(),HistName.Data(),32,-0.5,31.5,4,-0.5,3.5));
+          fHm->H2(HistName.Data())->GetXaxis()->SetTitle("Channel");
+          fHm->H2(HistName.Data())->GetYaxis()->SetTitle("TriggerType");
+        }
+    }
+
   for(Int_t syscore = 0; syscore < fBT->GetNrRobs(); ++syscore) {
     for(Int_t spadic = 0; spadic < fBT->GetNrSpadics(); ++spadic) {
       TString spadicName = GetSpadicName(syscore, spadic, "SysCore",true);
@@ -95,6 +108,23 @@ void CbmTrdQAHit::Exec(Option_t*)
       HistogramArray.at(GetRobID(raw)*fBT->GetNrSpadics()+GetSpadicID(raw)/2)->Fill(raw->GetTriggerType(),raw->GetStopType());
   }
   LOG(INFO)<<this->GetName()<<": Loop for TriggerType_vs_StopType done"<<FairLogger::endl;
+  //Loop for TriggerType_vs_Channel_:
+  HistogramArray.clear();
+  for(Int_t RobID=0;RobID<fBT->GetNrRobs();RobID++){
+    for(Int_t SpadicID=0;SpadicID<fBT->GetNrSpadics();SpadicID++){
+      TString spadicName = GetSpadicName(RobID, SpadicID, "SysCore",true);
+      TString HistName="TriggerType_vs_Channel_"+spadicName;
+      HistogramArray.push_back(fHm->H2(HistName.Data()));
+    }
+  }
+
+  for (Int_t iSpadicMessage=0; iSpadicMessage < nSpadicMessages; ++iSpadicMessage){
+    CbmSpadicRawMessage *raw= static_cast<CbmSpadicRawMessage*>(fRaw->At(iSpadicMessage));
+    if(raw->GetHit()||raw->GetHitAborted())
+      HistogramArray.at(GetRobID(raw)*fBT->GetNrSpadics()+GetSpadicID(raw)/2)->Fill(GetRobID(raw)*fBT->GetNrSpadics()+GetSpadicID(raw)*16+raw->GetChannelID(),raw->GetTriggerType());
+  }
+  LOG(INFO)<<this->GetName()<<": Loop for NrOfSamples_vs_TriggerType done"<<FairLogger::endl;
+
   //Loop for NrOfSamples_vs_TriggerType:
   HistogramArray.clear();
   for(Int_t RobID=0;RobID<fBT->GetNrRobs();RobID++){
