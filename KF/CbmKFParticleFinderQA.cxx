@@ -6,6 +6,9 @@
 #include "CbmTrack.h"
 #include "CbmMCTrack.h"
 #include "CbmTrackMatchNew.h"
+#include "CbmMCDataManager.h"
+#include "CbmMCDataArray.h"
+#include "CbmMCEventList.h"
 
 #include "FairRunAna.h"
 
@@ -29,8 +32,8 @@
 #include <vector>
 using std::vector;
 
-CbmKFParticleFinderQA::CbmKFParticleFinderQA(const char* name, Int_t iVerbose, KFParticleTopoReconstructor* tr, TString outFileName):
-  FairTask(name, iVerbose), fMCTracksBranchName("MCTrack"), fTrackMatchBranchName("StsTrackMatch"), fMCTrackArray(0), fTrackMatchArray(0), 
+CbmKFParticleFinderQA::CbmKFParticleFinderQA(const char* name, Int_t iVerbose, const KFParticleTopoReconstructor* tr, TString outFileName):
+  FairTask(name, iVerbose), fMCTracksBranchName("MCTrack"), fTrackMatchBranchName("StsTrackMatch"), fMCTrackArray(0), fMCTrackArrayEvent(0), fTrackMatchArray(0), 
   fRecParticles(0), fMCParticles(0), fMatchParticles(0), fSaveParticles(0), fSaveMCParticles(0),
   fOutFileName(outFileName), fOutFile(0), fEfffileName("Efficiency.txt"), fTopoPerformance(0), fPrintFrequency(100), fNEvents(0), fSuperEventAnalysis(0)
 {
@@ -76,13 +79,38 @@ InitStatus CbmKFParticleFinderQA::Init()
     Error("CbmKFParticleFinderQA::Init","RootManager not instantiated!");
     return kERROR;
   }
+
+    //check the mode
+  fTimeSliceMode = 0;
+  if( ioman->GetObject("TimeSlice.") )
+    fTimeSliceMode = 1;
   
   //MC Tracks
-  fMCTrackArray=(TClonesArray*) ioman->GetObject(fMCTracksBranchName);
-  if(fMCTrackArray==0)
+  if(fTimeSliceMode)
   {
-    Error("CbmKFParticleFinderQA::Init","mc track array not found!");
-    return kERROR;
+    FairRootManager *fManger = FairRootManager::Instance();
+    CbmMCDataManager* mcManager = (CbmMCDataManager*) fManger->GetObject("MCDataManager");
+    if(mcManager==0)
+      Error("CbmKFParticleFinderQA::Init","MC Data Manager not found!");
+    
+    fMCTrackArray= mcManager->InitBranch("MCTrack");
+  
+    if(fMCTrackArray==0)
+    {
+      Error("CbmKFParticleFinderQA::Init","mc track array not found!");
+      return kERROR;
+    }
+    
+    fEventList =  (CbmMCEventList*) ioman->GetObject("MCEventList.");
+    if(fEventList==0)
+    {
+      Error("CbmKFParticleFinderQA::Init","MC Event List not found!");
+      return kERROR;
+    }
+  }
+  else
+  {
+    fMCTrackArrayEvent = (TClonesArray*) ioman->GetObject("MCTrack");
   }
   
   //Track match
@@ -125,42 +153,80 @@ void CbmKFParticleFinderQA::Exec(Option_t* /*opt*/)
       fMatchParticles->Delete();
     }
     
-    Int_t nMCTracks = fMCTrackArray->GetEntriesFast();
-    vector<KFMCTrack> mcTracks(nMCTracks);
-    for(Int_t iMC=0; iMC<nMCTracks; iMC++)
+    int nMCEvents = 1;
+    if(fTimeSliceMode)
+      nMCEvents = fEventList->GetNofEvents();   
+    
+    std::cout<<nMCEvents<<" nMCEvents"<<endl;
+    
+    vector<KFMCTrack> mcTracks;
+    vector< vector< vector<int> > > indexMap(1);
+    indexMap[0].resize(nMCEvents);
+    
+    int mcIndexOffset = 0;
+    
+    for(int iMCEvent=0; iMCEvent<nMCEvents; iMCEvent++)
     {
-      CbmMCTrack *cbmMCTrack = (CbmMCTrack*)fMCTrackArray->At(iMC);
-
+      int nMCTracks = 0;
+      if(fTimeSliceMode)
+        nMCTracks = fMCTrackArray->Size(0, iMCEvent);
+      else
+        nMCTracks = fMCTrackArrayEvent->GetEntriesFast();
       
-      mcTracks[iMC].SetX ( cbmMCTrack->GetStartX() );
-      mcTracks[iMC].SetY ( cbmMCTrack->GetStartY() );
-      mcTracks[iMC].SetZ ( cbmMCTrack->GetStartZ() );
-      mcTracks[iMC].SetPx( cbmMCTrack->GetPx() );
-      mcTracks[iMC].SetPy( cbmMCTrack->GetPy() );
-      mcTracks[iMC].SetPz( cbmMCTrack->GetPz() );
+      if(fTimeSliceMode)
+        indexMap[0][iMCEvent].resize(nMCTracks);
       
-      Int_t pdg = cbmMCTrack->GetPdgCode();
-      Double_t q=1;
-      if ( pdg < 9999999 && ( (TParticlePDG *)TDatabasePDG::Instance()->GetParticle(pdg) ))
-        q = TDatabasePDG::Instance()->GetParticle(pdg)->Charge()/3.0;
-      else if(pdg ==  1000010020) q =  1;
-      else if(pdg == -1000010020) q = -1;
-      else if(pdg ==  1000010030) q =  1;
-      else if(pdg == -1000010030) q = -1;
-      else if(pdg ==  1000020030) q =  2;
-      else if(pdg == -1000020030) q = -2;
-      else if(pdg ==  1000020040) q =  2;
-      else if(pdg == -1000020040) q = -2;
-      else q = 0;
-      Double_t p = cbmMCTrack->GetP();
+      for(Int_t iMC=0; iMC<nMCTracks; iMC++)
+      {
+        CbmMCTrack *cbmMCTrack;
+        if(fTimeSliceMode)
+          cbmMCTrack = (CbmMCTrack*)fMCTrackArray->Get(0, iMCEvent, iMC);
+        else
+          cbmMCTrack = (CbmMCTrack*)fMCTrackArrayEvent->At(iMC);
+        
+        KFMCTrack kfMCTrack;
+        kfMCTrack.SetX ( cbmMCTrack->GetStartX() );
+        kfMCTrack.SetY ( cbmMCTrack->GetStartY() );
+        kfMCTrack.SetZ ( cbmMCTrack->GetStartZ() );
+        kfMCTrack.SetPx( cbmMCTrack->GetPx() );
+        kfMCTrack.SetPy( cbmMCTrack->GetPy() );
+        kfMCTrack.SetPz( cbmMCTrack->GetPz() );
+        
+        Int_t pdg = cbmMCTrack->GetPdgCode();
+        Double_t q=1;
+        if ( pdg < 9999999 && ( (TParticlePDG *)TDatabasePDG::Instance()->GetParticle(pdg) ))
+          q = TDatabasePDG::Instance()->GetParticle(pdg)->Charge()/3.0;
+        else if(pdg ==  1000010020) q =  1;
+        else if(pdg == -1000010020) q = -1;
+        else if(pdg ==  1000010030) q =  1;
+        else if(pdg == -1000010030) q = -1;
+        else if(pdg ==  1000020030) q =  2;
+        else if(pdg == -1000020030) q = -2;
+        else if(pdg ==  1000020040) q =  2;
+        else if(pdg == -1000020040) q = -2;
+        else q = 0;
+        Double_t p = cbmMCTrack->GetP();
+        
+        if(cbmMCTrack->GetMotherId() >= 0)
+          kfMCTrack.SetMotherId(cbmMCTrack->GetMotherId() + mcIndexOffset);
+        else
+          kfMCTrack.SetMotherId(-iMCEvent-1);
+        kfMCTrack.SetQP(q/p);
+        kfMCTrack.SetPDG(pdg);
+        kfMCTrack.SetNMCPoints(0);
+        
+        if(fTimeSliceMode)
+          indexMap[0][iMCEvent][iMC] = mcTracks.size();
+        mcTracks.push_back(kfMCTrack);
+      }
       
-      mcTracks[iMC].SetMotherId(cbmMCTrack->GetMotherId());
-      mcTracks[iMC].SetQP(q/p);
-      mcTracks[iMC].SetPDG(pdg);
-      mcTracks[iMC].SetNMCPoints(0);
+      mcIndexOffset += nMCTracks;
     }
     
     Int_t ntrackMatches=fTrackMatchArray->GetEntriesFast();
+    
+    std::cout<<ntrackMatches<<" ntrackMatches"<<std::endl;
+    
     vector<int> trackMatch(ntrackMatches, -1);
 
     for(int iTr=0; iTr<ntrackMatches; iTr++)
@@ -170,21 +236,30 @@ void CbmKFParticleFinderQA::Exec(Option_t* /*opt*/)
       Float_t bestWeight = 0.f;
       Float_t totalWeight = 0.f;
       Int_t mcTrackId = -1;
+      CbmLink link;
       for(int iLink=0; iLink<stsTrackMatch -> GetNofLinks(); iLink++)
       {
         totalWeight += stsTrackMatch->GetLink(iLink).GetWeight();
         if( stsTrackMatch->GetLink(iLink).GetWeight() > bestWeight)
         {
           bestWeight = stsTrackMatch->GetLink(iLink).GetWeight();
-          mcTrackId = stsTrackMatch->GetLink(iLink).GetIndex();
+          int iMCTrack = stsTrackMatch->GetLink(iLink).GetIndex();
+          link = stsTrackMatch->GetLink(iLink);
+          
+          if(fTimeSliceMode)
+            mcTrackId = indexMap[link.GetFile()][link.GetEntry()][iMCTrack];
+          else
+            mcTrackId = stsTrackMatch->GetLink(iLink).GetIndex();
+          
+         /// std::cout << "mcTrackId " << mcTrackId << std::endl;
         }
       }
       if(bestWeight/totalWeight < 0.7) continue;
-      if(mcTrackId >= nMCTracks || mcTrackId < 0)
-      {
-        std::cout << "Sts Matching is wrong!    StsTackId = " << mcTrackId << " N mc tracks = " << nMCTracks << std::endl;
-        continue;
-      }
+//       if(mcTrackId >= nMCTracks || mcTrackId < 0)
+//       {
+//         std::cout << "Sts Matching is wrong!    StsTackId = " << mcTrackId << " N mc tracks = " << nMCTracks << std::endl;
+//         continue;
+//       }
       
       if(TMath::Abs(mcTracks[mcTrackId].PDG()) > 4000 && 
         !(TMath::Abs(mcTracks[mcTrackId].PDG()) == 1000010020 || TMath::Abs(mcTracks[mcTrackId].PDG()) == 1000010030 ||

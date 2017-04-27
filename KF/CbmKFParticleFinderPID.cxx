@@ -11,7 +11,9 @@
 #include "CbmTrdTrack.h"
 #include "CbmRichRing.h"
 #include "CbmMuchTrack.h"
-#include "utils/CbmRichUtil.h"
+
+#include "CbmEvent.h"
+#include "CbmMCDataManager.h"
 
 #include "FairRunAna.h"
 
@@ -26,7 +28,7 @@ CbmKFParticleFinderPID::CbmKFParticleFinderPID(const char* name, Int_t iVerbose)
   fTofBranchName("TofHit"), fMCTracksBranchName("MCTrack"), fTrackMatchBranchName("StsTrackMatch"), fTrdBranchName ("TrdTrack"), fRichBranchName ("RichRing"),
   fMuchTrackBranchName("MuchTrack"),
   fTrackArray(0), fGlobalTrackArray(0), fTofHitArray(0), fMCTrackArray(0), fTrackMatchArray(0), fTrdTrackArray(0), fRichRingArray(0),
-  fMuchTrackArray(0),
+  fMuchTrackArray(0), fMCTracks(0),
   fPIDMode(0), fSisMode(1), fTrdPIDMode(0), fRichPIDMode(0),
   fMuchMode(0),
   fPID(0)
@@ -52,6 +54,69 @@ InitStatus CbmKFParticleFinderPID::Init()
   {
     Error("CbmKFParticleFinderPID::Init","RootManager not instantiated!");
     return kERROR;
+  }
+  
+  
+    //check the mode
+  fTimeSliceMode = 0;
+  if( ioman->GetObject("TimeSlice.") )
+  {
+    fTimeSliceMode = 1;
+    std::cout << GetName() << ": Running in the timeslice mode." << FairLogger::endl;
+  }
+  else
+    std::cout << GetName() << ": Running in the event by event mode." << FairLogger::endl;
+  
+    // Get reconstructed events
+  
+  if(fPIDMode == 1)
+  {
+    FairRootManager *fManger = FairRootManager::Instance();
+    if(fManger == 0)
+    {
+      Fatal("CbmKFParticleFinder::Init", "fManger is not found!");
+      return kERROR;
+    }
+    
+    
+    CbmMCDataManager* mcManager = 0;
+    
+    if(fTimeSliceMode)
+      mcManager = (CbmMCDataManager*) fManger->GetObject("MCDataManager");
+    
+    if(fTimeSliceMode)
+      if(mcManager == 0)
+      {
+        Fatal("CbmKFParticleFinder::Init", "MC Data Manager is not found! Losos!");
+        return kERROR;
+      }
+
+    if(fTimeSliceMode)
+    {
+      fMCTracks = mcManager->InitBranch("MCTrack");
+      if(fMCTracks==0)
+      {
+        Fatal("CbmKFParticleFinderPID::Init","mc track array not found!");
+        return kERROR;
+      }
+    }
+    else
+    {
+      fMCTrackArray=(TClonesArray*) ioman->GetObject("MCTrack");
+      if(fMCTrackArray==0)
+      {
+        Fatal("CbmKFParticleFinderPID::Init","mc track array not found!");
+        return kERROR;
+      }
+    }
+  
+    //Track match
+    fTrackMatchArray=(TClonesArray*) ioman->GetObject(fTrackMatchBranchName);
+    if(fTrackMatchArray==0)
+    {
+      Error("CbmKFParticleFinderPID::Init","track match array not found!");
+      return kERROR;
+    }
   }
   
   // Get sts tracks
@@ -110,25 +175,6 @@ InitStatus CbmKFParticleFinderPID::Init()
       }
     }
   }
-  
-  if(fPIDMode==1)
-  {
-    //MC Tracks
-    fMCTrackArray=(TClonesArray*) ioman->GetObject(fMCTracksBranchName);
-    if(fMCTrackArray==0)
-    {
-      Error("CbmKFParticleFinderPID::Init","mc track array not found!");
-      return kERROR;
-    }
-  
-    //Track match
-    fTrackMatchArray=(TClonesArray*) ioman->GetObject(fTrackMatchBranchName);
-    if(fTrackMatchArray==0)
-    {
-      Error("CbmKFParticleFinderPID::Init","track match array not found!");
-      return kERROR;
-    }
-  }
    
   return kSUCCESS;
 }
@@ -152,16 +198,25 @@ void CbmKFParticleFinderPID::Finish()
 
 void CbmKFParticleFinderPID::SetMCPID()
 {
-  Int_t nMCTracks = fMCTrackArray->GetEntriesFast();
-  Int_t ntrackMatches = fTrackMatchArray->GetEntriesFast();
-  for(int iTr=0; iTr<ntrackMatches; iTr++)
+  Int_t nTracks=fTrackArray->GetEntriesFast();
+  Int_t ntrackMatches = fTrackMatchArray->GetEntriesFast();  
+  std::cout << "PID  ntrackMatches " << ntrackMatches << " fTrackMatchArray " << fTrackMatchArray <<" "<<nTracks<< std::endl;
+  Int_t nMCTracks = 0;
+  if(!fTimeSliceMode)
+    nMCTracks = fMCTrackArray->GetEntriesFast();
+  
+  for(int iTr=0; iTr<nTracks; iTr++)
   {
     fPID[iTr] = -2;
+    
     CbmTrackMatchNew* stsTrackMatch = (CbmTrackMatchNew*) fTrackMatchArray->At(iTr);
     if(stsTrackMatch -> GetNofLinks() == 0) continue;
     Float_t bestWeight = 0.f;
     Float_t totalWeight = 0.f;
     Int_t mcTrackId = -1;
+    Int_t iFile = -1;
+    Int_t iEvent = -1;
+    
     for(int iLink=0; iLink<stsTrackMatch -> GetNofLinks(); iLink++)
     {
       totalWeight += stsTrackMatch->GetLink(iLink).GetWeight();
@@ -169,15 +224,34 @@ void CbmKFParticleFinderPID::SetMCPID()
       {
         bestWeight = stsTrackMatch->GetLink(iLink).GetWeight();
         mcTrackId = stsTrackMatch->GetLink(iLink).GetIndex();
+        if(fTimeSliceMode)
+        {
+          iFile = stsTrackMatch->GetLink(iLink).GetFile();
+          iEvent = stsTrackMatch->GetLink(iLink).GetEntry();
+          } 
       }
     }
     if(bestWeight/totalWeight < 0.7) continue;
-    if(mcTrackId >= nMCTracks || mcTrackId < 0)
-    {
-      std::cout << "Sts Matching is wrong!    StsTrackId = " << mcTrackId << " N mc tracks = " << nMCTracks << std::endl;
-      continue;
-    }
-    CbmMCTrack *cbmMCTrack = (CbmMCTrack*)fMCTrackArray->At(mcTrackId);
+    
+    if((!fTimeSliceMode) && (mcTrackId >= nMCTracks || mcTrackId < 0)) continue;
+//     if(mcTrackId >= nMCTracks || mcTrackId < 0)
+//     {
+//       std::cout << "Sts Matching is wrong!    StsTrackId = " << mcTrackId << " N mc tracks = " << nMCTracks << std::endl;
+//       continue;
+//     }
+    
+    
+//     std::cout<<mcTrackId<<" mcTrackId "<<fMCTrackArray->GetEntriesFast()<<std::endl;
+    
+    CbmMCTrack *cbmMCTrack = 0;
+    
+    if(fTimeSliceMode)
+      cbmMCTrack = dynamic_cast <CbmMCTrack*>(fMCTracks->Get(iFile,iEvent,mcTrackId) );
+    else
+      cbmMCTrack = (CbmMCTrack*)fMCTrackArray->At(mcTrackId);
+    
+    
+    
     if(!(TMath::Abs(cbmMCTrack->GetPdgCode()) == 11 ||
          TMath::Abs(cbmMCTrack->GetPdgCode()) == 13 ||
          TMath::Abs(cbmMCTrack->GetPdgCode()) == 211 ||
@@ -261,7 +335,7 @@ void CbmKFParticleFinderPID::SetRecoPID()
           {
             Double_t axisA = richRing->GetAaxis();
             Double_t axisB = richRing->GetBaxis();
-            Double_t dist = CbmRichUtil::GetRingTrackDistance(igt);
+            Double_t dist = 0;// richRing->GetDistance();
             
             Double_t fMeanA = 4.95;
             Double_t fMeanB = 4.54;

@@ -13,6 +13,8 @@
 class KFParticleTopoReconstructor;
 class KFTopoPerformance;
 class TClonesArray;
+class CbmMCEventList;
+class CbmMCDataArray;
 class TFile;
 class TObject;
 
@@ -20,7 +22,7 @@ class CbmKFParticleFinderQA : public FairTask {
  public:
 
   // Constructors/Destructors ---------
-  CbmKFParticleFinderQA(const char* name = "CbmKFParticleFinderQA", Int_t iVerbose = 0, KFParticleTopoReconstructor* tr=0,
+  CbmKFParticleFinderQA(const char* name = "CbmKFParticleFinderQA", Int_t iVerbose = 0, const KFParticleTopoReconstructor* tr=0,
                         TString outFileName="CbmKFParticleFinderQA.root");
   ~CbmKFParticleFinderQA();
 
@@ -52,8 +54,10 @@ class CbmKFParticleFinderQA : public FairTask {
   TString fTrackMatchBranchName;      //! Name of the input TCA with track match
 
   //input branches
-  TClonesArray *fMCTrackArray; //mc tracks
-  TClonesArray *fTrackMatchArray; //track match
+  CbmMCDataArray* fMCTrackArray; //mc tracks
+  TClonesArray *fMCTrackArrayEvent;
+  CbmMCEventList* fEventList;    //mc event list in timeslice 
+  TClonesArray* fTrackMatchArray; //track match
  
  // output arrays of particles
   TClonesArray* fRecParticles;    // output array of KF Particles
@@ -62,6 +66,8 @@ class CbmKFParticleFinderQA : public FairTask {
 
   Bool_t fSaveParticles;
   Bool_t fSaveMCParticles;
+  
+  bool fTimeSliceMode;
   
   //output file with histograms
   TString fOutFileName;

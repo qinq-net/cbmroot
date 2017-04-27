@@ -63,16 +63,18 @@ class CbmKFParticleFinder : public FairTask {
   TString fStsTrackBranchName;      //! Name of the input TCA with reco tracks
 
   //input branches
-  TClonesArray *fTrackArray;
+  TClonesArray* fTrackArray;
+  TClonesArray* fEvents;
   CbmVertex* fPrimVtx;
 
   //topology reconstructor
   KFParticleTopoReconstructor *fTopoReconstructor;
+//   KFParticleTopoReconstructor* eventTopoReconstructor;
   int fPVFindMode;
   
   //PID information
   CbmKFParticleFinderPID* fPID;
-  
+    
   //for super event analysis
   bool fSuperEventAnalysis;
   std::vector<CbmStsTrack> fSETracks;
@@ -80,6 +82,8 @@ class CbmKFParticleFinder : public FairTask {
   std::vector<int> fSEpdg;
   std::vector<int> fSETrackId;
   std::vector<float> fSEChiPrim;
+  
+  bool fTimeSliceMode;
   
   ClassDef(CbmKFParticleFinder,1);
 };

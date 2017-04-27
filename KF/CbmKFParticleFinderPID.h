@@ -8,6 +8,10 @@
 
 #include "TString.h"
 
+
+#include "CbmMCDataArray.h"
+#include "CbmMCEventList.h"
+
 #include <vector>
 
 class TClonesArray;
@@ -85,6 +89,7 @@ class CbmKFParticleFinderPID : public FairTask {
   TClonesArray *fTrdTrackArray;
   TClonesArray *fRichRingArray;
   TClonesArray *fMuchTrackArray;//input much tracks
+  CbmMCDataArray* fMCTracks;
   
   //PID variables
   Int_t fPIDMode;
@@ -92,6 +97,8 @@ class CbmKFParticleFinderPID : public FairTask {
   Int_t fTrdPIDMode;
   Int_t fRichPIDMode;
   Int_t fMuchMode;
+  
+  bool fTimeSliceMode;
   
   //MuCh cuts
   float fMuchCutsFloat[2];
