@@ -95,6 +95,7 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
                                 UInt_t inPulserChanM = 12, UInt_t inPulserChanN = 13, UInt_t inPulserChanO = 14,
                                 UInt_t inPulserChanP = 15 );
 
+    void SaveAllHistos( TString sFileName = "" );
     void ResetAllHistos();
     void CyclePulserFee();
 
@@ -146,7 +147,7 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
      * The correct array index is calculated using the function
      * GetArrayIndex(gdpbId, get4Id)
      **/
-    Int_t* fCurrentEpoch; //!
+    Long64_t* fCurrentEpoch; //!
 
     Int_t fNofEpochs; /** Current epoch marker for each ROC **/
     ULong_t fCurrentEpochTime; /** Time stamp of current epoch **/

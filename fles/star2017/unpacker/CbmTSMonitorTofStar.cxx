@@ -206,7 +206,7 @@ Bool_t CbmTSMonitorTofStar::InitContainers()
 
   CreateHistograms();
 
-  fCurrentEpoch = new Int_t[fNrOfGdpbs * fNrOfGet4PerGdpb];
+  fCurrentEpoch = new Long64_t[fNrOfGdpbs * fNrOfGet4PerGdpb];
   for (Int_t i = 0; i < fNrOfGdpbs; ++i) {
     for (Int_t j = 0; j < fNrOfGet4PerGdpb; ++j) {
       fCurrentEpoch[GetArrayIndex(i, j)] = -111;
@@ -1318,6 +1318,8 @@ Bool_t CbmTSMonitorTofStar::DoUnpack(const fles::Timeslice& ts,
                << FairLogger::endl;
      fTimeLastPrintoutNbStarEvent = timeCurrent;
      fulNbStarEventLastPrintout   = fulNbStarEvent;
+     
+     SaveAllHistos( "data/histos_test.root" );
   } // else if( 300 < elapsed_seconds.count() )
 
   LOG(DEBUG1) << "Timeslice contains " << ts.num_microslices(component)
@@ -1646,7 +1648,7 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
   Int_t tot = mess.getGdpbHit32Tot();
   ULong_t hitTime = mess.getMsgFullTime(0);
 
-  Int_t curEpochGdpbGet4 = fCurrentEpoch[fGet4Nr];
+  Long64_t curEpochGdpbGet4 = fCurrentEpoch[fGet4Nr];
   
   if (curEpochGdpbGet4 != -111) {
 
@@ -1813,7 +1815,7 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
 
 void CbmTSMonitorTofStar::FillEpochInfo(ngdpb::Message mess)
 {
-  Int_t epochNr = mess.getGdpbEpEpochNb();
+  Long64_t epochNr = mess.getGdpbEpEpochNb();
 /*  
   if( epochNr < fCurrentEpoch[fGet4Nr] ) 
       LOG(WARNING) << "Epoch message for get4 " << Form("%3u", fGet4Nr ) 
@@ -2530,6 +2532,26 @@ void CbmTSMonitorTofStar::Finish()
   }
   LOG(INFO) << "-------------------------------------" << FairLogger::endl;
 
+  SaveAllHistos();
+}
+
+void CbmTSMonitorTofStar::FillOutput(CbmDigi* /*digi*/)
+{
+}
+
+void CbmTSMonitorTofStar::SaveAllHistos( TString sFileName )
+{
+   TDirectory * oldDir = NULL;
+   TFile * histoFile = NULL;
+  if( "" != sFileName )
+  {
+     // Store current directory position to allow restore later
+     oldDir = gDirectory;
+     // open separate histo file in recreate mode
+     histoFile = new TFile( sFileName , "RECREATE");
+     histoFile->cd();
+  } // if( "" != sFileName )
+
   gDirectory->mkdir("Tof_Raw_gDPB");
   gDirectory->cd("Tof_Raw_gDPB");
   for (UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb++) {
@@ -2597,10 +2619,13 @@ void CbmTSMonitorTofStar::Finish()
   } // for( UInt_t uLinks = 0; uLinks < 16; uLinks ++)
   gDirectory->cd("..");
 
-}
+  if( "" != sFileName )
+  {
+     // Restore original directory position
+     histoFile->Close();
+     oldDir->cd();
+  } // if( "" != sFileName )
 
-void CbmTSMonitorTofStar::FillOutput(CbmDigi* /*digi*/)
-{
 }
 
 void CbmTSMonitorTofStar::ResetAllHistos()
