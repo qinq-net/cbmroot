@@ -3,7 +3,8 @@
 /// \brief Generates TRD geometry in Root format.
 ///                                             
 
-// 2017-04-26 - DE - v17     - add copper bus bars as mock-up of services
+// 2017-04-28 - DE - v17     - implement power bus bars as defined in the TDR
+// 2017-04-26 - DE - v17     - add aluminium ledge around backpanel
 // 2017-02-14 - DE - v17b_3e - build TRD from ROB-3 only, optimise layout
 // 2017-01-10 - DE - v17a_3e - replace 6 ultimate density by 9 super density FEBs for TRD type 1 modules
 // 2016-07-05 - FU - v16a_3e - identical to v15a, change the way the trd volume is exported to resolve a bug with TGeoShape destructor
@@ -114,12 +115,13 @@ const Bool_t IncludeKaptonFoil  = true;  // false;  // true, if entrance window 
 const Bool_t IncludeGasFrame    = true;  // false;  // true, if frame around gas volume is included in geometry
 const Bool_t IncludePadplane    = true;  // false;  // true, if padplane is included in geometry
 const Bool_t IncludeBackpanel   = true;  // false;  // true, if backpanel is included in geometry
-const Bool_t IncludeServices    = true;  // false;
+const Bool_t IncludeAluLedge    = true;  // false;  // true, if Al-ledge around the backpanel is included in geometry
+const Bool_t IncludePowerbars   = true;  // false;  // true, if LV copper bus bars to be drawn
 
 const Bool_t IncludeFebs        = true;  // false;  // true, if FEBs are included in geometry
 const Bool_t IncludeRobs        = true;  // false;  // true, if ROBs are included in geometry
 const Bool_t IncludeAsics       = true;  // false;  // true, if ASICs are included in geometry
-const Bool_t IncludeSupports    = true;  // support structure must be there, otherwise there are no TRDpoints in sim
+const Bool_t IncludeSupports    = true;  // false;  // true, if support structure is included in geometry
 const Bool_t IncludeLabels      = true;  // false;  // true, if TRD (I, II, III) labels are plotted in (VisLevel 5)
 const Bool_t IncludeFieldVector = false;  // true, if magnetic field vector to be shown (in the magnet)
 
@@ -408,17 +410,21 @@ const Double_t honeycomb_thickness    =   2.3 - kapton_thickness - padcopper_thi
 const Double_t honeycomb_position     =  padplane_position + padplane_thickness/2. + honeycomb_thickness/2.;
 const Double_t carbon_position        =  honeycomb_position + honeycomb_thickness/2. + carbon_thickness/2.;
 
-// services thickness
-const Double_t services_thickness     =   1.0; // crossbar of 1 x 1 cm at every module edge
-const Double_t services_width         =   1.0; // crossbar of 1 x 1 cm at every module edge
-const Double_t services_position      =  carbon_position + carbon_thickness/2. + services_thickness/2.;
+// aluminium thickness
+const Double_t aluminium_thickness    =   0.4; // crossbar of 1 x 1 cm at every module edge
+const Double_t aluminium_width        =   1.0; // crossbar of 1 x 1 cm at every module edge
+const Double_t aluminium_position     =  carbon_position + carbon_thickness/2. + aluminium_thickness/2.;
+
+// power bus bars
+const Double_t powerbar_thickness     =   1.0; // 1 cm in z direction
+const Double_t powerbar_width         =   2.0; // 2 cm in x/y direction
+const Double_t powerbar_position      =  aluminium_position + aluminium_thickness/2. + powerbar_thickness/2.;
 
 // readout boards
 //const  Double_t feb_width           =  10.0;    // width of FEBs in cm
 const  Double_t feb_width             =   8.5;    // width of FEBs in cm
 const  Double_t feb_thickness         =   0.25;  // light //  2.5 mm thickness of FEBs
-const  Double_t febvolume_position    =  services_position + services_thickness/2. + feb_width/2.;
-//const  Double_t febvolume_position    =  carbon_position + carbon_thickness/2. + feb_width/2.;
+const  Double_t febvolume_position    =  aluminium_position + aluminium_thickness/2. + feb_width/2.;
 
 // ASIC parameters
 const Double_t asic_thickness         =   0.25; // 2.5 mm asic_thickness
@@ -441,7 +447,8 @@ const TString FebVolumeMedium         = "TRDG10";    // todo - put correct FEB m
 const TString AsicVolumeMedium        = "air";       // todo - put correct ASIC material here
 const TString TextVolumeMedium        = "air";       // leave as air
 const TString FrameVolumeMedium       = "TRDG10";
-const TString ServicesVolumeMedium    = "TRDcopper";
+const TString PowerBusVolumeMedium    = "TRDcopper"; // power bus bars
+const TString AluLegdeVolumeMedium    = "aluminium"; // aluminium frame around backpanel
 const TString AluminiumVolumeMedium   = "aluminium";
 //const TString MylarVolumeMedium       = "mylar";
 //const TString RadiatorVolumeMedium    = "polypropylene";
@@ -456,6 +463,8 @@ TGeoVolume*  gModules[NofModuleTypes]; // Global storage for module types
 void create_materials_from_media_file();
 TGeoVolume* create_trd_module_type(Int_t moduleType);
 void create_detector_layers(Int_t layer);
+void create_power_bars_vertical();
+void create_power_bars_horizontal();
 void create_xtru_supports();
 void create_box_supports();
 void add_trd_labels(TGeoVolume*, TGeoVolume*, TGeoVolume*);
@@ -518,8 +527,13 @@ void Create_TRD_Geometry_v17b() {
 
   if (IncludeSupports)
   {
-    //    create_xtru_supports();
     create_box_supports();
+  }
+
+  if (IncludePowerbars)
+  {
+    create_power_bars_vertical();
+    create_power_bars_horizontal();
   }
 
   if (IncludeFieldVector)
@@ -902,8 +916,12 @@ void dump_info_file()
   if (!IncludeBackpanel ) fprintf(ifile,"NOT ");
   fprintf(ifile,"included\n");
 
-  fprintf(ifile,"services are            : ");
-  if (!IncludeServices ) fprintf(ifile,"NOT ");
+  fprintf(ifile,"Aluminium ledge is      : ");
+  if (!IncludeAluLedge  ) fprintf(ifile,"NOT ");
+  fprintf(ifile,"included\n");
+
+  fprintf(ifile,"Power bus bars are      : ");
+  if (!IncludePowerbars ) fprintf(ifile,"NOT ");
   fprintf(ifile,"included\n");
 
   fprintf(ifile,"asics are               : ");
@@ -1421,7 +1439,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
 //  TGeoMedium* mylarVolMed       = gGeoMan->GetMedium(MylarVolumeMedium);
 //  TGeoMedium* electronicsVolMed = gGeoMan->GetMedium(ElectronicsVolumeMedium);
   TGeoMedium* frameVolMed       = gGeoMan->GetMedium(FrameVolumeMedium);
-  TGeoMedium* servicesVolMed    = gGeoMan->GetMedium(ServicesVolumeMedium);
+  TGeoMedium* aluledgeVolMed    = gGeoMan->GetMedium(AluLegdeVolumeMedium);
   TGeoMedium* febVolMed         = gGeoMan->GetMedium(FebVolumeMedium);
   TGeoMedium* asicVolMed        = gGeoMan->GetMedium(AsicVolumeMedium);
 //  TGeoMedium* aluminiumVolMed   = gGeoMan->GetMedium(AluminiumVolumeMedium);
@@ -1724,30 +1742,30 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
      module->AddNode(trdmod1_carbonvol, 1, trd_carbon_trans);
    }
 
-   if(IncludeServices)
+   if(IncludeAluLedge)
    {
-     // services1
-     TGeoBBox* trd_services1 = new TGeoBBox("trd_services1", sizeY /2., services_width /2., services_thickness /2.);
-     TGeoVolume* trdmod1_services1vol = new TGeoVolume("services1", trd_services1, servicesVolMed);
-     trdmod1_services1vol->SetLineColor(kBlue);
+     // Al-ledge
+     TGeoBBox* trd_aluledge1 = new TGeoBBox("trd_aluledge1", sizeY /2., aluminium_width /2., aluminium_thickness /2.);
+     TGeoVolume* trdmod1_aluledge1vol = new TGeoVolume("aluledge1", trd_aluledge1, aluledgeVolMed);
+     trdmod1_aluledge1vol->SetLineColor(kRed);
      
      // translations 
-     TGeoTranslation* trd_services1_trans = new TGeoTranslation("", 0., sizeY /2. - services_width /2., services_position);
-     module->AddNode(trdmod1_services1vol, 1, trd_services1_trans);
-     trd_services1_trans = new TGeoTranslation("", 0., -(sizeY /2. - services_width /2.), services_position);
-     module->AddNode(trdmod1_services1vol, 2, trd_services1_trans);
+     TGeoTranslation* trd_aluledge1_trans = new TGeoTranslation("", 0., sizeY /2. - aluminium_width /2., aluminium_position);
+     module->AddNode(trdmod1_aluledge1vol, 1, trd_aluledge1_trans);
+     trd_aluledge1_trans = new TGeoTranslation("", 0., -(sizeY /2. - aluminium_width /2.), aluminium_position);
+     module->AddNode(trdmod1_aluledge1vol, 2, trd_aluledge1_trans);
      
      
-     // services2
-     TGeoBBox* trd_services2 = new TGeoBBox("trd_services2", services_width /2., sizeY /2. - services_width, services_thickness /2.);
-     TGeoVolume* trdmod1_services2vol = new TGeoVolume("services2", trd_services2, servicesVolMed);
-     trdmod1_services2vol->SetLineColor(kBlue);
+     // Al-ledge
+     TGeoBBox* trd_aluledge2 = new TGeoBBox("trd_aluledge2", aluminium_width /2., sizeY /2. - aluminium_width, aluminium_thickness /2.);
+     TGeoVolume* trdmod1_aluledge2vol = new TGeoVolume("aluledge2", trd_aluledge2, aluledgeVolMed);
+     trdmod1_aluledge2vol->SetLineColor(kRed);
      
      // translations 
-     TGeoTranslation* trd_services2_trans = new TGeoTranslation("", sizeX /2. - services_width /2., 0., services_position);
-     module->AddNode(trdmod1_services2vol, 1, trd_services2_trans);
-     trd_services2_trans = new TGeoTranslation("", -(sizeX /2. - services_width /2.), 0., services_position);
-     module->AddNode(trdmod1_services2vol, 2, trd_services2_trans);
+     TGeoTranslation* trd_aluledge2_trans = new TGeoTranslation("", sizeX /2. - aluminium_width /2., 0., aluminium_position);
+     module->AddNode(trdmod1_aluledge2vol, 1, trd_aluledge2_trans);
+     trd_aluledge2_trans = new TGeoTranslation("", -(sizeX /2. - aluminium_width /2.), 0., aluminium_position);
+     module->AddNode(trdmod1_aluledge2vol, 2, trd_aluledge2_trans);
    }
 
    // FEBs
@@ -2277,6 +2295,244 @@ void create_mag_field_vector()
 
   //   TGeoCombiTrans* field_combi02 = new TGeoCombiTrans( 200., 0., 0., rotx090);   // point in -y direction
   //   gGeoMan->GetVolume(geoVersion)->AddNode(cbmfield_1, 2, field_combi02);
+}
+
+
+void create_power_bars_vertical()
+{
+  const TString power_01 = "power_bars_trd1";
+  TGeoVolume* power_1 = new TGeoVolumeAssembly(power_01);
+
+  TGeoBBox*   power1;
+  TGeoBBox*   power2;
+
+  TGeoVolume* power1_vol;
+  TGeoVolume* power2_vol;
+
+  TGeoTranslation* power1_trans;
+  TGeoTranslation* power2_trans;
+
+  const Int_t kColor = kBlue;  // bus bar color
+  
+  TGeoMedium* powerBusVolMed = gGeoMan->GetMedium(PowerBusVolumeMedium);
+
+  // powerbus - horizontal short
+  power1     = new TGeoBBox("power1", (DetectorSizeX[1] - DetectorSizeX[0] - powerbar_width)/2., powerbar_width /2., powerbar_thickness /2.);
+  power1_vol = new TGeoVolume("powerbus1", power1, powerBusVolMed);
+  power1_vol->SetLineColor(kColor);
+  
+  // translations 
+  power1_trans = new TGeoTranslation("",  1 * (DetectorSizeX[1] - DetectorSizeY[0]/2.),  1.5 * DetectorSizeY[1], 0.);
+  power_1->AddNode(power1_vol, 1, power1_trans);
+
+  power1_trans = new TGeoTranslation("", -1 * (DetectorSizeX[1] - DetectorSizeY[0]/2.), -1.5 * DetectorSizeY[1], 0.);
+  power_1->AddNode(power1_vol, 2, power1_trans);
+
+  // powerbus - horizontal long
+  power1     = new TGeoBBox("power1", (DetectorSizeX[0] - powerbar_width)/2., powerbar_width /2., powerbar_thickness /2.);
+  power1_vol = new TGeoVolume("powerbus1", power1, powerBusVolMed);
+  power1_vol->SetLineColor(kColor);
+
+  // translations 
+  power1_trans = new TGeoTranslation("", -1 * DetectorSizeX[0],  1.5 * DetectorSizeY[1], 0.);
+  power_1->AddNode(power1_vol, 3, power1_trans);
+
+  power1_trans = new TGeoTranslation("",  1 * DetectorSizeX[0], -1.5 * DetectorSizeY[1], 0.);
+  power_1->AddNode(power1_vol, 4, power1_trans);
+
+
+  // powerbus - vertical long
+  power2     = new TGeoBBox("power2", powerbar_width /2., (5 * DetectorSizeY[1] + powerbar_width) /2., powerbar_thickness /2.);
+  power2_vol = new TGeoVolume("powerbus2", power2, powerBusVolMed);
+  power2_vol->SetLineColor(kColor);
+  
+  // translations 
+  power2_trans = new TGeoTranslation("", -3.5 * DetectorSizeX[1],  0., 0.);
+  power_1->AddNode(power2_vol, 1, power2_trans);
+  power2_trans = new TGeoTranslation("",  3.5 * DetectorSizeX[1],  0., 0.);
+  power_1->AddNode(power2_vol, 2, power2_trans);
+
+  power2_trans = new TGeoTranslation("", -2.5 * DetectorSizeX[1],  0., 0.);
+  power_1->AddNode(power2_vol, 3, power2_trans);
+  power2_trans = new TGeoTranslation("",  2.5 * DetectorSizeX[1],  0., 0.);
+  power_1->AddNode(power2_vol, 4, power2_trans);
+
+  power2_trans = new TGeoTranslation("", -1.5 * DetectorSizeX[1],  0., 0.);
+  power_1->AddNode(power2_vol, 5, power2_trans);
+  power2_trans = new TGeoTranslation("",  1.5 * DetectorSizeX[1],  0., 0.);
+  power_1->AddNode(power2_vol, 6, power2_trans);
+
+  // powerbus - vertical middle
+  power2     = new TGeoBBox("power2", powerbar_width /2., (3 * DetectorSizeY[1] + powerbar_width) /2., powerbar_thickness /2.);
+  power2_vol = new TGeoVolume("powerbus2", power2, powerBusVolMed);
+  power2_vol->SetLineColor(kColor);
+  
+  // translations 
+  power2_trans = new TGeoTranslation("", -1.5 * DetectorSizeX[0],  0., 0.);
+  power_1->AddNode(power2_vol, 7, power2_trans);
+  power2_trans = new TGeoTranslation("",  1.5 * DetectorSizeX[0],  0., 0.);
+  power_1->AddNode(power2_vol, 8, power2_trans);
+
+  // powerbus - vertical short 1
+  power2     = new TGeoBBox("power2", powerbar_width /2., 1 * DetectorSizeY[1] /2., powerbar_thickness /2.);
+  power2_vol = new TGeoVolume("powerbus2", power2, powerBusVolMed);
+  power2_vol->SetLineColor(kColor);
+  //  power2_vol->SetLineColor(kRed);
+  
+  // translations 
+  power2_trans = new TGeoTranslation("", -0.5 * DetectorSizeX[1],  (2.0 * DetectorSizeY[1] + powerbar_width/2.), 0.);
+  power_1->AddNode(power2_vol, 9, power2_trans);
+  power2_trans = new TGeoTranslation("",  0.5 * DetectorSizeX[1], -(2.0 * DetectorSizeY[1] + powerbar_width/2.), 0.);
+  power_1->AddNode(power2_vol,10, power2_trans);
+
+  // powerbus - vertical short 2
+  power2     = new TGeoBBox("power2", powerbar_width /2., (1 * DetectorSizeY[1] + powerbar_width) /2., powerbar_thickness /2.);
+  power2_vol = new TGeoVolume("powerbus2", power2, powerBusVolMed);
+  power2_vol->SetLineColor(kColor);
+  
+  // translations 
+  power2_trans = new TGeoTranslation("", -0.5 * DetectorSizeX[1], -2.0 * DetectorSizeY[1], 0.);
+  power_1->AddNode(power2_vol,11, power2_trans);
+  power2_trans = new TGeoTranslation("",  0.5 * DetectorSizeX[1],  2.0 * DetectorSizeY[1], 0.);
+  power_1->AddNode(power2_vol,12, power2_trans);
+
+  // powerbus - vertical short 3
+  power2     = new TGeoBBox("power2", powerbar_width /2., (2 * DetectorSizeY[0] + powerbar_width/2.) /2., powerbar_thickness /2.);
+  power2_vol = new TGeoVolume("powerbus2", power2, powerBusVolMed);
+  power2_vol->SetLineColor(kColor);
+  
+  // translations 
+  power2_trans = new TGeoTranslation("", -0.5 * DetectorSizeX[0],  (1.5 * DetectorSizeY[0] + powerbar_width/4.), 0.);
+  power_1->AddNode(power2_vol,11, power2_trans);
+  power2_trans = new TGeoTranslation("",  0.5 * DetectorSizeX[0], -(1.5 * DetectorSizeY[0] + powerbar_width/4.), 0.);
+  power_1->AddNode(power2_vol,12, power2_trans);
+
+  Int_t l;
+//  for (l=0; l<4; l++)
+  for (l=0; l<4; l+=2)
+    {
+      TString layername = Form("layer%02d", l+1);
+      TGeoTranslation* power_placement = new TGeoTranslation(0, 0, LayerPosition[l] + LayerThickness/2. + powerbar_position);
+      gGeoMan->GetVolume(layername)->AddNode(power_1, l, power_placement);
+    }
+   
+}
+
+
+void create_power_bars_horizontal()
+{
+  const TString power_01 = "power_bars_trd1";
+  TGeoVolume* power_1 = new TGeoVolumeAssembly(power_01);
+
+  TGeoBBox*   power1;
+  TGeoBBox*   power2;
+
+  TGeoVolume* power1_vol;
+  TGeoVolume* power2_vol;
+
+  TGeoTranslation* power1_trans;
+  TGeoTranslation* power2_trans;
+
+  const Int_t kColor = kBlue;  // bus bar color
+  
+  TGeoMedium* powerBusVolMed = gGeoMan->GetMedium(PowerBusVolumeMedium);
+
+  // powerbus - vertical short
+  power1     = new TGeoBBox("power1", powerbar_width /2., (DetectorSizeY[1] - DetectorSizeY[0] - powerbar_width)/2., powerbar_thickness /2.);
+  power1_vol = new TGeoVolume("powerbus1", power1, powerBusVolMed);
+  power1_vol->SetLineColor(kColor);
+  
+  // translations 
+  power1_trans = new TGeoTranslation("",  1.5 * DetectorSizeX[1], -1 * (DetectorSizeY[1] - DetectorSizeY[0]/2.), 0.);
+  power_1->AddNode(power1_vol, 1, power1_trans);
+
+  power1_trans = new TGeoTranslation("", -1.5 * DetectorSizeX[1],  1 * (DetectorSizeY[1] - DetectorSizeY[0]/2.), 0.);
+  power_1->AddNode(power1_vol, 2, power1_trans);
+
+  // powerbus - vertical long
+  power1     = new TGeoBBox("power1", powerbar_width /2., (DetectorSizeY[0] - powerbar_width)/2., powerbar_thickness /2.);
+  power1_vol = new TGeoVolume("powerbus1", power1, powerBusVolMed);
+  power1_vol->SetLineColor(kColor);
+
+  // translations 
+  power1_trans = new TGeoTranslation("",  1.5 * DetectorSizeX[1],  1 * DetectorSizeY[0], 0.);
+  power_1->AddNode(power1_vol, 3, power1_trans);
+
+  power1_trans = new TGeoTranslation("", -1.5 * DetectorSizeX[1], -1 * DetectorSizeY[0], 0.);
+  power_1->AddNode(power1_vol, 4, power1_trans);
+
+
+  // powerbus - horizontal long
+  power2     = new TGeoBBox("power2", (7 * DetectorSizeX[1] + powerbar_width) /2., powerbar_width /2., powerbar_thickness /2.);
+  power2_vol = new TGeoVolume("powerbus2", power2, powerBusVolMed);
+  power2_vol->SetLineColor(kColor);
+  
+  // translations 
+  power2_trans = new TGeoTranslation("", 0., -2.5 * DetectorSizeY[1], 0.);
+  power_1->AddNode(power2_vol, 1, power2_trans);
+  power2_trans = new TGeoTranslation("", 0.,  2.5 * DetectorSizeY[1], 0.);
+  power_1->AddNode(power2_vol, 2, power2_trans);
+
+  power2_trans = new TGeoTranslation("", 0., -1.5 * DetectorSizeY[1], 0.);
+  power_1->AddNode(power2_vol, 3, power2_trans);
+  power2_trans = new TGeoTranslation("", 0.,  1.5 * DetectorSizeY[1], 0.);
+  power_1->AddNode(power2_vol, 4, power2_trans);
+
+  // powerbus - horizontal middle
+  power2     = new TGeoBBox("power2", (3 * DetectorSizeX[1] + powerbar_width) /2., powerbar_width /2., powerbar_thickness /2.);
+  power2_vol = new TGeoVolume("powerbus2", power2, powerBusVolMed);
+  power2_vol->SetLineColor(kColor);
+  
+  // translations 
+  power2_trans = new TGeoTranslation("", 0., -1.5 * DetectorSizeY[0], 0.);
+  power_1->AddNode(power2_vol, 7, power2_trans);
+  power2_trans = new TGeoTranslation("", 0.,  1.5 * DetectorSizeY[0], 0.);
+  power_1->AddNode(power2_vol, 8, power2_trans);
+
+  // powerbus - horizontal short 1
+  power2     = new TGeoBBox("power2", 2 * DetectorSizeX[1] /2., powerbar_width /2., powerbar_thickness /2.);
+  power2_vol = new TGeoVolume("powerbus2", power2, powerBusVolMed);
+  power2_vol->SetLineColor(kColor);
+  //  power2_vol->SetLineColor(kRed);
+  
+  // translations 
+  power2_trans = new TGeoTranslation("",  (2.5 * DetectorSizeX[1] + powerbar_width/2.),  0.5 * DetectorSizeY[1], 0.);
+  power_1->AddNode(power2_vol, 9, power2_trans);
+  power2_trans = new TGeoTranslation("", -(2.5 * DetectorSizeX[1] + powerbar_width/2.), -0.5 * DetectorSizeY[1], 0.);
+  power_1->AddNode(power2_vol,10, power2_trans);
+
+  // powerbus - horizontal short 2
+  power2     = new TGeoBBox("power2", (2 * DetectorSizeX[1] + powerbar_width) /2., powerbar_width /2., powerbar_thickness /2.);
+  power2_vol = new TGeoVolume("powerbus2", power2, powerBusVolMed);
+  power2_vol->SetLineColor(kColor);
+  
+  // translations 
+  power2_trans = new TGeoTranslation("", -2.5 * DetectorSizeX[1],  0.5 * DetectorSizeY[1], 0.);
+  power_1->AddNode(power2_vol,11, power2_trans);
+  power2_trans = new TGeoTranslation("",  2.5 * DetectorSizeX[1], -0.5 * DetectorSizeY[1], 0.);
+  power_1->AddNode(power2_vol,12, power2_trans);
+
+  // powerbus - horizontal short 3
+  power2     = new TGeoBBox("power2", (2 * DetectorSizeX[0] + powerbar_width/2.) /2., powerbar_width /2., powerbar_thickness /2.);
+  power2_vol = new TGeoVolume("powerbus2", power2, powerBusVolMed);
+  power2_vol->SetLineColor(kColor);
+  
+  // translations 
+  power2_trans = new TGeoTranslation("",  (1.5 * DetectorSizeX[0] + powerbar_width/4.),  0.5 * DetectorSizeY[0], 0.);
+  power_1->AddNode(power2_vol,11, power2_trans);
+  power2_trans = new TGeoTranslation("", -(1.5 * DetectorSizeX[0] + powerbar_width/4.), -0.5 * DetectorSizeY[0], 0.);
+  power_1->AddNode(power2_vol,12, power2_trans);
+
+  Int_t l;
+//  for (l=0; l<4; l++)
+  for (l=1; l<4; l+=2)
+    if (ShowLayer[l])  // if geometry contains layer l
+    {
+      TString layername = Form("layer%02d", l+1);
+      TGeoTranslation* power_placement = new TGeoTranslation(0, 0, LayerPosition[l] + LayerThickness/2. + powerbar_position);
+      gGeoMan->GetVolume(layername)->AddNode(power_1, l, power_placement);
+    }
+   
 }
 
 
