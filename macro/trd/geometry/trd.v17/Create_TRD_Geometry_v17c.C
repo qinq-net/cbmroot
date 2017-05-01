@@ -171,6 +171,8 @@ const Int_t   MaxLayers = 10;   // max layers
 //const Int_t    ShowLayer[MaxLayers] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };  // SIS300-e   // 1: plot, 0: hide
 Int_t    ShowLayer[MaxLayers] = { 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 };  // SIS100-4l is default
 
+Int_t    BusBarOrientation[MaxLayers] = { 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 };  // 1 = vertical
+
 Int_t    PlaneId[MaxLayers]; // automatically filled with layer ID
 
 const Int_t   LayerType[MaxLayers]        = { 10, 11, 10, 11, 20, 21, 20, 21, 30, 31 };  // ab: a [1-3] - layer type, b [0,1] - vertical/horizontal pads
@@ -2441,8 +2443,8 @@ void create_power_bars_vertical()
   power_1->AddNode(power2_vol,12, power2_trans);
 
   Int_t l;
-//  for (l=0; l<4; l++)
-  for (l=0; l<4; l+=2)
+  for (l=0; l<4; l++)
+    if ((ShowLayer[l]) && (BusBarOrientation[l] == 1))  // if geometry contains layer l
     {
       TString layername = Form("layer%02d", l+1);
       TGeoTranslation* power_placement = new TGeoTranslation(0, 0, LayerPosition[l] + LayerThickness/2. + powerbar_position);
@@ -2557,9 +2559,8 @@ void create_power_bars_horizontal()
   power_1->AddNode(power2_vol,12, power2_trans);
 
   Int_t l;
-//  for (l=0; l<4; l++)
-  for (l=1; l<4; l+=2)
-    if (ShowLayer[l])  // if geometry contains layer l
+  for (l=0; l<4; l++)
+    if ((ShowLayer[l]) && (BusBarOrientation[l] == 0))  // if geometry contains layer l
     {
       TString layername = Form("layer%02d", l+1);
       TGeoTranslation* power_placement = new TGeoTranslation(0, 0, LayerPosition[l] + LayerThickness/2. + powerbar_position);
