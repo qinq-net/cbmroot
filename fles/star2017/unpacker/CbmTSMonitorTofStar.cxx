@@ -36,6 +36,7 @@
 #include <ctime>
 
 static Int_t iMess = 0;
+static Int_t iMessB = 0;
 Bool_t bResetTofStarHistos = kFALSE;
 Bool_t bTofCyclePulserFee  = kFALSE;
 
@@ -108,6 +109,10 @@ CbmTSMonitorTofStar::CbmTSMonitorTofStar() :
     fFeetRateDate_gDPB(),
     fiRunStartDateTimeSec( -1 ),
     fiBinSizeDatePlots( -1 ),
+    fulLastMsIdx(0),
+    fbHitsInLastTs(kFALSE),
+    fvulHitEpochBuffLastTs(),
+    fvhCoincOffsetEpochGet4(),
     fulGdpbTsMsb(0),
     fulGdpbTsLsb(0),
     fulStarTsMsb(0),
@@ -793,6 +798,27 @@ void CbmTSMonitorTofStar::CreateHistograms()
       } // if( fbGet4M24b )
     } // for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
+  
+  ///* ASIC coincidences & offsets mapping *///
+  fvulHitEpochBuffLastTs.resize(fNrOfGet4);  //! Dims: [gDPB][hits]
+  for( UInt_t uAsicA = 0; uAsicA < fNrOfGet4 - 1; uAsicA ++ )
+  {
+      name = Form("fvhCoincOffsetEpochGet4__g%03u", uAsicA);
+      title = Form(
+          "Distance in epoch between hits in Get4 %03u and hits in another Get4 ASIC in same TS; GET4 B index [] ; Hit B - Hit A [Epoch]; Counts []", 
+          uAsicA );
+      TH2* ph2 = new TH2I( name.Data(), title.Data(), 
+               fNrOfGet4 - uAsicA - 1, uAsicA + 1, fNrOfGet4,
+               20000, -10000, 10000
+               );
+      fvhCoincOffsetEpochGet4.push_back( ph2 );
+      
+      fHM->Add( name.Data(), ph2 );
+#ifdef USE_HTTP_SERVER
+      if (server)
+         server->Register("/TofCoinc", fHM->H2(name.Data()));
+#endif
+  } // for( UInt_t uAsicA = 0; uAsicA < fNrOfGet4 - 1; uAsicA ++ )
 
   name = "hSpill";
   title = "Counts per channel in Current Spill; X [Strip]; Y [End]; Counts";
@@ -1298,6 +1324,30 @@ Bool_t CbmTSMonitorTofStar::DoUnpack(const fles::Timeslice& ts,
      bTofCyclePulserFee = kFALSE;
   }
   
+  
+  ///* ASIC coincidences & offsets mapping *///
+  if( 0 == component && fbHitsInLastTs )
+  {
+      for( UInt_t uAsicA = 0; uAsicA < fNrOfGet4 - 1; uAsicA ++ )
+      {
+         for( UInt_t uHitA = 0; uHitA < fvulHitEpochBuffLastTs[uAsicA].size(); uHitA ++ )
+         {
+            for( UInt_t uAsicB = uAsicA; uAsicB < fNrOfGet4; uAsicB ++ )
+            {
+               for( UInt_t uHitB = 0; uHitB < fvulHitEpochBuffLastTs[uAsicB].size(); uHitB ++ )
+               {
+                  fvhCoincOffsetEpochGet4[uAsicA]->Fill( uAsicB,
+                           fvulHitEpochBuffLastTs[uAsicB][uHitB]
+                         - fvulHitEpochBuffLastTs[uAsicA][uHitA] );
+               } // for( UInt_t uHitB = 0; uHitB < fvulHitEpochBuffLastTs[uAsicB].size(); uHitB ++ )
+            } // for( UInt_t uAsicA = 0; uAsicA < fNrOfGet4 - 1; uAsicA ++ )
+         } // for( UInt_t uHitA = 0; uHitA < fvulHitEpochBuffLastTs[uAsicA].size(); uHitA ++ )
+         fvulHitEpochBuffLastTs[uAsicA].clear();
+      } // for( UInt_t uAsicA = 0; uAsicA < fNrOfGet4 - 1; uAsicA ++ )
+      fvulHitEpochBuffLastTs[fNrOfGet4 - 1].clear();
+      fbHitsInLastTs = kFALSE;
+  } // if( 0 == component && fbHitsInLastTs )
+  
   // Printout of nb star events log
   std::chrono::time_point<std::chrono::system_clock> timeCurrent = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed_seconds = timeCurrent - fTimeLastPrintoutNbStarEvent;
@@ -1390,6 +1440,7 @@ Bool_t CbmTSMonitorTofStar::DoUnpack(const fles::Timeslice& ts,
         component, m));
 
     uint32_t size = msDescriptor.size;
+    fulLastMsIdx = msDescriptor.idx;
     if (size > 0)
       LOG(DEBUG) << "Microslice: " << msDescriptor.idx << " has size: " << size
                     << FairLogger::endl;
@@ -1805,6 +1856,11 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
                      << ", " << channel << ", " << tot << ", epoch "
                      << curEpochGdpbGet4 << ", FullTime "
                      << hitTime << ", FineTime " << Ft << FairLogger::endl;
+
+    ///* ASIC coincidences & offsets mapping *///
+    fbHitsInLastTs = kTRUE;
+    fvulHitEpochBuffLastTs[fGet4Nr].push_back( curEpochGdpbGet4 );
+
   } // if( fCurrentEpoch[rocId].end() != fCurrentEpoch[rocId].find( get4Id ) )
     //} // if( fCurrentEpoch.end() != fCurrentEpoch.find( rocId ) )
   //} // if( fGdpbIdIndexMap.end() != fGdpbIdIndexMap.find( rocId ) )
@@ -1833,6 +1889,24 @@ void CbmTSMonitorTofStar::FillEpochInfo(ngdpb::Message mess)
   if (100 > iMess++)
       LOG(DEBUG) << "Epoch message for get4 " << fGet4Nr << " with epoch number "
                  << fCurrentEpoch[fGet4Nr] << FairLogger::endl;
+/*
+  if (1000 > iMessB ) 
+  {   
+//      if(  0 <= fGet4Nr && fGet4Nr <= 15 )
+     if( ( 16 <= fGet4Nr && fGet4Nr <= 23 ) || ( 40 <= fGet4Nr && fGet4Nr <= 47 ))
+//     if( 24 <= fGet4Nr && fGet4Nr <= 39 )
+//     if( 48 <= fGet4Nr && fGet4Nr <= 63 )
+//     if( ( 64 <= fGet4Nr && fGet4Nr <= 71 ) || ( 88 <= fGet4Nr && fGet4Nr <= 95 ))
+//     if( 72 <= fGet4Nr && fGet4Nr <= 87 )
+     { 
+         LOG(INFO) << "Epoch message for get4 " << Form( "%02u", fGet4Nr) << " with epoch number "
+                    << Form( "%09llu", fCurrentEpoch[fGet4Nr]) 
+                    << " in ms " << Form("%12llu", fulLastMsIdx)
+                    << FairLogger::endl;
+         iMessB++;
+     } // if get4 chip in range
+  } // if (10000 > iMessB )
+*/
 
   if (1 == mess.getGdpbEpSync())
     fHistGet4EpochFlags->Fill(fGet4Nr, 0);
@@ -1934,7 +2008,7 @@ void CbmTSMonitorTofStar::FillEpochInfo(ngdpb::Message mess)
          else
          {
             LOG(ERROR) << "In STAR sort and cut mode, gDPB " << Form("0x%08x,", fGdpbId)
-                       << " found epoch " << Form( "%12u", epochNr) 
+                       << " found epoch " << Form( "%12llu", epochNr) 
                        << " for get4 "<< Form( "%2u", fGet4Id) 
                        << " while waiting for epoch " 
                        << Form( "%12u", fuCurrentEpGdpb[ fGdpbNr ]) 
@@ -2585,6 +2659,13 @@ void CbmTSMonitorTofStar::SaveAllHistos( TString sFileName )
   fHM->H1("hSpillCount")->Write();
   fHM->H1("hSpillQA")->Write();
 
+  gDirectory->cd("..");
+  
+  ///* ASIC coincidences & offsets mapping *///
+  gDirectory->mkdir("TofCoinc");
+  gDirectory->cd("TofCoinc");
+  for( UInt_t uAsicA = 0; uAsicA < fvhCoincOffsetEpochGet4.size(); uAsicA ++ )
+      fvhCoincOffsetEpochGet4[uAsicA]->Write();
   gDirectory->cd("..");
   
   ///* STAR event building/cutting *///

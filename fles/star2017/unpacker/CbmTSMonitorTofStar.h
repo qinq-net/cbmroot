@@ -183,6 +183,12 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     Int_t             fiRunStartDateTimeSec;
     Int_t             fiBinSizeDatePlots;
     
+    ///* ASIC coincidences & offsets mapping *///
+    ULong64_t fulLastMsIdx;
+    Bool_t    fbHitsInLastTs;
+    std::vector< std::vector< Long64_t > > fvulHitEpochBuffLastTs;  //! Dims: [gDPB][hits]
+    std::vector< TH2 * >                   fvhCoincOffsetEpochGet4; //! Dims: [gDPB - 1]
+    
     ///* STAR TRIGGER detection *///
     ULong64_t fulGdpbTsMsb;
     ULong64_t fulGdpbTsLsb;
