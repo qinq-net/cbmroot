@@ -6,6 +6,8 @@
  **
  **/
 
+// 2017-05-02 - DE - switch back to 5x5 RPC TOF
+// 2017-05-02 - DE - skip MVD in the initial setup
 // 2016-02-05 - VF - Replaces former sis18_mcbm_setup.C,
 //                   now using the CbmSetup class.
 // 2015-06-18 - DE - mCBM @ SIS18 setup
@@ -21,7 +23,7 @@ void setup_sis18_mcbm()
   TString stsGeoTag       = "v18e_mcbm";    // "v18d_mcbm";						  
   TString muchGeoTag      = "v18a_mcbm";
   TString trdGeoTag       = "v18d_1e_mcbm"; // "v18c_1e_mcbm";  // "v18b_1e_mcbm";  // "v18a_1e_mcbm";
-  TString tofGeoTag       = "v13-7a_mcbm";  // "v13_6a_mcbm";   // "v13_5a_mcbm";
+  TString tofGeoTag       = "v13_6a_mcbm";  // "v13-7a_mcbm";  // "v13_5a_mcbm";
   // ------------------------------------------------------------------------
 
 
@@ -41,7 +43,7 @@ void setup_sis18_mcbm()
   }
   setup->SetTitle("SIS18 - MCBM Setup");
   setup->SetModule(kPipe, pipeGeoTag);
-  setup->SetModule(kMvd, mvdGeoTag);
+  //  setup->SetModule(kMvd, mvdGeoTag);  // skip mvd in the initial setup
   setup->SetModule(kSts, stsGeoTag);
   setup->SetModule(kMuch, muchGeoTag);
   setup->SetModule(kTrd, trdGeoTag);
