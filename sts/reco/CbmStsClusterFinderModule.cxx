@@ -1,9 +1,7 @@
-/*
- * CbmStsClusterFinderModule.cxx
- *
- *  Created on: 01.04.2017
- *      Author: vfriese
- */
+/** @file CbmStsClusterFindeModule.cxx
+ ** @author Volker Friese <v.friese@gsi.de>
+ ** @date 05.04.20174
+ **/
 
 #include "CbmStsClusterFinderModule.h"
 
@@ -14,18 +12,22 @@
 #include "CbmStsCluster.h"
 
 
+
 ClassImp(CbmStsClusterFinderModule)
 
-Int_t CbmStsClusterFinderModule::fgFinishCluster = 0;
-Int_t CbmStsClusterFinderModule::fgFinishClusterEnd = 0;
 
+// -----   Default constructor   -------------------------------------------
 CbmStsClusterFinderModule::CbmStsClusterFinderModule() :
-  TNamed(), fSize(0), fDeltaT(0.), fModule(NULL), fClusters(NULL),
-  fIndex(), fTime()
+  TNamed(), fSize(0), fDeltaT(0.),
+  fConnectEdgeFront(kFALSE), fConnectEdgeBack(kFALSE),
+  fModule(NULL), fClusters(NULL), fIndex(), fTime()
 {
 }
+// -------------------------------------------------------------------------
 
 
+
+// -----   Constructor with parameters   -----------------------------------
 CbmStsClusterFinderModule::CbmStsClusterFinderModule(Int_t nChannels,
                                                      Double_t deltaT,
                                                      const char* name,
@@ -34,20 +36,170 @@ CbmStsClusterFinderModule::CbmStsClusterFinderModule(Int_t nChannels,
   TNamed(name, "cluster finder module"),
   fSize(nChannels),
   fDeltaT(deltaT),
+  fConnectEdgeFront(kFALSE),
+  fConnectEdgeBack(kFALSE),
   fModule(module),
   fClusters(output),
   fIndex(fSize),
   fTime(fSize)
 {
  // Number of channels must fit in UShort_t
- assert ( nChannels > 0 && nChannels <= 65536);
+ assert ( nChannels > 0 && nChannels <= 65536 );
 }
+// -------------------------------------------------------------------------
 
 
+
+// -----   Destructor   ----------------------------------------------------
 CbmStsClusterFinderModule::~CbmStsClusterFinderModule() {
-  // TODO Auto-generated destructor stub
 }
+// -------------------------------------------------------------------------
 
+
+
+// ----- Search for a matching cluster for a given channel   ---------------
+Bool_t CbmStsClusterFinderModule::CheckChannel(UShort_t channel,
+                                               Double_t time) {
+
+  // No match if no active digi in the channel
+  if ( fIndex[channel] == -1 ) return kFALSE;
+
+  // Check timing. Digis should be time-ordered.
+  assert( time >= fTime[channel] );
+
+  // Channel is active, but time is not matching: close cluster
+  // and return no match.
+  if ( time - fTime[channel] > fDeltaT ) {
+    FinishCluster(channel);
+    return kFALSE;
+  }
+
+  // Matching digi found
+  return kTRUE;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Create a cluster object   ---------------------------------------
+void CbmStsClusterFinderModule::CreateCluster(UShort_t first,
+                                              UShort_t last) {
+
+  // --- Create cluster object; if possible, in the output array
+  CbmStsCluster* cluster = NULL;
+  if ( fClusters ) {
+    Int_t index = fClusters->GetEntriesFast();
+    cluster = new ((*fClusters)[index]) CbmStsCluster();
+  }
+  else cluster = new CbmStsCluster();
+
+  // --- Add digis to cluster and reset the respective channel
+  UShort_t channel = first;
+  while ( kTRUE ) {
+    assert( fIndex[channel] > - 1 );
+    cluster->AddDigi(fIndex[channel]);
+    fIndex[channel] = -1;
+    fTime[channel] = 0.;
+    if ( channel == last ) break;
+    channel++;
+    if ( last < first && channel == fSize/2 ) channel = 0; // round the edge, front side
+    if ( last < first && channel == fSize ) channel = fSize/2; // round the edge, back side
+  }
+
+  if ( fModule ) cluster->SetAddress(fModule->GetAddress());
+
+  // --- Delete cluster object if no output array is there
+  if ( ! fClusters ) delete cluster;
+
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Close a cluster   -----------------------------------------------
+void CbmStsClusterFinderModule::FinishCluster(UShort_t channel) {
+
+  // Find start and stop channel of cluster
+  UShort_t start = channel;
+  UShort_t stop = channel;
+  UShort_t testChannel;
+
+  // Case: front-side channel
+  if ( channel < fSize/2 ) {
+
+    // Normal clustering
+    if ( ! fConnectEdgeFront ) {
+      while ( start > 0 && fIndex[start-1] > -1 ) start--;
+      while ( stop < fSize/2 - 1 && fIndex[stop+1] > -1 ) stop++;
+    } //? normal clustering
+
+    // Clustering round-the-edge
+    else {
+      testChannel = ( channel ? channel - 1 : fSize/2 - 1);
+      while ( fIndex[testChannel] > -1 ) {
+        start = testChannel;
+        testChannel = ( start ? start - 1 : fSize/2 - 1);
+      }
+      testChannel = ( channel == fSize/2 - 1 ? 0 : channel + 1);
+      while ( fIndex[testChannel] > -1 ) {
+        stop = testChannel;
+        testChannel = ( stop == fSize/2 - 1 ? 0 : stop + 1);
+      }
+    } //? clustering round the edge
+
+  } //? Front-side channel
+
+
+  // Case: back-side channel
+  else  {
+
+    // Normal clustering
+    if ( ! fConnectEdgeBack ) {
+      while ( start > fSize/2 && fIndex[start-1] > -1 ) start--;
+      while ( stop < fSize - 1 && fIndex[stop+1] > -1 ) stop++;
+    }
+
+    // Clustering round-the-edge
+    else {
+      testChannel = ( channel == fSize/2 ? fSize - 1 : channel - 1);
+      while ( fIndex[testChannel] > -1 ) {
+        start = testChannel;
+        testChannel = ( start == fSize/2 ? fSize - 1 : start - 1);
+      }
+      testChannel = ( channel == fSize - 1 ? fSize/2 : channel + 1);
+      while ( fIndex[testChannel] > -1 ) {
+        stop = testChannel;
+        testChannel = ( stop == fSize - 1 ? fSize/2 : stop + 1);
+      }
+    } //? clustering round the edge
+
+  }//? back-side channel
+
+  // Create a cluster object
+  CreateCluster(start, stop);
+
+  // Reset channels added tp the cluster
+  for (UShort_t iChannel = start; iChannel <= stop; iChannel++) {
+    assert( iChannel >= 0 && iChannel <= fSize );
+    fIndex[iChannel] = -1;
+    fTime[iChannel] = 0.;
+  }
+
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Process active clusters   ---------------------------------------
+void CbmStsClusterFinderModule::ProcessBuffer() {
+
+  for (UShort_t channel = 0; channel < fSize; channel++) {
+    if ( fIndex[channel] == - 1 ) continue;
+    FinishCluster(channel);
+  }
+
+}
+// -------------------------------------------------------------------------
 
 
 
@@ -69,94 +221,6 @@ void CbmStsClusterFinderModule::ProcessDigi(UShort_t channel, Double_t time,
   // Set channel active
   fIndex[channel] = index;
   fTime[channel] = time;
-
-}
-// -------------------------------------------------------------------------
-
-
-
-// ----- Search for a matching cluster for a given channel   ---------------
-Bool_t CbmStsClusterFinderModule::CheckChannel(UShort_t channel,
-                                               Double_t time) {
-
-  // No match if no active digi in the channel
-  if ( fIndex[channel] == -1 ) return kFALSE;
-
-  // Check timing. Digis should be time-ordered.
-  assert( time >= fTime[channel] );
-
-  // Channel is active, but time is not matching: close cluster and return no match.
-  if ( time - fTime[channel] > fDeltaT ) {
-    FinishCluster(channel);
-    fgFinishCluster++;
-    return kFALSE;
-  }
-
-  // Matching digi found
-  return kTRUE;
-}
-// -------------------------------------------------------------------------
-
-
-
-// -----   Close a cluster   -----------------------------------------------
-void CbmStsClusterFinderModule::FinishCluster(UShort_t channel) {
-
-  // Find start and stop channel of cluster
-  UShort_t start = channel;
-  UShort_t stop = channel;
-  if ( channel < fSize/2 ) {   // front side channels
-    while ( start > 0 && fIndex[start-1] > -1 ) start--;
-    while ( stop < fSize/2 - 1 && fIndex[stop+1] > -1 ) stop++;
-  }
-  else  {   // back side channels
-    while ( start > fSize/2 && fIndex[start-1] > -1 ) start--;
-    while ( stop < fSize - 1 && fIndex[stop+1] > -1 ) stop++;
-  }
-
-  // Create a cluster object
-  CreateCluster(start, stop);
-
-  // Reset channels
-  for (UShort_t iChannel = start; iChannel <= stop; iChannel++) {
-    assert( iChannel >= 0 && iChannel <= fSize );
-    fIndex[iChannel] = -1;
-    fTime[iChannel] = 0.;
-  }
-
-}
-// -------------------------------------------------------------------------
-
-
-
-// -----   Create a cluster object   ---------------------------------------
-void CbmStsClusterFinderModule::CreateCluster(UShort_t first,
-                                              UShort_t last) {
-
-  // --- No action if no output array specified
-  if ( ! fClusters ) return;
-
-  Int_t index = fClusters->GetEntriesFast();
-  CbmStsCluster* cluster = new ((*fClusters)[index]) CbmStsCluster();
-  for (UShort_t channel = first; channel <= last; channel++) {
-    assert( fIndex[channel] > -1 );
-    cluster->AddDigi(fIndex[channel]);
-  } //#  channels in cluster
-  if ( fModule ) cluster->SetAddress(fModule->GetAddress());
-
-}
-// -------------------------------------------------------------------------
-
-
-
-// -----   Process active clusters   ---------------------------------------
-void CbmStsClusterFinderModule::ProcessBuffer() {
-
-  for (UShort_t channel = 0; channel < fSize; channel++) {
-    if ( fIndex[channel] == - 1 ) continue;
-    FinishCluster(channel);
-    fgFinishClusterEnd++;
-  }
 
 }
 // -------------------------------------------------------------------------

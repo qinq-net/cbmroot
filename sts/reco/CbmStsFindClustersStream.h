@@ -1,6 +1,6 @@
 /** @file CbmFindClustersStream.h
  ** @author Volker Friese <v.friese@gsi.de>
- ** @date 16.06.2014
+ ** @date 05.04.2017
  **/
 
 
@@ -27,9 +27,8 @@ class CbmStsSetup;
  ** the module they are registered by; the cluster finding is then performed
  ** in each module.
  **
- ** The actual cluster finding algorithm is defined in an engine class
- ** CbmStsClusterFinderSimple. Other, alternative algorithms can be
- ** plugged in.
+ ** The actual cluster finding algorithm is defined in the class
+ ** CbmStsClusterFinderModule.
  **/
 class CbmStsFindClustersStream : public FairTask
 {

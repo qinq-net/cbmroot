@@ -1,6 +1,6 @@
 /** @file CbmStsFindClustersStream.cxx
  ** @author Volker Friese <v.friese@gsi.de>
- ** @date 16.06.2014
+ ** @date 05.04.2017
  **/
 
 // --- Include class header
@@ -20,9 +20,11 @@
 #include "CbmStsDigi.h"
 
 // --- Includes from STS
+#include "digitize/CbmStsSensorTypeDssd.h"
 #include "reco/CbmStsClusterAnalysis.h"
 #include "reco/CbmStsClusterFinderModule.h"
 #include "setup/CbmStsModule.h"
+#include "setup/CbmStsSensor.h"
 #include "setup/CbmStsSetup.h"
 
 using std::fixed;
@@ -216,6 +218,16 @@ InitStatus CbmStsFindClustersStream::Init()
       Int_t nChannels = module->GetNofChannels();
       CbmStsClusterFinderModule* finderModule =
           new CbmStsClusterFinderModule(nChannels, deltaT, name, module, fClusters);
+      // --- Check the sensor for stereo angles
+      CbmStsSensor* sensor =
+          dynamic_cast<CbmStsSensor*>(module->GetDaughter(0));
+      CbmStsSensorTypeDssd* type =
+          dynamic_cast<CbmStsSensorTypeDssd*>(sensor->GetType());
+      assert(type);
+      if ( TMath::Abs(type->GetStereoAngle(0)) > 1. )
+        finderModule->ConnectEdgeFront();
+      if ( TMath::Abs(type->GetStereoAngle(1)) > 1. )
+        finderModule->ConnectEdgeBack();
       fModules[address] = finderModule;
     }
     LOG(INFO) << GetName() << ": " << fModules.size()

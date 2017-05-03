@@ -59,14 +59,22 @@ void CbmStsClusterAnalysis::Analyze(CbmStsCluster* cluster,
 
 		UInt_t address1 = digi1->GetAddress();
 		UInt_t address2 = digi2->GetAddress();
-		Double_t x1 = Double_t(CbmStsAddress::GetElementId(address1, kStsChannel));
-		Double_t x2 = Double_t(CbmStsAddress::GetElementId(address2, kStsChannel));
-		assert(x2 = x1 + 1); // channels should be in ascending order
-		Double_t q1 = module->AdcToCharge(digi1->GetCharge());
-		Double_t q2 = module->AdcToCharge(digi2->GetCharge());
+		Int_t chan1 = CbmStsAddress::GetElementId(address1, kStsChannel);
+        Int_t chan2 = CbmStsAddress::GetElementId(address2, kStsChannel);
+        assert( chan2 == chan1 + 1 ||
+                chan2 == chan1 - module->GetNofChannels()/2 + 1);
+
+        // Channel positions and charge
+        Double_t x1 = Double_t(chan1);
+        Double_t q1 = module->AdcToCharge(digi1->GetCharge());
+        Double_t x2 = Double_t(chan2);
+        Double_t q2 = module->AdcToCharge(digi2->GetCharge());
+
+        // Periodic position for clusters round the edge
+        if ( chan1 > chan2 ) x1 -= Double_t(module->GetNofChannels() / 2);
 
 		// Uncertainties of the charge measurements
-		Double_t width1 = fPhysics->LandauWidth(q1);
+        Double_t width1 = fPhysics->LandauWidth(q1);
 		Double_t eq1sq = width1 * width1 + eNoiseSq + eDigitSq;
 		Double_t width2 = fPhysics->LandauWidth(q2);
 		Double_t eq2sq = width2 * width2 + eNoiseSq + eDigitSq;
@@ -76,8 +84,11 @@ void CbmStsClusterAnalysis::Analyze(CbmStsCluster* cluster,
 		Double_t timeError = module->GetTimeResolution() * 0.70710678; // 1/sqrt(2)
 
 		// Cluster position
-		// See corresponding software note. The number 0.11785113 is 1/sqrt(72).
+		// See corresponding software note.
 		Double_t x = x1 + 0.5 + ( q2 - q1 ) / 3. /  TMath::Max(q1, q2);
+
+		// Correct negative position for clusters around the edge
+		if ( x < -0.5 ) x += Double_t(module->GetNofChannels() / 2);
 
 		// Uncertainty on cluster position. See software note.
 		Double_t ex0sq = 0.;    // error for ideal charge measurements
@@ -135,7 +146,9 @@ void CbmStsClusterAnalysis::Analyze(CbmStsCluster* cluster,
 			Int_t channel = CbmStsAddress::GetElementId(address, kStsChannel);
 
 			// Check ascending order of channel number
-			if ( iDigi > 0 ) assert(channel == prevChannel + 1);
+			if ( iDigi > 0 )
+			  assert(channel == prevChannel + 1 ||
+			         channel == prevChannel - module->GetNofChannels() / 2 + 1);
 			prevChannel = channel;
 
 			if ( iDigi == 0 ) {  // first channel
@@ -155,6 +168,9 @@ void CbmStsClusterAnalysis::Analyze(CbmStsCluster* cluster,
 
 		} //# digis in cluster
 
+		// Periodic channel position for clusters round the edge
+		if ( chanF > chanL ) chanF -= module->GetNofChannels()/2;
+
 		// Cluster time and total charge
 		tSum = tSum / Double_t(cluster->GetNofDigis());
 		Double_t tError = module->GetTimeResolution()
@@ -167,6 +183,9 @@ void CbmStsClusterAnalysis::Analyze(CbmStsCluster* cluster,
 
 		// Cluster position
 		Double_t x = 0.5 * ( Double_t( chanF + chanL ) + ( qL - qF ) / qM );
+
+		// Correct negative cluster position for clusters round the edge
+		if ( x < - 0.5 ) x += Double_t(module->GetNofChannels() / 2);
 
 		// Cluster position error
 		Double_t exFsq = eqFsq / qM / qM / 4.;  // error from first charge
