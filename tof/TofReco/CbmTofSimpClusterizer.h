@@ -33,6 +33,7 @@ class TH1;
 class TH2;
 class TString;
 #include "TTimeStamp.h"
+#include "TStopwatch.h"
 
 // C++ Classes and includes
 #include <vector>
@@ -250,6 +251,13 @@ class CbmTofSimpClusterizer : public FairTask
       // Control
       TTimeStamp fStart;
       TTimeStamp fStop;
+      
+      // --- Run counters
+      TStopwatch fTimer;       ///< ROOT timer
+      Int_t      fiNofEvents;   ///< Total number of events processed
+      Double_t   fdNofDigisTot; ///< Total number of Tof Digis processed
+      Double_t   fdNofHitsTot;  ///< Total number of hits produced
+      Double_t   fdTimeTot;     ///< Total execution time
 
       // Calib
       Double_t dTRef;

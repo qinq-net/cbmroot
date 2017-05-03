@@ -31,6 +31,7 @@ class TClonesArray;
 class TH1;
 class TH2;
 #include "TTimeStamp.h"
+#include "TStopwatch.h"
 class TRandom3;
 
 // C++ Classes and includes
@@ -333,6 +334,13 @@ class CbmTofDigitizerBDF : public FairTask
       TTimeStamp fStop;
       Double_t   fdDigitizeTime;
       Double_t   fdMergeTime;
+      // --- Run counters
+      TStopwatch     fTimer;           ///< ROOT timer
+      Int_t          fiNofEvents;      ///< Total number of events processed
+      Double_t       fdNofTofMcTrkTot; ///< Total number of MC tracks with TOF points
+      Double_t       fdNofPointsTot;   ///< Total number of points processed
+      Double_t       fdNofDigisTot;    ///< Total number of digis created
+      Double_t       fdTimeTot;        ///< Total execution time
 
       TString fsBeamInputFile;
 

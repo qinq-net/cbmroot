@@ -134,6 +134,12 @@ CbmTofDigitizerBDF::CbmTofDigitizerBDF():
    fStop(),
    fdDigitizeTime(0.),
    fdMergeTime(0.),
+   fTimer(),
+   fiNofEvents(0),
+   fdNofTofMcTrkTot(0.),
+   fdNofPointsTot(0.),
+   fdNofDigisTot(0.),
+   fdTimeTot(0.),
    fsBeamInputFile(""),
    fbMonitorHistos(kTRUE),
    fbMcTrkMonitor(kFALSE),
@@ -207,6 +213,12 @@ CbmTofDigitizerBDF::CbmTofDigitizerBDF(const char *name, Int_t verbose):
    fStop(),
    fdDigitizeTime(0.),
    fdMergeTime(0.),
+   fTimer(),
+   fiNofEvents(0),
+   fdNofTofMcTrkTot(0.),
+   fdNofPointsTot(0.),
+   fdNofDigisTot(0.),
+   fdTimeTot(0.),
    fsBeamInputFile(""),
    fbMonitorHistos(kTRUE),
    fbMcTrkMonitor(kFALSE),
@@ -293,6 +305,9 @@ void CbmTofDigitizerBDF::SetParContainers()
 
 void CbmTofDigitizerBDF::Exec(Option_t* /*option*/)
 {
+   // --- Start timer and reset counters
+	fTimer.Start();
+   
    // Get FairEventHeader information for CbmLink objects
    GetEventInfo(fiCurrentFileId, fiCurrentEventId, fdCurrentEventTime);
 
@@ -330,6 +345,12 @@ void CbmTofDigitizerBDF::Exec(Option_t* /*option*/)
                     + (fStart.GetNanoSec() - fStop.GetNanoSec())/1e9;
 
    FillHistos();
+   
+   // --- Counters
+   fTimer.Stop();
+   fiNofEvents++;
+   fdNofDigisTot    += fiNbDigis;
+   fdTimeTot        += fTimer.RealTime();
 }
 
 void CbmTofDigitizerBDF::Finish()
@@ -340,6 +361,30 @@ void CbmTofDigitizerBDF::Finish()
 
    // Clear the cluster size and efficiency histos copies inside the parameter
    fDigiBdfPar->ClearHistos();
+   
+   // Final printout for reference
+   LOG(INFO) << "=====================================" << FairLogger::endl;
+   LOG(INFO) << GetName() << ": Run summary (Time includes Hist filling)" << FairLogger::endl;
+   LOG(INFO) << "Events processed    : " << fiNofEvents << FairLogger::endl;
+   if( fbMcTrkMonitor )
+   {
+   LOG(INFO) << "Tof MC Track / event: " << fdNofPointsTot / fdNofTofMcTrkTot
+             << FairLogger::endl;
+   } // if( fbMcTrkMonitor )
+   LOG(INFO) << "TofPoint / event    : " << fdNofPointsTot / static_cast<Double_t>(fiNofEvents)
+             << FairLogger::endl;
+   LOG(INFO) << "TofDigi / event     : " << fdNofDigisTot  / static_cast<Double_t>(fiNofEvents) 
+             << FairLogger::endl;
+   LOG(INFO) << "Digis per point     : " << fdNofDigisTot  / fdNofPointsTot 
+             << FairLogger::endl;
+   if( fbMcTrkMonitor )
+   {
+   LOG(INFO) << "Digis per TofMcTrack: " << fdNofDigisTot  / fdNofTofMcTrkTot
+             << FairLogger::endl;
+   } // if( fbMcTrkMonitor )
+   LOG(INFO) << "Real time per event : " << fdTimeTot      / static_cast<Double_t>(fiNofEvents)
+             << " s" << FairLogger::endl;
+   LOG(INFO) << "=====================================" << FairLogger::endl;
 }
 
 /************************************************************************************/
@@ -829,6 +874,9 @@ Bool_t   CbmTofDigitizerBDF::FillHistos()
    Double_t nTofFired  = 0;
    Double_t dProcessTime = fdDigitizeTime + fdMergeTime;
    
+   // --- Update run Counters
+   fdNofPointsTot   += nTofPoint;
+   
    // Tracks Info
    CbmMCTrack  *pMcTrk;
    if( fbMcTrkMonitor )
@@ -852,6 +900,9 @@ Bool_t   CbmTofDigitizerBDF::FillHistos()
             iNbTofTracksPrim++;
 
       } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
+      
+      // --- Update run Counters
+      fdNofTofMcTrkTot += iNbTofTracks;
    } // if( fbMcTrkMonitor )
 
    // Tof Points info

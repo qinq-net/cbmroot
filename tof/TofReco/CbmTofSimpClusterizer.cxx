@@ -146,6 +146,11 @@ CbmTofSimpClusterizer::CbmTofSimpClusterizer():
    fhNbDigiPerChan(NULL),
    fStart(),
    fStop(),
+   fTimer(),
+   fiNofEvents(0.),
+   fdNofDigisTot(0.),
+   fdNofHitsTot(0.),
+   fdTimeTot(0.),
    dTRef(0.),
    fdTRefMax(0.),
    fCalMode(0),
@@ -242,6 +247,11 @@ CbmTofSimpClusterizer::CbmTofSimpClusterizer(const char *name, Int_t verbose):
    fhNbDigiPerChan(NULL),
    fStart(),
    fStop(),
+   fTimer(),
+   fiNofEvents(0.),
+   fdNofDigisTot(0.),
+   fdNofHitsTot(0.),
+   fdTimeTot(0.),
    dTRef(0.),
    fdTRefMax(0.),
    fCalMode(0),
@@ -313,14 +323,18 @@ void CbmTofSimpClusterizer::SetParContainers()
 
 void CbmTofSimpClusterizer::Exec(Option_t* /*option*/)
 {
+   // Start timer counter
+	fTimer.Start();
+   
    fTofHitsColl->Clear("C");
 //   fTofDigiMatchColl->Clear("C"); // Not enough => CbmMatch has no Clear functions!!
    fTofDigiMatchColl->Delete();
 
    fiNbHits = 0;
 
+   Int_t iNbTofDigi  = fTofDigisColl->GetEntries();
    LOG(DEBUG)<<" CbmTofSimpClusterizer => New event with "
-             <<fTofDigisColl->GetEntries()<<" digis "<<FairLogger::endl;
+             << iNbTofDigi <<" digis "<<FairLogger::endl;
    fStart.Set();
 
    BuildClusters();
@@ -328,6 +342,13 @@ void CbmTofSimpClusterizer::Exec(Option_t* /*option*/)
    fStop.Set();
 
    FillHistos();
+ 
+   // --- Update Counters  
+   fTimer.Stop();
+   fiNofEvents++;
+   fdNofDigisTot    += iNbTofDigi;
+   fdNofHitsTot     += fiNbHits;
+   fdTimeTot        += fTimer.RealTime();
 }
 
 void CbmTofSimpClusterizer::Finish()
@@ -335,6 +356,20 @@ void CbmTofSimpClusterizer::Finish()
    WriteHistos();
    // Prevent them from being sucked in by the CbmHadronAnalysis WriteHistograms method
    DeleteHistos();
+   
+   // Final printout for reference
+   LOG(INFO) << "=====================================" << FairLogger::endl;
+   LOG(INFO) << GetName() << ": Run summary (Time includes Hist filling)" << FairLogger::endl;
+   LOG(INFO) << "Events processed   : " << fiNofEvents << FairLogger::endl;
+   LOG(INFO) << "Digis / event      : " << fdNofDigisTot / static_cast<Double_t>(fiNofEvents)
+             << FairLogger::endl;
+   LOG(INFO) << "Hits / event       : " << fdNofHitsTot  / static_cast<Double_t>(fiNofEvents)
+             << FairLogger::endl;
+   LOG(INFO) << "Digis per Hits     : " << fdNofDigisTot / fdNofHitsTot
+             << FairLogger::endl;
+   LOG(INFO) << "Time per event     : " << fdTimeTot     / static_cast<Double_t>(fiNofEvents)
+             << " " << FairLogger::endl;
+   LOG(INFO) << "=====================================" << FairLogger::endl;
 }
 
 /************************************************************************************/
