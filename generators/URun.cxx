@@ -35,9 +35,6 @@ URun::URun()
     fSigma(0.),
     fNEvents(0)
 {
-  // Default constructor. Should not be used
-  LOG(WARNING) << "Default constructor of URun should not be used!" 
-    << FairLogger::endl;
 }
 //--------------------------------------------------------------------
 
