@@ -11,6 +11,7 @@
 #define CBM_RICH_EVENT_DISPLAY
 
 #include "FairTask.h"
+#include "CbmHistManager.h"
 
 #include <map>
 #include <string>
@@ -61,6 +62,12 @@ public:
    void SetDrawPoints(bool b){fDrawPoints = b;}
    void SetDrawProjections(bool b){fDrawProjections = b;}
 
+   /**
+    * \brief Set output directory where you want to write results (figures and json).
+    * \param[in] dir Path to the output directory.
+    */
+   void SetOutputDir(const std::string& dir) {fOutputDir = dir;}
+
 private:
 
    TClonesArray* fRichRings;
@@ -70,6 +77,9 @@ private:
    TClonesArray* fRichProjections;
 
    TClonesArray* fMcTracks;
+
+   std::string fOutputDir; // output dir for results
+   CbmHistManager* fHM;
 
    int fEventNum;
 

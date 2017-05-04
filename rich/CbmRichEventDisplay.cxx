@@ -76,6 +76,8 @@ InitStatus CbmRichEventDisplay::Init()
    fMcTracks = (TClonesArray*) ioman->GetObject("MCTrack");
    if (NULL == fMcTracks ) {Fatal("CbmRichEventDisplay::Init", "No MCTrack array!");}
 
+   fHM = new CbmHistManager();
+
    return kSUCCESS;
 }
 
@@ -91,7 +93,7 @@ void CbmRichEventDisplay::DrawOneEvent()
 {
    stringstream ss;
    ss << "rich_event_display_event_"<< fEventNum;
-   TCanvas *c = new TCanvas(ss.str().c_str(), ss.str().c_str(), 800, 800);
+   TCanvas *c = fHM->CreateCanvas(ss.str().c_str(), ss.str().c_str(), 800, 800);
    c->Divide(1, 2);
    c->cd(1);
    TH2D* padU = new TH2D("padU", ";x [cm];y [cm]", 1, -120., 120., 1, 120., 210);
@@ -192,7 +194,7 @@ void CbmRichEventDisplay::DrawCircle(
 
 void CbmRichEventDisplay::Finish()
 {
-
+	fHM->SaveCanvasToImage(fOutputDir);
 }
 
 ClassImp(CbmRichEventDisplay)
