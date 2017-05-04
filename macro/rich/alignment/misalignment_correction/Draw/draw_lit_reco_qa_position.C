@@ -5,11 +5,11 @@ void draw_lit_reco_qa_position(bool lit, bool reco)
 	gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
 	loadlibs();
 
-	string dir = "/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/";
+	string dir = "/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Batch_4/";
 	string fileName = "", outputDirTracking = "", outputDirRecoQa = "";
 
-	for ( int i = 2; i<5; i++ )
-//	int i = 2;
+	for ( int i=0; i<7; i++ )
+//	int i = 6;
 	{
 		PrepareInputs(i, dir, fileName, outputDirTracking, outputDirRecoQa);
 		gSystem->mkdir(outputDirTracking.c_str(), true);
@@ -51,7 +51,7 @@ void PrepareInputs(int Flag, string dir, string& fileName, string& outputDirTrac
 
 	else if ( Flag == 3 )
 	{
-		folder = "Misaligned_3mrad_Full/";
+		folder = "Misaligned_3mrad_XY_Full/";
 		fileName = dir + folder + "merge_misalign_3mrad.root";
 	}
 
