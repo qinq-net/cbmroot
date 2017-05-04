@@ -58,6 +58,11 @@ TString pipeName = "pipe_" + sVersion;
 #include "pipe_v16a_mvdsts100.h"
 // ----------------------------------------------------------------------------
 
+TGeoVolume* MakePipe(Int_t iPart, Int_t nSects, Double_t* z, Double_t* rin, 
+		     Double_t* rout, TGeoMedium* medium, fstream* infoFile);
+
+TGeoVolume* MakeVacuum(Int_t iPart, Int_t nSects, Double_t* z, Double_t* rin, 
+		       Double_t* rout, TGeoMedium* medium, fstream* infoFile);
 
 // ============================================================================
 // ======                         Main function                           =====
@@ -211,14 +216,6 @@ void create_bpipe_geometry_v16a_1h( Bool_t bMuch = kFALSE, Bool_t bTrd = kFALSE,
   Double_t dRoutVacTrd[nSectsVacTrd] = {  156.2,   250.84,  250.85,  251.01,  251.54,  252.44,  253.23 };
 */
 /*************************************************************/
-  // --------------------------------------------------------------------------
-
-  // -------------  Load the necessary FairRoot libraries   -------------------
-  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-  basiclibs();
-  gSystem->Load("libGeoBase");
-  gSystem->Load("libParBase");
-  gSystem->Load("libBase");
   // --------------------------------------------------------------------------
 
 
@@ -387,12 +384,12 @@ void create_bpipe_geometry_v16a_1h( Bool_t bMuch = kFALSE, Bool_t bTrd = kFALSE,
      pipeWinEnd->SetLineColor(kBlue);
      pipe->AddNode(pipeWinEnd, 0);
      
-     if( 0 < nSectsVacWinEnd )
-     {
-        TGeoVolume* pipeVacWinEnd = MakeVacuum(8, nSectsVacWinEnd, dZposVacWinEnd, dRinVacWinEnd, dRoutVacWinEnd, vacuum,     &infoFile); 
-        pipeVacWinEnd->SetLineColor(kCyan);
-        pipe->AddNode(pipeVacWinEnd, 0);
-     } // if( 0 < nSectsVacWinEnd )
+//     if( 0 < nSectsVacWinEnd )
+//     {
+//        TGeoVolume* pipeVacWinEnd = MakeVacuum(8, nSectsVacWinEnd, dZposVacWinEnd, dRinVacWinEnd, dRoutVacWinEnd, vacuum,     &infoFile); 
+//        pipeVacWinEnd->SetLineColor(kCyan);
+//        pipe->AddNode(pipeVacWinEnd, 0);
+//     } // if( 0 < nSectsVacWinEnd )
   } // if( 0 < nSectsWinEnd  && kTRUE == bWin )
   
   // -----   End   --------------------------------------------------

@@ -40,6 +40,11 @@ const char*    gkMaterial  = "carbon";    // material of beam pipe
 TGeoManager*   gGeoMan     = NULL;  // will be set later
 // ----------------------------------------------------------------------------
 
+TGeoVolume* MakePipe(Int_t iPart, Int_t nSects, Double_t* z, Double_t* r,
+                     TGeoMedium* medium, fstream* infoFile);
+
+TGeoVolume* MakeVacuum(Int_t iPart, Int_t nSects, Double_t* z, Double_t* r,
+                       TGeoMedium* medium, fstream* infoFile);
 
 // ============================================================================
 // ======                         Main function                           =====
@@ -91,16 +96,6 @@ void create_pipegeo_v14(const char* geoTag)
 
   // --------------------------------------------------------------------------
 
-    
-
-  // -------------  Load the necessary FairRoot libraries   -------------------
-  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-  basiclibs();
-  gSystem->Load("libGeoBase");
-  gSystem->Load("libParBase");
-  gSystem->Load("libBase");
-  // --------------------------------------------------------------------------
-
 
   // -------   Geometry file name (output)   ----------------------------------
   TString geoFileName = "pipe_";
@@ -142,9 +137,9 @@ void create_pipegeo_v14(const char* geoTag)
   TGeoMedium* carbon = gGeoMan->GetMedium("carbon");
   if ( ! carbon ) Fatal("Main", "Medium carbon not found");
   // ---> vacuum
-  FairGeoMedium* mCarbon  = geoMedia->getMedium("vacuum");
-  if ( ! mCarbon ) Fatal("Main", "FairMedium vacuum not found");
-  geoBuild->createMedium(mCarbon);
+  FairGeoMedium* mVaccum  = geoMedia->getMedium("vacuum");
+  if ( ! mVaccum ) Fatal("Main", "FairMedium vacuum not found");
+  geoBuild->createMedium(mVaccum);
   TGeoMedium* vacuum = gGeoMan->GetMedium("vacuum");
   if ( ! vacuum ) Fatal("Main", "Medium vacuum not found");
   // --------------------------------------------------------------------------
@@ -195,6 +190,8 @@ void create_pipegeo_v14(const char* geoTag)
   gGeoMan->PrintOverlaps();
   gGeoMan->Test();
 
+  top->Draw("ogl");
+ 
   TFile* geoFile = new TFile(geoFileName, "RECREATE");
   top->Write();
   cout << endl;

@@ -37,6 +37,11 @@ const char*    gkMaterial  = "carbon";    // material of beam pipe
 TGeoManager*   gGeoMan     = NULL;  // will be set later
 // ----------------------------------------------------------------------------
 
+TGeoVolume* MakePipe(Int_t iPart, Int_t nSects, Double_t* z, Double_t* r,
+                     TGeoMedium* medium, fstream* infoFile);
+
+TGeoVolume* MakeVacuum(Int_t iPart, Int_t nSects, Double_t* z, Double_t* r,
+		       TGeoMedium* medium, fstream* infoFile);
 
 // ============================================================================
 // ======                         Main function                           =====
@@ -53,8 +58,8 @@ void create_pipegeo_v13(const char* geoTag)
   Double_t z1[] = { -5.0, 2.5,  3.5, 23.95, 24.0, 26.95, 27.0, 160.0, 350.0, 449.95, 450.0, 1000.0 };
   Double_t r1[] = {  2.5, 2.5, 13.0, 13.0,  12.8,  1.0,   1.0,   3.2,  25.0,  25.0,   13.9,   13.9 };
   Int_t nSects2 = 0;
-  Double_t z2[]; 
-  Double_t r2[];
+  Double_t z2[] = {}; 
+  Double_t r2[] = {};
     
     
   /** For v13b (electron setup): two parts, excluding RICH region
@@ -79,16 +84,6 @@ void create_pipegeo_v13(const char* geoTag)
   // --------------------------------------------------------------------------
 
     
-
-  // -------------  Load the necessary FairRoot libraries   -------------------
-  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-  basiclibs();
-  gSystem->Load("libGeoBase");
-  gSystem->Load("libParBase");
-  gSystem->Load("libBase");
-  // --------------------------------------------------------------------------
-
-
   // -------   Geometry file name (output)   ----------------------------------
   TString geoFileName = "pipe_";
   geoFileName = geoFileName + geoTag + ".geo.root";
@@ -129,9 +124,9 @@ void create_pipegeo_v13(const char* geoTag)
   TGeoMedium* carbon = gGeoMan->GetMedium("carbon");
   if ( ! carbon ) Fatal("Main", "Medium carbon not found");
   // ---> vacuum
-  FairGeoMedium* mCarbon  = geoMedia->getMedium("vacuum");
-  if ( ! mCarbon ) Fatal("Main", "FairMedium vacuum not found");
-  geoBuild->createMedium(mCarbon);
+  FairGeoMedium* mVaccum  = geoMedia->getMedium("vacuum");
+  if ( ! mVaccum ) Fatal("Main", "FairMedium vacuum not found");
+  geoBuild->createMedium(mVaccum);
   TGeoMedium* vacuum = gGeoMan->GetMedium("vacuum");
   if ( ! vacuum ) Fatal("Main", "Medium vacuum not found");
   // --------------------------------------------------------------------------
@@ -181,6 +176,8 @@ void create_pipegeo_v13(const char* geoTag)
   gGeoMan->CheckOverlaps(0.001);
   gGeoMan->PrintOverlaps();
   gGeoMan->Test();
+
+  top->Draw("ogl");
 
   TFile* geoFile = new TFile(geoFileName, "RECREATE");
   top->Write();

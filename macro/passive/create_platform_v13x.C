@@ -60,16 +60,6 @@ void create_platform_v13x()
   // --------------------------------------------------------------------------
 
     
-
-  // -------------  Load the necessary FairRoot libraries   -------------------
-  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-  basiclibs();
-  gSystem->Load("libGeoBase");
-  gSystem->Load("libParBase");
-  gSystem->Load("libBase");
-  // --------------------------------------------------------------------------
-
-
   // -------   Geometry file name (output)   ----------------------------------
   TString geoFileName = "platform_";
   geoFileName = geoFileName + geoTag + ".geo.root";

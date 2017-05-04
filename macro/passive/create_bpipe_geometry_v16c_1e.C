@@ -44,6 +44,11 @@ TString rootFileName = "pipe_v16c_1e.geo.root";
 TString pipeName = "pipe_v16c_1e";
 // ----------------------------------------------------------------------------
 
+TGeoVolume* MakePipe(Int_t iPart, Int_t nSects, Double_t* z, Double_t* rin,
+                     Double_t* rout, TGeoMedium* medium, fstream* infoFile);
+
+TGeoVolume* MakeVacuum(Int_t iPart, Int_t nSects, Double_t* z, Double_t* rin,
+                       Double_t* rout, TGeoMedium* medium, fstream* infoFile);
 
 // ============================================================================
 // ======                         Main function                           =====
@@ -120,21 +125,13 @@ void create_bpipe_geometry_v16c_1e()
   Double_t z5[nSects5]      = { 1225.,  1230.,  1230.,  1700.  }; // mm
   Double_t rout5[nSects5]   = {   85.,    85.,    55.+pipewallthickness,
 				                         74.2 };
-  Double_t rin5[nSects5]    = {   55.,    55.,    55.     74.2-pipewallthickness}; 
+  Double_t rin5[nSects5]    = {   55.,    55.,    55.,     74.2-pipewallthickness}; 
   TString pipevac5name = "pipevac5";
   const Int_t nSects05 = nSects5;
   Double_t z05[nSects05]    = { 1225.,  1230.,  1230.,  1700. }; // mm
   Double_t rin05[nSects05]  = {    0.,     0.,     0.,     0. };
   Double_t rout05[nSects05]; for(Int_t i=0; i<nSects05; i++) { rout05[i]=rin5[i]; }
 
-  // --------------------------------------------------------------------------
-
-  // -------------  Load the necessary FairRoot libraries   -------------------
-  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-  basiclibs();
-  gSystem->Load("libGeoBase");
-  gSystem->Load("libParBase");
-  gSystem->Load("libBase");
   // --------------------------------------------------------------------------
 
 
