@@ -2,7 +2,6 @@
 #define CBMTRDTESTBEAMTOOLS_H
 
 #include "CbmSpadicRawMessage.h"
-#include "CbmBeamDefaults.h"
 #include <vector>
 #include "TString.h"
 #include "TObject.h"
@@ -20,8 +19,8 @@ class CbmTrdTestBeamTools: public TObject
   virtual Int_t GetModuleID(CbmSpadicRawMessage* raw);
   virtual Int_t GetLayerID(CbmSpadicRawMessage* raw);
   virtual Int_t GetRowID(CbmSpadicRawMessage* raw);
-  virtual Int_t GetRobID(CbmSpadicRawMessage* raw);
-  virtual Int_t GetSpadicID(CbmSpadicRawMessage* raw);
+  virtual Int_t GetRobID(CbmSpadicRawMessage* raw);    //blubb
+  virtual Int_t GetSpadicID(CbmSpadicRawMessage* raw); //blubb
   virtual Int_t GetColumnID(CbmSpadicRawMessage* raw);
   //  virtual Int_t GetCombiID(CbmSpadicRawMessage* raw);
   virtual Int_t GetChannelOnPadPlane(CbmSpadicRawMessage* raw);
@@ -51,12 +50,24 @@ class CbmTrdTestBeamTools: public TObject
   }
   virtual Int_t GetNrRobs(){
     //Get the Number of active ROBS in the Setup;
-    return NrOfActiveSyscores;
+    return 4;
   };
   virtual Int_t GetNrSpadics(Int_t RobID=0){
     //Get the Number of active Spadics on a ROB
-    return NrOfActiveSpadics;
+    return 3;
   }
+  virtual Int_t GetSpadicBaseAddress(){
+	  /** Base address which will be added to each half spadic number
+	      the first halfspadic which is connected to the Syscore
+	      get SpadicBaseAddress+0, the second SpadicBaseAddress +1 ... */
+    return 0;
+  }
+  virtual Int_t GetBaseEquipmentID(){
+    //Get the BaseEquipmentID
+    return 0xE000;
+  }
+
+
   virtual std::vector<Int_t> GetChannelMap(CbmSpadicRawMessage* raw);
   TString GetSpadicName(Int_t,Int_t,TString,Bool_t);
   Int_t GetBaseline(CbmSpadicRawMessage* raw);

@@ -68,7 +68,7 @@ Int_t CbmTrdTestBeamTools::GetSpadicID(CbmSpadicRawMessage* raw)
    */
   //TString spadic="";
   Int_t sourceA = raw->GetSourceAddress();
-  Int_t SpaId = sourceA-SpadicBaseAddress;
+  Int_t SpaId = sourceA-GetSpadicBaseAddress();
   if (SpaId<0||SpaId>5){
     LOG(ERROR) << "Source Address " << sourceA << " not known." << FairLogger::endl;
     SpaId = -1;
@@ -83,8 +83,8 @@ Int_t CbmTrdTestBeamTools::GetRobID(CbmSpadicRawMessage* raw)
    * SPS2016 Case: Numerical id of the syscore on which the spadic was connected.
    */
   Int_t eqID=raw->GetEquipmentID();
-  Int_t SyscoreID=eqID-BaseEquipmentID;
-  if((SyscoreID<0||SyscoreID>NrOfActiveSyscores)){
+  Int_t SyscoreID=eqID-GetBaseEquipmentID();
+  if((SyscoreID<0||SyscoreID>GetNrRobs())){
     LOG(ERROR) << "EqID " << eqID << " not known." << FairLogger::endl;
     SyscoreID=-1;
   }
