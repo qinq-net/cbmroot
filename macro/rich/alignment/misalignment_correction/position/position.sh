@@ -5,7 +5,8 @@ YYYY=$(printf "%08d" "$SLURM_ARRAY_JOB_ID")
 ##XXXX=$4
 
 cbmroot_config_path=/lustre/nyx/cbm/users/jbendar/CBMINSTALL_Root5/bin/CbmRootConfig.sh
-output_dir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position
+#output_dir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position
+output_dir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Batch_4
 macro_dir=/lustre/nyx/cbm/users/jbendar/CBMINSTALL_Root5/share/cbmroot/macro/rich
 
 # Specify input and output directories
@@ -83,6 +84,7 @@ elif [ $1 -eq 6 ] ; then
 fi
 export GEO_SETUP_FILE=${setupMacro}
 export SETUP_NAME=${setupName}
+export GEO_FOLDER=1
 
 # Define urqmd and output files
 export URQMD_FILE=/lustre/nyx/cbm/prod/gen/urqmd/auau/${3}/centr/urqmd.auau.${3}.centr.${YYYY}_${XXXX}.root
@@ -98,10 +100,10 @@ export LIT_RESULT_DIR=${outdir}/${YYYY}_${XXXX}
 export ELECTRONS=yes
 # number of embedded electrons
 export NOF_ELECTRONS=1
-export NELECTRONS=1
+export NELECTRONS=10
 # number of embedded positrons
 export NOF_POSITRONS=1
-export NPOSITRONS=1
+export NPOSITRONS=10
 # If "yes" then UrQMD will be used as background
 export URQMD=no
 # If "yes" PLUTO particles will be embedded

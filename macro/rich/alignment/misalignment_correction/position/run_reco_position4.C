@@ -68,7 +68,7 @@ void run_reco_position4(Int_t nEvents = 100)
 	parFile = TString(gSystem->Getenv("PAR_FILE"));
 	resultDir = TString(gSystem->Getenv("LIT_RESULT_DIR"));
 
-	geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/position/geosetup/" + TString(gSystem->Getenv("GEO_SETUP_FILE"));
+	geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/position/geosetup_2/" + TString(gSystem->Getenv("GEO_SETUP_FILE"));
 	setupName = TString(gSystem->Getenv("SETUP_NAME"));
     }
     // ------------------------------------------------------------------------

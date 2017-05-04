@@ -47,7 +47,11 @@ void run_sim_position4(Int_t nEvents = 100)
         parFile = TString(gSystem->Getenv("PAR_FILE"));
 	cout << "mcFile: " << TString(gSystem->Getenv("MC_FILE")) << endl << "parFile: " << TString(gSystem->Getenv("PAR_FILE")) << endl << "urqmdFile: " << TString(gSystem->Getenv("URQMD_FILE")) << endl;
 
-	geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/position/geosetup/" + TString(gSystem->Getenv("GEO_SETUP_FILE"));
+	TString geoFolder = "";
+	geoFolder = TString(gSystem->Getenv("GEO_FOLDER"));
+	cout << "geoFolder = " << geoFolder << endl;
+	if ( geoFolder == "1" ) { cout << "HERE" << endl; geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/position/geosetup/" + TString(gSystem->Getenv("GEO_SETUP_FILE")); }
+	else if ( geoFolder == "2" ) { geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/position/geosetup_2/" + TString(gSystem->Getenv("GEO_SETUP_FILE")); }
 	setupName = TString(gSystem->Getenv("SETUP_NAME"));
 
         NELECTRONS = TString(gSystem->Getenv("NELECTRONS")).Atoi();
@@ -61,6 +65,7 @@ void run_sim_position4(Int_t nEvents = 100)
 
     std::cout << "-I- using geoSetupFile: " << geoSetupFile << " and setupName: "
 	<< setupName << std::endl;
+    std::cout << "Nb of electrons: " << NELECTRONS << " and nb of positrons: " << NPOSITRONS << std::endl;
 
     remove(parFile.Data());
     remove(mcFile.Data());
