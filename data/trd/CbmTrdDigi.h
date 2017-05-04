@@ -76,6 +76,9 @@ class CbmTrdDigi : public CbmDigi
   /** Modifiers **/
   void AddCharge(Double_t charge) { fCharge += charge; }
   void AddChargeTR(Double_t charge) { fChargeTR += charge; }
+  /** Needed for TClonesArray sorting **/
+  Int_t Compare(const TObject*) const;
+  Bool_t IsSortable() const { return kTRUE; }
 
   std::string ToString() const;
   
