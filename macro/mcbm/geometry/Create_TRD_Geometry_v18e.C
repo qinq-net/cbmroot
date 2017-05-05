@@ -2225,6 +2225,12 @@ void create_detector_layers(Int_t layerId)
             module_rotation->RotateX( drotx );
           }
 
+          if (layerId == 0)
+          {
+             xPos += -4;   // shift first module to the right
+             cout << "DE shifted" << endl;
+          }
+
           TGeoCombiTrans* module_placement = new TGeoCombiTrans(xPos, yPos, LayerPosition[layerId] + LayerThickness/2 + dz, module_rotation);  // shift by half layer thickness
 //          gGeoMan->GetVolume(geoVersion)->AddNode(gModules[type - 1], copy, module_placement);
 // add module to layer
