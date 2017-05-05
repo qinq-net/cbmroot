@@ -69,7 +69,7 @@ void mcbm_mc(Int_t nEvents = 2, const char* setupName = "sis18_mcbm",
   Double_t targetPosY      = 0.;     // target y position in global c.s. [cm]
   Double_t targetPosZ      = 0.;     // target z position in global c.s. [cm]
   Double_t targetRotY      = 0.;     // target rotation angle around the y axis [deg]
-  Double_t beamRotY        = 20.;   // with 10 degree magnet - beam rotation angle around the y axis [deg]
+  Double_t beamRotY        = 25.;    // with 8 degree wrt R3B beam - beam rotation angle around the y axis [deg]
   //  Double_t beamRotY        = -20.;   // with 15 degree magnet - beam rotation angle around the y axis [deg]
   // ------------------------------------------------------------------------
 
