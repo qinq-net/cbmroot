@@ -415,7 +415,7 @@ Bool_t CbmStsMC::IsNewGeometryFile(TString /*filename*/)
       LOG(INFO) << "No TGeoVolume found in geometry file. File is not of new type."
 	      << FairLogger::endl;
     }
-    if ( !foundGeoVolume) {
+    if ( !foundGeoMatrix) {
       LOG(INFO) << "Not TGeoMatrix derived object found in geometry file. File is not of new type."
 		<< FairLogger::endl;
     }
