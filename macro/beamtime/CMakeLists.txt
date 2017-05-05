@@ -6,21 +6,6 @@ File(COPY ${CBMROOT_SOURCE_DIR}/macro/include/.rootrc DESTINATION ${CBMROOT_BINA
 Set(NumEvents 2)
 
 #If($ENV{ctest_model} MATCHES Nightly)
-  If(EXISTS ${CBMROOT_SOURCE_DIR}/input/run106_production_sts3exttrig_0000.lmd)
-    # STS COSY December 2014 beamtime => LMD
-    GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/beamtime/tests/StsCosyDec14.C)
-    add_test(StsCosyDec14 ${CBMROOT_BINARY_DIR}/macro/beamtime/tests/StsCosyDec14.sh ${NumEvents} )
-    SET_TESTS_PROPERTIES(StsCosyDec14 PROPERTIES TIMEOUT "600")
-    SET_TESTS_PROPERTIES(StsCosyDec14 PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-  EndIf()
-
-  If(EXISTS ${CBMROOT_SOURCE_DIR}/input/hodoTop_source_1000ts_20160422.tsa)
-    # STS Lab Setup => TSA
-    GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/beamtime/tests/FHodoLabSetup.C)
-    add_test(StsLabSetup ${CBMROOT_BINARY_DIR}/macro/beamtime/tests/FHodoLabSetup.sh)
-    SET_TESTS_PROPERTIES(StsLabSetup PROPERTIES TIMEOUT "60")
-    SET_TESTS_PROPERTIES(StsLabSetup PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-  EndIf()
 
   If(FairRoot_VERSION VERSION_EQUAL 15.11.2)
     If(EXISTS ${CBMROOT_SOURCE_DIR}/input/CernSps05Mar0041_0000.lmd)
@@ -57,6 +42,22 @@ Set(NumEvents 2)
       Set(_FileName_Dependency tests/data/TofCernNov15Calib_ok)
       Set_Tests_Properties(TofCernNov15Run PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
     EndIf()
+  Else()
+     If(EXISTS ${CBMROOT_SOURCE_DIR}/input/run106_production_sts3exttrig_0000.lmd)
+       # STS COSY December 2014 beamtime => LMD
+       GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/beamtime/tests/StsCosyDec14.C)
+       add_test(StsCosyDec14 ${CBMROOT_BINARY_DIR}/macro/beamtime/tests/StsCosyDec14.sh ${NumEvents} )
+       SET_TESTS_PROPERTIES(StsCosyDec14 PROPERTIES TIMEOUT "600")
+       SET_TESTS_PROPERTIES(StsCosyDec14 PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
+     EndIf()
+
+     If(EXISTS ${CBMROOT_SOURCE_DIR}/input/hodoTop_source_1000ts_20160422.tsa)
+       # STS Lab Setup => TSA
+       GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/beamtime/tests/FHodoLabSetup.C)
+       add_test(StsLabSetup ${CBMROOT_BINARY_DIR}/macro/beamtime/tests/FHodoLabSetup.sh)
+       SET_TESTS_PROPERTIES(StsLabSetup PROPERTIES TIMEOUT "60")
+       SET_TESTS_PROPERTIES(StsLabSetup PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
+     EndIf()
   EndIf()
 #EndIf()
 
