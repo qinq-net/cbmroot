@@ -13,10 +13,16 @@
 #include "TList.h"
 #include "TObjArray.h"
 
+#include "TGeoManager.h"
+#include "TFile.h"
+#include "TKey.h"
+
 
 // -----  Default constructor  ------------------------------------------------
 CbmPipe::CbmPipe()
-  : FairModule()
+  : FairModule(),
+  fCombiTrans(),
+  fVolumeName("")
 {
 }
 // ----------------------------------------------------------------------------
@@ -24,7 +30,9 @@ CbmPipe::CbmPipe()
 
 // -----  Constructor  --------------------------------------------------------
 CbmPipe::CbmPipe(const char * name, const char * title)
-  : FairModule(name, title)
+  : FairModule(name, title),
+  fCombiTrans(),
+  fVolumeName("")
 {
 }
 // ----------------------------------------------------------------------------
@@ -57,6 +65,90 @@ void CbmPipe::ConstructGeometry()
 }
 // ----------------------------------------------------------------------------
 
+// ----------------------------------------------------------------------------
+void CbmPipe::ConstructRootGeometry()
+{   
+  if( IsNewGeometryFile(fgeoName) ) {
+    TGeoVolume *module1 = TGeoVolume::Import(fgeoName, fVolumeName.c_str());
+    gGeoManager->GetTopVolume()->AddNode(module1, 0, fCombiTrans);
+  } else {
+    FairModule::ConstructRootGeometry();
+  } 
+}   
+// ----------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------
+Bool_t CbmPipe::IsNewGeometryFile(TString /*filename*/)
+{
+
+  TFile* f=new TFile(fgeoName);
+  TList* l = f->GetListOfKeys();
+  Int_t numKeys = l->GetSize();
+  if ( 2 != numKeys) {
+    LOG(INFO) << "Not exactly two keys in the file. File is not of new type."
+              << FairLogger::endl;
+    return kFALSE;
+  }
+  TKey* key;
+  TIter next( l);
+  Bool_t foundGeoVolume = kFALSE;
+  Bool_t foundGeoMatrix = kFALSE;
+  TGeoTranslation* trans = NULL;
+  TGeoRotation* rot = NULL;
+  while ((key = (TKey*)next())) {
+    if (strcmp(key->GetClassName(),"TGeoVolume") == 0) {
+      LOG(INFO) << "Found TGeoVolume in geometry file." << FairLogger::endl;
+      LOG(INFO) << "Name: " << key->GetName() << FairLogger::endl;      
+      foundGeoVolume =  kTRUE;
+      fVolumeName = key->GetName();
+      continue;
+    }
+    if (strcmp(key->GetClassName(),"TGeoVolumeAssembly") == 0) {
+      LOG(INFO) << "Found TGeoVolumeAssembly in geometry file." << FairLogger::endl;
+      LOG(INFO) << "Name: " << key->GetName() << FairLogger::endl;
+      foundGeoVolume =  kTRUE;
+      fVolumeName = key->GetName();
+      continue;
+    }
+    if (strcmp(key->GetClassName(),"TGeoTranslation") == 0) {
+      LOG(DEBUG) << "Found TGeoTranslation in geometry file." << FairLogger::endl;
+      foundGeoMatrix =  kTRUE;
+      trans = static_cast<TGeoTranslation*>(key->ReadObj());
+      rot = new TGeoRotation();
+      fCombiTrans = new TGeoCombiTrans(*trans, *rot);
+      continue;
+    }
+    if (strcmp(key->GetClassName(),"TGeoRotation") == 0) {
+      LOG(DEBUG) << "Found TGeoRotation in geometry file." << FairLogger::endl;
+      foundGeoMatrix =  kTRUE;
+      trans = new TGeoTranslation();
+      rot = static_cast<TGeoRotation*>(key->ReadObj());
+      fCombiTrans = new TGeoCombiTrans(*trans, *rot);
+      continue;
+    }
+    if (strcmp(key->GetClassName(),"TGeoCombiTrans") == 0) {
+      LOG(DEBUG) << "Found TGeoCombiTrans in geometry file." << FairLogger::endl;
+      foundGeoMatrix =  kTRUE;
+      fCombiTrans = static_cast<TGeoCombiTrans*>(key->ReadObj());
+      continue;
+    }
+  }
+  if ( foundGeoVolume && foundGeoMatrix ) {
+    LOG(INFO) << "Geometry file is of new type." << FairLogger::endl;
+    return kTRUE;
+  } else {
+    if ( !foundGeoVolume) {
+      LOG(INFO) << "No TGeoVolume found in geometry file. File is not of new type."
+              << FairLogger::endl;
+    }
+    if ( !foundGeoVolume) {
+      LOG(INFO) << "Not TGeoMatrix derived object found in geometry file. File is not of new type."
+                << FairLogger::endl;
+    }
+    return kFALSE;
+  }
+}
+// ----------------------------------------------------------------------------
 
 // -----  ConstructAsciiGeometry  ---------------------------------------------
 void CbmPipe::ConstructAsciiGeometry()
