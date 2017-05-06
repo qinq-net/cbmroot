@@ -30,23 +30,27 @@ class TGeoMatrix;
 #include "TStyle.h"
 #include "CbmTrackMatchNew.h"
 
-CbmRichMirrorSortingAlignment::CbmRichMirrorSortingAlignment() :
-	fEventNb(0),
-	fGlobalTracks(NULL),
-	fRichRings(NULL),
-	fMCTracks(NULL),
-	fCopFit(NULL),
-	fTauFit(NULL),
-	fOutputDir(""),
-	fStudyName(""),
-	fMirrorPoints(NULL),
-	fRefPlanePoints(NULL),
-	fPmtPoints(NULL),
-	fRichProjections(NULL),
-	fTrackParams(NULL),
-	fRichRingMatches(NULL),
-	fStsTrackMatches(NULL),
-	fMirrorMap()
+#include <iostream>
+
+CbmRichMirrorSortingAlignment::CbmRichMirrorSortingAlignment()
+: FairTask("CbmRichMirrorSortingAlignment"),
+  fEventNb(0),
+  fGlobalTracks(NULL),
+  fRichRings(NULL),
+  fMCTracks(NULL),
+  fCopFit(NULL),
+  fTauFit(NULL),
+  fOutputDir(""),
+  fStudyName(""),
+  fMirrorPoints(NULL),
+  fRefPlanePoints(NULL),
+  fPmtPoints(NULL),
+  fRichProjections(NULL),
+  fTrackParams(NULL),
+  fRichRingMatches(NULL),
+  fStsTrackMatches(NULL),
+  fMirrorMap(),
+  fThreshold(0)
 {
 }
 
@@ -100,6 +104,7 @@ void CbmRichMirrorSortingAlignment::Exec(Option_t* Option)
 	TVector3 momentum, outPos;
 	Double_t constantePMT = 0., trackX=0., trackY=0.;
 	vector<Double_t> vect(2,0), ptM(3,0), ptC(3,0), ptCIdeal(3,0), ptR1(3,0), ptR2Center(3,0), ptR2Mirr(3,0), ptPR2(3,0), ptPMirr(3,0), normalPMT(3,0);
+	//ptC[0]=0.;
 	ptC.at(0) = 0., ptC.at(1) = 132.594000, ptC.at(2) = 54.267226;
 	TVector3 mirrorPoint, dirCos, pos;
 	Double_t nx=0., ny=0., nz=0.;
@@ -128,7 +133,7 @@ void CbmRichMirrorSortingAlignment::Exec(Option_t* Option)
 				cout << "Error ring == NULL!" << endl;
 				continue;
 			}
-			Int_t ringTrackID = ring->GetTrackID();
+			//Int_t ringTrackID = ring->GetTrackID();				//Old code not working with changes for new matching method.
 			//cout << "ringTrackID: " << ringTrackID << endl;
 			CbmTrackMatchNew* cbmRichTrackMatch = (CbmTrackMatchNew*) fRichRingMatches->At(richInd);
 			CbmTrackMatchNew* cbmStsTrackMatch = (CbmTrackMatchNew*) fStsTrackMatches->At(stsInd);
@@ -139,7 +144,8 @@ void CbmRichMirrorSortingAlignment::Exec(Option_t* Option)
 			Int_t mcStsTrackId = cbmStsTrackMatch->GetMatchedLink().GetIndex();
 			//cout << "mcTrackId: " << mcRichTrackId << endl;
 			if (mcRichTrackId < 0) continue;
-			if (mcStsTrackId != ringTrackID) {
+			//if (mcStsTrackId != ringTrackID) {					//Old code not working with changes for new matching method.
+			if (mcStsTrackId != mcRichTrackId) {
 				cout << "Error StsTrackIndex and TrackIndex from Ring do not match!" << endl;
 				continue;
 			}
@@ -150,11 +156,12 @@ void CbmRichMirrorSortingAlignment::Exec(Option_t* Option)
 			CbmRichConverter::CopyHitsToRingLight(ring, &ringL);
 			fCopFit->DoFit(&ringL);
 			//fTauFit->DoFit(&ringL);
-			mirrorObject->setRingLight(ringL);																							// Fill Cbm Rich Ring Light inside mirrorObject.
+			mirrorObject->setRingLight(ringL);																// Fill Cbm Rich Ring Light inside mirrorObject.
 			cout << "ring Center Coo: " << ringL.GetCenterX() << ", " << ringL.GetCenterY() << endl;
 			mcTrack->GetMomentum(momentum);
-			mirrorObject->setMomentum(momentum);																						// Fill track momentum inside mirrorObject.
-			FairTrackParam* pr = (FairTrackParam*) fRichProjections->At(ringTrackID);
+			mirrorObject->setMomentum(momentum);															// Fill track momentum inside mirrorObject.
+			//FairTrackParam* pr = (FairTrackParam*) fRichProjections->At(ringTrackID);	//Old code not working with changes for new matching method.
+			FairTrackParam* pr = (FairTrackParam*) fRichProjections->At(stsInd);
 			if (pr == NULL) {
 				cout << "CbmRichMirrorSortingAlignment::Exec : pr = NULL." << endl;
 				continue;
@@ -408,7 +415,7 @@ void CbmRichMirrorSortingAlignment::ComputeP(vector<Double_t> &ptPMirr, vector<D
 	//cout << "* using reflected point R2, checkCalc = " << checkCalc2 << endl;
 }
 
-void CbmRichMirrorSortingAlignment::CreateHistoMap(std::map<string, vector<CbmRichMirror*>> mirrorMap, std::map<string, TH2D*> &histoMap, Int_t thresh)
+void CbmRichMirrorSortingAlignment::CreateHistoMap(std::map<string, vector<CbmRichMirror*>> mirrorMap, std::map<string, TH2D*> &histoMap)
 {
 	Int_t NofHits = 0;
 	Double_t phi=0., theta0=0., thetaCh=0.;
@@ -418,7 +425,7 @@ void CbmRichMirrorSortingAlignment::CreateHistoMap(std::map<string, vector<CbmRi
 		string curMirrorId = it->first;
 		cout << "curMirrorId: '" << curMirrorId << "' and vector size: " << it->second.size() << endl;
 		vector<CbmRichMirror*> mirror = it->second;
-		if (curMirrorId != "" && it->second.size() > thresh) {
+		if (curMirrorId != "" && it->second.size() > fThreshold) {
 			histoMap[it->first] = new TH2D(string("CherenkovHitsDistribReduced_" + it->first).c_str(), "CherenkovHitsDistribReduced;Phi_Ch [rad];Th_Ch-Th_0 [cm];Entries", 200, -3.4, 3.4, 500, -8., 8.);
 			for (int i = 0; i < it->second.size(); i++) {
 				CbmRichMirror* mirr = mirror.at(i);
@@ -542,10 +549,9 @@ void CbmRichMirrorSortingAlignment::Finish()
 	histoMap.clear();
 	std::map<string, vector<Double_t>> anglesMap;
 	anglesMap.clear();
-	Int_t thresh = 500;
 
 	// Filling the reduced thetaCh VS phi histogram and writing the resulting histogram in histoMap:
-	CreateHistoMap(fMirrorMap, histoMap, thresh);
+	CreateHistoMap(fMirrorMap, histoMap);
 
 	// Drawing the obtained thetaCh VS phi histogram ; fitting with sinusoid ; write calculated misalignment angles in anglesMap:
 	DrawFitAndExtractAngles(anglesMap, histoMap);

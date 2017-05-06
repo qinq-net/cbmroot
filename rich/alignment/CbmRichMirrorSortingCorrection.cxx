@@ -34,27 +34,30 @@ class TGeoMatrix;
 #include <iostream>
 using namespace std;
 
-CbmRichMirrorSortingCorrection::CbmRichMirrorSortingCorrection() :
-    	    fEventNb(0),
-			fHM(NULL),
-			fHM2(NULL),
-			fDiffHistoMap(),
-			fCopFit(NULL),
-			fTauFit(NULL),
-    		fGlobalTracks(NULL),
-    	    fRichRings(NULL),
-    	    fMCTracks(NULL),
-			fMirrorPoints(NULL),
-			fRefPlanePoints(NULL),
-			fPmtPoints(NULL),
-			fRichProjections(NULL),
-			fTrackParams(NULL),
-			fRichRingMatches(NULL),
-			fStsTrackMatches(NULL),
-			fTrackCenterDistanceIdeal(0),
-			fTrackCenterDistanceCorrected(0),
-			fTrackCenterDistanceUncorrected(0),
-			fCorrectionMatching("")
+
+CbmRichMirrorSortingCorrection::CbmRichMirrorSortingCorrection()
+: FairTask("CbmRichMirrorSortingCorrection"),
+  fEventNb(0),
+  fHM(NULL),
+  fHM2(NULL),
+  fDiffHistoMap(),
+  fCopFit(NULL),
+  fTauFit(NULL),
+  fGlobalTracks(NULL),
+  fRichRings(NULL),
+  fMCTracks(NULL),
+  fMirrorPoints(NULL),
+  fRefPlanePoints(NULL),
+  fPmtPoints(NULL),
+  fRichProjections(NULL),
+  fTrackParams(NULL),
+  fRichRingMatches(NULL),
+  fStsTrackMatches(NULL),
+  fTrackCenterDistanceIdeal(0),
+  fTrackCenterDistanceCorrected(0),
+  fTrackCenterDistanceUncorrected(0),
+  fCorrectionMatching(""),
+  fThreshold(0)
 {
 }
 
@@ -100,7 +103,7 @@ InitStatus CbmRichMirrorSortingCorrection::Init()
 
 	InitHistProjection();
 
-	InitHistProjectionList();
+	InitHistoMap();
 
 	return kSUCCESS;
 }
@@ -130,11 +133,62 @@ void CbmRichMirrorSortingCorrection::InitHistProjection()
 	fHM->Create1<TH1D>("fHistoBoA", "fHistoBoA;Histogram B axis over A axis;A.U.", bin, 0., upperScaleLimit);
 }
 
-void CbmRichMirrorSortingCorrection::InitHistProjectionList()
+void CbmRichMirrorSortingCorrection::InitHistoMap()
 {
 	//fHM2 = new CbmHistManager();
-
 	Double_t upperScaleLimit = 6., bin = 400.;
+	TString strCorrX="fhDifferenceCorrectedX_mirror_tile_", strCorrY="fhDifferenceCorrectedY_mirror_tile_", strDiffCorrX="DiffCorrX_mirror_tile_", strDiffCorrY="DiffCorrY_mirror_tile_";
+	stringstream ssDiffCorrX, ssDiffCorrY, ssCorrX, ssCorrY;
+	TString strUncorrX="fhDifferenceUncorrectedX_mirror_tile_", strUncorrY="fhDifferenceUncorrectedY_mirror_tile_", strDiffUncorrX="DiffUncorrX_mirror_tile_", strDiffUncorrY="DiffUncorrY_mirror_tile_";
+	stringstream ssDiffUncorrX, ssDiffUncorrY, ssUncorrX, ssUncorrY;
+	TString strIdealX="fhDifferenceIdealX_mirror_tile_", strIdealY="fhDifferenceIdealY_mirror_tile_", strDiffIdealX="DiffIdealX_mirror_tile_", strDiffIdealY="DiffIdealY_mirror_tile_";
+	stringstream ssDiffIdealX, ssDiffIdealY, ssIdealX, ssIdealY;
+
+	cout << endl << "Init histo: " << endl << endl;
+	for (Int_t j=0; j<4; j++) {
+		for (Int_t i=0; i<10; i++) {
+			ssDiffCorrX << strDiffCorrX << j << "_" << i;
+			ssDiffCorrY << strDiffCorrY << j << "_" << i;
+			ssCorrX << strCorrX << j << "_" << i;
+			ssCorrY << strCorrY << j << "_" << i;
+			fDiffHistoMap[ssDiffCorrX.str().c_str()] = new TH1D(ssCorrX.str().c_str(), ";Difference in X (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+			fDiffHistoMap[ssDiffCorrY.str().c_str()] = new TH1D(ssCorrY.str().c_str(), ";Difference in Y (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+
+			ssDiffUncorrX << strDiffUncorrX << j << "_" << i;
+			ssDiffUncorrY << strDiffUncorrY << j << "_" << i;
+			ssUncorrX << strUncorrX << j << "_" << i;
+			ssUncorrY << strUncorrY << j << "_" << i;
+			fDiffHistoMap[ssDiffUncorrX.str().c_str()] = new TH1D(ssUncorrX.str().c_str(), ";Difference in X (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+			fDiffHistoMap[ssDiffUncorrY.str().c_str()] = new TH1D(ssUncorrY.str().c_str(), ";Difference in Y (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+
+			ssDiffIdealX << strDiffIdealX << j << "_" << i;
+			ssDiffIdealY << strDiffIdealY << j << "_" << i;
+			ssIdealX << strIdealX << j << "_" << i;
+			ssIdealY << strIdealY << j << "_" << i;
+			fDiffHistoMap[ssDiffIdealX.str().c_str()] = new TH1D(ssIdealX.str().c_str(), ";Difference in X (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+			fDiffHistoMap[ssDiffIdealY.str().c_str()] = new TH1D(ssIdealY.str().c_str(), ";Difference in Y (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+
+//			cout << "CorrX: " << ssDiffCorrX.str().c_str() << ", " << ssCorrX.str().c_str() << endl << "UncorrX: " << ssDiffUncorrX.str().c_str() << ", " <<
+//					ssUncorrX.str().c_str()	<< endl << "IdealX: " << ssDiffIdealX.str().c_str() << ", " << ssIdealX.str().c_str() << endl << endl;
+
+			ssDiffCorrX.str("");
+			ssCorrX.str("");
+			ssDiffCorrY.str("");
+			ssCorrY.str("");
+			ssDiffUncorrX.str("");
+			ssUncorrX.str("");
+			ssDiffUncorrY.str("");
+			ssUncorrY.str("");
+			ssDiffIdealX.str("");
+			ssIdealX.str("");
+			ssDiffIdealY.str("");
+			ssIdealY.str("");
+
+		}
+	}
+
+/*
+//	Double_t upperScaleLimit = 6., bin = 400.;
 	fDiffHistoMap["DiffCorrX_mirror_tile_2_8"] = new TH1D("fhDifferenceCorrectedX_mirror_tile_2_8", ";Difference in X (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
 	fDiffHistoMap["DiffCorrY_mirror_tile_2_8"] = new TH1D("fhDifferenceCorrectedY_mirror_tile_2_8", ";Difference in Y (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
 	fDiffHistoMap["DiffUncorrX_mirror_tile_2_8"] = new TH1D("fhDifferenceUncorrectedX_mirror_tile_2_8", ";Difference in X (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
@@ -176,6 +230,7 @@ void CbmRichMirrorSortingCorrection::InitHistProjectionList()
 	fDiffHistoMap["DiffUncorrY_mirror_tile_0_1"] = new TH1D("fhDifferenceUncorrectedY_mirror_tile_0_1", ";Difference in Y (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
 	fDiffHistoMap["DiffIdealX_mirror_tile_0_1"] = new TH1D("fhDifferenceIdealX_mirror_tile_0_1", ";Difference in X (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
 	fDiffHistoMap["DiffIdealY_mirror_tile_0_1"] = new TH1D("fhDifferenceIdealY_mirror_tile_0_1", ";Difference in Y (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
+*/
 
 	/*fDiffHistoMap["fhDifferenceX_mirror_tile_2_8"] = "X_mirror_tile_2_8";
 	fDiffHistoMap["fhDifferenceY_mirror_tile_2_8"] = "Y_mirror_tile_2_8";
@@ -198,6 +253,7 @@ void CbmRichMirrorSortingCorrection::Exec(Option_t* Option)
 	Double_t constantePMT = 0., trackX=0., trackY=0.;
 	vector<Double_t> vect(2,0), ptM(3,0), ptC(3,0), ptCIdeal(3,0), ptR1(3,0), ptR2Center(3,0), ptR2Mirr(3,0), ptPR2(3,0), ptPMirr(3,0), normalPMT(3,0);
 	vector<Double_t> ptR2CenterUnCorr(3,0), ptR2CenterIdeal(3,0), ptR2MirrUnCorr(3,0), ptR2MirrIdeal(3,0), ptPMirrUnCorr(3,0), ptPMirrIdeal(3,0), ptPR2UnCorr(3,0), ptPR2Ideal(3,0);
+	ptC[0] = 0.;
 	ptC.at(0) = 0., ptC.at(1) = 132.594000, ptC.at(2) = 54.267226;
 	TVector3 mirrorPoint, dirCos, pos;
 	Double_t nx=0., ny=0., nz=0.;
@@ -225,7 +281,7 @@ void CbmRichMirrorSortingCorrection::Exec(Option_t* Option)
 				cout << "Error ring == NULL!" << endl;
 				continue;
 			}
-			Int_t ringTrackID = ring->GetTrackID();
+			//Int_t ringTrackID = ring->GetTrackID();						//Old code not working with changes for new matching method.
 			//cout << "ringTrackID: " << ringTrackID << endl;
 			CbmTrackMatchNew* cbmRichTrackMatch = (CbmTrackMatchNew*) fRichRingMatches->At(richInd);
 			CbmTrackMatchNew* cbmStsTrackMatch = (CbmTrackMatchNew*) fStsTrackMatches->At(stsInd);
@@ -236,7 +292,8 @@ void CbmRichMirrorSortingCorrection::Exec(Option_t* Option)
 			Int_t mcStsTrackId = cbmStsTrackMatch->GetMatchedLink().GetIndex();
 			//cout << "mcTrackId: " << mcRichTrackId << endl;
 			if (mcRichTrackId < 0) continue;
-			if (mcStsTrackId != ringTrackID) {
+			//if (mcStsTrackId != ringTrackID) {							//Old code not working with changes for new matching method.
+			if (mcStsTrackId != mcRichTrackId) {
 				cout << "Error StsTrackIndex and TrackIndex from Ring do not match!" << endl;
 				continue;
 			}
@@ -249,7 +306,8 @@ void CbmRichMirrorSortingCorrection::Exec(Option_t* Option)
 			//fTauFit->DoFit(&ringL);
 			cout << "ring Center Coo: " << ringL.GetCenterX() << ", " << ringL.GetCenterY() << endl;
 			mcTrack->GetMomentum(momentum);
-			FairTrackParam* pTrack = (FairTrackParam*) fRichProjections->At(ringTrackID);
+			//FairTrackParam* pTrack = (FairTrackParam*) fRichProjections->At(ringTrackID);	//Old code not working with changes for new matching method.
+			FairTrackParam* pTrack = (FairTrackParam*) fRichProjections->At(stsInd);
 			if (pTrack == NULL) {
 				cout << "CbmRichMirrorSortingCorrection::Exec : pTrack = NULL." << endl;
 				continue;
@@ -650,16 +708,95 @@ void CbmRichMirrorSortingCorrection::FillHistProjection(TVector3 outPosIdeal, TV
 	}
 	else {
 		cout << "Distance hit-ring too high!" << endl;
-		sleep(5);
+		//sleep(5);
 	}
+}
+
+void CbmRichMirrorSortingCorrection::DrawMap(Int_t axisX, Int_t axisY)
+{
+	//vector<TCanvas> Can(40);
+	Int_t counterX = 1, counterY = 1, canX=1500, canY=400;
+	vector<TH1D*> histoVectX, histoVectY;
+	vector<string> stringVectX, stringVectY;
+	TString strX="X_mirror_tile_", strY="Y_mirror_tile_", str1="", str2="";
+	stringstream ssX, ssY, str3, str4;
+	ssX << strX << axisY << "_" << axisX;
+	ssY << strY << axisY << "_" << axisX;
+	cout << "ssX: " << ssX.str().c_str() << " and ssY: " << ssY.str().c_str() << endl << endl;
+
+	for (std::map<string,TH1D*>::iterator it=fDiffHistoMap.begin(); it!=fDiffHistoMap.end(); ++it) {
+		if ( it->first.find(ssX.str().c_str())!=std::string::npos && it->second->GetEntries() > fThreshold ) {
+//			cout << "ssX: " << ssX.str().c_str() << " and histo key: " << it->first << endl;
+			cout << "Histo entries: " << it->second->GetEntries() << endl;
+			stringVectX.push_back(it->first);
+			histoVectX.push_back(it->second);
+		}
+		else if ( it->first.find(ssY.str().c_str())!=std::string::npos && it->second->GetEntries() > fThreshold ) {
+//			cout << "ssY: " << ssY.str().c_str() << " and histo key: " << it->first << endl;
+			stringVectY.push_back(it->first);
+			histoVectY.push_back(it->second);
+		}
+	}
+
+	if ( !histoVectX.empty() ) {
+		cout << "Vector size: " << histoVectX.size() << endl;
+		TCanvas* c1 = new TCanvas(ssX.str().c_str(), ssX.str().c_str(), canX, canY);
+		c1->Divide(3,1);
+		for ( Int_t i=0; i<3; i++) {
+			c1->cd(counterX);
+			histoVectX[i]->Draw();
+			histoVectX[i]->SetTitle(stringVectX[i].c_str());
+			histoVectX[i]->SetLineColor(counterX+1);
+			histoVectX[i]->SetLineWidth(2);
+			histoVectX[i]->Write();
+			counterX++;
+		}
+		Cbm::SaveCanvasAsImage(c1, string(fOutputDir.Data()+fStudyName), "png");
+	}
+
+	if ( !histoVectY.empty() ) {
+		TCanvas* c2 = new TCanvas(ssY.str().c_str(), ssY.str().c_str(), canX, canY);
+		c2->Divide(3,1);
+		for ( Int_t i=0; i<3; i++) {
+			c2->cd(counterY);
+			histoVectY[i]->Draw();
+			histoVectY[i]->SetTitle(stringVectY[i].c_str());
+			histoVectY[i]->SetLineColor(counterY+1);
+			histoVectY[i]->SetLineWidth(2);
+			histoVectY[i]->Write();
+			counterY++;
+		}
+		Cbm::SaveCanvasAsImage(c2, string(fOutputDir.Data()+fStudyName), "png");
+	}
+
+	histoVectX.clear();
+	histoVectY.clear();
 }
 
 void CbmRichMirrorSortingCorrection::DrawHistProjection()
 {
 	int counter1 = 1, counter2 = 1, counter3 = 1, counter4 = 1, counter5 = 1, counter6 = 1, counter7 = 1, counter8 = 1, counter9 = 1, counter10 = 1, counter11 = 1, counter12 = 1;
-	Int_t thresh = 100;
 
-	TCanvas* can1 = new TCanvas("X_mirror_tile_0_1","X_mirror_tile_0_1",1500,400);
+//	vector<TCanvas> Can;
+//	std::stringstream ss;
+//	ss << "X_mirror_" << X << "_" << Y;
+//	ss.str();
+//	ss.str().c_str();
+//	for ( Int_t i=0; i<10; i++ ) {
+//		ss << can << i;
+//		TCan* c = new TCan(ss.str().c_str(), )
+//		draw
+//	}
+
+//	vector<TCanvas> CanVect(80);
+	cout << endl << "CALLING FUNCTION 'DRAWMAP()' ... " << endl << endl;
+	for (Int_t j=0; j<4; j++) {
+		for (Int_t i=0; i<10; i++) {
+			DrawMap(i, j);
+		}
+	}
+
+/*	TCanvas* can1 = new TCanvas("X_mirror_tile_0_1","X_mirror_tile_0_1",1500,400);
 	can1->Divide(3,1);
 	TCanvas* can2 = new TCanvas("Y_mirror_tile_0_1","Y_mirror_tile_0_1",1500,400);
 	can2->Divide(3,1);
@@ -667,7 +804,7 @@ void CbmRichMirrorSortingCorrection::DrawHistProjection()
 	can3->Divide(3,1);
 	TCanvas* can4 = new TCanvas("Y_mirror_tile_1_5","Y_mirror_tile_1_5",1500,400);
 	can4->Divide(3,1);
-/*	TCanvas* can5 = new TCanvas("X_mirror_tile_2_8","X_mirror_tile_2_8",1500,400);
+	TCanvas* can5 = new TCanvas("X_mirror_tile_2_8","X_mirror_tile_2_8",1500,400);
 	can5->Divide(3,1);
 	TCanvas* can6 = new TCanvas("Y_mirror_tile_2_8","Y_mirror_tile_2_8",1500,400);
 	can6->Divide(3,1);
@@ -683,9 +820,10 @@ void CbmRichMirrorSortingCorrection::DrawHistProjection()
 	can11->Divide(3,1);
 	TCanvas* can12 = new TCanvas("Y_mirror_tile_0_8","Y_mirror_tile_0_8",1500,400);
 	can12->Divide(3,1);
-*/
+
+
 	for (std::map<string,TH1D*>::iterator it=fDiffHistoMap.begin(); it!=fDiffHistoMap.end(); ++it) {
-		if ( it->first.find("X_mirror_tile_0_1")!=std::string::npos && it->second->GetEntries() > thresh ) {
+		if ( it->first.find("X_mirror_tile_0_1")!=std::string::npos && it->second->GetEntries() > fThreshold ) {
 			can1->cd(counter1);
 			fDiffHistoMap[it->first]->Draw();
 			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
@@ -694,7 +832,7 @@ void CbmRichMirrorSortingCorrection::DrawHistProjection()
 			fDiffHistoMap[it->first]->Write();
 			counter1++;
 		}
-		else if ( it->first.find("Y_mirror_tile_0_1")!=std::string::npos && it->second->GetEntries() > thresh ) {
+		else if ( it->first.find("Y_mirror_tile_0_1")!=std::string::npos && it->second->GetEntries() > fThreshold ) {
 			can2->cd(counter2);
 			fDiffHistoMap[it->first]->Draw();
 			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
@@ -703,7 +841,7 @@ void CbmRichMirrorSortingCorrection::DrawHistProjection()
 			fDiffHistoMap[it->first]->Write();
 			counter2++;
 		}
-		else if ( it->first.find("X_mirror_tile_1_5")!=std::string::npos && it->second->GetEntries() > thresh ) {
+		else if ( it->first.find("X_mirror_tile_1_5")!=std::string::npos && it->second->GetEntries() > fThreshold ) {
 			can3->cd(counter3);
 			fDiffHistoMap[it->first]->Draw();
 			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
@@ -712,7 +850,7 @@ void CbmRichMirrorSortingCorrection::DrawHistProjection()
 			fDiffHistoMap[it->first]->Write();
 			counter3++;
 		}
-		else if ( it->first.find("Y_mirror_tile_1_5")!=std::string::npos && it->second->GetEntries() > thresh ) {
+		else if ( it->first.find("Y_mirror_tile_1_5")!=std::string::npos && it->second->GetEntries() > fThreshold ) {
 			can4->cd(counter4);
 			fDiffHistoMap[it->first]->Draw();
 			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
@@ -721,7 +859,7 @@ void CbmRichMirrorSortingCorrection::DrawHistProjection()
 			fDiffHistoMap[it->first]->Write();
 			counter4++;
 		}
-/*		else if ( it->first.find("X_mirror_tile_2_8")!=std::string::npos && it->second->GetEntries() > thresh ) {
+		else if ( it->first.find("X_mirror_tile_2_8")!=std::string::npos && it->second->GetEntries() > fThreshold ) {
 			can5->cd(counter5);
 			fDiffHistoMap[it->first]->Draw();
 			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
@@ -730,7 +868,7 @@ void CbmRichMirrorSortingCorrection::DrawHistProjection()
 			fDiffHistoMap[it->first]->Write();
 			counter5++;
 		}
-		else if ( it->first.find("Y_mirror_tile_2_8")!=std::string::npos && it->second->GetEntries() > thresh ) {
+		else if ( it->first.find("Y_mirror_tile_2_8")!=std::string::npos && it->second->GetEntries() > fThreshold ) {
 			can6->cd(counter6);
 			fDiffHistoMap[it->first]->Draw();
 			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
@@ -739,7 +877,7 @@ void CbmRichMirrorSortingCorrection::DrawHistProjection()
 			fDiffHistoMap[it->first]->Write();
 			counter6++;
 		}
-		else if ( it->first.find("X_mirror_tile_1_3")!=std::string::npos && it->second->GetEntries() > thresh ) {
+		else if ( it->first.find("X_mirror_tile_1_3")!=std::string::npos && it->second->GetEntries() > fThreshold ) {
 			can7->cd(counter7);
 			fDiffHistoMap[it->first]->Draw();
 			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
@@ -747,7 +885,7 @@ void CbmRichMirrorSortingCorrection::DrawHistProjection()
 			fDiffHistoMap[it->first]->SetLineWidth(2);
 			counter7++;
 		}
-		else if ( it->first.find("Y_mirror_tile_1_3")!=std::string::npos && it->second->GetEntries() > thresh ) {
+		else if ( it->first.find("Y_mirror_tile_1_3")!=std::string::npos && it->second->GetEntries() > fThreshold ) {
 			can8->cd(counter8);
 			fDiffHistoMap[it->first]->Draw();
 			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
@@ -755,7 +893,7 @@ void CbmRichMirrorSortingCorrection::DrawHistProjection()
 			fDiffHistoMap[it->first]->SetLineWidth(2);
 			counter8++;
 		}
-		else if ( it->first.find("X_mirror_tile_1_4")!=std::string::npos && it->second->GetEntries() > thresh ) {
+		else if ( it->first.find("X_mirror_tile_1_4")!=std::string::npos && it->second->GetEntries() > fThreshold ) {
 			can9->cd(counter9);
 			fDiffHistoMap[it->first]->Draw();
 			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
@@ -764,7 +902,7 @@ void CbmRichMirrorSortingCorrection::DrawHistProjection()
 			fDiffHistoMap[it->first]->Write();
 			counter9++;
 		}
-		else if ( it->first.find("Y_mirror_tile_1_4")!=std::string::npos && it->second->GetEntries() > thresh ) {
+		else if ( it->first.find("Y_mirror_tile_1_4")!=std::string::npos && it->second->GetEntries() > fThreshold ) {
 			can10->cd(counter10);
 			//fDiffHistoMap[it->first]->Draw();
 			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
@@ -773,7 +911,7 @@ void CbmRichMirrorSortingCorrection::DrawHistProjection()
 			fDiffHistoMap[it->first]->Write();
 			counter10++;
 		}
-		else if ( it->first.find("X_mirror_tile_0_8")!=std::string::npos && it->second->GetEntries() > thresh ) {
+		else if ( it->first.find("X_mirror_tile_0_8")!=std::string::npos && it->second->GetEntries() > fThreshold ) {
 			can11->cd(counter11);
 			fDiffHistoMap[it->first]->Draw();
 			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
@@ -782,7 +920,7 @@ void CbmRichMirrorSortingCorrection::DrawHistProjection()
 			fDiffHistoMap[it->first]->Write();
 			counter11++;
 		}
-		else if ( it->first.find("Y_mirror_tile_0_8")!=std::string::npos && it->second->GetEntries() > thresh ) {
+		else if ( it->first.find("Y_mirror_tile_0_8")!=std::string::npos && it->second->GetEntries() > fThreshold ) {
 			can12->cd(counter12);
 			fDiffHistoMap[it->first]->Draw();
 			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
@@ -791,7 +929,7 @@ void CbmRichMirrorSortingCorrection::DrawHistProjection()
 			fDiffHistoMap[it->first]->Write();
 			counter12++;
 		}
-*/		else if ( it->second->GetEntries() > thresh ) {
+		else if ( it->second->GetEntries() > fThreshold ) {
 			TCanvas* can = new TCanvas();
 			fDiffHistoMap[it->first]->Draw();
 			fDiffHistoMap[it->first]->SetTitle((it->first).c_str());
@@ -804,7 +942,7 @@ void CbmRichMirrorSortingCorrection::DrawHistProjection()
 	Cbm::SaveCanvasAsImage(can1, string(fOutputDir.Data()+fStudyName), "png");
 	Cbm::SaveCanvasAsImage(can2, string(fOutputDir.Data()+fStudyName), "png");
 	Cbm::SaveCanvasAsImage(can3, string(fOutputDir.Data()+fStudyName), "png");
-	Cbm::SaveCanvasAsImage(can4, string(fOutputDir.Data()+fStudyName), "png");
+	Cbm::SaveCanvasAsImage(can4, string(fOutputDir.Data()+fStudyName), "png");*/
 	//Cbm::SaveCanvasAsImage(can5, string(fOutputDir.Data()+fStudyName), "png");
 	//Cbm::SaveCanvasAsImage(can6, string(fOutputDir.Data()+fStudyName), "png");
 	//Cbm::SaveCanvasAsImage(can7, string(fOutputDir.Data()+fStudyName), "png");

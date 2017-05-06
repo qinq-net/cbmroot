@@ -50,13 +50,15 @@ public:
 
     void ComputeP(vector<Double_t> &ptPMirr, vector<Double_t> &ptPR2, vector<Double_t> normalPMT, vector<Double_t> ptM, vector<Double_t> ptR2Mirr, Double_t constantePMT);
 
-    void CreateHistoMap(std::map<string, vector<CbmRichMirror*>> mirrorMap, std::map<string, TH2D*> &histoMap, Int_t thresh);
+    void CreateHistoMap(std::map<string, vector<CbmRichMirror*>> mirrorMap, std::map<string, TH2D*> &histoMap);
 
     void DrawFitAndExtractAngles(std::map<string, vector<Double_t>> &anglesMap, std::map<string, TH2D*> histoMap);
 
     void setOutputDir(TString s) { fOutputDir = s; }
 
     void setStudyName(TString s) { fStudyName = s; }
+
+    void setThreshold(Int_t t) { fThreshold = t; }
 
     /**
      * \brief Inherited from FairTask.
@@ -71,6 +73,7 @@ private:
     CbmRichRingFitterEllipseTau* fTauFit;
     TString fOutputDir;
     TString fStudyName;
+    Int_t fThreshold;
 	std::map<string, vector<CbmRichMirror*>> fMirrorMap;
 
     TClonesArray* fGlobalTracks;

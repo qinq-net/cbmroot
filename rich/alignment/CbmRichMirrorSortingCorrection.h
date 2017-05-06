@@ -32,7 +32,7 @@ public:
 
     void InitHistProjection();
 
-    void InitHistProjectionList();
+    void InitHistoMap();
 
     /**
      * \brief Inherited from FairTask.
@@ -53,9 +53,13 @@ public:
 
     void DrawHistProjection();
 
+    void DrawMap(Int_t strX, Int_t strY);
+
     void setOutputDir(TString s) { fOutputDir = s; }
 
     void setStudyName(TString s) { fStudyName = s; }
+
+    void setThreshold(Int_t t) { fThreshold = t; }
 
     /**
      * \brief Inherited from FairTask.
@@ -76,6 +80,7 @@ private:
     Double_t fTrackCenterDistanceCorrected;
     Double_t fTrackCenterDistanceUncorrected;
     TString fCorrectionMatching;
+    Int_t fThreshold;
 
     TClonesArray* fGlobalTracks;
     TClonesArray* fRichRings;
