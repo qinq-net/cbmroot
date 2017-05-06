@@ -15,10 +15,13 @@
 //
 // --------------------------------------------------------------------------
 
-
-
-void mcbm_mc(Int_t nEvents = 2, const char* setupName = "sis18_mcbm",
-             const char* inputFile ="")
+void mcbm_mc(Int_t nEvents = 2,  Int_t iMode=3, 
+	     TString cSys="lam", 
+	     TString cEbeam="2.5gev",
+	     TString cCentr="-",
+	     Int_t iRun=0, 
+	     const char* setupName = "sis18_mcbm",
+             const char* inputFile = "")
 
 // available input files
 // inputFile = "/input/urqmd.agag.1.65gev.centr.00001.root";
@@ -38,18 +41,19 @@ void mcbm_mc(Int_t nEvents = 2, const char* setupName = "sis18_mcbm",
   TString myName = "mcbm_mc";  // this macro's name for screen output
   TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
   // ------------------------------------------------------------------------
-
   // -----   In- and output file names   ------------------------------------
-  TString inFile = ""; // give here or as argument; otherwise default is taken
+  //TString inFile  = srcDir + "/input/urqmd." + cSys + "." + cEbeam + "." + cCentr + "." + Form("%05d",iRun) + ".root";
+  TString inFile  = "/lustre/nyx/cbm/prod/gen/urqmd/" + cSys + "/" + cEbeam + "/" + cCentr + "/urqmd." + cSys + "." + cEbeam + "." + cCentr + "." + Form("%05d",iRun) + ".root";
   TString outDir  = "data/";
-  TString outFile = outDir + setupName + "_test.mc.root";
-  TString parFile = outDir + setupName + "_params.root";
+  TString outFile = outDir + setupName + "_" + cSys + "." + cEbeam + "." + cCentr + ".mc." + Form("%05d",iRun) + ".root";
+  TString parFile = outDir + setupName + "_" + cSys + "." + cEbeam + "." + cCentr + ".params." + Form("%05d",iRun) + ".root";
   TString geoFile = outDir + setupName + "_geofile_full.root";
   // ------------------------------------------------------------------------
 
   // --- Logger settings ----------------------------------------------------
-  TString logLevel     = "INFO";
-  TString logVerbosity = "LOW";
+  TString logLevel     = "WARNING";
+  //TString logLevel     = "INFO";
+  TString logVerbosity = "MEDIUM";
   // ------------------------------------------------------------------------
 
   // --- Define the target geometry -----------------------------------------
@@ -135,7 +139,8 @@ void mcbm_mc(Int_t nEvents = 2, const char* setupName = "sis18_mcbm",
   
   // -----   Input file   ---------------------------------------------------
   std::cout << std::endl;
-  TString defaultInputFile = srcDir + "/input/urqmd.agag.1.65gev.centr.00001.root";
+  //TString defaultInputFile = srcDir + "/input/urqmd.agag.1.65gev.centr.00001.root";
+  TString defaultInputFile = srcDir + "/input/urqmd.nini.1.93gev.mbias.00001.root";
   if ( inFile.IsNull() ) {  // Not defined in the macro explicitly
     if ( strcmp(inputFile, "") == 0 ) {  // not given as argument to the macro
         inFile = defaultInputFile;
@@ -213,12 +218,55 @@ void mcbm_mc(Int_t nEvents = 2, const char* setupName = "sis18_mcbm",
   // in the FairPrimaryGenerator class.
   // ------------------------------------------------------------------------
 
+     // choose generator / source 
+  if(iMode>0)
+  {
+    switch (iMode) {
+        case 1:                  
+	  {                                 //                          (pdg, mul,px,     py, pz, vx,vy,vz)
+            FairParticleGenerator *fPartGen = new FairParticleGenerator  (13,   1,0.0,-0.228, 1.5, 0.,0.,0.); //mu-
+	    primGen->AddGenerator(fPartGen);
+	  }
+            break;
 
+        case 2:                  
+	  {                                 //(pdg,mul,px, py, pz, vx,vy,vz)
+            FairParticleGenerator *fPartGen= new FairParticleGenerator(2212, 1,0.0,-0.228, 1.5, 0.,0.,0.); //proton
+	    primGen->AddGenerator(fPartGen);
+	  }
+            break;
+
+        case 3:                  
+	  {                                 //(pdg,mul,px, py, pz, vx,vy,vz)
+	    Double_t pz;
+	    sscanf(cEbeam,"%lfgev",&pz);
+	    cout<<"simulate single lambda with pz = "<<pz<<endl;
+            FairParticleGenerator *fPartGen= new FairParticleGenerator(3122, 1,0.0,0., pz, 0.,0.,0.); //lambda
+	    primGen->AddGenerator(fPartGen);
+	  }
+            break;
+        case 4:
+	  {
+	    FairBoxGenerator *fPartGen= new FairBoxGenerator(3122, 1);
+	    fPartGen->SetPtRange(0.,0.);
+            fPartGen->SetYRange(0.9,2.);
+	    primGen->AddGenerator(fPartGen);
+	  }	  
+            break;
+
+        default:
+	  ;
+    }
+  }
+  // Use the CbmUrqmdGenrator which calculates a reaction plane and
+  // rotate all particles accordingly
+  else { //if (iMode>0){
   // Use the CbmUnigenGenrator for the input
   CbmUnigenGenerator*  uniGen = new CbmUnigenGenerator(inFile);
   uniGen->SetEventPlane(0. , 360.);
   primGen->AddGenerator(uniGen);
   primGen->SetBeamAngle(beamRotY * TMath::Pi()/180.,0,0,0);  // set direction of beam to 30 degrees
+  }
   run->SetGenerator(primGen);
   // ------------------------------------------------------------------------
 
@@ -247,7 +295,8 @@ void mcbm_mc(Int_t nEvents = 2, const char* setupName = "sis18_mcbm",
   // Visualisation of trajectories (TGeoManager Only)
   // Switch this on if you want to visualise tracks in the event display.
   // This is normally switch off, because of the huge files created
-  // when it is switched on. 
+  // when it is switched on.
+ 
   run->SetStoreTraj(kTRUE);
 
   // -----   Run initialisation   -------------------------------------------
