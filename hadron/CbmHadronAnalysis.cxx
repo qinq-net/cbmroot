@@ -425,6 +425,7 @@ CbmHadronAnalysis::CbmHadronAnalysis()
     fdD0ProtLim(0.4),     // Ext Parameter: Min impact parameter for secondary proton 
     fdOpAngMin(0.01),     // Ext Parameter: Min opening angle for accepting pair
     fdDCALim(0.2),        // Ext Parameter: Max DCA for accepting pair
+    fdVLenMin(5.),        // Ext Parameter: Min Lambda flight path length for accepting pair
     fdVLenMax(25.),       // Ext Parameter: Max Lambda flight path length for accepting pair
     fNMixedEvents(1)
 {
@@ -794,6 +795,7 @@ CbmHadronAnalysis::CbmHadronAnalysis(const char* name, Int_t verbose)
     fdD0ProtLim(0.4),     // Ext Parameter: Min impact parameter for secondary proton 
     fdOpAngMin(0.01),     // Ext Parameter: Min opening angle for accepting pair
     fdDCALim(0.2),        // Ext Parameter: Max DCA for accepting pair
+    fdVLenMin(5.),        // Ext Parameter: Min Lambda flight path length for accepting pair
     fdVLenMax(25.),       // Ext Parameter: Max Lambda flight path length for accepting pair
     fNMixedEvents(1)
 
@@ -3537,8 +3539,10 @@ void CbmHadronAnalysis::ReconstructSecondaries()
   static TH1F* fhMIXPathLen;
   static TH1F* fhMIXMMom;
   static TH1F* fhMCLamMom;
+  static TH1F* fhMCPathLen;
 
   static std::list <std::vector <TLorentzVector>> fvP;
+  static std::list <std::vector <TLorentzVector>> fvX;
   static std::list <std::vector <TVector3 >> fvX0;
   static std::list <std::vector <TVector3 >> fvDX;
 
@@ -3563,17 +3567,18 @@ void CbmHadronAnalysis::ReconstructSecondaries()
     fhDperp2 = new TH1F( Form("hDperp2"), Form("transverse matching distance (prim); d [cm]"), 100, 0., 1.);   
     fhDperpS = new TH1F( Form("hDperpS"), Form("transverse matching distance (sec); d [cm]"), 100, 0., 1.);   
     fhD0prim = new TH1F( Form("hD0prim"), Form("transverse distance to primary vertex; d [cm]"), 100, 0., 2.);   
-    fhOpAng  = new TH1F( Form("hOpAng"),  Form("opening angle; #alpha [rad]"), 100, 0., 0.1);   
+    fhOpAng  = new TH1F( Form("hOpAng"),  Form("opening angle; #alpha [rad]"), 100, 0., 0.5);   
     fhDCA    = new TH1F( Form("hDCA"),    Form("distance of closest approach; d [cm]"), 100, 0., 2.);   
-    fhMinv   = new TH1F( Form("hMinv"),   Form("invariant mass; M_{inv} [GeV]"), 100, 1., 1.3);   
+    fhMinv   = new TH1F( Form("hMinv"),   Form("invariant mass; M_{inv} [GeV]"), 100, 1.05, 1.25);   
     fhPathLen= new TH1F( Form("hPathLen"),Form("path length; L [cm]"), 100, 0., 30.);   
     fhMMom   = new TH1F( Form("hMMom"),   Form("momentum of mother ; p [GeV]"), 100, 0., 5.); 
-    fhMIXOpAng  = new TH1F( Form("hMIXOpAng"),  Form("opening angle; #alpha [rad]"), 100, 0., 0.1);   
+    fhMIXOpAng  = new TH1F( Form("hMIXOpAng"),  Form("opening angle; #alpha [rad]"), 100, 0., 0.5);   
     fhMIXDCA    = new TH1F( Form("hMIXDCA"),    Form("distance of closest approach; d [cm]"), 100, 0., 2.);   
-    fhMIXMinv   = new TH1F( Form("hMIXMinv"),   Form("invariant mass; M_{inv} [GeV]"), 100, 1., 1.3);   
+    fhMIXMinv   = new TH1F( Form("hMIXMinv"),   Form("invariant mass; M_{inv} [GeV]"), 100, 1.05, 1.25);   
     fhMIXPathLen= new TH1F( Form("hMIXPathLen"),Form("path length; L [cm]"), 100, 0., 30.);   
     fhMIXMMom   = new TH1F( Form("hMIXMMom"),   Form("momentum of mother ; p [GeV]"), 100, 0., 5.);   
-    fhMCLamMom  = new TH1F( Form("hMCLamMom"),   Form("MC lambda momentum; p [GeV]"), 100, 0., 5.);   
+    fhMCPathLen = new TH1F( Form("hMCPathLen"),Form("MC #Lambda path length; L [cm]"), 100, 0., 30.);   
+    fhMCLamMom  = new TH1F( Form("hMCLamMom"),   Form("MC #Lambda momentum; p [GeV]"), 100, 0., 5.);   
   }
   iCandEv++;                   // count events locally
 
@@ -3581,11 +3586,24 @@ void CbmHadronAnalysis::ReconstructSecondaries()
   for (Int_t k=0; k< nMCTracks; k++) { // inspect MCTracks 			
      CbmMCTrack* MCTrack = (CbmMCTrack*) fMCTracksColl->At(k);
      Int_t pdgCode = MCTrack->GetPdgCode();
-     if(pdgCode == 3122) {
+     //cout<<"MCTrack pdg "<< pdgCode << ", Mother "<<MCTrack->GetMotherId()<<endl;
+     if( MCTrack->GetMotherId()==-1 && pdgCode == 3122 ) {
        fhMCLamMom->Fill(MCTrack->GetP());
      }
+     if( MCTrack->GetMotherId()>-1 && pdgCode == -211 ) { // decay pion
+       CbmMCTrack* MCTrackm = (CbmMCTrack*) fMCTracksColl->At( MCTrack->GetMotherId() );
+       if ( MCTrackm->GetPdgCode() == 3122 ) {
+	 TVector3 MCV;
+	 MCTrack->GetStartVertex(MCV);
+	 fhMCPathLen->Fill(MCV.Mag());
+	 LOG(DEBUG) << "MC vertex at Pathlen =  "<<MCV.Mag()<<", pi-mom "
+		    << MCTrack->GetP()
+		    << FairLogger::endl;
+       }	 
+     }
   }
-  std::vector<TLorentzVector>P; P.resize(nTofHits);  // define array of Lorentzvectors
+  std::vector<TLorentzVector>P; P.resize(nTofHits);  // define array of momentum Lorentzvectors
+  std::vector<TLorentzVector>X; X.resize(nTofHits);  // define array of space Lorentzvectors
   std::vector<TVector3> X0;    X0.resize(nTofHits);  // first measured point of line 
   std::vector<TVector3> DX;    DX.resize(nTofHits);  // direction of line 
 
@@ -3594,17 +3612,20 @@ void CbmHadronAnalysis::ReconstructSecondaries()
   Double_t dSts2DistMin[nTofHits];
   Double_t dTofDistMin[nStsHits];
   Double_t dTofDist2Min[nStsHits];
+  Int_t    iStsMin[nTofHits][2]; // storage of track candidate STS hits 
   Int_t    iTofMin[nStsHits];
   for (Int_t j=0; j<nStsHits; j++) {
     iTofMin[j]     =-1;    //initialize
     dTofDistMin[j] =100.;  //initialize
     dTofDist2Min[j]=100.;  //initialize
   }
-  //1. find tof silicon match
+  //1. find best tof silicon match
   for (Int_t i=0; i<nTofHits; i++) {
      CbmTofHit* pTofHit   = (CbmTofHit*) fTofHits->At(i);
      dStsDistMin[i] =1.E3;
      dSts2DistMin[i]=1.E3;
+     iStsMin[i][0]=-1; 
+     iStsMin[i][1]=-1; 
      for (Int_t j=0; j<nStsHits; j++) {
        CbmStsHit* pStsHit   = (CbmStsHit*) fStsHits->At(j);
        // Check for primary track
@@ -3627,7 +3648,7 @@ void CbmHadronAnalysis::ReconstructSecondaries()
 	 dStsDistMin[i]=dDist;
 	 iTofMin[j]=i;
 	 dTofDistMin[j]=dDist;
-	 LOG(DEBUG) << "Prim Track cand from Tof "<<i<<", Sts "<<j
+	 LOG(DEBUG) << "Prim Track cand started for Tof "<<i<<", Sts "<<j
 		   <<Form(": dist %6.3f, Min %6.3f at z = %4.1f",dDist, dStsDistMin[i], sPosZ)
 		   <<FairLogger::endl;
        }
@@ -3653,7 +3674,7 @@ void CbmHadronAnalysis::ReconstructSecondaries()
 						k, dDist, dSts2DistMin[i],sPos2Z)
 		<<FairLogger::endl;
 
-      if(dDist<fdDistPrimLim2 && dDist<dSts2DistMin[i]) { // primary or proton candidate
+      if(dDist<fdDistPrimLim2 && dDist<dSts2DistMin[i]) { // look for primary or proton candidate
 	if ( iTofMin[k] > -1 ) {
 	   LOG(DEBUG) <<Form("Sts2hit %d already assigned to tof hit %d with dist= %6.3f, prev %6.3f",
 			    k, iTofMin[k],dDist,dTofDistMin[k])
@@ -3662,41 +3683,55 @@ void CbmHadronAnalysis::ReconstructSecondaries()
 	}
 	dSts2DistMin[i]=dDist;
 	iTofMin[k]=i;
+	iStsMin[i][0]=j;
+	iStsMin[i][1]=k;
 	dTofDistMin[k]=dDist;
-	LOG(DEBUG) << "Prim Track cand extended for Tof "<<i<<", Sts "<<j<<", Sts2 "<<k
+	LOG(DEBUG) << "Prim Track cand found for Tof "<<i<<", Sts "<<j<<", Sts2 "<<k
 		  << Form(": dist %6.3f, Min %6.3f at z = %4.1f",dDist, dSts2DistMin[i], sPos2Z)
 		  << FairLogger::endl;
-	Double_t dDx = pStsHit->GetX() - pSts2Hit->GetX();
-	Double_t dDy = pStsHit->GetY() - pSts2Hit->GetY();
-	Double_t dDz = pStsHit->GetZ() - pSts2Hit->GetZ();
-	// Extrapolate to z=0 (from Si information)
-	Double_t dX0 = pSts2Hit->GetX() - dDx/dDz * pSts2Hit->GetZ();
-	Double_t dY0 = pSts2Hit->GetY() - dDy/dDz * pSts2Hit->GetZ();
-	Double_t dD0 = TMath::Sqrt(dX0*dX0 + dY0*dY0);
-	fhD0prim->Fill(dD0);
-	if(dD0 > fdD0ProtLim) { // secondary proton canditate, memorize relevant quantities
-	  CbmTofHit* pTofHit   = (CbmTofHit*) fTofHits->At(i);
-	  Double_t dDd = TMath::Sqrt(dDx*dDx + dDy*dDy + dDz*dDz);
-	  Double_t vel = pTofHit->GetR() / pTofHit->GetTime();
-	  Double_t bet = vel/ clight;
-	  if(bet > 0.9999) continue;   // bet=0.9999;
-	  Double_t m    = refMass[2];  // assume proton
-	  Double_t pmag = m * bet / TMath::Sqrt(1. - bet*bet); // natural units    
-	  Double_t pz   = pmag * dDz / dDd;
-	  Double_t px   = pmag * dDx / dDd;
-	  Double_t py   = pmag * dDy / dDd;
-	  Double_t E=TMath::Sqrt(pmag*pmag + m*m);
-	  P[i].SetPxPyPzE(px,py,pz,E);	 
-	  LOG(DEBUG)<<"Init LV at ind "<<i<<" with beta = "<<bet<<", minv = "<< P[i].M()
-		   << FairLogger::endl;
-	  X0[i].SetXYZ(pSts2Hit->GetX(),pSts2Hit->GetY(),pSts2Hit->GetZ());
-	  DX[i].SetXYZ(dDx,dDy,dDz);
-	}
-      }
-    } 
+      }    // primary or proton candidate
+    }  //  for (Int_t k=0; k<nStsHits; k++) {
   } // for (Int_t j=0; j<nStsHits; j++) {
 
-  //3. find tof silicon match for secondaries
+  //3. find secondary proton candidate 
+  for (Int_t i=0; i<nTofHits; i++) {
+    if( iStsMin[i][0]>-1 && iStsMin[i][1]>-1 ) {
+      CbmTofHit* pTofHit   = (CbmTofHit*) fTofHits->At(i);
+      CbmStsHit* pStsHit   = (CbmStsHit*) fStsHits->At( iStsMin[i][0] );
+      CbmStsHit* pSts2Hit   = (CbmStsHit*)fStsHits->At( iStsMin[i][1] );
+
+      Double_t dDx = pStsHit->GetX() - pSts2Hit->GetX();
+      Double_t dDy = pStsHit->GetY() - pSts2Hit->GetY();
+      Double_t dDz = pStsHit->GetZ() - pSts2Hit->GetZ();
+      // Extrapolate to z=0 (from Si information)
+      Double_t dX0 = pSts2Hit->GetX() - dDx/dDz * pSts2Hit->GetZ();
+      Double_t dY0 = pSts2Hit->GetY() - dDy/dDz * pSts2Hit->GetZ();
+      Double_t dD0 = TMath::Sqrt(dX0*dX0 + dY0*dY0);
+      fhD0prim->Fill(dD0);
+      if(dD0 > fdD0ProtLim) { // secondary proton canditate, memorize relevant quantities
+	Double_t dDd = TMath::Sqrt(dDx*dDx + dDy*dDy + dDz*dDz);
+	Double_t vel = pTofHit->GetR() / pTofHit->GetTime();
+	Double_t bet = vel/ clight;
+	if(bet > 0.9999) continue;   // bet=0.9999;
+	Double_t m    = refMass[2];  // assume proton
+	Double_t pmag = m * bet / TMath::Sqrt(1. - bet*bet); // natural units    
+	Double_t pz   = pmag * dDz / dDd;
+	Double_t px   = pmag * dDx / dDd;
+	Double_t py   = pmag * dDy / dDd;
+	Double_t E=TMath::Sqrt(pmag*pmag + m*m);
+	P[i].SetPxPyPzE(px,py,pz,E);	 
+	X[i].SetXYZT(pTofHit->GetX(),pTofHit->GetY(),pTofHit->GetZ(),pTofHit->GetTime());	 
+	LOG(DEBUG)<<"Init proton LV at ind "<<Form("%d %d %d",i, iStsMin[i][0], iStsMin[i][1])
+		  <<" with beta = "<<bet<<", minv = "<< P[i].M()
+		  <<", tof "<<X[i].T()
+		  << FairLogger::endl;
+	X0[i].SetXYZ(pSts2Hit->GetX(),pSts2Hit->GetY(),pSts2Hit->GetZ());
+	DX[i].SetXYZ(dDx,dDy,dDz);
+      }  // secondary proton canditate,
+    }
+  }
+
+  //4. find tof silicon match for secondaries
   for (Int_t i=0; i<nTofHits; i++) {
     LOG(DEBUG) << "Tof "<<i<<Form(" ? sec cand Min %6.3f ", dStsDistMin[i] )
 	      << FairLogger::endl;    
@@ -3736,6 +3771,7 @@ void CbmHadronAnalysis::ReconstructSecondaries()
 	  } // for (Int_t k=0; k<nStsHits; k++) {
 	} //if( dTofDistMin[j] > dDistPrimLim) {  // Sts hit not in the primary class
       } // for (Int_t j=0; j<nStsHits; j++) {
+
       if(dDistMin < 100.) { // secondary candidate found, store vectors
 	CbmStsHit* pStsHit   = (CbmStsHit*) fStsHits->At(jbest);
 	CbmStsHit* pSts2Hit  = (CbmStsHit*) fStsHits->At(kbest);
@@ -3757,8 +3793,10 @@ void CbmHadronAnalysis::ReconstructSecondaries()
 	Double_t py   = pmag * dDy / dDd;
 	Double_t E=TMath::Sqrt(pmag*pmag + m*m);
 	P[i].SetPxPyPzE(px,py,pz,E);	 
-	LOG(DEBUG)<<"Init LV at ind "<<i<<" with beta = "<<bet<<", minv = "<< P[i].M()
-	         << FairLogger::endl;
+	X[i].SetXYZT(pTofHit->GetX(),pTofHit->GetY(),pTofHit->GetZ(),pTofHit->GetTime());	 
+	LOG(DEBUG)<<"Init pion LV at ind "<<i<<" with beta = "<<bet<<", minv = "<< P[i].M()
+		  <<", tof "<<X[i].T()
+	          << FairLogger::endl;
 	X0[i].SetXYZ(pSts2Hit->GetX(),pSts2Hit->GetY(),pSts2Hit->GetZ());
 	DX[i].SetXYZ(dDx,dDy,dDz);
       }
@@ -3766,30 +3804,33 @@ void CbmHadronAnalysis::ReconstructSecondaries()
   } //for (Int_t i=0; i<nTofHits; i++) {
 
   fvP.push_front(P);   //insert to event vector
+  fvX.push_front(X);   //insert to event vector
   fvX0.push_front(X0); //insert to event vector
   fvDX.push_front(DX); //insert to event vector
-  if(fvP.size() >= fNMixedEvents){
+  if(fvP.size() > fNMixedEvents+1){
     fvP.pop_back();
+    fvX.pop_back();
     fvX0.pop_back();
     fvDX.pop_back();
   }
 
-  //4. do combinatorics 
+  //5. do combinatorics 
   for (Int_t i=0; i<nTofHits; i++) {
     if(TMath::Abs(P[i].M() - refMass[2])<0.01 ) { // proton candidate
+      std::list<std::vector <TLorentzVector> >::iterator itX =fvX.begin();
       std::list<std::vector <TVector3> >::iterator itX0=fvX0.begin();
       std::list<std::vector <TVector3> >::iterator itDX=fvDX.begin();
       Int_t iMixEv=0;
-      itX0--; itDX--;
-      LOG(DEBUG)<<"P  has size "<<P.size() <<", fvP size "<<fvP.size()<<FairLogger::endl;
+      itX0--; itDX--; itX--;
+      LOG(DEBUG1)<<"LV P has size "<<P.size() <<", fvP size "<<fvP.size()<<FairLogger::endl;
       for(std::list<std::vector <TLorentzVector> >::iterator itP =fvP.begin(); itP !=  fvP.end(); ++itP) {
 	iMixEv++; 
-	++itX0;
-	++itDX;
+	++itX;	++itX0;	++itDX;
 	std::vector<TLorentzVector> PE = *itP;  //fvP[iEv];
+	std::vector<TLorentzVector> XE = *itX;  //fvX[iEv];
 	std::vector<TVector3>      X0E = *itX0; //fvX0[iEv];
 	std::vector<TVector3>      DXE = *itDX; //fvDX[iEv];
-	LOG(DEBUG)<<"iMixEv "<<iMixEv<<": PE has size "<<PE.size()<<", X0E: "<<X0E.size()<<FairLogger::endl;
+	LOG(DEBUG1)<<"iMixEv "<<iMixEv<<": PE has size "<<PE.size()<<", X0E: "<<X0E.size()<<FairLogger::endl;
 	if(iMixEv==1){
 	  if(PE != P) LOG(FATAL)<<"P not properly restored from list"<<FairLogger::endl;
 	}
@@ -3819,40 +3860,58 @@ void CbmHadronAnalysis::ReconstructSecondaries()
 	      TVector3 V=X0E[j]+cj*DXE[j]-0.5*D; // Vertex vector 
 	      Double_t dVLen=V.Mag();          // Lambda flight pathlength
 	      if(dVLen>fdVLenMax) continue;
+	      if(dVLen<fdVLenMin) continue;
 	      TLorentzVector PM=P[i]+PE[j];
 	      TVector3 PV=TVector3(PM.Px(),PM.Py(),PM.Pz());
 	      Double_t TofM=dVLen/PM.Beta()/clight; // flight time of M in ns
 
 	      Double_t TofMLast=100.;
 	      Int_t Niter=0;
-	      while(TMath::Abs(TofM - TofMLast) > 0.001 && Niter++<0){ // not compatible with mixing
+	      std::vector<TLorentzVector> Ptmp  =P; 
+	      std::vector<TLorentzVector> PEtmp =PE; 
+	      std::vector<TLorentzVector> Xtmp  =X; 
+	      std::vector<TLorentzVector> XEtmp =XE; 
+
+	      while(TMath::Abs(TofM - TofMLast) > 0.001 && Niter++<3){ 
 		LOG(DEBUG)<<"MinvI at ind i "<<i<<", j "<<j<<": "<< PM.M()
 			  <<", vertex: "<<V[0]<<" "<<V[1]<<" "<<V[2]<<", Len "<<dVLen 
-			  <<", mom = "<<PV.Mag()<<", tof "<<TofM
+			  <<", mom = "<<PV.Mag()<<", TofM "<<TofM
 			  << FairLogger::endl;
 
 		// update momentum calculation 
 		for (Int_t ii=0; ii<2; ii++){
 		  Int_t k;
-		  if(ii==0) k=i;
-		  if(ii==1) k=j;
-		  CbmTofHit* pTofHit = (CbmTofHit*) fTofHits->At(k);
-		  Double_t dDx = pTofHit->GetX() - V[0];
-		  Double_t dDy = pTofHit->GetY() - V[1];
-		  Double_t dDz = pTofHit->GetZ() - V[2];
-		  Double_t dDd = TMath::Sqrt(dDx*dDx + dDy*dDy + dDz*dDz);
-		  Double_t vel = dDd / (pTofHit->GetTime()-TofM);
+		  TVector3 TofX;
+		  Double_t m; 
+		  Double_t tof;
+		  if(ii==0) {
+		    k=i;
+		    TofX = Xtmp[k].Vect();
+		    m    = Ptmp[k].M(); 
+		    tof  = Xtmp[k].T();
+		  }else {
+		    k=j;
+		    TofX = XEtmp[k].Vect();
+		    m    = PEtmp[k].M(); 
+		    tof  = XEtmp[k].T();
+		  }
+		  TVector3 vDTofV=TofX-V;
+		  Double_t vel = vDTofV.Mag() / (tof-TofM);
 		  Double_t bet = vel/ clight;
 		  if(bet > 0.9999) bet=0.9999;
-		  Double_t m    = P[k].M(); 
-		  Double_t pmag = m * bet / TMath::Sqrt(1. - bet*bet); // natural units    
-		  Double_t pz   = pmag * dDz / dDd;
-		  Double_t px   = pmag * dDx / dDd;
-		  Double_t py   = pmag * dDy / dDd;
+		  Double_t pmag = m * bet / TMath::Sqrt(1. - bet*bet); // natural units
+		  TVector3 vPsec =   vDTofV;
+		  vPsec.SetMag(pmag);
 		  Double_t E=TMath::Sqrt(pmag*pmag + m*m);
-		  P[k].SetPxPyPzE(px,py,pz,E);
+		  if(ii==0) {
+		    Ptmp[k].SetVect(vPsec);
+		    Ptmp[k].SetE(E);
+		  }else{
+		    PEtmp[k].SetVect(vPsec);
+		    PEtmp[k].SetE(E);
+		  }
 		}
-		PM=P[i]+PE[j];
+		PM=Ptmp[i]+PEtmp[j];
 		PV=TVector3(PM.Px(),PM.Py(),PM.Pz());
 		TofMLast=TofM;
 		TofM=dVLen/PM.Beta()/clight; // flight time of M in ns

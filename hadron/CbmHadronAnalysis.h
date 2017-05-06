@@ -428,6 +428,7 @@ private:
     Double_t fdD0ProtLim;//=0.4;     // Ext Parameter: Min impact parameter for secondary proton 
     Double_t fdOpAngMin;//=0.01;     // Ext Parameter: Min opening angle for accepting pair
     Double_t fdDCALim;//=0.2;        // Ext Parameter: Max DCA for accepting pair
+    Double_t fdVLenMin;//=25.;       // Ext Parameter: Min Lambda flight path length for accepting pair
     Double_t fdVLenMax;//=25.;       // Ext Parameter: Max Lambda flight path length for accepting pair
     UInt_t   fNMixedEvents;//=10;    // Number of events to be mixed with 
 
@@ -476,6 +477,7 @@ public:
     inline void SetD0ProtLim(Double_t val)      { fdD0ProtLim=val; }
     inline void SetOpAngMin(Double_t val)       { fdOpAngMin=val; }
     inline void SetDCALim(Double_t val)         { fdDCALim=val; }
+    inline void SetVLenMin(Double_t val)        { fdVLenMin=val; }
     inline void SetVLenMax(Double_t val)        { fdVLenMax=val; }
     inline void SetNMixedEvents(UInt_t val)     { fNMixedEvents=val; }
 
