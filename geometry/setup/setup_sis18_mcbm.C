@@ -22,7 +22,7 @@ void setup_sis18_mcbm()
   TString mvdGeoTag       = "v18b_mcbm";    // "v18a_mcbm";						  
   TString stsGeoTag       = "v18e_mcbm";    // "v18d_mcbm";						  
   TString muchGeoTag      = "v18a_mcbm";
-  TString trdGeoTag       = "v18e_1e_mcbm"; // "v18d_1e_mcbm"; // "v18c_1e_mcbm";  // "v18b_1e_mcbm";  // "v18a_1e_mcbm";
+  TString trdGeoTag       = "v18g_1e_mcbm"; // "v18e_1e_mcbm"; // "v18d_1e_mcbm"; // "v18c_1e_mcbm";  // "v18b_1e_mcbm";  // "v18a_1e_mcbm";
   TString tofGeoTag       = "v13_6a_mcbm";  // "v13-7a_mcbm";  // "v13_5a_mcbm";
   // ------------------------------------------------------------------------
 
