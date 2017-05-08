@@ -24,7 +24,7 @@ void eventDisplay(const char* setup = "sis18_mcbm")
   FairMCPointDraw  *MuchPoint     = new FairMCPointDraw ("MuchPoint",     kOrange, kFullSquare);
   FairMCPointDraw  *RichPoint     = new FairMCPointDraw ("RichPoint",     kRed,    kFullSquare);
   FairMCPointDraw  *TrdPoint      = new FairMCPointDraw ("TrdPoint",      kBlue,   kFullSquare);
-  FairMCPointDraw  *TofPoint      = new FairMCPointDraw ("TofPoint",      kGreen,  kFullSquare);
+  FairMCPointDraw  *TofPoint      = new FairMCPointDraw ("TofPoint",      kRed,    kFullSquare);
   FairMCPointDraw  *EcalPoint     = new FairMCPointDraw ("EcalPoint",     kYellow, kFullSquare);
   FairMCPointDraw  *RefPlanePoint = new FairMCPointDraw ("RefPlanePoint", kPink,   kFullSquare);
                                                                
