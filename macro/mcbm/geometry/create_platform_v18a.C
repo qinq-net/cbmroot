@@ -41,7 +41,9 @@ void create_platform_v18a()
   /** For v18a (mCBM)   **/
   TString geoTag = "v18a";
 
-  Double_t platform_angle = 25.;  // rotation angle around y-axis
+  //  Double_t platform_angle = 25.;  // rotation angle around y-axis
+  Double_t platform_angle = -5.;  // rotation angle around y-axis
+  Double_t platX_offset   = -100.;  // offset to the right side along x-axis
 
   Double_t sizeX =  80.0;  // symmetric in x
   Double_t sizeY = 200.0;  // without rails
@@ -157,7 +159,7 @@ void create_platform_v18a()
   TGeoRotation* platform_rotation = new TGeoRotation();
   platform_rotation->RotateY( platform_angle );
   //  TGeoCombiTrans* platform_placement = new TGeoCombiTrans( sin( platform_angle/180.*acos(-1) ) * z1[1]/2., 0., 0., platform_rotation);
-  TGeoCombiTrans* platform_placement = new TGeoCombiTrans("platform_rot", 0., 0., 0, platform_rotation);
+  TGeoCombiTrans* platform_placement = new TGeoCombiTrans("platform_rot", platX_offset, 0., 0, platform_rotation);
   
 
   //  TGeoTranslation* platform_placement = new TGeoTranslation("platform_trans", 0., 0., 0.);
