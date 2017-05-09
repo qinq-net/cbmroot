@@ -859,33 +859,29 @@ InitStatus CbmAnaFlow::Init()
 
   if (fuseTrackatGen == kTRUE) fileName_tree = fileName_tree_gen;
 
-  if ( (fmode == 3 || fmode == 4) && (fileName_tree == "" || fileName_tree_gen == "") )
+  if ( (fmode == 3 || fmode == 4) && (fileName_tree.EqualTo("") || fileName_tree_gen.EqualTo("")) )
   {
-      LOG(FATAL) << "-E- CbmAnaFlow::Init: no TTREE input file for histogramming !" << FairLogger::endl;
-      return kERROR;
+      LOG(FATAL) << "No TTREE input file for histogramming !" << FairLogger::endl;
   }
 
-  if ( fmode == 5 && fileName_tree == "" )                                    // ordering + 2D histos creation
+  if ( fmode == 5 && fileName_tree.EqualTo("") )  // ordering + 2D histos creation
   {
-      LOG(FATAL) << "-E- CbmAnaFlow::Init: no TTREE input file for 2D histograms creation !" << FairLogger::endl;
-      return kERROR;
+      LOG(FATAL) << "No TTREE input file for 2D histograms creation !" << FairLogger::endl;
   }
 
-  if ( fmode == 6 && strcmp(fdirname,"") == 0)                                         // merging 2D histos
+  if ( fmode == 6 && (strcmp(fdirname,"") == 0) )  // merging 2D histos
   {
-      LOG(FATAL) << "-E- CbmAnaFlow::Init: no directory for Merging 2D histos !" << FairLogger::endl;
-      return kERROR;
+      LOG(FATAL) << "No directory for Merging 2D histos !" << FairLogger::endl;
   }
 
-  if ( ( fmode == 7 ) && (fileName_tree == "" || fileName_tree_gen == "") )   // Final drawing
+  if ( ( fmode == 7 ) && (fileName_tree.EqualTo("") || fileName_tree_gen.EqualTo("")) )  // Final drawing
   {
-      LOG(FATAL) << "-E- CbmAnaFlow::Init: no TTREE input file for histogramming !" << FairLogger::endl;
-      return kERROR;
+      LOG(FATAL) << "No TTREE input file for histogramming !" << FairLogger::endl;
   }
 
   // ============ Input parameters for final drawing
 
-  if ( fmode == 3 || fmode == 4 || fmode == 5 || fmode == 7 )    // mode 6 just for histogram merging (only inputs: dir & file names)
+  if ( fmode == 3 || fmode == 4 || fmode == 5 || fmode == 7 )  // mode 6 just for histogram merging (only inputs: dir & file names)
   {
       // Centrality selection
       centrality_cutDef_STSmult();
