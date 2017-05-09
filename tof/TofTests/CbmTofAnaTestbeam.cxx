@@ -746,6 +746,7 @@ void CbmTofAnaTestbeam::Exec(Option_t* /*option*/)
    fStop.Set();
 
 
+   //   if( 0 < fEvents )
    if( 0 == ( fEvents%100000 ) && 0 < fEvents )
    {
       cout << "-I- CbmTofAnaTestbeam::Exec : "
@@ -1393,10 +1394,10 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 			    100, -200., 200.);  
      fhDutPullT=new TH1F(  Form("hDutPullT_Sm_%d",iDutId),
 			    Form("hDutPullT_Sm_%d;  #DeltaT",iDutId),
-			    100, -500., 500.); 
+			    100, -0.5, 0.5); 
      fhDutPullTB=new TH1F( Form("hDutPullTB_Sm_%d",iDutId),
 			    Form("hDutPullTB_Sm_%d;  #DeltaT",iDutId),
-			    150, -750., 750.); 
+			    150, -0.75, 0.75); 
 
      fhDutChiFound=new TH1F(  Form("hDutChi_Found_Sm_%d",iDutId),
 			    Form("hDutChi_Found_Sm_%d;  #chi",iDutId),
@@ -1409,7 +1410,7 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 			    Form("hDutChi_Match_Sm_%d;  #chi",iDutId),
 			    50, 0., 10.);  
      Double_t XSIZ=20.; 
-     Double_t DTSIZ=500;
+     Double_t DTSIZ=0.5;
      Int_t Nbins=40.;
      fhDutXY_Found = new TH2F( Form("hDutXY_Found_%d",iDutId),
 			    Form("hDutXY_Found_%d;  x(cm); y (cm)",iDutId),
@@ -1596,7 +1597,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      }
      if( dTDia<1.E300 && dTDia - StartSpillTime > SpillDuration*1.E9 ) {
        StartSpillTime=dTDia;
-       LOG(INFO) << "StartSpillTime from TDia set to "<<StartSpillTime<<" ns. "<<FairLogger::endl;
+       LOG(DEBUG) << "StartSpillTime from TDia set to "<<StartSpillTime<<" ns. "<<FairLogger::endl;
      }
    }
 
@@ -2002,6 +2003,8 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
     fhDTD4sel->Fill(dDTD4Min);                                      //  general normalisation
     
     Int_t iDutCh=0;
+    Double_t dTimeSinceLastDutHit=0.;
+
     if(fChannelInfoDut != NULL){
      // Project into Dut reference frame
      /*TGeoNode *fNodeDut=*/        // prepare global->local trafo
@@ -2017,18 +2020,52 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      fhXY0D4sel->Fill(hitpos1_local[0],hitpos1_local[1]);
 
      iDutCh=TMath::Floor( hitpos1_local[0]/fChannelInfoDut->GetSizex() ) + fiDutNch/2; // FIXME: needs proper calculation
-      if(iDutCh<0 || iDutCh>fiDutNch-1)
-      LOG(INFO)<<"Predicted ch "<<iDutCh<<" from x = "<<hitpos1_local[0]<<", Sizex ="<<fChannelInfoDut->GetSizex()
-	       <<", Memory "<<fClusterizer->fdMemoryTime
-	       <<FairLogger::endl;
+     if(iDutCh<0 || iDutCh>fiDutNch-1) {
+       LOG(DEBUG)<<"Predicted ch "<<iDutCh<<" from x = "<<hitpos1_local[0]<<", Sizex ="<<fChannelInfoDut->GetSizex()
+		 <<", Memory "<<fClusterizer->fdMemoryTime
+		 <<FairLogger::endl;
+       if(iDutCh<0) iDutCh=0;
+       if(iDutCh>fiDutNch-1) iDutCh=fiDutNch-1;
+     }
+     if(NULL != fClusterizer)
      if(fClusterizer->fdMemoryTime>0) {
-      if(iDutCh<0) iDutCh=0;
-      if(iDutCh>fiDutNch-1) iDutCh=fiDutNch-1;
-      if(fClusterizer->fvLastHits[fiDut][fiDutSm][fiDutRpc][iDutCh].size()>1){
-	std::list<CbmTofHit *>::iterator itL=fClusterizer->fvLastHits[fiDut][fiDutSm][fiDutRpc][iDutCh].end(); 
-	itL--;        
-	fhDTLH_sel->Fill(TMath::Log10(pHitRef->GetTime()-(*itL)->GetTime()));
-      }
+       for (Int_t iDutChtest = iDutCh; iDutChtest<iDutCh+1; iDutChtest++) { // test possible strips
+	 if(iDutChtest<0) iDutChtest=0;
+	 if(iDutChtest>fiDutNch-1) iDutChtest=fiDutNch-1;
+	 if(fClusterizer->fvLastHits[fiDut][fiDutSm][fiDutRpc][iDutChtest].size()>1){
+	   std::list<CbmTofHit *>::iterator itL=fClusterizer->fvLastHits[fiDut][fiDutSm][fiDutRpc][iDutChtest].end(); 
+	   itL--; 
+	   //find out, whether hit was added for current event 
+           for (UInt_t i=0; i<iNDutHits; i++){ // loop over Dut Hits
+	     LOG(DEBUG1)<<"Inspect "<<i<<" for address  match "<<(*itL)->GetAddress()<<" - "
+		      <<vDutHit[i]->GetAddress()
+		      <<FairLogger::endl; 
+	     if( (*itL)->GetAddress() == vDutHit[i]->GetAddress() ) {
+	       LOG(DEBUG)<<"iDutCh hit was added to DTLH from Mul "<<iNDutHits<<FairLogger::endl; 
+	       itL--;        
+	       break; //
+	     }
+	   }
+	   // std::list<CbmTofHit *>::iterator itL=fClusterizer->fvLastHits[fiDut][fiDutSm][fiDutRpc][iDutChtest].begin();  
+	   dTimeSinceLastDutHit=TMath::Max(0.,TMath::Log10(pHitRef->GetTime()-(*itL)->GetTime()));
+	   break;                        //leave for-loop 
+	 }
+	 else dTimeSinceLastDutHit=9.9;  //generate entry in last bin of histogram
+       }
+  
+       LOG(DEBUG)<<Form(" DTLH for iDutCh %02d Mul %03d: %6.1f from size %lu, ref %12.0f ",
+		       iDutCh, iNDutHits,
+			dTimeSinceLastDutHit,
+		       //fClusterizer->fvLastHits[fiDut][fiDutSm][fiDutRpc][iDutCh-1].size(),
+			fClusterizer->fvLastHits[fiDut][fiDutSm][fiDutRpc][iDutCh].size(),
+		       //fClusterizer->fvLastHits[fiDut][fiDutSm][fiDutRpc][iDutCh+1].size(),
+		       //	(*fClusterizer->fvLastHits[fiDut][fiDutSm][fiDutRpc][iDutCh-1].begin())->GetTime(),
+		       //	(*fClusterizer->fvLastHits[fiDut][fiDutSm][fiDutRpc][iDutCh].begin())->GetTime(),
+		       //(*(fClusterizer->fvLastHits[fiDut][fiDutSm][fiDutRpc][iDutCh].end())--)->GetTime(),
+		       //(*fClusterizer->fvLastHits[fiDut][fiDutSm][fiDutRpc][iDutCh+1].begin())->GetTime(),
+			pHitRef->GetTime())
+		 <<FairLogger::endl;
+      fhDTLH_sel->Fill(dTimeSinceLastDutHit);
      }
     }
 
@@ -2059,12 +2096,9 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
       if(fTrbHeader != NULL) fhTIS_sel2->Fill(fTrbHeader->GetTimeInSpill());
       else                   fhTIS_sel2->Fill((dRefTMean-StartSpillTime)/1.E9);
 
+      if(NULL != fClusterizer)
       if(fClusterizer->fdMemoryTime>0) {
-	if(fClusterizer->fvLastHits[fiDut][fiDutSm][fiDutRpc][iDutCh].size()>1){
-	  std::list<CbmTofHit *>::iterator itL=fClusterizer->fvLastHits[fiDut][fiDutSm][fiDutRpc][iDutCh].end(); 
-	  itL--;        
-	  fhDTLH_sel2->Fill(TMath::Log10(pHitRef->GetTime()-(*itL)->GetTime()));
-	}
+	fhDTLH_sel2->Fill(dTimeSinceLastDutHit);
       }
     }
 
@@ -2128,6 +2162,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      if(fTrbHeader != NULL) fhTIS_sel1->Fill(fTrbHeader->GetTimeInSpill());
      else                   fhTIS_sel1->Fill((dRefTMean-StartSpillTime)/1.E9);
 
+     if(NULL != fClusterizer)
      if(fClusterizer->fdMemoryTime>0) {
        Int_t iDut = CbmTofAddress::GetSmType( pHit1->GetAddress() );
        if(fiDut != iDut)
@@ -2137,12 +2172,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
        if(iDutCh != iCh) 
        LOG(DEBUG)<<"Inconsistent Dut strip #: "<<iCh<<" != "<<iDutCh<<FairLogger::endl;
        fhDTLH_DStrip->Fill((Double_t)iCh,(Double_t)(iCh-iDutCh));
-       if(fClusterizer->fvLastHits[fiDut][fiDutSm][fiDutRpc][iDutCh].size()>1){
-	  std::list<CbmTofHit *>::iterator itL=fClusterizer->fvLastHits[fiDut][fiDutSm][fiDutRpc][iDutCh].end(); 
-	  itL--;  
-	  LOG(DEBUG)<<"DTLH_sel1: "<< pHit1->GetTime() <<" - " << (*itL)->GetTime() << FairLogger::endl;    
-	  fhDTLH_sel1->Fill(TMath::Log10(pHit2->GetTime()-(*itL)->GetTime()));
-       }
+       fhDTLH_sel1->Fill(dTimeSinceLastDutHit);
      }
 
      fhXX04->Fill(xPos1,xPos2);
@@ -2554,7 +2584,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 				  fFindTracks->GetStationOfAddr( pTrk->GetTofHitPointer(iTH)->GetAddress() & DetMask ) ); 
 	 }
 
-	 if (pTrk->GetNofHits() < NStations) continue;  
+	 if (pTrk->GetNofHits() < NStations - 1) continue;  
 
 	 // Calculate positions and time in Dut plane
 	 Double_t dXex=pTrk->GetFitX(dDutzPos);
@@ -2586,7 +2616,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	    }
 	    else{
 	      vHitMap[iTrk].insert(std::pair<Double_t, Int_t>(dChi,i));
-	      LOG(DEBUG)<<Form(" HitMap[%d]:ins  %d, %6.2f ",iTrk,i,dChi)<< FairLogger::endl;
+	      LOG(DEBUG)<<Form(" HitMap[%d]: start %d, %6.2f ",iTrk,i,dChi)<< FairLogger::endl;
 	    }
 
             if(vTrkMap[i].size()>0) {
@@ -2658,7 +2688,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
        for (Int_t iTrk=0; iTrk<iNbTofTracks;iTrk++) { // loop over all Tracklets
 	 CbmTofTracklet *pTrk = (CbmTofTracklet*)fTofTrackColl->At(iTrk);
 	 if(NULL == pTrk) continue;
-	 if (pTrk->GetNofHits() < NStations) continue;  
+	 if (pTrk->GetNofHits() < NStations-1) continue;  
 
 	 // Calculate positions and time in Dut plane
 /*	 Double_t dXex=pTrk->GetFitX(dDutzPos);*/
@@ -2669,7 +2699,8 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 hitpos[1]=pTrk->GetFitY(dDutzPos);
 	 hitpos[2]=dDutzPos;
 	 gGeoManager->MasterToLocal(hitpos, hitpos_local);
-	 if(vHitMap[iTrk].size()>0){  // matched hit found 
+	 //if(vHitMap[iTrk].size()>0){  // matched hit found 
+	 if(vHitMap[iTrk].size()>0 && pTrk->GetNofHits() == NStations){  // matched hit found 
 	   LOG(DEBUG )<<Form(" Event %d : process complete Trkl %d, HMul %d,  with DutHitMap.size:  %d,  best hit %d, %6.2f ",
 		   fEvents,iTrk,pTrk->GetNofHits(),(int)vHitMap[iTrk].size(),vHitMap[iTrk].begin()->second,vHitMap[iTrk].begin()->first)
 		     <<FairLogger::endl;
