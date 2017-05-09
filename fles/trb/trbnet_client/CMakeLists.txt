@@ -10,8 +10,8 @@ Set(CMAKE_CXX_FLAGS_BAK ${CMAKE_CXX_FLAGS})
 Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -Winit-self -Wundef -Wold-style-cast -Woverloaded-virtual -Wwrite-strings -Wnon-virtual-dtor")
 
 Set(INCLUDE_DIRECTORIES
-${CBMROOT_CURRENT_SOURCE_DIR}
-${CBMROOT_SOURCE_DIR}/fles/ipc/src
+${CMAKE_CURRENT_SOURCE_DIR}
+${CBMROOT_SOURCE_DIR}/external/ipc_legacy/ipc/src
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})
@@ -41,9 +41,9 @@ TrbBridgeTransaction.cpp
 
 Set(EXE_NAME trbnet_client)
 If(UNIX AND NOT APPLE)
-  Set(DEPENDENCIES fles_ipc boost_program_options ${CMAKE_THREAD_LIBS_INIT} zmq rt)
+  Set(DEPENDENCIES fles_ipc_legacy boost_program_options ${CMAKE_THREAD_LIBS_INIT} zmq rt)
 Else()
-  Set(DEPENDENCIES fles_ipc boost_program_options ${CMAKE_THREAD_LIBS_INIT} zmq)
+  Set(DEPENDENCIES fles_ipc_legacy boost_program_options ${CMAKE_THREAD_LIBS_INIT} zmq)
 EndIf()
 
 GENERATE_EXECUTABLE()
