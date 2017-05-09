@@ -35,6 +35,8 @@ Bool_t GenTofBdfRootInput_v17a()
                                 "../../../parameters/tof/test_bdf_input.root" };
    /// Name of the histogram with the cluster size distribution for each type
    /// => (sub)folder(s) not needed, dimensions should be: (size [strips], # clusters[])
+   ///    The size of the X axis should not matter as it is just used to reconstruct a
+   ///    probability map
    TString      sSizeHistSourceName[kuNbSmType] =
                               { "h1ClusterSizeType000",
                                 "h1ClusterSizeType000",
@@ -44,7 +46,10 @@ Bool_t GenTofBdfRootInput_v17a()
                                 "h1ClusterSizeType000" };
    /// Name of the histogram with the cluster TOT distribution for each type
    /// => (sub)folder(s) not needed, dimensions should be: (cluster TOT [ps], # clusters[])
-   /// => 
+   ///    The size of the X axis should not matter as it is just used to reconstruct a
+   ///    probability map
+   /// => If ns are used instead of ps, the CbmTofDigitizerBDF method called "LoadBeamtimeValues"
+   ///    will need to be modified around l.661 ===> BACKWARD COMPATIBILITY BREAKING!
    TString      sTotHistSourceName[kuNbSmType] =
                               { "h1ClusterTot000",
                                 "h1ClusterTot000",
