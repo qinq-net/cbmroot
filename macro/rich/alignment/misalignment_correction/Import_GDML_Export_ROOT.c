@@ -1,7 +1,7 @@
 void Import_GDML_Export_ROOT(TString axis="", TString nb="")
 {
-//	TString vmcDir = TString(gSystem->Getenv("VMCWORKDIR"));
-	TString vmcDir = "/u/jbendar/cbmroot5/CBMSRC/geometry/rich/";
+	TString vmcDir = TString(gSystem->Getenv("VMCWORKDIR"));
+	TString vmcDir2 = vmcDir + "/geometry/rich/";
 
 	TGeoManager *gdml = new TGeoManager("gdml", "FAIRGeom");
 
@@ -12,7 +12,8 @@ void Import_GDML_Export_ROOT(TString axis="", TString nb="")
 //	TGeoVolume* gdmlTop = parser.GDMLReadFile (vmcDir + "/geometry/rich/Rich_jan2016_misalign_5mrad_study.gdml");
 //	TGeoVolume* gdmlTop = parser.GDMLReadFile (vmcDir + "/geometry/rich/RICH_21Nov2016_simplified_test.gdml");
 
-	TGeoVolume* gdmlTop = parser.GDMLReadFile (vmcDir + "matching/misalign_1mrad_jan16.gdml");
+//	TGeoVolume* gdmlTop = parser.GDMLReadFile (vmcDir2 + "misalign_5mrad.gdml");
+	TGeoVolume* gdmlTop = parser.GDMLReadFile (vmcDir2 + "position_cyl/rich_v17a_1e_test.gdml");
 	TGeoVolume* rootTop = new TGeoVolumeAssembly("TOP");
 
 	gGeoManager->SetTopVolume(rootTop);
@@ -37,7 +38,8 @@ void Import_GDML_Export_ROOT(TString axis="", TString nb="")
 //	TFile* outfile = new TFile("/data/misalignment_correction/Sim_Outputs/RICH_Geometries/Tile_2_8/Rich_jan2016_misalign_" + nb + "mrad_" + axis + ".root", "RECREATE");
 //	TFile* outfile = new TFile("/home/aghoehne/Desktop/Rich_jan2016_misalign_" + nb + "mrad_" + axis + ".root", "RECREATE");
 
-	TFile* outfile = new TFile(vmcDir + "rich_v16a_matching_misalign_1mrad_jan16.geo.root", "RECREATE");
+//	TFile* outfile = new TFile(vmcDir2 + "rich_v16a_misalign_5mrad_01y_15x.geo.root", "RECREATE");
+	TFile* outfile = new TFile(vmcDir2 + "rich_v17a_1e_test.geo.root", "RECREATE");
 	rootTop->Write();
 	outfile->Close();
 }
