@@ -226,11 +226,6 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData, CbmEvent* event)
         if( th.iStripF<0 ) continue;
         if( th.iStripF>=0 && th.iStripB>=0 ) th.isStrip  = 1;
         if( th.iStripB <0 ) th.iStripB = th.iStripF;
-        
-        
-                //Get time
-        th.time =  mh->GetTime();
-        th.t_er =  mh->GetTimeError();  
   
         TVector3 pos, err;
         mh->Position(pos);
@@ -346,8 +341,7 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData, CbmEvent* event)
 
         //Get time
         th.time =  mh->GetTime();
-        th.t_er =  mh->GetTimeError();  
-
+        th.t_er =  mh->GetTimeError();     
 
         th.iStripF += nMvdHits;
         th.iStripB += nMvdHits;
@@ -593,6 +587,7 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData, CbmEvent* event)
 
     h.t_reco = th.time; 
     h.t_er = th.t_er; 
+    h.t_mc = th.time;
 
     // find and save z positions
     float z_tmp;

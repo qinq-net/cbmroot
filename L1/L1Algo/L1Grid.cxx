@@ -160,12 +160,8 @@ void L1Grid::BuildBins( float yMin, float yMax, float zMin, float zMax, float tM
     // unsigned int Nold = fN;
    
     fN = fNy * fNz * fNt;
-   cout<<fNThreads<<" fN "<<fN<<" fBinInGrid "<<fNy<<" "<<fNz<<" "<<fNt<<endl;
-  //   cout<<fN<<endl;
+
     fBinInGrid = (((fN)/fNThreads)+1);
-    
-    //      #pragma omp critical
-    //     cout<<fN<<" fN "<<fBinInGrid<<" fBinInGrid "<<endl;
 }
 
 

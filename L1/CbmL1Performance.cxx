@@ -965,7 +965,7 @@ cout<<vMCTracks.size()<< " vMCTracks"<<endl;
 
 void CbmL1::TrackFitPerformance()
 {
-  const int Nh_fit = 14;
+  const int Nh_fit = 12;
   static TH1F *h_fit[Nh_fit], *h_fitL[Nh_fit], *h_fitSV[Nh_fit], *h_fitPV[Nh_fit], *h_fit_chi2;
 
   static TH2F *PRes2D, *PRes2DPrim, *PRes2DSec;
@@ -1002,18 +1002,14 @@ void CbmL1::TrackFitPerformance()
         {"ty", "Residual Ty [mrad]",                  100,   -3.5,   3.5},
 		//{"ty", "Residual Ty [mrad]",                  100,   -2.5,   2.5},
         {"P",  "Resolution P/Q [100%]",               100,   -0.1,  0.1 },
-        
 		//{"P",  "Resolution P/Q [100%]",               100,   -0.2,  0.2 },
         {"px", "Pull X [residual/estimated_error]",   100,  -6.,  6.},
         {"py", "Pull Y [residual/estimated_error]",   100,  -6.,  6.},
         {"ptx","Pull Tx [residual/estimated_error]",  100,  -6.,  6.},
         {"pty","Pull Ty [residual/estimated_error]",  100,  -6.,  6.},
         {"pQP","Pull Q/P [residual/estimated_error]", 100,  -6.,  6.},
-       
         {"QPreco","Reco Q/P ", 100,  -10.,  10.},
-        {"QPmc","MC Q/P ", 100,  -10.,  10.},
-         {"timeRes",  "Resolution time [100%]",               100,   -15.,  15. },
-          {"timePull","Pull time [residual/estimated_error]", 100,  -6.,  6.}
+        {"QPmc","MC Q/P ", 100,  -10.,  10.}
       };
 
       struct Tab{
@@ -1033,17 +1029,13 @@ void CbmL1::TrackFitPerformance()
         //{"ty", "Residual Ty [mrad]",                  100,   -3.,   3.},
 		{"ty", "Residual Ty [mrad]",                  100,   -2.,   2.},
         {"P",  "Resolution P/Q [100%]",               100,   -0.1,  0.1 },
-        
         {"px", "Pull X [residual/estimated_error]",   100,  -6.,  6.},
         {"py", "Pull Y [residual/estimated_error]",   100,  -6.,  6.},
         {"ptx","Pull Tx [residual/estimated_error]",  100,  -6.,  6.},
         {"pty","Pull Ty [residual/estimated_error]",  100,  -6.,  6.},
         {"pQP","Pull Q/P [residual/estimated_error]", 100,  -6.,  6.},
-       
         {"QPreco","Reco Q/P ", 100,  -10.,  10.},
-        {"QPmc","MC Q/P ", 100,  -10.,  10.},
-         {"timeRes",  "Resolution time [100%]",               100,   -15.,  15. },
-          {"timePull","Pull time [residual/estimated_error]", 100,  -6.,  6.}
+        {"QPmc","MC Q/P ", 100,  -10.,  10.}
       };
 
       for( int i=0; i<Nh_fit; i++ ){
@@ -1094,16 +1086,12 @@ void CbmL1::TrackFitPerformance()
       targB = algo->vtxFieldValue;
       fld.Set( B[0], z[0], B[1], z[1], B[2], z[2] );
       L1Extrapolate(trPar, mcP.zIn, trPar.qp, fld);
-//       L1ExtrapolateTime(trPar, (mcP.zIn-trPar.z[0]));
 
       h_fit[0]->Fill( (trPar.x[0]-mcP.xIn) *1.e4);
       h_fit[1]->Fill( (trPar.y[0]-mcP.yIn) *1.e4);
       h_fit[2]->Fill((trPar.tx[0]-mcP.pxIn/mcP.pzIn)*1.e3);
       h_fit[3]->Fill((trPar.ty[0]-mcP.pyIn/mcP.pzIn)*1.e3);
       h_fit[4]->Fill(fabs(1./trPar.qp[0])/mcP.p-1);
-      h_fit[12]->Fill((trPar.t[0]-mcP.time));
-      
-     // cout<<trPar.t[0]<<" trPar.t[0] "<<mc.time<<" mcP.time"<<endl;
 
       PRes2D->Fill( mcP.p, (1./fabs(trPar.qp[0]) - mcP.p)/mcP.p*100. );
 
@@ -1118,8 +1106,6 @@ void CbmL1::TrackFitPerformance()
       if( finite(trPar.C22[0]) && trPar.C22[0]>0 ) h_fit[7]->Fill( (trPar.tx[0]-mcP.pxIn/mcP.pzIn)/sqrt(trPar.C22[0]));
       if( finite(trPar.C33[0]) && trPar.C33[0]>0 ) h_fit[8]->Fill( (trPar.ty[0]-mcP.pyIn/mcP.pzIn)/sqrt(trPar.C33[0]));
       if( finite(trPar.C44[0]) && trPar.C44[0]>0 ) h_fit[9]->Fill( (trPar.qp[0]-mcP.q/mcP.p)/sqrt(trPar.C44[0]));
-      if( finite(trPar.C55[0]) && trPar.C55[0]>0 ) h_fit[13]->Fill( (trPar.t[0]-mcP.time)/sqrt(trPar.C55[0]));//sqrt(trPar.C55[0]));
-      
       h_fit[10]->Fill(trPar.qp[0]);
       h_fit[11]->Fill(mcP.q/mcP.p);
 #else
@@ -1146,7 +1132,6 @@ void CbmL1::TrackFitPerformance()
       if( finite(it->C[5]) && it->C[5]>0 )h_fit[7]->Fill( (mc.px/mc.pz-it->T[2])/sqrt(it->C[5]));
       if( finite(it->C[9]) && it->C[9]>0 )h_fit[8]->Fill( (mc.py/mc.pz-it->T[3])/sqrt(it->C[9]));
       if( finite(it->C[14]) && it->C[14]>0 )h_fit[9]->Fill( (mc.q/mc.p-it->T[4])/sqrt(it->C[14]));
-      
       h_fit[10]->Fill(it->T[4]);
       h_fit[11]->Fill(mc.q/mc.p);
 #endif
@@ -1534,8 +1519,8 @@ void CbmL1::InputPerformance()
 {
 //  static TH1I *nStripFHits, *nStripBHits, *nStripFMC, *nStripBMC;
 
-  static TH1F *resXsts, *resYsts, *resXmvd, *resYmvd, *resTsts/*, *pullZ*/;
-  static TH1F *pullXsts, *pullYsts, *pullXmvd, *pullYmvd, *pullTsts/*, *pullZ*/;
+  static TH1F *resXsts, *resYsts, *resXmvd, *resYmvd/*, *pullZ*/;
+  static TH1F *pullXsts, *pullYsts, *pullXmvd, *pullYmvd/*, *pullZ*/;
 
   static bool first_call = 1;
   if ( first_call ){
@@ -1556,11 +1541,9 @@ void CbmL1::InputPerformance()
 
     pullXsts = new TH1F("Px_sts", "STS Pull x", 100, -5, 5);
     pullYsts = new TH1F("Py_sts", "STS Pull y", 100, -5, 5);
-    pullTsts = new TH1F("Pt_sts", "STS Pull t", 100, -5, 5);
 
     resXsts = new TH1F("x_sts", "STS Residual x", 100, -50, 50);
     resYsts = new TH1F("y_sts", "STS Residual y", 100, -500, 500);
-    resTsts = new TH1F("t_sts", "STS Residual t", 100, -50, 50);
 
     gDirectory->cd("..");
     gDirectory->mkdir("MVD");
@@ -1572,15 +1555,11 @@ void CbmL1::InputPerformance()
     resXmvd = new TH1F("x_mvd", "MVD Residual x", 100, -50, 50);
     resYmvd = new TH1F("y_mvd", "MVD Residual y", 100, -50, 50);
 
-
     TH1* histo;
     histo = resXsts;
     histo->GetXaxis()->SetTitle("Residual x, um");
     histo = resYsts;
     histo->GetXaxis()->SetTitle("Residual y, um");
-    histo = resTsts;
-    histo->GetXaxis()->SetTitle("Residual t, ns");
-    
     histo = resXmvd;
     histo->GetXaxis()->SetTitle("Residual x, um");
     histo = resYmvd;
@@ -1589,8 +1568,6 @@ void CbmL1::InputPerformance()
     histo->GetXaxis()->SetTitle("Pull x, um");
     histo = pullYsts;
     histo->GetXaxis()->SetTitle("Pull y, um");
-    histo = pullTsts;
-    histo->GetXaxis()->SetTitle("Pull t, ns");
     histo = pullXmvd;
     histo->GetXaxis()->SetTitle("Pull x, um");
     histo = pullYmvd;
@@ -1659,9 +1636,6 @@ void CbmL1::InputPerformance()
 
       resXsts->Fill((hitPos.X() - mcPos.X())*10*1000);
       resYsts->Fill((hitPos.Y() - mcPos.Y())*10*1000);
-      resTsts->Fill( sh->GetTime() - pt->GetTime() );
-      
-      if (sh->GetTimeError() != 0) pullTsts->Fill(  (sh->GetTime() - pt->GetTime() ) / sh->GetTimeError() );
 
     }
   } // sts

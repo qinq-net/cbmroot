@@ -161,9 +161,7 @@ bool L1AlgoInputData::ReadHitsFromFile(const char work_dir[100], const int maxNE
       fadata >> element_f >> element_b >>element_n>> element_iz >> element_time;
       element.f = static_cast<THitI>(element_f);
       element.b = static_cast<THitI>(element_b);
-#ifdef USE_EVENT_NUMBER       
       element.n = static_cast< unsigned short int>(element_n);
-#endif       
       element.iz = static_cast<TZPosI>(element_iz);
       element.t_reco = element_time;
       vStsHits.push_back(element);
