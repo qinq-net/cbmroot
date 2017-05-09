@@ -457,8 +457,7 @@ void L1Algo::CAMergeClones()
  // vRecoHits.resize(vRecoHitsNew.size());
   for(THitI iHi=0; iHi < vRecoHitsNew.size(); iHi++)
     vRecoHits[iHi] = vRecoHitsNew[iHi];
-  
-  cout<<NTracksIsecAll<<" NTracksIsecAll "<<vTracksNew.size()<<" vTracksNew.size()"<<endl;
+
   
   NHitsIsecAll=vRecoHitsNew.size();
   NTracksIsecAll=vTracksNew.size();

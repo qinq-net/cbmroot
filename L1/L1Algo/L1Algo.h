@@ -12,7 +12,7 @@
 class L1AlgoDraw;
 #include "CbmL1Track.h"
 #endif
-#define XXX               // time debug
+//#define XXX               // time debug
 //#define COUNTERS          // diff counters (hits, doublets, ... )
 
 //#define MERGE_CLONES

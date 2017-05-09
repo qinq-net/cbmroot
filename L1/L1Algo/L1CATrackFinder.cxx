@@ -2148,11 +2148,15 @@ int num_thread = 0;
           }   
         }
       }
-                        
+      
+      
+#ifdef XXX                        
       Time.Stop();
       ti[isec]["table"] += Time;
       
       Time.Start();
+      
+#endif      
               
       vector<int> offset_tracks(fNThreads,NTracksIsecAll);   
       vector<int> offset_hits(fNThreads,NHitsIsecAll);  
@@ -2181,10 +2185,12 @@ int num_thread = 0;
       }
     } //istaf
 
-        
+#ifdef XXX        
     c_timer.Stop();
     ti[isec]["tracks"] = c_timer;        
     c_timer.Start();
+#endif    
+    
                 
     if (isec<(fNFindIterations-1))    
     {
