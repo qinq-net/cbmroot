@@ -85,6 +85,7 @@ Set(SRCS
   get4/CbmGet4EventBuffer.cxx
 
   tasks/tools/CbmTrdTestBeamTools.cxx
+  tasks/tools/CbmTrdTestBeamToolsBuch2016.cxx
   tasks/tools/CbmTrdLabTools.cxx
 #  tasks/tools/CbmTrdClusterTools.cxx
   

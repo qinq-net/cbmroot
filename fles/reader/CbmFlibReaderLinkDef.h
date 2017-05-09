@@ -36,6 +36,7 @@
 #pragma link C++ class CbmFiberHodoMapping;
 #pragma link C++ class CbmSpadicTriggerComp;
 #pragma link C++ class CbmTrdTestBeamTools;
+#pragma link C++ class CbmTrdTestBeamToolsBuch2016;
 #pragma link C++ class CbmTrdLabTools;
 //#pragma link C++ class CbmTrdClusterTools;
 #pragma link C++ class CbmTrdQABase;

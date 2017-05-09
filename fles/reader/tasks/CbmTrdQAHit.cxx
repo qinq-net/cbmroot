@@ -1,5 +1,4 @@
 #include "CbmTrdQAHit.h"
-#include "CbmBeamDefaults.h"
 #include "FairLogger.h"
 #include "CbmHistManager.h"
 #include "TString.h"
