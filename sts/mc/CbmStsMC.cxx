@@ -16,9 +16,6 @@
 #include "TKey.h"
 
 #include "FairLogger.h"
-#include "FairGeoMedium.h"
-#include "FairGeoMedia.h"
-#include "FairGeoBuilder.h"
 
 #include "CbmDetectorList.h"
 #include "CbmStack.h"
@@ -352,11 +349,11 @@ void CbmStsMC::ExpandStsNodes(TGeoNode* fN)
  
    if(fNode->GetNdaughters()>0) { ExpandStsNodes(fNode); }
     TGeoVolume* v= fNode->GetVolume();
-    AssignStsMediumAtImport(v);
-    if (!gGeoManager->FindVolumeFast(v->GetName())) {
-      LOG(INFO)<<"Register Volume " << v->GetName()<<FairLogger::endl;
-     v->RegisterYourself();
-    }
+//    AssignMediumAtImport(v);
+//    if (!gGeoManager->FindVolumeFast(v->GetName())) {
+//      LOG(DEBUG2)<<"Register Volume " << v->GetName()<<FairLogger::endl;
+//      v->RegisterYourself();
+//    }
     if ( (this->InheritsFrom("FairDetector")) && CheckIfSensitive(v->GetName())) {
       //     LOG(INFO)<<"Sensitive Volume "<< v->GetName() << FairLogger::endl;
       AddSensitiveVolume(v);
@@ -425,71 +422,5 @@ Bool_t CbmStsMC::IsNewGeometryFile(TString /*filename*/)
     return kFALSE;
   }
 }
-
-void CbmStsMC::AssignStsMediumAtImport(TGeoVolume* v)
-{
-
-  /**
-   * Assign medium to the the volume v, this has to be done in all cases:
-   * case 1: For CAD converted volumes they have no mediums (only names)
-   * case 2: TGeoVolumes, we need to be sure that the material is defined in this session
-   */
-  FairGeoMedia* Media       = FairGeoLoader::Instance()->getGeoInterface()->getMedia();
-  FairGeoBuilder* geobuild  = FairGeoLoader::Instance()->getGeoBuilder();
-
-  TGeoMedium* med1=v->GetMedium();
-
-
-  if(med1) {
-    // In newer ROOT version also a TGeoVolumeAssembly has a material and medium.
-    // This medium is called dummy and is automatically set when the geometry is constructed.
-    // Since this material and medium is neither in the TGeoManager (at this point) nor in our
-    // ASCII file we have to create it the same way it is done in TGeoVolume::CreateDummyMedium()
-    // In the end the new medium and material has to be added to the TGeomanager, because this is
-    // not done automatically when using the default constructor. For all other constructors the
-    // newly created medium or material is added to the TGeomanger.
-    // Create the medium and material only the first time.
-    TString medName = (TString)(med1->GetName());
-    if ( medName.EqualTo("dummy") && NULL == gGeoManager->GetMedium(medName) ) {
-
-      TGeoMaterial *dummyMaterial = new TGeoMaterial();
-      dummyMaterial->SetName("dummy");
-
-      TGeoMedium* dummyMedium = new TGeoMedium();
-      dummyMedium->SetName("dummy");
-      dummyMedium->SetMaterial(dummyMaterial);
-
-      gGeoManager->GetListOfMedia()->Add(dummyMedium);
-      gGeoManager->AddMaterial(dummyMaterial);
-    }
-
-    TGeoMaterial* mat1=v->GetMaterial();
-    TGeoMaterial* newMat = gGeoManager->GetMaterial(mat1->GetName());
-    if( newMat==0) {
-      /**The Material is not defined in the TGeoManager, we try to create one if we have enough information about it*/
-      FairGeoMedium* FairMedium=Media->getMedium(mat1->GetName());
-      if (!FairMedium) {  
-        LOG(FATAL)<<"Material "<< mat1->GetName() << "is not defined in ASCII file nor in Root file." << FairLogger::endl;
-        //     FairMedium=new FairGeoMedium(mat1->GetName());
-        //      Media->addMedium(FairMedium);
-      } else {
-
-        Int_t nmed=geobuild->createMedium(FairMedium);
-        v->SetMedium(gGeoManager->GetMedium(nmed));
-        gGeoManager->SetAllIndex();
-      }
-    } else {
-      /**Material is already available in the TGeoManager and we can set it */
-      TGeoMedium* med2= gGeoManager->GetMedium(mat1->GetName());
-      v->SetMedium(med2); 
-    }
-  } else {
-    if (strcmp(v->ClassName(),"TGeoVolumeAssembly") != 0) {
-      //[R.K.-3.3.08]  // When there is NO material defined, set it to avoid conflicts in Geant
-      LOG(FATAL)<<"The volume "<< v->GetName() << "has no medium information and not an Assembly so we have to quit"<<FairLogger::endl;
-    }
-  }
-}
-
 
 ClassImp(CbmStsMC)

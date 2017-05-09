@@ -171,8 +171,6 @@ class CbmStsMC : public FairDetector
     Bool_t IsNewGeometryFile(TString filename);
 
 
-    void AssignStsMediumAtImport(TGeoVolume* v); 
-
     /** Copy constructor: usage prevented **/
     CbmStsMC(const CbmStsMC&);
 

@@ -55,9 +55,9 @@ Int_t CbmDaqMapCosy2014Much::GetSystemId(Int_t rocId)
   Int_t systemId = -1;
   
   // --- ROC 0 and 1 are MUCH
-  if ( rocId >= 0  && rocId <= 1 ) systemId = kMUCH;
+  if ( rocId >= 0  && rocId <= 2 ) systemId = kMUCH;
   // --- ROC 3 is HODO
-  else if ( rocId == 2 ) systemId = kFHODO;
+  else if ( rocId == 3 ) systemId = kFHODO;
   // --- other ROC ids will be ignored
   else {
     //LOG(WARNING) << GetName() << ": Unknown ROC id " << rocId
@@ -101,12 +101,12 @@ Int_t CbmDaqMapCosy2014Much::GetMuchStation(Int_t rocId) {
 
 // -----   Get Fiber Hodoscope station number   ------------------------------
 Int_t CbmDaqMapCosy2014Much::GetFiberHodoStation(Int_t rocId) {
-	if ( rocId < 2 || rocId > 2 ) {
+	if ( rocId < 0 || rocId > 1 ) {
 		LOG(ERROR) << GetName() << ": Illegal Fiber Hodoscope ROC Id " << rocId
 				       << FairLogger::endl;
 		return -1;
 	}
-	return ( 1 );
+	return ( rocId );
 }
 // ---------------------------------------------------------------------------
 
@@ -171,7 +171,7 @@ Bool_t CbmDaqMapCosy2014Much::Map(Int_t iRoc, Int_t iNx, Int_t iId,
 			Int_t& iSide, Int_t& iChannel) {
 
   // --- ROC 3: Hodoscope
-  if ( 2 == iRoc  ) {
+  if ( 3 == iRoc  ) {
     if ( iNx-2 == 0) {
       iStation = 1;
       iSector = 0;

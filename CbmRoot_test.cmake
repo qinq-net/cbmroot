@@ -16,13 +16,10 @@ Set(BUILD_COMMAND "make")
 Set(CTEST_BUILD_COMMAND "${BUILD_COMMAND} -j$ENV{number_of_processors}")
 
 String(TOUPPER $ENV{ctest_model} _Model)
-
-#set(CTEST_USE_LAUNCHERS 1)
-#set(configure_options "-DCTEST_USE_LAUNCHERS=${CTEST_USE_LAUNCHERS};-DCMAKE_BUILD_TYPE=${_Model}")
-set(configure_options "-DCMAKE_BUILD_TYPE=${_Model}")
-
 If(EXTRA_FLAGS)
-  Set(configure_options "${configure_options};${EXTRA_FLAGS}")
+  Set(CTEST_CONFIGURE_COMMAND " \"${CMAKE_EXECUTABLE_NAME}\" \"-G${CTEST_CMAKE_GENERATOR}\" \"-DCMAKE_BUILD_TYPE=${_Model}\" \"${EXTRA_FLAGS}\" \"${CTEST_SOURCE_DIRECTORY}\" ")
+Else()
+  Set(CTEST_CONFIGURE_COMMAND " \"${CMAKE_EXECUTABLE_NAME}\" \"-G${CTEST_CMAKE_GENERATOR}\" \"-DCMAKE_BUILD_TYPE=${_Model}\" \"${CTEST_SOURCE_DIRECTORY}\" ")
 EndIf()
 
 If($ENV{ctest_model} MATCHES Nightly OR $ENV{ctest_model} MATCHES Profile)
@@ -71,10 +68,8 @@ If(NOT $ENV{ctest_model} MATCHES Experimental)
 EndIf()
 
 Ctest_Configure(BUILD "${CTEST_BINARY_DIRECTORY}"
-                OPTIONS "${configure_options}"
                 RETURN_VALUE _RETVAL
-               )
-
+)
 If(NOT _RETVAL)
   Ctest_Build(BUILD "${CTEST_BINARY_DIRECTORY}")
   If($ENV{ctest_model} MATCHES Continuous)
@@ -100,4 +95,3 @@ If(NOT _RETVAL)
 Else()
   CTest_Submit()
 EndIf()
-
