@@ -54,8 +54,12 @@ Int_t    fieldSymType=0;
 
 TString defaultInputFile="";
 
-
-void mcbm_reco(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
+void mcbm_reco_nh(Int_t nEvents = 1000, 
+	       TString cSys="lam", 
+	       TString cEbeam="2.5gev",
+	       TString cCentr="-",
+	       Int_t   iRun=0,
+	       const char* setup = "sis18_mcbm")
 {
 
   // ========================================================================
@@ -65,11 +69,16 @@ void mcbm_reco(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   Int_t iVerbose = 0;
 
   TString outDir  = "data/";
-  TString inFile  = outDir + setup + "_test.mc.root";       // Input file (MC events)
-  TString parFile = outDir + setup + "_params.root";        // Parameter file
-  TString outFile = outDir + setup + "_test.eds.root";      // Output file
+  TString inFile  = outDir + setup + "_" + cSys + "." + cEbeam + "." + cCentr + ".mc." + Form("%05d",iRun) + ".root"; // Input file (MC events)
+  TString parFile = outDir + setup + "_" + cSys + "." + cEbeam + "." + cCentr + ".params." + Form("%05d",iRun) + ".root";  // Parameter file
+  TString outFile = outDir + setup + "_" + cSys + "." + cEbeam + "." + cCentr + ".eds." + Form("%05d",iRun) + ".root";     // Output file
 
-  //  Digitisation files.
+  FairLogger::GetLogger()->SetLogScreenLevel("WARNING");
+  //FairLogger::GetLogger()->SetLogScreenLevel("INFO");
+  //FairLogger::GetLogger()->SetLogScreenLevel("DEBUG");
+  FairLogger::GetLogger()->SetLogVerbosityLevel("MEDIUM");
+
+  // Digitisation files.
   // Add TObjectString containing the different file names to
   // a TList which is passed as input to the FairParAsciiFileIo.
   // The FairParAsciiFileIo will take care to create on the fly 
@@ -80,13 +89,24 @@ void mcbm_reco(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   TString inDir = gSystem->Getenv("VMCWORKDIR");
   TString paramDir = inDir + "/parameters/";
 
+  
   TString setupFile = inDir + "/geometry/setup/legacy/" + setup + "_setup.C";
   TString setupFunct = setup;
   setupFunct += "_setup()";
-
   gROOT->LoadMacro(setupFile);
   gInterpreter->ProcessLine(setupFunct);
   
+  /*
+  // -----   Load the geometry setup   -------------------------------------
+  std::cout << std::endl;
+  TString setupFile = inDir + "/geometry/setup/setup_" + setup+ ".C";
+  TString setupFunct = "setup_";
+  setupFunct = setupFunct + setup + "()";
+  std::cout << "-I- mcbm_reco: Loading macro " << setupFile << std::endl;
+  gROOT->LoadMacro(setupFile);
+  gROOT->ProcessLine(setupFunct);
+  */
+
   // --- STS digipar file is there only for L1. It is no longer required
   // ---  for STS digitisation and should be eventually removed.
   //TObjString stsDigiFile = paramDir + stsDigi;
@@ -102,9 +122,11 @@ void mcbm_reco(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
 
   TObjString* tofDigiFile = new TObjString(paramDir + tofDigi);
   parFileList->Add(tofDigiFile);
+  cout << "macro/mcbm/mcbm_reco.C using: " << tofDigi << endl;
 
   TObjString* tofDigiBdfFile = new TObjString(paramDir + tofDigiBdf);
   parFileList->Add(tofDigiBdfFile);
+  cout << "macro/mcbm/mcbm_reco.C using: " << paramDir << tofDigiBdf << endl;
 //  TObjString tofDigiFile = paramDir + tofDigi;
 //  parFileList->Add(&tofDigiFile);
 
@@ -143,12 +165,12 @@ void mcbm_reco(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
 
   // -----   MVD Digitiser   -------------------------------------------------
   CbmMvdDigitizer* mvdDigitise = new CbmMvdDigitizer("MVD Digitiser", 0, iVerbose);
-  run->AddTask(mvdDigitise);
+  //run->AddTask(mvdDigitise);
   // -------------------------------------------------------------------------
 
   // -----   MVD Clusterfinder   ---------------------------------------------
   CbmMvdClusterfinder* mvdCluster = new CbmMvdClusterfinder("MVD Clusterfinder", 0, iVerbose);
-  run->AddTask(mvdCluster);
+  //run->AddTask(mvdCluster);
   // -------------------------------------------------------------------------
 
 
@@ -179,7 +201,7 @@ void mcbm_reco(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   // -----   MVD Hit Finder   ------------------------------------------------
   CbmMvdHitfinder* mvdHitfinder = new CbmMvdHitfinder("MVD Hit Finder", 0, iVerbose);
   mvdHitfinder->UseClusterfinder(kTRUE);
-  run->AddTask(mvdHitfinder);
+  //run->AddTask(mvdHitfinder);
   // -------------------------------------------------------------------------
 
   // ===                 End of MVD local reconstruction                   ===
@@ -219,11 +241,11 @@ void mcbm_reco(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   TString stsMatBudgetFileName = paramDir + stsMatBudget;
 //  l1->SetStsMaterialBudgetFileName(stsMatBudgetFileName.Data());
 //  l1->SetMvdMaterialBudgetFileName(mvdMatBudgetFileName.Data());
-  run->AddTask(l1);
+//  run->AddTask(l1);
 
   CbmStsTrackFinder* stsTrackFinder = new CbmL1StsTrackFinder();
   FairTask* stsFindTracks = new CbmStsFindTracks(iVerbose, stsTrackFinder);
-  run->AddTask(stsFindTracks);
+  // run->AddTask(stsFindTracks);
   // -------------------------------------------------------------------------
 
 
@@ -249,10 +271,10 @@ void mcbm_reco(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   // ===                     TRD local reconstruction                      ===
   // =========================================================================
 
-
+  
   CbmTrdRadiator *radiator = new CbmTrdRadiator(kTRUE,"K++");
   FairTask* trdDigi = new CbmTrdDigitizerPRF(radiator);
-  run->AddTask(trdDigi);
+  //run->AddTask(trdDigi);
 
   Double_t triggerThreshold = 0.5e-6;   // SIS100
   Bool_t   triangularPads = false;      // Bucharest triangular pad-plane layout
@@ -262,13 +284,13 @@ void mcbm_reco(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   trdCluster->SetNeighbourRowTrigger(false);
   trdCluster->SetPrimaryClusterRowMerger(true);
   trdCluster->SetTriangularPads(triangularPads);
-  run->AddTask(trdCluster);
+  //run->AddTask(trdCluster);
 
   CbmTrdHitProducerCluster* trdHit = new CbmTrdHitProducerCluster();
   trdHit->SetTriangularPads(triangularPads);
-  run->AddTask(trdHit);
-
-/*
+  //run->AddTask(trdHit);
+  
+  /*
   Bool_t  simpleTR  = kTRUE;  // use fast and simple version for TR production
   CbmTrdRadiator *radiator = new CbmTrdRadiator(simpleTR,"K++");
   //"K++" : micro structured POKALON
@@ -295,7 +317,7 @@ void mcbm_reco(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
 
   CbmTrdHitProducerCluster* trdHit = new CbmTrdHitProducerCluster();
   trdHit->SetTriangularPads(triangularPads);
-  run->AddTask(trdHit);
+//  run->AddTask(trdHit);
 */
   // -------------------------------------------------------------------------
   // ===                 End of TRD local reconstruction                   ===
@@ -307,8 +329,8 @@ void mcbm_reco(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   // =========================================================================
 
   CbmTofDigitizerBDF* tofDigi = new CbmTofDigitizerBDF("TOF Digitizer BDF",iVerbose);
-  tofDigi->SetOutputBranchPersistent("TofDigi",            kFALSE);
-  tofDigi->SetOutputBranchPersistent("TofDigiMatchPoints", kFALSE);
+  tofDigi->SetOutputBranchPersistent("TofDigi",            kTRUE);
+  tofDigi->SetOutputBranchPersistent("TofDigiMatchPoints", kTRUE);
   tofDigi->SetInputFileName( paramDir + "/tof/test_bdf_input.root");
 //      tofDigi->SetHistoFileName( digiOutFile ); // Uncomment to save control histograms
   run->AddTask(tofDigi);
@@ -334,7 +356,7 @@ void mcbm_reco(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   // =========================================================================
   // ===                        Global tracking                            ===
   // =========================================================================
-
+  
   CbmLitFindGlobalTracks* finder = new CbmLitFindGlobalTracks();
   // Tracking method to be used
   // "branch" - branching tracking
@@ -345,13 +367,15 @@ void mcbm_reco(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   // Hit-to-track merger method to be used
   // "nearest_hit" - assigns nearest hit to the track
   finder->SetMergerType("nearest_hit");
-
+  
 //  run->AddTask(finder);
 
   // -----   Primary vertex finding   ---------------------------------------
+  
   CbmPrimaryVertexFinder* pvFinder = new CbmPVFinderKF();
   CbmFindPrimaryVertex* findVertex = new CbmFindPrimaryVertex(pvFinder);
-  run->AddTask(findVertex);
+  //run->AddTask(findVertex);
+  
   // ------------------------------------------------------------------------
 
   // ===                      End of global tracking                       ===
