@@ -39,11 +39,11 @@ void create_platform_v18a()
   // -----   Define platform parts   ----------------------------------------------
   
   /** For v18a (mCBM)   **/
-  TString geoTag = "v18a";
+  TString geoTag = "v18a_mcbm";
 
   //  Double_t platform_angle = 25.;  // rotation angle around y-axis
-  Double_t platform_angle = -5.;  // rotation angle around y-axis
-  Double_t platX_offset   = -100.;  // offset to the right side along x-axis
+  Double_t platform_angle =   19.;  // rotation angle around y-axis
+  Double_t platX_offset   = -230.;  // offset to the right side along x-axis
 
   Double_t sizeX =  80.0;  // symmetric in x
   Double_t sizeY = 200.0;  // without rails
