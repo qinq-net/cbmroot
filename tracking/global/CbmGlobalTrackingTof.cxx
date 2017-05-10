@@ -502,7 +502,7 @@ struct ZBin
    }
 };
 
-CbmGlobalTrackingTofGeometry::CbmGlobalTrackingTofGeometry() : fC(0), fPDG(211),
+CbmGlobalTrackingTofGeometry::CbmGlobalTrackingTofGeometry() : fC(0), fPDG(211), fChi2Cut(50),
 #ifdef CBM_GLOBALTB_TOF_3D_CUBOIDS
    fCuboids(),
 #endif//CBM_GLOBALTB_TOF_3D_CUBOIDS
@@ -866,7 +866,7 @@ void CbmGlobalTrackingTofGeometry::Find(FairTrackParam& trackParams, timetype tr
    }*/
    
    double deltaX = 4 * TMath::Sqrt(litTrackParams.GetCovariance(0));
-   double deltaY = 4 * TMath::Sqrt(litTrackParams.GetCovariance(5));
+   double deltaY = 4 * TMath::Sqrt(litTrackParams.GetCovariance(6));
    double deltaT = 4 * errT;
    //double deltaT = 4 * litTrackParams.GetTimeError();
    //Find(x1 - deltaX, y1 - deltaY, z1, tx, ty, inds);
@@ -1036,7 +1036,7 @@ void CbmGlobalTrackingTofGeometry::Find(FairTrackParam& trackParams, timetype tr
       }
    }
    
-   if (minChi2 > 75)
+   if (minChi2 > fChi2Cut)
    {
       tofHitInd = -1;
       length = 0;

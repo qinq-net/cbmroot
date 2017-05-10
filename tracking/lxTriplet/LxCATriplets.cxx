@@ -793,11 +793,11 @@ void LxSpace::JoinExtTracks()
       Double_t deltaTy = abs(lastParam.GetTy() - leftTriplet->ty);
       Double_t sigmaX2 = muchPoint->dx2 + lastParam.GetCovariance(0);
       Double_t sigmaX = sqrt(sigmaX2);
-      Double_t sigmaY2 = muchPoint->dy2 + lastParam.GetCovariance(5);
+      Double_t sigmaY2 = muchPoint->dy2 + lastParam.GetCovariance(6);
       Double_t sigmaY = sqrt(sigmaY2);
-      Double_t sigmaTx2 = leftTriplet->dtx2 + lastParam.GetCovariance(9);
+      Double_t sigmaTx2 = leftTriplet->dtx2 + lastParam.GetCovariance(11);
       Double_t sigmaTx = sqrt(sigmaTx2);
-      Double_t sigmaTy2 = leftTriplet->dty2 + lastParam.GetCovariance(12);
+      Double_t sigmaTy2 = leftTriplet->dty2 + lastParam.GetCovariance(15);
       Double_t sigmaTy = sqrt(sigmaTy2);
 
       if (deltaX > cutCoeff * sigmaX || deltaY > cutCoeff * sigmaY ||

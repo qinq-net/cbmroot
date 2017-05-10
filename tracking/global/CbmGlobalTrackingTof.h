@@ -49,6 +49,16 @@ public:
     ~CbmGlobalTrackingTofGeometry();
     bool Read();
     
+    void SetPdg(Int_t v)
+    {
+        fPDG = v;
+    }
+    
+    void SetChi2Cut(Double_t v)
+    {
+        fChi2Cut = v;
+    }
+    
     int GetXInd(scaltype x) const
     {
         int ind = (x - fMinX) / fXBinSize;
@@ -124,6 +134,7 @@ public:
 private:
     scaltype fC;
     Int_t fPDG;
+    Double_t fChi2Cut;
 #ifdef CBM_GLOBALTB_TOF_3D_CUBOIDS
     std::list<Cuboid*> fCuboids;
 #endif//CBM_GLOBALTB_TOF_3D_CUBOIDS

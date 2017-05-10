@@ -40,6 +40,16 @@ public:
         fTofGeometry.SetTBinSize(v);
     }
     
+    void SetPropagatePdg(Int_t v)
+    {
+        fTofGeometry.SetPdg(v);
+    }
+    
+    void SetChi2Cut(Double_t v)
+    {
+        fTofGeometry.SetChi2Cut(v);
+    }
+    
 private:
     Double_t CalcStsTrackLength(const CbmStsTrack* track);
     

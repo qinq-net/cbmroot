@@ -149,7 +149,7 @@ void LxTBBinnedDetector::TieTracks(LxTbBinnedFinder& fFinder)
             (par.GetZ() - prevPar.GetZ()) * (par.GetZ() - prevPar.GetZ()));
          t += 1.e9 * length / speedOfLight;
          scaltype sigmaXSq = par.GetCovariance(0);
-         scaltype sigmaYSq = par.GetCovariance(5);
+         scaltype sigmaYSq = par.GetCovariance(6);
          TieHandlePoint pointHandler;
          pointHandler.fFilter = filter;
          pointHandler.fPar = par;
