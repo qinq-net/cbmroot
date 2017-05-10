@@ -209,5 +209,4 @@ void run_digi(Int_t nEvents = 2,
   RemoveGeoManager();
   // ------------------------------------------------------------------------
 
-  RemoveGeoManager();
 } // End of macro
