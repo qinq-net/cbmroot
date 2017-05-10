@@ -53,13 +53,13 @@ protected:
     * @param zOut Input Z position to extrapolate to [cm].
     * @param derivs Vector with integrated derivatives.
     */
+
    void RK4Order(
       const std::vector<litfloat>& xIn,
       litfloat zIn,
       std::vector<litfloat>& xOut,
       litfloat zOut,
-      std::vector<litfloat>& derivs,
-      litfloat& length) const;
+      std::vector<litfloat>& derivs) const;
 
    /* TODO: add comment */
    litfloat CalcOut(

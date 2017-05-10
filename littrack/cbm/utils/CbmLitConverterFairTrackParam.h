@@ -53,10 +53,20 @@ public:
         litPar->SetTime(0);
         Double_t cov[15];
         par->CovMatrix(cov);
-        std::vector<litfloat> covVec(15);
-        for (UInt_t i = 0; i < 15; ++i) { covVec[i] = (litfloat) cov[i]; }
+        std::vector<litfloat> covVec(21);
+        for (UInt_t i = 0; i < 5; ++i) { covVec[i] = (litfloat) cov[i]; }
+        for (UInt_t i = 5; i < 9; ++i) { covVec[i + 1] = (litfloat) cov[i]; }
+        for (UInt_t i = 9; i < 12; ++i) { covVec[i + 2] = (litfloat) cov[i]; }
+        for (UInt_t i = 12; i < 14; ++i) { covVec[i + 3] = (litfloat) cov[i]; }
+        covVec[18] = (litfloat) cov[14];
+        covVec[5] = 0;
+        covVec[10] = 0;
+        covVec[5] = 0;
+        covVec[14] = 0;
+        covVec[17] = 0;
+        covVec[19] = 0;
+        covVec[20] = 4 * 4;
         litPar->SetCovMatrix(covVec);
-        litPar->SetTimeError(4);
     }
     
     static void FairTrackParamToCbmLitTrackParam(
@@ -72,10 +82,20 @@ public:
         litPar->SetTime((litfloat)par->GetTime());
         Double_t cov[15];
         par->CovMatrix(cov);
-        std::vector<litfloat> covVec(15);
-        for (UInt_t i = 0; i < 15; ++i) { covVec[i] = (litfloat) cov[i]; }
+        std::vector<litfloat> covVec(21);
+        for (UInt_t i = 0; i < 5; ++i) { covVec[i] = (litfloat) cov[i]; }
+        for (UInt_t i = 5; i < 9; ++i) { covVec[i + 1] = (litfloat) cov[i]; }
+        for (UInt_t i = 9; i < 12; ++i) { covVec[i + 2] = (litfloat) cov[i]; }
+        for (UInt_t i = 12; i < 14; ++i) { covVec[i + 3] = (litfloat) cov[i]; }
+        covVec[18] = (litfloat) cov[14];
+        covVec[5] = 0;
+        covVec[10] = 0;
+        covVec[5] = 0;
+        covVec[14] = 0;
+        covVec[17] = 0;
+        covVec[19] = 0;
+        covVec[20] = (litfloat)(par->GetDTime() * par->GetDTime());
         litPar->SetCovMatrix(covVec);
-        litPar->SetTimeError((litfloat)par->GetDTime());
     }
     
     static void CbmLitTrackParamToFairTrackParam(
@@ -90,7 +110,11 @@ public:
         par->SetQp(litPar->GetQp());
         Double_t cov[15];
         std::vector<litfloat> covVec(litPar->GetCovMatrix());
-        for (UInt_t i = 0; i < 15; ++i) { cov[i] = (Double_t) covVec[i]; }
+        for (UInt_t i = 0; i < 5; ++i) { cov[i] = (Double_t) covVec[i]; }
+        for (UInt_t i = 5; i < 9; ++i) { cov[i] = (Double_t) covVec[i + 1]; }
+        for (UInt_t i = 9; i < 12; ++i) { cov[i] = (Double_t) covVec[i + 2]; }
+        for (UInt_t i = 12; i < 14; ++i) { cov[i] = (Double_t) covVec[i + 3 ]; }
+        cov[14] = (Double_t) covVec[18];
         par->SetCovMatrix(cov);
     }
 

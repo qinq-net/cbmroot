@@ -67,16 +67,16 @@ void CbmLitMaterialEffectsImp::AddEnergyLoss(
       qp *= std::exp(-t);
       par->SetQp(qp);
 
-      litfloat cov = par->GetCovariance(14);
+      litfloat cov = par->GetCovariance(18);
       cov += CalcSigmaSqQpElectron(par, mat);
-      par->SetCovariance(14, cov);
+      par->SetCovariance(18, cov);
    } else {
       litfloat Eloss = EnergyLoss(par, mat);
       par->SetQp(CalcQpAfterEloss(par->GetQp(), Eloss));
 
-      litfloat cov = par->GetCovariance(14);
+      litfloat cov = par->GetCovariance(18);
       cov += CalcSigmaSqQp(par, mat);
-      par->SetCovariance(14, cov);
+      par->SetCovariance(18, cov);
    }
 }
 
@@ -109,14 +109,14 @@ void CbmLitMaterialEffectsImp::AddThickScatter(
    C[2] += Q33 * D * T2;
    C[3] += Q34 * D * T2;
 
-   C[5] += Q44 * T23;
-   C[6] += Q34 * D * T2;
-   C[7] += Q44 * D * T2;
+   C[6] += Q44 * T23;
+   C[7] += Q34 * D * T2;
+   C[8] += Q44 * D * T2;
 
-   C[9] += Q33;
-   C[10] += Q34;
+   C[11] += Q33;
+   C[12] += Q34;
 
-   C[12] += Q44;
+   C[15] += Q44;
 
    par->SetCovMatrix(C);
 }
@@ -137,9 +137,9 @@ void CbmLitMaterialEffectsImp::AddThinScatter(
    litfloat Q34 = tx * ty * t * thetaSq;
 
    std::vector<litfloat> C = par->GetCovMatrix();
-   C[9] += Q33;
-   C[12] += Q44;
-   C[10] += Q34;
+   C[11] += Q33;
+   C[15] += Q44;
+   C[12] += Q34;
    par->SetCovMatrix(C);
 }
 

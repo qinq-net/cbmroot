@@ -43,8 +43,7 @@ public:
       fTy(0.),
       fQp(0.),
       fTime(0.),
-      fTimeError(0.),
-      fCovMatrix(15, 0.) { }
+      fCovMatrix(21, 0.) { }
 
    /**
     * \brief Destructor.
@@ -59,7 +58,6 @@ public:
    litfloat GetTy() const { return fTy; }
    litfloat GetQp() const { return fQp; }
    litfloat GetTime() const { return fTime; }
-   litfloat GetTimeError() const { return fTimeError; }
    litfloat GetCovariance(int index) const { return fCovMatrix[index]; }
    const vector<litfloat>& GetCovMatrix() const { return fCovMatrix; }
 
@@ -71,7 +69,6 @@ public:
    void SetTy(litfloat ty) { fTy = ty; }
    void SetQp(litfloat qp) { fQp = qp; }
    void SetTime(litfloat t) { fTime = t; }
-   void SetTimeError(litfloat tErr) { fTimeError = tErr; }
    void SetCovMatrix(const vector<litfloat>& C) { fCovMatrix.assign(C.begin(), C.end()); }
    void SetCovariance(int index, litfloat cov) { fCovMatrix[index] = cov; }
 
@@ -97,14 +94,13 @@ public:
     * \return State vector as vector.
     */
    vector<litfloat> GetStateVector() const {
-      vector<litfloat> state(7, 0.);
+      vector<litfloat> state(6, 0.);
       state[0] = GetX();
       state[1] = GetY();
       state[2] = GetTx();
       state[3] = GetTy();
       state[4] = GetQp();
       state[5] = GetTime();
-      state[6] = GetTimeError();
       return state;
    }
 
@@ -119,7 +115,6 @@ public:
       SetTy(x[3]);
       SetQp(x[4]);
       SetTime(x[5]);
-      SetTimeError(x[6]);
    }
 
    /**
@@ -134,9 +129,9 @@ public:
    // for (Int_t i = 0; i < 15; i++) ss << fCovMatrix[i] << " ";
    // ss << endl;
       ss.precision(3);
-      ss << " cov: x=" << fCovMatrix[0] <<  " y=" << fCovMatrix[5]
-         <<  " tx=" << fCovMatrix[9] <<  " ty=" << fCovMatrix[12]
-         <<  " q/p=" << fCovMatrix[14] << ", fTimeError=" << fTimeError << endl;
+      ss << " cov: x=" << fCovMatrix[0] <<  " y=" << fCovMatrix[6]
+         <<  " tx=" << fCovMatrix[11] <<  " ty=" << fCovMatrix[15]
+         <<  " q/p=" << fCovMatrix[18] << ", time=" << fCovMatrix[20] << endl;
       return ss.str();
    }
 
@@ -145,7 +140,6 @@ private:
    litfloat fTx, fTy; // Slopes: tx=dx/dz, ty=dy/dz
    litfloat fQp; // Q/p: Q is a charge (+/-1), p is momentum in [GeV/c]
    litfloat fTime;
-   litfloat fTimeError;
 
    /* Covariance matrix.
     * Upper triangle symmetric matrix.

@@ -125,7 +125,7 @@ public:
    Bool_t CheckParams() const {
       std::vector<litfloat> covFirst(fParamFirst.GetCovMatrix());
       std::vector<litfloat> covLast(fParamLast.GetCovMatrix());
-      for (Int_t i = 0; i < 15; i++) {
+      for (Int_t i = 0; i < 21; i++) {
          if (std::abs(covFirst[i]) > 10000. ||
                std::abs(covLast[i]) > 10000.) { return false; }
       }

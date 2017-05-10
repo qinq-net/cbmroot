@@ -37,7 +37,7 @@ LitStatus CbmLitTrackFitterImp::Fit(
    Int_t nofHits = track->GetNofHits();
    FitNodeVector nodes(nofHits);
    CbmLitTrackParam par;
-   std::vector<litfloat> F(25);
+   std::vector<litfloat> F(36);
 
    if (downstream) {
       track->SetParamLast(track->GetParamFirst());

@@ -178,7 +178,7 @@ void CbmLitTrackFinderNN::FollowTracks(
                litfloat maxErrX = fHitData.GetMaxErrX(iStation);
                litfloat devX = fSigmaCoef[fIteration] * (sqrt(tpar.GetCovariance(0) + maxErrX * maxErrX));
                litfloat maxErrY = fHitData.GetMaxErrY(iStation);
-               litfloat devY = fSigmaCoef[fIteration] * (sqrt(tpar.GetCovariance(5) + maxErrY * maxErrY));
+               litfloat devY = fSigmaCoef[fIteration] * (sqrt(tpar.GetCovariance(6) + maxErrY * maxErrY));
                bool hitInside = (pixelHit->GetX() < (tpar.GetX() + devX)) && (pixelHit->GetX() > (tpar.GetX() - devX))
                      && (pixelHit->GetY() < (tpar.GetY() + devY)) && (pixelHit->GetY() > (tpar.GetY() - devY));
                if (!hitInside) continue;

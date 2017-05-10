@@ -14,6 +14,7 @@
 #include <cmath>
 
 #include "TMath.h"
+#include "TMatrixD.h"
 
 litfloat CbmLitTrackParam::fSpeedOfLight = 1.e-7 * TMath::C();
 
@@ -61,60 +62,108 @@ LitStatus CbmLitKalmanFilter::Update(
    litfloat dxx = hit->GetDx() * hit->GetDx();
    litfloat dxy = hit->GetDxy();
    litfloat dyy = hit->GetDy() * hit->GetDy();
+   litfloat dtt = hit->GetDt() * hit->GetDt();
 
    // calculate residuals
    litfloat dx = hit->GetX() - par->GetX();
    litfloat dy = hit->GetY() - par->GetY();
+   litfloat dt = hit->GetT() - par->GetTime();
 
    // Calculate and inverse residual covariance matrix
-   litfloat t = ONE / (dxx * dyy + dxx * cIn[5] + dyy * cIn[0] + cIn[0] * cIn[5] -
-                  dxy * dxy - TWO * dxy * cIn[1] - cIn[1] * cIn[1]);
-   litfloat R00 = (dyy + cIn[5]) * t;
-   litfloat R01 = -(dxy + cIn[1]) * t;
-   litfloat R11 = (dxx + cIn[0]) * t;
+   //litfloat t = ONE / (dxx * dyy + dxx * cIn[5] + dyy * cIn[0] + cIn[0] * cIn[5] -
+                  //dxy * dxy - TWO * dxy * cIn[1] - cIn[1] * cIn[1]);
+   litfloat t = ONE / (
+      (cIn[0] + dxx) * ((cIn[6] + dyy) * (cIn[20] + dtt) - cIn[10] * cIn[10]) -
+      (cIn[1] + dxy) * ((cIn[1] + dxy) * (cIn[20] + dtt) - cIn[5] * cIn[10]) +
+      cIn[5] * ((cIn[1] + dxy) * cIn[10] - (cIn[6] + dyy) * cIn[5])
+      );
+   //litfloat R00 = (dyy + cIn[5]) * t;
+   //litfloat R01 = -(dxy + cIn[1]) * t;
+   //litfloat R11 = (dxx + cIn[0]) * t;
+   litfloat R00 = ((cIn[6] + dyy) * (cIn[20] + dtt) - cIn[10] * cIn[10]) * t;
+   litfloat R01 = (cIn[5] * cIn[10] - (cIn[1] + dxy) * (cIn[20] + dtt)) * t;
+   litfloat R02 = ((cIn[1] + dxy) * cIn[10] - (cIn[6] + dyy) * cIn[5]) * t;
+   litfloat R11 = ((cIn[0] + dxx) * (cIn[20] + dtt) - cIn[5] * cIn[5]) * t;
+   litfloat R12 = ((cIn[1] + dxy) * cIn[5] - (cIn[0] + dxx) * cIn[10]) * t;
+   litfloat R22 = ((cIn[0] + dxx) * (cIn[6] + dyy) - (cIn[1] + dxy) * (cIn[1] + dxy)) * t;
+   
+   /*TMatrixD ResM(3, 3);
+   ResM(0, 0) = dxx + cIn[0];
+   ResM(0, 1) = dxy + cIn[1];
+   ResM(0, 2) = cIn[5];
+   ResM(1, 0) = dxy + cIn[1];
+   ResM(1, 1) = dyy + cIn[6];
+   ResM(1, 2) = cIn[10];
+   ResM(2, 0) = cIn[5];
+   ResM(2, 1) = cIn[10];
+   ResM(2, 2) = dtt + cIn[20];
+   ResM.Invert();
+   
+   litfloat R00 = ResM(0, 0);
+   litfloat R01 = ResM(0, 1);
+   litfloat R02 = ResM(0, 2);
+   litfloat R11 = ResM(1, 1);
+   litfloat R12 = ResM(1, 2);
+   litfloat R22 = ResM(2, 2);*/
 
    // Calculate Kalman gain matrix
-   litfloat K00 = cIn[0] * R00 + cIn[1] * R01;
-   litfloat K01 = cIn[0] * R01 + cIn[1] * R11;
-   litfloat K10 = cIn[1] * R00 + cIn[5] * R01;
-   litfloat K11 = cIn[1] * R01 + cIn[5] * R11;
-   litfloat K20 = cIn[2] * R00 + cIn[6] * R01;
-   litfloat K21 = cIn[2] * R01 + cIn[6] * R11;
-   litfloat K30 = cIn[3] * R00 + cIn[7] * R01;
-   litfloat K31 = cIn[3] * R01 + cIn[7] * R11;
-   litfloat K40 = cIn[4] * R00 + cIn[8] * R01;
-   litfloat K41 = cIn[4] * R01 + cIn[8] * R11;
+   litfloat K00 = cIn[0] * R00 + cIn[1] * R01 + cIn[5] * R02;
+   litfloat K01 = cIn[0] * R01 + cIn[1] * R11 + cIn[5] * R12;
+   litfloat K02 = cIn[0] * R02 + cIn[1] * R12 + cIn[5] * R22;
+   litfloat K10 = cIn[1] * R00 + cIn[6] * R01 + cIn[10] * R02;
+   litfloat K11 = cIn[1] * R01 + cIn[6] * R11 + cIn[10] * R12;
+   litfloat K12 = cIn[1] * R02 + cIn[6] * R12 + cIn[10] * R22;
+   litfloat K20 = cIn[2] * R00 + cIn[7] * R01 + cIn[14] * R02;
+   litfloat K21 = cIn[2] * R01 + cIn[7] * R11 + cIn[14] * R12;
+   litfloat K22 = cIn[2] * R02 + cIn[7] * R12 + cIn[14] * R22;
+   litfloat K30 = cIn[3] * R00 + cIn[8] * R01 + cIn[17] * R02;
+   litfloat K31 = cIn[3] * R01 + cIn[8] * R11 + cIn[17] * R12;
+   litfloat K32 = cIn[3] * R02 + cIn[8] * R12 + cIn[17] * R22;
+   litfloat K40 = cIn[4] * R00 + cIn[9] * R01 + cIn[19] * R02;
+   litfloat K41 = cIn[4] * R01 + cIn[9] * R11 + cIn[19] * R12;
+   litfloat K42 = cIn[4] * R02 + cIn[9] * R12 + cIn[19] * R22;
+   litfloat K50 = cIn[5] * R00 + cIn[10] * R01 + cIn[20] * R02;
+   litfloat K51 = cIn[5] * R01 + cIn[10] * R11 + cIn[20] * R12;
+   litfloat K52 = cIn[5] * R02 + cIn[10] * R12 + cIn[20] * R22;
 
    // Calculate filtered state vector
-   litfloat xOut[5] = { par->GetX(), par->GetY(), par->GetTx(), par->GetTy(), par->GetQp() };
-   xOut[0] += K00 * dx + K01 * dy;
-   xOut[1] += K10 * dx + K11 * dy;
-   xOut[2] += K20 * dx + K21 * dy;
-   xOut[3] += K30 * dx + K31 * dy;
-   xOut[4] += K40 * dx + K41 * dy;
+   litfloat xOut[6] = { par->GetX(), par->GetY(), par->GetTx(), par->GetTy(), par->GetQp(), par->GetTime() };
+   xOut[0] += K00 * dx + K01 * dy + K02 * dt;
+   xOut[1] += K10 * dx + K11 * dy + K12 * dt;
+   xOut[2] += K20 * dx + K21 * dy + K22 * dt;
+   xOut[3] += K30 * dx + K31 * dy + K32 * dt;
+   xOut[4] += K40 * dx + K41 * dy + K42 * dt;
+   xOut[5] += K50 * dx + K51 * dy + K52 * dt;
 
    // Calculate filtered covariance matrix
    std::vector<litfloat> cOut = cIn;
 
-   cOut[0]  += -K00 * cIn[0] - K01 * cIn[1];
-   cOut[1]  += -K00 * cIn[1] - K01 * cIn[5];
-   cOut[2]  += -K00 * cIn[2] - K01 * cIn[6];
-   cOut[3]  += -K00 * cIn[3] - K01 * cIn[7];
-   cOut[4]  += -K00 * cIn[4] - K01 * cIn[8];
+   cOut[0]  -= K00 * cIn[0] + K01 * cIn[1] + K02 * cIn[5];
+   cOut[1]  -= K00 * cIn[1] + K01 * cIn[6] + K02 * cIn[10];
+   cOut[2]  -= K00 * cIn[2] + K01 * cIn[7] + K02 * cIn[14];
+   cOut[3]  -= K00 * cIn[3] + K01 * cIn[8] + K02 * cIn[17];
+   cOut[4]  -= K00 * cIn[4] + K01 * cIn[9] + K02 * cIn[19];
+   cOut[5]  -= K00 * cIn[5] + K01 * cIn[10] + K02 * cIn[20];
 
-   cOut[5]  += -K11 * cIn[5] - K10 * cIn[1];
-   cOut[6]  += -K11 * cIn[6] - K10 * cIn[2];
-   cOut[7]  += -K11 * cIn[7] - K10 * cIn[3];
-   cOut[8]  += -K11 * cIn[8] - K10 * cIn[4];
+   cOut[6]  -= K10 * cIn[1] + K11 * cIn[6] + K12 * cIn[10];
+   cOut[7]  -= K10 * cIn[2] + K11 * cIn[7] + K12 * cIn[14];
+   cOut[8]  -= K10 * cIn[3] + K11 * cIn[8] + K12 * cIn[17];
+   cOut[9]  -= K10 * cIn[4] + K11 * cIn[9] + K12 * cIn[19];
+   cOut[10]  -= K10 * cIn[5] + K11 * cIn[10] + K12 * cIn[20];
 
-   cOut[9]  += -K20 * cIn[2] - K21 * cIn[6];
-   cOut[10] += -K20 * cIn[3] - K21 * cIn[7];
-   cOut[11] += -K20 * cIn[4] - K21 * cIn[8];
+   cOut[11]  -= K20 * cIn[2] + K21 * cIn[7] + K22 * cIn[14];
+   cOut[12] -= K20 * cIn[3] + K21 * cIn[8] + K22 * cIn[17];
+   cOut[13] -= K20 * cIn[4] + K21 * cIn[9] + K22 * cIn[19];
+   cOut[14] -= K20 * cIn[5] + K21 * cIn[10] + K22 * cIn[20];
 
-   cOut[12] += -K30 * cIn[3] - K31 * cIn[7];
-   cOut[13] += -K30 * cIn[4] - K31 * cIn[8];
+   cOut[15] -= K30 * cIn[3] + K31 * cIn[8] + K32 * cIn[17];
+   cOut[16] -= K30 * cIn[4] + K31 * cIn[9] + K32 * cIn[19];
+   cOut[17] -= K30 * cIn[5] + K31 * cIn[10] + K32 * cIn[20];
 
-   cOut[14] += -K40 * cIn[4] - K41 * cIn[8];
+   cOut[18] -= K40 * cIn[4] + K41 * cIn[9] + K42 * cIn[19];
+   cOut[19] -= K40 * cIn[5] + K41 * cIn[10] + K42 * cIn[20];
+   
+   cOut[20] -= K50 * cIn[5] + K51 * cIn[10] + K52 * cIn[20];
 
    // Copy filtered state to output
    par->SetX(xOut[0]);
@@ -122,25 +171,59 @@ LitStatus CbmLitKalmanFilter::Update(
    par->SetTx(xOut[2]);
    par->SetTy(xOut[3]);
    par->SetQp(xOut[4]);
+   par->SetTime(xOut[5]);
    par->SetCovMatrix(cOut);
 
    // Calculate chi-square
    litfloat xmx = hit->GetX() - par->GetX();
    litfloat ymy = hit->GetY() - par->GetY();
+   litfloat tmt = hit->GetT() - par->GetTime();
    litfloat C0 = cOut[0];
    litfloat C1 = cOut[1];
-   litfloat C5 = cOut[5];
+   litfloat C5 = cOut[6];
 
-   litfloat norm = dxx * dyy - dxx * C5 - dyy * C0 + C0 * C5
+   /*litfloat norm = dxx * dyy - dxx * C5 - dyy * C0 + C0 * C5
               - dxy * dxy + 2 * dxy * C1 - C1 * C1;
 
    chiSq = ((xmx * (dyy - C5) - ymy * (dxy - C1)) * xmx
             +(-xmx * (dxy - C1) + ymy * (dxx - C0)) * ymy) / norm +
-      (hit->GetT() - par->GetTime()) * (hit->GetT() - par->GetTime()) / (hit->GetDt() * hit->GetDt() + par->GetTimeError() * par->GetTimeError());
+      (hit->GetT() - par->GetTime()) * (hit->GetT() - par->GetTime()) / (hit->GetDt() * hit->GetDt() + cOut[20]);*/
+   litfloat norm = (dxx - cOut[0]) * ((dyy - cOut[6]) * (dtt - cOut[20]) - cOut[10] * cOut[10]) +
+      (dxy - cOut[1]) * (cOut[5] * cOut[10] - (dxy - cOut[1]) * (dtt - cOut[20])) +
+      cOut[5] * ((dxy - cOut[1]) * cOut[10] - (dyy - cOut[6]) * cOut[5]);
+   
+   if (norm == 0.) { norm = 1e-10; }
+   
+   // Mij is the (symmetric) inverse of the residual matrix
+   litfloat M00 = ((dyy - cOut[6]) * (dtt - cOut[20]) - cOut[10] * cOut[10]) / norm;
+   litfloat M01 = ((dxy - cOut[1]) * (dtt - cOut[20]) - cOut[5] * cOut[10]) / norm;
+   litfloat M02 = ((dxy - cOut[1]) * cOut[10] - (dyy - cOut[6]) * cOut[5]) / norm;
+   litfloat M11 = ((dxx - cOut[0]) * (dtt - cOut[20]) - cOut[5] * cOut[5]) / norm;
+   litfloat M12 = ((dxx - cOut[0]) * cOut[10] - (dxy - cOut[1]) * cOut[5]) / norm;
+   litfloat M22 = ((dxx - cOut[0]) * (dyy - cOut[6]) - (dxy - cOut[1]) * (dxy - cOut[1])) / norm;
+   /*TMatrixD Chi2M(3, 3);
+   Chi2M(0, 0) = dxx - cOut[0];
+   Chi2M(0, 1) = dxy - cOut[1];
+   Chi2M(0, 2) = -cOut[5];
+   Chi2M(1, 0) = dxy - cOut[1];
+   Chi2M(1, 1) = dyy - cOut[6];
+   Chi2M(1, 2) = -cOut[10];
+   Chi2M(2, 0) = -cOut[5];
+   Chi2M(2, 1) = -cOut[10];
+   Chi2M(2, 2) = dtt - cOut[20];
+   Chi2M.Invert();
+   
+   litfloat M00 = Chi2M(0, 0);
+   litfloat M01 = Chi2M(0, 1);
+   litfloat M02 = Chi2M(0, 2);
+   litfloat M11 = Chi2M(1, 1);
+   litfloat M12 = Chi2M(1, 2);
+   litfloat M22 = Chi2M(2, 2);*/
+   
+   chiSq = xmx * (xmx * M00 + ymy * M01 + tmt * M02) + ymy * (xmx * M01 + ymy * M11 + tmt * M12) + tmt * (xmx * M02 + ymy * M12 + tmt * M22);
 
    return kLITSUCCESS;
 }
-
 
 LitStatus CbmLitKalmanFilter::UpdateWMF(
    CbmLitTrackParam* par,

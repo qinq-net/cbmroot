@@ -218,6 +218,29 @@ bool Mult25(
    return true;
 }
 
+bool Mult36(
+   const std::vector<litfloat>& a,
+   const std::vector<litfloat>& b,
+   std::vector<litfloat>& c)
+{
+   if (a.size() != 36 || b.size() != 36 || c.size() != 36) {
+      std::cout << "-E- Mult36: size is not correct" << std::endl;
+      return false;
+   }
+   
+   for (int i = 0; i < 6; ++i)
+   {
+      for (int j = 0; j < 6; ++j)
+      {
+         c[6 * i + j] = 0;
+         
+         for (int k = 0; k < 6; ++k)
+            c[6 * i + j] += a[6 * i + k] * b[j + 6 * k];
+      }
+   }
+
+   return true;
+}
 
 bool Transpose25(
    std::vector<litfloat>& a)
@@ -457,4 +480,3 @@ bool Mult25On15(
 
    return true;
 }
-

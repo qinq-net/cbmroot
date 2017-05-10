@@ -427,11 +427,14 @@ public:
         Double_t deltaTFirst = 0;
         
         if (propagator->Propagate(&par, zVert, pdg) == kLITERROR)
-            deltaTFirst = TMath::Sqrt(TMath::Power(x - xVert, 2) + TMath::Power(y - yVert, 2) + TMath::Power(z - zVert, 2)) / CbmLitTrackParam::fSpeedOfLight;
+            deltaTFirst = -TMath::Sqrt(TMath::Power(x - xVert, 2) + TMath::Power(y - yVert, 2) + TMath::Power(z - zVert, 2)) / CbmLitTrackParam::fSpeedOfLight;
         else
             deltaTFirst = par.GetTime() - paramFirst.GetTime();
+        
+        if (deltaTFirst > 0)
+            deltaTFirst = - deltaTFirst;
 
-        paramFirst.SetTime(paramFirst.GetTime() + deltaTFirst);
+        paramFirst.SetTime(paramFirst.GetTime() - deltaTFirst);
         firstTime = paramFirst.GetTime();
         par = paramFirst;
         //int nofHits = track->GetNofHits();

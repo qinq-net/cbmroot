@@ -17,6 +17,12 @@ bool Mult25(
    const std::vector<litfloat>& b,
    std::vector<litfloat>& c);
 
+/* Multiplication of two 6x6 matrices */
+bool Mult36(
+   const std::vector<litfloat>& a,
+   const std::vector<litfloat>& b,
+   std::vector<litfloat>& c);
+
 /* Multiplication of 5x5 matrix and 5x1 vector */
 bool Mult25On5(
    const std::vector<litfloat>& a,

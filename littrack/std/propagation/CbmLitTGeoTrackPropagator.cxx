@@ -69,12 +69,13 @@ LitStatus CbmLitTGeoTrackPropagator::Propagate(
    bool downstream = dz > 0;
 
    if (F != NULL) {
-      F->assign(25, 0.);
+      F->assign(36, 0.);
       (*F)[0] = 1.;
-      (*F)[6] = 1.;
-      (*F)[12] = 1.;
-      (*F)[18] = 1.;
-      (*F)[24] = 1.;
+      (*F)[7] = 1.;
+      (*F)[14] = 1.;
+      (*F)[21] = 1.;
+      (*F)[28] = 1.;
+      (*F)[35] = 1.;
    }
 
    int nofSteps = int(std::abs(dz) / CbmLitTGeoTrackPropagator::MAXIMUM_PROPAGATION_STEP_SIZE);
@@ -113,7 +114,7 @@ LitStatus CbmLitTGeoTrackPropagator::Propagate(
          }
 
          std::vector<litfloat>* Fnew = NULL;
-         if (F != NULL) { Fnew = new std::vector<litfloat>(25, 0.); }
+         if (F != NULL) { Fnew = new std::vector<litfloat>(36, 0.); }
          // Extrapolate to the next boundary
          if (fExtrapolator->Extrapolate(par, mat.GetZpos(), Fnew) == kLITERROR) {
             return kLITERROR;
@@ -138,8 +139,8 @@ void CbmLitTGeoTrackPropagator::UpdateF(
    std::vector<litfloat>& F,
    const std::vector<litfloat>& newF)
 {
-   std::vector<litfloat> A(25);
-   Mult25(newF, F, A);
+   std::vector<litfloat> A(36);
+   Mult36(newF, F, A);
    F.assign(A.begin(), A.end());
 }
 
