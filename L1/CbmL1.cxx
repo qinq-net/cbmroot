@@ -228,26 +228,14 @@ InitStatus CbmL1::Init()
   fMvdPoints = 0;
   fMCTracks  = 0;
 
-  CbmMCDataManager* mcManager = (CbmMCDataManager*) fManger->GetObject("MCDataManager");
-  
-  if ( NULL == mcManager )
-    LOG(FATAL) << GetName() << ": No CbmMCDataManager!" << FairLogger::endl;
-  
-  fStsPoints = mcManager->InitBranch("StsPoint");
-  if(!fTimesliceMode)
-    fMvdPoints = mcManager->InitBranch("MvdPoint");
-  fMCTracks = mcManager->InitBranch("MCTrack");
-  if ( NULL == fStsPoints )
-    LOG(FATAL) << GetName() << ": No StsPoint data!" << FairLogger::endl;
-  if ( NULL == fMCTracks )
-    LOG(FATAL) << GetName() << ": No MCTrack data!" << FairLogger::endl;
-    
+
+
 
   listStsClusters = 0;
   listStsDigi.clear();
   vFileEvent.clear();
 
-  listStsPts = L1_DYNAMIC_CAST<TClonesArray*>(  fManger->GetObject("StsPoint") );
+  
 
   if ( fTimesliceMode ) {  //  Time-slice mode selected
     LOG(INFO) << GetName() << ": running in time-slice mode."
@@ -256,9 +244,7 @@ InitStatus CbmL1::Init()
     fTimeSlice = (CbmTimeSlice*) fManger->GetObject("TimeSlice.");
     if ( fTimeSlice == NULL ) LOG(FATAL) << GetName()
         << ": No time slice branch in tree!" << FairLogger::endl;
-    fEventList =  (CbmMCEventList*) fManger->GetObject("MCEventList.");
-    if ( NULL == fEventList)
-        LOG(FATAL) << GetName() << ": No MCEventList data!" << FairLogger::endl;
+
   } //? time-slice mode
 
   else   // event mode
@@ -272,6 +258,28 @@ InitStatus CbmL1::Init()
   listStsHits = L1_DYNAMIC_CAST<TClonesArray*>(  fManger->GetObject("StsHit") );
 
   if (fPerformance){
+    CbmMCDataManager* mcManager = (CbmMCDataManager*) fManger->GetObject("MCDataManager");  
+    if ( NULL == mcManager )
+      LOG(FATAL) << GetName() << ": No CbmMCDataManager!" << FairLogger::endl;
+    
+    fStsPoints = mcManager->InitBranch("StsPoint");
+    if(!fTimesliceMode)
+      fMvdPoints = mcManager->InitBranch("MvdPoint");
+    fMCTracks = mcManager->InitBranch("MCTrack");
+    if ( NULL == fStsPoints )
+      LOG(FATAL) << GetName() << ": No StsPoint data!" << FairLogger::endl;
+    if ( NULL == fMCTracks )
+      LOG(FATAL) << GetName() << ": No MCTrack data!" << FairLogger::endl;
+    
+    listStsPts = L1_DYNAMIC_CAST<TClonesArray*>(  fManger->GetObject("StsPoint") );
+    
+    if ( fTimesliceMode ) {  
+      fEventList =  (CbmMCEventList*) fManger->GetObject("MCEventList.");
+      if ( NULL == fEventList)
+          LOG(FATAL) << GetName() << ": No MCEventList data!" << FairLogger::endl;
+    }  
+    
+    
     if( !fUseMVD ){
       listMvdPts = 0;
       listMvdHitMatches = 0;
@@ -280,7 +288,7 @@ InitStatus CbmL1::Init()
       listMvdDigiMatches = L1_DYNAMIC_CAST<TClonesArray*>(  fManger->GetObject("MvdDigiMatch") );
       listMvdHitMatches = L1_DYNAMIC_CAST<TClonesArray*>(  fManger->GetObject("MvdHitMatch") );
       
-      if(!listMvdHitMatches)
+      if(!listMvdHitMatches&&listMvdPts)
         std::cout << "No listMvdHitMatches provided, performance is not done correctly" << std::endl;
     }
   }
@@ -536,7 +544,7 @@ InitStatus CbmL1::Init()
         if ( !hStaRadLen ) {
           cout << "L1: incorrect " << fMvdMatBudgetFileName << " file. No " << stationNameMvd << "\n";
           exit(1);
-    	}
+      }
         const int NBins = hStaRadLen->GetNbinsX(); // should be same in Y
         const float RMax = hStaRadLen->GetXaxis()->GetXmax(); // should be same as min
         algo->fRadThick[iSta].SetBins(NBins,RMax);
@@ -548,12 +556,12 @@ InitStatus CbmL1::Init()
             algo->fRadThick[iSta].table[iB][iB2] = 0.01 * hStaRadLen->GetBinContent(iB,iB2);
             // Correction for holes in material map
             if(algo->fRadThick[iSta].table[iB][iB2] < algo->vStations[iSta].materialInfo.RadThick[0])
-            	if(iB2 > 0 && iB2<NBins-1)
-            	algo->fRadThick[iSta].table[iB][iB2] = TMath::Min(0.01 * hStaRadLen->GetBinContent(iB,iB2-1),
-            			                                          0.01 * hStaRadLen->GetBinContent(iB,iB2+1));
+              if(iB2 > 0 && iB2<NBins-1)
+              algo->fRadThick[iSta].table[iB][iB2] = TMath::Min(0.01 * hStaRadLen->GetBinContent(iB,iB2-1),
+                                                            0.01 * hStaRadLen->GetBinContent(iB,iB2+1));
             // Correction for the incorrect harcoded value of RadThick of MVD stations
             if(algo->fRadThick[iSta].table[iB][iB2] < 0.0015)
-            	algo->fRadThick[iSta].table[iB][iB2]  = 0.0015;
+              algo->fRadThick[iSta].table[iB][iB2]  = 0.0015;
 //              algo->fRadThick[iSta].table[iB][iB2] = algo->vStations[iSta].materialInfo.RadThick[0];
           }
         }
@@ -736,7 +744,7 @@ void CbmL1::Reconstruct(CbmEvent* event)
         const_cast<std::vector<float> *> (algo->vStsZPos)->push_back(0);
       } 
       zP.push_back(h.iz); 
- 	       
+         
       const fscal idet = 1/(sta.xInfo.sin_phi*sta.yInfo.sin_phi - sta.xInfo.cos_phi*sta.yInfo.cos_phi)[0]; 
 
 #if 1 // GAUSS 
@@ -1593,7 +1601,7 @@ void CbmL1::WriteSIMDKFData()
         z = t.z;
         Xmax = Ymax = t.R;
       }else{
-    	  CbmStsStation* station = dynamic_cast<CbmStsStation*> (CbmStsSetup::Instance()->GetDaughter(ist - NMvdStations));
+        CbmStsStation* station = dynamic_cast<CbmStsStation*> (CbmStsSetup::Instance()->GetDaughter(ist - NMvdStations));
           f_phi = station->GetSensorRotation();
           b_phi = f_phi;
           double Pi = 3.14159265358;
@@ -1681,7 +1689,7 @@ void CbmL1::WriteSIMDKFData()
       }
       else if(ist<(NStsStations+NMvdStations))
       {
-    	CbmStsStation* station = dynamic_cast<CbmStsStation*> (CbmStsSetup::Instance()->GetDaughter(ist - NMvdStations));
+      CbmStsStation* station = dynamic_cast<CbmStsStation*> (CbmStsSetup::Instance()->GetDaughter(ist - NMvdStations));
         FileGeo<<station->GetZ()<<" ";
         FileGeo<<station->GetSensorD()<<" ";
         FileGeo<<station->GetRadLength()<<" ";

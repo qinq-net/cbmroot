@@ -3,7 +3,8 @@
  *
  *  CBM Level 1 Reconstruction 
  *  
- *  Authors: I.Kisel,  S.Gorbunov
+ *  Authors: I.Kisel,  S.Gorbunov, I. Rostovtseva (2016)
+ *  
  *
  *  e-mail : ikisel@kip.uni-heidelberg.de 
  *
@@ -341,7 +342,8 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData, CbmEvent* event)
 
         //Get time
         th.time =  mh->GetTime();
-        th.t_er =  mh->GetTimeError();     
+        th.t_er =  mh->GetTimeError();    
+        
 
         th.iStripF += nMvdHits;
         th.iStripB += nMvdHits;
