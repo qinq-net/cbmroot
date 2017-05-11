@@ -1622,9 +1622,10 @@ void CbmL1::InputPerformance()
     }
     if(bestWeight/totalWeight < 0.7|| iMCPoint < 0) continue;
 
-
     CbmStsPoint* pt = (CbmStsPoint*) fStsPoints->Get(link.GetFile(),link.GetEntry(),link.GetIndex());
-    double mcTime = pt->GetTime() + fEventList->GetEventTime(link.GetEntry()+1, link.GetFile());
+    double mcTime = pt->GetTime();
+    
+    if (fTimesliceMode) mcTime+= fEventList->GetEventTime(link.GetEntry()+1, link.GetFile());
 
         // hit pulls and residuals
 
