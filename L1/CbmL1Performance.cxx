@@ -1591,7 +1591,7 @@ void CbmL1::InputPerformance()
     nMC = listStsPts->GetEntries();
   }
 
-  if( listStsHits ){
+  if( listStsHits && listStsHitMatch ){
     for (unsigned int iH=0; iH < vStsHits.size(); iH++ ){
       const CbmL1StsHit &h = vStsHits[iH];
 
