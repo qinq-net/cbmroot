@@ -17,43 +17,6 @@
 //
 // --------------------------------------------------------------------------
 
-TString caveGeom="";
-TString pipeGeom="";
-TString magnetGeom="";
-TString mvdGeom="";
-TString stsGeom="";
-TString richGeom="";
-TString muchGeom="";
-TString shieldGeom="";
-TString trdGeom="";
-TString tofGeom="";
-TString ecalGeom="";
-TString platformGeom="";
-TString psdGeom="";
-Double_t psdZpos=0.;
-Double_t psdXpos=0.;
-
-TString mvdTag="";
-TString stsTag="";
-TString trdTag="";
-TString tofTag="";  
-
-TString stsDigi="";
-TString muchDigi="";
-TString trdDigi="";
-TString tofDigi="";
-TString tofDigiBdf="";
-
-TString mvdMatBudget="";
-TString stsMatBudget="";
-
-TString  fieldMap="";
-Double_t fieldZ=0.;
-Double_t fieldScale=0.;
-Int_t    fieldSymType=0;
-
-TString defaultInputFile="";
-
 void mcbm_reco_nh(Int_t nEvents = 1000, 
 	       TString cSys="lam", 
 	       TString cEbeam="2.5gev",
