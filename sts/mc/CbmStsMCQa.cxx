@@ -136,11 +136,11 @@ void CbmStsMCQa::ProcessPoints(const TClonesArray * points)
     if (std::find(used_map[stationId].begin(), used_map[stationId].end(), mcTrackID) == used_map[stationId].end()) {
       used_map[stationId].push_back(mcTrackID);
       fHM -> H2(Form("h_PointsMap_NoOverlap_Station%i", stationId)) -> Fill(pointX, pointY);
-    }
-    fHM -> H1(Form("h_MultPoints_Station%i",0)) -> Fill(used_map[0].size());
-    fHM -> H1(Form("h_MultPoints_Station%i",1)) -> Fill(used_map[1].size());
-    
+    }    
   }
+  fHM -> H1(Form("h_MultPoints_Station%i",0)) -> Fill(used_map[0].size());
+  fHM -> H1(Form("h_MultPoints_Station%i",1)) -> Fill(used_map[1].size());
+
 }
 
 void CbmStsMCQa::Finish(){
