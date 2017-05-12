@@ -73,6 +73,7 @@ void CbmStsMCQa::CreateHistograms()
 
 void CbmStsMCQa::CreateNofObjectsHistograms()
 {
+
   Int_t nofBins = 100;
   Double_t minX = -0.5;
   Double_t maxX = 99.5;
@@ -88,6 +89,12 @@ void CbmStsMCQa::CreateNofObjectsHistograms()
 void CbmStsMCQa::CreatePointHistograms()
 {
   for (Int_t stationId = 0; stationId < fNofStation; stationId++){
+    Int_t nofBins = 100;
+    Double_t minX = -0.5;
+    Double_t maxX = 99.5;
+    fHM -> Create1<TH1F>(Form("h_MultPoints_Station%i",stationId),
+			 Form("Mult, Station %i;Objects per event;Entries", stationId),
+			 nofBins, minX, maxX);
     fHM -> Create2<TH2F>(Form("h_PointsMap_Station%i",stationId),
 			 Form("Points Map, Station %i;x, cm;y, cm", stationId),
 			 200, -10., 10., 200, -10., 10.);
@@ -130,6 +137,8 @@ void CbmStsMCQa::ProcessPoints(const TClonesArray * points)
       used_map[stationId].push_back(mcTrackID);
       fHM -> H2(Form("h_PointsMap_NoOverlap_Station%i", stationId)) -> Fill(pointX, pointY);
     }
+    fHM -> H1(Form("h_MultPoints_Station%i",0)) -> Fill(used_map[0].size());
+    fHM -> H1(Form("h_MultPoints_Station%i",1)) -> Fill(used_map[1].size());
     
   }
 }
