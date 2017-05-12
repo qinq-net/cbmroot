@@ -20,12 +20,16 @@
 
 #include "TLorentzVector.h"
 
+#include <vector>
+#include <tuple>
+
 class CbmTofPoint;
 class CbmTofGeoHandler;
 class FairVolume; 
 class TClonesArray;
 class TVector3;
 class TGeoCombiTrans;
+class TGeoPhysicalNode;
 
 class CbmTof : public FairDetector
 {
@@ -112,7 +116,31 @@ class CbmTof : public FairDetector
   /** Do all initilization for the TOF detector **/
   virtual void Initialize();
 
+  /**called from ConstructRootGeometry()*/
+  virtual void ExpandNode(TGeoNode* Node);
+
   void GenerateOnePointPerTrack( Bool_t bOnePointPerTrack = kTRUE ) { fbOnePointPerTrack = bOnePointPerTrack; }
+
+    /** Set a counter inactive
+     ** @param iModuleType    type of inactive module
+     ** @param iModuleIndex   index of inactive module
+     ** @param iCounterIndex  index of inactive counter
+     **
+     ** If a counter is set inactive, no CbmTofPoint objects will be created for
+     ** collision products traversing its Cell volumes.
+     **/
+  void SetCounterInactive(Int_t iModuleType, Int_t iModuleIndex, Int_t iCounterIndex);
+
+    /** Set a counter in beam
+     ** @param iModuleType    type of inactive module
+     ** @param iModuleIndex   index of inactive module
+     ** @param iCounterIndex  index of inactive counter
+     **
+     ** If a counter is set in beam, the beam line will be extrapolated to the
+     ** counter coordinate system and create a CbmTofPoint object if it actually
+     ** traverses the counter volume.
+     **/
+  void SetCounterInBeam(Int_t iModuleType, Int_t iModuleIndex, Int_t iCounterIndex);
 
  private:
 
@@ -130,12 +158,22 @@ class CbmTof : public FairDetector
   TClonesArray* fTofCollection;      //! Hit collection
   CbmTofGeoHandler *fGeoHandler;      //! Interface to gMC and gGeoManager
 
-   TGeoCombiTrans*   fCombiTrans;  //! Transformation matrix for geometry positioning
+  TGeoCombiTrans*   fCombiTrans;  //! Transformation matrix for geometry positioning
 
-   std::string fVolumeName;    //! Name of Volume to be imported
+  std::string fVolumeName;    //! Name of Volume to be imported
 
   Bool_t fbOnePointPerTrack;
   Bool_t fbIsNewTrack;
+
+  TString        fTofNodePath;         //! Path to physical ToF node
+  TString        fCurrentNodePath;     //! Path to current physical node
+  Int_t          fCurrentModuleType;   //! Current module type
+  Int_t          fCurrentModuleIndex;  //! Current module index
+  Int_t          fCurrentCounterIndex; //! Current counter index
+
+  std::vector< std::tuple<Int_t, Int_t, Int_t> > fInactiveCounters;                    //! Vector of inactive counters
+  std::vector< std::pair< std::tuple<Int_t, Int_t, Int_t>, TString> > fCountersInBeam; //! Vector of counters in beam
+  std::vector<TGeoPhysicalNode*> fNodesInBeam;                                         //! Vector of counter nodes in beam
 
   /** Private method AddHit
    **
@@ -170,11 +208,29 @@ class CbmTof : public FairDetector
      */
     Bool_t IsNewGeometryFile(TString filename);
 
+  /** Private method copied from FairModule
+   **
+   ** Hiding the private base class method SetDefaultMatrixName is necessary because
+   ** the reimplemented method ExpandNode calls this method and cannot do so from
+   ** the derived class.
+   **/
+  void SetDefaultMatrixName(TGeoMatrix* matrix);
+
+  /** Private method copied from FairModule
+   **
+   ** Hiding the private base class method AssignMediumAtImport is necessary because
+   ** the reimplemented method ExpandNode calls this method and cannot do so from
+   ** the derived class.
+   **/
+  void AssignMediumAtImport(TGeoVolume* v);
+
+  void CreateInBeamNodes();
+
   CbmTof(const CbmTof&);
   CbmTof& operator=(const CbmTof&);
 
 
-  ClassDef(CbmTof,3)
+  ClassDef(CbmTof,4)
 
 };
 
