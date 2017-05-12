@@ -455,7 +455,7 @@ void CbmTrdElectronsTrainAnn::DoTrain()
       (TMVA::gConfig().GetIONames()).fWeightFileDir = fOutputDir;
       TCut mycuts = "";
       TCut mycutb = "";
-      factory->PrepareTrainingAndTestTree(mycuts, mycutb,"SplitMode=Random:NormMode=NumEvents:!V");
+//      factory->PrepareTrainingAndTestTree(mycuts, mycutb,"SplitMode=Random:NormMode=NumEvents:!V");
       //factory->BookMethod(TMVA::Types::kTMlpANN, "TMlpANN","!H:!V:NCycles=50:HiddenLayers=N+1");
       stringstream ss;
       ss << "nTrain_Signal=" << fNofTrainSamples - 500 <<":nTrain_Background=" << fNofTrainSamples - 500 <<":nTest_Signal=0:nTest_Background=0";
