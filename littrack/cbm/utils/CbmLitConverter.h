@@ -61,7 +61,12 @@ public:
         litHit->SetDy(hit->GetDy());
         litHit->SetDz(hit->GetDz());
         litHit->SetDxy(hit->GetDxy());
-        litHit->SetDt(hit->GetTimeError());
+        
+        if (hit->GetTimeError() > 0)
+            litHit->SetDt(hit->GetTimeError());
+        else
+            litHit->SetDt(100);
+                
         litHit->SetRefId(index);
         
         if (hit->GetType() == kTRDHIT) {

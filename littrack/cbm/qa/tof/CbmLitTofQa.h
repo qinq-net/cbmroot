@@ -126,10 +126,10 @@ private:
    vector<string> fTrackCategories; // Vector of track category names
 
 
-#ifndef  __ROOTCLING__
+//#ifndef  __ROOTCLING__
    typedef Bool_t (*LitTrackAcceptanceFunction)(const TClonesArray* mcTracks, Int_t index);
    map<string, LitTrackAcceptanceFunction> fTrackAcceptanceFunctions; // maps track category name to track acceptance function
-#endif
+//#endif
 
    set<Int_t> fMCTrackIdForTofHits; // Set of MC track IDs for all existing TOF hits
    set<Int_t> fMCTrackIdForTofPoints; // Set of MC track IDs for all existing TOF points
