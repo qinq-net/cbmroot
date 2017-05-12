@@ -224,13 +224,13 @@ void CbmTof::FinishEvent()
       // collision vertex in the target and the (global) beam point in the counter
       Double_t dBeamMomentumLab = FairRunSim::Instance()->GetBeamMom();
       Double_t dCounterBeamTime = dTargetVertexT;
-      Double_t dCounterTargetDistance(0.);
+      // Distance between the collision vertex point and the beam point in the counter
+      // N.B.: The beam line is assumed to be parallel to Z
+      Double_t dCounterTargetDistance = dGlobalCounterCoordinates[2] - dGlobalTargetCoordinates[2];
+
       if(0. < dBeamMomentumLab)
       {
         Double_t dBeamVelocityLab = dBeamMomentumLab/TMath::Sqrt(TMath::Power(dBeamMomentumLab, 2.) + TMath::Power(0.938271998, 2.))*TMath::Ccgs(); // [cm/s]
-        // Distance between the collision vertex point and the beam point in the counter
-        // N.B.: The beam line is assumed to be parallel to Z
-        dCounterTargetDistance = dGlobalCounterCoordinates[2] - dGlobalTargetCoordinates[2];
         dCounterBeamTime += dCounterTargetDistance/dBeamVelocityLab;
       }
 
