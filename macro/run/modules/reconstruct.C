@@ -52,7 +52,8 @@ Bool_t reconstruct()
   // -----   Local reconstruction in STS   ----------------------------------
   if ( setup->IsActive(kSts) ) {
 
-  	FairTask* stsCluster = new CbmStsFindClustersEvents();
+  	CbmStsFindClustersStream* stsCluster = new CbmStsFindClustersStream();
+  	stsCluster->UseEventMode();
   	run->AddTask(stsCluster);
     std::cout << "-I- : Added task " << stsCluster->GetName() << std::endl;
 

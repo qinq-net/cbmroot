@@ -13,6 +13,8 @@
 //
 // --------------------------------------------------------------------------
 
+using std::cout;
+using std::endl;
 
 void run_reco_tb_track()
  {
@@ -34,10 +36,10 @@ void run_reco_tb_track()
   TString logLevel = "INFO";  // switch to DEBUG or DEBUG1,... for more info
   TString logVerbosity = "LOW"; // switch to MEDIUM or HIGH for more info
   
-  // TOF digitization parameters
+  // TOF digitisation parameters
   // For some reason that nobody seems to be able to explain, the TOF
   // digitisation parameters cannot be retrieved from the parameter file,
-  // in which they are supposed to be stored suring digitisation.
+  // in which they are supposed to be stored during digitisation.
   // They are needed, however, for the TOF cluster finder. So, we read them
   // here from the ASCII file. Note that there is no guarantee that you use
   // the same parameters during digitisation and reconstruction this way.
@@ -98,11 +100,8 @@ void run_reco_tb_track()
   // ===                      Reconstruction chain                         ===
   // =========================================================================
   
-  // --- MC data manager (needed by L1)
-  CbmMCDataManager* evManager=new CbmMCDataManager("evManager");
-  evManager->AddFile(mcFile);
-  run->AddTask(evManager);
 
+  // --- STS cluster finder
   // --- Parameters for STS modules
   // --- TODO: Currently, the parameters used for STS digitisation
   // --- are not persistent. Thus, they have to be set explicitly here
@@ -112,12 +111,11 @@ void run_reco_tb_track()
   Double_t dynRange       =   40960.;  // Dynamic range [e]
   Double_t threshold      =    4000.;  // Digitisation threshold [e]
   Int_t nAdc              =    4096;   // Number of ADC channels (12 bit)
-  Double_t timeResolution =       0.;  // time resolution [ns]
+  Double_t timeResolution =       5.;  // time resolution [ns]
   Double_t deadTime       =     100.;  // infinite dead time (integrate entire event)
   Int_t digiModel         =       1;   // Model: 1 = uniform charge distribution along track
   Double_t noise          =    1000.;  // Noise [e]
  
-  // --- STS cluster finder
   CbmStsFindClustersStream* stsCluster = new CbmStsFindClustersStream();
   stsCluster->SetParameters(dynRange, threshold, nAdc, timeResolution,
                             deadTime, noise);
@@ -136,9 +134,6 @@ void run_reco_tb_track()
   CbmStsTrackFinder* stsTrackFinder = new CbmL1StsTrackFinder();
   FairTask* stsFindTracks = new CbmStsFindTracks(0, stsTrackFinder);
   run->AddTask(stsFindTracks);
-  
-  // --- Matching to MC (needed by event builder)
-  run->AddTask(new CbmMatchRecoToMC());
   
   // --- Event builder (track-based)
   run->AddTask(new CbmBuildEventsFromTracksReal());
@@ -164,7 +159,7 @@ void run_reco_tb_track()
   // ------------------------------------------------------------------------
 
 
-  // -----   Intialise and run   --------------------------------------------
+  // -----   Initialise and run   --------------------------------------------
   run->Init();
   cout << "Starting run " << gGeoManager << endl;
   run->Run();
@@ -175,7 +170,7 @@ void run_reco_tb_track()
   Double_t rtime = timer.RealTime();
   Double_t ctime = timer.CpuTime();
   cout << endl << endl;
-  cout << "Macro finished succesfully." << endl;
+  cout << "Macro finished successfully." << endl;
   cout << "Output file is " << outFile << endl;
   cout << "Parameter file is " << parFile << endl;
   cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << endl;
