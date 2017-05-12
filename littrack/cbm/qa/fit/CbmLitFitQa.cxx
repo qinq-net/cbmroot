@@ -142,10 +142,10 @@ void CbmLitFitQa::ProcessStsTrack(
     if (match->GetTrueOverAllHitsRatio() < fQuota) return;
     
     CbmStsTrack* track = static_cast<CbmStsTrack*>(fStsTracks->At(trackId));
-    Int_t nofStsHits = track->GetNofHits();
+    Int_t nofStsHits = track->GetNofStsHits();
     Int_t nofMvdHits = track->GetNofMvdHits();
     if (nofStsHits < 1) return; // No hits in STS
-    if (nofMvdHits < fMvdMinNofHits || nofStsHits < fStsMinNofHits) return; // cut on number of hits in track
+    if (nofMvdHits < fMvdMinNofHits || nofStsHits + nofMvdHits < fStsMinNofHits) return; // cut on number of hits in track
     
     const CbmLitMCTrack& mcTrack = fMCTrackCreator->GetTrack(mcId);
     
