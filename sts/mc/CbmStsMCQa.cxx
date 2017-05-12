@@ -95,12 +95,16 @@ void CbmStsMCQa::CreatePointHistograms()
     fHM -> Create1<TH1F>(Form("h_MultPoints_Station%i",stationId),
 			 Form("Mult, Station %i;Objects per event;Entries", stationId),
 			 nofBins, minX, maxX);
+
     fHM -> Create2<TH2F>(Form("h_PointsMap_Station%i",stationId),
 			 Form("Points Map, Station %i;x, cm;y, cm", stationId),
 			 200, -10., 10., 200, -10., 10.);
     fHM -> Create2<TH2F>(Form("h_PointsMap_NoOverlap_Station%i",stationId),
 			 Form("Points Map, Station %i;x, cm;y, cm", stationId),
 			 200, -10., 10., 200, -10., 10.);
+
+    fHM -> Create1<TH1F>("h_XPos","X position;x, cm; Entries", 200, -10., 10.);
+    fHM -> Create1<TH1F>("h_YPos","Y position;y, cm; Entries", 200, -10., 10.);
   }
 }
 
@@ -130,7 +134,9 @@ void CbmStsMCQa::ProcessPoints(const TClonesArray * points)
     pointZ = stsPoint -> GetZIn();
 
     fHM -> H2(Form("h_PointsMap_Station%i", stationId)) -> Fill(pointX, pointY);
-
+    fHM -> H1("h_XPos") -> Fill(pointX);
+    fHM -> H1("h_YPos") -> Fill(pointY);
+    
     Int_t mcTrackID = stsPoint -> GetTrackID();
  
     if (std::find(used_map[stationId].begin(), used_map[stationId].end(), mcTrackID) == used_map[stationId].end()) {
