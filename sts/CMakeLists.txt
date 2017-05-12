@@ -24,6 +24,7 @@ set(SRCS_MC
 mc/CbmStsAcceptance.cxx
 mc/CbmStsMC.cxx
 mc/CbmStsSensorFactory.cxx
+mc/CbmStsMCQa.cxx
 )
 # --- Sources in digitize
 set (SRCS_DIGITIZE

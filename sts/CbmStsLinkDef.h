@@ -21,6 +21,7 @@
 #pragma link C++ class CbmStsMC;
 #pragma link C++ class CbmStsSensorFactory;
 #pragma link C++ class CbmStsTrackStatus;
+#pragma link C++ class CbmStsMCQa;
 
 // Digitisation
 #pragma link C++ class CbmStsDigitize;
