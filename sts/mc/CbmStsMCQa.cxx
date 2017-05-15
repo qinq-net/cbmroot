@@ -103,9 +103,9 @@ void CbmStsMCQa::CreatePointHistograms()
 			 Form("Points Map, Station %i;x, cm;y, cm", stationId),
 			 200, -10., 10., 200, -10., 10.);
 
-    fHM -> Create1<TH1F>("h_XPos","X position;x, cm; Entries", 200, -10., 10.);
-    fHM -> Create1<TH1F>("h_YPos","Y position;y, cm; Entries", 200, -10., 10.);
   }
+  fHM -> Create1<TH1F>("h_XPos","X position;x, cm; Entries", 200, -10., 10.);
+  fHM -> Create1<TH1F>("h_YPos","Y position;y, cm; Entries", 200, -10., 10.);
 }
 
 void CbmStsMCQa::Exec(Option_t*){
