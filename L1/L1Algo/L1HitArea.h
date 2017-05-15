@@ -2,7 +2,6 @@
 #define L1HitArea_H
 
 #include "L1Grid.h"
-
 #include "CbmL1Def.h"
 
 class L1Row;
@@ -58,25 +57,6 @@ inline L1HitArea::L1HitArea( const L1Grid & grid, float y, float z, float dy, fl
   fIh = fGrid.FirstHitInBin( fIndYmin );
   fHitYlst = fGrid.FirstHitInBin( fIndYmin + fBDY );
 
-  // const unsigned int hitLst = fGrid.FirstHitInBin( fBZmax * fNy + bZmin + 1 );
-  // cout << fIh << " " << hitLst << endl;
-  // if ( fIh >= hitLst ) fIz = fBZmax + 1; // finish area in one step
-
-  // cout // << fBZmax << " " << fBDY << " " << fIndYmin << " " << fIz << " " << fHitYlst << " " << fIh << endl; // dbg
-  //  << "HitArea created:\n"
-  //  << y << " " << z << endl
-  //   << "bYmin:    " << bYmin << "\n"
-  //   << "bZmin:    " << bZmin << "\n"
-  //   << "bYmax:    " << bYmax << "\n"
-  //   << "fBZmax:   " << fBZmax << "\n"
-  //   << "fBDY:     " << fBDY << "\n"
-  //   << "fIndYmin: " << fIndYmin << "\n"
-  //   << "fIz:      " << fIz << "\n"
-  //   << "fHitYlst: " << fHitYlst << "\n"
-  //   << "fIh:      " << fIh << "\n"
-  //   << "fNy:      " << fNy << "\n"
-  //   << "Nz " << fGrid.Nz() << std::endl;
- // L1_ASSERT ( fIndYmin + fBDY < fGrid.N()+1, fIndYmin + fBDY << " < " << fGrid.N());
 }
 
 inline bool L1HitArea::GetNext( THitI& i )
@@ -90,11 +70,10 @@ inline bool L1HitArea::GetNext( THitI& i )
   
   // at least one entry in the vector has (fIh >= fHitYlst && fIz < fBZmax)
   bool needNextZ = yIndexOutOfRange && !nextZIndexOutOfRange;
-    int num=0;
+  
   // skip as long as fIh is outside of the interesting bin y-index
   while ( ISLIKELY( needNextZ ) ) {   //ISLIKELY to speed the programm and optimise the use of registers
     fIz++;   // get new z-line
-   // num++;
       // get next hit
     fIndYmin += fNy;
     fIh = fGrid.FirstHitInBin( fIndYmin ); // get first hit in cell, if z-line is new
@@ -105,11 +84,9 @@ inline bool L1HitArea::GetNext( THitI& i )
     needNextZ = yIndexOutOfRange && !nextZIndexOutOfRange;
     
   }
-  //cout<<num<<endl;
-  L1_ASSERT ( fIh < fGrid.FirstHitInBin(fGrid.N()-1) || yIndexOutOfRange, fIh << " < " << fGrid.FirstHitInBin(fGrid.N()-1) << " || " <<  yIndexOutOfRange);
+
+  L1_ASSERT ( fIh < fGrid.FirstHitInBin(fGrid.N()) || yIndexOutOfRange, fIh << " < " << fGrid.FirstHitInBin(fGrid.N()) << " || " <<  yIndexOutOfRange);
   i = fIh; // return
-    
-  //    cout<<i<<" old i"<<endl;
     
   fIh++; // go to next
   return !yIndexOutOfRange;
@@ -175,9 +152,6 @@ fNz( fGrid.Nz() )
     
     fBDY = ( bYmax - bYmin + 1 ); // bin index span in y direction
     
-    // fIndYmin = ( bZmin * fNy + bYmin ); // same as grid.GetBin(fMinY, fMinZ), i.e. the smallest bin index of interest
-    // fIndYmin + fBDY - 1 then is the largest bin index of interest with the same Z
-    
     fIndYmin = (bTmin * fNy * fNz + bZmin * fNy + bYmin );
     
     fGrid.GetBinBounds( fIndYmin, y, dy, z, dz, t, dt );
@@ -188,26 +162,6 @@ fNz( fGrid.Nz() )
     
     fIh = fGrid.FirstHitInBin( fIndYmin );
     fHitYlst = fGrid.FirstHitInBin( fIndYmin + fBDY );
-    
-    // const unsigned int hitLst = fGrid.FirstHitInBin( fBZmax * fNy + bZmin + 1 );
-    // cout << fIh << " " << hitLst << endl;
-    // if ( fIh >= hitLst ) fIz = fBZmax + 1; // finish area in one step
-    
-    // cout // << fBZmax << " " << fBDY << " " << fIndYmin << " " << fIz << " " << fHitYlst << " " << fIh << endl; // dbg
-    //  << "HitArea created:\n"
-    //  << y << " " << z << endl
-    //   << "bYmin:    " << bYmin << "\n"
-    //   << "bZmin:    " << bZmin << "\n"
-    //   << "bYmax:    " << bYmax << "\n"
-    //   << "fBZmax:   " << fBZmax << "\n"
-    //   << "fBDY:     " << fBDY << "\n"
-    //   << "fIndYmin: " << fIndYmin << "\n"
-    //   << "fIz:      " << fIz << "\n"
-    //   << "fHitYlst: " << fHitYlst << "\n"
-    //   << "fIh:      " << fIh << "\n"
-    //   << "fNy:      " << fNy << "\n"
-    //   << "Nz " << fGrid.Nz() << std::endl;
-   // L1_ASSERT ( fIndYmin + fBDY < fGrid.N()+1, fIndYmin + fBDY << " < " << fGrid.N());
 }
 
 inline bool L1HitAreaTime::GetNext( THitI& i )
@@ -215,10 +169,6 @@ inline bool L1HitAreaTime::GetNext( THitI& i )
     bool yIndexOutOfRange = fIh >= fHitYlst;     // current y is not in the area
     bool nextZIndexOutOfRange = (fIz >= fBZmax);   // there isn't any new z-line
     bool nextTIndexOutOfRange = (fIt >= fBTmax);   // there isn't any new z-line
-    
-//     cout<<yIndexOutOfRange<<" yIndexOutOfRange"<<endl;
-//     cout<<nextZIndexOutOfRange<<" nextZIndexOutOfRange"<<endl;
-//     cout<<nextTIndexOutOfRange<<" nextTIndexOutOfRange"<<endl;
     
     
     if ( yIndexOutOfRange && nextZIndexOutOfRange && nextTIndexOutOfRange) { // all iterators are over the end
@@ -234,9 +184,7 @@ inline bool L1HitAreaTime::GetNext( THitI& i )
         
         if (needNextT)    {
             fIt++;
-            //fIndZmin+= fNy*fNz;
-fIz = fBZmin;
-            //fBZmax+= fNy*fNz;
+            fIz = fBZmin;
             
             fIndYmin = (fIt * fNy * fNz + fBZmin * fNy + fBYmin );
             fIh = fGrid.FirstHitInBin( fIndYmin ); // get first hit in cell, if z-line is new
@@ -244,10 +192,8 @@ fIz = fBZmin;
         }
         else
         {
-            //   yIndexOutOfRange = fIh >= fHitYlst;
             
             fIz++;   // get new z-line
-            // num++;
             // get next hit
             fIndYmin += fNy;
             fIh = fGrid.FirstHitInBin( fIndYmin ); // get first hit in cell, if z-line is new
@@ -259,20 +205,12 @@ fIz = fBZmin;
         needNextZ = yIndexOutOfRange && !nextZIndexOutOfRange;
         
         nextTIndexOutOfRange = (fIt >= fBTmax);
-//cout<<fIh<<" fIh "<<fHitYlst<<" fHitYlst "<<endl;
         needNextT = yIndexOutOfRange && nextZIndexOutOfRange && !nextTIndexOutOfRange;
-
-//cout<<needNextT<< " needNextT "<< fBTmax<< " fBTmax "<<needNextZ<< " needNextZ " <<fBZmax<< " fBZmax "<<fIz<<" fIz "<<endl;
         
     }
-    
-    
-    
-    //cout<<num<<endl;
-    L1_ASSERT ( fIh < fGrid.FirstHitInBin(fGrid.N()-1) || yIndexOutOfRange, fIh << " < " << fGrid.FirstHitInBin(fGrid.N()-1) << " || " <<  yIndexOutOfRange);
+
+    L1_ASSERT ( fIh < fGrid.FirstHitInBin(fGrid.N()) || yIndexOutOfRange, fIh << " < " << fGrid.FirstHitInBin(fGrid.N()) << " || " <<  yIndexOutOfRange);
     i = fIh; // return
-    
-    //cout<<i<<" new i"<<endl;
     
     fIh++; // go to next
     return !yIndexOutOfRange;
