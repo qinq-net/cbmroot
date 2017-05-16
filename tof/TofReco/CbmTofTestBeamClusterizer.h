@@ -147,7 +147,7 @@ class CbmTofTestBeamClusterizer : public FairTask
       virtual void fit_ybox(TH1 *h, Double_t dy);      // Fit
       virtual void CheckLHMemory();                    // Check consistency of stored last hits
       virtual void CleanLHMemory();                    // Cleanup
-      virtual Bool_t AddNextChan(Int_t iSmType, Int_t iSm, Int_t iRpc, Int_t iLastChan, Double_t dLastPosX,  Double_t dLastPosY, Double_t dLastTime, Double_t dLastTot); // needed time based data  
+      virtual Bool_t AddNextChan(Int_t iSmType, Int_t iSm, Int_t iRpc, Int_t iLastChan, Double_t dLastPosX,  Double_t dLastPosY, Double_t dLastTime, Double_t dLastTot); // needed for time based data  
       virtual void LH_store(Int_t iSmType, Int_t iSm,  Int_t iRpc, Int_t iChm, CbmTofHit *pHit);
 
    protected:
@@ -320,7 +320,7 @@ class CbmTofTestBeamClusterizer : public FairTask
       std::vector< std::vector< std::vector< std::vector< Double_t > > > > fvCPTotOff;  //[nSMT][nRpc][nCh][nbSide]
       std::vector< std::vector< std::vector< std::vector< std::vector< Double_t > > > > > fvCPWalk; //[nSMT][nRpc][nCh][nbSide][nbWalkBins]
 
-      std::vector< std::vector< std::vector< std::vector< std::list< CbmTofHit * > > > > >  fvLastHits;  //[nSMT[nSm][nRpc][nCh][NHits]
+      std::vector< std::vector< std::vector< std::vector< std::list< CbmTofHit * > > > > > fvLastHits;  //[nSMT[nSm][nRpc][nCh][NHits]
 
       // Digis quality
       Int_t fiNbSameSide;
