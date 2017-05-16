@@ -26,6 +26,7 @@
 #include "FairRootManager.h"
 #include "FairMCApplication.h"
 #include "CbmStsTrack.h"
+#include "CbmStsSetup.h"
 #include "CbmVertex.h"
 #include "CbmMvdHit.h"
 #include "CbmStsAddress.h"
@@ -429,7 +430,8 @@ void CbmStsFitPerformanceTask::Exec(Option_t* /*option*/){
 	if( ih==jh ) continue;
 	CbmStsHit* h2 = (CbmStsHit*) fStsHitArray->At(jh);
 	if( !h2 ) continue;
-	if( CbmStsAddress::GetElementId(h1->GetAddress(), kStsStation) != CbmStsAddress::GetElementId(h2->GetAddress(), kStsStation) ) continue;//h1->GetStationNr() != h2->GetStationNr() ) continue;
+	if ( CbmStsSetup::Instance()->GetStationNumber(h1->GetAddress()) !=
+	     CbmStsSetup::Instance()->GetStationNumber(h2->GetAddress()) ) continue;
 //	if( h1->GetBackDigiId()>=0 ){
 //	  if( h1->GetFrontDigiId()!=h2->GetFrontDigiId() &&
 //	      h1->GetBackDigiId()!=h2->GetBackDigiId()     ) continue;
@@ -439,7 +441,7 @@ void CbmStsFitPerformanceTask::Exec(Option_t* /*option*/){
 	Double_t d2 = fabs(dx*dx*V[0]-2*dx*dy*V[1]+dy*dy*V[2]);
 	if( d2<D2 ) D2 = d2;
       }
-      fhHitDensity[CbmKF::Instance()->MvdStationIDMap.size()+CbmStsAddress::GetElementId(h1->GetAddress(), kStsStation)-1]->Fill(sqrt(D2/2));
+      fhHitDensity[CbmKF::Instance()->MvdStationIDMap.size()+CbmStsSetup::Instance()->GetStationNumber(h1->GetAddress())-1]->Fill(sqrt(D2/2));
     }
   }
 

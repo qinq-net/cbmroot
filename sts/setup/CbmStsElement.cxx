@@ -1,16 +1,17 @@
+
 /** @file CbmStsElement.cxx
  ** @author Volker Friese <v.friese@gsi.de>
  ** @date 27.05.2013
  **/
 
-#include "setup/CbmStsElement.h"
+#include "CbmStsElement.h"
 
 #include "TGeoManager.h"
 
-#include "setup/CbmStsModule.h"
-#include "setup/CbmStsSensor.h"
-#include "setup/CbmStsSetup.h"
-#include "setup/CbmStsStation.h"
+#include "CbmStsModule.h"
+#include "CbmStsSensor.h"
+#include "CbmStsSetup.h"
+#include "CbmStsStation.h"
 
 using std::left;
 using std::right;
@@ -79,7 +80,7 @@ void CbmStsElement::ConstructName() {
 		return;
 	}
 
-	// Special case halfladder ("U"p or "D"own)
+	// Special case half-ladder ("U"p or "D"own)
 	if ( GetLevel() == kStsHalfLadder ) {
 		TString label;
 		switch ( CbmStsAddress::GetElementId(fAddress, kStsHalfLadder) ) {
@@ -94,7 +95,7 @@ void CbmStsElement::ConstructName() {
 	// For other levels: Expand the name of the mother
 	TString label;
 	switch ( GetLevel() ) {
-		case kStsStation: label = "_S"; break;
+		case kStsUnit:   label = "_U"; break;
 		case kStsLadder: label = "_L"; break;
 		case kStsModule: label = "_M"; break;
 		case kStsSensor: label = "_S"; break;
@@ -157,11 +158,12 @@ void CbmStsElement::InitDaughters() {
   TGeoNode* mNode = fNode->GetNode();   // This node
   TString   mPath = fNode->GetName();   // Full path to this node
   Int_t nDaughters = 0;
+
   for (Int_t iNode = 0; iNode < mNode->GetNdaughters(); iNode++) {
 
     // Check name of daughter node for level name
     TString dName = mNode->GetDaughter(iNode)->GetName();
-    if ( dName.Contains(CbmStsSetup::GetLevelName(fLevel + 1),
+    if ( dName.Contains(CbmStsSetup::Instance()->GetLevelName(fLevel + 1),
                         TString::kIgnoreCase ) ) {
 
       // Create physical node
@@ -169,14 +171,14 @@ void CbmStsElement::InitDaughters() {
       TGeoPhysicalNode* pNode = new TGeoPhysicalNode(dPath.Data());
 
       // Create element and add it as daughter
-      TString name = CbmStsSetup::GetLevelName(fLevel+1);
+      TString name = CbmStsSetup::Instance()->GetLevelName(fLevel+1);
       name += Form("%02i", nDaughters++);
 
       const char* title = mNode->GetDaughter(iNode)->GetVolume()->GetName();
       CbmStsElement* dElement = NULL;
       switch ( fLevel) {
-      	case kStsSystem:
-      		dElement = new CbmStsStation(name, title, pNode); break;
+        case kStsSystem:
+            dElement = new CbmStsStation(name, title, pNode); break;
       	case kStsHalfLadder:
       		dElement = new CbmStsModule(name, title, pNode); break;
       	case kStsModule:
@@ -218,7 +220,7 @@ void CbmStsElement::Print(Option_t* opt) const {
 void CbmStsElement::SetLevel(Int_t level) {
   switch (level) {
     case kStsSystem:     fLevel = kStsSystem;     break;
-    case kStsStation:    fLevel = kStsStation;    break;
+    case kStsUnit   :    fLevel = kStsUnit;       break;
     case kStsLadder:     fLevel = kStsLadder;     break;
     case kStsHalfLadder: fLevel = kStsHalfLadder; break;
     case kStsModule:     fLevel = kStsModule;     break;

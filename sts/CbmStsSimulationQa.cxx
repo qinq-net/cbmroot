@@ -11,6 +11,7 @@
 #include "FairGeoNode.h"
 #include "CbmGeoPassivePar.h"
 #include "CbmStsSetup.h"
+#include "CbmStsSensor.h"
 #include "FairGeoTransform.h"
 #include "FairGeoVector.h"
 #include "CbmMCTrack.h"

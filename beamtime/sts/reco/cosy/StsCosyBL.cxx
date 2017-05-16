@@ -10,6 +10,7 @@
 
 #include "CbmStsDigi.h"
 #include "CbmStsAddress.h"
+#include "CbmStsSetup.h"
 #include "CbmFiberHodoAddress.h"
 #include "CbmFiberHodoDigi.h"
 #include "CbmAuxDigi.h"
@@ -223,7 +224,7 @@ void StsCosyBL::Exec(Option_t*)
     for (Int_t iDigi=0; iDigi < nofSTS; iDigi++ ) 
     {
       StsDigi = (CbmStsDigi*) fDigis->At(iDigi);
-      int station = CbmStsAddress::GetElementId(StsDigi->GetAddress(),kStsStation);
+      int station = CbmStsSetup::Instance()->GetStationNumber(StsDigi->GetAddress());
       int side = CbmStsAddress::GetElementId(StsDigi->GetAddress(),kStsSide);
       int ch = CbmStsAddress::GetElementId(StsDigi->GetAddress(),kStsChannel);
       raw_ch_woBL[station][side]->Fill(ch,StsDigi->GetCharge());
@@ -273,7 +274,7 @@ void StsCosyBL::Exec(Option_t*)
 	    {
 	      StsDigi = (CbmStsDigi*) fDigis->At(iDigi);
 	      
-	      int station = CbmStsAddress::GetElementId(StsDigi->GetAddress(),kStsStation);
+	      int station = CbmStsSetup::Instance()->GetStationNumber(StsDigi->GetAddress());
 	      int side = CbmStsAddress::GetElementId(StsDigi->GetAddress(),kStsSide);
 	      int ch = CbmStsAddress::GetElementId(StsDigi->GetAddress(),kStsChannel);
 
@@ -419,7 +420,7 @@ void StsCosyBL::BaseLine(TClonesArray* fBaselineDigis, vector< vector < vector <
       for( Int_t iDigi = 0; iDigi < nBaselineEntries; ++iDigi ) 
 	{
 	  CbmStsDigi * digi = static_cast< CbmStsDigi * >( fBaselineDigis->At( iDigi ) );
-	  Int_t station = CbmStsAddress::GetElementId( digi->GetAddress(), kStsStation );
+	  Int_t station = CbmStsSetup::Instance()->GetStationNumber( digi->GetAddress() );
 	  Int_t side = CbmStsAddress::GetElementId( digi->GetAddress(), kStsSide );
 	  Int_t strip = CbmStsAddress::GetElementId( digi->GetAddress(), kStsChannel );
 	  Double_t adc = digi->GetCharge();

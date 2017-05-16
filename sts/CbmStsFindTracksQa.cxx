@@ -55,6 +55,7 @@ CbmStsFindTracksQa::CbmStsFindTracksQa(Int_t iVerbose)
     fLegacy(kFALSE),
     fPassGeo(NULL),
     fTargetPos(0.,0.,0.),
+    fSetup(NULL),
     fNStations(0),
     fMinStations(3),
     fQuota(0.7),
@@ -119,6 +120,7 @@ CbmStsFindTracksQa::CbmStsFindTracksQa(Int_t minStations, Double_t quota,
     fLegacy(kFALSE),
     fPassGeo(NULL),
     fTargetPos(0.,0.,0.),
+    fSetup(NULL),
     fNStations(0),
     fMinStations(minStations),
     fQuota(quota),
@@ -232,6 +234,9 @@ InitStatus CbmStsFindTracksQa::Init() {
   // Get RootManager
   FairRootManager* ioman = FairRootManager::Instance();
   assert(ioman);
+
+  // Get STS setup
+  fSetup = CbmStsSetup::Instance();
 
   // Get MCDataManager
   CbmMCDataManager* mcManager =
@@ -772,7 +777,7 @@ void CbmStsFindTracksQa::FillHitMap(CbmEvent* event) {
     CbmStsPoint* stsPoint =
         dynamic_cast<CbmStsPoint*>(fStsPoints->Get(0, eventNumber, pointIndex));
     Int_t mcTrackIndex = stsPoint->GetTrackID();
-    Int_t station = CbmStsAddress::GetElementId(hit->GetAddress(), kStsStation);
+    Int_t station = fSetup->GetStationNumber(hit->GetAddress());
     fHitMap[mcTrackIndex][station]++;
   }
   LOG(DEBUG) << GetName() << ": Filled hit map from " << nHits

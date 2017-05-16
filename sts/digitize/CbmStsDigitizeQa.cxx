@@ -52,10 +52,10 @@ CbmStsDigitizeQa::~CbmStsDigitizeQa(){
 
 InitStatus CbmStsDigitizeQa::Init(){
     fSetup = CbmStsSetup::Instance();
-    fNofStation = fSetup -> GetNofElements(kStsStation);
+    fNofStation = fSetup -> GetNofStations();
     fHM = new CbmHistManager();
-    fnOfDigisChip.resize(fSetup -> GetNofElements(kStsStation));
-    for (Int_t iStation = 0; iStation < fSetup -> GetNofElements(kStsStation); iStation ++){
+    fnOfDigisChip.resize(fNofStation);
+    for (Int_t iStation = 0; iStation < fNofStation; iStation ++){
 	CbmStsElement * stat = fSetup -> GetDaughter(iStation);
 	fnOfDigisChip[iStation].resize(stat -> GetNofDaughters());
 	for (Int_t iLad = 0; iLad < stat -> GetNofDaughters(); iLad++) {
@@ -95,7 +95,7 @@ void CbmStsDigitizeQa::Finish(){
     TString rmFile = "rm " + fileName;
     gSystem -> Exec(rmFile);
     fOutFile.open(Form("%s",fileName.Data()), std::ofstream::app);
-    for (Int_t iStation = 0; iStation < fSetup -> GetNofElements(kStsStation); iStation ++){
+    for (Int_t iStation = 0; iStation < fNofStation; iStation ++){
 	CbmStsElement * stat = fSetup -> GetDaughter(iStation);
 	for (Int_t iLad = 0; iLad < stat -> GetNofDaughters(); iLad++) {
 	    CbmStsElement* ladd = stat -> GetDaughter(iLad);
@@ -220,7 +220,7 @@ void CbmStsDigitizeQa::ProcessDigisAndPoints(const TClonesArray* digis, const TC
     for(Int_t iDigi = 0; iDigi < digis -> GetEntriesFast(); iDigi++) {
 	const CbmStsDigi* stsDigi = static_cast<const CbmStsDigi*>(digis -> At(iDigi));
 	const CbmMatch* digiMatch = static_cast<const CbmMatch*>(stsDigi -> GetMatch());
-	Int_t stationId = CbmStsAddress::GetElementId(stsDigi -> GetAddress(), kStsStation);
+	Int_t stationId = fSetup->GetStationNumber(stsDigi->GetAddress());
 	Int_t iLad = CbmStsAddress::GetElementId(stsDigi -> GetAddress(), kStsLadder);
 	Int_t iHla = CbmStsAddress::GetElementId(stsDigi -> GetAddress(), kStsHalfLadder);
 	Int_t iMod = CbmStsAddress::GetElementId(stsDigi -> GetAddress(), kStsModule);
@@ -283,7 +283,7 @@ void CbmStsDigitizeQa::ProcessDigisAndPoints(const TClonesArray* digis, const TC
 	pointZ = stsPoint -> GetZ();
 	pointPX = stsPoint -> GetPx();
 	pointPZ = stsPoint -> GetPz();
-	Int_t stationId = fSetup -> GetElement(stsPoint -> GetDetectorID(), kStsStation) -> GetIndex();
+	Int_t stationId = fSetup->GetStationNumber(stsPoint->GetDetectorID());
 	fHM -> H2(Form("h_PointsMap_Station%i", stationId)) -> Fill(pointX, pointY);
 	fHM -> H1(Form("h_ParticleAngles_%s", modu -> GetName())) -> Fill(TMath::Abs(TMath::ATan(pointPX / pointPZ)) * 180. / 3.1416);	
     }

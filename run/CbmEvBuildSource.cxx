@@ -83,7 +83,7 @@ Int_t CbmEvBuildSource::ReadEvent(UInt_t par)
       if (digi==NULL) continue;
       t=digi->GetTime();
       fNDigis++;
-      k=CbmStsAddress::GetElementId(digi->GetAddress(), kStsStation);
+      k=CbmStsAddress::GetElementId(digi->GetAddress(), kStsUnit);
       fNStsDigis[k]++;
       if (fST==-1111) { fSN=fISts; fST=t; }
       if (t-fST>fWindDur)
@@ -95,7 +95,7 @@ Int_t CbmEvBuildSource::ReadEvent(UInt_t par)
 	  fST=digi2->GetTime();
           if (t-fST<=fWindDur) { fSN=j; break; }
 	  fNDigis--;
-          k=CbmStsAddress::GetElementId(digi2->GetAddress(), kStsStation);
+          k=CbmStsAddress::GetElementId(digi2->GetAddress(), kStsUnit);
           fNStsDigis[k]--;
         }
         if (j==fISts) { fSN=fISts; fST=t; }

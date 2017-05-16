@@ -2,6 +2,8 @@
 
 #include "CbmStsHit.h"
 #include "CbmStsAddress.h"
+#include "CbmStsSetup.h"
+#include "CbmStsAddress.h"
 
 #include "FairRootManager.h"
 #include "FairLogger.h"
@@ -77,8 +79,8 @@ StsCosyAnalysis::StsCosyAnalysis() :
   fTimeShift[0] = 0;
   fTimeShift[1] = -16;
   fTimeShift[2] = -16;  
-//  fXbin = 300; // 300 µm
-//  fYbin = 400; // 400 µm
+//  fXbin = 300; // 300 ï¿½m
+//  fYbin = 400; // 400 ï¿½m
     
 //  fCutName = "";
 }
@@ -222,7 +224,7 @@ void StsCosyAnalysis::Exec(Option_t*) {
       hit = (CbmStsHit*) fHits->At(iHit);
       
       // Determine sector type and channel numbers
-      Int_t detId = CbmStsAddress::GetElementId(hit->GetAddress(),kStsStation);
+      Int_t detId = CbmStsSetup::Instance()->GetStationNumber(hit->GetAddress());
       vector<CbmStsHit*>& vlist =  fMapPts[detId];
       vlist.push_back((CbmStsHit*) hit); 
     } 

@@ -3,6 +3,7 @@
 #include "CbmStsDigi.h"
 #include "CbmStsCluster.h"
 #include "CbmStsAddress.h"
+#include "CbmStsSetup.h"
 #include "CbmCluster.h"
 #include "FairRootManager.h"
 #include "FairRunAna.h"
@@ -169,7 +170,7 @@ void StsCosyHitFinder::Exec(Option_t*)
       
 //      double adc=-100;
       
-      int station = CbmStsAddress::GetElementId(cluster->GetAddress(),kStsStation);
+      int station = CbmStsSetup::Instance()->GetStationNumber(cluster->GetAddress());
       int side = CbmStsAddress::GetElementId(cluster->GetAddress(),kStsSide);
 //      int ch = CbmStsAddress::GetElementId(cluster->GetAddress(),kStsChannel);
 

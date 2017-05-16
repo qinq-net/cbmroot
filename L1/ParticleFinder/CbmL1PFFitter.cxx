@@ -19,6 +19,7 @@
 #include "TClonesArray.h"
 #include "CbmStsTrack.h"
 #include "CbmStsAddress.h"
+#include "setup/CbmStsSetup.h"
 
 //L1Algo tools
 #include "L1Algo.h"
@@ -187,7 +188,7 @@ void CbmL1PFFitter::Fit(vector<CbmStsTrack> &Tracks, vector<int>& pidHypo)
           posx = hit->GetX();
           posy = hit->GetY();
           posz = hit->GetZ();
-          ista = CbmStsAddress::GetElementId(hit->GetAddress(), kStsStation) + NMvdStations;//hit->GetStationNr() - 1 + NMvdStations;
+          ista = CbmStsSetup::Instance()->GetStationNumber(hit->GetAddress()) + NMvdStations;//hit->GetStationNr() - 1 + NMvdStations;
         }
         w[ista][iVec] = 1.f;
 
@@ -473,7 +474,7 @@ void CbmL1PFFitter::GetChiToVertex(vector<CbmStsTrack> &Tracks, vector<L1FieldRe
           posx = hit->GetX();
           posy = hit->GetY();
           posz = hit->GetZ();
-          ista = CbmStsAddress::GetElementId(hit->GetAddress(), kStsStation) + NMvdStations;//hit->GetStationNr()-1+NMvdStations;
+          ista = CbmStsSetup::Instance()->GetStationNumber(hit->GetAddress()) + NMvdStations;//hit->GetStationNr()-1+NMvdStations;
         }
 
         sta[ista].fieldSlice.GetFieldValue( posx, posy, fB_temp );
@@ -622,7 +623,7 @@ void CbmL1PFFitter::CalculateFieldRegion(vector<CbmStsTrack> &Tracks, vector<L1F
           posx = hit->GetX();
           posy = hit->GetY();
           posz = hit->GetZ();
-          ista = CbmStsAddress::GetElementId(hit->GetAddress(), kStsStation)  + NMvdStations;//hit->GetStationNr()-1+NMvdStations;
+          ista = CbmStsSetup::Instance()->GetStationNumber(hit->GetAddress())  + NMvdStations;//hit->GetStationNr()-1+NMvdStations;
         }
 
         sta[ista].fieldSlice.GetFieldValue( posx, posy, fB_temp );
@@ -702,7 +703,7 @@ void CbmL1PFFitter::CalculateFieldRegionAtLastPoint(vector<CbmStsTrack> &Tracks,
           posx = hit->GetX();
           posy = hit->GetY();
           posz = hit->GetZ();
-          ista = CbmStsAddress::GetElementId(hit->GetAddress(), kStsStation)  + NMvdStations;//hit->GetStationNr()-1+NMvdStations;
+          ista = CbmStsSetup::Instance()->GetStationNumber(hit->GetAddress())  + NMvdStations;//hit->GetStationNr()-1+NMvdStations;
         }
 
         sta[ista].fieldSlice.GetFieldValue( posx, posy, fB_temp );

@@ -136,9 +136,10 @@ class CbmStsElement : public TNamed
 
 
 private:
-    // --- Prevent usage of copy constructor and assignment operator
-    CbmStsElement(const CbmStsElement&);
-    CbmStsElement& operator=(const CbmStsElement&);
+
+    // --- Disable copy constructor and assignment operator
+    CbmStsElement(const CbmStsElement&) = delete;
+    CbmStsElement& operator=(const CbmStsElement&) = delete;
 
 
     ClassDef(CbmStsElement,1);

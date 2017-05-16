@@ -103,7 +103,7 @@ void CbmStsDigitizeQaReport::DrawNofObjectsHistograms(){
 
 void CbmStsDigitizeQaReport::Draw2dHistograms(){
     string name = "h_DigisPerChip_Station";
-    for (Int_t stationId = 0; stationId < fSetup -> GetNofElements(kStsStation); stationId++){
+    for (Int_t stationId = 0; stationId < fSetup->GetNofStations(); stationId++){
 	if (!HM() -> Exists(Form("h_DigisPerChip_Station%i", stationId)) && 
 		!HM() -> Exists(Form("h_PointsMap_Station%i", stationId)) && 
 		!HM() -> Exists(Form("h_MeanAngleMap_Station%i", stationId)) && 
@@ -132,7 +132,7 @@ void CbmStsDigitizeQaReport::Draw2dHistograms(){
     canvas3 -> Divide(4,2);
     canvas3 -> SetGrid();
 
-    for (Int_t stationId = 0; stationId < fSetup -> GetNofElements(kStsStation); stationId++){
+    for (Int_t stationId = 0; stationId < fSetup -> GetNofStations(); stationId++){
 	canvas -> cd(stationId + 1);
 	DrawH2(HM() -> H2(Form("%s%i", name.c_str(), stationId)), kLinear, kLinear, kLinear);
 

@@ -33,7 +33,7 @@ CbmStsStation::CbmStsStation()
 // -----   Standard constructor   ------------------------------------------
 CbmStsStation::CbmStsStation(const char* name, const char* title,
 		                                 TGeoPhysicalNode* node)
-	: CbmStsElement(name, title, kStsStation, node),
+	: CbmStsElement(name, title, kStsUnit, node),
 	  fZ(0.),
     fXmin(0.), fXmax(0.), fYmin(0.), fYmax(0.), fSensorD(0.), fSensorRot(0.),
     fNofSensors(0),

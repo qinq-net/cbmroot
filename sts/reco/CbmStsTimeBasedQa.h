@@ -16,6 +16,7 @@
 #include <vector>
 
 class TClonesArray;
+class CbmStsSetup;
 
 class CbmStsTimeBasedQa : public FairTask
 {
@@ -71,6 +72,8 @@ private:
 
   CbmHistManager* fHM;
   std::string fOutputDir;
+
+  CbmStsSetup* fSetup;
 
   CbmTimeSlice* fTimeSlice;
   TClonesArray* fStsDigis;

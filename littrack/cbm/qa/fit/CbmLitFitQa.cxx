@@ -14,6 +14,7 @@
 #include "CbmMvdHit.h"
 #include "CbmStsHit.h"
 #include "CbmStsAddress.h"
+#include "CbmStsSetup.h"
 #include "CbmMCTrack.h"
 #include "CbmTrdAddress.h"
 #include "CbmMuchGeoScheme.h"
@@ -165,7 +166,7 @@ void CbmLitFitQa::ProcessStsTrack(
         }
     } else { // first track parameters in STS
         const CbmStsHit* firstHit = static_cast<const CbmStsHit*>(fStsHits->At(track->GetHitIndex(0)));
-        Int_t firstStation = CbmStsAddress::GetElementId(firstHit->GetAddress(), kStsStation) - 1;//firstHit->GetStationNr() - 1; // to start with 0
+        Int_t firstStation = CbmStsSetup::Instance()->GetStationNumber(firstHit->GetAddress()) - 1;//firstHit->GetStationNr() - 1; // to start with 0
         if (mcTrack.GetNofPointsAtStation(kSTS, firstStation) > 0) {
             const CbmLitMCPoint& firstPoint = mcTrack.GetPointAtStation(kSTS, firstStation, 0);
             FillResidualsAndPulls(firstParam, &firstPoint, "htf_Sts_FirstParam_", nofMvdHits + nofStsHits, kSTS);
@@ -174,7 +175,7 @@ void CbmLitFitQa::ProcessStsTrack(
     
     // Fill histograms for last track parameters
     const CbmStsHit* lastHit = static_cast<const CbmStsHit*>(fStsHits->At(track->GetHitIndex(nofStsHits - 1)));
-    Int_t lastStation = CbmStsAddress::GetElementId(lastHit->GetAddress(), kStsStation) - 1;//lastHit->GetStationNr() - 1; // to start with 0
+    Int_t lastStation = CbmStsSetup::Instance()->GetStationNumber(lastHit->GetAddress()) - 1;//lastHit->GetStationNr() - 1; // to start with 0
     if (mcTrack.GetNofPointsAtStation(kSTS, lastStation) > 0) {
         const CbmLitMCPoint& lastPoint = mcTrack.GetPointAtStation(kSTS, lastStation, 0);
         FillResidualsAndPulls(lastParam, &lastPoint, "htf_Sts_LastParam_", nofMvdHits + nofStsHits, kSTS);

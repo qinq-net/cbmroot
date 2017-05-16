@@ -18,6 +18,7 @@
 #include "CbmStsAddress.h"
 #include "CbmStsCluster.h"
 #include "CbmStsHit.h"
+#include "CbmStsSetup.h"
 #include "CbmStsTrack.h"
 #include "CbmVertex.h"
 
@@ -33,7 +34,8 @@ CbmStsTestQa::CbmStsTestQa() :
 	fFileClusters(NULL),
 	fFileHits(NULL),
 	fFileTracks(NULL),
-	fFileVertices(NULL)
+	fFileVertices(NULL),
+	fSetup(NULL)
 {
 	SetName("StsTestQa");
 }
@@ -94,6 +96,9 @@ InitStatus CbmStsTestQa::Init()
     			       << FairLogger::endl;
     	return kFATAL;
     }
+
+    // --- Get STS setup
+    fSetup = CbmStsSetup::Instance();
 
     // --- Get input array (events)
     fEvents = (TClonesArray*) ioman->GetObject("Event");
@@ -163,8 +168,8 @@ void CbmStsTestQa::ProcessEvent(CbmEvent* event) {
 		Int_t index = (event ? event->GetIndex(Cbm::kStsHit, iHit) : iHit);
 		CbmStsHit* hit = dynamic_cast<CbmStsHit*>(fHits->At(index));
 		assert(hit);
-		Int_t station = CbmStsAddress::GetElementId(hit->GetAddress(), kStsStation);
-	    if ( fFileHits ) (*fFileHits) << hit->ToString() << "\n";
+		Int_t station = fSetup->GetStationNumber(hit->GetAddress());
+		if ( fFileHits ) (*fFileHits) << hit->ToString() << "\n";
 		if ( station != 7) continue;
 		fHistMan->H1("Hit x in station 8")->Fill(hit->GetX());
 	}

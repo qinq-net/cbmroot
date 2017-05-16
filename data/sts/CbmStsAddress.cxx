@@ -7,12 +7,14 @@
 #include "CbmDetectorList.h"
 #include "CbmStsAddress.h"
 
+using std::string;
+
 
 // -----    Definition of the address field   -------------------------------
 const Int_t CbmStsAddress::fgkBits[] = { fgkSystemBits,   // system = kSTS
-                                         4,   // station
+                                         4,   // unit
                                          4,   // ladder
-                                         1,   // halfladder
+                                         1,   // half-ladder
                                          3,   // module
                                          2,   // sensor
                                          1,   // side
@@ -49,7 +51,7 @@ const Int_t CbmStsAddress::fgkMask[] = { ( 1 << fgkBits[0] ) -1,
 
 
 // -----  Unique element address   -----------------------------------------
-UInt_t CbmStsAddress::GetAddress(Int_t station,
+UInt_t CbmStsAddress::GetAddress(Int_t unit,
                                  Int_t ladder,
                                  Int_t halfladder,
                                  Int_t module,
@@ -57,10 +59,10 @@ UInt_t CbmStsAddress::GetAddress(Int_t station,
                                  Int_t side,
                                  Int_t channel) {
 
-  // Catch overrunning of allowed ranges
-  if ( station >= ( 1 << fgkBits[kStsStation] ) ) {
-    LOG(ERROR) << "Station Id "  << station << " exceeds maximum ("
-               << ( 1 << fgkBits[kStsStation] ) - 1 << ")"
+  // Catch overrun of allowed ranges
+  if ( unit >= ( 1 << fgkBits[kStsUnit] ) ) {
+    LOG(ERROR) << "Unit Id "  << unit << " exceeds maximum ("
+               << ( 1 << fgkBits[kStsUnit] ) - 1 << ")"
                << FairLogger::endl;
     return 0;
   }
@@ -102,7 +104,7 @@ UInt_t CbmStsAddress::GetAddress(Int_t station,
   }
 
   return kSts       << fgkShift[kStsSystem]     |
-         station    << fgkShift[kStsStation]    |
+         unit       << fgkShift[kStsUnit   ]    |
          ladder     << fgkShift[kStsLadder]     |
          halfladder << fgkShift[kStsHalfLadder] |
          module     << fgkShift[kStsModule]     |
@@ -135,15 +137,17 @@ UInt_t CbmStsAddress::GetAddress(Int_t* elementId) {
 
 
 
-// -----   Print info   ----------------------------------------------------
-void CbmStsAddress::Print() {
-  LOG(INFO) << "Number of STS levels is " << kStsNofLevels
-      << FairLogger::endl;
-  for (Int_t level = 0; level < kStsNofLevels; level++)
-    LOG(INFO) << "Level " << std::setw(2) << std::right << level
-              << ": bits " << std::setw(2) << fgkBits[level]
-              << ", max. range " << std::setw(6) << fgkMask[level]
-              << FairLogger::endl;
+// -----   Info   ----------------------------------------------------------
+string CbmStsAddress::ToString() const {
+   std::stringstream ss;
+   ss << "Number of STS levels is " << kStsNofLevels
+       << FairLogger::endl;
+   for (Int_t level = 0; level < kStsNofLevels; level++)
+     ss << "Level " << std::setw(2) << std::right << level
+               << ": bits " << std::setw(2) << fgkBits[level]
+               << ", max. range " << std::setw(6) << fgkMask[level]
+               << FairLogger::endl;
+   return ss.str();
 }
 // -------------------------------------------------------------------------
 

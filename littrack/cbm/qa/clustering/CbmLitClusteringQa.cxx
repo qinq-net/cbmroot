@@ -32,6 +32,7 @@
 #include "CbmStsDigi.h"
 #include "CbmMatch.h"
 #include "CbmStsAddress.h"
+#include "CbmStsSetup.h"
 
 #include "TSystem.h"
 #include "TClonesArray.h"
@@ -217,7 +218,7 @@ Int_t CbmLitClusteringQa::GetStationId(
       DetectorId detId)
 {
    assert(detId == kSTS || detId == kTRD || detId == kMUCH);
-   if (detId == kSTS) return CbmStsAddress::GetElementId(address, kStsStation);
+   if (detId == kSTS) return CbmStsSetup::Instance()->GetStationNumber(address);
    else if (detId == kTRD) return CbmTrdAddress::GetLayerId(address);
    else if (detId == kMUCH) return (CbmMuchGeoScheme::Instance()->GetLayerSideNr(address) - 1) / 2;
    return 0;

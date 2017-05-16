@@ -2,6 +2,7 @@
 
 #include "CbmStsDigi.h"
 #include "CbmStsAddress.h"
+#include "CbmStsSetup.h"
 #include "FairRootManager.h"
 #include "FairRunAna.h"
 #include "FairRuntimeDb.h"
@@ -129,7 +130,7 @@ void StsClusterSet::Exec(Option_t*)
   for (Int_t iDigi=0; iDigi < nofDigis; iDigi++ ) 
     {
       digi = (CbmStsDigi*) fDigis->At(iDigi);
-	int station = CbmStsAddress::GetElementId(digi->GetAddress(),kStsStation);
+	int station = CbmStsSetup::Instance()->GetStationNumber(digi->GetAddress());
       int side = CbmStsAddress::GetElementId(digi->GetAddress(),kStsSide);
       Int_t layer= 2*station+side;
       
@@ -174,7 +175,7 @@ void StsClusterSet::Exec(Option_t*)
 	      digi = static_cast<CbmStsDigi*>(fDigis->At(index));
 	      time = digi->GetTime();
 	      stripNr = CbmStsAddress::GetElementId((*j)->GetAddress(),kStsChannel);
-	      station = CbmStsAddress::GetElementId(digi->GetAddress(),kStsStation);
+	      station = CbmStsSetup::Instance()->GetStationNumber(digi->GetAddress());
 	      side = CbmStsAddress::GetElementId(digi->GetAddress(),kStsSide);
 	      
 	      if(1 == stripNr-stripNrPrev)

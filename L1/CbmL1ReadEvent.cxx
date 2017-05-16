@@ -21,6 +21,7 @@
 #include "CbmKF.h"
 #include "CbmMatch.h"
 #include "CbmStsAddress.h"
+#include "setup/CbmStsSetup.h"
 #include "CbmDetectorList.h"
 
 #include "CbmMvdHitMatch.h"
@@ -335,7 +336,7 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData, CbmEvent* event)
       {
         CbmStsHit *mh = L1_DYNAMIC_CAST<CbmStsHit*>( listStsHits->At(hitIndex) );
         th.ExtIndex = hitIndex;
-        th.iStation = NMvdStations + CbmStsAddress::GetElementId(mh->GetAddress(), kStsStation);//mh->GetStationNr() - 1;
+        th.iStation = NMvdStations + CbmStsSetup::Instance()->GetStationNumber(mh->GetAddress());//mh->GetStationNr() - 1;
         th.isStrip  = 0;
         th.iStripF = 0;//mh->GetFrontDigiId();
         th.iStripB = 0;//mh->GetBackDigiId();

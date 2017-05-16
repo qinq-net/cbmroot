@@ -41,7 +41,7 @@ CbmStsMCQa::~CbmStsMCQa()
 InitStatus CbmStsMCQa::Init()
 {
   fSetup = CbmStsSetup::Instance();
-  fNofStation = fSetup -> GetNofElements(kStsStation);
+  fNofStation = fSetup -> GetNofStations();
   LOG(INFO) << "Sts Setup consist of " << fNofStation << " stations." << FairLogger::endl;
     
   ReadDataBranches();
@@ -151,7 +151,7 @@ void CbmStsMCQa::ProcessPoints(const TClonesArray * points)
 
   for(Int_t iPoint = 0; iPoint < points -> GetEntriesFast(); iPoint++) {
     const CbmStsPoint* stsPoint = static_cast<const CbmStsPoint*>(points -> At(iPoint));
-    Int_t stationId = CbmStsAddress::GetElementId(stsPoint -> GetDetectorID(), kStsStation);
+    Int_t stationId = fSetup->GetStationNumber(stsPoint->GetDetectorID());
     fHM -> H1("h_sts_NofObjects_Points_Station") -> Fill(stationId);
     
     pointX = stsPoint -> GetXIn();

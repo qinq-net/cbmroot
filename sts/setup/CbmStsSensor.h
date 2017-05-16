@@ -13,9 +13,9 @@
 #include <vector>
 #include "CbmStsAddress.h"
 #include "CbmStsCluster.h"
-#include "setup/CbmStsElement.h"
-#include "setup/CbmStsSensorConditions.h"
-#include "setup/CbmStsSensorType.h"
+#include "CbmStsElement.h"
+#include "CbmStsSensorConditions.h"
+#include "CbmStsSensorType.h"
 
 class TClonesArray;
 class TGeoPhysicalNode;

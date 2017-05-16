@@ -2,6 +2,7 @@
 
 #include "CbmStsHit.h"
 #include "CbmStsAddress.h"
+#include "CbmStsSetup.h"
 
 #include "FairRootManager.h"
 #include "FairLogger.h"
@@ -138,7 +139,7 @@ void StsAlignment::Exec(Option_t*) {
     {
       hit = (CbmStsHit*) fHits->At(iHit);      
       
-      Int_t detId = CbmStsAddress::GetElementId(hit->GetAddress(),kStsStation);
+      Int_t detId = CbmStsSetup::Instance()->GetStationNumber(hit->GetAddress());
       vector<CbmStsHit*>& vlist =  fMapPts[detId];
       vlist.push_back((CbmStsHit*) hit); 
     }   

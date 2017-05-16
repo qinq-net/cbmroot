@@ -23,6 +23,7 @@
 #include "CbmStsAddress.h"
 #include "CbmStsMC.h"
 #include "CbmStsModule.h"
+#include "CbmStsSensor.h"
 #include "CbmStsSensorTypeDssd.h"
 #include "CbmStsSensorTypeDssdOrtho.h"
 #include "CbmStsStation.h"
@@ -39,24 +40,11 @@ CbmStsSetup* CbmStsSetup::fgInstance = NULL;
 
 
 
-// -----   Level names   ---------------------------------------------------
-const TString CbmStsSetup::fgkLevelName[] = { "sts",
-                                              "station",
-                                              "ladder",
-                                              "halfladder",
-                                              "module",
-                                              "sensor",
-                                              "side",
-                                              "channel" };
-// -------------------------------------------------------------------------
-
-
-
 // -----   Constructor   ---------------------------------------------------
 CbmStsSetup::CbmStsSetup() : CbmStsElement("STS", "system", kStsSystem),
-			     fDigitizer(NULL), fIsInitialised(kFALSE), fModules(),
-			     fSensors(), fSensorTypes() {
-	if ( gGeoManager) Init(gGeoManager);
+			     fDigitizer(NULL), fIsInitialised(kFALSE),
+			     fIsOld(kFALSE), fModules(),
+			     fSensors(), fSensorTypes(), fStations() {
 }
 // -------------------------------------------------------------------------
 
@@ -204,6 +192,41 @@ CbmStsElement* CbmStsSetup::GetElement(UInt_t address, Int_t level) {
 
 
 
+// -----   Get hierarchy level name   ---------------------------------------
+const char* CbmStsSetup::GetLevelName(Int_t level) {
+
+  // --- Catch legacy (setup with stations)
+  if ( fIsOld && level == kStsUnit ) return "station";
+
+  switch(level) {
+    case kStsSystem: return "sts"; break;
+    case kStsUnit: return "unit"; break;
+    case kStsLadder: return "ladder"; break;
+    case kStsHalfLadder: return "halfladder"; break;
+    case kStsModule: return "module"; break;
+    case kStsSensor: return "sensor"; break;
+    case kStsSide: return "side"; break;
+    case kStsChannel: return "channel"; break;
+    default: return ""; break;
+  }
+
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Get the station number from an address   ------------------------
+Int_t CbmStsSetup::GetStationNumber(UInt_t address) {
+  // In old, station-based geometries, the station equals the unit
+  if ( fIsOld ) return CbmStsAddress::GetElementId(address, kStsUnit);
+  else LOG(FATAL) << GetName() << ": implementation for ststaion number "
+      << " in unit-based geometry is still missing!" << FairLogger::endl;
+  return 0;
+}
+// -------------------------------------------------------------------------
+
+
+
 // -----   Initialisation from TGeoManager   -------------------------------
 Bool_t CbmStsSetup::Init(TGeoManager* geo) {
 
@@ -258,25 +281,32 @@ Bool_t CbmStsSetup::Init(TGeoManager* geo) {
   fAddress = kSTS;
 
   // --- Check for old geometry (with stations) or new geometry (with units)
-  Bool_t isOldGeo = kFALSE;
-  TString dName = fNode->GetNode()->GetDaughter(0)->GetName();
-  LOG(DEBUG) << "First node is " << dName << FairLogger::endl;
-  if ( dName.Contains("station", TString::kIgnoreCase) ) isOldGeo = kTRUE;
-  else if ( dName.Contains("unit", TString::kIgnoreCase) ) isOldGeo = kFALSE;
-  else LOG(FATAL) << GetName() << ": unknown geometry type; first level name is "
-  		<< dName << FairLogger::endl;
-  if ( isOldGeo ) LOG(WARNING) << GetName() << ": using old geometry (with stations)"
+  Bool_t hasStation = kFALSE;
+  Bool_t hasUnit = kFALSE;
+  for (Int_t iDaughter = 0; iDaughter < fNode->GetNode()->GetNdaughters();
+       iDaughter++) {
+    TString dName = fNode->GetNode()->GetDaughter(iDaughter)->GetName();
+    if ( dName.Contains("station", TString::kIgnoreCase) ) hasStation = kTRUE;
+    if ( dName.Contains("unit", TString::kIgnoreCase) ) hasUnit = kTRUE;
+  }
+  if ( hasUnit && (! hasStation) ) fIsOld = kFALSE;
+  else if ( (! hasUnit) && hasStation) fIsOld = kTRUE;
+  else if ( hasUnit && hasStation) LOG(FATAL) << GetName()
+      << ": geometry contains both units and stations!" << FairLogger::endl;
+  else LOG(FATAL) << GetName() << ": geometry contains neither units "
+      << "nor stations!" << FairLogger::endl;
+  if ( fIsOld ) LOG(WARNING) << GetName() << ": using old geometry (with stations)"
   		<< FairLogger::endl;
 
   // --- Recursively initialise daughter elements
-  if ( isOldGeo) CbmStsElement::InitDaughters(); // use method from CbmStsElement
+  if ( fIsOld ) CbmStsElement::InitDaughters(); // use method from CbmStsElement
   else InitDaughters();
 
   // --- Build arrays of modules and sensors
-  for (Int_t iStat = 0; iStat < GetNofDaughters(); iStat++) {
-  	CbmStsElement* stat = GetDaughter(iStat);
-  	for (Int_t iLad = 0; iLad < stat->GetNofDaughters(); iLad++) {
-  		CbmStsElement* ladd = stat->GetDaughter(iLad);
+  for (Int_t iUnit = 0; iUnit < GetNofDaughters(); iUnit++) {
+  	CbmStsElement* unit = GetDaughter(iUnit);
+  	for (Int_t iLad = 0; iLad < unit->GetNofDaughters(); iLad++) {
+  		CbmStsElement* ladd = unit->GetDaughter(iLad);
   		for (Int_t iHla = 0; iHla < ladd->GetNofDaughters(); iHla++) {
   			CbmStsElement* hlad = ladd->GetDaughter(iHla);
   			for (Int_t iMod = 0; iMod < hlad->GetNofDaughters(); iMod++) {
@@ -295,11 +325,18 @@ Bool_t CbmStsSetup::Init(TGeoManager* geo) {
   // --- Statistics
   LOG(INFO) << fName << ": Elements in setup: " << FairLogger::endl;
   for (Int_t iLevel = 1; iLevel <= kStsSensor; iLevel++) {
-	  TString name = fgkLevelName[iLevel];
+	  TString name = GetLevelName(iLevel);
 	  name += "s";
 	  LOG(INFO) << "     " << setw(12) << name << setw(5) << right
 	  		      << GetNofElements(iLevel) << FairLogger::endl;
   }
+
+  // --- Temporary protection against new geometries
+  if ( ! fIsOld ) LOG(FATAL) << GetName() << ": You are using a new "
+      << "STS geometry with units as top level. The software to support "
+      << "this is not yet ready. Please use an older geometry meanwhile."
+      << FairLogger::endl;
+
 
   // Set the sensor types
   Int_t nSensors = SetSensorTypes();
@@ -310,6 +347,7 @@ Bool_t CbmStsSetup::Init(TGeoManager* geo) {
   for (Int_t iStat = 0; iStat < GetNofDaughters(); iStat++) {
   	CbmStsStation* station =
   			dynamic_cast<CbmStsStation*>(GetDaughter(iStat));
+  	assert(station);
   	station->Init();
   	LOG(DEBUG) << station->ToString() << FairLogger::endl;
   }
@@ -319,6 +357,8 @@ Bool_t CbmStsSetup::Init(TGeoManager* geo) {
   	LOG(FATAL) << GetName() << ": inconsistent number of sensors! "
   			       << GetNofElements(kStsSensor) << " " << GetNofSensors()
   			       << FairLogger::endl;
+
+
 
   LOG(INFO) << "=========================================================="
 		    << FairLogger::endl;
@@ -412,14 +452,25 @@ Bool_t CbmStsSetup::Init(const char* fileName) {
   // --- Set system address
   fAddress = kSTS;
 
+  // --- Check for old geometry (with stations) or new geometry (with units)
+  TString dName = fNode->GetNode()->GetDaughter(0)->GetName();
+  LOG(DEBUG) << "First node is " << dName << FairLogger::endl;
+  if ( dName.Contains("station", TString::kIgnoreCase) ) fIsOld = kTRUE;
+  else if ( dName.Contains("unit", TString::kIgnoreCase) ) fIsOld = kFALSE;
+  else LOG(FATAL) << GetName() << ": unknown geometry type; first level name is "
+        << dName << FairLogger::endl;
+  if ( fIsOld ) LOG(WARNING) << GetName() << ": using old geometry (with stations)"
+        << FairLogger::endl;
+
   // --- Recursively initialise daughter elements
-  InitDaughters();
+  if ( fIsOld ) CbmStsElement::InitDaughters(); // use method from CbmStsElement
+  else InitDaughters();
 
   // --- Build arrays of modules and sensors
-  for (Int_t iStat = 0; iStat < GetNofDaughters(); iStat++) {
-  	CbmStsElement* stat = GetDaughter(iStat);
-  	for (Int_t iLad = 0; iLad < stat->GetNofDaughters(); iLad++) {
-  		CbmStsElement* ladd = stat->GetDaughter(iLad);
+  for (Int_t iUnit = 0; iUnit < GetNofDaughters(); iUnit++) {
+  	CbmStsElement* unit = GetDaughter(iUnit);
+  	for (Int_t iLad = 0; iLad < unit->GetNofDaughters(); iLad++) {
+  		CbmStsElement* ladd = unit->GetDaughter(iLad);
   		for (Int_t iHla = 0; iHla < ladd->GetNofDaughters(); iHla++) {
   			CbmStsElement* hlad = ladd->GetDaughter(iHla);
   			for (Int_t iMod = 0; iMod < hlad->GetNofDaughters(); iMod++) {
@@ -429,16 +480,16 @@ Bool_t CbmStsSetup::Init(const char* fileName) {
   					CbmStsSensor* sensor =
   							dynamic_cast<CbmStsSensor*>(modu->GetDaughter(iSen));
   					fSensors.push_back(sensor);
-  				}
-  			}
-  		}
-  	}
-  }
+  				} //# sensors
+  			} //# modules
+  		} //# halfladders
+  	} //# ladders
+  } //# units
 
   // --- Statistics
   LOG(INFO) << fName << ": Elements in setup: " << FairLogger::endl;
   for (Int_t iLevel = 1; iLevel <= kStsSensor; iLevel++) {
-	  TString name = fgkLevelName[iLevel];
+	  TString name = GetLevelName(iLevel);
 	  name += "s";
 	  LOG(INFO) << "     " << setw(12) << name << setw(5) << right
 	  		      << GetNofElements(iLevel) << FairLogger::endl;
@@ -548,7 +599,10 @@ void CbmStsSetup::InitDaughters() {
 
 // -----   Instance   ------------------------------------------------------
 CbmStsSetup* CbmStsSetup::Instance() {
-  if ( ! fgInstance ) fgInstance = new CbmStsSetup();
+  if ( ! fgInstance ) {
+    fgInstance = new CbmStsSetup();
+    if ( gGeoManager) fgInstance->Init(gGeoManager);
+  }
   return fgInstance;
 }
 // -------------------------------------------------------------------------

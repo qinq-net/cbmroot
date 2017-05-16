@@ -2,6 +2,7 @@
 
 #include "CbmStsCluster.h"
 #include "CbmStsAddress.h"
+#include "CbmStsSetup.h"
 #include "CbmCluster.h"
 #include "FairRootManager.h"
 #include "FairRunAna.h"
@@ -121,7 +122,7 @@ void StsHitSet::Exec(Option_t*)
    {
 //      int layer =-1;
       const CbmStsCluster* cluster = static_cast<const CbmStsCluster*>(stsClusters->At(i));
-      int station = CbmStsAddress::GetElementId(cluster->GetAddress(),kStsStation);
+      int station = CbmStsSetup::Instance()->GetStationNumber(cluster->GetAddress());
       int side = CbmStsAddress::GetElementId(cluster->GetAddress(),kStsSide);
       if(side==1)continue;
       
@@ -131,7 +132,7 @@ void StsHitSet::Exec(Option_t*)
       if(i==j)continue;
       
       const CbmStsCluster* cluster2 = static_cast<const CbmStsCluster*>(stsClusters->At(j));
-      int station2 = CbmStsAddress::GetElementId(cluster2->GetAddress(),kStsStation);
+      int station2 = CbmStsSetup::Instance()->GetStationNumber(cluster2->GetAddress());
       if(station != station2)continue;
       
       int side2 = CbmStsAddress::GetElementId(cluster2->GetAddress(),kStsSide);

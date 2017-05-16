@@ -3,6 +3,7 @@
 #include "CbmStsDigi.h"
 #include "CbmStsCluster.h"
 #include "CbmStsAddress.h"
+#include "CbmStsSetup.h"
 #include "CbmCluster.h"
 #include "FairRootManager.h"
 #include "FairRunAna.h"
@@ -183,7 +184,7 @@ void StsCosyClusterFinder::Exec(Option_t*)
   for (Int_t iDigi=0; iDigi < nofDigis; iDigi++ ) 
     {
       digi = (CbmStsDigi*) fDigis->At(iDigi);
-      int station = CbmStsAddress::GetElementId(digi->GetAddress(),kStsStation);
+      int station = CbmStsSetup::Instance()->GetStationNumber(digi->GetAddress());
       int side = CbmStsAddress::GetElementId(digi->GetAddress(),kStsSide);
       Int_t layer= 2*station+side;
 
@@ -229,7 +230,7 @@ void StsCosyClusterFinder::Exec(Option_t*)
 	      time = digi->GetTime();
 	      stripNr = CbmStsAddress::GetElementId((*j)->GetAddress(),kStsChannel);
 	      
-	      int station = CbmStsAddress::GetElementId(digi->GetAddress(),kStsStation);
+	      int station = CbmStsSetup::Instance()->GetStationNumber(digi->GetAddress());
 //	      int side = CbmStsAddress::GetElementId(digi->GetAddress(),kStsSide);
 	      
 	      Bool_t TrCl = kTRUE;
@@ -286,7 +287,7 @@ void StsCosyClusterFinder::Exec(Option_t*)
 	  for(int st=0; st<nofStrips; st++)
 	    {
 	      const CbmStsDigi* temp_digi = (CbmStsDigi*)fDigis->At(cluster->GetDigi(st));
-	      station = CbmStsAddress::GetElementId(temp_digi->GetAddress(),kStsStation);
+	      station = CbmStsSetup::Instance()->GetStationNumber(temp_digi->GetAddress());
 	      side = CbmStsAddress::GetElementId(temp_digi->GetAddress(),kStsSide);
 	      int ch = CbmStsAddress::GetElementId(temp_digi->GetAddress(),kStsChannel);
 //	      layer = 2*station+side;

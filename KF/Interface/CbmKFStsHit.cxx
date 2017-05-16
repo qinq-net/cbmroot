@@ -6,6 +6,7 @@
 #include "CbmKFMaterial.h"
 
 #include "CbmStsHit.h"
+#include "CbmStsSetup.h"
 #include "CbmMvdHit.h"
 #include "CbmStsAddress.h"
 //#include <ios.h>
@@ -19,7 +20,8 @@ static CbmKFTube st_tube;
 void CbmKFStsHit::Create( CbmStsHit *h ){
 
   CbmKF *KF = CbmKF::Instance();
-  int id = 1000+CbmStsAddress::GetElementId(h->GetAddress(), kStsStation);//h->GetStationNr();
+  int id = 1000 + CbmStsSetup::Instance()->GetStationNumber(h->GetAddress());
+
   MaterialIndex =  KF->GetMaterialIndex( id );
 
   if(  MaterialIndex>=0 ) tube = (CbmKFTube*)KF->vMaterial[MaterialIndex];

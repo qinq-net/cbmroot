@@ -7,17 +7,15 @@
 #ifndef CBMSTSSETUP_H
 #define CBMSTSSETUP_H 1
 
-
 #include <vector>
-#include "setup/CbmStsSensor.h"
-#include "setup/CbmStsElement.h"
-#include "setup/CbmStsStation.h"
-
-#include <vector>
+#include "CbmStsElement.h"
 
 class TGeoManager;
 class CbmStsDigitize;
-
+class CbmStsModule;
+class CbmStsSensor;
+class CbmStsSensorType;
+class CbmStsStation;
 
 
 /** @class CbmStsSetup
@@ -60,10 +58,7 @@ class CbmStsSetup : public CbmStsElement
      ** @param level    Element level (EStsElementLevel)
      ** @return  Name of element level (station, ladder, etc.)
      **/
-    static const char* GetLevelName(Int_t level) {
-      if ( level < 0 || level >= kStsNofLevels ) return "";
-      return (fgkLevelName[level]).Data();
-    }
+    const char* GetLevelName(Int_t level);
 
 
     /** Get number of modules in setup **/
@@ -76,6 +71,10 @@ class CbmStsSetup : public CbmStsElement
 
     /** Get number of available sensor types **/
     Int_t GetNofSensorTypes() const { return fSensorTypes.size(); }
+
+
+    /** Get number of stations **/
+    Int_t GetNofStations() const { return fStations.size(); }
 
 
     /** Get a module from the module array.
@@ -107,6 +106,13 @@ class CbmStsSetup : public CbmStsElement
     }
 
 
+    /** Get station number from address
+     ** @param address  Unique detector address
+     ** @value Station number
+     **/
+    Int_t GetStationNumber(UInt_t address);
+
+
     /** Initialise setup from geometry
      ** @param geo  Instance of TGeoManager
      ** @return kTRUE if successfully initialised; kFALSE else
@@ -124,7 +130,6 @@ class CbmStsSetup : public CbmStsElement
     /** Initialise daughters from geometry
      ** Overrides the mother class implementation in case of new geometries (with units) **/
     virtual void InitDaughters();
-
 
 
     /** Static instance of CbmStsSetup **/
@@ -152,21 +157,26 @@ class CbmStsSetup : public CbmStsElement
     CbmStsDigitize* fDigitizer;   ///< Pointer to digitiser task
 
     Bool_t fIsInitialised;  ///< To protect against multiple initialisation.
-
-    static const TString fgkLevelName[kStsNofLevels];  ///< Level names
+    Bool_t fIsOld;          ///< Old setup with stations as top level
 
     /** These arrays allow convenient loops over all modules or sensors. **/
-    std::vector<CbmStsModule*> fModules;   ///< Array of modules
-    std::vector<CbmStsSensor*> fSensors;   ///< Array of sensors
+    std::vector<CbmStsModule*> fModules;   //! Array of modules
+    std::vector<CbmStsSensor*> fSensors;   //! Array of sensors
+
+    /** Stations (special case; are not elements in the setup) **/
+    std::vector<CbmStsStation*> fStations;  //!
 
     /** Available sensor types **/
-    std::map<Int_t, CbmStsSensorType*> fSensorTypes;
+    std::map<Int_t, CbmStsSensorType*> fSensorTypes; //!
 
     /** Default constructor  **/
     CbmStsSetup();
 
-    CbmStsSetup(const CbmStsSetup&);
-    CbmStsSetup operator=(const CbmStsSetup&);
+    /** Copy constructor (disabled) **/
+    CbmStsSetup(const CbmStsSetup&) = delete;
+
+    /** Assignment operator (disabled) **/
+    CbmStsSetup operator=(const CbmStsSetup&) = delete;
 
     ClassDef(CbmStsSetup,1);
 

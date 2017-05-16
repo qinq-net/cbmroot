@@ -24,6 +24,7 @@ class TH1F;
 class CbmGeoPassivePar;
 class CbmEvent;
 class CbmMCDataArray;
+class CbmStsSetup;
 
 
 
@@ -143,6 +144,7 @@ class CbmStsFindTracksQa : public FairTask
   /** Geometry parameters **/
   CbmGeoPassivePar* fPassGeo;             //! Passive geometry parameters
   TVector3 fTargetPos;                    // Target centre position
+  CbmStsSetup* fSetup;                    // STS setup interface
   Int_t fNStations;                       // Number of STS stations
 
 

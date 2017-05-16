@@ -94,7 +94,7 @@ void CbmBuildEventsSimple::Exec(Option_t*)
     if (digi==NULL) continue;
     t=digi->GetTime();
     fNDigis++;
-    k=CbmStsAddress::GetElementId(digi->GetAddress(), kStsStation);
+    k=CbmStsAddress::GetElementId(digi->GetAddress(), kStsUnit);
     fNStsDigis[k]++;
     if (fST==-1111) { fSN=i; fST=t; }
     if (t-fST>fWindDur)
@@ -106,7 +106,7 @@ void CbmBuildEventsSimple::Exec(Option_t*)
 	fST=digi2->GetTime();
         if (t-fST<=fWindDur) { fSN=j; break; }
 	fNDigis--;
-        k=CbmStsAddress::GetElementId(digi2->GetAddress(), kStsStation);
+        k=CbmStsAddress::GetElementId(digi2->GetAddress(), kStsUnit);
         fNStsDigis[k]--;
       }
       if (j==i) { fSN=i; fST=t; }

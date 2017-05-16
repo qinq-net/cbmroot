@@ -14,6 +14,7 @@
 #include "CbmTrdAddress.h"
 #include "CbmMCTrack.h"
 #include "CbmStsPoint.h"
+#include "CbmStsSetup.h"
 #include "CbmRichPoint.h"
 #include "CbmMvdPoint.h"
 #include "CbmTrdPoint.h"
@@ -375,7 +376,7 @@ void CbmLitMCTrackCreator::FillStationMaps()
             const CbmStsPoint* point = static_cast<const CbmStsPoint*>(fStsPoints->At(iPoint));
             if (NULL == point) continue;
             UInt_t address = point->GetDetectorID();
-            Int_t stationId = CbmStsAddress::GetElementId(address, kStsStation);
+            Int_t stationId = CbmStsSetup::Instance()->GetStationNumber(address);
             fStsStationsMap[iPoint] = stationId;
         }
     }

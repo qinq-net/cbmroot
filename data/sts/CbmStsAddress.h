@@ -6,8 +6,7 @@
 #ifndef CBMSTSADDRESS_H
 #define CBMSTSADDRESS_H 1
 
-#include <iomanip>
-#include "Rtypes.h"
+#include <sstream>
 #include "FairLogger.h"
 #include "CbmAddress.h"
 
@@ -19,7 +18,7 @@
  **/
 enum EStsElementLevel {
   kStsSystem,     //!< System = STS
-  kStsStation,    //!< Station
+  kStsUnit,       //!< Station
   kStsLadder,     //!< Ladder
   kStsHalfLadder, //!< Halfladder
   kStsModule,     //!< Module
@@ -34,7 +33,7 @@ enum EStsElementLevel {
 /** @class CbmStsAddress
  ** @brief Interface class to unique address for the STS
  ** @author V.Friese <v.friese@gsi.de>
- ** @version 1.0
+ ** @version 2.0
  **
  ** The CbmStsAddress interprets and modifies the unique address
  ** for the STS by the proper bit operation on the address bit field.
@@ -44,7 +43,7 @@ enum EStsElementLevel {
  **                                               3         2         1
  ** Level           Bits  Max. Elements  Shift   10987654321098765432109876543210 \n
  ** System (kSTS)     4         16          0    0000000000000000000000000000xxxx \n
- ** Station           4         16          4    000000000000000000000000xxxx0000 \n
+ ** Unit              4         16          4    000000000000000000000000xxxx0000 \n
  ** Ladder            4         16          8    00000000000000000000xxxx00000000 \n
  ** HalfLadder        1          2         12    0000000000000000000x000000000000 \n
  ** Module            3          8         13    0000000000000000xxx0000000000000 \n
@@ -58,7 +57,7 @@ class CbmStsAddress : public CbmAddress
   public:
 
     /** Construct address
-     ** @param station      Station index
+     ** @param unit         Unit index
      ** @param ladder       Ladder index in station
      ** @param halfladder   Halfladder index in ladder
      ** @param module       Module index within halfladder
@@ -67,7 +66,7 @@ class CbmStsAddress : public CbmAddress
      ** @param channel      Channel number
      ** @return Unique element address
      **/
-    static UInt_t GetAddress(Int_t station = 0,
+    static UInt_t GetAddress(Int_t unit = 0,
                              Int_t ladder = 0,
                              Int_t halfladder = 0,
                              Int_t module = 0,
@@ -81,7 +80,6 @@ class CbmStsAddress : public CbmAddress
      ** @return Unique element address
      **/
     static UInt_t GetAddress(Int_t* elementIds);
-
 
 
     /** Construct the address of an element from the address of a
@@ -125,11 +123,7 @@ class CbmStsAddress : public CbmAddress
      ** For use in macros which do not include this header file.
      ** @return       Number of hierarchy levels
      **/
-    static Int_t GetNofLevels() { return kStsNofLevels; }
-
-
-    /** Print information on the bit field **/
-    static void Print();
+     static Int_t GetNofLevels() { return kStsNofLevels; }
 
 
     /** Set the index of an element
@@ -152,6 +146,11 @@ class CbmStsAddress : public CbmAddress
      }
 
 
+     /** String output **/
+     virtual std::string ToString() const;
+
+
+
   private:
 
     /** Number of bits for the different levels **/
@@ -164,7 +163,7 @@ class CbmStsAddress : public CbmAddress
     static const Int_t fgkMask[kStsNofLevels];
 
 
-    ClassDef(CbmStsAddress,1);
+    ClassDef(CbmStsAddress, 2);
 };
 
 

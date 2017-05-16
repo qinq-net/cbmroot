@@ -3,6 +3,7 @@
  ** @date 19.04.2016
  **/
 
+#include <utility>
 #include "CbmStsTimeBasedQa.h"
 #include "CbmHistManager.h"
 #include "FairRootManager.h"
@@ -16,6 +17,7 @@
 #include "CbmMCBuffer.h"
 #include "CbmSimulationReport.h"
 #include "CbmStsTimeBasedQaReport.h"
+#include "CbmStsSetup.h"
 
 #include "TClonesArray.h"
 #include "TH1.h"
@@ -35,6 +37,7 @@ using std::string;
 CbmStsTimeBasedQa::CbmStsTimeBasedQa():
     fHM(NULL)
   , fOutputDir(" ")
+  , fSetup(NULL)
   , fTimeSlice(NULL)
   , fStsDigis(NULL)
   , fStsClusters(NULL)
@@ -62,6 +65,8 @@ InitStatus CbmStsTimeBasedQa::Init()
   fHM = new CbmHistManager();
 
   ReadDataBranches();
+
+  fSetup = CbmStsSetup::Instance();
 
   string type;
   if ( fDaq )
@@ -273,7 +278,7 @@ void CbmStsTimeBasedQa::ProcessDigisAndPoints(const vector<CbmStsDigi> digis, Cb
   for(UInt_t iDigi = 0; iDigi < digis.size(); iDigi++) {
     const CbmStsDigi stsDigi = digis[iDigi];
     const CbmMatch* digiMatch = static_cast<const CbmMatch*>(stsDigi.GetMatch());
-    Int_t stationId = CbmStsAddress::GetElementId(stsDigi.GetAddress(), kStsStation);
+    Int_t stationId = fSetup->GetStationNumber(stsDigi.GetAddress());
     for(Int_t iLink = 0; iLink < digiMatch->GetNofLinks(); iLink++) {
       const CbmLink link = digiMatch->GetLink(iLink);
       Double_t index = (1000 * link.GetIndex()) + (link.GetFile()) + (0.0001 * link.GetEntry());
@@ -323,7 +328,7 @@ void CbmStsTimeBasedQa::ProcessDigisAndPoints(const TClonesArray* digis, const C
   for(Int_t iDigi = 0; iDigi < digis->GetEntriesFast(); iDigi++) {
     const CbmStsDigi* stsDigi = static_cast<const CbmStsDigi*>(digis->At(iDigi));
     const CbmMatch* digiMatch = static_cast<const CbmMatch*>(stsDigi->GetMatch());
-    Int_t stationId = CbmStsAddress::GetElementId(stsDigi->GetAddress(), kStsStation);
+    Int_t stationId = fSetup->GetStationNumber(stsDigi->GetAddress());
     for(Int_t iLink = 0; iLink < digiMatch->GetNofLinks(); iLink++) {
       const CbmLink link = digiMatch->GetLink(iLink);
       Double_t index = (1000 * link.GetIndex()) + (link.GetFile()) + (0.0001 * link.GetEntry());
@@ -359,7 +364,7 @@ void CbmStsTimeBasedQa::ProcessClusters(const TClonesArray* clusters, const TClo
   for(Int_t iCluster = 0; iCluster < clusters->GetEntriesFast(); iCluster++) {
     const CbmStsCluster* stsCluster = static_cast<const CbmStsCluster*>(clusters->At(iCluster));
     const CbmMatch* stsClusterMatch = static_cast<const CbmMatch*>(clusterMatches->At(iCluster));
-    Int_t stationId = CbmStsAddress::GetElementId(stsCluster->GetAddress(), kStsStation);
+    Int_t stationId = fSetup->GetStationNumber(stsCluster->GetAddress());
     fHM->H1("hno_NofObjects_Clusters_Station_" + type)->Fill(stationId);
     if ( NULL != clusters && fHM->Exists("hdo_DigisInCluster_" + type) )
       fHM->H1("hdo_DigisInCluster_" + type)->Fill(stsCluster->GetNofDigis());
@@ -400,7 +405,7 @@ void CbmStsTimeBasedQa::ProcessHits(const TClonesArray* hits, const TClonesArray
   for(Int_t iHit = 0; iHit < hits->GetEntriesFast(); iHit++) {
     const CbmStsHit* hit = static_cast<CbmStsHit*>(hits->At(iHit));
     const CbmMatch* hitMatch = static_cast<CbmMatch*>(hitMatches->At(iHit));
-    Int_t stationId = CbmStsAddress::GetElementId(hit->GetAddress(), kStsStation);
+    Int_t stationId = fSetup->GetStationNumber(hit->GetAddress());
     fHM->H1("hno_NofObjects_Hits_Station_" + type)->Fill(stationId);
     fHM->H1("hhp_PointsInHit_" + type)->Fill(hitMatch->GetNofLinks());
     if ( hitMatch->GetNofLinks() == 1 ) {

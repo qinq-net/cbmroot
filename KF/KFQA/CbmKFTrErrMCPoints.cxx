@@ -18,6 +18,7 @@
 #include "CbmMCTrack.h"
 #include <algorithm>
 #include "CbmStsAddress.h"
+#include "CbmStsSetup.h"
 
 using std::vector;
 
@@ -89,7 +90,7 @@ int CbmKFTrErrMCPoints::GetNConsHitStations()
 //    std::cout << GetMvdHit(iMvd)->GetStationNr() << " " << GetMvdHit(iMvd)->GetZ() << std::endl;
   }
   for(int iSts=0; iSts<GetNStsHits(); ++iSts)
-    iStations.push_back( CbmStsAddress::GetElementId(GetStsHit(iSts)->GetAddress(), kStsStation) - 1 + CbmKF::Instance()->GetNMvdStations());
+    iStations.push_back( CbmStsSetup::Instance()->GetStationNumber(GetStsHit(iSts)->GetAddress()) - 1 + CbmKF::Instance()->GetNMvdStations());
 
   std::sort(iStations.begin(),iStations.end());
 
@@ -127,7 +128,7 @@ int CbmKFTrErrMCPoints::GetNHitStations()
 //    std::cout << GetMvdHit(iMvd)->GetStationNr() << " " << GetMvdHit(iMvd)->GetZ() << std::endl;
   }
   for(int iSts=0; iSts<GetNStsHits(); ++iSts)
-    iStations.push_back( CbmStsAddress::GetElementId(GetStsHit(iSts)->GetAddress(), kStsStation) - 1 + CbmKF::Instance()->GetNMvdStations());
+    iStations.push_back( CbmStsSetup::Instance()->GetStationNumber(GetStsHit(iSts)->GetAddress()) - 1 + CbmKF::Instance()->GetNMvdStations());
 
   std::sort(iStations.begin(),iStations.end());
 

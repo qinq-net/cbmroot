@@ -2,6 +2,7 @@
 
 #include "CbmStsDigi.h"
 #include "CbmStsAddress.h"
+#include "CbmStsSetup.h"
 #include "CbmFiberHodoCluster.h"
 #include "CbmFiberHodoAddress.h"
 
@@ -113,7 +114,7 @@ void CbmStsHodoCorrelations::Exec(Option_t* /*option*/)
   for ( UInt_t iDigi=0; iDigi < nofStsDigis; ++iDigi) {
     stsDigi = static_cast<CbmStsDigi*>(fStsDigi->At(iDigi));
     UInt_t stsAddress = stsDigi->GetAddress();
-    UInt_t station = CbmStsAddress::GetElementId(stsAddress, kStsStation);
+    UInt_t station = CbmStsSetup::Instance()->GetStationNumber(stsAddress);
     UInt_t side = CbmStsAddress::GetElementId(stsAddress, kStsSide);
 
     if ( 0 == station && 0 == side ) St0S0++; 
