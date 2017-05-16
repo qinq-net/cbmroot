@@ -41,49 +41,6 @@ void mcbm_qa_nh(Int_t nEvents = 1000,
   //FairLogger::GetLogger()->SetLogScreenLevel("DEBUG");
   FairLogger::GetLogger()->SetLogVerbosityLevel("MEDIUM");
 
-/*
-  // Digitisation files.
-  // Add TObjectString containing the different file names to
-  // a TList which is passed as input to the FairParAsciiFileIo.
-  // The FairParAsciiFileIo will take care to create on the fly 
-  // a concatenated input parameter file which is then used during
-  // the reconstruction.
-  TList *parFileList = new TList();
-
-  TString inDir = gSystem->Getenv("VMCWORKDIR");
-  TString paramDir = inDir + "/parameters/";
-
-  
-  TString setupFile = inDir + "/geometry/setup/legacy/" + setup + "_setup.C";
-  TString setupFunct = setup;
-  setupFunct += "_setup()";
-  gROOT->LoadMacro(setupFile);
-  gInterpreter->ProcessLine(setupFunct);
-  
-
-  // --- STS digipar file is there only for L1. It is no longer required
-  // ---  for STS digitisation and should be eventually removed.
-  //TObjString stsDigiFile = paramDir + stsDigi;
-  //parFileList->Add(&stsDigiFile);
-  //cout << "macro/run/run_reco.C using: " << stsDigi << endl;
-
-  TObjString* trdDigiFile = new TObjString(paramDir + trdDigi);
-  parFileList->Add(trdDigiFile);
-
-//  TObjString trdDigiFile(paramDir + trdDigi);
-//  parFileList->Add(&trdDigiFile);
-  cout << "macro/run/run_reco.C using: " << trdDigi << endl;
-
-  TObjString* tofDigiFile = new TObjString(paramDir + tofDigi);
-  parFileList->Add(tofDigiFile);
-  cout << "macro/mcbm/mcbm_reco.C using: " << tofDigi << endl;
-
-  TObjString* tofDigiBdfFile = new TObjString(paramDir + tofDigiBdf);
-  parFileList->Add(tofDigiBdfFile);
-  cout << "macro/mcbm/mcbm_reco.C using: " << paramDir << tofDigiBdf << endl;
-//  TObjString tofDigiFile = paramDir + tofDigi;
-//  parFileList->Add(&tofDigiFile);
-*/
 
   // In general, the following parts need not be touched
   // ========================================================================
@@ -111,9 +68,12 @@ void mcbm_qa_nh(Int_t nEvents = 1000,
   run->AddTask(mcManager);
   // ------------------------------------------------------------------------
 	
-
   CbmStsMCQa* stsQa = new CbmStsMCQa();
   run->AddTask(stsQa);
+  // ------------------------------------------------------------------------
+	
+  CbmTrdMCQa* trdQa = new CbmTrdMCQa();
+  run->AddTask(trdQa);
   // -------------------------------------------------------------------------
 
   // -----  Parameter database   --------------------------------------------

@@ -91,14 +91,19 @@ void CbmTrdMCQa::CreatePointHistograms()
 			 nofBins, minX, maxX);
 
     fHM -> Create2<TH2F>(Form("h_trd_PointsMap_Station%i",stationId),
-			 Form("Points Map, Station %i;x, cm;y, cm", stationId),
-			 200, -50., 50., 200, -50., 50.);
-    fHM -> Create2<TH2F>(Form("h_trd_PointsMap_NoOverlap_Station%i",stationId),
-			 Form("Points Map, Station %i;x, cm;y, cm", stationId),
-			 200, -50., 50., 200, -50., 50.);
-  }
-  fHM -> Create1<TH1F>("h_trd_XPos","X position;x, cm; Entries", 1000, -50., 50.);
-  fHM -> Create1<TH1F>("h_trd_YPos","Y position;y, cm; Entries", 1000, -50., 50.);
+       Form("TrdPoint, Station %i;x, cm;y, cm", stationId),
+       120, -60., 60., 120, -60., 60.);
+    fHM -> Create2<TH2F>(Form("h_trd_PointsMapEvent_Station%i",stationId),
+       Form("TrdPoint/cm^{2}, Station %i;x, cm;y, cm", stationId),
+       120, -60., 60., 120, -60., 60.);
+    fHM -> Create2<TH2F>(Form("h_trd_PointsMapRate_Station%i",stationId),
+       Form("TrdPoint/cm^{2}/s, Station %i;x, cm;y, cm", stationId),
+       120, -60., 60., 120, -60., 60.);
+    fHM -> Create1<TH1F>(Form("h_trd_XPos_Station%i",stationId),"X position;x, cm; Entries", 1200, -60., 60.);
+    fHM -> Create1<TH1F>(Form("h_trd_YPos_Station%i",stationId),"Y position;y, cm; Entries", 1200, -60., 60.);
+   }
+  fHM -> Create1<TH1F>("h_trd_XPos","X position;x, cm; Entries", 1200, -60., 60.);
+  fHM -> Create1<TH1F>("h_trd_YPos","Y position;y, cm; Entries", 1200, -60., 60.);
 }
 
 void CbmTrdMCQa::Exec(Option_t*){
@@ -115,7 +120,7 @@ void CbmTrdMCQa::ProcessPoints(const TClonesArray * points)
   Double_t pointY=0.;
   Double_t pointZ=0.;
 
-  std::map<Int_t, vector<Int_t>> used_map = { {0, {}}, {1, {}} };
+  std::map<Int_t, vector<Int_t>> used_map;
 
   for(Int_t iPoint = 0; iPoint < points -> GetEntriesFast(); iPoint++) {
     const CbmTrdPoint* trdPoint = static_cast<const CbmTrdPoint*>(points -> At(iPoint));
@@ -126,7 +131,12 @@ void CbmTrdMCQa::ProcessPoints(const TClonesArray * points)
     pointY = trdPoint -> GetYIn();
     pointZ = trdPoint -> GetZIn();
 
+    fHM -> H1(Form("h_trd_XPos_Station%i",stationId)) -> Fill(pointX);
+    fHM -> H1(Form("h_trd_YPos_Station%i",stationId)) -> Fill(pointY);
+
     fHM -> H2(Form("h_trd_PointsMap_Station%i", stationId)) -> Fill(pointX, pointY);
+    fHM -> H2(Form("h_trd_PointsMapEvent_Station%i", stationId)) -> Fill(pointX, pointY);
+    fHM -> H2(Form("h_trd_PointsMapRate_Station%i", stationId)) -> Fill(pointX, pointY);
     fHM -> H1("h_trd_XPos") -> Fill(pointX);
     fHM -> H1("h_trd_YPos") -> Fill(pointY);
     
@@ -134,8 +144,7 @@ void CbmTrdMCQa::ProcessPoints(const TClonesArray * points)
  
     if (std::find(used_map[stationId].begin(), used_map[stationId].end(), mcTrackID) == used_map[stationId].end()) {
       used_map[stationId].push_back(mcTrackID);
-      fHM -> H2(Form("h_trd_PointsMap_NoOverlap_Station%i", stationId)) -> Fill(pointX, pointY);
-    }    
+    }
   }
   fHM -> H1(Form("h_trd_MultPoints_Station%i",0)) -> Fill(used_map[0].size());
   fHM -> H1(Form("h_trd_MultPoints_Station%i",1)) -> Fill(used_map[1].size());
@@ -147,8 +156,25 @@ void CbmTrdMCQa::ProcessPoints(const TClonesArray * points)
 void CbmTrdMCQa::Finish(){
 
   Int_t nofEvents = fHM -> H1("h_trd_EventNo_MCQa") -> GetEntries();
-  // Do here some scalling of the histogramms to have MCPoint per cm^2
+  // Do here some scaling of the histograms to have MCPoint per cm^2
 
+  Int_t xbins = (fHM->H2("h_trd_PointsMap_Station0"))->GetXaxis()->GetNbins();
+  Float_t xmax = fHM -> H2("h_trd_PointsMap_Station0") -> GetXaxis()->GetXmax();
+  Float_t xmin = fHM -> H2("h_trd_PointsMap_Station0") -> GetXaxis()->GetXmin();
+  Float_t scaleX = static_cast<Float_t>(xbins)/(xmax - xmin);
+
+  Int_t ybins = fHM -> H2("h_trd_PointsMap_Station0") -> GetYaxis()->GetNbins();
+  Int_t ymax = fHM -> H2("h_trd_PointsMap_Station0") -> GetYaxis()->GetXmax();
+  Int_t ymin = fHM -> H2("h_trd_PointsMap_Station0") -> GetYaxis()->GetXmin();
+  Float_t scaleY = static_cast<Float_t>(ybins)/(ymax - ymin);
+
+  Float_t scale = scaleX * scaleY;
+  scale=1.;
+
+  for(Int_t i=0; i<fNofStation; ++i) {
+    fHM -> Scale(Form("h_trd_PointsMapEvent_Station%i", i),scale/nofEvents);
+    fHM -> Scale(Form("h_trd_PointsMapRate_Station%i", i),10000000.*scale/nofEvents);
+   }
 
   gDirectory -> mkdir("QA/TrdMCQa");
   gDirectory -> cd("QA/TrdMCQa");
