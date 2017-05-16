@@ -1,10 +1,12 @@
 //                                             
-/// \file create_MUCH_geometry_v16a.C
+/// \file create_MUCH_geometry_v17a.C
 /// \brief Generates MUCH geometry in Root format.
 ///                                             
 
-// 2017-04-27 - DE - v16a - fix GEM module positions and angles
-// 2016-04-19 - DE - v16a - initial version derived from TRD
+// 2017-05-02 - PPB - v17a - Change the shape of the first absorber according to latest design
+// 2017-04-27 - DE  - v17a - fix GEM module positions and angles
+// 2017-04-22 - PPB - v17a - Define the absorber, shield and station shapes sizes ...
+// 2016-04-19 - DE  - v17a - initial version derived from TRD
 
 // in root all sizes are given in cm
 
@@ -39,7 +41,7 @@
 
 
 // Name of output file with geometry
-const TString tagVersion   = "v16a";
+const TString tagVersion   = "v17a";
 const TString subVersion   = "";
 const TString geoVersion   = "much_" + tagVersion + subVersion;
 const TString FileNameSim  = geoVersion + ".geo.root";
@@ -74,7 +76,7 @@ const Int_t fNabs = 6; // Number of absorbers
 // Absorber Zin position [cm] in the cave reference frame
 Double_t fAbsorberZ1[6]={0, 24, 90, 140, 190, 250}; 
 // Absorber thickness [cm]
-Double_t fAbsorberLz[6]= {24, 36, 20, 20, 30,100}; 
+Double_t fAbsorberLz[6]= {16, 44, 20, 20, 30,100}; 
 Double_t safetyrad[6]={0.0,30.0,30.0,30.0,30.0,5.0};
 
 
@@ -84,16 +86,17 @@ Double_t safetyrad[6]={0.0,30.0,30.0,30.0,30.0,5.0};
 
 const Int_t fNst = 5; // Number of stations
  // Sector-type module parameters
-// Number of sectors per layer
-Int_t fNSectorsPerLayer[5] = {16, 20, 24, 28, 38};; 
+// Number of sectors per layer (should be even for symmetry)
+// Needs to be fixed with actual numbers
+Int_t fNSectorsPerLayer[5] = {14, 18, 24, 26, 36}; 
 Double_t fActiveLzSector =0.3;  // Active volume thickness [cm]
 Double_t fSpacerR = 2.0;         // Spacer width in R [cm]
 Double_t fSpacerPhi = 2.0;       // Spacer width in Phi [cm]
 Double_t fOverlapR = 2.0;        // Overlap in R direction [cm]
 
 // Station Zceneter [cm] in  the cave reference frame
-Double_t fMuchZ2=160.0;
-Double_t fStationZ0[5]={40,90,140,200,330}; 
+//Double_t fMuchZ2=160.0;
+Double_t fStationZ0[5]={75,125,175,235,365}; 
 Int_t fNlayers[5]={3,3,3,3,3}; // Number of layers
 Int_t fDetType[5]={3,3,3,3,3}; // Detector type
 Double_t fLayersDz[5]={10,10,10,10,10}; 
@@ -134,9 +137,7 @@ TGeoVolume* CreateStations(int ist);
 TGeoVolume* CreateLayers(int istn, int ily);
 
 
-//Int_t Intersect(Float_t , Float_t , Float_t , Float_t , Float_t );
-
-void create_MUCH_geometry_v16a_de() {
+void create_MUCH_geometry_v17a() {
 
   // Load needed material definition from media.geo file
   create_materials_from_media_file();
@@ -154,25 +155,31 @@ void create_MUCH_geometry_v16a_de() {
   TGeoVolume* much = new TGeoVolumeAssembly(geoVersion);
   top->AddNode(much, 1);
 
-  for (Int_t iabs = 0; iabs <6 ; iabs++) {
+  for (Int_t iabs = 0; iabs <6 ; iabs++) { // 6 pieces of absorbers
+    // first abosrber is divided into two halves
+    // first half inserted inside the dipole magnet
     
     gModules[iabs] = CreateAbsorbers(iabs);
-    top->AddNode(gModules[iabs],iabs);
+   
+    much->AddNode(gModules[iabs],iabs); 
   }
 
   
   for (Int_t ishi = 0; ishi <4 ; ishi++) {
     
     gModules_shield[ishi] = CreateShields(ishi);
-    top->AddNode(gModules_shield[ishi],ishi);
+    
+    much->AddNode(gModules_shield[ishi],ishi);
+
   }
 
   
   for (Int_t istn = 0; istn < 5; istn++) { // 5 Stations
-    //  for (Int_t istn = 0; istn < 1; istn++) { // 1 Stations
+  // for (Int_t istn = 0; istn < 1; istn++) { // 1 Stations
     
     gModules_station[istn] = CreateStations(istn);
-    top->AddNode(gModules_station[istn],istn);
+ 
+    much->AddNode(gModules_station[istn],istn);
   }
 
   gGeoMan->CloseGeometry();
@@ -232,18 +239,14 @@ void create_materials_from_media_file()
 
 TGeoVolume* CreateShields(int ish) {
 
-  
-  //  TGeoMedium* AbsMed1 = gGeoMan->GetMedium(C);
   TGeoMedium* graphite = gGeoMan->GetMedium(C);
   TGeoMedium* iron = gGeoMan->GetMedium(I);
 
   TString name = Form("shieldblock%d", ish);
   TGeoVolumeAssembly* shieldblock = new TGeoVolumeAssembly(name);
   
-  //TString pipename =  Form("beampipe_%d",ish);
   TString conename_sh =  Form("conesh_%d",ish);
  
-  // TString supportShapeName = Form("Support_%d",ish);
   
   Double_t dz = fShieldLz[ish]/2.0 ;
   Double_t globalZ1 = fShieldZin[ish] ;
@@ -261,8 +264,8 @@ TGeoVolume* CreateShields(int ish) {
   TGeoCone * sh =new TGeoCone(conename_sh,dz, rmin1, rmax1, rmin2, rmax2);
   TGeoVolume* shield = new TGeoVolume("shield", sh, iron);
   
-  shield->SetLineColor(kMagenta);
-  shield->SetTransparency(50);
+  shield->SetLineColor(kBlack);
+  shield->SetTransparency(2);
   TGeoTranslation *sh_trans = new TGeoTranslation("", 0., 0., globalZ1+dz);
   shieldblock->AddNode(shield,ish, sh_trans); 
   
@@ -285,48 +288,55 @@ TGeoVolume* CreateAbsorbers(int i) {
   TString conename =  Form("cone_%d",i);
   TString BoxName   = Form("Box_%d",i);
   TString supportShapeName = Form("Support_%d",i);
-  
+  TString TrapName =  Form("Trap_%d",i);
+
   Double_t dz = fAbsorberLz[i]/2.0 ;
   Double_t globalZ1 = fAbsorberZ1[i] + fMuchZ1;
   Double_t globalZ2 = fAbsorberZ1[i] + 2 * dz + fMuchZ1;
   
   Double_t rmin1 = globalZ1 * fAcceptanceTanMin;
-  Double_t rmax1 = globalZ1 * fAcceptanceTanMax + safetyrad[i];
   Double_t rmin2 = globalZ2 * fAcceptanceTanMin;
+  Double_t rmax1 = globalZ1 * fAcceptanceTanMax + safetyrad[i];
   Double_t rmax2 = globalZ2 * fAcceptanceTanMax + safetyrad[i];//
 
+  // 1st part of 1st absorber trapezium
+  //dimensions are hardcoded
+    if(i==0)
+      {
+	printf("absorber %d \n",i);
 
-  // cout<<" Absorbers:  rmin1 "<<rmin1<<" rmax 1  "<<rmax1<<"  rmin2 "<<rmin2<<"  rmax2  "<<rmax2<<endl;
- 
-  // in smaller cone (tube) the half thickness is a bit larger than that of bigger cone fromm which it is cut out. i.e to make the hole visible, if we cut the smaller volume from bigger voulme with equatl thickness, then they are carved at the same plane and we would not see the hole
+	TGeoTrd2 * trap = new TGeoTrd2(TrapName,70.0,70.0,46.0,71.0,dz);
+	TGeoCone * tube = new TGeoCone(pipename,dz+0.001,0.,rmin1,0.,rmin2);
+	TString expression = TrapName +"-"+pipename;
+	TGeoCompositeShape* shSupport = new TGeoCompositeShape(supportShapeName,expression);
+	TGeoVolume* abs0 = new TGeoVolume("absorber", shSupport, graphite);
+	abs0->SetLineColor(kRed);
+	abs0->SetTransparency(2);
+	TGeoTranslation *abs0_trans = new TGeoTranslation("", 0., 0., globalZ1+dz);
+	absblock->AddNode(abs0, i, abs0_trans);
+      }
+
+    // 2nd part of 1st absorber box
+  if(i==1)
+      {
+	printf("absorber %d \n",i);
+	TGeoBBox * box = new TGeoBBox(BoxName,130.0,125.0,dz);
+	TGeoCone * tube = new TGeoCone(pipename,dz+0.001,0.,rmin1,0.,rmin2);
+	TString expression = BoxName +"-"+pipename;
+	TGeoCompositeShape* shSupport = new TGeoCompositeShape(supportShapeName,expression);
+	
+	TGeoVolume* abs1 = new TGeoVolume("absorber", shSupport, graphite);
+	abs1->SetLineColor(kBlue);
+	abs1->SetTransparency(2);
+	TGeoTranslation *abs1_trans = new TGeoTranslation("", 0., 0., globalZ1+dz);
+	absblock->AddNode(abs1, i, abs1_trans);
 
 
-  // for box volumes (Tgeobox) co-ordinates are half thickness along x ,y ,z (dx, dy,dz), mesured froom the centre of the box
-
-  // Similarly for cone rmin & ramx of smaller alnd larger surfaces and half thickness w.r.t centre along z
-
-  // any translation should be made hence w.r.t to the centre of the volume (not front/back suraface)
+      }
 
 
- 
-   if(i <=1)
-   {
-     TGeoCone * ab1 =new TGeoCone(conename,dz, rmin1, rmax1, rmin2, rmax2);
-   
-     TGeoVolume* abs1 = new TGeoVolume("absorber", ab1, graphite);
-     if (i==0) abs1->SetLineColor(kBlue);
-
-     abs1->SetTransparency(50);
-     
-     TGeoTranslation *abs1_trans = new TGeoTranslation("", 0., 0., globalZ1+dz);
-     absblock->AddNode(abs1,i, abs1_trans); 
-    
-     cout<<" Abosrber # "<<i<<"  z  "<<globalZ1+dz<<endl; 
-   }
-
-
-
-    else
+  //rest of the absorbers
+   if (!(i==0 || i ==1))
     {
       TGeoBBox * box = new TGeoBBox(BoxName,rmax2,rmax2,dz);
       TGeoCone * tube = new TGeoCone(pipename,dz+0.01,0.,rmin1,0.,rmin2);   
@@ -335,8 +345,8 @@ TGeoVolume* CreateAbsorbers(int i) {
       
       TGeoVolume* abs2 = new TGeoVolume("absorber", shSupport, iron);
 
-      abs2->SetLineColor(kGreen);
-      abs2->SetTransparency(20);
+      abs2->SetLineColor(kBlue);
+      abs2->SetTransparency(2);
  
       
       TGeoTranslation *abs_trans = new TGeoTranslation("", 0., 0., globalZ1+dz);
@@ -360,8 +370,8 @@ TGeoVolume * CreateStations(int ist){
 
   TGeoVolume*  gLayer[4];
   
-  //  for (int ii=0;ii<3;ii++){  // 3 Layers
-  for (int ii=0;ii<1;ii++){  // 1 Layer
+  for (int ii=0;ii<3;ii++){  // 3 Layers
+  //for (int ii=0;ii<1;ii++){  // 1 Layer
 
      gLayer[ii] = CreateLayers(ist, ii);
      station->AddNode(gLayer[ii],ii);
@@ -378,7 +388,7 @@ TGeoVolume * CreateLayers(int istn, int ily){
   TGeoVolumeAssembly* volayer = new TGeoVolumeAssembly(layerName);
 
   
-  Double_t stGlobalZ0 = fStationZ0[istn] + fMuchZ2; //z position of station center (midplane) [cm]
+  Double_t stGlobalZ0 = fStationZ0[istn] + fMuchZ1; //z position of station center (midplane) [cm]
   Double_t stDz = ((fNlayers[istn] - 1) * fLayersDz[istn] + fSupportLz[istn]+2*fActiveLzSector)/2.;
   Double_t stGlobalZ2 = stGlobalZ0 + stDz;
   Double_t stGlobalZ1 = stGlobalZ0 - stDz;
@@ -414,9 +424,6 @@ TGeoVolume * CreateLayers(int istn, int ily){
   Double_t sdy  = dy+fSpacerR;
   Double_t sdz  = dz-0.1;
 
-
-
-
   const Int_t Nsector=fNSectorsPerLayer[istn];
   TGeoVolume* gsector[Nsector];
 
@@ -426,8 +433,8 @@ TGeoVolume * CreateLayers(int istn, int ily){
   // Add the support structure
 // Create support
 
-  Double_t supportDx=rmax;//sqrt(rmax*rmax+dx2*dx2);
-  Double_t supportDy=rmax;//sqrt(rmax*rmax+dx2*dx2);
+  Double_t supportDx=sqrt(rmax*rmax+dx2*dx2);
+  Double_t supportDy=sqrt(rmax*rmax+dx2*dx2);
   Double_t supportDz=fSupportLz[istn]/ 2.;
 
 
@@ -458,11 +465,6 @@ TGeoVolume * CreateLayers(int istn, int ily){
   TGeoTranslation *support_trans1 = new TGeoTranslation("supportName1", supportDx/2,0,layerGlobalZ0);
   TGeoTranslation *support_trans2 = new TGeoTranslation("supportName2", -supportDx/2,0,layerGlobalZ0);
 
-  // combination of translation + rotation
-  //  TGeoCombiTrans *support_trans2 = new TGeoCombiTrans("supportName2",-supportDx/2,0,layerGlobalZ0,rZ);
-  // support_trans2->RegisterYourself();
-
-
   TGeoHMatrix *support_rot2 = new TGeoHMatrix(""); // Matrix
   *support_rot2=(*support_trans2)*(*rZ); //Product of translation+rotation
     
@@ -471,87 +473,77 @@ TGeoVolume * CreateLayers(int istn, int ily){
 
   // Now start adding the GEM modules  
   for (Int_t iModule=0; iModule<fNSectorsPerLayer[istn]; iModule++){ 
-  //  for (Int_t iModule=0; iModule<5; iModule++){ 
-  //  for (Int_t iModule=0; iModule<17; iModule++){ 
-    //if (iModule!=1) continue;
-
-      TString moduleHoleName = Form("shStation%02iModuleHole", istn);
-      TGeoTube* shModuleHole = new TGeoTube(moduleHoleName, 0., rmin, size[2] / 2. + 0.001);
+  
+    TString moduleHoleName = Form("shStation%02iModuleHole", istn);
+    TGeoTube* shModuleHole = new TGeoTube(moduleHoleName, 0., rmin, size[2] / 2. + 0.001);
      
       Double_t phi = 2*phi0*iModule;
       Bool_t isBack = iModule%2; 
-//      Bool_t isBack = 1;
-//      if (iModule < fNSectorsPerLayer[istn]/2)
-//        isBack = 0; 
-//      if (isBack) continue;
       Char_t cside = (isBack==1) ? 'b' : 'f'; 
      
-//      pos[0] = (ymin+dy)*cos(phi);
-//      pos[1] = (ymin+dy)*sin(phi);
+      // correct the x, y positions
       pos[0] = -(ymin+dy)*sin(phi);
       pos[1] = (ymin+dy)*cos(phi);
-      pos[2] = (isBack ? 1 : -1)*moduleZ + layerGlobalZ0; // different for odd/even modules
+      // different z positions for odd/even modules
+      pos[2] = (isBack ? 1 : -1)*moduleZ + layerGlobalZ0; 
       
       
       TGeoMedium* argon = gGeoMan->GetMedium(activemedium); // active medium
       TGeoMedium* noryl = gGeoMan->GetMedium(spacermedium); // spacer medium
 
 
-      // Define the trapezoidal module in X-Y plane
+      // Define and place the trapezoidal GEM module in X-Y plane
       TGeoTrap* shape = new TGeoTrap(dz,0,0,dy,dx1,dx2,0,dy,dx1,dx2,0);
       shape->SetName(Form("shStation%02iLayer%i%cModule%03iActiveNoHole", istn, ily, cside, iModule));
 
-      expression = Form("shStation%02iLayer%i%cModule%03iActiveNoHole-", istn, ily, cside, iModule)+moduleHoleName;//+":"+translationName;
-      TString moduleActiveName = Form("shStation%02iLayer%i%cModule%03iActive", istn, ily, cside, iModule);
-      TGeoCompositeShape* shActive = new TGeoCompositeShape(moduleActiveName,expression);
-
-      TGeoTrap* shapeSpacer = new TGeoTrap(sdz,0,0,sdy,sdx1,sdx2,0,sdy,sdx1,sdx2,0);
-      shapeSpacer->SetName(Form("shStation%02iLayer%i%cModule%03iFullSpacerNoHole", istn, ily, cside, iModule));
-      
-      expression = Form("shStation%02iLayer%i%cModule%03iFullSpacerNoHole-shStation%02iLayer%i%cModule%03iActiveNoHole", istn, ily, cside, iModule, istn, ily, cside, iModule);
-      TGeoCompositeShape* shSpacerFull1 = new TGeoCompositeShape(Form("shStation%02iLayer%i%cModule%03iSpacerNoHole", istn, ily, cside, iModule), expression);
-            
-      expression = Form("shStation%02iLayer%i%cModule%03iSpacerNoHole-", istn, ily, cside, iModule)+moduleHoleName;//+":"+translationName;
-      TGeoCompositeShape* shSpacer = new TGeoCompositeShape(Form("shStation%02iLayer%i%cModule%03iSpacer", istn, ily, cside, iModule),expression);
-      	    
-      TString spacerName = Form("muchstation%02ilayer%i%cspacer%03i",istn+1,ily+1,cside,iModule+1);
-      //      TGeoVolume* voSpacer = new TGeoVolume(spacerName,shSpacer,noryl);
-      TGeoVolume* voSpacer = new TGeoVolume(spacerName,shape,noryl);
-      voSpacer->SetLineColor(kMagenta);
-
       TString activeName = Form("muchstation%02ilayer%i%cactive%03i",istn+1,ily+1,cside,iModule+1);
-//      //      TGeoVolume* voActive = new TGeoVolume(activeName,shActive,argon);
-//      TGeoVolume* voActive = new TGeoVolume(activeName,shActive,argon);
-//      voActive->SetLineColor(kGreen);
-     
+
+      TGeoVolume* voActive = new TGeoVolume(activeName,shape,argon);
+      voActive->SetLineColor(kGreen);
+
+
+
+      // Define the trapezoidal spacers 
+
+      TGeoTrap* shapeFrame = new TGeoTrap(sdz,0,0,sdy,sdx1,sdx2,0,sdy,sdx1,sdx2,0);
+      shapeFrame->SetName(Form("shStation%02iLayer%i%cModule%03iFullFrameNoHole", istn, ily, cside, iModule));
+      
+      expression = Form("shStation%02iLayer%i%cModule%03iFullFrameNoHole-shStation%02iLayer%i%cModule%03iActiveNoHole", istn, ily, cside, iModule, istn, ily, cside, iModule);
+      TGeoCompositeShape* shFrame = new TGeoCompositeShape(Form("shStation%02iLayer%i%cModule%03iFrameNoHole", istn, ily, cside, iModule), expression);
+
+      
+      TGeoVolume* voFrame = new TGeoVolume("",shFrame,noryl);
+      voFrame->SetLineColor(kMagenta);
+
+      
+      
 
       // Calculate the phi angle of the sector where it has to be placed 
       Double_t phi_cent = 180./fNSectorsPerLayer[istn];     
-      //      Double_t angle =  phi_cent*(2*iModule+iSide);  
       Double_t angle =  phi_cent*(2*iModule);  
 
-      //      TGeoTranslation*trans1=new TGeoTranslation("",0.0,-pos.Perp(),0.0);
-      TGeoTranslation*trans1=new TGeoTranslation("",0, 0, 0);
+     
+      //  TGeoTranslation*trans1=new TGeoTranslation("",0, 0, 0);
 
       TGeoTranslation*trans2=new TGeoTranslation("",pos[0],pos[1],pos[2]);
 
       cout << "DE i: " << iModule << " x: " << pos[0] << " y: " << pos[1] << " z: " << pos[2] << " angle: " << angle << " phi_cent: " << phi_cent << endl;
     
       TGeoRotation *r2 = new TGeoRotation("r2");
+
       //rotate in the vertical plane (per to z axis) with angle 
-      //      r2->RotateZ(0);
       r2->RotateZ(angle);
 
       TGeoHMatrix *incline_mod = new TGeoHMatrix("");
 
-      (*incline_mod) = (*trans1) * (*trans2) * (*r2);  // OK
+      (*incline_mod) =  (*trans2) * (*r2);  // OK
 
-      //      volayer->AddNode(voActive, iModule, incline_mod); // add active volume 
-      volayer->AddNode(voSpacer, iModule, incline_mod); // add spacer
+        volayer->AddNode(voActive, iModule, incline_mod); // add active volume 
+        volayer->AddNode(voFrame, iModule, incline_mod); // add spacer
       
-   }	     
-   
-   return volayer;
+  }	     
+  
+  return volayer;
 }
 
 
