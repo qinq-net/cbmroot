@@ -19,20 +19,19 @@
 
 void mcbm_mc(Int_t nEvents = 2, const char* setupName = "sis18_mcbm",
              const char* inputFile ="")
-
-// available input files
-// inputFile = "/input/urqmd.agag.1.65gev.centr.00001.root";
-// inputFile = "/input/urqmd.agag.1.65gev.mbias.00001.root";
-// inputFile = "/input/urqmd.niau.1.93gev.centr.00001.root";
-// inputFile = "/input/urqmd.niau.1.93gev.mbias.00001.root";
-// inputFile = "/input/urqmd.nini.1.93gev.centr.00001.root";
-// inputFile = "/input/urqmd.nini.1.93gev.mbias.00001.root";
-// inputFile = "/input/urqmd.pau.4.5gev.mbias.00001.root";
-
 {
 
   // ========================================================================
   //          Adjust this part according to your requirements
+
+// available input files
+  TString defaultInputFile = "/input/urqmd.agag.1.65gev.centr.00001.root";
+  //  TString defaultInputFile = "/input/urqmd.agag.1.65gev.mbias.00001.root";
+  //  TString defaultInputFile = "/input/urqmd.niau.1.93gev.centr.00001.root";
+  //  TString defaultInputFile = "/input/urqmd.niau.1.93gev.mbias.00001.root";
+  //  TString defaultInputFile = "/input/urqmd.nini.1.93gev.centr.00001.root";
+  //  TString defaultInputFile = "/input/urqmd.nini.1.93gev.mbias.00001.root";
+  //  TString defaultInputFile = "/input/urqmd.pau.4.5gev.mbias.00001.root";
 
   // -----   Environment   --------------------------------------------------
   TString myName = "mcbm_mc";  // this macro's name for screen output
@@ -135,10 +134,10 @@ void mcbm_mc(Int_t nEvents = 2, const char* setupName = "sis18_mcbm",
   
   // -----   Input file   ---------------------------------------------------
   std::cout << std::endl;
-  TString defaultInputFile = srcDir + "/input/urqmd.agag.1.65gev.centr.00001.root";
+  TString defaultInput = srcDir + defaultInputFile;
   if ( inFile.IsNull() ) {  // Not defined in the macro explicitly
     if ( strcmp(inputFile, "") == 0 ) {  // not given as argument to the macro
-        inFile = defaultInputFile;
+        inFile = defaultInput;
     }
     else inFile = inputFile;
   }
