@@ -17,6 +17,7 @@ ${CBMROOT_SOURCE_DIR}/data/psd
 
 ${CBMROOT_SOURCE_DIR}/base
 ${CBMROOT_SOURCE_DIR}/base/draw
+${CBMROOT_SOURCE_DIR}/base/report
 
 ${CBMROOT_SOURCE_DIR}/data
 ${CBMROOT_SOURCE_DIR}/data/sts
@@ -99,6 +100,7 @@ qa/CbmTrdDigitizerPRFQa.cxx
 qa/CbmTrdClusterizerFastQa.cxx
 qa/CbmTrdHitProducerClusterQa.cxx
 qa/CbmTrdRecoQa.cxx
+qa/CbmTrdMCQa.cxx
 
 reco/CbmTrdHitProducerIdeal.cxx    
 reco/CbmTrdHitProducerSmearing.cxx

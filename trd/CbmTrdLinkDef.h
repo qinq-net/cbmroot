@@ -54,6 +54,7 @@
 //#pragma link C++ class CbmTrdDigiRingSorter+;
 //#pragma link C++ class CbmTrdDigiSorterTask+;
 #pragma link C++ class CbmTrdQa+;
+#pragma link C++ class CbmTrdMCQa+;
 #pragma link C++ class CbmTrdRecoQa+;
 
 //#pragma link C++ class CbmTrdRawToDigiSpadic03+;
