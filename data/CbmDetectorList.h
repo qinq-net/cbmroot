@@ -31,15 +31,16 @@ enum DetectorId {kREF,      // Reference plane
 
 namespace Cbm
 {
-enum DataType {kUnknown, 
-	       kMCTrack,
-	       kStsPoint, 
-	       kStsDigi, 
-	       kStsCluster, 
-	       kStsHit,
-	       kStsTrack,
-	       kTofDigi};
-}
+enum DataType {
+  kUnknown,
+  kMCTrack,
+  kStsPoint, kStsDigi, kStsCluster, kStsHit, kStsTrack,
+  kMuchDigi, kMuchPixelHit, kMuchStrawHit, kMuchTrack,
+  kTrdDigi, kTrdHit, kTrdTrack,
+  kTofDigi, kTofHit, kTofTrack,
+  kGlobalTrack
+  }; // DataType
+} // namespace CBM
 
 
 #include "TObject.h"
