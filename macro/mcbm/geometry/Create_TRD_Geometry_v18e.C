@@ -3,6 +3,7 @@
 /// \brief Generates TRD geometry in Root format.
 ///                                             
 
+// 2017-05-16 - DE - v18e    - re-align all TRD modules to same theta angle using left side of 4th TRD module as reference
 // 2017-05-02 - DE - v18a    - re-base miniTRD v18e on CBM TRD v17a
 // 2017-04-28 - DE - v17     - implement power bus bars as defined in the TDR
 // 2017-04-26 - DE - v17     - add aluminium ledge around backpanel
@@ -98,7 +99,7 @@ const TString tagVersion   = "v18e";
 
 const Int_t setupid = 1;  // 1e is the default
 //const Double_t zfront[5]  = { 260., 410., 360., 410., 550. };
-const Double_t zfront[5]  = { 260., 110., 360., 410., 550. };
+const Double_t zfront[5]  = { 260., 115., 360., 410., 550. };
 const TString setupVer[5] = { "_1h", "_1e", "_1m", "_3e", "_3m" };
 const TString subVersion = setupVer[setupid];
 
@@ -2225,14 +2226,43 @@ void create_detector_layers(Int_t layerId)
             module_rotation->RotateX( drotx );
           }
 
-          if (layerId == 0)
-          {
-             xPos += -4;   // shift first module to the right
-             cout << "DE shifted" << endl;
-          }
+          Double_t frameref_angle = 0;
+          Double_t layer_angle    = 0;
+
+          cout << "layer " << layerId << " ---" << endl;
+          frameref_angle = atan( (DetectorSizeX[1]/2. - FrameWidth[1]) / (zfront[setupid] + 3 * LayerThickness) );
+          cout << "reference angle " << frameref_angle * 180 / acos(-1) << endl;
+
+          layer_angle    = atan( (DetectorSizeX[1]/2. - FrameWidth[1]) / (zfront[setupid] + layerId * LayerThickness) );
+          cout << "layer     angle " << layer_angle * 180 / acos(-1) << endl;
+
+	  xPos = tan( frameref_angle ) * (zfront[setupid] + layerId * LayerThickness) - (DetectorSizeX[1]/2. - FrameWidth[1]);  // shift module along x-axis
+	  //        xPos = 0;
+          cout << "layer " << layerId << " - xPos " << xPos << endl;
+
+          layer_angle    = atan( (DetectorSizeX[1]/2. - FrameWidth[1] + xPos) / (zfront[setupid] + layerId * LayerThickness) );
+          cout << "corrected angle " << layer_angle * 180 / acos(-1) << endl;
+
+
+//          Double_t frameangle[4] = {0};
+//          for ( Int_t ilayer = 3; ilayer >= 0; ilayer--)
+//          {
+//            frameangle[ilayer] = atan( (DetectorSizeX[1]/2. - FrameWidth[1]) / (zfront[setupid] + ilayer * LayerThickness) ); 
+//            cout << "layer " << ilayer << " - angle " << frameangle[ilayer] * 180 / acos(-1) << endl;
+// 
+//            xPos = (DetectorSizeX[1]/2. - FrameWidth[1]);
+//            cout << "layer " << ilayer << " - xPos " << xPos << endl;
+//
+//            xPos = tan( frameangle[3] ) * (zfront[setupid] + ilayer * LayerThickness);
+//            cout << "layer " << ilayer << " - xPos " << xPos << endl;
+//
+//            xPos = (DetectorSizeX[1]/2. - FrameWidth[1])  - ( tan( frameangle[3] ) * (zfront[setupid] + ilayer * LayerThickness) );   // shift module along x-axis
+//            cout << "layer " << ilayer << " - xPos " << xPos << endl;
+//	  }
+
 
           TGeoCombiTrans* module_placement = new TGeoCombiTrans(xPos, yPos, LayerPosition[layerId] + LayerThickness/2 + dz, module_rotation);  // shift by half layer thickness
-//          gGeoMan->GetVolume(geoVersion)->AddNode(gModules[type - 1], copy, module_placement);
+
 // add module to layer
           gGeoMan->GetVolume(layername)->AddNode(gModules[type - 1], copy, module_placement);
 //
