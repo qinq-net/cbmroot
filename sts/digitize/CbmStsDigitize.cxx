@@ -585,8 +585,19 @@ void CbmStsDigitize::ProcessPoint(const CbmStsPoint* point,
 	UInt_t address = point->GetDetectorID();
 	CbmStsSensor* sensor = dynamic_cast<CbmStsSensor*>
 					(fSetup->GetElement(address, kStsSensor));
+	if ( ! sensor ) {
+	  LOG(INFO) << GetName() << ": No sensor for address " << address
+	      << FairLogger::endl;
+	  LOG(INFO) << "Unit " << CbmStsAddress::GetElementId(address, kStsUnit);
+      LOG(INFO) << " Ladder " << CbmStsAddress::GetElementId(address, kStsLadder);
+      LOG(INFO) << " Half-ladder " << CbmStsAddress::GetElementId(address, kStsHalfLadder);
+      LOG(INFO) << " Module " << CbmStsAddress::GetElementId(address, kStsModule);
+      LOG(INFO) << " Sensor " << CbmStsAddress::GetElementId(address, kStsSensor);
+      LOG(INFO) << FairLogger::endl;
+	}
 	if ( ! sensor ) LOG(ERROR) << GetName() << ": Sensor of StsPoint not found!"
 			                       << FairLogger::endl;
+	assert(sensor);
 	LOG(DEBUG2) << GetName() << ": Sending point to sensor "
 			        << sensor->GetName() << " ( " << sensor->GetAddress()
 			        << " ) " << FairLogger::endl;

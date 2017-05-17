@@ -344,7 +344,8 @@ void CbmStsFindTracksQa::ProcessEvent(CbmEvent* event) {
   Int_t eventNumber = ( event ? event->GetNumber()
       : FairRun::Instance()->GetEventHeader()->GetMCEntryNumber() - 1);
 
-  LOG(DEBUG) << GetName() << ": Process event " << eventNumber << FairLogger::endl;
+  LOG(DEBUG) << GetName() << ": Process event " << eventNumber
+      << FairLogger::endl;
 
   // Timer
   fTimer.Start();
@@ -581,7 +582,7 @@ InitStatus CbmStsFindTracksQa::GetGeometry() {
   // Get target geometry
   GetTargetPosition();
 
-  fNStations = CbmStsSetup::Instance()->GetNofDaughters();
+  fNStations = CbmStsSetup::Instance()->GetNofStations();
 
 
   return kSUCCESS;
@@ -766,8 +767,6 @@ void CbmStsFindTracksQa::FillHitMap(CbmEvent* event) {
   fHitMap.clear();
   Int_t nHits = (event ? event->GetNofData(Cbm::kStsHit)
       : fStsHits->GetEntriesFast());
-  LOG(INFO) << GetName() << ": event " << eventNumber << " with " << nHits
-      << " STS hits." << FairLogger::endl;
   for (Int_t iHit = 0; iHit < nHits; iHit++) {
     Int_t hitIndex = (event ? event->GetIndex(Cbm::kStsHit, iHit) : iHit);
     CbmStsHit* hit = (CbmStsHit*) fStsHits->At(hitIndex);
@@ -776,6 +775,7 @@ void CbmStsFindTracksQa::FillHitMap(CbmEvent* event) {
     assert(pointIndex >= 0);
     CbmStsPoint* stsPoint =
         dynamic_cast<CbmStsPoint*>(fStsPoints->Get(0, eventNumber, pointIndex));
+    assert(stsPoint);
     Int_t mcTrackIndex = stsPoint->GetTrackID();
     Int_t station = fSetup->GetStationNumber(hit->GetAddress());
     fHitMap[mcTrackIndex][station]++;

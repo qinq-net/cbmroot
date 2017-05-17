@@ -53,7 +53,7 @@ CbmStsSetup::CbmStsSetup() : CbmStsElement("STS", "system", kStsSystem),
 // -----   Create station objects   ----------------------------------------
 Int_t CbmStsSetup::CreateStations() {
 
-  // For old geometries: the station equals the unit
+  // For old geometries: the station corresponds to the unit
   if ( fIsOld ) {
 
     for (Int_t iUnit = 0; iUnit < GetNofDaughters(); iUnit++) {
@@ -67,8 +67,8 @@ Int_t CbmStsSetup::CreateStations() {
                                                  unit->GetPnode());
       // Add all ladders of the unit to the station
       for (Int_t iLadder = 0; iLadder < unit->GetNofDaughters(); iLadder++)
-        station->AddDaughter(unit->GetDaughter(iLadder));
-      // Initialise station paraneters
+        station->AddLadder(unit->GetDaughter(iLadder));
+      // Initialise station parameters
       station->Init();
       // Add station to station map
       assert ( fStations.find(stationId) == fStations.end() );
@@ -85,7 +85,8 @@ Int_t CbmStsSetup::CreateStations() {
     for ( Int_t iLadder = 0; iLadder < unit->GetNofDaughters(); iLadder++) {
       CbmStsElement* ladder = unit->GetDaughter(iLadder);
       // This convention must be followed by the STS geometry
-      Int_t stationId = ladder->GetIndex() / 100;
+      Int_t nodeNumber = ladder->GetPnode()->GetNode()->GetNumber();
+      Int_t stationId = nodeNumber / 100 - 1;
       // Get the station from the map. If not there, create it.
       CbmStsStation* station = NULL;
       if ( fStations.find(stationId) == fStations.end() ) {
@@ -97,7 +98,7 @@ Int_t CbmStsSetup::CreateStations() {
       else station = fStations[stationId];
 
       // Add ladder to station
-      station->AddDaughter(ladder);
+      station->AddLadder(ladder);
 
     } //# ladders
   } //# units
@@ -108,6 +109,28 @@ Int_t CbmStsSetup::CreateStations() {
     it->second->Init();
     it++;
   } //# stations
+
+  // Check that the station number is set consecutively and that the
+  // stations are ordered w.r.t. position along the beam
+  Bool_t isOk = kTRUE;
+  Double_t zPrevious = -999999;
+  for (Int_t iStation = 0; iStation < fStations.size(); iStation++) {
+    if ( fStations.find(iStation) == fStations.end() ) {
+      LOG(ERROR) << GetName() << ": Number of stations is "
+          << fStations.size() << ", but station " << iStation
+          << "is not present!" << FairLogger::endl;
+      isOk = kFALSE;
+    } //? station present?
+    if ( fStations[iStation]->GetZ() <= zPrevious ) {
+      LOG(ERROR) << GetName() << ": Disordered stations. Station "
+          << iStation << " is at z = " << fStations[iStation]->GetZ()
+          << "cm , previous is at z = " << zPrevious << " cm."
+          << FairLogger::endl;
+      isOk = kFALSE;
+    } //? disordered in z
+  } //# stations
+  if ( ! isOk ) LOG(FATAL) << GetName() << ": Error in creation of stations."
+      << FairLogger::endl;
 
   return fStations.size();
 }
@@ -282,11 +305,15 @@ const char* CbmStsSetup::GetLevelName(Int_t level) {
 
 // -----   Get the station number from an address   ------------------------
 Int_t CbmStsSetup::GetStationNumber(UInt_t address) {
+
   // In old, station-based geometries, the station equals the unit
   if ( fIsOld ) return CbmStsAddress::GetElementId(address, kStsUnit);
-  else LOG(FATAL) << GetName() << ": implementation for ststaion number "
-      << " in unit-based geometry is still missing!" << FairLogger::endl;
-  return 0;
+
+  // In new, unit-based geometries, the station is obtained from the ladder
+  CbmStsElement* ladder = CbmStsSetup::GetElement(address, kStsLadder);
+  assert(ladder);
+  return ladder->GetPnode()->GetNode()->GetNumber() / 100 - 1;
+
 }
 // -------------------------------------------------------------------------
 
@@ -365,7 +392,7 @@ Bool_t CbmStsSetup::Init(TGeoManager* geo) {
 
   // --- Recursively initialise daughter elements
   if ( fIsOld ) CbmStsElement::InitDaughters(); // use method from CbmStsElement
-  else InitDaughters();
+  else CbmStsElement::InitDaughters();
 
   // --- Build arrays of modules and sensors
   for (Int_t iUnit = 0; iUnit < GetNofDaughters(); iUnit++) {
@@ -396,11 +423,13 @@ Bool_t CbmStsSetup::Init(TGeoManager* geo) {
 	  		      << GetNofElements(iLevel) << FairLogger::endl;
   }
 
+  /*
   // --- Temporary protection against new geometries
   if ( ! fIsOld ) LOG(FATAL) << GetName() << ": You are using a new "
       << "STS geometry with units as top level. The software to support "
       << "this is not yet ready. Please use an older geometry meanwhile."
       << FairLogger::endl;
+      */
 
 
   // Set the sensor types
@@ -593,80 +622,7 @@ Bool_t CbmStsSetup::Init(const char* fileName) {
 
 
 
-// -----   InitDaughters   -------------------------------------------------
-void CbmStsSetup::InitDaughters() {
-
-	// --- Catch absence of TGeoManager
-	if ( ! gGeoManager ) {
-		LOG(ERROR) << fName << ": cannot initialise without TGeoManager!"
-				<< FairLogger::endl;
-		return;
-	}
-
-	// --- Catch physical node not being set
-	if ( ! fNode ) {
-		LOG(ERROR) << fName << ": physical node is not set!"
-				<< FairLogger::endl;
-		return;
-	}
-
-	TGeoNode* mNode = fNode->GetNode();   // This node
-	TString   mPath = fNode->GetName();   // Full path to this node
-	//Int_t nDaughters = 0;
-	for (Int_t iNode = 0; iNode < mNode->GetNdaughters(); iNode++) {
-		TGeoNode* unitNode = mNode->GetDaughter(iNode);
-		assert(unitNode);
-
-		// Check name of daughter node (should be a "unit") for level name
-		TString uName = unitNode->GetName();
-		if ( ! uName.Contains("unit", TString::kIgnoreCase ) ) continue;
-		TString uPath = mPath + "/" + uName;
-
-		// Loop over unit daughters (should be ladders)
-		for (Int_t iLadder = 0; iLadder < unitNode->GetNdaughters(); iLadder++) {
-			TGeoNode* ladderNode = unitNode->GetDaughter(iLadder);
-			assert(ladderNode);
-
-			// Check name of ladder node
-			TString lName = ladderNode->GetName();
-			if ( ! lName.Contains("ladder", TString::kIgnoreCase ) ) continue;
-
-			// Get station number
-			Int_t iStation = ladderNode->GetNumber() / 100;
-			Int_t ladderNumber = ladderNode->GetNumber() - 100 * iStation;
-
-			// Get station, if it already exists. Otherwise, create new one
-			CbmStsStation* station = dynamic_cast<CbmStsStation*>(GetDaughter(iStation-1));
-			if ( ! station ) {
-				TString name = Form("Station%02i", iStation);
-				station = new CbmStsStation(name, "", NULL);
-				AddDaughter(station);
-			}
-
-			// Create a physical node for the ladder
-			TString lPath = uPath + "/" + lName;
-			TGeoPhysicalNode* pNode = new TGeoPhysicalNode(lPath.Data());
-
-			// Create the ladder element
-			TString name = Form("Ladder%02i", ladderNumber);
-			const char* title = ladderNode->GetVolume()->GetName();
-			CbmStsElement* ladder = new CbmStsElement(name, title, kStsLadder, pNode);
-
-			// Add the ladder to its station
-			station->AddDaughter(ladder);
-
-			// Initialise the ladder daughters recursively
-			ladder->InitDaughters();
-
-		} // #ladder nodes
-	} // #unit nodes
-
-}
-// -------------------------------------------------------------------------
-
-
-
-// -----   Instance   ------------------------------------------------------
+// -----   Singleton iunstance   -------------------------------------------
 CbmStsSetup* CbmStsSetup::Instance() {
   if ( ! fgInstance ) {
     fgInstance = new CbmStsSetup();

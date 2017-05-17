@@ -322,7 +322,7 @@ InitStatus CbmL1::Init()
   }
       
   NMvdStations = ( fUseMVD ) ? CbmKF::Instance()->vMvdMaterial.size() : 0;
-  NStsStations = CbmStsSetup::Instance()->GetNofDaughters();
+  NStsStations = CbmStsSetup::Instance()->GetNofStations();
   NStation = NMvdStations + NStsStations;
   geo.push_back(NStation);
   geo.push_back(NMvdStations);

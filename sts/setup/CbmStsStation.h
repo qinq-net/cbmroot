@@ -7,9 +7,13 @@
 #define CBMSTSSTATION_H 1
 
 
-#include "CbmStsElement.h"
-
 #include <string>
+#include "TGeoPhysicalNode.h"
+#include "TNamed.h"
+
+class CbmStsElement;
+class CbmStsSensor;
+
 
 /** @class CbmStsStation
  ** @brief Class representing a station of the StsSystem.
@@ -20,7 +24,7 @@
  ** It holds station-wide parameters like z position, sensor thickness,
  ** and material budget for use in reconstruction tasks.
  **/
-class CbmStsStation : public CbmStsElement {
+class CbmStsStation : public TNamed {
 
 	public:
 
@@ -39,6 +43,10 @@ class CbmStsStation : public CbmStsElement {
 
 		/** Destructor **/
 		virtual ~CbmStsStation();
+
+
+		/** Add a ladder to the station **/
+		void AddLadder(CbmStsElement* ladder);
 
 
 		/** Radiation length of the main material of the station (silicon)
@@ -137,6 +145,10 @@ class CbmStsStation : public CbmStsElement {
 		Int_t    fNofSensors;   ///< Number of sensors in station
 		Bool_t   fDiffSensorD;  ///< Flag for different sensor thicknesses
 		CbmStsSensor* fFirstSensor; ///< Pointer to first sensor
+
+	    TGeoPhysicalNode* fNode;               ///< Pointer to geometry
+	    std::vector<CbmStsElement*> fLadders;  ///< Array of ladders
+
 
 
 		/** @brief Check properties of sensors (position, thickness)

@@ -137,11 +137,6 @@ class CbmStsSetup : public CbmStsElement
     Bool_t Init(const char* fileName);
 
 
-    /** Initialise daughters from geometry
-     ** Overrides the mother class implementation in case of new geometries (with units) **/
-    virtual void InitDaughters();
-
-
     /** Static instance of CbmStsSetup **/
     static CbmStsSetup* Instance();
 

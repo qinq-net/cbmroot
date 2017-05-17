@@ -731,7 +731,7 @@ bool CbmEventBuilderQA::CalculateIsReconstructable( const int iMCFile, const int
     CbmStsPoint* point = (CbmStsPoint*) fStsPoints->Get(iMCFile, iMCEvent, iStsPoint);
     
     int currentStation = -1;
-    for(int iStation=0; iStation<CbmStsSetup::Instance()->GetNofDaughters(); iStation++)
+    for(int iStation=0; iStation<CbmStsSetup::Instance()->GetNofStations(); iStation++)
     {
       CbmStsStation* station = CbmStsSetup::Instance()->GetStation(iStation);
       const float zStation = station->GetZ();

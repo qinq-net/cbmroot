@@ -3,6 +3,9 @@
  ** @date 04.03.2015
  **/
 
+
+#include "CbmStsStation.h"
+
 #include <cassert>
 #include <sstream>
 #include "TGeoBBox.h"
@@ -11,19 +14,21 @@
 #include "TGeoVolume.h"
 #include "CbmStsSensor.h"
 #include "CbmStsSensorTypeDssd.h"
-#include "CbmStsStation.h"
 
 using std::stringstream;
 using std::string;
 
+
 // -----   Default constructor   -------------------------------------------
-CbmStsStation::CbmStsStation()
-	: CbmStsElement(),
-	  fZ(0.),
-	  fXmin(0.), fXmax(0.), fYmin(0.), fYmax(0.), fSensorD(0.), fSensorRot(0.),
-	  fNofSensors(0),
-	  fDiffSensorD(kFALSE),
-	  fFirstSensor(NULL)
+CbmStsStation::CbmStsStation() :
+    TNamed(),
+    fZ(0.),
+    fXmin(0.), fXmax(0.), fYmin(0.), fYmax(0.), fSensorD(0.), fSensorRot(0.),
+    fNofSensors(0),
+    fDiffSensorD(kFALSE),
+    fFirstSensor(NULL),
+    fNode(NULL),
+    fLadders()
 {
 }
 // -------------------------------------------------------------------------
@@ -32,13 +37,15 @@ CbmStsStation::CbmStsStation()
 
 // -----   Standard constructor   ------------------------------------------
 CbmStsStation::CbmStsStation(const char* name, const char* title,
-		                                 TGeoPhysicalNode* node)
-	: CbmStsElement(name, title, kStsUnit, node),
-	  fZ(0.),
+		                                 TGeoPhysicalNode* node) :
+	TNamed(name, title),
+	fZ(0.),
     fXmin(0.), fXmax(0.), fYmin(0.), fYmax(0.), fSensorD(0.), fSensorRot(0.),
     fNofSensors(0),
     fDiffSensorD(kFALSE),
-		fFirstSensor(NULL)
+    fFirstSensor(NULL),
+    fNode(node),
+    fLadders()
 {
 }
 // -------------------------------------------------------------------------
@@ -51,6 +58,19 @@ CbmStsStation::~CbmStsStation() {
 // -------------------------------------------------------------------------
 
 
+// -----   Add a ladder to the station   -----------------------------------
+void CbmStsStation::AddLadder(CbmStsElement* ladder) {
+
+  // Check whether argument really is a ladder
+  assert(ladder);
+  assert(ladder->GetLevel() == kStsLadder);
+
+  // Add to daughter array
+  fLadders.push_back(ladder);
+
+}
+// -------------------------------------------------------------------------
+
 
 // -----   Initialise the station properties from sensors   ----------------
 void CbmStsStation::CheckSensorProperties() {
@@ -60,8 +80,8 @@ void CbmStsStation::CheckSensorProperties() {
 	Double_t zMax  = -999999.;  // sensor z maximum
 
 	// --- Loop over ladders
-    for (Int_t iLad = 0; iLad < GetNofDaughters(); iLad++) {
-  	CbmStsElement* ladd = GetDaughter(iLad);
+    for (Int_t iLad = 0; iLad < fLadders.size(); iLad++) {
+      CbmStsElement* ladd = fLadders.at(iLad);
 
   	// --- Loop over half-ladders
  	for (Int_t iHla = 0; iHla < ladd->GetNofDaughters(); iHla++) {
@@ -189,9 +209,9 @@ void CbmStsStation::Init() {
 	// of its ladder daughters.
 	else {
 	  TGeoVolumeAssembly* statVol = new TGeoVolumeAssembly("myStation");
-	  for (Int_t iLadder = 0; iLadder < GetNofDaughters(); iLadder++) {
-	  	TGeoVolume* ladVol = GetDaughter(iLadder)->GetPnode()->GetVolume();
-	  	TGeoHMatrix* ladMat = GetDaughter(iLadder)->GetPnode()->GetMatrix();
+	  for (Int_t iLadder = 0; iLadder < fLadders.size(); iLadder++) {
+	  	TGeoVolume* ladVol = fLadders.at(iLadder)->GetPnode()->GetVolume();
+	  	TGeoHMatrix* ladMat = fLadders.at(iLadder)->GetPnode()->GetMatrix();
 	  	statVol->AddNode(ladVol, iLadder, ladMat);
 	  } // # ladders in station
 	  statVol->GetShape()->ComputeBBox();

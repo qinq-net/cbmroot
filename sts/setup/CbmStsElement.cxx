@@ -6,8 +6,8 @@
 
 #include "CbmStsElement.h"
 
+#include <cassert>
 #include "TGeoManager.h"
-
 #include "CbmStsModule.h"
 #include "CbmStsSensor.h"
 #include "CbmStsSetup.h"
@@ -63,8 +63,16 @@ void CbmStsElement::AddDaughter(CbmStsElement* element) {
   element->fAddress = CbmStsAddress::SetElementId(fAddress,
                                                   element->GetLevel(),
                                                   GetNofDaughters() );
+
   element->SetMother(this);
   element->ConstructName();
+
+  // Catch invalid address
+  if ( ! element->fAddress ) LOG(FATAL) << GetName()
+      << ": could not add daughter " << GetNofDaughters()
+      << " (" << element->GetName() << ", " << element->GetTitle()
+      << ")" << FairLogger::endl;
+
   fDaughters.push_back(element);
 }
 // -------------------------------------------------------------------------
@@ -139,11 +147,7 @@ Int_t CbmStsElement::GetNofElements(Int_t level) const {
 void CbmStsElement::InitDaughters() {
 
   // --- Catch absence of TGeoManager
-  if ( ! gGeoManager ) {
-    LOG(ERROR) << fName << ": cannot initialise without TGeoManager!"
-               << FairLogger::endl;
-    return;
-  }
+  assert( gGeoManager );
 
   // --- No daughter elements below sensor level
   if ( fLevel > kStsSensor ) return;
