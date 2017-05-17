@@ -177,8 +177,6 @@ void CbmStsElement::InitDaughters() {
       const char* title = mNode->GetDaughter(iNode)->GetVolume()->GetName();
       CbmStsElement* dElement = NULL;
       switch ( fLevel) {
-        case kStsSystem:
-            dElement = new CbmStsStation(name, title, pNode); break;
       	case kStsHalfLadder:
       		dElement = new CbmStsModule(name, title, pNode); break;
       	case kStsModule:

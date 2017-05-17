@@ -413,7 +413,7 @@ InitStatus CbmL1::Init()
       z = t.z;
       Xmax = Ymax = t.R;
     }else{
-      CbmStsStation* station = dynamic_cast<CbmStsStation*> (CbmStsSetup::Instance()->GetDaughter(ist - NMvdStations));
+      CbmStsStation* station = CbmStsSetup::Instance()->GetStation(ist - NMvdStations);
   
       geo.push_back(station->GetZ());
       geo.push_back(station->GetSensorD());
@@ -1601,7 +1601,7 @@ void CbmL1::WriteSIMDKFData()
         z = t.z;
         Xmax = Ymax = t.R;
       }else{
-        CbmStsStation* station = dynamic_cast<CbmStsStation*> (CbmStsSetup::Instance()->GetDaughter(ist - NMvdStations));
+        CbmStsStation* station = CbmStsSetup::Instance()->GetStation(ist - NMvdStations);
           f_phi = station->GetSensorRotation();
           b_phi = f_phi;
           double Pi = 3.14159265358;
@@ -1689,7 +1689,7 @@ void CbmL1::WriteSIMDKFData()
       }
       else if(ist<(NStsStations+NMvdStations))
       {
-      CbmStsStation* station = dynamic_cast<CbmStsStation*> (CbmStsSetup::Instance()->GetDaughter(ist - NMvdStations));
+      CbmStsStation* station = CbmStsSetup::Instance()->GetStation(ist - NMvdStations);
         FileGeo<<station->GetZ()<<" ";
         FileGeo<<station->GetSensorD()<<" ";
         FileGeo<<station->GetRadLength()<<" ";

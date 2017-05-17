@@ -50,11 +50,76 @@ CbmStsSetup::CbmStsSetup() : CbmStsElement("STS", "system", kStsSystem),
 
 
 
+// -----   Create station objects   ----------------------------------------
+Int_t CbmStsSetup::CreateStations() {
+
+  // For old geometries: the station equals the unit
+  if ( fIsOld ) {
+
+    for (Int_t iUnit = 0; iUnit < GetNofDaughters(); iUnit++) {
+      CbmStsElement* unit = GetDaughter(iUnit);
+
+      // Create one station for each unit
+      Int_t stationId = unit->GetIndex();
+      TString name = Form("STS_S%02i", stationId+1);
+      TString title = Form("STS Station %i", stationId+1);
+      CbmStsStation* station = new CbmStsStation(name, title,
+                                                 unit->GetPnode());
+      // Add all ladders of the unit to the station
+      for (Int_t iLadder = 0; iLadder < unit->GetNofDaughters(); iLadder++)
+        station->AddDaughter(unit->GetDaughter(iLadder));
+      // Initialise station paraneters
+      station->Init();
+      // Add station to station map
+      assert ( fStations.find(stationId) == fStations.end() );
+      fStations[stationId] = station;
+    } //# units
+
+    return fStations.size();
+  } //? is old geometry?
+
+
+  // Loop over all ladders. They are associated to a station.
+  for (Int_t iUnit = 0; iUnit < GetNofDaughters(); iUnit++) {
+    CbmStsElement* unit = GetDaughter(iUnit);
+    for ( Int_t iLadder = 0; iLadder < unit->GetNofDaughters(); iLadder++) {
+      CbmStsElement* ladder = unit->GetDaughter(iLadder);
+      // This convention must be followed by the STS geometry
+      Int_t stationId = ladder->GetIndex() / 100;
+      // Get the station from the map. If not there, create it.
+      CbmStsStation* station = NULL;
+      if ( fStations.find(stationId) == fStations.end() ) {
+        TString name = Form("STS_S%02i", stationId+1);
+        TString title = Form("STS Station %i", stationId+1);
+        station = new CbmStsStation(name, title);
+        fStations[stationId] = station;
+      } //? station not yet in map
+      else station = fStations[stationId];
+
+      // Add ladder to station
+      station->AddDaughter(ladder);
+
+    } //# ladders
+  } //# units
+
+  // Initialise the stations
+  auto it = fStations.begin();
+  while ( it != fStations.end() ) {
+    it->second->Init();
+    it++;
+  } //# stations
+
+  return fStations.size();
+}
+// -------------------------------------------------------------------------
+
+
+
 // -----   Define sensor types   -------------------------------------------
 Int_t CbmStsSetup::DefineSensorTypes() {
 
 	// Common parameters for all sensor types
-        Double_t lz      = 0.03; // active thickness [cm]
+    Double_t lz      = 0.03; // active thickness [cm]
 	Double_t stereoF = 0.;   // stereo angle front side [degrees]
 	Double_t stereoB = 7.5;  // stereo angle back side [degrees]
 
@@ -343,14 +408,18 @@ Bool_t CbmStsSetup::Init(TGeoManager* geo) {
 	LOG(INFO) << GetName() << ": Set types for " << nSensors
 			      << " sensors" << FairLogger::endl;
 
-  // --- Initialise stations parameters
-  for (Int_t iStat = 0; iStat < GetNofDaughters(); iStat++) {
-  	CbmStsStation* station =
-  			dynamic_cast<CbmStsStation*>(GetDaughter(iStat));
-  	assert(station);
-  	station->Init();
-  	LOG(DEBUG) << station->ToString() << FairLogger::endl;
-  }
+  // --- Create station objects
+  Int_t nStations = CreateStations();
+  LOG(INFO) << GetName() << ": Setup contains " << nStations
+      << " stations." << FairLogger::endl;
+  if ( FairLogger::GetLogger()->IsLogNeeded(DEBUG) ) {
+    auto it = fStations.begin();
+    while ( it != fStations.end() ) {
+      LOG(DEBUG) << "  " << it->second->ToString() << FairLogger::endl;
+      it++;
+    } //# stations
+  } //? Debug
+
 
   // --- Consistency check
   if ( GetNofSensors() != GetNofElements(kStsSensor) )

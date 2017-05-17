@@ -1342,7 +1342,7 @@ void CbmL1::FieldApproxCheck()
       z = t.z;
       Xmax = Ymax = t.R;
     }else{
-      CbmStsStation* station = dynamic_cast<CbmStsStation*> (CbmStsSetup::Instance()->GetDaughter(ist - NMvdStations));
+      CbmStsStation* station = CbmStsSetup::Instance()->GetStation(ist - NMvdStations);
       z = station->GetZ();
 
       Xmax = station->GetXmax();

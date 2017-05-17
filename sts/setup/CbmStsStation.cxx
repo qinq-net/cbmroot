@@ -60,11 +60,11 @@ void CbmStsStation::CheckSensorProperties() {
 	Double_t zMax  = -999999.;  // sensor z maximum
 
 	// --- Loop over ladders
-  for (Int_t iLad = 0; iLad < GetNofDaughters(); iLad++) {
+    for (Int_t iLad = 0; iLad < GetNofDaughters(); iLad++) {
   	CbmStsElement* ladd = GetDaughter(iLad);
 
   	// --- Loop over half-ladders
-  	for (Int_t iHla = 0; iHla < ladd->GetNofDaughters(); iHla++) {
+ 	for (Int_t iHla = 0; iHla < ladd->GetNofDaughters(); iHla++) {
   		CbmStsElement* hlad = ladd->GetDaughter(iHla);
 
   		// --- Loop over modules
@@ -73,8 +73,8 @@ void CbmStsStation::CheckSensorProperties() {
 
   			// --- Loop over sensors
   			for (Int_t iSen = 0; iSen < modu->GetNofDaughters(); iSen++) {
-  				CbmStsSensor* sensor =
-  						dynamic_cast<CbmStsSensor*>(modu->GetDaughter(iSen));
+  			    CbmStsSensor* sensor =
+  			 			dynamic_cast<CbmStsSensor*>(modu->GetDaughter(iSen));
 
   				// Set first sensor
   				if ( ! nSensors ) fFirstSensor = sensor;
@@ -203,9 +203,9 @@ void CbmStsStation::Init() {
 	  fYmax = origin[1] + statShape->GetDY();
 	}
 
-  // The z position of the station is obtained from the sensor positions,
-  // not from the station node. This is more flexible, because it does not
-  // assume the station to be symmetric.
+    // The z position of the station is obtained from the sensor positions,
+	// not from the station node. This is more flexible, because it does not
+	// assume the station to be symmetric.
 	CheckSensorProperties();
 
 	// Warning if varying sensor properties are found

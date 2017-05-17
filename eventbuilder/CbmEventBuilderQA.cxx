@@ -733,7 +733,7 @@ bool CbmEventBuilderQA::CalculateIsReconstructable( const int iMCFile, const int
     int currentStation = -1;
     for(int iStation=0; iStation<CbmStsSetup::Instance()->GetNofDaughters(); iStation++)
     {
-      CbmStsStation* station = dynamic_cast<CbmStsStation*> (CbmStsSetup::Instance()->GetDaughter(iStation));
+      CbmStsStation* station = CbmStsSetup::Instance()->GetStation(iStation);
       const float zStation = station->GetZ();
       
       if( fabs(point->GetZ() - zStation) < 2.5 )

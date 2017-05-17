@@ -100,12 +100,12 @@ void CbmStsMC::Initialize() {
   // --- I checked however, that the performance penalty is very small.
   fAddressMap.clear();
   fSetup = CbmStsSetup::Instance();
-  	Int_t nStat = fSetup->GetNofDaughters();
-  	for (Int_t iStat = 0; iStat < nStat; iStat++) {
-  		CbmStsElement* stat = fSetup->GetDaughter(iStat);
-  		Int_t nLadd = stat->GetNofDaughters();
+  	Int_t nUnits = fSetup->GetNofDaughters();
+  	for (Int_t iUnit = 0; iUnit < nUnits; iUnit++) {
+  		CbmStsElement* unit = fSetup->GetDaughter(iUnit);
+  		Int_t nLadd = unit->GetNofDaughters();
   		for (Int_t iLadd = 0; iLadd < nLadd; iLadd++) {
-  			CbmStsElement* ladd = stat->GetDaughter(iLadd);
+  			CbmStsElement* ladd = unit->GetDaughter(iLadd);
   			Int_t nHlad = ladd->GetNofDaughters();
   			for (Int_t iHlad = 0; iHlad < nHlad; iHlad++) {
   				CbmStsElement* hlad = ladd->GetDaughter(iHlad);
@@ -129,7 +129,7 @@ void CbmStsMC::Initialize() {
   			      << Int_t(fAddressMap.size()) << " sensors. "
   			      << FairLogger::endl;
 
-  	// --- Call the Initialize method of the mother class
+  	// --- Call the Initialise method of the mother class
   	FairDetector::Initialize();
 }
 // -------------------------------------------------------------------------

@@ -41,7 +41,6 @@ class CbmStsStation : public CbmStsElement {
 		virtual ~CbmStsStation();
 
 
-
 		/** Radiation length of the main material of the station (silicon)
 		 ** @value  Radiation length of silicon [cm]
 		 **

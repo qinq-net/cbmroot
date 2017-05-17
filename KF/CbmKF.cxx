@@ -189,7 +189,7 @@ InitStatus CbmKF::Init()
 
   for ( Int_t ist = 0; ist<NStations; ist++ )
       {
-	CbmStsStation* station = dynamic_cast<CbmStsStation*> (CbmStsSetup::Instance()->GetDaughter(ist));
+	CbmStsStation* station = CbmStsSetup::Instance()->GetStation(ist);
 
 	if ( !station ) continue;
 

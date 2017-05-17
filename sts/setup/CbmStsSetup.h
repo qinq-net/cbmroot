@@ -7,7 +7,7 @@
 #ifndef CBMSTSSETUP_H
 #define CBMSTSSETUP_H 1
 
-#include <vector>
+#include <map>
 #include "CbmStsElement.h"
 
 class TGeoManager;
@@ -106,6 +106,16 @@ class CbmStsSetup : public CbmStsElement
     }
 
 
+    /** Get a station
+     ** @param stationId  Station number
+     ** @value Pointer to station object. NULL is not present.
+     **/
+    CbmStsStation* GetStation(Int_t stationId) {
+      if ( fStations.find(stationId) == fStations.end() ) return NULL;
+      return fStations[stationId];
+    }
+
+
     /** Get station number from address
      ** @param address  Unique detector address
      ** @value Station number
@@ -164,13 +174,16 @@ class CbmStsSetup : public CbmStsElement
     std::vector<CbmStsSensor*> fSensors;   //! Array of sensors
 
     /** Stations (special case; are not elements in the setup) **/
-    std::vector<CbmStsStation*> fStations;  //!
+    std::map<Int_t, CbmStsStation*> fStations;  //!
 
     /** Available sensor types **/
     std::map<Int_t, CbmStsSensorType*> fSensorTypes; //!
 
     /** Default constructor  **/
     CbmStsSetup();
+
+    /** Create station objects **/
+    Int_t CreateStations();
 
     /** Copy constructor (disabled) **/
     CbmStsSetup(const CbmStsSetup&) = delete;
