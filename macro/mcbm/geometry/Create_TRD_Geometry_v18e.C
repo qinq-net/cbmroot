@@ -2231,6 +2231,7 @@ void create_detector_layers(Int_t layerId)
 
           cout << "layer " << layerId << " ---" << endl;
           frameref_angle = atan( (DetectorSizeX[1]/2. - FrameWidth[1]) / (zfront[setupid] + 3 * LayerThickness) );
+	  //          frameref_angle = 15. / 180. * acos(-1);  // set a fixed reference angle
           cout << "reference angle " << frameref_angle * 180 / acos(-1) << endl;
 
           layer_angle    = atan( (DetectorSizeX[1]/2. - FrameWidth[1]) / (zfront[setupid] + layerId * LayerThickness) );
