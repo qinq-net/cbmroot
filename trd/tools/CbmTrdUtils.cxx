@@ -201,28 +201,33 @@ Int_t CbmTrdUtils::GetModuleType(Int_t moduleAddress, CbmTrdModule *fModuleInfo,
   fModuleInfo = fDigiPar->GetModule(moduleAddress);
   Int_t nRows = fModuleInfo->GetNofRows();
   Int_t nCols = fModuleInfo->GetNofColumns();
- 
-  if (nCols == 80){
-    if (nRows == 36)
-      type = 1;
-    else if (nRows == 20)
-      type = 2;
-    else if (nRows == 12)
-      type = 3;
-    else if (nRows == 8)
-      type = 4;
-  } else if (nCols == 128) {
-    if (nRows == 24)
-      type = 5;
-    else if (nRows == 16)  // from v14d
-      type = 6;
-    else if (nRows == 12)  // till v14c
-      type = 6;
-    else if (nRows == 8)
-      type = 7;
-    else if (nRows == 6)
-      type = 8;
+
+  if (nCols == 80)
+  {
+    if      (nRows == 36)   type = 1;  // v17a
+    else if (nRows == 24)   type = 2;  // v17a
+    else if (nRows == 12)   type = 3;  // v17a
+
+    else if (nRows == 32)   type = 1;  // v17c
+    else if (nRows == 16)   type = 2;  // v17c
+    else if (nRows ==  8)   type = 3;  // v17c
+    else if (nRows ==  4)   type = 4;  // v17c - not used
+  } 
+  else if (nCols == 112) 
+  {
+    if      (nRows == 24)   type = 5;  // v17c - not used
+    else if (nRows == 18)   type = 6;  // v17c
+    else if (nRows == 12)   type = 7;  // v17c
+    else if (nRows ==  6)   type = 8;  // v17c
   }
+  else if (nCols == 128) 
+  {
+    if      (nRows == 24)   type = 5;  // v17a - not used
+    else if (nRows == 16)   type = 6;  // v17a
+    else if (nRows ==  8)   type = 7;  // v17a
+    else if (nRows ==  4)   type = 8;  // v17a
+  }
+
   if (type == -1) printf("ERROR::CbmTrdUtils:GetModuleType: nRows:%2i nCols:%3i\n",nRows,nCols);
   return type;
 }
