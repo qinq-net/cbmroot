@@ -91,6 +91,13 @@ public:
      */
     void SetOutputDir(const string& dir) {fOutputDir = dir;}
     
+    /**
+     * \brief Draw histogram from file
+     */
+    void DrawFromFile(
+          const string& fileName,
+		  const string& outputDir);
+
 private:
     
     /**

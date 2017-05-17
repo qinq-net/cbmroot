@@ -1094,5 +1094,22 @@ string CbmRichGeoTest::CalcEfficiency(
     }
 }
 
+void CbmRichGeoTest::DrawFromFile(
+      const string& fileName,
+      const string& outputDir)
+{
+	fOutputDir = outputDir;
+
+	if (fHM != NULL) delete fHM;
+
+	fHM = new CbmHistManager();
+	TFile* file = new TFile(fileName.c_str());
+	fHM->ReadFromFile(file);
+
+	DrawHist();
+
+	fHM->SaveCanvasToImage(fOutputDir);
+}
+
 ClassImp(CbmRichGeoTest)
 
