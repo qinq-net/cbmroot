@@ -295,12 +295,19 @@ void create_stsgeo_v18g(const char* geoTag="v18g_mcbm")
   TGeoMedium* air = gGeoMan->GetMedium("air");
   if ( ! air ) Fatal("Main", "Medium air not found");
 
-  // ---> silicon
+  // ---> silicon (active)
   FairGeoMedium* mSilicon  = geoMedia->getMedium("silicon");
   if ( ! mSilicon ) Fatal("Main", "FairMedium silicon not found");
   geoBuild->createMedium(mSilicon);
   TGeoMedium* silicon = gGeoMan->GetMedium("silicon");
   if ( ! silicon ) Fatal("Main", "Medium silicon not found");
+
+  // ---> silicon (inactive)
+  FairGeoMedium* mSilicon_inactive  = geoMedia->getMedium("silicon_inactive");
+  if ( ! mSilicon_inactive ) Fatal("Main", "FairMedium silicon_inactive not found");
+  geoBuild->createMedium(mSilicon_inactive);
+  TGeoMedium* silicon_inactive = gGeoMan->GetMedium("silicon_inactive");
+  if ( ! silicon_inactive ) Fatal("Main", "Medium silicon_inactive not found");
 
   // ---> carbon
   FairGeoMedium* mCarbon  = geoMedia->getMedium("carbon");
@@ -1023,16 +1030,17 @@ Int_t CreateSensors() {
 
   Int_t nSensors = 0;
 
-  Double_t inactive_xSize = 0.125;  // width of surrounding ring in cm = 1.25 mm
-  Double_t inactive_ySize = 0.132;  // width of surrounding ring in cm = 1.32 mm
+  // sizes provided from DXF file by Johann
+  Double_t inactive_ring_xWidth = 0.125;  // width of surrounding ring in cm = 1.25 mm
+  Double_t inactive_ring_yWidth = 0.132;  // width of surrounding ring in cm = 1.32 mm
 
   Double_t xSize      = 0.;
   Double_t ySize      = 0.;
   Double_t zSize      = gkSensorThickness;
 
   TGeoMedium* silicon = gGeoMan->GetMedium("silicon");
-  TGeoMedium* inactive_silicon = gGeoMan->GetMedium("STScable");  // AKA "inactive silicon"
-
+  TGeoMedium* inactive_silicon = gGeoMan->GetMedium("silicon_inactive");  // AKA "inactive silicon"
+  //  TGeoMedium* inactive_silicon = gGeoMan->GetMedium("STScable");  // AKA "inactive silicon"
 
   // --- Sensor Type 01: Half small sensor (4 cm x 2.5 cm)
   xSize = 4.0;
@@ -1064,20 +1072,21 @@ Int_t CreateSensors() {
   // ---  Sensor type 04: Big sensor (6.2 cm x 6.2 cm)
   xSize = 6.2092;
   ySize = 6.2;
+
   // entire sensor including inactive rings
-  TGeoBBox* shape_inactive_sensor04 = new TGeoBBox("ina_sensor04", xSize/2., ySize/2., zSize/2.);
-  TGeoVolume* sts_ina_sens04 = new TGeoVolume("Sensor04", shape_inactive_sensor04, inactive_silicon);
-//  // add color
-//  sts_ina_sens04->SetLineColor(kGreen);
-//  sts_ina_sens04->SetTransparency(60);
+  TGeoBBox* shape_inactive_sensor04 = 
+    new TGeoBBox("inactive_sensor04", xSize/2., ySize/2., zSize/2.);
+  TGeoVolume* sts_inactive_sens04 = new TGeoVolume("Sensor04", shape_inactive_sensor04, inactive_silicon);
+  // color is set to kBlue in main function
+
   // active sensor area inside inactive rings
-  TGeoBBox* shape_active_sensor04 = new TGeoBBox("act_sensor04", xSize/2.-inactive_xSize, ySize/2.-inactive_ySize, zSize/2.);
-  TGeoVolume* sts_act_sens04 = new TGeoVolume("ActSensor04", shape_active_sensor04, silicon);
-//  // add color
-//  sts_act_sens04->SetLineColor(kRed);
-//  sts_act_sens04->SetTransparency(60);
-  // add active to inactive
-  sts_ina_sens04->AddNode(sts_act_sens04, 1);
+  TGeoBBox* shape_active_sensor04 = 
+    new TGeoBBox("active_sensor04", xSize/2.-inactive_ring_xWidth, ySize/2.-inactive_ring_yWidth, zSize/2.);
+  TGeoVolume* sts_active_sens04 = new TGeoVolume("ActiveSensor04", shape_active_sensor04, silicon);
+  sts_active_sens04->SetLineColor(kRed);
+
+  // add active part to inactive sensor
+  sts_inactive_sens04->AddNode(sts_active_sens04, 1);
   nSensors++;
 
   // ---  Sensor type 05: Additional "in hole" sensor (3.1 cm x 4.2 cm)
