@@ -27,6 +27,7 @@ void mcbm_mc(Int_t nEvents = 2, const char* setupName = "sis18_mcbm",
 // available input files
   TString defaultInputFile = "/input/urqmd.agag.1.65gev.centr.00001.root";
   //  TString defaultInputFile = "/input/urqmd.agag.1.65gev.mbias.00001.root";
+  //  TString defaultInputFile = "/input/urqmd.auau.1.24gev.mbias.00001.root";
   //  TString defaultInputFile = "/input/urqmd.niau.1.93gev.centr.00001.root";
   //  TString defaultInputFile = "/input/urqmd.niau.1.93gev.mbias.00001.root";
   //  TString defaultInputFile = "/input/urqmd.nini.1.93gev.centr.00001.root";
