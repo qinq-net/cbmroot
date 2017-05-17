@@ -325,10 +325,10 @@ void CbmRichGeoManager::InitMirror()
     TString mirrorMisAlignName1("mirror_tile_1");
     TString mirrorMisAlignName2("mirror_tile_2");
     TString mirrorMisAlignName3("mirror_tile_3");
-    TString mirrorMisAlignName2("mirror_tile_4");
-    TString mirrorMisAlignName3("mirror_tile_5");
-    TString mirrorMisAlignName2("mirror_tile_6");
-    TString mirrorMisAlignName3("mirror_tile_7");
+    TString mirrorMisAlignName4("mirror_tile_4");
+    TString mirrorMisAlignName5("mirror_tile_5");
+    TString mirrorMisAlignName6("mirror_tile_6");
+    TString mirrorMisAlignName7("mirror_tile_7");
     
     geoIterator.Reset();
     double maxTheta = 0.;
