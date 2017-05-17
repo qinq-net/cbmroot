@@ -888,7 +888,8 @@ void create_stsgeo_v18f(const char* geoTag="v18f_mcbm")
     TString statName = Form("Station%02d", iStation);
     TGeoVolume* station = gGeoMan->GetVolume(statName);
     Double_t posZ = statPos[iStation-1] - stsPosZ;
-    TGeoTranslation* trans = new TGeoTranslation(0., 0., posZ);
+    //    TGeoTranslation* trans = new TGeoTranslation(0., 0., posZ);  // standard
+    TGeoTranslation* trans = new TGeoTranslation(0., gkSectorOverlapY/2., posZ);  // mcbm
     sts->AddNode(station, iStation, trans);
     sts->GetShape()->ComputeBBox();
   }
