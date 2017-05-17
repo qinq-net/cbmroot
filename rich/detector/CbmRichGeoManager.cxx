@@ -341,9 +341,9 @@ void CbmRichGeoManager::InitMirror()
         TString nodeName(curNode->GetName());
         TString nodePath;
         
-        
         if (nodeName.Contains(mirrorName0) || nodeName.Contains(mirrorName1) ||  nodeName.Contains(mirrorName2) ||  nodeName.Contains(mirrorName3) ||
-            nodeName.Contains(mirrorMisAlignName0) || nodeName.Contains(mirrorMisAlignName1) ||  nodeName.Contains(mirrorMisAlignName2) ||  nodeName.Contains(mirrorMisAlignName3)) {
+            nodeName.Contains(mirrorMisAlignName0) || nodeName.Contains(mirrorMisAlignName1) ||  nodeName.Contains(mirrorMisAlignName2) ||  nodeName.Contains(mirrorMisAlignName3) ||
+			nodeName.Contains(mirrorMisAlignName4) || nodeName.Contains(mirrorMisAlignName5) ||  nodeName.Contains(mirrorMisAlignName6) ||  nodeName.Contains(mirrorMisAlignName7)) {
             geoIterator.GetPath(nodePath);
             const TGeoMatrix* curMatrix = geoIterator.GetCurrentMatrix();
             const Double_t* curNodeTr = curMatrix->GetTranslation();
