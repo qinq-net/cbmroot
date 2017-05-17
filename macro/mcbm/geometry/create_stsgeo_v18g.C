@@ -944,7 +944,8 @@ void create_stsgeo_v18g(const char* geoTag="v18g_mcbm")
   geoFile->Close();
 
   top->Draw("ogl");
-  gGeoManager->SetVisLevel(6);
+  //  gGeoManager->SetVisLevel(6);
+  gGeoManager->SetVisLevel(7);
   
   infoFile.close();
 
