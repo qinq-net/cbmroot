@@ -12,6 +12,8 @@
 #include "data/CbmLitHit.h"
 #include "FairTask.h"
 
+class CbmEvent;
+
 /**
  * \class CbmLitFindMvdTracks.h
  * \brief MVD tracking based on littrack package.
@@ -65,7 +67,7 @@ private:
    /**
     * \brief Convert input data from CBMROOT data classes to littrack data classes.
     */
-   void ConvertInputData();
+   void ConvertInputData(CbmEvent* event);
 
    /**
     * \brief Convert output littrack data classes to CBMROOT data classes.
@@ -85,6 +87,7 @@ private:
    // Pointers to data arrays
    TClonesArray* fStsTracks; // CbmStsTrack array
    TClonesArray* fMvdHits; // CbmMvdHits
+   TClonesArray* fEvents;
 
    // littrack data arrays
    TrackPtrVector fLitStsTracks; // STS tracks

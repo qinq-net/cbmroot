@@ -30,6 +30,7 @@
 CbmLitFindMvdTracks::CbmLitFindMvdTracks():
    fStsTracks(NULL),
    fMvdHits(NULL),
+   fEvents(NULL),
    fLitStsTracks(),
    fLitMvdHits(),
    fLitOutputTracks(),
@@ -57,7 +58,22 @@ void CbmLitFindMvdTracks::Exec(
    Option_t* opt)
 {
    if (fStsTracks != NULL && fMvdHits != NULL) {
-      ConvertInputData();
+      if (fEvents)
+      {
+         Int_t nEvents = fEvents->GetEntriesFast();
+         LOG(DEBUG) << GetName() << ": reading time slice with " << nEvents << " events " << FairLogger::endl;
+      
+         for (Int_t iEvent = 0; iEvent < nEvents; iEvent++)
+         {
+            CbmEvent* event = static_cast<CbmEvent*> (fEvents->At(iEvent));
+            ConvertInputData(event);
+         } //# events
+      } //? event branch present
+      else
+      {// Old event-by-event simulation without event branch
+         ConvertInputData(0);
+      }
+
       RunTrackReconstruction();
       ConvertOutputData();
       ClearArrays();
@@ -87,11 +103,12 @@ void CbmLitFindMvdTracks::ReadAndCreateDataBranches()
    }
    fMvdHits = (TClonesArray*) ioman->GetObject("MvdHit");
    fStsTracks = (TClonesArray*) ioman->GetObject("StsTrack");
+   fEvents = dynamic_cast<TClonesArray*> (ioman->GetObject("Event"));
 }
 
-void CbmLitFindMvdTracks::ConvertInputData()
+void CbmLitFindMvdTracks::ConvertInputData(CbmEvent* event)
 {
-   CbmLitConverter::StsTrackArrayToTrackVector(fStsTracks, fLitStsTracks);
+   CbmLitConverter::StsTrackArrayToTrackVector(event, fStsTracks, fLitStsTracks);
    // Change last and first parameters of the track seeds
    for(Int_t iTrack = 0; iTrack < fLitStsTracks.size(); iTrack++) {
       CbmLitTrack* track = fLitStsTracks[iTrack];

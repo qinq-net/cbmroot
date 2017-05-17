@@ -26,6 +26,7 @@
 #include "CbmMuchGeoScheme.h"
 #include "CbmMvdHit.h"
 #include "CbmMuchTrack.h"
+#include "CbmEvent.h"
 
 #include "CbmGlobalTrack.h"
 #include "CbmVertex.h"
@@ -258,6 +259,7 @@ public:
     }
     
     static void LitTrackVectorToGlobalTrackArray(
+                                                 CbmEvent* event,
                                                  const TrackPtrVector& litTracks,
                                                  const TofTrackPtrVector& litTofTracks,
                                                  TClonesArray* globalTracks,
@@ -268,10 +270,14 @@ public:
     {
         // Loop over STS tracks and create GlobalTrack for each StsTrack
         Int_t globalTrackNo = globalTracks->GetEntriesFast();
-        Int_t nofStsTracks = stsTracks->GetEntriesFast();
-        for (Int_t iTrack = 0; iTrack < nofStsTracks; iTrack++) {
+        Int_t nofStsTracks = event ? event->GetNofData(Cbm::kStsTrack) : stsTracks->GetEntriesFast();
+        for (Int_t i = 0; i < nofStsTracks; i++) {
+            Int_t iTrack = event ? event->GetIndex(Cbm::kStsTrack, i) : i;
             CbmGlobalTrack* globalTrack = new ((*globalTracks)[globalTrackNo++]) CbmGlobalTrack();
-            globalTrack->SetStsTrackIndex(iTrack);
+            globalTrack->SetStsTrackIndex(i);
+            
+            if (event)
+                event->AddData(Cbm::kGlobalTrack, iTrack);
         }
         
         Int_t trdTrackNo = (trdTracks != NULL) ? trdTracks->GetEntriesFast() : 0;
@@ -304,14 +310,24 @@ public:
                 if (thisDetId == kLITTRD && trdTracks != NULL) { isCreateTrdTrack = true; }
             }
             if (isCreateTrdTrack) {
-                CbmTrdTrack* track = new ((*trdTracks)[trdTrackNo++]) CbmTrdTrack();
+                CbmTrdTrack* track = new ((*trdTracks)[trdTrackNo]) CbmTrdTrack();
                 CbmLitTrackToCbmTrack(litTrack, track, kLITTRD);
-                globalTrack->SetTrdTrackIndex(trdTrackNo - 1);
+                globalTrack->SetTrdTrackIndex(trdTrackNo);
+                
+                if (event)
+                    event->AddData(Cbm::kTrdTrack, trdTrackNo);
+                
+                ++trdTrackNo;
             }
             if (isCreateMuchTrack) {
-                CbmMuchTrack* track = new ((*muchTracks)[muchTrackNo++]) CbmMuchTrack();
+                CbmMuchTrack* track = new ((*muchTracks)[muchTrackNo]) CbmMuchTrack();
                 CbmLitTrackToCbmTrack(litTrack, track, kLITMUCH);
-                globalTrack->SetMuchTrackIndex(muchTrackNo - 1);
+                globalTrack->SetMuchTrackIndex(muchTrackNo);
+                
+                if (event)
+                    event->AddData(Cbm::kMuchTrack, muchTrackNo);
+                
+                ++muchTrackNo;
             }
         }
         
@@ -329,15 +345,21 @@ public:
             
             CbmGlobalTrack* globalTrack = static_cast<CbmGlobalTrack*>(globalTracks->At(globalTrackId));
             globalTrack->SetTofHitIndex(tofHitId);
+            
+            if (event)
+                event->AddData(Cbm::kTofHit, tofHitId);
         }
     }
     
     static void HitArrayToHitVector(
+                                    CbmEvent* event,
+                                    Cbm::DataType hitDataType,
                                     const TClonesArray* hits,
                                     HitPtrVector& litHits)
     {
-        Int_t nofHits = hits->GetEntriesFast();
-        for(Int_t iHit = 0; iHit < nofHits; iHit++) {
+        Int_t nofHits = event ? event->GetNofData(hitDataType) : hits->GetEntriesFast();
+        for(Int_t i = 0; i < nofHits; ++i) {
+            Int_t iHit = event ? event->GetIndex(hitDataType, i) : i;
             CbmHit* hit = (CbmHit*) hits->At(iHit);
             if(NULL == hit) { continue; }
             if (hit->GetType() == kMUCHSTRAWHIT) {
@@ -369,11 +391,13 @@ public:
     }
     
     static void StsTrackArrayToTrackVector(
+                                           CbmEvent* event,
                                            const TClonesArray* tracks,
                                            TrackPtrVector& litTracks)
-    {
-        Int_t nofTracks = tracks->GetEntriesFast();
-        for(Int_t iTrack = 0; iTrack < nofTracks; iTrack++) {
+    {      
+        Int_t nofTracks = event ? event->GetNofData(Cbm::kStsTrack) : tracks->GetEntriesFast();
+        for(Int_t i = 0; i < nofTracks; ++i) {
+            Int_t iTrack = event ? event->GetIndex(Cbm::kStsTrack, i) : i;
             CbmStsTrack* track = (CbmStsTrack*) tracks->At(iTrack);
             if (track == NULL) { continue; }
             if (track->GetParamLast()->GetQp() == 0) { continue; }

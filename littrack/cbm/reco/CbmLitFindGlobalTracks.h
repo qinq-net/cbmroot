@@ -31,6 +31,7 @@
 #include <vector>
 
 class TClonesArray;
+class CbmEvent;
 
 using std::string;
 using std::vector;
@@ -89,22 +90,22 @@ private:
    /**
     * \brief Convert input data from CBMROOT data classes to LIT data classes.
     */
-   void ConvertInputData();
+  void ConvertInputData(CbmEvent* event);
 
    /**
     * \brief Convert output data LIT data classes to CBMROOT data classes.
     */
-   void ConvertOutputData();
+   void ConvertOutputData(CbmEvent* event);
 
    /*
     * \brief Calculate length of the global track
     */
-   void CalculateLength();
+   void CalculateLength(CbmEvent* event);
    
    /*
     * \brief Calculate and set the parameter set in the primary vertex of the global track
     */
-   void CalculatePrimaryVertexParameters();
+   void CalculatePrimaryVertexParameters(CbmEvent* event);
 
    /**
     * \brief Clear arrays and frees the memory.
@@ -137,6 +138,7 @@ private:
    TClonesArray* fMuchStrawHits; // CbmMuchStrawHit array
    TClonesArray* fTrdHits; // CbmTrdHit array
    TClonesArray* fTofHits; // CbmTofHit array
+   TClonesArray* fEvents;
    // Output
    TClonesArray* fMuchTracks; // output CbmMuchTrack array
    TClonesArray* fTrdTracks; // output CbmTrdTrack array

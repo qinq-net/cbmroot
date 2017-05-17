@@ -47,6 +47,7 @@ CbmLitFindGlobalTracks::CbmLitFindGlobalTracks()
    fTrdHits(NULL),
    fTrdTracks(NULL),
    fTofHits(NULL),
+   fEvents(NULL),
    fTofTracks(NULL),
    fGlobalTracks(NULL),
    fPrimVertex(NULL),
@@ -101,20 +102,34 @@ void CbmLitFindGlobalTracks::Exec(
    if (fMuchTracks != NULL) fMuchTracks->Delete();
    if (fTofTracks != NULL) fTofTracks->Delete();
    fGlobalTracks->Clear();
-
-   ConvertInputData();
-
-   RunTrackReconstruction();
-
-   ConvertOutputData();
-
-   CalculateLength();
    
-   CalculatePrimaryVertexParameters();
-
-   ClearArrays();
-
-   std::cout << "CbmLitFindGlobalTracks::Exec event: " << fEventNo++ << std::endl;
+   if (fEvents)
+   {
+      Int_t nEvents = fEvents->GetEntriesFast();
+      LOG(DEBUG) << GetName() << ": reading time slice with " << nEvents << " events " << FairLogger::endl;
+      
+      for (Int_t iEvent = 0; iEvent < nEvents; iEvent++)
+      {
+         CbmEvent* event = static_cast<CbmEvent*> (fEvents->At(iEvent));
+         ConvertInputData(event);
+         RunTrackReconstruction();
+         ConvertOutputData(event);
+         CalculateLength(event);
+         CalculatePrimaryVertexParameters(event);
+         ClearArrays();
+         std::cout << "CbmLitFindGlobalTracks::Exec event: " << event->GetNumber() << std::endl;
+      } //# events
+   } //? event branch present
+   else
+   {// Old event-by-event simulation without event branch
+      ConvertInputData(0);
+      RunTrackReconstruction();
+      ConvertOutputData(0);
+      CalculateLength(0);
+      CalculatePrimaryVertexParameters(0);
+      ClearArrays();
+      std::cout << "CbmLitFindGlobalTracks::Exec event: " << fEventNo++ << std::endl;
+   }
 }
 
 void CbmLitFindGlobalTracks::SetParContainers()
@@ -169,6 +184,8 @@ void CbmLitFindGlobalTracks::ReadAndCreateDataBranches()
       if (NULL == fTofHits) { Fatal("Init", "No TofHit array!"); }
       std::cout << "-I- TofHit branch found in tree" << std::endl;
    }
+   
+   fEvents = dynamic_cast<TClonesArray*> (ioman->GetObject("Event"));
 
    // Create and register track arrays
    fGlobalTracks = new TClonesArray("CbmGlobalTrack",100);
@@ -229,15 +246,15 @@ void CbmLitFindGlobalTracks::InitTrackReconstruction()
    fPropagator = CbmLitToolFactory::CreateTrackPropagator("lit");
 }
 
-void CbmLitFindGlobalTracks::ConvertInputData()
+void CbmLitFindGlobalTracks::ConvertInputData(CbmEvent* event)
 {
-   CbmLitConverter::StsTrackArrayToTrackVector(fStsTracks, fLitStsTracks);
+   CbmLitConverter::StsTrackArrayToTrackVector(event, fStsTracks, fLitStsTracks);
    std::cout << "-I- CbmLitFindGlobalTracks: Number of STS tracks: " << fLitStsTracks.size() << std::endl;
 
-   if (fMuchPixelHits) { CbmLitConverter::HitArrayToHitVector(fMuchPixelHits, fLitHits); }
-   if (fMuchStrawHits) { CbmLitConverter::HitArrayToHitVector(fMuchStrawHits, fLitHits); }
+   if (fMuchPixelHits) { CbmLitConverter::HitArrayToHitVector(event, Cbm::kMuchPixelHit, fMuchPixelHits, fLitHits); }
+   if (fMuchStrawHits) { CbmLitConverter::HitArrayToHitVector(event, Cbm::kMuchStrawHit, fMuchStrawHits, fLitHits); }
    if (fTrdHits) {
-      CbmLitConverter::HitArrayToHitVector(fTrdHits, fLitHits);
+      CbmLitConverter::HitArrayToHitVector(event, Cbm::kTrdHit, fTrdHits, fLitHits);
       //If MUCH-TRD setup, than shift plane id for the TRD hits
       if (fDet.GetDet(kMUCH) && fDet.GetDet(kTRD)) {
          Int_t nofStations = CbmLitTrackingGeometryConstructor::Instance()->GetNofMuchStations();
@@ -250,39 +267,42 @@ void CbmLitFindGlobalTracks::ConvertInputData()
    std::cout << "-I- CbmLitFindGlobalTracks: Number of hits: " << fLitHits.size() << std::endl;
 
    if (fTofHits) {
-      CbmLitConverter::HitArrayToHitVector(fTofHits, fLitTofHits);
+      CbmLitConverter::HitArrayToHitVector(event, Cbm::kTofHit, fTofHits, fLitTofHits);
       std::cout << "-I- CbmLitFindGlobalTracks: Number of TOF hits: " << fLitTofHits.size() << std::endl;
    }
 }
 
-void CbmLitFindGlobalTracks::ConvertOutputData()
+void CbmLitFindGlobalTracks::ConvertOutputData(CbmEvent* event)
 {
-   CbmLitConverter::LitTrackVectorToGlobalTrackArray(fLitOutputTracks, fLitOutputTofTracks, fGlobalTracks, fStsTracks, fTrdTracks, fMuchTracks, fTofTracks);
+   CbmLitConverter::LitTrackVectorToGlobalTrackArray(event, fLitOutputTracks, fLitOutputTofTracks, fGlobalTracks, fStsTracks, fTrdTracks, fMuchTracks, fTofTracks);
 }
 
-void CbmLitFindGlobalTracks::CalculateLength()
+void CbmLitFindGlobalTracks::CalculateLength(CbmEvent* event)
 {
    if (fTofTracks == NULL || fGlobalTracks == NULL) return;
+   
+   CbmVertex* primVertex = event ? event->GetVertex() : fPrimVertex;
 
    /* Calculate the length of the global track
     * starting with (0, 0, 0) and adding all
     * distances between hits
     */
-   Int_t nofTofTracks = fTofTracks->GetEntriesFast();
-   for (Int_t itt = 0; itt < nofTofTracks; itt++) {
+   Int_t nofTofTracks = event ? event->GetNofData(Cbm::kTofTrack) : fTofTracks->GetEntriesFast();
+   for (Int_t i = 0; i < nofTofTracks; ++i) {
+      Int_t itt = event ? event->GetIndex(Cbm::kTofTrack, i) : i;
       CbmTofTrack* tofTrack = static_cast<CbmTofTrack*>(fTofTracks->At(itt));
       CbmGlobalTrack* globalTrack = static_cast<CbmGlobalTrack*>(fGlobalTracks->At(tofTrack->GetTrackIndex()));
       if (globalTrack == NULL) { continue; }
 
       std::vector<Double_t> X, Y, Z;
-      if (fPrimVertex == NULL) {
+      if (primVertex == NULL) {
     	  X.push_back(0.);
     	  Y.push_back(0.);
     	  Z.push_back(0.);
       } else {
-    	  X.push_back(fPrimVertex->GetX());
-    	  Y.push_back(fPrimVertex->GetY());
-    	  Z.push_back(fPrimVertex->GetZ());
+    	  X.push_back(primVertex->GetX());
+    	  Y.push_back(primVertex->GetY());
+    	  Z.push_back(primVertex->GetZ());
       }
 
       // get track segments indices
@@ -338,10 +358,10 @@ void CbmLitFindGlobalTracks::CalculateLength()
 
       // Calculate distances between hits
       Double_t length = 0.;
-      for (Int_t i = 0; i < X.size() - 1; i++) {
-         Double_t dX = X[i] - X[i+1];
-         Double_t dY = Y[i] - Y[i+1];
-         Double_t dZ = Z[i] - Z[i+1];
+      for (Int_t j = 0; j < X.size() - 1; ++j) {
+         Double_t dX = X[j] - X[j+1];
+         Double_t dY = Y[j] - Y[j+1];
+         Double_t dZ = Z[j] - Z[j+1];
          length += std::sqrt(dX*dX + dY*dY + dZ*dZ);
       }
 
@@ -391,21 +411,27 @@ void CbmLitFindGlobalTracks::CalculateLength()
 //	for_each(litTracks.begin(), litTracks.end(), DeleteObject());
 //}
 
-void CbmLitFindGlobalTracks::CalculatePrimaryVertexParameters()
+void CbmLitFindGlobalTracks::CalculatePrimaryVertexParameters(CbmEvent* event)
 {
-    if (0 == fGlobalTracks || 0 == fPrimVertex)
+    if (0 == fGlobalTracks)
         return;
     
-    Int_t nofGlobalTracks = fGlobalTracks->GetEntriesFast();
+    CbmVertex* primVertex = event ? event->GetVertex() : fPrimVertex;
     
-    for (Int_t i = 0; i < nofGlobalTracks; ++i)
+    if (0 == primVertex)
+       return;
+    
+    Int_t nofGlobalTracks = event ? event->GetNofData(Cbm::kGlobalTrack) : fGlobalTracks->GetEntriesFast();
+    
+    for (Int_t i0 = 0; i0 < nofGlobalTracks; ++i0)
     {
+      Int_t i = event ? event->GetIndex(Cbm::kGlobalTrack, i0) : i0;
       CbmGlobalTrack* globalTrack = static_cast<CbmGlobalTrack*> (fGlobalTracks->At(i));
       Int_t stsId = globalTrack->GetStsTrackIndex();
       CbmStsTrack* stsTrack = static_cast<CbmStsTrack*>(fStsTracks->At(stsId));
       FairTrackParam vtxTrackParam;
       float chiSqPrimary = 0.f;
-      CbmKFParticleInterface::ExtrapolateTrackToPV(stsTrack, fPrimVertex, &vtxTrackParam, chiSqPrimary);
+      CbmKFParticleInterface::ExtrapolateTrackToPV(stsTrack, primVertex, &vtxTrackParam, chiSqPrimary);
       globalTrack->SetParamPrimaryVertex(&vtxTrackParam);
     }
 }
