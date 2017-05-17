@@ -28,11 +28,11 @@ reco).
 
 #  mcbm_sim.C was therefore moved to the legacy folder
 
-#
-##  acceptance
-#
 
-# STS v18f
+
+#
+##  STS v18f - acceptance
+#
 
 # Station 1 (2x2)
 outer dimensions
@@ -55,6 +55,33 @@ atan(9./42) / acos(-1) * 180
 12.0948
 atan(18.06/2/42) / acos(-1) * 180
 12.1339
+
+
+#
+##  STS v18g - acceptance
+#
+
+# guard and bias ring width 
+# sizes provided from DXF file by Johann
+ring_xWidth = 0.125;  // width of surrounding ring in cm = 1.25 mm                     
+ring_yWidth = 0.132;  // width of surrounding ring in cm = 1.32 mm
+
+# Station 1 (2x2)
+outer dimensions
+x: -5.934 .. 5.934 = 11.868 cm
+y: -5.933 .. 5.933 = 11.866 cm
+
+atan(11.87/2/28) / acos(-1) * 180
+11.9675
+
+# Station 2 (3x3)
+active area only
+x: -8.889 .. 8.889 = 17.778 cm
+y: -8.898 .. 8.898 = 17.796 cm
+
+atan(17.78/2/42) / acos(-1) * 180
+11.9512
+
 
 
 #
