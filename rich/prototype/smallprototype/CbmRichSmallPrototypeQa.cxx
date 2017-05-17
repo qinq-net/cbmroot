@@ -133,7 +133,7 @@ void CbmRichSmallPrototypeQa::InitHistograms()
     fHM->Create1<TH1D>("fh_nof_rich_points", "fh_nof_rich_points;Nof RICH Points per event;Yield (a.u.)", 250, -.5, 499.5);
     fHM->Create1<TH1D>("fh_nof_rich_hits", "fh_nof_rich_hits;Nof RICH hits per event;Yield (a.u.)", 100, -.5, 99.5);
     fHM->Create1<TH1D>("fh_nof_rich_rings", "fh_nof_rich_rings;Nof RICH rings;# per event", 5, -0.5, 4.5);
-    fHM->Create1<TH1D>("fh_rich_ring_radius","fh_rich_ring_radius;Ring radius [cm];Yield (a.u.)", 100, 4.5, 6.5);
+    fHM->Create1<TH1D>("fh_rich_ring_radius","fh_rich_ring_radius;Ring radius [cm];Yield (a.u.)", 100, 3., 10.);
     fHM->Create2<TH2D>("fh_rich_points_xy", "fh_rich_points_xy;X [cm];Y [cm];Yield (a.u.)", 250, -10., 10., 250, -10., 10.);
     
     vector<Double_t> xbins = GetHistBins(true);
@@ -155,6 +155,7 @@ void CbmRichSmallPrototypeQa::InitHistograms()
     fHM->Create1<TH1D>("fh_refplane_pdg", "fh_refplane_pdg;PDG Code;# per event", 6000, -3000., 3000.);
     
     fHM->Create1<TH1D>("fh_refplane_sources", "fh_refplane_sources;Particle;# per event", 6, -0.5, 5.5);
+    fHM->Create1<TH1D>("fh_photon_energy", "fh_photon_energy;Momentum [eV]", 100, 0., 10.);
 }
 
 void CbmRichSmallPrototypeQa::Exec(
@@ -192,6 +193,11 @@ void CbmRichSmallPrototypeQa::Exec(
         Int_t pdg = mctrack->GetPdgCode();
         if(pdg != 50000050) {
             fHM->H2("fh_nonphoton_pmt_points_xy")->Fill(point->GetX(), point->GetY());
+        } else {
+        	TVector3 mom;
+			point->Momentum(mom);
+			Double_t momTotal =  1e9 * sqrt(mom.Px()*mom.Px() + mom.Py()*mom.Py() + mom.Pz()*mom.Pz()); // GeV ->eV
+			fHM->H1("fh_photon_energy")->Fill(momTotal);
         }
     }
     
@@ -219,7 +225,6 @@ void CbmRichSmallPrototypeQa::Exec(
         Int_t pdg = TMath::Abs(mcTrack->GetPdgCode());
         //select only primary protons
         if (!(motherId == -1 && pdg == 2212)) continue;
-        if (nofHits > 40) continue;
         
         Double_t cX = ring->GetCenterX();
         Double_t cY = ring->GetCenterY();
@@ -228,18 +233,16 @@ void CbmRichSmallPrototypeQa::Exec(
         
         Double_t radius = ring->GetRadius();
         fHM->H1("fh_rich_ring_radius")->Fill(radius);
-        if(radius<4.0) continue;
         for (int iH = 0; iH < nofHits; iH++) {
             Int_t hitInd = ring->GetHit(iH);
             CbmRichHit* hit = (CbmRichHit*) fRichHits->At(hitInd);
             if (NULL == hit) continue;
             Double_t hitX = hit->GetX();
             Double_t hitY = hit->GetY();
-            if(hitX<3.0 && hitX>-3.0 && hitY<3.0 && hitY>-3.0) continue;
+
             Double_t dR = radius - TMath::Sqrt( (cX - hitX)*( cX - hitX) + (cY - hitY)*(cY - hitY) );
             fHM->H1("fh_dR")->Fill(dR);
         }
-        
     }
 
     for (Int_t i = 0; i<nofRefPlanePoints; i++)
@@ -275,7 +278,7 @@ void CbmRichSmallPrototypeQa::Exec(
             fHM->H2("fh_refplane_xy_prim")->Fill(point->GetX(), point->GetY());
         }
     }
-    
+
     if (fEventNum < 20) {
         DrawEvent();
     }
@@ -291,8 +294,8 @@ void CbmRichSmallPrototypeQa::DrawHist()
     
     
     {
-        TCanvas* c = fHM->CreateCanvas("richsp_nof_rich_hits_points", "richsp_nof_rich_hits_points", 1200, 1200);
-        c->Divide(2,2);
+        TCanvas* c = fHM->CreateCanvas("richsp_nof_rich_hits_points", "richsp_nof_rich_hits_points", 1800, 600);
+        c->Divide(3,1);
         c->cd(1);
         DrawH1andFitGauss(fHM->H1("fh_nof_rich_points"));
         c->cd(2);
@@ -342,6 +345,11 @@ void CbmRichSmallPrototypeQa::DrawHist()
         c->SetLogz();
         DrawH2(fHM->H2("fh_ring_center_xy"));
         fHM->H1("fh_ring_center_xy")->SetTitle("Ring center");
+    }
+
+    {
+        TCanvas* c = fHM->CreateCanvas("richsp_photon_energy", "richsp_photon_energy", 600, 600);
+        DrawH1(fHM->H1("fh_photon_energy"));
     }
 
 

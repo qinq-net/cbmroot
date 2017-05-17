@@ -33,9 +33,15 @@ protected:
     void Draw();
     
     /**
-     * \brief Draw Invariant mass of combinatorial BG.
+     * \brief
      */
-    void DrawNofHitsPerEvent();
+    void DrawNofHistAll();
+
+    /**
+     * \brief
+     */
+    void DrawNofHist(
+    		const std::string& histName);
     
     ClassDef(CbmRichSmallPrototypeStudyReport, 1)
     

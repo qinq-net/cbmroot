@@ -39,7 +39,7 @@ public:
 private:
 
 	/**
-	 * \brief Return a vector with distance ans x, y components. [0] - total distance, [1] - x component, [2] - y component
+	 * \brief Return a vector with total distance and x, y components. [0] - total distance, [1] - x component, [2] - y component
 	 */
 	static vector<Double_t> GetRingTrackDistanceImpl(Int_t globalTrackId)
 	{
