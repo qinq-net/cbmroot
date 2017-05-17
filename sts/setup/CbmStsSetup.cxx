@@ -391,8 +391,7 @@ Bool_t CbmStsSetup::Init(TGeoManager* geo) {
   		<< FairLogger::endl;
 
   // --- Recursively initialise daughter elements
-  if ( fIsOld ) CbmStsElement::InitDaughters(); // use method from CbmStsElement
-  else CbmStsElement::InitDaughters();
+  InitDaughters();
 
   // --- Build arrays of modules and sensors
   for (Int_t iUnit = 0; iUnit < GetNofDaughters(); iUnit++) {
@@ -422,15 +421,6 @@ Bool_t CbmStsSetup::Init(TGeoManager* geo) {
 	  LOG(INFO) << "     " << setw(12) << name << setw(5) << right
 	  		      << GetNofElements(iLevel) << FairLogger::endl;
   }
-
-  /*
-  // --- Temporary protection against new geometries
-  if ( ! fIsOld ) LOG(FATAL) << GetName() << ": You are using a new "
-      << "STS geometry with units as top level. The software to support "
-      << "this is not yet ready. Please use an older geometry meanwhile."
-      << FairLogger::endl;
-      */
-
 
   // Set the sensor types
   Int_t nSensors = SetSensorTypes();
@@ -561,8 +551,7 @@ Bool_t CbmStsSetup::Init(const char* fileName) {
         << FairLogger::endl;
 
   // --- Recursively initialise daughter elements
-  if ( fIsOld ) CbmStsElement::InitDaughters(); // use method from CbmStsElement
-  else InitDaughters();
+  InitDaughters();
 
   // --- Build arrays of modules and sensors
   for (Int_t iUnit = 0; iUnit < GetNofDaughters(); iUnit++) {
@@ -622,7 +611,7 @@ Bool_t CbmStsSetup::Init(const char* fileName) {
 
 
 
-// -----   Singleton iunstance   -------------------------------------------
+// -----   Singleton instance   --------------------------------------------
 CbmStsSetup* CbmStsSetup::Instance() {
   if ( ! fgInstance ) {
     fgInstance = new CbmStsSetup();
