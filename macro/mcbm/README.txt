@@ -28,6 +28,34 @@ reco).
 
 #  mcbm_sim.C was therefore moved to the legacy folder
 
+#
+##  acceptance
+#
+
+# STS v18f
+
+# Station 1 (2x2)
+outer dimensions
+x: -6.059 .. 6.059 = 12.118 cm
+y: -6.065 .. 6.065          cm - shifted upwards
+y: -6.200 .. 5.930 = 12.130 cm - delta 0.270 cm (halfladder)
+
+atan(6./28) / acos(-1) * 180
+12.0948
+atan(12.13/2/28) / acos(-1) * 180
+12.2219
+
+# Station 2 (3x3)
+outer dimensions
+x: -9.015 .. 9.015 = 18.030 cm
+y: -9.030 .. 9.030          cm - shifted upwards
+y: -9.165 .. 8.895 = 18.060 cm - delta 0.270 cm
+
+atan(9./42) / acos(-1) * 180
+12.0948
+atan(18.06/2/42) / acos(-1) * 180
+12.1339
+
 
 #
 ##   UrQMD input files for mCBM energies
