@@ -1,24 +1,11 @@
 ///                                             
-/// \file Create_TOF_Geometry_v13_4x.C
+/// \file Create_TOF_Geometry_v18d_mcbm.C
 /// \brief Generates TOF geometry in Root format.
 ///  
 
 // Changelog
 //
-// 2013-10-16 - DE - prepare tof_v13_5a geometry - SIS 100 hadron  : TOF_Z_Front =  450 cm
-// 2013-10-16 - DE - prepare tof_v13_5b geometry - SIS 100 electron: TOF_Z_Front =  600 cm
-// 2013-10-16 - DE - prepare tof_v13_5c geometry - SIS 100 muon    : TOF_Z_Front =  650 cm
-// 2013-10-16 - DE - prepare tof_v13_5d geometry - SIS 300 electron: TOF_Z_Front =  880 cm
-// 2013-10-16 - DE - prepare tof_v13_5e geometry - SIS 300 muon    : TOF_Z_Front = 1020 cm
-// 2013-10-16 - DE - patch pole_alu bug - skip 0 thickness air volume in pole
-// 2013-09-04 - DE - prepare tof_v13_4a geometry - SIS 100 hadron  : TOF_Z_Front =  450 cm
-// 2013-09-04 - DE - prepare tof_v13_4b geometry - SIS 100 electron: TOF_Z_Front =  600 cm
-// 2013-09-04 - DE - prepare tof_v13_4c geometry - SIS 100 muon    : TOF_Z_Front =  650 cm
-// 2013-09-04 - DE - prepare tof_v13_4d geometry - SIS 300 electron: TOF_Z_Front =  880 cm
-// 2013-09-04 - DE - prepare tof_v13_4e geometry - SIS 300 muon    : TOF_Z_Front = 1020 cm
-// 2013-09-04 - DE - dump z-positions to .geo.info file
-// 2013-09-04 - DE - define front z-position of TOF wall (TOF_Z_Front)
-// 2013-09-04 - DE - fix arrangement of glass plates in RPC cells 
+// 2017-05-17 - v18d - DE - change geometry name to v18d
 
 // in root all sizes are given in cm
 
@@ -38,16 +25,12 @@
 #include <iostream>
 
 // Name of geometry version and output file
-const TString geoVersion = "tof_v14a";
-//const TString geoVersion = "tof_v13_6a";
-//const TString geoVersion = "tof_v13_5a";
-//const TString geoVersion = "tof_v13-5b";
-//const TString geoVersion = "tof_v13-5c";
-//const TString geoVersion = "tof_v13-5d";
-//const TString geoVersion = "tof_v13-5e";
-const TString FileNameSim  = "m" + geoVersion + ".geo.root";
-const TString FileNameGeo  = "m" + geoVersion + "_geo.root";
-const TString FileNameInfo = "m" + geoVersion + ".geo.info";
+const TString geoVersion = "tof_v14a";  // do not change
+//
+const TString fileTag    = "tof_v18d";
+const TString FileNameSim  = fileTag + "_mcbm.geo.root";
+const TString FileNameGeo  = fileTag + "_mcbm_geo.root";
+const TString FileNameInfo = fileTag + "_mcbm.geo.info";
 
 // TOF_Z_Front corresponds to front cover of outer super module towers
 const Float_t TOF_Z_Front =  130;  // mCBM@SIS18
@@ -204,7 +187,7 @@ void position_outer_tof_modules(Int_t);
 void dump_info_file();
 
 
-void Create_TOF_Geometry_v18_4x() {
+void Create_TOF_Geometry_v18d_mcbm() {
   // Load the necessary FairRoot libraries 
 //  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
 //  basiclibs();
