@@ -1909,6 +1909,9 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
    }
  }  // 0<iNSel software triffer check end 
  
+   /// Go to Top volume of the geometry in the GeoManager to make sure
+   /// our nodes are found
+   gGeoManager->CdTop();
  for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)
  {
    pHit = (CbmTofHit*) fTofHitsColl->At( iHitInd );
@@ -1943,7 +1946,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
                 << FairLogger::endl;
      continue;
    }
-   gGeoManager->SetTopVolume( gGeoManager->FindVolumeFast("tof_v14a") );
+
    /*TGeoNode *fNode=*/        // prepare global->local trafo
    gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
 
@@ -3877,6 +3880,9 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
    Double_t dTimeDif = 0.0;
    Double_t dTotS = 0.0;
    fiNbSameSide = 0;
+   /// Go to Top volume of the geometry in the GeoManager to make sure
+   /// our nodes are found
+   gGeoManager->CdTop();
    if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
    {
       for( Int_t iSmType = 0; iSmType < iNbSmTypes; iSmType++ )
@@ -4016,7 +4022,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 					  <<FairLogger::endl;
 				break;
                               }
-			      gGeoManager->SetTopVolume( gGeoManager->FindVolumeFast("tof_v14a") );
+
                               TGeoNode *fNode=        // prepare local->global trafo
                               gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
                               LOG(DEBUG2)<<Form(" Node at (%6.1f,%6.1f,%6.1f) : %p, %s",

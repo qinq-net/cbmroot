@@ -1308,6 +1308,9 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
    Double_t dTime = 0.0;
    Double_t dTotS = 0.0;
    fiNbSameSide = 0;
+   /// Go to Top volume of the geometry in the GeoManager to make sure
+   /// our nodes are found
+   gGeoManager->CdTop();
    if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
    {
       for( Int_t iSmType = 0; iSmType < iNbSmTypes; iSmType++ )
