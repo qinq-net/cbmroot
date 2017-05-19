@@ -627,14 +627,15 @@ void CbmStsFindTracksQa::GetTargetPosition() {
 	  fTargetPos[0] = 0.;
 	  fTargetPos[1] = 0.;
 	  fTargetPos[2] = 0.;
-	  return;
+  } else {
+          TGeoHMatrix* glbMatrix = gGeoManager->GetCurrentMatrix();
+          Double_t* pos = glbMatrix->GetTranslation();
+          fTargetPos[0] = pos[0];
+          fTargetPos[1] = pos[1];
+          fTargetPos[2] = pos[2];
   }
-  TGeoHMatrix* glbMatrix = gGeoManager->GetCurrentMatrix();
-  Double_t* pos = glbMatrix->GetTranslation();
-  fTargetPos[0] = pos[0];
-  fTargetPos[1] = pos[1];
-  fTargetPos[2] = pos[2];
 
+  gGeoManager->CdTop();
 }
 // -------------------------------------------------------------------------
 
