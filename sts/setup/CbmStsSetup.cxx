@@ -352,7 +352,6 @@ Bool_t CbmStsSetup::Init(TGeoManager* geo) {
     TString name = cave->GetDaughter(iNode)->GetName();
      if ( name.Contains("STS", TString::kIgnoreCase) ) {
       sts = cave->GetDaughter(iNode);
-      geo->CdDown(iNode);
       LOG(INFO) << fName << ": STS top node is " << sts->GetName()
                 << FairLogger::endl;
       break;
