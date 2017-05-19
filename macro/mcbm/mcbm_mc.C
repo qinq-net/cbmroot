@@ -156,7 +156,7 @@ void mcbm_mc(Int_t nEvents = 2, const char* setupName = "sis18_mcbm",
   // -----   Create and register modules   ----------------------------------
   std::cout << std::endl;
   TString macroName = gSystem->Getenv("VMCWORKDIR");
-  macroName += "/macro/mcbm/registerSetup.C";
+  macroName += "/macro/mcbm/modules/registerSetup.C";
   //  macroName += "/macro/run/modules/registerSetup.C";
   std::cout << "Loading macro " << macroName << std::endl;
   gROOT->LoadMacro(macroName);
