@@ -153,6 +153,7 @@ void CbmTrdDigitizerPRF::Exec(Option_t*)
   Int_t nofBackwardTracks = 0;
   Int_t nofPointsAboveThreshold = 0;
   Int_t nofPoints = fPoints->GetEntries();
+  gGeoManager->CdTop();
   for (Int_t iPoint = 0; iPoint < nofPoints ; iPoint++) {
     fMCPointId = iPoint;
     CbmTrdPoint* point = static_cast<CbmTrdPoint*>(fPoints->At(iPoint));
