@@ -35,11 +35,13 @@
 
 using std::vector;
 
+Int_t CbmMatchRecoToMC::fEventNumber = 0;
+
 CbmMatchRecoToMC::CbmMatchRecoToMC() :
    FairTask("CbmMatchRecoToMC"),
    fIncludeMvdHitsInStsTrack(kFALSE),
    fMCTracks(NULL),
-   fMCTracksArray(NULL),
+   //fMCTracksArray(NULL),
    fStsPoints(NULL),
    fStsDigis(NULL),
    fStsClusters(NULL),
@@ -211,7 +213,7 @@ void CbmMatchRecoToMC::Exec(
 
    //RICH
    if (fRichDigis && fRichHits && fRichMcPoints && fRichRings && fRichTrackMatches) {
-       MatchRichRings(fRichRings, fRichHits, fRichDigis, fRichMcPoints, fMCTracksArray, fRichTrackMatches);
+       MatchRichRings(fRichRings, fRichHits, fRichDigis, fRichMcPoints, fMCTracks, fRichTrackMatches);
    }
 
    // TRD
@@ -240,8 +242,8 @@ void CbmMatchRecoToMC::Exec(
       MatchHitsTofDigiExp( fTofDigiMatchesPoints, fTofDigis, fTofDigiMatches, fTofHits, fTofHitMatches);
       else MatchHitsTof( fTofDigiMatchesPoints, fTofDigis, fTofDigiMatches, fTofHits, fTofHitMatches);
 
-   static Int_t eventNo = 0;
-   LOG(INFO) << "CbmMatchRecoToMC::Exec eventNo=" << eventNo++ << FairLogger::endl;
+   //static Int_t eventNo = 0;
+   LOG(INFO) << "CbmMatchRecoToMC::Exec eventNo=" << fEventNumber++ << FairLogger::endl;
 }
 
 void CbmMatchRecoToMC::Finish()
@@ -256,10 +258,14 @@ void CbmMatchRecoToMC::ReadAndCreateDataBranches()
       LOG(FATAL) << "CbmMatchRecoToMC::ReadAndCreateDataBranches() NULL FairRootManager." << FairLogger::endl;
    }
 
-   CbmMCDataManager* mcManager=(CbmMCDataManager*)ioman->GetObject("MCDataManager");
-   fMCTracks=mcManager->InitBranch("MCTrack");
+   CbmMCDataManager* mcManager = (CbmMCDataManager*)ioman->GetObject("MCDataManager");
+   
+   if (0 == mcManager)
+      LOG(FATAL) << "CbmMatchRecoToMC::ReadAndCreateDataBranches() NULL MCDataManager." << FairLogger::endl;
+      
+   fMCTracks = mcManager->InitBranch("MCTrack");
 
-    fMCTracksArray= (TClonesArray*) ioman->GetObject("MCTrack");
+    //fMCTracksArray= (TClonesArray*) ioman->GetObject("MCTrack");
 
 
    // STS
@@ -286,14 +292,14 @@ void CbmMatchRecoToMC::ReadAndCreateDataBranches()
    fRichDigis = (TClonesArray*) ioman->GetObject("RichDigi");
    fRichHits = (TClonesArray*) ioman->GetObject("RichHit");
    fRichRings = (TClonesArray*) ioman->GetObject("RichRing");
-   fRichMcPoints = (TClonesArray*) ioman->GetObject("RichPoint");
+   fRichMcPoints = mcManager->InitBranch("RichPoint");
    if (fRichRings != NULL) {
       fRichTrackMatches = new TClonesArray("CbmTrackMatchNew", 100);
       ioman->Register("RichRingMatch", "RICH", fRichTrackMatches, IsOutputBranchPersistent("RichRingMatch"));
    }
 
    // TRD
-   fTrdPoints = (TClonesArray*) ioman->GetObject("TrdPoint");
+   fTrdPoints = mcManager->InitBranch("TrdPoint");
    fTrdDigis = (TClonesArray*) ioman->GetObject("TrdDigi");
    fTrdClusters = (TClonesArray*) ioman->GetObject("TrdCluster");
    fTrdHits = (TClonesArray*) ioman->GetObject("TrdHit");
@@ -322,7 +328,7 @@ void CbmMatchRecoToMC::ReadAndCreateDataBranches()
    }
 
    // MUCH
-   fMuchPoints = (TClonesArray*) ioman->GetObject("MuchPoint");
+   fMuchPoints = mcManager->InitBranch("MuchPoint");
    fMuchPixelDigis = (TClonesArray*) ioman->GetObject("MuchDigi");
    fMuchStrawDigis = (TClonesArray*) ioman->GetObject("MuchStrawDigi");
    fMuchClusters = (TClonesArray*) ioman->GetObject("MuchCluster");
@@ -349,7 +355,7 @@ void CbmMatchRecoToMC::ReadAndCreateDataBranches()
    }
 
    // MVD
-   fMvdPoints = (TClonesArray*) ioman->GetObject("MvdPoint");
+   fMvdPoints = mcManager->InitBranch("MvdPoint");
    fMvdHits = (TClonesArray*) ioman->GetObject("MvdHit");
    fMvdCluster = (TClonesArray*) ioman->GetObject("MvdCluster");
    fMvdDigiMatches = (TClonesArray*) ioman->GetObject("MvdDigiMatch");
@@ -364,7 +370,7 @@ void CbmMatchRecoToMC::ReadAndCreateDataBranches()
    }
 
    // TOF
-   fTofPoints = (TClonesArray*) ioman->GetObject("TofPoint");
+   fTofPoints = mcManager->InitBranch("TofPoint");
    fTofDigis  = (TClonesArray*) ioman->GetObject("TofDigi");
    if (NULL != fTofDigis) {
       if ( TString("CbmTofDigiExp") == fTofDigis->GetClass()->GetName() )
@@ -571,7 +577,7 @@ void CbmMatchRecoToMC::MatchHitsTofDigiExp(
 }
 
 void CbmMatchRecoToMC::MatchHitsToPoints(
-      const TClonesArray* points,
+      CbmMCDataArray* points,
       const TClonesArray* hits,
       TClonesArray* hitMatches)
 {
@@ -580,14 +586,14 @@ void CbmMatchRecoToMC::MatchHitsToPoints(
    for (Int_t iHit = 0; iHit < nofHits; iHit++) {
       CbmHit* hit = static_cast<CbmHit*>(hits->At(iHit));
       CbmMatch* hitMatch = new ((*hitMatches)[iHit]) CbmMatch();
-      const FairMCPoint* point = static_cast<const FairMCPoint*>(points->At(hit->GetRefId()));
-      hitMatch->AddLink(CbmLink(point->GetEnergyLoss(), hit->GetRefId()));
+      const FairMCPoint* point = static_cast<const FairMCPoint*>(points->Get(0, fEventNumber, hit->GetRefId()));
+      hitMatch->AddLink(CbmLink(point->GetEnergyLoss(), hit->GetRefId(), fEventNumber));
    }
 }
 
 void CbmMatchRecoToMC::MatchTracks(
       const TClonesArray* hitMatches,
-      const TClonesArray* points,
+      CbmMCDataArray* points,
       const TClonesArray* tracks,
       TClonesArray* trackMatches)
 {
@@ -607,7 +613,7 @@ void CbmMatchRecoToMC::MatchTracks(
          const CbmMatch* hitMatch = static_cast<CbmMatch*>(hitMatches->At(track->GetHitIndex(iHit)));
          Int_t nofLinks = hitMatch->GetNofLinks();
          for (Int_t iLink = 0; iLink < nofLinks; iLink++) {
-            const FairMCPoint* point = static_cast<const FairMCPoint*>(points->At(hitMatch->GetLink(iLink).GetIndex()));
+            const FairMCPoint* point = static_cast<const FairMCPoint*>(points->Get(hitMatch->GetLink(iLink)));
             if (NULL == point) continue;
 			////fix low energy cut case on STS
 			if (CbmStsAddress::GetSystemId(point->GetDetectorID()) == kSTS ){
@@ -617,7 +623,7 @@ void CbmMatchRecoToMC::MatchTracks(
 					continue;
 			}
 			////
-            trackMatch->AddLink(CbmLink(1., point->GetTrackID()));
+            trackMatch->AddLink(CbmLink(1., point->GetTrackID(), point->GetEventID()));
          }
       }
       if ( ! trackMatch->GetNofLinks() ) continue;
@@ -630,9 +636,9 @@ void CbmMatchRecoToMC::MatchTracks(
          Int_t nofLinks = hitMatch->GetNofLinks();
          Bool_t hasTrue = false;
          for (Int_t iLink = 0; iLink < nofLinks; iLink++) {
-            const FairMCPoint* point = static_cast<const FairMCPoint*>(points->At(hitMatch->GetLink(iLink).GetIndex()));
+            const FairMCPoint* point = static_cast<const FairMCPoint*>(points->Get(hitMatch->GetLink(iLink)));
             if (NULL == point) continue;
-            if (point->GetTrackID() == trackMatch->GetMatchedLink().GetIndex()) {
+            if (point->GetEventID() == trackMatch->GetMatchedLink().GetEntry() && point->GetTrackID() == trackMatch->GetMatchedLink().GetIndex()) {
                hasTrue = true;
                break;
             }
@@ -649,7 +655,7 @@ void CbmMatchRecoToMC::MatchTracks(
 void CbmMatchRecoToMC::MatchStsTracks(
 	  const TClonesArray* mvdHitMatches,
       const TClonesArray* stsHitMatches,
-	  const TClonesArray* mvdPoints,
+	   CbmMCDataArray* mvdPoints,
       CbmMCDataArray* stsPoints,
       const TClonesArray* tracks,
       TClonesArray* trackMatches)
@@ -693,7 +699,7 @@ void CbmMatchRecoToMC::MatchStsTracks(
             Int_t nofLinks = hitMatch->GetNofLinks();
             for (Int_t iLink = 0; iLink < nofLinks; iLink++) {
         	   const CbmLink& link = hitMatch->GetLink(iLink);
-	           const FairMCPoint* point = static_cast<const FairMCPoint*>(mvdPoints->At(link.GetIndex()));
+	           const FairMCPoint* point = static_cast<const FairMCPoint*>(mvdPoints->Get(link));
                if (NULL == point) continue;
                trackMatch->AddLink(CbmLink(1., point->GetTrackID(), link.GetEntry(), link.GetFile()));
             }
@@ -727,9 +733,9 @@ void CbmMatchRecoToMC::MatchStsTracks(
             Int_t nofLinks = hitMatch->GetNofLinks();
             Bool_t hasTrue = false;
             for (Int_t iLink = 0; iLink < nofLinks; iLink++) {
-               const FairMCPoint* point = static_cast<const FairMCPoint*>(mvdPoints->At(hitMatch->GetLink(iLink).GetIndex()));
+               const FairMCPoint* point = static_cast<const FairMCPoint*>(mvdPoints->Get(hitMatch->GetLink(iLink)));
                if (NULL == point) continue;
-               if (point->GetTrackID() == trackMatch->GetMatchedLink().GetIndex()) {
+               if (point->GetEventID() == trackMatch->GetMatchedLink().GetEntry() && point->GetTrackID() == trackMatch->GetMatchedLink().GetIndex()) {
                   hasTrue = true;
                   break;
                }
@@ -749,8 +755,8 @@ void CbmMatchRecoToMC::MatchRichRings(
     const TClonesArray* richRings,
     const TClonesArray* richHits,
     const TClonesArray* richDigis,
-    const TClonesArray* richMcPoints,
-    const TClonesArray* mcTracks,
+    CbmMCDataArray* richMcPoints,
+    CbmMCDataArray* mcTracks,
     TClonesArray* ringMatches)
 {
     // Loop over RichRings
@@ -800,6 +806,45 @@ void CbmMatchRecoToMC::MatchRichRings(
     }// Ring loop
 }
 
+
+vector<Int_t> CbmMatchRecoToMC::GetMcTrackMotherIdsForRichHit(
+        const CbmRichHit* hit,
+        const TClonesArray* richDigis,
+        CbmMCDataArray* richPoints,
+        CbmMCDataArray* mcTracks)
+{
+    vector<Int_t> result;
+    if ( NULL == hit ) return result;
+    Int_t digiIndex = hit->GetRefId();
+    if (digiIndex < 0) return result;
+    const CbmRichDigi* digi = static_cast<const CbmRichDigi*>(richDigis->At(digiIndex));
+    if (NULL == digi) return result;
+    CbmMatch* digiMatch = digi->GetMatch();
+
+    vector<CbmLink> links = digiMatch->GetLinks();
+    for (UInt_t i = 0; i < links.size(); i++) {
+        Int_t pointId = links[i].GetIndex();
+        if (pointId < 0) continue; // noise hit
+
+        const CbmRichPoint* pMCpt = static_cast<const CbmRichPoint*>(richPoints->Get(0, fEventNumber, pointId));
+        if ( NULL == pMCpt ) continue;
+        Int_t mcTrackIndex = pMCpt->GetTrackID();
+        if ( mcTrackIndex < 0 ) continue;
+        //TODO: Currently we support only legacy mode of CbmMCDataArray
+        const CbmMCTrack *mcTrack = static_cast<const CbmMCTrack*>(mcTracks->Get(0, fEventNumber, mcTrackIndex));
+       // CbmMCTrack* pMCtr = (CbmMCTrack*) mcTracks->At(mcTrackIndex);
+        if ( NULL == mcTrack ) continue;
+        if ( mcTrack->GetPdgCode() != 50000050) continue; // select only Cherenkov photons
+        Int_t motherId = mcTrack->GetMotherId();
+        // several photons can have same mother track
+        // count only unique motherIds
+        if(std::find(result.begin(), result.end(), motherId) == result.end()) {
+            result.push_back(motherId);
+        }
+    }
+
+    return result;
+}
 
 vector<Int_t> CbmMatchRecoToMC::GetMcTrackMotherIdsForRichHit(
         const CbmRichHit* hit,

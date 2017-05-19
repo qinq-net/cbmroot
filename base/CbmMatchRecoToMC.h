@@ -114,13 +114,13 @@ private:
           TClonesArray* hitMatches);
 
     void MatchHitsToPoints(
-          const TClonesArray* points,
+          CbmMCDataArray* points,
           const TClonesArray* hits,
           TClonesArray* hitMatches);
 
     void MatchTracks(
           const TClonesArray* hitMatches,
-          const TClonesArray* points,
+          CbmMCDataArray* points,
           const TClonesArray* tracks,
           TClonesArray* trackMatches);
 
@@ -128,7 +128,7 @@ private:
     void MatchStsTracks(
     	  const TClonesArray* mvdHitMatches,
           const TClonesArray* stsHitMatches,
-    	  const TClonesArray* mvdPoints,
+    	  CbmMCDataArray* mvdPoints,
           CbmMCDataArray* stsPoints,
           const TClonesArray* tracks,
           TClonesArray* trackMatches);
@@ -137,8 +137,8 @@ private:
           const TClonesArray* richRings,
           const TClonesArray* richHits,
           const TClonesArray* richDigis,
-          const TClonesArray* richMcPoints,
-          const TClonesArray* mcTracks,
+          CbmMCDataArray* richMcPoints,
+          CbmMCDataArray* mcTracks,
           TClonesArray* ringMatches);
 
 public:
@@ -149,17 +149,24 @@ public:
     static std::vector<Int_t> GetMcTrackMotherIdsForRichHit(
             const CbmRichHit* hit,
             const TClonesArray* richDigis,
+            CbmMCDataArray* richPoints,
+            CbmMCDataArray* mcTracks);
+    
+    static std::vector<Int_t> GetMcTrackMotherIdsForRichHit(
+            const CbmRichHit* hit,
+            const TClonesArray* richDigis,
             const TClonesArray* richPoints,
             const TClonesArray* mcTracks);
     
 private:
+    static Int_t fEventNumber;
     // If MVD hits has to be included in STS track
     Bool_t fIncludeMvdHitsInStsTrack;
 
     // Pointers to data arrays
     CbmMCDataArray* fMCTracks;  // Monte-Carlo tracks
     
-    TClonesArray* fMCTracksArray;  // Array of MCTracks
+    //TClonesArray* fMCTracksArray;  // Array of MCTracks
     
     // STS
     CbmMCDataArray* fStsPoints; // CbmStsPoint array
@@ -176,12 +183,12 @@ private:
     TClonesArray* fRichDigis; // CbmRichDigi array
     TClonesArray* fRichHits; // CbmRichHit array
     TClonesArray* fRichRings; // CbmRichRing array
-    TClonesArray* fRichMcPoints; // CbmRichRing array
+    CbmMCDataArray* fRichMcPoints; // CbmRichRing array
     TClonesArray* fRichTrackMatches; // Output CbmTrackMatchNew array
         
 
     // TRD
-    TClonesArray* fTrdPoints; // CbmTrdPoint array
+    CbmMCDataArray* fTrdPoints; // CbmTrdPoint array
     TClonesArray* fTrdDigis; // CbmTrdDigi array
     TClonesArray* fTrdClusters; // CbmTrdCluster array
     TClonesArray* fTrdHits; // CbmTrdHit array
@@ -192,7 +199,7 @@ private:
     TClonesArray* fTrdTrackMatches; // Output CbmTrackMatchNew array
 
     // MUCH
-    TClonesArray* fMuchPoints; // CbmMuchPoint array
+    CbmMCDataArray* fMuchPoints; // CbmMuchPoint array
     TClonesArray* fMuchPixelDigis; // CbmMuchDigi array
     TClonesArray* fMuchStrawDigis; // CbmMuchStrawDigi array
     TClonesArray* fMuchClusters; // CbmMuchCluster array
@@ -207,7 +214,7 @@ private:
     TClonesArray* fMuchTrackMatches; // Output CbmMatch array
 
     // MVD
-    TClonesArray* fMvdPoints; // CbmMvdPoint array
+    CbmMCDataArray* fMvdPoints; // CbmMvdPoint array
     TClonesArray* fMvdHits; 		// CbmMvdHit array
     TClonesArray* fMvdDigiMatches;	// CbmMatch array
     TClonesArray* fMvdHitMatches; 	// Output CbmMatch array
@@ -215,7 +222,7 @@ private:
     TClonesArray* fMvdClusterMatches;   // Output CbmMatch array
 
     // TOF
-    TClonesArray* fTofPoints; // CbmTofPoint array
+    CbmMCDataArray* fTofPoints; // CbmTofPoint array
     TClonesArray* fTofDigis; 	// CbmTofDigi or CbmTofDigiExp array
     TClonesArray* fTofHits; 		// CbmTofHit array
     Bool_t        fbDigiExpUsed; // Flag true if usage of CbmTofDigiExp detected
