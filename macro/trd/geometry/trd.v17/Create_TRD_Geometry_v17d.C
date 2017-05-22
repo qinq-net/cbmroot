@@ -1,5 +1,5 @@
 ///                                             
-/// \file Create_TRD_Geometry_v17a.C
+/// \file Create_TRD_Geometry_v17d.C
 /// \brief Generates TRD geometry in Root format.
 ///                                             
 
