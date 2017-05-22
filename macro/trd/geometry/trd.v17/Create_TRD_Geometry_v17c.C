@@ -285,7 +285,7 @@ const Int_t NofModuleTypes = 8;
 const Int_t ModuleType[NofModuleTypes]    = {  0,  0,  0,  0,  1,  1,  1,  1 }; // 0 = small module, 1 = large module
 
 // FEB inclination angle
-const Double_t feb_rotation_angle[NofModuleTypes] = { 70,  90,  90,  80,  80,  90,  90,  90 }; // rotation around x-axis, 0 = vertical, 90 = horizontal
+const Double_t feb_rotation_angle[NofModuleTypes] = { 60,  90,  90,  80,  80,  90,  90,  90 }; // rotation around x-axis, 0 = vertical, 90 = horizontal
 //const Double_t feb_rotation_angle[NofModuleTypes] = { 45,  45,  45,  45,  45,  45,  45,  45 }; // rotation around x-axis, 0 = vertical, 90 = horizontal
 
 // GBTx ROB definitions
