@@ -8,6 +8,7 @@
  **
  **/
 
+// 2017-05-22 - DE - use TRD v17c as new default
 // 2016-06-27 - DE - use STS v16x as new default, see issue #647
 // 2016-06-21 - DE - switch to shortened root pipe v16b_1m geometry ref #721
 // 2016-05-19 - VF - Add platform module
@@ -39,7 +40,7 @@ void setup_sis100_muon_lmvm()
   TString stsGeoTag       = "v16x";
   TString muchGeoTag      = "v15b_STS100-B_125cm_no";
   TString shieldGeoTag    = "v15b_SIS100B_149_3part_125cm";
-  TString trdGeoTag       = "v15c_1m";
+  TString trdGeoTag       = "v17c_1m";
   TString tofGeoTag       = "v16a_1m";
   TString platGeoTag      = "v13a";
   // ------------------------------------------------------------------------

@@ -8,6 +8,7 @@
  **
  **/
 
+// 2017-05-22 - DE - use TRD v17c as new default
 // 2016-06-27 - DE - use STS v16x as new default, see issue #647
 // 2016-05-19 - VF - Add platform module
 // 2016-02-25 - DE - use STS v16c as new default
@@ -41,7 +42,7 @@ void setup_sis300_electron()
   TString mvdGeoTag       = "v15a";
   TString stsGeoTag       = "v16x";
   TString richGeoTag      = "v16a_3e";
-  TString trdGeoTag       = "v15a_3e";
+  TString trdGeoTag       = "v17c_3e";
   TString tofGeoTag       = "v16a_3e";
   TString platGeoTag      = "v13b";
   // ------------------------------------------------------------------------
