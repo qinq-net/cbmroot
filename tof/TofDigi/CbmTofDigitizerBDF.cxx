@@ -4590,7 +4590,7 @@ void CbmTofDigitizerBDF::GetEventInfo(Int_t& inputNr, Int_t& eventNr, Double_t& 
       FairEventHeader* event = FairRunAna::Instance()->GetEventHeader();
 
       inputNr   = event->GetInputFileId();
-      eventNr   = event->GetMCEntryNumber();
+      eventNr   = FairRootManager::Instance()->GetEntryNr();
       eventTime = event->GetEventTime();
     }
 
@@ -4601,10 +4601,8 @@ void CbmTofDigitizerBDF::GetEventInfo(Int_t& inputNr, Int_t& eventNr, Double_t& 
       if ( ! FairRunSim::Instance() )
          LOG(FATAL) << GetName() << ": neither SIM nor ANA run." << FairLogger::endl;
 
-      FairMCEventHeader* event = FairRunSim::Instance()->GetMCEventHeader();
-
       inputNr   = 0;
-      eventNr   = event->GetEventID();
+      eventNr   = FairRootManager::Instance()->GetEntryNr();
       eventTime = 0.;
     }
 }
