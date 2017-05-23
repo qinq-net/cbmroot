@@ -13,16 +13,16 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/fles/cern2016
   ${CBMROOT_SOURCE_DIR}/fles/cern2016/unpacker
   ${CBMROOT_SOURCE_DIR}/fles/cern2016/param
-  
+
   ${CBMROOT_SOURCE_DIR}/fles/star2017
   ${CBMROOT_SOURCE_DIR}/fles/star2017/unpacker
   ${CBMROOT_SOURCE_DIR}/fles/star2017/param
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
-  ${BASE_INCLUDE_DIRECTORIES} 
-  ${Boost_INCLUDE_DIR} 
-  ${ROOT_INCLUDE_DIR}  
+  ${BASE_INCLUDE_DIRECTORIES}
+  ${Boost_INCLUDE_DIR}
+  ${ROOT_INCLUDE_DIR}
   ${CBMROOT_SOURCE_DIR}/external/ipc/ipc
   ${CBMROOT_SOURCE_DIR}/external/flib_dpb/flib_dpb
   ${CMAKE_SOURCE_DIR}/external/cppzmq
@@ -30,21 +30,22 @@ Set(SYSTEM_INCLUDE_DIRECTORIES
 
 Include_Directories(${INCLUDE_DIRECTORIES})
 Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
- 
+
 
 Set(LINK_DIRECTORIES
   ${ROOT_LIBRARY_DIR}
   ${FAIRROOT_LIBRARY_DIR}
   ${Boost_LIBRARY_DIRS}
 )
- 
-Link_Directories( 
+
+Link_Directories(
   ${LINK_DIRECTORIES}
 )
 
 Set(SRCS
   unpacker/CbmTofStarData.cxx
   unpacker/CbmTSMonitorTofStar.cxx
+  unpacker/CbmTSMonitorTofLab.cxx
 )
 
 If( STAR_SUBEVT_BUILDER )

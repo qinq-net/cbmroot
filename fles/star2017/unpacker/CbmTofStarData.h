@@ -41,11 +41,12 @@ namespace get4v1x {
    const uint32_t kuEpochInBins = kuFineTime + kuCoarseTime + 1;
    // Epoch Size in ps
    // alternatively: (kiCoarseTime>>kiCtShift + 1)*kdClockCycleSize
-   const double   kdEpochInPs   = kuEpochInBins*kdBinSize;
+   const double   kdEpochInPs   = static_cast<double>(kuEpochInBins)*kdBinSize;
    const double   kdEpochInNs   = kdEpochInPs / 1000.0;
-   
+
    // Epoch counter size in epoch
    const uint32_t kuEpochCounterSz = 0x7FFFFFFF;
+   const double   kdEpochCycleInS  = static_cast<double>(kuEpochCounterSz) * (kdEpochInNs/1e9);
 }
 #endif
 
@@ -55,19 +56,19 @@ class CbmTofStarTrigger
    public:
       // Constructors
       CbmTofStarTrigger( ULong64_t ulGdpbTsFullIn, ULong64_t ulStarTsFullIn,
-                         UInt_t    uStarTokenIn,   UInt_t    uStarDaqCmdIn, 
+                         UInt_t    uStarTokenIn,   UInt_t    uStarDaqCmdIn,
                          UInt_t    uStarTrigCmdIn );
-      
+
       // Destructor
       ~CbmTofStarTrigger() {};
-   
+
       // Setters
       inline void SetFullGdpbTs( ULong64_t ulGdpbTsFullIn ){ fulGdpbTsFull = ulGdpbTsFullIn; }
       inline void SetFullStarTs( ULong64_t ulStarTsFullIn ){ fulStarTsFull = ulStarTsFullIn; }
       inline void SetStarToken(  UInt_t    uStarTokenIn ){   fuStarToken   = uStarTokenIn; }
       inline void SetStarDaqCmd( UInt_t    uStarDaqCmdIn ){  fusStarDaqCmd  = uStarDaqCmdIn; }
       inline void SetStarTRigCmd(UInt_t    uStarTrigCmdIn ){ fusStarTrigCmd = uStarTrigCmdIn; }
-      
+
       // Accessors
       inline ULong64_t GetFullGdpbTs()  const { return fulGdpbTsFull;}
       inline ULong64_t GetFullStarTs()  const { return fulStarTsFull;}
@@ -76,20 +77,20 @@ class CbmTofStarTrigger
       inline UShort_t  GetStarTrigCmd() const { return fusStarTrigCmd;}
       UInt_t           GetStarTrigerWord() const;
       UInt_t           GetFullGdpbEpoch()  const;
-         
+
       // Operators
       bool operator<(const CbmTofStarTrigger& other) const;
-      
+
    private:
       ULong64_t fulGdpbTsFull;
       ULong64_t fulStarTsFull;
       UInt_t    fuStarToken;
       UShort_t  fusStarDaqCmd;
       UShort_t  fusStarTrigCmd;
-   
+
 //      CbmTofStarTrigger(const CbmTofStarTrigger&);
 //      CbmTofStarTrigger operator=(const CbmTofStarTrigger&);
-    
+
 //   ClassDef(CbmTofStarTrigger, 1)
 };
 
@@ -100,25 +101,25 @@ class CbmTofStarSubevent
       // Constructors
       CbmTofStarSubevent();
       CbmTofStarSubevent( CbmTofStarTrigger triggerIn );
-      
+
       // Destructor
       ~CbmTofStarSubevent();
-   
+
       // Setters
       inline void SetTrigger( CbmTofStarTrigger triggerIn ){ fTrigger = triggerIn; fbTriggerSet = kTRUE; }
-      inline void SetBadEventFlag(  Bool_t bFlagState = kTRUE ){ 
-                        bFlagState ? (fulEventStatusFlags |= kulFlagBadEvt) : 
+      inline void SetBadEventFlag(  Bool_t bFlagState = kTRUE ){
+                        bFlagState ? (fulEventStatusFlags |= kulFlagBadEvt) :
                                      (fulEventStatusFlags &= ~(kulFlagBadEvt) ); }
-      inline void SetOverlapEventFlag(  Bool_t bFlagState = kTRUE ){ 
-                        bFlagState ? (fulEventStatusFlags |= kulFlagOverlapEvt) : 
+      inline void SetOverlapEventFlag(  Bool_t bFlagState = kTRUE ){
+                        bFlagState ? (fulEventStatusFlags |= kulFlagOverlapEvt) :
                                      (fulEventStatusFlags &= ~(kulFlagOverlapEvt) ); }
-      inline void SetEmptyEventFlag(  Bool_t bFlagState = kTRUE ){ 
-                        bFlagState ? (fulEventStatusFlags |= kulFlagEmptyEvt) : 
+      inline void SetEmptyEventFlag(  Bool_t bFlagState = kTRUE ){
+                        bFlagState ? (fulEventStatusFlags |= kulFlagEmptyEvt) :
                                      (fulEventStatusFlags &= ~(kulFlagEmptyEvt) ); }
 #ifndef __CINT__
       inline void AddMsg( ngdpb::Message & msgIn){ fvMsgBuffer.push_back( msgIn ); }
 #endif
-      
+
       // Accessors
       inline CbmTofStarTrigger GetTrigger()  const { return fTrigger;}
       inline Bool_t            GetBadEventFlag() const { return (fulEventStatusFlags & kulFlagBadEvt); }
@@ -131,16 +132,16 @@ class CbmTofStarSubevent
 #ifndef __CINT__
       inline static uint32_t   GetMaxOutputSize() { return kuMaxOutputSize;}
 #endif
-      
+
       // Content clearing
       void   ClearSubEvent();
-      
+
       // Sub-event output
       void * BuildOutput( Int_t & iOutputSizeBytes );
-      
+
       // Sub-event input
       Bool_t LoadInput( void * pBuff, Int_t iInputSizeBytes );
-      
+
    private:
 #ifndef __CINT__
       static const uint32_t         kuMaxOutputSize   = 131072; // 2^17
@@ -149,7 +150,7 @@ class CbmTofStarSubevent
       static const uint64_t         kulFlagOverlapEvt = 0x1 << 1;
       static const uint64_t         kulFlagEmptyEvt   = 0x1 << 2;
 #endif
-   
+
       Bool_t                        fbTriggerSet;
       CbmTofStarTrigger             fTrigger;
       ULong64_t                     fulEventStatusFlags;
@@ -157,11 +158,11 @@ class CbmTofStarSubevent
       std::vector< ngdpb::Message > fvMsgBuffer;
       ULong64_t                     fpulBuff[kuMaxOutputSize];
 #endif
-      
-   
+
+
       CbmTofStarSubevent(const CbmTofStarSubevent&);
       CbmTofStarSubevent operator=(const CbmTofStarSubevent&);
-    
+
 //   ClassDef(CbmTofStarSubevent, 1)
 };
 
