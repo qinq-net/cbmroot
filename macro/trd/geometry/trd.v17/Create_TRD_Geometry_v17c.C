@@ -97,8 +97,10 @@ const TString tagVersion   = "v17c";
 //const TString subVersion   = "_3e";
 //const TString subVersion   = "_3m";
 
-const Int_t setupid = 1;  // 1e is the default
-const Double_t zfront[5]  = { 260., 410., 360., 410., 550. };
+//const Int_t setupid = 1;  // 1e is the default
+const Int_t setupid = 2;  // 1e is the default
+//const Double_t zfront[5]  = { 260., 410., 360., 410., 550. };  // original
+const Double_t zfront[5]  = { 260., 410., 490., 410., 550. };  // muon_jpsi and muon_lmvm
 const TString setupVer[5] = { "_1h", "_1e", "_1m", "_3e", "_3m" };
 const TString subVersion = setupVer[setupid];
 
