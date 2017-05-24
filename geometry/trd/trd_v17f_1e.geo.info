@@ -1,0 +1,130 @@
+#
+##   trd_v17f_1e information file
+#
+
+# created 20170524
+
+# envelope
+0.000000 cm   start of TRD (z)
+275.000000 cm   end   of TRD (z)
+
+# thickness
+45.000000 cm   per single layer (z)
+
+# extra gaps
+ 0.000000 0.000000 0.000000 0.000000 5.000000 0.000000    extra gaps in z (cm)
+
+# generated TRD layers
+  1  2  3  4  5  6    planeID
+
+# dimensions in x
+-332.500000 cm to 332.500000 cm x-dimension of layer  1
+-332.500000 cm to 332.500000 cm x-dimension of layer  2
+-332.500000 cm to 332.500000 cm x-dimension of layer  3
+-332.500000 cm to 332.500000 cm x-dimension of layer  4
+-427.500000 cm to 427.500000 cm x-dimension of layer  5
+-427.500000 cm to 427.500000 cm x-dimension of layer  6
+
+# dimensions in y
+-237.500000 cm to 237.500000 cm y-dimension of layer  1
+-237.500000 cm to 237.500000 cm y-dimension of layer  2
+-237.500000 cm to 237.500000 cm y-dimension of layer  3
+-237.500000 cm to 237.500000 cm y-dimension of layer  4
+-332.500000 cm to 332.500000 cm y-dimension of layer  5
+-332.500000 cm to 332.500000 cm y-dimension of layer  6
+
+# z-positions of layer front
+0.000000 cm   z-position of layer  1
+45.000000 cm   z-position of layer  2
+90.000000 cm   z-position of layer  3
+135.000000 cm   z-position of layer  4
+185.000000 cm   z-position of layer  5
+230.000000 cm   z-position of layer  6
+
+# flags
+support structure is    : NOT included
+radiator is             : included
+lattice grid is         : included
+kapton window is        : included
+gas frame is            : included
+padplane is             : included
+backpanel is            : included
+Aluminium ledge is      : included
+Power bus bars are      : included
+asics are               : included
+front-end boards are    : included
+GBTX readout boards are : included
+
+# modules
+     mod1     mod2     mod3     mod4     mod5     mod6     mod7     mod8    total
+---------------------------------------------------------------------------------
+        8        6       10        0        0        6        8       12            layer  1
+        8        6       10        0        0        6        8       12            layer  2
+        8        6       10        0        0        6        8       12            layer  3
+        8        6       10        0        0        6        8       12            layer  4
+        8        6       10        0        0        6       12       36            layer  5
+        8        6       10        0        0        6       12       36            layer  6
+
+---------------------------------------------------------------------------------
+       48       36       60        0        0       36       56      120      356   number of modules
+# febs
+        8s       4s       2s       4       12        9        6        3            FEBs per module
+                                                                                0   ultimate  FEBs
+      384s     144s     120s                                                  648   super     FEBs
+                                   0        0      324      336      360     1020   regular   FEBs
+      384      144      120        0        0      324      336      360     1668   number of FEBs
+# asics
+       10       10       10        5        8        7        7        7            ASICs per FEB
+       80       40       20       20       96       63       42       21            ASICs per module
+     3840     1440     1200        0        0     2268     2352     2520    13620   number of ASICs
+# gbtx
+       12        6        3        0        0        9        6        3            GBTXs per module
+      576      216      180        0        0      324      336      360     1992   number of GBTXs
+     3333       33        3        0        0      333       33        3            GBTX ROB types on module
+        0        0        0        0        0        0        0        0        0   number of GBTX ROB7
+        0        0        0        0        0        0        0        0        0   number of GBTX ROB5
+      192       72       60        0        0      108      112      120      664   number of GBTX ROB3
+# e-links
+      160       80       40       40      192      126       84       42    27240   e-links used
+      168       84       42        0        0      126       84       42    27888   e-links available
+    95.2%    95.2%    95.2%        -        -   100.0%   100.0%   100.0%    97.7%   e-link efficiency
+
+# channels
+     2560     1280      640      640     3072     2016     1344      672            channels per module
+      320      320      320      160      256      224      224      224            channels per feb
+   122880    46080    38400        0        0    72576    75264    80640   435840   channels used
+   122880s   46080s   38400s       0        0    72576    75264    80640   435840   channels available
+     0.0%u   47.6%s   52.4%r                                                        channel ratio
+
+   100.0%   channel efficiency
+
+ 238.12 m2      total surface    
+ 221.43 m2      total active area
+   2.66 m3      total gas volume 
+   5.08 cm2/ch  average channel size
+1968.32 ch/m2   channels per m2 active area
+
+# gas volume position
+   31.6000 cm   position of gas volume - layer  1
+   76.6000 cm   position of gas volume - layer  2
+  121.6000 cm   position of gas volume - layer  3
+  166.6000 cm   position of gas volume - layer  4
+  216.6000 cm   position of gas volume - layer  5
+  261.6000 cm   position of gas volume - layer  6
+
+# angles of acceptance
+v: 82.27 deg, h: 84.47 deg - vertical/horizontal - layer  1
+v: 71.99 deg, h: 76.93 deg - vertical/horizontal - layer  2
+v: 62.77 deg, h: 69.82 deg - vertical/horizontal - layer  3
+v: 54.85 deg, h: 63.30 deg - vertical/horizontal - layer  4
+v: 56.84 deg, h: 63.06 deg - vertical/horizontal - layer  5
+v: 51.74 deg, h: 58.48 deg - vertical/horizontal - layer  6
+
+# inner aperture
+v: 41.49 deg, h: 41.49 deg - vertical/horizontal - layer  1
+v: 20.26 deg, h: 20.26 deg - vertical/horizontal - layer  2
+v: 13.13 deg, h: 13.13 deg - vertical/horizontal - layer  3
+v:  9.67 deg, h:  9.67 deg - vertical/horizontal - layer  4
+v:  7.47 deg, h:  7.47 deg - vertical/horizontal - layer  5
+v:  6.20 deg, h:  6.20 deg - vertical/horizontal - layer  6
+
