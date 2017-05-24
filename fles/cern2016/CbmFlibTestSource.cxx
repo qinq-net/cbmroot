@@ -8,7 +8,7 @@
 #include "CbmFlibTestSource.h"
 
 #include "CbmTbDaqBuffer.h"
- 
+
 #include "TimesliceInputArchive.hpp"
 #include "Timeslice.hpp"
 #include "TimesliceSubscriber.hpp"
@@ -25,7 +25,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-  
+
 std::vector<CbmDigi*> vdigi;
 
 CbmFlibTestSource::CbmFlibTestSource()
@@ -83,11 +83,11 @@ Bool_t CbmFlibTestSource::Init()
     LOG(INFO) << "Open TSPublisher at " << connector << FairLogger::endl;
     fInputFileList.Add(new TObjString(connector));
     fSource = new fles::TimesliceSubscriber(connector.Data());
-    if ( !fSource) { 
+    if ( !fSource) {
       LOG(FATAL) << "Could not connect to publisher." << FairLogger::endl;
-    } 
+    }
   } else {
-    // --- Open input file 
+    // --- Open input file
     TObjString* tmp =
       dynamic_cast<TObjString*>(fInputFileList.At(fFileCounter));
     fFileName = tmp->GetString();
@@ -100,18 +100,18 @@ Bool_t CbmFlibTestSource::Init()
     }
     fclose(inputFile);
     fSource = new fles::TimesliceInputArchive(fFileName.Data());
-    if ( !fSource) { 
+    if ( !fSource) {
       LOG(FATAL) << "Could not open input file." << FairLogger::endl;
-    } 
+    }
   }
 
   for (auto it=fUnpackers.begin(); it!=fUnpackers.end(); ++it) {
-    LOG(INFO) << "Initialize " << it->second->GetName() << 
+    LOG(INFO) << "Initialize " << it->second->GetName() <<
       " for systemID 0x" << std::hex << it->first << std::dec << FairLogger::endl;
     it->second->Init();
     //    it->second->Register();
   }
-  
+
   return kTRUE;
 }
 
@@ -132,7 +132,7 @@ void CbmFlibTestSource::AddPath(const TString& tFileDirectory,
 
   TRegexp* tRegexp = new TRegexp(tFileNameWildCard.Data(), kTRUE);
 
-  TSystemDirectory* tSystemDirectory = 
+  TSystemDirectory* tSystemDirectory =
          new TSystemDirectory("dir", tFileDirectory.Data());
 
   TString tDirectoryName(tFileDirectory);
@@ -143,25 +143,25 @@ void CbmFlibTestSource::AddPath(const TString& tFileDirectory,
   }
   TList* tList = tSystemDirectory->GetListOfFiles();
 
-  for (Int_t iRun=0; iRun<100; iRun++) {
-    
+  for (Int_t iRun=0; iRun< 999; iRun++) {
+
     Char_t* cRun = Form("_%04d.t",iRun);
     TIterator* tIter = tList->MakeIterator();
     TSystemFile* tSystemFile;
     TString tFileName;
-    
+
 
     while(NULL != (tSystemFile = (TSystemFile*)tIter->Next()))
     {
       tFileName = tSystemFile->GetName();
 
       //LOG(INFO)<<" Check file  "<<tFileName.Data()<<" for "<<cRun<<FairLogger::endl;
- 
+
       if( tFileName.Contains(*tRegexp) && tFileName.Contains(cRun) )
       {
 	tFileName = tDirectoryName + tFileName;
 
-	LOG(INFO)<<" Add file to input "<<tFileName.Data()<<FairLogger::endl; 
+	LOG(INFO)<<" Add file to input "<<tFileName.Data()<<FairLogger::endl;
 
 	AddFile(tFileName);
 	break;
@@ -170,7 +170,7 @@ void CbmFlibTestSource::AddPath(const TString& tFileDirectory,
   }
   tList->Delete();
   if(0==fInputFileList.GetEntries())
-  LOG(FATAL)<<" did not find any valid input file at "<<tFileDirectory.Data()<<FairLogger::endl; 
+  LOG(FATAL)<<" did not find any valid input file at "<<tFileDirectory.Data()<<FairLogger::endl;
 }
 
 void CbmFlibTestSource::SetParUnpackers()
@@ -205,21 +205,21 @@ Bool_t CbmFlibTestSource::ReInitUnpackers()
     return result;
 }
 
-Int_t CbmFlibTestSource::ReadEvent(UInt_t iEv) 
+Int_t CbmFlibTestSource::ReadEvent(UInt_t iEv)
 {
 
   LOG(DEBUG) << "Request received for "<<iEv<<". event "
              << FairLogger::endl;
 
-    
-  while ( 1 ==  GetNextEvent()){   
+
+  while ( 1 ==  GetNextEvent()){
       if (fBufferFillNeeded) {
 	Int_t iRet = FillBuffer();
 	if (iRet>0) break;  // no more data
       }
   }
 
-  if ( fSource->eos() && fFileCounter < fInputFileList.GetEntries()){	  
+  if ( fSource->eos() && fFileCounter < fInputFileList.GetEntries()){
     fFileCounter++;
     TObjString* tmp =
       dynamic_cast<TObjString*>(fInputFileList.At(fFileCounter));
@@ -229,9 +229,9 @@ Int_t CbmFlibTestSource::ReadEvent(UInt_t iEv)
 		<<") Flib input file " << fFileName << FairLogger::endl;
       delete(fSource);
       fSource = new fles::TimesliceInputArchive(fFileName.Data());
-      if ( !fSource) { 
+      if ( !fSource) {
 	LOG(FATAL) << "Could not open input file." << FairLogger::endl;
-      } 
+      }
     }
   }
   return fSource->eos(); // no more data; trigger end of run
@@ -239,17 +239,17 @@ Int_t CbmFlibTestSource::ReadEvent(UInt_t iEv)
 
 void CbmFlibTestSource::PrintMicroSliceDescriptor(const fles::MicrosliceDescriptor& mdsc)
 {
-  LOG(INFO) << "Header ID: Ox" << std::hex << static_cast<int>(mdsc.hdr_id) 
+  LOG(INFO) << "Header ID: Ox" << std::hex << static_cast<int>(mdsc.hdr_id)
             << std::dec << FairLogger::endl;
-  LOG(INFO) << "Header version: Ox" << std::hex << static_cast<int>(mdsc.hdr_ver) 
+  LOG(INFO) << "Header version: Ox" << std::hex << static_cast<int>(mdsc.hdr_ver)
             << std::dec << FairLogger::endl;
   LOG(INFO) << "Equipement ID: " << mdsc.eq_id << FairLogger::endl;
   LOG(INFO) << "Flags: " << mdsc.flags << FairLogger::endl;
-  LOG(INFO) << "Sys ID: Ox" << std::hex << static_cast<int>(mdsc.sys_id) 
+  LOG(INFO) << "Sys ID: Ox" << std::hex << static_cast<int>(mdsc.sys_id)
             << std::dec << FairLogger::endl;
-  LOG(INFO) << "Sys version: Ox" << std::hex << static_cast<int>(mdsc.sys_ver) 
+  LOG(INFO) << "Sys version: Ox" << std::hex << static_cast<int>(mdsc.sys_ver)
             << std::dec << FairLogger::endl;
-  LOG(INFO) << "Microslice Idx: " << mdsc.idx << FairLogger::endl; 
+  LOG(INFO) << "Microslice Idx: " << mdsc.idx << FairLogger::endl;
   LOG(INFO) << "Checksum: " << mdsc.crc << FairLogger::endl;
   LOG(INFO) << "Size: " << mdsc.size << FairLogger::endl;
   LOG(INFO) << "Offset: " << mdsc.offset << FairLogger::endl;
@@ -258,19 +258,19 @@ void CbmFlibTestSource::PrintMicroSliceDescriptor(const fles::MicrosliceDescript
 Bool_t CbmFlibTestSource::CheckTimeslice(const fles::Timeslice& ts)
 {
     if ( 0 == ts.num_components() ) {
-      LOG(ERROR) << "No Component in TS " << ts.index() 
+      LOG(ERROR) << "No Component in TS " << ts.index()
                  << FairLogger::endl;
       return 1;
     }
-    LOG(INFO) << "Found " << ts.num_components() 
-              << " different components in timeslice" << FairLogger::endl; 
+    LOG(INFO) << "Found " << ts.num_components()
+              << " different components in timeslice" << FairLogger::endl;
     return kTRUE;
 }
 
 void CbmFlibTestSource::Close()
 {
   for (auto it=fUnpackers.begin(); it!=fUnpackers.end(); ++it) {
-    LOG(INFO) << "Finish " << it->second->GetName() << " for systemID 0x" 
+    LOG(INFO) << "Finish " << it->second->GetName() << " for systemID 0x"
               << std::hex << it->first << std::dec << FairLogger::endl;
     it->second->Finish();
   }
@@ -292,34 +292,34 @@ Int_t CbmFlibTestSource::FillBuffer()
       if ( 0 == fTSCounter%10000 ) {
         LOG(INFO) << "Analyse Event " << fTSCounter << FairLogger::endl;
       }
-            
+
       const fles::Timeslice& ts = *timeslice;
       auto tsIndex = ts.index();
       if( (tsIndex != (fTSNumber+1)) &&( fTSNumber != 0) ) {
-        LOG(WARNING) << "Missed Timeslices. Old TS Number was " << fTSNumber 
+        LOG(WARNING) << "Missed Timeslices. Old TS Number was " << fTSNumber
                      << " New TS Number is " << tsIndex << FairLogger::endl;
       }
       fTSNumber=tsIndex;
 
       if ( 0 ==fTSNumber%10000 ) {
         LOG(INFO) << "Reading Timeslice " << fTSNumber
-                  << FairLogger::endl;    
+                  << FairLogger::endl;
       }
 
       for (size_t c {0}; c < ts.num_components(); c++) {
         auto systemID = static_cast<int>(ts.descriptor(c, 0).sys_id);
 
-        LOG(DEBUG) << "Found systemID: " << std::hex 
+        LOG(DEBUG) << "Found systemID: " << std::hex
                    << systemID << std::dec << FairLogger::endl;
-        
+
         if(gLogger->IsLogNeeded(DEBUG1)) {
           PrintMicroSliceDescriptor(ts.descriptor(c, 0));
         }
 
         auto it=fUnpackers.find(systemID);
         if (it == fUnpackers.end()) {
-          LOG(DEBUG) << "Could not find unpacker for system id 0x" 
-                     << std::hex << systemID << std::dec 
+          LOG(DEBUG) << "Could not find unpacker for system id 0x"
+                     << std::hex << systemID << std::dec
                      << FairLogger::endl;
         } else {
           it->second->DoUnpack(ts, c);
@@ -340,11 +340,11 @@ Int_t CbmFlibTestSource::GetNextEvent()
  //Double_t dTLast=0.;
  while (!bOut)
  {
-  fTimeBufferOut = fBuffer->GetTimeLast(); 
-  LOG(DEBUG) << "Buffer has " << fBuffer->GetSize() << " entries and contains data from " 
-            << std::setprecision(9) << std::fixed 
+  fTimeBufferOut = fBuffer->GetTimeLast();
+  LOG(DEBUG) << "Buffer has " << fBuffer->GetSize() << " entries and contains data from "
+            << std::setprecision(9) << std::fixed
             << static_cast<Double_t>(fBuffer->GetTimeFirst()) * 1.e-9 << " to "
-            << std::setprecision(9) << std::fixed 
+            << std::setprecision(9) << std::fixed
             << static_cast<Double_t>(fBuffer->GetTimeLast()) * 1.e-9 << " s" << FairLogger::endl;
 
   if(fTimeBufferOut - fBuffer->GetTimeFirst()<1.E6) {fBufferFillNeeded=kTRUE; return 1;} // store 1 msec of data in memory
@@ -358,17 +358,17 @@ Int_t CbmFlibTestSource::GetNextEvent()
 
   if(dTEnd > fTimeBufferOut)  {
     LOG(WARNING) <<Form("Remaining buffer < %f with %d entries is not sufficient for digi ending at %f -> skipped ",
-			fTimeBufferOut, fBuffer->GetSize(), dTEnd ) 
-		 <<  FairLogger::endl; 
+			fTimeBufferOut, fBuffer->GetSize(), dTEnd )
+		 <<  FairLogger::endl;
     fBufferFillNeeded=kTRUE; return 1;
   }
-  
+
   Bool_t bDet[fiReqDigiAddr.size()];
   for(Int_t i=0; i<fiReqDigiAddr.size(); i++) bDet[i]=kFALSE; //initialize
 
   nDigi=0;
   while(digi) { // build digi array
-    if (nDigi == vdigi.size()) vdigi.resize(nDigi+100); 
+    if (nDigi == vdigi.size()) vdigi.resize(nDigi+100);
     vdigi[nDigi++]=digi;
     for(Int_t i=0; i<fiReqDigiAddr.size(); i++)
     if( (digi->GetAddress() & AddrMask) == fiReqDigiAddr[i]) bDet[i]=kTRUE;
@@ -382,7 +382,7 @@ Int_t CbmFlibTestSource::GetNextEvent()
 
   //dTLast = vdigi[nDigi-1]->GetTime();
 
-  for(Int_t i=0; i<fiReqDigiAddr.size(); i++) 
+  for(Int_t i=0; i<fiReqDigiAddr.size(); i++)
     if(bDet[i]==kFALSE) break;
     else if( i == fiReqDigiAddr.size()-1 ) bOut=kTRUE;
 
@@ -392,13 +392,13 @@ Int_t CbmFlibTestSource::GetNextEvent()
     digi=vdigi[iDigi];
     Int_t detId = digi->GetSystemId();
     Int_t flibId = fDetectorSystemMap[detId];
-    LOG(DEBUG1) << "Digi has system ID " << detId 
+    LOG(DEBUG1) << "Digi has system ID " << detId
                << " which maps to FlibId "<< flibId
               //<< ", T "<<digi->GetTime()<<" < "<<dTEnd
               << FairLogger::endl;
     std::map<Int_t, CbmTSUnpack*>::iterator it=fUnpackers.find(flibId);
     if (it == fUnpackers.end()) {
-      LOG(ERROR) << "Skipping digi with unknown id " 
+      LOG(ERROR) << "Skipping digi with unknown id "
                  << detId << FairLogger::endl;
       continue;
     } else {
@@ -408,13 +408,13 @@ Int_t CbmFlibTestSource::GetNextEvent()
       else          digi->Delete();
     }
     //    digi = fBuffer->GetNextData(dTEnd);
-  }; 
+  };
   vdigi.clear();
  }  // end of bOut condition
  LOG(DEBUG) << "Buffer has " << fBuffer->GetSize() << " entries left, "
             << nDigi <<" digis in current event. "<< FairLogger::endl;
- //( fBuffer->GetSize() <= 100000 ) ? fBufferFillNeeded=kTRUE : fBufferFillNeeded=kFALSE; 
- //((dTLast + 1.E10) >  fTimeBufferOut) ? fBufferFillNeeded=kTRUE : fBufferFillNeeded=kFALSE;  // store 10 sec in memory 
+ //( fBuffer->GetSize() <= 100000 ) ? fBufferFillNeeded=kTRUE : fBufferFillNeeded=kFALSE;
+ //((dTLast + 1.E10) >  fTimeBufferOut) ? fBufferFillNeeded=kTRUE : fBufferFillNeeded=kFALSE;  // store 10 sec in memory
  return 0;
 }
 
