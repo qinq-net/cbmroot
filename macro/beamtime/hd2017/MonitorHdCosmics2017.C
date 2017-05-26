@@ -14,9 +14,6 @@ void MonitorHdCosmics2017(TString inFile = "")
 {
   TString srcDir = gSystem->Getenv("VMCWORKDIR");
 //  TString inDir  = srcDir + "/input/";
-  TString inDir  = "/home/mework/star/";
-  if( "" != inFile )
-   inFile = inDir + inFile;
 
   // --- Specify number of events to be produced.
   // --- -1 means run until the end of the input file.
@@ -35,14 +32,14 @@ void MonitorHdCosmics2017(TString inFile = "")
   // --- Define parameter files
   TList *parFileList = new TList();
   TString paramDir = "./";
-  
+
   TString paramFileTof = paramDir + "MapTofHdCosmics2017.par";
   TObjString* tutDetDigiFileTof = new TObjString(paramFileTof);
   parFileList->Add(tutDetDigiFileTof);
 
   // --- Set debug level
   gDebug = 0;
-  
+
   std::cout << std::endl;
   std::cout << ">>> MonitorStar2017: output file is " << outFile << std::endl;
 
@@ -51,13 +48,15 @@ void MonitorHdCosmics2017(TString inFile = "")
 
   std::cout << std::endl;
   std::cout << ">>> MonitorStar2017: Initialising..." << std::endl;
-  
+
   // Get4 Unpacker
-  CbmTSMonitorTofStar* test_monitor_tof = new CbmTSMonitorTofStar();
+//  CbmTSMonitorTofStar* test_monitor_tof = new CbmTSMonitorTofStar();
+  CbmTSMonitorTofLab* test_monitor_tof = new CbmTSMonitorTofLab();
+//  test_monitor_tof->SetCoincidenceMapOn();
 /*
   test_monitor_tof->SetPulserMode();
   test_monitor_tof->SetPulserFee(0, 1);
-  test_monitor_tof->SetPulserChans(   0,   8,  16,  24,  32,  40,  48,  56, 
+  test_monitor_tof->SetPulserChans(   0,   8,  16,  24,  32,  40,  48,  56,
                                      64,  72,  80,  88,  96, 104, 112, 120 );
 */
    test_monitor_tof->SetMsOverlap(1);
@@ -104,11 +103,11 @@ void MonitorHdCosmics2017(TString inFile = "")
   std::cout << ">>> MonitorStar2017: Starting run..." << std::endl;
   run->Run(nEvents, 0); // run until end of input file
   timer.Stop();
-  
+
 //  run->Finish();
 
   std::cout << "Processed " << std::dec << source->GetTsCount() << " timeslices" << std::endl;
-    
+
   // --- End-of-run info
   Double_t rtime = timer.RealTime();
   Double_t ctime = timer.CpuTime();

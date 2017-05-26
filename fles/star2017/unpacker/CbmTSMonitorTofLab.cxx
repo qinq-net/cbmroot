@@ -118,12 +118,11 @@ CbmTSMonitorTofLab::CbmTSMonitorTofLab() :
     fFeetRateDate_gDPB(),
     fiRunStartDateTimeSec( -1 ),
     fiBinSizeDatePlots( -1 ),
-/*
+    fbEnableCoincMap(kFALSE),
     fulLastMsIdx(0),
     fbHitsInLastTs(kFALSE),
     fvulHitEpochBuffLastTs(),
     fvhCoincOffsetEpochGet4(),
-*/
     fulGdpbTsMsb(0),
     fulGdpbTsLsb(0),
     fulStarTsMsb(0),
@@ -276,6 +275,9 @@ void CbmTSMonitorTofLab::CreateHistograms()
 #ifdef USE_HTTP_SERVER
   THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
 //  server->SetJSROOT("https://root.cern.ch/js/latest");
+  LOG(INFO) << "Using Http Server " << server
+            << "with JSROOT = "
+            << FairLogger::endl;
 #endif
 
   TString name { "" };
@@ -770,27 +772,28 @@ void CbmTSMonitorTofLab::CreateHistograms()
   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
 
   ///* ASIC coincidences & offsets mapping *///
-/*
-  fvulHitEpochBuffLastTs.resize(fNrOfGet4);  //! Dims: [gDPB][hits]
-  for( UInt_t uAsicA = 0; uAsicA < fNrOfGet4 - 1; uAsicA ++ )
+  if( fbEnableCoincMap )
   {
-      name = Form("fvhCoincOffsetEpochGet4__g%03u", uAsicA);
-      title = Form(
-          "Distance in epoch between hits in Get4 %03u and hits in another Get4 ASIC in same TS; GET4 B index [] ; Hit B - Hit A [Epoch]; Counts []",
-          uAsicA );
-      TH2* ph2 = new TH2I( name.Data(), title.Data(),
-               fNrOfGet4 - uAsicA - 1, uAsicA + 1, fNrOfGet4,
-               20000, -10000, 10000
-               );
-      fvhCoincOffsetEpochGet4.push_back( ph2 );
+     fvulHitEpochBuffLastTs.resize(fNrOfGet4);  //! Dims: [gDPB][hits]
+     for( UInt_t uAsicA = 0; uAsicA < fNrOfGet4 - 1; uAsicA ++ )
+     {
+         name = Form("fvhCoincOffsetEpochGet4__g%03u", uAsicA);
+         title = Form(
+             "Distance in epoch between hits in Get4 %03u and hits in another Get4 ASIC in same TS; GET4 B index [] ; Hit B - Hit A [Epoch]; Counts []",
+             uAsicA );
+         TH2* ph2 = new TH2I( name.Data(), title.Data(),
+                  fNrOfGet4 - uAsicA - 1, uAsicA + 1, fNrOfGet4,
+                  20000, -10000, 10000
+                  );
+         fvhCoincOffsetEpochGet4.push_back( ph2 );
 
-      fHM->Add( name.Data(), ph2 );
+         fHM->Add( name.Data(), ph2 );
 #ifdef USE_HTTP_SERVER
-      if (server)
-         server->Register("/TofCoinc", fHM->H2(name.Data()));
+         if (server)
+            server->Register("/TofCoinc", fHM->H2(name.Data()));
 #endif
-  } // for( UInt_t uAsicA = 0; uAsicA < fNrOfGet4 - 1; uAsicA ++ )
-*/
+     } // for( UInt_t uAsicA = 0; uAsicA < fNrOfGet4 - 1; uAsicA ++ )
+  } // if( fbEnableCoincMap )
 
   name = "hSpill";
   title = "Counts per channel in Current Spill; X [Strip]; Y [End]; Counts";
@@ -1235,29 +1238,30 @@ Bool_t CbmTSMonitorTofLab::DoUnpack(const fles::Timeslice& ts,
   }
 
   ///* ASIC coincidences & offsets mapping *///
-/*
-  if( 0 == component && fbHitsInLastTs )
+  if( fbEnableCoincMap )
   {
-      for( UInt_t uAsicA = 0; uAsicA < fNrOfGet4 - 1; uAsicA ++ )
-      {
-         for( UInt_t uHitA = 0; uHitA < fvulHitEpochBuffLastTs[uAsicA].size(); uHitA ++ )
+     if( 0 == component && fbHitsInLastTs )
+     {
+         for( UInt_t uAsicA = 0; uAsicA < fNrOfGet4 - 1; uAsicA ++ )
          {
-            for( UInt_t uAsicB = uAsicA; uAsicB < fNrOfGet4; uAsicB ++ )
+            for( UInt_t uHitA = 0; uHitA < fvulHitEpochBuffLastTs[uAsicA].size(); uHitA ++ )
             {
-               for( UInt_t uHitB = 0; uHitB < fvulHitEpochBuffLastTs[uAsicB].size(); uHitB ++ )
+               for( UInt_t uAsicB = uAsicA; uAsicB < fNrOfGet4; uAsicB ++ )
                {
-                  fvhCoincOffsetEpochGet4[uAsicA]->Fill( uAsicB,
-                           fvulHitEpochBuffLastTs[uAsicB][uHitB]
-                         - fvulHitEpochBuffLastTs[uAsicA][uHitA] );
-               } // for( UInt_t uHitB = 0; uHitB < fvulHitEpochBuffLastTs[uAsicB].size(); uHitB ++ )
-            } // for( UInt_t uAsicA = 0; uAsicA < fNrOfGet4 - 1; uAsicA ++ )
-         } // for( UInt_t uHitA = 0; uHitA < fvulHitEpochBuffLastTs[uAsicA].size(); uHitA ++ )
-         fvulHitEpochBuffLastTs[uAsicA].clear();
-      } // for( UInt_t uAsicA = 0; uAsicA < fNrOfGet4 - 1; uAsicA ++ )
-      fvulHitEpochBuffLastTs[fNrOfGet4 - 1].clear();
-      fbHitsInLastTs = kFALSE;
-  } // if( 0 == component && fbHitsInLastTs )
-*/
+                  for( UInt_t uHitB = 0; uHitB < fvulHitEpochBuffLastTs[uAsicB].size(); uHitB ++ )
+                  {
+                     fvhCoincOffsetEpochGet4[uAsicA]->Fill( uAsicB,
+                              fvulHitEpochBuffLastTs[uAsicB][uHitB]
+                            - fvulHitEpochBuffLastTs[uAsicA][uHitA] );
+                  } // for( UInt_t uHitB = 0; uHitB < fvulHitEpochBuffLastTs[uAsicB].size(); uHitB ++ )
+               } // for( UInt_t uAsicA = 0; uAsicA < fNrOfGet4 - 1; uAsicA ++ )
+            } // for( UInt_t uHitA = 0; uHitA < fvulHitEpochBuffLastTs[uAsicA].size(); uHitA ++ )
+            fvulHitEpochBuffLastTs[uAsicA].clear();
+         } // for( UInt_t uAsicA = 0; uAsicA < fNrOfGet4 - 1; uAsicA ++ )
+         fvulHitEpochBuffLastTs[fNrOfGet4 - 1].clear();
+         fbHitsInLastTs = kFALSE;
+     } // if( 0 == component && fbHitsInLastTs )
+  } // if( fbEnableCoincMap )
 
   // Periodic histo saving & Printout of nb events log
   std::chrono::time_point<std::chrono::system_clock> timeCurrent = std::chrono::system_clock::now();
@@ -1347,7 +1351,7 @@ Bool_t CbmTSMonitorTofLab::DoUnpack(const fles::Timeslice& ts,
         component, m));
 
     uint32_t size = msDescriptor.size;
-//    fulLastMsIdx = msDescriptor.idx;
+    fulLastMsIdx = msDescriptor.idx;
     if (size > 0)
       LOG(DEBUG) << "Microslice: " << msDescriptor.idx << " has size: " << size
                     << FairLogger::endl;
@@ -1676,10 +1680,11 @@ void CbmTSMonitorTofLab::FillHitInfo(ngdpb::Message mess)
     } // if (100 > iMess)
 
     ///* ASIC coincidences & offsets mapping *///
-/*
-    fbHitsInLastTs = kTRUE;
-    fvulHitEpochBuffLastTs[fGet4Nr].push_back( curEpochGdpbGet4 );
-*/
+    if( fbEnableCoincMap )
+    {
+       fbHitsInLastTs = kTRUE;
+       fvulHitEpochBuffLastTs[fGet4Nr].push_back( curEpochGdpbGet4 );
+    } // if( fbEnableCoincMap )
   } // if( fCurrentEpoch[rocId].end() != fCurrentEpoch[rocId].find( get4Id ) )
   else
     LOG(WARNING) << "Found hit in gdpbId w/o epoch yet: "
@@ -2252,13 +2257,14 @@ void CbmTSMonitorTofLab::SaveAllHistos( TString sFileName )
   gDirectory->cd("..");
 
   ///* ASIC coincidences & offsets mapping *///
-/*
-  gDirectory->mkdir("TofCoinc");
-  gDirectory->cd("TofCoinc");
-  for( UInt_t uAsicA = 0; uAsicA < fvhCoincOffsetEpochGet4.size(); uAsicA ++ )
-      fvhCoincOffsetEpochGet4[uAsicA]->Write();
-  gDirectory->cd("..");
-*/
+  if( fbEnableCoincMap )
+  {
+     gDirectory->mkdir("TofCoinc");
+     gDirectory->cd("TofCoinc");
+     for( UInt_t uAsicA = 0; uAsicA < fvhCoincOffsetEpochGet4.size(); uAsicA ++ )
+         fvhCoincOffsetEpochGet4[uAsicA]->Write();
+     gDirectory->cd("..");
+  } // if( fbEnableCoincMap )
 
   ///* STAR event building/cutting *///
   gDirectory->mkdir("Star_Raw");

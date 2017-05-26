@@ -73,6 +73,8 @@ class CbmTSMonitorTofLab: public CbmTSUnpack {
 
     void SetRunStart( Int_t dateIn, Int_t timeIn, Int_t iBinSize = 5 );
 
+    void SetCoincidenceMapOn( Bool_t bEnable = kTRUE ) { fbEnableCoincMap = bEnable; }
+
     inline void SetGet4Mode24b( Bool_t inGet4Mode24b = kTRUE ) { fbGet4M24b = inGet4Mode24b; }
     inline void SetGet4v20Mode( Bool_t inGet4v20Mode = kTRUE ) { fbGet4v20 = inGet4v20Mode; }
     inline void SetPulserMode( Bool_t inPulserMode = kTRUE ) { fbPulserMode = inPulserMode; SetPulserChans(); }
@@ -179,12 +181,11 @@ class CbmTSMonitorTofLab: public CbmTSUnpack {
     Int_t             fiBinSizeDatePlots;
 
     ///* ASIC coincidences & offsets mapping *///
-/*
+    Bool_t    fbEnableCoincMap;
     ULong64_t fulLastMsIdx;
     Bool_t    fbHitsInLastTs;
     std::vector< std::vector< Long64_t > > fvulHitEpochBuffLastTs;  //! Dims: [gDPB][hits]
     std::vector< TH2 * >                   fvhCoincOffsetEpochGet4; //! Dims: [gDPB - 1]
-*/
 
     ///* STAR TRIGGER detection *///
     ULong64_t fulGdpbTsMsb;
