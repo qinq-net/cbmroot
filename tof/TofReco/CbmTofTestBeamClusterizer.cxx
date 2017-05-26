@@ -1569,6 +1569,8 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
                            + (fStop.GetNanoSec() - fStart.GetNanoSec())/1e9 );
  Int_t iNbTofHits  = fTofHitsColl->GetEntries();
  CbmTofHit  *pHit;
+ //gGeoManager->SetTopVolume( gGeoManager->FindVolumeFast("tof_v14a") );
+ gGeoManager->CdTop();
 
  if(0<iNbTofHits){
  /* Double_t    dCluMul=0.;*/
@@ -1589,6 +1591,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
     LOG(DEBUG) <<"CbmTofTestBeamClusterizer::FillHistos: Muls: "
                      <<fviClusterMul[fDutId][fDutSm][fDutRpc]
                <<", "<<fviClusterMul[fSelId][fSelSm][fSelRpc]
+               <<", "<<fviClusterMul[5][0][0]
                <<FairLogger::endl;
    // monitor multiplicities 
    Int_t iNbDet=fDigiBdfPar->GetNbDet();
@@ -1909,9 +1912,6 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
    }
  }  // 0<iNSel software triffer check end 
  
-   /// Go to Top volume of the geometry in the GeoManager to make sure
-   /// our nodes are found
-   gGeoManager->CdTop();
  for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)
  {
    pHit = (CbmTofHit*) fTofHitsColl->At( iHitInd );
@@ -1946,7 +1946,6 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
                 << FairLogger::endl;
      continue;
    }
-
    /*TGeoNode *fNode=*/        // prepare global->local trafo
    gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
 
@@ -1962,7 +1961,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
    Double_t hitpos_local[3];
    TGeoNode* cNode= gGeoManager->GetCurrentNode();
    gGeoManager->MasterToLocal(hitpos, hitpos_local);
-   LOG(DEBUG1)<< Form(" MasterToLocal for node %p: (%6.1f,%6.1f,%6.1f) -> (%6.1f,%6.1f,%6.1f)", 
+   LOG(DEBUG1)<< Form(" MasterToLocal for node %p: (%6.1f,%6.1f,%6.1f) ->(%6.1f,%6.1f,%6.1f)", 
                  cNode, hitpos[0], hitpos[1], hitpos[2], 
                  hitpos_local[0], hitpos_local[1], hitpos_local[2])
               <<FairLogger::endl;
@@ -2734,7 +2733,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
          Double_t YMean=((TProfile *)hAvPos_pfx)->GetBinContent(iB+1);  //nh +1 empirical(?)
 	 htempPos_py=htempPos->ProjectionY(Form("%s_py",htempPos->GetName()),1,iNbCh);
 	 const Double_t YFITMIN=500.;
-	 if(htempPos_py->GetEntries() > YFITMIN) {
+	 if(htempPos_py->GetEntries() > YFITMIN && fPosYMaxScal < 2. && fPosYMaxScal < 2.) {
 	   LOG(DEBUG1)<<Form("Determine YMean in %s by fit to %d entries",
 			     htempPos->GetName(),(Int_t)htempPos_py->GetEntries()) 
 		      <<FairLogger::endl;
@@ -2898,7 +2897,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
           Double_t YMean=((TProfile *)htempPos_pfx)->GetBinContent(iCh+1);  //set default
 	  htempPos_py=htempPos->ProjectionY(Form("%s_py%02d",htempPos->GetName(),iCh),iCh+1,iCh+1);
 	  const Double_t YFITMIN=500.;
-	  if(htempPos_py->GetEntries() > YFITMIN) {
+	  if(htempPos_py->GetEntries() > YFITMIN  && fPosYMaxScal < 2.) {
 	    LOG(DEBUG1)<<Form("Determine YMean in %s of channel %d by fit to %d entries",
 			    htempPos->GetName(),iCh,(Int_t)htempPos_py->GetEntries()) 
 		       <<FairLogger::endl;
@@ -2945,13 +2944,13 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
           if(htempTOff_px->GetBinContent(iCh+1)>WalkNHmin){
             fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0] += -dTYOff + TMean;
             fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1] += +dTYOff + TMean;
-          }
-	  LOG(DEBUG3)<<Form("Calib: TSRC %d%d%d%d, hits %6.0f, new Off %8.0f,%8.0f ",
+	    LOG(INFO)<<Form("Calib: TSRC %d%d%d%d, hits %6.0f, dTY  %8.3f, TM %8.3f -> new Off %8.3f,%8.3f ",
 			  iSmType,iSm,iRpc,iCh,htempTOff_px->GetBinContent(iCh+1),
+			  dTYOff,TMean,
 			  fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0],
 			  fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1])
-                    <<FairLogger::endl;
-
+		     <<FairLogger::endl;
+	  }
           /*
            Double_t TotMean=((TProfile *)htempTot_pfx)->GetBinContent(iCh+1);  //nh +1 empirical(!)
           if(0.001 < TotMean){
@@ -3466,6 +3465,8 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
     * direction
     */
   Int_t iMess =0;
+  //gGeoManager->SetTopVolume( gGeoManager->FindVolumeFast("tof_v14a") );
+  gGeoManager->CdTop();
    
   if(NULL == fTofDigisColl) {
     LOG(INFO) <<" No CalDigis defined ! Check! " << FairLogger::endl;
@@ -3880,9 +3881,6 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
    Double_t dTimeDif = 0.0;
    Double_t dTotS = 0.0;
    fiNbSameSide = 0;
-   /// Go to Top volume of the geometry in the GeoManager to make sure
-   /// our nodes are found
-   gGeoManager->CdTop();
    if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
    {
       for( Int_t iSmType = 0; iSmType < iNbSmTypes; iSmType++ )
@@ -4006,12 +4004,11 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                               /* Int_t iLastChId = iChId; // Save Last hit channel*/
 
                               // 2 Digis = both sides present
-			      Int_t iCh0=(iNbCh-1)/2;
-                              CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh0);
+                              CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh);
                               iChId = fTofId->SetDetectorInfo( xDetInfo );
                               Int_t iUCellId=CbmTofAddress::GetUniqueAddress(iSm,iRpc,iCh,0,iSmType);
-                              LOG(DEBUG1)<< Form(" TSRC %d%d%d%d refCh %d size %3lu ",
-                                                 iSmType,iSm,iRpc,iCh,iCh0, fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size())
+                              LOG(DEBUG1)<< Form(" TSRC %d%d%d%d size %3lu ",
+                                                 iSmType,iSm,iRpc,iCh,fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size())
                                          << Form(" ChId: 0x%08x 0x%08x ",iChId,iUCellId)
                                          <<FairLogger::endl;
                               fChannelInfo = fDigiPar->GetCell( iChId );
@@ -4025,8 +4022,8 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 
                               TGeoNode *fNode=        // prepare local->global trafo
                               gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
-                              LOG(DEBUG2)<<Form(" Node at (%6.1f,%6.1f,%6.1f) : %p, %s",
-						fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode,fNode->GetName())
+                              LOG(DEBUG2)<<Form(" Node at (%6.1f,%6.1f,%6.1f) : %p",
+                                               fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode)
                                         <<FairLogger::endl;
                               //          fNode->Print();      
 
@@ -4103,9 +4100,8 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                               dTotS = xDigiA->GetTot() + xDigiB->GetTot();
 
                    
-                              // use local coordinates, (0,0,0) is in the center of counter, 
-			      // checked with histo dxx in CbmHadronAnalysis
-			      dPosX=(Double_t) (((Double_t)(-iNbCh+1)/2 + iCh ) - 0.5) *fChannelInfo->GetSizex();
+                              // use local coordinates, (0,0,0) is in the center of counter  ?
+                              dPosX=((Double_t)(-iNbCh/2 + iCh)+0.5)*fChannelInfo->GetSizex();
                               dPosZ=0.;
 
                               LOG(DEBUG1)
@@ -4163,28 +4159,22 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                                     dWeightedPosX /= dWeightsSum;
                                     dWeightedPosY /= dWeightsSum;
                                     dWeightedPosZ /= dWeightsSum;
-
+                                    //  TVector3 hitPosLocal(dWeightedPosX, dWeightedPosY, dWeightedPosZ);
+                                    //TVector3 hitPos;
                                     Double_t hitpos_local[3];
+                                    hitpos_local[0] = dWeightedPosX;
+                                    hitpos_local[1] = dWeightedPosY;
+                                    hitpos_local[2] = dWeightedPosZ;
+
                                     Double_t hitpos[3];
                                     TGeoNode*         cNode   = gGeoManager->GetCurrentNode();
                                     /*TGeoHMatrix* cMatrix =*/ gGeoManager->GetCurrentMatrix();
                                     //cNode->Print();
                                     //cMatrix->Print();
-				    hitpos[0]=fChannelInfo->GetX();
-				    hitpos[1]=fChannelInfo->GetY();
-				    hitpos[2]=fChannelInfo->GetZ();
-				    gGeoManager->MasterToLocal(hitpos, hitpos_local);
-                                    LOG(DEBUG1)<<
-                                    Form(" MasterToLocal for node %p: (%6.1f,%6.1f,%6.1f) <- (%6.1f,%6.1f,%6.1f)", 
-                                         cNode, hitpos_local[0], hitpos_local[1], hitpos_local[2], 
-                                         hitpos[0], hitpos[1], hitpos[2])
-                                              <<FairLogger::endl;
-                                    hitpos_local[0] += dWeightedPosX;
-                                    hitpos_local[1] += dWeightedPosY;
-                                    hitpos_local[2] += dWeightedPosZ;
+
                                     gGeoManager->LocalToMaster(hitpos_local, hitpos);
                                     LOG(DEBUG1)<<
-                                    Form(" LocalToMaster for node %p: (%6.1f,%6.1f,%6.1f) -> (%6.1f,%6.1f,%6.1f)", 
+                                    Form(" LocalToMaster for node %p: (%6.1f,%6.1f,%6.1f) ->(%6.1f,%6.1f,%6.1f)", 
                                          cNode, hitpos_local[0], hitpos_local[1], hitpos_local[2], 
                                          hitpos[0], hitpos[1], hitpos[2])
                                               <<FairLogger::endl;
@@ -4200,9 +4190,15 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                                        0.5, // Use generic value 
                                        1.);
 
-                                    */                                       
+                                    */                                       // fDigiBdfPar->GetFeeTimeRes() * fDigiBdfPar->GetSigVel(iSmType,iRpc), // Use the electronics resolution
+                                       //fDigiBdfPar->GetNbGaps( iSmType, iRpc)*
+                                       //fDigiBdfPar->GetGapSize( iSmType, iRpc)/ //10.0 / // Change gap size in cm
+                                       //TMath::Sqrt(12.0) ); // Use full RPC thickness as "Channel" Z size
 
-				    Int_t iChm=floor(dWeightedPosX/fChannelInfo->GetSizex())+(iNbCh-1)/2;
+                                    // Int_t iDetId = vPtsRef[0]->GetDetectorID();// detID = pt->GetDetectorID() <= from TofPoint
+                                    // calc mean ch from dPosX=((Double_t)(-iNbCh/2 + iCh)+0.5)*fChannelInfo->GetSizex();
+
+				    Int_t iChm=floor(dWeightedPosX/fChannelInfo->GetSizex())+iNbCh/2;
 				    if(iChm<0)        iChm=0;
 				    if(iChm >iNbCh-1) iChm=iNbCh-1;
                                     Int_t iDetId = CbmTofAddress::GetUniqueAddress(iSm,iRpc,iChm,0,iSmType);
@@ -4211,9 +4207,9 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                                       iRefId = fTofPointsColl->IndexOf( vPtsRef[0] );
                                     }
                                     LOG(DEBUG)<<"Save Hit  "
-                                               << Form(" %3d %3d 0x%08x %3d %3d %3d %f %f %f",
+                                               << Form(" %3d %3d 0x%08x %3d %3d %3d %f %f",
                                                        fiNbHits,iNbChanInHit,iDetId,iChm,iLastChan,iRefId,
-                                                       dWeightedTime,dWeightedPosX,dWeightedPosY)
+                                                       dWeightedTime,dWeightedPosY)
                                                <<", DigiSize: "<<vDigiIndRef.size()
                                                <<", DigiInds: ";
 
@@ -4402,7 +4398,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                   } // if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
                   else
                   {
-		     LOG(DEBUG1)<<"Store V-Hit with "<< iNbChanInHit <<" channels "<<FairLogger::endl;
+                     LOG(DEBUG2)<<"V-Hit " <<FairLogger::endl;
                      // Save Hit
                      dWeightedTime /= dWeightsSum;
                      dWeightedPosX /= dWeightsSum;
@@ -4410,122 +4406,117 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                      dWeightedPosZ /= dWeightsSum;
                      //TVector3 hitPos(dWeightedPosX, dWeightedPosY, dWeightedPosZ);
 
-                     Double_t hitpos_local[3];
-                     Double_t hitpos[3];
-		     if(NULL != fChannelInfo) {// restore previous transformation
-		       gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
-		       TGeoNode*      cNode = gGeoManager->GetCurrentNode();
-		       TGeoHMatrix* cMatrix = gGeoManager->GetCurrentMatrix();
-		       if(gLogger->IsLogNeeded(DEBUG1)) cMatrix->Print();		     
-		       //cNode->Print();
-		       //cMatrix->Print();
-		       hitpos[0]=fChannelInfo->GetX();
-		       hitpos[1]=fChannelInfo->GetY();
-		       hitpos[2]=fChannelInfo->GetZ();
-		       gGeoManager->MasterToLocal(hitpos, hitpos_local);
-		       LOG(DEBUG1)<<
-			 Form(" MasterToLocal for V-node %p: (%6.2f,%6.2f,%6.2f) <- (%7.2f,%7.2f,%7.2f)", 
-			      cNode, hitpos_local[0], hitpos_local[1], hitpos_local[2], 
-			      hitpos[0], hitpos[1], hitpos[2])
-				  <<FairLogger::endl;
-		       hitpos_local[0] += dWeightedPosX;
-		       hitpos_local[1] += dWeightedPosY;
-		       hitpos_local[2] += dWeightedPosZ;
-		       gGeoManager->LocalToMaster(hitpos_local, hitpos);
-		       LOG(DEBUG1)<<
-			 Form(" LocalToMaster for V-node %p: (%6.2f,%6.2f,%6.2f) -> (%7.2f,%7.2f,%7.2f)", 
-			      cNode, hitpos_local[0], hitpos_local[1], hitpos_local[2], 
-			      hitpos[0], hitpos[1], hitpos[2])
-				  <<FairLogger::endl;
+                     Double_t hitpos_local[3]={3*0.};
+                     hitpos_local[0] = dWeightedPosX;
+                     hitpos_local[1] = dWeightedPosY;
+                     hitpos_local[2] = dWeightedPosZ;
 
-		       TVector3 hitPos(hitpos[0],hitpos[1],hitpos[2]);
-		       // TestBeam errors, not properly done at all for now
-		       // Right way of doing it should take into account the weight distribution
-		       // and real system time resolution
-		       TVector3 hitPosErr(0.5,0.5,0.5);  // including positioning uncertainty
-		       /*
-			 TVector3 hitPosErr( fChannelInfo->GetSizex()/TMath::Sqrt(12.0),   // Single strips approximation
+                     Double_t hitpos[3];
+                     TGeoNode*        cNode= gGeoManager->GetCurrentNode();
+                     /*TGeoHMatrix* cMatrix =*/ gGeoManager->GetCurrentMatrix();
+                     //cNode->Print();
+                     //cMatrix->Print();
+
+                     gGeoManager->LocalToMaster(hitpos_local, hitpos);
+                     LOG(DEBUG1)<<
+                     Form(" LocalToMaster for V-node %p: (%6.1f,%6.1f,%6.1f) ->(%6.1f,%6.1f,%6.1f)", 
+                         cNode, hitpos_local[0], hitpos_local[1], hitpos_local[2], 
+                         hitpos[0], hitpos[1], hitpos[2])
+                             <<FairLogger::endl;
+
+                     TVector3 hitPos(hitpos[0],hitpos[1],hitpos[2]);
+                     // TestBeam errors, not properly done at all for now
+                     // Right way of doing it should take into account the weight distribution
+                     // and real system time resolution
+                      TVector3 hitPosErr(0.5,0.5,0.5);  // including positioning uncertainty
+                     /*
+                     TVector3 hitPosErr( fChannelInfo->GetSizex()/TMath::Sqrt(12.0),   // Single strips approximation
                                        0.5, // Use generic value 
                                        1.);
-		       */
-		       Int_t iChm=floor(dWeightedPosX/fChannelInfo->GetSizex())+(iNbCh-1)/2;
-		       if(iChm<0)        iChm=0;
-		       if(iChm >iNbCh-1) iChm=iNbCh-1;
-		       Int_t iDetId = CbmTofAddress::GetUniqueAddress(iSm,iRpc,iChm,0,iSmType);
-		       Int_t iRefId = 0; // Index of the corresponding TofPoint
-		       if(NULL != fTofPointsColl) iRefId = fTofPointsColl->IndexOf( vPtsRef[0] );
-		       LOG(DEBUG)<<"Save V-Hit  "
-				 << Form(" %3d %3d 0x%08x %3d 0x%08x", // %3d %3d 
-					 fiNbHits,iNbChanInHit,iDetId,iLastChan,iRefId) //vPtsRef.size(),vPtsRef[0])
-			 //   dWeightedTime,dWeightedPosY)
-				 <<", DigiSize: "<<vDigiIndRef.size();
-		       LOG(DEBUG)<<", DigiInds: ";
-		       
-		       fviClusterMul[iSmType][iSm][iRpc]++; 
-		       
-		       for (UInt_t i=0; i<vDigiIndRef.size();i++){
-			 LOG(DEBUG)<<" "<<vDigiIndRef.at(i)<<"(M"<<fviClusterMul[iSmType][iSm][iRpc]<<")";
-		       }
-		       LOG(DEBUG)  <<FairLogger::endl;
-		       
-		       if( vDigiIndRef.size() < 2 ){
-			 LOG(WARNING)<<"Digi refs for Hit "
-				     << fiNbHits<<":        vDigiIndRef.size()"
-				     <<FairLogger::endl;
-		       }        
-		       if(fiNbHits>0){
-			 CbmTofHit *pHitL = (CbmTofHit*) fTofHitsColl->At(fiNbHits-1);
-			 if(iDetId == pHitL->GetAddress() && dWeightedTime==pHitL->GetTime())
-			   LOG(DEBUG)<<"Store Hit twice? "
-				     <<" fiNbHits "<<fiNbHits<<", "<<Form("0x%08x",iDetId)
-				     <<FairLogger::endl;
-		       }
+                     */
+                     //                fDigiBdfPar->GetFeeTimeRes() * fDigiBdfPar->GetSigVel(iSmType,iRpc), // Use the electronics resolution
+                     //                fDigiBdfPar->GetNbGaps( iSmType, iRpc)*
+                     //                fDigiBdfPar->GetGapSize( iSmType, iRpc)/10.0 / // Change gap size in cm
+                     //                TMath::Sqrt(12.0) ); // Use full RPC thickness as "Channel" Z size
+//                     cout<<"a "<<vPtsRef.size()<<endl;
+//                     cout<<"b "<<vPtsRef[0]<<endl;
+//                     cout<<"c "<<vPtsRef[0]->GetDetectorID()<<endl;
+//                     Int_t iDetId = vPtsRef[0]->GetDetectorID();// detID = pt->GetDetectorID() <= from TofPoint
+//                     Int_t iDetId = iChId;
+		     Int_t iChm=floor(dWeightedPosX/fChannelInfo->GetSizex())+iNbCh/2;
+		     if(iChm<0)        iChm=0;
+		     if(iChm >iNbCh-1) iChm=iNbCh-1;
+                     Int_t iDetId = CbmTofAddress::GetUniqueAddress(iSm,iRpc,iChm,0,iSmType);
+                     Int_t iRefId = 0; // Index of the correspondng TofPoint
+                     if(NULL != fTofPointsColl) iRefId = fTofPointsColl->IndexOf( vPtsRef[0] );
+                     LOG(DEBUG)<<"Save V-Hit  "
+                     << Form(" %3d %3d 0x%08x %3d 0x%08x", // %3d %3d 
+                             fiNbHits,iNbChanInHit,iDetId,iLastChan,iRefId) //vPtsRef.size(),vPtsRef[0])
+                       //   dWeightedTime,dWeightedPosY)
+                                <<", DigiSize: "<<vDigiIndRef.size();
+                     LOG(DEBUG)<<", DigiInds: ";
 
-		       CbmTofHit *pHit =  new CbmTofHit( iDetId,
-							 hitPos, hitPosErr,  //local detector coordinates
-							 fiNbHits,  // this number is used as reference!!
-							 dWeightedTime,
-							 vPtsRef.size(), // flag  = number of TofPoints generating the cluster
-							 0) ; //channel
-		       //                vDigiIndRef);
-		       // output hit
-		       new((*fTofHitsColl)[fiNbHits]) CbmTofHit(*pHit);
-		       // memorize hit 
-		       if(fdMemoryTime > 0.) {
-			 LH_store(iSmType,iSm,iRpc,iChm,pHit);		       
-		       }else{
-			 pHit->Delete();
-		       }
-		       /*
-			 new((*fTofDigiMatchColl)[fiNbHits]) CbmMatch();
-			 CbmMatch* digiMatch = (CbmMatch *)fTofDigiMatchColl->At(fiNbHits);
-		       */
-		       CbmMatch* digiMatch = new((*fTofDigiMatchColl)[fiNbHits]) CbmMatch();
-		       
-		       for (Int_t i=0; i<vDigiIndRef.size();i++){
-			 Double_t dTot = ((CbmTofDigiExp*) (fTofCalDigisColl->At(vDigiIndRef.at(i))))->GetTot();
-			 digiMatch->AddLink(CbmLink(dTot,vDigiIndRef.at(i)));
-		       }
-		       
-		       fiNbHits++;
-		       // For Histogramming
-		       fviClusterSize[iSmType][iRpc].push_back(iNbChanInHit);
-		       fviTrkMul[iSmType][iRpc].push_back( vPtsRef.size() );
-		       fvdX[iSmType][iRpc].push_back(dWeightedPosX);
-		       fvdY[iSmType][iRpc].push_back(dWeightedPosY);
-		       /*
-			 fvdDifX[iSmType][iRpc].push_back( vPtsRef[0]->GetX() - dWeightedPosX);
-			 fvdDifY[iSmType][iRpc].push_back( vPtsRef[0]->GetY() - dWeightedPosY);
-			 fvdDifCh[iSmType][iRpc].push_back( fGeoHandler->GetCell( vPtsRef[0]->GetDetectorID() ) -1 -iLastChan );
-		       */
-		       vPtsRef.clear();
-		       vDigiIndRef.clear();
-		     } // else of if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
-		     else {
-		       LOG(FATAL)<<"Missing V-node pointer, check setup!"<<FairLogger::endl;
+                     fviClusterMul[iSmType][iSm][iRpc]++; 
+
+                     for (UInt_t i=0; i<vDigiIndRef.size();i++){
+                       LOG(DEBUG)<<" "<<vDigiIndRef.at(i)<<"(M"<<fviClusterMul[iSmType][iSm][iRpc]<<")";
+                     }
+                     LOG(DEBUG)  <<FairLogger::endl;
+                     
+                     if( vDigiIndRef.size() < 2 ){
+                      LOG(WARNING)<<"Digi refs for Hit "
+                                  << fiNbHits<<":        vDigiIndRef.size()"
+                                  <<FairLogger::endl;
+                     }        
+                     if(fiNbHits>0){
+                       CbmTofHit *pHitL = (CbmTofHit*) fTofHitsColl->At(fiNbHits-1);
+                       if(iDetId == pHitL->GetAddress() && dWeightedTime==pHitL->GetTime())
+                          LOG(DEBUG)<<"Store Hit twice? "
+                                    <<" fiNbHits "<<fiNbHits<<", "<<Form("0x%08x",iDetId)
+                                    <<FairLogger::endl;
+                     }
+
+                     CbmTofHit *pHit =  new CbmTofHit( iDetId,
+                                                       hitPos, hitPosErr,  //local detector coordinates
+                                                       fiNbHits,  // this number is used as reference!!
+                                                       dWeightedTime,
+                                                       vPtsRef.size(), // flag  = number of TofPoints generating the cluster
+                                                       0) ; //channel
+                     //                vDigiIndRef);
+		     // output hit
+		     new((*fTofHitsColl)[fiNbHits]) CbmTofHit(*pHit);
+ 		     // memorize hit 
+		     if(fdMemoryTime > 0.) {
+		       LH_store(iSmType,iSm,iRpc,iChm,pHit);		       
+		     }else{
+		       pHit->Delete();
 		     }
-		  }
-	       } // if( 0 < iNbChanInHit)
+		     /*
+		     new((*fTofDigiMatchColl)[fiNbHits]) CbmMatch();
+		     CbmMatch* digiMatch = (CbmMatch *)fTofDigiMatchColl->At(fiNbHits);
+		     */
+		     CbmMatch* digiMatch = new((*fTofDigiMatchColl)[fiNbHits]) CbmMatch();
+
+                     for (Int_t i=0; i<vDigiIndRef.size();i++){
+		       Double_t dTot = ((CbmTofDigiExp*) (fTofCalDigisColl->At(vDigiIndRef.at(i))))->GetTot();
+		       digiMatch->AddLink(CbmLink(dTot,vDigiIndRef.at(i)));
+		     }
+
+                     fiNbHits++;
+                     // For Histogramming
+                     fviClusterSize[iSmType][iRpc].push_back(iNbChanInHit);
+                     fviTrkMul[iSmType][iRpc].push_back( vPtsRef.size() );
+                     fvdX[iSmType][iRpc].push_back(dWeightedPosX);
+                     fvdY[iSmType][iRpc].push_back(dWeightedPosY);
+                     /*
+                     fvdDifX[iSmType][iRpc].push_back( vPtsRef[0]->GetX() - dWeightedPosX);
+                     fvdDifY[iSmType][iRpc].push_back( vPtsRef[0]->GetY() - dWeightedPosY);
+                     fvdDifCh[iSmType][iRpc].push_back( fGeoHandler->GetCell( vPtsRef[0]->GetDetectorID() ) -1 -iLastChan );
+                     */
+                     vPtsRef.clear();
+                     vDigiIndRef.clear();
+                  } // else of if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
+               } // if( 0 < iNbChanInHit)
                LOG(DEBUG2)<<" Fini-A "<<Form(" %3d %3d %3d M%3d",iSmType, iSm, iRpc, fviClusterMul[iSmType][iSm][iRpc])<<FairLogger::endl;
             } // for each sm/rpc pair
                LOG(DEBUG2)<<" Fini-B "<<Form(" %3d ",iSmType)<<FairLogger::endl;
@@ -4803,8 +4794,6 @@ Bool_t CbmTofTestBeamClusterizer::AddNextChan(Int_t iSmType, Int_t iSm, Int_t iR
 	     << FairLogger::endl;
   if (iCh == iNbCh) return kFALSE; 
   if (0 == fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size()) return kFALSE;
-  TGeoNode *fNode = NULL;
-
   if( 0 < fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size() )
      fhNbDigiPerChan->Fill( fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size() );
   if( 1 < fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size() )
@@ -4829,28 +4818,22 @@ Bool_t CbmTofTestBeamClusterizer::AddNextChan(Int_t iSmType, Int_t iSm, Int_t iR
 	CbmTofDigiExp * xDigiB = fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][i2];
         Double_t dTime = 0.5 * ( xDigiA->GetTime() + xDigiB->GetTime() ) ; 
 	if(TMath::Abs(dTime-dLastTime)<fdMaxTimeDist){
-	  Int_t iCh0=iNbCh/2;
-	  CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh0);
+	  CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh);
 	  Int_t iChId = fTofId->SetDetectorInfo( xDetInfo );
 	  fChannelInfo = fDigiPar->GetCell( iChId );
-	  fNode = (TGeoNode *)gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
-	  if(NULL == fNode) LOG(FATAL)<<"GeoNode not found"<<FairLogger::endl;
-	  LOG(DEBUG) << Form("GeoManager Trafo at %p with ref point %6.1f,%6.1f,%6.1f, name %s",fNode,
-			     fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode->GetName())
-		     << FairLogger::endl;
+	  gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
 
 	  Double_t dTimeDif = xDigiA->GetTime() - xDigiB->GetTime(); 
 	  Double_t dPosY=0.;
           if( 1 == xDigiA->GetSide() )
-            dPosY =  fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc) * dTimeDif * 0.5;
+            dPosY = fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc) * dTimeDif * 0.5;
           else                              
             dPosY = -fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc) * dTimeDif * 0.5;
 
           if(TMath::Abs(dPosY - dLastPosY) < fdMaxSpaceDist  ) { // append digi pair to current cluster
 
 	    Double_t dNClHits=(Double_t)(vDigiIndRef.size()/2);
-            Double_t dPosX=(Double_t) (((Double_t)(-iNbCh+1)/2 + iCh ) - 0.5) *fChannelInfo->GetSizex();
-            //Double_t dPosX=((Double_t)(-iNbCh/2 + iCh)+0.5)*fChannelInfo->GetSizex();
+            Double_t dPosX=((Double_t)(-iNbCh/2 + iCh)+0.5)*fChannelInfo->GetSizex();
             Double_t dTotS = xDigiA->GetTot() + xDigiB->GetTot();
 	    Double_t dNewTotS = (dLastTotS + dTotS);
 	    dLastPosX=(dLastPosX*dLastTotS + dPosX*dTotS)/dNewTotS;
@@ -4889,32 +4872,14 @@ Bool_t CbmTofTestBeamClusterizer::AddNextChan(Int_t iSmType, Int_t iSm, Int_t iR
       } //  while(i2 < fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size()-1 )
     }  // end for i1 
   }   // end if size
-  Double_t hitpos_local[3];
-  //hitpos_local[0] = dLastPosX;
-  //hitpos_local[1] = dLastPosY;
-  //hitpos_local[2] = 0.;
+  Double_t hitpos_local[3]={3*0.};
+  hitpos_local[0] = dLastPosX;
+  hitpos_local[1] = dLastPosY;
+  hitpos_local[2] = 0.;
   Double_t hitpos[3];
-  TGeoNode*    cNode   = gGeoManager->GetCurrentNode();
-  TGeoHMatrix* cMatrix = gGeoManager->GetCurrentMatrix();
-  hitpos[0]=fChannelInfo->GetX();
-  hitpos[1]=fChannelInfo->GetY();
-  hitpos[2]=fChannelInfo->GetZ();
-  gGeoManager->MasterToLocal(hitpos, hitpos_local);
-  LOG(DEBUG1)<<
-  Form(" MasterToLocal for V-node %p: (%6.1f,%6.1f,%6.1f) <- (%6.1f,%6.1f,%6.1f)", 
-       cNode, hitpos_local[0], hitpos_local[1], hitpos_local[2], 
-       hitpos[0], hitpos[1], hitpos[2])
-	     <<FairLogger::endl;
-  hitpos_local[0] += dLastPosX;                     
-  hitpos_local[1] += dLastPosY;
-  hitpos_local[2] += 0;
+  /*TGeoNode*    cNode   = */gGeoManager->GetCurrentNode();
+  /*TGeoHMatrix* cMatrix = */gGeoManager->GetCurrentMatrix();
   gGeoManager->LocalToMaster(hitpos_local, hitpos);
-  LOG(DEBUG1)<< Form(" LocalToMaster for node %p, %p, %s: (%6.1f,%6.1f,%6.1f) -> (%6.1f,%6.1f,%6.1f)", 
-		     cNode, fNode, cNode->GetName(),
-		     hitpos_local[0], hitpos_local[1], hitpos_local[2], hitpos[0], hitpos[1], hitpos[2])
-              <<FairLogger::endl;
-  if(gLogger->IsLogNeeded(DEBUG1)) cMatrix->Print();		     
-
   TVector3 hitPos(hitpos[0],hitpos[1],hitpos[2]);
   TVector3 hitPosErr(0.5,0.5,0.5);  // FIXME including positioning uncertainty
   Int_t iChm=floor(dLastPosX/fChannelInfo->GetSizex())+iNbCh/2;
