@@ -110,7 +110,7 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     Int_t fNrOfFebsPerGdpb;     // Number of FEBs per GDPB
     Int_t fNrOfGet4PerFeb;      // Number of GET4s per FEB
     Int_t fNrOfChannelsPerGet4; // Number of channels in each GET4
-    
+
     Int_t fNrOfChannelsPerFeet; // Number of channels in each FEET
     Int_t fNrOfGet4;            // Total number of Get4 chips in the system
     Int_t fNrOfGet4PerGdpb;     // Number of GET4s per GDPB
@@ -182,13 +182,15 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     std::vector<TH1*> fFeetRateDate_gDPB;
     Int_t             fiRunStartDateTimeSec;
     Int_t             fiBinSizeDatePlots;
-    
+
     ///* ASIC coincidences & offsets mapping *///
+/*
     ULong64_t fulLastMsIdx;
     Bool_t    fbHitsInLastTs;
     std::vector< std::vector< Long64_t > > fvulHitEpochBuffLastTs;  //! Dims: [gDPB][hits]
     std::vector< TH2 * >                   fvhCoincOffsetEpochGet4; //! Dims: [gDPB - 1]
-    
+*/
+
     ///* STAR TRIGGER detection *///
     ULong64_t fulGdpbTsMsb;
     ULong64_t fulGdpbTsLsb;
@@ -202,8 +204,8 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     TH1 *     fhTokenMsgType;
     TH1 *     fhTriggerRate;
     TH2 *     fhCmdDaqVsTrig;
-    TH2 *     fhStarTokenEvo; 
-    
+    TH2 *     fhStarTokenEvo;
+
     ///* STAR and pulser monitoring *///
     static const UInt_t kuNbChanTest = 16;
     Bool_t fbGet4M24b;
@@ -212,7 +214,7 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     UInt_t fuPulserGdpb;
     UInt_t fuPulserFee;
     UInt_t fuPulserChan[kuNbChanTest]; //! Always in first gDPB !!!
-    std::vector<TH1 *> fhTimeDiffPulserChosenFee; 
+    std::vector<TH1 *> fhTimeDiffPulserChosenFee;
     std::vector<TH1 *> fhTimeDiffPulserChosenChPairs;
     TH2 * fhTimeRmsPulserChosenFee;
     TH1 * fhTimeRmsPulserChosenChPairs;
@@ -254,7 +256,7 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     std::vector<TH1*> fhStarHitToTrigWin_gDPB;
     std::vector<TH1*> fhStarEventSize_gDPB;
     std::vector<TH2*> fhStarEventSizeTime_gDPB;
-    
+
     void CreateHistograms();
 
 #ifndef __CINT__
