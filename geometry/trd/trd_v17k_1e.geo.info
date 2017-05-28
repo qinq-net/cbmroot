@@ -109,8 +109,8 @@ v: 62.77 deg, h: 69.82 deg - vertical/horizontal - layer  3
 v: 54.85 deg, h: 63.30 deg - vertical/horizontal - layer  4
 
 # inner aperture
-v: 41.49 deg, h: 41.49 deg - vertical/horizontal - layer  1
-v: 20.26 deg, h: 20.26 deg - vertical/horizontal - layer  2
-v: 13.13 deg, h: 13.13 deg - vertical/horizontal - layer  3
-v:  9.67 deg, h:  9.67 deg - vertical/horizontal - layer  4
+v: 41.49 deg, h: 60.52 deg - vertical/horizontal - layer  1
+v: 20.26 deg, h: 36.43 deg - vertical/horizontal - layer  2
+v: 13.13 deg, h: 25.00 deg - vertical/horizontal - layer  3
+v:  9.67 deg, h: 18.82 deg - vertical/horizontal - layer  4
 
