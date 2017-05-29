@@ -126,6 +126,11 @@ void run_mc(Int_t nEvents = 2,
   std::cout << "-I- " << myName << ": Loading macro " << setupFile << std::endl;
   gROOT->LoadMacro(setupFile);
   gROOT->ProcessLine(setupFunct);
+  // You can modify the pre-defined setup by using
+  // CbmSetup::Instance()->RemoveModule(ESystemId) or
+  // CbmSetup::Instance()->SetModule(ESystemId, const char*, Bool_t) or
+  // CbmSetup::Instance()->SetActive(ESystemId, Bool_t)
+  // See the class documentation of CbmSetup.
   // ------------------------------------------------------------------------
 
 

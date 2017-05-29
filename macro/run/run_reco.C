@@ -60,7 +60,11 @@ void run_reco(Int_t nEvents = 2,
   std::cout << "-I- " << myName << ": Loading macro " << setupFile << std::endl;
   gROOT->LoadMacro(setupFile);
   gROOT->ProcessLine(setupFunct);
-  CbmSetup* setup = CbmSetup::Instance();
+  // You can modify the pre-defined setup by using
+  // CbmSetup::Instance()->RemoveModule(ESystemId) or
+  // CbmSetup::Instance()->SetModule(ESystemId, const char*, Bool_t) or
+  // CbmSetup::Instance()->SetActive(ESystemId, Bool_t)
+  // See the class documentation of CbmSetup.
   // ------------------------------------------------------------------------
 
 
@@ -71,7 +75,7 @@ void run_reco(Int_t nEvents = 2,
   TString geoTag;
 
   // - TRD digitisation parameters
-  if ( setup->GetGeoTag(kTrd, geoTag) ) {
+  if ( CbmSetup::Instance()->GetGeoTag(kTrd, geoTag) ) {
   	TObjString* trdFile = new TObjString(srcDir + "/parameters/trd/trd_" + geoTag + ".digi.par");
   	parFileList->Add(trdFile);
     std::cout << "-I- " << myName << ": Using parameter file "
@@ -79,7 +83,7 @@ void run_reco(Int_t nEvents = 2,
   }
 
   // - TOF digitisation parameters
-  if ( setup->GetGeoTag(kTof, geoTag) ) {
+  if ( CbmSetup::Instance()->GetGeoTag(kTof, geoTag) ) {
   	TObjString* tofFile = new TObjString(srcDir + "/parameters/tof/tof_" + geoTag + ".digi.par");
   	parFileList->Add(tofFile);
     std::cout << "-I- " << myName << ": Using parameter file "
@@ -175,9 +179,11 @@ void run_reco(Int_t nEvents = 2,
   FairParRootFileIo* parIo1 = new FairParRootFileIo();
   FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
   parIo1->open(parFile.Data());
-  parIo2->open(parFileList, "in");
   rtdb->setFirstInput(parIo1);
-  rtdb->setSecondInput(parIo2);
+  if ( ! parFileList->IsEmpty() ) {
+    parIo2->open(parFileList, "in");
+    rtdb->setSecondInput(parIo2);
+  }
   rtdb->setOutput(parIo1);
   rtdb->saveOutput();
   rtdb->print();
