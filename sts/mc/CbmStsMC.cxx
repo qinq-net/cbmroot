@@ -35,7 +35,8 @@ CbmStsMC::CbmStsMC(Bool_t active, const char* name)
     fAddressMap(),
     fStsPoints(NULL),
     fSetup(NULL),
-    fCombiTrans(NULL)
+    fCombiTrans(NULL),
+    fProcessNeutrals(kFALSE)
 {
 }
 // -------------------------------------------------------------------------
@@ -160,7 +161,7 @@ Bool_t CbmStsMC::ProcessHits(FairVolume* /*vol*/) {
   	SetStatus(fStatusOut);
 
   	// --- No action if no energy loss (neutral particles)
-  	if (fEloss == 0. ) return kFALSE;
+  	if (fEloss == 0. && ( ! fProcessNeutrals ) ) return kFALSE;
 
   	// --- Add a StsPoint to the output array. Increment stack counter.
   	CreatePoint();

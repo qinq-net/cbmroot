@@ -72,6 +72,7 @@ CbmMCEntry.cxx
 CbmMCList.cxx
 CbmMCDataArray.cxx
 CbmMCDataManager.cxx
+CbmRadDamage.cxx
 
 CbmModule.cxx
 

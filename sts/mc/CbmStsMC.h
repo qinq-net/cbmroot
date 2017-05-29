@@ -129,6 +129,22 @@ class CbmStsMC : public FairDetector
 		}
 
 
+		/** @brief Create StsPoints also for neutral particles
+		 ** @param choice  If kTRUE, StsPoints are created also for neutrals
+		 **
+		 ** By default, StsPoints are only created if there is non-vanishing
+		 ** energy loss for the particle in the detector. Neutral particles
+		 ** do normally not deposit energy, such that no StsPoints are
+		 ** created. For some applications however, e.g. for the calculation
+		 ** of the radiation dose, the neutron flux is required. For such
+		 ** cases, the creation of StsPoints for neutrals can be activated
+		 ** by this method.
+		 **/
+		void ProcessNeutrals(Bool_t choice = kTRUE) {
+		  fProcessNeutrals = choice;
+		}
+
+
 		/** @brief Clear output array and reset current track status
 		 **
 		 ** Abstract from FairDetector.
@@ -145,7 +161,8 @@ class CbmStsMC : public FairDetector
     std::map<TString, UInt_t> fAddressMap;  ///< Map from full path to unique address
     TClonesArray*     fStsPoints;  //!  Output array (CbmStsPoint)
     CbmStsSetup*      fSetup;      //! Pointer to static instance of CbmStsSetup
-    TGeoCombiTrans*   fCombiTrans;  //! Transformation matrix for geometry positioning
+    TGeoCombiTrans*   fCombiTrans; //! Transformation matrix for geometry positioning
+    Bool_t fProcessNeutrals;      ///< Create points also for neutral particles
 
     /** @brief Create a new StsPoint
      ** Creates a new CbmStsPoint using the current track status information
