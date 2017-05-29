@@ -22,6 +22,7 @@ class CbmMuchPoint;
 class CbmGeoStsPar;
 class CbmStsDigiPar;
 class CbmRichRingFitterEllipseTau;
+class CbmMCDataArray;
 
 /**
  * \class CbmLitMCTrackCreator
@@ -50,9 +51,15 @@ public:
     
     /**
      * \brief Creates array of CbmLitMCTracks for current event.
+     * Has to be executed in Init() function of the task.
+     */
+    void CreateMC();
+    
+    /**
+     * \brief Creates array of CbmLitMCTracks for current event.
      * Has to be executed in Exec() function of the task.
      */
-    void Create();
+    void CreateReco();
     
     /**
      * \brief Check whether a track exists in the array.
@@ -60,8 +67,9 @@ public:
      * \return true if track exists in array.
      */
     bool TrackExists(
+                     int mcEventId,
                      int mcId) const {
-        return (fLitMCTracks.count(mcId) > 0) ? true : false;
+        return (fLitMCTracks.count(std::make_pair(mcEventId, mcId)) > 0) ? true : false;
     }
     
     /**
@@ -70,9 +78,10 @@ public:
      * \return MC track.
      */
     const CbmLitMCTrack& GetTrack(
+                                  int mcEventId,
                                   int mcId) const {
-        assert(TrackExists(mcId));
-        return fLitMCTracks.find(mcId)->second;
+        assert(TrackExists(mcEventId, mcId));
+        return fLitMCTracks.find(std::make_pair(mcEventId, mcId))->second;
     }
     
     /**
@@ -97,7 +106,7 @@ private:
      */
     void AddPoints(
                    DetectorId detId,
-                   const TClonesArray* array);
+                   CbmMCDataArray* array);
     
     /**
      * \brief Calculate and set number of RICH hits for MC track.
@@ -118,6 +127,7 @@ private:
     void FairMCPointToLitMCPoint(
                                  const FairMCPoint* fairPoint,
                                  CbmLitMCPoint* litPoint,
+                                 int eventId,
                                  int refId,
                                  int stationId);
     
@@ -147,25 +157,25 @@ private:
                                                      const CbmMuchPoint* muchPoint,
                                                      CbmLitMCPoint* litPoint);
     
-    TClonesArray* fMCTracks; // CbmMCTrack array
-    TClonesArray* fMvdPoints; // CbmMvdPoint array
-    TClonesArray* fStsPoints; // CbmStsPoint array
-    TClonesArray* fTrdPoints; // CbmTrdPoint array
-    TClonesArray* fMuchPoints; // CbmMuchPoint array
-    TClonesArray* fTofPoints; // CbmTofPoint array
-    TClonesArray* fRichPoints; // CbmRichPoint array
+    CbmMCDataArray* fMCTracks; // CbmMCTrack array
+    CbmMCDataArray* fMvdPoints; // CbmMvdPoint array
+    CbmMCDataArray* fStsPoints; // CbmStsPoint array
+    CbmMCDataArray* fTrdPoints; // CbmTrdPoint array
+    CbmMCDataArray* fMuchPoints; // CbmMuchPoint array
+    CbmMCDataArray* fTofPoints; // CbmTofPoint array
+    CbmMCDataArray* fRichPoints; // CbmRichPoint array
     TClonesArray* fRichHits; // CbmRichHit array
     TClonesArray* fRichDigis; //CbmRichdigi array
     
     // Stores created CbmLitMCTrack objects.
     // std::map<MC track index, CbmLitMCTrack object>.
-    std::map<int, CbmLitMCTrack> fLitMCTracks;
+    std::map<std::pair<int, int>, CbmLitMCTrack> fLitMCTracks;
     
     // Map <MC point index, station index>
-    std::map<int, int>fMvdStationsMap; // for MVD
-    std::map<int, int>fStsStationsMap; // for STS
-    std::map<int, int>fTrdStationsMap; // for TRD
-    std::map<int, int>fMuchStationsMap; // for MUCH
+    std::map<std::pair<int, int>, int>fMvdStationsMap; // for MVD
+    std::map<std::pair<int, int>, int>fStsStationsMap; // for STS
+    std::map<std::pair<int, int>, int>fTrdStationsMap; // for TRD
+    std::map<std::pair<int, int>, int>fMuchStationsMap; // for MUCH
     
     CbmRichRingFitterEllipseTau* fTauFit; // Ellipse fitter algorithm
     

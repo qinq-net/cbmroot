@@ -18,11 +18,13 @@
 class CbmHistManager;
 class CbmVertex;
 class FairTrackParam;
+class CbmMCDataArray;
 
 using std::string;
 using std::map;
 using std::vector;
 using std::set;
+using std::pair;
 
 /**
  * \class CbmLitTofQa
@@ -115,10 +117,10 @@ private:
    TClonesArray* fStsTracks; // CbmStsTrack array
    TClonesArray* fStsTrackMatches; // CbmTrackMatchNew array
    TClonesArray* fTofHits; // CbmTofHit array
-   TClonesArray* fTofPoints; // CbmTofPoint array
+   CbmMCDataArray* fTofPoints; // CbmTofPoint array
    TClonesArray* fTofHitsMatches;
    TClonesArray* fTofTracks; // CbmTofTrack array
-   TClonesArray* fMCTracks; // CbmMCTrack array
+   CbmMCDataArray* fMCTracks; // CbmMCTrack array
 
    CbmVertex* fPrimVertex; // Pointer to the primary vertex
    CbmStsKFTrackFitter fKFFitter; // Pointer to the Kalman Filter Fitter algorithm
@@ -127,12 +129,12 @@ private:
 
 
 //#ifndef  __ROOTCLING__
-   typedef Bool_t (*LitTrackAcceptanceFunction)(const TClonesArray* mcTracks, Int_t index);
+   typedef Bool_t (*LitTrackAcceptanceFunction)(CbmMCDataArray* mcTracks, Int_t eventNo, Int_t index);
    map<string, LitTrackAcceptanceFunction> fTrackAcceptanceFunctions; // maps track category name to track acceptance function
 //#endif
 
-   set<Int_t> fMCTrackIdForTofHits; // Set of MC track IDs for all existing TOF hits
-   set<Int_t> fMCTrackIdForTofPoints; // Set of MC track IDs for all existing TOF points
+   set<pair<Int_t, Int_t> > fMCTrackIdForTofHits; // Set of MC track IDs for all existing TOF hits
+   //set<pair<Int_t, Int_t> > fMCTrackIdForTofPoints; // Set of MC track IDs for all existing TOF points
 
    ClassDef(CbmLitTofQa, 1)
 };

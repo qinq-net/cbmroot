@@ -15,6 +15,7 @@
 #include "TMath.h"
 #include "TDatabasePDG.h"
 #include "TMCProcess.h"
+#include "CbmMCDataArray.h"
 //#include <cmath>
 //using std::abs;
 
@@ -24,174 +25,193 @@ class CbmLitAcceptanceFunction
 public:
 
    static Bool_t AllTrackAcceptanceFunction(
-         const TClonesArray* mcTracks,
+         CbmMCDataArray* mcTracks,
+         Int_t eventNo,
          Int_t index)
    {
       return true;
    }
 
    static Bool_t NegativeTrackAcceptanceFunction(
-         const TClonesArray* mcTracks,
+         CbmMCDataArray* mcTracks,
+         Int_t eventNo,
          Int_t index)
    {
       if (index < 0) return false;
-      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->At(index));
+      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->Get(0, eventNo, index));
       const TParticlePDG* particle = TDatabasePDG::Instance()->GetParticle(mcTrack->GetPdgCode());
       if (particle == NULL) return false;
       return particle->Charge() < 0;
    }
 
    static Bool_t PositiveTrackAcceptanceFunction(
-         const TClonesArray* mcTracks,
+         CbmMCDataArray* mcTracks,
+         Int_t eventNo,
          Int_t index)
    {
       if (index < 0) return false;
-      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->At(index));
+      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->Get(0, eventNo, index));
       const TParticlePDG* particle = TDatabasePDG::Instance()->GetParticle(mcTrack->GetPdgCode());
       if (particle == NULL) return false;
       return particle->Charge() > 0;
    }
 
    static Bool_t PrimaryTrackAcceptanceFunction(
-         const TClonesArray* mcTracks,
+         CbmMCDataArray* mcTracks,
+         Int_t eventNo,
          Int_t index)
    {
       if (index < 0) return false;
-      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->At(index));
+      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->Get(0, eventNo, index));
       return (mcTrack->GetMotherId() == -1);
       //return (mcTrack->GetGeantProcessId() == kPPrimary);
    }
 
    static Bool_t ReferenceTrackAcceptanceFunction(
-         const TClonesArray* mcTracks,
+         CbmMCDataArray* mcTracks,
+         Int_t eventNo,
          Int_t index)
    {
       if (index < 0) return false;
-      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->At(index));
+      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->Get(0, eventNo, index));
       return (mcTrack->GetMotherId() == -1) && (mcTrack->GetP() > 1.);
    }
 
    static Bool_t SecondaryTrackAcceptanceFunction(
-         const TClonesArray* mcTracks,
+         CbmMCDataArray* mcTracks,
+         Int_t eventNo,
          Int_t index)
    {
       if (index < 0) return false;
-      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->At(index));
+      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->Get(0, eventNo, index));
       return (mcTrack->GetMotherId() != -1);
    }
 
    static Bool_t PrimaryElectronTrackAcceptanceFunction(
-         const TClonesArray* mcTracks,
+         CbmMCDataArray* mcTracks,
+         Int_t eventNo,
          Int_t index)
    {
       if (index < 0) return false;
-      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->At(index));
+      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->Get(0, eventNo, index));
       //return (TMath::Abs(mcTrack->GetPdgCode()) == 11) && (mcTrack->GetMotherId() == -1);
       return (TMath::Abs(mcTrack->GetPdgCode()) == 11) && (mcTrack->GetGeantProcessId() == kPPrimary);
    }
 
    static Bool_t PrimaryMuonTrackAcceptanceFunction(
-         const TClonesArray* mcTracks,
+         CbmMCDataArray* mcTracks,
+         Int_t eventNo,
          Int_t index)
    {
       if (index < 0) return false;
-      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->At(index));
+      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->Get(0, eventNo, index));
       //return (TMath::Abs(mcTrack->GetPdgCode()) == 13) && (mcTrack->GetMotherId() == -1);
       return (TMath::Abs(mcTrack->GetPdgCode()) == 13) && (mcTrack->GetGeantProcessId() == kPPrimary);
    }
 
    static Bool_t ElectronTrackAcceptanceFunction(
-         const TClonesArray* mcTracks,
+         CbmMCDataArray* mcTracks,
+         Int_t eventNo,
          Int_t index)
    {
       if (index < 0) return false;
-      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->At(index));
+      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->Get(0, eventNo, index));
       return TMath::Abs(mcTrack->GetPdgCode()) == 11;
    }
 
    static Bool_t MuonTrackAcceptanceFunction(
-         const TClonesArray* mcTracks,
+         CbmMCDataArray* mcTracks,
+         Int_t eventNo,
          Int_t index)
    {
       if (index < 0) return false;
-      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->At(index));
+      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->Get(0, eventNo, index));
       return TMath::Abs(mcTrack->GetPdgCode()) == 13;
    }
 
    static Bool_t ProtonTrackAcceptanceFunction(
-         const TClonesArray* mcTracks,
+         CbmMCDataArray* mcTracks,
+         Int_t eventNo,
          Int_t index)
    {
       if (index < 0) return false;
-      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->At(index));
+      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->Get(0, eventNo, index));
       return (TMath::Abs(mcTrack->GetPdgCode()) == 2212);
    }
 
    static Bool_t AntiProtonTrackAcceptanceFunction(
-         const TClonesArray* mcTracks,
+         CbmMCDataArray* mcTracks,
+         Int_t eventNo,
          Int_t index)
    {
       if (index < 0) return false;
-      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->At(index));
+      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->Get(0, eventNo, index));
       return mcTrack->GetPdgCode() == -2212;
    }
 
    static Bool_t PionTrackAcceptanceFunction(
-         const TClonesArray* mcTracks,
+         CbmMCDataArray* mcTracks,
+         Int_t eventNo,
          Int_t index)
    {
       if (index < 0) return false;
-      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->At(index));
+      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->Get(0, eventNo, index));
       return (TMath::Abs(mcTrack->GetPdgCode()) == 211);
    }
 
    static Bool_t PionPlusTrackAcceptanceFunction(
-         const TClonesArray* mcTracks,
+         CbmMCDataArray* mcTracks,
+         Int_t eventNo,
          Int_t index)
    {
       if (index < 0) return false;
-      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->At(index));
+      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->Get(0, eventNo, index));
       return (mcTrack->GetPdgCode() == 211);
    }
 
    static Bool_t PionMinusTrackAcceptanceFunction(
-         const TClonesArray* mcTracks,
+         CbmMCDataArray* mcTracks,
+         Int_t eventNo,
          Int_t index)
    {
       if (index < 0) return false;
-      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->At(index));
+      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->Get(0, eventNo, index));
       return (mcTrack->GetPdgCode() == -211);
    }
 
    static Bool_t KaonTrackAcceptanceFunction(
-         const TClonesArray* mcTracks,
+         CbmMCDataArray* mcTracks,
+         Int_t eventNo,
          Int_t index)
    {
       if (index < 0) return false;
-      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->At(index));
+      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->Get(0, eventNo, index));
       return (TMath::Abs(mcTrack->GetPdgCode()) == 321);
    }
 
    static Bool_t KaonPlusTrackAcceptanceFunction(
-         const TClonesArray* mcTracks,
+         CbmMCDataArray* mcTracks,
+         Int_t eventNo,
          Int_t index)
    {
       if (index < 0) return false;
-      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->At(index));
+      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->Get(0, eventNo, index));
       return (mcTrack->GetPdgCode() == 321);
    }
 
    static Bool_t KaonMinusTrackAcceptanceFunction(
-         const TClonesArray* mcTracks,
+         CbmMCDataArray* mcTracks,
+         Int_t eventNo,
          Int_t index)
    {
       if (index < 0) return false;
-      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->At(index));
+      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->Get(0, eventNo, index));
       return (mcTrack->GetPdgCode() == -321);
    }
 
    static Bool_t AllRingAcceptanceFunction(
-         const TClonesArray* mcTracks,
+         CbmMCDataArray* mcTracks,
+         Int_t eventNo,
          Int_t index,
          Int_t nofHitsInRing)
    {
@@ -199,54 +219,59 @@ public:
    }
 
    static Bool_t AllReferenceRingAcceptanceFunction(
-         const TClonesArray* mcTracks,
+         CbmMCDataArray* mcTracks,
+         Int_t eventNo,
          Int_t index,
          Int_t nofHitsInRing)
    {
       if (index < 0) return false;
-      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->At(index));
+      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->Get(0, eventNo, index));
       return (mcTrack->GetMotherId() == -1) && (nofHitsInRing >= 15);
    }
 
    static Bool_t PrimaryElectronRingAcceptanceFunction(
-         const TClonesArray* mcTracks,
+         CbmMCDataArray* mcTracks,
+         Int_t eventNo,
          Int_t index,
          Int_t nofHitsInRing)
    {
       if (index < 0) return false;
-      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->At(index));
+      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->Get(0, eventNo, index));
       //return (mcTrack->GetMotherId() == -1) && (TMath::Abs(mcTrack->GetPdgCode()) == 11);
       return (mcTrack->GetGeantProcessId() == kPPrimary) && (TMath::Abs(mcTrack->GetPdgCode()) == 11);
    }
 
    static Bool_t PrimaryElectronReferenceRingAcceptanceFunction(
-         const TClonesArray* mcTracks,
+         CbmMCDataArray* mcTracks,
+         Int_t eventNo,
          Int_t index,
          Int_t nofHitsInRing)
    {
       if (index < 0) return false;
-      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->At(index));
+      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->Get(0, eventNo, index));
      // return (mcTrack->GetMotherId() == -1) && (TMath::Abs(mcTrack->GetPdgCode()) == 11) && (nofHitsInRing >= 15);
       return (mcTrack->GetGeantProcessId() == kPPrimary) && (TMath::Abs(mcTrack->GetPdgCode()) == 11) && (nofHitsInRing >= 15);
    }
 
    static Bool_t PionRingAcceptanceFunction(
-         const TClonesArray* mcTracks,
+         CbmMCDataArray* mcTracks,
+         Int_t eventNo,
          Int_t index,
          Int_t nofHitsInRing)
    {
       if (index < 0) return false;
-      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->At(index));
+      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->Get(0, eventNo, index));
       return (TMath::Abs(mcTrack->GetPdgCode()) == 211);
    }
 
    static Bool_t PionReferenceRingAcceptanceFunction(
-         const TClonesArray* mcTracks,
+         CbmMCDataArray* mcTracks,
+         Int_t eventNo,
          Int_t index,
          Int_t nofHitsInRing)
    {
       if (index < 0) return false;
-      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->At(index));
+      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(mcTracks->Get(0, eventNo, index));
       return (TMath::Abs(mcTrack->GetPdgCode()) == 211) && (nofHitsInRing >= 15);
    }
 

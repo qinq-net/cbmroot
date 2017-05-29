@@ -19,6 +19,8 @@ class CbmVertex;
 class FairTrackParam;
 class CbmLitMCPoint;
 class CbmLitMCTrackCreator;
+class CbmMCDataArray;
+class CbmEvent;
 
 using std::string;
 
@@ -105,6 +107,7 @@ private:
          const FairTrackParam* par);
 
    void ProcessTrackParamsAtVertex();
+   void ProcessTrackParamsAtVertex(CbmEvent* event);
    
    void ProcessTrackMomentumAtVertex();
 
@@ -146,7 +149,8 @@ private:
    TClonesArray* fMuchTrackMatches; // CbmTrackMatchNew array
    TClonesArray* fMuchPixelHits; // CbmMuchPixelHit array
    TClonesArray* fMuchStripHits; // CbmMuchStripHit array
-   TClonesArray* fMCTracks; // CbmMCTrack array
+   CbmMCDataArray* fMCTracks; // CbmMCTrack array
+   TClonesArray* fEvents;
 
    Double_t fQuota; // percent of correctly attached hits
 

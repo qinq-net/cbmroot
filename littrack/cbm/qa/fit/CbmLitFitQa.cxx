@@ -18,10 +18,13 @@
 #include "CbmMCTrack.h"
 #include "CbmTrdAddress.h"
 #include "CbmMuchGeoScheme.h"
+#include "CbmMCDataArray.h"
+#include "CbmMCDataManager.h"
 #include "TClonesArray.h"
 #include "TH1.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "CbmEvent.h"
 #include <boost/assign/list_of.hpp>
 #include <vector>
 using std::vector;
@@ -52,6 +55,7 @@ fMuchTrackMatches(NULL),
 fMuchPixelHits(NULL),
 fMuchStripHits(NULL),
 fMCTracks(NULL),
+fEvents(NULL),
 fQuota(0.7),
 fPrimVertex(NULL),
 fKFFitter(),
@@ -74,6 +78,7 @@ InitStatus CbmLitFitQa::Init()
     ReadDataBranches();
     fMCTrackCreator = CbmLitMCTrackCreator::Instance();
     fKFFitter.Init();
+    fMCTrackCreator->CreateMC();
     return kSUCCESS;
 }
 
@@ -82,7 +87,7 @@ void CbmLitFitQa::Exec(
 {
     static Int_t nofEvents = 0;
     std::cout << "CbmLitFitQa::Exec: event=" << nofEvents++ << std::endl;
-    fMCTrackCreator->Create();
+    fMCTrackCreator->CreateReco();
     ProcessGlobalTracks();
     ProcessTrackParamsAtVertex();
     ProcessTrackMomentumAtVertex();
@@ -114,7 +119,14 @@ void CbmLitFitQa::ReadDataBranches()
     fTrdTracks = (TClonesArray*) ioman->GetObject("TrdTrack");
     fTrdTrackMatches = (TClonesArray*) ioman->GetObject("TrdTrackMatch");
     fTrdHits = (TClonesArray*) ioman->GetObject("TrdHit");
-    fMCTracks = (TClonesArray*) ioman->GetObject("MCTrack");
+    
+    CbmMCDataManager* mcManager = (CbmMCDataManager*)ioman->GetObject("MCDataManager");
+   
+    if (0 == mcManager)
+       LOG(FATAL) << "CbmMatchRecoToMC::ReadAndCreateDataBranches() NULL MCDataManager." << FairLogger::endl;
+   
+    fMCTracks = mcManager->InitBranch("MCTrack");
+    fEvents = dynamic_cast<TClonesArray*> (ioman->GetObject("Event"));
     fPrimVertex = (CbmVertex*) ioman->GetObject("PrimaryVertex");
 }
 
@@ -137,6 +149,7 @@ void CbmLitFitQa::ProcessStsTrack(
     CbmTrackMatchNew* match = static_cast<CbmTrackMatchNew*>(fStsTrackMatches->At(trackId));
     if (match->GetNofLinks() < 1) return;
     Int_t mcId = match->GetMatchedLink().GetIndex();
+    Int_t mcEventId = match->GetMatchedLink().GetEntry();
     if (mcId < 0) return; // Ghost or fake track
     
     // Check correctness of reconstructed track
@@ -148,7 +161,7 @@ void CbmLitFitQa::ProcessStsTrack(
     if (nofStsHits < 1) return; // No hits in STS
     if (nofMvdHits < fMvdMinNofHits || nofStsHits + nofMvdHits < fStsMinNofHits) return; // cut on number of hits in track
     
-    const CbmLitMCTrack& mcTrack = fMCTrackCreator->GetTrack(mcId);
+    const CbmLitMCTrack& mcTrack = fMCTrackCreator->GetTrack(mcEventId, mcId);
     
     const FairTrackParam* firstParam = track->GetParamFirst();
     const FairTrackParam* lastParam = track->GetParamLast();
@@ -189,6 +202,7 @@ void CbmLitFitQa::ProcessTrdTrack(
     
     CbmTrackMatchNew* match = static_cast<CbmTrackMatchNew*>(fTrdTrackMatches->At(trackId));
     Int_t mcId = match->GetMatchedLink().GetIndex();
+    Int_t mcEntryId = match->GetMatchedLink().GetEntry();
     if (mcId < 0) return; // Ghost or fake track
     
     // Check correctness of reconstructed track
@@ -199,7 +213,7 @@ void CbmLitFitQa::ProcessTrdTrack(
     if (nofHits < 1) return; // No hits
     if (nofHits < fTrdMinNofHits) return; // cut on number of hits in track
     
-    const CbmLitMCTrack& mcTrack = fMCTrackCreator->GetTrack(mcId);
+    const CbmLitMCTrack& mcTrack = fMCTrackCreator->GetTrack(mcEntryId, mcId);
     
     const FairTrackParam* firstParam = track->GetParamFirst();
     const FairTrackParam* lastParam = track->GetParamLast();
@@ -233,6 +247,7 @@ void CbmLitFitQa::ProcessMuchTrack(
     
     const CbmTrackMatchNew* match = static_cast<const CbmTrackMatchNew*>(fMuchTrackMatches->At(trackId));
     Int_t mcId = match->GetMatchedLink().GetIndex();
+    Int_t mcEventId = match->GetMatchedLink().GetEntry();
     if (mcId < 0) return; // Ghost or fake track
     
     // Check correctness of reconstructed track
@@ -243,7 +258,7 @@ void CbmLitFitQa::ProcessMuchTrack(
     if (nofHits < 1) return; // No hits
     if (nofHits < fMuchMinNofHits) return; // cut on number of hits in track
     
-    const CbmLitMCTrack& mcTrack = fMCTrackCreator->GetTrack(mcId);
+    const CbmLitMCTrack& mcTrack = fMCTrackCreator->GetTrack(mcEventId, mcId);
     
     const FairTrackParam* firstParam = track->GetParamFirst();
     const FairTrackParam* lastParam = track->GetParamLast();
@@ -352,28 +367,45 @@ void CbmLitFitQa::FillTrackParamHistogramm(
 
 void CbmLitFitQa::ProcessTrackParamsAtVertex()
 {
-    Int_t nofTracks = fStsTracks->GetEntriesFast();
-    for (Int_t iTrack = 0; iTrack < nofTracks; iTrack++) {
+   if (fEvents)
+   {
+      Int_t nofEvents = fEvents->GetEntriesFast();
+      
+      for (int i = 0; i < nofEvents; ++i)
+         ProcessTrackParamsAtVertex(static_cast<CbmEvent*> (fEvents->At(i)));
+   }
+   else
+      ProcessTrackParamsAtVertex(0);
+}
+
+void CbmLitFitQa::ProcessTrackParamsAtVertex(CbmEvent* event)
+{
+    Int_t nofTracks = event ? event->GetNofData(Cbm::kStsTrack) : fStsTracks->GetEntriesFast();
+    
+    for (Int_t i = 0; i < nofTracks; ++i) {
+        Int_t iTrack = event ? event->GetIndex(Cbm::kStsTrack, i) : i;
         CbmStsTrack* track = static_cast<CbmStsTrack*>(fStsTracks->At(iTrack));
         
         CbmTrackMatchNew* match = static_cast<CbmTrackMatchNew*>(fStsTrackMatches->At(iTrack));
         if (match->GetNofLinks() < 1) continue;
         Int_t mcId = match->GetMatchedLink().GetIndex();
+        Int_t mcEventId = match->GetMatchedLink().GetEntry();
         if (mcId < 0) continue; // Ghost or fake track
         
-        const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(fMCTracks->At(mcId));
+        const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*> (fMCTracks->Get(0, mcEventId, mcId));
         if (mcTrack->GetMotherId() != -1) continue; // only for primaries
         //if (mcTrack->GetP() < 1.) continue; // only for momentum large 1 GeV/c
         
         // Check correctness of reconstructed track
         if (match->GetTrueOverAllHitsRatio() < fQuota) continue;
         
+        CbmVertex* primVertex = event ? event->GetVertex() : fPrimVertex;
         fKFFitter.DoFit(track, 211);
-        Double_t chiPrimary = fKFFitter.GetChiToVertex(track, fPrimVertex);
+        Double_t chiPrimary = fKFFitter.GetChiToVertex(track, primVertex);
         fHM->H1("htf_ChiPrimary")->Fill(chiPrimary);
         
         FairTrackParam vtxTrack;
-        fKFFitter.FitToVertex(track, fPrimVertex, &vtxTrack);
+        fKFFitter.FitToVertex(track, primVertex, &vtxTrack);
         
         TVector3 momMC, momRec;
         mcTrack->GetMomentum(momMC);
@@ -399,11 +431,12 @@ void CbmLitFitQa::ProcessTrackMomentumAtVertex()
             continue;
         
         Int_t mcId = match->GetMatchedLink().GetIndex();
+        Int_t mcEventId = match->GetMatchedLink().GetEntry();
         
         if (mcId < 0)
             continue; // Ghost or fake track
         
-        const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(fMCTracks->At(mcId));
+        const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*> (fMCTracks->Get(0, mcEventId, mcId));
         
         if (mcTrack->GetMotherId() != -1)
             continue; // only for primaries

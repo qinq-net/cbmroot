@@ -21,6 +21,8 @@
 #include "CbmMvdHitMatch.h"
 #include "CbmTrackMatchNew.h"
 #include "utils/CbmRichUtil.h"
+#include "CbmMCDataArray.h"
+#include "CbmMCDataManager.h"
 
 #include "TH1.h"
 #include "TH2F.h"
@@ -113,11 +115,12 @@ InitStatus CbmLitTrackingQa::Init()
    fMcToRecoMap.clear();
    vector<string> trackVariants = GlobalTrackVariants();
    for (Int_t i = 0; i < trackVariants.size(); i++) {
-      fMcToRecoMap.insert(make_pair(trackVariants[i], multimap<Int_t, Int_t>()));
+      fMcToRecoMap.insert(make_pair(trackVariants[i], multimap<pair<Int_t, Int_t>, Int_t>()));
    }
 
    CbmLitGlobalElectronId::GetInstance().SetTrdAnnCut(fTrdAnnCut);
    CbmLitGlobalElectronId::GetInstance().SetRichAnnCut(fRichAnnCut);
+   fMCTrackCreator->CreateMC();
 
    return kSUCCESS;
 }
@@ -129,16 +132,16 @@ void CbmLitTrackingQa::Exec(
    fHM->H1("hen_EventNo_TrackingQa")->Fill(0.5);
    std::cout << "CbmLitTrackingQa::Exec: event=" << fHM->H1("hen_EventNo_TrackingQa")->GetEntries() << std::endl;
 
-   fMCTrackCreator->Create();
+   fMCTrackCreator->CreateReco();
 
    ProcessGlobalTracks();
-   ProcessMcTracks();
    PionSuppression();
    IncreaseCounters();
 }
 
 void CbmLitTrackingQa::Finish()
 {
+   ProcessMcTracks();
    fHM->WriteToFile();
    CbmSimulationReport* report = new CbmLitTrackingQaReport();
    report->Create(fHM, fOutputDir);
@@ -150,14 +153,15 @@ void CbmLitTrackingQa::ReadDataBranches()
    FairRootManager* ioman = FairRootManager::Instance();
    if (NULL == ioman) { Fatal("Init","CbmRootManager is not instantiated"); }
 
-   fMCTracks = (TClonesArray*) ioman->GetObject("MCTrack");
+   CbmMCDataManager* mcManager=(CbmMCDataManager*)ioman->GetObject("MCDataManager");
+   fMCTracks=mcManager->InitBranch("MCTrack");
    if (NULL == fMCTracks) { Fatal("Init","No MCTrack array!"); }
 
    fGlobalTracks = (TClonesArray*) ioman->GetObject("GlobalTrack");
    if (NULL == fGlobalTracks) { Fatal("Init","No GlobalTrack array!"); }
 
    if (fDet.GetDet(kMVD)) {
-      fMvdPoints = (TClonesArray*) ioman->GetObject("MvdPoint");
+      fMvdPoints = mcManager->InitBranch("MvdPoint");
       if (NULL == fMvdPoints) { Fatal("Init",": No MvdPoint array!"); }
       fMvdHitMatches = (TClonesArray*) ioman->GetObject("MvdHitMatch");
       if (NULL == fMvdHitMatches) { Fatal("Init",": No MvdHitMatch array!"); }
@@ -190,7 +194,7 @@ void CbmLitTrackingQa::ReadDataBranches()
    }
 
    if (fDet.GetDet(kTOF)) {
-      fTofPoints = (TClonesArray*) ioman->GetObject("TofPoint");
+      fTofPoints = mcManager->InitBranch("TofPoint");
       if (NULL == fTofPoints) { Fatal("Init", "No TofPoint array!"); }
       fTofMatches = (TClonesArray*) ioman->GetObject("TofHitMatch");
       if (NULL == fTofMatches) { Fatal("Init", "No TofHitMatch array!"); }
@@ -670,12 +674,12 @@ void CbmLitTrackingQa::CreateHistograms()
 void CbmLitTrackingQa::ProcessGlobalTracks()
 {
    // Clear all maps for MC to reco matching
-   map<string, multimap<Int_t, Int_t> >::iterator it;
-   for (it = fMcToRecoMap.begin(); it != fMcToRecoMap.end(); it++) {
-      multimap<Int_t, Int_t>& mcRecoMap = (*it).second;
-      mcRecoMap.clear();
+   //map<string, multimap<pair<Int_t, Int_t>, Int_t> >::iterator it;
+   //for (it = fMcToRecoMap.begin(); it != fMcToRecoMap.end(); it++) {
+      //multimap<pair<Int_t, Int_t>, Int_t>& mcRecoMap = (*it).second;
+      //mcRecoMap.clear();
       //(*it).second.clear();
-   }
+   //}
 
    ProcessRichRings();
 
@@ -697,7 +701,11 @@ void CbmLitTrackingQa::ProcessGlobalTracks()
       Bool_t isTofOk = tofId > -1 && fDet.GetDet(kTOF);
       Bool_t isRichOk = richId > -1 && fDet.GetDet(kRICH);
 
-      Double_t rtDistance = CbmRichUtil::GetRingTrackDistance(iTrack);
+      Double_t rtDistance = 10;
+      
+      if (isRichOk)
+         rtDistance = CbmRichUtil::GetRingTrackDistance(iTrack);
+      
       // check the quality of track segments
       const CbmTrackMatchNew* stsTrackMatch;
       if (isStsOk) {
@@ -766,7 +774,7 @@ void CbmLitTrackingQa::ProcessGlobalTracks()
 
                Double_t momentumMc = 0.;
                if (stsTrackMatch != NULL) {
-                  const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(fMCTracks->At(stsTrackMatch->GetMatchedLink().GetIndex()));
+                  const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(fMCTracks->Get(stsTrackMatch->GetMatchedLink()));
                   if (mcTrack != NULL) momentumMc = mcTrack->GetP();
                 }
                 if (rtDistance < 1. && CbmLitGlobalElectronId::GetInstance().IsRichElectron(iTrack, momentumMc)){
@@ -777,37 +785,37 @@ void CbmLitTrackingQa::ProcessGlobalTracks()
       }
 
       // Get MC indices of track segments
-      Int_t stsMCId = -1, trdMCId = -1, muchMCId = -1, richMCId = -1;
-      list<Int_t> tofMCIds;
-      if (isStsOk) { stsMCId = stsTrackMatch->GetMatchedLink().GetIndex(); }
-      if (isTrdOk) { trdMCId = trdTrackMatch->GetMatchedLink().GetIndex(); }
-      if (isMuchOk) { muchMCId = muchTrackMatch->GetMatchedLink().GetIndex(); }
+      pair<Int_t, Int_t> stsMCId = { -1, -1 }, trdMCId = { -1, -1 }, muchMCId = { -1, -1 }, richMCId = { -1, -1 };
+      list<pair<Int_t, Int_t> > tofMCIds;
+      if (isStsOk) { stsMCId = { stsTrackMatch->GetMatchedLink().GetEntry(), stsTrackMatch->GetMatchedLink().GetIndex() } ; }
+      if (isTrdOk) { trdMCId = { trdTrackMatch->GetMatchedLink().GetEntry(), trdTrackMatch->GetMatchedLink().GetIndex() }; }
+      if (isMuchOk) { muchMCId = { muchTrackMatch->GetMatchedLink().GetEntry(), muchTrackMatch->GetMatchedLink().GetIndex() }; }
       if (isTofOk) {
          const CbmMatch* tofMatch = static_cast<const CbmMatch*>(fTofMatches->At(tofId));
          const vector<CbmLink>& tofMCLinks = tofMatch->GetLinks();
          
          for (vector<CbmLink>::const_iterator tofMCIt = tofMCLinks.begin(); tofMCIt != tofMCLinks.end(); ++tofMCIt)
          {
-             const FairMCPoint* tofPoint = static_cast<const FairMCPoint*>(fTofPoints->At(tofMCIt->GetIndex()));
+             const FairMCPoint* tofPoint = static_cast<const FairMCPoint*>(fTofPoints->Get(*tofMCIt));
              
              if (tofPoint != NULL)
-                 tofMCIds.push_back(tofPoint->GetTrackID());
+                 tofMCIds.push_back(pair<Int_t, Int_t> (tofMCIt->GetEntry(), tofPoint->GetTrackID()));
          }
       }
-      if (isRichOk) { richMCId = richRingMatch->GetMatchedLink().GetIndex(); }
+      if (isRichOk) { richMCId = { richRingMatch->GetMatchedLink().GetEntry(), richRingMatch->GetMatchedLink().GetIndex() }; }
 
-      map<string, multimap<Int_t, Int_t> >::iterator it;
+      map<string, multimap<pair<Int_t, Int_t>, Int_t> >::iterator it;
       for (it = fMcToRecoMap.begin(); it != fMcToRecoMap.end(); it++) {
         string name = (*it).first;
-        multimap<Int_t, Int_t>& mcRecoMap = (*it).second;
-        Bool_t sts = (name.find("Sts") != string::npos) ? isStsOk && stsMCId != -1 : true;
+        multimap<pair<Int_t, Int_t>, Int_t>& mcRecoMap = (*it).second;
+        Bool_t sts = (name.find("Sts") != string::npos) ? isStsOk && stsMCId.second != -1 : true;
         Bool_t trd = (name.find("Trd") != string::npos) ? isTrdOk && stsMCId == trdMCId : true;
         Bool_t much = (name.find("Much") != string::npos) ? isMuchOk && stsMCId == muchMCId : true;
         Bool_t tof = (name.find("Tof") != string::npos) ? isTofOk && find(tofMCIds.begin(), tofMCIds.end(), stsMCId) != tofMCIds.end() : true;
         Bool_t rich = (name.find("Rich") != string::npos) ? isRichOk && stsMCId == richMCId : true;
 
         if (sts && trd && much && tof && rich) {
-           pair<Int_t, Int_t> tmp = make_pair(stsMCId, iTrack);
+           pair<pair<Int_t, Int_t>, Int_t> tmp = make_pair(stsMCId, iTrack);
            mcRecoMap.insert(tmp);
         }
       }
@@ -821,9 +829,9 @@ void CbmLitTrackingQa::ProcessRichRings()
    for(Int_t iRing = 0; iRing < nofRings; iRing++) {
      const CbmTrackMatchNew* richRingMatch = static_cast<const CbmTrackMatchNew*>(fRichRingMatches->At(iRing));
      Bool_t isRichOk = richRingMatch->GetTrueOverAllHitsRatio() >= fQuotaRich;
-     Int_t richMCId = (isRichOk) ? richRingMatch->GetMatchedLink().GetIndex() : -1;//GetMCTrackId() : -1;
-     if (isRichOk && -1 != richMCId) {
-         pair<Int_t, Int_t> tmp = make_pair(richMCId, iRing);
+     pair<Int_t, Int_t> richMCId = { isRichOk ? richRingMatch->GetMatchedLink().GetEntry() : -1, isRichOk ? richRingMatch->GetMatchedLink().GetIndex() : -1 };//GetMCTrackId() : -1;
+     if (isRichOk && -1 != richMCId.second) {
+         pair<pair<Int_t, Int_t>, Int_t> tmp = make_pair(richMCId, iRing);
          fMcToRecoMap["Rich"].insert(tmp);
      }
    }
@@ -846,7 +854,8 @@ void CbmLitTrackingQa::ProcessMvd(
       const CbmMvdHitMatch* hitMatch = static_cast<const CbmMvdHitMatch*>(fMvdHitMatches->At(hitId));
       if (NULL == hitMatch) continue;
       Int_t pointId = hitMatch->GetPointId();
-      const FairMCPoint* point = static_cast<const FairMCPoint*>(fMvdPoints->At(pointId));
+      Int_t eventId = hitMatch->GetEntryNumber();
+      const FairMCPoint* point = static_cast<const FairMCPoint*>(fMvdPoints->Get(0, eventId, pointId));
       if (NULL == point) continue;
       Int_t mcTrackId = point->GetTrackID();
       if (mcTrackId == stsMcTrackId) { // true hit
@@ -882,127 +891,132 @@ void CbmLitTrackingQa::ProcessMcTracks()
     vector<TH1*> effHistos = fHM->H1Vector("(hte|hpe)_.*_Eff_.*");
     Int_t nofEffHistos = effHistos.size();
 
-   Int_t nofMcTracks = fMCTracks->GetEntriesFast();
-   for (Int_t iMCTrack = 0; iMCTrack < nofMcTracks; iMCTrack++) {
-      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(fMCTracks->At(iMCTrack));
+   for (Int_t iMCEvent = 0; fMCTracks->Size(0, iMCEvent) >= 0; ++iMCEvent)
+   {
+      Int_t nofMcTracks = fMCTracks->Size(0, iMCEvent);
 
-      // Check accepted tracks cutting on minimal number of MC points
-      if (!fMCTrackCreator->TrackExists(iMCTrack)) continue;
-      const CbmLitMCTrack& litMCTrack = fMCTrackCreator->GetTrack(iMCTrack);
-      Int_t nofPointsSts = litMCTrack.GetNofPointsInDifferentStations(kSTS);
-      Int_t nofPointsTrd = litMCTrack.GetNofPointsInDifferentStations(kTRD);
-      Int_t nofPointsMuch = litMCTrack.GetNofPointsInDifferentStations(kMUCH);
-      Int_t nofPointsTof = litMCTrack.GetNofPoints(kTOF);
-      Int_t nofHitsRich = litMCTrack.GetNofRichHits();
-      Double_t boa = litMCTrack.GetRingBaxis()/litMCTrack.GetRingAaxis();
-      if (litMCTrack.GetRingBaxis() == -1. || litMCTrack.GetRingAaxis() == -1) boa = -1.;
-      Double_t ringX = litMCTrack.GetRingCenterX();
-      Double_t ringY = litMCTrack.GetRingCenterY();
+      for (Int_t iMCTrack = 0; iMCTrack < nofMcTracks; ++iMCTrack) {
+         const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*> (fMCTracks->Get(0, iMCEvent, iMCTrack));
+
+         // Check accepted tracks cutting on minimal number of MC points
+         if (!fMCTrackCreator->TrackExists(iMCEvent, iMCTrack)) continue;
+         const CbmLitMCTrack& litMCTrack = fMCTrackCreator->GetTrack(iMCEvent, iMCTrack);
+         Int_t nofPointsSts = litMCTrack.GetNofPointsInDifferentStations(kSTS);
+         Int_t nofPointsTrd = litMCTrack.GetNofPointsInDifferentStations(kTRD);
+         Int_t nofPointsMuch = litMCTrack.GetNofPointsInDifferentStations(kMUCH);
+         Int_t nofPointsTof = litMCTrack.GetNofPoints(kTOF);
+         Int_t nofHitsRich = litMCTrack.GetNofRichHits();
+         Double_t boa = litMCTrack.GetRingBaxis() / litMCTrack.GetRingAaxis();
+         if (litMCTrack.GetRingBaxis() == -1. || litMCTrack.GetRingAaxis() == -1) boa = -1.;
+         Double_t ringX = litMCTrack.GetRingCenterX();
+         Double_t ringY = litMCTrack.GetRingCenterY();
 
 
-      // Check local tracks
-      Bool_t stsConsecutive = (fUseConsecutivePointsInSts) ? litMCTrack.GetNofConsecutivePoints(kSTS) >= fMinNofPointsSts : true;
-      Bool_t isStsOk = nofPointsSts >= fMinNofPointsSts && fDet.GetDet(kSTS) && stsConsecutive;
-      Bool_t isTrdOk = nofPointsTrd >= fMinNofPointsTrd && fDet.GetDet(kTRD);
-      Bool_t isMuchOk = nofPointsMuch >= fMinNofPointsMuch && fDet.GetDet(kMUCH);
-      Bool_t isTofOk = nofPointsTof >= fMinNofPointsTof && fDet.GetDet(kTOF);
-      Bool_t isRichOk = nofHitsRich >= fMinNofHitsRich && fDet.GetDet(kRICH);
+         // Check local tracks
+         Bool_t stsConsecutive = (fUseConsecutivePointsInSts) ? litMCTrack.GetNofConsecutivePoints(kSTS) >= fMinNofPointsSts : true;
+         Bool_t isStsOk = nofPointsSts >= fMinNofPointsSts && fDet.GetDet(kSTS) && stsConsecutive;
+         Bool_t isTrdOk = nofPointsTrd >= fMinNofPointsTrd && fDet.GetDet(kTRD);
+         Bool_t isMuchOk = nofPointsMuch >= fMinNofPointsMuch && fDet.GetDet(kMUCH);
+         Bool_t isTofOk = nofPointsTof >= fMinNofPointsTof && fDet.GetDet(kTOF);
+         Bool_t isRichOk = nofHitsRich >= fMinNofHitsRich && fDet.GetDet(kRICH);
 
-      // calculate polar angle
-      TVector3 mom;
-      mcTrack->GetMomentum(mom);
-      Double_t angle = std::abs(mom.Theta() * 180 / TMath::Pi());
-      Double_t mcP = mcTrack->GetP();
-      Double_t mcY = mcTrack->GetRapidity();
-      Double_t mcPt = mcTrack->GetPt();
+         // calculate polar angle
+         TVector3 mom;
+         mcTrack->GetMomentum(mom);
+         Double_t angle = std::abs(mom.Theta() * 180 / TMath::Pi());
+         Double_t mcP = mcTrack->GetP();
+         Double_t mcY = mcTrack->GetRapidity();
+         Double_t mcPt = mcTrack->GetPt();
 
-      // Fill parameter name to value map
-      map<string, vector<Double_t> > parMap;
+         // Fill parameter name to value map
+         map<string, vector<Double_t> > parMap;
 
-      vector<Double_t> tmp = list_of(mcP);
-      parMap["p"] = tmp;
+         vector<Double_t> tmp = list_of(mcP);
+         parMap["p"] = tmp;
 
-      vector<Double_t> tmp1 = list_of(mcY);
-      parMap["y"] = tmp1;
+         vector<Double_t> tmp1 = list_of(mcY);
+         parMap["y"] = tmp1;
 
-      vector<Double_t> tmp2 = list_of(mcPt);
-      parMap["pt"] = tmp2;
+         vector<Double_t> tmp2 = list_of(mcPt);
+         parMap["pt"] = tmp2;
 
-      vector<Double_t> tmp3 = list_of(angle);
-      parMap["Angle"] = tmp3;
+         vector<Double_t> tmp3 = list_of(angle);
+         parMap["Angle"] = tmp3;
 
-      vector<Double_t> tmp4 = list_of(0);
-      parMap["Np"] = tmp4; // FIXME : correct to number of points in concrete detector!
-                        // Currently as a  temporary solution it is reassigned later
+         vector<Double_t> tmp4 = list_of(0);
+         parMap["Np"] = tmp4; // FIXME : correct to number of points in concrete detector!
+         // Currently as a  temporary solution it is reassigned later
 
-      vector<Double_t> tmp5 = list_of(boa);
-      parMap["BoA"] = tmp5;
+         vector<Double_t> tmp5 = list_of(boa);
+         parMap["BoA"] = tmp5;
 
-      vector<Double_t> tmp5X = list_of(ringX);
-      parMap["RingXc"] = tmp5X;
+         vector<Double_t> tmp5X = list_of(ringX);
+         parMap["RingXc"] = tmp5X;
 
-      vector<Double_t> tmp5Y = list_of(std::abs(ringY));
-      parMap["RingYc"] = tmp5Y;
+         vector<Double_t> tmp5Y = list_of(std::abs(ringY));
+         parMap["RingYc"] = tmp5Y;
 
-      vector<Double_t> tmp6 = list_of(ringX)(ringY);
-      parMap["RingXcYc"] = tmp6;
+         vector<Double_t> tmp6 = list_of(ringX)(ringY);
+         parMap["RingXcYc"] = tmp6;
 
-      vector<Double_t> tmp7 = list_of(nofHitsRich);
-      parMap["RingNh"] = tmp7;
+         vector<Double_t> tmp7 = list_of(nofHitsRich);
+         parMap["RingNh"] = tmp7;
 
-      vector<Double_t> tmp8 = list_of(mcY)(mcPt);
-      //parMap["RadPos"] = list_of(1);
-      parMap["YPt"] = tmp8;
+         vector<Double_t> tmp8 = list_of(mcY)(mcPt);
+         //parMap["RadPos"] = list_of(1);
+         parMap["YPt"] = tmp8;
 
-      for (Int_t iHist = 0; iHist < nofEffHistos; iHist++) {
-         TH1* hist = effHistos[iHist];
-         string histName = hist->GetName();
-         vector<string> split = Split(histName, '_');
-         string effName = split[1];
-         string normName = split[2];
-         string catName = split[3];
-         string histTypeName = split[0];
-         string parName = split[5];
-         assert(parMap.count(parName) != 0);
+         for (Int_t iHist = 0; iHist < nofEffHistos; iHist++) {
+            TH1* hist = effHistos[iHist];
+            string histName = hist->GetName();
+            vector<string> split = Split(histName, '_');
+            string effName = split[1];
+            string normName = split[2];
+            string catName = split[3];
+            string histTypeName = split[0];
+            string parName = split[5];
+            assert(parMap.count(parName) != 0);
 
-         vector<Double_t> par = list_of(0);
-         if (parName == "Np") {
-            vector<Double_t> tmp = list_of((effName == "Sts") ? nofPointsSts : (effName == "Trd") ? nofPointsTrd : (effName == "Much") ? nofPointsMuch : (effName == "Tof") ? nofPointsTof : 0);
-            par = tmp;
-         } else {
-            par = parMap[parName];
-         }
-
-         Bool_t sts = (normName.find("Sts") != string::npos) ? isStsOk : true;
-         Bool_t trd = (normName.find("Trd") != string::npos) ? isTrdOk : true;
-         Bool_t much = (normName.find("Much") != string::npos) ? isMuchOk : true;
-         Bool_t tof = (normName.find("Tof") != string::npos) ? isTofOk : true;
-         Bool_t rich = (normName.find("Rich") != string::npos) ? isRichOk : true;
-
-         if (effName == "Trd" || effName == "Much" || effName == "Tof") {
-            string prevRecName = FindAndReplace(normName, effName, "");
-            Bool_t isPrevRec = fMcToRecoMap[prevRecName].find(iMCTrack) != fMcToRecoMap[prevRecName].end();
-            Bool_t accOk = isPrevRec && sts && trd && much && tof && rich;
-            if (accOk) {
-               FillGlobalReconstructionHistos(iMCTrack, fMcToRecoMap[normName], histName, histTypeName, effName, catName, par);
+            vector<Double_t> par = list_of(0);
+            if (parName == "Np") {
+               vector<Double_t> tmp = list_of((effName == "Sts") ? nofPointsSts : (effName == "Trd") ? nofPointsTrd : (effName == "Much") ? nofPointsMuch : (effName == "Tof") ? nofPointsTof : 0);
+               par = tmp;
+            } else {
+               par = parMap[parName];
             }
-         } else {
-            Bool_t accOk = sts && trd && much && tof && rich;
-            if (accOk) {
-              if (histName.find("Rich") == string::npos) {
-               FillGlobalReconstructionHistos(iMCTrack, fMcToRecoMap[effName], histName, histTypeName, effName, catName, par);
-              } else {
-                 FillGlobalReconstructionHistosRich(iMCTrack, fMcToRecoMap[effName], histName, histTypeName, effName, catName, par);
-              }
+
+            Bool_t sts = (normName.find("Sts") != string::npos) ? isStsOk : true;
+            Bool_t trd = (normName.find("Trd") != string::npos) ? isTrdOk : true;
+            Bool_t much = (normName.find("Much") != string::npos) ? isMuchOk : true;
+            Bool_t tof = (normName.find("Tof") != string::npos) ? isTofOk : true;
+            Bool_t rich = (normName.find("Rich") != string::npos) ? isRichOk : true;
+
+            if (effName == "Trd" || effName == "Much" || effName == "Tof") {
+               string prevRecName = FindAndReplace(normName, effName, "");
+               Bool_t isPrevRec = fMcToRecoMap[prevRecName].find(make_pair(iMCEvent, iMCTrack)) != fMcToRecoMap[prevRecName].end();
+               Bool_t accOk = isPrevRec && sts && trd && much && tof && rich;
+               if (accOk) {
+                  FillGlobalReconstructionHistos(iMCEvent, iMCTrack, fMcToRecoMap[normName], histName, histTypeName, effName, catName, par);
+               }
+            } else {
+               Bool_t accOk = sts && trd && much && tof && rich;
+               if (accOk) {
+                  if (histName.find("Rich") == string::npos) {
+                     FillGlobalReconstructionHistos(iMCEvent, iMCTrack, fMcToRecoMap[effName], histName, histTypeName, effName, catName, par);
+                  } else {
+                     FillGlobalReconstructionHistosRich(iMCEvent, iMCTrack, fMcToRecoMap[effName], histName, histTypeName, effName, catName, par);
+                  }
+               }
             }
-         }
-      } // Loop over efficiency histograms
-   } // Loop over MCTracks
+         } // Loop over efficiency histograms
+      } // Loop over MCTracks
+   }// Loop over MC events
 }
 
 void CbmLitTrackingQa::FillGlobalReconstructionHistos(
+   Int_t mcEventId,
    Int_t mcId,
-   const multimap<Int_t, Int_t>& mcMap,
+   const multimap<pair<Int_t, Int_t>, Int_t>& mcMap,
    const string& histName,
    const string& histTypeName,
    const string& effName,
@@ -1012,8 +1026,8 @@ void CbmLitTrackingQa::FillGlobalReconstructionHistos(
    string accHistName = FindAndReplace(histName, "_Eff_", "_Acc_");
    string recHistName = FindAndReplace(histName, "_Eff_", "_Rec_");
    LitTrackAcceptanceFunction function = fTrackAcceptanceFunctions.find(catName)->second;
-   Bool_t accOk = function(fMCTracks, mcId);
-   Bool_t recOk = (histTypeName == "hte") ? (mcMap.find(mcId) != mcMap.end() && accOk) : (ElectronId(mcId, mcMap, effName) && accOk);
+   Bool_t accOk = function(fMCTracks, mcEventId, mcId);
+   Bool_t recOk = (histTypeName == "hte") ? (mcMap.find(pair<Int_t, Int_t> (mcEventId, mcId)) != mcMap.end() && accOk) : (ElectronId(mcEventId, mcId, mcMap, effName) && accOk);
    Int_t nofParams = par.size();
    assert(nofParams < 3 && nofParams > 0);
    if (nofParams == 1) {
@@ -1026,20 +1040,21 @@ void CbmLitTrackingQa::FillGlobalReconstructionHistos(
 }
 
 void CbmLitTrackingQa::FillGlobalReconstructionHistosRich(
+      Int_t mcEventId,
       Int_t mcId,
-      const multimap<Int_t, Int_t>& mcMap,
+      const multimap<pair<Int_t, Int_t>, Int_t>& mcMap,
       const string& histName,
       const string& histTypeName,
       const string& effName,
       const string& catName,
       const vector<Double_t>& par)
 {
-   Int_t nofHitsInRing = fMCTrackCreator->GetTrack(mcId).GetNofRichHits();
+   Int_t nofHitsInRing = fMCTrackCreator->GetTrack(mcEventId, mcId).GetNofRichHits();
    string accHistName = FindAndReplace(histName, "_Eff_", "_Acc_");
    string recHistName = FindAndReplace(histName, "_Eff_", "_Rec_");
    LitRingAcceptanceFunction function = fRingAcceptanceFunctions.find(catName)->second;
-   Bool_t accOk = function(fMCTracks, mcId, nofHitsInRing);
-   Bool_t recOk = (histTypeName == "hte") ? (mcMap.find(mcId) != mcMap.end() && accOk) : (ElectronId(mcId, mcMap, effName) && accOk);
+   Bool_t accOk = function(fMCTracks, mcEventId, mcId, nofHitsInRing);
+   Bool_t recOk = (histTypeName == "hte") ? (mcMap.find(make_pair(mcEventId, mcId)) != mcMap.end() && accOk) : (ElectronId(mcEventId, mcId, mcMap, effName) && accOk);
    Int_t nofParams = par.size();
    assert(nofParams < 3 && nofParams > 0);
    if (nofParams == 1) {
@@ -1052,14 +1067,15 @@ void CbmLitTrackingQa::FillGlobalReconstructionHistosRich(
 }
 
 Bool_t CbmLitTrackingQa::ElectronId(
+      Int_t mcEventId,
       Int_t mcId,
-      const multimap<Int_t, Int_t>& mcMap,
+      const multimap<pair<Int_t, Int_t>, Int_t>& mcMap,
       const string& effName)
 {
-   multimap<Int_t, Int_t>::const_iterator it = mcMap.find(mcId);
+   multimap<pair<Int_t, Int_t>, Int_t>::const_iterator it = mcMap.find(pair<Int_t, Int_t> (mcEventId, mcId));
    if (it == mcMap.end()) return false;
    Int_t globalTrackIndex = (*it).second;
-   const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(fMCTracks->At(mcId));
+   const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(fMCTracks->Get(0, mcEventId, mcId));
    TVector3 mom;
    mcTrack->GetMomentum(mom);
    Bool_t isRichElectron = (fDet.GetDet(kRICH) && (effName.find("Rich") != string::npos)) ? CbmLitGlobalElectronId::GetInstance().IsRichElectron(globalTrackIndex, mom.Mag()) : true;
@@ -1088,8 +1104,9 @@ void CbmLitTrackingQa::PionSuppression()
        if (fDet.GetDet(kTOF) && tofIndex < 0) continue;
        
       Int_t mcIdSts = trackMatch->GetMatchedLink().GetIndex();
+      Int_t mcIdStsEvent = trackMatch->GetMatchedLink().GetEntry();
       if (mcIdSts < 0) continue;
-      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(fMCTracks->At(mcIdSts));
+      const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(fMCTracks->Get(0, mcIdStsEvent, mcIdSts));
       TVector3 mom;
       mcTrack->GetMomentum(mom);
       Double_t p = mom.Mag();

@@ -15,10 +15,12 @@
 class CbmHistManager;
 class CbmTrackMatchNew;
 class CbmLitMCTrackCreator;
+class CbmMCDataArray;
 
 using std::string;
 using std::vector;
 using std::multimap;
+using std::pair;
 
 
 /**
@@ -231,8 +233,9 @@ private:
     * \param[in] par Value that will be added in histogram (momentum or number of points).
     */
    void FillGlobalReconstructionHistos(
+         Int_t mcEventId,
          Int_t mcId,
-         const multimap<Int_t, Int_t>& mcMap,
+         const multimap<pair<Int_t, Int_t>, Int_t>& mcMap,
          const string& histName,
          const string& histTypeName,
          const string& effName,
@@ -248,8 +251,9 @@ private:
      * \param[in] par Value that will be added in histogram (momentum or number of points)
      */
    void FillGlobalReconstructionHistosRich(
+         Int_t mcEventId,
          Int_t mcId,
-         const multimap<Int_t, Int_t>& mcMap,
+         const multimap<pair<Int_t, Int_t>, Int_t>& mcMap,
          const string& histName,
          const string& histTypeName,
          const string& effName,
@@ -257,8 +261,9 @@ private:
          const vector<Double_t>& par);
 
    Bool_t ElectronId(
+         Int_t mcEventId,
          Int_t mcId,
-         const multimap<Int_t, Int_t>& mcMap,
+         const multimap<pair<Int_t, Int_t>, Int_t>& mcMap,
          const string& effName);
 
    void PionSuppression();
@@ -311,9 +316,9 @@ private:
    Int_t fAngleRangeBins; // Number of bins for efficiency vs. polar angle histogram
 
    // Pointers to data arrays
-   TClonesArray* fMCTracks; // CbmMCTrack array
+   CbmMCDataArray* fMCTracks; // CbmMCTrack array
    TClonesArray* fGlobalTracks; // CbmGlobalTrack array
-   TClonesArray* fMvdPoints; // CbmMvdPoint array
+   CbmMCDataArray* fMvdPoints; // CbmMvdPoint array
    TClonesArray* fMvdHitMatches; // CbmMvdHitMatch array
    TClonesArray* fStsTracks; // CbmStsTrack array
    TClonesArray* fStsMatches; // CbmStsTrackMatch array
@@ -322,11 +327,11 @@ private:
    TClonesArray* fRichRingMatches; // CbmRichMatchesn array
    TClonesArray* fMuchMatches; // CbmTrackMatchNew array
    TClonesArray* fTrdMatches; // CbmTrackMatchNew array
-   TClonesArray* fTofPoints; // CbmTofPoint array
+   CbmMCDataArray* fTofPoints; // CbmTofPoint array
    TClonesArray* fTofMatches;// CbmMatch array
 
    // Global track segment name maps to multimap <MC track index, reconstructed track index>
-   map<string, multimap<Int_t, Int_t> > fMcToRecoMap;
+   map<string, multimap<pair<Int_t, Int_t>, Int_t> > fMcToRecoMap;
 
    vector<string> fTrackCategories; // Vector of track category names
    vector<string> fRingCategories; // Vector of ring category names
@@ -335,8 +340,8 @@ private:
    vector<string> fPiSuppCategories;; // Vector of categories for pion suppression
 
 //#ifndef  __ROOTCLING__
-   typedef Bool_t (*LitTrackAcceptanceFunction)(const TClonesArray* mcTracks, Int_t index);
-   typedef Bool_t (*LitRingAcceptanceFunction)(const TClonesArray* mcTracks, Int_t index, Int_t nofHitsInRing);
+   typedef Bool_t (*LitTrackAcceptanceFunction)(CbmMCDataArray* mcTracks, Int_t eventNo, Int_t index);
+   typedef Bool_t (*LitRingAcceptanceFunction)(CbmMCDataArray* mcTracks, Int_t eventNo, Int_t index, Int_t nofHitsInRing);
    typedef Bool_t (*LitPiSuppAcceptanceFunction)(const TClonesArray* globalTracks, const TClonesArray* stsMatches, const TClonesArray* richMatches, Int_t index);
    map<string, LitTrackAcceptanceFunction> fTrackAcceptanceFunctions; // maps track category name to track acceptance function
    map<string, LitRingAcceptanceFunction> fRingAcceptanceFunctions; // maps ring category name to ring acceptance function

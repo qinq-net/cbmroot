@@ -17,7 +17,7 @@ using std::string;
 using std::vector;
 using std::map;
 class CbmHistManager;
-class TClonesArray;
+class CbmMCDataArray;
 
 class CbmLitClusteringQa : public FairTask
 {
@@ -66,7 +66,7 @@ private:
     void InitMuchGeoScheme(const string& digiFileName);
 
     void ProcessPoints(
-          const TClonesArray* points,
+          CbmMCDataArray* points,
           const string& detName,
           DetectorId detId);
 
@@ -91,7 +91,12 @@ private:
     /**
      *
      */
-    void FillEventCounterHistograms();
+    void FillEventCounterHistogramsMC();
+    
+    /**
+     *
+     */
+    void FillEventCounterHistogramsReco();
 
     /**
      *
@@ -119,14 +124,19 @@ private:
           const string& detName);
 
     void FillResidualAndPullHistograms(
-          const TClonesArray* points,
+          CbmMCDataArray* points,
           const TClonesArray* hits,
           const TClonesArray* hitMatches,
           const string& detName,
           DetectorId detId);
 
-    void FillHitEfficiencyHistograms(
-          const TClonesArray* points,
+    void FillHitEfficiencyHistogramsMC(
+          CbmMCDataArray* points,
+          const string& detName,
+          DetectorId detId);
+    
+    void FillHitEfficiencyHistogramsReco(
+          CbmMCDataArray* points,
           const TClonesArray* hits,
           const TClonesArray* hitMatches,
           const string& detName,
@@ -146,14 +156,14 @@ private:
     CbmLitDetectorSetup fDet; // For detector setup determination
 
     // Pointers to data arrays
-    TClonesArray* fMCTracks;
+    CbmMCDataArray* fMCTracks;
 
-    TClonesArray* fMvdPoints; // CbmMvdPoint array
+    CbmMCDataArray* fMvdPoints; // CbmMvdPoint array
     TClonesArray* fMvdDigis; // CbmMvdDigi array
     TClonesArray* fMvdClusters; // CbmMvdClusters array
     TClonesArray* fMvdHits; // CbmMvdHit array
 
-    TClonesArray* fStsPoints; // CbmStsPoint array
+    CbmMCDataArray* fStsPoints; // CbmStsPoint array
     TClonesArray* fStsDigis; // CbmStsDigi array
     TClonesArray* fStsClusters; // CbmStsCluster array
     TClonesArray* fStsHits; // CbmStsHit array
@@ -161,10 +171,10 @@ private:
     TClonesArray* fStsClusterMatches; // CbmMatch array
     TClonesArray* fStsHitMatches; // CbmMatch array
 
-    TClonesArray* fRichPoints; // CbmRichPoint array
+    CbmMCDataArray* fRichPoints; // CbmRichPoint array
     TClonesArray* fRichHits; // CbmRichHits array
 
-    TClonesArray* fMuchPoints; // CbmMuchPoint array
+    CbmMCDataArray* fMuchPoints; // CbmMuchPoint array
     TClonesArray* fMuchDigis; // CbmMuchDigi array
     TClonesArray* fMuchClusters; // CbmMuchCluster array
     TClonesArray* fMuchPixelHits; // CbmMuchPixelHits array
@@ -174,7 +184,7 @@ private:
     TClonesArray* fMuchPixelHitMatches; // CbmMatch array
     TClonesArray* fMuchStrawHitMatches; // CbmMatch array
 
-    TClonesArray* fTrdPoints; // CbmTrdPoint array
+    CbmMCDataArray* fTrdPoints; // CbmTrdPoint array
     TClonesArray* fTrdDigis; // CbmTrdDigi array
     TClonesArray* fTrdClusters; // CbmTrdCluster array
     TClonesArray* fTrdHits; // CbmTrdHit array
@@ -182,7 +192,7 @@ private:
     TClonesArray* fTrdClusterMatches; // CbmMatch array
     TClonesArray* fTrdHitMatches; // CbmMatches array
 
-    TClonesArray* fTofPoints; // CbmTofPoint array
+    CbmMCDataArray* fTofPoints; // CbmTofPoint array
     TClonesArray* fTofHits; // CbmTofHit array
 
     string fMuchDigiFileName;

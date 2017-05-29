@@ -16,6 +16,7 @@
 #include "CbmMCTrack.h"
 #include "CbmKFVertex.h"
 #include "CbmKFParticleInterface.h"
+#include "CbmMCDataManager.h"
 #include "TClonesArray.h"
 #include "TH2F.h"
 #include "TParticlePDG.h"
@@ -48,8 +49,8 @@ CbmLitTofQa::CbmLitTofQa():
    fKFFitter(),
    fTrackCategories(),
    fTrackAcceptanceFunctions(),
-   fMCTrackIdForTofHits(),
-   fMCTrackIdForTofPoints()
+   fMCTrackIdForTofHits()//,
+   //fMCTrackIdForTofPoints()
 {
    FillTrackCategoriesAndAcceptanceFunctions();
 }
@@ -92,15 +93,17 @@ void CbmLitTofQa::ReadDataBranches()
 {
    FairRootManager* ioman = FairRootManager::Instance();
    assert(ioman != NULL);
+   
+   CbmMCDataManager* mcManager = (CbmMCDataManager*)ioman->GetObject("MCDataManager");
 
    fGlobalTracks = (TClonesArray*) ioman->GetObject("GlobalTrack");
    fStsTracks = (TClonesArray*) ioman->GetObject("StsTrack");
    fStsTrackMatches = (TClonesArray*) ioman->GetObject("StsTrackMatch");
    fTofHits = (TClonesArray*) ioman->GetObject("TofHit");
    fTofHitsMatches = (TClonesArray*) ioman->GetObject("TofHitMatch");
-   fTofPoints = (TClonesArray*) ioman->GetObject("TofPoint");
+   fTofPoints = mcManager->InitBranch("TofPoint");
    fTofTracks = (TClonesArray*) ioman->GetObject("TofTrack");
-   fMCTracks = (TClonesArray*) ioman->GetObject("MCTrack");
+   fMCTracks = mcManager->InitBranch("MCTrack");
    fPrimVertex = (CbmVertex*) ioman->GetObject("PrimaryVertex");
 }
 
@@ -165,7 +168,7 @@ void CbmLitTofQa::CreateHistograms()
 void CbmLitTofQa::ProcessMC()
 {
    fMCTrackIdForTofHits.clear();
-   fMCTrackIdForTofPoints.clear();
+   //fMCTrackIdForTofPoints.clear();
 
    Int_t nofHits = fTofHits->GetEntriesFast();
    for (Int_t iHit = 0; iHit < nofHits; iHit++) {
@@ -173,15 +176,20 @@ void CbmLitTofQa::ProcessMC()
       CbmMatch*  tofHitMatch = static_cast<CbmMatch*>(fTofHitsMatches->At(iHit));
       if (tofHitMatch == NULL) {continue;}
       Int_t tofPointIndex = tofHitMatch->GetMatchedLink().GetIndex();
-      const CbmTofPoint* tofPoint = static_cast<const CbmTofPoint*>(fTofPoints->At(tofPointIndex));
-      fMCTrackIdForTofHits.insert(tofPoint->GetTrackID());
+      Int_t tofPointEventNo = tofHitMatch->GetMatchedLink().GetEntry();
+      const CbmTofPoint* tofPoint = static_cast<const CbmTofPoint*>(fTofPoints->Get(0, tofPointEventNo, tofPointIndex));
+      fMCTrackIdForTofHits.insert(make_pair(tofPointEventNo, tofPoint->GetTrackID()));
    }
 
-   Int_t nofPoints = fTofPoints->GetEntriesFast();
-   for (Int_t iPoint = 0; iPoint < nofPoints; iPoint++) {
-      const CbmTofPoint* tofPoint = static_cast<const CbmTofPoint*>(fTofPoints->At(iPoint));
-      fMCTrackIdForTofPoints.insert(tofPoint->GetTrackID());
-   }
+   /*for (Int_t iEventNo = 0; fTofPoints->Size(0, iEventNo) >= 0; ++iEventNo)
+   {
+      Int_t nofPoints = fTofPoints->Size(0, iEventNo);
+      
+      for (Int_t iPoint = 0; iPoint < nofPoints; iPoint++) {
+         const CbmTofPoint* tofPoint = static_cast<const CbmTofPoint*>(fTofPoints->Get(0, iEventNo, iPoint));
+         fMCTrackIdForTofPoints.insert(pair<Int_t, Int_t> (iEventNo, tofPoint->GetTrackID()));
+      }
+   }*/
 }
 
 void CbmLitTofQa::ProcessGlobalTracks()
@@ -207,7 +215,8 @@ void CbmLitTofQa::ProcessGlobalTracks()
       CbmMatch*  tofHitMatch = static_cast<CbmMatch*>(fTofHitsMatches->At(tofId));
       if (tofHitMatch == NULL) {continue;}
       Int_t tofMCPointId = tofHitMatch->GetMatchedLink().GetIndex();
-      const CbmTofPoint* tofPoint = static_cast<const CbmTofPoint*>(fTofPoints->At(tofMCPointId));
+      Int_t tofMCEventId = tofHitMatch->GetMatchedLink().GetEntry();
+      const CbmTofPoint* tofPoint = static_cast<const CbmTofPoint*>(fTofPoints->Get(0, tofMCEventId, tofMCPointId));
       Int_t tofMCTrackId = tofPoint->GetTrackID();
 
       
@@ -245,9 +254,9 @@ void CbmLitTofQa::ProcessGlobalTracks()
       for (Int_t iCat = 0; iCat < nofTrackCategories; iCat++) {
     	  string category = fTrackCategories[iCat];
     	  LitTrackAcceptanceFunction function = fTrackAcceptanceFunctions.find(category)->second;
-    	  Bool_t categoryOk = function(fMCTracks, stsMCTrackId);
+    	  Bool_t categoryOk = function(fMCTracks, tofMCEventId, stsMCTrackId);
     	  //Bool_t accTofOk = fMCTrackIdForTofPoints.find(stsMCTrackId) != fMCTrackIdForTofPoints.end();
-    	  Bool_t accTofOk = fMCTrackIdForTofHits.find(stsMCTrackId) != fMCTrackIdForTofHits.end();
+    	  Bool_t accTofOk = fMCTrackIdForTofHits.find(make_pair(tofMCEventId, stsMCTrackId)) != fMCTrackIdForTofHits.end();
 
     	  if (categoryOk && chiSqPrimaryOk) {
     		  fHM->H1("hmp_Tof_Reco_" + category + "_m2p")->Fill(preco, m2reco);
@@ -280,7 +289,8 @@ void CbmLitTofQa::ProcessTofHits()
       CbmMatch*  tofHitMatch = static_cast<CbmMatch*>(fTofHitsMatches->At(iHit));
       if (tofHitMatch == NULL) {continue;}
       Int_t tofMCPointId = tofHitMatch->GetMatchedLink().GetIndex();
-      const CbmTofPoint* tofPoint = static_cast<const CbmTofPoint*>(fTofPoints->At(tofMCPointId));
+      Int_t tofMCEventId = tofHitMatch->GetMatchedLink().GetEntry();
+      const CbmTofPoint* tofPoint = static_cast<const CbmTofPoint*>(fTofPoints->Get(0, tofMCEventId, tofMCPointId));
       Int_t tofMCTrackId = tofPoint->GetTrackID();
 
       fHM->H1("hmp_Tof_dTime")->Fill(1000*(tofPoint->GetTime() - tofHit->GetTime()));
@@ -302,7 +312,8 @@ void CbmLitTofQa::ProcessTofTracks()
       CbmMatch*  tofHitMatch = static_cast<CbmMatch*>(fTofHitsMatches->At(tofTrack->GetTofHitIndex()));
       if (tofHitMatch == NULL) {continue;}
       Int_t tofMCPointId = tofHitMatch->GetMatchedLink().GetIndex();
-      const FairMCPoint* tofPoint = static_cast<const FairMCPoint*>(fTofPoints->At(tofMCPointId));
+      Int_t tofMCEventId = tofHitMatch->GetMatchedLink().GetEntry();
+      const FairMCPoint* tofPoint = static_cast<const FairMCPoint*>(fTofPoints->Get(0, tofMCEventId, tofMCPointId));
       Int_t tofMCTrackId = tofPoint->GetTrackID();
 
       const FairTrackParam* par = tofTrack->GetTrackParameter();
@@ -314,7 +325,7 @@ void CbmLitTofQa::ProcessTofTracks()
       for (Int_t iCat = 0; iCat < nofTrackCategories; iCat++) {
         string category = fTrackCategories[iCat];
         LitTrackAcceptanceFunction function = fTrackAcceptanceFunctions.find(category)->second;
-        Bool_t categoryOk = function(fMCTracks, tofMCTrackId);
+        Bool_t categoryOk = function(fMCTracks, tofMCEventId, tofMCTrackId);
         if (categoryOk) {
            fHM->H1("hmp_TofTrack_" + category + "_Distance")->Fill(distance);
            fHM->H1("hmp_TofTrack_" + category + "_NormDistance")->Fill(tofTrack->GetDistance());
