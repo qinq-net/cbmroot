@@ -10,6 +10,7 @@
 
 #include "FairTask.h"
 #include <vector>
+#include <utility>
 
 class TClonesArray;
 class CbmMCDataArray;
@@ -146,7 +147,7 @@ public:
      * \brief Return McTrack Ids for RICH hit
      * C++11 efficient way to return vector
      */
-    static std::vector<Int_t> GetMcTrackMotherIdsForRichHit(
+    static std::vector<std::pair<Int_t, Int_t> > GetMcTrackMotherIdsForRichHit(
             const CbmRichHit* hit,
             const TClonesArray* richDigis,
             CbmMCDataArray* richPoints,

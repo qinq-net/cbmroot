@@ -13,6 +13,7 @@
 #include "CbmGlobalTrack.h"
 #include "CbmStsKFTrackFitter.h"
 #include "FairMCPoint.h"
+#include "FairEventHeader.h"
 
 #include "CbmMCTrack.h"
 
@@ -605,6 +606,8 @@ InitStatus CbmAnaDielectronTask::Init()
         fCuts.fMomentumCut = 5.5;
     }
     
+    CbmLitMCTrackCreator::Instance()->CreateMC();
+    
     return kSUCCESS;
 }
 
@@ -623,7 +626,7 @@ void CbmAnaDielectronTask::Exec(Option_t*)
         Fatal("CbmAnaDielectronTask::Exec","No PrimaryVertex array!");
     }
     cout << "I'm here" << endl;
-    CbmLitMCTrackCreator::Instance()->Create();
+    CbmLitMCTrackCreator::Instance()->CreateReco();
     //
     FillRichRingNofHits();
     MCPairs();
@@ -1590,8 +1593,8 @@ void CbmAnaDielectronTask::CalculateNofTopologyPairs(
             if (mcTrack->GetMotherId() != fCandidates[iP].fMcMotherId) continue;
             if (iMCTrack == fCandidates[iP].fStsMcTrackId) continue;
             
-            if (!CbmLitMCTrackCreator::Instance()->TrackExists(iMCTrack)) continue;
-            const CbmLitMCTrack& litMCTrack = CbmLitMCTrackCreator::Instance()->GetTrack(iMCTrack);
+            if (!CbmLitMCTrackCreator::Instance()->TrackExists(FairRun::Instance()->GetEventHeader()->GetMCEntryNumber(), iMCTrack)) continue;
+            const CbmLitMCTrack& litMCTrack = CbmLitMCTrackCreator::Instance()->GetTrack(FairRun::Instance()->GetEventHeader()->GetMCEntryNumber(), iMCTrack);
             nofPointsSts = litMCTrack.GetNofPointsInDifferentStations(kSTS);
             break;
         }

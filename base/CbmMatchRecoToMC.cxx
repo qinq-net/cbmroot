@@ -34,6 +34,7 @@
 #include "CbmRichPoint.h"
 
 using std::vector;
+using std::pair;
 
 Int_t CbmMatchRecoToMC::fEventNumber = 0;
 
@@ -623,7 +624,7 @@ void CbmMatchRecoToMC::MatchTracks(
 					continue;
 			}
 			////
-            trackMatch->AddLink(CbmLink(1., point->GetTrackID(), point->GetEventID()));
+            trackMatch->AddLink(CbmLink(1., point->GetTrackID(), hitMatch->GetLink(iLink).GetEntry()));
          }
       }
       if ( ! trackMatch->GetNofLinks() ) continue;
@@ -638,7 +639,7 @@ void CbmMatchRecoToMC::MatchTracks(
          for (Int_t iLink = 0; iLink < nofLinks; iLink++) {
             const FairMCPoint* point = static_cast<const FairMCPoint*>(points->Get(hitMatch->GetLink(iLink)));
             if (NULL == point) continue;
-            if (point->GetEventID() == trackMatch->GetMatchedLink().GetEntry() && point->GetTrackID() == trackMatch->GetMatchedLink().GetIndex()) {
+            if (/*point->GetEventID() == trackMatch->GetMatchedLink().GetEntry() && */point->GetTrackID() == trackMatch->GetMatchedLink().GetIndex()) {
                hasTrue = true;
                break;
             }
@@ -735,7 +736,7 @@ void CbmMatchRecoToMC::MatchStsTracks(
             for (Int_t iLink = 0; iLink < nofLinks; iLink++) {
                const FairMCPoint* point = static_cast<const FairMCPoint*>(mvdPoints->Get(hitMatch->GetLink(iLink)));
                if (NULL == point) continue;
-               if (point->GetEventID() == trackMatch->GetMatchedLink().GetEntry() && point->GetTrackID() == trackMatch->GetMatchedLink().GetIndex()) {
+               if (/*point->GetEventID() == trackMatch->GetMatchedLink().GetEntry() && */point->GetTrackID() == trackMatch->GetMatchedLink().GetIndex()) {
                   hasTrue = true;
                   break;
                }
@@ -772,23 +773,24 @@ void CbmMatchRecoToMC::MatchRichRings(
             const CbmRichHit* hit = static_cast<const CbmRichHit*>(richHits->At(ring->GetHit(iHit)));
             if ( NULL == hit ) continue;
 
-            vector<Int_t> motherIds = GetMcTrackMotherIdsForRichHit(hit, richDigis, richMcPoints, mcTracks);
+            vector<pair<Int_t, Int_t> > motherIds = GetMcTrackMotherIdsForRichHit(hit, richDigis, richMcPoints, mcTracks);
             for (UInt_t i = 0; i < motherIds.size(); i++) {
-                ringMatch->AddLink(1., motherIds[i]);
+                ringMatch->AddLink(1., motherIds[i].second, motherIds[i].second);
             }
         }
         
         if (ringMatch->GetNofLinks() != 0) {
 
             Int_t bestTrackId = ringMatch->GetMatchedLink().GetIndex();
+            Int_t bestTrackEventId = ringMatch->GetMatchedLink().GetEntry();
 
             Int_t trueCounter = 0;
             Int_t wrongCounter = 0;
             for (Int_t iHit = 0; iHit < nofHits; iHit++) {
                 const CbmRichHit* hit = static_cast<const CbmRichHit*>(richHits->At(ring->GetHit(iHit)));
                 if ( NULL == hit ) continue;
-                vector<Int_t> motherIds = GetMcTrackMotherIdsForRichHit(hit, richDigis, richMcPoints, mcTracks);
-                if(std::find(motherIds.begin(), motherIds.end(), bestTrackId) != motherIds.end()) {
+                vector<pair<Int_t, Int_t> > motherIds = GetMcTrackMotherIdsForRichHit(hit, richDigis, richMcPoints, mcTracks);
+                if(std::find(motherIds.begin(), motherIds.end(), std::make_pair(bestTrackEventId, bestTrackId)) != motherIds.end()) {
                     trueCounter++;
                 } else {
                     wrongCounter++;
@@ -807,13 +809,13 @@ void CbmMatchRecoToMC::MatchRichRings(
 }
 
 
-vector<Int_t> CbmMatchRecoToMC::GetMcTrackMotherIdsForRichHit(
+vector<pair<Int_t, Int_t> > CbmMatchRecoToMC::GetMcTrackMotherIdsForRichHit(
         const CbmRichHit* hit,
         const TClonesArray* richDigis,
         CbmMCDataArray* richPoints,
         CbmMCDataArray* mcTracks)
 {
-    vector<Int_t> result;
+    vector<pair<Int_t, Int_t> > result;
     if ( NULL == hit ) return result;
     Int_t digiIndex = hit->GetRefId();
     if (digiIndex < 0) return result;
@@ -838,8 +840,9 @@ vector<Int_t> CbmMatchRecoToMC::GetMcTrackMotherIdsForRichHit(
         Int_t motherId = mcTrack->GetMotherId();
         // several photons can have same mother track
         // count only unique motherIds
-        if(std::find(result.begin(), result.end(), motherId) == result.end()) {
-            result.push_back(motherId);
+        pair<Int_t, Int_t> val = std::make_pair(fEventNumber, motherId);
+        if(std::find(result.begin(), result.end(), val) == result.end()) {
+            result.push_back(val);
         }
     }
 
