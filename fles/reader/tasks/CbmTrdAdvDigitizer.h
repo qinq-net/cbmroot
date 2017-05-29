@@ -369,6 +369,8 @@ class CbmTrdAdvDigitizer : public CbmTrdQABase
         CbmTrdTestBeamTools* fBT;
     };
     typedef msm::back::state_machine<CbmTrdDigiFinder_> CbmTrdDigiFinder;
+
+    ClassDef(CbmTrdAdvDigitizer,1);
 };
 
 #endif /* FLES_READER_TASKS_CBMTRDADVDIGITIZER_H_ */
