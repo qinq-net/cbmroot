@@ -187,8 +187,21 @@ void create_MUCH_geometry_v17a() {
   gGeoMan->PrintOverlaps();
   //  gGeoMan->Test();
 
-  TFile* outfile = new TFile("test.geo.root","RECREATE");
-  top->Write();      // use this as input to simulations (run_sim.C)
+  const TString tagVersion  = "v17a";
+  const TString subVersion  = "_1m";
+  const TString geoVersion  = "much_" + tagVersion + subVersion;
+  const TString FileNameSim = geoVersion + ".geo.root";
+  const TString FileNameGeo  = geoVersion + "_geo.root";
+  
+  much->Export(FileNameSim);   // an alternative way of writing the much
+
+  TFile* outfile = new TFile(FileNameSim, "UPDATE");
+  TGeoTranslation* much_placement = new TGeoTranslation("much_trans", 0., 0., 0.);
+  much_placement->Write();
+  outfile->Close();
+
+  outfile = new TFile(FileNameGeo,"RECREATE");
+  gGeoMan->Write();  // use this if you want GeoManager format in the output
   outfile->Close();
 
   top->Draw("ogl");
