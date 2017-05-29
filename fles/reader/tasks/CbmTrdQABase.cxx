@@ -25,7 +25,7 @@ ClassImp(CbmTrdQABase)
 
 // ---- Default constructor -------------------------------------------
 CbmTrdQABase::CbmTrdQABase (CbmTrdTestBeamTools*ptr,TString ClassName) :
-  FairTask (ClassName.Data()), fRaw(nullptr),fBT(CbmTrdTestBeamTools::Instance(ptr)), fHm(new CbmHistManager)
+FairTask (ClassName.Data()), fRaw(nullptr),fBT(CbmTrdTestBeamTools::Instance(ptr)), fHm(new CbmHistManager), fNrTimeslice(0)
 {
   LOG(INFO) << TString("Default Constructor of ")+TString(this->GetName())
 		<< FairLogger::endl;
@@ -91,9 +91,13 @@ InitStatus CbmTrdQABase::ReInit ()
 // ---- Exec ----------------------------------------------------------
 void CbmTrdQABase::Exec (Option_t*)
 {
-  static Int_t NrTimeSlice=-1;
+  static Bool_t FirstTS=true;
+  if (FirstTS){
+    fNrTimeslice=-1;
+    FirstTS=false;
+  }
   LOG(INFO) << this->GetName() <<": Number of current TimeSlice:"
-	       << ++NrTimeSlice << FairLogger::endl;
+	       << ++fNrTimeslice << FairLogger::endl;
   LOG(INFO) << this->GetName() <<": rawMessages in TS:          "
 	       << fRaw->GetEntriesFast () << FairLogger::endl;
   LOG(DEBUG) <<this->GetName() <<": Begin sorting CbmSpadicMessage*"
@@ -106,15 +110,18 @@ void CbmTrdQABase::Exec (Option_t*)
       HistogramArray.push_back(fHm->G1(TString("TSCounter"+GetSpadicName(RobID,SpadicID,"Syscore",false)).Data()));
     }
   }
-  EinzelHistogram->SetPoint(NrTimeSlice,NrTimeSlice,nSpadicMessages);
+  EinzelHistogram->SetPoint(fNrTimeslice,fNrTimeslice,nSpadicMessages);
   std::vector<Int_t> MessageCounters(fBT->GetNrRobs()*fBT->GetNrSpadics()*2,0);
   for (Int_t iSpadicMessage=0; iSpadicMessage < nSpadicMessages; ++iSpadicMessage){
     CbmSpadicRawMessage *raw= static_cast<CbmSpadicRawMessage*>(fRaw->At(iSpadicMessage));
-    MessageCounters.at(GetRobID(raw)*fBT->GetNrSpadics()*2+GetSpadicID(raw))++;
+    if(!raw)
+      continue;
+    if(fBT->GetSpadicID(raw)>0)
+      MessageCounters.at(GetRobID(raw)*fBT->GetNrSpadics()*2+GetSpadicID(raw))++;
   }
   for(Int_t RobID=0;RobID<fBT->GetNrRobs();RobID++){
     for(Int_t SpadicID=0;SpadicID<fBT->GetNrSpadics()*2;SpadicID++){
-      HistogramArray.at(RobID*fBT->GetNrSpadics()*2+SpadicID)->SetPoint(NrTimeSlice,NrTimeSlice,MessageCounters.at(RobID*fBT->GetNrSpadics()*2+SpadicID));
+      HistogramArray.at(RobID*fBT->GetNrSpadics()*2+SpadicID)->SetPoint(fNrTimeslice,fNrTimeslice,MessageCounters.at(RobID*fBT->GetNrSpadics()*2+SpadicID));
     }
   }
 }

@@ -39,7 +39,7 @@ class CbmTrdQABase : public FairTask
     TClonesArray* fClusters;
     CbmTrdTestBeamTools* fBT;
     CbmHistManager* fHm;
-
+    Int_t fNrTimeslice;
 
  public:
   /** Constructor with parameters (Optional) **/
