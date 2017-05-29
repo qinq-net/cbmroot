@@ -92,6 +92,7 @@ Set(SRCS
   tasks/CbmSpadicTriggerComp.cxx
   tasks/CbmTrdQABase.cxx
   tasks/CbmTrdQAHit.cxx
+  tasks/CbmTrdQACosmics.cxx
 #  tasks/CbmTrdQABaseline.cxx
   tasks/CbmTrdSimpleDigitizer.cxx
 #  tasks/CbmTrdAdvDigitizer.cxx

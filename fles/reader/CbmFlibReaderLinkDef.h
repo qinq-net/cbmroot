@@ -40,6 +40,7 @@
 #pragma link C++ class CbmTrdLabTools;
 //#pragma link C++ class CbmTrdClusterTools;
 #pragma link C++ class CbmTrdQABase;
+#pragma link C++ class CbmTrdQACosmics;
 #pragma link C++ class CbmTrdQAHit;
 //#pragma link C++ class CbmTrdQABaseline;
 #pragma link C++ class CbmTrdSimpleDigitizer;
