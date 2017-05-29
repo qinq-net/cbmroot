@@ -95,7 +95,7 @@ Set(SRCS
   tasks/CbmTrdQACosmics.cxx
 #  tasks/CbmTrdQABaseline.cxx
   tasks/CbmTrdSimpleDigitizer.cxx
-#  tasks/CbmTrdAdvDigitizer.cxx
+  tasks/CbmTrdAdvDigitizer.cxx
   tasks/CbmTrdDigiAnalysis.cxx
 #  tasks/CbmTrdSimpleClusterizer.cxx
   tasks/CbmTrdRawBeamProfile.cxx
