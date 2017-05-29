@@ -21,6 +21,7 @@ class CbmMuchPoint;
 class FairVolume;
 class CbmGeoMuchPar;
 class TGeoMedium;
+class TGeoCombiTrans;
 
 class CbmMuch : public FairDetector
 {
@@ -106,11 +107,12 @@ class CbmMuch : public FairDetector
 			  Int_t offset);
 
 
-  /** Virtaul method Construct geometry
+  /** Virtual method Construct geometry
    **
    ** Constructs the Much geometry
    **/
   virtual void ConstructGeometry();
+
 
 
   //  void SaveGeoParams();
@@ -133,6 +135,12 @@ class CbmMuch : public FairDetector
   Bool_t         kGeoSaved;          //!
   TList *flGeoPar; //!
   CbmGeoMuchPar* fPar;               //!  parameter container
+
+  TGeoCombiTrans*   fCombiTrans;  //! Transformation matrix for geometry positioning
+
+  std::string fVolumeName; //! Volume name to be placed
+   
+
   /** Private method AddHit
    **
    ** Adds a MuchPoint to the HitCollection
@@ -149,6 +157,24 @@ class CbmMuch : public FairDetector
    **/
   void ResetParameters();
   Int_t GetDetId(FairVolume* vol);
+
+  /** Construct old geometry
+   **
+   ** Constructs the Much geometry from old ascii parameter file
+   **/
+  void ConstructOldGeometry();
+
+  /** Construct geometry from ROOT file
+   **
+   ** Constructs the Much geometry from ROOT file
+   **/
+  virtual void ConstructRootGeometry();
+
+  void ExpandMuchNodes(TGeoNode* fN);
+  Bool_t IsNewGeometryFile(TString);
+
+  Bool_t CheckIfSensitive(std::string name);
+
 private:
   Int_t Intersect(Float_t x, Float_t y, Float_t lx, Float_t ly, Float_t r);
   TGeoMedium* CreateMedium(const char* matName);
