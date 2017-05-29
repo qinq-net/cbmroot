@@ -1367,7 +1367,7 @@ void dump_info_file()
       {	
 	//        fprintf(ifile,"y %10.4f cm   x %10.4f cm\n", 2.5 * DetectorSizeY[1], 3.5 * DetectorSizeX[1]);
         yangle = atan(2.5 * DetectorSizeY[1] / (LayerPosition[iLayer] + LayerThickness/2. + padplane_position)) * 180. / acos(-1.);
-        xangle = atan(3.5 * DetectorSizeX[1] / (LayerPosition[iLayer] + LayerThickness/2. + padplane_position)) * 180. / acos(-1.);
+        xangle = atan((2.0 * DetectorSizeX[0] + 2.0 * DetectorSizeX[1]) / (LayerPosition[iLayer] + LayerThickness/2. + padplane_position)) * 180. / acos(-1.);
       }
       if ((iLayer >= 4) && (iLayer < 8))
       {	
