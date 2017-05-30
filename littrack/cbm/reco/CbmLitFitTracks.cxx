@@ -99,7 +99,7 @@ void CbmLitFitTracks::DoFit()
    // Convert input data
    TrackPtrVector ltracks;
    HitPtrVector lhits;
-   CbmLitConverter::HitArrayToHitVector(0, Cbm::kTrdHit, fTrdHits, lhits);
+   CbmLitConverter::HitArrayToHitVector(0, kTrdHit, fTrdHits, lhits);
    CbmLitConverter::CbmTrackArrayToCbmLitTrackArray(fTrdTracks, lhits, ltracks);
 
    // Replace first track parameter of the converted tracks with the last STS track parameter

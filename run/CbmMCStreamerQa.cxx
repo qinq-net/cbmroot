@@ -4,6 +4,7 @@
  **/
 
 #include "CbmMCStreamerQa.h"
+#include "CbmModuleList.h"
 #include "CbmMCTrack.h"
 #include "FairRootManager.h"
 #include "FairRunAna.h"
@@ -30,7 +31,7 @@ CbmMCStreamerQa::CbmMCStreamerQa()
     fPointArrays(),
     fMapPointsInEvents()
 {
-  for (Int_t i=kREF;i<kTutDet;i++) fPointArrays[i]=NULL;
+  for (Int_t i=kRef;i<kNofSystems;i++) fPointArrays[i]=NULL;
 }
 // -------------------------------------------------------------------------
 
@@ -44,7 +45,7 @@ CbmMCStreamerQa::CbmMCStreamerQa(const char* name, TChain* mcChain)
     fPointArrays(),
     fMapPointsInEvents()
 {
-  for (Int_t i=kREF;i<kTutDet;i++) fPointArrays[i]=NULL;
+  for (Int_t i=kRef;i<kNofSystems;i++) fPointArrays[i]=NULL;
 }
 
 // -------------------------------------------------------------------------
@@ -93,11 +94,11 @@ InitStatus CbmMCStreamerQa::Init(){
   }
   
   // Set branches
-  fPointArrays[kSTS] = new TClonesArray("CbmStsPoint");
-  fPointArrays[kMUCH] = new TClonesArray("CbmMuchPoint");
+  fPointArrays[kSts] = new TClonesArray("CbmStsPoint");
+  fPointArrays[kMuch] = new TClonesArray("CbmMuchPoint");
 
-  fMcChain->SetBranchAddress("StsPoint",& fPointArrays[kSTS]);
-  fMcChain->SetBranchAddress("MuchPoint", & fPointArrays[kMUCH]);
+  fMcChain->SetBranchAddress("StsPoint",& fPointArrays[kSts]);
+  fMcChain->SetBranchAddress("MuchPoint", & fPointArrays[kMuch]);
   
   fNepoch=0;
 
@@ -113,11 +114,10 @@ void CbmMCStreamerQa::Exec(Option_t* /*opt*/){
   if (fVerbose>-1) printf("Epoch: %i",fNepoch);
   if (fVerbose>-1) printf("\n");
   
-  for (Int_t detId=kREF;detId<kTutDet;detId++){
-    TString detName="";
-    CbmDetectorList::GetSystemName(DetectorId(detId),detName);
-    for (Int_t i=0;i<fMcEpoch->GetNofPoints(DetectorId(detId));i++){
-      FairMCPoint* point = fMcEpoch->GetPoint(DetectorId(detId),i);
+  for (Int_t detId=kRef;detId<kNofSystems;detId++){
+    TString detName = CbmModuleList::GetModuleName(ECbmModuleId(detId));
+    for (Int_t i=0;i<fMcEpoch->GetNofPoints(ECbmModuleId(detId));i++){
+      FairMCPoint* point = fMcEpoch->GetPoint(ECbmModuleId(detId),i);
       Int_t eventId = point->GetEventID();
       Double_t t = point->GetTime();
       Double_t x = point->GetX();
@@ -143,9 +143,8 @@ void CbmMCStreamerQa::Finish(){
   Int_t nEpochTotal = FairRootManager::Instance()->GetInChain()->GetEntries();
   if (fNepoch!=nEpochTotal) Warning("Finish","Not all MC epochs were analysed: analysed=%i total=%i\n",fNepoch,nEpochTotal);
 
-  for (Int_t detId=kREF;detId<kTutDet;detId++){
-    TString detName="";
-    CbmDetectorList::GetSystemName(DetectorId(detId),detName);
+  for (Int_t detId=kRef;detId<kNofSystems;detId++){
+    TString detName = CbmModuleList::GetModuleName(ECbmModuleId(detId));
     if (!fMapPointsInEvents[detId].size()) continue;
     if (!fPointArrays[detId]) Warning("Finish","Array of MC points for detector %s not initialized",detName.Data());
 

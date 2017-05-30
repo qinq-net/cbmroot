@@ -231,13 +231,13 @@ Bool_t CbmSourceLmd::FillBuffer(ULong_t time)
       // --- Process hit message (detector dependent)
       Int_t systemId = fDaqMap->GetSystemId(rocId);
       switch (systemId) {
-      case kSTS:
+      case kSts:
         ProcessStsMessage();
         break;
-      case kMUCH:
+      case kMuch:
         ProcessMuchMessage();
         break;
-      case kFHODO:
+      case kHodo:
         ProcessHodoMessage();
         break;
       default:
@@ -476,23 +476,23 @@ Int_t CbmSourceLmd::ReadEvent(UInt_t)
 
       // --- Copy digi to output array
       Int_t systemId = fCurrentDigi->GetSystemId();
-      if ( systemId == kSTS ) {
+      if ( systemId == kSts ) {
         new( (*fStsDigis)[fStsDigis->GetEntriesFast()])
           CbmStsDigi(*(dynamic_cast<CbmStsDigi*>(fCurrentDigi)));
-        fNofDigis[kSTS]++;
-        LOG(DEBUG) << "STS digis " << fNofDigis[kMUCH] << FairLogger::endl;
+        fNofDigis[kSts]++;
+        LOG(DEBUG) << "STS digis " << fNofDigis[kMuch] << FairLogger::endl;
       } //? STS digi
-      else if ( systemId == kMUCH ) {
+      else if ( systemId == kMuch ) {
         new( (*fMuchDigis)[fMuchDigis->GetEntriesFast()])
           CbmMuchBeamTimeDigi(*(dynamic_cast<CbmMuchBeamTimeDigi*>(fCurrentDigi)));
-        fNofDigis[kMUCH]++;
-        LOG(DEBUG) << "MUCH digis " << fNofDigis[kMUCH] << FairLogger::endl;
+        fNofDigis[kMuch]++;
+        LOG(DEBUG) << "MUCH digis " << fNofDigis[kMuch] << FairLogger::endl;
       } //? MUCH digi
-      else if ( systemId == kFHODO ) {
+      else if ( systemId == kHodo ) {
         new( (*fHodoDigis)[fHodoDigis->GetEntriesFast()])
           CbmFiberHodoDigi(*(dynamic_cast<CbmFiberHodoDigi*>(fCurrentDigi)));
-        fNofDigis[kFHODO]++;
-        LOG(DEBUG) << "HODO digis " << fNofDigis[kMUCH] << FairLogger::endl;
+        fNofDigis[kHodo]++;
+        LOG(DEBUG) << "HODO digis " << fNofDigis[kMuch] << FairLogger::endl;
       } //? HODO digi
       else if ( systemId == 999) { // I know I should not hardcode numbers....
 	Int_t val = dynamic_cast<CbmAuxDigi*>(fCurrentDigi)->GetRocId();
@@ -618,7 +618,7 @@ void CbmSourceLmd::ProcessHodoMessage()
 {
 
   // --- Increment message counter
-  fNofHitMsg[kFHODO]++;
+  fNofHitMsg[kHodo]++;
   
   // --- Get absolute time, NXYTER and channel number
   Int_t rocId      = fCurrentMessage->getRocNumber();
@@ -659,7 +659,7 @@ void CbmSourceLmd::ProcessMuchMessage()
 {
 
   // --- Increment message counter
-  fNofHitMsg[kMUCH]++;
+  fNofHitMsg[kMuch]++;
   
   // --- Get absolute time, NXYTER and channel number
   Int_t rocId      = fCurrentMessage->getRocNumber();
@@ -707,7 +707,7 @@ void CbmSourceLmd::ProcessStsMessage()
 {
 
   // --- Increment message counter
-  fNofHitMsg[kSTS]++;
+  fNofHitMsg[kSts]++;
 
   // --- Get absolute time, NXYTER and channel number
   Int_t rocId        = fCurrentMessage->getRocNumber();
@@ -784,9 +784,8 @@ void CbmSourceLmd::Close()
 
   cout << endl;
   LOG(INFO) << "Hit messages and digis per system: " << FairLogger::endl;
-  for (Int_t iSys = 0; iSys < kNOFDETS; iSys++) {
-    TString sysName;
-    CbmDetectorList::GetSystemNameCaps(iSys, sysName);
+  for (Int_t iSys = 0; iSys < kNofSystems; iSys++) {
+    TString sysName = CbmModuleList::GetModuleNameCaps(iSys);
     LOG(INFO) << setw(5) << sysName << ": Messages " << fNofHitMsg[iSys]
               << ", Digis " << fNofDigis[iSys] << FairLogger::endl;
   }
@@ -822,25 +821,25 @@ Int_t CbmSourceLmd::FillBaselineDataContainer()
   fCurrentEvent->SetEventType(1);
   LOG(INFO) << "Event type is now: " << fCurrentEvent->GetEventType() << FairLogger::endl;
 
-  Int_t _nofevents = fNofDigis[kTutDet];
+  Int_t _nofevents = fNofDigis[kDummyDet];
   // Loop over digis
   while ( kTRUE ) {
 
     Int_t systemId = fCurrentDigi->GetSystemId();
  
-    if ( systemId == kSTS ) {
+    if ( systemId == kSts ) {
       new( (*fStsBaselineDigis)[fStsBaselineDigis->GetEntriesFast()])
       CbmStsDigi(*(dynamic_cast<CbmStsDigi*>(fCurrentDigi)));
       fCurrentEvent->AddDigi(fCurrentDigi);
-      fNofDigis[kTutDet]++;
-    } else if ( systemId == kMUCH ) {
+      fNofDigis[kDummyDet]++;
+    } else if ( systemId == kMuch ) {
       new( (*fMuchBaselineDigis)[fMuchBaselineDigis->GetEntriesFast()])
 	CbmMuchBeamTimeDigi(*(dynamic_cast<CbmMuchBeamTimeDigi*>(fCurrentDigi)));
-      fNofDigis[kTutDet]++;
-    } else if ( systemId == kFHODO ) {
+      fNofDigis[kDummyDet]++;
+    } else if ( systemId == kHodo ) {
       new( (*fHodoBaselineDigis)[fHodoBaselineDigis->GetEntriesFast()])
 	CbmFiberHodoDigi(*(dynamic_cast<CbmFiberHodoDigi*>(fCurrentDigi)));
-      fNofDigis[kTutDet]++;
+      fNofDigis[kDummyDet]++;
     } else if ( systemId == 999) { // I know I should not hardcode numbers....
       // check if this is a misused auxmessage to set/unset basline
       // calibration
@@ -848,7 +847,7 @@ Int_t CbmSourceLmd::FillBaselineDataContainer()
       if ( val  == 999 ) {
         LOG(INFO) << "Aux RocId: "<< val<<FairLogger::endl;
         LOG(INFO) << "Leaving FillBaselineDataContainer after " << 
-	  (fNofDigis[kTutDet] - _nofevents) << " events" << FairLogger::endl;
+	  (fNofDigis[kDummyDet] - _nofevents) << " events" << FairLogger::endl;
 	return 0;
       } else {
         //  LOG(ERROR) << "Between baseline start and end marker there should be only sts data" <<FairLogger::endl;

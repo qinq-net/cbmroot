@@ -13,7 +13,7 @@
 #include "FairLogger.h"
 
 #include "CbmDaqBuffer.h"
-#include "CbmDetectorList.h"
+#include "CbmModuleList.h"
 
 using std::setprecision;
 using std::stringstream;
@@ -44,7 +44,7 @@ CbmDaqBuffer::~CbmDaqBuffer() {
 // -----   Time of first raw data   ------------------------------------------
 Double_t CbmDaqBuffer::GetFirstTime() const {
   Double_t time = -1.;
-  for (Int_t iDet = kREF; iDet < kNOFDETS; iDet++) {
+  for (Int_t iDet = kRef; iDet < kNofSystems; iDet++) {
     if ( GetSize(iDet) ) {
         if ( time < 0. ) time = GetFirstTime(iDet);
         else time = ( time < GetFirstTime(iDet) ? time : GetFirstTime(iDet) );
@@ -59,7 +59,7 @@ Double_t CbmDaqBuffer::GetFirstTime() const {
 // -----   Time of last raw data   -------------------------------------------
 Double_t CbmDaqBuffer::GetLastTime() const {
   Double_t time = -1.;
-  for (Int_t iDet = kREF; iDet < kNOFDETS; iDet++)
+  for (Int_t iDet = kRef; iDet < kNofSystems; iDet++)
     time = ( time > GetLastTime(iDet) ? time : GetLastTime(iDet) );
   return time;
 }
@@ -72,7 +72,7 @@ CbmDigi* CbmDaqBuffer::GetNextData(Int_t iDet, Double_t time) {
 
 
   // --- Check for system ID
-  if ( iDet >= kNOFDETS ) {
+  if ( iDet >= kNofSystems ) {
     LOG(WARNING) << "DaqBuffer: Illegal system ID " << iDet
                  << FairLogger::endl;
     return NULL;
@@ -100,7 +100,7 @@ CbmDigi* CbmDaqBuffer::GetNextData(Int_t iDet, Double_t time) {
 Int_t CbmDaqBuffer::GetSize() const {
 
   Int_t size = 0;
-  for (Int_t iDet = kREF; iDet < kNOFDETS; iDet++)
+  for (Int_t iDet = kRef; iDet < kNofSystems; iDet++)
     size += fData[iDet].size();
   return size;
 
@@ -111,7 +111,7 @@ Int_t CbmDaqBuffer::GetSize() const {
 
 // -----   Number of objects in buffer for given detector   ------------------
 Int_t CbmDaqBuffer::GetSize(Int_t det) const {
-  if ( det < kREF || det > kNOFDETS) return 0;
+  if ( det < kRef || det > kNofSystems) return 0;
   return fData[det].size();
 }
 // ---------------------------------------------------------------------------
@@ -125,7 +125,7 @@ void CbmDaqBuffer::InsertData(CbmDigi* digi) {
                            << FairLogger::endl;
 
   Int_t iDet = digi->GetSystemId();
-  if ( iDet >= kNOFDETS) {
+  if ( iDet >= kNofSystems) {
     LOG(WARNING) << "DaqBuffer: Illegal system ID " << iDet
                  << FairLogger::endl;
     return;
@@ -160,9 +160,9 @@ string CbmDaqBuffer::ToString() const {
 		return ss.str();
 	}
 	TString sysName;
-  for (Int_t det = kREF; det < kNOFDETS; det++) {
+  for (Int_t det = kRef; det < kNofSystems; det++) {
     if ( GetSize(det) ) {
-      CbmDetectorList::GetSystemNameCaps(det, sysName);
+      sysName = CbmModuleList::GetModuleNameCaps(det);
       ss << sysName << " " << GetSize(det) << "  ";
     }
   }
@@ -180,9 +180,9 @@ void CbmDaqBuffer::PrintStatus() const {
     LOG(INFO) << "empty" << FairLogger::endl;
     return;
   }
-  for (Int_t det = kREF; det < kNOFDETS; det++) {
+  for (Int_t det = kRef; det < kNofSystems; det++) {
     if ( GetSize(det) ) {
-      CbmDetectorList::GetSystemNameCaps(det, sysName);
+      sysName = CbmModuleList::GetModuleNameCaps(det);
       LOG(INFO) << sysName << " " << GetSize(det) << "  ";
     }
   }

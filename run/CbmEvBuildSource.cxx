@@ -76,10 +76,10 @@ Int_t CbmEvBuildSource::ReadEvent(UInt_t par)
 
   for(;;)
   {
-    nsts=fSlice->GetDataSize(kSTS);
+    nsts=fSlice->GetDataSize(kSts);
     for(;fISts<nsts;fISts++)
     {
-      digi=(CbmStsDigi*)fSlice->GetData(kSTS, fISts);
+      digi=(CbmStsDigi*)fSlice->GetData(kSts, fISts);
       if (digi==NULL) continue;
       t=digi->GetTime();
       fNDigis++;
@@ -90,7 +90,7 @@ Int_t CbmEvBuildSource::ReadEvent(UInt_t par)
       {
         for(j=fSN;j<fISts;j++)
         {
-          digi2=(CbmStsDigi*)fSlice->GetData(kSTS, j);
+          digi2=(CbmStsDigi*)fSlice->GetData(kSts, j);
           if (digi2==NULL) continue;
 	  fST=digi2->GetTime();
           if (t-fST<=fWindDur) { fSN=j; break; }
@@ -110,14 +110,14 @@ Int_t CbmEvBuildSource::ReadEvent(UInt_t par)
 	  // Reached required number of digis and hit stations
           for(j=fISts;j>-1;j--)
 	  {
-	    digi2=(CbmStsDigi*)fSlice->GetData(kSTS, j);
+	    digi2=(CbmStsDigi*)fSlice->GetData(kSts, j);
             if (digi2==NULL) continue;
 	    if (fST-digi2->GetTime()>fMinusDeltaT) break;
 	  }
 	  n0=j+1;
 	  for(j=fISts+1;j<nsts;j++)
   	  {
-	    digi2=(CbmStsDigi*)fSlice->GetData(kSTS, j);
+	    digi2=(CbmStsDigi*)fSlice->GetData(kSts, j);
             if (digi2==NULL) continue;
 	    if (digi2->GetTime()-t>fPlusDeltaT) break;
 	  }
@@ -130,7 +130,7 @@ Int_t CbmEvBuildSource::ReadEvent(UInt_t par)
 	  }
 	  for(j=n1+1;j<nsts;j++)
 	  {
-	    digi2=(CbmStsDigi*)fSlice->GetData(kSTS, j);
+	    digi2=(CbmStsDigi*)fSlice->GetData(kSts, j);
             if (digi2==NULL) continue;
 	    if (digi2->GetTime()-t>fPlusDeltaT+fDeadT) break;
 	  }
@@ -142,7 +142,7 @@ Int_t CbmEvBuildSource::ReadEvent(UInt_t par)
 	  fISts=j;
 	  for(j=0;j<16;j++) fNStsDigis[j]=0;
 	  fNDigis=0; fSN=fISts; 
-          digi2=(CbmStsDigi*)fSlice->GetData(kSTS, fISts);
+          digi2=(CbmStsDigi*)fSlice->GetData(kSts, fISts);
 	  fST=digi2->GetTime();
 	  return 0;
 /*	
@@ -181,7 +181,7 @@ Int_t CbmEvBuildSource::GetNextTimeSlice()
   fCh->GetEntry(fI);
 
   cout << fEvHeader << endl;
-  LOG(INFO) << "CbmBuildEventsSimple:	Sts digis in slice " << fSlice->GetDataSize(kSTS) << ". Slice start: " << fSlice->GetStartTime() << FairLogger::endl;
+  LOG(INFO) << "CbmBuildEventsSimple:	Sts digis in slice " << fSlice->GetDataSize(kSts) << ". Slice start: " << fSlice->GetStartTime() << FairLogger::endl;
   fNDigis=0;
   for(i=0;i<16;i++) fNStsDigis[i]=0;
   fSN=0;
@@ -228,7 +228,7 @@ void CbmEvBuildSource::FillEvent(Int_t st, Int_t end)
   fNSTSDigis=0; fSTSDigi->Delete(); fEv++;
   for(i=st;i<=end;i++)
   {
-    digi=(CbmStsDigi*)fSlice->GetData(kSTS, i);
+    digi=(CbmStsDigi*)fSlice->GetData(kSts, i);
     new ((*fSTSDigi)[fNSTSDigis])CbmStsDigi(*digi);
     fNSTSDigis++;
 //    cout << fSTSDigi->GetEntries() << " " << fNSTSDigis << endl;

@@ -84,7 +84,7 @@ void CbmStsClusterFinderReal::CreateCluster(Int_t clusterStart,
 	Int_t clusterIndex = fClusters->GetEntriesFast();
 	CbmStsCluster* cluster = new ( (*fClusters)[clusterIndex] ) CbmStsCluster();
 	cluster->SetAddress(module->GetAddress());
-	if ( event ) event->AddData(Cbm::kStsCluster, clusterIndex);
+	if ( event ) event->AddData(kStsCluster, clusterIndex);
 	Int_t digiIndex = -1;  // digi index in TClonesArray
 	for (Int_t channel = clusterStart; channel <= clusterEnd; channel++) {
 		CbmStsDigi* digi = module->GetDigi(channel, digiIndex);

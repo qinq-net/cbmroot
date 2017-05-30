@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "CbmDetectorList.h"
+#include "CbmDefs.h"
 #include "CbmDigi.h"
 
 /** @class CbmDaqBuffer
@@ -50,7 +50,7 @@ class CbmDaqBuffer
      ** @return time of first data [ns]
      */
     Double_t GetFirstTime(Int_t iDet) const {
-      if ( iDet < kREF || iDet >= kNOFDETS ) return -1.;
+      if ( iDet < kRef || iDet >= kNofSystems ) return -1.;
       if ( ! GetSize(iDet) ) return -1.;
       return (fData[iDet].begin())->second->GetTime();
     }
@@ -67,7 +67,7 @@ class CbmDaqBuffer
      ** @return time of last data [ns]
      */
     Double_t GetLastTime(Int_t iDet) const {
-      if ( iDet < kREF || iDet >= kNOFDETS ) return -1.;
+      if ( iDet < kRef || iDet >= kNofSystems ) return -1.;
       if ( ! GetSize(iDet) ) return -1.;
       return (--fData[iDet].end())->second->GetTime();
     }
@@ -118,7 +118,7 @@ class CbmDaqBuffer
 
 
     /** Buffer management **/
-    std::multimap<Double_t, CbmDigi*> fData[kNOFDETS];
+    std::multimap<Double_t, CbmDigi*> fData[kNofSystems];
 
 
     /** Pointer to singleton instance **/

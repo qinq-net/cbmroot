@@ -32,7 +32,6 @@ ${FAIRROOT_LIBRARY_DIR}
 link_directories( ${LINK_DIRECTORIES})
 
 set(SRCS
-CbmDetectorList.cxx
 
 CbmEvent.cxx
 CbmHit.cxx

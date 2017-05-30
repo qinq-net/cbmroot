@@ -21,7 +21,7 @@
 #define CBMMVDDETECTORID_H 1
 
 
-#include "CbmDetectorList.h"
+#include "CbmDefs.h"
 
 #include "FairLogger.h"
 
@@ -44,14 +44,14 @@ class CbmMvdDetectorId
   
   /** Create unique detector ID from station number **/
   Int_t DetectorId(Int_t iStation) const {
-     return ( kMVD | (iStation << 5) );
+     return ( kMvd | (iStation << 5) );
   }
   
   
   /** Get System identifier from detector ID **/
   Int_t SystemId(Int_t detectorId) const {
     Int_t iSystem = detectorId & 31;
-    if ( iSystem != kMVD ) {
+    if ( iSystem != kMvd ) {
     	LOG(ERROR) << "-E- CbmMvdDetectorId::GetSystemId : "
 	     << "wrong system ID " << iSystem << FairLogger::endl;
 	return -1;

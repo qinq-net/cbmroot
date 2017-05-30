@@ -17,7 +17,6 @@
 #include "FairMCPoint.h"
 #include "FairTask.h"
 
-#include "CbmDetectorList.h"
 
 class CbmMCBuffer;
 class FairMCEventHeader;

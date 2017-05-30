@@ -18,7 +18,6 @@
 #define CBMPSDDIGI_H 1
 
 
-#include "CbmDetectorList.h"
 #include "TObject.h"
 
 #include <vector>

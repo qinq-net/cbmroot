@@ -5,10 +5,10 @@
 
 
 #include "CbmTofGeoHandler.h"
-#include "CbmDetectorList.h"
 #include "CbmTofDetectorId_v07a.h"
 #include "CbmTofDetectorId_v12b.h"
 #include "CbmTofDetectorId_v14a.h"
+#include "CbmDefs.h"
 
 #include "FairLogger.h"
 
@@ -167,7 +167,7 @@ Int_t CbmTofGeoHandler::GetUniqueDetectorId()
   LOG(DEBUG1)<<" Gap: "<<gap;
   LOG(DEBUG1)<<" Cell: "<<cell;
 
-  CbmTofDetectorInfo detInfo(kTOF, smtype, smodule, counter, gap, cell);
+  CbmTofDetectorInfo detInfo(kTof, smtype, smodule, counter, gap, cell);
 
   Int_t result=fTofId->SetDetectorInfo(detInfo);
   LOG(DEBUG1)<<" Unique ID: "<< Form("0x%08x",result) << FairLogger::endl;
@@ -214,7 +214,7 @@ Int_t CbmTofGeoHandler::GetUniqueCounterId()
 
   cell=0;
 
-  fDetectorInfoArray = CbmTofDetectorInfo(kTOF, smtype, smodule, counter, gap, cell);
+  fDetectorInfoArray = CbmTofDetectorInfo(kTof, smtype, smodule, counter, gap, cell);
 
   gap=0;
 
@@ -226,7 +226,7 @@ Int_t CbmTofGeoHandler::GetUniqueCounterId()
   LOG(DEBUG1)<<" Gap: "<<gap;
   LOG(DEBUG1)<<" Cell: "<<cell;
 
-  CbmTofDetectorInfo detInfo(kTOF, smtype, smodule, counter, gap, cell);
+  CbmTofDetectorInfo detInfo(kTof, smtype, smodule, counter, gap, cell);
 
   Int_t result=fTofId->SetDetectorInfo(detInfo);
   fLastUsedDetectorID = result;

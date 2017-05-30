@@ -13,7 +13,6 @@
 #ifndef CbmMuchGeoScheme_H
 #define CbmMuchGeoScheme_H 1
 
-#include "CbmDetectorList.h"
 #include "CbmMuchAddress.h"
 #include "TObject.h"
 #include "TObjArray.h"

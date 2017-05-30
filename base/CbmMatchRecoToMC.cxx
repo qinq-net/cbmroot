@@ -617,10 +617,10 @@ void CbmMatchRecoToMC::MatchTracks(
             const FairMCPoint* point = static_cast<const FairMCPoint*>(points->Get(hitMatch->GetLink(iLink)));
             if (NULL == point) continue;
 			////fix low energy cut case on STS
-			if (CbmStsAddress::GetSystemId(point->GetDetectorID()) == kSTS ){
+			if (CbmStsAddress::GetSystemId(point->GetDetectorID()) == kSts ){
 				Int_t mcTrackId = point->GetTrackID();
 				CbmMCTrack *mcTrack = (CbmMCTrack*) fMCTracks->Get(hitMatch->GetLink(iLink).GetFile(), hitMatch->GetLink(iLink).GetEntry(), mcTrackId);
-				if(mcTrack->GetNPoints(kSTS) < 2)
+				if(mcTrack->GetNPoints(kSts) < 2)
 					continue;
 			}
 			////
@@ -681,10 +681,10 @@ void CbmMatchRecoToMC::MatchStsTracks(
             const FairMCPoint* point = static_cast<const FairMCPoint*>(stsPoints->Get(link));
             if (NULL == point) continue;
 			////fix low energy cut case on STS
-			if (CbmStsAddress::GetSystemId(point->GetDetectorID()) == kSTS ){
+			if (CbmStsAddress::GetSystemId(point->GetDetectorID()) == kSts ){
 				Int_t mcTrackId = point->GetTrackID();
 				CbmMCTrack *mcTrack = (CbmMCTrack*) fMCTracks->Get(link.GetFile(), link.GetEntry(), mcTrackId);
-				if(mcTrack->GetNPoints(kSTS) < 2)
+				if(mcTrack->GetNPoints(kSts) < 2)
 					continue;
 			}
 			////

@@ -269,8 +269,8 @@ void CbmFillM2::Exec(Option_t*)
 		   (2212!=TMath::Abs(pdgCode)) ) continue;
 
 		// Check if accepted in the STS and TRD
-		if(mcTrack->GetNPoints(kSTS) < 4) continue;
-		if(mcTrack->GetNPoints(kTRD) <
+		if(mcTrack->GetNPoints(kSts) < 4) continue;
+		if(mcTrack->GetNPoints(kTrd) <
 		   (fNoTrdStations*fNoTrdPerStation)) continue;
 
 		// Calculate squared mass from smeared tof

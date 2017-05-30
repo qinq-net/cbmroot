@@ -195,7 +195,7 @@ void CbmDaqNew::FillData(CbmDigi* data) {
   Int_t iDet = data->GetSystemId();
   switch ( iDet ) {
 
-    case kSTS: {
+    case kSts: {
       CbmStsDigi* digi = static_cast<CbmStsDigi*>(data);
       Int_t nDigis = fStsDigis->GetEntriesFast();
       new ( (*fStsDigis)[nDigis] ) CbmStsDigi(*digi);
@@ -203,7 +203,7 @@ void CbmDaqNew::FillData(CbmDigi* data) {
       break;
     }
 
-    case kMUCH: {
+    case kMuch: {
       CbmMuchDigi* digi = static_cast<CbmMuchDigi*>(data);
       Int_t nDigis = fMuchDigis->GetEntriesFast();
       new ( (*fMuchDigis)[nDigis] ) CbmMuchDigi(*digi);
@@ -211,7 +211,7 @@ void CbmDaqNew::FillData(CbmDigi* data) {
       break;
     }
 
-    case kTOF: {
+    case kTof: {
       CbmTofDigiExp* digi = static_cast<CbmTofDigiExp*>(data);
       Int_t nDigis = fTofDigis->GetEntriesFast();
       new ( (*fTofDigis)[nDigis] ) CbmTofDigiExp(*digi);
@@ -220,8 +220,7 @@ void CbmDaqNew::FillData(CbmDigi* data) {
     }
 
     default:
-      TString sysName;
-      CbmDetectorList::GetSystemName(iDet, sysName);
+      TString sysName = CbmModuleList::GetModuleName(iDet);
       LOG(WARNING) << "CbmDaq: System " << sysName
                    << " is not implemented yet!" << FairLogger::endl;
       break;
@@ -240,7 +239,7 @@ Int_t CbmDaqNew::FillTimeSlice() {
   Int_t nDigis = 0;
 
   // --- Loop over all detector systems
-  for (Int_t iDet = kREF; iDet < kNOFDETS; iDet++) {
+  for (Int_t iDet = kRef; iDet < kNofSystems; iDet++) {
 
     // --- Loop over digis from DaqBuffer and fill them into current time slice
     CbmDigi* digi = fBuffer->GetNextData(iDet, fTimeSlice->GetEndTime());

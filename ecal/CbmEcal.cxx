@@ -102,7 +102,6 @@
 #include "CbmEcalPoint.h"
 #include "CbmGeoEcalPar.h"
 
-#include "CbmDetectorList.h"
 #include "FairGeoInterface.h"
 #include "FairGeoLoader.h"
 #include "FairGeoNode.h"
@@ -113,7 +112,6 @@
 #include "FairRunAna.h"
 #include "CbmMCTrack.h"
 #include "CbmStack.h"
-#include "CbmDetectorList.h"
 #include "FairVolume.h"
 #include "FairGeoMedium.h"
 #include "FairGeoMedia.h"
@@ -142,7 +140,7 @@ using std::cerr;
 
 // -----   Default constructor   -------------------------------------------
 CbmEcal::CbmEcal() 
-  : FairDetector("ECAL", kTRUE, kECAL), 
+  : FairDetector("ECAL", kTRUE, kEcal),
     fInf(NULL),
     fDebug(NULL),
     fTrackID(-1),
@@ -192,7 +190,7 @@ CbmEcal::CbmEcal()
 
 // -----   Standard constructor   ------------------------------------------
 CbmEcal::CbmEcal(const char* name, Bool_t active, const char* fileGeo)
-  : FairDetector(name, active, kECAL),
+  : FairDetector(name, active, kEcal),
     fInf(NULL),
     fDebug(NULL),
     fTrackID(-1),
@@ -418,7 +416,7 @@ Bool_t  CbmEcal::ProcessHits(FairVolume* vol)
 
   // Increment number of ecal points for TParticle
 
-  ((CbmStack*)gMC->GetStack())->AddPoint(kECAL, fTrackID);
+  ((CbmStack*)gMC->GetStack())->AddPoint(kEcal, fTrackID);
   
   ResetParameters();
   

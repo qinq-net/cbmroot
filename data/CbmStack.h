@@ -31,7 +31,7 @@
 #define CBMSTACK_H
 
 
-#include "CbmDetectorList.h"
+#include "CbmDefs.h"
 #include "FairGenericStack.h"
 
 #include <map>
@@ -171,14 +171,14 @@ class CbmStack : public FairGenericStack
   /** Increment number of points for the current track in a given detector
    *@param iDet  Detector unique identifier
    **/
-  void AddPoint(DetectorId iDet);
+  void AddPoint(ECbmModuleId iDet);
 
 
   /** Increment number of points for an arbitrary track in a given detector
    *@param iDet    Detector unique identifier
    *@param iTrack  Track number
    **/
-  void AddPoint(DetectorId iDet, Int_t iTrack);
+  void AddPoint(ECbmModuleId iDet, Int_t iTrack);
 
 
   /** Accessors **/

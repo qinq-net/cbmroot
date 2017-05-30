@@ -15,7 +15,7 @@
 
 #include "sts/CbmStsPoint.h"
 #include "much/CbmMuchPoint.h"
-#include "CbmDetectorList.h"
+#include "CbmDefs.h"
 
 
 #include "TClonesArray.h"
@@ -56,7 +56,7 @@ class CbmMCEpoch : public TNamed
    *@param eventId   Event identifier (negative value keeps original event Id)
    *@param eventTime MC event time
    **/
-  void AddPoint(DetectorId det, FairMCPoint* point, 
+  void AddPoint(ECbmModuleId det, FairMCPoint* point,
 		Int_t eventId = -1, Double_t eventTime = 0.);
 
 
@@ -67,11 +67,11 @@ class CbmMCEpoch : public TNamed
   /**   Get number of points in this epoch for a given detector 
    *@param det  Detector system identifier
    **/
-  Int_t GetNofPoints(DetectorId det) const;
+  Int_t GetNofPoints(ECbmModuleId det) const;
 
 
   /** Get array of MC points for a given detector */
-  TClonesArray* GetPoints(DetectorId det) { return fPoints[det]; } 
+  TClonesArray* GetPoints(ECbmModuleId det) { return fPoints[det]; }
      
      
   /**   Get an MCPoint for a given detector
@@ -79,7 +79,7 @@ class CbmMCEpoch : public TNamed
    **@param index  Index of point in array
    **   Check for index range included.
    **/
-  FairMCPoint* GetPoint(DetectorId det, Int_t index);
+  FairMCPoint* GetPoint(ECbmModuleId det, Int_t index);
 
 
   /**   Get epoch start time   **/
@@ -105,7 +105,7 @@ class CbmMCEpoch : public TNamed
   Double_t fStartTime;             /** Start time of epoch [ns] **/
   Double_t fEpochLength;           /** Duration of epoch [ns] **/ 
 
-  TClonesArray* fPoints[kTutDet];  /** Array of arrays with MCPoints **/
+  TClonesArray* fPoints[kNofSystems];  /** Array of arrays with MCPoints **/
 
 
   /**  Create MCPoint arrays

@@ -17,7 +17,6 @@
 #include "TKey.h"
 
 // Includes from CbmRoot
-#include "CbmDetectorList.h"
 
 // Includes from STS
 #include "CbmStsAddress.h"
@@ -256,7 +255,7 @@ CbmStsElement* CbmStsSetup::GetElement(UInt_t address, Int_t level) {
 			                         << FairLogger::endl;
 
 	// --- Catch non-STS addresses
-	if ( CbmStsAddress::GetSystemId(address) != kSTS ) {
+	if ( CbmStsAddress::GetSystemId(address) != kSts ) {
 		LOG(WARNING) << fName << ": No STS address " << address
 				     << FairLogger::endl;
 		return NULL;
@@ -369,7 +368,7 @@ Bool_t CbmStsSetup::Init(TGeoManager* geo) {
   fNode = new TGeoPhysicalNode(path);
 
   // --- Set system address
-  fAddress = kSTS;
+  fAddress = kSts;
 
   // --- Check for old geometry (with stations) or new geometry (with units)
   Bool_t hasStation = kFALSE;
@@ -537,7 +536,7 @@ Bool_t CbmStsSetup::Init(const char* fileName) {
   fNode = new TGeoPhysicalNode(path);
 
   // --- Set system address
-  fAddress = kSTS;
+  fAddress = kSts;
 
   // --- Check for old geometry (with stations) or new geometry (with units)
   TString dName = fNode->GetNode()->GetDaughter(0)->GetName();

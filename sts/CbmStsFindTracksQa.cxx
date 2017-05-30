@@ -766,10 +766,10 @@ void CbmStsFindTracksQa::FillHitMap(CbmEvent* event) {
 
   // --- Fill hit map ( mcTrack -> ( station -> number of hits ) )
   fHitMap.clear();
-  Int_t nHits = (event ? event->GetNofData(Cbm::kStsHit)
+  Int_t nHits = (event ? event->GetNofData(kStsHit)
       : fStsHits->GetEntriesFast());
   for (Int_t iHit = 0; iHit < nHits; iHit++) {
-    Int_t hitIndex = (event ? event->GetIndex(Cbm::kStsHit, iHit) : iHit);
+    Int_t hitIndex = (event ? event->GetIndex(kStsHit, iHit) : iHit);
     CbmStsHit* hit = (CbmStsHit*) fStsHits->At(hitIndex);
     CbmMatch* hitMatch = (CbmMatch*) fStsHitMatch->At(hitIndex);
     Int_t pointIndex = hitMatch->GetMatchedLink().GetIndex();
@@ -799,13 +799,13 @@ void CbmStsFindTracksQa::FillMatchMap(CbmEvent* event, Int_t& nRec,
   // Loop over StsTracks. Check matched MCtrack and fill maps.
   nGhosts = 0;
   nClones = 0;
-  Int_t nTracks  = (event ? event->GetNofData(Cbm::kStsTrack)
+  Int_t nTracks  = (event ? event->GetNofData(kStsTrack)
                           : fStsTracks->GetEntriesFast());
 
   for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
 
     // --- StsTrack
-    Int_t trackIndex = (event ? event->GetIndex(Cbm::kStsTrack, iTrack)
+    Int_t trackIndex = (event ? event->GetIndex(kStsTrack, iTrack)
                               : iTrack);
     CbmStsTrack* stsTrack = (CbmStsTrack*) fStsTracks->At(trackIndex);
     assert(stsTrack);

@@ -12,7 +12,7 @@
 #include "CbmTbDaqBuffer.h"
 #include "CbmDaqMap.h"
 #include "CbmSourceLmdNew.h"
-#include "CbmDetectorList.h"
+#include "CbmDefs.h"
 
 #include "FairRunOnline.h"
 #include "FairLogger.h"
@@ -108,7 +108,7 @@ Bool_t CbmROCUnpackHodo::DoUnpack(roc::Message* Message, ULong_t hitTime)
     if ( fSource->IsBaselineFill(rocId) ) { 
       fBuffer->InsertData(digi); 
     } else {
-      fSource->AddDiscardedDigi(kFHODO);
+      fSource->AddDiscardedDigi(kHodo);
     }
   }
 

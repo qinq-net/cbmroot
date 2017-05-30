@@ -16,7 +16,7 @@
 #ifndef CBMFIBERHODODETECTORID_H
 #define CBMFIBERHODODETECTORID_H 1
 
-#include "CbmDetectorList.h"
+#include "CbmDefs.h"
 #include <cassert>
 
 class CbmFiberHodoAddress
@@ -37,7 +37,7 @@ public:
      assert(!(stationId < 0 || stationId > fgkStationIdLength 
             || sideId < 0 || sideId > fgkSideIdLength 
             || stripId < 0 || stripId > fgkStripIdLength));
-     return (kFHODO << fgkSystemIdShift) | (stationId << fgkStationIdShift) 
+     return (kHodo << fgkSystemIdShift) | (stationId << fgkStationIdShift)
             | (sideId << fgkSideIdShift) | (stripId << fgkStripIdShift); 
    }
 

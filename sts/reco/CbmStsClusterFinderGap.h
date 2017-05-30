@@ -26,7 +26,6 @@ class CbmStsClusterFinderGap: public CbmStsClusterFinder {
 	public:
 
 		/** Constructor
-		 ** @param clusterArray  Output array for CbmStsCluster objects
 		 **/
 		CbmStsClusterFinderGap(TClonesArray* clusterArray = NULL);
 

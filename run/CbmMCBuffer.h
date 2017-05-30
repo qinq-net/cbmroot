@@ -75,7 +75,7 @@ class CbmMCBuffer
    ** The FairMCPoints in the given TClonesArray are copied to the CbmMCBuffer.
    ** The event start time is added to the MCPoint time, the event ID is set.
    **/
-  Int_t Fill(TClonesArray* points, DetectorId det, 
+  Int_t Fill(TClonesArray* points, ECbmModuleId det,
 	     Int_t eventId, Double_t eventTime);
   Int_t Fill(TClonesArray* points, Int_t det, 
 	     Int_t eventId, Double_t eventTime);
@@ -121,7 +121,7 @@ class CbmMCBuffer
    ** After that, a NULL pointer is returned.
    ** After retrieval, the MCPoint is removed from the buffer.
    **/
-  const FairMCPoint* GetNextPoint(DetectorId det);
+  const FairMCPoint* GetNextPoint(ECbmModuleId det);
 
 
   /**   Get number of entries

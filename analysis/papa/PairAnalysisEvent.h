@@ -14,7 +14,7 @@
 #include <TClonesArray.h>
 #include <TObjArray.h>
 
-#include "CbmDetectorList.h"
+#include "CbmDefs.h"
 #include "CbmVertex.h"
 
 class FairRootManager;
@@ -39,16 +39,16 @@ public:
   Int_t      GetNumberOfTracks()      const { return (fTracks ? fTracks->GetEntriesFast() : -1); }
   Int_t      GetNumberOfMCTracks()    const { return (fMCTracks ? fMCTracks->GetEntriesFast() : -1); }
   Int_t      GetNumberOfVageMatches() const { return fMultiMatch; }
-  Int_t      GetNumberOfMatches(   DetectorId det) const;
-  Int_t      GetNumberOfHits(      DetectorId det) const;
-  Int_t      GetNumberOfHitMatches(DetectorId det) const;
-  Int_t      GetNumberOfPoints(    DetectorId det) const;
+  Int_t      GetNumberOfMatches(   ECbmModuleId det) const;
+  Int_t      GetNumberOfHits(      ECbmModuleId det) const;
+  Int_t      GetNumberOfHitMatches(ECbmModuleId det) const;
+  Int_t      GetNumberOfPoints(    ECbmModuleId det) const;
 
-  TClonesArray *GetHits(      DetectorId det) const;
-  TClonesArray *GetHitMatches(DetectorId det) const;
-  TClonesArray *GetPoints(    DetectorId det) const;
+  TClonesArray *GetHits(      ECbmModuleId det) const;
+  TClonesArray *GetHitMatches(ECbmModuleId det) const;
+  TClonesArray *GetPoints(    ECbmModuleId det) const;
 
-  TClonesArray *GetCluster(   DetectorId det) const;
+  TClonesArray *GetCluster(   ECbmModuleId det) const;
 
   TObjArray    *GetTracks()           const { return fTracks; }
   PairAnalysisTrack *GetTrack(UInt_t pos);

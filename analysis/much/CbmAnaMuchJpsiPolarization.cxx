@@ -186,8 +186,8 @@ void CbmAnaMuchJpsiPolarization::Exec(Option_t* /*opt*/){
     mapRecSts[iTrack]=-1;
     mapRecMuch[iTrack]=-1;
     if (mcTrack->GetMotherId()>=0) continue;
-    Int_t nAccStsPoints  = mcTrack->GetNPoints(kSTS);
-    Int_t nAccMuchPoints = mcTrack->GetNPoints(kMUCH);
+    Int_t nAccStsPoints  = mcTrack->GetNPoints(kSts);
+    Int_t nAccMuchPoints = mcTrack->GetNPoints(kMuch);
     Int_t pdgCode = mcTrack->GetPdgCode();
     if (pdgCode== 13) mcTrack->Get4Momentum(pMCmuPlus);
     if (pdgCode==-13) mcTrack->Get4Momentum(pMCmuMinus);

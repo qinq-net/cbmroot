@@ -9,7 +9,6 @@
 #ifndef CBMMVDDIGIMATCH_H
 #define CBMMVDDIGIMATCH_H 1
 
-#include "CbmDetectorList.h"
 #include "CbmDigi.h"
 #include "CbmMvdDetectorId.h"
 #include "CbmMatch.h"

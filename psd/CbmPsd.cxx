@@ -8,7 +8,7 @@
 #include "CbmGeoPsd.h"
 #include "CbmGeoPsdPar.h"
 #include "CbmPsdPoint.h"
-#include "CbmDetectorList.h"
+#include "CbmDefs.h"
 #include "CbmStack.h"
 
 #include "FairGeoInterface.h"
@@ -31,7 +31,7 @@ using std::endl;
 
 // -----   Default constructor   -------------------------------------------
 CbmPsd::CbmPsd() 
- : FairDetector("PSD", kTRUE, kPSD),
+ : FairDetector("PSD", kTRUE, kPsd),
    fDebug(""),
    fTrackID(0),
    fVolumeID(0),
@@ -52,7 +52,7 @@ CbmPsd::CbmPsd()
 
 // -----   Standard constructor   ------------------------------------------
 CbmPsd::CbmPsd(const char* name, Bool_t active)
-  : FairDetector(name, active, kPSD),
+  : FairDetector(name, active, kPsd),
     fDebug(""),
     fTrackID(0),
     fVolumeID(0),
@@ -113,7 +113,7 @@ Bool_t  CbmPsd::ProcessHits(FairVolume* vol)
 	   TVector3(fMom.Px(), fMom.Py(), fMom.Pz()), fTime, fLength, 
 	   fELoss);
  
-    ((CbmStack*)gMC->GetStack())->AddPoint(kPSD, fTrackID);
+    ((CbmStack*)gMC->GetStack())->AddPoint(kPsd, fTrackID);
   /*
   // Increment number of ecal points for TParticle
   Int_t points = gMC->GetStack()->GetCurrentTrack()->GetMother(1);

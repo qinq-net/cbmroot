@@ -709,8 +709,8 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
     if(i==kSEPM) {
 
       // loop over all detectors and check for hit histos
-      for (Int_t idet=kREF; idet<kNOFDETS; ++idet){
-	className3+Form("Hit.Legs.")+PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet));
+      for (Int_t idet=kRef; idet<kNofSystems; ++idet){
+	className3+Form("Hit.Legs.")+PairAnalysisHelper::GetDetName(static_cast<ECbmModuleId>(idet));
 	legClassHits = fHistos->HasHistClass(className3);
 	if(legClassHits) break;
       }
@@ -728,8 +728,8 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	// check mc signal leg hits filling
 	if(!legClassHits) {
 	  // loop over all detectors
-	  for (Int_t idet=kREF; idet<kNOFDETS; ++idet){
-	    className3=Form("Hit.Legs.")+PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet));
+	  for (Int_t idet=kRef; idet<kNofSystems; ++idet){
+	    className3=Form("Hit.Legs.")+PairAnalysisHelper::GetDetName(static_cast<ECbmModuleId>(idet));
 	    sigName = className3 + "_" + fSignalsMC->At(isig)->GetName();
 	    legClassHits = fHistos->HasHistClass(className3);
 	    if(legClassHits) break; // abort when at least something should be filled
@@ -1505,16 +1505,16 @@ Bool_t PairAnalysis::FillMCHistograms(Int_t label1, Int_t label2, Int_t nSignal)
     for(Int_t ileg=0; ileg<2; ileg++) {
 
       // loop over all detectors
-      for (Int_t idet=kREF; idet<kNOFDETS; ++idet){
+      for (Int_t idet=kRef; idet<kNofSystems; ++idet){
 	className4=Form("Hit.%s",(ileg?"Legs.":""));
-	className4+= PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet)) + "_" + sigMC->GetName() + "_MCtruth";
+	className4+= PairAnalysisHelper::GetDetName(static_cast<ECbmModuleId>(idet)) + "_" + sigMC->GetName() + "_MCtruth";
 	if(!fHistos->HasHistClass(className4)) continue;
 
-	Int_t npnts = part->GetNPoints(static_cast<DetectorId>(idet));
-	//printf("track %p(%d) \t has %d %s mc points \n",part,label1,npnts,PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet)).Data());
+	Int_t npnts = part->GetNPoints(static_cast<ECbmModuleId>(idet));
+	//printf("track %p(%d) \t has %d %s mc points \n",part,label1,npnts,PairAnalysisHelper::GetDetName(static_cast<ECbmModuleId>(idet)).Data());
 	if(!npnts) continue;
 
-	TClonesArray *points = PairAnalysisVarManager::GetCurrentEvent()->GetPoints(static_cast<DetectorId>(idet));    // get point array
+	TClonesArray *points = PairAnalysisVarManager::GetCurrentEvent()->GetPoints(static_cast<ECbmModuleId>(idet));    // get point array
 	Int_t psize = points->GetSize();
 	if(!points || psize<1) continue;
 
@@ -1524,7 +1524,7 @@ Bool_t PairAnalysis::FillMCHistograms(Int_t label1, Int_t label2, Int_t nSignal)
 
 	  pnt = static_cast<FairMCPoint*>( points->At(idx));
 	  if(pnt->GetTrackID() == label) {
-	    // printf("det %s \t point index: %d/%d found! \n",PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet)).Data(),idx,psize);
+	    // printf("det %s \t point index: %d/%d found! \n",PairAnalysisHelper::GetDetName(static_cast<ECbmModuleId>(idet)).Data(),idx,psize);
 	    nfnd++;   // found point
 	    PairAnalysisVarManager::Fill(pnt,values);
 	    fHistos->FillClass(className4, values);
@@ -1777,23 +1777,23 @@ void PairAnalysis::FillHistogramsHits(const PairAnalysisEvent *ev,
 
 
   // loop over all detectors
-  for (Int_t idet=kREF; idet<kNOFDETS; ++idet){
+  for (Int_t idet=kRef; idet<kNofSystems; ++idet){
 
     // detectors implemented
     switch(idet) {
-    case kMVD:
-    case kSTS:
-    case kMUCH:
-    case kTRD:
-    case kRICH:
-    case kTOF:  /* */ break;
+    case kMvd:
+    case kSts:
+    case kMuch:
+    case kTrd:
+    case kRich:
+    case kTof:  /* */ break;
     default:
       continue;
     }
 
     /// histogram name convention
     className.Form("Hit.%s",(trackIsLeg?"Legs.":""));
-    className+=PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet));  // detector hit
+    className+=PairAnalysisHelper::GetDetName(static_cast<ECbmModuleId>(idet));  // detector hit
 
     Bool_t hitClass  =  fHistos->HasHistClass(className);
     Bool_t hitClass2 = (fHistoArray && fHistoArray->HasHistClass(className));
@@ -1807,11 +1807,11 @@ void PairAnalysis::FillHistogramsHits(const PairAnalysisEvent *ev,
     if(!hitClass && !hitClass2 && !hitClassMC.CountBits() && !hitClassMChf.CountBits()) continue;
 
     // get hit array
-    TClonesArray *hits = ev->GetHits(static_cast<DetectorId>(idet));
+    TClonesArray *hits = ev->GetHits(static_cast<ECbmModuleId>(idet));
     if(!hits || hits->GetSize()<1) continue;
 
     // get matched track and mc track index/id
-    CbmTrackMatchNew *tmtch = track->GetTrackMatch(static_cast<DetectorId>(idet));
+    CbmTrackMatchNew *tmtch = track->GetTrackMatch(static_cast<ECbmModuleId>(idet));
     Int_t mctrk = (tmtch?tmtch->GetMatchedLink().GetIndex():-1);
     //	  Printf("mc track id via track match (%p) link: %d",tmtch,mctrk);
 
@@ -1819,12 +1819,12 @@ void PairAnalysis::FillHistogramsHits(const PairAnalysisEvent *ev,
     CbmTrack    *trkl = 0x0;
     CbmRichRing *ring = 0x0;
     switch(idet) {
-    case kMVD:
-    case kSTS:
-    case kMUCH:
-    case kTRD:  trkl = track->GetTrack(static_cast<DetectorId>(idet)); break;
-    case kRICH: ring = track->GetRichRing();   break;
-    case kTOF:  /* */ break;
+    case kMvd:
+    case kSts:
+    case kMuch:
+    case kTrd:  trkl = track->GetTrack(static_cast<ECbmModuleId>(idet)); break;
+    case kRich: ring = track->GetRichRing();   break;
+    case kTof:  /* */ break;
     default:
       continue;
     }
@@ -1832,12 +1832,12 @@ void PairAnalysis::FillHistogramsHits(const PairAnalysisEvent *ev,
     // get number of hits
     Int_t nhits = 0;
     switch(idet) {
-    case kMVD:  if(trkl) nhits = static_cast<CbmStsTrack*>(trkl)->GetNofMvdHits(); break;
-    case kSTS:  if(trkl) nhits = static_cast<CbmStsTrack*>(trkl)->GetNofStsHits(); break;
-    case kMUCH:
-    case kTRD:  if(trkl) nhits = trkl->GetNofHits();    break;
-    case kTOF:  nhits = 1; /* one is maximum */         break;
-    case kRICH: if(ring) nhits = ring->GetNofHits();    break;
+    case kMvd:  if(trkl) nhits = static_cast<CbmStsTrack*>(trkl)->GetNofMvdHits(); break;
+    case kSts:  if(trkl) nhits = static_cast<CbmStsTrack*>(trkl)->GetNofStsHits(); break;
+    case kMuch:
+    case kTrd:  if(trkl) nhits = trkl->GetNofHits();    break;
+    case kTof:  nhits = 1; /* one is maximum */         break;
+    case kRich: if(ring) nhits = ring->GetNofHits();    break;
     default:
       continue;
     }
@@ -1849,17 +1849,17 @@ void PairAnalysis::FillHistogramsHits(const PairAnalysisEvent *ev,
     for (Int_t ihit=0; ihit < nhits; ihit++) {
       Int_t idx=-1;
       switch(idet) {
-      case kMVD:  idx = static_cast<CbmStsTrack*>(trkl)->GetMvdHitIndex(ihit); break;
-      case kSTS:  idx = static_cast<CbmStsTrack*>(trkl)->GetStsHitIndex(ihit); break;
-      case kMUCH:
-      case kTRD:  idx = trkl->GetHitIndex(ihit);                               break;
-      case kTOF:  hit = track->GetTofHit();                                    break;
-      case kRICH: idx = ring->GetHit(ihit);                                    break;
+      case kMvd:  idx = static_cast<CbmStsTrack*>(trkl)->GetMvdHitIndex(ihit); break;
+      case kSts:  idx = static_cast<CbmStsTrack*>(trkl)->GetStsHitIndex(ihit); break;
+      case kMuch:
+      case kTrd:  idx = trkl->GetHitIndex(ihit);                               break;
+      case kTof:  hit = track->GetTofHit();                                    break;
+      case kRich: idx = ring->GetHit(ihit);                                    break;
       default:
 	continue;
       }
       // get hit
-      if(idet!=kTOF && idx>-1)  {
+      if(idet!=kTof && idx>-1)  {
 	hit = dynamic_cast<CbmHit*>(hits->At(idx));
       }
       if(!hit) continue;
@@ -1869,7 +1869,7 @@ void PairAnalysis::FillHistogramsHits(const PairAnalysisEvent *ev,
       Bool_t trueHit=kTRUE;
       Bool_t fakeHit=kTRUE;
       // access to mc points
-      if( (mtch=hit->GetMatch()) && ev->GetPoints(static_cast<DetectorId>(idet))) {
+      if( (mtch=hit->GetMatch()) && ev->GetPoints(static_cast<ECbmModuleId>(idet))) {
 	Int_t nlinks=mtch->GetNofLinks();
 
 	// check if mc point corresponds to the matched track (true or fake pnt)
@@ -1880,7 +1880,7 @@ void PairAnalysis::FillHistogramsHits(const PairAnalysisEvent *ev,
 	// NOTE: the sum of all linked mc points is stored, you have to normlize to the mean
 	// loop over all linked mc points
 	for (Int_t iLink = 0; iLink < nlinks; iLink++) {
-	  pnt = static_cast<FairMCPoint*>( ev->GetPoints(static_cast<DetectorId>(idet))
+	  pnt = static_cast<FairMCPoint*>( ev->GetPoints(static_cast<ECbmModuleId>(idet))
 					   ->At(mtch->GetLink(iLink).GetIndex())
 					   );
 

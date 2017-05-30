@@ -6,7 +6,7 @@
 #include "CbmDaqMapCosy2014Much.h"
 
 #include "FairLogger.h"
-#include "CbmDetectorList.h"
+#include "CbmDefs.h"
 
 #include "MuchRealSize.h"
 
@@ -55,9 +55,9 @@ Int_t CbmDaqMapCosy2014Much::GetSystemId(Int_t rocId)
   Int_t systemId = -1;
   
   // --- ROC 0 and 1 are MUCH
-  if ( rocId >= 0  && rocId <= 2 ) systemId = kMUCH;
+  if ( rocId >= 0  && rocId <= 2 ) systemId = kMuch;
   // --- ROC 3 is HODO
-  else if ( rocId == 3 ) systemId = kFHODO;
+  else if ( rocId == 3 ) systemId = kHodo;
   // --- other ROC ids will be ignored
   else {
     //LOG(WARNING) << GetName() << ": Unknown ROC id " << rocId

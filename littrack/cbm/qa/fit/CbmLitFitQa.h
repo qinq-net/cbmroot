@@ -9,8 +9,8 @@
 #define CBMLITFITQA_H_
 
 #include "FairTask.h"
+#include "CbmDefs.h"
 #include "CbmStsKFTrackFitter.h"
-#include "CbmDetectorList.h"
 #include "cbm/base/CbmLitDetectorSetup.h"
 #include <string>
 
@@ -100,7 +100,7 @@ private:
       const CbmLitMCPoint* mcPoint,
       const string& histName,
       Float_t wrongPar,
-      DetectorId detId);
+      ECbmModuleId detId);
 
    void FillTrackParamHistogramm(
          const string& histName,
@@ -114,11 +114,11 @@ private:
    void CreateHistograms();
 
    void CreateResidualAndPullHistograms(
-         DetectorId detId,
+       ECbmModuleId detId,
          const string& detName);
 
    void CreateTrackParamHistograms(
-         DetectorId detId,
+       ECbmModuleId detId,
          const string& detName);
 
    Bool_t fIsFixedBounds; // if true than fixed bounds are used for histograms

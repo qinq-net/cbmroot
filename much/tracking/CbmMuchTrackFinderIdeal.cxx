@@ -10,7 +10,6 @@
 #include "CbmMuchCluster.h"
 #include "CbmMuchDigiMatch.h"
 
-#include "CbmDetectorList.h"
 #include "FairMCPoint.h"
 #include "CbmMCTrack.h"
 #include "FairRootManager.h"

@@ -15,7 +15,7 @@
 #define CBMMUCHBEAMTIMEDIGI_H 1
 
 #include "CbmDigi.h"
-#include "CbmDetectorList.h"
+#include "CbmDefs.h"
 #include "CbmMuchDigiMatch.h"
 #include "CbmMuchAddress.h"
 
@@ -30,7 +30,7 @@ class CbmMuchBeamTimeDigi : public CbmDigi{
 
   
   virtual ~CbmMuchBeamTimeDigi(){}
-  Int_t GetSystemId() const { return kMUCH; }
+  Int_t GetSystemId() const { return kMuch; }
   Int_t GetAddress()  const { return (fData >> fgkAddrShift) & fgkAddrMask; }
   Int_t GetAdc()      const { return (fData >> fgkCharShift) & fgkCharMask; }
   //Double_t GetTime()  const { return (fData >> fgkTimeShift) & fgkTimeMask; }

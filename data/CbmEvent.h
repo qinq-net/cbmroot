@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 #include <TObject.h>
-#include "CbmDetectorList.h"
+#include "CbmDefs.h"
 #include "CbmMatch.h"
 #include "CbmVertex.h"
 
@@ -50,13 +50,13 @@ class CbmEvent: public TObject {
 		 ** @param DataType  Type of data (for values see CbmDetectorList.h)
 		 ** @param Index     Index of the data object in its TClonesArray
 		 */
-		void AddData(Cbm::DataType type, UInt_t index);
+		void AddData(ECbmDataType type, UInt_t index);
 
 
 		/** Add an STS track to the event
 		 ** @param Index of STS track in its TClonesArray
 		 **/
-		void AddStsTrack(UInt_t index) { AddData(Cbm::kStsTrack, index); }
+		void AddStsTrack(UInt_t index) { AddData(kStsTrack, index); }
 
 
 		/** Get the index of a data object in its TClonesArray
@@ -64,7 +64,7 @@ class CbmEvent: public TObject {
 		 ** @param iData     Running number of data object in event
 		 ** @value Index of data object in its TClonesArray
 		 **/
-		UInt_t GetIndex(Cbm::DataType type, UInt_t iData);
+		UInt_t GetIndex(ECbmDataType type, UInt_t iData);
 
 
 		/** Get match object
@@ -82,13 +82,13 @@ class CbmEvent: public TObject {
 		 ** @value Number of objects of type DataType in the event.
 		 ** -1 is data type is not registered.
 		 **/
-		Int_t GetNofData(Cbm::DataType type) const;
+		Int_t GetNofData(ECbmDataType type) const;
 
 
 		/** Get number of STS tracks
 		 ** @value Number of STS tracks in the event. -1 if not registered.
 		 **/
-		Int_t GetNofStsTracks() const { return GetNofData(Cbm::kStsTrack); }
+		Int_t GetNofStsTracks() const { return GetNofData(kStsTrack); }
 
 
 		/** Get event number
@@ -102,7 +102,7 @@ class CbmEvent: public TObject {
 		 ** @value index   Index of STS track in TClonesArray
 		 **/
 		Int_t GetStsTrackIndex(Int_t iTrack) {
-			return GetIndex(Cbm::kStsTrack, iTrack);
+			return GetIndex(kStsTrack, iTrack);
 		}
 
 
@@ -142,9 +142,9 @@ class CbmEvent: public TObject {
 		 ** @param indexVector  Vector with indices of STS tracks
 	     **/
 		void SetStsTracks(std::vector<UInt_t>& indexVector) {
-			fNofData -= fIndexMap[Cbm::kStsTrack].size();
-			fIndexMap[Cbm::kStsTrack] = indexVector;
-			fNofData += fIndexMap[Cbm::kStsTrack].size();
+			fNofData -= fIndexMap[kStsTrack].size();
+			fIndexMap[kStsTrack] = indexVector;
+			fNofData += fIndexMap[kStsTrack].size();
 		}
 
 
@@ -184,7 +184,7 @@ class CbmEvent: public TObject {
 		CbmMatch* fMatch; ///< Match object to MCEvent
 
 		/** Arrays of indices to data types **/
-		std::map<Cbm::DataType, std::vector<UInt_t>> fIndexMap;
+		std::map<ECbmDataType, std::vector<UInt_t>> fIndexMap;
 
         CbmEvent(const CbmEvent&);
         CbmEvent& operator=(const CbmEvent&);

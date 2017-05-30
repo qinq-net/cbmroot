@@ -173,25 +173,25 @@ void CbmLitFitQa::ProcessStsTrack(
     if (nofMvdHits > 0) { // first track parameters in MVD
         const CbmMvdHit* firstHit = static_cast<const CbmMvdHit*>(fMvdHits->At(track->GetMvdHitIndex(0)));
         Int_t firstStation = firstHit->GetStationNr() - 1; // to start with 0
-        if (mcTrack.GetNofPointsAtStation(kMVD, firstStation) > 0) {
-            const CbmLitMCPoint& firstPoint = mcTrack.GetPointAtStation(kMVD, firstStation, 0);
-            FillResidualsAndPulls(firstParam, &firstPoint, "htf_Sts_FirstParam_", nofMvdHits + nofStsHits, kMVD);
+        if (mcTrack.GetNofPointsAtStation(kMvd, firstStation) > 0) {
+            const CbmLitMCPoint& firstPoint = mcTrack.GetPointAtStation(kMvd, firstStation, 0);
+            FillResidualsAndPulls(firstParam, &firstPoint, "htf_Sts_FirstParam_", nofMvdHits + nofStsHits, kMvd);
         }
     } else { // first track parameters in STS
         const CbmStsHit* firstHit = static_cast<const CbmStsHit*>(fStsHits->At(track->GetHitIndex(0)));
         Int_t firstStation = CbmStsSetup::Instance()->GetStationNumber(firstHit->GetAddress()) - 1;//firstHit->GetStationNr() - 1; // to start with 0
-        if (mcTrack.GetNofPointsAtStation(kSTS, firstStation) > 0) {
-            const CbmLitMCPoint& firstPoint = mcTrack.GetPointAtStation(kSTS, firstStation, 0);
-            FillResidualsAndPulls(firstParam, &firstPoint, "htf_Sts_FirstParam_", nofMvdHits + nofStsHits, kSTS);
+        if (mcTrack.GetNofPointsAtStation(kSts, firstStation) > 0) {
+            const CbmLitMCPoint& firstPoint = mcTrack.GetPointAtStation(kSts, firstStation, 0);
+            FillResidualsAndPulls(firstParam, &firstPoint, "htf_Sts_FirstParam_", nofMvdHits + nofStsHits, kSts);
         }
     }
     
     // Fill histograms for last track parameters
     const CbmStsHit* lastHit = static_cast<const CbmStsHit*>(fStsHits->At(track->GetHitIndex(nofStsHits - 1)));
     Int_t lastStation = CbmStsSetup::Instance()->GetStationNumber(lastHit->GetAddress()) - 1;//lastHit->GetStationNr() - 1; // to start with 0
-    if (mcTrack.GetNofPointsAtStation(kSTS, lastStation) > 0) {
-        const CbmLitMCPoint& lastPoint = mcTrack.GetPointAtStation(kSTS, lastStation, 0);
-        FillResidualsAndPulls(lastParam, &lastPoint, "htf_Sts_LastParam_", nofMvdHits + nofStsHits, kSTS);
+    if (mcTrack.GetNofPointsAtStation(kSts, lastStation) > 0) {
+        const CbmLitMCPoint& lastPoint = mcTrack.GetPointAtStation(kSts, lastStation, 0);
+        FillResidualsAndPulls(lastParam, &lastPoint, "htf_Sts_LastParam_", nofMvdHits + nofStsHits, kSts);
     }
 }
 
@@ -225,18 +225,18 @@ void CbmLitFitQa::ProcessTrdTrack(
     const CbmHit* firstHit = static_cast<const CbmHit*>(fTrdHits->At(track->GetHitIndex(0)));
     //Int_t firstStation = 10 * CbmTrdAddress::GetStationNr(firstHit->GetAddress()) + CbmTrdAddress::GetLayerNr(firstHit->GetAddress());
     Int_t firstStation = CbmTrdAddress::GetLayerId(firstHit->GetAddress());
-    if (mcTrack.GetNofPointsAtStation(kTRD, firstStation) > 0) {
-        const CbmLitMCPoint& firstPoint = mcTrack.GetPointAtStation(kTRD, firstStation, 0);
-        FillResidualsAndPulls(firstParam, &firstPoint, "htf_Trd_FirstParam_", nofHits, kTRD);
+    if (mcTrack.GetNofPointsAtStation(kTrd, firstStation) > 0) {
+        const CbmLitMCPoint& firstPoint = mcTrack.GetPointAtStation(kTrd, firstStation, 0);
+        FillResidualsAndPulls(firstParam, &firstPoint, "htf_Trd_FirstParam_", nofHits, kTrd);
     }
     
     // Fill histograms for last track parameters
     const CbmHit* lastHit = static_cast<const CbmHit*>(fTrdHits->At(track->GetHitIndex(nofHits - 1)));
     //Int_t lastStation = 10 * CbmTrdAddress::GetStationNr(lastHit->GetAddress()) + CbmTrdAddress::GetLayerNr(lastHit->GetAddress());
     Int_t lastStation = CbmTrdAddress::GetLayerId(lastHit->GetAddress());
-    if (mcTrack.GetNofPointsAtStation(kTRD, lastStation) > 0) {
-        const CbmLitMCPoint& lastPoint = mcTrack.GetPointAtStation(kTRD, lastStation, 0);
-        FillResidualsAndPulls(lastParam, &lastPoint, "htf_Trd_LastParam_", nofHits, kTRD);
+    if (mcTrack.GetNofPointsAtStation(kTrd, lastStation) > 0) {
+        const CbmLitMCPoint& lastPoint = mcTrack.GetPointAtStation(kTrd, lastStation, 0);
+        FillResidualsAndPulls(lastParam, &lastPoint, "htf_Trd_LastParam_", nofHits, kTrd);
     }
 }
 
@@ -272,9 +272,9 @@ void CbmLitFitQa::ProcessMuchTrack(
     Int_t firstStation = 100 * CbmMuchGeoScheme::GetStationIndex(firstHit->GetAddress())
     + 10 * CbmMuchGeoScheme::GetLayerIndex(firstHit->GetAddress())
     + CbmMuchGeoScheme::GetLayerSideIndex(firstHit->GetAddress());
-    if (mcTrack.GetNofPointsAtStation(kMUCH, firstStation) > 0) {
-        const CbmLitMCPoint& firstPoint = mcTrack.GetPointAtStation(kMUCH, firstStation, 0);
-        FillResidualsAndPulls(firstParam, &firstPoint, "htf_Much_FirstParam_", nofHits, kMUCH);
+    if (mcTrack.GetNofPointsAtStation(kMuch, firstStation) > 0) {
+        const CbmLitMCPoint& firstPoint = mcTrack.GetPointAtStation(kMuch, firstStation, 0);
+        FillResidualsAndPulls(firstParam, &firstPoint, "htf_Much_FirstParam_", nofHits, kMuch);
     }
     
     // Fill histograms for last track parameters
@@ -283,9 +283,9 @@ void CbmLitFitQa::ProcessMuchTrack(
     Int_t lastStation = 100 * CbmMuchGeoScheme::GetStationIndex(lastHit->GetAddress())
     + 10 * CbmMuchGeoScheme::GetLayerIndex(lastHit->GetAddress())
     + CbmMuchGeoScheme::GetLayerSideIndex(lastHit->GetAddress());
-    if (mcTrack.GetNofPointsAtStation(kMUCH, lastStation) > 0) {
-        const CbmLitMCPoint& lastPoint = mcTrack.GetPointAtStation(kMUCH, lastStation, 0);
-        FillResidualsAndPulls(lastParam, &lastPoint, "htf_Much_LastParam_", nofHits, kMUCH);
+    if (mcTrack.GetNofPointsAtStation(kMuch, lastStation) > 0) {
+        const CbmLitMCPoint& lastPoint = mcTrack.GetPointAtStation(kMuch, lastStation, 0);
+        FillResidualsAndPulls(lastParam, &lastPoint, "htf_Much_LastParam_", nofHits, kMuch);
     }
 }
 
@@ -294,29 +294,29 @@ void CbmLitFitQa::FillResidualsAndPulls(
                                         const CbmLitMCPoint* mcPoint,
                                         const string& histName,
                                         Float_t wrongPar,
-                                        DetectorId detId)
+                                        ECbmModuleId detId)
 {
     // Residuals
     Double_t resX = 0., resY = 0., resTx = 0., resTy = 0., resQp = 0.;
-    if (detId == kMVD) { // Use MC average for MVD
+    if (detId == kMvd) { // Use MC average for MVD
         resX = par->GetX() - mcPoint->GetX();
         resY = par->GetY() - mcPoint->GetY();
         resTx = par->GetTx() - mcPoint->GetTx();
         resTy = par->GetTy() - mcPoint->GetTy();
         resQp = par->GetQp() - mcPoint->GetQp();
-    } else if (detId == kSTS) { // Use MC average for STS
+    } else if (detId == kSts) { // Use MC average for STS
         resX = par->GetX() - mcPoint->GetX();
         resY = par->GetY() - mcPoint->GetY();
         resTx = par->GetTx() - mcPoint->GetTx();
         resTy = par->GetTy() - mcPoint->GetTy();
         resQp = par->GetQp() - mcPoint->GetQp();
-    } else if (detId == kTRD) { // Use MC out for TRD
+    } else if (detId == kTrd) { // Use MC out for TRD
         resX = par->GetX() - mcPoint->GetXOut();
         resY = par->GetY() - mcPoint->GetYOut();
         resTx = par->GetTx() - mcPoint->GetTxOut();
         resTy = par->GetTy() - mcPoint->GetTyOut();
         resQp = par->GetQp() - mcPoint->GetQpOut();
-    } else if (detId == kMUCH) { // Use MC average for MUCH
+    } else if (detId == kMuch) { // Use MC average for MUCH
         resX = par->GetX() - mcPoint->GetX();
         resY = par->GetY() - mcPoint->GetY();
         resTx = par->GetTx() - mcPoint->GetTx();
@@ -380,10 +380,10 @@ void CbmLitFitQa::ProcessTrackParamsAtVertex()
 
 void CbmLitFitQa::ProcessTrackParamsAtVertex(CbmEvent* event)
 {
-    Int_t nofTracks = event ? event->GetNofData(Cbm::kStsTrack) : fStsTracks->GetEntriesFast();
+    Int_t nofTracks = event ? event->GetNofData(kStsTrack) : fStsTracks->GetEntriesFast();
     
     for (Int_t i = 0; i < nofTracks; ++i) {
-        Int_t iTrack = event ? event->GetIndex(Cbm::kStsTrack, i) : i;
+        Int_t iTrack = event ? event->GetIndex(kStsTrack, i) : i;
         CbmStsTrack* track = static_cast<CbmStsTrack*>(fStsTracks->At(iTrack));
         
         CbmTrackMatchNew* match = static_cast<CbmTrackMatchNew*>(fStsTrackMatches->At(iTrack));
@@ -471,14 +471,14 @@ void CbmLitFitQa::ProcessTrackMomentumAtVertex()
 
 void CbmLitFitQa::CreateHistograms()
 {
-    CreateResidualAndPullHistograms(kSTS, "Sts");
-    CreateTrackParamHistograms(kSTS, "Sts");
+    CreateResidualAndPullHistograms(kSts, "Sts");
+    CreateTrackParamHistograms(kSts, "Sts");
     
-    CreateResidualAndPullHistograms(kTRD, "Trd");
-    CreateTrackParamHistograms(kTRD, "Trd");
+    CreateResidualAndPullHistograms(kTrd, "Trd");
+    CreateTrackParamHistograms(kTrd, "Trd");
     
-    CreateResidualAndPullHistograms(kMUCH, "Much");
-    CreateTrackParamHistograms(kMUCH, "Much");
+    CreateResidualAndPullHistograms(kMuch, "Much");
+    CreateTrackParamHistograms(kMuch, "Much");
     
     // Momentum resolution vs momwntum
     fHM->Add("htf_MomRes_Mom", new TH2F("htf_MomRes_Mom", "htf_MomRes_Mom;P [GeV/c];dP/P [%]", fPRangeBins, fPRangeMin, fPRangeMax, 100, -3., 3.));
@@ -499,7 +499,7 @@ void CbmLitFitQa::CreateHistograms()
 }
 
 void CbmLitFitQa::CreateResidualAndPullHistograms(
-                                                  DetectorId detId,
+                                                  ECbmModuleId detId,
                                                   const string& detName)
 {
     if (!fDet.GetDet(detId)) return;
@@ -564,7 +564,7 @@ void CbmLitFitQa::CreateResidualAndPullHistograms(
 }
 
 void CbmLitFitQa::CreateTrackParamHistograms(
-                                             DetectorId detId,
+                                             ECbmModuleId detId,
                                              const string& detName)
 {
     if (!fDet.GetDet(detId)) return;

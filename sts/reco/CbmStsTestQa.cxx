@@ -150,10 +150,10 @@ void CbmStsTestQa::ProcessEvent(CbmEvent* event) {
 	Int_t eventNr = (event ? event->GetNumber() : -1);
 
 	// --- Process clusters
-	Int_t nClusters = (event ? event->GetNofData(Cbm::kStsCluster) :
+	Int_t nClusters = (event ? event->GetNofData(kStsCluster) :
 			                   fClusters->GetEntriesFast());
 	for (Int_t iCluster = 0; iCluster < nClusters; iCluster++) {
-		Int_t index = (event ? event->GetIndex(Cbm::kStsCluster, iCluster)
+		Int_t index = (event ? event->GetIndex(kStsCluster, iCluster)
 				             : iCluster);
 		CbmStsCluster* cluster = dynamic_cast<CbmStsCluster*>(fClusters->At(index));
 		assert(cluster);
@@ -162,10 +162,10 @@ void CbmStsTestQa::ProcessEvent(CbmEvent* event) {
 	} //# clusters in event
 
 	// Process hits
-	Int_t nHits = (event ? event->GetNofData(Cbm::kStsHit)
+	Int_t nHits = (event ? event->GetNofData(kStsHit)
 			             : fHits->GetEntriesFast());
 	for (Int_t iHit = 0; iHit < nHits; iHit++) {
-		Int_t index = (event ? event->GetIndex(Cbm::kStsHit, iHit) : iHit);
+		Int_t index = (event ? event->GetIndex(kStsHit, iHit) : iHit);
 		CbmStsHit* hit = dynamic_cast<CbmStsHit*>(fHits->At(index));
 		assert(hit);
 		Int_t station = fSetup->GetStationNumber(hit->GetAddress());
@@ -175,10 +175,10 @@ void CbmStsTestQa::ProcessEvent(CbmEvent* event) {
 	}
 
 	// Process tracks
-	Int_t nTracks = (event ? event->GetNofData(Cbm::kStsTrack)
+	Int_t nTracks = (event ? event->GetNofData(kStsTrack)
 			               : fTracks->GetEntriesFast());
 	for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
-		Int_t index = (event ? event->GetIndex(Cbm::kStsTrack, iTrack) : iTrack);
+		Int_t index = (event ? event->GetIndex(kStsTrack, iTrack) : iTrack);
 		CbmStsTrack* track = dynamic_cast<CbmStsTrack*>(fTracks->At(index));
 		assert(track);
 		if ( fFileTracks ) (*fFileTracks) << track->ToString() << "\n";

@@ -218,7 +218,7 @@ void CbmLitTrackingGeometryConstructor::GetTrdLayout(
 void CbmLitTrackingGeometryConstructor::GetRichMaterial(
       lit::parallel::LitMaterialGrid* material)
 {
-   if (!fDet.GetDet(kRICH)) return;
+   if (!fDet.GetDet(kRich)) return;
    // Read file with TProfile2D containing silicon equivalent of the material
    TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
    TString matBudgetFile = parDir + "/littrack/rich_v08a.silicon.root";

@@ -5,7 +5,7 @@
  *      Author: slebedev
  */
 
-#include "CbmDetectorList.h"
+#include "CbmDefs.h"
 #include "CbmDigi.h"
 
 #ifndef DATA_RICH_CBMRICHDIGI_H_
@@ -27,7 +27,7 @@ public:
 	 * \brief Inherited from CbmDigi
 	 * @value System identifier (enum DetectorId)
 	 */
-	virtual Int_t GetSystemId() const { return kRICH; }
+	virtual Int_t GetSystemId() const { return kRich; }
 
 	/*
 	 * \brief Inherited from CbmDigi

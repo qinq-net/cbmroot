@@ -611,7 +611,7 @@ Bool_t CbmAnaJpsiTask::IsMcTrackAccepted(
 	Int_t nRichPoints = fNofHitsInRingMap[mcTrackInd];
 	//TVector3 v;
 	//tr->GetStartVertex(v);
-	return (tr->GetNPoints(kMVD) + tr->GetNPoints(kSTS) >= 4 && nRichPoints >= 7 && tr->GetNPoints(kTRD) >= 6 && tr->GetNPoints(kTOF) > 0 /*&& tr->GetPt()>fCuts.fPtCut && v.Mag()<0.01*/);
+	return (tr->GetNPoints(kMvd) + tr->GetNPoints(kSts) >= 4 && nRichPoints >= 7 && tr->GetNPoints(kTrd) >= 6 && tr->GetNPoints(kTof) > 0 /*&& tr->GetPt()>fCuts.fPtCut && v.Mag()<0.01*/);
 }
 
 

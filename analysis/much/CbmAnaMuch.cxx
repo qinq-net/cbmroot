@@ -198,8 +198,8 @@ void CbmAnaMuch::Exec(Option_t* /*opt*/){
   
   for (Int_t iTrack=0;iTrack<nMCTracks;iTrack++){
     CbmMCTrack* mcTrack = (CbmMCTrack*) fMCTracks->At(iTrack);
-    Int_t nAccStsPoints = mcTrack->GetNPoints(kSTS);
-    Int_t nAccMuchPoints = mcTrack->GetNPoints(kMUCH);
+    Int_t nAccStsPoints = mcTrack->GetNPoints(kSts);
+    Int_t nAccMuchPoints = mcTrack->GetNPoints(kMuch);
     if (fVerbose>1) printf(" StsPoints: %4i",nAccStsPoints);
     if (fVerbose>1) printf(" MuchPoints: %4i",nAccMuchPoints);
     if (fVerbose>1) printf("\n");

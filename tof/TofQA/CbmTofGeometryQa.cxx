@@ -743,7 +743,7 @@ Bool_t CbmTofGeometryQa::FillHistos()
       
       // Is track reconstructable in STS
       /*
-      UInt_t uNbStsPnts = pMcTrk->GetNPoints(kSTS);
+      UInt_t uNbStsPnts = pMcTrk->GetNPoints(kSts);
        
          // True criterium is whether enough STS stations are crossed
          // but if already less STS points, can escape looping
@@ -760,21 +760,21 @@ Bool_t CbmTofGeometryQa::FillHistos()
                break;
             }
          } // for( UInt_t uStsPntIdx = 0; uStsPntIdx < uNbStsPnts; uStsPntIdx++)
-      } // if( kiMinNbStsPntAcc <= pMcTrk->GetNPoints(kSTS) )
+      } // if( kiMinNbStsPntAcc <= pMcTrk->GetNPoints(kSts) )
        */
 
-      if( 0 < pMcTrk->GetNPoints(kTOF) )
+      if( 0 < pMcTrk->GetNPoints(kTof) )
       {
          iNbTofTracks++;
          // Keep track of MC tracks with at least one TOF Point
          
-         UInt_t uNbTofPnt = pMcTrk->GetNPoints(kTOF) -1;
+         UInt_t uNbTofPnt = pMcTrk->GetNPoints(kTof) -1;
          
          if( -1 == pMcTrk->GetMotherId() )
          {
             iNbTofTracksPrim++;
          } // if( -1 == pMcTrk->GetMotherId() )
-      } // if( 0 < pMcTrk->GetNPoints(kTOF) )
+      } // if( 0 < pMcTrk->GetNPoints(kTof) )
          
       // tracks mapping: Only when creating normalization histos
       // Assume only TOF in setup, no field (only straight tracks)
@@ -810,7 +810,7 @@ Bool_t CbmTofGeometryQa::FillHistos()
          iPartIdx = 0;
          
          // Dependence of Track origin on centrality or position
-      if( 0 < pMcTrk->GetNPoints(kTOF) )
+      if( 0 < pMcTrk->GetNPoints(kTof) )
       {
          fvhTrackAllStartZCent[iPartIdx]->Fill( pMcTrk->GetStartZ(), fMCEventHeader->GetB());
          if( 2 == iPartIdx ) // 3D plot only for e-
@@ -827,26 +827,26 @@ Bool_t CbmTofGeometryQa::FillHistos()
             // PLab
          fvhPlabGenTrk[iPartIdx]->Fill( pMcTrk->GetP() );
          // Do the same for tracks within STS acceptance
-         if( kiMinNbStsPntAcc <= pMcTrk->GetNPoints(kSTS) )
+         if( kiMinNbStsPntAcc <= pMcTrk->GetNPoints(kSts) )
          {
             fvhPtmRapStsPnt[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
             fvhPlabStsPnt[iPartIdx]->Fill( pMcTrk->GetP() );
-         } // if( 0 < pMcTrk->GetNPoints(kSTS) )
+         } // if( 0 < pMcTrk->GetNPoints(kSts) )
          // Do the same for tracks within STS acceptance
-         if( 0 < pMcTrk->GetNPoints(kTOF) )
+         if( 0 < pMcTrk->GetNPoints(kTof) )
          {
             fvhPtmRapGenTrkTofPnt[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
             fvhPlabGenTrkTofPnt[iPartIdx]->Fill( pMcTrk->GetP() );
             
-            if( kiMinNbStsPntAcc <= pMcTrk->GetNPoints(kSTS) )
+            if( kiMinNbStsPntAcc <= pMcTrk->GetNPoints(kSts) )
                fvhPlabStsTrkTofPnt[iPartIdx]->Fill( pMcTrk->GetP() );
-         } // if( 0 < pMcTrk->GetNPoints(kTOF) )
+         } // if( 0 < pMcTrk->GetNPoints(kTof) )
       } // if( -1 == pMcTrk->GetMotherId() )
          else
          {
             // secondary track
                // Dependence of Track origin on centrality
-            if( 0 < pMcTrk->GetNPoints(kTOF) )
+            if( 0 < pMcTrk->GetNPoints(kTof) )
                fvhTrackSecStartZCent[iPartIdx]->Fill( pMcTrk->GetStartZ(), fMCEventHeader->GetB());
                
                // Phase space
@@ -854,20 +854,20 @@ Bool_t CbmTofGeometryQa::FillHistos()
                // PLab
             fvhPlabSecGenTrk[iPartIdx]->Fill( pMcTrk->GetP() );
             // Do the same for tracks within STS acceptance
-            if( kiMinNbStsPntAcc <= pMcTrk->GetNPoints(kSTS) )
+            if( kiMinNbStsPntAcc <= pMcTrk->GetNPoints(kSts) )
             {
                fvhPtmRapSecStsPnt[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
                fvhPlabSecStsPnt[iPartIdx]->Fill( pMcTrk->GetP() );
-            } // if( 0 < pMcTrk->GetNPoints(kSTS) )
+            } // if( 0 < pMcTrk->GetNPoints(kSts) )
             // Do the same for tracks within STS acceptance
-            if( 0 < pMcTrk->GetNPoints(kTOF) )
+            if( 0 < pMcTrk->GetNPoints(kTof) )
             {
                fvhPtmRapSecGenTrkTofPnt[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
                fvhPlabSecGenTrkTofPnt[iPartIdx]->Fill( pMcTrk->GetP() );
                
-               if( kiMinNbStsPntAcc <= pMcTrk->GetNPoints(kSTS) )
+               if( kiMinNbStsPntAcc <= pMcTrk->GetNPoints(kSts) )
                   fvhPlabSecStsTrkTofPnt[iPartIdx]->Fill( pMcTrk->GetP() );
-            } // if( 0 < pMcTrk->GetNPoints(kTOF) )
+            } // if( 0 < pMcTrk->GetNPoints(kTof) )
          } // else of if( -1 == pMcTrk->GetMotherId() )
    } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
    

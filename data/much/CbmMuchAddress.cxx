@@ -1,4 +1,3 @@
-#include "CbmDetectorList.h"
 #include "CbmMuchAddress.h"
 
 

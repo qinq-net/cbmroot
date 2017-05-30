@@ -195,14 +195,14 @@ Int_t CbmStsFindHitsEvents::SortClusters(CbmEvent* event) {
 
 	// --- Counters
     Int_t nClusters = 0;
-    if ( event ) nClusters = event->GetNofData(Cbm::kStsCluster);
+    if ( event ) nClusters = event->GetNofData(kStsCluster);
     else         nClusters = fClusters->GetEntriesFast();
     LOG(INFO) << GetName() << ": event " << (event ? event->GetNumber() : 0)
       << ", clusters " << nClusters << FairLogger::endl;
 
 	// --- Loop over clusters in event
 	for (Int_t iCluster = 0; iCluster < nClusters; iCluster++) {
-      UInt_t index = (event ? event->GetIndex(Cbm::kStsCluster, iCluster) : iCluster);
+      UInt_t index = (event ? event->GetIndex(kStsCluster, iCluster) : iCluster);
 		CbmStsCluster* cluster =
 				static_cast<CbmStsCluster*> (fClusters->At(index));
 		assert(cluster);

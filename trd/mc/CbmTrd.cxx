@@ -35,7 +35,7 @@ using std::endl;
 
 // -----   Default constructor   ----------------------------------------------
 CbmTrd::CbmTrd() 
-  : FairDetector("TRD", kTRUE, kTRD),
+  : FairDetector("TRD", kTRUE, kTrd),
     fPosIn(),
     fMomIn(),
     fPosOut(),
@@ -57,7 +57,7 @@ CbmTrd::CbmTrd()
 
 // -----   Standard constructor   ---------------------------------------------
 CbmTrd::CbmTrd(const char* name, Bool_t active)
-  : FairDetector(name, active, kTRD),
+  : FairDetector(name, active, kTrd),
     fPosIn(),
     fMomIn(),
     fPosOut(),
@@ -220,7 +220,7 @@ Bool_t  CbmTrd::ProcessHits(
 
       // Increment number of trd points in TParticle
       CbmStack* stack = (CbmStack*) gMC->GetStack();
-      stack->AddPoint(kTRD);
+      stack->AddPoint(kTrd);
       
       ResetParameters();
    }

@@ -24,7 +24,6 @@
 #include <TCollection.h>
 #include <TVectorD.h>
 
-#include "CbmDetectorList.h"
 #include "CbmMCTrack.h"
 
 #include "PairAnalysisCutGroup.h"
@@ -174,12 +173,12 @@ void PairAnalysisCutQA::Init()
       TString detlbl="";
       for(Int_t i=0; i<binsDet->GetNrows()-1; i++) {
 	switch(i+1) {
-	case 1:  detlbl=PairAnalysisHelper::GetDetName(kMVD);  break;
-	case 2:  detlbl=PairAnalysisHelper::GetDetName(kSTS);  break;
-	case 3:  detlbl=PairAnalysisHelper::GetDetName(kRICH); break;
-	case 4:  detlbl=PairAnalysisHelper::GetDetName(kTRD);  break;
-	case 5:  detlbl=PairAnalysisHelper::GetDetName(kTOF);  break;
-	case 6:  detlbl=PairAnalysisHelper::GetDetName(kMUCH); break;
+	case 1:  detlbl=PairAnalysisHelper::GetDetName(kMvd);  break;
+	case 2:  detlbl=PairAnalysisHelper::GetDetName(kSts);  break;
+	case 3:  detlbl=PairAnalysisHelper::GetDetName(kRich); break;
+	case 4:  detlbl=PairAnalysisHelper::GetDetName(kTrd);  break;
+	case 5:  detlbl=PairAnalysisHelper::GetDetName(kTof);  break;
+	case 6:  detlbl=PairAnalysisHelper::GetDetName(kMuch); break;
 	}
 	fEffCutQA->GetYaxis()->SetBinLabel(i+1,detlbl.Data());
       }
@@ -404,12 +403,12 @@ void PairAnalysisCutQA::Fill(UInt_t mask, TObject *obj, UInt_t addIdx)
       if(idx==kTrack || idx==kTrack2) {
 	TProfile2D *detQA = static_cast<TProfile2D*>(histos->FindObject(Form("%sMatchEff",fTypeKeys[idx])));
 	PairAnalysisTrack *t = static_cast<PairAnalysisTrack*>(obj);
-	detQA->Fill(cutstep, PairAnalysisHelper::GetDetName(kMVD), t->TestBit( BIT(14+kMVD) ) );
-	detQA->Fill(cutstep, PairAnalysisHelper::GetDetName(kSTS), t->TestBit( BIT(14+kSTS) ) );
-	detQA->Fill(cutstep, PairAnalysisHelper::GetDetName(kRICH),t->TestBit( BIT(14+kRICH)) );
-	detQA->Fill(cutstep, PairAnalysisHelper::GetDetName(kTRD), t->TestBit( BIT(14+kTRD) ) );
-	detQA->Fill(cutstep, PairAnalysisHelper::GetDetName(kTOF), t->TestBit( BIT(14+kTOF) ) );
-	detQA->Fill(cutstep, PairAnalysisHelper::GetDetName(kMUCH),t->TestBit( BIT(14+kMUCH)) );
+	detQA->Fill(cutstep, PairAnalysisHelper::GetDetName(kMvd), t->TestBit( BIT(14+kMvd) ) );
+	detQA->Fill(cutstep, PairAnalysisHelper::GetDetName(kSts), t->TestBit( BIT(14+kSts) ) );
+	detQA->Fill(cutstep, PairAnalysisHelper::GetDetName(kRich),t->TestBit( BIT(14+kRich)) );
+	detQA->Fill(cutstep, PairAnalysisHelper::GetDetName(kTrd), t->TestBit( BIT(14+kTrd) ) );
+	detQA->Fill(cutstep, PairAnalysisHelper::GetDetName(kTof), t->TestBit( BIT(14+kTof) ) );
+	detQA->Fill(cutstep, PairAnalysisHelper::GetDetName(kMuch),t->TestBit( BIT(14+kMuch)) );
       }
 
       ++cutstep;
@@ -467,12 +466,12 @@ void PairAnalysisCutQA::FillAll(TObject *obj, UInt_t addIdx)
   if(idx==kTrack || idx==kTrack2) {
     TProfile2D *detQA = static_cast<TProfile2D*>(histos->FindObject(Form("%sMatchEff",fTypeKeys[idx])));
     PairAnalysisTrack *t = static_cast<PairAnalysisTrack*>(obj);
-    detQA->Fill(0., PairAnalysisHelper::GetDetName(kMVD), t->TestBit( BIT(14+kMVD) ) );
-    detQA->Fill(0., PairAnalysisHelper::GetDetName(kSTS), t->TestBit( BIT(14+kSTS) ) );
-    detQA->Fill(0., PairAnalysisHelper::GetDetName(kRICH),t->TestBit( BIT(14+kRICH)) );
-    detQA->Fill(0., PairAnalysisHelper::GetDetName(kTRD), t->TestBit( BIT(14+kTRD) ) );
-    detQA->Fill(0., PairAnalysisHelper::GetDetName(kTOF), t->TestBit( BIT(14+kTOF) ) );
-    detQA->Fill(0., PairAnalysisHelper::GetDetName(kMUCH),t->TestBit( BIT(14+kMUCH)) );
+    detQA->Fill(0., PairAnalysisHelper::GetDetName(kMvd), t->TestBit( BIT(14+kMvd) ) );
+    detQA->Fill(0., PairAnalysisHelper::GetDetName(kSts), t->TestBit( BIT(14+kSts) ) );
+    detQA->Fill(0., PairAnalysisHelper::GetDetName(kRich),t->TestBit( BIT(14+kRich)) );
+    detQA->Fill(0., PairAnalysisHelper::GetDetName(kTrd), t->TestBit( BIT(14+kTrd) ) );
+    detQA->Fill(0., PairAnalysisHelper::GetDetName(kTof), t->TestBit( BIT(14+kTof) ) );
+    detQA->Fill(0., PairAnalysisHelper::GetDetName(kMuch),t->TestBit( BIT(14+kMuch)) );
   }
 
 }

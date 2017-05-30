@@ -117,7 +117,7 @@ void CbmStsSensor::CreateHit(Double_t xLocal, Double_t yLocal, Double_t varX,
 					      clusterB->GetIndex(),  // back cluster index
 					      hitTime,               // hit time
 					      hitTimeError);         // hit time error
-	if ( fEvent) fEvent->AddData(Cbm::kStsHit, index);
+	if ( fEvent) fEvent->AddData(kStsHit, index);
 
 	LOG(DEBUG2) << GetName() << ": Creating hit at (" << global[0] << ", "
 			        << global[1] << ", " << global[2] << ")" << FairLogger::endl;

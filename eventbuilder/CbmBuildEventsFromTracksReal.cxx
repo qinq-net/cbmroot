@@ -13,7 +13,6 @@
 #include "TStopwatch.h"
 #include "FairLogger.h"
 #include "FairRootManager.h"
-#include "CbmDetectorList.h"
 #include "CbmEvent.h"
 #include "CbmStsHit.h"
 #include "CbmStsDigi.h"

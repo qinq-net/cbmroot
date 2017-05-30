@@ -29,11 +29,11 @@
 #include <THashList.h>
 #include <TGraph.h>
 
-#include <CbmDetectorList.h>
 
 #include "PairAnalysisVarManager.h"
 #include "PairAnalysisStyler.h"
 #include "PairAnalysisHelper.h"
+#include "CbmModuleList.h"
 
 //_____________________________________________________________________________
 TVectorD* PairAnalysisHelper::MakeLogBinning(Int_t nbinsX, Double_t xmin, Double_t xmax)
@@ -454,13 +454,12 @@ void PairAnalysisHelper::SetGEANTBinLabels( TH1 *hist) {
 
 
 //_____________________________________________________________________________
-TString PairAnalysisHelper::GetDetName(DetectorId det)
+TString PairAnalysisHelper::GetDetName(ECbmModuleId det)
 {
   //
   // get detector name
   //
-  TString name="";
-  CbmDetectorList::GetSystemNameCaps(det, name);
+  TString name = CbmModuleList::GetModuleNameCaps(det);
   return (name);
 }
 

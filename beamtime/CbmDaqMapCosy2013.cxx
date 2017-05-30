@@ -5,7 +5,7 @@
 
 #include "CbmDaqMapCosy2013.h"
 
-#include "CbmDetectorList.h"
+#include "CbmDefs.h"
 
 #include "FairLogger.h"
 
@@ -43,9 +43,9 @@ CbmDaqMapCosy2013::~CbmDaqMapCosy2013() { }
 // -----   Get System   ------------------------------------------------------
 Int_t CbmDaqMapCosy2013::GetSystemId(Int_t rocId) {
 	Int_t systemId = -1;
-	if ( rocId >= 0  && rocId <= 4 ) systemId = kMUCH;
-	else if ( rocId == 5  || rocId == 6 ) systemId = kFHODO;
-	else if ( rocId >= 7  || rocId <= 12 ) systemId = kSTS;
+	if ( rocId >= 0  && rocId <= 4 ) systemId = kMuch;
+	else if ( rocId == 5  || rocId == 6 ) systemId = kHodo;
+	else if ( rocId >= 7  || rocId <= 12 ) systemId = kSts;
 	else LOG(WARNING) << GetName() << ": Unknown ROC id " << rocId
 			              << FairLogger::endl;
 	return systemId;

@@ -234,7 +234,7 @@ void CbmStack::FillTrackArray()
         new( (*fTracks)[fNTracks]) CbmMCTrack(GetParticle(iPart));
       fIndexMap[iPart] = fNTracks;
       // --> Set the number of points in the detectors for this track
-      for (Int_t iDet=kREF; iDet<=kPSD; iDet++) {
+      for (Int_t iDet=kRef; iDet<=kPsd; iDet++) {
         pair<Int_t, Int_t> a(iPart, iDet);
         track->SetNPoints(iDet, fPointsMap[a]);
       }
@@ -358,7 +358,7 @@ void CbmStack::Print(Option_t*) const
 
 
 // -----   Public method AddPoint (for current track)   --------------------
-void CbmStack::AddPoint(DetectorId detId)
+void CbmStack::AddPoint(ECbmModuleId detId)
 {
   Int_t iDet = detId;
   pair<Int_t, Int_t> a(fCurrentTrack, iDet);
@@ -370,7 +370,7 @@ void CbmStack::AddPoint(DetectorId detId)
 
 
 // -----   Public method AddPoint (for arbitrary track)  -------------------
-void CbmStack::AddPoint(DetectorId detId, Int_t iTrack)
+void CbmStack::AddPoint(ECbmModuleId detId, Int_t iTrack)
 {
   if ( iTrack < 0 ) { return; }
   Int_t iDet = detId;
@@ -431,7 +431,7 @@ void CbmStack::SelectTracks()
     if(eKin < 0.0) { eKin=0.0; }
     // --> Calculate number of points
     Int_t nPoints = 0;
-    for (Int_t iDet=kMVD; iDet<=kPSD; iDet++) {
+    for (Int_t iDet=kMvd; iDet<kNofSystems; iDet++) {
       pair<Int_t, Int_t> a(i, iDet);
       if ( fPointsMap.find(a) != fPointsMap.end() ) {
         nPoints += fPointsMap[a];

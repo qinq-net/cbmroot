@@ -9,7 +9,6 @@
 #include "CbmStsTrack.h"
 
 // CBM includes
-#include "CbmDetectorList.h"
 #include "FairMCPoint.h"
 #include "CbmMCTrack.h"
 #include "FairRootManager.h"
@@ -168,13 +167,13 @@ Int_t CbmStsTrackFinderIdeal::DoFind() {
   for (Int_t iMCTrack=0; iMCTrack<nMCTracks; iMCTrack++) {
     pMCtr = (CbmMCTrack*) fMCTrackArray->At(iMCTrack);
     if ( ! pMCtr ) continue;
-    if ( pMCtr->GetNPoints(kSTS) < 3 ) continue;
+    if ( pMCtr->GetNPoints(kSts) < 3 ) continue;
     nMCacc++;
     if ( hitMap[iMCTrack] < 3 ) continue;
     new((*fTracks)[nTracks]) CbmStsTrack();
     if (fVerbose>1) cout << "-I- " << fName << ": StsTrack " 
 			 << nTracks << " created from MCTrack " 
-			 << iMCTrack << " (" << pMCtr->GetNPoints(kSTS) 
+			 << iMCTrack << " (" << pMCtr->GetNPoints(kSts)
 			 << " StsPoints)" << endl;
     trackMap[iMCTrack] = nTracks++;
   }

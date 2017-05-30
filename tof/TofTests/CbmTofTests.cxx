@@ -674,11 +674,11 @@ Bool_t CbmTofTests::FillHistos()
    {
       pMcTrk = (CbmMCTrack*) fMcTracksColl->At( iTrkInd );
 
-      if( 0 < pMcTrk->GetNPoints(kTOF) )
+      if( 0 < pMcTrk->GetNPoints(kTof) )
       {
          iNbTofTracks++;
       }
-      if( 0 < pMcTrk->GetNPoints(kTOF) && -1 == pMcTrk->GetMotherId() )
+      if( 0 < pMcTrk->GetNPoints(kTof) && -1 == pMcTrk->GetMotherId() )
          iNbTofTracksPrim++;
 
    } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
@@ -727,7 +727,7 @@ Bool_t CbmTofTests::FillHistos()
          // First Get X/Y position info
          if(fGeoHandler->GetGeoVersion() < k14a) 
             iCh = iCh+1; //FIXME: Reason found in TofMC and TofGeoHandler
-         CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh);
+         CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSm, iRpc, 0, iCh);
          Int_t iChId =  fTofId->SetDetectorInfo( xDetInfo );
          fChannelInfo = fDigiPar->GetCell( iChId );
 
@@ -776,7 +776,7 @@ Bool_t CbmTofTests::FillHistos()
             // First Get X/Y position info
             if(fGeoHandler->GetGeoVersion() < k14a) 
                iCh = iCh+1; //FIXME: Reason found in TofMC and TofGeoHandler
-            CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh);
+            CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSm, iRpc, 0, iCh);
             Int_t iChId = fTofId->SetDetectorInfo( xDetInfo );
             fChannelInfo = fDigiPar->GetCell( iChId );
 

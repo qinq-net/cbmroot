@@ -14,7 +14,6 @@
 #include "FairLogger.h"
 #include "FairMCPoint.h"
 #include "CbmCluster.h"
-#include "CbmDetectorList.h"
 #include "CbmDigi.h"
 #include "CbmLink.h"
 #include "CbmMCDataArray.h"
@@ -204,7 +203,7 @@ void CbmStsMatchReco::MatchTracks(const TClonesArray* hits,
 				CbmMCTrack* mcTrack = static_cast<CbmMCTrack*>(fMCTracks->Get(
 						link.GetFile(), link.GetEntry(), mcTrackId));
 				assert(mcTrack);
-				if (mcTrack->GetNPoints(kSTS) < 2) continue;
+				if (mcTrack->GetNPoints(kSts) < 2) continue;
 
 				// --- Link each MCTrack with weight = 1
 				trackMatch->AddLink(1., mcTrackId, link.GetEntry(), link.GetFile());

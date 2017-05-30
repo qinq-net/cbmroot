@@ -13,7 +13,6 @@
 #include "TStopwatch.h"
 #include "FairLogger.h"
 #include "FairRootManager.h"
-#include "CbmDetectorList.h"
 #include "CbmEvent.h"
 #include "CbmLink.h"
 #include "CbmMatch.h"
@@ -74,7 +73,7 @@ void CbmBuildEventsIdeal::Exec(Option_t*) {
 		else event = eventMap.at(eventNr);
 
 		// Fill digi index into event
-		event->AddData(Cbm::kStsDigi, iDigi);
+		event->AddData(kStsDigi, iDigi);
 
 	} //# STS digis
 
@@ -101,7 +100,7 @@ void CbmBuildEventsIdeal::Exec(Option_t*) {
         else event = eventMap.at(eventNr);
 
         // Fill digi index into event
-        event->AddData(Cbm::kTofDigi, iDigi);
+        event->AddData(kTofDigi, iDigi);
 
     } //# TOF digis
 

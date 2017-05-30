@@ -103,7 +103,7 @@ Bool_t CbmROCUnpackSts::DoUnpack(roc::Message* Message, ULong_t hitTime)
     if ( fSource->IsBaselineFill(rocId) ) { 
       fBuffer->InsertData(digi); 
     } else {
-      fSource->AddDiscardedDigi(kSTS);
+      fSource->AddDiscardedDigi(kSts);
     }
   }
 

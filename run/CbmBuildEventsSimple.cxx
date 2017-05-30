@@ -11,7 +11,6 @@
 #include "FairLogger.h"
 #include "FairRootManager.h"
 
-#include "CbmDetectorList.h"
 #include "CbmEvent.h"
 #include "CbmLink.h"
 #include "CbmMatch.h"
@@ -60,7 +59,7 @@ void CbmBuildEventsSimple::FillEvent(Int_t st, Int_t end)
   for(i=st;i<=end;i++)
   {
 //    digi=(CbmStsDigi*)fStsDigis->At(i);
-    event->AddData(Cbm::kStsDigi, i);
+    event->AddData(kStsDigi, i);
   }
   FairRootManager::Instance()->Fill();
   LOG(INFO) << "CbmBuildEventsSimple:	Event constructed. Digis used from " << st << " to " << end << "." << FairLogger::endl;

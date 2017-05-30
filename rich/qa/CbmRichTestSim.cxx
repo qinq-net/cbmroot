@@ -168,7 +168,7 @@ void CbmRichTestSim::Exec(
          if (TMath::Abs(gcode) == 11) {
             Nel++;
             fh_v_el->Fill(vertex.Z(),vertex.Y());
-            if (pTrack->GetNPoints(kSTS) > 5) Nel_prim++;
+            if (pTrack->GetNPoints(kSts) > 5) Nel_prim++;
          } // electrons
          if (TMath::Abs(gcode) == 211) Npi++;
          if (TMath::Abs(gcode) == 321) Nk++;

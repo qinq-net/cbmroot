@@ -10,8 +10,6 @@
 
 #include "CbmTimeSlice.h"
 
-#include "CbmDetectorList.h"
-
 #include "FairLogger.h"
 
 //#include <iostream>
@@ -60,19 +58,19 @@ CbmTimeSlice::~CbmTimeSlice() {
 
 
 // -----   Get data object   ------------------------------------------------
-CbmDigi* CbmTimeSlice::GetData(DetectorId iDet, UInt_t index) {
+CbmDigi* CbmTimeSlice::GetData(ECbmModuleId iDet, UInt_t index) {
 
   CbmDigi* digi = NULL;
 
   switch (iDet) {
 
-    case kSTS:
+    case kSts:
       if ( index < fStsData.size() ) digi = &(fStsData[index]);
       break;
-    case kMUCH:
+    case kMuch:
       if ( index < fMuchData.size() ) digi = &(fMuchData[index]);
       break;
-    case kTOF:
+    case kTof:
       if ( index < fTofData.size() ) digi = &(fTofData[index]);
       break;
     default:
@@ -85,11 +83,11 @@ CbmDigi* CbmTimeSlice::GetData(DetectorId iDet, UInt_t index) {
 
 
 // -----   Get data array size   ----------------------------------------------
-Int_t CbmTimeSlice::GetDataSize(DetectorId iDet) const {
+Int_t CbmTimeSlice::GetDataSize(ECbmModuleId iDet) const {
   switch (iDet) {
-    case kSTS:  return fStsData.size();
-    case kMUCH: return fMuchData.size();
-    case kTOF:  return fTofData.size();
+    case kSts:  return fStsData.size();
+    case kMuch: return fMuchData.size();
+    case kTof:  return fTofData.size();
     default:    return 0;
   }
 
@@ -128,21 +126,21 @@ void CbmTimeSlice::InsertData(CbmDigi* data) {
   Int_t iDet = data->GetSystemId();
   switch ( iDet ) {
 
-    case kSTS: {
+    case kSts: {
       CbmStsDigi* digi = static_cast<CbmStsDigi*>(data);
       fStsData.push_back(*digi);
       fIsEmpty = kFALSE;
       break;
     }
 
-    case kMUCH: {
+    case kMuch: {
       CbmMuchDigi* digi = static_cast<CbmMuchDigi*>(data);
       fMuchData.push_back(*digi);
       fIsEmpty = kFALSE;
       break;
    }
 
-    case kTOF: {
+    case kTof: {
       CbmTofDigiExp* digi = static_cast<CbmTofDigiExp*>(data);
       fTofData.push_back(*digi);
       fIsEmpty = kFALSE;
@@ -150,8 +148,7 @@ void CbmTimeSlice::InsertData(CbmDigi* data) {
    }
 
     default:
-      TString sysName;
-      CbmDetectorList::GetSystemName(iDet, sysName);
+      TString sysName = CbmModuleList::GetModuleName(iDet);
       LOG(WARNING) << "CbmTimeSlice: System " << sysName
                    << " is not implemented yet!" << FairLogger::endl;
       break;
@@ -195,8 +192,8 @@ Bool_t CbmTimeSlice::SelfTest() {
 	// --- Check STS
 	Double_t tCurrent  = -1.;
 	Double_t tPrevious = -1.;
-	for (Int_t index = 0; index < GetDataSize(kSTS); index++) {
-		tCurrent = GetData(kSTS, index)->GetTime();
+	for (Int_t index = 0; index < GetDataSize(kSts); index++) {
+		tCurrent = GetData(kSts, index)->GetTime();
 		if ( tCurrent < GetStartTime() ) {
 			LOG(WARNING) << "STS index " << index << ": t = " << tCurrent
 					         << " ns is before time slice start = " << GetStartTime()
@@ -216,7 +213,7 @@ Bool_t CbmTimeSlice::SelfTest() {
 			status = kFALSE;
 		} //? Time before last data
 	} // STS data loop
-	LOG(DEBUG) << "\t STS: data " << GetDataSize(kSTS)
+	LOG(DEBUG) << "\t STS: data " << GetDataSize(kSts)
 			      << ( status ? " OK" : " FAILED" ) << FairLogger::endl;
 
 	LOG(DEBUG) << "TimeSlice: self test"

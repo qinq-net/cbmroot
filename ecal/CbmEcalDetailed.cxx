@@ -11,7 +11,6 @@
 #include "CbmGeoEcalPar.h"
 #include "CbmEcalLightMap.h"
 
-#include "CbmDetectorList.h"
 #include "FairGeoInterface.h"
 #include "FairGeoLoader.h"
 #include "FairGeoNode.h"
@@ -22,7 +21,6 @@
 #include "FairRunAna.h"
 #include "CbmMCTrack.h"
 #include "CbmStack.h"
-#include "CbmDetectorList.h"
 #include "FairVolume.h"
 #include "FairGeoMedium.h"
 #include "FairGeoMedia.h"
@@ -48,7 +46,7 @@ using namespace std;
 
 // -----   Default constructor   -------------------------------------------
 CbmEcalDetailed::CbmEcalDetailed() 
-  : FairDetector("ECAL", kTRUE, kECAL),
+  : FairDetector("ECAL", kTRUE, kEcal),
     fInf(NULL),
     fDebug(NULL),
     fTrackID(-1),
@@ -126,7 +124,7 @@ CbmEcalDetailed::CbmEcalDetailed()
 
 // -----   Standard constructor   ------------------------------------------
 CbmEcalDetailed::CbmEcalDetailed(const char* name, Bool_t active, const char* fileGeo)
-  : FairDetector(name, active, kECAL),
+  : FairDetector(name, active, kEcal),
     fInf(NULL),
     fDebug(NULL),
     fTrackID(-1),
@@ -397,7 +395,7 @@ Bool_t  CbmEcalDetailed::ProcessHits(FairVolume* vol)
     if (gMC->IsTrackEntering())
     {
       FillWallPoint();
-      ((CbmStack*)gMC->GetStack())->AddPoint(kECAL, fTrackID);
+      ((CbmStack*)gMC->GetStack())->AddPoint(kEcal, fTrackID);
   
       ResetParameters();
 
@@ -495,7 +493,7 @@ Bool_t  CbmEcalDetailed::ProcessHits(FairVolume* vol)
 //   }
 //    cout << endl;
   }
-  ((CbmStack*)gMC->GetStack())->AddPoint(kECAL, fTrackID);
+  ((CbmStack*)gMC->GetStack())->AddPoint(kEcal, fTrackID);
   
   ResetParameters();
 

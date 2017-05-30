@@ -6,8 +6,7 @@
 #include "CbmDaqMapCosy2014.h"
 
 #include "FairLogger.h"
-#include "CbmDetectorList.h"
-
+#include "CbmDefs.h"
 #include <iostream>
 
 
@@ -319,14 +318,14 @@ void CbmDaqMapCosy2014::InitializeFiberHodoMapping()
 
 void CbmDaqMapCosy2014::InitializeRocToSystemArray() 
 {
-  fRocToSystem[0] = kFHODO;
-  fRocToSystem[1] = kFHODO;
-  fRocToSystem[2] = kSTS;
-  fRocToSystem[3] = kSTS;
-  fRocToSystem[4] = kSTS;
-  fRocToSystem[5] = kSTS;
-  fRocToSystem[6] = kSTS;
-  fRocToSystem[7] = kSTS;
+  fRocToSystem[0] = kHodo;
+  fRocToSystem[1] = kHodo;
+  fRocToSystem[2] = kSts;
+  fRocToSystem[3] = kSts;
+  fRocToSystem[4] = kSts;
+  fRocToSystem[5] = kSts;
+  fRocToSystem[6] = kSts;
+  fRocToSystem[7] = kSts;
 }
 
 void CbmDaqMapCosy2014::InitializeRocToStsStation() 

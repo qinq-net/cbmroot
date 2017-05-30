@@ -262,13 +262,13 @@ void CbmStsFindClustersStream::ProcessData(CbmEvent* event) {
 
   // --- Number of input digis
   fTimer.Start();
-  Int_t nDigis = (event ? event->GetNofData(Cbm::kStsDigi)
+  Int_t nDigis = (event ? event->GetNofData(kStsDigi)
       : fDigis->GetEntriesFast() );
 
   // --- Loop over input digis
   Int_t digiIndex = -1;
   for (Int_t iDigi = 0; iDigi < nDigis; iDigi++) {
-    digiIndex = (event ? event->GetIndex(Cbm::kStsDigi, iDigi) : iDigi);
+    digiIndex = (event ? event->GetIndex(kStsDigi, iDigi) : iDigi);
     CbmStsDigi* digi = dynamic_cast<CbmStsDigi*>(fDigis->At(digiIndex));
     ProcessDigi(digiIndex);
   }  //# digis in time slice or event
@@ -299,7 +299,7 @@ void CbmStsFindClustersStream::ProcessData(CbmEvent* event) {
   // --- In event-by-event mode: register clusters to event
   fTimer.Start();
   if ( event ) for (Int_t index = indexFirst; index < indexLast; index++)
-    event->AddData(Cbm::kStsCluster, index);
+    event->AddData(kStsCluster, index);
   fTimer.Stop();
   Double_t time5 = fTimer.RealTime();
 

@@ -11,7 +11,6 @@
 #define CBMSTSEventData_H 1
 
 
-#include "CbmDetectorList.h"
 #include "TNamed.h"
 #include <vector>
 #include "TH2F.h"

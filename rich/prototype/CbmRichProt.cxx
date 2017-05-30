@@ -5,7 +5,6 @@
 #include "CbmGeoRich.h"
 #include "CbmRichPoint.h"
 
-#include "CbmDetectorList.h"
 #include "FairGeoInterface.h"
 #include "FairGeoLoader.h"
 #include "FairGeoNode.h"
@@ -33,7 +32,7 @@ using std::cout;
 using std::endl;
 
 CbmRichProt::CbmRichProt() :
-   FairDetector("RICH", kTRUE, kRICH),
+   FairDetector("RICH", kTRUE, kRich),
    fPosIndex(0),
    volDetector(0),
    volRefPlane(0),
@@ -54,7 +53,7 @@ CbmRichProt::CbmRichProt() :
 CbmRichProt::CbmRichProt(
       const char* name,
       Bool_t active):
-   FairDetector(name, active, kRICH),
+   FairDetector(name, active, kRich),
    fPosIndex(0),
    volDetector(0),
    volRefPlane(0),
@@ -159,7 +158,7 @@ Bool_t CbmRichProt::ProcessHits(
 	     
          // Increment number of RichPoints for this track
          CbmStack* stack = (CbmStack*) gMC->GetStack();
-         stack->AddPoint(kRICH);
+         stack->AddPoint(kRich);
     
     /*
        // Increment number of rich points in TParticle (for Mother of Cherenkovs)
@@ -195,7 +194,7 @@ Bool_t CbmRichProt::ProcessHits(
 			 
 	 // Increment number of RichPoints for this track
          CbmStack* stack = (CbmStack*) gMC->GetStack();
-         stack->AddPoint(kRICH);
+         stack->AddPoint(kRich);
 
 /*
 	// Increment number of rich points in TParticle
@@ -247,7 +246,7 @@ Bool_t CbmRichProt::ProcessHits(
         			 
         // Increment number of RefPlanePoints for this track
 	CbmStack* stack = (CbmStack*) gMC->GetStack();
-	stack->AddPoint(kREF);
+	stack->AddPoint(kRef);
 	
 
 	/* Number of Rich points in ImPlane not needed as they will never be recorded anyhow

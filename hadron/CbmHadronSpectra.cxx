@@ -424,7 +424,7 @@ void CbmHadronSpectra::Exec(Option_t*)
 	       2212 != TMath::Abs(pdgCode)) continue;
 
 	    // Check if accepted in STS and TRD
-	    if(mcTrack->GetNPoints(kSTS) < 4) continue;
+	    if(mcTrack->GetNPoints(kSts) < 4) continue;
 //	    if(mcTrack->GetNPoints(kTRD) < 12) continue;
 
 	    // Get momentum

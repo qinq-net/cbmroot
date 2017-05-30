@@ -18,7 +18,6 @@ using namespace std;
 #include "FairMCEventHeader.h"
 #include "FairMCPoint.h"
 #include "CbmCluster.h"
-#include "CbmDetectorList.h"
 #include "CbmDigi.h"
 #include "CbmLink.h"
 #include "CbmMCDataArray.h"

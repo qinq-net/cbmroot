@@ -4,7 +4,6 @@
  **/
 
 
-#include "CbmDetectorList.h"
 #include "CbmStsAddress.h"
 
 using std::string;

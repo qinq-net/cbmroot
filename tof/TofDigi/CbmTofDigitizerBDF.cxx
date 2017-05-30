@@ -886,17 +886,17 @@ Bool_t   CbmTofDigitizerBDF::FillHistos()
       {
          pMcTrk = (CbmMCTrack*) fMcTracksColl->At( iTrkInd );
          // Jump all tracks not making 8 points for test
-   //      if( 8 != pMcTrk->GetNPoints(kTOF) )
+   //      if( 8 != pMcTrk->GetNPoints(kTof) )
    //         continue;
-         if( 0 < pMcTrk->GetNPoints(kTOF) )
+         if( 0 < pMcTrk->GetNPoints(kTof) )
          {
             iNbTofTracks++;
-            fhTofPointsPerTrack->Fill( pMcTrk->GetNPoints(kTOF) );
+            fhTofPointsPerTrack->Fill( pMcTrk->GetNPoints(kTof) );
             /*
-            fhTofPointsPerTrackVsPdg->Fill( pMcTrk->GetPdgCode(), pMcTrk->GetNPoints(kTOF) );
+            fhTofPointsPerTrackVsPdg->Fill( pMcTrk->GetPdgCode(), pMcTrk->GetNPoints(kTof) );
             */
          }
-         if( 0 < pMcTrk->GetNPoints(kTOF) && -1 == pMcTrk->GetMotherId() )
+         if( 0 < pMcTrk->GetNPoints(kTof) && -1 == pMcTrk->GetMotherId() )
             iNbTofTracksPrim++;
 
       } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
@@ -919,17 +919,17 @@ Bool_t   CbmTofDigitizerBDF::FillHistos()
 
          pMcTrk = (CbmMCTrack*) fMcTracksColl->At( pTofPt->GetTrackID() );
 
-         fhTofPtsInTrkVsGapInd->Fill( pMcTrk->GetNPoints(kTOF), iGap );
+         fhTofPtsInTrkVsGapInd->Fill( pMcTrk->GetNPoints(kTof), iGap );
          if( -1 == pMcTrk->GetMotherId() )
-            fhTofPtsInTrkVsGapIndPrm->Fill( pMcTrk->GetNPoints(kTOF), iGap );
+            fhTofPtsInTrkVsGapIndPrm->Fill( pMcTrk->GetNPoints(kTof), iGap );
          else if( 11 != pMcTrk->GetPdgCode() ) // Remove electrons
-            fhTofPtsInTrkVsGapIndSec->Fill( pMcTrk->GetNPoints(kTOF), iGap );
+            fhTofPtsInTrkVsGapIndSec->Fill( pMcTrk->GetNPoints(kTof), iGap );
 
          // Get TofPoint Position
          TVector3 vPntPos;
          pTofPt->Position( vPntPos );
-         if( 8-pMcTrk->GetNPoints(kTOF) <= iGap &&
-               pMcTrk->GetNPoints(kTOF) < 8 &&
+         if( 8-pMcTrk->GetNPoints(kTof) <= iGap &&
+               pMcTrk->GetNPoints(kTof) < 8 &&
                -1 != pMcTrk->GetMotherId() )
          fhTofPtsPosVsGap[iGap]->Fill(  vPntPos.X(),  vPntPos.Y() );
       } // if( fbMcTrkMonitor )
@@ -1525,9 +1525,9 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
       for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
       {
          pMcTrk = (CbmMCTrack*) fMcTracksColl->At( iTrkInd );
-         if( 0 < pMcTrk->GetNPoints(kTOF) )
+         if( 0 < pMcTrk->GetNPoints(kTof) )
             iNbTofTracks++;
-         if( 0 < pMcTrk->GetNPoints(kTOF) && -1 == pMcTrk->GetMotherId() )
+         if( 0 < pMcTrk->GetNPoints(kTof) && -1 == pMcTrk->GetMotherId() )
             iNbTofTracksPrim++;
       } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
 
@@ -1791,7 +1791,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
                Int_t iCh1 = iStripInd;
 	       if(fGeoHandler->GetGeoVersion() < k14a) 
                   iCh1= iCh1+1; //FIXME: Reason found in TofMC and TofGeoHandler
-               CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSM, iRpc, 0, iCh1);
+               CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSM, iRpc, 0, iCh1);
                Int_t iSideChId = fTofId->SetDetectorInfo( xDetInfo );
                fChannelInfo = fDigiPar->GetCell( iSideChId );
 
@@ -1904,7 +1904,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
                Int_t iCh1 = iStripInd;
 	       if(fGeoHandler->GetGeoVersion() < k14a) 
                   iCh1= iCh1+1; //FIXME: Reason found in TofMC and TofGeoHandler
-               CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSM, iRpc, 0, iCh1);
+               CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSM, iRpc, 0, iCh1);
                Int_t iSideChId = fTofId->SetDetectorInfo( xDetInfo );
                fChannelInfo = fDigiPar->GetCell( iSideChId );
 
@@ -2046,9 +2046,9 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
       for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
       {
          pMcTrk = (CbmMCTrack*) fMcTracksColl->At( iTrkInd );
-         if( 0 < pMcTrk->GetNPoints(kTOF) )
+         if( 0 < pMcTrk->GetNPoints(kTof) )
             iNbTofTracks++;
-         if( 0 < pMcTrk->GetNPoints(kTOF) && -1 == pMcTrk->GetMotherId() )
+         if( 0 < pMcTrk->GetNPoints(kTof) && -1 == pMcTrk->GetMotherId() )
             iNbTofTracksPrim++;
       } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
 
@@ -2132,7 +2132,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
           <<" Cell: "<<iChannel<<" of "<<iNbCh+1 <<FairLogger::endl;
 
          // Jump all tracks not making 8 points for test
-   //      if( 8 != pMcTrk->GetNPoints(kTOF) )
+   //      if( 8 != pMcTrk->GetNPoints(kTof) )
    //         continue;
 
          // Keep only primaries
@@ -2567,10 +2567,10 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 
             // Channel index in this UID is in [1,nbCh] instead of [0, nbCh[
             // ... don't ask me why ... Reason found in TofMC and TofGeoHandler
-	    //            CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSM, iRpc, 0, iChanInd + 1);
+	    //            CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSM, iRpc, 0, iChanInd + 1);
             Int_t iCh1=iChanInd;
 	    if(fGeoHandler->GetGeoVersion() < k14a) iCh1= iCh1+1; //FIXME: Reason found in TofMC and TofGeoHandler
-	    CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSM, iRpc, 0, iCh1); 
+	    CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSM, iRpc, 0, iCh1);
             Int_t iSideChId = fTofId->SetDetectorInfo( xDetInfo );
 
             fChannelInfo = fDigiPar->GetCell( iSideChId );
@@ -2805,7 +2805,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
                Int_t iCh1 = iChanInd;
 	            if(fGeoHandler->GetGeoVersion() < k14a) 
                   iCh1= iCh1+1; //FIXME: Reason found in TofMC and TofGeoHandler
-               CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSM, iRpc, 0, iCh1);
+               CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSM, iRpc, 0, iCh1);
 
                Int_t iSideChId =fTofId->SetDetectorInfo( xDetInfo );
 
@@ -2868,7 +2868,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
                   Int_t iCh1 = iChanInd;
                   if(fGeoHandler->GetGeoVersion() < k14a) 
                      iCh1= iCh1+1; //FIXME: Reason found in TofMC and TofGeoHandler
-                  CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSM, iRpc, 0, iCh1);
+                  CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSM, iRpc, 0, iCh1);
 
                   Int_t iSideChId =fTofId->SetDetectorInfo( xDetInfo );
 
@@ -2983,9 +2983,9 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
       for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
       {
          pMcTrk = (CbmMCTrack*) fMcTracksColl->At( iTrkInd );
-         if( 0 < pMcTrk->GetNPoints(kTOF) )
+         if( 0 < pMcTrk->GetNPoints(kTof) )
             iNbTofTracks++;
-         if( 0 < pMcTrk->GetNPoints(kTOF) && -1 == pMcTrk->GetMotherId() )
+         if( 0 < pMcTrk->GetNPoints(kTof) && -1 == pMcTrk->GetMotherId() )
             iNbTofTracksPrim++;
       } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
 
@@ -3375,7 +3375,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
             Int_t iCh1 = iSideChInd;
             if(fGeoHandler->GetGeoVersion() < k14a) 
                iCh1= iCh1+1; //FIXME: Reason found in TofMC and TofGeoHandler
-            CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSM, iRpc, 0, iCh1);
+            CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSM, iRpc, 0, iCh1);
 
             Int_t iSideChId = fTofId->SetDetectorInfo( xDetInfo );
 
@@ -3499,7 +3499,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
             Int_t iCh1 = iSideChInd;
             if(fGeoHandler->GetGeoVersion() < k14a) 
                iCh1= iCh1+1; //FIXME: Reason found in TofMC and TofGeoHandler
-            CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSM, iRpc, 0, iCh1);
+            CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSM, iRpc, 0, iCh1);
 
             Int_t iSideChId = fTofId->SetDetectorInfo( xDetInfo );
 
@@ -3656,7 +3656,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
                Int_t iCh1 = iSideChInd;
                if(fGeoHandler->GetGeoVersion() < k14a) 
                   iCh1= iCh1+1; //FIXME: Reason found in TofMC and TofGeoHandler
-               CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSM, iRpc, 0, iCh1);
+               CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSM, iRpc, 0, iCh1);
 
                Int_t iSideChId = fTofId->SetDetectorInfo( xDetInfo );
 
@@ -3739,7 +3739,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
                Int_t iCh1 = iSideChInd;
                if(fGeoHandler->GetGeoVersion() < k14a) 
                   iCh1= iCh1+1; //FIXME: Reason found in TofMC and TofGeoHandler
-               CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSM, iRpc, 0, iCh1);
+               CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSM, iRpc, 0, iCh1);
 
                Int_t iSideChId = fTofId->SetDetectorInfo( xDetInfo );
 
@@ -3820,7 +3820,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
             Int_t iCh1 = iChannel;
             if(fGeoHandler->GetGeoVersion() < k14a) 
                iCh1= iCh1+1; //FIXME: Reason found in TofMC and TofGeoHandler
-            CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSM, iRpc, 0, iCh1 + ( 1 - 2*iRow )*iNbCh/2.0);
+            CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSM, iRpc, 0, iCh1 + ( 1 - 2*iRow )*iNbCh/2.0);
             Int_t iSideChId = fTofId->SetDetectorInfo( xDetInfo );
             fChannelInfo = fDigiPar->GetCell( iSideChId );
 

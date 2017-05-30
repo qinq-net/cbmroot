@@ -7,7 +7,6 @@
 
 #include "CbmStsPoint.h"
 
-#include "CbmDetectorList.h"
 #include "FairGeoNode.h"
 #include "CbmGeoPassivePar.h"
 #include "CbmStsSetup.h"
@@ -357,7 +356,7 @@ void CbmStsSimulationQa::Exec(Option_t* /*opt*/) {
     mctrack->Get4Momentum(mom4);
     Float_t rapidity =  mom4.Rapidity();
 
-    Int_t stsPoints = mctrack->GetNPoints(kSTS);
+    Int_t stsPoints = mctrack->GetNPoints(kSts);
 
     if(stsPoints>0 && vertexZ<=100) {
       fhMomAll      ->Fill(p);

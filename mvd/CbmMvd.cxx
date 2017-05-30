@@ -9,7 +9,6 @@
 //#include "CbmMvdGeoPar.h"
 #include "CbmMvdPoint.h"
 
-#include "CbmDetectorList.h"
 #include "CbmStack.h"
 #include "tools/CbmMvdGeoHandler.h"
 
@@ -39,7 +38,7 @@ using std::endl;
 
 // -----   Default constructor   -------------------------------------------
 CbmMvd::CbmMvd() 
-  : FairDetector("MVD", kTRUE, kMVD), 
+  : FairDetector("MVD", kTRUE, kMvd),
     fTrackID(0),
     fPdg(0),
     fVolumeID(0),
@@ -67,7 +66,7 @@ CbmMvd::CbmMvd()
 
 // -----   Standard constructor   ------------------------------------------
 CbmMvd::CbmMvd(const char* name, Bool_t active) 
-  : FairDetector(name, active, kMVD),
+  : FairDetector(name, active, kMvd),
     fTrackID(0),
     fPdg(0),
     fVolumeID(0),
@@ -142,7 +141,7 @@ Bool_t CbmMvd::ProcessHits(FairVolume* vol) {
 
     // Increment number of MvdPoints for this track
     CbmStack* stack = (CbmStack*) gMC->GetStack();
-    stack->AddPoint(kMVD);
+    stack->AddPoint(kMvd);
     
     ResetParameters();
   }

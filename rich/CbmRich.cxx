@@ -4,7 +4,6 @@
 #include "CbmGeoRich.h"
 #include "CbmRichPoint.h"
 
-#include "CbmDetectorList.h"
 #include "FairGeoInterface.h"
 #include "FairGeoLoader.h"
 #include "FairGeoNode.h"
@@ -40,7 +39,7 @@ using std::endl;
 std::map<TString, TGeoMedium*> CbmRich::fFixedMedia;
 
 CbmRich::CbmRich() :
-FairDetector("RICH", kTRUE, kRICH),
+FairDetector("RICH", kTRUE, kRich),
 fPosIndex(0),
 fRegisterPhotonsOnSensitivePlane(false),
 fRichPoints(new TClonesArray("CbmRichPoint")),
@@ -68,7 +67,7 @@ CbmRich::CbmRich(
                  Double_t rx,
                  Double_t ry,
                  Double_t rz):
-FairDetector(name, active, kRICH),
+FairDetector(name, active, kRich),
 fPosIndex(0),
 fRegisterPhotonsOnSensitivePlane(false),
 fRichPoints(new TClonesArray("CbmRichPoint")),
@@ -144,7 +143,7 @@ Bool_t CbmRich::ProcessHits(
                 
                 // Increment number of RichPoints for this track
                 CbmStack* stack = (CbmStack*) gMC->GetStack();
-                stack->AddPoint(kRICH);
+                stack->AddPoint(kRich);
                 return kTRUE;
             } else {
                 if (charge == 0.) {
@@ -154,7 +153,7 @@ Bool_t CbmRich::ProcessHits(
                     
                     // Increment number of RichPoints for this track
                     CbmStack* stack = (CbmStack*) gMC->GetStack();
-                    stack->AddPoint(kRICH);
+                    stack->AddPoint(kRich);
                     return kTRUE;
                 }
             }
@@ -183,7 +182,7 @@ Bool_t CbmRich::ProcessHits(
                 
                 //Increment number of RefPlanePoints for this track
                 CbmStack* stack = (CbmStack*) gMC->GetStack();
-                stack->AddPoint(kREF);
+                stack->AddPoint(kRef);
                 return kTRUE;
             } else {
                 return kFALSE;

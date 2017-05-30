@@ -60,7 +60,7 @@ void CbmMCBuffer::Clear() {
 
 
 // -----   Fill buffer   -----------------------------------------------------
-Int_t CbmMCBuffer::Fill(TClonesArray* points, DetectorId det,
+Int_t CbmMCBuffer::Fill(TClonesArray* points, ECbmModuleId det,
                         Int_t eventNr, Double_t eventTime) {
   Int_t iDet = det;
   return Fill(points, iDet, eventNr, eventTime);
@@ -79,14 +79,14 @@ Int_t CbmMCBuffer::Fill(TClonesArray* points, Int_t det,
   Int_t nPoints = 0;
   if ( points ) {
     switch (det) {
-    case kMVD:  nPoints = fMvdBuffer.Fill(points, eventTime, eventNr);  break;
-    case kSTS:  nPoints = fStsBuffer.Fill(points, eventTime, eventNr);  break;
-    case kRICH: nPoints = fRichBuffer.Fill(points, eventTime, eventNr); break;
-    case kMUCH: nPoints = fMuchBuffer.Fill(points, eventTime, eventNr); break;
-    case kTRD:  nPoints = fTrdBuffer.Fill(points, eventTime, eventNr);  break;
-    case kTOF:  nPoints = fTofBuffer.Fill(points, eventTime, eventNr);  break;
-    case kECAL: nPoints = fEcalBuffer.Fill(points, eventTime, eventNr); break;
-    case kPSD:  nPoints = fPsdBuffer.Fill(points, eventTime, eventNr);  break;
+    case kMvd:  nPoints = fMvdBuffer.Fill(points, eventTime, eventNr);  break;
+    case kSts:  nPoints = fStsBuffer.Fill(points, eventTime, eventNr);  break;
+    case kRich: nPoints = fRichBuffer.Fill(points, eventTime, eventNr); break;
+    case kMuch: nPoints = fMuchBuffer.Fill(points, eventTime, eventNr); break;
+    case kTrd:  nPoints = fTrdBuffer.Fill(points, eventTime, eventNr);  break;
+    case kTof:  nPoints = fTofBuffer.Fill(points, eventTime, eventNr);  break;
+    case kEcal: nPoints = fEcalBuffer.Fill(points, eventTime, eventNr); break;
+    case kPsd:  nPoints = fPsdBuffer.Fill(points, eventTime, eventNr);  break;
     default:    nPoints = 0; break;
     }
   }
@@ -139,33 +139,33 @@ Double_t CbmMCBuffer::GetMinTime() const {
 
 
 // -----   Get next point   --------------------------------------------------
-const FairMCPoint* CbmMCBuffer::GetNextPoint(DetectorId det) {
+const FairMCPoint* CbmMCBuffer::GetNextPoint(ECbmModuleId det) {
 
   const FairMCPoint* nextPoint = NULL;
 
   if ( ! fEndOfRun ) {
     switch (det) {
-      case kMVD:  nextPoint = fMvdBuffer.GetNextPoint(fTime);  break;
-      case kSTS:  nextPoint = fStsBuffer.GetNextPoint(fTime);  break;
-      case kRICH: nextPoint = fRichBuffer.GetNextPoint(fTime); break;
-      case kMUCH: nextPoint = fMuchBuffer.GetNextPoint(fTime); break;
-      case kTRD:  nextPoint = fTrdBuffer.GetNextPoint(fTime);  break;
-      case kTOF:  nextPoint = fTofBuffer.GetNextPoint(fTime);  break;
-      case kECAL: nextPoint = fEcalBuffer.GetNextPoint(fTime); break;
-      case kPSD:  nextPoint = fPsdBuffer.GetNextPoint(fTime);  break;
+      case kMvd:  nextPoint = fMvdBuffer.GetNextPoint(fTime);  break;
+      case kSts:  nextPoint = fStsBuffer.GetNextPoint(fTime);  break;
+      case kRich: nextPoint = fRichBuffer.GetNextPoint(fTime); break;
+      case kMuch: nextPoint = fMuchBuffer.GetNextPoint(fTime); break;
+      case kTrd:  nextPoint = fTrdBuffer.GetNextPoint(fTime);  break;
+      case kTof:  nextPoint = fTofBuffer.GetNextPoint(fTime);  break;
+      case kEcal: nextPoint = fEcalBuffer.GetNextPoint(fTime); break;
+      case kPsd:  nextPoint = fPsdBuffer.GetNextPoint(fTime);  break;
       default:    nextPoint = NULL; break;
     }
   }
   else {
     switch (det) {
-      case kMVD:  nextPoint = fMvdBuffer.GetNextPoint();  break;
-      case kSTS:  nextPoint = fStsBuffer.GetNextPoint();  break;
-      case kRICH: nextPoint = fRichBuffer.GetNextPoint(); break;
-      case kMUCH: nextPoint = fMuchBuffer.GetNextPoint(); break;
-      case kTRD:  nextPoint = fTrdBuffer.GetNextPoint();  break;
-      case kTOF:  nextPoint = fTofBuffer.GetNextPoint();  break;
-      case kECAL: nextPoint = fEcalBuffer.GetNextPoint(); break;
-      case kPSD:  nextPoint = fPsdBuffer.GetNextPoint();  break;
+      case kMvd:  nextPoint = fMvdBuffer.GetNextPoint();  break;
+      case kSts:  nextPoint = fStsBuffer.GetNextPoint();  break;
+      case kRich: nextPoint = fRichBuffer.GetNextPoint(); break;
+      case kMuch: nextPoint = fMuchBuffer.GetNextPoint(); break;
+      case kTrd:  nextPoint = fTrdBuffer.GetNextPoint();  break;
+      case kTof:  nextPoint = fTofBuffer.GetNextPoint();  break;
+      case kEcal: nextPoint = fEcalBuffer.GetNextPoint(); break;
+      case kPsd:  nextPoint = fPsdBuffer.GetNextPoint();  break;
       default:    nextPoint = NULL; break;
     }
   }

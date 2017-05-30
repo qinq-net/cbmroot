@@ -9,7 +9,6 @@
 #include "CbmTofGeoHandler.h"
 #include "CbmGeoTofPar.h"
 #include "CbmGeoTof.h"
-#include "CbmDetectorList.h"
 #include "CbmStack.h"
 
 #include "FairGeoBuilder.h"
@@ -42,7 +41,7 @@ using std::endl;
 
 // -----   Default constructor   -------------------------------------------
 CbmTof::CbmTof() 
-  : FairDetector("TOF", kTRUE, kTOF),
+  : FairDetector("TOF", kTRUE, kTof),
     fTrackID(-1),
     fVolumeID(-1),
     fPos(),
@@ -74,7 +73,7 @@ CbmTof::CbmTof()
 
 // -----   Standard constructor   ------------------------------------------
 CbmTof::CbmTof(const char* name, Bool_t active)
-  : FairDetector(name, active, kTOF),
+  : FairDetector(name, active, kTof),
     fTrackID(-1),
     fVolumeID(-1),
     fPos(),
@@ -196,7 +195,7 @@ void CbmTof::FinishEvent()
     iCounterIndex = std::get<2>(itCounterInBeam.first);
 
     // Create the unique counter ID
-    CbmTofDetectorInfo tCounterInfo(kTOF, iModuleType, iModuleIndex, iCounterIndex, 0, 0);
+    CbmTofDetectorInfo tCounterInfo(kTof, iModuleType, iModuleIndex, iCounterIndex, 0, 0);
     iUniqueCounterId = fGeoHandler->GetDetIdPointer()->SetDetectorInfo(tCounterInfo);
 
     tCurrentNode = fNodesInBeam.at(iCounter);
@@ -335,7 +334,7 @@ Bool_t  CbmTof::ProcessHits(FairVolume* /*vol*/)
 
           // Increment number of tof points for TParticle
           CbmStack* stack = dynamic_cast<CbmStack*>(gMC->GetStack());
-          stack->AddPoint(kTOF);
+          stack->AddPoint(kTof);
         }
 
         tCounterPoint->SetGap( fGeoHandler->GetGap( iCounterID ) );
@@ -395,7 +394,7 @@ Bool_t  CbmTof::ProcessHits(FairVolume* /*vol*/)
 
       // Increment number of tof points for TParticle
       CbmStack* stack = (CbmStack*) gMC->GetStack();
-      stack->AddPoint(kTOF);
+      stack->AddPoint(kTof);
 
       ResetParameters();
     }

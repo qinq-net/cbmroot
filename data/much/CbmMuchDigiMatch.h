@@ -12,7 +12,6 @@
 
 #include "CbmMatch.h"
 
-#include "CbmDetectorList.h"
 
 
 class CbmMuchDigiMatch : public CbmMatch

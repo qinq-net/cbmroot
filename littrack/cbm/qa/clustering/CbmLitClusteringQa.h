@@ -56,7 +56,7 @@ private:
 
     Int_t GetStationId(
           Int_t address,
-          DetectorId detId);
+          ECbmModuleId detId);
 
     /**
      * \brief Read data branches.
@@ -68,25 +68,25 @@ private:
     void ProcessPoints(
           CbmMCDataArray* points,
           const string& detName,
-          DetectorId detId);
+          ECbmModuleId detId);
 
     void ProcessDigis(
           const TClonesArray* digis,
           const TClonesArray* digiMatches,
           const string& detName,
-          DetectorId detId);
+          ECbmModuleId detId);
 
     void ProcessClusters(
           const TClonesArray* clusters,
           const TClonesArray* clusterMatches,
           const string& detName,
-          DetectorId detId);
+          ECbmModuleId detId);
 
     void ProcessHits(
           const TClonesArray* hits,
           const TClonesArray* hitMatches,
           const string& detName,
-          DetectorId detId);
+          ECbmModuleId detId);
 
     /**
      *
@@ -107,20 +107,20 @@ private:
      *
      */
     void CreateNofObjectsHistograms(
-          DetectorId detId,
+          ECbmModuleId detId,
           const string& detName);
 
     /**
      *
      */
     void CreateNofObjectsHistograms(
-          DetectorId detId,
+          ECbmModuleId detId,
           const string& detName,
           const string& parameter,
           const string& xTitle);
 
     void CreateClusterParametersHistograms(
-          DetectorId detId,
+          ECbmModuleId detId,
           const string& detName);
 
     void FillResidualAndPullHistograms(
@@ -128,22 +128,22 @@ private:
           const TClonesArray* hits,
           const TClonesArray* hitMatches,
           const string& detName,
-          DetectorId detId);
+          ECbmModuleId detId);
 
     void FillHitEfficiencyHistogramsMC(
           CbmMCDataArray* points,
           const string& detName,
-          DetectorId detId);
+          ECbmModuleId detId);
     
     void FillHitEfficiencyHistogramsReco(
           CbmMCDataArray* points,
           const TClonesArray* hits,
           const TClonesArray* hitMatches,
           const string& detName,
-          DetectorId detId);
+          ECbmModuleId detId);
 
     void CreateHitEfficiencyHistograms(
-          DetectorId detId,
+          ECbmModuleId detId,
           const string& detName,
           const string& parameter,
           const string& xTitle,

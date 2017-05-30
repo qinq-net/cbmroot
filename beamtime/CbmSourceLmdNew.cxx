@@ -384,7 +384,7 @@ Int_t CbmSourceLmdNew::ReadEvent(UInt_t)
 	  LOG(INFO) << "In Old Aux RocId: "<< val<<FairLogger::endl;
 	  //	  FillBaselineDataContainer();
 	  fNofEvents++;
-          fNofBaselineDigis = fNofDigis[kTutDet];
+          fNofBaselineDigis = fNofDigis[kDummyDet];
           // remove special aux digi which should not end up in output
 	  delete fCurrentDigi;
 	  fCurrentDigi = GetNextData();
@@ -393,7 +393,7 @@ Int_t CbmSourceLmdNew::ReadEvent(UInt_t)
 	  fBaselineDataRetrieve = kFALSE; 
 	  LOG(INFO) << "Aux RocId: "<< val<<FairLogger::endl;
 	  LOG(INFO) << "Filling " 
-		    << ( fNofDigis[kTutDet] - fNofBaselineDigis ) 
+		    << ( fNofDigis[kDummyDet] - fNofBaselineDigis )
 		    << " for this baseline event" 
 		    << FairLogger::endl;
           // remove special aux digi which should not end up in output
@@ -416,7 +416,7 @@ Int_t CbmSourceLmdNew::ReadEvent(UInt_t)
       } else {
 	it->second->FillOutput(fCurrentDigi);
         if ( kTRUE == fBaselineDataRetrieve ) {
-	  fNofDigis[kTutDet]++;
+	  fNofDigis[kDummyDet]++;
 	  fNofBLDigis[systemId]++;
 	} else {
 	  fNofDigis[systemId]++;
@@ -494,9 +494,8 @@ void CbmSourceLmdNew::Close()
 
   LOG(INFO) << FairLogger::endl;
   LOG(INFO) << "Hit messages and digis per system: " << FairLogger::endl;
-  for (Int_t iSys = 0; iSys < kNOFDETS; iSys++) {
-    TString sysName;
-    CbmDetectorList::GetSystemNameCaps(iSys, sysName);
+  for (Int_t iSys = 0; iSys < kNofSystems; iSys++) {
+    TString sysName = CbmModuleList::GetModuleNameCaps(iSys);
     LOG(INFO) << setw(5) << sysName << ": Messages " << fNofHitMsg[iSys]
               << ", Digis " << fNofDigis[iSys] 
 	      << ", BaselineDigis " << fNofBLDigis[iSys] 

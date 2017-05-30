@@ -18,7 +18,7 @@
 #include "FairRunSim.h"
 #include "FairEventHeader.h"
 #include "FairMCEventHeader.h"
-#include "CbmDetectorList.h"
+#include "CbmDefs.h"
 
 #ifdef __MACH__
 #include <mach/mach_time.h>
@@ -641,7 +641,7 @@ void CbmTofTBClusterizer::Exec(Option_t* option)
                   
                   Double_t y = fvCPSigPropSpeed[iSmType][iRpc] * (bottomDigiIter->first - topTime) / 2;
                   
-                  CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh); 
+                  CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSm, iRpc, 0, iCh);
                   Int_t iChId = fTofId->SetDetectorInfo(xDetInfo);
                   fChannelInfo = fDigiPar->GetCell(iChId);
                   

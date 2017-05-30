@@ -73,7 +73,7 @@ Int_t CbmL1StsTrackFinder::CopyL1Tracks(CbmEvent* event) {
       CbmL1Track &T = *it;
       new((*fTracks)[trackIndex]) CbmStsTrack();
       nTracks++;
-      if ( event ) event->AddData(Cbm::kStsTrack, trackIndex);
+      if ( event ) event->AddData(kStsTrack, trackIndex);
       CbmStsTrack *t =
       		L1_DYNAMIC_CAST<CbmStsTrack*>( fTracks->At(trackIndex++) );
       t->SetFlag(0);

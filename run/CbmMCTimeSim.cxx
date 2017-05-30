@@ -9,8 +9,9 @@
 #include "TClonesArray.h"
 #include "TRandom3.h"
 
-#include "CbmDetectorList.h"
+#include "CbmDefs.h"
 #include "CbmMCBuffer.h"
+#include "CbmModuleList.h"
 #include "FairEventHeader.h"
 #include "FairMCEventHeader.h"
 #include "FairRunAna.h"
@@ -57,7 +58,7 @@ CbmMCTimeSim::CbmMCTimeSim(Double_t rate, Int_t profile, const char* name)
     fEvent(NULL),
     fPointArrays()
 {
-  for (Int_t iDet = 0; iDet < kNOFDETS; iDet++) fPointArrays.push_back(NULL);
+  for (Int_t iDet = 0; iDet < kNofSystems; iDet++) fPointArrays.push_back(NULL);
 }
 // ---------------------------------------------------------------------------
 
@@ -127,17 +128,16 @@ void CbmMCTimeSim::Exec(Option_t*) {
             << " ns, points ";
 
   // Read MCPoints from event into buffers
-  for (Int_t iDet = 0; iDet < kNOFDETS; iDet++) {
+  for (Int_t iDet = 0; iDet < kNofSystems; iDet++) {
 
   	// --- For the time being, use only STS and MUCH to avoid overflow
-  	 if ( iDet != kSTS && iDet != kMUCH ) continue;
+  	 if ( iDet != kSts && iDet != kMuch ) continue;
 
     Int_t nPoints = 0;
     if ( fPointArrays[iDet] ) {
       nPoints = buffer->Fill(fPointArrays[iDet], iDet,
                              fNofEvents, fEventTime);
-      TString sysName;
-      CbmDetectorList::GetSystemNameCaps(iDet, sysName);
+      TString sysName = CbmModuleList::GetModuleNameCaps(iDet);
       LOG(DEBUG) << sysName << " " << nPoints << "  ";
       nPointsAll += nPoints;
     }
@@ -217,22 +217,21 @@ InitStatus CbmMCTimeSim::Init() {
   fEvent = dynamic_cast<FairMCEventHeader*>(ioman->GetObject("MCEventHeader."));
 
   // Get MCPoint arrays
-  fPointArrays[kMVD]  = (TClonesArray*) ioman->GetObject("MvdPoint");
-  fPointArrays[kSTS]  = (TClonesArray*) ioman->GetObject("StsPoint");
-  fPointArrays[kRICH] = (TClonesArray*) ioman->GetObject("RichPoint");
-  fPointArrays[kMUCH] = (TClonesArray*) ioman->GetObject("MuchPoint");
-  fPointArrays[kTRD]  = (TClonesArray*) ioman->GetObject("TrdPoint");
-  fPointArrays[kTOF]  = (TClonesArray*) ioman->GetObject("TofPoint");
-  fPointArrays[kECAL] = (TClonesArray*) ioman->GetObject("EcalPoint");
-  fPointArrays[kPSD]  = (TClonesArray*) ioman->GetObject("PsdPoint");
+  fPointArrays[kMvd]  = (TClonesArray*) ioman->GetObject("MvdPoint");
+  fPointArrays[kSts]  = (TClonesArray*) ioman->GetObject("StsPoint");
+  fPointArrays[kRich] = (TClonesArray*) ioman->GetObject("RichPoint");
+  fPointArrays[kMuch] = (TClonesArray*) ioman->GetObject("MuchPoint");
+  fPointArrays[kTrd]  = (TClonesArray*) ioman->GetObject("TrdPoint");
+  fPointArrays[kTof]  = (TClonesArray*) ioman->GetObject("TofPoint");
+  fPointArrays[kEcal] = (TClonesArray*) ioman->GetObject("EcalPoint");
+  fPointArrays[kPsd]  = (TClonesArray*) ioman->GetObject("PsdPoint");
 
   // Control output for configuration
   LOG(INFO) << GetName() << ": configuration ";
   TString config = "";
-  for (Int_t iDet = 1; iDet < kNOFDETS; iDet++) {
+  for (Int_t iDet = 1; iDet < kNofSystems; iDet++) {
     if ( fPointArrays[iDet] ) {
-      TString sysName;
-      CbmDetectorList::GetSystemNameCaps(iDet, sysName);
+      TString sysName = CbmModuleList::GetModuleNameCaps(iDet);
       LOG(INFO) << sysName << " ";
       config += " " + sysName;
     }

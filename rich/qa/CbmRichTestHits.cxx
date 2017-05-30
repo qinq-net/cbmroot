@@ -196,7 +196,7 @@ void CbmRichTestHits::Exec(
          Int_t gcode = pTrack->GetPdgCode();
          if (TMath::Abs(gcode) == 11) {
             Nel++;
-            if (pTrack->GetNPoints(kSTS) > 5) {
+            if (pTrack->GetNPoints(kSts) > 5) {
                Nel_prim++;
                fh_Nhits->Fill(Nhits);
             }

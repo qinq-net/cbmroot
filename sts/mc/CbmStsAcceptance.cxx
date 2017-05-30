@@ -218,7 +218,7 @@ Bool_t CbmStsAcceptance::Test() {
 	for (Int_t trackId = 0; trackId < nTracks; trackId++) {
 		track = dynamic_cast<CbmMCTrack*>(fTracks->At(trackId));
 		assert (track);
-		nPoints1 = track->GetNPoints(kSTS);
+		nPoints1 = track->GetNPoints(kSts);
 		nPoints2 = GetNofPoints(trackId);
 		// The value of 31 is the maximal number that can be stored in CbmMCTrack
 		// for the count of StsPoints. Sometimes there are more (spiralling electrons).

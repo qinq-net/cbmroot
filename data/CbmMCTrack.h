@@ -19,7 +19,7 @@
 #define CBMMCTRACK_H 1
 
 
-#include "CbmDetectorList.h"
+#include "CbmDefs.h"
 
 #include "TObject.h"
 #include "TMath.h"
@@ -56,9 +56,9 @@ class CbmMCTrack : public TObject
   /**  Destructor  **/
   virtual ~CbmMCTrack();
 
-  Int_t AccMVD() const {return GetNPoints(kMVD);}
-  Int_t AccSTS() const {return GetNPoints(kSTS);}
-  Int_t AccPSD() const {return GetNPoints(kPSD);}
+  Int_t AccMVD() const {return GetNPoints(kMvd);}
+  Int_t AccSTS() const {return GetNPoints(kSts);}
+  Int_t AccPSD() const {return GetNPoints(kPsd);}
 
   /**  Accessors  **/
   UInt_t   GetGeantProcessId()  const { return fProcessId; }
@@ -83,7 +83,7 @@ class CbmMCTrack : public TObject
 
 
   /** Accessors to the number of MCPoints in the detectors **/
-  Int_t GetNPoints(DetectorId detId)  const;
+  Int_t GetNPoints(ECbmModuleId detId)  const;
 
 
   /**  Modifiers  **/

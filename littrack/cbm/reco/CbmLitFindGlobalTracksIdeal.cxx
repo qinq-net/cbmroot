@@ -55,10 +55,10 @@ InitStatus CbmLitFindGlobalTracksIdeal::Init()
 void CbmLitFindGlobalTracksIdeal::Exec(
    Option_t* opt)
 {
-   if (fDet.GetDet(kSTS)) { FillTrackMap(fMcStsMap, fStsMatches); }
-   if (fDet.GetDet(kTRD)) { FillTrackMap(fMcTrdMap, fTrdMatches); }
-   if (fDet.GetDet(kMUCH)) { FillTrackMap(fMcMuchMap, fMuchMatches); }
-   if (fDet.GetDet(kTOF)) { FillMapTof(); }
+   if (fDet.GetDet(kSts)) { FillTrackMap(fMcStsMap, fStsMatches); }
+   if (fDet.GetDet(kTrd)) { FillTrackMap(fMcTrdMap, fTrdMatches); }
+   if (fDet.GetDet(kMuch)) { FillTrackMap(fMcMuchMap, fMuchMatches); }
+   if (fDet.GetDet(kTof)) { FillMapTof(); }
 
    CreateGlobalTracks();
 
@@ -78,25 +78,25 @@ void CbmLitFindGlobalTracksIdeal::ReadDataBranches()
    if (NULL == fMCTracks) { Fatal("Init","No MCTrack array!"); }
 
    //STS data
-   if (fDet.GetDet(kSTS)) {
+   if (fDet.GetDet(kSts)) {
       fStsMatches = (TClonesArray*) ioman->GetObject("StsTrackMatch");
       if (NULL == fStsMatches) { Fatal("Init","No StsTrackMatch array!"); }
    }
 
    //MUCH data
-   if (fDet.GetDet(kMUCH)) {
+   if (fDet.GetDet(kMuch)) {
       fMuchMatches = (TClonesArray*) ioman->GetObject("MuchTrackMatch");
       if (NULL == fMuchMatches) { Fatal("Init","No MuchTrackMatch array!"); }
    }
 
    //TRD data
-   if (fDet.GetDet(kTRD)) {
+   if (fDet.GetDet(kTrd)) {
       fTrdMatches = (TClonesArray*) ioman->GetObject("TrdTrackMatch");
       if (NULL == fTrdMatches) { Fatal("Init","No TrdTrackMatch array!"); }
    }
 
    //TOF data
-   if (fDet.GetDet(kTOF)) {
+   if (fDet.GetDet(kTof)) {
       fTofMCPoints = (TClonesArray*) ioman->GetObject("TofPoint");
       if (NULL == fTofMCPoints ) { Fatal("Init","No TofPoint array!"); }
       fTofHits = (TClonesArray*) ioman->GetObject("TofHit");
@@ -152,10 +152,10 @@ void CbmLitFindGlobalTracksIdeal::CreateGlobalTracks()
       CbmMCTrack* mcTrack = (CbmMCTrack*) fMCTracks->At(iMCTrack);
       if (mcTrack==NULL) { continue; }
       Int_t stsId = -1, trdId = -1, muchId = -1, tofId = -1;
-      if (fDet.GetDet(kSTS) && (fMcStsMap.find(iMCTrack) != fMcStsMap.end())) { stsId = fMcStsMap[iMCTrack]; }
-      if (fDet.GetDet(kTRD) && (fMcTrdMap.find(iMCTrack) != fMcTrdMap.end())) { trdId = fMcTrdMap[iMCTrack]; }
-      if (fDet.GetDet(kMUCH) && (fMcMuchMap.find(iMCTrack) != fMcMuchMap.end())) { muchId = fMcMuchMap[iMCTrack]; }
-      if (fDet.GetDet(kTOF) && (fMcTofMap.find(iMCTrack) != fMcTofMap.end())) { tofId = fMcTofMap[iMCTrack]; }
+      if (fDet.GetDet(kSts) && (fMcStsMap.find(iMCTrack) != fMcStsMap.end())) { stsId = fMcStsMap[iMCTrack]; }
+      if (fDet.GetDet(kTrd) && (fMcTrdMap.find(iMCTrack) != fMcTrdMap.end())) { trdId = fMcTrdMap[iMCTrack]; }
+      if (fDet.GetDet(kMuch) && (fMcMuchMap.find(iMCTrack) != fMcMuchMap.end())) { muchId = fMcMuchMap[iMCTrack]; }
+      if (fDet.GetDet(kTof) && (fMcTofMap.find(iMCTrack) != fMcTofMap.end())) { tofId = fMcTofMap[iMCTrack]; }
 
       if (stsId == -1 && trdId == -1 && muchId == -1 && tofId == -1) { continue; }
 

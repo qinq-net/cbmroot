@@ -73,17 +73,17 @@ void CbmLitMCTrackCreator::CreateMC()
     fLitMCTracks.clear();
     
 
-    AddPoints(kMVD, fMvdPoints);
+    AddPoints(kMvd, fMvdPoints);
 
-    AddPoints(kSTS, fStsPoints);
+    AddPoints(kSts, fStsPoints);
     
-    AddPoints(kTRD, fTrdPoints);
+    AddPoints(kTrd, fTrdPoints);
     
-    AddPoints(kMUCH, fMuchPoints);
+    AddPoints(kMuch, fMuchPoints);
     
-    AddPoints(kTOF, fTofPoints);
+    AddPoints(kTof, fTofPoints);
     
-    AddPoints(kRICH, fRichPoints);
+    AddPoints(kRich, fRichPoints);
     
     AddRingParameters();
 
@@ -127,7 +127,7 @@ void CbmLitMCTrackCreator::ReadDataBranches()
 }
 
 void CbmLitMCTrackCreator::AddPoints(
-                                     DetectorId detId,
+                                     ECbmModuleId detId,
                                      CbmMCDataArray* array)
 {
     if (!array) return;
@@ -141,28 +141,28 @@ void CbmLitMCTrackCreator::AddPoints(
          if (NULL == fairPoint) continue;
          CbmLitMCPoint litPoint;
          Int_t stationId = -1;
-         if (detId == kMVD) {
+         if (detId == kMvd) {
             stationId = fMvdStationsMap[make_pair(iEvent, iPoint)];
             MvdPointCoordinatesAndMomentumToLitMCPoint(static_cast<CbmMvdPoint*> (fairPoint), &litPoint);
-         } else if (detId == kSTS) {
+         } else if (detId == kSts) {
             stationId = fStsStationsMap[make_pair(iEvent, iPoint)];
             StsPointCoordinatesAndMomentumToLitMCPoint(static_cast<CbmStsPoint*> (fairPoint), &litPoint);
-         } else if (detId == kTRD) {
+         } else if (detId == kTrd) {
             stationId = fTrdStationsMap[make_pair(iEvent, iPoint)];
             TrdPointCoordinatesAndMomentumToLitMCPoint(static_cast<CbmTrdPoint*> (fairPoint), &litPoint);
-         } else if (detId == kMUCH) {
+         } else if (detId == kMuch) {
             stationId = fMuchStationsMap[make_pair(iEvent, iPoint)];
             MuchPointCoordinatesAndMomentumToLitMCPoint(static_cast<CbmMuchPoint*> (fairPoint), &litPoint);
-         } else if (detId == kTOF) {
+         } else if (detId == kTof) {
             stationId = 0;
             FairMCPointCoordinatesAndMomentumToLitMCPoint(fairPoint, &litPoint);
-         } else if (detId == kRICH) {
+         } else if (detId == kRich) {
             stationId = 0;
             FairMCPointCoordinatesAndMomentumToLitMCPoint(fairPoint, &litPoint);
          }
          if (stationId < 0) continue;
          FairMCPointToLitMCPoint(fairPoint, &litPoint, iEvent, iPoint, stationId);
-         if (detId != kRICH) {
+         if (detId != kRich) {
             fLitMCTracks[make_pair(iEvent, fairPoint->GetTrackID())].AddPoint(detId, litPoint);
          } else {
             const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*> (fMCTracks->Get(0, iEvent, fairPoint->GetTrackID()));

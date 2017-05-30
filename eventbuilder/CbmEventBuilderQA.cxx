@@ -494,7 +494,7 @@ void CbmEventBuilderQA::Exec(Option_t* /*opt*/)
     
 
     vector<int> tracksId;
-    Int_t nEventTracks = event->GetNofData(Cbm::kStsTrack);
+    Int_t nEventTracks = event->GetNofData(kStsTrack);
     
     fTimeHisto[23]->Fill(nEventTracks);
 
@@ -564,7 +564,7 @@ void CbmEventBuilderQA::Exec(Option_t* /*opt*/)
         if (iEvent==iEvent1) continue;
         CbmEvent* event1 = (CbmEvent*) fEvents->At(iEvent1);
         
-        Int_t nTracks1 = event1->GetNofData(Cbm::kStsTrack);
+        Int_t nTracks1 = event1->GetNofData(kStsTrack);
         for(int iTr1=0; iTr1<nTracks1; iTr1++)
         {
           const int stsTrackIndex1 = event1->GetStsTrackIndex(iTr1);
@@ -625,7 +625,7 @@ void CbmEventBuilderQA::Exec(Option_t* /*opt*/)
     CbmEvent* event = Ev[k].Event;//(CbmEvent*) fEvents->At(k);
         
     int iCol = k%5;
-    for(unsigned int i=0;i<event->GetNofData(Cbm::kStsTrack);i++)  
+    for(unsigned int i=0;i<event->GetNofData(kStsTrack);i++)
     { 
       const int stsTrackIndex = event->GetStsTrackIndex(i);
       CbmStsTrack* track = (CbmStsTrack*) fStsTracks->At(stsTrackIndex);

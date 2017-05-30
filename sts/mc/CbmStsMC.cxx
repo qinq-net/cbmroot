@@ -17,7 +17,6 @@
 
 #include "FairLogger.h"
 
-#include "CbmDetectorList.h"
 #include "CbmStack.h"
 #include "CbmStsElement.h"
 #include "CbmStsPoint.h"
@@ -28,7 +27,7 @@ using std::map;
 
 // -----   Constructor   ---------------------------------------------------
 CbmStsMC::CbmStsMC(Bool_t active, const char* name)
-  : FairDetector(name, active, kSTS),
+  : FairDetector(name, active, kSts),
     fStatusIn(),
     fStatusOut(),
     fEloss(0.),
@@ -168,7 +167,7 @@ Bool_t CbmStsMC::ProcessHits(FairVolume* /*vol*/) {
 
     // --- Increment number of StsPoints for this track
     CbmStack* stack = (CbmStack*) gMC->GetStack();
-    stack->AddPoint(kSTS);
+    stack->AddPoint(kSts);
 
   }  //? track is exiting or stopped
 

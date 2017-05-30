@@ -12,8 +12,8 @@
 #include "FairLogger.h"
 
 #include "CbmROCUnpack.h"
-#include "CbmDetectorList.h"
 #include "CbmTbDaqBuffer.h"
+#include "CbmDefs.h"
 
 #include "TList.h"
 #include "TString.h"
@@ -180,10 +180,10 @@ class CbmSourceLmdNew : public FairSource
     Int_t fNofEvents;            ///< Number of built events
     Int_t fNofMessType[8];       ///< Number of message per message type
     Int_t fNofMessRoc[20][5];    ///< Number of messages per ROC and NXYTER
-    Int_t fNofHitMsg[kNOFDETS];  ///< Number of hit messages per detector system
-    Int_t fNofDigis[kNOFDETS];   ///< Number of created digis per detector system
-    Int_t fNofBLDigis[kNOFDETS];   ///< Number of created baseline digis per detector system
-    Int_t fNofDiscardedDigis[kNOFDETS]; ///< Number of created discarded digis per detector system
+    Int_t fNofHitMsg[kNofSystems];  ///< Number of hit messages per detector system
+    Int_t fNofDigis[kNofSystems];   ///< Number of created digis per detector system
+    Int_t fNofBLDigis[kNofSystems];   ///< Number of created baseline digis per detector system
+    Int_t fNofDiscardedDigis[kNofSystems]; ///< Number of created discarded digis per detector system
     Int_t fNofAux;               ///< Number of AUX messages
     Int_t fNofDiscardedAux;      ///< Number of discarded AUX messages
     Int_t fNofIgnoredMessages;   ///< Number of ignores due to unknown system ID

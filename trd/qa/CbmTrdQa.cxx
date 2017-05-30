@@ -761,8 +761,8 @@ void CbmTrdQa::Exec(Option_t*)
       iTrack = point->GetTrackID();
       track = (CbmMCTrack*) fMCTracks->At(iTrack);
       //PDG = track->GetPdgCode();
-      nStsPoints = track->GetNPoints(kSTS);
-      //fStsTrdPoints->Fill(track->GetNPoints(kTRD),track->GetNPoints(kSTS));
+      nStsPoints = track->GetNPoints(kSts);
+      //fStsTrdPoints->Fill(track->GetNPoints(kTrd),track->GetNPoints(kSts));
       fModuleInfo = fDigiPar->GetModule(moduleAddress);
       if (fModuleGhostMap.find(moduleAddress) == fModuleGhostMap.end()){
 	title.Form("G%i_S%i_L%i_(%.2f, %.2f, %.2f)",moduleAddress,Station,Layer,fModuleInfo->GetX(),fModuleInfo->GetY(),fModuleInfo->GetZ());
@@ -833,10 +833,10 @@ void CbmTrdQa::Exec(Option_t*)
 	  if (fRadiator->LatticeHit(point))
 	    hasBeenUsedTrack[iTrack] -= 1;
       } else {
-	hasBeenUsedTrack[iTrack] = track->GetNPoints(kTRD);
-	fTrdPointsPerMcTrack_PID->Fill(track->GetNPoints(kTRD), CbmTrdUtils::PdgToGeant(Pdg_code));
-	fTrdPointsPerMcTrack_PT->Fill(track->GetNPoints(kTRD), track->GetPt());
-	fTrdPointsPerMcTrack_P->Fill(track->GetNPoints(kTRD), track->GetP());
+	hasBeenUsedTrack[iTrack] = track->GetNPoints(kTrd);
+	fTrdPointsPerMcTrack_PID->Fill(track->GetNPoints(kTrd), CbmTrdUtils::PdgToGeant(Pdg_code));
+	fTrdPointsPerMcTrack_PT->Fill(track->GetNPoints(kTrd), track->GetPt());
+	fTrdPointsPerMcTrack_P->Fill(track->GetNPoints(kTrd), track->GetP());
       }
 
 
@@ -926,7 +926,7 @@ void CbmTrdQa::Exec(Option_t*)
     }
     for (std::map<Int_t,Int_t>::iterator it = hasBeenUsedTrack.begin(); it != hasBeenUsedTrack.end(); it++){
       track = (CbmMCTrack*) fMCTracks->At(it->first);
-      fTrdTrackCrossedRadiator->Fill(track->GetNPoints(kTRD),it->second);
+      fTrdTrackCrossedRadiator->Fill(track->GetNPoints(kTrd),it->second);
     }
   }
 
@@ -1064,18 +1064,18 @@ void CbmTrdQa::Exec(Option_t*)
 	else
 	  track_mother = NULL;
 	if (notMultiPointTRDPoints.find(iTrack) == notMultiPointTRDPoints.end()){
-	  //if (track->GetNPoints(kSTS) > 0)
+	  //if (track->GetNPoints(kSts) > 0)
 	  {	
-	    Int_t nStsPoint = track->GetNPoints(kSTS);
-	    fStsTrdPoints->Fill(track->GetNPoints(kTRD),track->GetNPoints(kSTS));
-	    fStsMuchPoints->Fill(track->GetNPoints(kMUCH),track->GetNPoints(kSTS));
-	    fStsTofPoints->Fill(track->GetNPoints(kTOF),track->GetNPoints(kSTS));
+	    Int_t nStsPoint = track->GetNPoints(kSts);
+	    fStsTrdPoints->Fill(track->GetNPoints(kTrd),track->GetNPoints(kSts));
+	    fStsMuchPoints->Fill(track->GetNPoints(kMuch),track->GetNPoints(kSts));
+	    fStsTofPoints->Fill(track->GetNPoints(kTof),track->GetNPoints(kSts));
 	    if (nStsPoint < 11){
-	      fMuchTrdPoints[nStsPoint]->Fill(track->GetNPoints(kTRD),track->GetNPoints(kMUCH));
-	      fMuchTofPoints[nStsPoint]->Fill(track->GetNPoints(kTOF),track->GetNPoints(kMUCH));
-	      fTrdTofPoints[nStsPoint]->Fill(track->GetNPoints(kTOF),track->GetNPoints(kTRD));
+	      fMuchTrdPoints[nStsPoint]->Fill(track->GetNPoints(kTrd),track->GetNPoints(kMuch));
+	      fMuchTofPoints[nStsPoint]->Fill(track->GetNPoints(kTof),track->GetNPoints(kMuch));
+	      fTrdTofPoints[nStsPoint]->Fill(track->GetNPoints(kTof),track->GetNPoints(kTrd));
 	    }
-	    notMultiPointTRDPoints[iTrack] = track->GetNPoints(kTRD);       
+	    notMultiPointTRDPoints[iTrack] = track->GetNPoints(kTrd);
 	  }
 	}
 	Int_t Pdg_code = track->GetPdgCode();
@@ -1112,18 +1112,18 @@ void CbmTrdQa::Exec(Option_t*)
 	  else
 	    track2_mother = NULL;
 	  if (notMultiPointTRDPoints.find(jTrack) == notMultiPointTRDPoints.end()){
-	    //if (track2->GetNPoints(kSTS) > 0)
+	    //if (track2->GetNPoints(kSts) > 0)
 	    {
-	      Int_t nStsPoint = track2->GetNPoints(kSTS);
-	      fStsTrdPoints->Fill(track2->GetNPoints(kTRD),track2->GetNPoints(kSTS));
-	      fStsMuchPoints->Fill(track2->GetNPoints(kMUCH),track2->GetNPoints(kSTS));
-	      fStsTofPoints->Fill(track2->GetNPoints(kTOF),track2->GetNPoints(kSTS));
+	      Int_t nStsPoint = track2->GetNPoints(kSts);
+	      fStsTrdPoints->Fill(track2->GetNPoints(kTrd),track2->GetNPoints(kSts));
+	      fStsMuchPoints->Fill(track2->GetNPoints(kMuch),track2->GetNPoints(kSts));
+	      fStsTofPoints->Fill(track2->GetNPoints(kTof),track2->GetNPoints(kSts));
 	      if (nStsPoint < 11){
-		fMuchTrdPoints[nStsPoint]->Fill(track2->GetNPoints(kTRD),track2->GetNPoints(kMUCH));
-		fMuchTofPoints[nStsPoint]->Fill(track2->GetNPoints(kTOF),track2->GetNPoints(kMUCH));
-		fTrdTofPoints[nStsPoint]->Fill(track2->GetNPoints(kTOF),track2->GetNPoints(kTRD));
+		fMuchTrdPoints[nStsPoint]->Fill(track2->GetNPoints(kTrd),track2->GetNPoints(kMuch));
+		fMuchTofPoints[nStsPoint]->Fill(track2->GetNPoints(kTof),track2->GetNPoints(kMuch));
+		fTrdTofPoints[nStsPoint]->Fill(track2->GetNPoints(kTof),track2->GetNPoints(kTrd));
 	      }
-	      notMultiPointTRDPoints[jTrack] = track2->GetNPoints(kTRD);
+	      notMultiPointTRDPoints[jTrack] = track2->GetNPoints(kTrd);
 	    }
 	  }
 
@@ -1182,10 +1182,10 @@ void CbmTrdQa::Exec(Option_t*)
 		multiHitCounterModule++;
 	      } 
 	    } else {
-	      //fStsTrdPointsTrackable->Fill(track->GetNPoints(kTRD),track->GetNPoints(kSTS));
+	      //fStsTrdPointsTrackable->Fill(track->GetNPoints(kTrd),track->GetNPoints(kSts));
 	    }
 	  } else {
-	    //fStsTrdPointsTrackable->Fill(track->GetNPoints(kTRD),track->GetNPoints(kSTS));
+	    //fStsTrdPointsTrackable->Fill(track->GetNPoints(kTrd),track->GetNPoints(kSts));
 	  }
 	}
 	Double_t xPPadSize(fModuleInfo->GetPadSizeX(pSectorId)), yPPadSize(fModuleInfo->GetPadSizeY(pSectorId)); // correspoondig pad sizes from point point of view 
@@ -1295,7 +1295,7 @@ void CbmTrdQa::Exec(Option_t*)
   }
   for (std::map<Int_t, Int_t>::iterator notMultiPointTRDPointsIt = notMultiPointTRDPoints.begin(); notMultiPointTRDPointsIt != notMultiPointTRDPoints.end(); notMultiPointTRDPointsIt++){
     track = (CbmMCTrack*)(fMCTracks->At(notMultiPointTRDPointsIt->first));     
-    fStsTrdPointsTrackable->Fill(notMultiPointTRDPointsIt->second, track->GetNPoints(kSTS));
+    fStsTrdPointsTrackable->Fill(notMultiPointTRDPointsIt->second, track->GetNPoints(kSts));
   }
   timer.Stop();
   Double_t rtime = timer.RealTime();

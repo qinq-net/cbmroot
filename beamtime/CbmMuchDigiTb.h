@@ -15,7 +15,6 @@
 #define CBMMUCHDIGITB_H 1
 
 #include "CbmDigi.h"
-#include "CbmDetectorList.h"
 #include "CbmMuchDigiMatch.h"
 #include "CbmMuchAddress.h"
 
@@ -30,7 +29,7 @@ class CbmMuchDigiTb : public CbmDigi{
 
   
   virtual ~CbmMuchDigiTb(){}
-  Int_t GetSystemId() const { return kMUCH; }
+  Int_t GetSystemId() const { return kMuch; }
   Int_t GetAddress()  const { return (fData >> fgkAddrShift) & fgkAddrMask; }
   Int_t GetAdc()      const { return (fData >> fgkCharShift) & fgkCharMask; }
   //Double_t GetTime()  const { return (fData >> fgkTimeShift) & fgkTimeMask; }

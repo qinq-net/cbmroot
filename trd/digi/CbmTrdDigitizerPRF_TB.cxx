@@ -127,7 +127,7 @@ void CbmTrdDigitizerPRF_TB::Exec(Option_t*)
   Int_t nofBackwardTracks = 0;
   Int_t nofPoints = 0;
   //const CbmTrdPoint* point = dynamic_cast< const CbmTrdPoint*> (CbmMCBuffer::Instance()->GetNextPoint(kTRD));
-  CbmTrdPoint* point =  (CbmTrdPoint*) (CbmMCBuffer::Instance()->GetNextPoint(kTRD));
+  CbmTrdPoint* point =  (CbmTrdPoint*) (CbmMCBuffer::Instance()->GetNextPoint(kTrd));
   while ( point ) {
     nofPoints++;
     fnPoint++;
@@ -175,7 +175,7 @@ void CbmTrdDigitizerPRF_TB::Exec(Option_t*)
 
     if (!TString(gGeoManager->GetPath()).Contains("gas")){
       LOG(ERROR) << "CbmTrdDigitizerPRF_TB::Exec: MC-track not in TRD! Node:" << TString(gGeoManager->GetPath()).Data() << " gGeoManager->MasterToLocal() failed!" << FairLogger::endl;
-      point = /*dynamic_cast<const*/ (CbmTrdPoint*)/*>*/(CbmMCBuffer::Instance()->GetNextPoint(kTRD));
+      point = /*dynamic_cast<const*/ (CbmTrdPoint*)/*>*/(CbmMCBuffer::Instance()->GetNextPoint(kTrd));
       continue;
     }
 
@@ -187,7 +187,7 @@ void CbmTrdDigitizerPRF_TB::Exec(Option_t*)
     fnRow = fModuleInfo->GetNofRows();
 
     SplitTrackPath(point, ELoss);
-    point = /*dynamic_cast<const*/ (CbmTrdPoint*)/*>*/(CbmMCBuffer::Instance()->GetNextPoint(kTRD));
+    point = /*dynamic_cast<const*/ (CbmTrdPoint*)/*>*/(CbmMCBuffer::Instance()->GetNextPoint(kTrd));
   }
   // Fill data from internally used stl map into output TClonesArray
    Int_t iDigi = fDigis->GetEntries();

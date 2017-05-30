@@ -7,9 +7,9 @@
 #ifndef CBMLITDETECTORSETUP_H_
 #define CBMLITDETECTORSETUP_H_
 
-#include "CbmDetectorList.h"
 #include <string>
 #include <map>
+#include "CbmDefs.h"
 using std::string;
 using std::map;
 
@@ -39,7 +39,7 @@ public:
     * \param[in] isDet True if detector is in the setup.
     */
    void SetDet(
-            DetectorId detId,
+            ECbmModuleId detId,
             bool isDet);
 
    /**
@@ -48,7 +48,7 @@ public:
     * \return Detector presence in setup.
     */
    bool GetDet(
-            DetectorId detId) const;
+       ECbmModuleId detId) const;
 
    /**
     * \brief Set electron setup of detector.
@@ -96,7 +96,7 @@ private:
 
    bool fIsElectronSetup; // If "electron" setup detected than true
    bool fIsMuonSetup; // If "muon" setup detected than true
-   map<DetectorId, bool> fDet; // Map DetectorId to detector presence
+   map<ECbmModuleId, bool> fDet; // Map DetectorId to detector presence
 };
 
 #endif /* CBMLITDETECTORSETUP_H_ */

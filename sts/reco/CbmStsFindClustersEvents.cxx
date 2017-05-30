@@ -227,10 +227,10 @@ void CbmStsFindClustersEvents::ProcessEvent(CbmEvent* event) {
 	LOG(INFO) << "Cluster finding done" << FairLogger::endl;
 
 	// --- Analyse the clusters in the event
-	Int_t nClusters = (event ? event->GetNofData(Cbm::kStsCluster)
+	Int_t nClusters = (event ? event->GetNofData(kStsCluster)
 	    : fClusters->GetEntriesFast());
 	for (Int_t iCluster = 0; iCluster < nClusters; iCluster++) {
-		Int_t index = (event ? event->GetIndex(Cbm::kStsCluster, iCluster) : iCluster );
+		Int_t index = (event ? event->GetIndex(kStsCluster, iCluster) : iCluster );
 		CbmStsCluster* cluster = (CbmStsCluster*) fClusters->At(index);
 		CbmStsModule* module =
 				(CbmStsModule*) fSetup->GetElement(cluster->GetAddress(),
@@ -297,14 +297,14 @@ Int_t CbmStsFindClustersEvents::SortDigis(CbmEvent* event) {
 
 	// --- Counters
     Int_t nDigis = 0;
-    if ( event ) nDigis = event->GetNofData(Cbm::kStsDigi);
+    if ( event ) nDigis = event->GetNofData(kStsDigi);
     else         nDigis = fDigis->GetEntriesFast();
 	LOG(INFO) << GetName() << ": event " << (event ? event->GetNumber() : 0)
 	    << ", digis " << nDigis << FairLogger::endl;
 
 	// --- Loop over digis in event
 	for (Int_t iDigi = 0; iDigi < nDigis; iDigi++) {
-	    UInt_t index = (event ? event->GetIndex(Cbm::kStsDigi, iDigi) : iDigi);
+	    UInt_t index = (event ? event->GetIndex(kStsDigi, iDigi) : iDigi);
 		CbmStsDigi* digi = (CbmStsDigi*) fDigis->At(index);
 		assert(digi);
 

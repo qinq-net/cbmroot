@@ -7,11 +7,11 @@
   Event that holds all information needed for the of analysis (including fast simulations). 
   Init() the PairAnalysisTrack array fTracks and provides easy access to:
 
-    hits          GetHits(      DetectorId det)
-    hit matches   GetHitMatches(DetectorId det)
-    points        GetPoints(    DetectorId det)
+    hits          GetHits(      ECbmModuleId det)
+    hit matches   GetHitMatches(ECbmModuleId det)
+    points        GetPoints(    ECbmModuleId det)
 
-    clusters      GetCluster(   DetectorId det)
+    clusters      GetCluster(   ECbmModuleId det)
 
   for each sub-detector.
 
@@ -29,7 +29,6 @@
 #include "FairMCPoint.h"
 #include "FairTrackParam.h"
 
-#include "CbmDetectorList.h"
 #include "FairMCEventHeader.h"
 
 #include "CbmVertex.h"
@@ -184,23 +183,23 @@ void PairAnalysisEvent::Init()
 
   // DEBUG stuff
   if(0) {
-    fprintf(stderr, "check %s: has %d points in %p \n", "MVD",GetNumberOfPoints(kMVD), GetPoints(kMVD));
-    fprintf(stderr, "check %s: has %d points in %p \n", "STS",GetNumberOfPoints(kSTS), GetPoints(kSTS));
-    fprintf(stderr, "check %s: has %d points in %p \n", "RICH",GetNumberOfPoints(kRICH), GetPoints(kRICH));
-    fprintf(stderr, "check %s: has %d points in %p \n", "TRD",GetNumberOfPoints(kTRD), GetPoints(kTRD));
-    fprintf(stderr, "check %s: has %d points in %p \n", "TOF",GetNumberOfPoints(kTOF), GetPoints(kTOF));
+    fprintf(stderr, "check %s: has %d points in %p \n", "MVD",GetNumberOfPoints(kMvd), GetPoints(kMvd));
+    fprintf(stderr, "check %s: has %d points in %p \n", "STS",GetNumberOfPoints(kSts), GetPoints(kSts));
+    fprintf(stderr, "check %s: has %d points in %p \n", "RICH",GetNumberOfPoints(kRich), GetPoints(kRich));
+    fprintf(stderr, "check %s: has %d points in %p \n", "TRD",GetNumberOfPoints(kTrd), GetPoints(kTrd));
+    fprintf(stderr, "check %s: has %d points in %p \n", "TOF",GetNumberOfPoints(kTof), GetPoints(kTof));
 
-    fprintf(stderr, "check %s: has %d hitMatches in %p \n", "MVD",GetNumberOfHitMatches(kMVD), GetHitMatches(kMVD));
-    fprintf(stderr, "check %s: has %d hitMatches in %p \n", "STS",GetNumberOfHitMatches(kSTS), GetHitMatches(kSTS));
-    fprintf(stderr, "check %s: has %d hitMatches in %p \n", "RICH",GetNumberOfHitMatches(kRICH), GetHitMatches(kRICH));
-    fprintf(stderr, "check %s: has %d hitMatches in %p \n", "TRD",GetNumberOfHitMatches(kTRD), GetHitMatches(kTRD));
-    fprintf(stderr, "check %s: has %d hitMatches in %p \n", "TOF",GetNumberOfHitMatches(kTOF), GetHitMatches(kTOF));
+    fprintf(stderr, "check %s: has %d hitMatches in %p \n", "MVD",GetNumberOfHitMatches(kMvd), GetHitMatches(kMvd));
+    fprintf(stderr, "check %s: has %d hitMatches in %p \n", "STS",GetNumberOfHitMatches(kSts), GetHitMatches(kSts));
+    fprintf(stderr, "check %s: has %d hitMatches in %p \n", "RICH",GetNumberOfHitMatches(kRich), GetHitMatches(kRich));
+    fprintf(stderr, "check %s: has %d hitMatches in %p \n", "TRD",GetNumberOfHitMatches(kTrd), GetHitMatches(kTrd));
+    fprintf(stderr, "check %s: has %d hitMatches in %p \n", "TOF",GetNumberOfHitMatches(kTof), GetHitMatches(kTof));
 
-    fprintf(stderr, "check %s: has %d hits in %p \n", "MVD",GetNumberOfHits(kMVD), GetHits(kMVD));
-    fprintf(stderr, "check %s: has %d hits in %p \n", "STS",GetNumberOfHits(kSTS), GetHits(kSTS));
-    fprintf(stderr, "check %s: has %d hits in %p \n", "RICH",GetNumberOfHits(kRICH), GetHits(kRICH));
-    fprintf(stderr, "check %s: has %d hits in %p \n", "TRD",GetNumberOfHits(kTRD), GetHits(kTRD));
-    fprintf(stderr, "check %s: has %d hits in %p \n", "TOF",GetNumberOfHits(kTOF), GetHits(kTOF));
+    fprintf(stderr, "check %s: has %d hits in %p \n", "MVD",GetNumberOfHits(kMvd), GetHits(kMvd));
+    fprintf(stderr, "check %s: has %d hits in %p \n", "STS",GetNumberOfHits(kSts), GetHits(kSts));
+    fprintf(stderr, "check %s: has %d hits in %p \n", "RICH",GetNumberOfHits(kRich), GetHits(kRich));
+    fprintf(stderr, "check %s: has %d hits in %p \n", "TRD",GetNumberOfHits(kTrd), GetHits(kTrd));
+    fprintf(stderr, "check %s: has %d hits in %p \n", "TOF",GetNumberOfHits(kTof), GetHits(kTof));
   }
 
   // get primary kf vertex or create one from mc header
@@ -297,12 +296,12 @@ void PairAnalysisEvent::Init()
     if(iMC<0) iMC=-999; // STS tracks w/o MC matching
     tr->SetLabel(iMC);
     // NOTE: sts track matching might include mvd points
-    tr->SetBit(BIT(14+kMVD),  (iMC==imvdMC)  );
-    tr->SetBit(BIT(14+kSTS),  (iMC==istsMC)  );
-    tr->SetBit(BIT(14+kRICH), (iMC==irichMC) );
-    tr->SetBit(BIT(14+kTRD),  (iMC==itrdMC)  );
-    tr->SetBit(BIT(14+kTOF),  (iMC==itofMC) );
-    tr->SetBit(BIT(14+kMUCH), (iMC==imuchMC)  );
+    tr->SetBit(BIT(14+kMvd),  (iMC==imvdMC)  );
+    tr->SetBit(BIT(14+kSts),  (iMC==istsMC)  );
+    tr->SetBit(BIT(14+kRich), (iMC==irichMC) );
+    tr->SetBit(BIT(14+kTrd),  (iMC==itrdMC)  );
+    tr->SetBit(BIT(14+kTof),  (iMC==itofMC) );
+    tr->SetBit(BIT(14+kMuch), (iMC==imuchMC)  );
 
   }
 
@@ -350,23 +349,23 @@ PairAnalysisTrack *PairAnalysisEvent::GetTrack(UInt_t pos)
 }
 
 //______________________________________________
-Int_t PairAnalysisEvent::GetNumberOfMatches(DetectorId det) const
+Int_t PairAnalysisEvent::GetNumberOfMatches(ECbmModuleId det) const
 {
   //
   // number of track matches
   //
   switch(det) {
-  case kSTS:  return (fStsMatches  ? fStsMatches->GetEntriesFast()  : 0);
-  case kMUCH: return (fMuchMatches ? fMuchMatches->GetEntriesFast() : 0);
-  case kTRD:  return (fTrdMatches  ? fTrdMatches->GetEntriesFast()  : 0);
-  case kRICH: return (fRichMatches ? fRichMatches->GetEntriesFast() : 0);
+  case kSts:  return (fStsMatches  ? fStsMatches->GetEntriesFast()  : 0);
+  case kMuch: return (fMuchMatches ? fMuchMatches->GetEntriesFast() : 0);
+  case kTrd:  return (fTrdMatches  ? fTrdMatches->GetEntriesFast()  : 0);
+  case kRich: return (fRichMatches ? fRichMatches->GetEntriesFast() : 0);
   default:   return 0;
   }
 
 }
 
 //______________________________________________
-Int_t PairAnalysisEvent::GetNumberOfHitMatches(DetectorId det) const
+Int_t PairAnalysisEvent::GetNumberOfHitMatches(ECbmModuleId det) const
 {
   //
   // number of hit matches
@@ -377,7 +376,7 @@ Int_t PairAnalysisEvent::GetNumberOfHitMatches(DetectorId det) const
 }
 
 //______________________________________________
-Int_t PairAnalysisEvent::GetNumberOfHits(DetectorId det) const
+Int_t PairAnalysisEvent::GetNumberOfHits(ECbmModuleId det) const
 {
   //
   // number of reconstructed hits
@@ -387,7 +386,7 @@ Int_t PairAnalysisEvent::GetNumberOfHits(DetectorId det) const
 }
 
 //______________________________________________
-Int_t PairAnalysisEvent::GetNumberOfPoints(DetectorId det) const
+Int_t PairAnalysisEvent::GetNumberOfPoints(ECbmModuleId det) const
 {
   //
   // number of reconstructed hits
@@ -397,70 +396,70 @@ Int_t PairAnalysisEvent::GetNumberOfPoints(DetectorId det) const
 }
 
 //______________________________________________
-TClonesArray *PairAnalysisEvent::GetHits(DetectorId det) const {
+TClonesArray *PairAnalysisEvent::GetHits(ECbmModuleId det) const {
   //
   // get hits array for certain detector
   //
   //TODO: add much straw hits
   switch(det) {
-  case kMVD: return fMvdHits;
-  case kSTS: return fStsHits;
-  case kMUCH:return fMuchHits; //pixel
-  case kTRD: return fTrdHits;
-  case kRICH:return fRichHits;
-  case kTOF: return fTofHits;
+  case kMvd: return fMvdHits;
+  case kSts: return fStsHits;
+  case kMuch:return fMuchHits; //pixel
+  case kTrd: return fTrdHits;
+  case kRich:return fRichHits;
+  case kTof: return fTofHits;
   default:   return 0x0;
   }
 
 }
 
 //______________________________________________
-TClonesArray *PairAnalysisEvent::GetHitMatches(DetectorId det) const {
+TClonesArray *PairAnalysisEvent::GetHitMatches(ECbmModuleId det) const {
   //
   // get hit matches array for certain detector
   //
   //TODO: add much straw hits
   switch(det) {
-  case kMVD: return fMvdHitMatches;
-  case kSTS: return fStsHitMatches;
-  case kMUCH:return fMuchHitMatches; //pixel
-  case kTRD: return fTrdHitMatches;
-  case kRICH:return fRichHitMatches;
-  case kTOF: return fTofHitMatches;
+  case kMvd: return fMvdHitMatches;
+  case kSts: return fStsHitMatches;
+  case kMuch:return fMuchHitMatches; //pixel
+  case kTrd: return fTrdHitMatches;
+  case kRich:return fRichHitMatches;
+  case kTof: return fTofHitMatches;
   default:   return 0x0;
   }
 
 }
 
 //______________________________________________
-TClonesArray *PairAnalysisEvent::GetPoints(DetectorId det) const {
+TClonesArray *PairAnalysisEvent::GetPoints(ECbmModuleId det) const {
   //
   // get mc points array for certain detector
   //
   switch(det) {
-  case kMVD: return fMvdPoints;
-  case kSTS: return fStsPoints;
-  case kMUCH:return fMuchPoints;
-  case kTRD: return fTrdPoints;
-  case kRICH:return fRichPoints;
-  case kTOF: return fTofPoints;
+  case kMvd: return fMvdPoints;
+  case kSts: return fStsPoints;
+  case kMuch:return fMuchPoints;
+  case kTrd: return fTrdPoints;
+  case kRich:return fRichPoints;
+  case kTof: return fTofPoints;
   default:   return 0x0;
   }
 
 }
 
 //______________________________________________
-TClonesArray *PairAnalysisEvent::GetCluster(DetectorId det) const {
+TClonesArray *PairAnalysisEvent::GetCluster(ECbmModuleId det) const {
   //
   // get cluster array for certain detector
   //
   switch(det) {
-  // case kMVD: return fMvdCluster;
-  // case kSTS: return fStsCluster;
-  // case kMUCH:return fMuchCluster; //pixel
-  case kTRD: return fTrdCluster;
-  // case kRICH:return fRichCluster;
-  // case kTOF: return fTofCluster;
+  // case kMvd: return fMvdCluster;
+  // case kSts: return fStsCluster;
+  // case kMuch:return fMuchCluster; //pixel
+  case kTrd: return fTrdCluster;
+  // case kRich:return fRichCluster;
+  // case kTof: return fTofCluster;
   default:   return 0x0;
   }
 

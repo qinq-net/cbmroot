@@ -14,7 +14,7 @@ ${CBMROOT_SOURCE_DIR}/mvd/plugins/tasks
 ${CBMROOT_SOURCE_DIR}/mvd/plugins/buffers
 ${CBMROOT_SOURCE_DIR}/mvd/SensorDataSheets
 
-#${CBMROOT_SOURCE_DIR}/base 
+${CBMROOT_SOURCE_DIR}/base 
 
 ${CBMROOT_SOURCE_DIR}/data
 ${CBMROOT_SOURCE_DIR}/data/sts

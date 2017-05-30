@@ -20,7 +20,7 @@
 #ifndef CBMTRDDETECTORID_H
 #define CBMTRDDETECTORID_H 1
 
-#include "CbmDetectorList.h"
+#include "CbmDefs.h"
 #include <cassert>
 
 class CbmTrdAddress
@@ -44,7 +44,7 @@ public:
       assert(!(layerId < 0 || layerId > fgkLayerIdLength || moduleId < 0 || moduleId > fgkModuleIdLength
             || sectorId < 0 || sectorId > fgkSectorIdLength || rowId < 0 || rowId > fgkRowIdLength
             || columnId < 0 || columnId > fgkColumnIdLength));
-      return (kTRD << fgkSystemIdShift) | (layerId << fgkLayerIdShift) | (moduleId << fgkModuleIdShift) |
+      return (kTrd << fgkSystemIdShift) | (layerId << fgkLayerIdShift) | (moduleId << fgkModuleIdShift) |
             (sectorId << fgkSectorIdShift) | (rowId << fgkRowIdShift) | (columnId << fgkColumnIdShift);
     }
 

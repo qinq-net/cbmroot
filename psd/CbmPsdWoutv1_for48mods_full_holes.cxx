@@ -142,7 +142,7 @@ Bool_t  CbmPsdWoutv1_for48mods_full_holes::ProcessHits(FairVolume* vol)
   }
   */  
 
-   ((CbmStack*)gMC->GetStack())->AddPoint(kPSD, fTrackID);
+   ((CbmStack*)gMC->GetStack())->AddPoint(kPsd, fTrackID);
  
   //  ResetParameters();
     

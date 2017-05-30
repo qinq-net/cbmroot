@@ -1645,9 +1645,9 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, TString option, TStrin
       if (optDiv && !optOneOver)  histClass.ReplaceAll(GetName(),Form("%s/%s",GetName(),divName.Data()));
       if (optDiv &&  optOneOver)  histClass.Prepend(Form("%s/",divName.Data()));
       if (optDet) {
-	for (Int_t idet=kREF; idet<kNOFDETS; ++idet){
-	  if(histName.Contains(PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet))))
-	    histClass=PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet));
+	for (Int_t idet=kRef; idet<kNofSystems; ++idet){
+	  if(histName.Contains(PairAnalysisHelper::GetDetName(static_cast<ECbmModuleId>(idet))))
+	    histClass=PairAnalysisHelper::GetDetName(static_cast<ECbmModuleId>(idet));
 	}
       }
       //	else if(nobj)     histClass="";

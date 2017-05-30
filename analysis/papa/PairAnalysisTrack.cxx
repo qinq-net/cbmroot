@@ -6,7 +6,7 @@
 /*
 
   Analysis track that keep references to all tracklets of sub detectors and 
-  provides easy access to them via e.g. GetTrack(DetectorId det).
+  provides easy access to them via e.g. GetTrack(ECbmModuleId det).
 
   Two TLorentzVector hold information on the momentum components and
   position. Further the SetMassHypo is calculated according to the 
@@ -15,7 +15,7 @@
   using PairAnalysis::SetRefitWithMassAssump(kTRUE)
 
   TObject bits are used to flag the matching between detector tracklets and MC tracks.
-  Bits used are >14 and correspond to CbmDetectorList.h -> DetectorId
+  Bits used are >14 and correspond to CbmDetectorList.h -> ECbmModuleId
 */
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
@@ -29,7 +29,6 @@
 #include <TParticlePDG.h>
 
 #include "FairTrackParam.h"
-#include "CbmDetectorList.h"
 
 #include "CbmKFVertex.h"
 #include "CbmTrack.h"
@@ -179,10 +178,10 @@ PairAnalysisTrack::PairAnalysisTrack(const PairAnalysisTrack& track) :
   fRichRing(track.GetRichRing()),
   fTofHit(track.GetTofHit()),
   fMCTrack(track.GetMCTrack()),
-  fStsTrackMatch(track.GetTrackMatch(kSTS)),
-  fMuchTrackMatch(track.GetTrackMatch(kMUCH)),
-  fTrdTrackMatch(track.GetTrackMatch(kTRD)),
-  fRichRingMatch(track.GetTrackMatch(kRICH)),
+  fStsTrackMatch(track.GetTrackMatch(kSts)),
+  fMuchTrackMatch(track.GetTrackMatch(kMuch)),
+  fTrdTrackMatch(track.GetTrackMatch(kTrd)),
+  fRichRingMatch(track.GetTrackMatch(kRich)),
   fRichProj(track.GetRichProj()),
   fMvdEntrance(track.GetMvdEntrance()),
   fMomentum(track.fMomentum),
@@ -198,11 +197,11 @@ PairAnalysisTrack::PairAnalysisTrack(const PairAnalysisTrack& track) :
   // Copy Constructor
   //
 
-  this->SetBit(BIT(14+kTOF),  track.TestBit(BIT(14+kTOF) ));
-  this->SetBit(BIT(14+kRICH), track.TestBit(BIT(14+kRICH)));
-  this->SetBit(BIT(14+kTRD),  track.TestBit(BIT(14+kTRD) ));
-  this->SetBit(BIT(14+kSTS),  track.TestBit(BIT(14+kSTS) ));
-  this->SetBit(BIT(14+kMUCH), track.TestBit(BIT(14+kMUCH)));
+  this->SetBit(BIT(14+kTof),  track.TestBit(BIT(14+kTof) ));
+  this->SetBit(BIT(14+kRich), track.TestBit(BIT(14+kRich)));
+  this->SetBit(BIT(14+kTrd),  track.TestBit(BIT(14+kTrd) ));
+  this->SetBit(BIT(14+kSts),  track.TestBit(BIT(14+kSts) ));
+  this->SetBit(BIT(14+kMuch), track.TestBit(BIT(14+kMuch)));
 
 }
 
@@ -216,34 +215,34 @@ PairAnalysisTrack::~PairAnalysisTrack()
 }
 
 //______________________________________________
-CbmTrackMatchNew* PairAnalysisTrack::GetTrackMatch(DetectorId det) const
+CbmTrackMatchNew* PairAnalysisTrack::GetTrackMatch(ECbmModuleId det) const
 {
   //
   // get track match depending on detector id
   //
   switch(det) {
-  case kMVD:  return fStsTrackMatch; // there is no mvd track, hit are associtaed to sts track
-  case kSTS:  return fStsTrackMatch;
-  case kTRD:  return fTrdTrackMatch;
-  case kMUCH: return fMuchTrackMatch;
-  case kRICH: return fRichRingMatch;
+  case kMvd:  return fStsTrackMatch; // there is no mvd track, hit are associtaed to sts track
+  case kSts:  return fStsTrackMatch;
+  case kTrd:  return fTrdTrackMatch;
+  case kMuch: return fMuchTrackMatch;
+  case kRich: return fRichRingMatch;
   default:   return 0x0;
   }
 
 }
 
 //______________________________________________
-CbmTrack* PairAnalysisTrack::GetTrack(DetectorId det) const
+CbmTrack* PairAnalysisTrack::GetTrack(ECbmModuleId det) const
 {
   //
   // get track depending on detector id
   //
   switch(det) {
-  case kMVD:  return fStsTrack; // there is no mvd track, hit are associtaed to sts track
-  case kSTS:  return fStsTrack;
-  case kTRD:  return fTrdTrack;
-  case kMUCH: return fMuchTrack;
-  case kRICH: return 0x0;
+  case kMvd:  return fStsTrack; // there is no mvd track, hit are associtaed to sts track
+  case kSts:  return fStsTrack;
+  case kTrd:  return fTrdTrack;
+  case kMuch: return fMuchTrack;
+  case kRich: return 0x0;
   default:   return 0x0;
   }
 

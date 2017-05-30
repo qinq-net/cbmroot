@@ -151,7 +151,7 @@ void CbmLitFindGlobalTracks::ReadAndCreateDataBranches()
    FairRootManager* ioman = FairRootManager::Instance();
    if (NULL == ioman) { Fatal("Init","CbmRootManager is not instantiated"); }
 
-   if (fDet.GetDet(kMVD)) {
+   if (fDet.GetDet(kMvd)) {
 	   fMvdHits = (TClonesArray*) ioman->GetObject("MvdHit");
 	   if (NULL == fMvdHits) { Fatal("Init","No MvdHit array!"); }
    }
@@ -163,7 +163,7 @@ void CbmLitFindGlobalTracks::ReadAndCreateDataBranches()
    if (NULL == fStsHits) { Fatal("Init","No StsHit array!"); }
 
    //MUCH data
-   if (fDet.GetDet(kMUCH)) {
+   if (fDet.GetDet(kMuch)) {
       fMuchPixelHits = (TClonesArray*) ioman->GetObject("MuchPixelHit");
       fMuchStrawHits = (TClonesArray*) ioman->GetObject("MuchStrawHit");
       if (NULL == fMuchPixelHits && NULL == fMuchStrawHits) { Fatal("Init", "No MuchPixelHit or MuchStrawHit array!"); }
@@ -172,14 +172,14 @@ void CbmLitFindGlobalTracks::ReadAndCreateDataBranches()
    }
 
    //TRD data
-   if (fDet.GetDet(kTRD)) {
+   if (fDet.GetDet(kTrd)) {
       fTrdHits = (TClonesArray*) ioman->GetObject("TrdHit");
       if (NULL == fTrdHits) { Fatal("Init", "No TRDHit array!"); }
       std::cout << "-I- TRDHit branch found in tree" << std::endl;
    }
 
    //TOF data
-   if (fDet.GetDet(kTOF)) {
+   if (fDet.GetDet(kTof)) {
       fTofHits = (TClonesArray*) ioman->GetObject("TofHit");
       if (NULL == fTofHits) { Fatal("Init", "No TofHit array!"); }
       std::cout << "-I- TofHit branch found in tree" << std::endl;
@@ -191,17 +191,17 @@ void CbmLitFindGlobalTracks::ReadAndCreateDataBranches()
    fGlobalTracks = new TClonesArray("CbmGlobalTrack",100);
    ioman->Register("GlobalTrack", "Global", fGlobalTracks, IsOutputBranchPersistent("GlobalTrack"));
 
-   if (fDet.GetDet(kMUCH)) {
+   if (fDet.GetDet(kMuch)) {
       fMuchTracks = new TClonesArray("CbmMuchTrack", 100);
       ioman->Register("MuchTrack", "Much", fMuchTracks, IsOutputBranchPersistent("MuchTrack"));
    }
 
-   if (fDet.GetDet(kTRD)) {
+   if (fDet.GetDet(kTrd)) {
       fTrdTracks = new TClonesArray("CbmTrdTrack", 100);
       ioman->Register("TrdTrack", "Trd", fTrdTracks, IsOutputBranchPersistent("TrdTrack"));
    }
 
-   if (fDet.GetDet(kTOF)) {
+   if (fDet.GetDet(kTof)) {
       fTofTracks = new TClonesArray("CbmTofTrack", 100);
       ioman->Register("TofTrack", "Tof", fTofTracks, IsOutputBranchPersistent("TofTrack"));
    }
@@ -229,7 +229,7 @@ void CbmLitFindGlobalTracks::InitTrackReconstruction()
       }
    }
 
-   if (fDet.GetDet(kTOF)) {
+   if (fDet.GetDet(kTof)) {
       if (fMergerType == "nearest_hit" || fMergerType == "all_hits") {
          fMerger = CbmLitToolFactory::CreateHitToTrackMerger("tof_" + fMergerType);
       } else {
@@ -251,12 +251,12 @@ void CbmLitFindGlobalTracks::ConvertInputData(CbmEvent* event)
    CbmLitConverter::StsTrackArrayToTrackVector(event, fStsTracks, fLitStsTracks);
    std::cout << "-I- CbmLitFindGlobalTracks: Number of STS tracks: " << fLitStsTracks.size() << std::endl;
 
-   if (fMuchPixelHits) { CbmLitConverter::HitArrayToHitVector(event, Cbm::kMuchPixelHit, fMuchPixelHits, fLitHits); }
-   if (fMuchStrawHits) { CbmLitConverter::HitArrayToHitVector(event, Cbm::kMuchStrawHit, fMuchStrawHits, fLitHits); }
+   if (fMuchPixelHits) { CbmLitConverter::HitArrayToHitVector(event, kMuchPixelHit, fMuchPixelHits, fLitHits); }
+   if (fMuchStrawHits) { CbmLitConverter::HitArrayToHitVector(event, kMuchStrawHit, fMuchStrawHits, fLitHits); }
    if (fTrdHits) {
-      CbmLitConverter::HitArrayToHitVector(event, Cbm::kTrdHit, fTrdHits, fLitHits);
+      CbmLitConverter::HitArrayToHitVector(event, kTrdHit, fTrdHits, fLitHits);
       //If MUCH-TRD setup, than shift plane id for the TRD hits
-      if (fDet.GetDet(kMUCH) && fDet.GetDet(kTRD)) {
+      if (fDet.GetDet(kMuch) && fDet.GetDet(kTrd)) {
          Int_t nofStations = CbmLitTrackingGeometryConstructor::Instance()->GetNofMuchStations();
          for (Int_t i = 0; i < fLitHits.size(); i++) {
             CbmLitHit* hit = fLitHits[i];
@@ -267,7 +267,7 @@ void CbmLitFindGlobalTracks::ConvertInputData(CbmEvent* event)
    std::cout << "-I- CbmLitFindGlobalTracks: Number of hits: " << fLitHits.size() << std::endl;
 
    if (fTofHits) {
-      CbmLitConverter::HitArrayToHitVector(event, Cbm::kTofHit, fTofHits, fLitTofHits);
+      CbmLitConverter::HitArrayToHitVector(event, kTofHit, fTofHits, fLitTofHits);
       std::cout << "-I- CbmLitFindGlobalTracks: Number of TOF hits: " << fLitTofHits.size() << std::endl;
    }
 }
@@ -287,9 +287,9 @@ void CbmLitFindGlobalTracks::CalculateLength(CbmEvent* event)
     * starting with (0, 0, 0) and adding all
     * distances between hits
     */
-   Int_t nofTofTracks = event ? event->GetNofData(Cbm::kTofTrack) : fTofTracks->GetEntriesFast();
+   Int_t nofTofTracks = event ? event->GetNofData(kTofTrack) : fTofTracks->GetEntriesFast();
    for (Int_t i = 0; i < nofTofTracks; ++i) {
-      Int_t itt = event ? event->GetIndex(Cbm::kTofTrack, i) : i;
+      Int_t itt = event ? event->GetIndex(kTofTrack, i) : i;
       CbmTofTrack* tofTrack = static_cast<CbmTofTrack*>(fTofTracks->At(itt));
       CbmGlobalTrack* globalTrack = static_cast<CbmGlobalTrack*>(fGlobalTracks->At(tofTrack->GetTrackIndex()));
       if (globalTrack == NULL) { continue; }
@@ -327,12 +327,12 @@ void CbmLitFindGlobalTracks::CalculateLength(CbmEvent* event)
          Int_t nofMuchHits = muchTrack->GetNofHits();
          for(Int_t ih = 0; ih < nofMuchHits; ih++) {
             HitType hitType = muchTrack->GetHitType(ih);
-            if (hitType == kMUCHPIXELHIT) {
+            if (hitType == kMuchPixelHit) {
                CbmPixelHit* hit = (CbmPixelHit*) fMuchPixelHits->At(muchTrack->GetHitIndex(ih));
                X.push_back(hit->GetX());
                Y.push_back(hit->GetY());
                Z.push_back(hit->GetZ());
-            } else if (hitType == kMUCHSTRAWHIT) {
+            } else if (hitType == kMuchStrawHit) {
 
             }
          }
@@ -421,11 +421,11 @@ void CbmLitFindGlobalTracks::CalculatePrimaryVertexParameters(CbmEvent* event)
     if (0 == primVertex)
        return;
     
-    Int_t nofGlobalTracks = event ? event->GetNofData(Cbm::kGlobalTrack) : fGlobalTracks->GetEntriesFast();
+    Int_t nofGlobalTracks = event ? event->GetNofData(kGlobalTrack) : fGlobalTracks->GetEntriesFast();
     
     for (Int_t i0 = 0; i0 < nofGlobalTracks; ++i0)
     {
-      Int_t i = event ? event->GetIndex(Cbm::kGlobalTrack, i0) : i0;
+      Int_t i = event ? event->GetIndex(kGlobalTrack, i0) : i0;
       CbmGlobalTrack* globalTrack = static_cast<CbmGlobalTrack*> (fGlobalTracks->At(i));
       Int_t stsId = globalTrack->GetStsTrackIndex();
       CbmStsTrack* stsTrack = static_cast<CbmStsTrack*>(fStsTracks->At(stsId));
@@ -454,15 +454,15 @@ void CbmLitFindGlobalTracks::ClearArrays()
 void CbmLitFindGlobalTracks::RunTrackReconstruction()
 {
    // Track finding in TRD or MUCH
-   if (fDet.GetDet(kMUCH) || fDet.GetDet(kTRD)) {
+   if (fDet.GetDet(kMuch) || fDet.GetDet(kTrd)) {
       fTrackingWatch.Start(kFALSE);
       fFinder->DoFind(fLitHits, fLitStsTracks, fLitOutputTracks);
       fTrackingWatch.Stop();
    }
    // Merging of TOF hits to global tracks
-   if (fDet.GetDet(kTOF)) {
+   if (fDet.GetDet(kTof)) {
       // If there are no TRD or MUCH than merge STS tracks with TOF
-      if (!(fDet.GetDet(kMUCH) || fDet.GetDet(kTRD))) {
+      if (!(fDet.GetDet(kMuch) || fDet.GetDet(kTrd))) {
          for(TrackPtrIterator it = fLitStsTracks.begin(); it != fLitStsTracks.end(); it++) {
             CbmLitTrack* track = new CbmLitTrack(*(*it));
             fLitOutputTracks.push_back(track);
@@ -470,7 +470,7 @@ void CbmLitFindGlobalTracks::RunTrackReconstruction()
       }
 
       // Selection of tracks to be merged with TOF
-      if (fDet.GetDet(kMUCH) || fDet.GetDet(kTRD)) {
+      if (fDet.GetDet(kMuch) || fDet.GetDet(kTrd)) {
          SelectTracksForTofMerging();
       } else {
          for (TrackPtrIterator it = fLitOutputTracks.begin(); it != fLitOutputTracks.end(); it++) {

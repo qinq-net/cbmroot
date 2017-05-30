@@ -298,7 +298,7 @@ void CbmMCStreamer::ProcessBuffer() {
 
     // Add (copy) point to current epoch. Time relative to epoch start is
     // calculated by CbmMCEpoch.
-    fEpoch->AddPoint(kSTS, &((*stsIt).second));
+    fEpoch->AddPoint(kSts, &((*stsIt).second));
     cout <<  "-I- " << GetName() << ": Adding STS point from event "
 	 << ((*stsIt).second).GetEventID() << " to epoch at " 
 	 << ((*stsIt).second).GetTime() << " ns" << endl;
@@ -334,7 +334,7 @@ void CbmMCStreamer::ProcessBuffer() {
 
     // Add (copy) point to current epoch. Time relative to epoch start is
     // calculated by CbmMCEpoch.
-    fEpoch->AddPoint(kMUCH, &((*muchIt).second));
+    fEpoch->AddPoint(kMuch, &((*muchIt).second));
     cout <<  "-I- " << GetName() << ": Adding MUCH point from event "
 	 << ((*muchIt).second).GetEventID() << " to epoch at " 
 	 << ((*muchIt).second).GetTime() << " ns" << endl;

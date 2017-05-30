@@ -48,10 +48,10 @@ Int_t CbmPVFinderKF::FindEventVertex(CbmEvent* event, TClonesArray* tracks) {
   CbmVertex* vertex = event->GetVertex();
 
   // Copy input tracks to KF tracks
-  Int_t nTracks = event->GetNofData(Cbm::kStsTrack);
+  Int_t nTracks = event->GetNofData(kStsTrack);
   CbmKFTrack* trackArray = new CbmKFTrack[nTracks];
   for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
-	Int_t trackIndex = event->GetIndex(Cbm::kStsTrack, iTrack);
+	Int_t trackIndex = event->GetIndex(kStsTrack, iTrack);
 	CbmStsTrack* track = (CbmStsTrack*) tracks->At(trackIndex);
 	Int_t nHits = track->GetNofHits();
 	if ( nHits < 4 ) continue;         // use only tracks with at least 4 hits

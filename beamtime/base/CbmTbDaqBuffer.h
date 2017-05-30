@@ -6,7 +6,6 @@
 #ifndef CBMTBDAQBUFFER_H
 #define CBMTBDAQBUFFER_H 1
 
-#include "CbmDetectorList.h"
 #include "CbmDigi.h"
 
 #include <map>

@@ -3,6 +3,7 @@
 # The extension is already found.  Any number of sources could be listed here.
 
 Set(INCLUDE_DIRECTORIES
+  ${CBMROOT_SOURCE_DIR}/base
   ${CBMROOT_SOURCE_DIR}/data
   ${CBMROOT_SOURCE_DIR}/data/beamtime
   ${CBMROOT_SOURCE_DIR}/roclight

@@ -14,7 +14,7 @@
 #include <TNamed.h>
 #include <TLorentzVector.h>
 
-#include "CbmDetectorList.h"
+#include "CbmDefs.h"
 //#include "CbmTrackMatchNew.h"
 
 class FairTrackParam;
@@ -64,13 +64,13 @@ public:
   CbmTrdTrack    *GetTrdTrack()     const { return fTrdTrack;  }
   CbmRichRing    *GetRichRing()     const { return fRichRing;  }
   CbmTofHit      *GetTofHit()       const { return fTofHit;    }
-  CbmTrack       *GetTrack(DetectorId det) const;
+  CbmTrack       *GetTrack(ECbmModuleId det) const;
 
   FairTrackParam *GetRichProj()     const { return fRichProj;     }
   FairTrackParam *GetMvdEntrance()  const { return fMvdEntrance;  }
   // mc track
   CbmMCTrack     *GetMCTrack()      const { return fMCTrack;   }
-  CbmTrackMatchNew *GetTrackMatch(DetectorId det) const;
+  CbmTrackMatchNew *GetTrackMatch(ECbmModuleId det) const;
 
   CbmKFVertex    *GetPrimaryKFVertex() const { return fPrimVertex; } 
   // default kinematics

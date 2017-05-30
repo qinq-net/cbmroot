@@ -5,7 +5,6 @@
 
 
 #include "CbmTofDetectorId_v07a.h"
-#include "CbmDetectorList.h"
 #include "FairLogger.h"
 
 const Int_t CbmTofDetectorId_v07a::shiftarray[] = {0,5,9,19,23}; 

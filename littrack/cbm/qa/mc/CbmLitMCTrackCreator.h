@@ -9,6 +9,7 @@
 
 #include "CbmLitMCTrack.h"
 #include "CbmStsAddress.h"
+#include "CbmDefs.h"
 #include <map>
 #include <iostream>
 #include <assert.h>
@@ -105,7 +106,7 @@ private:
      * \param[in] array Array of FairMCPoint.
      */
     void AddPoints(
-                   DetectorId detId,
+                   ECbmModuleId detId,
                    CbmMCDataArray* array);
     
     /**

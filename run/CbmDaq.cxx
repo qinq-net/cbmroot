@@ -185,7 +185,7 @@ Int_t CbmDaq::FillTimeSlice() {
   Int_t nDigis = 0;
 
   // --- Loop over all detector systems
-  for (Int_t iDet = kREF; iDet < kNOFDETS; iDet++) {
+  for (Int_t iDet = kRef; iDet < kNofSystems; iDet++) {
 
     // --- Loop over digis from DaqBuffer and fill them into current time slice
     CbmDigi* digi = fBuffer->GetNextData(iDet, fTimeSlice->GetEndTime());

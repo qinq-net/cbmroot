@@ -6,6 +6,7 @@
 
 #include "CbmTbEvent.h"
 #include "CbmDigi.h"
+#include "CbmModuleList.h"
 
 #include "FairLogger.h"
 
@@ -81,7 +82,7 @@ void CbmTbEvent::Clear(Option_t*) {
   fEpochTime     = 0.;
   fNofData       = 0;
   fNofAux        = 0;
-  for (Int_t iSys = 0; iSys < kNOFDETS; iSys++) fNofDigis[iSys] = 0;
+  for (Int_t iSys = 0; iSys < kNofSystems; iSys++) fNofDigis[iSys] = 0;
   fTimeBc.clear();
   fEventType     = 0;
   fTimeSum       = 0.;
@@ -96,10 +97,9 @@ void CbmTbEvent::Print(Option_t* /*opt*/) const {
   LOG(INFO) << "Cbm Testbeam Event: " << setprecision(9) << fixed << "Event time " 
             << fEventTime << " s, duration " << setprecision(0) << GetDuration()
             << " ns, Beam " << fTimeBc.size();
-  for (Int_t iSys = 0; iSys < kNOFDETS; iSys++) {
+  for (Int_t iSys = 0; iSys < kNofSystems; iSys++) {
   	if ( fNofDigis[iSys] ) {
-  		TString systemName;
-  		CbmDetectorList::GetSystemNameCaps(iSys, systemName);
+  		TString systemName = CbmModuleList::GetModuleNameCaps(iSys);
   		LOG(INFO) << ", " << systemName << " " << fNofDigis[iSys];
   	}
   }

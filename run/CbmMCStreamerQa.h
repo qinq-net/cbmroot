@@ -10,7 +10,7 @@
 #include "FairTask.h"
 #include "TString.h"
 #include "TClonesArray.h"
-#include "CbmDetectorList.h"
+#include "CbmDefs.h"
 #include <map>
 class CbmMCEvent;
 class CbmMCEpoch;
@@ -48,8 +48,8 @@ private:
   Int_t         fNepoch;  //! MC epoch counter
   CbmMCEpoch*   fMcEpoch; //! Pointer to the current MC epoch
   TChain*       fMcChain; //! tree of MC events
-  TClonesArray* fPointArrays[kTutDet];       //! Array of MC points per detector
-  std::map<int,int>  fMapPointsInEvents[kTutDet]; //! map of point counters for each event per detector
+  TClonesArray* fPointArrays[kNofSystems];       //! Array of MC points per detector
+  std::map<int,int>  fMapPointsInEvents[kNofSystems]; //! map of point counters for each event per detector
 
   CbmMCStreamerQa(const CbmMCStreamerQa&);
   CbmMCStreamerQa& operator=(const CbmMCStreamerQa&);

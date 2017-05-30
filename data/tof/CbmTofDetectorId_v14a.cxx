@@ -5,7 +5,6 @@
 
 
 #include "CbmTofDetectorId_v14a.h"
-#include "CbmDetectorList.h"
 
 const Int_t CbmTofDetectorId_v14a::shiftarray[] = {0,4,12,16,23,24};
 const Int_t CbmTofDetectorId_v14a::bitarray[]   = {4,8, 4, 7, 1, 8};

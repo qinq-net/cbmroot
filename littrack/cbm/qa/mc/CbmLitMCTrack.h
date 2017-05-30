@@ -8,7 +8,7 @@
 #define CBMLITMCTRACK_H_
 
 #include "CbmLitMCPoint.h"
-#include "CbmDetectorList.h"
+#include "CbmDefs.h"
 #include <cassert>
 #include <map>
 #include <vector>
@@ -44,23 +44,23 @@ public:
     fRingCenterX(0.),
     fRingCenterY(0.) {
       // Initialize all maps
-      fPoints[kMVD];
-      fPoints[kSTS];
-      fPoints[kTRD];
-      fPoints[kMUCH];
-      fPoints[kTOF];
-      fPoints[kRICH];
-      fStationPoints[kMVD];
-      fStationPoints[kSTS];
-      fStationPoints[kTRD];
-      fStationPoints[kMUCH];
-      fStationPoints[kTOF];
-      fStationIds[kMVD];
-      fStationIds[kSTS];
-      fStationIds[kTRD];
-      fStationIds[kMUCH];
-      fStationIds[kTOF];
-      fMaxConsecutivePoints[kSTS] = -1;
+      fPoints[kMvd];
+      fPoints[kSts];
+      fPoints[kTrd];
+      fPoints[kMuch];
+      fPoints[kTof];
+      fPoints[kRich];
+      fStationPoints[kMvd];
+      fStationPoints[kSts];
+      fStationPoints[kTrd];
+      fStationPoints[kMuch];
+      fStationPoints[kTof];
+      fStationIds[kMvd];
+      fStationIds[kSts];
+      fStationIds[kTrd];
+      fStationIds[kMuch];
+      fStationIds[kTof];
+      fMaxConsecutivePoints[kSts] = -1;
    }
 
    /**
@@ -73,9 +73,9 @@ public:
     * \param[in] detId Detector identificator.
     * \param[in] point MC point to be added.
     */
-   void AddPoint(DetectorId detId, const CbmLitMCPoint& point) {
+   void AddPoint(ECbmModuleId detId, const CbmLitMCPoint& point) {
       fPoints[detId].push_back(point);
-      if (detId != kRICH) {
+      if (detId != kRich) {
     	  fStationPoints[detId][point.GetStationId()].push_back(point);
     	  fStationIds[detId].insert(point.GetStationId());
       }
@@ -86,7 +86,7 @@ public:
     * \param[in] detId Detector identificator.
     * \return Array of MC points.
     */
-   const vector<CbmLitMCPoint>& GetPoints(DetectorId detId) const {
+   const vector<CbmLitMCPoint>& GetPoints(ECbmModuleId detId) const {
       return fPoints.find(detId)->second;
    }
 
@@ -96,7 +96,7 @@ public:
     * \param[in] index Index of MC point.
     * \return MC point.
     */
-   const CbmLitMCPoint& GetPoint(DetectorId detId, Int_t index) const {
+   const CbmLitMCPoint& GetPoint(ECbmModuleId detId, Int_t index) const {
       assert(GetNofPoints(detId) != 0);
       return fPoints.find(detId)->second[index];
    }
@@ -106,7 +106,7 @@ public:
     * \param[in] detId Detector identificator.
     * \return Number of MC points.
     */
-   UInt_t GetNofPoints(DetectorId detId) const {
+   UInt_t GetNofPoints(ECbmModuleId detId) const {
       return fPoints.find(detId)->second.size();
    }
 
@@ -115,8 +115,8 @@ public:
     * \param[in] detId Detector identificator.
     * \return Number of MC points.
     */
-   UInt_t GetNofPointsInDifferentStations(DetectorId detId) const {
-	  assert(detId != kRICH);
+   UInt_t GetNofPointsInDifferentStations(ECbmModuleId detId) const {
+	  assert(detId != kRich);
       return fStationPoints.find(detId)->second.size();
    }
 
@@ -125,10 +125,10 @@ public:
     * \param[in] detId Detector identificator.
     * \return Number of MC points.
     */
-   Int_t GetNofConsecutivePoints(DetectorId detId) const {
-	  //assert(detId == kSTS);
+   Int_t GetNofConsecutivePoints(ECbmModuleId detId) const {
+	  //assert(detId == kSts);
 //      return fMaxConsecutivePoints.find(detId)->second;
-	   return (detId == kSTS) ? fMaxConsecutivePoints.find(detId)->second : -1;
+	   return (detId == kSts) ? fMaxConsecutivePoints.find(detId)->second : -1;
    }
 
    /**
@@ -137,7 +137,7 @@ public:
     * \return Number of MC points.
     */
    void CalculateNofConsecutivePoints() {
-	  fMaxConsecutivePoints[kSTS] = MaxConsecutiveNumbers(fStationIds.find(kSTS)->second);
+	  fMaxConsecutivePoints[kSts] = MaxConsecutiveNumbers(fStationIds.find(kSts)->second);
    }
 
    /**
@@ -232,10 +232,10 @@ public:
     * \return MC point.
     */
    const CbmLitMCPoint& GetPointAtStation(
-         DetectorId detId,
+         ECbmModuleId detId,
          Int_t stationId,
          Int_t index) const {
-      assert((detId != kRICH) && (GetNofPointsAtStation(detId, stationId) != 0));
+      assert((detId != kRich) && (GetNofPointsAtStation(detId, stationId) != 0));
       return fStationPoints.find(detId)->second.find(stationId)->second[index];
    }
 
@@ -246,9 +246,9 @@ public:
     * \return Number of MC points.
     */
    UInt_t GetNofPointsAtStation(
-         DetectorId detId,
+         ECbmModuleId detId,
          Int_t stationId) const {
-      assert(detId != kRICH);
+      assert(detId != kRich);
       if (fStationPoints.find(detId)->second.count(stationId) > 0) {
          return fStationPoints.find(detId)->second.find(stationId)->second.size();
       } else return 0;
@@ -299,7 +299,7 @@ private:
    }
 
    string PointsToString(
-         DetectorId detId,
+         ECbmModuleId detId,
          const string& detName) const {
       stringstream ss;
       ss << detName << " np=" << GetNofPoints(detId) << " npds=" << GetNofPointsInDifferentStations(detId)
@@ -321,11 +321,11 @@ public:
    virtual string ToString() const {
       stringstream ss;
       ss << "MCTrack: ";
-      ss << PointsToString(kMVD, "MVD") << "|";
-      ss << PointsToString(kSTS, "STS") << "|";
-      ss << PointsToString(kTRD, "TRD") << "|";
-      ss << PointsToString(kMUCH, "MUCH") << "|";
-      ss << PointsToString(kTOF, "TOF") << "|";
+      ss << PointsToString(kMvd, "MVD") << "|";
+      ss << PointsToString(kSts, "STS") << "|";
+      ss << PointsToString(kTrd, "TRD") << "|";
+      ss << PointsToString(kMuch, "MUCH") << "|";
+      ss << PointsToString(kTof, "TOF") << "|";
       ss << endl;
       return ss.str();
    }

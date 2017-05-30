@@ -16,7 +16,6 @@
 
 #include "FairMCPoint.h"
 
-#include "CbmDetectorList.h"
 
 /** @class IsBefore
  ** @author Volker Friese <v.friese@gsi.de>

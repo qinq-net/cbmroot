@@ -48,7 +48,7 @@
 #include <CbmTrdTrack.h>
 #include <CbmRichRing.h>
 #include <CbmMCTrack.h>
-#include <CbmDetectorList.h>
+#include <CbmDefs.h>
 #include <CbmTrackMatchNew.h>
 
 
@@ -87,21 +87,21 @@ public:
     kPosY,                   // Y position [cm]
     kPosZ,                   // Z position [cm]
     kLinksMC,                // number of matched MC links
-    kTRDLayer,               // plane/layer id
-    kTRDPads,                // number of pads contributing to cluster/hit
-    kTRDCols,                // number of pads columns contributing to cluster/hit
-    kTRDRows,                // number of pads rows contributing to cluster/hit
+    kTrdLayer,               // plane/layer id
+    kTrdPads,                // number of pads contributing to cluster/hit
+    kTrdCols,                // number of pads columns contributing to cluster/hit
+    kTrdRows,                // number of pads rows contributing to cluster/hit
     kEloss,                  // TRD energy loss dEdx+TR
     kElossdEdx,              // TRD energy loss dEdx only
     kElossTR,                // TRD energy loss TR only
     kNPhotons,               // RICH number of photons in this hit
     kPmtId,                  // RICH photomultiplier number
     kBeta,                   // TOF beta
-    kTOFPidDeltaBetaEL,      // delta of TOF beta to expected beta for electrons
-    kTOFPidDeltaBetaMU,      // delta of TOF beta to expected beta for muons
-    kTOFPidDeltaBetaPI,      // delta of TOF beta to expected beta for pions
-    kTOFPidDeltaBetaKA,      // delta of TOF beta to expected beta for kaons
-    kTOFPidDeltaBetaPR,      // delta of TOF beta to expected beta for protons
+    kTofPidDeltaBetaEL,      // delta of TOF beta to expected beta for electrons
+    kTofPidDeltaBetaMU,      // delta of TOF beta to expected beta for muons
+    kTofPidDeltaBetaPI,      // delta of TOF beta to expected beta for pions
+    kTofPidDeltaBetaKA,      // delta of TOF beta to expected beta for kaons
+    kTofPidDeltaBetaPR,      // delta of TOF beta to expected beta for protons
     kMassSq,                 // TOF mass squared
     kHitMax,
 // Particle specific variables
@@ -138,64 +138,64 @@ public:
     kPout,                   // last point momentum (GeV/c)
     kPtout,                  // last point transverse momentum (GeV/c)
     // trd track information
-    kTRDSignal,              // TRD energy loss dEdx+TR (keV)
-    kTRDPidWkn,              // PID value Wkn method
-    kTRDPidANN,              // PID value Artificial Neural Network (ANN-method)
-    kTRDPidLikeEL,           // PID value Likelihood method: electron
-    kTRDPidLikePI,           // PID value Likelihood method: pion
-    kTRDPidLikeKA,           // PID value Likelihood method: kaon
-    kTRDPidLikePR,           // PID value Likelihood method: proton
-    kTRDPidLikeMU,           // PID value Likelihood method: muon
-    kTRDHits,                // number of TRD hits
-    kTRDChi2NDF,             // chi2/ndf TRD
-    kTRDPin,                 // first point TRD momentum (GeV/c)
-    kTRDPtin,                // first point TRD transverse momentum (GeV/c)
-    kTRDPhiin,               // first point TRD azimuthal angle (rad)
-    kTRDThetain,             // first point TRD polar angle (rad)
-    kTRDPout,                // last point TRD momentum (GeV/c)
-    kTRDPtout,               // last point TRD transverse momentum (GeV/c)
-    kTRDThetaCorr,           // correction factor for theta track angle
-    kTRDPhiCorr,             // correction factor for phi track angle
-    //    kTRDTrackLength,         // track length in cm of the trd tracklet
+    kTrdSignal,              // TRD energy loss dEdx+TR (keV)
+    kTrdPidWkn,              // PID value Wkn method
+    kTrdPidANN,              // PID value Artificial Neural Network (ANN-method)
+    kTrdPidLikeEL,           // PID value Likelihood method: electron
+    kTrdPidLikePI,           // PID value Likelihood method: pion
+    kTrdPidLikeKA,           // PID value Likelihood method: kaon
+    kTrdPidLikePR,           // PID value Likelihood method: proton
+    kTrdPidLikeMU,           // PID value Likelihood method: muon
+    kTrdHits,                // number of TRD hits
+    kTrdChi2NDF,             // chi2/ndf TRD
+    kTrdPin,                 // first point TRD momentum (GeV/c)
+    kTrdPtin,                // first point TRD transverse momentum (GeV/c)
+    kTrdPhiin,               // first point TRD azimuthal angle (rad)
+    kTrdThetain,             // first point TRD polar angle (rad)
+    kTrdPout,                // last point TRD momentum (GeV/c)
+    kTrdPtout,               // last point TRD transverse momentum (GeV/c)
+    kTrdThetaCorr,           // correction factor for theta track angle
+    kTrdPhiCorr,             // correction factor for phi track angle
+    //    kTrdTrackLength,         // track length in cm of the trd tracklet
     // sts track information
-    kMVDhasEntr,             // weather track enters first MVD station
-    kMVDHits,                // number of MVD hits
-    kMVDFirstHitPosZ,        // position of the first hit in the MVD (cm)
-    kMVDFirstExtX,           // x-position of the extrapolated track at the first MVD station (cm) 
-    kMVDFirstExtY,           // y-position of the extrapolated track at the first MVD station (cm)
+    kMvdhasEntr,             // weather track enters first MVD station
+    kMvdHits,                // number of MVD hits
+    kMvdFirstHitPosZ,        // position of the first hit in the MVD (cm)
+    kMvdFirstExtX,           // x-position of the extrapolated track at the first MVD station (cm)
+    kMvdFirstExtY,           // y-position of the extrapolated track at the first MVD station (cm)
    //    kImpactParZ,             // Impact parameter of track at target z, in units of its error  
-    kSTSHits,                // number of STS hits
-    kSTSChi2NDF,             // chi2/ndf STS
-    kSTSPin,                 // first point STS momentum (GeV/c)
-    kSTSPtin,                // first point STS transverse momentum (GeV/c)
-    kSTSPout,                // last point STS momentum (GeV/c)
-    kSTSPtout,               // last point STS transverse momentum (GeV/c)
-    kSTSXv,                  // STS point: x-coordinate
-    kSTSYv,                  // STS point: y-coordinate
-    kSTSZv,                  // STS point: z-coordinate
-    kSTSFirstHitPosZ,        // position of the first hit in the STS (cm)
+    kStsHits,                // number of STS hits
+    kStsChi2NDF,             // chi2/ndf STS
+    kStsPin,                 // first point STS momentum (GeV/c)
+    kStsPtin,                // first point STS transverse momentum (GeV/c)
+    kStsPout,                // last point STS momentum (GeV/c)
+    kStsPtout,               // last point STS transverse momentum (GeV/c)
+    kStsXv,                  // STS point: x-coordinate
+    kStsYv,                  // STS point: y-coordinate
+    kStsZv,                  // STS point: z-coordinate
+    kStsFirstHitPosZ,        // position of the first hit in the STS (cm)
     // rich ring information
-    kRICHhasProj,            // weather rich ring has a projection onto the pmt plane
-    kRICHPidANN,             // PID value Artificial Neural Network (ANN-method)
-    kRICHHitsOnRing,         // number of RICH hits on the ring
-    kRICHHits,               // number of RICH hits (ANN input)
-    kRICHChi2NDF,            // chi2/ndf ring fit (ANN input)
-    kRICHRadius,             // ring radius
-    kRICHAxisA,              // major semi-axis (ANN input)
-    kRICHAxisB,              // minor semi-axis (ANN input)
-    kRICHCenterX,            // ring center in x
-    kRICHCenterY,            // ring center in y
-    kRICHDistance,           // distance between ring center and track (ANN input)
-    kRICHRadialPos,          // radial psoition = sqrt(x**2+abs(y-110)**2), (ANN input)
-    kRICHRadialAngle,        // radial angle (0||1||2)*pi +- atan( abs((+-100-y)/-x) ), (ANN input)
-    kRICHPhi,                // phi rotation angle of ellipse (ANN input)
+    kRichhasProj,            // weather rich ring has a projection onto the pmt plane
+    kRichPidANN,             // PID value Artificial Neural Network (ANN-method)
+    kRichHitsOnRing,         // number of RICH hits on the ring
+    kRichHits,               // number of RICH hits (ANN input)
+    kRichChi2NDF,            // chi2/ndf ring fit (ANN input)
+    kRichRadius,             // ring radius
+    kRichAxisA,              // major semi-axis (ANN input)
+    kRichAxisB,              // minor semi-axis (ANN input)
+    kRichCenterX,            // ring center in x
+    kRichCenterY,            // ring center in y
+    kRichDistance,           // distance between ring center and track (ANN input)
+    kRichRadialPos,          // radial psoition = sqrt(x**2+abs(y-110)**2), (ANN input)
+    kRichRadialAngle,        // radial angle (0||1||2)*pi +- atan( abs((+-100-y)/-x) ), (ANN input)
+    kRichPhi,                // phi rotation angle of ellipse (ANN input)
     // tof track information
-    kTOFHits,                // number of TOF hits
+    kTofHits,                // number of TOF hits
     // much track information
-    kMUCHHits,               // number of MUCH hits
-    kMUCHHitsPixel,          // number of MUCH pixel hits
-    kMUCHHitsStraw,          // number of MUCH straw hits
-    kMUCHChi2NDF,            // chi2/ndf MUCH
+    kMuchHits,               // number of MUCH hits
+    kMuchHitsPixel,          // number of MUCH pixel hits
+    kMuchHitsStraw,          // number of MUCH straw hits
+    kMuchChi2NDF,            // chi2/ndf MUCH
     // technical variables
     kRndmTrack,              // randomly created number (used to apply special selection cuts)
     kTrackMax,
@@ -303,27 +303,27 @@ public:
     kParticleMaxMC,
 
     // Track specific MC variables
-    kTRDHitsMC=kParticleMaxMC, // number of TRD hits
-    kMVDHitsMC,                // number of MVD hits
-    kSTSHitsMC,                // number of STS hits
-    kTOFHitsMC,                // number of TOF hits
-    kMUCHHitsMC,               // number of MUCH hits
-    kRICHHitsMC,               // number of RICH hits
-    kTRDMCTracks,              // number of TRD MC Points in reconstructed track
-    kRICHMCPoints,              // number of TRD MC Points in reconstructed track
-    kTRDTrueHits,              // number of true TRD hits in reconstructed track
-    kTRDDistHits,              // number of distorted TRD hits in reconstructed track
-    kTRDFakeHits,              // number of fake TRD hits in reconstructed track
-    kTRDDistortion,            // level of distortion of reconstructed track [0,1]
-    kSTSTrueHits,              // number of true STS hits in reconstructed track
-    kSTSDistHits,              // number of distorted STS hits in reconstructed track
-    kSTSFakeHits,              // number of fake STS hits in reconstructed track
-    kTRDisMC,                  // status bit for matching btw. glbl. and local MC track
-    kMVDisMC,                  // status bit for matching btw. glbl. and local MC track
-    kSTSisMC,                  // status bit for matching btw. glbl. and local MC track
-    kMUCHisMC,                 // status bit for matching btw. glbl. and local MC track
-    kRICHisMC,                 // status bit for matching btw. glbl. and local MC track
-    kTOFisMC,                  // status bit for matching btw. glbl. and local MC track
+    kTrdHitsMC=kParticleMaxMC, // number of TRD hits
+    kMvdHitsMC,                // number of MVD hits
+    kStsHitsMC,                // number of STS hits
+    kTofHitsMC,                // number of TOF hits
+    kMuchHitsMC,               // number of MUCH hits
+    kRichHitsMC,               // number of RICH hits
+    kTrdMCTracks,              // number of TRD MC Points in reconstructed track
+    kRichMCPoints,              // number of TRD MC Points in reconstructed track
+    kTrdTrueHits,              // number of true TRD hits in reconstructed track
+    kTrdDistHits,              // number of distorted TRD hits in reconstructed track
+    kTrdFakeHits,              // number of fake TRD hits in reconstructed track
+    kTrdDistortion,            // level of distortion of reconstructed track [0,1]
+    kStsTrueHits,              // number of true STS hits in reconstructed track
+    kStsDistHits,              // number of distorted STS hits in reconstructed track
+    kStsFakeHits,              // number of fake STS hits in reconstructed track
+    kTrdisMC,                  // status bit for matching btw. glbl. and local MC track
+    kMvdisMC,                  // status bit for matching btw. glbl. and local MC track
+    kStsisMC,                  // status bit for matching btw. glbl. and local MC track
+    kMuchisMC,                 // status bit for matching btw. glbl. and local MC track
+    kRichisMC,                 // status bit for matching btw. glbl. and local MC track
+    kTofisMC,                  // status bit for matching btw. glbl. and local MC track
     kTrackMaxMC,
 
     // Pair specific MC variables
@@ -337,8 +337,8 @@ public:
     kXvPrimMC,               /// MC vertex [cm]
     kYvPrimMC,               /// MC vertex [cm]
     kZvPrimMC,               /// MC vertex [cm]
-    kSTSMatches,             // number of matched STS tracks
-    kTRDMatches,             // number of matched TRD tracks
+    kStsMatches,             // number of matched STS tracks
+    kTrdMatches,             // number of matched TRD tracks
     kVageMatches,            // number of MC tracks (STS) matched to multiple reconstr. track
     kTotalTRDHitsMC,         // size of trd MC point array
     kImpactParam,            // impact parameter from MC header
@@ -359,7 +359,7 @@ public:
   static void FillVarMCParticle(const CbmMCTrack *p1, const CbmMCTrack *p2, Double_t * const values);
   static void FillSum(          const TObject* particle,                    Double_t * const values);
 
-  static void CalculateHitTypes(const PairAnalysisTrack *track, DetectorId idet,
+  static void CalculateHitTypes(const PairAnalysisTrack *track, ECbmModuleId idet,
 				Int_t *trueH, Int_t *distH, Int_t *fakeH);
 
   // Setter
@@ -498,17 +498,17 @@ inline void PairAnalysisVarManager::ResetArrayData(Int_t to, Double_t * const va
   }
   // reset values different from zero
   if(to>=kTrackMax && to>kParticleMax) {
-    values[kTRDPidANN]  = -999.;
-    values[kRICHPidANN] = -999.;
+    values[kTrdPidANN]  = -999.;
+    values[kRichPidANN] = -999.;
   }
   if(to>=kHitMax && to>kConstMax) {
     values[kMassSq]     = -999.;
     values[kBeta]       = -999.;
-    values[kTOFPidDeltaBetaEL] = -999.;
-    values[kTOFPidDeltaBetaMU] = -999.;
-    values[kTOFPidDeltaBetaPI] = -999.;
-    values[kTOFPidDeltaBetaKA] = -999.;
-    values[kTOFPidDeltaBetaPR] = -999.;
+    values[kTofPidDeltaBetaEL] = -999.;
+    values[kTofPidDeltaBetaMU] = -999.;
+    values[kTofPidDeltaBetaPI] = -999.;
+    values[kTofPidDeltaBetaKA] = -999.;
+    values[kTofPidDeltaBetaPR] = -999.;
   }
 }
 
@@ -549,16 +549,16 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisEvent(const PairAnalysisE
 
   // Set
   values[kNTrk]         = event->GetNumberOfTracks();
-  values[kSTSMatches]   = event->GetNumberOfMatches(kSTS);
-  values[kTRDMatches]   = event->GetNumberOfMatches(kTRD);
+  values[kStsMatches]   = event->GetNumberOfMatches(kSts);
+  values[kTrdMatches]   = event->GetNumberOfMatches(kTrd);
   values[kVageMatches]  = event->GetNumberOfVageMatches();
-  values[kTotalTRDHits] = event->GetNumberOfHits(kTRD);
+  values[kTotalTRDHits] = event->GetNumberOfHits(kTrd);
   const Double_t proMass = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
   Double_t beta          = TMath::Sqrt(values[kEbeam]*values[kEbeam] - proMass*proMass) / (values[kEbeam]+proMass);
   values[kYbeam]        = TMath::ATanH( beta );
   //  Printf("beam rapidity new: %f",values[kYbeam]);
   values[kNTrkMC]         = event->GetNumberOfMCTracks();
-  values[kTotalTRDHitsMC] = event->GetNumberOfPoints(kTRD);
+  values[kTotalTRDHitsMC] = event->GetNumberOfPoints(kTrd);
 
 
   // Set vertex
@@ -645,14 +645,14 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisTrack(const PairAnalysisT
   // acceptance defintions
   FairTrackParam *param=NULL;
   if( (param = track->GetRichProj()) ) {   // RICH
-    values[kRICHhasProj] = (TMath::Abs(param->GetX() + param->GetY()) > 0.);
+    values[kRichhasProj] = (TMath::Abs(param->GetX() + param->GetY()) > 0.);
   }
   if( (param = track->GetMvdEntrance()) ) {  // MVD
-    values[kMVDFirstExtX] = param->GetX();
-    values[kMVDFirstExtY] = param->GetY();
+    values[kMvdFirstExtX] = param->GetX();
+    values[kMvdFirstExtY] = param->GetY();
     Double_t innerLimit=0.5; //cm, TODO: no hardcoding
     Double_t outerLimit=2.5; //cm
-    values[kMVDhasEntr] = ( (TMath::Abs(param->GetX()) > innerLimit && TMath::Abs(param->GetX()) < outerLimit && TMath::Abs(param->GetY()) < outerLimit)
+    values[kMvdhasEntr] = ( (TMath::Abs(param->GetX()) > innerLimit && TMath::Abs(param->GetX()) < outerLimit && TMath::Abs(param->GetY()) < outerLimit)
 			    ||
 			    (TMath::Abs(param->GetY()) > innerLimit && TMath::Abs(param->GetY()) < outerLimit && TMath::Abs(param->GetX()) < outerLimit)
 			  );
@@ -661,36 +661,36 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisTrack(const PairAnalysisT
   // mc
   Fill(track->GetMCTrack(),     values); // this contains particle infos as well
 
-  if(track->GetTrackMatch(kTRD)) {       // track match specific (accessors via CbmTrackMatchNew)
-    values[kTRDMCTracks]    = track->GetTrackMatch(kTRD)->GetNofLinks(); //number of different! mc tracks
+  if(track->GetTrackMatch(kTrd)) {       // track match specific (accessors via CbmTrackMatchNew)
+    values[kTrdMCTracks]    = track->GetTrackMatch(kTrd)->GetNofLinks(); //number of different! mc tracks
 
     Int_t trueHits=0, distHits=0, fakeHits=0;
-    CalculateHitTypes(track,kTRD, &trueHits,&distHits,&fakeHits);
+    CalculateHitTypes(track,kTrd, &trueHits,&distHits,&fakeHits);
 
-    values[kTRDTrueHits]    = trueHits;
-    values[kTRDDistHits]    = distHits;
-    values[kTRDFakeHits]    = fakeHits;
-    //    values[kTRDDistortion]  = dist/links;
-    /* values[kTRDTrueHits]    = tmtch->GetNofTrueHits(); //NOTE: changed defintion */
-    /* values[kTRDFakeHits]    = tmtch->GetNofWrongHits(); //NOTE: changed definition */
+    values[kTrdTrueHits]    = trueHits;
+    values[kTrdDistHits]    = distHits;
+    values[kTrdFakeHits]    = fakeHits;
+    //    values[kTrdDistortion]  = dist/links;
+    /* values[kTrdTrueHits]    = tmtch->GetNofTrueHits(); //NOTE: changed defintion */
+    /* values[kTrdFakeHits]    = tmtch->GetNofWrongHits(); //NOTE: changed definition */
   }
-  if(track->GetTrackMatch(kSTS)) {
+  if(track->GetTrackMatch(kSts)) {
     Int_t trueHits=0, distHits=0, fakeHits=0;
-    CalculateHitTypes(track,kSTS, &trueHits,&distHits,&fakeHits);
+    CalculateHitTypes(track,kSts, &trueHits,&distHits,&fakeHits);
 
-    values[kSTSTrueHits]    = trueHits;
-    values[kSTSDistHits]    = distHits;
-    values[kSTSFakeHits]    = fakeHits;
+    values[kStsTrueHits]    = trueHits;
+    values[kStsDistHits]    = distHits;
+    values[kStsFakeHits]    = fakeHits;
   }
-  if(track->GetTrackMatch(kRICH)) {
-    values[kRICHMCPoints]    = track->GetTrackMatch(kRICH)->GetNofLinks();
+  if(track->GetTrackMatch(kRich)) {
+    values[kRichMCPoints]    = track->GetTrackMatch(kRich)->GetNofLinks();
   }
-  values[kSTSisMC]   = track->TestBit( BIT(14+kSTS) );
-  values[kMUCHisMC]  = track->TestBit( BIT(14+kMUCH) );
-  values[kTRDisMC]   = track->TestBit( BIT(14+kTRD) );
-  values[kRICHisMC]  = track->TestBit( BIT(14+kRICH));
-  values[kMVDisMC]   = track->TestBit( BIT(14+kMVD) );
-  values[kTOFisMC]   = track->TestBit( BIT(14+kTOF) );
+  values[kStsisMC]   = track->TestBit( BIT(14+kSts) );
+  values[kMuchisMC]  = track->TestBit( BIT(14+kMuch) );
+  values[kTrdisMC]   = track->TestBit( BIT(14+kTrd) );
+  values[kRichisMC]  = track->TestBit( BIT(14+kRich));
+  values[kMvdisMC]   = track->TestBit( BIT(14+kMvd) );
+  values[kTofisMC]   = track->TestBit( BIT(14+kTof) );
   values[kWeight]    = track->GetWeight();
 
   // Reset
@@ -729,7 +729,7 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisTrack(const PairAnalysisT
   //  values[kTrackLength] = track->GetGlobalTrack()->GetLength(); // cm
   values[kInclAngle] = TMath::ASin(track->Pt()/track->P());
   Fill(track->GetTofHit(),      values);
-  values[kTOFHits]   = (track->GetTofHit() ? 1. : 0.);
+  values[kTofHits]   = (track->GetTofHit() ? 1. : 0.);
   values[kRndmTrack] = gRandom->Rndm();
 
 }
@@ -769,21 +769,21 @@ inline void PairAnalysisVarManager::FillVarRichRing(const CbmRichRing *track, Do
 
   // Set
   //Do Select is no longer supported use CbmRichElectronIdAnn::GetInstance().CalculateAnnValue(globalTrackIndex, momentum);
-  values[kRICHPidANN]      = -1; // fgRichElIdAnn->DoSelect(const_cast<CbmRichRing*>(track), values[kP]); // PID value ANN method
-  values[kRICHHitsOnRing]  = track->GetNofHitsOnRing();
-  values[kRICHHits]        = track->GetNofHits();
-  values[kRICHChi2NDF]     = (track->GetNDF()>0. ? track->GetChi2()/track->GetNDF() : -999.);
-  values[kRICHRadius]      = track->GetRadius();
-  values[kRICHAxisA]       = track->GetAaxis();
-  values[kRICHAxisB]       = track->GetBaxis();
-  values[kRICHCenterX]     = track->GetCenterX();
-  values[kRICHCenterY]     = track->GetCenterY();
+  values[kRichPidANN]      = -1; // fgRichElIdAnn->DoSelect(const_cast<CbmRichRing*>(track), values[kP]); // PID value ANN method
+  values[kRichHitsOnRing]  = track->GetNofHitsOnRing();
+  values[kRichHits]        = track->GetNofHits();
+  values[kRichChi2NDF]     = (track->GetNDF()>0. ? track->GetChi2()/track->GetNDF() : -999.);
+  values[kRichRadius]      = track->GetRadius();
+  values[kRichAxisA]       = track->GetAaxis();
+  values[kRichAxisB]       = track->GetBaxis();
+  values[kRichCenterX]     = track->GetCenterX();
+  values[kRichCenterY]     = track->GetCenterY();
 	// CbmRichRing::GetDistance() method is no longer supported
 	// If you wan to use cuts update code using CbmRichUtil::GetRingTrackDistance()
-  values[kRICHDistance]    = 1.;
-  values[kRICHRadialPos]   = track->GetRadialPosition();
-  values[kRICHRadialAngle] = track->GetRadialAngle();
-  values[kRICHPhi]         = track->GetPhi();
+  values[kRichDistance]    = 1.;
+  values[kRichRadialPos]   = track->GetRadialPosition();
+  values[kRichRadialAngle] = track->GetRadialAngle();
+  values[kRichPhi]         = track->GetPhi();
 
 }
 
@@ -797,8 +797,8 @@ inline void PairAnalysisVarManager::FillVarTrdTrack(const CbmTrdTrack *track, Do
   if(!track) return;
 
   // Calculate eloss
-  TClonesArray *hits   = fgEvent->GetHits(kTRD);
-  if(hits &&  track->GetELoss()<1.e-8 /*&& Req(kTRDSignal)*/ ) {
+  TClonesArray *hits   = fgEvent->GetHits(kTrd);
+  if(hits &&  track->GetELoss()<1.e-8 /*&& Req(kTrdSignal)*/ ) {
     Double_t eloss   = 0;
     for (Int_t ihit=0; ihit < track->GetNofHits(); ihit++){
       Int_t idx = track->GetHitIndex(ihit);
@@ -812,40 +812,40 @@ inline void PairAnalysisVarManager::FillVarTrdTrack(const CbmTrdTrack *track, Do
   }
 
   // Set
-  values[kTRDSignal]      = track->GetELoss() * 1.e+6; //GeV->keV, NOTE: see corrections,normalisation below (angles,#hits)
-  values[kTRDPidWkn]      = track->GetPidWkn(); // PID value Wkn method
-  values[kTRDPidANN]      = track->GetPidANN(); // PID value ANN method
+  values[kTrdSignal]      = track->GetELoss() * 1.e+6; //GeV->keV, NOTE: see corrections,normalisation below (angles,#hits)
+  values[kTrdPidWkn]      = track->GetPidWkn(); // PID value Wkn method
+  values[kTrdPidANN]      = track->GetPidANN(); // PID value ANN method
   // PID value Likelihood method
-  values[kTRDPidLikeEL]   = track->GetPidLikeEL();
-  values[kTRDPidLikePI]   = track->GetPidLikePI();
-  values[kTRDPidLikeKA]   = track->GetPidLikeKA();
-  values[kTRDPidLikePR]   = track->GetPidLikePR();
-  values[kTRDPidLikeMU]   = track->GetPidLikeMU();
+  values[kTrdPidLikeEL]   = track->GetPidLikeEL();
+  values[kTrdPidLikePI]   = track->GetPidLikePI();
+  values[kTrdPidLikeKA]   = track->GetPidLikeKA();
+  values[kTrdPidLikePR]   = track->GetPidLikePR();
+  values[kTrdPidLikeMU]   = track->GetPidLikeMU();
   // accessors via CbmTrack
-  values[kTRDHits]        = track->GetNofHits();
-  values[kTRDChi2NDF]     = (track->GetNDF()>0. ? track->GetChiSq()/track->GetNDF() : -999.);
+  values[kTrdHits]        = track->GetNofHits();
+  values[kTrdChi2NDF]     = (track->GetNDF()>0. ? track->GetChiSq()/track->GetNDF() : -999.);
   // accessors via first FairTrackParam
   TVector3 mom;
   track->GetParamFirst()->Momentum(mom);
-  values[kTRDPin]         = mom.Mag();
-  values[kTRDPtin]        = mom.Pt();
-  values[kTRDThetain]     = mom.Theta();
-  values[kTRDPhiin]       = mom.Phi();
+  values[kTrdPin]         = mom.Mag();
+  values[kTrdPtin]        = mom.Pt();
+  values[kTrdThetain]     = mom.Theta();
+  values[kTrdPhiin]       = mom.Phi();
   // correction factors
-  values[kTRDThetaCorr]   = 1. / mom.CosTheta();
-  values[kTRDPhiCorr]     = 1. / TMath::Cos(mom.Phi());
+  values[kTrdThetaCorr]   = 1. / mom.CosTheta();
+  values[kTrdPhiCorr]     = 1. / TMath::Cos(mom.Phi());
   // apply correction and normalisation
-  values[kTRDSignal]      /= values[kTRDHits];// * values[kTRDThetaCorr] * values[kTRDPhiCorr]);
+  values[kTrdSignal]      /= values[kTrdHits];// * values[kTrdThetaCorr] * values[kTrdPhiCorr]);
 
   track->GetParamLast()->Momentum(mom);
-  values[kTRDPout]        = mom.Mag();
-  values[kTRDPtout]       = mom.Pt();
-  //  values[kTRDCharge]      = (track->GetParamFirst()->GetQp()>0. ? +1. : -1. );
+  values[kTrdPout]        = mom.Mag();
+  values[kTrdPtout]       = mom.Pt();
+  //  values[kTrdCharge]      = (track->GetParamFirst()->GetQp()>0. ? +1. : -1. );
   /* TVector3 pos1; */
   /* track->GetParamFirst()->Position(pos1); */
   /* TVector3 pos2; */
   /* track->GetParamLast()->Position(pos2); */
-  //  values[kTRDTrackLength] =  (pos2!=pos1 ? (pos2-=pos1).Mag() : 1.);
+  //  values[kTrdTrackLength] =  (pos2!=pos1 ? (pos2-=pos1).Mag() : 1.);
 
  
 }
@@ -861,8 +861,8 @@ inline void PairAnalysisVarManager::FillVarStsTrack(const CbmStsTrack *track, Do
 
   // Calculate first hit position for sts and mvd
   Double_t minSts = 9999.;
-  TClonesArray *hits   = fgEvent->GetHits(kSTS);
-  if(hits /*&& Req(kSTSFirstHitPosZ)*/ ) {
+  TClonesArray *hits   = fgEvent->GetHits(kSts);
+  if(hits /*&& Req(kStsFirstHitPosZ)*/ ) {
     for (Int_t ihit=0; ihit < track->GetNofStsHits(); ihit++){
       Int_t idx = track->GetStsHitIndex(ihit);
       CbmStsHit* hit = (CbmStsHit*) hits->At(idx);
@@ -873,7 +873,7 @@ inline void PairAnalysisVarManager::FillVarStsTrack(const CbmStsTrack *track, Do
     }
   }
   Double_t minMvd = 9999.;
-  hits   = fgEvent->GetHits(kMVD);
+  hits   = fgEvent->GetHits(kMvd);
   if(hits) {
     for (Int_t ihit=0; ihit < track->GetNofMvdHits(); ihit++){
       Int_t idx = track->GetMvdHitIndex(ihit);
@@ -885,28 +885,28 @@ inline void PairAnalysisVarManager::FillVarStsTrack(const CbmStsTrack *track, Do
   }
 
   // Set
-  values[kMVDHits]        = track->GetNofMvdHits();
+  values[kMvdHits]        = track->GetNofMvdHits();
   //  values[kImpactParZ]     = track->GetB();  //Impact parameter of track at target z, in units of its error
   //  printf(" mom %f   impactparz %f \n",values[kPout],values[kImpactParZ]);
   // accessors via CbmTrack
-  values[kSTSHits]        = track->GetNofStsHits();
-  values[kSTSChi2NDF]     = (track->GetNDF()>0. ? track->GetChiSq()/track->GetNDF() : -999.);
+  values[kStsHits]        = track->GetNofStsHits();
+  values[kStsChi2NDF]     = (track->GetNDF()>0. ? track->GetChiSq()/track->GetNDF() : -999.);
   // accessors via first FairTrackParam
   TVector3 mom;
   track->GetParamFirst()->Momentum(mom);
-  values[kSTSPin]         = mom.Mag();
-  values[kSTSPtin]        = mom.Pt();
+  values[kStsPin]         = mom.Mag();
+  values[kStsPtin]        = mom.Pt();
   track->GetParamFirst()->Position(mom);
-  values[kSTSXv]          = mom.X();
-  values[kSTSYv]          = mom.Y();
-  values[kSTSZv]          = mom.Z();
+  values[kStsXv]          = mom.X();
+  values[kStsYv]          = mom.Y();
+  values[kStsZv]          = mom.Z();
   track->GetParamLast()->Momentum(mom);
-  values[kSTSPout]        = mom.Mag();
-  values[kSTSPtout]       = mom.Pt();
-  //  values[kSTSCharge]      = (track->GetParamFirst()->GetQp()>0. ? +1. : -1. );
+  values[kStsPout]        = mom.Mag();
+  values[kStsPtout]       = mom.Pt();
+  //  values[kStsCharge]      = (track->GetParamFirst()->GetQp()>0. ? +1. : -1. );
 
-  values[kMVDFirstHitPosZ]= minMvd;
-  values[kSTSFirstHitPosZ]= minSts;
+  values[kMvdFirstHitPosZ]= minMvd;
+  values[kStsFirstHitPosZ]= minSts;
 
 
 }
@@ -921,19 +921,19 @@ inline void PairAnalysisVarManager::FillVarMuchTrack(const CbmMuchTrack *track, 
   if(!track) return;
 
   // Calculate straw, (TODO:trigger) and pixel hits
-  values[kMUCHHitsPixel]  = 0.;
-  values[kMUCHHitsStraw]  = 0.;
+  values[kMuchHitsPixel]  = 0.;
+  values[kMuchHitsStraw]  = 0.;
   for (Int_t ihit=0; ihit < track->GetNofHits(); ihit++){
 //    Int_t idx = track->GetHitIndex(ihit);
       Int_t hitType = track->GetHitType(ihit);
-      if      (hitType==kMUCHPIXELHIT) values[kMUCHHitsPixel]++;
-      else if (hitType==kMUCHSTRAWHIT) values[kMUCHHitsStraw]++;
+      if      (hitType==kMuchPixelHit) values[kMuchHitsPixel]++;
+      else if (hitType==kMuchStrawHit) values[kMuchHitsStraw]++;
   }
 
   // Set
   // accessors via CbmTrack
-  values[kMUCHHits]        = track->GetNofHits();
-  values[kMUCHChi2NDF]     = (track->GetNDF()>0. ? track->GetChiSq()/track->GetNDF() : -999.);
+  values[kMuchHits]        = track->GetNofHits();
+  values[kMuchChi2NDF]     = (track->GetNDF()>0. ? track->GetChiSq()/track->GetNDF() : -999.);
 }
 
 inline void PairAnalysisVarManager::FillVarMCParticle(const CbmMCTrack *p1, const CbmMCTrack *p2, Double_t * const values)
@@ -1057,12 +1057,12 @@ inline void PairAnalysisVarManager::FillVarMCTrack(const CbmMCTrack *particle, D
   values[kChargeMC]    = particle->GetCharge();
 
   // detector info
-  values[kRICHHitsMC]  = particle->GetNPoints(kRICH);
-  values[kTRDHitsMC]   = particle->GetNPoints(kTRD);
-  values[kMVDHitsMC]   = particle->GetNPoints(kMVD);
-  values[kSTSHitsMC]   = particle->GetNPoints(kSTS);
-  values[kTOFHitsMC]   = particle->GetNPoints(kTOF);
-  values[kMUCHHitsMC]  = particle->GetNPoints(kMUCH);
+  values[kRichHitsMC]  = particle->GetNPoints(kRich);
+  values[kTrdHitsMC]   = particle->GetNPoints(kTrd);
+  values[kMvdHitsMC]   = particle->GetNPoints(kMvd);
+  values[kStsHitsMC]   = particle->GetNPoints(kSts);
+  values[kTofHitsMC]   = particle->GetNPoints(kTof);
+  values[kMuchHitsMC]  = particle->GetNPoints(kMuch);
 
 }
 
@@ -1306,7 +1306,7 @@ inline void PairAnalysisVarManager::FillVarTrdHit(const CbmTrdHit *hit, Double_t
   FillVarPixelHit(hit, values);
 
   // accessors via CbmCluster & CbmTrdCluster
-  TClonesArray *cluster  = fgEvent->GetCluster(kTRD);
+  TClonesArray *cluster  = fgEvent->GetCluster(kTrd);
   if(cluster->GetEntriesFast()>0) {
     const CbmTrdCluster *cls = static_cast<const CbmTrdCluster*>( cluster->At(hit->GetRefId()) );
     FillVarTrdCluster(cls, values);
@@ -1314,7 +1314,7 @@ inline void PairAnalysisVarManager::FillVarTrdHit(const CbmTrdHit *hit, Double_t
   }
 
   // Set
-  values[kTRDLayer]  = hit->GetPlaneId(); //layer id
+  values[kTrdLayer]  = hit->GetPlaneId(); //layer id
   /// NOTE: use correction from first TRD track param
   values[kEloss]     = hit->GetELoss()     * 1.e+6; //GeV->keV, dEdx + TR
   values[kElossdEdx] = hit->GetELossdEdX() * 1.e+6; //GeV->keV, dEdx
@@ -1340,11 +1340,11 @@ inline void PairAnalysisVarManager::FillVarTofHit(const CbmTofHit *hit, Double_t
   // Set
   values[kBeta]    = values[kTrackLength]/100 / (hit->GetTime()*1e-9) / TMath::C();
   // PID value detla beta
-  values[kTOFPidDeltaBetaEL] = values[kBeta] - ( values[kP]/TMath::Sqrt(values[kMEL]*values[kMEL]+values[kP]*values[kP]) );
-  values[kTOFPidDeltaBetaMU] = values[kBeta] - ( values[kP]/TMath::Sqrt(values[kMMU]*values[kMMU]+values[kP]*values[kP]) );
-  values[kTOFPidDeltaBetaPI] = values[kBeta] - ( values[kP]/TMath::Sqrt(values[kMPI]*values[kMPI]+values[kP]*values[kP]) );
-  values[kTOFPidDeltaBetaKA] = values[kBeta] - ( values[kP]/TMath::Sqrt(values[kMKA]*values[kMKA]+values[kP]*values[kP]) );
-  values[kTOFPidDeltaBetaPR] = values[kBeta] - ( values[kP]/TMath::Sqrt(values[kMPR]*values[kMPR]+values[kP]*values[kP]) );
+  values[kTofPidDeltaBetaEL] = values[kBeta] - ( values[kP]/TMath::Sqrt(values[kMEL]*values[kMEL]+values[kP]*values[kP]) );
+  values[kTofPidDeltaBetaMU] = values[kBeta] - ( values[kP]/TMath::Sqrt(values[kMMU]*values[kMMU]+values[kP]*values[kP]) );
+  values[kTofPidDeltaBetaPI] = values[kBeta] - ( values[kP]/TMath::Sqrt(values[kMPI]*values[kMPI]+values[kP]*values[kP]) );
+  values[kTofPidDeltaBetaKA] = values[kBeta] - ( values[kP]/TMath::Sqrt(values[kMKA]*values[kMKA]+values[kP]*values[kP]) );
+  values[kTofPidDeltaBetaPR] = values[kBeta] - ( values[kP]/TMath::Sqrt(values[kMPR]*values[kMPR]+values[kP]*values[kP]) );
 
   values[kMassSq]    = values[kP]*values[kP] * (TMath::Power(1./values[kBeta],2) -1);
 
@@ -1365,11 +1365,11 @@ inline void PairAnalysisVarManager::FillVarTrdCluster(const CbmTrdCluster *clust
   if(!cluster) return;
 
   // accessors via CbmCluster
-  values[kTRDPads]  = cluster->GetNofDigis();
+  values[kTrdPads]  = cluster->GetNofDigis();
 
   // Set
-  values[kTRDCols]  = cluster->GetNCols();
-  values[kTRDRows]  = cluster->GetNRows();
+  values[kTrdCols]  = cluster->GetNCols();
+  values[kTrdRows]  = cluster->GetNRows();
 
 }
 
@@ -1460,19 +1460,19 @@ inline void PairAnalysisVarManager::SetEventData(const Double_t data[PairAnalysi
 }
 
 
-inline void PairAnalysisVarManager::CalculateHitTypes(const PairAnalysisTrack *track, DetectorId idet,
+inline void PairAnalysisVarManager::CalculateHitTypes(const PairAnalysisTrack *track, ECbmModuleId idet,
 						      Int_t *trueH, Int_t *distH, Int_t *fakeH) {
 
   CbmTrack    *trkl = track->GetTrack(idet);
   CbmRichRing *ring = track->GetRichRing();
   Int_t nhits = 0;
   switch(idet) {
-  case kMVD:  if(trkl) nhits = static_cast<CbmStsTrack*>(trkl)->GetNofMvdHits(); break;
-  case kSTS:  if(trkl) nhits = static_cast<CbmStsTrack*>(trkl)->GetNofStsHits(); break;
-  case kMUCH:
-  case kTRD:  if(trkl) nhits = trkl->GetNofHits();    break;
-  case kTOF:  nhits = 1; /* one is maximum */         break;
-  case kRICH: if(ring) nhits = ring->GetNofHits();    break;
+  case kMvd:  if(trkl) nhits = static_cast<CbmStsTrack*>(trkl)->GetNofMvdHits(); break;
+  case kSts:  if(trkl) nhits = static_cast<CbmStsTrack*>(trkl)->GetNofStsHits(); break;
+  case kMuch:
+  case kTrd:  if(trkl) nhits = trkl->GetNofHits();    break;
+  case kTof:  nhits = 1; /* one is maximum */         break;
+  case kRich: if(ring) nhits = ring->GetNofHits();    break;
   default:
     return;
   }
@@ -1498,17 +1498,17 @@ inline void PairAnalysisVarManager::CalculateHitTypes(const PairAnalysisTrack *t
 	  CbmHit *hit=NULL;
 	  Int_t idx      = -1;
 	  switch(idet) {
-	  case kMVD:  idx = static_cast<CbmStsTrack*>(trkl)->GetMvdHitIndex(ihit); break;
-	  case kSTS:  idx = static_cast<CbmStsTrack*>(trkl)->GetStsHitIndex(ihit); break;
-	  case kMUCH:
-	  case kTRD:  idx = trkl->GetHitIndex(ihit);                               break;
-	  case kTOF:  hit = track->GetTofHit();                                    break;
-	  case kRICH: idx = ring->GetHit(ihit);                                    break;
+	  case kMvd:  idx = static_cast<CbmStsTrack*>(trkl)->GetMvdHitIndex(ihit); break;
+	  case kSts:  idx = static_cast<CbmStsTrack*>(trkl)->GetStsHitIndex(ihit); break;
+	  case kMuch:
+	  case kTrd:  idx = trkl->GetHitIndex(ihit);                               break;
+	  case kTof:  hit = track->GetTofHit();                                    break;
+	  case kRich: idx = ring->GetHit(ihit);                                    break;
 	  default:
 	    continue;
 	  }
 
-	  if(idet!=kTOF && idx>-1)  {
+	  if(idet!=kTof && idx>-1)  {
 	    hit = dynamic_cast<CbmHit*>(hits->At(idx));
 	  }
 
@@ -1541,7 +1541,7 @@ inline void PairAnalysisVarManager::CalculateHitTypes(const PairAnalysisTrack *t
 	  if(!btrueH &&!bfakeH) (*distH)++;
 	}
       }
-      /* values[kTRDDistortion]  = dist/links; */
+      /* values[kTrdDistortion]  = dist/links; */
     }
 
 

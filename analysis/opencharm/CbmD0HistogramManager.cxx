@@ -587,11 +587,11 @@ void CbmD0HistogramManager::ExecMc()
      //    {
 	     mcMomentumMvd->Fill(mcTrack->GetP());
 	 }
-        if(mcTrack->GetNPoints(kMVD)>=3)
+        if(mcTrack->GetNPoints(kMvd)>=3)
          {
              mcMomentumMvdTrack->Fill(mcTrack->GetP());
          }
-        if((mcTrack->GetNPoints(kMVD) + mcTrack->GetNPoints(kSTS)) >= 3)
+        if((mcTrack->GetNPoints(kMvd) + mcTrack->GetNPoints(kSts)) >= 3)
          {
            mcMomentumMvdStsTrack->Fill(mcTrack->GetP());
            if(mcTrack->GetPdgCode() == -321 || mcTrack->GetPdgCode() == 211) mcMomentumMvdStsTrackPID->Fill(mcTrack->GetP());
@@ -600,7 +600,7 @@ void CbmD0HistogramManager::ExecMc()
 	     {
 	       kaon = (CbmMCTrack*)fListMCTracks->At(i);
 	       mcMomentumKaonTrackable->Fill(mcTrack->GetP());
-	       if(mcTrack->GetNPoints(kTOF)>0)  // Kaons from signal Trackable and TOF Pid
+	       if(mcTrack->GetNPoints(kTof)>0)  // Kaons from signal Trackable and TOF Pid
 	       	  {
 	       	    mcMomentumKaonTrackPID->Fill(mcTrack->GetP());
 	       	  }
@@ -610,14 +610,14 @@ void CbmD0HistogramManager::ExecMc()
 	     {
 	       pion =  (CbmMCTrack*)fListMCTracks->At(i);
 	       mcMomentumPion1Trackable->Fill(mcTrack->GetP());
-	       if(mcTrack->GetNPoints(kTOF)>0)  // Pion+ from signal Trackable and TOF Pid
+	       if(mcTrack->GetNPoints(kTof)>0)  // Pion+ from signal Trackable and TOF Pid
 	      	  {
 	       	      mcMomentumPion1TrackPID->Fill(mcTrack->GetP());
                   }
              }
 
 	 }
-	   if( mcTrack->GetNPoints(kSTS) >= 3 && mcTrack->GetNPoints(kMVD) > 1 )
+	   if( mcTrack->GetNPoints(kSts) >= 3 && mcTrack->GetNPoints(kMvd) > 1 )
 	      {
               mcMomentumStsTrackMvdVertex->Fill(mcTrack->GetP());
 	      }
@@ -634,7 +634,7 @@ void CbmD0HistogramManager::ExecMc()
 	mcMomentumSignal->Fill(signalLV.P());
         
 
-        if(kaon->GetNPoints(kTOF)>0 && pion->GetNPoints(kTOF)>0)
+        if(kaon->GetNPoints(kTof)>0 && pion->GetNPoints(kTof)>0)
             mcMomentumSignalPID->Fill(signalLV.P());
 
     }

@@ -8,7 +8,6 @@
 #ifndef CBMMVDDIGI_H
 #define CBMMVDDIGI_H 1
 
-#include "CbmDetectorList.h"
 #include "CbmDigi.h"
 #include "CbmMvdDetectorId.h"
 

@@ -160,7 +160,7 @@ void CbmTofMergeMcPoints::MergeRealisticTofPoints(
    for (Int_t iTrk = 0; iTrk < iNbTracks; iTrk++) {
       pMcTrk = (CbmMCTrack*) tracks->At( iTrk );
       
-      if( 0 < pMcTrk->GetNPoints(kTOF) )
+      if( 0 < pMcTrk->GetNPoints(kTof) )
          fTofPntTrkMap.insert( 
             std::pair< Int_t, std::vector< Int_t > >(iTrk, std::vector< Int_t >() ) );
    } // for (Int_t iTrk = 0; iTrk < iNbTofPoints; iTrk++)
@@ -288,7 +288,7 @@ void CbmTofMergeMcPoints::MergeRealisticTofPoints(
          dMeanMomZ /= iNbPntInMean;
          dMeanLen  /= iNbPntInMean;
             // Store the new mean MC Point in the output TClonesArray
-         CbmTofDetectorInfo detInfo( kTOF, 
+         CbmTofDetectorInfo detInfo( kTof,
                iMeanModType, iMeanModule, iMeanCounter, 
                0, iMeanChannel);
          TVector3 meanPos( dMeanPosX, dMeanPosY, dMeanPosZ);

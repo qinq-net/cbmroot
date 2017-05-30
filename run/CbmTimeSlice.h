@@ -51,7 +51,7 @@ class CbmTimeSlice : public TNamed
      ** @param index  index of data object in array
      ** @return pointer to data object
      **/
-    CbmDigi* GetData(DetectorId iDet, UInt_t index);
+    CbmDigi* GetData(ECbmModuleId iDet, UInt_t index);
 
 
     /** Get size of raw data container for given detector
@@ -59,7 +59,7 @@ class CbmTimeSlice : public TNamed
      ** @param iDet   detector type
      ** @return size of raw data container (number of digis)
      */
-    Int_t GetDataSize(DetectorId iDet) const;
+    Int_t GetDataSize(ECbmModuleId iDet) const;
 
 
     /** Duration of time slice

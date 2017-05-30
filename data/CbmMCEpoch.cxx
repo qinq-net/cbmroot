@@ -7,6 +7,7 @@
 
 
 #include "CbmMCEpoch.h"
+#include "CbmModuleList.h"
 
 #include "FairLogger.h"
 
@@ -47,12 +48,12 @@ CbmMCEpoch::~CbmMCEpoch() {
 
 
 // -----   Add a MCPoint to the epoch   --------------------------------------
-void CbmMCEpoch::AddPoint(DetectorId det, FairMCPoint* point, 
+void CbmMCEpoch::AddPoint(ECbmModuleId det, FairMCPoint* point,
 			  Int_t eventId, Double_t eventTime) {
 
   switch (det) {
 
-  case kSTS: {
+  case kSts: {
     CbmStsPoint* stsPoint = (CbmStsPoint*) point;
     new ((*(fPoints[det]))[GetNofPoints(det)]) CbmStsPoint(*stsPoint,
 							   eventId,
@@ -61,7 +62,7 @@ void CbmMCEpoch::AddPoint(DetectorId det, FairMCPoint* point,
   }
     break;
 
-  case kMUCH: {
+  case kMuch: {
     CbmMuchPoint* muchPoint = (CbmMuchPoint*) point;
     new ((*(fPoints[det]))[GetNofPoints(det)]) CbmMuchPoint(*muchPoint,
 							    eventId,
@@ -87,8 +88,8 @@ void CbmMCEpoch::Clear(Option_t*) {
    * enum is continuous. Did not find a better solution yet. V.F.  */
 
   fStartTime = 0.;
-  for (Int_t iDet=kREF; iDet<kTutDet; iDet++) {
-    DetectorId det = DetectorId(iDet);
+  for (Int_t iDet=kRef; iDet<kNofSystems; iDet++) {
+    ECbmModuleId det = ECbmModuleId(iDet);
     if ( fPoints[det] ) fPoints[det]->Clear("C");
   }
 
@@ -98,7 +99,7 @@ void CbmMCEpoch::Clear(Option_t*) {
 
 
 // -----   Get number of points in epoch   -----------------------------------
-Int_t CbmMCEpoch::GetNofPoints(DetectorId det) const {
+Int_t CbmMCEpoch::GetNofPoints(ECbmModuleId det) const {
 
   if ( ! fPoints[det] ) {
     LOG(WARNING) << "No array for detector system " << det << FairLogger::endl;
@@ -113,7 +114,7 @@ Int_t CbmMCEpoch::GetNofPoints(DetectorId det) const {
 
 
 // -----   Get a MCPoint from the array   ------------------------------------
-FairMCPoint* CbmMCEpoch::GetPoint(DetectorId det, Int_t index) {
+FairMCPoint* CbmMCEpoch::GetPoint(ECbmModuleId det, Int_t index) {
 
   if ( ! fPoints[det] ) {
     LOG(WARNING) << "No array for detector system " << det << FairLogger::endl;
@@ -139,8 +140,8 @@ Bool_t CbmMCEpoch::IsEmpty() {
 
   Int_t nTotal = 0;
 
-  for (Int_t iDet=kREF; iDet<kTutDet; iDet++) {
-    DetectorId det = DetectorId(iDet);
+  for (Int_t iDet=kRef; iDet<kNofSystems; iDet++) {
+    ECbmModuleId det = ECbmModuleId(iDet);
     if ( fPoints[iDet] ) nTotal += GetNofPoints(det);
   }
 
@@ -157,10 +158,10 @@ void CbmMCEpoch::Print(Option_t* /*opt*/) const {
 
   LOG(INFO) << " Start time " << fStartTime << ", Points: ";
   TString sysName;
-  for (Int_t iDet = kREF; iDet<kTutDet; iDet++) {
-    DetectorId det = DetectorId(iDet);
+  for (Int_t iDet = kRef; iDet<kNofSystems; iDet++) {
+    ECbmModuleId det = ECbmModuleId(iDet);
     if ( fPoints[iDet] ) {
-      CbmDetectorList::GetSystemName(DetectorId(iDet), sysName);
+      sysName = CbmModuleList::GetModuleName(ECbmModuleId(iDet));
       LOG(INFO)<< "   " << sysName << " " << GetNofPoints(det) << " ";
     }
   }
@@ -174,11 +175,11 @@ void CbmMCEpoch::Print(Option_t* /*opt*/) const {
 // -----   Create MCPoint arrays   -------------------------------------------
 void CbmMCEpoch::CreateArrays() {
 
-  for (Int_t iDet=kREF; iDet<kTutDet; iDet++) {
-    DetectorId det = DetectorId(iDet);
+  for (Int_t iDet=kRef; iDet<kNofSystems; iDet++) {
+    ECbmModuleId det = ECbmModuleId(iDet);
     switch(det) {
-    case kSTS:  fPoints[det] = new TClonesArray("CbmStsPoint", 1000); break;
-    case kMUCH: fPoints[det] = new TClonesArray("CbmMuchPoint", 1000); break;
+    case kSts:  fPoints[det] = new TClonesArray("CbmStsPoint", 1000); break;
+    case kMuch: fPoints[det] = new TClonesArray("CbmMuchPoint", 1000); break;
     default:    fPoints[det] = NULL; break;
     }
   }

@@ -150,16 +150,16 @@ Double_t CbmMCTrack::GetRapidity() const {
 
 
 // -----   Public method GetNPoints   --------------------------------------
-Int_t CbmMCTrack::GetNPoints(DetectorId detId) const {
-  if      ( detId == kREF  ) return (  fNPoints &   1);
-  else if ( detId == kMVD  ) return ( (fNPoints & ( 7 <<  1) ) >>  1);
-  else if ( detId == kSTS  ) return ( (fNPoints & (31 <<  4) ) >>  4);
-  else if ( detId == kRICH ) return ( (fNPoints & ( 1 <<  9) ) >>  9);
-  else if ( detId == kMUCH ) return ( (fNPoints & (31 << 10) ) >> 10);
-  else if ( detId == kTRD  ) return ( (fNPoints & (31 << 15) ) >> 15);
-  else if ( detId == kTOF  ) return ( (fNPoints & (15 << 20) ) >> 20);
-  else if ( detId == kECAL ) return ( (fNPoints & ( 1 << 24) ) >> 24);
-  else if ( detId == kPSD  ) return ( (fNPoints & ( 1 << 25) ) >> 25);
+Int_t CbmMCTrack::GetNPoints(ECbmModuleId detId) const {
+  if      ( detId == kRef  ) return (  fNPoints &   1);
+  else if ( detId == kMvd  ) return ( (fNPoints & ( 7 <<  1) ) >>  1);
+  else if ( detId == kSts  ) return ( (fNPoints & (31 <<  4) ) >>  4);
+  else if ( detId == kRich ) return ( (fNPoints & ( 1 <<  9) ) >>  9);
+  else if ( detId == kMuch ) return ( (fNPoints & (31 << 10) ) >> 10);
+  else if ( detId == kTrd  ) return ( (fNPoints & (31 << 15) ) >> 15);
+  else if ( detId == kTof  ) return ( (fNPoints & (15 << 20) ) >> 20);
+  else if ( detId == kEcal ) return ( (fNPoints & ( 1 << 24) ) >> 24);
+  else if ( detId == kPsd  ) return ( (fNPoints & ( 1 << 25) ) >> 25);
   else {
     LOG(ERROR) << "GetNPoints: Unknown detector ID "
 	       << detId << FairLogger::endl;
@@ -173,55 +173,55 @@ Int_t CbmMCTrack::GetNPoints(DetectorId detId) const {
 // -----   Public method SetNPoints   --------------------------------------
 void CbmMCTrack::SetNPoints(Int_t iDet, Int_t nPoints) {
 
-  if ( iDet == kREF ) {
+  if ( iDet == kRef ) {
     if      ( nPoints < 0 ) nPoints = 0;
     else if ( nPoints > 1 ) nPoints = 1;
     fNPoints = ( fNPoints & ( ~ 1 ) )  |  nPoints;
   }
 
-  else if ( iDet == kMVD ) {
+  else if ( iDet == kMvd ) {
     if      ( nPoints < 0 ) nPoints = 0;
     else if ( nPoints > 7 ) nPoints = 7;
     fNPoints = ( fNPoints & ( ~ (  7 <<  1 ) ) )  |  ( nPoints <<  1 );
   }
 
-  else if ( iDet == kSTS ) {
+  else if ( iDet == kSts ) {
     if      ( nPoints <  0 ) nPoints =  0;
     else if ( nPoints > 31 ) nPoints = 31;
     fNPoints = ( fNPoints & ( ~ ( 31 <<  4 ) ) )  |  ( nPoints <<  4 );
   }
 
-  else if ( iDet == kRICH ) {
+  else if ( iDet == kRich ) {
     if      ( nPoints < 0 ) nPoints = 0;
     else if ( nPoints > 1 ) nPoints = 1;
     fNPoints = ( fNPoints & ( ~ (  1 <<  9 ) ) )  |  ( nPoints <<  9 );
   }
 
-  else if ( iDet == kMUCH ) {
+  else if ( iDet == kMuch ) {
     if      ( nPoints <  0 ) nPoints =  0;
     else if ( nPoints > 31 ) nPoints = 31;
     fNPoints = ( fNPoints & ( ~ ( 31 << 10 ) ) )  |  ( nPoints << 10 );
   }
 
-  else if ( iDet == kTRD ) {
+  else if ( iDet == kTrd ) {
     if      ( nPoints <  0 ) nPoints =  0;
     else if ( nPoints > 31 ) nPoints = 31;
     fNPoints = ( fNPoints & ( ~ ( 31 << 15 ) ) )  |  ( nPoints << 15 );
   }
 
-  else if ( iDet == kTOF ) {
+  else if ( iDet == kTof ) {
     if      ( nPoints <  0 ) nPoints =  0;
     else if ( nPoints > 15 ) nPoints = 15;
     fNPoints = ( fNPoints & ( ~ ( 15 << 20 ) ) )  |  ( nPoints << 20 );
   }
 
-  else if ( iDet == kECAL ) {
+  else if ( iDet == kEcal ) {
     if      ( nPoints < 0 ) nPoints = 0;
     else if ( nPoints > 1 ) nPoints = 1;
     fNPoints = ( fNPoints & ( ~ (  1 << 24 ) ) )  |  ( nPoints << 24 );
   }
 
-  else if ( iDet == kPSD ) {
+  else if ( iDet == kPsd ) {
     if      ( nPoints < 0 ) nPoints = 0;
     else if ( nPoints > 1 ) nPoints = 1;
     fNPoints = ( fNPoints & ( ~ (  1 << 25 ) ) )  |  ( nPoints << 25 );
@@ -243,15 +243,15 @@ std::string CbmMCTrack::ToString() const
    	  << ", GeantProcess " << TMCProcessName[fProcessId]
       << ", Type " << fPdgCode << ", momentum (" << fPx << ", "
       << fPy << ", " << fPz << ") GeV" << std::endl;
-   ss << "       Ref " << GetNPoints(kREF)
-	  	<< ", MVD " << GetNPoints(kMVD)
-	    << ", STS " << GetNPoints(kSTS)
-	    << ", RICH " << GetNPoints(kRICH)
-	    << ", MUCH " << GetNPoints(kMUCH)
-	    << ", TRD " << GetNPoints(kTRD)
-	    << ", TOF " << GetNPoints(kTOF)
-	    << ", ECAL " << GetNPoints(kECAL)
-	    << ", PSD " << GetNPoints(kPSD) << std::endl;
+   ss << "       Ref " << GetNPoints(kRef)
+	  	<< ", MVD " << GetNPoints(kMvd)
+	    << ", STS " << GetNPoints(kSts)
+	    << ", RICH " << GetNPoints(kRich)
+	    << ", MUCH " << GetNPoints(kMuch)
+	    << ", TRD " << GetNPoints(kTrd)
+	    << ", TOF " << GetNPoints(kTof)
+	    << ", ECAL " << GetNPoints(kEcal)
+	    << ", PSD " << GetNPoints(kPsd) << std::endl;
    return ss.str();
 }
 // -------------------------------------------------------------------------

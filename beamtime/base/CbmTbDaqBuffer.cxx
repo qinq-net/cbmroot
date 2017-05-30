@@ -12,7 +12,6 @@
 #include "FairLogger.h"
 
 #include "CbmTbDaqBuffer.h"
-#include "CbmDetectorList.h"
 
 using std::multimap;
 using std::pair;

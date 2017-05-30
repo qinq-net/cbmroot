@@ -17,7 +17,7 @@
 #define CBMMUCHDIGI_H 1
 
 #include "CbmDigi.h"
-#include "CbmDetectorList.h"
+#include "CbmDefs.h"
 #include "CbmMuchDigiMatch.h"
 #include "CbmMuchAddress.h"
 
@@ -52,7 +52,7 @@ class CbmMuchDigi : public CbmDigi{
 	virtual ~CbmMuchDigi(){}
 
 	//Getters
-	Int_t     GetSystemId() const { return kMUCH; }
+	Int_t     GetSystemId() const { return kMuch; }
 	UShort_t  GetAdc()      const { return fCharge; }
 
  	virtual Int_t     GetAddress()  const { return static_cast<Int_t>(fAddress); }

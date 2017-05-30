@@ -5,7 +5,7 @@
 
 #include "CbmStsPoint.h"
 
-#include "CbmDetectorList.h"
+#include "CbmDefs.h"
 
 #include "FairLogger.h"
 
@@ -49,7 +49,7 @@ CbmStsPoint::CbmStsPoint(Int_t trackID, Int_t detID, TVector3 posIn,
     fIndex(index),
     fFlag(flag)
 {
-  SetLink(FairLink(Cbm::kMCTrack, trackID));
+  SetLink(FairLink(kMCTrack, trackID));
 }
 // -------------------------------------------------------------------------
 

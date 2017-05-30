@@ -13,32 +13,8 @@
 #include "Rtypes.h"
 #include "TString.h"
 #include "CbmAddress.h"
+#include "CbmDefs.h"
 
-
-/** Enumerator for system Ids.
- ** Systems are active modules (detectors), the ID of which is used
- ** in the CBM addressing scheme (CbmAddress).
- **/
-enum ESystemId {kRef,         ///< Reference plane
-                kMvd,         ///< Micro-Vertex Detector
-                kSts,         ///< Silicon Tracking System
-                kRich,        ///< Ring-Imaging Cherenkov Detector
-                kMuch,        ///< Muon detection system
-                kTrd,         ///< Transition Radiation Detector
-                kTof,         ///< Time-of-flight Detector
-                kEcal,        ///< EM-Calorimeter
-                kPsd,         ///< Projectile spectator detector
-                kDummy,       ///< Dummy for tutorials or tests
-                kNofSystems}; ///< Number of system (e.g. for loops)
-
-
-/** Enumerator for the Ids of passive modules **/
-enum EPassiveId {kMagnet = 100,  ///< Magnet
-                 kTarget,        ///< Target
-                 kPipe,          ///< Beam pipe
-                 kShield,        ///< Beam pipe shielding in MUCH section
-                 kPlatform,      ///< RICH rail platform
-                 kLastModule};   ///< End point for loops
 
 
 

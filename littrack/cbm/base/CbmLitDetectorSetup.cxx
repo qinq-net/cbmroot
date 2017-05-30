@@ -26,14 +26,14 @@ CbmLitDetectorSetup::~CbmLitDetectorSetup()
 }
 
 void CbmLitDetectorSetup::SetDet(
-         DetectorId detId,
+         ECbmModuleId detId,
          bool isDet)
 {
    fDet[detId] = isDet;
 }
 
 bool CbmLitDetectorSetup::GetDet(
-         DetectorId detId) const
+         ECbmModuleId detId) const
 {
    assert(fDet.count(detId) != 0);
    return fDet.find(detId)->second;
@@ -93,12 +93,12 @@ void CbmLitDetectorSetup::DetermineSetup()
 {
    fIsElectronSetup = !CheckDetectorPresence("much");
    fIsMuonSetup = CheckDetectorPresence("much");
-   fDet[kMVD] = CheckDetectorPresence("mvd");
-   fDet[kSTS] = CheckDetectorPresence("sts") || CheckDetectorPresence("STS");
-   fDet[kRICH] = CheckDetectorPresence("rich");
-   fDet[kTRD] = CheckDetectorPresence("trd");
-   fDet[kMUCH] = CheckDetectorPresence("much");
-   fDet[kTOF] = CheckDetectorPresence("tof");
+   fDet[kMvd] = CheckDetectorPresence("mvd");
+   fDet[kSts] = CheckDetectorPresence("sts") || CheckDetectorPresence("STS");
+   fDet[kRich] = CheckDetectorPresence("rich");
+   fDet[kTrd] = CheckDetectorPresence("trd");
+   fDet[kMuch] = CheckDetectorPresence("much");
+   fDet[kTof] = CheckDetectorPresence("tof");
 }
 
 string CbmLitDetectorSetup::ToString() const
@@ -107,12 +107,12 @@ string CbmLitDetectorSetup::ToString() const
    if (fIsMuonSetup) str += "   Muon setup detected \n";
    if (fIsElectronSetup) str += "   Electron setup detected \n";
    str += "   Detectors found in setup: ";
-   if (fDet.find(kMVD)->second) str += "MVD ";
-   if (fDet.find(kSTS)->second) str += "STS ";
-   if (fDet.find(kRICH)->second) str += "RICH ";
-   if (fDet.find(kMUCH)->second) str += "MUCH ";
-   if (fDet.find(kTRD)->second) str += "TRD ";
-   if (fDet.find(kTOF)->second) str += "TOF ";
+   if (fDet.find(kMvd)->second) str += "MVD ";
+   if (fDet.find(kSts)->second) str += "STS ";
+   if (fDet.find(kRich)->second) str += "RICH ";
+   if (fDet.find(kMuch)->second) str += "MUCH ";
+   if (fDet.find(kTrd)->second) str += "TRD ";
+   if (fDet.find(kTof)->second) str += "TOF ";
    str += "\n";
    return str;
 }

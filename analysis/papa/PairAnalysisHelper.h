@@ -17,7 +17,7 @@
 #include <TVectorDfwd.h>
 #include <TArrayD.h>
 
-#include <CbmDetectorList.h>
+#include "CbmDefs.h"
 
 //class AliKFParticle;
 /* class AliVEvent; */
@@ -55,7 +55,7 @@ namespace PairAnalysisHelper
   void SetGEANTBinLabels( TH1 *hist);
 
   // misc
-  TString GetDetName(DetectorId det);
+  TString GetDetName(ECbmModuleId det);
   Double_t GetContentMinimum(TH1 *h, Bool_t inclErr=kTRUE);
   Double_t GetContentMaximum(TH1 *h, Bool_t inclErr=kTRUE);
   Double_t GetQuantile(TH1* h1, Double_t p=0.5);

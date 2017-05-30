@@ -9,7 +9,7 @@
 #define CBMLITTRACKINGQA_H_
 
 #include "FairTask.h"
-#include "CbmDetectorList.h"
+#include "CbmDefs.h"
 #include "cbm/base/CbmLitDetectorSetup.h"
 
 class CbmHistManager;
@@ -211,7 +211,7 @@ private:
 
    void FillTrackQualityHistograms(
       const CbmTrackMatchNew* trackMatch,
-      DetectorId detId);
+      ECbmModuleId detId);
 
    /**
     * \brief Loop over the MC tracks. Check track acceptance for different cases.

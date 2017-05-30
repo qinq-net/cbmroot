@@ -175,7 +175,7 @@ Bool_t  CbmPsdWoutv1_for44mods_sub3::ProcessHits(FairVolume* /*vol*/)
   }
   */  
 
-   ((CbmStack*)gMC->GetStack())->AddPoint(kPSD, fTrackID);
+   ((CbmStack*)gMC->GetStack())->AddPoint(kPsd, fTrackID);
  
   //  ResetParameters();
     

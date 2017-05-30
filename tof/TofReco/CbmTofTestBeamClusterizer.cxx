@@ -2737,7 +2737,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
 	   LOG(DEBUG1)<<Form("Determine YMean in %s by fit to %d entries",
 			     htempPos->GetName(),(Int_t)htempPos_py->GetEntries()) 
 		      <<FairLogger::endl;
-	   CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, 0);
+	   CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSm, iRpc, 0, 0);
 	   Int_t iChId = fTofId->SetDetectorInfo( xDetInfo );
 	   fChannelInfo = fDigiPar->GetCell( iChId );
 	   if(NULL == fChannelInfo){
@@ -2901,7 +2901,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
 	    LOG(DEBUG1)<<Form("Determine YMean in %s of channel %d by fit to %d entries",
 			    htempPos->GetName(),iCh,(Int_t)htempPos_py->GetEntries()) 
 		       <<FairLogger::endl;
-	    CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh);
+	    CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSm, iRpc, 0, iCh);
 	    Int_t iChId = fTofId->SetDetectorInfo( xDetInfo );
 	    fChannelInfo = fDigiPar->GetCell( iChId );
 	    if(NULL == fChannelInfo){
@@ -3537,7 +3537,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
        }
        
        if( pDigi2Min !=NULL ){
-         CbmTofDetectorInfo xDetInfo(kTOF, pDigi->GetType(), pDigi->GetSm(), pDigi->GetRpc(), 0, pDigi->GetChannel());
+         CbmTofDetectorInfo xDetInfo(kTof, pDigi->GetType(), pDigi->GetSm(), pDigi->GetRpc(), 0, pDigi->GetChannel());
          Int_t iChId = fTofId->SetDetectorInfo( xDetInfo );
          fChannelInfo = fDigiPar->GetCell( iChId );
          if(NULL == fChannelInfo){
@@ -4004,7 +4004,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                               /* Int_t iLastChId = iChId; // Save Last hit channel*/
 
                               // 2 Digis = both sides present
-                              CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh);
+                              CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSm, iRpc, 0, iCh);
                               iChId = fTofId->SetDetectorInfo( xDetInfo );
                               Int_t iUCellId=CbmTofAddress::GetUniqueAddress(iSm,iRpc,iCh,0,iSmType);
                               LOG(DEBUG1)<< Form(" TSRC %d%d%d%d size %3lu ",
@@ -4724,7 +4724,7 @@ void CbmTofTestBeamClusterizer::CheckLHMemory()
 		    <<FairLogger::endl;	
 	for (Int_t iCh=0; iCh< fDigiBdfPar->GetNbChan( iSmType, iRpc ); iCh++ )
 	  if(fvLastHits[iSmType][iSm][iRpc][iCh].size()>0){
-	    CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh);
+	    CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSm, iRpc, 0, iCh);
 	    Int_t iAddr = fTofId->SetDetectorInfo( xDetInfo );	     
 	    if( fvLastHits[iSmType][iSm][iRpc][iCh].front()->GetAddress() != iAddr )
 	      LOG(FATAL)<<Form("Inconsistent address for Ev %8.0f in list of size %lu for TSRC %d%d%d%d: 0x%08x, time  %f",
@@ -4762,7 +4762,7 @@ void CbmTofTestBeamClusterizer::CleanLHMemory()
 		    <<FairLogger::endl;	
 	for (Int_t iCh=0; iCh< fDigiBdfPar->GetNbChan( iSmType, iRpc ); iCh++ )
 	  while(fvLastHits[iSmType][iSm][iRpc][iCh].size()>0){
-	    CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh);
+	    CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSm, iRpc, 0, iCh);
 	    Int_t iAddr = fTofId->SetDetectorInfo( xDetInfo );	     
 	    if( fvLastHits[iSmType][iSm][iRpc][iCh].front()->GetAddress() != iAddr )
 	      LOG(FATAL)<<Form("Inconsistent address for Ev %8.0f in list of size %lu for TSRC %d%d%d%d: 0x%08x, time  %f",
@@ -4818,7 +4818,7 @@ Bool_t CbmTofTestBeamClusterizer::AddNextChan(Int_t iSmType, Int_t iSm, Int_t iR
 	CbmTofDigiExp * xDigiB = fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][i2];
         Double_t dTime = 0.5 * ( xDigiA->GetTime() + xDigiB->GetTime() ) ; 
 	if(TMath::Abs(dTime-dLastTime)<fdMaxTimeDist){
-	  CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh);
+	  CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSm, iRpc, 0, iCh);
 	  Int_t iChId = fTofId->SetDetectorInfo( xDetInfo );
 	  fChannelInfo = fDigiPar->GetCell( iChId );
 	  gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());

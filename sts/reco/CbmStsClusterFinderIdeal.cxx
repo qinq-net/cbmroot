@@ -59,7 +59,7 @@ Int_t CbmStsClusterFinderIdeal::FindClusters(CbmStsModule* module,
   		Int_t index = fClusters->GetEntriesFast();
   		CbmStsCluster* cluster = new ((*fClusters)[index]) CbmStsCluster();
   		cluster->SetAddress(module->GetAddress());
-   		if ( event ) event->AddData(Cbm::kStsCluster, index);
+   		if ( event ) event->AddData(kStsCluster, index);
     	linkMap[link] = cluster;
   		nClusters++;
   	}
@@ -88,7 +88,7 @@ Int_t CbmStsClusterFinderIdeal::FindClusters(CbmStsModule* module,
   		Int_t index = fClusters->GetEntriesFast();
   		CbmStsCluster* cluster = new ((*fClusters)[index]) CbmStsCluster();
    		cluster->SetAddress(module->GetAddress());
-     	if ( event ) event->AddData(Cbm::kStsCluster, index);
+     	if ( event ) event->AddData(kStsCluster, index);
   		linkMap[link] = cluster;
   		nClusters++;
   	}

@@ -15,7 +15,6 @@
 #pragma link C++ class CbmTrackParam;
 #pragma link C++ class CbmTrackMatch+;
 #pragma link C++ class CbmCluster+;
-#pragma link C++ class CbmDetectorList+;
 #pragma link C++ class CbmMatch+;
 #pragma link C++ class CbmTrackMatchNew+;
 #pragma link C++ class CbmLink+;
@@ -104,7 +103,5 @@
 #pragma link C++ class CbmNxyterRawSyncMessage;
 #pragma link C++ class CbmStsxyterRawHitMessage;
 #pragma link C++ class CbmTrbRawMessage;
-
-#pragma link C++ enum DetectorId;
 
 #endif

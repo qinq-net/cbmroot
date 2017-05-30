@@ -428,10 +428,10 @@ void CbmAnaConversionTomography::TomographyReco(CbmMCTrack* mctrack)
 
 Bool_t CbmAnaConversionTomography::GetNPoints(CbmMCTrack* mctrack)
 {
-	Double_t np_sts = mctrack->GetNPoints(kSTS);
-	Double_t np_rich = mctrack->GetNPoints(kRICH);
-	Double_t np_trd = mctrack->GetNPoints(kTRD);
-	Double_t np_tof = mctrack->GetNPoints(kTOF);
+	Double_t np_sts = mctrack->GetNPoints(kSts);
+	Double_t np_rich = mctrack->GetNPoints(kRich);
+	Double_t np_trd = mctrack->GetNPoints(kTrd);
+	Double_t np_tof = mctrack->GetNPoints(kTof);
 	
 	Bool_t result = false;
 	if(np_sts > 0 || np_rich > 0 || np_trd > 0 || np_tof > 0) {

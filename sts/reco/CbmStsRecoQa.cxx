@@ -129,14 +129,14 @@ void CbmStsRecoQa::ProcessEvent(CbmEvent* event) {
 	TStopwatch timer;
 	timer.Start();
 	Int_t eventNr = ( event ? event->GetNumber() : fNofEvents );
-	Int_t nTracks = ( event ? event->GetNofData(Cbm::kStsTrack)
+	Int_t nTracks = ( event ? event->GetNofData(kStsTrack)
 	    : fTracks->GetEntriesFast() );
 	LOG(DEBUG) << GetName() << ": event " << eventNr << ", STS tracks: "
 	    << nTracks << FairLogger::endl;
 
 	// Track loop
 	for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
-	  Int_t index = ( event ? event->GetIndex(Cbm::kStsTrack, iTrack) : iTrack );
+	  Int_t index = ( event ? event->GetIndex(kStsTrack, iTrack) : iTrack );
 		CbmStsTrack* track = dynamic_cast<CbmStsTrack*>(fTracks->At(index));
 		assert(track);
 

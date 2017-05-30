@@ -117,9 +117,9 @@ void CbmLitRadLengthQa::CreateHistograms()
    Int_t nofDetNames = detNames.size();
    for (Int_t iDet = 0; iDet < nofDetNames; iDet++) {
       string detName = detNames[iDet];
-      Bool_t createHistograms = detName == "Total" || (detName == "Mvd" && fDet.GetDet(kMVD)) || (detName == "Sts" && fDet.GetDet(kSTS))
-             || (detName == "Rich" && fDet.GetDet(kRICH)) || (detName == "Trd" && fDet.GetDet(kTRD))
-             || (detName == "Much" && fDet.GetDet(kMUCH)) || (detName == "Tof" && fDet.GetDet(kTOF));
+      Bool_t createHistograms = detName == "Total" || (detName == "Mvd" && fDet.GetDet(kMvd)) || (detName == "Sts" && fDet.GetDet(kSts))
+             || (detName == "Rich" && fDet.GetDet(kRich)) || (detName == "Trd" && fDet.GetDet(kTrd))
+             || (detName == "Much" && fDet.GetDet(kMuch)) || (detName == "Tof" && fDet.GetDet(kTof));
       if (!createHistograms) continue; // Create histograms only for the detectors wich are in the setup
       string rtname = "hrl_RadThickness_" + detName;
       fHM->Add(rtname + "_H1", new TH1D(string(rtname + "_H1").c_str(), string(rtname + "_H1;Radiation thickness [%];Entries").c_str(), nofBins, 0, 0));
@@ -168,9 +168,9 @@ void CbmLitRadLengthQa::ExecDetector(
       const string& pathPattern,
       const string& detName)
 {
-    if (!(detName == "Total" || (detName == "Mvd" && fDet.GetDet(kMVD)) || (detName == "Sts" && fDet.GetDet(kSTS))
-                || (detName == "Rich" && fDet.GetDet(kRICH)) || (detName == "Trd" && fDet.GetDet(kTRD))
-                || (detName == "Much" && fDet.GetDet(kMUCH)) || (detName == "Tof" && fDet.GetDet(kTOF)))) return;
+    if (!(detName == "Total" || (detName == "Mvd" && fDet.GetDet(kMvd)) || (detName == "Sts" && fDet.GetDet(kSts))
+                || (detName == "Rich" && fDet.GetDet(kRich)) || (detName == "Trd" && fDet.GetDet(kTrd))
+                || (detName == "Much" && fDet.GetDet(kMuch)) || (detName == "Tof" && fDet.GetDet(kTof)))) return;
 
    map<Int_t, Double_t> radThicknessOnTrack; // track ID -> sum of radiation thickness on track
    map<Int_t, Double_t> thicknessOnTrack; // track ID -> sum of track lengthens on track
@@ -232,9 +232,9 @@ void CbmLitRadLengthQa::ExecDetector(
       const string& detName,
       Int_t (*getStationId)(const TString&))
 {
-   if (!((detName == "Mvd" && fDet.GetDet(kMVD)) || (detName == "Sts" && fDet.GetDet(kSTS))
-           || (detName == "Trd" && fDet.GetDet(kTRD)) || (detName == "Much" && fDet.GetDet(kMUCH))
-           || (detName == "MuchAbsorber" && fDet.GetDet(kMUCH)))) return;
+   if (!((detName == "Mvd" && fDet.GetDet(kMvd)) || (detName == "Sts" && fDet.GetDet(kSts))
+           || (detName == "Trd" && fDet.GetDet(kTrd)) || (detName == "Much" && fDet.GetDet(kMuch))
+           || (detName == "MuchAbsorber" && fDet.GetDet(kMuch)))) return;
 
    // track ID -> TRD station ID -> parameter
    map<Int_t, map<Int_t, Double_t> > radThicknessOnTrack; // track ID -> sum of radiation thickness on track

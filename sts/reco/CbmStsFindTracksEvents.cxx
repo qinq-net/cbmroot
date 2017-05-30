@@ -185,7 +185,7 @@ void CbmStsFindTracksEvents::ProcessEvent(CbmEvent* event) {
 
   // --- Event log
   Int_t eventNumber = (event ? event->GetNumber() : fNofEvents);
-  Int_t nHits = (event ? event->GetNofData(Cbm::kStsHit) : fStsHits->GetEntriesFast());
+  Int_t nHits = (event ? event->GetNofData(kStsHit) : fStsHits->GetEntriesFast());
   LOG(INFO) << "+ " << setw(20) << GetName() << ": Event " << setw(6)
             << right << eventNumber
             << ", real time " << fixed << setprecision(6)

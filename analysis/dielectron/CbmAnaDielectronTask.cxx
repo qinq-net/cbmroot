@@ -753,7 +753,7 @@ Bool_t CbmAnaDielectronTask::IsMcTrackAccepted(
     CbmMCTrack* tr = (CbmMCTrack*) fMCTracks->At(mcTrackInd);
     if (tr == NULL) return false;
     Int_t nRichPoints = fNofHitsInRingMap[mcTrackInd];
-    return (tr->GetNPoints(kMVD) + tr->GetNPoints(kSTS) >= 4 && nRichPoints >= 7 && tr->GetNPoints(kTRD) >= 2 && tr->GetNPoints(kTOF) > 0) ;
+    return (tr->GetNPoints(kMvd) + tr->GetNPoints(kSts) >= 4 && nRichPoints >= 7 && tr->GetNPoints(kTrd) >= 2 && tr->GetNPoints(kTof) > 0) ;
 }
 
 void CbmAnaDielectronTask::SingleParticleAcceptance()
@@ -763,8 +763,8 @@ void CbmAnaDielectronTask::SingleParticleAcceptance()
         CbmMCTrack* mctrack = (CbmMCTrack*) fMCTracks->At(i);
         Int_t motherId = mctrack->GetMotherId();
         Int_t pdg = TMath::Abs(mctrack->GetPdgCode());
-        Int_t nMvdPoints = mctrack->GetNPoints(kMVD);
-        Int_t nStsPoints = mctrack->GetNPoints(kSTS);
+        Int_t nMvdPoints = mctrack->GetNPoints(kMvd);
+        Int_t nStsPoints = mctrack->GetNPoints(kSts);
         Int_t nRichPoints = fNofHitsInRingMap[i];
         
         Bool_t isAcc = ( nMvdPoints+nStsPoints >= 4 && nRichPoints >= 7);
@@ -848,8 +848,8 @@ void CbmAnaDielectronTask::FillElPiMomHist()
         Int_t pdg = TMath::Abs(mctrack->GetPdgCode());
         double momentum = mctrack->GetP();
         double rapidity = mctrack->GetRapidity();
-        Int_t nMvdPoints = mctrack->GetNPoints(kMVD);
-        Int_t nStsPoints = mctrack->GetNPoints(kSTS);
+        Int_t nMvdPoints = mctrack->GetNPoints(kMvd);
+        Int_t nStsPoints = mctrack->GetNPoints(kSts);
         Bool_t isAcc = ( nMvdPoints+nStsPoints >= 4);
         TVector3 vertex;
         mctrack->GetStartVertex(vertex);
@@ -1595,7 +1595,7 @@ void CbmAnaDielectronTask::CalculateNofTopologyPairs(
             
             if (!CbmLitMCTrackCreator::Instance()->TrackExists(FairRun::Instance()->GetEventHeader()->GetMCEntryNumber(), iMCTrack)) continue;
             const CbmLitMCTrack& litMCTrack = CbmLitMCTrackCreator::Instance()->GetTrack(FairRun::Instance()->GetEventHeader()->GetMCEntryNumber(), iMCTrack);
-            nofPointsSts = litMCTrack.GetNofPointsInDifferentStations(kSTS);
+            nofPointsSts = litMCTrack.GetNofPointsInDifferentStations(kSts);
             break;
         }
         if (nofPointsSts == 0) h_nof_pairs->Fill(0.5);

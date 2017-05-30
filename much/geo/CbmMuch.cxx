@@ -175,7 +175,7 @@ Bool_t CbmMuch::ProcessHits(FairVolume* vol) {
 
     // Increment number of MuchPoints for this track
     CbmStack* stack = (CbmStack*) gMC->GetStack();
-    stack->AddPoint(kMUCH);
+    stack->AddPoint(kMuch);
 
     ResetParameters();
   }

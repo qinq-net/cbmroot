@@ -8,7 +8,7 @@
 #define CBMMUCHSTRAWDIGI_H 1
 
 #include "CbmDigi.h"
-#include "CbmDetectorList.h"
+#include "CbmDefs.h"
 #include "CbmMuchDigiMatch.h"
 
 
@@ -17,7 +17,7 @@ class CbmMuchStrawDigi : public CbmDigi{
   CbmMuchStrawDigi();
   CbmMuchStrawDigi(UInt_t address, Float_t x, Float_t y, Float_t z, Double_t time);
   virtual ~CbmMuchStrawDigi(){}
-  Int_t GetSystemId()  const { return kMUCH;    }
+  Int_t GetSystemId()  const { return kMuch;    }
   Int_t GetAddress()  const { return fAddress; }
   Float_t GetX() const { return fX; }
   Float_t GetY() const { return fY; }

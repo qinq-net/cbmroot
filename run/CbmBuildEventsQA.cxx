@@ -13,7 +13,6 @@
 #include "TStopwatch.h"
 #include "FairLogger.h"
 #include "FairRootManager.h"
-#include "CbmDetectorList.h"
 #include "CbmEvent.h"
 #include "CbmLink.h"
 #include "CbmMatch.h"
@@ -64,7 +63,7 @@ void CbmBuildEventsQA::Exec(Option_t*) {
 				       << FairLogger::endl;
 
 		// --- Counters
-		Int_t nDigis        = event->GetNofData(Cbm::kStsDigi);
+		Int_t nDigis        = event->GetNofData(kStsDigi);
 		Int_t nDigiCorrect  = 0;
 		Int_t nLinks        = 0;
 		Int_t nLinksCorrect = 0;
@@ -72,7 +71,7 @@ void CbmBuildEventsQA::Exec(Option_t*) {
 
 		// --- Loop over STS digis
 		for (Int_t iDigi = 0; iDigi < nDigis; iDigi++) {
-			UInt_t index = event->GetIndex(Cbm::kStsDigi, iDigi);
+			UInt_t index = event->GetIndex(kStsDigi, iDigi);
 			CbmStsDigi* digi = (CbmStsDigi*) fStsDigis->At(index);
 			assert(digi);
 
@@ -151,8 +150,8 @@ void CbmBuildEventsQA::MatchEvent(CbmEvent* event) {
 	} //? event has no match
 
 	// --- Loop over digis
-	for (Int_t iDigi = 0; iDigi < event->GetNofData(Cbm::kStsDigi); iDigi++) {
-		Int_t index = event->GetIndex(Cbm::kStsDigi, iDigi);
+	for (Int_t iDigi = 0; iDigi < event->GetNofData(kStsDigi); iDigi++) {
+		Int_t index = event->GetIndex(kStsDigi, iDigi);
 		CbmDigi* digi = (CbmStsDigi*) fStsDigis->At(index);
 		assert(digi);
 

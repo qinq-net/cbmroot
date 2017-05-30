@@ -8,9 +8,8 @@
 #ifndef CBMSTSDIGI_H
 #define CBMSTSDIGI_H 1
 
+#include "CbmDefs.h"
 #include "CbmDigi.h"
-
-#include "CbmDetectorList.h"
 
 #ifndef __CINT__
 #include <boost/serialization/access.hpp>
@@ -62,7 +61,7 @@ class CbmStsDigi : public CbmDigi
  /** System ID
   ** @value System identifier (enum DetectorId)
   **/
-  virtual Int_t GetSystemId() const { return kSTS; }
+  virtual Int_t GetSystemId() const { return kSts; }
 
 
   /** Time of measurement

@@ -12,7 +12,7 @@
 #define CBMTBEVENT_H 1
 
 
-#include "CbmDetectorList.h"
+#include "CbmDefs.h"
 
 #include "FairEventHeader.h"
 
@@ -86,7 +86,7 @@ class CbmTbEvent : public FairEventHeader
   Double_t fEpochTime;            /** Time of epoch marker [ns] **/
   Int_t    fNofData;              ///< Total number of digis in event
   std::vector<Double_t> fTimeBc;  /** Time Of Beam Counter messages **/
-  Int_t    fNofDigis[kNOFDETS];   ///< Number of digis per detector system
+  Int_t    fNofDigis[kNofSystems];   ///< Number of digis per detector system
   Int_t    fNofAux;               ///< Number of AUX signals in event
   Int_t    fEventType;            ///< Type of event 0=normal event,1=baseline
 

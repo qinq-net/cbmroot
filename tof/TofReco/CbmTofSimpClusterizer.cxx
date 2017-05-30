@@ -920,11 +920,11 @@ Bool_t   CbmTofSimpClusterizer::FillHistos()
       {
          pMcTrk = (CbmMCTrack*) fMcTracksColl->At( iTrkInd );
 
-         if( 0 < pMcTrk->GetNPoints(kTOF) )
+         if( 0 < pMcTrk->GetNPoints(kTof) )
          {
             iNbTofTracks++;
          }
-         if( 0 < pMcTrk->GetNPoints(kTOF) && -1 == pMcTrk->GetMotherId() )
+         if( 0 < pMcTrk->GetNPoints(kTof) && -1 == pMcTrk->GetMotherId() )
             iNbTofTracksPrim++;
 
       } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
@@ -1405,7 +1405,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                               // 2 Digis = both sides present
                               Int_t iCh1=iCh;
                               if(fGeoHandler->GetGeoVersion() < k14a) iCh1= iCh1+1; //FIXME
-                              CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh1); 
+                              CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSm, iRpc, 0, iCh1);
 
                               iChId = fTofId->SetDetectorInfo( xDetInfo );
                               Int_t iUCellId=CbmTofAddress::GetUniqueAddress(iSm,iRpc,iCh,0,iSmType);
