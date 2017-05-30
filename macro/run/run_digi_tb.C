@@ -91,7 +91,6 @@ void run_digi_tb(Int_t nEvents = 2, const char* setupName = "sis100_electron")
   Int_t nAdc              =    4096;   // Number of ADC channels (12 bit)
   Double_t timeResolution =       5.;  // time resolution [ns]
   Double_t deadTime       =     100.;  // infinite dead time (integrate entire event)
-  Int_t digiModel         =       1;   // Model: 1 = uniform charge distribution along track
   Double_t noise          =    1000.;  // Noise [e]
 	
   // The following settings correspond to a validated implementation. 
@@ -101,7 +100,7 @@ void run_digi_tb(Int_t nEvents = 2, const char* setupName = "sis100_electron")
   Bool_t useDiffusion     = kFALSE;    // Deactivate diffusion
   Bool_t useCrossTalk     = kFALSE;    // Deactivate cross talk
 	
-  CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
+  CbmStsDigitize* stsDigi = new CbmStsDigitize();
   stsDigi->SetProcesses(eLossModel, useLorentzShift, useDiffusion, useCrossTalk);
   stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution, deadTime, noise);
   run->AddTask(stsDigi);

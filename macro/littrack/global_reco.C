@@ -159,7 +159,6 @@ void global_reco(Int_t nEvents = 10, // number of events
       Double_t timeResolution =       5.;  // time resolution [ns]
       Double_t deadTime       = 9999999.;  // infinite dead time (integrate entire event)
       Double_t noise          =       0.;  // ENC [e]
-      Int_t digiModel         = 1;  // Model: 1 = uniform charge distribution along track
       
       // The following settings correspond to a validated implementation. 
       // Changing them is on your own risk.
@@ -168,7 +167,7 @@ void global_reco(Int_t nEvents = 10, // number of events
       Bool_t useDiffusion     = kFALSE;    // Deactivate diffusion
       Bool_t useCrossTalk     = kFALSE;    // Deactivate cross talk
       
-      CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
+      CbmStsDigitize* stsDigi = new CbmStsDigitize();
       stsDigi->SetProcesses(eLossModel, useLorentzShift, useDiffusion, useCrossTalk);
       stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution,
 			     deadTime, noise);

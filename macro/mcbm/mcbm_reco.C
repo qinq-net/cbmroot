@@ -143,7 +143,7 @@ void mcbm_reco(Int_t nEvents = 2,
   // -----   Digitisers   ---------------------------------------------------
   std::cout << std::endl;
   TString macroName = gSystem->Getenv("VMCWORKDIR");
-  macroName += "/macro/mcbm/modules/digitize.C";
+  macroName += "/macro/run/modules/digitize.C";
   std::cout << "Loading macro " << macroName << std::endl;
   gROOT->LoadMacro(macroName);
   gROOT->ProcessLine("digitize()");
