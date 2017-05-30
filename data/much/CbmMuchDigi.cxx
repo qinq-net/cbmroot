@@ -20,16 +20,16 @@
 CbmMuchDigi::CbmMuchDigi(CbmMuchDigi* digi)
 	: CbmDigi(*digi),
 	fAddress(digi->fAddress),
-	fCharge(digi->fCharge),
-	fTime(digi->fTime)
+ 	fTime(digi->fTime),
+	fCharge(digi->fCharge)
 { 
 }
 
 CbmMuchDigi::CbmMuchDigi(CbmMuchDigi* digi,CbmMuchDigiMatch* match)
   : CbmDigi(*digi),
 	fAddress(digi->fAddress),
-	fCharge(digi->fCharge),
-	fTime(digi->fTime)
+	fTime(digi->fTime),
+	fCharge(digi->fCharge)
 {  
 	SetMatch(match);
 }
@@ -38,8 +38,8 @@ CbmMuchDigi::CbmMuchDigi(CbmMuchDigi* digi,CbmMuchDigiMatch* match)
 CbmMuchDigi::CbmMuchDigi(const CbmMuchDigi& rhs)
 	: CbmDigi(rhs),
 	fAddress(rhs.fAddress),
-	fCharge(rhs.fCharge),
-	fTime(rhs.fTime)
+	fTime(rhs.fTime),
+	fCharge(rhs.fCharge)
 {
 }
 
@@ -49,8 +49,8 @@ CbmMuchDigi& CbmMuchDigi::operator=(const CbmMuchDigi& rhs)
   if (this != &rhs) {
     CbmDigi::operator=(rhs);
     fAddress = rhs.fAddress;
-    fCharge = rhs.fCharge;
     fTime = rhs.fTime;
+    fCharge = rhs.fCharge;
   }
   return *this;
 }
