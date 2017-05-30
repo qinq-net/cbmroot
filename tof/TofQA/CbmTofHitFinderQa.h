@@ -28,6 +28,7 @@ class TClonesArray;
 class TH1;
 class TH2;
 class TH3;
+class TProfile2D;
 class TString;
 
 class CbmTofHitFinderQa : public FairTask {
@@ -47,16 +48,17 @@ class CbmTofHitFinderQa : public FairTask {
        virtual void SetParContainers();
 
        Bool_t   RegisterInputs();
-       
+
        Bool_t   SetHistoFileNameCartCoordNorm( TString sFilenameIn );
        Bool_t   SetHistoFileNameAngCoordNorm( TString sFilenameIn );
        Bool_t   SetHistoFileNameSphCoordNorm( TString sFilenameIn );
        Bool_t   SetHistoFileName( TString sFilenameIn );
-       
+
        void   SetNormHistGenerationMode( Bool_t bModeIn = kTRUE){ fbNormHistGenMode = bModeIn;}
-       
+
        Bool_t   SetWallPosZ( Double_t dWallPosCm = 1000);
 
+       void   SetNbEventsHitsNbPlots( UInt_t uNbEvents ){ fuNbEventsForHitsNbPlots = uNbEvents; }
    private:
       Bool_t   CreateHistos();
       Bool_t   FillHistos();
@@ -85,7 +87,7 @@ class CbmTofHitFinderQa : public FairTask {
       std::vector< std::vector< Int_t > >                fvSmRpcOffs;  // Offset in RPC index for first RPC of each SM
       Int_t fiNbChTot;
       std::vector< std::vector< std::vector< Int_t > > > fvRpcChOffs;  // Offset in channel index for first channel of each RPC
-    
+
       // Parameters
       CbmTofDigiPar    * fDigiPar;
       CbmTofDigiBdfPar * fDigiBdfPar;
@@ -103,18 +105,28 @@ class CbmTofHitFinderQa : public FairTask {
       TClonesArray          * fRealTofPointsColl; // Realistics TOF MC points
       TClonesArray          * fRealTofMatchColl;  // Index of Realistics TOF MC points for each MC Point (CbmMatch)
       Bool_t                  fbRealPointAvail;
-      
+
       // Histograms
          // Flag for Normalization histograms generation
       Bool_t  fbNormHistGenMode;
          // Input file names and path for Mapping Normalization histos
-      TString fsHistoInNormCartFilename;   
-      TString fsHistoInNormAngFilename;    
-      TString fsHistoInNormSphFilename;  
+      TString fsHistoInNormCartFilename;
+      TString fsHistoInNormAngFilename;
+      TString fsHistoInNormSphFilename;
          // Output file name and path
-      TString fsHistoOutFilename;   
+      TString fsHistoOutFilename;
          // Position of the TOF wall on Z axis for centering histos with Z
       Double_t fdWallPosZ;
+         // Nb Hits per event for first N events
+      UInt_t   fuNbEventsForHitsNbPlots;
+      TH1        * fhNbHitsPerEvent;
+      TH1        * fhNbHitsSingPntPerEvent;
+      TH1        * fhNbHitsMultPntPerEvent;
+      TH1        * fhNbHitsSingTrkPerEvent;
+      TH1        * fhNbHitsMultTrkPerEvent;
+         // Nb different TOF digis in Hit
+      TH1        * fhNbDigisInHit;
+      TProfile2D * fhNbDigisInHitMapXY;
          // Geometric Mapping
       std::vector<TH2 *> fvhTrackAllStartZCent; // Dependence of Track origin on centrality, if TOF points
       std::vector<TH2 *> fvhTrackSecStartZCent; // Dependence of Track origin on centrality, if TOF points
@@ -288,7 +300,7 @@ class CbmTofHitFinderQa : public FairTask {
       TH2 * fhMultiTrkHitBestPullY;
       TH2 * fhMultiTrkHitBestPullZ;
       TH2 * fhMultiTrkHitBestPullR;
-      
+
          // Physics coord mapping, 1 per particle type
             // Phase space
                // Primary tracks
@@ -305,7 +317,7 @@ class CbmTofHitFinderQa : public FairTask {
       std::vector<TH2 *> fvhPtmRapSecTofHit;
       std::vector<TH2 *> fvhPtmRapSecTofHitSinglePnt;
       std::vector<TH2 *> fvhPtmRapSecTofHitSingleTrk;
-      
+
             // PLab
                // Primary tracks
       std::vector<TH1 *> fvhPlabGenTrk;
@@ -321,7 +333,7 @@ class CbmTofHitFinderQa : public FairTask {
       std::vector<TH1 *> fvhPlabSecTofHit;
       std::vector<TH1 *> fvhPlabSecTofHitSinglePnt;
       std::vector<TH1 *> fvhPlabSecTofHitSingleTrk;
-      
+
             // MC Tracks losses
                // Primary tracks
       std::vector<TH2 *> fvhPtmRapGenTrkTofPnt;
@@ -348,7 +360,7 @@ class CbmTofHitFinderQa : public FairTask {
       std::vector<ULong64_t> fvulIdxSecTracksWithPnt;
       std::vector<ULong64_t> fvulIdxSecTracksWithHit;
       TH1* fhIntegratedHitPntEffSec;
-      
+
          // Integrated TofHit Efficiency: Tracks firing channel but not going to Digi/Hit
       std::vector<ULong64_t> fvulIdxHiddenTracksWithHit;
       TH1* fhIntegratedHiddenHitPntLoss;
@@ -356,7 +368,7 @@ class CbmTofHitFinderQa : public FairTask {
       TH1* fhIntegratedHiddenHitPntLossPrim;
       std::vector<ULong64_t> fvulIdxHiddenSecTracksWithHit;
       TH1* fhIntegratedHiddenHitPntLossSec;
-      
+
          // Efficiency dependence on nb crossed gaps
       UInt_t fuMaxCrossedGaps = 20;
       std::vector< std::vector<ULong64_t> > fvulIdxTracksWithPntGaps;
@@ -376,10 +388,10 @@ class CbmTofHitFinderQa : public FairTask {
             // Multiple track hits
       TH2 * fhMcTrkStartPrimMultiTrk;
       TH2 * fhMcTrkStartSecMultiTrk;
-      
+
          // TOF Debug checks
       TH1 * fhPointMatchWeight;
-      
+
       ClassDef(CbmTofHitFinderQa, 1);
 };
 
