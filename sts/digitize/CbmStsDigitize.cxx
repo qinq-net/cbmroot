@@ -62,10 +62,9 @@ Bool_t CbmStsDigitize::fIsInitialised   = kFALSE;
 
 
 // -----   Standard constructor   ------------------------------------------
-CbmStsDigitize::CbmStsDigitize(Int_t digiModel)
+CbmStsDigitize::CbmStsDigitize()
   : FairTask("StsDigitize"),
     fMode(0),
-    fDigiModel(digiModel),
     fProcessSecondaries(kTRUE),
     fDynRange(40960.),
     fThreshold(4000.),
@@ -477,8 +476,6 @@ void CbmStsDigitize::InitSetup() {
   // Get STS setup interface
 	fSetup = CbmStsSetup::Instance();
 
-  // Assign types to the sensors in the setup
-	SetSensorTypes();
 
 	// Modify the strip pitch for DSSD sensor type, if explicitly set by user
 	Int_t nModified = 0;
@@ -781,61 +778,6 @@ void CbmStsDigitize::SetSensorConditions() {
 }
 // -------------------------------------------------------------------------
 
-
-
-// --- Set the types for the sensors in the setup --------------------------
-// TODO: I do not like the current implementation. Depending on the
-// detector response model, it replaces the sensor types set by CbmStsSetup
-// by the appropriate sensor types for each sensor. A better and fully
-// consistent treatment requires the introduction of parameter handling
-// for the STS digitisation, which is still to come.
-void CbmStsDigitize::SetSensorTypes() {
-
-	// --- Sensor counter
-	Int_t nSensorsSet = 0;
-
-	// --- Catch unknown response model
-	if ( fDigiModel != 1 && fDigiModel != 3 )
-		LOG(FATAL) << GetName() << ": Unknown response model " << fDigiModel
-				       << FairLogger::endl;
-
-
-	// --- No action required if model is "simple". TypeDssd is instantiated
-	// --- as default by CbmStsSetup.
-	if ( fDigiModel == 1 ) {
-		LOG(INFO) << GetName() << ": Detector response model SIMPLE"
-				      << FairLogger::endl;
-		return;
-	}
-
-	// --- Type Dssd, but with old ProcessPoint implementation
-	if ( fDigiModel == 3 ) {
-		LOG(INFO) << GetName() << ": Detector response model SIMPLE OLD"
-				      << FairLogger::endl;
-		for (Int_t iSensor = 0; iSensor < fSetup->GetNofSensors(); iSensor++) {
-			CbmStsSensor* sensor = fSetup->GetSensor(iSensor);
-
-			// --- Get sensor type. Catch non-DSSD types.
-			if ( ! sensor->GetType()->IsA()->InheritsFrom(CbmStsSensorTypeDssd::Class()) )
-				LOG(FATAL) << GetName() << ": Sensor " << sensor->GetName()
-				           << " is not of type DSSD!" << FairLogger::endl;
-			CbmStsSensorTypeDssd* type =
-					dynamic_cast<CbmStsSensorTypeDssd*>(sensor->GetType());
-			type->SetOld();
-
-		}
-		return;
-	}
-
-
-	// --- Log
-	LOG(INFO) << GetName() << ": Detector response model "
-			      << ( fDigiModel == 0 ? "IDEAL" : "REAL" ) << FairLogger::endl;
-
-	LOG(INFO) << GetName() << ": Re-set types for " << nSensorsSet
-            << " sensors" << FairLogger::endl;
-}
-// -------------------------------------------------------------------------
 
 
 ClassImp(CbmStsDigitize)

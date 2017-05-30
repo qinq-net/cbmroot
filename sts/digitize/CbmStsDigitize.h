@@ -36,13 +36,8 @@ class CbmStsDigitize : public FairTask
 
  public:
 
-  /** Constructor
-   ** @param digiModel  Charge creation model.
-   **                   0 = ideal, all charge in one strip.
-   **                   1 = simple, uniform charge creation
-   **                   2 = advanced
-   **/
-  CbmStsDigitize(Int_t digiModel = 2);
+  /** Constructor **/
+  CbmStsDigitize();
 
 
   /** Destructor **/
@@ -67,11 +62,6 @@ class CbmStsDigitize : public FairTask
   Double_t GetDeadChannelFraction() const {
   	return fDeadChannelFraction;
   }
-
-  /** Digitize model **/
-  // TODO: can be removed after validation of SensorTypeDssd
-  Int_t GetDigitizeModel() const { return fDigiModel;}
-
 
   /** Flag for energy loss model
    ** @value 0 = ideal, 1 = uniform, 2 = fluctuations
@@ -204,10 +194,6 @@ class CbmStsDigitize : public FairTask
   void SetSensorStripPitch(Double_t pitch) { fStripPitch = pitch; }
 
 
-  /** Set types for the sensors in the setup **/
-  void SetSensorTypes();
-
-
   /** Flag for cross talk
    ** @value kTRUE if cross talk is activated
    **/
@@ -230,7 +216,6 @@ class CbmStsDigitize : public FairTask
  private:
 
   Int_t fMode;       ///< Run mode. 0 = stream, 1 = event
-  Int_t fDigiModel;  ///< Detector response model. 0 = ideal, 1 = simple, 2 = real
   Bool_t fProcessSecondaries;  ///< If kFALSE, only primaries will be digitised
   static Bool_t fIsInitialised;   ///< kTRUE if Init() was called
 

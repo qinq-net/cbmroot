@@ -32,7 +32,7 @@ using std::vector;
 CbmStsSensorTypeDssd::CbmStsSensorTypeDssd()
     : CbmStsSensorType(), 
       fDx(-1.), fDy(-1.), fDz(-1.),
-      fNofStrips(), fStereo(), fIsSet(kFALSE), fOld(kFALSE),
+      fNofStrips(), fStereo(), fIsSet(kFALSE),
       fPhysics(NULL), fHitFinderModel(1),
       fPitch(), fTanStereo(), fCosStereo(), fStripShift(), fErrorFac(0.),
       fStripCharge()
@@ -678,12 +678,6 @@ void CbmStsSensorTypeDssd::PrintChargeStatus() const {
 Int_t CbmStsSensorTypeDssd::ProcessPoint(CbmStsSensorPoint* point,
                                          const CbmStsSensor* sensor) {
 
-  // --- If desired, use the old ProcessPoint method
-	if ( fOld ) {
-	  Int_t nSignalsOld = ProcessPointOld(point, sensor);
-	  return nSignalsOld;
-	}
-
   // --- Catch if parameters are not set
   if ( ! fIsSet ) {
     LOG(FATAL) << fName << ": parameters are not set!"
@@ -748,51 +742,6 @@ Int_t CbmStsSensorTypeDssd::ProcessPoint(CbmStsSensorPoint* point,
 
   // Code number of signals
   nSignals = 1000 * nCharges[0] + nCharges[1];
-
-  return nSignals;
-}
-// -------------------------------------------------------------------------
-
-
-
-// -----   Process an MC Point (old)   -------------------------------------
-Int_t CbmStsSensorTypeDssd::ProcessPointOld(CbmStsSensorPoint* point,
-                                            const CbmStsSensor* sensor) {
-
-	// TODO: This implementation can be removed after validation of the new one.
-
-  // --- Catch if parameters are not set
-  if ( ! fIsSet ) {
-    LOG(FATAL) << fName << ": parameters are not set!"
-               << FairLogger::endl;
-    return -1;
-  }
-
-  // --- Debug
-  LOG(DEBUG3) << ToString() << FairLogger::endl;
-  LOG(DEBUG3) << GetName() << ": Processing point " << point->ToString()
-  		        << FairLogger::endl;
-
-  // --- Check for being in sensitive area
-  // --- Note: No charge is produced if either entry or exit point
-  // --- (or both) are outside the active area. This is not an exact
-  // --- description since the track may enter the sensitive area
-  // --- if not perpendicular to the sensor plane. The simplification
-  // --- was chosen to avoid complexity. :-)
-  if ( TMath::Abs(point->GetX1()) > fDx/2. ||
-	   TMath::Abs(point->GetY1()) > fDy/2. ||
-	   TMath::Abs(point->GetX2()) > fDx/2. ||
-	   TMath::Abs(point->GetY2()) > fDy/2. ) {
-  	LOG(DEBUG4) << GetName() << ": not in sensitive area" << FairLogger::endl;
-  	return 0;
-  }
-
-  // --- Number of created charge signals (coded front/back side)
-  Int_t nSignals = 0;
-
-  // --- Produce charge on front and back side
-  nSignals += 1000 * ProduceCharge(point, 0, sensor); // front
-  nSignals +=        ProduceCharge(point, 1, sensor); // back
 
   return nSignals;
 }
@@ -892,93 +841,6 @@ void CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
 		} //# front and back side
 	} //? E loss fluctuations
 
-}
-// -------------------------------------------------------------------------
-
-
-
-// -----   Produce charge on the strips   ----------------------------------
-Int_t CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
-                                          Int_t side,
-                                          const CbmStsSensor* sensor)
-                                          const {
-
-	// TODO: This implementation can be removed after validation of the new one.
-  // It projects a uniform charge distribution on the strips.
-
-  // --- Protect against being called without parameters being set
-  if ( ! fIsSet ) LOG(FATAL) << "Parameters of sensor " << fName
-                             << " are not set!" << FairLogger::endl;
-
-  // This implementation assumes a straight trajectory in the sensor
-  // and a constant charge distribution along it.
-
-  // Check for side qualifier
-  if ( side < 0 || side > 1 )  {
-    LOG(ERROR) << "Illegal side qualifier!" << FairLogger::endl;
-    return -1;
-  }
-
-  // Total produced charge
-  Double_t qtot = point->GetELoss() / CbmStsPhysics::PairCreationEnergy();
-
-  // Stereo angle and strip pitch
-  Double_t tanphi = fTanStereo[side];
-  Double_t pitch  = fPitch[side];
-//  Int_t nStrips   = fNofStrips[side];
-
-  // Debug output
-  LOG(DEBUG3) << GetName() << ": Side " << side << ", dx = " << fDx
-  		        << " cm, dy = " << fDy << " cm, stereo " << fStereo[side]
-  		        << " degrees, strips " << fNofStrips[side] << ", pitch "
-  		        << pitch << " mum" << FairLogger::endl;
-
-  // Project point coordinates (in / out) along strips to readout (top) edge
-  // Keep in mind that the SensorPoint gives coordinates with
-  // respect to the centre of the active area.
-  Double_t x1 = point->GetX1() + 0.5 * fDx
-                - ( 0.5 * fDy - point->GetY1() ) * tanphi;
-  Double_t x2 = point->GetX2() + 0.5 * fDx
-                - ( 0.5 * fDy - point->GetY2() ) * tanphi;
-  LOG(DEBUG3) << GetName() << ": R/O x coordinates are " << x1 << " "
-  		        << x2 << FairLogger::endl;
-
-
-  // Calculate corresponding strip numbers
-  // This can be negative or larger than the number of channels if the
-  // strip does not extend to the top edge.
-  Int_t i1 = TMath::FloorNint( x1 / pitch );
-  Int_t i2 = TMath::FloorNint( x2 / pitch );
-
-
-  // --- More than one strip: sort strips
-  if ( i1 > i2 ) {
-    Int_t tempI = i1;
-    i1 = i2;
-    i2 = tempI;
-    Double_t tempX = x1;
-    x1 = x2;
-    x2 = tempX;
-  }
-  LOG(DEBUG3) << GetName() << ": R/O strips are " << i1 << " to "
-  		        << i2 << FairLogger::endl;
-
-  // --- Loop over fired strips
-  Int_t nSignals = 0;
-  for (Int_t iStrip = i1; iStrip <= i2; iStrip++) {
-
-    // --- Calculate charge in strip
-    Double_t y1 = TMath::Max(x1, Double_t(iStrip) * pitch);  // start in strip
-    Double_t y2 = TMath::Min(x2, Double_t(iStrip+1) * pitch); // stop in strip
-    Double_t charge = (y2 - y1) * qtot / ( x2 - x1 );
-
-    // --- Register charge to module
-    RegisterCharge(sensor, side, iStrip, charge, point->GetTime());
-    nSignals++;
-
-  } // Loop over fired strips
-
-  return nSignals;
 }
 // -------------------------------------------------------------------------
 

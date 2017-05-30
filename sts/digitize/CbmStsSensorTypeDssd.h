@@ -143,23 +143,6 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
                                const CbmStsSensor* sensor);
 
 
-    /** Process one STS Point (old)
-     **
-     ** @param point   Pointer to CbmStsSensorPoint with relevant parameters
-     ** @param sensor  Pointer to CbmStsSensor object
-     ** @return  1000* # signals on front side + # signals on back side
-     **
-     ** Old implementation. Temporary here until new implementation is
-     ** validated.
-     **/
-    virtual Int_t ProcessPointOld(CbmStsSensorPoint* point,
-                                  const CbmStsSensor* sensor);
-
-
-    /** Set usage of old ProcessPoint implementation **/
-    void SetOld() { fOld = kTRUE; }
-
-
     /** Set the parameters
      ** @param dx,dy,dz          Size in x,y,z [cm]
      ** @param pitchF,pitchB     Strip pitch foint and back side [cm]
@@ -208,7 +191,6 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
     Int_t    fNofStrips[2];   ///< Number of strips on front/back side
     Double_t fStereo[2];      ///< Stereo angle front/back side [degrees]
     Bool_t   fIsSet;          ///< Flag whether parameters are set
-    Bool_t   fOld;            ///< Use old ProcessPoint implementation
     CbmStsPhysics* fPhysics;  //!  Pointer to CbmStsPhysics instance
     Int_t fHitFinderModel;    ///< Hit finder model
 
@@ -371,22 +353,12 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
     		                  const CbmStsSensor* sensor, Double_t bY) const;
 
 
-    /** Produce charge on front or back side from a CbmStsSensorPoint
-     ** @param point  Pointer to CbmStsSensorType object
-     ** @param side   0 = front, 1 = back side
-     ** @param sensor Pointer to sensor object
-     ** @return  Number of generated charge signals (active strips)
-     **/
-    virtual Int_t ProduceCharge(CbmStsSensorPoint* point, Int_t side,
-                                const CbmStsSensor* sensor) const;
-
-
     /** Produce charge from a CbmStsSensorPoint
      ** @param point  Pointer to CbmStsSensorType object
      ** @param sensor Pointer to sensor object
      **/
     void ProduceCharge(CbmStsSensorPoint* point,
-    	                 const CbmStsSensor* sensor);
+    	               const CbmStsSensor* sensor);
 
 
     /** Propagate a charge created in the sensor to the readout strips
