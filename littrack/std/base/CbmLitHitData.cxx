@@ -24,6 +24,7 @@ CbmLitHitData::CbmLitHitData():
    fHits(),
    fMaxErrX(),
    fMaxErrY(),
+   fMaxErrT(),
    fNofStations(0)
 {
 }
@@ -39,12 +40,14 @@ void CbmLitHitData::SetNofStations(
    fHits.resize(nofStations);
    fMaxErrX.resize(nofStations);
    fMaxErrY.resize(nofStations);
+   fMaxErrT.resize(nofStations);
    fZPosSet.resize(nofStations);
    fZPosBins.resize(nofStations);
    for(Int_t i = 0; i < nofStations; i++) {
       fHits[i].reserve(nofStations);
       fMaxErrX[i] = 0.;
       fMaxErrY[i] = 0.;
+      fMaxErrT[i] = 0.;
    }
 }
 
@@ -63,6 +66,7 @@ void CbmLitHitData::AddHit(
       CbmLitPixelHit* pixelHit = static_cast<CbmLitPixelHit*>(hit);
       fMaxErrX[station] = max(pixelHit->GetDx(), fMaxErrX[station]);
       fMaxErrY[station] = max(pixelHit->GetDy(), fMaxErrY[station]);
+      fMaxErrT[station] = max(pixelHit->GetDt() > 0 ? pixelHit->GetDt() : 100, fMaxErrT[station]);
    }
 }
 
@@ -95,6 +99,12 @@ litfloat CbmLitHitData::GetMaxErrY(
    Int_t station) const
 {
    return fMaxErrY[station];
+}
+
+litfloat CbmLitHitData::GetMaxErrT(
+   Int_t station) const
+{
+   return fMaxErrT[station];
 }
 
 //const vector<litfloat>& CbmLitHitData::GetZPos(
@@ -136,6 +146,7 @@ void CbmLitHitData::Clear()
       fHits[i].reserve(1500);
       fMaxErrX[i] = 0.;
       fMaxErrY[i] = 0.;
+      fMaxErrT[i] = 0.;
       fZPosSet[i].clear();
       fZPosBins[i].clear();
    }
@@ -171,7 +182,7 @@ string CbmLitHitData::ToString() const
    ss << "HitData: nofStations=" << fNofStations << endl;
    for(UInt_t i = 0; i < fHits.size(); i++) {
       ss << " station " << i << ": " << GetNofHits(i) << " hits, "
-            << "maxerrx=" << GetMaxErrX(i) << ", maxerry=" << GetMaxErrY(i) << ", ";
+            << "maxerrx=" << GetMaxErrX(i) << ", maxerry=" << GetMaxErrY(i) << ", maxerrt=" << GetMaxErrT(i) << ", ";
       ss << "zposset=(";
       for (set<litfloat>::const_iterator it = fZPosSet[i].begin(); it != fZPosSet[i].end(); it++) {
          ss << *it << ", ";

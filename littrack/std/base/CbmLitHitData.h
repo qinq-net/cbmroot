@@ -88,6 +88,14 @@ public:
     */
    litfloat GetMaxErrY(
       Int_t station) const;
+   
+   /**
+    * \breif Return maximum hit error in [ns].
+    * \param[in] station Index of station.
+    * \return hit error.
+    */
+   litfloat GetMaxErrT(
+      Int_t station) const;
 
 //   /**
 //    * \brief Return Z positions of hits.
@@ -154,6 +162,7 @@ private:
    vector<HitPtrVector> fHits; // Array of hits for each station
    vector<litfloat> fMaxErrX; // Array of maximum X position errors for each station
    vector<litfloat> fMaxErrY; // Array of maximum Y position errors for each station
+   vector<litfloat> fMaxErrT; // Array of maximum time measurement errors for each station
    Int_t fNofStations; // Number of stations
    vector<set<litfloat> > fZPosSet; // Set of Z positions of hits in each station
                                     // Temporarily used for Z different Z positions calculation
