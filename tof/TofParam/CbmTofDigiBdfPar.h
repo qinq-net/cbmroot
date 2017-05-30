@@ -95,7 +95,7 @@ class CbmTofDigiBdfPar : public FairParGenericSet
 
     // Simple clusterizer parameters
     Bool_t   ClustUseTrackId() const { return fbMulUseTrackId;};
-    Double_t GetMaxTimeDist() const { return fdMaxTimeDistClust; };
+    Double_t GetMaxTimeDist() const;
     Double_t GetMaxDistAlongCh() const { return fdMaxSpaceDistClust; };
 
     // Cleaning junk
@@ -136,8 +136,8 @@ class CbmTofDigiBdfPar : public FairParGenericSet
     std::vector< TArrayI > fiNbCh;           // [fiNbSmTypes][fiNbRpc]
     std::vector< TArrayI > fiChType;         // [fiNbSmTypes][fiNbRpc]
     std::vector< TArrayI > fiChOrientation;  // [fiNbSmTypes][fiNbRpc] -> in parameter? Possibility to Readout from geometry angles?
-    TArrayI                fiDetUId;         // [NbDet]         
-    std::map <Int_t,Int_t> fMapDetInd;       // [NbDet]         
+    TArrayI                fiDetUId;         // [NbDet]
+    std::map <Int_t,Int_t> fMapDetInd;       // [NbDet]
 
     // Beamtime variables
     TString                fsBeamInputFile;

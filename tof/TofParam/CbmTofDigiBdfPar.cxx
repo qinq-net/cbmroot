@@ -38,7 +38,7 @@ CbmTofDigiBdfPar::CbmTofDigiBdfPar( const char* name,
   fiNbSmTypes(0),
   fiNbSm(),
   fiNbRpc(),
-  fiNbGaps(),  
+  fiNbGaps(),
   fdGapSize(),
   fdSigVel(),
   fiNbCh(),
@@ -46,7 +46,7 @@ CbmTofDigiBdfPar::CbmTofDigiBdfPar( const char* name,
   fiChOrientation(),
   fiDetUId(),
   fMapDetInd(),
-  fsBeamInputFile(""),	
+  fsBeamInputFile(""),
   fiClusterRadiusModel(-1),
   fiSmTypeInpMapp(),
   fdEfficiency(),
@@ -180,23 +180,23 @@ Bool_t CbmTofDigiBdfPar::getParams(FairParamList* l)
    for( Int_t iSmType = 0; iSmType < fiNbSmTypes; iSmType ++)
    {
       fdSigVel[iSmType].Set( fiNbSm[iSmType]*fiNbRpc[iSmType] );
-      if ( ! l->fill( Form("SigVel%03d", iSmType), &(fdSigVel[iSmType]) ) ) 
+      if ( ! l->fill( Form("SigVel%03d", iSmType), &(fdSigVel[iSmType]) ) )
       {
          LOG(WARNING)<<"CbmTofDigiBdfPar::getParams => parameter "
-                     <<Form("SigVel%03d", iSmType) 
+                     <<Form("SigVel%03d", iSmType)
                      <<" not found in the text file. "
                      <<"This is normal for geometries < 14a but may indicate file corruption "
                      <<" for newer geometries. Values are set to default 0.0 cm/ps."
                      <<FairLogger::endl;
          for( Int_t iRpc = 0; iRpc < fiNbRpc[iSmType]; iRpc++)
-            fdSigVel[iSmType].SetAt( 0.0, iRpc);    
+            fdSigVel[iSmType].SetAt( 0.0, iRpc);
          //return kFALSE;
-      } // if ( ! l->fill( Form("SigVel%03d", iSmType), &(fdSigVel[iSmType]) ) ) 
+      } // if ( ! l->fill( Form("SigVel%03d", iSmType), &(fdSigVel[iSmType]) ) )
 
       if( (fdSigVel[iSmType]).GetSize() < fiNbSm[iSmType]*fiNbRpc[iSmType]){
          if( (fdSigVel[iSmType]).GetSize() == fiNbRpc[iSmType] )
          {
-            LOG(INFO)<<Form("SigVel%03d Array size: %d < request %d, copy values to all modules ",iSmType, 
+            LOG(INFO)<<Form("SigVel%03d Array size: %d < request %d, copy values to all modules ",iSmType,
                             (Int_t)(fdSigVel[iSmType]).GetSize(),fiNbSm[iSmType]*fiNbRpc[iSmType])
                      <<FairLogger::endl;
 
@@ -212,7 +212,7 @@ Bool_t CbmTofDigiBdfPar::getParams(FairParamList* l)
          else
          {
             LOG(ERROR) << "CbmTofDigiBdfPar::getParams => parameter "
-                     << Form("SigVel%03d", iSmType) 
+                     << Form("SigVel%03d", iSmType)
                      << " has a not matching number of fields: "
                      << (fdSigVel[iSmType]).GetSize()
                      << " instead of "
@@ -246,7 +246,7 @@ Bool_t CbmTofDigiBdfPar::getParams(FairParamList* l)
       if ( ! l->fill( Form("ChOrientation%03d", iSmType), &(fiChOrientation[iSmType]) ) ) return kFALSE;
    } // for( Int_t iSmType = 0; iSmType < fiNbSmTypes; iSmType ++)
 
-   
+
    Int_t nDet=0;
    for( Int_t iSmType = 0; iSmType < fiNbSmTypes; iSmType ++)
    {
@@ -255,7 +255,7 @@ Bool_t CbmTofDigiBdfPar::getParams(FairParamList* l)
 
    fiDetUId.Set( nDet);    // dimension unique identifier array
    fMapDetInd.clear();  // reset
-   
+
    Int_t iDet=0;
    for( Int_t iSmType = 0; iSmType < fiNbSmTypes; iSmType ++)
    {
@@ -319,7 +319,7 @@ Bool_t CbmTofDigiBdfPar::getParams(FairParamList* l)
 Bool_t CbmTofDigiBdfPar::LoadBeamtimeHistos()
 {
    TDirectory * oldir = gDirectory;
-   
+
    TFile * fBeamtimeInput = new TFile( fsBeamInputFile, "READ");
    if( kFALSE == fBeamtimeInput->IsOpen() )
    {
@@ -372,7 +372,7 @@ Bool_t CbmTofDigiBdfPar::LoadBeamtimeHistos()
 
          for( Int_t iRpc = 0; iRpc < fiNbRpc[iSmType]; iRpc ++)
          {
-            LOG(DEBUG1) << iSmType << " Eff: " << iRpc << " " << fdEfficiency[iSmType] << " " 
+            LOG(DEBUG1) << iSmType << " Eff: " << iRpc << " " << fdEfficiency[iSmType] << " "
                         << GetNbGaps( iSmType, iRpc) << " " << (Double_t)GetNbGaps( iSmType, iRpc)
                         << " TRes " << fdTimeResolution[iSmType] << FairLogger::endl;
            fdGapsEfficiency[iSmType][iRpc] = 1 - TMath::Power( 1.0 - fdEfficiency[iSmType],
@@ -653,6 +653,12 @@ Double_t CbmTofDigiBdfPar::GetLandauSigma( Int_t iSmType ) const
       return fdLandauSigma[iSmType];
       else return 0;
 }
+Double_t CbmTofDigiBdfPar::GetMaxTimeDist( ) const
+{
+   if( -1 <  fdMaxTimeDistClust )
+      return fdMaxTimeDistClust;
+      else return 5*0.08;
+}
 void CbmTofDigiBdfPar::printParams()
 {
 //   LOG(INFO)<<"  _   _   _   _   _   _   _   _   _   _  "<<FairLogger::endl;
@@ -712,7 +718,7 @@ void CbmTofDigiBdfPar::printParams()
       {
          sGapsNb[iSmType] += Form( "%3d  ", GetNbGaps( iSmType, iRpc) );
          sGapsSz[iSmType] += Form( "%3.2f ", GetGapSize( iSmType, iRpc) );
-         for(Int_t iSm=0; iSm<fiNbSm[iSmType]; iSm++) 
+         for(Int_t iSm=0; iSm<fiNbSm[iSmType]; iSm++)
             sSigVel[iSmType] += Form( "%4.3f ", GetSigVel( iSmType, iSm, iRpc) );
          sChNb[iSmType] += Form( "%3d  ", GetNbChan( iSmType, iRpc) );
          if( 1 == GetChanType( iSmType, iRpc) )
@@ -831,12 +837,9 @@ void CbmTofDigiBdfPar::printParams()
       LOG(INFO)<<"  Variable used for multiplicity cnt: Track ID"<<FairLogger::endl;
       else LOG(INFO)<<"  Variable used for multiplicity cnt: TofPoint ID"<<FairLogger::endl;
    if( -1 <  fdMaxTimeDistClust)
-      LOG(INFO)<<"  Maximal time dist. to last chan.:   "<<fdMaxTimeDistClust<<" [ns]"<<FairLogger::endl;
-      else
-      {
-         fdMaxTimeDistClust = 5*0.08;
-         LOG(INFO)<<"  Maximal time dist. to last chan.:   Use 5*Nom. Syst. Res. = "<<fdMaxTimeDistClust<<" [ns]"<<FairLogger::endl;
-      } // else of if( -1 <  fdMaxTimeDistClust)
+      LOG(INFO)<<"  Maximal time dist. to last chan.:   "<< GetMaxTimeDist() <<" [ns]"<<FairLogger::endl;
+      else LOG(INFO)<<"  Maximal time dist. to last chan.:   Use 5*Nom. Syst. Res. (80 ps) = "<< GetMaxTimeDist() <<" [ns]"<<FairLogger::endl;
+
    LOG(INFO)<<"  Maximal dist. along ch to last one: "<<fdMaxSpaceDistClust<<" [cm]"<<FairLogger::endl;
 
 
@@ -855,7 +858,7 @@ Int_t CbmTofDigiBdfPar::GetNbDet() const
 
 Int_t CbmTofDigiBdfPar::GetDetInd(Int_t iAddr)
 {
-  
+
   const Int_t DetMask = 4194303;
   /*
   Int_t iInd=0;
@@ -866,7 +869,7 @@ Int_t CbmTofDigiBdfPar::GetDetInd(Int_t iAddr)
   }
   return iInd;
   */
-  return fMapDetInd[(iAddr&DetMask)]; 
+  return fMapDetInd[(iAddr&DetMask)];
 }
 
 Int_t CbmTofDigiBdfPar::GetDetUId(Int_t iInd)
