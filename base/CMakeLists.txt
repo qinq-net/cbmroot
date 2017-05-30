@@ -59,17 +59,6 @@ CbmRichMerger.cxx
 CbmTofMerger.cxx
 CbmTrackMerger.cxx
 
-CbmMCMatch.cxx
-CbmMCMatchCreatorTask.cxx
-CbmMCMatchLoaderTask.cxx
-CbmMCMatchSelectorTask.cxx
-CbmMCObject.cxx
-CbmMCStage.cxx
-CbmMCResult.cxx
-#CbmMCTestMomentumCompare.cxx
-CbmMCTestHitCompare.cxx
-CbmMCEntry.cxx
-CbmMCList.cxx
 CbmMCDataArray.cxx
 CbmMCDataManager.cxx
 CbmRadDamage.cxx

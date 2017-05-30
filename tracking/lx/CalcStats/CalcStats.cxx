@@ -8,7 +8,6 @@
 #include "CbmMuchGeoScheme.h"
 #include "CbmTrdAddress.h"
 #include "CbmMCTrack.h"
-#include "CbmMCTestHitCompare.h"
 
 ClassImp(LxCalcStats)
 
