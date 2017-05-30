@@ -30,7 +30,7 @@ class CbmStsClusterFinderReal: public CbmStsClusterFinder {
 	public:
 
 		/** Constructor
-		 ** @param clusterçrray  Output array for CbmStsCluster objects
+		 ** @param clusterArray  Output array for CbmStsCluster objects
 		 **/
 		CbmStsClusterFinderReal(TClonesArray* clusterArray = NULL);
 

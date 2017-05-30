@@ -33,7 +33,7 @@ class CbmStsClusterFinder: public TNamed {
 	public:
 
 		/** Constructor
-		 ** @param clusterçrray  Output array for CbmStsCluster objects
+		 ** @param clusterArray  Output array for CbmStsCluster objects
 		 **/
 		CbmStsClusterFinder(TClonesArray* clusterArray = NULL);
 
