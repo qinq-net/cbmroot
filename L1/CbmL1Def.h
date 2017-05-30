@@ -3,7 +3,6 @@
 
 // #define FAST_CODE // FAST_CODE = more unsafe
 
-using namespace std;
 
 #include "TStopwatch.h"
 #include <assert.h>
@@ -54,6 +53,7 @@ if (v) {} else { \
 #endif
 
 
+using namespace std;
 
 typedef int index_type;
 

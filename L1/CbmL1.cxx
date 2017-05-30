@@ -67,6 +67,8 @@ CbmL1::CbmL1(): FairTask("L1"),
     algo(0), // for access to L1 Algorithm from L1::Instance
 vRTracks(), // reconstructed tracks
 vHitStore(),
+vMCPoints(),
+nMvdPoints(0),
 NStation(0), NMvdStations(0), NStsStations(0), // number of detector stations (all\sts\mvd)
 fPerformance(0),
 fSTAPDataMode(0),
@@ -79,26 +81,29 @@ fUseMVD(0),  // really doesn't used
 
 PrimVtx(),
 
-//listMCTracks (0),
-listStsPts(0),
-fMCTracks(0),
 fStsPoints(0),
-listStsDigi(0),
+fMCTracks(0),
+fMvdPoints(0),
+//listMCTracks (0),
+//listStsDigi(0),
+listStsPts(0),
 listStsDigiMatch(0),
 listStsClusters(0),
 listStsHits(0),
 listStsHitMatch(0),
 listStsClusterMatch(0),
 
+	       
+
 listMvdPts(0),
 listMvdHits(0),
 listMvdDigiMatches(0),
 listMvdHitMatches(0),
+
 vStsHits(),
-vMCPoints(),
-nMvdPoints(0),
 vMCTracks(),
 vHitMCRef(),
+
 histodir(0),
 fFindParticlesMode(),
 fStsMatBudgetFileName(""),
@@ -110,9 +115,11 @@ fTimesliceMode(0)
 }
 
 CbmL1::CbmL1(const char *name, Int_t iVerbose, Int_t _fPerformance, int fSTAPDataMode_, TString fSTAPDataDir_, int findParticleMode_):FairTask(name,iVerbose),
-algo(0), // for access to L1 Algorithm from L1::Instance                                                                                                                                      
+algo(0), // for access to L1 Algorithm from L1::Instance                       
 vRTracks(), // reconstructed tracks
 vHitStore(),
+vMCPoints(),
+nMvdPoints(0),
 NStation(0), NMvdStations(0), NStsStations(0), // number of detector stations (all\sts\mvd)
 fPerformance(_fPerformance),
 fSTAPDataMode(fSTAPDataMode_),
@@ -125,11 +132,13 @@ fUseMVD(0),  // really doesn't used
 
 PrimVtx(),
 
-fMCTracks(0),
-fStsPoints(0),
-//listMCTracks (0),
-listStsPts(0),
 listStsDigi(0),
+fStsPoints(0),
+fMCTracks(0),
+fMvdPoints(NULL),
+//listMCTracks (0),
+
+listStsPts(0),
 listStsDigiMatch(0),
 listStsClusters(0),
 listStsHits(0),
@@ -140,9 +149,8 @@ listMvdPts(0),
 listMvdHits(0),
 listMvdDigiMatches(0),
 listMvdHitMatches(0),
+
 vStsHits(),
-vMCPoints(),
-nMvdPoints(0),
 vMCTracks(),
 vHitMCRef(),
 histodir(0),

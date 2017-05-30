@@ -84,8 +84,6 @@ class L1Algo{
     vSFlag(0),  // information of hits station & using hits in tracks(),
     vSFlagB(0),
     CATime(0), // time of trackfinding
-    vStripToTrack(TypicalSize),
-    vStripToTrackB(TypicalSize),
     vTracks(20000), // reconstructed tracks
     vRecoHits(200000),// packed hits of reconstructed tracks
     vStsDontUsedHits_A(TypicalSize),
@@ -97,11 +95,14 @@ class L1Algo{
     RealIHit_v(TypicalSize),
     RealIHit_v_buf(TypicalSize),
     RealIHit_v_buf2(TypicalSize),
+    vStripToTrack(TypicalSize),
+    vStripToTrackB(TypicalSize),
 #ifdef _OPENMP    
     hitToBestTrackF(TypicalSize),
     hitToBestTrackB(TypicalSize),
 #endif    
     //sh (),
+    fNThreads(nThreads),
     TRACK_CHI2_CUT(10.),
     TRIPLET_CHI2_CUT(5.),
     DOUBLET_CHI2_CUT(5.), 
@@ -109,7 +110,6 @@ class L1Algo{
     draw(0),
 #endif
     
-    fNThreads(nThreads),
     Pick_gather(0),
     PickNeighbour(0), // (PickNeighbour < dp/dp_error)  =>  triplets are neighbours
     MaxInvMom(0),     // max considered q/p for tracks 

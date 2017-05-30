@@ -137,7 +137,7 @@ fNz( fGrid.Nz() )
     const float maxY = y + dy;
     const float minZ = z - dz;
     const float maxZ = z + dz;
-     float minT = t - dt;
+    //     float minT = t - dt;
      
 
 

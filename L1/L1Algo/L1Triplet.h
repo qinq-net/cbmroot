@@ -132,6 +132,7 @@ class L1Triplet
   //  float x = (b0>>3)*3.5/31.;
   //  return x*x;
    // return time; 
+    return -111.;
   }
 
   fscal GetQpOrig(){

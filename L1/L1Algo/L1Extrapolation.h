@@ -636,7 +636,7 @@ inline void L1Extrapolate0
 
   const fvec x   = T.tx;
   const fvec y   = T.ty;
-  const fvec z   = T.z;
+  //  const fvec z   = T.z;
   const fvec xx  = x*x;
   const fvec xy = x*y;
   const fvec yy = y*y;
@@ -734,8 +734,8 @@ inline void L1ExtrapolateTime
   
 //   cout<<k1<<" k1 "<<k2<<" k2 "<<endl;
   
-  fvec ha = T.C53;
-  fvec ha2 = T.C54;
+//  fvec ha = T.C53;
+//  fvec ha2 = T.C54;
   
   T.C50 += k1*T.C20 + k2*T.C30 ;
   T.C51 += k1*T.C21 + k2*T.C31 ;

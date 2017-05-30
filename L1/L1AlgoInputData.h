@@ -17,12 +17,12 @@ class L1AlgoInputData{
  public:
 
   L1AlgoInputData():
-  vStsHits(NULL),
-  vStsStrips(NULL),
-  vStsStripsB(NULL),
-  vStsZPos(NULL),
-  vSFlag(NULL),
-  vSFlagB(NULL)
+  vStsHits(),
+  vStsStrips(),
+  vStsStripsB(),
+  vStsZPos(),
+  vSFlag(),
+  vSFlagB()
 //  MaxNStations(12)  
 
   {  
