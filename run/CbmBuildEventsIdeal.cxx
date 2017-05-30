@@ -89,7 +89,7 @@ void CbmBuildEventsIdeal::Exec(Option_t*) {
         // Can be refined later on.
         // TODO: The event number in the TOF digi links have to be corrected by one,
         // in order to be consistent with STS digis.
-        Int_t eventNr = digi->GetMatch()->GetMatchedLink().GetEntry() - 1;
+        Int_t eventNr = digi->GetMatch()->GetMatchedLink().GetEntry();
 
         // Get event pointer. If event is not yet present, create it.
         CbmEvent* event = NULL;

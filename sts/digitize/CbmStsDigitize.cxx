@@ -43,7 +43,6 @@
 #include "setup/CbmStsSetup.h"
 #include "digitize/CbmStsPhysics.h"
 #include "digitize/CbmStsSensorTypeDssd.h"
-#include "digitize/CbmStsSensorTypeDssdIdeal.h"
 #include "digitize/CbmStsSensorTypeDssdReal.h"
 
 using std::fixed;
@@ -431,6 +430,24 @@ InitStatus CbmStsDigitize::Init() {
 
   } //? event mode
 
+  // Processes
+  TString model;
+  switch ( fElossModel) {
+    case 0: model = "IDEAL"; break;
+    case 1: model = "UNIFORM"; break;
+    case 2: model = "NON-UNIFORM"; break;
+    default: LOG(FATAL) << GetName() << ": Unknown energy loss model "
+        << fElossModel << FairLogger::endl;
+  } //? fElossModel
+  LOG(INFO) << GetName() << ": Energy loss model " << model
+      << FairLogger::endl;
+  LOG(INFO) << GetName() << ": Lorentz-Shift     "
+      << (fUseLorentzShift ? "ON" : "OFF") << FairLogger::endl;
+  LOG(INFO) << GetName() << ": Diffusion         "
+      << (fUseDiffusion ? "ON" : "OFF") << FairLogger::endl;
+  LOG(INFO) << GetName() << ": Cross-Talk        "
+      << (fUseCrossTalk ? "ON" : "OFF") << FairLogger::endl;
+
 	// Initialise STS setup
 	InitSetup();
 
@@ -779,9 +796,10 @@ void CbmStsDigitize::SetSensorTypes() {
 	Int_t nSensorsSet = 0;
 
 	// --- Catch unknown response model
-	if ( fDigiModel < 0 || fDigiModel > 3 )
+	if ( fDigiModel < 1 || fDigiModel > 3 )
 		LOG(FATAL) << GetName() << ": Unknown response model " << fDigiModel
 				       << FairLogger::endl;
+
 
 	// --- No action required if model is "simple". TypeDssd is instantiated
 	// --- as default by CbmStsSetup.
@@ -795,7 +813,6 @@ void CbmStsDigitize::SetSensorTypes() {
 	if ( fDigiModel == 3 ) {
 		LOG(INFO) << GetName() << ": Detector response model SIMPLE OLD"
 				      << FairLogger::endl;
-//		Int_t nSensors = fSetup->GetNofSensors();
 		for (Int_t iSensor = 0; iSensor < fSetup->GetNofSensors(); iSensor++) {
 			CbmStsSensor* sensor = fSetup->GetSensor(iSensor);
 
@@ -808,7 +825,7 @@ void CbmStsDigitize::SetSensorTypes() {
 			type->SetOld();
 
 		}
-	return;
+		return;
 	}
 
 
@@ -845,11 +862,7 @@ void CbmStsDigitize::SetSensorTypes() {
 
 		// --- Instantiate new sensor type according to response model
 		CbmStsSensorTypeDssd* newType = NULL;
-		if ( fDigiModel == 0 ) {
-			newType = new CbmStsSensorTypeDssdIdeal();
-			newType->SetTitle("DssdIdeal");
-		}
-		else if ( fDigiModel == 2 ) {
+		if ( fDigiModel == 2 ) {
 			newType = new CbmStsSensorTypeDssdReal();
 			newType->SetTitle("DssdReal");
 			Bool_t nonUniform = ( fElossModel == 2 );

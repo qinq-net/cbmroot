@@ -32,7 +32,7 @@ using std::vector;
 CbmStsSensorTypeDssd::CbmStsSensorTypeDssd()
     : CbmStsSensorType(), 
       fDx(-1.), fDy(-1.), fDz(-1.),
-      fNofStrips(), fStereo(), fIsSet(kFALSE), fOld(kTRUE),
+      fNofStrips(), fStereo(), fIsSet(kFALSE), fOld(kFALSE),
       fPhysics(NULL), fHitFinderModel(1),
       fPitch(), fTanStereo(), fCosStereo(), fStripShift(), fErrorFac(0.),
       fStripCharge()
@@ -678,7 +678,7 @@ void CbmStsSensorTypeDssd::PrintChargeStatus() const {
 Int_t CbmStsSensorTypeDssd::ProcessPoint(CbmStsSensorPoint* point,
                                          const CbmStsSensor* sensor) {
 
-	// --- If desired, use the old ProcessPoint method
+  // --- If desired, use the old ProcessPoint method
 	if ( fOld ) {
 	  Int_t nSignalsOld = ProcessPointOld(point, sensor);
 	  return nSignalsOld;
@@ -807,7 +807,6 @@ void CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
 	// Total charge created in the sensor: is calculated from the energy loss
 	Double_t chargeTotal = point->GetELoss()
 			                 / CbmStsPhysics::PairCreationEnergy();  // in e
-
 
 	// For ideal energy loss, just have all charge in the mid-point of the
 	// trajectory
