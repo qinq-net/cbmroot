@@ -43,7 +43,6 @@
 #include "setup/CbmStsSetup.h"
 #include "digitize/CbmStsPhysics.h"
 #include "digitize/CbmStsSensorTypeDssd.h"
-#include "digitize/CbmStsSensorTypeDssdReal.h"
 
 using std::fixed;
 using std::right;
@@ -796,7 +795,7 @@ void CbmStsDigitize::SetSensorTypes() {
 	Int_t nSensorsSet = 0;
 
 	// --- Catch unknown response model
-	if ( fDigiModel < 1 || fDigiModel > 3 )
+	if ( fDigiModel != 1 && fDigiModel != 3 )
 		LOG(FATAL) << GetName() << ": Unknown response model " << fDigiModel
 				       << FairLogger::endl;
 
@@ -832,55 +831,6 @@ void CbmStsDigitize::SetSensorTypes() {
 	// --- Log
 	LOG(INFO) << GetName() << ": Detector response model "
 			      << ( fDigiModel == 0 ? "IDEAL" : "REAL" ) << FairLogger::endl;
-
-	// --- Loop over sensors in setup
-//	Int_t nSensors = fSetup->GetNofSensors();
-	for (Int_t iSensor = 0; iSensor < fSetup->GetNofSensors(); iSensor++) {
-		CbmStsSensor* sensor = fSetup->GetSensor(iSensor);
-
-		// --- Get sensor type. Catch non-DSSD types.
-		if ( ! sensor->GetType()->IsA()->InheritsFrom(CbmStsSensorTypeDssd::Class()) )
-			LOG(FATAL) << GetName() << ": Sensor " << sensor->GetName()
-			           << " is not of type DSSD!" << FairLogger::endl;
-		CbmStsSensorTypeDssd* type =
-				dynamic_cast<CbmStsSensorTypeDssd*>(sensor->GetType());
-
-		// --- Catch sensor parameters not being set
-		if ( ! type->IsSet() )
-			LOG(FATAL) << GetName() <<": Parameters of sensor " << sensor->GetName()
-			           << " are not set!" << FairLogger::endl;
-
-		// --- Get parameters
-		Double_t dX = 0.;
-		Double_t dY = 0.;
-		Double_t dZ = 0.;
-		Int_t nStripsF = 0;
-		Int_t nStripsB = 0;
-		Double_t stereoF = 0.;
-		Double_t stereoB = 0.;
-		type->GetParameters(dX, dY, dZ, nStripsF, nStripsB, stereoF, stereoB);
-
-		// --- Instantiate new sensor type according to response model
-		CbmStsSensorTypeDssd* newType = NULL;
-		if ( fDigiModel == 2 ) {
-			newType = new CbmStsSensorTypeDssdReal();
-			newType->SetTitle("DssdReal");
-			Bool_t nonUniform = ( fElossModel == 2 );
-			((CbmStsSensorTypeDssdReal*)newType)->SetPhysicalProcesses(nonUniform, fUseDiffusion,
-					                                         fUseCrossTalk, fUseLorentzShift);
-		}
-		else
-			LOG(FATAL) << GetName() << ": Unknown response model " << fDigiModel
-			           << FairLogger::endl;
-
-		// --- Set parameters to new type
-		newType->SetParameters(dX, dY, dZ, nStripsF, nStripsB, stereoF, stereoB);
-
-		// --- Set new type to sensor
-		sensor->SetType(newType);
-		nSensorsSet++;
-
-	} //# sensors in setup
 
 	LOG(INFO) << GetName() << ": Re-set types for " << nSensorsSet
             << " sensors" << FairLogger::endl;

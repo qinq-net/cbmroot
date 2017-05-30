@@ -32,7 +32,6 @@ digitize/CbmStsDigitize.cxx
 digitize/CbmStsPhysics.cxx
 digitize/CbmStsSensorTypeDssd.cxx
 digitize/CbmStsSensorTypeDssdOrtho.cxx
-digitize/CbmStsSensorTypeDssdReal.cxx;
 digitize/CbmStsSignal.cxx;
 digitize/CbmStsDigitizeQa.cxx
 digitize/CbmStsDigitizeQaReport.cxx
