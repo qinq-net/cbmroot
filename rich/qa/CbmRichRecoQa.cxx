@@ -25,6 +25,7 @@
 #include "CbmRichPoint.h"
 #include "CbmRichUtil.h"
 #include "utils/CbmRichDraw.h"
+#include "elid/CbmLitGlobalElectronId.h"
 
 #include "CbmUtils.h"
 #include "CbmHistManager.h"
@@ -96,6 +97,8 @@ InitStatus CbmRichRecoQa::Init()
 
     InitHistograms();
     
+   // CbmLitGlobalElectronId::GetInstance();
+
     return kSUCCESS;
 }
 
@@ -134,6 +137,9 @@ void CbmRichRecoQa::InitHistograms()
 		fHM->Create2<TH2D>("fhRingTrackDistVsXTruematch"+s, "fhRingTrackDistVsXTruematch"+s+";X [cm];Ring-track distance [cm]", nBinsX1, xMin1, xMax1, 100, 0., 5.);
 		fHM->Create2<TH2D>("fhRingTrackDistVsYTruematch"+s, "fhRingTrackDistVsYTruematch"+s+";Abs(Y) [cm];Ring-track distance [cm]", nBinsY1, yMin1, yMax1, 100, 0., 5.);
     }
+
+	// after electron identification
+	fHM->Create2<TH2D>("fhRingTrackDistVsMomTruematchElId", "fhRingTrackDistVsMomTruematchElId;P [GeV/c];Ring-track distance [cm];Yield (a.u.)", 20, 0., 10., 100, 0., 5.);
 
     fHM->Create1<TH1D>("fhMismatchSource", "fhMismatchSource;Global track category;% from MC", 13, -0.5, 12.5);
 
@@ -406,6 +412,12 @@ void CbmRichRecoQa::FillRingTrackDistance()
 				fHM->H2("fhRingTrackDistVsYTruematch"+s)->Fill(abs(yc), rtDistance);
 				fHM->H2("fhRingTrackDistVsNofHitsTruematch"+s)->Fill(nofHits, rtDistance);
 
+				if (i == 0 && isEl) {
+					//if (CbmLitGlobalElectronId::GetInstance().IsRichElectron(iTrack, mom)){
+						fHM->H2("fhRingTrackDistVsMomTruematchElId")->Fill(mom, rtDistance);
+					//}
+				}
+
 			} else {
 				fHM->H2("fhRingTrackDistVsMomWrongmatch"+s)->Fill(mom, rtDistance);
 			}
@@ -477,6 +489,23 @@ void CbmRichRecoQa::DrawHist()
     DrawRingTrackDistHistWithSuffix("PrimelPlus");
     DrawRingTrackDistHistWithSuffix("PrimelMinus");
     DrawRingTrackDistHistWithSuffix("Pi");
+
+    // before and after electron identification
+    {
+		TCanvas* c = fHM->CreateCanvas("fh_ring_track_distance_truematch_elid", "fh_ring_track_distance_truematch_elid", 1800, 600);
+		c->Divide(3,1);
+		c->cd(1);
+		DrawH2WithProfile(fHM->H2("fhRingTrackDistVsMomTruematchPrimel"), false, true);
+		c->cd(2);
+		DrawH2WithProfile(fHM->H2("fhRingTrackDistVsMomTruematchElId"), false, true);
+		c->cd(3);
+		TH1D* py = (TH1D*)(fHM->H2("fhRingTrackDistVsMomTruematchPrimel")->ProjectionY(string("fhRingTrackDistVsMomTruematchPrimel_py2").c_str())->Clone());
+		TH1D* pyElId = (TH1D*)(fHM->H2("fhRingTrackDistVsMomTruematchElId")->ProjectionY(string("fhRingTrackDistVsMomTruematchElId_py").c_str())->Clone());
+		DrawH1({py, pyElId}, {string("before ElId (" + this->GetMeanRmsOverflowString(py) + ")"), string("after ElId (" + this->GetMeanRmsOverflowString(pyElId) + ")")},
+				kLinear, kLog, true, 0.3, 0.75, 0.99, 0.99);
+		fHM->H2("fhRingTrackDistVsMomTruematchPrimel")->GetYaxis()->SetRangeUser(0., 2.);
+		fHM->H2("fhRingTrackDistVsMomTruematchElId")->GetYaxis()->SetRangeUser(0., 2.);
+	}
 }
 
 string CbmRichRecoQa::GetMeanRmsOverflowString(
@@ -486,7 +515,7 @@ string CbmRichRecoQa::GetMeanRmsOverflowString(
 	if (withOverflow) {
 		double overflow = h->GetBinContent(h->GetNbinsX() + 1);
 		return Cbm::NumberToString<Double_t>(h->GetMean(), 2) + " / " + Cbm::NumberToString<Double_t>(h->GetRMS(), 2) +
-			"/" + Cbm::NumberToString<Double_t>(100.* overflow / h->Integral(0, h->GetNbinsX() + 1), 2) + "%";
+			" / " + Cbm::NumberToString<Double_t>(100.* overflow / h->Integral(0, h->GetNbinsX() + 1), 2) + "%";
 	} else {
 		return Cbm::NumberToString<Double_t>(h->GetMean(), 2) + " / " + Cbm::NumberToString<Double_t>(h->GetRMS(), 2);
 	}
