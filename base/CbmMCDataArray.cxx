@@ -53,17 +53,17 @@ void CbmMCDataArray::AddFriend(Int_t chainNum1, Int_t chainNum2)
 {
   if (fLegacy==1)
   {
-    LOG(ERROR) << "AddFriend method should not be called in legacy mode" << endl;
+    LOG(ERROR) << "AddFriend method should not be called in legacy mode" << FairLogger::endl;
     return;
   }
   if (chainNum1<0 || chainNum1>=static_cast<Int_t>(fChains.size()) || fChains[chainNum1]==NULL)
   {
-    LOG(ERROR) << "chainNum1=" << chainNum1 << " is not a correct chain number." << endl;
+    LOG(ERROR) << "chainNum1=" << chainNum1 << " is not a correct chain number." << FairLogger::endl;
     return;
   }
   if (chainNum2<0 || chainNum2>=static_cast<Int_t>(fChains.size()) || fChains[chainNum2]==NULL)
   {
-    LOG(ERROR) << "chainNum2=" << chainNum2 << " is not a correct chain number." << endl;
+    LOG(ERROR) << "chainNum2=" << chainNum2 << " is not a correct chain number." << FairLogger::endl;
     return;
   }
   fChains[chainNum1]->AddFriend(fChains[chainNum2]);
@@ -76,13 +76,13 @@ CbmMCDataArray::CbmMCDataArray(const char* branchname)
   FairRootManager* fManager=FairRootManager::Instance();
   if (!fManager)
   {
-    LOG(FATAL) << "CbmMCDataArray():	Can't find a Root Manager." << endl;
+    LOG(FATAL) << "CbmMCDataArray():	Can't find a Root Manager." << FairLogger::endl;
     return;
   }
   fLegacyArray=(TClonesArray*)fManager->GetObject(branchname);
   if (!fLegacyArray)
   {
-    LOG(FATAL) << "CbmMCDataArray(): Can't find " << fBranchName << " in the system.";
+    LOG(FATAL) << "CbmMCDataArray(): Can't find " << fBranchName << " in the system." << FairLogger::endl;
     return;
   }
 }
@@ -106,7 +106,7 @@ TObject* CbmMCDataArray::Get(Int_t fileNumber, Int_t eventNumber, Int_t index)
   if (fileNumber<0||fileNumber>=fSize) return NULL;
   if (eventNumber<0||eventNumber>=fN[fileNumber]) return NULL;
   if (index<0) return NULL;
-  
+
   // --- Cached arrays
   map<Int_t, TClonesArray*> &arr=fArrays[fileNumber];
 

@@ -80,9 +80,9 @@ InitStatus CbmMCDataManager::Init()
 {
   FairRootManager* fManager=FairRootManager::Instance();
   if (!fManager) return kFATAL;
-  
+
   fManager->Register("MCDataManager", "Stack", (TNamed*)this, kFALSE);
-  
+
   return kSUCCESS;
 }
 
@@ -96,9 +96,9 @@ CbmMCDataArray* CbmMCDataManager::InitBranch(const char* brname)
 
   if (fActive.find(nm)!=fActive.end())
   {
-    LOG(INFO) << "InitBranch: " << nm << " " << fActive[nm] << FairLogger::endl; 
+    LOG(INFO) << "InitBranch: " << nm << " " << fActive[nm] << FairLogger::endl;
     return fActive[nm];
-  }  
+  }
   if (fLegacy==0)
   {
     arr=new CbmMCDataArray(brname, fFileList);
@@ -108,10 +108,29 @@ CbmMCDataArray* CbmMCDataManager::InitBranch(const char* brname)
     }
   }
   else
-    arr=new CbmMCDataArray(brname);
+  {
+    FairRootManager* fManager=FairRootManager::Instance();
+    if (!fManager)
+    {
+      LOG(FATAL) << "CbmMCDataManager::InitBranch(): Can't find a Root Manager." << FairLogger::endl;
+      return NULL;
+    }
+    arr = NULL;
+    // Create Data Array only if corresponding TClonesArray exists
+    if( NULL != fManager->GetObject(brname) )
+      arr=new CbmMCDataArray(brname);
+  }
 
-  fActive[nm]=arr;
-  LOG(INFO) << "InitBranch: " << nm << " " << arr << FairLogger::endl; 
+  if( NULL != arr )
+  {
+    fActive[nm]=arr;
+    LOG(INFO) << "InitBranch: " << nm << " " << arr << FairLogger::endl;
+  }
+  else
+  {
+    LOG(INFO) << "InitBranch: " << nm << " could not be initialized, pointer is " << arr << FairLogger::endl;
+  }
+
   return arr;
 }
 
