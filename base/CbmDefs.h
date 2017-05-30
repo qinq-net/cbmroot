@@ -8,7 +8,7 @@
 #ifndef CBMDEFS_H
 #define CBMDEFS_H 1
 
-#include "RTypes.h"
+#include "Rtypes.h"
 
 
 /** Enumerator for module Identifiers. Modules can be active (detector systems)
