@@ -33,12 +33,14 @@ using namespace std;
 
 CbmRichEventDisplay::CbmRichEventDisplay():
    FairTask("CbmRichEventDisplay"),
-   fRichRings(NULL),
-   fRichHits(NULL),
-   fRichPoints(NULL),
-   fRichMatches(NULL),
-   fRichProjections(NULL),
-   fMcTracks(NULL),
+   fRichRings(nullptr),
+   fRichHits(nullptr),
+   fRichPoints(nullptr),
+   fRichMatches(nullptr),
+   fRichProjections(nullptr),
+   fMcTracks(nullptr),
+   fOutputDir(""),
+   fHM(nullptr),
    fEventNum(0),
    fDrawRings(true),
    fDrawHits(true),
@@ -56,25 +58,25 @@ CbmRichEventDisplay::~CbmRichEventDisplay()
 InitStatus CbmRichEventDisplay::Init()
 {
    FairRootManager* ioman = FairRootManager::Instance();
-   if (NULL == ioman) {Fatal("CbmRichEventDisplay::Init", "RootManager not instantiated!");}
+   if (nullptr == ioman) {Fatal("CbmRichEventDisplay::Init", "RootManager not instantiated!");}
 
    fRichHits = (TClonesArray*) ioman->GetObject("RichHit");
-   if (NULL == fRichHits) {Fatal("CbmRichEventDisplay::Init", "No RichHit array!");}
+   if (nullptr == fRichHits) {Fatal("CbmRichEventDisplay::Init", "No RichHit array!");}
 
    fRichRings = (TClonesArray*) ioman->GetObject("RichRing");
-   if (NULL == fRichRings) { Fatal("CbmRichEventDisplay::Init", "No RichRing array!");}
+   if (nullptr == fRichRings) { Fatal("CbmRichEventDisplay::Init", "No RichRing array!");}
 
    fRichPoints = (TClonesArray*) ioman->GetObject("RichPoint");
-   if (NULL == fRichPoints) {Fatal("CbmRichEventDisplay::Init", "No RichPoint array!");}
+   if (nullptr == fRichPoints) {Fatal("CbmRichEventDisplay::Init", "No RichPoint array!");}
 
    fRichMatches = (TClonesArray*) ioman->GetObject("RichRingMatch");
-   if (NULL == fRichMatches) {Fatal("CbmRichEventDisplay::Init", "No RichRingMatch array!");}
+   if (nullptr == fRichMatches) {Fatal("CbmRichEventDisplay::Init", "No RichRingMatch array!");}
 
    fRichProjections = (TClonesArray*) ioman->GetObject("RichProjection");
-   if (NULL == fRichProjections) {Fatal("CbmRichEventDisplay::Init", "No RichProjection array!");}
+   if (nullptr == fRichProjections) {Fatal("CbmRichEventDisplay::Init", "No RichProjection array!");}
 
    fMcTracks = (TClonesArray*) ioman->GetObject("MCTrack");
-   if (NULL == fMcTracks ) {Fatal("CbmRichEventDisplay::Init", "No MCTrack array!");}
+   if (nullptr == fMcTracks ) {Fatal("CbmRichEventDisplay::Init", "No MCTrack array!");}
 
    fHM = new CbmHistManager();
 
@@ -120,7 +122,7 @@ void CbmRichEventDisplay::DrawOnePmtPlane(
       int nofProjections = fRichProjections->GetEntriesFast();
       for (int iP = 0; iP < nofProjections; iP++){
          FairTrackParam* pr = (FairTrackParam*) fRichProjections->At(iP);
-         if (NULL == pr) continue;
+         if (nullptr == pr) continue;
          if ( (plane == "up" && pr->GetY() >= 0.) ||
               (plane == "down" && pr->GetY() < 0.) ){
             TMarker* m = new TMarker(pr->GetX(), pr->GetY(), 3.);
@@ -136,7 +138,7 @@ void CbmRichEventDisplay::DrawOnePmtPlane(
       int nofHits = fRichHits->GetEntriesFast();
       for (int iH = 0; iH < nofHits; iH++){
          CbmRichHit* hit = (CbmRichHit*) fRichHits->At(iH);
-         if (NULL == hit) continue;
+         if (nullptr == hit) continue;
          if ( (plane == "up" && hit->GetY() >= 0.) ||
               (plane == "down" && hit->GetY() < 0.) ){
 
@@ -153,7 +155,7 @@ void CbmRichEventDisplay::DrawOnePmtPlane(
       int nofRings = fRichRings->GetEntriesFast();
       for (int iR = 0; iR < nofRings; iR++){
          CbmRichRing* ring = (CbmRichRing*) fRichRings->At(iR);
-         if (NULL == ring) continue;
+         if (nullptr == ring) continue;
          if ( (plane == "up" && ring->GetCenterY() >= 0.) ||
               (plane == "down" && ring->GetCenterY() < 0.) ){
             DrawCircle(ring);
@@ -166,7 +168,7 @@ void CbmRichEventDisplay::DrawOnePmtPlane(
       int nofPoints = fRichPoints->GetEntriesFast();
       for (int iP = 0; iP < nofPoints; iP++){
          CbmRichPoint* point = (CbmRichPoint*) fRichPoints->At(iP);
-         if (NULL == point) continue;
+         if (nullptr == point) continue;
          if ( (plane == "up" && point->GetY() >= 0.) ||
               (plane == "down" && point->GetY() < 0.) ){
             TEllipse* pointDr = new TEllipse(point->GetX(), point->GetY(), 0.4);

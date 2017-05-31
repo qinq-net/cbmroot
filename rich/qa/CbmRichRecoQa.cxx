@@ -40,20 +40,21 @@ using boost::assign::list_of;
 
 CbmRichRecoQa::CbmRichRecoQa()
 : FairTask("CbmRichRecoQa"),
-fHM(NULL),
+fHM(nullptr),
 fEventNum(0),
 fOutputDir(""),
-fMCTracks(NULL),
-fRichPoints(NULL),
-fRichDigis(NULL),
-fRichHits(NULL),
-fRichRings(NULL),
-fRichRingMatches(NULL),
-fStsTrackMatches(NULL),
-fStsTracks(NULL),
-fRichProjections(NULL),
-fGlobalTracks(NULL),
-fNofHitsInRingMap()
+fMCTracks(nullptr),
+fRichPoints(nullptr),
+fRichDigis(nullptr),
+fRichHits(nullptr),
+fRichRings(nullptr),
+fRichRingMatches(nullptr),
+fGlobalTracks(nullptr),
+fStsTracks(nullptr),
+fStsTrackMatches(nullptr),
+fRichProjections(nullptr),
+fNofHitsInRingMap(),
+fCanvas()
 {
 
 }
@@ -63,37 +64,37 @@ InitStatus CbmRichRecoQa::Init()
 {
     cout << "CbmRichRecoQa::Init"<<endl;
     FairRootManager* ioman = FairRootManager::Instance();
-    if (NULL == ioman) { Fatal("CbmRichRecoQa::Init","RootManager not instantised!"); }
+    if (nullptr == ioman) { Fatal("CbmRichRecoQa::Init","RootManager not instantised!"); }
     
     fMCTracks = (TClonesArray*) ioman->GetObject("MCTrack");
-    if (NULL == fMCTracks) { Fatal("CbmRichRecoQa::Init", "No MC Tracks!"); }
+    if (nullptr == fMCTracks) { Fatal("CbmRichRecoQa::Init", "No MC Tracks!"); }
     
     fRichPoints =(TClonesArray*) ioman->GetObject("RichPoint");
-    if (NULL == fRichPoints) { Fatal("CbmRichRecoQa::Init", "No Rich Points!");}
+    if (nullptr == fRichPoints) { Fatal("CbmRichRecoQa::Init", "No Rich Points!");}
     
     fRichDigis =(TClonesArray*) ioman->GetObject("RichDigi");
-    if (NULL == fRichDigis) { Fatal("CbmRichRecoQa::Init", "No Rich Digis!");}
+    if (nullptr == fRichDigis) { Fatal("CbmRichRecoQa::Init", "No Rich Digis!");}
     
     fRichHits = (TClonesArray*) ioman->GetObject("RichHit");
-    if ( NULL == fRichHits) { Fatal("CbmRichRecoQa::Init","No RichHits!"); }
+    if ( nullptr == fRichHits) { Fatal("CbmRichRecoQa::Init","No RichHits!"); }
     
     fRichRings = (TClonesArray*) ioman->GetObject("RichRing");
-    if ( NULL == fRichRings) { Fatal("CbmRichRecoQa::Init","No RichRings!"); }
+    if ( nullptr == fRichRings) { Fatal("CbmRichRecoQa::Init","No RichRings!"); }
     
     fRichRingMatches = (TClonesArray*) ioman->GetObject("RichRingMatch");
-    if ( NULL == fRichRingMatches) { Fatal("CbmRichRecoQa::Init","No RichRingMatch array!"); }
+    if ( nullptr == fRichRingMatches) { Fatal("CbmRichRecoQa::Init","No RichRingMatch array!"); }
     
     fGlobalTracks = (TClonesArray*) ioman->GetObject("GlobalTrack");
-    if (NULL == fGlobalTracks) { Fatal("CbmRichRecoQa::Init","No GlobalTrack array!"); }
+    if (nullptr == fGlobalTracks) { Fatal("CbmRichRecoQa::Init","No GlobalTrack array!"); }
     
     fStsTracks = (TClonesArray*) ioman->GetObject("StsTrack");
-    if (NULL == fStsTracks) { Fatal("CbmRichRecoQa::Init",": No StsTrack array!"); }
+    if (nullptr == fStsTracks) { Fatal("CbmRichRecoQa::Init",": No StsTrack array!"); }
     
     fStsTrackMatches = (TClonesArray*) ioman->GetObject("StsTrackMatch");
-    if (NULL == fStsTrackMatches) { Fatal("CbmRichRecoQa::Init",": No StsTrackMatch array!"); }
+    if (nullptr == fStsTrackMatches) { Fatal("CbmRichRecoQa::Init",": No StsTrackMatch array!"); }
     
     fRichProjections = (TClonesArray*) ioman->GetObject("RichProjection");
-    if ( NULL == fRichProjections) { Fatal("CbmRichUrqmdTest::Init","No fRichProjections array!"); }
+    if ( nullptr == fRichProjections) { Fatal("CbmRichUrqmdTest::Init","No fRichProjections array!"); }
 
     InitHistograms();
     
@@ -175,7 +176,7 @@ void CbmRichRecoQa::FillRichRingNofHits()
     Int_t nofRichHits = fRichHits->GetEntriesFast();
     for (Int_t iHit=0; iHit < nofRichHits; iHit++) {
         CbmRichHit* hit = static_cast<CbmRichHit*>(fRichHits->At(iHit));
-        if (NULL == hit) continue;
+        if (nullptr == hit) continue;
 
         vector<Int_t> motherIds = CbmMatchRecoToMC::GetMcTrackMotherIdsForRichHit(hit, fRichDigis, fRichPoints, fMCTracks);
         for (UInt_t i = 0; i < motherIds.size(); i++) {
@@ -189,7 +190,7 @@ void CbmRichRecoQa::RingTrackMismatchSource()
 	Int_t nofMcTracks = fMCTracks->GetEntriesFast();
 	for(Int_t iTrack = 0; iTrack < nofMcTracks; iTrack++) {
 		const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(fMCTracks->At(iTrack));
-		if (mcTrack == NULL) continue;
+		if (mcTrack == nullptr) continue;
 		bool isEl = IsMcPrimaryElectron(mcTrack);
 		if (isEl) {
 			//MC
@@ -206,11 +207,11 @@ void CbmRichRecoQa::RingTrackMismatchSource()
 		Int_t stsId = globalTrack->GetStsTrackIndex();
 		if (stsId < 0) continue;
 		const CbmTrackMatchNew* stsTrackMatch = static_cast<const CbmTrackMatchNew*>(fStsTrackMatches->At(stsId));
-		if (stsTrackMatch == NULL) continue;
+		if (stsTrackMatch == nullptr) continue;
 		int stsMcTrackId = stsTrackMatch->GetMatchedLink().GetIndex();
 
 		CbmMCTrack* mctrack = static_cast<CbmMCTrack*>(fMCTracks->At(stsMcTrackId));
-		if (mctrack == NULL) continue;
+		if (mctrack == nullptr) continue;
 		Double_t mom = mctrack->GetP();
 
 		bool isEl = IsMcPrimaryElectron(mctrack);
@@ -266,10 +267,10 @@ void CbmRichRecoQa::RingTrackMismatchSource()
 		fHM->H1("fhMismatchSourceMomStsRich")->Fill(mom);
 
 		const CbmTrackMatchNew* richRingMatch = static_cast<const CbmTrackMatchNew*>(fRichRingMatches->At(richId));
-		if (richRingMatch == NULL) continue;
+		if (richRingMatch == nullptr) continue;
 		int richMcTrackId = richRingMatch->GetMatchedLink().GetIndex();
 		const CbmRichRing* ring = static_cast<const CbmRichRing*>(fRichRings->At(richId));
-		if (NULL == ring) continue;
+		if (nullptr == ring) continue;
 
 		if (stsMcTrackId == richMcTrackId) {
 			//STS-RICH true
@@ -299,9 +300,9 @@ bool CbmRichRecoQa::WasRingFound(Int_t mcTrackId)
 	Int_t nofRings = fRichRings->GetEntriesFast();
 	for(Int_t iR = 0; iR < nofRings; iR++) {
 		const CbmRichRing* ring = static_cast<const CbmRichRing*>(fRichRings->At(iR));
-		if (ring == NULL) continue;
+		if (ring == nullptr) continue;
 		const CbmTrackMatchNew* richRingMatch = static_cast<const CbmTrackMatchNew*>(fRichRingMatches->At(iR));
-		if (richRingMatch == NULL) continue;
+		if (richRingMatch == nullptr) continue;
 		int richMcTrackId = richRingMatch->GetMatchedLink().GetIndex();
 		if (richMcTrackId == mcTrackId) return true;
 	}
@@ -317,7 +318,7 @@ bool CbmRichRecoQa::WasRingMatched(Int_t mcTrackId)
 		Int_t richId = globalTrack->GetRichRingIndex();
 		if (richId < 0) continue;
 		const CbmTrackMatchNew* richRingMatch = static_cast<const CbmTrackMatchNew*>(fRichRingMatches->At(richId));
-		if (richRingMatch == NULL) continue;
+		if (richRingMatch == nullptr) continue;
 		int richMcTrackId = richRingMatch->GetMatchedLink().GetIndex();
 		if (richMcTrackId == mcTrackId) {
 			return true;
@@ -334,7 +335,7 @@ bool CbmRichRecoQa::HasRichProjection(Int_t stsTrackId)
 		return false;
 	}
 	FairTrackParam* pTrack = (FairTrackParam*)fRichProjections->At(stsTrackId);
-	if (pTrack == NULL) {
+	if (pTrack == nullptr) {
 		return false;
 	}
 
@@ -356,14 +357,14 @@ void CbmRichRecoQa::FillRingTrackDistance()
         if (stsId < 0 || richId < 0) continue;
         
         const CbmTrackMatchNew* stsTrackMatch = static_cast<const CbmTrackMatchNew*>(fStsTrackMatches->At(stsId));
-        if (stsTrackMatch == NULL) continue;
+        if (stsTrackMatch == nullptr) continue;
         int stsMcTrackId = stsTrackMatch->GetMatchedLink().GetIndex();
         
         const CbmTrackMatchNew* richRingMatch = static_cast<const CbmTrackMatchNew*>(fRichRingMatches->At(richId));
-        if (richRingMatch == NULL) continue;
+        if (richRingMatch == nullptr) continue;
         int richMcTrackId = richRingMatch->GetMatchedLink().GetIndex();
         const CbmRichRing* ring = static_cast<const CbmRichRing*>(fRichRings->At(richId));
-        if (NULL == ring) continue;
+        if (nullptr == ring) continue;
         
         double rtDistance = CbmRichUtil::GetRingTrackDistance(iTrack);
         double xc = ring->GetCenterX();
@@ -371,7 +372,7 @@ void CbmRichRecoQa::FillRingTrackDistance()
         int nofHits = ring->GetNofHits();
         
         CbmMCTrack* mctrack = static_cast<CbmMCTrack*>(fMCTracks->At(stsMcTrackId));
-        if (mctrack == NULL) continue;
+        if (mctrack == nullptr) continue;
         double mom = mctrack->GetP();
         int charge = mctrack->GetCharge();
         
@@ -566,7 +567,7 @@ void CbmRichRecoQa::DrawRingTrackDistHistWithSuffix(const string& s )
 bool CbmRichRecoQa::IsMcPrimaryElectron(
 			const CbmMCTrack* mctrack)
 {
-	if (mctrack == NULL) return false;
+	if (mctrack == nullptr) return false;
 	int pdg = TMath::Abs(mctrack->GetPdgCode());
 	if (mctrack->GetGeantProcessId() == kPPrimary && pdg == 11) return true;
 	return false;
@@ -575,7 +576,7 @@ bool CbmRichRecoQa::IsMcPrimaryElectron(
 bool CbmRichRecoQa::IsMcPion(
 				const CbmMCTrack* mctrack)
 {
-	if (mctrack == NULL) return false;
+	if (mctrack == nullptr) return false;
 	int pdg = TMath::Abs(mctrack->GetPdgCode());
 	if (pdg == 211) return true;
 	return false;
@@ -594,7 +595,7 @@ void CbmRichRecoQa::DrawFromFile(
 {
 	fOutputDir = outputDir;
 
-	if (fHM != NULL) delete fHM;
+	if (fHM != nullptr) delete fHM;
 
 	fHM = new CbmHistManager();
 	TFile* file = new TFile(fileName.c_str());
