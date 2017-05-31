@@ -57,8 +57,8 @@
 
 #pragma link C++ class CbmMatchRecoToMC+;
 
-#pragma link C++ enum ESystemId;
-#pragma link C++ enum EPassiveId;
+#pragma link C++ enum ECbmModuleId;
+#pragma link C++ enum ECbmDataType;
 
 #endif
 

@@ -9,8 +9,6 @@
 #include "TObject.h"
 #include "TMatrixD.h"
 
-#include "CbmStatusCode.h"
-
 #include "Rtypes.h"
 
 #include <vector>
@@ -30,7 +28,7 @@ public:
     ** @param zOut             z position to propagate to
     ** @param pdg              PDG code of the particle 
     **/
-   virtual StatusCode Propagate( 
+   virtual Bool_t Propagate(
 		   const FairTrackParam *parIn,
            FairTrackParam *parOut,
            Double_t zOut,
@@ -41,7 +39,7 @@ public:
     ** @param zOut             z position to propagate to
     ** @param pdg              PDG code of the particle 
     **/
-   virtual StatusCode Propagate( 
+   virtual Bool_t Propagate(
 		   FairTrackParam *par, 
            Double_t zOut,
            Int_t pdg) = 0;
