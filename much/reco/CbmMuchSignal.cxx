@@ -24,6 +24,7 @@
 
 using namespace std;
 
+/*
 CbmMuchSignal::CbmMuchSignal(CbmMuchSignal* signal)
 	: TObject(),
 	fAddress(signal->fAddress),
@@ -32,7 +33,7 @@ CbmMuchSignal::CbmMuchSignal(CbmMuchSignal* signal)
 	fSignalShape(signal->fSignalShape)
 {
 }
-
+*/
 CbmMuchSignal::CbmMuchSignal(const CbmMuchSignal& rhs)
 	: TObject(),
 	fAddress(rhs.fAddress),
@@ -42,7 +43,7 @@ CbmMuchSignal::CbmMuchSignal(const CbmMuchSignal& rhs)
 	fMatch(rhs.fMatch)
 {
 }
-
+/*
 CbmMuchSignal& CbmMuchSignal::operator=(const CbmMuchSignal& rhs)
 {
 
@@ -56,7 +57,7 @@ CbmMuchSignal& CbmMuchSignal::operator=(const CbmMuchSignal& rhs)
   }
   return *this;
 }
-
+*/
 
 
 void CbmMuchSignal::MakeSignalShape(UInt_t charge, TArrayD shape) {

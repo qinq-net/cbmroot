@@ -113,7 +113,8 @@ CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName)
     fTotalDriftTime(0.4/fDriftVelocity*10000), // 40 ns
     fSigma(),
     fMPV(),
-    fIsLight(1) // fIsLight = 1 (default) Store Light CbmMuchDigiMatch in output branch, fIsLight = 0 Create Heavy CbmMuchDigiMatch with fSignalShape info.  
+    fIsLight(1), // fIsLight = 1 (default) Store Light CbmMuchDigiMatch in output branch, fIsLight = 0 Create Heavy CbmMuchDigiMatch with fSignalShape info.  
+    fAddressCharge()
 {
   fSigma[0] = new TF1("sigma_e","pol6",-5,10);
   fSigma[0]->SetParameters(sigma_e);

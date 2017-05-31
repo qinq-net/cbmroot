@@ -25,7 +25,7 @@ static const Double_t fDeadTime		= 400;  // Deadtime
 class CbmMuchSignal : public TObject{
  public:
   	/** Default Constructor */
-	CbmMuchSignal(): TObject(), fAddress(0), fTimeStart(0), fTimeStop(0), fSignalShape(0){}
+	CbmMuchSignal(): TObject(), fAddress(0), fTimeStart(0), fTimeStop(0), fSignalShape(0), fMatch(nullptr) {}
 	
 	/** Standard constructor
 	** @param  fTimeStart     Start time [ns]
@@ -33,16 +33,16 @@ class CbmMuchSignal : public TObject{
 	** @param  charge   Charge [ADC units]
  	**/
 	CbmMuchSignal(UInt_t address, ULong64_t starttime=0)
-		: TObject(), fAddress(address), fTimeStart(starttime), fSignalShape(0)
+		: TObject(), fAddress(address), fTimeStart(starttime), fTimeStop(fTimeStart + fDeadTime),  fSignalShape(0), fMatch(new CbmMatch())
 
 		{
-			fMatch = new CbmMatch();
-			fTimeStop = fTimeStart + fDeadTime;
+//			fMatch = new CbmMatch();
+//			fTimeStop = fTimeStart + fDeadTime;
 		}
 
-	CbmMuchSignal(CbmMuchSignal* signal);
+	CbmMuchSignal(CbmMuchSignal* signal) = delete;
 	CbmMuchSignal(const CbmMuchSignal&);
-	CbmMuchSignal& operator=(const CbmMuchSignal&);
+	CbmMuchSignal& operator=(const CbmMuchSignal&) = delete;
 
   	/** Destructor **/
 	virtual ~CbmMuchSignal(){

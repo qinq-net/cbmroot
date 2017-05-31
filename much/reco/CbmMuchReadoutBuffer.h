@@ -43,6 +43,9 @@ class CbmMuchReadoutBuffer : public CbmReadoutBuffer<CbmMuchSignal> {
 		//Vikas Todo:- Create similar  for the CbmMuchReadoutBuffe
 		CbmMuchReadoutBuffer(TString branchName, TString folderName, Bool_t persistence = kTRUE) 
 				:CbmReadoutBuffer(branchName,folderName,persistence) { }
+
+                CbmMuchReadoutBuffer(const CbmMuchReadoutBuffer&) = delete;
+                CbmMuchReadoutBuffer& operator=(const CbmMuchReadoutBuffer&) = delete;
 	  // ---------------------------------------------------------------------
 	    	/**   Access to singleton instance
      		** @return pointer to instance

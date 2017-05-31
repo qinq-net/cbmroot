@@ -63,6 +63,9 @@ class CbmMuchDigitizeGem : public FairTask{
     /** Constructor */
     CbmMuchDigitizeGem(const char* digiFileName);
 
+    CbmMuchDigitizeGem(const CbmMuchDigitizeGem&) = delete;
+    CbmMuchDigitizeGem& operator=(const CbmMuchDigitizeGem&) = delete;
+
     /** Destructor. */
     virtual ~CbmMuchDigitizeGem();
 
@@ -206,6 +209,9 @@ class CbmMuchDigitizeGem : public FairTask{
     Double_t       fNofDigisTot;    ///< Total number of digis created
     Double_t       fTimeTot;        ///< Total execution time
 
+    //Storing all the charges which is generated from the same MCPoint in a map<address, charge>
+    std::map<UInt_t, UInt_t> fAddressCharge;
+
     /** Initialization. **/
     virtual InitStatus Init();
 
@@ -221,8 +227,6 @@ class CbmMuchDigitizeGem : public FairTask{
 
    // Bool_t AddDigi(CbmMuchPad* pad);
     inline Int_t GasGain();
-    CbmMuchDigitizeGem(const CbmMuchDigitizeGem&);
-    CbmMuchDigitizeGem& operator=(const CbmMuchDigitizeGem&);
         
     Double_t GetNPrimaryElectronsPerCm(const CbmMuchPoint* point);
     Bool_t AddCharge(CbmMuchSectorRadial* s,UInt_t ne, Int_t iPoint, Double_t time, Double_t driftTime, Double_t phi1, Double_t phi2);
@@ -239,8 +243,6 @@ class CbmMuchDigitizeGem : public FairTask{
   ** respective information is taken from FairMCEventHeader.
  **/
   void GetEventInfo(Int_t& inputNr, Int_t& eventNr, Double_t& eventTime);
-    //Storing all the charges which is generated from the same MCPoint in a map<address, charge>
-    std::map<UInt_t, UInt_t> fAddressCharge;
     
     ClassDef(CbmMuchDigitizeGem,1)
 };
