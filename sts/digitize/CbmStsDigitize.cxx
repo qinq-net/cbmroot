@@ -53,7 +53,7 @@ using std::string;
 // -----   Static member variables   ---------------------------------------
 // The default setting is the fully realistic response.
 Int_t  CbmStsDigitize::fElossModel      = 2;  //  energy loss fluctuations
-Bool_t CbmStsDigitize::fUseLorentzShift = kFALSE;  // Lorentz shift off
+Bool_t CbmStsDigitize::fUseLorentzShift = kTRUE;  // Lorentz shift on
 Bool_t CbmStsDigitize::fUseDiffusion    = kTRUE;  // Diffusion on
 Bool_t CbmStsDigitize::fUseCrossTalk    = kTRUE;  // Cross talk on
 Bool_t CbmStsDigitize::fIsInitialised   = kFALSE;

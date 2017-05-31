@@ -52,15 +52,7 @@ void digitize()
 	  Double_t deadTime       = 9999999.;  // infinite dead time (integrate entire event)
 	  Double_t noise          =       0.;  // ENC [e]
 
-	  // The following settings correspond to a validated implementation.
-	  // Changing them is on your own risk.
-	  Int_t  eLossModel       = 1;         // Energy loss model: uniform
-	  Bool_t useLorentzShift  = kFALSE;    // Deactivate Lorentz shift
-	  Bool_t useDiffusion     = kFALSE;    // Deactivate diffusion
-	  Bool_t useCrossTalk     = kFALSE;    // Deactivate cross talk
-
 	  CbmStsDigitize* stsDigi = new CbmStsDigitize();
-	  stsDigi->SetProcesses(eLossModel, useLorentzShift, useDiffusion, useCrossTalk);
 	  stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution, deadTime, noise);
 	  run->AddTask(stsDigi);
 
