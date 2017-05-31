@@ -10,7 +10,10 @@ class CbmPlatform : public FairModule {
   public:
     CbmPlatform();
     CbmPlatform(const char * name, const char *Title="CBM Platform");
+    CbmPlatform(const CbmPlatform&) = delete;
+    CbmPlatform& operator=(const CbmPlatform&) = delete;
     virtual ~CbmPlatform();
+   
     virtual void ConstructGeometry();
 
     void ConstructRootGeometry();

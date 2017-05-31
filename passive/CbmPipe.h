@@ -10,7 +10,10 @@ class CbmPipe : public FairModule {
   public:
     CbmPipe();
     CbmPipe(const char * name, const char *Title="CBM Pipe");
+    CbmPipe(const CbmPipe&) = delete;
+    CbmPipe& operator=(const CbmPipe&) = delete;
     virtual ~CbmPipe();
+    
     virtual void ConstructGeometry();
 
     void ConstructRootGeometry();
