@@ -94,12 +94,16 @@ struct LxTbBinnedPoint
     std::list<PointDesc> mcRefs;
 #endif//LXTB_QA
     
-    LxTbBinnedPoint(scaltype X, scaltype Dx, scaltype Y, scaltype Dy, timetype T, timetype Dt, Int_t ri, bool Use) : x(X), dx(Dx), y(Y), dy(Dy),
-        t(T), dt(Dt), refId(ri), use(Use)
+    LxTbBinnedPoint(scaltype X, scaltype Dx, scaltype Y, scaltype Dy, timetype T, timetype Dt, Int_t ri, bool Use) 
+      : x(X), dx(Dx), y(Y), dy(Dy),
+        t(T), dt(Dt), use(Use), neighbours(), refId(ri)
 #ifdef LXTB_QA
-    , pHit(0), isTrd(false)
+    , pHit(0), isTrd(false), stationNumber(-1), mcRefs()
 #endif//LXTB_QA
     {}
+ private:
+//   LxTbBinnedPoint(const LxTbBinnedPoint&);
+   LxTbBinnedPoint& operator=(const LxTbBinnedPoint&);
 };
 
 inline LxTbBinnedRay::LxTbBinnedRay(scaltype deltaZ, const LxTbBinnedPoint& rP, const LxTbBinnedPoint& lP, scaltype Chi2) : lPoint(&lP), tx((lP.x - rP.x) / deltaZ),
@@ -113,7 +117,7 @@ struct LxTbXBin
     std::list<LxTbBinnedPoint> points;
     bool use;
     
-    LxTbXBin() : use(false) {}
+    LxTbXBin() : points(), use(false), maxDx() {}
     
     void Clear()
     {
@@ -206,8 +210,12 @@ struct LxTbBinnedStation
     LxTbTYXBin* tyxBins;
     Q qs[2];
     
-    LxTbBinnedStation(int nofxb, int nofyb, int noftb) : nofXBins(nofxb), nofYBins(nofyb), nofTYXBins(noftb), lastXBin(nofxb - 1), lastYBin(nofyb - 1),
-        tyxBins(reinterpret_cast<LxTbTYXBin*> (new unsigned char[noftb * sizeof(LxTbTYXBin)]))
+    LxTbBinnedStation(int nofxb, int nofyb, int noftb) 
+      : stationNumber(-1), z(), nofXBins(nofxb), nofYBins(nofyb), nofTYXBins(noftb), lastXBin(nofxb - 1), lastYBin(nofyb - 1),
+        minX(), maxX(), binSizeX(), minY(), maxY(), binSizeY(), absorber(), deltaThetaX(), deltaThetaY(), 
+        dispX(), dispY(),
+        tyxBins(reinterpret_cast<LxTbTYXBin*> (new unsigned char[noftb * sizeof(LxTbTYXBin)])),
+        qs()
     {
         for (int i = 0; i < noftb; ++i)
             new (&tyxBins[i]) LxTbTYXBin(nofXBins, nofYBins);
@@ -247,7 +255,11 @@ struct LxTbBinnedTrdStation
     scaltype dispYs[4];
     LxTbTYXBin* tyxBinsArr[4];
     
-    LxTbBinnedTrdStation(int nofxb, int nofyb, int noftb) : nofXBins(nofxb), nofYBins(nofyb), nofTYXBins(noftb), lastXBin(nofxb - 1), lastYBin(nofyb - 1)
+    LxTbBinnedTrdStation(int nofxb, int nofyb, int noftb) 
+      : Zs(), nofXBins(nofxb), nofYBins(nofyb), nofTYXBins(noftb), lastXBin(nofxb - 1), lastYBin(nofyb - 1),
+        minX(), maxX(), binSizeX(), minY(), maxY(), binSizeY(), absorber(), deltaThetaX(), deltaThetaY(),
+        dispXs(), dispYs(), tyxBinsArr()
+
     {
         for (int i = 0; i < 4; ++i)
         {
@@ -358,6 +370,10 @@ struct LxTbBinnedFinder
             
             delete[] points;
         }
+         
+         private:
+           Chain(const Chain&);
+           Chain& operator=(const Chain&);
     };
     
     struct ChainImpl
@@ -446,6 +462,11 @@ struct LxTbBinnedFinder
         int tbLength;
         timetype& minT;
         std::list<std::pair<timetype, timetype> >* triggerTimeBins;
+
+         private:
+          TriggerTimeArray(const TriggerTimeArray&);
+          TriggerTimeArray& operator=(const TriggerTimeArray&);
+          
     };
     
     struct SignalParticle
@@ -495,9 +516,9 @@ struct LxTbBinnedFinder
     LxTbBinnedFinder(int nofTrdLayers, int nofStations, int nofTimeBins, std::pair<int, int>* nofSpatBins, int nofTrdXBins, int nofTrdYBins, int timeBinLength) :
         fSignalParticle(&particleDescs[0]),
         stations(reinterpret_cast<LxTbBinnedStation*> (new unsigned char[nofStations * sizeof(LxTbBinnedStation)])),
-        trdStation(nofTrdXBins, nofTrdYBins, nofTimeBins), fNofStations(nofStations), fLastStationNumber(nofStations - 1), minT(0), maxT(0),
+        trdStation(nofTrdXBins, nofTrdYBins, nofTimeBins), minT(0), maxT(0),
         recoTracks(new std::list<Chain*>[nofTimeBins]), nofTrackBins(nofTimeBins),
-        fHasTrd(nofTrdLayers > 0), fNofTrdLayers(nofTrdLayers), fTimeBinLength(timeBinLength), fNofTimeBins(nofTimeBins), fLastTimeBinNumber(nofTimeBins - 1), fTimeSliceLength(nofTimeBins * timeBinLength),
+        fHasTrd(nofTrdLayers > 0), fNofTrdLayers(nofTrdLayers), 
         triggerTimes_trd0_sign0_dist0(nofTimeBins, timeBinLength, minT),
         triggerTimes_trd0_sign0_dist1(nofTimeBins, timeBinLength, minT),
         triggerTimes_trd0_sign1_dist0(nofTimeBins, timeBinLength, minT),
@@ -509,11 +530,16 @@ struct LxTbBinnedFinder
         triggerTimes_trd05_sign0_dist0(nofTimeBins, timeBinLength, minT),
         triggerTimes_trd05_sign0_dist1(nofTimeBins, timeBinLength, minT),
         triggerTimes_trd05_sign1_dist0(nofTimeBins, timeBinLength, minT),
-        triggerTimes_trd05_sign1_dist1(nofTimeBins, timeBinLength, minT)
-    {
-        for (int i = 0; i < fNofStations; ++i)
+        triggerTimes_trd05_sign1_dist1(nofTimeBins, timeBinLength, minT),
+#ifdef LXTB_QA
+        triggerEventNumber(),
+#endif//LXTB_QA
+        fNofStations(nofStations), fLastStationNumber(nofStations - 1), 
+        fNofTimeBins(nofTimeBins), fLastTimeBinNumber(nofTimeBins - 1), fTimeBinLength(timeBinLength), fTimeSliceLength(nofTimeBins * timeBinLength)
+        {
+          for (int i = 0; i < fNofStations; ++i)
             new (&stations[i]) LxTbBinnedStation(nofSpatBins[i].first, nofSpatBins[i].second, nofTimeBins);
-    }
+        }
     
     virtual ~LxTbBinnedFinder()
     {
@@ -1318,6 +1344,10 @@ struct LxTbBinnedFinder
             TriggerBin(recoTracks[i], borderTracks, i, false);
         }
     }
+    
+     private:
+       LxTbBinnedFinder(const LxTbBinnedFinder&);
+       LxTbBinnedFinder& operator=(const LxTbBinnedFinder&);
 };
 
 #endif /* LXTBBINNED_H */
