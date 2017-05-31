@@ -652,7 +652,7 @@ void dump_digi_file()
           {  4.00,  4.00,  4.00 },   // module type 5 -  2.67 cm2
           {  6.00,  6.00,  6.00 },   // module type 6 -  4.00 cm2
           {  8.00,  8.00,  8.00 },   // module type 7 -  5.33 cm2
-          { 24.00, 24.00, 24.00 } }; // module type 8 -  8.00 cm2
+          { 24.00, 24.00, 24.00 } }; // module type 8 - 16.00 cm2
 //          { 12.00, 12.00, 12.00 } }; // module type 8 -  8.00 cm2
 
 //          {  3.75,  4.00,  3.75 },   // module type 5 -
