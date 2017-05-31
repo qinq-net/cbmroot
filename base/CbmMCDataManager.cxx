@@ -11,7 +11,7 @@ using namespace std;
 
 // --- Default constructor
 CbmMCDataManager::CbmMCDataManager()
-  : FairTask("MCDataManager", 0), fLegacy(0), fFileList(), fActive()
+  : FairTask("MCDataManager", 0), fLegacy(0), fFileList(), fActive(), fFriends()
 {
   fFileList.clear();
   fActive.clear();
@@ -20,7 +20,7 @@ CbmMCDataManager::CbmMCDataManager()
 
 // --- Standard constructor
 CbmMCDataManager::CbmMCDataManager(const char* name, Int_t legacy)
-  : FairTask(name,0), fLegacy(legacy), fFileList(), fActive()
+  : FairTask(name,0), fLegacy(legacy), fFileList(), fActive(), fFriends()
 {
   fFileList.clear();
   fActive.clear();

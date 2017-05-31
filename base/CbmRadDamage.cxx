@@ -16,7 +16,20 @@
 
 
 // =====   Constructor   ==================================================
-CbmRadDamage::CbmRadDamage() {
+CbmRadDamage::CbmRadDamage() 
+ : niel_neutron(),
+   niel_proton(),
+   niel_pion(),
+   niel_electron(),
+   fIAlpha(4.e-17),
+   fEGap0(1.166),
+   fEGapAlpha(4.73e-4),
+   fEGapBeta(636.),
+   fNeff0(9.0e11),
+   fNeffC(2.5e-14),
+   fNeffGc(1.5e-2),
+   fEpsilon(1.04e-12)
+{
   Init();
 }
 // ========================================================================

@@ -49,7 +49,7 @@ public:
 };
 
 CbmHistManager::CbmHistManager():
-      fMap()
+      fMap(), fCanvases()
 {
 
 }
