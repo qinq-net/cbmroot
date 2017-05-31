@@ -34,16 +34,16 @@ CbmMvdDetector* CbmMvdDetector::Instance()
 // -----   Default constructor   -------------------------------------------
 CbmMvdDetector::CbmMvdDetector() 
   : TNamed(),
-    fSensorArray(NULL),
-    fSensorIDArray(NULL),
+    fSensorArray(nullptr),
+    fSensorIDArray(nullptr),
     fPluginCount(0),
-    foutput(NULL),
-    foutputHits(NULL),
-    foutputDigis(NULL),
-    foutputCluster(NULL),
-    foutputDigiMatchs(NULL),
-    foutputHitMatchs(NULL),
-    fcurrentEvent(NULL),
+    foutput(nullptr),
+    foutputHits(nullptr),
+    foutputDigis(nullptr),
+    foutputCluster(nullptr),
+    foutputDigiMatchs(nullptr),
+    foutputHitMatchs(nullptr),
+    fcurrentEvent(nullptr),
     fepsilon(),
     fDigiPlugin(-1),
     fHitPlugin(-1),
@@ -51,7 +51,8 @@ CbmMvdDetector::CbmMvdDetector()
     fSensorArrayFilled(kFALSE),
     initialized(kFALSE),
     fFinished(kFALSE),
-    fParameter()
+    fName(""),
+    fParameter(nullptr)
 {
 
   Fatal (GetName(), " - Do not use standard constructor");
@@ -65,15 +66,15 @@ CbmMvdDetector::CbmMvdDetector()
 CbmMvdDetector::CbmMvdDetector(const char* name)
   : TNamed(),
     fSensorArray(new TClonesArray("CbmMvdSensor", 10)),
-    fSensorIDArray(NULL),
+    fSensorIDArray(nullptr),
     fPluginCount(0),
-    foutput(NULL),
-    foutputHits(NULL),
-    foutputDigis(NULL),
-    foutputCluster(NULL),
-    foutputDigiMatchs(NULL),
-    foutputHitMatchs(NULL),
-    fcurrentEvent(NULL),
+    foutput(nullptr),
+    foutputHits(nullptr),
+    foutputDigis(nullptr),
+    foutputCluster(nullptr),
+    foutputDigiMatchs(nullptr),
+    foutputHitMatchs(nullptr),
+    fcurrentEvent(nullptr),
     fepsilon(),
     fDigiPlugin(-1),
     fHitPlugin(-1),
@@ -81,7 +82,8 @@ CbmMvdDetector::CbmMvdDetector(const char* name)
     fSensorArrayFilled(kFALSE),
     initialized(kFALSE),
     fFinished(kFALSE),
-    fParameter()
+    fName(name),
+    fParameter(nullptr)
 {
  
   if(fInstance) {Fatal(GetName(), " - Error, singleton does already exist.");}
