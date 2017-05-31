@@ -24,6 +24,9 @@ class CbmTofHitFinderTBQA : public FairTask
 {
 public:
     CbmTofHitFinderTBQA();
+    CbmTofHitFinderTBQA(const CbmTofHitFinderTBQA&) = delete;
+    CbmTofHitFinderTBQA& operator=(const CbmTofHitFinderTBQA&) = delete;
+
     InitStatus Init();
     void Exec(Option_t* option);
     void Finish();
@@ -39,6 +42,7 @@ private:
     CbmMCDataArray* fMCTracks;
     CbmTimeSlice* fTimeSlice;
     CbmMCEventList* fEventList;
+
     ClassDef(CbmTofHitFinderTBQA, 1)
 };
 

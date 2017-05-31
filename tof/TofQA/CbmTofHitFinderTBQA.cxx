@@ -20,7 +20,8 @@ using std::endl;
 using std::set;
 using std::pair;
 
-/*struct TofHitDesc
+/*
+struct TofHitDesc
 {
    CbmTofHit hit;
    list<const CbmTofPoint*> pointRefs;
@@ -43,7 +44,8 @@ struct TrackDesc
 
 static vector<vector<TofHitDesc> > tofHitsAll;
 static vector<vector<TofPointDesc> > tofPointsAll;
-static vector<vector<TrackDesc> > tofTracksAll;*/
+static vector<vector<TrackDesc> > tofTracksAll;
+*/
 
 struct QAMCTrack;
 
@@ -55,6 +57,8 @@ struct QAMCPoint
    int detId;
    QAMCTrack* track;
    bool isInit;
+  
+//   QAMCPoint() : x(0.), y(0.), t(0.), detId(0), track(nullptr), isInit(false) {}
 };
 
 struct QAHit
@@ -68,12 +72,20 @@ struct QAHit
    set<const QAMCPoint*> points;
    set<const QAMCTrack*> tracks;
    int detId;
+
+   QAHit() 
+    : x(0.), dx(0.), y(0.), dy(0.), t(0.), dt(0.), points(), tracks(), detId(0) {}
+
+   QAHit(double _x,  double _dx, double _y, double _dy, double _t,  double _dt, 
+         set<const QAMCPoint*> _points, set<const QAMCTrack*> _tracks, int _detId) 
+    : x(_x), dx(_dx), y(_y), dy(_dy), t(_t), dt(_dt), points(_points), tracks(_tracks), detId(_detId) {}
 };
 
 struct QAMCTrack
 {
    list<const QAMCPoint*> points;
    list<const QAHit*> hits;
+   QAMCTrack() : points(), hits() {}
 };
 
 static vector<vector<QAMCTrack> > mcTracks;
