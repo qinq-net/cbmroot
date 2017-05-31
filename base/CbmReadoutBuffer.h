@@ -37,13 +37,12 @@ template <class Data> class CbmReadoutBuffer : public FairWriteoutBuffer {
 		CbmReadoutBuffer() : FairWriteoutBuffer(),
 		                     fBuffer(),
 		                     fBufferIt(),
-		                     fArray(NULL),
+		                     fOldIt(),
+		                     fArray(nullptr),
 		                     fWriteToArray(kFALSE)
 		{
 		}
 	  // ---------------------------------------------------------------------
-
-
 
 	  // ---------------------------------------------------------------------
 		/** Constructor with branch and folder name
@@ -60,7 +59,8 @@ template <class Data> class CbmReadoutBuffer : public FairWriteoutBuffer {
 			FairWriteoutBuffer(),
 			fBuffer(),
 		  fBufferIt(),
-		  fArray(NULL),
+		  fOldIt(),
+		  fArray(nullptr),
 		  fWriteToArray(kTRUE) {
 
 			if ( FairRootManager::Instance() ) {
@@ -75,7 +75,8 @@ template <class Data> class CbmReadoutBuffer : public FairWriteoutBuffer {
 			}
 		}
 	  // ---------------------------------------------------------------------
-
+                CbmReadoutBuffer(const CbmReadoutBuffer&) = delete;
+                CbmReadoutBuffer& operator=(const CbmReadoutBuffer&) = delete;
 
 
 	  // ---------------------------------------------------------------------
