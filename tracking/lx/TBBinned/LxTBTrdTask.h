@@ -55,6 +55,9 @@ public:
     
 public:
     LxTBTrdFinder();
+    LxTBTrdFinder(const LxTBTrdFinder&) = delete;
+    LxTBTrdFinder& operator=(const LxTBTrdFinder&) = delete;
+    
     InitStatus Init();// Overridden from FairTask
     void Exec(Option_t* opt);// Overridden from FairTask
     void Finish();// Overridden from FairTask

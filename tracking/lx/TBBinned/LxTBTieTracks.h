@@ -44,13 +44,17 @@ struct LxTBBinndedLayer
     timetype maxDt;
     LxTbTYXBin* tyxBins;
     
-    LxTBBinndedLayer(int nofxb, int nofyb, int noftb, int bst) : nofXBins(nofxb), nofYBins(nofyb), nofTBins(noftb), lastXBin(nofxb - 1), lastYBin(nofyb - 1), lastTBin(noftb - 1),
+    LxTBBinndedLayer(int nofxb, int nofyb, int noftb, int bst) 
+      : z(), nofXBins(nofxb), nofYBins(nofyb), nofTBins(noftb), lastXBin(nofxb - 1), lastYBin(nofyb - 1), lastTBin(noftb - 1),
+        minX(), maxX(), binSizeX(), minY(), maxY(), binSizeY(),
         minT(0), maxT(0), binSizeT(bst), timeSliceLength(nofTBins * binSizeT), maxDx(0), maxDy(0), maxDt(0),
         tyxBins(reinterpret_cast<LxTbTYXBin*> (new unsigned char[noftb * sizeof(LxTbTYXBin)]))
     {
         for (int i = 0; i < noftb; ++i)
             new (&tyxBins[i]) LxTbTYXBin(nofXBins, nofYBins);
     }
+    LxTBBinndedLayer(const LxTBBinndedLayer&) = delete;
+    LxTBBinndedLayer& operator=(const LxTBBinndedLayer&) = delete;
     
     ~LxTBBinndedLayer()
     {
@@ -189,11 +193,15 @@ struct LxTBBinnedDetector
     TClonesArray* fGlobalTracks;
     
     LxTBBinnedDetector(int nofl, int nofxb, int nofyb, int noftb, int binSizeT);
+    LxTBBinnedDetector(const LxTBBinnedDetector&) = delete;
+    LxTBBinnedDetector& operator=(const LxTBBinnedDetector&) = delete;
+
     void Init();
     void Clear();
     void SetTSBegin(unsigned long long tsLowBound);
     void AddStsTrack(const FairTrackParam& par, Double_t chiSq, Double_t time, Int_t selfId/*, Int_t eventId, Int_t fileId*/);
     void TieTracks(LxTbBinnedFinder& fFinder);
+
 };
 
 #endif /* LXTBTIETRACKS_H */

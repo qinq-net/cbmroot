@@ -48,21 +48,23 @@ Double_t speedOfLight = 0;
 
 LxTbBinnedFinder::SignalParticle LxTbBinnedFinder::particleDescs[] = { { "jpsi", 443, 3.0, true  }, { "omega", 223, 1.5, true }, { "", -1, 0, false } };
 
-LxTBFinder::LxTBFinder() : fMuchMCPoints(0), fMuchPixelHits(0), fMuchClusters(0), fMuchPixelDigiMatches(0),
-   fTrdMCPoints(0), fTrdHits(0), fTrdClusters(0), fTrdDigiMatches(0),
+LxTBFinder::LxTBFinder() 
+  : fMuchPoints(), fMuchMCPoints(nullptr), fMuchPixelHits(nullptr), fMuchClusters(nullptr), fMuchPixelDigiMatches(nullptr),
+    fTrdPoints(), fTrdMCPoints(nullptr), fTrdHits(nullptr), fTrdClusters(nullptr), fTrdDigiMatches(nullptr),
 #ifdef LXTB_QA
-   fMvdDigis(0), fStsDigis(0), fTofDigis(0),
+   fMvdDigis(nullptr), fStsDigis(nullptr), fTofDigis(nullptr), fMCTracks(),
 #endif//LXTB_QA
-   isEvByEv(false), fFinder(0), hasTrd(false), useTrd(true), useIdeal(false), useAsciiSig(false), fSignalParticle("jpsi"),
+   isEvByEv(false), fFinder(nullptr), recoTracks(), hasTrd(false), useTrd(true), useIdeal(false), useAsciiSig(false), fSignalParticle("jpsi"),
 #ifdef LXTB_EMU_TS
    nof_timebins(1000),
 #else//LXTB_EMU_TS
    nof_timebins(isEvByEv ? 5 : 1000),
 #endif//LXTB_EMU_TS
-   last_timebin(nof_timebins - 1), fNEvents(1000)
+   last_timebin(nof_timebins - 1), fNEvents(1000), fEventTimes(),
 #ifdef LXTB_TIE
-   , fStsHits(0), fStsTracks(0), fStsClusters(0), fStsDigiMatches(0), fDetector(0)
+   fStsHits(nullptr), fStsTracks(nullptr), fStsClusters(nullptr), fStsDigiMatches(nullptr), fDetector(nullptr),
 #endif//LXTB_TIE
+   dummy(0)
 {
 }
 

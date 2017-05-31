@@ -28,6 +28,10 @@ struct TieHandlePoint : public LxTBBinndedLayer::PointHandler
    litfloat fChiSq;
    litfloat fZ;
    const LxTbBinnedPoint* fPoint;
+
+   TieHandlePoint() : fFilter(), fPar(), fOutPar(), fChiSq(), fZ(), fPoint(nullptr) {}
+   TieHandlePoint(const TieHandlePoint&) = delete;
+   TieHandlePoint& operator=(const TieHandlePoint&) = delete;
    
    void HandlePoint(const LxTbBinnedPoint& point)
    {
@@ -54,7 +58,7 @@ struct TieHandlePoint : public LxTBBinndedLayer::PointHandler
 };
 
 LxTBBinnedDetector::LxTBBinnedDetector(int nofl, int nofxb, int nofyb, int noftb, int binSizeT) :
-   fLayers(reinterpret_cast<LxTBBinndedLayer*> (new unsigned char[nofl * sizeof(LxTBBinndedLayer)])), fNofLayers(nofl), fMuchTracks(0), fGlobalTracks(0)
+   fLayers(reinterpret_cast<LxTBBinndedLayer*> (new unsigned char[nofl * sizeof(LxTBBinndedLayer)])), fNofLayers(nofl), fStsTracks(), fMuchTracks(nullptr), fGlobalTracks(nullptr)
 {
    for (int i = 0; i < fNofLayers; ++i)
       new (&fLayers[i]) LxTBBinndedLayer(nofxb, nofyb, noftb, binSizeT);

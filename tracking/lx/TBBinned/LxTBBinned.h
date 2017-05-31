@@ -101,9 +101,6 @@ struct LxTbBinnedPoint
     , pHit(0), isTrd(false), stationNumber(-1), mcRefs()
 #endif//LXTB_QA
     {}
- private:
-//   LxTbBinnedPoint(const LxTbBinnedPoint&);
-   LxTbBinnedPoint& operator=(const LxTbBinnedPoint&);
 };
 
 inline LxTbBinnedRay::LxTbBinnedRay(scaltype deltaZ, const LxTbBinnedPoint& rP, const LxTbBinnedPoint& lP, scaltype Chi2) : lPoint(&lP), tx((lP.x - rP.x) / deltaZ),
@@ -141,6 +138,8 @@ struct LxTbYXBin
     bool use;
     
     LxTbYXBin(int nxbs) : xBins(new LxTbXBin[nxbs]), nofXBins(nxbs), use(false) {}
+    LxTbYXBin(const LxTbYXBin&) = delete;
+    LxTbYXBin& operator=(const LxTbYXBin&) = delete;
     
     ~LxTbYXBin()
     {
@@ -167,7 +166,9 @@ struct LxTbTYXBin
         for (int i = 0; i < nybs; ++i)
             new (&yxBins[i]) LxTbYXBin(nxbs);
     }
-    
+    LxTbTYXBin(const LxTbTYXBin&) = delete;
+    LxTbTYXBin& operator=(const LxTbTYXBin&) = delete;
+        
     ~LxTbTYXBin()
     {
         delete[] reinterpret_cast<unsigned char*> (yxBins);
@@ -220,6 +221,8 @@ struct LxTbBinnedStation
         for (int i = 0; i < noftb; ++i)
             new (&tyxBins[i]) LxTbTYXBin(nofXBins, nofYBins);
     }
+    LxTbBinnedStation(const LxTbBinnedStation&) = delete;
+    LxTbBinnedStation& operator=(const LxTbBinnedStation&) = delete;
     
     ~LxTbBinnedStation()
     {
@@ -231,7 +234,6 @@ struct LxTbBinnedStation
         for (int i = 0; i < nofTYXBins; ++i)
             tyxBins[i].Clear();
     }
-            
 };
 
 struct LxTbBinnedTrdStation
@@ -271,6 +273,8 @@ struct LxTbBinnedTrdStation
             }
         }
     }
+    LxTbBinnedTrdStation(const LxTbBinnedTrdStation&) = delete;
+    LxTbBinnedTrdStation& operator=(const LxTbBinnedTrdStation&) = delete;
     
     ~LxTbBinnedTrdStation()
     {
@@ -362,6 +366,8 @@ struct LxTbBinnedFinder
             for (int i = 0; i < nofPoints; ++i)
                 points[i] = new LxTbBinnedPoint(*pts[i]);
         }
+        Chain(const Chain&) = delete;
+        Chain& operator=(const Chain&) = delete;
         
         ~Chain()
         {
@@ -371,9 +377,6 @@ struct LxTbBinnedFinder
             delete[] points;
         }
          
-         private:
-           Chain(const Chain&);
-           Chain& operator=(const Chain&);
     };
     
     struct ChainImpl
@@ -398,6 +401,8 @@ struct LxTbBinnedFinder
         TriggerTimeArray(int noftb, int tbl, timetype& mt) : nofTimebins(noftb), tbLength(tbl), minT(mt), triggerTimeBins(new std::list<std::pair<timetype, timetype> > [noftb])
         {
         }
+        TriggerTimeArray(const TriggerTimeArray&) = delete;
+        TriggerTimeArray& operator=(const TriggerTimeArray&) = delete;
         
         ~TriggerTimeArray()
         {
@@ -463,9 +468,6 @@ struct LxTbBinnedFinder
         timetype& minT;
         std::list<std::pair<timetype, timetype> >* triggerTimeBins;
 
-         private:
-          TriggerTimeArray(const TriggerTimeArray&);
-          TriggerTimeArray& operator=(const TriggerTimeArray&);
           
     };
     
@@ -540,6 +542,9 @@ struct LxTbBinnedFinder
           for (int i = 0; i < fNofStations; ++i)
             new (&stations[i]) LxTbBinnedStation(nofSpatBins[i].first, nofSpatBins[i].second, nofTimeBins);
         }
+
+    LxTbBinnedFinder(const LxTbBinnedFinder&) = delete;
+    LxTbBinnedFinder& operator=(const LxTbBinnedFinder&) = delete;
     
     virtual ~LxTbBinnedFinder()
     {
@@ -1345,9 +1350,6 @@ struct LxTbBinnedFinder
         }
     }
     
-     private:
-       LxTbBinnedFinder(const LxTbBinnedFinder&);
-       LxTbBinnedFinder& operator=(const LxTbBinnedFinder&);
 };
 
 #endif /* LXTBBINNED_H */

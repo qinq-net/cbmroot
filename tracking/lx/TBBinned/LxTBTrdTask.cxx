@@ -34,10 +34,11 @@ using std::set;
 
 ClassImp(LxTBTrdFinder)
 
-LxTBTrdFinder::LxTBTrdFinder() : fFinder(0), fTrigDistance(200), nof_timebins(5), last_timebin(nof_timebins - 1), fTrdHits(0), fTrdClusters(0), fTrdDigiMatches(0),
-   fTrdTracks(0), fGlobalTracks(0)
+LxTBTrdFinder::LxTBTrdFinder() 
+  : fFinder(nullptr), fTrigDistance(200), recoTracks(), nof_timebins(5), last_timebin(nof_timebins - 1), fTrdHits(nullptr), 
+    fTrdClusters(nullptr), fTrdDigiMatches(nullptr), fTrdTracks(nullptr), fGlobalTracks(nullptr)
 #ifdef LXTB_QA
-   , fTrdMCPoints(0), fNEvents(1000)
+   , fTrdMCPoints(nullptr), fMCTracks(), fTrdPoints(), fNEvents(1000)
 #endif//LXTB_QA
 {
 }
