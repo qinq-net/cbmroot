@@ -67,6 +67,8 @@ class CbmStsClusterFinderModule : public TNamed
                               const char* name, CbmStsModule* module = NULL,
                               TClonesArray* output = NULL);
 
+    CbmStsClusterFinderModule(const CbmStsClusterFinderModule&) = delete; 
+    CbmStsClusterFinderModule& operator=(const CbmStsClusterFinderModule&) = delete; 
 
     /** Destructor **/
     virtual ~CbmStsClusterFinderModule();

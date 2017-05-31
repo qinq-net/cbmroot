@@ -23,6 +23,9 @@ class CbmStsTestQa: public FairTask {
 public:
 	CbmStsTestQa();
 
+        CbmStsTestQa(const CbmStsTestQa&) = delete;
+        CbmStsTestQa& operator=(const CbmStsTestQa&) = delete;
+
 	virtual ~CbmStsTestQa();
 
 

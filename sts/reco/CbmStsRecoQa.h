@@ -24,6 +24,9 @@ class CbmStsRecoQa: public FairTask {
 public:
 	CbmStsRecoQa();
 
+        CbmStsRecoQa(const CbmStsRecoQa&) = delete;
+        CbmStsRecoQa& operator=(const CbmStsRecoQa&) = delete;
+
 	virtual ~CbmStsRecoQa();
 
 

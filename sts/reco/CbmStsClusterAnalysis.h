@@ -32,7 +32,10 @@ class CbmStsClusterAnalysis : public TObject
 		CbmStsClusterAnalysis() : fPhysics(CbmStsPhysics::Instance()) {
 		};
 
-
+                
+                CbmStsClusterAnalysis(const CbmStsClusterAnalysis&) = delete;
+                CbmStsClusterAnalysis& operator=(const CbmStsClusterAnalysis&) = delete;
+                
 		/** Destructor **/
 		virtual ~CbmStsClusterAnalysis() { };
 

@@ -38,6 +38,9 @@ class CbmStsClusterFinder: public TNamed {
 		CbmStsClusterFinder(TClonesArray* clusterArray = NULL);
 
 
+                CbmStsClusterFinder(const CbmStsClusterFinder&) = delete;
+                CbmStsClusterFinder& operator=(const CbmStsClusterFinder&) = delete;
+
 		/** Destructor **/
 		virtual ~CbmStsClusterFinder() { };
 
