@@ -26,6 +26,10 @@ class CbmGlobalTrackingTask : public FairTask
 {
 public:
     CbmGlobalTrackingTask();
+
+    CbmGlobalTrackingTask(const CbmGlobalTrackingTask&) = delete;
+    CbmGlobalTrackingTask& operator=(const CbmGlobalTrackingTask&) = delete;
+
     InitStatus Init();// Overridden from FairTask
     void Exec(Option_t* opt);// Overridden from FairTask
     void Finish();// Overridden from FairTask

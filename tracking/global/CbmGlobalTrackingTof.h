@@ -46,6 +46,10 @@ public:
     };
     
     CbmGlobalTrackingTofGeometry();
+
+    CbmGlobalTrackingTofGeometry(const CbmGlobalTrackingTofGeometry&) = delete;
+    CbmGlobalTrackingTofGeometry& operator=(const CbmGlobalTrackingTofGeometry&) = delete;
+
     ~CbmGlobalTrackingTofGeometry();
     bool Read();
     

@@ -188,6 +188,8 @@ struct TBin
 {
    list<Int_t> fHitInds;
    
+   TBin() : fHitInds() {}
+
    void Clear()
    {
       fHitInds.clear();

@@ -47,6 +47,13 @@ public:
         bool used;
         TrackData* parent;
         std::list<TrackData*> offsprings;
+ 
+        TrackData() : hasSts(false), x(0), y(0), z(0), t(0), tx(0), ty(0), 
+                      tofPoints(), use(false), evN(0), ind(0), tofHits(),
+                      used(false), parent(nullptr), offsprings()
+                      {}
+//        TrackData(const TrackData&) = delete;
+        TrackData& operator=(const TrackData&) = delete;
     };
     
     struct PointData
@@ -62,6 +69,10 @@ public:
     
 public:
     CbmGlobalTrackingQA();
+
+    CbmGlobalTrackingQA(const CbmGlobalTrackingQA&) = delete;
+    CbmGlobalTrackingQA& operator=(const CbmGlobalTrackingQA&) = delete;
+
     InitStatus Init();// Overridden from FairTask
     void Exec(Option_t* opt);// Overridden from FairTask
     void Finish();// Overridden from FairTask
