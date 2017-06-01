@@ -20,6 +20,7 @@
 #include "CbmStsDigi.h"
 
 // --- Includes from STS
+#include "digitize/CbmStsDigitizeSettings.h"
 #include "digitize/CbmStsSensorTypeDssd.h"
 #include "reco/CbmStsClusterAnalysis.h"
 #include "reco/CbmStsClusterFinderModule.h"
@@ -39,6 +40,7 @@ CbmStsFindClustersStream::CbmStsFindClustersStream()
     , fDigis(NULL)
     , fClusters(NULL)
     , fSetup(NULL)
+    , fSettings(NULL)
     , fAna(NULL)
     , fTimer()
     , fEventMode(kFALSE)
@@ -48,12 +50,12 @@ CbmStsFindClustersStream::CbmStsFindClustersStream()
     , fNofDigis(0.)
     , fNofClusters(0.)
     , fTimeTot(0.)
-    , fDynRange(40960.)
-    , fThreshold(4000.)
-    , fNofAdcChannels(4096)
-    , fTimeResolution(5.)
-    , fDeadTime(9999999.)
-    , fNoise(0.)
+//    , fDynRange(40960.)
+//    , fThreshold(4000.)
+//    , fNofAdcChannels(4096)
+//    , fTimeResolution(5.)
+//    , fDeadTime(9999999.)
+//    , fNoise(0.)
     , fModules()
     , fDigiMap()
 {
@@ -77,11 +79,55 @@ CbmStsFindClustersStream::~CbmStsFindClustersStream() {
 
 
 
+// -----   Initialise the cluster finding modules   ------------------------
+Int_t CbmStsFindClustersStream::CreateModules() {
+
+  assert( fSetup );
+
+  Int_t nModules = fSetup->GetNofModules();
+  for (Int_t iModule = 0; iModule < nModules; iModule++) {
+    CbmStsModule* module = fSetup->GetModule(iModule);
+    assert(module->IsSet());
+    UInt_t address = module->GetAddress();
+    const char* name = module->GetName();
+    Double_t deltaT = 3.* TMath::Sqrt(2.) * module->GetTimeResolution();
+    Int_t nChannels = module->GetNofChannels();
+    CbmStsClusterFinderModule* finderModule =
+        new CbmStsClusterFinderModule(nChannels, deltaT, name, module, fClusters);
+    // --- Check the sensor for stereo angles
+    CbmStsSensor* sensor =
+        dynamic_cast<CbmStsSensor*>(module->GetDaughter(0));
+    CbmStsSensorTypeDssd* type =
+        dynamic_cast<CbmStsSensorTypeDssd*>(sensor->GetType());
+    assert(type);
+    if ( TMath::Abs(type->GetStereoAngle(0)) > 1. )
+      finderModule->ConnectEdgeFront();
+    if ( TMath::Abs(type->GetStereoAngle(1)) > 1. )
+      finderModule->ConnectEdgeBack();
+    fModules[address] = finderModule;
+  }
+  LOG(INFO) << GetName() << ": " << fModules.size()
+    << " modules created." << FairLogger::endl;
+
+  return nModules;
+}
+// -------------------------------------------------------------------------
+
+
+
 // -----   Task execution   ------------------------------------------------
 void CbmStsFindClustersStream::Exec(Option_t* opt) {
 
-  if ( fEventMode && ! fLegacy) LOG(INFO) << GetName() << ": Processing time slice "
-      << fNofEntries << FairLogger::endl;
+  // --- Check whether digi settings are present in the setup. If not,
+  // --- get them from the tree and update the setup.
+  if ( ! fSetup->GetDigiSettings() ) {
+    LOG(INFO) << GetName() << ": Initialise settings" << FairLogger::endl;
+    InitSettings();
+  }
+
+  if ( fEventMode && ! fLegacy)
+    LOG(INFO) << GetName() << ": Processing time slice "
+              << fNofEntries << FairLogger::endl;
 
   // --- Reset output array
   fClusters->Delete();
@@ -193,52 +239,39 @@ InitStatus CbmStsFindClustersStream::Init()
     fDigis = (TClonesArray*)ioman->GetObject("StsDigi");
     assert(fDigis);
 
+    // --- Get input object (StsDigitizeSettings)
+    fSettings = dynamic_cast<CbmStsDigitizeSettings*>
+      (ioman->GetObject("StsDigitizeSettings"));
+    assert(fSettings);
+
     // --- Register output array
     fClusters = new TClonesArray("CbmStsCluster", 1e6);
     ioman->Register("StsCluster", "Cluster in STS", fClusters, IsOutputBranchPersistent("StsCluster"));
 
-
-    // --- Set module parameters if not done already
-    // TODO: The module parameters are set by the STS digitiser. However,
-    // this information is not persistent. If the reco run starts from the raw
-    // data file, i.e. the digitiser is not part of the run, the module
-    // parameters are not set. As a workaround, they are set here explicitly.
-    // Obviously, this is not a good solution since consistency with the
-    // parameters used by the digitiser is not assured. A proper treatment
-    // of the STS parameters is needed (parameter file).
-    if ( ! fSetup->GetModule(0)->IsSet() ) SetModuleParameters();
-
-    // --- Instantiate the cluster finding modules
-    Int_t nModules = fSetup->GetNofModules();
-    for (Int_t iModule = 0; iModule < nModules; iModule++) {
-      CbmStsModule* module = fSetup->GetModule(iModule);
-      UInt_t address = module->GetAddress();
-      const char* name = module->GetName();
-      Double_t deltaT = 3.* TMath::Sqrt(2.) * module->GetTimeResolution();
-      Int_t nChannels = module->GetNofChannels();
-      CbmStsClusterFinderModule* finderModule =
-          new CbmStsClusterFinderModule(nChannels, deltaT, name, module, fClusters);
-      // --- Check the sensor for stereo angles
-      CbmStsSensor* sensor =
-          dynamic_cast<CbmStsSensor*>(module->GetDaughter(0));
-      CbmStsSensorTypeDssd* type =
-          dynamic_cast<CbmStsSensorTypeDssd*>(sensor->GetType());
-      assert(type);
-      if ( TMath::Abs(type->GetStereoAngle(0)) > 1. )
-        finderModule->ConnectEdgeFront();
-      if ( TMath::Abs(type->GetStereoAngle(1)) > 1. )
-        finderModule->ConnectEdgeBack();
-      fModules[address] = finderModule;
-    }
-    LOG(INFO) << GetName() << ": " << fModules.size()
-      << " modules created." << FairLogger::endl;
-
+    // --- Create modules if settings are present in setup
+    // --- This is the case if the digitiser is run in the same run.
+    // --- Otherwise, the settings are read from the input tree,
+    // --- and the modules are created at the first call to Exec.
+    if ( fSetup->GetDigiSettings() ) CreateModules();
 
     LOG(INFO) << GetName() << ": Initialisation successful."
     		      << FairLogger::endl;
     LOG(INFO) << "==========================================================\n"
                   << FairLogger::endl;
     return kSUCCESS;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Initialise the digitisation settings   --------------------------
+void CbmStsFindClustersStream::InitSettings() {
+
+  assert( fSettings );
+  fSetup->SetDigiSettings(fSettings);
+  SetModuleParameters();
+  CreateModules();
+
 }
 // -------------------------------------------------------------------------
 
@@ -361,6 +394,8 @@ void CbmStsFindClustersStream::ProcessLegacyEvent() {
   // --- Event number. Note that the FairRun counting start with 1.
   Int_t eventNumber =
       FairRun::Instance()->GetEventHeader()->GetMCEntryNumber() - 1;
+  LOG(INFO) << GetName() << ": Processing legacy event "
+            << eventNumber << FairLogger::endl;
 
   // --- Reset output array
   fClusters->Delete();
@@ -459,28 +494,37 @@ Int_t CbmStsFindClustersStream::ReadLegacyEvent() {
 // -----   Set parameters of the modules    --------------------------------
 void CbmStsFindClustersStream::SetModuleParameters()
 {
+
+    // --- Get settings from setup
+    CbmStsDigitizeSettings* settings = fSetup->GetDigiSettings();
+    assert( settings );
+
 	// --- Control output of parameters
 	LOG(INFO) << GetName() << ": Digitisation parameters :"
 			      << FairLogger::endl;
 	LOG(INFO) << "\t Dynamic range   " << setw(10) << right
-				    << fDynRange << " e"<< FairLogger::endl;
+				    << settings->GetDynRange() << " e"<< FairLogger::endl;
 	LOG(INFO) << "\t Threshold       " << setw(10) << right
-			      << fThreshold << " e"<< FairLogger::endl;
+			      << settings->GetThreshold() << " e"<< FairLogger::endl;
 	LOG(INFO) << "\t ADC channels    " << setw(10) << right
-			      << fNofAdcChannels << FairLogger::endl;
+			      << settings->GetNofAdc() << FairLogger::endl;
 	LOG(INFO) << "\t Time resolution " << setw(10) << right
-			      << fTimeResolution << " ns" << FairLogger::endl;
+			      << settings->GetTimeResolution() << " ns" << FairLogger::endl;
 	LOG(INFO) << "\t Dead time       " << setw(10) << right
-			      << fDeadTime << " ns" << FairLogger::endl;
+			      << settings->GetDeadTime() << " ns" << FairLogger::endl;
 	LOG(INFO) << "\t ENC             " << setw(10) << right
-			      << fNoise << " e" << FairLogger::endl;
+			      << settings->GetNoise() << " e" << FairLogger::endl;
 
 	// --- Set parameters for all modules
 	Int_t nModules = fSetup->GetNofModules();
 	for (Int_t iModule = 0; iModule < nModules; iModule++) {
-		fSetup->GetModule(iModule)->SetParameters(2048, fDynRange, fThreshold,
-												  fNofAdcChannels, fTimeResolution,
-												  fDeadTime, fNoise);
+		fSetup->GetModule(iModule)->SetParameters(2048,
+		                                          settings->GetDynRange(),
+		                                          settings->GetThreshold(),
+		                                          settings->GetNofAdc(),
+		                                          settings->GetTimeResolution(),
+		                                          settings->GetDeadTime(),
+		                                          settings->GetNoise());
 	}
 	LOG(INFO) << GetName() << ": Set parameters for " << nModules
 			      << " modules " << FairLogger::endl;

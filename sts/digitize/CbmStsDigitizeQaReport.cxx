@@ -36,15 +36,20 @@ CbmStsDigitizeQaReport::~CbmStsDigitizeQaReport(){
 }
 
 void CbmStsDigitizeQaReport::Create(){
-    Int_t nAdc, eLossModel;
-    Bool_t lorentz, diffusion, crossTalk;
-    Double_t dynRange, threshold, timeResolution, deadTime, noise;
-    fDigitizer -> GetParameters(dynRange, threshold, nAdc, timeResolution, deadTime, noise);
-    fDigitizer -> GetProcesses(eLossModel, lorentz, diffusion, crossTalk);
+    Int_t eLossModel = fDigitizer->GetSettings()->GetELossModel();
+    Bool_t lorentz = fDigitizer->GetSettings()->GetUseLorentzShift();
+    Bool_t diffusion = fDigitizer->GetSettings()->GetUseDiffusion();
+    Bool_t crossTalk = fDigitizer->GetSettings()->GetUseCrossTalk();
+    Double_t dynRange = fDigitizer->GetSettings()->GetDynRange();
+    Double_t threshold = fDigitizer->GetSettings()->GetThreshold();
+    Int_t nAdc = fDigitizer->GetSettings()->GetNofAdc();
+    Double_t timeResolution = fDigitizer->GetSettings()->GetTimeResolution();
+    Double_t deadTime = fDigitizer->GetSettings()->GetDeadTime();
+    Double_t noise = fDigitizer->GetSettings()->GetNoise();
     char eLossModelChar[7];
     if (eLossModel == 0) sprintf(eLossModelChar, "ideal");
     if (eLossModel == 1) sprintf(eLossModelChar, "uniform");
-    if (eLossModel == 2) sprintf(eLossModelChar, "non-unifrom");
+    if (eLossModel == 2) sprintf(eLossModelChar, "non-uniform");
     Out().precision(1);
     Out() << R() -> DocumentBegin();
     Out() << R() -> Title(0, GetTitle());

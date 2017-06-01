@@ -10,6 +10,7 @@
 #include "TStopwatch.h"
 #include "FairTask.h"
 #include "CbmMatch.h"
+#include "CbmStsDigitizeSettings.h"
 
 class TClonesArray;
 class CbmStsPoint;
@@ -54,66 +55,40 @@ class CbmStsDigitize : public FairTask
   		            const CbmMatch& match);
 
 
+  /** @brief Discard processing of secondary tracks
+   ** @param flag  kTRUE if secondaries shall be discarded
+   **
+   ** This flag enables the user to suppress the digitisation of
+   ** StsPoints from secondary tracks for debug purposes. By default,
+   ** points from all tracks are processed.
+   **/
+  void DiscardSecondaries(Bool_t flag = kTRUE) {
+    fSettings->SetDiscardSecondaries(flag);
+  }
+
+
   /** Execution **/
   virtual void Exec(Option_t* opt);
 
 
-  /** Percentage of dead channels **/
-  Double_t GetDeadChannelFraction() const {
-  	return fDeadChannelFraction;
-  }
-
-  /** Flag for energy loss model
-   ** @value 0 = ideal, 1 = uniform, 2 = fluctuations
-   **/
-  static Int_t GetElossModel() { return fElossModel; }
+  /** Get energy loss model
+  ** @param eLossModel       0 = ideal, 1 = uniform, 2 = fluctuations
+  **/
+  Int_t GetELossModel() const{return fSettings->GetELossModel();}
 
 
   /** Get number of signals front side **/
   Int_t GetNofSignalsF() const {return fNofSignalsF;}
 
+
   /** Get number of signals back side **/
   Int_t GetNofSignalsB() const {return fNofSignalsB;}
 
-  /** Get the digitisation parameters 
-   ** @param dynRagne             Dynamic range [e]
-   ** @param threshold            Threshold [e]
-   ** @param nAdc                 Number of ADC channels
-   ** @param timeResolution       Time resolution [ns]
-   ** @param deadTimec            Single-channel dead time [ns]
-   ** @param noise                Equivalent noise charge (sigma) [e]
-   **/
-   void GetParameters(Double_t& dynRange, Double_t& threshold, Int_t& nAdc,
-  		               Double_t& timeResolution, Double_t& deadTime,
-  		               Double_t& noise) {
- 	 dynRange       = fDynRange;
- 	 threshold      = fThreshold;
- 	 nAdc           = fNofAdcChannels;
- 	 timeResolution = fTimeResolution;
- 	 deadTime       = fDeadTime;
- 	 noise          = fNoise;
-    }
 
-   /** Get physics processes
-   ** @param eLossModel       0 = ideal, 1 = uniform, 2 = fluctuations
-   ** @param useLorentzShift  If kTRUE, activate Lorentz shift
-   ** @param useDiffusion     If kTRUE, activate diffusion
-   ** @param useCrossTalk     If kTRUE; activate cross talk
+  /** @brief Get the digitisation settings
+   ** @value Pointer to digitisation settings
    **/
-   void GetProcesses(Int_t& eLossModel,
-  		              Bool_t& useLorentzShift,
-  		              Bool_t& useDiffusion,
-  		              Bool_t& useCrossTalk) {
-       eLossModel      = fElossModel;
-       useLorentzShift = fUseLorentzShift;
-       useDiffusion    = fUseDiffusion;
-       useCrossTalk    = fUseCrossTalk;
-    }
-
-   /** Get energy loss model
-   ** @param eLossModel       0 = ideal, 1 = uniform, 2 = fluctuations
-   **/
-   Int_t GetELossModel() const{return fElossModel;}
+  CbmStsDigitizeSettings* GetSettings() const { return fSettings; }
 
 
   /** Initialise the STS setup and the parameters **/
@@ -122,10 +97,6 @@ class CbmStsDigitize : public FairTask
 
   /** Re-initialisation **/
   virtual InitStatus ReInit();
-
-
-  /** Set percentage of dead channels in the modules **/
-  void SetDeadChannelFraction(Double_t fraction = 0.);
 
 
    /** Set the digitisation parameters in the modules **/
@@ -140,16 +111,12 @@ class CbmStsDigitize : public FairTask
    ** @param deadTimec            Single-channel dead time [ns]
    ** @param noise                Equivalent noise charge (sigma) [e]
    **/
-  void SetParameters(Double_t dynRange = 75000., Double_t threshold = 3000., Int_t nAdc = 32,
-  		               Double_t timeResolution = 10., Double_t deadTime = 800.,
-  		               Double_t noise = 1000.) {
- 	 fDynRange       = dynRange;
- 	 fThreshold      = threshold;
- 	 fNofAdcChannels = nAdc;
- 	 fTimeResolution = timeResolution;
- 	 fDeadTime       = deadTime;
- 	 fNoise          = noise;
-   }
+  void SetParameters(Double_t dynRange, Double_t threshold, Int_t nAdc,
+  		               Double_t timeResolution, Double_t deadTime,
+  		               Double_t noise, Double_t deadChannelFrac = 0.) {
+    fSettings->SetModuleParameters(dynRange, threshold, nAdc, timeResolution,
+                                   deadTime, noise, deadChannelFrac);
+  }
 
 
   /** Set physics processes
@@ -161,21 +128,9 @@ class CbmStsDigitize : public FairTask
    ** Changing the physics flags is only allowed before Init() is called.
    **/
   void SetProcesses(Int_t eLossModel,
-  		              Bool_t useLorentzShift = kTRUE,
-  		              Bool_t useDiffusion = kTRUE,
-  		              Bool_t useCrossTalk = kTRUE);
-
-
-  /** (De-)Activate processing of secondary tracks
-   ** @param flag  kTRUE if secondaries shall be processed (default)
-   **
-   ** This flag enables the user to suppress the digitisation of
-   ** StsPoints from secondary tracks for debug purposes. By default,
-   ** points from all tracks are processed.
-   **/
-  void SetProcessSecondaries(Bool_t flag = kTRUE) {
-  	fProcessSecondaries = flag;
-  }
+  		            Bool_t useLorentzShift = kTRUE,
+  		            Bool_t useDiffusion = kTRUE,
+  		            Bool_t useCrossTalk = kTRUE);
 
 
  /** Set the operating parameters in the sensors **/
@@ -191,53 +146,19 @@ class CbmStsDigitize : public FairTask
    ** without defining new types in the database. It has effect only for strip sensor types.
    ** The specified strip pitch will be applied for all sensors in the setup.
    **/
-  void SetSensorStripPitch(Double_t pitch) { fStripPitch = pitch; }
+  void SetSensorStripPitch(Double_t pitch) {
+    fSettings->SetStripPitch(pitch);
+  }
 
-
-  /** Flag for cross talk
-   ** @value kTRUE if cross talk is activated
-   **/
-  static Bool_t UseCrossTalk() { return fUseCrossTalk; }
-
-
-  /** Flag for diffusion
-   ** @value kTRUE if diffusion is activated
-   **/
-  static Bool_t UseDiffusion() { return fUseDiffusion; }
-
-
-   /** Flag for Lorentz shift
-   ** @value kTRUE if Lorentz shift is activated
-   **/
-  static Bool_t UseLorentzShift() { return fUseLorentzShift; }
 
 
 
  private:
 
-  Int_t fMode;       ///< Run mode. 0 = stream, 1 = event
-  Bool_t fProcessSecondaries;  ///< If kFALSE, only primaries will be digitised
-  static Bool_t fIsInitialised;   ///< kTRUE if Init() was called
+  Int_t  fMode;       ///< Run mode. 0 = stream, 1 = event
+  Bool_t fIsInitialised;   ///< kTRUE if Init() was called
 
-  // --- Digitisation parameters
-  Double_t fDynRange;            ///< Dynamic range [e]
-  Double_t fThreshold;           ///< Threshold [e]
-  Int_t    fNofAdcChannels;      ///< Number of ADC channels
-  Double_t fTimeResolution;      ///< Time resolution (sigma) [ns]
-  Double_t fDeadTime;            ///< Single-channel dead time [ns]
-  Double_t fNoise;               ///< equivalent noise charge (sigma) [ns]
-  Double_t fDeadChannelFraction; ///< fraction of dead channels [%]
-
-  // --- Strip pitch, in case it is explicitly set by the user and not taken from
-  // --- the sensor DB
-  Double_t fStripPitch;
-
-  // --- Switches for physics process
-  static Int_t  fElossModel;      ///< Energy loss model (0, 1 or 2)
-  static Bool_t fUseLorentzShift; ///< Lorentz shift of charge carriers in magnetic field
-  static Bool_t fUseDiffusion;    ///< Diffusion of charge carriers
-  static Bool_t fUseCrossTalk;    ///< Cross talk due to inter-strip capacitance
-
+  CbmStsDigitizeSettings* fSettings;  ///< Digitisation parameters and settings
   CbmStsSetup*   fSetup;        ///< STS setup interface
   TClonesArray*  fPoints;       ///< Input array of CbmStsPoint
   TClonesArray*  fTracks;       ///< Input array of CbmMCTrack

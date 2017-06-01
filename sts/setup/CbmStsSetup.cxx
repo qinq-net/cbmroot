@@ -41,7 +41,7 @@ CbmStsSetup* CbmStsSetup::fgInstance = NULL;
 
 // -----   Constructor   ---------------------------------------------------
 CbmStsSetup::CbmStsSetup() : CbmStsElement("STS", "system", kStsSystem),
-			     fDigitizer(NULL), fIsInitialised(kFALSE),
+			     fDigitizer(NULL), fSettings(NULL),fIsInitialised(kFALSE),
 			     fIsOld(kFALSE), fModules(),
 			     fSensors(), fSensorTypes(), fStations() {
 }

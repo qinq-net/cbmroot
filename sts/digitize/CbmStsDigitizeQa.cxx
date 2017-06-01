@@ -178,11 +178,7 @@ void CbmStsDigitizeQa::CreateDigiHistograms(){
     fHM -> Create1<TH1F>("h_PointsInDigiLog", "PointsInDigi;Number of Points;Entries", nofBins, minX, maxX);
     fHM -> Create1<TH1F>("h_DigisByPoint", "DigisByPoint;Number of Digis;Entries" , nofBins, minX, maxX);
     fHM -> Create1<TH1F>("h_DigisByPointLog", "DigisByPoint;Number of Digis;Entries" , nofBins, minX, maxX);
-    Double_t tempD; 
-//    Int_t tempI;
-    Int_t  nAdc; 
-    fDigitizer -> GetParameters(tempD, tempD, nAdc, tempD, tempD, tempD);
-    nofBins = nAdc;
+    nofBins = fDigitizer->GetSettings()->GetNofAdc();
     fHM -> Create1<TH1F>("h_DigiCharge", "DigiCharge;Digi Charge, ADC;Entries", nofBins, 0., Double_t(nofBins));
     for (Int_t stationId = 0; stationId < fNofStation; stationId++){
 	fHM -> Create2<TH2F>(Form("h_DigisPerChip_Station%i",stationId), 

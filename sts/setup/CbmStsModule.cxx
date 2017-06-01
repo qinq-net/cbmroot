@@ -3,6 +3,7 @@
  ** @date 14.05.2013
  **/
 
+#include <cassert>
 #include <cmath>
 #include "TClonesArray.h"
 #include "TRandom.h"
@@ -151,6 +152,9 @@ void CbmStsModule::AddDigi(CbmStsDigi* digi, Int_t index) {
 void CbmStsModule::AddSignal(Int_t channel, Double_t time,
                              Double_t charge, Int_t index, Int_t entry,
                              Int_t file) {
+
+    // --- Check channel number
+    assert( channel < fNofChannels );
 
 	// --- Debug
 	LOG(DEBUG3) << GetName() << ": Receiving signal " << charge
@@ -463,6 +467,9 @@ void CbmStsModule::CreateCluster(Int_t clusterStart, Int_t clusterEnd,
 
 // -----   Digitise an analog charge signal   ------------------------------
 void CbmStsModule::Digitize(Int_t channel, CbmStsSignal* signal) {
+
+    // --- Check channel number
+    assert ( channel < fNofChannels );
 
 	// --- Add noise to the signal
 	Double_t charge = signal->GetCharge();

@@ -29,12 +29,13 @@ mc/CbmStsMCQa.cxx
 # --- Sources in digitize
 set (SRCS_DIGITIZE
 digitize/CbmStsDigitize.cxx
+digitize/CbmStsDigitizeQa.cxx
+digitize/CbmStsDigitizeQaReport.cxx
+digitize/CbmStsDigitizeSettings.cxx
 digitize/CbmStsPhysics.cxx
 digitize/CbmStsSensorTypeDssd.cxx
 digitize/CbmStsSensorTypeDssdOrtho.cxx
 digitize/CbmStsSignal.cxx;
-digitize/CbmStsDigitizeQa.cxx
-digitize/CbmStsDigitizeQaReport.cxx
 )
 # --- Sources in reco
 set (SRCS_RECO

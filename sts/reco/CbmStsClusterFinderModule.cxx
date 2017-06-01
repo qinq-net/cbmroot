@@ -61,10 +61,12 @@ CbmStsClusterFinderModule::~CbmStsClusterFinderModule() {
 Bool_t CbmStsClusterFinderModule::CheckChannel(UShort_t channel,
                                                Double_t time) {
 
+  // Check channel number
+  assert( channel < fSize );
+
   // No match if no active digi in the channel
   if ( fIndex[channel] == -1 ) return kFALSE;
 
-  // Check timing. Digis should be time-ordered.
   assert( time >= fTime[channel] );
 
   // Channel is active, but time is not matching: close cluster
@@ -90,7 +92,7 @@ void CbmStsClusterFinderModule::CreateCluster(UShort_t first,
   if ( fClusters ) {
     Int_t index = fClusters->GetEntriesFast();
     cluster = new ((*fClusters)[index]) CbmStsCluster();
-  }
+  } //? cluster array
   else cluster = new CbmStsCluster();
 
   // --- Add digis to cluster and reset the respective channel
@@ -206,6 +208,9 @@ void CbmStsClusterFinderModule::ProcessBuffer() {
 // ----- Process an input digi   -------------------------------------------
 void CbmStsClusterFinderModule::ProcessDigi(UShort_t channel, Double_t time,
                                             Int_t index) {
+
+  // Assert channel number
+  assert ( channel < fSize );
 
   // Check for matching digi in the same channel (should not happen)
   assert ( ! CheckChannel(channel, time) );

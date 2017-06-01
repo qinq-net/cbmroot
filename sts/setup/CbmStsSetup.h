@@ -12,6 +12,7 @@
 
 class TGeoManager;
 class CbmStsDigitize;
+class CbmStsDigitizeSettings;
 class CbmStsModule;
 class CbmStsSensor;
 class CbmStsSensorType;
@@ -42,8 +43,14 @@ class CbmStsSetup : public CbmStsElement
     Int_t DefineSensorTypes();
 
 
-    /** Get digitiser task **/
-    CbmStsDigitize* GetDigitizer() const  { return fDigitizer; }
+    /** Get the digitiser task **/
+    CbmStsDigitize* GetDigitizer() const { return fDigitizer; }
+
+
+    /** Get digitiser settings **/
+    CbmStsDigitizeSettings* GetDigiSettings() const  {
+      return fSettings;
+    }
 
 
     /** Get an STS element by address
@@ -141,9 +148,26 @@ class CbmStsSetup : public CbmStsElement
     static CbmStsSetup* Instance();
 
 
-    /** Set the digitiser task  **/
+    /** @brief Set the digitiser task
+     ** @param digitizer  Pointer to STS digitiser task
+     **
+     ** In the digitisation run, the digitiser task is available from
+     ** the setup instance. In other runs, this will be NULL.
+     **/
     void SetDigitizer(CbmStsDigitize* digitizer) {
-    	fDigitizer = digitizer; }
+      fDigitizer = digitizer;
+    }
+
+
+    /** @brief Set the digitiser settings
+     ** @param settings  Pointer to digitiser settings
+     **
+     ** The settings are registered by the digitiser task during digitisation.
+     ** They have to be set by a reconstruction task during reconstruction.
+     **/
+    void SetDigiSettings(CbmStsDigitizeSettings* settings) {
+      fSettings = settings;
+    }
 
 
     /** Set sensor parameters
@@ -159,7 +183,8 @@ class CbmStsSetup : public CbmStsElement
   private:
 
     static CbmStsSetup* fgInstance;    ///< Static instance of this class
-    CbmStsDigitize* fDigitizer;   ///< Pointer to digitiser task
+    CbmStsDigitize* fDigitizer;        ///< Pointer to digitiser task
+    CbmStsDigitizeSettings* fSettings;     ///< Pointer to digitiser settings
 
     Bool_t fIsInitialised;  ///< To protect against multiple initialisation.
     Bool_t fIsOld;          ///< Old setup with stations as top level

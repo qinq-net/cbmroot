@@ -13,6 +13,7 @@
 class TClonesArray;
 class CbmStsClusterAnalysis;
 class CbmStsClusterFinderModule;
+class CbmStsDigitizeSettings;
 class CbmEvent;
 class CbmStsSetup;
 
@@ -58,21 +59,9 @@ class CbmStsFindClustersStream : public FairTask
      ** Inherited from FairTask.
      **/
     virtual InitStatus Init();
-    TClonesArray* GetClusters() {return fClusters;}
 
-    /** Set parameters for all modules if digitizer and cluster finder
-     ** are used in different macro. Need for time-based case.
-     **/
-    void SetParameters(Double_t dynRange = 75000., Double_t threshold = 3000., Int_t nAdc = 32,
-      		               Double_t timeResolution = 10., Double_t deadTime = 800.,
-      		               Double_t noise = 1000.) {
-         fDynRange       = dynRange;
-         fThreshold      = threshold;
-         fNofAdcChannels = nAdc;
-         fTimeResolution = timeResolution;
-         fDeadTime       = deadTime;
-         fNoise          = noise;
-    }
+
+    TClonesArray* GetClusters() {return fClusters;}
 
     void SetModuleParameters();
 
@@ -85,6 +74,7 @@ class CbmStsFindClustersStream : public FairTask
     TClonesArray* fDigis;             //! Input array of CbmStsDigi
     TClonesArray* fClusters;          //! Output array of CbmStsCluster
     CbmStsSetup*  fSetup;             //! Instance of STS setup
+    CbmStsDigitizeSettings* fSettings; //! Instance of digi settings
     CbmStsClusterAnalysis* fAna;      //! Instance of Cluster Analysis tool
     TStopwatch    fTimer;             //! ROOT timer
     Bool_t fEventMode;                /// Run event-by-event if kTRUE
@@ -98,12 +88,14 @@ class CbmStsFindClustersStream : public FairTask
     Double_t  fTimeTot;         ///< Total execution time
 
     // --- Module parameters
+    /*
     Double_t fDynRange;            ///< Dynamic range [e]
     Double_t fThreshold;           ///< Threshold [e]
     Int_t    fNofAdcChannels;      ///< Number of ADC channels
     Double_t fTimeResolution;      ///< Time resolution (sigma) [ns]
     Double_t fDeadTime;            ///< Single-channel dead time [ns]
     Double_t fNoise;               ///< equivalent noise charge (sigma) [ns]
+    */
 
     // --- Map from module address to cluster finding module
     std::map<UInt_t, CbmStsClusterFinderModule*> fModules;  //!
@@ -111,6 +103,20 @@ class CbmStsFindClustersStream : public FairTask
     // --- Map from time to index of digi
     // --- Use for legacy mode when digis do not come time-ordered
     std::multimap<Double_t, Int_t> fDigiMap;   //!
+
+
+    /** @brief Instantiate cluster finding modules
+     ** @value Number of modules created
+     **/
+    Int_t CreateModules();
+
+
+   /** @brief Initialise the digitisation settings
+     **
+     ** This method read the digi settings object from file,
+     ** sets it to the setup and updates the module parameters.
+     */
+    void InitSettings();
 
 
     /** @brief Process one time slice or event

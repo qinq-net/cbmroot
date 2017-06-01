@@ -50,30 +50,13 @@ using std::setprecision;
 using std::setw;
 using std::string;
 
-// -----   Static member variables   ---------------------------------------
-// The default setting is the fully realistic response.
-Int_t  CbmStsDigitize::fElossModel      = 2;  //  energy loss fluctuations
-Bool_t CbmStsDigitize::fUseLorentzShift = kTRUE;  // Lorentz shift on
-Bool_t CbmStsDigitize::fUseDiffusion    = kTRUE;  // Diffusion on
-Bool_t CbmStsDigitize::fUseCrossTalk    = kTRUE;  // Cross talk on
-Bool_t CbmStsDigitize::fIsInitialised   = kFALSE;
-// -------------------------------------------------------------------------
-
-
 
 // -----   Standard constructor   ------------------------------------------
 CbmStsDigitize::CbmStsDigitize()
   : FairTask("StsDigitize"),
     fMode(0),
-    fProcessSecondaries(kTRUE),
-    fDynRange(40960.),
-    fThreshold(4000.),
-    fNofAdcChannels(4096),
-    fTimeResolution(5.),
-    fDeadTime(9999999.),
-    fNoise(0.),
-    fDeadChannelFraction(0.),
-    fStripPitch(-1.),
+    fIsInitialised(kFALSE),
+    fSettings(new CbmStsDigitizeSettings()),
     fSetup(NULL),
     fPoints(NULL),
     fTracks(NULL),
@@ -95,6 +78,9 @@ CbmStsDigitize::CbmStsDigitize()
     fTimeTot()
 { 
   Reset();
+  // --- By default, set most realistic response processes.
+  // --- This can be changed by the method SetProcesses.
+  fSettings->SetProcesses(2, kTRUE, kTRUE, kTRUE);
 }
 // -------------------------------------------------------------------------
 
@@ -110,6 +96,7 @@ CbmStsDigitize::~CbmStsDigitize() {
 	fMatches->Delete();
 	delete fMatches;
  }
+ if ( fSettings ) delete fSettings;
  Reset();
 }
 // -------------------------------------------------------------------------
@@ -412,6 +399,10 @@ InitStatus CbmStsDigitize::Init() {
   fTracks = (TClonesArray*) ioman->GetObject("MCTrack");
   assert ( fTracks );
 
+  // --- Register output (CbmStsDigitizeSettings)
+  ioman->Register("StsDigitizeSettings", "STS digi settings", fSettings,
+                  IsOutputBranchPersistent("StsDigitizeSettings"));
+
 
   // --- In event mode: register output arrays
   if ( fMode == 1 ) {
@@ -428,43 +419,28 @@ InitStatus CbmStsDigitize::Init() {
 
   } //? event mode
 
-  // Processes
-  TString model;
-  switch ( fElossModel) {
-    case 0: model = "IDEAL"; break;
-    case 1: model = "UNIFORM"; break;
-    case 2: model = "NON-UNIFORM"; break;
-    default: LOG(FATAL) << GetName() << ": Unknown energy loss model "
-        << fElossModel << FairLogger::endl;
-  } //? fElossModel
-  LOG(INFO) << GetName() << ": Energy loss model " << model
-      << FairLogger::endl;
-  LOG(INFO) << GetName() << ": Lorentz-Shift     "
-      << (fUseLorentzShift ? "ON" : "OFF") << FairLogger::endl;
-  LOG(INFO) << GetName() << ": Diffusion         "
-      << (fUseDiffusion ? "ON" : "OFF") << FairLogger::endl;
-  LOG(INFO) << GetName() << ": Cross-Talk        "
-      << (fUseCrossTalk ? "ON" : "OFF") << FairLogger::endl;
-
-	// Initialise STS setup
-	InitSetup();
+  // Initialise STS setup
+  InitSetup();
 
   // Instantiate StsPhysics
   CbmStsPhysics::Instance();
 
-  // Register this task to the setup
+  // Register this task and its settings to the setup
   fSetup->SetDigitizer(this);
+  fSetup->SetDigiSettings(fSettings);
+  LOG(INFO) << GetName() << ": " << fSettings->ToString() << FairLogger::endl;
 
   LOG(INFO) << GetName() << ": Initialisation successful"
 		    << FairLogger::endl;
   LOG(INFO) << "=========================================================="
 		        << FairLogger::endl;
-	std::cout << std::endl;
+  std::cout << std::endl;
 
-	// Set static initialisation flag
-	fIsInitialised = kTRUE;
 
-	return kSUCCESS;
+  // Set static initialisation flag
+  fIsInitialised = kTRUE;
+
+  return kSUCCESS;
 }
 // -------------------------------------------------------------------------
 
@@ -479,7 +455,7 @@ void CbmStsDigitize::InitSetup() {
 
 	// Modify the strip pitch for DSSD sensor type, if explicitly set by user
 	Int_t nModified = 0;
-	if ( fStripPitch > 0. ) {
+	if ( fSettings->GetStripPitch() > 0. ) {
 		Int_t nTypes = fSetup->GetNofSensorTypes();
 		for (Int_t iType = 0; iType < nTypes; iType++) {
 			CbmStsSensorType* type = fSetup->GetSensorType(iType);
@@ -488,13 +464,14 @@ void CbmStsDigitize::InitSetup() {
 			if ( type->InheritsFrom("CbmStsSensorTypeDssd") ) {
 				CbmStsSensorTypeDssd* dssdType =
 						dynamic_cast<CbmStsSensorTypeDssd*>(type);
-				dssdType->SetStripPitch(fStripPitch);
+				dssdType->SetStripPitch(fSettings->GetStripPitch());
 				nModified++;
 			} //? DSSD type
 		} //# sensor types
-		LOG(INFO) << GetName() << ": modified strip pitch to " << fStripPitch
-				      << " cm for "<< nModified << " sensor types."
-				      << FairLogger::endl;
+		LOG(INFO) << GetName() << ": Modified strip pitch to "
+		          << fSettings->GetStripPitch()
+				  << " cm for "<< nModified << " sensor types."
+	              << FairLogger::endl;
 	} //? strip pitch set by user
 
   // Set sensor conditions
@@ -548,25 +525,25 @@ void CbmStsDigitize::ProcessMCEvent() {
 
 
   // --- Loop over all StsPoints and execute the ProcessPoint method
-	assert ( fPoints );
+  assert ( fPoints );
   for (Int_t iPoint=0; iPoint<fPoints->GetEntriesFast(); iPoint++) {
   	const CbmStsPoint* point = (const CbmStsPoint*) fPoints->At(iPoint);
   	CbmLink* link = new CbmLink(1., iPoint, eventNr, inputNr);
 
   	// --- Discard secondaries if the respective flag is set
-  	if ( ! fProcessSecondaries ) {
+  	if ( fSettings->GetDiscardSecondaries() ) {
   		Int_t iTrack = point->GetTrackID();
   		if ( iTrack >= 0 ) {  // MC track is present
   			CbmMCTrack* track = (CbmMCTrack*) fTracks->At(iTrack);
   			assert ( track );
   			if ( track->GetMotherId() >= 0 ) continue;
   		} //? MC track present
-  	}
+  	} //? discard secondaries
 
   	ProcessPoint(point, eventTime, link);
   	fNofPoints++;
   	delete link;
-  }  // StsPoint loop
+  }  //# StsPoints
 
 }
 // -------------------------------------------------------------------------
@@ -650,33 +627,24 @@ void CbmStsDigitize::Reset() {
 // more flexible schemes must be used, in particular for the thresholds.
 void CbmStsDigitize::SetModuleParameters() {
 
-	// --- Control output of parameters
-	LOG(INFO) << GetName() << ": Digitisation parameters :"
-			      << FairLogger::endl;
-	LOG(INFO) << "\t Dynamic range   " << setw(10) << right
-				    << fDynRange << " e"<< FairLogger::endl;
-	LOG(INFO) << "\t Threshold       " << setw(10) << right
-			      << fThreshold << " e"<< FairLogger::endl;
-	LOG(INFO) << "\t ADC channels    " << setw(10) << right
-			      << fNofAdcChannels << FairLogger::endl;
-	LOG(INFO) << "\t Time resolution " << setw(10) << right
-			      << fTimeResolution << " ns" << FairLogger::endl;
-	LOG(INFO) << "\t Dead time       " << setw(10) << right
-			      << fDeadTime << " ns" << FairLogger::endl;
-	LOG(INFO) << "\t ENC             " << setw(10) << right
-			      << fNoise << " e" << FairLogger::endl;
-	LOG(INFO) << "\t Dead channel fraction " << setw(10) << right
-			      << fDeadChannelFraction << " %" << FairLogger::endl;
+  if ( fIsInitialised ) {
+      LOG(ERROR) << GetName() << ": module parameters must be set before "
+                 << "initialisation! Statement will have no effect."
+                 << FairLogger::endl;
+      return;
+    }
 
- // --- Set parameters for all modules
+    // --- Set parameters for all modules
 	Int_t nModules = fSetup->GetNofModules();
 	for (Int_t iModule = 0; iModule < nModules; iModule++) {
-		fSetup->GetModule(iModule)->SetParameters(2048, fDynRange, fThreshold,
-				                                      fNofAdcChannels,
-				                                      fTimeResolution,
-				                                      fDeadTime,
-				                                      fNoise);
-		fSetup->GetModule(iModule)->SetDeadChannels(fDeadChannelFraction);
+		fSetup->GetModule(iModule)->SetParameters(2048,
+		                                          fSettings->GetDynRange(),
+		                                          fSettings->GetThreshold(),
+				                                  fSettings->GetNofAdc(),
+				                                  fSettings->GetTimeResolution(),
+				                                  fSettings->GetDeadTime(),
+				                                  fSettings->GetNoise());
+		fSetup->GetModule(iModule)->SetDeadChannels(fSettings->GetDeadChannelFrac());
 	}
 	LOG(INFO) << GetName() << ": Set parameters for " << nModules
 			      << " modules " << FairLogger::endl;
@@ -685,43 +653,19 @@ void CbmStsDigitize::SetModuleParameters() {
 
 
 
-// -----   Set the percentage of dead channels   ---------------------------
-void CbmStsDigitize::SetDeadChannelFraction(Double_t fraction) {
-	if ( fraction < 0. ) {
-		LOG(WARNING) << GetName()
-				         << ": illegal dead channel fraction " << fraction
-				         << "% , is set to 0 %" << FairLogger::endl;
-		fDeadChannelFraction = 0.;
-		return;
-	}
-	if ( fraction > 100. ) {
-		LOG(WARNING) << GetName()
-				         << ": illegal dead channel fraction " << fraction
-				         << "% , is set to 100 %" << FairLogger::endl;
-		fDeadChannelFraction = 100.;
-		return;
-	}
-	fDeadChannelFraction = fraction;
-}
-// -------------------------------------------------------------------------
-
-
-
-// -----   Set the switches for physical processes for real digitiser model
+// -----   Set the switches for physical processes for the analogue response
 void CbmStsDigitize::SetProcesses(Int_t eLossModel,
-		                              Bool_t useLorentzShift,
-		                              Bool_t useDiffusion,
-		                              Bool_t useCrossTalk) {
+		                          Bool_t useLorentzShift,
+		                          Bool_t useDiffusion,
+		                          Bool_t useCrossTalk) {
 	  if ( fIsInitialised ) {
-	  	LOG(ERROR) << "STS digitize: physics processes must be set before "
-	  			       << "initialisation! Statement will have no effect."
-	  			       << FairLogger::endl;
+	  	LOG(ERROR) << GetName() << ": physics processes must be set before "
+	  			   << "initialisation! Statement will have no effect."
+	  	           << FairLogger::endl;
 	  	return;
 	  }
-	  fElossModel      = eLossModel;
-	  fUseLorentzShift = useLorentzShift;
-	  fUseDiffusion    = useDiffusion;
-	  fUseCrossTalk    = useCrossTalk;
+	  fSettings->SetProcesses(eLossModel, useLorentzShift, useDiffusion,
+	                          useCrossTalk);
 }
 // -------------------------------------------------------------------------
 
@@ -732,26 +676,21 @@ void CbmStsDigitize::SetProcesses(Int_t eLossModel,
 // more flexible schemes must be used (initialisation from a database).
 void CbmStsDigitize::SetSensorConditions() {
 
+    if ( fIsInitialised ) {
+      LOG(ERROR) << GetName() << ": sensor conditions must be set before "
+                 << "initialisation! Statement will have no effect."
+                 << FairLogger::endl;
+      return;
+    }
+
 	// --- Current parameters are hard-coded
 	Double_t vDep        =  70.;    //depletion voltage, V
 	Double_t vBias       = 140.;    //bias voltage, V
 	Double_t temperature = 268.;    //temperature of sensor, K
 	Double_t cCoupling   =  17.5;   //coupling capacitance, pF
 	Double_t cInterstrip =   1.;    //inter-strip capacitance, pF
-
-	// --- Control output of parameters
-	LOG(INFO) << GetName() << ": Sensor operation conditions :"
-			      << FairLogger::endl;
-	LOG(INFO) << "\t Depletion voltage       " << setw(10) << right
-				    << vDep << " V"<< FairLogger::endl;
-	LOG(INFO) << "\t Bias voltage            " << setw(10) << right
-			      << vBias << " V"<< FairLogger::endl;
-	LOG(INFO) << "\t Temperature             " << setw(10) << right
-			      << temperature << FairLogger::endl;
-	LOG(INFO) << "\t Coupling capacitance    " << setw(10) << right
-			      << cCoupling << " pF" << FairLogger::endl;
-	LOG(INFO) << "\t Inter-strip capacitance " << setw(10) << right
-			      << cInterstrip << " pF" << FairLogger::endl;
+	fSettings->SetSensorConditions(vDep, vBias, temperature,
+	                               cCoupling, cInterstrip);
 
 	CbmStsSensorConditions cond(vDep, vBias, temperature, cCoupling,
 			                        cInterstrip);

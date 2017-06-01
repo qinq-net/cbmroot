@@ -19,6 +19,7 @@
 #include "CbmStsPhysics.h"
 #include "CbmStsSensor.h"
 #include "CbmStsSensorPoint.h"
+#include "CbmStsSetup.h"
 #include "CbmMatch.h"
 
 
@@ -219,7 +220,8 @@ void CbmStsSensorTypeDssd::GetClusterPosition(Double_t centre,
 	//Double_t mobility = (side == 0 ? 0.1650 : 0.0310 );  // in m^2/(Vs)
 	//Double_t tanLorentz = mobility * sensor->GetConditions().GetBy();
 	//xCluster -= tanLorentz * fDz / 2.;
-	if ( CbmStsDigitize::UseLorentzShift() ) xCluster -= sensor->GetConditions().GetMeanLorentzShift(side);
+	if ( CbmStsSetup::Instance()->GetDigiSettings()->GetUseLorentzShift() )
+	  xCluster -= sensor->GetConditions().GetMeanLorentzShift(side);
 
 	LOG(DEBUG4) << GetName() << ": Cluster centre " << centre
 			        << ", sensor index " << sensor->GetIndex() << ", side "
@@ -438,22 +440,11 @@ Int_t CbmStsSensorTypeDssd::IntersectClusters(CbmStsCluster* clusterF,
 		                                          CbmStsSensor* sensor) {
 
 	// --- Check pointer validity
-	if ( ! clusterF ) {
-		LOG(FATAL) << GetName() << ": invalid front cluster pointer!"
-				        << FairLogger::endl;
-		return 0;
-	}
-	if ( ! clusterB ) {
-		LOG(FATAL) << GetName() << ": invalid back cluster pointer!"
-				        << FairLogger::endl;
-		return 0;
-	}
-	if ( ! sensor ) {
-		LOG(FATAL) << GetName() << ": invalid sensor pointer!"
-				        << FairLogger::endl;
-		return 0;
-	}
-	//Ideal hit finder
+    assert(clusterF);
+    assert(clusterB);
+    assert(sensor);
+
+    //Ideal hit finder
 	if (fHitFinderModel == 0){
 		LOG(DEBUG3) << GetName() << ": ideal model of Hit Finder" << FairLogger::endl;
 
@@ -701,7 +692,7 @@ Int_t CbmStsSensorTypeDssd::ProcessPoint(CbmStsSensorPoint* point,
   ProduceCharge(point, sensor);
 
   // --- Cross talk
-  if ( CbmStsDigitize::UseCrossTalk() ) {
+  if ( CbmStsSetup::Instance()->GetDigiSettings()->GetUseCrossTalk() ) {
     if ( FairLogger::GetLogger()->IsLogNeeded(DEBUG4) ) {
     	LOG(DEBUG4) << GetName() << ": Status before cross talk"
     			        << FairLogger::endl;
@@ -759,7 +750,7 @@ void CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
 
 	// For ideal energy loss, just have all charge in the mid-point of the
 	// trajectory
-	if ( CbmStsDigitize::GetElossModel() == 0 ) {
+	if ( CbmStsSetup::Instance()->GetDigitizer()->GetELossModel() == 0 ) {
 	  Double_t xP = 0.5 * ( point->GetX1() + point->GetX2() );
 	  Double_t yP = 0.5 * ( point->GetY1() + point->GetY2() );
 	  Double_t zP = 0.5 * ( point->GetZ1() + point->GetZ2() );
@@ -801,7 +792,7 @@ void CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
 
 	// Stopping power, needed for energy loss fluctuations
 	Double_t dedx = 0.;
-	if ( CbmStsDigitize::GetElossModel() == 2 )
+	if ( CbmStsSetup::Instance()->GetDigitizer()->GetELossModel() == 2 )
 		dedx = fPhysics->StoppingPower(eKin, point->GetPid());
 
 	// Stepping over the trajectory
@@ -816,7 +807,7 @@ void CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
 
 		// Charge for this step
 		Double_t chargeInStep = chargePerStep;  // uniform energy loss
-		if ( CbmStsDigitize::GetElossModel() == 2 ) // energy loss fluctuations
+		if ( CbmStsSetup::Instance()->GetDigitizer()->GetELossModel() == 2 ) // energy loss fluctuations
 			chargeInStep = fPhysics->EnergyLoss(stepSize, mass, eKin, dedx)
 			               / CbmStsPhysics::PairCreationEnergy();
 		chargeSum += chargeInStep;
@@ -834,7 +825,7 @@ void CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
 	// charge per step does not coincide with the expectation value.
 	// In order to be consistent with the transport, the charges are
 	// re-normalised.
-	if ( CbmStsDigitize::GetElossModel() == 2) {
+	if ( CbmStsSetup::Instance()->GetDigitizer()->GetELossModel() == 2) {
 		for (Int_t side = 0; side < 2; side++) {  // front and back side
 			for (Int_t strip = 0; strip < fNofStrips[side]; strip++)
 				fStripCharge[side][strip] *= ( chargeTotal / chargeSum );
@@ -866,7 +857,7 @@ void CbmStsSensorTypeDssd::PropagateCharge(Double_t x, Double_t y,
 			        << FairLogger::endl;
 
 	// Lorentz shift on the drift to the readout plane
-	if ( CbmStsDigitize::UseLorentzShift() ) {
+	if ( CbmStsSetup::Instance()->GetDigiSettings()->GetUseLorentzShift() ) {
 		xCharge += LorentzShift(z, side, sensor, bY);
     LOG(DEBUG4) << GetName() << ": After Lorentz shift: (" << xCharge << ", "
 		   	        << yCharge << ", " << zCharge << ") cm" << FairLogger::endl;
@@ -881,7 +872,7 @@ void CbmStsSensorTypeDssd::PropagateCharge(Double_t x, Double_t y,
 	}
 
 	// No diffusion: all charge is in one strip
-	if ( ! CbmStsDigitize::UseDiffusion() ) {
+	if ( ! CbmStsSetup::Instance()->GetDigiSettings()->GetUseDiffusion() ) {
 		Int_t iStrip = GetStripNumber(xCharge, yCharge, side);
 		fStripCharge[side][iStrip] += charge;
 		LOG(DEBUG4) << GetName() << ": Adding charge " << charge << " to strip "
