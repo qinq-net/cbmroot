@@ -80,22 +80,7 @@ void run_reco_tb_digi()
   run->AddTask(new CbmBuildEventsSimple());
   
   // --- STS cluster finder (event-based)
-  // --- Parameters for STS modules
-  // --- TODO: Currently, the parameters used for STS digitisation
-  // --- are not persistent. Thus, they have to be set explicitly here
-  // --- for use in the cluster finder.
-  // --- Make sure the are the same as in run_digi_tb.C
-  // --- We will work on saving the digitisation parameters properly.
-  Double_t dynRange       =   40960.;  // Dynamic range [e]
-  Double_t threshold      =    4000.;  // Digitisation threshold [e]
-  Int_t nAdc              =    4096;   // Number of ADC channels (12 bit)
-  Double_t timeResolution =       5.;  // time resolution [ns]
-  Double_t deadTime       =     100.;  // infinite dead time (integrate entire event)
-  Int_t digiModel         =       1;   // Model: 1 = uniform charge distribution along track
-  Double_t noise          =    1000.;  // Noise [e]
   CbmStsFindClustersStream* stsCluster = new CbmStsFindClustersStream();
-  stsCluster->SetParameters(dynRange, threshold, nAdc, timeResolution,
-                            deadTime, noise);
   stsCluster->UseEventMode();
   run->AddTask(stsCluster);
 
