@@ -194,7 +194,7 @@ class CbmTofTracklet : public TObject {
 	  }
 	}
 
-	inline void RemoveTofHitIndex(Int_t tofHitIndex, Int_t iDet, CbmTofHit* pHit, Double_t chi2) { 
+	inline void RemoveTofHitIndex(Int_t /*tofHitIndex*/, Int_t iDet, CbmTofHit* /*pHit*/, Double_t /*chi2*/) { 
 	  for (Int_t iHit=0; iHit<(Int_t)fTofHit.size(); iHit++){
 	    if (iDet == fTofDet[iHit]) {
 	      fTofHit.erase(fTofHit.begin()+iHit);

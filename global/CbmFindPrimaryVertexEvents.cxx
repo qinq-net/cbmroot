@@ -23,6 +23,7 @@ using namespace std;
 // -----   Default constructor   -------------------------------------------
 CbmFindPrimaryVertexEvents::CbmFindPrimaryVertexEvents()
   : FairTask(),
+    fTimer(),
     fFinder(NULL),
 	fEvents(NULL),
     fTracks(NULL),
@@ -39,6 +40,7 @@ CbmFindPrimaryVertexEvents::CbmFindPrimaryVertexEvents()
 // -----   Standard constructor   ------------------------------------------
 CbmFindPrimaryVertexEvents::CbmFindPrimaryVertexEvents(CbmPrimaryVertexFinder* pvFinder)
   : FairTask(),
+    fTimer(),
     fFinder(pvFinder),
 	fEvents(NULL),
     fTracks(NULL),
@@ -57,6 +59,7 @@ CbmFindPrimaryVertexEvents::CbmFindPrimaryVertexEvents(const char* name,
 					   const char*, 
 					   CbmPrimaryVertexFinder* finder) 
   : FairTask(name),
+    fTimer(),
     fFinder(finder),
 	fEvents(NULL),
     fTracks(NULL),

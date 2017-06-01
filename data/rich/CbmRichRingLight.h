@@ -75,8 +75,8 @@ public:
       fSelectionNN(0.f)
 
    {
-      fHits.reserve(30);
-      fHitIds.reserve(30);
+      fHits.reserve(30000);
+      fHitIds.reserve(30000);
    }
 
    /**

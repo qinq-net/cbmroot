@@ -30,6 +30,8 @@ public:
       fTrackParam(),
       fDistance(0.) {}
 
+   CbmLitTofTrack(const CbmLitTofTrack&) = delete;
+   CbmLitTofTrack& operator=(const CbmLitTofTrack&) = delete;
    /**
     * \brief Destructor.
     */

@@ -2893,7 +2893,7 @@ void CbmHadronAnalysis::Exec(Option_t*)
 	LOG(DEBUG1)<<" Mul f: "<< fclu->GetNofDigis()<<" (";
 	for (Int_t iDigi=0; iDigi< fclu->GetNofDigis(); iDigi++) {
 	  LOG(DEBUG1)<<fclu->GetDigi(iDigi)<<" ";
-	  CbmStsDigi* stsdigi      = (CbmStsDigi*) fStsDigis->At( fclu->GetDigi(iDigi) );
+	  //CbmStsDigi* stsdigi      = (CbmStsDigi*) fStsDigis->At( fclu->GetDigi(iDigi) );
 	  CbmMatch*   stsdigiMatch = (CbmMatch*)   fStsDigiMatchColl->At( fclu->GetDigi(iDigi) );
 	  LOG(DEBUG1)<<stsdigiMatch->GetNofLinks()<<" ";
 	  for(Int_t iL=0; iL<stsdigiMatch->GetNofLinks();iL++){
@@ -2921,7 +2921,7 @@ void CbmHadronAnalysis::Exec(Option_t*)
 
 	for (Int_t iDigi=0; iDigi< bclu->GetNofDigis(); iDigi++) {
 	  LOG(DEBUG1)<<bclu->GetDigi(iDigi)<<" ";
-	  CbmStsDigi* stsdigi      = (CbmStsDigi*) fStsDigis->At( bclu->GetDigi(iDigi) );
+	  //CbmStsDigi* stsdigi      = (CbmStsDigi*) fStsDigis->At( bclu->GetDigi(iDigi) );
 	  CbmMatch*   stsdigiMatch = (CbmMatch*)   fStsDigiMatchColl->At( bclu->GetDigi(iDigi) );
 	  LOG(DEBUG1)<<stsdigiMatch->GetNofLinks()<<" ";
 	  for(Int_t iL=0; iL<stsdigiMatch->GetNofLinks();iL++){
@@ -3886,7 +3886,7 @@ void CbmHadronAnalysis::ReconstructSecondaries()
 	  if(PE != P) LOG(FATAL)<<"P not properly restored from list"<<FairLogger::endl;
 	}
 
-	for (Int_t j=0; j<PE.size(); j++) {
+	for (UInt_t j=0; j<PE.size(); j++) {
 	  if(TMath::Abs(PE[j].M() - refMass[0])<0.01 ) { // pion candidate
 	    //request minimum opening angle
 	    Double_t dOpAngle = DX[i].Angle(DXE[j]);

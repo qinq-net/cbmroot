@@ -40,6 +40,9 @@ class CbmFindPrimaryVertexEvents : public FairTask
    **/
   CbmFindPrimaryVertexEvents(CbmPrimaryVertexFinder* pvFinder);
   
+  // Prevent auto copy constructor and assignment operator
+  CbmFindPrimaryVertexEvents(const CbmFindPrimaryVertexEvents&) = delete;
+  CbmFindPrimaryVertexEvents& operator=(const CbmFindPrimaryVertexEvents&) = delete;
 
   /** Constructor with name and title
    **
@@ -78,9 +81,6 @@ class CbmFindPrimaryVertexEvents : public FairTask
   Int_t     fNofEvents;       ///< Total number of events processed
   Double_t  fTimeTot;         ///< Total execution time [s]
 
-  // Prevent auto copy constructor and assignment operator
-  CbmFindPrimaryVertexEvents(const CbmFindPrimaryVertexEvents&);
-  CbmFindPrimaryVertexEvents& operator=(const CbmFindPrimaryVertexEvents&);
 
 
   ClassDef(CbmFindPrimaryVertexEvents,1);
