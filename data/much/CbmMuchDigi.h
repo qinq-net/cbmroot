@@ -39,7 +39,7 @@ class CbmMuchDigi : public CbmDigi{
 	** @param  charge   Charge [ADC units]
  	**/
 	CbmMuchDigi(UInt_t address, UShort_t charge=0, ULong64_t time=0)
-		: CbmDigi(), fAddress(address), fCharge(charge), fTime(time) {}
+		: CbmDigi(), fAddress(address), fTime(time), fCharge(charge) {}
 			//fMatch will be created in the CbmMuchSignal and should be deleted by that class destructor only.
 			//fMatch = new CbmMatch();}
 
