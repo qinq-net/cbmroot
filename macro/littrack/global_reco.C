@@ -174,7 +174,8 @@ void global_reco(Int_t nEvents = 10, // number of events
       run->AddTask(stsDigi);
       
       // -----   STS Cluster Finder   --------------------------------------------
-      FairTask* stsCluster = new CbmStsFindClusters();
+      CbmStsFindClusters* stsCluster = new CbmStsFindClusters();
+      stsCluster->UseEventMode();
       run->AddTask(stsCluster);
       // -------------------------------------------------------------------------
       

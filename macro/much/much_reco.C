@@ -73,7 +73,8 @@ void much_reco(
 
 
   // -----   STS Cluster Finder   --------------------------------------------
-  FairTask* stsClusterFinder = new CbmStsFindClusters();
+  CbmStsFindClusters* stsClusterFinder = new CbmStsFindClusters();
+  stsClusterFinder->UseEventMode();
   run->AddTask(stsClusterFinder);
   // -------------------------------------------------------------------------
 
