@@ -12,8 +12,6 @@
 #include <vector>
 
 ClassImp(CbmTrdQAHit)
-const  Int_t NrRobs=4;
-const  Int_t NrSpadics=3;
 
 CbmTrdQAHit::CbmTrdQAHit(TString ClassName) :
   CbmTrdQABase("CbmTrdQAHit"){
