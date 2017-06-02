@@ -33,15 +33,8 @@
 
 // Reconstruction
 #pragma link C++ class CbmStsClusterAnalysis;
-#pragma link C++ class CbmStsClusterFinder;
-#pragma link C++ class CbmStsClusterFinderGap;
-#pragma link C++ class CbmStsClusterFinderIdeal;
 #pragma link C++ class CbmStsClusterFinderModule;
-#pragma link C++ class CbmStsClusterFinderReal;
-#pragma link C++ class CbmStsClusterFinderSimple;
 #pragma link C++ class CbmStsFindClusters;
-#pragma link C++ class CbmStsFindClustersEvents;
-#pragma link C++ class CbmStsFindClustersStream;
 #pragma link C++ class CbmStsFindHits;
 #pragma link C++ class CbmStsFindHitsEvents;
 #pragma link C++ class CbmStsFindTracksEvents;

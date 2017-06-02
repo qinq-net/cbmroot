@@ -80,7 +80,7 @@ void run_reco_tb_digi()
   run->AddTask(new CbmBuildEventsSimple());
   
   // --- STS cluster finder (event-based)
-  CbmStsFindClustersStream* stsCluster = new CbmStsFindClustersStream();
+  CbmStsFindClusters* stsCluster = new CbmStsFindClusters();
   stsCluster->UseEventMode();
   run->AddTask(stsCluster);
 

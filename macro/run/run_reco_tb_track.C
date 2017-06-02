@@ -103,7 +103,7 @@ void run_reco_tb_track()
 
   // --- STS cluster finder
   // --- Parameters for STS modules
-  CbmStsFindClustersStream* stsCluster = new CbmStsFindClustersStream();
+  CbmStsFindClusters* stsCluster = new CbmStsFindClusters();
   run->AddTask(stsCluster);
   
   // --- STS hit finder

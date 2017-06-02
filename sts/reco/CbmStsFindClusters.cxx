@@ -1,131 +1,158 @@
 /** @file CbmStsFindClusters.cxx
  ** @author Volker Friese <v.friese@gsi.de>
- ** @date 16.06.2014
+ ** @date 05.04.2017
  **/
 
 // --- Include class header
 #include "reco/CbmStsFindClusters.h"
 
 // --- Includes from C++
-#include <iostream>
+#include <cassert>
 
-// --- Includes from ROOT
+// --- Includes from ROOT and FairRoot
 #include "TClonesArray.h"
-
-// --- Includes from FAIRROOT
 #include "FairEventHeader.h"
-#include "FairRunAna.h"
+#include "FairRun.h"
+
+// --- Include from CBMROOT
+#include "CbmEvent.h"
+#include "CbmStsAddress.h"
+#include "CbmStsDigi.h"
 
 // --- Includes from STS
-#include "reco/CbmStsClusterFinderSimple.h"
+#include "digitize/CbmStsDigitizeSettings.h"
+#include "digitize/CbmStsSensorTypeDssd.h"
+#include "reco/CbmStsClusterAnalysis.h"
+#include "reco/CbmStsClusterFinderModule.h"
 #include "setup/CbmStsModule.h"
+#include "setup/CbmStsSensor.h"
 #include "setup/CbmStsSetup.h"
-#include "digitize/CbmStsPhysics.h"
 
-using namespace std;
-
+using std::fixed;
+using std::right;
+using std::setprecision;
+using std::setw;
 
 // -----   Constructor   ---------------------------------------------------
-CbmStsFindClusters::CbmStsFindClusters(Int_t finderModel, Int_t algorithm)
-    : FairTask("StsFindClusters", 1)
+CbmStsFindClusters::CbmStsFindClusters()
+    : FairTask("StsFindClustersStream", 1)
+    , fEvents(NULL)
     , fDigis(NULL)
     , fClusters(NULL)
     , fSetup(NULL)
-    , fFinder(NULL)      
+    , fSettings(NULL)
+    , fAna(NULL)
     , fTimer()
-    , fFinderModel(finderModel)
-    , fAlgorithm(algorithm)
-    , fELossModel(0)
-    , fTimeSlice(NULL)
-    , fDigiData()
-    , fDaq(kFALSE)
-    , fUseFinderTb(kFALSE)
-    , fDeadTime(9999999.)
-    , fNofEvents(0.)
-    , fNofDigisTot(0.)
-    , fNofClustersTot(0.)
+    , fEventMode(kFALSE)
+    , fLegacy(kFALSE)
+    , fNofEntries(0)
+    , fNofUnits(0)
+    , fNofDigis(0.)
+    , fNofClusters(0.)
     , fTimeTot(0.)
-    , fDynRange(40960.)
-    , fThreshold(4000.)
-    , fNofAdcChannels(4096)
-    , fTimeResolution(5.)
-    , fNoise(0.)
-    , fActiveModules()
+//    , fDynRange(40960.)
+//    , fThreshold(4000.)
+//    , fNofAdcChannels(4096)
+//    , fTimeResolution(5.)
+//    , fDeadTime(9999999.)
+//    , fNoise(0.)
+    , fModules()
+    , fDigiMap()
 {
 }
 // -------------------------------------------------------------------------
 
 
+
 // -----   Destructor   ----------------------------------------------------
 CbmStsFindClusters::~CbmStsFindClusters() {
-	if ( fFinder ) delete fFinder;
+
+  // Delete cluster analysis
+  if ( fAna ) delete fAna;
+
+  // Delete cluster finder modules
+  auto it = fModules.begin();
+  while ( it != fModules.end() ) delete it->second;
+
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Initialise the cluster finding modules   ------------------------
+Int_t CbmStsFindClusters::CreateModules() {
+
+  assert( fSetup );
+
+  Int_t nModules = fSetup->GetNofModules();
+  for (Int_t iModule = 0; iModule < nModules; iModule++) {
+    CbmStsModule* module = fSetup->GetModule(iModule);
+    assert(module->IsSet());
+    UInt_t address = module->GetAddress();
+    const char* name = module->GetName();
+    Double_t deltaT = 3.* TMath::Sqrt(2.) * module->GetTimeResolution();
+    Int_t nChannels = module->GetNofChannels();
+    CbmStsClusterFinderModule* finderModule =
+        new CbmStsClusterFinderModule(nChannels, deltaT, name, module, fClusters);
+    // --- Check the sensor for stereo angles
+    CbmStsSensor* sensor =
+        dynamic_cast<CbmStsSensor*>(module->GetDaughter(0));
+    CbmStsSensorTypeDssd* type =
+        dynamic_cast<CbmStsSensorTypeDssd*>(sensor->GetType());
+    assert(type);
+    if ( TMath::Abs(type->GetStereoAngle(0)) > 1. )
+      finderModule->ConnectEdgeFront();
+    if ( TMath::Abs(type->GetStereoAngle(1)) > 1. )
+      finderModule->ConnectEdgeBack();
+    fModules[address] = finderModule;
+  }
+  LOG(INFO) << GetName() << ": " << fModules.size()
+    << " modules created." << FairLogger::endl;
+
+  return nModules;
 }
 // -------------------------------------------------------------------------
 
 
 
 // -----   Task execution   ------------------------------------------------
-void CbmStsFindClusters::Exec(Option_t* /*opt*/) {
+void CbmStsFindClusters::Exec(Option_t* opt) {
 
-	// --- Event number
-	Int_t iEvent =
-			FairRun::Instance()->GetEventHeader()->GetMCEntryNumber();
+  // --- Check whether digi settings are present in the setup. If not,
+  // --- get them from the tree and update the setup.
+  if ( ! fSetup->GetDigiSettings() ) {
+    LOG(INFO) << GetName() << ": Initialise settings" << FairLogger::endl;
+    InitSettings();
+  }
 
-	// Start timer and counter
-	fTimer.Start();
-	Int_t nOfClusters = 0;
+  if ( fEventMode && ! fLegacy)
+    LOG(INFO) << GetName() << ": Processing time slice "
+              << fNofEntries << FairLogger::endl;
 
-	// --- Clear output array
-	fClusters->Delete();
+  // --- Reset output array
+  fClusters->Delete();
 
-	// --- Sort digis into modules
-	Int_t nOfDigis = SortDigis();
+  // --- In legacy mode: process legacy event
+  if ( fLegacy ) {
+    ProcessLegacyEvent();
+    return;
+  }
 
-	// --- Find clusters in modules
-	/*
-	set<CbmStsModule*>::iterator it;
-	for (it = fActiveModules.begin(); it != fActiveModules.end(); it++) {
-		Int_t nClusters = 0;
-		if(fUseFinderTb) {
-			(*it)->SetDeadTime(fDeadTime);
-			nClusters = fFinder->FindClustersTb(*it);
-		}
-		else
-			nClusters = fFinder->FindClustersSimple(*it);
-		LOG(DEBUG1) << GetName() << ": Module " << (*it)->GetName()
-    			      << ", digis: " << (*it)->GetNofDigis()
-   		          << ", clusters " << nClusters << FairLogger::endl;
-		nOfClusters += nClusters;
-	}
-	*/
-	for (Int_t iModule = 0; iModule < fSetup->GetNofModules(); iModule++) {
-		CbmStsModule* module = fSetup->GetModule(iModule);
-		if ( fUseFinderTb && module->GetNofDigisTb() == 0 ) continue;
-		if ( ! fUseFinderTb && module->GetNofDigis() == 0 ) continue;
+  // --- Number of time slices or events
+  Int_t nUnits = ( (fEventMode && !fLegacy) ? fEvents->GetEntriesFast() : 1);
 
-		Int_t nClusters = 0;
-		if ( fUseFinderTb ) {
-			module->SetDeadTime(fDeadTime);
-			nClusters = fFinder->FindClustersTb(module);
-		}
-		else nClusters = fFinder->FindClustersSimple(module);
-		LOG(DEBUG1) << GetName() << ": Module " << module->GetName()
-    			      << ", digis: " << module->GetNofDigis()
-   		          << ", clusters " << nClusters << FairLogger::endl;
-		nOfClusters += nClusters;
-	}
+  // --- Loop over input units
+  for (Int_t iUnit = 0; iUnit < nUnits; iUnit++) {
+    CbmEvent* event = ( (fEventMode && !fLegacy) ?
+        dynamic_cast<CbmEvent*>(fEvents->At(iUnit)) : NULL);
+    ProcessData(event);
+  }
 
-  // --- Counters
-  fTimer.Stop();
-  fNofEvents++;
-  fNofDigisTot    += nOfDigis;
-  fNofClustersTot += nOfClusters;
-  fTimeTot        += fTimer.RealTime();
+  if ( fEventMode ) LOG(INFO) << GetName() << ": " << nUnits
+      << (nUnits == 1 ? " event" : " events") << " processed in time slice "
+      << fNofEntries << FairLogger::endl;
 
-  LOG(INFO) << "+ " << setw(20) << GetName() << ": Event " << setw(6)
-  		      << right << iEvent << ", real time " << fixed << setprecision(6)
-  		      << fTimer.RealTime() << " s, digis: " << nOfDigis
-  		      << ", clusters: " << nOfClusters << FairLogger::endl;
+  fNofEntries++;
 }
 // -------------------------------------------------------------------------
 
@@ -133,47 +160,41 @@ void CbmStsFindClusters::Exec(Option_t* /*opt*/) {
 
 // -----   End-of-run action   ---------------------------------------------
 void CbmStsFindClusters::Finish() {
-	std::cout << std::endl;
-	LOG(INFO) << "=====================================" << FairLogger::endl;
-	LOG(INFO) << GetName() << ": Run summary" << FairLogger::endl;
-	LOG(INFO) << "Events processed   : " << fNofEvents << FairLogger::endl;
-	LOG(INFO) << "Digis / event      : " << fNofDigisTot / Double_t(fNofEvents)
-			      << FairLogger::endl;
-	LOG(INFO) << "Clusters / event   : "
-			      << fNofClustersTot / Double_t(fNofEvents)
-			      << FairLogger::endl;
-	if (fFinderModel == 2) LOG(INFO) << "ClustersWithGap / e: " 
-			      << Double_t(fFinder -> GetNofClustersWithGap()) / Double_t (fNofEvents)
-			      << FairLogger::endl;
-	if (fFinderModel == 0) LOG(INFO) << "SplittedClusters/ e: " 
-			      << Double_t(fFinder -> GetNofSplittedClusters()) / Double_t (fNofEvents)
-			      << FairLogger::endl;
-	LOG(INFO) << "Digis per cluster  : " << fNofDigisTot / fNofClustersTot
-			      << FairLogger::endl;
-	LOG(INFO) << "Time per event     : " << fTimeTot / Double_t(fNofEvents)
-			      << " s " << FairLogger::endl;
-	LOG(INFO) << "=====================================" << FairLogger::endl;
+  std::cout << std::endl;
+  LOG(INFO) << "=====================================" << FairLogger::endl;
+  LOG(INFO) << GetName() << ": Run summary" << FairLogger::endl;
 
-}
-// -------------------------------------------------------------------------
+  if ( ! fLegacy ) LOG(INFO) << "Time slices           : "
+        << fNofEntries << FairLogger::endl;
 
+  // --- Time slice mode
+  if ( ! fEventMode) {
+    LOG(INFO) << "Digis / time slice    : "
+        << fNofDigis / Double_t(fNofEntries) << FairLogger::endl;
+    LOG(INFO) << "Clusters / time slice : "
+        << fNofClusters / Double_t(fNofEntries) << FairLogger::endl;
+    LOG(INFO) << "Digis per cluster     : "
+        << fNofDigis / fNofClusters << FairLogger::endl;
+    LOG(INFO) << "Time per time slice   : "
+        << fTimeTot / Double_t(fNofEntries) << " s " << FairLogger::endl;
+  } //? time-based mode
 
+  // --- Event-by-event mode
+  else {
+    LOG(INFO) << "Events                : "
+        << fNofUnits << FairLogger::endl;
+    LOG(INFO) << "Digis / event         : "
+        << fNofDigis / Double_t(fNofUnits) << FairLogger::endl;
+    LOG(INFO) << "Clusters / event      : "
+        << fNofClusters / Double_t(fNofUnits) << FairLogger::endl;
+    LOG(INFO) << "Digis per cluster     : "
+        << fNofDigis / fNofClusters << FairLogger::endl;
+    LOG(INFO) << "Time per event        : "
+        << fTimeTot / Double_t(fNofUnits) << " s " << FairLogger::endl;
+  } //? event-by-event mode
 
-// -----   End-of-event action   -------------------------------------------
-void CbmStsFindClusters::FinishEvent() {
+  LOG(INFO) << "=====================================" << FairLogger::endl;
 
-	// --- Clear digi maps for all active modules
-	Int_t nModules = 0;
-	set<CbmStsModule*>::iterator it;
-	for (it = fActiveModules.begin(); it != fActiveModules.end(); it++) {
-		if (fDaq)	(*it)->ClearDigisTb();
-		else 		(*it)->ClearDigis();
-		nModules++;
-	}
-	fActiveModules.clear();
-
-	LOG(DEBUG) << GetName() << ": Cleared digis in " << nModules
-			       << " modules. " << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 
@@ -182,117 +203,289 @@ void CbmStsFindClusters::FinishEvent() {
 // -----   Initialisation   ------------------------------------------------
 InitStatus CbmStsFindClusters::Init()
 {
-    // --- Check IO-Manager
-    FairRootManager* ioman = FairRootManager::Instance();
-    if (NULL == ioman) {
-    	LOG(ERROR) << GetName() << ": No FairRootManager!"
-    			       << FairLogger::endl;
-    	return kFATAL;
+
+  // --- Get STS setup
+  fSetup = CbmStsSetup::Instance();
+
+  // --- Instantiate cluster analysis
+  fAna = new CbmStsClusterAnalysis();
+
+  // --- Something for the screen
+  LOG(INFO) << "\n=========================================================="
+                << FairLogger::endl;
+  LOG(INFO) << GetName() << ": Initialising " << FairLogger::endl;
+
+  // --- Check IO-Manager
+  FairRootManager* ioman = FairRootManager::Instance();
+  assert(ioman);
+
+  // --- In event mode: get input array (CbmEvent)
+  if ( fEventMode ) {
+    LOG(INFO) << GetName() << ": Using event-by-event mode"
+          << FairLogger::endl;
+      fEvents = dynamic_cast<TClonesArray*>(ioman->GetObject("Event"));
+      if ( ! fEvents ) {
+        LOG(WARNING) << GetName()
+            << ": Event mode selected but no event array found! \n"
+            << "           The task will run over the entire input array "
+            << "(legacy mode)." << FairLogger::endl;
+        fLegacy = kTRUE;
+      }
     }
+    else LOG(INFO) << GetName() << ": Using time-based mode"
+        << FairLogger::endl;
 
     // --- Get input array (StsDigis)
     fDigis = (TClonesArray*)ioman->GetObject("StsDigi");
-    if (fDaq) {
-		fTimeSlice = (CbmTimeSlice*) ioman->GetObject("TimeSlice.");
-		if (NULL == fTimeSlice)
-			LOG(FATAL) << GetName() << ": NoTimeSlice data!" << FairLogger::endl;
-	}
-	else {
-		fDigis = (TClonesArray*) ioman->GetObject("StsDigi");
-		if (NULL == fDigis) {
-			LOG(ERROR) << GetName() << ": No StsDigi array!" << FairLogger::endl;
-			return kERROR;
-		}
-	}
+    assert(fDigis);
+
+    // --- Get input object (StsDigitizeSettings)
+    fSettings = dynamic_cast<CbmStsDigitizeSettings*>
+      (ioman->GetObject("StsDigitizeSettings"));
+    assert(fSettings);
 
     // --- Register output array
-    fClusters = new TClonesArray("CbmStsCluster", 10000);
+    fClusters = new TClonesArray("CbmStsCluster", 1e6);
     ioman->Register("StsCluster", "Cluster in STS", fClusters, IsOutputBranchPersistent("StsCluster"));
 
-    // --- Get STS setup
-    fSetup = CbmStsSetup::Instance();
+    // --- Create modules if settings are present in setup
+    // --- This is the case if the digitiser is run in the same run.
+    // --- Otherwise, the settings are read from the input tree,
+    // --- and the modules are created at the first call to Exec.
+    if ( fSetup->GetDigiSettings() ) CreateModules();
 
-    // --- Set module parameters if not done already
-    // TODO: The module parameters are set by the STS digitiser. However,
-    // this information is not persistent. If the reco run starts from the raw
-    // data file, i.e. the digitiser is not part of the run, the module
-    // parameters are not set. As a workaround, they are set here explicitly.
-    // Obviously, this is not a good solution since consistency with the
-    // parameters used by the digitiser is not assured. A proper treatment
-    // of the STS parameters is needed (parameter file).
-    CbmStsModule* module = fSetup->GetModule(0);
-    if ( ! fSetup->GetModule(0)->IsSet() ) SetModuleParameters();
-
-    if (fDaq) SetModuleParameters();
-
-    // --- Instantiate StsPhysics
-    CbmStsPhysics::Instance();
-
-    // --- Create cluster finder
-    fFinder = new CbmStsClusterFinderSimple(fFinderModel, fAlgorithm, fELossModel);
-    fFinder->SetOutputArray(fClusters);
-
-    LOG(INFO) << GetName() << ": Initialisation successful"
+    LOG(INFO) << GetName() << ": Initialisation successful."
     		      << FairLogger::endl;
+    LOG(INFO) << "==========================================================\n"
+                  << FairLogger::endl;
     return kSUCCESS;
 }
 // -------------------------------------------------------------------------
 
 
 
+// -----   Initialise the digitisation settings   --------------------------
+void CbmStsFindClusters::InitSettings() {
 
-// ----- Sort digis into module digi maps   --------------------------------
-Int_t CbmStsFindClusters::SortDigis() {
+  assert( fSettings );
+  fSetup->SetDigiSettings(fSettings);
+  SetModuleParameters();
+  CreateModules();
 
-	// --- Counters
-	Int_t nDigis   = 0;
+}
+// -------------------------------------------------------------------------
 
-	// --- Loop over digis in input array
-	CbmStsDigi* digi = NULL;
-	Int_t nofDigis = fDigis->GetEntriesFast();
-	for (Int_t iDigi = 0; iDigi < nofDigis; iDigi++) {
-		digi = static_cast<CbmStsDigi*> (fDigis->At(iDigi));
-		if ( ! digi ) {
-			LOG(FATAL) << GetName() << ": Invalid digi pointer!"
-					       << FairLogger::endl;
-			continue;
-		}
 
-		// --- Get the module
-		UInt_t address = digi->GetAddress();
-		CbmStsModule* module =
-				static_cast<CbmStsModule*>(fSetup->GetElement(address, kStsModule));
-		if ( ! module ) {
-			LOG(FATAL) << GetName() << ": Module " << address
-					       << " not present in STS setup!" << FairLogger::endl;
-			continue;
-		}
 
-		// --- Add module to list of active modules, if not yet present.
-		fActiveModules.insert(module);
+// -----   Process one time slice or event   -------------------------------
+void CbmStsFindClusters::ProcessData(CbmEvent* event) {
 
-		// --- Add the digi to the module
-		if ( fDaq || fUseFinderTb )
-			module->AddDigiTb(digi, iDigi);
-		else
-			module->AddDigi(digi, iDigi);
-		nDigis++;
+  // --- Event or time slice number
+  Int_t unitId = ( event ? event->GetNumber() : fNofUnits);
 
-	}  // Loop over digi array
+  // --- Reset all cluster finder modules
+  fTimer.Start();
+  for (auto it = fModules.begin(); it != fModules.end(); it++)
+      it->second->Reset();
+  fTimer.Stop();
+  Double_t time1 = fTimer.RealTime();
 
-	// --- Debug output
-	LOG(DEBUG) << GetName() << ": sorted " << nDigis << " digis into "
-			       << fActiveModules.size() << " module(s)." << FairLogger::endl;
-	if ( FairLogger::GetLogger()->IsLogNeeded(DEBUG3) ) {
-		set<CbmStsModule*>::iterator it;
-		for (it = fActiveModules.begin(); it != fActiveModules.end() ; it++) {
-				LOG(DEBUG3) << GetName() << ": Module " << (*it)->GetName()
-						        << ", digis " << (*it)->GetNofDigis()
-						        << FairLogger::endl;
-		}
-	}
+  // --- Start index of newly created clusters
+  Int_t indexFirst = fClusters->GetEntriesFast();
 
-	return nDigis;
+  // --- Number of input digis
+  fTimer.Start();
+  Int_t nDigis = (event ? event->GetNofData(kStsDigi)
+      : fDigis->GetEntriesFast() );
+
+  // --- Loop over input digis
+  Int_t digiIndex = -1;
+  for (Int_t iDigi = 0; iDigi < nDigis; iDigi++) {
+    digiIndex = (event ? event->GetIndex(kStsDigi, iDigi) : iDigi);
+    CbmStsDigi* digi = dynamic_cast<CbmStsDigi*>(fDigis->At(digiIndex));
+    ProcessDigi(digiIndex);
+  }  //# digis in time slice or event
+  fTimer.Stop();
+  Double_t time2 = fTimer.RealTime();
+
+  // --- Process remaining clusters in the buffers
+  fTimer.Start();
+  for (auto it = fModules.begin(); it != fModules.end(); it++)
+       it->second->ProcessBuffer();
+  fTimer.Stop();
+  Double_t time3 = fTimer.RealTime();
+
+  // --- Stop index of newly created clusters
+  Int_t indexLast = fClusters->GetEntriesFast();
+
+  // --- Determine cluster parameters
+  fTimer.Start();
+  for (Int_t index = indexFirst; index < indexLast; index++) {
+    CbmStsCluster* cluster = dynamic_cast<CbmStsCluster*>(fClusters->At(index));
+    CbmStsModule* module = dynamic_cast<CbmStsModule*>
+      (fSetup->GetElement(cluster->GetAddress(), kStsModule));
+    fAna->Analyze(cluster, module, fDigis);
+  }
+  fTimer.Stop();
+  Double_t time4 = fTimer.RealTime();
+
+  // --- In event-by-event mode: register clusters to event
+  fTimer.Start();
+  if ( event ) for (Int_t index = indexFirst; index < indexLast; index++)
+    event->AddData(kStsCluster, index);
+  fTimer.Stop();
+  Double_t time5 = fTimer.RealTime();
+
+  // --- Counters
+  Int_t nClusters = indexLast - indexFirst;
+  Double_t realTime = time1 + time2 + time3 + time4 + time5;
+  fNofUnits++;
+  fNofDigis    += nDigis;
+  fNofClusters += nClusters;
+  fTimeTot     += realTime;
+
+  // --- Screen output
+  TString unit = (fEventMode ? " Event " : " Time slice ");
+  LOG(DEBUG) << GetName() << ": created " << nClusters << " from index "
+      << indexFirst << " to " << indexLast << FairLogger::endl;
+  LOG(DEBUG) << GetName() << ": reset " << time1 << ", process digis " << time2
+      << ", process buffers " << time3 << ", analyse " << time4 << ", register "
+      << time5 << FairLogger::endl;
+  LOG(INFO) << "+ " << setw(20) << GetName() << ": " << unit << setw(6)
+              << right << unitId << ", real time " << fixed << setprecision(6)
+              << realTime << " s, digis: " << nDigis
+              << ", clusters: " << nClusters << FairLogger::endl;
+
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Process one digi object   ---------------------------------------
+void CbmStsFindClusters::ProcessDigi(Int_t index) {
+
+  // --- Get the digi object
+  CbmStsDigi* digi = dynamic_cast<CbmStsDigi*>(fDigis->At(index));
+  assert(digi);
+
+  // --- Get the cluster finder module
+  UInt_t address =
+      CbmStsAddress::GetMotherAddress(digi->GetAddress(), kStsModule);
+  CbmStsClusterFinderModule* module = fModules.at(address);
+  assert(module);
+
+  // --- Digi channel and time
+  Int_t digiChannel = CbmStsAddress::GetElementId(digi->GetAddress(),
+                                                  kStsChannel);
+  assert ( digiChannel >= 0 || digiChannel < module->GetSize() );
+  UShort_t channel = UShort_t(digiChannel);
+
+  // --- Process digi in module
+  module->ProcessDigi(channel, digi->GetTime(), index);
+
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Process a legacy event   ----------------------------------------
+void CbmStsFindClusters::ProcessLegacyEvent() {
+
+  // --- Event number. Note that the FairRun counting start with 1.
+  Int_t eventNumber =
+      FairRun::Instance()->GetEventHeader()->GetMCEntryNumber() - 1;
+  LOG(INFO) << GetName() << ": Processing legacy event "
+            << eventNumber << FairLogger::endl;
+
+  // --- Reset output array
+  fClusters->Delete();
+
+  // --- Reset all cluster finder modules
+  fTimer.Start();
+  for (auto it = fModules.begin(); it != fModules.end(); it++)
+      it->second->Reset();
+  fTimer.Stop();
+  Double_t time1 = fTimer.RealTime();  // time for module reset
+
+  // --- Read legacy event
+  fTimer.Start();
+  Int_t nDigis = ReadLegacyEvent();
+  assert ( fDigiMap.size() == nDigis );
+  fTimer.Stop();
+  Double_t time2 = fTimer.RealTime();  // time for reading event
+
+  // --- Start index of newly created clusters
+  Int_t indexFirst = fClusters->GetEntriesFast();
+
+  // --- Loop over input digis
+  fTimer.Start();
+  Int_t digiIndex = -1;
+  for ( auto it = fDigiMap.begin(); it != fDigiMap.end(); it++) {
+    digiIndex = it->second;
+    CbmStsDigi* digi = dynamic_cast<CbmStsDigi*>(fDigis->At(digiIndex));
+    ProcessDigi(digiIndex);
+  }  //# digis in time slice or event
+  fTimer.Stop();
+  Double_t time3 = fTimer.RealTime();  // time for processing digis
+
+  // --- Process remaining clusters in the buffers
+  fTimer.Start();
+  for (auto it = fModules.begin(); it != fModules.end(); it++)
+       it->second->ProcessBuffer();
+  fTimer.Stop();
+  Double_t time4 = fTimer.RealTime(); // time for processing buffers
+
+  // --- Stop index of newly created clusters
+  Int_t indexLast = fClusters->GetEntriesFast();
+
+  // --- Determine cluster parameters
+  fTimer.Start();
+  for (Int_t index = indexFirst; index < indexLast; index++) {
+    CbmStsCluster* cluster = dynamic_cast<CbmStsCluster*>(fClusters->At(index));
+    CbmStsModule* module = dynamic_cast<CbmStsModule*>
+      (fSetup->GetElement(cluster->GetAddress(), kStsModule));
+    fAna->Analyze(cluster, module, fDigis);
+  }
+  fTimer.Stop();
+  Double_t time5 = fTimer.RealTime();  // time for cluster analysis
+
+  // --- Counters
+  Int_t nClusters = indexLast - indexFirst;
+  Double_t realTime = time1 + time2 + time3 + time4 + time5;
+  fNofUnits++;
+  fNofDigis    += nDigis;
+  fNofClusters += nClusters;
+  fTimeTot     += realTime;
+
+  // --- Screen output
+  TString unit = (fEventMode ? " Event " : " Time slice ");
+  LOG(DEBUG) << GetName() << ": created " << nClusters << " from index "
+      << indexFirst << " to " << indexLast << FairLogger::endl;
+  LOG(DEBUG) << GetName() << ": reset " << time1 << ",read event " << time2
+      << ", process digis " << time3 << ", process buffers " << time4
+      << ", analyse " << time5  << FairLogger::endl;
+  LOG(INFO) << "+ " << setw(20) << GetName() << ": Event " << setw(6)
+              << right << eventNumber << ", real time " << fixed << setprecision(6)
+              << realTime << " s, digis: " << nDigis
+              << ", clusters: " << nClusters << FairLogger::endl;
+
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Read legacy event   ---------------------------------------------
+Int_t CbmStsFindClusters::ReadLegacyEvent() {
+
+  fDigiMap.clear();
+  Int_t nDigis = fDigis->GetEntriesFast();
+  for (Int_t index = 0; index < nDigis; index++) {
+    CbmStsDigi* digi = dynamic_cast<CbmStsDigi*>(fDigis->At(index));
+    Double_t time = digi->GetTime();
+    fDigiMap.insert(std::pair<Double_t, Int_t>(time, index));
+  } //# digis in input array
+
+  return nDigis;
 }
 // -------------------------------------------------------------------------
 
@@ -301,28 +494,37 @@ Int_t CbmStsFindClusters::SortDigis() {
 // -----   Set parameters of the modules    --------------------------------
 void CbmStsFindClusters::SetModuleParameters()
 {
+
+    // --- Get settings from setup
+    CbmStsDigitizeSettings* settings = fSetup->GetDigiSettings();
+    assert( settings );
+
 	// --- Control output of parameters
 	LOG(INFO) << GetName() << ": Digitisation parameters :"
 			      << FairLogger::endl;
 	LOG(INFO) << "\t Dynamic range   " << setw(10) << right
-				    << fDynRange << " e"<< FairLogger::endl;
+				    << settings->GetDynRange() << " e"<< FairLogger::endl;
 	LOG(INFO) << "\t Threshold       " << setw(10) << right
-			      << fThreshold << " e"<< FairLogger::endl;
+			      << settings->GetThreshold() << " e"<< FairLogger::endl;
 	LOG(INFO) << "\t ADC channels    " << setw(10) << right
-			      << fNofAdcChannels << FairLogger::endl;
+			      << settings->GetNofAdc() << FairLogger::endl;
 	LOG(INFO) << "\t Time resolution " << setw(10) << right
-			      << fTimeResolution << " ns" << FairLogger::endl;
+			      << settings->GetTimeResolution() << " ns" << FairLogger::endl;
 	LOG(INFO) << "\t Dead time       " << setw(10) << right
-			      << fDeadTime << " ns" << FairLogger::endl;
+			      << settings->GetDeadTime() << " ns" << FairLogger::endl;
 	LOG(INFO) << "\t ENC             " << setw(10) << right
-			      << fNoise << " e" << FairLogger::endl;
+			      << settings->GetNoise() << " e" << FairLogger::endl;
 
 	// --- Set parameters for all modules
 	Int_t nModules = fSetup->GetNofModules();
 	for (Int_t iModule = 0; iModule < nModules; iModule++) {
-		fSetup->GetModule(iModule)->SetParameters(2048, fDynRange, fThreshold,
-												  fNofAdcChannels, fTimeResolution,
-												  fDeadTime, fNoise);
+		fSetup->GetModule(iModule)->SetParameters(2048,
+		                                          settings->GetDynRange(),
+		                                          settings->GetThreshold(),
+		                                          settings->GetNofAdc(),
+		                                          settings->GetTimeResolution(),
+		                                          settings->GetDeadTime(),
+		                                          settings->GetNoise());
 	}
 	LOG(INFO) << GetName() << ": Set parameters for " << nModules
 			      << " modules " << FairLogger::endl;
@@ -330,78 +532,4 @@ void CbmStsFindClusters::SetModuleParameters()
 // -------------------------------------------------------------------------
 
 
-
-
-
-// -----   MQ specific   ------------------------------------------------
-
-// -----   MQ init   ------------------------------------------------
-bool CbmStsFindClusters::InitMQ(const std::string& geo_file)
-{
-    // --- Register output array
-    fClusters = new TClonesArray("CbmStsCluster", 10000);
-
-    // --- Get STS setup
-    fSetup = CbmStsSetup::Instance();
-    fSetup->Init(geo_file.c_str());
-
-    // --- Instantiate StsPhysics
-    CbmStsPhysics::Instance();
-
-    // --- Create cluster finder
-    fFinder = new CbmStsClusterFinderSimple(fFinderModel, fAlgorithm, fELossModel);
-    fFinder->SetOutputArray(fClusters);
-    return true;
-}
-
-// -----   MQ set input   ------------------------------------------------
-InitStatus CbmStsFindClusters::SetTimeSlice(CbmTimeSlice* ts)
-{
-    if(ts)
-        fTimeSlice = ts;
-    else
-        return kERROR;
-
-    return kSUCCESS;
-}
-
-// -----   MQ exec   ------------------------------------------------
-void CbmStsFindClusters::ExecMQ() {
-
-    // Start timer and counter
-    fTimer.Start();
-    Int_t nOfClusters = 0;
-
-    // --- Clear output array
-    fClusters->Delete();
-
-    // --- Sort digis into modules
-    Int_t nOfDigis = SortDigis();
-
-    // --- Find clusters in modules
-    set<CbmStsModule*>::iterator it;
-    for (it = fActiveModules.begin(); it != fActiveModules.end(); it++) {
-        Int_t nClusters = 0;
-        if(fUseFinderTb)
-            nClusters = fFinder->FindClustersTb(*it);
-        else
-            nClusters = fFinder->FindClustersSimple(*it);
-        LOG(DEBUG1) << GetName() << ": Module " << (*it)->GetName()
-                      << ", digis: " << (*it)->GetNofDigis()
-                  << ", clusters " << nClusters << FairLogger::endl;
-        nOfClusters += nClusters;
-    }
-
-  // --- Counters
-  fTimer.Stop();
-  fNofEvents++;
-  fNofDigisTot    += nOfDigis;
-  fNofClustersTot += nOfClusters;
-  fTimeTot        += fTimer.RealTime();
-
-  LOG(INFO) << "+ " << setw(20) << GetName() << ": Event " << setw(6)
-              << right << ", time " << fixed << setprecision(6)
-              << fTimer.RealTime() << " s, digis: " << nOfDigis
-              << ", clusters: " << nOfClusters << FairLogger::endl;
-}
 ClassImp(CbmStsFindClusters)
