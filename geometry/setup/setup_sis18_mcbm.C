@@ -6,6 +6,7 @@
  **
  **/
 
+// 2017-06-03 - DE - add RICH v18a_mcbm
 // 2017-05-02 - DE - switch back to 5x5 RPC TOF
 // 2017-05-02 - DE - skip MVD in the initial setup
 // 2016-02-05 - VF - Replaces former sis18_mcbm_setup.C,
@@ -24,6 +25,7 @@ void setup_sis18_mcbm()
   TString muchGeoTag      = "v18a_mcbm";
   TString trdGeoTag       = "v18e_1e_mcbm"; // "v18g_1e_mcbm"; // "v18d_1e_mcbm"; // "v18c_1e_mcbm";  // "v18b_1e_mcbm";  // "v18a_1e_mcbm";
   TString tofGeoTag       = "v18e_mcbm";    //  "v18d_mcbm";
+  TString richGeoTag      = "v18a_mcbm";
   TString platGeoTag      = "v18a_mcbm";
   // ------------------------------------------------------------------------
 
@@ -50,6 +52,7 @@ void setup_sis18_mcbm()
   setup->SetModule(kMuch, muchGeoTag);
   setup->SetModule(kTrd, trdGeoTag);
   setup->SetModule(kTof, tofGeoTag);
+  //  setup->SetModule(kRich, richGeoTag);
   setup->SetField(fieldTag, fieldScale, 0., 0., fieldZ);
   // ------------------------------------------------------------------------
 
