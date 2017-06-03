@@ -2,6 +2,7 @@
 using namespace std; 
 
 
+enum RichGeomType{kGlassLense, kQuarzPlate};
 
 void create_geo_smallprototype()
 {
@@ -9,7 +10,9 @@ void create_geo_smallprototype()
 	//gGeoMan = gGeoManager;// (TGeoManager*)gROOT->FindObject("FAIRGeom");
 	//new TGeoManager ("Testbox", "Testbox");
 
-	TString geoFileName= "/Users/slebedev/Development/cbm/trunk/cbmroot/geometry/rich/prototype/Testbox.geo.root";
+	RichGeomType richGeomType = kGlassLense;
+
+	TString geoFileName= "/Users/slebedev/Development/cbm/trunk/cbmroot/geometry/rich/prototype/rich_smallprototype_v17a.geo.root";
 
 	FairGeoLoader*    geoLoad = new FairGeoLoader("TGeo","FairGeoLoader");
 	FairGeoInterface* geoFace = geoLoad->getGeoInterface();
@@ -60,17 +63,17 @@ void create_geo_smallprototype()
 	TGeoMedium* medLenseGlass = gGeoMan->GetMedium("Rich_NBK7_glass");
 	if (medLenseGlass == NULL) Fatal("Main", "Medium Rich_NBK7_glass  not found");
 
+	FairGeoMedium* mQuartz = geoMedia->getMedium("Rich_quartz");
+	if (mQuartz == NULL) Fatal("Main", "FairMedium Rich_quartz not found");
+	geoBuild->createMedium(mQuartz);
+	TGeoMedium* medQuartz = gGeoMan->GetMedium("Rich_quartz");
+	if (medQuartz == NULL) Fatal("Main", "Medium Rich_quartz  not found");
+
 	FairGeoMedium* mElectronic = geoMedia->getMedium("air");
 	if (mElectronic == NULL) Fatal("Main", "FairMedium air not found");
 	geoBuild->createMedium(mElectronic);
 	TGeoMedium* medElectronic = gGeoMan->GetMedium("air");
 	if (medElectronic == NULL) Fatal("Main", "Medium air not found");
-
-//	FairGeoMedium* mQuarz = geoMedia->getMedium("quarz");
-//	if (mQuarz == NULL) Fatal("Main", "FairMedium quarz not found");
-//	geoBuild->createMedium(mQuarz);
-//	TGeoMedium* medQuarz = gGeoMan->GetMedium("quarz");
-//	if (medQuarz == NULL) Fatal("Main", "Medium quarz not found");
 
 	//Dimensions of the RICH prototype [cm]
 	// Box
@@ -78,6 +81,7 @@ void create_geo_smallprototype()
 	const Double_t boxWidth = 20;
 	const Double_t boxHeight = 30;
 	const Double_t wallWidth = 0.3;
+	const Double_t boxThickness = 0.1;
 
 	// PMT
 	// PMT specs https://www.hamamatsu.com/resources/pdf/etd/H12700_TPMH1348E.pdf
@@ -90,7 +94,8 @@ void create_geo_smallprototype()
 	const Double_t pmtGap = 0.1;
 	const Double_t pmtGapHalf = pmtGap / 2.;
 	const Double_t pmtPadding = 0.175;
-	const Double_t pmtMatrixGap = 3.5;
+	const Double_t pmtMatrixGap = 1.0; //3.5;
+	const Double_t pmtThickness = 0.1;
 
 	// Electronics
 	const Double_t elecLength = 10.;
@@ -103,16 +108,18 @@ void create_geo_smallprototype()
 	const Double_t lensePmtDistance = 3.0;
 	const Double_t lenseCoating = 0.1;
 
+	// Quartz plate
+	const Double_t quartzThickness = 0.3;
+	const Double_t quartzWidth = 5.;
+	const Double_t quartzHeight = 5.;
+	const Double_t quartzPmtDistance = 2.9;
+
 	// Absorber
 	const Double_t absorberThickness = 0.1;
-	const Double_t absorberRadius = 2.0;
-
-	// Quarz plate can be exchanged with lense
-	const Double_t quarzThickness = 0.1;
-	const Double_t quarzWidth = 5.0;
-	const Double_t quarzHeight = 5.0;
+	const Double_t absorberRadius = 0.0;// 2.0;
 
 	// Imaginary sensitive plane
+	Bool_t isIncludeSensPlane = false;
 	const Double_t sensPlaneSize = 200.;
 	const Double_t sensPlaneBoxDistance = 1.;
 
@@ -122,7 +129,13 @@ void create_geo_smallprototype()
 	TGeoTranslation *trBox= new TGeoTranslation(0., 0., 0.); //Gasbox/Box Translation
 	TGeoTranslation *trSensPlane= new TGeoTranslation(0., 0., boxLength / 2. + sensPlaneBoxDistance);
 
-	Double_t pmtPlaneZ = -(lenseRadius - lenseCThickness - lensePmtDistance);
+	Double_t pmtPlaneZ = 0.;
+	if (richGeomType == kGlassLense) {
+		pmtPlaneZ = -(lenseRadius - lenseCThickness - lensePmtDistance);
+	} else {
+		pmtPlaneZ = quartzPmtDistance + quartzThickness / 2. + pmtThickness / 2.;
+	}
+
 	Double_t pmtPlaneY = pmtSize + pmtMatrixGap/2. + pmtGap/2.;
 	TGeoTranslation *trPmtPlaneUp = new TGeoTranslation(0., pmtPlaneY, pmtPlaneZ);
 	TGeoTranslation *trPmtPlaneDown = new TGeoTranslation(0., -pmtPlaneY, pmtPlaneZ);
@@ -134,12 +147,19 @@ void create_geo_smallprototype()
 	TGeoTranslation *trPmt5 = new TGeoTranslation(0., -pmtSizeHalf - pmtGapHalf, 0.);
 	TGeoTranslation *trPmt6 = new TGeoTranslation( pmtSize + pmtGap, -pmtSizeHalf - pmtGapHalf, 0.);
 
-	//TGeoTranslation *trelec1= new TGeoTranslation(0., pmtsize+0.5 , -(lenseradius-centerthickness-lensepmtdistance)+eleclength/2+0.1);
-	//TGeoTranslation *trelec2= new TGeoTranslation(0., -(pmtsize+0.5) ,-(lenseradius-centerthickness-lensepmtdistance)+eleclength/2+0.1);
+	TGeoTranslation trQuartzPlate(0., 0., 0. );
+	TGeoRotation rotQuartzPlate;
+	rotQuartzPlate.SetAngles(0., 0., 0.);
+	TGeoCombiTrans* combiTrQuartzPlate = new TGeoCombiTrans(trQuartzPlate, rotQuartzPlate);
 
 	TGeoTranslation *trAbsorber= new TGeoTranslation(0., 0., -(lenseRadius - lenseCThickness) + absorberThickness/2);
 
-	TGeoTranslation *trLense= new TGeoTranslation(0., 0., 0.);
+	Double_t rotAngleLense = 0.;
+	TGeoTranslation trLense(0., - lenseRadius * TMath::ASin(TMath::DegToRad() * rotAngleLense), 0.);
+	TGeoRotation rotLense;
+	rotLense.SetAngles(0., rotAngleLense, 0.);
+	TGeoCombiTrans* combiTrLense = new TGeoCombiTrans(trLense, rotLense);
+
 	TGeoTranslation *trComp= new TGeoTranslation("trComp", 0., 0., -(lenseRadius - lenseCThickness) / 2 + 0.1);
 	trComp->RegisterYourself();
 
@@ -147,13 +167,12 @@ void create_geo_smallprototype()
 	TGeoVolume* topVol = new TGeoVolumeAssembly("rich");
 	gGeoMan->SetTopVolume(topVol);
 
-	TGeoVolume *caveVol = gGeoMan->MakeBox("Cave", medNitrogen, 300., 300., 300.);
+	TGeoVolume *caveVol = gGeoMan->MakeBox("rich_smallprototype_v17a", medAl, (boxWidth + boxThickness)/2. , (boxHeight + boxThickness)/2., (boxLength + boxThickness)/2.);
 	TGeoVolume *boxVol = gGeoMan->MakeBox("Box", medNitrogen, boxWidth/2., boxHeight/2., boxLength/2.);
 	TGeoVolume *gasVol = gGeoMan->MakeBox("Gas", medNitrogen , boxWidth/2 - wallWidth, boxHeight/2 - wallWidth, boxLength/2 - wallWidth);
-	TGeoVolume *pmtContVol = gGeoMan->MakeBox("PmtContainer", medCsI , 3 * pmtSizeHalf + pmtGap, 2 * pmtSizeHalf + pmtGap / 2., 0.1);
-	TGeoVolume *pmtVol = gGeoMan->MakeBox("Pmt", medCsI , pmtSizeHalf, pmtSizeHalf, 0.1);
-	TGeoVolume *pmtPixelVol = gGeoMan->MakeBox("pmt_pixel", medCsI, pmtPixelSize/2., pmtPixelSize/2., 0.1);
-	//TGeoVolume *elecVol = gGeoMan->MakeBox("elec", medElectronic , elecwidth/2, elecheight/2, eleclength/2);
+	TGeoVolume *pmtContVol = gGeoMan->MakeBox("PmtContainer", medCsI , 3 * pmtSizeHalf + pmtGap, 2 * pmtSizeHalf + pmtGap / 2., pmtThickness / 2.);
+	TGeoVolume *pmtVol = gGeoMan->MakeBox("Pmt", medCsI , pmtSizeHalf, pmtSizeHalf, pmtThickness / 2.);
+	TGeoVolume *pmtPixelVol = gGeoMan->MakeBox("pmt_pixel", medCsI, pmtPixelSize/2., pmtPixelSize/2., pmtThickness / 2.);
 
 	// Lense composite shape
 	TGeoSphere *lenseCoatingVol = new TGeoSphere("LenseCoating", lenseRadius, lenseRadius + lenseCoating, 90., 180., 0., 360.);
@@ -168,24 +187,31 @@ void create_geo_smallprototype()
 	TGeoVolume *sensPlaneVol = gGeoMan->MakeBox("SensPlane", medCsI, sensPlaneSize/2 , sensPlaneSize/2  , 0.1);
 
 	// Quarz plate
-	//TGeoVolume *quarzVol = gGeoMan->MakeBox("QuarzPlate", medQuarz , quarzWidth / 2., quarzHeight / 2., quarzThickness / 2.);
+	TGeoVolume *quartzVol = gGeoMan->MakeBox("QuarzPlate", medQuartz , quartzWidth / 2., quartzHeight / 2., quartzThickness / 2.);
 
 	//Positioning
 	topVol->AddNode(caveVol, 1, trCave);
 
 	caveVol->AddNode(boxVol, 1, trBox);
-	caveVol->AddNode(sensPlaneVol, 1, trSensPlane);
+	if (isIncludeSensPlane) {
+		caveVol->AddNode(sensPlaneVol, 1, trSensPlane);
+	}
 
 	boxVol->AddNode(gasVol, 1, rotBox);
 
-	gasVol->AddNode(lenseCoatingCompVol, 1, trLense);
-	gasVol->AddNode(lenseCompVol, 1, trLense);
+	if (richGeomType == kGlassLense) {
+		gasVol->AddNode(lenseCoatingCompVol, 1, combiTrLense);
+		gasVol->AddNode(lenseCompVol, 1, combiTrLense);
+	} else {
+		gasVol->AddNode(quartzVol, 1, combiTrQuartzPlate);
+	}
+
 	gasVol->AddNode(pmtContVol, 1, trPmtPlaneUp);
 	gasVol->AddNode(pmtContVol, 2, trPmtPlaneDown);
-	//gas->AddNode(elec, 1, trelec1);
-	//gas->AddNode(elec, 2, trelec2);
 
-	lenseCompVol->AddNode(absorberVol, 1, trAbsorber);
+	if (absorberRadius > 0.){
+		lenseCompVol->AddNode(absorberVol, 1, trAbsorber);
+	}
 
 	pmtContVol->AddNode(pmtVol, 1, trPmt1);
 	pmtContVol->AddNode(pmtVol, 2, trPmt2);
