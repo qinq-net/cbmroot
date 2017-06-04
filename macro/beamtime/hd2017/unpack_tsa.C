@@ -8,11 +8,12 @@
  */
 
 //void unpack_tsa(Int_t nEvt=100, TString FileId = "cosmic_2016110701_safe_4links_4")
-void unpack_tsa(Int_t nEvt=10000, Double_t dDeltaT=50., Int_t iReqDet=2, Bool_t bEpSupp=kTRUE, TString FileId = "r0002_20170413_0756")
+void unpack_tsa(Int_t nEvt=10000, Double_t dDeltaT=50., Int_t iReqDet=2, Bool_t bEpSupp=kTRUE, TString FileId = "r0031_20170602_1343")
 {
   TString srcDir = gSystem->Getenv("VMCWORKDIR");
   //  TString inDir  = "./input/";
-  TString inDir  = "./input/" + FileId + "/";
+  //TString inDir  = "./input/" + FileId + "/";
+  TString inDir  = "./input1/" + FileId + "/";
   //  TString inDir  = "/lustre/nyx/cbm/prod/beamtime/2016/11/cern/phase1/";
   //  inFile = inDir + FileId + ".tsa"; 
   // for Phase2 data
@@ -69,7 +70,7 @@ void unpack_tsa(Int_t nEvt=10000, Double_t dDeltaT=50., Int_t iReqDet=2, Bool_t 
   //  test_unpacker->CreateRawMessageOutput(kTRUE);
   
   // Get4 Unpacker
-  CbmTSUnpackTof* test_unpacker_tof = new CbmTSUnpackTof(7);  //argument is number of gDpb
+  CbmTSUnpackTof* test_unpacker_tof = new CbmTSUnpackTof(4);  //argument is number of gDpb
   test_unpacker_tof->SetEpochSuppressedMode(bEpSupp);
 
   // --- Source task
@@ -86,8 +87,16 @@ void unpack_tsa(Int_t nEvt=10000, Double_t dDeltaT=50., Int_t iReqDet=2, Bool_t 
       source->AddReqDigiAddr(0x00019026);  // request THU  1 for output events
       break;
     case 3:
+      source->AddReqDigiAddr(0x00006016);  // request USTC 0 for output events
+      source->AddReqDigiAddr(0x00016016);  // request USTC 1 for output events
+      break;
+    case 4:
       source->AddReqDigiAddr(0x00006006);  // request BUC 0 for output events
       source->AddReqDigiAddr(0x00016006);  // request BUC 1 for output events
+      break;
+    case 5:
+      source->AddReqDigiAddr(0x00006006);  // request BUC SS 0 for output events
+      source->AddReqDigiAddr(0x00019006);  // request USTC SS 1 for output events
       break;
     default:
       std::cout<<"Request mode not implemented"<<std::endl;
