@@ -59,7 +59,7 @@ void create_digipar(TString fileName="tof_v16a_1e", Int_t nEvents = 0)
   run->SetInputFile(inFile);
   run->SetOutputFile(outFile);
   run->SetGeomFile(geoFile);
-  gLogger->SetLogScreenLevel("DEBUG2");
+  FairLogger::GetLogger()->SetLogScreenLevel("DEBUG2");
   // ------------------------------------------------------------------------
 
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
