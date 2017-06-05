@@ -93,6 +93,7 @@ Set(SRCS
   tasks/CbmTrdQABase.cxx
   tasks/CbmTrdQAHit.cxx
   tasks/CbmTrdQACosmics.cxx
+  tasks/CbmTrdQAEfficiency.cxx
 #  tasks/CbmTrdQABaseline.cxx
   tasks/CbmTrdSimpleDigitizer.cxx
   tasks/CbmTrdAdvDigitizer.cxx
