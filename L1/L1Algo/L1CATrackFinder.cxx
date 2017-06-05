@@ -536,8 +536,8 @@ inline void L1Algo::f30(  // input
           const fscal &zr = hitr.Z();
           const fscal &yr = hitr.Y();
           
-          fvec dz2 = zr - T2.z;
-          L1ExtrapolateTime( T2, dz2);
+          fvec dz3 = zr - T2.z;
+          L1ExtrapolateTime( T2, dz3);
 
           
            if (fabs(T2.t[i2_4]-hitr.time)>sqrt(T2.C55[i2_4]+hitr.timeEr)*5) continue;
@@ -615,7 +615,7 @@ inline void L1Algo::f30(  // input
 inline void L1Algo::f31(  // input
                         Tindex n3_V,
                         L1Station &star,
-                        nsL1::vector<fvec>::TSimd &u_front, nsL1::vector<fvec>::TSimd &u_back, nsL1::vector<fvec>::TSimd &z_Pos,
+                        nsL1::vector<fvec>::TSimd &u_front_, nsL1::vector<fvec>::TSimd &u_back_, nsL1::vector<fvec>::TSimd &z_Pos,
                         nsL1::vector<fvec>::TSimd &timeR,
                         // output
                         //                L1TrackPar *T_3
@@ -628,8 +628,8 @@ inline void L1Algo::f31(  // input
           
     L1ExtrapolateTime( T_3[i3_V], dz);
     L1ExtrapolateLine( T_3[i3_V], z_Pos[i3_V] );
-    L1Filter( T_3[i3_V], star.frontInfo, u_front[i3_V] );    // 2.1/100 sec
-    L1Filter( T_3[i3_V], star.backInfo,  u_back [i3_V] );   // 2.0/100 sec
+    L1Filter( T_3[i3_V], star.frontInfo, u_front_[i3_V] );    // 2.1/100 sec
+    L1Filter( T_3[i3_V], star.backInfo,  u_back_ [i3_V] );   // 2.0/100 sec
     FilterTime( T_3[i3_V], timeR[i3_V], sqrt(TimePrecision));
   }
 }
@@ -936,14 +936,16 @@ if (isec!=TRACKS_FROM_TRIPLETS_ITERATION)
 
     if (istal > (NStations - 4)) continue;
     
-    if ( TripForHit[0][ihitm] == TripForHit[1][ihitm]) continue;
+    unsigned int Neighbours = TripForHit[1][ihitm]-TripForHit[0][ihitm];
+    
+    if (!Neighbours) continue;
     
     level = 0;
 
     tr1.first_neighbour=0;
     tr1.last_neighbour=0;
 
-    for (unsigned int iN=0; iN < (TripForHit[1][ihitm]-TripForHit[0][ihitm]); ++iN)
+    for (unsigned int iN=0; iN < Neighbours; ++iN)
     {
       Location = TripForHit[0][ihitm]+iN;
       
@@ -955,8 +957,8 @@ if (isec!=TRACKS_FROM_TRIPLETS_ITERATION)
       
       L1Triplet &curNeighbour = TripletsLocal1[Station][Thread][Triplet];
 
-      const fscal &qp2 = curNeighbour.GetQp();
-      fscal &Cqp2 = curNeighbour.Cqp;
+//      const fscal &qp2 = curNeighbour.GetQp();
+//      fscal &Cqp2 = curNeighbour.Cqp;
 //      if ((curNeighbour.GetMHit() != ihitr) )  continue;
       
       if (tr1.first_neighbour==0) 
@@ -1016,7 +1018,7 @@ inline void L1Algo::f5(  // input
           if ( istar != trip->GetRSta() ) continue;
 
           unsigned char level = 0;
-          float  chi2 = trip->GetChi2();
+//           float  chi2 = trip->GetChi2();
           unsigned char  qp = trip->GetQp();
 
           THitI ihitl = trip->GetLHit();
@@ -1029,7 +1031,9 @@ inline void L1Algo::f5(  // input
           vector<unsigned int> neighCands; // save neighbour candidates
           neighCands.reserve(8); // ~average is 1-2 for central, up to 5
           
-          for (unsigned int iN=0; iN < (TripForHit[1][ihitm]-TripForHit[0][ihitm]); ++iN)
+          unsigned int Neighbours = TripForHit[1][ihitm]-TripForHit[0][ihitm];
+          
+          for (unsigned int iN=0; iN < Neighbours; ++iN)
           {
       //    for (iN = first_triplet; iN <= last_triplet; ++iN){
             int Location = TripForHit[0][ihitm]+iN;
@@ -1060,17 +1064,17 @@ inline void L1Algo::f5(  // input
           
         //  trip->neighbours.resize(0);
           
-          for (unsigned int in = 0; in < neighCands.size(); in++) 
-          {
-            int Location = neighCands[in];
+//           for (unsigned int in = 0; in < neighCands.size(); in++) 
+//           {
+//             int Location = neighCands[in];
+//             
+//             int Station = Location/100000000;
+//             int Thread = (Location -Station*100000000)/1000000;
+//             int Triplet = (Location- Station*100000000-Thread*1000000);
             
-            int Station = Location/100000000;
-            int Thread = (Location -Station*100000000)/1000000;
-            int Triplet = (Location- Station*100000000-Thread*1000000);
-            
-            const int nLevel = TripletsLocal1[Station][Thread][Triplet].GetLevel();
-       //     if (level == nLevel + 1) trip->neighbours.push_back(Location);
-          }
+          //  const int nLevel = TripletsLocal1[Station][Thread][Triplet].GetLevel();
+         //   if (level == nLevel + 1) trip->neighbours.push_back(Location);
+//           }
           nlevel[level]++;
         }// vTriplets
       }
@@ -1083,7 +1087,7 @@ inline void L1Algo::f5(  // input
 inline void L1Algo::DupletsStaPort(  /// creates duplets: input: @istal - start station number, @istam - last station number, @ip - index of portion, @&n_g - number of elements in portion, @*portionStopIndex
                                    int istal, int istam,
                                    Tindex ip,
-                                   vector<Tindex> &n_g, Tindex *portionStopIndex,
+                                   vector<Tindex> &n_g, Tindex *portionStopIndex_,
                                    /// output:
                                    L1TrackPar *T_1, /// @*T_1 - singlets perameters, @*fld_1 - field aproximation, @*hitsl_1- left hits of triplets, @&lmDuplets - existance of a doublet starting from the left hit,
                                    L1FieldRegion *fld_1, ///  @&n_2 - number of douplets,@&i1_2 - index of 1st hit in portion indexed by doublet index, @&hitsm_2 - index of middle hit in hits array indexed by doublet index
@@ -1112,7 +1116,7 @@ inline void L1Algo::DupletsStaPort(  /// creates duplets: input: @istal - start 
     Tindex &n1 = n_g[ip];
     
     f10(  // input
-        (ip - portionStopIndex[istal+1]) * Portion, n1, vStsHits_l,
+        (ip - portionStopIndex_[istal+1]) * Portion, n1, vStsHits_l,
         // output
         u_front, u_back, zPos,
         hitsl_1, HitTime, HitTimeEr, Event
@@ -1674,17 +1678,17 @@ void L1Algo::CATrackFinder()
 
       for (int istal = NStations-2; istal >= FIRSTCASTATION; istal--)  //start downstream chambers
       {
-        int NHits_l = StsHitsUnusedStopIndex[istal] - StsHitsUnusedStartIndex[istal];
+        int nHits = StsHitsUnusedStopIndex[istal] - StsHitsUnusedStartIndex[istal];
 
-        int NHits_l_P = NHits_l/Portion;
+        int NHits_P = nHits/Portion;
 
-        for( int ipp = 0; ipp < NHits_l_P; ipp++ )
+        for( int ipp = 0; ipp < NHits_P; ipp++ )
         {
           n_g1[ip] = Portion;
           ip++;
         } // start_lh - portion of left hits
 
-        n_g1[ip] = NHits_l - NHits_l_P*Portion;
+        n_g1[ip] = nHits - NHits_P*Portion;
 
         ip++;
         portionStopIndex[istal] = ip;
@@ -2158,14 +2162,14 @@ int num_thread = 0;
       
 #endif      
               
-      vector<int> offset_tracks(fNThreads,NTracksIsecAll);   
-      vector<int> offset_hits(fNThreads,NHitsIsecAll);  
+      vector<int> offset_tracks(nTh, NTracksIsecAll);   
+      vector<int> offset_hits(nTh, NHitsIsecAll);  
       
       NTracksIsecAll+=SavedCand[0];
       NHitsIsecAll+=SavedHits[0];
       
       
-      for (int i=1; i<fNThreads; ++i)
+      for (int i=1; i<nTh; ++i)
       {                
         offset_tracks [i]=offset_tracks [i-1]+SavedCand[i-1];
         offset_hits [i]=offset_hits [i-1]+SavedHits[i-1];
@@ -2175,7 +2179,7 @@ int num_thread = 0;
 #ifdef _OPENMP               
   #pragma omp parallel for
 #endif  
-      for (int i=0; i<fNThreads; ++i)
+      for (int i=0; i<nTh; ++i)
       {
         for ( Tindex iC = 0; iC < SavedCand[i]; ++iC )
           vTracks[ offset_tracks[i]+iC] = (vTracks_local[i][iC]);
@@ -2430,8 +2434,9 @@ inline void L1Algo::CAFindTrack(int ista,
     unsigned int Thread = 0;
     unsigned int Triplet = 0; 
     unsigned int Location = 0;  
+    int N_neighbour = (curr_trip->last_neighbour-curr_trip->first_neighbour);
       
-    for (Tindex in = 0; in < (curr_trip->last_neighbour-curr_trip->first_neighbour); in++) 
+    for (Tindex in = 0; in < N_neighbour; in++) 
     {  
       Location = curr_trip->first_neighbour+in;
   

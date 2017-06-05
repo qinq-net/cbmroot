@@ -94,26 +94,13 @@ struct L1Branch
 // 
 //   }
     
-        inline static  bool compareCand(const L1Branch &a, const L1Branch &b){
+  inline static  bool compareCand(const L1Branch &a, const L1Branch &b){     
       
-      
-      
-    if (a.Lengtha != b.Lengtha) return (a.Lengtha > b.Lengtha);
-  
-    
-    // if (a.time_dif != b.time_dif) return (a.time_dif < b.time_dif);
-    
+    if (a.Lengtha != b.Lengtha) return (a.Lengtha > b.Lengtha);    
     
     if (a.ista != b.ista ) return (a.ista  < b.ista );
     
-   
-    
-    if (a.chi2 != b.chi2 ) return (a.chi2  < b.chi2 );
-    
-   //   return (a.CandIndex  < b.CandIndex );
-    //   return (a->CandIndex < b->CandIndex );
-   // return (a.CandIndex < b.CandIndex );
-
+    else return (a.chi2  < b.chi2 );
   }
   
   

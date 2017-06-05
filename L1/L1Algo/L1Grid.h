@@ -105,7 +105,7 @@ class L1Grid {
     
 
     
-void UpdateIterGrid(int Nelements, L1StsHit* hits,  vector <THitI>* indicesBuf, THitI* indices,  vector <THitI>* indicesBuf2, vector <L1StsHit>* hits2, vector <L1HitPoint>* pointsBuf, L1HitPoint* points, int &NHitsOnStation, char iS, L1Algo &Algo, const vector< unsigned char > *vSFlag, const vector< unsigned char > *vSFlagB);
+void UpdateIterGrid(unsigned int Nelements, L1StsHit* hits,  vector <THitI>* indicesBuf, THitI* indices,  vector <THitI>* indicesBuf2, vector <L1StsHit>* hits2, vector <L1HitPoint>* pointsBuf, L1HitPoint* points, int &NHitsOnStation, char iS, L1Algo &Algo, const vector< unsigned char > *vSFlag, const vector< unsigned char > *vSFlagB);
 
 
   

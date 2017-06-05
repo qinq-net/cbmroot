@@ -204,18 +204,18 @@ void L1Algo::FilterTracks(fvec const r[5], fvec const C[15], fvec const m[5], fv
 
 void L1Algo::CAMergeClones()
 {
-  vector<unsigned short> FirstHit;
-  vector<unsigned short> LastHit;
-  vector<THitI> FirstHitIndex;
-  vector<THitI> LastHitIndex;
-  vector<unsigned short> Neighbour;
-  vector<float> TrackChi2;
-  vector<bool> IsNext;
-  vector<bool> IsUsed;
+//   vector<unsigned short> FirstHit;
+//   vector<unsigned short> LastHit;
+//   vector<THitI> FirstHitIndex;
+//   vector<THitI> LastHitIndex;
+//    vector<unsigned short> Neighbour;
+//    vector<float> TrackChi2;
+   vector<bool> IsNext;
+   vector<bool> IsUsed;
 
-  vector< L1Track > vTracksNew;
+//  vector< L1Track > vTracksNew;
   vTracksNew.reserve(NTracksIsecAll);
-  vector< THitI > vRecoHitsNew;
+//  vector< THitI > vRecoHitsNew;
   vRecoHitsNew.reserve(vRecoHits.size());
 
   FirstHit.resize(NTracksIsecAll);

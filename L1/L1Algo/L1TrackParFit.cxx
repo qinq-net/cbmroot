@@ -427,22 +427,22 @@ void L1TrackParFit::Extrapolate // extrapolates track parameters and returns jac
   const fvec cj40 = C40 + C42*J[6*2 + 0] + C43*J[6*3 + 0] + C44*J[6*4 + 0];
   const fvec cj50 = C50 + C52*J[6*2 + 0] + C53*J[6*3 + 0] + C54*J[6*4 + 0];
  
-  const fvec cj01 = C10 + C20*J[6*2 + 1] + C30*J[6*3 + 1] + C40*J[6*4 + 1];
+//  const fvec cj01 = C10 + C20*J[6*2 + 1] + C30*J[6*3 + 1] + C40*J[6*4 + 1];
   const fvec cj11 = C11 + C21*J[6*2 + 1] + C31*J[6*3 + 1] + C41*J[6*4 + 1];
   const fvec cj21 = C21 + C22*J[6*2 + 1] + C32*J[6*3 + 1] + c42*J[6*4 + 1];
   const fvec cj31 = C31 + C32*J[6*2 + 1] + C33*J[6*3 + 1] + c43*J[6*4 + 1];
   const fvec cj41 = C41 + C42*J[6*2 + 1] + C43*J[6*3 + 1] + C44*J[6*4 + 1];
   const fvec cj51 = C51 + C52*J[6*2 + 1] + C53*J[6*3 + 1] + C54*J[6*4 + 1];
 
-  const fvec cj02 = C20*J[6*2 + 2] + C30*J[6*3 + 2] + C40*J[6*4 + 2];
-  const fvec cj12 = C21*J[6*2 + 2] + C31*J[6*3 + 2] + C41*J[6*4 + 2];
+ // const fvec cj02 = C20*J[6*2 + 2] + C30*J[6*3 + 2] + C40*J[6*4 + 2];
+ // const fvec cj12 = C21*J[6*2 + 2] + C31*J[6*3 + 2] + C41*J[6*4 + 2];
   const fvec cj22 = C22*J[6*2 + 2] + C32*J[6*3 + 2] + c42*J[6*4 + 2];
   const fvec cj32 = C32*J[6*2 + 2] + C33*J[6*3 + 2] + c43*J[6*4 + 2];
   const fvec cj42 = C42*J[6*2 + 2] + C43*J[6*3 + 2] + C44*J[6*4 + 2];
   const fvec cj52 = C52*J[6*2 + 2] + C53*J[6*3 + 2] + C54*J[6*4 + 2];
 
-  const fvec cj03 = C20*J[6*2 + 3] + C30*J[6*3 + 3] + C40*J[6*4 + 3];
-  const fvec cj13 = C21*J[6*2 + 3] + C31*J[6*3 + 3] + C41*J[6*4 + 3];
+ // const fvec cj03 = C20*J[6*2 + 3] + C30*J[6*3 + 3] + C40*J[6*4 + 3];
+ // const fvec cj13 = C21*J[6*2 + 3] + C31*J[6*3 + 3] + C41*J[6*4 + 3];
   const fvec cj23 = C22*J[6*2 + 3] + C32*J[6*3 + 3] + c42*J[6*4 + 3];
   const fvec cj33 = C32*J[6*2 + 3] + C33*J[6*3 + 3] + c43*J[6*4 + 3];
   const fvec cj43 = C42*J[6*2 + 3] + C43*J[6*3 + 3] + C44*J[6*4 + 3];
@@ -453,8 +453,8 @@ void L1TrackParFit::Extrapolate // extrapolates track parameters and returns jac
   const fvec cj44 = C44;
   const fvec cj54 = C54;   
    
-  const fvec cj05 = C50 + C20*J[17] + C30*J[23] + C40*J[29];
-  const fvec cj15 = C51 + C21*J[17] + C31*J[23] + C41*J[29];
+ // const fvec cj05 = C50 + C20*J[17] + C30*J[23] + C40*J[29];
+ // const fvec cj15 = C51 + C21*J[17] + C31*J[23] + C41*J[29];
   const fvec cj25 = C52 + C22*J[17] + C32*J[23] + C42*J[29];
   const fvec cj35 = C53 + C32*J[17] + C33*J[23] + C43*J[29];
   const fvec cj45 = C54 + C42*J[17] + C43*J[23] + C44*J[29];
@@ -551,7 +551,7 @@ void L1TrackParFit::L1AddMaterial(L1MaterialInfo &info, fvec qp0, fvec w, fvec m
 
   fvec tx = ftx;
   fvec ty = fty;
-  fvec time = ft;
+ // fvec time = ft;
   fvec txtx = tx*tx;
   fvec tyty = ty*ty;
   fvec txtx1 = txtx + ONE;

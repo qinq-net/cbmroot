@@ -1604,8 +1604,6 @@ void CbmL1::InputPerformance()
     if(stsHitMatch -> GetNofLinks() == 0) continue;
     Float_t bestWeight = 0.f;
     Float_t totalWeight = 0.f;
-    Int_t mcHitId = -1;
-    int mcEvent = -1;
     int iMCPoint = -1;
     CbmLink link;
     
@@ -1617,7 +1615,6 @@ void CbmL1::InputPerformance()
         bestWeight = stsHitMatch->GetLink(iLink).GetWeight();
         iMCPoint = stsHitMatch->GetLink(iLink).GetIndex();
         link = stsHitMatch->GetLink(iLink);
-        mcEvent = link.GetEntry();
       }
     }
     if(bestWeight/totalWeight < 0.7|| iMCPoint < 0) continue;

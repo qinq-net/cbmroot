@@ -63,7 +63,7 @@ void L1Algo::BranchFitterFast(const L1Branch &t, L1TrackPar& T, const bool dir, 
   fvec v2  = static_cast<fscal>( (*vStsStripsB)[hit2.b] );
   fvec x2,y2;
   StripsToCoor(u2, v2, x2, y2, sta2);
-  fvec z2 = (*vStsZPos)[hit2.iz];
+//  fvec z2 = (*vStsZPos)[hit2.iz];
 
   fvec dzi = 1./(z1-z0);
 
@@ -265,8 +265,8 @@ void L1Algo::FindMoreHits(L1Branch &t, L1TrackPar& T, const bool dir, const fvec
       fvec y, C11;
       L1ExtrapolateYC11Line( T, zh, y, C11 );
         
-      fscal dym_est = ( Pick_gather*sqrt(fabs(C11[0]+sta.XYInfo.C11[0])) );
-      fscal y_minus_new = y[0] - dym_est;
+   //   fscal dym_est = ( Pick_gather*sqrt(fabs(C11[0]+sta.XYInfo.C11[0])) );
+   //   fscal y_minus_new = y[0] - dym_est;
      // if (yh < y_minus_new) continue;  // CHECKME take into account overlaping?
    
       fvec x, C00;
@@ -340,7 +340,7 @@ void L1Algo::FindMoreHits(L1Branch &t, L1TrackPar& T, const bool dir, const fvec
   /// Try to extrapolate and find additional hits on other stations
 fscal L1Algo::BranchExtender(L1Branch &t) // TODO Simdize
 {
-    const unsigned int minNHits = 3;
+ //   const unsigned int minNHits = 3;
 
   L1TrackPar T;
 

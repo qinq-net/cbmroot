@@ -95,12 +95,13 @@ class L1Algo{
     RealIHit_v(TypicalSize),
     RealIHit_v_buf(TypicalSize),
     RealIHit_v_buf2(TypicalSize),
-    vStripToTrack(TypicalSize),
-    vStripToTrackB(TypicalSize),
+
 #ifdef _OPENMP    
     hitToBestTrackF(TypicalSize),
     hitToBestTrackB(TypicalSize),
-#endif    
+#endif 
+    vStripToTrack(TypicalSize),
+    vStripToTrackB(TypicalSize),
     //sh (),
     fNThreads(nThreads),
     TRACK_CHI2_CUT(10.),
@@ -157,7 +158,7 @@ class L1Algo{
 
 #ifdef _OPENMP    
     
-    for (int j=0; j<hitToBestTrackB.size(); j++)
+    for (unsigned int j=0; j<hitToBestTrackB.size(); j++)
     {
       omp_init_lock(&hitToBestTrackB[j]);
       omp_init_lock(&hitToBestTrackF[j]);
@@ -178,10 +179,10 @@ class L1Algo{
     LastHit.resize(NTracksIsecAll);
     FirstHitIndex.resize(NTracksIsecAll);
     LastHitIndex.resize(NTracksIsecAll);
-    IsUsed.resize(NTracksIsecAll);
+//     IsUsed.resize(NTracksIsecAll);
     TrackChi2.resize(NTracksIsecAll);
     Neighbour.resize(NTracksIsecAll);
-    IsNext.resize(NTracksIsecAll);
+//     IsNext.resize(NTracksIsecAll);
   }
   
   static const int nTh = 1;
@@ -207,8 +208,8 @@ class L1Algo{
   L1Vector<THitI> LastHitIndex;
   L1Vector<unsigned short> Neighbour;
   L1Vector<float> TrackChi2;
-  L1Vector<bool> IsNext;
-  L1Vector<bool> IsUsed;
+//   L1Vector<bool> IsNext;
+//   L1Vector<bool> IsUsed;
   L1Vector< THitI > vRecoHitsNew;
   L1Vector< L1Track > vTracksNew;
   
@@ -273,9 +274,52 @@ class L1Algo{
  
   const vector< unsigned char > *vSFlag,  // information of hits station & using hits in tracks;
                           *vSFlagB;
+                          
+  double CATime; // time of trackfinding   
+  
+  L1Vector< L1Track > vTracks;
+  L1Vector< THitI >  vRecoHits;
+  
   const THitI *StsHitsStartIndex, *StsHitsStopIndex; // station-bounders in vStsHits array
     
-    /// standard sizes of the arrays
+
+   
+
+
+ //  L1Branch* pointer;
+  unsigned int NHitsIsecAll;
+  unsigned int NTracksIsecAll;
+
+  vector< L1StsHit > vStsDontUsedHits_A;  
+  vector< L1StsHit > vStsDontUsedHits_B;
+  vector< L1StsHit > vStsDontUsedHits_Buf;
+  vector< L1HitPoint > vStsDontUsedHitsxy_A; 
+  vector< L1HitPoint > vStsDontUsedHitsxy_buf; 
+  vector< L1HitPoint > vStsDontUsedHitsxy_B;
+  L1Vector< L1Track > vTracks_local[nTh];
+  L1Vector< THitI > vRecoHits_local[nTh];
+
+  vector<THitI> RealIHit_v;
+  vector<THitI> RealIHit_v_buf;
+  vector<THitI> RealIHit_v_buf2;
+  
+#ifdef _OPENMP   
+    
+  L1Vector<omp_lock_t> hitToBestTrackF;
+  L1Vector<omp_lock_t> hitToBestTrackB;
+  
+#endif  
+    
+  L1Vector< int > vStripToTrack;
+  L1Vector< int > vStripToTrackB;
+  
+  int fNThreads;
+
+  fvec EventTime[nTh][nTh];
+  fvec Err[nTh][nTh];
+  
+  
+      /// standard sizes of the arrays
     enum {
         multiCoeff = 1, // central - 1, mbias
         
@@ -310,9 +354,9 @@ class L1Algo{
   float TimePrecision;
 
 
- fvec u_front[Portion/fvecLen], u_back[Portion/fvecLen];
- fvec zPos[Portion/fvecLen];
- fvec HitTime[Portion/fvecLen];
+//  fvec u_front[Portion/fvecLen], u_back[Portion/fvecLen];
+//  fvec zPos[Portion/fvecLen];
+//  fvec fHitTime[Portion/fvecLen];
     
     nsL1::vector<L1TrackPar>::TSimd fT_3[nTh];
     
@@ -325,39 +369,6 @@ class L1Algo{
   Tindex NHits_l[MaxNStations];
   Tindex NHits_l_P[MaxNStations];
     /// ----- Output data ----- 
-   
-
-  double CATime; // time of trackfinding
- //  L1Branch* pointer;
-  int NHitsIsecAll;
-  int NTracksIsecAll;
-  L1Vector< L1Track > vTracks;
-  L1Vector< THitI >  vRecoHits;
-  vector< L1StsHit > vStsDontUsedHits_A;  
-  vector< L1StsHit > vStsDontUsedHits_B;
-  vector< L1StsHit > vStsDontUsedHits_Buf;
-  vector< L1HitPoint > vStsDontUsedHitsxy_A; 
-  vector< L1HitPoint > vStsDontUsedHitsxy_buf; 
-  vector< L1HitPoint > vStsDontUsedHitsxy_B;
-  L1Vector< L1Track > vTracks_local[nTh];
-  L1Vector< THitI > vRecoHits_local[nTh];
-
-  vector<THitI> RealIHit_v;
-  vector<THitI> RealIHit_v_buf;
-  vector<THitI> RealIHit_v_buf2;
-  
-#ifdef _OPENMP   
-    
-  L1Vector<omp_lock_t> hitToBestTrackB;
-  L1Vector<omp_lock_t> hitToBestTrackF;
-  
-#endif  
-    
-  L1Vector< int > vStripToTrack;
-  L1Vector< int > vStripToTrackB;
-
-  fvec EventTime[nTh][nTh];
-  fvec Err[nTh][nTh];
     
   friend class CbmL1;
 
@@ -547,7 +558,7 @@ class L1Algo{
                        int istal, int istam,
                        Tindex ip,
                        vector<Tindex>& n_g,
-                       Tindex *portionStopIndex,
+                       Tindex *portionStopIndex_,
               
                           // output
                        L1TrackPar *T_1,
@@ -648,7 +659,7 @@ class L1Algo{
 #endif // FIND_GAPED_TRACKS
   
   map<int,int> threadNumberToCpuMap;
-  int fNThreads;
+
   
   float TRACK_CHI2_CUT;
   float TRIPLET_CHI2_CUT; // = 5.0; // cut for selecting triplets before collecting tracks.per one DoF

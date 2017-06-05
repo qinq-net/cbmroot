@@ -3,7 +3,7 @@
 int L1MCEvent::IsReconstructed()
 {
   if(fRecoEvents.size()>0) return 1;
-  if(fRecoEvents.size()==0) return 0;
+  else return 0;
 }
 
 int L1MCEvent::NClones()
