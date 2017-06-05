@@ -197,7 +197,7 @@ const Float_t Star2_rotate_Z=0.;
 const Int_t Star2_NTypes = 3;
 const Float_t Star2_Types[Star2_NTypes]  = {9.,9.,9.};
 const Float_t Star2_Number[Star2_NTypes] = {1.,1.,1.}; //debugging, V16b
-const Float_t Star2_X_Offset[Star2_NTypes]={0.,0.,0.};
+const Float_t Star2_X_Offset[Star2_NTypes]={0.,-0.5,0.};
 
 
 const Int_t Pla_NTypes = 2;
