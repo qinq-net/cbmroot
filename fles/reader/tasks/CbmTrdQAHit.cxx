@@ -198,18 +198,18 @@ void CbmTrdQAHit::Exec(Option_t*)
     //Loop for NrOfSamples_vs_TriggerType:
     Histogram1DArray.clear();
   }
-
+  const Double_t SpadicFrequency=1E9/fBT->GetSamplingTime();
   for (Int_t iSpadicMessage=0; iSpadicMessage < nSpadicMessages; ++iSpadicMessage){
     CbmSpadicRawMessage *raw= static_cast<CbmSpadicRawMessage*>(fRaw->At(iSpadicMessage));  
     if(!(raw->GetHit()||raw->GetTriggerType()==1))continue;
     TGraph* CurrentGraph=HitfrequencyGraphs.at(GetRobID(raw)*fBT->GetNrSpadics()+GetSpadicID(raw)/2);
     Long64_t CurrentTime=raw->GetFullTime();
     UInt_t Index=GetRobID(raw)*fBT->GetNrSpadics()*32+GetSpadicID(raw)*16+raw->GetChannelID();
-    Double_t CurrentFrequency=16*1E6/static_cast<Double_t>(CurrentTime-LastHit.at(Index));
+    Double_t CurrentFrequency=SpadicFrequency/static_cast<Double_t>(CurrentTime-LastHit.at(Index));
     LastHit.at(Index)=CurrentTime;
     if(std::isinf(CurrentFrequency)||std::isnan(CurrentFrequency)||CurrentFrequency<10.0)
       continue;
-    CurrentGraph->SetPoint(CurrentGraph->GetN(),CurrentTime/(16*1E6),CurrentFrequency);
+    CurrentGraph->SetPoint(CurrentGraph->GetN(),CurrentTime/(SpadicFrequency),CurrentFrequency);
   }
     LOG(INFO)<<this->GetName()<<": Loop for Hitfrequency_vs_Time done"<<FairLogger::endl;
 }
