@@ -214,8 +214,10 @@ void L1Algo::CAMergeClones()
    vector<bool> IsUsed;
 
 //  vector< L1Track > vTracksNew;
+  vTracksNew.clear();
   vTracksNew.reserve(NTracksIsecAll);
 //  vector< THitI > vRecoHitsNew;
+  vRecoHitsNew.clear();
   vRecoHitsNew.reserve(vRecoHits.size());
 
   FirstHit.resize(NTracksIsecAll);

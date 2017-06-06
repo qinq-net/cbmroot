@@ -2176,6 +2176,7 @@ int num_thread = 0;
         NTracksIsecAll+=SavedCand[i];
         NHitsIsecAll+=SavedHits[i];
       }
+      
 #ifdef _OPENMP               
   #pragma omp parallel for
 #endif  
