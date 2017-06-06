@@ -81,6 +81,16 @@ CbmStsDigitize::CbmStsDigitize()
   // --- By default, set most realistic response processes.
   // --- This can be changed by the method SetProcesses.
   fSettings->SetProcesses(2, kTRUE, kTRUE, kTRUE);
+  // --- Set default parameters for the modules
+  Double_t dynRange = 75000.;   // dynamic range in e
+  Double_t threshold = 3000.;   // threshold in e
+  Int_t nAdc = 32;              // Number of ADC channels
+  Double_t tResol = 5.;         // Time resolution in ns
+  Double_t deadTime = 800.;     // Channel dead time in ns
+  Double_t noise = 1000.;       // Noise in e
+  Double_t deadChannels = 0.;   // Fraction of dead channels in %
+  fSettings->SetModuleParameters(dynRange, threshold, nAdc, tResol,
+                                 deadTime, noise, deadChannels);
 }
 // -------------------------------------------------------------------------
 

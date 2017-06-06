@@ -35,7 +35,7 @@ using std::setw;
 
 // -----   Constructor   ---------------------------------------------------
 CbmStsFindClusters::CbmStsFindClusters()
-    : FairTask("StsFindClustersStream", 1)
+    : FairTask("StsFindClusters", 1)
     , fEvents(NULL)
     , fDigis(NULL)
     , fClusters(NULL)
@@ -211,7 +211,7 @@ InitStatus CbmStsFindClusters::Init()
   fAna = new CbmStsClusterAnalysis();
 
   // --- Something for the screen
-  LOG(INFO) << "\n=========================================================="
+  LOG(INFO) << "=========================================================="
                 << FairLogger::endl;
   LOG(INFO) << GetName() << ": Initialising " << FairLogger::endl;
 
@@ -502,18 +502,18 @@ void CbmStsFindClusters::SetModuleParameters()
 	// --- Control output of parameters
 	LOG(INFO) << GetName() << ": Digitisation parameters :"
 			      << FairLogger::endl;
-	LOG(INFO) << "\t Dynamic range   " << setw(10) << right
-				    << settings->GetDynRange() << " e"<< FairLogger::endl;
-	LOG(INFO) << "\t Threshold       " << setw(10) << right
-			      << settings->GetThreshold() << " e"<< FairLogger::endl;
-	LOG(INFO) << "\t ADC channels    " << setw(10) << right
-			      << settings->GetNofAdc() << FairLogger::endl;
-	LOG(INFO) << "\t Time resolution " << setw(10) << right
-			      << settings->GetTimeResolution() << " ns" << FairLogger::endl;
-	LOG(INFO) << "\t Dead time       " << setw(10) << right
-			      << settings->GetDeadTime() << " ns" << FairLogger::endl;
-	LOG(INFO) << "\t ENC             " << setw(10) << right
-			      << settings->GetNoise() << " e" << FairLogger::endl;
+	LOG(INFO) << "\t Dynamic range   " << settings->GetDynRange()
+	          << " e"<< FairLogger::endl;
+	LOG(INFO) << "\t Threshold       " << settings->GetThreshold()
+	          << " e"<< FairLogger::endl;
+	LOG(INFO) << "\t ADC channels    " << settings->GetNofAdc()
+	          << FairLogger::endl;
+	LOG(INFO) << "\t Time resolution " << settings->GetTimeResolution()
+	          << " ns" << FairLogger::endl;
+	LOG(INFO) << "\t Dead time       " << settings->GetDeadTime()
+	          << " ns" << FairLogger::endl;
+	LOG(INFO) << "\t ENC             " << settings->GetNoise()
+	    << " e" << FairLogger::endl;
 
 	// --- Set parameters for all modules
 	Int_t nModules = fSetup->GetNofModules();

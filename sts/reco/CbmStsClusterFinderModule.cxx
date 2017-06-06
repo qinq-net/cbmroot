@@ -212,8 +212,16 @@ void CbmStsClusterFinderModule::ProcessDigi(UShort_t channel, Double_t time,
   // Assert channel number
   assert ( channel < fSize );
 
-  // Check for matching digi in the same channel (should not happen)
-  assert ( ! CheckChannel(channel, time) );
+  // Check for matching digi in the same channel (can only happen if
+  // time resolution is not much smaller than the dead time.)
+  // In this case, finish the cluster in this channel and add the new
+  // digi to the module status.
+  if ( CheckChannel(channel, time) ) {
+    LOG(WARNING) << GetName() << ": Channel " << channel << " time "
+        << fTime[channel] << " ns, new digi at t = " << time
+        << " ns is within dead time!" << FairLogger::endl;
+    FinishCluster(channel);
+  }
 
   // Check for matching digi in the left neighbour channel
   Bool_t leftNeighbour =  ( channel != 0 && channel != fSize/2 &&

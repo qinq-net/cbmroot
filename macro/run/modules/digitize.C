@@ -45,25 +45,10 @@ void digitize()
   // -----   STS Digitiser   -------------------------------------------------
 	if ( setup->IsActive(kSts) ) {
 
-	  Double_t dynRange       =   40960.;  // Dynamic range [e]
-	  Double_t threshold      =    4000.;  // Digitisation threshold [e]
-	  Int_t nAdc              =    4096;   // Number of ADC channels (12 bit)
-	  Double_t timeResolution =       5.;  // time resolution [ns]
-	  Double_t deadTime       = 9999999.;  // infinite dead time (integrate entire event)
-	  Double_t noise          =       0.;  // ENC [e]
-
 	  CbmStsDigitize* stsDigi = new CbmStsDigitize();
-	  stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution, deadTime, noise);
 	  run->AddTask(stsDigi);
-
-
-		/*
-		CbmStsDigitize* stsDigi = new CbmStsDigitize(1);
-		stsDigi->SetProcesses(1, kFALSE, kFALSE, kFALSE);
-		run->AddTask(stsDigi);
-		std::cout << "-I- digitize: Added task " << stsDigi->GetName()
-				      << std::endl;
-				      */
+      std::cout << "-I- digitize: Added task " << stsDigi->GetName()
+				<< std::endl;
 	}
   // -------------------------------------------------------------------------
 
