@@ -213,19 +213,33 @@ Int_t CbmTrdUtils::GetModuleType(Int_t moduleAddress, CbmTrdModule *fModuleInfo,
     else if (nRows ==  8)   type = 3;  // v17c
     else if (nRows ==  4)   type = 4;  // v17c - not used
   } 
-  else if (nCols == 112) 
+  else if (nCols == 112)   // FEB-7x1
   {
     if      (nRows == 24)   type = 5;  // v17c - not used
     else if (nRows == 18)   type = 6;  // v17c
     else if (nRows == 12)   type = 7;  // v17c
     else if (nRows ==  6)   type = 8;  // v17c
   }
-  else if (nCols == 128) 
+  else if (nCols == 128)   // FEB-8x1
   {
     if      (nRows == 24)   type = 5;  // v17a - not used
     else if (nRows == 16)   type = 6;  // v17a
     else if (nRows ==  8)   type = 7;  // v17a
     else if (nRows ==  4)   type = 8;  // v17a
+  }
+  else if (nCols == 144)   // FEB-9x1
+  {
+    if      (nRows == 24)   type = 5;  // v17l
+    else if (nRows == 16)   type = 6;  // v17l
+    else if (nRows == 12)   type = 7;  // v17l
+    else if (nRows ==  4)   type = 8;  // v17l
+  }
+  else if (nCols == 160)   // FEB-10x1
+  {
+    if      (nRows == 48)   type = 5;  // v17m
+    else if (nRows == 24)   type = 6;  // v17m
+    else if (nRows == 12)   type = 7;  // v17m
+    else if (nRows ==  8)   type = 8;  // v17m
   }
 
   if (type == -1) printf("ERROR::CbmTrdUtils:GetModuleType: nRows:%2i nCols:%3i\n",nRows,nCols);
