@@ -2,7 +2,7 @@
 ##   trd_v17n_1e information file
 #
 
-# created 20170602
+# created 20170606
 
 # envelope
 0.000000 cm   start of TRD (z)
@@ -52,40 +52,40 @@ GBTX readout boards are : included
 # modules
      mod1     mod2     mod3     mod4     mod5     mod6     mod7     mod8    total
 ---------------------------------------------------------------------------------
-       10        0       24        0        0        8        0       12            layer  1
-       10        0       24        0        0        8        0       12            layer  2
-       10        0       24        0        0        8        0       12            layer  3
-       10        0       24        0        0        8        0       12            layer  4
+       10        0       24        0        8        0       12        0            layer  1
+       10        0       24        0        8        0       12        0            layer  2
+       10        0       24        0        8        0       12        0            layer  3
+       10        0       24        0        8        0       12        0            layer  4
 
 ---------------------------------------------------------------------------------
-       40        0       96        0        0       32        0       48      216   number of modules
+       40        0       96        0       32        0       48        0      216   number of modules
 # febs
-        8s       4s       2s       4       12       12        6        4            FEBs per module
+        8s       4s       2s       4       12       12        4        4            FEBs per module
                                                                                 0   ultimate  FEBs
       320s       0s     192s                                                  512   super     FEBs
-                                   0        0      384        0      192      576   regular   FEBs
-      320        0      192        0        0      384        0      192     1088   number of FEBs
+                                   0      384        0      192        0      576   regular   FEBs
+      320        0      192        0      384        0      192        0     1088   number of FEBs
 # asics
        10       10       10        5        9        9        9        9            ASICs per FEB
-       80       40       20       20      108      108       54       36            ASICs per module
-     3200        0     1920        0        0     3456        0     1728    10304   number of ASICs
+       80       40       20       20      108      108       36       36            ASICs per module
+     3200        0     1920        0     3456        0     1728        0    10304   number of ASICs
 # gbtx
-       12        6        3        0        0       18        9        6            GBTXs per module
-      480        0      288        0        0      576        0      288     1632   number of GBTXs
-     3333       33        3        0        0   333333      333       33            GBTX ROB types on module
+       12        6        3        0       18       18        6        6            GBTXs per module
+      480        0      288        0      576        0      288        0     1632   number of GBTXs
+     3333       33        3        0   333333   333333       33       33            GBTX ROB types on module
         0        0        0        0        0        0        0        0        0   number of GBTX ROB7
         0        0        0        0        0        0        0        0        0   number of GBTX ROB5
-      160        0       96        0        0      160        0       96      512   number of GBTX ROB3
+      160        0       96        0      160        0       96        0      512   number of GBTX ROB3
 # e-links
-      160       80       40       40      216      216      108       72    20608   e-links used
-      168       84       42        0        0      252      126       84    22848   e-links available
-    95.2%        -    95.2%        -        -    85.7%        -    85.7%    90.2%   e-link efficiency
+      160       80       40       40      216      216       72       72    20608   e-links used
+      168       84       42        0      252      252       84       84    22848   e-links available
+    95.2%        -    95.2%        -    85.7%        -    85.7%        -    90.2%   e-link efficiency
 
 # channels
-     2560     1280      640      640     3456     3456     1728     1152            channels per module
+     2560     1280      640      640     3456     3456     1152     1152            channels per module
       320      320      320      160      288      288      288      288            channels per feb
-   102400        0    61440        0        0   110592        0    55296   329728   channels used
-   102400s       0s   61440s       0        0   110592        0    55296   329728   channels available
+   102400        0    61440        0   110592        0    55296        0   329728   channels used
+   102400s       0s   61440s       0   110592        0    55296        0   329728   channels available
      0.0%u   49.7%s   50.3%r                                                        channel ratio
 
    100.0%   channel efficiency

@@ -232,11 +232,11 @@ const Int_t layer1i[9][4] = { { 323,  323,  321,  321 },    // abc: a module typ
 // v14x - module types in the outer sector of layer type 1 - looking upstream
 const Int_t layer1o[9][11]= { {  0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0 },
                               {  0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0 },
-                              {  0,    0,  823,  823,    0,    0,    0,  821,  821,    0,    0 },
-                              {  0,    0,  823,  623,    0,    0,    0,  621,  821,    0,    0 },
-                              {  0,    0,  603,  603,    0,    0,    0,  601,  601,    0,    0 },
-                              {  0,    0,  803,  603,    0,    0,    0,  601,  801,    0,    0 },
-                              {  0,    0,  803,  803,    0,    0,    0,  801,  801,    0,    0 },
+                              {  0,    0,  723,  723,    0,    0,    0,  721,  721,    0,    0 },
+                              {  0,    0,  723,  523,    0,    0,    0,  521,  721,    0,    0 },
+                              {  0,    0,  503,  503,    0,    0,    0,  501,  501,    0,    0 },
+                              {  0,    0,  703,  503,    0,    0,    0,  501,  701,    0,    0 },
+                              {  0,    0,  703,  703,    0,    0,    0,  701,  701,    0,    0 },
                               {  0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0 },
                               {  0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0 } };
 // number of modules: 26
@@ -294,7 +294,7 @@ const Int_t NofModuleTypes = 8;
 const Int_t ModuleType[NofModuleTypes]    = {  0,  0,  0,  0,  1,  1,  1,  1 }; // 0 = small module, 1 = large module
 
 // FEB inclination angle
-const Double_t feb_rotation_angle[NofModuleTypes] = { 60,  90,  90,  80,  80,  60,  90,  90 }; // rotation around x-axis, 0 = vertical, 90 = horizontal
+const Double_t feb_rotation_angle[NofModuleTypes] = { 60,  90,  90,  80,  60,  60,  90,  90 }; // rotation around x-axis, 0 = vertical, 90 = horizontal
 //const Double_t feb_rotation_angle[NofModuleTypes] = { 60,  90,  90,  80,  80,  90,  90,  90 }; // rotation around x-axis, 0 = vertical, 90 = horizontal
 //const Double_t feb_rotation_angle[NofModuleTypes] = { 45,  45,  45,  45,  45,  45,  45,  45 }; // rotation around x-axis, 0 = vertical, 90 = horizontal
 
@@ -307,11 +307,11 @@ const Double_t feb_rotation_angle[NofModuleTypes] = { 60,  90,  90,  80,  80,  6
 //const Int_t RobTypeOnModule[NofModuleTypes]={ 3333, 33, 33,  0,  0,333, 33,  3 }; // for .geo.info - TODO: merge with above GbtxPerRob
 //
 // v17l - 96 cm
-const Int_t RobsPerModule[NofModuleTypes] = {  4,  2,  1,  1,  6,  6,  3,  2 }; // number of GBTx ROBs on module
+const Int_t RobsPerModule[NofModuleTypes] = {  4,  2,  1,  1,  6,  6,  2,  2 }; // number of GBTx ROBs on module
 const Int_t GbtxPerRob[NofModuleTypes]    = {103,103,103,103,103,103,103,103 }; // number of GBTx ASICs on ROB
 
-const Int_t GbtxPerModule[NofModuleTypes] = {   12,  6,  3,  0,  0,  18,  9,  6 }; // for .geo.info - TODO: merge with above GbtxPerRob
-const Int_t RobTypeOnModule[NofModuleTypes]={ 3333, 33,  3,  0,  0,333333,333,  33 }; // for .geo.info - TODO: merge with above GbtxPerRob
+const Int_t GbtxPerModule[NofModuleTypes] = {   12,  6,  3,  0,  18,  18,      6,  6 }; // for .geo.info - TODO: merge with above GbtxPerRob
+const Int_t RobTypeOnModule[NofModuleTypes]={ 3333, 33,  3,  0,333333,333333, 33,  33 }; // for .geo.info - TODO: merge with above GbtxPerRob
 
 //// v17c
 //const Int_t RobsPerModule[NofModuleTypes] = {  4,  2,  1,  1,  2,  3,  2,  1 }; // number of GBTx ROBs on module
@@ -347,7 +347,7 @@ const Int_t RobTypeOnModule[NofModuleTypes]={ 3333, 33,  3,  0,  0,333333,333,  
 // v17l - 96 cm
 //const Int_t FebsPerModule[NofModuleTypes] = {  8,  4,  2,  4, 12,  8,  6,  4 }; // number of FEBs on backside
 //const Int_t FebsPerModule[NofModuleTypes] = {  8,  4,  2,  4, 12,  8,  6,  2 }; // number of FEBs on backside
-const Int_t FebsPerModule[NofModuleTypes] = {  8,  4,  2,  4, 12, 12,  6,  4 }; // number of FEBs on backside
+const Int_t FebsPerModule[NofModuleTypes] = {  8,  4,  2,  4, 12, 12,  4,  4 }; // number of FEBs on backside
 const Int_t AsicsPerFeb[NofModuleTypes]   = {210,210,210,105,109,109,109,109 }; // %100 gives number of ASICs on FEB, /100 gives grouping
 
 //// v17c
@@ -651,12 +651,10 @@ void dump_digi_file()
 // 108 cm          {  9.00,  9.00,  9.00 },   // module type 7 -  6.37 cm2
 // 108 cm          { 18.00, 18.00, 18.00 } }; // module type 8 - 12.73 cm2
 
-//          {  2.00,  2.00,  2.00 },   // module type 5 -
           {  4.00,  4.00,  4.00 },   // module type 5 -  2.67 cm2
-          {  4.00,  4.00,  4.00 },   // module type 6 -  2.67 cm2
-          {  8.00,  8.00,  8.00 },   // module type 7 -  5.33 cm2
-//          { 24.00, 24.00, 24.00 } }; // module type 8 - 16.00 cm2
-          { 12.00, 12.00, 12.00 } }; // module type 8 -  8.00 cm2
+          {  6.00,  6.00,  6.00 },   // module type 6 -  4.00 cm2
+          { 12.00, 12.00, 12.00 },   // module type 7 -  8.00 cm2
+          { 24.00, 24.00, 24.00 } }; // module type 8 - 16.00 cm2
 
 //          {  3.75,  4.00,  3.75 },   // module type 5 -
 //          {  5.00,  5.50,  5.00 },   // module type 6 -  4.52 cm2
@@ -673,12 +671,10 @@ void dump_digi_file()
           {   2,   4,   2 },         // module type 3
           {   2,   4,   2 },         // module type 4
 
-//          {  12,  24,  12 },         // module type 5
           {   8,   8,   8 },         // module type 5
-          {   8,   8,   8 },         // module type 6
-          {   2,   8,   2 },         // module type 7
-	  //          {   1,   2,   1 } };       // module type 8
-          {   2,   4,   2 } };       // module type 8
+          {   6,   4,   6 },         // module type 6
+          {   2,   4,   2 },         // module type 7
+          {   1,   2,   1 } };       // module type 8
 
 //          {   8,   8,   8 },         // module type 5
 //          {   4,   8,   4 },         // module type 6

@@ -648,12 +648,10 @@ void dump_digi_file()
 // 108 cm          {  9.00,  9.00,  9.00 },   // module type 7 -  6.37 cm2
 // 108 cm          { 18.00, 18.00, 18.00 } }; // module type 8 - 12.73 cm2
 
-//          {  2.00,  2.00,  2.00 },   // module type 5 -
           {  4.00,  4.00,  4.00 },   // module type 5 -  2.67 cm2
           {  6.00,  6.00,  6.00 },   // module type 6 -  4.00 cm2
-          {  8.00,  8.00,  8.00 },   // module type 7 -  5.33 cm2
+          { 12.00, 12.00, 12.00 },   // module type 7 -  8.00 cm2
           { 24.00, 24.00, 24.00 } }; // module type 8 - 16.00 cm2
-//          { 12.00, 12.00, 12.00 } }; // module type 8 -  8.00 cm2
 
 //          {  3.75,  4.00,  3.75 },   // module type 5 -
 //          {  5.00,  5.50,  5.00 },   // module type 6 -  4.52 cm2
@@ -670,12 +668,10 @@ void dump_digi_file()
           {   2,   4,   2 },         // module type 3
           {   2,   4,   2 },         // module type 4
 
-//          {  12,  24,  12 },         // module type 5
           {   8,   8,   8 },         // module type 5
           {   6,   4,   6 },         // module type 6
-          {   2,   8,   2 },         // module type 7
+          {   2,   4,   2 },         // module type 7
           {   1,   2,   1 } };       // module type 8
-  //          {   2,   4,   2 } };       // module type 8
 
 //          {   8,   8,   8 },         // module type 5
 //          {   4,   8,   4 },         // module type 6
