@@ -46,29 +46,8 @@ void much_reco(
 
 
   // -----   STS digitizer   -------------------------------------------------
-
   FairTask* stsDigi = new CbmStsDigitize();
   run->AddTask(stsDigi);
-
-  // -----   The parameters of the STS digitizer are set such as to match
-  // -----   those in the old digitizer. Change them only if you know what you
-  // -----   are doing.
-/*
-  Double_t dynRange       =   40960.;  // Dynamic range [e]
-  Double_t threshold      =    4000.;  // Digitisation threshold [e]
-  Int_t nAdc              =    4096;   // Number of ADC channels (12 bit)
-  Double_t timeResolution =       5.;  // time resolution [ns]
-  Double_t deadTime       = 9999999.;  // infinite dead time (integrate entire event)
-  Double_t noise          =       0.;  // ENC [e]
-  Int_t digiModel         =       1;   // Model: 1 = uniform charge distribution along track
-
-
-
-  CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
-  stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution,
-  		                 deadTime, noise);
-  run->AddTask(stsDigi);
-*/
   // -------------------------------------------------------------------------
 
 

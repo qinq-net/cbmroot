@@ -151,26 +151,8 @@ void global_reco(Int_t nEvents = 10, // number of events
        //  run->AddTask(stsMatchHits);
 */
     } else if (stsHitProducerType == "new") {
-      // --- The following settings correspond to the settings for the old
-      // --- digitizer in run_reco.C
-      Double_t dynRange       =   40960.;  // Dynamic range [e]
-      Double_t threshold      =    4000.;  // Digitisation threshold [e]
-      Int_t nAdc              =    4096;   // Number of ADC channels (12 bit)
-      Double_t timeResolution =       5.;  // time resolution [ns]
-      Double_t deadTime       = 9999999.;  // infinite dead time (integrate entire event)
-      Double_t noise          =       0.;  // ENC [e]
-      
-      // The following settings correspond to a validated implementation. 
-      // Changing them is on your own risk.
-      Int_t  eLossModel       = 1;         // Energy loss model: uniform 
-      Bool_t useLorentzShift  = kFALSE;    // Deactivate Lorentz shift
-      Bool_t useDiffusion     = kFALSE;    // Deactivate diffusion
-      Bool_t useCrossTalk     = kFALSE;    // Deactivate cross talk
-      
+      // --- The following calls the STS digitizer with default settings
       CbmStsDigitize* stsDigi = new CbmStsDigitize();
-      stsDigi->SetProcesses(eLossModel, useLorentzShift, useDiffusion, useCrossTalk);
-      stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution,
-			     deadTime, noise);
       run->AddTask(stsDigi);
       
       // -----   STS Cluster Finder   --------------------------------------------
