@@ -86,15 +86,7 @@ void run_digi_tb(Int_t nEvents = 2, const char* setupName = "sis100_electron")
 
 
   // ----- STS digitiser
-  Double_t dynRange       =   40960.;  // Dynamic range [e]
-  Double_t threshold      =    4000.;  // Digitisation threshold [e]
-  Int_t nAdc              =    4096;   // Number of ADC channels (12 bit)
-  Double_t timeResolution =       5.;  // time resolution [ns]
-  Double_t deadTime       =     100.;  // infinite dead time (integrate entire event)
-  Double_t noise          =    1000.;  // Noise [e]
-	
   CbmStsDigitize* stsDigi = new CbmStsDigitize();
-  stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution, deadTime, noise);
   run->AddTask(stsDigi);
   
   CbmTofDigitizerBDF* tofDigi = new CbmTofDigitizerBDF("TOF Digitizer BDF");
