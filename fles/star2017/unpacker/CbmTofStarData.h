@@ -48,6 +48,9 @@ namespace get4v1x {
    const uint32_t kuEpochCounterSz = 0x7FFFFFFF;
    const double   kdEpochCycleInS  = static_cast<double>(kuEpochCounterSz) * (kdEpochInNs/1e9);
 }
+namespace get4v2x {
+   const uint32_t kuChipIdMergedEpoch = 63; // 0x3F
+}
 #endif
 
 class CbmTofStarTrigger
