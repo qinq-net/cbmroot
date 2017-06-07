@@ -1591,7 +1591,6 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
     LOG(DEBUG) <<"CbmTofTestBeamClusterizer::FillHistos: Muls: "
                      <<fviClusterMul[fDutId][fDutSm][fDutRpc]
                <<", "<<fviClusterMul[fSelId][fSelSm][fSelRpc]
-               <<", "<<fviClusterMul[5][0][0]
                <<FairLogger::endl;
    // monitor multiplicities 
    Int_t iNbDet=fDigiBdfPar->GetNbDet();
@@ -2910,24 +2909,23 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
 	    }
             fit_ybox(htempPos_py,0.5*fChannelInfo->GetSizey());
 	    TF1 *ff=htempPos_py->GetFunction("YBox");
-	    if(NULL != ff){              
-              LOG(DEBUG) << "FRes YBox "<<htempPos_py->GetEntries()<<" entries in "<<iSmType<<iSm<<iRpc<<iCh
+	    if(NULL != ff){              	    
+	      if(    TMath::Abs(fChannelInfo->GetSizey()-2.*ff->GetParameter(1))/fChannelInfo->GetSizey()<0.05 
+		  && TMath::Abs(ff->GetParError(1)/ff->GetParameter(1))<0.05 
+	      	  &&  ff->GetChisquare() < 200.)   //FIXME - constants!
+	      {                  
+		if(TMath::Abs(ff->GetParameter(3)-YMean)<0.5*fChannelInfo->GetSizey()){
+		  YMean=ff->GetParameter(3);
+		  Double_t dV =dVscal*fChannelInfo->GetSizey()/(2.*ff->GetParameter(1)); 
+		  fhSmCluSvel[iSmType]->Fill((Double_t)(iSm*iNbRpc+iRpc),dV);
+		  LOG(INFO) << "FRes YBox "<<htempPos_py->GetEntries()<<" entries in "<<iSmType<<iSm<<iRpc<<iCh
 			<<", chi2 "<<ff->GetChisquare()
 			<< Form(", striplen (%5.2f), %4.2f: %7.2f +/- %5.2f, pos res %5.2f +/- %5.2f at y_cen = %5.2f +/- %5.2f",
 				fChannelInfo->GetSizey(),dVscal,
 				2.*ff->GetParameter(1),2.*ff->GetParError(1),
 				ff->GetParameter(2),ff->GetParError(2),
 				ff->GetParameter(3),ff->GetParError(3))
-			<< FairLogger::endl;	    
-
-	      if(    TMath::Abs(fChannelInfo->GetSizey()-2.*ff->GetParameter(1))/fChannelInfo->GetSizey()<0.2 
-		  && TMath::Abs(ff->GetParError(1)/ff->GetParameter(1))<0.2 ) 
-	      //	 &&  ff->GetChisquare() < 500.)   //FIXME - constants!
-	      {                  
-		if(TMath::Abs(ff->GetParameter(3)-YMean)<0.5*fChannelInfo->GetSizey()){
-		  YMean=ff->GetParameter(3);
-		  Double_t dV =dVscal*fChannelInfo->GetSizey()/(2.*ff->GetParameter(1)); 
-		  fhSmCluSvel[iSmType]->Fill((Double_t)(iSm*iNbRpc+iRpc),dV);
+			<< FairLogger::endl;
 		}
 	      }
 	    }
