@@ -22,6 +22,7 @@
 #include "THttpServer.h"
 #include "Rtypes.h"
 #include "TH1.h"
+#include "TF1.h"
 #include "TCanvas.h"
 #include "THStack.h"
 #include "TROOT.h"
@@ -38,11 +39,13 @@
 static Int_t iMess = 0;
 static Int_t iMessB = 0;
 Bool_t bResetTofStarHistos = kFALSE;
+Bool_t bSaveTofStarHistos  = kFALSE;
 Bool_t bTofCyclePulserFee  = kFALSE;
+Bool_t bTofUpdateNormedFt  = kFALSE;
 
 // Default value for nb bins in Pulser time difference histos
 //const UInt_t kuNbBinsDt    = 5000;
-const UInt_t kuNbBinsDt    = 150;
+const UInt_t kuNbBinsDt    = 300;
 Double_t dMinDt     = -1.*(kuNbBinsDt*get4v1x::kdBinSize/2.) - get4v1x::kdBinSize/2.;
 Double_t dMaxDt     =  1.*(kuNbBinsDt*get4v1x::kdBinSize/2.) + get4v1x::kdBinSize/2.;
 //const UInt_t kuNbBinsDt    = 299;
@@ -130,6 +133,7 @@ CbmTSMonitorTofStar::CbmTSMonitorTofStar() :
     fhStarTokenEvo(NULL),
     fbGet4M24b( kFALSE ),
     fbGet4v20( kFALSE ),
+    fbMergedEpochsOn( kFALSE ),
     fbPulserMode( kFALSE ),
     fuPulserGdpb(0),
     fuPulserFee(0),
@@ -141,6 +145,20 @@ CbmTSMonitorTofStar::CbmTSMonitorTofStar() :
     fhFtDistribPerCh(),
     fChCountFall_gDPB(),
     fhFtDistribPerChFall(),
+    fSelChFtNormDnlRise(),
+    fSelChFtNormDnlFall(),
+    fFtNormDnlMinRise(),
+    fFtNormDnlMaxRise(),
+    fFtNormDnlMinFall(),
+    fFtNormDnlMaxFall(),
+    fhTempHistInlRise(NULL),
+    fhTempHistInlFall(NULL),
+    fSelChFtNormInlRise(),
+    fSelChFtNormInlFall(),
+    fFtNormInlMinRise(),
+    fFtNormInlMaxRise(),
+    fFtNormInlMinFall(),
+    fFtNormInlMaxFall(),
     fviFtLastRise24b(),
     fviFtLastFall24b(),
     fvdTimeLastRise24b(),
@@ -564,6 +582,14 @@ void CbmTSMonitorTofStar::CreateHistograms()
   {
       // Full Fee time difference test
       UInt_t uNbBinsDt = kuNbBinsDt + 1; // To account for extra bin due to shift by 1/2 bin of both ranges
+
+      if( fbGet4v20 && !fbGet4M24b  )
+      {
+         Double_t dBinSzG4v2 = (6250. / 112.);
+         dMinDt     = -1.*(kuNbBinsDt*dBinSzG4v2/2.) - dBinSzG4v2/2.;
+         dMaxDt     =  1.*(kuNbBinsDt*dBinSzG4v2/2.) + dBinSzG4v2/2.;
+      } // if( fbGet4v20 && fbGet4M24b )
+
       for( UInt_t uChanFeeA = 0; uChanFeeA < fNrOfChannelsPerFeet; uChanFeeA++)
       {
          for( UInt_t uChanFeeB = uChanFeeA + 1; uChanFeeB < fNrOfChannelsPerFeet; uChanFeeB++)
@@ -574,6 +600,10 @@ void CbmTSMonitorTofStar::CreateHistograms()
                   Form("Time difference for channels %03u and %03u in chosen Fee; DeltaT [ps]; Counts",
                         uChanFeeA, uChanFeeB),
                   uNbBinsDt, dMinDt, dMaxDt) );
+#ifdef USE_HTTP_SERVER
+            if (server)
+               server->Register("/TofFt", fhTimeDiffPulserChosenFee[ fhTimeDiffPulserChosenFee.size() - 1] );
+#endif
          } // for any unique pair of channel in chosen Fee
       } // for( UInt_t uChanFeeA = 0; uChanFeeA < kuNbChanFee; uChanFeeA++)
 
@@ -673,6 +703,18 @@ void CbmTSMonitorTofStar::CreateHistograms()
     if (server)
       server->Register("/TofRaw", fHM->H1(name.Data()));
 #endif
+    
+    if( fbGet4M24b )
+    {
+          name = Form("ChCountFall_gDPB_%02u", uGdpb);
+          title = Form("Channel falling edge counts gDPB %02u; channel; Hits", uGdpb);
+          fHM->Add(name.Data(), new TH1I(name.Data(), title.Data(), 
+                   fNrOfFebsPerGdpb*fNrOfChannelsPerFeet, 0, fNrOfFebsPerGdpb*fNrOfChannelsPerFeet));
+#ifdef USE_HTTP_SERVER
+          if (server)
+            server->Register("/TofRaw", fHM->H1(name.Data()));
+#endif
+    } // if( fbGet4M24b )
 
     for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet++) {
       name = Form("FeetRate_gDPB_g%02u_f%1u", uGdpb, uFeet);
@@ -721,17 +763,77 @@ void CbmTSMonitorTofStar::CreateHistograms()
         server->Register("/TofRaw", fHM->H2(name.Data()));
 #endif
 
-      if( fbGet4M24b )
-      {
-          name = Form("ChCountFall_gDPB_%02u", uGdpb);
-          title = Form("Channel falling edge counts gDPB %02u; channel; Hits", uGdpb);
-          fHM->Add(name.Data(), new TH1I(name.Data(), title.Data(),
-                   fNrOfFebsPerGdpb*fNrOfChannelsPerFeet, 0, fNrOfFebsPerGdpb*fNrOfChannelsPerFeet));
+
+      name = Form("SelChFtNormDnlRise_g%02u_f%1u", uGdpb, uFeet);
+      title = Form(
+       "normalized FT distribution for selected channel, rising edge, in Feet %1u of gDPB %02u; FT Rise [bin]; DNL []", uFeet,
+       uGdpb);
+      fHM->Add(name.Data(), new TH1D( name.Data(), title.Data(),
+                                      get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize));
 #ifdef USE_HTTP_SERVER
-          if (server)
-            server->Register("/TofRaw", fHM->H1(name.Data()));
+      if (server)
+      server->Register("/TofRaw", fHM->H1(name.Data()));
 #endif
 
+      name = Form("FtNormDnlMinRise_g%02u_f%1u", uGdpb, uFeet);
+      title = Form(
+       "Minimum of normalized FT distribution per channel, rising edge, in Feet %1u of gDPB %02u; channel []; DNL Min []", uFeet,
+       uGdpb);
+      fHM->Add(name.Data(), new TH1D( name.Data(), title.Data(),
+                                      fNrOfChannelsPerFeet, 0, fNrOfChannelsPerFeet ));
+#ifdef USE_HTTP_SERVER
+      if (server)
+      server->Register("/TofRaw", fHM->H1(name.Data()));
+#endif
+
+      name = Form("FtNormDnlMaxRise_g%02u_f%1u", uGdpb, uFeet);
+      title = Form(
+       "maximum of normalized FT distribution per channel, rising edge, in Feet %1u of gDPB %02u; channel []; DNL Max []", uFeet,
+       uGdpb);
+      fHM->Add(name.Data(), new TH1D( name.Data(), title.Data(),
+                                      fNrOfChannelsPerFeet, 0, fNrOfChannelsPerFeet ));
+#ifdef USE_HTTP_SERVER
+      if (server)
+      server->Register("/TofRaw", fHM->H1(name.Data()));
+#endif
+
+/// ----------------------> INL plots
+      name = Form("SelChFtNormInlRise_g%02u_f%1u", uGdpb, uFeet);
+      title = Form(
+       "INL distribution for selected channel, rising edge, in Feet %1u of gDPB %02u; FT Rise [bin]; INL []", uFeet,
+       uGdpb);
+      fHM->Add(name.Data(), new TH1D( name.Data(), title.Data(),
+                                      get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize));
+#ifdef USE_HTTP_SERVER
+      if (server)
+      server->Register("/TofRaw", fHM->H1(name.Data()));
+#endif
+
+      name = Form("FtNormInlMinRise_g%02u_f%1u", uGdpb, uFeet);
+      title = Form(
+       "Minimum of INL distribution per channel, rising edge, in Feet %1u of gDPB %02u; channel []; INL Min []", uFeet,
+       uGdpb);
+      fHM->Add(name.Data(), new TH1D( name.Data(), title.Data(),
+                                      fNrOfChannelsPerFeet, 0, fNrOfChannelsPerFeet ));
+#ifdef USE_HTTP_SERVER
+      if (server)
+      server->Register("/TofRaw", fHM->H1(name.Data()));
+#endif
+
+      name = Form("FtNormInlMaxRise_g%02u_f%1u", uGdpb, uFeet);
+      title = Form(
+       "maximum of INL distribution per channel, rising edge, in Feet %1u of gDPB %02u; channel []; INL Max []", uFeet,
+       uGdpb);
+      fHM->Add(name.Data(), new TH1D( name.Data(), title.Data(),
+                                      fNrOfChannelsPerFeet, 0, fNrOfChannelsPerFeet ));
+#ifdef USE_HTTP_SERVER
+      if (server)
+      server->Register("/TofRaw", fHM->H1(name.Data()));
+#endif
+/// <--------------------------------
+
+      if( fbGet4M24b )
+      {
          name = Form("FtDistribPerChFall_gDPB_g%02u_f%1u", uGdpb, uFeet);
          title = Form(
           "FT distribution per channel, falling edge, in Feet %1u of gDPB %02u; Channel [] ; FT Fall [bin]; Counts []", uFeet,
@@ -743,6 +845,74 @@ void CbmTSMonitorTofStar::CreateHistograms()
          if (server)
          server->Register("/TofRaw", fHM->H2(name.Data()));
 #endif
+
+         name = Form("SelChFtNormDnlFall_g%02u_f%1u", uGdpb, uFeet);
+         title = Form(
+          "normalized FT distribution for selected channel, falling edge, in Feet %1u of gDPB %02u; FT Fall [bin]; DNL []", uFeet,
+          uGdpb);
+         fHM->Add(name.Data(), new TH1D( name.Data(), title.Data(),
+                                      get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize));
+#ifdef USE_HTTP_SERVER
+         if (server)
+         server->Register("/TofRaw", fHM->H1(name.Data()));
+#endif
+
+         name = Form("FtNormDnlMinFall_g%02u_f%1u", uGdpb, uFeet);
+         title = Form(
+          "Minimum of normalized FT distribution per channel, falling edge, in Feet %1u of gDPB %02u; channel []; DNL Min []", uFeet,
+          uGdpb);
+         fHM->Add(name.Data(), new TH1D( name.Data(), title.Data(),
+                                         fNrOfChannelsPerFeet, 0, fNrOfChannelsPerFeet ));
+#ifdef USE_HTTP_SERVER
+         if (server)
+         server->Register("/TofRaw", fHM->H1(name.Data()));
+#endif
+
+         name = Form("FtNormDnlMaxFall_g%02u_f%1u", uGdpb, uFeet);
+         title = Form(
+          "maximum of normalized FT distribution per channel, falling edge, in Feet %1u of gDPB %02u; channel []; DNL Max []", uFeet,
+          uGdpb);
+         fHM->Add(name.Data(), new TH1D( name.Data(), title.Data(),
+                                         fNrOfChannelsPerFeet, 0, fNrOfChannelsPerFeet ));
+#ifdef USE_HTTP_SERVER
+         if (server)
+         server->Register("/TofRaw", fHM->H1(name.Data()));
+#endif
+
+/// ----------------------> INL plots
+         name = Form("SelChFtNormInlFall_g%02u_f%1u", uGdpb, uFeet);
+         title = Form(
+          "INL distribution for selected channel, falling edge, in Feet %1u of gDPB %02u; FT Fall [bin]; INL []", uFeet,
+          uGdpb);
+         fHM->Add(name.Data(), new TH1D( name.Data(), title.Data(),
+                                      get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize));
+#ifdef USE_HTTP_SERVER
+         if (server)
+         server->Register("/TofRaw", fHM->H1(name.Data()));
+#endif
+
+         name = Form("FtNormInlMinFall_g%02u_f%1u", uGdpb, uFeet);
+         title = Form(
+          "Minimum of INL distribution per channel, falling edge, in Feet %1u of gDPB %02u; channel []; INL Min []", uFeet,
+          uGdpb);
+         fHM->Add(name.Data(), new TH1D( name.Data(), title.Data(),
+                                         fNrOfChannelsPerFeet, 0, fNrOfChannelsPerFeet ));
+#ifdef USE_HTTP_SERVER
+         if (server)
+         server->Register("/TofRaw", fHM->H1(name.Data()));
+#endif
+
+         name = Form("FtNormInlMaxFall_g%02u_f%1u", uGdpb, uFeet);
+         title = Form(
+          "maximum of INL distribution per channel, falling edge, in Feet %1u of gDPB %02u; channel []; INL Max []", uFeet,
+          uGdpb);
+         fHM->Add(name.Data(), new TH1D( name.Data(), title.Data(),
+                                         fNrOfChannelsPerFeet, 0, fNrOfChannelsPerFeet ));
+#ifdef USE_HTTP_SERVER
+         if (server)
+         server->Register("/TofRaw", fHM->H1(name.Data()));
+#endif
+/// <--------------------------------
 
         fviFtLastRise24b[ uGdpb * fNrOfFebsPerGdpb + uFeet ].resize( fNrOfChannelsPerFeet, -1 );
         fviFtLastFall24b[ uGdpb * fNrOfFebsPerGdpb + uFeet ].resize( fNrOfChannelsPerFeet, -1 );
@@ -800,6 +970,13 @@ void CbmTSMonitorTofStar::CreateHistograms()
       } // if( fbGet4M24b )
     } // for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
+  fhTempHistInlRise = new TH1D( "TempHistInlRise", 
+                                "Temp holder for INL distribution in current channel, rising edge; FT Rise [bin]; INL []",
+                                get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize);
+  if( fbGet4M24b )
+    fhTempHistInlFall = new TH1D( "TempHistInlFall", 
+                                  "Temp holder for INL distribution in current channel, falling edge; FT Fall [bin]; INL []",
+                                  get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize);
 
   ///* ASIC coincidences & offsets mapping *///
 /*
@@ -1008,11 +1185,16 @@ void CbmTSMonitorTofStar::CreateHistograms()
 
 #ifdef USE_HTTP_SERVER
   if (server)
+  {
     server->RegisterCommand("/Reset_All_TOF", "bResetTofStarHistos=kTRUE");
-  if (server)
+    server->RegisterCommand("/Save_All_Tof", "bSaveTofStarHistos=kTRUE");
+    
     server->RegisterCommand("/Cycle_Pulser_FEE", "bTofCyclePulserFee=kTRUE");
-  if (server)
+    server->RegisterCommand("/Update_Norm_FT", "bTofUpdateNormedFt=kTRUE");
+   
     server->Restrict("/Reset_All_TOF", "allow=admin");
+    server->Restrict("/Save_All_Tof", "allow=admin");
+  } // if (server)
 #endif
 
    LOG(INFO) << "Done with histo creation, now doing canvases" << FairLogger::endl;
@@ -1124,45 +1306,197 @@ void CbmTSMonitorTofStar::CreateHistograms()
   if( fbGet4M24b )
   {
      TCanvas* cFt24b = NULL;
+     TCanvas* cFt24b_Dnl = NULL;
+     TCanvas* cFt24b_Inl = NULL;
      for( UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; ++uGdpb ) {
 
-       cFt24b = new TCanvas( Form("cFt24b_g%02u", uGdpb),
-                              Form("gDPB %02u 24b mode FineTime distributions", uGdpb),
+       cFt24b = new TCanvas( Form("cFt24b_g%02u_f0", uGdpb), 
+                              Form("gDPB %02u Feet 0 24b mode FineTime distributions", uGdpb), 
                               w, h);
-       cFt24b->Divide( 2, 2 );
-       TH2* histPntFt = NULL;
+       cFt24b->Divide( 2, 4 );
 
        cFt24b->cd( 1  );
        gPad->SetGridx();
        gPad->SetGridy();
        gPad->SetLogz();
        name = Form("FtDistribPerCh_gDPB_g%02u_f%1u", uGdpb, 0);
-       histPntFt = fHM->H2(name.Data());
-       histPntFt->Draw( "colz" );
+       fHM->H2(name.Data())->Draw( "colz" );
 
        cFt24b->cd( 2  );
        gPad->SetGridx();
        gPad->SetGridy();
        gPad->SetLogz();
        name = Form("FtDistribPerChFall_gDPB_g%02u_f%1u", uGdpb, 0);
-       histPntFt = fHM->H2(name.Data());
-       histPntFt->Draw( "colz" );
+       fHM->H2(name.Data())->Draw( "colz" );
 
        cFt24b->cd( 3 );
        gPad->SetGridx();
        gPad->SetGridy();
        gPad->SetLogz();
-       name = Form("ChCount_gDPB_%02u", uGdpb);
+//       name = Form("ChCount_gDPB_%02u", uGdpb);
+       name = Form("SelChFtNormDnlRise_g%02u_f%1u", uGdpb, 0);
        fHM->H1(name.Data())->Draw();
 
        cFt24b->cd( 4 );
        gPad->SetGridx();
        gPad->SetGridy();
        gPad->SetLogz();
-       name = Form("ChCountFall_gDPB_%02u", uGdpb);
+//       name = Form("ChCountFall_gDPB_%02u", uGdpb);
+       name = Form("SelChFtNormDnlFall_g%02u_f%1u", uGdpb, 0);
+       fHM->H1(name.Data())->Draw();
+       
+       cFt24b->cd( 5 );
+       gPad->SetGridx();
+       gPad->SetGridy();
+       gPad->SetLogz();
+       name = Form("FtLastRiseCurrFall_gDPB_g%02u_f%1u", uGdpb, 0);
+       fHM->H2(name.Data())->Draw( "colz" );
+       
+       cFt24b->cd( 6 );
+       gPad->SetGridx();
+       gPad->SetGridy();
+       gPad->SetLogz();
+       name = Form("FtCurrRiseLastFall_gDPB_g%02u_f%1u", uGdpb, 0);
+       fHM->H2(name.Data())->Draw( "colz" );
+       
+       cFt24b->cd( 7 );
+       gPad->SetGridx();
+       gPad->SetGridy();
+       gPad->SetLogz();
+       name = Form("FtLastRiseDistRise_gDPB_g%02u_f%1u", uGdpb, 0);
+       fHM->H2(name.Data())->Draw( "colz" );
+       
+       cFt24b->cd( 8 );
+       gPad->SetGridx();
+       gPad->SetGridy();
+       gPad->SetLogz();
+       name = Form("FtLastRiseDistFall_gDPB_g%02u_f%1u", uGdpb, 0);
+       fHM->H2(name.Data())->Draw( "colz" );
+       
+           
+       cFt24b_Dnl = new TCanvas( Form("cFt24bDnl_g%02u_f0", uGdpb), 
+                              Form("gDPB %02u Feet 0 24b mode FineTime DNL min/max distributions", uGdpb), 
+                              w, h);
+       cFt24b_Dnl->Divide( 2, 2 );
+       
+       cFt24b_Dnl->cd( 1 );
+       gPad->SetGridx();
+       gPad->SetGridy();
+       gPad->SetLogz();
+       name = Form("FtNormDnlMinRise_g%02u_f%1u", uGdpb, 0);
+       fHM->H1(name.Data())->Draw();
+       
+       cFt24b_Dnl->cd( 2 );
+       gPad->SetGridx();
+       gPad->SetGridy();
+       gPad->SetLogz();
+       name = Form("FtNormDnlMaxRise_g%02u_f%1u", uGdpb, 0);
+       fHM->H1(name.Data())->Draw();
+       
+       cFt24b_Dnl->cd( 3 );
+       gPad->SetGridx();
+       gPad->SetGridy();
+       gPad->SetLogz();
+       name = Form("FtNormDnlMinFall_g%02u_f%1u", uGdpb, 0);
+       fHM->H1(name.Data())->Draw();
+       
+       cFt24b_Dnl->cd( 4 );
+       gPad->SetGridx();
+       gPad->SetGridy();
+       gPad->SetLogz();
+       name = Form("FtNormDnlMaxFall_g%02u_f%1u", uGdpb, 0);
+       fHM->H1(name.Data())->Draw();
+       
+       cFt24b_Inl = new TCanvas( Form("cFt24bInl_g%02u_f0", uGdpb), 
+                              Form("gDPB %02u Feet 0 24b mode FineTime INL min/max distributions", uGdpb), 
+                              w, h);
+       cFt24b_Inl->Divide( 2, 2 );
+       
+       cFt24b_Inl->cd( 1 );
+       gPad->SetGridx();
+       gPad->SetGridy();
+       gPad->SetLogz();
+       name = Form("FtNormInlMinRise_g%02u_f%1u", uGdpb, 0);
+       fHM->H1(name.Data())->Draw();
+       
+       cFt24b_Inl->cd( 2 );
+       gPad->SetGridx();
+       gPad->SetGridy();
+       gPad->SetLogz();
+       name = Form("FtNormInlMaxRise_g%02u_f%1u", uGdpb, 0);
+       fHM->H1(name.Data())->Draw();
+       
+       cFt24b_Inl->cd( 3 );
+       gPad->SetGridx();
+       gPad->SetGridy();
+       gPad->SetLogz();
+       name = Form("FtNormInlMinFall_g%02u_f%1u", uGdpb, 0);
+       fHM->H1(name.Data())->Draw();
+       
+       cFt24b_Inl->cd( 4 );
+       gPad->SetGridx();
+       gPad->SetGridy();
+       gPad->SetLogz();
+       name = Form("FtNormInlMaxFall_g%02u_f%1u", uGdpb, 0);
        fHM->H1(name.Data())->Draw();
      } // for( UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; ++uGdpb )
   } // if( fbGet4M24b )
+  /*****************************/
+
+  /** Create 32b mode Canvas(es) for STAR 2017 **/
+     else 
+     {
+        TCanvas* cFt32b = NULL;
+        for( UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; ++uGdpb ) {
+           
+          cFt32b = new TCanvas( Form("cFt32b_g%02u_f0", uGdpb), 
+                                 Form("gDPB %02u Feet 0 32b mode FineTime, DNL & INL distributions", uGdpb), 
+                                 w, h);
+          cFt32b->Divide( 2, 3 );
+            
+          cFt32b->cd( 1  );
+          gPad->SetGridx();
+          gPad->SetGridy();
+          gPad->SetLogz();
+          name = Form("SelChFtNormDnlRise_g%02u_f%1u", uGdpb, 0);
+          fHM->H1(name.Data())->Draw("hist");
+          
+          cFt32b->cd( 2 );
+          gPad->SetGridx();
+          gPad->SetGridy();
+          gPad->SetLogz();
+          name = Form("SelChFtNormInlRise_g%02u_f%1u", uGdpb, 0);
+          fHM->H1(name.Data())->Draw("hist");
+          
+          cFt32b->cd( 3 );
+          gPad->SetGridx();
+          gPad->SetGridy();
+          gPad->SetLogz();
+          name = Form("FtNormDnlMinRise_g%02u_f%1u", uGdpb, 0);
+          fHM->H1(name.Data())->Draw("hist");
+          
+          cFt32b->cd( 4 );
+          gPad->SetGridx();
+          gPad->SetGridy();
+          gPad->SetLogz();
+          name = Form("FtNormDnlMaxRise_g%02u_f%1u", uGdpb, 0);
+          fHM->H1(name.Data())->Draw("hist");
+          
+          cFt32b->cd( 5 );
+          gPad->SetGridx();
+          gPad->SetGridy();
+          gPad->SetLogz();
+          name = Form("FtNormInlMinRise_g%02u_f%1u", uGdpb, 0);
+          fHM->H1(name.Data())->Draw("hist");
+          
+          cFt32b->cd( 6 );
+          gPad->SetGridx();
+          gPad->SetGridy();
+          gPad->SetLogz();
+          name = Form("FtNormInlMaxRise_g%02u_f%1u", uGdpb, 0);
+          fHM->H1(name.Data())->Draw("hist");
+        } // for( UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; ++uGdpb )
+     } // else of if( fbGet4M24b )
   /*****************************/
 
   /** Create Pulser mode Canvas for STAR 2017 **/
@@ -1175,7 +1509,7 @@ void CbmTSMonitorTofStar::CreateHistograms()
      fhTimeRmsPulserChosenFee->Draw( "colz" );
 
      cPulserRms->cd(2);
-     fhTimeRmsPulserChosenChPairs->Draw( "colz" );
+     fhTimeRmsPulserChosenChPairs->Draw( "hist" );
   } // if( fbPulserMode )
   /*****************************/
 
@@ -1262,6 +1596,12 @@ void CbmTSMonitorTofStar::CreateHistograms()
     name = Form("ChCount_gDPB_%02u", i);
     fChCount_gDPB.push_back(fHM->H1(name.Data()));
 
+    if( fbGet4M24b )
+    {
+       name = Form("ChCountFall_gDPB_%02u", i);
+       fChCountFall_gDPB.push_back(fHM->H1(name.Data()));
+    } // if( fbGet4M24b )
+
     if (fUnpackPar->IsChannelRateEnabled()) {
       name = Form("ChannelRate_gDPB_%02u_0", i);
       fChannelRate_gDPB.push_back(fHM->H2(name.Data()));
@@ -1288,12 +1628,36 @@ void CbmTSMonitorTofStar::CreateHistograms()
       } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
       name = Form("FtDistribPerCh_gDPB_g%02u_f%1u", i, uFeet);
       fhFtDistribPerCh.push_back(fHM->H2(name.Data()));
+      name = Form("SelChFtNormDnlRise_g%02u_f%1u", i, uFeet);
+      fSelChFtNormDnlRise.push_back(fHM->H1(name.Data()));
+      name = Form("FtNormDnlMinRise_g%02u_f%1u", i, uFeet);
+      fFtNormDnlMinRise.push_back(fHM->H1(name.Data()));
+      name = Form("FtNormDnlMaxRise_g%02u_f%1u", i, uFeet);
+      fFtNormDnlMaxRise.push_back(fHM->H1(name.Data()));
+      name = Form("SelChFtNormInlRise_g%02u_f%1u", i, uFeet);
+      fSelChFtNormInlRise.push_back(fHM->H1(name.Data()));
+      name = Form("FtNormInlMinRise_g%02u_f%1u", i, uFeet);
+      fFtNormInlMinRise.push_back(fHM->H1(name.Data()));
+      name = Form("FtNormInlMaxRise_g%02u_f%1u", i, uFeet);
+      fFtNormInlMaxRise.push_back(fHM->H1(name.Data()));
+      
       if( fbGet4M24b )
       {
-         name = Form("ChCountFall_gDPB_%02u", i);
-         fChCountFall_gDPB.push_back(fHM->H1(name.Data()));
          name = Form("FtDistribPerChFall_gDPB_g%02u_f%1u", i, uFeet);
          fhFtDistribPerChFall.push_back(fHM->H2(name.Data()));
+
+         name = Form("SelChFtNormDnlFall_g%02u_f%1u", i, uFeet);
+         fSelChFtNormDnlFall.push_back(fHM->H1(name.Data()));
+         name = Form("FtNormDnlMinFall_g%02u_f%1u", i, uFeet);
+         fFtNormDnlMinFall.push_back(fHM->H1(name.Data()));
+         name = Form("FtNormDnlMaxFall_g%02u_f%1u", i, uFeet);
+         fFtNormDnlMaxFall.push_back(fHM->H1(name.Data()));
+         name = Form("SelChFtNormInlFall_g%02u_f%1u", i, uFeet);
+         fSelChFtNormInlFall.push_back(fHM->H1(name.Data()));
+         name = Form("FtNormInlMinFall_g%02u_f%1u", i, uFeet);
+         fFtNormInlMinFall.push_back(fHM->H1(name.Data()));
+         name = Form("FtNormInlMaxFall_g%02u_f%1u", i, uFeet);
+         fFtNormInlMaxFall.push_back(fHM->H1(name.Data()));
 
          name = Form("FtLastRiseCurrFall_gDPB_g%02u_f%1u", i, uFeet);
          fhFtLastRiseCurrFall.push_back(fHM->H2(name.Data()));
@@ -1320,13 +1684,24 @@ Bool_t CbmTSMonitorTofStar::DoUnpack(const fles::Timeslice& ts,
 #endif
 
   if (bResetTofStarHistos) {
+    LOG(INFO) << "Reset TOF STAR histos " << FairLogger::endl;
     ResetAllHistos();
     bResetTofStarHistos = kFALSE;
   }
+   if( bSaveTofStarHistos )
+   {
+      LOG(INFO) << "Start saving TOF STAR histos " << FairLogger::endl;
+      SaveAllHistos( "data/histos_StarTof.root" );
+      bSaveTofStarHistos = kFALSE;
+   } // if( bSaveStsHistos )
   if (bTofCyclePulserFee) {
      CyclePulserFee();
      bTofCyclePulserFee = kFALSE;
-  }
+  } // if (bTofCyclePulserFee)
+  if (bTofUpdateNormedFt) {
+     UpdateNormedFt();
+     bTofUpdateNormedFt = kFALSE;
+  } // if (bTofUpdateNormedFt)
 
   ///* ASIC coincidences & offsets mapping *///
 /*
@@ -1499,6 +1874,12 @@ Bool_t CbmTSMonitorTofStar::DoUnpack(const fles::Timeslice& ts,
       fGet4Id = mess.getGdpbGenChipId();
       fGet4Nr = (fGdpbNr * fNrOfGet4PerGdpb) + fGet4Id;
 
+      if( fNrOfGet4PerGdpb <= fGet4Id &&
+          ( get4v2x::kuChipIdMergedEpoch != fGet4Id ||
+            kFALSE == fbMergedEpochsOn ) )
+         LOG(WARNING) << "Message with Get4 ID too high: " << fGet4Id
+                      << " VS " << fNrOfGet4PerGdpb << " set in parameters." << FairLogger::endl;
+
       switch (messageType) {
         case ngdpb::MSG_HIT:
           //           FillHitInfo(mess);
@@ -1514,9 +1895,27 @@ Bool_t CbmTSMonitorTofStar::DoUnpack(const fles::Timeslice& ts,
           fHistSysMessType->Fill(mess.getSysMesType());
           break;
         case ngdpb::MSG_EPOCH2:
-          fHistGet4MessType->Fill(fGet4Nr, ngdpb::GET4_32B_EPOCH);
-          FillEpochInfo(mess);
+        {
+          if( get4v2x::kuChipIdMergedEpoch == fGet4Id &&
+              kTRUE == fbMergedEpochsOn )
+          {
+             for( uint32_t uGet4Index = 0; uGet4Index < fNrOfGet4PerGdpb; uGet4Index ++ )
+             {
+               fHistGet4MessType->Fill(uGet4Index, ngdpb::GET4_32B_EPOCH);
+               fGet4Id = uGet4Index;
+               fGet4Nr = (fGdpbNr * fNrOfGet4PerGdpb) + fGet4Id;
+               ngdpb::Message tmpMess(mess);
+               tmpMess.setGdpbGenChipId( uGet4Index );
+               FillEpochInfo(tmpMess);
+             } // for( uint32_t uGet4Index = 0; uGet4Index < fNrOfGet4PerGdpb; uGetIndex ++ )
+          } // if this epoch message is a merged one valiud for all chips
+            else
+            {
+              fHistGet4MessType->Fill(fGet4Nr, ngdpb::GET4_32B_EPOCH);
+              FillEpochInfo(mess);
+            } // if single chip epoch message
           break;
+        }
         case ngdpb::MSG_GET4:
           fHistGet4MessType->Fill(fGet4Nr, ngdpb::GET4_32B_DATA + 1);
           if( fbGet4M24b )
@@ -1713,7 +2112,7 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
 {
   Int_t channel = mess.getGdpbHitChanId();
   Int_t tot = mess.getGdpbHit32Tot();
-  ULong_t hitTime = mess.getMsgFullTime(0);
+  Int_t Fts  = mess.getGdpbHitFineTs();
 
   Long64_t curEpochGdpbGet4 = fCurrentEpoch[fGet4Nr];
 
@@ -1729,7 +2128,27 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
 
     Int_t channelNr = fGet4Id * fNrOfChannelsPerGet4 + channel;
     Int_t iFeetNr   = (fGet4Id / fNrOfGet4PerFeb);
+         
+    ULong_t hitTime;
+    Double_t dHitTime;
 
+    if( fbGet4v20 )
+    {
+      hitTime  = mess.getMsgG4v2FullTime(curEpochGdpbGet4);
+      dHitTime = mess.getMsgG4v2FullTimeD(curEpochGdpbGet4);
+      
+      // In 32b mode the coarse counter is already computed back to 112 FTS bins
+      // => need to hide its contribution from the Finetime
+      // => FTS = Fullt TS modulo 112
+      if( !fbGet4M24b )
+         Fts = mess.getGdpbHitFullTs() % 112;
+    } // if( fbGet4v20 )
+      else
+      {
+         hitTime  = mess.getMsgFullTime(curEpochGdpbGet4);
+         dHitTime = mess.getMsgFullTimeD(curEpochGdpbGet4);
+      } // else of if( fbGet4v20 )
+    
     if( !fbGet4M24b )
     {
        fRaw_Tot_gDPB[fGdpbNr + iFeetNr/uNbFeetPlot]->Fill(channelNr, tot);
@@ -1737,9 +2156,7 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
 
       /// Finetime monitoring
       fhFtDistribPerCh[(fGdpbNr * fNrOfFebsPerGdpb) + iFeetNr]->Fill(
-            fGet4Id * fNrOfChannelsPerGet4 + channel,
-            mess.getGdpbHitFineTs()
-         );
+            fGet4Id * fNrOfChannelsPerGet4 + channel, Fts );
     } // if( !fbGet4M24b )
       else
       {
@@ -1749,14 +2166,11 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
          UInt_t Fts  = mess.getGet4FineTs();
          UInt_t edge = mess.getGet4Edge();
 */
-         Int_t Fts  = mess.getGdpbHitFineTs();
          Int_t edge = mess.getGdpbHit24Edge();
 
          channelNr = fGet4Id * fNrOfChannelsPerGet4 + channel;
          iFeetNr   = (fGet4Id / fNrOfGet4PerFeb);
          Int_t iFullFebIdx = (fGdpbNr * fNrOfFebsPerGdpb) + iFeetNr;
-
-         Double_t dHitTime = mess.getMsgFullTimeD(curEpochGdpbGet4);
 
          if( edge )
          {
@@ -1803,36 +2217,39 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
             } // else of if( edge )
       } // else of if( !fbGet4M24b )
 
-    if (fUnpackPar->IsChannelRateEnabled()) {
+    if (fUnpackPar->IsChannelRateEnabled() && 
+        ( !fbGet4M24b || !(mess.getGdpbHit24Edge()) )) {
       // Check if at least one hit before in this channel
       if( -1 < fTsLastHit[fGdpbNr][fGet4Id][channel] )
       {
          fChannelRate_gDPB[fGdpbNr + iFeetNr/uNbFeetPlot]->Fill(
-             1e9 / (mess.getMsgFullTimeD(curEpochGdpbGet4)
-                     - fTsLastHit[fGdpbNr][fGet4Id][channel]),
+//             1e9 / (dHitTime - fTsLastHit[fGdpbNr][fGet4Id][channel]),
+                     (dHitTime - fTsLastHit[fGdpbNr][fGet4Id][channel]),
              fGet4Id * fNrOfChannelsPerGet4 + channel);
       } // if( -1 < fTsLastHit[fGdpbNr][fGet4Id][channel] )
     } // if( fUnpackPar->IsChannelRateEnabled() )
 
     // Save last hist time if channel rate histos or pulser mode enabled
     if( fUnpackPar->IsChannelRateEnabled() || fbPulserMode )
-      fTsLastHit[fGdpbNr][fGet4Id][channel] = mess.getMsgFullTimeD(
-          curEpochGdpbGet4);
+    {
+      if( !fbGet4M24b || !(mess.getGdpbHit24Edge()) )
+         fTsLastHit[fGdpbNr][fGet4Id][channel] = dHitTime;
+    } // if( fUnpackPar->IsChannelRateEnabled() || fbPulserMode )
 
     // In Run rate evolution
     if (fdStartTime < 0)
-      fdStartTime = mess.getMsgFullTimeD(curEpochGdpbGet4);
+      fdStartTime = dHitTime;
 
     if (0 <= fdStartTime)
     {
       fFeetRate_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + iFeetNr]->Fill(
-          1e-9 * (mess.getMsgFullTimeD(curEpochGdpbGet4) - fdStartTime));
+          1e-9 * (dHitTime - fdStartTime));
 
        // General Time (date + time) rate evolution
        // Add offset of -1H as the filenames were using some times offset by 1 hour (Summer time?!?)
        if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec ) {
          fFeetRateDate_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + iFeetNr]->Fill(
-             1e-9 * (mess.getMsgFullTimeD(curEpochGdpbGet4) - fdStartTime)  );
+             1e-9 * (dHitTime - fdStartTime)  );
        } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
     }
 
@@ -1843,7 +2260,7 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
       fHistSpill->Fill(0., 0., increment);
 */
     fiCountsLastTs ++;
-    fdDetLastTime = 1e-9 * mess.getMsgFullTimeD(curEpochGdpbGet4);
+    fdDetLastTime = 1e-9 * dHitTime;
 
     ///* STAR event building/cutting *///
     if( fbStarSortAndCutMode )
@@ -1869,15 +2286,12 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
          } // else of if( fbEpochSuppModeOn )
     } // if( fbStarSortAndCutMode )
 
-    hitTime = mess.getMsgFullTime(curEpochGdpbGet4);
-    Int_t Ft = mess.getGdpbHitFineTs();
-
     if (100 > iMess)
     {
        LOG(DEBUG) << "Hit: " << Form("0x%08x ", fGdpbId) << ", " << fGet4Id
                      << ", " << channel << ", " << tot << ", epoch "
                      << curEpochGdpbGet4 << ", FullTime "
-                     << hitTime << ", FineTime " << Ft << FairLogger::endl;
+                     << hitTime << ", FineTime " << Fts << FairLogger::endl;
        iMess++; // Separate increment from condition, otherwise increase until wrap to -1664185233
     } // if (100 > iMess)
 
@@ -2355,7 +2769,7 @@ void CbmTSMonitorTofStar::FillStarTrigInfo(ngdpb::Message mess)
                ngdpb::Message messEpoch(0);
                messEpoch.setRocNumber(        mess.getRocNumber() );
                messEpoch.setMessageType(      ngdpb::MSG_EPOCH2 );
-               messEpoch.setEpoch2ChipNumber( 63 ); // Use a ChipID out of physical connection possibility
+               messEpoch.setEpoch2ChipNumber( 62 ); // Use a ChipID out of physical connection possibility
                messEpoch.setEpoch2Number(     newTrig.GetFullGdpbEpoch() );
                FillTrigEpochInfo( messEpoch );
             } // if( fuCurrentEpGdpb[ fGdpbNr ] + 1 < newTrig.GetTrigger() )
@@ -2664,9 +3078,13 @@ void CbmTSMonitorTofStar::SaveAllHistos( TString sFileName )
      histoFile->cd();
   } // if( "" != sFileName )
 
+   // Update the FT slected channel distribution if needed
+   if( fbGet4M24b )
+      UpdateNormedFt();
+
   gDirectory->mkdir("Tof_Raw_gDPB");
   gDirectory->cd("Tof_Raw_gDPB");
-  for (UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb++) {
+  for (UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; uGdpb++) {
 
     for (UInt_t uFeetPlot = 0; uFeetPlot < fNrOfFebsPerGdpb/uNbFeetPlot; ++uFeetPlot )
       fHM->H2(Form("Raw_Tot_gDPB_%02u_%1u", uGdpb, uFeetPlot))->Write();
@@ -2682,11 +3100,23 @@ void CbmTSMonitorTofStar::SaveAllHistos( TString sFileName )
       fHM->H1(Form("FeetErrorRate_gDPB_g%02u_f%1u", uGdpb, uFeet))->Write();
       if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec ) {
         fHM->H1(Form("FeetRateDate_gDPB_g%02u_f%1u", uGdpb, uFeet))->Write();
-      }
+      } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
       fHM->H2(Form("FtDistribPerCh_gDPB_g%02u_f%1u", uGdpb, uFeet))->Write();
+      fHM->H1(Form("SelChFtNormDnlRise_g%02u_f%1u", uGdpb, uFeet))->Write();
+      fHM->H1(Form("FtNormDnlMinRise_g%02u_f%1u", uGdpb, uFeet))->Write();
+      fHM->H1(Form("FtNormDnlMaxRise_g%02u_f%1u", uGdpb, uFeet))->Write();
       if( fbGet4M24b )
+      {
          fHM->H2(Form("FtDistribPerChFall_gDPB_g%02u_f%1u", uGdpb, uFeet))->Write();
-    }
+         fHM->H1(Form("SelChFtNormDnlFall_g%02u_f%1u", uGdpb, uFeet))->Write();
+         fHM->H1(Form("FtNormDnlMinFall_g%02u_f%1u", uGdpb, uFeet))->Write();
+         fHM->H1(Form("FtNormDnlMaxFall_g%02u_f%1u", uGdpb, uFeet))->Write();
+         fHM->H2(Form("FtLastRiseCurrFall_gDPB_g%02u_f%1u", uGdpb, uFeet))->Write();
+         fHM->H2(Form("FtCurrRiseLastFall_gDPB_g%02u_f%1u", uGdpb, uFeet))->Write();
+         fHM->H2(Form("FtLastRiseDistRise_gDPB_g%02u_f%1u", uGdpb, uFeet))->Write();
+         fHM->H2(Form("FtLastRiseDistFall_gDPB_g%02u_f%1u", uGdpb, uFeet))->Write();
+      } // if( fbGet4M24b )
+    } // for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet++)
   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
   fHM->H1("hMessageType")->Write();
   fHM->H1("hSysMessType")->Write();
@@ -2717,7 +3147,7 @@ void CbmTSMonitorTofStar::SaveAllHistos( TString sFileName )
   fHM->H1("hStarTokenEvo")->Write();
   if( fbStarSortAndCutMode )
   {
-      for (UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb++)
+      for (UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; uGdpb++)
       {
          fhStarHitToTrigAll_gDPB[ uGdpb ]->Write();
          fhStarHitToTrigWin_gDPB[ uGdpb ]->Write();
@@ -2739,7 +3169,13 @@ void CbmTSMonitorTofStar::SaveAllHistos( TString sFileName )
       fHM->P1(sMsSzName.Data())->Write();
   } // for( UInt_t uLinks = 0; uLinks < 16; uLinks ++)
   gDirectory->cd("..");
-
+  
+  if( "" != sFileName )
+  {
+     // Restore original directory position
+     histoFile->Close();
+     oldDir->cd();
+  } // if( "" != sFileName )
   if( "" != sFileName )
   {
      // Restore original directory position
@@ -2762,7 +3198,7 @@ void CbmTSMonitorTofStar::ResetAllHistos()
   fHM->H2("hSpillQA")->Reset();
   fSpillIdx = 0;
 
-  for (UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb++) {
+  for (UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; uGdpb++) {
     fHM->H1(Form("ChCount_gDPB_%02u", uGdpb))->Reset();
     if( fbGet4M24b )
       fHM->H1(Form("ChCountFall_gDPB_%02u", uGdpb))->Reset();
@@ -2776,9 +3212,16 @@ void CbmTSMonitorTofStar::ResetAllHistos()
       fHM->H1(Form("FeetRate_gDPB_g%02u_f%1u", uGdpb, uFeet))->Reset();
       fHM->H1(Form("FeetErrorRate_gDPB_g%02u_f%1u", uGdpb, uFeet))->Reset();
       fHM->H2(Form("FtDistribPerCh_gDPB_g%02u_f%1u", uGdpb, uFeet))->Reset();
+      fHM->H1(Form("SelChFtNormDnlRise_g%02u_f%1u", uGdpb, uFeet))->Reset();
+      fHM->H1(Form("FtNormDnlMinRise_g%02u_f%1u", uGdpb, uFeet))->Reset();
+      fHM->H1(Form("FtNormDnlMaxRise_g%02u_f%1u", uGdpb, uFeet))->Reset();
+      
       if( fbGet4M24b )
       {
          fHM->H2(Form("FtDistribPerChFall_gDPB_g%02u_f%1u", uGdpb, uFeet))->Reset();
+         fHM->H1(Form("SelChFtNormDnlFall_g%02u_f%1u", uGdpb, uFeet))->Reset();
+         fHM->H1(Form("FtNormDnlMinFall_g%02u_f%1u", uGdpb, uFeet))->Reset();
+         fHM->H1(Form("FtNormDnlMaxFall_g%02u_f%1u", uGdpb, uFeet))->Reset();
          fHM->H2(Form("FtLastRiseCurrFall_gDPB_g%02u_f%1u", uGdpb, uFeet))->Reset();
          fHM->H2(Form("FtCurrRiseLastFall_gDPB_g%02u_f%1u", uGdpb, uFeet))->Reset();
          fHM->H2(Form("FtLastRiseDistRise_gDPB_g%02u_f%1u", uGdpb, uFeet))->Reset();
@@ -2826,7 +3269,7 @@ void CbmTSMonitorTofStar::ResetAllHistos()
   fHM->H1("hStarTokenEvo")->Reset();
   if( fbStarSortAndCutMode )
   {
-      for (UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb++)
+      for (UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; uGdpb++)
       {
          fhStarHitToTrigAll_gDPB[ uGdpb ]->Reset();
          fhStarHitToTrigWin_gDPB[ uGdpb ]->Reset();
@@ -2866,14 +3309,24 @@ void CbmTSMonitorTofStar::CyclePulserFee()
   {
       // Full Fee time difference test
       UInt_t uHistoFeeIdx = 0;
-      for (UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb++)
+      for (UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; uGdpb++)
       {
          for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet++)
          {
+            fSelChFtNormDnlRise[uHistoFeeIdx]->Reset();
+            fSelChFtNormDnlFall[uHistoFeeIdx]->Reset();
             fhFtLastRiseCurrFall[uHistoFeeIdx]->Reset();
             fhFtCurrRiseLastFall[uHistoFeeIdx]->Reset();
             fhFtLastRiseDistRise[uHistoFeeIdx]->Reset();
             fhFtLastRiseDistFall[uHistoFeeIdx]->Reset();
+            
+            fSelChFtNormInlRise[uHistoFeeIdx]->Reset();
+            fSelChFtNormInlFall[uHistoFeeIdx]->Reset();
+            fhFtLastRiseCurrFall[uHistoFeeIdx]->Reset();
+            fhFtCurrRiseLastFall[uHistoFeeIdx]->Reset();
+            fhFtLastRiseDistRise[uHistoFeeIdx]->Reset();
+            fhFtLastRiseDistFall[uHistoFeeIdx]->Reset();
+            
             uHistoFeeIdx++;
          } // for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet++)
       } // for (UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb++)
@@ -2882,10 +3335,165 @@ void CbmTSMonitorTofStar::CyclePulserFee()
       fuRiseFallChSel = (fuRiseFallChSel + 1)%fNrOfChannelsPerFeet;
 
       LOG(INFO) << "Channel index for 24b FT Rise vs FT Fall histo changed to : " << fuRiseFallChSel << FairLogger::endl;
-  } //
+  } // if( fbGet4M24b )
 
 }
+void CbmTSMonitorTofStar::UpdateNormedFt()
+{
+   TDirectory * oldDir = gDirectory;
+   
+   gROOT->cd();
+   UInt_t uHistoFeeIdx = 0;
+   TF1 *constantVal = new TF1("constant","1", 0, get4v1x::kuFineCounterSize);
+   for (UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; uGdpb++)
+   {
+      for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet++)
+      {
+         fFtNormDnlMinRise[uHistoFeeIdx]->Reset();
+         fFtNormDnlMaxRise[uHistoFeeIdx]->Reset();
+         fFtNormInlMinRise[uHistoFeeIdx]->Reset();
+         fFtNormInlMaxRise[uHistoFeeIdx]->Reset();
+         if( fbGet4M24b )
+         {
+            fFtNormDnlMinFall[uHistoFeeIdx]->Reset();
+            fFtNormDnlMaxFall[uHistoFeeIdx]->Reset();
+            fFtNormInlMinFall[uHistoFeeIdx]->Reset();
+            fFtNormInlMaxFall[uHistoFeeIdx]->Reset();
+         } // if( fbGet4M24b )
+         
+         for (UInt_t uChannel = 0; uChannel < fNrOfChannelsPerFeet; uChannel++)
+         {
+            // Rising edge
+            TH1 * pFtSelChSliceRise = fhFtDistribPerCh[uHistoFeeIdx]->ProjectionY( "temp_pFtSelChSliceRise", 
+                                                1 + uChannel, 1 + uChannel);
+            if( 0 < pFtSelChSliceRise->GetEntries() )
+            {
+               Double_t dNormFactRise = pFtSelChSliceRise->GetEntries()
+                                       / (fbGet4v20 ? 112. : get4v1x::kuFineCounterSize);
+               pFtSelChSliceRise->Scale( 1.0 / dNormFactRise );
+               pFtSelChSliceRise->Add( constantVal, -1.);
+            } // if( 0 < pFtSelChSliceRise->GetEntries() )
+            
+            // Falling edge
+            TH1 * pFtSelChSliceFall = NULL;
+            if( fbGet4M24b )
+            {
+               pFtSelChSliceFall = fhFtDistribPerChFall[uHistoFeeIdx]->ProjectionY( "temp_pFtSelChSliceFall", 
+                                                1 + uChannel, 1 + uChannel);
+               if( 0 < pFtSelChSliceFall->GetEntries() )
+               {
+                  Double_t dNormFactFall = pFtSelChSliceFall->GetEntries()
+                                       / (fbGet4v20 ? 112. : get4v1x::kuFineCounterSize);
+                  pFtSelChSliceFall->Scale( 1.0 / dNormFactFall );
+                  pFtSelChSliceFall->Add( constantVal, -1.);
+               } // if( 0 < pFtSelChSliceFall->GetEntries() )
+               
+               if( fbGet4v20 )
+               {
+                  pFtSelChSliceRise->SetAxisRange( 8, 119 );
+                  pFtSelChSliceFall->SetAxisRange( 8, 119 );
+               } // if( fbGet4v20 )
+            } // if( fbGet4M24b )
+               else if( fbGet4v20 )
+               {
+                  pFtSelChSliceRise->SetAxisRange( 0, 111 );
+               } // if !fbGet4M24b and fbGet4v20
+               
+            // INLs
+            fhTempHistInlRise->Reset();
+            if( fbGet4M24b )
+               fhTempHistInlFall->Reset();
+            Double_t dInlRise = 0.0;
+            Double_t dInlFall = 0.0;
+            for( UInt_t uFtBin = 0; uFtBin < get4v1x::kuFineCounterSize; uFtBin++)
+            {
+               dInlRise += pFtSelChSliceRise->GetBinContent( 1 + uFtBin );
+               fhTempHistInlRise->Fill( uFtBin, dInlRise );
+               
+               if( fbGet4M24b )
+               {
+                  dInlFall += pFtSelChSliceFall->GetBinContent( 1 + uFtBin );
+                  fhTempHistInlFall->Fill( uFtBin, dInlFall );
+               } // if( fbGet4M24b )
+            } // for( UInt_t uFtBin = 0; uFtBin < get4v1x::kuFineCounterSize; uFtBin++)
+            if( fbGet4v20 )
+            {
+               if( fbGet4M24b )
+               {
+                  fhTempHistInlRise->SetAxisRange( 8, 119 );
+                  fhTempHistInlFall->SetAxisRange( 8, 119 );
+               } // if( fbGet4M24b )
+                  else fhTempHistInlRise->SetAxisRange( 0, 111 );
+            } // if( fbGet4v20 )
+            
+            // Fill min/max histos
+            fFtNormDnlMinRise[uHistoFeeIdx]->Fill( uChannel, pFtSelChSliceRise->GetMinimum() );
+            fFtNormDnlMaxRise[uHistoFeeIdx]->Fill( uChannel, pFtSelChSliceRise->GetMaximum() );
+            fFtNormInlMinRise[uHistoFeeIdx]->Fill( uChannel, fhTempHistInlRise->GetMinimum() );
+            fFtNormInlMaxRise[uHistoFeeIdx]->Fill( uChannel, fhTempHistInlRise->GetMaximum() );
+            if( fbGet4M24b )
+            {
+               fFtNormDnlMinFall[uHistoFeeIdx]->Fill( uChannel, pFtSelChSliceFall->GetMinimum() );
+               fFtNormDnlMaxFall[uHistoFeeIdx]->Fill( uChannel, pFtSelChSliceFall->GetMaximum() );
+               fFtNormInlMinFall[uHistoFeeIdx]->Fill( uChannel, fhTempHistInlFall->GetMinimum() );
+               fFtNormInlMaxFall[uHistoFeeIdx]->Fill( uChannel, fhTempHistInlFall->GetMaximum() );
+            } // if( fbGet4M24b )
+            
+            if( uChannel == fuRiseFallChSel )
+            {
+               fSelChFtNormDnlRise[uHistoFeeIdx]->Reset();
+               fSelChFtNormDnlRise[uHistoFeeIdx]->Add( pFtSelChSliceRise );
+               
+               fSelChFtNormInlRise[uHistoFeeIdx]->Reset();
+               fSelChFtNormInlRise[uHistoFeeIdx]->Add( fhTempHistInlRise );
+               
+               if( fbGet4M24b )
+               {
+                  fSelChFtNormDnlFall[uHistoFeeIdx]->Reset();
+                  fSelChFtNormDnlFall[uHistoFeeIdx]->Add( pFtSelChSliceFall );
+                  
+                  fSelChFtNormInlFall[uHistoFeeIdx]->Reset();
+                  fSelChFtNormInlFall[uHistoFeeIdx]->Add( fhTempHistInlFall );
+               
+                  if( fbGet4v20 )
+                  {
+                     fSelChFtNormDnlRise[uHistoFeeIdx]->SetAxisRange( 8, 119 );
+                     fSelChFtNormDnlFall[uHistoFeeIdx]->SetAxisRange( 8, 119 );
+                     
+                     fSelChFtNormInlRise[uHistoFeeIdx]->SetAxisRange( 8, 119 );
+                     fSelChFtNormInlFall[uHistoFeeIdx]->SetAxisRange( 8, 119 );
+                  } // if( fbGet4v20 ) 
+               } // if( fbGet4M24b )
+                  else if( fbGet4v20 )
+                  {
+                     fSelChFtNormDnlRise[uHistoFeeIdx]->SetAxisRange( 0, 111 );
+                     fSelChFtNormInlRise[uHistoFeeIdx]->SetAxisRange( 0, 111 );
+                  } // if !fbGet4M24b and fbGet4v20
+         
+               LOG(INFO) << "Gdpb " << uGdpb << " Feet " << uFeet 
+                         << " Leading DNL min " << fSelChFtNormDnlRise[uHistoFeeIdx]->GetMinimum()
+                         << " max " << fSelChFtNormDnlRise[uHistoFeeIdx]->GetMaximum()
+                         << FairLogger::endl;
+               if( fbGet4M24b )
+                  LOG(INFO) << "Gdpb " << uGdpb << " Feet " << uFeet 
+                            << " Trailing DNL min " << fSelChFtNormDnlFall[uHistoFeeIdx]->GetMinimum()
+                            << " max " << fSelChFtNormDnlFall[uHistoFeeIdx]->GetMaximum()
+                            << FairLogger::endl;
+            } // if( uChannel == fuRiseFallChSel )
+            
+            delete pFtSelChSliceRise;
+            if( fbGet4M24b )
+               delete pFtSelChSliceFall;
+         } // for (UInt_t uChannel = 0; uChannel < fNrOfChannelsPerFeet; uChannel++)
+         
+         // Update histo index
+         uHistoFeeIdx++;
+      } // for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet++)
+   } // for (UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb++)
+   delete constantVal;
 
+   oldDir->cd();
+}
 
 void CbmTSMonitorTofStar::SetRunStart( Int_t dateIn, Int_t timeIn, Int_t iBinSize )
 {

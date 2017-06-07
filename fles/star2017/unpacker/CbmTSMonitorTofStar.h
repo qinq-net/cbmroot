@@ -86,6 +86,7 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
 
     inline void SetGet4Mode24b( Bool_t inGet4Mode24b = kTRUE ) { fbGet4M24b = inGet4Mode24b; }
     inline void SetGet4v20Mode( Bool_t inGet4v20Mode = kTRUE ) { fbGet4v20 = inGet4v20Mode; }
+    inline void SetMergedEpochs( Bool_t inMergedEpochs = kTRUE ) { fbMergedEpochsOn = inMergedEpochs; }
     inline void SetPulserMode( Bool_t inPulserMode = kTRUE ) { fbPulserMode = inPulserMode; SetPulserChans(); }
     inline void SetPulserFee( UInt_t inPulserGdpb, UInt_t inPulserFee ) { fuPulserGdpb = inPulserGdpb; fuPulserFee = inPulserFee; }
            void SetPulserChans( UInt_t inPulserChanA =  0, UInt_t inPulserChanB =  1, UInt_t inPulserChanC =  2,
@@ -98,6 +99,7 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     void SaveAllHistos( TString sFileName = "" );
     void ResetAllHistos();
     void CyclePulserFee();
+    void UpdateNormedFt();
 
   private:
 
@@ -210,6 +212,7 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     static const UInt_t kuNbChanTest = 16;
     Bool_t fbGet4M24b;
     Bool_t fbGet4v20;
+    Bool_t fbMergedEpochsOn;
     Bool_t fbPulserMode;
     UInt_t fuPulserGdpb;
     UInt_t fuPulserFee;
@@ -220,8 +223,22 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     TH1 * fhTimeRmsPulserChosenChPairs;
     Double_t fdLastRmsUpdateTime;
     std::vector<TH2 *> fhFtDistribPerCh;
-    std::vector<TH1*> fChCountFall_gDPB;
+    std::vector<TH1*>  fChCountFall_gDPB;
     std::vector<TH2 *> fhFtDistribPerChFall;
+    std::vector<TH1*>  fSelChFtNormDnlRise;
+    std::vector<TH1*>  fSelChFtNormDnlFall;
+    std::vector<TH1*>  fFtNormDnlMinRise;
+    std::vector<TH1*>  fFtNormDnlMaxRise;
+    std::vector<TH1*>  fFtNormDnlMinFall;
+    std::vector<TH1*>  fFtNormDnlMaxFall;
+    TH1 *              fhTempHistInlRise;
+    TH1 *              fhTempHistInlFall;
+    std::vector<TH1*>  fSelChFtNormInlRise;
+    std::vector<TH1*>  fSelChFtNormInlFall;
+    std::vector<TH1*>  fFtNormInlMinRise;
+    std::vector<TH1*>  fFtNormInlMaxRise;
+    std::vector<TH1*>  fFtNormInlMinFall;
+    std::vector<TH1*>  fFtNormInlMaxFall;
     std::vector< std::vector<Int_t> > fviFtLastRise24b;
     std::vector< std::vector<Int_t> > fviFtLastFall24b;
     std::vector< std::vector<Double_t> > fvdTimeLastRise24b;
