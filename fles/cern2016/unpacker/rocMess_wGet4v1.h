@@ -507,6 +507,7 @@ namespace ngdpb {
 
          // ---------- Get4 gDPB 24b/32b ALL access methods ------------------------
          inline uint16_t getGdpbGenChipId()      const { return getField( 42,  6); }
+         inline void     setGdpbGenChipId(uint32_t v)   { setField(42, 6, v); }
 
          // ---------- Get4 gDPB 24b/32b Hit access methods ------------------------
 //         inline uint16_t getGdpbHitChipId()      const { return getField( 42,  6); }
@@ -619,6 +620,10 @@ namespace ngdpb {
          uint64_t getMsgFullTime(uint32_t epoch) const;
 
          double getMsgFullTimeD(uint32_t epoch) const;
+         
+         uint64_t getMsgG4v2FullTime(uint32_t epoch) const;
+
+         double getMsgG4v2FullTimeD(uint32_t epoch) const;
 
          //! Expanded timestamp for 160 MHz * 14 bit (12 + 2) epochs
          inline static uint64_t FullTimeStamp(uint32_t epoch, uint16_t stamp)

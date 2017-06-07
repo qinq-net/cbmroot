@@ -132,8 +132,47 @@ double ngdpb::Message::getMsgFullTimeD(uint32_t epoch) const
    // If not already dealt with => unknown type
    return 0.0;
 }
-
-
+//----------------------------------------------------------------------------
+//! Same as getMsgFullTime with Get4 v2.0 and higher fine time calculation
+uint64_t ngdpb::Message::getMsgG4v2FullTime(uint32_t epoch) const
+{
+   return std::round( getMsgG4v2FullTimeD( epoch ) );
+}
+//----------------------------------------------------------------------------
+//! Same as getMsgFullTimeD with Get4 v2.0 and higher fine time calculation
+//! Harcoded constants should be implemented better as soon as their value is fixed
+double ngdpb::Message::getMsgG4v2FullTimeD(uint32_t epoch) const
+{
+   switch (getMessageType()) {         
+      case MSG_HIT:
+         if( 0 < epoch )
+            return FullTimeStamp(getNxLastEpoch() ? epoch - 1 : epoch, getNxTs()) * (6.25 / 4.); // ignore the 2 last bits of NX TS (fine-time)
+         else return (getNxLastEpoch() ? -1 : FullTimeStamp( epoch, getNxTs()) * (6.25 / 4.) ); // ignore the 2 last bits of NX TS (fine-time)
+      case MSG_EPOCH:
+         return FullTimeStamp(getEpochNumber(), 0); // ignore the 2 last bits
+      case MSG_SYNC:
+         return FullTimeStamp((getSyncEpochLSB() == (epoch & 0x1)) ? epoch : epoch - 1, getSyncTs()) * (6.25 / 4.); 
+      case MSG_AUX:
+         return FullTimeStamp((getAuxEpochLSB() == (epoch & 0x1)) ? epoch : epoch - 1, getAuxTs()) * (6.25 / 4.);
+      case MSG_EPOCH2:
+         return FullTimeStamp2(getEpoch2Number(), 0) * (6.25 / 128.);
+      case MSG_GET4:
+         return ( static_cast<double_t>(FullTimeStamp2(epoch, (getGdpbHitCoarse() << 7))) + ( static_cast<double_t>(getGdpbHitFineTs() - 8. ) * 128. /112.) ) 
+                  * (6.25 / 128.); /// TODO: hardcoded -> constant values!!
+      case MSG_SYS:
+         return FullTimeStamp(epoch, 0) * (6.25 / 4.); // Assume same internal TS as NX TS
+      case MSG_GET4_32B:
+         return ( static_cast<double_t>(FullTimeStamp2(epoch, (getGdpbHitCoarse() << 7))) + static_cast<double_t>(getGdpbHitFineTs() )  ) 
+                  * (6.25 / 112.); /// TODO: hardcoded -> constant values!!
+      case MSG_GET4_SLC:
+      case MSG_GET4_SYS:
+         return FullTimeStamp2(epoch, 0) * (6.25 / 128.);
+   }
+   
+   // If not already dealt with => unknown type
+   return 0.0;
+}
+//----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
 //! Returns the time difference between two expanded time stamps
 
