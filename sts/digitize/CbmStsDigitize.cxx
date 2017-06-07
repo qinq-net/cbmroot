@@ -64,6 +64,7 @@ CbmStsDigitize::CbmStsDigitize()
     fMatches(NULL),
     fTimer(),
     fTimePointLast(-1.),
+    fEventTimeCurrent(0.),
     fTimeDigiFirst(-1.),
     fTimeDigiLast(-1.),
     fNofPoints(0),
@@ -75,6 +76,7 @@ CbmStsDigitize::CbmStsDigitize()
     fNofSignalsFTot(0.),
     fNofSignalsBTot(0.),
     fNofDigisTot(0.),
+    fNofNoiseTot(0.),
     fTimeTot()
 { 
   Reset();
@@ -82,15 +84,18 @@ CbmStsDigitize::CbmStsDigitize()
   // --- This can be changed by the method SetProcesses.
   fSettings->SetProcesses(2, kTRUE, kTRUE, kTRUE);
   // --- Set default parameters for the modules
-  Double_t dynRange = 75000.;   // dynamic range in e
-  Double_t threshold = 3000.;   // threshold in e
-  Int_t nAdc = 32;              // Number of ADC channels
-  Double_t tResol = 5.;         // Time resolution in ns
-  Double_t deadTime = 800.;     // Channel dead time in ns
-  Double_t noise = 1000.;       // Noise in e
-  Double_t deadChannels = 0.;   // Fraction of dead channels in %
+  // --- The zero noise rate corresponds to a rise time of 80 ns (1/(pi*tau))
+  Double_t dynRange = 75000.;          // dynamic range in e
+  Double_t threshold = 3000.;          // threshold in e
+  Int_t    nAdc = 32;                  // Number of ADC channels
+  Double_t tResol = 5.;                // Time resolution in ns
+  Double_t deadTime = 800.;            // Channel dead time in ns
+  Double_t noise = 1000.;              // Noise RMS in e
+  Double_t zeroNoiseRate = 3.9789e-3;  // Zero noise rate [1/ns]
+  Double_t deadChannels = 0.;          // Fraction of dead channels in %
   fSettings->SetModuleParameters(dynRange, threshold, nAdc, tResol,
-                                 deadTime, noise, deadChannels);
+                                 deadTime, noise, zeroNoiseRate,
+                                 deadChannels);
 }
 // -------------------------------------------------------------------------
 
@@ -174,6 +179,8 @@ string CbmStsDigitize::BufferStatus2() const {
 }
 // -------------------------------------------------------------------------
 
+
+
 // -----   Create a digi object   ------------------------------------------
 void CbmStsDigitize::CreateDigi(UInt_t address,
 		              							Long64_t time,
@@ -233,47 +240,64 @@ void CbmStsDigitize::Exec(Option_t* /*opt*/) {
 	fTimer.Start();
 	Reset();
 
-	// --- For debug: status of analog buffers
-  if ( gLogger->IsLogNeeded(DEBUG)) {
-   	std::cout << std::endl;
-    LOG(DEBUG) << GetName() << ": " << BufferStatus() << FairLogger::endl;
-  }
+	// --- For debug: status of analogue buffers
+    if ( gLogger->IsLogNeeded(DEBUG)) {
+     	std::cout << std::endl;
+     	LOG(DEBUG) << GetName() << ": " << BufferStatus() << FairLogger::endl;
+    }
 
-	// --- Analog reponse: Process the input array of StsPoints
+    // --- Store previous event time.  Get current event time.
+    Int_t eventNumber = FairRootManager::Instance()->GetEntryNr();
+    Double_t eventTimePrevious = fEventTimeCurrent;
+    fEventTimeCurrent = FairRun::Instance()->GetEventHeader()->GetEventTime();
+
+    // --- Generate noise from previous to current event time. Only in
+    // --- streaming mode.
+    if ( fMode == 0 && fSettings->GetGenerateNoise() ) {
+      Int_t nNoise = 0;
+      for (Int_t iModule = 0; iModule < fSetup->GetNofModules(); iModule++)
+        nNoise += fSetup->GetModule(iModule)->GenerateNoise(eventTimePrevious,
+                                                            fEventTimeCurrent);
+      fNofNoiseTot += Double_t(nNoise);
+      LOG(INFO) << "+ " << setw(20) << GetName() << ": Generated  " << nNoise
+          << " noise digis from t = " << eventTimePrevious << " ns to "
+          << fEventTimeCurrent << " ns" << FairLogger::endl;
+    }
+
+	// --- Analogue response: Process the input array of StsPoints
 	ProcessMCEvent();
 	LOG(DEBUG) << GetName() << ": " << fNofSignalsF + fNofSignalsB
 			       << " signals generated ( "
 			       << fNofSignalsF << " / " << fNofSignalsB << " )"
 			       << FairLogger::endl;
-	// --- For debug: status of analog buffers
-  if ( gLogger->IsLogNeeded(DEBUG)) {
-    LOG(DEBUG) << GetName() << ": " << BufferStatus() << FairLogger::endl;
-  }
+	// --- For debug: status of analogue buffers
+	if ( gLogger->IsLogNeeded(DEBUG)) {
+	  LOG(DEBUG) << GetName() << ": " << BufferStatus() << FairLogger::endl;
+	}
 
-	// --- Readout time: in stream mode the time of the last processed StsPoint.
-	// --- Analog buffers will be digitised for signals at times smaller than
+	// --- Readout time: in stream mode the time of the current event.
+	// --- Analogue buffers will be digitised for signals at times smaller than
 	// --- that time minus a safety margin depending on the module properties
 	// --- (dead time and time resolution). In event mode, the readout time
 	// --- is set to -1., meaning to digitise everything in the readout buffers.
-	Double_t eventTime
-		= FairRun::Instance()->GetEventHeader()->GetEventTime();
-	Double_t readoutTime = fMode == 0 ? eventTime : -1.;
+	Double_t readoutTime = fMode == 0 ? fEventTimeCurrent : -1.;
 	LOG(DEBUG) << GetName() << ": Readout time is " << readoutTime << " ns"
 			       << FairLogger::endl;
 
-  // --- Digital response: Process buffers of all modules
+	// --- Digital response: Process buffers of all modules
 	ProcessAnalogBuffers(readoutTime);
 
 
-  // --- Check status of analog module buffers
-  if ( gLogger->IsLogNeeded(DEBUG)) {
-    LOG(DEBUG) << GetName() << ": " << BufferStatus() << FairLogger::endl;
-  }
+    // --- Check status of analogue module buffers
+    if ( gLogger->IsLogNeeded(DEBUG)) {
+      LOG(DEBUG) << GetName() << ": " << BufferStatus() << FairLogger::endl;
+    }
 
   // --- Event log
   LOG(INFO) << "+ " << setw(20) << GetName() << ": Event " << setw(6)
-  		      << right << fNofEvents << ", real time " << fixed
-  		      << setprecision(6) << fTimer.RealTime() << " s, points: "
+  		      << right << eventNumber << ", real time " << fixed
+  		      << setprecision(6) << fTimer.RealTime() << " s, event time "
+  		      << fEventTimeCurrent << " ns, points: "
   		      << fNofPoints << ", signals: " << fNofSignalsF << " / "
   		      << fNofSignalsB << ", digis: " << fNofDigis << FairLogger::endl;
 
@@ -332,6 +356,10 @@ void CbmStsDigitize::Finish() {
 	LOG(INFO) << "Digis per signal    : "
 			      << fNofDigisTot / ( fNofSignalsFTot + fNofSignalsBTot )
 			      << FairLogger::endl;
+	LOG(INFO) << "Noise digis / event : " << fNofNoiseTot / Double_t(fNofEvents)
+	          << FairLogger::endl;
+	LOG(INFO) << "Noise fraction      : " << fNofNoiseTot / fNofDigisTot
+	          << FairLogger::endl;
 	LOG(INFO) << "Real time per event : " << fTimeTot / Double_t(fNofEvents)
 			      << " s" << FairLogger::endl;
 	LOG(INFO) << "=====================================" << FairLogger::endl;
@@ -344,26 +372,25 @@ void CbmStsDigitize::Finish() {
 void CbmStsDigitize::GetEventInfo(Int_t& inputNr, Int_t& eventNr,
 		                              Double_t& eventTime) {
 
+  // --- The event number is taken from the FairRootManager
+  eventNr = FairRootManager::Instance()->GetEntryNr();
 
-	// --- In a FairRunAna, take the information from FairEventHeader
-	if ( FairRunAna::Instance() ) {
-		FairEventHeader* event = FairRunAna::Instance()->GetEventHeader();
-		assert ( event );
-	  inputNr   = event->GetInputFileId();
-	  eventNr = FairRootManager::Instance()->GetEntryNr();
-	  eventTime = event->GetEventTime();
-	}
+  // --- In a FairRunAna, take input number and time from FairEventHeader
+  if ( FairRunAna::Instance() ) {
+    FairEventHeader* event = FairRunAna::Instance()->GetEventHeader();
+	assert ( event );
+	 inputNr   = event->GetInputFileId();
+	 eventTime = event->GetEventTime();
+  } //? FairRunAna
 
-	// --- In a FairRunSim, the input number and event time are always zero;
-	// --- only the event number is retrieved.
-	else {
-		if ( ! FairRunSim::Instance() )
-			LOG(FATAL) << GetName() << ": neither SIM nor ANA run."
-					       << FairLogger::endl;
+  // --- In a FairRunSim, the input number and event time are always zero.
+  else {
+	if ( ! FairRunSim::Instance() )
+	  LOG(FATAL) << GetName() << ": neither SIM nor ANA run."
+			     << FairLogger::endl;
 		inputNr   = 0;
-	    eventNr = FairRootManager::Instance()->GetEntryNr();
 		eventTime = 0.;
-	}
+  } //? Not FairRunAna
 
 }
 // -------------------------------------------------------------------------
@@ -395,6 +422,7 @@ InitStatus CbmStsDigitize::Init() {
   	LOG(INFO) << GetName() << ": Using event mode."
   			      << FairLogger::endl;
   	fMode = 1;
+  	SetGenerateNoise(kFALSE);  // Noise can be generated only in stream mode
   }
 
 	// --- Get FairRootManager instance
@@ -632,17 +660,26 @@ void CbmStsDigitize::Reset() {
 
 
 
+// -----   Activate noise generation   -------------------------------------
+void CbmStsDigitize::SetGenerateNoise(Bool_t choice) {
+
+  if ( fIsInitialised ) {
+    LOG(ERROR) << GetName() << ": physics processes must be set before "
+               << "initialisation! Statement will have no effect."
+               << FairLogger::endl;
+    return;
+  }
+
+  fSettings->SetGenerateNoise(choice);
+}
+// -------------------------------------------------------------------------
+
+
+
 // -----   Set the digitisation parameters for the modules   ---------------
 // TODO: Currently, all modules have the same parameters. In future,
 // more flexible schemes must be used, in particular for the thresholds.
 void CbmStsDigitize::SetModuleParameters() {
-
-  if ( fIsInitialised ) {
-      LOG(ERROR) << GetName() << ": module parameters must be set before "
-                 << "initialisation! Statement will have no effect."
-                 << FairLogger::endl;
-      return;
-    }
 
     // --- Set parameters for all modules
 	Int_t nModules = fSetup->GetNofModules();
@@ -653,7 +690,8 @@ void CbmStsDigitize::SetModuleParameters() {
 				                                  fSettings->GetNofAdc(),
 				                                  fSettings->GetTimeResolution(),
 				                                  fSettings->GetDeadTime(),
-				                                  fSettings->GetNoise());
+				                                  fSettings->GetNoise(),
+				                                  fSettings->GetZeroNoiseRate());
 		fSetup->GetModule(iModule)->SetDeadChannels(fSettings->GetDeadChannelFrac());
 	}
 	LOG(INFO) << GetName() << ": Set parameters for " << nModules
@@ -663,11 +701,33 @@ void CbmStsDigitize::SetModuleParameters() {
 
 
 
+// -----   Set the digitisation parameters   -------------------------------
+void CbmStsDigitize::SetParameters(Double_t dynRange, Double_t threshold,
+                                   Int_t nAdc, Double_t timeResolution,
+                                   Double_t deadTime, Double_t noise,
+                                   Double_t zeroNoiseRate,
+                                   Double_t deadChannelFrac) {
+
+  if ( fIsInitialised ) {
+    LOG(ERROR) << GetName() << ": physics processes must be set before "
+               << "initialisation! Statement will have no effect."
+               << FairLogger::endl;
+    return;
+  }
+  fSettings->SetModuleParameters(dynRange, threshold, nAdc, timeResolution,
+                                 deadTime, noise, zeroNoiseRate,
+                                 deadChannelFrac);
+}
+// -------------------------------------------------------------------------
+
+
+
 // -----   Set the switches for physical processes for the analogue response
 void CbmStsDigitize::SetProcesses(Int_t eLossModel,
 		                          Bool_t useLorentzShift,
 		                          Bool_t useDiffusion,
-		                          Bool_t useCrossTalk) {
+		                          Bool_t useCrossTalk,
+		                          Bool_t generateNoise) {
 	  if ( fIsInitialised ) {
 	  	LOG(ERROR) << GetName() << ": physics processes must be set before "
 	  			   << "initialisation! Statement will have no effect."
@@ -675,7 +735,7 @@ void CbmStsDigitize::SetProcesses(Int_t eLossModel,
 	  	return;
 	  }
 	  fSettings->SetProcesses(eLossModel, useLorentzShift, useDiffusion,
-	                          useCrossTalk);
+	                          useCrossTalk, generateNoise);
 }
 // -------------------------------------------------------------------------
 
@@ -685,13 +745,6 @@ void CbmStsDigitize::SetProcesses(Int_t eLossModel,
 // TODO: Currently, all sensors have the same parameters. In future,
 // more flexible schemes must be used (initialisation from a database).
 void CbmStsDigitize::SetSensorConditions() {
-
-    if ( fIsInitialised ) {
-      LOG(ERROR) << GetName() << ": sensor conditions must be set before "
-                 << "initialisation! Statement will have no effect."
-                 << FairLogger::endl;
-      return;
-    }
 
 	// --- Current parameters are hard-coded
 	Double_t vDep        =  70.;    //depletion voltage, V

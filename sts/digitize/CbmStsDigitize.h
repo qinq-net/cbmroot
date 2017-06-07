@@ -77,6 +77,12 @@ class CbmStsDigitize : public FairTask
   Int_t GetELossModel() const{return fSettings->GetELossModel();}
 
 
+  /** Get current event time
+   ** @value Current event time [ns]
+   **/
+  Double_t GetEventTime() { return fEventTimeCurrent; }
+
+
   /** Get number of signals front side **/
   Int_t GetNofSignalsF() const {return fNofSignalsF;}
 
@@ -99,6 +105,15 @@ class CbmStsDigitize : public FairTask
   virtual InitStatus ReInit();
 
 
+  /** @brief Activate noise generation
+   ** @param choice If kTRUE, noise will be generated (only in stream mode).
+   **
+   ** By default, noise is not generated.
+   ** Changing the physics flags is only allowed before Init() is called.
+   **/
+  void SetGenerateNoise(Bool_t choise = kTRUE);
+
+
    /** Set the digitisation parameters in the modules **/
   void SetModuleParameters();
 
@@ -110,30 +125,33 @@ class CbmStsDigitize : public FairTask
    ** @param timeResolution       Time resolution [ns]
    ** @param deadTimec            Single-channel dead time [ns]
    ** @param noise                Equivalent noise charge (sigma) [e]
+   ** @param zeroNoiseRate        Zero-threshold noise rate [1/ns]
+   **
+   ** Changing the parameters is only allowed before Init() is called.
    **/
   void SetParameters(Double_t dynRange, Double_t threshold, Int_t nAdc,
   		               Double_t timeResolution, Double_t deadTime,
-  		               Double_t noise, Double_t deadChannelFrac = 0.) {
-    fSettings->SetModuleParameters(dynRange, threshold, nAdc, timeResolution,
-                                   deadTime, noise, deadChannelFrac);
-  }
+  		               Double_t noise, Double_t zeroNoiseRate,
+  		               Double_t deadChannelFrac = 0.);
 
 
   /** Set physics processes
    ** @param eLossModel       0 = ideal, 1 = uniform, 2 = fluctuations
    ** @param useLorentzShift  If kTRUE, activate Lorentz shift
    ** @param useDiffusion     If kTRUE, activate diffusion
-   ** @param useCrossTalk     If kTRUE; activate cross talk
+   ** @param useCrossTalk     If kTRUE, activate cross talk
+   ** @param generateNoise    If kTRUE, noise will be generated
    **
    ** Changing the physics flags is only allowed before Init() is called.
    **/
   void SetProcesses(Int_t eLossModel,
   		            Bool_t useLorentzShift = kTRUE,
   		            Bool_t useDiffusion = kTRUE,
-  		            Bool_t useCrossTalk = kTRUE);
+  		            Bool_t useCrossTalk = kTRUE,
+  		            Bool_t generateNoise = kFALSE);
 
 
- /** Set the operating parameters in the sensors **/
+  /** Set the operating parameters in the sensors **/
   void SetSensorConditions();
 
 
@@ -169,6 +187,9 @@ class CbmStsDigitize : public FairTask
   // --- Time of last processed StsPoint (for stream mode)
   Double_t fTimePointLast;
 
+  // --- Time of current event (for stream mode)
+  Double_t fEventTimeCurrent;   ///< Time of current event [ns]
+
   // --- Digi times (for stream mode, in each step)
   Double_t fTimeDigiFirst;      ///< Time of first digi sent to DAQ
   Double_t fTimeDigiLast;       ///< Time of last digi sent to DAQ
@@ -185,6 +206,7 @@ class CbmStsDigitize : public FairTask
   Double_t       fNofSignalsFTot; ///< Number of signals on front side
   Double_t       fNofSignalsBTot; ///< Number of signals on back side
   Double_t       fNofDigisTot;    ///< Total number of digis created
+  Double_t       fNofNoiseTot;    ///< Total number of noise digis
   Double_t       fTimeTot;        ///< Total execution time
 
 
@@ -203,10 +225,13 @@ class CbmStsDigitize : public FairTask
    ** @param[out]  inputNumber  Number of input
    ** @param[out]  eventTime    Start time of event [ns]
    **
-   ** In case of being run with FairRunAna, this information
-   ** is taken from FairEventHeader. If the task is run with
-   ** FairRunSim, the FairEventHeader is not filled, so the
-   ** respective information is taken from FairMCEventHeader.
+   ** In case of being run with FairRunAna, input number and time
+   ** are taken from FairEventHeader. If the task is run with
+   ** FairRunSim, the FairEventHeader is not filled, so input number
+   ** and event time are zero.
+   ** The event number is always taken from the FairRootManager, because the
+   ** event number from FaurEventHeader::GetMCEntryNumber() is
+   ** generator-dependent.
    **/
   void GetEventInfo(Int_t& inputNr, Int_t& eventNr, Double_t& eventTime);
 

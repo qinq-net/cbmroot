@@ -224,12 +224,12 @@ class CbmStsModule : public CbmStsElement
       ** @param timeResolution  Time resolution [ns]
       ** @param deadTime        Single-channel dead time [ns]
       ** @param noise           Equivalent noise charge [e]
+      ** @param zeroNoiseRate   Zero threshold noise rate [1/ns]
       **/
      void SetParameters(Int_t nChannels, Double_t dynRange,
     		                Double_t threshold, Int_t nAdc,
-    		                Double_t timeResolution = 0.,
-    		                Double_t deadTime = 0.,
-    		                Double_t noise = 0.) {
+    		                Double_t timeResolution, Double_t deadTime,
+    		                Double_t noise, Double_t zeroNoiseRate) {
     	 fNofChannels    = nChannels;
     	 fDynRange       = dynRange;
     	 fThreshold      = threshold;
@@ -237,7 +237,10 @@ class CbmStsModule : public CbmStsElement
     	 fTimeResolution = timeResolution;
     	 fDeadTime       = deadTime;
     	 fNoise          = noise;
-    	 fIsSet = kTRUE;
+    	 fZeroNoiseRate  = zeroNoiseRate;
+    	 fIsSet          = kTRUE;
+    	 fNoiseRate = 0.5 * fZeroNoiseRate
+    	     * TMath::Exp( -0.5 * fThreshold * fThreshold / (fNoise * fNoise) );
     	 InitAnalogBuffer();
      }
 
@@ -276,6 +279,13 @@ class CbmStsModule : public CbmStsElement
       **/
      Double_t GetTimeResolution() const { return fTimeResolution; }
 
+
+     /** @brief Zero threshold noise rate
+      ** @value Noise rate at zero threshold [1/ns]
+      **/
+     Double_t GetZeroNoiseRate() const { return fZeroNoiseRate; }
+
+
      /** Start clustering procedure for the current module **/
      void StartClusteringTb();
 
@@ -289,6 +299,23 @@ class CbmStsModule : public CbmStsElement
 
      /** Delete used digi from multimap **/
      void DeactivateDigiTb();
+
+
+     /** @brief Generate noise
+      ** @param t1  Start time [ns]
+      ** @param t2  Stop time [n2]
+      **
+      ** This method will generate noise digis in the time interval [t1, t2]
+      ** according to Rice's formula. The number of noise digis in this
+      ** interval is sampled from a Poissonian with mean calculated from
+      ** the single-channel noise rate, the number of channels and the
+      ** length of the time interval. The noise hits are randomly distributed
+      ** to the channels. The time of each noise digi is sampled from a flat
+      ** distribution, its charge from a Gaussian with sigma = noise,
+      ** truncated at threshold.
+      **/
+     Int_t GenerateNoise(Double_t t1, Double_t t2);
+
 
      /** Return channel dead time [ns] **/
      Double_t GetDeadTimeTb() { return fDeadTime; }
@@ -315,6 +342,8 @@ class CbmStsModule : public CbmStsElement
     Double_t fTimeResolution;    ///< Time resolution (sigma) [ns]
     Double_t fDeadTime;          ///< Channel dead time [ns]
     Double_t fNoise;             ///< Equivalent noise charge (sigma) [e]
+    Double_t fZeroNoiseRate;     ///< Zero-threshold noise rate [1/ns]
+    Double_t fNoiseRate;         ///< Noise rate [1/ns]
     Bool_t   fIsSet;             ///< Flag whether parameters are set
     std::set <Int_t> fDeadChannels;    ///< List of inactive channels
     CbmStsPhysics* fPhysics;  //!  Pointer to CbmStsPhysics instance

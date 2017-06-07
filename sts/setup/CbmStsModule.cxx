@@ -36,14 +36,15 @@ CbmStsModule::CbmStsModule() : CbmStsElement(),
                                fTimeResolution(0),
                                fDeadTime(0.),
                                fNoise(0.),
+                               fZeroNoiseRate(0.),
                                fIsSet(kFALSE),
                                fDeadChannels(),
-			       fPhysics(NULL),
+                               fPhysics(NULL),
                                fAnalogBuffer(),
                                fDigis(),
                                fClusters(),
                                fDigisTb(),
-			       fDigisTbtemp(),
+                               fDigisTbtemp(),
                                fIt_DigiTb()
 {
 	fPhysics = CbmStsPhysics::Instance();
@@ -63,14 +64,15 @@ CbmStsModule::CbmStsModule(const char* name, const char* title,
                            fTimeResolution(0),
                            fDeadTime(0.),
                            fNoise(0.),
+                           fZeroNoiseRate(0.),
                            fIsSet(0),
                            fDeadChannels(),
-			   fPhysics(NULL),
+                           fPhysics(NULL),
                            fAnalogBuffer(),
                            fDigis(),
                            fClusters(),
                            fDigisTb(),
-			   fDigisTbtemp(),
+                           fDigisTbtemp(),
                            fIt_DigiTb()
 {
 	fPhysics = CbmStsPhysics::Instance();
@@ -492,11 +494,8 @@ void CbmStsModule::Digitize(Int_t channel, CbmStsSignal* signal) {
 				     * Double_t(fNofAdcChannels) );
 
 	// --- Digitise time
-	// Note that the time is truncated at 0 to avoid negative times. This
-	// will show up in event-by-event simulations, since the digi times
-	// in this case are mostly below 1 ns.
 	Double_t  deltaT = gRandom->Gaus(0., fTimeResolution);
-	Long64_t dTime = Long64_t(round(signal->GetTime() + deltaT));;
+	Long64_t dTime = Long64_t(round(signal->GetTime() + deltaT));
 
 	// --- Send the message to the digitiser task
 	LOG(DEBUG4) << GetName() << ": charge " << signal->GetCharge()
@@ -535,6 +534,39 @@ Int_t CbmStsModule::FindHits(TClonesArray* hitArray, CbmEvent* event) {
 			        << ", sensors " << GetNofDaughters() << ", hits "
 			        << nHits << FairLogger::endl;
 	return nHits;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Generate noise   ------------------------------------------------
+Int_t CbmStsModule::GenerateNoise(Double_t t1, Double_t t2) {
+
+  assert( t2 > t1 );
+
+  // --- Mean number of digis in [t1, t2]
+  Double_t nNoiseMean = fNoiseRate * fNofChannels * ( t2 - t1 );
+
+  // --- Sample number of noise digis
+  Int_t nNoise = gRandom->Poisson(nNoiseMean);
+
+  // --- Create noise digis
+  for (Int_t iNoise = 0; iNoise < nNoise; iNoise++) {
+
+    // --- Random channel number, time and charge
+    Int_t channel = Int_t(gRandom->Uniform(Double_t(fNofChannels)));
+    Double_t time = gRandom->Uniform(t1, t2);
+    Double_t charge = 1.1 * fThreshold; // TODO: Real sampling from Gauss
+
+    // --- Create a signal object (without link index, entry and file)
+    // --- and digitise it.
+    CbmStsSignal signal(time, charge, -1, -1, -1);
+    Digitize(channel, &signal);
+
+  } //# noise digis
+
+
+  return nNoise;
 }
 // -------------------------------------------------------------------------
 

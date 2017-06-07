@@ -32,14 +32,6 @@ class CbmStsDigitizeSettings : public TNamed
     virtual ~CbmStsDigitizeSettings() { };
 
 
-    /** @brief Flag whether secondary tracks are discarded during digitisation
-     ** @value if kTRUE, points from secondary tracks are not digitised.
-     **/
-    void SetDiscardSecondaries(Bool_t flag = kTRUE) {
-      fDiscardSecondaries = flag;
-    }
-
-
     /** Accessors **/
     Double_t GetCcoup() const { return fCcoup; }
     Double_t GetCis() const { return fCis; }
@@ -48,6 +40,7 @@ class CbmStsDigitizeSettings : public TNamed
     Bool_t   GetDiscardSecondaries() const { return fDiscardSecondaries; }
     Double_t GetDynRange() const { return fDynRange; }
     Int_t    GetELossModel() const { return fELossModel; }
+    Bool_t   GetGenerateNoise() const { return fGenerateNoise; }
     Int_t    GetNofAdc() const { return fNofAdc; }
     Int_t    GetNoise() const { return fNoise; }
     Double_t GetStripPitch() const { return fStripPitch; }
@@ -59,6 +52,21 @@ class CbmStsDigitizeSettings : public TNamed
     Bool_t   GetUseLorentzShift() const { return fUseLorentzShift; }
     Double_t GetVbias() const { return fVbias; }
     Double_t GetVdep() const { return fVdep; }
+    Double_t GetZeroNoiseRate() const { return fZeroNoiseRate; }
+
+
+    /** @brief Flag whether secondary tracks are discarded during digitisation
+     ** @param if kTRUE, points from secondary tracks are not digitised.
+     **/
+    void SetDiscardSecondaries(Bool_t choice = kTRUE) {
+      fDiscardSecondaries = choice;
+    }
+
+
+    /** @brief Switch noise generation on/off (is deactivated by default).
+     ** @param If kTRUE, noise will be generated in stream mode.
+     **/
+    void SetGenerateNoise(Bool_t choice = kTRUE) { fGenerateNoise = choice; }
 
 
     /** @brief Set digital      response parameters
@@ -74,6 +82,7 @@ class CbmStsDigitizeSettings : public TNamed
     void SetModuleParameters(Double_t dynRange, Double_t threshold,
                              Int_t nAdc, Double_t timeResol,
                              Double_t deadTime, Double_t noise,
+                             Double_t zeroNoiseRate,
                              Double_t deadChannelFrac) {
       fDynRange        = dynRange;
       fThreshold       = threshold;
@@ -81,6 +90,7 @@ class CbmStsDigitizeSettings : public TNamed
       fTimeResolution  = timeResol;
       fDeadTime        = deadTime;
       fNoise           = noise;
+      fZeroNoiseRate   = zeroNoiseRate;
       fDeadChannelFrac = deadChannelFrac;
     }
 
@@ -92,11 +102,13 @@ class CbmStsDigitizeSettings : public TNamed
      ** @param useCrossTalk     Cross-talk on/off
      **/
     void SetProcesses(Int_t eLossModel, Bool_t useLorentzShift,
-                      Bool_t useDiffusion, Bool_t useCrossTalk) {
+                      Bool_t useDiffusion, Bool_t useCrossTalk,
+                      Bool_t generateNoise = kFALSE) {
       fELossModel = eLossModel;
       fUseLorentzShift = useLorentzShift;
       fUseDiffusion = useDiffusion;
       fUseCrossTalk = useCrossTalk;
+      fGenerateNoise = generateNoise;
     }
 
 
@@ -137,6 +149,7 @@ class CbmStsDigitizeSettings : public TNamed
     Bool_t fUseLorentzShift;    ///< Lorentz shift on/off
     Bool_t fUseDiffusion;       ///< Thermal diffusion on/off
     Bool_t fUseCrossTalk;       ///< Cross-talk on/off
+    Bool_t fGenerateNoise;      ///< Noise on/off
 
     // --- Sensor conditions (analogue response)
     Double_t fVdep;            ///< Depletion voltage [V]
@@ -152,6 +165,7 @@ class CbmStsDigitizeSettings : public TNamed
     Double_t fTimeResolution;  ///< Time resolution [ns]
     Double_t fDeadTime;        ///< Channel dead time [ns]
     Double_t fNoise;           ///< RMS of noise [e]
+    Double_t fZeroNoiseRate;   ///< Zero noise rate [1/ns]
     Double_t fDeadChannelFrac; ///< Fraction of dead channels [%]
 
     // --- Strip pitch. If not -1, this value overrides the strip pitch

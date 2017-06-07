@@ -22,6 +22,7 @@ CbmStsDigitizeSettings::CbmStsDigitizeSettings() :
   fUseLorentzShift(kTRUE),
   fUseDiffusion(kTRUE),
   fUseCrossTalk(kTRUE),
+  fGenerateNoise(kFALSE),
   fVdep(-1.),
   fVbias(-1.),
   fTemperature(0.),
@@ -33,6 +34,7 @@ CbmStsDigitizeSettings::CbmStsDigitizeSettings() :
   fTimeResolution(0.),
   fDeadTime(0.),
   fNoise(0.),
+  fZeroNoiseRate(0.),
   fDeadChannelFrac(0.),
   fStripPitch(-1.),
   fDiscardSecondaries(kFALSE)
@@ -57,6 +59,7 @@ std::string CbmStsDigitizeSettings::ToString() const {
    ss << "\n\t  Lorentz shift     " << (fUseLorentzShift ? "ON" : "OFF");
    ss << "\n\t  Diffusion         " << (fUseDiffusion ? "ON" : "OFF");
    ss << "\n\t  Cross-talk        " << (fUseCrossTalk ? "ON" : "OFF");
+   ss << "\n\t  Noise             " << (fGenerateNoise ? "ON" : "OFF");
 
    ss << "\n\t  Sensor operation conditions :\n";
    ss << "\t\t Depletion voltage         "
@@ -83,6 +86,8 @@ std::string CbmStsDigitizeSettings::ToString() const {
        << fDeadTime << " ns\n";
    ss << "\t\t Noise (RMS)               "
        << fNoise << " e\n";
+   ss << "\t\t Zero noise rate           "
+      << fZeroNoiseRate << " / ns\n";
    ss << "\t\t Fraction of dead channels "
        << fDeadChannelFrac;
 

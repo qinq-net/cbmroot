@@ -514,6 +514,8 @@ void CbmStsFindClusters::SetModuleParameters()
 	          << " ns" << FairLogger::endl;
 	LOG(INFO) << "\t ENC             " << settings->GetNoise()
 	    << " e" << FairLogger::endl;
+    LOG(INFO) << "\t Zero noise rate " << settings->GetZeroNoiseRate()
+        << " e" << FairLogger::endl;
 
 	// --- Set parameters for all modules
 	Int_t nModules = fSetup->GetNofModules();
@@ -524,7 +526,8 @@ void CbmStsFindClusters::SetModuleParameters()
 		                                          settings->GetNofAdc(),
 		                                          settings->GetTimeResolution(),
 		                                          settings->GetDeadTime(),
-		                                          settings->GetNoise());
+		                                          settings->GetNoise(),
+		                                          settings->GetZeroNoiseRate());
 	}
 	LOG(INFO) << GetName() << ": Set parameters for " << nModules
 			      << " modules " << FairLogger::endl;

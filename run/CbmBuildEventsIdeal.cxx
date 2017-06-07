@@ -53,6 +53,7 @@ void CbmBuildEventsIdeal::Exec(Option_t*) {
 	fEvents->Delete();
 
 	UInt_t nStsDigis = fStsDigis->GetEntriesFast();
+	UInt_t nStsNoise = 0;
 	LOG(DEBUG) << GetName() << ": found " << nStsDigis << " STS digis "
 			       << FairLogger::endl;
 	for (UInt_t iDigi = 0; iDigi < nStsDigis; iDigi++) {
@@ -63,11 +64,16 @@ void CbmBuildEventsIdeal::Exec(Option_t*) {
 		// Can be refined later on.
 		Int_t eventNr = digi->GetMatch()->GetMatchedLink().GetEntry();
 
+		// Ignore digis with missing event number (noise)
+		if ( eventNr < 0 ) {
+		  nStsNoise++;
+		  continue;
+		}
+
 		// Get event pointer. If event is not yet present, create it.
 		CbmEvent* event = NULL;
 		if ( eventMap.find(eventNr) == eventMap.end() ) {
-			Int_t nEvents = fEvents->GetEntriesFast();
-			event = new ( (*fEvents)[nEvents] ) CbmEvent(eventNr);
+			event = new ( (*fEvents)[eventNr] ) CbmEvent(eventNr);
 			eventMap[eventNr] = event;
 		}
 		else event = eventMap.at(eventNr);
@@ -76,8 +82,11 @@ void CbmBuildEventsIdeal::Exec(Option_t*) {
 		event->AddData(kStsDigi, iDigi);
 
 	} //# STS digis
+	LOG(DEBUG) << GetName() <<": ignored " << nStsNoise << " STS digis"
+               << FairLogger::endl;
 
     UInt_t nTofDigis = fTofDigis->GetEntriesFast();
+    /*
     LOG(DEBUG) << GetName() << ": found " << nTofDigis << " TOF digis "
                    << FairLogger::endl;
     for (UInt_t iDigi = 0; iDigi < nTofDigis; iDigi++) {
@@ -103,6 +112,7 @@ void CbmBuildEventsIdeal::Exec(Option_t*) {
         event->AddData(kTofDigi, iDigi);
 
     } //# TOF digis
+    */
 
 
 
