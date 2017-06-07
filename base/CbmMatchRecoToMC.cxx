@@ -230,7 +230,10 @@ void CbmMatchRecoToMC::Exec(
    // MUCH
    MatchHits(fMuchStrawDigiMatches, fMuchStrawHits, fMuchStrawHitMatches);
    if (fMuchPixelDigis && fMuchClusters && fMuchPixelHits) {
-      MatchClusters(fMuchPixelDigiMatches, fMuchClusters, fMuchClusterMatches);
+      if (fMuchPixelDigiMatches)
+         MatchClusters(fMuchPixelDigiMatches, fMuchClusters, fMuchClusterMatches);
+      else
+         MatchStsClusters(fMuchPixelDigis, fMuchClusters, fMuchClusterMatches);
       MatchHits(fMuchClusterMatches, fMuchPixelHits, fMuchPixelHitMatches);
    } else {
       MatchHitsToPoints(fMuchPoints, fMuchPixelHits, fMuchPixelHitMatches);
@@ -240,8 +243,13 @@ void CbmMatchRecoToMC::Exec(
 
    // TOF: (Digi->MC)+(Hit->Digi)=>(Hit->MC)
    if (kTRUE == fbDigiExpUsed)
+   {
       MatchHitsTofDigiExp( fTofDigiMatchesPoints, fTofDigis, fTofDigiMatches, fTofHits, fTofHitMatches);
-      else MatchHitsTof( fTofDigiMatchesPoints, fTofDigis, fTofDigiMatches, fTofHits, fTofHitMatches);
+   }
+   else
+   {
+      MatchHitsTof( fTofDigiMatchesPoints, fTofDigis, fTofDigiMatches, fTofHits, fTofHitMatches);
+   }
 
    //static Int_t eventNo = 0;
    LOG(INFO) << "CbmMatchRecoToMC::Exec eventNo=" << fEventNumber++ << FairLogger::endl;
@@ -377,6 +385,14 @@ void CbmMatchRecoToMC::ReadAndCreateDataBranches()
       if ( TString("CbmTofDigiExp") == fTofDigis->GetClass()->GetName() )
          fbDigiExpUsed = kTRUE;
    }
+   else
+   {
+      fTofDigis  = (TClonesArray*) ioman->GetObject("TofDigiExp");
+      
+      if (NULL != fTofDigis)
+         fbDigiExpUsed = kTRUE;
+   }
+   
    fTofHits   = (TClonesArray*) ioman->GetObject("TofHit");
 
    fTofDigiMatchesPoints = (TClonesArray*) ioman->GetObject("TofDigiMatchPoints");
@@ -401,6 +417,9 @@ void CbmMatchRecoToMC::MatchClusters(
       CbmMatch* clusterMatch = new ((*clusterMatches)[iCluster]) CbmMatch();
       Int_t nofDigis = cluster->GetNofDigis();
       for (Int_t iDigi = 0; iDigi < nofDigis; iDigi++) {
+         Int_t nofDigis = fMuchPixelDigis->GetEntriesFast();
+         Int_t nofDigiMatches = digiMatches->GetEntriesFast();
+         Int_t digiIndex = cluster->GetDigi(iDigi);
          const CbmMatch* digiMatch = static_cast<const CbmMatch*>(digiMatches->At(cluster->GetDigi(iDigi)));
          clusterMatch->AddLinks(*digiMatch);
       }  //# digis in cluster
@@ -531,7 +550,7 @@ void CbmMatchRecoToMC::MatchHitsTofDigiExp(
       const TClonesArray* hits,
       TClonesArray* hitMatches)
 {
-   if (!(DigiPntMatches && digis && HitDigiMatches && hits && hitMatches)) return;
+   if (!(/*DigiPntMatches && */digis && HitDigiMatches && hits && hitMatches)) return;
 
    Int_t iNbTofDigis = digis->GetEntriesFast();
    Int_t nofHits = hits->GetEntriesFast();
@@ -557,7 +576,11 @@ void CbmMatchRecoToMC::MatchHitsTofDigiExp(
          } // if( iNbTofDigis <= iDigiIdx )
 
          pTofDigi      = static_cast<CbmTofDigiExp*> (digis->At( iDigiIdx ));
-         pMatchDigiPnt = static_cast<CbmMatch*>      (DigiPntMatches->At( iDigiIdx ));
+         
+         if (0 == DigiPntMatches)
+            pMatchDigiPnt = pTofDigi->GetMatch();
+         else
+            pMatchDigiPnt = static_cast<CbmMatch*> (DigiPntMatches->At( iDigiIdx ));
 
          Int_t iNbPointsDigi = pMatchDigiPnt->GetNofLinks();
          CbmLink lTruePoint    = pMatchDigiPnt->GetMatchedLink(); // Point generating the Digi
