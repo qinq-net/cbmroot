@@ -10,8 +10,9 @@
 // In order to call later Finish, we make this global
 FairRunOnline *run = NULL;
 
-void ngDpbMonitorLab(TString inFile = "")
-{
+void ngDpbMonitorLab(TString inFile = "", Bool_t bGet4v2Mode = kTRUE, Bool_t b24bModeOn = kFALSE,
+                     Bool_t bMergedEpochsOn = kFALSE )
+{   
   TString srcDir = gSystem->Getenv("VMCWORKDIR");
   TString inDir  = srcDir + "/input/";
   if( "" != inFile )
@@ -29,6 +30,7 @@ void ngDpbMonitorLab(TString inFile = "")
   FairLogger::GetLogger();
   gLogger->SetLogScreenLevel("INFO");
 //  gLogger->SetLogScreenLevel("DEBUG");
+//  gLogger->SetLogScreenLevel("DEBUG2"); // Print raw messages
   gLogger->SetLogVerbosityLevel("LOW");
 
   // --- Define parameter files
@@ -64,9 +66,11 @@ void ngDpbMonitorLab(TString inFile = "")
   // Get4 Unpacker
   CbmTSMonitorTofStar* test_monitor_tof = new CbmTSMonitorTofStar();
   test_monitor_tof->SetPulserMode();
-  test_monitor_tof->SetPulserFee(0, 1);
-  test_monitor_tof->SetPulserChans(   0,   8,  16,  24,  32,  40,  48,  56, 
-                                     64,  72,  80,  88,  96, 104, 112, 120 );
+  test_monitor_tof->SetPulserFee(0, 0);
+  test_monitor_tof->SetPulserChans(3, 35, 67, 1, 32, 64);
+  test_monitor_tof->SetGet4v20Mode( bGet4v2Mode );
+  test_monitor_tof->SetGet4Mode24b( b24bModeOn );
+  test_monitor_tof->SetMergedEpochs( bMergedEpochsOn );
 
   // --- Source task
   CbmFlibCern2016Source* source = new CbmFlibCern2016Source();
