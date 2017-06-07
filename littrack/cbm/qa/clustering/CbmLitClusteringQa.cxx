@@ -316,7 +316,7 @@ void CbmLitClusteringQa::ProcessHits(
 
 void CbmLitClusteringQa::FillEventCounterHistogramsMC()
 {
-   for (Int_t i = 0; fMCTracks->Size(0, i); ++i)
+   for (Int_t i = 0; fMCTracks->Size(0, i) >= 0; ++i)
    {
       if (NULL != fMvdPoints && fHM->Exists("hno_NofObjects_MvdPoints_Event")) fHM->H1("hno_NofObjects_MvdPoints_Event")->Fill(fMvdPoints->Size(0, i));
       if (NULL != fStsPoints && fHM->Exists("hno_NofObjects_StsPoints_Event")) fHM->H1("hno_NofObjects_StsPoints_Event")->Fill(fStsPoints->Size(0, i));
@@ -417,14 +417,14 @@ void CbmLitClusteringQa::FillHitEfficiencyHistogramsReco(
 
    string recName = "hhe_" + detName + "_All_Rec_Station";
    string cloneName = "hhe_" + detName + "_All_Clone_Station";
-   set<Int_t> mcPointSet; // IDs of MC points
+   set<pair<Int_t, Int_t> > mcPointSet; // IDs of MC points
    Int_t nofHits = hits->GetEntriesFast();
    for (Int_t iHit = 0; iHit < nofHits; iHit++) {
       const CbmPixelHit* hit = static_cast<const CbmPixelHit*>(hits->At(iHit));
       const CbmMatch* match = static_cast<const CbmMatch*>(hitMatches->At(iHit));
-      if (mcPointSet.find(match->GetMatchedLink().GetIndex()) == mcPointSet.end()) {
+      if (mcPointSet.find(make_pair(match->GetMatchedLink().GetEntry(), match->GetMatchedLink().GetIndex())) == mcPointSet.end()) {
          fHM->H1(recName)->Fill(GetStationId(hit->GetAddress(), detId));
-         mcPointSet.insert(match->GetMatchedLink().GetIndex());
+         mcPointSet.insert(make_pair(match->GetMatchedLink().GetEntry(), match->GetMatchedLink().GetIndex()));
       } else {
          fHM->H1(cloneName)->Fill(GetStationId(hit->GetAddress(), detId));
       }

@@ -8,6 +8,7 @@
 #include "TGeoManager.h"
 #include "TObjArray.h"
 #include "TGeoNode.h"
+#include "CbmSetup.h"
 
 #include <cassert>
 #include <iostream>
@@ -96,9 +97,17 @@ void CbmLitDetectorSetup::DetermineSetup()
    fDet[kMvd] = CheckDetectorPresence("mvd");
    fDet[kSts] = CheckDetectorPresence("sts") || CheckDetectorPresence("STS");
    fDet[kRich] = CheckDetectorPresence("rich");
-   fDet[kTrd] = CheckDetectorPresence("trd");
+   fDet[kTrd] = false;//CheckDetectorPresence("trd");
    fDet[kMuch] = CheckDetectorPresence("much");
    fDet[kTof] = CheckDetectorPresence("tof");
+   /*fIsElectronSetup = !CbmSetup::Instance()->IsActive(kMuch);
+   fIsMuonSetup = CbmSetup::Instance()->IsActive(kMuch);
+   fDet[kMvd] = CbmSetup::Instance()->IsActive(kMvd);
+   fDet[kSts] = CbmSetup::Instance()->IsActive(kSts);
+   fDet[kRich] = CbmSetup::Instance()->IsActive(kRich);
+   fDet[kTrd] = CbmSetup::Instance()->IsActive(kTrd);
+   fDet[kMuch] = CbmSetup::Instance()->IsActive(kMuch);
+   fDet[kTof] = CbmSetup::Instance()->IsActive(kTof);*/
 }
 
 string CbmLitDetectorSetup::ToString() const
