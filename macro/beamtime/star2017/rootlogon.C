@@ -3,7 +3,8 @@
 
 void rootlogon_nh()
 {
-  cout << " Executing rootlogon.C (nh)" << endl;
+  pTime=new TDatime();
+  cout << " Executing rootlogon.C (nh) at " <<pTime->GetDate() << ", "<<pTime->GetTime() <<endl;
   gStyle->SetOptStat(111);
   gStyle->SetLineWidth(2.);
   gStyle->SetFrameLineWidth(2.);

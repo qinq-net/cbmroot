@@ -8,7 +8,7 @@
  */
 
 //void unpack_tsa(Int_t nEvt=100, TString FileId = "cosmic_2016110701_safe_4links_4")
-void unpack_tsa(Int_t nEvt=100, Double_t dDeltaT=200., Int_t iReqDet=0, Bool_t bEpSupp=kFALSE, TString FileId = "sps2016111302_1945")
+void unpack_tsa(Int_t nEvt=100, Double_t dDeltaT=50., Int_t iReqDet=0, Bool_t bEpSupp=kFALSE, TString FileId = "sps2016111302_1945")
 {
   TString srcDir = gSystem->Getenv("VMCWORKDIR");
   //  TString inDir  = "./input/";
@@ -29,25 +29,22 @@ void unpack_tsa(Int_t nEvt=100, Double_t dDeltaT=200., Int_t iReqDet=0, Bool_t b
    nEvents = nEvt;
   }
   // --- Specify output file name (this is just an example)
-  TString outDir = srcDir + "/macro/beamtime/cern2016/data/";
+  TString outDir = srcDir + "/macro/beamtime/star2017/data/";
   TString Mode = Form("_DT%d_0x%08x",(Int_t)dDeltaT,iReqDet);
   TString outFile = outDir + FileId + Mode + ".root";
   TString parFile = outDir + FileId + Mode + ".params.root";
 
   // --- Set log output levels
-  FairLogger::GetLogger();
-  gLogger->SetLogScreenLevel("INFO");
-  //gLogger->SetLogScreenLevel("DEBUG");
-  gLogger->SetLogVerbosityLevel("MEDIUM");
-
+  //FairLogger::GetLogger();
+  //FairLogger::GetLogger()->SetLogScreenLevel("WARNING");
+  FairLogger::GetLogger()->SetLogScreenLevel("INFO");
+  //FairLogger::GetLogger()->SetLogScreenLevel("DEBUG");
+  FairLogger::GetLogger()->SetLogVerbosityLevel("MEDIUM");
+  
   // --- Define parameter files
   TList *parFileList = new TList();
   TString paramDir = "./";
-  TString paramFile = paramDir + "FHodoUnpackPar.par";
-  TObjString* tutDetDigiFile = new TObjString(paramFile);
-  parFileList->Add(tutDetDigiFile);
-  
-  TString paramFileTof = paramDir + "MapCern2016.par";
+  TString paramFileTof = paramDir + "MapStar2017.par";
   TObjString* parTofFileName = new TObjString(paramFileTof);
   parFileList->Add(parTofFileName);
 
@@ -62,14 +59,12 @@ void unpack_tsa(Int_t nEvt=100, Double_t dDeltaT=200., Int_t iReqDet=0, Bool_t b
 
   std::cout << std::endl;
   std::cout << ">>> unpack_tsa: Initialising..." << std::endl;
-
-  // NXyter Unpacker
-  CbmTSUnpackFHodo*   test_unpacker = new CbmTSUnpackFHodo();
-  //  test_unpacker->CreateRawMessageOutput(kTRUE);
   
   // Get4 Unpacker
-  CbmTSUnpackTof* test_unpacker_tof = new CbmTSUnpackTof(7);  //argument is number of gDpb
+  CbmTSUnpackTof* test_unpacker_tof = new CbmTSUnpackTof(1);  //argument is number of gDpb
   test_unpacker_tof->SetEpochSuppressedMode(bEpSupp);
+  //test_unpacker_tof->SetTShiftRef(1700000.);  // Reference signal time shift in ns, run 008 <-> 0018 
+  test_unpacker_tof->SetTShiftRef(21000.);  // Reference signal time shift in ns, run 0026  
 
   // --- Source task
   CbmFlibTestSource* source = new CbmFlibTestSource();
@@ -87,7 +82,7 @@ void unpack_tsa(Int_t nEvt=100, Double_t dDeltaT=200., Int_t iReqDet=0, Bool_t b
   // --- Run
   FairRunOnline *run = new FairRunOnline(source);
   run->SetOutputFile(outFile);
-  //  run->SetEventHeader(event);
+  run->SetEventHeader(event);
 
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
 
