@@ -268,10 +268,10 @@ void CbmMatchRecoToMC::ReadAndCreateDataBranches()
    }
 
    CbmMCDataManager* mcManager = (CbmMCDataManager*)ioman->GetObject("MCDataManager");
-   
+
    if (0 == mcManager)
       LOG(FATAL) << "CbmMatchRecoToMC::ReadAndCreateDataBranches() NULL MCDataManager." << FairLogger::endl;
-      
+
    fMCTracks = mcManager->InitBranch("MCTrack");
 
     //fMCTracksArray= (TClonesArray*) ioman->GetObject("MCTrack");
@@ -388,11 +388,11 @@ void CbmMatchRecoToMC::ReadAndCreateDataBranches()
    else
    {
       fTofDigis  = (TClonesArray*) ioman->GetObject("TofDigiExp");
-      
+
       if (NULL != fTofDigis)
          fbDigiExpUsed = kTRUE;
    }
-   
+
    fTofHits   = (TClonesArray*) ioman->GetObject("TofHit");
 
    fTofDigiMatchesPoints = (TClonesArray*) ioman->GetObject("TofDigiMatchPoints");
@@ -417,8 +417,6 @@ void CbmMatchRecoToMC::MatchClusters(
       CbmMatch* clusterMatch = new ((*clusterMatches)[iCluster]) CbmMatch();
       Int_t nofDigis = cluster->GetNofDigis();
       for (Int_t iDigi = 0; iDigi < nofDigis; iDigi++) {
-         Int_t nofDigis = fMuchPixelDigis->GetEntriesFast();
-         Int_t nofDigiMatches = digiMatches->GetEntriesFast();
          Int_t digiIndex = cluster->GetDigi(iDigi);
          const CbmMatch* digiMatch = static_cast<const CbmMatch*>(digiMatches->At(cluster->GetDigi(iDigi)));
          clusterMatch->AddLinks(*digiMatch);
@@ -535,7 +533,7 @@ void CbmMatchRecoToMC::MatchHitsTof(
             Int_t   iPointIdx = lPoint.GetIndex();
 
             if( iPointIdx == iTruePointIdx )
-               hitMatch->AddLink(CbmLink(pTofDigi->GetTot(), iPointIdx, 
+               hitMatch->AddLink(CbmLink(pTofDigi->GetTot(), iPointIdx,
                                          lPoint.GetEntry(), lPoint.GetFile())); // Point generating the Digi
                else hitMatch->AddLink(CbmLink(0, iPointIdx, lPoint.GetEntry(),
                                               lPoint.GetFile())); // Point whose Digi was hidden by True one
@@ -576,7 +574,7 @@ void CbmMatchRecoToMC::MatchHitsTofDigiExp(
          } // if( iNbTofDigis <= iDigiIdx )
 
          pTofDigi      = static_cast<CbmTofDigiExp*> (digis->At( iDigiIdx ));
-         
+
          if (0 == DigiPntMatches)
             pMatchDigiPnt = pTofDigi->GetMatch();
          else
@@ -591,9 +589,9 @@ void CbmMatchRecoToMC::MatchHitsTofDigiExp(
             Int_t   iPointIdx = lPoint.GetIndex();
 
             if( iPointIdx == iTruePointIdx )
-               hitMatch->AddLink(CbmLink(pTofDigi->GetTot(), iPointIdx, 
+               hitMatch->AddLink(CbmLink(pTofDigi->GetTot(), iPointIdx,
                                          lPoint.GetEntry(), lPoint.GetFile() ) ); // Point generating the Digi
-               else hitMatch->AddLink(CbmLink(0, iPointIdx, lPoint.GetEntry(), 
+               else hitMatch->AddLink(CbmLink(0, iPointIdx, lPoint.GetEntry(),
                                               lPoint.GetFile())); // Point whose Digi was hidden by True one
          } // for( Int_t iPoint = 0; iPoint < iNbPointsDigi; iPoint ++)
       } // for (Int_t iDigi = 0; iDigi < iNbDigisHit; iDigi++)
@@ -801,7 +799,7 @@ void CbmMatchRecoToMC::MatchRichRings(
                 ringMatch->AddLink(1., motherIds[i].second, motherIds[i].second);
             }
         }
-        
+
         if (ringMatch->GetNofLinks() != 0) {
 
             Int_t bestTrackId = ringMatch->GetMatchedLink().GetIndex();
