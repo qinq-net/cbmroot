@@ -43,7 +43,7 @@ class CbmTrdQABase : public FairTask
 
  public:
   /** Constructor with parameters (Optional) **/
-     CbmTrdQABase(TString ClassName):CbmTrdQABase(nullptr,ClassName){};
+     CbmTrdQABase(TString _ClassName):CbmTrdQABase(nullptr, _ClassName){};
 
     CbmTrdQABase(CbmTrdTestBeamTools*,TString);
 

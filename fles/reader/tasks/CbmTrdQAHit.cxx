@@ -13,7 +13,7 @@
 
 ClassImp(CbmTrdQAHit)
 
-CbmTrdQAHit::CbmTrdQAHit(TString ClassName) :
+CbmTrdQAHit::CbmTrdQAHit(TString _ClassName) :
   CbmTrdQABase("CbmTrdQAHit"){
 }
 

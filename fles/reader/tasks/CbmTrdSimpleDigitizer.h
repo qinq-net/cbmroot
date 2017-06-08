@@ -15,6 +15,8 @@ class CbmTrdSimpleDigitizer : public CbmTrdQABase
   TClonesArray* fDigis;
  public:
   CbmTrdSimpleDigitizer();
+  CbmTrdSimpleDigitizer(const CbmTrdSimpleDigitizer&) = delete;
+  CbmTrdSimpleDigitizer& operator=(const CbmTrdSimpleDigitizer&) = delete;
   //  ~CbmTrdSimpleDigitizer();
   InitStatus Init();
   void Exec(Option_t*);

@@ -13,7 +13,7 @@
 
 ClassImp(CbmTrdQAEfficiency)
 
-CbmTrdQAEfficiency::CbmTrdQAEfficiency(TString ClassName) :
+CbmTrdQAEfficiency::CbmTrdQAEfficiency(TString _ClassName) :
   CbmTrdQABase("CbmTrdQAEfficiency"){
 }
 

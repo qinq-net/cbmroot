@@ -24,8 +24,8 @@ ClassImp(CbmTrdQABase)
 
 
 // ---- Default constructor -------------------------------------------
-CbmTrdQABase::CbmTrdQABase (CbmTrdTestBeamTools*ptr,TString ClassName) :
-FairTask (ClassName.Data()), fRaw(nullptr),fBT(CbmTrdTestBeamTools::Instance(ptr)), fHm(new CbmHistManager), fNrTimeslice(0)
+CbmTrdQABase::CbmTrdQABase (CbmTrdTestBeamTools*ptr,TString _ClassName) :
+FairTask (_ClassName.Data()), fRaw(nullptr), fDigis(nullptr), fClusters(nullptr), fBT(CbmTrdTestBeamTools::Instance(ptr)), fHm(new CbmHistManager), fNrTimeslice(0)
 {
   LOG(INFO) << TString("Default Constructor of ")+TString(this->GetName())
 		<< FairLogger::endl;

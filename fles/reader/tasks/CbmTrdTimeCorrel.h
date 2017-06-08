@@ -27,6 +27,8 @@ class CbmTrdTimeCorrel : public FairTask
  public:
 
   CbmTrdTimeCorrel();
+  CbmTrdTimeCorrel(const CbmTrdTimeCorrel&) = delete;
+  CbmTrdTimeCorrel& operator=(const CbmTrdTimeCorrel&) = delete;
   ~CbmTrdTimeCorrel();
 
   virtual InitStatus Init();
@@ -213,8 +215,8 @@ class CbmTrdTimeCorrel : public FairTask
   std::deque<Cluster> fClusterBuffer;
 
 
-  CbmTrdTimeCorrel(const CbmTrdTimeCorrel&);
-  CbmTrdTimeCorrel operator=(const CbmTrdTimeCorrel&);
+//  CbmTrdTimeCorrel(const CbmTrdTimeCorrel&);
+//  CbmTrdTimeCorrel operator=(const CbmTrdTimeCorrel&);
 
   ClassDef(CbmTrdTimeCorrel,1);
 };

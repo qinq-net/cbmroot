@@ -4,7 +4,7 @@
 #include "CbmTrdAddress.h"
 
 CbmTrdSimpleDigitizer::CbmTrdSimpleDigitizer ()
-    : CbmTrdQABase ("CbmTrdSimpleDigitizer")
+    : CbmTrdQABase ("CbmTrdSimpleDigitizer"), fDigis(nullptr)
 {
 }
 ;
