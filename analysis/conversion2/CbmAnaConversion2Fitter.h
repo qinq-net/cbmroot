@@ -28,6 +28,9 @@ class CbmAnaConversion2Fitter
 
 public:
 	CbmAnaConversion2Fitter();
+	CbmAnaConversion2Fitter(const CbmAnaConversion2Fitter&) = delete;
+	CbmAnaConversion2Fitter operator=(const CbmAnaConversion2Fitter&) = delete;
+
 	virtual ~CbmAnaConversion2Fitter();
 
 	void Init();
@@ -49,9 +52,6 @@ private:
 	CbmVertex* fPrimVertex;
 
 
-
-	CbmAnaConversion2Fitter(const CbmAnaConversion2Fitter&);
-	CbmAnaConversion2Fitter operator=(const CbmAnaConversion2Fitter&);
 
 	ClassDef(CbmAnaConversion2Fitter,1)
 };

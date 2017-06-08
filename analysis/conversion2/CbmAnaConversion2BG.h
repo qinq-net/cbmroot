@@ -35,6 +35,9 @@ class CbmAnaConversion2BG
 
 public:
 	CbmAnaConversion2BG();
+	CbmAnaConversion2BG(const CbmAnaConversion2BG&) = delete;
+	CbmAnaConversion2BG operator=(const CbmAnaConversion2BG&) = delete;
+
 	virtual ~CbmAnaConversion2BG();
 
 	void Init();
@@ -59,9 +62,6 @@ private:
 	// timer
 	TStopwatch timer;
 	Double_t fTime;
-
-	CbmAnaConversion2BG(const CbmAnaConversion2BG&);
-	CbmAnaConversion2BG operator=(const CbmAnaConversion2BG&);
 
 	ClassDef(CbmAnaConversion2BG,1)
 };

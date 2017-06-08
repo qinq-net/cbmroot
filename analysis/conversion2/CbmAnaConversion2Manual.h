@@ -35,6 +35,9 @@ class CbmAnaConversion2Manual
 
 public:
 	CbmAnaConversion2Manual();
+	CbmAnaConversion2Manual(const CbmAnaConversion2Manual&) = delete;
+	CbmAnaConversion2Manual operator=(const CbmAnaConversion2Manual&) = delete;
+
 	virtual ~CbmAnaConversion2Manual();
 
 	void Init();
@@ -256,9 +259,6 @@ private:
 	TH2D * Case1ZYPos_InM_zero;
 	TH2D * Case1ZYPos_InM_onetwo;
 
-
-	CbmAnaConversion2Manual(const CbmAnaConversion2Manual&);
-	CbmAnaConversion2Manual operator=(const CbmAnaConversion2Manual&);
 
 	ClassDef(CbmAnaConversion2Manual,1)
 };

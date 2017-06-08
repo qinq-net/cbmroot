@@ -32,12 +32,13 @@ using namespace std;
 
 
 CbmAnaConversion2Manual::CbmAnaConversion2Manual()
- : fMcTracks(NULL),
-   fStsTracks(NULL),
-   fStsTrackMatches(NULL),
-   fRichRings(NULL),
-   fRichRingMatches(NULL),
-   fPrimVertex(NULL),
+ : fMcTracks(nullptr),
+   fStsTracks(nullptr),
+   fStsTrackMatches(nullptr),
+   fGlobalTracks(nullptr),
+   fRichRings(nullptr),
+   fRichRingMatches(nullptr),
+   fPrimVertex(nullptr),
    fKFVertex(),
    VMomenta_minus(),
    VMCtracks_minus(),
@@ -56,6 +57,48 @@ CbmAnaConversion2Manual::CbmAnaConversion2Manual()
    fHistoList_man_two(),
    fHistoList_man_zero(),
    fHistoList_man_onetwo(),
+   EMT_InvMass_all(nullptr),
+   EMT_InvMass_oneInRICH(nullptr),
+   EMT_InvMass_twoInRICH(nullptr),
+   EMT_InvMass_zeroInRICH(nullptr),
+   EMT_InvMass_onetwoInRICH(nullptr),
+   fGammaInvMassReco_all(nullptr),
+   fGammaOpeningAngleReco_all(nullptr),
+   fPdg_all(nullptr),
+   fPi0InvMassReco_all(nullptr),
+   fP_reco_all(nullptr),
+   fPt_reco_all(nullptr),
+   fPi0_pt_vs_rap_all(nullptr),
+   fGammaInvMassReco_one(nullptr),
+   fGammaOpeningAngleReco_one(nullptr),
+   fPdg_one(nullptr),
+   fPi0InvMassReco_one(nullptr),
+   fP_reco_one(nullptr),
+   fPt_reco_one(nullptr),
+   fPi0_pt_vs_rap_one(nullptr),
+   fGammaInvMassReco_two(nullptr),
+   fGammaOpeningAngleReco_two(nullptr),
+   fPdg_two(nullptr),
+   fPi0InvMassReco_two(nullptr),
+   fP_reco_two(nullptr),
+   fPt_reco_two(nullptr),
+   fPi0_pt_vs_rap_two(nullptr),
+   fGammaInvMassReco_zero(nullptr),
+   fGammaOpeningAngleReco_zero(nullptr),
+   fPdg_zero(nullptr),
+   fPi0InvMassReco_zero(nullptr),
+   fP_reco_zero(nullptr),
+   fPt_reco_zero(nullptr),
+   fPi0_pt_vs_rap_zero(nullptr),
+   fGammaInvMassReco_onetwo(nullptr),
+   fGammaOpeningAngleReco_onetwo(nullptr),
+   fPdg_onetwo(nullptr),
+   fPi0InvMassReco_onetwo(nullptr),
+   fP_reco_onetwo(nullptr),
+   fPt_reco_onetwo(nullptr),
+   fPi0_pt_vs_rap_onetwo(nullptr),
+
+  
    Gammas_all(),
    Gammas_one(),
    Gammas_two(),
@@ -76,9 +119,98 @@ CbmAnaConversion2Manual::CbmAnaConversion2Manual()
    Gammas_MC_zero(),
    Gammas_MC_onetwo(),
    fHistoList_man(),
-   fAnaBGInManual(NULL),
-   DoBGAnalysisInManual(0)
-
+   fAnaBGInManual(nullptr),
+   DoBGAnalysisInManual(0),
+   fHistoList_bg_InM_all(),
+   BG1_InM_all(nullptr),
+   BG2_InM_all(nullptr),
+   BG3_InM_all(nullptr),
+   BG4_InM_all(nullptr),
+   BG5_InM_all(nullptr),
+   BG6_InM_all(nullptr),
+   BG7_InM_all(nullptr),
+   BG8_InM_all(nullptr),
+   BG9_InM_all(nullptr),
+   BG10_InM_all(nullptr),
+   fHistoList_bg_InM_one(),
+   BG1_InM_one(nullptr),
+   BG2_InM_one(nullptr),
+   BG3_InM_one(nullptr),
+   BG4_InM_one(nullptr),
+   BG5_InM_one(nullptr),
+   BG6_InM_one(nullptr),
+   BG7_InM_one(nullptr),
+   BG8_InM_one(nullptr),
+   BG9_InM_one(nullptr),
+   BG10_InM_one(nullptr),
+   fHistoList_bg_InM_two(),
+   BG1_InM_two(nullptr),
+   BG2_InM_two(nullptr),
+   BG3_InM_two(nullptr),
+   BG4_InM_two(nullptr),
+   BG5_InM_two(nullptr),
+   BG6_InM_two(nullptr),
+   BG7_InM_two(nullptr),
+   BG8_InM_two(nullptr),
+   BG9_InM_two(nullptr),
+   BG10_InM_two(nullptr),
+   fHistoList_bg_InM_zero(),
+   BG1_InM_zero(nullptr),
+   BG2_InM_zero(nullptr),
+   BG3_InM_zero(nullptr),
+   BG4_InM_zero(nullptr),
+   BG5_InM_zero(nullptr),
+   BG6_InM_zero(nullptr),
+   BG7_InM_zero(nullptr),
+   BG8_InM_zero(nullptr),
+   BG9_InM_zero(nullptr),
+   BG10_InM_zero(nullptr),
+   fHistoList_bg_InM_onetwo(),
+   BG1_InM_onetwo(nullptr),
+   BG2_InM_onetwo(nullptr),
+   BG3_InM_onetwo(nullptr),
+   BG4_InM_onetwo(nullptr),
+   BG5_InM_onetwo(nullptr),
+   BG6_InM_onetwo(nullptr),
+   BG7_InM_onetwo(nullptr),
+   BG8_InM_onetwo(nullptr),
+   BG9_InM_onetwo(nullptr),
+   BG10_InM_onetwo(nullptr),
+   PdgCase8_InM_all(nullptr),
+   PdgCase8_InM_one(nullptr),
+   PdgCase8_InM_two(nullptr),
+   PdgCase8_InM_zero(nullptr),
+   PdgCase8_InM_onetwo(nullptr),
+   testsameMIDcase8_InM_all(nullptr),
+   testsameGRIDcase8_InM_all(nullptr),
+   testsameMIDcase8_InM_one(nullptr),
+   testsameGRIDcase8_InM_one(nullptr),
+   testsameMIDcase8_InM_two(nullptr),
+   testsameGRIDcase8_InM_two(nullptr),
+   testsameMIDcase8_InM_zero(nullptr),
+   testsameGRIDcase8_InM_zero(nullptr),
+   testsameMIDcase8_InM_onetwo(nullptr),
+   testsameGRIDcase8_InM_onetwo(nullptr),
+   PdgCase8mothers_InM_all(nullptr),
+   PdgCase8mothers_InM_one(nullptr),
+   PdgCase8mothers_InM_two(nullptr),
+   PdgCase8mothers_InM_zero(nullptr),
+   PdgCase8mothers_InM_onetwo(nullptr),
+   case8GRIDInvMassGamma_InM_all(nullptr),
+   case8GRIDOAGamma_InM_all(nullptr),
+   case8GRIDInvMassGamma_InM_one(nullptr),
+   case8GRIDOAGamma_InM_one(nullptr),
+   case8GRIDInvMassGamma_InM_two(nullptr),
+   case8GRIDOAGamma_InM_two(nullptr),
+   case8GRIDInvMassGamma_InM_zero(nullptr), 
+   case8GRIDOAGamma_InM_zero(nullptr),
+   case8GRIDInvMassGamma_InM_onetwo(nullptr),
+   case8GRIDOAGamma_InM_onetwo(nullptr),
+   Case1ZYPos_InM_all(nullptr),
+   Case1ZYPos_InM_one(nullptr),
+   Case1ZYPos_InM_two(nullptr),
+   Case1ZYPos_InM_zero(nullptr),
+   Case1ZYPos_InM_onetwo(nullptr)
 {
 }
 
@@ -89,28 +221,28 @@ CbmAnaConversion2Manual::~CbmAnaConversion2Manual()
 void CbmAnaConversion2Manual::Init()
 {
 	FairRootManager* ioman = FairRootManager::Instance();
-	if (NULL == ioman) { Fatal("CbmAnaConversion2Manual::Init","RootManager not instantised!"); }
+	if (nullptr == ioman) { Fatal("CbmAnaConversion2Manual::Init","RootManager not instantised!"); }
 
 	fMcTracks = (TClonesArray*) ioman->GetObject("MCTrack");
-	if ( NULL == fMcTracks) { Fatal("CbmAnaConversion2Manual::Init","No MCTrack array!"); }
+	if ( nullptr == fMcTracks) { Fatal("CbmAnaConversion2Manual::Init","No MCTrack array!"); }
 
 	fStsTracks = (TClonesArray*) ioman->GetObject("StsTrack");
-	if ( NULL == fStsTracks) { Fatal("CbmAnaConversion2Manual::Init","No StsTrack array!"); }
+	if ( nullptr == fStsTracks) { Fatal("CbmAnaConversion2Manual::Init","No StsTrack array!"); }
 
 	fStsTrackMatches = (TClonesArray*) ioman->GetObject("StsTrackMatch");
-	if (NULL == fStsTrackMatches) { Fatal("CbmAnaConversion2Manual::Init","No StsTrackMatch array!"); }
+	if (nullptr == fStsTrackMatches) { Fatal("CbmAnaConversion2Manual::Init","No StsTrackMatch array!"); }
 
 	fGlobalTracks = (TClonesArray*) ioman->GetObject("GlobalTrack");
-	if (NULL == fGlobalTracks) { Fatal("CbmAnaConversion2Manual::Init","No GlobalTrack array!"); }
+	if (nullptr == fGlobalTracks) { Fatal("CbmAnaConversion2Manual::Init","No GlobalTrack array!"); }
 
 	fRichRings = (TClonesArray*) ioman->GetObject("RichRing");
-	if (NULL == fRichRings) { Fatal("CbmAnaConversion2Manual::Init","No RichRing array!"); }
+	if (nullptr == fRichRings) { Fatal("CbmAnaConversion2Manual::Init","No RichRing array!"); }
 
 	fRichRingMatches = (TClonesArray*) ioman->GetObject("RichRingMatch");
-	if (NULL == fRichRingMatches) { Fatal("CbmAnaConversion2Manual::Init","No RichRingMatch array!"); }
+	if (nullptr == fRichRingMatches) { Fatal("CbmAnaConversion2Manual::Init","No RichRingMatch array!"); }
 
 	fPrimVertex = (CbmVertex*) ioman->GetObject("PrimaryVertex");
-	if (NULL == fPrimVertex) { Fatal("CbmAnaConversion2Manual::Init","No PrimaryVertex array!"); }
+	if (nullptr == fPrimVertex) { Fatal("CbmAnaConversion2Manual::Init","No PrimaryVertex array!"); }
 
 	cout << " CbmAnaConversion2Manual::Init() " << endl;
 	InitHistos();
@@ -525,7 +657,7 @@ void CbmAnaConversion2Manual::Exec(int fEventNum, double OpeningAngleCut, double
 	double InvMassCut = GammaInvMassCut;
 	cout << "CbmAnaConversion2Manual::Exec()   Event: " << Event << endl;
 
-	if (fPrimVertex != NULL){
+	if (fPrimVertex != nullptr){
 		fKFVertex = CbmKFVertex(*fPrimVertex);
 	} else {
 		Fatal("CbmAnaConversion::Exec","No PrimaryVertex array!");
@@ -559,20 +691,20 @@ void CbmAnaConversion2Manual::Exec(int fEventNum, double OpeningAngleCut, double
 	Int_t ngTracks = fGlobalTracks->GetEntriesFast();
 	for (Int_t i = 0; i < ngTracks; i++) {
 		CbmGlobalTrack* gTrack = (CbmGlobalTrack*) fGlobalTracks->At(i);
-		if(NULL == gTrack) continue;
+		if(nullptr == gTrack) continue;
 		int stsInd = gTrack->GetStsTrackIndex();
 		int richInd = gTrack->GetRichRingIndex();
 
 		if (stsInd < 0) continue;
 		CbmStsTrack* stsTrack = (CbmStsTrack*) fStsTracks->At(stsInd);
-		if (stsTrack == NULL) continue;
+		if (stsTrack == nullptr) continue;
 		CbmTrackMatchNew* stsMatch  = (CbmTrackMatchNew*) fStsTrackMatches->At(stsInd);
-		if (stsMatch == NULL) continue;
+		if (stsMatch == nullptr) continue;
 		if(stsMatch->GetNofLinks() <= 0) continue;
 		int stsMcTrackId = stsMatch->GetMatchedLink().GetIndex();
 		if (stsMcTrackId < 0) continue;
 		CbmMCTrack* mcTrack1 = (CbmMCTrack*) fMcTracks->At(stsMcTrackId);
-		if (mcTrack1 == NULL) continue;
+		if (mcTrack1 == nullptr) continue;
 
 		// Doing refit of momenta with electron assumption
 		CbmL1PFFitter fPFFitter_electron;
@@ -603,12 +735,12 @@ void CbmAnaConversion2Manual::Exec(int fEventNum, double OpeningAngleCut, double
  
 		if (richInd > 0){
 			CbmTrackMatchNew* richMatch  = (CbmTrackMatchNew*)fRichRingMatches->At(richInd);
-			if (richMatch != NULL){
+			if (richMatch != nullptr){
 				int richMcTrackId = richMatch->GetMatchedLink().GetIndex();
 				if (richMcTrackId > 0){
 					if(stsMcTrackId == richMcTrackId){ // check that global track was matched correctly for STS and RICH together
 						CbmMCTrack* mcTrack2 = (CbmMCTrack*) fMcTracks->At(richMcTrackId);
-						if (mcTrack2 != NULL){
+						if (mcTrack2 != nullptr){
 							int pdgRICH = mcTrack2->GetPdgCode();
 							if (TMath::Abs(pdgRICH) == 11 ) InRich++;
 						}
@@ -823,7 +955,7 @@ void CbmAnaConversion2Manual::FindPi0(std::vector< std::vector<TVector3> > norma
 				CbmMCTrack* mother2 = (CbmMCTrack*) fMcTracks->At(motherId2);
 				CbmMCTrack* mother3 = (CbmMCTrack*) fMcTracks->At(motherId3);
 				CbmMCTrack* mother4 = (CbmMCTrack*) fMcTracks->At(motherId4);
-				if (NULL == mother1 || NULL == mother2 || NULL == mother3 || NULL == mother4) continue;
+				if (nullptr == mother1 || nullptr == mother2 || nullptr == mother3 || nullptr == mother4) continue;
 				int mcMotherPdg1 = mother1->GetPdgCode();
 				int mcMotherPdg2 = mother2->GetPdgCode();
 				int mcMotherPdg3 = mother3->GetPdgCode();
@@ -837,7 +969,7 @@ void CbmAnaConversion2Manual::FindPi0(std::vector< std::vector<TVector3> > norma
 					if (grandmotherId1 != grandmotherId2) continue;
 					if (grandmotherId1 != motherId3) continue;
 					CbmMCTrack* grandmother1 = (CbmMCTrack*) fMcTracks->At(grandmotherId1);
-					if (NULL == grandmother1 ) continue;
+					if (nullptr == grandmother1 ) continue;
 					int mcGrandMotherPdg1 = grandmother1->GetPdgCode();
 					if (mcGrandMotherPdg1 != 111 ) continue;
 					//cout << "Dalitz case" << endl;
@@ -850,7 +982,7 @@ void CbmAnaConversion2Manual::FindPi0(std::vector< std::vector<TVector3> > norma
 					if (grandmotherId3 != grandmotherId4) continue;
 					if (grandmotherId3 != motherId1) continue;
 					CbmMCTrack* grandmother3 = (CbmMCTrack*) fMcTracks->At(grandmotherId3);
-					if (NULL == grandmother3 ) continue;
+					if (nullptr == grandmother3 ) continue;
 					int mcGrandMotherPdg3 = grandmother3->GetPdgCode();
 					if (mcGrandMotherPdg3 != 111 ) continue;
 					//cout << "Dalitz case" << endl;
@@ -862,7 +994,7 @@ void CbmAnaConversion2Manual::FindPi0(std::vector< std::vector<TVector3> > norma
 				if( mcMotherPdg1 == 22 && mcMotherPdg2 == 22 && mcMotherPdg3 == 22 && mcMotherPdg4 == 22){
 					if (grandmotherId1 != grandmotherId2 || grandmotherId3 != grandmotherId4 || grandmotherId1 != grandmotherId3) continue;
 					CbmMCTrack* grandmother1 = (CbmMCTrack*) fMcTracks->At(grandmotherId1);
-					if (NULL == grandmother1) continue;
+					if (nullptr == grandmother1) continue;
 					int mcGrandMotherPdg1 = grandmother1->GetPdgCode();
 					if (mcGrandMotherPdg1 != 111 ) continue;
 					//cout << "Double conversion case " << endl;

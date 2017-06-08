@@ -32,6 +32,8 @@ class CbmAnaConversion2Reconstruction
 
 public:
 	CbmAnaConversion2Reconstruction();
+	CbmAnaConversion2Reconstruction(const CbmAnaConversion2Reconstruction&) = delete;
+	CbmAnaConversion2Reconstruction operator=(const CbmAnaConversion2Reconstruction&) = delete;
 	virtual ~CbmAnaConversion2Reconstruction();
 
 	void Init();
@@ -98,8 +100,6 @@ private:
 
 
 
-	CbmAnaConversion2Reconstruction(const CbmAnaConversion2Reconstruction&);
-	CbmAnaConversion2Reconstruction operator=(const CbmAnaConversion2Reconstruction&);
 
 	ClassDef(CbmAnaConversion2Reconstruction,1)
 };

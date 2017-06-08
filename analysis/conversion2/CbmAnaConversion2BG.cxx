@@ -38,12 +38,13 @@ using namespace std;
 
 
 CbmAnaConversion2BG::CbmAnaConversion2BG()
- : fKFMcParticles(NULL),
-   fMcTracks(NULL),
-   fStsTracks(NULL),
-   fStsTrackMatches(NULL),
-   fRichRings(NULL),
-   fRichRingMatches(NULL),
+ : fKFMcParticles(nullptr),
+   fMcTracks(nullptr),
+   fStsTracks(nullptr),
+   fStsTrackMatches(nullptr),
+   fGlobalTracks(nullptr),
+   fRichRings(nullptr),
+   fRichRingMatches(nullptr),
 
 
    timer(),
@@ -59,28 +60,28 @@ CbmAnaConversion2BG::~CbmAnaConversion2BG()
 void CbmAnaConversion2BG::Init()
 {
 	FairRootManager* ioman = FairRootManager::Instance();
-	if (NULL == ioman) { Fatal("CbmAnaConversion2BG::Init","RootManager not instantised!"); }
+	if (nullptr == ioman) { Fatal("CbmAnaConversion2BG::Init","RootManager not instantised!"); }
 
 	fKFMcParticles = (TClonesArray*) ioman->GetObject("KFMCParticles");
-	if ( NULL == fKFMcParticles) { Fatal("CbmAnaConversion2BG::Init","No KFMCParticles array!"); }
+	if ( nullptr == fKFMcParticles) { Fatal("CbmAnaConversion2BG::Init","No KFMCParticles array!"); }
 
 	fMcTracks = (TClonesArray*) ioman->GetObject("MCTrack");
-	if ( NULL == fMcTracks) { Fatal("CbmAnaConversion2BG::Init","No MCTrack array!"); }
+	if ( nullptr == fMcTracks) { Fatal("CbmAnaConversion2BG::Init","No MCTrack array!"); }
 
 	fStsTracks = (TClonesArray*) ioman->GetObject("StsTrack");
-	if ( NULL == fStsTracks) { Fatal("CbmAnaConversion2BG::Init","No StsTrack array!"); }
+	if ( nullptr == fStsTracks) { Fatal("CbmAnaConversion2BG::Init","No StsTrack array!"); }
 
 	fStsTrackMatches = (TClonesArray*) ioman->GetObject("StsTrackMatch");
-	if (NULL == fStsTrackMatches) { Fatal("CbmAnaConversion2BG::Init","No StsTrackMatch array!"); }
+	if (nullptr == fStsTrackMatches) { Fatal("CbmAnaConversion2BG::Init","No StsTrackMatch array!"); }
 
 	fGlobalTracks = (TClonesArray*) ioman->GetObject("GlobalTrack");
-	if (NULL == fGlobalTracks) { Fatal("CbmAnaConversion2BG::Init","No GlobalTrack array!"); }
+	if (nullptr == fGlobalTracks) { Fatal("CbmAnaConversion2BG::Init","No GlobalTrack array!"); }
 
 	fRichRings = (TClonesArray*) ioman->GetObject("RichRing");
-	if (NULL == fRichRings) { Fatal("CbmAnaConversion2BG::Init","No RichRing array!"); }
+	if (nullptr == fRichRings) { Fatal("CbmAnaConversion2BG::Init","No RichRing array!"); }
 
 	fRichRingMatches = (TClonesArray*) ioman->GetObject("RichRingMatch");
-	if (NULL == fRichRingMatches) { Fatal("CbmAnaConversion2BG::Init","No RichRingMatch array!"); }
+	if (nullptr == fRichRingMatches) { Fatal("CbmAnaConversion2BG::Init","No RichRingMatch array!"); }
 
 
 	cout << " CbmAnaConversion2BG::Init() " << endl;
@@ -172,10 +173,10 @@ void CbmAnaConversion2BG::Exec(CbmMCTrack* mctrack1, CbmMCTrack* mctrack2, CbmMC
 		CbmMCTrack* mother4 = (CbmMCTrack*) fMcTracks->At(motherId4);
 
 		std::vector<int> testGR;
-		if (TMath::Abs(pdg1) == 11 && NULL != mother1) testGR.push_back(mother1->GetMotherId());
-		if (TMath::Abs(pdg2) == 11 && NULL != mother2) testGR.push_back(mother2->GetMotherId());
-		if (TMath::Abs(pdg3) == 11 && NULL != mother3) testGR.push_back(mother3->GetMotherId());
-		if (TMath::Abs(pdg4) == 11 && NULL != mother4) testGR.push_back(mother4->GetMotherId());
+		if (TMath::Abs(pdg1) == 11 && nullptr != mother1) testGR.push_back(mother1->GetMotherId());
+		if (TMath::Abs(pdg2) == 11 && nullptr != mother2) testGR.push_back(mother2->GetMotherId());
+		if (TMath::Abs(pdg3) == 11 && nullptr != mother3) testGR.push_back(mother3->GetMotherId());
+		if (TMath::Abs(pdg4) == 11 && nullptr != mother4) testGR.push_back(mother4->GetMotherId());
 
 		if (testGR.size() == 2){
 			if (testGR[0] == testGR[1]){ 
@@ -194,10 +195,10 @@ void CbmAnaConversion2BG::Exec(CbmMCTrack* mctrack1, CbmMCTrack* mctrack2, CbmMC
 		testGR.clear();
 		testM.clear();
 
-		if (NULL != mother1) PdgCase8mothers->Fill(mother1->GetPdgCode());
-		if (NULL != mother2) PdgCase8mothers->Fill(mother2->GetPdgCode());
-		if (NULL != mother3) PdgCase8mothers->Fill(mother3->GetPdgCode());
-		if (NULL != mother4) PdgCase8mothers->Fill(mother4->GetPdgCode());
+		if (nullptr != mother1) PdgCase8mothers->Fill(mother1->GetPdgCode());
+		if (nullptr != mother2) PdgCase8mothers->Fill(mother2->GetPdgCode());
+		if (nullptr != mother3) PdgCase8mothers->Fill(mother3->GetPdgCode());
+		if (nullptr != mother4) PdgCase8mothers->Fill(mother4->GetPdgCode());
 
 	}
 	if(NumOfOthers == 1) Case7->Fill(invmassRecoPi0);
@@ -208,7 +209,7 @@ void CbmAnaConversion2BG::Exec(CbmMCTrack* mctrack1, CbmMCTrack* mctrack2, CbmMC
 			CbmMCTrack* mother2 = (CbmMCTrack*) fMcTracks->At(motherId2);
 			CbmMCTrack* mother3 = (CbmMCTrack*) fMcTracks->At(motherId3);
 			CbmMCTrack* mother4 = (CbmMCTrack*) fMcTracks->At(motherId4);
-			if (NULL != mother1 && NULL != mother2 && NULL != mother3 && NULL != mother4){
+			if (nullptr != mother1 && nullptr != mother2 && nullptr != mother3 && nullptr != mother4){
 				int mcMotherPdg1 = mother1->GetPdgCode();
 				int mcMotherPdg2 = mother2->GetPdgCode();
 				int mcMotherPdg3 = mother3->GetPdgCode();
@@ -221,7 +222,7 @@ void CbmAnaConversion2BG::Exec(CbmMCTrack* mctrack1, CbmMCTrack* mctrack2, CbmMC
 				if(motherId1 == motherId2 && motherId3 == motherId4 && grandmotherId1 == grandmotherId3){ 
 					if (grandmotherId1 != -1){
 						CbmMCTrack* grm1 = (CbmMCTrack*) fMcTracks->At(grandmotherId1);
-						if (NULL != grm1 && grm1->GetPdgCode() == 111){ // && mctrack1->GetStartZ() < 4.5 && mctrack3->GetStartZ() < 4.5){
+						if (nullptr != grm1 && grm1->GetPdgCode() == 111){ // && mctrack1->GetStartZ() < 4.5 && mctrack3->GetStartZ() < 4.5){
 							Case1->Fill(invmassRecoPi0); 
 							Case1ZYPos->Fill(mctrack1->GetStartZ(), mctrack1->GetStartY()); 
 							Case1ZYPos->Fill(mctrack3->GetStartZ(), mctrack3->GetStartY());

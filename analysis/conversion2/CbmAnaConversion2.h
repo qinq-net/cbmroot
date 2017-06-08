@@ -47,6 +47,16 @@ public:
 	CbmAnaConversion2();
 
    /**
+    * \brief disallow Copy constructor.
+    */
+   CbmAnaConversion2(const CbmAnaConversion2&) = delete;
+
+   /**
+    * \brief disallow Assignment operator.
+    */
+   CbmAnaConversion2& operator=(const CbmAnaConversion2&) = delete;
+
+   /**
     * \brief Standard destructor.
     */
    virtual ~CbmAnaConversion2();
@@ -196,15 +206,6 @@ private:
 
 
 
-   /**
-    * \brief Copy constructor.
-    */
-   CbmAnaConversion2(const CbmAnaConversion2&);
-
-   /**
-    * \brief Assignment operator.
-    */
-   CbmAnaConversion2& operator=(const CbmAnaConversion2&);
 
 
 	ClassDef(CbmAnaConversion2,1)

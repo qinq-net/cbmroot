@@ -32,35 +32,41 @@
 using namespace std;
 using boost::assign::list_of;
 
-
 CbmAnaConversion2Reconstruction::CbmAnaConversion2Reconstruction()
-  : fMcTracks(NULL),
-	fGlobalTracks(NULL),
-	fRichRings(NULL),
+  : fRichRings(nullptr),
+	fRichHits(nullptr),
+        fMcTracks(nullptr),
+	fGlobalTracks(nullptr),
 	fRecoTracklistEPEM(),
-	fRecoRefittedMomentum_dir(),
+        fRecoTracklistEPEM_ids(),
+        fRecoTracklistEPEM_gtid(),
+  	fRecoRefittedMomentum_dir(),
 	fRecoRefittedMomentum_conv(),
 	fRecoRefittedMomentum(),
+	STS_Id(),
 	fRecoTracklistEPEMwithRICH(),
+        fRecoTracklistEPEM_idswithRICH(),
+        fRecoTracklistEPEM_gtidwithRICH(),
 	fRecoRefittedMomentumwithRICH(),
-	fhEPEM_openingAngle_gee_mc(NULL),
-	fhEPEM_openingAngle_gee_refitted(NULL),
-	fhEPEM_openingAngle_gee_mc_dalitz(NULL),
-	fhEPEM_openingAngle_gee_refitted_dalitz(NULL),
-	fhEPEM_openingAngle_betweenGammas_mc(NULL),
-	fhEPEM_openingAngle_betweenGammas_reco(NULL),
-	fhEPEM_invmass_eeee_refitted(NULL),
-	fhEPEM_invmass_eeee_mc(NULL),
 	fHistoList_gg(),
 	fHistoList_gee(),
 	fHistoList_eeee(),
-	OpeningAngleMCgg(NULL),
-	OpeningAngleRecogg(NULL),
-	STS_Id(),
 
-
-	fRichHits(NULL)
-
+	fhEPEM_openingAngle_gee_mc(nullptr),
+	fhEPEM_openingAngle_gee_refitted(nullptr),
+	fhEPEM_openingAngle_gee_mc_dalitz(nullptr),
+	fhEPEM_openingAngle_gee_refitted_dalitz(nullptr),
+	fhEPEM_openingAngle_betweenGammas_mc(nullptr),
+	fhEPEM_openingAngle_betweenGammas_reco(nullptr),
+	fhEPEM_invmass_eeee_refitted(nullptr),
+	fhEPEM_invmass_eeee_mc(nullptr),
+        OAsmallest(nullptr),
+        OpeningAngleMCgg(nullptr),
+        OpeningAngleRecogg(nullptr),
+        fhEPEM_invmass_gg_mc(nullptr),
+        fhEPEM_invmass_gg_refitted(nullptr),
+        fhEPEM_invmass_gee_mc(nullptr),
+        fhEPEM_invmass_gee_refitted(nullptr)
 {
 }
 
@@ -72,19 +78,19 @@ CbmAnaConversion2Reconstruction::~CbmAnaConversion2Reconstruction()
 void CbmAnaConversion2Reconstruction::Init()
 {
 	FairRootManager* ioman = FairRootManager::Instance();
-	if (NULL == ioman) { Fatal("CbmAnaConversion::Init","RootManager not instantised!"); }
+	if (nullptr == ioman) { Fatal("CbmAnaConversion::Init","RootManager not instantised!"); }
 
 	fMcTracks = (TClonesArray*) ioman->GetObject("MCTrack");
-	if ( NULL == fMcTracks) { Fatal("CbmAnaConversion::Init","No MCTrack array!"); }
+	if ( nullptr == fMcTracks) { Fatal("CbmAnaConversion::Init","No MCTrack array!"); }
 
 	fGlobalTracks = (TClonesArray*) ioman->GetObject("GlobalTrack");
-	if (NULL == fGlobalTracks) { Fatal("CbmAnaConversion::Init","No GlobalTrack array!"); }
+	if (nullptr == fGlobalTracks) { Fatal("CbmAnaConversion::Init","No GlobalTrack array!"); }
 
 	fRichRings = (TClonesArray*) ioman->GetObject("RichRing");
-	if (NULL == fRichRings) { Fatal("CbmAnaConversion::Init","No RichRing array!"); }
+	if (nullptr == fRichRings) { Fatal("CbmAnaConversion::Init","No RichRing array!"); }
 
 	fRichHits = (TClonesArray*) ioman->GetObject("RichHit");
-	if ( NULL == fRichHits) { Fatal("CbmAnaConversion::Init","No RichHit array!"); }
+	if ( nullptr == fRichHits) { Fatal("CbmAnaConversion::Init","No RichHit array!"); }
 
 	InitHistos();
 
@@ -219,7 +225,7 @@ void CbmAnaConversion2Reconstruction::SetTracklistReco(vector<CbmMCTrack*> MCTra
 						if (motherId1 != -1) {
 							int mcMotherPdg1  = -1;
 							CbmMCTrack* mother1 = (CbmMCTrack*) fMcTracks->At(motherId1);
-							if(NULL != mother1) mcMotherPdg1 = mother1->GetPdgCode();
+							if(nullptr != mother1) mcMotherPdg1 = mother1->GetPdgCode();
 							if( (mcMotherPdg1 == fDecayedParticlePdg) ) { 
 								Double_t invmass1 = 0;
 								Double_t invmass3 = 0;
@@ -338,24 +344,24 @@ void CbmAnaConversion2Reconstruction::SetTracklistReco(vector<CbmMCTrack*> MCTra
 						int mcGrandmotherPdg3  = -1;
 						int mcGrandmotherPdg4  = -1;
 
-						CbmMCTrack* grandmother1 = NULL;
+						CbmMCTrack* grandmother1 = nullptr;
 
 						if (motherId1 == -1 || motherId2 == -1 || motherId3 == -1 || motherId4 == -1) continue;
 						CbmMCTrack* mother1 = (CbmMCTrack*) fMcTracks->At(motherId1);
-						if (NULL != mother1) mcMotherPdg1 = mother1->GetPdgCode();
+						if (nullptr != mother1) mcMotherPdg1 = mother1->GetPdgCode();
 						grandmotherId1 = mother1->GetMotherId();
 						if(grandmotherId1 != -1) {
 							grandmother1 = (CbmMCTrack*) fMcTracks->At(grandmotherId1);
-							if (NULL != grandmother1) mcGrandmotherPdg1 = grandmother1->GetPdgCode();
+							if (nullptr != grandmother1) mcGrandmotherPdg1 = grandmother1->GetPdgCode();
 						}
 						CbmMCTrack* mother2 = (CbmMCTrack*) fMcTracks->At(motherId2);
-						if (NULL != mother2) mcMotherPdg2 = mother2->GetPdgCode();
+						if (nullptr != mother2) mcMotherPdg2 = mother2->GetPdgCode();
 						grandmotherId2 = mother2->GetMotherId();
 						CbmMCTrack* mother3 = (CbmMCTrack*) fMcTracks->At(motherId3);
-						if (NULL != mother3) mcMotherPdg3 = mother3->GetPdgCode();
+						if (nullptr != mother3) mcMotherPdg3 = mother3->GetPdgCode();
 						grandmotherId3 = mother3->GetMotherId();
 						CbmMCTrack* mother4 = (CbmMCTrack*) fMcTracks->At(motherId4);
-						if (NULL != mother4) mcMotherPdg4 = mother4->GetPdgCode();
+						if (nullptr != mother4) mcMotherPdg4 = mother4->GetPdgCode();
 						grandmotherId4 = mother4->GetMotherId();
 
 						if(motherId1 == motherId2 && motherId3 == motherId4) {

@@ -39,23 +39,22 @@
 
 using namespace std;
 
-
-
 CbmAnaConversion2KF::CbmAnaConversion2KF()
- : fKFMcParticles(NULL),
-   fMcTracks(NULL),
-   fStsTracks(NULL),
-   fStsTrackMatches(NULL),
-   fRichRings(NULL),
-   fRichRingMatches(NULL),
-   fKFparticle(NULL),
-   fKFparticleFinderQA(NULL),
-   fKFtopo(NULL),
-   fKFtopoPerf(0),
+ : fKFMcParticles(nullptr),
+   fMcTracks(nullptr),
+   fStsTracks(nullptr),
+   fStsTrackMatches(nullptr),
+   fGlobalTracks(nullptr),
+   fRichRings(nullptr),
+   fRichRingMatches(nullptr),
+   fKFparticle(nullptr),
+   fKFparticleFinderQA(nullptr),
+   fKFtopo(nullptr),
+   fKFtopoPerf(nullptr),
    fHistoList_kfparticle(),
-   timer(),
    frefmomentum(),
    fmcvector(),
+
 
 // mixing
    fHistoList_mixing(),
@@ -64,12 +63,22 @@ CbmAnaConversion2KF::CbmAnaConversion2KF()
    EMT_OA(),
    EMT_InvMass(),
    EMT_NofRings(),
+   gr_EMT_InvMass_all(nullptr),
+   gr_EMT_InvMass_oneInRICH(nullptr),
+   gr_EMT_InvMass_twoInRICH(nullptr),
+   gr_EMT_InvMass_zeroInRICH(nullptr),
+   gr_EMT_InvMass_onetwoInRICH(nullptr),
    EMT_Z(),
-   gr_EMT_InvMass_all(NULL),
-   gr_EMT_InvMass_oneInRICH(NULL),
-   gr_EMT_InvMass_twoInRICH(NULL),
-   gr_EMT_InvMass_zeroInRICH(NULL),
-   gr_EMT_InvMass_onetwoInRICH(NULL),
+   gr_EMT_InvMass_all_target(nullptr),
+   gr_EMT_InvMass_oneInRICH_target(nullptr),
+   gr_EMT_InvMass_twoInRICH_target(nullptr),
+   gr_EMT_InvMass_zeroInRICH_target(nullptr),
+   gr_EMT_InvMass_onetwoInRICH_target(nullptr),
+   gr_EMT_InvMass_all_outside_target(nullptr),
+   gr_EMT_InvMass_oneInRICH_outside_target(nullptr),
+   gr_EMT_InvMass_twoInRICH_outside_target(nullptr),
+   gr_EMT_InvMass_zeroInRICH_outside_target(nullptr),
+   gr_EMT_InvMass_onetwoInRICH_outside_target(nullptr),
 
 // multiplicity
    fHistoList_multiplicity(),
@@ -78,17 +87,17 @@ CbmAnaConversion2KF::CbmAnaConversion2KF()
    fHistoList_multiplicity_two(),
    fHistoList_multiplicity_zero(),
    fHistoList_multiplicity_onetwo(),
-   MultiplicityInv_all(NULL),
-   MultiplicityInv_one(NULL),
-   MultiplicityInv_two(NULL),
-   MultiplicityInv_zero(NULL),
-   MultiplicityInv_onetwo(NULL),
+   MultiplicityInv_all(nullptr),
+   MultiplicityInv_one(nullptr),
+   MultiplicityInv_two(nullptr),
+   MultiplicityInv_zero(nullptr),
+   MultiplicityInv_onetwo(nullptr),
 
-   Multiplicity_chargedParticles_Inv_all(NULL),
-   Multiplicity_chargedParticles_Inv_one(NULL),
-   Multiplicity_chargedParticles_Inv_two(NULL),
-   Multiplicity_chargedParticles_Inv_zero(NULL),
-   Multiplicity_chargedParticles_Inv_onetwo(NULL),
+   Multiplicity_chargedParticles_Inv_all(nullptr),
+   Multiplicity_chargedParticles_Inv_one(nullptr),
+   Multiplicity_chargedParticles_Inv_two(nullptr),
+   Multiplicity_chargedParticles_Inv_zero(nullptr),
+   Multiplicity_chargedParticles_Inv_onetwo(nullptr),
 
    EMT_Event_multi_all(),
    EMT_pair_momenta_multi_all(),
@@ -117,314 +126,469 @@ CbmAnaConversion2KF::CbmAnaConversion2KF()
    EMT_multi_zero(),
    EMT_multi_onetwo(), 
 
-	gr_EMTMulti_InvMass_all_m1(NULL),
-	gr_EMTMulti_InvMass_all_m2(NULL),
-	gr_EMTMulti_InvMass_all_m3(NULL),
-	gr_EMTMulti_InvMass_all_m4(NULL), 
-	gr_EMTMulti_InvMass_all_m5(NULL), 
-	gr_EMTMulti_InvMass_all_m6(NULL), 
-	gr_EMTMulti_InvMass_all_m7(NULL), 
-	gr_EMTMulti_InvMass_all_m8(NULL), 
-	gr_EMTMulti_InvMass_all_m9(NULL), 
-	gr_EMTMulti_InvMass_all_m10(NULL),
-	gr_EMTMulti_InvMass_all_m11(NULL),
-	gr_EMTMulti_InvMass_all_m12(NULL),
-	gr_EMTMulti_InvMass_all_m13(NULL),
-	gr_EMTMulti_InvMass_all_m14(NULL), 
-	gr_EMTMulti_InvMass_all_m15(NULL), 
-	gr_EMTMulti_InvMass_all_m16(NULL), 
-	gr_EMTMulti_InvMass_all_m17(NULL), 
-	gr_EMTMulti_InvMass_all_m18(NULL), 
-	gr_EMTMulti_InvMass_all_m19(NULL), 
-	gr_EMTMulti_InvMass_all_m20(NULL),
+	gr_EMTMulti_InvMass_all_m1(nullptr),
+	gr_EMTMulti_InvMass_all_m2(nullptr),
+	gr_EMTMulti_InvMass_all_m3(nullptr),
+	gr_EMTMulti_InvMass_all_m4(nullptr), 
+	gr_EMTMulti_InvMass_all_m5(nullptr), 
+	gr_EMTMulti_InvMass_all_m6(nullptr), 
+	gr_EMTMulti_InvMass_all_m7(nullptr), 
+	gr_EMTMulti_InvMass_all_m8(nullptr), 
+	gr_EMTMulti_InvMass_all_m9(nullptr), 
+	gr_EMTMulti_InvMass_all_m10(nullptr),
+	gr_EMTMulti_InvMass_all_m11(nullptr),
+	gr_EMTMulti_InvMass_all_m12(nullptr),
+	gr_EMTMulti_InvMass_all_m13(nullptr),
+	gr_EMTMulti_InvMass_all_m14(nullptr), 
+	gr_EMTMulti_InvMass_all_m15(nullptr), 
+	gr_EMTMulti_InvMass_all_m16(nullptr), 
+	gr_EMTMulti_InvMass_all_m17(nullptr), 
+	gr_EMTMulti_InvMass_all_m18(nullptr), 
+	gr_EMTMulti_InvMass_all_m19(nullptr), 
+	gr_EMTMulti_InvMass_all_m20(nullptr),
  
-	gr_EMTMulti_InvMass_one_m1(NULL),
-	gr_EMTMulti_InvMass_one_m2(NULL),
-	gr_EMTMulti_InvMass_one_m3(NULL),
-	gr_EMTMulti_InvMass_one_m4(NULL),
-	gr_EMTMulti_InvMass_one_m5(NULL),
-	gr_EMTMulti_InvMass_one_m6(NULL),
-	gr_EMTMulti_InvMass_one_m7(NULL),
-	gr_EMTMulti_InvMass_one_m8(NULL),
-	gr_EMTMulti_InvMass_one_m9(NULL),
-	gr_EMTMulti_InvMass_one_m10(NULL),
-	gr_EMTMulti_InvMass_one_m11(NULL),
-	gr_EMTMulti_InvMass_one_m12(NULL),
-	gr_EMTMulti_InvMass_one_m13(NULL),
-	gr_EMTMulti_InvMass_one_m14(NULL),
-	gr_EMTMulti_InvMass_one_m15(NULL),
-	gr_EMTMulti_InvMass_one_m16(NULL),
-	gr_EMTMulti_InvMass_one_m17(NULL),
-	gr_EMTMulti_InvMass_one_m18(NULL),
-	gr_EMTMulti_InvMass_one_m19(NULL),
-	gr_EMTMulti_InvMass_one_m20(NULL),
+	gr_EMTMulti_InvMass_one_m1(nullptr),
+	gr_EMTMulti_InvMass_one_m2(nullptr),
+	gr_EMTMulti_InvMass_one_m3(nullptr),
+	gr_EMTMulti_InvMass_one_m4(nullptr),
+	gr_EMTMulti_InvMass_one_m5(nullptr),
+	gr_EMTMulti_InvMass_one_m6(nullptr),
+	gr_EMTMulti_InvMass_one_m7(nullptr),
+	gr_EMTMulti_InvMass_one_m8(nullptr),
+	gr_EMTMulti_InvMass_one_m9(nullptr),
+	gr_EMTMulti_InvMass_one_m10(nullptr),
+	gr_EMTMulti_InvMass_one_m11(nullptr),
+	gr_EMTMulti_InvMass_one_m12(nullptr),
+	gr_EMTMulti_InvMass_one_m13(nullptr),
+	gr_EMTMulti_InvMass_one_m14(nullptr),
+	gr_EMTMulti_InvMass_one_m15(nullptr),
+	gr_EMTMulti_InvMass_one_m16(nullptr),
+	gr_EMTMulti_InvMass_one_m17(nullptr),
+	gr_EMTMulti_InvMass_one_m18(nullptr),
+	gr_EMTMulti_InvMass_one_m19(nullptr),
+	gr_EMTMulti_InvMass_one_m20(nullptr),
 
-	gr_EMTMulti_InvMass_two_m1(NULL),
-	gr_EMTMulti_InvMass_two_m2(NULL),
-	gr_EMTMulti_InvMass_two_m3(NULL),
-	gr_EMTMulti_InvMass_two_m4(NULL),
-	gr_EMTMulti_InvMass_two_m5(NULL),
-	gr_EMTMulti_InvMass_two_m6(NULL),
-	gr_EMTMulti_InvMass_two_m7(NULL),
-	gr_EMTMulti_InvMass_two_m8(NULL),
-	gr_EMTMulti_InvMass_two_m9(NULL),
-	gr_EMTMulti_InvMass_two_m10(NULL),
-	gr_EMTMulti_InvMass_two_m11(NULL),
-	gr_EMTMulti_InvMass_two_m12(NULL),
-	gr_EMTMulti_InvMass_two_m13(NULL),
-	gr_EMTMulti_InvMass_two_m14(NULL),
-	gr_EMTMulti_InvMass_two_m15(NULL),
-	gr_EMTMulti_InvMass_two_m16(NULL),
-	gr_EMTMulti_InvMass_two_m17(NULL),
-	gr_EMTMulti_InvMass_two_m18(NULL),
-	gr_EMTMulti_InvMass_two_m19(NULL),
-	gr_EMTMulti_InvMass_two_m20(NULL),
+	gr_EMTMulti_InvMass_two_m1(nullptr),
+	gr_EMTMulti_InvMass_two_m2(nullptr),
+	gr_EMTMulti_InvMass_two_m3(nullptr),
+	gr_EMTMulti_InvMass_two_m4(nullptr),
+	gr_EMTMulti_InvMass_two_m5(nullptr),
+	gr_EMTMulti_InvMass_two_m6(nullptr),
+	gr_EMTMulti_InvMass_two_m7(nullptr),
+	gr_EMTMulti_InvMass_two_m8(nullptr),
+	gr_EMTMulti_InvMass_two_m9(nullptr),
+	gr_EMTMulti_InvMass_two_m10(nullptr),
+	gr_EMTMulti_InvMass_two_m11(nullptr),
+	gr_EMTMulti_InvMass_two_m12(nullptr),
+	gr_EMTMulti_InvMass_two_m13(nullptr),
+	gr_EMTMulti_InvMass_two_m14(nullptr),
+	gr_EMTMulti_InvMass_two_m15(nullptr),
+	gr_EMTMulti_InvMass_two_m16(nullptr),
+	gr_EMTMulti_InvMass_two_m17(nullptr),
+	gr_EMTMulti_InvMass_two_m18(nullptr),
+	gr_EMTMulti_InvMass_two_m19(nullptr),
+	gr_EMTMulti_InvMass_two_m20(nullptr),
 
-	gr_EMTMulti_InvMass_zero_m1(NULL),
-	gr_EMTMulti_InvMass_zero_m2(NULL),
-	gr_EMTMulti_InvMass_zero_m3(NULL),
-	gr_EMTMulti_InvMass_zero_m4(NULL),
-	gr_EMTMulti_InvMass_zero_m5(NULL),
-	gr_EMTMulti_InvMass_zero_m6(NULL),
-	gr_EMTMulti_InvMass_zero_m7(NULL),
-	gr_EMTMulti_InvMass_zero_m8(NULL),
-	gr_EMTMulti_InvMass_zero_m9(NULL),
-	gr_EMTMulti_InvMass_zero_m10(NULL),
-	gr_EMTMulti_InvMass_zero_m11(NULL),
-	gr_EMTMulti_InvMass_zero_m12(NULL),
-	gr_EMTMulti_InvMass_zero_m13(NULL),
-	gr_EMTMulti_InvMass_zero_m14(NULL),
-	gr_EMTMulti_InvMass_zero_m15(NULL),
-	gr_EMTMulti_InvMass_zero_m16(NULL),
-	gr_EMTMulti_InvMass_zero_m17(NULL),
-	gr_EMTMulti_InvMass_zero_m18(NULL),
-	gr_EMTMulti_InvMass_zero_m19(NULL),
-	gr_EMTMulti_InvMass_zero_m20(NULL),
+	gr_EMTMulti_InvMass_zero_m1(nullptr),
+	gr_EMTMulti_InvMass_zero_m2(nullptr),
+	gr_EMTMulti_InvMass_zero_m3(nullptr),
+	gr_EMTMulti_InvMass_zero_m4(nullptr),
+	gr_EMTMulti_InvMass_zero_m5(nullptr),
+	gr_EMTMulti_InvMass_zero_m6(nullptr),
+	gr_EMTMulti_InvMass_zero_m7(nullptr),
+	gr_EMTMulti_InvMass_zero_m8(nullptr),
+	gr_EMTMulti_InvMass_zero_m9(nullptr),
+	gr_EMTMulti_InvMass_zero_m10(nullptr),
+	gr_EMTMulti_InvMass_zero_m11(nullptr),
+	gr_EMTMulti_InvMass_zero_m12(nullptr),
+	gr_EMTMulti_InvMass_zero_m13(nullptr),
+	gr_EMTMulti_InvMass_zero_m14(nullptr),
+	gr_EMTMulti_InvMass_zero_m15(nullptr),
+	gr_EMTMulti_InvMass_zero_m16(nullptr),
+	gr_EMTMulti_InvMass_zero_m17(nullptr),
+	gr_EMTMulti_InvMass_zero_m18(nullptr),
+	gr_EMTMulti_InvMass_zero_m19(nullptr),
+	gr_EMTMulti_InvMass_zero_m20(nullptr),
 
-	gr_EMTMulti_InvMass_onetwo_m1(NULL),
-	gr_EMTMulti_InvMass_onetwo_m2(NULL),
-	gr_EMTMulti_InvMass_onetwo_m3(NULL),
-	gr_EMTMulti_InvMass_onetwo_m4(NULL),
-	gr_EMTMulti_InvMass_onetwo_m5(NULL),
-	gr_EMTMulti_InvMass_onetwo_m6(NULL),
-	gr_EMTMulti_InvMass_onetwo_m7(NULL),
-	gr_EMTMulti_InvMass_onetwo_m8(NULL),
-	gr_EMTMulti_InvMass_onetwo_m9(NULL),
-	gr_EMTMulti_InvMass_onetwo_m10(NULL),
-	gr_EMTMulti_InvMass_onetwo_m11(NULL),
-	gr_EMTMulti_InvMass_onetwo_m12(NULL),
-	gr_EMTMulti_InvMass_onetwo_m13(NULL),
-	gr_EMTMulti_InvMass_onetwo_m14(NULL),
-	gr_EMTMulti_InvMass_onetwo_m15(NULL),
-	gr_EMTMulti_InvMass_onetwo_m16(NULL),
-	gr_EMTMulti_InvMass_onetwo_m17(NULL),
-	gr_EMTMulti_InvMass_onetwo_m18(NULL),
-	gr_EMTMulti_InvMass_onetwo_m19(NULL),
-	gr_EMTMulti_InvMass_onetwo_m20(NULL),
+	gr_EMTMulti_InvMass_onetwo_m1(nullptr),
+	gr_EMTMulti_InvMass_onetwo_m2(nullptr),
+	gr_EMTMulti_InvMass_onetwo_m3(nullptr),
+	gr_EMTMulti_InvMass_onetwo_m4(nullptr),
+	gr_EMTMulti_InvMass_onetwo_m5(nullptr),
+	gr_EMTMulti_InvMass_onetwo_m6(nullptr),
+	gr_EMTMulti_InvMass_onetwo_m7(nullptr),
+	gr_EMTMulti_InvMass_onetwo_m8(nullptr),
+	gr_EMTMulti_InvMass_onetwo_m9(nullptr),
+	gr_EMTMulti_InvMass_onetwo_m10(nullptr),
+	gr_EMTMulti_InvMass_onetwo_m11(nullptr),
+	gr_EMTMulti_InvMass_onetwo_m12(nullptr),
+	gr_EMTMulti_InvMass_onetwo_m13(nullptr),
+	gr_EMTMulti_InvMass_onetwo_m14(nullptr),
+	gr_EMTMulti_InvMass_onetwo_m15(nullptr),
+	gr_EMTMulti_InvMass_onetwo_m16(nullptr),
+	gr_EMTMulti_InvMass_onetwo_m17(nullptr),
+	gr_EMTMulti_InvMass_onetwo_m18(nullptr),
+	gr_EMTMulti_InvMass_onetwo_m19(nullptr),
+	gr_EMTMulti_InvMass_onetwo_m20(nullptr),
 
 
 // 0-2
    GammasAll(),
    fHistoList_all(),
-   fGammaInvMassMC_All(NULL),
-   fGammaInvMassReco_All(NULL),
-   fGammaOpeningAngleMC_All(NULL),
-   fGammaOpeningAngleReco_All(NULL),
-   fPdg_All(NULL),
-   fPi0InvMassTrueKFV_All(NULL),
-   fPi0InvMassRecoKFV_All(NULL),
-   fdx_All(NULL),
-   fdy_All(NULL),
-   fdz_All(NULL),
-   fD_All(NULL),
-   fP_mc_All(NULL),
-   fP_reco_All(NULL),
-   fPt_mc_All(NULL),
-   fPt_reco_All(NULL),
-   fPi0_pt_vs_rap_All(NULL),
+   fGammaInvMassMC_All(nullptr),
+   fGammaInvMassReco_All(nullptr),
+   fGammaOpeningAngleMC_All(nullptr),
+   fGammaOpeningAngleReco_All(nullptr),
+   fPdg_All(nullptr),
+   fPi0InvMassTrueKFV_All(nullptr),
+   fPi0InvMassRecoKFV_All(nullptr),
+   fdx_All(nullptr),
+   fdy_All(nullptr),
+   fdz_All(nullptr),
+   fD_All(nullptr),
+   fP_mc_All(nullptr),
+   fP_reco_All(nullptr),
+   fPt_mc_All(nullptr),
+   fPt_reco_All(nullptr),
+   fPi0_pt_vs_rap_All(nullptr),
    fHistoList_all_target(),
    fHistoList_all_mvd(),
    fHistoList_all_sts(),
-   fGammaInvMassReco_All_target(NULL),
-   fGammaOpeningAngleReco_All_target(NULL),
-   fPi0InvMassRecoKFV_All_target(NULL),
-   fGammaInvMassReco_All_mvd(NULL),
-   fGammaOpeningAngleReco_All_mvd(NULL),
-   fPi0InvMassRecoKFV_All_mvd(NULL),
-   fGammaInvMassReco_All_sts(NULL),
-   fGammaOpeningAngleReco_All_sts(NULL),
-   fPi0InvMassRecoKFV_All_sts(NULL),
+   fGammaInvMassReco_All_target(nullptr),
+   fGammaOpeningAngleReco_All_target(nullptr),
+   fPi0InvMassRecoKFV_All_target(nullptr),
+   fGammaInvMassReco_All_mvd(nullptr),
+   fGammaOpeningAngleReco_All_mvd(nullptr),
+   fPi0InvMassRecoKFV_All_mvd(nullptr),
+   fGammaInvMassReco_All_sts(nullptr),
+   fGammaOpeningAngleReco_All_sts(nullptr),
+   fPi0InvMassRecoKFV_All_sts(nullptr),
    fHistoList_all_outside(),
-
+   fPi0InvMassRecoKFV_All_In_Rich_outside_target(nullptr),
 // 1
    GammasOneLeptonInRICH(),
    fHistoList_oneInRich(),
-   fGammaInvMassMC_One_In_Rich(NULL),
-   fGammaInvMassReco_One_In_Rich(NULL),
-   fGammaOpeningAngleMC_One_In_Rich(NULL),
-   fGammaOpeningAngleReco_One_In_Rich(NULL),
-   fPi0InvMassTrueKFV_One_In_Rich(NULL),
-   fPi0InvMassRecoKFV_One_In_Rich(NULL),
-   fPdg_One_In_Rich(NULL),
-   fdx_One_In_Rich(NULL),
-   fdy_One_In_Rich(NULL),
-   fdz_One_In_Rich(NULL),
-   fD_One_In_Rich(NULL),
-   fP_mc_One_In_Rich(NULL),
-   fP_reco_One_In_Rich(NULL),
-   fPt_mc_One_In_Rich(NULL),
-   fPt_reco_One_In_Rich(NULL),
-   fPi0_pt_vs_rap_One_In_Rich(NULL),
+   fGammaInvMassMC_One_In_Rich(nullptr),
+   fGammaInvMassReco_One_In_Rich(nullptr),
+   fGammaOpeningAngleMC_One_In_Rich(nullptr),
+   fGammaOpeningAngleReco_One_In_Rich(nullptr),
+   fPi0InvMassTrueKFV_One_In_Rich(nullptr),
+   fPi0InvMassRecoKFV_One_In_Rich(nullptr),
+   fPdg_One_In_Rich(nullptr),
+   fdx_One_In_Rich(nullptr),
+   fdy_One_In_Rich(nullptr),
+   fdz_One_In_Rich(nullptr),
+   fD_One_In_Rich(nullptr),
+   fP_mc_One_In_Rich(nullptr),
+   fP_reco_One_In_Rich(nullptr),
+   fPt_mc_One_In_Rich(nullptr),
+   fPt_reco_One_In_Rich(nullptr),
+   fPi0_pt_vs_rap_One_In_Rich(nullptr),
    fHistoList_oneInRich_target(),
    fHistoList_oneInRich_mvd(),
    fHistoList_oneInRich_sts(),
-   fGammaInvMassReco_One_In_Rich_target(NULL),
-   fGammaOpeningAngleReco_One_In_Rich_target(NULL),
-   fPi0InvMassRecoKFV_One_In_Rich_target(NULL),
-   fGammaInvMassReco_One_In_Rich_mvd(NULL),
-   fGammaOpeningAngleReco_One_In_Rich_mvd(NULL),
-   fPi0InvMassRecoKFV_One_In_Rich_mvd(NULL),
-   fGammaInvMassReco_One_In_Rich_sts(NULL),
-   fGammaOpeningAngleReco_One_In_Rich_sts(NULL),
-   fPi0InvMassRecoKFV_One_In_Rich_sts(NULL),
+   fGammaInvMassReco_One_In_Rich_target(nullptr),
+   fGammaOpeningAngleReco_One_In_Rich_target(nullptr),
+   fPi0InvMassRecoKFV_One_In_Rich_target(nullptr),
+   fGammaInvMassReco_One_In_Rich_mvd(nullptr),
+   fGammaOpeningAngleReco_One_In_Rich_mvd(nullptr),
+   fPi0InvMassRecoKFV_One_In_Rich_mvd(nullptr),
+   fGammaInvMassReco_One_In_Rich_sts(nullptr),
+   fGammaOpeningAngleReco_One_In_Rich_sts(nullptr),
+   fPi0InvMassRecoKFV_One_In_Rich_sts(nullptr),
    fHistoList_one_outside(),
-
+   fPi0InvMassRecoKFV_One_In_Rich_outside_target(nullptr),
 // 2
    GammasTwoLeptonInRICH(),
    fHistoList_twoInRich(),
-   fGammaInvMassMC_Two_In_Rich(NULL),
-   fGammaInvMassReco_Two_In_Rich(NULL),
-   fGammaOpeningAngleMC_Two_In_Rich(NULL),
-   fGammaOpeningAngleReco_Two_In_Rich(NULL),
-   fPi0InvMassTrueKFV_Two_In_Rich(NULL),
-   fPi0InvMassRecoKFV_Two_In_Rich(NULL),
-   fPdg_Two_In_Rich(NULL),
-   fdx_Two_In_Rich(NULL),
-   fdy_Two_In_Rich(NULL),
-   fdz_Two_In_Rich(NULL),
-   fD_Two_In_Rich(NULL),
-   fP_mc_Two_In_Rich(NULL),
-   fP_reco_Two_In_Rich(NULL),
-   fPt_mc_Two_In_Rich(NULL),
-   fPt_reco_Two_In_Rich(NULL),
-   fPi0_pt_vs_rap_Two_In_Rich(NULL),
+   fGammaInvMassMC_Two_In_Rich(nullptr),
+   fGammaInvMassReco_Two_In_Rich(nullptr),
+   fGammaOpeningAngleMC_Two_In_Rich(nullptr),
+   fGammaOpeningAngleReco_Two_In_Rich(nullptr),
+   fPi0InvMassTrueKFV_Two_In_Rich(nullptr),
+   fPi0InvMassRecoKFV_Two_In_Rich(nullptr),
+   fPdg_Two_In_Rich(nullptr),
+   fdx_Two_In_Rich(nullptr),
+   fdy_Two_In_Rich(nullptr),
+   fdz_Two_In_Rich(nullptr),
+   fD_Two_In_Rich(nullptr),
+   fP_mc_Two_In_Rich(nullptr),
+   fP_reco_Two_In_Rich(nullptr),
+   fPt_mc_Two_In_Rich(nullptr),
+   fPt_reco_Two_In_Rich(nullptr),
+   fPi0_pt_vs_rap_Two_In_Rich(nullptr),
    fHistoList_twoInRich_target(),
    fHistoList_twoInRich_mvd(),
    fHistoList_twoInRich_sts(),
-   fGammaInvMassReco_Two_In_Rich_target(NULL),
-   fGammaOpeningAngleReco_Two_In_Rich_target(NULL),
-   fPi0InvMassRecoKFV_Two_In_Rich_target(NULL),
-   fGammaInvMassReco_Two_In_Rich_mvd(NULL),
-   fGammaOpeningAngleReco_Two_In_Rich_mvd(NULL),
-   fPi0InvMassRecoKFV_Two_In_Rich_mvd(NULL),
-   fGammaInvMassReco_Two_In_Rich_sts(NULL),
-   fGammaOpeningAngleReco_Two_In_Rich_sts(NULL),
-   fPi0InvMassRecoKFV_Two_In_Rich_sts(NULL),
+   fGammaInvMassReco_Two_In_Rich_target(nullptr),
+   fGammaOpeningAngleReco_Two_In_Rich_target(nullptr),
+   fPi0InvMassRecoKFV_Two_In_Rich_target(nullptr),
+   fGammaInvMassReco_Two_In_Rich_mvd(nullptr),
+   fGammaOpeningAngleReco_Two_In_Rich_mvd(nullptr),
+   fPi0InvMassRecoKFV_Two_In_Rich_mvd(nullptr),
+   fGammaInvMassReco_Two_In_Rich_sts(nullptr),
+   fGammaOpeningAngleReco_Two_In_Rich_sts(nullptr),
+   fPi0InvMassRecoKFV_Two_In_Rich_sts(nullptr),
    fHistoList_two_outside(),
-
+   fPi0InvMassRecoKFV_Two_In_Rich_outside_target(nullptr),
 // 0
    GammasZeroLeptonInRICH(),
    fHistoList_zeroInRich(),
-   fGammaInvMassMC_Zero_In_Rich(NULL),
-   fGammaInvMassReco_Zero_In_Rich(NULL),
-   fGammaOpeningAngleMC_Zero_In_Rich(NULL),
-   fGammaOpeningAngleReco_Zero_In_Rich(NULL),
-   fPi0InvMassTrueKFV_Zero_In_Rich(NULL),
-   fPi0InvMassRecoKFV_Zero_In_Rich(NULL),
-   fPdg_Zero_In_Rich(NULL),
-   fdx_Zero_In_Rich(NULL),
-   fdy_Zero_In_Rich(NULL),
-   fdz_Zero_In_Rich(NULL),
-   fD_Zero_In_Rich(NULL),
-   fP_mc_Zero_In_Rich(NULL),
-   fP_reco_Zero_In_Rich(NULL),
-   fPt_mc_Zero_In_Rich(NULL),
-   fPt_reco_Zero_In_Rich(NULL),
-   fPi0_pt_vs_rap_Zero_In_Rich(NULL),
+   fGammaInvMassMC_Zero_In_Rich(nullptr),
+   fGammaInvMassReco_Zero_In_Rich(nullptr),
+   fGammaOpeningAngleMC_Zero_In_Rich(nullptr),
+   fGammaOpeningAngleReco_Zero_In_Rich(nullptr),
+   fPi0InvMassTrueKFV_Zero_In_Rich(nullptr),
+   fPi0InvMassRecoKFV_Zero_In_Rich(nullptr),
+   fPdg_Zero_In_Rich(nullptr),
+   fdx_Zero_In_Rich(nullptr),
+   fdy_Zero_In_Rich(nullptr),
+   fdz_Zero_In_Rich(nullptr),
+   fD_Zero_In_Rich(nullptr),
+   fP_mc_Zero_In_Rich(nullptr),
+   fP_reco_Zero_In_Rich(nullptr),
+   fPt_mc_Zero_In_Rich(nullptr),
+   fPt_reco_Zero_In_Rich(nullptr),
+   fPi0_pt_vs_rap_Zero_In_Rich(nullptr),
    fHistoList_zeroInRich_target(),
    fHistoList_zeroInRich_mvd(),
    fHistoList_zeroInRich_sts(),
-   fGammaInvMassReco_Zero_In_Rich_target(NULL),
-   fGammaOpeningAngleReco_Zero_In_Rich_target(NULL),
-   fPi0InvMassRecoKFV_Zero_In_Rich_target(NULL),
-   fGammaInvMassReco_Zero_In_Rich_mvd(NULL),
-   fGammaOpeningAngleReco_Zero_In_Rich_mvd(NULL),
-   fPi0InvMassRecoKFV_Zero_In_Rich_mvd(NULL),
-   fGammaInvMassReco_Zero_In_Rich_sts(NULL),
-   fGammaOpeningAngleReco_Zero_In_Rich_sts(NULL),
-   fPi0InvMassRecoKFV_Zero_In_Rich_sts(NULL),
+   fGammaInvMassReco_Zero_In_Rich_target(nullptr),
+   fGammaOpeningAngleReco_Zero_In_Rich_target(nullptr),
+   fPi0InvMassRecoKFV_Zero_In_Rich_target(nullptr),
+   fGammaInvMassReco_Zero_In_Rich_mvd(nullptr),
+   fGammaOpeningAngleReco_Zero_In_Rich_mvd(nullptr),
+   fPi0InvMassRecoKFV_Zero_In_Rich_mvd(nullptr),
+   fGammaInvMassReco_Zero_In_Rich_sts(nullptr),
+   fGammaOpeningAngleReco_Zero_In_Rich_sts(nullptr),
+   fPi0InvMassRecoKFV_Zero_In_Rich_sts(nullptr),
    fHistoList_zero_outside(),
-
+   fPi0InvMassRecoKFV_Zero_In_Rich_outside_target(nullptr),
 // 1-2
    GammasOneTwoLeptonInRICH(),
    fHistoList_onetwoInRich(),
-   fGammaInvMassMC_OneTwo_In_Rich(NULL),
-   fGammaInvMassReco_OneTwo_In_Rich(NULL),
-   fGammaOpeningAngleMC_OneTwo_In_Rich(NULL),
-   fGammaOpeningAngleReco_OneTwo_In_Rich(NULL),
-   fPi0InvMassTrueKFV_OneTwo_In_Rich(NULL),
-   fPi0InvMassRecoKFV_OneTwo_In_Rich(NULL),
-   fPdg_OneTwo_In_Rich(NULL),
-   fdx_OneTwo_In_Rich(NULL),
-   fdy_OneTwo_In_Rich(NULL),
-   fdz_OneTwo_In_Rich(NULL),
-   fD_OneTwo_In_Rich(NULL),
-   fP_mc_OneTwo_In_Rich(NULL),
-   fP_reco_OneTwo_In_Rich(NULL),
-   fPt_mc_OneTwo_In_Rich(NULL),
-   fPt_reco_OneTwo_In_Rich(NULL),
-   fPi0_pt_vs_rap_OneTwo_In_Rich(NULL),
+   fGammaInvMassMC_OneTwo_In_Rich(nullptr),
+   fGammaInvMassReco_OneTwo_In_Rich(nullptr),
+   fGammaOpeningAngleMC_OneTwo_In_Rich(nullptr),
+   fGammaOpeningAngleReco_OneTwo_In_Rich(nullptr),
+   fPi0InvMassTrueKFV_OneTwo_In_Rich(nullptr),
+   fPi0InvMassRecoKFV_OneTwo_In_Rich(nullptr),
+   fPdg_OneTwo_In_Rich(nullptr),
+   fdx_OneTwo_In_Rich(nullptr),
+   fdy_OneTwo_In_Rich(nullptr),
+   fdz_OneTwo_In_Rich(nullptr),
+   fD_OneTwo_In_Rich(nullptr),
+   fP_mc_OneTwo_In_Rich(nullptr),
+   fP_reco_OneTwo_In_Rich(nullptr),
+   fPt_mc_OneTwo_In_Rich(nullptr),
+   fPt_reco_OneTwo_In_Rich(nullptr),
+   fPi0_pt_vs_rap_OneTwo_In_Rich(nullptr),
    fHistoList_onetwoInRich_target(),
    fHistoList_onetwoInRich_mvd(),
    fHistoList_onetwoInRich_sts(),
-   fGammaInvMassReco_OneTwo_In_Rich_target(NULL),
-   fGammaOpeningAngleReco_OneTwo_In_Rich_target(NULL),
-   fPi0InvMassRecoKFV_OneTwo_In_Rich_target(NULL),
-   fGammaInvMassReco_OneTwo_In_Rich_mvd(NULL),
-   fGammaOpeningAngleReco_OneTwo_In_Rich_mvd(NULL),
-   fPi0InvMassRecoKFV_OneTwo_In_Rich_mvd(NULL),
-   fGammaInvMassReco_OneTwo_In_Rich_sts(NULL),
-   fGammaOpeningAngleReco_OneTwo_In_Rich_sts(NULL),
-   fPi0InvMassRecoKFV_OneTwo_In_Rich_sts(NULL),
+   fGammaInvMassReco_OneTwo_In_Rich_target(nullptr),
+   fGammaOpeningAngleReco_OneTwo_In_Rich_target(nullptr),
+   fPi0InvMassRecoKFV_OneTwo_In_Rich_target(nullptr),
+   fGammaInvMassReco_OneTwo_In_Rich_mvd(nullptr),
+   fGammaOpeningAngleReco_OneTwo_In_Rich_mvd(nullptr),
+   fPi0InvMassRecoKFV_OneTwo_In_Rich_mvd(nullptr),
+   fGammaInvMassReco_OneTwo_In_Rich_sts(nullptr),
+   fGammaOpeningAngleReco_OneTwo_In_Rich_sts(nullptr),
+   fPi0InvMassRecoKFV_OneTwo_In_Rich_sts(nullptr),
    fHistoList_onetwo_outside(),
-
+   fPi0InvMassRecoKFV_OneTwo_In_Rich_outside_target(nullptr),
 
    fHistoList_MC(),
-   fMC_start_vertex(NULL),
-   fMC_Pt(NULL),
-   fMC_P(NULL),
-   fPdgCodesMC(NULL),
+   fMC_start_vertex(nullptr),
+   fMC_Pt(nullptr),
+   fMC_P(nullptr),
+   fPdgCodesMC(nullptr),
 
    fHistoList_CheckForCuts(),
-   CheckForCuts_OA_MC(NULL),
-   CheckForCuts_OA_Reco(NULL),
-   CheckForCuts_InvMass_MC(NULL),
-   CheckForCuts_InvMass_Reco(NULL),
-   CheckForCuts_OA_MC_from_one_pi0(NULL),
-   CheckForCuts_OA_Reco_from_one_pi0(NULL),
-   CheckForCuts_InvMass_MC_from_one_pi0(NULL),
-   CheckForCuts_InvMass_Reco_from_one_pi0(NULL),
-   CheckForCuts_z_vs_InvMass_MC_from_one_pi0(NULL),
-   CheckForCuts_z_vs_OA_MC_from_one_pi0(NULL),
-   CheckForCuts_z_vs_InvMass_Reco_from_one_pi0(NULL),
-   CheckForCuts_z_vs_OA_Reco_from_one_pi0(NULL),
-   CheckForCuts_InvMass_Reco_from_one_pi0_less20cm(NULL),
-   CheckForCuts_OA_Reco_from_one_pi0_less20cm(NULL),
-   CheckForCuts_InvMass_Reco_from_one_pi0_between20cm_40cm(NULL),
-   CheckForCuts_OA_Reco_from_one_pi0_between20cm_40cm(NULL),
-   CheckForCuts_InvMass_Reco_from_one_pi0_more40cm(NULL),
-   CheckForCuts_OA_Reco_from_one_pi0_more40cm(NULL),
+   CheckForCuts_OA_MC(nullptr),
+   CheckForCuts_OA_Reco(nullptr),
+   CheckForCuts_InvMass_MC(nullptr),
+   CheckForCuts_InvMass_Reco(nullptr),
+   CheckForCuts_OA_MC_from_one_pi0(nullptr),
+   CheckForCuts_OA_Reco_from_one_pi0(nullptr),
+   CheckForCuts_InvMass_MC_from_one_pi0(nullptr),
+   CheckForCuts_InvMass_Reco_from_one_pi0(nullptr),
+   CheckForCuts_z_vs_InvMass_MC_from_one_pi0(nullptr),
+   CheckForCuts_z_vs_OA_MC_from_one_pi0(nullptr),
+   CheckForCuts_z_vs_InvMass_Reco_from_one_pi0(nullptr),
+   CheckForCuts_z_vs_OA_Reco_from_one_pi0(nullptr),
+   CheckForCuts_InvMass_Reco_from_one_pi0_less20cm(nullptr),
+   CheckForCuts_OA_Reco_from_one_pi0_less20cm(nullptr),
+   CheckForCuts_InvMass_Reco_from_one_pi0_between20cm_40cm(nullptr),
+   CheckForCuts_OA_Reco_from_one_pi0_between20cm_40cm(nullptr),
+   CheckForCuts_InvMass_Reco_from_one_pi0_more40cm(nullptr),
+   CheckForCuts_OA_Reco_from_one_pi0_more40cm(nullptr),
 
-    fAnaBG(NULL),
+    fAnaBG(nullptr),
     DoBGAnalysis(0),
+    fHistoList_bg_all(),
+    BG1_all(nullptr),
+    BG2_all(nullptr),
+    BG3_all(nullptr),
+    BG4_all(nullptr),
+    BG5_all(nullptr),
+    BG6_all(nullptr),
+    BG7_all(nullptr),
+    BG8_all(nullptr),
+    BG9_all(nullptr),
+    BG10_all(nullptr),
+    fHistoList_bg_one(),
+    BG1_one(nullptr),
+    BG2_one(nullptr),
+    BG3_one(nullptr),
+    BG4_one(nullptr),
+    BG5_one(nullptr),
+    BG6_one(nullptr),
+    BG7_one(nullptr),
+    BG8_one(nullptr),
+    BG9_one(nullptr),
+    BG10_one(nullptr),
+    fHistoList_bg_two(),
+    BG1_two(nullptr),
+    BG2_two(nullptr),
+    BG3_two(nullptr),
+    BG4_two(nullptr),
+    BG5_two(nullptr),
+    BG6_two(nullptr),
+    BG7_two(nullptr),
+    BG8_two(nullptr),
+    BG9_two(nullptr),
+    BG10_two(nullptr),
+    fHistoList_bg_zero(),
+    BG1_zero(nullptr),
+    BG2_zero(nullptr),
+    BG3_zero(nullptr),
+    BG4_zero(nullptr),
+    BG5_zero(nullptr),
+    BG6_zero(nullptr),
+    BG7_zero(nullptr),
+    BG8_zero(nullptr),
+    BG9_zero(nullptr),
+    BG10_zero(nullptr),
+    fHistoList_bg_onetwo(),
+    BG1_onetwo(nullptr),
+    BG2_onetwo(nullptr),
+    BG3_onetwo(nullptr),
+    BG4_onetwo(nullptr),
+    BG5_onetwo(nullptr),
+    BG6_onetwo(nullptr),
+    BG7_onetwo(nullptr),
+    BG8_onetwo(nullptr),
+    BG9_onetwo(nullptr),
+    BG10_onetwo(nullptr),
 
+    PdgCase8_all(nullptr),
+    PdgCase8_one(nullptr),
+    PdgCase8_two(nullptr),
+    PdgCase8_zero(nullptr),
+    PdgCase8_onetwo(nullptr),
+    testsameMIDcase8_all(nullptr),
+    testsameGRIDcase8_all(nullptr),
+    testsameMIDcase8_one(nullptr),
+    testsameGRIDcase8_one(nullptr),
+    testsameMIDcase8_two(nullptr),
+    testsameGRIDcase8_two(nullptr),
+    testsameMIDcase8_zero(nullptr),
+    testsameGRIDcase8_zero(nullptr),
+    testsameMIDcase8_onetwo(nullptr),
+    testsameGRIDcase8_onetwo(nullptr),
 
+    PdgCase8mothers_all(nullptr),
+    PdgCase8mothers_one(nullptr),
+    PdgCase8mothers_two(nullptr),
+    PdgCase8mothers_zero(nullptr),
+    PdgCase8mothers_onetwo(nullptr),
 
+    case8GRIDInvMassGamma_all(nullptr),
+    case8GRIDOAGamma_all(nullptr),
+    case8GRIDInvMassGamma_one(nullptr),
+    case8GRIDOAGamma_one(nullptr),
+    case8GRIDInvMassGamma_two(nullptr),
+    case8GRIDOAGamma_two(nullptr), 
+    case8GRIDInvMassGamma_zero(nullptr),
+    case8GRIDOAGamma_zero(nullptr),
+    case8GRIDInvMassGamma_onetwo(nullptr),
+    case8GRIDOAGamma_onetwo(nullptr),
 
+ 
+    fHistoList_pt(),
+    fHistoList_pt_all(),
+    Pt1_all(nullptr),
+    Pt2_all(nullptr),
+    Pt3_all(nullptr),
+    Pt4_all(nullptr),
+    Pt5_all(nullptr),
+    Pt6_all(nullptr),
+    Pt7_all(nullptr),
+    Pt8_all(nullptr),
+    Pt9_all(nullptr),
+    Pt10_all(nullptr),
+    Pt11_all(nullptr),
+    Pt12_all(nullptr),
+    fHistoList_pt_one(),
+    Pt1_one(nullptr),
+    Pt2_one(nullptr),
+    Pt3_one(nullptr),
+    Pt4_one(nullptr),
+    Pt5_one(nullptr),
+    Pt6_one(nullptr),
+    Pt7_one(nullptr),
+    Pt8_one(nullptr),
+    Pt9_one(nullptr),
+    Pt10_one(nullptr),
+    Pt11_one(nullptr),
+    Pt12_one(nullptr),
+    fHistoList_pt_two(),
+    Pt1_two(nullptr),
+    Pt2_two(nullptr),
+    Pt3_two(nullptr),
+    Pt4_two(nullptr),
+    Pt5_two(nullptr),
+    Pt6_two(nullptr),
+    Pt7_two(nullptr),
+    Pt8_two(nullptr),
+    Pt9_two(nullptr),
+    Pt10_two(nullptr),
+    Pt11_two(nullptr),
+    Pt12_two(nullptr),
+    fHistoList_pt_zero(),
+    Pt1_zero(nullptr),
+    Pt2_zero(nullptr),
+    Pt3_zero(nullptr),
+    Pt4_zero(nullptr),
+    Pt5_zero(nullptr),
+    Pt6_zero(nullptr),
+    Pt7_zero(nullptr),
+    Pt8_zero(nullptr),
+    Pt9_zero(nullptr),
+    Pt10_zero(nullptr),
+    Pt11_zero(nullptr),
+    Pt12_zero(nullptr),
+    fHistoList_pt_onetwo(),
+    Pt1_onetwo(nullptr),
+    Pt2_onetwo(nullptr),
+    Pt3_onetwo(nullptr),
+    Pt4_onetwo(nullptr),
+    Pt5_onetwo(nullptr),
+    Pt6_onetwo(nullptr),
+    Pt7_onetwo(nullptr),
+    Pt8_onetwo(nullptr),
+    Pt9_onetwo(nullptr),
+    Pt10_onetwo(nullptr),
+    Pt11_onetwo(nullptr),
+    Pt12_onetwo(nullptr),
 
-
-
-
+    Case1ZYPos_all(nullptr),
+    Case1ZYPos_one(nullptr),
+    Case1ZYPos_two(nullptr),
+    Case1ZYPos_zero(nullptr),
+    Case1ZYPos_onetwo(nullptr),
+   timer(),
    fTime(0.)
 {
 }
@@ -448,28 +612,28 @@ void CbmAnaConversion2KF::SetKF(CbmKFParticleFinder* kfparticle, CbmKFParticleFi
 void CbmAnaConversion2KF::Init()
 {
 	FairRootManager* ioman = FairRootManager::Instance();
-	if (NULL == ioman) { Fatal("CbmAnaConversion2KF::Init","RootManager not instantised!"); }
+	if (nullptr == ioman) { Fatal("CbmAnaConversion2KF::Init","RootManager not instantised!"); }
 
 	fKFMcParticles = (TClonesArray*) ioman->GetObject("KFMCParticles");
-	if ( NULL == fKFMcParticles) { Fatal("CbmAnaConversion2KF::Init","No KFMCParticles array!"); }
+	if ( nullptr == fKFMcParticles) { Fatal("CbmAnaConversion2KF::Init","No KFMCParticles array!"); }
 
 	fMcTracks = (TClonesArray*) ioman->GetObject("MCTrack");
-	if ( NULL == fMcTracks) { Fatal("CbmAnaConversion2KF::Init","No MCTrack array!"); }
+	if ( nullptr == fMcTracks) { Fatal("CbmAnaConversion2KF::Init","No MCTrack array!"); }
 
 	fStsTracks = (TClonesArray*) ioman->GetObject("StsTrack");
-	if ( NULL == fStsTracks) { Fatal("CbmAnaConversion2KF::Init","No StsTrack array!"); }
+	if ( nullptr == fStsTracks) { Fatal("CbmAnaConversion2KF::Init","No StsTrack array!"); }
 
 	fStsTrackMatches = (TClonesArray*) ioman->GetObject("StsTrackMatch");
-	if (NULL == fStsTrackMatches) { Fatal("CbmAnaConversion2KF::Init","No StsTrackMatch array!"); }
+	if (nullptr == fStsTrackMatches) { Fatal("CbmAnaConversion2KF::Init","No StsTrackMatch array!"); }
 
 	fGlobalTracks = (TClonesArray*) ioman->GetObject("GlobalTrack");
-	if (NULL == fGlobalTracks) { Fatal("CbmAnaConversion2KF::Init","No GlobalTrack array!"); }
+	if (nullptr == fGlobalTracks) { Fatal("CbmAnaConversion2KF::Init","No GlobalTrack array!"); }
 
 	fRichRings = (TClonesArray*) ioman->GetObject("RichRing");
-	if (NULL == fRichRings) { Fatal("CbmAnaConversion2KF::Init","No RichRing array!"); }
+	if (nullptr == fRichRings) { Fatal("CbmAnaConversion2KF::Init","No RichRing array!"); }
 
 	fRichRingMatches = (TClonesArray*) ioman->GetObject("RichRingMatch");
-	if (NULL == fRichRingMatches) { Fatal("CbmAnaConversion2KF::Init","No RichRingMatch array!"); }
+	if (nullptr == fRichRingMatches) { Fatal("CbmAnaConversion2KF::Init","No RichRingMatch array!"); }
 
 	fKFtopo = fKFparticle->GetTopoReconstructor();
 
@@ -1882,8 +2046,8 @@ void CbmAnaConversion2KF::test(int Event, double AngleCut, double InvMassCut)
 	for(int i=0; i<nofparticles; i++) {
 		KFMCParticle* mcTrack1 = (KFMCParticle*) fKFMcParticles->At(i);
 		CbmMCTrack* mctrack = (CbmMCTrack*)fMcTracks->At(i);
-		if (mcTrack1 == NULL) continue;
-		if (mctrack == NULL) continue;
+		if (mcTrack1 == nullptr) continue;
+		if (mctrack == nullptr) continue;
 		int pdg = mcTrack1->GetPDG();
 		int motherId = mcTrack1->GetMotherId();
 	}
@@ -1988,17 +2152,17 @@ void CbmAnaConversion2KF::FindGammas(vector<KFParticle> allgammas, vector<KFPart
 		// STS ind
 		CbmStsTrack* stsTrack0 = (CbmStsTrack*) fStsTracks->At(grDaughter0.at(0));
 		CbmStsTrack* stsTrack1 = (CbmStsTrack*) fStsTracks->At(grDaughter1.at(0));
-		if (stsTrack0 == NULL || stsTrack1 == NULL) continue;
+		if (stsTrack0 == nullptr || stsTrack1 == nullptr) continue;
 		CbmTrackMatchNew* stsMatch0 = (CbmTrackMatchNew*) fStsTrackMatches->At(grDaughter0.at(0));
 		CbmTrackMatchNew* stsMatch1 = (CbmTrackMatchNew*) fStsTrackMatches->At(grDaughter1.at(0));
-		if (stsMatch0 == NULL || stsMatch1 == NULL) continue;
+		if (stsMatch0 == nullptr || stsMatch1 == nullptr) continue;
 		if (stsMatch0->GetNofLinks() <= 0 || stsMatch1->GetNofLinks() <= 0) continue;
 		int stsMcTrackId0 = stsMatch0->GetMatchedLink().GetIndex();
 		int stsMcTrackId1 = stsMatch1->GetMatchedLink().GetIndex();
 		if (stsMcTrackId0 < 0 || stsMcTrackId1 < 0) continue;
 		CbmMCTrack* mcTrack0 = (CbmMCTrack*) fMcTracks->At(stsMcTrackId0);
 		CbmMCTrack* mcTrack1 = (CbmMCTrack*) fMcTracks->At(stsMcTrackId1);
-		if (mcTrack0 == NULL || mcTrack1 == NULL) continue;
+		if (mcTrack0 == nullptr || mcTrack1 == nullptr) continue;
 
 
 		// RICH ind 
@@ -2007,7 +2171,7 @@ void CbmAnaConversion2KF::FindGammas(vector<KFParticle> allgammas, vector<KFPart
 		int richInd1 = 99999;
 		for (Int_t iTr = 0; iTr < ngTracks; iTr++) {
 			CbmGlobalTrack* gTrack = (CbmGlobalTrack*) fGlobalTracks->At(iTr);
-			if(NULL == gTrack) continue;
+			if(nullptr == gTrack) continue;
 			int stsInd = gTrack->GetStsTrackIndex();
 			if (stsInd < 0 ) continue; 
 			if (stsInd == grDaughter0.at(0)){
@@ -2023,23 +2187,23 @@ void CbmAnaConversion2KF::FindGammas(vector<KFParticle> allgammas, vector<KFPart
 		for (int loo = 0; loo < 2; loo++){
 			if (loo == 0 && richInd0 != 99999){ 
 				CbmTrackMatchNew* richMatch  = (CbmTrackMatchNew*)fRichRingMatches->At(richInd0);
-				if (richMatch == NULL) continue;
+				if (richMatch == nullptr) continue;
 				int richMcTrackId = richMatch->GetMatchedLink().GetIndex();
 				if (richMcTrackId < 0) continue;
 				if(stsMcTrackId0 != richMcTrackId) continue; // check that global track was matched correctly for STS and RICH together
 				CbmMCTrack* mcTrack2 = (CbmMCTrack*) fMcTracks->At(richMcTrackId);
-				if (mcTrack2 == NULL) continue;
+				if (mcTrack2 == nullptr) continue;
 				int pdgRICH = mcTrack2->GetPdgCode();
 				if (TMath::Abs(pdgRICH) == 11 ) richcheck++; richcheck0++;
 			}
 			if (loo == 1 && richInd1 != 99999){ 
 				CbmTrackMatchNew* richMatch  = (CbmTrackMatchNew*)fRichRingMatches->At(richInd1);
-				if (richMatch == NULL) continue;
+				if (richMatch == nullptr) continue;
 				int richMcTrackId = richMatch->GetMatchedLink().GetIndex();
 				if (richMcTrackId < 0) continue;
 				if(stsMcTrackId1 != richMcTrackId) continue; // check that global track was matched correctly for STS and RICH together
 				CbmMCTrack* mcTrack2 = (CbmMCTrack*) fMcTracks->At(richMcTrackId);
-				if (mcTrack2 == NULL) continue;
+				if (mcTrack2 == nullptr) continue;
 				int pdgRICH = mcTrack2->GetPdgCode();
 				if (TMath::Abs(pdgRICH) == 11 ) richcheck++; richcheck1++;
 			}
@@ -2073,7 +2237,7 @@ void CbmAnaConversion2KF::FindGammas(vector<KFParticle> allgammas, vector<KFPart
 				if (mcTrack0->GetMotherId() == -1 || mcTrack1->GetMotherId() == -1) continue;
 				CbmMCTrack* mcTrackMotherSTS0 = (CbmMCTrack*) fMcTracks->At(mcTrack0->GetMotherId());
 				CbmMCTrack* mcTrackMotherSTS1 = (CbmMCTrack*) fMcTracks->At(mcTrack1->GetMotherId());
-				if (mcTrackMotherSTS0 == NULL || mcTrackMotherSTS1 == NULL) continue;
+				if (mcTrackMotherSTS0 == nullptr || mcTrackMotherSTS1 == nullptr) continue;
 				if (mcTrackMotherSTS0->GetPdgCode() != 22 && mcTrackMotherSTS1->GetPdgCode() != 22) continue; // electrons/positrons from gamma
 				if (mcTrackMotherSTS0->GetMotherId() == -1) continue;
 				if (mcTrackMotherSTS0->GetMotherId() != mcTrackMotherSTS1->GetMotherId()) continue; // from one gamma
@@ -2524,13 +2688,13 @@ void CbmAnaConversion2KF::FindPi0(vector<KFParticle> normalgammas, vector<KFPart
 				CbmStsTrack* stsTrack2 = (CbmStsTrack*) fStsTracks->At(electronIdsConstr2.at(0));
 				CbmStsTrack* stsTrack3 = (CbmStsTrack*) fStsTracks->At(electronIdsConstr3.at(0));
 				CbmStsTrack* stsTrack4 = (CbmStsTrack*) fStsTracks->At(electronIdsConstr4.at(0));
-				if (stsTrack1 == NULL || stsTrack2 == NULL || stsTrack3 == NULL || stsTrack4 == NULL) continue;
+				if (stsTrack1 == nullptr || stsTrack2 == nullptr || stsTrack3 == nullptr || stsTrack4 == nullptr) continue;
 				
 				CbmTrackMatchNew* stsMatch1 = (CbmTrackMatchNew*) fStsTrackMatches->At(electronIdsConstr1.at(0));
 				CbmTrackMatchNew* stsMatch2 = (CbmTrackMatchNew*) fStsTrackMatches->At(electronIdsConstr2.at(0));
 				CbmTrackMatchNew* stsMatch3 = (CbmTrackMatchNew*) fStsTrackMatches->At(electronIdsConstr3.at(0));
 				CbmTrackMatchNew* stsMatch4 = (CbmTrackMatchNew*) fStsTrackMatches->At(electronIdsConstr4.at(0));
-				if (stsMatch1 == NULL || stsMatch2 == NULL || stsMatch3 == NULL || stsMatch4 == NULL) continue;
+				if (stsMatch1 == nullptr || stsMatch2 == nullptr || stsMatch3 == nullptr || stsMatch4 == nullptr) continue;
 				if (stsMatch1->GetNofLinks() <= 0 || stsMatch2->GetNofLinks() <= 0 || stsMatch3->GetNofLinks() <= 0 || stsMatch4->GetNofLinks() <= 0) continue;
 				
 				int stsMcTrackId1 = stsMatch1->GetMatchedLink().GetIndex();
@@ -2544,7 +2708,7 @@ void CbmAnaConversion2KF::FindPi0(vector<KFParticle> normalgammas, vector<KFPart
 				CbmMCTrack* mcTrack2 = (CbmMCTrack*) fMcTracks->At(stsMcTrackId2);
 				CbmMCTrack* mcTrack3 = (CbmMCTrack*) fMcTracks->At(stsMcTrackId3);
 				CbmMCTrack* mcTrack4 = (CbmMCTrack*) fMcTracks->At(stsMcTrackId4);
-				if (mcTrack1 == NULL || mcTrack2 == NULL || mcTrack3 == NULL || mcTrack4 == NULL) continue;
+				if (mcTrack1 == nullptr || mcTrack2 == nullptr || mcTrack3 == nullptr || mcTrack4 == nullptr) continue;
 				
 				// fit STS track to point from KFParticle
 				TVector3 refmomentum1 = FitToVertexSTS(stsTrack1, normalgammas[gamma1].GetX(), normalgammas[gamma1].GetY(), normalgammas[gamma1].GetZ());
@@ -2621,7 +2785,7 @@ void CbmAnaConversion2KF::FindPi0(vector<KFParticle> normalgammas, vector<KFPart
 				CbmMCTrack* mother2 = (CbmMCTrack*) fMcTracks->At(motherId2);
 				CbmMCTrack* mother3 = (CbmMCTrack*) fMcTracks->At(motherId3);
 				CbmMCTrack* mother4 = (CbmMCTrack*) fMcTracks->At(motherId4);
-				if (NULL == mother1 || NULL == mother2 || NULL == mother3 || NULL == mother4) continue;
+				if (nullptr == mother1 || nullptr == mother2 || nullptr == mother3 || nullptr == mother4) continue;
 				int mcMotherPdg1 = mother1->GetPdgCode();
 				int mcMotherPdg2 = mother2->GetPdgCode();
 				int mcMotherPdg3 = mother3->GetPdgCode();
@@ -2635,7 +2799,7 @@ void CbmAnaConversion2KF::FindPi0(vector<KFParticle> normalgammas, vector<KFPart
 					if (grandmotherId1 != grandmotherId2) continue;
 					if (grandmotherId1 != motherId3) continue;
 					CbmMCTrack* grandmother1 = (CbmMCTrack*) fMcTracks->At(grandmotherId1);
-					if (NULL == grandmother1 ) continue;
+					if (nullptr == grandmother1 ) continue;
 					int mcGrandMotherPdg1 = grandmother1->GetPdgCode();
 					if (mcGrandMotherPdg1 != 111 ) continue;
 					//cout << "Dalitz case" << endl;
@@ -2648,7 +2812,7 @@ void CbmAnaConversion2KF::FindPi0(vector<KFParticle> normalgammas, vector<KFPart
 					if (grandmotherId3 != grandmotherId4) continue;
 					if (grandmotherId3 != motherId1) continue;
 					CbmMCTrack* grandmother3 = (CbmMCTrack*) fMcTracks->At(grandmotherId3);
-					if (NULL == grandmother3 ) continue;
+					if (nullptr == grandmother3 ) continue;
 					int mcGrandMotherPdg3 = grandmother3->GetPdgCode();
 					if (mcGrandMotherPdg3 != 111 ) continue;
 					//cout << "Dalitz case" << endl;
@@ -2660,7 +2824,7 @@ void CbmAnaConversion2KF::FindPi0(vector<KFParticle> normalgammas, vector<KFPart
 				if( mcMotherPdg1 == 22 && mcMotherPdg2 == 22 && mcMotherPdg3 == 22 && mcMotherPdg4 == 22){
 					if (grandmotherId1 != grandmotherId2 || grandmotherId3 != grandmotherId4 || grandmotherId1 != grandmotherId3) continue;
 					CbmMCTrack* grandmother1 = (CbmMCTrack*) fMcTracks->At(grandmotherId1);
-					if (NULL == grandmother1) continue;
+					if (nullptr == grandmother1) continue;
 					int mcGrandMotherPdg1 = grandmother1->GetPdgCode();
 					if (mcGrandMotherPdg1 != 111 ) continue;
 					//cout << "Double conversion case " << endl;
@@ -2682,18 +2846,18 @@ void CbmAnaConversion2KF::DoMC()
 	Int_t nofMcTracks = fMcTracks->GetEntriesFast();
 	for (int i = 0; i < nofMcTracks; i++) {
 		CbmMCTrack* mctrack = (CbmMCTrack*)fMcTracks->At(i);
-		if (mctrack == NULL) continue;
+		if (mctrack == nullptr) continue;
 
 		fPdgCodesMC->Fill(TMath::Abs(mctrack->GetPdgCode()));
 		if (TMath::Abs(mctrack->GetPdgCode() ) == 11) { 
 			int motherId = mctrack->GetMotherId();
 			if (motherId == -1) continue;
 			CbmMCTrack* mother = (CbmMCTrack*) fMcTracks->At(motherId);
-			if(NULL == mother) continue; 
+			if(nullptr == mother) continue; 
 			int grandmotherId = mother->GetMotherId();
 			if(grandmotherId == -1) continue;
 			CbmMCTrack* grandmother = (CbmMCTrack*) fMcTracks->At(grandmotherId);
-			if (NULL == grandmother) continue;
+			if (nullptr == grandmother) continue;
 			int mcGrandmotherPdg = grandmother->GetPdgCode();
 			if(mcGrandmotherPdg == 111){
 				TVector3 v;

@@ -51,16 +51,18 @@ using boost::assign::list_of;
 
 CbmAnaConversion2::CbmAnaConversion2()
   : FairTask("CbmAnaConversion2"),
-    fMcTracks(NULL),
-    fRichHits(NULL),
-    fRichRings(NULL),
-    fRichPoints(NULL),
-    fStsTrackMatches(NULL),
-    fRichRingMatches(NULL),
-    fRichProjections(NULL),
-    fTauFit(NULL),
-    fRichRings_Aaxis(NULL),
-    fRichRings_Baxis(NULL),
+    fHistoList(),
+    fMcTracks(nullptr),
+    fRichHits(nullptr),
+    fRichRings(nullptr),
+    fRichPoints(nullptr),
+    fStsTrackMatches(nullptr),
+    fGlobalTracks(nullptr),
+    fRichRingMatches(nullptr),
+    fRichProjections(nullptr),
+    fTauFit(nullptr),
+    fRichRings_Aaxis(nullptr),
+    fRichRings_Baxis(nullptr),
     fMinAaxis(0.),
     fMaxAaxis(0.),
     fMinBaxis(0.),
@@ -70,20 +72,34 @@ CbmAnaConversion2::CbmAnaConversion2()
     DecayedParticlePdg(0.),
     LeptonsInDecay(0.),
     Dalitz (0.),
-    fhPio_pt(NULL),
-    fhPio_pt_vs_rap(NULL),
-    fhPio_theta(NULL),
-    fhPio_theta_vs_rap(NULL),
-    fhPdgCodes(NULL),
+    fhPio_pt(nullptr),
+    fhPio_pt_vs_rap(nullptr),
+    fhPio_theta(nullptr),
+    fhPio_theta_vs_rap(nullptr),
+    fhPdgCodes(nullptr),
+    dR_plot_electrons(nullptr),
+    NumberOfRings_electrons(nullptr),
+    AllPoints_from_hits_electrons(nullptr),
+    AllPoints2D(nullptr),
+    eff(nullptr),
+    STSmomenta(nullptr),
+    ConversionPoints2D(nullptr),
+    Invariant_masses(nullptr),
+    AllPoints3D(nullptr),
+    ConversionPoints(nullptr),
+    A_electrons(nullptr),
+    B_electrons(nullptr),
+    hprof2d_electrons(nullptr),
+    BoA_electrons(nullptr),
     counter_full_ind_STS(0.),
     counter_full_ind_RICH(0.),
     UsedRingsId(),
-    fPrimVertex(NULL),
+    fPrimVertex(nullptr),
     fKFVertex(),
-    fStsTracks(NULL),
+    fStsTracks(nullptr),
     DoReconstruction(0),
     DoKFAnalysis(0),
-    fAnaReco(NULL),
+    fAnaReco(nullptr),
     fMCTracklist_gamma_from_our_particle(),                  // particle -> gamma                                        from our particle
     fMCTracklist_gamma_all(),                                // gamma                                                    from everywhere (target, all particles, bremstralung)
     fMCTracklist_elpositrons_from_our_particle(),            // particle ->  e+ and  e-                                  decayed from our particle
@@ -102,18 +118,18 @@ CbmAnaConversion2::CbmAnaConversion2()
     fTracklist_withRichInd_refmomentum_all(),
     fTracklist_noRichInd_mcTrack_STS_Id(),
 
-    fAnaKF(NULL),
-    fKFparticle(NULL),
-    fKFparticleFinderQA(NULL),
+    fAnaKF(nullptr),
+    fKFparticle(nullptr),
+    fKFparticleFinderQA(nullptr),
 
-    fAnaFitter(NULL),
+    fAnaFitter(nullptr),
     DoFitter(0),
 
-    fArrayStsHit(NULL),
-    fArrayMvdHit(NULL),
+    fArrayStsHit(nullptr),
+    fArrayMvdHit(nullptr),
 
     DoManualAnalysis(0),
-    fAnaManual(NULL),
+    fAnaManual(nullptr),
 
 
     fEventNum(0)
@@ -140,47 +156,47 @@ InitStatus CbmAnaConversion2::Init()
 
    cout << "CbmAnaConversion2::Init"<<endl;
    FairRootManager* ioman = FairRootManager::Instance();
-   if (NULL == ioman) { Fatal("CbmAnaConversion2::Init","RootManager not instantised!"); }
+   if (nullptr == ioman) { Fatal("CbmAnaConversion2::Init","RootManager not instantised!"); }
 
    fRichProjections = (TClonesArray*) ioman->GetObject("RichProjection");
-   if (NULL == fRichProjections) {Fatal("CbmRichEventDisplay::Init", "No RichProjection array!");}
+   if (nullptr == fRichProjections) {Fatal("CbmRichEventDisplay::Init", "No RichProjection array!");}
 
    fRichPoints = (TClonesArray*) ioman->GetObject("RichPoint");
-   if ( NULL == fRichPoints) { Fatal("CbmAnaConversion2::Init","No RichPoint array!"); }
+   if ( nullptr == fRichPoints) { Fatal("CbmAnaConversion2::Init","No RichPoint array!"); }
 
    fMcTracks = (TClonesArray*) ioman->GetObject("MCTrack");
-   if ( NULL == fMcTracks) { Fatal("CbmAnaConversion2::Init","No MCTrack array!"); }
+   if ( nullptr == fMcTracks) { Fatal("CbmAnaConversion2::Init","No MCTrack array!"); }
 
    fStsTracks = (TClonesArray*) ioman->GetObject("StsTrack");
-   if ( NULL == fStsTracks) { Fatal("CbmAnaConversion2::Init","No StsTrack array!"); }
+   if ( nullptr == fStsTracks) { Fatal("CbmAnaConversion2::Init","No StsTrack array!"); }
 
    fStsTrackMatches = (TClonesArray*) ioman->GetObject("StsTrackMatch");
-   if (NULL == fStsTrackMatches) { Fatal("CbmAnaConversion2::Init","No StsTrackMatch array!"); }
+   if (nullptr == fStsTrackMatches) { Fatal("CbmAnaConversion2::Init","No StsTrackMatch array!"); }
 
 	fRichRingMatches = (TClonesArray*) ioman->GetObject("RichRingMatch");
-	if (NULL == fRichRingMatches) { Fatal("CbmAnaConversion::Init","No RichRingMatch array!"); }
+	if (nullptr == fRichRingMatches) { Fatal("CbmAnaConversion::Init","No RichRingMatch array!"); }
 
 	fGlobalTracks = (TClonesArray*) ioman->GetObject("GlobalTrack");
-	if (NULL == fGlobalTracks) { Fatal("CbmAnaConversion2::Init","No GlobalTrack array!"); }
+	if (nullptr == fGlobalTracks) { Fatal("CbmAnaConversion2::Init","No GlobalTrack array!"); }
 
 	fRichRings = (TClonesArray*) ioman->GetObject("RichRing");
-	if (NULL == fRichRings) { Fatal("CbmAnaConversion::Init","No RichRing array!"); }
+	if (nullptr == fRichRings) { Fatal("CbmAnaConversion::Init","No RichRing array!"); }
 
 	fRichHits = (TClonesArray*) ioman->GetObject("RichHit");
-	if ( NULL == fRichHits) { Fatal("CbmRichGeoTest::Init","No RichHit array!"); }
+	if ( nullptr == fRichHits) { Fatal("CbmRichGeoTest::Init","No RichHit array!"); }
 
 	fTauFit = new CbmRichRingFitterEllipseTau();
 
 	InitHistograms();
 
 	fPrimVertex = (CbmVertex*) ioman->GetObject("PrimaryVertex");
-	if (NULL == fPrimVertex) { Fatal("CbmAnaConversion::Init","No PrimaryVertex array!"); }
+	if (nullptr == fPrimVertex) { Fatal("CbmAnaConversion::Init","No PrimaryVertex array!"); }
 
 	fArrayStsHit = (TClonesArray*) ioman->GetObject("StsHit");
-	if(NULL == fArrayStsHit) { Fatal("CbmAnaConversion2Fitter::Init","No StsHit array!"); }
+	if(nullptr == fArrayStsHit) { Fatal("CbmAnaConversion2Fitter::Init","No StsHit array!"); }
 
 	fArrayMvdHit = (TClonesArray*) ioman->GetObject("MvdHit");
-	if(NULL == fArrayMvdHit) { Fatal("CbmAnaConversion2Fitter::Init","No MvdHit array!"); }
+	if(nullptr == fArrayMvdHit) { Fatal("CbmAnaConversion2Fitter::Init","No MvdHit array!"); }
 
 
 	DoReconstruction = 1;
@@ -293,7 +309,7 @@ void CbmAnaConversion2::Exec(
 	fEventNum++;
 //	cout << "CbmAnaConversion2, event No. " <<  fEventNum-1 << endl;
 
-	if (fPrimVertex != NULL){
+	if (fPrimVertex != nullptr){
 		fKFVertex = CbmKFVertex(*fPrimVertex);
 	} else {
 		Fatal("CbmAnaConversion::Exec","No PrimaryVertex array!");
@@ -362,7 +378,7 @@ void CbmAnaConversion2::Exec(
 	///////   Fill all rotated points in one histogram
 	for (int i = 0; i < nofRichPoints; i++) {
 		CbmRichPoint* point = (CbmRichPoint*)fRichPoints->At(i);
-		if (point == NULL) continue;
+		if (point == nullptr) continue;
 		double xPOINT = point->GetX();
 		double yPOINT = point->GetY();
 		double zPOINT = point->GetZ();
@@ -381,7 +397,7 @@ void CbmAnaConversion2::Exec(
 	Int_t nofMcTracks = fMcTracks->GetEntriesFast();
 	for (int i = 0; i < nofMcTracks; i++) {
 		CbmMCTrack* mctrack = (CbmMCTrack*)fMcTracks->At(i);
-		if (mctrack == NULL) continue;
+		if (mctrack == nullptr) continue;
 
 		FillMCTracklists(mctrack, i);	// fill tracklists for further analyses ???????
 
@@ -408,7 +424,7 @@ void CbmAnaConversion2::Exec(
     int nofProjections = fRichProjections->GetEntriesFast();
 	for (int i = 0; i < nofRings; i++) {
 		CbmRichRing* richRing = (CbmRichRing*)fRichRings->At(i);
-		if(richRing == NULL) continue;
+		if(richRing == nullptr) continue;
 		fRichRings_Aaxis->Fill(richRing->GetAaxis());
 		fRichRings_Baxis->Fill(richRing->GetBaxis());
 	}
@@ -432,7 +448,7 @@ void CbmAnaConversion2::Exec(
 	Int_t ngTracks = fGlobalTracks->GetEntriesFast();
 	for (Int_t iTr = 0; iTr < ngTracks; iTr++) {
 		CbmGlobalTrack* gTrack = (CbmGlobalTrack*) fGlobalTracks->At(iTr);
-		if(NULL == gTrack) continue;
+		if(nullptr == gTrack) continue;
 		int stsInd = gTrack->GetStsTrackIndex();
 		int richInd = gTrack->GetRichRingIndex();
 
@@ -441,14 +457,14 @@ void CbmAnaConversion2::Exec(
 		///////   STS
 		if (stsInd < 0) continue;    
 		CbmStsTrack* stsTrack = (CbmStsTrack*) fStsTracks->At(stsInd);
-		if (stsTrack == NULL) continue;
+		if (stsTrack == nullptr) continue;
 		CbmTrackMatchNew* stsMatch  = (CbmTrackMatchNew*) fStsTrackMatches->At(stsInd);
-		if (stsMatch == NULL) continue;
+		if (stsMatch == nullptr) continue;
 		if (stsMatch->GetNofLinks() <= 0) continue;
 		int stsMcTrackId = stsMatch->GetMatchedLink().GetIndex();
 		if (stsMcTrackId < 0) continue;
 		CbmMCTrack* mcTrack1 = (CbmMCTrack*) fMcTracks->At(stsMcTrackId);
-		if (mcTrack1 == NULL) continue;
+		if (mcTrack1 == nullptr) continue;
 		int pdgSTS = mcTrack1->GetPdgCode();
 		int motherIdSTS = mcTrack1->GetMotherId();
 		double momentumSTS = mcTrack1->GetP();
@@ -456,7 +472,7 @@ void CbmAnaConversion2::Exec(
 		if(TMath::Abs(pdgSTS) != 11) continue;
 		if (motherIdSTS == -1) continue;
 		CbmMCTrack* mcTrackMotherSTS = (CbmMCTrack*) fMcTracks->At(motherIdSTS);
-		if (mcTrackMotherSTS == NULL) continue;
+		if (mcTrackMotherSTS == nullptr) continue;
 		TVector3 refmomentum_direct_elposinton;
 		TVector3 refmomentum_gamma_conversion_elposinton;
 		TVector3 refmomentum_all;
@@ -509,7 +525,7 @@ void CbmAnaConversion2::Exec(
 		int TT=0;
 		for(TT; TT<nofRings; TT++){
 			CbmTrackMatchNew* richMatch  = (CbmTrackMatchNew*)fRichRingMatches->At(TT);
-			if (richMatch == NULL) continue;
+			if (richMatch == nullptr) continue;
 			int richMcTrackId = richMatch->GetMatchedLink().GetIndex();
 			if (richMcTrackId < 0) continue;
 			if(stsMcTrackId == richMcTrackId) {
@@ -521,11 +537,11 @@ void CbmAnaConversion2::Exec(
 
 
 		CbmTrackMatchNew* richMatch  = (CbmTrackMatchNew*)fRichRingMatches->At(TT);
-		if (richMatch == NULL) continue;
+		if (richMatch == nullptr) continue;
 		int richMcTrackId = richMatch->GetMatchedLink().GetIndex();
 		if (richMcTrackId < 0) continue;
 		CbmMCTrack* mcTrack2 = (CbmMCTrack*) fMcTracks->At(richMcTrackId);
-		if (mcTrack2 == NULL) continue;
+		if (mcTrack2 == nullptr) continue;
 		int pdgRICH = mcTrack2->GetPdgCode();
 		int motherIdRICH = mcTrack2->GetMotherId();
 		double momentumRICH = mcTrack2->GetP();
@@ -533,7 +549,7 @@ void CbmAnaConversion2::Exec(
 		if(TMath::Abs(pdgRICH) != 11) continue;
 		if (motherIdRICH == -1) continue;
 		CbmMCTrack* mcTrackMotherRICH = (CbmMCTrack*) fMcTracks->At(motherIdRICH);
-		if (mcTrackMotherRICH == NULL) continue;
+		if (mcTrackMotherRICH == nullptr) continue;
 		if (mcTrackMotherRICH->GetPdgCode() == DecayedParticlePdg) {
 			if (mcTrackMotherRICH->GetMotherId() != -1) continue; /// which were created inside the target
 			PrimaryCandidateRICH++;
@@ -565,13 +581,13 @@ void CbmAnaConversion2::Exec(
 		if(stsMcTrackId == richMcTrackId) {
 			NofFullCorrectReconstruction++;
 			CbmRichRing* ring = static_cast<CbmRichRing*> (fRichRings->At(TT));
-			if (NULL == ring) continue;
+			if (nullptr == ring) continue;
 			CbmRichRingLight ringHit;
 			int nofHits = ring->GetNofHits();
 			for (int i = 0; i < nofHits; i++){
 				Int_t hitInd = ring->GetHit(i);
 				CbmRichHit* hit = (CbmRichHit*) fRichHits->At(hitInd);
-				if (NULL == hit) continue;
+				if (nullptr == hit) continue;
 				CbmRichHitLight hl(hit->GetX(), hit->GetY());
 				ringHit.AddHit(hl);
 			}
@@ -640,17 +656,17 @@ void CbmAnaConversion2::Exec(
 				it = find (UsedRingsId.begin(), UsedRingsId.end(), UnidentifiedRingId);
 				if (it == UsedRingsId.end()){
 					CbmTrackMatchNew* richMatch  = (CbmTrackMatchNew*)fRichRingMatches->At(UnidentifiedRingId);
-					if (richMatch != NULL){
+					if (richMatch != nullptr){
 						int richMcTrackId = richMatch->GetMatchedLink().GetIndex();
 						if (richMcTrackId >= 0){
 							CbmMCTrack* mcTrackFromG = (CbmMCTrack*) fMcTracks->At(richMcTrackId);
-							if (mcTrackFromG != NULL){
+							if (mcTrackFromG != nullptr){
 								int pdgRICH = mcTrackFromG->GetPdgCode();
 								int motherIdRICH = mcTrackFromG->GetMotherId();
 								double momentumRICH = mcTrackFromG->GetP();
 								if(TMath::Abs(pdgRICH) == 11 && motherIdRICH != -1){
 									CbmMCTrack* mcTrackMotherRICH = (CbmMCTrack*) fMcTracks->At(motherIdRICH);
-									if (mcTrackMotherRICH != NULL && mcTrackMotherRICH->GetPdgCode() == 22 && mcTrackMotherRICH->GetMotherId() != -1){
+									if (mcTrackMotherRICH != nullptr && mcTrackMotherRICH->GetPdgCode() == 22 && mcTrackMotherRICH->GetMotherId() != -1){
 										CbmMCTrack* mcTrackMotherMotherRICH = (CbmMCTrack*) fMcTracks->At(mcTrackMotherRICH->GetMotherId());
 										if (mcTrackMotherMotherRICH->GetPdgCode() == DecayedParticlePdg){
 											float xConv = mcTrackFromG->GetStartX();
@@ -829,7 +845,7 @@ void CbmAnaConversion2::FillMCTracklists(CbmMCTrack* mctrack, int)
 		if (motherId != -1 || motherId == -1) {
 			CbmMCTrack* mother = (CbmMCTrack*) fMcTracks->At(motherId);
 			int mcMotherPdg  = -1;
-			if (NULL != mother) mcMotherPdg = mother->GetPdgCode();
+			if (nullptr != mother) mcMotherPdg = mother->GetPdgCode();
 			if (mcMotherPdg == 22) {
 				fMCTracklist_elpositrons_from_gamma.push_back(mctrack);
 			}
@@ -843,7 +859,7 @@ void CbmAnaConversion2::FillMCTracklists(CbmMCTrack* mctrack, int)
 		if (motherId != -1) {
 			CbmMCTrack* mother = (CbmMCTrack*) fMcTracks->At(motherId);
 			int mcMotherPdg  = -1;
-			if (NULL != mother) mcMotherPdg = mother->GetPdgCode();
+			if (nullptr != mother) mcMotherPdg = mother->GetPdgCode();
 			if (mcMotherPdg == DecayedParticlePdg) {	// pdg code 111 = pi0
 				fMCTracklist_gamma_from_our_particle.push_back(mctrack);
 			}
@@ -857,7 +873,7 @@ void CbmAnaConversion2::FillMCTracklists(CbmMCTrack* mctrack, int)
 		if (motherId != -1) {
 			CbmMCTrack* mother = (CbmMCTrack*) fMcTracks->At(motherId);
 			int mcMotherPdg  = -1;
-			if (NULL != mother) mcMotherPdg = mother->GetPdgCode();
+			if (nullptr != mother) mcMotherPdg = mother->GetPdgCode();
 			if (mcMotherPdg == DecayedParticlePdg) {
 				fMCTracklist_elpositrons_from_our_particle.push_back(mctrack);
 			}
@@ -871,13 +887,13 @@ void CbmAnaConversion2::FillMCTracklists(CbmMCTrack* mctrack, int)
 		if (motherId != -1) {
 			CbmMCTrack* mother = (CbmMCTrack*) fMcTracks->At(motherId);
 			int mcMotherPdg  = -1;
-			if (NULL != mother) mcMotherPdg = mother->GetPdgCode();
+			if (nullptr != mother) mcMotherPdg = mother->GetPdgCode();
 			if (mcMotherPdg == 22) {
 				int grandmotherId = mother->GetMotherId();
 				if(grandmotherId != -1 || grandmotherId == -1) {
 					CbmMCTrack* grandmother = (CbmMCTrack*) fMcTracks->At(grandmotherId);
 					int mcGrandmotherPdg = -1;
-					if (NULL != grandmother) mcGrandmotherPdg = grandmother->GetPdgCode();
+					if (nullptr != grandmother) mcGrandmotherPdg = grandmother->GetPdgCode();
 					if(mcGrandmotherPdg == 111) {
 						fMCTracklist_elpositrons_from_gamma_from_our_particle.push_back(mctrack);
 					}

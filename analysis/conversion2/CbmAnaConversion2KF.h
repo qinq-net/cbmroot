@@ -41,6 +41,9 @@ class CbmAnaConversion2KF
 
 public:
 	CbmAnaConversion2KF();
+	CbmAnaConversion2KF(const CbmAnaConversion2KF&) = delete;
+	CbmAnaConversion2KF operator=(const CbmAnaConversion2KF&) = delete;
+
 	virtual ~CbmAnaConversion2KF();
 
 	void Init();
@@ -628,9 +631,6 @@ private:
 	// timer
 	TStopwatch timer;
 	Double_t fTime;
-
-	CbmAnaConversion2KF(const CbmAnaConversion2KF&);
-	CbmAnaConversion2KF operator=(const CbmAnaConversion2KF&);
 
 	ClassDef(CbmAnaConversion2KF,1)
 };

@@ -38,12 +38,13 @@ using boost::assign::list_of;
 
 
 CbmAnaConversion2Fitter::CbmAnaConversion2Fitter()
-  : fMcTracks(NULL),
-    fStsTracks(NULL),
-    fStsTrackMatches(NULL),
-    fPrimVertex(NULL),
-    fArrayStsHit(NULL),
-    fArrayMvdHit(NULL)
+  : fMcTracks(nullptr),
+    fStsTracks(nullptr),
+    fStsTrackMatches(nullptr),
+    fGlobalTracks(nullptr),
+    fPrimVertex(nullptr),
+    fArrayStsHit(nullptr),
+    fArrayMvdHit(nullptr)
 
 {
 }
@@ -57,28 +58,28 @@ void CbmAnaConversion2Fitter::Init()
 
 	cout << "CbmAnaConversion2Fitter::Init" << endl;
 	FairRootManager* ioman = FairRootManager::Instance();
-	if (NULL == ioman) { Fatal("CbmAnaConversion2Fitter::Init","RootManager not instantised!"); }
+	if (nullptr == ioman) { Fatal("CbmAnaConversion2Fitter::Init","RootManager not instantised!"); }
 
 	fMcTracks = (TClonesArray*) ioman->GetObject("MCTrack");
-	if ( NULL == fMcTracks) { Fatal("CbmAnaConversion2Fitter::Init","No MCTrack array!"); }
+	if ( nullptr == fMcTracks) { Fatal("CbmAnaConversion2Fitter::Init","No MCTrack array!"); }
 
 	fStsTracks = (TClonesArray*) ioman->GetObject("StsTrack");
-	if ( NULL == fStsTracks) { Fatal("CbmAnaConversion2Fitter::Init","No StsTrack array!"); }
+	if ( nullptr == fStsTracks) { Fatal("CbmAnaConversion2Fitter::Init","No StsTrack array!"); }
 
 	fStsTrackMatches = (TClonesArray*) ioman->GetObject("StsTrackMatch");
-	if (NULL == fStsTrackMatches) { Fatal("CbmAnaConversion2Fitter::Init","No StsTrackMatch array!"); }
+	if (nullptr == fStsTrackMatches) { Fatal("CbmAnaConversion2Fitter::Init","No StsTrackMatch array!"); }
 
 	fGlobalTracks = (TClonesArray*) ioman->GetObject("GlobalTrack");
-	if (NULL == fGlobalTracks) { Fatal("CbmAnaConversion2Fitter::Init","No GlobalTrack array!"); }
+	if (nullptr == fGlobalTracks) { Fatal("CbmAnaConversion2Fitter::Init","No GlobalTrack array!"); }
 
 	fPrimVertex = (CbmVertex*) ioman->GetObject("PrimaryVertex");
-	if (NULL == fPrimVertex) { Fatal("CbmAnaConversion2Fitter::Init","No PrimVertex array!"); }
+	if (nullptr == fPrimVertex) { Fatal("CbmAnaConversion2Fitter::Init","No PrimVertex array!"); }
 
 	fArrayStsHit = (TClonesArray*) ioman->GetObject("StsHit");
-	if(NULL == fArrayStsHit) { Fatal("CbmAnaConversion2Fitter::Init","No StsHit array!"); }
+	if(nullptr == fArrayStsHit) { Fatal("CbmAnaConversion2Fitter::Init","No StsHit array!"); }
 
 	fArrayMvdHit = (TClonesArray*) ioman->GetObject("MvdHit");
-	if(NULL == fArrayMvdHit) { Fatal("CbmAnaConversion2Fitter::Init","No MvdHit array!"); }
+	if(nullptr == fArrayMvdHit) { Fatal("CbmAnaConversion2Fitter::Init","No MvdHit array!"); }
 
 	InitHistograms();
 
@@ -112,10 +113,10 @@ void CbmAnaConversion2Fitter::test()
 	Int_t nofMcTracks = fMcTracks->GetEntriesFast();
 	for (int i = 0; i < nofMcTracks; i++) {
 		CbmMCTrack* mctrack = (CbmMCTrack*)fMcTracks->At(i);
-		if (mctrack == NULL) continue;
+		if (mctrack == nullptr) continue;
 		CbmMCTrack* mcTrackMother = (CbmMCTrack*) fMcTracks->At(mctrack->GetMotherId());
 		int motherPdg = -1;
-		if (mcTrackMother != NULL) motherPdg = mcTrackMother->GetPdgCode();
+		if (mcTrackMother != nullptr) motherPdg = mcTrackMother->GetPdgCode();
 
 		int PdgCode = mctrack->GetPdgCode();
 		if (TMath::Abs(PdgCode) != 11) continue;
@@ -130,26 +131,26 @@ void CbmAnaConversion2Fitter::test()
 	Int_t ngTracks = fGlobalTracks->GetEntriesFast();
 	for (Int_t iTr = 0; iTr < ngTracks; iTr++) {
 		CbmGlobalTrack* gTrack = (CbmGlobalTrack*) fGlobalTracks->At(iTr);
-		if(NULL == gTrack) continue;
+		if(nullptr == gTrack) continue;
 		int stsInd = gTrack->GetStsTrackIndex();
 		// ========================================================================================
 		if (stsInd < 0) continue;    
 		CbmStsTrack* stsTrack = (CbmStsTrack*) fStsTracks->At(stsInd);
-		if (stsTrack == NULL) continue;
+		if (stsTrack == nullptr) continue;
 		CbmTrackMatchNew* stsMatch  = (CbmTrackMatchNew*) fStsTrackMatches->At(stsInd);
-		if (stsMatch == NULL) continue;
+		if (stsMatch == nullptr) continue;
 		if (stsMatch->GetNofLinks() <= 0) continue;
 		int stsMcTrackId = stsMatch->GetMatchedLink().GetIndex();
 		if (stsMcTrackId < 0) continue;
 		CbmMCTrack* mcTrack1 = (CbmMCTrack*) fMcTracks->At(stsMcTrackId);
-		if (mcTrack1 == NULL) continue;
+		if (mcTrack1 == nullptr) continue;
 		int pdgSTS = mcTrack1->GetPdgCode();
 		int motherIdSTS = mcTrack1->GetMotherId();
 		double momentumSTS = mcTrack1->GetP();
 		if(TMath::Abs(pdgSTS) != 11) continue;
 		CbmMCTrack* mcTrackMother = (CbmMCTrack*) fMcTracks->At(mcTrack1->GetMotherId());
 		int motherPdg = -1;
-		if (mcTrackMother != NULL) motherPdg = mcTrackMother->GetPdgCode();
+		if (mcTrackMother != nullptr) motherPdg = mcTrackMother->GetPdgCode();
 
 		cout << "num of STS hits: " << stsTrack->GetNofStsHits() << endl;
 		cout << " -->  MCTrue info ==> particle pdg: " << mcTrack1->GetPdgCode() << "; motherPdg = " << motherPdg << endl;
