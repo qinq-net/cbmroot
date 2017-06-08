@@ -126,8 +126,18 @@ void create_rich_v18a_mcbm()
 	const Double_t sensPlaneBoxDistance = 1.;
 
 	TGeoRotation *rotBox= new TGeoRotation("rotBox", 0., 0., 0.);
+
 	//	TGeoTranslation *trCave= new TGeoTranslation(0., 0., 0.);
-	TGeoTranslation *trCave= new TGeoTranslation(-48., 0., 280.);   // miniCBM position
+	//	TGeoTranslation *trCave= new TGeoTranslation(-48., 0., 280.);   // miniCBM position
+  	Double_t xPos = -48.;
+  	Double_t yPos =   0.;
+  	Double_t zPos = 280.;
+
+	Double_t proto_angle = atan(xPos/zPos) * 180 / acos(-1);
+
+      	TGeoRotation* proto_rotation = new TGeoRotation();
+	proto_rotation->RotateY(proto_angle);
+	TGeoCombiTrans* trCave = new TGeoCombiTrans(xPos, yPos, zPos, proto_rotation);
 
 	TGeoTranslation *trBox= new TGeoTranslation(0., 0., 0.); //Gasbox/Box Translation
 	TGeoTranslation *trSensPlane= new TGeoTranslation(0., 0., boxLength / 2. + sensPlaneBoxDistance);
@@ -249,9 +259,10 @@ void create_rich_v18a_mcbm()
 	//gGeoMan->SetTopVisible();
 	//boxVol->SetVisibility(false);
 
-	//topVol->Draw("ogl");
-	boxVol->Draw("ogl");
-
+	//	boxVol->Draw("ogl");
+	topVol->Draw("ogl");
+        gGeoMan->SetVisLevel(5);
+	  
 	TFile* geoFile = new TFile(geoFileName, "RECREATE");
 	topVol->Write();
 	cout << endl << "Geometry written to " << geoFileName << endl;
