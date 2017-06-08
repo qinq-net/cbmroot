@@ -42,6 +42,9 @@ class CbmStsModule : public CbmStsElement
     /** Default constructor **/
     CbmStsModule();
 
+    /** Prevent usage of copy constructor and assignment operator **/
+    CbmStsModule(const CbmStsModule&) = delete;
+    CbmStsModule& operator=(const CbmStsModule&) = delete;
 
     /** Standard constructor
      ** @param name   Name
@@ -382,9 +385,6 @@ class CbmStsModule : public CbmStsElement
     void Digitize(Int_t channel, CbmStsSignal* signal);
 
 
-    /** Prevent usage of copy constructor and assignment operator **/
-    CbmStsModule(const CbmStsModule&);
-    CbmStsModule& operator=(const CbmStsModule&);
     
 
     ClassDef(CbmStsModule,1);

@@ -66,9 +66,11 @@ CbmL1 *CbmL1::fInstance = 0;
 CbmL1::CbmL1(): FairTask("L1"),
     algo(0), // for access to L1 Algorithm from L1::Instance
 vRTracks(), // reconstructed tracks
+vFileEvent(),
 vHitStore(),
 vMCPoints(),
 nMvdPoints(0),
+vMCPoints_in_Time_Slice(),
 NStation(0), NMvdStations(0), NStsStations(0), // number of detector stations (all\sts\mvd)
 fPerformance(0),
 fSTAPDataMode(0),
@@ -80,7 +82,9 @@ fGhostSuppression(1),  // really doesn't used
 fUseMVD(0),  // really doesn't used
 
 PrimVtx(),
-
+fTimeSlice(nullptr),
+fEventList(nullptr),
+listStsDigi(),
 fStsPoints(0),
 fMCTracks(0),
 fMvdPoints(0),
@@ -99,17 +103,22 @@ listMvdPts(0),
 listMvdHits(0),
 listMvdDigiMatches(0),
 listMvdHitMatches(0),
-
+fPerfFile(nullptr), 
+fHistoDir(nullptr),     
 vStsHits(),
 vMCTracks(),
 vHitMCRef(),
-
-histodir(0),
+dFEI2vMCPoints(),
+dFEI2vMCTracks(),
+fData(nullptr),
+histodir(nullptr),
 fFindParticlesMode(),
 fStsMatBudgetFileName(""),
 fMvdMatBudgetFileName(""),
 fExtrapolateToTheEndOfSTS(false),
-fTimesliceMode(0)
+fTimesliceMode(0),
+fTopoPerformance(nullptr),
+fEventEfficiency()
 {
   if( !fInstance ) fInstance = this;
 }
@@ -117,9 +126,11 @@ fTimesliceMode(0)
 CbmL1::CbmL1(const char *name, Int_t iVerbose, Int_t _fPerformance, int fSTAPDataMode_, TString fSTAPDataDir_, int findParticleMode_):FairTask(name,iVerbose),
 algo(0), // for access to L1 Algorithm from L1::Instance                       
 vRTracks(), // reconstructed tracks
+vFileEvent(),
 vHitStore(),
 vMCPoints(),
 nMvdPoints(0),
+vMCPoints_in_Time_Slice(),
 NStation(0), NMvdStations(0), NStsStations(0), // number of detector stations (all\sts\mvd)
 fPerformance(_fPerformance),
 fSTAPDataMode(fSTAPDataMode_),
@@ -131,7 +142,8 @@ fGhostSuppression(1),  // really doesn't used
 fUseMVD(0),  // really doesn't used
 
 PrimVtx(),
-
+fTimeSlice(nullptr),
+fEventList(nullptr),
 listStsDigi(0),
 fStsPoints(0),
 fMCTracks(0),
@@ -149,16 +161,22 @@ listMvdPts(0),
 listMvdHits(0),
 listMvdDigiMatches(0),
 listMvdHitMatches(0),
-
+fPerfFile(nullptr),
+fHistoDir(nullptr),
 vStsHits(),
 vMCTracks(),
 vHitMCRef(),
-histodir(0),
+dFEI2vMCPoints(),
+dFEI2vMCTracks(),
+fData(nullptr),
+histodir(nullptr),
 fFindParticlesMode(findParticleMode_),
 fStsMatBudgetFileName(""),
 fMvdMatBudgetFileName(""),
 fExtrapolateToTheEndOfSTS(false),
-fTimesliceMode(0)
+fTimesliceMode(0),
+fTopoPerformance(nullptr),
+fEventEfficiency()
 {
   if( !fInstance ) fInstance = this;
 }

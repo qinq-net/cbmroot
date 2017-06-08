@@ -37,9 +37,10 @@ CbmStsModule::CbmStsModule() : CbmStsElement(),
                                fDeadTime(0.),
                                fNoise(0.),
                                fZeroNoiseRate(0.),
+                               fNoiseRate(0.),
                                fIsSet(kFALSE),
                                fDeadChannels(),
-                               fPhysics(NULL),
+                               fPhysics(nullptr),
                                fAnalogBuffer(),
                                fDigis(),
                                fClusters(),
@@ -65,9 +66,10 @@ CbmStsModule::CbmStsModule(const char* name, const char* title,
                            fDeadTime(0.),
                            fNoise(0.),
                            fZeroNoiseRate(0.),
+                           fNoiseRate(0.),
                            fIsSet(0),
                            fDeadChannels(),
-                           fPhysics(NULL),
+                           fPhysics(nullptr),
                            fAnalogBuffer(),
                            fDigis(),
                            fClusters(),
@@ -282,7 +284,7 @@ Int_t CbmStsModule::ChargeToAdc(Double_t charge) {
 void CbmStsModule::CreateCluster(Int_t clusterStart, Int_t clusterEnd,
 		                             TClonesArray* clusterArray, Int_t algorithm, Int_t eLossModel) {
 
-        CbmStsCluster* cluster = NULL;
+        CbmStsCluster* cluster = nullptr;
 
 	// --- If output array is specified: Create a new cluster there
 	if ( clusterArray ) {
@@ -578,13 +580,13 @@ CbmStsDigi* CbmStsModule::GetDigi(Int_t channel, Int_t& index) {
 	if ( ! ( channel >= 0 && channel < fNofChannels) ) {
 		LOG(ERROR) << GetName() << ": Illegal channel number " << channel
 				       << FairLogger::endl;
-		return NULL;
+		return nullptr;
 	}
 
 	map<Int_t, pair<CbmStsDigi*, Int_t> >::iterator it = fDigis.find(channel);
 	if (it == fDigis.end() ) {
 		index = -1;
-		return NULL;  // inactive channel
+		return nullptr;  // inactive channel
 	}
 
 	index = (it->second).second;  // index of digi in this channel
@@ -755,7 +757,7 @@ CbmStsDigi* CbmStsModule::GetDigiTb(Int_t channel, Int_t index) {
 	if ( ! ( channel >= 0 && channel < fNofChannels) ) {
 		LOG(ERROR) << GetName() << ": Illegal channel number " << channel
 				       << FairLogger::endl;
-		return NULL;
+		return nullptr;
 	}
 
 	multimap<Int_t, pair<CbmStsDigi*, Int_t> >::iterator it = fDigisTb.find(channel);
@@ -766,13 +768,13 @@ CbmStsDigi* CbmStsModule::GetDigiTb(Int_t channel, Int_t index) {
 			++it;
 	} while ( it->first == channel );
 
-	return NULL;
+	return nullptr;
 }
 
 // -----   Create cluster in the output array   ----------------------------
 void CbmStsModule::CreateClusterTb(vector<Int_t> digiIndexes, Double_t s1,
 		Double_t s2, Double_t s3, Double_t ts, Bool_t /*side*/, TClonesArray* clusterArray) {
-	CbmStsCluster* cluster = NULL;
+	CbmStsCluster* cluster = nullptr;
 	// --- If output array is specified: Create a new cluster there
 	if ( clusterArray ) {
 		Int_t nClusters = clusterArray->GetEntriesFast();
@@ -792,7 +794,7 @@ void CbmStsModule::CreateClusterTb(vector<Int_t> digiIndexes, Double_t s1,
 }
 
 void CbmStsModule::CreateClusterTb(vector<Int_t>* digiIndexes, Int_t firstChannel, TClonesArray* clusterArray, Int_t algorithm) {
-	CbmStsCluster* cluster = NULL;
+	CbmStsCluster* cluster = nullptr;
 	// --- If output array is specified: Create a new cluster there
 	if ( clusterArray ) {
 		Int_t nClusters = clusterArray->GetEntriesFast();

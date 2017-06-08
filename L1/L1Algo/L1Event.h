@@ -13,7 +13,7 @@ using std::vector;
 class L1Event
 {
  public:
-  L1Event ():fKFPTrack(),fStsHit(0) {};
+  L1Event ():fTopoReconstructor(),fKFPTrack(),fStsHit(0) {};
 
   void Clear();
   void TopoReconstructor();
@@ -24,7 +24,7 @@ class L1Event
   vector<int>& getHits() {return fStsHit;}
   const KFParticleTopoReconstructor* getTopoReconstructor() const {return &fTopoReconstructor;}
   
-  L1Event (const L1Event& event)
+  L1Event (const L1Event& event) : fTopoReconstructor(event.fTopoReconstructor),fKFPTrack(event.fKFPTrack),fStsHit(event.fStsHit)
   {
     fKFPTrack = event.fKFPTrack;
     fStsHit = event.fStsHit;
@@ -32,6 +32,7 @@ class L1Event
   
   L1Event& operator=(const L1Event& event)
   {
+    fTopoReconstructor = event.fTopoReconstructor;
     fKFPTrack = event.fKFPTrack;
     fStsHit = event.fStsHit;
     
