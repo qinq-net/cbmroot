@@ -15,7 +15,7 @@ struct L1Strip{
   
    L1Strip():f(0){
    }
-  L1Strip(fscal _f, unsigned short int /*_n*/ = 0):f(_f){ };
+  L1Strip(fscal _f, unsigned short int _n = 0):f(_f){ };
 
   operator fscal() const { return f;}
 //   operator fvec() { return fscal(f);}
@@ -28,17 +28,13 @@ struct L1Strip{
 
 struct L1StripSelectTracks{
   
-  L1StripSelectTracks() : Cand(-1)
-#ifdef _OPENMP
-  , Occupied()
-#endif
-  {   
-#ifdef _OPENMP
-    omp_init_lock(&Occupied);
-#endif
+  L1StripSelectTracks(){   
   //  Candidates.resize(70);
    // Candidates2.resize(70);
-  //  Cand = -1;
+#ifdef _OPENMP
+    omp_init_lock(&Occupied); 
+#endif
+    Cand = -1;
   }
   
   ~L1StripSelectTracks()

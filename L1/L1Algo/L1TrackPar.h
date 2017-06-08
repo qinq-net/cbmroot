@@ -27,7 +27,7 @@ class L1TrackPar{
     C30(0), C31(0), C32(0), C33(0),
     C40(0), C41(0), C42(0), C43(0), C44(0),
     C50(0), C51(0), C52(0), C53(0), C54(0), C55(0),
-    chi2(0), NDF(0), time(0), time1(0), t_er(0), n(0)
+    chi2(0), NDF(0)
     {};
     L1TrackPar(double *T, double *C):
       x(T[0]),
@@ -59,7 +59,7 @@ class L1TrackPar{
       C53(C[18]),
       C54(C[19]),
       C55(C[20]),
-      chi2(0), NDF(0), time(0), time1(0), t_er(0), n(0)
+      chi2(0), NDF(0), time(0)
       {};
       
     void SetOneEntry( const int i0, const L1TrackPar &T1, const int i1 );

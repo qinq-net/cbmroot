@@ -33,7 +33,7 @@ class CbmL1MCTrack;
 class CbmL1Track: public CbmL1TrackPar
 {
   public:
-    CbmL1Track() :StsHits(),nStations(0),index(0),fTrackTime(0.),hitMap(),mcTracks(),maxPurity(-1){}
+    CbmL1Track():StsHits(),nStations(0),hitMap(),mcTracks(),maxPurity(-1){}
 
     int GetNOfHits(){ return StsHits.size(); }
 

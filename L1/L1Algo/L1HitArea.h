@@ -33,10 +33,6 @@ class L1HitArea
 
 inline L1HitArea::L1HitArea( const L1Grid & grid, float y, float z, float dy, float dz )
   : fGrid( grid ),
-  fBZmax(0),
-  fBDY(0),
-  fIndYmin(0),
-  fIz(0),
   fHitYlst( 0 ),
   fIh( 0 ),
   fNy( fGrid.Ny() )
@@ -132,19 +128,10 @@ protected:
 
 inline L1HitAreaTime::L1HitAreaTime( const L1Grid & grid, float y, float z, float dy, float dz, float t, float dt )
 : fGrid( grid ),
-fBZmax(0),
-fBDY(0),
-fIndYmin(0),
-fIz(0),
 fHitYlst( 0 ),
 fIh( 0 ),
 fNy( fGrid.Ny() ),
-fNz( fGrid.Nz() ),
-fBTmax(0),
-fIt(0),
-fBZmin(0),
-fBYmin(0),
-fIndZmin(0)
+fNz( fGrid.Nz() )
 {
     const float minY = y - dy;
     const float maxY = y + dy;

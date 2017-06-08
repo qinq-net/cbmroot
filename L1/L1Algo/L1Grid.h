@@ -39,34 +39,9 @@ class L1Algo;
 class L1Grid {
  public:
  L1Grid():
- fN(0), fNy(0), fNz(0), fNt(0),
- fYMinOverStep(0.),
- fZMinOverStep(0.),
- fTMinOverStep(0.),
- fStepYInv(0.),
- fStepZInv(0.),
- fStepTInv(0.),
- fBinInGrid(0), 
- fFirstHitInBin(),
- fHitsInBin(),
- fNThreads(0)
- {
- }
-              
+ fN(0), fNy(0), fNz(0), fNt(0), fNThreads(0){}
  L1Grid(const L1Grid& grid):
- fN(grid.N()), fNy(grid.Ny()), fNz(grid.Nz()), fNt(grid.Nt()), 
- fYMinOverStep(0.),
- fZMinOverStep(0.),
- fTMinOverStep(0.),
- fStepYInv(0.),
- fStepZInv(0.),
- fStepTInv(0.),
- fBinInGrid(0),
- fFirstHitInBin(),
- fHitsInBin(),
- fNThreads(0)
- {
- }
+ fN(grid.N()), fNy(grid.Ny()), fNz(grid.Nz()), fNt(grid.Nt()), fNThreads(0){  }
 //  ~L1Grid(){ //if ( fFirstHitInBin ) delete[] fFirstHitInBin;
 //      
 // 
@@ -149,7 +124,7 @@ void UpdateIterGrid(unsigned int Nelements, L1StsHit* hits,  vector <THitI>* ind
   float fStepTInv; //* inverse bin size in Z
   int fBinInGrid;
   
-    vector <THitI> fFirstHitInBin;
+   vector <THitI> fFirstHitInBin;
    vector <THitI> fHitsInBin;
   // vector <THitI*> fFirstHitInBinArray;
 //   vector <THitI> fOffsets;

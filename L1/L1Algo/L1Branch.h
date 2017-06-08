@@ -26,7 +26,7 @@ class L1Triplet;
 
 struct L1Branch
 {
-  L1Branch(): n(0), Quality(0),CandIndex(0),Momentum(0),chi2(0),NHits(0),Lengtha(0),ista(0), location(0),StsHits(){
+  L1Branch():CandIndex(0),Momentum(0),chi2(0),NHits(0),Lengtha(0),ista(0) ,StsHits(){
    //  L1Branch():Momentum(0),chi2(0),NHits(0),Lengtha(0),ista(0) , StsHits(){
      StsHits.resize(12);
     // CandToCand.resize(200);

@@ -28,13 +28,11 @@ class L1StsHit
    
  // unsigned short int n; // number of event
   
-  L1StsHit() 
-    :f(0),b(0),iz(0), n(0),used(false),t_reco(0.f),t_er(0.),t_mc(0.),ista(-1), time1(0.), time2(0.) {
+  L1StsHit():f(0),b(0),iz(0), n(0),used(0),t_reco(0.f),ista(-1){
 //   CandidatesB.resize(0, 0);
 //   CandidatesF.resize(0, 0);
   }
-  L1StsHit(L1StsHit &h,  /*short*/ int sh, /*short*/ int shB)
-    :f(h.f + sh),b(h.b + shB),iz(0), n(0),used(false),t_reco(0.f),t_er(0.),t_mc(0.),ista(-1),time1(0.), time2(0.) {}
+  L1StsHit(L1StsHit &h,  /*short*/ int sh, /*short*/ int shB):f(h.f + sh),b(h.b + shB),iz(0), n(0),used(0),t_reco(0.f),ista(-1) {}
 
 };
 

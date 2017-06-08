@@ -70,13 +70,12 @@ class L1Triplet
   unsigned int last_neighbour;
 
 
-  L1Triplet() 
-   : w0(), w1(), w2(), bl(), b1(0), st(), chi2double(0), Cqp(0), first_neighbour(0), last_neighbour(0) { };
+  L1Triplet(){ };
   
   void Set( unsigned int iHitL, unsigned int iHitM, unsigned int iHitR,
             unsigned int iStaL, unsigned int iStaM, unsigned int iStaR,
       unsigned char Level, fscal  Qp, 
-      fscal Chi2, fscal /*time_*/=0, fscal _Cqp=0, int /*_n*/=0
+      fscal Chi2, fscal time_=0, fscal _Cqp=0, int _n=0
       ){ 
     w0 = iHitL;
     w1 = iHitM;
