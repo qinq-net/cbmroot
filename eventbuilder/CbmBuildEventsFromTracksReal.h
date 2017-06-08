@@ -18,6 +18,8 @@ class CbmBuildEventsFromTracksReal: public FairTask
   /** Constructor **/
   CbmBuildEventsFromTracksReal();
 
+  CbmBuildEventsFromTracksReal(const CbmBuildEventsFromTracksReal&) = delete;
+  CbmBuildEventsFromTracksReal& operator=(const CbmBuildEventsFromTracksReal&) = delete;
   /** Destructor **/
   virtual ~CbmBuildEventsFromTracksReal();
 
@@ -31,6 +33,8 @@ class CbmBuildEventsFromTracksReal: public FairTask
     CbmStsTrack Track;
     int index;
     bool used;
+
+    SortTracks() : Track(), index(-1), used(false) {}
   };
 
   static bool CompareTrackTime(const SortTracks& a, const SortTracks& b) { return (a.Track.GetTime() < b.Track.GetTime()); }
@@ -41,8 +45,6 @@ class CbmBuildEventsFromTracksReal: public FairTask
   /** Task initialisation **/
   virtual InitStatus Init();
 
-  CbmBuildEventsFromTracksReal(const CbmBuildEventsFromTracksReal&);
-  CbmBuildEventsFromTracksReal& operator=(const CbmBuildEventsFromTracksReal&);
  
   ClassDef(CbmBuildEventsFromTracksReal, 1);
 };

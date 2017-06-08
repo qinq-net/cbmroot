@@ -25,9 +25,8 @@ using namespace std;
 // =====   Constructor   =====================================================
 CbmBuildEventsFromTracksReal::CbmBuildEventsFromTracksReal() :
 	FairTask("CbmBuildEventsFromTracksReal"),
-	fStsTracks(NULL),
-	fEvents(NULL)
-	//fNofEntries(0)
+	fStsTracks(nullptr),
+	fEvents(nullptr)
 {
 }
 // ===========================================================================
@@ -173,7 +172,7 @@ void CbmBuildEventsFromTracksReal::Exec(Option_t*) {
         
   for(int iEvent=0; iEvent<clusters.size(); iEvent++)
   {
-     CbmEvent* event = NULL;
+     CbmEvent* event = nullptr;
      Int_t nEvents = fEvents->GetEntriesFast();
 
    //  if (clusters[iEvent].size()>1) 

@@ -31,6 +31,8 @@ class CbmEventBuilderQA : public FairTask {
 
   // Constructors/Destructors ---------
   CbmEventBuilderQA(const char* name = "CbmEventBuilderQA", Int_t iVerbose = 0, TString outFileName="CbmEventBuilderQA.root");
+  const CbmEventBuilderQA& operator=(const CbmEventBuilderQA&) = delete;
+  CbmEventBuilderQA(const CbmEventBuilderQA&) = delete;
   ~CbmEventBuilderQA();
 
   void SetStsTrackBranchName(const TString& name)   { fStsTrackBranchName = name;  }
@@ -49,8 +51,6 @@ class CbmEventBuilderQA : public FairTask {
   
  private:
   
-  const CbmEventBuilderQA& operator = (const CbmEventBuilderQA&);
-  CbmEventBuilderQA(const CbmEventBuilderQA&);
   
   std::vector< std::vector< std::vector <int> > > fPointsInTracks;
 
@@ -59,6 +59,8 @@ class CbmEventBuilderQA : public FairTask {
     struct SortEvents {
      CbmEvent* Event;
      CbmStsTrack track;
+
+     SortEvents() : Event(nullptr), track() {}
    };
    
   static bool CompareTrackTime(const SortEvents& a, const SortEvents& b) { return (a.track.GetTime() < b.track.GetTime()); }

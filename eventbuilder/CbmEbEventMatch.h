@@ -16,7 +16,7 @@ using std::map;
 class CbmEbEventMatch
 {
   public:
-    CbmEbEventMatch():fMCEvent(), fNTracks(0) {};
+    CbmEbEventMatch():fMCEvent(), fNTracks(0), fTracks() {};
     bool IsGhost() { return fMCEvent.size() == 0; }
     void Clear()
     {

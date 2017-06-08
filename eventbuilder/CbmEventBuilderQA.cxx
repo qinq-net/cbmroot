@@ -72,12 +72,12 @@ struct TH1FParameters
 };
 
 CbmEventBuilderQA::CbmEventBuilderQA(const char* name, Int_t iVerbose, TString outFileName):
-  FairTask(name, iVerbose), fStsTrackBranchName("StsTrack"), fGlobalTrackBranchName("GlobalTrack"), fRichBranchName("RichRing"),
+  FairTask(name, iVerbose), fPointsInTracks(), fStsTrackBranchName("StsTrack"), fGlobalTrackBranchName("GlobalTrack"), fRichBranchName("RichRing"),
   fTrdBranchName ("TrdTrack"), fTofBranchName("TofHit"), fMuchTrackBranchName("MuchTrack"), fMCTracksBranchName("MCTrack"),
   fStsTrackMatchBranchName("StsTrackMatch"), fRichRingMatchBranchName("RichRingMatch"), fTrdTrackMatchBranchName("TrdTrackMatch"),
   fTofHitMatchBranchName("TofHitMatch"), fMuchTrackMatchBranchName("MuchTrackMatch"), 
   fStsDigis(0), fStsTracks(0), fMCTracks(0), fStsHits(0), fMvdPoints(0), fStsPoints(0), fEvents(0), fStsTrackMatchArray(0), fStsHitMatch(0),
-  fOutFileName(outFileName), fOutFile(0), fHistoDir(0)//, //fNEvents(0),
+  fEventList(nullptr), fOutFileName(outFileName), fOutFile(0), fHistoDir(0)//, //fNEvents(0),
  // fPDGtoIndexMap()
 { 
   TFile* curFile = gFile;
@@ -201,11 +201,11 @@ InitStatus CbmEventBuilderQA::Init()
   }
 
   CbmMCDataManager* mcManager = (CbmMCDataManager*) ioman->GetObject("MCDataManager");
-  if( mcManager == NULL )
+  if( mcManager == nullptr )
     LOG(FATAL) << GetName() << ": No CbmMCDataManager!" << FairLogger::endl;
   
   fMCTracks = (CbmMCDataArray*) mcManager->InitBranch("MCTrack");
-  if ( fMCTracks == NULL )
+  if ( fMCTracks == nullptr )
     LOG(FATAL) << GetName() << ": No MCTrack data!" << FairLogger::endl;
   
   fEventList = (CbmMCEventList*) ioman->GetObject("MCEventList.");

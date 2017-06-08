@@ -29,6 +29,9 @@ class CbmBuildEventsFromTracksIdeal: public FairTask
   /** Constructor **/
   CbmBuildEventsFromTracksIdeal();
 
+  CbmBuildEventsFromTracksIdeal(const CbmBuildEventsFromTracksIdeal&) = delete;
+  CbmBuildEventsFromTracksIdeal& operator=(const CbmBuildEventsFromTracksIdeal&) = delete;
+
   /** Destructor **/
   virtual ~CbmBuildEventsFromTracksIdeal();
 
@@ -50,8 +53,6 @@ class CbmBuildEventsFromTracksIdeal: public FairTask
   /** Task initialisation **/
   virtual InitStatus Init();
 
-  CbmBuildEventsFromTracksIdeal(const CbmBuildEventsFromTracksIdeal&);
-  CbmBuildEventsFromTracksIdeal& operator=(const CbmBuildEventsFromTracksIdeal&);
  
   ClassDef(CbmBuildEventsFromTracksIdeal, 1);
 

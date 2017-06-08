@@ -13,7 +13,7 @@ using std::vector;
 class CbmEbMCEvent
 {
  public:
-  CbmEbMCEvent ():fMCEventId(-1),fRecoEvents(),fIsReconstructable(0),fMCTrackId(0) {};
+  CbmEbMCEvent ():fMCEventId(-1),fRecoEvents(),fMCTrackId(0),fIsReconstructable(0),fRecoTrackId(0) {};
     
   int IsReconstructed()
   {

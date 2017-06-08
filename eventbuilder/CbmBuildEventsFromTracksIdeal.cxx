@@ -30,12 +30,14 @@ using namespace std;
 // =====   Constructor   =====================================================
 CbmBuildEventsFromTracksIdeal::CbmBuildEventsFromTracksIdeal() :
 	FairTask("CbmBuildEventsFromTracksIdeal"),
-	fStsDigis(NULL),
-	fMCTracks(NULL),
-	fMcPoints(NULL),
-	fStsTracks(NULL),
-	fEvents(NULL)
-	//fNofEntries(0)
+	fStsDigis(nullptr),
+	fStsTracks(nullptr),
+	fMCTracks(nullptr),
+	fStsHits(nullptr),
+	fMcPoints(nullptr),
+	fEvents(nullptr),
+	fStsTrackMatchArray(nullptr),
+	fEventList(nullptr)
 {
 }
 // ===========================================================================
@@ -61,11 +63,11 @@ InitStatus CbmBuildEventsFromTracksIdeal::Init() {
 //   assert ( fStsDigis );
   
   CbmMCDataManager* mcManager = (CbmMCDataManager*) ioman->GetObject("MCDataManager");
-  if( mcManager == NULL )
+  if( mcManager == nullptr )
     LOG(FATAL) << GetName() << ": No CbmMCDataManager!" << FairLogger::endl;
   
   fMCTracks = (CbmMCDataArray*) mcManager->InitBranch("MCTrack");
-  if ( fMCTracks == NULL )
+  if ( fMCTracks == nullptr )
     LOG(FATAL) << GetName() << ": No MCTrack data!" << FairLogger::endl;
   
   fEventList = (CbmMCEventList*) ioman->GetObject("MCEventList.");
@@ -160,7 +162,7 @@ void CbmBuildEventsFromTracksIdeal::Exec(Option_t*) {
 
   for(int iEvent=0; iEvent<vKFPTrack1.size(); iEvent++)
   {
-           CbmEvent* event = NULL;
+           CbmEvent* event = nullptr;
            Int_t nEvents = fEvents->GetEntriesFast();
 
           if (vKFPTrack1[iEvent].size()>1) 
