@@ -102,7 +102,7 @@ template <class Data> class CbmReadoutBuffer : public FairWriteoutBuffer {
 		 ** Abstract method from FairWriteoutBuffer; not needed in this
 		 ** template implementation.
 		 **/
-		virtual void AddNewDataToTClonesArray(FairTimeStamp* data) { }
+		virtual void AddNewDataToTClonesArray(FairTimeStamp* /*data*/) { }
 	  // ---------------------------------------------------------------------
 
 
@@ -153,7 +153,7 @@ template <class Data> class CbmReadoutBuffer : public FairWriteoutBuffer {
 		 ** Abstract method from FairWriteoutBuffer; not needed in this
 		 ** template implementation.
 		 **/
-		virtual void EraseDataFromDataMap(FairTimeStamp* data) { }
+		virtual void EraseDataFromDataMap(FairTimeStamp*) { }
 	  // ---------------------------------------------------------------------
 
 
@@ -228,7 +228,7 @@ template <class Data> class CbmReadoutBuffer : public FairWriteoutBuffer {
 				delete data;
 
 				// --- Fill new data to buffer, still checking for existing ones
-				for (Int_t iData = 0; iData < newDataList.size(); iData++) {
+				for (UInt_t iData = 0; iData < newDataList.size(); iData++) {
 					LOG(DEBUG4) << "RO: Filling modified data at address " << address
 							<< ", t = " << newDataList[iData]->GetTimeStart()
 							<< " to " << newDataList[iData]->GetTimeStop() << FairLogger::endl;
@@ -257,7 +257,7 @@ template <class Data> class CbmReadoutBuffer : public FairWriteoutBuffer {
 		 ** Abstract method from FairWriteoutBuffer; not needed in this
 		 ** template implementation.
 		 **/
-		virtual void FillDataMap(FairTimeStamp* data, double activeTime) { }
+		virtual void FillDataMap(FairTimeStamp*, double /*activeTime*/) { }
 	  // ---------------------------------------------------------------------
 
 
@@ -267,7 +267,7 @@ template <class Data> class CbmReadoutBuffer : public FairWriteoutBuffer {
 		 ** Abstract method from FairWriteoutBuffer; not needed in this
 		 ** template implementation.
 		 **/
-		virtual double FindTimeForData(FairTimeStamp* data) { return -1.; }
+		virtual double FindTimeForData(FairTimeStamp*) { return -1.; }
 	  // ---------------------------------------------------------------------
 
 
@@ -294,10 +294,10 @@ template <class Data> class CbmReadoutBuffer : public FairWriteoutBuffer {
 			// but set the stop time of the result to the maximum of the
 			// two stop times
 			Data* firstData  = oldData1;
-			Data* secondData = oldData2;
+//			Data* secondData = oldData2;
 			if ( oldData1->GetTimeStart() > oldData2->GetTimeStart() ) {
 				firstData  = oldData2;
-				secondData = oldData1;
+//				secondData = oldData1;
 			}
 			Double_t stopTime = std::max(oldData1->GetTimeStop(), oldData2->GetTimeStop() );
 

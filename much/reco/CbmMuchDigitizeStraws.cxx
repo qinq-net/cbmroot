@@ -78,10 +78,10 @@ void CbmMuchDigitizeStraws::Exec(Option_t*)
             continue;
 
         // Produce straw digi
-        Double_t x = (point->GetXIn() + point->GetXOut()) / 2.;
-        Double_t y = (point->GetYIn() + point->GetYOut()) / 2.;
-        Double_t z = (point->GetZIn() + point->GetZOut()) / 2.;
-        CbmMuchStrawDigi* digi = new ((*fDigis)[iDigi]) CbmMuchStrawDigi(point->GetDetectorID(), x, y, z, point->GetTime());
+        //Double_t x = (point->GetXIn() + point->GetXOut()) / 2.;
+        //Double_t y = (point->GetYIn() + point->GetYOut()) / 2.;
+        //Double_t z = (point->GetZIn() + point->GetZOut()) / 2.;
+        //CbmMuchStrawDigi* digi = new ((*fDigis)[iDigi]) CbmMuchStrawDigi(point->GetDetectorID(), x, y, z, point->GetTime());
         CbmMuchDigiMatch* match = new ((*fDigiMatches)[iDigi]) CbmMuchDigiMatch();
         match->AddLink(CbmLink(1., iPoint));
         iDigi++;
@@ -140,7 +140,7 @@ void CbmMuchDigitizeStraws::Exec2D()
 
         // Produce MUCH digi
         Int_t sizeDigis = fDigis->GetEntriesFast();
-        CbmMuchDigi* digi = new ((*fDigis)[sizeDigis]) CbmMuchDigi(point->GetDetectorID(), 1., point->GetTime());
+        //CbmMuchDigi* digi = new ((*fDigis)[sizeDigis]) CbmMuchDigi(point->GetDetectorID(), 1., point->GetTime());
         // cout << point->GetDetectorID() << " " << digi->GetAddress() << " " << iPoint << endl;
         CbmMuchDigiMatch* match = new ((*fDigiMatches)[sizeDigis]) CbmMuchDigiMatch();
         match->AddLink(CbmLink(1., iPoint));

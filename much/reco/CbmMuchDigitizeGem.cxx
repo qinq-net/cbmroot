@@ -89,6 +89,7 @@ CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName)
     fMeanGasGain(1e4),
     fDTime(3),
     fDeadPadsFrac(0),
+    fTimer(),
     fDaq(0),
     fMcChain(NULL),
     fDeadTime(400),
@@ -97,7 +98,11 @@ CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName)
     fRemainderTime(40),
     fTimeBinWidth(1),
     fNTimeBins(200),
-    fTimer(),
+    fTOT(0),
+    fTotalDriftTime(0.4/fDriftVelocity*10000), // 40 ns
+    fSigma(),
+    fMPV(),
+    fIsLight(1), // fIsLight = 1 (default) Store Light CbmMuchDigiMatch in output branch, fIsLight = 0 Create Heavy CbmMuchDigiMatch with fSignalShape info.  
     fTimePointLast(-1.),
     fTimeDigiFirst(-1.),
     fTimeDigiLast(-1.),
@@ -109,11 +114,6 @@ CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName)
     fNofSignalsTot(0.),
     fNofDigisTot(0.),
     fTimeTot(),
-    fTOT(0),
-    fTotalDriftTime(0.4/fDriftVelocity*10000), // 40 ns
-    fSigma(),
-    fMPV(),
-    fIsLight(1), // fIsLight = 1 (default) Store Light CbmMuchDigiMatch in output branch, fIsLight = 0 Create Heavy CbmMuchDigiMatch with fSignalShape info.  
     fAddressCharge()
 {
   fSigma[0] = new TF1("sigma_e","pol6",-5,10);
@@ -260,7 +260,7 @@ InitStatus CbmMuchDigitizeGem::Init() {
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmMuchDigitizeGem::Exec(Option_t* opt) {
+void CbmMuchDigitizeGem::Exec(Option_t*) {
   
 	// get current event to revert back at the end of exec
 	//Int_t currentEvent = FairRootManager::Instance()->GetInTree()->GetBranch("MCTrack")->GetReadEntry();
@@ -643,7 +643,7 @@ Double_t CbmMuchDigitizeGem::MPV_n_e(Double_t Tkin, Double_t mass) {
 // -------------------------------------------------------------------------
 Double_t CbmMuchDigitizeGem::GetNPrimaryElectronsPerCm(const CbmMuchPoint* point){
   Int_t trackId = point->GetTrackID();
-  Int_t eventId = point->GetEventID();
+//  Int_t eventId = point->GetEventID();
   if (trackId < 0) return -1;
 
 
@@ -674,7 +674,7 @@ Double_t CbmMuchDigitizeGem::GetNPrimaryElectronsPerCm(const CbmMuchPoint* point
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
-Bool_t CbmMuchDigitizeGem::AddCharge(CbmMuchSectorRadial* s,UInt_t ne, Int_t iPoint, Double_t time, Double_t driftTime, 
+Bool_t CbmMuchDigitizeGem::AddCharge(CbmMuchSectorRadial* s,UInt_t ne, Int_t /*iPoint*/, Double_t /*time*/, Double_t /*driftTime*/, 
     Double_t phi1, Double_t phi2){
   CbmMuchPadRadial* pad1 = s->GetPadByPhi(phi1);
   if(!pad1) return kFALSE;

@@ -214,7 +214,7 @@ void CbmMuchFindHitsGem::CreateCluster(CbmMuchPad* pad) {
   fDigiIndices.push_back(digiIndex);
   pad->SetDigiIndex(-1);
   vector<CbmMuchPad*> neighbours = pad->GetNeighbours();
-  for (Int_t i=0;i<neighbours.size();i++) CreateCluster(neighbours[i]);
+  for (UInt_t i=0;i<neighbours.size();i++) CreateCluster(neighbours[i]);
 }
 // -------------------------------------------------------------------------
 
@@ -296,9 +296,9 @@ void CbmMuchFindHitsGem::ExecClusteringPeaks(CbmMuchCluster* cluster,Int_t iClus
   }
 
   // Flag local maxima
-  for (UInt_t i=0; i<nDigis;i++) {
+  for (Int_t i=0; i<nDigis;i++) {
     Int_t c = fClusterCharges[i];
-    for (Int_t n=0;n<fNeighbours[i].size();n++) {
+    for (UInt_t n=0;n<fNeighbours[i].size();n++) {
       Int_t in = fNeighbours[i][n];
       Int_t cn = fClusterCharges[in];
       if (cn < c) fLocalMax[in] = 0;
@@ -307,7 +307,7 @@ void CbmMuchFindHitsGem::ExecClusteringPeaks(CbmMuchCluster* cluster,Int_t iClus
 
   // Fire pads corresponding to local maxima
   fFiredPads.clear();
-  for (UInt_t i=0; i<nDigis;i++) {
+  for (Int_t i=0; i<nDigis;i++) {
     if (fLocalMax[i]==0) continue;
     CbmMuchPad* pad = fClusterPads[i];
     pad->SetDigiIndex(cluster->GetDigi(i));
@@ -315,7 +315,7 @@ void CbmMuchFindHitsGem::ExecClusteringPeaks(CbmMuchCluster* cluster,Int_t iClus
   }
   
   // Create clusters
-  for (Int_t p=0;p<fFiredPads.size();p++){
+  for (UInt_t p=0;p<fFiredPads.size();p++){
     fDigiIndices.clear();
     CreateCluster(fFiredPads[p]);
     if (fDigiIndices.size()==0) continue;
