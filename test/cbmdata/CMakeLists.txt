@@ -22,6 +22,7 @@ Macro(CreateGTestExeAndAddTest _testname _includeDirs _linkDirs _sources _depend
 EndMacro(CreateGTestExeAndAddTest)
 
 Set(INCLUDE_DIRECTORIES
+  ${CMAKE_SOURCE_DIR}/base
   ${CMAKE_SOURCE_DIR}/data
   ${CMAKE_SOURCE_DIR}/data/global
   ${BASE_INCLUDE_DIRECTORIES} 
@@ -95,13 +96,6 @@ Set(CbmStripHitSources
 CreateGTestExeAndAddTest(_GTestCbmStripHit "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
                          "${CbmStripHitSources}" "${DEPENDENCIES}" "_GTestCbmPixelHit")
 
-Set(CbmDetectorListSources
-  ${CMAKE_SOURCE_DIR}/data/CbmDetectorList.cxx
-  _GTestCbmDetectorList.cxx
-)  
-
-CreateGTestExeAndAddTest(_GTestCbmDetectorList "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
-                         "${CbmDetectorListSources}" "${DEPENDENCIES}" "_GTestCbmStripHit")
 
 Set(CbmEventSources
   ${CMAKE_SOURCE_DIR}/data/CbmEvent.cxx
@@ -109,7 +103,7 @@ Set(CbmEventSources
 )  
 
 CreateGTestExeAndAddTest(_GTestCbmEvent "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
-                         "${CbmEventSources}" "${DEPENDENCIES}" "_GTestCbmDetectorList")
+                         "${CbmEventSources}" "${DEPENDENCIES}" "_GTestCbmPixelHit")
 
 
 Set(CbmConstantsSources

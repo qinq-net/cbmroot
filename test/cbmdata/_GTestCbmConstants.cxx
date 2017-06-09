@@ -1,4 +1,4 @@
-#include "CbmConstants.h"
+#include "CbmDefs.h"
 
 #include "Rtypes.h"
 
@@ -11,8 +11,8 @@ TEST(_GTestCbmConstants , CheckParticleMasses)
   Double_t neutronMass = 0.939565379;
   Double_t electronMass = 0.000510998928;
 
-  EXPECT_EQ(protonMass, Cbm::ProtonMass());
-  EXPECT_EQ(neutronMass, Cbm::NeutronMass());
-  EXPECT_EQ(electronMass, Cbm::ElectronMass());
+  EXPECT_EQ(protonMass, CbmProtonMass());
+  EXPECT_EQ(neutronMass, CbmNeutronMass());
+  EXPECT_EQ(electronMass, CbmElectronMass());
 }
 

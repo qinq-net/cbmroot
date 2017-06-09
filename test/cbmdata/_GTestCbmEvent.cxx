@@ -2,7 +2,7 @@
 
 #include "CbmMatch.h"
 #include "CbmVertex.h"
-#include "CbmDetectorList.h"
+#include "CbmDefs.h"
 
 #include "gtest/gtest.h"
 #include "gtest/gtest-spi.h"
@@ -30,7 +30,7 @@
   EXPECT_EQ(match, test.GetMatch());
 }
 
-void compareEventMap(CbmEvent& test, Int_t numobjects, Int_t numobjectstype, Cbm::DataType type, std::vector<UInt_t> indices)
+void compareEventMap(CbmEvent& test, Int_t numobjects, Int_t numobjectstype, ECbmDataType type, std::vector<UInt_t> indices)
 {
   Int_t retValInt{-111};
   UInt_t retValUInt{111};
@@ -114,97 +114,97 @@ TEST(_GTestCbmCluster, CheckSettersAndGetters)
 
 
    mctrack.push_back(11);
-   test.AddData(Cbm::kMCTrack, 11);
+   test.AddData(kMCTrack, 11);
    {
      SCOPED_TRACE("CheckAddData: Add first MCTrack");
      compareEventDataMembers(test, -111, 1., 2., 1, nullptr);
-     compareEventMap(test, 1,  1, Cbm::kMCTrack,    mctrack);
-     compareEventMap(test, 1, -1, Cbm::kStsPoint,   stspoint);
-     compareEventMap(test, 1, -1, Cbm::kStsDigi,    stsdigi);
-     compareEventMap(test, 1, -1, Cbm::kStsCluster, stscluster);
-     compareEventMap(test, 1, -1, Cbm::kStsHit,     stshit);
-     compareEventMap(test, 1, -1, Cbm::kStsTrack,   ststrack);
+     compareEventMap(test, 1,  1, kMCTrack,    mctrack);
+     compareEventMap(test, 1, -1, kStsPoint,   stspoint);
+     compareEventMap(test, 1, -1, kStsDigi,    stsdigi);
+     compareEventMap(test, 1, -1, kStsCluster, stscluster);
+     compareEventMap(test, 1, -1, kStsHit,     stshit);
+     compareEventMap(test, 1, -1, kStsTrack,   ststrack);
    }
 
    mctrack.push_back(23);
-   test.AddData(Cbm::kMCTrack, 23);
+   test.AddData(kMCTrack, 23);
    {
      SCOPED_TRACE("CheckAddData: Add second MCTrack");
      compareEventDataMembers(test, -111, 1., 2., 2, nullptr);
-     compareEventMap(test, 2,  2, Cbm::kMCTrack,    mctrack);
-     compareEventMap(test, 2, -1, Cbm::kStsPoint,   stspoint);
-     compareEventMap(test, 2, -1, Cbm::kStsDigi,    stsdigi);
-     compareEventMap(test, 2, -1, Cbm::kStsCluster, stscluster);
-     compareEventMap(test, 2, -1, Cbm::kStsHit,     stshit);
-     compareEventMap(test, 2, -1, Cbm::kStsTrack,   ststrack);
+     compareEventMap(test, 2,  2, kMCTrack,    mctrack);
+     compareEventMap(test, 2, -1, kStsPoint,   stspoint);
+     compareEventMap(test, 2, -1, kStsDigi,    stsdigi);
+     compareEventMap(test, 2, -1, kStsCluster, stscluster);
+     compareEventMap(test, 2, -1, kStsHit,     stshit);
+     compareEventMap(test, 2, -1, kStsTrack,   ststrack);
    }
 
-   UInt_t retValUInt=test.GetIndex(Cbm::kMCTrack, 25);
+   UInt_t retValUInt=test.GetIndex(kMCTrack, 25);
    EXPECT_EQ(-2, retValUInt);
 
    stspoint.push_back(1);
-   test.AddData(Cbm::kStsPoint, 1);
+   test.AddData(kStsPoint, 1);
    {
      SCOPED_TRACE("CheckAddData: Add StsPoint");
      compareEventDataMembers(test, -111, 1., 2., 3, nullptr);
-     compareEventMap(test, 3,  2, Cbm::kMCTrack,    mctrack);
-     compareEventMap(test, 3,  1, Cbm::kStsPoint,   stspoint);
-     compareEventMap(test, 3, -1, Cbm::kStsDigi,    stsdigi);
-     compareEventMap(test, 3, -1, Cbm::kStsCluster, stscluster);
-     compareEventMap(test, 3, -1, Cbm::kStsHit,     stshit);
-     compareEventMap(test, 3, -1, Cbm::kStsTrack,   ststrack);
+     compareEventMap(test, 3,  2, kMCTrack,    mctrack);
+     compareEventMap(test, 3,  1, kStsPoint,   stspoint);
+     compareEventMap(test, 3, -1, kStsDigi,    stsdigi);
+     compareEventMap(test, 3, -1, kStsCluster, stscluster);
+     compareEventMap(test, 3, -1, kStsHit,     stshit);
+     compareEventMap(test, 3, -1, kStsTrack,   ststrack);
    }
 
    stsdigi.push_back(2);
-   test.AddData(Cbm::kStsDigi, 2);
+   test.AddData(kStsDigi, 2);
    {
      SCOPED_TRACE("CheckAddData: Add StsDigi");
      compareEventDataMembers(test, -111, 1., 2., 4, nullptr);
-     compareEventMap(test, 4,  2, Cbm::kMCTrack,    mctrack);
-     compareEventMap(test, 4,  1, Cbm::kStsPoint,   stspoint);
-     compareEventMap(test, 4,  1, Cbm::kStsDigi,    stsdigi);
-     compareEventMap(test, 4, -1, Cbm::kStsCluster, stscluster);
-     compareEventMap(test, 4, -1, Cbm::kStsHit,     stshit);
-     compareEventMap(test, 4, -1, Cbm::kStsTrack,   ststrack);
+     compareEventMap(test, 4,  2, kMCTrack,    mctrack);
+     compareEventMap(test, 4,  1, kStsPoint,   stspoint);
+     compareEventMap(test, 4,  1, kStsDigi,    stsdigi);
+     compareEventMap(test, 4, -1, kStsCluster, stscluster);
+     compareEventMap(test, 4, -1, kStsHit,     stshit);
+     compareEventMap(test, 4, -1, kStsTrack,   ststrack);
    }
 
    stscluster.push_back(3);
-   test.AddData(Cbm::kStsCluster, 3);
+   test.AddData(kStsCluster, 3);
    {
      SCOPED_TRACE("CheckAddData: Add StsCluster");
      compareEventDataMembers(test, -111, 1., 2., 5, nullptr);
-     compareEventMap(test, 5,  2, Cbm::kMCTrack,    mctrack);
-     compareEventMap(test, 5,  1, Cbm::kStsPoint,   stspoint);
-     compareEventMap(test, 5,  1, Cbm::kStsDigi,    stsdigi);
-     compareEventMap(test, 5,  1, Cbm::kStsCluster, stscluster);
-     compareEventMap(test, 5, -1, Cbm::kStsHit,     stshit);
-     compareEventMap(test, 5, -1, Cbm::kStsTrack,   ststrack);
+     compareEventMap(test, 5,  2, kMCTrack,    mctrack);
+     compareEventMap(test, 5,  1, kStsPoint,   stspoint);
+     compareEventMap(test, 5,  1, kStsDigi,    stsdigi);
+     compareEventMap(test, 5,  1, kStsCluster, stscluster);
+     compareEventMap(test, 5, -1, kStsHit,     stshit);
+     compareEventMap(test, 5, -1, kStsTrack,   ststrack);
    }
 
    stshit.push_back(4);
-   test.AddData(Cbm::kStsHit, 4);
+   test.AddData(kStsHit, 4);
    {
      SCOPED_TRACE("CheckAddData: Add StsHit");
      compareEventDataMembers(test, -111, 1., 2., 6, nullptr);
-     compareEventMap(test, 6,  2, Cbm::kMCTrack,    mctrack);
-     compareEventMap(test, 6,  1, Cbm::kStsPoint,   stspoint);
-     compareEventMap(test, 6,  1, Cbm::kStsDigi,    stsdigi);
-     compareEventMap(test, 6,  1, Cbm::kStsCluster, stscluster);
-     compareEventMap(test, 6,  1, Cbm::kStsHit,     stshit);
-     compareEventMap(test, 6, -1, Cbm::kStsTrack,   ststrack);
+     compareEventMap(test, 6,  2, kMCTrack,    mctrack);
+     compareEventMap(test, 6,  1, kStsPoint,   stspoint);
+     compareEventMap(test, 6,  1, kStsDigi,    stsdigi);
+     compareEventMap(test, 6,  1, kStsCluster, stscluster);
+     compareEventMap(test, 6,  1, kStsHit,     stshit);
+     compareEventMap(test, 6, -1, kStsTrack,   ststrack);
    }
 
    ststrack.push_back(5);
-   test.AddData(Cbm::kStsTrack, 5);
+   test.AddData(kStsTrack, 5);
    {
      SCOPED_TRACE("CheckAddData: Add StsTrack");
      compareEventDataMembers(test, -111, 1., 2., 7, nullptr);
-     compareEventMap(test, 7,  2, Cbm::kMCTrack,    mctrack);
-     compareEventMap(test, 7,  1, Cbm::kStsPoint,   stspoint);
-     compareEventMap(test, 7,  1, Cbm::kStsDigi,    stsdigi);
-     compareEventMap(test, 7,  1, Cbm::kStsCluster, stscluster);
-     compareEventMap(test, 7,  1, Cbm::kStsHit,     stshit);
-     compareEventMap(test, 7,  1, Cbm::kStsTrack,   ststrack);
+     compareEventMap(test, 7,  2, kMCTrack,    mctrack);
+     compareEventMap(test, 7,  1, kStsPoint,   stspoint);
+     compareEventMap(test, 7,  1, kStsDigi,    stsdigi);
+     compareEventMap(test, 7,  1, kStsCluster, stscluster);
+     compareEventMap(test, 7,  1, kStsHit,     stshit);
+     compareEventMap(test, 7,  1, kStsTrack,   ststrack);
    }
 
    ststrack.push_back(6);
@@ -212,12 +212,12 @@ TEST(_GTestCbmCluster, CheckSettersAndGetters)
    {
      SCOPED_TRACE("CheckAddData: Add StsTrack via AddStsTrack");
      compareEventDataMembers(test, -111, 1., 2., 8, nullptr);
-     compareEventMap(test, 8,  2, Cbm::kMCTrack,    mctrack);
-     compareEventMap(test, 8,  1, Cbm::kStsPoint,   stspoint);
-     compareEventMap(test, 8,  1, Cbm::kStsDigi,    stsdigi);
-     compareEventMap(test, 8,  1, Cbm::kStsCluster, stscluster);
-     compareEventMap(test, 8,  1, Cbm::kStsHit,     stshit);
-     compareEventMap(test, 8,  2, Cbm::kStsTrack,   ststrack);
+     compareEventMap(test, 8,  2, kMCTrack,    mctrack);
+     compareEventMap(test, 8,  1, kStsPoint,   stspoint);
+     compareEventMap(test, 8,  1, kStsDigi,    stsdigi);
+     compareEventMap(test, 8,  1, kStsCluster, stscluster);
+     compareEventMap(test, 8,  1, kStsHit,     stshit);
+     compareEventMap(test, 8,  2, kStsTrack,   ststrack);
    }
 
    retValUInt=test.GetStsTrackIndex(0);
@@ -243,12 +243,12 @@ TEST(_GTestCbmCluster, CheckSettersAndGetters)
    {
      SCOPED_TRACE("CheckAddData: Add StsTracks via StsStsTrack");
      compareEventDataMembers(test, -111, 1., 2., 9, nullptr);
-     compareEventMap(test, 9,  2, Cbm::kMCTrack,    mctrack);
-     compareEventMap(test, 9,  1, Cbm::kStsPoint,   stspoint);
-     compareEventMap(test, 9,  1, Cbm::kStsDigi,    stsdigi);
-     compareEventMap(test, 9,  1, Cbm::kStsCluster, stscluster);
-     compareEventMap(test, 9,  1, Cbm::kStsHit,     stshit);
-     compareEventMap(test, 9,  3, Cbm::kStsTrack,   ststrack);
+     compareEventMap(test, 9,  2, kMCTrack,    mctrack);
+     compareEventMap(test, 9,  1, kStsPoint,   stspoint);
+     compareEventMap(test, 9,  1, kStsDigi,    stsdigi);
+     compareEventMap(test, 9,  1, kStsCluster, stscluster);
+     compareEventMap(test, 9,  1, kStsHit,     stshit);
+     compareEventMap(test, 9,  3, kStsTrack,   ststrack);
    }
 
    EXPECT_STREQ("Event -111 at t = 1 ns. Registered data types: 6, data objects: 9\n          -- Data type 1, number of data 2\n          -- Data type 2, number of data 1\n          -- Data type 3, number of data 1\n          -- Data type 4, number of data 1\n          -- Data type 5, number of data 1\n          -- Data type 6, number of data 3\n", test.ToString().c_str());
