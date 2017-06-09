@@ -204,6 +204,7 @@ CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer():
    fMaxTimeDist(0.),
    fdChannelDeadtime(0.),
    fdMemoryTime(0.),
+   fdYFitMin(1.E6),
    fEnableMatchPosScaling(kTRUE),
    fEnableAvWalk(kFALSE),
    fbPs2Ns(kFALSE),
@@ -362,6 +363,7 @@ CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer(const char *name, Int_t ver
    fMaxTimeDist(0.),
    fdChannelDeadtime(0.),
    fdMemoryTime(0.),
+   fdYFitMin(1.E6),
    fEnableMatchPosScaling(kTRUE),
    fEnableAvWalk(kFALSE),
    fbPs2Ns(kFALSE),
@@ -2731,8 +2733,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
 
          Double_t YMean=((TProfile *)hAvPos_pfx)->GetBinContent(iB+1);  //nh +1 empirical(?)
 	 htempPos_py=htempPos->ProjectionY(Form("%s_py",htempPos->GetName()),1,iNbCh);
-	 const Double_t YFITMIN=500.;
-	 if(htempPos_py->GetEntries() > YFITMIN && fPosYMaxScal < 2. && fPosYMaxScal < 2.) {
+	 if(htempPos_py->GetEntries() > fdYFitMin && fPosYMaxScal < 2. && fPosYMaxScal < 2.) {
 	   LOG(DEBUG1)<<Form("Determine YMean in %s by fit to %d entries",
 			     htempPos->GetName(),(Int_t)htempPos_py->GetEntries()) 
 		      <<FairLogger::endl;
@@ -2895,8 +2896,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
          {
           Double_t YMean=((TProfile *)htempPos_pfx)->GetBinContent(iCh+1);  //set default
 	  htempPos_py=htempPos->ProjectionY(Form("%s_py%02d",htempPos->GetName(),iCh),iCh+1,iCh+1);
-	  const Double_t YFITMIN=500.;
-	  if(htempPos_py->GetEntries() > YFITMIN  && fPosYMaxScal < 2.) {
+	  if(htempPos_py->GetEntries() > fdYFitMin  && fPosYMaxScal < 2.) {
 	    LOG(DEBUG1)<<Form("Determine YMean in %s of channel %d by fit to %d entries",
 			    htempPos->GetName(),iCh,(Int_t)htempPos_py->GetEntries()) 
 		       <<FairLogger::endl;
