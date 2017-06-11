@@ -448,7 +448,8 @@ Int_t CbmTofTrackFinderNN::DoFind(
 	    fvTrkVec[iHit].push_back(pTrk);
 	    Line3Dfit(pTrk);                   // full MINUIT fit for debugging overwrites ParamLast!
 	    if(pTrk->GetChiSq() > fChiMaxAccept) {
-	      LOG(DEBUG) <<Form("Add hit %d invalidates tracklet with Chi %6.2f -> undo ",iHit,pTrk->GetChiSq())
+	      LOG(DEBUG) <<Form("Add hit %d invalidates tracklet with Chi %6.2f > %6.2f -> undo ",
+				iHit,pTrk->GetChiSq(),fChiMaxAccept)
                          << FairLogger::endl;
               fvTrkVec[iHit].pop_back();
 	      pTrk->RemoveTofHitIndex(iHit,iAddr,pHit,dChi2[0]); 
@@ -883,7 +884,7 @@ void CbmTofTrackFinderNN::Line3Dfit(CbmTofTracklet*  pTrk)
       double dx,dy,dz = 0;
       dx = (pTrk->GetTofHitPointer(N))->GetDx();  
       dy = (pTrk->GetTofHitPointer(N))->GetDy();  
-      dz = (pTrk->GetTofHitPointer(N))->GetDz();
+      //dz = (pTrk->GetTofHitPointer(N))->GetDz();
       gr->SetPointError(N,dx,dy,dz);
       LOG(DEBUG) << "Line3Dfit add N = "<<N<<", "<<x<<", "<<y<<", "<<z<<", "<<dx<<", "<<dy<<", "<<dz<<FairLogger::endl;
    }  

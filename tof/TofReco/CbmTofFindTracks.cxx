@@ -25,6 +25,7 @@
 #include "FairLogger.h"
 
 #include "TClonesArray.h"
+#include "TF1.h"
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
@@ -119,7 +120,7 @@ CbmTofFindTracks::CbmTofFindTracks()  : FairTask(),
     fhDeltaTt_Smt(NULL),
     fhTOff_HMul2(NULL),
     fiCorMode(0),
-    fiBeamCounter(5),
+    fiBeamCounter(500),
     fTtTarg(30.),
     fVTXNorm(0.),
     fVTX_T(0.),
@@ -448,7 +449,7 @@ Bool_t   CbmTofFindTracks::LoadCalParameter()
 	if(NULL != fChannelInfo) {
 	  Double_t dVal = fChannelInfo->GetZ() * fTtTarg ; //  use calibration target value
 	  fhPullT_Smt_Off->SetBinContent(iDet+1,dVal);
-	  LOG(DEBUG)<<Form("CbmTofFindTracks::LoadCalParameter Initialize det 0x%08x at %d with TOff %6.0f",
+	  LOG(INFO)<<Form("CbmTofFindTracks::LoadCalParameter Initialize det 0x%08x at %d with TOff %6.0f",
 			   iUniqueId,iDet+1,dVal)
 		    <<FairLogger::endl;
 	}
@@ -614,7 +615,7 @@ Bool_t CbmTofFindTracks::WriteHistos()
 
      break;
 
-   case 1 : // correct mean deviation from fit (Pull), extract width
+   case 1 : // correct mean deviation from fit (Pull)
     {
      TProfile *htmp=fhPullT_Smt->ProfileX();
      TH1D *htmp1D=htmp->ProjectionX();
@@ -623,7 +624,7 @@ Bool_t CbmTofFindTracks::WriteHistos()
 
      if(fhPullT_Smt_Off != NULL){
        Double_t nx=htmp1D->GetNbinsX();
-       for (Int_t ix=1; ix<nx; ix++){
+       for (Int_t ix=0; ix<nx; ix++){
 	 Double_t dVal  = fhPullT_Smt_Off->GetBinContent(ix+1);
 	          dVal -= htmp1D->GetBinContent(ix+1);
 
@@ -652,7 +653,7 @@ Bool_t CbmTofFindTracks::WriteHistos()
 
      if(fhPullT_Smt_Off != NULL){
        Double_t nx=htmp1D->GetNbinsX();
-       for (Int_t ix=1; ix<nx; ix++){
+       for (Int_t ix=0; ix<nx; ix++){
 	 Double_t dVal  = fhPullT_Smt_Off->GetBinContent(ix+1);
 	 dVal -= hTOff1D->GetBinContent(ix+1);
 	 TH1D *hTOff1DY=fhTOff_Smt->ProjectionY(Form("_py%d",ix),ix+1,ix+1,"");
@@ -670,7 +671,7 @@ Bool_t CbmTofFindTracks::WriteHistos()
         dVal += hTOff1D->GetBinContent(ix+1); //revert default correction
         dVal -= dFMean;
        }
-	   LOG(DEBUG1)<<"Update hPullT_Smt_Off "<<ix<<": Old "
+	   LOG(INFO)<<"Update hPullT_Smt_Off Ind "<<ix<<": Old "
 		  << fhPullT_Smt_Off->GetBinContent(ix+1) <<", Pull "
 		  << htmp1D->GetBinContent(ix+1)<<", Dev@Peak "
 		  << hTOff1D->GetBinContent(ix+1)<<", FitMean "
@@ -690,14 +691,14 @@ Bool_t CbmTofFindTracks::WriteHistos()
      }
      break;
 
-   case 3:  // correct Time Offset from PullT
+   case 3:  // correct Time Offset from PullT, extract width
      {
      TProfile *htmp=fhPullT_Smt->ProfileX();
      TH1D *htmp1D=htmp->ProjectionX();
      
      if(fhPullT_Smt_Off != NULL){
        Double_t nx=htmp1D->GetNbinsX();
-       for (Int_t ix=1; ix<nx; ix++){
+       for (Int_t ix=0; ix<nx; ix++){
 	 TH1D *hpy=fhPullT_Smt->ProjectionY("_py",ix+1,ix+1);
 	 if(hpy->GetEntries()>100.){
            Int_t iBmax  = hpy->GetMaximumBin();
@@ -707,16 +708,23 @@ Bool_t CbmTofFindTracks::WriteHistos()
 	   Double_t dLim =1.5*dRMS;
 	   TFitResultPtr fRes=hpy->Fit("gaus","S","",dMean-dLim,dMean+dLim);
 	   Double_t dFMean=fRes->Parameter(1);
+
 	   Double_t dVal  = fhPullT_Smt_Off->GetBinContent(ix+1);
 	            dVal -= dFMean;
-	   LOG(DEBUG1)<<"Update hPullT_Smt_Off "<<ix<<": "
-		    << fhPullT_Smt_Off->GetBinContent(ix+1) <<" + "
-		    << dFMean <<" -> " << dVal 
+	   TF1 *fg = hpy->GetFunction("gaus");
+	   Double_t dFMeanError=fg->GetParError(1);
+	   LOG(INFO)<<"Update hPullT_Smt_Off3 Ind "<<ix<<": "
+		    << fhPullT_Smt_Off->GetBinContent(ix+1) <<" + " << dFMean
+		    << ", Err "<< dFMeanError
+		    <<" -> " << dVal 
 		    <<", Width "<<dRMS
+		    <<", Chi2 "<< fg->GetChisquare()
 		    << FairLogger::endl;
-	   if(dRMS<RMSmin) dRMS=RMSmin;
-	   fhPullT_Smt_Off->SetBinContent(ix+1,dVal);
-	   fhPullT_Smt_Width->SetBinContent(ix+1,dRMS);
+	   if (dFMeanError < 0.01) { // FIXME: hardwired constant 
+	     if(dRMS<RMSmin) dRMS=RMSmin;
+	     fhPullT_Smt_Off->SetBinContent(ix+1,dVal);
+	     fhPullT_Smt_Width->SetBinContent(ix+1,dRMS);
+	   }
 	 }else{
 	   LOG(DEBUG1)<<"Update hPullT_Smt_Off "<<ix<<": insufficient counts: "
 		    <<hpy->GetEntries() << FairLogger::endl;
@@ -741,6 +749,8 @@ Bool_t CbmTofFindTracks::WriteHistos()
        for (Int_t ix=1; ix<nx; ix++){
 	 Double_t dVal  = fhPullX_Smt_Off->GetBinContent(ix+1);
 	          dVal -= htmp1D->GetBinContent(ix+1);
+		  if(dVal<-1.) dVal=-1.; // limit maximal shift in X, for larger values, change geometry file
+		  if(dVal>1.)  dVal=1.;
 	 fhPullX_Smt_Off->SetBinContent(ix+1,dVal);
 
 	 TH1D *hpy=fhPullX_Smt->ProjectionY("_py",ix+1,ix+1);
@@ -857,7 +867,7 @@ Bool_t CbmTofFindTracks::WriteHistos()
 	 Int_t iRpcInd = fMapRpcIdParInd[fMapStationRpcId[iSt]];
 	 Double_t dVal = fhPullT_Smt_Off->GetBinContent(iRpcInd+1);
 	          dVal -= dDOff;
-	 LOG(DEBUG1)<<"Update hPullT_Smt_Off "<<iSt<<", Ind "<<iRpcInd<<": "
+	 LOG(INFO)<<"Update hPullT_Smt_OffP Ind "<<iSt<<", Ind "<<iRpcInd<<": "
 		  << fhPullT_Smt_Off->GetBinContent(iRpcInd+1) <<" - "
 		  << dDOff<<" -> " << dVal 
 		  <<", Width "<<dSig
@@ -929,7 +939,13 @@ void CbmTofFindTracks::Exec(Option_t* /*opt*/)
       pHit->SetPosition(hitPos);
       pHit->SetPositionError(hitPosErr);
     } else {
-      TVector3 hitPosErr(fSIGX,fSIGY,fSIGZ);  // include positioning uncertainty 
+      Double_t dSIGX=GetSigX(iDetId);
+      if(dSIGX == 0.) dSIGX = fSIGX;
+      Double_t dSIGY=GetSigY(iDetId);
+      if(dSIGY == 0.) dSIGY = fSIGY;
+      Double_t dSIGZ=GetSigZ(iDetId);
+      if(dSIGZ == 0.) dSIGZ = fSIGZ;
+      TVector3 hitPosErr(dSIGX,dSIGY,dSIGZ);  // include positioning uncertainty 
       pHit->SetPositionError(hitPosErr);
     } 
     Int_t iSt=GetStationOfAddr(iDetId);
@@ -1007,9 +1023,9 @@ void CbmTofFindTracks::CreateHistograms(){
 			  Form("Used (HMul>2) / Reconstructed Hits; Station #"),
 			  fNTofStations, 0, fNTofStations);    
 
-  fhTrklChi2 =  new TH1F(  Form("hTrklChi2"),
-			  Form("Tracklet Chi;  #chi"),
-			  100, 0, ((CbmTofTrackFinderNN *)fFinder)->GetSIGLIM());  
+  fhTrklChi2 =  new TH2F(  Form("hTrklChi2"),
+			  Form("Tracklet Chi;  HMul_{Tracklet}; #chi"),
+			  fNTofStations-1, 2, fNTofStations+1, 100, 0, ((CbmTofTrackFinderNN *)fFinder)->GetSIGLIM());  
   
   fhTrackingTimeNhits  =  new TH2F(  Form("hTrackingTimeNhits"),
 			       Form("Tracking Time; NHits; #Deltat (s)"),
@@ -1129,8 +1145,8 @@ void CbmTofFindTracks::CreateHistograms(){
     vhPullTB[iSt]=new TH1F( Form("hPullTB_Station_%d",iSt),
 			    Form("hPullTB_Station_%d;  #DeltaT",iSt),
 			    250, -1.25*fT0MAX, 1.25*fT0MAX); 
-    Double_t XSIZ=20.; 
-    Int_t Nbins=40.;
+    Double_t XSIZ=16.; 
+    Int_t Nbins=32.;
     vhXY_AllStations[iSt] = new TH2F( Form("hXY_AllStations_%d",iSt),
 			    Form("hXY_AllStations_%d;  x(cm); y (cm)",iSt),
 			    Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ); 
@@ -1190,6 +1206,21 @@ void CbmTofFindTracks::FindVertex(){
 }
 
 void CbmTofFindTracks::FillHistograms(){
+  // Locate reference ("beam counter") hit
+  CbmTofHit* pRefHit=NULL;
+  Double_t RefMinTime=1.E300;
+  for (Int_t iHit=0; iHit<fTofHitArray->GetEntries(); iHit++){ // loop over Hits 
+    CbmTofHit* pHit = (CbmTofHit*) fTofHitArray->At( iHit );	
+    Int_t iAddr   = ( pHit->GetAddress() & DetMask );
+    if(iAddr == fiBeamCounter) {
+      if(pHit->GetTime()<RefMinTime) {
+	pRefHit=pHit;
+	RefMinTime=pRefHit->GetTime();
+      }
+    }
+  }
+  if(NULL == pRefHit) return;
+
   std::vector<Int_t> HMul;
   HMul.resize(fNTofStations+1);
   //  HMul.clear();
@@ -1231,7 +1262,7 @@ void CbmTofFindTracks::FillHistograms(){
 
     if( pTrk->GetNofHits() > fMinNofHits ){   // for further analysis request at least 3 matched hits
       iTMul++;
-      fhTrklChi2->Fill(pTrk->GetChiSq());
+      fhTrklChi2->Fill( pTrk->GetNofHits(),pTrk->GetChiSq());
 
       CbmTofTrackletParam *tPar = pTrk->GetTrackParameter();
       LOG(DEBUG)<<Form("CbmTofFindTracks::FillHistograms Trk %d: Lz=%6.2f Z0x=%6.2f Z0y=%6.2f ",
@@ -1283,7 +1314,12 @@ void CbmTofFindTracks::FillHistograms(){
 
 	Double_t dDeltaTt=dTt - fTtTarg;
 	fhDeltaTt_Smt->Fill((Double_t)fMapRpcIdParInd[fMapStationRpcId[iSt]], dDeltaTt );
-	Double_t dTOff = dDeltaTt*pHit->GetR(); 
+	//XXX use BRef as Referenz!!! 
+	Double_t dTOff = dDeltaTt* //pHit->GetR(); 
+	  TMath::Sqrt(TMath::Power(pHit->GetX()-pRefHit->GetX(),2) + 
+		      TMath::Power(pHit->GetY()-pRefHit->GetY(),2) +
+		      TMath::Power(pHit->GetZ()-pRefHit->GetZ(),2) )
+	  * TMath::Sign(1,pHit->GetZ()-pRefHit->GetZ());
 	fhTOff_Smt->Fill((Double_t)fMapRpcIdParInd[fMapStationRpcId[iSt]], dTOff );
       }
 
@@ -1386,6 +1422,11 @@ void CbmTofFindTracks::FillHistograms(){
   if(HMul.size()>5)  fhTrklMul3D->Fill(HMul[fNTofStations],HMul[fNTofStations-1],HMul[fNTofStations-2]);
   fhTrklMulNhits->Fill(fTofHitArray->GetEntries(),iTMul);
   fhTrackingTimeNhits->Fill(fTofHitArray->GetEntries(),fdTrackingTime);
+
+  if (HMul[fNTofStations]>0) 
+    LOG(DEBUG)<<"Found "<<HMul[fNTofStations]<<" max length tracklets in event "<<fiEvent
+	     <<" with "<< fTofHitArray->GetEntries() << " hits "
+	     <<FairLogger::endl;
 
   if(iTMul > 1){
     LOG(DEBUG)<<Form("CbmTofFindTracks::FillHistograms NTrkl %d(%d) in event %d", 
@@ -1527,10 +1568,12 @@ void CbmTofFindTracks::ResetStationsFired(){
 }
 
 void CbmTofFindTracks::FillUHits(){
+  // collect unused hits in active tracking stations 
   Int_t iNbUHits=0;
   for (Int_t iHit=0; iHit<fTofHitArray->GetEntries(); iHit++){
     CbmTofHit* pHit = (CbmTofHit*) fTofHitArray->At(iHit);
-    if(pHit->GetFlag() == 0) 
+    Int_t iAddr   = ( pHit->GetAddress() & DetMask );
+    if(pHit->GetFlag() == 0 && GetStationOfAddr(iAddr) < fNTofStations) 
     new((*fTofUHitArray)[iNbUHits++]) CbmTofHit(*pHit);
   }
 }

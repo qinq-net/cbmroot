@@ -2148,7 +2148,8 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
 	       		          +TMath::Power(pHit->GetZ()-pTrig[iSel]->GetZ(),2.));
 		 */
 		 // determine correction value 
-                 if(fiBeamRefAddr  != iDetId) // do not do this for reference counter itself
+                 //if(fiBeamRefAddr  != iDetId) // do not do this for reference counter itself
+                 if(fTRefMode<11) // do not do this for trigger counter itself
 		 {
 		   Double_t dTentry=dTRef-dTTrig[iSel]+fdDelTofMax;
 		   Int_t iBx = dTentry/2./fdDelTofMax*nbClDelTofBinX;
@@ -2569,7 +2570,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
            TH1D *hCorDelTofout=(TH1D*)hCorDelTof->Clone(Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel));
           hCorDelTofout->Write();
          }else {
-         LOG(INFO)<<" No CorDelTof histo "
+         LOG(DEBUG)<<" No CorDelTof histo "
                   <<Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel)<<FairLogger::endl;
          }
         }
@@ -2918,7 +2919,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
 		  YMean=ff->GetParameter(3);
 		  Double_t dV =dVscal*fChannelInfo->GetSizey()/(2.*ff->GetParameter(1)); 
 		  fhSmCluSvel[iSmType]->Fill((Double_t)(iSm*iNbRpc+iRpc),dV);
-		  LOG(INFO) << "FRes YBox "<<htempPos_py->GetEntries()<<" entries in "<<iSmType<<iSm<<iRpc<<iCh
+		  LOG(DEBUG) << "FRes YBox "<<htempPos_py->GetEntries()<<" entries in "<<iSmType<<iSm<<iRpc<<iCh
 			<<", chi2 "<<ff->GetChisquare()
 			<< Form(", striplen (%5.2f), %4.2f: %7.2f +/- %5.2f, pos res %5.2f +/- %5.2f at y_cen = %5.2f +/- %5.2f",
 				fChannelInfo->GetSizey(),dVscal,
@@ -2942,7 +2943,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
           if(htempTOff_px->GetBinContent(iCh+1)>WalkNHmin){
             fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0] += -dTYOff + TMean;
             fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1] += +dTYOff + TMean;
-	    LOG(INFO)<<Form("Calib: TSRC %d%d%d%d, hits %6.0f, dTY  %8.3f, TM %8.3f -> new Off %8.3f,%8.3f ",
+	    LOG(DEBUG)<<Form("Calib: TSRC %d%d%d%d, hits %6.0f, dTY  %8.3f, TM %8.3f -> new Off %8.3f,%8.3f ",
 			  iSmType,iSm,iRpc,iCh,htempTOff_px->GetBinContent(iCh+1),
 			  dTYOff,TMean,
 			  fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0],
