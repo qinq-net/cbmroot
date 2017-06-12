@@ -61,6 +61,7 @@ CbmTrackMerger.cxx
 
 CbmMCDataArray.cxx
 CbmMCDataManager.cxx
+CbmMCDataObject.cxx
 CbmRadDamage.cxx
 
 CbmModule.cxx

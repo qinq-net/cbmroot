@@ -34,6 +34,7 @@
 
 #pragma link C++ class CbmMCDataArray;
 #pragma link C++ class CbmMCDataManager;
+#pragma link C++ class CbmMCDataObject;
 #pragma link C++ class CbmRadDamage;
 
 #pragma link C++ class CbmModule+;

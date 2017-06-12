@@ -13,6 +13,7 @@
 #include <vector>
 
 class CbmMCDataArray;
+class CbmMCDataObject;
 
 /** @class CbmMCDataManager
  ** @brief Task class creating and managing CbmMCDataArray objects
@@ -78,7 +79,12 @@ class CbmMCDataManager : public FairTask
 		 ** @value              Pointer to CbmMCDataArray object for this branch
 		 **/
 		CbmMCDataArray* InitBranch(const char* name);
-
+		
+		/** Create a CbmMCDataObject for a given branch name
+		 ** @param branchName   Name of data branch
+		 ** @value              Pointer to CbmMCDataObject object for this branch
+		 **/
+		CbmMCDataObject* GetObject(const char* name);
 
 	private:
 
@@ -89,8 +95,10 @@ class CbmMCDataManager : public FairTask
 
     /** List of created CbmMCDataArrays **/
     std::map<TString, CbmMCDataArray*> fActive;			//!
+    /** List of created CbmMCDataObjects **/
+    std::map<TString, CbmMCDataObject*> fActiveObj;		//!
     /** Map of friends **/
-    std::map<Int_t, Int_t> fFriends;					//!
+    std::map<Int_t, Int_t> fFriends;				//!
 
     ClassDef(CbmMCDataManager, 1);
 };
