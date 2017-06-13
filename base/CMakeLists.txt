@@ -103,4 +103,6 @@ EndIf ( ${ROOT_HAS_GDML} STREQUAL yes )
 
 GENERATE_LIBRARY()
 
+# Install file which has no corresponding source file 
+Install(FILES CbmDefs.h DESTINATION include)
 
