@@ -224,8 +224,9 @@ Int_t CbmTrdUtils::GetModuleType(Int_t moduleAddress, CbmTrdModule *fModuleInfo,
   {
     if      (nRows == 24)   type = 5;  // v17a - not used
     else if (nRows == 16)   type = 6;  // v17a
+    else if (nRows == 12)   type = 6;  // + v17o
     else if (nRows ==  8)   type = 7;  // v17a
-    else if (nRows ==  4)   type = 8;  // v17a
+    else if (nRows ==  4)   type = 8;  // v17a + v17o
   }
   else if (nCols == 144)   // FEB-9x1
   {
