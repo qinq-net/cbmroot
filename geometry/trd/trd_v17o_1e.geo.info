@@ -52,40 +52,40 @@ GBTX readout boards are : included
 # modules
      mod1     mod2     mod3     mod4     mod5     mod6     mod7     mod8    total
 ---------------------------------------------------------------------------------
-       10        0       24        0        8        0       12        0            layer  1
-       10        0       24        0        8        0       12        0            layer  2
-       10        0       24        0        8        0       12        0            layer  3
-       10        0       24        0        8        0       12        0            layer  4
+       10        0       24        0        0        8        0       12            layer  1
+       10        0       24        0        0        8        0       12            layer  2
+       10        0       24        0        0        8        0       12            layer  3
+       10        0       24        0        0        8        0       12            layer  4
 
 ---------------------------------------------------------------------------------
-       40        0       96        0       32        0       48        0      216   number of modules
+       40        0       96        0        0       32        0       48      216   number of modules
 # febs
         8s       4s       2s       4        6        6        2        2            FEBs per module
                                                                                 0   ultimate  FEBs
       320s       0s     192s                                                  512   super     FEBs
-                                   0      192        0       96        0      288   regular   FEBs
-      320        0      192        0      192        0       96        0      800   number of FEBs
+                                   0        0      192        0       96      288   regular   FEBs
+      320        0      192        0        0      192        0       96      800   number of FEBs
 # asics
        10       10       10        5        8        8        8        8            ASICs per FEB
        80       40       20       20       48       48       16       16            ASICs per module
-     3200        0     1920        0     1536        0      768        0     7424   number of ASICs
+     3200        0     1920        0        0     1536        0      768     7424   number of ASICs
 # gbtx
        12        6        3        0        9        9        3        3            GBTXs per module
-      480        0      288        0      288        0      144        0     1200   number of GBTXs
+      480        0      288        0        0      288        0      144     1200   number of GBTXs
      3333       33        3        0      333      333        3        3            GBTX ROB types on module
         0        0        0        0        0        0        0        0        0   number of GBTX ROB7
         0        0        0        0        0        0        0        0        0   number of GBTX ROB5
-      160        0       96        0       96        0       48        0      400   number of GBTX ROB3
+      160        0       96        0        0       96        0       48      400   number of GBTX ROB3
 # e-links
       160       80       40       40       96       96       32       32    14848   e-links used
       168       84       42        0      126      126       42       42    16800   e-links available
-    95.2%        -    95.2%        -    76.2%        -    76.2%        -    88.4%   e-link efficiency
+    95.2%        -    95.2%        -        -    76.2%        -    76.2%    88.4%   e-link efficiency
 
 # channels
      2560     1280      640      640     1536     1536      512      512            channels per module
       320      320      320      160      256      256      256      256            channels per feb
-   102400        0    61440        0    49152        0    24576        0   237568   channels used
-   102400s       0s   61440s       0    49152        0    24576        0   237568   channels available
+   102400        0    61440        0        0    49152        0    24576   237568   channels used
+   102400s       0s   61440s       0        0    49152        0    24576   237568   channels available
      0.0%u   69.0%s   31.0%r                                                        channel ratio
 
    100.0%   channel efficiency

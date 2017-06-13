@@ -233,11 +233,11 @@ const Int_t layer1i[9][4] = { { 323,  323,  321,  321 },    // abc: a module typ
 // v14x - module types in the outer sector of layer type 1 - looking upstream
 const Int_t layer1o[9][11]= { {  0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0 },
                               {  0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0 },
-                              {  0,    0,  723,  723,    0,    0,    0,  721,  721,    0,    0 },
-                              {  0,    0,  723,  523,    0,    0,    0,  521,  721,    0,    0 },
-                              {  0,    0,  503,  503,    0,    0,    0,  501,  501,    0,    0 },
-                              {  0,    0,  703,  503,    0,    0,    0,  501,  701,    0,    0 },
-                              {  0,    0,  703,  703,    0,    0,    0,  701,  701,    0,    0 },
+                              {  0,    0,  823,  823,    0,    0,    0,  821,  821,    0,    0 },
+                              {  0,    0,  823,  623,    0,    0,    0,  621,  821,    0,    0 },
+                              {  0,    0,  603,  603,    0,    0,    0,  601,  601,    0,    0 },
+                              {  0,    0,  803,  603,    0,    0,    0,  601,  801,    0,    0 },
+                              {  0,    0,  803,  803,    0,    0,    0,  801,  801,    0,    0 },
                               {  0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0 },
                               {  0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0 } };
 // number of modules: 26
@@ -643,8 +643,8 @@ void dump_digi_file()
   const Int_t NofSectors = 3;
 // v17b
 //  const Int_t NofPadsInRow[2]  = { 80, 112 };  //  7 // number of pads in rows
-//  const Int_t NofPadsInRow[2]  = { 80, 128 };  //  8 // number of pads in rows
-  const Int_t NofPadsInRow[2]  = { 80, 144 };  //  9 // number of pads in rows
+  const Int_t NofPadsInRow[2]  = { 80, 128 };  //  8 // number of pads in rows
+//  const Int_t NofPadsInRow[2]  = { 80, 144 };  //  9 // number of pads in rows
 //  const Int_t NofPadsInRow[2]  = { 80, 160 };  // 10 // number of pads in rows
   Int_t nrow = 0;   // number of rows in module
 
@@ -666,8 +666,9 @@ void dump_digi_file()
 // v17o
           {  7.25,  7.25,  7.25 },   // module type 5 -  4.92 cm2
           {  7.25,  7.25,  7.25 },   // module type 6 -  4.92 cm2
-          { 21.75, 21.75, 21.75 },   // module type 7 -  9.85 cm2
-          { 14.50, 14.50, 14.50 } };   // module type 7 -  9.85 cm2
+          { 21.75, 21.75, 21.75 },   // module type 7 -  14.78 cm2
+          { 21.75, 21.75, 21.75 } }; // module type 8 -  14.78 cm2
+//          { 14.50, 14.50, 14.50 } };   // module type 8 -  9.85 cm2
 
 // v17n          {  4.00,  4.00,  4.00 },   // module type 5 -  2.67 cm2
 // v17n          {  6.00,  6.00,  6.00 },   // module type 6 -  4.00 cm2
@@ -693,7 +694,7 @@ void dump_digi_file()
           {   4,   4,   4 },         // module type 5
           {   4,   4,   4 },         // module type 6
           {   1,   2,   1 },         // module type 7
-          {   2,   2,   2 } };       // module type 8
+          {   1,   2,   1 } };       // module type 8
 
 //          {   8,   8,   8 },         // module type 5
 //          {   6,   4,   6 },         // module type 6
