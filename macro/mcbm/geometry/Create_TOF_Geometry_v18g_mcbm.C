@@ -83,10 +83,10 @@ const Float_t Module_Size_X[NofModuleTypes] = {180.,180.,180.,180.,180.,74.};
 const Float_t Module_Size_Y[NofModuleTypes] = {49.,49.,74.,28.,18.,18.};
 const Float_t Module_Over_Y[NofModuleTypes] = {11.5,11.5,11.,4.5,4.5,5.1};
 const Float_t Module_Size_Z[NofModuleTypes] = {10.,10.,13.,10.,10.,10.};
-const Float_t Module_Thick_Alu_X_left = 5.;
-const Float_t Module_Thick_Alu_X_right = 1.;
-const Float_t Module_Thick_Alu_Y = 1.;
-const Float_t Module_Thick_Alu_Z = 0.1;
+const Float_t Module_Thick_Alu_X_left  = 1.0;
+const Float_t Module_Thick_Alu_X_right = 0.1;
+const Float_t Module_Thick_Alu_Y       = 0.1;
+const Float_t Module_Thick_Alu_Z       = 0.1;
 
 // Distance to the center of the TOF wall [cm];
 const Float_t Wall_Z_Position = TOF_Z_Front + 0.5 * Module_Size_Z[0] + 3.5 * Module_Size_Z[1] + 4.5 * Module_Size_Z[2];
