@@ -45,6 +45,10 @@ atan(6./28) / acos(-1) * 180
 atan(12.13/2/28) / acos(-1) * 180
 12.2219
 
+# -0.1 for guard ring
+atan(5.9/28) / acos(-1) * 180
+
+
 # Station 2 (3x3)
 outer dimensions
 x: -9.015 .. 9.015 = 18.030 cm
@@ -55,6 +59,9 @@ atan(9./42) / acos(-1) * 180
 12.0948
 atan(18.06/2/42) / acos(-1) * 180
 12.1339
+
+# -0.1 for guard ring
+atan(8.9/42) / acos(-1) * 180
 
 
 #
@@ -82,7 +89,27 @@ y: -8.898 .. 8.898 = 17.796 cm
 atan(17.78/2/42) / acos(-1) * 180
 11.9512
 
+# MUCH - layer 2
+atan(16.65/79) / acos(-1) * 180
+11.9015
 
+# MUCH - layer 3
+atan(16.65/89) / acos(-1) * 180
+10.5963
+
+# TRD - layer 4
+atan(46./190) / acos(-1) * 180
+
+# TOF - x
+atan(58.5/236) / acos(-1) * 180
+13.9219
+
+atan(-93.5/236) / acos(-1) * 180
+-21.6128
+
+# TOF - y
+atan(63.5/231) / acos(-1) * 180
+15.3705
 
 #
 ##   UrQMD input files for mCBM energies
