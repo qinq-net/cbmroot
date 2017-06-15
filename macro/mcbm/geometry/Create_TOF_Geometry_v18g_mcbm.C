@@ -5,8 +5,8 @@
 
 // Changelog
 //
-// 2017-05-17 - v18g - DE - swap the z-position of TOF modules: 2 in the front, 3 in the back
-// 2017-05-17 - v18f - DE - reduce vertical gap between TOF modules to fix the gap between modules 1-2 and 4-5
+// 2017-07-15 - v18g - DE - swap the z-position of TOF modules: 2 in the front, 3 in the back
+// 2017-07-15 - v18f - DE - reduce vertical gap between TOF modules to fix the gap between modules 1-2 and 4-5
 // 2017-05-17 - v18e - DE - rotate electronics away from beam, shift 16 cm away from beam along x-axis
 // 2017-05-17 - v18d - DE - change geometry name to v18d
 
