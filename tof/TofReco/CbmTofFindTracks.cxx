@@ -133,7 +133,7 @@ CbmTofFindTracks::CbmTofFindTracks()  : FairTask(),
     fTofId(NULL),
     fDigiPar(NULL),
     fDigiBdfPar(NULL),
-    fSIGT(100.),
+    fSIGT(0.1),
     fSIGX(1.),
     fSIGY(1.),
     fSIGZ(1.),
@@ -231,7 +231,7 @@ CbmTofFindTracks::CbmTofFindTracks(const char* name,
     fTofId(NULL),
     fDigiPar(NULL),
     fDigiBdfPar(NULL),
-    fSIGT(100.),
+    fSIGT(0.1),
     fSIGX(1.),
     fSIGY(1.),
     fSIGZ(1.),
@@ -322,7 +322,7 @@ InitStatus CbmTofFindTracks::Init()
       Int_t iCellId = fDigiPar->GetCellId(iCell);
       Int_t iCh = fTofId->GetCell(iCellId);
       if(0 == iCh) {
-	LOG(INFO)<<Form("Init found Rpc %d at Addr 0x%08x, ModType %d, ModId %d, RpcId %d ",
+	LOG(INFO)<<Form("Init found RpcInd %d at Addr 0x%08x, ModType %d, ModId %d, RpcId %d ",
 			iRpc, iCellId,
 			fTofId->GetSMType(iCellId), 
                         fTofId->GetSModule(iCellId), 
@@ -720,7 +720,7 @@ Bool_t CbmTofFindTracks::WriteHistos()
 		    <<", Width "<<dRMS
 		    <<", Chi2 "<< fg->GetChisquare()
 		    << FairLogger::endl;
-	   if (dFMeanError < 0.01) { // FIXME: hardwired constant 
+	   if (dFMeanError < 0.05) { // FIXME: hardwired constant 
 	     if(dRMS<RMSmin) dRMS=RMSmin;
 	     fhPullT_Smt_Off->SetBinContent(ix+1,dVal);
 	     fhPullT_Smt_Width->SetBinContent(ix+1,dRMS);
@@ -746,7 +746,7 @@ Bool_t CbmTofFindTracks::WriteHistos()
      
      if(fhPullX_Smt_Off != NULL){
        Double_t nx=htmp1D->GetNbinsX();
-       for (Int_t ix=1; ix<nx; ix++){
+       for (Int_t ix=0; ix<nx; ix++){
 	 Double_t dVal  = fhPullX_Smt_Off->GetBinContent(ix+1);
 	          dVal -= htmp1D->GetBinContent(ix+1);
 		  if(dVal<-1.) dVal=-1.; // limit maximal shift in X, for larger values, change geometry file
@@ -756,10 +756,10 @@ Bool_t CbmTofFindTracks::WriteHistos()
 	 TH1D *hpy=fhPullX_Smt->ProjectionY("_py",ix+1,ix+1);
 	 if(hpy->GetEntries()>100.){
 	   Double_t dRMS = TMath::Abs( hpy->GetRMS() );
-	   if(dRMS<0.5) dRMS=0.5;
+	   if(dRMS<fSIGX*0.5) dRMS=fSIGX*0.5;
 	   fhPullX_Smt_Width->SetBinContent(ix+1,dRMS);
 
-	   LOG(DEBUG1)<<"Update hPullX_Smt_Off "<<ix<<": "
+	   LOG(INFO)<<"Update hPullX_Smt_Off "<<ix<<": "
 		    << fhPullX_Smt_Off->GetBinContent(ix+1) <<" + "
 		    << htmp1D->GetBinContent(ix+1)<<" -> " << dVal 
 		    <<", Width "<<dRMS
@@ -782,7 +782,7 @@ Bool_t CbmTofFindTracks::WriteHistos()
      
      if(fhPullY_Smt_Off != NULL){
        Double_t nx=htmp1D->GetNbinsX();
-       for (Int_t ix=1; ix<nx; ix++){
+       for (Int_t ix=0; ix<nx; ix++){
 	 Double_t dVal  = fhPullY_Smt_Off->GetBinContent(ix+1);
 	          dVal -= htmp1D->GetBinContent(ix+1);
 	 fhPullY_Smt_Off->SetBinContent(ix+1,dVal);
@@ -790,7 +790,7 @@ Bool_t CbmTofFindTracks::WriteHistos()
 	 TH1D *hpy=fhPullY_Smt->ProjectionY("_py",ix+1,ix+1);
 	 if(hpy->GetEntries()>100.){
 	   Double_t dRMS = TMath::Abs( hpy->GetRMS() );
-	   if(dRMS<1.) dRMS=1.;
+	   if(dRMS<fSIGY*0.5) dRMS=0.5*fSIGY;
 	   fhPullY_Smt_Width->SetBinContent(ix+1,dRMS);
 
 	   LOG(DEBUG1)<<"Update hPullY_Smt_Off "<<ix<<": "
@@ -817,7 +817,7 @@ Bool_t CbmTofFindTracks::WriteHistos()
      
      if(fhPullZ_Smt_Off != NULL){
        Double_t nx=htmp1D->GetNbinsX();
-       for (Int_t ix=1; ix<nx; ix++){
+       for (Int_t ix=0; ix<nx; ix++){
 	 Double_t dVal  = fhPullZ_Smt_Off->GetBinContent(ix+1);
 	          dVal -= htmp1D->GetBinContent(ix+1);
 	 fhPullZ_Smt_Off->SetBinContent(ix+1,dVal);
@@ -873,6 +873,8 @@ Bool_t CbmTofFindTracks::WriteHistos()
 		  <<", Width "<<dSig
 		  << FairLogger::endl;
 	 fhPullT_Smt_Off->SetBinContent(iRpcInd+1,dVal);
+	 if(dSig<fSIGT*0.5) dSig=0.5*fSIGT;
+	 fhPullT_Smt_Width->SetBinContent(iRpcInd+1,dSig);
        } else
        {
 	 LOG(INFO)<< "CbmTofFindTracks::WriteHistos: Too few entries in histo "
@@ -1054,11 +1056,11 @@ void CbmTofFindTracks::CreateHistograms(){
 
   fhTrklTxHMul =  new TH2F(  Form("hTrklTxHMul"),
 			   Form("Tracklet Tx vs. Hit - Multiplicity; HMul_{Tracklet}; Tx"),
-			   fNTofStations-1, 2, fNTofStations+1, 100, -0.5, 0.5);
+			   fNTofStations-1, 2, fNTofStations+1, 100, -0.65, 0.65);
 
   fhTrklTyHMul =  new TH2F(  Form("hTrklTyHMul"),
 			   Form("Tracklet Ty vs. Hit - Multiplicity; HMul_{Tracklet}; Ty"),
-			   fNTofStations-1, 2, fNTofStations+1, 100, -0.5, 0.5);
+			   fNTofStations-1, 2, fNTofStations+1, 100, -0.65, 0.65);
   Double_t TTMAX=0.2;
   fhTrklTtHMul =  new TH2F(  Form("hTrklTtHMul"),
 			   Form("Tracklet Tt vs. Hit - Multiplicity; HMul_{Tracklet}; Tt"),
