@@ -3,13 +3,13 @@ using namespace std;
 
 // Changelog
 //
-// 2017-07-15 - v18c - DE - add one level to the geometry hierarchy
+// 2017-07-19 - v18b - DE - add one level to the geometry hierarchy
 // 2017-07-15 - v18b - DE - arrange 4x mRICH detectors in the setup and tilt towards target
 
 
 enum RichGeomType{kGlassLense, kQuarzPlate};
 
-void create_rich_v18c_mcbm()
+void create_rich_v18b_mcbm()
 {
 	gSystem->Load("libGeom");
 	//gGeoMan = gGeoManager;// (TGeoManager*)gROOT->FindObject("FAIRGeom");
@@ -17,7 +17,7 @@ void create_rich_v18c_mcbm()
 
 	RichGeomType richGeomType = kGlassLense;
 
-	TString geoFileName= "rich_v18c_mcbm.geo.root";
+	TString geoFileName= "rich_v18b_mcbm.geo.root";
 
 	FairGeoLoader*    geoLoad = new FairGeoLoader("TGeo","FairGeoLoader");
 	FairGeoInterface* geoFace = geoLoad->getGeoInterface();
@@ -213,7 +213,7 @@ void create_rich_v18c_mcbm()
 	gGeoMan->SetTopVolume(top);
 
 	// Rich assembly
-	TGeoVolume* rich = new TGeoVolumeAssembly("rich_v18c_mcbm");
+	TGeoVolume* rich = new TGeoVolumeAssembly("rich_v18b_mcbm");
 	top->AddNode(rich, 1);
 
 	//	TGeoVolume *caveVol = gGeoMan->MakeBox("rich_smallprototype_v17a", medAl, (boxWidth + boxThickness)/2. , (boxHeight + boxThickness)/2., (boxLength + boxThickness)/2.);
@@ -302,11 +302,11 @@ void create_rich_v18c_mcbm()
 	top->Draw("ogl");
         gGeoMan->SetVisLevel(6);
 	  
-//	TFile* geoFile = new TFile(geoFileName, "RECREATE");
-//	rich->Write();
-	rich->Export(geoFileName);   // an alternative way of writing the trd volume
+//	rich->Export(geoFileName);   // an alternative way of writing the trd volume
+	TFile* geoFile = new TFile(geoFileName, "RECREATE");
+ 	top->Write();
 	cout << endl << "Geometry written to " << geoFileName << endl;
-//	geoFile->Close();
+	geoFile->Close();
 
 
 }
