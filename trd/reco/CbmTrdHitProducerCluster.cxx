@@ -55,6 +55,9 @@ InitStatus CbmTrdHitProducerCluster::Init()
    fHits = new TClonesArray("CbmTrdHit", 100);
    ioman->Register("TrdHit","TRD Hit",fHits,IsOutputBranchPersistent("TrdHit"));
 
+  // new call needed when parameters are initialized from ROOT file
+  fDigiPar->Initialize();
+
    return kSUCCESS;
 }
 void CbmTrdHitProducerCluster::SetTriangularPads(Bool_t triangles)

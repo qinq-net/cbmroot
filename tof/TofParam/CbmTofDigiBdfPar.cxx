@@ -67,7 +67,7 @@ CbmTofDigiBdfPar::~CbmTofDigiBdfPar(void)
 {
    LOG(DEBUG4)<<"Enter CbmTofDigiBdfPar destructor"<< FairLogger::endl;
    clear();
-   LOG(DEBUG4)<<"Leave CbmTrdDigiPar destructor"<< FairLogger::endl;
+   LOG(DEBUG4)<<"Leave CbmTofDigiBdfPar destructor"<< FairLogger::endl;
 }
 
 void CbmTofDigiBdfPar::clear(void)

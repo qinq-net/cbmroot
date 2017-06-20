@@ -8,9 +8,7 @@
 
 #include "FairParGenericSet.h"
 
-//#include "TObject.h"
-//#include "TObjArray.h"
-//#include "TArrayF.h"
+#include "TArrayD.h"
 #include "TArrayI.h"
 
 #include <map>
@@ -52,16 +50,30 @@ class CbmTrdDigiPar : public FairParGenericSet
 
   CbmTrdModule* GetModule(Int_t i) { return fModuleMap[i]; }
 
+  /** Initialize fModuleMap from fModuleInfoMap.
+   ** Has to be called in the init function of the task.
+   ** which uses the parameter container
+   **/
+  Bool_t Initialize();
+  
+  /** Print some of the values stored in the parameter container. **/
+  void printparams();
+  
  private:
 
   /** Map of Unique Trd Module Id to corresponding TrdModule **/
   std::map<Int_t, CbmTrdModule*> fModuleMap;                  //!   
   std::map<Int_t, CbmTrdModule*>::iterator fModuleMapIt;      //! 
 
+  /** Map needed for streaming to ROOT file. Unfortunately streaming
+   ** fModuleMap directly is not possible.
+   **/
+  std::map<Int_t, TArrayD> fModuleInfoMap;
+
   TArrayI fModuleIdArray; // Array to hold the unique IDs for all modules
   Int_t fNrOfModules; // Total number of modules
   Int_t fMaxSectors; // Maximum number of sectors
 
-  ClassDef(CbmTrdDigiPar,3);
+  ClassDef(CbmTrdDigiPar,4);
 };
 #endif

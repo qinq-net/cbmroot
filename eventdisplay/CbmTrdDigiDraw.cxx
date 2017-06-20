@@ -100,6 +100,10 @@ InitStatus CbmTrdDigiDraw::Init()
    fq =0;
       
   // gEve->AddElement(fq, fEventManager ); 
+
+  // new call needed when parameters are initialized from ROOT file
+  fDigiPar->Initialize();
+
    return kSUCCESS;
 }
 // -------------------------------------------------------------------------  

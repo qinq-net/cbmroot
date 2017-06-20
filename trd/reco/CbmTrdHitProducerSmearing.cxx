@@ -98,6 +98,9 @@ InitStatus CbmTrdHitProducerSmearing::Init()
   if (fRadiator != NULL)
     fRadiator->Init();
 
+  // new call needed when parameters are initialized from ROOT file
+  fDigiPar->Initialize();
+
   return kSUCCESS;
 }
 

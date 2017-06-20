@@ -20,6 +20,7 @@ CbmTrdDigiPar::CbmTrdDigiPar(const char* name,
   : FairParGenericSet(name, title, context), 
     fModuleMap(),
     fModuleMapIt(),
+    fModuleInfoMap(),
     fModuleIdArray(),
     fNrOfModules(-1),
     fMaxSectors(-1)
@@ -151,15 +152,90 @@ Bool_t CbmTrdDigiPar::getParams(FairParamList* l) {
       padSizeY.AddAt(values->At(k+3),j);
     }
 
-    fModuleMap[VolumeID] = new CbmTrdModule(VolumeID, orientation, x, y, z,
-					    sizex, sizey, sizez, fMaxSectors,
-					    sectorSizeX, sectorSizeY,
-					    padSizeX, padSizeY);
+    TArrayD modInfo(nrValues);
+    for (Int_t j=0; j<nrValues; ++j) {
+       modInfo[j] = values->At(j);
+    } 
+
+    fModuleInfoMap[VolumeID] = modInfo;
+
   }
 
   delete values;
+
+  // call Initialize here to fill fModuleMap which is used in the tasks
+  // TODO: should be called in the Init function of the task and removed
+  // here. The call in the Init function is needed if the parameters are
+  // read from a ROOT file. Otherwise fModuleMap isn't properly filled.
+  Initialize();
+
   return kTRUE;
 }
+
+Bool_t CbmTrdDigiPar::Initialize() 
+{
+  TArrayD sectorSizeX(fMaxSectors);
+  TArrayD sectorSizeY(fMaxSectors);
+  TArrayD padSizeX(fMaxSectors);
+  TArrayD padSizeY(fMaxSectors);
+  Int_t orientation;
+  Double_t x;
+  Double_t y;
+  Double_t z;
+  Double_t sizex;
+  Double_t sizey;
+  Double_t sizez;
+
+  for (Int_t i=0; i < fNrOfModules; i++){
+    Int_t VolumeID = fModuleIdArray[i];
+    TArrayD* values = &fModuleInfoMap[VolumeID];
+    orientation=values->At(0);
+    x=values->At(1);
+    y=values->At(2);
+    z=values->At(3);
+    sizex= values->At(4);
+    sizey= values->At(5);
+    sizez= values->At(6);
+    for (Int_t j=0; j < fMaxSectors; j++){
+      Int_t k=7+(j*4);
+      sectorSizeX.AddAt(values->At(k+0),j);
+      sectorSizeY.AddAt(values->At(k+1),j);
+      padSizeX.AddAt(values->At(k+2),j);
+      padSizeY.AddAt(values->At(k+3),j);
+    }
+
+    fModuleMap[VolumeID] = new CbmTrdModule(VolumeID, orientation, x, y, z,
+                                            sizex, sizey, sizez, fMaxSectors,
+                                            sectorSizeX, sectorSizeY,
+                                            padSizeX, padSizeY);
+
+  }
+  return kTRUE;
+}
+
+// -----   Public method printParams ---------------------------------------
+void CbmTrdDigiPar::printparams()
+{
+
+  LOG(INFO) <<"FairTutorialDet2DigiPar::printparams()"<<FairLogger::endl;
+  LOG(INFO) <<"fMaxSectors: " << fMaxSectors << FairLogger::endl;
+  LOG(INFO) <<"fNrOfModules: " << fNrOfModules << FairLogger::endl;
+
+  for (fModuleMapIt = fModuleMap.begin(); fModuleMapIt != fModuleMap.end(); 
+       ++fModuleMapIt) {
+    LOG(INFO) << "VolumeID: " << fModuleMapIt->first << FairLogger::endl;
+    CbmTrdModule* mod = fModuleMapIt->second;
+    LOG(INFO) << "X: " << std::setprecision(5) << mod->GetX() << FairLogger::endl;
+    LOG(INFO) << "Y: " << std::setprecision(5) << mod->GetY() << FairLogger::endl;
+    LOG(INFO) << "Z: " << std::setprecision(5) << mod->GetZ() << FairLogger::endl;
+    LOG(INFO) << "SizeX: " << std::setprecision(5) << mod->GetSizeX() << FairLogger::endl;
+    LOG(INFO) << "SizeY: " << std::setprecision(5) << mod->GetSizeY() << FairLogger::endl;
+    LOG(INFO) << "SizeZ: " << std::setprecision(5) << mod->GetSizeZ() << FairLogger::endl;
+
+  }      
+
+}
+// -------------------------------------------------------------------------
 
 
 ClassImp(CbmTrdDigiPar)

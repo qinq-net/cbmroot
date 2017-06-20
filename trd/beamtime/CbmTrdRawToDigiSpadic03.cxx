@@ -118,6 +118,9 @@ InitStatus CbmTrdRawToDigiSpadic03::ReInit(){
 
   fDigiPar = (CbmTrdDigiPar*)
       (rtdb->getContainer("CbmTrdDigiPar"));
+
+  // new call needed when parameters are initialized from ROOT file
+  fDigiPar->Initialize();
   
   return kSUCCESS;
 }
@@ -136,6 +139,9 @@ InitStatus CbmTrdRawToDigiSpadic03::Init()
   ioman->Register("TrdDigi","TRD Digis",fDigis,IsOutputBranchPersistent("TrdDigi"));
 
   //fGeoHandler->Init();
+
+  // new call needed when parameters are initialized from ROOT file
+  fDigiPar->Initialize();
 
   return kSUCCESS;
 

@@ -157,6 +157,9 @@ InitStatus CbmTrdHitRateQa::ReInit(){
   fDigiPar = (CbmTrdDigiPar*)
       (rtdb->getContainer("CbmTrdDigiPar"));
   
+  // new call needed when parameters are initialized from ROOT file
+  fDigiPar->Initialize();
+
   return kSUCCESS;
 }
 // --------------------------------------------------------------------
@@ -193,6 +196,9 @@ InitStatus CbmTrdHitRateQa::Init()
     fGeoHandler->Init();
 
     //fRadiators->Init();
+
+  // new call needed when parameters are initialized from ROOT file
+  fDigiPar->Initialize();
 
     return kSUCCESS;
 

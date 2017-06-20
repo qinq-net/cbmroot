@@ -119,6 +119,9 @@ InitStatus CbmTrdDigitizerPRF::Init()
     fNoise = new TRandom3();
   }
 
+  fDigiPar->Initialize();
+  fDigiPar->printparams();
+
   return kSUCCESS;
 }
 

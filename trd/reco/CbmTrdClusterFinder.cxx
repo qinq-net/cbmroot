@@ -93,6 +93,9 @@ InitStatus CbmTrdClusterFinder::ReInit(){
   
   fDigiPar = (CbmTrdDigiPar*)(rtdb->getContainer("CbmTrdDigiPar"));
   
+  // new call needed when parameters are initialized from ROOT file
+  fDigiPar->Initialize();
+
   return kSUCCESS;
 }
 // --------------------------------------------------------------------
@@ -115,6 +118,9 @@ InitStatus CbmTrdClusterFinder::Init()
 
   fGeoHandler->Init();
   
+  // new call needed when parameters are initialized from ROOT file
+  fDigiPar->Initialize();
+
   return kSUCCESS;
   
 } 

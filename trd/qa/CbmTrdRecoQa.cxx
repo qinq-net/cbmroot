@@ -132,6 +132,9 @@ InitStatus CbmTrdRecoQa::Init()
 
   fGeoHandler->Init();
 
+  // new call needed when parameters are initialized from ROOT file
+  fDigiPar->Initialize();
+
   return kSUCCESS;
 
 }
@@ -166,6 +169,9 @@ InitStatus CbmTrdRecoQa::ReInit(){
   fDigiPar = (CbmTrdDigiPar*)
       (rtdb->getContainer("CbmTrdDigiPar"));
   
+  // new call needed when parameters are initialized from ROOT file
+  fDigiPar->Initialize();
+
   return kSUCCESS;
 }
 void CbmTrdRecoQa::SetTriangularPads(Bool_t triangles)

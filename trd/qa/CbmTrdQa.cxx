@@ -332,6 +332,10 @@ InitStatus CbmTrdQa::ReInit()
   FairRunAna* ana = FairRunAna::Instance();
   FairRuntimeDb* rtdb=ana->GetRuntimeDb();  
   fDigiPar = (CbmTrdDigiPar*)(rtdb->getContainer("CbmTrdDigiPar")); 
+
+  // new call needed when parameters are initialized from ROOT file
+  fDigiPar->Initialize();
+
   return kSUCCESS;
 }
 InitStatus CbmTrdQa::Init()
@@ -373,6 +377,9 @@ InitStatus CbmTrdQa::Init()
     fH = false;
   }
   fGeoHandler->Init();
+
+  // new call needed when parameters are initialized from ROOT file
+  fDigiPar->Initialize();
 
   fLayerDummy = new TH2I("LayerDummy","",1,-600,600,1,-500,500);
   fLayerDummy->SetXTitle("x-coordinate [cm]");
