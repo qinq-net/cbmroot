@@ -18,7 +18,12 @@ class CbmTofDigiPar : public FairParGenericSet
     CbmTofDigiPar(const char* name="CbmTofDigiPar",
                           const char* title="Digitization parameters for the TOF detector",
                           const char* context="TestDefaultContext");
+
+    CbmTofDigiPar(const CbmTofDigiPar&) = delete;
+    CbmTofDigiPar& operator=(const CbmTofDigiPar&) = delete;
+
     ~CbmTofDigiPar(void);
+
     void clear(void);
     void putParams(FairParamList*);
     Bool_t getParams(FairParamList*);
@@ -43,8 +48,7 @@ class CbmTofDigiPar : public FairParGenericSet
   private:
 
     /** Map of Unique Tof Cell Id to corresponding TofCell **/
-    std::map<Int_t, CbmTofCell*> fCellMap;                  //!
-    std::map<Int_t, CbmTofCell*>::iterator fCellMapIt;      //!
+    std::map<Int_t, CbmTofCell*> fCellMap;
 
     TArrayI fCellIdArray; // Array to hold the unique IDs for all cells
     TArrayD fCellXArray; // Array to hold the unique IDs for all cells
@@ -54,10 +58,7 @@ class CbmTofDigiPar : public FairParGenericSet
     TArrayD fCellDyArray; // Array to hold the unique IDs for all cells
     Int_t fNrOfCells; // Total number of cells
 
-    CbmTofDigiPar(const CbmTofDigiPar&);
-    CbmTofDigiPar& operator=(const CbmTofDigiPar&);
-
-    ClassDef(CbmTofDigiPar,1)
+    ClassDef(CbmTofDigiPar,2)
 };
 
 #endif

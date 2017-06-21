@@ -15,8 +15,8 @@
 //#pragma link C++ class CbmTofHitProducerNew+;
 //#pragma link C++ class CbmTofHitProducerIdeal+;
 #pragma link C++ class CbmTofGeoHandler+;
-#pragma link C++ class CbmTofDigiPar;
-#pragma link C++ class CbmTofCell;
+#pragma link C++ class CbmTofDigiPar+;
+#pragma link C++ class CbmTofCell+;
 #pragma link C++ class CbmTofCreateDigiPar+;
 
 #pragma link C++ class CbmTofDigiBdfPar+;

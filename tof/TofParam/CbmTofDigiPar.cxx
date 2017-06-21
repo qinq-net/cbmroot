@@ -14,7 +14,6 @@ CbmTofDigiPar::CbmTofDigiPar(const char* name,
     const char* context)
   : FairParGenericSet(name,title,context),
     fCellMap(),
-    fCellMapIt(),
     fCellIdArray(),
     fCellXArray(),
     fCellYArray(),
@@ -29,6 +28,7 @@ CbmTofDigiPar::CbmTofDigiPar(const char* name,
 CbmTofDigiPar::~CbmTofDigiPar(void)
 {
 	  LOG(DEBUG4)<<"Enter CbmTofDigiPar destructor"<< FairLogger::endl;
+          std::map<Int_t, CbmTofCell*>::iterator fCellMapIt;
 	  for (fCellMapIt = fCellMap.begin(); fCellMapIt != fCellMap.end();
 	       ++fCellMapIt) {
 	    delete fCellMapIt->second;
