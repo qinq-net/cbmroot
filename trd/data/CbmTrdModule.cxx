@@ -10,7 +10,7 @@
 #include <iomanip>
 
 CbmTrdModule::CbmTrdModule() 
-  : CbmTrdModule(0, 0, 0., 0., 0., 0., 0., 0., 0, TArrayD(0), TArrayD(0), TArrayD(0), TArrayD(0), false)
+  : CbmTrdModule(0, 0, 0., 0., 0., 0., 0., 0., 1, TArrayD(1), TArrayD(1), TArrayD(1), TArrayD(1), false)
 {
 }
 
