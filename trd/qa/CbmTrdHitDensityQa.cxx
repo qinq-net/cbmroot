@@ -127,9 +127,6 @@ InitStatus CbmTrdHitDensityQa::ReInit()
   
   //fDigiPar = (CbmTrdDigiPar*)(rtdb->getContainer("CbmTrdDigiPar"));
 
-  // new call needed when parameters are initialized from ROOT file
-  fDigiPar->Initialize();
-
   return kSUCCESS;
 }
 // ---- Init ----------------------------------------------------------
@@ -181,9 +178,6 @@ InitStatus CbmTrdHitDensityQa::Init()
   printf("\nCbmTrdHitDensityQa::Init: NeighbourTrigger %i\n\n",fNeighbourTrigger);
 
   fEventCounter = new TH1I("fEventCounter","fEventCounter",1,-0.5,0.5);
-
-  // new call needed when parameters are initialized from ROOT file
-  fDigiPar->Initialize();
 
   return kSUCCESS;
   

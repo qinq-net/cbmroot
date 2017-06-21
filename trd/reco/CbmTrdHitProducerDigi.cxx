@@ -52,9 +52,6 @@ InitStatus CbmTrdHitProducerDigi::Init()
    fTrdHits = new TClonesArray("CbmTrdHit", 100);
    ioman->Register("TrdHit", "TRD", fTrdHits, IsOutputBranchPersistent("TrdHit"));
 
-  // new call needed when parameters are initialized from ROOT file
-  fDigiPar->Initialize();
-
    return kSUCCESS;
 }
 

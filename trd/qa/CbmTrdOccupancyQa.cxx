@@ -141,9 +141,6 @@ InitStatus CbmTrdOccupancyQa::ReInit()
   FairRuntimeDb* rtdb=ana->GetRuntimeDb();  
   fDigiPar = (CbmTrdDigiPar*)(rtdb->getContainer("CbmTrdDigiPar")); 
  
-  // new call needed when parameters are initialized from ROOT file
-  fDigiPar->Initialize();
-
   return kSUCCESS;
 }
 // --------------------------------------------------------------------
@@ -166,9 +163,6 @@ InitStatus CbmTrdOccupancyQa::Init()
     return kERROR;
   }   
   fGeoHandler->Init();
-
-  // new call needed when parameters are initialized from ROOT file
-  fDigiPar->Initialize();
 
   return kSUCCESS;
 

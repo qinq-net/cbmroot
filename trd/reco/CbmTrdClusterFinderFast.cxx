@@ -76,9 +76,6 @@ InitStatus CbmTrdClusterFinderFast::Init()
    fGeoHandler = new CbmTrdGeoHandler();
    fGeoHandler->Init();
 
-  // new call needed when parameters are initialized from ROOT file
-  fDigiPar->Initialize();
-
    return kSUCCESS;
 } 
 // --------------------------------------------------------------------
