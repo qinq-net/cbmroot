@@ -25,9 +25,9 @@ using std::vector;
 //.include $SIMPATH/include
 //.include $FAIRROOTPATH/include
 
-//Int_t matbudget_ana(Int_t nEvents=10      , const char* stsGeo = "v16a")
-//Int_t matbudget_ana(Int_t nEvents=1000000 , const char* stsGeo = "v16a")
-Int_t matbudget_ana(Int_t nEvents=10000000, const char* stsGeo = "v16c")
+//Int_t matbudget_ana(Int_t nEvents = 10      , const char* stsGeo = "v16v")
+//Int_t matbudget_ana(Int_t nEvents = 1000000 , const char* stsGeo = "v16v")
+Int_t matbudget_ana(Int_t nEvents = 10000000, const char* stsGeo = "v16v")
 {
 	
   // Input file (MC)
@@ -37,7 +37,7 @@ Int_t matbudget_ana(Int_t nEvents=10000000, const char* stsGeo = "v16c")
 	if ( ! input ) {
 		cout << "*** matbudget_ana: Input file " << inFile << " not found!\n"
 		     << "Be sure to run matbudget_mc.C before for the respective STS geometry!" << endl;
-		exit;
+		exit(1);
 	}
 
 	// Output file (material maps)
@@ -89,7 +89,8 @@ Int_t matbudget_ana(Int_t nEvents=10000000, const char* stsGeo = "v16c")
     std::vector<double> TrackLength (nTracks,0.0); //trackID, vector with points on track
 
     vector<double> RadThick(nStations,0);
-    double x,y;
+    Double_t x=0;
+    Double_t y=0;
 
     // For this implementation to be correct, there should be only one MCTrack per event.
 
