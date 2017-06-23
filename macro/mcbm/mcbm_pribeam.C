@@ -218,7 +218,7 @@ void mcbm_pribeam(Int_t nEvents = 2, const char* setupName = "sis18_mcbm",
   CbmUnigenGenerator*  uniGen = new CbmUnigenGenerator(inFile);
   uniGen->SetEventPlane(0. , 360.);
   primGen->AddGenerator(uniGen);
-  primGen->SetBeamAngle(beamRotY * TMath::Pi()/180.,0,0,0);  // set direction of beam to 30 degrees
+  primGen->SetBeamAngle(beamRotY * TMath::Pi()/180.,0,0,0);  // set direction of beam
   run->SetGenerator(primGen);
 
   // Ion Generator
