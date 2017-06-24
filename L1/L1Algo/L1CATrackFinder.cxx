@@ -1468,7 +1468,7 @@ void L1Algo::CATrackFinder()
   
   for(int ist = 0; ist < NStations; ++ist)
     for(THitI ih = StsHitsStartIndex[ist]; ih < StsHitsStopIndex[ist]; ++ih)
-      if (lasttime<(*vStsHits)[ih].t_reco) lasttime=(*vStsHits)[ih].t_reco;
+      if ((lasttime<(*vStsHits)[ih].t_reco)&&(!isinf((*vStsHits)[ih].t_reco))) lasttime=(*vStsHits)[ih].t_reco;
 
 
 #ifdef XXX
@@ -1671,7 +1671,7 @@ void L1Algo::CATrackFinder()
 #endif
     }
 
-    {
+/*    {
       /// possible left hits of triplets are splited in portions of 16 (4 SIMDs) to use memory faster
       portionStopIndex[NStations-1] = 0;
       unsigned int ip = 0;  //index of curent portion
@@ -1694,7 +1694,7 @@ void L1Algo::CATrackFinder()
         portionStopIndex[istal] = ip;
       }// lstations
 //       nPortions = ip;
-    }   
+    } */  
         
     ///   stage for triplets creation
         

@@ -137,14 +137,14 @@ fNz( fGrid.Nz() )
     const float maxY = y + dy;
     const float minZ = z - dz;
     const float maxZ = z + dz;
-    //     float minT = t - dt;
+    const float minT = t - dt;
      
 
 
     const float maxT = t + dt;
 
     unsigned short bYmin, bZmin, bYmax, bTmin; // boundary bin indexes
-    fGrid.GetBinBounded( minY, minZ, minZ, bYmin, bZmin, bTmin );
+    fGrid.GetBinBounded( minY, minZ, minT, bYmin, bZmin, bTmin );
     fGrid.GetBinBounded( maxY, maxZ, maxT, bYmax, fBZmax, fBTmax );
     fBZmin = bZmin;
     fBYmin = bYmin;
@@ -161,7 +161,9 @@ fNz( fGrid.Nz() )
     fIt = bTmin;
     
     fIh = fGrid.FirstHitInBin( fIndYmin );
+
     fHitYlst = fGrid.FirstHitInBin( fIndYmin + fBDY );
+
 }
 
 inline bool L1HitAreaTime::GetNext( THitI& i )
@@ -197,9 +199,10 @@ inline bool L1HitAreaTime::GetNext( THitI& i )
             // get next hit
             fIndYmin += fNy;
             fIh = fGrid.FirstHitInBin( fIndYmin ); // get first hit in cell, if z-line is new
+
             fHitYlst = fGrid.FirstHitInBin( fIndYmin + fBDY );
         }
-        
+
         yIndexOutOfRange = fIh >= fHitYlst;
         nextZIndexOutOfRange = (fIz >= fBZmax);
         needNextZ = yIndexOutOfRange && !nextZIndexOutOfRange;
@@ -209,7 +212,7 @@ inline bool L1HitAreaTime::GetNext( THitI& i )
         
     }
 
-    L1_ASSERT ( fIh < fGrid.FirstHitInBin(fGrid.N()) || yIndexOutOfRange, fIh << " < " << fGrid.FirstHitInBin(fGrid.N()) << " || " <<  yIndexOutOfRange);
+    L1_ASSERT ( fIh < fGrid.FirstHitInBin(fGrid.N()+1) || yIndexOutOfRange, fIh << " < " << fGrid.FirstHitInBin(fGrid.N()+1) << " || " <<  yIndexOutOfRange);
     i = fIh; // return
     
     fIh++; // go to next

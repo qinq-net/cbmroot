@@ -34,7 +34,7 @@ inline void memset( T *dest, T i, size_t num ) {
 void L1Grid::UpdateIterGrid(unsigned int Nelements, L1StsHit* hits,  vector <THitI>* indicesBuf, THitI* indices,  vector <THitI>* indicesBuf2, vector <L1StsHit>* hits2, vector <L1HitPoint>* pointsBuf, L1HitPoint* points, int &NHitsOnStation, char iS, L1Algo &Algo, const vector< unsigned char > *vSFlag, const vector< unsigned char > *vSFlagB)
 {
 
-    fFirstHitInBin.assign(fN+1, 0);
+    fFirstHitInBin.assign(fN+2, 0);
 
     fscal xs=0;
     fscal ys=0;
@@ -60,18 +60,14 @@ void L1Grid::UpdateIterGrid(unsigned int Nelements, L1StsHit* hits,  vector <THi
      
         } 
     }
-    
-    
-    
-    
+
             int kk = 2;
             /* Up-Sweep Phase */
-            for (unsigned int k = 1; k < fN+1; k = kk) { kk = k << 1;
+            for (unsigned int k = 1; k < fN+2; k = kk) { kk = k << 1;
 #ifdef _OPENMP              
 #pragma omp parallel for //schedule(guided)
 #endif               
-                for (unsigned int i = kk - 1; i < fN+1; i += kk) { fFirstHitInBin[i] = fFirstHitInBin[i - k]+fFirstHitInBin[i];
-                    
+                for (unsigned int i = kk - 1; i < fN+2; i += kk) { fFirstHitInBin[i] = fFirstHitInBin[i - k]+fFirstHitInBin[i];                   
                 } }
             
             /* Down-Sweep Phase */
@@ -79,9 +75,8 @@ void L1Grid::UpdateIterGrid(unsigned int Nelements, L1StsHit* hits,  vector <THi
 #ifdef _OPENMP               
 #pragma omp parallel for //schedule(guided)
 #endif               
-                for (unsigned int i = k - 1; i < fN+1 - kk; i += k) {
-                    fFirstHitInBin[i + kk] = fFirstHitInBin[i]+fFirstHitInBin[i + kk];
-                    
+                for (unsigned int i = k - 1; i < fN+2 - kk; i += k) {
+                    fFirstHitInBin[i + kk] = fFirstHitInBin[i]+fFirstHitInBin[i + kk];   
                 } }
 
 #ifdef _OPENMP      
@@ -111,7 +106,7 @@ void L1Grid::UpdateIterGrid(unsigned int Nelements, L1StsHit* hits,  vector <THi
         
     }
 
-    NHitsOnStation+=fFirstHitInBin[fN];
+    NHitsOnStation+=fFirstHitInBin[fN+1];
 
 }
 
@@ -172,7 +167,7 @@ void L1Grid::StoreHits(THitI nhits, const L1StsHit* hits, char iS, L1Algo &Algo,
     fscal xs=0;
     fscal ys=0;
 
-    fFirstHitInBin.assign(fN+1, 0);
+    fFirstHitInBin.assign(fN+2, 0);
     
 #ifdef _OPENMP    
 #pragma omp parallel for firstprivate(xs, ys)
@@ -186,19 +181,17 @@ void L1Grid::StoreHits(THitI nhits, const L1StsHit* hits, char iS, L1Algo &Algo,
 #pragma omp atomic
 #endif         
         fFirstHitInBin[GetBinBounded(xs, ys, (hits)[x].t_reco )+1]++;
-
-        
+      
     }
-
 
     
     int kk = 2;
     /* Up-Sweep Phase */
-    for (unsigned int k = 1; k < fN+1; k = kk) { kk = k << 1;
+    for (unsigned int k = 1; k < fN+2; k = kk) { kk = k << 1;
 #ifdef _OPENMP       
 #pragma omp parallel for //schedule(guided)
 #endif      
-        for (unsigned int i = kk - 1; i < fN+1; i += kk) { fFirstHitInBin[i] = fFirstHitInBin[i - k]+fFirstHitInBin[i];
+        for (unsigned int i = kk - 1; i < fN+2; i += kk) { fFirstHitInBin[i] = fFirstHitInBin[i - k]+fFirstHitInBin[i];
             
         } }
     
@@ -207,9 +200,8 @@ void L1Grid::StoreHits(THitI nhits, const L1StsHit* hits, char iS, L1Algo &Algo,
 #ifdef _OPENMP       
 #pragma omp parallel for //schedule(guided)
 #endif       
-        for (unsigned int i = k - 1; i < fN+1 - kk; i += k) {
-            fFirstHitInBin[i + kk] = fFirstHitInBin[i]+fFirstHitInBin[i + kk];
-            
+        for (unsigned int i = k - 1; i < fN+2 - kk; i += k) {
+            fFirstHitInBin[i + kk] = fFirstHitInBin[i]+fFirstHitInBin[i + kk];      
         } }
 
     
@@ -230,15 +222,9 @@ void L1Grid::StoreHits(THitI nhits, const L1StsHit* hits, char iS, L1Algo &Algo,
             
             (indices1)[index1]=x+n;
             
-        }
-        
-        
-        
-    }
-
-    
+        } 
+    }  
 }
-
 
 
 
