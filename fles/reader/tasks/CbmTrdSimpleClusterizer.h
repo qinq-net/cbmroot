@@ -3,7 +3,6 @@
 
 
 #include "CbmTrdQABase.h"
-#include "CbmTrdClusterTools.h"
 
 class CbmTrdSimpleClusterizer : public CbmTrdQABase
 {

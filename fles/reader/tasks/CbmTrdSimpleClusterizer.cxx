@@ -64,8 +64,8 @@ CbmTrdSimpleClusterizer::CreateHistograms ()
           + std::to_string (layer);
       fHm->Add (
           HistName.Data (),
-          new TH2I (HistName.Data (), HistName.Data (), NrOfActiveSpadics, -0.5,
-                    NrOfActiveSpadics - 0.5, 16, -0.5, 15.5));
+          new TH2I (HistName.Data (), HistName.Data (), fBT->GetNrSpadics(), -0.5,
+                    fBT->GetNrSpadics() - 0.5, 16, -0.5, 15.5));
       fHm->H2 (HistName.Data ())->GetXaxis ()->SetTitle ("Spadic");
       fHm->H2 (HistName.Data ())->GetYaxis ()->SetTitle ("Cluster Size");
     }
