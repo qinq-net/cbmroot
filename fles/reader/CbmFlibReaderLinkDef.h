@@ -38,7 +38,6 @@
 #pragma link C++ class CbmTrdTestBeamTools;
 #pragma link C++ class CbmTrdTestBeamToolsBuch2016;
 #pragma link C++ class CbmTrdLabTools;
-//#pragma link C++ class CbmTrdClusterTools;
 #pragma link C++ class CbmTrdQABase;
 #pragma link C++ class CbmTrdQACosmics;
 #pragma link C++ class CbmTrdQAHit;
@@ -47,7 +46,7 @@
 #pragma link C++ class CbmTrdSimpleDigitizer;
 #pragma link C++ class CbmTrdAdvDigitizer;
 #pragma link C++ class CbmTrdDigiAnalysis;
-//#pragma link C++ class CbmTrdSimpleClusterizer;
+#pragma link C++ class CbmTrdSimpleClusterizer;
 #pragma link C++ class CbmTrdRawBeamProfile;
 #pragma link C++ class CbmTrdRawBuchData;
 #pragma link C++ class CbmTrdRawPulseMonitor;

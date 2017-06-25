@@ -87,7 +87,6 @@ Set(SRCS
   tasks/tools/CbmTrdTestBeamTools.cxx
   tasks/tools/CbmTrdTestBeamToolsBuch2016.cxx
   tasks/tools/CbmTrdLabTools.cxx
-#  tasks/tools/CbmTrdClusterTools.cxx
   
   tasks/CbmSpadicTriggerComp.cxx
   tasks/CbmTrdQABase.cxx
@@ -98,7 +97,7 @@ Set(SRCS
   tasks/CbmTrdSimpleDigitizer.cxx
   tasks/CbmTrdAdvDigitizer.cxx
   tasks/CbmTrdDigiAnalysis.cxx
-#  tasks/CbmTrdSimpleClusterizer.cxx
+  tasks/CbmTrdSimpleClusterizer.cxx
   tasks/CbmTrdRawBeamProfile.cxx
   tasks/CbmTrdRawBuchData.cxx
   tasks/CbmTrdRawPulseMonitor.cxx
