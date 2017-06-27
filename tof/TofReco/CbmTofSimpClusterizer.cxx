@@ -50,10 +50,10 @@
 const Int_t DetMask = 4194303;
 const Int_t nbClWalkBinX=20;
 const Int_t nbClWalkBinY=41;  // choose odd number to have central bin symmetric around 0
-const Double_t WalkNHmin=100; // minimal number of hits in bin for walk correction 
-Double_t TOTMax=5.E4; 
-Double_t TOTMin=2.E4; 
-const Double_t TTotMean=2.E4; 
+const Double_t WalkNHmin=100; // minimal number of hits in bin for walk correction
+Double_t TOTMax=5.E4;
+Double_t TOTMin=2.E4;
+const Double_t TTotMean=2.E4;
 
 const Int_t nbClDelTofBinX=50;
 const Int_t nbClDelTofBinY=49;
@@ -116,29 +116,29 @@ CbmTofSimpClusterizer::CbmTofSimpClusterizer():
    fhClustSizeDifY(NULL),
    fhChDifDifX(NULL),
    fhChDifDifY(NULL),
-   fhRpcDigiCor(),     
-   fhRpcCluMul(),      
+   fhRpcDigiCor(),
+   fhRpcCluMul(),
    fhRpcSigPropSpeed(),
-   fhRpcCluPosition(), 
-   fhRpcCluTOff(),     
-   fhRpcCluTrms(),     
-   fhRpcCluTot(),      
-   fhRpcCluSize(),     
-   fhRpcCluAvWalk(),   
+   fhRpcCluPosition(),
+   fhRpcCluTOff(),
+   fhRpcCluTrms(),
+   fhRpcCluTot(),
+   fhRpcCluSize(),
+   fhRpcCluAvWalk(),
    fhRpcCluWalk(),
-   fhTRpcCluMul(),     
+   fhTRpcCluMul(),
    fhTRpcCluPosition(),
-   fhTRpcCluTOff(),    
-   fhTRpcCluTot(),     
-   fhTRpcCluSize(),    
-   fhTRpcCluAvWalk(),  
-   fhTRpcCluDelTof(),  
-   fhTRpcCludXdY(),    
+   fhTRpcCluTOff(),
+   fhTRpcCluTot(),
+   fhTRpcCluSize(),
+   fhTRpcCluAvWalk(),
+   fhTRpcCluDelTof(),
+   fhTRpcCludXdY(),
    fhTRpcCluWalk(),
    fhTrgdT(),
    fvCPSigPropSpeed(),
    fvCPDelTof(),
-   fvCPTOff(),  
+   fvCPTOff(),
    fvCPTotGain(),
    fvCPWalk(),
    fiNbSameSide(0),
@@ -217,29 +217,29 @@ CbmTofSimpClusterizer::CbmTofSimpClusterizer(const char *name, Int_t verbose):
    fhClustSizeDifY(NULL),
    fhChDifDifX(NULL),
    fhChDifDifY(NULL),
-   fhRpcDigiCor(),     
-   fhRpcCluMul(),      
+   fhRpcDigiCor(),
+   fhRpcCluMul(),
    fhRpcSigPropSpeed(),
-   fhRpcCluPosition(), 
-   fhRpcCluTOff(),     
-   fhRpcCluTrms(),     
-   fhRpcCluTot(),      
-   fhRpcCluSize(),     
-   fhRpcCluAvWalk(),   
+   fhRpcCluPosition(),
+   fhRpcCluTOff(),
+   fhRpcCluTrms(),
+   fhRpcCluTot(),
+   fhRpcCluSize(),
+   fhRpcCluAvWalk(),
    fhRpcCluWalk(),
-   fhTRpcCluMul(),     
+   fhTRpcCluMul(),
    fhTRpcCluPosition(),
-   fhTRpcCluTOff(),    
-   fhTRpcCluTot(),     
-   fhTRpcCluSize(),    
-   fhTRpcCluAvWalk(),  
-   fhTRpcCluDelTof(),  
-   fhTRpcCludXdY(),    
+   fhTRpcCluTOff(),
+   fhTRpcCluTot(),
+   fhTRpcCluSize(),
+   fhTRpcCluAvWalk(),
+   fhTRpcCluDelTof(),
+   fhTRpcCludXdY(),
    fhTRpcCluWalk(),
    fhTrgdT(),
    fvCPSigPropSpeed(),
    fvCPDelTof(),
-   fvCPTOff(),  
+   fvCPTOff(),
    fvCPTotGain(),
    fvCPWalk(),
    fiNbSameSide(0),
@@ -315,7 +315,7 @@ void CbmTofSimpClusterizer::SetParContainers()
    fDigiPar = (CbmTofDigiPar*)
               (rtdb->getContainer("CbmTofDigiPar"));
 
-   LOG(INFO)<<"  CbmTofSimpClusterizer::SetParContainers found " 
+   LOG(INFO)<<"  CbmTofSimpClusterizer::SetParContainers found "
             << fDigiPar->GetNrOfModules() << " cells " <<FairLogger::endl;
    fDigiBdfPar = (CbmTofDigiBdfPar*)
               (rtdb->getContainer("CbmTofDigiBdfPar"));
@@ -325,7 +325,7 @@ void CbmTofSimpClusterizer::Exec(Option_t* /*option*/)
 {
    // Start timer counter
 	fTimer.Start();
-   
+
    fTofHitsColl->Clear("C");
 //   fTofDigiMatchColl->Clear("C"); // Not enough => CbmMatch has no Clear functions!!
    fTofDigiMatchColl->Delete();
@@ -342,8 +342,8 @@ void CbmTofSimpClusterizer::Exec(Option_t* /*option*/)
    fStop.Set();
 
    FillHistos();
- 
-   // --- Update Counters  
+
+   // --- Update Counters
    fTimer.Stop();
    fiNofEvents++;
    fdNofDigisTot    += iNbTofDigi;
@@ -356,7 +356,7 @@ void CbmTofSimpClusterizer::Finish()
    WriteHistos();
    // Prevent them from being sucked in by the CbmHadronAnalysis WriteHistograms method
    DeleteHistos();
-   
+
    // Final printout for reference
    LOG(INFO) << "=====================================" << FairLogger::endl;
    LOG(INFO) << GetName() << ": Run summary (Time includes Hist filling)" << FairLogger::endl;
@@ -430,12 +430,12 @@ Bool_t   CbmTofSimpClusterizer::InitParameters()
                 <<FairLogger::endl;
       return kFALSE;
    }
-   
-   if(NULL != fTofId) 
+
+   if(NULL != fTofId)
      LOG(INFO)<<"CbmTofSimpClusterizer::InitParameters with GeoVersion "<<fGeoHandler->GetGeoVersion()<<FairLogger::endl;
    else{
      switch(iGeoVersion){
-     case k12b: 
+     case k12b:
        fTofId = new CbmTofDetectorId_v12b();
        break;
      case k14a:
@@ -453,12 +453,12 @@ Bool_t   CbmTofSimpClusterizer::InitParameters()
 Bool_t   CbmTofSimpClusterizer::InitCalibParameter()
 {
   // dimension and initialize calib parameter
-  // 
+  //
   Int_t iNbSmTypes = fDigiBdfPar->GetNbSmTypes();
 
   fvCPSigPropSpeed.resize( iNbSmTypes );
   for (Int_t iT=0; iT<iNbSmTypes; iT++)
-  { 
+  {
       Int_t iNbRpc = fDigiBdfPar->GetNbRpc( iT );
       fvCPSigPropSpeed[iT].resize(iNbRpc);
       for (Int_t iRpc=0; iRpc<iNbRpc; iRpc++)
@@ -486,7 +486,7 @@ Bool_t   CbmTofSimpClusterizer::InitCalibParameter()
           //          LOG(INFO)<<Form(" fvCPDelTof resize for SmT %d, R %d, B %d ",iSmType,iNbSm*iNbRpc,nbClDelTofBinX)
           //           <<FairLogger::endl;
           fvCPDelTof[iSmType][iSm*iNbRpc+iRpc].resize( nbClDelTofBinX );
-          for(Int_t iBx=0; iBx<nbClDelTofBinX; iBx++){ 
+          for(Int_t iBx=0; iBx<nbClDelTofBinX; iBx++){
             // LOG(INFO)<<Form(" fvCPDelTof for SmT %d, R %d, B %d",iSmType,iSm*iNbRpc+iRpc,iBx)<<FairLogger::endl;
               fvCPDelTof[iSmType][iSm*iNbRpc+iRpc][iBx].resize( iNTrg );
             for(Int_t iTrg=0; iTrg<iNTrg; iTrg++)
@@ -502,7 +502,7 @@ Bool_t   CbmTofSimpClusterizer::InitCalibParameter()
           {
             fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh].resize( nbSide );
             fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh].resize( nbSide );
-            fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh].resize( nbSide );          
+            fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh].resize( nbSide );
             for(Int_t iSide=0; iSide<nbSide; iSide++){
               fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][iSide]=0.;      //initialize
               fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][iSide]=1.;   //initialize
@@ -510,7 +510,7 @@ Bool_t   CbmTofSimpClusterizer::InitCalibParameter()
               for(Int_t iWx=0; iWx<nbClWalkBinX; iWx++){
                 fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][iSide][iWx]=0.;
               }
-            }    
+            }
           }
         }
       }
@@ -553,7 +553,7 @@ Bool_t   CbmTofSimpClusterizer::InitCalibParameter()
           TH2F *htempPos_pfx =(TH2F*) gDirectory->FindObjectAny( Form("cl_CorSmT%01d_sm%03d_rpc%03d_Pos_pfx",iSmType,iSm,iRpc));
           TH2F *htempTOff_pfx=(TH2F*) gDirectory->FindObjectAny( Form("cl_CorSmT%01d_sm%03d_rpc%03d_TOff_pfx",iSmType,iSm,iRpc));
           TH2F *htempTot_pfx =(TH2F*) gDirectory->FindObjectAny( Form("cl_CorSmT%01d_sm%03d_rpc%03d_Tot_pfx",iSmType,iSm,iRpc));
-          if(NULL != htempPos_pfx && NULL != htempTOff_pfx && NULL != htempTot_pfx)  
+          if(NULL != htempPos_pfx && NULL != htempTOff_pfx && NULL != htempTot_pfx)
           {
             Int_t iNbCh = fDigiBdfPar->GetNbChan( iSmType, iRpc );
             Int_t iNbinTot = htempTot_pfx->GetNbinsX();
@@ -564,13 +564,13 @@ Bool_t   CbmTofSimpClusterizer::InitCalibParameter()
                 Double_t dTYOff=YMean/fvCPSigPropSpeed[iSmType][iRpc] ;
                 fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0] += -dTYOff + TMean ;
                 fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1] += +dTYOff + TMean ;
- 
+
                 Double_t TotMean=((TProfile *)htempTot_pfx)->GetBinContent(iCh+1);  //nh +1 empirical(?)
                 if(1<TotMean){
                   fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][0] *= TTotMean / TotMean;
                   fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][1] *= TTotMean / TotMean;
                 }
-                LOG(DEBUG1)<<"CbmTofSimpClusterizer::InitCalibParameter:" 
+                LOG(DEBUG1)<<"CbmTofSimpClusterizer::InitCalibParameter:"
                            <<" SmT "<< iSmType<<" Sm "<<iSm<<" Rpc "<<iRpc<<" Ch "<<iCh
                            <<": YMean "<<YMean<<", TMean "<< TMean
                            <<" -> " << fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]
@@ -579,15 +579,15 @@ Bool_t   CbmTofSimpClusterizer::InitCalibParameter()
                            <<", NbinTot "<< iNbinTot
                            <<FairLogger::endl;
 
-                TH1D *htempWalk0=(TH1D*)gDirectory->FindObjectAny( 
+                TH1D *htempWalk0=(TH1D*)gDirectory->FindObjectAny(
                                  Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S0_Walk_px", iSmType, iSm, iRpc, iCh ));
-                TH1D *htempWalk1=(TH1D*)gDirectory->FindObjectAny( 
+                TH1D *htempWalk1=(TH1D*)gDirectory->FindObjectAny(
                                  Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S1_Walk_px", iSmType, iSm, iRpc, iCh ));
-                if(NULL != htempWalk0 && NULL != htempWalk1 ) { // reinitialize Walk array 
+                if(NULL != htempWalk0 && NULL != htempWalk1 ) { // reinitialize Walk array
                   LOG(INFO)<<"Initialize Walk correction for "
                             <<Form(" SmT%01d_sm%03d_rpc%03d_Ch%03d",iSmType, iSm, iRpc, iCh)
                             <<FairLogger::endl;
-                  if(htempWalk0->GetNbinsX() != nbClWalkBinX) 
+                  if(htempWalk0->GetNbinsX() != nbClWalkBinX)
                     LOG(ERROR)<<"CbmTofSimpClusterizer::InitCalibParameter: Inconsistent Walk histograms"
                               <<FairLogger::endl;
                    for( Int_t iBin = 0; iBin < nbClWalkBinX; iBin++ )
@@ -638,7 +638,7 @@ Bool_t   CbmTofSimpClusterizer::InitCalibParameter()
   //   fCalParFile->Delete();
   gDirectory->cd( oldir->GetPath() ); // <= To prevent histos from being sucked in by the param file of the TRootManager!
   LOG(INFO)<<"CbmTofSimpClusterizer::InitCalibParameter: initialization done"
-           <<FairLogger::endl; 
+           <<FairLogger::endl;
   return kTRUE;
 }
 /************************************************************************************/
@@ -671,7 +671,7 @@ Bool_t   CbmTofSimpClusterizer::LoadGeometry()
      Double_t dy = fChannelInfo->GetSizey();
      LOG(DEBUG1)
        << "-I- InitPar "<<icell<<" Id: "<< Form("0x%08x",cellId)
-            << " "<< cell << " tmcs: "<< smtype <<" "<<smodule<<" "<<module<<" "<<cell   
+            << " "<< cell << " tmcs: "<< smtype <<" "<<smodule<<" "<<module<<" "<<cell
             << " x="<<Form("%6.2f",x)<<" y="<<Form("%6.2f",y)<<" z="<<Form("%6.2f",z)
             <<" dx="<<dx<<" dy="<<dy<<FairLogger::endl;
    }
@@ -747,7 +747,7 @@ Bool_t   CbmTofSimpClusterizer::LoadGeometry()
             {
                for( Int_t iRpc = 0; iRpc < iNbRpc; iRpc++ )
                {
-                  Int_t iNbChan = fDigiBdfPar->GetNbChan( iSmType, iRpc ); 
+                  Int_t iNbChan = fDigiBdfPar->GetNbChan( iSmType, iRpc );
                   fStorDigi[iSmType][iSm*iNbRpc+iRpc].resize( iNbChan );
                   fStorDigiInd[iSmType][iSm*iNbRpc+iRpc].resize( iNbChan );
               } // for( Int_t iRpc = 0; iRpc < iNbRpc; iRpc++ )
@@ -907,7 +907,7 @@ Bool_t   CbmTofSimpClusterizer::FillHistos()
    fhClustBuildTime->Fill( fStop.GetSec() - fStart.GetSec()
                            + (fStop.GetNanoSec() - fStart.GetNanoSec())/1e9 );
    Int_t iNbTofHits  = fTofHitsColl->GetEntries();
-   
+
    if( fbMcTrkMonitor )
    {
       Int_t iNbTracks   = fMcTracksColl->GetEntries();
@@ -946,7 +946,7 @@ Bool_t   CbmTofSimpClusterizer::FillHistos()
          // with something in littrack QA
 //         CbmTofPoint* pPt = (CbmTofPoint*)(pHit->GetLinks());
 /*
-         // Use instead the index => WRONG and not consistent with hit creation  
+         // Use instead the index => WRONG and not consistent with hit creation
          // Need to loop on digi match object, check the digi to pnt match object for each, etc....
          // ====> Just comment this code, if anybody needs it, have to implement proper solution
          CbmTofPoint* pPt = (CbmTofPoint*)fTofPointsColl->At( pHit->GetRefId() );
@@ -954,7 +954,7 @@ Bool_t   CbmTofSimpClusterizer::FillHistos()
          fhTimeResSingHits->Fill( pHit->GetTime() - pPt->GetTime() );
          fhTimeResSingHitsB->Fill( pHit->GetTime() - pPt->GetTime(),
                fGeoHandler->GetSMType(pPt->GetDetectorID()) );
-*/               
+*/
       } // if( 1 == pHit->GetFlag() )
    } // for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)
 
@@ -1004,14 +1004,14 @@ Bool_t   CbmTofSimpClusterizer::WriteHistos()
 {
    if( "" == fsHistoOutFilename )
    {
-      LOG(INFO) << "CbmTofSimpClusterizer::WriteHistos => Control histograms will not be written to disk!" 
+      LOG(INFO) << "CbmTofSimpClusterizer::WriteHistos => Control histograms will not be written to disk!"
                 << FairLogger::endl;
       LOG(INFO) << "CbmTofSimpClusterizer::WriteHistos => To change this behavior please provide a full path "
                 << "with the SetHistoFileName method"
                 << FairLogger::endl;
       return kTRUE;
    } // if( "" == fsHistoOutFilename )
-   
+
    TDirectory * oldir = gDirectory;
    TFile *fHist = new TFile(fsHistoOutFilename,"RECREATE");
 
@@ -1103,7 +1103,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
 	Int_t    iEventNr   = 0;
 	Double_t dEventTime = 0.;
 	GetEventInfo(iInputNr, iEventNr, dEventTime);
-   
+
    /*
     * FIXME: maybe use the 2D distance (X/Y) as criteria instead of the distance long channel
     * direction
@@ -1135,10 +1135,10 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                    <<pDigi->GetChannel()<<" "
 		    <<Form("T %6.2f, Tot %6.1f ",pDigi->GetTime(),pDigi->GetTot())
                    <<FairLogger::endl;
-         if(    fDigiBdfPar->GetNbSmTypes() > pDigi->GetType()  // prevent crash due to misconfiguration 
+         if(    fDigiBdfPar->GetNbSmTypes() > pDigi->GetType()  // prevent crash due to misconfiguration
              && fDigiBdfPar->GetNbSm(  pDigi->GetType()) > pDigi->GetSm()
              && fDigiBdfPar->GetNbRpc( pDigi->GetType()) > pDigi->GetRpc()
-             && fDigiBdfPar->GetNbChan(pDigi->GetType(),0) >pDigi->GetChannel() 
+             && fDigiBdfPar->GetNbChan(pDigi->GetType(),0) >pDigi->GetChannel()
                 ){
 
          fStorDigiExp[pDigi->GetType()]
@@ -1148,56 +1148,60 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                      [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
                      [pDigi->GetChannel()].push_back(iDigInd);
 
-         // apply calibration vectors 
-         pDigi->SetTime(pDigi->GetTime()- // calibrate Digi Time 
+         // apply calibration vectors
+         pDigi->SetTime(pDigi->GetTime()- // calibrate Digi Time
                         fvCPTOff[pDigi->GetType()]
                        [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
                        [pDigi->GetChannel()]
                        [pDigi->GetSide()]);
 
-         pDigi->SetTot(pDigi->GetTot() *  // calibrate Digi ToT 
+         pDigi->SetTot(pDigi->GetTot() *  // calibrate Digi ToT
                 fvCPTotGain[pDigi->GetType()]
                        [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
                        [pDigi->GetChannel()]
                        [pDigi->GetSide()]);
 
-         // walk correction 
+         // walk correction
          Double_t dTotBinSize = (TOTMax-TOTMin)/ 2. / nbClWalkBinX;
          Int_t iWx = (Int_t)((pDigi->GetTot()-TOTMin/2.)/dTotBinSize);
          if (0>iWx) iWx=0;
-         if (iWx>nbClWalkBinX) iWx=nbClWalkBinX-1;        
+         if (iWx > (nbClWalkBinX - 1) ) iWx=nbClWalkBinX-1;
          Double_t dDTot = (pDigi->GetTot()-TOTMin/2.)/dTotBinSize-(Double_t)iWx-0.5;
          Double_t dWT  = fvCPWalk[pDigi->GetType()]
                          [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
                          [pDigi->GetChannel()]
                          [pDigi->GetSide()]
                          [iWx];
-         if(dDTot > 0) {    // linear interpolation to next bin
-           dWT += dDTot * (fvCPWalk[pDigi->GetType()]
-                          [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-                          [pDigi->GetChannel()]
-                          [pDigi->GetSide()]
-                          [iWx+1]
-                         -fvCPWalk[pDigi->GetType()]
-                          [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-                          [pDigi->GetChannel()]
-                          [pDigi->GetSide()]
-                          [iWx]);
-         }else  // dDTot < 0,  linear interpolation to next bin
+         if(dDTot > 0) {
+           if(iWx < nbClWalkBinX -1) {    // linear interpolation to next bin
+             dWT += dDTot * (fvCPWalk[pDigi->GetType()]
+                            [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
+                            [pDigi->GetChannel()]
+                            [pDigi->GetSide()]
+                            [iWx+1]
+                           -fvCPWalk[pDigi->GetType()]
+                            [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
+                            [pDigi->GetChannel()]
+                            [pDigi->GetSide()]
+                            [iWx]);
+           } // if(iWx < nbClWalkBinX -1)
+         }else  // dDTot < 0,
          {
-           dWT -= dDTot * (fvCPWalk[pDigi->GetType()]
-                          [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-                          [pDigi->GetChannel()]
-                          [pDigi->GetSide()]
-                          [iWx-1]
-                         -fvCPWalk[pDigi->GetType()]
-                          [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-                          [pDigi->GetChannel()]
-                          [pDigi->GetSide()]
-                          [iWx]);
+           if(0 < iWx) {  // linear interpolation to next bin
+             dWT -= dDTot * (fvCPWalk[pDigi->GetType()]
+                            [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
+                            [pDigi->GetChannel()]
+                            [pDigi->GetSide()]
+                            [iWx-1]
+                           -fvCPWalk[pDigi->GetType()]
+                            [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
+                            [pDigi->GetChannel()]
+                            [pDigi->GetSide()]
+                            [iWx]);
+           } // if(0 < iWx)
          }
-             
-         pDigi->SetTime(pDigi->GetTime() - dWT); // calibrate Digi Time 
+
+         pDigi->SetTime(pDigi->GetTime() - dWT); // calibrate Digi Time
 
          if(0) {//pDigi->GetType()==2 && pDigi->GetSm()==0){
           LOG(INFO)<<"CbmTofSimpClusterizer::BuildClusters: CalDigi "
@@ -1242,7 +1246,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                   <<" -> dWT = "<< dWT
                   <<FairLogger::endl;
           }
-          } else 
+          } else
            {
            LOG(DEBUG)<<"CbmTofSimpBeamClusterizer::BuildClusters: Skip Digi "
                      <<" Type "<<pDigi->GetType()<<" "<< fDigiBdfPar->GetNbSmTypes()
@@ -1325,7 +1329,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                LOG(DEBUG2)<<"CbmTofSimpClusterizer::BuildClusters: RPC - Loop  "
                          << Form(" %3d %3d %3d %3d ",iSmType,iSm,iRpc,iChType)
                          <<FairLogger::endl;
-               fviClusterMul[iSmType][iSm][iRpc]=0; 
+               fviClusterMul[iSmType][iSm][iRpc]=0;
                Int_t  iChId = 0;
                if( 0 == iChType )
                {
@@ -1365,13 +1369,13 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                               fhNbDigiPerChan->Fill( fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size() );
                            while( 1 < fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size() )
                            {
-                               LOG(DEBUG2) << "CbmTofSimpClusterizer::BuildClusters: digis processing for " 
+                               LOG(DEBUG2) << "CbmTofSimpClusterizer::BuildClusters: digis processing for "
                                           << Form(" SmT %3d Sm %3d Rpc %3d Ch %3d # %3zu ",iSmType,iSm,iRpc,iCh,
                                                   fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size())
                                <<FairLogger::endl;
                                /*
                               if (3 < fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size()) // needs more work!
-                               LOG(DEBUG) << "CbmTofSimpClusterizer::BuildClusters: digis ignored for " 
+                               LOG(DEBUG) << "CbmTofSimpClusterizer::BuildClusters: digis ignored for "
                                << Form(" SmT %3d Sm %3d Rpc %3d Ch %3d # %3d ",iSmType,iSm,iRpc,iCh,fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size())
                                <<FairLogger::endl;
                                */
@@ -1384,7 +1388,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                  LOG(DEBUG) << "CbmTofSimpClusterizer::BuildClusters: SameSide Hits! Times: "
                                               <<   (fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0])->GetTime()
                                               << ", "<<(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][1])->GetTime()
-                                              <<", DeltaT " <<(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][1])->GetTime() - 
+                                              <<", DeltaT " <<(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][1])->GetTime() -
                                                               (fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0])->GetTime()
                                               <<FairLogger::endl;
                                     LOG(DEBUG2)<<" SameSide Erase fStor entries(d) "<<iSmType<<", SR "<<iSm*iNbRpc+iRpc<<", Ch"<<iCh
@@ -1392,10 +1396,10 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                     fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
                                     fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
                                  if(2 > fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size()) break;
-                                 continue;  
+                                 continue;
                                }
 
-                              LOG(DEBUG2) << "CbmTofSimpClusterizer::BuildClusters: digis processing for " 
+                              LOG(DEBUG2) << "CbmTofSimpClusterizer::BuildClusters: digis processing for "
                                           << Form(" SmT %3d Sm %3d Rpc %3d Ch %3d # %3zu ",iSmType,iSm,iRpc,iCh,
                                                   fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size())
                                             <<FairLogger::endl;
@@ -1417,7 +1421,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                         <<FairLogger::endl;
                               break;
                               }
-                              LOG(DEBUG1)<<"CbmTofSimpClusterizer::BuildClusters:" 
+                              LOG(DEBUG1)<<"CbmTofSimpClusterizer::BuildClusters:"
                                          << Form(" T %3d Sm %3d R %3d Ch %3d size %3zu ",
                                                  iSmType,iSm,iRpc,iCh,fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size())
                                          << Form(" ChId: 0x%08x 0x%08x %p",iChId,iUCellId,fChannelInfo)
@@ -1428,7 +1432,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
 
 
                               // The "Strip" time is the mean time between each end
-                              dTime =0.5 * ( xDigiA->GetTime() + xDigiB->GetTime() ) ;                             
+                              dTime =0.5 * ( xDigiA->GetTime() + xDigiB->GetTime() ) ;
 
                               // Weight is the total charge => sum of both ends ToT
                               dTotS = xDigiA->GetTot() + xDigiB->GetTot();
@@ -1454,7 +1458,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
 						fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode,fChannelInfo,fTrafoCell)
                                         <<FairLogger::endl;
                               //        fNode->Print();
-                              
+
 
                               // switch to local coordinates, (0,0,0) is in the center of counter  ?
                               dPosX=((Double_t)(-iTrafoCell + iCh))*fChannelInfo->GetSizex();
@@ -1463,13 +1467,13 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
 
 
                               if( 1 == xDigiA->GetSide() )
-                             
+
                                  // 0 is the top side, 1 is the bottom side
                                  dPosY += fvCPSigPropSpeed[iSmType][iRpc] *
                                         ( xDigiA->GetTime() - xDigiB->GetTime() )/2.0;
 
                               else
-                              
+
                                  // 0 is the bottom side, 1 is the top side
                                  dPosY += fvCPSigPropSpeed[iSmType][iRpc] *
                                        ( xDigiB->GetTime() - xDigiA->GetTime() )/2.0;
@@ -1478,7 +1482,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                   -1*fChannelInfo->GetSizey()/2.0 > dPosY )
                               {
                                  // if outside of strip limits, the pair is bad => try to remove one end and check the next pair
-                                 // (if another possibility exist)   
+                                 // (if another possibility exist)
                                  fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
                                  fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
                                  continue;
@@ -1494,7 +1498,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                    <<FairLogger::endl;
 
                               // Now check if a hit/cluster is already started
-                              if( 0 < iNbChanInHit) 
+                              if( 0 < iNbChanInHit)
                               {
 
 
@@ -1523,8 +1527,8 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                     // in this cluster, save its pointer
 //                                    Bool_t bFoundA = kFALSE; // -> Comment to remove warning because set but never used
 //                                    Bool_t bFoundB = kFALSE; // -> Comment to remove warning because set but never used
-                                    if(NULL != fTofPointsColl){ // MC 
-                                    
+                                    if(NULL != fTofPointsColl){ // MC
+
                                     /** **Comment the full Block as not used anymore** **/
 /*
                                     if( kTRUE == fDigiBdfPar->ClustUseTrackId() )
@@ -1550,19 +1554,19 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                     // CbmTofPoint pointer for 2nd digi not found => save it
                                       //                                    if( kFALSE == bFoundB )
                                       //                                       vPtsRef.push_back( (CbmTofPoint*)(xDigiB->GetLinks()) );
-                                    } // MC end 
+                                    } // MC end
                                     vDigiIndRef.push_back( (Int_t )(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh][0]));
                                     vDigiIndRef.push_back( (Int_t )(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh][1]));
 
                                     LOG(DEBUG1)<<" Add Digi and erase fStor entries(a): NbChanInHit "<< iNbChanInHit<<", "
                                              <<iSmType<<", SR "<<iSm*iNbRpc+iRpc<<", Ch"<<iCh
                                              <<FairLogger::endl;
-                
+
                                     fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
                                     fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
                                     fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
                                     fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
- 
+
                                 } // if current Digis compatible with last fired chan
                                  else
                                  {
@@ -1577,12 +1581,12 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
 
 				    TGeoNode *tNode=        // prepare local->global trafo
 				      gGeoManager->FindNode(fTrafoCell->GetX(),fTrafoCell->GetY(),fTrafoCell->GetZ());
-				    TGeoNode *cNode = 
+				    TGeoNode *cNode =
 				      gGeoManager->GetCurrentNode();
 				    //cNode->Print();
-				    //TGeoHMatrix* cMatrix = 
+				    //TGeoHMatrix* cMatrix =
 				    gGeoManager->GetCurrentMatrix();
-				    //cMatrix->Print();		     
+				    //cMatrix->Print();
 				    hitpos[0]=fTrafoCell->GetX();
 				    hitpos[1]=fTrafoCell->GetY();
 				    hitpos[2]=fTrafoCell->GetZ();
@@ -1597,8 +1601,8 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
 
                                     gGeoManager->LocalToMaster(hitpos_local, hitpos);
                                     LOG(DEBUG1)<<
-                                    Form(" LTM for node %p, info %p: (%6.1f,%6.1f,%6.1f) ->(%6.1f,%6.1f,%6.1f)", 
-                                         cNode, fChannelInfo, hitpos_local[0], hitpos_local[1], hitpos_local[2], 
+                                    Form(" LTM for node %p, info %p: (%6.1f,%6.1f,%6.1f) ->(%6.1f,%6.1f,%6.1f)",
+                                         cNode, fChannelInfo, hitpos_local[0], hitpos_local[1], hitpos_local[2],
                                          hitpos[0], hitpos[1], hitpos[2])
 					       <<FairLogger::endl;
 
@@ -1629,12 +1633,12 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                                        dWeightedTime,dWeightedPosY)
                                                <<", DigiSize: "<<vDigiIndRef.size()
                                                <<", DigiInds: ";
-                                    fviClusterMul[iSmType][iSm][iRpc]++; 
+                                    fviClusterMul[iSmType][iSm][iRpc]++;
                                     for (UInt_t i=0; i<vDigiIndRef.size();i++){
                                       LOG(DEBUG)<<" "<<vDigiIndRef.at(i);
                                     }
                                     LOG(DEBUG)  <<FairLogger::endl;
-                                    
+
                                     new((*fTofHitsColl)[fiNbHits]) CbmTofHit( iDetId,
                                                         hitPos, hitPosErr,  //local detector coordinates
                                                         fiNbHits,
@@ -1649,7 +1653,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                     }
                                     new((*fTofDigiMatchColl)[fiNbHits]) CbmMatch(*digiMatch);
                                     delete digiMatch;
-                                                                      
+
                                     // Using the SetLinks/GetLinks of the TofHit class seems to conflict
                                     // with something in littrack QA
 //                                    ((CbmTofHit*)fTofHitsColl->At(fiNbHits))->SetLinks(vPtsRef[0]);
@@ -1659,7 +1663,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                     fviTrkMul[iSmType][iRpc].push_back( vPtsRef.size() );
                                     fvdX[iSmType][iRpc].push_back(dWeightedPosX);
                                     fvdY[iSmType][iRpc].push_back(dWeightedPosY);
-                                    /*  no TofPoint available for data!  
+                                    /*  no TofPoint available for data!
                                     fvdDifX[iSmType][iRpc].push_back( vPtsRef[0]->GetX() - dWeightedPosX);
                                     fvdDifY[iSmType][iRpc].push_back( vPtsRef[0]->GetY() - dWeightedPosY);
                                     fvdDifCh[iSmType][iRpc].push_back( fGeoHandler->GetCell( vPtsRef[0]->GetDetectorID() ) -1 -iLastChan );
@@ -1707,7 +1711,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                               } // if( 0 < iNbChanInHit)
                                  else
                                  {
-                                     LOG(DEBUG1)<<"CbmTofSimpClusterizer::BuildClusters: 1.Hit on channel " 
+                                     LOG(DEBUG1)<<"CbmTofSimpClusterizer::BuildClusters: 1.Hit on channel "
                                                <<iCh<<", time: "<<dTime
 					       <<", x: "<<dPosX
 					       <<", y: "<<dPosY
@@ -1772,7 +1776,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                // and save it if it's the case
                if( 0 < iNbChanInHit)
                {
-                   LOG(DEBUG1)<<"CbmTofSimpClusterizer::BuildClusters: Process cluster " 
+                   LOG(DEBUG1)<<"CbmTofSimpClusterizer::BuildClusters: Process cluster "
                               <<iNbChanInHit<<FairLogger::endl;
 
                   // Check orientation to properly assign errors
@@ -1794,12 +1798,12 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
 
                      TGeoNode *tNode=        // prepare local->global trafo
                      gGeoManager->FindNode(fTrafoCell->GetX(),fTrafoCell->GetY(),fTrafoCell->GetZ());
-		     //TGeoNode *cNode = 
+		     //TGeoNode *cNode =
                      gGeoManager->GetCurrentNode();
 		     //cNode->Print();
-		     //TGeoHMatrix* cMatrix = 
+		     //TGeoHMatrix* cMatrix =
 		     gGeoManager->GetCurrentMatrix();
-                     //cMatrix->Print();		     
+                     //cMatrix->Print();
 		     hitpos[0]=fTrafoCell->GetX();
 		     hitpos[1]=fTrafoCell->GetY();
 		     hitpos[2]=fTrafoCell->GetZ();
@@ -1814,8 +1818,8 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
 
                      gGeoManager->LocalToMaster(hitpos_local, hitpos);
                      LOG(DEBUG1)<<
-                     Form(" LTM for V-node %p, info %p, tra %p: (%6.1f,%6.1f,%6.1f) ->(%6.1f,%6.1f,%6.1f) [(%6.1f,%6.1f,%6.1f)]", 
-			  tNode, fChannelInfo, fTrafoCell, hitpos_local[0], hitpos_local[1], hitpos_local[2], 
+                     Form(" LTM for V-node %p, info %p, tra %p: (%6.1f,%6.1f,%6.1f) ->(%6.1f,%6.1f,%6.1f) [(%6.1f,%6.1f,%6.1f)]",
+			  tNode, fChannelInfo, fTrafoCell, hitpos_local[0], hitpos_local[1], hitpos_local[2],
 			  hitpos[0], hitpos[1], hitpos[2], fTrafoCell->GetX(),fTrafoCell->GetY(),fTrafoCell->GetZ())
 				<<FairLogger::endl;
 
@@ -1838,7 +1842,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
 		     if(iChm<0 || iChm >iNbCh){
 		       LOG(DEBUG)<<"CbmTofSimpClusterizer::BuildClusters: Invalid mean channel "
 				 <<iChm<<"("<<iNbCh<<")"<<FairLogger::endl;
-		     } 
+		     }
 		     Int_t iDetId = CbmTofAddress::GetUniqueAddress(iSm,iRpc,iChm,0,iSmType);
                      Int_t iRefId = 0; // Index of the correspondng TofPoint
                      //                     if(NULL != fTofPointsColl) iRefId = fTofPointsColl->IndexOf( vPtsRef[0] );
@@ -1853,8 +1857,8 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                        LOG(DEBUG)<<" "<<vDigiIndRef.at(i);
                      }
                      LOG(DEBUG)  <<FairLogger::endl;
-                     
-                     fviClusterMul[iSmType][iSm][iRpc]++; 
+
+                     fviClusterMul[iSmType][iSm][iRpc]++;
 
                      new((*fTofHitsColl)[fiNbHits]) CbmTofHit( iDetId,
                                          hitPos, hitPosErr,
@@ -1916,7 +1920,7 @@ void CbmTofSimpClusterizer::GetEventInfo(Int_t& inputNr, Int_t& eventNr,
     // --- only the event number is retrieved.
     else {
         if ( ! FairRunSim::Instance() )
-            LOG(FATAL) << GetName() << ": neither SIM nor ANA run." 
+            LOG(FATAL) << GetName() << ": neither SIM nor ANA run."
                            << FairLogger::endl;
         FairMCEventHeader* event = FairRunSim::Instance()->GetMCEventHeader();
         inputNr   = 0;
