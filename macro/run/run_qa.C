@@ -44,8 +44,6 @@ void run_qa(Int_t nEvents = 1, const char* setupName = "sis100_electron")
   // In general, the following parts need not be touched
   // ========================================================================
 
-
-
   // -----   Timer   --------------------------------------------------------
   TStopwatch timer;
   timer.Start();
@@ -53,8 +51,10 @@ void run_qa(Int_t nEvents = 1, const char* setupName = "sis100_electron")
 
   // -----  Analysis run   --------------------------------------------------
   FairRunAna *fRun= new FairRunAna();
-  fRun->SetInputFile(simFile);
-  fRun->AddFriend(recFile);
+//  fRun->SetInputFile(simFile);
+//  fRun->AddFriend(recFile);
+  fRun->SetInputFile(recFile);
+//  fRun->AddFriend(simFile);
   fRun->SetOutputFile(outFile);
   Bool_t hasFairMonitor = Has_Fair_Monitor();
   if (hasFairMonitor) {
@@ -72,26 +72,6 @@ void run_qa(Int_t nEvents = 1, const char* setupName = "sis100_electron")
   rtdb->saveOutput();
   // ------------------------------------------------------------------------
 
-
-  // -----   STS track finder QA   ------------------------------------------
-  // Is legacy; to be checked
-  /*CbmStsFindTracksQa* stsTrackFindQa = new CbmStsFindTracksQa(4, 0.7,
-							      iVerbose);
-  fRun->AddTask(stsTrackFindQa);
-  */
-  // ------------------------------------------------------------------------
-    
-    // -------- Performance of PID algorithm ------------
-    CbmTrdTracksPidQa*  trdTrackPidQa =
-        new CbmTrdTracksPidQa("PidPerformance");
-    fRun->AddTask(trdTrackPidQa);
-    // -------------------------------------------------
-    
- // ------  Rich ring finder QA ---------------------------------------------
-   Int_t normType = 1; //0 - normalize by number of MC hits
-                      //1 - normalize by number of found hits;
-//  CbmRichRingQa* richQa   =  new CbmRichRingQa("Qa","qa", iVerbose,normType);
-//  fRun->AddTask(richQa);
 
   // -----   Intialise and run   --------------------------------------------
   fRun->Init();
