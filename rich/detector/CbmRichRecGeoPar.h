@@ -166,10 +166,16 @@ public:
                 return it->second;
             }
         }
+
         // if nothing is found we search for the closest strip block
         // closest we define by X position
+        if (TMath::IsNaN(pos->X()) || TMath::IsNaN(pos->Y()) || TMath::IsNaN(pos->Z()) ) {
+        	CbmRichRecGeoParPmt par;
+        	return par;
+        }
+
         double minDist = 999999999.;
-        it_type minIt;
+        CbmRichRecGeoParPmt minPar;
         for(it_type it = fPmtMap.begin(); it != fPmtMap.end(); it++) {
              double x = it->second.fPlaneX;
              double y = it->second.fPlaneY;
@@ -177,14 +183,14 @@ public:
             	 double d = TMath::Abs( x - pos->X() );
             	 if (d < minDist) {
             		 minDist = d;
-            		 minIt = it;
+            		 minPar = it->second;
             	 }
              }
         }
         //cout << "minIt->first :" << minIt->first << endl;
        // cout << "pos:" << pos->X() << " " << pos->Y() << " " << pos->Z() << " plane:" << minIt->second.fPlaneX << " " << minIt->second.fPlaneY << " " << minIt->second.fPlaneZ  << endl;
 
-        return minIt->second;
+        return minPar;
     }
     
     
