@@ -3670,7 +3670,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
          Double_t dTotBinSize = (fdTOTMax-fdTOTMin)/ nbClWalkBinX;
          Int_t iWx = (Int_t)((pCalDigi->GetTot()-fdTOTMin)/dTotBinSize);
          if (0>iWx) iWx=0;
-         if (iWx>nbClWalkBinX) iWx=nbClWalkBinX-1;        
+         if (iWx>=nbClWalkBinX) iWx=nbClWalkBinX-1;        
          Double_t dDTot = (pCalDigi->GetTot()-fdTOTMin)/dTotBinSize-(Double_t)iWx-0.5;
          Double_t dWT  = fvCPWalk[pCalDigi->GetType()]
                          [pCalDigi->GetSm()*fDigiBdfPar->GetNbRpc( pCalDigi->GetType()) + pCalDigi->GetRpc()]
@@ -3678,28 +3678,33 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                          [pCalDigi->GetSide()]
                          [iWx];
          if(dDTot > 0) {    // linear interpolation to next bin
-           dWT += dDTot * (fvCPWalk[pCalDigi->GetType()]
-                          [pCalDigi->GetSm()*fDigiBdfPar->GetNbRpc( pCalDigi->GetType()) + pCalDigi->GetRpc()]
-                          [pCalDigi->GetChannel()]
-                          [pCalDigi->GetSide()]
-                          [iWx+1]
-                         -fvCPWalk[pCalDigi->GetType()]
-                          [pCalDigi->GetSm()*fDigiBdfPar->GetNbRpc( pCalDigi->GetType()) + pCalDigi->GetRpc()]
-                          [pCalDigi->GetChannel()]
-                          [pCalDigi->GetSide()]
-                          [iWx]); //memory leak???
+	   if(iWx < nbClWalkBinX -1) {    // linear interpolation to next bin
+
+	     dWT += dDTot * (fvCPWalk[pCalDigi->GetType()]
+			     [pCalDigi->GetSm()*fDigiBdfPar->GetNbRpc( pCalDigi->GetType()) + pCalDigi->GetRpc()]
+			     [pCalDigi->GetChannel()]
+			     [pCalDigi->GetSide()]
+			     [iWx+1]
+			     -fvCPWalk[pCalDigi->GetType()]
+			     [pCalDigi->GetSm()*fDigiBdfPar->GetNbRpc( pCalDigi->GetType()) + pCalDigi->GetRpc()]
+			     [pCalDigi->GetChannel()]
+			     [pCalDigi->GetSide()]
+			     [iWx]); //memory leak???
+	   }
          }else  // dDTot < 0,  linear interpolation to next bin
          {
-           dWT -= dDTot * (fvCPWalk[pCalDigi->GetType()]
-                          [pCalDigi->GetSm()*fDigiBdfPar->GetNbRpc( pCalDigi->GetType()) + pCalDigi->GetRpc()]
-                          [pCalDigi->GetChannel()]
-                          [pCalDigi->GetSide()]
-                          [iWx-1]
-                         -fvCPWalk[pCalDigi->GetType()]
-                          [pCalDigi->GetSm()*fDigiBdfPar->GetNbRpc( pCalDigi->GetType()) + pCalDigi->GetRpc()]
-                          [pCalDigi->GetChannel()]
-                          [pCalDigi->GetSide()]
-                          [iWx]); //memory leak???
+           if(0 < iWx) {  // linear interpolation to next bin
+	     dWT -= dDTot * (fvCPWalk[pCalDigi->GetType()]
+			     [pCalDigi->GetSm()*fDigiBdfPar->GetNbRpc( pCalDigi->GetType()) + pCalDigi->GetRpc()]
+			     [pCalDigi->GetChannel()]
+			     [pCalDigi->GetSide()]
+			     [iWx-1]
+			     -fvCPWalk[pCalDigi->GetType()]
+			     [pCalDigi->GetSm()*fDigiBdfPar->GetNbRpc( pCalDigi->GetType()) + pCalDigi->GetRpc()]
+			     [pCalDigi->GetChannel()]
+			     [pCalDigi->GetSide()]
+			     [iWx]); //memory leak???
+	   }
          }
              
          pCalDigi->SetTime(pCalDigi->GetTime() - dWT); // calibrate Digi Time 
