@@ -122,10 +122,10 @@ void CbmStsDigitizeParameters::putParams(FairParamList* l)
     if (!l) return;
 
     l->add("ELossModel", fELossModel);
-    l->add("UseLorentzShift", fUseLorentzShift);
-    l->add("UseDiffusion", fUseDiffusion);
-    l->add("UseCrossTalk", fUseCrossTalk);
-    l->add("GenerateNoise", fGenerateNoise);
+    l->add("UseLorentzShift", static_cast<Int_t>(fUseLorentzShift));
+    l->add("UseDiffusion", static_cast<Int_t>(fUseDiffusion));
+    l->add("UseCrossTalk", static_cast<Int_t>(fUseCrossTalk));
+    l->add("GenerateNoise", static_cast<Int_t>(fGenerateNoise));
     l->add("Vdep", fVdep);
     l->add("Vbias", fVbias);
     l->add("Temperature", fTemperature);
@@ -139,7 +139,7 @@ void CbmStsDigitizeParameters::putParams(FairParamList* l)
     l->add("Noise", fNoise);
     l->add("ZeroNoiseRate", fZeroNoiseRate);
     l->add("StripPitch", fStripPitch);
-    l->add("DiscardSecondaries", fDiscardSecondaries);
+    l->add("DiscardSecondaries", static_cast<Int_t>(fDiscardSecondaries));
 
 }
 
@@ -148,11 +148,21 @@ Bool_t CbmStsDigitizeParameters::getParams(FairParamList* l)
 
     if (!l) return kFALSE;
 
+    Int_t iTemp;
     if ( ! l->fill("ELossModel", &fELossModel) ) return kFALSE;
-    if ( ! l->fill("UseLorentzShift", &fUseLorentzShift) ) return kFALSE;
-    if ( ! l->fill("UseDiffusion", &fUseDiffusion) ) return kFALSE;
-    if ( ! l->fill("UseCrossTalk", &fUseCrossTalk) ) return kFALSE;
-    if ( ! l->fill("GenerateNoise", &fGenerateNoise) ) return kFALSE;
+
+    if ( ! l->fill("UseLorentzShift", &iTemp) ) return kFALSE;
+    fUseLorentzShift = ( 1 == iTemp? kTRUE : kFALSE);
+
+    if ( ! l->fill("UseDiffusion", &iTemp) ) return kFALSE;
+    fUseDiffusion = ( 1 == iTemp? kTRUE : kFALSE);
+
+    if ( ! l->fill("UseCrossTalk", &iTemp) ) return kFALSE;
+    fUseCrossTalk = ( 1 == iTemp? kTRUE : kFALSE);
+
+    if ( ! l->fill("GenerateNoise", &iTemp) ) return kFALSE;
+    fGenerateNoise = ( 1 == iTemp? kTRUE : kFALSE);
+ 
     if ( ! l->fill("Vdep", &fVdep) ) return kFALSE;
     if ( ! l->fill("Vbias", &fVbias) ) return kFALSE;
     if ( ! l->fill("Temperature", &fTemperature) ) return kFALSE;
@@ -166,7 +176,9 @@ Bool_t CbmStsDigitizeParameters::getParams(FairParamList* l)
     if ( ! l->fill("Noise", &fNoise) ) return kFALSE;
     if ( ! l->fill("ZeroNoiseRate", &fZeroNoiseRate) ) return kFALSE;
     if ( ! l->fill("StripPitch", &fStripPitch) ) return kFALSE;
-    if ( ! l->fill("DiscardSecondaries", &fDiscardSecondaries) ) return kFALSE;
+
+    if ( ! l->fill("DiscardSecondaries", &iTemp) ) return kFALSE;
+    fDiscardSecondaries = ( 1 == iTemp? kTRUE : kFALSE);
 
     return kTRUE;
 }
