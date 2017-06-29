@@ -17,6 +17,8 @@
 #include "FairParRootFileIo.h"
 #include "FairParAsciiFileIo.h"
 
+#include "CbmStsDigitizeParameters.h"
+
 #include "TClass.h"
 
 #include <iostream>
@@ -52,6 +54,15 @@ void CbmStsContFact::setAllContainers() {
 
     containers->Add(p2);
     */
+
+    FairContainer* p1= new FairContainer("CbmStsDigitizeParameters",
+                                          "Sts digitization parameters",
+                                          "Default");
+    p1->addContext("Default");
+
+    containers->Add(p1);
+
+
 }
 
 FairParSet* CbmStsContFact::createContainer(FairContainer* c) {
@@ -63,6 +74,9 @@ FairParSet* CbmStsContFact::createContainer(FairContainer* c) {
   const char* name=c->GetName();
   cout << " -I container name " << name << endl;
   FairParSet* p=0;
+  if (strcmp(name,"CbmStsDigitizeParameters")==0) {
+    p=new CbmStsDigitizeParameters(c->getConcatName().Data(),c->GetTitle(),c->getContext());
+  }
   if (strcmp(name,"CbmStsDigiPar")==0) {
   //  p=new CbmStsDigiPar(c->getConcatName().Data(),c->GetTitle(),c->getContext());
   }
@@ -71,6 +85,3 @@ FairParSet* CbmStsContFact::createContainer(FairContainer* c) {
   }
   return p;
 }
-
-
-

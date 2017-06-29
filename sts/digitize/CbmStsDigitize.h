@@ -10,12 +10,11 @@
 #include "TStopwatch.h"
 #include "FairTask.h"
 #include "CbmMatch.h"
-#include "CbmStsDigitizeSettings.h"
+#include "CbmStsDigitizeParameters.h"
 
 class TClonesArray;
 class CbmStsPoint;
 class CbmStsSetup;
-
 
 /** @class CbmStsDigitize
  ** @brief Task class for simulating the detector response of the STS
@@ -63,8 +62,13 @@ class CbmStsDigitize : public FairTask
    ** points from all tracks are processed.
    **/
   void DiscardSecondaries(Bool_t flag = kTRUE) {
-    fSettings->SetDiscardSecondaries(flag);
+    fDigiPar->SetDiscardSecondaries(flag);
   }
+
+   /**
+    * \brief Inherited from FairTask.
+    */
+   virtual void SetParContainers();
 
 
   /** Execution **/
@@ -74,7 +78,7 @@ class CbmStsDigitize : public FairTask
   /** Get energy loss model
   ** @param eLossModel       0 = ideal, 1 = uniform, 2 = fluctuations
   **/
-  Int_t GetELossModel() const{return fSettings->GetELossModel();}
+  Int_t GetELossModel() const{return fDigiPar->GetELossModel();}
 
 
   /** Get current event time
@@ -89,12 +93,6 @@ class CbmStsDigitize : public FairTask
 
   /** Get number of signals back side **/
   Int_t GetNofSignalsB() const {return fNofSignalsB;}
-
-
-  /** @brief Get the digitisation settings
-   ** @value Pointer to digitisation settings
-   **/
-  CbmStsDigitizeSettings* GetSettings() const { return fSettings; }
 
 
   /** Initialise the STS setup and the parameters **/
@@ -165,7 +163,7 @@ class CbmStsDigitize : public FairTask
    ** The specified strip pitch will be applied for all sensors in the setup.
    **/
   void SetSensorStripPitch(Double_t pitch) {
-    fSettings->SetStripPitch(pitch);
+    fDigiPar->SetStripPitch(pitch);
   }
 
 
@@ -176,7 +174,7 @@ class CbmStsDigitize : public FairTask
   Int_t  fMode;       ///< Run mode. 0 = stream, 1 = event
   Bool_t fIsInitialised;   ///< kTRUE if Init() was called
 
-  CbmStsDigitizeSettings* fSettings;  ///< Digitisation parameters and settings
+  CbmStsDigitizeParameters* fDigiPar; ///< Digitisation parameters
   CbmStsSetup*   fSetup;        ///< STS setup interface
   TClonesArray*  fPoints;       ///< Input array of CbmStsPoint
   TClonesArray*  fTracks;       ///< Input array of CbmMCTrack

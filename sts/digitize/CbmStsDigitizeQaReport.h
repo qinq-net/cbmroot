@@ -4,18 +4,18 @@
 #include "CbmSimulationReport.h"
 
 class CbmStsSetup;
-class CbmStsDigitize;
+class CbmStsDigitizeParameters;
 
 class CbmStsDigitizeQaReport : public CbmSimulationReport
 {
     public:
-	CbmStsDigitizeQaReport(CbmStsSetup * setup, CbmStsDigitize * digitizer);
+	CbmStsDigitizeQaReport(CbmStsSetup * setup, CbmStsDigitizeParameters * digipar);
 	virtual ~CbmStsDigitizeQaReport();
 
 
     private:
 	CbmStsSetup * fSetup;
-	CbmStsDigitize * fDigitizer;
+	CbmStsDigitizeParameters * fDigiPar;
 	virtual void Create();
 	virtual void Draw();
 	void DrawNofObjectsHistograms();

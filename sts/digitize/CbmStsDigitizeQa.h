@@ -3,18 +3,20 @@
 
 #include "FairTask.h"
 #include "CbmStsDigi.h"
-#include "CbmStsDigitize.h"
 #include "CbmHistManager.h"
 #include "CbmMCDataArray.h"
 #include <iostream>
 #include <fstream>
 #include <vector>
 class TClonesArray;
+class CbmStsDigitizeParameters;
+class CbmStsDigitize;
+class CbmStsSetup;
 
 class CbmStsDigitizeQa : public FairTask
 {
     public:
-	CbmStsDigitizeQa(CbmStsDigitize * digitizer);
+	CbmStsDigitizeQa(CbmStsDigitize * digitizer=NULL);
 
 	virtual ~CbmStsDigitizeQa();
 
@@ -22,6 +24,8 @@ class CbmStsDigitizeQa : public FairTask
 
 	virtual void Exec(Option_t* opt);
 
+        virtual void SetParContainers();
+        
 	virtual void Finish();
 
 	void SetOutputDir(const std::string& outputDir) { fOutputDir = outputDir; }
@@ -38,7 +42,7 @@ class CbmStsDigitizeQa : public FairTask
     private:
 	void ReadDataBranches();
 
-	CbmStsDigitize * fDigitizer;
+        CbmStsDigitizeParameters* fDigiPar;
 	CbmHistManager* fHM;
 	std::string fOutputDir;
 	TClonesArray* fStsDigis;

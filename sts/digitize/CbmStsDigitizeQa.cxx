@@ -1,8 +1,6 @@
 #include "CbmStsDigitizeQa.h"
 #include "CbmStsDigitize.h"
 #include "CbmHistManager.h"
-#include "FairRootManager.h"
-#include "FairLogger.h"
 #include "CbmMatch.h"
 #include "CbmStsDigi.h"
 #include "CbmStsAddress.h"
@@ -13,6 +11,13 @@
 #include "CbmMCBuffer.h"
 #include "CbmSimulationReport.h"
 #include "CbmStsDigitizeQaReport.h"
+#include "CbmStsDigitizeParameters.h"
+
+#include "FairRootManager.h"
+#include "FairLogger.h"
+#include "FairRun.h"
+#include "FairRuntimeDb.h"
+
 #include "TGeoPhysicalNode.h"
 #include "TGeoMatrix.h"
 
@@ -24,6 +29,7 @@
 #include "TProfile.h"
 #include "TProfile2D.h"
 
+
 using std::cout;
 using std::endl;
 using std::vector;
@@ -33,7 +39,8 @@ using std::pair;
 using std::string;
 
 CbmStsDigitizeQa::CbmStsDigitizeQa(CbmStsDigitize * digitizer):
-    fDigitizer(digitizer)
+    FairTask("CbmStsDigitizeQa")
+    , fDigiPar(nullptr)
     , fHM(NULL)
     , fOutputDir(" ")
     , fStsDigis(NULL)
@@ -48,6 +55,11 @@ CbmStsDigitizeQa::CbmStsDigitizeQa(CbmStsDigitize * digitizer):
 
 CbmStsDigitizeQa::~CbmStsDigitizeQa(){
     if ( fHM ) delete fHM;
+}
+
+void CbmStsDigitizeQa::SetParContainers()
+{
+   fDigiPar = static_cast<CbmStsDigitizeParameters*>(FairRun::Instance()->GetRuntimeDb()->getContainer("CbmStsDigitizeParameters"));
 }
 
 InitStatus CbmStsDigitizeQa::Init(){
@@ -116,7 +128,7 @@ void CbmStsDigitizeQa::Finish(){
     gDirectory -> cd("STSDigitizeQA");
     fHM -> WriteToFile();
     gDirectory -> cd("../");
-    CbmSimulationReport* report = new CbmStsDigitizeQaReport(fSetup, fDigitizer);
+    CbmSimulationReport* report = new CbmStsDigitizeQaReport(fSetup, fDigiPar);
     report -> Create(fHM, fOutputDir);
     delete report;
 
@@ -178,7 +190,7 @@ void CbmStsDigitizeQa::CreateDigiHistograms(){
     fHM -> Create1<TH1F>("h_PointsInDigiLog", "PointsInDigi;Number of Points;Entries", nofBins, minX, maxX);
     fHM -> Create1<TH1F>("h_DigisByPoint", "DigisByPoint;Number of Digis;Entries" , nofBins, minX, maxX);
     fHM -> Create1<TH1F>("h_DigisByPointLog", "DigisByPoint;Number of Digis;Entries" , nofBins, minX, maxX);
-    nofBins = fDigitizer->GetSettings()->GetNofAdc();
+    nofBins = fDigiPar->GetNofAdc();
     fHM -> Create1<TH1F>("h_DigiCharge", "DigiCharge;Digi Charge, ADC;Entries", nofBins, 0., Double_t(nofBins));
     for (Int_t stationId = 0; stationId < fNofStation; stationId++){
 	fHM -> Create2<TH2F>(Form("h_DigisPerChip_Station%i",stationId), 

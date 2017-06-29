@@ -29,6 +29,7 @@
 #include "FairMCPoint.h"
 #include "FairRunAna.h"
 #include "FairRunSim.h"
+#include "FairRuntimeDb.h"
 
 // Includes from CbmRoot
 #include "CbmDaqBuffer.h"
@@ -43,6 +44,7 @@
 #include "setup/CbmStsSetup.h"
 #include "digitize/CbmStsPhysics.h"
 #include "digitize/CbmStsSensorTypeDssd.h"
+#include "digitize/CbmStsDigitizeParameters.h"
 
 using std::fixed;
 using std::right;
@@ -56,7 +58,7 @@ CbmStsDigitize::CbmStsDigitize()
   : FairTask("StsDigitize"),
     fMode(0),
     fIsInitialised(kFALSE),
-    fSettings(new CbmStsDigitizeSettings()),
+    fDigiPar(NULL),
     fSetup(NULL),
     fPoints(NULL),
     fTracks(NULL),
@@ -80,22 +82,6 @@ CbmStsDigitize::CbmStsDigitize()
     fTimeTot()
 { 
   Reset();
-  // --- By default, set most realistic response processes.
-  // --- This can be changed by the method SetProcesses.
-  fSettings->SetProcesses(2, kTRUE, kTRUE, kTRUE);
-  // --- Set default parameters for the modules
-  // --- The zero noise rate corresponds to a rise time of 80 ns (1/(pi*tau))
-  Double_t dynRange = 75000.;          // dynamic range in e
-  Double_t threshold = 3000.;          // threshold in e
-  Int_t    nAdc = 32;                  // Number of ADC channels
-  Double_t tResol = 5.;                // Time resolution in ns
-  Double_t deadTime = 800.;            // Channel dead time in ns
-  Double_t noise = 1000.;              // Noise RMS in e
-  Double_t zeroNoiseRate = 3.9789e-3;  // Zero noise rate [1/ns]
-  Double_t deadChannels = 0.;          // Fraction of dead channels in %
-  fSettings->SetModuleParameters(dynRange, threshold, nAdc, tResol,
-                                 deadTime, noise, zeroNoiseRate,
-                                 deadChannels);
 }
 // -------------------------------------------------------------------------
 
@@ -111,7 +97,7 @@ CbmStsDigitize::~CbmStsDigitize() {
 	fMatches->Delete();
 	delete fMatches;
  }
- if ( fSettings ) delete fSettings;
+
  Reset();
 }
 // -------------------------------------------------------------------------
@@ -236,6 +222,7 @@ void CbmStsDigitize::CreateDigi(UInt_t address,
 // -----   Task execution   ------------------------------------------------
 void CbmStsDigitize::Exec(Option_t* /*opt*/) {
 
+
 	// --- Start timer and reset counters
 	fTimer.Start();
 	Reset();
@@ -253,7 +240,7 @@ void CbmStsDigitize::Exec(Option_t* /*opt*/) {
 
     // --- Generate noise from previous to current event time. Only in
     // --- streaming mode.
-    if ( fMode == 0 && fSettings->GetGenerateNoise() ) {
+    if ( fMode == 0 && fDigiPar->GetGenerateNoise() ) {
       Int_t nNoise = 0;
       for (Int_t iModule = 0; iModule < fSetup->GetNofModules(); iModule++)
         nNoise += fSetup->GetModule(iModule)->GenerateNoise(eventTimePrevious,
@@ -395,10 +382,32 @@ void CbmStsDigitize::GetEventInfo(Int_t& inputNr, Int_t& eventNr,
 }
 // -------------------------------------------------------------------------
 
+void CbmStsDigitize::SetParContainers()
+{
+   fDigiPar = static_cast<CbmStsDigitizeParameters*>(FairRunAna::Instance()->GetRuntimeDb()->getContainer("CbmStsDigitizeParameters"));
+}
 
 
 // -----   Initialisation    -----------------------------------------------
 InitStatus CbmStsDigitize::Init() {
+
+  // Initialize the STS digitization parameters 
+  // --- By default, set most realistic response processes.
+  // --- This can be changed by the method SetProcesses.
+  fDigiPar->SetProcesses(2, kTRUE, kTRUE, kTRUE);
+  // --- Set default parameters for the modules
+  // --- The zero noise rate corresponds to a rise time of 80 ns (1/(pi*tau))
+  Double_t dynRange = 75000.;          // dynamic range in e
+  Double_t threshold = 3000.;          // threshold in e
+  Int_t    nAdc = 32;                  // Number of ADC channels
+  Double_t tResol = 5.;                // Time resolution in ns
+  Double_t deadTime = 800.;            // Channel dead time in ns
+  Double_t noise = 1000.;              // Noise RMS in e
+  Double_t zeroNoiseRate = 3.9789e-3;  // Zero noise rate [1/ns]
+  Double_t deadChannels = 0.;          // Fraction of dead channels in %
+  fDigiPar->SetModuleParameters(dynRange, threshold, nAdc, tResol,
+                                 deadTime, noise, zeroNoiseRate,
+                                 deadChannels);
 
   // Get STS setup interface
   fSetup = CbmStsSetup::Instance();
@@ -437,11 +446,6 @@ InitStatus CbmStsDigitize::Init() {
   fTracks = (TClonesArray*) ioman->GetObject("MCTrack");
   assert ( fTracks );
 
-  // --- Register output (CbmStsDigitizeSettings)
-  ioman->Register("StsDigitizeSettings", "STS digi settings", fSettings,
-                  IsOutputBranchPersistent("StsDigitizeSettings"));
-
-
   // --- In event mode: register output arrays
   if ( fMode == 1 ) {
 
@@ -463,10 +467,11 @@ InitStatus CbmStsDigitize::Init() {
   // Instantiate StsPhysics
   CbmStsPhysics::Instance();
 
+
   // Register this task and its settings to the setup
   fSetup->SetDigitizer(this);
-  fSetup->SetDigiSettings(fSettings);
-  LOG(INFO) << GetName() << ": " << fSettings->ToString() << FairLogger::endl;
+  fSetup->SetDigiParameters(fDigiPar);
+  LOG(INFO) << GetName() << ": " << fDigiPar->ToString() << FairLogger::endl;
 
   LOG(INFO) << GetName() << ": Initialisation successful"
 		    << FairLogger::endl;
@@ -493,7 +498,7 @@ void CbmStsDigitize::InitSetup() {
 
 	// Modify the strip pitch for DSSD sensor type, if explicitly set by user
 	Int_t nModified = 0;
-	if ( fSettings->GetStripPitch() > 0. ) {
+	if ( fDigiPar->GetStripPitch() > 0. ) {
 		Int_t nTypes = fSetup->GetNofSensorTypes();
 		for (Int_t iType = 0; iType < nTypes; iType++) {
 			CbmStsSensorType* type = fSetup->GetSensorType(iType);
@@ -502,12 +507,12 @@ void CbmStsDigitize::InitSetup() {
 			if ( type->InheritsFrom("CbmStsSensorTypeDssd") ) {
 				CbmStsSensorTypeDssd* dssdType =
 						dynamic_cast<CbmStsSensorTypeDssd*>(type);
-				dssdType->SetStripPitch(fSettings->GetStripPitch());
+				dssdType->SetStripPitch(fDigiPar->GetStripPitch());
 				nModified++;
 			} //? DSSD type
 		} //# sensor types
 		LOG(INFO) << GetName() << ": Modified strip pitch to "
-		          << fSettings->GetStripPitch()
+		          << fDigiPar->GetStripPitch()
 				  << " cm for "<< nModified << " sensor types."
 	              << FairLogger::endl;
 	} //? strip pitch set by user
@@ -569,7 +574,7 @@ void CbmStsDigitize::ProcessMCEvent() {
   	CbmLink* link = new CbmLink(1., iPoint, eventNr, inputNr);
 
   	// --- Discard secondaries if the respective flag is set
-  	if ( fSettings->GetDiscardSecondaries() ) {
+  	if ( fDigiPar->GetDiscardSecondaries() ) {
   		Int_t iTrack = point->GetTrackID();
   		if ( iTrack >= 0 ) {  // MC track is present
   			CbmMCTrack* track = (CbmMCTrack*) fTracks->At(iTrack);
@@ -670,7 +675,7 @@ void CbmStsDigitize::SetGenerateNoise(Bool_t choice) {
     return;
   }
 
-  fSettings->SetGenerateNoise(choice);
+  fDigiPar->SetGenerateNoise(choice);
 }
 // -------------------------------------------------------------------------
 
@@ -685,14 +690,14 @@ void CbmStsDigitize::SetModuleParameters() {
 	Int_t nModules = fSetup->GetNofModules();
 	for (Int_t iModule = 0; iModule < nModules; iModule++) {
 		fSetup->GetModule(iModule)->SetParameters(2048,
-		                                          fSettings->GetDynRange(),
-		                                          fSettings->GetThreshold(),
-				                                  fSettings->GetNofAdc(),
-				                                  fSettings->GetTimeResolution(),
-				                                  fSettings->GetDeadTime(),
-				                                  fSettings->GetNoise(),
-				                                  fSettings->GetZeroNoiseRate());
-		fSetup->GetModule(iModule)->SetDeadChannels(fSettings->GetDeadChannelFrac());
+		                                          fDigiPar->GetDynRange(),
+		                                          fDigiPar->GetThreshold(),
+				                                  fDigiPar->GetNofAdc(),
+				                                  fDigiPar->GetTimeResolution(),
+				                                  fDigiPar->GetDeadTime(),
+				                                  fDigiPar->GetNoise(),
+				                                  fDigiPar->GetZeroNoiseRate());
+		fSetup->GetModule(iModule)->SetDeadChannels(fDigiPar->GetDeadChannelFrac());
 	}
 	LOG(INFO) << GetName() << ": Set parameters for " << nModules
 			      << " modules " << FairLogger::endl;
@@ -714,7 +719,7 @@ void CbmStsDigitize::SetParameters(Double_t dynRange, Double_t threshold,
                << FairLogger::endl;
     return;
   }
-  fSettings->SetModuleParameters(dynRange, threshold, nAdc, timeResolution,
+  fDigiPar->SetModuleParameters(dynRange, threshold, nAdc, timeResolution,
                                  deadTime, noise, zeroNoiseRate,
                                  deadChannelFrac);
 }
@@ -734,7 +739,7 @@ void CbmStsDigitize::SetProcesses(Int_t eLossModel,
 	  	           << FairLogger::endl;
 	  	return;
 	  }
-	  fSettings->SetProcesses(eLossModel, useLorentzShift, useDiffusion,
+	  fDigiPar->SetProcesses(eLossModel, useLorentzShift, useDiffusion,
 	                          useCrossTalk, generateNoise);
 }
 // -------------------------------------------------------------------------
@@ -752,7 +757,7 @@ void CbmStsDigitize::SetSensorConditions() {
 	Double_t temperature = 268.;    //temperature of sensor, K
 	Double_t cCoupling   =  17.5;   //coupling capacitance, pF
 	Double_t cInterstrip =   1.;    //inter-strip capacitance, pF
-	fSettings->SetSensorConditions(vDep, vBias, temperature,
+	fDigiPar->SetSensorConditions(vDep, vBias, temperature,
 	                               cCoupling, cInterstrip);
 
 	CbmStsSensorConditions cond(vDep, vBias, temperature, cCoupling,

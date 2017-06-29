@@ -6,7 +6,7 @@
 #include "CbmUtils.h"
 #include "CbmStsSetup.h"
 #include "CbmStsModule.h"
-#include "CbmStsDigitize.h"
+#include "CbmStsDigitizeParameters.h"
 
 #include "TH1.h"
 #include "TF1.h"
@@ -24,10 +24,10 @@ using Cbm::NumberToString;
 using Cbm::Split;
 using Cbm::FindAndReplace;
 
-CbmStsDigitizeQaReport::CbmStsDigitizeQaReport(CbmStsSetup * setup, CbmStsDigitize * digitizer):
+CbmStsDigitizeQaReport::CbmStsDigitizeQaReport(CbmStsSetup * setup, CbmStsDigitizeParameters *digipar):
     CbmSimulationReport()
     , fSetup(setup)
-    , fDigitizer(digitizer)
+    , fDigiPar(digipar)
 {
     SetReportName("STSdigitize_qa");
 }
@@ -36,16 +36,16 @@ CbmStsDigitizeQaReport::~CbmStsDigitizeQaReport(){
 }
 
 void CbmStsDigitizeQaReport::Create(){
-    Int_t eLossModel = fDigitizer->GetSettings()->GetELossModel();
-    Bool_t lorentz = fDigitizer->GetSettings()->GetUseLorentzShift();
-    Bool_t diffusion = fDigitizer->GetSettings()->GetUseDiffusion();
-    Bool_t crossTalk = fDigitizer->GetSettings()->GetUseCrossTalk();
-    Double_t dynRange = fDigitizer->GetSettings()->GetDynRange();
-    Double_t threshold = fDigitizer->GetSettings()->GetThreshold();
-    Int_t nAdc = fDigitizer->GetSettings()->GetNofAdc();
-    Double_t timeResolution = fDigitizer->GetSettings()->GetTimeResolution();
-    Double_t deadTime = fDigitizer->GetSettings()->GetDeadTime();
-    Double_t noise = fDigitizer->GetSettings()->GetNoise();
+    Int_t eLossModel = fDigiPar->GetELossModel();
+    Bool_t lorentz = fDigiPar->GetUseLorentzShift();
+    Bool_t diffusion = fDigiPar->GetUseDiffusion();
+    Bool_t crossTalk = fDigiPar->GetUseCrossTalk();
+    Double_t dynRange = fDigiPar->GetDynRange();
+    Double_t threshold = fDigiPar->GetThreshold();
+    Int_t nAdc = fDigiPar->GetNofAdc();
+    Double_t timeResolution = fDigiPar->GetTimeResolution();
+    Double_t deadTime = fDigiPar->GetDeadTime();
+    Double_t noise = fDigiPar->GetNoise();
     char eLossModelChar[7];
     if (eLossModel == 0) sprintf(eLossModelChar, "ideal");
     if (eLossModel == 1) sprintf(eLossModelChar, "uniform");

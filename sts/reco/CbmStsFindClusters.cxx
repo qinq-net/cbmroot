@@ -13,6 +13,7 @@
 #include "TClonesArray.h"
 #include "FairEventHeader.h"
 #include "FairRun.h"
+#include "FairRuntimeDb.h"
 
 // --- Include from CBMROOT
 #include "CbmEvent.h"
@@ -20,7 +21,7 @@
 #include "CbmStsDigi.h"
 
 // --- Includes from STS
-#include "digitize/CbmStsDigitizeSettings.h"
+#include "digitize/CbmStsDigitizeParameters.h"
 #include "digitize/CbmStsSensorTypeDssd.h"
 #include "reco/CbmStsClusterAnalysis.h"
 #include "reco/CbmStsClusterFinderModule.h"
@@ -40,7 +41,7 @@ CbmStsFindClusters::CbmStsFindClusters()
     , fDigis(NULL)
     , fClusters(NULL)
     , fSetup(NULL)
-    , fSettings(NULL)
+    , fDigiPar(NULL)
     , fAna(NULL)
     , fTimer()
     , fEventMode(kFALSE)
@@ -114,16 +115,13 @@ Int_t CbmStsFindClusters::CreateModules() {
 // -------------------------------------------------------------------------
 
 
+void CbmStsFindClusters::SetParContainers()
+{
+   fDigiPar = static_cast<CbmStsDigitizeParameters*>(FairRun::Instance()->GetRuntimeDb()->getContainer("CbmStsDigitizeParameters"));
+}
 
 // -----   Task execution   ------------------------------------------------
 void CbmStsFindClusters::Exec(Option_t* opt) {
-
-  // --- Check whether digi settings are present in the setup. If not,
-  // --- get them from the tree and update the setup.
-  if ( ! fSetup->GetDigiSettings() ) {
-    LOG(INFO) << GetName() << ": Initialise settings" << FairLogger::endl;
-    InitSettings();
-  }
 
   if ( fEventMode && ! fLegacy)
     LOG(INFO) << GetName() << ": Processing time slice "
@@ -239,20 +237,20 @@ InitStatus CbmStsFindClusters::Init()
     fDigis = (TClonesArray*)ioman->GetObject("StsDigi");
     assert(fDigis);
 
-    // --- Get input object (StsDigitizeSettings)
-    fSettings = dynamic_cast<CbmStsDigitizeSettings*>
-      (ioman->GetObject("StsDigitizeSettings"));
-    assert(fSettings);
-
     // --- Register output array
     fClusters = new TClonesArray("CbmStsCluster", 1e6);
     ioman->Register("StsCluster", "Cluster in STS", fClusters, IsOutputBranchPersistent("StsCluster"));
 
-    // --- Create modules if settings are present in setup
-    // --- This is the case if the digitiser is run in the same run.
-    // --- Otherwise, the settings are read from the input tree,
-    // --- and the modules are created at the first call to Exec.
-    if ( fSetup->GetDigiSettings() ) CreateModules();
+
+  // --- Create modules if digi parameters are present in setup
+  // --- This is the case if the digitiser is run in the same run.
+  // --- Otherwise, the parameters are read from the parameter container,
+  // --- and the module paramters are created before creating the modules
+  if ( fSetup->GetDigiParameters() ) {
+    CreateModules();
+  } else {
+    InitSettings();
+  }
 
     LOG(INFO) << GetName() << ": Initialisation successful."
     		      << FairLogger::endl;
@@ -267,8 +265,8 @@ InitStatus CbmStsFindClusters::Init()
 // -----   Initialise the digitisation settings   --------------------------
 void CbmStsFindClusters::InitSettings() {
 
-  assert( fSettings );
-  fSetup->SetDigiSettings(fSettings);
+  assert( fDigiPar );
+  fSetup->SetDigiParameters(fDigiPar);
   SetModuleParameters();
   CreateModules();
 
@@ -495,39 +493,37 @@ Int_t CbmStsFindClusters::ReadLegacyEvent() {
 void CbmStsFindClusters::SetModuleParameters()
 {
 
-    // --- Get settings from setup
-    CbmStsDigitizeSettings* settings = fSetup->GetDigiSettings();
-    assert( settings );
+    assert( fDigiPar );
 
 	// --- Control output of parameters
 	LOG(INFO) << GetName() << ": Digitisation parameters :"
 			      << FairLogger::endl;
-	LOG(INFO) << "\t Dynamic range   " << settings->GetDynRange()
+	LOG(INFO) << "\t Dynamic range   " << fDigiPar->GetDynRange()
 	          << " e"<< FairLogger::endl;
-	LOG(INFO) << "\t Threshold       " << settings->GetThreshold()
+	LOG(INFO) << "\t Threshold       " << fDigiPar->GetThreshold()
 	          << " e"<< FairLogger::endl;
-	LOG(INFO) << "\t ADC channels    " << settings->GetNofAdc()
+	LOG(INFO) << "\t ADC channels    " << fDigiPar->GetNofAdc()
 	          << FairLogger::endl;
-	LOG(INFO) << "\t Time resolution " << settings->GetTimeResolution()
+	LOG(INFO) << "\t Time resolution " << fDigiPar->GetTimeResolution()
 	          << " ns" << FairLogger::endl;
-	LOG(INFO) << "\t Dead time       " << settings->GetDeadTime()
+	LOG(INFO) << "\t Dead time       " << fDigiPar->GetDeadTime()
 	          << " ns" << FairLogger::endl;
-	LOG(INFO) << "\t ENC             " << settings->GetNoise()
+	LOG(INFO) << "\t ENC             " << fDigiPar->GetNoise()
 	    << " e" << FairLogger::endl;
-    LOG(INFO) << "\t Zero noise rate " << settings->GetZeroNoiseRate()
+    LOG(INFO) << "\t Zero noise rate " << fDigiPar->GetZeroNoiseRate()
         << " e" << FairLogger::endl;
 
 	// --- Set parameters for all modules
 	Int_t nModules = fSetup->GetNofModules();
 	for (Int_t iModule = 0; iModule < nModules; iModule++) {
 		fSetup->GetModule(iModule)->SetParameters(2048,
-		                                          settings->GetDynRange(),
-		                                          settings->GetThreshold(),
-		                                          settings->GetNofAdc(),
-		                                          settings->GetTimeResolution(),
-		                                          settings->GetDeadTime(),
-		                                          settings->GetNoise(),
-		                                          settings->GetZeroNoiseRate());
+		                                          fDigiPar->GetDynRange(),
+		                                          fDigiPar->GetThreshold(),
+		                                          fDigiPar->GetNofAdc(),
+		                                          fDigiPar->GetTimeResolution(),
+		                                          fDigiPar->GetDeadTime(),
+		                                          fDigiPar->GetNoise(),
+		                                          fDigiPar->GetZeroNoiseRate());
 	}
 	LOG(INFO) << GetName() << ": Set parameters for " << nModules
 			      << " modules " << FairLogger::endl;

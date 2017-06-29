@@ -107,18 +107,20 @@ void run_digi_tb(Int_t nEvents = 2, const char* setupName = "sis100_electron")
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
   FairParRootFileIo* parIo1 = new FairParRootFileIo();
   FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
-  parIo1->open(parFile.Data());
+  parIo1->open(parFile.Data(),"UPDATE");
   parIo2->open(parFileList, "in");
   rtdb->setFirstInput(parIo1);
   rtdb->setSecondInput(parIo2);
-  rtdb->setOutput(parIo1);
-  rtdb->saveOutput();
   rtdb->print();
   // ------------------------------------------------------------------------
 
 
   // -----   Intialise and run   --------------------------------------------
   run->Init();
+
+  rtdb->setOutput(parIo1);
+  rtdb->saveOutput();
+
   cout << "Starting run" << endl;
   run->Run(0, nEvents);
   // ------------------------------------------------------------------------

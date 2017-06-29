@@ -220,7 +220,7 @@ void CbmStsSensorTypeDssd::GetClusterPosition(Double_t centre,
 	//Double_t mobility = (side == 0 ? 0.1650 : 0.0310 );  // in m^2/(Vs)
 	//Double_t tanLorentz = mobility * sensor->GetConditions().GetBy();
 	//xCluster -= tanLorentz * fDz / 2.;
-	if ( CbmStsSetup::Instance()->GetDigiSettings()->GetUseLorentzShift() )
+	if ( CbmStsSetup::Instance()->GetDigiParameters()->GetUseLorentzShift() )
 	  xCluster -= sensor->GetConditions().GetMeanLorentzShift(side);
 
 	LOG(DEBUG4) << GetName() << ": Cluster centre " << centre
@@ -692,7 +692,7 @@ Int_t CbmStsSensorTypeDssd::ProcessPoint(CbmStsSensorPoint* point,
   ProduceCharge(point, sensor);
 
   // --- Cross talk
-  if ( CbmStsSetup::Instance()->GetDigiSettings()->GetUseCrossTalk() ) {
+  if ( CbmStsSetup::Instance()->GetDigiParameters()->GetUseCrossTalk() ) {
     if ( FairLogger::GetLogger()->IsLogNeeded(DEBUG4) ) {
     	LOG(DEBUG4) << GetName() << ": Status before cross talk"
     			        << FairLogger::endl;
@@ -857,7 +857,7 @@ void CbmStsSensorTypeDssd::PropagateCharge(Double_t x, Double_t y,
 			        << FairLogger::endl;
 
 	// Lorentz shift on the drift to the readout plane
-	if ( CbmStsSetup::Instance()->GetDigiSettings()->GetUseLorentzShift() ) {
+	if ( CbmStsSetup::Instance()->GetDigiParameters()->GetUseLorentzShift() ) {
 		xCharge += LorentzShift(z, side, sensor, bY);
     LOG(DEBUG4) << GetName() << ": After Lorentz shift: (" << xCharge << ", "
 		   	        << yCharge << ", " << zCharge << ") cm" << FairLogger::endl;
@@ -872,7 +872,7 @@ void CbmStsSensorTypeDssd::PropagateCharge(Double_t x, Double_t y,
 	}
 
 	// No diffusion: all charge is in one strip
-	if ( ! CbmStsSetup::Instance()->GetDigiSettings()->GetUseDiffusion() ) {
+	if ( ! CbmStsSetup::Instance()->GetDigiParameters()->GetUseDiffusion() ) {
 		Int_t iStrip = GetStripNumber(xCharge, yCharge, side);
 		fStripCharge[side][iStrip] += charge;
 		LOG(DEBUG4) << GetName() << ": Adding charge " << charge << " to strip "

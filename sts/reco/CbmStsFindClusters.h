@@ -13,7 +13,7 @@
 class TClonesArray;
 class CbmStsClusterAnalysis;
 class CbmStsClusterFinderModule;
-class CbmStsDigitizeSettings;
+class CbmStsDigitizeParameters;
 class CbmEvent;
 class CbmStsSetup;
 
@@ -53,6 +53,11 @@ class CbmStsFindClusters : public FairTask
     virtual void Exec(Option_t* opt);
 
 
+    /** define needed parameter containers
+     ** Inherited from FairTask.
+     **/
+    virtual void SetParContainers();
+
     /** End-of-run action
      ** Inherited from FairTask.
      **/
@@ -78,7 +83,7 @@ class CbmStsFindClusters : public FairTask
     TClonesArray* fDigis;             //! Input array of CbmStsDigi
     TClonesArray* fClusters;          //! Output array of CbmStsCluster
     CbmStsSetup*  fSetup;             //! Instance of STS setup
-    CbmStsDigitizeSettings* fSettings; //! Instance of digi settings
+    CbmStsDigitizeParameters* fDigiPar; //! digi parameters
     CbmStsClusterAnalysis* fAna;      //! Instance of Cluster Analysis tool
     TStopwatch    fTimer;             //! ROOT timer
     Bool_t fEventMode;                /// Run event-by-event if kTRUE

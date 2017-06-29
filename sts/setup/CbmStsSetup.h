@@ -12,7 +12,7 @@
 
 class TGeoManager;
 class CbmStsDigitize;
-class CbmStsDigitizeSettings;
+class CbmStsDigitizeParameters;
 class CbmStsModule;
 class CbmStsSensor;
 class CbmStsSensorType;
@@ -47,11 +47,10 @@ class CbmStsSetup : public CbmStsElement
     CbmStsDigitize* GetDigitizer() const { return fDigitizer; }
 
 
-    /** Get digitiser settings **/
-    CbmStsDigitizeSettings* GetDigiSettings() const  {
+    /** Get digitize parameters **/
+    CbmStsDigitizeParameters* GetDigiParameters() const  {
       return fSettings;
     }
-
 
     /** Get an STS element by address
      ** @param address  Unique element address (see CbmStsAddress)
@@ -159,16 +158,15 @@ class CbmStsSetup : public CbmStsElement
     }
 
 
-    /** @brief Set the digitiser settings
-     ** @param settings  Pointer to digitiser settings
+    /** @brief Set the digitiser parameters 
+     ** @param settings  Pointer to digitiser parameters
      **
-     ** The settings are registered by the digitiser task during digitisation.
+     ** The parameters are registered by the digitiser task during digitisation.
      ** They have to be set by a reconstruction task during reconstruction.
      **/
-    void SetDigiSettings(CbmStsDigitizeSettings* settings) {
+    void SetDigiParameters(CbmStsDigitizeParameters* settings) {
       fSettings = settings;
     }
-
 
     /** Set sensor parameters
      ** Set the sensor parameters that are not contained in the geometry,
@@ -184,7 +182,7 @@ class CbmStsSetup : public CbmStsElement
 
     static CbmStsSetup* fgInstance;    ///< Static instance of this class
     CbmStsDigitize* fDigitizer;        ///< Pointer to digitiser task
-    CbmStsDigitizeSettings* fSettings;     ///< Pointer to digitiser settings
+    CbmStsDigitizeParameters* fSettings;     ///< Pointer to digitiser settings
 
     Bool_t fIsInitialised;  ///< To protect against multiple initialisation.
     Bool_t fIsOld;          ///< Old setup with stations as top level
@@ -211,7 +209,7 @@ class CbmStsSetup : public CbmStsElement
     /** Assignment operator (disabled) **/
     CbmStsSetup operator=(const CbmStsSetup&) = delete;
 
-    ClassDef(CbmStsSetup,1);
+    ClassDef(CbmStsSetup,2);
 
 };
 

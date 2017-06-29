@@ -31,7 +31,8 @@ set (SRCS_DIGITIZE
 digitize/CbmStsDigitize.cxx
 digitize/CbmStsDigitizeQa.cxx
 digitize/CbmStsDigitizeQaReport.cxx
-digitize/CbmStsDigitizeSettings.cxx
+#digitize/CbmStsDigitizeSettings.cxx
+digitize/CbmStsDigitizeParameters.cxx
 digitize/CbmStsPhysics.cxx
 digitize/CbmStsSensorTypeDssd.cxx
 digitize/CbmStsSensorTypeDssdOrtho.cxx
