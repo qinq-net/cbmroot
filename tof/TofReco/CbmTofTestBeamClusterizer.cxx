@@ -2734,7 +2734,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
 
          Double_t YMean=((TProfile *)hAvPos_pfx)->GetBinContent(iB+1);  //nh +1 empirical(?)
 	 htempPos_py=htempPos->ProjectionY(Form("%s_py",htempPos->GetName()),1,iNbCh);
-	 if(htempPos_py->GetEntries() > fdYFitMin && fPosYMaxScal < 2. && fPosYMaxScal < 2.) {
+	 if(htempPos_py->GetEntries() > fdYFitMin && fPosYMaxScal < 2.) {
 	   LOG(DEBUG1)<<Form("Determine YMean in %s by fit to %d entries",
 			     htempPos->GetName(),(Int_t)htempPos_py->GetEntries()) 
 		      <<FairLogger::endl;
@@ -2748,7 +2748,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
            fit_ybox(htempPos_py,0.5*fChannelInfo->GetSizey());
 	   TF1 *ff=htempPos_py->GetFunction("YBox");
 	   if(NULL != ff){              
-             LOG(DEBUG) << "FRes YBox "<<htempPos_py->GetEntries()<<" entries in TSR "<<iSmType<<iSm<<iRpc
+             LOG(INFO) << "FRes YBox "<<htempPos_py->GetEntries()<<" entries in TSR "<<iSmType<<iSm<<iRpc
 		       <<", chi2 "<<ff->GetChisquare()
 		       << Form(", striplen (%5.2f), %4.2f: %7.2f +/- %5.2f, pos res %5.2f +/- %5.2f at y_cen = %5.2f +/- %5.2f",
 			       fChannelInfo->GetSizey(),dVscal,
@@ -2878,7 +2878,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
         Int_t iNbRpc = fDigiBdfPar->GetNbRpc(  iSmType);
         Int_t iNbCh  = fDigiBdfPar->GetNbChan( iSmType, iRpc );
         if((fCalSmAddr < 0) || (fCalSmAddr != iSmAddr) ){     // select detectors for updating offsets
-         LOG(DEBUG)<<"WriteHistos (calMode==3): update Offsets and Gains, keep Walk and DelTof for "
+         LOG(INFO)<<"WriteHistos (calMode==3): update Offsets and Gains, keep Walk and DelTof for "
                   <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc<<" with " <<  iNbCh << " channels "
                    <<" using selector "<<fCalSel
                   <<FairLogger::endl;
@@ -2912,14 +2912,14 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
 	    TF1 *ff=htempPos_py->GetFunction("YBox");
 	    if(NULL != ff){              	    
 	      if(    TMath::Abs(fChannelInfo->GetSizey()-2.*ff->GetParameter(1))/fChannelInfo->GetSizey()<0.05 
-		  && TMath::Abs(ff->GetParError(1)/ff->GetParameter(1))<0.05 
-	      	  &&  ff->GetChisquare() < 200.)   //FIXME - constants!
+		  && TMath::Abs(ff->GetParError(1)/ff->GetParameter(1))<0.05 )
+		     //&&  ff->GetChisquare() < 200.)   //FIXME - constants!
 	      {                  
 		if(TMath::Abs(ff->GetParameter(3)-YMean)<0.5*fChannelInfo->GetSizey()){
 		  YMean=ff->GetParameter(3);
 		  Double_t dV =dVscal*fChannelInfo->GetSizey()/(2.*ff->GetParameter(1)); 
 		  fhSmCluSvel[iSmType]->Fill((Double_t)(iSm*iNbRpc+iRpc),dV);
-		  LOG(DEBUG) << "FRes YBox "<<htempPos_py->GetEntries()<<" entries in "<<iSmType<<iSm<<iRpc<<iCh
+		  LOG(INFO) << "FRes YBox "<<htempPos_py->GetEntries()<<" entries in "<<iSmType<<iSm<<iRpc<<iCh
 			<<", chi2 "<<ff->GetChisquare()
 			<< Form(", striplen (%5.2f), %4.2f: %7.2f +/- %5.2f, pos res %5.2f +/- %5.2f at y_cen = %5.2f +/- %5.2f",
 				fChannelInfo->GetSizey(),dVscal,
@@ -3641,7 +3641,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
          if(    fDigiBdfPar->GetNbSmTypes() > pDigi->GetType()  // prevent crash due to misconfiguration 
              && fDigiBdfPar->GetNbSm(  pDigi->GetType()) > pDigi->GetSm()
              && fDigiBdfPar->GetNbRpc( pDigi->GetType()) > pDigi->GetRpc()
-             && fDigiBdfPar->GetNbChan(pDigi->GetType(),0) >pDigi->GetChannel() 
+             && fDigiBdfPar->GetNbChan(pDigi->GetType(), pDigi->GetRpc()) > pDigi->GetChannel() 
                 )
          {
 
@@ -3759,14 +3759,14 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                   <<FairLogger::endl;
           }
           } else 
-           {
-           LOG(INFO)<<"Skip1 Digi "
+          {
+            LOG(INFO)<<"Skip1 Digi "
                      <<" Type "<<pDigi->GetType()<<" "<< fDigiBdfPar->GetNbSmTypes()
                      <<" Sm "  <<pDigi->GetSm()<<" " << fDigiBdfPar->GetNbSm(pDigi->GetType())
                      <<" Rpc " <<pDigi->GetRpc()<<" "<< fDigiBdfPar->GetNbRpc(pDigi->GetType())
                      <<" Ch "  <<pDigi->GetChannel()<<" "<<fDigiBdfPar->GetNbChan(pDigi->GetType(),0)
                      <<FairLogger::endl;
-           }
+          }
           if(pCalDigi->GetType()==5 || pCalDigi->GetType() == 8) {  // for Pad counters generate fake digi to mockup a strip
 	     CbmTofDigiExp *pCalDigi2 = new((*fTofCalDigisColl)[++iDigIndCal]) CbmTofDigiExp( *pCalDigi );
              if(pCalDigi->GetSide()==0) pCalDigi2->SetAddress(pCalDigi->GetSm(),pCalDigi->GetRpc(),pCalDigi->GetChannel(),1,pCalDigi->GetType());
@@ -3804,7 +3804,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
          if(    fDigiBdfPar->GetNbSmTypes() > pDigi->GetType()  // prevent crash due to misconfiguration 
              && fDigiBdfPar->GetNbSm(  pDigi->GetType()) > pDigi->GetSm()
              && fDigiBdfPar->GetNbRpc( pDigi->GetType()) > pDigi->GetRpc()
-             && fDigiBdfPar->GetNbChan(pDigi->GetType(),0) >pDigi->GetChannel() 
+             && fDigiBdfPar->GetNbChan(pDigi->GetType(), pDigi->GetRpc()) > pDigi->GetChannel() 
                 )
          {
          fStorDigiExp[pDigi->GetType()]
