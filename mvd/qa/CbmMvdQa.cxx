@@ -495,8 +495,8 @@ Int_t nrDigis = fMvdDigis->GetEntriesFast();
 Int_t nrSensor = fDetector->GetSensorArraySize();
 Int_t nrMcPoints = fMcPoints->GetEntriesFast();
 
-Int_t digisPerMcPoints[nrMcPoints] = {0};
-Int_t McPointsPerDigi[nrDigis] = {0};
+Int_t digisPerMcPoints[nrMcPoints];// = {0};
+Int_t McPointsPerDigi[nrDigis];// = {0};
 
 for(Int_t i = 0; i < nrDigis; i++)
    {
