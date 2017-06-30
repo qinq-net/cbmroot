@@ -104,15 +104,18 @@ void run_reco_tb_digi()
   // -----  Parameter database   --------------------------------------------
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
   FairParRootFileIo* parIo1 = new FairParRootFileIo();
-  parIo1->open(parFile.Data());
+  parIo1->open(parFile.Data(),"UPDATE");
   rtdb->setFirstInput(parIo1);
-  rtdb->setOutput(parIo1);
-  rtdb->saveOutput();
   // ------------------------------------------------------------------------
 
 
   // -----   Initialise and run   -------------------------------------------
   run->Init();
+
+  rtdb->setOutput(parIo1);
+  rtdb->saveOutput();
+  rtdb->print();
+
   cout << "Starting run " << gGeoManager << endl;
   run->Run();
   // ------------------------------------------------------------------------

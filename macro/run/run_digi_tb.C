@@ -120,6 +120,7 @@ void run_digi_tb(Int_t nEvents = 2, const char* setupName = "sis100_electron")
 
   rtdb->setOutput(parIo1);
   rtdb->saveOutput();
+  rtdb->print();
 
   cout << "Starting run" << endl;
   run->Run(0, nEvents);

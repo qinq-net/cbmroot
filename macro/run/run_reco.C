@@ -178,15 +178,12 @@ void run_reco(Int_t nEvents = 2,
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
   FairParRootFileIo* parIo1 = new FairParRootFileIo();
   FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
-  parIo1->open(parFile.Data());
+  parIo1->open(parFile.Data(),"UPDATE");
   rtdb->setFirstInput(parIo1);
   if ( ! parFileList->IsEmpty() ) {
     parIo2->open(parFileList, "in");
     rtdb->setSecondInput(parIo2);
   }
-  rtdb->setOutput(parIo1);
-  rtdb->saveOutput();
-  rtdb->print();
   // ------------------------------------------------------------------------
 
 
@@ -196,6 +193,9 @@ void run_reco(Int_t nEvents = 2,
   run->Init();
   // ------------------------------------------------------------------------
 
+  rtdb->setOutput(parIo1);
+  rtdb->saveOutput();
+  rtdb->print();
 
   // -----   Start run   ----------------------------------------------------
   std::cout << std::endl << std::endl;

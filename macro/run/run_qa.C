@@ -66,15 +66,18 @@ void run_qa(Int_t nEvents = 1, const char* setupName = "sis100_electron")
   // -----  Parameter database   --------------------------------------------
   FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
   FairParRootFileIo* parIo1 = new FairParRootFileIo();
-  parIo1->open(parFile.Data());
+  parIo1->open(parFile.Data(),"UPDATE");
   rtdb->setFirstInput(parIo1);
-  rtdb->setOutput(parIo1);
-  rtdb->saveOutput();
   // ------------------------------------------------------------------------
 
 
   // -----   Intialise and run   --------------------------------------------
   fRun->Init();
+
+  rtdb->setOutput(parIo1);
+  rtdb->saveOutput();
+  rtdb->print();
+
   cout << "Starting run" << endl;
   fRun->Run(0,nEvents);
   // ------------------------------------------------------------------------
@@ -112,6 +115,7 @@ void run_qa(Int_t nEvents = 1, const char* setupName = "sis100_electron")
   }
   //  delete run;
 
+  RemoveGeoManager();
   cout << " Test passed" << endl;
   cout << " All ok " << endl;
 }

@@ -135,17 +135,20 @@ void run_reco_tb_track()
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
   FairParRootFileIo* parIo1 = new FairParRootFileIo();
   FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
-  parIo1->open(parFile.Data());
+  parIo1->open(parFile.Data(),"UPDATE");
   parIo2->open(parFileList, "in");
   rtdb->setFirstInput(parIo1);
   rtdb->setSecondInput(parIo2);
-  rtdb->setOutput(parIo1);
-  rtdb->saveOutput();
   // ------------------------------------------------------------------------
 
 
   // -----   Initialise and run   --------------------------------------------
   run->Init();
+
+  rtdb->setOutput(parIo1);
+  rtdb->saveOutput();
+  rtdb->print();
+
   cout << "Starting run " << gGeoManager << endl;
   run->Run();
   // ------------------------------------------------------------------------
