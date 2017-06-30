@@ -27,6 +27,7 @@
 
 
 #include "FairRunAna.h"
+#include "FairEventHeader.h"
 #include "CbmStsFindTracks.h"
 #include "CbmKF.h"
 #include "setup/CbmStsSetup.h"
