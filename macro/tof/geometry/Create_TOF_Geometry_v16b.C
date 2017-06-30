@@ -52,22 +52,22 @@ const Float_t Wall_Z_ReferenceSmPos = 200; // target distance of setup
 // 3 Buc ref
 // 4 Plastic
 // 5 Diamond 
-// 6 Buc 2015a
-// 7 Buc 2015b
+// 6 Buc 2015a - 600
+// 7 Buc 2015b - 601
 // 8 Ceramic Pad 
 // 9 THU strip 
 //
 const Int_t NumberOfDifferentCounterTypes = 10;
-const Float_t Glass_X[NumberOfDifferentCounterTypes] = {32.,  52., 15.04, 18.,  2.,   0.2,  40.4, 28.8, 17.4, 25.};
+const Float_t Glass_X[NumberOfDifferentCounterTypes] = {32.,  52., 15.04, 18.,  2.,   0.2,  28.8, 28.8, 17.4, 25.};
 const Float_t Glass_Y[NumberOfDifferentCounterTypes] = {26.9, 53.,  4.,    4.6, 8.,  0.2,  9.6,   9.6,  2.0, 26.7};
 const Float_t Glass_Z[NumberOfDifferentCounterTypes] = {0.1,   0.1, 0.1,   0.1, 0.01, 0.1,  0.05,  0.05, 0.07, 0.1};
 
-const Float_t GasGap_X[NumberOfDifferentCounterTypes] = {32., 52., 15.04, 18.,    2.,  0.2,  40.4, 28.8,  17.4, 25.};
+const Float_t GasGap_X[NumberOfDifferentCounterTypes] = {32., 52., 15.04, 18.,    2.,  0.2,  28.8, 28.8,  17.4, 25.};
 const Float_t GasGap_Y[NumberOfDifferentCounterTypes] = {26.9,53.,  4.,    4.6,   8.,  0.2, 9.6,  9.6,   2.0, 26.7};
 const Float_t GasGap_Z[NumberOfDifferentCounterTypes] = {0.022,0.022,0.022,0.014, 1.,  0.1, 0.014,0.014, 0.025, 0.025};
 
 const Int_t NumberOfGaps[NumberOfDifferentCounterTypes] = {8,8,6,10,1,1,10,8,10,10};
-const Int_t NumberOfReadoutStrips[NumberOfDifferentCounterTypes] = {32,56,16,72,1,16,40,40,8,24};
+const Int_t NumberOfReadoutStrips[NumberOfDifferentCounterTypes] = {32,56,16,72,1,16,28,40,8,24};
 
 const Float_t SingleStackStartPosition_Z[NumberOfDifferentCounterTypes] = {-0.6,-0.6,-0.6,-0.6,-0.1,-0.1,-0.6,-0.6,-1.,-0.6};
 
@@ -102,7 +102,7 @@ const Int_t NCounterInModule[NofModuleTypes]    = {1,1,1,1,1,1,2,4,1,2};
 
 // Placement of the counter inside the module
 const Float_t CounterXStartPosition[NofModuleTypes] = {-10.0,   0.0,   2.0,  0.0,  0.0,  0., 0., -15., 0.,  0.};
-const Float_t CounterXDistance[NofModuleTypes]      = {30.0,   30.6,   0.0, 30.0,  0.0,  0.,-6.4, 30., 0.,  0.};
+const Float_t CounterXDistance[NofModuleTypes]      = {30.0,   30.6,   0.0, 30.0,  0.0,  0., 0., 30., 0.,  0.};
 const Float_t CounterYStartPosition[NofModuleTypes] = {0.0,     0.0,   0.0,  0.0,  0.0,  0., 0., -4.,  0.,  0.};
 const Float_t CounterYDistance[NofModuleTypes]      = {0.0,     0.0,   0.0,  0.0,  0.0,  0., 0.,  8.,  0., 0.};
 const Float_t CounterZStartPosition[NofModuleTypes] = {0.0,     0.0,   0.0,  2.5,  0.0,  0.,-2., -8.,  0., -2.};
@@ -164,7 +164,7 @@ const Float_t Buc2012_Number[Buc2012_NTypes] = {1.};
 
 const Float_t Buc2015_Z_Position=ZDist2Target+125.;
 const Float_t Buc2015_First_Y_Position=Buc2015_Z_Position*TanTheta + 0.5;
-const Float_t Buc2015_X_Offset=5.5; 
+const Float_t Buc2015_X_Offset=-0.5; 
 const Float_t Buc2015_rotate_Z=0.;
 const Int_t Buc2015_NTypes = 1;
 const Float_t Buc2015_Types[Buc2015_NTypes]  = {6.};
@@ -197,7 +197,7 @@ const Float_t Star2_rotate_Z=0.;
 const Int_t Star2_NTypes = 3;
 const Float_t Star2_Types[Star2_NTypes]  = {9.,9.,9.};
 const Float_t Star2_Number[Star2_NTypes] = {1.,1.,1.}; //debugging, V16b
-const Float_t Star2_X_Offset[Star2_NTypes]={2.,0.,0.};
+const Float_t Star2_X_Offset[Star2_NTypes]={2.,-0.13,-0.49};
 
 
 const Int_t Pla_NTypes = 2;
