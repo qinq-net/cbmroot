@@ -17,33 +17,21 @@
 #define CBMMVDDETECTOR_H 1
 
 
-
+/// includes from c
 #include <vector>
-#include "TNamed.h"
-#include "TString.h"
-#include "TGeoMatrix.h"
-#include "TGeoVolume.h"
-#include "TGeoBBox.h"
+
+/// includes from ROOT
 #include "TClonesArray.h"
+#include "TNamed.h"
 
-#include "CbmMvdSensor.h"
+/// includes from CbmRoot
 #include "CbmMvdStationPar.h"
+#include "CbmMvdDigi.h"
 
-#include "plugins/CbmMvdSensorPlugin.h"
-   #include "plugins/tasks/CbmMvdSensorTask.h"
-      #include "plugins/tasks/CbmMvdSensorDigitizerTask.h"
-      #include "plugins/tasks/CbmMvdSensorFindHitTask.h"
-      #include "plugins/tasks/CbmMvdSensorClusterfinderTask.h"
-      #include "plugins/tasks/CbmMvdSensorHitfinderTask.h"
-   #include "plugins/buffers/CbmMvdSensorBuffer.h"
-      #include "plugins/buffers/CbmMvdSensorFrameBuffer.h"
-      #include "plugins/buffers/CbmMvdSensorTrackingBuffer.h"
-
-// data classes
 class CbmMvdPoint;
 class CbmMvdSensorDataSheet;
-
-
+class CbmMvdSensorPlugin;
+class CbmMvdSensor;
 
 class CbmMvdDetector : public TNamed
 {
@@ -92,6 +80,7 @@ public:
   void SetParameterFile(CbmMvdStationPar* parameter){fParameter = parameter;};
   void ShowDebugHistos();
   /** Data Processing */
+
   
   void ExecChain(); //Processes the full execution chain
   void Exec(UInt_t nLevel); //Processes Element nLevel of the chain
@@ -107,6 +96,8 @@ public:
   CbmMvdStationPar* GetParameterFile(){return fParameter;};  
   CbmMvdSensor* GetSensor(UInt_t nSensor){return (CbmMvdSensor*)fSensorArray->At(nSensor);};
   void PrintParameter(){fParameter->Print();};
+
+  void SetProduceNoise();
 
 private:
   TClonesArray* fSensorArray;

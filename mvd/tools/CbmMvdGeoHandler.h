@@ -10,6 +10,7 @@
 #define CbmMvdGeoHandler_H_ 1
 
 #include <map>
+using std::map;
 
 #include "TObject.h"
 #include "CbmMvdDetector.h"
@@ -21,7 +22,7 @@ class TGeoBBox;
 class TGeoVolume;
 class TGeoHMatrix;
 
-enum CbmMvdGeoTyp {Default, beamtest, TwoStation, ThreeStation, FourStation, FourStationShift, MiniCbm};
+enum CbmMvdGeoTyp {Default, beamtest, TwoStation, ThreeStation, FourStation, FourStationShift, MiniCbm, scripted};
 
 class CbmMvdGeoHandler : public TObject
 {
@@ -57,8 +58,10 @@ public:
    Double_t GetZ(const TString& path);
    Int_t    GetStation(const TString& path);
    void     Fill();
-   std::map<Int_t, Int_t> GetMap() {return fStationMap;};
+   map<Int_t, Int_t> GetMap() {return fStationMap;};
    void PrintGeoParameter();
+   Int_t GetIDfromPath(TString path);
+
 
 private:
 
@@ -67,13 +70,15 @@ private:
    void GetGeometryTyp();
    void FillParameter();
    void FillDetector();
-   void FillStationMap(); 
+   void FillStationMap();
+
+
 
 
    CbmMvdDetector* fDetector;
    CbmMvdStationPar* fStationPar;
 
-   std::map<Int_t, Int_t> fStationMap; 
+   map<Int_t, Int_t> fStationMap;
 
    Bool_t fIsSimulation; //!
 

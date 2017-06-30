@@ -50,7 +50,7 @@ public:
   ~CbmMvdQa();
 
   void     SetMinHitReq(Int_t nrOfHits){fminHitReq = nrOfHits;};
-  void     SetMatches(Int_t trackID, CbmStsTrack* stsTrack);
+  void     SetMatches(Int_t MCtrackID, CbmStsTrack* stsTrack);
   void     Exec(Option_t* opt); 
 
   InitStatus Init();
@@ -62,7 +62,12 @@ public:
   void SetUseHitQa(){useHitQa = kTRUE;};
   void SetUseTrackQa(){useTrackQa = kTRUE;};
 
+  void SetOutFile(TFile* outFile){foutFile = outFile;};
+  void SetDrawOutput(){fdraw = kTRUE;};
+
 private:
+
+  TFile* foutFile;
 
   Int_t fNHitsOfLongTracks;
   Int_t fEventNumber;
@@ -71,6 +76,13 @@ private:
   Int_t fBadTrack;
   Int_t fUsedTracks;
   Int_t fnrOfMergedHits;
+
+
+  Int_t fnrTrackslowP;
+  Int_t fnrTracksHighP;
+  Int_t flow;
+  Int_t fmid;
+  Int_t fhigh;
 
   TClonesArray* fStsTrackArray;
   TClonesArray* fStsTrackArrayP;
@@ -88,33 +100,22 @@ private:
   TClonesArray* fMvdCluster;
   TClonesArray* fMvdHits;
   TClonesArray* fMvdHitMatchArray;
+    TClonesArray* fMvdDigiMatchArray;
   TClonesArray* fBadTracks;
 
   TClonesArray* fInfoArray;
-  TH2F* fMvdResHistoX;
-  TH2F* fMvdResHistoR;
-  TH2F* fMvdResHistoY;
-  TH2F* fMvdResHistoXY;
-  TH1F* fMatchingEffiHisto;
 
-  TH2F* fMvdDigiDist1;
-  TH2F* fMvdDigiDist2;
-  TH2F* fMvdDigiDist3;
-  TH2F* fMvdDigiDist4;
-  TH2F* fMvdDigiWorst;
-  TH2F* fMvdHitWorst;
-  TH2F* fMvdMCWorst;
-  TH2F* fMvdMCWorstDelta;
-  TH2F* fMvdMCBank[63];
-  TH2F* fMvdMCHitsStations[4];
-  TH1F* fWordsPerSuperRegion;
-  TH1F* fWorstSuperPerEvent;
+  TH1F* fMC1F[30];
+  TH2F* fMC2F[30];
 
-  TH2I* fMvdBankDist;
+  TH1F* fDigi1F[30];
+  TH2F* fDigi2F[30];
 
+  TH1F* fHits1F[30];
+  TH2F* fHits2F[30];
 
-  TH1F* fMvdTrackQa1F[20];
-  TH2F* fMvdTrackQa2F[20];
+  TH1F* fTracks1F[40];
+  TH2F* fTracks2F[30];
 
   CbmVertex* fPrimVtx;
   CbmVertex* fSecVtx;
@@ -126,6 +127,10 @@ private:
   Bool_t useHitQa;
   Bool_t useTrackQa;
 
+  Int_t fMode;
+
+  Bool_t fdraw;
+
  // Double_t GetImpactParameterRadius(CbmLitTrackParam etrack);
  // Double_t GetImpactParameterX(CbmLitTrackParam etrack);
  // Double_t GetImpactParameterY(CbmLitTrackParam etrack);
@@ -136,6 +141,10 @@ private:
  // Double_t GetAngle(CbmLitTrackParam etrack);
 
   void SetupHistograms();
+  void SetupMCHistograms();
+  void SetupDigiHistograms();
+  void SetupHitHistograms();
+  void SetupTrackHistograms();
 
   void ExecDigiQa();
   void ExecHitQa();
@@ -147,8 +156,12 @@ private:
   void FinishHitQa();
   void FinishTrackQa();
 
-  CbmMvdQa(const CbmMvdQa&);
-  CbmMvdQa& operator=(const CbmMvdQa&);
+  Bool_t HasHitFirstMvd(CbmStsTrack* stsTrack);
+  Bool_t HasHitFirstTrue(Int_t MCtrackID, CbmStsTrack* stsTrack);
+
+  void GetFirstMCPos(Int_t MCtrackID, CbmStsTrack* stsTrack, Float_t* pos);
+  void GetFirstMvdHitPos(CbmStsTrack* stsTrack, Float_t* hitPos);
+
 
  ClassDef(CbmMvdQa,1);
 };

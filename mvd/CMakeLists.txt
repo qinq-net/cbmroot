@@ -9,6 +9,7 @@ ${CBMROOT_SOURCE_DIR}/mvd
 #${CBMROOT_SOURCE_DIR}/mvd/old
 #${CBMROOT_SOURCE_DIR}/mvd/qa
 #${CBMROOT_SOURCE_DIR}/mvd/tools 
+${CBMROOT_SOURCE_DIR}/mvd/tools/readout 
 #${CBMROOT_SOURCE_DIR}/mvd/plugins
 ${CBMROOT_SOURCE_DIR}/mvd/plugins/tasks
 ${CBMROOT_SOURCE_DIR}/mvd/plugins/buffers
@@ -58,6 +59,8 @@ plugins/tasks/CbmMvdSensorDigitizerTask.cxx
 plugins/tasks/CbmMvdSensorFindHitTask.cxx
 plugins/tasks/CbmMvdSensorHitfinderTask.cxx
 plugins/tasks/CbmMvdSensorClusterfinderTask.cxx
+plugins/tasks/CbmMvdSensorReadoutTask.cxx
+
 
 #plugins/buffers/CbmMvdSensorBuffer.cxx
 #plugins/buffers/CbmMvdSensorFrameBuffer.cxx
@@ -70,6 +73,7 @@ SensorDataSheets/CbmMvdMimosa34.cxx
 SensorDataSheets/CbmMvdSensorDataSheet.cxx  
 
 tools/CbmMvdGeoHandler.cxx
+tools/readout/CbmMvdReadoutSimple.cxx
 
 qa/CbmMvdQa.cxx 
 qa/CbmMvdClusterAna.cxx
@@ -84,6 +88,8 @@ CbmMvdStationPar.cxx
 CbmMvdDetector.cxx
 CbmMvdSensor.cxx
 CbmMvdClusterfinder.cxx
+
+CbmMvdReadout.cxx
 
 
 #CbmMvdReadoutBuffer.h

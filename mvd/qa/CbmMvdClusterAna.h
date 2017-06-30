@@ -15,27 +15,11 @@
 #define CBMMVDCLUSTERANA_H
 
 #include "FairTask.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TString.h"
-#include "TNtuple.h"
-#include <iostream>
-#include "TVector3.h"
-#include "TClonesArray.h"
-// #include "base/CbmLitPtrTypes.h"
-#include "CbmTrackMatchNew.h"
-// #include "CbmStsTrack.h"
-//#include "TROOT.h"
-#include "tools/CbmMvdGeoHandler.h"
-
 
 class TClonesArray;
-class CbmStsTrack;
-class CbmVertex;
-class FairTrackParam;
-class CbmLitTrackParam;
-class CbmStsTrack;
-
+class TH1F;
+class TH2F;
+class TProfile;
 
 class CbmMvdClusterAna : public FairTask
 {

@@ -93,6 +93,8 @@ if ( fHits)
 // -----   Exec   --------------------------------------------------------------
 void CbmMvdHitfinder::Exec(Option_t* /*opt*/){
 
+using namespace std;
+
 fHits->Clear();
 fTimer.Start();
 if(fInputDigis || fInputCluster)
@@ -120,6 +122,9 @@ fTimer.Stop();
 
 // -----   Init   --------------------------------------------------------------
 InitStatus CbmMvdHitfinder::Init() {
+
+    using namespace std;
+
   cout << "-I- " << GetName() << ": Initialisation..." << endl;
   cout << endl;
   cout << "---------------------------------------------" << endl;
@@ -217,7 +222,9 @@ void CbmMvdHitfinder::GetMvdGeometry() {
 
 // -----   Private method PrintParameters   --------------------------------
 void CbmMvdHitfinder::PrintParameters() {
-    
+
+using namespace std;
+
     cout.setf(ios_base::fixed, ios_base::floatfield);
     cout << "============================================================" << endl;
     cout << "============== Parameters MvdHitfinder =====================" << endl;

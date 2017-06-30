@@ -32,18 +32,29 @@ public:
 
     void ShowHistograms(){fshow = kTRUE;};
 
+    void SetHistogramFile(TFile* file){foutFile = file;};
+
     void Finish();
 
 private:
 
+    TFile* foutFile;
+
     Bool_t fshow;
     TH2F* fMvdMCBank[63];
     TH2F* fMvdMCHitsStations[4];
+    TH1F* fWordsPerRegion;
+    TH2F* fWordsPerRegion2;
+    TH1F* fWordsPerWorstRegion;
     TH1F* fWordsPerSuperRegion;
     TH1F* fWorstSuperPerEvent;
     TH2I* fMvdBankDist;
     TH2F* fMvdMCWorst;
     TH2F* fMvdMCWorstDelta;
+    TH1I* fMvdDataLoadPerSensor;
+    TH1I* fMvdDataLoadHotSensor;
+    TH1F* fMvdDataPerRegion[64];
+    TH1F* fMvdDataPerSuperRegion[16];
 
     TClonesArray* fMcPoints;
     TClonesArray* fListMCTracks;
@@ -51,6 +62,7 @@ private:
     Int_t fEventNumber;
 
     void DrawHistograms();
+    void WriteHistograms();
     void SetupHistograms();
 
 ClassDef(CbmMvdReadoutSimple,1);

@@ -5,20 +5,15 @@
 
 #include "CbmMvd.h"
 
-//#include "CbmMvdGeo.h"
-//#include "CbmMvdGeoPar.h"
 #include "CbmMvdPoint.h"
 
 #include "CbmStack.h"
 #include "tools/CbmMvdGeoHandler.h"
 
-//#include "FairGeoInterface.h"
-//#include "FairGeoLoader.h"
-//#include "FairGeoNode.h"
-//#include "FairGeoVolume.h"
 #include "FairRootManager.h"
 #include "FairRun.h"
 #include "FairRuntimeDb.h"
+
 
 #include "FairVolume.h"
 
@@ -58,6 +53,8 @@ CbmMvd::CbmMvd()
   ResetParameters();
   fGeoPar->SetName( GetName());
   fVerboseLevel = 1;
+  fmvdHandler = new CbmMvdGeoHandler();
+
 
 }
 // -------------------------------------------------------------------------
@@ -85,6 +82,8 @@ CbmMvd::CbmMvd(const char* name, Bool_t active)
  {
   fGeoPar->SetName( GetName());
   fVerboseLevel = 1;
+  fmvdHandler = new CbmMvdGeoHandler();
+
  
 }
 // -------------------------------------------------------------------------
@@ -127,10 +126,21 @@ Bool_t CbmMvd::ProcessHits(FairVolume* vol) {
   if ( gMC->IsTrackExiting()    ||
        gMC->IsTrackStop()       ||
        gMC->IsTrackDisappeared()   ) {
-    fTrackID  = gMC->GetStack()->GetCurrentTrackNumber();
-    fVolumeID = vol->getMCid();
-    gMC->TrackPosition(fPosOut);
-    gMC->TrackMomentum(fMomOut);
+      fTrackID  = gMC->GetStack()->GetCurrentTrackNumber();
+      gMC->TrackPosition(fPosOut);
+      gMC->TrackMomentum(fMomOut);
+      const char* address = gMC->CurrentVolPath();
+
+      TString stAdd(address);
+
+      if(stAdd.Contains("/MVDscripted_0"))
+      {
+      fVolumeID = fmvdHandler->GetIDfromPath(stAdd);
+      }
+      else
+      {
+      fVolumeID = vol->getMCid();
+      }
     if (fELoss == 0. ) return kFALSE;
     AddHit(fTrackID, fPdg, fStationMap[fVolumeID],
 	   TVector3(fPosIn.X(),   fPosIn.Y(),   fPosIn.Z()),
@@ -236,9 +246,7 @@ void CbmMvd::ConstructGeometry()
   else if ( fileName.EndsWith(".geo") ) 
   {
       LOG(FATAL) << "Don't use old .geo style geometrys for the MVD. Please use a .root geometry" << FairLogger::endl;
-     //   LOG(INFO) <<  "Constructing MVD  geometry from ASCII file "
-      //  << fileName.Data() << FairLogger::endl;
-      //  ConstructAsciiGeometry();
+
  	}
   else
     LOG(FATAL) <<  "Geometry format of MVD file " << fileName.Data()
@@ -248,54 +256,6 @@ void CbmMvd::ConstructGeometry()
 
 // -----   Virtual public method ConstructAsciiGeometry   -----------------------
 void CbmMvd::ConstructAsciiGeometry() {
-/*
-  FairGeoLoader*    geoLoad = FairGeoLoader::Instance();
-  FairGeoInterface* geoFace = geoLoad->getGeoInterface();
-  CbmMvdGeo*       mvdGeo  = new CbmMvdGeo();
-  mvdGeo->setGeomFile(GetGeometryFileName());
-  geoFace->addGeoModule(mvdGeo);
-
-  Bool_t rc = geoFace->readSet(mvdGeo);
-  if (rc) mvdGeo->create(geoLoad->getGeoBuilder());
-  TList* volList = mvdGeo->getListOfVolumes();
-  // store geo parameter
-  FairRun *fRun = FairRun::Instance();
-  FairRuntimeDb *rtdb= FairRun::Instance()->GetRuntimeDb();
-  CbmMvdGeoPar* geoPar = (CbmMvdGeoPar*)(rtdb->getContainer("CbmMvdGeoPar"));
-  TObjArray *fSensNodes = geoPar->GetGeoSensitiveNodes();
-  TObjArray *fPassNodes = geoPar->GetGeoPassiveNodes();
-
-  TListIter iter(volList);
-  FairGeoNode*   node = NULL;
-  FairGeoVolume* vol  = NULL;
-
-  while( (node = (FairGeoNode*)iter.Next()) ) {
-    vol = dynamic_cast<FairGeoVolume*> ( node );
-    if ( node->isSensitive()  ) {
-	   LOG(DEBUG) << "Add: "<< vol->GetName() << FairLogger::endl;
-           fSensNodes->AddLast( vol );
-       }else{
-           fPassNodes->AddLast( vol );
-       }
-  }
-  geoPar->setChanged();
-  geoPar->setInputVersion(fRun->GetRunId(),1);
-  ProcessNodes( volList );
-  
-  // Fill map of station numbers
-  Int_t iStation =  1;
-  Int_t volId    = -1;
-  do {
-    TString volName = Form("mvdstation%02i", iStation);
-    volId = gGeoManager->GetUID(volName);
-    if (volId > -1 ) {
-      fStationMap[volId] = iStation;
-      LOG(INFO) << GetName() << "::ConstructAsciiGeometry: "
-           << "Station No. " << iStation << ", volume ID " << volId 
-	   << ", volume name " << volName << FairLogger::endl;
-      iStation++;
-    }
-  } while ( volId > -1 );   */
 
  
 }
@@ -304,11 +264,10 @@ void CbmMvd::ConstructAsciiGeometry() {
 // --------    Public method ConstructRootGeometry     ---------------------
 void CbmMvd::ConstructRootGeometry() // added 05.05.14 by P. Sitzmann
 {
-FairDetector::ConstructRootGeometry();
-CbmMvdGeoHandler* mvdHandler = new CbmMvdGeoHandler();
-mvdHandler->Init(kTRUE);
-mvdHandler->Fill();
-fStationMap = mvdHandler->GetMap();
+    FairDetector::ConstructRootGeometry();
+    fmvdHandler->Init(kTRUE);
+    fmvdHandler->Fill();
+fStationMap = fmvdHandler->GetMap();
 if (fStationMap.size() == 0 )
     LOG(FATAL) << "Tried to load MVD Geometry, but didn't succeed to load Sensors" << FairLogger::endl;
 LOG(DEBUG) << "filled mvd StationMap with: " << fStationMap.size() << " new Sensors" << FairLogger::endl;
@@ -317,17 +276,17 @@ LOG(DEBUG) << "filled mvd StationMap with: " << fStationMap.size() << " new Sens
 
 
 // -----   Private method AddHit   --------------------------------------------
-CbmMvdPoint* CbmMvd::AddHit(Int_t trackID, Int_t pdg, Int_t stationNr, 
+CbmMvdPoint* CbmMvd::AddHit(Int_t trackID, Int_t pdg, Int_t sensorNr,
 			    TVector3 posIn, TVector3 posOut, 
 			    TVector3 momIn, TVector3 momOut, Double_t time, 
 			    Double_t length, Double_t eLoss) {
   TClonesArray& clref = *fCollection;
   Int_t size = clref.GetEntriesFast();
-  if (fVerboseLevel>1) 
-    LOG(INFO) << "CbmMvd: Adding Point at (" << posIn.X() << ", " << posIn.Y() 
-	 << ", " << posIn.Z() << ") cm,  station " << stationNr << ", track "
+ 
+    LOG(DEBUG2) << "CbmMvd: Adding Point at (" << posIn.X() << ", " << posIn.Y()
+	 << ", " << posIn.Z() << ") cm,  sensor " << sensorNr << ", track "
          << trackID << ", energy loss " << eLoss*1e06 << " keV" << FairLogger::endl;
-  return new(clref[size]) CbmMvdPoint(trackID, pdg, stationNr, posIn, posOut,
+  return new(clref[size]) CbmMvdPoint(trackID, pdg, sensorNr, posIn, posOut,
 				      momIn, momOut, time, length, eLoss);
 }
 // ----------------------------------------------------------------------------
@@ -335,8 +294,8 @@ CbmMvdPoint* CbmMvd::AddHit(Int_t trackID, Int_t pdg, Int_t stationNr,
 Bool_t CbmMvd::CheckIfSensitive(std::string name)
 {
   TString tsname = name; 
-  if (tsname.Contains("MimosaActive") || (tsname.Contains("mvdstation") && !(tsname.Contains("PartAss"))) ){
-    //cout<<"*** Register "<<tsname<<" as active volume."<<endl;
+  if (tsname.Contains("sensorActive") || tsname.Contains("MimosaActive") || (tsname.Contains("mvdstation") && !(tsname.Contains("PartAss"))) ){
+     LOG(DEBUG) << "*** Register "<<tsname<<" as active volume."<<FairLogger::endl;    //cout<<"*** Register "<<tsname<<" as active volume."<<endl;
     return kTRUE;
   }
   else if(tsname.EndsWith("-P0"))    

@@ -4,10 +4,31 @@
 // -------------------------------------------------------------------------
 
 #include "CbmMvdDetector.h"
+
+/// includes from CbmRoot
 #include "tools/CbmMvdGeoHandler.h"
+#include "plugins/CbmMvdSensorPlugin.h"
+#include "plugins/tasks/CbmMvdSensorTask.h"
+#include "plugins/tasks/CbmMvdSensorDigitizerTask.h"
+#include "plugins/tasks/CbmMvdSensorFindHitTask.h"
+#include "plugins/tasks/CbmMvdSensorClusterfinderTask.h"
+#include "plugins/tasks/CbmMvdSensorHitfinderTask.h"
+#include "plugins/buffers/CbmMvdSensorBuffer.h"
+#include "plugins/buffers/CbmMvdSensorFrameBuffer.h"
+#include "plugins/buffers/CbmMvdSensorTrackingBuffer.h"
+#include "CbmMvdSensor.h"
+
+/// includes from FairRoot
 #include "FairLogger.h"
+
+/// includes from Root
+#include "TString.h"
+#include "TGeoMatrix.h"
+#include "TGeoVolume.h"
+#include "TGeoBBox.h"
+
+/// includes from c
 #include <iostream>
-//#include <omp.h>
 
 using std::cout;
 using std::endl;
@@ -111,13 +132,17 @@ void CbmMvdDetector::AddSensor(TString clearName, TString fullName, TString node
    * new sensor is registered in sensor array 
    * 
    * **/
-  
+
+  TString myname;
+
   if (fSensorArrayFilled) {Fatal (GetName(), " - Error, must add all sensors before adding plugins.");}
   
   
   Int_t nSensors=fSensorArray->GetEntriesFast();
- 
-  new ((*fSensorArray)[nSensors]) CbmMvdSensor(clearName, sensorData, fullName, nodeName,sensorNr,volumeId,sensorStartTime);
+
+  myname = clearName; myname += nSensors;
+
+  new ((*fSensorArray)[nSensors]) CbmMvdSensor(myname, sensorData, fullName, nodeName,sensorNr,volumeId,sensorStartTime);
   //CbmMvdSensor(const char* name, CbmMvdSensorDataSheet* dataSheet, TString volName,
   //TString nodeName, Int_t stationNr, Int_t volumeId, Double_t sensorStartTime);
  
@@ -132,7 +157,7 @@ void CbmMvdDetector::AddSensor(TString clearName, TString fullName, TString node
     misalignment[1] = ((2*randArray[0])-1) * fepsilon[1]; 
     misalignment[2] = ((2*randArray[0])-1) * fepsilon[2]; 
     sensor->SetMisalignment(misalignment);
-  //cout << endl << "new sensor " << fullName << " to detector added" << endl;
+    LOG(DEBUG) << "new sensor " << myname << " to detector added at station: " << stationNr << FairLogger::endl;
 } 
  
 // ----------------------------------------------------------------------
@@ -146,7 +171,7 @@ void CbmMvdDetector::AddPlugin(CbmMvdSensorPlugin* plugin) {
  * or you can't use it.
  */
   fSensorArrayFilled=kTRUE;
-  fPluginCount++;
+
   CbmMvdSensor* sensor;
   Int_t nSensors=fSensorArray->GetEntriesFast();
   const TString digitizername = "CbmMvdSensorDigitizerTask";
@@ -169,6 +194,8 @@ void CbmMvdDetector::AddPlugin(CbmMvdSensorPlugin* plugin) {
 	  CbmMvdSensorDigitizerTask* digiTask = new CbmMvdSensorDigitizerTask();
 	  sensor=(CbmMvdSensor*)fSensorArray->At(i);
 	  sensor->AddPlugin(digiTask);
+	  sensor->SetDigiPlugin(fPluginCount);
+	
 	  //cout <<  "Adding Task CbmMvdSensorDigitizerTask at Sensor " << sensor->GetName() << endl;
 	  }
       else if (plugin->ClassName() == findername)
@@ -176,6 +203,7 @@ void CbmMvdDetector::AddPlugin(CbmMvdSensorPlugin* plugin) {
 	  CbmMvdSensorFindHitTask* findTask = new CbmMvdSensorFindHitTask();
 	  sensor=(CbmMvdSensor*)fSensorArray->At(i);
 	  sensor->AddPlugin(findTask);
+          sensor->SetHitPlugin(fPluginCount);
 	 // cout <<  "Adding Task CbmMvdSensorFindHitTask at Sensor " << sensor->GetName() << endl;
 	  }
        else if (plugin->ClassName() == clustername)
@@ -183,6 +211,7 @@ void CbmMvdDetector::AddPlugin(CbmMvdSensorPlugin* plugin) {
 	  CbmMvdSensorClusterfinderTask* clusterTask = new CbmMvdSensorClusterfinderTask();
 	  sensor=(CbmMvdSensor*)fSensorArray->At(i);
 	  sensor->AddPlugin(clusterTask);
+          sensor->SetClusterPlugin(fPluginCount);
 	 // cout <<  "Adding Task CbmMvdSensorClusterfinderTask at Sensor " << sensor->GetName() << endl;
 	  }
       else if (plugin->ClassName() == hitname)
@@ -190,6 +219,7 @@ void CbmMvdDetector::AddPlugin(CbmMvdSensorPlugin* plugin) {
 	  CbmMvdSensorHitfinderTask* hitTask = new CbmMvdSensorHitfinderTask();
 	  sensor=(CbmMvdSensor*)fSensorArray->At(i);
 	  sensor->AddPlugin(hitTask);
+          sensor->SetHitPlugin(fPluginCount);
 	 // cout <<  "Adding Task CbmMvdSensorHitfinderTask at Sensor " << sensor->GetName() << endl;
 	  }
       else 
@@ -235,7 +265,7 @@ void CbmMvdDetector::AddPlugin(CbmMvdSensorPlugin* plugin) {
     }   
     else {cout << "Invalide" << endl;}
   };
-  
+  fPluginCount++;  
 };
 
 //----------------------------------------------------------------------
@@ -266,7 +296,7 @@ if(!initialized)
     {
     
     sensor=(CbmMvdSensor*)fSensorArray->At(j);
-    //cout << "Init Sensor " << sensor->GetName() << endl;
+    LOG(DEBUG) << "Init Sensor " << sensor->GetName() << FairLogger::endl;
     sensor->Init();
     }
   initialized = kTRUE;
@@ -290,6 +320,20 @@ void CbmMvdDetector::ShowDebugHistos(){
 //-----------------------------------------------------------------------
 
 //-----------------------------------------------------------------------
+void CbmMvdDetector::SetProduceNoise()
+{
+  Int_t nSensors=fSensorArray->GetEntriesFast();
+  CbmMvdSensor* sensor;
+
+  for(Int_t j = 0; j < nSensors; j++)
+    {
+    sensor=(CbmMvdSensor*)fSensorArray->At(j);
+    sensor->SetProduceNoise();
+    }
+}
+//-----------------------------------------------------------------------
+
+//-----------------------------------------------------------------------
 void CbmMvdDetector::SendInput(TClonesArray* input){
 
   /**
@@ -306,6 +350,7 @@ void CbmMvdDetector::SendInput(TClonesArray* input){
   Int_t nEntries = input->GetEntriesFast();
   Int_t nSensors=fSensorArray->GetEntriesFast();
   CbmMvdSensor* sensor;
+  Bool_t send = kFALSE;
   for (Int_t i = 0; i < nEntries ; i++ )   
 		{
 		point= (CbmMvdPoint*) input->At(i); 
@@ -316,9 +361,11 @@ void CbmMvdDetector::SendInput(TClonesArray* input){
   	
 	        if (point->GetDetectorID() == sensor->GetDetectorID())
 	           {
-                  sensor->SendInput(point);
+		       sensor->SendInput(point);
+                       send = true;
                    }
-                }
+		 }
+	 if(!send) LOG(WARNING) << "Point not send to any sensor: " << point->GetDetectorID() << FairLogger::endl;
         }
 }
 //-----------------------------------------------------------------------

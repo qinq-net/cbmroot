@@ -37,6 +37,10 @@
 #include "TProfile.h"
 #include "TGeoManager.h"
 #include "TROOT.h"
+#include "TProfile.h"
+#include "TH1.h"
+#include "TH2.h"
+#include "TGeoBBox.h"
 
 //-- Include from C++ --//
 #include <iostream>
@@ -224,13 +228,10 @@ InitStatus CbmMvdClusterAna::Init()
 // -------------------------------------------------------------------------
 void CbmMvdClusterAna::Exec(Option_t* /*opt*/) 
 {
-	
-// 	if(fManager->GetObject("MvdPoint"))
-// -------------------
-	Int_t nMcpoints			= fMcPoints			->GetEntriesFast();		// Number of Monte Carlo Points
-	Int_t nDigis			= fMvdDigis			->GetEntriesFast();		// Number of Mvd Digis
-       // Int_t nClusters			= fMvdClusters		->GetEntriesFast();		// Number of reconstructed Mvd Clusters
-	Int_t nHits				= fMvdHits			->GetEntriesFast();		// Number of reconstructed Mvd Hits
+Int_t nMcpoints = fMcPoints->GetEntriesFast();		// Number of Monte Carlo Points
+Int_t nDigis = fMvdDigis->GetEntriesFast();		// Number of Mvd Digis
+// Int_t nClusters = fMvdClusters->GetEntriesFast();		// Number of reconstructed Mvd Clusters
+Int_t nHits = fMvdHits->GetEntriesFast();		// Number of reconstructed Mvd Hits
 
        // Int_t nDigisMatch		= fMvdDigisMatch	->GetEntriesFast();		// Number of Matches from Digis to Monte Carlo
        // Int_t nClustersMatch	= fMvdClustersMatch	->GetEntriesFast();		// Number of Matches from Reconstructed Mvd Clusters to Mvd Hits (?)
@@ -250,10 +251,10 @@ void CbmMvdClusterAna::Exec(Option_t* /*opt*/)
 // 	cout<<"Tracks       : "<< nTracks		<<endl;
 // 	cout<<"------"<<endl;
 // -------------------
-	CbmMvdPoint 	* mvdPoint;			// Monte Carlo Point
-	CbmMvdDigi		* mvdDigi;			// Digi
-	CbmMvdCluster	* mvdCluster;
-	CbmMvdHit		* mvdHit;			// Digitized Hit
+	CbmMvdPoint* mvdPoint;			// Monte Carlo Point
+	CbmMvdDigi* mvdDigi;			// Digi
+	CbmMvdCluster* mvdCluster;
+	CbmMvdHit* mvdHit;			// Digitized Hit
 	
 	CbmMvdDigiMatch * mvdDigiMatch;		// Digi to MC point
 	CbmMatch		* mvdClusterMatch;	// Cluster to (?)
@@ -265,9 +266,9 @@ void CbmMvdClusterAna::Exec(Option_t* /*opt*/)
       //  CbmMatch		* mvdMatch;			// Reco Track to Hit Match
 // -------------------
 	typedef map<pair<Int_t,Int_t>,Int_t>::iterator it_type;
-	map <pair<Int_t, Int_t>, Int_t >	digiMap;
-	pair<Int_t, Int_t>					digiCoor;
-	Int_t								digiCharge;
+	map <pair<Int_t, Int_t>, Int_t > digiMap;
+	pair<Int_t, Int_t> digiCoor;
+	Int_t digiCharge;
 	
 	TVector3 cOrth;
 	TVector3 cVect;
@@ -336,6 +337,7 @@ void CbmMvdClusterAna::Exec(Option_t* /*opt*/)
 
 	for(int iDigi=0;iDigi<nDigis;iDigi++)
 	{
+
 		mvdDigi			= (CbmMvdDigi*)			fMvdDigis		->At(iDigi);
 		mvdDigiMatch	= (CbmMvdDigiMatch*)	fMvdDigisMatch	->At(iDigi);
 
@@ -381,6 +383,7 @@ void CbmMvdClusterAna::Exec(Option_t* /*opt*/)
 
 	for(Int_t iHit=0;iHit<nHits;iHit++)
 	{
+            cout << endl << "run next Hit "<< iHit << " of " << nHits <<" Hits" << endl;
 		mvdHit			= (CbmMvdHit*)		fMvdHits			->At(iHit);
 		mvdCluster		= (CbmMvdCluster*)	fMvdClusters		->At(iHit);
 		mvdHitMatch		= (CbmMvdHitMatch*)	fMvdHitsMatch		->At(iHit);
@@ -422,7 +425,7 @@ void CbmMvdClusterAna::Exec(Option_t* /*opt*/)
 		
 		McInHit.clear();
 		McContrToHitList.clear();
-		
+                cout << endl <<"ping" << endl;
 		for(it_type iterator = digiMap.begin(); iterator != digiMap.end(); iterator++)
 		{
 			digiCoor	= iterator->first;
@@ -461,7 +464,7 @@ void CbmMvdClusterAna::Exec(Option_t* /*opt*/)
 // 			if (it != DigisMap.end())
 // 			{
 				fMcperDigi[McContrList.size()]++;		// Number of MC Points contributing to a Digi
-				
+			            cout << endl <<"ping 2" << endl;
 				for(Int_t iMc=0;iMc<McContrList.size();iMc++)
 				{
 					if( std::find(McContrToHitList.begin(), McContrToHitList.end(), McContrList[iMc] ) == McContrToHitList.end() )
@@ -499,6 +502,7 @@ void CbmMvdClusterAna::Exec(Option_t* /*opt*/)
 			fMcperHit[10]++;
 		}
 		count=0;
+                           cout << endl <<"ping 3" << endl;
 		for(std::map<Int_t,Int_t>::iterator iterator = McInHit.begin(); iterator != McInHit.end(); iterator++)
 		{
 			DigisInMc[ iterator->first ] += iterator->second;
@@ -519,7 +523,7 @@ void CbmMvdClusterAna::Exec(Option_t* /*opt*/)
 			
 			HitsInMc[ iterator->first ] = McContrList;
 		}
-		
+		           cout << endl <<"ping 4" << endl;
 		if( (xaxismax-xaxismin)<4 && (yaxismax-yaxismin)<4 )
 		{
 			shape = 0;
@@ -547,7 +551,7 @@ void CbmMvdClusterAna::Exec(Option_t* /*opt*/)
 		{
 			shape = 9;
 		}
-		
+		           cout << endl <<"ping 5" << endl;
 		ARR_momentum[iHit] = mcTrack->GetP();
 		ARR_angle	[iHit] = cVect.Angle(cOrth);
 		ARR_digis	[iHit] = mvdCluster->GetNofDigis();
@@ -558,11 +562,13 @@ void CbmMvdClusterAna::Exec(Option_t* /*opt*/)
 		ARR_dyp		[iHit] = -(int)(((locMC[1]+VolumeShape->GetDY())/(1*pitchy))-0.5)+(double)(((locMC[1]+VolumeShape->GetDY())/(1*pitchy))-0.5);
 		ARR_shape	[iHit] = shape;
 		ARR_charge	[iHit] = charge;
+                cout << endl << "finished this hit" << endl;
 	}
 
 // -------------------
 	for(Int_t iHit=0;iHit<nHits;iHit++)
 	{
+                cout << endl << "fill stuff" << endl;
 		fMvdHisto1[0]->Fill(ARR_momentum[iHit]);
 		fMvdHisto1[1]->Fill(ARR_angle[iHit]);
 		fMvdHisto1[2]->Fill(ARR_digis[iHit]);

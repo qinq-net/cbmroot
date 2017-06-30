@@ -4,12 +4,8 @@
 // -------------------------------------------------------------------------
 
 #include "CbmMvdSensor.h"
-//#include "CbmMvdMimosa26AHR.h"
-#include "TGeoManager.h"
 
 //---Plugins
-
-
 #include "plugins/buffers/CbmMvdSensorFrameBuffer.h"
 #include "plugins/buffers/CbmMvdSensorTrackingBuffer.h"
 #include "plugins/tasks/CbmMvdSensorDigitizerTask.h"
@@ -18,20 +14,30 @@
 #include "plugins/tasks/CbmMvdSensorHitfinderTask.h"
 //---Plugins
 
+/// includes from ROOT
+#include "TGeoMatrix.h"
+#include "TGeoVolume.h"
+#include "TGeoManager.h"
 
-#include <iostream>
+/// includes from FairRoot
 #include "FairLogger.h"
+#include "FairPrimaryGenerator.h"
+#include "FairEventHeader.h"
+#include "FairRunSim.h"
+#include "FairRunAna.h"
+
+/// includes from C
+#include <iostream>
 
 using std::cout;
 using std::endl;
-
 
 // -----   Default constructor   -------------------------------------------
 CbmMvdSensor::CbmMvdSensor() 
   : TNamed(),
     fStationNr(0),
     fSensorNr(0),
-    fVolumeId(0),
+    fVolumeId(-1),
     fDetectorID(-1),
     fDigiPlugin(-1),
     fHitPlugin(-1),
@@ -119,186 +125,104 @@ CbmMvdSensor::~CbmMvdSensor() {
 void CbmMvdSensor::SetAlignment(TGeoHMatrix* alignmentMatrix) {
   
   if (fAlignmentCorr) {delete fAlignmentCorr;};
-  fAlignmentCorr=(TGeoHMatrix*)alignmentMatrix->Clone(fVolName+"_AlignmentData");
+  fAlignmentCorr=(TGeoHMatrix*)alignmentMatrix->Clone(fNodeName+"_AlignmentData");
   
   
 }
 
 
 // -------Initialization tools  -----------------------------------------------------
-void CbmMvdSensor::ReadSensorGeometry(TString volName, TString nodeName) {
+void CbmMvdSensor::ReadSensorGeometry(TString nodeName) {
    
   //cout << "-I- " << GetName() << " : Searching for station: " << volName << endl;
-  //cout << "-I- nodeName is " << nodeName << endl;
-  
-  
-  Int_t volId    = -1;
+    //cout << "-I- nodeName is " << nodeName << endl;
+
+  if(fMCMatrix) {delete fMCMatrix;}; //delete local copy of the position information
+
   TGeoVolume* volume;
-   //cout << gGeoManager->GetNodeId()<<endl;
-  volId = gGeoManager->GetUID(volName); //search for node in geometry data base
-  Double_t* tempCoordinate; 
+  gGeoManager->cd(nodeName);
+  fMCMatrix=(TGeoHMatrix*)(gGeoManager->GetCurrentMatrix())->Clone(nodeName+"_MC_Matrix");
 
-  if ( !(volId > -1) ) {
-    cout << "-W- " << GetName() << ": Station " << volName << " not found, ignored for now." << endl;
-  }
-  else { // volume found
+  //TGeoNode* node = gGeoManager->GetCurrentNode();
+  volume = gGeoManager->GetCurrentVolume();
+  Double_t* tempCoordinate;
+  fShape = (TGeoBBox*) volume->GetShape();
 
-      // Get shape parameters
-      volume   = gGeoManager    ->GetVolume(volName.Data());
-      fShape = (TGeoBBox*) volume ->GetShape();
-      
-      //fDetectorID = volume->GetIndex(volume->GetNode(nodeName));
-      //cout << fDetectorID << endl;
-     // cout<< "This is the volume:" <<endl;
-     // volume->Dump();
-     // cout<< "This is the shape:" << endl;
-     // fShape->Dump();
-  }
-  
-  
-  Bool_t nodeFound = gGeoManager->cd(nodeName.Data());
-
-  if ( ! nodeFound ) {
-        
-        
-	
-	cout << "-W- " << GetName() << "::SetMvdGeometry: Node " << nodeName
-	     << " not found in geometry!" << endl;
-	cout << " Ignored for now." << endl;
-	cout << endl;
-      }    
-  else { 
-    if(fMCMatrix) {delete fMCMatrix;}; //delete local copy of the position information
- 
-    fMCMatrix=(TGeoHMatrix*)(gGeoManager->GetCurrentMatrix())->Clone(volName+"_MC_Matrix");
     //fMCMatrix->Print();
     
-    fMCMatrix->SetName(volName+"_MC_Matrix");
+    fMCMatrix->SetName(nodeName+"_MC_Matrix");
    
     if (!fRecoMatrix) {
-        Double_t pre[3], past[3];
+	Double_t pre[3], past[3], global[3];
+	Double_t local[3]={0,0,0};
 	//The initial guess on the reconstructed position is that the MC-position is correct
 	//Short cut to misalignment, add a small error
-	fRecoMatrix=(TGeoHMatrix*)fMCMatrix->Clone(volName+"_Reco_Matrix");
+	fRecoMatrix=(TGeoHMatrix*)fMCMatrix->Clone(nodeName+"_Reco_Matrix");
         PixelToTop(0, 0, pre);
         tempCoordinate=fRecoMatrix->GetTranslation();
 	for(Int_t i=0;i<3;i++){tempCoordinate[i]=tempCoordinate[i]+epsilon[i];}
 	fRecoMatrix->SetTranslation(tempCoordinate);
         PixelToTop(0, 0, past);
-	//cout << endl << "shifted pixel 0 from: " << pre[0] << ", " << pre[1] << " to " << past[0] << ", " << past[1] << endl; 
+	LOG(DEBUG)<< "shifted pixel 0,0 to: "<< past[0] << ", " << past[1] << " at z = " << past[2] << FairLogger::endl;
+	LocalToTop(local, global);
+        LOG(DEBUG)<< "shifted local center to: "<< global[0] << ", " << global[1] << " at z = " << global[2] << FairLogger::endl;
     }
      else
 	{tempCoordinate=fRecoMatrix->GetTranslation();}
     if (!fAlignmentCorr){
 	//If no knowledge on the reco matrix is available there is plausibly no correction data.
-	fAlignmentCorr=new TGeoHMatrix(volName+"_AlignmentData");
+	fAlignmentCorr=new TGeoHMatrix(nodeName+"_AlignmentData");
     }
-  }
-
 
  for(Int_t i=0;i<3;i++){fSensorPosition[i]=tempCoordinate[i];}
 }
 
 //-------------------------------------------------------------------
 
-void CbmMvdSensor::Init(){
-  
+//-------------------------------------------------------------------
+void CbmMvdSensor::Init()
+{
 
-      
-ReadSensorGeometry(fVolName, fNodeName);  
+ReadSensorGeometry(fNodeName);
 	
 
  if(!initialized)
 {
   foutputDigis = new TClonesArray("CbmMvdDigi",1000);
   foutputDigiMatch = new TClonesArray("CbmMatch", 1000);
-  foutputBuffer = new TClonesArray("CbmMvdHit", 1000);
+  foutputBuffer = new TClonesArray("CbmMvdHit",1000);
   foutputCluster = new TClonesArray("CbmMvdCluster", 1000);
   //cout << endl << " init TClonesArrays" << endl;
  }
   
   Int_t nPlugin=fPluginArray->GetEntriesFast();
-  CbmMvdSensorPlugin* pluginFirst;
-  CbmMvdSensorPlugin* pluginNext;
-  
- // CbmMvdSensorFrameBuffer* framebuffer;
-  CbmMvdSensorDigitizerTask* digitask;
-  CbmMvdSensorClusterfinderTask* clustertask;
-  CbmMvdSensorHitfinderTask* hitfindertask;
 
-  //CbmMvdSensorTrackingBuffer* trackingbuffer;
-  CbmMvdSensorFindHitTask* findertask;
   
   TClonesArray* dataArray;
-  
+
+  CbmMvdSensorTask* gentask;
+  CbmMvdSensorBuffer* genBuffer;
+
+  CbmMvdSensorPlugin *pluginFirst, *pluginNext;
+
   for(Int_t i=0;i<nPlugin;i++)
      {
       pluginFirst=(CbmMvdSensorPlugin*)fPluginArray->At(i);
       if( pluginFirst->GetPluginType() == buffer)
           {
-          /* const TString framename = "CbmMvdSensorFrameBuffer";
-           const TString trackingname = "CbmMvdSensorTrackingBuffer";
+      genBuffer = (CbmMvdSensorBuffer*)fPluginArray->At(i);
+      genBuffer->InitBuffer(this);
 
-	   
-           if ( pluginFirst->ClassName() == framename)
-	       {
-		
-                framebuffer = (CbmMvdSensorFrameBuffer*)fPluginArray->At(i);
-		if(! framebuffer->IsInit())
-               		framebuffer->InitBuffer(this);
-               }
-                if ( pluginFirst->ClassName() == trackingname)
-	       {
-		
-                trackingbuffer = (CbmMvdSensorTrackingBuffer*)fPluginArray->At(i);
-		if(! trackingbuffer->IsInit())
-               		 trackingbuffer->InitBuffer(this);
-               }
-               */
 	  }
     if(pluginFirst->GetPluginType() == task)
       {
-      const TString digitizername = "CbmMvdSensorDigitizerTask";
-      const TString findername = "CbmMvdSensorFindHitTask";
-      const TString clustername = "CbmMvdSensorClusterfinderTask";
-      const TString hitname = "CbmMvdSensorHitfinderTask";
-
-      if (pluginFirst->ClassName()  == digitizername)
-	  {
-	  digitask = (CbmMvdSensorDigitizerTask*)fPluginArray->At(i);
-	  if(! digitask->IsInit())
-        	  digitask->InitTask(this);
-          fDigiPlugin = i;
-	  } 
-	 
-      else if (pluginFirst->ClassName() == findername)
-	       {
-		findertask = (CbmMvdSensorFindHitTask*)fPluginArray->At(i);
-		if(! findertask->IsInit())
-               		 findertask->InitTask(this);
-		 fHitPlugin = i;
-	       }
-      else if (pluginFirst->ClassName() == clustername)
-	       {
-		clustertask = (CbmMvdSensorClusterfinderTask*)fPluginArray->At(i);
-		if(! clustertask->IsInit())
-               		 clustertask->InitTask(this);
-		 fClusterPlugin = i;
-	       }
-        else if (pluginFirst->ClassName() == hitname)
-	       {
-		hitfindertask = (CbmMvdSensorHitfinderTask*)fPluginArray->At(i);
-		if(! hitfindertask->IsInit())
-               		 hitfindertask->InitTask(this);
-		 fHitPlugin = i;
-	       }
+      gentask = (CbmMvdSensorTask*)fPluginArray->At(i);
+      gentask->InitTask(this);
      }
      }
   //Link data chain
   if(nPlugin>1){
-    
-    
-    
+
     for(Int_t i=0;i<nPlugin-1;i++){
       
       pluginFirst=(CbmMvdSensorPlugin*)fPluginArray->At(i);
@@ -317,7 +241,7 @@ ReadSensorGeometry(fVolName, fNodeName);
   
   if(nPlugin == 0)
       {
-       cout << endl << "No Plugins on this Sensor " << endl;
+	  LOG(DEBUG) << "No Plugins on this Sensor " << FairLogger::endl;
        pluginFirst = NULL;
       }
 initialized = kTRUE;
@@ -334,7 +258,44 @@ if(fDetectorID == 1537)
 	pluginLast->ShowDebugHistos();
 	}
 }
+// -------------------------------------------------------------------------
 
+// -------------------------------------------------------------------------
+void CbmMvdSensor::SetProduceNoise()
+{
+CbmMvdSensorPlugin* pluginFirst;
+// CbmMvdSensorFrameBuffer* framebuffer;
+CbmMvdSensorDigitizerTask* digitask;
+
+pluginFirst=(CbmMvdSensorPlugin*)fPluginArray->At(0);
+if( pluginFirst->GetPluginType() == buffer)
+    {
+    return;
+    }
+else if(pluginFirst->GetPluginType() == task)
+      {
+      TString digitizername = "CbmMvdSensorDigitizerTask";
+        
+      if (pluginFirst->ClassName()  == digitizername)
+	  {
+	  digitask = (CbmMvdSensorDigitizerTask*)fPluginArray->At(0);
+          digitask->SetProduceNoise();
+	  } 
+	
+	   else 
+	       {
+		LOG(FATAL) << "Invalid input typ" << FairLogger::endl;
+		 
+	       }
+	
+     }
+     else
+     {
+      cout << endl << "ERROR!! undefind plugin!" << endl; 
+     }
+
+}
+// -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
 void CbmMvdSensor::SendInput(CbmMvdPoint* point){
@@ -466,7 +427,7 @@ void CbmMvdSensor::Exec(UInt_t nPlugin){
 foutputDigiMatch->Clear("C");
 foutputCluster->Clear("C");
 foutputBuffer->Clear("C");
-  Int_t nPluginMax=fPluginArray->GetEntriesFast();
+  UInt_t nPluginMax=fPluginArray->GetEntriesFast();
   
   if(nPlugin>nPluginMax) {Fatal(GetName()," Error - Called non-existing plugin");}
   
@@ -489,7 +450,7 @@ foutputBuffer->Clear("C");
 fcurrentEventTime = event->GetT();
   
    CbmMvdSensorPlugin* plugin;
-   Int_t maxPlugin=fPluginArray->GetEntriesFast();
+   UInt_t maxPlugin=fPluginArray->GetEntriesFast();
   
    plugin=(CbmMvdSensorPlugin*)fPluginArray->At(0);
 if(nPlugin < maxPlugin)
@@ -499,7 +460,7 @@ if(nPlugin < maxPlugin)
   if(plugin->PluginReady()) 
     {
     //cout << endl << "exec chain on sensor "<< this->GetName() << endl;
-    for(Int_t i=1; i<=nPlugin; i++)
+    for(UInt_t i=1; i<=nPlugin; i++)
       {
 	//cout << endl << "exec plugin " << i << " on sensor "<< this->GetName() << endl;
 	plugin=(CbmMvdSensorPlugin*)fPluginArray->At(i);
@@ -522,7 +483,7 @@ FairMCEventHeader* event = gen->GetEvent();
 fcurrentEventTime = event->GetT();
   
    CbmMvdSensorPlugin* plugin;
-   Int_t maxPlugin=fPluginArray->GetEntriesFast();
+   UInt_t maxPlugin=fPluginArray->GetEntriesFast();
   
    plugin=(CbmMvdSensorPlugin*)fPluginArray->At(nPlugin);
 if(nPlugin <= maxPlugin)
@@ -545,7 +506,7 @@ else {cout << endl << "nPlugin to large" << endl;}
 }
 
 // -------------------------------------------------------------------------   
-TClonesArray* CbmMvdSensor::GetOutputArray(Int_t nPlugin){
+TClonesArray* CbmMvdSensor::GetOutputArray(Int_t nPlugin) const{
 
 if(nPlugin == fHitPlugin)
 	GetOutputBuffer();
@@ -571,14 +532,14 @@ else if (nPlugin == fClusterPlugin)
 	  } 
 else
 	{ 
-	LOG(FATAL) << "undefined plugin called" << FairLogger::endl;
+	    LOG(FATAL) << "undefined plugin: " <<nPlugin << " called" << FairLogger::endl;
 	}
 	return NULL;
 }    
 // -------------------------------------------------------------------------   
 
 // -------------------------------------------------------------------------   
-Int_t CbmMvdSensor::GetOutputArrayLen(Int_t nPlugin){
+Int_t CbmMvdSensor::GetOutputArrayLen(Int_t nPlugin) const{
 
 GetOutputArray(nPlugin); //** make sure that the arrays are filled 
 
@@ -605,7 +566,7 @@ else
 // -------------------------------------------------------------------------   
 
 // -------------------------------------------------------------------------   
-TClonesArray* CbmMvdSensor::GetOutputMatch(){
+TClonesArray* CbmMvdSensor::GetOutputMatch() const{
 
   return(foutputDigiMatch);
 
@@ -614,12 +575,12 @@ TClonesArray* CbmMvdSensor::GetOutputMatch(){
 
 
 // -------------------------------------------------------------------------
-TClonesArray* CbmMvdSensor::GetOutputBuffer(){
+TClonesArray* CbmMvdSensor::GetOutputBuffer() const{
 
 
 
   CbmMvdSensorPlugin* plugin=(CbmMvdSensorPlugin*)fPluginArray->At(fPluginArray->GetLast());
-  foutputBuffer->AbsorbObjects(plugin->GetOutputArray(),0,plugin->GetOutputArray()->GetEntriesFast()-1);
+  foutputBuffer->AbsorbObjects(plugin->GetOutputArray());
   return (foutputBuffer);
      
 } 
@@ -700,7 +661,7 @@ void CbmMvdSensor::TopToPixel (Double_t* lab, Int_t &pixelNumberX, Int_t &pixelN
 
 
 // -------------------------------------------------------------------------
-Int_t CbmMvdSensor::GetFrameNumber  (Int_t pixelNumberY, Double_t absoluteTime){
+Int_t CbmMvdSensor::GetFrameNumber  (Int_t pixelNumberY, Double_t absoluteTime) const{
   
 
   Double_t timeSinceStart= absoluteTime - fSensorStartTime;

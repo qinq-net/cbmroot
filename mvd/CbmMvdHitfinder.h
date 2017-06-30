@@ -8,8 +8,10 @@
 #define CBMMVDHITFINDER_H 1
 
 #include "FairTask.h"
-#include "CbmMvdDetector.h"
-#include "TGeoManager.h"
+#include "TStopwatch.h"
+
+class CbmMvdDetector;
+
 
 class CbmMvdHitfinder : public FairTask
 {

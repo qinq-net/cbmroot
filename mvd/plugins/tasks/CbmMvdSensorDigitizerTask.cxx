@@ -31,6 +31,7 @@
 #include "FairMCEventHeader.h"
 #include "FairRunAna.h"
 #include "FairRunSim.h"
+#include "FairLogger.h"
 
 
 // Includes from C++
@@ -149,6 +150,8 @@ CbmMvdSensorDigitizerTask::CbmMvdSensorDigitizerTask()
   h_ElossVsMomIn(NULL)
 {   
     fRandGen.SetSeed(2736);
+    frand = new TRandom3(0);
+    fproduceNoise=kFALSE;
 }
 // -------------------------------------------------------------------------
 
@@ -301,6 +304,8 @@ CbmMvdSensorDigitizerTask::CbmMvdSensorDigitizerTask(Int_t iMode)
     
     fcurrentFrameNumber = 0;
 
+    frand = new TRandom3(0);
+    fproduceNoise=kFALSE;
 
  }
 
@@ -424,8 +429,8 @@ for (Int_t iPoint=0; iPoint<fInputPoints->GetEntriesFast(); iPoint++)
     //Particles generated in the sensor or being absorbed in this sensor are ignored
       if(TMath::Abs(point->GetZOut()-point->GetZ())<0.9*fEpiTh) 
 	  {
-		//cout << endl << "hit not on chip with thickness " << 0.9* 2 *fSensor->GetDZ() << endl;
-		//cout << endl << "hit not on chip with length " << TMath::Abs(point->GetZOut()-point->GetZ()) << endl;
+	      LOG(DEBUG) << "hit not on chip with thickness " << 0.9* 2 *fSensor->GetDZ() << FairLogger::endl;
+	      LOG(DEBUG) << "hit not on chip with length " << TMath::Abs(point->GetZOut()-point->GetZ()) << FairLogger::endl;
 		continue;}
     // Reject for the time being light nuclei (no digitization modell yet)
       if ( point->GetPdgCode() > 100000) 
@@ -441,7 +446,10 @@ for (Int_t iPoint=0; iPoint<fInputPoints->GetEntriesFast(); iPoint++)
 Int_t inputNr = 0;
 Int_t eventNr = 0;
 Double_t eventTime = .0;
+Int_t nDigis = 0;
 GetEventInfo(inputNr, eventNr, eventTime);
+
+if(fproduceNoise) ProduceNoise();
 
 for (Int_t i=0; i<fPixelCharge->GetEntriesFast(); i++)
 	{ 
@@ -449,13 +457,14 @@ for (Int_t i=0; i<fPixelCharge->GetEntriesFast(); i++)
            
 	    if ( pixel->GetCharge()>fChargeThreshold )
 	    {
-		Int_t nDigis = fDigis->GetEntriesFast();
+		nDigis = fDigis->GetEntriesFast();
+	       
 		new ((*fDigis)[nDigis]) CbmMvdDigi (fSensor->GetSensorNr(),
 						    pixel->GetX(), pixel->GetY(), pixel->GetCharge(),
 						    fPixelSizeX, fPixelSizeY, pixel->GetTime(), 
 						    pixel->GetFrame());
 
-		//cout << endl << " new Digi at " <<  pixel->GetX() << " " << pixel->GetY() << endl;
+	       
 		new ((*fOutputBuffer)[nDigis]) CbmMvdDigi (fSensor->GetSensorNr(),
 						    pixel->GetX(), pixel->GetY(), pixel->GetCharge(),
 						    fPixelSizeX, fPixelSizeY, pixel->GetTime(), 
@@ -474,10 +483,12 @@ for (Int_t i=0; i<fPixelCharge->GetEntriesFast(); i++)
 		//cout << endl << "charge under threshold, digi rejected" << endl;
 		}
 	}
+ //LOG(DEBUG) << nDigis <<" new Digis at on Sensor " << fSensor->GetSensorNr() << " from " << fInputPoints->GetEntriesFast()<< " McPoints" << FairLogger::endl;
 
  }
 
-else { //cout << endl << "No input found." << endl;
+else {
+    //LOG(DEBUG)<< "No input found on Sensor " << fSensor->GetSensorNr() << " from " << fInputPoints->GetEntriesFast()<< " McPoints" << FairLogger::endl;
      }
 
  fPixelCharge->Delete();
@@ -937,28 +948,41 @@ if (totClusterCharge > 0)fTotalChargeHisto->Fill(totClusterCharge);
 
 // -------------------------------------------------------------------------
 
-//void CbmMvdSensorDigitizerTask::PoissonSmearer( SimTrackerHitImplVec & simTrkVec ) {
-    /*
-     * Function that fluctuates charge (in units of electrons)
-     * deposited on the fired pixels according to the Poisson
-     * distribution...
-     */
-/*
-    for (int ihit=0; ihit<int(simTrkVec.size()); ++ihit) {
-	SimTrackerHitImpl * hit = simTrkVec[ihit];
-	double charge = hit->getdEdx();
-	double rng;
-	if (charge > 1000.) { // assume Gaussian
-	    double sigma = sqrt(charge);
-	    rng = double(RandGauss::shoot(charge,sigma));
-	    hit->setdEdx(rng);
-	}
-	else { // assume Poisson
-	    rng = double(RandPoisson::shoot(charge));
-	}
-	hit->setdEdx(float(rng));
-    }
-} */
+void CbmMvdSensorDigitizerTask::ProduceNoise()
+{
+ Int_t fmaxNoise = 100;
+ Int_t noiseHits = (Int_t) (frand->Rndm(fmaxNoise) * fmaxNoise);
+ Int_t xPix, yPix;
+ CbmMvdPixelCharge* pixel;
+ pair<Int_t, Int_t> thispoint;
+
+ for(Int_t i = 0; i <= noiseHits; i++)
+ {
+     xPix = frand->Integer(fNPixelsX);
+     yPix = frand->Integer(fNPixelsY);
+
+     Double_t Current[3];
+     fSensor->PixelToLocal(xPix,yPix,Current);
+
+     thispoint = std::make_pair(xPix,yPix);
+
+     fChargeMapIt = fChargeMap.find(thispoint);
+
+     if ( fChargeMapIt == fChargeMap.end() )
+        {
+	    pixel= new ((*fPixelCharge)[fPixelCharge->GetEntriesFast()]) CbmMvdPixelCharge(1000, xPix, yPix, 0, -4, Current[0], Current[1]);
+            pixel->DigestCharge( Current[0] , Current[1], 0, -4);
+	fChargeMap[thispoint] = pixel;
+      	}
+     else {
+	   pixel = fChargeMapIt->second;
+	   pixel->AddCharge(1000);
+           pixel->DigestCharge( Current[0] , Current[1], 0, -4);
+     }
+
+ }
+
+}
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
@@ -1138,8 +1162,3 @@ void CbmMvdSensorDigitizerTask::PrintParameters() {
 
 
 ClassImp(CbmMvdSensorDigitizerTask);
-
-
-
-
-ClassImp(CbmMvdSensorDigitizerTask)

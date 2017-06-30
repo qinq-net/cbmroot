@@ -8,6 +8,7 @@
 #include "plugins/tasks/CbmMvdSensorDigitizerTask.h"
 #include "SensorDataSheets/CbmMvdMimosa26AHR.h"
 #include "tools/CbmMvdGeoHandler.h"
+#include "CbmMvdPileupManager.h"
 
 // Includes from FAIR
 #include "FairRootManager.h"
@@ -22,19 +23,14 @@
 #include <iomanip>
 #include <iostream>
 
-using std::setw;
-using std::fixed;
-using std::setprecision;
-using std::ios_base;
 using std::cout;
 using std::endl;
-using std::vector;
-
 // -----   Default constructor   ------------------------------------------
 CbmMvdDigitizer::CbmMvdDigitizer() 
   : FairTask("MVDDigitizer"),
     fMode(0),
     fShowDebugHistos(kFALSE),
+    fNoiseSensors(kFALSE),
     fDetector(NULL),
     fInputPoints(NULL),
     fDigis(NULL),
@@ -65,6 +61,7 @@ CbmMvdDigitizer::CbmMvdDigitizer(const char* name, Int_t iMode, Int_t iVerbose)
   : FairTask(name, iVerbose),
     fMode(iMode),
     fShowDebugHistos(kFALSE),
+    fNoiseSensors(kFALSE),
     fDetector(NULL),
     fInputPoints(NULL),
     fDigis(NULL),
@@ -102,7 +99,9 @@ if ( fDigis)
 
 // -----   Exec   --------------------------------------------------------------
 void CbmMvdDigitizer::Exec(Option_t* /*opt*/){
-// --- Start timer
+    // --- Start timer
+using namespace std;
+
 fTimer.Start();
 	
 fDigis->Delete();
@@ -115,12 +114,12 @@ if(fInputPoints->GetEntriesFast() > 0)
    if(fVerbose) cout << "//----------------------------------------//";
    if(fVerbose) cout << endl << "Send Input" << endl;
    fDetector->SendInput(fInputPoints);
-   if(fVerbose) cout << "Execute DigitizerPlugin Nr. "<< fDigiPluginNr << endl;
+   LOG(DEBUG) << "Execute DigitizerPlugin Nr. "<< fDigiPluginNr << FairLogger::endl;
    fDetector->Exec(fDigiPluginNr);
    if(fVerbose) cout << "End Chain" << endl;
    if(fVerbose) cout << "Start writing Digis" << endl;  
    fDigis->AbsorbObjects(fDetector->GetOutputDigis(),0,fDetector->GetOutputArray(fDigiPluginNr)->GetEntriesFast()-1); 
-   if(fVerbose) cout << "Total of " << fDigis->GetEntriesFast() << " digis in this Event" << endl;
+   LOG(DEBUG) << "Total of " << fDigis->GetEntriesFast() << " digis in this Event" << FairLogger::endl;
    if(fVerbose) cout << "Start writing DigiMatchs" << endl;  
    fDigiMatch->AbsorbObjects(fDetector->GetOutputDigiMatchs(),0,fDetector->GetOutputDigiMatchs()->GetEntriesFast()-1);
    if(fVerbose) cout << "Total of " << fDigiMatch->GetEntriesFast() << " digisMatch in this Event" << endl; 
@@ -168,7 +167,7 @@ InitStatus CbmMvdDigitizer::Init() {
     fMcPileUp = new TClonesArray("CbmMvdPoint", 10000);
     ioman->Register("MvdPileUpMC", "Mvd MC Points after Pile Up", fMcPileUp, IsOutputBranchPersistent("MvdPileUpMC"));
 
-   fDetector = CbmMvdDetector::Instance();
+    fDetector = CbmMvdDetector::Instance();
 
 	if(fDetector->GetSensorArraySize() > 1)
 		{
@@ -220,7 +219,8 @@ InitStatus CbmMvdDigitizer::Init() {
     fDigiPluginNr = (UInt_t) (fDetector->GetPluginArraySize());
     if(fShowDebugHistos) fDetector->ShowDebugHistos();
     fDetector->Init();
-   
+
+    if(fNoiseSensors) fDetector->SetProduceNoise();
 
     // Screen output
     cout << GetName() << " initialised with parameters: " << endl;
@@ -268,7 +268,9 @@ void CbmMvdDigitizer::GetMvdGeometry() {
 
 // -----   Private method PrintParameters   --------------------------------
 void CbmMvdDigitizer::PrintParameters() {
-    
+
+using namespace std;
+
     cout.setf(ios_base::fixed, ios_base::floatfield);
     cout << "============================================================" << endl;
     cout << "============== Parameters MvdDigitizer =====================" << endl;

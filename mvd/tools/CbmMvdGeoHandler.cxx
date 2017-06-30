@@ -15,6 +15,7 @@
 #include "TGeoManager.h"
 #include "TGeoMatrix.h"
 #include "TVirtualMC.h"
+#include "TString.h"
 
 #include <string>
 #include <cstdlib>
@@ -85,6 +86,7 @@ void CbmMvdGeoHandler::Init(Bool_t isSimulation)
             fDetector->SetParameterFile(fStationPar);
 	switch (fGeoTyp)
 	{
+	case scripted:
 	case FourStation:
 	case FourStationShift:
 	fStationPar->SetNofStations(4);
@@ -214,21 +216,27 @@ void CbmMvdGeoHandler::NavigateTo(
       fGeoPathHash = path.Hash();
       fCurrentVolume = gGeoManager->GetCurrentVolume();
       TString name = fCurrentVolume->GetName();
-      //cout << endl << "this volume is " << name << endl;
+      LOG(DEBUG) << "this volume is " << name << FairLogger::endl;
       fVolumeShape = (TGeoBBox*)fCurrentVolume->GetShape();
       Double_t local[3] = {0., 0., 0.};  // Local center of volume
       gGeoManager->LocalToMaster(local, fGlobal);
       fGlobalMatrix = gGeoManager->GetCurrentMatrix();
-	if(name.Contains("S0"))
+	if(path.Contains("S0"))
 	fStationNumber = 0;
-	else if(name.Contains("S1"))
+	else if(path.Contains("S1"))
 	fStationNumber = 1;
-	else if(name.Contains("S2"))
+	else if(path.Contains("S2"))
 	fStationNumber = 2;
-	else if(name.Contains("S3"))
+	else if(path.Contains("S3"))
 	fStationNumber = 3;
         else
-	LOG(FATAL) <<  "couldn't find Station in volume name, something seems fishy " << FairLogger::endl;
+	    LOG(FATAL) <<  "couldn't find Station in volume name, something seems fishy " << FairLogger::endl;
+
+	LOG(DEBUG) << "I am on station: " << fStationNumber << FairLogger::endl;
+	LOG(DEBUG) << "I am at X: " << fGlobal[0] << FairLogger::endl;
+	LOG(DEBUG) << "I am at Y: " << fGlobal[1] << FairLogger::endl;
+	LOG(DEBUG) << "I am at Z: " << fGlobal[2] << FairLogger::endl;
+
 	local[0] = fVolumeShape->GetDX();
         local[1] = fVolumeShape->GetDY();
 	Double_t fGlobalMax[3]; 
@@ -266,7 +274,7 @@ TObjArray* nodes = gGeoManager->GetTopNode()->GetNodes();
 for (Int_t iNode = 0; iNode < nodes->GetEntriesFast(); iNode++)
     {
     TGeoNode* node = (TGeoNode*) nodes->At(iNode);
-    if (TString(node->GetName()).Contains(pipeName))
+    if (TString(node->GetName()).Contains(pipeName, TString::ECaseCompare::kIgnoreCase))
        {
 	   motherName = node->GetName();
 	   fMother = Form("cave_1/%s/pipevac1_0", motherName.Data());
@@ -277,8 +285,26 @@ for (Int_t iNode = 0; iNode < nodes->GetEntriesFast(); iNode++)
     else continue;
     }
 if(fail)
-    LOG(FATAL)<<"MVD Geometry included, but pipe not found please check your setup" << FairLogger::endl;
+{
+    LOG(DEBUG)<<"Check for MVD outside of pipe"<< FairLogger::endl;
 
+    for (Int_t iNode = 0; iNode < nodes->GetEntriesFast(); iNode++)
+    {
+    TGeoNode* node = (TGeoNode*) nodes->At(iNode);
+    if (TString(node->GetName()).Contains("mvd", TString::ECaseCompare::kIgnoreCase))
+       {
+	   motherName = node->GetName();
+	   fMother = "cave_1";
+	   LOG(DEBUG) << "MvdGeoHandler found Mother: " << fMother << FairLogger::endl;
+	   LOG(WARNING) << "Mvd found outside of pipe, use this setup only in testing" << FairLogger::endl;
+	   fail = kFALSE;
+           break;
+       }
+    else continue;
+    }
+}
+if(fail)
+    LOG(FATAL)<<"MVD Geometry included, but pipe not found please check your setup" << FairLogger::endl;
 }
 //--------------------------------------------------------------------------
 
@@ -319,6 +345,12 @@ else if (gGeoManager->CheckPath(fMother + "/MVDomCBMorotated_0"))
         LOG(DEBUG) << "Found mCBM MVD rotated configuration" << FairLogger::endl;
         fDetectorName = "/MVDomCBMorotated_0";
         fGeoTyp = MiniCbm;
+	}
+else if (gGeoManager->CheckPath(fMother + "/MVDscripted_0"))
+        {
+        LOG(DEBUG) << "Found scripted MVD configuration" << FairLogger::endl;
+        fDetectorName = "/MVDscripted_0";
+        fGeoTyp = scripted;
         }
 else 
 	{
@@ -329,6 +361,37 @@ else
 }
 //--------------------------------------------------------------------------
 
+//--------------------------------------------------------------------------
+Int_t CbmMvdGeoHandler::GetIDfromPath(TString path)
+{
+    // path is build as: cave_1/*pipe/MVDscripted_0/quadrant_S*_*/sensor_*/sensorActive
+    Int_t id = 0;
+    TString sensorName;
+
+    TString quadrantName;
+    TString stationName;
+
+    gGeoManager->cd(path.Data());
+
+    sensorName = gGeoManager->GetMother(1)->GetName();
+    sensorName.Remove(0, 7);
+    Int_t sensorNumber = sensorName.Atoi();
+
+    quadrantName = gGeoManager->GetMother(2)->GetName();
+    stationName = quadrantName(10);
+    quadrantName.Remove(0, 12);
+    Int_t quadNumber = quadrantName.Atoi();
+    Int_t stationNumber = stationName.Atoi();
+
+    id = 1000 * stationNumber + 100 * quadNumber + sensorNumber;
+
+   // LOG(DEBUG) << "We are on Station: " << stationNumber << " in Quadrant: " << quadNumber << " and Sensor: " << sensorNumber << FairLogger::endl;
+   // LOG(DEBUG) << "This ID is: " << id << FairLogger::endl;
+
+
+    return id;
+}
+//--------------------------------------------------------------------------
 
 
 //--------------------------------------------------------------------------
@@ -357,7 +420,8 @@ if(!fDetector)
 
 Int_t iStation = 0;
   	for(Int_t StatNr = 0; StatNr < 4; StatNr++)
-      	{
+	{
+                   fStationNumber = StatNr;
 	if(StatNr == 0 && fGeoTyp == FourStation)
 		fStationName = "/MVDo0ohoFPCoHSoS_1";
 	else
@@ -371,30 +435,72 @@ Int_t iStation = 0;
 	     		for(Int_t Layer = 0; Layer < 2; Layer++)
 		 	 {
 		  	
-		     		 for(Int_t SensNr = 0; SensNr < 50; SensNr++)
-			  	{
-				fSensorHolding = Form("/MVD-S%i-Q%i-L%i-C%02i-P0oPartAss_1",  StatNr, QuadNr, Layer, SensNr);
-			    	fSensorName = Form("MVD-S%i-Q%i-L%i-C%02i-P0", StatNr, QuadNr, Layer, SensNr);
-			  	fVolId = gGeoManager->GetUID(fSensorName);
-				if(fVolId > -1)
-				for(Int_t SegmentNr = 0; SegmentNr < 50; SegmentNr++)
-			       {
-				fSectorName = Form("/S%iQ%iS%i_1", StatNr, QuadNr, SegmentNr);
-				fnodeName = fMother + fDetectorName + fStationName + fQuadrantName + fSectorName + fSensorHolding + "/" + fSensorName + "_1";
-				//cout << endl << "looking for " << fnodeName << endl;
-				Bool_t nodeFound = gGeoManager->CheckPath(fnodeName.Data());
-				        if(nodeFound)
-					{
-					fDetector->AddSensor(fSensorName, fSensorName, fnodeName, new CbmMvdMimosa26AHR, iStation, fVolId, 0.0, StatNr);
-					iStation++;
-					FillParameter();
-					}
-					}
+		     	  for(Int_t SensNr = 0; SensNr < 50; SensNr++)
+			      {
+			      fSensorHolding = Form("/MVD-S%i-Q%i-L%i-C%02i-P0oPartAss_1",  StatNr, QuadNr, Layer, SensNr);
+			      fSensorName = Form("MVD-S%i-Q%i-L%i-C%02i-P0", StatNr, QuadNr, Layer, SensNr);
+			      fVolId = gGeoManager->GetUID(fSensorName);
+			      if(fVolId > -1)
+			      for(Int_t SegmentNr = 0; SegmentNr < 50; SegmentNr++)
+			         {
+			          fSectorName = Form("/S%iQ%iS%i_1", StatNr, QuadNr, SegmentNr);
+			         fnodeName = fMother + fDetectorName + fStationName + fQuadrantName + fSectorName + fSensorHolding + "/" + fSensorName + "_1";
+			        LOG(DEBUG) << "looking for " << fnodeName << FairLogger::endl;
+			        Bool_t nodeFound = gGeoManager->CheckPath(fnodeName.Data());
+			               if(nodeFound)
+			        	{
+			        	fDetector->AddSensor(fSensorName, fSensorName, fnodeName, new CbmMvdMimosa26AHR, iStation, fVolId, 0.0, StatNr);
+			        	iStation++;
+			        	FillParameter();
+			        	}
+			        	}
 				}
 			}
 		}
 	}
 }
+
+if(fGeoTyp == scripted)
+{
+fSensorName = "sensorActive";
+if(!fDetector)
+	LOG(FATAL) <<  "GeometryHandler couldn't find a valid Detector"
+		   << FairLogger::endl;
+
+Int_t iStation = 0;
+  	for(Int_t StatNr = 0; StatNr < 4; StatNr++)
+	{
+        fStationNumber = StatNr;
+        fStationName = Form("/station_S%d_1",StatNr);
+		for(Int_t QuadNr = 0; QuadNr < 4; QuadNr++)
+	           {
+	           fQuadrantName = Form("/quadrant_S%d_%d",StatNr, QuadNr);
+	           for(Int_t SensNr = 0; SensNr < 50; SensNr++)
+		      {
+		      fSensorHolding = Form("/sensor_%d", SensNr);
+                      fnodeName = fMother + fDetectorName + fStationName + fQuadrantName + fSensorHolding + "/" + fSensorName + "_1";
+		      LOG(DEBUG) << "looking for " << fnodeName << FairLogger::endl;
+                      Bool_t nodeFound = gGeoManager->CheckPath(fnodeName.Data());
+		      if(nodeFound)
+		        {
+			gGeoManager->cd(fnodeName);
+		        fVolId = GetIDfromPath(fnodeName);
+		      	fDetector->AddSensor(fSensorName, fSensorName, fnodeName, new CbmMvdMimosa26AHR, iStation, fVolId, 0.0, StatNr);
+		       	iStation++;
+			FillParameter();
+                         LOG(DEBUG) << "found " << fSensorHolding + "/" + fSensorName <<  " number: " << fVolId << "  and added to MVD Detector" << FairLogger::endl;
+			}
+                      else break;
+
+		      }
+		   }
+	}
+}
+
+
+
+
+
 else if(fGeoTyp == MiniCbm)
 {
 
@@ -404,7 +510,8 @@ if(!fDetector)
 
 Int_t iStation = 0;
   	for(Int_t StatNr = 0; StatNr < 2; StatNr++)
-      	{
+	{
+                   fStationNumber = StatNr;
 	fStationName = Form("/MVDomCBMoS%i_1",StatNr);
                      
 	     		for(Int_t Layer = 0; Layer < 2; Layer++)
@@ -414,18 +521,18 @@ Int_t iStation = 0;
 				fQuadrantName = Form("/MVD-S%i-Q0-L%i-C%02i_1",StatNr, Layer, SensNr);
 				fSensorHolding = Form("/MVD-S%i-Q0-L%i-C%02i-P0oPartAss_1",  StatNr, Layer, SensNr);
 			    	fSensorName = Form("MVD-S%i-Q0-L%i-C%02i-P0", StatNr, Layer, SensNr);
-			  	fVolId = gGeoManager->GetUID(fSensorName);
-				if(fVolId > -1)
-				{
-				fnodeName = fMother + fDetectorName + fStationName + fQuadrantName + fSensorHolding + "/" + fSensorName + "_1";
-				Bool_t nodeFound = gGeoManager->CheckPath(fnodeName.Data());
-				        if(nodeFound)
-					{
-					fDetector->AddSensor(fSensorName, fSensorName, fnodeName, new CbmMvdMimosa26AHR, iStation, fVolId, 0.0, StatNr);
-					iStation++;
-					FillParameter();
-				        }
-				}
+			        fVolId = gGeoManager->GetUID(fSensorName);
+			        if(fVolId > -1)
+			          {
+			        fnodeName = fMother + fDetectorName + fStationName + fQuadrantName + fSensorHolding + "/" + fSensorName + "_1";
+			        Bool_t nodeFound = gGeoManager->CheckPath(fnodeName.Data());
+			                if(nodeFound)
+			        	{
+				        fDetector->AddSensor(fSensorName, fSensorName, fnodeName, new CbmMvdMimosa26AHR, iStation, fVolId, 0.0, StatNr);
+			        	iStation++;
+			        	FillParameter();
+			                }
+			        }
 				}
 			}
 		
@@ -441,7 +548,8 @@ LOG(ERROR) << "Tried to load an unsupported MVD Geometry" << FairLogger::endl;
 //--------------------------------------------------------------------------
 void CbmMvdGeoHandler::FillParameter()
 {
-   
+
+
 if (fGeoPathHash != fnodeName.Hash()) {
       NavigateTo(fnodeName);
 }
@@ -489,27 +597,61 @@ Int_t iStation = 0;
 			  	{
 				fSensorHolding = Form("/MVD-S%i-Q%i-L%i-C%02i-P0oPartAss_1",  StatNr, QuadNr, Layer, SensNr);
 			    	fSensorName = Form("MVD-S%i-Q%i-L%i-C%02i-P0", StatNr, QuadNr, Layer, SensNr);
-			  	fVolId = gGeoManager->GetUID(fSensorName);
-				if(fVolId > -1)
-				for(Int_t SegmentNr = 0; SegmentNr < 50; SegmentNr++)
+			        fVolId = gGeoManager->GetUID(fSensorName);
+			        if(fVolId > -1)
+			        for(Int_t SegmentNr = 0; SegmentNr < 50; SegmentNr++)
 			       {
-				fSectorName = Form("/S%iQ%iS%i_1", StatNr, QuadNr, SegmentNr);
-				fnodeName = fMother + fDetectorName + fStationName + fQuadrantName + fSectorName + fSensorHolding + "/" + fSensorName + "_1";
-				//cout << endl << "looking for " << fnodeName << endl;
-				Bool_t nodeFound = gGeoManager->CheckPath(fnodeName.Data());
-				        if(nodeFound)
-					{
-					fStationMap[fVolId] = iStation;
-					iStation++;
+			        fSectorName = Form("/S%iQ%iS%i_1", StatNr, QuadNr, SegmentNr);
+			        fnodeName = fMother + fDetectorName + fStationName + fQuadrantName + fSectorName + fSensorHolding + "/" + fSensorName + "_1";
+			        LOG(DEBUG) << "looking for " << fnodeName << FairLogger::endl;
+			        Bool_t nodeFound = gGeoManager->CheckPath(fnodeName.Data());
+			                if(nodeFound)
+			        	{
+			        	fStationMap[fVolId] = iStation;
+			        	iStation++;
 					
-					}
-					}
+			       	}
+			        	}
 				}
 			}
 		}
 
 }
 }
+
+else if(fGeoTyp == scripted)
+{
+fSensorName = "sensorActive";
+Int_t iStation = 0;
+  	for(Int_t StatNr = 0; StatNr < 4; StatNr++)
+      	{
+        fStationName = Form("/station_S%d_1",StatNr);
+		for(Int_t QuadNr = 0; QuadNr < 4; QuadNr++)
+	    	{
+		fQuadrantName = Form("/quadrant_S%d_%d",StatNr, QuadNr);
+	           for(Int_t SensNr = 0; SensNr < 50; SensNr++)
+		      {
+			  fSensorHolding = Form("/sensor_%d", SensNr);
+                      fnodeName = fMother + fDetectorName + fStationName + fQuadrantName + fSensorHolding + "/" + fSensorName + "_1";
+		      LOG(DEBUG) << "looking for " << fnodeName << FairLogger::endl;
+                      Bool_t nodeFound = gGeoManager->CheckPath(fnodeName.Data());
+		      if(nodeFound)
+		        {
+			gGeoManager->cd(fnodeName);
+                        TGeoNode* node = gGeoManager->GetCurrentNode();
+			fVolId = GetIDfromPath(fnodeName);
+			LOG(DEBUG) << "found " << fnodeName << " number: " << iStation << " ID: " << fVolId << " and added to station map" << FairLogger::endl;
+		          fStationMap[fVolId] = iStation;
+			  iStation++;
+			  LOG(DEBUG) << "Map now size: " << fStationMap.size() << FairLogger::endl;
+		          }
+                      else break;
+
+		   }
+		}
+	}
+}
+
 else if(fGeoTyp == Default)
 {
   Int_t iStation =  1;
@@ -520,8 +662,8 @@ else if(fGeoTyp == Default)
     if (volId > -1 ) {
       fStationMap[volId] = iStation;
       LOG(INFO) << GetName() << "::ConstructAsciiGeometry: "
-           << "Station No. " << iStation << ", volume ID " << volId 
-	   << ", volume name " << volName << FairLogger::endl;
+           << "Station No. " << iStation << ", volume ID " << volId
+           << ", volume name " << volName << FairLogger::endl;
       iStation++;
     }
   } while ( volId > -1 );
@@ -542,20 +684,20 @@ Int_t iStation = 0;
 				fSensorHolding = Form("/MVD-S%i-Q0-L%i-C%02i-P0oPartAss_1",  StatNr, Layer, SensNr);
 			    	fSensorName = Form("MVD-S%i-Q0-L%i-C%02i-P0", StatNr, Layer, SensNr);
 				//cout << endl << "try to find: " << fSensorName << endl;
-			  	fVolId = gGeoManager->GetUID(fSensorName);
-				if(fVolId > -1)
-				{
-				fnodeName = fMother + fDetectorName + fStationName + fQuadrantName + fSensorHolding + "/" + fSensorName + "_1";
+			        fVolId = gGeoManager->GetUID(fSensorName);
+			        if(fVolId > -1)
+			        {
+			       fnodeName = fMother + fDetectorName + fStationName + fQuadrantName + fSensorHolding + "/" + fSensorName + "_1";
 				//cout << endl << "sensorfound check for node " << fnodeName << endl;
-				Bool_t nodeFound = gGeoManager->CheckPath(fnodeName.Data());
-				        if(nodeFound)
-					{
-					//cout << endl << "node found " << fnodeName << endl;
-					fStationMap[fVolId] = iStation;
-					iStation++;
-					
-				        }
-				}
+			        Bool_t nodeFound = gGeoManager->CheckPath(fnodeName.Data());
+			                if(nodeFound)
+			        	{
+			        	//cout << endl << "node found " << fnodeName << endl;
+			        	fStationMap[fVolId] = iStation;
+			        	iStation++;
+
+			                }
+			        }
 				}
 			}
 		
@@ -564,7 +706,7 @@ Int_t iStation = 0;
 
 
 else
-	LOG(ERROR) << "You tried to use an unsoported Geometry" << FairLogger::endl;
+	LOG(ERROR) << "You tried to use an unsuported Geometry" << FairLogger::endl;
 }
 //--------------------------------------------------------------------------
 

@@ -15,29 +15,30 @@
 #ifndef CBMMVDSENSOR_H
 #define CBMMVDSENSOR_H 1
 
-
-#include "FairPrimaryGenerator.h"
-#include "FairEventHeader.h"
-#include "FairRunSim.h"
-#include "FairRunAna.h"
-
-#include <map>
 #include "TNamed.h"
-#include "TString.h"
-#include "SensorDataSheets/CbmMvdSensorDataSheet.h"
-#include "TGeoMatrix.h"
-#include "TGeoVolume.h"
-#include "TGeoBBox.h"
-#include "TClonesArray.h"
-#include "TObjArray.h"
 #include "CbmMvdDetectorId.h"
+
+#include "SensorDataSheets/CbmMvdSensorDataSheet.h"
+#include "plugins/CbmMvdSensorPlugin.h"
 #include "CbmMvdCluster.h"
 
-#include "plugins/CbmMvdSensorPlugin.h"
+#include "TObjArray.h"
+#include "TGeoBBox.h"
+#include "TClonesArray.h"
+
+#include <map>
+
+#include "TString.h"
+
+using std::vector;
+using std::map;
 
 // data classes
 class CbmMvdPoint;
 class CbmMvdDigi;
+class TGeoHMatrix;
+class TGeoHMatrix;
+
 
 class CbmMvdSensor : public TNamed, CbmMvdDetectorId
 {
@@ -50,7 +51,7 @@ class CbmMvdSensor : public TNamed, CbmMvdDetectorId
 
   
   CbmMvdSensor(const char* name, CbmMvdSensorDataSheet* dataSheet, TString volName, TString nodeName,
-	       Int_t stationNr, Int_t volumeId, Double_t sensorStartTime);
+	       Int_t stationNr, Int_t volume, Double_t sensorStartTime);
 
 
   /** Destructor **/
@@ -63,14 +64,14 @@ class CbmMvdSensor : public TNamed, CbmMvdDetectorId
   Int_t    GetDetectorID() const { return fDetectorID;};
   Int_t    GetSensorNr() const { return fSensorNr; }
   
-  Double_t GetDX(){return fShape->GetDX();};        
-  Double_t GetDY(){return fShape->GetDY();};        
-  Double_t GetDZ(){return fShape->GetDZ();};
-  Double_t GetX(){return fSensorPosition[0];}; // returns x position for pixle 0/0
-  Double_t GetY(){return fSensorPosition[1];}; // returns y position for pixle 0/0
-  Double_t GetZ(){return fSensorPosition[2];}; // returns z position
-  Double_t GetIntegrationtime() {return fSensorData->GetIntegrationTime();};
-  Double_t GetCurrentEventTime() {return fcurrentEventTime;};
+  Double_t GetDX() const {return fShape->GetDX();};
+  Double_t GetDY() const {return fShape->GetDY();};
+  Double_t GetDZ() const {return fShape->GetDZ();};
+  Double_t GetX() const {return fSensorPosition[0];}; // returns x position for pixle 0/0
+  Double_t GetY() const {return fSensorPosition[1];}; // returns y position for pixle 0/0
+  Double_t GetZ() const {return fSensorPosition[2];}; // returns z position
+  Double_t GetIntegrationtime() const {return fSensorData->GetIntegrationTime();};
+  Double_t GetCurrentEventTime() const {return fcurrentEventTime;};
   
   
   TString  GetNodeName() {return fNodeName;};
@@ -90,18 +91,22 @@ class CbmMvdSensor : public TNamed, CbmMvdDetectorId
   void PixelToLocal	(Int_t pixelNumberX, Int_t pixelNumberY, Double_t* local);
   void PixelToTop	(Int_t pixelNumberX, Int_t pixelNumberY, Double_t* lab);
   void TopToPixel       (Double_t* lab, Int_t &pixelNumberX, Int_t &pixelNumberY);
-  Int_t GetFrameNumber  (Int_t pixelNumberY, Double_t absoluteTime);
-  Int_t GetDigiPlugin () {return fDigiPlugin;};
-  Int_t GetHitPlugin () {return fHitPlugin;};
-  Int_t GetClusterPlugin() {return fClusterPlugin;}
-  
+  Int_t GetFrameNumber(Int_t pixelNumberY, Double_t absoluteTime) const;
+  Int_t GetDigiPlugin () const {return fDigiPlugin;};
+  Int_t GetHitPlugin () const {return fHitPlugin;};
+  Int_t GetClusterPlugin() const {return fClusterPlugin;}
+
+  void SetDigiPlugin (const Int_t &nPlugin)  { fDigiPlugin = nPlugin;};
+  void SetHitPlugin (const Int_t &nPlugin)  { fHitPlugin = nPlugin;};
+  void SetClusterPlugin(const Int_t &nPlugin)  { fClusterPlugin = nPlugin;}
+
   void SetAlignment(TGeoHMatrix* alignmentMatrix);
   TGeoHMatrix* GetAlignmentCorr()	{return fAlignmentCorr;};
   TGeoHMatrix* GetRecoMatrix()		{return fRecoMatrix;};
   
 
   /** Initialization tools **/
-  void ReadSensorGeometry(TString volName, TString nodeName);
+  void ReadSensorGeometry(TString nodeName);
   
   void Init();
   void ShowDebugHistos();
@@ -132,12 +137,12 @@ class CbmMvdSensor : public TNamed, CbmMvdDetectorId
   void ClearInputArray(){;}
 //  void AddInputObject(TObject* dataObject);
   
-  TClonesArray* GetOutputBuffer();
-  TClonesArray* GetOutputArray(Int_t nPlugin);
-  TClonesArray* GetOutputMatch();
-  Int_t         GetOutputArrayLen(Int_t nPlugin);
+  TClonesArray* GetOutputBuffer() const;
+  TClonesArray* GetOutputArray(Int_t nPlugin) const;
+  TClonesArray* GetOutputMatch() const;
+  Int_t         GetOutputArrayLen(Int_t nPlugin) const;
  
- 
+  void SetProduceNoise();
   
  
  protected:
@@ -171,7 +176,7 @@ class CbmMvdSensor : public TNamed, CbmMvdDetectorId
   
   /** Technical data of the sensor */
   CbmMvdSensorDataSheet* fSensorData;
-  std::map<Int_t, Int_t> fSensorMap;
+  map<Int_t, Int_t> fSensorMap;
   
   /** Plugins */
   TObjArray* fPluginArray;

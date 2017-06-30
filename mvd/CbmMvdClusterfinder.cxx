@@ -8,25 +8,31 @@
 #include "plugins/tasks/CbmMvdSensorClusterfinderTask.h"
 #include "SensorDataSheets/CbmMvdMimosa26AHR.h"
 #include "tools/CbmMvdGeoHandler.h"
+#include "CbmMvdDetector.h"
 
 // Includes from FAIR
 #include "FairRootManager.h"
 #include "FairModule.h"
 
+
 // Includes from ROOT
 #include "TClonesArray.h"
+#include "TGeoManager.h"
+
+#include "TString.h"
+#include "TMath.h"
+
 
 
 // Includes from C++
 #include <iomanip>
 #include <iostream>
 
-using std::setw;
-using std::fixed;
-using std::setprecision;
-using std::ios_base;
 using std::cout;
 using std::endl;
+using std::setw;
+using std::setprecision;
+using std::fixed;
 
 // -----   Default constructor   ------------------------------------------
 CbmMvdClusterfinder::CbmMvdClusterfinder() 
@@ -191,7 +197,6 @@ void CbmMvdClusterfinder::GetMvdGeometry() {
 // -----   Private method PrintParameters   --------------------------------
 void CbmMvdClusterfinder::PrintParameters() {
     
-    cout.setf(ios_base::fixed, ios_base::floatfield);
     cout << "============================================================" << endl;
     cout << "============== Parameters Clusterfinder ====================" << endl;
     cout << "============================================================" << endl;

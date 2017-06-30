@@ -19,13 +19,14 @@
 
 #include "TLorentzVector.h"
 #include "TVector3.h"
-#include "FairGeoMedia.h"
-#include "FairGeoBuilder.h"
-#include "FairDetector.h"
-#include "TKey.h"
-#include "TGeoVoxelFinder.h"
 
-#include "CbmMvdDetector.h"
+//#include "FairGeoMedia.h"
+//#include "FairGeoBuilder.h"
+#include "FairDetector.h"
+//#include "TKey.h"
+//#include "TGeoVoxelFinder.h"
+
+//#include "CbmMvdDetector.h"
 #include "SensorDataSheets/CbmMvdMimosa26AHR.h"
 
 
@@ -33,6 +34,14 @@ class TClonesArray;
 class TList;
 class FairVolume;
 class CbmMvdPoint;
+class CbmMvdGeoHandler;
+class CbmMvdDetector;
+
+
+using std::map;
+
+
+
 
 class CbmMvd : public FairDetector
 {
@@ -125,7 +134,7 @@ class CbmMvd : public FairDetector
 
   virtual Bool_t CheckIfSensitive(std::string name);
 
-  virtual std::map<Int_t, Int_t> GetMap() {return fStationMap;};
+  virtual map<Int_t, Int_t> GetMap() {return fStationMap;};
   
   private:
 
@@ -145,13 +154,16 @@ class CbmMvd : public FairDetector
     TClonesArray*  fCollection;        //!  The hit collection
     Bool_t         kGeoSaved;          //!
     TList*         fGeoPar;            //!  List of geometry parameters
-    std::map<Int_t, Int_t> fStationMap;  //! Map from MC volume ID to station number
+    map<Int_t, Int_t> fStationMap;  //! Map from MC volume ID to station number
+
+    CbmMvdGeoHandler* fmvdHandler;
 
     /** Private method AddHit
      **
-     ** Adds a MvdPoint to the HitCollection
+
+    ** Adds a MvdPoint to the HitCollection
      **/
-    CbmMvdPoint* AddHit(Int_t trackID, Int_t pdg, Int_t stationNr, 
+    CbmMvdPoint* AddHit(Int_t trackID, Int_t pdg, Int_t sensorNr,
 			TVector3 posIn, TVector3 pos_out, 
 			TVector3 momIn, TVector3 momOut, 
 			Double_t time, Double_t length, Double_t eLoss);

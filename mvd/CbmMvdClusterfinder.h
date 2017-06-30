@@ -8,13 +8,16 @@
 #ifndef CBMMVDCLUSTERFINDER_H
 #define CBMMVDCLUSTERFINDER_H 1
 
-#include "FairTask.h"
-#include "CbmMvdDetector.h"
-#include "TGeoManager.h"
 
+
+#include "FairTask.h"
 #include "TRandom3.h"
-#include "TString.h"
-#include "TMath.h"
+#include "TStopwatch.h"
+
+class CbmMvdDetector;
+class TClonesArray;
+class TString;
+
 
 class CbmMvdClusterfinder : public FairTask
 {
@@ -39,10 +42,6 @@ class CbmMvdClusterfinder : public FairTask
   void Exec(Option_t* opt);
 
   void ShowDebugHistos(){fShowDebugHistos = kTRUE;}
-protected:
- 
- 
-
 
 private:
 /** Hit producer mode (0 = MAPS, 1 = Ideal) **/
