@@ -17,9 +17,9 @@ Set(INCLUDE_DIRECTORIES
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
-  ${BASE_INCLUDE_DIRECTORIES} 
-  ${Boost_INCLUDE_DIR} 
-  ${ROOT_INCLUDE_DIR}  
+  ${BASE_INCLUDE_DIRECTORIES}
+  ${Boost_INCLUDE_DIR}
+  ${ROOT_INCLUDE_DIR}
   ${CBMROOT_SOURCE_DIR}/external/ipc_legacy/ipc/src
   ${CBMROOT_SOURCE_DIR}/external/flib_dpb/flib_dpb
   ${CBMROOT_SOURCE_DIR}/external/spadic/spadic
@@ -37,20 +37,20 @@ Set(SYSTEM_INCLUDE_DIRECTORIES
 
 Include_Directories(${INCLUDE_DIRECTORIES})
 Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
- 
+
 
 Set(LINK_DIRECTORIES
   ${ROOT_LIBRARY_DIR}
   ${FAIRROOT_LIBRARY_DIR}
   ${Boost_LIBRARY_DIRS}
 )
- 
-Link_Directories( 
+
+Link_Directories(
   ${LINK_DIRECTORIES}
 )
 
 If(FairRoot_VERSION VERSION_EQUAL 15.11.2)
-  Set(FLES_TOF_BEAM_SOURCES 
+  Set(FLES_TOF_BEAM_SOURCES
     get4/CbmGet4EventDumper.cxx
 #    get4/CbmGet4EventMonitor.cxx
   )
@@ -61,14 +61,15 @@ If(FairRoot_VERSION VERSION_EQUAL 15.11.2)
 EndIf()
 
 Set(SRCS
-  CbmFlibFileSource.cxx   
-#  CbmNxFlibFileSource.cxx   
-  CbmFlibFileSourceNew.cxx   
+  CbmFlibFileSource.cxx
+#  CbmNxFlibFileSource.cxx
+  CbmFlibFileSourceNew.cxx
   CbmDaqBuffer.cxx
   CbmFiberHodoMapping.cxx
 
   unpacker/CbmTSUnpackSpadic.cxx
   unpacker/CbmTSUnpackSpadic11OnlineMonitor.cxx
+  unpacker/CbmTSUnpackSpadic20OnlineMonitor.cxx
   unpacker/CbmTSUnpackSpadicLegacy.cxx
   unpacker/CbmTSUnpackNxyter.cxx
   unpacker/CbmTSUnpackStsxyter.cxx
@@ -87,7 +88,7 @@ Set(SRCS
   tasks/tools/CbmTrdTestBeamTools.cxx
   tasks/tools/CbmTrdTestBeamToolsBuch2016.cxx
   tasks/tools/CbmTrdLabTools.cxx
-  
+
   tasks/CbmSpadicTriggerComp.cxx
   tasks/CbmTrdQABase.cxx
   tasks/CbmTrdQAHit.cxx
@@ -133,7 +134,7 @@ EndIf()
 Set(LINKDEF  CbmFlibReaderLinkDef.h )
 Set(LIBRARY_NAME CbmFlibReader)
 Set(DEPENDENCIES
-    CbmBase CbmBeamtimeBase CbmRich fles_ipc_legacy flib_dpb spadicMessage trbnet ${FLES_TOF_BEAM_DEPEND} Eve Base 
+    CbmBase CbmBeamtimeBase CbmRich fles_ipc_legacy flib_dpb spadicMessage trbnet ${FLES_TOF_BEAM_DEPEND} Eve Base
 )
 
 GENERATE_LIBRARY()
