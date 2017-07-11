@@ -460,7 +460,7 @@ Int_t iStation = 0;
 	}
 }
 
-if(fGeoTyp == scripted)
+else if(fGeoTyp == scripted)
 {
 fSensorName = "sensorActive";
 if(!fDetector)
