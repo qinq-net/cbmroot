@@ -97,7 +97,7 @@ void CbmLitDetectorSetup::DetermineSetup()
    fDet[kMvd] = CheckDetectorPresence("mvd");
    fDet[kSts] = CheckDetectorPresence("sts") || CheckDetectorPresence("STS");
    fDet[kRich] = CheckDetectorPresence("rich");
-   fDet[kTrd] = false;//CheckDetectorPresence("trd");
+   fDet[kTrd] = CheckDetectorPresence("trd");
    fDet[kMuch] = CheckDetectorPresence("much");
    fDet[kTof] = CheckDetectorPresence("tof");
    /*fIsElectronSetup = !CbmSetup::Instance()->IsActive(kMuch);
