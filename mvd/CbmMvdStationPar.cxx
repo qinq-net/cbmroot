@@ -5,6 +5,8 @@
 
 #include "CbmMvdStationPar.h"
 
+#include "FairLogger.h"
+
 #include <iostream>
 #include <math.h>
 
@@ -41,6 +43,26 @@ void CbmMvdStationPar::Print(Option_t* /*opt*/) const {
 cout 	<< endl << "--I--" << GetName() << "--I--" << endl
 	<< endl << "Initialized ParameterFile with " << fZPositions.size() << " Stations" << endl
 	<< endl << "-------------------------------------------------------------------------" << endl;
+
+LOG(DEBUG) <<"Z Postion station 0: " << GetZPosition(0) << FairLogger::endl;
+LOG(DEBUG) <<"Z Postion station 1: " << GetZPosition(1) << FairLogger::endl;
+LOG(DEBUG) <<"Z Postion station 2: " << GetZPosition(2) << FairLogger::endl;
+LOG(DEBUG) <<"Z Postion station 3: " << GetZPosition(3) << FairLogger::endl;
+
+LOG(DEBUG) <<"Thickness station 0: " << GetThickness(0) << FairLogger::endl;
+LOG(DEBUG) <<"Thickness station 1: " << GetThickness(1) << FairLogger::endl;
+LOG(DEBUG) <<"Thickness station 2: " << GetThickness(2) << FairLogger::endl;
+LOG(DEBUG) <<"Thickness station 3: " << GetThickness(3) << FairLogger::endl;
+
+LOG(DEBUG) <<"Width station 0: " << GetWidth(0) << FairLogger::endl;
+LOG(DEBUG) <<"Width station 1: " << GetWidth(1) << FairLogger::endl;
+LOG(DEBUG) <<"Width station 2: " << GetWidth(2) << FairLogger::endl;
+LOG(DEBUG) <<"Width station 3: " << GetWidth(3) << FairLogger::endl;
+
+LOG(DEBUG) <<"Height station 0: " << GetHeight(0) << FairLogger::endl;
+LOG(DEBUG) <<"Height station 1: " << GetHeight(1) << FairLogger::endl;
+LOG(DEBUG) <<"Height station 2: " << GetHeight(2) << FairLogger::endl;
+LOG(DEBUG) <<"Height station 3: " << GetHeight(3) << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 
@@ -63,11 +85,11 @@ for (Int_t i = 0; i < fStationCount; i++)
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
-Double_t CbmMvdStationPar::GetZPosition(Int_t stationNumber)
+Double_t CbmMvdStationPar::GetZPosition(Int_t stationNumber) const
 {
 if(stationNumber <= fStationCount)
 	{
-	return fZPositions[stationNumber];
+	return fZPositions.at(stationNumber);
 	}
 else
 	{
@@ -78,27 +100,11 @@ return 0.;
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
-Double_t CbmMvdStationPar::GetThickness(Int_t stationNumber)
+Double_t CbmMvdStationPar::GetThickness(Int_t stationNumber) const
 {
 if(stationNumber <= fStationCount)
 	{
-	return fThicknesses[stationNumber];
-	}
-else
-	{
-	cout <<  "Station number out of Range " << endl;
-	}
-return 0.;
-}
-
-// -------------------------------------------------------------------------
-
-// -------------------------------------------------------------------------
-Double_t CbmMvdStationPar::GetHeight(Int_t stationNumber)
-{
-if(stationNumber <= fStationCount)
-	{
-	return fHeights[stationNumber];
+	return fThicknesses.at(stationNumber);
 	}
 else
 	{
@@ -110,11 +116,27 @@ return 0.;
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
-Double_t CbmMvdStationPar::GetWidth(Int_t stationNumber)
+Double_t CbmMvdStationPar::GetHeight(Int_t stationNumber) const
 {
 if(stationNumber <= fStationCount)
 	{
-	return fWidths[stationNumber];
+	return fHeights.at(stationNumber);
+	}
+else
+	{
+	cout <<  "Station number out of Range " << endl;
+	}
+return 0.;
+}
+
+// -------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------
+Double_t CbmMvdStationPar::GetWidth(Int_t stationNumber) const
+{
+if(stationNumber <= fStationCount)
+	{
+	return fWidths.at(stationNumber);
 	
 	}
 else
@@ -127,11 +149,11 @@ return 0.;
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
-Double_t CbmMvdStationPar::GetXRes(Int_t stationNumber)
+Double_t CbmMvdStationPar::GetXRes(Int_t stationNumber) const
 {
 if(stationNumber <= fStationCount)
 	{
-	return fXResolutions[stationNumber]; 
+	return fXResolutions.at(stationNumber);
 	}
 else
 	{
@@ -143,11 +165,11 @@ return 0.;
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
-Double_t CbmMvdStationPar::GetYRes(Int_t stationNumber)
+Double_t CbmMvdStationPar::GetYRes(Int_t stationNumber) const
 {
 if(stationNumber <= fStationCount)
 	{
-	return fYResolutions[stationNumber];
+	return fYResolutions.at(stationNumber);
 	}
 else
 	{
@@ -159,11 +181,11 @@ return 0.;
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
-Double_t CbmMvdStationPar::GetRadLength(Int_t stationNumber)
+Double_t CbmMvdStationPar::GetRadLength(Int_t stationNumber) const
 {
 if(stationNumber <= fStationCount)
 	{
-	return fRadiationLength[stationNumber];
+	return fRadiationLength.at(stationNumber);
 	}
 else
 	{
@@ -175,11 +197,11 @@ return 0.;
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------  
-Double_t CbmMvdStationPar::GetBeamHeight(Int_t stationNumber)
+Double_t CbmMvdStationPar::GetBeamHeight(Int_t stationNumber) const
 {
 if(stationNumber <= fStationCount)
 	{
-	return fBeamHeights[stationNumber];
+	return fBeamHeights.at(stationNumber);
 	}
 else
 	{
@@ -191,11 +213,11 @@ return 0.;
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
-Double_t CbmMvdStationPar::GetBeamWidth(Int_t stationNumber)
+Double_t CbmMvdStationPar::GetBeamWidth(Int_t stationNumber) const
 {
 if(stationNumber <= fStationCount)
 	{
-	return fBeamWidths[stationNumber];
+	return fBeamWidths.at(stationNumber);
 	}
 else
 	{

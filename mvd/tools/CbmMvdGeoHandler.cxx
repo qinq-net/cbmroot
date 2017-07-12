@@ -221,17 +221,19 @@ void CbmMvdGeoHandler::NavigateTo(
       Double_t local[3] = {0., 0., 0.};  // Local center of volume
       gGeoManager->LocalToMaster(local, fGlobal);
       fGlobalMatrix = gGeoManager->GetCurrentMatrix();
-	if(path.Contains("S0"))
+	if(path.Contains("-S0-") || path.Contains("_S0_"))
 	fStationNumber = 0;
-	else if(path.Contains("S1"))
+	else if(path.Contains("-S1-") || path.Contains("_S1_"))
 	fStationNumber = 1;
-	else if(path.Contains("S2"))
+	else if(path.Contains("-S2-") || path.Contains("_S2_"))
 	fStationNumber = 2;
-	else if(path.Contains("S3"))
+	else if(path.Contains("-S3-") || path.Contains("_S3_"))
 	fStationNumber = 3;
         else
 	    LOG(FATAL) <<  "couldn't find Station in volume name, something seems fishy " << FairLogger::endl;
 
+	LOG(DEBUG) << "I am in path: " << path << FairLogger::endl;
+        LOG(DEBUG) << "I am: " << name << FairLogger::endl;
 	LOG(DEBUG) << "I am on station: " << fStationNumber << FairLogger::endl;
 	LOG(DEBUG) << "I am at X: " << fGlobal[0] << FairLogger::endl;
 	LOG(DEBUG) << "I am at Y: " << fGlobal[1] << FairLogger::endl;

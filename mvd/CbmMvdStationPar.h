@@ -35,15 +35,15 @@ class CbmMvdStationPar : public TNamed
 
   /** Accessors **/
   Int_t    GetStationCount() const { return fStationCount; };
-  Double_t GetZPosition(Int_t stationNumber);
-  Double_t GetThickness(Int_t stationNumber);
-  Double_t GetHeight(Int_t stationNumber);
-  Double_t GetWidth(Int_t stationNumber);
-  Double_t GetXRes(Int_t stationNumber);
-  Double_t GetYRes(Int_t stationNumber);
-  Double_t GetRadLength(Int_t stationNumber);
-  Double_t GetBeamHeight(Int_t stationNumber);
-  Double_t GetBeamWidth(Int_t stationNumber);
+  Double_t GetZPosition(Int_t stationNumber)const;
+  Double_t GetThickness(Int_t stationNumber)const;
+  Double_t GetHeight(Int_t stationNumber)const;
+  Double_t GetWidth(Int_t stationNumber)const;
+  Double_t GetXRes(Int_t stationNumber)const;
+  Double_t GetYRes(Int_t stationNumber)const;
+  Double_t GetRadLength(Int_t stationNumber)const;
+  Double_t GetBeamHeight(Int_t stationNumber)const;
+  Double_t GetBeamWidth(Int_t stationNumber)const;
 
 
   /** Data interface */
