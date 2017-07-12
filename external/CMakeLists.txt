@@ -25,5 +25,5 @@ If(NOT ${ROOT_HAS_VC})
       ${CBMROOT_SOURCE_DIR}/external/vc/include/
       PARENT_SCOPE
      )
-  Install(FILES $${CMAKE_BINARY_DIR}/lib/libVc.a DESTINATION lib)
+  Install(FILES ${CMAKE_BINARY_DIR}/lib/libVc.a DESTINATION lib)
 EndIf()
