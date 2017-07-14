@@ -805,24 +805,22 @@ Bool_t CbmMuchDigitizeGem::BufferSignals(Int_t iPoint,Double_t time, Double_t dr
 void CbmMuchDigitizeGem::GetEventInfo(Int_t& inputNr, Int_t& eventNr,
                                               Double_t& eventTime) {
 
+    // --- Take event number from FairRootManager
+    eventNr = FairRootManager::Instance()->GetEntryNr();
+
 	// --- In a FairRunAna, take the information from FairEventHeader
 	if ( FairRunAna::Instance() ) {
                 FairEventHeader* event = FairRunAna::Instance()->GetEventHeader();
                 assert ( event );
           inputNr   = event->GetInputFileId();
-          eventNr   = event->GetMCEntryNumber();
           eventTime = event->GetEventTime();
         }
  	// --- In a FairRunSim, the input number and event time are always zero;
-	 // --- only the event number is retrieved.
-     else {
+    else {
                 if ( ! FairRunSim::Instance() )
                         LOG(FATAL) << GetName() << ": neither SIM nor ANA run."
                                                << FairLogger::endl;
-                FairMCEventHeader* event = FairRunSim::Instance()->GetMCEventHeader();
-                assert ( event );
                 inputNr   = 0;
-                eventNr   = event->GetEventID();
                 eventTime = 0.;
         }
 
