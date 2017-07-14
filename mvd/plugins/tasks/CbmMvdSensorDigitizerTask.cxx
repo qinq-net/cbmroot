@@ -505,23 +505,22 @@ void CbmMvdSensorDigitizerTask::GetEventInfo(Int_t& inputNr, Int_t& eventNr,
 					     Double_t& eventTime)
 {
 
+    // --- The event number is taken from the FairRootManager
+    eventNr = FairRootManager::Instance()->GetEntryNr();
+
     // --- In a FairRunAna, take the information from FairEventHeader
     if ( FairRunAna::Instance() ) {
         FairEventHeader* event = FairRunAna::Instance()->GetEventHeader();
       inputNr   = event->GetInputFileId();
-      eventNr   = event->GetMCEntryNumber();
       eventTime = event->GetEventTime();
     }
 
-    // --- In a FairRunSim, the input number and event time are always zero;
-    // --- only the event number is retrieved.
+    // --- In a FairRunSim, the input number and event time are always zero.
     else {
         if ( ! FairRunSim::Instance() )
             LOG(FATAL) << GetName() << ": neither SIM nor ANA run." 
                            << FairLogger::endl;
-        FairMCEventHeader* event = FairRunSim::Instance()->GetMCEventHeader();
         inputNr   = 0;
-        eventNr   = event->GetEventID();
         eventTime = 0.;
     }
 
