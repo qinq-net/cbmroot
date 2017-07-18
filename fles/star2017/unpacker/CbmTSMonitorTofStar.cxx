@@ -1262,9 +1262,11 @@ void CbmTSMonitorTofStar::CreateHistograms()
     cTotPnt = new TCanvas( Form("cTotPnt_g%02u", uGdpb),
                            Form("gDPB %02u TOT distributions", uGdpb),
                            w, h);
-    cTotPnt->Divide( fNrOfFebsPerGdpb/uNbFeetPlot );
+    cTotPnt->Divide( fNrOfFebsPerGdpb/uNbFeetPlot + fNrOfFebsPerGdpb%uNbFeetPlot );
     TH2* histPntTot = NULL;
-    for (UInt_t uFeetPlot = 0; uFeetPlot < fNrOfFebsPerGdpb/uNbFeetPlot; ++uFeetPlot ) {
+    for (UInt_t uFeetPlot = 0;
+         uFeetPlot < fNrOfFebsPerGdpb/uNbFeetPlot + fNrOfFebsPerGdpb%uNbFeetPlot;
+         ++uFeetPlot ) {
       name = Form("Raw_Tot_gDPB_%02u_%1u", uGdpb, uFeetPlot);
       histPntTot = fHM->H2(name.Data());
 
@@ -1901,11 +1903,12 @@ Bool_t CbmTSMonitorTofStar::DoUnpack(const fles::Timeslice& ts,
           {
              for( uint32_t uGet4Index = 0; uGet4Index < fNrOfGet4PerGdpb; uGet4Index ++ )
              {
-               fHistGet4MessType->Fill(uGet4Index, ngdpb::GET4_32B_EPOCH);
                fGet4Id = uGet4Index;
                fGet4Nr = (fGdpbNr * fNrOfGet4PerGdpb) + fGet4Id;
                ngdpb::Message tmpMess(mess);
                tmpMess.setGdpbGenChipId( uGet4Index );
+               
+               fHistGet4MessType->Fill(fGet4Nr, ngdpb::GET4_32B_EPOCH);
                FillEpochInfo(tmpMess);
              } // for( uint32_t uGet4Index = 0; uGet4Index < fNrOfGet4PerGdpb; uGetIndex ++ )
           } // if this epoch message is a merged one valiud for all chips
@@ -2127,6 +2130,7 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
     } // if( fbEpochSuppModeOn )
 
     Int_t channelNr = fGet4Id * fNrOfChannelsPerGet4 + channel;
+    Int_t channelNrInFeet = (fGet4Id % fNrOfGet4PerFeb) * fNrOfChannelsPerGet4 + channel;
     Int_t iFeetNr   = (fGet4Id / fNrOfGet4PerFeb);
          
     ULong_t hitTime;
@@ -2156,7 +2160,7 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
 
       /// Finetime monitoring
       fhFtDistribPerCh[(fGdpbNr * fNrOfFebsPerGdpb) + iFeetNr]->Fill(
-            fGet4Id * fNrOfChannelsPerGet4 + channel, Fts );
+            channelNrInFeet, Fts );
     } // if( !fbGet4M24b )
       else
       {
@@ -2178,7 +2182,7 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
 
 
             /// Finetime monitoring
-            fhFtDistribPerChFall[iFullFebIdx]->Fill( channelNr, Fts );
+            fhFtDistribPerChFall[iFullFebIdx]->Fill( channelNrInFeet, Fts );
             if( 0 <= fviFtLastRise24b[iFullFebIdx][channelNr] &&
                 fuRiseFallChSel == channelNr)
                fhFtLastRiseCurrFall[iFullFebIdx]->Fill(
