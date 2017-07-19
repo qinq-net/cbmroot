@@ -57,13 +57,13 @@ NbSmTypes: Int_t            10
 // !!!! this parameter HAS to xmatch the value used in the geometry !!!!                                                             
 //  0    1    2    3    4    5    6    7    8    9                                                                                  
 NbSm: Int_t \                                                                                                                       
-    0    1    2    1    1    3    1    1    1    3                                                
+    0    1    2    1    1    3    1    1    3    3                                                
 // Number of RPCs for each SM type (2)                                                                                              
 // The number of entries should match (1), the number of types                                                                      
 // !!!! this parameter HAS to match the value used in the geometry !!!!                                                             
 //  0    1    2    3    4    5    6    7    8    9                                                                                  
 NbRpc: Int_t \                                                                                                                      
-    1    1    1    1    1    1    2    4    6    2                                                
+    1    1    1    1    1    1    2    4    1    2                                                
 // Number of gaps per RPC for each SM type                                                                                      
 // 1 line per SM type, the number of entries for each line should match                                                             
 // the number of RPCs defined in (2)                                                                                                
@@ -158,7 +158,7 @@ NbCh004: Int_t \
 NbCh005: Int_t \                                                                                                                    
    16   16   16  
 NbCh006: Int_t \                                                                                                                    
-   40   40  
+   28   40  
 NbCh007: Int_t \                                                                                                                    
    40    40   40   40    
 NbCh008: Int_t \                                                                                                                    
