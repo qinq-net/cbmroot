@@ -60,7 +60,7 @@ CbmTofTrackFinderNN::CbmTofTrackFinderNN() :
   fTxLIM(0.),
   fTyLIM(0.),
   fTyMean(0.),
-  fSIGLIM(0.),
+  fSIGLIM(4.),
   fChiMaxAccept(3.),
   fPosYMaxScal(0.55),
   fMinuit(),
@@ -85,7 +85,7 @@ CbmTofTrackFinderNN::CbmTofTrackFinderNN(const CbmTofTrackFinderNN &finder) :
   fTxLIM(0.),
   fTyLIM(0.),
   fTyMean(0.),
-  fSIGLIM(0.),
+  fSIGLIM(4.),
   fChiMaxAccept(3.),
   fPosYMaxScal(0.55),
   fMinuit(),
@@ -548,6 +548,7 @@ Int_t CbmTofTrackFinderNN::DoFind(
   PrintStatus((char*)"<D> Final result");
 
   for(Int_t iTr=0; iTr<fTracks.size(); iTr++){
+    if(fTracks[iTr]==NULL) continue;
     fTracks[iTr]->Delete();
     LOG(DEBUG) << Form("<I> TofTracklet %d, %p deleted",
 			    iTr,fTracks[iTr] )
