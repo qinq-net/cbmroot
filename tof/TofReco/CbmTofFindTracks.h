@@ -39,6 +39,7 @@ class CbmTofAddress;
 class CbmTofFindTracks : public FairTask
 {
   friend class CbmTofTrackFinderNN;
+  friend class CbmTofAnaTestbeam;
 
  public:
 

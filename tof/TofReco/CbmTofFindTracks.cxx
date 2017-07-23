@@ -449,7 +449,7 @@ Bool_t   CbmTofFindTracks::LoadCalParameter()
 	if(NULL != fChannelInfo) {
 	  Double_t dVal = fChannelInfo->GetZ() * fTtTarg ; //  use calibration target value
 	  fhPullT_Smt_Off->SetBinContent(iDet+1,dVal);
-	  LOG(INFO)<<Form("CbmTofFindTracks::LoadCalParameter Initialize det 0x%08x at %d with TOff %6.0f",
+	  LOG(INFO)<<Form("Initialize det 0x%08x at %d with TOff %6.0f",
 			   iUniqueId,iDet+1,dVal)
 		    <<FairLogger::endl;
 	}
@@ -917,8 +917,9 @@ void CbmTofFindTracks::Exec(Option_t* /*opt*/)
     CbmTofHit* pHit = (CbmTofHit*) fTofHitArray->At(iHit);
     Int_t iDetId = (pHit->GetAddress() & DetMask);
     Int_t iRpcInd= fMapRpcIdParInd[iDetId];
+    Double_t dTcor=0.;
     if(fhPullT_Smt_Off != NULL) {
-      Double_t dTcor=(Double_t)fhPullT_Smt_Off->GetBinContent( iRpcInd + 1 );
+      dTcor=(Double_t)fhPullT_Smt_Off->GetBinContent( iRpcInd + 1 );
       pHit->SetTime(pHit->GetTime()+dTcor);
     }
     if(fhPullX_Smt_Off != NULL) {
@@ -937,7 +938,7 @@ void CbmTofFindTracks::Exec(Option_t* /*opt*/)
     if ( (iDetId & 0x0000F00F) == 0x00005006 )     // modify diamond position 
     {
       TVector3 hitPos(0.,0.,0.);
-      TVector3 hitPosErr(0.5,0.5,0.5);  // including positioning uncertainty 
+      TVector3 hitPosErr(2.5,2.5,5.0);  // including positioning uncertainty 
       pHit->SetPosition(hitPos);
       pHit->SetPositionError(hitPosErr);
     } else {
@@ -953,8 +954,8 @@ void CbmTofFindTracks::Exec(Option_t* /*opt*/)
     Int_t iSt=GetStationOfAddr(iDetId);
     MarkStationFired(iSt);
 
-    LOG(DEBUG) << Form("Exec found Hit %d, addr 0x%08x, sta %d, X %6.2f, Y %6.2f Z %6.2f T %6.2f",
-		  iHit,pHit->GetAddress(),GetStationOfAddr(iDetId),pHit->GetX(),pHit->GetY(),pHit->GetZ(),pHit->GetTime())
+    LOG(DEBUG) << Form("Exec found Hit %d, addr 0x%08x, sta %d, X %6.2f, Y %6.2f Z %6.2f T %6.2f (%6.2f)",
+		  iHit,pHit->GetAddress(),GetStationOfAddr(iDetId),pHit->GetX(),pHit->GetY(),pHit->GetZ(),pHit->GetTime(),dTcor)
 	       << FairLogger::endl; 
   }
   LOG(DEBUG) << Form("CbmTofFindTracks::Exec NStationsFired %d > %d Min ?",GetNStationsFired(),GetMinNofHits())
@@ -963,6 +964,9 @@ void CbmTofFindTracks::Exec(Option_t* /*opt*/)
   if (GetNStationsFired()<GetMinNofHits()) {
     fInspectEvent=kFALSE;          // mark event as non trackable
   } else fInspectEvent=kTRUE;
+
+  // resort Hit array with respect to time, FIXME danger: links to digis become  invalid (???, check!!!)
+  // fTofHitArray->Sort(fTofHitArray->GetEntries());  // feature not available
 
   if (fInspectEvent && fNTofStations > 1){
     fStart.Set();
@@ -991,6 +995,7 @@ void CbmTofFindTracks::Exec(Option_t* /*opt*/)
 // -----   Public method Finish   ------------------------------------------
 void CbmTofFindTracks::Finish()
 {
+  if(fiEvent<1000) return; // preserve calibration histos in event display
 
   WriteHistos();
 
