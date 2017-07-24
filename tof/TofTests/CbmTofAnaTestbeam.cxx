@@ -58,7 +58,11 @@ Double_t dTDia;
 Double_t dDTD4Min=1.E8;
 static Double_t StartAnalysisTime = 0.;
 static Double_t StartSpillTime    = 0.;
-const  Double_t SpillDuration     = 10.; // in seconds
+const  Double_t SpillDuration     = 9.; // in seconds
+
+static Double_t fdMemoryTime = 1.E10; // memory time in ns
+static std::vector<TH2D *> fhLHTime; 
+
 
 //___________________________________________________________________
 //
@@ -258,11 +262,17 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam()
     fhDutPullZ(NULL),
     fhDutPullT(NULL),
     fhDutPullTB(NULL),
-    fhDutChiFound(NULL),
-    fhDutChiMissed(NULL),
-    fhDutChiMatch(NULL),
+    fhDutChi_Found(NULL),
+    fhDutChi_Missed(NULL),
+    fhDutChi_Match(NULL),
     fhDutXY_Found(NULL),     
     fhDutXY_Missed(NULL), 
+    fhDutDTLH_Found(NULL),     
+    fhDutDTLH_Missed(NULL), 
+    fhDutMul_Found(NULL),     
+    fhDutMul_Missed(NULL),
+    fhDutTIS_Found(NULL),     
+    fhDutTIS_Missed(NULL), 
     fhDutXYDT(NULL),
     fhTrklNofHitsRate(NULL),
     fhTrklDetHitRate(NULL),
@@ -529,11 +539,17 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fhDutPullZ(NULL),
     fhDutPullT(NULL),
     fhDutPullTB(NULL), 
-    fhDutChiFound(NULL),
-    fhDutChiMissed(NULL),
-    fhDutChiMatch(NULL),
+    fhDutChi_Found(NULL),
+    fhDutChi_Missed(NULL),
+    fhDutChi_Match(NULL),
     fhDutXY_Found(NULL),     
     fhDutXY_Missed(NULL), 
+    fhDutDTLH_Found(NULL),     
+    fhDutDTLH_Missed(NULL), 
+    fhDutMul_Found(NULL),     
+    fhDutMul_Missed(NULL), 
+    fhDutTIS_Found(NULL),     
+    fhDutTIS_Missed(NULL), 
     fhDutXYDT(NULL),
     fhTrklNofHitsRate(NULL),
     fhTrklDetHitRate(NULL),
@@ -733,7 +749,7 @@ Bool_t   CbmTofAnaTestbeam::LoadGeometry()
 void CbmTofAnaTestbeam::Exec(Option_t* /*option*/)
 {
   // Task execution
-   if(NULL != fFindTracks){
+   if(NULL != fFindTracks && fdMemoryTime == 0.){
      if(!fFindTracks->InspectEvent()) return;
 
      LOG(DEBUG)<<" CbmTofAnaTestbeam::Exec => New event with "
@@ -1399,15 +1415,15 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 			    Form("hDutPullTB_Sm_%d;  #DeltaT",iDutId),
 			    150, -0.75, 0.75); 
 
-     fhDutChiFound=new TH1F(  Form("hDutChi_Found_Sm_%d",iDutId),
-			    Form("hDutChi_Found_Sm_%d;  #chi",iDutId),
+     fhDutChi_Found=new TH1F(  Form("hDutChi_Found_%d",iDutId),
+			    Form("hDutChi_Found_%d;  #chi",iDutId),
 			    50, 0., 10.);  
-     fhDutChiMissed=new TH1F(  Form("hDutChi_Missed_Sm_%d",iDutId),
-			    Form("hDutChi_Missed_Sm_%d;  #chi",iDutId),
+     fhDutChi_Missed=new TH1F(  Form("hDutChi_Missed_%d",iDutId),
+			    Form("hDutChi_Missed_%d;  #chi",iDutId),
 			    50, 0., 10.);  
 
-     fhDutChiMatch=new TH1F(  Form("hDutChi_Match_Sm_%d",iDutId),
-			    Form("hDutChi_Match_Sm_%d;  #chi",iDutId),
+     fhDutChi_Match=new TH1F(  Form("hDutChi_Match_%d",iDutId),
+			    Form("hDutChi_Match_%d;  #chi",iDutId),
 			    50, 0., 10.);  
      Double_t XSIZ=20.; 
      Double_t DTSIZ=0.5;
@@ -1418,6 +1434,25 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
      fhDutXY_Missed = new TH2F( Form("hDutXY_Missed_%d",iDutId),
 			    Form("hDutXY_Missed_%d;  x(cm); y (cm)",iDutId),
 			    Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ); 
+
+     fhDutDTLH_Found=new TH1F(  Form("hDutDTLH_Found_%d",iDutId),
+			    Form("hDutDTLH_Found_Sm_%d;  log(#DeltaT)",iDutId),
+			    50, 0., 10.);  
+     fhDutDTLH_Missed=new TH1F(  Form("hDutDTLH_Missed_%d",iDutId),
+			    Form("hDutDTHL_Missed_Sm_%d;  log(#DeltaT)",iDutId),
+			    50, 0., 10.);  
+     fhDutMul_Found=new TH1F(  Form("hDutMul_Found_%d",iDutId),
+			    Form("hDutMul_Found_Sm_%d; Hit Multiplicity",iDutId),
+			    32, 0., 32.);  
+     fhDutMul_Missed=new TH1F(  Form("hDutMul_Missed_%d",iDutId),
+			    Form("hDutMul_Missed_Sm_%d; Hit Multiplicity",iDutId),
+			    32, 0., 32.);  
+     fhDutTIS_Found=new TH1F(  Form("hDutTIS_Found_%d",iDutId),
+			    Form("hDutTIS_Found_Sm_%d; Time in spill (s)",iDutId),
+			    200, 0., 10.);  
+     fhDutTIS_Missed=new TH1F(  Form("hDutTIS_Missed_%d",iDutId),
+			    Form("hDutTIS_Missed_Sm_%d; Time in spill (s)",iDutId),
+			    200, 0., 10.);  
 
      fhDutXYDT      = new TH3F( Form("hDutXYDT_%d",iDutId), 
 			    Form("hDutXYDT_%d;  x(cm); y (cm); #Deltat (ns)",iDutId),
@@ -1442,6 +1477,16 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
      fhTrklDetHitRateInSpill  = new TH2F( Form("hTrklDetHitRateInSpill"),
 			    Form("hTrklDetHitRateInSpill;  Time (s); DetIndx "),
 				  (Int_t)TRangeSpill*10, 0., TRangeSpill, NStations, 0., NStations);
+     
+     if (fdMemoryTime>0.) { // book histograms for memory effects
+       fhLHTime.resize(iNbDet);
+       Int_t iNbins=16; // corresponds to 2x2 cm^2 regions 
+       for(Int_t iDet=0; iDet<iNbDet; iDet++){
+	 fhLHTime[iDet] = new TH2D( Form("hLHTime_Det%d",iDet),
+				    Form("hLHTime_Det%d ;  x (cm); y (cm) ",iDet),
+				    iNbins, -16., 16., iNbins, -16., 16.);
+       }
+     }
 
    gDirectory->cd( oldir->GetPath() ); // <= To prevent histos from being sucked in by the param file of the TRootManager!
 
@@ -1545,13 +1590,15 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
    std::vector<CbmTofHit * > vDiaHit; 
    Double_t DDiaAvLim = 0.2; // average width for fastest diamond hits in ns 
    Double_t dMulDAv=0;
-
+   Double_t dTAv=0.;
+   Double_t dMAv=0.;
    // find diamond reference (BRef)
    for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)
    {
       pHit = (CbmTofHit*) fTofHitsColl->At( iHitInd );
       if(NULL == pHit) continue;
       Int_t iDetId = (pHit->GetAddress() & DetMask);
+      dTAv += pHit->GetTime(); dMAv += 1.;
       /*
       Int_t iChId = pHit->GetAddress();
       fChannelInfo = fDigiPar->GetCell( iChId );
@@ -1589,14 +1636,15 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	     <<Form(", inspect Dut 0x%08x, Ref 0x%08x, Sel2  0x%08x, Sel3  0x%08x ",fiDutAddr,
 		    fiMrpcRefAddr,fiMrpcSel2Addr,fiMrpcSel3Addr)
 	     <<FairLogger::endl;
-
-   if( iNbTofHits > 3 ) { // FIXME hard wired constant in code
+   dTAv /= dMAv; //use any hit
+   dTAv=dTDia;   // use diamond 
+   if( iNbTofHits > 0 ) { // FIXME hard wired constant in code
      if( StartAnalysisTime == 0. ) {
-       StartAnalysisTime=dTDia;
+       StartAnalysisTime=dTAv;
        LOG(INFO) << "StartAnalysisTime from TDia set to "<<StartAnalysisTime<<" ns. "<<FairLogger::endl;
      }
-     if( dTDia<1.E300 && dTDia - StartSpillTime > SpillDuration*1.E9 ) {
-       StartSpillTime=dTDia;
+     if( dTAv<1.E300 && dTAv - StartSpillTime > SpillDuration*1.E9 ) {
+       StartSpillTime=dTAv;
        LOG(DEBUG) << "StartSpillTime from TDia set to "<<StartSpillTime<<" ns. "<<FairLogger::endl;
      }
    }
@@ -2138,402 +2186,429 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
        }
      }
 
-     if ( Chi2List[iM0] > fdChi2Lim) return 0;
+     if ( Chi2List[iM0] < fdChi2Lim) {
 
-     Int_t iDetId1 = (pHit1->GetAddress() & DetMask);
-     Int_t iChId1 = pHit1->GetAddress();
-     fChannelInfo1 = fDigiPar->GetCell( iChId1 );
+       Int_t iDetId1 = (pHit1->GetAddress() & DetMask);
+       Int_t iChId1 = pHit1->GetAddress();
+       fChannelInfo1 = fDigiPar->GetCell( iChId1 );
 
-     Int_t iDetId2 = (pHit2->GetAddress() & DetMask);
-     Int_t iChId2 = pHit2->GetAddress();
-     fChannelInfo2 = fDigiPar->GetCell( iChId2 );
+       Int_t iDetId2 = (pHit2->GetAddress() & DetMask);
+       Int_t iChId2 = pHit2->GetAddress();
+       fChannelInfo2 = fDigiPar->GetCell( iChId2 );
 
-     Double_t xPos1=pHit1->GetX();
-     Double_t yPos1=pHit1->GetY();
-     Double_t zPos1=pHit1->GetZ();
-     Double_t tof1 =pHit1->GetTime();
-     Double_t dzscal=1.;
-     if(fEnableMatchPosScaling) dzscal=zPos1/pHit2->GetZ();
+       Double_t xPos1=pHit1->GetX();
+       Double_t yPos1=pHit1->GetY();
+       Double_t zPos1=pHit1->GetZ();
+       Double_t tof1 =pHit1->GetTime();
+       Double_t dzscal=1.;
+       if(fEnableMatchPosScaling) dzscal=zPos1/pHit2->GetZ();
 
-     Double_t xPos2=dzscal*pHit2->GetX();
-     Double_t yPos2=dzscal*pHit2->GetY();
-     Double_t tof2=pHit2->GetTime();
+       Double_t xPos2=dzscal*pHit2->GetX();
+       Double_t yPos2=dzscal*pHit2->GetY();
+       Double_t tof2=pHit2->GetTime();
 
-     if(fTrbHeader != NULL) fhTIS_sel1->Fill(fTrbHeader->GetTimeInSpill());
-     else                   fhTIS_sel1->Fill((dRefTMean-StartSpillTime)/1.E9);
+       if(fTrbHeader != NULL) fhTIS_sel1->Fill(fTrbHeader->GetTimeInSpill());
+       else                   fhTIS_sel1->Fill((dRefTMean-StartSpillTime)/1.E9);
 
-     if(NULL != fClusterizer)
-     if(fClusterizer->fdMemoryTime>0) {
-       Int_t iDut = CbmTofAddress::GetSmType( pHit1->GetAddress() );
-       if(fiDut != iDut)
-       LOG(FATAL)<<"inconsistent Dut - type "<<iDut<<" != "<<fiDut<<FairLogger::endl;
+       if(NULL != fClusterizer)
+	 if(fClusterizer->fdMemoryTime>0) {
+	   Int_t iDut = CbmTofAddress::GetSmType( pHit1->GetAddress() );
+	   if(fiDut != iDut)
+	     LOG(FATAL)<<"inconsistent Dut - type "<<iDut<<" != "<<fiDut<<FairLogger::endl;
 
-       Int_t iCh  = CbmTofAddress::GetChannelId( pHit1->GetAddress() );
-       if(iDutCh != iCh) 
-       LOG(DEBUG)<<"Inconsistent Dut strip #: "<<iCh<<" != "<<iDutCh<<FairLogger::endl;
-       fhDTLH_DStrip->Fill((Double_t)iCh,(Double_t)(iCh-iDutCh));
-       fhDTLH_sel1->Fill(dTimeSinceLastDutHit);
-     }
-
-     fhXX04->Fill(xPos1,xPos2);
-     fhYY04->Fill(yPos1,yPos2);
-     fhXY04->Fill(xPos1,yPos2);
-     fhYX04->Fill(yPos1,xPos2);
-     fhTT04->Fill(tof1,tof1-tof2);
-
-     Double_t dDist=TMath::Sqrt(
-				TMath::Power(pHit1->GetX()-pHit2->GetX(),2)
-			       +TMath::Power(pHit1->GetY()-pHit2->GetY(),2)
-			       +TMath::Power(pHit1->GetZ()-pHit2->GetZ(),2)
-				);
-
-     fhChi04D4best->Fill(Chi2List[iM0]);
-
-
-     CbmMatch* digiMatch1=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit1));
-     Double_t dCluSize0 = digiMatch1->GetNofLinks()/2.;
-     fhDigiMul0D4best->Fill(dMul0,dCluSize0);
-     CbmMatch* digiMatch2=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit2));
-     Double_t dCluSize4 = digiMatch2->GetNofLinks()/2.;
-     fhDigiMul4D4best->Fill(dMul4,dCluSize4);
-
-     fhCluSize04D4best->Fill(dCluSize0,dCluSize4);
-
-     fhCluMul04D4best->Fill(dMul0,dMul4);
-     fhStrMul04D4best->Fill(dStrMul0,dStrMul4);
-
-     fhCluMulTSig0D4best->Fill(dMul0,dDutTSig);
-     fhCluMulTSig4D4best->Fill(dMul4,dRefTSig);
-
-     fhCluMulTrel0D4best->Fill(dMul0,pHit1->GetTime()-dDutTMean);
-     fhCluMulTrel4D4best->Fill(dMul4,pHit2->GetTime()-dRefTMean);
-
-     fhCluSizeTrel0D4best->Fill(dCluSize0,pHit1->GetTime()-dDutTMean);
-     fhCluSizeTrel4D4best->Fill(dCluSize4,pHit2->GetTime()-dRefTMean);
-
-     // check for dependence in counter reference frame 
-     /*TGeoNode *fNode=*/        // prepare global->local trafo
-     gGeoManager->FindNode(fChannelInfo2->GetX(),fChannelInfo2->GetY(),fChannelInfo2->GetZ());
-
-     hitpos2[0]=pHit2->GetX();
-     hitpos2[1]=pHit2->GetY();
-     hitpos2[2]=pHit2->GetZ();
-
-/*     TGeoNode* cNode=*/ gGeoManager->GetCurrentNode(); // -> Comment to remove warning because set but never used
-     // if(0) cNode->Print();
-     gGeoManager->MasterToLocal(hitpos2, hitpos2_local);
-
-     Double_t dTofD4  = fdTOffD4 + dDTD4Min;
-     Double_t dInvVel = dTofD4/pHitRef->GetR(); // in ns/cm
-     Double_t dDTexp  = dDist*dInvVel;
-     Double_t dTMin   = fdHitDistAv/30.; // in ns 
-     CbmMatch* digiMatch0=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit1));
-     Double_t dTot0   = 0.;
-     if(NULL != fTofDigisColl)
-     for (Int_t iLink=0; iLink<digiMatch0->GetNofLinks(); iLink++){  // loop over digis
-         CbmLink L0 = digiMatch0->GetLink(iLink);  
-	 Int_t iDigInd0=L0.GetIndex();
-         if (iDigInd0 < fTofDigisColl->GetEntries()){
-            CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
-	    dTot0 += pDig0->GetTot();
-	    LOG(DEBUG1)<<Form(" dTot of hit 0x%08x: digind %d add %f -> sum %f",iDetId1,iDigInd0,pDig0->GetTot(),dTot0)
-		      <<FairLogger::endl;
+	   Int_t iCh  = CbmTofAddress::GetChannelId( pHit1->GetAddress() );
+	   if(iDutCh != iCh) 
+	     LOG(DEBUG)<<"Inconsistent Dut strip #: "<<iCh<<" != "<<iDutCh<<FairLogger::endl;
+	   fhDTLH_DStrip->Fill((Double_t)iCh,(Double_t)(iCh-iDutCh));
+	   fhDTLH_sel1->Fill(dTimeSinceLastDutHit);
 	 }
-     } 
-     dTot0 /= digiMatch0->GetNofLinks();  // average time over threshold
 
-     CbmMatch* digiMatch4=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit2));
-     Double_t dTot4   = 0.;
-     if(NULL != fTofDigisColl)
-     for (Int_t iLink=0; iLink<digiMatch4->GetNofLinks(); iLink++){  // loop over digis
-         CbmLink L0 = digiMatch4->GetLink(iLink);  
-	 Int_t iDigInd0=L0.GetIndex();
-         if (iDigInd0 < fTofDigisColl->GetEntries()){
-            CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
-	    dTot4 += pDig0->GetTot();
-	    LOG(DEBUG1)<<Form(" dTot of hit 0x%08x: digind %d add %f -> sum %f",iDetId1,iDigInd0,pDig0->GetTot(),dTot4)
-		      <<FairLogger::endl;
-	 }
-     } 
-     dTot4 /= digiMatch4->GetNofLinks();  // average time over threshold
+       fhXX04->Fill(xPos1,xPos2);
+       fhYY04->Fill(yPos1,yPos2);
+       fhXY04->Fill(xPos1,yPos2);
+       fhYX04->Fill(yPos1,xPos2);
+       fhTT04->Fill(tof1,tof1-tof2);
 
-     Double_t dTcor=0.;
-     if(fhDTD4DT04D4Off != NULL) dTcor+=(Double_t)fhDTD4DT04D4Off->GetBinContent(fhDTD4DT04D4Off->FindBin(-dDTD4Min));
-     if(fhDTX4D4Off     != NULL) dTcor+=(Double_t)fhDTX4D4Off->GetBinContent(fhDTX4D4Off->FindBin(hitpos2_local[0]));
-     if(fhDTY4D4Off     != NULL) dTcor+=(Double_t)fhDTY4D4Off->GetBinContent(fhDTY4D4Off->FindBin(hitpos2_local[1]));
-     if(fhDTTexpD4Off   != NULL) dTcor+=(Double_t)fhDTTexpD4Off->GetBinContent(fhDTTexpD4Off->FindBin(dDTexp-dTMin));
-     if(fhCluSize0DT04D4Off != NULL) dTcor+=(Double_t)fhCluSize0DT04D4Off->GetBinContent(fhCluSize0DT04D4Off->FindBin(dCluSize0));
-     if(fhCluSize4DT04D4Off != NULL) dTcor+=(Double_t)fhCluSize4DT04D4Off->GetBinContent(fhCluSize4DT04D4Off->FindBin(dCluSize4));
-     if(fhTot0DT04D4Off != NULL) dTcor+=(Double_t)fhTot0DT04D4Off->GetBinContent(fhTot0DT04D4Off->FindBin(TMath::Log(dTot0)));
-     if(fhTot4DT04D4Off != NULL) dTcor+=(Double_t)fhTot4DT04D4Off->GetBinContent(fhTot4DT04D4Off->FindBin(TMath::Log(dTot4)));
+       Double_t dDist=TMath::Sqrt(
+				  TMath::Power(pHit1->GetX()-pHit2->GetX(),2)
+				  +TMath::Power(pHit1->GetY()-pHit2->GetY(),2)
+				  +TMath::Power(pHit1->GetZ()-pHit2->GetZ(),2)
+				  );
 
-     //    dTcor *= dDist/fdHitDistAv;
-     Double_t dToD = (tof1-tof2-dTcor); //*fdHitDistAv/dDist;
-     //     LOG(INFO) << "dTcor for "<<-dDTD4<<" from "<<fhDTD4DT04D4Off<<": "<<dTcor<<FairLogger::endl;
+       fhChi04D4best->Fill(Chi2List[iM0]);
 
-     fhTofD4best->Fill(dTofD4);
-     if(dInvVel>0.) fhVelD4best->Fill(1./dInvVel);
 
-     fhChiDT04D4best->Fill(Chi2List[iM0],dToD);
-     fhDTD4DT04D4best->Fill(-dDTD4Min,dToD);
-     fhDTMul4D4best->Fill(dMul4,dToD);
+       CbmMatch* digiMatch1=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit1));
+       Double_t dCluSize0 = digiMatch1->GetNofLinks()/2.;
+       fhDigiMul0D4best->Fill(dMul0,dCluSize0);
+       CbmMatch* digiMatch2=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit2));
+       Double_t dCluSize4 = digiMatch2->GetNofLinks()/2.;
+       fhDigiMul4D4best->Fill(dMul4,dCluSize4);
 
-     fhXY4D4best->Fill(hitpos2_local[0],hitpos2_local[1]);
-     fhDTX4D4best->Fill(hitpos2_local[0],dToD);
-     fhDTY4D4best->Fill(hitpos2_local[1],dToD);
-     fhDXX4D4best->Fill(hitpos2_local[0],xPos1-xPos2);
-     fhDXY4D4best->Fill(hitpos2_local[1],xPos1-xPos2);
-     fhDYX4D4best->Fill(hitpos2_local[0],yPos1-yPos2);
-     fhDYY4D4best->Fill(hitpos2_local[1],yPos1-yPos2);
+       fhCluSize04D4best->Fill(dCluSize0,dCluSize4);
 
-     fhCluSize4DT04D4best->Fill(digiMatch2->GetNofLinks()/2.,dToD);
+       fhCluMul04D4best->Fill(dMul0,dMul4);
+       fhStrMul04D4best->Fill(dStrMul0,dStrMul4);
 
-     Double_t dTot = 0.;
-     if(NULL != fTofDigisColl)
-     for (Int_t iLink=0; iLink<digiMatch2->GetNofLinks(); iLink++){  // loop over digis
-         CbmLink L0 = digiMatch2->GetLink(iLink);  
-	 Int_t iDigInd0=L0.GetIndex();
-         if (iDigInd0 < fTofDigisColl->GetEntries()){
-            CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
-	    dTot += pDig0->GetTot();
-	    LOG(DEBUG)<<Form(" dTot of hit 0x%08x: digind %d add %f -> sum %f",iDetId2,iDigInd0,pDig0->GetTot(),dTot)
-		     <<FairLogger::endl;
-	 }
-     } 
-     dTot /= digiMatch2->GetNofLinks();  // average time over threshold
-     fhTot4DT04D4best->Fill(TMath::Log(dTot),dToD);
+       fhCluMulTSig0D4best->Fill(dMul0,dDutTSig);
+       fhCluMulTSig4D4best->Fill(dMul4,dRefTSig);
 
-     fhCluSize0DT04D4best->Fill(digiMatch0->GetNofLinks()/2.,dToD);
+       fhCluMulTrel0D4best->Fill(dMul0,pHit1->GetTime()-dDutTMean);
+       fhCluMulTrel4D4best->Fill(dMul4,pHit2->GetTime()-dRefTMean);
 
-     dTot = 0.;
-     if(NULL != fTofDigisColl)
-     for (Int_t iLink=0; iLink<digiMatch0->GetNofLinks(); iLink++){  // loop over digis
-         CbmLink L0 = digiMatch0->GetLink(iLink);  
-	 Int_t iDigInd0=L0.GetIndex();
-         if (iDigInd0 < fTofDigisColl->GetEntries()){
-            CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
-	    dTot += pDig0->GetTot();
-	    LOG(DEBUG1)<<Form(" dTot of hit 0x%08x: digind %d add %f -> sum %f",iDetId1,iDigInd0,pDig0->GetTot(),dTot)
-		      <<FairLogger::endl;
-	 }
-     } 
-     dTot /= digiMatch0->GetNofLinks();  // average time over threshold
-     fhTot0DT04D4best->Fill(TMath::Log(dTot),dToD);
+       fhCluSizeTrel0D4best->Fill(dCluSize0,pHit1->GetTime()-dDutTMean);
+       fhCluSizeTrel4D4best->Fill(dCluSize4,pHit2->GetTime()-dRefTMean);
 
-     fhCluSizeSigT0D4best->Fill(digiMatch1->GetNofLinks()/2.,pHit1->GetTimeError());
-     fhCluSizeSigT4D4best->Fill(digiMatch2->GetNofLinks()/2.,pHit2->GetTimeError());
+       // check for dependence in counter reference frame 
+       /*TGeoNode *fNode=*/        // prepare global->local trafo
+       gGeoManager->FindNode(fChannelInfo2->GetX(),fChannelInfo2->GetY(),fChannelInfo2->GetZ());
 
-     fhDTMul0D4best->Fill(dMul0,dToD);
+       hitpos2[0]=pHit2->GetX();
+       hitpos2[1]=pHit2->GetY();
+       hitpos2[2]=pHit2->GetZ();
 
-     // check for dependence in counter reference frame
-     /*TGeoNode *fNode1=*/        // prepare global->local trafo
-     gGeoManager->FindNode(fChannelInfo1->GetX(),fChannelInfo1->GetY(),fChannelInfo1->GetZ());
+       /*     TGeoNode* cNode=*/ gGeoManager->GetCurrentNode(); // -> Comment to remove warning because set but never used
+       // if(0) cNode->Print();
+       gGeoManager->MasterToLocal(hitpos2, hitpos2_local);
 
-     hitpos1[0]=pHit1->GetX();
-     hitpos1[1]=pHit1->GetY();
-     hitpos1[2]=pHit1->GetZ();
+       Double_t dTofD4  = fdTOffD4 + dDTD4Min;
+       Double_t dInvVel = dTofD4/pHitRef->GetR(); // in ns/cm
+       Double_t dDTexp  = dDist*dInvVel;
+       Double_t dTMin   = fdHitDistAv/30.; // in ns 
+       CbmMatch* digiMatch0=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit1));
+       Double_t dTot0   = 0.;
+       if(NULL != fTofDigisColl)
+	 for (Int_t iLink=0; iLink<digiMatch0->GetNofLinks(); iLink++){  // loop over digis
+	   CbmLink L0 = digiMatch0->GetLink(iLink);  
+	   Int_t iDigInd0=L0.GetIndex();
+	   if (iDigInd0 < fTofDigisColl->GetEntries()){
+	     CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
+	     dTot0 += pDig0->GetTot();
+	     LOG(DEBUG1)<<Form(" dTot of hit 0x%08x: digind %d add %f -> sum %f",iDetId1,iDigInd0,pDig0->GetTot(),dTot0)
+			<<FairLogger::endl;
+	   }
+	 } 
+       dTot0 /= digiMatch0->GetNofLinks();  // average time over threshold
 
-     /*TGeoNode* cNode1=*/ gGeoManager->GetCurrentNode();
-     gGeoManager->MasterToLocal(hitpos1, hitpos1_local);
-
-     fhXY0D4best->Fill(hitpos1_local[0],hitpos1_local[1]);
-     fhXX04D4best->Fill(hitpos1_local[0],hitpos2_local[0]);
-     fhYY04D4best->Fill(hitpos1_local[1],hitpos2_local[1]);
-
-     fhDTX0D4best->Fill(hitpos1_local[0],dToD);
-     fhDTY0D4best->Fill(hitpos1_local[1],dToD);
-     fhDXX0D4best->Fill(hitpos1_local[0],xPos1-xPos2);
-     fhDXY0D4best->Fill(hitpos1_local[1],xPos1-xPos2);
-     fhDYX0D4best->Fill(hitpos1_local[0],yPos1-yPos2);
-     fhDYY0D4best->Fill(hitpos1_local[1],yPos1-yPos2);
-
-     fhDXDY04D4best->Fill(xPos1-xPos2,yPos1-yPos2);
-     fhDXDT04D4best->Fill(xPos1-xPos2,dToD);
-     fhDYDT04D4best->Fill(yPos1-yPos2,dToD);
-     fhDistDT04D4best->Fill(dDist,dToD);
-     fhTexpDT04D4best->Fill(dDTexp-dTMin,dToD);
-     fhX0DT04D4best->Fill(hitpos1_local[0],dToD);
-     fhY0DT04D4best->Fill(hitpos1_local[1],dToD);
-     if(fTrbHeader != NULL) fhTISDT04D4best->Fill(fTrbHeader->GetTimeInSpill(),dToD);
-     else                   fhTISDT04D4best->Fill((dRefTMean-StartSpillTime)/1.E9,dToD);
-
-     if(iNbMatchedHits>1){
-       LOG(DEBUG)<<Form(" Matches>1: %d with first chi2s = %12.1f, %12.1f, %12.1f, %12.1f",iNbMatchedHits,
-		    Chi2List[0],Chi2List[1],Chi2List[2],Chi2List[3])
-		 <<FairLogger::endl;
-
-       for(Int_t iM=0; iM<iNbMatchedHits; iM++){
-	 LOG(DEBUG)<<Form(" Match: %d (%d) with ids = 0x%08x, 0x%08x - 0x%08x, 0x%08x",
-			  iM,iNbMatchedHits,pChi2Hit1[iM]->GetAddress(),pHit1->GetAddress(),
-			  pChi2Hit2[iM]->GetAddress(),pHit2->GetAddress()
-		   )
- 	     <<FairLogger::endl;
-	 if(pChi2Hit1[iM] != pHit1 && pChi2Hit2[iM] != pHit2){
-
-	 LOG(DEBUG)<<Form(" second best match D4 at %d (%d): chi2 %f ",iM,iNbMatchedHits,Chi2List[iM])
-		    <<FairLogger::endl;
-
-         if (Chi2List[iM] > 1.E3) break; // FIXME hardwired limit !
-
-	 pHit3=pChi2Hit1[iM];
-	 pHit4=pChi2Hit2[iM];
-
-	 /*Int_t iDetId3 = (pHit1->GetAddress() & DetMask);*/
-	 Int_t iChId3 = pHit1->GetAddress();
-	 fChannelInfo3 = fDigiPar->GetCell( iChId3 );
-
-	 /*Int_t iDetId4 = (pHit4->GetAddress() & DetMask);*/
-	 Int_t iChId4 = pHit4->GetAddress();
-	 fChannelInfo4 = fDigiPar->GetCell( iChId4 );
-
-	 // check for dependence in counter reference frame
-	 /*TGeoNode *fNode4= */       // prepare global->local trafo
-	   gGeoManager->FindNode(fChannelInfo4->GetX(),fChannelInfo4->GetY(),fChannelInfo4->GetZ());
-
-	 hitpos4[0]=pChi2Hit2[iM]->GetX();
-	 hitpos4[1]=pChi2Hit2[iM]->GetY();
-	 hitpos4[2]=pChi2Hit2[iM]->GetZ();
-
-/*	 cNode=*/ gGeoManager->GetCurrentNode(); // -> Comment to remove warning because set but never used
-	 gGeoManager->MasterToLocal(hitpos4, hitpos4_local);
-
-	 if(TMath::Abs(hitpos4_local[1])>fdPosY4Sel*fChannelInfo4->GetSizey()) continue;
-
-	 fhChi04D4sbest->Fill(Chi2List[iM]);
-	 if(fEnableMatchPosScaling) dzscal=zPos1/pChi2Hit1[iM]->GetZ();
-	 Double_t xPos3=dzscal*pChi2Hit1[iM]->GetX();
-	 Double_t yPos3=dzscal*pChi2Hit1[iM]->GetY();
-	 Double_t tof3=pChi2Hit1[iM]->GetTime();
-
-	 if(fEnableMatchPosScaling) dzscal=zPos1/pChi2Hit2[iM]->GetZ();
-	 Double_t xPos4=dzscal*pChi2Hit2[iM]->GetX();
-	 Double_t yPos4=dzscal*pChi2Hit2[iM]->GetY();
-	 Double_t tof4=pChi2Hit2[iM]->GetTime();
-
-	 Double_t dDist34=TMath::Sqrt(
-				TMath::Power(pHit3->GetX()-pHit4->GetX(),2)
-			       +TMath::Power(pHit3->GetY()-pHit4->GetY(),2)
-			       +TMath::Power(pHit3->GetZ()-pHit4->GetZ(),2)
-				);
-
-	 CbmMatch* digiMatch3=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit3));
-	 fhDigiMul0D4sbest->Fill(digiMatch3->GetNofLinks()/2.);
-	 digiMatch4=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit4));
-	 fhDigiMul4D4sbest->Fill(digiMatch4->GetNofLinks()/2.);
-
-	 fhCluMul04D4sbest->Fill(dMul0,dMul4);
-
-	 Double_t dTofD44  = fdTOffD4 + pHit4->GetTime()-dTDia;
-	 Double_t dInvVel4 = dTofD44/pHitRef->GetR(); // in ns/cm
-	 Double_t dDTexp4  = dDist34*dInvVel4;
-	 Double_t dTcor4=0.;
-	 if(fhDTD4DT04D4Off != NULL) dTcor4=(Double_t)fhDTD4DT04D4Off->GetBinContent(fhDTD4DT04D4Off->FindBin(dTDia-pHit4->GetTime()));
-	 if(fhDTX4D4Off     != NULL) dTcor4+=(Double_t)fhDTX4D4Off->GetBinContent(fhDTX4D4Off->FindBin(hitpos4_local[0]));
-	 if(fhDTY4D4Off     != NULL) dTcor4+=(Double_t)fhDTY4D4Off->GetBinContent(fhDTY4D4Off->FindBin(hitpos4_local[1]));
-	 if(fhDTTexpD4Off   != NULL) dTcor4+=(Double_t)fhDTTexpD4Off->GetBinContent(fhDTTexpD4Off->FindBin(dDTexp4));
-
-	 fhTofD4sbest->Fill(dTofD44);
-	 if(dInvVel4>0.) fhVelD4sbest->Fill(1000./dInvVel4);
-
-	 fhChiDT04D4sbest->Fill(Chi2List[iM],tof3-tof4-dTcor4);
-
-	 fhDTD4DT04D4sbest->Fill(dTDia-pHit4->GetTime(),tof3-tof4-dTcor4);
-	 fhDTMul4D4sbest->Fill(dMul4,tof3-tof4-dTcor4);
-
-	 fhDTX4D4sbest->Fill(hitpos4_local[0],tof3-tof4-dTcor4);
-	 fhDTY4D4sbest->Fill(hitpos4_local[1],tof3-tof4-dTcor4);
-	 fhDXX4D4sbest->Fill(hitpos4_local[0],xPos3-xPos4);
-	 fhDXY4D4sbest->Fill(hitpos4_local[1],xPos3-xPos4);
-	 fhDYX4D4sbest->Fill(hitpos4_local[0],yPos3-yPos4);
-	 fhDYY4D4sbest->Fill(hitpos4_local[1],yPos3-yPos4);
-
-	 fhCluSize4DT04D4sbest->Fill(digiMatch4->GetNofLinks()/2.,tof3-tof4-dTcor4);
-
-	 dTot4 = 0.;
-	 if(NULL != fTofDigisColl)
+       CbmMatch* digiMatch4=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit2));
+       Double_t dTot4   = 0.;
+       if(NULL != fTofDigisColl)
 	 for (Int_t iLink=0; iLink<digiMatch4->GetNofLinks(); iLink++){  // loop over digis
 	   CbmLink L0 = digiMatch4->GetLink(iLink);  
 	   Int_t iDigInd0=L0.GetIndex();
 	   if (iDigInd0 < fTofDigisColl->GetEntries()){
-            CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
-	    dTot4 += pDig0->GetTot();
-	    LOG(DEBUG)<<Form(" dTot4 of hit 0x%08x: digind %d add %f -> sum %f",iDetId2,iDigInd0,pDig0->GetTot(),dTot4)
-		     <<FairLogger::endl;
+	     CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
+	     dTot4 += pDig0->GetTot();
+	     LOG(DEBUG1)<<Form(" dTot of hit 0x%08x: digind %d add %f -> sum %f",iDetId1,iDigInd0,pDig0->GetTot(),dTot4)
+			<<FairLogger::endl;
 	   }
 	 } 
-	 dTot4 /= digiMatch4->GetNofLinks();  // average time over threshold
-	 fhTot4DT04D4sbest->Fill(TMath::Log(dTot4),tof3-tof4-dTcor4);
+       dTot4 /= digiMatch4->GetNofLinks();  // average time over threshold
+       
+       Double_t dTcor=0.;
+       if(fhDTD4DT04D4Off != NULL) dTcor+=(Double_t)fhDTD4DT04D4Off->GetBinContent(fhDTD4DT04D4Off->FindBin(-dDTD4Min));
+       if(fhDTX4D4Off     != NULL) dTcor+=(Double_t)fhDTX4D4Off->GetBinContent(fhDTX4D4Off->FindBin(hitpos2_local[0]));
+       if(fhDTY4D4Off     != NULL) dTcor+=(Double_t)fhDTY4D4Off->GetBinContent(fhDTY4D4Off->FindBin(hitpos2_local[1]));
+       if(fhDTTexpD4Off   != NULL) dTcor+=(Double_t)fhDTTexpD4Off->GetBinContent(fhDTTexpD4Off->FindBin(dDTexp-dTMin));
+       if(fhCluSize0DT04D4Off != NULL) dTcor+=(Double_t)fhCluSize0DT04D4Off->GetBinContent(fhCluSize0DT04D4Off->FindBin(dCluSize0));
+       if(fhCluSize4DT04D4Off != NULL) dTcor+=(Double_t)fhCluSize4DT04D4Off->GetBinContent(fhCluSize4DT04D4Off->FindBin(dCluSize4));
+       if(fhTot0DT04D4Off != NULL) dTcor+=(Double_t)fhTot0DT04D4Off->GetBinContent(fhTot0DT04D4Off->FindBin(TMath::Log(dTot0)));
+       if(fhTot4DT04D4Off != NULL) dTcor+=(Double_t)fhTot4DT04D4Off->GetBinContent(fhTot4DT04D4Off->FindBin(TMath::Log(dTot4)));
 
-	 fhCluSize0DT04D4sbest->Fill(digiMatch3->GetNofLinks()/2.,tof3-tof4-dTcor4);
+       //    dTcor *= dDist/fdHitDistAv;
+       Double_t dToD = (tof1-tof2-dTcor); //*fdHitDistAv/dDist;
+       //     LOG(INFO) << "dTcor for "<<-dDTD4<<" from "<<fhDTD4DT04D4Off<<": "<<dTcor<<FairLogger::endl;
 
-	 Double_t dTot3 = 0.;
-	 if(NULL != fTofDigisColl)
-	 for (Int_t iLink=0; iLink<digiMatch3->GetNofLinks(); iLink++){  // loop over digis
-	   CbmLink L0 = digiMatch3->GetLink(iLink);  
+       fhTofD4best->Fill(dTofD4);
+       if(dInvVel>0.) fhVelD4best->Fill(1./dInvVel);
+
+       fhChiDT04D4best->Fill(Chi2List[iM0],dToD);
+       fhDTD4DT04D4best->Fill(-dDTD4Min,dToD);
+       fhDTMul4D4best->Fill(dMul4,dToD);
+
+       fhXY4D4best->Fill(hitpos2_local[0],hitpos2_local[1]);
+       fhDTX4D4best->Fill(hitpos2_local[0],dToD);
+       fhDTY4D4best->Fill(hitpos2_local[1],dToD);
+       fhDXX4D4best->Fill(hitpos2_local[0],xPos1-xPos2);
+       fhDXY4D4best->Fill(hitpos2_local[1],xPos1-xPos2);
+       fhDYX4D4best->Fill(hitpos2_local[0],yPos1-yPos2);
+       fhDYY4D4best->Fill(hitpos2_local[1],yPos1-yPos2);
+
+       fhCluSize4DT04D4best->Fill(digiMatch2->GetNofLinks()/2.,dToD);
+
+       Double_t dTot = 0.;
+       if(NULL != fTofDigisColl)
+	 for (Int_t iLink=0; iLink<digiMatch2->GetNofLinks(); iLink++){  // loop over digis
+	   CbmLink L0 = digiMatch2->GetLink(iLink);  
 	   Int_t iDigInd0=L0.GetIndex();
 	   if (iDigInd0 < fTofDigisColl->GetEntries()){
 	     CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
-	     dTot3 += pDig0->GetTot();
-	     LOG(DEBUG)<<Form(" dTot of hit 0x%08x: digind %d add %f -> sum %f",iDetId1,iDigInd0,pDig0->GetTot(),dTot3)
+	     dTot += pDig0->GetTot();
+	     LOG(DEBUG)<<Form(" dTot of hit 0x%08x: digind %d add %f -> sum %f",iDetId2,iDigInd0,pDig0->GetTot(),dTot)
 		       <<FairLogger::endl;
 	   }
 	 } 
-	 dTot3 /= digiMatch3->GetNofLinks();  // average time over threshold
-	 fhTot0DT04D4sbest->Fill(TMath::Log(dTot3),tof3-tof4-dTcor4);
+       dTot /= digiMatch2->GetNofLinks();  // average time over threshold
+       fhTot4DT04D4best->Fill(TMath::Log(dTot),dToD);
+       
+       fhCluSize0DT04D4best->Fill(digiMatch0->GetNofLinks()/2.,dToD);
+       
+       dTot = 0.;
+       if(NULL != fTofDigisColl)
+	 for (Int_t iLink=0; iLink<digiMatch0->GetNofLinks(); iLink++){  // loop over digis
+	   CbmLink L0 = digiMatch0->GetLink(iLink);  
+	   Int_t iDigInd0=L0.GetIndex();
+	   if (iDigInd0 < fTofDigisColl->GetEntries()){
+	     CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
+	     dTot += pDig0->GetTot();
+	     LOG(DEBUG1)<<Form(" dTot of hit 0x%08x: digind %d add %f -> sum %f",iDetId1,iDigInd0,pDig0->GetTot(),dTot)
+			<<FairLogger::endl;
+	   }
+	 } 
+       dTot /= digiMatch0->GetNofLinks();  // average time over threshold
+       fhTot0DT04D4best->Fill(TMath::Log(dTot),dToD);
+       
+       fhCluSizeSigT0D4best->Fill(digiMatch1->GetNofLinks()/2.,pHit1->GetTimeError());
+       fhCluSizeSigT4D4best->Fill(digiMatch2->GetNofLinks()/2.,pHit2->GetTimeError());
+       
+       fhDTMul0D4best->Fill(dMul0,dToD);
+       
+       // check for dependence in counter reference frame
+       /*TGeoNode *fNode1=*/        // prepare global->local trafo
+       gGeoManager->FindNode(fChannelInfo1->GetX(),fChannelInfo1->GetY(),fChannelInfo1->GetZ());
+       
+       hitpos1[0]=pHit1->GetX();
+       hitpos1[1]=pHit1->GetY();
+       hitpos1[2]=pHit1->GetZ();
+       
+       /*TGeoNode* cNode1=*/ gGeoManager->GetCurrentNode();
+       gGeoManager->MasterToLocal(hitpos1, hitpos1_local);
+       
+       fhXY0D4best->Fill(hitpos1_local[0],hitpos1_local[1]);
+       fhXX04D4best->Fill(hitpos1_local[0],hitpos2_local[0]);
+       fhYY04D4best->Fill(hitpos1_local[1],hitpos2_local[1]);
+       
+       fhDTX0D4best->Fill(hitpos1_local[0],dToD);
+       fhDTY0D4best->Fill(hitpos1_local[1],dToD);
+       fhDXX0D4best->Fill(hitpos1_local[0],xPos1-xPos2);
+       fhDXY0D4best->Fill(hitpos1_local[1],xPos1-xPos2);
+       fhDYX0D4best->Fill(hitpos1_local[0],yPos1-yPos2);
+       fhDYY0D4best->Fill(hitpos1_local[1],yPos1-yPos2);
+       
+       fhDXDY04D4best->Fill(xPos1-xPos2,yPos1-yPos2);
+       fhDXDT04D4best->Fill(xPos1-xPos2,dToD);
+       fhDYDT04D4best->Fill(yPos1-yPos2,dToD);
+       fhDistDT04D4best->Fill(dDist,dToD);
+       fhTexpDT04D4best->Fill(dDTexp-dTMin,dToD);
+       fhX0DT04D4best->Fill(hitpos1_local[0],dToD);
+       fhY0DT04D4best->Fill(hitpos1_local[1],dToD);
+       if(fTrbHeader != NULL) fhTISDT04D4best->Fill(fTrbHeader->GetTimeInSpill(),dToD);
+       else                   fhTISDT04D4best->Fill((dRefTMean-StartSpillTime)/1.E9,dToD);
+       
+       if(iNbMatchedHits>1){
+	 LOG(DEBUG)<<Form(" Matches>1: %d with first chi2s = %12.1f, %12.1f, %12.1f, %12.1f",iNbMatchedHits,
+			  Chi2List[0],Chi2List[1],Chi2List[2],Chi2List[3])
+		   <<FairLogger::endl;
+	 
+	 for(Int_t iM=0; iM<iNbMatchedHits; iM++){
+	   LOG(DEBUG)<<Form(" Match: %d (%d) with ids = 0x%08x, 0x%08x - 0x%08x, 0x%08x",
+			    iM,iNbMatchedHits,pChi2Hit1[iM]->GetAddress(),pHit1->GetAddress(),
+			    pChi2Hit2[iM]->GetAddress(),pHit2->GetAddress()
+			    )
+		     <<FairLogger::endl;
+	   if(pChi2Hit1[iM] != pHit1 && pChi2Hit2[iM] != pHit2){
+	     
+	     LOG(DEBUG)<<Form(" second best match D4 at %d (%d): chi2 %f ",iM,iNbMatchedHits,Chi2List[iM])
+		       <<FairLogger::endl;
+	     
+	     if (Chi2List[iM] > 1.E3) break; // FIXME hardwired limit !
+	     
+	     pHit3=pChi2Hit1[iM];
+	     pHit4=pChi2Hit2[iM];
+	     
+	     /*Int_t iDetId3 = (pHit1->GetAddress() & DetMask);*/
+	     Int_t iChId3 = pHit1->GetAddress();
+	     fChannelInfo3 = fDigiPar->GetCell( iChId3 );
+	     
+	     /*Int_t iDetId4 = (pHit4->GetAddress() & DetMask);*/
+	     Int_t iChId4 = pHit4->GetAddress();
+	     fChannelInfo4 = fDigiPar->GetCell( iChId4 );
+	     
+	     // check for dependence in counter reference frame
+	     /*TGeoNode *fNode4= */       // prepare global->local trafo
+	     gGeoManager->FindNode(fChannelInfo4->GetX(),fChannelInfo4->GetY(),fChannelInfo4->GetZ());
+	     
+	     hitpos4[0]=pChi2Hit2[iM]->GetX();
+	     hitpos4[1]=pChi2Hit2[iM]->GetY();
+	     hitpos4[2]=pChi2Hit2[iM]->GetZ();
+	     
+	     /*	 cNode=*/ gGeoManager->GetCurrentNode(); // -> Comment to remove warning because set but never used
+	     gGeoManager->MasterToLocal(hitpos4, hitpos4_local);
+	     
+	     if(TMath::Abs(hitpos4_local[1])>fdPosY4Sel*fChannelInfo4->GetSizey()) continue;
+	     
+	     fhChi04D4sbest->Fill(Chi2List[iM]);
+	     if(fEnableMatchPosScaling) dzscal=zPos1/pChi2Hit1[iM]->GetZ();
+	     Double_t xPos3=dzscal*pChi2Hit1[iM]->GetX();
+	     Double_t yPos3=dzscal*pChi2Hit1[iM]->GetY();
+	     Double_t tof3=pChi2Hit1[iM]->GetTime();
+	     
+	     if(fEnableMatchPosScaling) dzscal=zPos1/pChi2Hit2[iM]->GetZ();
+	     Double_t xPos4=dzscal*pChi2Hit2[iM]->GetX();
+	     Double_t yPos4=dzscal*pChi2Hit2[iM]->GetY();
+	     Double_t tof4=pChi2Hit2[iM]->GetTime();
+	     
+	     Double_t dDist34=TMath::Sqrt(
+					  TMath::Power(pHit3->GetX()-pHit4->GetX(),2)
+					  +TMath::Power(pHit3->GetY()-pHit4->GetY(),2)
+					  +TMath::Power(pHit3->GetZ()-pHit4->GetZ(),2)
+					  );
+	     
+	     CbmMatch* digiMatch3=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit3));
+	     fhDigiMul0D4sbest->Fill(digiMatch3->GetNofLinks()/2.);
+	     digiMatch4=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit4));
+	     fhDigiMul4D4sbest->Fill(digiMatch4->GetNofLinks()/2.);
+	     
+	     fhCluMul04D4sbest->Fill(dMul0,dMul4);
 
-	 fhDTMul0D4sbest->Fill(dMul0,tof3-tof4-dTcor4);
-
-	 // check for dependence in counter reference frame
-	 /*TGeoNode *fNode3=*/        // prepare global->local trafo
-	   gGeoManager->FindNode(fChannelInfo3->GetX(),fChannelInfo3->GetY(),fChannelInfo3->GetZ());
-
-	 hitpos3[0]=pChi2Hit1[iM]->GetX();
-	 hitpos3[1]=pChi2Hit1[iM]->GetY();
-	 hitpos3[2]=pChi2Hit1[iM]->GetZ();
-
-	 /*TGeoNode* cNode3=*/ gGeoManager->GetCurrentNode();
-	 gGeoManager->MasterToLocal(hitpos3, hitpos3_local);
-
-	 fhDTX0D4sbest->Fill(hitpos3_local[0],tof3-tof4-dTcor4);
-	 fhDTY0D4sbest->Fill(hitpos3_local[1],tof4-tof4-dTcor4);
-	 fhDXX0D4sbest->Fill(hitpos3_local[0],xPos3-xPos4);
-	 fhDXY0D4sbest->Fill(hitpos3_local[1],xPos3-xPos4);
-	 fhDYX0D4sbest->Fill(hitpos3_local[0],yPos3-yPos4);
-	 fhDYY0D4sbest->Fill(hitpos3_local[1],yPos3-yPos4);
-
-	 fhDXDY04D4sbest->Fill(xPos3-xPos4,yPos3-yPos4);
-	 fhDXDT04D4sbest->Fill(xPos3-xPos4,tof3-tof4-dTcor4);
-	 fhDYDT04D4sbest->Fill(yPos3-yPos4,tof3-tof4-dTcor4);
-	 fhDistDT04D4sbest->Fill(dDist34,tof3-tof4-dTcor4);
-	 fhTexpDT04D4sbest->Fill(dDTexp4,tof3-tof4-dTcor4);
-	 fhX0DT04D4sbest->Fill(hitpos3_local[0],tof3-tof4-dTcor4);
-	 fhY0DT04D4sbest->Fill(hitpos3_local[1],tof3-tof4-dTcor4);
-
-	 fhDT04DX0_2->Fill(hitpos1_local[0]-hitpos3_local[0],tof3-tof4-dTcor4);
-	 fhDT04DY0_2->Fill(hitpos1_local[1]-hitpos3_local[1],tof3-tof4-dTcor4);
-	 fhDT04DT0_2->Fill(tof1-tof3,tof3-tof4-dTcor4);
-
-	 fhDT04DX4_2->Fill(hitpos2_local[0]-hitpos4_local[0],tof3-tof4-dTcor4);
-	 fhDT04DY4_2->Fill(hitpos2_local[1]-hitpos4_local[1],tof3-tof4-dTcor4);
-	 fhDT04DT4_2->Fill(tof2-tof4,tof3-tof4-dTcor4);
-
-	 fhDT04DX0_1->Fill(hitpos1_local[0]-hitpos3_local[0],dToD);
-	 fhDT04DY0_1->Fill(hitpos1_local[1]-hitpos3_local[1],dToD);
-	 fhDT04DT0_1->Fill(tof1-tof3,dToD);
-
-	 fhDT04DX4_1->Fill(hitpos2_local[0]-hitpos4_local[0],dToD);
-	 fhDT04DY4_1->Fill(hitpos2_local[1]-hitpos4_local[1],dToD);
-	 fhDT04DT4_1->Fill(tof2-tof4,dToD);
-
-	 break;
+	     Double_t dTofD44  = fdTOffD4 + pHit4->GetTime()-dTDia;
+	     Double_t dInvVel4 = dTofD44/pHitRef->GetR(); // in ns/cm
+	     Double_t dDTexp4  = dDist34*dInvVel4;
+	     Double_t dTcor4=0.;
+	     if(fhDTD4DT04D4Off != NULL) dTcor4=(Double_t)fhDTD4DT04D4Off->GetBinContent(fhDTD4DT04D4Off->FindBin(dTDia-pHit4->GetTime()));
+	     if(fhDTX4D4Off     != NULL) dTcor4+=(Double_t)fhDTX4D4Off->GetBinContent(fhDTX4D4Off->FindBin(hitpos4_local[0]));
+	     if(fhDTY4D4Off     != NULL) dTcor4+=(Double_t)fhDTY4D4Off->GetBinContent(fhDTY4D4Off->FindBin(hitpos4_local[1]));
+	     if(fhDTTexpD4Off   != NULL) dTcor4+=(Double_t)fhDTTexpD4Off->GetBinContent(fhDTTexpD4Off->FindBin(dDTexp4));
+	     
+	     fhTofD4sbest->Fill(dTofD44);
+	     if(dInvVel4>0.) fhVelD4sbest->Fill(1000./dInvVel4);
+	     
+	     fhChiDT04D4sbest->Fill(Chi2List[iM],tof3-tof4-dTcor4);
+	     
+	     fhDTD4DT04D4sbest->Fill(dTDia-pHit4->GetTime(),tof3-tof4-dTcor4);
+	     fhDTMul4D4sbest->Fill(dMul4,tof3-tof4-dTcor4);
+	     
+	     fhDTX4D4sbest->Fill(hitpos4_local[0],tof3-tof4-dTcor4);
+	     fhDTY4D4sbest->Fill(hitpos4_local[1],tof3-tof4-dTcor4);
+	     fhDXX4D4sbest->Fill(hitpos4_local[0],xPos3-xPos4);
+	     fhDXY4D4sbest->Fill(hitpos4_local[1],xPos3-xPos4);
+	     fhDYX4D4sbest->Fill(hitpos4_local[0],yPos3-yPos4);
+	     fhDYY4D4sbest->Fill(hitpos4_local[1],yPos3-yPos4);
+	     
+	     fhCluSize4DT04D4sbest->Fill(digiMatch4->GetNofLinks()/2.,tof3-tof4-dTcor4);
+	     
+	     dTot4 = 0.;
+	     if(NULL != fTofDigisColl)
+	       for (Int_t iLink=0; iLink<digiMatch4->GetNofLinks(); iLink++){  // loop over digis
+		 CbmLink L0 = digiMatch4->GetLink(iLink);  
+		 Int_t iDigInd0=L0.GetIndex();
+		 if (iDigInd0 < fTofDigisColl->GetEntries()){
+		   CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
+		   dTot4 += pDig0->GetTot();
+		   LOG(DEBUG)<<Form(" dTot4 of hit 0x%08x: digind %d add %f -> sum %f",iDetId2,iDigInd0,pDig0->GetTot(),dTot4)
+			     <<FairLogger::endl;
+		 }
+	       } 
+	     dTot4 /= digiMatch4->GetNofLinks();  // average time over threshold
+	     fhTot4DT04D4sbest->Fill(TMath::Log(dTot4),tof3-tof4-dTcor4);
+	     
+	     fhCluSize0DT04D4sbest->Fill(digiMatch3->GetNofLinks()/2.,tof3-tof4-dTcor4);
+	     
+	     Double_t dTot3 = 0.;
+	     if(NULL != fTofDigisColl)
+	       for (Int_t iLink=0; iLink<digiMatch3->GetNofLinks(); iLink++){  // loop over digis
+		 CbmLink L0 = digiMatch3->GetLink(iLink);  
+		 Int_t iDigInd0=L0.GetIndex();
+		 if (iDigInd0 < fTofDigisColl->GetEntries()){
+		   CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
+		   dTot3 += pDig0->GetTot();
+		   LOG(DEBUG)<<Form(" dTot of hit 0x%08x: digind %d add %f -> sum %f",iDetId1,iDigInd0,pDig0->GetTot(),dTot3)
+			     <<FairLogger::endl;
+		 }
+	       } 
+	     dTot3 /= digiMatch3->GetNofLinks();  // average time over threshold
+	     fhTot0DT04D4sbest->Fill(TMath::Log(dTot3),tof3-tof4-dTcor4);
+	     
+	     fhDTMul0D4sbest->Fill(dMul0,tof3-tof4-dTcor4);
+	     
+	     // check for dependence in counter reference frame
+	     /*TGeoNode *fNode3=*/        // prepare global->local trafo
+	     gGeoManager->FindNode(fChannelInfo3->GetX(),fChannelInfo3->GetY(),fChannelInfo3->GetZ());
+	     
+	     hitpos3[0]=pChi2Hit1[iM]->GetX();
+	     hitpos3[1]=pChi2Hit1[iM]->GetY();
+	     hitpos3[2]=pChi2Hit1[iM]->GetZ();
+	     
+	     /*TGeoNode* cNode3=*/ gGeoManager->GetCurrentNode();
+	     gGeoManager->MasterToLocal(hitpos3, hitpos3_local);
+	     
+	     fhDTX0D4sbest->Fill(hitpos3_local[0],tof3-tof4-dTcor4);
+	     fhDTY0D4sbest->Fill(hitpos3_local[1],tof4-tof4-dTcor4);
+	     fhDXX0D4sbest->Fill(hitpos3_local[0],xPos3-xPos4);
+	     fhDXY0D4sbest->Fill(hitpos3_local[1],xPos3-xPos4);
+	     fhDYX0D4sbest->Fill(hitpos3_local[0],yPos3-yPos4);
+	     fhDYY0D4sbest->Fill(hitpos3_local[1],yPos3-yPos4);
+	     
+	     fhDXDY04D4sbest->Fill(xPos3-xPos4,yPos3-yPos4);
+	     fhDXDT04D4sbest->Fill(xPos3-xPos4,tof3-tof4-dTcor4);
+	     fhDYDT04D4sbest->Fill(yPos3-yPos4,tof3-tof4-dTcor4);
+	     fhDistDT04D4sbest->Fill(dDist34,tof3-tof4-dTcor4);
+	     fhTexpDT04D4sbest->Fill(dDTexp4,tof3-tof4-dTcor4);
+	     fhX0DT04D4sbest->Fill(hitpos3_local[0],tof3-tof4-dTcor4);
+	     fhY0DT04D4sbest->Fill(hitpos3_local[1],tof3-tof4-dTcor4);
+	     
+	     fhDT04DX0_2->Fill(hitpos1_local[0]-hitpos3_local[0],tof3-tof4-dTcor4);
+	     fhDT04DY0_2->Fill(hitpos1_local[1]-hitpos3_local[1],tof3-tof4-dTcor4);
+	     fhDT04DT0_2->Fill(tof1-tof3,tof3-tof4-dTcor4);
+	     
+	     fhDT04DX4_2->Fill(hitpos2_local[0]-hitpos4_local[0],tof3-tof4-dTcor4);
+	     fhDT04DY4_2->Fill(hitpos2_local[1]-hitpos4_local[1],tof3-tof4-dTcor4);
+	     fhDT04DT4_2->Fill(tof2-tof4,tof3-tof4-dTcor4);
+	     
+	     fhDT04DX0_1->Fill(hitpos1_local[0]-hitpos3_local[0],dToD);
+	     fhDT04DY0_1->Fill(hitpos1_local[1]-hitpos3_local[1],dToD);
+	     fhDT04DT0_1->Fill(tof1-tof3,dToD);
+	     
+	     fhDT04DX4_1->Fill(hitpos2_local[0]-hitpos4_local[0],dToD);
+	     fhDT04DY4_1->Fill(hitpos2_local[1]-hitpos4_local[1],dToD);
+	     fhDT04DT4_1->Fill(tof2-tof4,dToD);
+	     
+	     break;
+	   }
 	 }
        }
-     }
-    } // end of if(iNbMatchedHits>0)
-   }  // BSel[0] condition end 
+     }  // fdChi2Lim end 
+    }   // end of if(iNbMatchedHits>0)
+   }    // BSel[0] condition end 
 
- // Tracklet based analysis
+   // Tracklet based analysis
+   Double_t  hitpos[3], hitpos_local[3];
 
+   // DDDDDD for verifying storage concept
+   /* 
+     if(fFindTracks != NULL && fdMemoryTime > 0.) {
+       // everything else done -> update hit memory to latest hits 
+       for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)
+       {
+	 pHit = (CbmTofHit*) fTofHitsColl->At( iHitInd );
+	 if(NULL == pHit) continue;
+	 Int_t iDetId = (pHit->GetAddress() & DetMask);
+	 Int_t iDet=fFindTracks->fMapRpcIdParInd[iDetId];
+	 fChannelInfo = fDigiPar->GetCell(pHit->GetAddress());
+	 gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
+	 hitpos[0]=pHit->GetX();
+	 hitpos[1]=pHit->GetY();
+	 hitpos[2]=pHit->GetZ();
+	 gGeoManager->MasterToLocal(hitpos, hitpos_local);
+	 Int_t iBin = fhLHTime[iDet]->FindBin( hitpos_local[0], hitpos_local[1] );
+         fhLHTime[iDet]->SetBinContent(iBin,pHit->GetTime()-2.);
+	 LOG(DEBUG) << Form("Store hit 0x%08x at x %6.3f, y %6.3f, bin %d, time %f in det Id 0x%08x, #%d from x %6.3f, y %6.3f",
+			    pHit->GetAddress(),hitpos_local[0],hitpos_local[1], iBin, 
+	                    pHit->GetTime(), iDetId, iDet, hitpos[0],hitpos[1] )
+		    << FairLogger::endl;
+       }
+     } //(fdMemoryTime > 0.) end
+     */
    if(NULL!=fTofTrackColl){
      iNbTofTracks  = fTofTrackColl->GetEntries();
      Int_t NStations = fFindTracks->GetNStations();
@@ -2548,7 +2623,6 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
        /*TGeoNode* cNode=*/ gGeoManager->GetCurrentNode();
        Double_t  dDutzPos=fChannelInfo->GetZ();
-       Double_t  hitpos[3], hitpos_local[3];
 	
        LOG(DEBUG)<<Form("Tracklet analysis of %d tracks and %d Dut Hits ",iNbTofTracks,(int)vDutHit.size())<< FairLogger::endl;
 
@@ -2561,17 +2635,6 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
        for (Int_t iTrk=0; iTrk<iNbTofTracks;iTrk++) { // loop over all Tracklets
 	 CbmTofTracklet *pTrk = (CbmTofTracklet*)fTofTrackColl->At(iTrk);
 	 if(NULL == pTrk) continue;
-	 //Monitor tracklet related rates
-	 /*
-	 if (StartAnalysisTime == 0.) {
-	   StartAnalysisTime = pTrk->GetTime();
-	   LOG(INFO) << "StartAnalysisTime (from Trkls) set to "<<StartAnalysisTime<<" ns. "<<FairLogger::endl;
-	 }
-	 if( pTrk->GetTime() - StartSpillTime > SpillDuration*1.E9 ) {
-	   StartSpillTime=pTrk->GetTime();
-	   LOG(INFO) << "StartSpillTime (from Trkls) set to "<<StartSpillTime<<" ns. "<<FairLogger::endl;
-	 }
-	 */
 	 fhTrklNofHitsRate->Fill((pTrk->GetTime()-StartAnalysisTime)/1.E9,pTrk->GetNofHits());   // Monitor tracklet size
 	 for (Int_t iTH=0; iTH<pTrk->GetNofHits(); iTH++){                                       // Loop over Tracklet hits
 	   fhTrklDetHitRate->Fill((pTrk->GetTime()-StartAnalysisTime)/1.E9,                      // Station hit rate
@@ -2584,6 +2647,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 				  fFindTracks->GetStationOfAddr( pTrk->GetTofHitPointer(iTH)->GetAddress() & DetMask ) ); 
 	 }
 
+	 /*
 	 if (pTrk->GetNofHits() < NStations - 1) continue;  
 
 	 // Calculate positions and time in Dut plane
@@ -2640,7 +2704,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 LOG(DEBUG)<<Form(" HitMap[%d]: best %d, %6.4f ",iTrk,vHitMap[iTrk].begin()->second,vHitMap[iTrk].begin()->first)
 		   <<FairLogger::endl;
        } // tracklet loop end 
-       
+
        // inspect assignment results
        Int_t iCheck = 1;
        while(iCheck-- > 0)
@@ -2659,6 +2723,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 		 if(it1->second == iHit) {
 		   vHitMap[iTrk1].erase(it1);
   	           LOG(DEBUG1)<<Form("    Erase hit %d from  HitMap[%d]",iHit,iTrk1)<<FairLogger::endl;
+		   break;
 		 }
 	       }
 	     }
@@ -2669,6 +2734,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 		 if(it1->second == iTrk) {
 		   vTrkMap[iHit1].erase(it1);
   	           LOG(DEBUG1)<<Form("    Erase trk %d from  TrkMap[%d]",iHit1,iTrk)<<FairLogger::endl;
+		   break;
 		 }
 	       }
 	     }
@@ -2681,52 +2747,115 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 		     <<FairLogger::endl;
 
 	 }
+       */
        }
-
+       
 
        // fill tracklet histos 
        for (Int_t iTrk=0; iTrk<iNbTofTracks;iTrk++) { // loop over all Tracklets
 	 CbmTofTracklet *pTrk = (CbmTofTracklet*)fTofTrackColl->At(iTrk);
 	 if(NULL == pTrk) continue;
-	 if (pTrk->GetNofHits() < NStations-1) continue;  
+	 if (pTrk->GetNofHits() < NStations-1) continue;  // pick only full & full - 1 tracklets 
 
-	 // Calculate positions and time in Dut plane
-/*	 Double_t dXex=pTrk->GetFitX(dDutzPos);*/
-/*	 Double_t dYex=pTrk->GetFitY(dDutzPos);*/
-/*	 Double_t dTex=pTrk->GetFitT(dDutzPos);*/
-
-	 hitpos[0]=pTrk->GetFitX(dDutzPos);
-	 hitpos[1]=pTrk->GetFitY(dDutzPos);
-	 hitpos[2]=dDutzPos;
-	 gGeoManager->MasterToLocal(hitpos, hitpos_local);
 	 //if(vHitMap[iTrk].size()>0){  // matched hit found 
-	 if(vHitMap[iTrk].size()>0 && pTrk->GetNofHits() == NStations){  // matched hit found 
-	   LOG(DEBUG )<<Form(" Event %d : process complete Trkl %d, HMul %d,  with DutHitMap.size:  %d,  best hit %d, %6.2f ",
-		   fEvents,iTrk,pTrk->GetNofHits(),(int)vHitMap[iTrk].size(),vHitMap[iTrk].begin()->second,vHitMap[iTrk].begin()->first)
+	 //if(vHitMap[iTrk].size()>0 && pTrk->GetNofHits() == NStations){  // matched hit found 
+	 if(pTrk->ContainsAddr(fiDutAddr) && pTrk->GetNofHits() == NStations){  // matched hit found 
+	   LOG(DEBUG )<<Form(" Event %d : process complete Trkl %d, HMul %d, iDet %d ",
+			     fEvents,iTrk,pTrk->GetNofHits(),
+			     fFindTracks->fMapRpcIdParInd[fiDutAddr])
 		     <<FairLogger::endl;
 
-	   pHit = vDutHit[vHitMap[iTrk].begin()->second];
+	   //pHit = vDutHit[vHitMap[iTrk].begin()->second];
+	   pHit = pTrk->HitPointerOfAddr(fiDutAddr);
+	   if(NULL == pHit) 
+	     LOG(WARNING) << "Dut not found in full length track" << FairLogger::endl;
+
+	   //fChannelInfo = fDigiPar->GetCell(pHit->GetAddress());
+	   //gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
+	   gGeoManager->FindNode(fChannelInfoDut->GetX(),fChannelInfoDut->GetY(),fChannelInfoDut->GetZ());
+	   hitpos[0]=pHit->GetX();
+	   hitpos[1]=pHit->GetY();
+	   hitpos[2]=pHit->GetZ();
+	   gGeoManager->MasterToLocal(hitpos, hitpos_local);
+	  
+	   Int_t    iDet = fFindTracks->fMapRpcIdParInd[fiDutAddr];
+	   Int_t    iBin = fhLHTime[iDet]->FindBin( hitpos_local[0], hitpos_local[1] );
+	   Double_t dTLH = fhLHTime[iDet]->GetBinContent(iBin);
+	   LOG(DEBUG)<<Form(" got TLH = %f for Det %d at x %6.2f, y %6.2f, bin %d from x %6.2f, y %6.2f",
+			      dTLH, iDet, hitpos_local[0], hitpos_local[1],iBin, hitpos[0], hitpos[1])
+	             <<FairLogger::endl; 
+	   
 	   Double_t dDX = pHit->GetX() - pTrk->GetFitX(pHit->GetZ());    // - tPar->GetX() - tPar->GetTx()*dDZ;
 	   Double_t dDY = pHit->GetY() - pTrk->GetFitY(pHit->GetZ());    // - tPar->GetTy()*dDZ;
-	   Double_t dDT = pHit->GetTime() - pTrk->GetFitT(pHit->GetR()); //pTrk->GetTdif(fStationType[iSt]);
+	   Double_t dDT = pHit->GetTime() - pTrk->GetFitT(pHit->GetR()); // pTrk->GetTdif(fStationType[iSt]);
 	   Double_t dDTB= pTrk->GetTdif(fiDutAddr, pHit);                // ignore pHit in calc of reference
 	   fhDutPullX->Fill(dDX);
 	   fhDutPullY->Fill(dDY);
 	   fhDutPullT->Fill(dDT);
 	   fhDutPullTB->Fill(dDTB);
-	   fhDutChiFound->Fill(pTrk->GetChiSq());
-	   fhDutChiMatch->Fill(vHitMap[iTrk].begin()->first);
+	   fhDutChi_Found->Fill(pTrk->GetChiSq());
+	   fhDutChi_Match->Fill(vHitMap[iTrk].begin()->first);
 	   fhDutXY_Found->Fill(hitpos_local[0],hitpos_local[1]);  
 	   fhDutXYDT->Fill(hitpos_local[0],hitpos_local[1],dDTB);
-  
+	   fhDutDTLH_Found->Fill( TMath::Log10( pHit->GetTime()-dTLH) ); 
+	   fhDutMul_Found->Fill( (Double_t)vDutHit.size() ); 
+	   fhDutTIS_Found->Fill( (dRefTMean-StartSpillTime)/1.E9 ); 
+	   /*
+	   if( pHit->GetTime()- dTLH > 10.) // debugging check
+	     LOG(INFO)<< Form("invalid time distance for event %d, hit address 0x%08x",
+			      fEvents, pHit->GetAddress()) 
+		      << FairLogger::endl;
+	   */
 	 }else{                       // no match for this track
-	   fhDutChiMissed->Fill(pTrk->GetChiSq());
-	   fhDutXY_Missed->Fill(hitpos_local[0],hitpos_local[1]);
+	   if( !pTrk->ContainsAddr(fiDutAddr) ) {
+	     hitpos[0]=pTrk->GetFitX(dDutzPos);
+	     hitpos[1]=pTrk->GetFitY(dDutzPos);
+	     hitpos[2]=dDutzPos;
+	     gGeoManager->FindNode(fChannelInfoDut->GetX(),fChannelInfoDut->GetY(),fChannelInfoDut->GetZ());
+	     //gGeoManager->FindNode(hitpos[0],hitpos[1],hitpos[2]);
+	     gGeoManager->MasterToLocal(hitpos, hitpos_local);
+	  
+	     Int_t    iDet = fFindTracks->fMapRpcIdParInd[fiDutAddr];
+	     Int_t    iBin = fhLHTime[iDet]->FindBin( hitpos_local[0], hitpos_local[1] );
+	     Double_t dTLH = fhLHTime[iDet]->GetBinContent(iBin);
+	     LOG(DEBUG)<<Form(" got TLH = %f for Det %d at x %6.2f, y %6.2f, bin %d from x %6.2f, y %6.2f",
+			      dTLH, iDet, hitpos_local[0], hitpos_local[1],iBin, hitpos[0], hitpos[1])
+		       <<FairLogger::endl; 
+
+	     fhDutChi_Missed->Fill(pTrk->GetChiSq());
+	     fhDutXY_Missed->Fill(hitpos_local[0],hitpos_local[1]);
+	     fhDutDTLH_Missed->Fill( TMath::Log10( pTrk->GetTime()-dTLH) );
+	     fhDutMul_Missed->Fill( (Double_t)vDutHit.size() ); 
+	     fhDutTIS_Missed->Fill( (dRefTMean-StartSpillTime)/1.E9 ); 
+	   } 
 	 }                 
        }
-
      } // #tracklets > 0 end
-   }  // TclonesArray existing end
+     /*  this is the proper place LHTime filling, move for testing purpose*/
+     if(fFindTracks != NULL && fdMemoryTime > 0.) {
+       // everything else done -> update hit memory to latest hits 
+       for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)
+       {
+	 pHit = (CbmTofHit*) fTofHitsColl->At( iHitInd );
+	 if(NULL == pHit) continue;
+	 Int_t iDetId = (pHit->GetAddress() & DetMask);
+	 Int_t iDet=fFindTracks->fMapRpcIdParInd[iDetId];
+	 //fChannelInfo = fDigiPar->GetCell(pHit->GetAddress());
+	 //gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
+	 gGeoManager->FindNode(fChannelInfoDut->GetX(),fChannelInfoDut->GetY(),fChannelInfoDut->GetZ());
+	 hitpos[0]=pHit->GetX();
+	 hitpos[1]=pHit->GetY();
+	 hitpos[2]=pHit->GetZ();
+	 gGeoManager->MasterToLocal(hitpos, hitpos_local);
+	 Int_t iBin = fhLHTime[iDet]->FindBin( hitpos_local[0], hitpos_local[1] );
+         fhLHTime[iDet]->SetBinContent(iBin,pHit->GetTime());
+	 LOG(DEBUG) << Form("Store hit 0x%08x at x %6.3f, y %6.3f, bin %d, time %f in det Id 0x%08x, #%d",
+			    pHit->GetAddress(),hitpos_local[0],hitpos_local[1], iBin, pHit->GetTime(), iDetId, iDet)
+		    << FairLogger::endl;
+       }
+     } //(fdMemoryTime > 0.) end
+     
+   }   // TclonesArray existing end
    return kTRUE;  
 }  //FillHistos end 
 // ------------------------------------------------------------------

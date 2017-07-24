@@ -396,11 +396,17 @@ class CbmTofAnaTestbeam : public FairTask {
       TH1 * fhDutPullZ;
       TH1 * fhDutPullT;
       TH1 * fhDutPullTB;
-      TH1 * fhDutChiFound;
-      TH1 * fhDutChiMissed;
-      TH1 * fhDutChiMatch;
+      TH1 * fhDutChi_Found;
+      TH1 * fhDutChi_Missed;
+      TH1 * fhDutChi_Match;
       TH2 * fhDutXY_Found;     
       TH2 * fhDutXY_Missed; 
+      TH1 * fhDutDTLH_Found;     
+      TH1 * fhDutDTLH_Missed; 
+      TH1 * fhDutMul_Found;     
+      TH1 * fhDutMul_Missed; 
+      TH1 * fhDutTIS_Found;     
+      TH1 * fhDutTIS_Missed; 
       TH3 * fhDutXYDT;     
 
       // Test class performance
