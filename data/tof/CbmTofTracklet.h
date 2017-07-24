@@ -205,7 +205,10 @@ class CbmTofTracklet : public TObject {
 	  }
 	}
 
-	virtual Double_t GetTdif(Int_t iSmType, CbmTofHit* pHit); 
+	virtual Double_t GetTdif(Int_t iSmType, CbmTofHit* pHit);
+	virtual Bool_t ContainsAddr(Int_t iAddr); 
+	virtual Int_t  HitIndexOfAddr(Int_t iAddr); 
+	virtual CbmTofHit* HitPointerOfAddr(Int_t iAddr); 
 
 	/** Set track parameter **/
 	inline void SetTrackParameter(CbmTofTrackletParam* par) { fTrackPar = *par; }

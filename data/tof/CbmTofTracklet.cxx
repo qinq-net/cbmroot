@@ -198,7 +198,7 @@ Double_t CbmTofTracklet::UpdateT0(){ //returns estimated time at R=0
   Double_t at[fTofHit.size()];
   Double_t ae[fTofHit.size()];
   for (UInt_t iHit=0; iHit<fTofHit.size(); iHit++){
-    if( fTofDet[iHit]>0) {                        // exlude faked hits
+    if( fTofDet[iHit]>0) {                        // exclude faked hits
       aR[nValidHits]=fpHit[iHit].GetR();
       at[nValidHits]=fpHit[iHit].GetTime();
       ae[nValidHits]=0.1;                         // const timing error, FIXME
@@ -300,6 +300,30 @@ Double_t CbmTofTracklet::GetTdif(Int_t iDetId, CbmTofHit* pHit){
   // "<<dTdif<<FairLogger::endl;
   return dTdif;
 }
+
+Bool_t CbmTofTracklet::ContainsAddr(Int_t iAddr){
+  for (UInt_t iHit=0; iHit<fTofHit.size(); iHit++){
+    if( (fpHit[iHit].GetAddress() & 0x0001FFFF) == iAddr ) return kTRUE;
+  }
+  return kFALSE;
+}
+
+Int_t CbmTofTracklet::HitIndexOfAddr(Int_t iAddr){
+  for (UInt_t iHit=0; iHit<fTofHit.size(); iHit++){
+    if( (fpHit[iHit].GetAddress() & 0x0001FFFF) == iAddr ) return iHit;
+  }
+  return -1;
+}
+
+CbmTofHit* CbmTofTracklet::HitPointerOfAddr(Int_t iAddr){
+  for (UInt_t iHit=0; iHit<fTofHit.size(); iHit++){
+    if( (fpHit[iHit].GetAddress() & 0x0001FFFF) == iAddr ) return &fpHit[iHit];
+  }
+  return NULL;
+}
+
+
+
 
 const Double_t* CbmTofTracklet::GetPoint(Int_t n) {  // interface to event display: CbmTracks
   fP[0]=fpHit[n].GetX();
