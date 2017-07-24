@@ -3,7 +3,7 @@
 /// \brief Generates TRD geometry in Root format.
 ///                                             
 
-// 2017-06-02 - DE - v17n    - increase pad granulatiry wrt v17l: type 6 = 24 rows, type 8 = 8 rows
+// 2017-06-02 - DE - v17n    - increase pad granularity wrt v17l: type 6 = 24 rows, type 8 = 8 rows
 // 2017-05-31 - DE - v17l    - increase large module size to 96/99 cm
 // 2017-05-25 - DE - v17k    - use only 4 module types: 1, 3, 6, 8
 // 2017-05-25 - DE - v17j    - re-arrange inner zone to allow for a 2x1 hole
