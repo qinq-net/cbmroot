@@ -72,276 +72,7 @@ static std::vector<TH2D *> fhLHTime;
 //
 // ------------------------------------------------------------------
 CbmTofAnaTestbeam::CbmTofAnaTestbeam()
-  : FairTask("HadronAnalysis"),
-    fEvents(0),
-    fGeoHandler(new CbmTofGeoHandler()),
-    fTofId(NULL),
-    fChannelInfo(NULL),
-    fChannelInfoRef(NULL),
-    fChannelInfoDut(NULL),
-    fChannelInfoSel2(NULL),
-    fMbsMappingPar(NULL),
-    iNbSmTot(0),
-    fvTypeSmOffs(),
-    iNbRpcTot(0),
-    fvSmRpcOffs(),
-    iNbChTot(0),
-    fvRpcChOffs(),
-    fDigiPar(NULL),
-    fDigiBdfPar(NULL),
-    fTofDigisColl(NULL),
-    fTofHitsColl(NULL),
-    fTofDigiMatchColl(NULL),
-    fTofTrackColl(NULL),
-    fTrbHeader(NULL),
-    fdDXMean(0.),
-    fdDYMean(0.),
-    fdDTMean(0.),
-    fdDXWidth(0.),
-    fdDYWidth(0.),
-    fdDTWidth(0.),
-    fhTriggerPattern(NULL),
-    fhTriggerType(NULL),
-    fhTimeInSpill(NULL),
-    fhTIS_all(NULL),
-    fhTIS_sel(NULL),
-    fhTIS_sel1(NULL),
-    fhTIS_sel2(NULL),
-    fhDTLH_all(NULL),
-    fhDTLH_sel(NULL),
-    fhDTLH_sel1(NULL),
-    fhDTLH_sel2(NULL),
-    fhDTLH_DStrip(NULL),
-    fhDT2(NULL),
-    fhXX2(NULL),
-    fhYY2(NULL),
-    fhNMatch04(NULL),
-    fhXX04(NULL),
-    fhYY04(NULL),
-    fhXY04(NULL),
-    fhYX04(NULL),
-    fhTT04(NULL),
-    fhDutDXDYDT(NULL),
-    fhRefDXDYDT(NULL),
-    fhChi04(NULL),
-    fhChiSel24(NULL),
-    fhDXSel24(NULL),
-    fhDYSel24(NULL),
-    fhDTSel24(NULL),
-    fhDXDY04(NULL),
-    fhDXDT04(NULL),
-    fhDYDT04(NULL),
-    fhTofSel24(NULL),
-    fhNMatch04sel(NULL),
-    fhChi04best(NULL),
-    fhDigiMul0best(NULL),
-    fhDigiMul4best(NULL),
-    fhDXDY04best(NULL),
-    fhDXDT04best(NULL),
-    fhDYDT04best(NULL),
-    fhChiDT04best(NULL),
-    fhDT24DT04best(NULL),
-    fhDTD4DT04best(NULL),
-    fhX0DT04best(NULL), 
-    fhY0DT04best(NULL),
-    fhNMatchD4sel(NULL),
-    fhChi04D4best(NULL),
-    fhTofD4best(NULL),
-    fhVelD4best(NULL),
-    fhDigiMul0D4best(NULL),
-    fhDigiMul4D4best(NULL),
-    fhCluSize04D4best(NULL),
-    fhCluMul04D4best(NULL),
-    fhStrMul04D4best(NULL),
-    fhCluMulTSig0D4best(NULL),
-    fhCluMulTSig4D4best(NULL),
-    fhCluMulTrel0D4best(NULL),
-    fhCluMulTrel4D4best(NULL),
-    fhCluSizeTrel0D4best(NULL),
-    fhCluSizeTrel4D4best(NULL),
-    fhDXDY04D4best(NULL),
-    fhDXDT04D4best(NULL),
-    fhDYDT04D4best(NULL),
-    fhDistDT04D4best(NULL),
-    fhTexpDT04D4best(NULL),
-    fhCluSize0DT04D4best(NULL),
-    fhCluSize4DT04D4best(NULL),
-    fhTot0DT04D4best(NULL),
-    fhTot4DT04D4best(NULL),
-    fhCluSizeSigT0D4best(NULL),
-    fhCluSizeSigT4D4best(NULL),
-    fhChiDT04D4best(NULL),
-    fhDT24DT04D4best(NULL),
-    fhDTD4DT04D4best(NULL),
-    fhX0DT04D4best(NULL),
-    fhY0DT04D4best(NULL),
-    fhTISDT04D4best(NULL),
-    fhDTMul4D4best(NULL),
-    fhDTX4D4best(NULL),
-    fhDTY4D4best(NULL),
-    fhDXX4D4best(NULL),
-    fhDXY4D4best(NULL),
-    fhDYX4D4best(NULL),
-    fhDYY4D4best(NULL),
-    fhDTMul0D4best(NULL),
-    fhDTX0D4best(NULL),
-    fhDTY0D4best(NULL),
-    fhDXX0D4best(NULL),
-    fhDXY0D4best(NULL),
-    fhDYX0D4best(NULL),
-    fhDYY0D4best(NULL),
-    fhChi04D4sbest(NULL),
-    fhTofD4sbest(NULL),
-    fhVelD4sbest(NULL),
-    fhDigiMul0D4sbest(NULL),
-    fhDigiMul4D4sbest(NULL),
-    fhCluMul04D4sbest(NULL),
-    fhDXDY04D4sbest(NULL),
-    fhDXDT04D4sbest(NULL),
-    fhDYDT04D4sbest(NULL),
-    fhDistDT04D4sbest(NULL),
-    fhTexpDT04D4sbest(NULL),
-    fhCluSize0DT04D4sbest(NULL),
-    fhCluSize4DT04D4sbest(NULL),
-    fhTot0DT04D4sbest(NULL),
-    fhTot4DT04D4sbest(NULL),
-    fhChiDT04D4sbest(NULL),
-    fhDT24DT04D4sbest(NULL),
-    fhDTD4DT04D4sbest(NULL),
-    fhX0DT04D4sbest(NULL),
-    fhY0DT04D4sbest(NULL),
-    fhDTMul4D4sbest(NULL),
-    fhDTX4D4sbest(NULL),
-    fhDTY4D4sbest(NULL),
-    fhDXX4D4sbest(NULL),
-    fhDXY4D4sbest(NULL),
-    fhDYX4D4sbest(NULL),
-    fhDYY4D4sbest(NULL),
-    fhDTMul0D4sbest(NULL),
-    fhDTX0D4sbest(NULL),
-    fhDTY0D4sbest(NULL),
-    fhDXX0D4sbest(NULL),
-    fhDXY0D4sbest(NULL),
-    fhDYX0D4sbest(NULL),
-    fhDYY0D4sbest(NULL),
-    fhNMatch24(NULL),
-    fhNMatch24sel(NULL),
-    fhDT24sel(NULL),
-    fhChi24(NULL),
-    fhXY24(NULL),
-    fhDXDY24(NULL),
-    fhDXDT24(NULL),
-    fhDYDT24(NULL),
-    fhXY0D4best(NULL),
-    fhXY4D4best(NULL),
-    fhXX04D4best(NULL),
-    fhYY04D4best(NULL),
-    fhXYSel2D4best(NULL),
-    fhXY0D4sel(NULL),
-    fhXY4D4sel(NULL),
-    fhXYSel2D4sel(NULL),
-    fhDTD4sel(NULL),
-    fhTofD4sel(NULL),
-    fhBRefMul(NULL),
-    fhDTD4(NULL),
-    fhXYPos(),
-    fhDT04DX0_1(NULL),
-    fhDT04DY0_1(NULL),
-    fhDT04DT0_1(NULL),
-    fhDT04DX4_1(NULL),
-    fhDT04DY4_1(NULL),
-    fhDT04DT4_1(NULL),
-    fhDT04DX0_2(NULL),
-    fhDT04DY0_2(NULL),
-    fhDT04DT0_2(NULL),
-    fhDT04DX4_2(NULL),
-    fhDT04DY4_2(NULL),
-    fhDT04DT4_2(NULL),
-    fhDutPullX(NULL),
-    fhDutPullY(NULL),
-    fhDutPullZ(NULL),
-    fhDutPullT(NULL),
-    fhDutPullTB(NULL),
-    fhDutChi_Found(NULL),
-    fhDutChi_Missed(NULL),
-    fhDutChi_Match(NULL),
-    fhDutXY_Found(NULL),     
-    fhDutXY_Missed(NULL), 
-    fhDutDTLH_Found(NULL),     
-    fhDutDTLH_Missed(NULL), 
-    fhDutMul_Found(NULL),     
-    fhDutMul_Missed(NULL),
-    fhDutTIS_Found(NULL),     
-    fhDutTIS_Missed(NULL), 
-    fhDutXYDT(NULL),
-    fhTrklNofHitsRate(NULL),
-    fhTrklDetHitRate(NULL),
-    fhTrklNofHitsRateInSpill(NULL),
-    fhTrklDetHitRateInSpill(NULL),
-    fStart(),
-    fStop(),
-    fCalParFileName(""),
-    fCalOutFileName("./tofAnaTestBeam.hst.root"),
-    fCalParFile(NULL),
-    fhDTD4DT04D4Off(NULL),
-    fhDTX4D4Off(NULL),
-    fhDTY4D4Off(NULL),
-    fhDTTexpD4Off(NULL),
-    fhCluSize0DT04D4Off(NULL),
-    fhCluSize4DT04D4Off(NULL),
-    fhTot0DT04D4Off(NULL),
-    fhTot4DT04D4Off(NULL),
-    fdMulDMax(0.),
-    fdDTDia(0.),
-    fdDTD4MAX(0.),
-    fdMul0Max(0.),
-    fdMul4Max(0.),
-    fdCh4Sel(0.),
-    fdDCh4Sel(0.),
-    fdPosY4Sel(0.),
-    fdPosY4SelOff(0.),
-    fdChS2Sel(0.),
-    fdDChS2Sel(0.),
-    fdPosYS2Sel(0.),
-    fdPosYS2SelOff(0.),
-    fdSel2TOff(0.),
-    fdHitDistMin(0.),
-    fdHitDistAv(1.),
-    fdTOffD4(0.),
-    fdTShift(0.),
-    fdChi2Lim(0.),
-    fdChi2Lim2(0.),
-    fiCorMode(0),
-    fiDutAddr(0),
-    fiMrpcRefAddr(0),
-    fiMrpcSel2Addr(0),
-    fiMrpcSel3Addr(0),
-    fiBeamRefAddr(0),
-    fiDut(0),
-    fiDutSm(0),
-    fiDutRpc(0),
-    fiMrpcRef(0),
-    fiMrpcRefSm(0),
-    fiMrpcRefRpc(0),
-    fiMrpcSel2(0),
-    fiMrpcSel2Sm(0),
-    fiMrpcSel2Rpc(0),
-    fiMrpcSel3(0),
-    fiMrpcSel3Sm(0),
-    fiMrpcSel3Rpc(0),
-    fiPlaSelect(0),
-    fiBeamRefSmType(0),
-    fiBeamRefSmId(0),
-    fiBeamRefRpc(0),
-    fiDutNch(0),
-    fiReqTrg(-1),
-    fSIGLIM(3.),
-    fSIGT(100.),
-    fSIGX(1.),
-    fSIGY(1.),
-    fEnableMatchPosScaling(kTRUE),
-    fFindTracks(NULL),
-    fClusterizer(NULL)
+  : CbmTofAnaTestbeam("HadronAnalysis",0)
 {
   cout << "CbmTofTests: Task started " << endl;
 }
@@ -550,6 +281,9 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fhDutMul_Missed(NULL), 
     fhDutTIS_Found(NULL),     
     fhDutTIS_Missed(NULL), 
+    fhDutDTLH_CluSize(NULL),     
+    fhDutDTLH_Tot(NULL),     
+    fhDutDTLH_Mul(NULL),     
     fhDutXYDT(NULL),
     fhTrklNofHitsRate(NULL),
     fhTrklDetHitRate(NULL),
@@ -1436,24 +1170,32 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 			    Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ); 
 
      fhDutDTLH_Found=new TH1F(  Form("hDutDTLH_Found_%d",iDutId),
-			    Form("hDutDTLH_Found_Sm_%d;  log(#DeltaT)",iDutId),
+			    Form("hDutDTLH_Found_%d;  log(#DeltaT)",iDutId),
 			    50, 0., 10.);  
      fhDutDTLH_Missed=new TH1F(  Form("hDutDTLH_Missed_%d",iDutId),
-			    Form("hDutDTHL_Missed_Sm_%d;  log(#DeltaT)",iDutId),
+			    Form("hDutDTLH_Missed_%d;  log(#DeltaT)",iDutId),
 			    50, 0., 10.);  
      fhDutMul_Found=new TH1F(  Form("hDutMul_Found_%d",iDutId),
-			    Form("hDutMul_Found_Sm_%d; Hit Multiplicity",iDutId),
+			    Form("hDutMul_Found_%d; Hit Multiplicity",iDutId),
 			    32, 0., 32.);  
      fhDutMul_Missed=new TH1F(  Form("hDutMul_Missed_%d",iDutId),
-			    Form("hDutMul_Missed_Sm_%d; Hit Multiplicity",iDutId),
+			    Form("hDutMul_Missed_%d; Hit Multiplicity",iDutId),
 			    32, 0., 32.);  
      fhDutTIS_Found=new TH1F(  Form("hDutTIS_Found_%d",iDutId),
-			    Form("hDutTIS_Found_Sm_%d; Time in spill (s)",iDutId),
+			    Form("hDutTIS_Found_%d; Time in spill (s)",iDutId),
 			    200, 0., 10.);  
      fhDutTIS_Missed=new TH1F(  Form("hDutTIS_Missed_%d",iDutId),
-			    Form("hDutTIS_Missed_Sm_%d; Time in spill (s)",iDutId),
+			    Form("hDutTIS_Missed_%d; Time in spill (s)",iDutId),
 			    200, 0., 10.);  
-
+     fhDutDTLH_CluSize=new TH2F(  Form("hDutDTLH_CluSize_%d",iDutId),
+			    Form("hDutDTLH_CluSize_%d;  log(#DeltaT); CluSize",iDutId),
+				50, 0., 10.,	10, 1., 11.);  
+     fhDutDTLH_Tot  =new TH2F(  Form("hDutDTLH_Tot_%d",iDutId),
+			    Form("hDutDTLH_Tot_%d;  log(#DeltaT); Tot",iDutId),
+				50, 0., 10.,	50, 0., 20.);  
+     fhDutDTLH_Mul  =new TH2F(  Form("hDutDTLH_Mul_%d",iDutId),
+			    Form("hDutDTLH_Mul_%d;  log(#DeltaT); Tot",iDutId),
+				50, 0., 10.,	30, 0., 30.);  
      fhDutXYDT      = new TH3F( Form("hDutXYDT_%d",iDutId), 
 			    Form("hDutXYDT_%d;  x(cm); y (cm); #Deltat (ns)",iDutId),
 			    Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ, Nbins, -DTSIZ, DTSIZ); 
@@ -2749,7 +2491,6 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 }
        */
        }
-       
 
        // fill tracklet histos 
        for (Int_t iTrk=0; iTrk<iNbTofTracks;iTrk++) { // loop over all Tracklets
@@ -2781,31 +2522,55 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	   Int_t    iDet = fFindTracks->fMapRpcIdParInd[fiDutAddr];
 	   Int_t    iBin = fhLHTime[iDet]->FindBin( hitpos_local[0], hitpos_local[1] );
 	   Double_t dTLH = fhLHTime[iDet]->GetBinContent(iBin);
-	   LOG(DEBUG)<<Form(" got TLH = %f for Det %d at x %6.2f, y %6.2f, bin %d from x %6.2f, y %6.2f",
+	   if( iBin <= 0 || iBin > fhLHTime[iDet]->GetNbinsX()*fhLHTime[iDet]->GetNbinsY()){
+	     LOG(DEBUG) << "Invalid bin number for reading fhLHTime, det "<<iDet<<": "<<iBin<<", "<<dTLH<<FairLogger::endl;
+	   }else{	   
+	     LOG(DEBUG)<<Form(" got TLH = %f for Det %d at x %6.2f, y %6.2f, bin %d from x %6.2f, y %6.2f",
 			      dTLH, iDet, hitpos_local[0], hitpos_local[1],iBin, hitpos[0], hitpos[1])
-	             <<FairLogger::endl; 
+		       <<FairLogger::endl; 
 	   
-	   Double_t dDX = pHit->GetX() - pTrk->GetFitX(pHit->GetZ());    // - tPar->GetX() - tPar->GetTx()*dDZ;
-	   Double_t dDY = pHit->GetY() - pTrk->GetFitY(pHit->GetZ());    // - tPar->GetTy()*dDZ;
-	   Double_t dDT = pHit->GetTime() - pTrk->GetFitT(pHit->GetR()); // pTrk->GetTdif(fStationType[iSt]);
-	   Double_t dDTB= pTrk->GetTdif(fiDutAddr, pHit);                // ignore pHit in calc of reference
-	   fhDutPullX->Fill(dDX);
-	   fhDutPullY->Fill(dDY);
-	   fhDutPullT->Fill(dDT);
-	   fhDutPullTB->Fill(dDTB);
-	   fhDutChi_Found->Fill(pTrk->GetChiSq());
-	   fhDutChi_Match->Fill(vHitMap[iTrk].begin()->first);
-	   fhDutXY_Found->Fill(hitpos_local[0],hitpos_local[1]);  
-	   fhDutXYDT->Fill(hitpos_local[0],hitpos_local[1],dDTB);
-	   fhDutDTLH_Found->Fill( TMath::Log10( pHit->GetTime()-dTLH) ); 
-	   fhDutMul_Found->Fill( (Double_t)vDutHit.size() ); 
-	   fhDutTIS_Found->Fill( (dRefTMean-StartSpillTime)/1.E9 ); 
-	   /*
-	   if( pHit->GetTime()- dTLH > 10.) // debugging check
-	     LOG(INFO)<< Form("invalid time distance for event %d, hit address 0x%08x",
-			      fEvents, pHit->GetAddress()) 
-		      << FairLogger::endl;
-	   */
+	     Double_t dDX = pHit->GetX() - pTrk->GetFitX(pHit->GetZ());    // - tPar->GetX() - tPar->GetTx()*dDZ;
+	     Double_t dDY = pHit->GetY() - pTrk->GetFitY(pHit->GetZ());    // - tPar->GetTy()*dDZ;
+	     Double_t dDT = pHit->GetTime() - pTrk->GetFitT(pHit->GetR()); // pTrk->GetTdif(fStationType[iSt]);
+	     Double_t dDTB= pTrk->GetTdif(fiDutAddr, pHit);                // ignore pHit in calc of reference
+	     fhDutPullX->Fill(dDX);
+	     fhDutPullY->Fill(dDY);
+	     fhDutPullT->Fill(dDT);
+	     fhDutPullTB->Fill(dDTB);
+	     fhDutChi_Found->Fill(pTrk->GetChiSq());
+	     fhDutChi_Match->Fill(vHitMap[iTrk].begin()->first);
+	     fhDutXY_Found->Fill(hitpos_local[0],hitpos_local[1]);  
+	     fhDutXYDT->Fill(hitpos_local[0],hitpos_local[1],dDTB);
+	     fhDutDTLH_Found->Fill( TMath::Log10( pHit->GetTime()-dTLH) ); 
+	     fhDutMul_Found->Fill( dMulD+dMul4 );  
+	     fhDutTIS_Found->Fill( (dRefTMean-StartSpillTime)/1.E9 ); 
+
+	     //CbmMatch* digiMatch0=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit));
+	     Int_t iHit = pTrk->HitIndexOfAddr(fiDutAddr);
+	     CbmMatch* digiMatch0=(CbmMatch *)fTofDigiMatchColl->At( iHit );
+	     Double_t dTot0   = 0.;
+	     if(NULL != fTofDigisColl && NULL != digiMatch0){
+	       for (Int_t iLink=0; iLink<digiMatch0->GetNofLinks(); iLink++){  // loop over digis
+		 CbmLink L0 = digiMatch0->GetLink(iLink);  
+		 Int_t iDigInd0=L0.GetIndex();
+		 if (iDigInd0 < fTofDigisColl->GetEntries()){
+		   CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
+		   dTot0 += pDig0->GetTot();
+		 }
+	       } 
+	       dTot0 /= digiMatch0->GetNofLinks();  // average time over threshold
+	     }
+	     fhDutDTLH_CluSize->Fill(TMath::Log10( pHit->GetTime()-dTLH), digiMatch0->GetNofLinks()/2.);  
+	     fhDutDTLH_Tot->Fill(TMath::Log10( pHit->GetTime()-dTLH), dTot0);  
+	     fhDutDTLH_Mul->Fill(TMath::Log10( pHit->GetTime()-dTLH), (Double_t)vDutHit.size() ); 
+
+	     /*
+	       if( pHit->GetTime()- dTLH > 10.) // debugging check
+	       LOG(INFO)<< Form("invalid time distance for event %d, hit address 0x%08x",
+	       fEvents, pHit->GetAddress()) 
+	       << FairLogger::endl;
+	     */
+	   }
 	 }else{                       // no match for this track
 	   if( !pTrk->ContainsAddr(fiDutAddr) ) {
 	     hitpos[0]=pTrk->GetFitX(dDutzPos);
@@ -2818,15 +2583,20 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	     Int_t    iDet = fFindTracks->fMapRpcIdParInd[fiDutAddr];
 	     Int_t    iBin = fhLHTime[iDet]->FindBin( hitpos_local[0], hitpos_local[1] );
 	     Double_t dTLH = fhLHTime[iDet]->GetBinContent(iBin);
-	     LOG(DEBUG)<<Form(" got TLH = %f for Det %d at x %6.2f, y %6.2f, bin %d from x %6.2f, y %6.2f",
-			      dTLH, iDet, hitpos_local[0], hitpos_local[1],iBin, hitpos[0], hitpos[1])
-		       <<FairLogger::endl; 
+	     if( iBin <= 0 || iBin > fhLHTime[iDet]->GetNbinsX()*fhLHTime[iDet]->GetNbinsY()){
+	       LOG(DEBUG) << "Invalid bin number for reading fhLHTime, det "<<iDet<<": "<<iBin<<", "<<dTLH<<FairLogger::endl;
+	     }else{
+	       LOG(DEBUG)<<Form(" got TLH = %f for Det %d at x %6.2f, y %6.2f, bin %d from x %6.2f, y %6.2f",
+				dTLH, iDet, hitpos_local[0], hitpos_local[1],iBin, hitpos[0], hitpos[1])
+			 <<FairLogger::endl; 
 
-	     fhDutChi_Missed->Fill(pTrk->GetChiSq());
-	     fhDutXY_Missed->Fill(hitpos_local[0],hitpos_local[1]);
-	     fhDutDTLH_Missed->Fill( TMath::Log10( pTrk->GetTime()-dTLH) );
-	     fhDutMul_Missed->Fill( (Double_t)vDutHit.size() ); 
-	     fhDutTIS_Missed->Fill( (dRefTMean-StartSpillTime)/1.E9 ); 
+	       fhDutChi_Missed->Fill(pTrk->GetChiSq());
+	       fhDutXY_Missed->Fill(hitpos_local[0],hitpos_local[1]);
+	       fhDutDTLH_Missed->Fill( TMath::Log10( pTrk->GetTime()-dTLH) );
+	       //fhDutMul_Missed->Fill( (Double_t)vDutHit.size() ); 
+	       fhDutMul_Missed->Fill( dMulD+dMul4 );  
+	       fhDutTIS_Missed->Fill( (dRefTMean-StartSpillTime)/1.E9 );
+	     } 
 	   } 
 	 }                 
        }
@@ -2848,10 +2618,15 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 hitpos[2]=pHit->GetZ();
 	 gGeoManager->MasterToLocal(hitpos, hitpos_local);
 	 Int_t iBin = fhLHTime[iDet]->FindBin( hitpos_local[0], hitpos_local[1] );
-         fhLHTime[iDet]->SetBinContent(iBin,pHit->GetTime());
-	 LOG(DEBUG) << Form("Store hit 0x%08x at x %6.3f, y %6.3f, bin %d, time %f in det Id 0x%08x, #%d",
+
+	 if( iBin <= 0 || iBin > fhLHTime[iDet]->GetNbinsX()*fhLHTime[iDet]->GetNbinsY()){
+	   LOG(DEBUG) << "Invalid bin number for fhLHTime, det "<<iDet<<": "<<iBin<<FairLogger::endl;
+	 }else{
+          fhLHTime[iDet]->SetBinContent(iBin,pHit->GetTime());
+	  LOG(DEBUG) << Form("Store hit 0x%08x at x %6.3f, y %6.3f, bin %d, time %f in det Id 0x%08x, #%d",
 			    pHit->GetAddress(),hitpos_local[0],hitpos_local[1], iBin, pHit->GetTime(), iDetId, iDet)
-		    << FairLogger::endl;
+	 	     << FairLogger::endl;
+	 }
        }
      } //(fdMemoryTime > 0.) end
      
