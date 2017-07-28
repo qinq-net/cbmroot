@@ -60,11 +60,16 @@ void CbmCern2017UnpackParSts::putParams(FairParamList* l)
    l->add("NbChanPerAsic",  fuNbChanPerAsic );
    l->add("ElinkToAsicMap", fiElinkToAsicMap);
 #else
-   l->add("NrOfDpbs",       reinterpret_cast<Int_t>( fuNrOfDpbs) );
+   Int_t iNrOfDpbs       = fuNrOfDpbs;
+   Int_t iNbElinksPerDpb = fuNbElinksPerDpb;
+   Int_t iNbStsXyters    = fuNbStsXyters;
+   Int_t iNbChanPerAsic  = fuNbChanPerAsic;
+
+   l->add("NrOfDpbs",       iNrOfDpbs );
    l->add("DbpIdArray",     fiDbpIdArray);
-   l->add("NbElinksPerDpb", reinterpret_cast<Int_t>( fuNbElinksPerDpb ) );
-   l->add("NbStsXyters",    reinterpret_cast<Int_t>( fuNbStsXyters ) );
-   l->add("NbChanPerAsic",  reinterpret_cast<Int_t>( fuNbChanPerAsic ) );
+   l->add("NbElinksPerDpb", iNbElinksPerDpb );
+   l->add("NbStsXyters",    iNbStsXyters );
+   l->add("NbChanPerAsic",  iNbChanPerAsic );
    l->add("ElinkToAsicMap", fiElinkToAsicMap);
 #endif // VERSION_GREATER_160601
 }
