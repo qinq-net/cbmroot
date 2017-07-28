@@ -73,6 +73,7 @@ Else()
 EndIf()
 
 If(FairRoot_VERSION VERSION_GREATER 16.06.1)
+  ADD_DEFINITIONS(-DVERSION_GREATER_160601)
   Add_Definitions(-DUSE_HTTP_SERVER)
   Message("Found FairRoot version larger 16.06.1")
 EndIf()
