@@ -80,6 +80,7 @@ Bool_t CbmCern2017UnpackParSts::getParams(FairParamList* l) {
 
    if (!l) return kFALSE;
 
+#ifdef VERSION_GREATER_160601
    if ( ! l->fill("NrOfDpbs", &fuNrOfDpbs ) ) return kFALSE;
 
    fiDbpIdArray.Set( fuNrOfDpbs );
@@ -93,6 +94,30 @@ Bool_t CbmCern2017UnpackParSts::getParams(FairParamList* l) {
 
    fiElinkToAsicMap.Set( fuNrOfDpbs * fuNbElinksPerDpb );
    if ( ! l->fill("ElinkToAsicMap", &fiElinkToAsicMap ) ) return kFALSE;
+#else
+   Int_t iNrOfDpbs       = 0;
+   Int_t iNbElinksPerDpb = 0;
+   Int_t iNbStsXyters    = 0;
+   Int_t iNbChanPerAsic  = 0;
+
+   if ( ! l->fill("NrOfDpbs", &iNrOfDpbs ) ) return kFALSE;
+   fuNrOfDpbs = iNrOfDpbs;
+
+   fiDbpIdArray.Set( fuNrOfDpbs );
+   if ( ! l->fill("DbpIdArray", &fiDbpIdArray ) ) return kFALSE;
+
+   if ( ! l->fill("NbElinksPerDpb", &iNbElinksPerDpb ) ) return kFALSE;
+   fuNbElinksPerDpb = iNbElinksPerDpb;
+
+   if ( ! l->fill("NbStsXyters", &iNbStsXyters ) ) return kFALSE;
+   fuNbStsXyters = iNbStsXyters;
+
+   if ( ! l->fill("NbChanPerAsic", &iNbChanPerAsic ) ) return kFALSE;
+   fuNbChanPerAsic = iNbChanPerAsic;
+
+   fiElinkToAsicMap.Set( fuNrOfDpbs * fuNbElinksPerDpb );
+   if ( ! l->fill("ElinkToAsicMap", &fiElinkToAsicMap ) ) return kFALSE;
+#endif // VERSION_GREATER_160601
 
   return kTRUE;
 }
