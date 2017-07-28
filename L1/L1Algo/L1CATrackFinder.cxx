@@ -386,6 +386,12 @@ inline void L1Algo::f20(  // input
 #endif // DOUB_PERFORMANCE
       hitsm_2.push_back(imh);
       
+      TripForHit[0][hitsl_1[i1] +  StsHitsUnusedStartIndex[&stam - vStations-1]] = 0;
+      TripForHit[1][hitsl_1[i1] + StsHitsUnusedStartIndex[&stam - vStations-1]] = 0;
+      
+      TripForHit[0][hitsl_1[i1] +  StsHitsUnusedStartIndex[&stam - vStations-2]] = 0;
+      TripForHit[1][hitsl_1[i1] + StsHitsUnusedStartIndex[&stam - vStations-2]] = 0;
+      
       n2++;
     }
     lmDuplets[hitsl_1[i1]] = (n2Saved < n2);
@@ -824,7 +830,7 @@ inline void L1Algo::f4(  // input
                        Tindex ip_cur
                        )
 {
-  THitI ihitl_priv = 0;
+  int ihitl_priv = -1;
   
   unsigned int Station = 0;
   unsigned int Thread = 0;
@@ -839,6 +845,8 @@ inline void L1Algo::f4(  // input
   {
     const Tindex &i3_V = i3/fvecLen;
     const Tindex &i3_4 = i3%fvecLen;
+    
+
     L1TrackPar &T3 = T_3[i3_V];
     
     // select
@@ -851,7 +859,9 @@ inline void L1Algo::f4(  // input
     Thread = omp_get_thread_num();
 #else
     Thread = 0;   
-#endif     
+#endif   
+    
+
     
     TripletsLocal1[Station][Thread][nTripletsThread[istal][Thread]].SetLevel(0);
     
@@ -862,11 +872,14 @@ inline void L1Algo::f4(  // input
     
     Location = Triplet+Station*100000000 +Thread*1000000;
     
-    if (ihitl_priv==0||ihitl_priv!=hitsl_3[i3]) TripForHit[0][hitsl_3[i3] + StsHitsUnusedStartIndex[istal]] = Location;
+    if (ihitl_priv==-1||ihitl_priv!=hitsl_3[i3]) {TripForHit[0][hitsl_3[i3] + StsHitsUnusedStartIndex[istal]] = Location;
 
-
+    TripForHit[1][hitsl_3[i3] + StsHitsUnusedStartIndex[istal]] = Location;      
+    }
     
-    TripForHit[1][hitsl_3[i3] + StsHitsUnusedStartIndex[istal]] = Location;
+    ihitl_priv=hitsl_3[i3];
+    
+
 
 #ifdef DO_NOT_SELECT_TRIPLETS
 if (isec!=TRACKS_FROM_TRIPLETS_ITERATION)
@@ -894,7 +907,7 @@ if (isec!=TRACKS_FROM_TRIPLETS_ITERATION)
 
 
     
-    ihitl_priv=hitsl_3[i3];
+    
     
     const THitI &ihitl = hitsl_3[i3] + StsHitsUnusedStartIndex[istal];
     const THitI &ihitm = hitsm_3[i3] + StsHitsUnusedStartIndex[istam];
@@ -927,23 +940,17 @@ if (isec!=TRACKS_FROM_TRIPLETS_ITERATION)
         Triplet=nTripletsThread[istal][Thread];
         
         Location = Triplet+Station*100000000 +Thread*1000000;
-        
-      //  PackLocation(Location, Triplet, Station, Thread);
 
         
-        if (ihitl_priv==hitsl_3[i3]) TripForHit[1][tr1.GetLHit()] = Location;
+       TripForHit[1][hitsl_3[i3] + StsHitsUnusedStartIndex[istal]] = Location;
 
 
     if (istal > (NStations - 4)) continue;
     
     unsigned int Neighbours = TripForHit[1][ihitm]-TripForHit[0][ihitm];
-    
-    if (!Neighbours) continue;
+
     
     level = 0;
-
-    tr1.first_neighbour=0;
-    tr1.last_neighbour=0;
 
     for (unsigned int iN=0; iN < Neighbours; ++iN)
     {
@@ -951,27 +958,21 @@ if (isec!=TRACKS_FROM_TRIPLETS_ITERATION)
       
       
       
-      Station = Location/100000000;
-      Thread = (Location -Station*100000000)/1000000;
-      Triplet = (Location- Station*100000000-Thread*1000000);
+      int Station = Location/100000000;
+      int Thread = (Location -Station*100000000)/1000000;
+      int Triplet = (Location- Station*100000000-Thread*1000000);
       
       L1Triplet &curNeighbour = TripletsLocal1[Station][Thread][Triplet];
 
-//      const fscal &qp2 = curNeighbour.GetQp();
-//      fscal &Cqp2 = curNeighbour.Cqp;
-//      if ((curNeighbour.GetMHit() != ihitr) )  continue;
+      if ((curNeighbour.GetMHit() != ihitr) )  continue;
       
       if (tr1.first_neighbour==0) 
         tr1.first_neighbour=Location;
       
       tr1.last_neighbour=Location+1;
 
-      if ((curNeighbour.GetMHit() != ihitr) )  continue;
-      
-
-
-      // calculate level
       const unsigned char &jlevel = curNeighbour.GetLevel();
+
       if ( level <= jlevel ) level = jlevel + 1;
     }
     tr1.SetLevel( level );  
@@ -1642,30 +1643,37 @@ void L1Algo::CATrackFinder()
           L1_ASSERT( StsHitsUnusedStopIndex[istal] <= (*vStsHitsUnused).size(), StsHitsUnusedStopIndex[istal] << " <= " << (*vStsHitsUnused).size());
       }
 #endif // L1_NO_ASSERT
-      //   Tindex nPortions = 0; ///  number of portions
         
-      /// possible left hits of triplets are splited in portions of 16 (4 SIMDs) to use memory faster
+
+    }
+    
+    
+        unsigned int nPortions = 0; /// number of portions
+    {   
+   /// possible left hits of triplets are splited in portions of 16 (4 SIMDs) to use memory faster
       portionStopIndex[NStations-1] = 0;
-      Tindex ip = 0;  //ip - index of curent portion
-      /// possible left hits of triplets are splited in portions of 16 (4 SIMDs) to use memory faster
-      for (int istal = NStations-2; istal >= FIRSTCASTATION; istal--)   //start downstream chambers
-      {
-        NHits_l [istal]= StsHitsUnusedStopIndex[istal] - StsHitsUnusedStartIndex[istal];
-        
-        
-        NHits_l_P [istal]= NHits_l [istal]/Portion;
-        
-        
-        ip+=NHits_l_P[istal];
-        
-        
-        n_g1[ip]=(NHits_l[istal] - NHits_l_P[istal]*Portion);
-        
+      unsigned int ip = 0;  //index of curent portion
+
+      for (int istal = NStations-2; istal >= FIRSTCASTATION; istal--){  //start downstream chambers
+        int NHits_l = StsHitsUnusedStopIndex[istal] - StsHitsUnusedStartIndex[istal];
+
+        int NHits_l_P = NHits_l/Portion;
+
+        for( int ipp = 0; ipp < NHits_l_P; ipp++ ){
+//           n_g1[ip++] = Portion;
+          n_g1[ip]=(Portion);
+
+          ip++;
+        } // start_lh - portion of left hits
+
+//         n_g1[ip++] = NHits_l - NHits_l_P*Portion;
+        n_g1[ip]=(NHits_l - NHits_l_P*Portion);
+
         ip++;
         portionStopIndex[istal] = ip;
       }// lstations
-      //  nPortions = ip;
-        
+      nPortions = ip;
+      
 #ifdef COUNTERS
       stat_nSinglets[isec] += nSinglets;
 #endif
@@ -1703,7 +1711,6 @@ void L1Algo::CATrackFinder()
     TStopwatch c_time;
     c_timer.Start();
 #endif
-
       
         
     const Tindex vPortion = Portion/fvecLen;
@@ -1877,6 +1884,7 @@ void L1Algo::CATrackFinder()
     //     if (isec == kAllPrimJumpIter) min_level = 1;
     //     if ( (isec == kAllSecIter) || (isec == kAllSecJumpIter) ) min_level = 2; // only the long low momentum tracks
     // //    if (isec == -1) min_level = NStations-3 - 3; //only the longest tracks
+
     
     L1Branch curr_tr;
     L1Branch new_tr[MaxNStations];
@@ -1924,6 +1932,7 @@ void L1Algo::CATrackFinder()
 #endif            
             L1Triplet &first_trip = (TripletsLocal1[istaF][ip][itrip]);
             
+            
             // ghost supression !!!
 #ifndef FIND_GAPED_TRACKS
             if( /*(isec == kFastPrimIter) ||*/ (isec == kAllPrimIter) || (isec == kAllPrimEIter) || (isec == kAllSecIter) || (isec == kAllSecEIter) || (isec == kAllSecJumpIter) ) 
@@ -1964,6 +1973,8 @@ void L1Algo::CATrackFinder()
             
             best_chi2 = curr_chi2;
             best_L = curr_L;
+            
+       //     cout<<istaF<<" istaF"<<endl;
             
             CAFindTrack(istaF, best_tr, best_L, best_chi2, &first_trip, (curr_tr), curr_L, curr_chi2, min_best_l, new_tr); /// reqursive func to build a tree of possible track-candidates and choose the best
             
@@ -2376,6 +2387,8 @@ inline void L1Algo::CAFindTrack(int ista,
 {
   if (curr_trip->GetLevel() == 0)  // the end of the track -> check and store
   {
+    
+
     // -- finish with current track
     // add rest of hits
     const THitI &ihitm = curr_trip->GetMHit();
@@ -2431,11 +2444,13 @@ inline void L1Algo::CAFindTrack(int ista,
   } 
   else //MEANS level ! = 0
   { 
+   //  cout<<"1"<<endl;
     unsigned int Station = 0;
     unsigned int Thread = 0;
     unsigned int Triplet = 0; 
     unsigned int Location = 0;  
     int N_neighbour = (curr_trip->last_neighbour-curr_trip->first_neighbour);
+
       
     for (Tindex in = 0; in < N_neighbour; in++) 
     {  
@@ -2449,6 +2464,7 @@ inline void L1Algo::CAFindTrack(int ista,
       Station = Location/100000000;
       Thread = (Location -Station*100000000)/1000000;
       Triplet = (Location- Station*100000000-Thread*1000000);
+
 
       const L1Triplet &new_trip = TripletsLocal1[Station][Thread][Triplet];
       
@@ -2474,11 +2490,14 @@ inline void L1Algo::CAFindTrack(int ista,
       }
       else
       { // if hits are used add new triplet to the current track
+
+
         new_tr[ista] = curr_tr;
+
         
         unsigned char new_L = curr_L;
         fscal new_chi2 = curr_chi2;
-        
+
         // add new hit
         new_tr[ista].StsHits[new_tr[ista].NHits]=((*RealIHitP)[new_trip.GetLHit()]);
         new_tr[ista].NHits++;
@@ -2487,6 +2506,7 @@ inline void L1Algo::CAFindTrack(int ista,
         new_chi2 += dqp*dqp;
         
         if( new_chi2 > TRACK_CHI2_CUT * new_L ) continue;
+
         
         const int new_ista = ista + new_trip.GetMSta() - new_trip.GetLSta();
         
