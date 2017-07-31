@@ -61,7 +61,9 @@ static Double_t StartSpillTime    = 0.;
 const  Double_t SpillDuration     = 9.; // in seconds
 
 static Double_t fdMemoryTime = 1.E10; // memory time in ns
+
 static std::vector<TH2D *> fhLHTime; 
+static std::vector< std::vector<CbmTofHit*>  > fvLHit; 
 
 
 //___________________________________________________________________
@@ -284,6 +286,8 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fhDutDTLH_CluSize(NULL),     
     fhDutDTLH_Tot(NULL),     
     fhDutDTLH_Mul(NULL),     
+    fhDutDTLH_DD_Found(NULL),     
+    fhDutDTLH_DD_Missed(NULL), 
     fhDutXYDT(NULL),
     fhTrklNofHitsRate(NULL),
     fhTrklDetHitRate(NULL),
@@ -1195,7 +1199,13 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 				50, 0., 10.,	50, 0., 20.);  
      fhDutDTLH_Mul  =new TH2F(  Form("hDutDTLH_Mul_%d",iDutId),
 			    Form("hDutDTLH_Mul_%d;  log(#DeltaT); Tot",iDutId),
-				50, 0., 10.,	30, 0., 30.);  
+				50, 0., 10.,	30, 0., 30.); 
+     fhDutDTLH_DD_Found  =new TH2F(  Form("hDutDTLH_DD_Found_%d",iDutId),
+			    Form("hDutDTLH_DD_Found_%d;  log(#DeltaT); distance (cm)",iDutId),
+				50, 0., 10.,  40, 0., 4.);  
+     fhDutDTLH_DD_Missed =new TH2F(  Form("hDutDTLH_DD_Missed_%d",iDutId),
+			    Form("hDutDTLH_DD_Missed_%d;  log(#DeltaT); distance (cm)",iDutId),
+				50, 0., 10.,  40, 0., 4.);  
      fhDutXYDT      = new TH3F( Form("hDutXYDT_%d",iDutId), 
 			    Form("hDutXYDT_%d;  x(cm); y (cm); #Deltat (ns)",iDutId),
 			    Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ, Nbins, -DTSIZ, DTSIZ); 
@@ -1222,11 +1232,14 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
      
      if (fdMemoryTime>0.) { // book histograms for memory effects
        fhLHTime.resize(iNbDet);
+       fvLHit.resize(iNbDet);
        Int_t iNbins=16; // corresponds to 2x2 cm^2 regions 
        for(Int_t iDet=0; iDet<iNbDet; iDet++){
 	 fhLHTime[iDet] = new TH2D( Form("hLHTime_Det%d",iDet),
 				    Form("hLHTime_Det%d ;  x (cm); y (cm) ",iDet),
 				    iNbins, -16., 16., iNbins, -16., 16.);
+	 fvLHit[iDet].resize(iNbins*iNbins);
+	 for(Int_t iBin=0; iBin<fvLHit[iDet].size();iBin++) fvLHit[iDet][iBin]=NULL;
        }
      }
 
@@ -1242,6 +1255,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 
    // Declare variables outside the loop
    CbmTofHit   *pHit;
+   CbmTofHit   *pLHit;
    CbmTofHit   *pHit1;
    CbmTofHit   *pHit2;
    CbmTofHit   *pHit3;
@@ -2356,6 +2370,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      Int_t NStations = fFindTracks->GetNStations();
      LOG(DEBUG)<<Form("Tracklet analysis of %d tracklets from %d stations",iNbTofTracks,NStations)<< FairLogger::endl;
 
+     if(dMul4<dM4Max && dMulD<dMDMax)
      if(iNbTofTracks>0){   // Tracklet Analysis
                            // prepare Dut Hit List
 
@@ -2497,9 +2512,13 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 CbmTofTracklet *pTrk = (CbmTofTracklet*)fTofTrackColl->At(iTrk);
 	 if(NULL == pTrk) continue;
 	 if (pTrk->GetNofHits() < NStations-1) continue;  // pick only full & full - 1 tracklets 
+	 pLHit=NULL;
 
 	 //if(vHitMap[iTrk].size()>0){  // matched hit found 
 	 //if(vHitMap[iTrk].size()>0 && pTrk->GetNofHits() == NStations){  // matched hit found 
+
+	 Double_t LHpos[3], LHpos_local[3];
+
 	 if(pTrk->ContainsAddr(fiDutAddr) && pTrk->GetNofHits() == NStations){  // matched hit found 
 	   LOG(DEBUG )<<Form(" Event %d : process complete Trkl %d, HMul %d, iDet %d ",
 			     fEvents,iTrk,pTrk->GetNofHits(),
@@ -2518,33 +2537,49 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	   hitpos[1]=pHit->GetY();
 	   hitpos[2]=pHit->GetZ();
 	   gGeoManager->MasterToLocal(hitpos, hitpos_local);
-	  
+
+	   pLHit = NULL;
 	   Int_t    iDet = fFindTracks->fMapRpcIdParInd[fiDutAddr];
 	   Int_t    iBin = fhLHTime[iDet]->FindBin( hitpos_local[0], hitpos_local[1] );
 	   Double_t dTLH = fhLHTime[iDet]->GetBinContent(iBin);
 	   if( iBin <= 0 || iBin > fhLHTime[iDet]->GetNbinsX()*fhLHTime[iDet]->GetNbinsY()){
 	     LOG(DEBUG) << "Invalid bin number for reading fhLHTime, det "<<iDet<<": "<<iBin<<", "<<dTLH<<FairLogger::endl;
-	   }else{	   
-	     LOG(DEBUG)<<Form(" got TLH = %f for Det %d at x %6.2f, y %6.2f, bin %d from x %6.2f, y %6.2f",
-			      dTLH, iDet, hitpos_local[0], hitpos_local[1],iBin, hitpos[0], hitpos[1])
-		       <<FairLogger::endl; 
-	   
-	     Double_t dDX = pHit->GetX() - pTrk->GetFitX(pHit->GetZ());    // - tPar->GetX() - tPar->GetTx()*dDZ;
-	     Double_t dDY = pHit->GetY() - pTrk->GetFitY(pHit->GetZ());    // - tPar->GetTy()*dDZ;
-	     Double_t dDT = pHit->GetTime() - pTrk->GetFitT(pHit->GetR()); // pTrk->GetTdif(fStationType[iSt]);
-	     Double_t dDTB= pTrk->GetTdif(fiDutAddr, pHit);                // ignore pHit in calc of reference
-	     fhDutPullX->Fill(dDX);
-	     fhDutPullY->Fill(dDY);
-	     fhDutPullT->Fill(dDT);
-	     fhDutPullTB->Fill(dDTB);
-	     fhDutChi_Found->Fill(pTrk->GetChiSq());
-	     fhDutChi_Match->Fill(vHitMap[iTrk].begin()->first);
-	     fhDutXY_Found->Fill(hitpos_local[0],hitpos_local[1]);  
-	     fhDutXYDT->Fill(hitpos_local[0],hitpos_local[1],dDTB);
-	     fhDutDTLH_Found->Fill( TMath::Log10( pHit->GetTime()-dTLH) ); 
-	     fhDutMul_Found->Fill( dMulD+dMul4 );  
-	     fhDutTIS_Found->Fill( (dRefTMean-StartSpillTime)/1.E9 ); 
+	     dTLH=0.;
+	   }else 
+	     if(fvLHit[iDet][iBin]!=NULL)
+	       pLHit=fvLHit[iDet][iBin]; // pointer to Last Hit object 
 
+	   if(NULL != pLHit) {
+	     if(pLHit->GetTime() != dTLH) 
+	       LOG(FATAL)<<" LHTime mismatch for Det "<<iDet<<", Bin "<<iBin
+			 <<Form(": %f - %f = %f",pLHit->GetTime(),dTLH, pLHit->GetTime() - dTLH)
+			 <<FairLogger::endl;
+	     LHpos[0]=pLHit->GetX();
+	     LHpos[1]=pLHit->GetY();
+	     LHpos[2]=pLHit->GetZ();
+	     gGeoManager->MasterToLocal(LHpos, LHpos_local);
+
+	     LOG(DEBUG)<<Form(" got TLH = %f for Det %d at x %6.2f, y %6.2f, bin %d from x %6.2f, y %6.2f",
+			    dTLH, iDet, hitpos_local[0], hitpos_local[1],iBin, hitpos[0], hitpos[1])
+		       <<FairLogger::endl; 
+	   }
+	   
+	   Double_t dDX = pHit->GetX() - pTrk->GetFitX(pHit->GetZ());    // - tPar->GetX() - tPar->GetTx()*dDZ;
+	   Double_t dDY = pHit->GetY() - pTrk->GetFitY(pHit->GetZ());    // - tPar->GetTy()*dDZ;
+	   Double_t dDT = pHit->GetTime() - pTrk->GetFitT(pHit->GetR()); // pTrk->GetTdif(fStationType[iSt]);
+	   Double_t dDTB= pTrk->GetTdif(fiDutAddr, pHit);                // ignore pHit in calc of reference
+	   fhDutPullX->Fill(dDX);
+	   fhDutPullY->Fill(dDY);
+	   fhDutPullT->Fill(dDT);
+	   fhDutPullTB->Fill(dDTB);
+	   fhDutChi_Found->Fill(pTrk->GetChiSq());
+	   fhDutChi_Match->Fill(vHitMap[iTrk].begin()->first);
+	   fhDutXY_Found->Fill(hitpos_local[0],hitpos_local[1]);  
+	   fhDutDTLH_Found->Fill( TMath::Log10( pHit->GetTime()-dTLH) ); 
+	   fhDutMul_Found->Fill( dMulD+dMul4 );  
+	   fhDutTIS_Found->Fill( (dRefTMean-StartSpillTime)/1.E9 ); 
+	   if(NULL != pLHit){
+	     fhDutXYDT->Fill(hitpos_local[0],hitpos_local[1],dDTB);
 	     //CbmMatch* digiMatch0=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit));
 	     Int_t iHit = pTrk->HitIndexOfAddr(fiDutAddr);
 	     CbmMatch* digiMatch0=(CbmMatch *)fTofDigiMatchColl->At( iHit );
@@ -2563,7 +2598,10 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	     fhDutDTLH_CluSize->Fill(TMath::Log10( pHit->GetTime()-dTLH), digiMatch0->GetNofLinks()/2.);  
 	     fhDutDTLH_Tot->Fill(TMath::Log10( pHit->GetTime()-dTLH), dTot0);  
 	     fhDutDTLH_Mul->Fill(TMath::Log10( pHit->GetTime()-dTLH), (Double_t)vDutHit.size() ); 
-
+	     Double_t dDD=TMath::Sqrt(TMath::Power(hitpos_local[0] - LHpos_local[0],2.) +
+				      TMath::Power(hitpos_local[1] - LHpos_local[1],2.) );
+	     fhDutDTLH_DD_Found->Fill(TMath::Log10( pHit->GetTime()-dTLH), dDD ); 
+	   
 	     /*
 	       if( pHit->GetTime()- dTLH > 10.) // debugging check
 	       LOG(INFO)<< Form("invalid time distance for event %d, hit address 0x%08x",
@@ -2584,19 +2622,29 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	     Int_t    iBin = fhLHTime[iDet]->FindBin( hitpos_local[0], hitpos_local[1] );
 	     Double_t dTLH = fhLHTime[iDet]->GetBinContent(iBin);
 	     if( iBin <= 0 || iBin > fhLHTime[iDet]->GetNbinsX()*fhLHTime[iDet]->GetNbinsY()){
-	       LOG(DEBUG) << "Invalid bin number for reading fhLHTime, det "<<iDet<<": "<<iBin<<", "<<dTLH<<FairLogger::endl;
-	     }else{
-	       LOG(DEBUG)<<Form(" got TLH = %f for Det %d at x %6.2f, y %6.2f, bin %d from x %6.2f, y %6.2f",
-				dTLH, iDet, hitpos_local[0], hitpos_local[1],iBin, hitpos[0], hitpos[1])
-			 <<FairLogger::endl; 
+	       LOG(DEBUG) << "Invalid bin number for reading fhLHTime, det "<<iDet<<": "<<iBin
+			  <<", "<<dTLH<<FairLogger::endl;
+	       dTLH=0.;
+	     }
+	     else 
+	       if(fvLHit[iDet][iBin]!=NULL)
+		 pLHit=fvLHit[iDet][iBin]; // pointer to Last Hit
 
-	       fhDutChi_Missed->Fill(pTrk->GetChiSq());
-	       fhDutXY_Missed->Fill(hitpos_local[0],hitpos_local[1]);
+	     LOG(DEBUG)<<Form(" got TLH = %f for Det %d at x %6.2f, y %6.2f, bin %d from x %6.2f, y %6.2f",
+			      dTLH, iDet, hitpos_local[0], hitpos_local[1],iBin, hitpos[0], hitpos[1])
+		       <<FairLogger::endl; 
+
+	     fhDutChi_Missed->Fill(pTrk->GetChiSq());
+	     fhDutXY_Missed->Fill(hitpos_local[0],hitpos_local[1]);
+	     //fhDutMul_Missed->Fill( (Double_t)vDutHit.size() ); 
+	     fhDutMul_Missed->Fill( dMulD+dMul4 );  
+	     fhDutTIS_Missed->Fill( (dRefTMean-StartSpillTime)/1.E9 );
+	     if(NULL != pLHit){
 	       fhDutDTLH_Missed->Fill( TMath::Log10( pTrk->GetTime()-dTLH) );
-	       //fhDutMul_Missed->Fill( (Double_t)vDutHit.size() ); 
-	       fhDutMul_Missed->Fill( dMulD+dMul4 );  
-	       fhDutTIS_Missed->Fill( (dRefTMean-StartSpillTime)/1.E9 );
-	     } 
+	       Double_t dDD=TMath::Sqrt(TMath::Power(hitpos_local[0] - LHpos_local[0],2.) +
+					TMath::Power(hitpos_local[1] - LHpos_local[1],2.) );
+	       fhDutDTLH_DD_Missed->Fill(TMath::Log10( pHit->GetTime()-dTLH), dDD ); 
+	     }
 	   } 
 	 }                 
        }
@@ -2617,15 +2665,20 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 hitpos[1]=pHit->GetY();
 	 hitpos[2]=pHit->GetZ();
 	 gGeoManager->MasterToLocal(hitpos, hitpos_local);
+	 LOG(DEBUG) << Form("Find bin for Det %d, x %f, y %f, poi ",iDet,hitpos_local[0], hitpos_local[1])
+		    << fhLHTime[iDet]
+		    << FairLogger::endl;
 	 Int_t iBin = fhLHTime[iDet]->FindBin( hitpos_local[0], hitpos_local[1] );
 
 	 if( iBin <= 0 || iBin > fhLHTime[iDet]->GetNbinsX()*fhLHTime[iDet]->GetNbinsY()){
 	   LOG(DEBUG) << "Invalid bin number for fhLHTime, det "<<iDet<<": "<<iBin<<FairLogger::endl;
 	 }else{
-          fhLHTime[iDet]->SetBinContent(iBin,pHit->GetTime());
-	  LOG(DEBUG) << Form("Store hit 0x%08x at x %6.3f, y %6.3f, bin %d, time %f in det Id 0x%08x, #%d",
-			    pHit->GetAddress(),hitpos_local[0],hitpos_local[1], iBin, pHit->GetTime(), iDetId, iDet)
-	 	     << FairLogger::endl;
+	   fhLHTime[iDet]->SetBinContent(iBin,pHit->GetTime());
+	   if (NULL != fvLHit[iDet][iBin]) delete fvLHit[iDet][iBin];               // delete outdated CbmTofHit
+	   fvLHit[iDet][iBin]=new CbmTofHit(*pHit); // put onto heap
+	   LOG(DEBUG) << Form("Store hit 0x%08x at x %6.3f, y %6.3f, bin %d, time %f in det Id 0x%08x, #%d",
+			      pHit->GetAddress(),hitpos_local[0],hitpos_local[1], iBin, pHit->GetTime(), iDetId, iDet)
+		      << FairLogger::endl;
 	 }
        }
      } //(fdMemoryTime > 0.) end
