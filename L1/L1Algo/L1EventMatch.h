@@ -12,7 +12,7 @@ using std::map;
 class L1EventMatch
 {
   public:
-    L1EventMatch():fMCEvent(), fNTracks(0) {};
+    L1EventMatch():fMCEvent(), fNTracks(0), fTracks() {};
     bool IsGhost() { return fMCEvent.size() == 0; }
     void Clear();
     void AddTrack(int mcEventId){fMCEvent[mcEventId]++;}

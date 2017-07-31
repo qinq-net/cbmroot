@@ -74,6 +74,15 @@ class L1Algo{
  public:
 //  L1Algo(int nThreads=7):
   L1Algo(int nThreads=1, int TypicalSize=200000):
+    n_g1(),
+    FirstHit(),
+    LastHit(),
+    FirstHitIndex(),
+    LastHitIndex(),
+    Neighbour(),
+    TrackChi2(),
+    vRecoHitsNew(),
+    vTracksNew(),
     NStations(0),    // number of all detector stations
     NMvdStations(0), // number of mvd stations
     fRadThick(),
@@ -86,6 +95,10 @@ class L1Algo{
     CATime(0), // time of trackfinding
     vTracks(20000), // reconstructed tracks
     vRecoHits(200000),// packed hits of reconstructed tracks
+    StsHitsStartIndex(nullptr), 
+    StsHitsStopIndex(nullptr),
+    NHitsIsecAll(0),
+    NTracksIsecAll(0),
     vStsDontUsedHits_A(TypicalSize),
     vStsDontUsedHits_B(TypicalSize),
     vStsDontUsedHits_Buf(TypicalSize),
@@ -104,16 +117,30 @@ class L1Algo{
     vStripToTrackB(TypicalSize),
     //sh (),
     fNThreads(nThreads),
+    isec(0),
+    vStsHitsUnused(),
+    RealIHitP(),
+    RealIHitPBuf(),
+    vStsHitPointsUnused(),
+    RealIHit(nullptr),
+    TimePrecision(0.),
+    fMcDataHit2(),
+    fMcDataHit(),
+    FIRSTCASTATION(),
+    threadNumberToCpuMap(),
     TRACK_CHI2_CUT(10.),
     TRIPLET_CHI2_CUT(5.),
     DOUBLET_CHI2_CUT(5.), 
+    TIME_CUT1(0.),
+    TIME_CUT2(0.),
+    MaxDZ(0.),
 #ifdef DRAW
     draw(0),
 #endif
-    
     Pick_gather(0),
     PickNeighbour(0), // (PickNeighbour < dp/dp_error)  =>  triplets are neighbours
     MaxInvMom(0),     // max considered q/p for tracks 
+    MaxSlope(0),
     targX(0), targY(0), targZ(0),                        // target coor
     targB(),               // field in the target point
     TargetXYInfo(), // target constraint  [cm]
@@ -184,6 +211,9 @@ class L1Algo{
     Neighbour.resize(NTracksIsecAll);
 //     IsNext.resize(NTracksIsecAll);
   }
+  
+  L1Algo(const L1Algo&) = delete;
+  L1Algo operator=(const L1Algo&) = delete;
   
   static const int nTh = 1;
 
@@ -339,7 +369,7 @@ class L1Algo{
 
    /// --- data used during finding iterations
  
-  int isec; // iteration
+   int isec; // iteration
   vector< L1StsHit > *vStsHitsUnused;
   vector< THitI > *RealIHitP;
   vector< THitI > *RealIHitPBuf;

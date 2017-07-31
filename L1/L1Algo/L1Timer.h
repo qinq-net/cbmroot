@@ -43,6 +43,7 @@ class TimerInfo {
 
 class L1CATFIterTimerInfo {
  public:
+  L1CATFIterTimerInfo() : fNameToI(), fTIs() {};
   void Add( string name ) { fNameToI[name] = fTIs.size(); fTIs.push_back(TimerInfo(name)); };
   TimerInfo& operator[]( string name ) { return fTIs[fNameToI[name]]; };
   TimerInfo& operator[]( int i ) { return fTIs[i]; };
@@ -70,7 +71,7 @@ class L1CATFIterTimerInfo {
 
 class L1CATFTimerInfo {
  public:
-  L1CATFTimerInfo(){};
+  L1CATFTimerInfo() : fTIIs(), fTIAll() {};
   void SetNIter( int n ) { fTIIs.resize(n); };
 
   void Add( string name ) {
