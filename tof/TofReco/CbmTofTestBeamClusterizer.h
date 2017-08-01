@@ -144,8 +144,9 @@ class CbmTofTestBeamClusterizer : public FairTask
       inline void SetPs2Ns(Bool_t bval)                 { fbPs2Ns = bval; }
 
       //static Double_t  f1_xboxe(double *x, double *par); // Fit function 
-      virtual void fit_ybox(const char *hname);        // Fit
-      virtual void fit_ybox(TH1 *h, Double_t dy);      // Fit
+      virtual void fit_ybox(const char *hname);                      // Fit
+      virtual void fit_ybox(TH1 *h, Double_t dy);                    // Fit
+      virtual void fit_ybox(TH1 *h, Double_t dy, Double_t* fpar);    // Fit
       virtual void CheckLHMemory();                    // Check consistency of stored last hits
       virtual void CleanLHMemory();                    // Cleanup
       virtual Bool_t AddNextChan(Int_t iSmType, Int_t iSm, Int_t iRpc, Int_t iLastChan, Double_t dLastPosX,  Double_t dLastPosY, Double_t dLastTime, Double_t dLastTot); // needed for time based data  
@@ -291,6 +292,7 @@ class CbmTofTestBeamClusterizer : public FairTask
       std::vector< TH2* > fhSmCluPosition; //[nbSmTypes]
       std::vector< TH2* > fhSmCluTOff; 
       std::vector< TProfile* > fhSmCluSvel; 
+      std::vector< std::vector< TProfile* > > fhSmCluFpar; 
       std::vector< TH1* > fhRpcDTLastHits;         //[nbDet]
       std::vector< TH1* > fhRpcDTLastHits_Tot;     //[nbDet]
       std::vector< TH1* > fhRpcDTLastHits_CluSize; //[nbDet]
