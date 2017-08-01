@@ -115,9 +115,9 @@ class L1Grid {
   unsigned short Nz()       const { return fNz; }
   unsigned short Nt()       const { return fNt; }
 
-  THitI FirstHitInBin(int i) const  {
-    return fFirstHitInBin[i];
-   //  return fNumberHitsInBin[i];
+  THitI FirstHitInBin(unsigned int i) const  {
+    if (i<(fN+1)) return fFirstHitInBin[i];
+    else return fFirstHitInBin[fN+1];
   }
 
     

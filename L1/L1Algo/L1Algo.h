@@ -93,8 +93,8 @@ class L1Algo{
     vSFlag(0),  // information of hits station & using hits in tracks(),
     vSFlagB(0),
     CATime(0), // time of trackfinding
-    vTracks(20000), // reconstructed tracks
-    vRecoHits(200000),// packed hits of reconstructed tracks
+    vTracks(40000), // reconstructed tracks
+    vRecoHits(400000),// packed hits of reconstructed tracks
     StsHitsStartIndex(nullptr), 
     StsHitsStopIndex(nullptr),
     NHitsIsecAll(0),
@@ -156,8 +156,8 @@ class L1Algo{
     for (int i=0; i<fNThreads; i++)
     {     
 
-      vTracks_local[i].resize(50000);
-      vRecoHits_local[i].resize(200000);
+      vTracks_local[i].resize(100000);
+      vRecoHits_local[i].resize(400000);
       
       
       
@@ -178,7 +178,7 @@ class L1Algo{
       fz_pos3[i].reserve(MaxPortionTriplets/fvecLen);
       fTimeR[i].reserve(MaxPortionTriplets/fvecLen);
       
-      for (int j=0; j<12; j++) TripletsLocal1[j][i].resize(200000);
+      for (int j=0; j<12; j++) TripletsLocal1[j][i].resize(400000);
     }
     
     for (int i=0; i<MaxNStations; i++) vGridTime[i].AllocateMemory(fNThreads);
@@ -396,8 +396,8 @@ class L1Algo{
          vector< float >  fMcDataHit2;
     vector< float >  fMcDataHit;
 
-  Tindex NHits_l[MaxNStations];
-  Tindex NHits_l_P[MaxNStations];
+//   Tindex NHits_l[MaxNStations];
+//   Tindex NHits_l_P[MaxNStations];
     /// ----- Output data ----- 
     
   friend class CbmL1;

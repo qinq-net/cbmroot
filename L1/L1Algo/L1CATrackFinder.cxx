@@ -830,7 +830,7 @@ inline void L1Algo::f4(  // input
                        Tindex ip_cur
                        )
 {
-  int ihitl_priv = -1;
+  THitI ihitl_priv = 0;
   
   unsigned int Station = 0;
   unsigned int Thread = 0;
@@ -872,7 +872,7 @@ inline void L1Algo::f4(  // input
     
     Location = Triplet+Station*100000000 +Thread*1000000;
     
-    if (ihitl_priv==-1||ihitl_priv!=hitsl_3[i3]) {TripForHit[0][hitsl_3[i3] + StsHitsUnusedStartIndex[istal]] = Location;
+    if (ihitl_priv==0||ihitl_priv!=hitsl_3[i3]) {TripForHit[0][hitsl_3[i3] + StsHitsUnusedStartIndex[istal]] = Location;
 
     TripForHit[1][hitsl_3[i3] + StsHitsUnusedStartIndex[istal]] = Location;      
     }
@@ -958,9 +958,9 @@ if (isec!=TRACKS_FROM_TRIPLETS_ITERATION)
       
       
       
-      int Station = Location/100000000;
-      int Thread = (Location -Station*100000000)/1000000;
-      int Triplet = (Location- Station*100000000-Thread*1000000);
+      Station = Location/100000000;
+      Thread = (Location -Station*100000000)/1000000;
+      Triplet = (Location- Station*100000000-Thread*1000000);
       
       L1Triplet &curNeighbour = TripletsLocal1[Station][Thread][Triplet];
 
@@ -1648,7 +1648,7 @@ void L1Algo::CATrackFinder()
     }
     
     
-        unsigned int nPortions = 0; /// number of portions
+      
     {   
    /// possible left hits of triplets are splited in portions of 16 (4 SIMDs) to use memory faster
       portionStopIndex[NStations-1] = 0;
@@ -1672,7 +1672,7 @@ void L1Algo::CATrackFinder()
         ip++;
         portionStopIndex[istal] = ip;
       }// lstations
-      nPortions = ip;
+     
       
 #ifdef COUNTERS
       stat_nSinglets[isec] += nSinglets;
