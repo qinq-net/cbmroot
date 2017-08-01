@@ -1,23 +1,21 @@
 #include "CbmRichMirrorSortingCorrection.h"
-#include "CbmRichMirror.h"
+#include "alignment/CbmRichMirror.h"
 #include "FairRootManager.h"
 #include "FairLogger.h"
 
 	// ----- PART 1 ----- //
 #include "TClonesArray.h"
 #include "CbmGlobalTrack.h"
-#include "CbmRichRing.h"
-#include "CbmMCTrack.h"
 #include "CbmRichConverter.h"
 #include "CbmRichRingFitterCOP.h"
 #include "CbmRichRingFitterEllipseTau.h"
 #include "TVector3.h"
 #include <vector>
 #include "TCanvas.h"
-#include "TF1.h"
 #include "TLegend.h"
 #include "TH2D.h"
 #include "CbmUtils.h"
+#include "CbmRichUtil.h"
 
 	// ----- PART 2 ----- //
 #include "TGeoManager.h"
@@ -27,11 +25,15 @@
 class TGeoNode;
 class TGeoMatrix;
 #include "CbmTrackMatchNew.h"
-#include "TGeoNavigator.h"
-#include "TStyle.h"
 #include "string.h"
+#include "TStyle.h"
 #include <fstream>
 #include <iostream>
+#include <sstream>
+#include "CbmDrawHist.h"
+#include <iostream>
+#include "TMCProcess.h"
+
 using namespace std;
 
 
@@ -187,6 +189,19 @@ void CbmRichMirrorSortingCorrection::InitHistoMap()
 		}
 	}
 
+	fHM = new CbmHistManager();
+	Double_t xMin = -120., xMax = 120., nBinsX1 = 60, yMax = 200., range = 3.;
+	stringstream ss;
+
+	for (Int_t k=1; k<3; k++) {
+		ss << k;
+		fHM->Create3<TH3D>("fhRingTrackDistVsXYTruematch"+ss.str(), "fhRingTrackDistVsXYTruematch"+ss.str()+";X [cm];Y [cm];Ring-track distance [cm]", 60, xMin, xMax, 104, 110., 200., 100, 0., 5.);
+		fHM->Create2<TH2D>("fhRingTrackDistVsXTruematch"+ss.str(), "fhRingTrackDistVsXTruematch"+ss.str()+";X [cm];Ring-track distance [cm]", nBinsX1, xMin, xMax, 100, 0., 5.);
+		fHM->Create2<TH2D>("fhRingTrackDistVsYTruematch"+ss.str(), "fhRingTrackDistVsYTruematch"+ss.str()+";Abs(Y) [cm];Ring-track distance [cm]", 34, 110., yMax, 100, 0., 5.);
+		fHM->Create3<TH3D>("fhRingTrackDistDiffXRingVsXYTruematch"+ss.str(), "fhRingTrackDistDiffXRingVsXYTruematch"+ss.str()+";X [cm];Y [cm];X Ring-track distance [cm]", 60, xMin, xMax, 104, 110, 200, 200, -range, range);
+		fHM->Create3<TH3D>("fhRingTrackDistDiffYRingVsXYTruematch"+ss.str(), "fhRingTrackDistDiffYRingVsXYTruematch"+ss.str()+";X [cm];Y [cm];Y Ring-track distance [cm]", 60, xMin, xMax, 104, 110, 200, 200, -range, range);
+	}
+
 /*
 //	Double_t upperScaleLimit = 6., bin = 400.;
 	fDiffHistoMap["DiffCorrX_mirror_tile_2_8"] = new TH1D("fhDifferenceCorrectedX_mirror_tile_2_8", ";Difference in X (fitted center - extrapolated track);A.U.", bin, 0., upperScaleLimit);
@@ -299,6 +314,7 @@ void CbmRichMirrorSortingCorrection::Exec(Option_t* Option)
 			}
 			CbmMCTrack* mcTrack = (CbmMCTrack*) fMCTracks->At(mcRichTrackId);
 			if (!mcTrack) continue;
+			CbmMCTrack* mcTrack2 = (CbmMCTrack*) fMCTracks->At(mcStsTrackId);
 
 			CbmRichRingLight ringL;
 			CbmRichConverter::CopyHitsToRingLight(ring, &ringL);
@@ -375,6 +391,7 @@ void CbmRichMirrorSortingCorrection::Exec(Option_t* Option)
 						CbmRichGeoManager::GetInstance().RotatePoint(&inPosIdeal, &outPosIdeal);
 						cout << "New mirror points coordinates = {" << outPosIdeal.x() << ", " << outPosIdeal.y() << ", " << outPosIdeal.z() << "}" << endl << endl;
 
+						cout << "pTrack [X,Y]: " << pTrack->GetX() << ", " << pTrack->GetY() << endl;
 						if ( fCorrectionMatching == "standard" ) {
 							pTrack->SetX(outPosUnCorr.x());
 							pTrack->SetY(outPosUnCorr.y());
@@ -389,6 +406,10 @@ void CbmRichMirrorSortingCorrection::Exec(Option_t* Option)
 						}
 
 						FillHistProjection(outPosIdeal, outPosUnCorr, outPos, ringL, normalPMT, constantePMT, str3);
+
+						cout << "pTrack [X,Y]: " << pTrack->GetX() << ", " << pTrack->GetY() << endl;
+						FillRingTrackDistanceCorr(ring, pTrack, mcTrack2);
+						DrawRingTrackDistance(2);
 					}
 				}
 				else { cout << "No mirror points registered." << endl; }
@@ -398,6 +419,9 @@ void CbmRichMirrorSortingCorrection::Exec(Option_t* Option)
 		}
 	}
 	else { cout << "CbmRichMirrorSortingCorrection::Exec No rings in event were found." << endl; }
+
+	FillRingTrackDistance();
+	DrawRingTrackDistance(1);
 }
 
 void CbmRichMirrorSortingCorrection::GetPmtNormal(Int_t NofPMTPoints, vector<Double_t> &normalPMT, Double_t &normalCste)
@@ -484,7 +508,8 @@ void CbmRichMirrorSortingCorrection::ComputeR2(vector<Double_t> &ptR2Center, vec
 		// Use the correction information from text file, to the tile sphere center:
 		// Reading misalignment information from correction_param.txt text file.
 		Int_t lineCounter=1, lineIndex=0;
-		TString str = fOutputDir + "correction_param_array_" + fStudyName + ".txt";
+		//TString str = fOutputDir + "correction_param_array_" + fStudyName + ".txt";
+		TString str = fOutputDir + "/correction_table/correction_param_array.txt";
 		string fileLine = "", strMisX = "", strMisY = "";
 		Double_t misX=0., misY=0.;
 		ifstream corrFile;
@@ -517,10 +542,10 @@ void CbmRichMirrorSortingCorrection::ComputeR2(vector<Double_t> &ptR2Center, vec
 			}
 //			getline(corrFile, strMisX);
 			corrFile >> misY;
-			//cout << "number at line: " << lineCounter+1 << " = " << misX << "." << endl;
+			//cout << "number at line: " << lineCounter+2 << " = " << misX << "." << endl;
 //			getline(corrFile, strMisY);
 			corrFile >> misX;
-			//cout << "number at line: " << lineCounter+2 << " = " << misY << "." << endl;
+			//cout << "number at line: " << lineCounter+3 << " = " << misY << "." << endl;
 
 			/*std::istringstream i1(strMisX);
 			i1 >> misX;
@@ -965,11 +990,110 @@ void CbmRichMirrorSortingCorrection::DrawHistProjection()
 */
 }
 
+void CbmRichMirrorSortingCorrection::FillRingTrackDistance()
+{
+	for(Int_t iTrack = 0; iTrack < fGlobalTracks->GetEntriesFast(); iTrack++) {
+		const CbmGlobalTrack* globalTrack = static_cast<const CbmGlobalTrack*>(fGlobalTracks->At(iTrack));
+        Int_t stsId = globalTrack->GetStsTrackIndex();
+        Int_t richId = globalTrack->GetRichRingIndex();
+        if (stsId < 0 || richId < 0) continue;
+        const CbmTrackMatchNew* stsTrackMatch = static_cast<const CbmTrackMatchNew*>(fStsTrackMatches->At(stsId));
+        if (stsTrackMatch == NULL) continue;
+        int stsMcTrackId = stsTrackMatch->GetMatchedLink().GetIndex();
+		const CbmTrackMatchNew* richRingMatch = static_cast<const CbmTrackMatchNew*>(fRichRingMatches->At(richId));
+		if (richRingMatch == NULL) continue;
+		int richMcTrackId = richRingMatch->GetMatchedLink().GetIndex();
+		const CbmRichRing* ring = static_cast<const CbmRichRing*>(fRichRings->At(richId));
+		if (NULL == ring) continue;
+		Double_t rtDistance = CbmRichUtil::GetRingTrackDistance(iTrack);
+		Double_t rtDistanceX = CbmRichUtil::GetRingTrackDistanceX(iTrack);
+		Double_t rtDistanceY = CbmRichUtil::GetRingTrackDistanceY(iTrack);
+		Double_t xc = ring->GetCenterX();
+		Double_t yc = ring->GetCenterY();
+
+        CbmMCTrack* mctrack = static_cast<CbmMCTrack*>(fMCTracks->At(stsMcTrackId));
+        if (mctrack == NULL) continue;
+		bool isEl = IsMcPrimaryElectron(mctrack);
+
+		if (isEl && stsMcTrackId == richMcTrackId) {
+			Int_t k = 1;
+			stringstream ss;
+			ss << k;
+			fHM->H3("fhRingTrackDistVsXYTruematch"+ss.str())->Fill(xc, yc, rtDistance);
+			fHM->H2("fhRingTrackDistVsXTruematch"+ss.str())->Fill(xc, rtDistance);
+			fHM->H2("fhRingTrackDistVsYTruematch"+ss.str())->Fill(abs(yc), rtDistance);
+			fHM->H3("fhRingTrackDistDiffXRingVsXYTruematch"+ss.str())->Fill(xc, yc, rtDistanceX);
+			fHM->H3("fhRingTrackDistDiffYRingVsXYTruematch"+ss.str())->Fill(xc, yc, rtDistanceY);
+		}
+	}
+}
+
+void CbmRichMirrorSortingCorrection::FillRingTrackDistanceCorr(
+															const CbmRichRing* richRing,
+															const FairTrackParam* pTrack,
+															const CbmMCTrack* mcTrack)
+{
+	Double_t xRing = richRing->GetCenterX();
+	Double_t yRing = richRing->GetCenterY();
+	Double_t dx =  richRing->GetCenterX() - pTrack->GetX();
+	Double_t dy = richRing->GetCenterY() - pTrack->GetY();
+	Double_t dist = TMath::Sqrt( dx * dx + dy * dy );
+
+	bool isEl = IsMcPrimaryElectron(mcTrack);
+	if (isEl) {
+		Int_t k = 2;
+		fHM->H3("fhRingTrackDistVsXYTruematch"+k)->Fill(xRing, yRing, dist);
+		fHM->H2("fhRingTrackDistVsXTruematch"+k)->Fill(xRing, dist);
+		fHM->H2("fhRingTrackDistVsYTruematch"+k)->Fill(abs(yRing), dist);
+		fHM->H3("fhRingTrackDistDiffXRingVsXYTruematch"+k)->Fill(xRing, yRing, dist);
+		fHM->H3("fhRingTrackDistDiffYRingVsXYTruematch"+k)->Fill(xRing, yRing, dist);
+	}
+}
+
+bool CbmRichMirrorSortingCorrection::IsMcPrimaryElectron(
+														 const CbmMCTrack* mctrack)
+{
+	if (mctrack == NULL) return false;
+	int pdg = TMath::Abs(mctrack->GetPdgCode());
+	if (mctrack->GetGeantProcessId() == kPPrimary && pdg == 11) return true;
+	return false;
+}
+
+void CbmRichMirrorSortingCorrection::DrawRingTrackDistance(
+														   Int_t k)
+{
+	stringstream ss;
+	ss << k;
+    {
+    	TCanvas* c = fHM->CreateCanvas("fh_ring_track_distance_vs_xy_truematch"+k, "fh_ring_track_distance_vs_xy_truematch"+k, 1800, 600);
+    	c->Divide(3, 1);
+    	c->cd(1);
+    	DrawH3Profile(fHM->H3("fhRingTrackDistVsXYTruematch"+ss.str()), true, false, 0., 2.);
+    	c->cd(2);
+    	DrawH2WithProfile(fHM->H2("fhRingTrackDistVsXTruematch"+ss.str()), false, true);
+    	fHM->H2("fhRingTrackDistVsXTruematch"+ss.str())->GetYaxis()->SetRangeUser(0., 1.5);
+    	c->cd(3);
+    	DrawH2WithProfile(fHM->H2("fhRingTrackDistVsYTruematch"+ss.str()), false, true);
+    	fHM->H2("fhRingTrackDistVsYTruematch"+ss.str())->GetYaxis()->SetRangeUser(0., 1.5);
+    }
+
+    Double_t range = 2.5;
+    {
+    	TCanvas* c = fHM->CreateCanvas("fh_ring_track_distance_diff_x_y_ring_vs_xy_truematch"+k, "fh_ring_track_distance_diff_x_y_ring_vs_xy_truematch"+k, 1800, 600);
+    	c->Divide(2, 1);
+    	c->cd(1);
+    	DrawH3Profile(fHM->H3("fhRingTrackDistDiffXRingVsXYTruematch"+ss.str()), true, false, -range, range);
+    	c->cd(2);
+    	DrawH3Profile(fHM->H3("fhRingTrackDistDiffYRingVsXYTruematch"+ss.str()), true, false, -range, range);
+    }
+}
+
 void CbmRichMirrorSortingCorrection::Finish()
 {
 	DrawHistProjection();
 
-	TString s = fOutputDir + "track_ring_distances_" + fStudyName + ".txt";
+//	TString s = fOutputDir + "track_ring_distances_" + fStudyName + ".txt";
+	TString s = fOutputDir + "/correction_table/track_ring_distances.txt";
 	ofstream corrFile;
 	corrFile.open(s, std::ofstream::trunc);
 	if (corrFile.is_open()) {

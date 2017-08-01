@@ -4,7 +4,7 @@
 #include "FairTask.h"
 #include "CbmRichRingFitterCOP.h"
 #include "CbmRichRingFitterEllipseTau.h"
-#include "CbmRichMirror.h"
+#include "alignment/CbmRichMirror.h"
 #include "TGeoNavigator.h"
 
 #include <vector>

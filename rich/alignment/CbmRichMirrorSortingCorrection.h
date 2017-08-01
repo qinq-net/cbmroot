@@ -8,6 +8,9 @@
 #include "CbmRichRingLight.h"
 #include "TVector3.h"
 #include "CbmHistManager.h"
+#include "FairTrackParam.h"
+#include "CbmMCTrack.h"
+#include "CbmRichRing.h"
 
 using namespace std;
 
@@ -54,6 +57,21 @@ public:
     void DrawHistProjection();
 
     void DrawMap(Int_t strX, Int_t strY);
+
+    void FillRingTrackDistance();
+
+    bool IsMcPrimaryElectron(
+    						 const CbmMCTrack* mctrack);
+
+    void DrawRingTrackDistance(
+    						   Int_t k);
+
+    void FillRingTrackDistanceCorr(
+    							   const CbmRichRing* richRing,
+								   const FairTrackParam* pTrack,
+								   const CbmMCTrack* mcTrack);
+
+    void DrawRingTrackDistanceCorr();
 
     void setOutputDir(TString s) { fOutputDir = s; }
 
