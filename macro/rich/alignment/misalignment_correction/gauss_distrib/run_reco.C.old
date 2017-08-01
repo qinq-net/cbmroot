@@ -26,7 +26,7 @@ Int_t    fieldSymType=0;
 TString defaultInputFile="";
 
 
-void run_reco_alignment(Int_t nEvents = 100000)
+void run_reco(Int_t nEvents = 10)
 {
     TTree::SetMaxTreeSize(90000000000);
 
@@ -41,21 +41,8 @@ void run_reco_alignment(Int_t nEvents = 100000)
 
     // -----   In- and output file names   ------------------------------------
     TString setupName = "", outDir = "";
-//    setupName = "setup_align";
-    setupName = "setup_v17a_1e_3mrad_minusX";
-//    setupName = "setup_v17a_1e_3mrad_plusX";
-//    setupName = "setup_v17a_1e_3mrad_minusY";
-//    setupName = "setup_v17a_1e_3mrad_plusY";
-
-//    outDir = "/data/Sim_Outputs/Correction_test/old_code/";
-    outDir = "/data/Sim_Outputs/Correction_test/minusX/with_corr/";
-//    outDir = "/data/Sim_Outputs/w_Brems/minusY/";
-//    outDir = "/data/Sim_Outputs/Event_Display/plusY/";
-//    outDir = "/data/Sim_Outputs/Position/Aligned/";
-//    outDir = "/data/Sim_Outputs/Position/minusX/";
-//    outDir = "/data/Sim_Outputs/Position/plusX/";
-//    outDir = "/data/Sim_Outputs/Position/minusY/";
-//    outDir = "/data/Sim_Outputs/Position/plusY/";
+    setupName = "setup_misalign_gauss";
+    outDir = "/data/Sim_Outputs/Gauss/";
 
     if (script == "yes") {
 	setupName = TString(gSystem->Getenv("SETUP_NAME"));
@@ -69,8 +56,7 @@ void run_reco_alignment(Int_t nEvents = 100000)
     TString resultDir = outDir;
 
     TString geoSetupFile = "";
-    geoSetupFile = "/data/ROOT6/trunk/macro/rich/alignment/misalignment_correction/single_tile/geosetup/" + setupName + ".C";
-//    geoSetupFile = "/data/ROOT6/trunk/macro/rich/alignment/misalignment_correction/single_tile/geosetup/setup_align.C";
+    geoSetupFile = "/data/ROOT6/trunk/macro/rich/alignment/misalignment_correction/gauss_distrib/geosetup/" + setupName + ".C";
     // ------------------------------------------------------------------------
 
 
@@ -238,7 +224,7 @@ void run_reco_alignment(Int_t nEvents = 100000)
     CbmRichReconstruction* richReco = new CbmRichReconstruction();
     richReco->SetRunExtrapolation(true);
     richReco->SetRunProjection(true);
-    richReco->SetTxtFile(outDir.Data());
+    richReco->SetMirrorMisalignmentCorrectionParameterFile(outDir.Data());
     richReco->SetRunTrackAssign(true);
     //	richReco->SetFinderName("ideal");     // To do matching Sts-Ring
     //	richReco->SetProjectionName("analytical2"); // Set to analytical2 to test my class.
@@ -273,23 +259,16 @@ void run_reco_alignment(Int_t nEvents = 100000)
     richCat.push_back("ElectronReference");
     trackingQa->SetTrackCategories(trackCat);
     trackingQa->SetRingCategories(richCat);
-//    run->AddTask(trackingQa);
+    run->AddTask(trackingQa);
 
     // RICH reco QA
     CbmRichRecoQa* richRecoQa = new CbmRichRecoQa();
     richRecoQa->SetOutputDir(std::string(resultDir));
-//    run->AddTask(richRecoQa);
+    run->AddTask(richRecoQa);
 
     CbmRichGeoTest* geoTest = new CbmRichGeoTest();
     geoTest->SetOutputDir(std::string(resultDir));
 //    run->AddTask(geoTest);
-
-    CbmRichMirrorSortingAlignment* mirror = new CbmRichMirrorSortingAlignment();
-    mirror->setOutputDir(outDir + "/corr_params/");
-    mirror->setThreshold(700);
-//    TString studyName = "Full_Correction";
-//    mirror->setStudyName(studyName);
-    run->AddTask(mirror);
 
     CbmLitFitQa* fitQa = new CbmLitFitQa();
     fitQa->SetMvdMinNofHits(0);
@@ -328,7 +307,6 @@ void run_reco_alignment(Int_t nEvents = 100000)
     run->Init();
     cout << "Starting run" << endl;
     run->Run(0,nEvents);
-//    run->Run(182100,182200);
     // ------------------------------------------------------------------------
 
 

@@ -26,7 +26,7 @@ Int_t    fieldSymType=0;
 TString defaultInputFile="";
 
 
-void run_reco_alignment(Int_t nEvents = 100000)
+void run_reco_alignment(Int_t nEvents = 90000)
 {
     TTree::SetMaxTreeSize(90000000000);
 
@@ -36,26 +36,20 @@ void run_reco_alignment(Int_t nEvents = 100000)
     logger->SetLogVerbosityLevel("LOW");
     gRandom->SetSeed(10);
 
+    // -----   Environment   --------------------------------------------------
+    TString srcDir = gSystem->Getenv("VMCWORKDIR");	// top source directory
+    TString myName = "run_reco_alignment";		// macro's name for screen output
+    // ------------------------------------------------------------------------
+
     TString script = TString(gSystem->Getenv("SCRIPT"));
     TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters/");
 
     // -----   In- and output file names   ------------------------------------
     TString setupName = "", outDir = "";
-//    setupName = "setup_align";
-    setupName = "setup_v17a_1e_3mrad_minusX";
-//    setupName = "setup_v17a_1e_3mrad_plusX";
-//    setupName = "setup_v17a_1e_3mrad_minusY";
-//    setupName = "setup_v17a_1e_3mrad_plusY";
-
-//    outDir = "/data/Sim_Outputs/Correction_test/old_code/";
-    outDir = "/data/Sim_Outputs/Correction_test/minusX/with_corr/";
-//    outDir = "/data/Sim_Outputs/w_Brems/minusY/";
-//    outDir = "/data/Sim_Outputs/Event_Display/plusY/";
-//    outDir = "/data/Sim_Outputs/Position/Aligned/";
-//    outDir = "/data/Sim_Outputs/Position/minusX/";
-//    outDir = "/data/Sim_Outputs/Position/plusX/";
-//    outDir = "/data/Sim_Outputs/Position/minusY/";
-//    outDir = "/data/Sim_Outputs/Position/plusY/";
+    setupName = "setup_misalign_gauss_sigma_1";
+    outDir = "/data/Sim_Outputs/Gauss_sigma_1/";
+    setupName = "setup_align";
+    outDir = "/data/Sim_Outputs/Test/";
 
     if (script == "yes") {
 	setupName = TString(gSystem->Getenv("SETUP_NAME"));
@@ -69,8 +63,7 @@ void run_reco_alignment(Int_t nEvents = 100000)
     TString resultDir = outDir;
 
     TString geoSetupFile = "";
-    geoSetupFile = "/data/ROOT6/trunk/macro/rich/alignment/misalignment_correction/single_tile/geosetup/" + setupName + ".C";
-//    geoSetupFile = "/data/ROOT6/trunk/macro/rich/alignment/misalignment_correction/single_tile/geosetup/setup_align.C";
+    geoSetupFile = "/data/ROOT6/trunk/macro/rich/alignment/misalignment_correction/gauss_distrib/geosetup/" + setupName + ".C";
     // ------------------------------------------------------------------------
 
 
@@ -94,22 +87,39 @@ void run_reco_alignment(Int_t nEvents = 100000)
     const char* setupName2 = setupName;
     TString setupFunct = "";
     setupFunct = setupFunct + setupName2 + "()";
-    std::cout << "setupFile: " << geoSetupFile << " and setupFunct: " << setupFunct << std::endl;
+    std::cout << "-I- setupFile: " << geoSetupFile << std::endl
+	<< "-I- setupFunct: " << setupFunct << std::endl;
     gROOT->LoadMacro(geoSetupFile);
     gInterpreter->ProcessLine(setupFunct);
     // ------------------------------------------------------------------------
 
 
-    // -----   Digi parameters   ----------------------------------------------
-    TList *parFileList = new TList();
+  // -----   Parameter files as input to the runtime database   -------------
+  std::cout << std::endl;
+  std::cout << "-I- " << myName << ": Defining parameter files " << std::endl;
+  TList *parFileList = new TList();
+  TString geoTag;
 
-    TObjString trdDigiFile(parDir + trdDigi);
-    parFileList->Add(&trdDigiFile);
-    TObjString tofDigiFile(parDir + tofDigi);
-    parFileList->Add(&tofDigiFile);
-    TObjString tofDigiBdfFile(parDir + tofDigiBdf);
-    parFileList->Add(&tofDigiBdfFile);
-    // ------------------------------------------------------------------------
+  // - TRD digitisation parameters
+  if ( CbmSetup::Instance()->GetGeoTag(kTrd, geoTag) ) {
+        TObjString* trdFile = new TObjString(srcDir + "/parameters/trd/trd_" + geoTag + ".digi.par");
+        parFileList->Add(trdFile);
+    std::cout << "-I- " << myName << ": Using parameter file "
+                      << trdFile->GetString() << std::endl;
+  }
+
+  // - TOF digitisation parameters
+  if ( CbmSetup::Instance()->GetGeoTag(kTof, geoTag) ) {
+        TObjString* tofFile = new TObjString(srcDir + "/parameters/tof/tof_" + geoTag + ".digi.par");
+        parFileList->Add(tofFile);
+    std::cout << "-I- " << myName << ": Using parameter file "
+                      << tofFile->GetString() << std::endl;
+        TObjString* tofBdfFile = new TObjString(srcDir + "/parameters/tof/tof_" + geoTag + ".digibdf.par");
+        parFileList->Add(tofBdfFile);
+    std::cout << "-I- " << myName << ": Using parameter file "
+                      << tofBdfFile->GetString() << std::endl;
+  }
+  // ------------------------------------------------------------------------
 
 
     // ----    Debug option   -------------------------------------------------
@@ -163,10 +173,12 @@ void run_reco_alignment(Int_t nEvents = 100000)
     Bool_t useDiffusion     = kFALSE;    // Deactivate diffusion
     Bool_t useCrossTalk     = kFALSE;    // Deactivate cross talk
 
-    CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
-    stsDigi->SetProcesses(eLossModel, useLorentzShift, useDiffusion, useCrossTalk);
-    stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution, deadTime, noise);
+//    CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
+    CbmStsDigitize* stsDigi = new CbmStsDigitize();
+//    stsDigi->SetProcesses(eLossModel, useLorentzShift, useDiffusion, useCrossTalk);
+//    stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution, deadTime, noise);
     run->AddTask(stsDigi);
+    std::cout << "-I- digitize: Added task " << stsDigi->GetName() << std::endl;
     // -------------------------------------------------------------------------
 
 
@@ -175,13 +187,16 @@ void run_reco_alignment(Int_t nEvents = 100000)
     // =========================================================================
 
     // -----   STS Cluster Finder   --------------------------------------------
-    FairTask* stsClusterFinder = new CbmStsFindClustersEvents();
+    CbmStsFindClusters* stsClusterFinder = new CbmStsFindClusters();
+    stsClusterFinder->UseEventMode();
     run->AddTask(stsClusterFinder);
+    std::cout << "-I- : Added task " << stsClusterFinder->GetName() << std::endl;
     // -------------------------------------------------------------------------
 
     // -----   STS hit finder   ------------------------------------------------
     FairTask* stsFindHits = new CbmStsFindHitsEvents();
     run->AddTask(stsFindHits);
+    std::cout << "-I- : Added task " << stsFindHits->GetName() << std::endl;
     // -------------------------------------------------------------------------
 
     // ---  STS track finding   ------------------------------------------------
@@ -219,6 +234,7 @@ void run_reco_alignment(Int_t nEvents = 100000)
     finder->SetTrackingType("branch");
     finder->SetMergerType("nearest_hit");
     run->AddTask(finder);
+    std::cout << "-I- : Added task " << finder->GetName() << std::endl;
 
     // ===                      End of global tracking                       ===
     // =========================================================================
@@ -231,19 +247,22 @@ void run_reco_alignment(Int_t nEvents = 100000)
     CbmRichDigitizer* richDigitizer = new CbmRichDigitizer();
     //richDigitizer->SetNofNoiseHits(0);
     run->AddTask(richDigitizer);
+    std::cout << "-I- digitize: Added task " << richDigitizer->GetName() << std::endl;
 
-    CbmRichHitProducer* richHitProd	= new CbmRichHitProducer();
+    CbmRichHitProducer* richHitProd = new CbmRichHitProducer();
     run->AddTask(richHitProd);
+    std::cout << "-I- hitProducer: Added task " << richHitProd->GetName() << std::endl;
 
     CbmRichReconstruction* richReco = new CbmRichReconstruction();
     richReco->SetRunExtrapolation(true);
     richReco->SetRunProjection(true);
-    richReco->SetTxtFile(outDir.Data());
+    richReco->SetMirrorMisalignmentCorrectionParameterFile("");
     richReco->SetRunTrackAssign(true);
     //	richReco->SetFinderName("ideal");     // To do matching Sts-Ring
     //	richReco->SetProjectionName("analytical2"); // Set to analytical2 to test my class.
     //richReco->SetFitterName("circle_cop");;
     run->AddTask(richReco);
+    std::cout << "-I- : Added task " << richReco->GetName() << std::endl;
 
     CbmMatchRecoToMC* matchRecoToMc = new CbmMatchRecoToMC();
     run->AddTask(matchRecoToMc);
@@ -285,50 +304,45 @@ void run_reco_alignment(Int_t nEvents = 100000)
 //    run->AddTask(geoTest);
 
     CbmRichMirrorSortingAlignment* mirror = new CbmRichMirrorSortingAlignment();
-    mirror->setOutputDir(outDir + "/corr_params/");
-    mirror->setThreshold(700);
+    mirror->setOutputDir(outDir.Data());
+    mirror->setThreshold(200);
 //    TString studyName = "Full_Correction";
 //    mirror->setStudyName(studyName);
     run->AddTask(mirror);
-
-    CbmLitFitQa* fitQa = new CbmLitFitQa();
-    fitQa->SetMvdMinNofHits(0);
-    fitQa->SetStsMinNofHits(4);
-    fitQa->SetMuchMinNofHits(10);
-    fitQa->SetTrdMinNofHits(minNofPointsTrd);
-    fitQa->SetOutputDir(std::string(resultDir));
-    //run->AddTask(fitQa);
-
-    CbmLitClusteringQa* clusteringQa = new CbmLitClusteringQa();
-    clusteringQa->SetOutputDir(std::string(resultDir));
-    //run->AddTask(clusteringQa);
-
-    CbmLitTofQa* tofQa = new CbmLitTofQa();
-    tofQa->SetOutputDir(std::string(resultDir));
-    //run->AddTask(tofQa);
+    std::cout << "-I- MirrorSortingAlignment: Added task " << std::endl;
 
     // ===                 End of RICH local reconstruction                  ===
     // =========================================================================
 
 
     // -----  Parameter database   --------------------------------------------
+    std::cout << std::endl;
+    std::cout << "-I- " << myName << ": Set runtime DB" << std::endl;
     FairRuntimeDb* rtdb = run->GetRuntimeDb();
     FairParRootFileIo* parIo1 = new FairParRootFileIo();
     FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
-    parIo1->open(parFile.Data());
-    parIo2->open(parFileList, "in");
+    parIo1->open(parFile.Data(), "UPDATE");
     rtdb->setFirstInput(parIo1);
-    rtdb->setSecondInput(parIo2);
-    rtdb->setOutput(parIo1);
-    rtdb->saveOutput();
+    if ( ! parFileList->IsEmpty() ) {
+        parIo2->open(parFileList, "in");
+        rtdb->setSecondInput(parIo2);
+    }
     // ------------------------------------------------------------------------
 
 
     // -----   Intialize and run   --------------------------------------------
+    std::cout << std::endl;
+    std::cout << "-I- " << myName << ": Initialise run" << std::endl;
     run->Init();
-    cout << "Starting run" << endl;
-    run->Run(0,nEvents);
-//    run->Run(182100,182200);
+
+    rtdb->setOutput(parIo1);
+    rtdb->saveOutput();
+    rtdb->print();
+
+    std::cout << std::endl << std::endl;
+    std::cout << "-I- " << myName << ": Starting run" << std::endl;
+//    run->Run(0,nEvents);
+    run->Run(0,97400);
     // ------------------------------------------------------------------------
 
 
@@ -336,15 +350,12 @@ void run_reco_alignment(Int_t nEvents = 100000)
     timer.Stop();
     Double_t rtime = timer.RealTime();
     Double_t ctime = timer.CpuTime();
-    cout << endl << endl;
-    cout << "Macro finished successfully." << endl;
-    cout << "Output file is "    << recoFile << endl;
-    cout << "Parameter file is " << parFile << endl;
-    cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << endl;
-    cout << endl;
-    // ------------------------------------------------------------------------
-
-
-    cout << " Test passed" << endl;
-    cout << " All ok " << endl;
+    std::cout << std::endl << std::endl;
+    std::cout << "Macro finished successfully." << std::endl;
+    std::cout << "Output file is " << recoFile << std::endl;
+    std::cout << "Parameter file is " << parFile << std::endl;
+    std::cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << std::endl;
+    std::cout << std::endl;
+    std::cout << " Test passed" << std::endl;
+    std::cout << " All ok " << std::endl;
 }

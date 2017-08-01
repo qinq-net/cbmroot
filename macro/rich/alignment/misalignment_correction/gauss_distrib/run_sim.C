@@ -2,40 +2,28 @@ static TString  fieldMap;
 static Double_t fieldZ;
 static Double_t fieldScale;
 
-void run_sim(Int_t nEvents = 10)
+#include <iostream>
+using namespace std;
+
+void run_sim(Int_t nEvents = 500)
 {
     TTree::SetMaxTreeSize(90000000000);
     Int_t iVerbose = 0;
 
     TString script = TString(gSystem->Getenv("SCRIPT"));
-	cout << "script: " << script << endl;
+    cout << "script: " << script << endl;
 
     // -----   In- and output file names   ------------------------------------
     TString setupName = "", outDir = "";
-    setupName = "setup_misalign_v17a_pmt_tilt";
-//    setupName = "setup_align";
-//    setupName = "setup_v17a_1e_3mrad_minusX";
-//    setupName = "setup_v17a_1e_3mrad_plusX";
-//    setupName = "setup_v17a_1e_3mrad_minusY";
-//    setupName = "setup_v17a_1e_3mrad_plusY";
+    setupName = "setup_align";
+//    setupName = "setup_misalign_gauss_sigma_1";
 
-//    TString outDir = "";
     if (script == "yes") {
 	setupName = TString(gSystem->Getenv("SETUP_NAME"));
 	outDir = TString(gSystem->Getenv("OUT_DIR"));
     }
     else {
-//	outDir = "/data/Sim_Outputs/Correction_test/old_code/";
-//	outDir = "/data/Sim_Outputs/Correction_test/minusX/with_corr/";
-//	outDir = "/data/Sim_Outputs/w_Brems/minusY/";
-	outDir = "/data/Sim_Outputs/Event_Display/plusY/";
-//	outDir = "/data/Sim_Outputs/Position/Aligned/";
-//	outDir = "/data/Sim_Outputs/Position/minusX/";
-//	outDir = "/data/Sim_Outputs/Position/plusX/";
-//	outDir = "/data/Sim_Outputs/Position/minusY/";
-//	outDir = "/data/Sim_Outputs/Position/plusY/";
-//	outDir = "/data/Sim_Outputs/Pmt_Tilt/14/minusX/";
-//	outDir = "/data/Sim_Outputs/Pmt_Tilt/17pt5/";
+	outDir = "/data/Sim_Outputs/Test/";
     }
     TString parFile = outDir + setupName + "_param.root";
     TString mcFile = outDir + setupName + "_mc.root";
@@ -43,11 +31,11 @@ void run_sim(Int_t nEvents = 10)
     TString outFile = outDir + setupName + "_out.root";
 
     TString geoSetupFile = "";
-    geoSetupFile = "/data/ROOT6/trunk/macro/rich/alignment/misalignment_correction/single_tile/geosetup/" + setupName + ".C";
+    geoSetupFile = "/data/ROOT6/trunk/macro/rich/alignment/misalignment_correction/gauss_distrib/geosetup/" + setupName + ".C";
 
     TString boxGen = "yes"; // If "yes" then primary electrons will be generated
-    Int_t NELECTRONS = 1; // number of e- to be generated
-    Int_t NPOSITRONS = 1; // number of e+ to be generated
+    Int_t NELECTRONS = 4; // number of e- to be generated
+    Int_t NPOSITRONS = 4; // number of e+ to be generated
     TString urqmd = "no"; // If "yes" then UrQMD will be used as background
     TString urqmdFile = "/data/ROOT6/trunk/input/urqmd.auau.10gev.centr.root";
     TString pluto = "no"; // If "yes" PLUTO particles will be embedded
@@ -204,7 +192,7 @@ void run_sim(Int_t nEvents = 10)
         FairBoxGenerator* boxGen1 = new FairBoxGenerator(11, NELECTRONS);
         boxGen1->SetPRange(1., 9.5);
         //boxGen1->SetPtRange(0., 3.);
-        boxGen1->SetPhiRange(0.6, 179.4);
+        boxGen1->SetPhiRange(0.5, 359.5);
         boxGen1->SetThetaRange(2.5, 25);
         boxGen1->SetCosTheta();
         boxGen1->Init();
@@ -213,66 +201,13 @@ void run_sim(Int_t nEvents = 10)
         FairBoxGenerator* boxGen2 = new FairBoxGenerator(-11, NPOSITRONS);
         boxGen2->SetPRange(1., 9.5);
         //boxGen2->SetPtRange(0., 3.);
-        boxGen2->SetPhiRange(0.6, 179.4);
+        boxGen2->SetPhiRange(0.5, 359.5);
         boxGen2->SetThetaRange(2.5, 25);
         boxGen2->SetCosTheta();
         boxGen2->Init();
         primGen->AddGenerator(boxGen2);
 
     }
-/*
-	Double_t phi0 = 103., theta0 = 9.8;		// Tile 1_4
-	Double_t phi1 = 78., theta1 = 10.;		// Tile 1_5
-	Double_t phi2 = 143., theta2 = 28.;		// Tile 2_1
-	Double_t phi3 = 9., theta3 = 23.;		// Tile 0_8
-
-    if (boxGen == "yes") {
-        FairBoxGenerator* boxGen1 = new FairBoxGenerator(11, NELECTRONS);
-        boxGen1->SetPRange(9., 9.5);
-        //boxGen1->SetPtRange(0., 3.);
-        boxGen1->SetPhiRange(phi0, phi0);
-        boxGen1->SetThetaRange(theta0, theta0);
-//        boxGen1->SetPhiRange(0.5, 179.5);
-//        boxGen1->SetThetaRange(2.5, 25);
-        boxGen1->SetCosTheta();
-        boxGen1->Init();
-        primGen->AddGenerator(boxGen1);
-
-        FairBoxGenerator* boxGen2 = new FairBoxGenerator(-11, NPOSITRONS);
-        boxGen2->SetPRange(9., 9.5);
-        //boxGen2->SetPtRange(0., 3.);
-        boxGen2->SetPhiRange(phi1, phi1);
-        boxGen2->SetThetaRange(theta1, theta1);
-//        boxGen2->SetPhiRange(0.5, 179.5);
-//        boxGen2->SetThetaRange(2.5, 25);
-        boxGen2->SetCosTheta();
-        boxGen2->Init();
-        primGen->AddGenerator(boxGen2);
-
-        FairBoxGenerator* boxGen3 = new FairBoxGenerator(-11, NPOSITRONS);
-        boxGen3->SetPRange(9., 9.5);
-        //boxGen3->SetPtRange(0., 3.);
-        boxGen3->SetPhiRange(phi2, phi2);
-        boxGen3->SetThetaRange(theta2, theta2);
-//        boxGen3->SetPhiRange(0.5, 179.5);
-//        boxGen3->SetThetaRange(2.5, 25);
-        boxGen3->SetCosTheta();
-        boxGen3->Init();
-        primGen->AddGenerator(boxGen3);
-
-        FairBoxGenerator* boxGen4 = new FairBoxGenerator(11, NELECTRONS);
-        boxGen4->SetPRange(9., 9.5);
-        //boxGen4->SetPtRange(0., 3.);
-        boxGen4->SetPhiRange(phi3, phi3);
-        boxGen4->SetThetaRange(theta3, theta3);
-//        boxGen4->SetPhiRange(0.5, 179.5);
-//        boxGen4->SetThetaRange(2.5, 25);
-        boxGen4->SetCosTheta();
-        boxGen4->Init();
-        primGen->AddGenerator(boxGen4);
-
-    }
-*/
         //      CbmLitPolarizedGenerator *polGen;
         //      polGen = new CbmLitPolarizedGenerator(443, NELECTRONS);
         //      polGen->SetDistributionPt(0.176);        // 25 GeV
@@ -291,7 +226,7 @@ void run_sim(Int_t nEvents = 10)
 
     // -----   Run initialisation   -------------------------------------------
     fRun->SetGenerator(primGen);
-    fRun->SetStoreTraj(kTRUE);
+//    fRun->SetStoreTraj(kTRUE);
     fRun->Init();
 //    fRun->CreateGeometryFile(geoFile);
     // ------------------------------------------------------------------------

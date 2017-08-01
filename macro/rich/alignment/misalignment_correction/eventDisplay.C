@@ -1,14 +1,14 @@
 void eventDisplay(const char* setup = "sis100_electron")
 {
 
-  TString dataDir   = "data/";
-  TString InputFile = dataDir + setup + "_test.mc.root";
-  TString ParFile   = dataDir + setup + "_params.root";
+//  TString dataDir   = "data/";
+//  TString InputFile = dataDir + setup + "_test.mc.root";
+//  TString ParFile   = dataDir + setup + "_params.root";
 
-  TString dataDir   = "/data/misalignment_correction/event_display/test/";
-  TString numb = "00001";
-  TString InputFile = dataDir + "mc." + numb + ".root";
-  TString ParFile   = dataDir + "param." + numb + ".root";
+  TString dataDir   = "/data/Sim_Outputs/Event_Display/plusY/";
+  TString setupName = "setup_v17a_1e_3mrad_plusY_";
+  TString InputFile = dataDir + setupName + "mc.root";
+  TString ParFile   = dataDir + setupName + "param.root";
 
   // -----   Reconstruction run   -------------------------------------------
   FairRunAna *fRun= new FairRunAna();
@@ -34,13 +34,13 @@ void eventDisplay(const char* setup = "sis100_electron")
 
   fMan->AddTask(Track);
 
-  fMan->AddTask(MvdPoint);
+//  fMan->AddTask(MvdPoint);
   fMan->AddTask(StsPoint);
   fMan->AddTask(RichPoint);
-  fMan->AddTask(RefPlanePoint);
-  fMan->AddTask(TrdPoint);
-  fMan->AddTask(TofPoint);
-  fMan->AddTask(EcalPoint);
+//  fMan->AddTask(RefPlanePoint);
+//  fMan->AddTask(TrdPoint);
+//  fMan->AddTask(TofPoint);
+//  fMan->AddTask(EcalPoint);
 
   //  fMan->Init(1,4,10000);
   fMan->Init(1,7,10000);  // make STS visible by default

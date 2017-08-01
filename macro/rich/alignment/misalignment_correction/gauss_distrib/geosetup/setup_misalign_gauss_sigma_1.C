@@ -33,7 +33,7 @@
 //
 
 
-void setup_align()
+void setup_misalign_gauss_sigma_1()
 {
 
   // -----  Geometry Tags  --------------------------------------------------
@@ -42,7 +42,7 @@ void setup_align()
   TString mvdGeoTag       = "v15a";
   TString stsGeoTag       = "v16x";
 //  TString richGeoTag      = "v16a_1e";		//"v16a_3e"
-  TString richGeoTag	  = "v17a_1e_align";
+  TString richGeoTag	  = "v17a_gauss_distrib_sigma_1";
   TString trdGeoTag       = "v15a_3e";
   TString tofGeoTag       = "v16a_3e";
   TString psdGeoTag       = "psd_geo_xy.txt";

@@ -39,6 +39,9 @@ void run_sim_position4(Int_t nEvents = 100)
     TString plutoParticle = "";
     // ------------------------------------------------------------------------
 
+    setupName = "setup_v17a_1e_3mrad_plusY";
+    outDir = "/data/Sim_Outputs/Correction_test/new_code/";
+    
 
     // -----   Script initialization   ----------------------------------------
     if (script == "yes") {

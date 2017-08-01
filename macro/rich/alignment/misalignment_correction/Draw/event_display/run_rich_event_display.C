@@ -6,38 +6,16 @@
 
 void run_rich_event_display()
 {
-//  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-  gROOT->LoadMacro("/u/jbendar/cbmroot5/CBMSRC/gconfig/basiclibs.C");
-  basiclibs();
+//  TString outDir = "/data/Sim_Outputs/Event_Display/minusY/";
+//  TString name = "setup_v17a_1e_3mrad_minusY_";
 
-//  gROOT->LoadMacro("$VMCWORKDIR/macro/rich/cbmlibs.C");
-  gROOT->LoadMacro("/u/jbendar/cbmroot5/CBMSRC/macro/rich/cbmlibs.C");
-  cbmlibs();
+  TString outDir = "/data/Sim_Outputs/Event_Display/minusX/";
+  TString name = "setup_v17a_1e_3mrad_minusX_";
 
-  TString outDir1 = "/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/";
-  TString outDir2 = "Batch_3/";
-  TString outDir3 = "Aligned/";
-
-  TString name = "setup_align_";
-  TString jobID = "16516585";		// Aligned
-  TString taskID = "0012";
-  TString nb = jobID + "_" + taskID;
-
-  TString outDir = outDir1 + outDir2 + outDir3;
-
-  TString script = TString(gSystem->Getenv("SCRIPT"));
-  if ( script == "yes" ) {
-	outDir = TString(gSystem->Getenv("OUT_DIR"));
-	name = TString(gSystem->Getenv("NAME"));
-	nb = TString(gSystem->Getenv("NB_JOB_TASK"));
-
-	std::cout << "outDir: " << outDir << ", name: " << name << ", nb: " << nb << std::endl;
-  }
-
-  TString paramFile =  outDir + name + "params." + nb  + ".root";
-  TString mcFile = outDir + name + "mc." + nb + ".root";
-  TString recoFile = outDir + name + "reco." + nb + ".root";
-  TString outFile = outDir + "ed." + nb + ".root";
+  TString paramFile =  outDir + name + "param.root";
+  TString mcFile = outDir + name + "mc.root";
+  TString recoFile = outDir + name + "reco.root";
+  TString outFile = outDir + "ed.root";
 
   FairRunAna *run= new FairRunAna();
   run->SetInputFile(mcFile);
@@ -49,7 +27,7 @@ void run_rich_event_display()
   ed->SetDrawHits(true);
   ed->SetDrawPoints(false); //
   ed->SetDrawProjections(true);
-  string dirout = outDir + nb + "/";
+  string dirout = string(outDir.Data()) + "events/";
   ed->SetOutputDir(dirout);
   run->AddTask(ed);
 
@@ -63,5 +41,5 @@ void run_rich_event_display()
 
   run->Init();
   cout << "Starting run" << endl;
-  run->Run(20, 120);
+  run->Run(40, 80);
 }
