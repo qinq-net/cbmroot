@@ -5,7 +5,7 @@ static Double_t fieldScale;
 #include <iostream>
 using namespace std;
 
-void run_sim(Int_t nEvents = 500)
+void run_sim(Int_t nEvents = 50000)
 {
     TTree::SetMaxTreeSize(90000000000);
     Int_t iVerbose = 0;
@@ -23,7 +23,7 @@ void run_sim(Int_t nEvents = 500)
 	outDir = TString(gSystem->Getenv("OUT_DIR"));
     }
     else {
-	outDir = "/data/Sim_Outputs/Test/";
+	outDir = "/data/Sim_Outputs/Align/";
     }
     TString parFile = outDir + setupName + "_param.root";
     TString mcFile = outDir + setupName + "_mc.root";

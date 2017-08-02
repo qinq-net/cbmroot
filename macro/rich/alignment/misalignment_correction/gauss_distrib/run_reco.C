@@ -47,16 +47,16 @@ void run_reco(Int_t nEvents = 50000, Int_t corr_flag = 0)
     // -----   In- and output file names   ------------------------------------
     TString setupName = "", outDir = "";
     if ( corr_flag == 0 ) {
+	outDir = "/data/Sim_Outputs/Align/";
+	setupName = "setup_align";
+    }
+    else if ( corr_flag == 1 ) {
 	outDir = "/data/Sim_Outputs/Gauss_sigma_1/";
 	setupName = "setup_misalign_gauss_sigma_1"; // sigma_1
     }
-    else if ( corr_flag == 1 ) {
+    else if ( corr_flag == 2 ) {
 	outDir = "/data/Sim_Outputs/Gauss_sigma_3/";
 	setupName = "setup_misalign_gauss_sigma_3"; // sigma_3
-    }
-    else if ( corr_flag == 2 ) {
-	outDir = "/data/Sim_Outputs/Align/";
-	setupName = "setup_align";
     }
 
     if (script == "yes") {
@@ -64,11 +64,9 @@ void run_reco(Int_t nEvents = 50000, Int_t corr_flag = 0)
 	outDir = TString(gSystem->Getenv("OUT_DIR"));
     }
 
-setupName = "setup_align";
-outDir = "/data/Sim_Outputs/Test/";
-
     TString parFile = outDir + setupName + "_param.root";
     TString mcFile = outDir + setupName + "_mc.root";
+    TString geoFile = outDir + setupName + "_geofilefull.root";
     TString recoFile = outDir + setupName + "_reco.root";
     TString resultDir = outDir;
 
@@ -148,7 +146,7 @@ outDir = "/data/Sim_Outputs/Test/";
     if (mcFile != "") run->SetInputFile(mcFile);
     if (recoFile != "") run->SetOutputFile(recoFile);
     run->SetGenerateRunInfo(kTRUE);
-    run->SetGeomFile("/data/Sim_Outputs/setup_align_geofilefull.root");
+    run->SetGeomFile(geoFile);
     // ------------------------------------------------------------------------
 
 
@@ -267,8 +265,8 @@ outDir = "/data/Sim_Outputs/Test/";
     richReco->SetRunExtrapolation(true);
     richReco->SetRunProjection(true);
 //    richReco->SetMirrorMisalignmentCorrectionParameterFile("");
-    if ( corr_flag == 0 || corr_flag == 1 ) { richReco->SetMirrorMisalignmentCorrectionParameterFile(""); }
-    else if (corr_flag == 2 ) { richReco->SetMirrorMisalignmentCorrectionParameterFile(outDir.Data()); }
+    if ( corr_flag == 0 ) { richReco->SetMirrorMisalignmentCorrectionParameterFile(""); }
+    else if ( corr_flag == 1 || corr_flag == 2 ) { richReco->SetMirrorMisalignmentCorrectionParameterFile(outDir.Data()); }
     richReco->SetRunTrackAssign(true);
     //	richReco->SetFinderName("ideal");     // To do matching Sts-Ring
     //	richReco->SetProjectionName("analytical2"); // Set to analytical2 to test my class.
@@ -309,8 +307,8 @@ outDir = "/data/Sim_Outputs/Test/";
     // RICH reco QA
     CbmRichRecoQa* richRecoQa = new CbmRichRecoQa();
     richRecoQa->SetOutputDir(std::string(resultDir));
-    if ( corr_flag == 0 || corr_flag == 1 ) { richRecoQa->SetCorrection("Corrected"); }
-    else if ( corr_flag == 2 ) { richRecoQa->SetCorrection("Uncorrected"); }
+    if ( corr_flag == 1 || corr_flag == 2 ) { richRecoQa->SetCorrection("Corrected"); }
+    else if ( corr_flag == 0 ) { richRecoQa->SetCorrection("Uncorrected"); }
     run->AddTask(richRecoQa);
 
     CbmRichGeoTest* geoTest = new CbmRichGeoTest();
