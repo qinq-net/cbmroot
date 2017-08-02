@@ -6,144 +6,176 @@
 // macro to simulate signal events for KFParticleFinder
 //_________________________________________________________________________________
 
-void simSignal(Int_t iParticle = 0, Int_t nEvents = 10000, bool useMvd = 0)
+
+void simSignal(int iParticle = 0, Int_t nEvents = 1000,
+               const char* setupName = "sis100_electron",
+               const char* inputFile = "")
 {
+
   // ========================================================================
   //          Adjust this part according to your requirements
-  
-  //For charm particles MVD should be on
-  if(iParticle >= 54 && iParticle<=71)
-    useMvd = 1;
-  
-  const bool sameZ = 0;
-  const bool usePipe = 1;
-  const int  nElectrons = 0;
-  
-  // Output name
-  TString outName = "signal";
 
-  // Output file name
-  TString outFile = outName + ".mc.root";
+  // -----   Environment   --------------------------------------------------
+  TString myName = "run_mc";  // this macro's name for screen output
+  TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
+  // ------------------------------------------------------------------------
 
-  // Parameter file name
-  TString parFile = outName +".params.root";
 
-    // -----  Geometries  -----------------------------------------------------
-  TString caveGeom   = "cave.geo";
-  TString pipeGeom   = "pipe/pipe_v14l.geo.root"; //===>>>
-  TString magnetGeom = "magnet/magnet_v12b.geo.root";
-  TString mvdGeom    = "mvd/mvd_v14b.geo.root";
-
-  TString stsGeom;
-  if (sameZ) stsGeom    = "sts_same_z.geo";
-  else stsGeom    = "sts/sts_v15c.geo.root";
-
-  if (!useMvd) mvdGeom = "";
-  if (!usePipe) pipeGeom = "";
-  TString richGeom = "";
-  TString trdGeom  = "";
-  TString tofGeom = "tof/tof_v16a_1h.geo.root";
-  TString ecalGeom = "";
-
-  // -----   Magnetic field   -----------------------------------------------
-  TString fieldMap    = "field_v12b";   // name of field map
-  Double_t fieldZ     = 40.;             // field centre z position
-  Double_t fieldScale =  1.;             // field scaling factor
-  
-  // -----   Input file name   ----------------------------------------------  
+  // -----   In- and output file names   ------------------------------------
   TString inFile = "Signal.txt";
 
-  // ----    Debug option   -------------------------------------------------
-  gDebug = 0;
+  TString outDir  = "";
+  TString outFile = "mc.root";
+  TString parFile = "params.root";
+  TString geoFile = "geofile.root";
   // ------------------------------------------------------------------------
+
+
+  // --- Logger settings ----------------------------------------------------
+  TString logLevel     = "INFO";
+  TString logVerbosity = "LOW";
+  // ------------------------------------------------------------------------
+
+
+  // --- Define the target geometry -----------------------------------------
+  //
+  // The target is not part of the setup, since one and the same setup can
+  // and will be used with different targets.
+  // The target is constructed as a tube in z direction with the specified
+  // diameter (in x and y) and thickness (in z). It will be placed at the
+  // specified position as daughter volume of the volume present there. It is
+  // in the responsibility of the user that no overlaps or extrusions are
+  // created by the placement of the target.
+  //
+  TString  targetElement   = "Gold";
+  Double_t targetThickness = 0.025;  // full thickness in cm
+  Double_t targetDiameter  = 2.5;    // diameter in cm
+  Double_t targetPosX      = 0.;     // target x position in global c.s. [cm]
+  Double_t targetPosY      = 0.;     // target y position in global c.s. [cm]
+  Double_t targetPosZ      = 0.;     // target z position in global c.s. [cm]
+  Double_t targetRotY      = 0.;     // target rotation angle around the y axis [deg]
+  // ------------------------------------------------------------------------
+
+
+  // --- Define the creation of the primary vertex   ------------------------
+  //
+  // By default, the primary vertex point is sampled from a Gaussian
+  // distribution in both x and y with the specified beam profile width,
+  // and from a flat distribution in z over the extension of the target.
+  // By setting the respective flags to kFALSE, the primary vertex will always
+  // at the (0., 0.) in x and y and in the z centre of the target, respectively.
+  //
+//   Bool_t smearVertexXY = kTRUE;
+//   Bool_t smearVertexZ  = kTRUE;
+//   Double_t beamWidthX   = 1.;  // Gaussian sigma of the beam profile in x [cm]
+//   Double_t beamWidthY   = 1.;  // Gaussian sigma of the beam profile in y [cm]
+  Bool_t smearVertexXY = 0;
+  Bool_t smearVertexZ  = 0;
+  Double_t beamWidthX   = 0.;  // Gaussian sigma of the beam profile in x [cm]
+  Double_t beamWidthY   = 0.;  // Gaussian sigma of the beam profile in y [cm]
+  // ------------------------------------------------------------------------
+  
+
+  // In general, the following parts need not be touched
+  // ========================================================================
+
 
   // -----   Timer   --------------------------------------------------------
   TStopwatch timer;
   timer.Start();
   // ------------------------------------------------------------------------
 
-   // -----   Create simulation run   ----------------------------------------
-  FairRunSim* fRun = new FairRunSim();
-  fRun->SetName("TGeant3");              // Transport engine
-  fRun->SetOutputFile(outFile);          // Output file
-  FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
+
+  // ----    Debug option   -------------------------------------------------
+  gDebug = 0;
   // ------------------------------------------------------------------------
- 
-   // -----   Create media   -------------------------------------------------
-  fRun->SetMaterials("media.geo");       // Materials
+
+  // -----   Create simulation run   ----------------------------------------
+  FairRunSim* run = new FairRunSim();
+  run->SetName("TGeant3");              // Transport engine
+  run->SetOutputFile(outFile);          // Output file
+  run->SetGenerateRunInfo(kTRUE);       // Create FairRunInfo file
   // ------------------------------------------------------------------------
-  
-  // -----   Create detectors and passive volumes   -------------------------
-  if ( caveGeom != "" ) {
-    FairModule* cave = new CbmCave("CAVE");
-    cave->SetGeometryFileName(caveGeom);
-    fRun->AddModule(cave);
-  }
 
-  if ( pipeGeom != "" ) {
-    FairModule* pipe = new CbmPipe("PIPE");
-    pipe->SetGeometryFileName(pipeGeom);
-    fRun->AddModule(pipe);
-  }
+  // -----   Logger settings   ----------------------------------------------
+  FairLogger::GetLogger()->SetLogScreenLevel(logLevel.Data());
+  FairLogger::GetLogger()->SetLogVerbosityLevel(logVerbosity.Data());
+  // ------------------------------------------------------------------------
 
-  CbmTarget* target = new CbmTarget("Gold", 0.025);
-  fRun->AddModule(target);
-  
-  if ( magnetGeom != "" ) {
-    FairModule* magnet = new CbmMagnet("MAGNET");
-    magnet->SetGeometryFileName(magnetGeom);
-    fRun->AddModule(magnet);
-  }
-  
-  if ( mvdGeom != "" ) {
-    FairDetector* mvd = new CbmMvd("MVD", kTRUE);
-    mvd->SetGeometryFileName(mvdGeom);
-        mvd->SetMotherVolume("pipevac1");
-    fRun->AddModule(mvd);
-  }
+  // -----   Load the geometry setup   -------------------------------------
+  std::cout << std::endl;
+  TString setupFile = srcDir + "/geometry/setup/setup_" + setupName + ".C";
+  TString setupFunct = "setup_";
+  setupFunct = setupFunct + setupName + "()";
+  std::cout << "-I- " << myName << ": Loading macro " << setupFile << std::endl;
+  gROOT->LoadMacro(setupFile);
+  gROOT->ProcessLine(setupFunct);
+  // ------------------------------------------------------------------------
 
-  if ( stsGeom != "" ) {
-    FairDetector* sts = new CbmStsMC(kTRUE);
-    sts->SetGeometryFileName(stsGeom);
-    fRun->AddModule(sts);
-  }
+  // -----   Create media   -------------------------------------------------
+  std::cout << std::endl;
+  std::cout << "-I- " << myName << ": Setting media file" << std::endl;
+  run->SetMaterials("media.geo");       // Materials
+  // ------------------------------------------------------------------------
 
-  if ( richGeom != "" ) {
-    FairDetector* rich = new CbmRich("RICH", kTRUE);
-    rich->SetGeometryFileName(richGeom);
-    fRun->AddModule(rich);
-  }
+  // -----   Create and register modules   ----------------------------------
+  std::cout << std::endl;
+  TString macroName = gSystem->Getenv("VMCWORKDIR");
+  macroName += "/macro/run/modules/registerSetup.C";
+  std::cout << "Loading macro " << macroName << std::endl;
+  gROOT->LoadMacro(macroName);
+  gROOT->ProcessLine("registerSetup()");
+  // ------------------------------------------------------------------------
 
-  if ( trdGeom != "" ) {
-    FairDetector* trd = new CbmTrd("TRD",kTRUE );
-    trd->SetGeometryFileName(trdGeom);
-    fRun->AddModule(trd);
-  }
+  // -----   Create and register the target   -------------------------------
+  std::cout << std::endl;
+  std::cout << "-I- " << myName << ": Registering target" << std::endl;
+  CbmTarget* target = new CbmTarget(targetElement.Data(),
+  		                              targetThickness,
+  		                              targetDiameter);
+  target->SetPosition(targetPosX, targetPosY, targetPosZ);
+  target->SetRotation(targetRotY);
+  target->Print();
+  run->AddModule(target);
+  // ------------------------------------------------------------------------
 
-  if ( tofGeom != "" ) {
-    FairDetector* tof = new CbmTof("TOF", kTRUE);
-    tof->SetGeometryFileName(tofGeom);
-    fRun->AddModule(tof);
-  }
-  
-  if ( ecalGeom != "" ) {
-    FairDetector* ecal = new CbmEcal("ECAL", kTRUE, ecalGeom.Data()); 
-    fRun->AddModule(ecal);
-  }
 
   // -----   Create magnetic field   ----------------------------------------
-  CbmFieldMap* magField = new CbmFieldMapSym3(fieldMap);
-  magField->SetPosition(0., 0., fieldZ);
-  magField->SetScale(fieldScale);
-  fRun->SetField(magField);
+  std::cout << std::endl;
+  std::cout << "-I- " << myName << ": Registering magnetic field" << std::endl;
+  CbmFieldMap* magField = CbmSetup::Instance()->CreateFieldMap();
+  if ( ! magField ) {
+  	std::cout << "-E- run_sim_new: No valid field!";
+  	return;
+  }
+  run->SetField(magField);
   // ------------------------------------------------------------------------
 
+
   // -----   Create PrimaryGenerator   --------------------------------------
+  std::cout << std::endl;
+  std::cout << "-I- " << myName << ": Registering event generators" << std::endl;
   FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
+  // --- Uniform distribution of event plane angle
+  primGen->SetEventPlane(0., 2. * TMath::Pi());
+  // --- Get target parameters
+  Double_t tX = 0.;
+  Double_t tY = 0.;
+  Double_t tZ = 0.;
+  Double_t tDz = 0.;
+  if ( target ) {
+    target->GetPosition(tX, tY, tZ);
+    tDz = target->GetThickness();
+  }
+  primGen->SetTarget(tZ, tDz);
+  primGen->SetBeam(0., 0., beamWidthX, beamWidthY);
+//  primGen->SmearGausVertexXY(smearVertexXY);
+//  primGen->SmearVertexZ(smearVertexZ);
+
   FairAsciiGenerator*  asciiGen = new FairAsciiGenerator(inFile);
   primGen->AddGenerator(asciiGen);
 
-  fRun->SetGenerator(primGen);
+  run->SetGenerator(primGen);
   
   KFPartEfficiencies eff;
   for(int jParticle=eff.fFirstStableParticleIndex+10; jParticle<=eff.fLastStableParticleIndex; jParticle++)
@@ -172,18 +204,37 @@ void simSignal(Int_t iParticle = 0, Int_t nEvents = 10000, bool useMvd = 0)
     
       FairParticle* newParticle = new FairParticle(PDG, eff.partTitle[iPall].data(), kPTHadron, mass, charge,
               lifetime, "hadron", 0.0, 1, 1, 0, 1, 1, 0, 0, 1, kFALSE);
-      fRun->AddNewParticle(newParticle);
+      run->AddNewParticle(newParticle);
     }
     TString pythia6Config = "/u/mzyzak/cbmtrunk/macro/KF/KFParticleFinderSignalTest/Signal/DecayConfig.C()";
-    fRun->SetPythiaDecayer(pythia6Config);
+    run->SetPythiaDecayer(pythia6Config);
   }
+   
+   // -----   Run initialisation   -------------------------------------------
+  std::cout << std::endl;
+  std::cout << "-I- " << myName << ": Initialise run" << std::endl;
+  run->Init();
 
-  fRun->Init();
+ // -----   Runtime database   ---------------------------------------------
+  std::cout << std::endl << std::endl;
+  std::cout << "-I- " << myName << ": Set runtime DB" << std::endl;
+  FairRuntimeDb* rtdb = run->GetRuntimeDb();
+  CbmFieldPar* fieldPar = (CbmFieldPar*) rtdb->getContainer("CbmFieldPar");
+  fieldPar->SetParameters(magField);
+  fieldPar->setChanged();
+  fieldPar->setInputVersion(run->GetRunId(),1);
+  Bool_t kParameterMerged = kTRUE;
+  FairParRootFileIo* parOut = new FairParRootFileIo(kParameterMerged);
+  parOut->open(parFile.Data());
+  rtdb->setOutput(parOut);
+  rtdb->saveOutput();
+  rtdb->print();
+  // ------------------------------------------------------------------------
   
   if(!(iParticle == 56 || iParticle == 57))
   {
-    gMC->DefineParticle(PDG, eff.partTitle[iParticle].data(), kPTHadron, mass, charge,
-            lifetime, "hadron", 0.0, 1, 1, 0, 1, 1, 0, 0, 1, kFALSE);
+    TVirtualMC::GetMC()->DefineParticle(PDG, eff.partTitle[iParticle].data(), kPTHadron, mass, charge,
+                                        lifetime, "hadron", 0.0, 1, 1, 0, 1, 1, 0, 0, 1, kFALSE);
     
     Int_t mode[6][3];
     Float_t bratio[6];
@@ -202,7 +253,7 @@ void simSignal(Int_t iParticle = 0, Int_t nEvents = 10000, bool useMvd = 0)
       mode[0][iD] = eff.GetDaughterPDG(iParticle, iD); //pi+
     }
     
-    gMC->SetDecayMode(PDG,bratio,mode);
+    TVirtualMC::GetMC()->SetDecayMode(PDG,bratio,mode);
   }
   for(int iP=eff.fFirstHypernucleusIndex; iP<=eff.fLastHypernucleusIndex; iP++)
   {
@@ -211,8 +262,8 @@ void simSignal(Int_t iParticle = 0, Int_t nEvents = 10000, bool useMvd = 0)
     Int_t PDG = eff.partPDG[iP];
     Double_t charge = eff.partCharge[iP];
    
-    gMC->DefineParticle(PDG, eff.partTitle[iP].data(), kPTHadron, mass, charge,
-            lifetime, "hadron", 0.0, 1, 1, 0, 1, 1, 0, 0, 1, kFALSE);
+    TVirtualMC::GetMC()->DefineParticle(PDG, eff.partTitle[iP].data(), kPTHadron, mass, charge,
+                                        lifetime, "hadron", 0.0, 1, 1, 0, 1, 1, 0, 0, 1, kFALSE);
     
     Int_t mode[6][3];
     Float_t bratio[6];
@@ -231,36 +282,33 @@ void simSignal(Int_t iParticle = 0, Int_t nEvents = 10000, bool useMvd = 0)
       mode[0][iD] = eff.GetDaughterPDG(iP, iD); //pi+
     }
     
-    gMC->SetDecayMode(PDG,bratio,mode);
+    TVirtualMC::GetMC()->SetDecayMode(PDG,bratio,mode);
   }
-  // ------------------------------------------------------------------------
-
- // -----   Runtime database   ---------------------------------------------
-  CbmFieldPar* fieldPar = (CbmFieldPar*) rtdb->getContainer("CbmFieldPar");
-  fieldPar->SetParameters(magField);
-  fieldPar->setChanged();
-  fieldPar->setInputVersion(fRun->GetRunId(),1);
-  Bool_t kParameterMerged = kTRUE;
-  FairParRootFileIo* parOut = new FairParRootFileIo(kParameterMerged);
-  parOut->open(parFile.Data());
-  rtdb->setOutput(parOut);
-  rtdb->saveOutput();
-  rtdb->print();
-  // ------------------------------------------------------------------------
 
   // -----   Start run   ----------------------------------------------------
-  fRun->Run(nEvents);
+  std::cout << std::endl << std::endl;
+  std::cout << "-I- " << myName << ": Starting run" << std::endl;
+  run->Run(nEvents);
   // ------------------------------------------------------------------------
 
+
   // -----   Finish   -------------------------------------------------------
+  run->CreateGeometryFile(geoFile);
   timer.Stop();
   Double_t rtime = timer.RealTime();
   Double_t ctime = timer.CpuTime();
-  cout << endl << endl;
-  cout << "Macro finished succesfully." << endl;
-  cout << "Output file is "    << outFile << endl;
-  cout << "Parameter file is " << parFile << endl;
-  cout << "Real time " << rtime << " s, CPU time " << ctime 
-       << "s" << endl << endl;
+  std::cout << std::endl << std::endl;
+  std::cout << "Macro finished successfully." << std::endl;
+  std::cout << "Output file is "    << outFile << std::endl;
+  std::cout << "Parameter file is " << parFile << std::endl;
+  std::cout << "Geometry file is "  << geoFile << std::endl;
+  std::cout << "Real time " << rtime << " s, CPU time " << ctime
+            << "s" << std::endl << std::endl;
+  // ------------------------------------------------------------------------
+  std::cout << " Test passed" << std::endl;
+  std::cout << " All ok " << std::endl;
+
+  // ------------------------------------------------------------------------
+
 }
 

@@ -18,14 +18,14 @@ else
 fi
 cd $WORKDIR
 
-NNN=40
-TASKS=0
+NNN=35
+TASKS=1
 ONE=1
 NOL=0
 
 
 PID=""
-for i in {0..89}
+for i in {0..125}
 do
   CURDIR="Signal"$i
   cd $CURDIR
@@ -36,12 +36,14 @@ do
   bash runphys.sh $NEVENTS >& runphys.log &
   PID=$PID" "$!
 
-#   if [ $TASKS -eq $NNN ]
-#   then
-#     wait $PID
-#     PID=""
-#     TASKS=0
-#   fi
+  sleep 0.2
+  
+  if [ $TASKS -eq $NNN ]
+  then
+    wait $PID
+    PID=""
+    TASKS=0
+  fi
   
   TASKS=`expr $TASKS + $ONE`
   

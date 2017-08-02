@@ -20,13 +20,13 @@ cd $WORKDIR
 
 rm -rf *
 
-NNN=40
-TASKS=0
+NNN=35
+TASKS=1
 ONE=1
 NOL=0
 
 PID=""
-for i in {0..89}
+for i in {0..125}
 do
   CURDIR="Signal"$i
   mkdir $CURDIR
@@ -38,14 +38,14 @@ do
   bash runsim.sh $i $NEVENTS >& runsim.log &
   PID=$PID" "$!
   
-  sleep 0.1
+  sleep 0.2
   
-#   if [ $TASKS -eq $NNN ]
-#   then
-#     wait $PID
-#     PID=""
-#     TASKS=0
-#   fi
+  if [ $TASKS -eq $NNN ]
+  then
+    wait $PID
+    PID=""
+    TASKS=0
+  fi
   
   TASKS=`expr $TASKS + $ONE`
   
