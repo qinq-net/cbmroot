@@ -70,6 +70,7 @@ Set(SRCS
   unpacker/CbmTSUnpackSpadic.cxx
   unpacker/CbmTSUnpackSpadic11OnlineMonitor.cxx
   unpacker/CbmTSUnpackSpadic20OnlineMonitor.cxx
+  unpacker/CbmTSUnpackSpadic20DesyOnlineMonitor.cxx
   unpacker/CbmTSUnpackSpadicLegacy.cxx
   unpacker/CbmTSUnpackNxyter.cxx
   unpacker/CbmTSUnpackStsxyter.cxx
