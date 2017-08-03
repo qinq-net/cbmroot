@@ -11,8 +11,27 @@
 
 ClassImp(LxGenNoiseElectrons)
 
-LxGenNoiseElectrons::LxGenNoiseElectrons() : fNofNoiseE(1), fNofStations(4), fMCTracks(0), fMuchPoints(0), fTrdPoints(0)
+LxGenNoiseElectrons::LxGenNoiseElectrons() : fNofNoiseE(1), fNofStations(4), fMCTracks(0), fMuchPoints(0), fTrdPoints(0),
+   fOutMCTracks(0), fOutMuchPoints(0), fOutTrdPoints(0)
 {
+}
+
+LxGenNoiseElectrons::LxGenNoiseElectrons(const LxGenNoiseElectrons& orig) : fNofNoiseE(orig.fNofNoiseE), fNofStations(orig.fNofStations), fMCTracks(orig.fMCTracks),
+   fMuchPoints(orig.fMuchPoints), fTrdPoints(orig.fTrdPoints), fOutMCTracks(orig.fOutMCTracks), fOutMuchPoints(orig.fOutMuchPoints), fOutTrdPoints(orig.fOutTrdPoints)
+{   
+}
+
+LxGenNoiseElectrons& LxGenNoiseElectrons::operator=(const LxGenNoiseElectrons& orig)
+{
+   fNofNoiseE = orig.fNofNoiseE;
+   fNofStations = orig.fNofStations;
+   fMCTracks = orig.fMCTracks;
+   fMuchPoints = orig.fMuchPoints;
+   fTrdPoints = orig.fTrdPoints;
+   fOutMCTracks = orig.fOutMCTracks;
+   fOutMuchPoints = orig.fOutMuchPoints;
+   fOutTrdPoints = orig.fOutTrdPoints;
+   return *this;
 }
 
 LxGenNoiseElectrons::~LxGenNoiseElectrons()

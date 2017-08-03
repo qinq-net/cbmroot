@@ -23,6 +23,26 @@ LxCalcStats::LxCalcStats() : fMCTracks(0), fMuchPoints(0), fTrdPoints(0)
 {
 }
 
+LxCalcStats::LxCalcStats(const LxCalcStats& orig) : fMCTracks(orig.fMCTracks), fMuchPoints(orig.fMuchPoints), fTrdPoints(orig.fTrdPoints)
+{
+   std::copy(&orig.xHistos[0][0], &orig.xHistos[0][0] + 4 * 3, &xHistos[0][0]);
+   std::copy(&orig.yHistos[0][0], &orig.yHistos[0][0] + 4 * 3, &yHistos[0][0]);
+   std::copy(&orig.trdDeltaThetaXHistos[0], &orig.trdDeltaThetaXHistos[0] + 3, &trdDeltaThetaXHistos[0]);
+   std::copy(&orig.trdDeltaThetaYHistos[0], &orig.trdDeltaThetaYHistos[0] + 3, &trdDeltaThetaYHistos[0]);
+}
+
+LxCalcStats& LxCalcStats::operator=(const LxCalcStats& orig)
+{
+   fMCTracks = orig.fMCTracks;
+   fMuchPoints = orig.fMuchPoints;
+   fTrdPoints = orig.fTrdPoints;
+   std::copy(&orig.xHistos[0][0], &orig.xHistos[0][0] + 4 * 3, &xHistos[0][0]);
+   std::copy(&orig.yHistos[0][0], &orig.yHistos[0][0] + 4 * 3, &yHistos[0][0]);
+   std::copy(&orig.trdDeltaThetaXHistos[0], &orig.trdDeltaThetaXHistos[0] + 3, &trdDeltaThetaXHistos[0]);
+   std::copy(&orig.trdDeltaThetaYHistos[0], &orig.trdDeltaThetaYHistos[0] + 3, &trdDeltaThetaYHistos[0]);
+   return *this;
+}
+
 InitStatus LxCalcStats::Init()
 {
    FairRootManager* ioman = FairRootManager::Instance();
