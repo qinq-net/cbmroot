@@ -35,6 +35,7 @@
 #include <iomanip>
 
 Bool_t bCern2017ResetStsHistos = kFALSE;
+Bool_t bCern2017WriteStsHistos = kFALSE;
 
 CbmCern2017MonitorSts::CbmCern2017MonitorSts() :
    CbmTSUnpack(),
@@ -48,6 +49,7 @@ CbmCern2017MonitorSts::CbmCern2017MonitorSts() :
    fvuElinkToAsic(),
    fbPrintMessages( kFALSE ),
    fPrintMessCtrl( stsxyter::MessagePrintMask::msg_print_Human ),
+   fbChanHitDtEna( kFALSE ),
    fmMsgCounter(),
    fuCurrentEquipmentId(0),
    fuCurrDpbId(0),
@@ -71,6 +73,10 @@ CbmCern2017MonitorSts::CbmCern2017MonitorSts() :
    fhStsChanOverDiff(),
    fhStsChanHitRateEvo(),
    fhStsXyterRateEvo(),
+   fhStsChanHitRateEvoLong(),
+   fhStsXyterRateEvoLong(),
+   fhStsChanHitDt(),
+   fhStsChanHitDtNeg(),
    fhStsAsicTsMsb(NULL),
    fhStsAsicTsMsbMaj(NULL),
    fhStsElinkTsMsbCrc(),
@@ -377,6 +383,50 @@ void CbmCern2017MonitorSts::CreateHistograms()
       if( server ) server->Register("/StsRaw", fhStsXyterRateEvo[ uXyterIdx ] );
 #endif
 
+      // Hit rates evo per channel, 1 minute bins, 24h
+      sHistName = Form( "hStsChanRateEvoLong_%03u", uXyterIdx );
+      title = Form( "Hits per second & channel in StsXyter #%03u; Time [min]; Channel []; Hits []", uXyterIdx );
+      fhStsChanHitRateEvoLong.push_back( new TH2D( sHistName, title,
+                                                1440, 0, 1440,
+                                                fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
+      fHM->Add(sHistName.Data(), fhStsChanHitRateEvoLong[ uXyterIdx ] );
+#ifdef USE_HTTP_SERVER
+      if( server ) server->Register("/StsRaw", fhStsChanHitRateEvoLong[ uXyterIdx ] );
+#endif
+
+      // Hit rates evo per StsXyter, 1 minute bins, 24h
+      sHistName = Form( "hStsXyterRateEvoLong_%03u", uXyterIdx );
+      title = Form( "Hits per second in StsXyter #%03u; Time [min]; Hits []", uXyterIdx );
+      fhStsXyterRateEvoLong.push_back( new TH1D(sHistName, title, 1440, 0, 1440 ) );
+      fHM->Add(sHistName.Data(), fhStsXyterRateEvoLong[ uXyterIdx ] );
+#ifdef USE_HTTP_SERVER
+      if( server ) server->Register("/StsRaw", fhStsXyterRateEvoLong[ uXyterIdx ] );
+#endif
+
+      // Hit distance in time for each channel
+      if( fbChanHitDtEna )
+      {
+         sHistName = Form( "hStsChanHitDt_%03u", uXyterIdx );
+         title = Form( "Time diff between hits on same channel in StsXyter #%03u; t_hit - t_prev [ns]; Channel []; Hits []", uXyterIdx );
+         fhStsChanHitDt.push_back( new TH2I( sHistName, title,
+                                                   iNbBinsRate - 1, dBinsRate,
+                                                   fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
+         fHM->Add(sHistName.Data(), fhStsChanHitDt[ uXyterIdx ] );
+#ifdef USE_HTTP_SERVER
+         if( server ) server->Register("/StsRaw", fhStsChanHitDt[ uXyterIdx ] );
+#endif
+         sHistName = Form( "hStsChanHitDtNeg_%03u", uXyterIdx );
+         title = Form( "Time diff between hits on same channel in StsXyter #%03u; t_prev - t_hit [ns]; Channel []; Hits []", uXyterIdx );
+         fhStsChanHitDtNeg.push_back( new TH2I( sHistName, title,
+                                                   iNbBinsRate - 1, dBinsRate,
+                                                   fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
+         fHM->Add(sHistName.Data(), fhStsChanHitDtNeg[ uXyterIdx ] );
+#ifdef USE_HTTP_SERVER
+         if( server ) server->Register("/StsRaw", fhStsChanHitDtNeg[ uXyterIdx ] );
+#endif
+
+      } // if( fbChanHitDtEna )
+
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
 
    // Distribution of the TS_MSB per StsXyter
@@ -434,8 +484,10 @@ void CbmCern2017MonitorSts::CreateHistograms()
    if( server )
    {
       server->RegisterCommand("/Reset_All_Sts", "bCern2017ResetStsHistos=kTRUE");
+      server->RegisterCommand("/Write_All_Sts", "bCern2017WriteStsHistos=kTRUE");
 
       server->Restrict("/Reset_All_Sts", "allow=admin");
+      server->Restrict("/Write_All_Sts", "allow=admin");
    } // if( server )
 #endif
 
@@ -524,7 +576,12 @@ Bool_t CbmCern2017MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
    {
       ResetAllHistos();
       bCern2017ResetStsHistos = kFALSE;
-   }
+   } // if( bCern2017ResetStsHistos )
+   if( bCern2017WriteStsHistos )
+   {
+      SaveAllHistos( "data/StsHistos.root" );
+      bCern2017WriteStsHistos = kFALSE;
+   } // if( bCern2017WriteStsHistos )
 
    LOG(DEBUG) << "Timeslice contains " << ts.num_microslices(component)
               << "microslices." << FairLogger::endl;
@@ -769,17 +826,34 @@ void CbmCern2017MonitorSts::FillHitInfo( stsxyter::Message mess, const UShort_t 
                   stsxyter::kuHitNbTsBins   * static_cast<ULong64_t>( fvuCurrentTsMsb[fuCurrDpbIdx][usElinkIdx] - uTsMsbCorr )
                 + stsxyter::kuTsCycleNbBins * static_cast<ULong64_t>( fvuCurrentTsMsbCycle[fuCurrDpbIdx][usElinkIdx] );
 
-
    // Convert the Hit time in bins to Hit time in ns
-   fvdChanLastHitTime[ uAsicIdx ][ usChan ] = fvulChanLastHitTime[ uAsicIdx ][ usChan ] * stsxyter::kdClockCycleNs * 1e-9;
+   Double_t dHitTimeNs = fvulChanLastHitTime[ uAsicIdx ][ usChan ] * stsxyter::kdClockCycleNs;
+
+   // If needed fill the hit interval plots
+   if( fbChanHitDtEna )
+   {
+      Double_t dDeltaT = dHitTimeNs - fvdChanLastHitTime[ uAsicIdx ][ usChan ];
+      if( 0 == dDeltaT )
+         fhStsChanHitDtNeg[ uAsicIdx ]->Fill( 1, usChan );
+         else if( 0 < dDeltaT )
+            fhStsChanHitDt[ uAsicIdx ]->Fill( dDeltaT, usChan );
+         else fhStsChanHitDtNeg[ uAsicIdx ]->Fill( -dDeltaT, usChan );
+   } // if( fbChanHitDtEna )
+
+   // Store new value of Hit time in ns
+   fvdChanLastHitTime[ uAsicIdx ][ usChan ] = dHitTimeNs;
 
    // Check Starting point of histos with time as X axis
    if( -1 == fdStartTime )
       fdStartTime = fvdChanLastHitTime[ uAsicIdx ][ usChan ];
 
    // Fill histos with time as X axis
-   fhStsChanHitRateEvo[ uAsicIdx ]->Fill( fvdChanLastHitTime[ uAsicIdx ][ usChan ] - fdStartTime, usChan );
-   fhStsXyterRateEvo[ uAsicIdx ]->Fill(   fvdChanLastHitTime[ uAsicIdx ][ usChan ] - fdStartTime );
+   Double_t dTimeSinceStartSec = (fvdChanLastHitTime[ uAsicIdx ][ usChan ] - fdStartTime)* 1e-9;
+   Double_t dTimeSinceStartMin = dTimeSinceStartSec / 60.0;
+   fhStsChanHitRateEvo[ uAsicIdx ]->Fill( dTimeSinceStartSec , usChan );
+   fhStsXyterRateEvo[ uAsicIdx ]->Fill(   dTimeSinceStartSec );
+   fhStsChanHitRateEvoLong[ uAsicIdx ]->Fill( dTimeSinceStartMin, usChan, 1.0/60.0 );
+   fhStsXyterRateEvoLong[ uAsicIdx ]->Fill(   dTimeSinceStartMin, 1.0/60.0 );
 
 }
 
@@ -793,7 +867,7 @@ void CbmCern2017MonitorSts::FillTsMsbInfo( stsxyter::Message mess, const UShort_
    // Fill CRC check histo as independent of other data processing
    fhStsElinkTsMsbCrc[fuCurrDpbIdx]->Fill( usElinkIdx, ( bCrcCheck ? 1 : 0 ) );
 
-   if( mess.TsMsbTsCheck() )
+   if( bCrcCheck )
    {
       // Everything ok
 
@@ -805,7 +879,7 @@ void CbmCern2017MonitorSts::FillTsMsbInfo( stsxyter::Message mess, const UShort_
       fhStsAsicTsMsb->Fill( fvuCurrentTsMsb[fuCurrDpbIdx][usElinkIdx], uAsicIdx );
       fhStsAsicTsMsbMaj->Fill( uAsicIdx, 3 );
       fhStsElinkTsMsbMaj[fuCurrDpbIdx]->Fill( usElinkIdx, 3 );
-   } // if( mess.TsMsbTsCheck() )
+   } // if( bCrcCheck )
       else
       {
          // Either nor 3 agreement or bad CRC
@@ -837,7 +911,7 @@ void CbmCern2017MonitorSts::FillTsMsbInfo( stsxyter::Message mess, const UShort_
          UShort_t uMajCnt = mess. GetTsMsbMajCnt();
          fhStsAsicTsMsbMaj->Fill( uAsicIdx, uMajCnt );
          fhStsElinkTsMsbMaj[fuCurrDpbIdx]->Fill( usElinkIdx, uMajCnt );
-      } // else of if( mess.TsMsbTsCheck() )
+      } // else of if( bCrcCheck )
 
    // Update the overlap bits for this eLink
    fvuCurrentTsMsbOver[fuCurrDpbIdx][usElinkIdx] =  fvuCurrentTsMsb[fuCurrDpbIdx][usElinkIdx]
@@ -898,6 +972,13 @@ void CbmCern2017MonitorSts::SaveAllHistos( TString sFileName )
       fhStsChanOverDiff[ uXyterIdx ]->Write();
       fhStsChanHitRateEvo[ uXyterIdx ]->Write();
       fhStsXyterRateEvo[ uXyterIdx ]->Write();
+      fhStsChanHitRateEvoLong[ uXyterIdx ]->Write();
+      fhStsXyterRateEvoLong[ uXyterIdx ]->Write();
+      if( fbChanHitDtEna )
+      {
+         fhStsChanHitDt[ uXyterIdx ]->Write();
+         fhStsChanHitDtNeg[ uXyterIdx ]->Write();
+      } // if( fbChanHitDtEna )
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
 
    fhStsAsicTsMsb->Write();
@@ -950,6 +1031,13 @@ void CbmCern2017MonitorSts::ResetAllHistos()
       fhStsChanOverDiff[ uXyterIdx ]->Reset();
       fhStsChanHitRateEvo[ uXyterIdx ]->Reset();
       fhStsXyterRateEvo[ uXyterIdx ]->Reset();
+      fhStsChanHitRateEvoLong[ uXyterIdx ]->Reset();
+      fhStsXyterRateEvoLong[ uXyterIdx ]->Reset();
+      if( fbChanHitDtEna )
+      {
+         fhStsChanHitDt[ uXyterIdx ]->Reset();
+         fhStsChanHitDtNeg[ uXyterIdx ]->Reset();
+      } // if( fbChanHitDtEna )
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
 
    fhStsAsicTsMsb->Reset();

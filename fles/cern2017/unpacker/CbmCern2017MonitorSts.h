@@ -64,6 +64,7 @@ public:
                                                            stsxyter::MessagePrintMask::msg_print_Crc |
                                                            stsxyter::MessagePrintMask::msg_print_Human )
                         { fbPrintMessages = bPrintMessOn; fPrintMessCtrl = ctrl; }
+   void EnableChanHitDtPlot( Bool_t bEnable = kTRUE ) { fbChanHitDtEna = bEnable; }
 
 private:
    size_t fuOverlapMsNb;      /** Ignore Overlap Ms: all fuOverlapMsNb MS at the end of timeslice **/
@@ -85,6 +86,7 @@ private:
       // Task configuration values
    Bool_t                fbPrintMessages;
    stsxyter::MessagePrintMask fPrintMessCtrl;
+   Bool_t                fbChanHitDtEna;
       // Current data properties
    std::map< stsxyter::MessType, UInt_t > fmMsgCounter;
    UInt_t                fuCurrentEquipmentId;  //! Current equipment ID, tells from which DPB the current MS is originating
@@ -113,6 +115,10 @@ private:
    std::vector<TH2*> fhStsChanOverDiff;
    std::vector<TH2*> fhStsChanHitRateEvo;
    std::vector<TH1*> fhStsXyterRateEvo;
+   std::vector<TH2*> fhStsChanHitRateEvoLong;
+   std::vector<TH1*> fhStsXyterRateEvoLong;
+   std::vector<TH2*> fhStsChanHitDt;
+   std::vector<TH2*> fhStsChanHitDtNeg;
 
    TH2* fhStsAsicTsMsb;
    TH2* fhStsAsicTsMsbMaj;
