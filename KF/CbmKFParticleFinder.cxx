@@ -92,9 +92,7 @@ void CbmKFParticleFinder::Exec(Option_t* /*opt*/)
   
   vector<KFParticleTopoReconstructor> eventTopoReconstructor;
   eventTopoReconstructor.resize(nEvents);
-  
-  cout<<nEvents<<" nEvents"<<endl;
-  
+    
   for(int iEvent=0; iEvent<nEvents; iEvent++)
   {
     CbmEvent* event = 0;
@@ -137,6 +135,8 @@ void CbmKFParticleFinder::Exec(Option_t* /*opt*/)
         for (Int_t j=0; j<=i; j++,iCov++)
           V[iCov] = parameters->GetCovariance(i,j);
     
+      if(stsTrack->GetNofHits() < 3) continue;
+
       bool ok = 1;
       ok = ok && finite(parameters->GetX());
       ok = ok && finite(parameters->GetY());
@@ -237,9 +237,7 @@ void CbmKFParticleFinder::Exec(Option_t* /*opt*/)
       
       TStopwatch timer;
       timer.Start();
-      
-      cout<<fPVFindMode<<" fPVFindMode"<<endl;
-      
+            
       eventTopoReconstructor[iEvent].Init(tracks, tracksAtLastPoint);
       if(fPVFindMode == 0)
       {
@@ -318,7 +316,6 @@ void CbmKFParticleFinder::Exec(Option_t* /*opt*/)
   {
     const KFParticleTopoReconstructor* eventTR = &eventTopoReconstructor[iEvent];
     
-    cout<<eventTR->NPrimaryVertices()<<" eventTR->NPrimaryVertices()"<<endl;
     for( int iPV=0;iPV<eventTR->NPrimaryVertices();iPV++)
     {
       PVTrackIndexArray = eventTR->GetPVTrackIndexArray(iPV);
@@ -338,12 +335,9 @@ void CbmKFParticleFinder::Exec(Option_t* /*opt*/)
       int idDaughter=0;
       for(int nD=0;nD<particleEvent.NDaughters();nD++)
       {
-//         cout<< " idDaughter "<<particleEvent.DaughterIds()[nD] <<endl;
         if(particleEvent.NDaughters()==1) idDaughter = particleEvent.DaughterIds()[nD];
         if(particleEvent.NDaughters()>1) idDaughter = particleEvent.DaughterIds()[nD]+indexAdd;
-//          cout<< " idDaughter "<< idDaughter<<" particleEvent.DaughterIds()[nD] "<<particleEvent.DaughterIds()[nD]<<" nD "<<nD<<endl;
         particle.AddDaughterId(idDaughter);
-
       }
       particle.SetId(idP);
       fTopoReconstructor->AddParticle(particle);

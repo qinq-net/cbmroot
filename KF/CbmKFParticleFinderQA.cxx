@@ -156,9 +156,7 @@ void CbmKFParticleFinderQA::Exec(Option_t* /*opt*/)
     int nMCEvents = 1;
     if(fTimeSliceMode)
       nMCEvents = fEventList->GetNofEvents();   
-    
-    std::cout<<nMCEvents<<" nMCEvents"<<endl;
-    
+        
     vector<KFMCTrack> mcTracks;
     vector< vector< vector<int> > > indexMap(1);
     indexMap[0].resize(nMCEvents);
@@ -224,14 +222,13 @@ void CbmKFParticleFinderQA::Exec(Option_t* /*opt*/)
     }
     
     Int_t ntrackMatches=fTrackMatchArray->GetEntriesFast();
-    
-    std::cout<<ntrackMatches<<" ntrackMatches"<<std::endl;
-    
+        
     vector<int> trackMatch(ntrackMatches, -1);
 
     for(int iTr=0; iTr<ntrackMatches; iTr++)
     {
       CbmTrackMatchNew* stsTrackMatch = (CbmTrackMatchNew*) fTrackMatchArray->At(iTr);
+      
       if(stsTrackMatch -> GetNofLinks() == 0) continue;
       Float_t bestWeight = 0.f;
       Float_t totalWeight = 0.f;
@@ -250,8 +247,6 @@ void CbmKFParticleFinderQA::Exec(Option_t* /*opt*/)
             mcTrackId = indexMap[link.GetFile()][link.GetEntry()][iMCTrack];
           else
             mcTrackId = stsTrackMatch->GetLink(iLink).GetIndex();
-          
-         /// std::cout << "mcTrackId " << mcTrackId << std::endl;
         }
       }
       if(bestWeight/totalWeight < 0.7) continue;

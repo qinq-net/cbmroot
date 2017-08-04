@@ -189,7 +189,7 @@ void CbmKFParticleFinderPID::Exec(Option_t* /*opt*/)
   if(fPIDMode==1)
     SetMCPID();
   if(fPIDMode==2)
-    SetRecoPID(); 
+    SetRecoPID();  
 }
 
 void CbmKFParticleFinderPID::Finish()
@@ -199,8 +199,6 @@ void CbmKFParticleFinderPID::Finish()
 void CbmKFParticleFinderPID::SetMCPID()
 {
   Int_t nTracks=fTrackArray->GetEntriesFast();
-  Int_t ntrackMatches = fTrackMatchArray->GetEntriesFast();  
-  std::cout << "PID  ntrackMatches " << ntrackMatches << " fTrackMatchArray " << fTrackMatchArray <<" "<<nTracks<< std::endl;
   Int_t nMCTracks = 0;
   if(!fTimeSliceMode)
     nMCTracks = fMCTrackArray->GetEntriesFast();
