@@ -193,4 +193,5 @@ void trd_digi1(Int_t nEvents = 1,
 
   // Function needed for CTest runtime dependency
   Generate_CTest_Dependency_File(depFile);
+  RemoveGeoManager();
 }

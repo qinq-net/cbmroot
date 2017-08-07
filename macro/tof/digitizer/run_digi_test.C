@@ -217,4 +217,5 @@ void run_digi_test(Int_t nEvents = 2, const char* setup = "sis100_electron")
   
   // Function needed for CTest runtime dependency
   Generate_CTest_Dependency_File(depFile);
+  RemoveGeoManager();
 }

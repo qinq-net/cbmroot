@@ -181,4 +181,5 @@ void mvd_qa3_digitize( const char* setup = "sis100_electron")
 
   // Function needed for CTest runtime dependency
   Generate_CTest_Dependency_File(depFile);
+  RemoveGeoManager();
 }

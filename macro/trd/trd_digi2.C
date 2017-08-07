@@ -210,4 +210,5 @@ void trd_digi2(Int_t nEvents = 1,
 
   cout << " Test passed" << endl;
   cout << " All ok " << endl;
+  RemoveGeoManager();
 }

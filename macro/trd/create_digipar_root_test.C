@@ -46,5 +46,6 @@ void create_digipar_root_test(TString geoName = "trd_v15a_1e")
 
    cout << " Test passed" << endl;
    cout << " All ok " << endl;
+   RemoveGeoManager(); 
 }
 
