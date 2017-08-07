@@ -85,15 +85,15 @@ class CbmTofDigitizerBDF : public FairTask
       virtual void Finish();
 
       void SetInputFileName (TString FileName) { fsBeamInputFile = FileName; }
-      
+
       Bool_t   SetHistoFileName( TString sFilenameIn = "./tofDigiBdf.hst.root" );
 
       void SetMonitorHistograms(Bool_t bMonitor = kTRUE) { fbMonitorHistos = bMonitor; }
-      
+
       void UseMcTrackMonitoring(Bool_t bMcTrkMonitor = kTRUE) { fbMcTrkMonitor = bMcTrkMonitor; }
 
       inline void SetDigiTimeConvFactor  (Double_t dfac)  { fdDigiTimeConvFactor    = dfac;}
-      
+
    protected:
 
    private:
@@ -228,14 +228,14 @@ class CbmTofDigitizerBDF : public FairTask
        ** @param[out]  eventNumber  Number of MC event
        ** @param[out]  inputNumber  Number of input
        ** @param[out]  eventTime    Start time of event [ns]
-       **  
+       **
        ** In case of being run with FairRunAna, this information
        ** is taken from FairEventHeader. If the task is run with
        ** FairRunSim, the FairEventHeader is not filled, so the
        ** respective information is taken from FairMCEventHeader.
-       **/ 
+       **/
       void GetEventInfo(Int_t& inputNr, Int_t& eventNr, Double_t& eventTime);
-      
+
       // Fee properties and constants
       Double_t            fdFeeGainSigma;
       Double_t            fdFeeTotThr;
@@ -281,13 +281,6 @@ class CbmTofDigitizerBDF : public FairTask
       std::vector< std::vector < ULong64_t > > fvlTrckRpcAddr;   // [nbMcTracks][nbRpcFiredByTrk]
       std::vector< std::vector < Double_t > >  fvlTrckRpcTime;   // [nbMcTracks][nbRpcFiredByTrk]
 
-      // Random generators
-      TRandom3 * fRandStart;
-      TRandom3 * fRandEff;
-      TRandom3 * fRandRadius;
-      TRandom3 * fRandCharge;
-      TRandom3 * fRandRes;
-
       // Output variables
       TClonesArray          * fTofDigisColl;  // TOF Digis
       TClonesArray          * fTofDigiMatchPointsColl; // MC original points
@@ -297,7 +290,7 @@ class CbmTofDigitizerBDF : public FairTask
       Int_t fVerbose;
 
       // Output file name and path
-      TString fsHistoOutFilename;   
+      TString fsHistoOutFilename;
       // Histograms
       TH1 * fhTofPointsPerTrack;
       TH2 * fhTofPtsInTrkVsGapInd;

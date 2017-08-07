@@ -98,11 +98,6 @@ CbmTofDigitizerBDF::CbmTofDigitizerBDF():
    fvlTrckChAddr(),
    fvlTrckRpcAddr(),
    fvlTrckRpcTime(),
-   fRandStart(NULL),
-   fRandEff(NULL),  
-   fRandRadius(NULL),
-   fRandCharge(NULL),
-   fRandRes(NULL),  
    fTofDigisColl(NULL),
    fTofDigiMatchPointsColl(NULL),
    fiNbDigis(0),
@@ -177,11 +172,6 @@ CbmTofDigitizerBDF::CbmTofDigitizerBDF(const char *name, Int_t verbose):
    fvlTrckChAddr(),
    fvlTrckRpcAddr(),
    fvlTrckRpcTime(),
-   fRandStart(NULL),
-   fRandEff(NULL),  
-   fRandRadius(NULL),
-   fRandCharge(NULL),
-   fRandRes(NULL),
    fTofDigisColl(NULL),
    fTofDigiMatchPointsColl(NULL),
    fiNbDigis(0),
@@ -235,11 +225,6 @@ CbmTofDigitizerBDF::~CbmTofDigitizerBDF()
 {
    if( fGeoHandler )
       delete fGeoHandler;
-      delete fRandStart;
-      delete fRandEff;
-      delete fRandRadius;
-      delete fRandCharge;
-      delete fRandRes;
 //   DeleteHistos(); // <-- if needed  ?
 }
 
@@ -270,21 +255,6 @@ InitStatus CbmTofDigitizerBDF::Init()
    if( kFALSE == CreateHistos() )
       return kFATAL;
 
-   // use default seed (same random numbers will be generated each time)
-   // use 0: a unique seed will be automatically generated using TUUID
-   // - simulation results should be reproducible!
-
-   fRandStart  = new TRandom3();
-//   fRandStart->SetSeed(0);
-   fRandEff    = new TRandom3();
-//   fRandEff->SetSeed(0);
-   fRandRadius = new TRandom3();
-//   fRandRadius->SetSeed(0);
-   fRandCharge = new TRandom3();
-//   fRandCharge->SetSeed(0);
-   fRandRes    = new TRandom3();
-//   fRandRes->SetSeed(0);
-
    return kSUCCESS;
 }
 
@@ -307,7 +277,7 @@ void CbmTofDigitizerBDF::Exec(Option_t* /*option*/)
 {
    // --- Start timer and reset counters
 	fTimer.Start();
-   
+
    // Get FairEventHeader information for CbmLink objects
    GetEventInfo(fiCurrentFileId, fiCurrentEventId, fdCurrentEventTime);
 
@@ -345,7 +315,7 @@ void CbmTofDigitizerBDF::Exec(Option_t* /*option*/)
                     + (fStart.GetNanoSec() - fStop.GetNanoSec())/1e9;
 
    FillHistos();
-   
+
    // --- Counters
    fTimer.Stop();
    fiNofEvents++;
@@ -361,7 +331,7 @@ void CbmTofDigitizerBDF::Finish()
 
    // Clear the cluster size and efficiency histos copies inside the parameter
    fDigiBdfPar->ClearHistos();
-   
+
    // Final printout for reference
    LOG(INFO) << "=====================================" << FairLogger::endl;
    LOG(INFO) << GetName() << ": Run summary (Time includes Hist filling)" << FairLogger::endl;
@@ -373,9 +343,9 @@ void CbmTofDigitizerBDF::Finish()
    } // if( fbMcTrkMonitor )
    LOG(INFO) << "TofPoint / event    : " << fdNofPointsTot / static_cast<Double_t>(fiNofEvents)
              << FairLogger::endl;
-   LOG(INFO) << "TofDigi / event     : " << fdNofDigisTot  / static_cast<Double_t>(fiNofEvents) 
+   LOG(INFO) << "TofDigi / event     : " << fdNofDigisTot  / static_cast<Double_t>(fiNofEvents)
              << FairLogger::endl;
-   LOG(INFO) << "Digis per point     : " << fdNofDigisTot  / fdNofPointsTot 
+   LOG(INFO) << "Digis per point     : " << fdNofDigisTot  / fdNofPointsTot
              << FairLogger::endl;
    if( fbMcTrkMonitor )
    {
@@ -471,9 +441,9 @@ Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
    fDigiBdfPar->SetInputFile(fsBeamInputFile);
 
    // Printout option for crosscheck
-   LOG(DEBUG)<<"  CbmTofDigitizerBDF::LoadBeamtimeValues Digi Par contains " 
+   LOG(DEBUG)<<"  CbmTofDigitizerBDF::LoadBeamtimeValues Digi Par contains "
              << fDigiPar->GetNrOfModules() << " cells " <<FairLogger::endl;
-             
+
    // Add Param printout only if DEBUG level ON
    if( gLogger->IsLogNeeded( DEBUG ) )
       fDigiBdfPar->printParams();
@@ -873,10 +843,10 @@ Bool_t   CbmTofDigitizerBDF::FillHistos()
    Int_t iNbTofTracks     = 0;
    Double_t nTofFired  = 0;
    Double_t dProcessTime = fdDigitizeTime + fdMergeTime;
-   
+
    // --- Update run Counters
    fdNofPointsTot   += nTofPoint;
-   
+
    // Tracks Info
    CbmMCTrack  *pMcTrk;
    if( fbMcTrkMonitor )
@@ -900,7 +870,7 @@ Bool_t   CbmTofDigitizerBDF::FillHistos()
             iNbTofTracksPrim++;
 
       } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
-      
+
       // --- Update run Counters
       fdNofTofMcTrkTot += iNbTofTracks;
    } // if( fbMcTrkMonitor )
@@ -911,7 +881,7 @@ Bool_t   CbmTofDigitizerBDF::FillHistos()
    {
       pTofPt = (CbmTofPoint*) fTofPointsColl->At( iPtInd );
       fhPtTime->Fill( pTofPt->GetTime() );
-      
+
       if( fbMcTrkMonitor )
       {
          Int_t iDetId  = pTofPt->GetDetectorID();
@@ -954,9 +924,9 @@ Bool_t   CbmTofDigitizerBDF::FillHistos()
       for( Int_t iDigInd = 0; iDigInd < nTofDigi; iDigInd++ )
       {
          pDigi = (CbmTofDigiExp*) fTofDigisColl->At( iDigInd );
-         CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchPointsColl->At(iDigInd);	
-         CbmLink L0 = digiMatch->GetMatchedLink(); 
-         CbmTofPoint* point = (CbmTofPoint*)fTofPointsColl->At( L0.GetIndex()); 
+         CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchPointsColl->At(iDigInd);
+         CbmLink L0 = digiMatch->GetMatchedLink();
+         CbmTofPoint* point = (CbmTofPoint*)fTofPointsColl->At( L0.GetIndex());
 
          if( pDigi->GetTot() < 0 )
             cout<<iDigInd<<"/"<<nTofDigi<<" "<<pDigi->GetTot()<<endl;
@@ -975,10 +945,10 @@ Bool_t   CbmTofDigitizerBDF::FillHistos()
          for( Int_t iDigInd = 0; iDigInd < nTofDigi; iDigInd++ )
          {
             pDigi = (CbmTofDigi*) fTofDigisColl->At( iDigInd );
-            CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchPointsColl->At(iDigInd);	
+            CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchPointsColl->At(iDigInd);
             CbmLink L0 = digiMatch->GetMatchedLink();
-            CbmTofPoint* point = (CbmTofPoint*)fTofPointsColl->At( L0.GetIndex()); 
-            //     CbmTofPoint* point = (CbmTofPoint*)fTofPointsColl->At(pDigi->GetMatch()->GetMatchedLink().GetIndex()); 
+            CbmTofPoint* point = (CbmTofPoint*)fTofPointsColl->At( L0.GetIndex());
+            //     CbmTofPoint* point = (CbmTofPoint*)fTofPointsColl->At(pDigi->GetMatch()->GetMatchedLink().GetIndex());
             if( pDigi->GetTot() < 0 )
                cout<<iDigInd<<"/"<<nTofDigi<<" "<<pDigi->GetTot()<<endl;
             fhDigiTime->Fill( pDigi->GetTime() );
@@ -1003,14 +973,14 @@ Bool_t   CbmTofDigitizerBDF::WriteHistos()
 {
    if( "" == fsHistoOutFilename || !fbMonitorHistos )
    {
-      LOG(INFO) << "CbmTofDigitizerBDF::WriteHistos => Control histograms will not be written to disk!" 
+      LOG(INFO) << "CbmTofDigitizerBDF::WriteHistos => Control histograms will not be written to disk!"
                 << FairLogger::endl;
       LOG(INFO) << "CbmTofDigitizerBDF::WriteHistos => To change this behavior please provide a full path "
                 << "with the SetHistoFileName method"
                 << FairLogger::endl;
       return kTRUE;
    } // if( "" == fsHistoOutFilename )
-   
+
    TDirectory * oldir = gDirectory;
    TFile *fHist = new TFile(fsHistoOutFilename,"RECREATE");
 
@@ -1119,7 +1089,7 @@ Bool_t   CbmTofDigitizerBDF::DeleteHistos()
 // TODO: FEE double hit discrimination capability (using Time distance between Digis)
 // TODO: Charge summing up
 Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
-{   
+{
    Int_t iNbSmTypes = fDigiBdfPar->GetNbSmTypes();
    if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
    {
@@ -1139,7 +1109,7 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                   for( Int_t iSide = 0; iSide < iNbSides; iSide++ )
                   {
                      Int_t iNbDigis = fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].size();
-                     
+
                      // TOF QA: monitor number of tracks leading to digi before merging them
                      Int_t iNbTracks = 0;
                      std::vector<Int_t> vPrevTrackIdList;
@@ -1148,7 +1118,7 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                         if(fbMonitorHistos)
                         {
                           fhNbDigiEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbDigis);
-                          
+
                           fhDigiNbElecCh->Fill(iNbDigis);
 
                           fhFiredEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide );
@@ -1167,25 +1137,25 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
 //                        Int_t    ivDigiInd[iNbDigis]; // Never used?
 //                        Double_t dvDigiTime[iNbDigis]; // Never used?
                         CbmMatch* digiMatch = new CbmMatch();
-                        
+
                         for( Int_t iDigi = 0; iDigi < iNbDigis; iDigi++)
                         {
-                           // Store Link with weight 0 to have a trace of MC tracks firing the channel 
+                           // Store Link with weight 0 to have a trace of MC tracks firing the channel
                            // but whose Digi is not propagated to next stage
                            digiMatch->AddLink(CbmLink(0.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi],fiCurrentEventId,fiCurrentFileId ));
-                        
+
                           if( fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetTime()
                                                                                           < dMinTime )
                           {
                               iChosenDigi = iDigi;
                               dMinTime = fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetTime();
-                              
+
                               // TOF QA: monitor number of tracks leading to digi before merging them
                               Bool_t bTrackFound = kFALSE;
                               for( UInt_t uTrkId = 0; uTrkId < vPrevTrackIdList.size(); uTrkId++ )
-                                 if( vPrevTrackIdList[uTrkId] == 
+                                 if( vPrevTrackIdList[uTrkId] ==
                                      ((CbmTofPoint*) fTofPointsColl->At(
-                                          fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi] 
+                                          fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]
                                                 ))->GetTrackID() )
                                  {
                                     bTrackFound = kTRUE;
@@ -1197,12 +1167,12 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                                  iNbTracks++;
                                  vPrevTrackIdList.push_back(
                                     ((CbmTofPoint*) fTofPointsColl->At(
-                                          fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi] 
+                                          fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]
                                                 ))->GetTrackID() );
                               }  // if( kFALSE ==  bTrackFound )
                           } // if fastest digi on this side of the channel
                         } // for( Int_t iDigi = 0; iDigi < iNbDigis; iDigi++)
-                        
+
                         if(fbMonitorHistos)
                         {
                           // TOF QA: monitor number of tracks leading to digi before merging them
@@ -1215,7 +1185,7 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
 			CbmTofDigiExp* tDigi = (CbmTofDigiExp *)fTofDigisColl->At(fiNbDigis);
 			tDigi->SetTime(tDigi->GetTime()*fdDigiTimeConvFactor); // ns -> ps
 
-                        LOG(DEBUG1)<<Form("Add digi %d (%zu) match of (%d,%d,%d,%d,%d) at pos %d", 
+                        LOG(DEBUG1)<<Form("Add digi %d (%zu) match of (%d,%d,%d,%d,%d) at pos %d",
                               iChosenDigi, fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].size(),
                               iSmType,iSm,iRpc,iCh,iSide,fiNbDigis)<<FairLogger::endl;
 
@@ -1232,7 +1202,7 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                         }
 
                         new((*fTofDigiMatchPointsColl)[fiNbDigis]) CbmMatch(*digiMatch);
-                        CbmLink LP = digiMatch->GetMatchedLink(); 
+                        CbmLink LP = digiMatch->GetMatchedLink();
                         Int_t lp=LP.GetIndex();
 
                         // In time-based mode, calling '~CbmDigi()' when destroying the digi object in 'CbmDaq::FillTimeSlice'
@@ -1248,12 +1218,12 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                              <<", lp: "<<lp
                              <<", MCt: "<<((CbmTofPoint*) fTofPointsColl->At(lp))->GetTrackID()
                              <<FairLogger::endl;
-                        
+
                         if(lp != fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] )
                           LOG(ERROR)<<Form("CbmTofDigitizerBDF::MergeSameChanDigis inconsistent links: %d <-> %d for (%d,%d,%d,%d,%d)",
                                lp, fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi],
                                iSmType,iSm,iRpc,iCh,iSide)<<FairLogger::endl;
-                        
+
                         fiNbDigis++;
                         for( Int_t iDigi = 0; iDigi < iNbDigis; iDigi++){
                            delete fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi];
@@ -1284,7 +1254,7 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                   for( Int_t iSide = 0; iSide < iNbSides; iSide++ )
                   {
                      Int_t iNbDigis = fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].size();
-                     
+
                      // TOF QA: monitor number of tracks leading to digi before merging them
                      Int_t iNbTracks = 0;
                      std::vector<Int_t> vPrevTrackIdList;
@@ -1293,7 +1263,7 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                         if(fbMonitorHistos)
                         {
                           fhNbDigiEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbDigis);
-                          
+
                           fhDigiNbElecCh->Fill(iNbDigis);
 
                           fhFiredEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide );
@@ -1306,22 +1276,22 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                         CbmMatch* digiMatch = new CbmMatch();
                         for( Int_t iDigi = 0; iDigi < iNbDigis; iDigi++)
                         {
-                           // Store Link with weight 0 to have a trace of MC tracks firing the channel 
+                           // Store Link with weight 0 to have a trace of MC tracks firing the channel
                            // but whose Digi is not propagated to next stage
                            digiMatch->AddLink(CbmLink(0.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi],fiCurrentEventId,fiCurrentFileId ));
-                           
+
                            if( fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetTime()
                                                                                           < dMinTime )
                            {
                               iChosenDigi = iDigi;
                               dMinTime = fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetTime();
-                        
+
                               // TOF QA: monitor number of tracks leading to digi before merging them
                               Bool_t bTrackFound = kFALSE;
                               for( UInt_t uTrkId = 0; uTrkId < vPrevTrackIdList.size(); uTrkId++ )
-                                 if( vPrevTrackIdList[uTrkId] == 
+                                 if( vPrevTrackIdList[uTrkId] ==
                                      ((CbmTofPoint*) fTofPointsColl->At(
-                                          fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi] 
+                                          fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]
                                                 ))->GetTrackID() )
                                  {
                                     bTrackFound = kTRUE;
@@ -1333,12 +1303,12 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                                  iNbTracks++;
                                  vPrevTrackIdList.push_back(
                                     ((CbmTofPoint*) fTofPointsColl->At(
-                                          fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi] 
+                                          fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]
                                                 ))->GetTrackID() );
                               }  // if( kFALSE ==  bTrackFound )
                            } // if fastest digi on this side of the channel
                         } // for( Int_t iDigi = 0; iDigi < iNbDigis; iDigi++)
-                        
+
                         if(fbMonitorHistos)
                         {
                           // TOF QA: monitor number of tracks leading to digi before merging them
@@ -1354,24 +1324,24 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
 			tDigi->SetTime(tDigi->GetTime()*fdDigiTimeConvFactor); // ns -> ps
 
                         digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi],fiCurrentEventId,fiCurrentFileId ));
-                        
+
                         new((*fTofDigiMatchPointsColl)[fiNbDigis]) CbmMatch(*digiMatch);
-                        CbmLink LP = digiMatch->GetMatchedLink(); 
+                        CbmLink LP = digiMatch->GetMatchedLink();
                         Int_t lp=LP.GetIndex();
                         delete digiMatch;
-                        
+
                         LOG(DEBUG1)<<"CbmTofDigitizerBDF:: TofDigiMatchColl entry "
                              <<fTofDigiMatchPointsColl->GetEntries()-1
                              <<", Poi: "<<fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi]
                              <<", lp: "<<lp
                              <<", MCt: "<<((CbmTofPoint*) fTofPointsColl->At(lp))->GetTrackID()
                              <<FairLogger::endl;
-                        
+
                         if(lp != fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] )
                           LOG(ERROR)<<Form("CbmTofDigitizerBDF::MergeSameChanDigis inconsistent links: %d <-> %d for (%d,%d,%d,%d,%d)",
                                lp, fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi],
                                iSmType,iSm,iRpc,iCh,iSide)<<FairLogger::endl;
-                        
+
                         fiNbDigis++;
 
                         for( Int_t iDigi = 0; iDigi < iNbDigis; iDigi++){
@@ -1455,7 +1425,7 @@ Double_t CbmTofDigitizerBDF::GenerateClusterRadius( Int_t iSmType, Int_t iRpc )
             Double_t dSigmScal = fDigiBdfPar->GetLandauSigma(iSmType); // empirical best
 
             // Get the actual Cluster radius
-            dClusterRadius = dStripSize*fRandRadius->Landau( dPeakPos, dSigmScal ) ;
+            dClusterRadius = dStripSize*gRandom->Landau( dPeakPos, dSigmScal ) ;
             if( dClusterRadius < 0 )
                dClusterRadius = 0;
          } // if( 0 == iChType)
@@ -1512,7 +1482,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
          fvlTrckRpcTime[iTrkInd].clear();
       } // if( kTRUE == fDigiBdfPar->UseOneGapPerTrk() )
    } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
-   
+
    if( fbMcTrkMonitor )
    {
       // Debug Info printout
@@ -1567,7 +1537,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
    Double_t dStartJitter = 0.;
    if(!fbTimeBasedOutput)
    {
-     dStartJitter = fRandStart->Gaus( 0.0, fDigiBdfPar->GetStartTimeRes() );
+     dStartJitter = gRandom->Gaus( 0.0, fDigiBdfPar->GetStartTimeRes() );
    }
 
    for (Int_t iPntInd = 0; iPntInd < nTofPoint; iPntInd++ )
@@ -1633,7 +1603,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
          // Check if this track ID is bigger than size of McTracks TClonesArray (maybe happen with PSD cut!!)
          // If yes, resize the array to  reach the appropriate number of fields
          if( fvlTrckChAddr.size() <= iTrkId )
-            fvlTrckChAddr.resize( iTrkId + 1 ); 
+            fvlTrckChAddr.resize( iTrkId + 1 );
          for( UInt_t uTrkMainCh = 0; uTrkMainCh < fvlTrckChAddr[iTrkId].size(); uTrkMainCh ++)
             if( uAddr == fvlTrckChAddr[iTrkId][uTrkMainCh])
             {
@@ -1658,7 +1628,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
       //    (1-p)^NGaps with p = gap efficiency and Ngaps the number of gaps in this RPC
       // This results in the relation: p = 1 - (1 - P)^(1/Ngaps)
       //         with P = RPC efficiency from beamtime
-      if( fDigiBdfPar->GetGapEfficiency(iSmType, iRpc) < fRandEff->Uniform(1) )
+      if( fDigiBdfPar->GetGapEfficiency(iSmType, iRpc) < gRandom->Uniform(1) )
          continue;
 
       // Save the address in vector so that this channel is not redone later for the
@@ -1673,7 +1643,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
          gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
 	 LOG(DEBUG1)<<Form(" TofDigitizerBDF:: (%3d,%3d,%3d,%3d) - node at (%6.1f,%6.1f,%6.1f) : 0x%p Pos(%6.1f,%6.1f,%6.1f)",
 			  iSmType,iSM,iRpc,iChannel,
-			  fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode, 
+			  fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode,
 			  vPntPos.X(), vPntPos.Y(), vPntPos.Z())
 		   <<FairLogger::endl;
       gGeoManager->GetCurrentNode();
@@ -1692,7 +1662,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
       // Cluster size from beamtime distribution in [strips]
       iClusterSize = fh1ClusterSizeProb[iSmType]->GetBinContent(
                         fh1ClusterSizeProb[iSmType]->FindBin(
-                           fRandRadius->Uniform(1) ) );
+                           gRandom->Uniform(1) ) );
 
       Int_t iNbStripsSideA;
       Int_t iNbStripsSideB;
@@ -1712,7 +1682,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
             if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
             {
               // Horizontal strips
-	      if( poipos_local[1] < fChannelInfo->GetSizey()/2.0 ) //FIXME, needs posiion in rotated counter frame 
+	      if( poipos_local[1] < fChannelInfo->GetSizey()/2.0 ) //FIXME, needs posiion in rotated counter frame
                   iNbStripsSideB --; // less strips on top
               else iNbStripsSideA --; // less strips on bottom
             } // if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
@@ -1724,8 +1694,8 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
       // Generate Cluster charge as ToT[ps]
       dClustCharge = fh1ClusterTotProb[iSmType]->GetBinContent(
                         fh1ClusterTotProb[iSmType]->FindBin(
-                           fRandCharge->Uniform(1) ) );
-                   
+                           gRandom->Uniform(1) ) );
+
       // Calculate the time for the central channel
       Double_t dCentralTime;
          // Check if there was already a Digi from the same track created in this RPC
@@ -1746,14 +1716,14 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
             else
             {
                dCentralTime =  pPoint->GetTime()
-                             + fRandRes->Gaus( 0.0, fDigiBdfPar->GetResolution(iSmType ) )
+                             + gRandom->Gaus( 0.0, fDigiBdfPar->GetResolution(iSmType ) )
                              + dStartJitter; // Same contrib. for all points in same event
                fvlTrckRpcAddr[iTrkId].push_back(uRpcAddr);
-               fvlTrckRpcTime[iTrkId].push_back(dCentralTime);              
+               fvlTrckRpcTime[iTrkId].push_back(dCentralTime);
             } // No Digi yet in this RPC for this Track
       } // if( kTRUE == fDigiBdfPar->UseOneGapPerTrk() )
          else dCentralTime =  pPoint->GetTime()
-                             + fRandRes->Gaus( 0.0, fDigiBdfPar->GetResolution(iSmType ) )
+                             + gRandom->Gaus( 0.0, fDigiBdfPar->GetResolution(iSmType ) )
                              + dStartJitter; // Same contrib. for all points in same event
 
       if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
@@ -1789,7 +1759,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
             if( 0 <= iStripInd && iStripInd < iNbCh )
             {
                Int_t iCh1 = iStripInd;
-	       if(fGeoHandler->GetGeoVersion() < k14a) 
+	       if(fGeoHandler->GetGeoVersion() < k14a)
                   iCh1= iCh1+1; //FIXME: Reason found in TofMC and TofGeoHandler
                CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSM, iRpc, 0, iCh1);
                Int_t iSideChId = fTofId->SetDetectorInfo( xDetInfo );
@@ -1804,7 +1774,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
                      dStripCharge*fdChannelGain[iSmType][iSM*iNbRpc + iRpc][2*iStripInd+1]/2.0 )
                {
                   Double_t dTimeA = dCentralTime;
-                  dTimeA +=  fRandRes->Gaus( 0.0, fdTimeResElec)
+                  dTimeA +=  gRandom->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                            + TMath::Abs( poipos_local[0] - ( + fChannelInfo->GetSizex()/2.0 ) )
 #else
@@ -1838,7 +1808,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
                      dStripCharge*fdChannelGain[iSmType][iSM*iNbRpc + iRpc][2*iStripInd]/2.0 )
                {
                   Double_t dTimeB = dCentralTime;
-                  dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
+                  dTimeB +=  gRandom->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                            + TMath::Abs( poipos_local[0] - ( - fChannelInfo->GetSizex()/2.0 ) )
 #else
@@ -1902,7 +1872,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
             if( 0 <= iStripInd && iStripInd < iNbCh )
             {
                Int_t iCh1 = iStripInd;
-	       if(fGeoHandler->GetGeoVersion() < k14a) 
+	       if(fGeoHandler->GetGeoVersion() < k14a)
                   iCh1= iCh1+1; //FIXME: Reason found in TofMC and TofGeoHandler
                CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSM, iRpc, 0, iCh1);
                Int_t iSideChId = fTofId->SetDetectorInfo( xDetInfo );
@@ -1917,7 +1887,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
                      dStripCharge*fdChannelGain[iSmType][iSM*iNbRpc + iRpc][2*iStripInd+1]/2.0 )
                {
                   Double_t dTimeA = dCentralTime;
-                  dTimeA +=  fRandRes->Gaus( 0.0, fdTimeResElec)
+                  dTimeA +=  gRandom->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                            + TMath::Abs( poipos_local[1] - ( + fChannelInfo->GetSizey()/2.0 ) )
 #else
@@ -1950,7 +1920,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
                      dStripCharge*fdChannelGain[iSmType][iSM*iNbRpc + iRpc][2*iStripInd]/2.0 )
                {
                   Double_t dTimeB = dCentralTime;
-                  dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
+                  dTimeB +=  gRandom->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                            + TMath::Abs( poipos_local[1] - ( - fChannelInfo->GetSizey()/2.0 ) )
 #else
@@ -2033,7 +2003,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
          fvlTrckRpcTime[iTrkInd].clear();
       } // if( kTRUE == fDigiBdfPar->UseOneGapPerTrk() )
    } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
-   
+
    if( fbMcTrkMonitor )
    {
       // Debug Info printout
@@ -2088,7 +2058,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
    Double_t dStartJitter = 0.;
    if(!fbTimeBasedOutput)
    {
-     dStartJitter = fRandStart->Gaus( 0.0, fDigiBdfPar->GetStartTimeRes() );
+     dStartJitter = gRandom->Gaus( 0.0, fDigiBdfPar->GetStartTimeRes() );
    }
 
    for (Int_t iPntInd = 0; iPntInd < nTofPoint; iPntInd++ )
@@ -2124,7 +2094,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
          // Get pointer to the MC-Track info
          pMcTrk = (CbmMCTrack*) fMcTracksColl->At( iTrkId );
 
-         LOG(DEBUG1)<<Form("CbmTofDigitizerBDF => det ID 0x%08x",iDetId) 
+         LOG(DEBUG1)<<Form("CbmTofDigitizerBDF => det ID 0x%08x",iDetId)
           <<", GeoVersion "<< fGeoHandler->GetGeoVersion()<<", SMType: "<<iSmType
           <<" SModule: "<<iSM<<" of "<<iNbSm+1
           <<" Module: "<<iRpc<<" of "<<iNbRpc+1
@@ -2146,7 +2116,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
          || iRpc     < 0. || iNbRpc     <= iRpc
          || iChannel < 0. || iNbCh      <= iChannel )
       {
-	 LOG(ERROR)<<Form("CbmTofDigitizerBDF => det ID 0x%08x",iDetId) 
+	 LOG(ERROR)<<Form("CbmTofDigitizerBDF => det ID 0x%08x",iDetId)
 		   <<", GeoVersion "<< fGeoHandler->GetGeoVersion()<<", SMType: "<<iSmType;
          LOG(ERROR)<<" SModule: "<<iSM<<" of "<<iNbSm+1;
          LOG(ERROR)<<" Module: "<<iRpc<<" of "<<iNbRpc+1;
@@ -2167,7 +2137,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
          // Check if this track ID is bigger than size of McTracks TClonesArray (maybe happen with PSD cut!!)
          // If yes, resize the array to  reach the appropriate number of fields
          if( fvlTrckChAddr.size() <= iTrkId )
-            fvlTrckChAddr.resize( iTrkId + 1 ); 
+            fvlTrckChAddr.resize( iTrkId + 1 );
          for( UInt_t uTrkMainCh = 0; uTrkMainCh < fvlTrckChAddr[iTrkId].size(); uTrkMainCh ++)
             if( uAddr == fvlTrckChAddr[iTrkId][uTrkMainCh])
             {
@@ -2193,10 +2163,10 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
       // This results in the relation: p = 1 - (1 - P)^(1/Ngaps)
       //         with P = RPC efficiency from beamtime
       LOG(DEBUG2)<<"CbmTofDigitizerBDF::DigitizeFlatDisc => Eff = "
-		 <<fDigiBdfPar->GetGapEfficiency(iSmType, iRpc) 
+		 <<fDigiBdfPar->GetGapEfficiency(iSmType, iRpc)
 		 <<FairLogger::endl;
 
-      if( fDigiBdfPar->GetGapEfficiency(iSmType, iRpc) < fRandEff->Uniform(1) )
+      if( fDigiBdfPar->GetGapEfficiency(iSmType, iRpc) < gRandom->Uniform(1) )
          continue;
 
       // Save the address in vector so that this channel is not redone later for the
@@ -2217,7 +2187,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
          gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
 	 LOG(DEBUG1)<<Form(" TofDigitizerBDF:: (%3d,%3d,%3d,%3d) - node at (%6.1f,%6.1f,%6.1f) : %p Pos(%6.1f,%6.1f,%6.1f)",
 			  iSmType,iSM,iRpc,iChannel,
-			  fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode, 
+			  fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode,
 			  vPntPos.X(), vPntPos.Y(), vPntPos.Z())
 		   <<FairLogger::endl;
       gGeoManager->GetCurrentNode();
@@ -2248,7 +2218,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
       // Generate Cluster charge as ToT[ps]
       dClustCharge = fh1ClusterTotProb[iSmType]->GetBinContent(
                         fh1ClusterTotProb[iSmType]->FindBin(
-                           fRandCharge->Uniform(1) ) );
+                           gRandom->Uniform(1) ) );
 
       //Total cluster area (used to calculate the charge fraction in each channel)
       Double_t dClustArea = dClusterSize * dClusterSize * TMath::Pi();
@@ -2274,7 +2244,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
       } // if( dClustCharge +0.0000001 < dChargeCentral )
 
       // Calculate the time for the central channel
-      Double_t dCentralTime; 
+      Double_t dCentralTime;
         // Check if there was already a Digi from the same track created in this RPC
       if( kTRUE == fDigiBdfPar->UseOneGapPerTrk() )
       {
@@ -2293,16 +2263,16 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
             else
             {
                dCentralTime =  pPoint->GetTime()
-                             + fRandRes->Gaus( 0.0, fDigiBdfPar->GetResolution(iSmType ) )
+                             + gRandom->Gaus( 0.0, fDigiBdfPar->GetResolution(iSmType ) )
                              + dStartJitter; // Same contrib. for all points in same event
                fvlTrckRpcAddr[iTrkId].push_back(uRpcAddr);
-               fvlTrckRpcTime[iTrkId].push_back(dCentralTime);              
+               fvlTrckRpcTime[iTrkId].push_back(dCentralTime);
             } // No Digi yet in this RPC for this Track
       } // if( kTRUE == fDigiBdfPar->UseOneGapPerTrk() )
          else dCentralTime = pPoint->GetTime()
-                             + fRandRes->Gaus( 0.0, fDigiBdfPar->GetResolution(iSmType ) )
+                             + gRandom->Gaus( 0.0, fDigiBdfPar->GetResolution(iSmType ) )
                              + dStartJitter; // Same contrib. for all points in same event
-         
+
       // FIXME: not sure if this limit does not destroy rate estimates and such
 //      if( 1e6 < dCentralTime )
 //         continue;
@@ -2326,14 +2296,14 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
          if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
          {
             // Horizontal channel: A = Right and B = Left of the channel
-            dTimeA +=  fRandRes->Gaus( 0.0, fdTimeResElec)
+            dTimeA +=  gRandom->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                      + TMath::Abs( poipos_local[0] - ( + fChannelInfo->GetSizex()/2.0 ) )
 #else
                      + ( poipos_local[0] )
 #endif
                        /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
-            dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
+            dTimeB +=  gRandom->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                      + TMath::Abs( poipos_local[0] - ( - fChannelInfo->GetSizex()/2.0 ) )
 #else
@@ -2344,7 +2314,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
             else
             {
                // Vertical channel: A = Top and B = Bottom of the channel
-               dTimeA +=  fRandRes->Gaus( 0.0, fdTimeResElec)
+               dTimeA +=  gRandom->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                         + TMath::Abs( poipos_local[1]- ( + fChannelInfo->GetSizey()/2.0 ) )
 #else
@@ -2352,7 +2322,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
                         + poipos_local[1]
 #endif
                           /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
-               dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
+               dTimeB +=  gRandom->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                         + TMath::Abs( poipos_local[1] - ( - fChannelInfo->GetSizey()/2.0 ) )
 #else
@@ -2370,7 +2340,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
                CbmTofDigiExp * tofDigi = new CbmTofDigiExp( iSM, iRpc, iChannel, dTimeA,
                      dChargeCentral*fdChannelGain[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1]/2.0,
                      1, iSmType );
-	       //nh,crashes  
+	       //nh,crashes
 	       //	       tofDigi->GetMatch()->AddLink(1., iPntInd);
                fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].push_back( tofDigi );
 	       fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].push_back( iPntInd );
@@ -2472,7 +2442,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
                             + TMath::Power( poipos_local[1] - ( + fChannelInfo->GetSizey()/2.0 ), 2) );
                } // else of if( iChannel < iNbCh/2.0 )
 
-            dPadTime += fRandRes->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iSM][iRpc];
+            dPadTime += gRandom->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iSM][iRpc];
 
             if( fDigiBdfPar->GetFeeThreshold() <=
                   dChargeCentral*fdChannelGain[iSmType][iSM*iNbRpc + iRpc][iChannel] )
@@ -2606,14 +2576,14 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
             if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
             {
                // Horizontal channel: A = Right and B = Left of the channel
-               dTimeA +=  fRandRes->Gaus( 0.0, fdTimeResElec)
+               dTimeA +=  gRandom->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                         + TMath::Abs( poipos_local[0] - ( + fChannelInfo->GetSizex()/2.0 ) )
 #else
                         + ( poipos_local[0] )
 #endif
                           /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
-               dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
+               dTimeB +=  gRandom->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                         + TMath::Abs( poipos_local[0] - ( - fChannelInfo->GetSizex()/2.0 ) )
 #else
@@ -2625,7 +2595,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
                {
 
                   // Vertical channel: A = Top and B = Bottom of the channel
-                  dTimeA +=  fRandRes->Gaus( 0.0, fdTimeResElec)
+                  dTimeA +=  gRandom->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                            + TMath::Abs( poipos_local[1] - ( + fChannelInfo->GetSizey()/2.0 ) )
 #else
@@ -2633,7 +2603,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 		           + poipos_local[1]
 #endif
                              /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
-                  dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
+                  dTimeB +=  gRandom->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                            + TMath::Abs( poipos_local[1] - ( - fChannelInfo->GetSizey()/2.0 ) )
 #else
@@ -2758,7 +2728,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
                // Test if Pad in diff row but same column as central pad has cluster overlap
                // if Yes => Loop from min+1 to max-1 equivalents in the opposite row
                dClusterDist = TMath::Abs( poipos_local[0]
-                                 - ( 
+                                 - (
                                      + fChannelInfo->GetSizex()*( 2*iRow - 1 )/2 ) );
                if( dClusterDist < dClusterSize )
                   bCheckOtherRow = kTRUE;
@@ -2771,7 +2741,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
                   {
                      iMinChanInd --;
                      dClusterDist = TMath::Abs( poipos_local[0]
-                                     - ( 
+                                     - (
                                          + fChannelInfo->GetSizex()*( iMinChanInd - iChannel + ( 1-2*iRow )/2 ) ) );
                   } // while right/left edge inside cluster and index not out of rpc
                   dClusterDist = 0;
@@ -2780,14 +2750,14 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
                   {
                      iMaxChanInd ++;
                      dClusterDist = TMath::Abs( poipos_local[0]
-                                     - ( 
+                                     - (
                                          + fChannelInfo->GetSizex()*( iMaxChanInd - iChannel - ( 1-2*iRow )/2 ) ) );
                   } // while left/right edge inside cluster and index not out of rpc
 
                   // Test if Pad in diff row but same column as central pad has cluster overlap
                   // if Yes => Loop from min+1 to max-1 equivalents in the opposite row
                   dClusterDist = TMath::Abs( poipos_local[1]
-                                    - ( 
+                                    - (
                                         + fChannelInfo->GetSizey()*( 1 - 2*iRow )/2 ) );
                   if( dClusterDist < dClusterSize )
                      bCheckOtherRow = kTRUE;
@@ -2803,7 +2773,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
                // Channel index in this UID is in [1,nbCh] instead of [0, nbCh[
                // ... don't ask me why ... reason found in TofMC and TofGeoHandler!
                Int_t iCh1 = iChanInd;
-	            if(fGeoHandler->GetGeoVersion() < k14a) 
+	            if(fGeoHandler->GetGeoVersion() < k14a)
                   iCh1= iCh1+1; //FIXME: Reason found in TofMC and TofGeoHandler
                CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSM, iRpc, 0, iCh1);
 
@@ -2832,7 +2802,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
                      dClustToReadout = TMath::Sqrt(  TMath::Power( poipos_local[0] , 2)
                          + TMath::Power( poipos_local[1] - ( - (1-2*iRow)*fChannelInfo->GetSizey()/2.0 ), 2) );
 
-               dPadTime += fRandRes->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iSM][iRpc];
+               dPadTime += gRandom->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iSM][iRpc];
 
                // Switch between Digi and DigiExp
                if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
@@ -2866,7 +2836,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
                   // Channel index in this UID is in [1,nbCh] instead of [0, nbCh[
                   // ... don't ask me why ... reason found in TofMC and TofGeoHandler!
                   Int_t iCh1 = iChanInd;
-                  if(fGeoHandler->GetGeoVersion() < k14a) 
+                  if(fGeoHandler->GetGeoVersion() < k14a)
                      iCh1= iCh1+1; //FIXME: Reason found in TofMC and TofGeoHandler
                   CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSM, iRpc, 0, iCh1);
 
@@ -2893,8 +2863,8 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
                      else  // Horizontal => base = bottom/upper edge
                         dClustToReadout = TMath::Sqrt(  TMath::Power( poipos_local[0] , 2)
                             + TMath::Power( poipos_local[1] - ( - (1-2*iRow)*fChannelInfo->GetSizey()/2.0 ), 2) );
-		  
-                  dPadTime += fRandRes->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iSM][iRpc];
+
+                  dPadTime += gRandom->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iSM][iRpc];
 
                   // Switch between Digi and DigiExp
                   if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
@@ -2970,7 +2940,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
          fvlTrckRpcTime[iTrkInd].clear();
       } // if( kTRUE == fDigiBdfPar->UseOneGapPerTrk() )
    } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
-   
+
    if( fbMcTrkMonitor )
    {
       // Debug Info printout
@@ -3025,7 +2995,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
    Double_t dStartJitter = 0.;
    if(!fbTimeBasedOutput)
    {
-     dStartJitter = fRandStart->Gaus( 0.0, fDigiBdfPar->GetStartTimeRes() );
+     dStartJitter = gRandom->Gaus( 0.0, fDigiBdfPar->GetStartTimeRes() );
    }
 
    for (Int_t iPntInd = 0; iPntInd < nTofPoint; iPntInd++ )
@@ -3088,7 +3058,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
          // Check if this track ID is bigger than size of McTracks TClonesArray (maybe happen with PSD cut!!)
          // If yes, resize the array to  reach the appropriate number of fields
          if( fvlTrckChAddr.size() <= iTrkId )
-            fvlTrckChAddr.resize( iTrkId + 1 ); 
+            fvlTrckChAddr.resize( iTrkId + 1 );
          for( UInt_t uTrkMainCh = 0; uTrkMainCh < fvlTrckChAddr[iTrkId].size(); uTrkMainCh ++)
             if( uAddr == fvlTrckChAddr[iTrkId][uTrkMainCh])
             {
@@ -3101,7 +3071,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
       } // if( kTRUE == fDigiBdfPar->UseOneGapPerTrk() )
 
       // Probability that the RPC detect the hit
-//      if( fDigiBdfPar->GetEfficiency(iSmType) < fRandEff->Uniform(1) )
+//      if( fDigiBdfPar->GetEfficiency(iSmType) < gRandom->Uniform(1) )
 //         continue;
 
       // Probability that the gap detect the hit
@@ -3113,7 +3083,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
       //    (1-p)^NGaps with p = gap efficiency and Ngaps the number of gaps in this RPC
       // This results in the relation: p = 1 - (1 - P)^(1/Ngaps)
       //         with P = RPC efficiency from beamtime
-      if( fDigiBdfPar->GetGapEfficiency(iSmType, iRpc) < fRandEff->Uniform(1) )
+      if( fDigiBdfPar->GetGapEfficiency(iSmType, iRpc) < gRandom->Uniform(1) )
          continue;
 
       // Save the address in vector so that this channel is not redone later for the
@@ -3128,7 +3098,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
          gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
 	 LOG(DEBUG1)<<Form(" TofDigitizerBDF:: (%3d,%3d,%3d,%3d) - node at (%6.1f,%6.1f,%6.1f) : 0x%p Pos(%6.1f,%6.1f,%6.1f)",
 			  iSmType,iSM,iRpc,iChannel,
-			  fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode, 
+			  fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode,
 			  vPntPos.X(), vPntPos.Y(), vPntPos.Z())
 		   <<FairLogger::endl;
       gGeoManager->GetCurrentNode();
@@ -3147,7 +3117,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
       // Generate Cluster charge as ToT[ps]
       dClustCharge = fh1ClusterTotProb[iSmType]->GetBinContent(
                         fh1ClusterTotProb[iSmType]->FindBin(
-                           fRandCharge->Uniform(1) ) );
+                           gRandom->Uniform(1) ) );
 
       // Assume the width (sigma) of the gaussian in both direction is dClusterSize/3
       // => 99% of the charge is in "dClusterSize"
@@ -3184,16 +3154,16 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
             else
             {
                dCentralTime =  pPoint->GetTime()
-                             + fRandRes->Gaus( 0.0, fDigiBdfPar->GetResolution(iSmType ) )
+                             + gRandom->Gaus( 0.0, fDigiBdfPar->GetResolution(iSmType ) )
                              + dStartJitter; // Same contrib. for all points in same event
                fvlTrckRpcAddr[iTrkId].push_back(uRpcAddr);
-               fvlTrckRpcTime[iTrkId].push_back(dCentralTime);              
+               fvlTrckRpcTime[iTrkId].push_back(dCentralTime);
             } // No Digi yet in this RPC for this Track
       } // if( kTRUE == fDigiBdfPar->UseOneGapPerTrk() )
          else dCentralTime = pPoint->GetTime()
-                             + fRandRes->Gaus( 0.0, fDigiBdfPar->GetResolution(iSmType ) )
+                             + gRandom->Gaus( 0.0, fDigiBdfPar->GetResolution(iSmType ) )
                              + dStartJitter; // Same contrib. for all points in same event
-      
+
       // Calculate propagation time(s) to the readout point(s)
       if( 0 == iChType)
       {
@@ -3213,14 +3183,14 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
          if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
          {
             // Horizontal channel: A = Right and B = Left of the channel
-            dTimeA +=  fRandRes->Gaus( 0.0, fdTimeResElec)
+            dTimeA +=  gRandom->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                      + TMath::Abs( poipos_local[0] - ( + fChannelInfo->GetSizex()/2.0 ) )
 #else
                      + ( poipos_local[0] )
 #endif
                        /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
-            dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
+            dTimeB +=  gRandom->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                      + TMath::Abs( poipos_local[0] - ( - fChannelInfo->GetSizex()/2.0 ) )
 #else
@@ -3231,14 +3201,14 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
             else
             {
                // Vertical channel: A = Top and B = Bottom of the channel
-               dTimeA +=  fRandRes->Gaus( 0.0, fdTimeResElec)
+               dTimeA +=  gRandom->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                         + TMath::Abs( poipos_local[1] - ( + fChannelInfo->GetSizey()/2.0 ) )
 #else
                         + ( poipos_local[1] )
 #endif
                           /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
-               dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
+               dTimeB +=  gRandom->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                         + TMath::Abs( poipos_local[1] - ( - fChannelInfo->GetSizey()/2.0 ) )
 #else
@@ -3334,7 +3304,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
                             + TMath::Power( poipos_local[1] - ( + fChannelInfo->GetSizey()/2.0 ), 2) );
                } // else of if( iChannel < iNbCh/2.0 )
 
-            dPadTime += fRandRes->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iSM][iRpc];
+            dPadTime += gRandom->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iSM][iRpc];
 
             // TODO: Check on fee threshold ?
             // Switch between Digi and DigiExp
@@ -3373,7 +3343,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
             // Channel index in this UID is in [1,nbCh] instead of [0, nbCh[
             // ... don't ask me why ... reason found in TofMC and TofGeoHandler!
             Int_t iCh1 = iSideChInd;
-            if(fGeoHandler->GetGeoVersion() < k14a) 
+            if(fGeoHandler->GetGeoVersion() < k14a)
                iCh1= iCh1+1; //FIXME: Reason found in TofMC and TofGeoHandler
             CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSM, iRpc, 0, iCh1);
 
@@ -3397,14 +3367,14 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
                if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
                {
                   // Horizontal channel: A = Right and B = Left of the channel
-                  dTimeA +=  fRandRes->Gaus( 0.0, fdTimeResElec)
+                  dTimeA +=  gRandom->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                            + TMath::Abs( poipos_local[0] - ( + fChannelInfo->GetSizex()/2.0 ) )
 #else
                            + ( poipos_local[0] )
 #endif
                              /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
-                  dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
+                  dTimeB +=  gRandom->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                            + TMath::Abs( poipos_local[0] - ( - fChannelInfo->GetSizex()/2.0 ) )
 #else
@@ -3415,14 +3385,14 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
                   else
                   {
                      // Vertical channel: A = Top and B = Bottom of the channel
-                     dTimeA +=  fRandRes->Gaus( 0.0, fdTimeResElec)
+                     dTimeA +=  gRandom->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                               + TMath::Abs( poipos_local[1] - ( + fChannelInfo->GetSizey()/2.0 ) )
 #else
                               + ( poipos_local[1] )
 #endif
                                 /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
-                     dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
+                     dTimeB +=  gRandom->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                               + TMath::Abs( poipos_local[1] - ( - fChannelInfo->GetSizey()/2.0 ) )
 #else
@@ -3473,7 +3443,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
                // ... don't ask me why ...
                // FIXME: problem around here => reason found in TofMC and TofGeoHandler!
                Int_t iCh2 = iSideChInd;
-               if(fGeoHandler->GetGeoVersion() < k14a) 
+               if(fGeoHandler->GetGeoVersion() < k14a)
                   iCh2= iCh2+1; //FIXME: Reason found in TofMC and TofGeoHandler
                xDetInfo.fCell = iCh2;
 
@@ -3497,7 +3467,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
             // Channel index in this UID is in [1,nbCh] instead of [0, nbCh[
             // ... don't ask me why ... reason found in TofMC and TofGeoHandler!
             Int_t iCh1 = iSideChInd;
-            if(fGeoHandler->GetGeoVersion() < k14a) 
+            if(fGeoHandler->GetGeoVersion() < k14a)
                iCh1= iCh1+1; //FIXME: Reason found in TofMC and TofGeoHandler
             CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSM, iRpc, 0, iCh1);
 
@@ -3521,14 +3491,14 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
                if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
                {
                   // Horizontal channel: A = Right and B = Left of the channel
-                  dTimeA +=  fRandRes->Gaus( 0.0, fdTimeResElec)
+                  dTimeA +=  gRandom->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                            + TMath::Abs( poipos_local[0] - ( + fChannelInfo->GetSizex()/2.0 ) )
 #else
                            + ( poipos_local[0] )
 #endif
                              /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
-                  dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
+                  dTimeB +=  gRandom->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                            + TMath::Abs( poipos_local[0] - ( - fChannelInfo->GetSizex()/2.0 ) )
 #else
@@ -3539,14 +3509,14 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
                   else
                   {
                      // Vertical channel: A = Top and B = Bottom of the channel
-                     dTimeA +=  fRandRes->Gaus( 0.0, fdTimeResElec)
+                     dTimeA +=  gRandom->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                               + TMath::Abs( poipos_local[1] - ( + fChannelInfo->GetSizey()/2.0 ) )
 #else
                               + ( poipos_local[1] )
 #endif
                                 /fvdSignalVelocityRpc[iSmType][iSM][iRpc];
-                     dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
+                     dTimeB +=  gRandom->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                               + TMath::Abs( poipos_local[1] - ( - fChannelInfo->GetSizey()/2.0 ) )
 #else
@@ -3654,7 +3624,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
                // Channel index in this UID is in [1,nbCh] instead of [0, nbCh[
                // ... don't ask me why ... reason found in TofMC and TofGeoHandler!
                Int_t iCh1 = iSideChInd;
-               if(fGeoHandler->GetGeoVersion() < k14a) 
+               if(fGeoHandler->GetGeoVersion() < k14a)
                   iCh1= iCh1+1; //FIXME: Reason found in TofMC and TofGeoHandler
                CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSM, iRpc, 0, iCh1);
 
@@ -3685,7 +3655,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
                         dClustToReadout = TMath::Sqrt(  TMath::Power( poipos_local[0] , 2)
                             + TMath::Power( poipos_local[1] - ( - (1-2*iRow)*fChannelInfo->GetSizey()/2.0 ), 2) );
 
-                  dPadTime += fRandRes->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iSM][iRpc];
+                  dPadTime += gRandom->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iSM][iRpc];
 
                   // Switch between Digi and DigiExp
                   if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
@@ -3737,7 +3707,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
                // Channel index in this UID is in [1,nbCh] instead of [0, nbCh[
                // ... don't ask me why ... reason found in TofMC and TofGeoHandler!
                Int_t iCh1 = iSideChInd;
-               if(fGeoHandler->GetGeoVersion() < k14a) 
+               if(fGeoHandler->GetGeoVersion() < k14a)
                   iCh1= iCh1+1; //FIXME: Reason found in TofMC and TofGeoHandler
                CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSM, iRpc, 0, iCh1);
 
@@ -3768,7 +3738,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
                         dClustToReadout = TMath::Sqrt(  TMath::Power( poipos_local[0] , 2)
                             + TMath::Power( poipos_local[1] - ( - (1-2*iRow)*fChannelInfo->GetSizey()/2.0 ), 2) );
 
-                  dPadTime += fRandRes->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iSM][iRpc];
+                  dPadTime += gRandom->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iSM][iRpc];
 
                   // Switch between Digi and DigiExp
                   if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
@@ -3818,7 +3788,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
             // Channel index in this UID is in [1,nbCh] instead of [0, nbCh[
             // ... don't ask me why ... reason found in TofMC and TofGeoHandler!
             Int_t iCh1 = iChannel;
-            if(fGeoHandler->GetGeoVersion() < k14a) 
+            if(fGeoHandler->GetGeoVersion() < k14a)
                iCh1= iCh1+1; //FIXME: Reason found in TofMC and TofGeoHandler
             CbmTofDetectorInfo xDetInfo(kTof, iSmType, iSM, iRpc, 0, iCh1 + ( 1 - 2*iRow )*iNbCh/2.0);
             Int_t iSideChId = fTofId->SetDetectorInfo( xDetInfo );
@@ -3865,7 +3835,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
                            dClustToReadout = TMath::Sqrt(  TMath::Power( poipos_local[0] , 2)
                                + TMath::Power( poipos_local[1] - ( - (1-2*iRow)*fChannelInfo->GetSizey()/2.0 ), 2) );
 
-                     dPadTime += fRandRes->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iSM][iRpc];
+                     dPadTime += gRandom->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iSM][iRpc];
 
                      // Switch between Digi and DigiExp
                      if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
