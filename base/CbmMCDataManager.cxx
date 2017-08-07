@@ -12,21 +12,24 @@ using namespace std;
 
 // --- Default constructor
 CbmMCDataManager::CbmMCDataManager()
-  : FairTask("MCDataManager", 0), fLegacy(0), fFileList(), fActive(), fActiveObj()
+  : CbmMCDataManager("MCDataManager", 0)
+//  : FairTask("MCDataManager", 0), fLegacy(0), fFileList(), fActive(), fActiveObj(), fFriends()
 {
   fFileList.clear();
   fActive.clear();
   fActiveObj.clear();
+  fFriends.clear();
 }
 
 
 // --- Standard constructor
 CbmMCDataManager::CbmMCDataManager(const char* name, Int_t legacy)
-  : FairTask(name,0), fLegacy(legacy), fFileList(), fActive(), fActiveObj()
+  : FairTask(name,0), fLegacy(legacy), fFileList(), fActive(), fActiveObj(), fFriends()
 {
   fFileList.clear();
   fActive.clear();
   fActiveObj.clear();
+  fFriends.clear();
 }
 
 
