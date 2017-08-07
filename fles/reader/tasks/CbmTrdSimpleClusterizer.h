@@ -12,6 +12,8 @@ class CbmTrdSimpleClusterizer : public CbmTrdQABase
 
  public:
   CbmTrdSimpleClusterizer();
+  CbmTrdSimpleClusterizer(const CbmTrdSimpleClusterizer&) = delete;
+  CbmTrdSimpleClusterizer& operator=(const CbmTrdSimpleClusterizer&) = delete;
   //  ~CbmTrdSimpleClusterizer();
   InitStatus Init();
   void Exec(Option_t*);

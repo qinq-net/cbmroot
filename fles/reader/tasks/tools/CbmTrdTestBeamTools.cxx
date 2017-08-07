@@ -11,7 +11,7 @@
 
 ClassImp(CbmTrdTestBeamTools)
 
-CbmTrdTestBeamTools::CbmTrdTestBeamTools () : TObject()
+CbmTrdTestBeamTools::CbmTrdTestBeamTools () : TObject(), fDigis(nullptr)
 {
   LOG(INFO) << TString("Default Constructor of ")+TString(this->GetName())
 		<< FairLogger::endl;

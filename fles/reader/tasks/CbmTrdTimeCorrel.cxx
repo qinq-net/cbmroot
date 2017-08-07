@@ -2166,39 +2166,6 @@ TString CbmTrdTimeCorrel::GetStopName(Int_t stopType)
   return stopName;
 }
 
-inline TString CbmTrdTimeCorrel::GetSpadicName(Int_t eqID,Int_t sourceA,kInputType InputType,kSpadicType OutputType){
-	/*	Get a String of the Form "Syscore_0_Spadic_0" describing the specific SPADIC corresponding to the input parameters.
-	 *  The Parameter InputType allows either the Equipment ID/Source Address or the final Syscore/Spadic ID to be used.
-	 *  	kRawData (default) is the parameter that allows the raw EqID/Source Address to be used, kProcessedData takes Syscore/SpadicID.
-	 *  The Parameter OutputType allows adressing either the corresponding FullSpadic, via kFullSpadic (default), or the original HalfSpadic,
-	 *  	via kHalfSpadic.
-	 * */
-  TString spadicName="";
-  Int_t SpadicID=0;
-  if(InputType==kRawData){
-	  spadicName="SysCore_"+std::to_string(GetSyscoreID(eqID))+"_";
-	  SpadicID=GetSpadicID(sourceA);
-  }
-  else {
-	  spadicName="SysCore_"+std::to_string((eqID))+"_";
-	  SpadicID=(sourceA);
-  }
-
-  if(OutputType==kFullSpadic&&InputType!=kDirectOutput){
-	  SpadicID/=2;
-  }
-  ;
-  if(OutputType==kFullSpadic){
-	  spadicName += "Spadic_";
-  }else{
-	  spadicName += "Half_Spadic_";
-
-  }
-  spadicName+=std::to_string(SpadicID);
-
-  return spadicName;
-}
-
 TString CbmTrdTimeCorrel::RewriteSpadicName(TString spadicName) 
 {
   if(spadicName=="SysCore_0_Spadic_0") {

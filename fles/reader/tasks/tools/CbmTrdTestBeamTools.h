@@ -178,9 +178,9 @@ class CbmTrdTestBeamTools: public TObject
   CbmTrdClusterClassification
   ClassifyCluster (CbmTrdCluster*);
     TString
-    GetClassName (CbmTrdClusterClassification Class)
+    GetClassName (CbmTrdClusterClassification _Class)
     {
-      switch (Class)
+      switch (_Class)
         {
         case kNormal:
           return "kNormal";
