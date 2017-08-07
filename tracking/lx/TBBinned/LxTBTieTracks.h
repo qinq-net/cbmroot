@@ -81,6 +81,7 @@ struct LxTBBinndedLayer
     
     struct PointHandler
     {
+        virtual ~PointHandler() {}
         virtual void HandlePoint(const LxTbBinnedPoint& point) = 0;
     };
     
