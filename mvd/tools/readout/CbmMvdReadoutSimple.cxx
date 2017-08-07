@@ -32,41 +32,56 @@ using std::endl;
 
 // -----   Default constructor   -------------------------------------------
 CbmMvdReadoutSimple::CbmMvdReadoutSimple()
+    : CbmMvdReadoutSimple::CbmMvdReadoutSimple("MvdReadoutSimple", 0)
+/*
     : FairTask("MvdReadoutSimple"),
+    foutFile(nullptr),
     fshow(kFALSE),
     fMvdMCBank(),
     fMvdMCHitsStations(),
-    fWordsPerSuperRegion(),
-    fWorstSuperPerEvent(),
-    fMvdBankDist(),
-    fMvdMCWorst(),
-    fMvdMCWorstDelta(),
+    fWordsPerRegion(nullptr),
+    fWordsPerRegion2(nullptr),
+    fWordsPerWorstRegion(nullptr),
+    fWordsPerSuperRegion(nullptr),
+    fWorstSuperPerEvent(nullptr),
+    fMvdBankDist(nullptr),
+    fMvdMCWorst(nullptr),
+    fMvdMCWorstDelta(nullptr),
+    fMvdDataLoadPerSensor(nullptr),
+    fMvdDataLoadHotSensor(nullptr),
+    fMvdDataPerRegion(),
+    fMvdDataPerSuperRegion(),
     fMcPoints(),
     fListMCTracks(),
-    fEventNumber(0),
-    fMvdDataLoadPerSensor()
+    fEventNumber(0)
+*/
 {
-;
 }
 // -------------------------------------------------------------------------
 
 // -----   Standard constructor   ------------------------------------------
 CbmMvdReadoutSimple::CbmMvdReadoutSimple(const char* name, Int_t iVerbose)
     : FairTask(name , iVerbose),
+    foutFile(nullptr),
     fshow(kFALSE),
     fMvdMCBank(),
     fMvdMCHitsStations(),
-    fWordsPerSuperRegion(),
-    fWorstSuperPerEvent(),
-    fMvdBankDist(),
-    fMvdMCWorst(),
-    fMvdMCWorstDelta(),
+    fWordsPerRegion(nullptr),
+    fWordsPerRegion2(nullptr),
+    fWordsPerWorstRegion(nullptr),
+    fWordsPerSuperRegion(nullptr),
+    fWorstSuperPerEvent(nullptr),
+    fMvdBankDist(nullptr),
+    fMvdMCWorst(nullptr),
+    fMvdMCWorstDelta(nullptr),
+    fMvdDataLoadPerSensor(nullptr),
+    fMvdDataLoadHotSensor(nullptr),
+    fMvdDataPerRegion(),
+    fMvdDataPerSuperRegion(),
     fMcPoints(),
     fListMCTracks(),
-fEventNumber(0),
-fMvdDataLoadPerSensor()
+    fEventNumber(0)
 {
-;
 }
 // -------------------------------------------------------------------------
 

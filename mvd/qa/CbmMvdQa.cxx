@@ -43,28 +43,8 @@ using std::endl;
 using std::flush;
 
 // -----   Default constructor   -------------------------------------------
-CbmMvdQa::CbmMvdQa() 
-  : FairTask("MvdQa"),
-  fNHitsOfLongTracks(),
-  fEventNumber(),
-  fStsTrackArray(),
-  fStsTrackMatches(),
-  fListMCTracks(),
-  fMvdHitMatchArray(),
-  fInfoArray(),
-  fPrimVtx(),
-  fSecVtx(),
-  fminHitReq(0),
-  fMvdRecoRatio(0),
-  fBadTrack(0),
-  fUsedTracks(0),
-    fnrOfMergedHits(0.),
-  fDetector(),
-  useMcQa(kFALSE),
-  useDigiQa(kFALSE),
-  useHitQa(kFALSE),
-useTrackQa(kFALSE),
-    fdraw(kFALSE)
+CbmMvdQa::CbmMvdQa()
+  : CbmMvdQa("MvdQa", 0, 0)
 {
 }
 // -------------------------------------------------------------------------
@@ -74,28 +54,53 @@ useTrackQa(kFALSE),
 // -----   Standard constructor   ------------------------------------------
 CbmMvdQa::CbmMvdQa(const char* name, Int_t iMode, Int_t iVerbose) 
   : FairTask(name, iVerbose),
-  fNHitsOfLongTracks(),
-  fEventNumber(),
-  fStsTrackArray(),
-  fStsTrackMatches(),
-  fListMCTracks(),
-  fMvdHitMatchArray(),
-  fInfoArray(),
-  fPrimVtx(),
-  fSecVtx(),
+  foutFile(nullptr),
+  fNHitsOfLongTracks(0),
+  fEventNumber(0),
   fminHitReq(0),
-  fMvdRecoRatio(0),
+  fMvdRecoRatio(0.),
   fBadTrack(0),
   fUsedTracks(0),
-  fnrOfMergedHits(0.),
-  fDetector(),
+  fnrOfMergedHits(0),
+  fnrTrackslowP(0),
+  fnrTracksHighP(0),
+  flow(0),
+  fmid(0),
+  fhigh(0),
+  fStsTrackArray(nullptr),
+  fStsTrackArrayP(nullptr),
+  fStsTrackArrayN(nullptr),
+  fStsTrackMatches(nullptr),
+  fGlobalTrackArray(nullptr),
+  fListMCTracks(nullptr),
+  fMCTrackArrayP(nullptr),
+  fMCTrackArrayN(nullptr),
+  fMcPoints(nullptr),
+  fMvdDigis(nullptr),
+  fMvdCluster(nullptr),
+  fMvdHits(nullptr),
+  fMvdHitMatchArray(nullptr),
+  fMvdDigiMatchArray(nullptr),
+  fBadTracks(nullptr),
+  fInfoArray(nullptr),
+  fMC1F(),
+  fMC2F(),
+  fDigi1F(),
+  fDigi2F(),
+  fHits1F(),
+  fHits2F(),
+  fTracks1F(),
+  fTracks2F(),
+  fPrimVtx(nullptr),
+  fSecVtx(nullptr),
+  fDetector(nullptr),
   useMcQa(kFALSE),
   useDigiQa(kFALSE),
   useHitQa(kFALSE),
-useTrackQa(kFALSE),
-    fdraw(kFALSE)
+  useTrackQa(kFALSE),
+  fMode(iMode),
+  fdraw(kFALSE)
 {
- fMode = iMode;
 }
 // -------------------------------------------------------------------------
 

@@ -21,7 +21,7 @@ CbmMvdSensorReadoutTask::CbmMvdSensorReadoutTask()
     fSensor(nullptr),
     fSensorBanks()
 {
-    fSensorBanks[maxBanks] = {0};
+//    fSensorBanks[maxBanks] = {0};
 }
 // -------------------------------------------------------------------------
 // -----  constructor   -------------------------------------------
@@ -32,7 +32,7 @@ CbmMvdSensorReadoutTask::CbmMvdSensorReadoutTask(const char* name)
     fSensor(nullptr),
     fSensorBanks()
 {
-    fSensorBanks[maxBanks] = {0};
+//    fSensorBanks[maxBanks] = {0};
 }
 // -------------------------------------------------------------------------
 

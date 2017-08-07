@@ -25,26 +25,20 @@ using std::endl;
 
 // -----   Default constructor   ------------------------------------------
 CbmMvdReadout::CbmMvdReadout() 
-    : FairTask("MVDClusterfinder"),
-    fShowDebugHistos(),
-    fDetector(NULL),
-    fInputDigis(NULL),
-    fPluginNr(0)
+    : CbmMvdReadout("MVDClusterfinder")
 {
-    ;
 }
 // -------------------------------------------------------------------------
 
 // -----   Standard constructor   ------------------------------------------
 CbmMvdReadout::CbmMvdReadout(const char* name)
     : FairTask(name),
-    fShowDebugHistos(),
-    fDetector(NULL),
-    fInputDigis(NULL),
-    fPluginNr(0)
-
+    fMode(-1), 
+    fPluginNr(0),
+    fShowDebugHistos(kFALSE),
+    fDetector(nullptr),
+    fInputDigis(nullptr)
 {
-    ;
 }
 // -------------------------------------------------------------------------
 

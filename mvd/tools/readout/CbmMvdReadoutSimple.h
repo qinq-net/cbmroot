@@ -24,6 +24,9 @@ public:
 
     CbmMvdReadoutSimple();
     CbmMvdReadoutSimple(const char* name, Int_t iVerbose = 0);
+    CbmMvdReadoutSimple(const CbmMvdReadoutSimple&) = delete;
+    CbmMvdReadoutSimple& operator=(const CbmMvdReadoutSimple&) = delete;
+    
     ~CbmMvdReadoutSimple();
 
     InitStatus Init();

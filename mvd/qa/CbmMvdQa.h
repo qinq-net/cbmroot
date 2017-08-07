@@ -46,7 +46,10 @@ public:
   CbmMvdQa();
   
   CbmMvdQa(const char* name, Int_t iMode = 0, Int_t iVerbose = 0);
- 
+
+  CbmMvdQa(const CbmMvdQa&) = delete; 
+  CbmMvdQa& operator=(const CbmMvdQa&) = delete; 
+
   ~CbmMvdQa();
 
   void     SetMinHitReq(Int_t nrOfHits){fminHitReq = nrOfHits;};

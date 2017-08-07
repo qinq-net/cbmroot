@@ -33,6 +33,7 @@ using std::endl;
 
 // -----   Default constructor   -------------------------------------------
 CbmMvd::CbmMvd() 
+//  : CbmMvd("MVD", kTRUE, kMvd)
   : FairDetector("MVD", kTRUE, kMvd),
     fTrackID(0),
     fPdg(0),
@@ -48,14 +49,13 @@ CbmMvd::CbmMvd()
     fCollection(new TClonesArray("CbmMvdPoint")),
     kGeoSaved(kFALSE),
     fGeoPar(new TList()),
-    fStationMap()
+    fStationMap(),
+    fmvdHandler(nullptr)
 {
   ResetParameters();
   fGeoPar->SetName( GetName());
   fVerboseLevel = 1;
   fmvdHandler = new CbmMvdGeoHandler();
-
-
 }
 // -------------------------------------------------------------------------
 
@@ -78,13 +78,12 @@ CbmMvd::CbmMvd(const char* name, Bool_t active)
     fCollection(new TClonesArray("CbmMvdPoint")),
     kGeoSaved(kFALSE),
     fGeoPar(new TList()),
-    fStationMap()
- {
+    fStationMap(),
+    fmvdHandler(nullptr)
+{
   fGeoPar->SetName( GetName());
   fVerboseLevel = 1;
   fmvdHandler = new CbmMvdGeoHandler();
-
- 
 }
 // -------------------------------------------------------------------------
 
