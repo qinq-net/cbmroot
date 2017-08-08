@@ -203,7 +203,7 @@ void CbmStsElement::InitDaughters() {
 
 
 // -----   Print   ---------------------------------------------------------
-void CbmStsElement::Print(Option_t* /*opt*/) const {
+void CbmStsElement::Print(Option_t* opt) const {
   LOG(INFO) << setw(10) << right << fAddress << "  "
 		    << setw(12) << left << fName
 		    << "  type " << setw(22) << fTitle << "  path "
