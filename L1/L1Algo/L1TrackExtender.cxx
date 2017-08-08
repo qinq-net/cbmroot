@@ -171,7 +171,7 @@ void L1Algo::BranchFitter(const L1Branch &t, L1TrackPar& T, const bool dir, cons
    /// dir - 0 - forward, 1 - backward
    /// qp0 - momentum for extrapolation
    /// initialize - should be params ititialized. 1 - yes.
-void L1Algo::FindMoreHits(L1Branch &t, L1TrackPar& T, const bool dir, const fvec qp0, fvec n) // TODO take into account pipe
+void L1Algo::FindMoreHits(L1Branch &t, L1TrackPar& T, const bool dir, const fvec qp0) // TODO take into account pipe
 {
   std::vector<THitI> newHits;
   newHits.clear();
@@ -351,14 +351,14 @@ fscal L1Algo::BranchExtender(L1Branch &t) // TODO Simdize
   // BranchFitterFast (t, T, dir, 0, true);
   
  // if (t.NHits < minNHits) return T.chi2[0];
-  FindMoreHits(t, T, dir, T.qp, 0);
+  FindMoreHits(t, T, dir, T.qp);
 
     // backward
   dir = 1;
   BranchFitterFast (t, T, dir, T.qp, false); // 577
 
 
-  FindMoreHits(t, T, dir, T.qp, 0);
+  FindMoreHits(t, T, dir, T.qp);
 
   return T.chi2[0];
 }

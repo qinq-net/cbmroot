@@ -305,10 +305,10 @@ void L1Algo::CreateHitPoint(const L1StsHit &hit, char ista, L1HitPoint &point)
 //    // return (a.cand.CandIndex > b.cand.CandIndex );
 // }
 
-  inline int L1Algo::PackIndex(const int& a, const int& b, const int& c) {
-      return   (a) + ((b)*10000) + (c*100000000);
-}
-
-  inline int L1Algo::UnPackIndex(const int& i, int& a, int& b, int& c) {
-      return   (a) + ((b)*10000) + (c*100000000);
-}
+//   inline int L1Algo::PackIndex(const int& a, const int& b, const int& c) {
+//       return   (a) + ((b)*10000) + (c*100000000);
+// }
+// 
+//   inline int L1Algo::UnPackIndex(const int& i, int& a, int& b, int& c) {
+//       return   (a) + ((b)*10000) + (c*100000000);
+// }

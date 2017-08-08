@@ -453,7 +453,7 @@ class L1Algo{
     /// T - track params
     /// dir - 0 - forward, 1 - backward
     /// qp0 - momentum for extrapolation
-  void FindMoreHits(L1Branch &t, L1TrackPar& T, const bool dir, const fvec qp0 = 0.0, fvec n=0);
+  void FindMoreHits(L1Branch &t, L1TrackPar& T, const bool dir, const fvec qp0 = 0.0);
 
       /// Find additional hits for existing track
       /// return chi2
@@ -514,7 +514,7 @@ class L1Algo{
 #ifdef DOUB_PERFORMANCE
                 vector<THitI> &hitsl_2,
 #endif // DOUB_PERFORMANCE
-                vector<THitI> &hitsm_2, fvec *HitTime, fvec *Event,
+                vector<THitI> &hitsm_2, fvec *Event,
                  vector<bool> &lmDuplets
                 );
           
@@ -565,9 +565,7 @@ class L1Algo{
                 nsL1::vector<L1TrackPar>::TSimd &T_3,
                 vector<THitI> &hitsl_3,  vector<THitI> &hitsm_3,  vector<THitI> &hitsr_3,
                 // output
-            Tindex &nstaltriplets,
-              
-                         Tindex ip_cur  
+            Tindex &nstaltriplets 
               
 // #ifdef XXX                
 //                 ,unsigned int &stat_n_trip      
@@ -578,7 +576,6 @@ class L1Algo{
             /// Find neighbours of triplets. Calculate level of triplets.
   void f5(  // input
                  // output
-               unsigned int istaF,
                int *nlevel
                );
 
@@ -615,12 +612,10 @@ class L1Algo{
                              vector<THitI> &i1_2,
                              vector<THitI> &hitsm_2,
                                 
-                              const vector<bool> &mrDuplets,
+                              const vector<bool> &mrDuplets
                               
                                 // output
-                      
-             
-                         Tindex ip_cur  
+
                   
                           
                              );

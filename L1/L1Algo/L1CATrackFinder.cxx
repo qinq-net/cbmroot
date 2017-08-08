@@ -290,7 +290,7 @@ inline void L1Algo::f20(  // input
 #ifdef DOUB_PERFORMANCE
                         vector<THitI> &hitsl_2,
 #endif // DOUB_PERFORMANCE
-                        vector<THitI> &hitsm_2, fvec *HitTime, fvec *Event, vector<bool> &lmDuplets
+                        vector<THitI> &hitsm_2, fvec *Event, vector<bool> &lmDuplets
 )
 {
   n2 = 0; // number of doublet   
@@ -826,8 +826,7 @@ inline void L1Algo::f4(  // input
                        nsL1::vector<L1TrackPar>::TSimd &T_3,
                        vector<THitI> &hitsl_3,  vector<THitI> &hitsm_3,  vector<THitI> &hitsr_3,
                        // output
-                       Tindex &nstaltriplets,
-                       Tindex ip_cur
+                       Tindex &nstaltriplets
                        )
 {
   THitI ihitl_priv = 0;
@@ -982,7 +981,7 @@ if (isec!=TRACKS_FROM_TRIPLETS_ITERATION)
 /// Find neighbours of triplets. Calculate level of triplets.
 inline void L1Algo::f5(  // input
                  // output
-               unsigned int istaF,
+
                int *nlevel
                )
 {
@@ -1156,7 +1155,7 @@ inline void L1Algo::DupletsStaPort(  /// creates duplets: input: @istal - start 
 #ifdef DOUB_PERFORMANCE
         hitsl_2,
 #endif // DOUB_PERFORMANCE
-        hitsm_2, HitTime, Event,            lmDuplets
+        hitsm_2, Event,            lmDuplets
         );
     
     for (Tindex i = 0; i < static_cast<Tindex>(hitsm_2.size()); ++i)
@@ -1198,11 +1197,9 @@ inline void L1Algo::TripletsStaPort(  /// creates triplets: input: @istal - star
                                     vector<THitI> &i1_2,
                                     vector<THitI> &hitsm_2,
                                     
-                                    const vector<bool> &mrDuplets,
+                                    const vector<bool> &mrDuplets
                                     
                                     /// output: @*vTriplets_part - array of triplets, @*TripStartIndexH, @*TripStopIndexH - start/stop index of a triplet in the array
-                                    
-                                    Tindex ip_cur
                                     
                                     )
 {
@@ -1324,9 +1321,7 @@ inline void L1Algo::TripletsStaPort(  /// creates triplets: input: @istal - star
         T_3,
         hitsl_3, hitsm_3, hitsr_3,
         // output
-        nstaltriplets,
-        
-        ip_cur
+        nstaltriplets
         
         );
     
@@ -1786,10 +1781,8 @@ void L1Algo::CATrackFinder()
                         i1_2,
                         hitsm_2,
                         
-                        lmDuplets[istal+1],
+                        lmDuplets[istal+1]
                         // output
-                        
-                        ip-portionStopIndex[istal+1]
                         );
         
 
@@ -1826,8 +1819,7 @@ void L1Algo::CATrackFinder()
                           n_2,
                           i1_2,
                           hitsm_2,
-                          lmDupletsG[istal+1],
-                          ip-portionStopIndex[istal+1]
+                          lmDupletsG[istal+1]
                           );
           
           TripletsStaPort(  // input
@@ -1840,8 +1832,8 @@ void L1Algo::CATrackFinder()
                           nG_2,
                           i1G_2,
                           hitsmG_2,
-                          lmDuplets[istal+2],
-                          ip-portionStopIndex[istal+1]
+                          lmDuplets[istal+2]
+
                           );
         }                 
       }//
@@ -2218,7 +2210,7 @@ int num_thread = 0;
           int NHitsOnStationTmp=NHitsOnStation;
           vGridTime[ista].UpdateIterGrid(Nelements, &((*vStsHitsUnused)[StsHitsUnusedStartIndex[ista]]),
                                           RealIHitPBuf, &((*RealIHitP)[StsHitsUnusedStartIndex[ista]]),
-                                          &RealIHit_v_buf2, vStsHitsUnused_buf, vStsHitPointsUnused_buf,
+                                          vStsHitsUnused_buf, vStsHitPointsUnused_buf,
                                           &((*vStsHitPointsUnused)[StsHitsUnusedStartIndex[ista]]), NHitsOnStation, ista, *this, vSFlag, vSFlagB );
           StsHitsUnusedStartIndex[ista] = NHitsOnStationTmp;
           StsHitsUnusedStopIndex[ista] = NHitsOnStation;

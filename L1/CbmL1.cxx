@@ -864,9 +864,8 @@ const_cast<L1Strip &> ((*algo->vStsStripsB)[h.b]) = idet * ( - sta.yInfo.cos_phi
     // save recontstructed tracks
   vRTracks.clear();
   int start_hit = 0;
-  int start_track = 0;
+
   for(vector<L1Track>::iterator it = algo->vTracks.begin(); it!=(algo->vTracks.begin()+ algo->NTracksIsecAll); it++){
-    start_track = start_track +1; 
     
     CbmL1Track t;
     for( int i=0; i<7; i++) t.T[i] = it->TFirst[i];
@@ -882,7 +881,7 @@ const_cast<L1Strip &> ((*algo->vStsStripsB)[h.b]) = idet * ( - sta.yInfo.cos_phi
     t.fTrackTime = it->fTrackTime;
 
     for( int i=0; i<it->NHits; i++ ){
-      int start_hit1= start_hit + 1;
+      int start_hit1= start_hit;
 
       if (algo->vRecoHits[start_hit1] > vStsHits.size()-1 )
         start_hit++; 

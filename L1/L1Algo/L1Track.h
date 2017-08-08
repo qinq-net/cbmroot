@@ -37,7 +37,7 @@ class L1Track
     
      if (a.ista != b.ista ) return (a.ista  < b.ista );
     
-     if (a.chi2 != b.chi2 ) return (a.chi2  < b.chi2 );
+     else return (a.chi2  < b.chi2 );
   }
   
   
