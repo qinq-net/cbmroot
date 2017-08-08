@@ -118,7 +118,7 @@ InitStatus LxGenNoiseElectrons::Init()
    return kSUCCESS;
 }
 
-void LxGenNoiseElectrons::Exec(Option_t* opt)
+void LxGenNoiseElectrons::Exec(Option_t* /*opt*/)
 {
    fOutMCTracks->Delete();
    fOutMuchPoints->Delete();

@@ -23,7 +23,7 @@
 #include <sys/time.h>
 #define CLOCK_REALTIME 0
 #define CLOCK_MONOTONIC 0
-inline int clock_gettime(int clk_id, struct timespec *t){
+inline int clock_gettime(int /*clk_id*/, struct timespec *t){
     mach_timebase_info_data_t timebase;
     mach_timebase_info(&timebase);
     uint64_t time;
@@ -1243,7 +1243,7 @@ struct LxTbBinnedFinder
         //cout << "LxTbNaiveFinder::Reconstruct() the number of found tracks: " << recoTracks.size() << endl;
     }
     
-    void FindChains(int stationIndex, const LxTbBinnedPoint* rPoint, const LxTbBinnedRay* rRay,
+    void FindChains(int stationIndex, const LxTbBinnedPoint* rPoint, const LxTbBinnedRay* /*rRay*/,
         const LxTbBinnedPoint** points, KFParams kfParamsPrev, std::list<ChainImpl>& chains)
     {
         points[stationIndex] = rPoint;

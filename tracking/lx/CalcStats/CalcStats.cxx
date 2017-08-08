@@ -81,7 +81,7 @@ InitStatus LxCalcStats::Init()
    return kSUCCESS;
 }
 
-void LxCalcStats::Exec(Option_t* opt)
+void LxCalcStats::Exec(Option_t* /*opt*/)
 {
    map<Int_t, LxStatTrack> eNoiseTracks;
    Int_t nofMuchPoints = 0 == fMuchPoints ? 0 : fMuchPoints->GetEntriesFast();
