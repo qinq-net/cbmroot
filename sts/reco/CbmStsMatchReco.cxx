@@ -52,7 +52,7 @@ CbmStsMatchReco::~CbmStsMatchReco()
 
 
 // -----   Task execution   ------------------------------------------------
-void CbmStsMatchReco::Exec(Option_t* opt) {
+void CbmStsMatchReco::Exec(Option_t* /*opt*/) {
 
 	 // --- Time
 	TStopwatch timer;

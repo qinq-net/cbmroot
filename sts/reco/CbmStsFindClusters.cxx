@@ -121,7 +121,7 @@ void CbmStsFindClusters::SetParContainers()
 }
 
 // -----   Task execution   ------------------------------------------------
-void CbmStsFindClusters::Exec(Option_t* opt) {
+void CbmStsFindClusters::Exec(Option_t* /*opt*/) {
 
   if ( fEventMode && ! fLegacy)
     LOG(INFO) << GetName() << ": Processing time slice "

@@ -178,7 +178,7 @@ CbmStsFindTracksQa::~CbmStsFindTracksQa() {
 
 
 // -----   Task execution   ------------------------------------------------
-void CbmStsFindTracksQa::Exec(Option_t* opt) {
+void CbmStsFindTracksQa::Exec(Option_t* /*opt*/) {
 
   // If there is an event branch: do the event loop
   if ( fEvents ) {

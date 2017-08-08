@@ -43,7 +43,7 @@ CbmStsSetup* CbmStsSetup::fgInstance = NULL;
 CbmStsSetup::CbmStsSetup() : CbmStsElement("STS", "system", kStsSystem),
 			     fDigitizer(NULL), fSettings(NULL),fIsInitialised(kFALSE),
 			     fIsOld(kFALSE), fModules(),
-			     fSensors(), fSensorTypes(), fStations() {
+			     fSensors(), fStations(), fSensorTypes() {
 }
 // -------------------------------------------------------------------------
 
@@ -113,7 +113,7 @@ Int_t CbmStsSetup::CreateStations() {
   // stations are ordered w.r.t. position along the beam
   Bool_t isOk = kTRUE;
   Double_t zPrevious = -999999;
-  for (Int_t iStation = 0; iStation < fStations.size(); iStation++) {
+  for (UInt_t iStation = 0; iStation < fStations.size(); iStation++) {
     if ( fStations.find(iStation) == fStations.end() ) {
       LOG(ERROR) << GetName() << ": Number of stations is "
           << fStations.size() << ", but station " << iStation

@@ -43,7 +43,7 @@ CbmStsRecoQa::~CbmStsRecoQa() {
 
 
 // -----   Execution   -----------------------------------------------------
-void CbmStsRecoQa::Exec(Option_t* opt) {
+void CbmStsRecoQa::Exec(Option_t* /*opt*/) {
 
 	// If there is an event branch: do the event loop
 	if ( fEvents ) {

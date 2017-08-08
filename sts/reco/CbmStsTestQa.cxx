@@ -51,7 +51,7 @@ CbmStsTestQa::~CbmStsTestQa() {
 
 
 // -----   Execution   -----------------------------------------------------
-void CbmStsTestQa::Exec(Option_t* opt) {
+void CbmStsTestQa::Exec(Option_t* /*opt*/) {
 
 	// If there is an event branch: do the event loop
 	if ( fEvents ) {

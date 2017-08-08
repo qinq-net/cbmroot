@@ -68,7 +68,7 @@ CbmStsFindTracksEvents::~CbmStsFindTracksEvents() {
 
 
 // -----   Task execution   ------------------------------------------------
-void CbmStsFindTracksEvents::Exec(Option_t* opt) {
+void CbmStsFindTracksEvents::Exec(Option_t* /*opt*/) {
 
 	// --- Clear output array
 	fTracks->Delete();

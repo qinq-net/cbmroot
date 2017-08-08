@@ -43,7 +43,7 @@ CbmStsFindHitsEvents::~CbmStsFindHitsEvents() {
 
 
 // -----   Task execution   ------------------------------------------------
-void CbmStsFindHitsEvents::Exec(Option_t* opt) {
+void CbmStsFindHitsEvents::Exec(Option_t* /*opt*/) {
 
   // --- Clear output arrays
 	fHits->Delete();

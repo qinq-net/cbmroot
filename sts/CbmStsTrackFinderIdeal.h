@@ -68,7 +68,7 @@ class CbmStsTrackFinderIdeal : public CbmStsTrackFinder
    **/
  virtual Int_t DoFind();
 
- virtual Int_t FindTracks(CbmEvent* event) { return 0; }
+ virtual Int_t FindTracks(CbmEvent* /*event*/) { return 0; }
 
 
 

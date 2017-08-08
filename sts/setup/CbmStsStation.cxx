@@ -80,7 +80,7 @@ void CbmStsStation::CheckSensorProperties() {
 	Double_t zMax  = -999999.;  // sensor z maximum
 
 	// --- Loop over ladders
-    for (Int_t iLad = 0; iLad < fLadders.size(); iLad++) {
+    for (UInt_t iLad = 0; iLad < fLadders.size(); iLad++) {
       CbmStsElement* ladd = fLadders.at(iLad);
 
   	// --- Loop over half-ladders
@@ -209,7 +209,7 @@ void CbmStsStation::Init() {
 	// of its ladder daughters.
 	else {
 	  TGeoVolumeAssembly* statVol = new TGeoVolumeAssembly("myStation");
-	  for (Int_t iLadder = 0; iLadder < fLadders.size(); iLadder++) {
+	  for (UInt_t iLadder = 0; iLadder < fLadders.size(); iLadder++) {
 	  	TGeoVolume* ladVol = fLadders.at(iLadder)->GetPnode()->GetVolume();
 	  	TGeoHMatrix* ladMat = fLadders.at(iLadder)->GetPnode()->GetMatrix();
 	  	statVol->AddNode(ladVol, iLadder, ladMat);
