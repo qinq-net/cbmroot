@@ -92,6 +92,8 @@ class CbmTofDigitizerBDF : public FairTask
 
       void UseMcTrackMonitoring(Bool_t bMcTrkMonitor = kTRUE) { fbMcTrkMonitor = bMcTrkMonitor; }
 
+      void AllowPointsWithoutTrack( Bool_t bAllow = kTRUE ) { fbAllowPointsWithoutTrack = bAllow; }
+
       inline void SetDigiTimeConvFactor  (Double_t dfac)  { fdDigiTimeConvFactor    = dfac;}
 
    protected:
@@ -340,6 +342,7 @@ class CbmTofDigitizerBDF : public FairTask
       Bool_t fbMonitorHistos;
       Bool_t fbMcTrkMonitor;
       Bool_t fbTimeBasedOutput;
+      Bool_t fbAllowPointsWithoutTrack;
 
       Int_t fiCurrentFileId;
       Int_t fiCurrentEventId;

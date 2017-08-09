@@ -139,6 +139,7 @@ CbmTofDigitizerBDF::CbmTofDigitizerBDF():
    fbMonitorHistos(kTRUE),
    fbMcTrkMonitor(kFALSE),
    fbTimeBasedOutput(kFALSE),
+   fbAllowPointsWithoutTrack(kFALSE),
    fiCurrentFileId(-1),
    fiCurrentEventId(-1),
    fdCurrentEventTime(0.),
@@ -213,6 +214,7 @@ CbmTofDigitizerBDF::CbmTofDigitizerBDF(const char *name, Int_t verbose):
    fbMonitorHistos(kTRUE),
    fbMcTrkMonitor(kFALSE),
    fbTimeBasedOutput(kFALSE),
+   fbAllowPointsWithoutTrack(kFALSE),
    fiCurrentFileId(-1),
    fiCurrentEventId(-1),
    fdCurrentEventTime(0.),
@@ -1570,6 +1572,19 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
       iChType = fDigiBdfPar->GetChanType( iSmType, iRpc );
       Int_t iTrkId = pPoint->GetTrackID();
 
+      // Catch case where the MC track was removed from the transport stack
+      if( iTrkId < 0 )
+      {
+         if( fbAllowPointsWithoutTrack )
+            continue;
+            else LOG(FATAL) << "CbmTofDigitizerBDF::DigitizeDirectClusterSize => TofPoint without valid MC track Index, "
+                            << " track was probably cut at the transport level! "
+                            << " Pnt Idx: " << iPntInd << " Trk Idx: " << iTrkId << "\n"
+                            << "=============> To allow this kind of points and simply jump them, "
+                            << "call CbmTofDigitizerBDF::AllowPointsWithoutTrack() in your macro!!"
+                            << FairLogger::endl;
+      } // if( iTrkId < 0 )
+
       if( fbMcTrkMonitor )
       {
          // Get pointer to the MC-Track info
@@ -1602,8 +1617,11 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
          Bool_t bFoundIt = kFALSE;
          // Check if this track ID is bigger than size of McTracks TClonesArray (maybe happen with PSD cut!!)
          // If yes, resize the array to  reach the appropriate number of fields
-         if( fvlTrckChAddr.size() <= iTrkId )
+         // Cast of TrackId is safe as we already check for "< 0" case
+         // TODO: Is this check still required when Id < 0 are jumped?
+         if( fvlTrckChAddr.size() <= static_cast< UInt_t >( iTrkId ) )
             fvlTrckChAddr.resize( iTrkId + 1 );
+
          for( UInt_t uTrkMainCh = 0; uTrkMainCh < fvlTrckChAddr[iTrkId].size(); uTrkMainCh ++)
             if( uAddr == fvlTrckChAddr[iTrkId][uTrkMainCh])
             {
@@ -1959,11 +1977,11 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
    // Clear the Track to channel temporary storage
    if( kTRUE == fDigiBdfPar->UseOneGapPerTrk() )
    {
-      for(Int_t iTrkInd = 0; iTrkInd < fvlTrckChAddr.size(); iTrkInd++)
+      for(UInt_t uTrkInd = 0; uTrkInd < fvlTrckChAddr.size(); uTrkInd++)
       {
-         fvlTrckChAddr[iTrkInd].clear();
-         fvlTrckRpcAddr[iTrkInd].clear();
-         fvlTrckRpcTime[iTrkInd].clear();
+         fvlTrckChAddr[uTrkInd].clear();
+         fvlTrckRpcAddr[uTrkInd].clear();
+         fvlTrckRpcTime[uTrkInd].clear();
       }
       fvlTrckChAddr.clear();
       fvlTrckRpcAddr.clear();
@@ -2089,6 +2107,19 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
       iChType = fDigiBdfPar->GetChanType( iSmType, iRpc );
       Int_t iTrkId = pPoint->GetTrackID();
 
+      // Catch case where the MC track was removed from the transport stack
+      if( iTrkId < 0 )
+      {
+         if( fbAllowPointsWithoutTrack )
+            continue;
+            else LOG(FATAL) << "CbmTofDigitizerBDF::DigitizeDirectClusterSize => TofPoint without valid MC track Index, "
+                            << " track was probably cut at the transport level! "
+                            << " Pnt Idx: " << iPntInd << " Trk Idx: " << iTrkId << "\n"
+                            << "=============> To allow this kind of points and simply jump them, "
+                            << "call CbmTofDigitizerBDF::AllowPointsWithoutTrack() in your macro!!"
+                            << FairLogger::endl;
+      } // if( iTrkId < 0 )
+
       if( fbMcTrkMonitor )
       {
          // Get pointer to the MC-Track info
@@ -2136,8 +2167,11 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
          Bool_t bFoundIt = kFALSE;
          // Check if this track ID is bigger than size of McTracks TClonesArray (maybe happen with PSD cut!!)
          // If yes, resize the array to  reach the appropriate number of fields
-         if( fvlTrckChAddr.size() <= iTrkId )
+         // Cast of TrackId is safe as we already check for "< 0" case
+         // TODO: Is this check still required when Id < 0 are jumped?
+         if( fvlTrckChAddr.size() <= static_cast< UInt_t >( iTrkId ) )
             fvlTrckChAddr.resize( iTrkId + 1 );
+
          for( UInt_t uTrkMainCh = 0; uTrkMainCh < fvlTrckChAddr[iTrkId].size(); uTrkMainCh ++)
             if( uAddr == fvlTrckChAddr[iTrkId][uTrkMainCh])
             {
@@ -2896,11 +2930,11 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
    if( kTRUE == fDigiBdfPar->UseOneGapPerTrk() )
    {
       // Clear the Track to channel temporary storage
-      for(Int_t iTrkInd = 0; iTrkInd < fvlTrckChAddr.size(); iTrkInd++)
+      for(UInt_t uTrkInd = 0; uTrkInd < fvlTrckChAddr.size(); uTrkInd++)
       {
-         fvlTrckChAddr[iTrkInd].clear();
-         fvlTrckRpcAddr[iTrkInd].clear();
-         fvlTrckRpcTime[iTrkInd].clear();
+         fvlTrckChAddr[uTrkInd].clear();
+         fvlTrckRpcAddr[uTrkInd].clear();
+         fvlTrckRpcTime[uTrkInd].clear();
       }
       fvlTrckChAddr.clear();
       fvlTrckRpcAddr.clear();
@@ -3025,6 +3059,19 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
       iChType = fDigiBdfPar->GetChanType( iSmType, iRpc );
       Int_t iTrkId = pPoint->GetTrackID();
 
+      // Catch case where the MC track was removed from the transport stack
+      if( iTrkId < 0 )
+      {
+         if( fbAllowPointsWithoutTrack )
+            continue;
+            else LOG(FATAL) << "CbmTofDigitizerBDF::DigitizeDirectClusterSize => TofPoint without valid MC track Index, "
+                            << " track was probably cut at the transport level! "
+                            << " Pnt Idx: " << iPntInd << " Trk Idx: " << iTrkId << "\n"
+                            << "=============> To allow this kind of points and simply jump them, "
+                            << "call CbmTofDigitizerBDF::AllowPointsWithoutTrack() in your macro!!"
+                            << FairLogger::endl;
+      } // if( iTrkId < 0 )
+
       if( fbMcTrkMonitor )
       {
          // Get pointer to the MC-Track info
@@ -3057,8 +3104,11 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
          Bool_t bFoundIt = kFALSE;
          // Check if this track ID is bigger than size of McTracks TClonesArray (maybe happen with PSD cut!!)
          // If yes, resize the array to  reach the appropriate number of fields
-         if( fvlTrckChAddr.size() <= iTrkId )
+         // Cast of TrackId is safe as we already check for "< 0" case
+         // TODO: Is this check still required when Id < 0 are jumped?
+         if( fvlTrckChAddr.size() <= static_cast< UInt_t >( iTrkId ) )
             fvlTrckChAddr.resize( iTrkId + 1 );
+
          for( UInt_t uTrkMainCh = 0; uTrkMainCh < fvlTrckChAddr[iTrkId].size(); uTrkMainCh ++)
             if( uAddr == fvlTrckChAddr[iTrkId][uTrkMainCh])
             {
@@ -3869,11 +3919,11 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
    if( kTRUE == fDigiBdfPar->UseOneGapPerTrk() )
    {
       // Clear the Track to channel temporary storage
-      for(Int_t iTrkInd = 0; iTrkInd < fvlTrckChAddr.size(); iTrkInd++)
+      for(UInt_t uTrkInd = 0; uTrkInd < fvlTrckChAddr.size(); uTrkInd++)
       {
-         fvlTrckChAddr[iTrkInd].clear();
-         fvlTrckRpcAddr[iTrkInd].clear();
-         fvlTrckRpcTime[iTrkInd].clear();
+         fvlTrckChAddr[uTrkInd].clear();
+         fvlTrckRpcAddr[uTrkInd].clear();
+         fvlTrckRpcTime[uTrkInd].clear();
       }
       fvlTrckChAddr.clear();
       fvlTrckRpcAddr.clear();
