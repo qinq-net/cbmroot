@@ -100,10 +100,10 @@ Bool_t CbmTsMonitorSts::InitContainers()
 {
 	LOG(INFO) << "Init parameter containers for " << GetName()
 			<< FairLogger::endl;
-         
+
    Bool_t bReInit = ReInitContainers();
    CreateHistograms();
-   
+
    return bReInit;
 }
 
@@ -116,30 +116,30 @@ Bool_t CbmTsMonitorSts::ReInitContainers()
    fNrOfNdpbsB = fUnpackPar->GetNrOfnDpbsModB();
    fNrOfNdpbs = fNrOfNdpbsA + fNrOfNdpbsB;
    fNrOfFebsPerNdpb = fUnpackPar->GetNrOfFebsPerNdpb();
-  
+
 	LOG(INFO) << "Nr. of nDPBs Mod. A: " << fNrOfNdpbsA
     		<< FairLogger::endl;
-  
+
 	LOG(INFO) << "Nr. of nDPBs Mod. B: " << fNrOfNdpbsB
     		<< FairLogger::endl;
-      
+
    fNdpbIdIndexMap.clear();
-   for (Int_t i = 0; i< fNrOfNdpbsA; ++i) 
+   for (Int_t i = 0; i< fNrOfNdpbsA; ++i)
    {
      fNdpbIdIndexMap[fUnpackPar->GetNdpbIdA(i)] = i;
      LOG(INFO) << "nDPB Id of STS A " << i
                << " : 0x" << std::hex << fUnpackPar->GetNdpbIdA(i)
                << std::dec
                << FairLogger::endl;
-   } // for (Int_t i = 0; i< NrOfnDpbsModA; ++i) 
-   for (Int_t i = 0; i< fNrOfNdpbsB; ++i) 
+   } // for (Int_t i = 0; i< NrOfnDpbsModA; ++i)
+   for (Int_t i = 0; i< fNrOfNdpbsB; ++i)
    {
      fNdpbIdIndexMap[fUnpackPar->GetNdpbIdB(i)] = i + fNrOfNdpbsA;
      LOG(INFO) << "nDPB Id of STS B " << i
                << " : 0x" << std::hex << fUnpackPar->GetNdpbIdB(i)
                << std::dec
                << FairLogger::endl;
-   } // for (Int_t i = 0; i< NrOfnDpbsModB; ++i) 
+   } // for (Int_t i = 0; i< NrOfnDpbsModB; ++i)
 
 	Int_t NrOfFebs = fUnpackPar->GetNrOfFebs();
 
@@ -213,8 +213,8 @@ void CbmTsMonitorSts::CreateHistograms()
    const Int_t iNbDecadesRate    = 9;
    const Int_t iNbStepsDecade    = 9;
    const Int_t iNbSubStepsInStep = 10;
-   const Int_t iNbBinsRate = iNbStepsDecade 
-                           + iNbStepsDecade * iNbSubStepsInStep * iNbDecadesRate 
+   const Int_t iNbBinsRate = iNbStepsDecade
+                           + iNbStepsDecade * iNbSubStepsInStep * iNbDecadesRate
                            + 1;
    Double_t dBinsRate[iNbBinsRate];
    Double_t dBinsDt[iNbBinsRate];
@@ -230,7 +230,7 @@ void CbmTsMonitorSts::CreateHistograms()
    for( Int_t iDecade = 0; iDecade < iNbDecadesRate; iDecade ++)
    {
       Double_t dBase = std::pow( 10, iDecade );
-      Int_t iDecadeIdx = iNbStepsDecade 
+      Int_t iDecadeIdx = iNbStepsDecade
                        + iDecade * iNbStepsDecade * iNbSubStepsInStep;
       for( Int_t iStep = 0; iStep < iNbStepsDecade; iStep++ )
       {
@@ -245,35 +245,35 @@ void CbmTsMonitorSts::CreateHistograms()
    } // for( Int_t iDecade = 0; iDecade < iNbDecadesRate; iDecade ++)
    dBinsRate[ iNbBinsRate - 1 ] = std::pow( 10, iNbDecadesRate );
    dBinsDt[ iNbBinsRate - 1 ] = 10 * dBinsRate[ iNbBinsRate - 1 ] ;
-   
+
    TString sNdpbTag = "";
 	TString sDateHistName{""};
    for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
    {// looping on all the nDPBS IDs
-   
+
       if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
       {
          sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdA(dpbId) );
       } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-         else 
+         else
          {
             sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdB(dpbId - fNrOfNdpbsA) );
          } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-      
+
       for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
-      {// looping on all the FEB IDs 
+      {// looping on all the FEB IDs
          sHistName = Form("Chan_Counts_Sts_n%s_f%1u", sNdpbTag.Data(), febId);
-         title = Form("Channel counts Sts nDPB %s FEB %02u; channel; Counts", 
+         title = Form("Channel counts Sts nDPB %s FEB %02u; channel; Counts",
                      sNdpbTag.Data(), febId);
 		  fHM->Add( sHistName.Data(), new TH1F( sHistName.Data(), title.Data(), kiNbChanFebF, 0, kiNbChanFebF) );
 #ifdef USE_HTTP_SERVER
         if (server) server->Register("/StsRaw", fHM->H1(sHistName.Data()));
 #endif
-      
+
         sHistName = Form("Raw_ADC_Sts_n%s_f%1u", sNdpbTag.Data(), febId);
         title = Form("Raw ADC Sts nDPB %s FEB %02u; channel; ADC value",
                sNdpbTag.Data(), febId);
-		  fHM->Add( sHistName.Data(), new TH2F( sHistName.Data(), title.Data(), 
+		  fHM->Add( sHistName.Data(), new TH2F( sHistName.Data(), title.Data(),
                                               kiNbChanFebF, 0, kiNbChanFebF, 4096, 0, 4096) );
 #ifdef USE_HTTP_SERVER
         if (server) server->Register("/StsRaw", fHM->H2(sHistName.Data()));
@@ -319,7 +319,7 @@ void CbmTsMonitorSts::CreateHistograms()
         if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec ) {
           sDateHistName = Form("FebRateDate_n%s_f%1u", sNdpbTag.Data(), febId);
           fHM->Add(sDateHistName.Data(), new TH1F(sDateHistName.Data(), title.Data(),
-                        (5400 / fiBinSizeDatePlots), 
+                        (5400 / fiBinSizeDatePlots),
                         fiRunStartDateTimeSec -10, fiRunStartDateTimeSec + 5400 - 10));
           ( fHM->H1(sDateHistName.Data()) )->GetXaxis()->SetTimeDisplay(1);
 #ifdef USE_HTTP_SERVER
@@ -329,9 +329,9 @@ void CbmTsMonitorSts::CreateHistograms()
 
           sHistName = Form("HitDtDate_n%s_f%1u", sNdpbTag.Data(), febId );
           title = Form("Inverse Hit distance VS time in second in nDPB %s FEB %02u; Time[s] ; F [Hz]; Counts",
-                     sNdpbTag.Data() );
+                     sNdpbTag.Data(), febId );
           fHM->Add(sHistName.Data(), new TH2F(sHistName.Data(), title.Data(),
-                        (5400 / 2*fiBinSizeDatePlots), 
+                        (5400 / 2*fiBinSizeDatePlots),
                         fiRunStartDateTimeSec -10, fiRunStartDateTimeSec + 5400 - 10,
                         iNbBinsRate - 1, dBinsRate ));
           ( fHM->H2(sHistName.Data()) )->GetXaxis()->SetTimeDisplay(1);
@@ -342,7 +342,7 @@ void CbmTsMonitorSts::CreateHistograms()
 
           sHistName = Form("HitDt_n%s_f%1u", sNdpbTag.Data(), febId );
           title = Form("Hit distance in nDPB %s FEB %02u; dT [ns]; Counts",
-                     sNdpbTag.Data() );
+                     sNdpbTag.Data(), febId );
           fHM->Add(sHistName.Data(), new TH1F(sHistName.Data(), title.Data(),
                         iNbBinsRate - 1, dBinsDt )); // 1ns to 10s
 #ifdef USE_HTTP_SERVER
@@ -401,7 +401,7 @@ void CbmTsMonitorSts::CreateHistograms()
       {
          sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdA(dpbId) );
       } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-         else 
+         else
          {
             sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdB(dpbId - fNrOfNdpbsA) );
          } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
@@ -412,7 +412,7 @@ void CbmTsMonitorSts::CreateHistograms()
          gPad->SetLogy();
          sHistName = Form("Chan_Counts_Sts_n%s_f%1u", sNdpbTag.Data(), febId);
          histPnt = fHM->H1(sHistName.Data());
-         
+
          if( 0 == febId%2 )
          {
             histPnt->SetLineColor( kRed );  // => Change color for 1st of the 2/pad!
@@ -423,12 +423,12 @@ void CbmTsMonitorSts::CreateHistograms()
                histPnt->SetLineColor( kBlue );  // => Change color for 1nd of the 2/pad!
                histPnt->Draw("same");
             } // if( 0 == febId%2 )
-            
+
          cStsFebRate->cd( 1 + dpbId * iNbPadsPerDpb + febId/2 );
          gPad->SetLogy();
          sHistName = Form("FebRate_n%s_f%1u", sNdpbTag.Data(), febId);
          histPnt = fHM->H1(sHistName.Data());
-         
+
          if( 0 == febId%2 )
          {
             histPnt->SetLineColor( kRed );  // => Change color for 1st of the 2/pad!
@@ -442,12 +442,12 @@ void CbmTsMonitorSts::CreateHistograms()
 
          // ADC statistical properties per channel
          /// Maybe use some option to switch these canvases ON/OFF
-         TCanvas* cStsFebAdcStats = new TCanvas( Form("AdcStats_n%s_f%1u", sNdpbTag.Data(), febId), 
-                                                  Form("ADC statistical properties n%s f%1u", sNdpbTag.Data(), febId), 
+         TCanvas* cStsFebAdcStats = new TCanvas( Form("AdcStats_n%s_f%1u", sNdpbTag.Data(), febId),
+                                                  Form("ADC statistical properties n%s f%1u", sNdpbTag.Data(), febId),
                                                   w, h);
 //         cStsFebAdcStats->Divide( 2, 3 );
          cStsFebAdcStats->Divide( 2, 2 );
-         
+
          cStsFebAdcStats->cd(1);
          gPad->SetGridx();
          gPad->SetGridy();
@@ -455,7 +455,7 @@ void CbmTsMonitorSts::CreateHistograms()
          sHistName = Form("FebRate_n%s_f%1u", sNdpbTag.Data(), febId);
          histPnt = fHM->H1(sHistName.Data());
          histPnt->Draw();
-         
+
          cStsFebAdcStats->cd(2);
          gPad->SetGridx();
          gPad->SetGridy();
@@ -463,38 +463,38 @@ void CbmTsMonitorSts::CreateHistograms()
          sHistName = Form("Raw_ADC_Sts_n%s_f%1u", sNdpbTag.Data(), febId);
          histPnt = fHM->H2(sHistName.Data());
          histPnt->Draw("colz");
-         
+
          cStsFebAdcStats->cd(3);
          gPad->SetGridx();
          gPad->SetGridy();
          sHistName = Form("ADC_Mean_Sts_n%s_f%1u", sNdpbTag.Data(), febId);
          histPnt = fHM->H1(sHistName.Data());
          histPnt->Draw("hist");
-         
+
          cStsFebAdcStats->cd(4);
          gPad->SetGridx();
          gPad->SetGridy();
          sHistName = Form("ADC_Rms_Sts_n%s_f%1u", sNdpbTag.Data(), febId);
          histPnt = fHM->H1(sHistName.Data());
          histPnt->Draw("hist");
-/*         
+/*
          cStsFebAdcStats->cd(5);
          gPad->SetGridx();
          gPad->SetGridy();
          sHistName = Form("ADC_Skew_Sts_n%s_f%1u", sNdpbTag.Data(), febId);
          histPnt = fHM->H1(sHistName.Data());
          histPnt->Draw("hist");
-         
+
          cStsFebAdcStats->cd(6);
          gPad->SetGridx();
          gPad->SetGridy();
          sHistName = Form("ADC_Kurt_Sts_n%s_f%1u", sNdpbTag.Data(), febId);
          histPnt = fHM->H1(sHistName.Data());
          histPnt->Draw("hist");
-*/ 
+*/
       } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
    } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
-   
+
    /** Recovers/Create Ms Size Canvase for COSY 2017 **/
    // Try to recover canvas in case it was created already by another monitor
    // If not existing, create it
@@ -503,9 +503,9 @@ void CbmTsMonitorSts::CreateHistograms()
    {
       fcMsSizeAll = new TCanvas("cMsSizeAll", "Evolution of MS size in last 300 s", w, h);
       fcMsSizeAll->Divide( 4, 4 );
-      LOG(INFO) << "Created MS size canvas in STS monitor" << FairLogger::endl; 
+      LOG(INFO) << "Created MS size canvas in STS monitor" << FairLogger::endl;
    } // if( NULL == fcMsSizeAll )
-      else LOG(INFO) << "Recovered MS size canvas in STS monitor" << FairLogger::endl; 
+      else LOG(INFO) << "Recovered MS size canvas in STS monitor" << FairLogger::endl;
    /***************************************************/
 
    /** Save pointers to each histogram in class members to speed up access **/
@@ -518,7 +518,7 @@ void CbmTsMonitorSts::CreateHistograms()
       {
          sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdA(dpbId) );
       } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-         else 
+         else
          {
             sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdB(dpbId - fNrOfNdpbsA) );
          } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
@@ -532,20 +532,20 @@ void CbmTsMonitorSts::CreateHistograms()
          fFebRate.push_back(fHM->H1(sHistName.Data()));
          sHistName = Form("HitMissEvo_n%s_f%1u", sNdpbTag.Data(), febId);
          fHitMissEvo.push_back(fHM->H1(sHistName.Data()));
-         
+
          if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
          {
             sDateHistName = Form("FebRateDate_n%s_f%1u", sNdpbTag.Data(), febId);
             fFebRateDate_nDPB.push_back(fHM->H1(sDateHistName.Data()));
-            
+
             sHistName = Form("HitDtDate_n%s_f%1u", sNdpbTag.Data(), febId );
             fHitDtDate_nDPB.push_back(fHM->H2(sHistName.Data()));
             fdLastHitTime_nDPB.push_back( -1.0 );
-            
+
             sHistName = Form("HitDt_n%s_f%1u", sNdpbTag.Data(), febId );
             fHitDt_nDPB.push_back(fHM->H1(sHistName.Data()));
          } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
-         
+
          sHistName = Form("ADC_Mean_Sts_n%s_f%1u", sNdpbTag.Data(), febId);
          fADC_Mean_Sts.push_back(fHM->H1(sHistName.Data()));
          sHistName = Form("ADC_Rms_Sts_n%s_f%1u", sNdpbTag.Data(), febId);
@@ -556,7 +556,7 @@ void CbmTsMonitorSts::CreateHistograms()
          fADC_Kurt_Sts.push_back(fHM->H1(sHistName.Data()));
       } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
    } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
-  
+
    for( Int_t component = 0; component < kiMaxNbFlibLinks; component ++ )
    {
       fhMsSz[ component ] = NULL;
@@ -598,17 +598,17 @@ Bool_t CbmTsMonitorSts::DoUnpack(const fles::Timeslice& ts, size_t component)
    if( component < kiMaxNbFlibLinks )
       if( NULL == fhMsSz[ component ] )
    {
-      TString sMsSzName = Form("MsSz_link_%02u", component);
-      TString sMsSzTitle = Form("Size of MS for nDPB of link %02u; Ms Size [bytes]", component);
-      fHM->Add(sMsSzName.Data(), new TH1F( sMsSzName.Data(), sMsSzTitle.Data(), 
+      TString sMsSzName = Form("MsSz_link_%02lu", component);
+      TString sMsSzTitle = Form("Size of MS for nDPB of link %02lu; Ms Size [bytes]", component);
+      fHM->Add(sMsSzName.Data(), new TH1F( sMsSzName.Data(), sMsSzTitle.Data(),
                                     160000, 0., 20000. ) );
       fhMsSz[ component ] = fHM->H1(sMsSzName.Data());
 #ifdef USE_HTTP_SERVER
       if (server) server->Register("/FlibRaw", fhMsSz[ component ] );
 #endif
-      sMsSzName = Form("MsSzTime_link_%02u", component);
-      sMsSzTitle = Form("Size of MS vs time for gDPB of link %02u; Time[s] ; Ms Size [bytes]", component);
-      fHM->Add(sMsSzName.Data(), new TProfile( sMsSzName.Data(), sMsSzTitle.Data(), 
+      sMsSzName = Form("MsSzTime_link_%02lu", component);
+      sMsSzTitle = Form("Size of MS vs time for gDPB of link %02lu; Time[s] ; Ms Size [bytes]", component);
+      fHM->Add(sMsSzName.Data(), new TProfile( sMsSzName.Data(), sMsSzTitle.Data(),
                                     15000, 0., 300. ) );
       fhMsSzTime[ component ] = fHM->P1(sMsSzName.Data());
 #ifdef USE_HTTP_SERVER
@@ -620,8 +620,8 @@ Bool_t CbmTsMonitorSts::DoUnpack(const fles::Timeslice& ts, size_t component)
          gPad->SetLogy();
          fhMsSzTime[ component ]->Draw("hist le0");
       } // if( NULL != fcMsSizeAll )
-      LOG(INFO) << "Added MS size histo for component: " << component 
-             << " (nDPB)" << FairLogger::endl; 
+      LOG(INFO) << "Added MS size histo for component: " << component
+             << " (nDPB)" << FairLogger::endl;
    } // if( NULL == fhMsSz[ component ] )
 
    Int_t messageType = -111;
@@ -635,9 +635,9 @@ Bool_t CbmTsMonitorSts::DoUnpack(const fles::Timeslice& ts, size_t component)
       const uint8_t* msContent = reinterpret_cast<const uint8_t*>(ts.content(component, m));
 
       uint32_t size = msDescriptor.size;
-      LOG(DEBUG) << "Microslice: " << msDescriptor.idx 
-                << " has size: " << size << FairLogger::endl; 
-      
+      LOG(DEBUG) << "Microslice: " << msDescriptor.idx
+                << " has size: " << size << FairLogger::endl;
+
       if( component < kiMaxNbFlibLinks )
       {
          if( fdStartTimeMsSz < 0 )
@@ -648,14 +648,14 @@ Bool_t CbmTsMonitorSts::DoUnpack(const fles::Timeslice& ts, size_t component)
 
       // If not integer number of message in input buffer, print warning/error
       if( 0 != (size % kuBytesPerMessage) )
-         LOG(ERROR) << "The input microslice buffer does NOT " 
-                    << "contain only complete nDPB messages!" 
+         LOG(ERROR) << "The input microslice buffer does NOT "
+                    << "contain only complete nDPB messages!"
                     << FairLogger::endl;
 
       // Compute the number of complete messages in the input microslice buffer
       uint32_t uNbMessages = (size - (size % kuBytesPerMessage) )
                               / kuBytesPerMessage;
-      
+
       // Prepare variables for the loop on contents
       const uint64_t* pInBuff = reinterpret_cast<const uint64_t*>( msContent );
       UInt_t uNdpbIdx;
@@ -683,15 +683,15 @@ Bool_t CbmTsMonitorSts::DoUnpack(const fles::Timeslice& ts, size_t component)
             mess.printDataCout();
          } // if(gLogger->IsLogNeeded(DEBUG))
 
-         // Increment counter for different message types 
+         // Increment counter for different message types
          // and fill the corresponding histogram
          messageType = mess.getMessageType();
          fMsgCounter[messageType]++;
          fHistMessType->Fill(messageType);
-          
+
          switch( messageType )
          {
-            case ngdpb::MSG_HIT: 
+            case ngdpb::MSG_HIT:
                FillHitInfo(mess, uNdpbIdx, uFebBase);
                break;
             case ngdpb::MSG_EPOCH:
@@ -704,8 +704,8 @@ Bool_t CbmTsMonitorSts::DoUnpack(const fles::Timeslice& ts, size_t component)
                // Just keep track of which type of System message we receive
                fHistSysMessType->Fill(mess.getSysMesType());
                break;
-            default: 
-               LOG(ERROR) << "Message type " << std::hex << std::setw(2) 
+            default:
+               LOG(ERROR) << "Message type " << std::hex << std::setw(2)
                           << static_cast< uint16_t >( mess.getMessageType() )
                           << " not yet include in nXYTER unpacker."
                           << FairLogger::endl;
@@ -716,22 +716,22 @@ Bool_t CbmTsMonitorSts::DoUnpack(const fles::Timeslice& ts, size_t component)
    return kTRUE;
 }
 
-void CbmTsMonitorSts::FillHitInfo(ngdpb::Message mess, UInt_t uNdpbIdx, UInt_t uFebBase)
+void CbmTsMonitorSts::FillHitInfo(ngdpb::Message mess, UInt_t /*uNdpbIdx*/, UInt_t uFebBase)
 {
   // --- Get absolute time, NXYTER and channel number
   Int_t rocId      = mess.getRocNumber();
   Int_t nxyterId   = mess.getNxNumber();
-  Int_t nxChannel  = mess.getNxChNum(); 
+  Int_t nxChannel  = mess.getNxChNum();
   Int_t charge     = mess.getNxAdcValue();
- 
-  LOG(DEBUG) << "Hit: " << rocId << ", " << nxyterId 
+
+  LOG(DEBUG) << "Hit: " << rocId << ", " << nxyterId
              << ", " << nxChannel << ", " << charge << FairLogger::endl;
 
   //here converting channel number into the STS Digi.
 
 /*
 	Int_t address = CreateAddress(uFebBase,nxyterId,0, 0, 0, 0, nxChannel);
-	if (address){	
+	if (address){
 		LOG(DEBUG) << "Got address for hit" << FairLogger::endl;
 	}
 	else {
@@ -748,18 +748,18 @@ void CbmTsMonitorSts::FillHitInfo(ngdpb::Message mess, UInt_t uNdpbIdx, UInt_t u
       if( fCurrentEpoch[rocId].end() != fCurrentEpoch[rocId].find( nxyterId ) )
       {
          Double_t dHitFullTime = mess.getMsgFullTimeD( fCurrentEpoch[rocId][nxyterId] );
-         
+
          if( fdStartTime <= 0 )
          {
             fdStartTime = dHitFullTime;
-            
-            LOG(INFO) << "Start time set to " << (fdStartTime/1e9) 
-                      << " s using first hit on channel " << nxChannel 
-                      << " of FEB " << nxyterId 
-                      << " on nDPB " << fNdpbIdIndexMap[rocId] 
+
+            LOG(INFO) << "Start time set to " << (fdStartTime/1e9)
+                      << " s using first hit on channel " << nxChannel
+                      << " of FEB " << nxyterId
+                      << " on nDPB " << fNdpbIdIndexMap[rocId]
                       << " in epoch " << fCurrentEpoch[rocId][nxyterId] << FairLogger::endl;
          } // if( fdStartTime <= 0 )
-            
+
          if( 0 < fdStartTime )
          {
             fFebRate[iFebNr]->Fill( 1e-9*( dHitFullTime - fdStartTime)  );
@@ -788,36 +788,36 @@ void CbmTsMonitorSts::FillHitInfo(ngdpb::Message mess, UInt_t uNdpbIdx, UInt_t u
 
 }
 
+/*
 Int_t CbmTsMonitorSts::CreateAddress(Int_t febBase, Int_t febId, Int_t stationId,
 		Int_t layerId, Int_t sideId, Int_t moduleId, Int_t channelId)
 {
-/*
 	Int_t febNr = febBase + febId;
 	Int_t sector  = fUnpackPar->GetPadX(febNr, channelId);
 	Int_t channel = fUnpackPar->GetPadY(febNr, channelId);
-   
+
 	Int_t address = CbmStsAddress::GetAddress(stationId, layerId, sideId, moduleId, sector, channel);
 	if(!(sector<0||channel<0)){
-		
+
 		fHistPadDistr->Fill(78-sector,22-channel);
-		
+
 	}
-   
+
 //	fHM->H2("Pad_Distribution")->Fill(sector,channel);
 	return address;
-*/
    return 0;
 }
+*/
 
-void CbmTsMonitorSts::FillEpochInfo(ngdpb::Message mess, UInt_t uNdpbIdx, UInt_t uFebBase)
+void CbmTsMonitorSts::FillEpochInfo(ngdpb::Message mess, UInt_t /*uNdpbIdx*/, UInt_t uFebBase)
 {
   Int_t rocId          = mess.getRocNumber();
   Int_t nxyterId       = mess.getEpochNxNum();
-   
-  UInt_t uEpochVal = mess.getEpochNumber(); 
+
+  UInt_t uEpochVal = mess.getEpochNumber();
   fCurrentEpoch[rocId][nxyterId] = uEpochVal;
   fCurrentEpochTime = mess.getMsgFullTimeD( uEpochVal );
-  
+
   if( fdStartTime <= 0 )
   {
     Int_t channelNr = uFebBase + nxyterId;
@@ -855,26 +855,26 @@ void CbmTsMonitorSts::Finish()
     case 9: message_type ="GET4_32B"; break;
     case 10: message_type ="GET4_SYS"; break;
     }
-    LOG(INFO) << message_type << " messages: " 
+    LOG(INFO) << message_type << " messages: "
               << fMsgCounter[i] << FairLogger::endl;
   }
 
-   LOG(INFO) << "-------------------------------------" << FairLogger::endl;                
+   LOG(INFO) << "-------------------------------------" << FairLogger::endl;
    for( auto it = fCurrentEpoch.begin(); it != fCurrentEpoch.end(); ++it)
       for( auto itN = (it->second).begin(); itN != (it->second).end(); ++itN)
-      LOG(INFO) << "Last epoch for nDPB: " 
+      LOG(INFO) << "Last epoch for nDPB: "
                 << std::hex << std::setw(4) << it->first << std::dec
-                << " , FEB  " << std::setw(4) << itN->first 
-                << " => " << itN->second 
+                << " , FEB  " << std::setw(4) << itN->first
+                << " => " << itN->second
                 << FairLogger::endl;
    LOG(INFO) << "-------------------------------------" << FairLogger::endl;
-   
+
    UpdateAdcStatHistos();
    SaveAllHistos();
 }
 
 
-void CbmTsMonitorSts::FillOutput(CbmDigi* digi)
+void CbmTsMonitorSts::FillOutput(CbmDigi* /*digi*/)
 {
 }
 
@@ -894,7 +894,7 @@ void CbmTsMonitorSts::ResetAllHistos()
         fRaw_ADC_Sts    [iFebNr]->Reset();
         fFebRate        [iFebNr]->Reset();
         fHitMissEvo     [iFebNr]->Reset();
-        
+
         if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
         {
           fFebRateDate_nDPB[iFebNr]->Reset();
@@ -910,8 +910,8 @@ void CbmTsMonitorSts::ResetAllHistos()
       fhMsSz[uLinks]->Reset();
     if( NULL != fhMsSzTime[uLinks] )
       fhMsSzTime[uLinks]->Reset();
-  } // for( UInt_t uLinks = 0; uLinks < 16; uLinks ++) 
-  
+  } // for( UInt_t uLinks = 0; uLinks < 16; uLinks ++)
+
   fdStartTime = -1;
   LOG(INFO) << "Reset most histos done!" << FairLogger::endl;
 }
@@ -919,13 +919,13 @@ void CbmTsMonitorSts::ResetAllHistos()
 void CbmTsMonitorSts::SaveAllHistos()
 {
    TDirectory * oldDir = gDirectory;
-   
+
    TFile * histoFile = new TFile("data/histos_test.root", "RECREATE");
-   
+
    histoFile->cd();
    histoFile->mkdir("Sts_Raw");
    histoFile->cd("Sts_Raw");
-   
+
    fHistMessType   ->Reset();
    fHistSysMessType->Reset();
 
@@ -935,7 +935,7 @@ void CbmTsMonitorSts::SaveAllHistos()
       {// looping on all the FEB IDs
          UInt_t uFebBase = dpbId * fNrOfFebsPerNdpb;
          Int_t  iFebNr = uFebBase + febId;
-         
+
          fChan_Counts_Sts[iFebNr]->Write();
          fRaw_ADC_Sts    [iFebNr]->Write();
          fFebRate        [iFebNr]->Write();
@@ -947,7 +947,7 @@ void CbmTsMonitorSts::SaveAllHistos()
              fHitDtDate_nDPB  [iFebNr]->Write();
              fHitDt_nDPB      [iFebNr]->Write();
          } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
-        
+
          fADC_Mean_Sts[iFebNr]->Write();
          fADC_Rms_Sts [iFebNr]->Write();
          fADC_Skew_Sts[iFebNr]->Write();
@@ -955,7 +955,7 @@ void CbmTsMonitorSts::SaveAllHistos()
       } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
    } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
    histoFile->cd("..");
-   
+
    histoFile->mkdir("Flib_Raw");
    histoFile->cd("Flib_Raw");
    for (UInt_t uLinks = 0; uLinks < kiMaxNbFlibLinks; uLinks++)
@@ -966,11 +966,11 @@ void CbmTsMonitorSts::SaveAllHistos()
          fhMsSzTime[uLinks]->Write();
    } // for( UInt_t uLinks = 0; uLinks < 16; uLinks ++)
    histoFile->cd("..");
-   
+
    histoFile->Close();
 
    oldDir->cd();
-   
+
   LOG(INFO) << "Save all histos done!" << FairLogger::endl;
 }
 
@@ -983,17 +983,17 @@ void CbmTsMonitorSts::UpdateAdcStatHistos()
       {// looping on all the FEB IDs
          UInt_t uFebBase = dpbId * fNrOfFebsPerNdpb;
          Int_t channelNr = uFebBase + febId;
-         
+
          // First reset plots before update
          fADC_Mean_Sts[channelNr]->Reset();
          fADC_Rms_Sts [channelNr]->Reset();
          fADC_Skew_Sts[channelNr]->Reset();
          fADC_Kurt_Sts[channelNr]->Reset();
-         
+
          for( Int_t iChanId = 0; iChanId < kiNbChanFebF; iChanId ++)
          {// looping on all channels
-            phChanAdcProj = fRaw_ADC_Sts[channelNr]->ProjectionY( Form("_py_%03d", iChanId), 
-                                                                   1 + iChanId, 
+            phChanAdcProj = fRaw_ADC_Sts[channelNr]->ProjectionY( Form("_py_%03d", iChanId),
+                                                                   1 + iChanId,
                                                                    1 + iChanId );
             if( 0 < phChanAdcProj->GetEntries() )
             {
@@ -1009,12 +1009,12 @@ void CbmTsMonitorSts::UpdateAdcStatHistos()
                   fADC_Skew_Sts[channelNr]->Fill( iChanId, 0.0 );
                   fADC_Kurt_Sts[channelNr]->Fill( iChanId, 0.0 );
                } // else of if( 0 < phChanAdcProj->GetEntries() )
-            
+
             delete phChanAdcProj;
          }
       } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
    } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
-   
+
   LOG(INFO) << "Update of ADC stats histos done!" << FairLogger::endl;
 }
 
@@ -1023,7 +1023,7 @@ void CbmTsMonitorSts::SetRunStart( Int_t dateIn, Int_t timeIn, Int_t iBinSize )
    TDatime * fRunStartDateTime     = new TDatime( dateIn, timeIn);
    fiRunStartDateTimeSec = fRunStartDateTime->Convert();
    fiBinSizeDatePlots    = iBinSize;
-   
+
    LOG(INFO) << "Assigned new STS Run Start Date-Time: " << fRunStartDateTime->AsString() << FairLogger::endl;
 }
 

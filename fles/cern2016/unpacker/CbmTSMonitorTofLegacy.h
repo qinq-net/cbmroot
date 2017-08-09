@@ -28,10 +28,10 @@ class CbmTofUnpackPar;
 class CbmTSMonitorTofLegacy : public CbmTSUnpack
 {
 public:
-  
+
    CbmTSMonitorTofLegacy();
    virtual ~CbmTSMonitorTofLegacy();
-    
+
    virtual Bool_t Init();
 
 #ifndef __CINT__
@@ -53,10 +53,10 @@ public:
 
    void SetMsLimitLevel( size_t uAcceptBoundaryPct = 100 ) { fuMsAcceptsPercent = uAcceptBoundaryPct; }
    size_t GetMsLimitLevel( ) { return fuMsAcceptsPercent; }
-   
-   void SetDiamondChannels( Int_t iGdpb = 0, Int_t iFeet = 2, Int_t iChannelA = 78, 
-                            Int_t iChannelB = 70, Int_t iChannelC = 94, Int_t iChannelD = 86 );
-                            
+
+   void SetDiamondChannels( UInt_t uGdpb = 0, UInt_t uFeet = 2, UInt_t uChannelA = 78,
+                            UInt_t uChannelB = 70, UInt_t uChannelC = 94, UInt_t uChannelD = 86 );
+
    void ResetAllHistos();
 
 private:
@@ -65,21 +65,21 @@ private:
    UInt_t fuMinNbGdpb;
    UInt_t fuCurrNbGdpb;
 
-   Int_t fNrOfGdpbs;           // Total number of GDPBs in the system
-   Int_t fNrOfFebsPerGdpb;     // Number of FEBs per GDPB
-   Int_t fNrOfGet4PerFeb;      // Number of GET4s per FEB
-   Int_t fNrOfChannelsPerGet4; // Number of channels in each GET4
+   UInt_t fNrOfGdpbs;           // Total number of GDPBs in the system
+   UInt_t fNrOfFebsPerGdpb;     // Number of FEBs per GDPB
+   UInt_t fNrOfGet4PerFeb;      // Number of GET4s per FEB
+   UInt_t fNrOfChannelsPerGet4; // Number of channels in each GET4
 
-   Int_t fNrOfGet4;            // Total number of Get4 chips in the system
-   Int_t fNrOfGet4PerGdpb;     // Number of GET4s per GDPB
-   
-   Int_t fDiamondGdpb;
-   Int_t fDiamondFeet;
-   Int_t fDiamondChanA;
-   Int_t fDiamondChanB;
-   Int_t fDiamondChanC;
-   Int_t fDiamondChanD;
-   Int_t fDiamondTimeLastReset;
+   UInt_t fNrOfGet4;            // Total number of Get4 chips in the system
+   UInt_t fNrOfGet4PerGdpb;     // Number of GET4s per GDPB
+
+   UInt_t fDiamondGdpb;
+   UInt_t fDiamondFeet;
+   UInt_t fDiamondChanA;
+   UInt_t fDiamondChanB;
+   UInt_t fDiamondChanC;
+   UInt_t fDiamondChanD;
+   UInt_t fDiamondTimeLastReset;
 
    std::vector<int> fMsgCounter;
 
@@ -88,7 +88,7 @@ private:
    CbmHistManager* fHM;  ///< Histogram manager
 
    /** Current epoch marker for each ROC and GET4 (first epoch in the stream initialises the map item) **/
-   std::map<Int_t, std::map<Int_t, UInt_t> > fCurrentEpoch; 
+   std::map<Int_t, std::map<Int_t, UInt_t> > fCurrentEpoch;
    Int_t fNofEpochs; /** Current epoch marker for each ROC **/
    ULong_t fCurrentEpochTime;     /** Time stamp of current epoch **/
    Double_t fdStartTime; /** Time of first valid hit (epoch available), used as reference for evolution plots**/

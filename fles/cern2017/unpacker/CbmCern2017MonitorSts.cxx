@@ -494,8 +494,8 @@ void CbmCern2017MonitorSts::CreateHistograms()
   /** Create summary Canvases for CERN 2017 **/
   Double_t w = 10;
   Double_t h = 10;
-  Int_t iNbPadsPerDpb = fuNbElinksPerDpb/2 + fuNbElinksPerDpb%2;
 /*
+  Int_t iNbPadsPerDpb = fuNbElinksPerDpb/2 + fuNbElinksPerDpb%2;
   TCanvas* cMuchChCounts = new TCanvas("cMuchChCounts", "MUCH Channels counts", w, h);
   cMuchChCounts->Divide( fNrOfNdpbs/2 + fNrOfNdpbs%2, fNrOfFebsPerNdpb );
 
@@ -613,7 +613,7 @@ Bool_t CbmCern2017MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
                    << " (DPB)" << FairLogger::endl;
       } // if( NULL == fhMsSz[ component ] )
 
-   Int_t messageType = -111;
+//   Int_t messageType = -111;
    // Loop over microslices
    size_t numCompMsInTs = ts.num_microslices(component);
    for( size_t m = 0; m < numCompMsInTs; ++m )
@@ -719,7 +719,7 @@ void CbmCern2017MonitorSts::FillHitInfo( stsxyter::Message mess, const UShort_t 
 {
    UShort_t usChan   = mess.GetHitChannel();
    UShort_t usRawAdc = mess.GetHitAdc();
-   UShort_t usFullTs = mess.GetHitTimeFull();
+//   UShort_t usFullTs = mess.GetHitTimeFull();
    UShort_t usTsOver = mess.GetHitTimeOver();
    UShort_t usRawTs  = mess.GetHitTime();
 
@@ -860,8 +860,8 @@ void CbmCern2017MonitorSts::FillHitInfo( stsxyter::Message mess, const UShort_t 
 void CbmCern2017MonitorSts::FillTsMsbInfo( stsxyter::Message mess, const UShort_t & usElinkIdx, const UInt_t & uAsicIdx )
 {
    UShort_t usValA    = mess.GetTsMsbValA();
-   UShort_t usValB    = mess.GetTsMsbValB();
-   UShort_t usValC    = mess.GetTsMsbValC();
+//   UShort_t usValB    = mess.GetTsMsbValB();
+//   UShort_t usValC    = mess.GetTsMsbValC();
    bool     bCrcCheck = mess.TsMsbCrcCheck();
 
    // Fill CRC check histo as independent of other data processing
@@ -940,7 +940,7 @@ void CbmCern2017MonitorSts::Finish()
 }
 
 
-void CbmCern2017MonitorSts::FillOutput(CbmDigi* digi)
+void CbmCern2017MonitorSts::FillOutput(CbmDigi* /*digi*/)
 {
 }
 

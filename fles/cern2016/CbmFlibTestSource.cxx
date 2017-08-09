@@ -79,7 +79,7 @@ Bool_t CbmFlibTestSource::Init()
 {
   Int_t fNFiles = fInputFileList.GetEntries();
   if ( fiReqDigiAddr.size()>0 )
-  for(Int_t i=0; i<fiReqDigiAddr.size(); i++)
+  for(UInt_t i=0; i<fiReqDigiAddr.size(); i++)
   LOG(INFO) << Form("Look for 0x%08x digis in %d input files",fiReqDigiAddr[i],fNFiles) << FairLogger::endl;
   if ( 0 == fNFiles ) { //fFileName.Length() ) {
     TString connector = Form("tcp://%s:%i", fHost.Data(), fPort);
@@ -337,7 +337,7 @@ Int_t CbmFlibTestSource::FillBuffer()
 Int_t CbmFlibTestSource::GetNextEvent()
 {
  const Int_t AddrMask=0x0001FFFF;
- Int_t nDigi=0;
+ UInt_t nDigi=0;
  Bool_t bOut=kFALSE;
  Double_t fTimeBufferOut=0.;
  //Double_t dTLast=0.;
@@ -367,37 +367,37 @@ Int_t CbmFlibTestSource::GetNextEvent()
   }
 
   Bool_t bDet[fiReqDigiAddr.size()][2];
-  for(Int_t i=0; i<fiReqDigiAddr.size(); i++) for(Int_t j=0; j<2; j++) bDet[i][j]=kFALSE; //initialize
+  for(UInt_t i=0; i<fiReqDigiAddr.size(); i++) for(Int_t j=0; j<2; j++) bDet[i][j]=kFALSE; //initialize
 
   nDigi=0;
   while(digi) { // build digi array
     if (nDigi == vdigi.size()) vdigi.resize(nDigi+100);
     vdigi[nDigi++]=digi;
-    for(Int_t i=0; i<fiReqDigiAddr.size(); i++)
+    for(UInt_t i=0; i<fiReqDigiAddr.size(); i++)
       if( (digi->GetAddress() & AddrMask) == fiReqDigiAddr[i]) {
         Int_t j = ((CbmTofDigiExp *)digi)->GetSide();
 	bDet[i][j]=kTRUE;
-	if (fiReqDigiAddr[i] == 0x00005006) bDet[i][1]=kTRUE; // diamond with pad readout 
+	if (fiReqDigiAddr[i] == 0x00005006) bDet[i][1]=kTRUE; // diamond with pad readout
       }
     //if(bOut) LOG(INFO)<<Form("Found 0x%08x, Req 0x%08x ", digi->GetAddress(), fiReqDigiAddr)<<FairLogger::endl;
     digi = fBuffer->GetNextData(dTEnd);
   }
 
   LOG(DEBUG) << nDigi << " digis associated to dTEnd = " <<dTEnd<<":";
-  for(Int_t iDigi=0; iDigi<nDigi; iDigi++) LOG(DEBUG)<<Form(" 0x%08x",vdigi[iDigi]->GetAddress());
+  for(UInt_t iDigi=0; iDigi<nDigi; iDigi++) LOG(DEBUG)<<Form(" 0x%08x",vdigi[iDigi]->GetAddress());
   LOG(DEBUG)<< FairLogger::endl;
   if( fiReqDigiAddr.size() > 1)
     LOG(DEBUG) << "Found Req coinc in event with " <<nDigi << " digis, dTEnd = " <<dTEnd<< FairLogger::endl;
 
   //dTLast = vdigi[nDigi-1]->GetTime();
 
-  for(Int_t i=0; i<fiReqDigiAddr.size(); i++)
+  for(UInt_t i=0; i<fiReqDigiAddr.size(); i++)
     if(bDet[i][0]==kFALSE || bDet[i][1]==kFALSE ) break;
     else if( i == fiReqDigiAddr.size()-1 ) bOut=kTRUE;
 
   if(fiReqDigiAddr.size()==0) bOut=kTRUE;
 
-  for(Int_t iDigi=0; iDigi<nDigi; iDigi++){
+  for(UInt_t iDigi=0; iDigi<nDigi; iDigi++){
     digi=vdigi[iDigi];
     Int_t detId = digi->GetSystemId();
     Int_t flibId = fDetectorSystemMap[detId];

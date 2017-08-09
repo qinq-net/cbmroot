@@ -40,19 +40,19 @@ CbmTSMonitorTofLegacy::CbmTSMonitorTofLegacy()
     fuMsAcceptsPercent(100),
     fuMinNbGdpb(),
     fuCurrNbGdpb( 0 ),
-	fNrOfGdpbs(-1),
-	fNrOfFebsPerGdpb(-1),
-	fNrOfGet4PerFeb(-1),
-    fNrOfChannelsPerGet4(-1),
-	fNrOfGet4(-1),
-	fNrOfGet4PerGdpb(-1),
-   fDiamondGdpb(-1),
-   fDiamondFeet(-1),
-   fDiamondChanA(-1),
-   fDiamondChanB(-1),
-   fDiamondChanC(-1),
-   fDiamondChanD(-1),
-   fDiamondTimeLastReset(-1),
+	 fNrOfGdpbs(0),
+	 fNrOfFebsPerGdpb(0),
+	 fNrOfGet4PerFeb(0),
+    fNrOfChannelsPerGet4(0),
+	 fNrOfGet4(0),
+	 fNrOfGet4PerGdpb(0),
+    fDiamondGdpb(0),
+    fDiamondFeet(0),
+    fDiamondChanA(0),
+    fDiamondChanB(0),
+    fDiamondChanC(0),
+    fDiamondChanD(0),
+    fDiamondTimeLastReset(-1),
     fMsgCounter(11,0), // length of enum MessageTypes initialized with 0
     fGdpbIdIndexMap(),
     fHM(new CbmHistManager()),
@@ -131,26 +131,26 @@ Bool_t CbmTSMonitorTofLegacy::ReInitContainers()
    LOG(INFO) << "Nr. of GET4s per GDPB: " << fNrOfGet4PerGdpb
              << FairLogger::endl;
 
-   
+
    fGdpbIdIndexMap.clear();
-   for (Int_t i = 0; i< fNrOfGdpbs; ++i) {
+   for (UInt_t i = 0; i< fNrOfGdpbs; ++i) {
      fGdpbIdIndexMap[fUnpackPar->GetRocId(i)] = i;
      LOG(INFO) << "GDPB Id of TOF  " << i
                << " : " << fUnpackPar->GetRocId(i)
                << FairLogger::endl;
    }
-   Int_t NrOfChannels = fUnpackPar->GetNumberOfChannels();
+   UInt_t NrOfChannels = fUnpackPar->GetNumberOfChannels();
    LOG(INFO) << "Nr. of mapped Tof channels: " << NrOfChannels;
-   for (Int_t i = 0; i< NrOfChannels; ++i) {
+   for (UInt_t i = 0; i< NrOfChannels; ++i) {
       if(i%8 == 0)
          LOG(INFO) << FairLogger::endl;
       LOG(INFO) << Form(" 0x%08x",fUnpackPar->GetChannelToDetUIdMap(i));
    }
    LOG(INFO) << FairLogger::endl;
-   
-   LOG(INFO) << "Plot Channel Rate => " << ( fUnpackPar->IsChannelRateEnabled() ? "ON" : "OFF") 
+
+   LOG(INFO) << "Plot Channel Rate => " << ( fUnpackPar->IsChannelRateEnabled() ? "ON" : "OFF")
              << FairLogger::endl;
-   
+
    return kTRUE;
 }
 
@@ -376,7 +376,7 @@ void CbmTSMonitorTofLegacy::CreateHistograms()
     {
        name = Form("FeetRate_gDPB_g%02u_f%1u", uGdpb, uFeet);
        title = Form("Counts per second in Feet %1u of gDPB %02u; Time[s] ; Counts", uFeet, uGdpb);
-       fHM->Add(name.Data(), new TH1F( name.Data(), title.Data(), 
+       fHM->Add(name.Data(), new TH1F( name.Data(), title.Data(),
                                        1800, 0, 1800 ) );
 #ifdef USE_HTTP_SERVER
       if (server) server->Register("/TofRaw", fHM->H1(name.Data()));
@@ -388,10 +388,10 @@ void CbmTSMonitorTofLegacy::CreateHistograms()
       if (server) server->RegisterCommand( "/Reset_ChCount_gDPB_00", "/TofRaw/ChCount_gDPB_00/->Reset()" );
       if (server) server->Restrict("/Reset_ChCount_gDPB_00","allow=admin");
       if (server) server->RegisterCommand( "/Reset_All_TOF", "ResetAllHistos()" );
-      if (server) server->Restrict("/Reset_All_TOF","allow=admin"); 
+      if (server) server->Restrict("/Reset_All_TOF","allow=admin");
 #endif
-  
-  
+
+
    /** Create summary Canvases for CERN 2016 **/
    name = "stackRate_g00";
    THStack * stackRateA = new THStack( name, "Sum of counts vs Time per FEET for gDPB 1");
@@ -531,7 +531,7 @@ void CbmTSMonitorTofLegacy::CreateHistograms()
 #ifdef USE_HTTP_SERVER
   if (server) server->Register("/TofRaw", fHM->H2(name.Data()));
 #endif
-   
+
    /*****************************/
 
   LOG(INFO) << "Leaving CreateHistograms" << FairLogger::endl;
@@ -565,7 +565,7 @@ Bool_t CbmTSMonitorTofLegacy::DoUnpack(const fles::Timeslice& ts, size_t compone
    std::vector<TH2*> ChannelRate_gDPB;
    std::vector<TH1*> FeetRate_gDPB;
 
-   for(Int_t i=0; i<fNrOfGdpbs; ++i) {
+   for(UInt_t i=0; i<fNrOfGdpbs; ++i) {
      TString name = Form("Raw_Tot_gDPB_%02u", i);
      Raw_Tot_gDPB.push_back(fHM->H2(name.Data()));
      name = Form("ChCount_gDPB_%02u", i);
@@ -595,7 +595,7 @@ Bool_t CbmTSMonitorTofLegacy::DoUnpack(const fles::Timeslice& ts, size_t compone
       else
       {
          TString sMsSzTitle = Form("Size of MS for gDPB of link %02lu; Ms Size [bytes]", component);
-         fHM->Add(sMsSzName.Data(), new TH1F( sMsSzName.Data(), sMsSzTitle.Data(), 
+         fHM->Add(sMsSzName.Data(), new TH1F( sMsSzName.Data(), sMsSzTitle.Data(),
                                        160000, 0., 20000. ) );
          hMsSz = fHM->H1(sMsSzName.Data());
 #ifdef USE_HTTP_SERVER
@@ -603,14 +603,14 @@ Bool_t CbmTSMonitorTofLegacy::DoUnpack(const fles::Timeslice& ts, size_t compone
 #endif
          sMsSzName = Form("MsSzTime_link_%02lu", component);
          sMsSzTitle = Form("Size of MS vs time for gDPB of link %02lu; Time[s] ; Ms Size [bytes]", component);
-         fHM->Add(sMsSzName.Data(), new TProfile( sMsSzName.Data(), sMsSzTitle.Data(), 
+         fHM->Add(sMsSzName.Data(), new TProfile( sMsSzName.Data(), sMsSzTitle.Data(),
                                        15000, 0., 300. ) );
          hMsSzTime = fHM->P1(sMsSzName.Data());
 #ifdef USE_HTTP_SERVER
          if (server) server->Register("/FlibRaw", hMsSzTime );
 #endif
-         LOG(INFO) << "Added MS size histo for component: " << component 
-                << " (gDPB)" << FairLogger::endl; 
+         LOG(INFO) << "Added MS size histo for component: " << component
+                << " (gDPB)" << FairLogger::endl;
       } // else of if( fHM->Exists(sMsSzName.Data() ) )
 
    Int_t messageType = -111;
@@ -628,18 +628,18 @@ Bool_t CbmTSMonitorTofLegacy::DoUnpack(const fles::Timeslice& ts, size_t compone
 
       uint32_t size = msDescriptor.size;
       if(size>0)
-      LOG(DEBUG) << "Microslice: " << msDescriptor.idx 
-      << " has size: " << size << FairLogger::endl; 
-      
+      LOG(DEBUG) << "Microslice: " << msDescriptor.idx
+      << " has size: " << size << FairLogger::endl;
+
       hMsSz->Fill( size );
       hMsSzTime->Fill( (1e-9) * static_cast<double>( msDescriptor.idx) , size);
 //      LOG(INFO) << "Test: " << ((1e-9) * static_cast<double>( msDescriptor.idx))
-//      << " s for size: " << size << FairLogger::endl; 
+//      << " s for size: " << size << FairLogger::endl;
 
       // If not integer number of message in input buffer, print warning/error
       if( 0 != (size % kuBytesPerMessage) )
-      LOG(ERROR) << "The input microslice buffer does NOT " 
-      << "contain only complete nDPB messages!" 
+      LOG(ERROR) << "The input microslice buffer does NOT "
+      << "contain only complete nDPB messages!"
       << FairLogger::endl;
 
       // Compute the number of complete messages in the input microslice buffer
@@ -658,7 +658,7 @@ Bool_t CbmTSMonitorTofLegacy::DoUnpack(const fles::Timeslice& ts, size_t compone
             mess.printDataCout();
          }
 
-         // Increment counter for different message types 
+         // Increment counter for different message types
          // and fill the corresponding histogram
          messageType = mess.getMessageType();
          fMsgCounter[messageType]++;
@@ -670,7 +670,7 @@ Bool_t CbmTSMonitorTofLegacy::DoUnpack(const fles::Timeslice& ts, size_t compone
 
          switch( messageType )
          {
-            case ngdpb::MSG_HIT: 
+            case ngdpb::MSG_HIT:
                //           FillHitInfo(mess);
                LOG(ERROR) << "Message type " << messageType
                           << " not yet included in unpacker."
@@ -774,14 +774,14 @@ Bool_t CbmTSMonitorTofLegacy::DoUnpack(const fles::Timeslice& ts, size_t compone
                }
                default:
                if(100 > iMess++)
-                  LOG(ERROR) << "Message ("<<iMess<<") type " << std::hex << std::setw(2) 
+                  LOG(ERROR) << "Message ("<<iMess<<") type " << std::hex << std::setw(2)
                              << static_cast< uint16_t >( messageType )
                              << " not yet included in Get4 unpacker."
                              << FairLogger::endl;
                if(100 == iMess)
                   LOG(ERROR) << "Stop reporting MSG errors... "
                              << FairLogger::endl;
-         } // switch( mess.getMessageType() ) 
+         } // switch( mess.getMessageType() )
       } // for (uint32_t uIdx = 0; uIdx < uNbMessages; uIdx ++)
    } // for (size_t m = 0; m < ts.num_microslices(component); ++m)
 
@@ -799,7 +799,7 @@ void CbmTSMonitorTofLegacy::FillHitInfo(ngdpb::Message mess,
    // --- Get absolute time, NXYTER and channel number
    Int_t rocId      = mess.getRocNumber();
    Int_t get4Id     = mess.getGdpbGenChipId();
-   Int_t channel    = mess.getGdpbHitChanId(); 
+   Int_t channel    = mess.getGdpbHitChanId();
    Int_t tot        = mess.getGdpbHit32Tot();
    ULong_t hitTime  = mess.getMsgFullTime( 0 );
 
@@ -808,10 +808,10 @@ void CbmTSMonitorTofLegacy::FillHitInfo(ngdpb::Message mess,
       // Check if at least one epoch before in this gDPB
       if( fCurrentEpoch.end() != fCurrentEpoch.find( rocId ) )
       {
-         Int_t gdpbNr = fGdpbIdIndexMap[ rocId ];
+         UInt_t gdpbNr = fGdpbIdIndexMap[ rocId ];
          Raw_Tot_gDPB[gdpbNr]->Fill( get4Id*fNrOfChannelsPerGet4 + channel, tot);
          ChCount_gDPB[gdpbNr]->Fill( get4Id*fNrOfChannelsPerGet4 + channel );
-           
+
          // Check if at least one epoch before in this GET4
          if( fCurrentEpoch[rocId].end() != fCurrentEpoch[rocId].find( get4Id ) )
          {
@@ -832,50 +832,50 @@ void CbmTSMonitorTofLegacy::FillHitInfo(ngdpb::Message mess,
                      } // if( fTsLastHit[rocId][get4Id].end() != fTsLastHit[rocId][get4Id].find( channel ) )
                   } // if( fTsLastHit[rocId].end() != fTsLastHit[rocId].find( get4Id ) )
                } // if( fTsLastHit.end() != fTsLastHit.find( rocId ) )
-                   
+
                fTsLastHit[rocId][get4Id][channel] = mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] );
             } // if( fUnpackPar->IsChannelRateEnabled() )
-                
+
             if( fdStartTime < 0 )
                fdStartTime = mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] );
-               
+
             if( 0 < fdStartTime )
-               FeetRate_gDPB[ (gdpbNr*fNrOfFebsPerGdpb) + (get4Id / fNrOfGet4PerFeb) ]->Fill( 
-                           1e-9*( mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] ) 
+               FeetRate_gDPB[ (gdpbNr*fNrOfFebsPerGdpb) + (get4Id / fNrOfGet4PerFeb) ]->Fill(
+                           1e-9*( mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] )
                                  - fdStartTime) );
-                                 
+
             if( fDiamondGdpb == gdpbNr && ( get4Id/fNrOfGet4PerFeb == fDiamondFeet ) )
             {
-               Int_t iChanInGdpb = get4Id * fNrOfChannelsPerGet4 + channel;
-               if( fDiamondChanA == iChanInGdpb )
+               UInt_t uChanInGdpb = get4Id * fNrOfChannelsPerGet4 + channel;
+               if( fDiamondChanA == uChanInGdpb )
                   histDiamond->Fill( 0., 0.);
-               else if( fDiamondChanB == iChanInGdpb )
+               else if( fDiamondChanB == uChanInGdpb )
                   histDiamond->Fill( 1., 0.);
-               else if( fDiamondChanC == iChanInGdpb )
+               else if( fDiamondChanC == uChanInGdpb )
                   histDiamond->Fill( 0., 1.);
-               else if( fDiamondChanD == iChanInGdpb )
+               else if( fDiamondChanD == uChanInGdpb )
                   histDiamond->Fill( 1., 1.);
-                  
+
                if( 10 < ( (mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] )/1e9) - fDiamondTimeLastReset ) )
                {
                   histDiamond->Reset();
                   fDiamondTimeLastReset = mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] )/1e9;
                } // if( 1e10 < ( mess.getMsgFullTimeD( fCurrentEpoch[rocId][get4Id] ) - fDiamondTimeLastReset )
-               
+
             } // if( fDiamondGdpb == gdpbNr && ( get4Id/fNrOfGet4PerFeb == fDiamondFeet ) )
-          
+
             hitTime  = mess.getMsgFullTime(fCurrentEpoch[rocId][get4Id]);
             Int_t Ft = mess.getGdpbHitFineTs();
 
             if(100 > iMess++)
-               LOG(DEBUG) << "Hit: " << Form("0x%08x ",rocId) << ", " << get4Id 
+               LOG(DEBUG) << "Hit: " << Form("0x%08x ",rocId) << ", " << get4Id
                           << ", " << channel << ", " << tot
                           << ", epoch " << fCurrentEpoch[rocId][get4Id]
-                          << ", FullTime " << hitTime 
+                          << ", FullTime " << hitTime
                           << ", FineTime " << Ft
                           << FairLogger::endl;
          } // if( fCurrentEpoch[rocId].end() != fCurrentEpoch[rocId].find( get4Id ) )
-      } // if( fCurrentEpoch.end() != fCurrentEpoch.find( rocId ) ) 
+      } // if( fCurrentEpoch.end() != fCurrentEpoch.find( rocId ) )
    } // if( fGdpbIdIndexMap.end() != fGdpbIdIndexMap.find( rocId ) )
    else LOG(WARNING) << "found unmapped rocId w/o epoch yet: " << Form("0x%08x ",rocId) << FairLogger::endl;
 }
@@ -884,10 +884,10 @@ void CbmTSMonitorTofLegacy::FillEpochInfo(ngdpb::Message mess, TH2* EpochFlags)
 {
    Int_t rocId  = mess.getRocNumber();
    Int_t get4Id = mess.getGdpbGenChipId();
-   
+
    Int_t gdpbIdx = fGdpbIdIndexMap[rocId];
    Int_t get4Nr  = (gdpbIdx*fNrOfGet4PerGdpb) + get4Id;
-   
+
    fCurrentEpoch[rocId][get4Id] = mess.getEpoch2Number();
 
    //  LOG(INFO) << "Epoch message for ROC " << rocId << " with epoch number "
@@ -901,7 +901,7 @@ void CbmTSMonitorTofLegacy::FillEpochInfo(ngdpb::Message mess, TH2* EpochFlags)
       EpochFlags->Fill( get4Nr, 2 );
    if( 1 == mess.getGdpbEpMissmatch() )
       EpochFlags->Fill( get4Nr, 3 );
-   
+
 /*
    if( 0 == gdpbIdx && 0 == mess.getEpoch2Number() % 20000 ) // Try to force update every 1s
    {
@@ -951,14 +951,14 @@ void CbmTSMonitorTofLegacy::PrintGenInfo(ngdpb::Message mess)
    Int_t rocId    = mess.getRocNumber();
    Int_t get4Id   = mess.getGdpbGenChipId();
    Int_t channel  = mess.getGdpbHitChanId();
-   uint64_t uData = mess.getData(); 
+   uint64_t uData = mess.getData();
 
    if(100 > iMess++)
    LOG(INFO) << "Get4 MSG type "<<mType<<" from rocId "<<rocId<<", getId "<<get4Id
              << ", (hit channel) "<< channel << " data " << std::hex
              << uData
 //Form(" data 0x%01Fx ",uData)
-             << FairLogger::endl;  
+             << FairLogger::endl;
 }
 
 void CbmTSMonitorTofLegacy::PrintSysInfo(ngdpb::Message mess)
@@ -972,7 +972,7 @@ void CbmTSMonitorTofLegacy::PrintSysInfo(ngdpb::Message mess)
                 << Double_t(fCurrentEpochTime) * 1.e-9 << " s "
                 << " for board ID " << std::hex << std::setw(4) << rocId << std::dec
                 << FairLogger::endl;
-             
+
    switch( mess.getGdpbSysSubType() )
    {
       case ngdpb::SYSMSG_GET4_EVENT:
@@ -981,7 +981,7 @@ void CbmTSMonitorTofLegacy::PrintSysInfo(ngdpb::Message mess)
          if( ngdpb::GET4_V1X_ERR_TOT_OVERWRT == uData ||
              ngdpb::GET4_V1X_ERR_TOT_RANGE   == uData ||
              ngdpb::GET4_V1X_ERR_EVT_DISCARD == uData )
-            LOG(DEBUG) << " +++++++ > gDPB: " 
+            LOG(DEBUG) << " +++++++ > gDPB: "
                       << std::hex << std::setw(4) << rocId << std::dec
                       << ", Chip = " << std::setw(2) << mess.getGdpbGenChipId()
                       << ", Chan = " << std::setw(1) << mess.getGdpbSysErrChanId()
@@ -990,7 +990,7 @@ void CbmTSMonitorTofLegacy::PrintSysInfo(ngdpb::Message mess)
                       << ", Data = " << std::hex << std::setw(2) << uData << std::dec
                       << " -- GET4 V1 Error Event"
                       << FairLogger::endl;
-            else LOG(INFO) << " +++++++ >gDPB: " 
+            else LOG(INFO) << " +++++++ >gDPB: "
                    << std::hex << std::setw(4) << rocId << std::dec
                    << ", Chip = " << std::setw(2) << mess.getGdpbGenChipId()
                    << ", Chan = " << std::setw(1) << mess.getGdpbSysErrChanId()
@@ -1040,21 +1040,21 @@ void CbmTSMonitorTofLegacy::Finish()
          case 10: message_type ="GET4_SYS"; break;
          default:  message_type ="UNKNOWN"; break;
       } // switch(i)
-      LOG(INFO) << message_type << " messages: " 
+      LOG(INFO) << message_type << " messages: "
                 << fMsgCounter[i] << FairLogger::endl;
    } // for (unsigned int i=0; i< fMsgCounter.size(); ++i)
-  
+
    LOG(INFO) << "-------------------------------------" << FairLogger::endl;
    for( auto it = fCurrentEpoch.begin(); it != fCurrentEpoch.end(); ++it)
       for( auto itG = (it->second).begin(); itG != (it->second).end(); ++itG)
-      LOG(INFO) << "Last epoch for gDPB: " 
+      LOG(INFO) << "Last epoch for gDPB: "
                 << std::hex << std::setw(4) << it->first << std::dec
-                << " , GET4  " << std::setw(4) << itG->first 
-                << " => " << itG->second 
+                << " , GET4  " << std::setw(4) << itG->first
+                << " => " << itG->second
                 << FairLogger::endl;
    LOG(INFO) << "-------------------------------------" << FairLogger::endl;
-   
-   
+
+
    gDirectory->mkdir("Tof_Raw_gDPB");
    gDirectory->cd("Tof_Raw_gDPB");
    for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
@@ -1069,7 +1069,7 @@ void CbmTSMonitorTofLegacy::Finish()
       } // for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
    } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
    gDirectory->cd("..");
-   
+
    gDirectory->mkdir("Flib_Raw");
    gDirectory->cd("Flib_Raw");
    for( UInt_t uLinks = 0; uLinks < 16; uLinks ++)
@@ -1077,7 +1077,7 @@ void CbmTSMonitorTofLegacy::Finish()
       TString sMsSzName = Form("MsSz_link_%02u", uLinks);
       if( fHM->Exists(sMsSzName.Data() ) )
          fHM->H1( sMsSzName.Data() )->Write();
-         
+
       sMsSzName = Form("MsSzTime_link_%02u", uLinks);
       if( fHM->Exists(sMsSzName.Data() ) )
          fHM->P1( sMsSzName.Data() )->Write();
@@ -1092,18 +1092,18 @@ void CbmTSMonitorTofLegacy::FillOutput(CbmDigi* /*digi*/)
 }
 
 
-   
-void CbmTSMonitorTofLegacy::SetDiamondChannels( Int_t iGdpb, Int_t iFeet, Int_t iChannelA, 
-                            Int_t iChannelB, Int_t iChannelC, Int_t iChannelD)
+
+void CbmTSMonitorTofLegacy::SetDiamondChannels( UInt_t uGdpb, UInt_t uFeet, UInt_t uChannelA,
+                            UInt_t uChannelB, UInt_t uChannelC, UInt_t uChannelD)
 {
-   fDiamondGdpb  = iGdpb;
-   fDiamondFeet  = iFeet;
-   fDiamondChanA = iChannelA;
-   fDiamondChanB = iChannelB;
-   fDiamondChanC = iChannelC;
-   fDiamondChanD = iChannelD;
+   fDiamondGdpb  = uGdpb;
+   fDiamondFeet  = uFeet;
+   fDiamondChanA = uChannelA;
+   fDiamondChanB = uChannelB;
+   fDiamondChanC = uChannelC;
+   fDiamondChanD = uChannelD;
 }
-                   
+
 void CbmTSMonitorTofLegacy::ResetAllHistos()
 {
    fHM->H1( "hMessageType" )->Reset();
@@ -1111,7 +1111,7 @@ void CbmTSMonitorTofLegacy::ResetAllHistos()
    fHM->H2( "hGet4MessType" )->Reset();
    fHM->H2( "hGet4ChanErrors" )->Reset();
    fHM->H2( "hGet4EpochFlags")->Reset();
-      
+
    for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
    {
       fHM->H2( Form("Raw_Tot_gDPB_%02u", uGdpb) )->Reset();
@@ -1123,17 +1123,17 @@ void CbmTSMonitorTofLegacy::ResetAllHistos()
         fHM->H1( Form("FeetRate_gDPB_g%02u_f%1u", uGdpb, uFeet) )->Reset();
       } // for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
    } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
-   
+
    for( UInt_t uLinks = 0; uLinks < 16; uLinks ++)
    {
       TString sMsSzName = Form("MsSz_link_%02u", uLinks);
       if( fHM->Exists(sMsSzName.Data() ) )
          fHM->H1( sMsSzName.Data() )->Reset();
-         
+
       sMsSzName = Form("MsSzTime_link_%02u", uLinks);
       if( fHM->Exists(sMsSzName.Data() ) )
          fHM->P1( sMsSzName.Data() )->Reset();
    } // for( UInt_t uLinks = 0; uLinks < 16; uLinks ++)
 }
-   
+
 ClassImp(CbmTSMonitorTofLegacy)

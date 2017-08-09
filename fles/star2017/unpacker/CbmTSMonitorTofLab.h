@@ -97,14 +97,14 @@ class CbmTSMonitorTofLab: public CbmTSUnpack {
     UInt_t fuMinNbGdpb;
     UInt_t fuCurrNbGdpb;
 
-    Int_t fNrOfGdpbs;           // Total number of GDPBs in the system
-    Int_t fNrOfFebsPerGdpb;     // Number of FEBs per GDPB
-    Int_t fNrOfGet4PerFeb;      // Number of GET4s per FEB
-    Int_t fNrOfChannelsPerGet4; // Number of channels in each GET4
+    UInt_t fNrOfGdpbs;           // Total number of GDPBs in the system
+    UInt_t fNrOfFebsPerGdpb;     // Number of FEBs per GDPB
+    UInt_t fNrOfGet4PerFeb;      // Number of GET4s per FEB
+    UInt_t fNrOfChannelsPerGet4; // Number of channels in each GET4
 
-    Int_t fNrOfChannelsPerFeet; // Number of channels in each FEET
-    Int_t fNrOfGet4;            // Total number of Get4 chips in the system
-    Int_t fNrOfGet4PerGdpb;     // Number of GET4s per GDPB
+    UInt_t fNrOfChannelsPerFeet; // Number of channels in each FEET
+    UInt_t fNrOfGet4;            // Total number of Get4 chips in the system
+    UInt_t fNrOfGet4PerGdpb;     // Number of GET4s per GDPB
 
     Int_t fiCountsLastTs;
     Int_t fiSpillOnThr;

@@ -43,18 +43,18 @@ CbmTSMonitorTof::CbmTSMonitorTof() :
     fuOverlapMsNb(0),
     fuMinNbGdpb(),
     fuCurrNbGdpb(0),
-    fNrOfGdpbs(-1),
-    fNrOfFebsPerGdpb(-1),
-    fNrOfGet4PerFeb(-1),
-    fNrOfChannelsPerGet4(-1),
-    fNrOfGet4(-1),
-    fNrOfGet4PerGdpb(-1),
-    fDiamondGdpb(-1),
-    fDiamondFeet(-1),
-    fDiamondChanA(-1),
-    fDiamondChanB(-1),
-    fDiamondChanC(-1),
-    fDiamondChanD(-1),
+    fNrOfGdpbs(0),
+    fNrOfFebsPerGdpb(0),
+    fNrOfGet4PerFeb(0),
+    fNrOfChannelsPerGet4(0),
+    fNrOfGet4(0),
+    fNrOfGet4PerGdpb(0),
+    fDiamondGdpb(0),
+    fDiamondFeet(0),
+    fDiamondChanA(0),
+    fDiamondChanB(0),
+    fDiamondChanC(0),
+    fDiamondChanD(0),
     fDiamondTimeLastReset(-1),
     fiDiamCountsLastTs(0),
     fiDiamSpillOnThr(10),
@@ -141,8 +141,8 @@ Bool_t CbmTSMonitorTof::InitContainers()
   CreateHistograms();
 
   fCurrentEpoch = new Int_t[fNrOfGdpbs * fNrOfGet4PerGdpb];
-  for (Int_t i = 0; i < fNrOfGdpbs; ++i) {
-    for (Int_t j = 0; j < fNrOfGet4PerGdpb; ++j) {
+  for (UInt_t i = 0; i < fNrOfGdpbs; ++i) {
+    for (UInt_t j = 0; j < fNrOfGet4PerGdpb; ++j) {
       fCurrentEpoch[GetArrayIndex(i, j)] = -111;
     }
   }
@@ -179,14 +179,14 @@ Bool_t CbmTSMonitorTof::ReInitContainers()
                << FairLogger::endl;
 
   fGdpbIdIndexMap.clear();
-  for (Int_t i = 0; i < fNrOfGdpbs; ++i) {
+  for (UInt_t i = 0; i < fNrOfGdpbs; ++i) {
     fGdpbIdIndexMap[fUnpackPar->GetRocId(i)] = i;
     LOG(INFO) << "GDPB Id of TOF  " << i << " : " << fUnpackPar->GetRocId(i)
                  << FairLogger::endl;
   }
-  Int_t NrOfChannels = fUnpackPar->GetNumberOfChannels();
+  UInt_t NrOfChannels = fUnpackPar->GetNumberOfChannels();
   LOG(INFO) << "Nr. of mapped Tof channels: " << NrOfChannels;
-  for (Int_t i = 0; i < NrOfChannels; ++i) {
+  for (UInt_t i = 0; i < NrOfChannels; ++i) {
     if (i % 8 == 0)
       LOG(INFO) << FairLogger::endl;
     LOG(INFO) << Form(" 0x%08x", fUnpackPar->GetChannelToDetUIdMap(i));
@@ -489,26 +489,26 @@ void CbmTSMonitorTof::CreateHistograms()
 
   cSummary->cd(6);
   hDiamondSpill->Draw("col text");
-  
-  
+
+
   /** Create FEET rates Canvase for CERN 2016 **/
   TCanvas* cFeeRates = new TCanvas("cFeeRates", "gDPB Monitoring FEET rates", w, h);
   cFeeRates->Divide(fNrOfFebsPerGdpb, fNrOfGdpbs );
-  
+
   TH1* histPnt = NULL;
   for( UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; ++uGdpb ) {
     for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; ++uFeet ) {
       name = Form("FeetRate_gDPB_g%02u_f%1u", uGdpb, uFeet);
       histPnt = fHM->H1(name.Data());
-      
+
       cFeeRates->cd( 1 + uGdpb * fNrOfFebsPerGdpb + uFeet );
       gPad->SetLogy();
-      
+
       histPnt->Draw();
     } // for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; ++uFeet )
   } // for( UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; ++uGdpb )
-   
-  /** Recovers/Create Ms Size Canvase for CERN 2016 **/  
+
+  /** Recovers/Create Ms Size Canvase for CERN 2016 **/
   // Try to recover canvas in case it was created already by another monitor
   // If not existing, create it
   fcMsSizeAll = dynamic_cast<TCanvas *>( gROOT->FindObject( "cMsSizeAll" ) );
@@ -516,14 +516,14 @@ void CbmTSMonitorTof::CreateHistograms()
   {
      fcMsSizeAll = new TCanvas("cMsSizeAll", "Evolution of MS size in last 300 s", w, h);
      fcMsSizeAll->Divide( 4, 4 );
-      LOG(INFO) << "Created MS size canvas in TOF monitor" << FairLogger::endl; 
+      LOG(INFO) << "Created MS size canvas in TOF monitor" << FairLogger::endl;
   } // if( NULL == fcMsSizeAll )
-      else LOG(INFO) << "Recovered MS size canvas in TOF monitor" << FairLogger::endl; 
+      else LOG(INFO) << "Recovered MS size canvas in TOF monitor" << FairLogger::endl;
 
   /** Create beam tuning Canvases for CERN 2016 **/
   TCanvas* cBeamTunning = new TCanvas("cBeamTunning", "USTC D1 rate + DIam Rate + Diam centering", w, h);
   cBeamTunning->Divide(2, 2);
-  
+
   gStyle->Reset();
 
   cBeamTunning->cd(1);
@@ -539,7 +539,7 @@ void CbmTSMonitorTof::CreateHistograms()
   gPad->SetGridy();
   gPad->SetLogy();
   histPnt->Draw();
-  
+
   cBeamTunning->cd(3);
   gPad->SetGridx();
   gPad->SetGridy();
@@ -561,7 +561,7 @@ void CbmTSMonitorTof::CreateHistograms()
   fHistDiamondSpillCount = fHM->H1("hDiamondSpillCount");
   fHistDiamondSpillQA = fHM->H2("hDiamondSpillQA");
 
-  for (Int_t i = 0; i < fNrOfGdpbs; ++i) {
+  for (UInt_t i = 0; i < fNrOfGdpbs; ++i) {
     name = Form("Raw_Tot_gDPB_%02u", i);
     fRaw_Tot_gDPB.push_back(fHM->H2(name.Data()));
     name = Form("ChCount_gDPB_%02u", i);
@@ -580,7 +580,7 @@ void CbmTSMonitorTof::CreateHistograms()
     } // for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
   }
   /*****************************/
-  
+
   LOG(INFO) << "Leaving CreateHistograms" << FairLogger::endl;
 }
 
@@ -651,10 +651,10 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts,
   Int_t messageType = -111;
   // Loop over microslices
   size_t numCompMsInTs = ts.num_microslices(component);
-  for (size_t m = 0; m < numCompMsInTs; ++m) {  
+  for (size_t m = 0; m < numCompMsInTs; ++m) {
     if (fuMsAcceptsPercent < m)
       continue;
-      
+
     // Ignore overlap ms if number defined by user
     if( numCompMsInTs - fuOverlapMsNb <= m )
       continue;
@@ -697,7 +697,7 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts,
         mess.printDataCout();
       }
 
-      // Increment counter for different message types 
+      // Increment counter for different message types
       // and fill the corresponding histogram
       messageType = mess.getMessageType();
       fMsgCounter[messageType]++;
@@ -708,13 +708,13 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts,
 
       fGet4Id = mess.getGdpbGenChipId();
       fGet4Nr = (fGdpbNr * fNrOfGet4PerGdpb) + fGet4Id;
-      
+
       // Jump most data in Beam tuning mode
       if( fbBeamTuningMode )
-      { 
+      {
           if( fGdpbNr != fDiamondGdpb )
             break;
-//          if( fGet4Id / fNrOfGet4PerFeb != fDiamondFeet ) 
+//          if( fGet4Id / fNrOfGet4PerFeb != fDiamondFeet )
 //            continue;
       } // if( fbBeamTuningMode )
 
@@ -825,7 +825,7 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts,
                           << FairLogger::endl;
           if (100 == iMess)
             LOG(ERROR) << "Stop reporting MSG errors... " << FairLogger::endl;
-      } // switch( mess.getMessageType() ) 
+      } // switch( mess.getMessageType() )
     } // for (uint32_t uIdx = 0; uIdx < uNbMessages; uIdx ++)
   } // for (size_t m = 0; m < ts.num_microslices(component); ++m)
 
@@ -839,7 +839,7 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts,
     {
       fHistDiamondSpillLength->Fill( fdDiamondLastTime - fdDiamondTimeLastTs );
       fHistDiamondSpillCount->Fill( fSpillIdx, fHistDiamondSpill->GetEntries() );
-      fHistDiamondSpillQA->Fill( fdDiamondLastTime - fdDiamondTimeLastTs, 
+      fHistDiamondSpillQA->Fill( fdDiamondLastTime - fdDiamondTimeLastTs,
                                  fHistDiamondSpill->GetEntries() );
     } // if( 0 < fdDiamondTimeLastTs )
     fdDiamondTimeLastTs = fdDiamondLastTime;
@@ -867,12 +867,12 @@ void CbmTSMonitorTof::FillHitInfo(ngdpb::Message mess)
   ULong_t hitTime = mess.getMsgFullTime(0);
 
   Int_t curEpochGdpbGet4 = fCurrentEpoch[fGet4Nr];
-  
+
   if (curEpochGdpbGet4 != -111) {
 
     if( fbEpochSuppModeOn )
       curEpochGdpbGet4 --; // In Ep. Suppr. Mode, receive following epoch instead of previous
-  
+
     Int_t channelNr = fGet4Id * fNrOfChannelsPerGet4 + channel;
     fRaw_Tot_gDPB[fGdpbNr]->Fill(channelNr, tot);
     fChCount_gDPB[fGdpbNr]->Fill(channelNr);
@@ -906,7 +906,7 @@ void CbmTSMonitorTof::FillHitInfo(ngdpb::Message mess)
     {
       fFeetRate_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + (fGet4Id / fNrOfGet4PerFeb)]->Fill(
           1e-9 * (mess.getMsgFullTimeD(curEpochGdpbGet4) - fdStartTime));
-          
+
        // General Time (date + time) rate evolution
        // Add offset of -1H as the filenames were using some times offset by 1 hour (Summer time?!?)
        if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec ) {
@@ -917,31 +917,31 @@ void CbmTSMonitorTof::FillHitInfo(ngdpb::Message mess)
 
      if (fDiamondGdpb == fGdpbNr
          && (fGet4Id / fNrOfGet4PerFeb == fDiamondFeet)) {
-       Int_t iChanInGdpb = fGet4Id * fNrOfChannelsPerGet4 + channel;
+       UInt_t uChanInGdpb = fGet4Id * fNrOfChannelsPerGet4 + channel;
        Int_t increment = static_cast<CbmFlibCern2016Source*>(FairRunOnline::Instance()->GetSource())->GetNofTSSinceLastTS();
-       if (fDiamondChanA == iChanInGdpb)
+       if (fDiamondChanA == uChanInGdpb)
        {
          fHistDiamond->Fill(0., 0., increment);
          fHistDiamondSpill->Fill(0., 0., increment);
-       } // if (fDiamondChanA == iChanInGdpb)
-       else if (fDiamondChanB == iChanInGdpb)
+       } // if (fDiamondChanA == uChanInGdpb)
+       else if (fDiamondChanB == uChanInGdpb)
        {
          fHistDiamond->Fill(1., 0., increment);
          fHistDiamondSpill->Fill(1., 0., increment);
-       } // else if (fDiamondChanB == iChanInGdpb)
-       else if (fDiamondChanC == iChanInGdpb)
+       } // else if (fDiamondChanB == uChanInGdpb)
+       else if (fDiamondChanC == uChanInGdpb)
        {
          fHistDiamond->Fill(0., 1., increment);
          fHistDiamondSpill->Fill(0., 1., increment);
-       } // else if (fDiamondChanC == iChanInGdpb)
-       else if (fDiamondChanD == iChanInGdpb)
+       } // else if (fDiamondChanC == uChanInGdpb)
+       else if (fDiamondChanD == uChanInGdpb)
        {
          fHistDiamond->Fill(1., 1., increment);
          fHistDiamondSpill->Fill(1., 1., increment);
-       } // else if (fDiamondChanD == iChanInGdpb)
-         
-       if( fDiamondChanA == iChanInGdpb || fDiamondChanB == iChanInGdpb ||
-           fDiamondChanC == iChanInGdpb || fDiamondChanD == iChanInGdpb )
+       } // else if (fDiamondChanD == uChanInGdpb)
+
+       if( fDiamondChanA == uChanInGdpb || fDiamondChanB == uChanInGdpb ||
+           fDiamondChanC == uChanInGdpb || fDiamondChanD == uChanInGdpb )
        {
          fiDiamCountsLastTs ++;
          fdDiamondLastTime = 1e-9 * mess.getMsgFullTimeD(curEpochGdpbGet4);
@@ -987,7 +987,7 @@ void CbmTSMonitorTof::FillEpochInfo(ngdpb::Message mess)
       {
         FillHitInfo( fvmEpSupprBuffer[fGet4Nr][ iMsgIdx ] );
       } // for( Int_t iMsgIdx = 0; iMsgIdx < iBufferSize; iMsgIdx++ )
-      
+
       fvmEpSupprBuffer[fGet4Nr].clear();
     } // if( 0 < fvmEpSupprBuffer[fGet4Nr] )
   } // if( fbEpochSuppModeOn )
@@ -1003,7 +1003,7 @@ void CbmTSMonitorTof::FillEpochInfo(ngdpb::Message mess)
 
   fCurrentEpochTime = mess.getMsgFullTime(epochNr);
   fNofEpochs++;
-  
+
 
   if (fDiamondGdpb == fGdpbNr
       && (fGet4Id / fNrOfGet4PerFeb == fDiamondFeet)) {
@@ -1157,8 +1157,8 @@ void CbmTSMonitorTof::Finish()
   } // for (unsigned int i=0; i< fMsgCounter.size(); ++i)
 
   LOG(INFO) << "-------------------------------------" << FairLogger::endl;
-  for (Int_t i = 0; i < fNrOfGdpbs; ++i) {
-    for (Int_t j = 0; j < fNrOfGet4PerGdpb; ++j) {
+  for (UInt_t i = 0; i < fNrOfGdpbs; ++i) {
+    for (UInt_t j = 0; j < fNrOfGet4PerGdpb; ++j) {
       LOG(INFO) << "Last epoch for gDPB: " << std::hex << std::setw(4) << i
                    << std::dec << " , GET4  " << std::setw(4) << j << " => "
                    << fCurrentEpoch[GetArrayIndex(i, j)] << FairLogger::endl;
@@ -1210,16 +1210,17 @@ void CbmTSMonitorTof::FillOutput(CbmDigi* /*digi*/)
 {
 }
 
-void CbmTSMonitorTof::SetDiamondChannels(Int_t iGdpb, Int_t iFeet,
-    Int_t iChannelA, Int_t iChannelB, Int_t iChannelC, Int_t iChannelD)
+void CbmTSMonitorTof::SetDiamondChannels( UInt_t uGdpb, UInt_t uFeet, UInt_t uChannelA,
+                            UInt_t uChannelB, UInt_t uChannelC, UInt_t uChannelD)
 {
-  fDiamondGdpb = iGdpb;
-  fDiamondFeet = iFeet;
-  fDiamondChanA = iChannelA;
-  fDiamondChanB = iChannelB;
-  fDiamondChanC = iChannelC;
-  fDiamondChanD = iChannelD;
+   fDiamondGdpb  = uGdpb;
+   fDiamondFeet  = uFeet;
+   fDiamondChanA = uChannelA;
+   fDiamondChanB = uChannelB;
+   fDiamondChanC = uChannelC;
+   fDiamondChanD = uChannelD;
 }
+
 
 void CbmTSMonitorTof::ResetAllHistos()
 {
@@ -1263,7 +1264,7 @@ void CbmTSMonitorTof::SetRunStart( Int_t dateIn, Int_t timeIn, Int_t iBinSize )
    TDatime * fRunStartDateTime     = new TDatime( dateIn, timeIn);
    fiRunStartDateTimeSec = fRunStartDateTime->Convert();
    fiBinSizeDatePlots    = iBinSize;
-   
+
    LOG(INFO) << "Assigned new TOF Run Start Date-Time: " << fRunStartDateTime->AsString() << FairLogger::endl;
 }
 

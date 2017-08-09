@@ -63,14 +63,14 @@ class CbmTSMonitorTof: public CbmTSUnpack {
       return fuOverlapMsNb;
     }
 
-    void SetDiamondChannels(Int_t iGdpb = 0, Int_t iFeet = 2, Int_t iChannelA =
-        78, Int_t iChannelB = 70, Int_t iChannelC = 94, Int_t iChannelD = 86);
+    void SetDiamondChannels( UInt_t uGdpb = 0, UInt_t uFeet = 2, UInt_t uChannelA = 78,
+                            UInt_t uChannelB = 70, UInt_t uChannelC = 94, UInt_t uChannelD = 86 );
     void SetDiamondPerTsSpillOnThr( Int_t iThrIn = 10 ) {  fiDiamSpillOnThr = iThrIn; }
     void SetDiamondPerTsSpillOffThr( Int_t iThrIn = 3 ) { fiDiamSpillOffThr = iThrIn; }
     void SetDiamondTsNbSpillOffThr( Int_t iThrIn = 10 ) { fiTsUnderOffThr = iThrIn; }
 
     void SetEpochSuppressedMode( Bool_t bEnable = kTRUE ) { fbEpochSuppModeOn = bEnable; }
-    
+
     void SetBeamTuningMode( Bool_t bEnable = kTRUE ) { fbBeamTuningMode = bEnable; }
 
     void SetRunStart( Int_t dateIn, Int_t timeIn, Int_t iBinSize = 5 );
@@ -84,20 +84,20 @@ class CbmTSMonitorTof: public CbmTSUnpack {
     UInt_t fuMinNbGdpb;
     UInt_t fuCurrNbGdpb;
 
-    Int_t fNrOfGdpbs;           // Total number of GDPBs in the system
-    Int_t fNrOfFebsPerGdpb;     // Number of FEBs per GDPB
-    Int_t fNrOfGet4PerFeb;      // Number of GET4s per FEB
-    Int_t fNrOfChannelsPerGet4; // Number of channels in each GET4
+    UInt_t fNrOfGdpbs;           // Total number of GDPBs in the system
+    UInt_t fNrOfFebsPerGdpb;     // Number of FEBs per GDPB
+    UInt_t fNrOfGet4PerFeb;      // Number of GET4s per FEB
+    UInt_t fNrOfChannelsPerGet4; // Number of channels in each GET4
 
-    Int_t fNrOfGet4;            // Total number of Get4 chips in the system
-    Int_t fNrOfGet4PerGdpb;     // Number of GET4s per GDPB
+    UInt_t fNrOfGet4;            // Total number of Get4 chips in the system
+    UInt_t fNrOfGet4PerGdpb;     // Number of GET4s per GDPB
 
-    Int_t fDiamondGdpb;
-    Int_t fDiamondFeet;
-    Int_t fDiamondChanA;
-    Int_t fDiamondChanB;
-    Int_t fDiamondChanC;
-    Int_t fDiamondChanD;
+    UInt_t fDiamondGdpb;
+    UInt_t fDiamondFeet;
+    UInt_t fDiamondChanA;
+    UInt_t fDiamondChanB;
+    UInt_t fDiamondChanC;
+    UInt_t fDiamondChanD;
     Int_t fDiamondTimeLastReset;
     Int_t fiDiamCountsLastTs;
     Int_t fiDiamSpillOnThr;
@@ -115,10 +115,10 @@ class CbmTSMonitorTof: public CbmTSUnpack {
     std::vector< std::vector < ngdpb::Message > > fvmEpSupprBuffer;
 #endif
 
-    Int_t fGdpbId; // Id (hex number)of the GDPB which is read from the message
-    Int_t fGdpbNr; // running number (0 to fNrOfGdpbs) of the GDPB in the
-    Int_t fGet4Id; // running number (0 to fNrOfGet4PerGdpb) of the Get4 chip of a unique GDPB
-    Int_t fGet4Nr; // running number (0 to fNrOfGet4) of the Get4 chip in the system
+    UInt_t fGdpbId; // Id (hex number)of the GDPB which is read from the message
+    UInt_t fGdpbNr; // running number (0 to fNrOfGdpbs) of the GDPB in the
+    UInt_t fGet4Id; // running number (0 to fNrOfGet4PerGdpb) of the Get4 chip of a unique GDPB
+    UInt_t fGet4Nr; // running number (0 to fNrOfGet4) of the Get4 chip in the system
 
     std::vector<int> fMsgCounter;
 

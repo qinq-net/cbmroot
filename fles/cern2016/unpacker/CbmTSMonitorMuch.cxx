@@ -97,10 +97,10 @@ Bool_t CbmTSMonitorMuch::InitContainers()
 {
 	LOG(INFO) << "Init parameter containers for " << GetName()
 			<< FairLogger::endl;
-         
+
    Bool_t bReInit = ReInitContainers();
    CreateHistograms();
-   
+
    return bReInit;
 }
 
@@ -113,30 +113,30 @@ Bool_t CbmTSMonitorMuch::ReInitContainers()
 	fNrOfNdpbsB = fUnpackPar->GetNrOfnDpbsModB();
   fNrOfNdpbs = fNrOfNdpbsA + fNrOfNdpbsB;
   fNrOfFebsPerNdpb = fUnpackPar->GetNrOfFebsPerNdpb();
-  
+
 	LOG(INFO) << "Nr. of nDPBs Mod. A: " << fNrOfNdpbsA
     		<< FairLogger::endl;
-  
+
 	LOG(INFO) << "Nr. of nDPBs Mod. B: " << fNrOfNdpbsB
     		<< FairLogger::endl;
-      
+
    fNdpbIdIndexMap.clear();
-   for (Int_t i = 0; i< fNrOfNdpbsA; ++i) 
+   for (Int_t i = 0; i< fNrOfNdpbsA; ++i)
    {
      fNdpbIdIndexMap[fUnpackPar->GetNdpbIdA(i)] = i;
      LOG(INFO) << "nDPB Id of MUCH A " << i
                << " : 0x" << std::hex << fUnpackPar->GetNdpbIdA(i)
                << std::dec
                << FairLogger::endl;
-   } // for (Int_t i = 0; i< NrOfnDpbsModA; ++i) 
-   for (Int_t i = 0; i< fNrOfNdpbsB; ++i) 
+   } // for (Int_t i = 0; i< NrOfnDpbsModA; ++i)
+   for (Int_t i = 0; i< fNrOfNdpbsB; ++i)
    {
      fNdpbIdIndexMap[fUnpackPar->GetNdpbIdB(i)] = i + fNrOfNdpbsA;
      LOG(INFO) << "nDPB Id of MUCH B " << i
                << " : 0x" << std::hex << fUnpackPar->GetNdpbIdB(i)
                << std::dec
                << FairLogger::endl;
-   } // for (Int_t i = 0; i< NrOfnDpbsModB; ++i) 
+   } // for (Int_t i = 0; i< NrOfnDpbsModB; ++i)
 
 	Int_t NrOfFebs = fUnpackPar->GetNrOfFebs();
 
@@ -154,14 +154,14 @@ Bool_t CbmTSMonitorMuch::ReInitContainers()
 
 	// Filling all the Mapping values in the 2 X and Y arrays
 	//	Int_t nrOfChannels = fUnpackPar->GetNumberOfChannels();
-	
+
 	for (Int_t febId = 0 ; febId<NrOfFebs; febId++){// looping on all the FEB IDs
 		for (Int_t channelId=0; channelId<NrOfChannels; channelId++){
 
 			//Have to check GetPadX and GetPadY values.
 //			LOG(INFO) << "Value of GetPadX " << 	fUnpackPar->GetPadX(febId,channelId) << FairLogger::endl;
 			fMuchStationMapX[febId][channelId] = fUnpackPar->GetPadX(febId,channelId);
-//			LOG(INFO) << "Value of GetPadY " << 	fUnpackPar->GetPadY(febId,channelId) <<FairLogger::endl;		
+//			LOG(INFO) << "Value of GetPadY " << 	fUnpackPar->GetPadY(febId,channelId) <<FairLogger::endl;
 			fMuchStationMapY[febId][channelId] = fUnpackPar->GetPadY(febId,channelId);
 		}
 	}
@@ -229,8 +229,8 @@ void CbmTSMonitorMuch::CreateHistograms()
    const Int_t iNbDecadesRate    = 9;
    const Int_t iNbStepsDecade    = 9;
    const Int_t iNbSubStepsInStep = 10;
-   const Int_t iNbBinsRate = iNbStepsDecade 
-                           + iNbStepsDecade * iNbSubStepsInStep * iNbDecadesRate 
+   const Int_t iNbBinsRate = iNbStepsDecade
+                           + iNbStepsDecade * iNbSubStepsInStep * iNbDecadesRate
                            + 1;
    Double_t dBinsRate[iNbBinsRate];
       // First fill sub-unit decade
@@ -242,7 +242,7 @@ void CbmTSMonitorMuch::CreateHistograms()
    for( Int_t iDecade = 0; iDecade < iNbDecadesRate; iDecade ++)
    {
       Double_t dBase = std::pow( 10, iDecade );
-      Int_t iDecadeIdx = iNbStepsDecade 
+      Int_t iDecadeIdx = iNbStepsDecade
                        + iDecade * iNbStepsDecade * iNbSubStepsInStep;
       for( Int_t iStep = 0; iStep < iNbStepsDecade; iStep++ )
       {
@@ -255,31 +255,31 @@ void CbmTSMonitorMuch::CreateHistograms()
       } // for( Int_t iStep = 0; iStep < iNbStepsDecade; iStep++ )
    } // for( Int_t iDecade = 0; iDecade < iNbDecadesRate; iDecade ++)
    dBinsRate[ iNbBinsRate - 1 ] = std::pow( 10, iNbDecadesRate );
-   
+
    TString sNdpbTag = "";
 	TString sDateHistName{""};
    for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
    {// looping on all the nDPBS IDs
-   
+
       if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
       {
          sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdA(dpbId) );
       } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-         else 
+         else
          {
             sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdB(dpbId - fNrOfNdpbsA) );
          } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-      
+
       for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
-      {// looping on all the FEB IDs 
+      {// looping on all the FEB IDs
          sHistName = Form("Chan_Counts_Much_n%s_f%1u", sNdpbTag.Data(), febId);
-         title = Form("Channel counts Much nDPB %s FEB %02u; channel; Counts", 
+         title = Form("Channel counts Much nDPB %s FEB %02u; channel; Counts",
                      sNdpbTag.Data(), febId);
 		  fHM->Add( sHistName.Data(), new TH1F( sHistName.Data(), title.Data(), 128, 0, 128) );
 #ifdef USE_HTTP_SERVER
         if (server) server->Register("/MuchRaw", fHM->H1(sHistName.Data()));
 #endif
-      
+
         sHistName = Form("Raw_ADC_Much_n%s_f%1u", sNdpbTag.Data(), febId);
         title = Form("Raw ADC Much nDPB %s FEB %02u; channel; ADC value",
                sNdpbTag.Data(), febId);
@@ -299,7 +299,7 @@ void CbmTSMonitorMuch::CreateHistograms()
         if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec ) {
           sDateHistName = Form("FebRateDate_n%s_f%1u", sNdpbTag.Data(), febId);
           fHM->Add(sDateHistName.Data(), new TH1F(sDateHistName.Data(), title.Data(),
-                        (5400 / fiBinSizeDatePlots), 
+                        (5400 / fiBinSizeDatePlots),
                         fiRunStartDateTimeSec -10, fiRunStartDateTimeSec + 5400 - 10));
           ( fHM->H1(sDateHistName.Data()) )->GetXaxis()->SetTimeDisplay(1);
 #ifdef USE_HTTP_SERVER
@@ -311,7 +311,7 @@ void CbmTSMonitorMuch::CreateHistograms()
           title = Form("Inverse Hit distance VS time in second in nDPB %s FEB %02u; Time[s] ; F [Hz]; Counts",
                      sNdpbTag.Data(), febId  );
           fHM->Add(sHistName.Data(), new TH2F(sHistName.Data(), title.Data(),
-                        (5400 / 2*fiBinSizeDatePlots), 
+                        (5400 / 2*fiBinSizeDatePlots),
                         fiRunStartDateTimeSec -10, fiRunStartDateTimeSec + 5400 - 10,
                         iNbBinsRate - 1, dBinsRate ));
           ( fHM->H2(sHistName.Data()) )->GetXaxis()->SetTimeDisplay(1);
@@ -343,14 +343,14 @@ void CbmTSMonitorMuch::CreateHistograms()
 			Int_t sector  = fUnpackPar->GetPadX(iFeb, iChan);
 			Int_t channel = fUnpackPar->GetPadY(iFeb, iChan);
 			if(!(sector<0||channel<0)){
-	
+
 			histPadDistr->Fill((78-sector),(22-channel), (iFeb + 1));
 			if (sector==25 && channel==0) cout <<	"Pad X value" << fUnpackPar->GetPadX(iFeb, iChan) << "Pad Y value" << fUnpackPar->GetPadY(iFeb, iChan) << endl;
 		}
 	}
-//	Int_t iFeb = 3, iChan =32;	
+//	Int_t iFeb = 3, iChan =32;
 
-*/	
+*/
 #ifdef USE_HTTP_SERVER
     if (server) server->Register("/MuchRaw", fHM->H2(sHistName.Data()));
 #endif
@@ -380,7 +380,7 @@ void CbmTSMonitorMuch::CreateHistograms()
       {
          sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdA(dpbId) );
       } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-         else 
+         else
          {
             sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdB(dpbId - fNrOfNdpbsA) );
          } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
@@ -391,7 +391,7 @@ void CbmTSMonitorMuch::CreateHistograms()
          gPad->SetLogy();
          sHistName = Form("Chan_Counts_Much_n%s_f%1u", sNdpbTag.Data(), febId);
          histPnt = fHM->H1(sHistName.Data());
-         
+
          if( 0 == febId%2 )
          {
             histPnt->SetLineColor( kRed );  // => Change color for 1st of the 2/pad!
@@ -402,12 +402,12 @@ void CbmTSMonitorMuch::CreateHistograms()
                histPnt->SetLineColor( kBlue );  // => Change color for 1nd of the 2/pad!
                histPnt->Draw("same");
             } // if( 0 == febId%2 )
-            
+
          cMuchFebRate->cd( 1 + dpbId * iNbPadsPerDpb + febId/2 );
          gPad->SetLogy();
          sHistName = Form("FebRate_n%s_f%1u", sNdpbTag.Data(), febId);
          histPnt = fHM->H1(sHistName.Data());
-         
+
          if( 0 == febId%2 )
          {
             histPnt->SetLineColor( kRed );  // => Change color for 1st of the 2/pad!
@@ -420,8 +420,8 @@ void CbmTSMonitorMuch::CreateHistograms()
             } // if( 0 == febId%2 )
       } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
    } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
-   
-  /** Recovers/Create Ms Size Canvase for CERN 2016 **/  
+
+  /** Recovers/Create Ms Size Canvase for CERN 2016 **/
   // Try to recover canvas in case it was created already by another monitor
   // If not existing, create it
   fcMsSizeAll = dynamic_cast<TCanvas *>( gROOT->FindObject( "cMsSizeAll" ) );
@@ -429,19 +429,19 @@ void CbmTSMonitorMuch::CreateHistograms()
   {
      fcMsSizeAll = new TCanvas("cMsSizeAll", "Evolution of MS size in last 300 s", w, h);
      fcMsSizeAll->Divide( 4, 4 );
-      LOG(INFO) << "Created MS size canvas in MUCH monitor" << FairLogger::endl; 
+      LOG(INFO) << "Created MS size canvas in MUCH monitor" << FairLogger::endl;
   } // if( NULL == fcMsSizeAll )
-      else LOG(INFO) << "Recovered MS size canvas in MUCH monitor" << FairLogger::endl; 
-  
+      else LOG(INFO) << "Recovered MS size canvas in MUCH monitor" << FairLogger::endl;
+
   /*****************************/
-  
+
   for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
   {
       if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
       {
          sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdA(dpbId) );
       } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-         else 
+         else
          {
             sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdB(dpbId - fNrOfNdpbsA) );
          } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
@@ -450,19 +450,19 @@ void CbmTSMonitorMuch::CreateHistograms()
          if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec ) {
             sDateHistName = Form("FebRateDate_n%s_f%1u", sNdpbTag.Data(), febId);
             fFebRateDate_nDPB.push_back(fHM->H1(sDateHistName.Data()));
-            
+
             sHistName = Form("HitDtDate_n%s_f%1u", sNdpbTag.Data(), febId );
             fHitDtDate_nDPB.push_back(fHM->H2(sHistName.Data()));
             fdLastHitTime_nDPB.push_back( -1.0 );
          } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
-         
+
       } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
   } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
-  
-  
+
+
   fHistMessType = fHM->H1("hMessageTypeMuch");
   fHistSysMessType = fHM->H1("hSysMessTypeMuch");
-   
+
   std::vector<TH1*> Chan_Counts_Much;
   std::vector<TH2*> Raw_ADC_Much;
   std::vector<TH1*> FebRate;
@@ -478,7 +478,7 @@ void CbmTSMonitorMuch::CreateHistograms()
       {
          sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdA(dpbId) );
       } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-         else 
+         else
          {
             sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdB(dpbId - fNrOfNdpbsA) );
          } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
@@ -495,7 +495,7 @@ void CbmTSMonitorMuch::CreateHistograms()
       } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
    } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
   fHistPadDistr = fHM->H2("Pad_Distribution");
-  
+
   for( Int_t component = 0; component < kiMaxNbFlibLinks; component ++ )
   {
     fhMsSz[ component ] = NULL;
@@ -522,7 +522,7 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
    {
       TString sMsSzName = Form("MsSz_link_%02lu", component);
       TString sMsSzTitle = Form("Size of MS for nDPB of link %02lu; Ms Size [bytes]", component);
-      fHM->Add(sMsSzName.Data(), new TH1F( sMsSzName.Data(), sMsSzTitle.Data(), 
+      fHM->Add(sMsSzName.Data(), new TH1F( sMsSzName.Data(), sMsSzTitle.Data(),
                                     160000, 0., 20000. ) );
       fhMsSz[ component ] = fHM->H1(sMsSzName.Data());
 #ifdef USE_HTTP_SERVER
@@ -530,7 +530,7 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
 #endif
       sMsSzName = Form("MsSzTime_link_%02lu", component);
       sMsSzTitle = Form("Size of MS vs time for gDPB of link %02lu; Time[s] ; Ms Size [bytes]", component);
-      fHM->Add(sMsSzName.Data(), new TProfile( sMsSzName.Data(), sMsSzTitle.Data(), 
+      fHM->Add(sMsSzName.Data(), new TProfile( sMsSzName.Data(), sMsSzTitle.Data(),
                                     15000, 0., 300. ) );
       fhMsSzTime[ component ] = fHM->P1(sMsSzName.Data());
 #ifdef USE_HTTP_SERVER
@@ -542,8 +542,8 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
          gPad->SetLogy();
          fhMsSzTime[ component ]->Draw("hist le0");
       } // if( NULL != fcMsSizeAll )
-      LOG(INFO) << "Added MS size histo for component: " << component 
-             << " (nDPB)" << FairLogger::endl; 
+      LOG(INFO) << "Added MS size histo for component: " << component
+             << " (nDPB)" << FairLogger::endl;
    } // if( NULL == fhMsSz[ component ] )
 
    Int_t messageType = -111;
@@ -562,9 +562,9 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
       const uint8_t* msContent = reinterpret_cast<const uint8_t*>(ts.content(component, m));
 
       uint32_t size = msDescriptor.size;
-      LOG(DEBUG) << "Microslice: " << msDescriptor.idx 
-                << " has size: " << size << FairLogger::endl; 
-      
+      LOG(DEBUG) << "Microslice: " << msDescriptor.idx
+                << " has size: " << size << FairLogger::endl;
+
       if( component < kiMaxNbFlibLinks )
       {
           if( fdStartTimeMsSz < 0 )
@@ -575,14 +575,14 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
 
       // If not integer number of message in input buffer, print warning/error
       if( 0 != (size % kuBytesPerMessage) )
-        LOG(ERROR) << "The input microslice buffer does NOT " 
-                   << "contain only complete nDPB messages!" 
+        LOG(ERROR) << "The input microslice buffer does NOT "
+                   << "contain only complete nDPB messages!"
                    << FairLogger::endl;
 
       // Compute the number of complete messages in the input microslice buffer
       uint32_t uNbMessages = (size - (size % kuBytesPerMessage) )
                               / kuBytesPerMessage;
-      
+
       // Prepare variables for the loop on contents
       const uint64_t* pInBuff = reinterpret_cast<const uint64_t*>( msContent );
       UInt_t uNdpbIdx;
@@ -592,7 +592,7 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
           // Fill message
           uint64_t ulData = static_cast<uint64_t>( pInBuff[uIdx] );
           ngdpb::Message mess( ulData );
-          
+
           if( 0 == uIdx )
           {
             Int_t rocId      = mess.getRocNumber();
@@ -609,14 +609,14 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
             mess.printDataCout();
           }
 
-          // Increment counter for different message types 
+          // Increment counter for different message types
           // and fill the corresponding histogram
           messageType = mess.getMessageType();
           fMsgCounter[messageType]++;
           fHistMessType->Fill(messageType);
-          
+
           switch( messageType ) {
-          case ngdpb::MSG_HIT: 
+          case ngdpb::MSG_HIT:
             FillHitInfo(mess, uNdpbIdx, uFebBase);
             break;
           case ngdpb::MSG_EPOCH:
@@ -629,39 +629,39 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
             // Just keep track of which type of System message we receive
             fHistSysMessType->Fill(mess.getSysMesType());
             break;
-          default: 
-            LOG(ERROR) << "Message type " << std::hex << std::setw(2) 
+          default:
+            LOG(ERROR) << "Message type " << std::hex << std::setw(2)
                        << static_cast< uint16_t >( mess.getMessageType() )
                        << " not yet include in nXYTER unpacker."
                        << FairLogger::endl;
           }
-          
+
 
 
         } // for (uint32_t uIdx = 0; uIdx < uNbMessages; uIdx ++)
-      
+
     }
 
 
   return kTRUE;
 }
 
-void CbmTSMonitorMuch::FillHitInfo(ngdpb::Message mess, UInt_t uNdpbIdx, UInt_t uFebBase)
+void CbmTSMonitorMuch::FillHitInfo(ngdpb::Message mess, UInt_t /*uNdpbIdx*/, UInt_t uFebBase)
 {
   // --- Get absolute time, NXYTER and channel number
   Int_t rocId      = mess.getRocNumber();
   Int_t nxyterId   = mess.getNxNumber();
-  Int_t nxChannel  = mess.getNxChNum(); 
+  Int_t nxChannel  = mess.getNxChNum();
   Int_t charge     = mess.getNxAdcValue();
- 
-  LOG(DEBUG) << "Hit: " << rocId << ", " << nxyterId 
+
+  LOG(DEBUG) << "Hit: " << rocId << ", " << nxyterId
              << ", " << nxChannel << ", " << charge << FairLogger::endl;
 
   //here converting channel number into the MUCH Digi.
 
 /*
 	Int_t address = CreateAddress(uFebBase,nxyterId,0, 0, 0, 0, nxChannel);
-	if (address){	
+	if (address){
 		LOG(DEBUG) << "Got address for hit" << FairLogger::endl;
 	}
 	else {
@@ -677,18 +677,18 @@ void CbmTSMonitorMuch::FillHitInfo(ngdpb::Message mess, UInt_t uNdpbIdx, UInt_t 
    if( fCurrentEpoch.end() != fCurrentEpoch.find( rocId ) ) {
       if( fCurrentEpoch[rocId].end() != fCurrentEpoch[rocId].find( nxyterId ) ) {
          Double_t dHitFullTime = mess.getMsgFullTimeD( fCurrentEpoch[rocId][nxyterId] );
-         
+
          if( fdStartTime <= 0 )
          {
            fdStartTime = dHitFullTime;
-            
-           LOG(INFO) << "Start time set to " << (fdStartTime/1e9) 
-                     << " s using first hit on channel " << nxChannel 
-                     << " of FEB " << nxyterId 
-                     << " on nDPB " << fNdpbIdIndexMap[rocId] 
+
+           LOG(INFO) << "Start time set to " << (fdStartTime/1e9)
+                     << " s using first hit on channel " << nxChannel
+                     << " of FEB " << nxyterId
+                     << " on nDPB " << fNdpbIdIndexMap[rocId]
                      << " in epoch " << fCurrentEpoch[rocId][nxyterId] << FairLogger::endl;
          }
-            
+
          if( 0 < fdStartTime )
          {
         	  fFebRate[channelNr]->Fill( 1e-9*( dHitFullTime - fdStartTime)  );
@@ -718,27 +718,27 @@ Int_t CbmTSMonitorMuch::CreateAddress(Int_t febBase, Int_t febId, Int_t stationI
 	Int_t febNr = febBase + febId;
 	Int_t sector  = fUnpackPar->GetPadX(febNr, channelId);
 	Int_t channel = fUnpackPar->GetPadY(febNr, channelId);
-   
+
 	Int_t address = CbmMuchAddress::GetAddress(stationId, layerId, sideId, moduleId, sector, channel);
 	if(!(sector<0||channel<0)){
-		
+
 		fHistPadDistr->Fill(78-sector,22-channel);
-		
+
 	}
 //	fHM->H2("Pad_Distribution")->Fill(sector,channel);
-	
+
 	return address;
 }
 
-void CbmTSMonitorMuch::FillEpochInfo(ngdpb::Message mess, UInt_t uNdpbIdx, UInt_t uFebBase)
+void CbmTSMonitorMuch::FillEpochInfo(ngdpb::Message mess, UInt_t /*uNdpbIdx*/, UInt_t uFebBase)
 {
   Int_t rocId          = mess.getRocNumber();
   Int_t nxyterId       = mess.getEpochNxNum();
-   
-  UInt_t uEpochVal = mess.getEpochNumber(); 
+
+  UInt_t uEpochVal = mess.getEpochNumber();
   fCurrentEpoch[rocId][nxyterId] = uEpochVal;
   fCurrentEpochTime = mess.getMsgFullTimeD( uEpochVal );
-  
+
   if( fdStartTime <= 0 )
   {
     Int_t channelNr = uFebBase + nxyterId;
@@ -776,17 +776,17 @@ void CbmTSMonitorMuch::Finish()
     case 9: message_type ="GET4_32B"; break;
     case 10: message_type ="GET4_SYS"; break;
     }
-    LOG(INFO) << message_type << " messages: " 
+    LOG(INFO) << message_type << " messages: "
               << fMsgCounter[i] << FairLogger::endl;
   }
 
-   LOG(INFO) << "-------------------------------------" << FairLogger::endl;                
+   LOG(INFO) << "-------------------------------------" << FairLogger::endl;
    for( auto it = fCurrentEpoch.begin(); it != fCurrentEpoch.end(); ++it)
       for( auto itN = (it->second).begin(); itN != (it->second).end(); ++itN)
-      LOG(INFO) << "Last epoch for nDPB: " 
+      LOG(INFO) << "Last epoch for nDPB: "
                 << std::hex << std::setw(4) << it->first << std::dec
-                << " , FEB  " << std::setw(4) << itN->first 
-                << " => " << itN->second 
+                << " , FEB  " << std::setw(4) << itN->first
+                << " => " << itN->second
                 << FairLogger::endl;
    LOG(INFO) << "-------------------------------------" << FairLogger::endl;
 
@@ -800,14 +800,14 @@ void CbmTSMonitorMuch::Finish()
       {
          sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdA(dpbId) );
       } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-         else 
+         else
          {
             sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdB(dpbId - fNrOfNdpbsA) );
          } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
       for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
       {// looping on all the FEB IDs
         fHM->H1( Form("Chan_Counts_Much_n%s_f%1u", sNdpbTag.Data(), febId) )->Write();
-        fHM->H2( Form("Raw_ADC_Much_n%s_f%1u", sNdpbTag.Data(), febId) )->Write();  
+        fHM->H2( Form("Raw_ADC_Much_n%s_f%1u", sNdpbTag.Data(), febId) )->Write();
         fHM->H1( Form("FebRate_n%s_f%1u", sNdpbTag.Data(), febId) )->Write();
         fHM->H1( Form("HitMissEvo_n%s_f%1u", sNdpbTag.Data(), febId) )->Write();
         if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
@@ -817,9 +817,9 @@ void CbmTSMonitorMuch::Finish()
         } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
       } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
    } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
-   fHM->H2("Pad_Distribution")->Write();        
+   fHM->H2("Pad_Distribution")->Write();
    gDirectory->cd("..");
-   
+
    gDirectory->mkdir("Flib_Raw");
    gDirectory->cd("Flib_Raw");
    for( UInt_t uLinks = 0; uLinks < kiMaxNbFlibLinks; uLinks ++)
@@ -827,7 +827,7 @@ void CbmTSMonitorMuch::Finish()
       TString sMsSzName = Form("MsSz_link_%02u", uLinks);
       if( fHM->Exists(sMsSzName.Data() ) )
          fHM->H1( sMsSzName.Data() )->Write();
-         
+
       sMsSzName = Form("MsSzTime_link_%02u", uLinks);
       if( fHM->Exists(sMsSzName.Data() ) )
          fHM->P1( sMsSzName.Data() )->Write();
@@ -837,7 +837,7 @@ void CbmTSMonitorMuch::Finish()
 }
 
 
-void CbmTSMonitorMuch::FillOutput(CbmDigi* digi)
+void CbmTSMonitorMuch::FillOutput(CbmDigi* /*digi*/)
 {
 }
 
@@ -854,14 +854,14 @@ void CbmTSMonitorMuch::ResetAllHistos()
       {
          sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdA(dpbId) );
       } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
-         else 
+         else
          {
             sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdB(dpbId - fNrOfNdpbsA) );
          } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
       for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
       {// looping on all the FEB IDs
         fHM->H1( Form("Chan_Counts_Much_n%s_f%1u", sNdpbTag.Data(), febId) )->Reset();
-        fHM->H2( Form("Raw_ADC_Much_n%s_f%1u", sNdpbTag.Data(), febId) )->Reset();  
+        fHM->H2( Form("Raw_ADC_Much_n%s_f%1u", sNdpbTag.Data(), febId) )->Reset();
         fHM->H1( Form("FebRate_n%s_f%1u", sNdpbTag.Data(), febId) )->Reset();
         fHM->H1( Form("HitMissEvo_n%s_f%1u", sNdpbTag.Data(), febId) )->Reset();
         if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
@@ -871,7 +871,7 @@ void CbmTSMonitorMuch::ResetAllHistos()
         } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
       } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
    } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
-   fHM->H2("Pad_Distribution")->Write();  
+   fHM->H2("Pad_Distribution")->Write();
 
   for (UInt_t uLinks = 0; uLinks < kiMaxNbFlibLinks; uLinks++) {
     TString sMsSzName = Form("MsSz_link_%02u", uLinks);
@@ -881,8 +881,8 @@ void CbmTSMonitorMuch::ResetAllHistos()
     sMsSzName = Form("MsSzTime_link_%02u", uLinks);
     if (fHM->Exists(sMsSzName.Data()))
       fHM->P1(sMsSzName.Data())->Reset();
-  } // for( UInt_t uLinks = 0; uLinks < 16; uLinks ++) 
-  
+  } // for( UInt_t uLinks = 0; uLinks < 16; uLinks ++)
+
   fdStartTime = -1;
 }
 
@@ -891,7 +891,7 @@ void CbmTSMonitorMuch::SetRunStart( Int_t dateIn, Int_t timeIn, Int_t iBinSize )
    TDatime * fRunStartDateTime     = new TDatime( dateIn, timeIn);
    fiRunStartDateTimeSec = fRunStartDateTime->Convert();
    fiBinSizeDatePlots    = iBinSize;
-   
+
    LOG(INFO) << "Assigned new MUCH Run Start Date-Time: " << fRunStartDateTime->AsString() << FairLogger::endl;
 }
 

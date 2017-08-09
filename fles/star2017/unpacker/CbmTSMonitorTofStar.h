@@ -108,14 +108,14 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     UInt_t fuMinNbGdpb;
     UInt_t fuCurrNbGdpb;
 
-    Int_t fNrOfGdpbs;           // Total number of GDPBs in the system
-    Int_t fNrOfFebsPerGdpb;     // Number of FEBs per GDPB
-    Int_t fNrOfGet4PerFeb;      // Number of GET4s per FEB
-    Int_t fNrOfChannelsPerGet4; // Number of channels in each GET4
+    UInt_t fNrOfGdpbs;           // Total number of GDPBs in the system
+    UInt_t fNrOfFebsPerGdpb;     // Number of FEBs per GDPB
+    UInt_t fNrOfGet4PerFeb;      // Number of GET4s per FEB
+    UInt_t fNrOfChannelsPerGet4; // Number of channels in each GET4
 
-    Int_t fNrOfChannelsPerFeet; // Number of channels in each FEET
-    Int_t fNrOfGet4;            // Total number of Get4 chips in the system
-    Int_t fNrOfGet4PerGdpb;     // Number of GET4s per GDPB
+    UInt_t fNrOfChannelsPerFeet; // Number of channels in each FEET
+    UInt_t fNrOfGet4;            // Total number of Get4 chips in the system
+    UInt_t fNrOfGet4PerGdpb;     // Number of GET4s per GDPB
 
     Int_t fiCountsLastTs;
     Int_t fiSpillOnThr;
@@ -132,10 +132,10 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     std::vector< std::vector < ngdpb::Message > > fvmEpSupprBuffer;
 #endif
 
-    Int_t fGdpbId; // Id (hex number)of the GDPB which is read from the message
-    Int_t fGdpbNr; // running number (0 to fNrOfGdpbs) of the GDPB in the
-    Int_t fGet4Id; // running number (0 to fNrOfGet4PerGdpb) of the Get4 chip of a unique GDPB
-    Int_t fGet4Nr; // running number (0 to fNrOfGet4) of the Get4 chip in the system
+    UInt_t fGdpbId; // Id (hex number)of the GDPB which is read from the message
+    UInt_t fGdpbNr; // running number (0 to fNrOfGdpbs) of the GDPB in the
+    UInt_t fGet4Id; // running number (0 to fNrOfGet4PerGdpb) of the Get4 chip of a unique GDPB
+    UInt_t fGet4Nr; // running number (0 to fNrOfGet4) of the Get4 chip in the system
 
     std::vector<int> fMsgCounter;
 

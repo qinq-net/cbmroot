@@ -62,13 +62,13 @@ CbmTSMonitorTofLab::CbmTSMonitorTofLab() :
     fuOverlapMsNb(0),
     fuMinNbGdpb(),
     fuCurrNbGdpb(0),
-    fNrOfGdpbs(-1),
-    fNrOfFebsPerGdpb(-1),
-    fNrOfGet4PerFeb(-1),
-    fNrOfChannelsPerGet4(-1),
-    fNrOfChannelsPerFeet(-1),
-    fNrOfGet4(-1),
-    fNrOfGet4PerGdpb(-1),
+    fNrOfGdpbs(0),
+    fNrOfFebsPerGdpb(0),
+    fNrOfGet4PerFeb(0),
+    fNrOfChannelsPerGet4(0),
+    fNrOfChannelsPerFeet(0),
+    fNrOfGet4(0),
+    fNrOfGet4PerGdpb(0),
     fiCountsLastTs(0),
     fiSpillOnThr(10),
     fiSpillOffThr(3),
@@ -200,8 +200,8 @@ Bool_t CbmTSMonitorTofLab::InitContainers()
 
   fCurrentEpoch = new Long64_t[fNrOfGdpbs * fNrOfGet4PerGdpb];
   fuCurrentEpochCycle = new UInt_t[fNrOfGdpbs * fNrOfGet4PerGdpb];
-  for (Int_t i = 0; i < fNrOfGdpbs; ++i) {
-    for (Int_t j = 0; j < fNrOfGet4PerGdpb; ++j) {
+  for (UInt_t i = 0; i < fNrOfGdpbs; ++i) {
+    for (UInt_t j = 0; j < fNrOfGet4PerGdpb; ++j) {
       fCurrentEpoch[GetArrayIndex(i, j)] = -111;
       fuCurrentEpochCycle[GetArrayIndex(i, j)] = 0;
     }
@@ -243,7 +243,7 @@ Bool_t CbmTSMonitorTofLab::ReInitContainers()
                << FairLogger::endl;
 
   fGdpbIdIndexMap.clear();
-  for (Int_t i = 0; i < fNrOfGdpbs; ++i) {
+  for (UInt_t i = 0; i < fNrOfGdpbs; ++i) {
     fGdpbIdIndexMap[fUnpackPar->GetRocId(i)] = i;
     LOG(INFO) << "GDPB Id of TOF  " << i << " : " << fUnpackPar->GetRocId(i)
                  << FairLogger::endl;
@@ -1150,7 +1150,7 @@ void CbmTSMonitorTofLab::CreateHistograms()
   fHistSpillCount = fHM->H1("hSpillCount");
   fHistSpillQA = fHM->H2("hSpillQA");
 
-  for (Int_t i = 0; i < fNrOfGdpbs; ++i) {
+  for (UInt_t i = 0; i < fNrOfGdpbs; ++i) {
     name = Form("Raw_Tot_gDPB_%02u_0", i);
     fRaw_Tot_gDPB.push_back(fHM->H2(name.Data()));
     if( uNbFeetPlot < fNrOfFebsPerGdpb )
@@ -1544,16 +1544,16 @@ void CbmTSMonitorTofLab::FillHitInfo(ngdpb::Message mess)
   Long64_t curEpochGdpbGet4 = fCurrentEpoch[fGet4Nr];
 
   if (curEpochGdpbGet4 != -111) {
-    Int_t channelNr = fGet4Id * fNrOfChannelsPerGet4 + channel;
-    Int_t iFeetNr   = (fGet4Id / fNrOfGet4PerFeb);
+    UInt_t channelNr = fGet4Id * fNrOfChannelsPerGet4 + channel;
+    UInt_t uFeetNr   = (fGet4Id / fNrOfGet4PerFeb);
 
     if( !fbGet4M24b )
     {
-       fRaw_Tot_gDPB[fGdpbNr + iFeetNr/uNbFeetPlot]->Fill(channelNr, tot);
+       fRaw_Tot_gDPB[fGdpbNr + uFeetNr/uNbFeetPlot]->Fill(channelNr, tot);
        fChCount_gDPB[fGdpbNr]->Fill(channelNr);
 
       /// Finetime monitoring
-      fhFtDistribPerCh[(fGdpbNr * fNrOfFebsPerGdpb) + iFeetNr]->Fill(
+      fhFtDistribPerCh[(fGdpbNr * fNrOfFebsPerGdpb) + uFeetNr]->Fill(
             fGet4Id * fNrOfChannelsPerGet4 + channel,
             mess.getGdpbHitFineTs()
          );
@@ -1570,8 +1570,8 @@ void CbmTSMonitorTofLab::FillHitInfo(ngdpb::Message mess)
          Int_t edge = mess.getGdpbHit24Edge();
 
          channelNr = fGet4Id * fNrOfChannelsPerGet4 + channel;
-         iFeetNr   = (fGet4Id / fNrOfGet4PerFeb);
-         Int_t iFullFebIdx = (fGdpbNr * fNrOfFebsPerGdpb) + iFeetNr;
+         uFeetNr   = (fGet4Id / fNrOfGet4PerFeb);
+         Int_t iFullFebIdx = (fGdpbNr * fNrOfFebsPerGdpb) + uFeetNr;
 
          Double_t dHitTime = mess.getMsgFullTimeD(curEpochGdpbGet4);
 
@@ -1624,7 +1624,7 @@ void CbmTSMonitorTofLab::FillHitInfo(ngdpb::Message mess)
       // Check if at least one hit before in this channel
       if( -1 < fTsLastHit[fGdpbNr][fGet4Id][channel] )
       {
-         fChannelRate_gDPB[fGdpbNr + iFeetNr/uNbFeetPlot]->Fill(
+         fChannelRate_gDPB[fGdpbNr + uFeetNr/uNbFeetPlot]->Fill(
              1e9 / (mess.getMsgFullTimeD(curEpochGdpbGet4)
                      - fTsLastHit[fGdpbNr][fGet4Id][channel]),
              fGet4Id * fNrOfChannelsPerGet4 + channel);
@@ -1642,25 +1642,25 @@ void CbmTSMonitorTofLab::FillHitInfo(ngdpb::Message mess)
 
     if (0 <= fdStartTime)
     {
-      fFeetRate_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + iFeetNr]->Fill(
+      fFeetRate_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + uFeetNr]->Fill(
           1e-9 * (mess.getMsgFullTimeD(curEpochGdpbGet4) - fdStartTime));
-//      fFeetRateLong_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + iFeetNr]->Fill(
+//      fFeetRateLong_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + uFeetNr]->Fill(
 //          1e-9 * (mess.getMsgFullTimeD(curEpochGdpbGet4) - fdStartTime) / 60 );
 
        // General Time (date + time) rate evolution
        // Add offset of -1H as the filenames were using some times offset by 1 hour (Summer time?!?)
        if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec ) {
-         fFeetRateDate_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + iFeetNr]->Fill(
+         fFeetRateDate_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + uFeetNr]->Fill(
              1e-9 * (mess.getMsgFullTimeD(curEpochGdpbGet4) - fdStartTime)  );
        } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
     }
-   fFeetRateLong_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + iFeetNr]->Fill(
+   fFeetRateLong_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + uFeetNr]->Fill(
        1e-9 * (mess.getMsgFullTimeD(curEpochGdpbGet4) ) / 60.0
        + static_cast< double >( fuCurrentEpochCycle[fGet4Nr] ) * get4v1x::kdEpochCycleInS / 60.0 );
 
+/*
     Int_t iChanInGdpb = fGet4Id * fNrOfChannelsPerGet4 + channel;
     Int_t increment = static_cast<CbmFlibCern2016Source*>(FairRunOnline::Instance()->GetSource())->GetNofTSSinceLastTS();
-/*
     // if condition to find the right strip/end index
       fHistSpill->Fill(0., 0., increment);
 */
@@ -1848,15 +1848,15 @@ void CbmTSMonitorTofLab::FillGet4ErrorInfo(ngdpb::Message mess)
 
    fHistGet4MessType->Fill(fGet4Nr, ngdpb::GET4_32B_ERROR);
 
-   Int_t iFeetNr   = (fGet4Id / fNrOfGet4PerFeb);
+   UInt_t uFeetNr   = (fGet4Id / fNrOfGet4PerFeb);
    if (0 <= fdStartTime)
    {
-      fFeetErrorRate_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + iFeetNr]->Fill(
+      fFeetErrorRate_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + uFeetNr]->Fill(
          1e-9 * (mess.getMsgFullTimeD(fCurrentEpoch[fGet4Nr]) - fdStartTime));
-//      fFeetErrorRateLong_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + iFeetNr]->Fill(
+//      fFeetErrorRateLong_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + uFeetNr]->Fill(
 //         1e-9 * (mess.getMsgFullTimeD(fCurrentEpoch[fGet4Nr]) - fdStartTime) / 60 );
    } // if (0 <= fdStartTime)
-   fFeetErrorRateLong_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + iFeetNr]->Fill(
+   fFeetErrorRateLong_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + uFeetNr]->Fill(
       1e-9 * (mess.getMsgFullTimeD(fCurrentEpoch[fGet4Nr])) / 60.0
       + static_cast< double >( fuCurrentEpochCycle[fGet4Nr] ) * get4v1x::kdEpochCycleInS / 60.0 );
 
@@ -2082,7 +2082,7 @@ void CbmTSMonitorTofLab::FillStarTrigInfo(ngdpb::Message mess)
                        << " Diff = -" << Form("%8llu", fulStarTsFullLast - ulNewStarTsFull)
                        << FairLogger::endl;
 
-         ULong64_t ulGdpbTsDiff = ulNewGdpbTsFull - fulGdpbTsFullLast;
+//         ULong64_t ulGdpbTsDiff = ulNewGdpbTsFull - fulGdpbTsFullLast;
          fulGdpbTsFullLast = ulNewGdpbTsFull;
          fulStarTsFullLast = ulNewStarTsFull;
          fuStarTokenLast   = uNewToken;
@@ -2188,8 +2188,8 @@ void CbmTSMonitorTofLab::Finish()
   } // for (unsigned int i=0; i< fMsgCounter.size(); ++i)
 
   LOG(INFO) << "-------------------------------------" << FairLogger::endl;
-  for (Int_t i = 0; i < fNrOfGdpbs; ++i) {
-    for (Int_t j = 0; j < fNrOfGet4PerGdpb; ++j) {
+  for (UInt_t i = 0; i < fNrOfGdpbs; ++i) {
+    for (UInt_t j = 0; j < fNrOfGet4PerGdpb; ++j) {
       LOG(INFO) << "Last epoch for gDPB: " << std::hex << std::setw(4) << i
                    << std::dec << " , GET4  " << std::setw(4) << j << " => "
                    << fCurrentEpoch[GetArrayIndex(i, j)]
