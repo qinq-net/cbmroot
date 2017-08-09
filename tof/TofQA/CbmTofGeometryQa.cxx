@@ -2,7 +2,7 @@
  ** @author Pierre-Alain Loizeau <loizeau@physi.uni-heidelberg.de>
  ** @date 27/08/2015
  **/
- 
+
 #include "CbmTofGeometryQa.h"
 
 // TOF Classes and includes
@@ -43,19 +43,20 @@ using std::endl;
 //___________________________________________________________________
 // Constants definitions: Particles list
 const Int_t   kiNbPart = 13;
-const TString ksPartTag[kiNbPart] = 
+const TString ksPartTag[kiNbPart] =
    { "others",
-     "ep", "em",   "pip", "pim", "kp", "km", 
+     "ep", "em",   "pip", "pim", "kp", "km",
      "p",  "pbar", "d",   "t",   "he",  "a" };
-const Int_t   kiPartPdgCode[kiNbPart] = 
+const Int_t   kiPartPdgCode[kiNbPart] =
    {   0,
-      11,   -11,    211,   -211,  321,  -321, 
+      11,   -11,    211,   -211,  321,  -321,
     2212, -2212, 1000010020, 1000010030, 1000020030, 1000020040 };
-const TString ksPartName[kiNbPart] = 
-   { "any other part.", 
-     "e+", "e-",   "#pi+", "#pi-", "k+", "k-", 
+const TString ksPartName[kiNbPart] =
+   { "any other part.",
+     "e+", "e-",   "#pi+", "#pi-", "k+", "k-",
      "p",  "anti-p", "d",    "t",    "he", "#alpha"};
 const Int_t   kiMinNbStsPntAcc = 3; // Number of STS Pnt for Trk to be reconstructable
+const Int_t   kiMinNbMuchPntAcc = 10; // Number of MUCH Pnt for Trk to be reconstructable
 //___________________________________________________________________
 
 
@@ -86,17 +87,24 @@ CbmTofGeometryQa::CbmTofGeometryQa()
     fbRealPointAvail( kFALSE ),
     fsHistoOutFilename("./tofQa.hst.root"),
     fdWallPosZ(1000),
+    fbCentDepOn(kFALSE),
     fvhTrackAllStartZCent(), // Beam pipe check
     fvhTrackSecStartZCent(), // Beam pipe check
     fvhTrackAllStartXZCent(), // Beam pipe check
+    fvhTofPntAllAngCent(), // Beam pipe check
     fvhTrackAllStartXZ(), // Beam pipe check
     fvhTrackAllStartYZ(), // Beam pipe check
-    fvhTofPntAllAngCent(), // Beam pipe check
     fhTrackMapXY(NULL),  // Only when creating normalization histos
     fhTrackMapXZ(NULL),  // Only when creating normalization histos
     fhTrackMapYZ(NULL),  // Only when creating normalization histos
     fhTrackMapAng(NULL), // Only when creating normalization histos
     fhTrackMapSph(NULL), // Only when creating normalization histos
+    fhTrackMapAngPrimAll(NULL),  // For angular acceptance study
+    fhTrackMapAngPrimSts(NULL),  // For angular acceptance study
+    fhTrackMapAngPrimRich(NULL), // For angular acceptance study
+    fhTrackMapAngPrimMuch(NULL), // For angular acceptance study
+    fhTrackMapAngPrimTrd(NULL),  // For angular acceptance study
+    fhTrackMapAngPrimTof(NULL),  // For angular acceptance study
     fhPointMapXY(NULL),
     fhPointMapXZ(NULL),
     fhPointMapYZ(NULL),
@@ -107,6 +115,11 @@ CbmTofGeometryQa::CbmTofGeometryQa()
     fhRealPointMapYZ(NULL),
     fhRealPointMapAng(NULL),
     fhRealPointMapSph(NULL),
+    fhPointMapAngWithSts(NULL),
+    fhPointMapAngWithRich(NULL),
+    fhPointMapAngWithMuch(NULL),
+    fhPointMapAngWithTrd(NULL),
+    fbSphAppOn(kFALSE),
     fhPointSphAprRadiusErrMapXY(NULL),
     fhPointSphAprRadiusErrMapXZ(NULL),
     fhPointSphAprRadiusErrMapYZ(NULL),
@@ -161,17 +174,24 @@ CbmTofGeometryQa::CbmTofGeometryQa(const char* name, Int_t verbose)
     fbRealPointAvail( kFALSE ),
     fsHistoOutFilename("./tofQa.hst.root"),
     fdWallPosZ(1000),
+    fbCentDepOn(kFALSE),
     fvhTrackAllStartZCent(), // Beam pipe check
     fvhTrackSecStartZCent(), // Beam pipe check
     fvhTrackAllStartXZCent(), // Beam pipe check
+    fvhTofPntAllAngCent(), // Beam pipe check
     fvhTrackAllStartXZ(), // Beam pipe check
     fvhTrackAllStartYZ(), // Beam pipe check
-    fvhTofPntAllAngCent(), // Beam pipe check
     fhTrackMapXY(NULL),  // Only when creating normalization histos
     fhTrackMapXZ(NULL),  // Only when creating normalization histos
     fhTrackMapYZ(NULL),  // Only when creating normalization histos
     fhTrackMapAng(NULL), // Only when creating normalization histos
     fhTrackMapSph(NULL), // Only when creating normalization histos
+    fhTrackMapAngPrimAll(NULL),  // For angular acceptance study
+    fhTrackMapAngPrimSts(NULL),  // For angular acceptance study
+    fhTrackMapAngPrimRich(NULL), // For angular acceptance study
+    fhTrackMapAngPrimMuch(NULL), // For angular acceptance study
+    fhTrackMapAngPrimTrd(NULL),  // For angular acceptance study
+    fhTrackMapAngPrimTof(NULL),  // For angular acceptance study
     fhPointMapXY(NULL),
     fhPointMapXZ(NULL),
     fhPointMapYZ(NULL),
@@ -182,6 +202,11 @@ CbmTofGeometryQa::CbmTofGeometryQa(const char* name, Int_t verbose)
     fhRealPointMapYZ(NULL),
     fhRealPointMapAng(NULL),
     fhRealPointMapSph(NULL),
+    fhPointMapAngWithSts(NULL),
+    fhPointMapAngWithRich(NULL),
+    fhPointMapAngWithMuch(NULL),
+    fhPointMapAngWithTrd(NULL),
+    fbSphAppOn(kFALSE),
     fhPointSphAprRadiusErrMapXY(NULL),
     fhPointSphAprRadiusErrMapXZ(NULL),
     fhPointSphAprRadiusErrMapYZ(NULL),
@@ -238,14 +263,14 @@ InitStatus CbmTofGeometryQa::Init()
                 <<FairLogger::endl;
       return kFATAL;
    } // if( k12b > iGeoVersion )
-   
-   if(NULL != fTofId) 
+
+   if(NULL != fTofId)
      LOG(INFO)<<"CbmTofGeometryQa::Init with GeoVersion "<<fGeoHandler->GetGeoVersion()<<FairLogger::endl;
    else
    {
       switch(iGeoVersion)
       {
-         case k12b: 
+         case k12b:
             fTofId = new CbmTofDetectorId_v12b();
             break;
          case k14a:
@@ -256,7 +281,7 @@ InitStatus CbmTofGeometryQa::Init()
                       <<FairLogger::endl;
          return kFATAL;
       } // switch(iGeoVersion)
-   } // else of if(NULL != fTofId) 
+   } // else of if(NULL != fTofId)
 
    if( kFALSE == LoadGeometry() )
       return kFATAL;
@@ -272,8 +297,10 @@ void CbmTofGeometryQa::SetParContainers()
    LOG(INFO)<<" CbmTofGeometryQa => Get the digi parameters for tof"<<FairLogger::endl;
 
    // Get Base Container
+/*
    FairRunAna* ana = FairRunAna::Instance();
    FairRuntimeDb* rtdb=ana->GetRuntimeDb();
+*/
 }
 
 void CbmTofGeometryQa::Exec(Option_t* /*option*/)
@@ -307,14 +334,14 @@ void CbmTofGeometryQa::Finish()
 Bool_t   CbmTofGeometryQa::RegisterInputs()
 {
    FairRootManager *fManager = FairRootManager::Instance();
-   
+
    fMCEventHeader = (FairMCEventHeader*) fManager->GetObject("MCEventHeader.");
    if(NULL == fMCEventHeader)
    {
       LOG(ERROR)<<"CbmTofGeometryQa::RegisterInputs => Could not get the MCEventHeader object!!!"<<FairLogger::endl;
       return kFALSE;
    }
-    
+
    fTofPointsColl  = (TClonesArray *) fManager->GetObject("TofPoint");
    if( NULL == fTofPointsColl)
    {
@@ -328,7 +355,7 @@ Bool_t   CbmTofGeometryQa::RegisterInputs()
       LOG(ERROR)<<"CbmTofGeometryQa::RegisterInputs => Could not get the MCTrack TClonesArray!!!"<<FairLogger::endl;
       return kFALSE;
    } // if( NULL == fMcTracksColl)
-   
+
    fRealTofPointsColl  = (TClonesArray *) fManager->GetObject("RealisticTofPoint");
    fRealTofMatchColl   = (TClonesArray *) fManager->GetObject("TofRealPntMatch");
    if( NULL != fRealTofPointsColl && NULL != fRealTofMatchColl )
@@ -435,18 +462,6 @@ Bool_t CbmTofGeometryQa::CreateHistos()
    Int_t iNbBinPhi     = 180;
    Double_t dPhiMin    = - TMath::Pi();
    Double_t dPhiMax    =   TMath::Pi();
-   
-   // Range hit deviation from MC
-   Int_t    iNbBinsDeltaPos  =  600;
-   Double_t dDeltaPosRange   =   30; // cm
-   Int_t    iNbBinsDeltaTime = 1000;
-   Double_t dDeltaTimeRange  = 1000; // ps 
-   Int_t    iNbBinsMulti     =   18;
-   Double_t iMinMulti        =    2 - 0.5;
-   Double_t iMaxMulti        =   19 + 0.5;
-   // Range pulls from MC
-   Int_t    iNbBinsPullPos  =  500;
-   Double_t dPullPosRange   =    5; 
 
    // Mapping
       // Dependence of Track origin on centrality
@@ -459,51 +474,58 @@ Bool_t CbmTofGeometryQa::CreateHistos()
    Int_t    iNbBinsCentr  = 16;
    Double_t dNbMinCentr   =  0.0;
    Double_t dNbMaxCentr   = 16.0;
-   fvhTrackAllStartZCent.resize(kiNbPart);
-   fvhTrackSecStartZCent.resize(kiNbPart);
-   fvhTrackAllStartXZCent.resize(kiNbPart);
+
+   if( kTRUE == fbCentDepOn )
+   {
+      fvhTrackAllStartZCent.resize(kiNbPart);
+      fvhTrackSecStartZCent.resize(kiNbPart);
+      fvhTrackAllStartXZCent.resize(kiNbPart);
+      fvhTofPntAllAngCent.resize(kiNbPart);
+   } // if( kTRUE == fbCentDepOn )
    fvhTrackAllStartXZ.resize(kiNbPart);
    fvhTrackAllStartYZ.resize(kiNbPart);
-   fvhTofPntAllAngCent.resize(kiNbPart);
    for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
    {
          // Track origin for tracks reaching TOF
-      fvhTrackAllStartZCent[iPartIdx] = new TH2D( Form("TofTests_TrackAllStartZCent_%s", ksPartTag[iPartIdx].Data() ) ,  
-                              Form("Centrality vs Start Z distribution for MC tracks w/ TOF Pnt, %s, all tracks; Start Z [cm]; B [fm]; # []", 
-                                   ksPartName[iPartIdx].Data()  ),
-                              iNbBinsStartZ, dMinStartZ,  dMaxStartZ,
-                              iNbBinsCentr,  dNbMinCentr, dNbMaxCentr);
-      fvhTrackSecStartZCent[iPartIdx] = new TH2D( Form("TofTests_TrackSecStartZCent_%s", ksPartTag[iPartIdx].Data() ) ,  
-                              Form("Centrality vs Start Z distribution for MC tracks w/ TOF Pnt, %s, secondary tracks; Start Z [cm]; B [fm]; # []", 
-                                   ksPartName[iPartIdx].Data()  ),
-                              iNbBinsStartZ, dMinStartZ,  dMaxStartZ,
-                              iNbBinsCentr,  dNbMinCentr, dNbMaxCentr);
-      if( 2 == iPartIdx ) // 3D plot only for e-
-         fvhTrackAllStartXZCent[iPartIdx] = new TH3D( Form("TofTests_TrackAllStartXZCent_%s", ksPartTag[iPartIdx].Data() ) ,  
-                              Form("Centrality vs Start Z distribution for MC tracks w/ TOF Pnt, %s, all tracks; Start X [cm]; Start Z [cm]; B [fm];", 
-                                   ksPartName[iPartIdx].Data()  ),
-                              iNbBinsStartXY/2,  dMinStartXY, dMaxStartXY,
-                              iNbBinsStartZ/2, dMinStartZ,  dMaxStartZ,
-                              iNbBinsCentr,  dNbMinCentr, dNbMaxCentr);
-      fvhTrackAllStartXZ[iPartIdx] = new TH2D( Form("TofTests_TrackAllStartXZ_%s", ksPartTag[iPartIdx].Data() ) ,  
-                              Form("Start X vs Z distribution for MC tracks w/ TOF Pnt, %s, all tracks; Start Z [cm]; Start X [cm]; # []", 
+      if( kTRUE == fbCentDepOn )
+      {
+         fvhTrackAllStartZCent[iPartIdx] = new TH2D( Form("TofTests_TrackAllStartZCent_%s", ksPartTag[iPartIdx].Data() ) ,
+                                 Form("Centrality vs Start Z distribution for MC tracks w/ TOF Pnt, %s, all tracks; Start Z [cm]; B [fm]; # []",
+                                      ksPartName[iPartIdx].Data()  ),
+                                 iNbBinsStartZ, dMinStartZ,  dMaxStartZ,
+                                 iNbBinsCentr,  dNbMinCentr, dNbMaxCentr);
+         fvhTrackSecStartZCent[iPartIdx] = new TH2D( Form("TofTests_TrackSecStartZCent_%s", ksPartTag[iPartIdx].Data() ) ,
+                                 Form("Centrality vs Start Z distribution for MC tracks w/ TOF Pnt, %s, secondary tracks; Start Z [cm]; B [fm]; # []",
+                                      ksPartName[iPartIdx].Data()  ),
+                                 iNbBinsStartZ, dMinStartZ,  dMaxStartZ,
+                                 iNbBinsCentr,  dNbMinCentr, dNbMaxCentr);
+         if( 2 == iPartIdx ) // 3D plot only for e-
+            fvhTrackAllStartXZCent[iPartIdx] = new TH3D( Form("TofTests_TrackAllStartXZCent_%s", ksPartTag[iPartIdx].Data() ) ,
+                                 Form("Centrality vs Start Z distribution for MC tracks w/ TOF Pnt, %s, all tracks; Start X [cm]; Start Z [cm]; B [fm];",
+                                      ksPartName[iPartIdx].Data()  ),
+                                 iNbBinsStartXY/2,  dMinStartXY, dMaxStartXY,
+                                 iNbBinsStartZ/2, dMinStartZ,  dMaxStartZ,
+                                 iNbBinsCentr,  dNbMinCentr, dNbMaxCentr);
+         fvhTofPntAllAngCent[iPartIdx] = new TH3D( Form("TofTests_TofPntAllAngCent_%s", ksPartTag[iPartIdx].Data() ) ,
+                                 Form("Centrality vs Angular position of TOF Pnt, %s, all tracks; #theta_{x}[Deg.]; #theta_{y}[Deg.]; B [fm];",
+                                      ksPartName[iPartIdx].Data()  ),
+                                    iNbBinThetaX/2, dThetaXMin, dThetaXMax,
+                                    iNbBinThetaY/2, dThetaYMin, dThetaYMax,
+                                 iNbBinsCentr,  dNbMinCentr, dNbMaxCentr);
+      } // if( kTRUE == fbCentDepOn )
+      fvhTrackAllStartXZ[iPartIdx] = new TH2D( Form("TofTests_TrackAllStartXZ_%s", ksPartTag[iPartIdx].Data() ) ,
+                              Form("Start X vs Z distribution for MC tracks w/ TOF Pnt, %s, all tracks; Start Z [cm]; Start X [cm]; # []",
                                    ksPartName[iPartIdx].Data()  ),
                               iNbBinsStartZ/2, dMinStartZ,  dMaxStartZ,
                               iNbBinsStartXY,  dMinStartXY, dMaxStartXY);
-      fvhTrackAllStartYZ[iPartIdx] = new TH2D( Form("TofTests_TrackAllStartYZ_%s", ksPartTag[iPartIdx].Data() ) ,  
-                              Form("Start Y vs Z distribution for MC tracks w/ TOF Pnt, %s, all tracks; Start Z [cm]; Start Y [cm]; # []", 
+      fvhTrackAllStartYZ[iPartIdx] = new TH2D( Form("TofTests_TrackAllStartYZ_%s", ksPartTag[iPartIdx].Data() ) ,
+                              Form("Start Y vs Z distribution for MC tracks w/ TOF Pnt, %s, all tracks; Start Z [cm]; Start Y [cm]; # []",
                                    ksPartName[iPartIdx].Data()  ),
                               iNbBinsStartZ/2, dMinStartZ,  dMaxStartZ,
                               iNbBinsStartXY,  dMinStartXY, dMaxStartXY);
-      fvhTofPntAllAngCent[iPartIdx] = new TH3D( Form("TofTests_TofPntAllAngCent_%s", ksPartTag[iPartIdx].Data() ) ,  
-                              Form("Centrality vs Angular position of TOF Pnt, %s, all tracks; #theta_{x}[Deg.]; #theta_{y}[Deg.]; B [fm];", 
-                                   ksPartName[iPartIdx].Data()  ),
-                                 iNbBinThetaX/2, dThetaXMin, dThetaXMax,
-                                 iNbBinThetaY/2, dThetaYMin, dThetaYMax,
-                              iNbBinsCentr,  dNbMinCentr, dNbMaxCentr);
    } // for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
-   
-   // tracks: Only when creating normalization histos
+
+      // tracks
    fhTrackMapXY     = new TH2D("TofTests_TracksMapXY",  "Position of the MC Tracks assuming along Z axis; X[cm]; Y[cm]; # [Tracks]",
                               nbinx,-xrange,xrange,nbiny,-yrange,yrange);
    fhTrackMapXZ     = new TH2D("TofTests_TracksMapXZ",  "Position of the MC Tracks assuming along Z axis; X[cm]; Z[cm]; # [Tracks]",
@@ -516,6 +538,31 @@ Bool_t CbmTofGeometryQa::CreateHistos()
    fhTrackMapSph    = new TH2D("TofTests_TracksMapSph",  "Position of the MC Tracks assuming from origin; #theta[rad.]; #phi[rad.]; # [Tracks]",
                               iNbBinTheta, dThetaMin, dThetaMax,
                               iNbBinPhi,   dPhiMin,   dPhiMax);
+      // Tracks in angular coordinates with detectors points, For angular acceptance study
+   fhTrackMapAngPrimAll  = new TH2D("TofTests_TracksMapAngPrimAll",
+                                 "Position of the MC Tracks assuming from origin, primary only; #theta_{x}[Deg.]; #theta_{y}[Deg.]; # [Tracks]",
+                                 iNbBinThetaX, dThetaXMin, dThetaXMax,
+                                 iNbBinThetaY, dThetaYMin, dThetaYMax);
+   fhTrackMapAngPrimSts  = new TH2D("TofTests_TracksMapAngPrimSts",
+                                 "Position of the MC Tracks w/ STS Pnts assuming from origin, primary only; #theta_{x}[Deg.]; #theta_{y}[Deg.]; # [Tracks]",
+                                 iNbBinThetaX, dThetaXMin, dThetaXMax,
+                                 iNbBinThetaY, dThetaYMin, dThetaYMax);
+   fhTrackMapAngPrimRich = new TH2D("TofTests_TracksMapAngPrimRich",
+                                 "Position of the MC Tracks w/ RICH Pnts assuming from origin, primary only; #theta_{x}[Deg.]; #theta_{y}[Deg.]; # [Tracks]",
+                                 iNbBinThetaX, dThetaXMin, dThetaXMax,
+                                 iNbBinThetaY, dThetaYMin, dThetaYMax);
+   fhTrackMapAngPrimMuch = new TH2D("TofTests_TracksMapAngPrimMuch",
+                                 "Position of the MC Tracks w/ MUCH Pnts assuming from origin, primary only; #theta_{x}[Deg.]; #theta_{y}[Deg.]; # [Tracks]",
+                                 iNbBinThetaX, dThetaXMin, dThetaXMax,
+                                 iNbBinThetaY, dThetaYMin, dThetaYMax);
+   fhTrackMapAngPrimTrd  = new TH2D("TofTests_TracksMapAngPrimTrd",
+                                 "Position of the MC Tracks w/ TRD Pnts  assuming from origin, primary only; #theta_{x}[Deg.]; #theta_{y}[Deg.]; # [Tracks]",
+                                 iNbBinThetaX, dThetaXMin, dThetaXMax,
+                                 iNbBinThetaY, dThetaYMin, dThetaYMax);
+   fhTrackMapAngPrimTof  = new TH2D("TofTests_TracksMapAngPrimTof",
+                                 "Position of the MC Tracks w/ TOF Pnts assuming from origin, primary only; #theta_{x}[Deg.]; #theta_{y}[Deg.]; # [Tracks]",
+                                 iNbBinThetaX, dThetaXMin, dThetaXMax,
+                                 iNbBinThetaY, dThetaYMin, dThetaYMax);
       // points
    fhPointMapXY     = new TH2D("TofTests_PointsMapXY",  "Position of the Tof Points; X[cm]; Y[cm]; # [Points]",
                               nbinx,-xrange,xrange,nbiny,-yrange,yrange);
@@ -542,45 +589,61 @@ Bool_t CbmTofGeometryQa::CreateHistos()
    fhRealPointMapSph    = new TH2D("TofTests_RealPointsMapSph",  "Position of the Tof Points (mean o/ gaps); #theta[rad.]; #phi[rad.]; # [Points]",
                               iNbBinTheta, dThetaMin, dThetaMax,
                               iNbBinPhi,   dPhiMin,   dPhiMax);
-   
+      // Pints in angular coordinates with other detectors points in track, For angular acceptance study
+   fhPointMapAngWithSts = new TH2D("TofTests_PointsMapAngWithSts",  "Position of the Tof Points with enough STS points in Track; #theta_{x}[Deg.]; #theta_{y}[Deg.]; # [Points]",
+                              iNbBinThetaX, dThetaXMin, dThetaXMax,
+                              iNbBinThetaY, dThetaYMin, dThetaYMax);
+   fhPointMapAngWithRich = new TH2D("TofTests_PointsMapAngWithRich",  "Position of the Tof Points with RICH points in Track; #theta_{x}[Deg.]; #theta_{y}[Deg.]; # [Points]",
+                              iNbBinThetaX, dThetaXMin, dThetaXMax,
+                              iNbBinThetaY, dThetaYMin, dThetaYMax);
+   fhPointMapAngWithMuch = new TH2D("TofTests_PointsMapAngWithMuch",  "Position of the Tof Points with enough MUCH points in Track; #theta_{x}[Deg.]; #theta_{y}[Deg.]; # [Points]",
+                              iNbBinThetaX, dThetaXMin, dThetaXMax,
+                              iNbBinThetaY, dThetaYMin, dThetaYMax);
+   fhPointMapAngWithTrd = new TH2D("TofTests_PointsMapAngWithTrd",  "Position of the Tof Points with TRD points in Track; #theta_{x}[Deg.]; #theta_{y}[Deg.]; # [Points]",
+                              iNbBinThetaX, dThetaXMin, dThetaXMax,
+                              iNbBinThetaY, dThetaYMin, dThetaYMax);
+
    // Errors relative to spherical approx
+   if( kTRUE == fbSphAppOn )
+   {
       // Radius error (distance from target)
-   fhPointSphAprRadiusErrMapXY  = new TProfile2D("TofTests_PointSphAprRadiusErrMapXY",
-                                           "Radius error (distance from target) in spherical approx. (mean o/ gaps); X[cm]; Y[cm]; Rp - Rwall [cm]",
-                                           nbinx,-xrange,xrange,nbiny,-yrange,yrange);
-   fhPointSphAprRadiusErrMapXZ  = new TProfile2D("TofTests_PointSphAprRadiusErrMapXZ",
-                                           "Radius error (distance from target) in spherical approx. (mean o/ gaps); X[cm]; Z[cm]; Rp - Rwall [cm]",
-                                           nbinx,-xrange,xrange,nbinz,zmin,zmax);
-   fhPointSphAprRadiusErrMapYZ  = new TProfile2D("TofTests_PointSphAprRadiusErrMapYZ",
-                                           "Radius error (distance from target) in spherical approx. (mean o/ gaps); Y[cm]; Z[cm]; Rp - Rwall [cm]",
-                                           nbiny,-yrange,yrange,nbinz,zmin,zmax);
-   fhPointSphAprRadiusErrMapAng = new TProfile2D("TofTests_PointSphAprRadiusErrMapAng",
-                                           "Radius error (distance from target) in spherical approx. (mean o/ gaps); #theta_{x}[Deg.]; #theta_{y}[Deg.]; Rp - Rwall [cm]",
-                                           iNbBinThetaX, dThetaXMin, dThetaXMax,
-                                           iNbBinThetaY, dThetaYMin, dThetaYMax);
-   fhPointSphAprRadiusErrMapSph = new TProfile2D("TofTests_PointSphAprRadiusErrMapSph",
-                                           "Radius error (distance from target) in spherical approx. (mean o/ gaps); #theta[rad.]; #phi[rad.]; Rp - Rwall [cm]",
-                                           iNbBinTheta, dThetaMin, dThetaMax,
-                                           iNbBinPhi,   dPhiMin,   dPhiMax);
-      // Z position error
-   fhPointSphAprZposErrMapXY    = new TProfile2D("TofTests_PointSphAprZposErrMapXY",
-                                           "Z Position error of the Tof Points in spherical approx. (mean o/ gaps); X[cm]; Y[cm]; Zp - Zsph(X,Y) [cm]",
-                                           nbinx,-xrange,xrange,nbiny,-yrange,yrange);
-   fhPointSphAprZposErrMapXZ    = new TProfile2D("TofTests_PointSphAprZposErrMapXZ",
-                                           "Position of the Tof Points in spherical approx. (mean o/ gaps); X[cm]; Z[cm]; Zp - Zsph(X,Y) [cm]",
-                                           nbinx,-xrange,xrange,nbinz,zmin,zmax);
-   fhPointSphAprZposErrMapYZ    = new TProfile2D("TofTests_PointSphAprZposErrMapYZ",
-                                           "Position of the Tof Points in spherical approx. (mean o/ gaps); Y[cm]; Z[cm]; Zp - Zsph(X,Y) [cm]",
-                                           nbiny,-yrange,yrange,nbinz,zmin,zmax);
-   fhPointSphAprZposErrMapAng   = new TProfile2D("TofTests_PointSphAprZposErrMapAng",
-                                           "Position of the Tof Points in spherical approx. (mean o/ gaps); #theta_{x}[Deg.]; #theta_{y}[Deg.]; Zp - Zsph(X,Y) [cm]",
-                                           iNbBinThetaX, dThetaXMin, dThetaXMax,
-                                           iNbBinThetaY, dThetaYMin, dThetaYMax);
-   fhPointSphAprZposErrMapSph   = new TProfile2D("TofTests_PointSphAprZposErrMapSph",
-                                           "Position of the Tof Points in spherical approx. (mean o/ gaps); #theta[rad.]; #phi[rad.]; Zp - Zsph(X,Y) [cm]",
-                                           iNbBinTheta, dThetaMin, dThetaMax,
-                                           iNbBinPhi,   dPhiMin,   dPhiMax);
-    
+      fhPointSphAprRadiusErrMapXY  = new TProfile2D("TofTests_PointSphAprRadiusErrMapXY",
+                                              "Radius error (distance from target) in spherical approx. (mean o/ gaps); X[cm]; Y[cm]; Rp - Rwall [cm]",
+                                              nbinx,-xrange,xrange,nbiny,-yrange,yrange);
+      fhPointSphAprRadiusErrMapXZ  = new TProfile2D("TofTests_PointSphAprRadiusErrMapXZ",
+                                              "Radius error (distance from target) in spherical approx. (mean o/ gaps); X[cm]; Z[cm]; Rp - Rwall [cm]",
+                                              nbinx,-xrange,xrange,nbinz,zmin,zmax);
+      fhPointSphAprRadiusErrMapYZ  = new TProfile2D("TofTests_PointSphAprRadiusErrMapYZ",
+                                              "Radius error (distance from target) in spherical approx. (mean o/ gaps); Y[cm]; Z[cm]; Rp - Rwall [cm]",
+                                              nbiny,-yrange,yrange,nbinz,zmin,zmax);
+      fhPointSphAprRadiusErrMapAng = new TProfile2D("TofTests_PointSphAprRadiusErrMapAng",
+                                              "Radius error (distance from target) in spherical approx. (mean o/ gaps); #theta_{x}[Deg.]; #theta_{y}[Deg.]; Rp - Rwall [cm]",
+                                              iNbBinThetaX, dThetaXMin, dThetaXMax,
+                                              iNbBinThetaY, dThetaYMin, dThetaYMax);
+      fhPointSphAprRadiusErrMapSph = new TProfile2D("TofTests_PointSphAprRadiusErrMapSph",
+                                              "Radius error (distance from target) in spherical approx. (mean o/ gaps); #theta[rad.]; #phi[rad.]; Rp - Rwall [cm]",
+                                              iNbBinTheta, dThetaMin, dThetaMax,
+                                              iNbBinPhi,   dPhiMin,   dPhiMax);
+         // Z position error
+      fhPointSphAprZposErrMapXY    = new TProfile2D("TofTests_PointSphAprZposErrMapXY",
+                                              "Z Position error of the Tof Points in spherical approx. (mean o/ gaps); X[cm]; Y[cm]; Zp - Zsph(X,Y) [cm]",
+                                              nbinx,-xrange,xrange,nbiny,-yrange,yrange);
+      fhPointSphAprZposErrMapXZ    = new TProfile2D("TofTests_PointSphAprZposErrMapXZ",
+                                              "Position of the Tof Points in spherical approx. (mean o/ gaps); X[cm]; Z[cm]; Zp - Zsph(X,Y) [cm]",
+                                              nbinx,-xrange,xrange,nbinz,zmin,zmax);
+      fhPointSphAprZposErrMapYZ    = new TProfile2D("TofTests_PointSphAprZposErrMapYZ",
+                                              "Position of the Tof Points in spherical approx. (mean o/ gaps); Y[cm]; Z[cm]; Zp - Zsph(X,Y) [cm]",
+                                              nbiny,-yrange,yrange,nbinz,zmin,zmax);
+      fhPointSphAprZposErrMapAng   = new TProfile2D("TofTests_PointSphAprZposErrMapAng",
+                                              "Position of the Tof Points in spherical approx. (mean o/ gaps); #theta_{x}[Deg.]; #theta_{y}[Deg.]; Zp - Zsph(X,Y) [cm]",
+                                              iNbBinThetaX, dThetaXMin, dThetaXMax,
+                                              iNbBinThetaY, dThetaYMin, dThetaYMax);
+      fhPointSphAprZposErrMapSph   = new TProfile2D("TofTests_PointSphAprZposErrMapSph",
+                                              "Position of the Tof Points in spherical approx. (mean o/ gaps); #theta[rad.]; #phi[rad.]; Zp - Zsph(X,Y) [cm]",
+                                              iNbBinTheta, dThetaMin, dThetaMax,
+                                              iNbBinPhi,   dPhiMin,   dPhiMax);
+   } // if( kTRUE == fbSphAppOn )
+
       // Physics coord mapping, 1 per particle type
          // Phase space
    Int_t    iNbBinsY   = 30;
@@ -598,14 +661,14 @@ Bool_t CbmTofGeometryQa::CreateHistos()
          // PLab
    Int_t    iNbBinsPlab = 100;
    Double_t dMinPlab    =   0.0;
-   Double_t dMaxPlab    =  10.0;      
+   Double_t dMaxPlab    =  10.0;
    fvhPlabGenTrk.resize(kiNbPart);
    fvhPlabStsPnt.resize(kiNbPart);
    fvhPlabTofPnt.resize(kiNbPart);
    fvhPlabSecGenTrk.resize(kiNbPart);
    fvhPlabSecStsPnt.resize(kiNbPart);
    fvhPlabSecTofPnt.resize(kiNbPart);
-         // MC Tracks losses      
+         // MC Tracks losses
    fvhPtmRapGenTrkTofPnt.resize(kiNbPart);
    fvhPlabGenTrkTofPnt.resize(kiNbPart);
    fvhPlabStsTrkTofPnt.resize(kiNbPart);
@@ -615,102 +678,102 @@ Bool_t CbmTofGeometryQa::CreateHistos()
    for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
    {
          // Phase space
-      fvhPtmRapGenTrk[iPartIdx] = new TH2D( Form("TofTests_PtmRapGenTrk_%s", ksPartTag[iPartIdx].Data() ) ,  
-                              Form("P_{t}/M vs y distribution for MC tracks, %s, primary tracks; y; P_{t}/M; # []", 
+      fvhPtmRapGenTrk[iPartIdx] = new TH2D( Form("TofTests_PtmRapGenTrk_%s", ksPartTag[iPartIdx].Data() ) ,
+                              Form("P_{t}/M vs y distribution for MC tracks, %s, primary tracks; y; P_{t}/M; # []",
                                    ksPartName[iPartIdx].Data()  ),
                               iNbBinsY,    dMinY,   dMaxY,
                               iNbBNinsPtm, dMinPtm, dMaxPtm);
       fvhPtmRapStsPnt[iPartIdx] = new TH2D( Form("TofTests_PtmRapStsPnt_%s", ksPartTag[iPartIdx].Data() ) ,
-                              Form("P_{t}/M vs y distribution from MC Track with STS points, %s, primary tracks; y; P_{t}/M; # []", 
+                              Form("P_{t}/M vs y distribution from MC Track with STS points, %s, primary tracks; y; P_{t}/M; # []",
                                    ksPartName[iPartIdx].Data()  ),
                               iNbBinsY,    dMinY,   dMaxY,
                               iNbBNinsPtm, dMinPtm, dMaxPtm);
       fvhPtmRapTofPnt[iPartIdx] = new TH2D( Form("TofTests_PtmRapTofPnt_%s", ksPartTag[iPartIdx].Data() ) ,
-                              Form("P_{t}/M vs y distribution from MC Track for TOF points, %s, primary tracks; y; P_{t}/M; # []", 
+                              Form("P_{t}/M vs y distribution from MC Track for TOF points, %s, primary tracks; y; P_{t}/M; # []",
                                    ksPartName[iPartIdx].Data()  ),
                               iNbBinsY,    dMinY,   dMaxY,
                               iNbBNinsPtm, dMinPtm, dMaxPtm);
          // PLab
-      fvhPlabGenTrk[iPartIdx] = new TH1D( Form("TofTests_PlabGenTrk_%s", ksPartTag[iPartIdx].Data() ), 
-                              Form("P_{lab} distribution for MC tracks, %s, primary tracks; P_{lab} [GeV/c]; # []", 
+      fvhPlabGenTrk[iPartIdx] = new TH1D( Form("TofTests_PlabGenTrk_%s", ksPartTag[iPartIdx].Data() ),
+                              Form("P_{lab} distribution for MC tracks, %s, primary tracks; P_{lab} [GeV/c]; # []",
                                    ksPartName[iPartIdx].Data()  ),
                               iNbBinsPlab, dMinPlab, dMaxPlab);
       fvhPlabStsPnt[iPartIdx] = new TH1D( Form("TofTests_PlabStsPnt_%s", ksPartTag[iPartIdx].Data() ),
-                              Form("P_{lab} distribution from MC Track with STS points, %s, primary tracks; P_{lab} [GeV/c]; # []", 
+                              Form("P_{lab} distribution from MC Track with STS points, %s, primary tracks; P_{lab} [GeV/c]; # []",
                                    ksPartName[iPartIdx].Data()  ),
                               iNbBinsPlab, dMinPlab, dMaxPlab);
       fvhPlabTofPnt[iPartIdx] = new TH1D( Form("TofTests_PlabTofPnt_%s", ksPartTag[iPartIdx].Data() ),
-                              Form("P_{lab} distribution from MC Track for TOF points, %s, primary tracks; P_{lab} [GeV/c]; # []", 
+                              Form("P_{lab} distribution from MC Track for TOF points, %s, primary tracks; P_{lab} [GeV/c]; # []",
                                    ksPartName[iPartIdx].Data()  ),
                               iNbBinsPlab, dMinPlab, dMaxPlab);
-                              
-                              
-         // MC Tracks losses      
-      fvhPtmRapGenTrkTofPnt[iPartIdx] = new TH2D( Form("TofTests_PtmRapGenTrkTofPnt_%s", ksPartTag[iPartIdx].Data() ) ,  
-                              Form("P_{t}/M vs y distribution for MC tracks with TOF Point(s), %s, primary tracks; y; P_{t}/M; # []", 
+
+
+         // MC Tracks losses
+      fvhPtmRapGenTrkTofPnt[iPartIdx] = new TH2D( Form("TofTests_PtmRapGenTrkTofPnt_%s", ksPartTag[iPartIdx].Data() ) ,
+                              Form("P_{t}/M vs y distribution for MC tracks with TOF Point(s), %s, primary tracks; y; P_{t}/M; # []",
                                    ksPartName[iPartIdx].Data()  ),
                               iNbBinsY,    dMinY,   dMaxY,
                               iNbBNinsPtm, dMinPtm, dMaxPtm);
-      
-      fvhPlabGenTrkTofPnt[iPartIdx] = new TH1D( Form("TofTests_PlabGenTrkTofPnt_%s", ksPartTag[iPartIdx].Data() ), 
-                              Form("P_{lab} distribution for MC tracks with TOF Point(s), %s, primary tracks; P_{lab} [GeV/c]; # []", 
+
+      fvhPlabGenTrkTofPnt[iPartIdx] = new TH1D( Form("TofTests_PlabGenTrkTofPnt_%s", ksPartTag[iPartIdx].Data() ),
+                              Form("P_{lab} distribution for MC tracks with TOF Point(s), %s, primary tracks; P_{lab} [GeV/c]; # []",
                                    ksPartName[iPartIdx].Data()  ),
                               iNbBinsPlab, dMinPlab, dMaxPlab);
-      fvhPlabStsTrkTofPnt[iPartIdx] = new TH1D( Form("TofTests_PlabStsTrkTofPnt_%s", ksPartTag[iPartIdx].Data() ), 
-                              Form("P_{lab} distribution for MC tracks with STS and TOF Point(s), %s, primary tracks; P_{lab} [GeV/c]; # []", 
+      fvhPlabStsTrkTofPnt[iPartIdx] = new TH1D( Form("TofTests_PlabStsTrkTofPnt_%s", ksPartTag[iPartIdx].Data() ),
+                              Form("P_{lab} distribution for MC tracks with STS and TOF Point(s), %s, primary tracks; P_{lab} [GeV/c]; # []",
                                    ksPartName[iPartIdx].Data()  ),
                               iNbBinsPlab, dMinPlab, dMaxPlab);
 
       // Secondary tracks
          // Phase space
-      fvhPtmRapSecGenTrk[iPartIdx] = new TH2D( Form("TofTests_PtmRapSecGenTrk_%s", ksPartTag[iPartIdx].Data() ) ,  
-                              Form("P_{t}/M vs y distribution for MC tracks, %s, secondary tracks; y; P_{t}/M; # []", 
+      fvhPtmRapSecGenTrk[iPartIdx] = new TH2D( Form("TofTests_PtmRapSecGenTrk_%s", ksPartTag[iPartIdx].Data() ) ,
+                              Form("P_{t}/M vs y distribution for MC tracks, %s, secondary tracks; y; P_{t}/M; # []",
                                    ksPartName[iPartIdx].Data()  ),
                               iNbBinsY,    dMinY,   dMaxY,
                               iNbBNinsPtm, dMinPtm, dMaxPtm);
       fvhPtmRapSecStsPnt[iPartIdx] = new TH2D( Form("TofTests_PtmRapSecStsPnt_%s", ksPartTag[iPartIdx].Data() ) ,
-                              Form("P_{t}/M vs y distribution from MC Track with STS points, %s, secondary tracks; y; P_{t}/M; # []", 
+                              Form("P_{t}/M vs y distribution from MC Track with STS points, %s, secondary tracks; y; P_{t}/M; # []",
                                    ksPartName[iPartIdx].Data()  ),
                               iNbBinsY,    dMinY,   dMaxY,
                               iNbBNinsPtm, dMinPtm, dMaxPtm);
       fvhPtmRapSecTofPnt[iPartIdx] = new TH2D( Form("TofTests_PtmRapSecTofPnt_%s", ksPartTag[iPartIdx].Data() ) ,
-                              Form("P_{t}/M vs y distribution from MC Track for TOF points, %s, secondary tracks; y; P_{t}/M; # []", 
+                              Form("P_{t}/M vs y distribution from MC Track for TOF points, %s, secondary tracks; y; P_{t}/M; # []",
                                    ksPartName[iPartIdx].Data()  ),
                               iNbBinsY,    dMinY,   dMaxY,
                               iNbBNinsPtm, dMinPtm, dMaxPtm);
          // PLab
-      fvhPlabSecGenTrk[iPartIdx] = new TH1D( Form("TofTests_PlabSecGenTrk_%s", ksPartTag[iPartIdx].Data() ), 
-                              Form("P_{lab} distribution for MC tracks, %s, secondary tracks; P_{lab} [GeV/c]; # []", 
+      fvhPlabSecGenTrk[iPartIdx] = new TH1D( Form("TofTests_PlabSecGenTrk_%s", ksPartTag[iPartIdx].Data() ),
+                              Form("P_{lab} distribution for MC tracks, %s, secondary tracks; P_{lab} [GeV/c]; # []",
                                    ksPartName[iPartIdx].Data()  ),
                               iNbBinsPlab, dMinPlab, dMaxPlab);
       fvhPlabSecStsPnt[iPartIdx] = new TH1D( Form("TofTests_PlabSecStsPnt_%s", ksPartTag[iPartIdx].Data() ),
-                              Form("P_{lab} distribution from MC Track with STS points, %s, secondary tracks; P_{lab} [GeV/c]; # []", 
+                              Form("P_{lab} distribution from MC Track with STS points, %s, secondary tracks; P_{lab} [GeV/c]; # []",
                                    ksPartName[iPartIdx].Data()  ),
                               iNbBinsPlab, dMinPlab, dMaxPlab);
       fvhPlabSecTofPnt[iPartIdx] = new TH1D( Form("TofTests_PlabSecTofPnt_%s", ksPartTag[iPartIdx].Data() ),
-                              Form("P_{lab} distribution from MC Track for TOF points, %s, secondary tracks; P_{lab} [GeV/c]; # []", 
+                              Form("P_{lab} distribution from MC Track for TOF points, %s, secondary tracks; P_{lab} [GeV/c]; # []",
                                    ksPartName[iPartIdx].Data()  ),
                               iNbBinsPlab, dMinPlab, dMaxPlab);
-                              
-                              
-         // MC Tracks losses      
-      fvhPtmRapSecGenTrkTofPnt[iPartIdx] = new TH2D( Form("TofTests_PtmRapSecGenTrkTofPnt_%s", ksPartTag[iPartIdx].Data() ) ,  
-                              Form("P_{t}/M vs y distribution for MC tracks with TOF Point(s), %s, secondary tracks; y; P_{t}/M; # []", 
+
+
+         // MC Tracks losses
+      fvhPtmRapSecGenTrkTofPnt[iPartIdx] = new TH2D( Form("TofTests_PtmRapSecGenTrkTofPnt_%s", ksPartTag[iPartIdx].Data() ) ,
+                              Form("P_{t}/M vs y distribution for MC tracks with TOF Point(s), %s, secondary tracks; y; P_{t}/M; # []",
                                    ksPartName[iPartIdx].Data()  ),
                               iNbBinsY,    dMinY,   dMaxY,
                               iNbBNinsPtm, dMinPtm, dMaxPtm);
-      
-      fvhPlabSecGenTrkTofPnt[iPartIdx] = new TH1D( Form("TofTests_PlabSecGenTrkTofPnt_%s", ksPartTag[iPartIdx].Data() ), 
-                              Form("P_{lab} distribution for MC tracks with TOF Point(s), %s, secondary tracks; P_{lab} [GeV/c]; # []", 
+
+      fvhPlabSecGenTrkTofPnt[iPartIdx] = new TH1D( Form("TofTests_PlabSecGenTrkTofPnt_%s", ksPartTag[iPartIdx].Data() ),
+                              Form("P_{lab} distribution for MC tracks with TOF Point(s), %s, secondary tracks; P_{lab} [GeV/c]; # []",
                                    ksPartName[iPartIdx].Data()  ),
                               iNbBinsPlab, dMinPlab, dMaxPlab);
-      
-      fvhPlabSecStsTrkTofPnt[iPartIdx] = new TH1D( Form("TofTests_PlabSecStsTrkTofPnt_%s", ksPartTag[iPartIdx].Data() ), 
-                              Form("P_{lab} distribution for MC tracks with STS and TOF Point(s), %s, secondary tracks; P_{lab} [GeV/c]; # []", 
+
+      fvhPlabSecStsTrkTofPnt[iPartIdx] = new TH1D( Form("TofTests_PlabSecStsTrkTofPnt_%s", ksPartTag[iPartIdx].Data() ),
+                              Form("P_{lab} distribution for MC tracks with STS and TOF Point(s), %s, secondary tracks; P_{lab} [GeV/c]; # []",
                                    ksPartName[iPartIdx].Data()  ),
                               iNbBinsPlab, dMinPlab, dMaxPlab);
    } // for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
-   
+
    gDirectory->cd( oldir->GetPath() ); // <= To prevent histos from being sucked in by the param file of the TRootManager!
 
    return kTRUE;
@@ -730,7 +793,7 @@ Bool_t CbmTofGeometryQa::FillHistos()
    if( kTRUE == fbRealPointAvail )
       iNbTofRealPts = fRealTofPointsColl->GetEntriesFast();
       else iNbTofRealPts = 0;
-          
+
    // Tracks Info
    Int_t iNbTofTracks     = 0;
    Int_t iNbTofTracksPrim = 0;
@@ -740,11 +803,11 @@ Bool_t CbmTofGeometryQa::FillHistos()
    for(Int_t iTrkInd = 0; iTrkInd < iNbTracks; iTrkInd++)
    {
       pMcTrk = (CbmMCTrack*) fMcTracksColl->At( iTrkInd );
-      
+
       // Is track reconstructable in STS
       /*
       UInt_t uNbStsPnts = pMcTrk->GetNPoints(kSts);
-       
+
          // True criterium is whether enough STS stations are crossed
          // but if already less STS points, can escape looping
       if( kiMinNbStsPntAcc <= uNbStsPnts )
@@ -767,15 +830,13 @@ Bool_t CbmTofGeometryQa::FillHistos()
       {
          iNbTofTracks++;
          // Keep track of MC tracks with at least one TOF Point
-         
-         UInt_t uNbTofPnt = pMcTrk->GetNPoints(kTof) -1;
-         
+
          if( -1 == pMcTrk->GetMotherId() )
          {
             iNbTofTracksPrim++;
          } // if( -1 == pMcTrk->GetMotherId() )
       } // if( 0 < pMcTrk->GetNPoints(kTof) )
-         
+
       // tracks mapping: Only when creating normalization histos
       // Assume only TOF in setup, no field (only straight tracks)
       // and all tracks reach TOF (protons)
@@ -786,17 +847,43 @@ Bool_t CbmTofGeometryQa::FillHistos()
 //            fhTrackMapXZ->Fill( pMcTrk->GetStartX(), fdWallPosZ ); // Not sure how to get Z here
 //            fhTrackMapYZ->Fill( pMcTrk->GetStartY(), fdWallPosZ ); // Not sure how to get Z here
       } // if( pMcTrk->GetPz() == pMcTrk->GetP() )
-      
+
       // Angular mapping: assume tracks all coming from origin and not necess. along Z axis
+      // track with non zero Z momentum + non spectator (at least deflected in X or Y)
       if( 0 != pMcTrk->GetPz() && ( (0 != pMcTrk->GetPx() ) || (0 != pMcTrk->GetPy() ) ))
-         fhTrackMapAng->Fill( TMath::ATan2( pMcTrk->GetPx(), pMcTrk->GetPz() )*180.0/TMath::Pi(),
-                              TMath::ATan2( pMcTrk->GetPy(), pMcTrk->GetPz() )*180.0/TMath::Pi() );
-                              
+      {
+         Double_t dThetaX = TMath::ATan2( pMcTrk->GetPx(), pMcTrk->GetPz() )*180.0/TMath::Pi();
+         Double_t dThetaY = TMath::ATan2( pMcTrk->GetPy(), pMcTrk->GetPz() )*180.0/TMath::Pi();
+
+         fhTrackMapAng->Fill( dThetaX, dThetaY );
+
+         // Primary tracks
+         if( -1 == pMcTrk->GetMotherId() )
+         {
+            fhTrackMapAngPrimAll->Fill( dThetaX, dThetaY );
+
+            if( kiMinNbStsPntAcc <= pMcTrk->GetNPoints(kSts) )
+               fhTrackMapAngPrimSts->Fill( dThetaX, dThetaY );
+
+            if( 0 < pMcTrk->GetNPoints(kRich) )
+               fhTrackMapAngPrimRich->Fill( dThetaX, dThetaY );
+
+            if( kiMinNbMuchPntAcc <= pMcTrk->GetNPoints(kMuch) )
+               fhTrackMapAngPrimMuch->Fill( dThetaX, dThetaY );
+
+            if( 0 < pMcTrk->GetNPoints(kTrd) )
+               fhTrackMapAngPrimTrd->Fill( dThetaX, dThetaY );
+
+            if( 0 < pMcTrk->GetNPoints(kTof) )
+               fhTrackMapAngPrimTof->Fill( dThetaX, dThetaY );
+         } // if( -1 == pMcTrk->GetMotherId() )
+      } // if( 0 != pMcTrk->GetPz() && ( (0 != pMcTrk->GetPx() ) || (0 != pMcTrk->GetPy() ) ))
+
       // Spherical mapping: assume tracks all coming from origin and not necess. along Z axis
       if( 0 != pMcTrk->GetPz() && 0 != pMcTrk->GetPx() )
          fhTrackMapSph->Fill( TMath::ATan2( pMcTrk->GetPt(), pMcTrk->GetPz() ),
                               TMath::ATan2( pMcTrk->GetPy(), pMcTrk->GetPx() ) );
-      
+
          // Physics coord mapping, 1 per particle type
 	   Int_t iPdgCode = pMcTrk->GetPdgCode();
       Int_t iPartIdx = -1;
@@ -808,17 +895,20 @@ Bool_t CbmTofGeometryQa::FillHistos()
          } // if( kiPartPdgCode[iPart] == iPdgCode )
       if( -1 == iPartIdx )
          iPartIdx = 0;
-         
+
          // Dependence of Track origin on centrality or position
       if( 0 < pMcTrk->GetNPoints(kTof) )
       {
-         fvhTrackAllStartZCent[iPartIdx]->Fill( pMcTrk->GetStartZ(), fMCEventHeader->GetB());
-         if( 2 == iPartIdx ) // 3D plot only for e-
-            fvhTrackAllStartXZCent[iPartIdx]->Fill( pMcTrk->GetStartX(), pMcTrk->GetStartZ(), fMCEventHeader->GetB());
+         if( kTRUE == fbCentDepOn )
+         {
+            fvhTrackAllStartZCent[iPartIdx]->Fill( pMcTrk->GetStartZ(), fMCEventHeader->GetB());
+            if( 2 == iPartIdx ) // 3D plot only for e-
+               fvhTrackAllStartXZCent[iPartIdx]->Fill( pMcTrk->GetStartX(), pMcTrk->GetStartZ(), fMCEventHeader->GetB());
+         } // if( kTRUE == fbCentDepOn )
          fvhTrackAllStartXZ[iPartIdx]->Fill( pMcTrk->GetStartZ(), pMcTrk->GetStartX());
          fvhTrackAllStartYZ[iPartIdx]->Fill( pMcTrk->GetStartZ(), pMcTrk->GetStartY());
       }
-         
+
       if( -1 == pMcTrk->GetMotherId() )
       {
          // primary track
@@ -837,7 +927,7 @@ Bool_t CbmTofGeometryQa::FillHistos()
          {
             fvhPtmRapGenTrkTofPnt[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
             fvhPlabGenTrkTofPnt[iPartIdx]->Fill( pMcTrk->GetP() );
-            
+
             if( kiMinNbStsPntAcc <= pMcTrk->GetNPoints(kSts) )
                fvhPlabStsTrkTofPnt[iPartIdx]->Fill( pMcTrk->GetP() );
          } // if( 0 < pMcTrk->GetNPoints(kTof) )
@@ -846,9 +936,9 @@ Bool_t CbmTofGeometryQa::FillHistos()
          {
             // secondary track
                // Dependence of Track origin on centrality
-            if( 0 < pMcTrk->GetNPoints(kTof) )
+            if( 0 < pMcTrk->GetNPoints(kTof) && kTRUE == fbCentDepOn )
                fvhTrackSecStartZCent[iPartIdx]->Fill( pMcTrk->GetStartZ(), fMCEventHeader->GetB());
-               
+
                // Phase space
             fvhPtmRapSecGenTrk[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
                // PLab
@@ -864,13 +954,13 @@ Bool_t CbmTofGeometryQa::FillHistos()
             {
                fvhPtmRapSecGenTrkTofPnt[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
                fvhPlabSecGenTrkTofPnt[iPartIdx]->Fill( pMcTrk->GetP() );
-               
+
                if( kiMinNbStsPntAcc <= pMcTrk->GetNPoints(kSts) )
                   fvhPlabSecStsTrkTofPnt[iPartIdx]->Fill( pMcTrk->GetP() );
             } // if( 0 < pMcTrk->GetNPoints(kTof) )
          } // else of if( -1 == pMcTrk->GetMotherId() )
    } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
-   
+
    // Loop over Points and map them?
    for (Int_t iPntInd = 0; iPntInd < iNbTofPts; iPntInd++ )
    {
@@ -907,29 +997,48 @@ Bool_t CbmTofGeometryQa::FillHistos()
       Double_t dThetaY = TMath::ATan2( dY, dZ )*180.0/TMath::Pi();
       fhPointMapAng->Fill( dThetaX, dThetaY );
 
+      if( -1 == pMcTrk->GetMotherId() )
+      {
+         // primary track
+         if( kiMinNbStsPntAcc <= pMcTrk->GetNPoints(kSts) )
+            fhPointMapAngWithSts->Fill( dThetaX, dThetaY );
+
+         if( 0 < pMcTrk->GetNPoints(kRich) )
+            fhPointMapAngWithRich->Fill( dThetaX, dThetaY );
+
+         if( kiMinNbMuchPntAcc <= pMcTrk->GetNPoints(kMuch) )
+            fhPointMapAngWithMuch->Fill( dThetaX, dThetaY );
+
+         if( 0 < pMcTrk->GetNPoints(kTrd) )
+            fhPointMapAngWithTrd->Fill( dThetaX, dThetaY );
+      } // if( -1 == pMcTrk->GetMotherId() )
+
       Double_t dTheta  = TMath::ATan2( TMath::Sqrt( dX*dX + dY*dY ), dZ );// *180.0/TMath::Pi();
       Double_t dPhi    = TMath::ATan2( dY, dX );// *180.0/TMath::Pi();
       fhPointMapSph->Fill( dTheta, dPhi );
-      
+
       // Errors relative to spherical approx
+      if( kTRUE == fbSphAppOn )
+      {
          // Radius error (distance from target)
-      Double_t dSphereRadius = fdWallPosZ + 115; // Make constant a user parameter!!!
-      Double_t dRadiusError = TMath::Sqrt( dX*dX + dY*dY + dZ*dZ ) - dSphereRadius;
-      fhPointSphAprRadiusErrMapXY->Fill(  dX, dY,           dRadiusError );
-      fhPointSphAprRadiusErrMapXZ->Fill(  dX, dZ,           dRadiusError );
-      fhPointSphAprRadiusErrMapYZ->Fill(  dY, dZ,           dRadiusError );
-      fhPointSphAprRadiusErrMapAng->Fill( dThetaX, dThetaY, dRadiusError );
-      fhPointSphAprRadiusErrMapSph->Fill( dTheta, dPhi,     dRadiusError );
+         Double_t dSphereRadius = fdWallPosZ + 115; // Make constant a user parameter!!!
+         Double_t dRadiusError = TMath::Sqrt( dX*dX + dY*dY + dZ*dZ ) - dSphereRadius;
+         fhPointSphAprRadiusErrMapXY->Fill(  dX, dY,           dRadiusError );
+         fhPointSphAprRadiusErrMapXZ->Fill(  dX, dZ,           dRadiusError );
+         fhPointSphAprRadiusErrMapYZ->Fill(  dY, dZ,           dRadiusError );
+         fhPointSphAprRadiusErrMapAng->Fill( dThetaX, dThetaY, dRadiusError );
+         fhPointSphAprRadiusErrMapSph->Fill( dTheta, dPhi,     dRadiusError );
          // Z position error
-      Double_t dZposErr = dZ - TMath::Sqrt( dX*dX + dY*dY ) / TMath::Tan( 
-                                             TMath::ASin( TMath::Sqrt( dX*dX + dY*dY ) 
-                                                          / dSphereRadius ) );
-      fhPointSphAprZposErrMapXY->Fill(  dX, dY,           dZposErr );
-      fhPointSphAprZposErrMapXZ->Fill(  dX, dZ,           dZposErr );
-      fhPointSphAprZposErrMapYZ->Fill(  dY, dZ,           dZposErr );
-      fhPointSphAprZposErrMapAng->Fill( dThetaX, dThetaY, dZposErr );
-      fhPointSphAprZposErrMapSph->Fill( dTheta, dPhi,     dZposErr );
-      
+         Double_t dZposErr = dZ - TMath::Sqrt( dX*dX + dY*dY ) / TMath::Tan(
+                                                TMath::ASin( TMath::Sqrt( dX*dX + dY*dY )
+                                                             / dSphereRadius ) );
+         fhPointSphAprZposErrMapXY->Fill(  dX, dY,           dZposErr );
+         fhPointSphAprZposErrMapXZ->Fill(  dX, dZ,           dZposErr );
+         fhPointSphAprZposErrMapYZ->Fill(  dY, dZ,           dZposErr );
+         fhPointSphAprZposErrMapAng->Fill( dThetaX, dThetaY, dZposErr );
+         fhPointSphAprZposErrMapSph->Fill( dTheta, dPhi,     dZposErr );
+      } // if( kTRUE == fbSphAppOn )
+
          // Physics coord mapping, 1 per particle type
 	   Int_t iPdgCode = pMcTrk->GetPdgCode();
       Int_t iPartIdx = -1;
@@ -941,10 +1050,11 @@ Bool_t CbmTofGeometryQa::FillHistos()
          } // if( kiPartPdgCode[iPart] == iPdgCode )
       if( -1 == iPartIdx )
          iPartIdx = 0;
-         
+
       // Beam pipe check
-      fvhTofPntAllAngCent[iPartIdx]->Fill( dThetaX, dThetaY, fMCEventHeader->GetB());
-      
+      if( kTRUE == fbCentDepOn )
+         fvhTofPntAllAngCent[iPartIdx]->Fill( dThetaX, dThetaY, fMCEventHeader->GetB());
+
       if( -1 == pMcTrk->GetMotherId() )
       {
          // primary track
@@ -962,7 +1072,7 @@ Bool_t CbmTofGeometryQa::FillHistos()
             fvhPlabSecTofPnt[iPartIdx]->Fill( pMcTrk->GetP() );
          } // else of if( -1 == pMcTrk->GetMotherId() )
    } // for (Int_t iPntInd = 0; iPntInd < nTofPoint; iPntInd++ )
- 
+
     // Loop over Real Points and map them, only in case of protons
    if( kTRUE == fbRealPointAvail )
       for (Int_t iPntInd = 0; iPntInd < iNbTofRealPts; iPntInd++ )
@@ -971,9 +1081,9 @@ Bool_t CbmTofGeometryQa::FillHistos()
       pTofPoint = (CbmTofPoint*) fRealTofPointsColl->At( iPntInd );
       // Get a pointer to the corresponding MC Track
       pMcTrk = (CbmMCTrack*) fMcTracksColl->At( pTofPoint->GetTrackID() );
-      
+
          // Physics coord mapping, 1 per particle type
-	   Int_t iPdgCode = pMcTrk->GetPdgCode();
+//	   Int_t iPdgCode = pMcTrk->GetPdgCode();
 //      if( 2212 == iPdgCode ) // Protons cut, comment to get all
       {
          // Obtain position
@@ -1015,7 +1125,7 @@ Bool_t CbmTofGeometryQa::WriteHistos()
    TDirectory * oldir = gDirectory;
    TFile *fHist = new TFile( fsHistoOutFilename,"RECREATE");
    fHist->cd();
-   
+
       // Mapping
    TDirectory *cdGeomMap = fHist->mkdir( "GeomMap" );
    cdGeomMap->cd();    // make the "GeomMap" directory the current directory
@@ -1024,7 +1134,14 @@ Bool_t CbmTofGeometryQa::WriteHistos()
    fhTrackMapYZ->Write();
    fhTrackMapAng->Write();
    fhTrackMapSph->Write();
-   
+
+   fhTrackMapAngPrimAll->Write();
+   fhTrackMapAngPrimSts->Write();
+   fhTrackMapAngPrimRich->Write();
+   fhTrackMapAngPrimMuch->Write();
+   fhTrackMapAngPrimTrd->Write();
+   fhTrackMapAngPrimTof->Write();
+
    fhPointMapXY->Write();
    fhPointMapXZ->Write();
    fhPointMapYZ->Write();
@@ -1036,34 +1153,45 @@ Bool_t CbmTofGeometryQa::WriteHistos()
    fhRealPointMapAng->Write();
    fhRealPointMapSph->Write();
 
-      // Errors relative to spherical approx
-   TDirectory *cdSphApprox = fHist->mkdir( "SphApprox" );
-   cdSphApprox->cd();    // make the "SphApprox" directory the current directory   
-   fhPointSphAprRadiusErrMapXY->Write();
-   fhPointSphAprRadiusErrMapXZ->Write();
-   fhPointSphAprRadiusErrMapYZ->Write();
-   fhPointSphAprRadiusErrMapAng->Write();
-   fhPointSphAprRadiusErrMapSph->Write();
-   fhPointSphAprZposErrMapXY->Write();
-   fhPointSphAprZposErrMapXZ->Write();
-   fhPointSphAprZposErrMapYZ->Write();
-   fhPointSphAprZposErrMapAng->Write();
-   fhPointSphAprZposErrMapSph->Write();
+   fhPointMapAngWithSts->Write();
+   fhPointMapAngWithRich->Write();
+   fhPointMapAngWithMuch->Write();
+   fhPointMapAngWithTrd->Write();
 
-   fHist->cd(); // make the file root the current directory
-   
+      // Errors relative to spherical approx
+   if( kTRUE == fbSphAppOn )
+   {
+      TDirectory *cdSphApprox = fHist->mkdir( "SphApprox" );
+      cdSphApprox->cd();    // make the "SphApprox" directory the current directory
+      fhPointSphAprRadiusErrMapXY->Write();
+      fhPointSphAprRadiusErrMapXZ->Write();
+      fhPointSphAprRadiusErrMapYZ->Write();
+      fhPointSphAprRadiusErrMapAng->Write();
+      fhPointSphAprRadiusErrMapSph->Write();
+      fhPointSphAprZposErrMapXY->Write();
+      fhPointSphAprZposErrMapXZ->Write();
+      fhPointSphAprZposErrMapYZ->Write();
+      fhPointSphAprZposErrMapAng->Write();
+      fhPointSphAprZposErrMapSph->Write();
+
+      fHist->cd(); // make the file root the current directory
+   } // if( kTRUE == fbSphAppOn )
+
    TDirectory *cdStartZ = fHist->mkdir( "StartZ" );
    cdStartZ->cd();    // make the "MixMap" directory the current directory
       // Dependence of Track origin on centrality
    for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
    {
-      fvhTrackAllStartZCent[iPartIdx]->Write();
-      fvhTrackSecStartZCent[iPartIdx]->Write();
-      if( 2 == iPartIdx ) // 3D plot only for e-
-         fvhTrackAllStartXZCent[iPartIdx]->Write();
+      if( kTRUE == fbCentDepOn )
+      {
+         fvhTrackAllStartZCent[iPartIdx]->Write();
+         fvhTrackSecStartZCent[iPartIdx]->Write();
+         if( 2 == iPartIdx ) // 3D plot only for e-
+            fvhTrackAllStartXZCent[iPartIdx]->Write();
+         fvhTofPntAllAngCent[iPartIdx]->Write();
+      } // if( kTRUE == fbCentDepOn )
       fvhTrackAllStartXZ[iPartIdx]->Write();
       fvhTrackAllStartYZ[iPartIdx]->Write();
-      fvhTofPntAllAngCent[iPartIdx]->Write();
    } // for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
 
    TDirectory *cdPhysMap = fHist->mkdir( "PhysMap" );
@@ -1079,12 +1207,12 @@ Bool_t CbmTofGeometryQa::WriteHistos()
       fvhPlabGenTrk[iPartIdx]->Write();
       fvhPlabStsPnt[iPartIdx]->Write();
       fvhPlabTofPnt[iPartIdx]->Write();
-      // MC Tracks losses 
+      // MC Tracks losses
       fvhPtmRapGenTrkTofPnt[iPartIdx]->Write();
       fvhPlabGenTrkTofPnt[iPartIdx]->Write();
       fvhPlabStsTrkTofPnt[iPartIdx]->Write();
    } // for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
-   
+
    TDirectory *cdPhysMapSec = fHist->mkdir( "PhysMapSec" );
    cdPhysMapSec->cd();    // make the "PhysMap" directory the current directory
       // Physics coord mapping, 1 per particle type
@@ -1098,7 +1226,7 @@ Bool_t CbmTofGeometryQa::WriteHistos()
       fvhPlabSecGenTrk[iPartIdx]->Write();
       fvhPlabSecStsPnt[iPartIdx]->Write();
       fvhPlabSecTofPnt[iPartIdx]->Write();
-      // MC Tracks losses 
+      // MC Tracks losses
       fvhPtmRapSecGenTrkTofPnt[iPartIdx]->Write();
       fvhPlabSecGenTrkTofPnt[iPartIdx]->Write();
       fvhPlabSecStsTrkTofPnt[iPartIdx]->Write();
@@ -1118,27 +1246,40 @@ Bool_t   CbmTofGeometryQa::DeleteHistos()
       // Physics coord mapping, 1 per particle type
    for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
    {
-      delete fvhTrackAllStartZCent[iPartIdx];
-      delete fvhTrackSecStartZCent[iPartIdx];
-      if( 2 == iPartIdx ) // 3D plot only for e-
-         delete fvhTrackAllStartXZCent[iPartIdx];
+      if( kTRUE == fbCentDepOn )
+      {
+         delete fvhTrackAllStartZCent[iPartIdx];
+         delete fvhTrackSecStartZCent[iPartIdx];
+         if( 2 == iPartIdx ) // 3D plot only for e-
+            delete fvhTrackAllStartXZCent[iPartIdx];
+         delete fvhTofPntAllAngCent[iPartIdx];
+      } // if( kTRUE == fbCentDepOn )
       delete fvhTrackAllStartXZ[iPartIdx];
       delete fvhTrackAllStartYZ[iPartIdx];
-      delete fvhTofPntAllAngCent[iPartIdx];
    } // for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
-   fvhTrackAllStartZCent.clear();
-   fvhTrackSecStartZCent.clear();
-   fvhTrackAllStartXZCent.clear();
+   if( kTRUE == fbCentDepOn )
+   {
+      fvhTrackAllStartZCent.clear();
+      fvhTrackSecStartZCent.clear();
+      fvhTrackAllStartXZCent.clear();
+      fvhTofPntAllAngCent.clear();
+   } // if( kTRUE == fbCentDepOn )
    fvhTrackAllStartXZ.clear();
    fvhTrackAllStartYZ.clear();
-   fvhTofPntAllAngCent.clear();
-   
+
    delete fhTrackMapXY;
    delete fhTrackMapXZ;
    delete fhTrackMapYZ;
    delete fhTrackMapAng;
    delete fhTrackMapSph;
-   
+
+   delete fhTrackMapAngPrimAll;
+   delete fhTrackMapAngPrimSts;
+   delete fhTrackMapAngPrimRich;
+   delete fhTrackMapAngPrimMuch;
+   delete fhTrackMapAngPrimTrd;
+   delete fhTrackMapAngPrimTof;
+
    delete fhPointMapXY;
    delete fhPointMapXZ;
    delete fhPointMapYZ;
@@ -1149,18 +1290,26 @@ Bool_t   CbmTofGeometryQa::DeleteHistos()
    delete fhRealPointMapYZ;
    delete fhRealPointMapAng;
    delete fhRealPointMapSph;
-   
-   delete fhPointSphAprRadiusErrMapXY;
-   delete fhPointSphAprRadiusErrMapXZ;
-   delete fhPointSphAprRadiusErrMapYZ;
-   delete fhPointSphAprRadiusErrMapAng;
-   delete fhPointSphAprRadiusErrMapSph;
-   delete fhPointSphAprZposErrMapXY;
-   delete fhPointSphAprZposErrMapXZ;
-   delete fhPointSphAprZposErrMapYZ;
-   delete fhPointSphAprZposErrMapAng;
-   delete fhPointSphAprZposErrMapSph;
-   
+
+   delete fhPointMapAngWithSts;
+   delete fhPointMapAngWithRich;
+   delete fhPointMapAngWithMuch;
+   delete fhPointMapAngWithTrd;
+
+   if( kTRUE == fbSphAppOn )
+   {
+      delete fhPointSphAprRadiusErrMapXY;
+      delete fhPointSphAprRadiusErrMapXZ;
+      delete fhPointSphAprRadiusErrMapYZ;
+      delete fhPointSphAprRadiusErrMapAng;
+      delete fhPointSphAprRadiusErrMapSph;
+      delete fhPointSphAprZposErrMapXY;
+      delete fhPointSphAprZposErrMapXZ;
+      delete fhPointSphAprZposErrMapYZ;
+      delete fhPointSphAprZposErrMapAng;
+      delete fhPointSphAprZposErrMapSph;
+   } // if( kTRUE == fbSphAppOn )
+
       // Physics coord mapping, 1 per particle type
    for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
    {
@@ -1172,10 +1321,10 @@ Bool_t   CbmTofGeometryQa::DeleteHistos()
       delete fvhPlabGenTrk[iPartIdx];
       delete fvhPlabStsPnt[iPartIdx];
       delete fvhPlabTofPnt[iPartIdx];
-         // MC Tracks losses 
+         // MC Tracks losses
       delete fvhPtmRapGenTrkTofPnt[iPartIdx];
       delete fvhPlabGenTrkTofPnt[iPartIdx];
-      
+
       // Secondary tracks
          // Phase space
       delete fvhPtmRapSecGenTrk[iPartIdx];
@@ -1185,7 +1334,7 @@ Bool_t   CbmTofGeometryQa::DeleteHistos()
       delete fvhPlabSecGenTrk[iPartIdx];
       delete fvhPlabSecStsPnt[iPartIdx];
       delete fvhPlabSecTofPnt[iPartIdx];
-         // MC Tracks losses 
+         // MC Tracks losses
       delete fvhPtmRapSecGenTrkTofPnt[iPartIdx];
       delete fvhPlabSecGenTrkTofPnt[iPartIdx];
       delete fvhPlabSecStsTrkTofPnt[iPartIdx];
@@ -1194,29 +1343,29 @@ Bool_t   CbmTofGeometryQa::DeleteHistos()
    fvhPtmRapGenTrk.clear();
    fvhPtmRapStsPnt.clear();
    fvhPtmRapTofPnt.clear();
-         // PLab 
+         // PLab
    fvhPlabGenTrk.clear();
    fvhPlabStsPnt.clear();
    fvhPlabTofPnt.clear();
-         // MC Tracks losses      
+         // MC Tracks losses
    fvhPtmRapGenTrkTofPnt.clear();
    fvhPlabGenTrkTofPnt.clear();
    fvhPlabStsTrkTofPnt.clear();
-   
+
    // Secondary tracks
          // Phase space
    fvhPtmRapSecGenTrk.clear();
    fvhPtmRapSecStsPnt.clear();
    fvhPtmRapSecTofPnt.clear();
-         // PLab 
+         // PLab
    fvhPlabSecGenTrk.clear();
    fvhPlabSecStsPnt.clear();
    fvhPlabSecTofPnt.clear();
-         // MC Tracks losses      
+         // MC Tracks losses
    fvhPtmRapSecGenTrkTofPnt.clear();
    fvhPlabSecGenTrkTofPnt.clear();
    fvhPlabSecStsTrkTofPnt.clear();
-   
+
    return kTRUE;
 }
 

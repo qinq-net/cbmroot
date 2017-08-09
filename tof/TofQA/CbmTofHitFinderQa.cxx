@@ -2087,7 +2087,7 @@ Bool_t CbmTofHitFinderQa::FillHistos()
       pMcTrk = (CbmMCTrack*) fMcTracksColl->At( pTofPoint->GetTrackID() );
 
          // Physics coord mapping, 1 per particle type
-	   Int_t iPdgCode = pMcTrk->GetPdgCode();
+//      Int_t iPdgCode = pMcTrk->GetPdgCode();
 //      if( 2212 == iPdgCode ) // Protons cut, comment to get all
       {
          // Obtain position

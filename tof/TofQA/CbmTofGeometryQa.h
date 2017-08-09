@@ -48,10 +48,13 @@ class CbmTofGeometryQa : public FairTask {
        virtual void SetParContainers();
 
        Bool_t   RegisterInputs();
-       
+
        Bool_t   SetHistoFileName( TString sFilenameIn );
-       
+
        Bool_t   SetWallPosZ( Double_t dWallPosCm = 1000);
+
+       void     SetCentralityDepFlag( Bool_t bFlag = kTRUE ) { fbCentDepOn = bFlag; }
+       void     SetSphereApproxCheckFlag( Bool_t bFlag = kTRUE ) { fbSphAppOn = bFlag; }
 
    private:
       Bool_t   CreateHistos();
@@ -81,7 +84,7 @@ class CbmTofGeometryQa : public FairTask {
       std::vector< std::vector< Int_t > >                fvSmRpcOffs;  // Offset in RPC index for first RPC of each SM
       Int_t fiNbChTot;
       std::vector< std::vector< std::vector< Int_t > > > fvRpcChOffs;  // Offset in channel index for first channel of each RPC
-    
+
       // Parameters
 
       // Data IO
@@ -92,24 +95,39 @@ class CbmTofGeometryQa : public FairTask {
       TClonesArray          * fRealTofPointsColl; // Realistics TOF MC points
       TClonesArray          * fRealTofMatchColl;  // Index of Realistics TOF MC points for each MC Point (CbmMatch)
       Bool_t                  fbRealPointAvail;
-      
+
       // Histograms
          // Output file name and path
-      TString fsHistoOutFilename;   
+      TString fsHistoOutFilename;
          // Position of the TOF wall on Z axis for centering histos with Z
       Double_t fdWallPosZ;
          // Geometric Mapping
+      Bool_t             fbCentDepOn; // Switch on study of dependence on centrality
       std::vector<TH2 *> fvhTrackAllStartZCent; // Dependence of Track origin on centrality, if TOF points
       std::vector<TH2 *> fvhTrackSecStartZCent; // Dependence of Track origin on centrality, if TOF points
       std::vector<TH3 *> fvhTrackAllStartXZCent; // Dependence of Track origin on centrality, if TOF points
+      std::vector<TH3 *> fvhTofPntAllAngCent; // Dependence of Tof Point position (angular) on centrality
       std::vector<TH2 *> fvhTrackAllStartXZ;    // Track origin mapping, if TOF points
       std::vector<TH2 *> fvhTrackAllStartYZ;    // Track origin mapping, if TOF points
-      std::vector<TH3 *> fvhTofPntAllAngCent; // Dependence of Tof Point position (angular) on centrality
       TH2 * fhTrackMapXY;  // Only when creating normalization histos
       TH2 * fhTrackMapXZ;  // Only when creating normalization histos
       TH2 * fhTrackMapYZ;  // Only when creating normalization histos
       TH2 * fhTrackMapAng; // Only when creating normalization histos
       TH2 * fhTrackMapSph; // Only when creating normalization histos
+      TH2 * fhTrackMapAngPrimAll;  // For angular acceptance study
+      TH2 * fhTrackMapAngPrimSts;  // For angular acceptance study
+      TH2 * fhTrackMapAngPrimRich; // For angular acceptance study
+      TH2 * fhTrackMapAngPrimMuch; // For angular acceptance study
+      TH2 * fhTrackMapAngPrimTrd;  // For angular acceptance study
+      TH2 * fhTrackMapAngPrimTof;  // For angular acceptance study
+/*
+      TH2 * fhTrackMapAngSecAll;  // For angular acceptance study
+      TH2 * fhTrackMapAngSecSts;  // For angular acceptance study
+      TH2 * fhTrackMapAngSecRich; // For angular acceptance study
+      TH2 * fhTrackMapAngSecMuch; // For angular acceptance study
+      TH2 * fhTrackMapAngSecTrd;  // For angular acceptance study
+      TH2 * fhTrackMapAngSecTof;  // For angular acceptance study
+*/
       TH2 * fhPointMapXY;
       TH2 * fhPointMapXZ;
       TH2 * fhPointMapYZ;
@@ -120,8 +138,13 @@ class CbmTofGeometryQa : public FairTask {
       TH2 * fhRealPointMapYZ;
       TH2 * fhRealPointMapAng;
       TH2 * fhRealPointMapSph;
-      
+      TH2 * fhPointMapAngWithSts;  // For angular acceptance study
+      TH2 * fhPointMapAngWithRich; // For angular acceptance study
+      TH2 * fhPointMapAngWithMuch; // For angular acceptance study
+      TH2 * fhPointMapAngWithTrd;  // For angular acceptance study
+
          // Errors relative to spherical approx
+      Bool_t       fbSphAppOn;
       TProfile2D * fhPointSphAprRadiusErrMapXY;
       TProfile2D * fhPointSphAprRadiusErrMapXZ;
       TProfile2D * fhPointSphAprRadiusErrMapYZ;
@@ -132,7 +155,7 @@ class CbmTofGeometryQa : public FairTask {
       TProfile2D * fhPointSphAprZposErrMapYZ;
       TProfile2D * fhPointSphAprZposErrMapAng;
       TProfile2D * fhPointSphAprZposErrMapSph;
-      
+
          // Physics coord mapping, 1 per particle type
             // Phase space
                // Primary tracks
@@ -143,7 +166,7 @@ class CbmTofGeometryQa : public FairTask {
       std::vector<TH2 *> fvhPtmRapSecGenTrk;
       std::vector<TH2 *> fvhPtmRapSecStsPnt;
       std::vector<TH2 *> fvhPtmRapSecTofPnt;
-      
+
             // PLab
                // Primary tracks
       std::vector<TH1 *> fvhPlabGenTrk;
@@ -153,7 +176,7 @@ class CbmTofGeometryQa : public FairTask {
       std::vector<TH1 *> fvhPlabSecGenTrk;
       std::vector<TH1 *> fvhPlabSecStsPnt;
       std::vector<TH1 *> fvhPlabSecTofPnt;
-      
+
             // MC Tracks losses
                // Primary tracks
       std::vector<TH2 *> fvhPtmRapGenTrkTofPnt;
@@ -163,7 +186,7 @@ class CbmTofGeometryQa : public FairTask {
       std::vector<TH2 *> fvhPtmRapSecGenTrkTofPnt;
       std::vector<TH1 *> fvhPlabSecGenTrkTofPnt;
       std::vector<TH1 *> fvhPlabSecStsTrkTofPnt;
-      
+
       ClassDef(CbmTofGeometryQa, 1);
 };
 

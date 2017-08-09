@@ -1346,8 +1346,8 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
 //                  dLastPosX = 0.0; // -> Comment to remove warning because set but never used
                   dLastPosY = 0.0;
                   dLastTime = 0.0;
-		  fTrafoCell=NULL;
-		  iTrafoCell=-1;
+		            fTrafoCell=NULL;
+		            iTrafoCell=-1;
                   LOG(DEBUG2)<<"CbmTofSimpClusterizer::BuildClusters: ChanOrient "
                              << Form(" %3d %3d %3d %3d %3d ",iSmType,iSm,iRpc,fDigiBdfPar->GetChanOrient( iSmType, iRpc ),iNbCh)
                              <<FairLogger::endl;
@@ -1448,14 +1448,14 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
 
                               TGeoNode *fNode=        // prepare local->global trafo
                                 gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
-			      if(NULL == fTrafoCell) {
-				fTrafoCell=fChannelInfo;
-				iTrafoCell=iCh;
-			      }
+			                     if(NULL == fTrafoCell) {
+				                     fTrafoCell=fChannelInfo;
+				                     iTrafoCell=iCh;
+			                     }
 
-			      //fNode->Print();
+			                     //fNode->Print();
                               LOG(DEBUG1)<<Form(" Node at (%6.1f,%6.1f,%6.1f) : %p, info %p, %p",
-						fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode,fChannelInfo,fTrafoCell)
+						                  fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode,fChannelInfo,fTrafoCell)
                                         <<FairLogger::endl;
                               //        fNode->Print();
 
@@ -1579,32 +1579,33 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                     Double_t hitpos_local[3];
                                     Double_t hitpos[3];
 
-				    TGeoNode *tNode=        // prepare local->global trafo
-				      gGeoManager->FindNode(fTrafoCell->GetX(),fTrafoCell->GetY(),fTrafoCell->GetZ());
-				    TGeoNode *cNode =
-				      gGeoManager->GetCurrentNode();
-				    //cNode->Print();
-				    //TGeoHMatrix* cMatrix =
-				    gGeoManager->GetCurrentMatrix();
-				    //cMatrix->Print();
-				    hitpos[0]=fTrafoCell->GetX();
-				    hitpos[1]=fTrafoCell->GetY();
-				    hitpos[2]=fTrafoCell->GetZ();
-				    gGeoManager->MasterToLocal(hitpos, hitpos_local);
-				    LOG(DEBUG1)<<Form(" Node0 at (%6.1f,%6.1f,%6.1f) :  (%6.1f,%6.1f,%6.1f)",
-						      fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),hitpos_local[0], hitpos_local[1], hitpos_local[2])
-					       <<FairLogger::endl;
+                                    TGeoNode *tNode=        // prepare local->global trafo
+                                      gGeoManager->FindNode(fTrafoCell->GetX(),fTrafoCell->GetY(),fTrafoCell->GetZ());
+                                    TGeoNode *cNode =
+                                      gGeoManager->GetCurrentNode();
+                                    //cNode->Print();
+                                    //TGeoHMatrix* cMatrix =
+                                    gGeoManager->GetCurrentMatrix();
+                                    //cMatrix->Print();
+                                    hitpos[0]=fTrafoCell->GetX();
+                                    hitpos[1]=fTrafoCell->GetY();
+                                    hitpos[2]=fTrafoCell->GetZ();
+                                    gGeoManager->MasterToLocal(hitpos, hitpos_local);
+                                    LOG(DEBUG1)<<Form(" Node0 at (%6.1f,%6.1f,%6.1f) :  (%6.1f,%6.1f,%6.1f) pointer %p",
+                                            fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),hitpos_local[0], hitpos_local[1], hitpos_local[2],
+                                            tNode)
+                                          <<FairLogger::endl;
 
-				    hitpos_local[0] += dWeightedPosX;
-				    hitpos_local[1] += dWeightedPosY;
-				    hitpos_local[2] += dWeightedPosZ;
+                                    hitpos_local[0] += dWeightedPosX;
+                                    hitpos_local[1] += dWeightedPosY;
+				                        hitpos_local[2] += dWeightedPosZ;
 
                                     gGeoManager->LocalToMaster(hitpos_local, hitpos);
                                     LOG(DEBUG1)<<
-                                    Form(" LTM for node %p, info %p: (%6.1f,%6.1f,%6.1f) ->(%6.1f,%6.1f,%6.1f)",
-                                         cNode, fChannelInfo, hitpos_local[0], hitpos_local[1], hitpos_local[2],
-                                         hitpos[0], hitpos[1], hitpos[2])
-					       <<FairLogger::endl;
+                                          Form(" LTM for node %p, info %p: (%6.1f,%6.1f,%6.1f) ->(%6.1f,%6.1f,%6.1f)",
+                                               cNode, fChannelInfo, hitpos_local[0], hitpos_local[1], hitpos_local[2],
+                                               hitpos[0], hitpos[1], hitpos[2])
+					                           <<FairLogger::endl;
 
                                     TVector3 hitPos(hitpos[0],hitpos[1],hitpos[2]);
 
@@ -1621,9 +1622,9 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                     // calc mean ch from dPosX=((Double_t)(-iNbCh/2 + iCh)+0.5)*fChannelInfo->GetSizex();
 
                                     Int_t iChm=iTrafoCell+floor(dWeightedPosX/fChannelInfo->GetSizex());
-				    if(iChm<0 || iChm >iNbCh){
-				      LOG(DEBUG)<<"CbmTofSimpClusterizer::BuildClusters: Invalid mean channel"<<FairLogger::endl;
-				    }
+                                    if(iChm<0 || iChm >iNbCh){
+                                       LOG(DEBUG)<<"CbmTofSimpClusterizer::BuildClusters: Invalid mean channel"<<FairLogger::endl;
+                                    }
                                     Int_t iDetId = CbmTofAddress::GetUniqueAddress(iSm,iRpc,iChm,0,iSmType);
                                     Int_t iRefId = 0; // Index of the correspondng TofPoint
                                     // if(NULL != fTofPointsColl) {     iRefId = fTofPointsColl->IndexOf( vPtsRef[0] ); }
@@ -1713,10 +1714,10 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                  {
                                      LOG(DEBUG1)<<"CbmTofSimpClusterizer::BuildClusters: 1.Hit on channel "
                                                <<iCh<<", time: "<<dTime
-					       <<", x: "<<dPosX
-					       <<", y: "<<dPosY
-					       <<", Tot: "<<dTotS
-					       <<FairLogger::endl;
+                                               <<", x: "<<dPosX
+                                               <<", y: "<<dPosY
+                                               <<", Tot: "<<dTotS
+                                               <<FairLogger::endl;
 
                                     // first fired strip in this RPC
                                     dWeightedTime = dTime*dTotS;
@@ -1798,18 +1799,18 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
 
                      TGeoNode *tNode=        // prepare local->global trafo
                      gGeoManager->FindNode(fTrafoCell->GetX(),fTrafoCell->GetY(),fTrafoCell->GetZ());
-		     //TGeoNode *cNode =
-                     gGeoManager->GetCurrentNode();
-		     //cNode->Print();
-		     //TGeoHMatrix* cMatrix =
-		     gGeoManager->GetCurrentMatrix();
-                     //cMatrix->Print();
-		     hitpos[0]=fTrafoCell->GetX();
-		     hitpos[1]=fTrafoCell->GetY();
-		     hitpos[2]=fTrafoCell->GetZ();
+                     //TGeoNode *cNode =
+                              gGeoManager->GetCurrentNode();
+                     //cNode->Print();
+                     //TGeoHMatrix* cMatrix =
+                     gGeoManager->GetCurrentMatrix();
+                              //cMatrix->Print();
+                     hitpos[0]=fTrafoCell->GetX();
+                     hitpos[1]=fTrafoCell->GetY();
+                     hitpos[2]=fTrafoCell->GetZ();
                      gGeoManager->MasterToLocal(hitpos, hitpos_local);
                      LOG(DEBUG1)<<Form(" Node0 at (%6.1f,%6.1f,%6.1f) :  (%6.1f,%6.1f,%6.1f)",
-				fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),hitpos_local[0], hitpos_local[1], hitpos_local[2])
+				               fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),hitpos_local[0], hitpos_local[1], hitpos_local[2])
                                 <<FairLogger::endl;
 
                      hitpos_local[0] += dWeightedPosX;
@@ -1818,10 +1819,10 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
 
                      gGeoManager->LocalToMaster(hitpos_local, hitpos);
                      LOG(DEBUG1)<<
-                     Form(" LTM for V-node %p, info %p, tra %p: (%6.1f,%6.1f,%6.1f) ->(%6.1f,%6.1f,%6.1f) [(%6.1f,%6.1f,%6.1f)]",
-			  tNode, fChannelInfo, fTrafoCell, hitpos_local[0], hitpos_local[1], hitpos_local[2],
-			  hitpos[0], hitpos[1], hitpos[2], fTrafoCell->GetX(),fTrafoCell->GetY(),fTrafoCell->GetZ())
-				<<FairLogger::endl;
+                        Form(" LTM for V-node %p, info %p, tra %p: (%6.1f,%6.1f,%6.1f) ->(%6.1f,%6.1f,%6.1f) [(%6.1f,%6.1f,%6.1f)]",
+			                  tNode, fChannelInfo, fTrafoCell, hitpos_local[0], hitpos_local[1], hitpos_local[2],
+			                  hitpos[0], hitpos[1], hitpos[2], fTrafoCell->GetX(),fTrafoCell->GetY(),fTrafoCell->GetZ())
+				            <<FairLogger::endl;
 
                      TVector3 hitPos(hitpos[0],hitpos[1],hitpos[2]);
                      // TestBeam errors, not properly done at all for now
@@ -1839,11 +1840,11 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
 //                     Int_t iDetId = iChId;
 
                      Int_t iChm=iTrafoCell+floor(dWeightedPosX/fChannelInfo->GetSizex());
-		     if(iChm<0 || iChm >iNbCh){
-		       LOG(DEBUG)<<"CbmTofSimpClusterizer::BuildClusters: Invalid mean channel "
-				 <<iChm<<"("<<iNbCh<<")"<<FairLogger::endl;
-		     }
-		     Int_t iDetId = CbmTofAddress::GetUniqueAddress(iSm,iRpc,iChm,0,iSmType);
+		               if(iChm<0 || iChm >iNbCh){
+		                  LOG(DEBUG)<<"CbmTofSimpClusterizer::BuildClusters: Invalid mean channel "
+				            <<iChm<<"("<<iNbCh<<")"<<FairLogger::endl;
+                     }
+		               Int_t iDetId = CbmTofAddress::GetUniqueAddress(iSm,iRpc,iChm,0,iSmType);
                      Int_t iRefId = 0; // Index of the correspondng TofPoint
                      //                     if(NULL != fTofPointsColl) iRefId = fTofPointsColl->IndexOf( vPtsRef[0] );
                      LOG(DEBUG)<<"CbmTofSimpClusterizer::BuildClusters: Save V-Hit  "

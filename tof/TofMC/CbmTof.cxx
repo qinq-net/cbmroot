@@ -40,7 +40,7 @@ using std::cout;
 using std::endl;
 
 // -----   Default constructor   -------------------------------------------
-CbmTof::CbmTof() 
+CbmTof::CbmTof()
   : FairDetector("TOF", kTRUE, kTof),
     fTrackID(-1),
     fVolumeID(-1),
@@ -107,7 +107,7 @@ CbmTof::CbmTof(const char* name, Bool_t active)
 // -----   Destructor   ----------------------------------------------------
 CbmTof::~CbmTof() {
  if (fTofCollection) {
-   fTofCollection->Delete(); 
+   fTofCollection->Delete();
    delete fTofCollection;
  }
  if (fGeoHandler) {
@@ -365,7 +365,7 @@ Bool_t  CbmTof::ProcessHits(FairVolume* /*vol*/)
          (gMC->TrackCharge()!=0) )&&
         (gMC->IsTrackExiting()    ||
          gMC->IsTrackStop()       ||
-         gMC->IsTrackDisappeared()) 
+         gMC->IsTrackDisappeared())
          ) {
 
       fTrackID  = gMC->GetStack()->GetCurrentTrackNumber();
@@ -389,7 +389,7 @@ Bool_t  CbmTof::ProcessHits(FairVolume* /*vol*/)
       //fVolumeID = ((region-1)<<24) + ((module-1)<<14) + ((cell-1)<<4) + (gap-1);
 
       AddHit(fTrackID, fVolumeID, TVector3(fPos.X(),  fPos.Y(),  fPos.Z()),
-	     TVector3(fMom.Px(), fMom.Py(), fMom.Pz()), fTime, fLength, 
+	     TVector3(fMom.Px(), fMom.Py(), fMom.Pz()), fTime, fLength,
 	     fELoss);
 
       // Increment number of tof points for TParticle
@@ -440,7 +440,7 @@ void CbmTof::Print(Option_t*) const {
   LOG(INFO) << fName << ": " << nHits << " points registered in this event." << FairLogger::endl;
 
   if (fVerboseLevel>1)
-    for (Int_t i=0; i<nHits; i++) 
+    for (Int_t i=0; i<nHits; i++)
       (*fTofCollection)[i]->Print();
 }
 // -------------------------------------------------------------------------
@@ -487,10 +487,10 @@ void CbmTof::ConstructGeometry()
     std::cout << "Geometry format not supported." << std::endl;
   }
 }
- 
+
 // -----   Public method ConstructGeometry   -------------------------------
 void CbmTof::ConstructASCIIGeometry() {
-  
+
   Int_t count=0;
   Int_t count_tot=0;
 
@@ -526,7 +526,7 @@ void CbmTof::ConstructASCIIGeometry() {
        count_tot++;
   }
   par->setChanged();
-  par->setInputVersion(fRun->GetRunId(),1);  
+  par->setInputVersion(fRun->GetRunId(),1);
   ProcessNodes ( volList );
 }
 // -------------------------------------------------------------------------
@@ -690,7 +690,7 @@ Bool_t CbmTof::CheckIfSensitive(std::string name)
 
 // -----   Private method AddHit   -----------------------------------------
 CbmTofPoint* CbmTof::AddHit(Int_t trackID, Int_t detID, TVector3 pos,
-			    TVector3 mom, Double_t time, Double_t length, 
+			    TVector3 mom, Double_t time, Double_t length,
 			    Double_t eLoss) {
   TClonesArray& clref = *fTofCollection;
   Int_t size = clref.GetEntriesFast();
@@ -701,7 +701,7 @@ CbmTofPoint* CbmTof::AddHit(Int_t trackID, Int_t detID, TVector3 pos,
 
 //__________________________________________________________________________
 void CbmTof::ConstructRootGeometry()
-{   
+{
   if( IsNewGeometryFile(fgeoName) ) {
 
     TGeoVolume *module1 = TGeoVolume::Import(fgeoName, fVolumeName.c_str());
@@ -716,32 +716,32 @@ void CbmTof::ConstructRootGeometry()
       }
     }
     if (NULL == node) {
-      LOG(FATAL) << "Node " << fVolumeName.c_str() 
+      LOG(FATAL) << "Node " << fVolumeName.c_str()
                  << " not found." << FairLogger::endl;
     }
     ExpandTofNodes(node);
   } else {
     FairModule::ConstructRootGeometry();
-  } 
-}   
+  }
+}
 
 void CbmTof::ExpandTofNodes(TGeoNode* fN)
-{   
+{
   TGeoVolume* v1=fN->GetVolume();
   TObjArray* NodeList=v1->GetNodes();
   for (Int_t Nod=0; Nod<NodeList->GetEntriesFast(); Nod++) {
     TGeoNode* fNode =(TGeoNode*)NodeList->At(Nod);
-    
+
     if(fNode->GetNdaughters()>0) { ExpandTofNodes(fNode); }
     TGeoVolume* v= fNode->GetVolume();
     if ( (this->InheritsFrom("FairDetector")) && CheckIfSensitive(v->GetName())) {
       AddSensitiveVolume(v);
     }
-  } 
+  }
 
-}   
+}
 
-Bool_t CbmTof::IsNewGeometryFile(TString filename)
+Bool_t CbmTof::IsNewGeometryFile(TString /*filename*/)
 {
 
   TFile* f=new TFile(fgeoName);
@@ -761,7 +761,7 @@ Bool_t CbmTof::IsNewGeometryFile(TString filename)
   while ((key = (TKey*)next())) {
     if (strcmp(key->GetClassName(),"TGeoVolume") == 0) {
       LOG(INFO) << "Found TGeoVolume in geometry file." << FairLogger::endl;
-      LOG(INFO) << "Name: " << key->GetName() << FairLogger::endl;      
+      LOG(INFO) << "Name: " << key->GetName() << FairLogger::endl;
       foundGeoVolume =  kTRUE;
       fVolumeName = key->GetName();
       continue;
