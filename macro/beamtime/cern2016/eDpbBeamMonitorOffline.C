@@ -10,14 +10,14 @@
 // In order to call later Finish, we make this global
 FairRunOnline *run = NULL;
 
-void eDpbBeamMonitor(Bool_t highP = false, TString inFile =
-		     "")
+void eDpbBeamMonitorOffline(Bool_t highP = true, TString inFile =
+		     "/home/cbm/readout/flesnet/build/r0004_20170803_1025/r0004_20170803_1025_0001.tsa"
+		     )
 {
-  TString srcDir = gSystem->Getenv("VMCWORKDIR");
-  TString inDir  = srcDir + "/input/";
-//  TString inDir  = "/lustre/nyx/cbm/prod/beamtime/2016/11/cern/";
-  if( "" != inFile )
-   inFile = inDir + inFile;
+  //TString srcDir = gSystem->Getenv("VMCWORKDIR");
+  //TString inDir  = srcDir + "/input/";
+  //if( "" != inFile )
+  // inFile = inDir + inFile;
 
   // --- Specify number of events to be produced.
   // --- -1 means run until the end of the input file.
@@ -49,7 +49,8 @@ void eDpbBeamMonitor(Bool_t highP = false, TString inFile =
 
   // --- Source task
   CbmFlibFileSourceNew* source = new CbmFlibFileSourceNew();
-  source->SetHostName("localhost");
+  //source->SetHostName("localhost");
+  source->SetFileName(inFile);
   source->AddUnpacker(spadic20_unpacker, 0x10); // FIXME: set correct values
 
   // --- Event header

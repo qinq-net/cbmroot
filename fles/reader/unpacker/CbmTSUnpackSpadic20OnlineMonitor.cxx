@@ -132,51 +132,59 @@ Bool_t CbmTSUnpackSpadic20OnlineMonitor::Init()
 	return kTRUE;
 }
 
+
+spadic::MessageReader r;
+Int_t address = 0; // Fake the addr for now
+    Int_t addr = 0; // Fake!
+    Int_t counter=0;
+
+
 Bool_t CbmTSUnpackSpadic20OnlineMonitor::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
   // compare to: https://github.com/spadic/spadic10-software/blob/master/lib/message/message.h
   // or fles/spadic/message/wrap/cpp/message.cpp
   LOG(DEBUG) << "Unpacking Spadic Data" << FairLogger::endl;
-
+  Int_t link = 0;
   TH2I* h = NULL;
   TString cName;
 
   LOG(DEBUG) << "Timeslice contains " << ts.num_microslices(component)
              << "microslices." << FairLogger::endl;
 
-  std::vector<uint16_t> buf0;
-  std::vector<uint16_t> buf1;
-
-  buf0.clear();
-  buf1.clear();
-
+  std::cout << "Timeslice contains " << ts.num_microslices(component) << std::endl;
+  
+  
+  //printf("Component: %i Num MS: %i \n", component, ts.num_microslices(component));
+  
    // Loop over microslices
-  for (size_t m = 0; m < ts.num_microslices(component); ++m){
+  //for (size_t m = 0; m < ts.num_microslices(component); ++m){
+  for (size_t m {0}; m < ts.num_microslices(component); m++){
 
-      auto msDescriptor = ts.descriptor(component, m);
-      Int_t fEquipmentId = msDescriptor.eq_id;
-      const uint8_t* msContent = reinterpret_cast<const uint8_t*>(ts.content(component, m));
-      uint32_t size = msDescriptor.size;
-
-      if(size>0)
-        LOG(DEBUG) << "Microslice: " << msDescriptor.idx
-                   << " has size: " << size << FairLogger::endl;
-
-      const uint64_t* pInBuff = reinterpret_cast<const uint64_t*>( msContent );
-      for (auto uIdx = 0; uIdx < size; uIdx ++){
+    std::vector<uint16_t> buf0;
+    std::vector<uint16_t> buf1;
+    //buf0.reserve(20000);
+    //buf1.reserve(20000);
+  
+    // Get the microslice
+    auto msDescriptor =  ts.descriptor(component, m);   // mc
+    Int_t fEquipmentId = msDescriptor.eq_id;    
+    //const uint8_t* msContent =  reinterpret_cast<const uint8_t*>(ts.content(component, m));
+    auto msContent = reinterpret_cast<const uint16_t*>(ts.content(component, m)); 
+    //uint32_t size = msDescriptor.size;
+    auto s = msDescriptor.size * sizeof(*msContent) / sizeof(*msContent);
+    const uint64_t* pInBuff = reinterpret_cast<const uint64_t*>( msContent );
+      
+    for (auto uIdx = 0; uIdx < s; uIdx ++){
           // Fill message
+	  //printf("uIdx: %x Size: %x \n", uIdx, size);
           uint64_t ulData = static_cast<uint64_t>( pInBuff[uIdx] );
           uint16_t afck_id = (ulData & 0xffff000000000000) >> 48;
-
-          //printf("Frame: 0x%X\n", ulData);
-          //printf("AFCK ID: 0x%04X\n", afck_id);
-
-	        // Last 2bytes of mac addr of the afck, hard coded now for sps2016
-          if(afck_id != 0x5b9d)
+        
+	  // Last 2bytes of mac addr of the afck, hard coded now for sps2016
+          //if(afck_id != 0x5b9d) //IRI AFCK
+	  if(afck_id != 0x187f)  // IKF 217
 	         continue;
-
-	        //std::cout << "AFCK ID: " << std::hex << afck_id << std::endl;
-	        //std::cout << "0x" << std::hex << ulData << std::endl;
+	  
 	        uint8_t  downlink_header = (ulData & 0xf00000) >> 20;
 	        uint8_t  downlink_nr     = (ulData & 0xf0000)  >> 16;
 	        uint16_t payload         =  ulData & 0xffff;
@@ -184,55 +192,44 @@ Bool_t CbmTSUnpackSpadic20OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	        //std::cout << "Header: " << std::hex << downlink_header << " Downlink number: " << downlink_nr << std::endl;
 	        //printf("Header 0x%02x Link: 0x%02x \n", downlink_header, downlink_nr);
 
-      	  if(downlink_header != 0xa)
-      	    std::cout << "Corruption in downlink header found" << std::endl;
+		if(downlink_header != 0xa)
+		  std::cout << "Corruption in downlink header found" << std::endl;
 
+		//printf("Payload: 0x%04X\n", payload);
+		
       	  // Put the data in a buffer
-      	  if(downlink_nr == 0){
+      	  if(downlink_nr == 0)
       	    buf0.push_back(payload);
-      	  }
-      	  //else if(downlink_nr == 1)
-      	  //  buf1.push_back(payload);
-
-      	}
+      	  else if(downlink_nr == 1)
+      	    buf1.push_back(payload);
     }
 
-  // This is not nice... quick n' dirty
-  //std::move(buf1.begin(), buf1.end(), std::back_inserter(buf0));
+    // This is not nice... quick n' dirty
+    //std::move(buf1.begin(), buf1.end(), std::back_inserter(buf0));
+    
+    r.add_buffer(buf0.data() , buf0.size());
+    r.add_buffer(buf1.data() , buf1.size());
+    link = ts.descriptor(component, 0).eq_id;
 
-  /*
-  if(buf0.size() > 0){
-    printf("Buffer:");
-    for(auto i=0; i<buf0.size();i++)
-      printf(" %04x", buf0[i]);
-    printf("\n");
-  }
-  */
+    
+    //} // End microslice
 
-  // Unpack the timeslice
-  spadic::MessageReader r;
-  size_t buf_size = buf0.size();
-  std::vector<uint16_t>::pointer p = &buf0[0];
-  uint16_t* buf_array = p;
-  r.add_buffer( buf_array , buf0.size());
-  Int_t address = 0; // Fake the addr for now
-  Int_t addr = 0; // Fake!
-  Int_t counter=0;
-  Int_t link = ts.descriptor(component, 0).eq_id;
-  Bool_t isInfo(false), isHit(false), isEpoch(false), isEpochOutOfSync(false), isOverflow(false), isHitAborted(false), isStrange(false);
+  
+    Bool_t isInfo(false), isHit(false), isEpoch(false), isEpochOutOfSync(false), isOverflow(false), isHitAborted(false), isStrange(false);
 
+  
   while(auto m = r.get_message()) {
 
     if(m->is_hit()){
       auto& s = m->samples();
       //printf("Group: %i Ch: %i Ts: %i Samples: %i\n", m->group_id(), m->channel_id(), m->timestamp(),  s.size());
 
-      /*
+      
       printf("Ch: %i Ts: %i Samples: %i Trace: ", m->channel_id(), m->timestamp(),  s.size());
       for(int i = 0; i < s.size(); i++)
 	     printf(" %02i,", s[i]);
       printf("\n");
-      */
+      
 
       // Fill some nice histos
       Int_t triggerType =  static_cast<Int_t>(m->hit_type());
@@ -253,9 +250,9 @@ Bool_t CbmTSUnpackSpadic20OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
 	       //if (sample_values[2]>-150) {
 	        //if (!fHighPerformance)
 	         //fPulseShape[ ( GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address))*32+channel+16*(groupId%2) ]->Fill(counter1,x);
-			   fPulseShape[channel+16*(groupId%2)]->Fill(counter1,x);
-			   //  fMaxADC[channel]->Fill(counter1,x);
-	       //}
+		   fPulseShape[channel+16*(groupId%2)]->Fill(counter1,x);
+		   //  fMaxADC[channel]->Fill(counter1,x);
+		   //}
   	    if (x > maxADC){
   	      maxADC = x;
   	      maxTB = counter1;
@@ -406,6 +403,9 @@ Bool_t CbmTSUnpackSpadic20OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
     	//print_message(mp);
     }
   }
+
+ } // End microslice
+  
   return kTRUE;
 }
 

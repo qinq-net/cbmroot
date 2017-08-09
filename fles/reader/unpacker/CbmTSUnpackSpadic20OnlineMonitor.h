@@ -42,8 +42,9 @@ class CbmTSUnpackSpadic20OnlineMonitor : public CbmTSUnpack
   //  virtual void Register();
 
   virtual void FillOutput(CbmDigi*){;}
+  
  private:
-
+    
   TClonesArray* fSpadicRaw;
 
   Bool_t fHighPerformance;
