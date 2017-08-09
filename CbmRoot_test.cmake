@@ -15,7 +15,18 @@ EndIf($ENV{ctest_model} MATCHES Continuous)
 Set(BUILD_COMMAND "make")
 Set(CTEST_BUILD_COMMAND "${BUILD_COMMAND} -j$ENV{number_of_processors}")
 
-Set(CTEST_USE_LAUNCHERS 1)
+# Extract the FairRoot version from fairroot-config
+# The version info is of the form Major.Minor.Patch e.g. 15.11.1 and
+# is stored in the variable FairRoot_VERSION
+Set(CMAKE_MODULE_PATH "${CTEST_SOURCE_DIRECTORY}/cmake/modules" ${CMAKE_MODULE_PATH})
+Include(CbmMacros)
+FairRootVersion()
+
+If(${FairRoot_VERSION} VERSION_LESS 16.0.0)
+  Set(CTEST_USE_LAUNCHERS 0)
+Else()
+  Set(CTEST_USE_LAUNCHERS 1)
+EndIf()
 
 String(TOUPPER $ENV{ctest_model} _Model)
 If(EXTRA_FLAGS)
