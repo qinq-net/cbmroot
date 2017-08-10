@@ -120,14 +120,14 @@ TEST(_GTestCbmHit, CheckCopyConstructor)
   // as the original object
   CbmMatch* testMatch1 = test2.GetMatch();
 
-  EXPECT_NE(nullptr, testMatch1);
+  EXPECT_EQ(nullptr, testMatch1);
   if (testMatch1) {
     compareMatchDataMembers(testMatch1, 0, 0.);
   }
 
   {
     SCOPED_TRACE("CheckCopyConstructor: Test new object after copy construction");
-    compareHitDataMembers(test2, kHIT, 0., 0., -1, -1, testMatch, -1., -1.);
+    compareHitDataMembers(test2, kHIT, 0., 0., -1, -1, nullptr, -1., -1.);
   }
   // Test if the original object wasn't changed
   {
@@ -162,14 +162,14 @@ TEST(_GTestCbmHit, CheckAssignmentOperator)
   // as the original object
   CbmMatch* testMatch1 = test2.GetMatch();
 
-  EXPECT_NE(nullptr, testMatch1);
+  EXPECT_EQ(nullptr, testMatch1);
   if (testMatch1) {
     compareMatchDataMembers(testMatch1, 0, 0.);
   }
 
   {
     SCOPED_TRACE("CheckAssignmentOperator: Test new object after assignment");
-    compareHitDataMembers(test2, kHIT, 0., 0., -1, -1, testMatch, -1., -1.);
+    compareHitDataMembers(test2, kHIT, 0., 0., -1, -1, nullptr, -1., -1.);
   }
   // Test if the original object wasn't changed
   {
