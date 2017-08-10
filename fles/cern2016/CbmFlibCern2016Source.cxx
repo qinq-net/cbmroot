@@ -172,9 +172,9 @@ Int_t CbmFlibCern2016Source::ReadEvent(UInt_t)
 //  LOG(INFO) << "After FillBuffer" << FairLogger::endl;
 
   retVal = GetNextEvent();
-//  LOG(INFO) << "After GetNextEvent: " << retVal << FairLogger::endl;
+  LOG(DEBUG) << "After GetNextEvent: " << retVal << FairLogger::endl;
 
-  Int_t bla = retVal;
+  Int_t bla = 0;
   // If no more data and file mode, try to read next file in List
   if( fSource->eos() && 0 < fFileName.Length() )
   {
