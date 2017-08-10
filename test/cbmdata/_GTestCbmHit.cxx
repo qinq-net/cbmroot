@@ -38,10 +38,10 @@ void compareMatchDataMembers(CbmMatch* testMatch, Int_t noflinks, Double_t weigh
   Double_t totalWeight{-111.};
 
   linkLength = testMatch->GetNofLinks();
-  EXPECT_EQ(0, linkLength);
+  EXPECT_EQ(noflinks, linkLength);
 
   totalWeight = testMatch->GetTotalWeight();
-  EXPECT_FLOAT_EQ(0., totalWeight);
+  EXPECT_FLOAT_EQ(weight, totalWeight);
 }
 
 
