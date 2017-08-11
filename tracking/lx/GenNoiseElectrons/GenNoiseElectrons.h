@@ -7,8 +7,8 @@ class LxGenNoiseElectrons : public FairTask
 {
 public:
     LxGenNoiseElectrons();
-    LxGenNoiseElectrons(const LxGenNoiseElectrons& orig);
-    LxGenNoiseElectrons& operator=(const LxGenNoiseElectrons& orig);
+    LxGenNoiseElectrons(const LxGenNoiseElectrons& orig) = delete;
+    LxGenNoiseElectrons& operator=(const LxGenNoiseElectrons& orig) = delete;
     ~LxGenNoiseElectrons();
     InitStatus Init();// Overridden from FairTask
     void Exec(Option_t* opt);// Overridden from FairTask

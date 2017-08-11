@@ -8,8 +8,8 @@ class LxCalcStats : public FairTask
 {
 public:
     LxCalcStats();
-    LxCalcStats(const LxCalcStats& orig);
-    LxCalcStats& operator=(const LxCalcStats& orig);
+    LxCalcStats(const LxCalcStats& orig) = delete;
+    LxCalcStats& operator=(const LxCalcStats& orig) = delete;
     InitStatus Init();// Overridden from FairTask
     void Exec(Option_t* opt);// Overridden from FairTask
     void Finish();// Overridden from FairTask

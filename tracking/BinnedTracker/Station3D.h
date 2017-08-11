@@ -21,13 +21,16 @@
 class CbmBinned3DStation : public CbmBinnedStation
 {
 public:
-    CbmBinned3DStation(int nofYBins, int nofXBins, int nofTBins) : fYBins(reinterpret_cast<CbmYBin*> (new unsigned char[nofYBins * sizeof(CbmYBin)])),
+    CbmBinned3DStation(int nofYBins, int nofXBins, int nofTBins) : fZ(0), fYBins(reinterpret_cast<CbmYBin*> (new unsigned char[nofYBins * sizeof(CbmYBin)])),
             fNofYBins(nofYBins), fNofXBins(nofXBins), fNofTBins(nofTBins), fYBinSize(0), fXBinSize(0), fTBinSize(0),
             fMinY(0), fMaxY(0), fMinX(0), fMaxX(0), fMinT(0), fMaxT(0), fDefaultUse(false)
     {
         for (int i = 0; i < nofYBins; ++i)
             new(&fYBins[i]) CbmYBin(nofXBins, nofTBins);
     }
+    
+    Double_t GetZ() const { return fZ; }
+    void SetZ(Double_t v) { fZ = v; }
     
     void AddHit(const CbmPixelHit* hit, Int_t index)
     {
@@ -209,6 +212,11 @@ public:
     }
     
 private:
+    CbmBinned3DStation(const CbmBinned3DStation&) = delete;
+    CbmBinned3DStation& operator=(const CbmBinned3DStation&) = delete;
+    
+private:
+    Double_t fZ;
     CbmYBin* fYBins;
     int fNofYBins;
     int fNofXBins;

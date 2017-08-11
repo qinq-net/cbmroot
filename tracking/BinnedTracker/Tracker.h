@@ -15,6 +15,8 @@
 #define TRACKER_H
 
 #include "Station.h"
+#include "Station3D.h"
+#include "Station4D.h"
 
 class CbmBinnedTracker
 {
@@ -175,6 +177,8 @@ private:
             if (chiSq2 > fChiSqCut)
                 continue;
             
+            trackStart[level + 1] = childHolder;
+            
             if (level == fBeforeLastLevel)
             {
                 Track aCandidate(trackStart, fNofStations, chiSq2);                
@@ -192,6 +196,7 @@ private:
             [&](CbmTBin::HitHolder& hitHolder)->void
             {
                 CbmTBin::HitHolder* trackHolders[fNofStations];
+                trackHolders[0] = &hitHolder;
                 std::list<Track> candidates;
                 TraverseTrackCandidates(0, trackHolders, 0, candidates);
                 

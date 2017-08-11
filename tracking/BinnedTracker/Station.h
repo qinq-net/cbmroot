@@ -24,10 +24,8 @@ const Double_t cbmBinnedSOL = 0;
 class CbmBinnedStation
 {
 public:
-    CbmBinnedStation() : fZ(0), fDx(0), fDy(0), fDt(0) {}
+    CbmBinnedStation() : fDx(0), fDy(0), fDt(0) {}
     virtual ~CbmBinnedStation() {}
-    Double_t GetZ() const { return fZ; }
-    void SetZ(Double_t v) { fZ = v; }
     Double_t GetDx() const { return fDx; }
     void SetDx(Double_t v) { if (v > fDx) fDx = v; }
     Double_t GetDy() const { return fDy; }
@@ -39,7 +37,6 @@ public:
     virtual void SearchHits(const CbmPixelHit* searchHit, std::function<void(CbmTBin::HitHolder&)> handleHit) = 0;
     
 protected:
-    Double_t fZ;
     Double_t fDx;
     Double_t fDy;
     Double_t fDt;

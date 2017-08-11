@@ -16,24 +16,6 @@ LxGenNoiseElectrons::LxGenNoiseElectrons() : fNofNoiseE(1), fNofStations(4), fMC
 {
 }
 
-LxGenNoiseElectrons::LxGenNoiseElectrons(const LxGenNoiseElectrons& orig) : fNofNoiseE(orig.fNofNoiseE), fNofStations(orig.fNofStations), fMCTracks(orig.fMCTracks),
-   fMuchPoints(orig.fMuchPoints), fTrdPoints(orig.fTrdPoints), fOutMCTracks(orig.fOutMCTracks), fOutMuchPoints(orig.fOutMuchPoints), fOutTrdPoints(orig.fOutTrdPoints)
-{   
-}
-
-LxGenNoiseElectrons& LxGenNoiseElectrons::operator=(const LxGenNoiseElectrons& orig)
-{
-   fNofNoiseE = orig.fNofNoiseE;
-   fNofStations = orig.fNofStations;
-   fMCTracks = orig.fMCTracks;
-   fMuchPoints = orig.fMuchPoints;
-   fTrdPoints = orig.fTrdPoints;
-   fOutMCTracks = orig.fOutMCTracks;
-   fOutMuchPoints = orig.fOutMuchPoints;
-   fOutTrdPoints = orig.fOutTrdPoints;
-   return *this;
-}
-
 LxGenNoiseElectrons::~LxGenNoiseElectrons()
 {
    delete fOutMCTracks;

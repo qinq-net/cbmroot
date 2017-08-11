@@ -26,6 +26,7 @@ Set(SRCS
 )
 
 Set(NO_DICT_SRCS
+  GeoReader.cxx
 )
 
 set(LINKDEF CbmBinnedTrackerLinkDef.h)

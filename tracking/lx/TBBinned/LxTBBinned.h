@@ -102,33 +102,8 @@ struct LxTbBinnedPoint
 #endif//LXTB_QA
     {}
     
-    LxTbBinnedPoint(const LxTbBinnedPoint& orig)
-      : x(orig.x), dx(orig.dx), y(orig.y), dy(orig.dy),
-        t(orig.t), dt(orig.dt), use(orig.use), neighbours(orig.neighbours), refId(orig.refId)
-#ifdef LXTB_QA
-    , pHit(orig.pHit), isTrd(orig.isTrd), stationNumber(orig.stationNumber), mcRefs(orig.mcRefs)
-#endif//LXTB_QA
-    {}
-    
-    LxTbBinnedPoint& operator=(const LxTbBinnedPoint& orig)
-    {
-        x = orig.x;
-        dx = orig.dx;
-        y = orig.y;
-        dy = orig.dy;
-        t = orig.t;
-        dt = orig.dt;
-        use = orig.use;
-        neighbours = orig.neighbours;
-        refId = orig.refId;
-#ifdef LXTB_QA
-        pHit = orig.pHit;
-        isTrd = orig.isTrd;
-        stationNumber = orig.stationNumber;
-        mcRefs = orig.mcRefs;
-#endif//LXTB_QA
-        return *this;
-    }
+    LxTbBinnedPoint(const LxTbBinnedPoint& orig) = default;
+    LxTbBinnedPoint& operator=(const LxTbBinnedPoint& orig) = delete;
 };
 
 inline LxTbBinnedRay::LxTbBinnedRay(scaltype deltaZ, const LxTbBinnedPoint& rP, const LxTbBinnedPoint& lP, scaltype Chi2) : lPoint(&lP), tx((lP.x - rP.x) / deltaZ),
