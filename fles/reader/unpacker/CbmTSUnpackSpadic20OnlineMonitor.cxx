@@ -76,6 +76,7 @@ CbmTSUnpackSpadic20OnlineMonitor::CbmTSUnpackSpadic20OnlineMonitor(Bool_t highPe
     fPulseShape{NULL},
     fMaxADC{NULL},
     fMessageStatistic{NULL},
+    fHitSync{NULL},
     fMessageTypes{"Epoch",
 	  "Epoch out of synch",
 	  "Hit",
@@ -133,11 +134,10 @@ Bool_t CbmTSUnpackSpadic20OnlineMonitor::Init()
 }
 
 
-spadic::MessageReader r;
-Int_t address = 0; // Fake the addr for now
-    Int_t addr = 0; // Fake!
-    Int_t counter=0;
-
+Int_t  startTime = 0; // should be ULong_t as soon as used with a GetFullTime lateron
+Bool_t first = true; // for the "Sync" histo : is it the very first entry into this histo? 
+Bool_t syncHistFinished = false; // declare explicitly, if the "Sync" histo is finished.
+Int_t  maxTime = 0; // should be ULong_t as soon as used with a GetFullTime lateron
 
 Bool_t CbmTSUnpackSpadic20OnlineMonitor::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
@@ -160,75 +160,91 @@ Bool_t CbmTSUnpackSpadic20OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
   //for (size_t m = 0; m < ts.num_microslices(component); ++m){
   for (size_t m {0}; m < ts.num_microslices(component); m++){
 
+    spadic::MessageReader r;
+    Int_t address = 0; // Fake the addr for now
+    Int_t addr = 0; // Fake!
+    Int_t counter=0;
     std::vector<uint16_t> buf0;
     std::vector<uint16_t> buf1;
     //buf0.reserve(20000);
     //buf1.reserve(20000);
-  
+
+    // Get the microslice
+    auto mc = ts.get_microslice(component, m);
+    auto mv = reinterpret_cast<const fles::MicrosliceView&>(mc);
+    auto mv_p = reinterpret_cast<const uint16_t *>(mv.content());        // Pointer to the data
+    auto mv_s = mv.desc().size * sizeof(*mv.content()) / sizeof(*mv_p);  // Size
+
+    //for(auto p=0; p<mv_s; p++){
+    //  printf("D: %x", mv_p[p]);
+    //}
+    //continue;
+    
+    //const uint64_t* pInBuff = reinterpret_cast<const uint64_t*>( mv_p );
+    
+    // ----------------    
     // Get the microslice
     auto msDescriptor =  ts.descriptor(component, m);   // mc
     Int_t fEquipmentId = msDescriptor.eq_id;    
-    //const uint8_t* msContent =  reinterpret_cast<const uint8_t*>(ts.content(component, m));
-    auto msContent = reinterpret_cast<const uint16_t*>(ts.content(component, m)); 
-    //uint32_t size = msDescriptor.size;
+    //auto msContent = reinterpret_cast<const uint16_t*>(ts.content(component, m));
+    const uint8_t* msContent = ts.content(component, m);
     auto s = msDescriptor.size * sizeof(*msContent) / sizeof(*msContent);
     const uint64_t* pInBuff = reinterpret_cast<const uint64_t*>( msContent );
-      
+    
     for (auto uIdx = 0; uIdx < s; uIdx ++){
-          // Fill message
-	  //printf("uIdx: %x Size: %x \n", uIdx, size);
-          uint64_t ulData = static_cast<uint64_t>( pInBuff[uIdx] );
-          uint16_t afck_id = (ulData & 0xffff000000000000) >> 48;
-        
-	  // Last 2bytes of mac addr of the afck, hard coded now for sps2016
-          //if(afck_id != 0x5b9d) //IRI AFCK
-	  if(afck_id != 0x187f)  // IKF 217
-	         continue;
-	  
-	        uint8_t  downlink_header = (ulData & 0xf00000) >> 20;
-	        uint8_t  downlink_nr     = (ulData & 0xf0000)  >> 16;
-	        uint16_t payload         =  ulData & 0xffff;
+    //for (auto uIdx = 0; uIdx < mv_s; uIdx ++){
+      
+      uint64_t ulData = static_cast<uint64_t>( pInBuff[uIdx] );
+      //uint64_t ulData = static_cast<uint64_t>( mv_p[uIdx] );
+      
+      //auto ulData = mv_p[uIdx];
+      //printf("%04x ", ulData);
+      
+      uint16_t afck_id = (ulData & 0xffff000000000000) >> 48;
+      // Last 2bytes of mac addr of the afck, hard coded now for sps2016
+      //if(afck_id != 0x5b9d) //IRI AFCK
+      //if(afck_id != 0x187f)  // IKF 217
+      if(afck_id != 0x5f91)  // LEMO
+	continue;
 
-	        //std::cout << "Header: " << std::hex << downlink_header << " Downlink number: " << downlink_nr << std::endl;
-	        //printf("Header 0x%02x Link: 0x%02x \n", downlink_header, downlink_nr);
+      //uint64_t ulData = static_cast<uint64_t>( pInBuff[uIdx] );
+      uint8_t  downlink_header = (ulData & 0xf00000) >> 20;
+      uint8_t  downlink_nr     = (ulData & 0xf0000)  >> 16;
+      uint16_t payload         =  ulData & 0xffff;
 
-		if(downlink_header != 0xa)
-		  std::cout << "Corruption in downlink header found" << std::endl;
+      if(downlink_header != 0xa)
+	std::cout << "Corruption in downlink header found" << std::endl;
 
-		//printf("Payload: 0x%04X\n", payload);
-		
-      	  // Put the data in a buffer
-      	  if(downlink_nr == 0)
-      	    buf0.push_back(payload);
-      	  else if(downlink_nr == 1)
-      	    buf1.push_back(payload);
+      //printf("Payload: 0x%04X\n", payload);
+      
+      // Put the data in a buffer
+      if(downlink_nr == 0)
+	buf0.push_back(payload);
+      else if(downlink_nr == 1)
+	buf1.push_back(payload);
     }
-
+    
     // This is not nice... quick n' dirty
     //std::move(buf1.begin(), buf1.end(), std::back_inserter(buf0));
     
     r.add_buffer(buf0.data() , buf0.size());
     r.add_buffer(buf1.data() , buf1.size());
     link = ts.descriptor(component, 0).eq_id;
-
     
     //} // End microslice
-
   
-    Bool_t isInfo(false), isHit(false), isEpoch(false), isEpochOutOfSync(false), isOverflow(false), isHitAborted(false), isStrange(false);
-
+  Bool_t isInfo(false), isHit(false), isEpoch(false), isEpochOutOfSync(false), isOverflow(false), isHitAborted(false), isStrange(false);
   
   while(auto m = r.get_message()) {
 
     if(m->is_hit()){
       auto& s = m->samples();
-      //printf("Group: %i Ch: %i Ts: %i Samples: %i\n", m->group_id(), m->channel_id(), m->timestamp(),  s.size());
-
       
-      printf("Ch: %i Ts: %i Samples: %i Trace: ", m->channel_id(), m->timestamp(),  s.size());
-      for(int i = 0; i < s.size(); i++)
-	     printf(" %02i,", s[i]);
-      printf("\n");
+      printf("Group: %i Ch: %i Ts: %i Samples: %i\n", m->group_id(), m->channel_id(), m->timestamp(),  s.size());
+      //printf("Ch: %i Ts: %i hit type: %i Stop type: %i Samples: %i Trace: \n", m->channel_id(), m->timestamp(),  m->hit_type(), m->stop_type(), s.size());
+      //for(int i = 0; i < s.size(); i++)
+      //     printf(" %02i,", s[i]);
+      //printf("\n");
       
 
       // Fill some nice histos
@@ -246,26 +262,44 @@ Bool_t CbmTSUnpackSpadic20OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
       Int_t maxADC(-256), maxTB(-1);
       Int_t* sample_values = new Int_t[samples];
       for (auto x : m->samples()) {
-	       sample_values[counter1] = x;
-	       //if (sample_values[2]>-150) {
-	        //if (!fHighPerformance)
-	         //fPulseShape[ ( GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address))*32+channel+16*(groupId%2) ]->Fill(counter1,x);
-		   fPulseShape[channel+16*(groupId%2)]->Fill(counter1,x);
-		   //  fMaxADC[channel]->Fill(counter1,x);
-		   //}
-  	    if (x > maxADC){
-  	      maxADC = x;
-  	      maxTB = counter1;
-  	    }
-	      ++counter1;
+	sample_values[counter1] = x;
+	//if (sample_values[2]>-150) {
+	//if (!fHighPerformance)
+	//fPulseShape[ ( GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address))*32+channel+16*(groupId%2) ]->Fill(counter1,x);
+	fPulseShape[channel+16*(groupId%2)]->Fill(counter1,x);
+	//  fMaxADC[channel]->Fill(counter1,x);
+	//}
+	if (x > maxADC){
+	  maxADC = x;
+	  maxTB = counter1;
+	}
+	++counter1;
       }
 
-      fMaxADC[channel]->Fill(maxADC);
+      // Nasty look on messages from all available channels here.
+      // Only filled within one epoch. Therefore: regress of time will declare the histo as finished.
+      if(time < maxTime){
+	syncHistFinished = true;
+      }
+
+      // Here it is: its only processed and filled as long as not declared as finished.
+      if(!syncHistFinished){
+	maxTime = time; // lets bookkeep the highest time value we've seen so far
+      	if(first){      // just in case we are using ULong_t FullTime for the time info,
+	                // its worth to store what was the time of the very first message in this histo.
+	  startTime = time;
+	}
+      	fHitSync[0]->Fill(time, groupId*16+channel); // when startTime should be used, its x=time-startTime here
+      }
       
+      fMaxADC[channel]->Fill(maxADC);
       cName.Form("SysCore_%i_Spadic_%i",0,0);
   	  //h = (TH2I*)fHM->H2(TString("Baseline_"+cName).Data());
   	  //h->Fill(sample_values[0],groupId*16+channel);
   	  fBaseline[0]->Fill(sample_values[0],groupId*16+channel);
+
+
+      // ----
     }
 
     else if ( m->is_buffer_overflow() ){
@@ -614,6 +648,9 @@ void CbmTSUnpackSpadic20OnlineMonitor::InitHistos()
     fInfo[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("Info_"+histName).Data());
     fTSGraph[(iLink)*(NrOfSpadics)+iAddress] = new TGraph();
 
+    fHM->Add(TString("Sync_"+histName).Data(),new TH2I (TString("Sync_"+histName).Data(),TString("Sync_"+histName).Data(), 4096,-0.5,4095.5,32,-0.5,31.5));
+    fHitSync[(iLink)*(NrOfSpadics)+iAddress]=(TH2I*)fHM->H2(TString("Sync_"+histName).Data());
+    
     fHM->Add(TString("HitTimeA_"+histName).Data(),new TH1I (TString("HitTimeA_"+histName).Data(),TString("HitTimeA_"+histName).Data(),300,-299.5,0.5));
     fHitTimeA[(iLink)*(NrOfSpadics)+iAddress]=(TH1I*)fHM->H1(TString("HitTimeA_"+histName).Data());
     fHitTimeA[(iLink)*(NrOfSpadics)+iAddress]->GetXaxis()->SetTitle("SuperEpoch count");
@@ -781,6 +818,7 @@ void CbmTSUnpackSpadic20OnlineMonitor::InitCanvas()
       	fHitFrequency[(iLink)*(NrOfSpadics)+iAddress]->Draw(/*"colz"*/);
       	fcSp->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogy(1);
       	fSpectrum[(iLink)*(NrOfSpadics)+iAddress]->Draw();
+	fHitSync[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
       }
       fcB->cd((iLink)*(NrOfSpadics)+iAddress+1)->SetLogz();
       fBaseline[(iLink)*(NrOfSpadics)+iAddress]->Draw("col");
@@ -798,8 +836,7 @@ void CbmTSUnpackSpadic20OnlineMonitor::InitCanvas()
       fHitTimeA[(iLink)*(NrOfSpadics)+iAddress]->Draw("");
       fHitTimeB[(iLink)*(NrOfSpadics)+iAddress]->Draw("same");
       //fTSGraph[(iLink)*(NrOfSpadics)+iAddress]->Draw("ALP");
-
-
+      fHitSync[(iLink)*(NrOfSpadics)+iAddress]->Draw("colz");
     }
   }
 

@@ -96,6 +96,7 @@ class CbmTSUnpackSpadic20OnlineMonitor : public CbmTSUnpack
   TH1I* fSpectrum[(NrOfSyscores)*(NrOfSpadics)];
   TH2I* fPulseShape[(NrOfSyscores)*(NrOfSpadics)*32];
   TH1I* fMessageStatistic[(NrOfSyscores)*(NrOfSpadics)];
+  TH2I* fHitSync[(NrOfSyscores)*(NrOfSpadics)];
   TGraph* fTSGraph[(NrOfSyscores)*(NrOfSpadics)];
   Int_t fLastSuperEpochA[(NrOfSyscores)*(NrOfSpadics)];
   Int_t fLastSuperEpochB[(NrOfSyscores)*(NrOfSpadics)];
