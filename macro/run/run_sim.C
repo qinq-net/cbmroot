@@ -126,8 +126,8 @@ void run_sim(Int_t nEvents = 2,
   //
   Bool_t smearVertexXY = kTRUE;
   Bool_t smearVertexZ  = kTRUE;
-  Double_t beamWidthX   = 1.;  // Gaussian sigma of the beam profile in x [cm]
-  Double_t beamWidthY   = 1.;  // Gaussian sigma of the beam profile in y [cm]
+  Double_t beamWidthX   = 0.1;  // Gaussian sigma of the beam profile in x [cm]
+  Double_t beamWidthY   = 0.1;  // Gaussian sigma of the beam profile in y [cm]
   // ------------------------------------------------------------------------
   
 
