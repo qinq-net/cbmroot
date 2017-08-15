@@ -1,5 +1,5 @@
 ///                                             
-/// \file Create_TRD_Geometry_v18e.C
+/// \file Create_TRD_Geometry_v18f.C
 /// \brief Generates TRD geometry in Root format.
 ///                                             
 
@@ -90,7 +90,7 @@
 #include <iostream>
 
 // Name of output file with geometry
-const TString tagVersion   = "v18e";
+const TString tagVersion   = "v18f";
 //const TString subVersion   = "_1h";
 //const TString subVersion   = "_1e";
 //const TString subVersion   = "_1m";
@@ -485,8 +485,8 @@ void dump_info_file();
 void dump_digi_file();
 
 
-//void Create_TRD_Geometry_v18e(const Int_t setupid = 1) {
-void Create_TRD_Geometry_v18e() {
+//void Create_TRD_Geometry_v18f(const Int_t setupid = 1) {
+void Create_TRD_Geometry_v18f() {
 
   // declare TRD layer layout
   if (setupid > 2)
