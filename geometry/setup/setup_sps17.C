@@ -23,7 +23,7 @@ void setup_sps17()
   TString pipeGeoTag      = "v18d_mcbm";    // "v18c_mcbm";
   TString mvdGeoTag       = "";
   TString stsGeoTag       = "";
-  TString muchGeoTag      = "v17s_mcbm";
+  TString muchGeoTag      = "v18a_mcbm";  // "v17s_mcbm";
   TString trdGeoTag       = "v17s_1e_mcbm"; // "v18g_1e_mcbm"; // "v18d_1e_mcbm"; // "v18c_1e_mcbm";  // "v18b_1e_mcbm";  // "v18a_1e_mcbm";
   TString tofGeoTag       = "";
   TString richGeoTag      = "";
