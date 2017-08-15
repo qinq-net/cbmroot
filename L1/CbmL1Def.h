@@ -108,7 +108,6 @@ template <typename T> class L1Vector: public std::vector<T>
        #endif
        std::vector<T>::resize(index+1);
        std::cout<<index<<" index "<<std::endl;
-       if (index>1000000000) std::cin.get();
      }
      if(index>=fSize)
        fSize = index + 1;
