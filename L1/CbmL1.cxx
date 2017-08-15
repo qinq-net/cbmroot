@@ -853,8 +853,8 @@ const_cast<L1Strip &> ((*algo->vStsStripsB)[h.b]) = idet * ( - sta.yInfo.cos_phi
   if( fVerbose>1 ) cout<<"L1 Track finder..."<<endl;
   algo->CATrackFinder();
 
-//     IdealTrackFinder();
-//     algo->NTracksIsecAll=algo->vTracks.size();
+//      IdealTrackFinder();
+//      algo->NTracksIsecAll=algo->vTracks.size();
   if( fVerbose>1 ) cout<<"L1 Track finder ok"<<endl;
 //  algo->L1KFTrackFitter( fExtrapolateToTheEndOfSTS );
     algo->L1KFTrackFitter();

@@ -392,6 +392,8 @@ inline void L1Algo::f20(  // input
       TripForHit[0][hitsl_1[i1] +  StsHitsUnusedStartIndex[&stam - vStations-2]] = 0;
       TripForHit[1][hitsl_1[i1] + StsHitsUnusedStartIndex[&stam - vStations-2]] = 0;
       
+      if (n2 > 8000) return;
+      
       n2++;
     }
     lmDuplets[hitsl_1[i1]] = (n2Saved < n2);
@@ -611,6 +613,8 @@ inline void L1Algo::f30(  // input
               u_back_3.push_back(fvec_0);
               z_Pos_3.push_back(fvec_0);
           }
+          
+         if (n3 > 4000) return;
         }     
       } // i2_4
     }   // i2_V
@@ -1463,8 +1467,14 @@ void L1Algo::CATrackFinder()
   float lasttime =0;
   
   for(int ist = 0; ist < NStations; ++ist)
-    for(THitI ih = StsHitsStartIndex[ist]; ih < StsHitsStopIndex[ist]; ++ih)
+    for(THitI ih = StsHitsStartIndex[ist]; ih < StsHitsStopIndex[ist]; ++ih){
       if ((lasttime<(*vStsHits)[ih].t_reco)&&(!isinf((*vStsHits)[ih].t_reco))) lasttime=(*vStsHits)[ih].t_reco;
+      if (ist<NMvdStations) {
+        L1StsHit &h = *(const_cast<L1StsHit*>(&((*vStsHits)[ih])));
+        h.t_reco =0;
+        h.t_er=1000000;  
+      }
+    }
 
 
 #ifdef XXX
@@ -1606,9 +1616,9 @@ void L1Algo::CATrackFinder()
             (isec == kAllPrimIter) || (isec == kAllPrimEIter) || (isec == kAllPrimJumpIter) ){ // target
             targB = vtxFieldValue;
             if ( (isec == kFastPrimIter) || (isec == kAllPrimIter) || (isec == kAllPrimEIter) )
-                SigmaTargetX = SigmaTargetY = 0.01; // target
+                SigmaTargetX = SigmaTargetY = 1.0; // target
             else
-                SigmaTargetX = SigmaTargetY = 0.1;
+                SigmaTargetX = SigmaTargetY = 5.0;
         }
         if ( (isec == kAllSecIter) || (isec == kAllSecEIter) || (isec == kAllSecJumpIter) ) { //use outer radius of the 1st station as a constraint
             L1Station &st = vStations[0];
