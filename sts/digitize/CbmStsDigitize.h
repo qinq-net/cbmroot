@@ -153,6 +153,10 @@ class CbmStsDigitize : public FairTask
   void SetSensorConditions();
 
 
+  /** Assign sensor types from file **/
+  void SetSensorTypes(const char* fileName);
+
+
   /** Set the sensor strip pitch
    ** @param  pitch  Strip pitch [cm]
    **
@@ -174,13 +178,20 @@ class CbmStsDigitize : public FairTask
   Int_t  fMode;       ///< Run mode. 0 = stream, 1 = event
   Bool_t fIsInitialised;   ///< kTRUE if Init() was called
 
+  Int_t  fEnergyLossModel;  ///< Energy loss model
+  Bool_t fUseLorentzShift;
+  Bool_t fUseDiffusion;
+  Bool_t fUseCrossTalk;
+  Bool_t fGenerateNoise;
+
   CbmStsDigitizeParameters* fDigiPar; ///< Digitisation parameters
-  CbmStsSetup*   fSetup;        ///< STS setup interface
-  TClonesArray*  fPoints;       ///< Input array of CbmStsPoint
-  TClonesArray*  fTracks;       ///< Input array of CbmMCTrack
-  TClonesArray*  fDigis;        ///< Output array of CbmStsDigi
-  TClonesArray*  fMatches;      ///< Output array of CbmMatch
-  TStopwatch     fTimer;        ///< ROOT timer
+  CbmStsSetup*   fSetup;          ///< STS setup interface
+  TClonesArray*  fPoints;         ///< Input array of CbmStsPoint
+  TClonesArray*  fTracks;         ///< Input array of CbmMCTrack
+  TClonesArray*  fDigis;          ///< Output array of CbmStsDigi
+  TClonesArray*  fMatches;        ///< Output array of CbmMatch
+  TStopwatch     fTimer;          ///< ROOT timer
+  TString        fSensorTypeFile; ///< File name defining the sensor types
 
   // --- Time of last processed StsPoint (for stream mode)
   Double_t fTimePointLast;

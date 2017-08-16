@@ -9,7 +9,6 @@
 #include <cassert>
 #include "TGeoManager.h"
 #include "CbmStsModule.h"
-#include "CbmStsSensor.h"
 #include "CbmStsSetup.h"
 #include "CbmStsStation.h"
 
@@ -33,36 +32,38 @@ CbmStsElement::CbmStsElement() : TNamed(),
 
 
 // -----   Standard constructor   ------------------------------------------
-CbmStsElement::CbmStsElement(const char* name, const char* title,
-                             Int_t level,
-                             TGeoPhysicalNode* node) :
-                             TNamed(name, title),
-                             fAddress(0),
-                             fLevel(kStsSystem),
-                             fNode(node),
-                             fDaughters(),
-                             fMother(NULL)
+CbmStsElement::CbmStsElement(UInt_t address, Int_t level,
+                             TGeoPhysicalNode* node,
+                             CbmStsElement* mother) :
+    TNamed(),
+    fAddress(address),
+    fLevel(kStsSystem),
+    fNode(node),
+    fDaughters(),
+    fMother(mother)
 {
   SetLevel(level);
+  SetName(ConstructName(address, fLevel).Data());
 }
 // -------------------------------------------------------------------------
 
 
 
 // -----   Add a daughter element   ----------------------------------------
-void CbmStsElement::AddDaughter(CbmStsElement* element) {
+/*void CbmStsElement::AddDaughter(CbmStsElement* element) {
+
   if ( ! element ) return;
+
+  // Check correct element level
   if ( element->GetLevel() != fLevel + 1) {
     LOG(FATAL) << fName << ": Trying to add an element of level "
                << element->GetLevel() << " as daughter of level "
                << fLevel << "! Command will be ignored."
                << FairLogger::endl;
     return;
-
   }
-  element->fAddress = CbmStsAddress::SetElementId(fAddress,
-                                                  element->GetLevel(),
-                                                  GetNofDaughters() );
+
+  //
 
   element->SetMother(this);
   element->ConstructName();
@@ -75,6 +76,7 @@ void CbmStsElement::AddDaughter(CbmStsElement* element) {
 
   fDaughters.push_back(element);
 }
+*/
 // -------------------------------------------------------------------------
 
 
@@ -113,6 +115,38 @@ void CbmStsElement::ConstructName() {
 			          CbmStsAddress::GetElementId(fAddress, GetLevel()) + 1 );
 	SetName( fMother->GetName() + label );
 
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Construct name from address   -----------------------------------
+TString CbmStsElement::ConstructName(UInt_t address,
+                                     EStsElementLevel level) {
+
+  TString result = "STS";
+  if ( level >= kStsUnit ) {
+    Int_t unit = CbmStsAddress::GetElementId(address, kStsUnit);
+    result += Form("_U%02i", unit + 1);
+    if ( level >= kStsLadder ) {
+      Int_t ladder = CbmStsAddress::GetElementId(address, kStsLadder);
+      result += Form("_L%02i", ladder + 1);
+      if ( level >= kStsHalfLadder ) {
+        Int_t hladder = CbmStsAddress::GetElementId(address, kStsHalfLadder);
+        result += (hladder == 0 ? "U" : "D");
+        if ( level >= kStsModule ) {
+          Int_t module = CbmStsAddress::GetElementId(address, kStsModule);
+          result += Form("_M%02i", module + 1);
+          if ( level >= kStsSensor ) {
+            Int_t sensor = CbmStsAddress::GetElementId(address, kStsSensor);
+            result += Form("_S%02i", sensor + 1);
+          }  //? sensor
+        }  //? module
+      }  //? halfladder
+    }  //? ladder
+  }  //? unit
+
+  return result;
 }
 // -------------------------------------------------------------------------
 
@@ -161,7 +195,6 @@ void CbmStsElement::InitDaughters() {
 
   TGeoNode* mNode = fNode->GetNode();   // This node
   TString   mPath = fNode->GetName();   // Full path to this node
-  Int_t nDaughters = 0;
 
   for (Int_t iNode = 0; iNode < mNode->GetNdaughters(); iNode++) {
 
@@ -175,22 +208,19 @@ void CbmStsElement::InitDaughters() {
       TGeoPhysicalNode* pNode = new TGeoPhysicalNode(dPath.Data());
 
       // Create element and add it as daughter
-      TString name = CbmStsSetup::Instance()->GetLevelName(fLevel+1);
-      name += Form("%02i", nDaughters++);
-
-      const char* title = mNode->GetDaughter(iNode)->GetVolume()->GetName();
+      UInt_t address = CbmStsAddress::SetElementId(fAddress,
+                                                   fLevel + 1,
+                                                   GetNofDaughters());
       CbmStsElement* dElement = NULL;
       switch ( fLevel) {
       	case kStsHalfLadder:
-      		dElement = new CbmStsModule(name, title, pNode); break;
-      	case kStsModule:
-      		dElement = new CbmStsSensor(name, title, pNode); break;
-      	default:
-      		dElement = new CbmStsElement(name, title, fLevel+1, pNode); break;
+      		dElement = new CbmStsModule(address, pNode, this); break;
+     	default:
+      		dElement = new CbmStsElement(address, fLevel+1, pNode, this); break;
       }
-      AddDaughter(dElement);
+      fDaughters.push_back(dElement);
 
-      // Call method recursively for the daughter elements
+      // Call init method recursively for the daughter elements
       dElement->InitDaughters();
 
     } // name of daughter node
@@ -227,9 +257,8 @@ void CbmStsElement::SetLevel(Int_t level) {
     case kStsHalfLadder: fLevel = kStsHalfLadder; break;
     case kStsModule:     fLevel = kStsModule;     break;
     case kStsSensor:     fLevel = kStsSensor;     break;
-    default: LOG(ERROR) << fName << ": trying to set the level to "
-                        << level << " while max. level is "
-                        << kStsNofLevels - 1 << FairLogger::endl; break;
+    default: LOG(FATAL) << fName << ": Illegal element level "
+        << level << FairLogger::endl; break;
   }
 }
 // -------------------------------------------------------------------------

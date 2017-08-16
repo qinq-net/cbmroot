@@ -12,7 +12,6 @@
 #pragma link C++ class CbmStsSensor;
 #pragma link C++ class CbmStsSensorConditions;
 #pragma link C++ class CbmStsSensorPoint;
-#pragma link C++ class CbmStsSensorType;
 #pragma link C++ class CbmStsSetup;
 #pragma link C++ class CbmStsStation;
 
@@ -25,11 +24,11 @@
 
 // Digitisation
 #pragma link C++ class CbmStsDigitize;
-//#pragma link C++ class CbmStsDigitizeSettings;
 #pragma link C++ class CbmStsDigitizeParameters+;
 #pragma link C++ class CbmStsPhysics;
-#pragma link C++ class CbmStsSensorTypeDssd;
-#pragma link C++ class CbmStsSensorTypeDssdOrtho;
+#pragma link C++ class CbmStsSensorDssd;
+#pragma link C++ class CbmStsSensorDssdOrtho;
+#pragma link C++ class CbmStsSensorDssdStereo;
 #pragma link C++ class CbmStsSignal;
 
 // Reconstruction

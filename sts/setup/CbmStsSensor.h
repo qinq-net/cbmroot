@@ -11,11 +11,11 @@
 
 
 #include <vector>
+#include <string>
 #include "CbmStsAddress.h"
 #include "CbmStsCluster.h"
 #include "CbmStsElement.h"
 #include "CbmStsSensorConditions.h"
-#include "CbmStsSensorType.h"
 
 class TClonesArray;
 class TGeoPhysicalNode;
@@ -23,7 +23,8 @@ class CbmEvent;
 class CbmLink;
 class CbmStsModule;
 class CbmStsPoint;
-class CbmStsSensorType;
+class CbmStsSensorPoint;
+
 
 /** @class CbmStsSensor
  ** @brief Class representing an instance of a sensor in the CBM-STS.
@@ -40,24 +41,21 @@ class CbmStsSensorType;
  ** by the digitiser task.
  ** The sensor class performs the coordinate transformation from the
  ** global system to the sensor system, having the sensor midpoint as origin.
- ** The analog response is then modelled by the CbmStsSensorType object.
+ ** The analog response is then modelled by the pure virtual method
+ ** CalulateResponse.
  **/
 class CbmStsSensor : public CbmStsElement
 {
 
   public:
 
-    /** Constructor  **/
-    CbmStsSensor();
-
-
-    /** Standard constructor
-     ** @param name   Name
-     ** @param title  Title
-     ** @param node   Pointer to relevant TGeoPhysicalNode
-     */
-    CbmStsSensor(const char* name, const char* title,
-                 TGeoPhysicalNode* node = NULL);
+    /** Constructor
+     ** @param address Unique element address
+     ** @param node    Pointer to geometry node
+     ** @param mother  Pointer to mother element (module)
+     **/
+    CbmStsSensor(UInt_t address = 0, TGeoPhysicalNode* node = nullptr,
+                 CbmStsElement* mother = nullptr);
 
 
     /** Destructor  **/
@@ -79,16 +77,21 @@ class CbmStsSensor : public CbmStsElement
      ** @param clusters  Vector of clusters
      ** @param hitArray  TClonesArray to store the hits in
      ** @param event     Pointer to current event for registering of hits
+     ** @param dTime     Max. time difference of clusters in a hit
      ** @return Number of created hits
      **/
-    Int_t FindHits(std::vector<CbmStsCluster*>& clusters,
-    		           TClonesArray* hitArray, CbmEvent* event, Double_t dTime);
+    virtual Int_t FindHits(std::vector<CbmStsCluster*>& clusters,
+                           TClonesArray* hitArray, CbmEvent* event,
+                           Double_t dTime) = 0;
+
+
+    static UInt_t GetAddressFromName(TString name);
 
 
     /** Sensor conditions
      ** @return Pointer to sensor condition object
      **/
-    const CbmStsSensorConditions& GetConditions() const { return fConditions; }
+    const CbmStsSensorConditions* GetConditions() const { return fConditions; }
 
 
     /** Current link object
@@ -112,52 +115,69 @@ class CbmStsSensor : public CbmStsElement
       return CbmStsAddress::GetElementId(fAddress, kStsSensor); }
 
 
-    /** Pointer to sensor type **/
-    CbmStsSensorType* GetType() const { return fType; }
-
-
     /** Process one MC Point
      ** @param point  Pointer to CbmStsPoint object
      ** @return  Status variable, depends on sensor type
      **
-     ** Perform the appropriate action for a particle trajectory in the
-     ** sensor characterised by the CbmStsPoint object
+     ** The point coordinates are converted into the internal coordinate
+     ** system. The appropriate analogue response is then calculated
+     ** with the pure virtual method CalculateResponse.
      **/
     Int_t ProcessPoint(const CbmStsPoint* point,
     		               Double_t eventTime = 0., CbmLink* link = NULL);
 
 
-    /** Set the sensor address
-     ** @param address  Sensor address
+     /** Set the sensor conditions
+      ** @param vFD           Full depletion voltage [V]
+      ** @param vBias         Bias voltage [V]
+      ** @param temperature   Temperature [K]
+      ** @param cCoupling     Coupling capacitance [pF]
+      ** @param cInterstrip   Inter-strip capacitance [pF]
+      ** @param bX            Magn. field Bx at sensor centre [T]
+      ** @param bY            Magn. field By at sensor centre [T]
+      ** @param bZ            Magn. field Bz at sensor centre [T]
+      **/
+     void SetConditions(Double_t vFD, Double_t vBias, Double_t temperature,
+                        Double_t cCoupling, Double_t cInterstrip,
+                        Double_t bX, Double_t bY, Double_t bZ) {
+       fConditions = new CbmStsSensorConditions(vFD, vBias, temperature,
+                                                cCoupling, cInterstrip,
+                                                bX, bY, bZ);
+     }
+
+
+    /** Set the physical node
+     ** @param node  Pointer to associated TGeoPhysicalNode object
      **/
-    void SetAddress(UInt_t address) { fAddress = address; }
+    void SetNode(TGeoPhysicalNode* node) { fNode = node; }
 
 
-    /** Set the sensor conditions
-     ** @param conditions  Condition object
-     **/
-     void SetConditions(CbmStsSensorConditions& conditions) {
-    	fConditions = conditions;
-    }
+    /** String output **/
+    virtual std::string ToString() const = 0;
 
 
-    /** Set the sensor type
-     ** @param Pointer to sensor type object
-     **/
-    void SetType(CbmStsSensorType* type) { fType = type; }
+  protected:
 
-
-  private:
-
-    CbmStsSensorType*       fType;        ///< Pointer to sensor type
-    CbmStsSensorConditions  fConditions;  ///< Operating conditions
+    CbmStsSensorConditions*  fConditions;  ///< Operating conditions
     CbmLink* fCurrentLink;  ///< Link to currently processed MCPoint
     TClonesArray* fHits;    ///< Output array for hits. Used in hit finding.
     CbmEvent* fEvent;       //! ///< Pointer to current event
 
+
+    /** Perform response simulation for one MC Point
+     ** @param point   Pointer to CbmStsSensorPoint with relevant parameters
+     ** @return  Status variable, depends on concrete type
+     **
+     ** Perform the appropriate action for a particle trajectory in the
+     ** sensor characterised by the CbmStsSensorPoint object. This is specific
+     ** to the sensor type and has to be implemented in the derived class.
+     **/
+    virtual Int_t CalculateResponse(CbmStsSensorPoint* point) = 0;
+
+
     /** Prevent usage of copy constructor and assignment operator **/
-    CbmStsSensor(const CbmStsSensor&);
-    CbmStsSensor& operator=(const CbmStsSensor&);
+    CbmStsSensor(const CbmStsSensor&) = delete;
+    CbmStsSensor& operator=(const CbmStsSensor&) = delete;
 
 
     ClassDef(CbmStsSensor,2);

@@ -34,13 +34,14 @@ class CbmStsElement : public TNamed
 
 
     /** Standard constructor
-     ** @param name     Element name
-     ** @param title    Volume name (type)
-     ** @param level    Element level (enum)
-     ** @param node     Pointer to physical node in geometry
+     ** @param address  Unique element address
+     ** @param level    Element level
+     ** @param node     Pointer to geometry node
+     ** @param mother   Pointer to mother element
      **/
-    CbmStsElement(const char* name, const char* title,
-                  Int_t level, TGeoPhysicalNode* node = NULL);
+    CbmStsElement(UInt_t address, Int_t level,
+                  TGeoPhysicalNode* node = nullptr,
+                  CbmStsElement* mother = nullptr);
 
 
     /** Destructor **/
@@ -51,7 +52,14 @@ class CbmStsElement : public TNamed
      ** The daughter must be one element level higher than the mother.
      ** @param element  Pointer to element to be added as daughter.
      **/
-    virtual void AddDaughter(CbmStsElement* element);
+    //virtual void AddDaughter(CbmStsElement* element);
+
+
+    /** Construct the element name from the address (static)
+     ** @param address Unique element address
+     ** @param level   Element level (unit, ladder, etc.)
+     **/
+    static TString ConstructName(UInt_t address, EStsElementLevel level);
 
 
     /** Get unique address
@@ -98,11 +106,17 @@ class CbmStsElement : public TNamed
     Int_t GetNofElements(Int_t level) const;
 
 
-    TGeoPhysicalNode* GetPnode() { return fNode; }
+    TGeoPhysicalNode* GetPnode() const { return fNode; }
 
 
     /** Initialise daughters from geometry **/
     virtual void InitDaughters();
+
+
+    /** Set the mother element
+     ** @param Pointer to mother element
+     **/
+    void SetMother(CbmStsElement* mother) { fMother = mother; }
 
 
     /** Print **/
@@ -127,12 +141,6 @@ class CbmStsElement : public TNamed
      ** @param  level  Element level
      **/
     void SetLevel(Int_t level);
-
-
-    /** Set the mother element
-     ** @param Pointer to mother element
-     **/
-    void SetMother(CbmStsElement* mother) { fMother = mother; }
 
 
 private:

@@ -6,7 +6,10 @@
 #include <cassert>
 #include <cmath>
 #include "TClonesArray.h"
+#include "TF1.h"
+#include "TGeoManager.h"
 #include "TRandom.h"
+#include "TString.h"
 #include "FairLogger.h"
 #include "FairRunAna.h"
 #include "CbmMatch.h"
@@ -15,9 +18,7 @@
 #include "CbmStsDigi.h"
 #include "digitize/CbmStsDigitize.h"
 #include "digitize/CbmStsPhysics.h"
-#include "digitize/CbmStsSensorTypeDssd.h"
 #include "setup/CbmStsModule.h"
-#include "setup/CbmStsSensorType.h"
 #include "setup/CbmStsSetup.h"
 
 using std::pair;
@@ -28,54 +29,27 @@ using std::map;
 using std::vector;
 
 // -----   Default constructor   -------------------------------------------
-CbmStsModule::CbmStsModule() : CbmStsElement(),
-                               fNofChannels(2048),
-                               fDynRange(0.),
-                               fThreshold(0.),
-                               fNofAdcChannels(0),
-                               fTimeResolution(0),
-                               fDeadTime(0.),
-                               fNoise(0.),
-                               fZeroNoiseRate(0.),
-                               fNoiseRate(0.),
-                               fIsSet(kFALSE),
-                               fDeadChannels(),
-                               fPhysics(nullptr),
-                               fAnalogBuffer(),
-                               fDigis(),
-                               fClusters(),
-                               fDigisTb(),
-                               fDigisTbtemp(),
-                               fIt_DigiTb()
-{
-	fPhysics = CbmStsPhysics::Instance();
-}
-// -------------------------------------------------------------------------
-
-
-
-// -----   Standard constructor   ------------------------------------------
-CbmStsModule::CbmStsModule(const char* name, const char* title,
-                           TGeoPhysicalNode* node) :
-                           CbmStsElement(name, title, kStsModule, node),
-                           fNofChannels(2048),
-                           fDynRange(0.),
-                           fThreshold(0.),
-                           fNofAdcChannels(0),
-                           fTimeResolution(0),
-                           fDeadTime(0.),
-                           fNoise(0.),
-                           fZeroNoiseRate(0.),
-                           fNoiseRate(0.),
-                           fIsSet(0),
-                           fDeadChannels(),
-                           fPhysics(nullptr),
-                           fAnalogBuffer(),
-                           fDigis(),
-                           fClusters(),
-                           fDigisTb(),
-                           fDigisTbtemp(),
-                           fIt_DigiTb()
+CbmStsModule::CbmStsModule(UInt_t address, TGeoPhysicalNode* node,
+                           CbmStsElement* mother) :
+    CbmStsElement(address, kStsModule, node, mother),
+    fNofChannels(2048),
+    fDynRange(0.),
+    fThreshold(0.),
+    fNofAdcChannels(0),
+    fTimeResolution(0),
+    fDeadTime(0.),
+    fNoise(0.),
+    fZeroNoiseRate(0.),
+    fNoiseRate(0.),
+    fIsSet(kFALSE),
+    fDeadChannels(),
+    fPhysics(nullptr),
+    fAnalogBuffer(),
+    fDigis(),
+    fClusters(),
+    fDigisTb(),
+    fDigisTbtemp(),
+    fIt_DigiTb()
 {
 	fPhysics = CbmStsPhysics::Instance();
 }
@@ -558,6 +532,7 @@ Int_t CbmStsModule::GenerateNoise(Double_t t1, Double_t t2) {
     // --- Random channel number, time and charge
     Int_t channel = Int_t(gRandom->Uniform(Double_t(fNofChannels)));
     Double_t time = gRandom->Uniform(t1, t2);
+
     Double_t charge = 1.1 * fThreshold; // TODO: Real sampling from Gauss
 
     // --- Create a signal object (without link index, entry and file)
@@ -603,6 +578,46 @@ void CbmStsModule::InitAnalogBuffer() {
 		 multiset<CbmStsSignal*, CbmStsSignal::Before> mset;
 		 fAnalogBuffer[channel] = mset;
 	 } // channel loop
+
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Initialise daughters from geometry   ----------------------------
+void CbmStsModule::InitDaughters() {
+
+  // --- Catch absence of TGeoManager
+  assert( gGeoManager );
+
+  // --- Catch physical node not being set
+  assert ( fNode);
+
+  TGeoNode* moduleNode = fNode->GetNode();   // This node
+  TString   modulePath = fNode->GetName();   // Full path to this node
+
+  for (Int_t iNode = 0; iNode < moduleNode->GetNdaughters(); iNode++) {
+
+    // Check name of daughter node for level name
+    TString daughterName = moduleNode->GetDaughter(iNode)->GetName();
+    if ( daughterName.Contains("Sensor", TString::kIgnoreCase) ) {
+
+      // Create physical node
+      TString daughterPath = modulePath + "/" + daughterName;
+      TGeoPhysicalNode* sensorNode = new TGeoPhysicalNode(daughterPath.Data());
+
+      // Get or create element from setup and add it as daughter
+      UInt_t address = CbmStsAddress::SetElementId(fAddress,
+                                                   kStsSensor,
+                                                   GetNofDaughters());
+      CbmStsSensor* sensor = CbmStsSetup::Instance()->AssignSensor(address,
+                                                                   sensorNode);
+      sensor->SetMother(this);
+      fDaughters.push_back(sensor);
+
+    } //? name of daughter node contains "sensor"
+
+  } //# daughter nodes
 
 }
 // -------------------------------------------------------------------------

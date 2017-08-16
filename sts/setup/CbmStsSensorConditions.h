@@ -107,8 +107,6 @@ class CbmStsSensorConditions : public TObject {
 		Double_t HallMobility(Double_t eField, Int_t chargeType) const;
 
 
-                /** Parameters for Hall mobility calculation **/
-		void SetHallMobilityParameters();
 		
 		/** Set the magnetic field
 		 ** @param bx,by,bz  Magnetic field components in sensor centre [T]
@@ -117,7 +115,7 @@ class CbmStsSensorConditions : public TObject {
 			fBx = bX;
 			fBy = bY;
 			fBz = bZ;
-			SetHallMobilityParameters();
+			CalculateHallMobilityParameters();
 		}
 
 
@@ -140,6 +138,9 @@ class CbmStsSensorConditions : public TObject {
 		Double_t fHallMobilityParametersE[4]; ///< Array with parameters for electron Hall mobility calculation
 		Double_t fHallMobilityParametersH[4]; ///< Array with parameters for hole     Hall mobility calculation
 		Double_t fMeanLorentzShift[2];///< Lorenz shift averaged over the z-coordinate of the chage carrier creation
+
+		/** Parameters for Hall mobility calculation **/
+		void CalculateHallMobilityParameters();
 
 		ClassDef(CbmStsSensorConditions, 1);
 };

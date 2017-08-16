@@ -22,7 +22,7 @@
 
 // --- Includes from STS
 #include "digitize/CbmStsDigitizeParameters.h"
-#include "digitize/CbmStsSensorTypeDssd.h"
+#include "digitize/CbmStsSensorDssdStereo.h"
 #include "reco/CbmStsClusterAnalysis.h"
 #include "reco/CbmStsClusterFinderModule.h"
 #include "setup/CbmStsModule.h"
@@ -95,16 +95,18 @@ Int_t CbmStsFindClusters::CreateModules() {
     Int_t nChannels = module->GetNofChannels();
     CbmStsClusterFinderModule* finderModule =
         new CbmStsClusterFinderModule(nChannels, deltaT, name, module, fClusters);
-    // --- Check the sensor for stereo angles
-    CbmStsSensor* sensor =
-        dynamic_cast<CbmStsSensor*>(module->GetDaughter(0));
-    CbmStsSensorTypeDssd* type =
-        dynamic_cast<CbmStsSensorTypeDssd*>(sensor->GetType());
-    assert(type);
-    if ( TMath::Abs(type->GetStereoAngle(0)) > 1. )
-      finderModule->ConnectEdgeFront();
-    if ( TMath::Abs(type->GetStereoAngle(1)) > 1. )
-      finderModule->ConnectEdgeBack();
+
+    // --- Check whether there be round-the corner clustering. This happens
+    // --- only for DssdStereo sensors with non-vanishing stereo angle, where
+    // --- a double-metal layer horizontally connects strips.
+    CbmStsSensorDssdStereo* sensor =
+        dynamic_cast<CbmStsSensorDssdStereo*>(module->GetDaughter(0));
+    if ( sensor ) {
+      if ( TMath::Abs(sensor->GetStereoAngle(0)) > 1. )
+        finderModule->ConnectEdgeFront();
+      if ( TMath::Abs(sensor->GetStereoAngle(1)) > 1. )
+        finderModule->ConnectEdgeBack();
+    }
     fModules[address] = finderModule;
   }
   LOG(INFO) << GetName() << ": " << fModules.size()
@@ -268,6 +270,9 @@ void CbmStsFindClusters::InitSettings() {
   assert( fDigiPar );
   fSetup->SetDigiParameters(fDigiPar);
   SetModuleParameters();
+  Int_t nSensors = fSetup->SetSensorConditions();
+  LOG(INFO) << GetName() << ": Set conditions for " << nSensors
+      << " sensors." << FairLogger::endl;
   CreateModules();
 
 }

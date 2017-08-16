@@ -9,6 +9,8 @@
 // Includes from C++
 #include <cassert>
 #include <cstring>
+#include <fstream>
+#include <sstream>
 #include <sstream>
 #include <iomanip>
 #include <iostream>
@@ -43,7 +45,6 @@
 #include "setup/CbmStsSensorConditions.h"
 #include "setup/CbmStsSetup.h"
 #include "digitize/CbmStsPhysics.h"
-#include "digitize/CbmStsSensorTypeDssd.h"
 #include "digitize/CbmStsDigitizeParameters.h"
 
 using std::fixed;
@@ -52,12 +53,26 @@ using std::setprecision;
 using std::setw;
 using std::string;
 
+Bool_t fIsInitialised;   ///< kTRUE if Init() was called
+
+Int_t  fEnergyLossModel;  ///< Energy loss model
+Bool_t fUseLorentzShift;
+Bool_t fUseDiffusion;
+Bool_t fUseCrossTalk;
+Bool_t fGenerateNoise;
+
+CbmStsDigitizeParameters* fDigiPar; ///< Digitisation parameters
 
 // -----   Standard constructor   ------------------------------------------
 CbmStsDigitize::CbmStsDigitize()
   : FairTask("StsDigitize"),
     fMode(0),
     fIsInitialised(kFALSE),
+    fEnergyLossModel(2),
+    fUseLorentzShift(kTRUE),
+    fUseDiffusion(kTRUE),
+    fUseCrossTalk(kTRUE),
+    fGenerateNoise(kFALSE),
     fDigiPar(NULL),
     fSetup(NULL),
     fPoints(NULL),
@@ -65,6 +80,7 @@ CbmStsDigitize::CbmStsDigitize()
     fDigis(NULL),
     fMatches(NULL),
     fTimer(),
+    fSensorTypeFile(),
     fTimePointLast(-1.),
     fEventTimeCurrent(0.),
     fTimeDigiFirst(-1.),
@@ -469,8 +485,8 @@ InitStatus CbmStsDigitize::Init() {
 
 
   // Register this task and its settings to the setup
-  fSetup->SetDigitizer(this);
-  fSetup->SetDigiParameters(fDigiPar);
+  fDigiPar->SetProcesses(fEnergyLossModel, fUseLorentzShift, fUseDiffusion,
+                         fUseCrossTalk, fGenerateNoise);
   LOG(INFO) << GetName() << ": " << fDigiPar->ToString() << FairLogger::endl;
 
   LOG(INFO) << GetName() << ": Initialisation successful"
@@ -492,35 +508,17 @@ InitStatus CbmStsDigitize::Init() {
 // -----   Initialisation of setup    --------------------------------------
 void CbmStsDigitize::InitSetup() {
 
-  // Get STS setup interface
+    // Get STS setup interface
 	fSetup = CbmStsSetup::Instance();
 
+	// Register this task and the parameter container to the setup
+	fSetup->SetDigitizer(this);
+	fSetup->SetDigiParameters(fDigiPar);
 
-	// Modify the strip pitch for DSSD sensor type, if explicitly set by user
-	Int_t nModified = 0;
-	if ( fDigiPar->GetStripPitch() > 0. ) {
-		Int_t nTypes = fSetup->GetNofSensorTypes();
-		for (Int_t iType = 0; iType < nTypes; iType++) {
-			CbmStsSensorType* type = fSetup->GetSensorType(iType);
-			if ( ! type ) continue;
-			// Skip types other than DSSD
-			if ( type->InheritsFrom("CbmStsSensorTypeDssd") ) {
-				CbmStsSensorTypeDssd* dssdType =
-						dynamic_cast<CbmStsSensorTypeDssd*>(type);
-				dssdType->SetStripPitch(fDigiPar->GetStripPitch());
-				nModified++;
-			} //? DSSD type
-		} //# sensor types
-		LOG(INFO) << GetName() << ": Modified strip pitch to "
-		          << fDigiPar->GetStripPitch()
-				  << " cm for "<< nModified << " sensor types."
-	              << FairLogger::endl;
-	} //? strip pitch set by user
-
-  // Set sensor conditions
+    // Set sensor conditions
 	SetSensorConditions();
 
-  // Set the digitisation parameters of the modules
+    // Set the digitisation parameters of the modules
 	SetModuleParameters();
 
 }
@@ -569,7 +567,11 @@ void CbmStsDigitize::ProcessMCEvent() {
 
   // --- Loop over all StsPoints and execute the ProcessPoint method
   assert ( fPoints );
-  for (Int_t iPoint=0; iPoint<fPoints->GetEntriesFast(); iPoint++) {
+  Int_t nStart = 0;
+  Int_t nStop = fPoints->GetEntriesFast();
+  //nStop = 681;
+  for (Int_t iPoint=nStart; iPoint<nStop; iPoint++) {
+  //for (Int_t iPoint=0; iPoint<fPoints->GetEntriesFast(); iPoint++) {
   	const CbmStsPoint* point = (const CbmStsPoint*) fPoints->At(iPoint);
   	CbmLink* link = new CbmLink(1., iPoint, eventNr, inputNr);
 
@@ -719,6 +721,7 @@ void CbmStsDigitize::SetParameters(Double_t dynRange, Double_t threshold,
                << FairLogger::endl;
     return;
   }
+  assert(fDigiPar);
   fDigiPar->SetModuleParameters(dynRange, threshold, nAdc, timeResolution,
                                  deadTime, noise, zeroNoiseRate,
                                  deadChannelFrac);
@@ -739,8 +742,86 @@ void CbmStsDigitize::SetProcesses(Int_t eLossModel,
 	  	           << FairLogger::endl;
 	  	return;
 	  }
-	  fDigiPar->SetProcesses(eLossModel, useLorentzShift, useDiffusion,
-	                          useCrossTalk, generateNoise);
+	  fEnergyLossModel = eLossModel;
+	  fUseLorentzShift = useLorentzShift;
+	  fUseDiffusion    = useDiffusion;
+	  fUseCrossTalk    = useCrossTalk;
+	  fGenerateNoise   = generateNoise;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Set sensor types from file   ------------------------------------
+void CbmStsDigitize::SetSensorTypes(const char* fileName) {
+
+  Bool_t fileFound = kFALSE;
+  std::fstream testFile;
+
+  if ( fileName[0] == '/' ) {
+    testFile.open(fileName);
+    if ( testFile.is_open() )  {
+      fileFound = kTRUE;
+      testFile.close();
+      fSensorTypeFile = fileName;
+    }
+  }  //? Absolute path?
+
+  else {
+
+    // --- Check whether local file exists
+    fSensorTypeFile = gSystem->Getenv("PWD");
+    fSensorTypeFile += "/";
+    fSensorTypeFile += fileName;
+    testFile.open(fSensorTypeFile.Data());
+    if ( testFile.is_open() ) {
+      fileFound = kTRUE;
+      testFile.close();
+    }  //? Found in local directory
+
+    else {  // --- Otherwise, try in the parameter directory
+      fSensorTypeFile = gSystem->Getenv("VMCWRKDIR");
+      fSensorTypeFile += "/parameters/sts/";
+      fSensorTypeFile += fileName;
+      testFile.open(fSensorTypeFile.Data());
+      if ( testFile.is_open() ) {
+        fileFound = kTRUE;
+        testFile.close();
+      }  //? Found in source directory
+    }  //? Not found in local directory
+
+  }  //? Relative path
+
+  if ( fileFound ) LOG(INFO) << GetName() << ":Using " << fSensorTypeFile
+        << FairLogger::endl;
+  else LOG(FATAL) << GetName() << ": Could not find file " << fileName
+      << FairLogger::endl;
+
+  testFile.open(fSensorTypeFile);
+  string readstr;
+  TString sName, sType;
+  while ( kTRUE ) {
+    if ( testFile.eof() ) break;
+    getline(testFile, readstr);
+    if ( readstr[0] == '#') continue;
+    std::stringstream line(readstr);
+    line >> sName >> sType;
+   if ( sType.EqualTo("DSSD", TString::kIgnoreCase) ) {
+     Int_t nParams = 5;
+     Double_t par[10];
+     for (Int_t iParam = 0; iParam < nParams; iParam++) {
+       line >> par[iParam];
+     }
+     for (Int_t i=0; i<10; i++) std::cout << par[i] << " " << std::endl;
+   }
+
+    //}
+    LOG(INFO) << GetName() << " " << readstr << FairLogger::endl;
+    //std::cout << GetName() << " " << line << std::endl;
+    LOG(INFO) << GetName() << " Sensor name is  " << sName << FairLogger::endl;
+  }
+  testFile.close();
+
 }
 // -------------------------------------------------------------------------
 
@@ -759,29 +840,10 @@ void CbmStsDigitize::SetSensorConditions() {
 	Double_t cInterstrip =   1.;    //inter-strip capacitance, pF
 	fDigiPar->SetSensorConditions(vDep, vBias, temperature,
 	                               cCoupling, cInterstrip);
-
-	CbmStsSensorConditions cond(vDep, vBias, temperature, cCoupling,
-			                        cInterstrip);
-
-	// --- Set conditions for all sensors
-	for (Int_t iSensor = 0; iSensor < fSetup->GetNofSensors(); iSensor++) {
-		CbmStsSensor* sensor = fSetup->GetSensor(iSensor);
-		// -- Get field in sensor centre
-		Double_t field[3] = { 0., 0., 0.};
-		Double_t local[3] = { 0., 0., 0.}; // sensor centre in local C.S.
-		Double_t global[3];               // sensor centre in global C.S.
-		sensor->GetNode()->GetMatrix()->LocalToMaster(local, global);
-		if ( FairRun::Instance()->GetField() )
-		    FairRun::Instance()->GetField()->Field(global, field);
-		cond.SetField(field[0]/10., field[1]/10., field[2]/10.); // kG->T !
-    // --- Set the condition container
-		sensor->SetConditions(cond);
-		LOG(DEBUG1) << sensor->GetName() << ": conditions "
-				      << sensor->GetConditions().ToString() << FairLogger::endl;
-	} // sensor loop
+	Int_t nSensors = fSetup->SetSensorConditions();
 
 	LOG(INFO) << GetName() << ": Set conditions for "
-			      << fSetup->GetNofSensors() << " sensors " << FairLogger::endl;
+			      << nSensors << " sensors " << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 

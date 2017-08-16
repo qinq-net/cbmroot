@@ -33,6 +33,7 @@ CbmStsSensorConditions::CbmStsSensorConditions(Double_t vFd,
 {
 	if ( fCinterstrip + fCcoupling != 0. )
 		fCrossTalk = cInterstrip / (cInterstrip + cCoupling);
+	CalculateHallMobilityParameters();
 }
 // -------------------------------------------------------------------------
 
@@ -44,7 +45,7 @@ CbmStsSensorConditions::~CbmStsSensorConditions() { }
 
 
 // -----   Set parameters for Hall mobility calculation   ------------------
-void CbmStsSensorConditions::SetHallMobilityParameters() {
+void CbmStsSensorConditions::CalculateHallMobilityParameters() {
 
 	  // These are the parameters needed for the calculation of the Hall
 	  // mobility, i.e. the mobility of charge carriers in the silicon

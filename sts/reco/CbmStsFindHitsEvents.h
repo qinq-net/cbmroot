@@ -12,7 +12,6 @@
 #include "TStopwatch.h"
 #include "FairTask.h"
 #include "CbmStsModule.h"
-#include "CbmStsSensorTypeDssd.h"
 
 class TClonesArray;
 class CbmEvent;

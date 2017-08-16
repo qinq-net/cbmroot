@@ -9,6 +9,7 @@
 
 // Includes from c++
 #include <cassert>
+#include <sstream>
 
 // Includes from ROOT
 #include "TClonesArray.h"
@@ -31,33 +32,18 @@
 #include "setup/CbmStsSensorConditions.h"
 #include "setup/CbmStsSensorPoint.h"
 #include "setup/CbmStsSetup.h"
-#include "digitize/CbmStsSensorTypeDssd.h"
 
 using std::vector;
 
 
 // -----   Constructor   ---------------------------------------------------
-CbmStsSensor::CbmStsSensor() : CbmStsElement(),
-                               fType(NULL),
-                               fConditions(),
-                               fCurrentLink(NULL),
-                               fHits(NULL),
-                               fEvent(NULL)
-{
-}
-// -------------------------------------------------------------------------
-
-
-
-// -----   Standard constructor   ------------------------------------------
-CbmStsSensor::CbmStsSensor(const char* name, const char* title,
-                           TGeoPhysicalNode* node) :
-                           CbmStsElement(name, title, kStsSensor, node),
-                           fType(NULL),
-                           fConditions(),
-                           fCurrentLink(NULL),
-                           fHits(NULL),
-						   fEvent(NULL)
+CbmStsSensor::CbmStsSensor(UInt_t address, TGeoPhysicalNode* node,
+                           CbmStsElement* mother) :
+    CbmStsElement(address, kStsSensor, node, mother),
+    fConditions(nullptr),
+    fCurrentLink(nullptr),
+    fHits(nullptr),
+    fEvent(nullptr)
 {
 }
 // -------------------------------------------------------------------------
@@ -133,10 +119,26 @@ Int_t CbmStsSensor::FindHits(vector<CbmStsCluster*>& clusters,
 		                         Double_t dTime) {
 	fHits = hitArray;
 	fEvent = event;
-	Int_t nHits = fType->FindHits(clusters, this, dTime);
+	Int_t nHits = 0;
+	//Int_t nHits = fType->FindHits(clusters, this, dTime);
 	LOG(DEBUG2) << GetName() << ": Clusters " << clusters.size()
 			        << ", hits " << nHits << FairLogger::endl;
 	return nHits;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Get the unique address from the sensor name (static)   ----------
+UInt_t CbmStsSensor::GetAddressFromName(TString name) {
+
+  Int_t unit    = 10 * ( name[5]  - '0') + name[6]  - '0';
+  Int_t ladder  = 10 * ( name[9]  - '0') + name[10] - '0';
+  Int_t hLadder = ( name[11] == 'U' ? 0 : 1);
+  Int_t module  = 10 * ( name[14] - '0') + name[15] - '0';
+  Int_t sensor  = 10 * ( name[18] - '0') + name[19] - '0';
+
+  return CbmStsAddress::GetAddress(unit, ladder, hLadder, module, sensor);
 }
 // -------------------------------------------------------------------------
 
@@ -154,22 +156,8 @@ CbmStsModule* CbmStsSensor::GetModule() const {
 Int_t CbmStsSensor::ProcessPoint(const CbmStsPoint* point,
 		                             Double_t eventTime, CbmLink* link) {
 
-	// Check whether type is assigned
-	if ( ! fType ) {
-		LOG(FATAL) << GetName() << ": No sensor type assigned!"
-				       << FairLogger::endl;
-		return -1;
-	}
-
-	// --- Set current link
+  // --- Set current link
 	fCurrentLink = link;
-
-  // --- Debug output of transformation matrix
-  if ( FairLogger::GetLogger()->IsLogNeeded(DEBUG4) ) {
-  	LOG(DEBUG4) << GetName() << ": Transformation matrix is:"
-  			        << FairLogger::endl;
-  	fNode->GetMatrix()->Print();
-  }
 
   // --- Transform start coordinates into local C.S.
   Double_t global[3];
@@ -202,7 +190,7 @@ Int_t CbmStsSensor::ProcessPoint(const CbmStsPoint* point,
   }
 
   // --- Normally, the entry and exit coordinates are slightly outside of
-  // --- the active node,which is a feature of the transport engine.
+  // --- the active node, which is a feature of the transport engine.
   // --- We correct here for this, in case a track was entering or
   // --- exiting the sensor (not for tracks newly created or stopped
   // --- in the sensor volume).
@@ -317,17 +305,16 @@ Int_t CbmStsSensor::ProcessPoint(const CbmStsPoint* point,
   LOG(DEBUG2) << GetName() << ": Local point coordinates are (" << x1
   		        << ", " << y1 << "), (" << x2 << ", " << y2 << ")"
   		        << FairLogger::endl;
-  LOG(DEBUG2) << GetName() << ": Sensor type is " << fType->GetName()
-  		        << " " << fType->GetTitle() << FairLogger::endl;
   LOG(DEBUG2) << point->IsEntry() << " " << point->IsExit() << FairLogger::endl;
 
   // --- Call ProcessPoint method from sensor type
-  Int_t result = fType->ProcessPoint(sPoint, this);
+  Int_t result = CalculateResponse(sPoint);
   delete sPoint;
 
   return result;
 }
 // -------------------------------------------------------------------------
+
 
 
 ClassImp(CbmStsSensor)

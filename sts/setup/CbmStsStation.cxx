@@ -13,7 +13,8 @@
 #include "TGeoMatrix.h"
 #include "TGeoVolume.h"
 #include "CbmStsSensor.h"
-#include "CbmStsSensorTypeDssd.h"
+#include "CbmStsSensorDssd.h"
+#include "CbmStsSensorDssdStereo.h"
 
 using std::stringstream;
 using std::string;
@@ -140,44 +141,54 @@ void CbmStsStation::CheckSensorProperties() {
 
 
 // -----   Strip pitch    --------------------------------------------------
-Double_t CbmStsStation::GetSensorPitch(Int_t iSide) const {
-	if ( iSide < 0 || iSide > 1 ) {
-		LOG(FATAL) << GetName() << ": illegal side identifier!"
-				       << FairLogger::endl;
-	}
-	if ( ! fFirstSensor ) {
-		LOG(WARNING) << GetName() << ": No sensors connected to station!"
-				         << FairLogger::endl;
-		return 0.;
-	}
-	CbmStsSensorTypeDssd* type =
-			dynamic_cast<CbmStsSensorTypeDssd*>(fFirstSensor->GetType());
-	if ( ! type )
-		LOG(FATAL) << GetName() << ": sensor type is not DSSD!"
-		           << FairLogger::endl;
-	return type->GetPitch(iSide);
+Double_t CbmStsStation::GetSensorPitch(Int_t side) const {
+
+  assert( side == 0 || side == 1);
+
+  if ( ! fFirstSensor ) {
+    LOG(WARNING) << GetName() << ": No sensors connected to station!"
+        << FairLogger::endl;
+    return 0.;
+  }
+
+  // Action only for Dssd sensors
+  CbmStsSensorDssd* sensor = dynamic_cast<CbmStsSensorDssd*>(fFirstSensor);
+  Double_t pitch = -1.;
+  if ( sensor ) pitch = sensor->GetPitch(side);
+  else {
+    LOG(WARNING) << GetName() << ": Cannot get pitch for non-Dssd sensor."
+        << FairLogger::endl;
+  }
+
+  return pitch;
 }
 // -------------------------------------------------------------------------
 
 
 
 // -----   Stereo angle    -------------------------------------------------
-Double_t CbmStsStation::GetSensorStereoAngle(Int_t iSide) const {
-	if ( iSide < 0 || iSide > 1 ) {
-		LOG(FATAL) << GetName() << ": illegal side identifier!"
-				       << FairLogger::endl;
-	}
-	if ( ! fFirstSensor ) {
-		LOG(WARNING) << GetName() << ": No sensors connected to station!"
-				         << FairLogger::endl;
-		return 0.;
-	}
-	CbmStsSensorTypeDssd* type =
-			dynamic_cast<CbmStsSensorTypeDssd*>(fFirstSensor->GetType());
-	if ( ! type )
-		LOG(FATAL) << GetName() << ": sensor type is not DSSD!"
-		           << FairLogger::endl;
-	return type->GetStereoAngle(iSide);
+Double_t CbmStsStation::GetSensorStereoAngle(Int_t side) const {
+
+  assert ( side == 0 || side == 1);
+
+  if ( ! fFirstSensor ) {
+     LOG(WARNING) << GetName() << ": No sensors connected to station!"
+         << FairLogger::endl;
+     return 0.;
+  }
+
+  // Action only for Dssd sensors
+  CbmStsSensorDssdStereo* sensor =
+    dynamic_cast<CbmStsSensorDssdStereo*>(fFirstSensor);
+  Double_t stereo = 0.;
+  if ( sensor ) stereo = sensor->GetStereoAngle(side);
+  else {
+    LOG(WARNING) << GetName()
+        << ": Cannot get stereo angle for non-DssdStereo sensor."
+        << FairLogger::endl;
+  }
+
+  return stereo;
 }
 // -------------------------------------------------------------------------
 

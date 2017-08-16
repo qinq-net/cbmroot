@@ -162,10 +162,6 @@ InitStatus CbmStsFindHits::Init()
     LOG(INFO) << GetName() << ": Initialisation successful"
 	<< FairLogger::endl;
 
-    for (Int_t iSensor = 0; iSensor < fSetup -> GetNofSensors(); iSensor++){
-	CbmStsSensorTypeDssd * sensorType = static_cast<CbmStsSensorTypeDssd*>(fSetup -> GetSensor(iSensor) -> GetType());
-	sensorType -> SetHitFinderModel(fFinderModel);
-    }
     return kSUCCESS;
 }
 // -------------------------------------------------------------------------

@@ -39,20 +39,19 @@ class CbmStsModule : public CbmStsElement
 {
   public:
 
-    /** Default constructor **/
-    CbmStsModule();
-
-    /** Prevent usage of copy constructor and assignment operator **/
-    CbmStsModule(const CbmStsModule&) = delete;
-    CbmStsModule& operator=(const CbmStsModule&) = delete;
 
     /** Standard constructor
-     ** @param name   Name
-     ** @param title  Title
-     ** @param node   Pointer to relevant TGeoPhysicalNode
-     */
-    CbmStsModule(const char* name, const char* title,
-                 TGeoPhysicalNode* node = NULL);
+     ** @param address  Unique element address
+     ** @param node     Pointer to geometry node
+     ** @param mother   Pointer to mother element
+     **/
+    CbmStsModule(UInt_t address = 0, TGeoPhysicalNode* node = nullptr,
+                CbmStsElement* mother = nullptr);
+
+
+    // Copy constructor and assignment operator not allowed
+    CbmStsModule(const CbmStsModule&) = delete;
+    CbmStsModule& operator=(const CbmStsModule&) = delete;
 
 
     /** Destructor **/
@@ -384,6 +383,9 @@ class CbmStsModule : public CbmStsElement
      **/
     void Digitize(Int_t channel, CbmStsSignal* signal);
 
+
+    /** Initialise daughters from geometry **/
+    virtual void InitDaughters();
 
     
 

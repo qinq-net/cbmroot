@@ -4,7 +4,7 @@
  **/
 
 // Include class header
-#include "setup/CbmStsSetup.h"
+#include "CbmStsSetup.h"
 
 // Includes from C++
 #include <cassert>
@@ -16,22 +16,22 @@
 #include "TGeoManager.h"
 #include "TKey.h"
 
-// Includes from CbmRoot
+// Includes form FairRoot
+#include "FairField.h"
 
-// Includes from STS
+// Includes from CbmRoot
 #include "CbmStsAddress.h"
+#include "CbmStsDigitizeParameters.h"
 #include "CbmStsMC.h"
 #include "CbmStsModule.h"
+#include "CbmStsPhysics.h"
 #include "CbmStsSensor.h"
-#include "CbmStsSensorTypeDssd.h"
-#include "CbmStsSensorTypeDssdOrtho.h"
+#include "CbmStsSensorDssd.h"
+#include "CbmStsSensorDssdStereo.h"
 #include "CbmStsStation.h"
 
-using std::setw;
-using std::right;
-using std::cout;
-using std::endl;
-using std::map;
+using namespace std;
+
 
 // -----   Initialisation of static singleton pointer   --------------------
 CbmStsSetup* CbmStsSetup::fgInstance = NULL;
@@ -40,10 +40,29 @@ CbmStsSetup* CbmStsSetup::fgInstance = NULL;
 
 
 // -----   Constructor   ---------------------------------------------------
-CbmStsSetup::CbmStsSetup() : CbmStsElement("STS", "system", kStsSystem),
+CbmStsSetup::CbmStsSetup() : CbmStsElement(kSts, kStsSystem),
 			     fDigitizer(NULL), fSettings(NULL),fIsInitialised(kFALSE),
 			     fIsOld(kFALSE), fModules(),
-			     fSensors(), fStations(), fSensorTypes() {
+			     fSensors(), fStations() {
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Assign a sensor object to an address   --------------------------
+CbmStsSensor* CbmStsSetup::AssignSensor(UInt_t address,
+                                        TGeoPhysicalNode* node) {
+
+  CbmStsSensor* sensor = nullptr;
+  auto it = fSensors.find(address);
+  if ( it != fSensors.end() ) {
+    sensor = it->second; // Found in sensor list
+    assert (sensor->GetAddress() == address);
+    sensor->SetNode(node);
+  }
+  else sensor = DefaultSensor(address, node); // Not found; create and add.
+
+  return sensor;
 }
 // -------------------------------------------------------------------------
 
@@ -137,8 +156,55 @@ Int_t CbmStsSetup::CreateStations() {
 
 
 
+// -----   Instantiate default sensor   ------------------------------------
+CbmStsSensor* CbmStsSetup::DefaultSensor(UInt_t address,
+                                         TGeoPhysicalNode* node) {
+
+  // There should not already be a sensor object for this address
+  assert ( fSensors.find(address) == fSensors.end() );
+
+  // Sensor volume extension in x and y
+  assert(node);
+  TGeoBBox* shape = dynamic_cast<TGeoBBox*>(node->GetShape());
+  assert(shape);
+  Double_t volX = 2. * shape->GetDX();
+  Double_t volY = 2. * shape->GetDY();
+
+  // Default sensor type is DssdStereo
+  CbmStsSensorDssdStereo* sensor = new CbmStsSensorDssdStereo(address, node);
+
+  // Pitch and stereo angles
+  Double_t pitch   = 0.0058;
+  Double_t stereoF = 0.;
+  Double_t stereoB = 7.5;
+
+  // Size of inactive area in both x and y (total left+right/top+bottom)
+  Double_t dInact = 0.24;
+
+  // Number of strips. Calculated from active size in x, except for 6.2 cm
+  // sensors, where it is 1024.
+  Int_t nStrips = 1024;
+  if ( TMath::Abs(volX-6.2) > 0.01 )
+    nStrips = Int_t( (volX - dInact) / pitch );
+
+  // Active size in y
+  Double_t dy = volY - dInact;
+
+  // Set sensor parameters
+  sensor->SetParameters(dy, nStrips, pitch, stereoF, stereoB);
+
+  // Add sensor to sensor list
+  fSensors[address] = sensor;
+
+  return sensor;
+}
+// -------------------------------------------------------------------------
+
+
+
 // -----   Define sensor types   -------------------------------------------
 Int_t CbmStsSetup::DefineSensorTypes() {
+  /*
 
 	// Common parameters for all sensor types
     Double_t lz      = 0.03; // active thickness [cm]
@@ -151,77 +217,85 @@ Int_t CbmStsSetup::DefineSensorTypes() {
 	Int_t nStripsF   = 0;    // number of strips front side (58 mum)
 	Int_t nStripsB   = 0;    // number of strips back side  (58 mum)
 
-	// Sensor01: DSSD, 4 cm x 2.2 cm
+	// Sensor type CBM04H2: DSSD, 4 cm x 2.2 cm
 	CbmStsSensorTypeDssd* sensor01 = new CbmStsSensorTypeDssd();
 	lx       = 3.7584;    // active size in x
 	ly       = 1.96;      // active size in y
 	nStripsF = 648;       // number of strips front side (58 mum)
 	nStripsB = 648;       // number of strips back side  (58 mum)
 	sensor01->SetParameters(lx, ly, lz, nStripsF, nStripsB, stereoF, stereoB);
-	sensor01->SetName("Sensor01");
-	fSensorTypes[0] = sensor01;
+	sensor01->SetName("CBM04H2");
+    sensor01->SetTitle("Dssd");
+	fSensorTypes["CBM04H2"] = sensor01;
 
-	// Sensor02: DSSD, 6.2 cm x 2.2 cm
+
+	// Sensor type CBM06H2: DSSD, 6.2 cm x 2.2 cm
 	CbmStsSensorTypeDssd* sensor02 = new CbmStsSensorTypeDssd();
 	lx       = 5.9392;    // active size in x
 	ly       = 1.96;      // active size in y
 	nStripsF = 1024;      // number of strips front side (58 mum)
 	nStripsB = 1024;      // number of strips back side  (58 mum)
 	sensor02->SetParameters(lx, ly, lz, nStripsF, nStripsB, stereoF, stereoB);
-	sensor02->SetName("Sensor02");
-	fSensorTypes[1] = sensor02;
+	sensor02->SetName("CBM06H2");
+    sensor02->SetTitle("Dssd");
+	fSensorTypes["CBM06H2"] = sensor02;
 
-	// Sensor03: DSSD, 6.2 cm x 4.2 cm
+	// Sensor type CBM06H4: DSSD, 6.2 cm x 4.2 cm
 	CbmStsSensorTypeDssd* sensor03 = new CbmStsSensorTypeDssd();
 	lx       = 5.9392;    // active size in x
 	ly       = 3.96;      // active size in y
 	nStripsF = 1024;      // number of strips front side (58 mum)
 	nStripsB = 1024;      // number of strips back side  (58 mum)
 	sensor03->SetParameters(lx, ly, lz, nStripsF, nStripsB, stereoF, stereoB);
-	sensor03->SetName("Sensor03");
-	fSensorTypes[2] = sensor03;
+	sensor03->SetName("CBM06H4");
+    sensor03->SetTitle("Dssd");
+	fSensorTypes["CBM06H4"] = sensor03;
 
-	// Sensor04: DSSD, 6.2 cm x 6.2 cm
+	// Sensor type CBM06H6: DSSD, 6.2 cm x 6.2 cm
 	CbmStsSensorTypeDssd* sensor04 = new CbmStsSensorTypeDssd();
 	lx       = 5.9392;    // active size in x
 	ly       = 5.96;      // active size in y
 	nStripsF = 1024;      // number of strips front side (58 mum)
 	nStripsB = 1024;      // number of strips back side  (58 mum)
 	sensor04->SetParameters(lx, ly, lz, nStripsF, nStripsB, stereoF, stereoB);
-	sensor04->SetName("Sensor04");
-	fSensorTypes[3] = sensor04;
+	sensor04->SetName("CBM06H6");
+    sensor04->SetTitle("Dssd");
+	fSensorTypes["CBM06H6"] = sensor04;
 
-	// Sensor05: DSSD, 3.1 cm x 3.1 cm
+	// Sensor tyope CBM03H3: DSSD, 3.1 cm x 3.1 cm
 	CbmStsSensorTypeDssd* sensor05 = new CbmStsSensorTypeDssd();
 	lx       = 2.8594;    // active size in x
 	ly       = 2.86;      // active size in y
 	nStripsF = 493;       // number of strips front side (58 mum)
 	nStripsB = 493;       // number of strips back side  (58 mum)
 	sensor05->SetParameters(lx, ly, lz, nStripsF, nStripsB, stereoF, stereoB);
-	sensor05->SetName("Sensor05");
-	fSensorTypes[4] = sensor05;
+	sensor05->SetName("CBM03H3");
+    sensor05->SetTitle("Dssd");
+	fSensorTypes["CBM03H3"] = sensor05;
 
-	// Sensor06: DSSD, 1.5 cm x 4.2 cm
+	// Sensor type CBM01H4: DSSD, 1.5 cm x 4.2 cm
 	CbmStsSensorTypeDssd* sensor06 = new CbmStsSensorTypeDssd();
 	lx       = 1.2586;    // active size in x
 	ly       = 3.96;      // active size in y
 	nStripsF = 217;       // number of strips front side (58 mum)
 	nStripsB = 217;       // number of strips back side  (58 mum)
 	sensor06->SetParameters(lx, ly, lz, nStripsF, nStripsB, stereoF, stereoB);
-	sensor06->SetName("Sensor06");
-	fSensorTypes[5] = sensor06;
+	sensor06->SetName("CBM01H4");
+    sensor06->SetTitle("Dssd");
+	fSensorTypes["CBM01H4"] = sensor06;
 
-	// Sensor07: DSSD, 3.1 cm x 4.2 cm
+	// Sensor type CBM03H4: DSSD, 3.1 cm x 4.2 cm
 	CbmStsSensorTypeDssd* sensor07 = new CbmStsSensorTypeDssd();
 	lx       = 2.8594;    // active size in x
 	ly       = 3.96;      // active size in y
 	nStripsF = 493;       // number of strips front side (58 mum)
 	nStripsB = 493;       // number of strips back side  (58 mum)
 	sensor07->SetParameters(lx, ly, lz, nStripsF, nStripsB, stereoF, stereoB);
-	sensor07->SetName("Sensor07");
-	fSensorTypes[6] = sensor07;
+	sensor07->SetName("CBM03H4");
+    sensor07->SetTitle("Dssd");
+	fSensorTypes["CBM03H4"] = sensor07;
 
-	// Sensor08: DSSD Ortho (Baby), 1.62 cm x 1.62 cm
+	// Sensor type Baby: DSSD Ortho, 1.62 cm x 1.62 cm
 	CbmStsSensorTypeDssdOrtho* sensor08 = new CbmStsSensorTypeDssdOrtho();
 	lx       = 1.28;      // active size in x
 	ly       = 1.28;      // active size in y
@@ -229,19 +303,23 @@ Int_t CbmStsSetup::DefineSensorTypes() {
 	nStripsB = 256;       // number of strips back side  (58 mum)
 	sensor08->SetParameters(lx, ly, lz, nStripsF, nStripsB, 0., 0.);
 	sensor08->SetName("Baby");
-	fSensorTypes[7] = sensor08;
+    sensor08->SetTitle("DssdOrtho");
+	fSensorTypes["Baby"] = sensor08;
 
-	// Sensor09: DSSD, 6.2 cm x 12.4 cm
+	// Sensor type CBM06H12: DSSD, 6.2 cm x 12.4 cm
 	CbmStsSensorTypeDssd* sensor09 = new CbmStsSensorTypeDssd();
 	lx       = 5.9392;    // active size in x
 	ly       = 12.16;     // active size in y
 	nStripsF = 1024;      // number of strips front side (58 mum)
 	nStripsB = 1024;      // number of strips back side  (58 mum)
 	sensor09->SetParameters(lx, ly, lz, nStripsF, nStripsB, stereoF, stereoB);
-	sensor09->SetName("Sensor09");
-	fSensorTypes[8] = sensor09;
+	sensor09->SetName("CBM06H12");
+    sensor09->SetTitle("Dssd");
+	fSensorTypes["CBM06H12"] = sensor09;
 
 	return fSensorTypes.size();
+	*/
+  return 0;
 }
 // -------------------------------------------------------------------------
 
@@ -334,10 +412,10 @@ Bool_t CbmStsSetup::Init(TGeoManager* geo) {
   		      << FairLogger::endl;
 
   // --- Catch non-existence of GeoManager
-  if ( ! geo ) {
-    LOG(FATAL) << fName << ": no TGeoManager!" << FairLogger::endl;
-    return kFALSE;
-  }
+  assert (geo);
+
+  // Get STS physics singleton instance
+  CbmStsPhysics::Instance();
 
   // --- Get cave (top node)
   LOG(INFO) << fName << ": Reading geometry from TGeoManager "
@@ -391,7 +469,7 @@ Bool_t CbmStsSetup::Init(TGeoManager* geo) {
   // --- Recursively initialise daughter elements
   InitDaughters();
 
-  // --- Build arrays of modules and sensors
+  // --- Build arrays of modules
   for (Int_t iUnit = 0; iUnit < GetNofDaughters(); iUnit++) {
   	CbmStsElement* unit = GetDaughter(iUnit);
   	for (Int_t iLad = 0; iLad < unit->GetNofDaughters(); iLad++) {
@@ -401,11 +479,6 @@ Bool_t CbmStsSetup::Init(TGeoManager* geo) {
   			for (Int_t iMod = 0; iMod < hlad->GetNofDaughters(); iMod++) {
   				CbmStsElement* modu = hlad->GetDaughter(iMod);
   				fModules.push_back(dynamic_cast<CbmStsModule*>(modu));
-  				for (Int_t iSen = 0; iSen < modu->GetNofDaughters(); iSen++) {
-  					CbmStsSensor* sensor =
-  							dynamic_cast<CbmStsSensor*>(modu->GetDaughter(iSen));
-  					fSensors.push_back(sensor);
-  				}
   			}
   		}
   	}
@@ -428,7 +501,7 @@ Bool_t CbmStsSetup::Init(TGeoManager* geo) {
   // --- Create station objects
   Int_t nStations = CreateStations();
   LOG(INFO) << GetName() << ": Setup contains " << nStations
-      << " stations." << FairLogger::endl;
+      << " stations objects." << FairLogger::endl;
   if ( FairLogger::GetLogger()->IsLogNeeded(DEBUG) ) {
     auto it = fStations.begin();
     while ( it != fStations.end() ) {
@@ -443,7 +516,6 @@ Bool_t CbmStsSetup::Init(TGeoManager* geo) {
   	LOG(FATAL) << GetName() << ": inconsistent number of sensors! "
   			       << GetNofElements(kStsSensor) << " " << GetNofSensors()
   			       << FairLogger::endl;
-
 
 
   LOG(INFO) << "=========================================================="
@@ -561,11 +633,6 @@ Bool_t CbmStsSetup::Init(const char* fileName) {
   			for (Int_t iMod = 0; iMod < hlad->GetNofDaughters(); iMod++) {
   				CbmStsElement* modu = hlad->GetDaughter(iMod);
   				fModules.push_back(dynamic_cast<CbmStsModule*>(modu));
-  				for (Int_t iSen = 0; iSen < modu->GetNofDaughters(); iSen++) {
-  					CbmStsSensor* sensor =
-  							dynamic_cast<CbmStsSensor*>(modu->GetDaughter(iSen));
-  					fSensors.push_back(sensor);
-  				} //# sensors
   			} //# modules
   		} //# halfladders
   	} //# ladders
@@ -621,52 +688,156 @@ CbmStsSetup* CbmStsSetup::Instance() {
 
 
 
+// -----   Modify the strip pitch for all sensors   ------------------------
+Int_t CbmStsSetup::ModifyStripPitch(Double_t pitch) {
+
+  Int_t nModified = 0;
+  for ( auto it = fSensors.begin(); it != fSensors.end(); it++ ) {
+
+    CbmStsSensorDssd* sensor = dynamic_cast<CbmStsSensorDssd*>(it->second);
+    if ( ! sensor ) continue;
+    sensor->ModifyStripPitch(pitch);
+    nModified++;
+  }
+
+  return nModified;
+}
+// -------------------------------------------------------------------------
+
+
+// -----   Set conditions for all sensors   --------------------------------
+Int_t CbmStsSetup::SetSensorConditions() {
+
+  Int_t nSensors = 0;   // Sensor counter
+
+  // Get conditions from parameter object
+  assert(fSettings);
+  Double_t vDep = fSettings->GetVdep();           // Full depletion voltage
+  Double_t vBias = fSettings->GetVbias();         // Bias voltage
+  Double_t temperature = fSettings->GetTemperature(); // Temperature
+  Double_t cCoup = fSettings->GetCcoup();         // Coupling capacitance
+  Double_t cIs = fSettings->GetCis();             // Inter-strip capacitance
+
+  // --- Control output of parameters
+  LOG(INFO) << GetName() << ": Set conditions for all sensors";
+  LOG(INFO) << "\t Full depletion voltage   " << vDep
+                     << " V"<< FairLogger::endl;
+  LOG(INFO) << "\t Bias voltage             " << vBias
+                     << " V"<< FairLogger::endl;
+  LOG(INFO) << "\t Temperature              " << temperature << " K"
+                     << FairLogger::endl;
+  LOG(INFO) << "\t Coupling capacitance      " << cCoup
+                     << " pF" << FairLogger::endl;
+  LOG(INFO) << "\t Inter-strip capacitance   " << cIs
+                     << " pF" << FairLogger::endl;
+
+  // --- Set conditions for all sensors
+  for ( auto it = fSensors.begin(); it != fSensors.end(); it++ ) {
+
+    // Get sensor centre coordinates in the global c.s.
+    Double_t local[3] = { 0., 0., 0.}; // sensor centre in local C.S.
+    Double_t global[3];                // sensor centre in global C.S.
+    it->second->GetNode()->GetMatrix()->LocalToMaster(local, global);
+
+    // Get the field in the sensor centre. Note that the values are in kG
+    // and have to be converted to T
+    Double_t field[3] = { 0., 0., 0.};
+    if ( FairRun::Instance()->GetField() )
+        FairRun::Instance()->GetField()->Field(global, field);
+    it->second->SetConditions(vDep, vBias, temperature, cCoup,
+                              cIs, field[0]/10., field[1]/10., field[2]/10.);
+
+    nSensors++;
+  } //# sensors
+
+  return nSensors;
+}
+// -------------------------------------------------------------------------
+
+// -----   Set conditions for all sensors   --------------------------------
+Int_t CbmStsSetup::SetSensorConditions(Double_t vDep, Double_t vBias,
+                                       Double_t temperature,
+                                       Double_t cCoupling,
+                                       Double_t cInterstrip) {
+
+  Int_t nSensors = 0;   // Sensor counter
+
+  // --- Set conditions for all sensors
+  for ( auto it = fSensors.begin(); it != fSensors.end(); it++ ) {
+
+    // Get sensor centre coordinates in the global c.s.
+    Double_t local[3] = { 0., 0., 0.}; // sensor centre in local C.S.
+    Double_t global[3];                // sensor centre in global C.S.
+    it->second->GetNode()->GetMatrix()->LocalToMaster(local, global);
+
+    // Get the field in the sensor centre
+    Double_t field[3] = { 0., 0., 0.};
+    if ( FairRun::Instance()->GetField() )
+        FairRun::Instance()->GetField()->Field(global, field);
+    it->second->SetConditions(vDep, vBias, temperature, cCoupling,
+                              cInterstrip,
+                              field[0]/10., field[1]/10., field[2]/10.);
+
+    nSensors++;
+  } //# sensors
+
+  return nSensors;
+}
+// -------------------------------------------------------------------------
+
+
+
 // -----   Set sensor types   ----------------------------------------------
 // TODO: The current implementation is a workaround only. The sensor type
 // is determined from the geometric size of the sensor. Nasty, isn't it?
-Int_t CbmStsSetup::SetSensorTypes() {
+Int_t CbmStsSetup::SetSensorTypes(TString fileName) {
 
+    // Build sensor type database
 	Int_t nTypes = DefineSensorTypes();
 	LOG(INFO) << GetName() << ": " << nTypes << " sensor types in database"
 			      << FairLogger::endl;
 
-	Int_t nSensors = 0; // counter
 
-	for (Int_t iSensor = 0; iSensor < GetNofSensors(); iSensor++) {
-		CbmStsSensor* sensor = GetSensor(iSensor);
+	// Read from file if specified
+	if ( ! fileName.IsNull() ) {
 
-		// Sensor extension in x and y
-		TGeoBBox* shape =
-				dynamic_cast<TGeoBBox*>(sensor->GetPnode()->GetShape());
-		Double_t volX = 2. * shape->GetDX();
-		Double_t volY = 2. * shape->GetDY();
+	  std::fstream sensorFile(fileName.Data());
+	  assert(sensorFile.is_open());
+	  string input;
+	  TString sName, sType;
+	  vector<Double_t> params;
 
-		// Assign type
-		Int_t iType = -1;
-		if      ( volX > 3.99 && volX < 4.01 )                                 iType = 0;
-		else if ( volX > 6.19 && volX < 6.21 && volY >  2.19 && volY <  2.21 ) iType = 1;
-		else if ( volX > 6.19 && volX < 6.21 && volY >  4.19 && volY <  4.21 ) iType = 2;
-		else if ( volX > 6.19 && volX < 6.21 && volY >  6.19 && volY <  6.21 ) iType = 3;
-		else if ( volX > 3.09 && volX < 3.11 && volY >  3.09 && volY <  3.11 ) iType = 4;
-		else if ( volX > 1.49 && volX < 1.51 && volY >  4.19 && volY <  4.21 ) iType = 5;
-		else if ( volX > 3.09 && volX < 3.11 && volY >  4.19 && volY <  4.21 ) iType = 6;
-		else if ( volX > 1.61 && volX < 1.63 && volY >  1.61 && volY <  1.63 ) iType = 7;
-		else if ( volX > 6.19 && volX < 6.21 && volY > 12.39 && volY < 12.41 ) iType = 8;
+	  while ( kTRUE ) {  // read one line
+	    if ( sensorFile.eof() ) break;
+	    getline(sensorFile, input);
+	    if ( input[0] == '#') continue;  //
+	    std::stringstream line(input);
+	    line >> sName >> sType;
 
-		// Look for type in DB
-		map<Int_t, CbmStsSensorType*>::iterator it = fSensorTypes.find(iType);
-		if ( it == fSensorTypes.end() )
-			LOG(FATAL) << GetName() << ": sensor type for sensor with x = " << volX
-					       << " cm and y = " << volY << " cm is not defined!"
-					       << FairLogger::endl;
+	    // Look for sensor in setup
 
-		// Set sensor type to sensor
-		sensor->SetType((*it).second);
-		nSensors++;
 
-	} //# sensors
+	    if ( sType.EqualTo("DSSD", TString::kIgnoreCase) ) {
+	     Int_t nParams = 5;
+	     Double_t par[10];
+	     for (Int_t iParam = 0; iParam < nParams; iParam++) {
+	       line >> par[iParam];
+	     }
+	     for (Int_t i=0; i<10; i++) std::cout << par[i] << " " << std::endl;
+	   }
 
-	return nSensors;
+	    //}
+	    LOG(INFO) << GetName() << " " << input << FairLogger::endl;
+	    //std::cout << GetName() << " " << line << std::endl;
+	    LOG(INFO) << GetName() << " Sensor name is  " << sName << FairLogger::endl;
+	  }
+	  sensorFile.close();
+
+
+	}
+
+
+	return 0;
 }
 // -------------------------------------------------------------------------
 

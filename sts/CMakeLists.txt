@@ -15,7 +15,6 @@ setup/CbmStsModule.cxx
 setup/CbmStsSensor.cxx
 setup/CbmStsSensorConditions.cxx
 setup/CbmStsSensorPoint.cxx
-setup/CbmStsSensorType.cxx
 setup/CbmStsSetup.cxx
 setup/CbmStsStation.cxx
 )
@@ -31,11 +30,11 @@ set (SRCS_DIGITIZE
 digitize/CbmStsDigitize.cxx
 digitize/CbmStsDigitizeQa.cxx
 digitize/CbmStsDigitizeQaReport.cxx
-#digitize/CbmStsDigitizeSettings.cxx
 digitize/CbmStsDigitizeParameters.cxx
 digitize/CbmStsPhysics.cxx
-digitize/CbmStsSensorTypeDssd.cxx
-digitize/CbmStsSensorTypeDssdOrtho.cxx
+digitize/CbmStsSensorDssd.cxx
+digitize/CbmStsSensorDssdOrtho.cxx
+digitize/CbmStsSensorDssdStereo.cxx
 digitize/CbmStsSignal.cxx;
 )
 # --- Sources in reco

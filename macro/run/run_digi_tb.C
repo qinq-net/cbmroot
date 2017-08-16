@@ -111,7 +111,6 @@ void run_digi_tb(Int_t nEvents = 2, const char* setupName = "sis100_electron")
   parIo2->open(parFileList, "in");
   rtdb->setFirstInput(parIo1);
   rtdb->setSecondInput(parIo2);
-  rtdb->print();
   // ------------------------------------------------------------------------
 
 
