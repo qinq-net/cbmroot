@@ -2110,6 +2110,8 @@ void L1Algo::CATrackFinder()
               }  
             }
             
+            if (tr.NHits<3) check=0;
+            
             if (check)  
             {
 #ifdef EXTEND_TRACKS
