@@ -407,10 +407,39 @@ void CbmStsDigitize::SetParContainers()
 // -----   Initialisation    -----------------------------------------------
 InitStatus CbmStsDigitize::Init() {
 
-  // Initialize the STS digitization parameters 
-  // --- By default, set most realistic response processes.
-  // --- This can be changed by the method SetProcesses.
-  fDigiPar->SetProcesses(2, kTRUE, kTRUE, kTRUE);
+  // Get STS setup interface
+  fSetup = CbmStsSetup::Instance();
+
+  // Instantiate StsPhysics
+  CbmStsPhysics::Instance();
+
+  // Screen output
+  std::cout << std::endl;
+  LOG(INFO) << "=========================================================="
+      << FairLogger::endl;
+  LOG(INFO) << GetName() << ": Initialisation" << FairLogger::endl;
+  LOG(INFO) << FairLogger::endl;
+
+  // If the task CbmDaq is found, run in stream mode; else in event mode.
+  FairTask* daq = FairRun::Instance()->GetTask("Daq");
+  if ( daq ) {
+    LOG(INFO) << GetName() << ": Using stream mode."
+        << FairLogger::endl;
+    fMode = 0;
+  }  //? stream mode
+  else {
+    LOG(INFO) << GetName() << ": Using event mode."
+        << FairLogger::endl;
+    fMode = 1;
+    SetGenerateNoise(kFALSE);  // Noise can be generated only in stream mode
+  }
+
+  // --- Write physics settings to the parameter container. The default values
+  // --- are defined in the constructor; they may have been changed from the
+  // --- macro level by SetProcesses().
+  fDigiPar->SetProcesses(fEnergyLossModel, fUseLorentzShift, fUseDiffusion,
+                         fUseCrossTalk, fGenerateNoise);
+
   // --- Set default parameters for the modules
   // --- The zero noise rate corresponds to a rise time of 80 ns (1/(pi*tau))
   Double_t dynRange = 75000.;          // dynamic range in e
@@ -422,35 +451,16 @@ InitStatus CbmStsDigitize::Init() {
   Double_t zeroNoiseRate = 3.9789e-3;  // Zero noise rate [1/ns]
   Double_t deadChannels = 0.;          // Fraction of dead channels in %
   fDigiPar->SetModuleParameters(dynRange, threshold, nAdc, tResol,
-                                 deadTime, noise, zeroNoiseRate,
-                                 deadChannels);
+                                deadTime, noise, zeroNoiseRate,
+                                deadChannels);
 
-  // Get STS setup interface
-  fSetup = CbmStsSetup::Instance();
+  // Initialise STS setup, sensor conditions and module parameters
+  InitSetup();
 
-	std::cout << std::endl;
-  LOG(INFO) << "=========================================================="
-		        << FairLogger::endl;
- 	LOG(INFO) << GetName() << ": Initialisation" << FairLogger::endl;
-	LOG(INFO) << FairLogger::endl;
+  // --- Screen output of settings
+  LOG(INFO) << GetName() << ": " << fDigiPar->ToString() << FairLogger::endl;
 
-	// If the task CbmDaq is found, run in stream mode.
-	FairTask* daq     = FairRun::Instance()->GetTask("Daq");
-	if ( daq ) {
-  	LOG(INFO) << GetName() << ": Using stream mode."
-  			      << FairLogger::endl;
-  	fMode = 0;
-	}  //? stream mode
-
-  // --- Else: run in event-based mode.
-  else {
-  	LOG(INFO) << GetName() << ": Using event mode."
-  			      << FairLogger::endl;
-  	fMode = 1;
-  	SetGenerateNoise(kFALSE);  // Noise can be generated only in stream mode
-  }
-
-	// --- Get FairRootManager instance
+  // --- Get FairRootManager instance
   FairRootManager* ioman = FairRootManager::Instance();
   assert ( ioman );
 
@@ -477,24 +487,12 @@ InitStatus CbmStsDigitize::Init() {
 
   } //? event mode
 
-  // Initialise STS setup
-  InitSetup();
-
-  // Instantiate StsPhysics
-  CbmStsPhysics::Instance();
-
-
-  // Register this task and its settings to the setup
-  fDigiPar->SetProcesses(fEnergyLossModel, fUseLorentzShift, fUseDiffusion,
-                         fUseCrossTalk, fGenerateNoise);
-  LOG(INFO) << GetName() << ": " << fDigiPar->ToString() << FairLogger::endl;
-
+  // --- Screen output
   LOG(INFO) << GetName() << ": Initialisation successful"
-		    << FairLogger::endl;
+      << FairLogger::endl;
   LOG(INFO) << "=========================================================="
-		        << FairLogger::endl;
+      << FairLogger::endl;
   std::cout << std::endl;
-
 
   // Set static initialisation flag
   fIsInitialised = kTRUE;
@@ -677,7 +675,7 @@ void CbmStsDigitize::SetGenerateNoise(Bool_t choice) {
     return;
   }
 
-  fDigiPar->SetGenerateNoise(choice);
+  fGenerateNoise = choice;
 }
 // -------------------------------------------------------------------------
 
