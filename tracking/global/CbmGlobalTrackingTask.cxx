@@ -21,9 +21,13 @@
 #ifdef __MACH__
 #include <mach/mach_time.h>
 #include <sys/time.h>
+#ifndef CLOCK_REALTIME
 #define CLOCK_REALTIME 0
+#endif
+#ifndef CLOCK_MONOTONIC
 #define CLOCK_MONOTONIC 0
-inline int clock_gettime(int clk_id, struct timespec *t){
+#endif
+inline int clock_gettime(int /*clk_id*/, struct timespec *t){
     mach_timebase_info_data_t timebase;
     mach_timebase_info(&timebase);
     uint64_t time;
@@ -86,8 +90,18 @@ InitStatus CbmGlobalTrackingTask::Init()
       fLogger->Fatal(MESSAGE_ORIGIN, "No STS hits");
    
    fMvdHits = static_cast<TClonesArray*> (ioman->GetObject("MvdHit"));
-   fPrimVertex = static_cast<CbmVertex*> (ioman->GetObject("PrimaryVertex"));
-   
+   //fPrimVertex = static_cast<CbmVertex*> (ioman->GetObject("PrimaryVertex"));
+   // Get pointer to PrimaryVertex object from IOManager if it exists
+   // The old name for the object is "PrimaryVertex" the new one
+   // "PrimaryVertex." Check first for the new name
+   fPrimVertex = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex."));
+   if (nullptr == fPrimVertex) {
+    fPrimVertex = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex"));
+   }
+   if (nullptr == fPrimVertex) {
+     LOG(FATAL) << "No primary vertex" << FairLogger::endl;
+  }
+
    fGlobalTracks = new TClonesArray("CbmGlobalTrack",100);
    ioman->Register("GlobalTrack", "Global", fGlobalTracks, IsOutputBranchPersistent("GlobalTrack"));
    
@@ -98,7 +112,7 @@ InitStatus CbmGlobalTrackingTask::Init()
 static long fullDuration = 0;
 #endif//CBM_GLOBALTB_PRINT_PERF
 
-void CbmGlobalTrackingTask::Exec(Option_t* opt)
+void CbmGlobalTrackingTask::Exec(Option_t* /*opt*/)
 {
    fGlobalTracks->Clear();
    Double_t startTime = fTimeSlice->GetStartTime();

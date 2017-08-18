@@ -592,9 +592,18 @@ InitStatus CbmAnaDielectronTask::Init()
         if ( NULL == fTofHitsMatches) {Fatal("CbmAnaDielectronTask::Init","No TofHitMatch Array! ");}
     }//fUseTof
     
-    fPrimVertex = (CbmVertex*) ioman->GetObject("PrimaryVertex");
-    if (NULL == fPrimVertex) { Fatal("CbmAnaDielectronTask::Init","No PrimaryVertex array!"); }
-    
+
+    // Get pointer to PrimaryVertex object from IOManager if it exists
+    // The old name for the object is "PrimaryVertex" the new one
+    // "PrimaryVertex." Check first for the new name
+    fPrimVertex = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex."));
+    if (nullptr == fPrimVertex) {
+      fPrimVertex = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex"));
+    }
+    if (nullptr == fPrimVertex) { 
+      LOG(FATAL) << "No PrimaryVertex array!" << FairLogger::endl;
+    }
+
     InitHists();
     
     fKFFitter.Init();

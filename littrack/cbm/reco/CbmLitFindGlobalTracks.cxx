@@ -206,7 +206,19 @@ void CbmLitFindGlobalTracks::ReadAndCreateDataBranches()
       ioman->Register("TofTrack", "Tof", fTofTracks, IsOutputBranchPersistent("TofTrack"));
    }
 
-   fPrimVertex = (CbmVertex*) ioman->GetObject("PrimaryVertex");
+   //fPrimVertex = (CbmVertex*) ioman->GetObject("PrimaryVertex");
+   // Get pointer to PrimaryVertex object from IOManager if it exists
+   // The old name for the object is "PrimaryVertex" the new one
+   // "PrimaryVertex." Check first for the new name
+   fPrimVertex = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex."));
+   if (nullptr == fPrimVertex) {
+    fPrimVertex = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex"));
+   }
+   if (nullptr == fPrimVertex) {
+  //   LOG(FATAL) << "No primary vertex" << FairLogger::endl;
+  }
+
+
 }
 
 void CbmLitFindGlobalTracks::InitTrackReconstruction()

@@ -1332,11 +1332,17 @@ InitStatus CbmHadronAnalysis::Init()
 	    << "no STS DigiMatch array!" << endl;
     }
 
-    fPrimVertex = (CbmVertex*) rootMgr->GetObject("PrimaryVertex");
-    if(NULL == fPrimVertex){
-	cout << "-W- CbmHadronAnalysis::Init : "
-	    << "no primary vertex!" << endl;
+    // Get pointer to PrimaryVertex object from IOManager if it exists
+    // The old name for the object is "PrimaryVertex" the new one
+    // "PrimaryVertex." Check first for the new name
+    fPrimVertex = dynamic_cast<CbmVertex*>(rootMgr->GetObject("PrimaryVertex."));
+    if (nullptr == fPrimVertex) {
+     fPrimVertex = dynamic_cast<CbmVertex*>(rootMgr->GetObject("PrimaryVertex"));
     }
+    if (nullptr == fPrimVertex) {
+      LOG(WARNING) << "No primary vertex" << FairLogger::endl;
+    }
+
 
     // --- MC data manager
     CbmMCDataManager* mcManager =

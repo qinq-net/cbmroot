@@ -146,6 +146,18 @@ InitStatus CbmMvdClusterAna::Init()
 // 	fStsTrackMatches	= (TClonesArray*) ioman->GetObject("StsTrackMatch");
 	
 // 	fPrimVtx         = (CbmVertex*) ioman->GetObject("PrimaryVertex");
+/*
+  // Get pointer to PrimaryVertex object from IOManager if it exists
+  // The old name for the object is "PrimaryVertex" the new one
+  // "PrimaryVertex." Check first for the new name
+  fPrimVtx = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex."));
+  if (nullptr == fPrimVtx) {
+    fPrimVtx = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex"));
+  }
+  if (nullptr == fPrimVtx) { 
+    LOG(FATAL) << "No PrimaryVertex array!" << FairLogger::endl;
+  }
+*/
 // 	fListMCTracks    = (TClonesArray*) ioman->GetObject("MCTrack");
 // 	fExtrapolator = CbmLitToolFactory::Instance()->CreateTrackExtrapolator("rk4");
 	

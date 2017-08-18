@@ -512,20 +512,19 @@ CbmTrdPhotonAnalysis::CbmTrdPhotonAnalysis(const char *name, const char *title, 
       cout << "                            Task will be inactive" << endl;
       //return kERROR;
     }
-    /*
-    fPrimaryVertex=(TClonesArray *)ioman->GetObject("PrimaryVertex");
-    
-    if ( ! fPrimaryVertex ) {
+
+    // Get pointer to PrimaryVertex object from IOManager if it exists
+    // The old name for the object is "PrimaryVertex" the new one
+    // "PrimaryVertex." Check first for the new name
+    fPrimVertex = dynamic_cast<CbmVertex*>(fRootManager->GetObject("PrimaryVertex."));
+    if (nullptr == fPrimVertex) {
+      fPrimVertex = dynamic_cast<CbmVertex*>(fRootManager->GetObject("PrimaryVertex"));
+    }
+    if (nullptr == fPrimVertex) {
       cout << "-W CbmTrdPhotonAnalysis::Init: No PrimaryVertex array!" << endl;
       cout << "                            Task will be inactive" << endl;
       //return kERROR;
     }
-    */
-   fPrimVertex = (CbmVertex*) ioman->GetObject("PrimaryVertex");
-   if (NULL == fPrimVertex) {   cout << "-W CbmTrdPhotonAnalysis::Init: No PrimaryVertex array!" << endl;
-      cout << "                            Task will be inactive" << endl;
-      //return kERROR;
- }
 
 
     fKFFitter->Init();

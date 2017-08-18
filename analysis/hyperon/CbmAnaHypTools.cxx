@@ -21,7 +21,18 @@ void CbmAnaHypTools::Init(){
   fStsPointArray = (TClonesArray*) ioman->GetObject("StsPoint");
   fmArray        = (TClonesArray*) ioman->GetObject("MvdHit");
   fsArray        = (TClonesArray*) ioman->GetObject("StsHit");
-  fPV            = (CbmVertex*)    ioman->GetObject("PrimaryVertex");
+//  fPV            = (CbmVertex*)    ioman->GetObject("PrimaryVertex");
+  // Get pointer to PrimaryVertex object from IOManager if it exists
+  // The old name for the object is "PrimaryVertex" the new one
+  // "PrimaryVertex." Check first for the new name
+  fPV = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex."));
+  if (nullptr == fPV) {
+    fPV = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex"));
+  }
+  if (nullptr == fPV) { 
+    LOG(FATAL) << "No PrimaryVertex array!" << FairLogger::endl;
+  }
+
   fTrackMatch    = (TClonesArray*) ioman->GetObject("StsTrackMatch");
 
   fPV->Position(pv);

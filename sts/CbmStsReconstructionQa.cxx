@@ -359,15 +359,6 @@ InitStatus CbmStsReconstructionQa::Init() {
     return kERROR;
   }
 
-  // Get PrimaryVertex array
-  //  fPVertex = (CbmVertex*) ioman->GetObject("PrimaryVertex");
-//   CbmVertex* hohoho = (CbmVertex*) ioman->GetObject("PrimaryVertex");
-//   if ( ! hohoho ) {
-//     cout << "-E- " << GetName() << "::Init: No PrimaryVertex array!" 
-// 	 << endl;
-//     return kERROR;
-//   }
-
   // Get the geometry of target and STS
   InitStatus geoStatus = GetGeometry();
   if ( geoStatus != kSUCCESS ) {

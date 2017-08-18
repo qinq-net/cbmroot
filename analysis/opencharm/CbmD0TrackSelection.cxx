@@ -199,7 +199,15 @@ InitStatus CbmD0TrackSelection::Init() {
     fRichRings       = (TClonesArray*) ioman->GetObject("RichRing");
     fTofHits         = (TClonesArray*) ioman->GetObject("TofHit");
     fListMCTracks    = (TClonesArray*) ioman->GetObject("MCTrack");
-    fPrimVtx         = (CbmVertex*) ioman->GetObject("PrimaryVertex");
+//    fPrimVtx         = (CbmVertex*) ioman->GetObject("PrimaryVertex");
+
+    // Get pointer to PrimaryVertex object from IOManager if it exists
+    // The old name for the object is "PrimaryVertex" the new one
+    // "PrimaryVertex." Check first for the new name
+    fPrimVtx = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex."));
+    if (nullptr == fPrimVtx) {
+      fPrimVtx = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex"));
+    }
 
     fvtx[0] = fPrimVtx->GetX();
     fvtx[1] = fPrimVtx->GetY();

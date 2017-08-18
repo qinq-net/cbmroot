@@ -755,7 +755,18 @@ void CbmThermalModelNoFlow::ReInit(FairRootManager *fManger)
   // fPrimVtx = (CbmVertex*) fManger->GetObject("PrimaryVertex");
   flistStsTracks = dynamic_cast<TClonesArray*>(  fManger->GetObject("StsTrack") );
   flistTofPts = dynamic_cast<TClonesArray*>(  fManger->GetObject("TofPoint") );
-  fPrimVtx = dynamic_cast<CbmVertex*>(  fManger->GetObject("PrimaryVertex") );
+
+  // Get pointer to PrimaryVertex object from IOManager if it exists
+  // The old name for the object is "PrimaryVertex" the new one
+  // "PrimaryVertex." Check first for the new name
+  fPrimVtx = dynamic_cast<CbmVertex*>(fManger->GetObject("PrimaryVertex."));
+  if (nullptr == fPrimVtx) {
+    fPrimVtx = dynamic_cast<CbmVertex*>(fManger->GetObject("PrimaryVertex"));
+  }
+  if (nullptr == fPrimVtx) {
+    Error("CbmThermalModelNoFlow::ReInit","vertex not found!");
+  }
+  //fPrimVtx = dynamic_cast<CbmVertex*>(  fManger->GetObject("PrimaryVertex") );
   //fPrimVtx = new CbmVertex();
   //for the particle id
   flistStsTracksMatch = dynamic_cast<TClonesArray*>(  fManger->GetObject("StsTrackMatch") );

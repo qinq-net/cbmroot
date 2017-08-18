@@ -377,6 +377,19 @@ InitStatus LxFinder::Init()
     listStsMatches = LX_DYNAMIC_CAST<TClonesArray*> (fRootManager->GetObject("StsTrackMatch"));
     listStsPts = LX_DYNAMIC_CAST<TClonesArray*> (fRootManager->GetObject("StsPoint"));
     //fPrimVtx = LX_DYNAMIC_CAST<CbmVertex*> (fManager->GetObject("PrimaryVertex"));
+    /*
+    // Get pointer to PrimaryVertex object from IOManager if it exists
+    // The old name for the object is "PrimaryVertex" the new one
+    // "PrimaryVertex." Check first for the new name
+    fPrimVtx = LX_DYNAMIC_CAST<CbmVertex*>(fManager->GetObject("PrimaryVertex."));
+    if (nullptr == fPrimVtx) {
+      fPrimVtx = LX_DYNAMIC_CAST<CbmVertex*>(fManager->GetObject("PrimaryVertex"));
+    }
+    if (nullptr == fPrimVtx) {
+      Error("CbmL1SttTrackFinder::ReInit","vertex not found!");
+      return kERROR;
+    }
+    */
   }// if (!parallMode)
 
   fPrimVtx = new CbmVertex;

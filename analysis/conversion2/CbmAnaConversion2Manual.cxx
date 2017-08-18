@@ -241,8 +241,16 @@ void CbmAnaConversion2Manual::Init()
 	fRichRingMatches = (TClonesArray*) ioman->GetObject("RichRingMatch");
 	if (nullptr == fRichRingMatches) { Fatal("CbmAnaConversion2Manual::Init","No RichRingMatch array!"); }
 
-	fPrimVertex = (CbmVertex*) ioman->GetObject("PrimaryVertex");
-	if (nullptr == fPrimVertex) { Fatal("CbmAnaConversion2Manual::Init","No PrimaryVertex array!"); }
+        // Get pointer to PrimaryVertex object from IOManager if it exists
+        // The old name for the object is "PrimaryVertex" the new one
+        // "PrimaryVertex." Check first for the new name
+        fPrimVertex = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex."));
+        if (nullptr == fPrimVertex) {
+          fPrimVertex = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex"));
+        }
+        if (nullptr == fPrimVertex) { 
+          LOG(FATAL) << "No PrimaryVertex array!" << FairLogger::endl;
+        }
 
 	cout << " CbmAnaConversion2Manual::Init() " << endl;
 	InitHistos();

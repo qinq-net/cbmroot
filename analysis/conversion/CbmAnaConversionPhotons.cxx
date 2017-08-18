@@ -203,8 +203,16 @@ void CbmAnaConversionPhotons::Init()
 	fGlobalTracks = (TClonesArray*) ioman->GetObject("GlobalTrack");
 	if (NULL == fGlobalTracks) { Fatal("CbmAnaConversion::Init","No GlobalTrack array!"); }
 
-	fPrimVertex = (CbmVertex*) ioman->GetObject("PrimaryVertex");
-	if (NULL == fPrimVertex) { Fatal("CbmAnaConversion::Init","No PrimaryVertex array!"); }
+        // Get pointer to PrimaryVertex object from IOManager if it exists
+        // The old name for the object is "PrimaryVertex" the new one
+        // "PrimaryVertex." Check first for the new name
+        fPrimVertex = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex."));
+        if (nullptr == fPrimVertex) {
+          fPrimVertex = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex"));
+        }
+        if (nullptr == fPrimVertex) { 
+          LOG(FATAL) << "No PrimaryVertex array!" << FairLogger::endl;
+        }
 
 	fRichRings = (TClonesArray*) ioman->GetObject("RichRing");
 	if (NULL == fRichRings) { Fatal("CbmAnaConversion::Init","No RichRing array!"); }

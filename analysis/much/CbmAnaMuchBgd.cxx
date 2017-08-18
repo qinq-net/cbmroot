@@ -60,7 +60,14 @@ InitStatus CbmAnaMuchBgd::Init(){
   fStsTracks        = (TClonesArray*) fManager->GetObject("StsTrack");
   fMuchTracks       = (TClonesArray*) fManager->GetObject("MuchTrack");
   fGlobalTracks     = (TClonesArray*) fManager->GetObject("GlobalTrack");
-  fVertex           = (CbmVertex*)    fManager->GetObject("PrimaryVertex");
+  // Get pointer to PrimaryVertex object from IOManager if it exists
+  // The old name for the object is "PrimaryVertex" the new one
+  // "PrimaryVertex." Check first for the new name
+  fVertex = dynamic_cast<CbmVertex*>(fManager->GetObject("PrimaryVertex."));
+  if (nullptr == fVertex) {
+    fVertex = dynamic_cast<CbmVertex*>(fManager->GetObject("PrimaryVertex"));
+  }
+
   fEvent=0;
   
   fM = new TH1D("fM",";M_{#mu#mu}(GeV/c);Entries",100,0,4);

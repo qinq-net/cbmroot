@@ -161,7 +161,14 @@ Double_t  CbmStsKFTrackFitter::GetChiToVertex( CbmStsTrack* track,  CbmVertex *v
 {
   if( !vtx ){  
     FairRootManager *fManger = FairRootManager::Instance();
-    vtx = reinterpret_cast<CbmVertex *>(fManger->GetObject("PrimaryVertex"));
+    // Get pointer to PrimaryVertex object from IOManager if it exists
+    // The old name for the object is "PrimaryVertex" the new one
+    // "PrimaryVertex." Check first for the new name
+    // TODO: don't use reinterpret_cast
+    vtx = reinterpret_cast<CbmVertex*>(fManger->GetObject("PrimaryVertex."));
+    if (nullptr == vtx) {
+      vtx = reinterpret_cast<CbmVertex*>(fManger->GetObject("PrimaryVertex"));
+    }
     if( !vtx ){
       cout<< "-W- CbmStsKFTrackFitter::GetChiToVertex: No Primary Vertex found!"<<endl;
       return 100.;

@@ -186,11 +186,16 @@ InitStatus CbmDileptonAssignPid::Init(){
     // Get pointers to root manager
     fRootManager = FairRootManager::Instance();
 
-    // Get Primary Vertex
-    fPrimVertex = (CbmVertex*) fRootManager->GetObject("PrimaryVertex");
-    if(!fPrimVertex){
-        cout<<"-E- CbmDileptonAssignPid::Init No Primary Vertex!" <<endl;
-        return kFATAL;
+
+    // Get pointer to PrimaryVertex object from IOManager if it exists
+    // The old name for the object is "PrimaryVertex" the new one
+    // "PrimaryVertex." Check first for the new name
+    fPrimVertex = dynamic_cast<CbmVertex*>(fRootManager->GetObject("PrimaryVertex."));
+    if (nullptr == fPrimVertex) {
+      fPrimVertex = dynamic_cast<CbmVertex*>(fRootManager->GetObject("PrimaryVertex"));
+    }
+    if (nullptr == fPrimVertex) {
+      LOG(FATAL) << "No primary vertex" << FairLogger::endl;
     }
 
     // Get GlobalTrack Array

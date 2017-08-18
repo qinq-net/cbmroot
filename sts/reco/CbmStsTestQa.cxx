@@ -116,7 +116,17 @@ InitStatus CbmStsTestQa::Init()
 	assert(fTracks);
 
 	// --- Get event vertex (for old data format)
-	fVertex = (CbmVertex*) ioman->GetObject("PrimaryVertex");
+	//fVertex = (CbmVertex*) ioman->GetObject("PrimaryVertex");
+        // Get pointer to PrimaryVertex object from IOManager if it exists
+        // The old name for the object is "PrimaryVertex" the new one
+        // "PrimaryVertex." Check first for the new name
+        fVertex = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex."));
+        if (nullptr == fVertex) {
+          fVertex = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex"));
+        }
+        if (nullptr == fVertex) {
+          LOG(FATAL) << "No primary vertex" << FairLogger::endl;
+        }
 
 	// Instantiate histogram manager
 	fHistMan = new CbmHistManager();

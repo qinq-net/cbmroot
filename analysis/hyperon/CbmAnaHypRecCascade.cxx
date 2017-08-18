@@ -68,7 +68,18 @@ InitStatus CbmAnaHypRecCascade::Init(){
   fMCTracks  = (TClonesArray*) fManager->GetObject("MCTrack");
   fRCTracks  = (TClonesArray*) fManager->GetObject("StsTrack");
   fRCMatch   = (TClonesArray*) fManager->GetObject("StsTrackMatch");
-  fPV        = (CbmVertex*)    fManager->GetObject("PrimaryVertex");
+//  fPV        = (CbmVertex*)    fManager->GetObject("PrimaryVertex");
+  // Get pointer to PrimaryVertex object from IOManager if it exists
+  // The old name for the object is "PrimaryVertex" the new one
+  // "PrimaryVertex." Check first for the new name
+  fPV = dynamic_cast<CbmVertex*>(fManager->GetObject("PrimaryVertex."));
+  if (nullptr == fPV) {
+    fPV = dynamic_cast<CbmVertex*>(fManager->GetObject("PrimaryVertex"));
+  }
+  if (nullptr == fPV) { 
+    LOG(FATAL) << "No PrimaryVertex array!" << FairLogger::endl;
+  }
+
   fListRCLambda  = (TClonesArray*) fManager->GetObject("V0Candidates");
   fManager->Register("CascadeCandidates","Sts",fListCascades,IsOutputBranchPersistent("CascadeCandidates"));
   fTree=fManager->GetInTree();

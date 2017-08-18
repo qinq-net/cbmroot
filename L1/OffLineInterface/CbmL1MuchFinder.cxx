@@ -59,7 +59,19 @@ InitStatus CbmL1MuchFinder::ReInit()
   fStsTracks =(TClonesArray *) FairRootManager::Instance()->GetObject("StsTrack");
   fMCTracks =(TClonesArray *) FairRootManager::Instance()->GetObject("MCTrack");
   fSTSTrackMatch = (TClonesArray*) FairRootManager::Instance()->GetObject("StsTrackMatch");
-  fPrimVtx =  (CbmVertex *) FairRootManager::Instance() ->GetObject("PrimaryVertex");
+  //fPrimVtx =  (CbmVertex *) FairRootManager::Instance() ->GetObject("PrimaryVertex");
+  // Get pointer to PrimaryVertex object from IOManager if it exists
+  // The old name for the object is "PrimaryVertex" the new one
+  // "PrimaryVertex." Check first for the new name
+  fPrimVtx = dynamic_cast<CbmVertex*>(FairRootManager::Instance()->GetObject("PrimaryVertex."));
+  if (nullptr == fPrimVtx) {
+    fPrimVtx = dynamic_cast<CbmVertex*>(FairRootManager::Instance()->GetObject("PrimaryVertex"));
+  }
+  if (nullptr == fPrimVtx) {
+    Error("CbmL1MuchFinder::ReInit","vertex not found!");
+    return kERROR;
+  }
+
   fStsFitter.Init();
 
   FairRootManager::Instance()->Register("MuchTrack", "Much", fTrackCollection, IsOutputBranchPersistent("MuchTrack"));

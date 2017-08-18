@@ -111,7 +111,14 @@ InitStatus CbmAnaDimuonAnalysis::Init()
   fPixelDigiMatches = (TClonesArray*) fManager->GetObject("MuchDigiMatch");
   fStrawDigiMatches = (TClonesArray*) fManager->GetObject("MuchStrawDigiMatch");
   fClusters         = (TClonesArray*) fManager->GetObject("MuchCluster");
-  fVertex           = (CbmVertex*)    fManager->GetObject("PrimaryVertex");
+  // Get pointer to PrimaryVertex object from IOManager if it exists
+  // The old name for the object is "PrimaryVertex" the new one
+  // "PrimaryVertex." Check first for the new name
+  fVertex = dynamic_cast<CbmVertex*>(fManager->GetObject("PrimaryVertex."));
+  if (nullptr == fVertex) {
+    fVertex = dynamic_cast<CbmVertex*>(fManager->GetObject("PrimaryVertex"));
+  }
+
   fEvent=0;
   if (!(fMCTracks&&fStsPoints&&fMuchPoints&&fMuchPixelHits&&fStsTracks&&fMuchTracks&&fMuchTrackMatches&&fStsTrackMatches)){
     printf(" %p",fStsPoints);

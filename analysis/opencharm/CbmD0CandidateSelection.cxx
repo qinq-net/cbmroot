@@ -294,7 +294,14 @@ void CbmD0CandidateSelection::Register() {
     fPionParticleArray  = (TClonesArray*) ioman->GetObject("CbmD0PionParticles");
     fKaonTrackArray     = (TClonesArray*) ioman->GetObject("CbmD0KaonTrackArray");
     fPionTrackArray     = (TClonesArray*) ioman->GetObject("CbmD0PionTrackArray");
-    fPrimVtx            = (CbmVertex*) ioman->GetObject("PrimaryVertex");
+    // Get pointer to PrimaryVertex object from IOManager if it exists
+    // The old name for the object is "PrimaryVertex" the new one
+    // "PrimaryVertex." Check first for the new name
+    fPrimVtx = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex."));
+    if (nullptr == fPrimVtx) {
+      fPrimVtx = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex"));
+    }
+
     fListMCTracksPos    = (TClonesArray*) ioman->GetObject("PositiveMCTracks");
     fListMCTracksNeg    = (TClonesArray*) ioman->GetObject("NegativeMCTracks");
 }

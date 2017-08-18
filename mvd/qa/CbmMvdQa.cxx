@@ -145,7 +145,19 @@ cout << "-----------------------------------------------------------------------
 
     if( fMvdHits->GetEntriesFast() != fMvdHitMatchArray->GetEntriesFast())
 	cout << endl << "MvdHit and MvdHitMatch Arrays do not have the same size" << endl;
-    fPrimVtx         = (CbmVertex*) ioman->GetObject("PrimaryVertex");
+
+//    fPrimVtx         = (CbmVertex*) ioman->GetObject("PrimaryVertex");
+    // Get pointer to PrimaryVertex object from IOManager if it exists
+    // The old name for the object is "PrimaryVertex" the new one
+    // "PrimaryVertex." Check first for the new name
+    fPrimVtx = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex."));
+    if (nullptr == fPrimVtx) {
+      fPrimVtx = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex"));
+    }
+    if (nullptr == fPrimVtx) {
+//      LOG(FATAL) << "No primary vertex" << FairLogger::endl;
+    }
+
     fListMCTracks    = (TClonesArray*) ioman->GetObject("MCTrack");
 
     if(! fMcPoints )

@@ -15,6 +15,7 @@
 #include "CbmTofPoint.h"
 #include "CbmMCTrack.h"
 #include "CbmKFVertex.h"
+#include "CbmVertex.h"
 #include "CbmKFParticleInterface.h"
 #include "CbmMCDataManager.h"
 #include "TClonesArray.h"
@@ -104,7 +105,18 @@ void CbmLitTofQa::ReadDataBranches()
    fTofPoints = mcManager->InitBranch("TofPoint");
    fTofTracks = (TClonesArray*) ioman->GetObject("TofTrack");
    fMCTracks = mcManager->InitBranch("MCTrack");
-   fPrimVertex = (CbmVertex*) ioman->GetObject("PrimaryVertex");
+//   fPrimVertex = (CbmVertex*) ioman->GetObject("PrimaryVertex");
+   // Get pointer to PrimaryVertex object from IOManager if it exists
+   // The old name for the object is "PrimaryVertex" the new one
+   // "PrimaryVertex." Check first for the new name
+   fPrimVertex = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex."));
+   if (nullptr == fPrimVertex) {
+    fPrimVertex = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex"));
+   }
+   if (nullptr == fPrimVertex) {
+  //   LOG(FATAL) << "No primary vertex" << FairLogger::endl;
+   }
+
 }
 
 void CbmLitTofQa::FillTrackCategoriesAndAcceptanceFunctions()

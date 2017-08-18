@@ -173,6 +173,19 @@ InitStatus LxFinderTriplet::Init()
   listStsMatches = LX_DYNAMIC_CAST<TClonesArray*> (fManager->GetObject("StsTrackMatch"));
   listStsPts = LX_DYNAMIC_CAST<TClonesArray*> (fManager->GetObject("StsPoint"));
   //fPrimVtx = LX_DYNAMIC_CAST<CbmVertex*> (fManager->GetObject("PrimaryVertex"));
+  /*
+  // Get pointer to PrimaryVertex object from IOManager if it exists
+  // The old name for the object is "PrimaryVertex" the new one
+  // "PrimaryVertex." Check first for the new name
+  fPrimVtx = LX_DYNAMIC_CAST<CbmVertex*>(fManager->GetObject("PrimaryVertex."));
+  if (nullptr == fPrimVtx) {
+    fPrimVtx = LX_DYNAMIC_CAST<CbmVertex*>(fManager->GetObject("PrimaryVertex"));
+  }
+  if (nullptr == fPrimVtx) {
+    Error("CbmL1SttTrackFinder::ReInit","vertex not found!");
+    return kERROR;
+  }
+  */
   fPrimVtx = new CbmVertex;
 
   // Read Z-positions of MUCH station layers and save them in LxLayer objects.

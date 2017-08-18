@@ -308,7 +308,14 @@ void CbmD0HistogramManager::InitReco()
 
     fListGlobal = (TClonesArray*)ioman->GetObject("GlobalTrack");
     fListReco = (TClonesArray*)ioman->GetObject("StsTrack");
-    fPrimVtxs =  (CbmVertex*) ioman->GetObject("PrimaryVertex");
+    // Get pointer to PrimaryVertex object from IOManager if it exists
+    // The old name for the object is "PrimaryVertex" the new one
+    // "PrimaryVertex." Check first for the new name
+    fPrimVtxs = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex."));
+    if (nullptr == fPrimVtxs) {
+      fPrimVtxs = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex"));
+    }
+
     fListTrackMatch = (TClonesArray*) ioman->GetObject("StsTrackMatch");
 
     recoMomdist = new TH1F("RecoMomentumDist", "Momentumdistribution Reconstructed Kaon and Pion Tracks", 100, 0, 10);

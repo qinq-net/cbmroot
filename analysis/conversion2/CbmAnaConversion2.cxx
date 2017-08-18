@@ -189,8 +189,17 @@ InitStatus CbmAnaConversion2::Init()
 
 	InitHistograms();
 
-	fPrimVertex = (CbmVertex*) ioman->GetObject("PrimaryVertex");
-	if (nullptr == fPrimVertex) { Fatal("CbmAnaConversion::Init","No PrimaryVertex array!"); }
+
+        // Get pointer to PrimaryVertex object from IOManager if it exists
+        // The old name for the object is "PrimaryVertex" the new one
+        // "PrimaryVertex." Check first for the new name
+        fPrimVertex = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex."));
+        if (nullptr == fPrimVertex) {
+          fPrimVertex = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex"));
+        }
+        if (nullptr == fPrimVertex) { 
+          LOG(FATAL) << "No PrimaryVertex array!" << FairLogger::endl;
+        }
 
 	fArrayStsHit = (TClonesArray*) ioman->GetObject("StsHit");
 	if(nullptr == fArrayStsHit) { Fatal("CbmAnaConversion2Fitter::Init","No StsHit array!"); }

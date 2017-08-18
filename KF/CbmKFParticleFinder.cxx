@@ -76,8 +76,18 @@ InitStatus CbmKFParticleFinder::Init()
     Error("CbmKFParticleFinder::Init","track-array not found!");
     return kERROR;
   }
-  
-  fPrimVtx = (CbmVertex*) ioman->GetObject("PrimaryVertex");
+
+  // Get pointer to PrimaryVertex object from IOManager if it exists
+  // The old name for the object is "PrimaryVertex" the new one
+  // "PrimaryVertex." Check first for the new name
+  fPrimVtx = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex."));
+  if (nullptr == fPrimVtx) {
+    fPrimVtx = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex"));
+  }
+  if (nullptr == fPrimVtx) {
+    Error("CbmKFParticleFinder::Init","vertex not found!");
+    return kERROR;
+  }
 
   return kSUCCESS;
 }

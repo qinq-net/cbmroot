@@ -437,12 +437,17 @@ InitStatus eventPlane::Init()
     return kERROR;
   }
 
-  flistPV = (CbmVertex*) ioman->GetObject("PrimaryVertex");
-  if ( ! flistPV ) {
-      LOG(FATAL) << "-E- eventPlane::Init: No reco. primary vertex array!" << FairLogger::endl;
-    return kERROR;
-  }    
-  
+  // Get pointer to PrimaryVertex object from IOManager if it exists
+  // The old name for the object is "PrimaryVertex" the new one
+  // "PrimaryVertex." Check first for the new name
+  flistPV = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex."));
+  if (nullptr == flistPV) {
+    flistPV = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex"));
+  }
+  if (nullptr == flistPV) { 
+    LOG(FATAL) << "No PrimaryVertex array!" << FairLogger::endl;
+  }
+
   // =========== Create and register output array
   
   fMCEventData = new CbmMCEventData("CbmMcEvent");

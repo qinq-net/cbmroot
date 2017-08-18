@@ -344,7 +344,19 @@ InitStatus CbmStsFitPerformanceTask::ReInit(){
   fRecStsTrackArray = reinterpret_cast<TClonesArray*>(fManger->GetObject("StsTrack"));
   fStsHitArray = reinterpret_cast<TClonesArray*>(fManger->GetObject("StsHit"));
   fMvdHitArray = reinterpret_cast<TClonesArray*>(fManger->GetObject("MvdHit"));
-  fPrimaryVertex = reinterpret_cast<CbmVertex*>(fManger->GetObject("PrimaryVertex"));
+
+  // Get pointer to PrimaryVertex object from IOManager if it exists
+  // The old name for the object is "PrimaryVertex" the new one
+  // "PrimaryVertex." Check first for the new name
+  fPrimaryVertex = dynamic_cast<CbmVertex*>(fManger->GetObject("PrimaryVertex."));
+  if (nullptr == fPrimaryVertex) {
+    fPrimaryVertex = dynamic_cast<CbmVertex*>(fManger->GetObject("PrimaryVertex"));
+  }
+  if (nullptr == fPrimaryVertex) {
+    cout << "-W- CbmStsFitPerformanceTask::ReInit : "
+         << "no Primary Vertex!" << endl;
+  }
+
   fSTSTrackMatch = reinterpret_cast<TClonesArray*>(fManger->GetObject("StsTrackMatch"));
   fFitter.Init();
 

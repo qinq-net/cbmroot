@@ -131,7 +131,14 @@ void PairAnalysisEvent::SetInput(FairRootManager *man)
   fStsTracks    = (TClonesArray*) man->GetObject("StsTrack");
   fMuchTracks   = (TClonesArray*) man->GetObject("MuchTrack");
   fRichRings    = (TClonesArray*) man->GetObject("RichRing");
-  fPrimVertex   = (CbmVertex*)    man->GetObject("PrimaryVertex");
+//  fPrimVertex   = (CbmVertex*)    man->GetObject("PrimaryVertex");    // Get pointer to PrimaryVertex object from IOManager if it exists
+  // Get pointer to PrimaryVertex object from IOManager if it exists
+  // The old name for the object is "PrimaryVertex" the new one
+  // "PrimaryVertex." Check first for the new name
+  fPrimVertex = dynamic_cast<CbmVertex*>(man->GetObject("PrimaryVertex."));
+  if (nullptr == fPrimVertex) {
+    fPrimVertex = dynamic_cast<CbmVertex*>(man->GetObject("PrimaryVertex"));
+  }
   // MC matches and tracks
   fMCHeader     = (FairMCEventHeader*) man->GetObject("MCEventHeader.");
   fMCTracks     = (TClonesArray*) man->GetObject("MCTrack");

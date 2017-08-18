@@ -25,6 +25,7 @@
 #include "CbmRichRing.h"
 #include "CbmTrackMatch.h"
 #include "CbmMCTrack.h"
+#include "CbmVertex.h"
 
 #include "FairTrackParam.h"
 #include "FairTask.h"
@@ -271,11 +272,15 @@ InitStatus CbmDileptonAssignMCid::Init(){
 	return kFATAL;
     }
 
-    // Get Primary Vertex
-    fPrimVertex = (CbmVertex*) fRootManager->GetObject("PrimaryVertex");
-    if(!fPrimVertex){
-        cout<<"-E- CbmDileptonAssignMCid::Init No Primary Vertex!" <<endl;
-        return kFATAL;
+    // Get pointer to PrimaryVertex object from IOManager if it exists
+    // The old name for the object is "PrimaryVertex" the new one
+    // "PrimaryVertex." Check first for the new name
+    fPrimVertex = dynamic_cast<CbmVertex*>(fRootManager->GetObject("PrimaryVertex."));
+    if (nullptr == fPrimVertex) {
+      fPrimVertex = dynamic_cast<CbmVertex*>(fRootManager->GetObject("PrimaryVertex"));
+    }
+    if (nullptr == fPrimVertex) {
+      LOG(FATAL) << "No primary vertex" << FairLogger::endl;
     }
 
     // Get MCTrack Array

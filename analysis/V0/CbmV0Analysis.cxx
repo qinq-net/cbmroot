@@ -72,7 +72,18 @@ InitStatus CbmV0Analysis::ReInit(){
   listMCTracks = (TClonesArray*) fManger->GetObject("MCTrack");
   listStsTracks = (TClonesArray *)  fManger->GetObject("StsTrack");
   fSTSTrackMatch = (TClonesArray*) fManger->GetObject("StsTrackMatch");
-  fPrimVtx = (CbmVertex*) fManger->GetObject("PrimaryVertex");
+//  fPrimVtx = (CbmVertex*) fManger->GetObject("PrimaryVertex");
+  // Get pointer to PrimaryVertex object from IOManager if it exists
+  // The old name for the object is "PrimaryVertex" the new one
+  // "PrimaryVertex." Check first for the new name
+  fPrimVtx = dynamic_cast<CbmVertex*>(fManger->GetObject("PrimaryVertex."));
+  if (nullptr == fPrimVtx) {
+    fPrimVtx = dynamic_cast<CbmVertex*>(fManger->GetObject("PrimaryVertex"));
+  }
+  if (nullptr == fPrimVtx) { 
+    LOG(FATAL) << "No PrimaryVertex array!" << FairLogger::endl;
+  }
+
   fHitArray = (TClonesArray *)  fManger->GetObject("StsHit");
   fMvdHitArray = (TClonesArray *)  fManger->GetObject("MvdHit");
   return kSUCCESS;
