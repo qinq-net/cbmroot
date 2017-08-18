@@ -812,8 +812,6 @@ bool CbmL1::ReadMCPoint( CbmL1MCPoint *MC, int iPoint, bool MVD )
 /// should be called after fill of algo
 void CbmL1::HitMatch()
 {    
-  int  true_hits = 0;
-  int fake_hits=0;
   const int NHits = vStsHits.size();
   for (int iH = 0; iH < NHits; iH++)
   {
@@ -904,17 +902,11 @@ void CbmL1::HitMatch()
 
     if ( iP >= 0 )
     {
-      true_hits++;
       
       for(unsigned int i=0; i < iEvent1.size(); i++)
       {
         hit.event = iEvent1[i];
-//         sh->event = iEvent1[i];
       }
-/*
-
-      if ( iP >  vMCPoints.size() )
-        cout <<  " iP  "  << iP << "  vMCPoints.size() " <<   vMCPoints.size() << endl;*/
 
       hit.event=vMCPoints[iP].event;
       hit.mcPointIds.push_back( iP );
@@ -922,12 +914,11 @@ void CbmL1::HitMatch()
     }  
     else 
     {
-      fake_hits++;  
       hit.event = -1; 
       int idPoint = vHitMCRef[iH];
       if (idPoint >= 0){
         hit.mcPointIds.push_back( idPoint );
-        vMCPoints[iP].hitIds.push_back(iH);
+        vMCPoints[idPoint].hitIds.push_back(iH);
       }
     } // if no clusters 
   }
