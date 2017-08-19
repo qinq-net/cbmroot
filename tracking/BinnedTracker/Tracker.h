@@ -15,13 +15,18 @@
 #define TRACKER_H
 
 #include "Station.h"
-#include "Station3D.h"
-#include "Station4D.h"
 
 class CbmBinnedTracker
 {
 public:
     CbmBinnedTracker() : fStations(), fNofStations(0), fBeforeLastLevel(0), fChiSqCut(0), fTracks() {}
+    
+    void AddStation(CbmBinnedStation* station)
+    {
+        fStations.push_back(station);
+        fNofStations = fStations.size();
+        fBeforeLastLevel = fNofStations - 2;
+    }
     
     void Reconstruct()
     {

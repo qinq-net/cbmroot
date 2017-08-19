@@ -16,6 +16,7 @@
 
 #include "Bins.h"
 #include <functional>
+#include "HitReader.h"
 
 const Double_t cbmBinnedSigma = 4;
 const Double_t cbmBinnedSigmaSq = cbmBinnedSigma * cbmBinnedSigma;
@@ -24,7 +25,10 @@ const Double_t cbmBinnedSOL = 0;
 class CbmBinnedStation
 {
 public:
-    CbmBinnedStation() : fDx(0), fDy(0), fDt(0) {}
+    CbmBinnedStation() : fDx(0), fDy(0), fDt(0) {}    
+    CbmBinnedStation(const CbmBinnedStation&) = delete;
+    CbmBinnedStation& operator=(const CbmBinnedStation&) = delete;
+    
     virtual ~CbmBinnedStation() {}
     Double_t GetDx() const { return fDx; }
     void SetDx(Double_t v) { if (v > fDx) fDx = v; }

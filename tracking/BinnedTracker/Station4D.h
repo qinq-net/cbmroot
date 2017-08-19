@@ -331,8 +331,6 @@ public:
                     if (maxZk == minZj)
                         maxZk = maxZj;
 
-                    minZk - searchZ;
-                    maxZk - searchZ;
                     Double_t minT = searchT + (minZk - searchZ) * timeCoeff - wT;
                     Double_t maxT = searchT + (maxZk - searchZ) * timeCoeff + wT;
                     int minTind = GetTInd(minT);
@@ -400,4 +398,3 @@ private:
 };
 
 #endif /* STATION4D_H */
-
