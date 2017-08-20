@@ -1,6 +1,7 @@
 /** @file CbmDaq.h
  ** @author Volker Friese <v.friese@gsi.de>
  ** @date 20 July 2012
+ **
  **/
 
 
@@ -12,6 +13,7 @@
 #include "CbmMCEventList.h"
 
 
+class TClonesArray;
 class CbmDaqBuffer;
 class CbmDigi;
 class CbmTimeSlice;
@@ -20,28 +22,33 @@ class CbmTimeSlice;
 /** @class CbmDaq
  ** @author Volker Friese <v.friese@gsi.de>
  ** @date 20 July 2012
- ** @brief CBM task class for filling digis from the CbmDaqBuffer into
- ** timeslice containers
+ ** @brief CBM task class for filling digis into time slices
+ **
+ ** The CbmDaq collects raw data (digis) from various input sources
+ ** (detectors), sorts them w.r.t. time and fills time slices.
+ ** The digis in one time slice are written to TCLonesArrays as branches of
+ ** the output tree. One tree entry corresponds to one time slice (interval),
+ ** the duration of which can be adjusted.
  **/
 class CbmDaq : public FairTask
 {
   public:
 
-    /**   Constructor
+    /** @brief Constructor
      ** @param timeSliceSize  Duration of time slices [ns]
      **/
     CbmDaq(Double_t timeSliceSize = 1000.);
 
 
-    /**   Destructor   **/
+    /** Destructor   **/
     ~CbmDaq();
 
 
-    /**   Task execution   **/
+    /** Task execution **/
     virtual void Exec(Option_t* opt);
 
 
-    /**   Task initialisation   **/
+    /** Task initialisation **/
     virtual InitStatus Init();
 
 
@@ -53,7 +60,7 @@ class CbmDaq : public FairTask
     /** Duration of time slice [ns] **/
     Double_t fDuration;
 
-    /** Flag whether empty timeslices should be filled to the tree **/
+    /** Flag whether empty time-slices should be filled to the tree **/
     // TODO: Implement functionality
     Bool_t fStoreEmptySlices;
 
@@ -69,6 +76,11 @@ class CbmDaq : public FairTask
     Double_t fTimeDigiLast;      ///< Time of last digi
     Double_t fTimeSliceFirst;    ///< Start time of first time slice
     Double_t fTimeSliceLast;     ///< Stop time of last time slice
+
+    /** Output array (digis) **/
+    TClonesArray* fStsDigis;
+    TClonesArray* fMuchDigis;
+    TClonesArray* fTofDigis;
 
 
     /** Pointer to current time slice **/
@@ -100,6 +112,12 @@ class CbmDaq : public FairTask
     Int_t CopyEventList();
 
 
+    /** Copy data (digi) from the DaqBuffer into the output array
+     ** @param digi  Pointer to digi object
+     **/
+    void FillData(CbmDigi* digi);
+
+
     /** Fill data from the buffer into the current time slice
      ** @return Number if digis filled into the timeslice
      **/
@@ -115,7 +133,7 @@ class CbmDaq : public FairTask
     /** Register input and entry number of a MC event contributing data
      ** to the current time slice.
      **
-     ** CbmDaq stores the first and last event for each input such that
+     ** CbmDaqNew stores the first and last event for each input such that
      ** it can be copied from the event list after the time slice is
      ** closed and filled to the tree.
      **/
@@ -125,10 +143,11 @@ class CbmDaq : public FairTask
     /** At end of run: Process the remaining data in the CbmDaqBuffer  **/
     virtual void Finish();
 
-    CbmDaq(const CbmDaq&);
-    CbmDaq& operator=(const CbmDaq&);
+    /** Copy constructor and assignment operator are not allowed. **/
+    CbmDaq(const CbmDaq&) = delete;
+    CbmDaq& operator=(const CbmDaq&) = delete;
     
-    ClassDef (CbmDaq,1);
+    ClassDef(CbmDaq,1);
 
 };
 

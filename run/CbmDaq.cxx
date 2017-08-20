@@ -6,7 +6,9 @@
 
 #include <cassert>
 #include <iomanip>
+#include <utility>
 
+#include "TClonesArray.h"
 #include "FairEventHeader.h"
 #include "FairRunAna.h"
 
@@ -14,12 +16,9 @@
 #include "CbmDaqBuffer.h"
 #include "CbmTimeSlice.h"
 
-using std::setprecision;
-using std::setw;
-using std::fixed;
-using std::right;
-using std::map;
-using std::pair;
+
+using namespace std;
+
 
 // =====   Constructor   =====================================================
 CbmDaq::CbmDaq(Double_t timeSliceSize) : FairTask("Daq"),
@@ -35,6 +34,9 @@ CbmDaq::CbmDaq(Double_t timeSliceSize) : FairTask("Daq"),
                    fTimeDigiLast(-1.),
                    fTimeSliceFirst(-1.),
                    fTimeSliceLast(-1.),
+                   fStsDigis(NULL),
+                   fMuchDigis(NULL),
+                   fTofDigis(NULL),
                    fTimeSlice(NULL),
                    fBuffer(NULL),
                    fEventList(),
@@ -57,13 +59,15 @@ void CbmDaq::CloseTimeSlice() {
 
   // --- Time slice status
   if ( fTimeSlice->IsEmpty() ) {
-    LOG(DEBUG) << GetName() << ": closing " << fTimeSlice->ToString()
-                  << FairLogger::endl;
+    LOG(DEBUG) << GetName() << ": closing time slice from " << fTimeSlice->GetStartTime()
+                  << " to " << fTimeSlice->GetEndTime() << " ns " <<  FairLogger::endl;
     fNofTimeSlicesEmpty++;
   } //? empty time slice
   else
-  LOG(INFO) << GetName() << ": closing " << fTimeSlice->ToString()
-               << FairLogger::endl;
+  LOG(INFO) << GetName() << ": closing time slice from " << fTimeSlice->GetStartTime()
+    << " to " << fTimeSlice->GetEndTime() << " ns, data: STS " << fStsDigis->GetEntriesFast()
+    << " MUCH " << fMuchDigis->GetEntriesFast() << " TOF " << fTofDigis->GetEntriesFast()
+    << FairLogger::endl;
 
   // --- Fill current time slice into tree (if required)
   if ( fStoreEmptySlices || (!fTimeSlice->IsEmpty()) ) {
@@ -79,12 +83,14 @@ void CbmDaq::CloseTimeSlice() {
     PrintCurrentEventRange();
   }
 
-
   // --- Reset time slice with new time interval
   fCurrentStartTime += fDuration;
   fTimeSlice->Reset(fCurrentStartTime, fDuration);
   fEventRange.clear();
   fEventsCurrent->Clear("");
+
+  // --- Clear data output array
+  fStsDigis->Delete();
 
 }
 // ===========================================================================
@@ -178,8 +184,51 @@ void CbmDaq::Exec(Option_t*) {
 
 
 
+// =====   Fill a data (digi) object into the its output array   =============
+void CbmDaq::FillData(CbmDigi* data) {
+
+  Int_t iDet = data->GetSystemId();
+  switch ( iDet ) {
+
+    case kSts: {
+      CbmStsDigi* digi = static_cast<CbmStsDigi*>(data);
+      Int_t nDigis = fStsDigis->GetEntriesFast();
+      new ( (*fStsDigis)[nDigis] ) CbmStsDigi(*digi);
+      fTimeSlice->SetEmpty(kFALSE);
+      break;
+    }
+
+    case kMuch: {
+      CbmMuchDigi* digi = static_cast<CbmMuchDigi*>(data);
+      Int_t nDigis = fMuchDigis->GetEntriesFast();
+      new ( (*fMuchDigis)[nDigis] ) CbmMuchDigi(*digi);
+      fTimeSlice->SetEmpty(kFALSE);
+      break;
+    }
+
+    case kTof: {
+      CbmTofDigiExp* digi = static_cast<CbmTofDigiExp*>(data);
+      Int_t nDigis = fTofDigis->GetEntriesFast();
+      new ( (*fTofDigis)[nDigis] ) CbmTofDigiExp(*digi);
+      fTimeSlice->SetEmpty(kFALSE);
+      break;
+    }
+
+    default:
+      TString sysName = CbmModuleList::GetModuleName(iDet);
+      LOG(WARNING) << "CbmDaq: System " << sysName
+                   << " is not implemented yet!" << FairLogger::endl;
+      break;
+
+  }  // detector switch
+}
+// ===========================================================================
+
+
+
 // =====   Fill current time slice with data from buffers   ==================
 Int_t CbmDaq::FillTimeSlice() {
+	LOG(DEBUG) << "Daq::FillTimeSlice" << FairLogger::endl;
 
   // --- Digi counter
   Int_t nDigis = 0;
@@ -196,14 +245,14 @@ Int_t CbmDaq::FillTimeSlice() {
 		     << " into time slice [" << fixed << setprecision(3)
 		     << fTimeSlice->GetStartTime() << ", "
 		     << fTimeSlice->GetEndTime() << ") ns" << FairLogger::endl;
-      fTimeSlice->InsertData(digi);
+      FillData(digi);
       nDigis++;
       if (!fNofDigis) fTimeDigiFirst = digi->GetTime();
       fTimeDigiLast = TMath::Max(fTimeDigiLast, digi->GetTime());
       RegisterEvent(digi);
 
-      // --- Store event and input number
-       delete digi;
+      // --- Delete data and get next one from buffer
+      delete digi;
       digi = fBuffer->GetNextData(iDet, fTimeSlice->GetEndTime());
     }  //? Valid digi from buffer
 
@@ -292,6 +341,20 @@ InitStatus CbmDaq::Init() {
   FairRootManager::Instance()->Register("MCEventList.", "Event list",
       fEventsCurrent, kTRUE);
 
+  // Register output array (CbmStsDigi)
+  fStsDigis = new TClonesArray("CbmStsDigi",1000);
+  FairRootManager::Instance()->Register("StsDigi", "STS raw data",
+  		            fStsDigis, IsOutputBranchPersistent("StsDigi"));
+
+  // Register output array (CbmMuchDigi)
+  fMuchDigis = new TClonesArray("CbmMuchDigi",1000);
+  FairRootManager::Instance()->Register("MuchDigi", "MUCH raw data",
+                    fMuchDigis, IsOutputBranchPersistent("MuchDigi"));
+
+  // Register output array (CbmStsDigi)
+  fTofDigis = new TClonesArray("CbmTofDigiExp",1000);
+  FairRootManager::Instance()->Register("TofDigiExp", "TOF raw data",
+                    fTofDigis, IsOutputBranchPersistent("TofDigiExp"));
 
   // Get Daq Buffer
   fBuffer = CbmDaqBuffer::Instance();
@@ -316,7 +379,7 @@ void CbmDaq::PrintCurrentEventRange() const {
     LOG(INFO) << "empty" << FairLogger::endl;
     return;
   }
-  map<Int_t, pair<Int_t, Int_t>>::const_iterator it = fEventRange.begin();
+  auto it = fEventRange.begin();
   while ( it != fEventRange.end() ) {
     Int_t file = it->first;
     Int_t firstEvent = it->second.first;

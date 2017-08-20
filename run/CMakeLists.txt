@@ -52,10 +52,11 @@ CbmBuildEventsSimple.cxx
 CbmBuildEventsIdeal.cxx
 CbmBuildEventsQA.cxx
 CbmEvBuildSource.cxx
+CbmDaqHits.cxx
 CbmDaq.cxx
-CbmDaqNew.cxx
 #CbmDaqQa.cxx
 CbmDaqBuffer.cxx
+CbmDaqBufferHits.cxx
 CbmMCBuffer.cxx
 CbmMCTimeSim.cxx
 CbmTimeSlice.cxx

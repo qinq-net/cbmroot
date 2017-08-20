@@ -41,7 +41,7 @@ class CbmAddress
 
 
     /** Destructor  **/
-    virtual ~CbmAddress() { };
+    ~CbmAddress() { };
 
 
     /** Number of bits for system Id in the address field

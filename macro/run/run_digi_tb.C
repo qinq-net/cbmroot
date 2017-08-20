@@ -96,7 +96,7 @@ void run_digi_tb(Int_t nEvents = 2, const char* setupName = "sis100_electron")
   run->AddTask(tofDigi);
  
   // ----- DAQ
-  FairTask* daq = new CbmDaqNew(timeSliceSize);
+  FairTask* daq = new CbmDaq(timeSliceSize);
   run->AddTask(daq);
   
  
