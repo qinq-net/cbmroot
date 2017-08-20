@@ -51,7 +51,7 @@ class CbmTimeSlice : public TNamed
      ** @param index  index of data object in array
      ** @return pointer to data object
      **/
-    CbmDigi* GetData(ECbmModuleId iDet, UInt_t index);
+    //CbmDigi* GetData(ECbmModuleId iDet, UInt_t index);
 
 
     /** Get size of raw data container for given detector
@@ -59,7 +59,7 @@ class CbmTimeSlice : public TNamed
      ** @param iDet   detector type
      ** @return size of raw data container (number of digis)
      */
-    Int_t GetDataSize(ECbmModuleId iDet) const;
+    //Int_t GetDataSize(ECbmModuleId iDet) const;
 
 
     /** Duration of time slice
@@ -93,18 +93,18 @@ class CbmTimeSlice : public TNamed
      **
      ** @param digi  pointer to data object
      **/
-    void InsertData(CbmDigi* digi);
+    //void InsertData(CbmDigi* digi);
 
 
-    /** Check whether timeslice contains data
-     ** @return kTRUE if timeslice contains data
+    /** Check whether time slice contains data
+     ** @return kTRUE if time slice contains data
      **/
     Bool_t IsEmpty() const { return fIsEmpty; }
 
 
     /** Reset the time slice
      **
-     ** The data vectors will be cleared and a new start time is set.
+     ** A new start time is set.
      **
      ** @param start    New start time [ns]
      ** @param duration New duration [ns]
@@ -113,7 +113,7 @@ class CbmTimeSlice : public TNamed
 
 
     /** Set the flag whether the time slice is empty
-     ** @param isEmpty  kTRUE is timeslice contains no data
+     ** @param isEmpty  kTRUE is time slice contains no data
      **/
     void SetEmpty(Bool_t isEmpty = kTRUE) { fIsEmpty = isEmpty; }
 
@@ -122,28 +122,20 @@ class CbmTimeSlice : public TNamed
      ** Tests data to be in defined time interval and ordered w.r.t. time.
      ** @return kTRUE if OK, else kFALSE
      **/
-    Bool_t SelfTest();
+    //Bool_t SelfTest();
 
 
     /** Status to string **/
     std::string ToString() const;
 
-
-    /** Get vector of much digis
-     **
-     ** @return MUCH raw data container (vector of digis) 
-     */
-    std::vector<CbmMuchDigi> GetMuchData() {return fMuchData; } 
-    std::vector<CbmStsDigi>  GetStsData()  {return fStsData; }
-    std::vector<CbmTofDigiExp>  GetTofData()  {return fTofData; }
     
 
     template <class Archive>
     void serialize(Archive& ar, const unsigned int /*version*/)
     {
-        ar& fStsData;
-        ar& fMuchData;
-        ar& fStartTime;
+       // ar& fStsData;
+       // ar& fMuchData;
+       // ar& fStartTime;
         ar& fDuration;
         ar& fIsEmpty;
     }
@@ -153,9 +145,9 @@ class CbmTimeSlice : public TNamed
     Double_t fStartTime;                 ///< start time [ns]
     Double_t fDuration;                  ///< duration [ns]
     Bool_t   fIsEmpty;                   ///< Flag for containing no data
-    std::vector<CbmStsDigi> fStsData;    ///< raw data container for STS
-    std::vector<CbmMuchDigi> fMuchData;  ///< raw data container for MUCH
-    std::vector<CbmTofDigiExp> fTofData; ///< raw data container for TOF
+    //std::vector<CbmStsDigi> fStsData;    ///< raw data container for STS
+    //std::vector<CbmMuchDigi> fMuchData;  ///< raw data container for MUCH
+    //std::vector<CbmTofDigiExp> fTofData; ///< raw data container for TOF
     CbmMatch fMatch;                     ///< link time slice to events
 
     

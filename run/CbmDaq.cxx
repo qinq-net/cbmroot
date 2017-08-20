@@ -79,7 +79,6 @@ void CbmDaq::CloseTimeSlice() {
   fTimeSliceLast = fTimeSlice->GetEndTime();
   fNofTimeSlices++;
   if ( gLogger->IsLogNeeded(DEBUG) ) {
-    fTimeSlice->SelfTest();
     PrintCurrentEventRange();
   }
 

@@ -84,8 +84,7 @@ void CbmStsTimeBasedQa::Exec(Option_t* /*opt*/)
   string type;
   if ( fDaq ) {
     type = "TimeSlice";
-    fStsDigiData = fTimeSlice->GetStsData();
-    ProcessDigisAndPoints(fStsDigiData, fStsPoints, type);
+    ProcessDigisAndPoints(fStsDigis, fStsPoints, type);
   }
   else {
     type = "Event";

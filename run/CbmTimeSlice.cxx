@@ -24,9 +24,9 @@ CbmTimeSlice::CbmTimeSlice()
    fStartTime(0.), 
    fDuration(0.),
    fIsEmpty(kTRUE),
-   fStsData(),
-   fMuchData(),
-   fTofData(),
+   //fStsData(),
+   //fMuchData(),
+   //fTofData(),
    fMatch()
 {
 }
@@ -40,9 +40,9 @@ CbmTimeSlice::CbmTimeSlice(Double_t start, Double_t duration)
    fStartTime(start), 
    fDuration(duration),
    fIsEmpty(kTRUE),
-   fStsData(),
-   fMuchData(),
-   fTofData(),
+   //fStsData(),
+   //fMuchData(),
+   //fTofData(),
    fMatch()
 {
 }
@@ -58,6 +58,7 @@ CbmTimeSlice::~CbmTimeSlice() {
 
 
 // -----   Get data object   ------------------------------------------------
+/*
 CbmDigi* CbmTimeSlice::GetData(ECbmModuleId iDet, UInt_t index) {
 
   CbmDigi* digi = NULL;
@@ -79,10 +80,12 @@ CbmDigi* CbmTimeSlice::GetData(ECbmModuleId iDet, UInt_t index) {
 
   return digi;
 }
+*/
 // ---------------------------------------------------------------------------
 
 
 // -----   Get data array size   ----------------------------------------------
+/*
 Int_t CbmTimeSlice::GetDataSize(ECbmModuleId iDet) const {
   switch (iDet) {
     case kSts:  return fStsData.size();
@@ -93,10 +96,12 @@ Int_t CbmTimeSlice::GetDataSize(ECbmModuleId iDet) const {
 
   return 0;
 }
+*/
 // ---------------------------------------------------------------------------
 
 
 // -----   Copy data into the time slice   -----------------------------------
+/*
 void CbmTimeSlice::InsertData(CbmDigi* data) {
 
 
@@ -155,6 +160,7 @@ void CbmTimeSlice::InsertData(CbmDigi* data) {
 
   }  // detector switch
 }
+*/
 // ---------------------------------------------------------------------------
 
 
@@ -162,9 +168,9 @@ void CbmTimeSlice::InsertData(CbmDigi* data) {
 // ----- Reset time slice   --------------------------------------------------
 void CbmTimeSlice::Reset(Double_t start, Double_t duration) {
 
-  fStsData.clear();
-  fMuchData.clear();
-  fTofData.clear();
+  //fStsData.clear();
+  //fMuchData.clear();
+  //fTofData.clear();
   fIsEmpty = kTRUE;
   fStartTime = start;
   fDuration = duration;
@@ -176,6 +182,7 @@ void CbmTimeSlice::Reset(Double_t start, Double_t duration) {
 
 
 // -----   Consistency check   -----------------------------------------------
+/*
 Bool_t CbmTimeSlice::SelfTest() {
 
 	// --- Skip if empty
@@ -220,6 +227,7 @@ Bool_t CbmTimeSlice::SelfTest() {
 			       << ( status ? " OK" : " FAILED" ) << FairLogger::endl;
 	return status;
 }
+*/
 // ---------------------------------------------------------------------------
 
 
@@ -229,9 +237,9 @@ string CbmTimeSlice::ToString() const {
   stringstream ss;
   ss << "TimeSlice: interval [" << fixed << setprecision(3) << fStartTime
   		<< ", " << GetEndTime() << "] ns, Data:";
-  ss << " STS "  << fStsData.size();
-  ss << " MUCH " << fMuchData.size();
-  ss << " TOF "  << fMuchData.size();
+  //ss << " STS "  << fStsData.size();
+  //ss << " MUCH " << fMuchData.size();
+  //ss << " TOF "  << fMuchData.size();
   return ss.str();
 }
 // ---------------------------------------------------------------------------

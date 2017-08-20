@@ -75,7 +75,8 @@ void CbmMuchFindHitsGem::Exec(Option_t*) {
   fEvent++;
   fDigiData.clear();
   
-  if (fDaq) fDigiData = fTimeSlice->GetMuchData();
+  if (fDaq) ;
+    //fDigiData = fTimeSlice->GetMuchData();
   else {
     for (Int_t iDigi = 0; iDigi < fDigis->GetEntriesFast(); iDigi++) {
       CbmMuchDigi* digi = (CbmMuchDigi*) fDigis->At(iDigi);

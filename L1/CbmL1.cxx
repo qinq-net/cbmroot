@@ -666,7 +666,9 @@ void CbmL1::Reconstruct(CbmEvent* event)
   if ( fTimesliceMode )
   {
     listStsDigi.clear();
-    listStsDigi = fTimeSlice->GetStsData();
+    // The following line was commented out (V.F.) since it uses
+    // obsolete functionality of CbmTimeSlice.
+    //listStsDigi = fTimeSlice->GetStsData();
     TClonesArray* fDigis;
 
     FairRootManager* ioman = FairRootManager::Instance();
