@@ -60,8 +60,8 @@ void readTsaQA(TString inFile =
   //  FairEventHeader* event = new CbmTbEvent();
   //  event->SetRunId(260);
 
-  CbmTrdTestBeamTools::Instance(new CbmTrdTestBeamTools); 
-  //CbmTrdTestBeamTools::Instance(new CbmTrdLabTools); 
+  CbmTrdTestBeamTools::Instance(new CbmTrdTestBeamTools);
+  //CbmTrdTestBeamTools::Instance(new CbmTrdLabTools);
 
   // --- Run
   FairRunOnline *run = new FairRunOnline(source);
@@ -78,15 +78,17 @@ void readTsaQA(TString inFile =
   FairTask* Baseline=new CbmTrdQABaseline();
   run->AddTask(Baseline);
   */
-   FairTask* digitize=new CbmTrdSimpleDigitizer();
+   FairTask* digitize=new CbmTrdAdvDigitizer();
   run->AddTask(digitize);
-  /*
-  FairTask* Clusterrize=new CbmTrdSimpleClusterizer();
-  //  run->AddTask(Clusterrize);
+  
+  FairTask* DigiAnalysis = new CbmTrdDigiAnalysis();
+  run->AddTask(DigiAnalysis);
 
-  FairTask* ClusterAnalysis=new CbmTrdClusterAnalysis();
+  FairTask* Clusterrize=new CbmTrdSimpleClusterizer();
+    run->AddTask(Clusterrize);
+
+    //  FairTask* ClusterAnalysis=new CbmTrdClusterAnalysis();
   //  run->AddTask(ClusterAnalysis);
-  */
 
   run->Init();
 
