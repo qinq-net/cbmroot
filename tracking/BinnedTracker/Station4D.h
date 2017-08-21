@@ -19,13 +19,16 @@
 class CbmBinned4DStation : public CbmBinnedStation
 {
 public:
-    CbmBinned4DStation(int nofZBins, int nofYBins, int nofXBins, int nofTBins) : fZBins(reinterpret_cast<CbmZBin*> (new unsigned char[nofZBins * sizeof(CbmZBin)])),
-            fNofZBins(nofZBins), fNofYBins(nofYBins), fNofXBins(nofXBins), fNofTBins(nofTBins), fZBinSize(0), fYBinSize(0), fXBinSize(0), fTBinSize(0),
-            fMinZ(0), fMaxZ(0), fMinY(0), fMaxY(0), fMinX(0), fMaxX(0), fMinT(0), fMaxT(0), fDefaultUse(false), fDtxSq(0), fDtySq(0)
+    CbmBinned4DStation(int nofZBins, int nofYBins, int nofXBins, int nofTBins) : CbmBinnedStation(nofYBins, nofXBins, nofTBins),
+            fZBins(reinterpret_cast<CbmZBin*> (new unsigned char[nofZBins * sizeof(CbmZBin)])),
+            fNofZBins(nofZBins), fZBinSize(0), fMinZ(0), fMaxZ(0), fDtxSq(0), fDtySq(0)
     {
         for (int i = 0; i < nofZBins; ++i)
             new(&fZBins[i]) CbmZBin(nofYBins, nofXBins, nofTBins);
     }
+    
+    void SetMinZ(Double_t v) { fMinZ = v; }
+    void SetMaxZ(Double_t v) { fMaxZ = v; }
     
     void AddHit(const CbmPixelHit* hit, Int_t index)
     {
@@ -110,30 +113,6 @@ public:
         }
     }
     
-    int GetXInd(Double_t v) const
-    {
-        int ind = (v - fMinX) / fXBinSize;
-        
-        if (ind < 0)
-            ind = 0;
-        else if (ind >= fNofXBins)
-            ind = fNofXBins - 1;
-        
-        return ind;
-    }
-    
-    int GetYInd(Double_t v) const
-    {
-        int ind = (v - fMinY) / fYBinSize;
-        
-        if (ind < 0)
-            ind = 0;
-        else if (ind >= fNofYBins)
-            ind = fNofYBins - 1;
-        
-        return ind;
-    }
-    
     int GetZInd(Double_t v) const
     {
         int ind = (v - fMinZ) / fZBinSize;
@@ -142,18 +121,6 @@ public:
             ind = 0;
         else if (ind >= fNofZBins)
             ind = fNofZBins - 1;
-        
-        return ind;
-    }
-    
-    int GetTInd(Double_t v) const
-    {
-        int ind = (v - fMinT) / fTBinSize;
-        
-        if (ind < 0)
-            ind = 0;
-        else if (ind >= fNofTBins)
-            ind = fNofTBins - 1;
         
         return ind;
     }
@@ -188,6 +155,12 @@ public:
             return (fMinX + (xInd + 1) * fXBinSize) / tx;
         else
             return (fMinX + xInd * fXBinSize) / tx;
+    }
+    
+    void Init()
+    {
+        fZBinSize = (fMaxZ - fMinZ) / fNofZBins;
+        CbmBinnedStation::Init();
     }
     
     void SearchHits(const CbmPixelHit* searchHit, std::function<void(CbmTBin::HitHolder&)> handleHit)
@@ -377,22 +350,9 @@ private:
 private:
     CbmZBin* fZBins;
     int fNofZBins;
-    int fNofYBins;
-    int fNofXBins;
-    int fNofTBins;
     Double_t fZBinSize;
-    Double_t fYBinSize;
-    Double_t fXBinSize;
-    Double_t fTBinSize;
     Double_t fMinZ;
     Double_t fMaxZ;
-    Double_t fMinY;
-    Double_t fMaxY;
-    Double_t fMinX;
-    Double_t fMaxX;
-    Double_t fMinT;
-    Double_t fMaxT;
-    bool fDefaultUse;
     Double_t fDtxSq;
     Double_t fDtySq;
 };

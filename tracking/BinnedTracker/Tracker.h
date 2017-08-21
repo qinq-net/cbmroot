@@ -19,7 +19,20 @@
 class CbmBinnedTracker
 {
 public:
+    static CbmBinnedTracker* Instance()
+    {
+        static CbmBinnedTracker* theInstance = 0;
+        
+        if (0 == theInstance)
+            theInstance = new CbmBinnedTracker;
+        
+        return theInstance;
+    }
+    
+public:
     CbmBinnedTracker() : fStations(), fNofStations(0), fBeforeLastLevel(0), fChiSqCut(0), fTracks() {}
+    CbmBinnedTracker(const CbmBinnedTracker&) = delete;
+    CbmBinnedTracker& operator=(const CbmBinnedTracker&) = delete;
     
     void AddStation(CbmBinnedStation* station)
     {

@@ -22,15 +22,16 @@ class CbmBinnedTrackerTask : public FairTask
 {
 public:
     CbmBinnedTrackerTask();
-
     CbmBinnedTrackerTask(const CbmBinnedTrackerTask&) = delete;
     CbmBinnedTrackerTask& operator=(const CbmBinnedTrackerTask&) = delete;
+    ~CbmBinnedTrackerTask();
 
     InitStatus Init();// Overridden from FairTask
     void Exec(Option_t* opt);// Overridden from FairTask
     void Finish();// Overridden from FairTask
     
 private:
+    CbmBinnedTracker* fTracker;
     ClassDef(CbmBinnedTrackerTask, 1)
 };
 

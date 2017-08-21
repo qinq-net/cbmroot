@@ -5,26 +5,36 @@
  */
 
 #include "CbmBinnedTrackerTask.h"
+#include "GeoReader.h"
+#include "FairLogger.h"
    
-CbmBinnedTrackerTask::CbmBinnedTrackerTask()
+CbmBinnedTrackerTask::CbmBinnedTrackerTask() : fTracker(0)
 {
-   
+}
+
+CbmBinnedTrackerTask::~CbmBinnedTrackerTask()
+{
+   delete fTracker;
 }
 
 InitStatus CbmBinnedTrackerTask::Init()
 {
+   CbmBinnedGeoReader* geoReader = CbmBinnedGeoReader::Instance();
+   
+   if (0 == geoReader)
+      fLogger->Fatal(MESSAGE_ORIGIN, "Couldn't instantiate CbmBinnedGeoReader");
+   
+   geoReader->Read();
+   
    return kSUCCESS;
 }
 
 void CbmBinnedTrackerTask::Exec(Option_t* opt)
 {   
-   CbmBinnedTracker tracker;
-   int qq = 0;
 }
 
 void CbmBinnedTrackerTask::Finish()
 {
-   
 }
 
 ClassImp(CbmBinnedTrackerTask)

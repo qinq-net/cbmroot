@@ -13,24 +13,23 @@
 
 using namespace std;
 
-CbmBinnedGeoReader* CbmBinnedGeoReader::fInstance = 0;
-
 CbmBinnedGeoReader* CbmBinnedGeoReader::Instance()
 {
-   if (0 != fInstance)
-      return fInstance;
+   static CbmBinnedGeoReader* theInstance = 0;
+   
+   if (0 != theInstance)
+      return theInstance;
    
    FairRootManager* ioman = FairRootManager::Instance();
    
    if (0 == ioman)
       return 0;
    
-   fInstance = new CbmBinnedGeoReader;
-   fInstance->fIoman = ioman;
-   return fInstance;
+   theInstance = new CbmBinnedGeoReader(ioman, CbmBinnedTracker::Instance());
+   return theInstance;
 }
 
-CbmBinnedGeoReader::CbmBinnedGeoReader() : fIoman(0), fNavigator(0), fDetectorReaders(), fTracker(0)
+CbmBinnedGeoReader::CbmBinnedGeoReader(FairRootManager* ioman, CbmBinnedTracker* tracker) : fIoman(ioman), fNavigator(0), fDetectorReaders(), fTracker(tracker)
 {
    fNavigator = gGeoManager->GetCurrentNavigator();
    fDetectorReaders["sts"] = &CbmBinnedGeoReader::ReadSts;
@@ -84,16 +83,35 @@ void CbmBinnedGeoReader::SearchStation(TGeoNode* node, CbmBinnedHitReader* hitRe
 {   
    if (stationPath == stationPathEnd)
    {
+      Double_t left = 10000;
+      Double_t right = -10000;
+      Double_t top = -10000;
+      Double_t bottom = 10000;
+      Double_t front = 10000;
+      Double_t back = -10000;
+      HandleStation(node, geoPath.begin(), geoPath.end(), left, right, top, bottom, front, back);
       CbmBinnedStation* station = 0;
       
       if (is4d)
-         station = new CbmBinned4DStation(gNofZbins, gNofYbins, gNofXbins, gNofTbins);
+      {
+         CbmBinned4DStation* station4d = new CbmBinned4DStation(gNofZbins, gNofYbins, gNofXbins, gNofTbins);
+         station4d->SetMinZ(front);
+         station4d->SetMaxZ(back);
+         station = station4d;
+      }
       else
-         station = new CbmBinned3DStation(gNofYbins, gNofXbins, gNofTbins);
+      {
+         CbmBinned3DStation* station3d = new CbmBinned3DStation(gNofYbins, gNofXbins, gNofTbins);
+         station = station3d;
+      }
       
+      station->SetMinY(bottom);
+      station->SetMaxY(top);
+      station->SetMinX(left);
+      station->SetMaxX(right);
+      station->Init();
       fTracker->AddStation(station);
       hitReader->AddStation(station);
-      HandleStation(node, station, geoPath.begin(), geoPath.end());
    }
    else
    {
@@ -111,16 +129,11 @@ void CbmBinnedGeoReader::SearchStation(TGeoNode* node, CbmBinnedHitReader* hitRe
    fNavigator->CdUp();
 }
 
-void CbmBinnedGeoReader::HandleStation(TGeoNode* node, CbmBinnedStation* station, list<const char*>::const_iterator geoPath, list<const char*>::const_iterator geoPathEnd)
+void CbmBinnedGeoReader::HandleStation(TGeoNode* node, list<const char*>::const_iterator geoPath, list<const char*>::const_iterator geoPathEnd,
+   Double_t& left, Double_t& right, Double_t& top, Double_t& bottom, Double_t& front, Double_t& back)
 {   
    if (geoPath == geoPathEnd)
-   {
-      Double_t left = 10000;
-      Double_t right = -10000;
-      Double_t top = -10000;
-      Double_t bottom = 10000;
-      HandleActive(node, left, right, top, bottom);
-   }
+      HandleActive(node, left, right, top, bottom, front, back);
    else
    {
       const char* name = *geoPath++;
@@ -130,14 +143,14 @@ void CbmBinnedGeoReader::HandleStation(TGeoNode* node, CbmBinnedStation* station
       for (list<TGeoNode*>::iterator i = subNodes.begin(); i != subNodes.end(); ++i)
       {
          fNavigator->CdDown(*i);
-         HandleStation(*i, station, geoPath, geoPathEnd);
+         HandleStation(*i, geoPath, geoPathEnd, left, right, top, bottom, front, back);
       }
    }
    
    fNavigator->CdUp();
 }
 
-void CbmBinnedGeoReader::HandleActive(TGeoNode* node, Double_t& left, Double_t& right, Double_t& top, Double_t& bottom)
+void CbmBinnedGeoReader::HandleActive(TGeoNode* node, Double_t& left, Double_t& right, Double_t& top, Double_t& bottom, Double_t& front, Double_t& back)
 {
    TGeoBBox* pBox = static_cast<TGeoBBox*> (node->GetVolume()->GetShape());
    pBox->ComputeBBox();
@@ -163,6 +176,12 @@ void CbmBinnedGeoReader::HandleActive(TGeoNode* node, Double_t& left, Double_t& 
             
             if (top < globalCoords[1])
                top = globalCoords[1];
+            
+            if (front > globalCoords[2])
+               front = globalCoords[2];
+            
+            if (back < globalCoords[2])
+               back = globalCoords[2];
          }
       }
    }

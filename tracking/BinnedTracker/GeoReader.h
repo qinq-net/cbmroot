@@ -30,27 +30,24 @@ public:
     static CbmBinnedGeoReader* Instance();
     
 public:
-    CbmBinnedGeoReader();
+    CbmBinnedGeoReader(FairRootManager* ioman, CbmBinnedTracker* tracker);
     CbmBinnedGeoReader(const CbmBinnedGeoReader&) = delete;
     CbmBinnedGeoReader& operator=(const CbmBinnedGeoReader&) = delete;
     void FindGeoChild(TGeoNode* node, const char* name, std::list<TGeoNode*>& results);
     void Read();
-    void SetTracker(CbmBinnedTracker* tracker) { fTracker = tracker; }
     
 private:
     void ReadDetector(const char* name);
     void SearchStation(TGeoNode* node, CbmBinnedHitReader* hitReader, std::list<const char*>::const_iterator stationPath, std::list<const char*>::const_iterator stationPathEnd,
         const std::list<const char*>& geoPath, bool is4d = false);
-    void HandleStation(TGeoNode* node, CbmBinnedStation* station, std::list<const char*>::const_iterator geoPath, std::list<const char*>::const_iterator geoPathEnd);
-    void HandleActive(TGeoNode* node, Double_t& left, Double_t& right, Double_t& top, Double_t& bottom);
+    void HandleStation(TGeoNode* node, std::list<const char*>::const_iterator geoPath, std::list<const char*>::const_iterator geoPathEnd,
+        Double_t& left, Double_t& right, Double_t& top, Double_t& bottom, Double_t& front, Double_t& back);
+    void HandleActive(TGeoNode* node, Double_t& left, Double_t& right, Double_t& top, Double_t& bottom, Double_t& front, Double_t& back);
     void ReadSts();
     void ReadRich();
     void ReadMuch();
     void ReadTrd();
     void ReadTof();
-    
-private:
-    static CbmBinnedGeoReader* fInstance;
     
 private:
     FairRootManager* fIoman;

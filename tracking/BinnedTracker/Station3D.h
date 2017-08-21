@@ -21,16 +21,12 @@
 class CbmBinned3DStation : public CbmBinnedStation
 {
 public:
-    CbmBinned3DStation(int nofYBins, int nofXBins, int nofTBins) : fZ(0), fYBins(reinterpret_cast<CbmYBin*> (new unsigned char[nofYBins * sizeof(CbmYBin)])),
-            fNofYBins(nofYBins), fNofXBins(nofXBins), fNofTBins(nofTBins), fYBinSize(0), fXBinSize(0), fTBinSize(0),
-            fMinY(0), fMaxY(0), fMinX(0), fMaxX(0), fMinT(0), fMaxT(0), fDefaultUse(false)
+    CbmBinned3DStation(int nofYBins, int nofXBins, int nofTBins) : CbmBinnedStation(nofYBins, nofXBins, nofTBins),
+            fYBins(reinterpret_cast<CbmYBin*> (new unsigned char[nofYBins * sizeof(CbmYBin)]))
     {
         for (int i = 0; i < nofYBins; ++i)
             new(&fYBins[i]) CbmYBin(nofXBins, nofTBins);
     }
-    
-    Double_t GetZ() const { return fZ; }
-    void SetZ(Double_t v) { fZ = v; }
     
     void AddHit(const CbmPixelHit* hit, Int_t index)
     {
@@ -97,42 +93,6 @@ public:
                 }
             }
         }
-    }
-    
-    int GetXInd(Double_t v) const
-    {
-        int ind = (v - fMinX) / fXBinSize;
-        
-        if (ind < 0)
-            ind = 0;
-        else if (ind >= fNofXBins)
-            ind = fNofXBins - 1;
-        
-        return ind;
-    }
-    
-    int GetYInd(Double_t v) const
-    {
-        int ind = (v - fMinY) / fYBinSize;
-        
-        if (ind < 0)
-            ind = 0;
-        else if (ind >= fNofYBins)
-            ind = fNofYBins - 1;
-        
-        return ind;
-    }
-    
-    int GetTInd(Double_t v) const
-    {
-        int ind = (v - fMinT) / fTBinSize;
-        
-        if (ind < 0)
-            ind = 0;
-        else if (ind >= fNofTBins)
-            ind = fNofTBins - 1;
-        
-        return ind;
     }
     
     void SearchHits(const CbmPixelHit* searchHit, std::function<void(CbmTBin::HitHolder&)> handleHit)
@@ -216,21 +176,7 @@ private:
     CbmBinned3DStation& operator=(const CbmBinned3DStation&) = delete;
     
 private:
-    Double_t fZ;
     CbmYBin* fYBins;
-    int fNofYBins;
-    int fNofXBins;
-    int fNofTBins;
-    Double_t fYBinSize;
-    Double_t fXBinSize;
-    Double_t fTBinSize;
-    Double_t fMinY;
-    Double_t fMaxY;
-    Double_t fMinX;
-    Double_t fMaxX;
-    Double_t fMinT;
-    Double_t fMaxT;
-    bool fDefaultUse;
 };
 
 #endif /* STATION3D_H */

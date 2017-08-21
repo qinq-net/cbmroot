@@ -17,6 +17,10 @@ CbmBinnedHitReader::CbmBinnedHitReader(TClonesArray* hitArray) : fStations(), fH
 {
 }
 
+CbmBinnedHitReader::~CbmBinnedHitReader()
+{
+}
+
 class CbmBinnedStsHitReader : public CbmBinnedHitReader
 {
 public:
