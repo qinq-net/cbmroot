@@ -55,7 +55,6 @@ CbmBuildEventsQA.cxx
 CbmDaq.cxx
 #CbmDaqQa.cxx
 CbmDaqBuffer.cxx
-CbmDaqBufferHits.cxx
 CbmMCBuffer.cxx
 CbmMCTimeSim.cxx
 CbmTimeSlice.cxx
