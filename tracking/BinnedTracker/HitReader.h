@@ -18,6 +18,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include "TClonesArray.h"
 
 class CbmBinnedStation;
 

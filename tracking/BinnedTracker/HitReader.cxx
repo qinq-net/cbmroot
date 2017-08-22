@@ -106,7 +106,7 @@ public:
    }
 };
 
-map<string, CbmBinnedHitReader*> CbmBinnedHitReader::fReaders = {};
+map<string, CbmBinnedHitReader*> CbmBinnedHitReader::fReaders;
 
 CbmBinnedHitReader* CbmBinnedHitReader::Instance(const char* name)
 {
