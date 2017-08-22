@@ -35,6 +35,7 @@ public:
     void SetUse() { fUse = true; }
     std::list<HitHolder>::iterator HitsBegin() { return fHits.begin(); }
     std::list<HitHolder>::iterator HitsEnd() { return fHits.end(); }
+    void Clear() { fHits.clear(); }
     void AddHit(const CbmPixelHit* hit, Int_t index, bool use) { fHits.push_back({ hit, index, use, {} }); }
     
 private:

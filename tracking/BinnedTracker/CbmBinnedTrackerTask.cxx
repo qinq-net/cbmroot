@@ -30,7 +30,8 @@ InitStatus CbmBinnedTrackerTask::Init()
 }
 
 void CbmBinnedTrackerTask::Exec(Option_t* opt)
-{   
+{
+   fTracker->Reconstruct(-100);
 }
 
 void CbmBinnedTrackerTask::Finish()

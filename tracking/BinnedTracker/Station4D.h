@@ -30,6 +30,30 @@ public:
     void SetMinZ(Double_t v) { fMinZ = v; }
     void SetMaxZ(Double_t v) { fMaxZ = v; }
     
+    void Clear()
+    {
+        for (int i = 0; i < fNofZBins; ++i)
+        {
+            CbmZBin& zBin = fZBins[i];
+            
+            for (int j = 0; j < fNofYBins; ++j)
+            {
+                CbmYBin& yBin = zBin[j];
+            
+                for (int k = 0; k < fNofXBins; ++k)
+                {
+                    CbmXBin& xBin = yBin[k];
+                
+                    for (int l = 0; l < fNofTBins; ++l)
+                    {
+                        CbmTBin& tBin = xBin[l];
+                        tBin.Clear();
+                    }
+                }
+            }
+        }
+    }
+    
     void AddHit(const CbmPixelHit* hit, Int_t index)
     {
         Double_t z = hit->GetZ();

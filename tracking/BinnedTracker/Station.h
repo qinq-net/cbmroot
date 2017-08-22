@@ -25,7 +25,7 @@ const Double_t cbmBinnedSOL = 0;
 class CbmBinnedStation
 {
 public:
-    CbmBinnedStation(int nofYBins, int nofXBins, int nofTBins) : fZ(0), fNofYBins(nofYBins), fNofXBins(nofXBins), fNofTBins(nofTBins), fYBinSize(0), fXBinSize(0), fTBinSize(0),
+    CbmBinnedStation(int nofYBins, int nofXBins, int nofTBins) : fZ(0), fNofYBins(nofYBins), fNofXBins(nofXBins), fNofTBins(nofTBins), fYBinSize(0), fXBinSize(0), fTBinSize(100),
         fMinY(0), fMaxY(0), fMinX(0), fMaxX(0), fMinT(0), fMaxT(0), fDx(0), fDy(0), fDt(0), fDefaultUse(false) {}    
     CbmBinnedStation(const CbmBinnedStation&) = delete;
     CbmBinnedStation& operator=(const CbmBinnedStation&) = delete;
@@ -37,8 +37,15 @@ public:
     void SetMaxY(Double_t v) { fMaxY = v; }
     void SetMinX(Double_t v) { fMinX = v; }
     void SetMaxX(Double_t v) { fMaxX = v; }
-    void SetMinT(Double_t v) { fMinT = v; }
-    void SetMaxT(Double_t v) { fMaxT = v; }
+    
+    void SetTBinSize(Double_t v) { fTBinSize = v; }
+    
+    void SetMinT(Double_t v)
+    {
+        fMinT = v;
+        fMaxT = fMinT + fNofTBins * fTBinSize;
+    }
+    
     Double_t GetDx() const { return fDx; }
     void SetDx(Double_t v) { if (v > fDx) fDx = v; }
     Double_t GetDy() const { return fDy; }
@@ -86,8 +93,9 @@ public:
     {
         fYBinSize = (fMaxY - fMinY) / fNofYBins;
         fXBinSize = (fMaxX - fMinX) / fNofXBins;
-        fTBinSize = (fMaxT - fMinT) / fNofTBins;
     }
+    
+    virtual void Clear() = 0;
     
     virtual void AddHit(const CbmPixelHit* hit, Int_t index) = 0;
     virtual void IterateHits(std::function<void(CbmTBin::HitHolder&)> handleHit) = 0;

@@ -28,6 +28,25 @@ public:
             new(&fYBins[i]) CbmYBin(nofXBins, nofTBins);
     }
     
+    void Clear()
+    {
+        for (int i = 0; i < fNofYBins; ++i)
+        {
+            CbmYBin& yBin = fYBins[i];
+            
+            for (int j = 0; j < fNofXBins; ++j)
+            {
+                CbmXBin& xBin = yBin[j];
+                
+                for (int k = 0; k < fNofTBins; ++k)
+                {
+                    CbmTBin& tBin = xBin[k];
+                    tBin.Clear();
+                }
+            }
+        }
+    }
+    
     void AddHit(const CbmPixelHit* hit, Int_t index)
     {
         Double_t y = hit->GetY();

@@ -41,10 +41,20 @@ public:
         fBeforeLastLevel = fNofStations - 2;
     }
     
-    void Reconstruct()
+    void Reconstruct(Double_t startTime)
     {
+        Clear();
+        
+        for (std::list<CbmBinnedStation*>::iterator i = fStations.begin(); i != fStations.end(); ++i)
+        {
+            CbmBinnedStation* aStation = *i;
+            aStation->SetMinT(startTime);
+        }
+        
+        CbmBinnedHitReader::Instance()->Read();        
         ReconstructLocal();
         ReconstructGlobal();
+        std::cout << "Reconstructed " << fTracks.size() << " tracks" << std::endl;
     }
     
 private:
@@ -61,7 +71,10 @@ private:
             delete[] fHits;
         }
         
-        Track(const Track& track) : fHits(new CbmTBin::HitHolder*[track.fLength]), fLength(track.fLength), fChiSq(track.fChiSq)
+        Track(const Track&) = delete;
+        Track& operator=(const Track&) = delete;
+        
+        /*Track(const Track& track) : fHits(new CbmTBin::HitHolder*[track.fLength]), fLength(track.fLength), fChiSq(track.fChiSq)
         {
             for (int i = 0; i < fLength; ++i)
                 fHits[i] = track.fHits[i];
@@ -76,7 +89,7 @@ private:
                 fHits[i] = track.fHits[i];
             
             return *this;
-        }
+        }*/
         
         CbmTBin::HitHolder** fHits;
         int fLength;
@@ -84,6 +97,18 @@ private:
     };
     
 private:
+    void Clear()
+    {
+        for (std::list<CbmBinnedStation*>::iterator i = fStations.begin(); i != fStations.end(); ++i)
+        {
+            CbmBinnedStation* aStation = *i;
+            aStation->Clear();
+        }
+        
+        for (std::list<Track*>::iterator i = fTracks.begin(); i != fTracks.end(); ++i)
+            delete *i;
+    }
+    
     void ReconstructLocal()
     {
         for (std::list<CbmBinnedStation*>::iterator i = fStations.begin(); true;)
@@ -181,7 +206,7 @@ private:
                (t - t12) * (t - t12) / ((dt1 * dt1 + dt2 * dt2) / 2 + dt * dt);
     }
     
-    void TraverseTrackCandidates(int level, CbmTBin::HitHolder** trackStart, Double_t chiSq, std::list<Track>& candidates)
+    void TraverseTrackCandidates(int level, CbmTBin::HitHolder** trackStart, Double_t chiSq, std::list<Track*>& candidates)
     {
         CbmTBin::HitHolder* hitHolder = trackStart[level];
         
@@ -199,7 +224,7 @@ private:
             
             if (level == fBeforeLastLevel)
             {
-                Track aCandidate(trackStart, fNofStations, chiSq2);                
+                Track* aCandidate = new Track(trackStart, fNofStations, chiSq2);                
                 candidates.push_back(aCandidate);
             }
             else
@@ -215,21 +240,26 @@ private:
             {
                 CbmTBin::HitHolder* trackHolders[fNofStations];
                 trackHolders[0] = &hitHolder;
-                std::list<Track> candidates;
+                std::list<Track*> candidates;
                 TraverseTrackCandidates(0, trackHolders, 0, candidates);
                 
                 Track* bestCandidate = 0;
                 
-                for (std::list<Track>::iterator i = candidates.begin(); i != candidates.end(); ++i)
+                for (std::list<Track*>::iterator i = candidates.begin(); i != candidates.end(); ++i)
                 {
-                    Track& aCandidate = *i;
+                    Track* aCandidate = *i;
                     
-                    if (0 == bestCandidate || aCandidate.fChiSq < bestCandidate->fChiSq)
-                        bestCandidate = &aCandidate;
+                    if (0 == bestCandidate || aCandidate->fChiSq < bestCandidate->fChiSq)
+                    {
+                        delete bestCandidate;
+                        bestCandidate = aCandidate;
+                    }
+                    else
+                        delete aCandidate;
                 }
                 
                 if (0 != bestCandidate)
-                    fTracks.push_back(*bestCandidate);
+                    fTracks.push_back(bestCandidate);
             }
         );
     }
@@ -239,7 +269,7 @@ private:
     int fNofStations;
     int fBeforeLastLevel;
     Double_t fChiSqCut;
-    std::list<Track> fTracks;
+    std::list<Track*> fTracks;
 };
 
 #endif /* TRACKER_H */

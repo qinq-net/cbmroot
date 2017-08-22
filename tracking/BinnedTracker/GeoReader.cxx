@@ -83,6 +83,12 @@ void CbmBinnedGeoReader::SearchStation(TGeoNode* node, CbmBinnedHitReader* hitRe
 {   
    if (stationPath == stationPathEnd)
    {
+      /*Double_t localCoords[3] = { 0, 0, 0 };
+      Double_t globalCoords[3];
+      gGeoManager->LocalToMaster(localCoords, globalCoords);
+      Double_t z = globalCoords[2];
+      const char* name1 = node->GetName();
+      const char* name2 = gGeoManager->GetCurrentNode()->GetName();*/
       Double_t left = 10000;
       Double_t right = -10000;
       Double_t top = -10000;
@@ -102,6 +108,7 @@ void CbmBinnedGeoReader::SearchStation(TGeoNode* node, CbmBinnedHitReader* hitRe
       else
       {
          CbmBinned3DStation* station3d = new CbmBinned3DStation(gNofYbins, gNofXbins, gNofTbins);
+         station3d->SetZ((front + back) / 2);
          station = station3d;
       }
       
@@ -123,10 +130,9 @@ void CbmBinnedGeoReader::SearchStation(TGeoNode* node, CbmBinnedHitReader* hitRe
       {
          fNavigator->CdDown(*i);
          SearchStation(*i, hitReader, stationPath, stationPathEnd, geoPath);
+         fNavigator->CdUp();
       }
    }
-   
-   fNavigator->CdUp();
 }
 
 void CbmBinnedGeoReader::HandleStation(TGeoNode* node, list<const char*>::const_iterator geoPath, list<const char*>::const_iterator geoPathEnd,
@@ -144,10 +150,9 @@ void CbmBinnedGeoReader::HandleStation(TGeoNode* node, list<const char*>::const_
       {
          fNavigator->CdDown(*i);
          HandleStation(*i, geoPath, geoPathEnd, left, right, top, bottom, front, back);
+         fNavigator->CdUp();
       }
    }
-   
-   fNavigator->CdUp();
 }
 
 void CbmBinnedGeoReader::HandleActive(TGeoNode* node, Double_t& left, Double_t& right, Double_t& top, Double_t& bottom, Double_t& front, Double_t& back)
@@ -161,7 +166,7 @@ void CbmBinnedGeoReader::HandleActive(TGeoNode* node, Double_t& left, Double_t& 
       {
          for (int k = -1; k <= 1; k += 2)
          {
-            Double_t localCoords[3] = {i * pBox->GetDX(), j * pBox->GetDY(), k * pBox->GetDZ() };
+            Double_t localCoords[3] = { i * pBox->GetDX(), j * pBox->GetDY(), k * pBox->GetDZ() };
             Double_t globalCoords[3];
             gGeoManager->LocalToMaster(localCoords, globalCoords);
             

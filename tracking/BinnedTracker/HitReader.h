@@ -25,6 +25,7 @@ class CbmBinnedStation;
 class CbmBinnedHitReader
 {
 public:
+    static CbmBinnedHitReader* Instance();
     static CbmBinnedHitReader* Instance(const char* name);
     static void AddReader(const char* name, TClonesArray* hitArray);
     
@@ -40,7 +41,7 @@ protected:
     std::vector<CbmBinnedStation*> fStations;
     TClonesArray* fHitArray;
     
-private:
+protected:
     static std::map<std::string, CbmBinnedHitReader*> fReaders;
 };
 

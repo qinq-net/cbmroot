@@ -106,6 +106,22 @@ public:
    }
 };
 
+class CbmBinnedAllHitReader : public CbmBinnedHitReader
+{
+public:
+   CbmBinnedAllHitReader() : CbmBinnedHitReader(0) {}
+   
+   void Read()
+   {
+      for (map<string, CbmBinnedHitReader*>::iterator i = fReaders.begin(); i != fReaders.end(); ++i)
+         i->second->Read();
+   }
+};
+
+CbmBinnedHitReader* CbmBinnedHitReader::Instance()
+{
+}
+
 map<string, CbmBinnedHitReader*> CbmBinnedHitReader::fReaders;
 
 CbmBinnedHitReader* CbmBinnedHitReader::Instance(const char* name)
