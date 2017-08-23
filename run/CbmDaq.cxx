@@ -88,8 +88,10 @@ void CbmDaq::CloseTimeSlice() {
   fEventRange.clear();
   fEventsCurrent->Clear("");
 
-  // --- Clear data output array
+  // --- Clear data output arrays
   fStsDigis->Delete();
+  fMuchDigis->Delete();
+  fTofDigis->Delete();
 
 }
 // ===========================================================================
