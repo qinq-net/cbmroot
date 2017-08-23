@@ -171,9 +171,11 @@ class CbmTof : public FairDetector
   Int_t          fCurrentModuleIndex;  //! Current module index
   Int_t          fCurrentCounterIndex; //! Current counter index
 
-  std::vector< std::tuple<Int_t, Int_t, Int_t> > fInactiveCounters;                    //! Vector of inactive counters
+  std::vector< std::pair< std::tuple<Int_t, Int_t, Int_t>, Int_t> > fInactiveCounters; //! Vector of inactive counters
   std::vector< std::pair< std::tuple<Int_t, Int_t, Int_t>, TString> > fCountersInBeam; //! Vector of counters in beam
   std::vector<TGeoPhysicalNode*> fNodesInBeam;                                         //! Vector of counter nodes in beam
+
+  Int_t fOutputTreeEntry;
 
   /** Private method AddHit
    **
@@ -230,7 +232,7 @@ class CbmTof : public FairDetector
   CbmTof& operator=(const CbmTof&);
 
 
-  ClassDef(CbmTof,4)
+  ClassDef(CbmTof,5)
 
 };
 
