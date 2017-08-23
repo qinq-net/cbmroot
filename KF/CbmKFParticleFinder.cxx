@@ -84,10 +84,6 @@ InitStatus CbmKFParticleFinder::Init()
   if (nullptr == fPrimVtx) {
     fPrimVtx = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex"));
   }
-  if (nullptr == fPrimVtx) {
-    Error("CbmKFParticleFinder::Init","vertex not found!");
-    return kERROR;
-  }
 
   return kSUCCESS;
 }
