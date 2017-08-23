@@ -20,7 +20,7 @@
 
 const Double_t cbmBinnedSigma = 4;
 const Double_t cbmBinnedSigmaSq = cbmBinnedSigma * cbmBinnedSigma;
-const Double_t cbmBinnedSOL = 0;
+extern Double_t cbmBinnedSOL;
 
 class CbmBinnedStation
 {

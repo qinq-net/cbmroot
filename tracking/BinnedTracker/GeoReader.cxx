@@ -10,6 +10,7 @@
 #include "Station3D.h"
 #include "Station4D.h"
 #include "TClonesArray.h"
+#include "TMath.h"
 
 using namespace std;
 
@@ -59,6 +60,8 @@ void CbmBinnedGeoReader::FindGeoChild(TGeoNode* node, const char* name, list<TGe
    }
 }
 
+Double_t cbmBinnedSOL = 0;
+
 void CbmBinnedGeoReader::Read()
 {
    ReadDetector("sts");
@@ -66,6 +69,7 @@ void CbmBinnedGeoReader::Read()
    ReadDetector("much");
    ReadDetector("tof");
    ReadDetector("rich");
+   cbmBinnedSOL = 1.e-7 * TMath::C();// Speed of light in cm/ns
 }
 
 void CbmBinnedGeoReader::ReadDetector(const char* name)
@@ -78,9 +82,31 @@ static const int gNofYbins = 20;
 static const int gNofXbins = 20;
 static const int gNofTbins = 5;
 
+static Double_t gStationErrors[][3] =
+{
+   { 0.014601, 0.156848, 3.535534 },// Sts 0
+   { 0.013942, 0.108157, 3.535534 },// Sts 1
+   
+   { 0.359375, 7.750000, 4 },// Trd 0
+   { 7.750000, 0.359375, 4 },// Trd 1
+   { 0.359375, 7.750000, 4 },// Trd 2
+   { 7.750000, 0.359375, 4 },// Trd 3
+   
+   { 0.487468, 0.487468, 4 },// Much 0
+   { 0.487468, 0.487468, 4 },// Much 1
+   { 0.487468, 0.487468, 4 },// Much 2
+   
+   { 0.288675, 0.72, 4 },// Tof
+   
+   { 0.175, 0.175, 4 }// Rich
+};
+
+static Double_t gTofStationTxError = 0.001277;
+static Double_t gTofStationTyError = 0.003186;
+
 void CbmBinnedGeoReader::SearchStation(TGeoNode* node, CbmBinnedHitReader* hitReader, list<const char*>::const_iterator stationPath,
    list<const char*>::const_iterator stationPathEnd, const std::list<const char*>& geoPath, bool is4d)
-{   
+{
    if (stationPath == stationPathEnd)
    {
       /*Double_t localCoords[3] = { 0, 0, 0 };
@@ -89,6 +115,7 @@ void CbmBinnedGeoReader::SearchStation(TGeoNode* node, CbmBinnedHitReader* hitRe
       Double_t z = globalCoords[2];
       const char* name1 = node->GetName();
       const char* name2 = gGeoManager->GetCurrentNode()->GetName();*/
+      static int stationNumber = 0;
       Double_t left = 10000;
       Double_t right = -10000;
       Double_t top = -10000;
@@ -103,6 +130,8 @@ void CbmBinnedGeoReader::SearchStation(TGeoNode* node, CbmBinnedHitReader* hitRe
          CbmBinned4DStation* station4d = new CbmBinned4DStation(gNofZbins, gNofYbins, gNofXbins, gNofTbins);
          station4d->SetMinZ(front);
          station4d->SetMaxZ(back);
+         station4d->SetDtx(gTofStationTxError);
+         station4d->SetDty(gTofStationTyError);
          station = station4d;
       }
       else
@@ -116,9 +145,15 @@ void CbmBinnedGeoReader::SearchStation(TGeoNode* node, CbmBinnedHitReader* hitRe
       station->SetMaxY(top);
       station->SetMinX(left);
       station->SetMaxX(right);
+      
+      station->SetDx(gStationErrors[stationNumber][0]);
+      station->SetDy(gStationErrors[stationNumber][1]);
+      station->SetDt(gStationErrors[stationNumber][2]);
+      
       station->Init();
       fTracker->AddStation(station);
       hitReader->AddStation(station);
+      ++stationNumber;
    }
    else
    {
@@ -202,8 +237,8 @@ void CbmBinnedGeoReader::ReadSts()
 
 void CbmBinnedGeoReader::ReadRich()
 {
-   list<const char*> stationPath = { "rich", "rich_smallprototype" };
-   list<const char*> geoPath = { "Box", "Gas", "PmtContainer", "Pmt" };
+   list<const char*> stationPath = { "rich" };
+   list<const char*> geoPath = { "rich_smallprototype", "Box", "Gas", "PmtContainer", "Pmt", "pmt_pixel" };
    gGeoManager->cd("/cave_1");
    SearchStation(gGeoManager->GetCurrentNode(), CbmBinnedHitReader::Instance("rich"), stationPath.begin(), stationPath.end(), geoPath);
 }

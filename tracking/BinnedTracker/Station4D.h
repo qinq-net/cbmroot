@@ -29,6 +29,8 @@ public:
     
     void SetMinZ(Double_t v) { fMinZ = v; }
     void SetMaxZ(Double_t v) { fMaxZ = v; }
+    void SetDtx(Double_t v) { fDtxSq = v * v; }
+    void SetDty(Double_t v) { fDtySq = v * v; }
     
     void Clear()
     {

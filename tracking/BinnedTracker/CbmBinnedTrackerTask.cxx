@@ -25,6 +25,7 @@ InitStatus CbmBinnedTrackerTask::Init()
       fLogger->Fatal(MESSAGE_ORIGIN, "Couldn't instantiate CbmBinnedGeoReader");
    
    geoReader->Read();
+   fTracker = CbmBinnedTracker::Instance();
    
    return kSUCCESS;
 }
@@ -32,6 +33,7 @@ InitStatus CbmBinnedTrackerTask::Init()
 void CbmBinnedTrackerTask::Exec(Option_t* opt)
 {
    fTracker->Reconstruct(-100);
+   //CbmBinnedHitReader::Instance()->Read();
 }
 
 void CbmBinnedTrackerTask::Finish()
