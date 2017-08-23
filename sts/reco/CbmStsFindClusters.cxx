@@ -89,10 +89,10 @@ Int_t CbmStsFindClusters::CreateModules() {
   for (Int_t iModule = 0; iModule < nModules; iModule++) {
     CbmStsModule* module = fSetup->GetModule(iModule);
     assert(module->IsSet());
-    UInt_t address = module->GetAddress();
+    Int_t address = module->GetAddress();
     const char* name = module->GetName();
     Double_t deltaT = 3.* TMath::Sqrt(2.) * module->GetTimeResolution();
-    Int_t nChannels = module->GetNofChannels();
+    UShort_t nChannels = module->GetNofChannels();
     CbmStsClusterFinderModule* finderModule =
         new CbmStsClusterFinderModule(nChannels, deltaT, name, module, fClusters);
 
@@ -372,16 +372,12 @@ void CbmStsFindClusters::ProcessDigi(Int_t index) {
   assert(digi);
 
   // --- Get the cluster finder module
-  UInt_t address =
-      CbmStsAddress::GetMotherAddress(digi->GetAddress(), kStsModule);
-  CbmStsClusterFinderModule* module = fModules.at(address);
+  CbmStsClusterFinderModule* module = fModules.at(digi->GetAddress());
   assert(module);
 
-  // --- Digi channel and time
-  Int_t digiChannel = CbmStsAddress::GetElementId(digi->GetAddress(),
-                                                  kStsChannel);
-  assert ( digiChannel >= 0 || digiChannel < module->GetSize() );
-  UShort_t channel = UShort_t(digiChannel);
+  // --- Digi channel
+  UShort_t channel = digi->GetChannel();
+  assert ( channel < module->GetSize() );
 
   // --- Process digi in module
   module->ProcessDigi(channel, digi->GetTime(), index);

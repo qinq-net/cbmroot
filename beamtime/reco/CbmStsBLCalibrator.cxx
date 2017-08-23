@@ -102,9 +102,9 @@ void CbmStsBLCalibrator::Exec(Option_t* /*option*/)
     
     for( Int_t iDigi = 0; iDigi < nBaselineEntries; ++iDigi ) {
       CbmStsDigi * digi = static_cast< CbmStsDigi * >( fBaselineDigis->At( iDigi ) );
-      Int_t station = CbmStsAddress::GetElementId( digi->GetAddress(), kStsStation );
+      Int_t station = CbmStsAddress::GetElementId( digi->GetAddress(), kStsUnit );
       Int_t side = CbmStsAddress::GetElementId( digi->GetAddress(), kStsSide );
-      Int_t strip = CbmStsAddress::GetElementId( digi->GetAddress(), kStsChannel );
+      Int_t strip = digi->GetChannel();
       Double_t adc = digi->GetCharge();
       fBaselines.at( station ).at( side ).at( strip )->Fill( adc );
     }

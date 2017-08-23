@@ -39,7 +39,7 @@ class CbmStsElement : public TNamed
      ** @param node     Pointer to geometry node
      ** @param mother   Pointer to mother element
      **/
-    CbmStsElement(UInt_t address, Int_t level,
+    CbmStsElement(Int_t address, Int_t level,
                   TGeoPhysicalNode* node = nullptr,
                   CbmStsElement* mother = nullptr);
 
@@ -48,24 +48,17 @@ class CbmStsElement : public TNamed
     virtual ~CbmStsElement() { };
 
 
-    /** Add a daughter element
-     ** The daughter must be one element level higher than the mother.
-     ** @param element  Pointer to element to be added as daughter.
-     **/
-    //virtual void AddDaughter(CbmStsElement* element);
-
-
     /** Construct the element name from the address (static)
      ** @param address Unique element address
      ** @param level   Element level (unit, ladder, etc.)
      **/
-    static TString ConstructName(UInt_t address, EStsElementLevel level);
+    static TString ConstructName(Int_t address, EStsElementLevel level);
 
 
     /** Get unique address
      ** @return Element address
      **/
-    UInt_t GetAddress() const { return fAddress; }
+    Int_t GetAddress() const { return fAddress; }
 
 
     /** Get a daughter element
@@ -125,7 +118,7 @@ class CbmStsElement : public TNamed
 
   protected:
 
-    UInt_t fAddress;                       ///< Unique address
+    Int_t fAddress;                        ///< Unique element address
     EStsElementLevel fLevel;               ///< Level in hierarchy
     TGeoPhysicalNode* fNode;               ///< Pointer to geometry
     std::vector<CbmStsElement*> fDaughters;     ///< Array of daughters
@@ -150,7 +143,7 @@ private:
     CbmStsElement& operator=(const CbmStsElement&) = delete;
 
 
-    ClassDef(CbmStsElement,1);
+    ClassDef(CbmStsElement, 2);
 
 };
 

@@ -48,7 +48,7 @@ class CbmStsTrackStatus {
 		}
 
 
-		UInt_t   fAddress;    ///< Unique address
+		Int_t    fAddress;    ///< Unique address
 		Int_t    fTrackId;    ///< MCTrack index
 		Int_t    fPid;        ///< MCTrack PID [PDG code]
 		Double_t fX;          ///< x position [cm]

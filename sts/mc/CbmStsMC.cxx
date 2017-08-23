@@ -92,12 +92,13 @@ void CbmStsMC::Initialize() {
   fStsPoints = new TClonesArray("CbmStsPoint");
 
   // --- Get the CbmStsSetup instance and construct a map from full path
-  // --- to address. This is needed to store the unique address of the
-  // --- activated sensor in the CbmStsPoint class. Unfortunately, the
-  // --- full geometry path (string) is the only way to unambiguously
-  // --- identify the current active node during the transport.
-  // --- It may seem that looking up a string in a map is not efficient.
-  // --- I checked however, that the performance penalty is very small.
+  // --- to address for each sensor. This is needed to store the unique x
+  // --- address of the activated sensor in the CbmStsPoint class.
+  // --- Unfortunately, the full geometry path (string) is the only way
+  // --- to unambiguously identify the current active node during the
+  // --- transport. It may seem that looking up a string in a map is not
+  // --- efficient. I checked however, that the performance penalty is very
+  // --- small.
   fAddressMap.clear();
   fSetup = CbmStsSetup::Instance();
   	Int_t nUnits = fSetup->GetNofDaughters();
@@ -261,7 +262,7 @@ CbmStsPoint* CbmStsMC::CreatePoint() {
     CbmStsPoint(fStatusIn.fTrackId, fStatusIn.fAddress, posIn, posOut,
                 momIn, momOut, time, length, fEloss, fStatusIn.fPid, 0,
                 newIndex, flag);
-                
+
 }
 // -------------------------------------------------------------------------
 
@@ -281,7 +282,7 @@ void CbmStsMC::SetStatus(CbmStsTrackStatus& status) {
   // --- Use the geometry path from TVirtualMC; cannot rely on
   // --- TGeoManager here.
   TString path = gMC->CurrentVolPath();
-  map<TString, UInt_t>::iterator it = fAddressMap.find(path);
+  auto it = fAddressMap.find(path);
   if ( it == fAddressMap.end() ) {
   	LOG(INFO) << fName << ": Path not found in address map! "
   			      << gGeoManager->GetPath() << FairLogger::endl;

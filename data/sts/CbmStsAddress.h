@@ -6,165 +6,133 @@
 #ifndef CBMSTSADDRESS_H
 #define CBMSTSADDRESS_H 1
 
+#include <cassert>
 #include <sstream>
 #include "FairLogger.h"
-#include "CbmAddress.h"
 
 
-/** @enum EStsElementLevel
- ** Enumerator for STS element levels
- ** If this is changed, the initialisation of the static members
- ** of CbmStsAddress must be changed accordingly!
- **/
+/** Enumerator for the hierarchy levels of the STS setup **/
 enum EStsElementLevel {
-  kStsSystem,     //!< System = STS
-  kStsUnit,       //!< Station
-  kStsLadder,     //!< Ladder
-  kStsHalfLadder, //!< Halfladder
-  kStsModule,     //!< Module
-  kStsSensor,     //!< Sensor
-  kStsSide,       //!< Side
-  kStsChannel,    //!< Channel
-  kStsNofLevels   //!< Number of STS levels
+  kStsSystem,
+  kStsUnit,
+  kStsLadder,
+  kStsHalfLadder,
+  kStsModule,
+  kStsSensor,
+  kStsSide,
+  kStsNofLevels
 };
 
 
 
-/** @class CbmStsAddress
- ** @brief Interface class to unique address for the STS
+/** Namespace CbmStsAddress
+ ** @brief Functions to encode or decode the address field of STS data.
  ** @author V.Friese <v.friese@gsi.de>
- ** @version 2.0
  **
- ** The CbmStsAddress interprets and modifies the unique address
- ** for the STS by the proper bit operation on the address bit field.
+ ** The current definition (version 1) of the address bit field for the STS is:
  **
- ** The current definition of the bit field for the STS is:
- **
- **                                               3         2         1
- ** Level           Bits  Max. Elements  Shift   10987654321098765432109876543210 \n
- ** System (kSTS)     4         16          0    0000000000000000000000000000xxxx \n
- ** Unit              4         16          4    000000000000000000000000xxxx0000 \n
- ** Ladder            4         16          8    00000000000000000000xxxx00000000 \n
- ** HalfLadder        1          2         12    0000000000000000000x000000000000 \n
- ** Module            3          8         13    0000000000000000xxx0000000000000 \n
- ** Sensor            2          4         16    00000000000000xx0000000000000000 \n
- ** Side              1          2         18    0000000000000x000000000000000000 \n
- ** Channel          13       8192         19    xxxxxxxxxxxxx0000000000000000000 \n
+ ** Level           Bits  Max. Elements  Bit Position
+ ** System (kSTS)     4         16          0 -  3
+ ** Unit              6         64          4 -  9
+ ** Ladder            5         32         10 - 14
+ ** HalfLadder        1          2         15
+ ** Module            5         32         16 - 20
+ ** Sensor            4         16         21 - 24
+ ** Side              1          2         25
+ ** Unused            2                    26 - 27
+ ** Version           4         16         28 - 31
  **/
-class CbmStsAddress : public CbmAddress
-{
+namespace CbmStsAddress {
 
-  public:
+  const UInt_t kCurrentVersion = 1;
 
-    /** Construct address
-     ** @param unit         Unit index
-     ** @param ladder       Ladder index in station
-     ** @param halfladder   Halfladder index in ladder
-     ** @param module       Module index within halfladder
-     ** @param sensor       Sensor index within module
-     ** @param side         Side (0=front, 1=back) of sensor
-     ** @param channel      Channel number
-     ** @return Unique element address
-     **/
-    static UInt_t GetAddress(Int_t unit = 0,
-                             Int_t ladder = 0,
-                             Int_t halfladder = 0,
-                             Int_t module = 0,
-                             Int_t sensor = 0,
-                             Int_t side = 0,
-                             Int_t channel = 0);
+  // --- These values are not to be changed if backward compatibility
+  // --- shall be maintained.
+  const Int_t kVersionSize    = 4;   // Bits for version number
+  const Int_t kVersionShift   = 28;  // First bit for version number
+  const Int_t kVersionMask    = (1 << kVersionSize) -1;
 
 
-    /** Construct address
-     ** @param elementIds   Array of element indices in their mother volumes
-     ** @return Unique element address
-     **/
-    static UInt_t GetAddress(Int_t* elementIds);
+  /** @brief Construct address
+   ** @param unit         Unit index
+   ** @param ladder       Ladder index in station
+   ** @param halfladder   Halfladder index in ladder
+   ** @param module       Module index within halfladder
+   ** @param sensor       Sensor index within module
+   ** @param side         Side (0=front, 1=back) of sensor
+   ** @param channel      Channel number
+   ** @return Unique element address
+   **/
+  Int_t GetAddress(UInt_t unit = 0,
+                   UInt_t ladder = 0,
+                   UInt_t halfladder = 0,
+                   UInt_t module = 0,
+                   UInt_t sensor = 0,
+                   UInt_t side = 0,
+                   UInt_t version = kCurrentVersion);
 
 
-    /** Construct the address of an element from the address of a
-     ** descendant element.
-     ** @param address Address of descendant element
-     ** @param level   Desired hierarchy level
-     ** @return Address of element at desired hierarchy level
-     **
-     ** This strips of the address information of all hierarchy levels
-     ** below the desired one.
-     **/
-    static UInt_t GetMotherAddress(UInt_t address, Int_t level) {;
-    	if ( level < 0 || level >= kStsNofLevels ) return 0;
-    	return ( address & ( ( 1 << fgkShift[level+1] ) - 1 ) ) ;
-    }
+  /** @brief Construct address
+   ** @param elementIds   Array of element indices in their mother volumes
+   ** @return Unique element address
+   **/
+  Int_t GetAddress(UInt_t* elementId, UInt_t version);
 
 
-    /** Get the index of an element
-     ** @param address Unique element address
-     ** @param level Hierarchy level
-     ** @return Element index
-     **/
-    static Int_t GetElementId(UInt_t address, Int_t level) {
-      if ( level < 0 || level >= kStsNofLevels ) return -1;
-      return ( address & ( fgkMask[level] << fgkShift[level] ) )
-               >> fgkShift[level];
-    }
+  /** @brief Construct the address of an element from the address of a
+   ** descendant element.
+   ** @param address Address of descendant element
+   ** @param level   Desired hierarchy level
+   ** @return Address of element at desired hierarchy level
+   **
+   ** This strips of the address information of all hierarchy levels
+   ** below the desired one.
+   **/
+  Int_t GetMotherAddress(Int_t address, Int_t level);
 
 
-    /** Get the number of bits for a given hierarchy level
-     ** @param level  Requested element level
-     ** @return       Number of bits in address field
-     **/
-    static Int_t GetNofBits(Int_t level) {
-      if ( level < 0 || level >= kStsNofLevels ) return 0;
-      return fgkBits[level];
-    }
+  /** @brief Get the index of an element
+   ** @param address Unique element address
+   ** @param level Hierarchy level
+   ** @return Element index
+   **/
+  UInt_t GetElementId(Int_t address, Int_t level);
 
 
-    /** Get the number of hierarchy levels
-     ** For use in macros which do not include this header file.
-     ** @return       Number of hierarchy levels
-     **/
-     static Int_t GetNofLevels() { return kStsNofLevels; }
+  /** @brief Get system Id (should be kSts)
+   ** @param address Unique element address
+   **/
+  UInt_t GetSystemId(Int_t address);
 
 
-    /** Set the index of an element
-     ** leaving the other element levels untouched
-     ** @param address Unique element address
-     ** @param level   Hierarchy level
-     ** @param newId   New element index
-     ** @return New address
-     **/
-     static UInt_t SetElementId(UInt_t address, Int_t level, Int_t newId) {
-       if ( level < 0 || level >= kStsNofLevels ) return address;
-       if ( newId >= ( 1 << fgkBits[level]) ) {
-         LOG(ERROR) << "Id " << newId << " for STS level " << level
-                    << " exceeds maximum (" << (1 << fgkBits[level]) - 1
-                    << ")" << FairLogger::endl;
-         return 0;
-       }
-       return ( address & (~ (fgkMask[level] << fgkShift[level]) ) )
-              | ( newId << fgkShift[level]);
-     }
+  /** @brief Extract version number
+   ** @param address Unique element address
+   ** @value Version number
+   **
+   ** The version is encoded in the last 6 bits (58 to 63).
+   ** The maximal number of versions is 64.
+   **/
+  UInt_t GetVersion(Int_t address);
 
 
-     /** String output **/
-     virtual std::string ToString() const;
+  /** @brief Set the index of an element, leaving the other element levels
+   ** untouched
+   ** @param address Unique element address
+   ** @param level   Hierarchy level
+   ** @param newId   New element index
+   ** @return New address
+   **/
+  Int_t SetElementId(Int_t address, Int_t level, UInt_t newId);
 
 
+  /** @brief String output
+   ** @param address Unique element address
+   **/
+  std::string ToString(Int_t address);
 
-  private:
-
-    /** Number of bits for the different levels **/
-    static const Int_t fgkBits[kStsNofLevels];
-
-    /** Bit shifts for the different levels **/
-    static const Int_t fgkShift[kStsNofLevels];
-
-    /** Bit masks for the different levels **/
-    static const Int_t fgkMask[kStsNofLevels];
+} // Namespace CbmStsAddress
 
 
-    ClassDef(CbmStsAddress, 2);
-};
+#endif // CBMSTSADDRESS_H
 
 
-#endif /* CBMSTSADDRESS_H  */

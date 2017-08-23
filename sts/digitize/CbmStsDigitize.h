@@ -50,8 +50,8 @@ class CbmStsDigitize : public FairTask
    ** @param adc       Digitised charge [ADC channels]
    ** @param match    MC Match object
    **/
-  void CreateDigi(UInt_t address, Long64_t time, UShort_t adc,
-  		            const CbmMatch& match);
+  void CreateDigi(Int_t address, UShort_t channel, Long64_t time,
+                  UShort_t adc, const CbmMatch& match);
 
 
   /** @brief Discard processing of secondary tracks

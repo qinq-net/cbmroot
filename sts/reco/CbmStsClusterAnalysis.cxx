@@ -34,7 +34,7 @@ void CbmStsClusterAnalysis::Analyze(CbmStsCluster* cluster,
 		CbmStsDigi* digi = dynamic_cast<CbmStsDigi*> ( digiArray->At(index) );
 		assert(digi);
 		UInt_t address = digi->GetAddress();
-		Double_t x = Double_t(CbmStsAddress::GetElementId(address, kStsChannel));
+		Double_t x = Double_t(digi->GetChannel());
 		Double_t time = digi->GetTime();
 		Double_t timeError = module->GetTimeResolution();
 		Double_t charge = module->AdcToCharge(digi->GetCharge());
@@ -57,10 +57,8 @@ void CbmStsClusterAnalysis::Analyze(CbmStsCluster* cluster,
 		assert(digi1);
 		assert(digi2);
 
-		UInt_t address1 = digi1->GetAddress();
-		UInt_t address2 = digi2->GetAddress();
-		Int_t chan1 = CbmStsAddress::GetElementId(address1, kStsChannel);
-        Int_t chan2 = CbmStsAddress::GetElementId(address2, kStsChannel);
+		Int_t chan1 = digi1->GetChannel();
+        Int_t chan2 = digi2->GetChannel();
         assert( chan2 == chan1 + 1 ||
                 chan2 == chan1 - module->GetNofChannels()/2 + 1);
 
@@ -142,8 +140,7 @@ void CbmStsClusterAnalysis::Analyze(CbmStsCluster* cluster,
 			Double_t charge = module->AdcToCharge(digi->GetCharge());
 			Double_t lWidth = fPhysics->LandauWidth(charge);
 			Double_t eChargeSq = lWidth*lWidth + eNoiseSq + eDigitSq;
-			UInt_t address = digi->GetAddress();
-			Int_t channel = CbmStsAddress::GetElementId(address, kStsChannel);
+			Int_t channel = digi->GetChannel();
 
 			// Check ascending order of channel number
 			if ( iDigi > 0 )

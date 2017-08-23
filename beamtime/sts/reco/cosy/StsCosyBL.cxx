@@ -226,7 +226,7 @@ void StsCosyBL::Exec(Option_t*)
       StsDigi = (CbmStsDigi*) fDigis->At(iDigi);
       int station = CbmStsSetup::Instance()->GetStationNumber(StsDigi->GetAddress());
       int side = CbmStsAddress::GetElementId(StsDigi->GetAddress(),kStsSide);
-      int ch = CbmStsAddress::GetElementId(StsDigi->GetAddress(),kStsChannel);
+      int ch = StsDigi->GetChannel();
       raw_ch_woBL[station][side]->Fill(ch,StsDigi->GetCharge());
     }    
   }
@@ -276,7 +276,7 @@ void StsCosyBL::Exec(Option_t*)
 	      
 	      int station = CbmStsSetup::Instance()->GetStationNumber(StsDigi->GetAddress());
 	      int side = CbmStsAddress::GetElementId(StsDigi->GetAddress(),kStsSide);
-	      int ch = CbmStsAddress::GetElementId(StsDigi->GetAddress(),kStsChannel);
+	      int ch = StsDigi->GetChannel();
 
 	      double adc = -StsDigi->GetCharge() + base_line_array.at(station).at(side).at(ch);
 				
@@ -290,12 +290,16 @@ void StsCosyBL::Exec(Option_t*)
 	      
 	      if(fTriggeredMode && station==fTriggeredStation)
 	      {
-		new ( (*cDigis)[fNDigis] ) CbmStsDigi(StsDigi->GetAddress(), StsDigi->GetTime(), adc);
+		new ( (*cDigis)[fNDigis] ) CbmStsDigi(StsDigi->GetAddress(),
+		                                      StsDigi->GetChannel(),
+		                                      StsDigi->GetTime(), adc);
 		fNDigis++;
 	      }
 	      else if(adc>0)
 		{
-		  new ( (*cDigis)[fNDigis] ) CbmStsDigi(StsDigi->GetAddress(), StsDigi->GetTime(), (UShort_t)adc);
+		  new ( (*cDigis)[fNDigis] ) CbmStsDigi(StsDigi->GetAddress(),
+		                                        StsDigi->GetChannel(),
+		                                        StsDigi->GetTime(), (UShort_t)adc);
 		  fNDigis++;
 		}
 	      else return;
@@ -422,7 +426,7 @@ void StsCosyBL::BaseLine(TClonesArray* fBaselineDigis, vector< vector < vector <
 	  CbmStsDigi * digi = static_cast< CbmStsDigi * >( fBaselineDigis->At( iDigi ) );
 	  Int_t station = CbmStsSetup::Instance()->GetStationNumber( digi->GetAddress() );
 	  Int_t side = CbmStsAddress::GetElementId( digi->GetAddress(), kStsSide );
-	  Int_t strip = CbmStsAddress::GetElementId( digi->GetAddress(), kStsChannel );
+	  Int_t strip = digi->GetChannel();
 	  Double_t adc = digi->GetCharge();
 	  fBaselines.at( station ).at( side ).at( strip )->Fill( adc );
 

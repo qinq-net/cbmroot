@@ -86,7 +86,7 @@ class CbmStsModule : public CbmStsElement
      ** previous signals within the same channels is checked and the
      ** proper action is executed.
      **/
-    void AddSignal(Int_t channel, Double_t time, Double_t charge,
+    void AddSignal(UShort_t channel, Double_t time, Double_t charge,
                    Int_t index = 0, Int_t entry = 0, Int_t file = 0);
 
 
@@ -142,7 +142,7 @@ class CbmStsModule : public CbmStsElement
     /** @brief Number of electronic channels
      ** @value Number of ADC channels
      **/
-    Int_t GetNofChannels() const { return fNofChannels; };
+    UShort_t GetNofChannels() const { return fNofChannels; };
 
 
     /** @brief Current number of clusters
@@ -154,7 +154,7 @@ class CbmStsModule : public CbmStsElement
     /** @brief Set of dead channels
      ** @value Set of dead channels
      **/
-    std::set <Int_t> GetSetOfDeadChannels() const {return fDeadChannels;}
+    std::set<UShort_t> GetSetOfDeadChannels() const {return fDeadChannels;}
 
 
     /** Time resolution
@@ -188,7 +188,7 @@ class CbmStsModule : public CbmStsElement
      ** @param channel  Channel number
      ** @value kTRUE if channel is active
      **/
-    Bool_t IsChannelActive(Int_t channel) {
+    Bool_t IsChannelActive(UShort_t channel) {
       return ( fDeadChannels.find(channel) == fDeadChannels.end() );
     }
 
@@ -272,7 +272,7 @@ class CbmStsModule : public CbmStsElement
 
   private:
 
-    Double_t fNofChannels;       ///< Number of electronic channels
+    UShort_t fNofChannels;       ///< Number of electronic channels
     Double_t fDynRange;          ///< dynamic range [e]
     Double_t fThreshold;         ///< threshold [e]
     Int_t    fNofAdcChannels;    ///< Number of ADC channels
@@ -282,7 +282,7 @@ class CbmStsModule : public CbmStsElement
     Double_t fZeroNoiseRate;     ///< Zero-threshold noise rate [1/ns]
     Double_t fNoiseRate;         ///< Noise rate [1/ns]
     Bool_t   fIsSet;             ///< Flag whether parameters are set
-    std::set <Int_t> fDeadChannels;    ///< List of inactive channels
+    std::set <UShort_t> fDeadChannels;    ///< List of inactive channels
     CbmStsPhysics* fPhysics;  //!  Pointer to CbmStsPhysics instance
 
     /** Buffer for analog signals, key is channel number.
@@ -293,7 +293,8 @@ class CbmStsModule : public CbmStsElement
      ** which compares the time of the signals.
      **/
     typedef std::multiset<CbmStsSignal*, CbmStsSignal::Before> sigset;
-    std::map<Int_t, sigset> fAnalogBuffer;
+    std::map<UShort_t, sigset> fAnalogBuffer;
+
 
     /** Vector of clusters. Used for hit finding. **/
     std::vector<CbmStsCluster*> fClusters;
@@ -303,7 +304,7 @@ class CbmStsModule : public CbmStsElement
      ** @param channel Channel number
      ** @param signal  Pointer to signal object
      **/
-    void Digitize(Int_t channel, CbmStsSignal* signal);
+    void Digitize(UShort_t channel, CbmStsSignal* signal);
 
 
     /** Initialise daughters from geometry **/
@@ -311,7 +312,7 @@ class CbmStsModule : public CbmStsElement
 
 
 
-    ClassDef(CbmStsModule,1);
+    ClassDef(CbmStsModule, 2);
 
 };
 

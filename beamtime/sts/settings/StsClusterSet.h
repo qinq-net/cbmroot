@@ -23,7 +23,7 @@
 
 struct classcomp2 {
   bool operator() (const CbmStsDigi* lhs, const CbmStsDigi* rhs) const
-    {return CbmStsAddress::GetElementId(lhs->GetAddress(),kStsChannel) < CbmStsAddress::GetElementId(rhs->GetAddress(),kStsChannel);}
+    {return lhs->GetChannel() < rhs->GetChannel();}
 };
     
 class StsClusterSet : public FairTask

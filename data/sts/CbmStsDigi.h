@@ -1,7 +1,7 @@
 /** @file CbmStsDigi.h
  ** @author V.Friese <v.friese@gsi.de>
  ** @since 28.08.2006
- ** @version 4.0
+ ** @version 6
  **/
 
 
@@ -30,7 +30,13 @@ class CbmStsDigi : public CbmDigi
  public:
 
   /** Default constructor **/
-  CbmStsDigi() : CbmDigi(), fAddress(0), fTime(0), fCharge(0) { }
+  CbmStsDigi() :
+    CbmDigi(),
+    fAddress(0),
+    fChannel(0),
+    fTime(0),
+    fCharge(0)
+ { }
 
 
   /** Standard constructor
@@ -38,8 +44,13 @@ class CbmStsDigi : public CbmDigi
    ** @param  time     Measurement time [ns]
    ** @param  charge   Charge [ADC units]
    **/
-  CbmStsDigi(UInt_t address, ULong64_t time, UShort_t charge)
-      : CbmDigi(), fAddress(address), fTime(time), fCharge(charge) { }
+  CbmStsDigi(Int_t address, Int_t channel, ULong64_t time, UShort_t charge) :
+      CbmDigi(),
+      fAddress(address),
+      fChannel(channel),
+      fTime(time),
+      fCharge(charge)
+  { }
 
 
   /** Destructor **/
@@ -50,6 +61,12 @@ class CbmStsDigi : public CbmDigi
    ** @value Unique address of readout channel
    **/
   virtual Int_t GetAddress() const { return fAddress; }
+
+
+  /** @brief Channel number in module
+   ** @value Channel number
+   **/
+  UShort_t GetChannel() const { return fChannel; }
 
 
   /** Charge
@@ -88,12 +105,13 @@ class CbmStsDigi : public CbmDigi
   friend class boost::serialization::access;
 #endif // for BOOST serialization
 
-  UInt_t    fAddress;     ///< Unique detector address
+  Int_t     fAddress;     ///< Unique element address
+  UShort_t  fChannel;     ///< Channel number
   Long64_t  fTime;        ///< Time [ns]
   UShort_t  fCharge;      ///< Charge [ADC units]
 
 
-  ClassDef(CbmStsDigi,5);
+  ClassDef(CbmStsDigi, 6);
 
 };
 

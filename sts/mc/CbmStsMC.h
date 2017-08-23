@@ -158,7 +158,7 @@ class CbmStsMC : public FairDetector
     CbmStsTrackStatus fStatusIn;   //! Track status at entry of sensor
     CbmStsTrackStatus fStatusOut;  //! Track status at exit of sensor
     Double_t          fEloss;      //! Accumulated energy loss for current track
-    std::map<TString, UInt_t> fAddressMap;  ///< Map from full path to unique address
+    std::map<TString, Int_t> fAddressMap;  ///< Map from full path to unique address
     TClonesArray*     fStsPoints;  //!  Output array (CbmStsPoint)
     CbmStsSetup*      fSetup;      //! Pointer to static instance of CbmStsSetup
     TGeoCombiTrans*   fCombiTrans; //! Transformation matrix for geometry positioning

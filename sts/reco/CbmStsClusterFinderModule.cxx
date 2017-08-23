@@ -28,7 +28,7 @@ CbmStsClusterFinderModule::CbmStsClusterFinderModule() :
 
 
 // -----   Constructor with parameters   -----------------------------------
-CbmStsClusterFinderModule::CbmStsClusterFinderModule(Int_t nChannels,
+CbmStsClusterFinderModule::CbmStsClusterFinderModule(UShort_t nChannels,
                                                      Double_t deltaT,
                                                      const char* name,
                                                      CbmStsModule* module,
@@ -43,8 +43,6 @@ CbmStsClusterFinderModule::CbmStsClusterFinderModule(Int_t nChannels,
   fIndex(fSize),
   fTime(fSize)
 {
- // Number of channels must fit in UShort_t
- assert ( nChannels > 0 && nChannels <= 65536 );
 }
 // -------------------------------------------------------------------------
 

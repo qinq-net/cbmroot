@@ -50,7 +50,7 @@ CbmStsSetup::CbmStsSetup() : CbmStsElement(kSts, kStsSystem),
 
 
 // -----   Assign a sensor object to an address   --------------------------
-CbmStsSensor* CbmStsSetup::AssignSensor(UInt_t address,
+CbmStsSensor* CbmStsSetup::AssignSensor(Int_t address,
                                         TGeoPhysicalNode* node) {
 
   CbmStsSensor* sensor = nullptr;
@@ -157,7 +157,7 @@ Int_t CbmStsSetup::CreateStations() {
 
 
 // -----   Instantiate default sensor   ------------------------------------
-CbmStsSensor* CbmStsSetup::DefaultSensor(UInt_t address,
+CbmStsSensor* CbmStsSetup::DefaultSensor(Int_t address,
                                          TGeoPhysicalNode* node) {
 
   // There should not already be a sensor object for this address
@@ -326,7 +326,7 @@ Int_t CbmStsSetup::DefineSensorTypes() {
 
 
 // -----   Get an element from the STS setup   -----------------------------
-CbmStsElement* CbmStsSetup::GetElement(UInt_t address, Int_t level) {
+CbmStsElement* CbmStsSetup::GetElement(Int_t address, Int_t level) {
 
 	// --- Check for initialisation
 	if ( ! fAddress ) LOG(FATAL) << fName << ": not initialised!"
@@ -347,9 +347,11 @@ CbmStsElement* CbmStsSetup::GetElement(UInt_t address, Int_t level) {
 	}
 
 	CbmStsElement* element = this;
-	for (Int_t iLevel = 1; iLevel <= level; iLevel++)
+	for (Int_t iLevel = 1; iLevel <= level; iLevel++) {
 		element =
 				element->GetDaughter(CbmStsAddress::GetElementId(address, iLevel));
+		assert(element);
+	}
 
 	return element;
 }
@@ -371,7 +373,6 @@ const char* CbmStsSetup::GetLevelName(Int_t level) {
     case kStsModule: return "module"; break;
     case kStsSensor: return "sensor"; break;
     case kStsSide: return "side"; break;
-    case kStsChannel: return "channel"; break;
     default: return ""; break;
   }
 
@@ -381,7 +382,7 @@ const char* CbmStsSetup::GetLevelName(Int_t level) {
 
 
 // -----   Get the station number from an address   ------------------------
-Int_t CbmStsSetup::GetStationNumber(UInt_t address) {
+Int_t CbmStsSetup::GetStationNumber(Int_t address) {
 
   // In old, station-based geometries, the station equals the unit
   if ( fIsOld ) return CbmStsAddress::GetElementId(address, kStsUnit);

@@ -44,7 +44,7 @@ class CbmStsSetup : public CbmStsElement
      ** geometric node assigned. If it is not present in the list,
      ** the default sensor is instantiated (see DefaultSensor()).
      **/
-    CbmStsSensor* AssignSensor(UInt_t address,
+    CbmStsSensor* AssignSensor(Int_t address,
                                TGeoPhysicalNode* node = nullptr);
 
 
@@ -61,7 +61,7 @@ class CbmStsSetup : public CbmStsElement
      ** extension. The number of strips is adjusted to the geometric extension
      ** in x minus 0.24 cm inactive area.
      **/
-    CbmStsSensor* DefaultSensor(UInt_t address, TGeoPhysicalNode* node);
+    CbmStsSensor* DefaultSensor(Int_t address, TGeoPhysicalNode* node);
 
 
     /** Define available sensor types
@@ -85,7 +85,7 @@ class CbmStsSetup : public CbmStsElement
      ** @param level    Element level (EStsElementLevel)
      ** @return Pointer to STS element
      **/
-    CbmStsElement* GetElement(UInt_t address, Int_t level);
+    CbmStsElement* GetElement(Int_t address, Int_t level);
 
 
     /** Get the name of an element level
@@ -145,7 +145,7 @@ class CbmStsSetup : public CbmStsElement
      ** @param address  Unique detector address
      ** @value Station number
      **/
-    Int_t GetStationNumber(UInt_t address);
+    Int_t GetStationNumber(Int_t address);
 
 
     /** Initialise setup from geometry
@@ -279,7 +279,7 @@ class CbmStsSetup : public CbmStsElement
     /** Assignment operator (disabled) **/
     CbmStsSetup operator=(const CbmStsSetup&) = delete;
 
-    ClassDef(CbmStsSetup,2);
+    ClassDef(CbmStsSetup, 2);
 
 };
 

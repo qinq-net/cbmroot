@@ -27,7 +27,6 @@
 #include <stdint.h>
 #include <iomanip>
 
-class CbmStsAddress;
 using std::hex;
 using std::dec;
 using namespace std;

@@ -292,7 +292,7 @@ void CbmStsTimeBasedQa::ProcessDigisAndPoints(const vector<CbmStsDigi> digis, Cb
 
       pointIndexes.insert(index);
       stations.insert(std::pair<Double_t, Int_t>(index, stationId));
-      Int_t channel = CbmStsAddress::GetElementId(stsDigi.GetAddress(), kStsChannel);
+      Int_t channel = stsDigi.GetChannel();
       Int_t side = channel < 1024 ? 0 : 1;
       map_it = digisByPoint.find(index + (side * 0.00001));
       if ( map_it != digisByPoint.end() ) {
@@ -333,7 +333,7 @@ void CbmStsTimeBasedQa::ProcessDigisAndPoints(const TClonesArray* digis, const C
       Double_t index = (1000 * link.GetIndex()) + (link.GetFile()) + (0.0001 * link.GetEntry());
       pointIndexes.insert(index);
       stations.insert(std::pair<Double_t, Int_t>(index, stationId));
-      Int_t channel = CbmStsAddress::GetElementId(stsDigi->GetAddress(), kStsChannel);
+      Int_t channel = stsDigi->GetChannel();
       Int_t side = channel < 1024 ? 0 : 1;
       map_it = digisByPoint.find(index + (side * 0.00001));
       if ( map_it != digisByPoint.end() ) {

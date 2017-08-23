@@ -32,7 +32,7 @@ CbmStsElement::CbmStsElement() : TNamed(),
 
 
 // -----   Standard constructor   ------------------------------------------
-CbmStsElement::CbmStsElement(UInt_t address, Int_t level,
+CbmStsElement::CbmStsElement(Int_t address, Int_t level,
                              TGeoPhysicalNode* node,
                              CbmStsElement* mother) :
     TNamed(),
@@ -45,38 +45,6 @@ CbmStsElement::CbmStsElement(UInt_t address, Int_t level,
   SetLevel(level);
   SetName(ConstructName(address, fLevel).Data());
 }
-// -------------------------------------------------------------------------
-
-
-
-// -----   Add a daughter element   ----------------------------------------
-/*void CbmStsElement::AddDaughter(CbmStsElement* element) {
-
-  if ( ! element ) return;
-
-  // Check correct element level
-  if ( element->GetLevel() != fLevel + 1) {
-    LOG(FATAL) << fName << ": Trying to add an element of level "
-               << element->GetLevel() << " as daughter of level "
-               << fLevel << "! Command will be ignored."
-               << FairLogger::endl;
-    return;
-  }
-
-  //
-
-  element->SetMother(this);
-  element->ConstructName();
-
-  // Catch invalid address
-  if ( ! element->fAddress ) LOG(FATAL) << GetName()
-      << ": could not add daughter " << GetNofDaughters()
-      << " (" << element->GetName() << ", " << element->GetTitle()
-      << ")" << FairLogger::endl;
-
-  fDaughters.push_back(element);
-}
-*/
 // -------------------------------------------------------------------------
 
 
@@ -121,7 +89,7 @@ void CbmStsElement::ConstructName() {
 
 
 // -----   Construct name from address   -----------------------------------
-TString CbmStsElement::ConstructName(UInt_t address,
+TString CbmStsElement::ConstructName(Int_t address,
                                      EStsElementLevel level) {
 
   TString result = "STS";

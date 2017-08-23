@@ -89,9 +89,8 @@ Bool_t CbmROCUnpackSts::DoUnpack(roc::Message* Message, ULong_t hitTime)
                    0,   // halfladder
                    0,   // module
                    0,   // sensor
-                   side,
-                   channel);
-  CbmStsDigi* digi = new CbmStsDigi(address, hitTime, charge);
+                   side);
+  CbmStsDigi* digi = new CbmStsDigi(address, channel, hitTime, charge);
 
 
   // In case of normal data insert the digi into the buffer.

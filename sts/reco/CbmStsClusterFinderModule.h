@@ -63,7 +63,7 @@ class CbmStsClusterFinderModule : public TNamed
      ** @param module     Pointer to CbmModule object (in CbmStsSetup)
      ** @param output     Pointer to output array of CbmStsClusters
      */
-    CbmStsClusterFinderModule(Int_t nChannels, Double_t deltaT,
+    CbmStsClusterFinderModule(UShort_t nChannels, Double_t deltaT,
                               const char* name, CbmStsModule* module = NULL,
                               TClonesArray* output = NULL);
 

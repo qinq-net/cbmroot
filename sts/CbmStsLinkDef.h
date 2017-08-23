@@ -42,9 +42,6 @@
 #pragma link C++ class CbmStsRecoQa;
 #pragma link C++ class CbmStsTestQa;
 
-// Enumerators
-#pragma link C++ enum EStsElementLevel;
-
 // Others
 #pragma link C++ class CbmStsContFact;
 #pragma link C++ class CbmStsFindTracks+;

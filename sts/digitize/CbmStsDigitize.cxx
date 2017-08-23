@@ -184,7 +184,7 @@ string CbmStsDigitize::BufferStatus2() const {
 
 
 // -----   Create a digi object   ------------------------------------------
-void CbmStsDigitize::CreateDigi(UInt_t address,
+void CbmStsDigitize::CreateDigi(Int_t address, UShort_t channel,
 		              							Long64_t time,
 		              							UShort_t adc,
 		              							const CbmMatch& match) {
@@ -199,7 +199,7 @@ void CbmStsDigitize::CreateDigi(UInt_t address,
 
 	// In stream mode: create digi and send it to Daq
 	if ( fMode == 0 ) {
-		CbmStsDigi* digi = new CbmStsDigi(address, time, adc);
+		CbmStsDigi* digi = new CbmStsDigi(address, channel, time, adc);
 		digi->SetMatch(digiMatch);
     CbmDaqBuffer::Instance()->InsertData(digi);
 	} //? Stream mode
@@ -213,7 +213,7 @@ void CbmStsDigitize::CreateDigi(UInt_t address,
 		}
 		Int_t nDigis = fDigis->GetEntriesFast();
 		CbmStsDigi* digi =
-				new ( (*fDigis)[nDigis] ) CbmStsDigi(address, time, adc);
+				new ( (*fDigis)[nDigis] ) CbmStsDigi(address, channel, time, adc);
 		digi->SetMatch(digiMatch);
 
 		// --- For backward compatibility:
@@ -223,11 +223,10 @@ void CbmStsDigitize::CreateDigi(UInt_t address,
 
 	fNofDigis++;
 	LOG(DEBUG3) << GetName() << ": created digi at " << time
-			        << " ns with ADC " << adc << " at address " << address
-			        << " (module "
-			        << fSetup->GetElement(address, kStsModule)->GetName()
-			        << ", channel "
-			        << CbmStsAddress::GetElementId(address, kStsChannel)
+			    << " ns with ADC " << adc << " at address " << address
+			    << " (module "
+			    << fSetup->GetElement(address, kStsModule)->GetName()
+			    << ", channel " << channel
 	            << ")" << FairLogger::endl;
 
 }
@@ -565,11 +564,7 @@ void CbmStsDigitize::ProcessMCEvent() {
 
   // --- Loop over all StsPoints and execute the ProcessPoint method
   assert ( fPoints );
-  Int_t nStart = 0;
-  Int_t nStop = fPoints->GetEntriesFast();
-  //nStop = 681;
-  for (Int_t iPoint=nStart; iPoint<nStop; iPoint++) {
-  //for (Int_t iPoint=0; iPoint<fPoints->GetEntriesFast(); iPoint++) {
+  for (Int_t iPoint=0; iPoint<fPoints->GetEntriesFast(); iPoint++) {
   	const CbmStsPoint* point = (const CbmStsPoint*) fPoints->At(iPoint);
   	CbmLink* link = new CbmLink(1., iPoint, eventNr, inputNr);
 
@@ -604,8 +599,9 @@ void CbmStsDigitize::ProcessPoint(const CbmStsPoint* point,
 			        << ", out (" << point->GetXOut() << ", " << point->GetYOut()
 			        << ", " << point->GetZOut() << ")" << FairLogger::endl;
 
+
 	// --- Get the sensor the point is in
-	UInt_t address = point->GetDetectorID();
+	Int_t address = point->GetDetectorID();
 	CbmStsSensor* sensor = dynamic_cast<CbmStsSensor*>
 					(fSetup->GetElement(address, kStsSensor));
 	if ( ! sensor ) {

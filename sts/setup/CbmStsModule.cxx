@@ -53,11 +53,9 @@ CbmStsModule::CbmStsModule(UInt_t address, TGeoPhysicalNode* node,
 CbmStsModule::~CbmStsModule() {
 
   // --- Clean analog buffer
-  map<Int_t, multiset<CbmStsSignal*, CbmStsSignal::Before> >::iterator chanIt;
-  multiset<CbmStsSignal*>::iterator sigIt;
-  for (chanIt = fAnalogBuffer.begin(); chanIt != fAnalogBuffer.end();
+  for (auto chanIt = fAnalogBuffer.begin(); chanIt != fAnalogBuffer.end();
       chanIt++) {
-    for ( sigIt = (chanIt->second).begin(); sigIt != (chanIt->second).end();
+    for ( auto sigIt = (chanIt->second).begin(); sigIt != (chanIt->second).end();
         sigIt++) {
       delete (*sigIt);
     }
@@ -77,7 +75,7 @@ Double_t CbmStsModule::AdcToCharge(UShort_t adcChannel) {
 
 
 // -----   Add a signal to the buffer   ------------------------------------
-void CbmStsModule::AddSignal(Int_t channel, Double_t time,
+void CbmStsModule::AddSignal(UShort_t channel, Double_t time,
                              Double_t charge, Int_t index, Int_t entry,
                              Int_t file) {
 
@@ -160,8 +158,6 @@ void CbmStsModule::BufferStatus(Int_t& nofSignals,
                                 Double_t& timeFirst,
                                 Double_t& timeLast) {
 
-  map<Int_t, sigset>::iterator chanIt;
-  sigset::iterator sigIt;
 
   Int_t nSignals   = 0;
   Double_t tFirst  = -1.;
@@ -169,11 +165,11 @@ void CbmStsModule::BufferStatus(Int_t& nofSignals,
   Double_t tSignal = -1.;
 
   // --- Loop over active channels
-  for ( chanIt  = fAnalogBuffer.begin();
-      chanIt != fAnalogBuffer.end(); chanIt++) {
+  for ( auto chanIt  = fAnalogBuffer.begin();
+        chanIt != fAnalogBuffer.end(); chanIt++) {
 
     // --- Loop over signals in channel
-    for ( sigIt  = (chanIt->second).begin();
+    for ( auto sigIt  = (chanIt->second).begin();
         sigIt != (chanIt->second).end(); sigIt++) {
 
       tSignal = (*sigIt)->GetTime();
@@ -206,7 +202,7 @@ Int_t CbmStsModule::ChargeToAdc(Double_t charge) {
 
 
 // -----   Digitise an analogue charge signal   ----------------------------
-void CbmStsModule::Digitize(Int_t channel, CbmStsSignal* signal) {
+void CbmStsModule::Digitize(UShort_t channel, CbmStsSignal* signal) {
 
   // --- Check channel number
   assert ( channel < fNofChannels );
@@ -218,10 +214,6 @@ void CbmStsModule::Digitize(Int_t channel, CbmStsSignal* signal) {
 
   // --- No action if charge is below threshold
   if ( charge < fThreshold ) return;
-
-  // --- Construct channel address from module address and channel number
-  UInt_t address = CbmStsAddress::SetElementId(GetAddress(),
-                                               kStsChannel, channel);
 
   // --- Digitise charge
   // --- Prescription according to the information on the STS-XYTER
@@ -240,10 +232,10 @@ void CbmStsModule::Digitize(Int_t channel, CbmStsSignal* signal) {
 			            << ", dyn. range " << fDynRange << ", threshold "
 			            << fThreshold << ", # ADC channels "
 			            << fNofAdcChannels << FairLogger::endl;
-  LOG(DEBUG3) << GetName() << ": Sending message. Address " << address
+  LOG(DEBUG3) << GetName() << ": Sending message. Channel " << channel
       << ", time " << dTime << ", adc " << adc << FairLogger::endl;
   CbmStsDigitize* digitiser = CbmStsSetup::Instance()->GetDigitizer();
-  if ( digitiser ) digitiser->CreateDigi(address, dTime, adc,
+  if ( digitiser ) digitiser->CreateDigi(fAddress, channel, dTime, adc,
                                          signal->GetMatch());
 
   // --- If no digitiser task is present (debug mode): create a digi and
@@ -314,7 +306,7 @@ Int_t CbmStsModule::GenerateNoise(Double_t t1, Double_t t2) {
 // -----  Initialise the analog buffer   -----------------------------------
 void CbmStsModule::InitAnalogBuffer() {
 
-  for (Int_t channel = 0; channel < fNofChannels; channel++) {
+  for (UShort_t channel = 0; channel < fNofChannels; channel++) {
     multiset<CbmStsSignal*, CbmStsSignal::Before> mset;
     fAnalogBuffer[channel] = mset;
   } // channel loop
@@ -347,7 +339,7 @@ void CbmStsModule::InitDaughters() {
       TGeoPhysicalNode* sensorNode = new TGeoPhysicalNode(daughterPath.Data());
 
       // Get or create element from setup and add it as daughter
-      UInt_t address = CbmStsAddress::SetElementId(fAddress,
+      Int_t address = CbmStsAddress::SetElementId(fAddress,
                                                    kStsSensor,
                                                    GetNofDaughters());
       CbmStsSensor* sensor = CbmStsSetup::Instance()->AssignSensor(address,
@@ -381,7 +373,7 @@ Int_t CbmStsModule::ProcessAnalogBuffer(Double_t readoutTime) {
   Double_t timeLimit = readoutTime - 5. * fTimeResolution - fDeadTime;
 
   // --- Iterate over active channels
-  map<Int_t, sigset>::iterator chanIt;
+  map<UShort_t, sigset>::iterator chanIt;
   for (chanIt = fAnalogBuffer.begin();
       chanIt != fAnalogBuffer.end(); chanIt++) {
 

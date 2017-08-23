@@ -13,8 +13,7 @@ using namespace std;
 // --- String output
 string CbmStsDigi::ToString() const {
    stringstream ss;
-   ss << "StsDigi: address " << GetAddress() << " | channel "
-  		<< CbmStsAddress::GetElementId(fAddress, kStsChannel)
+   ss << "StsDigi: address " << fAddress << " | channel " << fChannel
       << " | charge " << fCharge << " | time " << fTime;
    return ss.str();
 }

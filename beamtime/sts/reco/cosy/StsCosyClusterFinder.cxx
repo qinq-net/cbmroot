@@ -220,7 +220,7 @@ void StsCosyClusterFinder::Exec(Option_t*)
 	      timePrev = digi->GetTime();
 
 	      cluster->AddDigi(index);  
-	      stripNrPrev = CbmStsAddress::GetElementId((*j)->GetAddress(),kStsChannel);
+	      stripNrPrev = (*j)->GetChannel();
 	      newCluster = kFALSE;
 	    } 
 	  else 
@@ -228,7 +228,7 @@ void StsCosyClusterFinder::Exec(Option_t*)
 	      Int_t index = fIndices[(*j)];
 	      digi = static_cast<CbmStsDigi*>(fDigis->At(index));
 	      time = digi->GetTime();
-	      stripNr = CbmStsAddress::GetElementId((*j)->GetAddress(),kStsChannel);
+	      stripNr = (*j)->GetChannel();
 	      
 	      int station = CbmStsSetup::Instance()->GetStationNumber(digi->GetAddress());
 //	      int side = CbmStsAddress::GetElementId(digi->GetAddress(),kStsSide);
@@ -252,7 +252,7 @@ void StsCosyClusterFinder::Exec(Option_t*)
 		  cluster = new ((*fClusters)[size]) CbmStsCluster();
 		  index = fIndices[(*j)];
                   cluster->AddDigi(index);  
-		  stripNrPrev = CbmStsAddress::GetElementId((*j)->GetAddress(),kStsChannel);
+		  stripNrPrev = (*j)->GetChannel();
 		  newCluster = kFALSE;
 		}
  	    }
@@ -289,7 +289,7 @@ void StsCosyClusterFinder::Exec(Option_t*)
 	      const CbmStsDigi* temp_digi = (CbmStsDigi*)fDigis->At(cluster->GetDigi(st));
 	      station = CbmStsSetup::Instance()->GetStationNumber(temp_digi->GetAddress());
 	      side = CbmStsAddress::GetElementId(temp_digi->GetAddress(),kStsSide);
-	      int ch = CbmStsAddress::GetElementId(temp_digi->GetAddress(),kStsChannel);
+	      int ch = temp_digi->GetChannel();
 //	      layer = 2*station+side;
 	      chanNr += ch;
 	      chanADC = temp_digi->GetCharge();

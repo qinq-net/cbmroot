@@ -39,6 +39,7 @@
 #pragma link C++ class CbmStsPoint+;
 #pragma link C++ class CbmStsTrack+;
 #pragma link C++ class CbmStsEventData+;
+#pragma link C++ enum EStsElementLevel;
 
 #pragma link C++ class CbmRichPoint+;
 #pragma link C++ class CbmRichHit+;

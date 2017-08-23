@@ -1,155 +1,253 @@
-/** @file CbmStsAddress.h
+/** @file CbmStsAddress.cxx
  ** @author Volker Friese <v.friese@gsi.de>
  ** @date 17.05.2013
  **/
 
-
 #include "CbmStsAddress.h"
 
-using std::string;
+#include <cassert>
+#include <sstream>
+#include "CbmModuleList.h"
 
 
-// -----    Definition of the address field   -------------------------------
-const Int_t CbmStsAddress::fgkBits[] = { fgkSystemBits,   // system = kSTS
-                                         4,   // unit
-                                         4,   // ladder
-                                         1,   // half-ladder
-                                         3,   // module
-                                         2,   // sensor
-                                         1,   // side
-                                        13 }; // channel
-// -------------------------------------------------------------------------
+namespace CbmStsAddress {
+
+  // -----    Definition of address bit field   ------------------------------
+  const Int_t kBits[kCurrentVersion+1][kStsSide+1] =
+  {
+
+   // Version 0 (until 23 August 2017)
+   {  4,  // system
+      4,  // unit / station
+      4,  // ladder
+      1,  // half-ladder
+      3,  // module
+      2,  //sensor
+      1,  //side
+   },
+
+   // Version 1 (current, since 23 August 2017)
+   {  4,  // system
+      6,  //unit
+      5,  // ladder
+      1,  // half-ladder
+      5,  // module
+      4,  //sensor
+      1,  //side
+   }
+
+  };
+  // -------------------------------------------------------------------------
 
 
+  // -----    Bit shifts -----------------------------------------------------
+  const Int_t kShift[kCurrentVersion+1][kStsSide+1] =
+  {
+   {   0,
+       kShift[0][0] + kBits[0][0],
+       kShift[0][1] + kBits[0][1],
+       kShift[0][2] + kBits[0][2],
+       kShift[0][3] + kBits[0][3],
+       kShift[0][4] + kBits[0][4],
+       kShift[0][5] + kBits[0][5],
+   },
 
-// -----    Initialisation of bit shifts -----------------------------------
-const Int_t CbmStsAddress::fgkShift[] =
-   { 0,
-     CbmStsAddress::fgkShift[0] + CbmStsAddress::fgkBits[0],
-     CbmStsAddress::fgkShift[1] + CbmStsAddress::fgkBits[1],
-     CbmStsAddress::fgkShift[2] + CbmStsAddress::fgkBits[2],
-     CbmStsAddress::fgkShift[3] + CbmStsAddress::fgkBits[3],
-     CbmStsAddress::fgkShift[4] + CbmStsAddress::fgkBits[4],
-     CbmStsAddress::fgkShift[5] + CbmStsAddress::fgkBits[5],
-     CbmStsAddress::fgkShift[6] + CbmStsAddress::fgkBits[6] };
-// -------------------------------------------------------------------------
-
-
-
-// -----    Initialisation of bit masks  -----------------------------------
-const Int_t CbmStsAddress::fgkMask[] = { ( 1 << fgkBits[0] ) -1,
-                                         ( 1 << fgkBits[1] ) -1,
-                                         ( 1 << fgkBits[2] ) -1,
-                                         ( 1 << fgkBits[3] ) -1,
-                                         ( 1 << fgkBits[4] ) -1,
-                                         ( 1 << fgkBits[5] ) -1,
-                                         ( 1 << fgkBits[6] ) -1,
-                                         ( 1 << fgkBits[7] ) -1  };
-// -------------------------------------------------------------------------
+   {   0,
+       kShift[1][0] + kBits[1][0],
+       kShift[1][1] + kBits[1][1],
+       kShift[1][2] + kBits[1][2],
+       kShift[1][3] + kBits[1][3],
+       kShift[1][4] + kBits[1][4],
+       kShift[1][5] + kBits[1][5],
+   }
+  };
+  // -------------------------------------------------------------------------
 
 
+  // -----    Bit masks  -----------------------------------------------------
+  const Int_t kMask[kCurrentVersion+1][kStsSide+1] =
+  {
+   { ( 1 << kBits[0][0] ) -1,
+     ( 1 << kBits[0][1] ) -1,
+     ( 1 << kBits[0][2] ) -1,
+     ( 1 << kBits[0][3] ) -1,
+     ( 1 << kBits[0][4] ) -1,
+     ( 1 << kBits[0][5] ) -1,
+     ( 1 << kBits[0][6] ) -1,
+   },
+   { ( 1 << kBits[1][0] ) -1,
+     ( 1 << kBits[1][1] ) -1,
+     ( 1 << kBits[1][2] ) -1,
+     ( 1 << kBits[1][3] ) -1,
+     ( 1 << kBits[1][4] ) -1,
+     ( 1 << kBits[1][5] ) -1,
+     ( 1 << kBits[1][6] ) -1,
+   }
+ };
+  // -------------------------------------------------------------------------
 
-// -----  Unique element address   -----------------------------------------
-UInt_t CbmStsAddress::GetAddress(Int_t unit,
-                                 Int_t ladder,
-                                 Int_t halfladder,
-                                 Int_t module,
-                                 Int_t sensor,
-                                 Int_t side,
-                                 Int_t channel) {
+
+} // Namespace CbmStsAddress
+
+
+// -----   Construct address from element Ids   ------------------------------
+Int_t CbmStsAddress::GetAddress(UInt_t unit,
+                                UInt_t ladder,
+                                UInt_t halfladder,
+                                UInt_t module,
+                                UInt_t sensor,
+                                UInt_t side,
+                                UInt_t version) {
+
+  assert ( version <= kCurrentVersion );
 
   // Catch overrun of allowed ranges
-  if ( unit >= ( 1 << fgkBits[kStsUnit] ) ) {
+  if ( unit >= ( 1 << kBits[version][kStsUnit] ) ) {
     LOG(ERROR) << "Unit Id "  << unit << " exceeds maximum ("
-               << ( 1 << fgkBits[kStsUnit] ) - 1 << ")"
-               << FairLogger::endl;
+        << ( 1 << kBits[version][kStsUnit] ) - 1 << ")"
+        << FairLogger::endl;
     return 0;
   }
-  if ( ladder >= ( 1 << fgkBits[kStsLadder]) ) {
+  if ( ladder >= ( 1 << kBits[version][kStsLadder]) ) {
     LOG(ERROR) << "Ladder Id "  << ladder << " exceeds maximum ("
-               << ( 1 << fgkBits[kStsLadder] ) - 1 << ")"
-               << FairLogger::endl;
+        << ( 1 << kBits[version][kStsLadder] ) - 1 << ")"
+        << FairLogger::endl;
     return 0;
   }
-  if ( halfladder >= ( 1 << fgkBits[kStsHalfLadder]) ) {
+  if ( halfladder >= ( 1 << kBits[version][kStsHalfLadder]) ) {
     LOG(ERROR) << "HalfLadder Id "  << halfladder << " exceeds maximum ("
-               << ( 1 << fgkBits[kStsHalfLadder] ) - 1 << ")"
-               << FairLogger::endl;
+        << ( 1 << kBits[version][kStsHalfLadder] ) - 1 << ")"
+        << FairLogger::endl;
     return 0;
   }
-  if ( module >= ( 1 << fgkBits[kStsModule]) ) {
+  if ( module >= ( 1 << kBits[version][kStsModule]) ) {
     LOG(ERROR) << "Module Id "  << module << " exceeds maximum ("
-               << ( 1 << fgkBits[kStsModule] ) - 1 << ")"
-               << FairLogger::endl;
+        << ( 1 << kBits[version][kStsModule] ) - 1 << ")"
+        << FairLogger::endl;
     return 0;
   }
-  if ( sensor >= ( 1 << fgkBits[kStsSensor]) ) {
+  if ( sensor >= ( 1 << kBits[version][kStsSensor]) ) {
     LOG(ERROR) << "Sensor Id "  << sensor << " exceeds maximum ("
-               << ( 1 << fgkBits[kStsSensor] ) - 1 << ")"
-               << FairLogger::endl;
+        << ( 1 << kBits[version][kStsSensor] ) - 1 << ")"
+        << FairLogger::endl;
     return 0;
   }
-  if ( side >= ( 1 << fgkBits[kStsSide]) ) {
+  if ( side >= ( 1 << kBits[version][kStsSide]) ) {
     LOG(ERROR) << "Side Id "  << side << " exceeds maximum ("
-               << ( 1 << fgkBits[kStsSide] ) - 1 << ")"
-               << FairLogger::endl;
-    return 0;
-  }
-  if ( channel >= ( 1 << fgkBits[kStsChannel]) ) {
-    LOG(ERROR) << "Channel Id "  << channel << " exceeds maximum ("
-               << ( 1 << fgkBits[kStsChannel] ) - 1 << ")"
-               << FairLogger::endl;
+        << ( 1 << kBits[version][kStsSide] ) - 1 << ")"
+        << FairLogger::endl;
     return 0;
   }
 
-  return kSts       << fgkShift[kStsSystem]     |
-         unit       << fgkShift[kStsUnit   ]    |
-         ladder     << fgkShift[kStsLadder]     |
-         halfladder << fgkShift[kStsHalfLadder] |
-         module     << fgkShift[kStsModule]     |
-         sensor     << fgkShift[kStsSensor]     |
-         side       << fgkShift[kStsSide]       |
-         channel    << fgkShift[kStsChannel];
+  return kSts       << kShift[version][kStsSystem]     |
+      unit       << kShift[version][kStsUnit   ]    |
+      ladder     << kShift[version][kStsLadder]     |
+      halfladder << kShift[version][kStsHalfLadder] |
+      module     << kShift[version][kStsModule]     |
+      sensor     << kShift[version][kStsSensor]     |
+      side       << kShift[version][kStsSide];
 
 }
-// -------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 
 
 
-// -----  Unique element address   -----------------------------------------
-UInt_t CbmStsAddress::GetAddress(Int_t* elementId) {
+// -----   Construct address from array of element Ids   ----------------------
+Int_t CbmStsAddress::GetAddress(UInt_t* elementId, UInt_t version) {
 
-  UInt_t address = kSts << fgkShift[kStsSystem];
-  for (Int_t level = 1; level < kStsNofLevels; level++) {
-    if ( elementId[level] >= ( 1 << fgkBits[level] ) ) {
+  assert ( version <= kCurrentVersion );
+
+  ULong64_t address = kSts << kShift[version][kStsSystem];
+  for (Int_t level = 1; level <= kStsSide; level++) {
+    if ( elementId[level] >= ( 1 << kBits[version][level] ) ) {
       LOG(ERROR) << "Id " << elementId[level] << " for STS level " << level
-                 << " exceeds maximum (" << (1 << fgkBits[level]) - 1
-                 << ")" << FairLogger::endl;
+          << " exceeds maximum (" << (1 << kBits[version][level]) - 1
+          << ")" << FairLogger::endl;
       return 0;
     }
-    address = address | ( elementId[level] << fgkShift[level] );
+    address = address | ( elementId[level] << kShift[version][level] );
   }
 
   return address;
 }
-// -------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 
 
 
-// -----   Info   ----------------------------------------------------------
-string CbmStsAddress::ToString() const {
-   std::stringstream ss;
-   ss << "Number of STS levels is " << kStsNofLevels
-       << FairLogger::endl;
-   for (Int_t level = 0; level < kStsNofLevels; level++)
-     ss << "Level " << std::setw(2) << std::right << level
-               << ": bits " << std::setw(2) << fgkBits[level]
-               << ", max. range " << std::setw(6) << fgkMask[level]
-               << FairLogger::endl;
-   return ss.str();
+// -----   Construct address from address of descendant element   -----------
+Int_t CbmStsAddress::GetMotherAddress(Int_t address, Int_t level) {
+  assert ( level >= kStsSystem && level <= kStsSide );
+  UInt_t version = GetVersion(address);
+  return ( address & ( ( 1 << kShift[version][level+1] ) - 1 ) ) ;
+}
+// ---------------------------------------------------------------------------
+
+
+
+// -----   Get the index of an element   -------------------------------------
+UInt_t CbmStsAddress::GetElementId(Int_t address, Int_t level) {
+  assert ( level >= kStsSystem && level <= kStsSide );
+  UInt_t version = GetVersion(address);
+  return ( address & ( kMask[version][level] << kShift[version][level] ) )
+      >> kShift[version][level];
+}
+// ---------------------------------------------------------------------------
+
+
+
+// -----   Get System ID   -------------------------------------------------
+UInt_t CbmStsAddress::GetSystemId(Int_t address) {
+  return GetElementId(address, kStsSystem);
 }
 // -------------------------------------------------------------------------
 
 
-ClassImp(CbmStsAddress)
+
+// -----   Get the version number from the address   -------------------------
+UInt_t CbmStsAddress::GetVersion(Int_t address) {
+  return UInt_t( ( address & ( kVersionMask << kVersionShift ) )
+                 >> kVersionShift );
+}
+// ---------------------------------------------------------------------------
+
+
+
+// -----  Construct address by changing the index of an element   ------------
+Int_t CbmStsAddress::SetElementId(Int_t address, Int_t level,
+                                  UInt_t newId) {
+  if ( level < 0 || level > kStsSide ) return address;
+  UInt_t version = GetVersion(address);
+  if ( newId >= ( 1 << kBits[version][level]) ) {
+    LOG(ERROR) << "Id " << newId << " for STS level " << level
+        << " exceeds maximum (" << (1 << kBits[version][level]) - 1
+        << ")" << FairLogger::endl;
+    return 0;
+  }
+  return ( address & (~ (kMask[version][level] << kShift[version][level]) ) )
+      | ( newId << kShift[version][level]);
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   String output   -------------------------------------------------
+std::string CbmStsAddress::ToString(Int_t address) {
+  std::stringstream ss;
+
+  ss << "StsAddress: address " << address
+      << " (version " << GetVersion(address) << ")"
+      << ": system " << GetElementId(address, kStsSystem)
+      << ", unit " << GetElementId(address, kStsUnit)
+      << ", ladder " << GetElementId(address, kStsLadder)
+      << ", half-ladder " << GetElementId(address, kStsHalfLadder)
+      << ", module " << GetElementId(address, kStsModule)
+      << ", sensor " << GetElementId(address, kStsSensor)
+      << ", side " << GetElementId(address, kStsSide);
+  return ss.str();
+}
+// -------------------------------------------------------------------------
+
+
+
+
 

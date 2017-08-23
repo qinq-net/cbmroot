@@ -96,18 +96,8 @@ class CbmStsFindClusters : public FairTask
     Double_t  fNofClusters;     ///< Total number of clusters produced
     Double_t  fTimeTot;         ///< Total execution time
 
-    // --- Module parameters
-    /*
-    Double_t fDynRange;            ///< Dynamic range [e]
-    Double_t fThreshold;           ///< Threshold [e]
-    Int_t    fNofAdcChannels;      ///< Number of ADC channels
-    Double_t fTimeResolution;      ///< Time resolution (sigma) [ns]
-    Double_t fDeadTime;            ///< Single-channel dead time [ns]
-    Double_t fNoise;               ///< equivalent noise charge (sigma) [ns]
-    */
-
     // --- Map from module address to cluster finding module
-    std::map<UInt_t, CbmStsClusterFinderModule*> fModules;  //!
+    std::map<Int_t, CbmStsClusterFinderModule*> fModules;  //!
 
     // --- Map from time to index of digi
     // --- Use for legacy mode when digis do not come time-ordered

@@ -165,7 +165,7 @@ void StsClusterSet::Exec(Option_t*)
 	      //----time----
 	      digi = static_cast<CbmStsDigi*>(fDigis->At(index));
 	      timePrev = digi->GetTime();
-	      stripNrPrev = CbmStsAddress::GetElementId((*j)->GetAddress(),kStsChannel);
+	      stripNrPrev = (*j)->GetChannel();
 	      sumW = digi->GetCharge();
 	      newCluster = kFALSE;
 	    } 
@@ -174,7 +174,7 @@ void StsClusterSet::Exec(Option_t*)
 	      Int_t index = fIndices[(*j)];
 	      digi = static_cast<CbmStsDigi*>(fDigis->At(index));
 	      time = digi->GetTime();
-	      stripNr = CbmStsAddress::GetElementId((*j)->GetAddress(),kStsChannel);
+	      stripNr = (*j)->GetChannel();
 	      station = CbmStsSetup::Instance()->GetStationNumber(digi->GetAddress());
 	      side = CbmStsAddress::GetElementId(digi->GetAddress(),kStsSide);
 	      

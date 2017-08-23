@@ -240,7 +240,7 @@ void CbmStsDigitizeQa::ProcessDigisAndPoints(const TClonesArray* digis, const TC
 	    matrix -> LocalToMaster(local, global);
 	}
 
-	Int_t iChan = CbmStsAddress::GetElementId(stsDigi -> GetAddress(), kStsChannel);  
+	Int_t iChan = stsDigi->GetChannel();
 	Int_t iChip = iChan / 128 ;
 	fnOfDigisChip[stationId][iLad][iHla][iMod][iChip]++;
 	fHM -> H2(Form("h_DigisPerChip_Station%i",stationId)) -> Fill(global[0] + 50. / 400. * ((iChip-8.) * 2. - 1.), global[1]);
@@ -250,7 +250,7 @@ void CbmStsDigitizeQa::ProcessDigisAndPoints(const TClonesArray* digis, const TC
 	    Double_t index = (1000 * link.GetIndex()) + (link.GetFile()) + (0.0001 * link.GetEntry());
 	    pointIndexes.insert(index);
 	    stations.insert(std::pair<Double_t, Int_t>(index, stationId));
-	    Int_t channel = CbmStsAddress::GetElementId(stsDigi -> GetAddress(), kStsChannel);
+	    Int_t channel = stsDigi -> GetChannel();
 
 	    Int_t side = channel < Int_t(nOfChannelsM / 2.) ? 0 : 1;
 	    map_it = digisByPoint.find(index + (side * 0.00001));
