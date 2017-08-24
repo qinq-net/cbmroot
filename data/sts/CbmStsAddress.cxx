@@ -13,7 +13,7 @@
 namespace CbmStsAddress {
 
   // -----    Definition of address bit field   ------------------------------
-  const Int_t kBits[kCurrentVersion+1][kStsSide+1] =
+  const Int_t kBits[kCurrentVersion+1][kStsNofLevels] =
   {
 
    // Version 0 (until 23 August 2017)
@@ -22,18 +22,18 @@ namespace CbmStsAddress {
       4,  // ladder
       1,  // half-ladder
       3,  // module
-      2,  //sensor
-      1,  //side
+      2,  // sensor
+      1   // side
    },
 
    // Version 1 (current, since 23 August 2017)
    {  4,  // system
-      6,  //unit
+      6,  // unit
       5,  // ladder
       1,  // half-ladder
       5,  // module
-      4,  //sensor
-      1,  //side
+      4,  // sensor
+      1   // side
    }
 
   };
@@ -41,7 +41,7 @@ namespace CbmStsAddress {
 
 
   // -----    Bit shifts -----------------------------------------------------
-  const Int_t kShift[kCurrentVersion+1][kStsSide+1] =
+  const Int_t kShift[kCurrentVersion+1][kStsNofLevels] =
   {
    {   0,
        kShift[0][0] + kBits[0][0],
@@ -49,7 +49,7 @@ namespace CbmStsAddress {
        kShift[0][2] + kBits[0][2],
        kShift[0][3] + kBits[0][3],
        kShift[0][4] + kBits[0][4],
-       kShift[0][5] + kBits[0][5],
+       kShift[0][5] + kBits[0][5]
    },
 
    {   0,
@@ -58,14 +58,14 @@ namespace CbmStsAddress {
        kShift[1][2] + kBits[1][2],
        kShift[1][3] + kBits[1][3],
        kShift[1][4] + kBits[1][4],
-       kShift[1][5] + kBits[1][5],
+       kShift[1][5] + kBits[1][5]
    }
   };
   // -------------------------------------------------------------------------
 
 
   // -----    Bit masks  -----------------------------------------------------
-  const Int_t kMask[kCurrentVersion+1][kStsSide+1] =
+  const Int_t kMask[kCurrentVersion+1][kStsNofLevels] =
   {
    { ( 1 << kBits[0][0] ) -1,
      ( 1 << kBits[0][1] ) -1,
@@ -73,15 +73,16 @@ namespace CbmStsAddress {
      ( 1 << kBits[0][3] ) -1,
      ( 1 << kBits[0][4] ) -1,
      ( 1 << kBits[0][5] ) -1,
-     ( 1 << kBits[0][6] ) -1,
+     ( 1 << kBits[0][6] ) -1
    },
+
    { ( 1 << kBits[1][0] ) -1,
      ( 1 << kBits[1][1] ) -1,
      ( 1 << kBits[1][2] ) -1,
      ( 1 << kBits[1][3] ) -1,
      ( 1 << kBits[1][4] ) -1,
      ( 1 << kBits[1][5] ) -1,
-     ( 1 << kBits[1][6] ) -1,
+     ( 1 << kBits[1][6] ) -1
    }
  };
   // -------------------------------------------------------------------------
@@ -140,12 +141,13 @@ Int_t CbmStsAddress::GetAddress(UInt_t unit,
   }
 
   return kSts       << kShift[version][kStsSystem]     |
-      unit       << kShift[version][kStsUnit   ]    |
-      ladder     << kShift[version][kStsLadder]     |
-      halfladder << kShift[version][kStsHalfLadder] |
-      module     << kShift[version][kStsModule]     |
-      sensor     << kShift[version][kStsSensor]     |
-      side       << kShift[version][kStsSide];
+         unit       << kShift[version][kStsUnit   ]    |
+         ladder     << kShift[version][kStsLadder]     |
+         halfladder << kShift[version][kStsHalfLadder] |
+         module     << kShift[version][kStsModule]     |
+         sensor     << kShift[version][kStsSensor] |
+         side       << kShift[version][kStsSide]       |
+         version    << kVersionShift;
 
 }
 // ---------------------------------------------------------------------------
@@ -157,8 +159,8 @@ Int_t CbmStsAddress::GetAddress(UInt_t* elementId, UInt_t version) {
 
   assert ( version <= kCurrentVersion );
 
-  ULong64_t address = kSts << kShift[version][kStsSystem];
-  for (Int_t level = 1; level <= kStsSide; level++) {
+  Int_t address = kSts << kShift[version][kStsSystem];
+  for (Int_t level = 1; level < kStsNofLevels; level++) {
     if ( elementId[level] >= ( 1 << kBits[version][level] ) ) {
       LOG(ERROR) << "Id " << elementId[level] << " for STS level " << level
           << " exceeds maximum (" << (1 << kBits[version][level]) - 1
@@ -167,6 +169,7 @@ Int_t CbmStsAddress::GetAddress(UInt_t* elementId, UInt_t version) {
     }
     address = address | ( elementId[level] << kShift[version][level] );
   }
+  address = address | ( version << kVersionShift );
 
   return address;
 }
@@ -174,11 +177,14 @@ Int_t CbmStsAddress::GetAddress(UInt_t* elementId, UInt_t version) {
 
 
 
-// -----   Construct address from address of descendant element   -----------
+// -----   Construct address from address of descendant element   ------------
 Int_t CbmStsAddress::GetMotherAddress(Int_t address, Int_t level) {
-  assert ( level >= kStsSystem && level <= kStsSide );
+  assert ( level >= kStsSystem && level < kStsNofLevels );
+  if ( level == kStsNofLevels - 1 ) return address;
   UInt_t version = GetVersion(address);
-  return ( address & ( ( 1 << kShift[version][level+1] ) - 1 ) ) ;
+  Int_t motherAdd = ( address & ( ( 1 << kShift[version][level+1] ) - 1 ) ) ;
+  motherAdd = motherAdd | ( version << kVersionShift );
+  return motherAdd;
 }
 // ---------------------------------------------------------------------------
 
@@ -186,7 +192,7 @@ Int_t CbmStsAddress::GetMotherAddress(Int_t address, Int_t level) {
 
 // -----   Get the index of an element   -------------------------------------
 UInt_t CbmStsAddress::GetElementId(Int_t address, Int_t level) {
-  assert ( level >= kStsSystem && level <= kStsSide );
+  assert ( level >= kStsSystem && level < kStsNofLevels );
   UInt_t version = GetVersion(address);
   return ( address & ( kMask[version][level] << kShift[version][level] ) )
       >> kShift[version][level];
@@ -215,7 +221,7 @@ UInt_t CbmStsAddress::GetVersion(Int_t address) {
 // -----  Construct address by changing the index of an element   ------------
 Int_t CbmStsAddress::SetElementId(Int_t address, Int_t level,
                                   UInt_t newId) {
-  if ( level < 0 || level > kStsSide ) return address;
+  assert ( level >= kStsSystem && level < kStsNofLevels );
   UInt_t version = GetVersion(address);
   if ( newId >= ( 1 << kBits[version][level]) ) {
     LOG(ERROR) << "Id " << newId << " for STS level " << level
