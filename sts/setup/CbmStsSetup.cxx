@@ -447,7 +447,7 @@ Bool_t CbmStsSetup::Init(TGeoManager* geo) {
   fNode = new TGeoPhysicalNode(path);
 
   // --- Set system address
-  fAddress = kSts;
+  fAddress = CbmStsAddress::GetAddress();
 
   // --- Check for old geometry (with stations) or new geometry (with units)
   Bool_t hasStation = kFALSE;

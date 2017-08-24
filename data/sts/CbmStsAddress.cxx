@@ -224,7 +224,7 @@ Int_t CbmStsAddress::SetElementId(Int_t address, Int_t level,
   assert ( level >= kStsSystem && level < kStsNofLevels );
   UInt_t version = GetVersion(address);
   if ( newId >= ( 1 << kBits[version][level]) ) {
-    LOG(ERROR) << "Id " << newId << " for STS level " << level
+    LOG(FATAL) << "Id " << newId << " for STS level " << level
         << " exceeds maximum (" << (1 << kBits[version][level]) - 1
         << ")" << FairLogger::endl;
     return 0;
