@@ -37,18 +37,22 @@ public:
         for (int i = 0; i < fNofZBins; ++i)
         {
             CbmZBin& zBin = fZBins[i];
+            zBin.SetUse(false);
             
             for (int j = 0; j < fNofYBins; ++j)
             {
                 CbmYBin& yBin = zBin[j];
+                yBin.SetUse(false);
             
                 for (int k = 0; k < fNofXBins; ++k)
                 {
                     CbmXBin& xBin = yBin[k];
+                    xBin.SetUse(false);
                 
                     for (int l = 0; l < fNofTBins; ++l)
                     {
                         CbmTBin& tBin = xBin[l];
+                        tBin.SetUse(false);
                         tBin.Clear();
                     }
                 }
@@ -91,10 +95,10 @@ public:
         
         if (fDefaultUse)
         {
-            zBin.SetUse();
-            yBin.SetUse();
-            xBin.SetUse();
-            tBin.SetUse();
+            zBin.SetUse(true);
+            yBin.SetUse(true);
+            xBin.SetUse(true);
+            tBin.SetUse(true);
         }
     }
     

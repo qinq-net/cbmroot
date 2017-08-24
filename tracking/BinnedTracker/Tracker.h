@@ -36,10 +36,15 @@ public:
     
     void AddStation(CbmBinnedStation* station)
     {
+        if (fStations.empty())
+            station->SetDefaultUse();
+        
         fStations.push_back(station);
         fNofStations = fStations.size();
         fBeforeLastLevel = fNofStations - 2;
     }
+    
+    void SetChiSqCut(Double_t v) { fChiSqCut = v; }
     
     void Reconstruct(Double_t startTime)
     {
@@ -107,6 +112,8 @@ private:
         
         for (std::list<Track*>::iterator i = fTracks.begin(); i != fTracks.end(); ++i)
             delete *i;
+        
+        fTracks.clear();
     }
     
     void ReconstructLocal()
@@ -126,7 +133,7 @@ private:
                     nextStation->SearchHits(hitHolder.hit,
                         [&](CbmTBin::HitHolder& hitHolder2)->void
                         {
-                            hitHolder2.use = true;
+                            hitHolder2.SetUse(true);
                             hitHolder.children.push_back(&hitHolder2);
                         }
                     );
@@ -157,6 +164,8 @@ private:
         Double_t dt = hit->GetTimeError();
         
         Double_t deltaZ = z - z1;
+        x1 += tx * deltaZ;
+        y1 += ty * deltaZ;
         t1 += std::sqrt(1 + tx * tx + ty * ty) * deltaZ / cbmBinnedSOL;
         
         return (x - x1) * (x - x1) / (dx1 * dx1 * z * z / z1 / z1 + dx * dx) + (y - y1) * (y - y1) / (dy1 * dy1 * z * z / z1 / z1 + dy * dy) +

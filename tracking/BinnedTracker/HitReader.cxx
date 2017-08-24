@@ -13,6 +13,9 @@
 
 using namespace std;
 
+//#define DO_ERROR_STAT
+
+#ifdef DO_ERROR_STAT
 static map<string, map<int, Double_t> > maxDx;
 static map<string, map<int, Double_t> > maxDy;
 static map<string, map<int, Double_t> > maxDt;
@@ -85,6 +88,8 @@ static void DumpMax()
    cout << "ToF dty: " << maxTofDty << endl;
 }
 
+#endif//DO_ERROR_STAT
+
 CbmBinnedHitReader::CbmBinnedHitReader(TClonesArray* hitArray) : fStations(), fHitArray(hitArray)
 {
 }
@@ -107,7 +112,9 @@ public:
          const CbmPixelHit* hit = static_cast<const CbmPixelHit*> (fHitArray->At(i));
          int stationNumber = CbmStsSetup::Instance()->GetStationNumber(hit->GetAddress());
          fStations[stationNumber]->AddHit(hit, i);
+#ifdef DO_ERROR_STAT
          UpdateMax("Sts", stationNumber, hit);
+#endif//DO_ERROR_STAT
       }
    }
 };
@@ -167,7 +174,9 @@ public:
          hit->SetTimeError(4);
          hit->SetDx(0.175);
          hit->SetDy(0.175);
+#ifdef DO_ERROR_STAT
          UpdateMax("Rich", 0, hit);
+#endif//DO_ERROR_STAT
       }
    }
    
@@ -192,7 +201,9 @@ public:
          int layerNumber = CbmMuchGeoScheme::GetLayerIndex(hit->GetAddress());
          int stationNumber = muchStationNumber * 3 + layerNumber;
          fStations[stationNumber]->AddHit(hit, i);
+#ifdef DO_ERROR_STAT
          UpdateMax("Much", stationNumber, hit);
+#endif//DO_ERROR_STAT
       }
    }
 };
@@ -247,7 +258,9 @@ public:
          
          hit->SetTime(t);
          hit->SetTimeError(4);
+#ifdef DO_ERROR_STAT
          UpdateMax("Trd", stationNumber, hit);
+#endif//DO_ERROR_STAT
       }
    }
    
@@ -271,7 +284,9 @@ public:
          /*const */CbmPixelHit* hit = static_cast</*const */CbmPixelHit*> (fHitArray->At(i));
          fStations[0]->AddHit(hit, i);
          hit->SetTimeError(4);
+#ifdef DO_ERROR_STAT
          UpdateMax("Tof", 0, hit);
+#endif//DO_ERROR_STAT
       }
    }
 };
@@ -285,8 +300,9 @@ public:
    {
       for (map<string, CbmBinnedHitReader*>::iterator i = fReaders.begin(); i != fReaders.end(); ++i)
          i->second->Read();
-      
+#ifdef DO_ERROR_STAT
       DumpMax();
+#endif//DO_ERROR_STAT
    }
 };
 

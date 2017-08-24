@@ -28,6 +28,7 @@ Link_Directories( ${LINK_DIRECTORIES})
 
 Set(SRCS
   CbmBinnedTrackerTask.cxx
+  CbmBinnedTrackerQA.cxx
 )
 
 Set(NO_DICT_SRCS

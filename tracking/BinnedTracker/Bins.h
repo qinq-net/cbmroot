@@ -18,6 +18,8 @@
 #include <cmath>
 #include "CbmPixelHit.h"
 
+class CbmXBin;
+
 class CbmTBin
 {
 public:
@@ -26,62 +28,98 @@ public:
         const CbmPixelHit* hit;
         Int_t index;
         bool use;
+        CbmTBin& bin;
         std::list<HitHolder*> children;
+        
+        void SetUse(bool v)
+        {
+            use = v;
+            bin.SetUseRc(v);
+        }
     };
     
 public:
-    CbmTBin() : fUse(false), fHits() {}
+    explicit CbmTBin(CbmXBin* owner) : fOwner(owner), fUse(false), fHits() {}
+    CbmTBin(const CbmTBin&) = delete;
+    CbmTBin& operator=(const CbmTBin&) = delete;
     bool Use() const { return fUse; }
-    void SetUse() { fUse = true; }
+    void SetUse(bool v) { fUse = v; }
+    void SetUseRc(bool v);
     std::list<HitHolder>::iterator HitsBegin() { return fHits.begin(); }
     std::list<HitHolder>::iterator HitsEnd() { return fHits.end(); }
     void Clear() { fHits.clear(); }
-    void AddHit(const CbmPixelHit* hit, Int_t index, bool use) { fHits.push_back({ hit, index, use, {} }); }
+    void AddHit(const CbmPixelHit* hit, Int_t index, bool use) { fHits.push_back({ hit, index, use, *this, {} }); }
     
 private:
+    CbmXBin* fOwner;
     bool fUse;
     std::list<HitHolder> fHits;
 };
 
+class CbmYBin;
+
 class CbmXBin
 {
 public:
-    explicit CbmXBin(int nofTBins) : fUse(false), fTBins(reinterpret_cast<CbmTBin*> (new unsigned char[nofTBins * sizeof(CbmTBin)])), fNofTBins(nofTBins)
+    CbmXBin(CbmYBin* owner, int nofTBins) : fOwner(owner), fUse(false), fTBins(reinterpret_cast<CbmTBin*> (new unsigned char[nofTBins * sizeof(CbmTBin)])), fNofTBins(nofTBins)
     {
         for (int i = 0; i < nofTBins; ++i)
-            new(&fTBins[i]) CbmTBin;
+            new(&fTBins[i]) CbmTBin(this);
     }
     
+    CbmXBin(const CbmXBin&) = delete;
+    CbmXBin& operator=(const CbmXBin&) = delete;
     bool Use() const { return fUse; }
-    void SetUse() { fUse = true; }
+    void SetUse(bool v) { fUse = v; }
+    void SetUseRc(bool v);
     
     CbmTBin& operator[](int i) { return fTBins[i]; }
     
 private:
+    CbmYBin* fOwner;
     bool fUse;
     CbmTBin* fTBins;
     int fNofTBins;
 };
 
+inline void CbmTBin::SetUseRc(bool v)
+{
+    fUse = v;
+    fOwner->SetUseRc(v);
+}
+
+class CbmZBin;
+
 class CbmYBin
 {
 public:
-    explicit CbmYBin(int nofXBins, int nofTBins) : fUse(false), fXBins(reinterpret_cast<CbmXBin*> (new unsigned char[nofXBins * sizeof(CbmXBin)])), fNofXBins(nofXBins)
+    CbmYBin(CbmZBin* owner, int nofXBins, int nofTBins) : fOwner(owner), fUse(false),
+            fXBins(reinterpret_cast<CbmXBin*> (new unsigned char[nofXBins * sizeof(CbmXBin)])), fNofXBins(nofXBins)
     {
         for (int i = 0; i < nofXBins; ++i)
-            new(&fXBins[i]) CbmXBin(nofTBins);
+            new(&fXBins[i]) CbmXBin(this, nofTBins);
     }
     
+    CbmYBin(const CbmYBin&) = delete;
+    CbmYBin& operator=(const CbmYBin&) = delete;
     bool Use() const { return fUse; }
-    void SetUse() { fUse = true; }
+    void SetUse(bool v) { fUse = v; }
+    void SetUseRc(bool v);
     
     CbmXBin& operator[](int i) { return fXBins[i]; }
     
 private:
+    CbmZBin* fOwner;
     bool fUse;
     CbmXBin* fXBins;
     int fNofXBins;
 };
+
+inline void CbmXBin::SetUseRc(bool v)
+{
+    fUse = v;
+    fOwner->SetUseRc(v);
+}
 
 class CbmZBin
 {
@@ -89,11 +127,13 @@ public:
     explicit CbmZBin(int nofYBins, int nofXBins, int nofTBins) : fUse(false), fYBins(reinterpret_cast<CbmYBin*> (new unsigned char[nofYBins * sizeof(CbmYBin)])), fNofYBins(nofYBins)
     {
         for (int i = 0; i < nofYBins; ++i)
-            new(&fYBins[i]) CbmYBin(nofXBins, nofTBins);
+            new(&fYBins[i]) CbmYBin(this, nofXBins, nofTBins);
     }
     
+    CbmZBin(const CbmZBin&) = delete;
+    CbmZBin& operator=(const CbmZBin&) = delete;
     bool Use() const { return fUse; }
-    void SetUse() { fUse = true; }
+    void SetUse(bool v) { fUse = v; }
     
     CbmYBin& operator[](int i) { return fYBins[i]; }
     
@@ -102,5 +142,13 @@ private:
     CbmYBin* fYBins;
     int fNofYBins;
 };
+
+inline void CbmYBin::SetUseRc(bool v)
+{
+    fUse = v;
+    
+    if (fOwner)
+        fOwner->SetUse(v);
+}
 
 #endif /* BINS_H */

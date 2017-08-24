@@ -25,7 +25,7 @@ public:
             fYBins(reinterpret_cast<CbmYBin*> (new unsigned char[nofYBins * sizeof(CbmYBin)]))
     {
         for (int i = 0; i < nofYBins; ++i)
-            new(&fYBins[i]) CbmYBin(nofXBins, nofTBins);
+            new(&fYBins[i]) CbmYBin(0, nofXBins, nofTBins);
     }
     
     void Clear()
@@ -33,14 +33,17 @@ public:
         for (int i = 0; i < fNofYBins; ++i)
         {
             CbmYBin& yBin = fYBins[i];
+            yBin.SetUse(false);
             
             for (int j = 0; j < fNofXBins; ++j)
             {
                 CbmXBin& xBin = yBin[j];
+                xBin.SetUse(false);
                 
                 for (int k = 0; k < fNofTBins; ++k)
                 {
                     CbmTBin& tBin = xBin[k];
+                    tBin.SetUse(false);
                     tBin.Clear();
                 }
             }
@@ -75,9 +78,9 @@ public:
         
         if (fDefaultUse)
         {
-            yBin.SetUse();
-            xBin.SetUse();
-            tBin.SetUse();
+            yBin.SetUse(true);
+            xBin.SetUse(true);
+            tBin.SetUse(true);
         }
     }
     

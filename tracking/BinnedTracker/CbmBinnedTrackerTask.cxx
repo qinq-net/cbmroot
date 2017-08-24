@@ -26,6 +26,7 @@ InitStatus CbmBinnedTrackerTask::Init()
    
    geoReader->Read();
    fTracker = CbmBinnedTracker::Instance();
+   fTracker->SetChiSqCut(320);
    
    return kSUCCESS;
 }

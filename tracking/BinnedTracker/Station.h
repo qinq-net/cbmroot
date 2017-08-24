@@ -46,6 +46,8 @@ public:
         fMaxT = fMinT + fNofTBins * fTBinSize;
     }
     
+    void SetDefaultUse() { fDefaultUse = true; }
+    
     Double_t GetDx() const { return fDx; }
     void SetDx(Double_t v) { if (v > fDx) fDx = v; }
     Double_t GetDy() const { return fDy; }
