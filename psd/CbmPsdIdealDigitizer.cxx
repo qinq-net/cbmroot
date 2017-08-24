@@ -88,17 +88,7 @@ void CbmPsdIdealDigitizer::Exec(Option_t* /*opt*/) {
   CbmPsdPoint* point = NULL;
   Int_t modID   = -1;        // module ID
   Int_t scinID = -1;        // #sciillator
-//  Double_t x, y, z;         // Position
- 
- //const Int_t NB_PSD_MODS = 45;//marina: if we have mod #45 with small hole
-  //const Int_t NB_PSD_MODS = 100;
-  //const Int_t NB_PSD_SECT = 100;
-  //const Int_t NB_PSD_MODS = 44;
-  //const Int_t NB_PSD_SECT = 10;
 
-  //Double_t edep[100][100];               //SELIM: 49 modules, including central & corner modules (rejected in analysis/flow/eventPlane.cxx)
-  //memset(edep, 0, 10000*sizeof(Double_t));
-  
   Double_t edep[NB_PSD_SECT][NB_PSD_MODS];               //SELIM: 49 modules, including central & corner modules (rejected in analysis/flow/eventPlane.cxx)
   memset(edep, 0,(NB_PSD_SECT*NB_PSD_MODS)*sizeof(Double_t));
 
@@ -114,13 +104,9 @@ void CbmPsdIdealDigitizer::Exec(Option_t* /*opt*/) {
       }
   }
 
-  // Loop over ZdcPoints
+  // Loop over PsdPoints
   Int_t nPoints = fPointArray->GetEntriesFast();
   cout<<" nPoints "<<nPoints<<endl;
-
-  //Int_t modID_min, modID_max;
-  //modID_min = 100;
-  //modID_max = 0;
 
   Int_t sec;
 

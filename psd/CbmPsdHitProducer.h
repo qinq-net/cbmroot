@@ -20,7 +20,7 @@
 #include "TH1F.h"
 
 class TClonesArray;
-
+const Int_t NPsdMod = 44; //with 4 central mods
 
 
 class CbmPsdHitProducer : public FairTask
@@ -58,16 +58,10 @@ class CbmPsdHitProducer : public FairTask
   CbmPsdHitProducer operator=(const CbmPsdHitProducer&);
 
   void Reset();
-  //Float_t       fXi[44];  //X coordinate of center of module
-  //Float_t       fYi[44];  //X coordinate of center of module
-  //Float_t       fXi[45];  //X coordinate of center of module
-  //Float_t       fYi[45];  //X coordinate of center of module
-  Float_t       fXi[48];  //X coordinate of center of module
-  Float_t       fYi[48];  //X coordinate of center of module
-  //Float_t       fXi[60];  //X coordinate of center of module
-  //Float_t       fYi[60];  //X coordinate of center of module
-  //Float_t       fXi[176];  //X coordinate of center of module
-  //Float_t       fYi[176];  //X coordinate of center of module
+
+  Float_t       fXi[NPsdMod];  //X coordinate of center of module
+  Float_t       fYi[NPsdMod];  //X coordinate of center of module
+
   TH1F *fhModXNewEn; //edep in each module for Marina
  
 

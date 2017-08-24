@@ -108,18 +108,9 @@ void CbmPsdHitProducer::Exec(Option_t* /*opt*/) {
     // Declare some variables
     CbmPsdDigi* dig = NULL;
 
-    //const Int_t NB_PSD_MODS = 44; //with hole 20 cm
-    //const Int_t NB_PSD_MODS = 45; //with hole in module 23
-    const Int_t NB_PSD_MODS = 48; //with 4 central mods
-    //const Int_t NB_PSD_MODS = 60; //with central mods hole6cm
-    //const Int_t NB_PSD_MODS = 176; //with mod10cm
-//    const Int_t NB_PSD_SECT = 10;
+    Double_t edep[NPsdMod];//marina
 
-    //Double_t edep[100];                                   //SELIM: 49 modules, including central & corner modules (rejected in analysis/flow/eventPlane.cxx)
-    Double_t edep[NB_PSD_MODS];//marina
-
-    ///for (Int_t imod=0; imod<100; imod++)  { edep[imod]=0.; }//SELIM: 49 modules, including central & corner modules (rejected in analysis/flow/eventPlane.cxx)
-    for (Int_t imod=0; imod<NB_PSD_MODS; imod++)  { edep[imod]=0.; }//marina
+    for (Int_t imod=0; imod<NPsdMod; imod++)  { edep[imod]=0.; }//marina
 
     // Loop over PsdDigits
     Int_t nDigi = fDigiArray->GetEntriesFast();
@@ -134,8 +125,7 @@ void CbmPsdHitProducer::Exec(Option_t* /*opt*/) {
 	edep[mod-1] += (Double_t) dig->GetEdep();                     //DEBUG: SELIM
     }// Loop over MCPoints
 
-    //for (Int_t imod=0; imod<100; imod++)                  //SELIM: 49 modules, including central & corner modules (rejected in analysis/flow/eventPlane.cxx)
-	for (Int_t imod=0; imod<NB_PSD_MODS; imod++) //marina
+	for (Int_t imod=0; imod<NPsdMod; imod++) //marina
     {              
       if (edep[imod]>0.)
       	{

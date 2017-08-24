@@ -24,6 +24,7 @@ ${FAIRROOT_LIBRARY_DIR}
  
 link_directories( ${LINK_DIRECTORIES})
 
+
 set(SRCS
 CbmPsd.cxx  
 CbmGeoPsd.cxx  
@@ -31,11 +32,13 @@ CbmGeoPsdPar.cxx
 CbmPsdv1.cxx 
 CbmPsdIdealDigitizer.cxx
 CbmPsdHitProducer.cxx
-CbmPsdv1_44mods_hole6cm.cxx 
-CbmPsdWoutv1_for44mods_full_holes.cxx
-CbmPsdWoutv1_for44mods_sub1.cxx 
-CbmPsdWoutv1_for44mods_sub2.cxx 
-CbmPsdWoutv1_for44mods_sub3.cxx
+# CbmPsdv1_44mods_hole6cm.cxx 
+# CbmPsdWoutv1_for44mods_full_holes.cxx
+# CbmPsdWoutv1_for44mods_sub1.cxx 
+# CbmPsdWoutv1_for44mods_sub2.cxx 
+# CbmPsdWoutv1_for44mods_sub3.cxx
+CbmPsdTest.cxx
+CbmPsdNA61.cxx
 
 )
 
