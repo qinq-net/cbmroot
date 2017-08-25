@@ -211,51 +211,51 @@ Bool_t TMbsMappingTof::CreateHistogramms()
          Int_t iSmType   = CbmTofAddress::GetSmType( iUniqueId );
          Int_t iSmId     = CbmTofAddress::GetSmId( iUniqueId );
          Int_t iRpcId    = CbmTofAddress::GetRpcId( iUniqueId );
-         fhDetChEvtMul[iDetIndx] =  new TH2I( 
+         fhDetChEvtMul.at(iDetIndx) =  new TH2I( 
                                     Form("tof_ty%01d_sm%03d_rpc%03d_ch_evt_mul", iSmType, iSmId, iRpcId ),
                                     Form("Number of events with hits for each channel of Rpc #%03d in Sm %03d of type %d; Channel []; Side []; Events with hits[]", 
                                           iRpcId, iSmId, iSmType ),
                                     fMbsMappingPar->GetSmTypeNbCh(iSmType), 0, fMbsMappingPar->GetSmTypeNbCh(iSmType),
                                     2, 0, 2 ); 
-         fhDetChTotMul[iDetIndx] =  new TH2I( 
+         fhDetChTotMul.at(iDetIndx) =  new TH2I( 
                                     Form("tof_ty%01d_sm%03d_rpc%03d_ch_tot_mul", iSmType, iSmId, iRpcId ),
                                     Form("Number of hits for each channel of Rpc #%03d in Sm %03d of type %d; Channel []; Side []; Hits []", 
                                           iRpcId, iSmId, iSmType ),
                                     fMbsMappingPar->GetSmTypeNbCh(iSmType), 0, fMbsMappingPar->GetSmTypeNbCh(iSmType),
                                     2, 0, 2 ); 
-         fhDetChHitsPerEvt[2*iDetIndx] =  new TH2I( 
+         fhDetChHitsPerEvt.at(2*iDetIndx) =  new TH2I( 
                                           Form("tof_ty%01d_sm%03d_rpc%03d_ch_left_hitsperevt", iSmType, iSmId, iRpcId ),
                                           Form("Number of hits per event for the left side each channel of Rpc #%03d in Sm %03d of type %d; Channel []; Nb hits per event []; Events []", 
                                                 iRpcId, iSmId, iSmType ),
                                           fMbsMappingPar->GetSmTypeNbCh(iSmType), 0, fMbsMappingPar->GetSmTypeNbCh(iSmType),
                                           10, 0, 10 ); 
-         fhDetChHitsPerEvt[2*iDetIndx + 1] =  new TH2I( 
+         fhDetChHitsPerEvt.at(2*iDetIndx + 1) =  new TH2I( 
                                           Form("tof_ty%01d_sm%03d_rpc%03d_ch_right_hitsperevt", iSmType, iSmId, iRpcId ),
                                           Form("Number of hits per event for the right side each channel of Rpc #%03d in Sm %03d of type %d; Channel []; Nb hits per event []; Events []", 
                                                 iRpcId, iSmId, iSmType ),
                                           fMbsMappingPar->GetSmTypeNbCh(iSmType), 0, fMbsMappingPar->GetSmTypeNbCh(iSmType),
                                           10, 0, 10 ); 
 
-         fhDetChCoincSides[iDetIndx] =  new TH2I(
+         fhDetChCoincSides.at(iDetIndx) =  new TH2I(
                                     Form("tof_ty%01d_sm%03d_rpc%03d_coinc_sides", iSmType, iSmId, iRpcId ),
                                     Form("Number of events with hits for both channels of Rpc #%03d in Sm %03d of type %d; Channel left []; Channel right []; Events with hits in both[]",
                                           iRpcId, iSmId, iSmType ),
                                     fMbsMappingPar->GetSmTypeNbCh(iSmType), 0, fMbsMappingPar->GetSmTypeNbCh(iSmType),
                                     fMbsMappingPar->GetSmTypeNbCh(iSmType), 0, fMbsMappingPar->GetSmTypeNbCh(iSmType));
-         fhDetChCoincLeft[iDetIndx] =  new TH2I(
+         fhDetChCoincLeft.at(iDetIndx) =  new TH2I(
                                     Form("tof_ty%01d_sm%03d_rpc%03d_coinc_left", iSmType, iSmId, iRpcId ),
                                     Form("Number of events with hits for both channels of Rpc #%03d in Sm %03d of type %d; Channel left 1 []; Channel left 2 []; Events with hits in both[]",
                                           iRpcId, iSmId, iSmType ),
                                     fMbsMappingPar->GetSmTypeNbCh(iSmType), 0, fMbsMappingPar->GetSmTypeNbCh(iSmType),
                                     fMbsMappingPar->GetSmTypeNbCh(iSmType), 0, fMbsMappingPar->GetSmTypeNbCh(iSmType));
-         fhDetChCoincRight[iDetIndx] =  new TH2I(
+         fhDetChCoincRight.at(iDetIndx) =  new TH2I(
                                     Form("tof_ty%01d_sm%03d_rpc%03d_coinc_right", iSmType, iSmId, iRpcId ),
                                     Form("Number of events with hits for both channels of Rpc #%03d in Sm %03d of type %d; Channel right 1 []; Channel right 2 []; Events with hits in both[]",
                                           iRpcId, iSmId, iSmType ),
                                     fMbsMappingPar->GetSmTypeNbCh(iSmType), 0, fMbsMappingPar->GetSmTypeNbCh(iSmType),
                                     fMbsMappingPar->GetSmTypeNbCh(iSmType), 0, fMbsMappingPar->GetSmTypeNbCh(iSmType));
                                     
-         fviNbHitInThisEvent[iDetIndx].resize( 2*fMbsMappingPar->GetSmTypeNbCh(iSmType), 0 );
+         (fviNbHitInThisEvent.at(iDetIndx)).resize( 2*fMbsMappingPar->GetSmTypeNbCh(iSmType), 0 );
       } // for( Int_t iDetIndx = 0; iDetIndx < fMbsMappingPar->GetNbMappedDet(); iDetIndx++ )
    } // if( 0 < fMbsMappingPar->GetNbMappedDet() )
    
@@ -298,11 +298,11 @@ Bool_t TMbsMappingTof::CreateHistogramms()
             for( UInt_t uTdc1 = 0; uTdc1 < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc1 ++)
             {
 //               fhDebTdcChEvtCoinc[uType][uTdc1].resize( fMbsUnpackPar->GetNbActiveBoards( uType ) - uTdc1 -1, NULL );
-               fbDebTdcChEvtThere[uType][uTdc1].resize( uNbChan, kFALSE );
+               ((fbDebTdcChEvtThere[uType]).at(uTdc1)).resize( uNbChan, kFALSE );
                for( UInt_t uTdc2 = uTdc1; uTdc2 < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc2 ++)
                {
 //                  LOG(INFO)<<"TMbsMappingTof::CreateHistogramms => "<< uType << " " << uTdc1 << " " << uTdc2;
-                  fhDebTdcChEvtCoinc[uType][iHistoIndex] =  new TH2I(
+                  (fhDebTdcChEvtCoinc[uType]).at(iHistoIndex) =  new TH2I(
                         Form("tof_map_deb_ty%01u_tdc%03u_tdc%03u", uType, uTdc1, uTdc2 ),
                         Form("Number of events with hits for in both channels for TDC #%03u and %03u of type %d; Channel TDC #%03u []; Channel TDC #%03u []; Events with hits in both[]",
                               uTdc1, uTdc2, uType, uTdc1, uTdc2 ),
@@ -321,7 +321,7 @@ Bool_t TMbsMappingTof::CreateHistogramms()
    return kTRUE;
 }
 Bool_t TMbsMappingTof::FillHistograms()
-{      
+{
    if( 0 != FairRunAna::Instance() )
    {
       // Get Base Container <- Needed because currently RunOnLmd runs 1 more time after setting end of file flag!!!!!
@@ -335,7 +335,7 @@ Bool_t TMbsMappingTof::FillHistograms()
    if( 0 < fMbsMappingPar->GetNbMappedDet() )
    {
       for( Int_t iDetIndx = 0; iDetIndx < fMbsMappingPar->GetNbMappedDet(); iDetIndx++ )
-         std::fill( fviNbHitInThisEvent[iDetIndx].begin(), fviNbHitInThisEvent[iDetIndx].end(), 0 );
+         std::fill( (fviNbHitInThisEvent.at(iDetIndx)).begin(), (fviNbHitInThisEvent.at(iDetIndx)).end(), 0 );
       
       Int_t iAddress   = 0xFFFFFFFF;
       Int_t iMappedDet = -1;
@@ -356,9 +356,9 @@ Bool_t TMbsMappingTof::FillHistograms()
                iSmType = xDigiPtr->GetType();
                iChan = xDigiPtr->GetChannel();
                iSide = xDigiPtr->GetSide();
-               fviNbHitInThisEvent[iMappedDet][ iSide*fMbsMappingPar->GetSmTypeNbCh(iSmType) + iChan] ++;
+               (fviNbHitInThisEvent.at(iMappedDet)).at( iSide*fMbsMappingPar->GetSmTypeNbCh(iSmType) + iChan) ++;
                
-               fhDetChTotMul[iMappedDet]->Fill( iChan, iSide);
+               (fhDetChTotMul.at(iMappedDet))->Fill( iChan, iSide);
             } // if( -1 < iMappedDet )
          } // if( kTRUE == fMbsMappingPar->UseDigiExp() )
             else
@@ -372,9 +372,9 @@ Bool_t TMbsMappingTof::FillHistograms()
                   iSmType = xDigiPtr->GetType();
                   iChan = xDigiPtr->GetChannel();
                   iSide = xDigiPtr->GetSide();
-                  fviNbHitInThisEvent[iMappedDet][ iSide*fMbsMappingPar->GetSmTypeNbCh(iSmType) + iChan] ++;
+                  (fviNbHitInThisEvent.at(iMappedDet)).at( iSide*fMbsMappingPar->GetSmTypeNbCh(iSmType) + iChan) ++;
                   
-                  fhDetChTotMul[iMappedDet]->Fill( iChan, iSide);
+                  (fhDetChTotMul.at(iMappedDet))->Fill( iChan, iSide);
                } // if( -1 < iMappedDet )
             } // else of if( kTRUE == fMbsMappingPar->UseDigiExp() )
       } // for( Int_t iDigiIndex = 0; iDigiIndex < fCbmTofDigiCollection->GetEntriesFast() ; iDigiIndex++ )
@@ -385,32 +385,32 @@ Bool_t TMbsMappingTof::FillHistograms()
          for( Int_t iChIndx = 0; iChIndx < fMbsMappingPar->GetSmTypeNbCh(iSmType); iChIndx++)
          {
             // Hits per events
-            fhDetChHitsPerEvt[2*iDetIndx]->Fill( iChIndx, 
-                                          fviNbHitInThisEvent[iDetIndx][ iChIndx ]);
-            fhDetChHitsPerEvt[2*iDetIndx+1]->Fill( iChIndx, 
-                                          fviNbHitInThisEvent[iDetIndx][ fMbsMappingPar->GetSmTypeNbCh(iSmType) +iChIndx ]);
+            (fhDetChHitsPerEvt.at(2*iDetIndx))->Fill( iChIndx, 
+                                          (fviNbHitInThisEvent.at(iDetIndx)).at( iChIndx ));
+            (fhDetChHitsPerEvt.at(2*iDetIndx+1))->Fill( iChIndx, 
+                                          (fviNbHitInThisEvent.at(iDetIndx)).at( fMbsMappingPar->GetSmTypeNbCh(iSmType) +iChIndx ));
                                           
             // Events with at least one hit
-            if( 0 < fviNbHitInThisEvent[iDetIndx][ iChIndx ] )
-               fhDetChEvtMul[iDetIndx]->Fill( iChIndx, 0);
-            if( 0 < fviNbHitInThisEvent[iDetIndx][ fMbsMappingPar->GetSmTypeNbCh(iSmType) + iChIndx ] )
-               fhDetChEvtMul[iDetIndx]->Fill( iChIndx, 1);
+            if( 0 < (fviNbHitInThisEvent.at(iDetIndx)).at( iChIndx ) )
+               (fhDetChEvtMul.at(iDetIndx))->Fill( iChIndx, 0);
+            if( 0 < (fviNbHitInThisEvent.at(iDetIndx)).at( fMbsMappingPar->GetSmTypeNbCh(iSmType) + iChIndx ) )
+               (fhDetChEvtMul.at(iDetIndx))->Fill( iChIndx, 1);
 
             // Events with at least one hit in both channels = coincidences
             for( Int_t iChIndx2 = 0 ; iChIndx2 < fMbsMappingPar->GetSmTypeNbCh(iSmType); iChIndx2++)
             {
-            	if( 0 < fviNbHitInThisEvent[iDetIndx][ iChIndx ] &&
-            	    0 < fviNbHitInThisEvent[iDetIndx][ fMbsMappingPar->GetSmTypeNbCh(iSmType) + iChIndx2 ])
-            		fhDetChCoincSides[iDetIndx]->Fill( iChIndx, iChIndx2 );
+            	if( 0 < (fviNbHitInThisEvent.at(iDetIndx)).at( iChIndx ) &&
+            	    0 < (fviNbHitInThisEvent.at(iDetIndx)).at( fMbsMappingPar->GetSmTypeNbCh(iSmType) + iChIndx2 ))
+            		(fhDetChCoincSides.at(iDetIndx))->Fill( iChIndx, iChIndx2 );
             	if( iChIndx < iChIndx2 &&
-            		0 < fviNbHitInThisEvent[iDetIndx][ iChIndx ] &&
-            	    0 < fviNbHitInThisEvent[iDetIndx][ iChIndx2 ])
-            		fhDetChCoincLeft[iDetIndx]->Fill( iChIndx,  iChIndx2 );
+            		0 < (fviNbHitInThisEvent.at(iDetIndx)).at( iChIndx ) &&
+            	    0 < (fviNbHitInThisEvent.at(iDetIndx)).at( iChIndx2 ))
+            		(fhDetChCoincLeft.at(iDetIndx))->Fill( iChIndx,  iChIndx2 );
 
             	if( iChIndx < iChIndx2 &&
-            		0 < fviNbHitInThisEvent[iDetIndx][ fMbsMappingPar->GetSmTypeNbCh(iSmType) + iChIndx ] &&
-            	    0 < fviNbHitInThisEvent[iDetIndx][ fMbsMappingPar->GetSmTypeNbCh(iSmType) + iChIndx2 ])
-            		fhDetChCoincRight[iDetIndx]->Fill( iChIndx,  iChIndx2 );
+            		0 < (fviNbHitInThisEvent.at(iDetIndx)).at( fMbsMappingPar->GetSmTypeNbCh(iSmType) + iChIndx ) &&
+            	    0 < (fviNbHitInThisEvent.at(iDetIndx)).at( fMbsMappingPar->GetSmTypeNbCh(iSmType) + iChIndx2 ))
+            		(fhDetChCoincRight.at(iDetIndx))->Fill( iChIndx,  iChIndx2 );
             } // for( Int_t iChIndx2 = iChIndx ; iChIndx2 < fMbsMappingPar->GetSmTypeNbCh(iSmType); iChIndx2++)
          } // for all Det/Ch pairs 
       } // for( Int_t iDetIndx = 0; iDetIndx < fMbsMappingPar->GetNbMappedDet(); iDetIndx++ )
@@ -432,7 +432,7 @@ Bool_t TMbsMappingTof::FillHistograms()
          Double_t dTot  = fCalibData->GetTot();
 
          if( 0 < dTime && 0 < dTot )
-            fbDebTdcChEvtThere[uType][uTdc][uChan] = kTRUE;
+            ((fbDebTdcChEvtThere[uType]).at(uTdc)).at(uChan) = kTRUE;
       } // for( Int_t iDataIndex = 0; iDataIndex < fCalibDataCollection->GetEntriesFast() ; iDataIndex++ )
 
       for( UInt_t uType = toftdc::caenV1290; uType < toftdc::NbTdcTypes; uType++ )
@@ -468,14 +468,14 @@ Bool_t TMbsMappingTof::FillHistograms()
                {
                   for( UInt_t uChIndx1 = 0 ; uChIndx1 < uNbChan; uChIndx1++)
                      for( UInt_t uChIndx2 = 0 ; uChIndx2 < uNbChan; uChIndx2++)
-                        if( kTRUE == fbDebTdcChEvtThere[uType][uTdc1][uChIndx1] &&
-                            kTRUE == fbDebTdcChEvtThere[uType][uTdc2][uChIndx2]  )
-                           fhDebTdcChEvtCoinc[uType][iHistoIndex]->Fill(uChIndx1, uChIndx2);
+                        if( kTRUE == ((fbDebTdcChEvtThere[uType]).at(uTdc1)).at(uChIndx1) &&
+                            kTRUE == ((fbDebTdcChEvtThere[uType]).at(uTdc2)).at(uChIndx2)  )
+                           ((fhDebTdcChEvtCoinc[uType]).at(iHistoIndex))->Fill(uChIndx1, uChIndx2);
                   iHistoIndex++;
                } // for( UInt_t uTdc2 = uTdc1 + 1; uTdc2 < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc2 ++)
 
                for( UInt_t uChIndx1 = 0 ; uChIndx1 < uNbChan; uChIndx1++)
-                  fbDebTdcChEvtThere[uType][uTdc1][uChIndx1] = kFALSE;
+                  ((fbDebTdcChEvtThere[uType]).at(uTdc1)).at(uChIndx1) = kFALSE;
             } // for( UInt_t uTdc1 = 0; uTdc1 < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc1 ++)
          } // if( 0 < fMbsUnpackPar->GetNbActiveBoards( uType ) )
       } // for( UInt_t uType = toftdc::caenV1290; uType < toftdc::NbTdcTypes; uType++ )
@@ -504,23 +504,23 @@ void TMbsMappingTof::WriteHistogramms()
       {
          // Nb Events with hits
          cdMapEvt->cd();
-         fhDetChEvtMul[iDetIndx]->Write();
+         (fhDetChEvtMul.at(iDetIndx))->Write();
          
          // Total Nb hits per channel/side
          cdMapTot->cd();
-         fhDetChTotMul[iDetIndx]->Write();
+         (fhDetChTotMul.at(iDetIndx))->Write();
          
          // Hits per events
          cdMapHitsPerEvt->cd();
-         fhDetChHitsPerEvt[2*iDetIndx]->Write();
-         fhDetChHitsPerEvt[2*iDetIndx+1]->Write();
+         (fhDetChHitsPerEvt.at(2*iDetIndx))->Write();
+         (fhDetChHitsPerEvt.at(2*iDetIndx+1))->Write();
 
          cdMapCoincSides->cd();
-         fhDetChCoincSides[iDetIndx]->Write();
+         (fhDetChCoincSides.at(iDetIndx))->Write();
          cdMapCoincLeft->cd();
-         fhDetChCoincLeft[iDetIndx]->Write();
+         (fhDetChCoincLeft.at(iDetIndx))->Write();
          cdMapCoincRight->cd();
-         fhDetChCoincRight[iDetIndx]->Write();
+         (fhDetChCoincRight.at(iDetIndx))->Write();
       } // for( Int_t iDetIndx = 0; iDetIndx < fMbsMappingPar->GetNbMappedDet(); iDetIndx++ )
    } // if( 0 < fMbsMappingPar->GetNbMappedDet() )
 
@@ -532,7 +532,7 @@ void TMbsMappingTof::WriteHistogramms()
       {
          if( 0 < fMbsUnpackPar->GetNbActiveBoards( uType ) )
          {
-            TDirectory *cdDebugMapTdcFirst[fMbsUnpackPar->GetNbActiveBoards( uType )];
+            TDirectory *cdDebugMapTdcFirst[fMbsUnpackPar->GetNbActiveBoards( uType )]; // TODO: safe?
             // Debug Write
             Int_t iHistoIndex = 0;
             for( UInt_t uTdc1 = 0; uTdc1 < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc1 ++)
@@ -542,7 +542,7 @@ void TMbsMappingTof::WriteHistogramms()
                cdDebugMapTdcFirst[uTdc1]->cd();
                for( UInt_t uTdc2 = uTdc1; uTdc2 < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc2 ++)
                {
-                  fhDebTdcChEvtCoinc[uType][iHistoIndex]->Write();
+                  ((fhDebTdcChEvtCoinc[uType]).at(iHistoIndex))->Write();
                   iHistoIndex++;
                } // for( UInt_t uTdc2 = uTdc1 + 1; uTdc2 < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc2 ++)
             } // for( UInt_t uTdc1 = 0; uTdc1 < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc1 ++)
