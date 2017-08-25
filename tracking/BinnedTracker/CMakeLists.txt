@@ -6,6 +6,7 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/data/sts
   ${CBMROOT_SOURCE_DIR}/data/much
   ${CBMROOT_SOURCE_DIR}/data/trd
+  ${CBMROOT_SOURCE_DIR}/data/tof
   ${CBMROOT_SOURCE_DIR}/sts
   ${CBMROOT_SOURCE_DIR}/much
 )

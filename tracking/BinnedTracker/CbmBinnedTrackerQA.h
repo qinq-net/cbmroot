@@ -15,6 +15,12 @@
 #define CBMBINNEDTRACKERQA_H
 
 #include "FairTask.h"
+#include "TClonesArray.h"
+#include "CbmMCDataArray.h"
+#include "CbmStsTrack.h"
+#include "CbmMuchTrack.h"
+#include "CbmTrdTrack.h"
+#include "CbmTofHit.h"
 
 class CbmBinnedTrackerQA : public FairTask
 {
@@ -24,6 +30,32 @@ public:
     void Finish();// Overridden from FairTask
     
 private:
+    void HandleSts(Int_t stsTrackIndex);
+    void HandleMuch(const CbmMuchTrack* muchTrack);
+    void HandleTrd(const CbmTrdTrack* trdTrack);
+    void HandleTof(const CbmTofHit* tofHit);
+    
+private:
+    TClonesArray* fGlobalTracks;
+    TClonesArray* fStsTracks;
+    TClonesArray* fMuchTracks;
+    TClonesArray* fTrdTracks;
+    TClonesArray* fTofTracks;
+    TClonesArray* fStsHits;
+    TClonesArray* fMuchHits;
+    TClonesArray* fTrdHits;
+    TClonesArray* fTofHits;
+    TClonesArray* fStsClusters;
+    TClonesArray* fMuchClusters;
+    TClonesArray* fTrdClusters;
+    
+    TClonesArray* fStsDigis;
+    
+    CbmMCDataArray* fMCTracks;
+    CbmMCDataArray* fStsPoints;
+    CbmMCDataArray* fMuchPoints;
+    CbmMCDataArray* fTrdPoints;
+    CbmMCDataArray* fTofPoints;
     ClassDef(CbmBinnedTrackerQA, 1)
 };
 
