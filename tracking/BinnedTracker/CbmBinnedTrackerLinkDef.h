@@ -5,5 +5,6 @@
 #pragma link off all functions;
 
 #pragma link C++ class CbmBinnedTrackerTask+;
+#pragma link C++ class CbmBinnedTrackerQA+;
 
 #endif

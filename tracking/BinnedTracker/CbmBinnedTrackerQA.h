@@ -25,22 +25,24 @@
 class CbmBinnedTrackerQA : public FairTask
 {
 public:
+    CbmBinnedTrackerQA();
+    CbmBinnedTrackerQA(const CbmBinnedTrackerQA&) = delete;
+    CbmBinnedTrackerQA& operator=(const CbmBinnedTrackerQA&) = delete;
     InitStatus Init();// Overridden from FairTask
     void Exec(Option_t* opt);// Overridden from FairTask
     void Finish();// Overridden from FairTask
     
 private:
     void HandleSts(Int_t stsTrackIndex);
-    void HandleMuch(const CbmMuchTrack* muchTrack);
-    void HandleTrd(const CbmTrdTrack* trdTrack);
-    void HandleTof(const CbmTofHit* tofHit);
+    void HandleMuch(Int_t muchTrackIndex);
+    void HandleTrd(Int_t trdTrackIndex);
+    void HandleTof(Int_t tofHitIndex);
     
 private:
     TClonesArray* fGlobalTracks;
     TClonesArray* fStsTracks;
     TClonesArray* fMuchTracks;
     TClonesArray* fTrdTracks;
-    TClonesArray* fTofTracks;
     TClonesArray* fStsHits;
     TClonesArray* fMuchHits;
     TClonesArray* fTrdHits;
@@ -49,7 +51,12 @@ private:
     TClonesArray* fMuchClusters;
     TClonesArray* fTrdClusters;
     
+    TClonesArray* fTofHitDigiMatches;
+    
     TClonesArray* fStsDigis;
+    TClonesArray* fMuchDigis;
+    TClonesArray* fTrdDigis;
+    TClonesArray* fTofDigis;
     
     CbmMCDataArray* fMCTracks;
     CbmMCDataArray* fStsPoints;
