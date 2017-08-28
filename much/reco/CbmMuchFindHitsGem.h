@@ -1,5 +1,11 @@
 /* CbmMuchFindHitsGem.h
  *
+ *@author  V.Singhal <vikas@vecc.gov.in>
+ *@version 2.0 (removeing fDaq Time stream mode as per CbmDaqNew Scheme)
+ *@define  Clusterization and Hit creation is not dependend of EBE or Time Based mode.
+ *         fClusterSeprationTime taken as 100 ns which will work with Time Based mode.
+ *@since   22.08.17
+ *
  *@author  E.Kryshen <e.kryshen@gsi.de>
  *@version 2.0
  *@since   31.07.12
@@ -29,7 +35,9 @@ class CbmMuchPad;
 class CbmMuchCluster;
 class TClonesArray;
 class CbmMuchGeoScheme;
-class CbmTimeSlice;
+// Root file for both the Event by Event Mode and Time Stream mode is same therefore 
+// Time based data can be read directly from the Root Tree ( One Tree entry = One Time Slice)
+// class CbmTimeSlice;
 
 class CbmMuchFindHitsGem: public FairTask {
   public:
@@ -39,7 +47,8 @@ class CbmMuchFindHitsGem: public FairTask {
     void SetAlgorithm(Int_t iAlgorithm)             { fAlgorithm = iAlgorithm;}
     void SetThresholdRatio(Double_t thresholdRatio) {fThresholdRatio = thresholdRatio; }
     void SetClusterSeparationTime(Double_t time)    { fClusterSeparationTime = time; }
-    void SetDaq(Bool_t daq)                         { fDaq = daq; }
+    // Removing SetDaq functionality as Cluster and Hit Finder algorithm is same for both the Time Based and Event Based mode.
+    // void SetDaq(Bool_t daq)                         { fDaq = daq; }
 
   private:
     virtual InitStatus Init();
@@ -66,8 +75,9 @@ class CbmMuchFindHitsGem: public FairTask {
     std::vector<Int_t> fDigiIndices;             //!
     std::vector<CbmMuchPad*> fFiredPads;         //!
     
-    Bool_t fDaq;                            // To daq or not to daq // TODO
-    CbmTimeSlice* fTimeSlice;               // Time slice object in the DAQ approach
+    // Removing SetDaq functionality as Cluster and Hit Finder algorithm is same for both the Time Based and Event Based mode.
+    //Bool_t fDaq;                            // To daq or not to daq // TODO
+    //CbmTimeSlice* fTimeSlice;               // Time slice object in the DAQ approach
     std::vector<CbmMuchDigi> fDigiData;          // Vector of digis
     CbmMuchFindHitsGem(const CbmMuchFindHitsGem&);
     CbmMuchFindHitsGem operator=(const CbmMuchFindHitsGem&);

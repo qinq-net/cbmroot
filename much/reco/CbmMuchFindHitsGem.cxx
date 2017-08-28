@@ -13,7 +13,7 @@
 #include "TFile.h"
 #include "TStopwatch.h"
 #include "TClonesArray.h"
-#include "CbmTimeSlice.h"
+//#include "CbmTimeSlice.h"
 #include "CbmMuchDigi.h"
 #include "CbmMuchAddress.h"
 #include <algorithm>
@@ -40,8 +40,8 @@ CbmMuchFindHitsGem::CbmMuchFindHitsGem(const char* digiFileName)
     fGeoScheme(CbmMuchGeoScheme::Instance()),
     fDigiIndices(),
     fFiredPads(),
-    fDaq(),
-    fTimeSlice(NULL),
+    // fDaq(),
+    // fTimeSlice(NULL),
     fDigiData()
 {
 }
@@ -49,8 +49,9 @@ CbmMuchFindHitsGem::CbmMuchFindHitsGem(const char* digiFileName)
 // -----   Private method Init   -------------------------------------------
 InitStatus CbmMuchFindHitsGem::Init() {
   FairRootManager* ioman = FairRootManager::Instance();
-  if (fDaq) fTimeSlice = (CbmTimeSlice*) ioman->GetObject("TimeSlice.");
-  else      fDigis     = (TClonesArray*) ioman->GetObject("MuchDigi");
+  //if (fDaq) fTimeSlice = (CbmTimeSlice*) ioman->GetObject("TimeSlice.");
+  //else      fDigis     = (TClonesArray*) ioman->GetObject("MuchDigi");
+  fDigis     = (TClonesArray*) ioman->GetObject("MuchDigi");
   
   ioman->Register("MuchCluster", "Cluster in MUCH", fClusters, IsOutputBranchPersistent("MuchCluster"));
   ioman->Register("MuchPixelHit", "Hit in MUCH", fHits, IsOutputBranchPersistent("MuchPixelHit"));
@@ -74,18 +75,18 @@ void CbmMuchFindHitsGem::Exec(Option_t*) {
   timer.Start();
   fEvent++;
   fDigiData.clear();
-  
-  if (fDaq) ;
-    //fDigiData = fTimeSlice->GetMuchData();
-  else {
-    for (Int_t iDigi = 0; iDigi < fDigis->GetEntriesFast(); iDigi++) {
+  // Removing SetDaq functionality as Cluster and Hit Finder algorithm is same for both the Time Based and Event Based mode.
+  //if (fDaq) ;
+  //fDigiData = fTimeSlice->GetMuchData();
+  // else {
+  for (Int_t iDigi = 0; iDigi < fDigis->GetEntriesFast(); iDigi++) {
       CbmMuchDigi* digi = (CbmMuchDigi*) fDigis->At(iDigi);
       CbmMuchModule* module = fGeoScheme->GetModuleByDetId(digi->GetAddress()); //AZ
       //std::cout << module->GetDetectorType() << std::endl; //AZ
       if (module->GetDetectorType() == 2) continue; //AZ - skip 2-D straws
       fDigiData.push_back(*digi);
-    }
-  }
+   }
+  //}
   
   
   // Clear output array
