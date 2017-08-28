@@ -22,7 +22,9 @@ using namespace std;
 
 // =====   Constructor   =====================================================
 CbmDaq::CbmDaq(Double_t timeSliceSize) : FairTask("Daq"),
-                   fCurrentStartTime (0.),
+                   fSystemTime(0.),
+                   fCurrentStartTime (1000.),
+                   fBufferTime(500.),
                    fDuration (timeSliceSize),
                    fStoreEmptySlices(kTRUE),
                    fTimer(),
@@ -124,58 +126,51 @@ Int_t CbmDaq::CopyEventList() {
 // =====   Task execution   ==================================================
 void CbmDaq::Exec(Option_t*) {
 
-	// Start timer and digi counter
-	fTimer.Start();
-	Int_t nDigis = 0;
+  // Start timer and digi counter
+  fTimer.Start();
+  Int_t nDigis = 0;
 
-	// Get system time (start time of current event)
-	Double_t systemTime = FairRootManager::Instance()->GetEventTime();
-	LOG(DEBUG) << GetName() << ": System time is " << systemTime
-			       << " ns " << FairLogger::endl;
+  // Debug info
+  LOG(DEBUG) << GetName() << ": System time is " << fSystemTime
+      << " ns " << FairLogger::endl;
+  LOG(DEBUG) << GetName() << ": " << fBuffer->ToString()
+                       << FairLogger::endl;
 
+  // Fill data from the buffers into the time slice
+  Double_t fillTime = fSystemTime - fBufferTime;
+  while ( kTRUE ) {
 
-  // --- DaqBuffer and time slice info
-	LOG(DEBUG) << GetName() << ": " << fBuffer->ToString()
-			       << FairLogger::endl;
-	LOG(DEBUG) << GetName() << ": " << fTimeSlice->ToString()
-			       << FairLogger::endl;
-
-	// --- Fill the data from the buffer into the current time slice.
-  while ( kTRUE ) {        /* Loop until time slice cannot be closed */
-
-    nDigis += FillTimeSlice();
-
-    // --> Exit if current time slice cannot yet be closed
-    if ( systemTime < fTimeSlice->GetEndTime() + 2. * fDuration ) {
-    	LOG(DEBUG) << GetName() << ": System time " << fixed
-    			       << setprecision(3) << systemTime
-    			       << " ns; waiting for data." << FairLogger::endl;
-    	break;
+    if ( fillTime < fTimeSlice->GetEndTime() ) {
+      FillTimeSlice(fillTime);
+      break;
+    }
+    else {
+      FillTimeSlice(fTimeSlice->GetEndTime());
+      CloseTimeSlice();
     }
 
-  	LOG(DEBUG) << GetName() << ": System time " << fixed
-  			       << setprecision(3) << systemTime
-  			       << " ns" << FairLogger::endl;
-    CloseTimeSlice();
+  }
 
-  }     /* Loop over time slices */
+  // --- DaqBuffer info
+  LOG(DEBUG) << GetName() << ": " << fBuffer->ToString()
+			           << FairLogger::endl;
 
-  // --- DaqBuffer and time slice info
-	LOG(DEBUG) << GetName() << ": " << fBuffer->ToString()
-			       << FairLogger::endl;
-
-  // --- Event log
-  fTimer.Stop();
-  LOG(INFO) << "+ " << setw(20) << GetName() << ": event  " << setw(6)
-  		      << right << fNofSteps << ", real time " << fixed
-  		      << setprecision(6) << fTimer.RealTime() << " s, " << nDigis
-  		      << " digis transported" << FairLogger::endl;
 
   // --- Store event start time in event list
   Int_t file  = FairRunAna::Instance()->GetEventHeader()->GetInputFileId();
   Int_t event = FairRunAna::Instance()->GetEventHeader()->GetMCEntryNumber();
   Double_t eventTime = FairRunAna::Instance()->GetEventHeader()->GetEventTime();
   fEventList.Insert(event, file, eventTime);
+
+  // Set system time (start time of current event)
+  fSystemTime = FairRootManager::Instance()->GetEventTime();
+
+  // --- Event log
+  fTimer.Stop();
+  LOG(INFO) << "+ " << setw(20) << GetName() << ": event  " << setw(6)
+                  << right << fNofSteps << ", real time " << fixed
+                  << setprecision(6) << fTimer.RealTime() << " s, " << nDigis
+                  << " digis transported" << FairLogger::endl;
 
   // --- Increase exec counter
   fNofSteps++;
@@ -228,8 +223,7 @@ void CbmDaq::FillData(CbmDigi* data) {
 
 
 // =====   Fill current time slice with data from buffers   ==================
-Int_t CbmDaq::FillTimeSlice() {
-	LOG(DEBUG) << "Daq::FillTimeSlice" << FairLogger::endl;
+Int_t CbmDaq::FillTimeSlice(Double_t fillTime) {
 
   // --- Digi counter
   Int_t nDigis = 0;
@@ -238,7 +232,7 @@ Int_t CbmDaq::FillTimeSlice() {
   for (Int_t iDet = kRef; iDet < kNofSystems; iDet++) {
 
     // --- Loop over digis from DaqBuffer and fill them into current time slice
-    CbmDigi* digi = fBuffer->GetNextData(iDet, fTimeSlice->GetEndTime());
+    CbmDigi* digi = fBuffer->GetNextData(iDet, fillTime);
     while (digi) {
 
       LOG(DEBUG2) << fName << ": Inserting digi with detector ID "
@@ -254,7 +248,7 @@ Int_t CbmDaq::FillTimeSlice() {
 
       // --- Delete data and get next one from buffer
       delete digi;
-      digi = fBuffer->GetNextData(iDet, fTimeSlice->GetEndTime());
+      digi = fBuffer->GetNextData(iDet, fillTime);
     }  //? Valid digi from buffer
 
   }  // Detector loop
@@ -277,7 +271,7 @@ void CbmDaq::Finish() {
 
   while ( fBuffer->GetSize() ) {  // time slice loop until buffer is emptied
 
-    FillTimeSlice();
+    FillTimeSlice(fTimeSlice->GetEndTime());
     CloseTimeSlice();
 
     // --- DaqBuffer and time slice info
@@ -328,6 +322,7 @@ InitStatus CbmDaq::Init() {
 			      << " ns." << FairLogger::endl;
 
 	// Set initial start time
+	fSystemTime= 0.;
   fCurrentStartTime = 0.;
   fTimeSliceFirst = fCurrentStartTime;
 

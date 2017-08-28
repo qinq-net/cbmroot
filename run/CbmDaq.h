@@ -54,11 +54,13 @@ class CbmDaq : public FairTask
 
   private:
 
-    /** Start time of current time slice [ns] **/
-    Double_t fCurrentStartTime;
+    Double_t fSystemTime;        ///< Current system time [ns]
+    Double_t fCurrentStartTime;  ///< Start time of current time slice [ns]
 
     /** Duration of time slice [ns] **/
     Double_t fDuration;
+
+    Double_t fBufferTime; ///< Maximal time disorder of input data
 
     /** Flag whether empty time-slices should be filled to the tree **/
     // TODO: Implement functionality
@@ -119,9 +121,10 @@ class CbmDaq : public FairTask
 
 
     /** Fill data from the buffer into the current time slice
-     ** @return Number if digis filled into the timeslice
+     ** @param fillTime Maximum time for digis to be filled
+     ** @return Number of digis filled into the time slice
      **/
-    Int_t FillTimeSlice();
+    Int_t FillTimeSlice(Double_t fillTime);
 
 
     /** Screen log of the range of MC events contributing to the

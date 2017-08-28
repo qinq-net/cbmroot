@@ -6,7 +6,6 @@
 #include <cassert>
 #include <cmath>
 #include "TClonesArray.h"
-#include "TF1.h"
 #include "TGeoManager.h"
 #include "TRandom.h"
 #include "TString.h"
@@ -40,6 +39,7 @@ CbmStsModule::CbmStsModule(UInt_t address, TGeoPhysicalNode* node,
         fIsSet(kFALSE),
         fDeadChannels(),
         fPhysics(nullptr),
+        fNoiseCharge(nullptr),
         fAnalogBuffer(),
         fClusters()
 {
@@ -207,12 +207,8 @@ void CbmStsModule::Digitize(UShort_t channel, CbmStsSignal* signal) {
   // --- Check channel number
   assert ( channel < fNofChannels );
 
-  // --- Add noise to the signal
-  Double_t charge = signal->GetCharge();
-  if ( fNoise > 0.)
-    charge = signal->GetCharge() + gRandom->Gaus(0., fNoise);
-
   // --- No action if charge is below threshold
+  Double_t charge = signal->GetCharge();
   if ( charge < fThreshold ) return;
 
   // --- Digitise charge
@@ -286,13 +282,11 @@ Int_t CbmStsModule::GenerateNoise(Double_t t1, Double_t t2) {
     // --- Random channel number, time and charge
     Int_t channel = Int_t(gRandom->Uniform(Double_t(fNofChannels)));
     Double_t time = gRandom->Uniform(t1, t2);
+    Double_t charge = fNoiseCharge->GetRandom();
 
-    Double_t charge = 1.1 * fThreshold; // TODO: Real sampling from Gauss
-
-    // --- Create a signal object (without link index, entry and file)
-    // --- and digitise it.
-    CbmStsSignal signal(time, charge, -1, -1, -1);
-    Digitize(channel, &signal);
+    // --- Insert a signal object (without link index, entry and file)
+    // --- into the analogue buffer.
+    AddSignal(channel, time, charge, -1, -1, -1);
 
   } //# noise digis
 

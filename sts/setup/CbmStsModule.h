@@ -10,6 +10,7 @@
 #include <map>
 #include <set>
 #include <vector>
+#include "TF1.h"
 #include "TRandom.h"
 #include "CbmStsCluster.h"
 #include "CbmStsDigi.h"
@@ -244,6 +245,9 @@ class CbmStsModule : public CbmStsElement
       fNoiseRate = 0.5 * fZeroNoiseRate
           * TMath::Exp( -0.5 * fThreshold * fThreshold / (fNoise * fNoise) );
       InitAnalogBuffer();
+      fNoiseCharge = new TF1("Noise Charge", "TMath::Gaus(x, [0], [1])",
+                             threshold, 10. * noise);
+      fNoiseCharge->SetParameters(0., noise);
     }
 
 
@@ -284,6 +288,7 @@ class CbmStsModule : public CbmStsElement
     Bool_t   fIsSet;             ///< Flag whether parameters are set
     std::set <UShort_t> fDeadChannels;    ///< List of inactive channels
     CbmStsPhysics* fPhysics;  //!  Pointer to CbmStsPhysics instance
+    TF1* fNoiseCharge;        //! Histogram to sample the noise charge
 
     /** Buffer for analog signals, key is channel number.
      ** Because signals do not, in general, arrive time-sorted,

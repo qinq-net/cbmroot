@@ -262,7 +262,7 @@ void CbmStsDigitize::Exec(Option_t* /*opt*/) {
                                                             fEventTimeCurrent);
       fNofNoiseTot += Double_t(nNoise);
       LOG(INFO) << "+ " << setw(20) << GetName() << ": Generated  " << nNoise
-          << " noise digis from t = " << eventTimePrevious << " ns to "
+          << " noise signals from t = " << eventTimePrevious << " ns to "
           << fEventTimeCurrent << " ns" << FairLogger::endl;
     }
 

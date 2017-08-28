@@ -168,6 +168,7 @@ string CbmDaqBuffer::ToString() const {
   }
   ss << "from " << fixed << setprecision(3) << GetFirstTime() << " ns to "
   	 << GetLastTime() << " ns";
+
   return ss.str();
 }
 
