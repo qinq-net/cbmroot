@@ -19,6 +19,28 @@
 class CbmBinnedTracker
 {
 public:
+    private:
+    struct Track
+    {
+        Track(CbmTBin::HitHolder** hits, int length, Double_t chiSq) : fHits(new CbmTBin::HitHolder*[length]), fLength(length), fChiSq(chiSq)
+        {
+            for (int i = 0; i < fLength; ++i)
+                fHits[i] = hits[i];
+        }
+        
+        ~Track()
+        {
+            delete[] fHits;
+        }
+        
+        Track(const Track&) = delete;
+        Track& operator=(const Track&) = delete;        
+        CbmTBin::HitHolder** fHits;
+        int fLength;
+        Double_t fChiSq;
+    };
+    
+public:
     static CbmBinnedTracker* Instance()
     {
         static CbmBinnedTracker* theInstance = 0;
@@ -62,44 +84,8 @@ public:
         std::cout << "Reconstructed " << fTracks.size() << " tracks" << std::endl;
     }
     
-private:
-    struct Track
-    {
-        Track(CbmTBin::HitHolder** hits, int length, Double_t chiSq) : fHits(new CbmTBin::HitHolder*[length]), fLength(length), fChiSq(chiSq)
-        {
-            for (int i = 0; i < fLength; ++i)
-                fHits[i] = hits[i];
-        }
-        
-        ~Track()
-        {
-            delete[] fHits;
-        }
-        
-        Track(const Track&) = delete;
-        Track& operator=(const Track&) = delete;
-        
-        /*Track(const Track& track) : fHits(new CbmTBin::HitHolder*[track.fLength]), fLength(track.fLength), fChiSq(track.fChiSq)
-        {
-            for (int i = 0; i < fLength; ++i)
-                fHits[i] = track.fHits[i];
-        }
-        
-        Track& operator=(const Track& track)
-        {
-            fLength = track.fLength;
-            fChiSq = track.fChiSq;
-            
-            for (int i = 0; i < fLength; ++i)
-                fHits[i] = track.fHits[i];
-            
-            return *this;
-        }*/
-        
-        CbmTBin::HitHolder** fHits;
-        int fLength;
-        Double_t fChiSq;
-    };
+    std::list<Track*>::const_iterator GetTracksBegin() const { return fTracks.begin(); }
+    std::list<Track*>::const_iterator GetTracksEnd() const { return fTracks.end(); }
     
 private:
     void Clear()

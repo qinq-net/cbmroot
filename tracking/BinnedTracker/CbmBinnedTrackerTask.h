@@ -32,6 +32,10 @@ public:
     
 private:
     CbmBinnedTracker* fTracker;
+    TClonesArray* fGlobalTracks;
+    TClonesArray* fStsTracks;
+    TClonesArray* fMuchTracks;
+    TClonesArray* fTrdTracks;
     ClassDef(CbmBinnedTrackerTask, 1)
 };
 
