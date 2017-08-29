@@ -63,7 +63,6 @@ class CbmDaq : public FairTask
     Double_t fBufferTime; ///< Maximal time disorder of input data
 
     /** Flag whether empty time-slices should be filled to the tree **/
-    // TODO: Implement functionality
     Bool_t fStoreEmptySlices;
 
     /** Timer **/
@@ -81,6 +80,7 @@ class CbmDaq : public FairTask
 
     /** Output array (digis) **/
     TClonesArray* fStsDigis;
+    TClonesArray* fRichDigis;
     TClonesArray* fMuchDigis;
     TClonesArray* fTofDigis;
 

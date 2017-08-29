@@ -14,6 +14,7 @@
 
 #include "CbmDaq.h"
 #include "CbmDaqBuffer.h"
+#include "CbmRichDigi.h"
 #include "CbmTimeSlice.h"
 
 
@@ -37,6 +38,7 @@ CbmDaq::CbmDaq(Double_t timeSliceSize) : FairTask("Daq"),
                    fTimeSliceFirst(-1.),
                    fTimeSliceLast(-1.),
                    fStsDigis(NULL),
+                   fRichDigis(nullptr),
                    fMuchDigis(NULL),
                    fTofDigis(NULL),
                    fTimeSlice(NULL),
@@ -194,6 +196,14 @@ void CbmDaq::FillData(CbmDigi* data) {
       break;
     }
 
+    case kRich: {
+      CbmRichDigi* digi = static_cast<CbmRichDigi*>(data);
+      Int_t nDigis = fRichDigis->GetEntriesFast();
+      new ( (*fRichDigis)[nDigis] ) CbmRichDigi(*digi);
+      fTimeSlice->SetEmpty(kFALSE);
+      break;
+    }
+
     case kMuch: {
       CbmMuchDigi* digi = static_cast<CbmMuchDigi*>(data);
       Int_t nDigis = fMuchDigis->GetEntriesFast();
@@ -341,6 +351,11 @@ InitStatus CbmDaq::Init() {
   fStsDigis = new TClonesArray("CbmStsDigi",1000);
   FairRootManager::Instance()->Register("StsDigi", "STS raw data",
   		            fStsDigis, IsOutputBranchPersistent("StsDigi"));
+
+  // Register output array (CbmRichDigi)
+  fRichDigis = new TClonesArray("CbmRichDigi",1000);
+  FairRootManager::Instance()->Register("RichDigi", "RICH raw data",
+                    fRichDigis, IsOutputBranchPersistent("RichDigi"));
 
   // Register output array (CbmMuchDigi)
   fMuchDigis = new TClonesArray("CbmMuchDigi",1000);
