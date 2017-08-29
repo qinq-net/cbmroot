@@ -19,7 +19,6 @@
 class CbmBinnedTracker
 {
 public:
-    private:
     struct Track
     {
         Track(CbmTBin::HitHolder** hits, int length, Double_t chiSq) : fHits(new CbmTBin::HitHolder*[length]), fLength(length), fChiSq(chiSq)
