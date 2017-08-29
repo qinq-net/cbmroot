@@ -965,8 +965,8 @@ cout<<vMCTracks.size()<< " vMCTracks"<<endl;
 
 void CbmL1::TrackFitPerformance()
 {
-  const int Nh_fit = 12;
-  static TH1F *h_fit[Nh_fit], *h_fitL[Nh_fit], *h_fitSV[Nh_fit], *h_fitPV[Nh_fit], *h_fit_chi2;
+  const int Nh_fit = 14;
+  static TH1F *h_fit[Nh_fit], *h_fitL[Nh_fit], *h_fitSV[Nh_fit], *h_fitPV[Nh_fit], *h_fit_chi2, *h_smoothed[12][Nh_fit];
 
   static TH2F *PRes2D, *PRes2DPrim, *PRes2DSec;
 
@@ -993,10 +993,10 @@ void CbmL1::TrackFitPerformance()
         Double_t l,r;
       } Table[Nh_fit]=
       {
-        {"x",  "Residual X [#mum]",                   100, -45., 45.},
+        {"x",  "Residual X [#mum]",                   140, -40., 40.},
         {"y",  "Residual Y [#mum]",                   100, -450., 450.},
 		//{"y",  "Residual Y [#mum]",                   100, -45., 45.},
-        {"tx", "Residual Tx [mrad]",                  100,   -2.,   2.},
+        {"tx", "Residual Tx [mrad]",                  100,   -4.,   4.},
 		//{"tx", "Residual Tx [mrad]",                  100,   -7.,   7.},
 		//{"tx", "Residual Tx [mrad]",                  100,   -2.5,   2.5},
         {"ty", "Residual Ty [mrad]",                  100,   -3.5,   3.5},
@@ -1009,7 +1009,9 @@ void CbmL1::TrackFitPerformance()
         {"pty","Pull Ty [residual/estimated_error]",  100,  -6.,  6.},
         {"pQP","Pull Q/P [residual/estimated_error]", 100,  -6.,  6.},
         {"QPreco","Reco Q/P ", 100,  -10.,  10.},
-        {"QPmc","MC Q/P ", 100,  -10.,  10.}
+        {"QPmc","MC Q/P ", 100,  -10.,  10.},
+        {"t","Residual T [ns]", 100, -6., 6.},
+	{"pt","Pull T [residual/estimated_error]", 100, -6., 6.}
       };
 
       struct Tab{
@@ -1035,7 +1037,9 @@ void CbmL1::TrackFitPerformance()
         {"pty","Pull Ty [residual/estimated_error]",  100,  -6.,  6.},
         {"pQP","Pull Q/P [residual/estimated_error]", 100,  -6.,  6.},
         {"QPreco","Reco Q/P ", 100,  -10.,  10.},
-        {"QPmc","MC Q/P ", 100,  -10.,  10.}
+        {"QPmc","MC Q/P ", 100,  -10.,  10.},
+        {"t","Residual T [ns]", 100, -10.,10.},
+	{"pt","Pull T [residual/estimated_error]", 100, -6., 6.}
       };
 
       for( int i=0; i<Nh_fit; i++ ){
@@ -1052,6 +1056,12 @@ void CbmL1::TrackFitPerformance()
         sprintf(n,"pvrt_%s",TableVertex[i].name);
         sprintf(t,"Primary vertex point %s",TableVertex[i].title);
         h_fitPV[i] = new TH1F(n,t, TableVertex[i].n, TableVertex[i].l, TableVertex[i].r);
+        
+        for( int j=0; j<12; j++){
+	  sprintf(n,"smth_%s_sta_%i",Table[i].name,j);
+	  sprintf(t,"Station %i %s",j,Table[i].title);
+	  h_smoothed[j][i] = new TH1F(n,t, Table[i].n, Table[i].l, Table[i].r);
+	}
       }
       h_fit_chi2 = new TH1F("h_fit_chi2", "Chi2/NDF", 50, -0.5, 10.0);
     }
@@ -1108,6 +1118,44 @@ void CbmL1::TrackFitPerformance()
       if( finite(trPar.C44[0]) && trPar.C44[0]>0 ) h_fit[9]->Fill( (trPar.qp[0]-mcP.q/mcP.p)/sqrt(trPar.C44[0]));
       h_fit[10]->Fill(trPar.qp[0]);
       h_fit[11]->Fill(mcP.q/mcP.p);
+      h_fit[12]->Fill(trPar.t[0]-mcP.time);
+      if( finite(trPar.C55[0]) && trPar.C55[0]>0 ) h_fit[13]->Fill( (trPar.t[0]-mcP.time)/sqrt(trPar.C55[0]));
+      
+      //smoothed:
+      L1TrackPar trParSm[12];
+      CbmL1MCPoint mcPSm[12];
+      for (int ista=0;ista<12;ista++){
+	trParSm[ista]=L1TrackPar(it->Ts[ista],it->Cs[ista]);
+	bool hit_match=false;
+	for (unsigned int ipoint=0;ipoint<mc.Points.size();ipoint++){
+	  if (vMCPoints[mc.Points[ipoint]].iStation==ista)
+	  {
+	    mcPSm[ista]=vMCPoints[mc.Points[ipoint]];
+	    hit_match=true;
+	    break;
+	  }
+	}
+	if (hit_match && it->ws[ista])
+	{
+	  L1Extrapolate(trParSm[ista], mcPSm[ista].zIn, trParSm[ista].qp[0], it->fs[ista]);
+	  double mcPpIn=sqrt(mcPSm[ista].pxIn*mcPSm[ista].pxIn+mcPSm[ista].pyIn*mcPSm[ista].pyIn+mcPSm[ista].pzIn*mcPSm[ista].pzIn);
+
+	  h_smoothed[ista][0]->Fill((trParSm[ista].x[0]-mcPSm[ista].xIn)*1.e4);
+	  h_smoothed[ista][1]->Fill((trParSm[ista].y[0]-mcPSm[ista].yIn) *1.e4);
+	  h_smoothed[ista][2]->Fill((trParSm[ista].tx[0]-mcPSm[ista].pxIn/mcPSm[ista].pzIn)*1.e3);
+	  h_smoothed[ista][3]->Fill((trParSm[ista].ty[0]-mcPSm[ista].pyIn/mcPSm[ista].pzIn)*1.e3);
+	  h_smoothed[ista][4]->Fill(fabs(1./trParSm[ista].qp[0])/mcPpIn-1);
+	  if( finite(trParSm[ista].C00[0]) && trParSm[ista].C00[0]>0 ) h_smoothed[ista][5]->Fill( (trParSm[ista].x[0]-mcPSm[ista].xIn)/sqrt(trParSm[ista].C00[0]));
+	  if( finite(trParSm[ista].C11[0]) && trParSm[ista].C11[0]>0 ) h_smoothed[ista][6]->Fill( (trParSm[ista].y[0]-mcPSm[ista].yIn)/sqrt(trParSm[ista].C11[0]));
+	  if( finite(trParSm[ista].C22[0]) && trParSm[ista].C22[0]>0 ) h_smoothed[ista][7]->Fill( (trParSm[ista].tx[0]-mcPSm[ista].pxIn/mcPSm[ista].pzIn)/sqrt(trParSm[ista].C22[0]));
+	  if( finite(trParSm[ista].C33[0]) && trParSm[ista].C33[0]>0 ) h_smoothed[ista][8]->Fill( (trParSm[ista].ty[0]-mcPSm[ista].pyIn/mcPSm[ista].pzIn)/sqrt(trParSm[ista].C33[0]));
+	  if( finite(trParSm[ista].C44[0]) && trParSm[ista].C44[0]>0 ) h_smoothed[ista][9]->Fill( (trParSm[ista].qp[0]-mcPSm[ista].q/mcPpIn)/sqrt(trParSm[ista].C44[0]));
+	  h_smoothed[ista][10]->Fill(trParSm[ista].qp[0]);
+	  h_smoothed[ista][11]->Fill(mcPSm[ista].q/mcPpIn);
+	  h_smoothed[ista][12]->Fill(trParSm[ista].t[0]-mcPSm[ista].time);
+	  if( finite(trParSm[ista].C55[0]) && trParSm[ista].C55[0]>0 ) h_smoothed[ista][13]->Fill( (trParSm[ista].t[0]-mcPSm[ista].time)/sqrt(trParSm[ista].C55[0]));
+	}
+      }
 #else
       int iMC = vHitMCRef[it->StsHits.front()]; // TODO2: adapt to linking
       if (iMC < 0) continue;
@@ -1134,6 +1182,8 @@ void CbmL1::TrackFitPerformance()
       if( finite(it->C[14]) && it->C[14]>0 )h_fit[9]->Fill( (mc.q/mc.p-it->T[4])/sqrt(it->C[14]));
       h_fit[10]->Fill(it->T[4]);
       h_fit[11]->Fill(mc.q/mc.p);
+      h_fit[12]->Fill(mc.time-it->T[6]);
+      if( finite(it->C[20]) && it->C[20]>0 )h_fit[13]->Fill( (mc.time-it->T[6])/sqrt(it->C[20]));
 #endif
     }
 
@@ -1154,6 +1204,8 @@ void CbmL1::TrackFitPerformance()
       if( finite(it->CLast[14]) && it->CLast[14]>0 ) h_fitL[9]->Fill( (it->TLast[4]-mc.q/mc.p)/sqrt(it->CLast[14]));
       h_fitL[10]->Fill(it->TLast[4]);
       h_fitL[11]->Fill(mc.q/mc.p);
+      h_fitL[12]->Fill(it->TLast[6]-mc.time);
+      if( finite(it->CLast[20]) && it->CLast[20]>0 ) h_fitL[13]->Fill( (it->TLast[6]-mc.time)/sqrt(it->CLast[20]));
     }
 
     { // vertex
@@ -1212,6 +1264,8 @@ void CbmL1::TrackFitPerformance()
         if( finite(trPar.C44[0]) && trPar.C44[0]>0 ) h_fitSV[9]->Fill( (trPar.qp[0]-mc.q/mc.p)/sqrt(trPar.C44[0]));
         h_fitSV[10]->Fill(trPar.qp[0]);
         h_fitSV[11]->Fill(mc.q/mc.p);
+	h_fitSV[12]->Fill(trPar.t[0]-mc.time);
+	if( finite(trPar.C55[0]) && trPar.C55[0]>0 ) h_fitSV[13]->Fill( (trPar.t[0]-mc.time)/sqrt(trPar.C55[0]));
       }
       else{ // primary
 
@@ -1285,6 +1339,8 @@ void CbmL1::TrackFitPerformance()
         if( finite(trPar.C44[0]) && trPar.C44[0]>0 ) h_fitPV[9]->Fill( (mc.q/mc.p-trPar.qp[0])/sqrt(trPar.C44[0]));
         h_fitPV[10]->Fill(trPar.qp[0]);
         h_fitPV[11]->Fill(mc.q/mc.p);
+	h_fitPV[12]->Fill(mc.time-trPar.t[0]);
+        if( finite(trPar.C55[0]) && trPar.C55[0]>0 ) h_fitPV[13]->Fill( (mc.time-trPar.t[0])/sqrt(trPar.C55[0]));
 #else
         FairTrackParam fTP;
 
@@ -1314,6 +1370,8 @@ void CbmL1::TrackFitPerformance()
         if( finite(it2.C[14]) && it2.C[14]>0 )h_fitPV[9]->Fill( (mc.q/mc.p-it2.T[4])/sqrt(it2.C[14]));
         h_fitPV[10]->Fill(it2.T[4]);
         h_fitPV[11]->Fill(mc.q/mc.p);
+	h_fitPV[12]->Fill(mc.time-it2.T[6]);
+        if( finite(it2.C[20]) && it2.C[20]>0 )h_fitPV[13]->Fill( (mc.time-it2.T[6])/sqrt(it2.C[20]));
 #endif // L1EXTRAPOLATE
       }
     }
