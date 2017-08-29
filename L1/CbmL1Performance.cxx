@@ -1121,41 +1121,6 @@ void CbmL1::TrackFitPerformance()
       h_fit[12]->Fill(trPar.t[0]-mcP.time);
       if( finite(trPar.C55[0]) && trPar.C55[0]>0 ) h_fit[13]->Fill( (trPar.t[0]-mcP.time)/sqrt(trPar.C55[0]));
       
-      //smoothed:
-      L1TrackPar trParSm[12];
-      CbmL1MCPoint mcPSm[12];
-      for (int ista=0;ista<12;ista++){
-	trParSm[ista]=L1TrackPar(it->Ts[ista],it->Cs[ista]);
-	bool hit_match=false;
-	for (unsigned int ipoint=0;ipoint<mc.Points.size();ipoint++){
-	  if (vMCPoints[mc.Points[ipoint]].iStation==ista)
-	  {
-	    mcPSm[ista]=vMCPoints[mc.Points[ipoint]];
-	    hit_match=true;
-	    break;
-	  }
-	}
-	if (hit_match && it->ws[ista])
-	{
-	  L1Extrapolate(trParSm[ista], mcPSm[ista].zIn, trParSm[ista].qp[0], it->fs[ista]);
-	  double mcPpIn=sqrt(mcPSm[ista].pxIn*mcPSm[ista].pxIn+mcPSm[ista].pyIn*mcPSm[ista].pyIn+mcPSm[ista].pzIn*mcPSm[ista].pzIn);
-
-	  h_smoothed[ista][0]->Fill((trParSm[ista].x[0]-mcPSm[ista].xIn)*1.e4);
-	  h_smoothed[ista][1]->Fill((trParSm[ista].y[0]-mcPSm[ista].yIn) *1.e4);
-	  h_smoothed[ista][2]->Fill((trParSm[ista].tx[0]-mcPSm[ista].pxIn/mcPSm[ista].pzIn)*1.e3);
-	  h_smoothed[ista][3]->Fill((trParSm[ista].ty[0]-mcPSm[ista].pyIn/mcPSm[ista].pzIn)*1.e3);
-	  h_smoothed[ista][4]->Fill(fabs(1./trParSm[ista].qp[0])/mcPpIn-1);
-	  if( finite(trParSm[ista].C00[0]) && trParSm[ista].C00[0]>0 ) h_smoothed[ista][5]->Fill( (trParSm[ista].x[0]-mcPSm[ista].xIn)/sqrt(trParSm[ista].C00[0]));
-	  if( finite(trParSm[ista].C11[0]) && trParSm[ista].C11[0]>0 ) h_smoothed[ista][6]->Fill( (trParSm[ista].y[0]-mcPSm[ista].yIn)/sqrt(trParSm[ista].C11[0]));
-	  if( finite(trParSm[ista].C22[0]) && trParSm[ista].C22[0]>0 ) h_smoothed[ista][7]->Fill( (trParSm[ista].tx[0]-mcPSm[ista].pxIn/mcPSm[ista].pzIn)/sqrt(trParSm[ista].C22[0]));
-	  if( finite(trParSm[ista].C33[0]) && trParSm[ista].C33[0]>0 ) h_smoothed[ista][8]->Fill( (trParSm[ista].ty[0]-mcPSm[ista].pyIn/mcPSm[ista].pzIn)/sqrt(trParSm[ista].C33[0]));
-	  if( finite(trParSm[ista].C44[0]) && trParSm[ista].C44[0]>0 ) h_smoothed[ista][9]->Fill( (trParSm[ista].qp[0]-mcPSm[ista].q/mcPpIn)/sqrt(trParSm[ista].C44[0]));
-	  h_smoothed[ista][10]->Fill(trParSm[ista].qp[0]);
-	  h_smoothed[ista][11]->Fill(mcPSm[ista].q/mcPpIn);
-	  h_smoothed[ista][12]->Fill(trParSm[ista].t[0]-mcPSm[ista].time);
-	  if( finite(trParSm[ista].C55[0]) && trParSm[ista].C55[0]>0 ) h_smoothed[ista][13]->Fill( (trParSm[ista].t[0]-mcPSm[ista].time)/sqrt(trParSm[ista].C55[0]));
-	}
-      }
 #else
       int iMC = vHitMCRef[it->StsHits.front()]; // TODO2: adapt to linking
       if (iMC < 0) continue;
