@@ -26,7 +26,7 @@ class CbmBinnedStation
 {
 public:
     CbmBinnedStation(int nofYBins, int nofXBins, int nofTBins) : fZ(0), fNofYBins(nofYBins), fNofXBins(nofXBins), fNofTBins(nofTBins), fYBinSize(0), fXBinSize(0), fTBinSize(100),
-        fMinY(0), fMaxY(0), fMinX(0), fMaxX(0), fMinT(0), fMaxT(0), fDx(0), fDy(0), fDt(0), fDefaultUse(false) {}    
+        fMinY(0), fMaxY(0), fMinX(0), fMaxX(0), fMinT(0), fMaxT(0), fDx(0), fDxSq(0), fDy(0), fDySq(0), fDt(0), fDtSq(0), fDefaultUse(false) {}    
     CbmBinnedStation(const CbmBinnedStation&) = delete;
     CbmBinnedStation& operator=(const CbmBinnedStation&) = delete;
     
@@ -49,11 +49,37 @@ public:
     void SetDefaultUse() { fDefaultUse = true; }
     
     Double_t GetDx() const { return fDx; }
-    void SetDx(Double_t v) { if (v > fDx) fDx = v; }
+    
+    void SetDx(Double_t v)
+    {
+        if (v > fDx)
+        {
+            fDx = v;
+            fDxSq = v * v;
+        }
+    }
+    
     Double_t GetDy() const { return fDy; }
-    void SetDy(Double_t v) { if (v > fDy) fDy = v; }
+    
+    void SetDy(Double_t v)
+    {
+        if (v > fDy)
+        {
+            fDy = v;
+            fDySq = v * v;
+        }
+    }
+    
     Double_t GetDt() const { return fDt; }
-    void SetDt(Double_t v) { if (v > fDt) fDt = v; }
+    
+    void SetDt(Double_t v)
+    {
+        if (v > fDt)
+        {
+            fDt = v;
+            fDySq = v * v;
+        }
+    }
     
     int GetXInd(Double_t v) const
     {
@@ -118,8 +144,11 @@ protected:
     Double_t fMinT;
     Double_t fMaxT;
     Double_t fDx;
+    Double_t fDxSq;
     Double_t fDy;
+    Double_t fDySq;
     Double_t fDt;
+    Double_t fDtSq;
     bool fDefaultUse;
 };
 

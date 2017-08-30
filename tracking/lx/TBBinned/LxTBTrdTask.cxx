@@ -383,6 +383,8 @@ static list<pair<timetype, timetype> > triggerTimes_trd1_sign0_dist0;
 static list<pair<timetype, timetype> > triggerTimes_trd1_sign0_dist1;
 static list<pair<timetype, timetype> > triggerTimes_trd1_sign1_dist0;
 static list<pair<timetype, timetype> > triggerTimes_trd1_sign1_dist1;
+static scaltype gMaxDx = 0;
+static scaltype gMaxDy = 0;
 #endif//LXTB_QA
 
 void LxTBTrdFinder::Exec(Option_t* opt)
@@ -398,7 +400,15 @@ void LxTBTrdFinder::Exec(Option_t* opt)
       scaltype y = hit->GetY();
       timetype t = tsStartTime + 50;//hit->GetTime();
       scaltype dx = hit->GetDx();
+      
+      if (gMaxDx < dx)
+         gMaxDx = dx;
+      
       scaltype dy = hit->GetDy();
+      
+      if (gMaxDy < dy)
+         gMaxDy = dy;
+      
       timetype dt = 4;//hit->GetTimeError();
       LxTbBinnedPoint point(x, dx, y, dy, t, dt, i, CUR_LAST_STATION == stationNumber);
 #ifdef LXTB_QA

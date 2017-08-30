@@ -69,6 +69,7 @@ void CbmBinnedGeoReader::Read()
    ReadDetector("much");
    ReadDetector("tof");
    //ReadDetector("rich");
+   //ReadTarget();
    cbmBinnedSOL = 1.e-7 * TMath::C();// Speed of light in cm/ns
 }
 
@@ -87,10 +88,14 @@ static Double_t gStationErrors[][3] =
    { 0.014601, 0.156848, 3.535534 },// Sts 0
    { 0.013942, 0.108157, 3.535534 },// Sts 1
    
-   { 0.359375, 7.750000, 4 },// Trd 0
-   { 7.750000, 0.359375, 4 },// Trd 1
-   { 0.359375, 7.750000, 4 },// Trd 2
-   { 7.750000, 0.359375, 4 },// Trd 3
+   { 0.359375, 7.75, 4 },// Trd 0
+   { 7.75, 0.359375, 4 },// Trd 1
+   { 0.359375, 7.75, 4 },// Trd 2
+   { 7.75, 0.359375, 4 },// Trd 3
+   /*{ 0.359375, 2.75, 4 },// Trd 0
+   { 2.75, 0.359375, 4 },// Trd 1
+   { 0.359375, 2.75, 4 },// Trd 2
+   { 2.75, 0.359375, 4 },// Trd 3*/
    
    { 0.487468, 0.487468, 4 },// Much 0
    { 0.487468, 0.487468, 4 },// Much 1
@@ -265,4 +270,44 @@ void CbmBinnedGeoReader::ReadTof()
    list<const char*> geoPath = { "module", "gas_box", "counter"};
    gGeoManager->cd("/cave_1");
    SearchStation(gGeoManager->GetCurrentNode(), CbmBinnedHitReader::Instance("tof"), stationPath.begin(), stationPath.end(), geoPath, true);
+}
+
+void CbmBinnedGeoReader::ReadTarget()
+{
+   gGeoManager->cd("/cave_1");
+   list<TGeoNode*> pipeNodes;
+   FindGeoChild(gGeoManager->GetCurrentNode(), "pipe", pipeNodes);
+   
+   for (list<TGeoNode*>::iterator i = pipeNodes.begin(); i != pipeNodes.end(); ++i)
+   {
+      TGeoNode* pipeNode = *i;
+      fNavigator->CdDown(pipeNode);
+      list<TGeoNode*> pipeVacNodes;
+      FindGeoChild(pipeNode, "pipevac", pipeVacNodes);
+      
+      for (list<TGeoNode*>::iterator j = pipeVacNodes.begin(); j != pipeVacNodes.end(); ++j)
+      {
+         TGeoNode* pipeVacNode = *j;
+         fNavigator->CdDown(pipeVacNode);
+         list<TGeoNode*> targetNodes;
+         FindGeoChild(pipeVacNode, "target", targetNodes);
+         
+         for (list<TGeoNode*>::iterator k = targetNodes.begin(); k != targetNodes.end(); ++k)
+         {
+            TGeoNode* targetNode = *k;
+            fNavigator->CdDown(targetNode);
+            Double_t localCoords[3] = { 0, 0, 0 };
+            Double_t globalCoords[3];
+            gGeoManager->LocalToMaster(localCoords, globalCoords);
+            Double_t targetX = globalCoords[0];
+            Double_t targetY = globalCoords[1];
+            Double_t targetZ = globalCoords[2];
+            fNavigator->CdUp();
+         }
+         
+         fNavigator->CdUp();
+      }
+      
+      fNavigator->CdUp();
+   }
 }

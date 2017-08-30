@@ -48,6 +48,7 @@ private:
     void ReadMuch();
     void ReadTrd();
     void ReadTof();
+    void ReadTarget();
     
 private:
     FairRootManager* fIoman;

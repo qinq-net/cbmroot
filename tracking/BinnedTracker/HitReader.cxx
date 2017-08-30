@@ -10,6 +10,7 @@
 #include "setup/CbmStsSetup.h"
 #include "geo/CbmMuchGeoScheme.h"
 #include "CbmTrdHit.h"
+#include "CbmMuchPixelHit.h"
 
 using namespace std;
 
@@ -145,7 +146,6 @@ public:
       for (Int_t i = 0; i < nofHits; ++i)
       {
          /*const */CbmPixelHit* hit = static_cast</*const */CbmPixelHit*> (fHitArray->At(i));
-         fStations[0]->AddHit(hit, i);
          
          int digiIndex = hit->GetRefId();
          const CbmRichDigi* digi = static_cast<const CbmRichDigi*>(fDigiArray->At(digiIndex));
@@ -167,13 +167,14 @@ public:
             ++cnt;
          }
          
-         if (0 != cnt)
+         if (0 < cnt)
             t /= cnt;
          
          hit->SetTime(t);
          hit->SetTimeError(4);
          hit->SetDx(0.175);
          hit->SetDy(0.175);
+         fStations[0]->AddHit(hit, i);
 #ifdef DO_ERROR_STAT
          UpdateMax("Rich", 0, hit);
 #endif//DO_ERROR_STAT
@@ -185,10 +186,21 @@ private:
    TClonesArray* fPointArray;
 };
 
+#include "CbmMuchCluster.h"
+#include "CbmMuchDigi.h"
+#include "CbmMuchPoint.h"
+#include "CbmTrdPoint.h"
+
 class CbmBinnedMuchHitReader : public CbmBinnedHitReader
 {
 public:
-   explicit CbmBinnedMuchHitReader(TClonesArray* hitArray) : CbmBinnedHitReader(hitArray) {}
+   explicit CbmBinnedMuchHitReader(TClonesArray* hitArray) : CbmBinnedHitReader(hitArray), fMuchClusters(0), fMuchDigis(0), fMuchPoints(0)
+   {
+      FairRootManager* ioman = FairRootManager::Instance();
+      fMuchClusters = static_cast<TClonesArray*> (ioman->GetObject("MuchCluster"));
+      fMuchDigis = static_cast<TClonesArray*> (ioman->GetObject("MuchDigi"));
+      fMuchPoints = static_cast<TClonesArray*> (ioman->GetObject("MuchPoint"));
+   }
    
    void Read()
    {
@@ -196,16 +208,51 @@ public:
    
       for (Int_t i = 0; i < nofHits; ++i)
       {
-         const CbmPixelHit* hit = static_cast<const CbmPixelHit*> (fHitArray->At(i));
+         /*const */CbmMuchPixelHit* hit = static_cast</*const */CbmMuchPixelHit*> (fHitArray->At(i));
          int muchStationNumber = CbmMuchGeoScheme::GetStationIndex(hit->GetAddress());
          int layerNumber = CbmMuchGeoScheme::GetLayerIndex(hit->GetAddress());
          int stationNumber = muchStationNumber * 3 + layerNumber;
+         
+         Double_t t = 0;
+         int cnt = 0;
+         Int_t clusterId = hit->GetRefId();
+         const CbmMuchCluster* cluster = static_cast<const CbmMuchCluster*> (fMuchClusters->At(clusterId));
+         Int_t nofDigis = cluster->GetNofDigis();
+
+         for (Int_t j = 0; j < nofDigis; ++j)
+         {
+            Int_t digiId = cluster->GetDigi(j);
+            const CbmMuchDigi* digi = static_cast<const CbmMuchDigi*> (fMuchDigis->At(digiId));
+            const CbmMatch* match = digi->GetMatch();
+            Int_t nofLinks = match->GetNofLinks();
+
+            for (Int_t k = 0; k < nofLinks; ++k)
+            {
+               const CbmLink& link = match->GetLink(k);
+               Int_t eventId = link.GetEntry();
+               Int_t mcPointId = link.GetIndex();
+               const CbmMuchPoint* muchPoint = static_cast<const CbmMuchPoint*> (fMuchPoints->At(mcPointId));
+               t += muchPoint->GetTime();
+               ++cnt;
+            }
+         }
+      
+         if (0 < cnt)
+            t /= cnt;
+         
+         hit->SetTime(t);
+         
          fStations[stationNumber]->AddHit(hit, i);
 #ifdef DO_ERROR_STAT
          UpdateMax("Much", stationNumber, hit);
 #endif//DO_ERROR_STAT
       }
    }
+   
+private:
+   TClonesArray* fMuchClusters;
+   TClonesArray* fMuchDigis;
+   TClonesArray* fMuchPoints;
 };
 
 class CbmBinnedTrdHitReader : public CbmBinnedHitReader
@@ -229,13 +276,13 @@ public:
       for (Int_t i = 0; i < nofHits; ++i)
       {
          /*const */CbmTrdHit* hit = static_cast</*const */CbmTrdHit*> (fHitArray->At(i));
-         int stationNumber = hit->GetPlaneId();
-         fStations[stationNumber]->AddHit(hit, i);
-         
+         int stationNumber = hit->GetPlaneId();         
          Int_t clusterId = hit->GetRefId();
          const CbmCluster* cluster = static_cast<const CbmCluster*> (fClusterArray->At(clusterId));
          Int_t nDigis = cluster->GetNofDigis();
          Double_t t = 0;
+         Double_t x = 0;
+         Double_t y = 0;
          int cnt = 0;
          
          for (Int_t j = 0; j < nDigis; ++j)
@@ -247,17 +294,26 @@ public:
             {
                const CbmLink& lnk = digiMatch->GetLink(k);
                Int_t pointId = lnk.GetIndex();
-               const FairMCPoint* point = static_cast<const FairMCPoint*> (fPointArray->At(pointId));
+               const CbmTrdPoint* point = static_cast<const CbmTrdPoint*> (fPointArray->At(pointId));
                t += point->GetTime();
+               x += (point->GetXIn() + point->GetXOut()) / 2;
+               y += (point->GetYIn() + point->GetYOut()) / 2;
                ++cnt;
             }
          }
          
-         if (0 != cnt)
+         if (0 < cnt)
+         {
             t /= cnt;
+            x /= cnt;
+            //hit->SetX(x);
+            y /= cnt;
+            //hit->SetY(y);
+         }
          
          hit->SetTime(t);
          hit->SetTimeError(4);
+         fStations[stationNumber]->AddHit(hit, i);
 #ifdef DO_ERROR_STAT
          UpdateMax("Trd", stationNumber, hit);
 #endif//DO_ERROR_STAT

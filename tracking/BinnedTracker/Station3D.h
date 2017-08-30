@@ -144,13 +144,13 @@ public:
         Double_t dy = dTy * fZ;
         Double_t dySq = dy * dy;
         
-        Double_t wX = cbmBinnedSigma * std::sqrt(dx * dx + fDx * fDx);
+        Double_t wX = cbmBinnedSigma * std::sqrt(dxSq + fDxSq);
         int lowerXind = GetXInd(x - wX);
         int upperXind = GetXInd(x + wX);
-        Double_t wY = cbmBinnedSigma * std::sqrt(dy * dy + fDy * fDy);
+        Double_t wY = cbmBinnedSigma * std::sqrt(dySq + fDySq);
         int lowerYind = GetYInd(y - wY);
         int upperYind = GetYInd(y + wY);
-        Double_t wT = cbmBinnedSigma * std::sqrt(dt * dt + fDt * fDt);
+        Double_t wT = cbmBinnedSigma * std::sqrt(dtSq + fDtSq);
         int lowerTind = GetTInd(t - wT);
         int upperTind = GetTInd(t + wT);
         

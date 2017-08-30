@@ -51,7 +51,9 @@ private:
     TClonesArray* fMuchClusters;
     TClonesArray* fTrdClusters;
     
+    TClonesArray* fTrdDigiMatches;
     TClonesArray* fTofHitDigiMatches;
+    TClonesArray* fTofDigiPointMatches;
     
     TClonesArray* fStsDigis;
     TClonesArray* fMuchDigis;

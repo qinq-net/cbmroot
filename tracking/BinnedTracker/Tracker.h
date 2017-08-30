@@ -129,7 +129,7 @@ private:
     
     Double_t GetChiSq(const CbmPixelHit* hit1, const CbmPixelHit* hit) const
     {
-        Double_t x1 = hit1->GetZ();
+        Double_t x1 = hit1->GetX();
         Double_t y1 = hit1->GetY();
         Double_t z1 = hit1->GetZ();
         Double_t t1 = hit1->GetTime();
@@ -140,7 +140,7 @@ private:
         Double_t tx = x1 / z1;
         Double_t ty = y1 / z1;
         
-        Double_t x = hit->GetZ();
+        Double_t x = hit->GetX();
         Double_t y = hit->GetY();
         Double_t z = hit->GetZ();
         Double_t t = hit->GetTime();
@@ -159,7 +159,7 @@ private:
     
     Double_t GetChiSq(const CbmPixelHit* hit1, const CbmPixelHit* hit2, const CbmPixelHit* hit) const
     {
-        Double_t x1 = hit1->GetZ();
+        Double_t x1 = hit1->GetX();
         Double_t y1 = hit1->GetY();
         Double_t z1 = hit1->GetZ();
         Double_t t1 = hit1->GetTime();
@@ -167,7 +167,7 @@ private:
         Double_t dy1 = hit1->GetDy();
         Double_t dt1 = hit1->GetTimeError();
         
-        Double_t x2 = hit2->GetZ();
+        Double_t x2 = hit2->GetX();
         Double_t y2 = hit2->GetY();
         Double_t z2 = hit2->GetZ();
         Double_t t2 = hit2->GetTime();
@@ -182,7 +182,7 @@ private:
         Double_t tx = (x2 - x1) / deltaZ12;
         Double_t ty = (y2 - y1) / deltaZ12;
         
-        Double_t x = hit->GetZ();
+        Double_t x = hit->GetX();
         Double_t y = hit->GetY();
         Double_t z = hit->GetZ();
         Double_t t = hit->GetTime();
