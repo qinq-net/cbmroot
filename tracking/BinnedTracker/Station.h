@@ -77,7 +77,7 @@ public:
         if (v > fDt)
         {
             fDt = v;
-            fDySq = v * v;
+            fDtSq = v * v;
         }
     }
     

@@ -153,8 +153,11 @@ private:
         y1 += ty * deltaZ;
         t1 += std::sqrt(1 + tx * tx + ty * ty) * deltaZ / cbmBinnedSOL;
         
-        return (x - x1) * (x - x1) / (dx1 * dx1 * z * z / z1 / z1 + dx * dx) + (y - y1) * (y - y1) / (dy1 * dy1 * z * z / z1 / z1 + dy * dy) +
-                (t - t1) * (t - t1) / (dt1 * dt1 + dt * dt);
+        Double_t xTerm = (x - x1) * (x - x1) / (dx1 * dx1 * z * z / z1 / z1 + dx * dx);
+        Double_t yTerm = (y - y1) * (y - y1) / (dy1 * dy1 * z * z / z1 / z1 + dy * dy);
+        Double_t tTerm = (t - t1) * (t - t1) / (dt1 * dt1 + dt * dt);
+        
+        return xTerm + yTerm + tTerm;
     }
     
     Double_t GetChiSq(const CbmPixelHit* hit1, const CbmPixelHit* hit2, const CbmPixelHit* hit) const
@@ -212,7 +215,12 @@ private:
             Double_t chiSq2 = chiSq + deltaChiSq;
             
             if (chiSq2 > fChiSqCut)
+            {
+                Double_t deltaChiSq2 = 0 == level ? GetChiSq(hitHolder->hit, childHit) : GetChiSq(trackStart[level - 1]->hit, hitHolder->hit, childHit);
+                int qq = 0;
+                ++qq;
                 continue;
+            }
             
             trackStart[level + 1] = childHolder;
             
