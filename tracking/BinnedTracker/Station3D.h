@@ -132,27 +132,47 @@ public:
         Double_t tx = searchX / searchZ;
         Double_t ty = searchY / searchZ;
         Double_t dTx = searchDx / searchZ;
+        Double_t wTx = cbmBinnedSigma * dTx;
+        Double_t txMin = tx - wTx;
+        Double_t txMax = tx + wTx;
         Double_t dTy = searchDy / searchZ;
+        Double_t wTy = cbmBinnedSigma * dTy;
+        Double_t tyMin = ty - wTy;
+        Double_t tyMax = ty + wTy;
         
-        Double_t deltaZ = fZ - searchZ;
+        Double_t deltaZMin = fMinZ - searchZ;
+        Double_t deltaZMax = fMaxZ - searchZ;
         
-        Double_t x = searchX + tx * deltaZ;
-        Double_t y = searchY + ty * deltaZ;
-        Double_t t = searchT + std::sqrt(1 + tx * tx + ty * ty) * deltaZ / cbmBinnedSOL;
-        Double_t dx = dTx * fZ;
-        Double_t dxSq = dx * dx;
-        Double_t dy = dTy * fZ;
-        Double_t dySq = dy * dy;
+        Double_t dxMin = dTx * fMinZ;
+        Double_t dxMinSq = dxMin * dxMin;
+        Double_t wxMin = cbmBinnedSigma * std::sqrt(dxMinSq + fDxSq);
+        Double_t dxMax = dTx * fMaxZ;
+        Double_t dxMaxSq = dxMax * dxMax;
+        Double_t wxMax = cbmBinnedSigma * std::sqrt(dxMaxSq + fDxSq);
+        Double_t dyMin = dTy * fMinZ;
+        Double_t dyMinSq = dyMin * dyMin;
+        Double_t wyMin = cbmBinnedSigma * std::sqrt(dyMinSq + fDySq);
+        Double_t dyMax = dTy * fMaxZ;
+        Double_t dyMaxSq = dyMax * dyMax;
+        Double_t wyMax = cbmBinnedSigma * std::sqrt(dyMaxSq + fDySq);
         
-        Double_t wX = cbmBinnedSigma * std::sqrt(dxSq + fDxSq);
-        int lowerXind = GetXInd(x - wX);
-        int upperXind = GetXInd(x + wX);
-        Double_t wY = cbmBinnedSigma * std::sqrt(dySq + fDySq);
-        int lowerYind = GetYInd(y - wY);
-        int upperYind = GetYInd(y + wY);
+        Double_t xMin = searchX + txMin > 0 ? tx * deltaZMin - wxMin : tx * deltaZMax - wxMax;
+        Double_t xMax = searchX + txMax > 0 ? tx * deltaZMax + wxMax : tx * deltaZMin + wxMin;
+            
+        Double_t yMin = searchY + tyMin > 0 ? ty * deltaZMin - wyMin : ty * deltaZMax - wyMax;
+        Double_t yMax = searchY + tyMax > 0 ? ty * deltaZMax + wyMax : ty * deltaZMin + wyMin;
+        
+        Double_t tCoeff = std::sqrt(1 + tx * tx + ty * ty) / cbmBinnedSOL;
         Double_t wT = cbmBinnedSigma * std::sqrt(dtSq + fDtSq);
-        int lowerTind = GetTInd(t - wT);
-        int upperTind = GetTInd(t + wT);
+        Double_t tMin = searchT + tCoeff * deltaZMin - wT;
+        Double_t tMax = searchT + tCoeff * deltaZMax + wT;
+        
+        int lowerXind = GetXInd(xMin);
+        int upperXind = GetXInd(xMax);
+        int lowerYind = GetYInd(yMin);
+        int upperYind = GetYInd(yMax);
+        int lowerTind = GetTInd(tMin);
+        int upperTind = GetTInd(tMax);
         
         for (int i = lowerYind; i <= upperYind; ++i)
         {
@@ -171,16 +191,23 @@ public:
                     for (; hitIter != hitIterEnd; ++hitIter)
                     {
                         const CbmPixelHit* hit = hitIter->hit;
+                        Double_t hitZ = hit->GetZ();
+                        Double_t dy = dTy * hitZ;
+                        Double_t deltaZ = hitZ - searchZ;
+                        Double_t y = searchY + ty * deltaZ;
                         Double_t deltaY = hit->GetY() - y;
                         
-                        if (deltaY * deltaY > cbmBinnedSigmaSq * (dySq + hit->GetDy() * hit->GetDy()))
+                        if (deltaY * deltaY > cbmBinnedSigmaSq * (dy * dy + hit->GetDy() * hit->GetDy()))
                             continue;
                         
+                        Double_t dx = dTx * hitZ;
+                        Double_t x = searchX + tx * deltaZ;
                         Double_t deltaX = hit->GetX() - x;
                         
-                        if (deltaX * deltaX > cbmBinnedSigmaSq * (dxSq + hit->GetDx() * hit->GetDx()))
+                        if (deltaX * deltaX > cbmBinnedSigmaSq * (dx * dx + hit->GetDx() * hit->GetDx()))
                             continue;
                         
+                        Double_t t = searchT + tCoeff * deltaZ;
                         Double_t deltaT = hit->GetTime() - t;
                         
                         if (deltaT * deltaT > cbmBinnedSigmaSq * (dtSq + hit->GetTimeError() * hit->GetTimeError()))

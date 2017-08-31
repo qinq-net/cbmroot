@@ -21,14 +21,12 @@ class CbmBinned4DStation : public CbmBinnedStation
 public:
     CbmBinned4DStation(int nofZBins, int nofYBins, int nofXBins, int nofTBins) : CbmBinnedStation(nofYBins, nofXBins, nofTBins),
             fZBins(reinterpret_cast<CbmZBin*> (new unsigned char[nofZBins * sizeof(CbmZBin)])),
-            fNofZBins(nofZBins), fZBinSize(0), fMinZ(0), fMaxZ(0), fDtxSq(0), fDtySq(0)
+            fNofZBins(nofZBins), fZBinSize(0), fDtxSq(0), fDtySq(0)
     {
         for (int i = 0; i < nofZBins; ++i)
             new(&fZBins[i]) CbmZBin(nofYBins, nofXBins, nofTBins);
     }
     
-    void SetMinZ(Double_t v) { fMinZ = v; }
-    void SetMaxZ(Double_t v) { fMaxZ = v; }
     void SetDtx(Double_t v) { fDtxSq = v * v; }
     void SetDty(Double_t v) { fDtySq = v * v; }
     
@@ -381,8 +379,6 @@ private:
     CbmZBin* fZBins;
     int fNofZBins;
     Double_t fZBinSize;
-    Double_t fMinZ;
-    Double_t fMaxZ;
     Double_t fDtxSq;
     Double_t fDtySq;
 };

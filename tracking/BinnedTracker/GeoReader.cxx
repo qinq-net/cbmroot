@@ -35,15 +35,15 @@ CbmBinnedGeoReader::CbmBinnedGeoReader(FairRootManager* ioman, CbmBinnedTracker*
    fNavigator = gGeoManager->GetCurrentNavigator();
    fDetectorReaders["sts"] = &CbmBinnedGeoReader::ReadSts;
    //fDetectorReaders["rich"] = &CbmBinnedGeoReader::ReadRich;
-   fDetectorReaders["much"] = &CbmBinnedGeoReader::ReadMuch;
+   //fDetectorReaders["much"] = &CbmBinnedGeoReader::ReadMuch;
    fDetectorReaders["trd"] = &CbmBinnedGeoReader::ReadTrd;
-   fDetectorReaders["tof"] = &CbmBinnedGeoReader::ReadTof;
+   //fDetectorReaders["tof"] = &CbmBinnedGeoReader::ReadTof;
    
    CbmBinnedHitReader::AddReader("sts", static_cast<TClonesArray*> (fIoman->GetObject("StsHit")));
    //CbmBinnedHitReader::AddReader("rich", static_cast<TClonesArray*> (fIoman->GetObject("RichHit")));
-   CbmBinnedHitReader::AddReader("much", static_cast<TClonesArray*> (fIoman->GetObject("MuchPixelHit")));
+   //CbmBinnedHitReader::AddReader("much", static_cast<TClonesArray*> (fIoman->GetObject("MuchPixelHit")));
    CbmBinnedHitReader::AddReader("trd", static_cast<TClonesArray*> (fIoman->GetObject("TrdHit")));
-   CbmBinnedHitReader::AddReader("tof", static_cast<TClonesArray*> (fIoman->GetObject("TofHit")));
+   //CbmBinnedHitReader::AddReader("tof", static_cast<TClonesArray*> (fIoman->GetObject("TofHit")));
 }
 
 void CbmBinnedGeoReader::FindGeoChild(TGeoNode* node, const char* name, list<TGeoNode*>& results)
@@ -66,8 +66,8 @@ void CbmBinnedGeoReader::Read()
 {
    ReadDetector("sts");
    ReadDetector("trd");
-   ReadDetector("much");
-   ReadDetector("tof");
+   //ReadDetector("much");
+   //ReadDetector("tof");
    //ReadDetector("rich");
    //ReadTarget();
    cbmBinnedSOL = 1.e-7 * TMath::C();// Speed of light in cm/ns
@@ -97,9 +97,9 @@ static Double_t gStationErrors[][3] =
    { 0.359375, 2.75, 4 },// Trd 2
    { 2.75, 0.359375, 4 },// Trd 3*/
    
-   { 0.487468, 0.487468, 4 },// Much 0
+   /*{ 0.487468, 0.487468, 4 },// Much 0
    { 0.487468, 0.487468, 4 },// Much 1
-   { 0.487468, 0.487468, 4 },// Much 2
+   { 0.487468, 0.487468, 4 },// Much 2*/
    
    { 0.288675, 0.72, 4 },// Tof
    
@@ -114,12 +114,12 @@ void CbmBinnedGeoReader::SearchStation(TGeoNode* node, CbmBinnedHitReader* hitRe
 {
    if (stationPath == stationPathEnd)
    {
-      /*Double_t localCoords[3] = { 0, 0, 0 };
-      Double_t globalCoords[3];
-      gGeoManager->LocalToMaster(localCoords, globalCoords);
-      Double_t z = globalCoords[2];
-      const char* name1 = node->GetName();
-      const char* name2 = gGeoManager->GetCurrentNode()->GetName();*/
+      //Double_t localCoords[3] = { 0, 0, 0 };
+      //Double_t globalCoords[3];
+      //gGeoManager->LocalToMaster(localCoords, globalCoords);
+      //Double_t z = globalCoords[2];
+      //const char* name1 = node->GetName();
+      //const char* name2 = gGeoManager->GetCurrentNode()->GetName();
       static int stationNumber = 0;
       Double_t left = 10000;
       Double_t right = -10000;
@@ -133,8 +133,6 @@ void CbmBinnedGeoReader::SearchStation(TGeoNode* node, CbmBinnedHitReader* hitRe
       if (is4d)
       {
          CbmBinned4DStation* station4d = new CbmBinned4DStation(gNofZbins, gNofYbins, gNofXbins, gNofTbins);
-         station4d->SetMinZ(front);
-         station4d->SetMaxZ(back);
          station4d->SetDtx(gTofStationTxError);
          station4d->SetDty(gTofStationTyError);
          station = station4d;
@@ -142,10 +140,11 @@ void CbmBinnedGeoReader::SearchStation(TGeoNode* node, CbmBinnedHitReader* hitRe
       else
       {
          CbmBinned3DStation* station3d = new CbmBinned3DStation(gNofYbins, gNofXbins, gNofTbins);
-         station3d->SetZ((front + back) / 2);
          station = station3d;
       }
       
+      station->SetMinZ(front);
+      station->SetMaxZ(back);
       station->SetMinY(bottom);
       station->SetMaxY(top);
       station->SetMinX(left);

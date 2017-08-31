@@ -38,11 +38,11 @@ using namespace std;
 struct TrackDesc
 {
    pair<set<Int_t>, set<Int_t> > sts[NOF_STS_STATIONS];
-   pair<set<Int_t>, set<Int_t> > much[NOF_MUCH_STATIONS * NOF_MUCH_LAYERS];
+   //pair<set<Int_t>, set<Int_t> > much[NOF_MUCH_STATIONS * NOF_MUCH_LAYERS];
    pair<set<Int_t>, set<Int_t> > trd[NOF_TRD_LAYERS];
-   pair<set<Int_t>, set<Int_t> > tof;
+   //pair<set<Int_t>, set<Int_t> > tof;
    
-   TrackDesc() : tof() {}
+   //TrackDesc() : tof() {}
 };
 
 static vector<vector<TrackDesc> > gTracks;
@@ -60,7 +60,7 @@ static TH1F* tofYResHisto = 0;
 static TH1F* tofTResHisto = 0;
 
 
-CbmBinnedTrackerQA::CbmBinnedTrackerQA() : fGlobalTracks(0), fStsTracks(0), fMuchTracks(0), fTrdTracks(0), fStsHits(0), fMuchHits(0), fTrdHits(0), fTofHits(0),
+CbmBinnedTrackerQA::CbmBinnedTrackerQA() : fGlobalTracks(0), fStsTracks(0)/*, fMuchTracks(0)*/, fTrdTracks(0), fStsHits(0), fMuchHits(0), fTrdHits(0), fTofHits(0),
    fStsClusters(0), fMuchClusters(0), fTrdClusters(0), fTrdDigiMatches(0), fTofHitDigiMatches(0), fTofDigiPointMatches(0),
    fStsDigis(0), fMuchDigis(0), fTrdDigis(0), fTofDigis(0), fMCTracks(0), fStsPoints(0), fMuchPoints(0), fTrdPoints(0), fTofPoints(0)
 {
@@ -83,10 +83,10 @@ InitStatus CbmBinnedTrackerQA::Init()
    if (0 == fStsTracks)
       fLogger->Fatal(MESSAGE_ORIGIN, "No sts tracks in the input file");
    
-   fMuchTracks = static_cast<TClonesArray*> (ioman->GetObject("MuchTrack"));
+   //fMuchTracks = static_cast<TClonesArray*> (ioman->GetObject("MuchTrack"));
    
-   if (0 == fMuchTracks)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No much tracks in the input file");
+   //if (0 == fMuchTracks)
+      //fLogger->Fatal(MESSAGE_ORIGIN, "No much tracks in the input file");
    
    fTrdTracks = static_cast<TClonesArray*> (ioman->GetObject("TrdTrack"));
    
@@ -226,7 +226,7 @@ InitStatus CbmBinnedTrackerQA::Init()
          int muchStationNumber = CbmMuchGeoScheme::GetStationIndex(muchPoint->GetDetectorID());
          int layerNumber = CbmMuchGeoScheme::GetLayerIndex(muchPoint->GetDetectorID());
          int stationNumber = muchStationNumber * NOF_MUCH_LAYERS + layerNumber;
-         tracks[trackId].much[stationNumber].first.insert(j);
+         //tracks[trackId].much[stationNumber].first.insert(j);
       }
    }
    
@@ -253,7 +253,7 @@ InitStatus CbmBinnedTrackerQA::Init()
       {
          const CbmTofPoint* tofPoint = static_cast<const CbmTofPoint*> (fTofPoints->Get(0, i, j));
          Int_t trackId = tofPoint->GetTrackID();
-         tracks[trackId].tof.first.insert(j);
+         //tracks[trackId].tof.first.insert(j);
       }
    }
    
@@ -331,7 +331,7 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
       }
    }// STS hits
    
-   Int_t nofMuchHits = fMuchHits->GetEntriesFast();
+   /*Int_t nofMuchHits = fMuchHits->GetEntriesFast();
    
    for (Int_t i = 0; i < nofMuchHits; ++i)
    {
@@ -364,7 +364,7 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
             trackDesk.much[stationNumber].first.insert(i);
          }
       }
-   }// MUCH hits
+   }// MUCH hits*/
    
    Int_t nofTrdHits = fTrdHits->GetEntriesFast();
    
@@ -379,8 +379,6 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
       for (Int_t j = 0; j < nofDigis; ++j)
       {
          Int_t digiId = cluster->GetDigi(j);
-         //const CbmTrdDigi* digi = static_cast<const CbmTrdDigi*> (fTrdDigis->At(digiId));
-         //const CbmMatch* match = digi->GetMatch();
          const CbmMatch* match = static_cast<const CbmMatch*> (fTrdDigiMatches->At(digiId));
          Int_t nofLinks = match->GetNofLinks();
 
@@ -412,8 +410,6 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
       {
          const CbmLink& digiLink = tofHitMatch->GetLink(j);
          Int_t digiInd = digiLink.GetIndex();
-         //const CbmTofDigiExp* digi = static_cast<const CbmTofDigiExp*> (fTofDigis->At(digiInd));
-         //const CbmMatch* pointMatch = digi->GetMatch();
          const CbmMatch* pointMatch = static_cast<const CbmMatch*> (fTofDigiPointMatches->At(digiInd));
          Int_t nofPoints = pointMatch->GetNofLinks();
 
@@ -428,7 +424,7 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
             tofTResHisto->Fill(tofHit->GetTime() - tofPoint->GetTime());
             Int_t trackId = tofPoint->GetTrackID();
             TrackDesc& trackDesk = gTracks[eventId][trackId];
-            trackDesk.tof.first.insert(i);
+            //trackDesk.tof.first.insert(i);
          }
       }
    }// TOF hits
@@ -447,7 +443,7 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
          continue;
       
       HandleSts(stsIndex);
-      HandleMuch(muchIndex);
+      //HandleMuch(muchIndex);
       HandleTrd(trdIndex);
       HandleTof(tofIndex);
    }
@@ -515,7 +511,7 @@ void CbmBinnedTrackerQA::HandleSts(Int_t stsTrackIndex)
    }
 }
 
-void CbmBinnedTrackerQA::HandleMuch(Int_t muchTrackIndex)
+/*void CbmBinnedTrackerQA::HandleMuch(Int_t muchTrackIndex)
 {
    const CbmMuchTrack* muchTrack = static_cast<const CbmMuchTrack*> (fMuchTracks->At(muchTrackIndex));
    Int_t nofMuchHits = muchTrack->GetNofHits();
@@ -547,12 +543,12 @@ void CbmBinnedTrackerQA::HandleMuch(Int_t muchTrackIndex)
             Int_t trackId = muchPoint->GetTrackID();
             TrackDesc& trackDesk = gTracks[eventId][trackId];
             
-            if (trackDesk.much[stationNumber].first.find(muchHitInd) != trackDesk.much[stationNumber].first.end())
-               trackDesk.much[stationNumber].second.insert(muchTrackIndex);
+            //if (trackDesk.much[stationNumber].first.find(muchHitInd) != trackDesk.much[stationNumber].first.end())
+               //trackDesk.much[stationNumber].second.insert(muchTrackIndex);
          }
       }
    }
-}
+}*/
 
 void CbmBinnedTrackerQA::HandleTrd(Int_t trdTrackIndex)
 {
@@ -571,8 +567,6 @@ void CbmBinnedTrackerQA::HandleTrd(Int_t trdTrackIndex)
       for (Int_t j = 0; j < nofDigis; ++j)
       {
          Int_t digiId = cluster->GetDigi(j);
-         //const CbmTrdDigi* digi = static_cast<const CbmTrdDigi*> (fTrdDigis->At(digiId));
-         //const CbmMatch* match = digi->GetMatch();
          const CbmMatch* match = static_cast<const CbmMatch*> (fTrdDigiMatches->At(digiId));
          Int_t nofLinks = match->GetNofLinks();
 
@@ -601,8 +595,6 @@ void CbmBinnedTrackerQA::HandleTof(Int_t tofHitIndex)
    {
       const CbmLink& digiLink = tofHitMatch->GetLink(i);
       Int_t digiInd = digiLink.GetIndex();
-      //const CbmTofDigiExp* digi = static_cast<const CbmTofDigiExp*> (fTofDigis->At(digiInd));
-      //const CbmMatch* pointMatch = digi->GetMatch();
       const CbmMatch* pointMatch = static_cast<const CbmMatch*> (fTofDigiPointMatches->At(digiInd));
       Int_t nofPoints = pointMatch->GetNofLinks();
 
@@ -615,8 +607,8 @@ void CbmBinnedTrackerQA::HandleTof(Int_t tofHitIndex)
          Int_t trackId = tofPoint->GetTrackID();
          TrackDesc& trackDesk = gTracks[eventId][trackId];
             
-         if (trackDesk.tof.first.find(tofHitIndex) != trackDesk.tof.first.end())
-            trackDesk.tof.second.insert(tofHitIndex);
+         //if (trackDesk.tof.first.find(tofHitIndex) != trackDesk.tof.first.end())
+            //trackDesk.tof.second.insert(tofHitIndex);
       }
    }
 }
@@ -640,8 +632,8 @@ void CbmBinnedTrackerQA::Finish()
    int nofMatchedRefTracks = 0;
    int nofSts[2] = { 0, 0 };
    int nofTrd[4] = { 0, 0, 0, 0 };
-   int nofMuch[3] = { 0, 0, 0 };
-   int nofTof = 0;
+   //int nofMuch[3] = { 0, 0, 0 };
+   //int nofTof = 0;
    
    for (vector<vector<TrackDesc> >::const_iterator i = gTracks.begin(); i != gTracks.end(); ++i)
    {
@@ -677,7 +669,7 @@ void CbmBinnedTrackerQA::Finish()
          if (!isRef)
             continue;
          
-         for (int k = 0; k < NOF_MUCH_STATIONS * NOF_MUCH_LAYERS; ++k)
+         /*for (int k = 0; k < NOF_MUCH_STATIONS * NOF_MUCH_LAYERS; ++k)
          {
             if (trackDesc.much[k].first.empty())
             {
@@ -687,10 +679,10 @@ void CbmBinnedTrackerQA::Finish()
          }
          
          if (!isRef)
-            continue;
+            continue;*/
          
-         if (trackDesc.tof.first.empty())
-            continue;
+         //if (trackDesc.tof.first.empty())
+            //continue;
          
          ++nofRefTracks;
          
@@ -728,7 +720,7 @@ void CbmBinnedTrackerQA::Finish()
                ++nofTrd[k];
          }
          
-         for (int k = 0; k < NOF_MUCH_STATIONS * NOF_MUCH_LAYERS; ++k)
+         /*for (int k = 0; k < NOF_MUCH_STATIONS * NOF_MUCH_LAYERS; ++k)
          {
             for (set<Int_t>::const_iterator l = trackDesc.much[k].second.begin(); l != trackDesc.much[k].second.end(); ++l)
             {
@@ -742,9 +734,9 @@ void CbmBinnedTrackerQA::Finish()
             
             if (!trackDesc.much[k].second.empty())
                ++nofMuch[k];
-         }
+         }*/
          
-         for (set<Int_t>::const_iterator k = trackDesc.tof.second.begin(); k != trackDesc.tof.second.end(); ++k)
+         /*for (set<Int_t>::const_iterator k = trackDesc.tof.second.begin(); k != trackDesc.tof.second.end(); ++k)
          {
             map<Int_t, Int_t>::iterator mrIter = matchedReco.find(*k);
                
@@ -755,7 +747,7 @@ void CbmBinnedTrackerQA::Finish()
          }
          
          if (!trackDesc.tof.second.empty())
-            ++nofTof;
+            ++nofTof;*/
          
          if (matchedReco.empty())
             continue;
@@ -777,7 +769,7 @@ void CbmBinnedTrackerQA::Finish()
                maxMatch = k->second;
          }
          
-         if (maxMatch < 7)
+         if (maxMatch < 5)
             continue;
             
          ++nofMatchedRefTracks;
@@ -794,10 +786,10 @@ void CbmBinnedTrackerQA::Finish()
    cout << "Nof TRD[1]: " << nofTrd[1] << endl;
    cout << "Nof TRD[2]: " << nofTrd[2] << endl;
    cout << "Nof TRD[3]: " << nofTrd[3] << endl;
-   cout << "Nof MUCH[0]: " << nofMuch[0] << endl;
-   cout << "Nof MUCH[1]: " << nofMuch[1] << endl;
-   cout << "Nof MUCH[2]: " << nofMuch[2] << endl;
-   cout << "Nof TOF: " << nofTof << endl;
+   //cout << "Nof MUCH[0]: " << nofMuch[0] << endl;
+   //cout << "Nof MUCH[1]: " << nofMuch[1] << endl;
+   //cout << "Nof MUCH[2]: " << nofMuch[2] << endl;
+   //cout << "Nof TOF: " << nofTof << endl;
    
    SaveHisto(stsXResHisto);
    SaveHisto(stsYResHisto);

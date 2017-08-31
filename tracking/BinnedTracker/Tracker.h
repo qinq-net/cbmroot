@@ -117,7 +117,7 @@ private:
                 {
                     nextStation->SearchHits(hitHolder.hit,
                         [&](CbmTBin::HitHolder& hitHolder2)->void
-                        {
+                        {                            
                             hitHolder2.SetUse(true);
                             hitHolder.children.push_back(&hitHolder2);
                         }
@@ -212,16 +212,7 @@ private:
             CbmTBin::HitHolder* childHolder = *i;
             const CbmPixelHit* childHit = childHolder->hit;
             Double_t deltaChiSq = 0 == level ? GetChiSq(hitHolder->hit, childHit) : GetChiSq(trackStart[level - 1]->hit, hitHolder->hit, childHit);
-            Double_t chiSq2 = chiSq + deltaChiSq;
-            
-            if (chiSq2 > fChiSqCut)
-            {
-                Double_t deltaChiSq2 = 0 == level ? GetChiSq(hitHolder->hit, childHit) : GetChiSq(trackStart[level - 1]->hit, hitHolder->hit, childHit);
-                int qq = 0;
-                ++qq;
-                continue;
-            }
-            
+            Double_t chiSq2 = chiSq + deltaChiSq;            
             trackStart[level + 1] = childHolder;
             
             if (level == fBeforeLastLevel)

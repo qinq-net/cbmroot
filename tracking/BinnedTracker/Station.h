@@ -25,14 +25,15 @@ extern Double_t cbmBinnedSOL;
 class CbmBinnedStation
 {
 public:
-    CbmBinnedStation(int nofYBins, int nofXBins, int nofTBins) : fZ(0), fNofYBins(nofYBins), fNofXBins(nofXBins), fNofTBins(nofTBins), fYBinSize(0), fXBinSize(0), fTBinSize(100),
-        fMinY(0), fMaxY(0), fMinX(0), fMaxX(0), fMinT(0), fMaxT(0), fDx(0), fDxSq(0), fDy(0), fDySq(0), fDt(0), fDtSq(0), fDefaultUse(false) {}    
+    CbmBinnedStation(int nofYBins, int nofXBins, int nofTBins) : fMinZ(0), fMaxZ(0), fNofYBins(nofYBins), fNofXBins(nofXBins), fNofTBins(nofTBins),
+            fYBinSize(0), fXBinSize(0), fTBinSize(100), fMinY(0), fMaxY(0), fMinX(0), fMaxX(0), fMinT(0), fMaxT(0), fDx(0), fDxSq(0), fDy(0), fDySq(0),
+            fDt(0), fDtSq(0), fDefaultUse(false) {}    
     CbmBinnedStation(const CbmBinnedStation&) = delete;
     CbmBinnedStation& operator=(const CbmBinnedStation&) = delete;
     
     virtual ~CbmBinnedStation() {}
-    Double_t GetZ() const { return fZ; }
-    void SetZ(Double_t v) { fZ = v; }
+    void SetMinZ(Double_t v) { fMinZ = v; }
+    void SetMaxZ(Double_t v) { fMaxZ = v; }
     void SetMinY(Double_t v) { fMinY = v; }
     void SetMaxY(Double_t v) { fMaxY = v; }
     void SetMinX(Double_t v) { fMinX = v; }
@@ -130,7 +131,8 @@ public:
     virtual void SearchHits(const CbmPixelHit* searchHit, std::function<void(CbmTBin::HitHolder&)> handleHit) = 0;
     
 protected:
-    Double_t fZ;
+    Double_t fMinZ;
+    Double_t fMaxZ;
     int fNofYBins;
     int fNofXBins;
     int fNofTBins;
