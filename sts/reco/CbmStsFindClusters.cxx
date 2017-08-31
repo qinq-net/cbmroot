@@ -206,6 +206,7 @@ InitStatus CbmStsFindClusters::Init()
 
   // --- Get STS setup
   fSetup = CbmStsSetup::Instance();
+  if ( ! fSetup->IsInit() ) fSetup->Init();
 
   // --- Instantiate cluster analysis
   fAna = new CbmStsClusterAnalysis();

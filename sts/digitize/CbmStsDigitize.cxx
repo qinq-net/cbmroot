@@ -406,11 +406,8 @@ void CbmStsDigitize::SetParContainers()
 // -----   Initialisation    -----------------------------------------------
 InitStatus CbmStsDigitize::Init() {
 
-  // Get STS setup interface
-  fSetup = CbmStsSetup::Instance();
-
-  // Instantiate StsPhysics
-  CbmStsPhysics::Instance();
+  // Get and initialise the STS setup interface
+  InitSetup();
 
   // Screen output
   std::cout << std::endl;
@@ -433,28 +430,22 @@ InitStatus CbmStsDigitize::Init() {
     SetGenerateNoise(kFALSE);  // Noise can be generated only in stream mode
   }
 
+  // Set the digitisation parameters of the modules
+  SetModuleParameters();
+
+  // Set sensor conditions
+  SetSensorConditions();
+
+  // Instantiate StsPhysics
+  CbmStsPhysics::Instance();
+
+
   // --- Write physics settings to the parameter container. The default values
   // --- are defined in the constructor; they may have been changed from the
   // --- macro level by SetProcesses().
   fDigiPar->SetProcesses(fEnergyLossModel, fUseLorentzShift, fUseDiffusion,
                          fUseCrossTalk, fGenerateNoise);
 
-  // --- Set default parameters for the modules
-  // --- The zero noise rate corresponds to a rise time of 80 ns (1/(pi*tau))
-  Double_t dynRange = 75000.;          // dynamic range in e
-  Double_t threshold = 3000.;          // threshold in e
-  Int_t    nAdc = 32;                  // Number of ADC channels
-  Double_t tResol = 5.;                // Time resolution in ns
-  Double_t deadTime = 800.;            // Channel dead time in ns
-  Double_t noise = 1000.;              // Noise RMS in e
-  Double_t zeroNoiseRate = 3.9789e-3;  // Zero noise rate [1/ns]
-  Double_t deadChannels = 0.;          // Fraction of dead channels in %
-  fDigiPar->SetModuleParameters(dynRange, threshold, nAdc, tResol,
-                                deadTime, noise, zeroNoiseRate,
-                                deadChannels);
-
-  // Initialise STS setup, sensor conditions and module parameters
-  InitSetup();
 
   // --- Screen output of settings
   LOG(INFO) << GetName() << ": " << fDigiPar->ToString() << FairLogger::endl;
@@ -505,18 +496,13 @@ InitStatus CbmStsDigitize::Init() {
 // -----   Initialisation of setup    --------------------------------------
 void CbmStsDigitize::InitSetup() {
 
-    // Get STS setup interface
+    // Initialise the STS setup interface
 	fSetup = CbmStsSetup::Instance();
+	fSetup->Init();
 
 	// Register this task and the parameter container to the setup
 	fSetup->SetDigitizer(this);
 	fSetup->SetDigiParameters(fDigiPar);
-
-    // Set sensor conditions
-	SetSensorConditions();
-
-    // Set the digitisation parameters of the modules
-	SetModuleParameters();
 
 }
 // -------------------------------------------------------------------------
@@ -680,23 +666,39 @@ void CbmStsDigitize::SetGenerateNoise(Bool_t choice) {
 // -----   Set the digitisation parameters for the modules   ---------------
 // TODO: Currently, all modules have the same parameters. In future,
 // more flexible schemes must be used, in particular for the thresholds.
+// TODO: The default parameters are hard-coded. They should be settable
+// from the macrp, but the method SetParameters does currently not work.
 void CbmStsDigitize::SetModuleParameters() {
 
-    // --- Set parameters for all modules
-	Int_t nModules = fSetup->GetNofModules();
-	for (Int_t iModule = 0; iModule < nModules; iModule++) {
-		fSetup->GetModule(iModule)->SetParameters(2048,
-		                                          fDigiPar->GetDynRange(),
-		                                          fDigiPar->GetThreshold(),
-				                                  fDigiPar->GetNofAdc(),
-				                                  fDigiPar->GetTimeResolution(),
-				                                  fDigiPar->GetDeadTime(),
-				                                  fDigiPar->GetNoise(),
-				                                  fDigiPar->GetZeroNoiseRate());
-		fSetup->GetModule(iModule)->SetDeadChannels(fDigiPar->GetDeadChannelFrac());
-	}
-	LOG(INFO) << GetName() << ": Set parameters for " << nModules
-			      << " modules " << FairLogger::endl;
+  // --- Set default parameters for the modules
+  // --- The zero noise rate corresponds to a rise time of 80 ns (1/(pi*tau))
+  Double_t dynRange = 75000.;          // dynamic range in e
+  Double_t threshold = 3000.;          // threshold in e
+  Int_t    nAdc = 32;                  // Number of ADC channels
+  Double_t tResol = 5.;                // Time resolution in ns
+  Double_t deadTime = 800.;            // Channel dead time in ns
+  Double_t noise = 1000.;              // Noise RMS in e
+  Double_t zeroNoiseRate = 3.9789e-3;  // Zero noise rate [1/ns]
+  Double_t deadChannels = 0.;          // Fraction of dead channels in %
+  fDigiPar->SetModuleParameters(dynRange, threshold, nAdc, tResol,
+                                deadTime, noise, zeroNoiseRate,
+                                deadChannels);
+
+  // --- Set parameters for all modules
+  Int_t nModules = fSetup->GetNofModules();
+  for (Int_t iModule = 0; iModule < nModules; iModule++) {
+    fSetup->GetModule(iModule)->SetParameters(2048,
+                                              fDigiPar->GetDynRange(),
+                                              fDigiPar->GetThreshold(),
+                                              fDigiPar->GetNofAdc(),
+                                              fDigiPar->GetTimeResolution(),
+                                              fDigiPar->GetDeadTime(),
+                                              fDigiPar->GetNoise(),
+                                              fDigiPar->GetZeroNoiseRate());
+    fSetup->GetModule(iModule)->SetDeadChannels(fDigiPar->GetDeadChannelFrac());
+  }
+  LOG(INFO) << GetName() << ": Set parameters for " << nModules
+      << " modules " << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 

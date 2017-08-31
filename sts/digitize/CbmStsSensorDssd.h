@@ -57,11 +57,10 @@ class CbmStsSensorDssd : public CbmStsSensor
      ** @param node    Pointer to geometry node
      ** @param mother  Pointer to mother element (module)
      **/
-    CbmStsSensorDssd(UInt_t address = 0, TGeoPhysicalNode* node = nullptr,
+    CbmStsSensorDssd(Int_t address = 0, TGeoPhysicalNode* node = nullptr,
                      CbmStsElement* mother = nullptr);
 
-
-    /** Destructor  **/
+     /** Destructor  **/
     virtual ~CbmStsSensorDssd() { };
 
 
@@ -109,8 +108,7 @@ class CbmStsSensorDssd : public CbmStsSensor
     Double_t fDx;            ///< Dimension of active area in x [cm]
     Double_t fDy;            ///< Dimension of active area in y [cm]
     Double_t fDz;            ///< Thickness in z [cm]
-    Bool_t   fIsSet;         ///< Flag whether parameters are set
-    CbmStsPhysics* fPhysics; //! ///<  Pointer to CbmStsPhysics instance
+    Bool_t   fIsSet;         ///< Flag whether sensor is properly initialised
 
     /** Analog charge in strips (for front and back side).
      ** Used during analog response simulation. **/

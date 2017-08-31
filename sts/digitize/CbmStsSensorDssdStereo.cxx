@@ -31,6 +31,28 @@ CbmStsSensorDssdStereo::CbmStsSensorDssdStereo(UInt_t address,
 
 
 
+// -----   Constructor   ---------------------------------------------------
+CbmStsSensorDssdStereo::CbmStsSensorDssdStereo(Double_t dy, Int_t nStrips,
+                                               Double_t pitch,
+                                               Double_t stereoF,
+                                               Double_t stereoB) :
+    CbmStsSensorDssd(),
+    fNofStrips(nStrips),
+    fPitch(pitch),
+    fStereoF(stereoF),
+    fStereoB(stereoB),
+    fTanStereo(),
+    fCosStereo(),
+    fStripShift(),
+    fErrorFac(0.)
+{
+  SetTitle("DssdStereo");
+  fDy = dy;
+}
+// -------------------------------------------------------------------------
+
+
+
 // -----   Diffusion   -----------------------------------------------------
 void CbmStsSensorDssdStereo::Diffusion(Double_t x, Double_t y,
                                        Double_t sigma, Int_t side,
@@ -168,6 +190,85 @@ Int_t CbmStsSensorDssdStereo::GetStripNumber(Double_t x, Double_t y,
   while ( iStrip >= fNofStrips )       iStrip -= fNofStrips;
 
   return iStrip;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Initialise   ----------------------------------------------------
+Bool_t CbmStsSensorDssdStereo::Init() {
+
+  // Check presence of node
+  if ( ! fNode ) {
+    LOG(ERROR) << GetName() << ": No node assigned!" << FairLogger::endl;
+    return kFALSE;
+  }
+
+  // Check whether parameters are assigned
+  if ( fNofStrips <= 0 ) {
+    LOG(ERROR) << GetName() << ": Parameters are not set!"
+        << FairLogger::endl;
+    return kFALSE;
+  }
+
+  // Geometric shape of the sensor volume
+  TGeoBBox* shape = dynamic_cast<TGeoBBox*>(fNode->GetShape());
+  assert(shape);
+
+  // Active size in x coordinate
+  fDx = Double_t(fNofStrips) * fPitch;
+  if ( fDx >= 2. * shape->GetDX() ) {
+    LOG(ERROR) << GetName() << ": Active size in x ( " << fNofStrips << " x "
+        << fPitch << " cm exceeds volume extension " << 2. * shape->GetDX()
+        << FairLogger::endl;
+    return kFALSE;
+  }
+
+  // Active size in y coordinate
+  if ( fDy >= 2. * shape->GetDY() ) {
+    LOG(ERROR) << GetName() << ": Active size in y ( " << fDy
+        << " cm exceeds volume extension " << 2. * shape->GetDY()
+        << FairLogger::endl;
+    return kFALSE;
+  }
+
+  // Active size in z coordinate
+  fDz = 2. * shape->GetDZ();
+
+  // Stereo angle front side must be between -85 and 85 degrees
+  if ( TMath::Abs(fStereoF) > 85. ) {
+    LOG(ERROR) << GetName() << ": Stereo angle front side ( " << fStereoF
+        << "° exceeds maximum 85° " << FairLogger::endl;
+    return kFALSE;
+  }
+
+  // Stereo angle back side must be between -85 and 85 degrees
+  if ( TMath::Abs(fStereoB) > 85. ) {
+    LOG(ERROR) << GetName() << ": Stereo angle back side ( " << fStereoB
+        << "° exceeds maximum 85° " << FairLogger::endl;
+    return kFALSE;
+  }
+
+  // Derived variables
+  fTanStereo[0]  = TMath::Tan( fStereoF * TMath::DegToRad() );
+  fCosStereo[0]  = TMath::Cos( fStereoF * TMath::DegToRad() );
+  fStripShift[0] = TMath::Nint(fDy * fTanStereo[0] / fPitch);
+  fTanStereo[1]  = TMath::Tan( fStereoB * TMath::DegToRad() );
+  fCosStereo[1]  = TMath::Cos( fStereoB * TMath::DegToRad() );
+  fStripShift[1] = TMath::Nint(fDy * fTanStereo[1] / fPitch);
+
+  // Set size of charge arrays
+  fStripCharge[0].Set(fNofStrips);
+  fStripCharge[1].Set(fNofStrips);
+
+  // Factor for the hit position error
+  fErrorFac = 1. / ( fTanStereo[1] - fTanStereo[0] )
+                     / ( fTanStereo[1] - fTanStereo[0] );
+
+  // --- Flag parameters to be set if test is OK
+  fIsSet = SelfTest();
+
+  return fIsSet;
 }
 // -------------------------------------------------------------------------
 
@@ -348,6 +449,7 @@ Int_t CbmStsSensorDssdStereo::IntersectClusters(CbmStsCluster* clusterF,
 // -------------------------------------------------------------------------
 
 
+
 // -----   Modify the strip pitch   ----------------------------------------
 void CbmStsSensorDssdStereo::ModifyStripPitch(Double_t pitch) {
 
@@ -465,75 +567,19 @@ void CbmStsSensorDssdStereo::PropagateCharge(Double_t x, Double_t y,
 
 
 
-// -----   Set internal sensor parameters   --------------------------------
-Bool_t CbmStsSensorDssdStereo::SetParameters(Double_t dy, Int_t nStrips,
-                                             Double_t pitch, Double_t stereoF,
-                                             Double_t stereoB) {
-
-  // Geometric shape of the sensor volume
-  TGeoBBox* shape = dynamic_cast<TGeoBBox*>(GetPnode()->GetShape());
-  assert(shape);
-
-  // Active size in x coordinate
-  fDx = Double_t(nStrips) * pitch;
-  assert( fDx < 2. * shape->GetDX() );  // The strips fit into the volume
-
-  // Active size in y coordinate
-  assert( dy < 2. * shape->GetDY() );
-  fDy = dy;
-
-  // Active size in z coordinate
-  fDz = 2. * shape->GetDZ();
-
-  // Stereo angles must be between -85 and 85 degrees
-  assert( TMath::Abs(stereoF) < 85. );
-  assert( TMath::Abs(stereoB) < 85. );
-
-  // Number of strips, pitch and stereo angles
-  fNofStrips = nStrips;
-  fPitch     = pitch;
-  fStereoF   = stereoF;
-  fStereoB   = stereoB;
-
-  // Derived variables
-  fTanStereo[0]  = TMath::Tan( fStereoF * TMath::DegToRad() );
-  fCosStereo[0]  = TMath::Cos( fStereoF * TMath::DegToRad() );
-  fStripShift[0] = TMath::Nint(fDy * fTanStereo[0] / fPitch);
-  fTanStereo[1]  = TMath::Tan( fStereoB * TMath::DegToRad() );
-  fCosStereo[1]  = TMath::Cos( fStereoB * TMath::DegToRad() );
-  fStripShift[1] = TMath::Nint(fDy * fTanStereo[1] / fPitch);
-
-  // Set size of charge arrays
-  fStripCharge[0].Set(fNofStrips);
-  fStripCharge[1].Set(fNofStrips);
-
-  // Factor for the hit position error
-  fErrorFac = 1. / ( fTanStereo[1] - fTanStereo[0] )
-                     / ( fTanStereo[1] - fTanStereo[0] );
-
-  // --- Flag parameters to be set if test is ok
-  fIsSet = SelfTest();
-
-  return fIsSet;
-}
-// -------------------------------------------------------------------------
-
-
-
 // -----   String output   -------------------------------------------------
 std::string CbmStsSensorDssdStereo::ToString() const {
   stringstream ss;
-  TGeoBBox* shape = dynamic_cast<TGeoBBox*>(GetPnode()->GetShape());
-  assert(shape);
   ss << "Sensor " << fName << " (type " << GetTitle() << "): ";
-  if ( ! fIsSet ) {
-    ss << "parameters are not set";
-    return ss.str();
+  if ( ! GetPnode() ) ss << "no node assigned; ";
+  else {
+    TGeoBBox* shape = dynamic_cast<TGeoBBox*>(GetPnode()->GetShape());
+    assert(shape);
+    ss << "Dimension (" << 2. * shape->GetDX() << ", "
+        << 2. * shape->GetDY() << ", " << 2. * shape->GetDZ() << ") cm, ";
   }
-  ss << "Dimension (" << 2. * shape->GetDX() << ", "
-      << 2. * shape->GetDY() << ", " << 2. * shape->GetDZ() << ") cm, ";
+  ss << "dy " << fDy << " cm, ";
   ss << "# strips " << fNofStrips << ", pitch " << fPitch << " cm, ";
-  ss << "ly " << fDy << " cm, ";
   ss << "stereo " << fStereoF << "/" << fStereoB << " degrees";
   return ss.str();
 }

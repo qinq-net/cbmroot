@@ -38,8 +38,8 @@ class CbmStsMC : public FairDetector
 		 ** @param active   If set true, ProcessHits will be called and
 		 **                 CbmStsPoints will be created.
 		 ** @param name     Name of detector object
-   	 **/
-		CbmStsMC(Bool_t active = kTRUE, const char* name = "STS");
+   	     **/
+		CbmStsMC(Bool_t active = kTRUE, const char* name = "STSMC");
 
 
 		/** Destructor **/

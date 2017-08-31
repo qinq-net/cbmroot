@@ -88,7 +88,7 @@ void CbmStsMC::EndOfEvent() {
 // -----   Initialise   ----------------------------------------------------
 void CbmStsMC::Initialize() {
 
-	// --- Instantiate the output array
+  // --- Instantiate the output array
   fStsPoints = new TClonesArray("CbmStsPoint");
 
   // --- Get the CbmStsSetup instance and construct a map from full path
@@ -101,6 +101,7 @@ void CbmStsMC::Initialize() {
   // --- small.
   fAddressMap.clear();
   fSetup = CbmStsSetup::Instance();
+  fSetup->Init();
   	Int_t nUnits = fSetup->GetNofDaughters();
   	for (Int_t iUnit = 0; iUnit < nUnits; iUnit++) {
   		CbmStsElement* unit = fSetup->GetDaughter(iUnit);
@@ -284,7 +285,7 @@ void CbmStsMC::SetStatus(CbmStsTrackStatus& status) {
   TString path = gMC->CurrentVolPath();
   auto it = fAddressMap.find(path);
   if ( it == fAddressMap.end() ) {
-  	LOG(INFO) << fName << ": Path not found in address map! "
+  	LOG(FATAL) << fName << ": Path not found in address map! "
   			      << gGeoManager->GetPath() << FairLogger::endl;
   	status.fAddress = 0;
   }

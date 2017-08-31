@@ -38,12 +38,10 @@ CbmStsModule::CbmStsModule(UInt_t address, TGeoPhysicalNode* node,
         fNoiseRate(0.),
         fIsSet(kFALSE),
         fDeadChannels(),
-        fPhysics(nullptr),
         fNoiseCharge(nullptr),
         fAnalogBuffer(),
         fClusters()
 {
-  fPhysics = CbmStsPhysics::Instance();
 }
 // -------------------------------------------------------------------------
 

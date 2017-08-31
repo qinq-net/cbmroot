@@ -64,21 +64,15 @@ class CbmStsSetup : public CbmStsElement
     CbmStsSensor* DefaultSensor(Int_t address, TGeoPhysicalNode* node);
 
 
-    /** Define available sensor types
-     ** Poor man's sensor database, with hardcoded values
-     ** @value Number of available sensor types
-     **/
-    Int_t DefineSensorTypes();
-
-
     /** Get the digitiser task **/
     CbmStsDigitize* GetDigitizer() const { return fDigitizer; }
 
 
-    /** Get digitize parameters **/
-    CbmStsDigitizeParameters* GetDigiParameters() const  {
+    /** Get digitisation parameters **/
+    CbmStsDigitizeParameters* GetDigiParameters() const {
       return fSettings;
     }
+
 
     /** Get an STS element by address
      ** @param address  Unique element address (see CbmStsAddress)
@@ -103,10 +97,6 @@ class CbmStsSetup : public CbmStsElement
     Int_t GetNofSensors() const { return fSensors.size(); }
 
 
-    /** Get number of available sensor types **/
-    //Int_t GetNofSensorTypes() const { return fSensorTypes.size(); }
-
-
     /** Get number of stations **/
     Int_t GetNofStations() const { return fStations.size(); }
 
@@ -120,20 +110,9 @@ class CbmStsSetup : public CbmStsElement
     CbmStsModule* GetModule(Int_t index) { return fModules[index]; }
 
 
-   /** Get a sensor type from the list of available ones
-     ** @param index  Index of sensor type in the array.
-     ** @value type   Pointer to sensor type. NULL if index is out of bounds.
-    CbmStsSensorType* GetSensorType(Int_t index) {
-    	if ( fSensorTypes.find(index) != fSensorTypes.end() )
-    		return fSensorTypes[index];
-    	return NULL;
-    }
-    **/
-
-
     /** Get a station
      ** @param stationId  Station number
-     ** @value Pointer to station object. NULL is not present.
+     ** @value Pointer to station object. NULL if not present.
      **/
     CbmStsStation* GetStation(Int_t stationId) {
       if ( fStations.find(stationId) == fStations.end() ) return NULL;
@@ -148,18 +127,30 @@ class CbmStsSetup : public CbmStsElement
     Int_t GetStationNumber(Int_t address);
 
 
-    /** Initialise setup from geometry
-     ** @param geo  Instance of TGeoManager
-     ** @return kTRUE if successfully initialised; kFALSE else
+    /** @brief Initialise the setup
+     ** @param sensorParameterFile  Name of file with sensor parameters
+     ** @param geometryFile         Name of file with STS geometry
+     ** @return  kTRUE if successfully initialised
+     **
+     ** The setup will be initialised from the STS geometry, either
+     ** taken from the TGeoManager or, if specified, read from a
+     ** geometry file.
+     ** In addition to the geometry, internal parameters of the sensors
+     ** have to be specified. This can be done through the parameter file,
+     ** which should contain for each sensor to be defined a line with
+     ** sensor_name sensor_type parameters
+     ** The number of parameters depends on the sensor type.
+     ** If no parameter file is specified, the default sensor type will be
+     ** used (see method DefautSensor()).
      **/
-    Bool_t Init(TGeoManager* geo);
+    Bool_t Init(const char* geometryFile = nullptr,
+                const char* sensorParameterFile = nullptr);
 
 
-    /** Initialise setup from a STS geometry file
-     ** @param fileName  Name of geometry file
-     ** @return kTRUE if successfully initialised; kFALSE else
+    /** @brief Initialisation status
+     ** @return kTRUE if setup is initialised
      **/
-    Bool_t Init(const char* fileName);
+    Bool_t IsInit() const { return fIsInitialised; }
 
 
     /** Static instance of CbmStsSetup **/
@@ -236,16 +227,6 @@ class CbmStsSetup : public CbmStsElement
                               Double_t cInterstrip);
 
 
-    /** Set sensor parameters
-     ** Set the sensor parameters that are not contained in the geometry,
-     ** but required for digitisation and reconstruction, like strip pitch,
-     ** stereo angle etc.
-     ** @value Number of sensors the type of which was set.
-     **/
-    Int_t SetSensorTypes(TString fileName = "");
-
-
-
 
   private:
 
@@ -257,24 +238,60 @@ class CbmStsSetup : public CbmStsElement
     Bool_t fIsInitialised;  ///< To protect against multiple initialisation.
     Bool_t fIsOld;          ///< Old setup with stations as top level
 
+    Int_t fNofSensorsDefault;  ///< Number of sensors created by default
+
     /** These arrays allow convenient loops over all modules or sensors. **/
     std::vector<CbmStsModule*> fModules;   //! Array of modules
-    std::map<UInt_t, CbmStsSensor*> fSensors;   //! Map of sensors. Key is address.
+    std::map<Int_t, CbmStsSensor*> fSensors;   //! Map of sensors. Key is address.
 
     /** Stations (special case; are not elements in the setup) **/
     std::map<Int_t, CbmStsStation*> fStations;  //!
 
-    /** Sensor type "database". Key is the type name. **/
-    //std::map<TString, CbmStsSensorType*> fSensorTypes; //!
-
     /** Default constructor  **/
     CbmStsSetup();
+
 
     /** Create station objects **/
     Int_t CreateStations();
 
+
+    /** @brief Read the geometry from TGeoManager
+     ** @param geoManager  Instance of TGeoManager
+     ** @return kTRUE if successfully read; kFALSE else
+     **
+     ** The ROOT geometry is browsed for elements of the setup,
+     ** which are then instantiated and connected to the respective
+     ** physical node.
+     **/
+    Bool_t ReadGeometry(TGeoManager* geoManager);
+
+
+    /** @brief Read the geometry from a ROOT geometry file
+     ** @param fileName  Name of geometry file
+     ** @return kTRUE if successfully read; kFALSE else
+     **
+     ** The ROOT geometry is browsed for elements of the setup,
+     ** which are then instantiated and connected to the respective
+     ** physical node.
+     **/
+    Bool_t ReadGeometry(const char* fileName);
+
+
+    /** @brief Read sensor parameters from file
+     ** @param fileName  Parameter file name
+     ** @value Number of sensors the type of which was set.
+     **
+     ** Read the sensor parameters that are not contained in the geometry,
+     ** but required for digitisation and reconstruction, like strip pitch,
+     ** stereo angle etc. Sensors not contained in the file will be
+     ** instantiated with default parameters.
+     **/
+    Int_t ReadSensorParameters(const char* fileName);
+
+
     /** Copy constructor (disabled) **/
     CbmStsSetup(const CbmStsSetup&) = delete;
+
 
     /** Assignment operator (disabled) **/
     CbmStsSetup operator=(const CbmStsSetup&) = delete;

@@ -54,6 +54,17 @@ class CbmStsSensorDssdStereo : public CbmStsSensorDssd
                            CbmStsElement* mother = nullptr);
 
 
+    /** Constructor
+     ** @param dy Length of active area in y [cm]
+     ** @param nStrips Number of strips (same front and back)
+     ** @param pitch   Strip pitch [cm]
+     ** @param stereoF Stereo angle front side [degrees]
+     ** @param stereoB Stereo angle back side [degrees]
+     **/
+    CbmStsSensorDssdStereo(Double_t dy, Int_t nStrips, Double_t pitch,
+                           Double_t stereoF, Double_t stereoB);
+
+
     /** Destructor  **/
     virtual ~CbmStsSensorDssdStereo() { };
 
@@ -75,6 +86,15 @@ class CbmStsSensorDssdStereo : public CbmStsSensorDssd
     }
 
 
+    /** @brief Initialisation
+     ** @value kTRUE if parameters and node are consistent
+     **
+     ** The consistency of geometric node and sensor parameters is checked;
+     ** derived parameters are calculated.
+     **/
+    virtual Bool_t Init();
+
+
     /** @brief Modify the strip pitch
      ** @param New strip pitch [cm]
      **
@@ -91,11 +111,11 @@ class CbmStsSensorDssdStereo : public CbmStsSensorDssd
      ** @param stereoB           Strip stereo angle back side [degrees]
      ** @value kTRUE if parameters are successfully set; else kFALSE
      **/
-    Bool_t SetParameters(Double_t dy, Int_t nStrips, Double_t pitch,
-                         Double_t stereoF, Double_t stereoB);
+    //Bool_t SetParameters(Double_t dy, Int_t nStrips, Double_t pitch,
+      //                   Double_t stereoF, Double_t stereoB);
 
 
-    /** String output **/
+    /** @brief String output **/
     std::string ToString() const;
 
 

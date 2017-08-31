@@ -132,11 +132,11 @@ Int_t CbmStsSensor::FindHits(vector<CbmStsCluster*>& clusters,
 // -----   Get the unique address from the sensor name (static)   ----------
 UInt_t CbmStsSensor::GetAddressFromName(TString name) {
 
-  Int_t unit    = 10 * ( name[5]  - '0') + name[6]  - '0';
-  Int_t ladder  = 10 * ( name[9]  - '0') + name[10] - '0';
+  Int_t unit    = 10 * ( name[5]  - '0') + name[6]  - '0' - 1;
+  Int_t ladder  = 10 * ( name[9]  - '0') + name[10] - '0' - 1;
   Int_t hLadder = ( name[11] == 'U' ? 0 : 1);
-  Int_t module  = 10 * ( name[14] - '0') + name[15] - '0';
-  Int_t sensor  = 10 * ( name[18] - '0') + name[19] - '0';
+  Int_t module  = 10 * ( name[14] - '0') + name[15] - '0' - 1;
+  Int_t sensor  = 10 * ( name[18] - '0') + name[19] - '0' - 1;
 
   return CbmStsAddress::GetAddress(unit, ladder, hLadder, module, sensor);
 }

@@ -18,12 +18,11 @@ using namespace std;
 
 
 // -----   Constructor   ---------------------------------------------------
-CbmStsSensorDssd::CbmStsSensorDssd(UInt_t address, TGeoPhysicalNode* node,
+CbmStsSensorDssd::CbmStsSensorDssd(Int_t address, TGeoPhysicalNode* node,
                                    CbmStsElement* mother) :
               CbmStsSensor(address, node, mother),
-              fDx(0.), fDy(0.), fDz(0.), fIsSet(kFALSE), fPhysics(nullptr)
+              fDx(0.), fDy(0.), fDz(0.), fIsSet(kFALSE)
 {
-  fPhysics = CbmStsPhysics::Instance();
 }
 // -------------------------------------------------------------------------
 
@@ -261,7 +260,7 @@ Int_t CbmStsSensorDssd::CalculateResponse(CbmStsSensorPoint* point) {
 
   // --- Catch if parameters are not set
   if ( ! fIsSet ) {
-    LOG(FATAL) << fName << ": parameters are not set!"
+    LOG(FATAL) << fName << ": sensor is not initialised!"
         << FairLogger::endl;
     return -1;
   }
@@ -374,7 +373,7 @@ void CbmStsSensorDssd::ProduceCharge(CbmStsSensorPoint* point) {
   // Stopping power, needed for energy loss fluctuations
   Double_t dedx = 0.;
   if ( CbmStsSetup::Instance()->GetDigitizer()->GetELossModel() == 2 )
-    dedx = fPhysics->StoppingPower(eKin, point->GetPid());
+    dedx = CbmStsPhysics::Instance()->StoppingPower(eKin, point->GetPid());
 
   // Stepping over the trajectory
   Double_t chargeSum = 0.;
@@ -389,7 +388,7 @@ void CbmStsSensorDssd::ProduceCharge(CbmStsSensorPoint* point) {
     // Charge for this step
     Double_t chargeInStep = chargePerStep;  // uniform energy loss
     if ( CbmStsSetup::Instance()->GetDigitizer()->GetELossModel() == 2 ) // energy loss fluctuations
-      chargeInStep = fPhysics->EnergyLoss(stepSize, mass, eKin, dedx)
+      chargeInStep = CbmStsPhysics::Instance()->EnergyLoss(stepSize, mass, eKin, dedx)
       / CbmStsPhysics::PairCreationEnergy();
     chargeSum += chargeInStep;
 
@@ -481,7 +480,6 @@ Bool_t CbmStsSensorDssd::SelfTest() {
     } // side loop
   } // sensor loop
 
-  //LOG(DEBUG2) << fName << ": self test passed" << FairLogger::endl;
   return kTRUE;
 }
 // -------------------------------------------------------------------------

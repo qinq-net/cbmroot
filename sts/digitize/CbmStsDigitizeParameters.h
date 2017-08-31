@@ -110,7 +110,6 @@ class CbmStsDigitizeParameters : public FairParGenericSet
       fNoise           = noise;
       fZeroNoiseRate   = zeroNoiseRate;
       fDeadChannelFrac = deadChannelFrac;
-      std::cout << "*** Setting parameters ***" << std::endl;
       setChanged();
       setInputVersion(-2,1);
     }

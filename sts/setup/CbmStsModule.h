@@ -287,7 +287,6 @@ class CbmStsModule : public CbmStsElement
     Double_t fNoiseRate;         ///< Noise rate [1/ns]
     Bool_t   fIsSet;             ///< Flag whether parameters are set
     std::set <UShort_t> fDeadChannels;    ///< List of inactive channels
-    CbmStsPhysics* fPhysics;  //!  Pointer to CbmStsPhysics instance
     TF1* fNoiseCharge;        //! Histogram to sample the noise charge
 
     /** Buffer for analog signals, key is channel number.

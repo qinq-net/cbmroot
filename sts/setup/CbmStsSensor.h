@@ -110,6 +110,14 @@ class CbmStsSensor : public CbmStsElement
   	TGeoPhysicalNode* GetNode() const {return fNode;}
 
 
+  	/** @brief Initialise the sensor, if needed
+  	 ** @return kTRUE is successfully initialised
+  	 **
+  	 ** The implementation depends on the concrete sensor class.
+  	 **/
+  	virtual Bool_t Init() { return kTRUE; }
+
+
     /** Get the sensor Id within the module  **/
     Int_t GetSensorId() const {
       return CbmStsAddress::GetElementId(fAddress, kStsSensor); }
@@ -125,6 +133,15 @@ class CbmStsSensor : public CbmStsElement
      **/
     Int_t ProcessPoint(const CbmStsPoint* point,
     		               Double_t eventTime = 0., CbmLink* link = NULL);
+
+
+    /** @brief Set sensor address
+     ** @param address STS element address
+     **/
+    void SetAddress(Int_t address) {
+      fAddress = address;
+      fName = CbmStsElement::ConstructName(address, kStsSensor);
+    }
 
 
      /** Set the sensor conditions
@@ -146,7 +163,7 @@ class CbmStsSensor : public CbmStsElement
      }
 
 
-    /** Set the physical node
+    /** @brief Set the physical node
      ** @param node  Pointer to associated TGeoPhysicalNode object
      **/
     void SetNode(TGeoPhysicalNode* node) { fNode = node; }
