@@ -36,13 +36,13 @@ CbmBinnedGeoReader::CbmBinnedGeoReader(FairRootManager* ioman, CbmBinnedTracker*
    fDetectorReaders["sts"] = &CbmBinnedGeoReader::ReadSts;
    //fDetectorReaders["rich"] = &CbmBinnedGeoReader::ReadRich;
    //fDetectorReaders["much"] = &CbmBinnedGeoReader::ReadMuch;
-   fDetectorReaders["trd"] = &CbmBinnedGeoReader::ReadTrd;
+   //fDetectorReaders["trd"] = &CbmBinnedGeoReader::ReadTrd;
    //fDetectorReaders["tof"] = &CbmBinnedGeoReader::ReadTof;
    
    CbmBinnedHitReader::AddReader("sts", static_cast<TClonesArray*> (fIoman->GetObject("StsHit")));
    //CbmBinnedHitReader::AddReader("rich", static_cast<TClonesArray*> (fIoman->GetObject("RichHit")));
    //CbmBinnedHitReader::AddReader("much", static_cast<TClonesArray*> (fIoman->GetObject("MuchPixelHit")));
-   CbmBinnedHitReader::AddReader("trd", static_cast<TClonesArray*> (fIoman->GetObject("TrdHit")));
+   //CbmBinnedHitReader::AddReader("trd", static_cast<TClonesArray*> (fIoman->GetObject("TrdHit")));
    //CbmBinnedHitReader::AddReader("tof", static_cast<TClonesArray*> (fIoman->GetObject("TofHit")));
 }
 
@@ -65,11 +65,11 @@ Double_t cbmBinnedSOL = 0;
 void CbmBinnedGeoReader::Read()
 {
    ReadDetector("sts");
-   ReadDetector("trd");
+   //ReadDetector("trd");
    //ReadDetector("much");
    //ReadDetector("tof");
    //ReadDetector("rich");
-   //ReadTarget();
+   ReadTarget();
    cbmBinnedSOL = 1.e-7 * TMath::C();// Speed of light in cm/ns
 }
 
@@ -308,5 +308,43 @@ void CbmBinnedGeoReader::ReadTarget()
       }
       
       fNavigator->CdUp();
+   }
+   
+   list<const char*> stsTest = { "sts", "station", "ladder", "halfladder", "module", "sensor" };
+   list<TGeoNode*> stsTestResults;
+   FindNode(stsTest, stsTestResults);
+   int nofStsSensors = stsTestResults.size();
+   
+   for (list<TGeoNode*>::iterator i = stsTestResults.begin(); i != stsTestResults.end(); ++i)
+   {
+      TGeoNode* node = *i;
+      const char* name = node->GetName();
+      TGeoVolume* vol = node->GetVolume();
+   }
+}
+
+void CbmBinnedGeoReader::FindNode(list<const char*> nodePath, list<TGeoNode*>& results, TGeoNode* rootNode)
+{
+   if (0 == rootNode)
+   {
+      rootNode = gGeoManager->GetTopNode();
+      gGeoManager->CdTop();
+   }
+   
+   results.push_back(rootNode);
+   
+   for (list<const char*>::const_iterator i = nodePath.begin(); i != nodePath.end(); ++i)
+   {
+      const char* name = *i;
+      list<TGeoNode*> work;
+      
+      for (list<TGeoNode*>::iterator j = results.begin(); j != results.end(); ++j)
+      {
+         TGeoNode* node = *j;
+         FindGeoChild(node, name, work);
+      }
+      
+      results.clear();
+      results.splice(results.begin(), work);
    }
 }

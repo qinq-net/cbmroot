@@ -39,10 +39,12 @@ struct TrackDesc
 {
    pair<set<Int_t>, set<Int_t> > sts[NOF_STS_STATIONS];
    //pair<set<Int_t>, set<Int_t> > much[NOF_MUCH_STATIONS * NOF_MUCH_LAYERS];
-   pair<set<Int_t>, set<Int_t> > trd[NOF_TRD_LAYERS];
+   //pair<set<Int_t>, set<Int_t> > trd[NOF_TRD_LAYERS];
    //pair<set<Int_t>, set<Int_t> > tof;
+   set<const CbmStsPoint*> stsPoints[NOF_STS_STATIONS];
+   bool isPrimary;
    
-   //TrackDesc() : tof() {}
+   TrackDesc() : /*tof(), */isPrimary(false) {}
 };
 
 static vector<vector<TrackDesc> > gTracks;
@@ -58,6 +60,9 @@ static TH1F* muchTResHisto = 0;
 static TH1F* tofXResHisto = 0;
 static TH1F* tofYResHisto = 0;
 static TH1F* tofTResHisto = 0;
+
+static TH1F* extrStsXHisto = 0;
+static TH1F* extrStsYHisto = 0;
 
 
 CbmBinnedTrackerQA::CbmBinnedTrackerQA() : fGlobalTracks(0), fStsTracks(0)/*, fMuchTracks(0)*/, fTrdTracks(0), fStsHits(0), fMuchHits(0), fTrdHits(0), fTofHits(0),
@@ -88,10 +93,10 @@ InitStatus CbmBinnedTrackerQA::Init()
    //if (0 == fMuchTracks)
       //fLogger->Fatal(MESSAGE_ORIGIN, "No much tracks in the input file");
    
-   fTrdTracks = static_cast<TClonesArray*> (ioman->GetObject("TrdTrack"));
+   //fTrdTracks = static_cast<TClonesArray*> (ioman->GetObject("TrdTrack"));
    
-   if (0 == fTrdTracks)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No trd tracks in the input file");
+   //if (0 == fTrdTracks)
+      //fLogger->Fatal(MESSAGE_ORIGIN, "No trd tracks in the input file");
    
    fStsHits = static_cast<TClonesArray*> (ioman->GetObject("StsHit"));
    
@@ -197,7 +202,17 @@ InitStatus CbmBinnedTrackerQA::Init()
    {
       gTracks.push_back(vector<TrackDesc>());
       Int_t nofMcTracks = fMCTracks->Size(0, i);
-      gTracks.back().resize(nofMcTracks);
+      vector<TrackDesc>& eventTracks = gTracks.back();
+      eventTracks.resize(nofMcTracks);
+      
+      for (Int_t j = 0; j < nofMcTracks; ++j)
+      {
+         TrackDesc& track = eventTracks[j];
+         const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*> (fMCTracks->Get(0, i, j));
+         
+         if (mcTrack->GetMotherId() < 0)
+            track.isPrimary = true;
+      }
    }
    
    for (Int_t i = 0; fStsPoints->Size(0, i) >= 0; ++i)
@@ -240,7 +255,7 @@ InitStatus CbmBinnedTrackerQA::Init()
          const CbmTrdPoint* trdPoint = static_cast<const CbmTrdPoint*> (fTrdPoints->Get(0, i, j));
          Int_t trackId = trdPoint->GetTrackID();
          int stationNumber = CbmTrdAddress::GetLayerId(trdPoint->GetModuleAddress());
-         tracks[trackId].trd[stationNumber].first.insert(j);
+         //tracks[trackId].trd[stationNumber].first.insert(j);
       }
    }
    
@@ -269,6 +284,9 @@ InitStatus CbmBinnedTrackerQA::Init()
    tofXResHisto = new TH1F("tofXResHisto", "tofXResHisto", 200, -3.0, 3.0);
    tofYResHisto = new TH1F("tofYResHisto", "tofYResHisto", 200, -3.0, 3.0);
    tofTResHisto = new TH1F("tofTResHisto", "tofTResHisto", 200, -10.0, 10.0);
+   
+   extrStsXHisto = new TH1F("extrStsXHisto", "extrStsXHisto", 200, -0.5, 0.5);
+   extrStsYHisto = new TH1F("extrStsYHisto", "extrStsYHisto", 200, -0.5, 0.5);
    
    return kSUCCESS;
 }
@@ -302,6 +320,7 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
             Int_t trackId = stsPoint->GetTrackID();
             TrackDesc& trackDesk = gTracks[eventId][trackId];
             trackDesk.sts[stationNumber].first.insert(i);
+            trackDesk.stsPoints[stationNumber].insert(stsPoint);
          }
       }
       
@@ -393,7 +412,7 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
             trdTResHisto->Fill(trdHit->GetTime() - trdPoint->GetTime());
             Int_t trackId = trdPoint->GetTrackID();
             TrackDesc& trackDesk = gTracks[eventId][trackId];
-            trackDesk.trd[stationNumber].first.insert(i);
+            //trackDesk.trd[stationNumber].first.insert(i);
          }
       }
    }// TRD hits
@@ -439,13 +458,22 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
       Int_t trdIndex = globalTrack->GetTrdTrackIndex();
       Int_t tofIndex = globalTrack->GetTofHitIndex();
       
-      if (stsIndex < 0 || muchIndex < 0 || trdIndex < 0 || tofIndex < 0)
+      if (stsIndex < 0)
          continue;
+      
+      //if (muchIndex < 0)
+         //continue;
+      
+      //if (trdIndex < 0)
+         //continue;
+      
+      //if (tofIndex < 0)
+         //continue;
       
       HandleSts(stsIndex);
       //HandleMuch(muchIndex);
-      HandleTrd(trdIndex);
-      HandleTof(tofIndex);
+      //HandleTrd(trdIndex);
+      //HandleTof(tofIndex);
    }
 }
 
@@ -579,8 +607,8 @@ void CbmBinnedTrackerQA::HandleTrd(Int_t trdTrackIndex)
             Int_t trackId = trdPoint->GetTrackID();
             TrackDesc& trackDesk = gTracks[eventId][trackId];
             
-            if (trackDesk.trd[stationNumber].first.find(trdHitInd) != trackDesk.trd[stationNumber].first.end())
-               trackDesk.trd[stationNumber].second.insert(trdTrackIndex);
+            //if (trackDesk.trd[stationNumber].first.find(trdHitInd) != trackDesk.trd[stationNumber].first.end())
+               //trackDesk.trd[stationNumber].second.insert(trdTrackIndex);
          }
       }
    }
@@ -643,6 +671,10 @@ void CbmBinnedTrackerQA::Finish()
       {
          ++nofAllTracks;
          const TrackDesc& trackDesc = *j;
+         
+         if (!trackDesc.isPrimary)
+            continue;
+         
          bool isRef = true;
 
          for (int k = 0; k < NOF_STS_STATIONS; ++k)
@@ -657,14 +689,34 @@ void CbmBinnedTrackerQA::Finish()
          if (!isRef)
             continue;
          
-         for (int k = 0; k < NOF_TRD_LAYERS; ++k)
+         for(set<const CbmStsPoint*>::const_iterator k = trackDesc.stsPoints[0].begin(); k != trackDesc.stsPoints[0].end(); ++k)
+         {
+            const CbmStsPoint* p0 = *k;
+            Double_t x0 = (p0->GetXIn() + p0->GetXOut()) / 2;
+            Double_t y0 = (p0->GetYIn() + p0->GetYOut()) / 2;
+            Double_t z0 = (p0->GetZIn() + p0->GetZOut()) / 2;
+            Double_t tx =  x0 / z0;
+            Double_t ty =  y0 / z0;
+            
+            for(set<const CbmStsPoint*>::const_iterator l = trackDesc.stsPoints[1].begin(); l != trackDesc.stsPoints[1].end(); ++l)
+            {
+               const CbmStsPoint* p1 = *l;
+               Double_t x1 = (p1->GetXIn() + p1->GetXOut()) / 2;
+               Double_t y1 = (p1->GetYIn() + p1->GetYOut()) / 2;
+               Double_t z1 = (p1->GetZIn() + p1->GetZOut()) / 2;
+               extrStsXHisto->Fill(x1 - tx * z1);
+               extrStsYHisto->Fill(y1 - ty * z1);
+            }
+         }
+         
+         /*for (int k = 0; k < NOF_TRD_LAYERS; ++k)
          {
             if (trackDesc.trd[k].first.empty())
             {
                isRef = false;
                break;
             }
-         }
+         }*/
          
          if (!isRef)
             continue;
@@ -704,7 +756,7 @@ void CbmBinnedTrackerQA::Finish()
                ++nofSts[k];
          }
          
-         for (int k = 0; k < NOF_TRD_LAYERS; ++k)
+         /*for (int k = 0; k < NOF_TRD_LAYERS; ++k)
          {
             for (set<Int_t>::const_iterator l = trackDesc.trd[k].second.begin(); l != trackDesc.trd[k].second.end(); ++l)
             {
@@ -718,7 +770,7 @@ void CbmBinnedTrackerQA::Finish()
             
             if (!trackDesc.trd[k].second.empty())
                ++nofTrd[k];
-         }
+         }*/
          
          /*for (int k = 0; k < NOF_MUCH_STATIONS * NOF_MUCH_LAYERS; ++k)
          {
@@ -769,7 +821,7 @@ void CbmBinnedTrackerQA::Finish()
                maxMatch = k->second;
          }
          
-         if (maxMatch < 5)
+         if (maxMatch < 2)
             continue;
             
          ++nofMatchedRefTracks;
@@ -803,6 +855,9 @@ void CbmBinnedTrackerQA::Finish()
    SaveHisto(tofXResHisto);
    SaveHisto(tofYResHisto);
    SaveHisto(tofTResHisto);
+   
+   SaveHisto(extrStsXHisto);
+   SaveHisto(extrStsYHisto);
 }
 
 ClassImp(CbmBinnedTrackerQA)

@@ -49,6 +49,7 @@ private:
     void ReadTrd();
     void ReadTof();
     void ReadTarget();
+    void FindNode(std::list<const char*> nodePath, std::list<TGeoNode*>& results, TGeoNode* rootNode = 0);
     
 private:
     FairRootManager* fIoman;

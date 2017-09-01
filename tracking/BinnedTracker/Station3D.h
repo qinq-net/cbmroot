@@ -156,11 +156,11 @@ public:
         Double_t dyMaxSq = dyMax * dyMax;
         Double_t wyMax = cbmBinnedSigma * std::sqrt(dyMaxSq + fDySq);
         
-        Double_t xMin = searchX + txMin > 0 ? tx * deltaZMin - wxMin : tx * deltaZMax - wxMax;
-        Double_t xMax = searchX + txMax > 0 ? tx * deltaZMax + wxMax : tx * deltaZMin + wxMin;
+        Double_t xMin = searchX + (txMin > 0 ? tx * deltaZMin - wxMin : tx * deltaZMax - wxMax) - 0.2;
+        Double_t xMax = searchX + (txMax > 0 ? tx * deltaZMax + wxMax : tx * deltaZMin + wxMin) + 0.2;
             
-        Double_t yMin = searchY + tyMin > 0 ? ty * deltaZMin - wyMin : ty * deltaZMax - wyMax;
-        Double_t yMax = searchY + tyMax > 0 ? ty * deltaZMax + wyMax : ty * deltaZMin + wyMin;
+        Double_t yMin = searchY + (tyMin > 0 ? ty * deltaZMin - wyMin : ty * deltaZMax - wyMax) - 0.2;
+        Double_t yMax = searchY + (tyMax > 0 ? ty * deltaZMax + wyMax : ty * deltaZMin + wyMin) + 0.2;
         
         Double_t tCoeff = std::sqrt(1 + tx * tx + ty * ty) / cbmBinnedSOL;
         Double_t wT = cbmBinnedSigma * std::sqrt(dtSq + fDtSq);
@@ -197,14 +197,14 @@ public:
                         Double_t y = searchY + ty * deltaZ;
                         Double_t deltaY = hit->GetY() - y;
                         
-                        if (deltaY * deltaY > cbmBinnedSigmaSq * (dy * dy + hit->GetDy() * hit->GetDy()))
+                        if (deltaY * deltaY > cbmBinnedSigmaSq * (dy * dy + hit->GetDy() * hit->GetDy() + 0.0025))
                             continue;
                         
                         Double_t dx = dTx * hitZ;
                         Double_t x = searchX + tx * deltaZ;
                         Double_t deltaX = hit->GetX() - x;
                         
-                        if (deltaX * deltaX > cbmBinnedSigmaSq * (dx * dx + hit->GetDx() * hit->GetDx()))
+                        if (deltaX * deltaX > cbmBinnedSigmaSq * (dx * dx + hit->GetDx() * hit->GetDx() + 0.0025))
                             continue;
                         
                         Double_t t = searchT + tCoeff * deltaZ;

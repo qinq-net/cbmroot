@@ -15,6 +15,8 @@
 #define TRACKER_H
 
 #include "Station.h"
+#include <iostream>
+using namespace std;
 
 class CbmBinnedTracker
 {
@@ -103,6 +105,9 @@ private:
     
     void ReconstructLocal()
     {
+        static int nofUsedHits[] = { 0, 0 };//, 0, 0, 0, 0 };
+        int stNo = 0;
+        
         for (std::list<CbmBinnedStation*>::iterator i = fStations.begin(); true;)
         {
             CbmBinnedStation* curStation = *i;
@@ -115,16 +120,27 @@ private:
             curStation->IterateHits(
                 [&](CbmTBin::HitHolder& hitHolder)->void
                 {
+                   ++nofUsedHits[stNo];
                     nextStation->SearchHits(hitHolder.hit,
                         [&](CbmTBin::HitHolder& hitHolder2)->void
                         {                            
+                            if (nextStation == fStations.back() && !hitHolder2.use)
+                                ++nofUsedHits[1];
+                            
                             hitHolder2.SetUse(true);
                             hitHolder.children.push_back(&hitHolder2);
                         }
                     );
                 }
             );
+            
+            ++stNo;
         }
+        
+        cout << "NOF used hits on:" << endl;
+        
+        for (int i = 0; i < 2; ++i)
+            cout << "On station " << i << ": " << nofUsedHits[i] << endl;
     }
     
     Double_t GetChiSq(const CbmPixelHit* hit1, const CbmPixelHit* hit) const
@@ -212,7 +228,11 @@ private:
             CbmTBin::HitHolder* childHolder = *i;
             const CbmPixelHit* childHit = childHolder->hit;
             Double_t deltaChiSq = 0 == level ? GetChiSq(hitHolder->hit, childHit) : GetChiSq(trackStart[level - 1]->hit, hitHolder->hit, childHit);
-            Double_t chiSq2 = chiSq + deltaChiSq;            
+            Double_t chiSq2 = chiSq + deltaChiSq;
+            
+            if (0 == level && deltaChiSq > 64)
+                deltaChiSq = GetChiSq(hitHolder->hit, childHit);
+            
             trackStart[level + 1] = childHolder;
             
             if (level == fBeforeLastLevel)
