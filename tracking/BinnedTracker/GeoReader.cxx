@@ -36,13 +36,13 @@ CbmBinnedGeoReader::CbmBinnedGeoReader(FairRootManager* ioman, CbmBinnedTracker*
    fDetectorReaders["sts"] = &CbmBinnedGeoReader::ReadSts;
    //fDetectorReaders["rich"] = &CbmBinnedGeoReader::ReadRich;
    //fDetectorReaders["much"] = &CbmBinnedGeoReader::ReadMuch;
-   //fDetectorReaders["trd"] = &CbmBinnedGeoReader::ReadTrd;
+   fDetectorReaders["trd"] = &CbmBinnedGeoReader::ReadTrd;
    //fDetectorReaders["tof"] = &CbmBinnedGeoReader::ReadTof;
    
    CbmBinnedHitReader::AddReader("sts", static_cast<TClonesArray*> (fIoman->GetObject("StsHit")));
    //CbmBinnedHitReader::AddReader("rich", static_cast<TClonesArray*> (fIoman->GetObject("RichHit")));
    //CbmBinnedHitReader::AddReader("much", static_cast<TClonesArray*> (fIoman->GetObject("MuchPixelHit")));
-   //CbmBinnedHitReader::AddReader("trd", static_cast<TClonesArray*> (fIoman->GetObject("TrdHit")));
+   CbmBinnedHitReader::AddReader("trd", static_cast<TClonesArray*> (fIoman->GetObject("TrdHit")));
    //CbmBinnedHitReader::AddReader("tof", static_cast<TClonesArray*> (fIoman->GetObject("TofHit")));
 }
 
@@ -65,7 +65,7 @@ Double_t cbmBinnedSOL = 0;
 void CbmBinnedGeoReader::Read()
 {
    ReadDetector("sts");
-   //ReadDetector("trd");
+   ReadDetector("trd");
    //ReadDetector("much");
    //ReadDetector("tof");
    //ReadDetector("rich");
@@ -301,6 +301,11 @@ void CbmBinnedGeoReader::ReadTarget()
             Double_t targetX = globalCoords[0];
             Double_t targetY = globalCoords[1];
             Double_t targetZ = globalCoords[2];
+            TGeoBBox* targetBox = static_cast<TGeoBBox*> (targetNode->GetVolume()->GetShape());
+            targetBox->ComputeBBox();
+            Double_t targetDx = targetBox->GetDX();
+            Double_t targetDy = targetBox->GetDY();
+            Double_t targetDz = targetBox->GetDZ();
             fNavigator->CdUp();
          }
          

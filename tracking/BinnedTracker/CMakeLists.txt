@@ -35,6 +35,9 @@ Set(SRCS
 Set(NO_DICT_SRCS
   GeoReader.cxx
   HitReader.cxx
+  Station3D.cxx
+  Station4D.cxx
+  Tracker.cxx
 )
 
 set(LINKDEF CbmBinnedTrackerLinkDef.h)

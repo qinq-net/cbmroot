@@ -64,6 +64,10 @@ static TH1F* tofTResHisto = 0;
 static TH1F* extrStsXHisto = 0;
 static TH1F* extrStsYHisto = 0;
 
+static TH1F* vtxXHisto = 0;
+static TH1F* vtxYHisto = 0;
+static TH1F* vtxZHisto = 0;
+
 
 CbmBinnedTrackerQA::CbmBinnedTrackerQA() : fGlobalTracks(0), fStsTracks(0)/*, fMuchTracks(0)*/, fTrdTracks(0), fStsHits(0), fMuchHits(0), fTrdHits(0), fTofHits(0),
    fStsClusters(0), fMuchClusters(0), fTrdClusters(0), fTrdDigiMatches(0), fTofHitDigiMatches(0), fTofDigiPointMatches(0),
@@ -73,6 +77,26 @@ CbmBinnedTrackerQA::CbmBinnedTrackerQA() : fGlobalTracks(0), fStsTracks(0)/*, fM
 
 InitStatus CbmBinnedTrackerQA::Init()
 {
+   stsXResHisto = new TH1F("stsXResHisto", "stsXResHisto", 200, -0.1, 0.1);
+   stsYResHisto = new TH1F("stsYResHisto", "stsYResHisto", 200, -0.1, 0.1);
+   stsTResHisto = new TH1F("stsTResHisto", "stsTResHisto", 200, -10.0, 10.0);
+   trdXResHisto = new TH1F("trdXResHisto", "trdXResHisto", 200, -10.0, 10.0);
+   trdYResHisto = new TH1F("trdYResHisto", "trdYResHisto", 200, -10.0, 10.0);
+   trdTResHisto = new TH1F("trdTResHisto", "trdTResHisto", 200, -10.0, 10.0);
+   muchXResHisto = new TH1F("muchXResHisto", "muchXResHisto", 200, -3.0, 3.0);
+   muchYResHisto = new TH1F("muchYResHisto", "muchYResHisto", 200, -3.0, 3.0);
+   muchTResHisto = new TH1F("muchTResHisto", "muchTResHisto", 200, -10.0, 100.0);
+   tofXResHisto = new TH1F("tofXResHisto", "tofXResHisto", 200, -3.0, 3.0);
+   tofYResHisto = new TH1F("tofYResHisto", "tofYResHisto", 200, -3.0, 3.0);
+   tofTResHisto = new TH1F("tofTResHisto", "tofTResHisto", 200, -10.0, 10.0);
+   
+   extrStsXHisto = new TH1F("extrStsXHisto", "extrStsXHisto", 200, -0.5, 0.5);
+   extrStsYHisto = new TH1F("extrStsYHisto", "extrStsYHisto", 200, -0.5, 0.5);
+   
+   vtxXHisto = new TH1F("vtxXHisto", "vtxXHisto", 100, -0.5, 0.5);
+   vtxYHisto = new TH1F("vtxYHisto", "vtxYHisto", 100, -0.5, 0.5);
+   vtxZHisto = new TH1F("vtxZHisto", "vtxZHisto", 100, -0.5, 0.5);
+   
    FairRootManager* ioman = FairRootManager::Instance();
     
    if (0 == ioman)
@@ -211,7 +235,12 @@ InitStatus CbmBinnedTrackerQA::Init()
          const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*> (fMCTracks->Get(0, i, j));
          
          if (mcTrack->GetMotherId() < 0)
+         {
             track.isPrimary = true;
+            vtxXHisto->Fill(mcTrack->GetStartX());
+            vtxYHisto->Fill(mcTrack->GetStartY());
+            vtxZHisto->Fill(mcTrack->GetStartZ());
+         }
       }
    }
    
@@ -271,22 +300,6 @@ InitStatus CbmBinnedTrackerQA::Init()
          //tracks[trackId].tof.first.insert(j);
       }
    }
-   
-   stsXResHisto = new TH1F("stsXResHisto", "stsXResHisto", 200, -0.1, 0.1);
-   stsYResHisto = new TH1F("stsYResHisto", "stsYResHisto", 200, -0.1, 0.1);
-   stsTResHisto = new TH1F("stsTResHisto", "stsTResHisto", 200, -10.0, 10.0);
-   trdXResHisto = new TH1F("trdXResHisto", "trdXResHisto", 200, -10.0, 10.0);
-   trdYResHisto = new TH1F("trdYResHisto", "trdYResHisto", 200, -10.0, 10.0);
-   trdTResHisto = new TH1F("trdTResHisto", "trdTResHisto", 200, -10.0, 10.0);
-   muchXResHisto = new TH1F("muchXResHisto", "muchXResHisto", 200, -3.0, 3.0);
-   muchYResHisto = new TH1F("muchYResHisto", "muchYResHisto", 200, -3.0, 3.0);
-   muchTResHisto = new TH1F("muchTResHisto", "muchTResHisto", 200, -10.0, 100.0);
-   tofXResHisto = new TH1F("tofXResHisto", "tofXResHisto", 200, -3.0, 3.0);
-   tofYResHisto = new TH1F("tofYResHisto", "tofYResHisto", 200, -3.0, 3.0);
-   tofTResHisto = new TH1F("tofTResHisto", "tofTResHisto", 200, -10.0, 10.0);
-   
-   extrStsXHisto = new TH1F("extrStsXHisto", "extrStsXHisto", 200, -0.5, 0.5);
-   extrStsYHisto = new TH1F("extrStsYHisto", "extrStsYHisto", 200, -0.5, 0.5);
    
    return kSUCCESS;
 }
@@ -858,6 +871,10 @@ void CbmBinnedTrackerQA::Finish()
    
    SaveHisto(extrStsXHisto);
    SaveHisto(extrStsYHisto);
+   
+   SaveHisto(vtxXHisto);
+   SaveHisto(vtxYHisto);
+   SaveHisto(vtxZHisto);
 }
 
 ClassImp(CbmBinnedTrackerQA)

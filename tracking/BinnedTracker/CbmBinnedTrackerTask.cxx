@@ -11,9 +11,13 @@
 #include "CbmStsTrack.h"
 #include "CbmTrdTrack.h"
 #include "CbmMuchTrack.h"
+
+CbmBinnedTrackerTask* CbmBinnedTrackerTask::fInstance = 0;
    
-CbmBinnedTrackerTask::CbmBinnedTrackerTask() : fTracker(0), fGlobalTracks(0), fStsTracks(0)/*, fMuchTracks(0)*//*, fTrdTracks(0)*/
+CbmBinnedTrackerTask::CbmBinnedTrackerTask(Double_t beamWidthX, Double_t beamWidthY) : fBeamDx(beamWidthX), fBeamDy(beamWidthY),
+   fTracker(0), fGlobalTracks(0), fStsTracks(0)/*, fMuchTracks(0)*//*, fTrdTracks(0)*/
 {
+   fInstance = this;
 }
 
 CbmBinnedTrackerTask::~CbmBinnedTrackerTask()
@@ -30,7 +34,7 @@ InitStatus CbmBinnedTrackerTask::Init()
    
    geoReader->Read();
    fTracker = CbmBinnedTracker::Instance();
-   fTracker->SetChiSqCut(320);
+   fTracker->SetChiSqCut(192);
    
    FairRootManager* ioman = FairRootManager::Instance();
     

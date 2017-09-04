@@ -21,7 +21,10 @@
 class CbmBinnedTrackerTask : public FairTask
 {
 public:
-    CbmBinnedTrackerTask();
+    static CbmBinnedTrackerTask* Instance() { return fInstance; }
+    
+public:
+    CbmBinnedTrackerTask(Double_t beamWidthX, Double_t beamWidthY);
     CbmBinnedTrackerTask(const CbmBinnedTrackerTask&) = delete;
     CbmBinnedTrackerTask& operator=(const CbmBinnedTrackerTask&) = delete;
     ~CbmBinnedTrackerTask();
@@ -30,7 +33,15 @@ public:
     void Exec(Option_t* opt);// Overridden from FairTask
     void Finish();// Overridden from FairTask
     
+    Double_t GetBeamDx() const { return fBeamDx; }
+    Double_t GetBeamDy() const { return fBeamDy; }
+    
 private:
+    static CbmBinnedTrackerTask* fInstance;
+    
+private:
+    Double_t fBeamDx;
+    Double_t fBeamDy;
     CbmBinnedTracker* fTracker;
     TClonesArray* fGlobalTracks;
     TClonesArray* fStsTracks;

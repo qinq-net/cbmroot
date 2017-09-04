@@ -42,20 +42,16 @@ public:
     };
     
 public:
-    static CbmBinnedTracker* Instance()
-    {
-        static CbmBinnedTracker* theInstance = 0;
-        
-        if (0 == theInstance)
-            theInstance = new CbmBinnedTracker;
-        
-        return theInstance;
-    }
+    static CbmBinnedTracker* Instance();
     
 public:
-    CbmBinnedTracker() : fStations(), fNofStations(0), fBeforeLastLevel(0), fChiSqCut(0), fTracks() {}
+    CbmBinnedTracker(Double_t beamDx, Double_t beamDy) : fStations(), fNofStations(0), fBeforeLastLevel(0), fChiSqCut(0), fTracks(),
+            fBeamDx(beamDx), fBeamDxSq(beamDx * beamDx), fBeamDy(beamDy), fBeamDySq(beamDy * beamDy) {}
     CbmBinnedTracker(const CbmBinnedTracker&) = delete;
     CbmBinnedTracker& operator=(const CbmBinnedTracker&) = delete;
+    
+    Double_t GetBeamDxSq() const { return fBeamDxSq; }
+    Double_t GetBeamDySq() const { return fBeamDySq; }
     
     void AddStation(CbmBinnedStation* station)
     {
@@ -105,7 +101,7 @@ private:
     
     void ReconstructLocal()
     {
-        static int nofUsedHits[] = { 0, 0 };//, 0, 0, 0, 0 };
+        static int nofUsedHits[] = { 0, 0, 0, 0, 0, 0 };
         int stNo = 0;
         
         for (std::list<CbmBinnedStation*>::iterator i = fStations.begin(); true;)
@@ -139,7 +135,7 @@ private:
         
         cout << "NOF used hits on:" << endl;
         
-        for (int i = 0; i < 2; ++i)
+        for (int i = 0; i < 6; ++i)
             cout << "On station " << i << ": " << nofUsedHits[i] << endl;
     }
     
@@ -164,13 +160,14 @@ private:
         Double_t dy = hit->GetDy();
         Double_t dt = hit->GetTimeError();
         
-        Double_t deltaZ = z - z1;
-        x1 += tx * deltaZ;
-        y1 += ty * deltaZ;
-        t1 += std::sqrt(1 + tx * tx + ty * ty) * deltaZ / cbmBinnedSOL;
+        x1 = tx * z;
+        y1 = ty * z;
+        t1 += std::sqrt(1 + tx * tx + ty * ty) * (z - z1) / cbmBinnedSOL;
         
-        Double_t xTerm = (x - x1) * (x - x1) / (dx1 * dx1 * z * z / z1 / z1 + dx * dx);
-        Double_t yTerm = (y - y1) * (y - y1) / (dy1 * dy1 * z * z / z1 / z1 + dy * dy);
+        Double_t xTerm = (x - x1) * (x - x1) / ((1.5 - 2 * z / z1) * (1.5 - 2 * z / z1) * fBeamDxSq +
+                  (2 * z / z1 - 0.5) * (2 * z / z1 - 0.5) * dx1 * dx1 + dx * dx);
+        Double_t yTerm = (y - y1) * (y - y1) / ((1.5 - 2 * z / z1) * (1.5 - 2 * z / z1) * fBeamDySq +
+                  (2 * z / z1 - 0.5) * (2 * z / z1 - 0.5) * dy1 * dy1 + dy * dy);
         Double_t tTerm = (t - t1) * (t - t1) / (dt1 * dt1 + dt * dt);
         
         return xTerm + yTerm + tTerm;
@@ -220,7 +217,7 @@ private:
     }
     
     void TraverseTrackCandidates(int level, CbmTBin::HitHolder** trackStart, Double_t chiSq, std::list<Track*>& candidates)
-    {
+    {        
         CbmTBin::HitHolder* hitHolder = trackStart[level];
         
         for (std::list<CbmTBin::HitHolder*>::iterator i = hitHolder->children.begin(); i != hitHolder->children.end(); ++i)
@@ -230,8 +227,8 @@ private:
             Double_t deltaChiSq = 0 == level ? GetChiSq(hitHolder->hit, childHit) : GetChiSq(trackStart[level - 1]->hit, hitHolder->hit, childHit);
             Double_t chiSq2 = chiSq + deltaChiSq;
             
-            if (0 == level && deltaChiSq > 64)
-                deltaChiSq = GetChiSq(hitHolder->hit, childHit);
+            if (chiSq2 > fChiSqCut)
+                return;
             
             trackStart[level + 1] = childHolder;
             
@@ -255,6 +252,8 @@ private:
                 trackHolders[0] = &hitHolder;
                 std::list<Track*> candidates;
                 TraverseTrackCandidates(0, trackHolders, 0, candidates);
+                
+                int nofCandidates = candidates.size();
                 
                 Track* bestCandidate = 0;
                 
@@ -283,6 +282,10 @@ private:
     int fBeforeLastLevel;
     Double_t fChiSqCut;
     std::list<Track*> fTracks;
+    Double_t fBeamDx;
+    Double_t fBeamDxSq;
+    Double_t fBeamDy;
+    Double_t fBeamDySq;
 };
 
 #endif /* TRACKER_H */
