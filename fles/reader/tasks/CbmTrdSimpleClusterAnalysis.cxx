@@ -94,8 +94,9 @@ for (Int_t layer = 0; layer < fBT->GetNrLayers(); layer++)
 		  fBT->GetCharge (CurrentCluster));
 	    }
 	}
-      LOG(INFO) << this->GetName () << ": " << fBT->GetCharge (CurrentCluster)
-		   << FairLogger::endl;
+      /*LOG(INFO) << this->GetName () << ": " << fBT->GetCharge (CurrentCluster)
+	<< FairLogger::endl;
+      */
   }
 
 }

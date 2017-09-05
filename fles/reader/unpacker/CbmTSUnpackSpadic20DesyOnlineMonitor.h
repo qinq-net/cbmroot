@@ -13,7 +13,7 @@
   #include "Message.hpp"
 #endif
 
-
+#include <map>
 #include "CbmTSUnpack.h"
 #include "CbmBeamDefaults.h"
 
@@ -42,26 +42,33 @@ class CbmTSUnpackSpadic20DesyOnlineMonitor : public CbmTSUnpack
   //  virtual void Register();
 
   virtual void FillOutput(CbmDigi*){;}
+  
  private:
-
+    
   TClonesArray* fSpadicRaw;
 
   Bool_t fHighPerformance;
-
-  Int_t fEpochMarkerArray[NrOfSyscores][NrOfHalfSpadics];
+ 
+  
+  std::map<std::pair<int,int>,int>fEpochMarkerArray;
   //Array to store the previous Epoch counter
-  Int_t fPreviousEpochMarkerArray[NrOfSyscores][NrOfHalfSpadics];
+  std::map<std::pair<int,int>,int>fPreviousEpochMarkerArray;
   //Suppress multiple Epoch Messages in duplicated Microslices. NOTE:Currently Buggy
   const Bool_t SuppressMultipliedEpochMessages = false;
-  Int_t fSuperEpochArray[NrOfSyscores][NrOfHalfSpadics];
+  std::map<std::pair<int,int>,int>fSuperEpochArray;
 
   static Int_t   GetSpadicID(Int_t address);
-  static Int_t   GetSyscoreID(Int_t link);
+  static Int_t   GetAfckID(Int_t AfckAddress);
   inline TString GetSpadicName(Int_t link,Int_t address);
   Int_t GetChannelOnPadPlane(Int_t SpadicChannel, Int_t groupId);
   Int_t fEpochMarker;
   Int_t fSuperEpoch;
   Int_t fNrExtraneousSamples;
+  Int_t  startTime = 0; // should be ULong_t as soon as used with a GetFullTime lateron
+  Bool_t first = true; // for the "Sync" histo : is it the very first entry into this histo? 
+  Bool_t syncHistFinished = false; // declare explicitly, if the "Sync" histo is finished.
+  Int_t  maxTime = 0; // should be ULong_t as soon as used with a GetFullTime lateron
+  Int_t lastTsCh7 = 0;
   void GetEpochInfo(Int_t link, Int_t addr);
   void FillEpochInfo(Int_t link, Int_t addr, Int_t epoch_count);
   CbmHistManager* fHM;
@@ -76,38 +83,75 @@ class CbmTSUnpackSpadic20DesyOnlineMonitor : public CbmTSUnpack
   TCanvas* fcTS;
   TCanvas* fcF;
   TCanvas* fcSp;
-  TCanvas* fcPS[(NrOfSyscores)*(NrOfSpadics)];
+  TCanvas* fcPS[(NrOfAfcks)*(NrOfSpadics)];
   TCanvas* fcMS;
+  TCanvas* fcSy;
+  TCanvas* fcNS;
+  TCanvas* fcTH;
+  TCanvas* fcAS;
+  TCanvas* fcA;
+  TCanvas* fcES;
+  TCanvas* fcHC;
   void InitHistos();
   void InitCanvas();
   void UpdateCanvas();
-  TH2I* fBaseline[(NrOfSyscores)*(NrOfSpadics)];
-  TH2I* fmaxADCmaxTimeBin[(NrOfSyscores)*(NrOfSpadics)];
-  TH2I* fHit[(NrOfSyscores)*(NrOfSpadics)];
-  TH2I* fLost[(NrOfSyscores)*(NrOfSpadics)];
-  TH2I* fEpoch[(NrOfSyscores)*(NrOfSpadics)];
-  TH2I* fOutOfSync[(NrOfSyscores)*(NrOfSpadics)];
-  TH2I* fStrange[(NrOfSyscores)*(NrOfSpadics)];
-  TH2I* fInfo[(NrOfSyscores)*(NrOfSpadics)];
-  TH1I* fHitTimeA[(NrOfSyscores)*(NrOfSpadics)];
-  TH1I* fHitTimeB[(NrOfSyscores)*(NrOfSpadics)];
-  TH1I* fHitFrequency[(NrOfSyscores)*(NrOfSpadics)];
-  TH1I* fSpectrum[(NrOfSyscores)*(NrOfSpadics)];
-  TH2I* fPulseShape[(NrOfSyscores)*(NrOfSpadics)*32];
-  TH1I* fMessageStatistic[(NrOfSyscores)*(NrOfSpadics)];
-  TGraph* fTSGraph[(NrOfSyscores)*(NrOfSpadics)];
-  Int_t fLastSuperEpochA[(NrOfSyscores)*(NrOfSpadics)];
-  Int_t fLastSuperEpochB[(NrOfSyscores)*(NrOfSpadics)];
-  ULong_t fLastFullTime[NrOfSyscores][NrOfSpadics][32];
+  TH2I* fBaseline[(NrOfAfcks)*(NrOfSpadics)];
+  TH2I* fmaxADCmaxTimeBin[(NrOfAfcks)*(NrOfSpadics)];
+  TH2I* fHit[(NrOfAfcks)*(NrOfSpadics)];
+  TH2I* fHitChannel[(NrOfAfcks)*(NrOfSpadics)];
+  TH2I* fLost[(NrOfAfcks)*(NrOfSpadics)];
+  TH2I* fEpoch[(NrOfAfcks)*(NrOfSpadics)];
+  TH2I* fOutOfSync[(NrOfAfcks)*(NrOfSpadics)];
+  TH2I* fStrange[(NrOfAfcks)*(NrOfSpadics)];
+  TH2I* fInfo[(NrOfAfcks)*(NrOfSpadics)];
+  TH1I* fHitTimeA[(NrOfAfcks)*(NrOfSpadics)];
+  TH1I* fHitTimeB[(NrOfAfcks)*(NrOfSpadics)];
+  TH1I* fHitFrequency[(NrOfAfcks)*(NrOfSpadics)];
+  TH1I* fSpectrum[(NrOfAfcks)*(NrOfSpadics)];
+  TH2I* fPulseShape[(NrOfAfcks)*(NrOfSpadics)*32];
+  TH1I* fMessageStatistic[(NrOfAfcks)*(NrOfSpadics)];
+  TH2I* fHitSync[(NrOfAfcks)*(NrOfSpadics)];
+  TH2I* fNrSamples[(NrOfAfcks)*(NrOfSpadics)];
+  TH1D* fTimeBetweenHits[(NrOfAfcks)*(NrOfSpadics)];
+  TH1I* fADCmaxSum[(NrOfAfcks)*(NrOfSpadics)];
+  //  TH1I* fDeltaT[1];
+  TGraph* fTSGraph[(NrOfAfcks)*(NrOfSpadics)];
+  Int_t fLastSuperEpochA[(NrOfAfcks)*(NrOfSpadics)];
+  Int_t fLastSuperEpochB[(NrOfAfcks)*(NrOfSpadics)];
+  ULong_t fLastFullTime[NrOfAfcks][NrOfSpadics][32];
+  ULong_t fHitsTrd0[16777216][2];
+  ULong_t fHitsTrd1[16777216][2];
+  ULong_t fHitsTrd1n[16777216][2];
+  ULong_t fHitsTrd2[16777216][2];
+  ULong_t fLastTimeGlobal;
+  ULong_t fThisTime;
+  ULong_t fAlignmentCounter0;
+  ULong_t fAlignmentCounter1;
+  ULong_t fAlignmentCompareCounter;
+  ULong_t fAlignmentCompareCounter1;
+  ULong_t fLastTimes[(NrOfAfcks)*(NrOfSpadics)];
   TString fMessageTypes[7];
   TString fTriggerTypes[4];
+  Int_t fClusterSwitch[(NrOfAfcks)*(NrOfSpadics)];
+  Int_t fMaxSum[(NrOfAfcks)*(NrOfSpadics)];
+  Int_t fLastTrigger[(NrOfAfcks)*(NrOfSpadics)];
+  Int_t fLastChannel[(NrOfAfcks)*(NrOfSpadics)];
   TString fStopTypes[6];
   TString fInfoTypes[7];
-  //Int_t fSumHitMessages[(NrOfSyscores)*(NrOfSpadics)];
+  TString fAlignments[3];
+  TString fChambers[4];
+  Int_t fAFCKs[4];
+  Int_t fSource;
+  Int_t fLastSource;
+  ULong_t fFillCounter;
+  //Int_t fSumHitMessages[(NrOfAfcks)*(NrOfSpadics)];
   CbmTSUnpackSpadic20DesyOnlineMonitor(const CbmTSUnpackSpadic20DesyOnlineMonitor&);
   CbmTSUnpackSpadic20DesyOnlineMonitor operator=(const CbmTSUnpackSpadic20DesyOnlineMonitor&);
 
-  TH1D* fMaxADC[32];
+  TH2I* fSyncChambers[1];
+  TH1I* fEventSelection[1];
+  TH2I* fAlignment[3];
+  TH1D* fMaxADC[32*(NrOfAfcks)*(NrOfSpadics)];
 
   ClassDef(CbmTSUnpackSpadic20DesyOnlineMonitor, 2)
 

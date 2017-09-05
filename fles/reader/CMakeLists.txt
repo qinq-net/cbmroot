@@ -22,7 +22,7 @@ Set(SYSTEM_INCLUDE_DIRECTORIES
   ${ROOT_INCLUDE_DIR}
   ${CBMROOT_SOURCE_DIR}/external/ipc_legacy/ipc/src
   ${CBMROOT_SOURCE_DIR}/external/flib_dpb/flib_dpb
-#  ${CBMROOT_SOURCE_DIR}/external/flib_dpb_20/flib_dpb_20
+  ${CBMROOT_SOURCE_DIR}/external/flib_dpb_20/flib_dpb_20
   ${CBMROOT_SOURCE_DIR}/external/spadic/spadic
   ${CBMROOT_SOURCE_DIR}/fles/trb/trbnet_lib
   ${CBMROOT_SOURCE_DIR}/rich/prototype/beamtime
@@ -69,10 +69,11 @@ Set(SRCS
   CbmFiberHodoMapping.cxx
 
   unpacker/CbmTSUnpackSpadic.cxx
-#  unpacker/CbmTSUnpackSpadic20.cxx
+  unpacker/CbmTSUnpackSpadic20.cxx
   unpacker/CbmTSUnpackSpadic11OnlineMonitor.cxx
   unpacker/CbmTSUnpackSpadic20OnlineMonitor.cxx
   unpacker/CbmTSUnpackSpadic20DesyOnlineMonitor.cxx
+  unpacker/UnpackOffline.cxx
   unpacker/CbmTSUnpackSpadicLegacy.cxx
   unpacker/CbmTSUnpackNxyter.cxx
   unpacker/CbmTSUnpackStsxyter.cxx
@@ -122,6 +123,7 @@ Set(SRCS
 Set(NO_DICT_SRCS
   unpacker/TimesliceReader.cpp
   unpacker/TimesliceReader20.cpp
+ unpacker/TimesliceReader20.cpp
 )
 
 If(_UINT8_T_EXIST)
@@ -141,7 +143,7 @@ EndIf()
 Set(LINKDEF  CbmFlibReaderLinkDef.h )
 Set(LIBRARY_NAME CbmFlibReader)
 Set(DEPENDENCIES
-    CbmBase CbmBeamtimeBase CbmRich fles_ipc_legacy flib_dpb spadicMessage trbnet ${FLES_TOF_BEAM_DEPEND} Eve Base
+    CbmBase CbmBeamtimeBase CbmRich fles_ipc_legacy flib_dpb flib_dpb_20 spadicMessage trbnet ${FLES_TOF_BEAM_DEPEND} Eve Base
 )
 
 GENERATE_LIBRARY()
