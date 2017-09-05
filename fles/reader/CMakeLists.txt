@@ -22,6 +22,7 @@ Set(SYSTEM_INCLUDE_DIRECTORIES
   ${ROOT_INCLUDE_DIR}
   ${CBMROOT_SOURCE_DIR}/external/ipc_legacy/ipc/src
   ${CBMROOT_SOURCE_DIR}/external/flib_dpb/flib_dpb
+#  ${CBMROOT_SOURCE_DIR}/external/flib_dpb_20/flib_dpb_20
   ${CBMROOT_SOURCE_DIR}/external/spadic/spadic
   ${CBMROOT_SOURCE_DIR}/fles/trb/trbnet_lib
   ${CBMROOT_SOURCE_DIR}/rich/prototype/beamtime
@@ -68,6 +69,7 @@ Set(SRCS
   CbmFiberHodoMapping.cxx
 
   unpacker/CbmTSUnpackSpadic.cxx
+#  unpacker/CbmTSUnpackSpadic20.cxx
   unpacker/CbmTSUnpackSpadic11OnlineMonitor.cxx
   unpacker/CbmTSUnpackSpadic20OnlineMonitor.cxx
   unpacker/CbmTSUnpackSpadic20DesyOnlineMonitor.cxx
@@ -87,6 +89,7 @@ Set(SRCS
   get4/CbmGet4EventBuffer.cxx
 
   tasks/tools/CbmTrdTestBeamTools.cxx
+  tasks/tools/CbmTrdTestBeamTools2017DESY.cxx
   tasks/tools/CbmTrdTestBeamToolsBuch2016.cxx
   tasks/tools/CbmTrdLabTools.cxx
 
@@ -95,11 +98,13 @@ Set(SRCS
   tasks/CbmTrdQAHit.cxx
   tasks/CbmTrdQACosmics.cxx
   tasks/CbmTrdQAEfficiency.cxx
+  tasks/CbmTrdDESYAlignment.cxx
 #  tasks/CbmTrdQABaseline.cxx
   tasks/CbmTrdSimpleDigitizer.cxx
   tasks/CbmTrdAdvDigitizer.cxx
   tasks/CbmTrdDigiAnalysis.cxx
   tasks/CbmTrdSimpleClusterizer.cxx
+  tasks/CbmTrdSimpleClusterAnalysis.cxx
   tasks/CbmTrdRawBeamProfile.cxx
   tasks/CbmTrdRawBuchData.cxx
   tasks/CbmTrdRawPulseMonitor.cxx
@@ -115,7 +120,8 @@ Set(SRCS
 )
 
 Set(NO_DICT_SRCS
- unpacker/TimesliceReader.cpp
+  unpacker/TimesliceReader.cpp
+  unpacker/TimesliceReader20.cpp
 )
 
 If(_UINT8_T_EXIST)

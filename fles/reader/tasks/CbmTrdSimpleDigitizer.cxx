@@ -154,11 +154,15 @@ CbmTrdSimpleDigitizer::Exec (Option_t*)
       else
         {
           auto CurrentBuffer = BaselineMap.find (fBT->GetAddress (raw));
-          BaselineEstimate = std::accumulate (CurrentBuffer->second.begin (),
-                                              CurrentBuffer->second.end (), 0L);
+          if(CurrentBuffer==BaselineMap.end())BaselineEstimate = fBT->GetBaseline(raw);
+          else
+            if (!CurrentBuffer->second.empty ()){
+        	BaselineEstimate = std::accumulate(CurrentBuffer->second.begin(),CurrentBuffer->second.end(),0);
+        	BaselineEstimate /= CurrentBuffer->second.size ();
+            }
+          //for (auto x : CurrentBuffer->second)
+            //BaselineEstimate+=x;
           //Div-by-Zero Check, should NEVER occur.
-          if (!CurrentBuffer->second.empty ())
-            BaselineEstimate /= CurrentBuffer->second.size ();
         }
       //BaselineEstimate=(fBT->GetBaseline(raw)<BaselineEstimate)?fBT->GetBaseline(raw):BaselineEstimate;
       for (UInt_t i = 0; i < 32; i++)
@@ -175,10 +179,9 @@ CbmTrdSimpleDigitizer::Exec (Option_t*)
           raw->GetTriggerType (), raw->GetInfoType (), raw->GetStopType (),
           raw->GetNrSamples (), Samples/*&Samples[32]*/);
       static_cast<CbmTrdDigi*> (fDigis->At (NrDigis++))->SetCharge (
-          fBT->GetIntegratedCharge (
+          fBT->GetMaximumAdc(
               raw,
-              Hitmaps.at (GetLayerID (raw))->GetBinContent (GetColumnID (raw),
-                                                            GetRowID (raw))));
+              BaselineEstimate)-BaselineEstimate);
     }
   delete Samples;
   fHm->G1 (GraphName.Data ())->SetPoint (fHm->G1 (GraphName.Data ())->GetN (),

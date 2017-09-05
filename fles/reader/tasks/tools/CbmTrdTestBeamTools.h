@@ -51,6 +51,30 @@ class CbmTrdTestBeamTools: public TObject
     //Get the Number of active Rows in the corresponding Layer
     return 2;
   };
+  double
+  GetPadWidth (Int_t layer)
+  {
+    /**
+     * Get The width of a pad in cm.
+     */
+    if (layer < 6)
+      return 0.7125;
+    return 16.0;
+  }
+
+  double
+  GetPadHeight (Int_t layer)
+  {
+    /**
+     * Get The height of a pad in cm.
+     */
+    if (layer < 4)
+      return 15.25;
+    if (layer < 6)
+      return 4.5; //????
+    return 23.0;
+  }
+
   virtual Int_t GetNrColumns(Int_t Layer=0){
     //Get the Number of active Columns in the corresponding Layer
     return 16*GetNrSpadics();

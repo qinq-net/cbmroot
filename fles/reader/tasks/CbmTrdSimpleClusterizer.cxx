@@ -58,7 +58,7 @@ CbmTrdSimpleClusterizer::CreateHistograms ()
                                              GraphName.Data ());
   fHm->G1 (GraphName.Data ())->GetXaxis ()->SetTitle ("TimeSlice");
   fHm->G1 (GraphName.Data ())->GetYaxis ()->SetTitle ("Nr of created Clusters");
-  for (Int_t layer = 0; layer < fBT->GetNrRobs(); layer++)
+  for (Int_t layer = 0; layer < fBT->GetNrLayers(); layer++)
     {
       TString HistName = "Cluster_size_Distribution_Layer_"
           + std::to_string (layer);
@@ -69,7 +69,7 @@ CbmTrdSimpleClusterizer::CreateHistograms ()
       fHm->H2 (HistName.Data ())->GetXaxis ()->SetTitle ("Spadic");
       fHm->H2 (HistName.Data ())->GetYaxis ()->SetTitle ("Cluster Size");
     }
-  for (Int_t layer = 0; layer < fBT->GetNrRobs(); layer++)
+  for (Int_t layer = 0; layer < fBT->GetNrLayers(); layer++)
     {
       TString HistName = "Cluster_Size_Type_Distribution_Layer_"
           + std::to_string (layer);
@@ -174,7 +174,7 @@ CbmTrdSimpleClusterizer::Exec (Option_t*)
   LOG(INFO) << this->GetName () << ": Check size distribution of Clusters"
                << FairLogger::endl;
   std::vector<TH2*> Sizemaps;
-  for (Int_t layer = 0; layer < fBT->GetNrRobs(); layer++)
+  for (Int_t layer = 0; layer < fBT->GetNrLayers(); layer++)
     {
       TString HistName = "Cluster_size_Distribution_Layer_"
           + std::to_string (layer);
@@ -189,12 +189,12 @@ CbmTrdSimpleClusterizer::Exec (Option_t*)
           CbmTrdDigi*firstDigi = static_cast<CbmTrdDigi*> (fDigis->At (
               *(CurrentCluster->GetDigis ().begin ())));
           Int_t Layer = CbmTrdAddress::GetLayerId (firstDigi->GetAddress ());
-          Int_t Col = CbmTrdAddress::GetColumnId (firstDigi->GetAddress ());
-          Sizemaps.at (Layer)->Fill (Col / 16, CurrentCluster->GetNofDigis ());
+          /*Int_t Col = CbmTrdAddress::GetColumnId (firstDigi->GetAddress ());*/
+          Sizemaps.at (Layer)->Fill (0.0, CurrentCluster->GetNofDigis ());
         }
     }
   Sizemaps.clear();
-  for (Int_t layer = 0; layer < fBT->GetNrRobs(); layer++)
+  for (Int_t layer = 0; layer < fBT->GetNrLayers(); layer++)
     {
       TString HistName = "Cluster_Size_Type_Distribution_Layer_"
           + std::to_string (layer);

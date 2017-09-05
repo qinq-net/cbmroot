@@ -144,8 +144,8 @@ class CbmTrdQABase : public FairTask
     Int_t GetMaximumAdc(CbmSpadicRawMessage* raw){
       return fBT->GetMaximumAdc(raw);
     };
-    Float_t GetIntegratedCharge(CbmSpadicRawMessage* raw){
-      return fBT->GetIntegratedCharge(raw);
+    Float_t GetIntegratedCharge(CbmSpadicRawMessage* raw,Double_t Base=0.0){
+      return fBT->GetIntegratedCharge(raw,Base);
     };
     
 
