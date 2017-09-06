@@ -46,7 +46,7 @@ private:
     TClonesArray* fGlobalTracks;
     TClonesArray* fStsTracks;
     //TClonesArray* fMuchTracks;
-    //TClonesArray* fTrdTracks;
+    TClonesArray* fTrdTracks;
     ClassDef(CbmBinnedTrackerTask, 1)
 };
 

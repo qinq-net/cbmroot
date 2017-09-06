@@ -32,6 +32,8 @@ public:
     
     void Clear()
     {
+        CbmBinnedStation::Clear();
+        
         for (int i = 0; i < fNofZBins; ++i)
         {
             CbmZBin& zBin = fZBins[i];
@@ -191,8 +193,9 @@ public:
         CbmBinnedStation::Init();
     }
     
-    void SearchHits(const CbmPixelHit* searchHit, std::function<void(CbmTBin::HitHolder&)> handleHit)
+    void SearchHits(Segment& segment, std::function<void(CbmTBin::HitHolder&)> handleHit)
     {
+        const CbmPixelHit* searchHit = segment.end.hit;
         Double_t searchX = searchHit->GetX();
         Double_t searchY = searchHit->GetY();
         Double_t searchZ = searchHit->GetZ();

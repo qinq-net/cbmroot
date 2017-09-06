@@ -17,17 +17,42 @@
 #include "Bins.h"
 #include <functional>
 #include "HitReader.h"
+#include <set>
 
 const Double_t cbmBinnedSigma = 4;
 const Double_t cbmBinnedSigmaSq = cbmBinnedSigma * cbmBinnedSigma;
 extern Double_t cbmBinnedSOL;
+const Double_t cbmBinnedCrazyChiSq = 100000;
 
 class CbmBinnedStation
 {
 public:
-    CbmBinnedStation(int nofYBins, int nofXBins, int nofTBins) : fMinZ(0), fMaxZ(0), fNofYBins(nofYBins), fNofXBins(nofXBins), fNofTBins(nofTBins),
-            fYBinSize(0), fXBinSize(0), fTBinSize(100), fMinY(0), fMaxY(0), fMinX(0), fMaxX(0), fMinT(0), fMaxT(0), fDx(0), fDxSq(0), fDy(0), fDySq(0),
-            fDt(0), fDtSq(0), fDefaultUse(false) {}    
+    struct Segment
+    {
+        CbmTBin::HitHolder& begin;
+        CbmTBin::HitHolder& end;
+        Double_t chiSq;
+        std::list<Segment*> children;
+        Segment* bestBranch;
+        
+        Segment(CbmTBin::HitHolder& beginHit, CbmTBin::HitHolder& endHit) : begin(beginHit), end(endHit), chiSq(cbmBinnedCrazyChiSq), children(), bestBranch(0) {}
+    };
+    
+    struct SegmentComp
+    {
+        bool operator()(const Segment& s1, const Segment& s2)
+        {
+            if (&s1.begin < &s2.begin)
+                return true;
+            else if (&s1.end < &s2.end)
+                return true;
+            else
+                return false;
+        }
+    };
+    
+public:
+    CbmBinnedStation(int nofYBins, int nofXBins, int nofTBins);
     CbmBinnedStation(const CbmBinnedStation&) = delete;
     CbmBinnedStation& operator=(const CbmBinnedStation&) = delete;
     
@@ -124,11 +149,40 @@ public:
         fXBinSize = (fMaxX - fMinX) / fNofXBins;
     }
     
-    virtual void Clear() = 0;
+    virtual void Clear()
+    {
+        fSegments.clear();
+    }
     
     virtual void AddHit(const CbmPixelHit* hit, Int_t index) = 0;
     virtual void IterateHits(std::function<void(CbmTBin::HitHolder&)> handleHit) = 0;
-    virtual void SearchHits(const CbmPixelHit* searchHit, std::function<void(CbmTBin::HitHolder&)> handleHit) = 0;
+    virtual void SearchHits(Segment& segment, std::function<void(CbmTBin::HitHolder&)> handleHit) = 0;
+    
+    void IterateSegments(std::function<void(Segment&)> handleSegment)
+    {
+        for (std::set<Segment, SegmentComp>::iterator i = fSegments.begin(); i != fSegments.end(); ++i)
+            handleSegment(const_cast<Segment&> (*i));
+    }
+    
+    void CreateSegmentsFromHits()
+    {
+        IterateHits(
+            [&](CbmTBin::HitHolder& hitHolder)->void
+            {
+                Segment segment(fVertexHolder, hitHolder);
+                fSegments.insert(segment);
+            }
+        );
+    }
+    
+    void NulifySegments()
+    {
+        for (std::set<Segment, SegmentComp>::iterator i = fSegments.begin(); i != fSegments.end(); ++i)
+        {
+            Segment& segment = const_cast<Segment&> (*i);
+            segment.chiSq = 0;
+        }
+    }
     
 protected:
     Double_t fMinZ;
@@ -152,6 +206,11 @@ protected:
     Double_t fDt;
     Double_t fDtSq;
     bool fDefaultUse;
+    
+public:
+    std::set<Segment, SegmentComp> fSegments;
+    CbmTBin fVertexBin;
+    CbmTBin::HitHolder fVertexHolder;
 };
 
 #endif /* STATION_H */

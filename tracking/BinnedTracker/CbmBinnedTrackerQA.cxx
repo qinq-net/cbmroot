@@ -39,7 +39,7 @@ struct TrackDesc
 {
    pair<set<Int_t>, set<Int_t> > sts[NOF_STS_STATIONS];
    //pair<set<Int_t>, set<Int_t> > much[NOF_MUCH_STATIONS * NOF_MUCH_LAYERS];
-   //pair<set<Int_t>, set<Int_t> > trd[NOF_TRD_LAYERS];
+   pair<set<Int_t>, set<Int_t> > trd[NOF_TRD_LAYERS];
    //pair<set<Int_t>, set<Int_t> > tof;
    set<const CbmStsPoint*> stsPoints[NOF_STS_STATIONS];
    bool isPrimary;
@@ -117,10 +117,10 @@ InitStatus CbmBinnedTrackerQA::Init()
    //if (0 == fMuchTracks)
       //fLogger->Fatal(MESSAGE_ORIGIN, "No much tracks in the input file");
    
-   //fTrdTracks = static_cast<TClonesArray*> (ioman->GetObject("TrdTrack"));
+   fTrdTracks = static_cast<TClonesArray*> (ioman->GetObject("TrdTrack"));
    
-   //if (0 == fTrdTracks)
-      //fLogger->Fatal(MESSAGE_ORIGIN, "No trd tracks in the input file");
+   if (0 == fTrdTracks)
+      fLogger->Fatal(MESSAGE_ORIGIN, "No trd tracks in the input file");
    
    fStsHits = static_cast<TClonesArray*> (ioman->GetObject("StsHit"));
    
@@ -284,7 +284,7 @@ InitStatus CbmBinnedTrackerQA::Init()
          const CbmTrdPoint* trdPoint = static_cast<const CbmTrdPoint*> (fTrdPoints->Get(0, i, j));
          Int_t trackId = trdPoint->GetTrackID();
          int stationNumber = CbmTrdAddress::GetLayerId(trdPoint->GetModuleAddress());
-         //tracks[trackId].trd[stationNumber].first.insert(j);
+         tracks[trackId].trd[stationNumber].first.insert(j);
       }
    }
    
@@ -425,7 +425,7 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
             trdTResHisto->Fill(trdHit->GetTime() - trdPoint->GetTime());
             Int_t trackId = trdPoint->GetTrackID();
             TrackDesc& trackDesk = gTracks[eventId][trackId];
-            //trackDesk.trd[stationNumber].first.insert(i);
+            trackDesk.trd[stationNumber].first.insert(i);
          }
       }
    }// TRD hits
@@ -477,15 +477,15 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
       //if (muchIndex < 0)
          //continue;
       
-      //if (trdIndex < 0)
-         //continue;
+      if (trdIndex < 0)
+         continue;
       
       //if (tofIndex < 0)
          //continue;
       
       HandleSts(stsIndex);
       //HandleMuch(muchIndex);
-      //HandleTrd(trdIndex);
+      HandleTrd(trdIndex);
       //HandleTof(tofIndex);
    }
 }
@@ -620,8 +620,8 @@ void CbmBinnedTrackerQA::HandleTrd(Int_t trdTrackIndex)
             Int_t trackId = trdPoint->GetTrackID();
             TrackDesc& trackDesk = gTracks[eventId][trackId];
             
-            //if (trackDesk.trd[stationNumber].first.find(trdHitInd) != trackDesk.trd[stationNumber].first.end())
-               //trackDesk.trd[stationNumber].second.insert(trdTrackIndex);
+            if (trackDesk.trd[stationNumber].first.find(trdHitInd) != trackDesk.trd[stationNumber].first.end())
+               trackDesk.trd[stationNumber].second.insert(trdTrackIndex);
          }
       }
    }
@@ -722,14 +722,14 @@ void CbmBinnedTrackerQA::Finish()
             }
          }
          
-         /*for (int k = 0; k < NOF_TRD_LAYERS; ++k)
+         for (int k = 0; k < NOF_TRD_LAYERS; ++k)
          {
             if (trackDesc.trd[k].first.empty())
             {
                isRef = false;
                break;
             }
-         }*/
+         }
          
          if (!isRef)
             continue;
@@ -769,7 +769,7 @@ void CbmBinnedTrackerQA::Finish()
                ++nofSts[k];
          }
          
-         /*for (int k = 0; k < NOF_TRD_LAYERS; ++k)
+         for (int k = 0; k < NOF_TRD_LAYERS; ++k)
          {
             for (set<Int_t>::const_iterator l = trackDesc.trd[k].second.begin(); l != trackDesc.trd[k].second.end(); ++l)
             {
@@ -783,7 +783,7 @@ void CbmBinnedTrackerQA::Finish()
             
             if (!trackDesc.trd[k].second.empty())
                ++nofTrd[k];
-         }*/
+         }
          
          /*for (int k = 0; k < NOF_MUCH_STATIONS * NOF_MUCH_LAYERS; ++k)
          {
@@ -834,7 +834,7 @@ void CbmBinnedTrackerQA::Finish()
                maxMatch = k->second;
          }
          
-         if (maxMatch < 2)
+         if (maxMatch < 4)
             continue;
             
          ++nofMatchedRefTracks;

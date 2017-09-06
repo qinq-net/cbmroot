@@ -15,7 +15,7 @@
 CbmBinnedTrackerTask* CbmBinnedTrackerTask::fInstance = 0;
    
 CbmBinnedTrackerTask::CbmBinnedTrackerTask(Double_t beamWidthX, Double_t beamWidthY) : fBeamDx(beamWidthX), fBeamDy(beamWidthY),
-   fTracker(0), fGlobalTracks(0), fStsTracks(0)/*, fMuchTracks(0)*//*, fTrdTracks(0)*/
+   fTracker(0), fGlobalTracks(0), fStsTracks(0)/*, fMuchTracks(0)*/, fTrdTracks(0)
 {
    fInstance = this;
 }
@@ -50,8 +50,8 @@ InitStatus CbmBinnedTrackerTask::Init()
    //fMuchTracks = new TClonesArray("CbmMuchTrack", 100);
    //ioman->Register("MuchTrack", "Much", fMuchTracks, IsOutputBranchPersistent("MuchTrack"));
    
-   //fTrdTracks = new TClonesArray("CbmTrdTrack", 100);
-   //ioman->Register("TrdTrack", "Trd", fTrdTracks, IsOutputBranchPersistent("TrdTrack"));
+   fTrdTracks = new TClonesArray("CbmTrdTrack", 100);
+   ioman->Register("TrdTrack", "Trd", fTrdTracks, IsOutputBranchPersistent("TrdTrack"));
    
    return kSUCCESS;
 }
@@ -60,7 +60,7 @@ void CbmBinnedTrackerTask::Exec(Option_t* opt)
 {
    fTracker->Reconstruct(-100);
    fStsTracks->Clear();
-   //fTrdTracks->Clear();
+   fTrdTracks->Clear();
    //fMuchTracks->Clear();
    fGlobalTracks->Clear();
    int trackNumber = 0;
@@ -72,10 +72,10 @@ void CbmBinnedTrackerTask::Exec(Option_t* opt)
       stsTrack->SetNDF(4);
       stsTrack->SetChiSq(1);
       stsTrack->SetPreviousTrackId(-1);
-      /*CbmTrdTrack* trdTrack = new ((*fTrdTracks)[trackNumber]) CbmTrdTrack();
+      CbmTrdTrack* trdTrack = new ((*fTrdTracks)[trackNumber]) CbmTrdTrack();
       trdTrack->SetNDF(8);
       trdTrack->SetChiSq(1);
-      trdTrack->SetPreviousTrackId(trackNumber);*/
+      trdTrack->SetPreviousTrackId(trackNumber);
       /*CbmMuchTrack* muchTrack = new ((*fMuchTracks)[trackNumber]) CbmMuchTrack();
       muchTrack->SetNDF(6);
       muchTrack->SetChiSq(1);
@@ -83,7 +83,7 @@ void CbmBinnedTrackerTask::Exec(Option_t* opt)
       CbmGlobalTrack* globalTrack = new ((*fGlobalTracks)[trackNumber]) CbmGlobalTrack();
       globalTrack->SetStsTrackIndex(trackNumber);
       //globalTrack->SetMuchTrackIndex(trackNumber);
-      //globalTrack->SetTrdTrackIndex(trackNumber);
+      globalTrack->SetTrdTrackIndex(trackNumber);
       globalTrack->SetNDF(20);
       globalTrack->SetChi2(1);
       ++trackNumber;
@@ -96,11 +96,11 @@ void CbmBinnedTrackerTask::Exec(Option_t* opt)
          stsTrack->AddStsHit(hh->index);
       }
       
-      /*for (Int_t i = 2; i < 6; ++i)
+      for (Int_t i = 2; i < 6; ++i)
       {
          CbmTBin::HitHolder* hh = recoTrack->fHits[i];
          trdTrack->AddHit(hh->index, kTRDHIT);
-      }*/
+      }
       
       /*for (Int_t i = 6; i < 9; ++i)
       {

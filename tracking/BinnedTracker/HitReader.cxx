@@ -202,6 +202,9 @@ public:
       fMuchPoints = static_cast<TClonesArray*> (ioman->GetObject("MuchPoint"));
    }
    
+   CbmBinnedMuchHitReader(const CbmBinnedMuchHitReader&) = delete;
+   CbmBinnedMuchHitReader& operator=(const CbmBinnedMuchHitReader&) = delete;
+   
    void Read()
    {
       Int_t nofHits = fHitArray->GetEntriesFast();

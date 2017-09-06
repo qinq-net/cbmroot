@@ -35,6 +35,7 @@ Set(SRCS
 Set(NO_DICT_SRCS
   GeoReader.cxx
   HitReader.cxx
+  Station.cxx
   Station3D.cxx
   Station4D.cxx
   Tracker.cxx

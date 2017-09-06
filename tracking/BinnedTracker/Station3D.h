@@ -30,6 +30,8 @@ public:
     
     void Clear()
     {
+        CbmBinnedStation::Clear();
+        
         for (int i = 0; i < fNofYBins; ++i)
         {
             CbmYBin& yBin = fYBins[i];
@@ -117,7 +119,7 @@ public:
         }
     }
     
-    void SearchHits(const CbmPixelHit* searchHit, std::function<void(CbmTBin::HitHolder&)> handleHit);
+    void SearchHits(Segment& segment, std::function<void(CbmTBin::HitHolder&)> handleHit);
     
 private:
     CbmBinned3DStation(const CbmBinned3DStation&) = delete;
