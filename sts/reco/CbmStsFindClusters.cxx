@@ -84,10 +84,13 @@ CbmStsFindClusters::~CbmStsFindClusters() {
 Int_t CbmStsFindClusters::CreateModules() {
 
   assert( fSetup );
+  fSetup->ListSensors();
+  fSetup->ListModules();
 
   Int_t nModules = fSetup->GetNofModules();
   for (Int_t iModule = 0; iModule < nModules; iModule++) {
     CbmStsModule* module = fSetup->GetModule(iModule);
+    assert(module);
     assert(module->IsSet());
     Int_t address = module->GetAddress();
     const char* name = module->GetName();

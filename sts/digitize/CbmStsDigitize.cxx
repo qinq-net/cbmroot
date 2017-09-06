@@ -80,7 +80,26 @@ CbmStsDigitize::CbmStsDigitize()
     fDigis(NULL),
     fMatches(NULL),
     fTimer(),
-    fSensorTypeFile(),
+    fSensorDinact(0.12),
+    fSensorPitch(0.0058),
+    fSensorStereoF(0.),
+    fSensorStereoB(7.5),
+    fSensorVdep(70.),
+    fSensorVbias(140.),
+    fSensorTemperature(268.),
+    fSensorCcoupling(17.5),
+    fSensorCinterstrip(1.),
+    fModuleDynRange(75000.),
+    fModuleThreshold(3000.),
+    fModuleNofAdc(32),
+    fModuleTresol(5.),
+    fModuleTdead(800.),
+    fModuleNoise(1000.),
+    fModuleZeroNoiseRate(3.9789e-3),
+    fModuleFracDeadChan(0.),
+    fSensorParameterFile(),
+    fSensorConditionFile(),
+    fModuleParameterFile(),
     fTimePointLast(-1.),
     fEventTimeCurrent(0.),
     fTimeDigiFirst(-1.),
@@ -430,12 +449,6 @@ InitStatus CbmStsDigitize::Init() {
     SetGenerateNoise(kFALSE);  // Noise can be generated only in stream mode
   }
 
-  // Set the digitisation parameters of the modules
-  SetModuleParameters();
-
-  // Set sensor conditions
-  SetSensorConditions();
-
   // Instantiate StsPhysics
   CbmStsPhysics::Instance();
 
@@ -496,13 +509,35 @@ InitStatus CbmStsDigitize::Init() {
 // -----   Initialisation of setup    --------------------------------------
 void CbmStsDigitize::InitSetup() {
 
-    // Initialise the STS setup interface
+    // Get the STS setup interface
 	fSetup = CbmStsSetup::Instance();
-	fSetup->Init();
 
-	// Register this task and the parameter container to the setup
-	fSetup->SetDigitizer(this);
-	fSetup->SetDigiParameters(fDigiPar);
+    // Register this task and the parameter container to the setup
+    fSetup->SetDigitizer(this);
+    fSetup->SetDigiParameters(fDigiPar);
+
+    // Set or read sensor parameters
+	fSetup->SetDefaultSensorParameters(fSensorDinact, fSensorPitch,
+	                                   fSensorStereoF, fSensorStereoB);
+	if ( fSensorParameterFile.IsNull() ) fSetup->Init();
+	else fSetup->Init(nullptr, fSensorParameterFile);
+
+	// Set sensor conditions, global or from file
+	if ( fSensorConditionFile.IsNull() )
+	  fSetup->SetSensorConditions(fSensorVdep, fSensorVbias,
+	                              fSensorTemperature, fSensorCcoupling,
+	                              fSensorCinterstrip);
+	else
+	  fSetup->SetSensorConditions(fSensorConditionFile);
+
+	// Set module parameters, global or from file
+	if ( fModuleParameterFile.IsNull() )
+	  fSetup->SetModuleParameters(fModuleDynRange, fModuleThreshold,
+	                              fModuleNofAdc, fModuleTresol, fModuleTdead,
+	                              fModuleNoise, fModuleZeroNoiseRate,
+	                              fModuleFracDeadChan);
+	else
+	  fSetup->SetModuleParameters(fModuleParameterFile);
 
 }
 // -------------------------------------------------------------------------
@@ -647,6 +682,65 @@ void CbmStsDigitize::Reset() {
 
 
 
+// -----   Set the default module parameters   -----------------------------
+void CbmStsDigitize::SetDefaultModuleParameters(Double_t dynRange,
+                                                Double_t threshold,
+                                                Int_t nAdc,
+                                                Double_t timeResolution,
+                                                Double_t deadTime,
+                                                Double_t noise,
+                                                Double_t zeroNoiseRate,
+                                                Double_t fracDeadChan) {
+  assert( ! fIsInitialised );
+  assert( nAdc > 0 );
+  assert( fracDeadChan >= 0. && fracDeadChan <= 1.);
+  fModuleDynRange      = dynRange;
+  fModuleThreshold     = threshold;
+  fModuleNofAdc        = nAdc;
+  fModuleTresol        = timeResolution;
+  fModuleTdead         = deadTime;
+  fModuleNoise         = noise;
+  fModuleZeroNoiseRate = zeroNoiseRate;
+  fModuleFracDeadChan  = fracDeadChan;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Set the default sensor conditions   -----------------------------
+void CbmStsDigitize::SetDefaultSensorConditions(Double_t vDep,
+                                                Double_t vBias,
+                                                Double_t temperature,
+                                                Double_t cCoupling,
+                                                Double_t cInterstrip) {
+  assert( ! fIsInitialised );
+  fSensorVdep        = vDep;
+  fSensorVbias       = vBias;
+  fSensorTemperature = temperature;
+  fSensorCcoupling   = cCoupling;
+  fSensorCinterstrip = cInterstrip;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Set the default sensor parameters   -----------------------------
+void CbmStsDigitize::SetDefaultSensorParameters(Double_t dInact,
+                                                Double_t pitch,
+                                                Double_t stereoF,
+                                                Double_t stereoB) {
+  assert( ! fIsInitialised );
+  assert( dInact >= 0.);
+  assert( pitch >= 0. );
+  fSensorDinact    = dInact;
+  fSensorPitch     = pitch;
+  fSensorStereoF   = stereoF;
+  fSensorStereoB   = stereoB;
+}
+// -------------------------------------------------------------------------
+
+
+
 // -----   Activate noise generation   -------------------------------------
 void CbmStsDigitize::SetGenerateNoise(Bool_t choice) {
 
@@ -663,42 +757,12 @@ void CbmStsDigitize::SetGenerateNoise(Bool_t choice) {
 
 
 
-// -----   Set the digitisation parameters for the modules   ---------------
-// TODO: Currently, all modules have the same parameters. In future,
-// more flexible schemes must be used, in particular for the thresholds.
-// TODO: The default parameters are hard-coded. They should be settable
-// from the macrp, but the method SetParameters does currently not work.
-void CbmStsDigitize::SetModuleParameters() {
+// -----   Set sensor parameter file   -------------------------------------
+void CbmStsDigitize::SetModuleParameterFile(const char* fileName) {
 
-  // --- Set default parameters for the modules
-  // --- The zero noise rate corresponds to a rise time of 80 ns (1/(pi*tau))
-  Double_t dynRange = 75000.;          // dynamic range in e
-  Double_t threshold = 3000.;          // threshold in e
-  Int_t    nAdc = 32;                  // Number of ADC channels
-  Double_t tResol = 5.;                // Time resolution in ns
-  Double_t deadTime = 800.;            // Channel dead time in ns
-  Double_t noise = 1000.;              // Noise RMS in e
-  Double_t zeroNoiseRate = 3.9789e-3;  // Zero noise rate [1/ns]
-  Double_t deadChannels = 0.;          // Fraction of dead channels in %
-  fDigiPar->SetModuleParameters(dynRange, threshold, nAdc, tResol,
-                                deadTime, noise, zeroNoiseRate,
-                                deadChannels);
+  assert( ! fIsInitialised );
+  fModuleParameterFile = fileName;
 
-  // --- Set parameters for all modules
-  Int_t nModules = fSetup->GetNofModules();
-  for (Int_t iModule = 0; iModule < nModules; iModule++) {
-    fSetup->GetModule(iModule)->SetParameters(2048,
-                                              fDigiPar->GetDynRange(),
-                                              fDigiPar->GetThreshold(),
-                                              fDigiPar->GetNofAdc(),
-                                              fDigiPar->GetTimeResolution(),
-                                              fDigiPar->GetDeadTime(),
-                                              fDigiPar->GetNoise(),
-                                              fDigiPar->GetZeroNoiseRate());
-    fSetup->GetModule(iModule)->SetDeadChannels(fDigiPar->GetDeadChannelFrac());
-  }
-  LOG(INFO) << GetName() << ": Set parameters for " << nModules
-      << " modules " << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 
@@ -748,98 +812,33 @@ void CbmStsDigitize::SetProcesses(Int_t eLossModel,
 
 
 
-// -----   Set sensor types from file   ------------------------------------
-void CbmStsDigitize::SetSensorTypes(const char* fileName) {
+// -----   Set sensor condition file   -------------------------------------
+void CbmStsDigitize::SetSensorConditionFile(const char* fileName) {
 
-  Bool_t fileFound = kFALSE;
-  std::fstream testFile;
-
-  if ( fileName[0] == '/' ) {
-    testFile.open(fileName);
-    if ( testFile.is_open() )  {
-      fileFound = kTRUE;
-      testFile.close();
-      fSensorTypeFile = fileName;
-    }
-  }  //? Absolute path?
-
-  else {
-
-    // --- Check whether local file exists
-    fSensorTypeFile = gSystem->Getenv("PWD");
-    fSensorTypeFile += "/";
-    fSensorTypeFile += fileName;
-    testFile.open(fSensorTypeFile.Data());
-    if ( testFile.is_open() ) {
-      fileFound = kTRUE;
-      testFile.close();
-    }  //? Found in local directory
-
-    else {  // --- Otherwise, try in the parameter directory
-      fSensorTypeFile = gSystem->Getenv("VMCWRKDIR");
-      fSensorTypeFile += "/parameters/sts/";
-      fSensorTypeFile += fileName;
-      testFile.open(fSensorTypeFile.Data());
-      if ( testFile.is_open() ) {
-        fileFound = kTRUE;
-        testFile.close();
-      }  //? Found in source directory
-    }  //? Not found in local directory
-
-  }  //? Relative path
-
-  if ( fileFound ) LOG(INFO) << GetName() << ":Using " << fSensorTypeFile
+  if ( fIsInitialised ) {
+    LOG(FATAL) << GetName()
+        <<": sensor conditions must be set before initialisation!"
         << FairLogger::endl;
-  else LOG(FATAL) << GetName() << ": Could not find file " << fileName
-      << FairLogger::endl;
-
-  testFile.open(fSensorTypeFile);
-  string readstr;
-  TString sName, sType;
-  while ( kTRUE ) {
-    if ( testFile.eof() ) break;
-    getline(testFile, readstr);
-    if ( readstr[0] == '#') continue;
-    std::stringstream line(readstr);
-    line >> sName >> sType;
-   if ( sType.EqualTo("DSSD", TString::kIgnoreCase) ) {
-     Int_t nParams = 5;
-     Double_t par[10];
-     for (Int_t iParam = 0; iParam < nParams; iParam++) {
-       line >> par[iParam];
-     }
-     for (Int_t i=0; i<10; i++) std::cout << par[i] << " " << std::endl;
-   }
-
-    //}
-    LOG(INFO) << GetName() << " " << readstr << FairLogger::endl;
-    //std::cout << GetName() << " " << line << std::endl;
-    LOG(INFO) << GetName() << " Sensor name is  " << sName << FairLogger::endl;
+    return;
   }
-  testFile.close();
+  fSensorConditionFile = fileName;
 
 }
 // -------------------------------------------------------------------------
 
 
 
-// -----   Set the operating parameters for the sensors   ------------------
-// TODO: Currently, all sensors have the same parameters. In future,
-// more flexible schemes must be used (initialisation from a database).
-void CbmStsDigitize::SetSensorConditions() {
+// -----   Set sensor parameter file   -------------------------------------
+void CbmStsDigitize::SetSensorParameterFile(const char* fileName) {
 
-	// --- Current parameters are hard-coded
-	Double_t vDep        =  70.;    //depletion voltage, V
-	Double_t vBias       = 140.;    //bias voltage, V
-	Double_t temperature = 268.;    //temperature of sensor, K
-	Double_t cCoupling   =  17.5;   //coupling capacitance, pF
-	Double_t cInterstrip =   1.;    //inter-strip capacitance, pF
-	fDigiPar->SetSensorConditions(vDep, vBias, temperature,
-	                               cCoupling, cInterstrip);
-	Int_t nSensors = fSetup->SetSensorConditions();
+  if ( fIsInitialised ) {
+    LOG(FATAL) << GetName()
+        <<": sensor parameters must be set before initialisation!"
+        << FairLogger::endl;
+    return;
+  }
+  fSensorParameterFile = fileName;
 
-	LOG(INFO) << GetName() << ": Set conditions for "
-			      << nSensors << " sensors " << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 

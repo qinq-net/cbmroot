@@ -570,7 +570,7 @@ void CbmStsSensorDssdStereo::PropagateCharge(Double_t x, Double_t y,
 // -----   String output   -------------------------------------------------
 std::string CbmStsSensorDssdStereo::ToString() const {
   stringstream ss;
-  ss << "Sensor " << fName << " (type " << GetTitle() << "): ";
+  ss << "Sensor " << fName << " (" << GetTitle() << "): ";
   if ( ! GetPnode() ) ss << "no node assigned; ";
   else {
     TGeoBBox* shape = dynamic_cast<TGeoBBox*>(GetPnode()->GetShape());
@@ -581,6 +581,7 @@ std::string CbmStsSensorDssdStereo::ToString() const {
   ss << "dy " << fDy << " cm, ";
   ss << "# strips " << fNofStrips << ", pitch " << fPitch << " cm, ";
   ss << "stereo " << fStereoF << "/" << fStereoB << " degrees";
+  if ( fConditions) ss << "\n Conditions: " << fConditions->ToString();
   return ss.str();
 }
 // -------------------------------------------------------------------------

@@ -89,6 +89,16 @@ class CbmStsSetup : public CbmStsElement
     const char* GetLevelName(Int_t level);
 
 
+    /** @brief Get a module from the module array.
+     ** @param  index  Index of module in the vector
+     ** @return  Pointer to module
+     **
+     ** For convenient loops over all modules.
+     ** Note that the index of the module is meaningless.
+     **/
+    CbmStsModule* GetModule(Int_t index) { return fModuleVector.at(index); }
+
+
     /** Get number of modules in setup **/
     Int_t GetNofModules() const { return fModules.size(); }
 
@@ -99,15 +109,6 @@ class CbmStsSetup : public CbmStsElement
 
     /** Get number of stations **/
     Int_t GetNofStations() const { return fStations.size(); }
-
-
-    /** Get a module from the module array.
-     ** For convenient loops over all modules.
-     ** Note that the index of the module is meaningless.
-     ** @param  index  Index of module in the array
-     ** @return  Pointer to module
-     **/
-    CbmStsModule* GetModule(Int_t index) { return fModules[index]; }
 
 
     /** Get a station
@@ -158,9 +159,13 @@ class CbmStsSetup : public CbmStsElement
 
 
     /** Print list of sensors with parameters **/
+    void ListModules() const;
+
+
+    /** Print list of sensors with parameters **/
     void ListSensors() const {
       for (auto it = fSensors.begin(); it != fSensors.end(); it++)
-     LOG(INFO) << it->second->ToString() << FairLogger::endl;
+        LOG(INFO) << it->second->ToString() << FairLogger::endl;
     }
 
 
@@ -168,11 +173,24 @@ class CbmStsSetup : public CbmStsElement
      ** @param pitch  New strip pitch [cm]
      ** @value Number of modified sensors
      **
-     ** This method will have affect only for sensor of type DSSD.
+     ** This method will have effect only for sensor of type DSSD.
      ** The strip pitch of all sensors is modified to the specified
      ** value. The number of strips in the sensor is re-calculated.
      **/
     Int_t ModifyStripPitch(Double_t pitch);
+
+
+    /** @brief Set the default sensor parameters
+     ** @param dInact  Size of inactive boarder (guard ring) [cm]
+     ** @param pitch   Strip pitch [cm]
+     ** @param stereoF Strip stereo angle front side [degrees]
+     ** @param stereoB Strip stereo angle back side [degrees]
+     **
+     ** These parameters correspond to the default sensor type DssdStereo.
+     ** They will be applied if no sensor parameter file is specified.
+     **/
+    void SetDefaultSensorParameters(Double_t dInact, Double_t pitch,
+                                    Double_t stereoF, Double_t stereoB);
 
 
     /** @brief Set the digitiser task
@@ -195,6 +213,42 @@ class CbmStsSetup : public CbmStsElement
     void SetDigiParameters(CbmStsDigitizeParameters* settings) {
       fSettings = settings;
     }
+
+
+    /** @brief Set parameters for all modules
+     ** @param dynRange          Dynamic range [e]
+     ** @param threshold         Charge threshold [e]
+     ** @param nAdc              Number of ADC channels
+     ** @param timeResolution    Time resolution [ns]
+     ** @param deadTime          Single-channel dead time [ns]
+     ** @param noise             Noise RMS [e]
+     ** @param zeroNoiseRate     Zero-threshold noise rate [1/ns]
+     ** @param fracDeadChannels  Fraction of dead channels
+     ** @value Number of modules the parameters of which were set
+     **
+     ** This method will set the parameters of all modules in the setup
+     ** to the values specified by the arguments.
+     **/
+    Int_t SetModuleParameters(Double_t dynRange, Double_t threshold,
+                              Int_t nAdc, Double_t timeResolution,
+                              Double_t deadTime, Double_t noise,
+                              Double_t zeroNoiseRate,
+                              Double_t fracDeadChannels);
+
+
+    /** @brief Read module parameters from file
+     ** @param fileName  Name of file with sensor conditions
+     ** @value Number of modules the parameters of which were set
+     **
+     ** The file with the parameters is read and the parameters
+     ** for the module are set accordingly. Each module in the setup must
+     ** show up in the file. The format is a text file containing for each
+     ** module a line with
+     ** module_name dynRange threshold nAdc tResol tDead noise zeroNoise fracDead
+     ** For the definition of the parameters, see SetModuleParameters above.
+     ** Empty lines or lines starting with '#' (comments) are ignored.
+     **/
+    Int_t SetModuleParameters(const char* fileName);
 
 
     /** @brief Set conditions for all sensors (same values for all)
@@ -227,24 +281,49 @@ class CbmStsSetup : public CbmStsElement
                               Double_t cInterstrip);
 
 
+    /** @brief Read sensor conditions from file
+     ** @param fileName  Name of file with sensor conditions
+     ** @value Number of sensors the conditions are set for
+     **
+     ** The file with the conditions is read and the condition parameters
+     ** for the sensor are set accordingly. Each sensor in the setup must
+     ** show up in the file. The format is a text file containing for each
+     ** sensor a line with
+     ** sensor_name vDep vBias temperature cCoupling cInterstrip
+     ** Empty lines or lines starting with '#' (comments) are ignored.
+     **/
+    Int_t SetSensorConditions(const char* fileName);
+
+
 
   private:
 
     static CbmStsSetup* fgInstance;    ///< Static instance of this class
     CbmStsDigitize* fDigitizer;        ///< Pointer to digitiser task
     CbmStsDigitizeParameters* fSettings;     ///< Pointer to digitiser settings
-    TString fSensorTypeFile;  ///< File name associating sensor types to the sensors
 
     Bool_t fIsInitialised;  ///< To protect against multiple initialisation.
     Bool_t fIsOld;          ///< Old setup with stations as top level
+    Int_t  fNofSensorsDefault;  ///< Number of sensors created by default
 
-    Int_t fNofSensorsDefault;  ///< Number of sensors created by default
+    // --- Default sensor parameters (for type DssdStereo)
+    Double_t fSensorDinact;   ///< Size of inactive border [cm]
+    Double_t fSensorPitch;    ///< Strip pitch [cm]
+    Double_t fSensorStereoF;  // Stereo angle front side [degrees]
+    Double_t fSensorStereoB;  // Stereo angle back side [degrees]
 
-    /** These arrays allow convenient loops over all modules or sensors. **/
-    std::vector<CbmStsModule*> fModules;   //! Array of modules
-    std::map<Int_t, CbmStsSensor*> fSensors;   //! Map of sensors. Key is address.
+    // --- Map of sensors. Key is address.
+    std::map<Int_t, CbmStsSensor*> fSensors;
 
-    /** Stations (special case; are not elements in the setup) **/
+    // --- Map of modules. Key is address.
+    std::map<Int_t, CbmStsModule*> fModules;
+
+    // --- Vector of modules. For convenient loops.
+    std::vector<CbmStsModule*> fModuleVector;
+
+    // --- Map of stations. Key is station number.
+    // --- Stations are a special case needed for reconstruction;
+    // --- they are not elements in the setup.
     std::map<Int_t, CbmStsStation*> fStations;  //!
 
     /** Default constructor  **/

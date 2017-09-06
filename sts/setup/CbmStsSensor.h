@@ -85,6 +85,10 @@ class CbmStsSensor : public CbmStsElement
                            Double_t dTime) = 0;
 
 
+    /** @brief Get the address from the sensor name (static)
+     ** @param name Name of sensor
+     ** @value Unique element address
+     **/
     static UInt_t GetAddressFromName(TString name);
 
 

@@ -69,9 +69,16 @@ class CbmStsSensorDssdStereo : public CbmStsSensorDssd
     virtual ~CbmStsSensorDssdStereo() { };
 
 
+    /** @brief Number of strips (same for front and back side)
+     ** @param side  Not used
+     ** @value Number of strips
+     **/
+    virtual Int_t GetNofStrips(Int_t) const { return fNofStrips; }
+
+
     /** @brief Strip pitch (same for front and back side)
-     ** @param side  0 = front side, 1 = back side
-     ** @value Strip pitch [cm] on the specified sensor side
+     ** @param side  Not used
+     ** @value Strip pitch
      **/
     virtual Double_t GetPitch(Int_t) const { return fPitch; }
 
@@ -170,13 +177,6 @@ class CbmStsSensorDssdStereo : public CbmStsSensorDssd
      **/
     virtual Int_t GetModuleChannel(Int_t strip, Int_t side,
                                    Int_t sensorId) const;
-
-
-    /** @brief Number of strips on front or back side
-     ** @param side  0 = front side, 1 = back side
-     ** @return  Number of strips
-     **/
-    virtual Int_t GetNofStrips(Int_t side) const { return fNofStrips; }
 
 
     /** Get strip and side from module channel.

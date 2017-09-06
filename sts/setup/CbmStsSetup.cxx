@@ -326,7 +326,7 @@ Bool_t CbmStsSetup::Init(const char* geoFile, const char* parFile) {
   LOG(INFO) << GetName() << ": " << fNofSensorsDefault
             << " sensors created from default." << FairLogger::endl;
 
-  // --- Build the module array
+  // --- Build the module map
   for (Int_t iUnit = 0; iUnit < GetNofDaughters(); iUnit++) {
     CbmStsElement* unit = GetDaughter(iUnit);
     for (Int_t iLad = 0; iLad < unit->GetNofDaughters(); iLad++) {
@@ -335,7 +335,15 @@ Bool_t CbmStsSetup::Init(const char* geoFile, const char* parFile) {
         CbmStsElement* hlad = ladd->GetDaughter(iHla);
         for (Int_t iMod = 0; iMod < hlad->GetNofDaughters(); iMod++) {
           CbmStsElement* modu = hlad->GetDaughter(iMod);
-          fModules.push_back(dynamic_cast<CbmStsModule*>(modu));
+          Int_t address = modu->GetAddress();
+          if ( fModules.find(address) != fModules.end() ) {
+            LOG(FATAL) << GetName() << ": Duplicate module address "
+                << address << " for " << modu->GetName()
+                << FairLogger::endl;
+          }
+          CbmStsModule* module = dynamic_cast<CbmStsModule*>(modu);
+          fModules[address] = module;
+          fModuleVector.push_back(module);
         } //# modules in half-ladder
       } //# half-ladders in ladder
     } //# ladders in unit
@@ -383,6 +391,15 @@ CbmStsSetup* CbmStsSetup::Instance() {
 
 
 
+// -----   Print list of modules   -----------------------------------------
+void CbmStsSetup::ListModules() const {
+  for (auto it = fModules.begin(); it != fModules.end(); it++)
+    LOG(INFO) << it->second->ToString() << FairLogger::endl;
+}
+// -------------------------------------------------------------------------
+
+
+
 // -----   Modify the strip pitch for all sensors   ------------------------
 Int_t CbmStsSetup::ModifyStripPitch(Double_t pitch) {
 
@@ -396,91 +413,6 @@ Int_t CbmStsSetup::ModifyStripPitch(Double_t pitch) {
   }
 
   return nModified;
-}
-// -------------------------------------------------------------------------
-
-
-
-// -----   Set conditions for all sensors   --------------------------------
-Int_t CbmStsSetup::SetSensorConditions() {
-
-  Int_t nSensors = 0;   // Sensor counter
-
-  // Get conditions from parameter object
-  assert(fSettings);
-  Double_t vDep = fSettings->GetVdep();           // Full depletion voltage
-  Double_t vBias = fSettings->GetVbias();         // Bias voltage
-  Double_t temperature = fSettings->GetTemperature(); // Temperature
-  Double_t cCoup = fSettings->GetCcoup();         // Coupling capacitance
-  Double_t cIs = fSettings->GetCis();             // Inter-strip capacitance
-
-  // --- Control output of parameters
-  LOG(INFO) << GetName() << ": Set conditions for all sensors:"
-            << FairLogger::endl;
-  LOG(INFO) << "\t Full depletion voltage   " << vDep
-                     << " V"<< FairLogger::endl;
-  LOG(INFO) << "\t Bias voltage             " << vBias
-                     << " V"<< FairLogger::endl;
-  LOG(INFO) << "\t Temperature              " << temperature << " K"
-                     << FairLogger::endl;
-  LOG(INFO) << "\t Coupling capacitance      " << cCoup
-                     << " pF" << FairLogger::endl;
-  LOG(INFO) << "\t Inter-strip capacitance   " << cIs
-                     << " pF" << FairLogger::endl;
-
-  // --- Set conditions for all sensors
-  for ( auto it = fSensors.begin(); it != fSensors.end(); it++ ) {
-
-    // Get sensor centre coordinates in the global c.s.
-    Double_t local[3] = { 0., 0., 0.}; // sensor centre in local C.S.
-    Double_t global[3];                // sensor centre in global C.S.
-    it->second->GetNode()->GetMatrix()->LocalToMaster(local, global);
-
-    // Get the field in the sensor centre. Note that the values are in kG
-    // and have to be converted to T
-    Double_t field[3] = { 0., 0., 0.};
-    if ( FairRun::Instance()->GetField() )
-        FairRun::Instance()->GetField()->Field(global, field);
-    it->second->SetConditions(vDep, vBias, temperature, cCoup,
-                              cIs, field[0]/10., field[1]/10., field[2]/10.);
-
-    nSensors++;
-  } //# sensors
-
-  return nSensors;
-}
-// -------------------------------------------------------------------------
-
-
-
-// -----   Set conditions for all sensors   --------------------------------
-Int_t CbmStsSetup::SetSensorConditions(Double_t vDep, Double_t vBias,
-                                       Double_t temperature,
-                                       Double_t cCoupling,
-                                       Double_t cInterstrip) {
-
-  Int_t nSensors = 0;   // Sensor counter
-
-  // --- Set conditions for all sensors
-  for ( auto it = fSensors.begin(); it != fSensors.end(); it++ ) {
-
-    // Get sensor centre coordinates in the global c.s.
-    Double_t local[3] = { 0., 0., 0.}; // sensor centre in local C.S.
-    Double_t global[3];                // sensor centre in global C.S.
-    it->second->GetNode()->GetMatrix()->LocalToMaster(local, global);
-
-    // Get the field in the sensor centre
-    Double_t field[3] = { 0., 0., 0.};
-    if ( FairRun::Instance()->GetField() )
-        FairRun::Instance()->GetField()->Field(global, field);
-    it->second->SetConditions(vDep, vBias, temperature, cCoupling,
-                              cInterstrip,
-                              field[0]/10., field[1]/10., field[2]/10.);
-
-    nSensors++;
-  } //# sensors
-
-  return nSensors;
 }
 // -------------------------------------------------------------------------
 
@@ -707,6 +639,332 @@ Int_t CbmStsSetup::ReadSensorParameters(const char* fileName) {
             << (nSensors == 1 ? " sensor" : " sensors") << " from "
             << inputFile << FairLogger::endl;
   assert( nSensors = fSensors.size() );
+
+  return nSensors;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Set the default sensor parameters   -----------------------------
+void CbmStsSetup::SetDefaultSensorParameters(Double_t dInact,
+                                             Double_t pitch,
+                                             Double_t stereoF,
+                                             Double_t stereoB) {
+  assert( ! fIsInitialised );
+  assert( dInact >= 0.);
+  assert( pitch >= 0. );
+  fSensorDinact    = dInact;
+  fSensorPitch     = pitch;
+  fSensorStereoF   = stereoF;
+  fSensorStereoB   = stereoB;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Set global parameters for all modules   -------------------------
+Int_t CbmStsSetup::SetModuleParameters(Double_t dynRange,
+                                       Double_t threshold,
+                                       Int_t nAdc, Double_t tResolution,
+                                       Double_t tDead, Double_t noise,
+                                       Double_t zeroNoiseRate,
+                                       Double_t fracDeadChannels) {
+
+  Int_t nModules = 0;
+  for ( auto it = fModules.begin(); it != fModules.end(); it++) {
+    it->second->SetParameters(dynRange, threshold, nAdc, tResolution,
+                              tDead, noise, zeroNoiseRate, fracDeadChannels);
+    nModules++;
+  }
+
+  return nModules;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Set module parameters from file   -------------------------------
+Int_t CbmStsSetup::SetModuleParameters(const char* fileName) {
+
+  // Input file
+  std::fstream inFile;
+  TString inputFile = fileName;
+
+  // Try with argument as is (absolute path or current directory)
+  inFile.open(inputFile.Data());
+
+  // If not successful, look in the standard parameter directory
+  if ( ! inFile.is_open() ) {
+    inputFile = gSystem->Getenv("VMCWORKDIR");
+    inputFile += "/parameters/sts/" + TString(fileName);
+    inFile.open(inputFile.Data());
+  }
+
+  // If still not open, throw an error
+  if ( ! inFile.is_open() ) {
+    LOG(FATAL) << GetName() << ": Cannot read file " << fileName
+        << " nor " << inputFile << FairLogger::endl;
+    return 0;
+  }
+
+  string input;
+  TString mName;
+  Double_t dynRange        = -1.e10;
+  Double_t threshold       = -1.e10;
+  Int_t    nAdc            = -1;
+  Double_t tResol          = -1.e10;
+  Double_t tDead           = -1.e10;
+  Double_t noise           = -1.e10;
+  Double_t zeroNoise       = -1.e10;
+  Double_t fracDead        = -1.e10;
+  Int_t nModules = 0;
+
+  while ( kTRUE ) {  // read one line
+    if ( inFile.eof() ) break;
+    getline(inFile, input);
+    if (input.empty() || input[0] == '#') continue;  // Comment line
+    std::stringstream line(input);
+    line >> mName >> dynRange >> threshold >> nAdc >> tResol >> tDead >> noise
+      >> zeroNoise >> fracDead;
+
+    // Look for module in setup
+    Int_t address = CbmStsModule::GetAddressFromName(mName);
+    if ( fModules.find(address) == fModules.end() ) {
+      LOG(ERROR) << GetName() << ": Module " << mName
+          << " not found in the setup!" << FairLogger::endl;
+      continue;
+    }
+    CbmStsModule* module = fModules.find(address)->second;
+    assert(module);
+
+    // Check for double occurrences of sensors
+    if ( module->IsSet() ) {
+      LOG(ERROR) << GetName() << ": Parameters of module "
+          << module->GetName() << " are already set!" << FairLogger::endl;
+      continue;
+    }
+
+    // Check presence of module parameters
+    if ( dynRange < 1.e-9 || threshold < 1.e-9 || nAdc < 0
+        || tResol < 1.e-9 || tDead < 1.e-9 || noise < 1.e-9
+        || zeroNoise < 1.e-9 || fracDead < 0. || fracDead > 1.) {
+      LOG(ERROR) << GetName()
+          << ": Missing or illegal parameters for module "
+          << module->GetName() << "; " << dynRange << " " << threshold << " "
+          << nAdc << " " << tResol << " " << tDead << " " << noise << " "
+          << zeroNoise << " " << fracDead << FairLogger::endl;
+      continue;
+    }
+
+    // --- Set parameters of module
+    module->SetParameters(dynRange, threshold, nAdc, tResol, tDead, noise,
+                          zeroNoise, fracDead);
+    LOG(DEBUG1) << GetName() << ": Set " << module->ToString()
+        << FairLogger::endl;
+    nModules++;
+
+  } //# input lines
+
+  inFile.close();
+  LOG(INFO) << GetName() << ": Read conditions of " << nModules
+            << (nModules == 1 ? " module" : " modules") << " from "
+            << inputFile << FairLogger::endl;
+
+  // Check that all sensors have their conditions set
+  if ( nModules!= fModules.size() ) {
+    LOG(FATAL) << GetName() << ": " << fModules.size()
+     << " modules in setup, but parameters for " << nModules
+     << " in parameter file!" << FairLogger::endl;
+  }
+
+  return nModules;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Set conditions for all sensors   --------------------------------
+Int_t CbmStsSetup::SetSensorConditions() {
+
+  Int_t nSensors = 0;   // Sensor counter
+
+  // Get conditions from parameter object
+  assert(fSettings);
+  Double_t vDep = fSettings->GetVdep();           // Full depletion voltage
+  Double_t vBias = fSettings->GetVbias();         // Bias voltage
+  Double_t temperature = fSettings->GetTemperature(); // Temperature
+  Double_t cCoup = fSettings->GetCcoup();         // Coupling capacitance
+  Double_t cIs = fSettings->GetCis();             // Inter-strip capacitance
+
+  // --- Control output of parameters
+  LOG(INFO) << GetName() << ": Set conditions for all sensors:"
+            << FairLogger::endl;
+  LOG(INFO) << "\t Full depletion voltage   " << vDep
+                     << " V"<< FairLogger::endl;
+  LOG(INFO) << "\t Bias voltage             " << vBias
+                     << " V"<< FairLogger::endl;
+  LOG(INFO) << "\t Temperature              " << temperature << " K"
+                     << FairLogger::endl;
+  LOG(INFO) << "\t Coupling capacitance      " << cCoup
+                     << " pF" << FairLogger::endl;
+  LOG(INFO) << "\t Inter-strip capacitance   " << cIs
+                     << " pF" << FairLogger::endl;
+
+  // --- Set conditions for all sensors
+  for ( auto it = fSensors.begin(); it != fSensors.end(); it++ ) {
+
+    // Get sensor centre coordinates in the global c.s.
+    Double_t local[3] = { 0., 0., 0.}; // sensor centre in local C.S.
+    Double_t global[3];                // sensor centre in global C.S.
+    it->second->GetNode()->GetMatrix()->LocalToMaster(local, global);
+
+    // Get the field in the sensor centre. Note that the values are in kG
+    // and have to be converted to T
+    Double_t field[3] = { 0., 0., 0.};
+    if ( FairRun::Instance()->GetField() )
+        FairRun::Instance()->GetField()->Field(global, field);
+    it->second->SetConditions(vDep, vBias, temperature, cCoup,
+                              cIs, field[0]/10., field[1]/10., field[2]/10.);
+
+    nSensors++;
+  } //# sensors
+
+  return nSensors;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Set conditions for all sensors   --------------------------------
+Int_t CbmStsSetup::SetSensorConditions(Double_t vDep, Double_t vBias,
+                                       Double_t temperature,
+                                       Double_t cCoupling,
+                                       Double_t cInterstrip) {
+
+  Int_t nSensors = 0;   // Sensor counter
+
+  // --- Set conditions for all sensors
+  for ( auto it = fSensors.begin(); it != fSensors.end(); it++ ) {
+
+    // Get sensor centre coordinates in the global c.s.
+    Double_t local[3] = { 0., 0., 0.}; // sensor centre in local C.S.
+    Double_t global[3];                // sensor centre in global C.S.
+    it->second->GetNode()->GetMatrix()->LocalToMaster(local, global);
+
+    // Get the field in the sensor centre
+    Double_t field[3] = { 0., 0., 0.};
+    if ( FairRun::Instance()->GetField() )
+        FairRun::Instance()->GetField()->Field(global, field);
+    it->second->SetConditions(vDep, vBias, temperature, cCoupling,
+                              cInterstrip,
+                              field[0]/10., field[1]/10., field[2]/10.);
+
+    nSensors++;
+  } //# sensors
+
+  return nSensors;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Set sensor conditions from file   -------------------------------
+Int_t CbmStsSetup::SetSensorConditions(const char* fileName) {
+
+  // Input file
+  std::fstream inFile;
+  TString inputFile = fileName;
+
+  // Try with argument as is (absolute path or current directory)
+  inFile.open(inputFile.Data());
+
+  // If not successful, look in the standard parameter directory
+  if ( ! inFile.is_open() ) {
+    inputFile = gSystem->Getenv("VMCWORKDIR");
+    inputFile += "/parameters/sts/" + TString(fileName);
+    inFile.open(inputFile.Data());
+  }
+
+  // If still not open, throw an error
+  if ( ! inFile.is_open() ) {
+    LOG(FATAL) << GetName() << ": Cannot read file " << fileName
+        << " nor " << inputFile << FairLogger::endl;
+    return 0;
+  }
+
+  string input;
+  TString sName;
+  Double_t vDep        = -1.e10;
+  Double_t vBias       = -1.e10;
+  Double_t temperature = -1.e10;
+  Double_t cCoupling   = -1.e10;
+  Double_t cInterstrip = -1.e10;
+  Int_t nSensors = 0;
+
+  while ( kTRUE ) {  // read one line
+    if ( inFile.eof() ) break;
+    getline(inFile, input);
+    if (input.empty() || input[0] == '#') continue;  // Comment line
+    std::stringstream line(input);
+    line >> sName >> vDep >> vBias >> temperature >> cCoupling >> cInterstrip;
+
+    // Look for sensor in setup
+    Int_t address = CbmStsSensor::GetAddressFromName(sName);
+    if ( fSensors.find(address) == fSensors.end() ) {
+      LOG(ERROR) << GetName() << ": Sensor " << sName
+          << " not found in the setup!" << FairLogger::endl;
+      continue;
+    }
+    CbmStsSensor* sensor = fSensors.find(address)->second;
+    assert(sensor);
+
+    // Check for double occurrences of sensors
+    if ( sensor->GetConditions() ) {
+      LOG(ERROR) << GetName() << ": Conditions of sensor "
+          << sensor->GetName() << " are already set!" << FairLogger::endl;
+      continue;
+    }
+
+    // Check presence of condition parameters
+    if ( vDep < 1.e-9 || vBias < 1.e-9 || temperature < 1.e-9
+        || cCoupling < 1.e-9 || cInterstrip < 1.e-9 ) {
+      LOG(ERROR) << GetName()
+          << ": Missing or illegal condition parameters for sensor "
+          << sensor->GetName() << "; " << vDep << " " << vBias << " "
+          << temperature << " " << cCoupling << " " << cInterstrip
+          << FairLogger::endl;
+      continue;
+    }
+
+    // --- Get the field in the sensor centre
+    Double_t local[3] = { 0., 0., 0.}; // sensor centre in local C.S.
+    Double_t global[3];                // sensor centre in global C.S.
+    sensor->GetNode()->GetMatrix()->LocalToMaster(local, global);
+    Double_t field[3] = { 0., 0., 0.}; // field in sensor centre
+    if ( FairRun::Instance()->GetField() )
+        FairRun::Instance()->GetField()->Field(global, field);
+
+    // --- Set conditions of sensor (n.b. conversion from kG to T)
+    sensor->SetConditions(vDep, vBias, temperature, cCoupling, cInterstrip,
+                          field[0]/10., field[1]/10., field[2]/10.);
+    LOG(DEBUG1) << GetName() << ": Conditions of sensor " << sensor->GetName()
+        << " " << sensor->GetConditions()->ToString() << FairLogger::endl;
+    nSensors++;
+
+  } //# input lines
+
+  inFile.close();
+  LOG(INFO) << GetName() << ": Read conditions of " << nSensors
+            << (nSensors == 1 ? " sensor" : " sensors") << " from "
+            << inputFile << FairLogger::endl;
+
+  // Check that all sensors have their conditions set
+  if ( nSensors != fSensors.size() ) {
+    LOG(FATAL) << GetName() << ": " << fSensors.size()
+     << " sensors in setup, but conditions for " << nSensors
+     << " in conditions file!" << FairLogger::endl;
+  }
 
   return nSensors;
 }

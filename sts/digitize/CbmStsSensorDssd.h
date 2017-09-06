@@ -78,6 +78,13 @@ class CbmStsSensorDssd : public CbmStsSensor
                            Double_t dTime);
 
 
+    /** @brief Number of strips on front and back side
+     ** @param side  0 = front side, 1 = back side
+     ** @value Number of strips on the specified sensor side
+     **/
+    virtual Int_t GetNofStrips(Int_t side) const = 0;
+
+
     /** @brief Strip pitch on front and back side
      ** @param side  0 = front side, 1 = back side
      ** @value Strip pitch [cm] on the specified sensor side
@@ -159,13 +166,6 @@ class CbmStsSensorDssd : public CbmStsSensor
      **/
     virtual Int_t GetModuleChannel(Int_t strip, Int_t side,
                                    Int_t sensorId) const = 0;
-
-
-    /** @brief Number of strips on front or back side
-     ** @param side  0 = front side, 1 = back side
-     ** @return  Number of strips
-     **/
-    virtual Int_t GetNofStrips(Int_t side) const = 0;
 
 
     /** Get the side of the sensor from the module channel number

@@ -3,6 +3,8 @@
  ** @date 14.05.2013
  **/
 
+#include "CbmStsModule.h"
+
 #include <cassert>
 #include <cmath>
 #include "TClonesArray.h"
@@ -15,10 +17,9 @@
 #include "CbmStsAddress.h"
 #include "CbmStsCluster.h"
 #include "CbmStsDigi.h"
-#include "digitize/CbmStsDigitize.h"
-#include "digitize/CbmStsPhysics.h"
-#include "setup/CbmStsModule.h"
-#include "setup/CbmStsSetup.h"
+#include "CbmStsDigitize.h"
+#include "CbmStsSensorDssd.h"
+#include "CbmStsSetup.h"
 
 using namespace std;
 
@@ -295,7 +296,35 @@ Int_t CbmStsModule::GenerateNoise(Double_t t1, Double_t t2) {
 
 
 
-// -----  Initialise the analog buffer   -----------------------------------
+// -----   Get the unique address from the sensor name (static)   ----------
+Int_t CbmStsModule::GetAddressFromName(TString name) {
+
+  Bool_t isValid = kTRUE;
+  if ( name.Length() != 16 ) isValid = kFALSE;
+  if ( isValid) {
+    if ( ! name.BeginsWith("STS") ) isValid = kFALSE;
+    if ( name[4] != 'U' )  isValid = kFALSE;
+    if ( name[8] != 'L' )  isValid = kFALSE;
+    if ( name[13] != 'M' ) isValid = kFALSE;
+  }
+  if ( ! isValid ) {
+    LOG(FATAL) << "GetAddressFromName: Not a valid module name "
+        << name << FairLogger::endl;
+    return 0;
+  }
+
+  Int_t unit    = 10 * ( name[5]  - '0') + name[6]  - '0' - 1;
+  Int_t ladder  = 10 * ( name[9]  - '0') + name[10] - '0' - 1;
+  Int_t hLadder = ( name[11] == 'U' ? 0 : 1);
+  Int_t module  = 10 * ( name[14] - '0') + name[15] - '0' - 1;
+
+  return CbmStsAddress::GetAddress(unit, ladder, hLadder, module);
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----  Initialise the analogue buffer   ---------------------------------
 void CbmStsModule::InitAnalogBuffer() {
 
   for (UShort_t channel = 0; channel < fNofChannels; channel++) {
@@ -399,6 +428,68 @@ Int_t CbmStsModule::ProcessAnalogBuffer(Double_t readoutTime) {
 
 
 
+// -----   Set the module parameters   -------------------------------------
+void CbmStsModule::SetParameters(Double_t dynRange, Double_t threshold,
+                                 Int_t nAdc, Double_t timeResolution,
+                                 Double_t deadTime, Double_t noise,
+                                 Double_t zeroNoiseRate,
+                                 Double_t fracDeadChannels) {
+
+  // Assert validity of parameters
+  assert( dynRange > 0. );
+  assert( threshold > 0. );
+  assert( nAdc > 0 );
+  assert( timeResolution > 0. );
+  assert( deadTime >= 0. );
+  assert( noise >= 0. );
+  assert( zeroNoiseRate >= 0. );
+  assert( fracDeadChannels >= 0. && fracDeadChannels <= 1.);
+
+  // Set number of channels, which depends on the connected sensor.
+  // For sensor DssdStereo, it is 2 * number of strips
+  assert(GetDaughter(0)); // check whether a sensor is attached
+  TString dType = GetDaughter(0)->GetTitle();
+  if ( dType.BeginsWith("Dssd") ) {
+    CbmStsSensorDssd* sensor =
+        dynamic_cast<CbmStsSensorDssd*>(GetDaughter(0));
+    Int_t nStripsF = sensor->GetNofStrips(0); // front side
+    Int_t nStripsB = sensor->GetNofStrips(1); // back side
+    fNofChannels = 2 * TMath::Max(nStripsF, nStripsB);
+  }
+  else {
+    LOG(FATAL) << GetName() << ": No sensor connected!" << FairLogger::endl;
+    return;
+  }
+
+  // Set other parameters
+  fDynRange       = dynRange;
+  fThreshold      = threshold;
+  fNofAdcChannels = nAdc;
+  fTimeResolution = timeResolution;
+  fDeadTime       = deadTime;
+  fNoise          = noise;
+  fZeroNoiseRate  = zeroNoiseRate;
+
+  // Calculate noise rate and prepare function for noise sampling
+  fNoiseRate = 0.5 * fZeroNoiseRate
+      * TMath::Exp( -0.5 * fThreshold * fThreshold / (fNoise * fNoise) );
+  fNoiseCharge = new TF1("Noise Charge", "TMath::Gaus(x, [0], [1])",
+                         threshold, 10. * noise);
+  fNoiseCharge->SetParameters(0., noise);
+
+  // Determine dead channels, if necessary
+  if ( fracDeadChannels > 0.) SetDeadChannels(fracDeadChannels);
+
+  // Initialise the analogue buffer
+  InitAnalogBuffer();
+
+  // Mark the module initialised
+  fIsSet          = kTRUE;
+}
+// -------------------------------------------------------------------------
+
+
+
 // -----   Create list of dead channels   ----------------------------------
 Int_t CbmStsModule::SetDeadChannels(Double_t percentage) {
 
@@ -441,6 +532,21 @@ Int_t CbmStsModule::SetDeadChannels(Double_t percentage) {
   }
 
   return fDeadChannels.size();
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   String output   -------------------------------------------------
+string CbmStsModule::ToString() const {
+    stringstream ss;
+    ss << "Module  " << GetName() << ": dynRange " << fDynRange
+       << "e, thresh. " << fThreshold << "e, nAdc " << fNofAdcChannels
+       << ", time res. " << fTimeResolution << "ns, dead time "
+       << fDeadTime << "ns, noise " << fNoise << "e, zero noise rate "
+       << fZeroNoiseRate << "/ns, dead chan. " << fDeadChannels.size()
+       << " / " << fNofChannels;
+    return ss.str();
 }
 // -------------------------------------------------------------------------
 

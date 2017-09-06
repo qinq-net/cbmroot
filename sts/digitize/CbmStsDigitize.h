@@ -103,6 +103,54 @@ class CbmStsDigitize : public FairTask
   virtual InitStatus ReInit();
 
 
+  /** @brief Set the default module parameters
+   ** @param dynRange         Dynamic range [e]
+   ** @param threshold        Threshold [e]
+   ** @param nAdc             Number of ADC channels
+   ** @param timeResolution   Time resolution [ns]
+   ** @param deadTime         Channel dead time [ns]
+   ** @param noise            Noise RMS [e]
+   ** @param zeroNoiseRate    Zero-threshold noise rate [1/ns]
+   ** @param fracDeadChan     Fraction of dead channels
+   **
+   ** These parameters will be applied to all modules when no
+   ** parameter file is specified.
+   **/
+  void SetDefaultModuleParameters(Double_t dynRange, Double_t threshold,
+                                  Int_t nAdc, Double_t timeResolution,
+                                  Double_t deadTime, Double_t noise,
+                                  Double_t zeroNoiseRate,
+                                  Double_t fracDeadChan);
+
+
+  /** @brief Set the default sensor conditions
+   ** @param vDep        Full-depletion voltage [V]
+   ** @param vBias       Bias voltage [V]
+   ** @param temperature Temperature [K]
+   ** @param cCoupling   Coupling capacitance [pF]
+   ** @param cInterstrip Inter-strip capacitance [pF]
+   **
+   ** These parameters will be applied to all sensors when no
+   ** condition file is specified.
+   **/
+  void SetDefaultSensorConditions(Double_t vDep, Double_t vBias,
+                                  Double_t temperature, Double_t cCoupling,
+                                  Double_t cInterstrip);
+
+
+  /** @brief Set the default sensor parameters
+   ** @param dInact  Size of inactive boarder (guard ring) [cm]
+   ** @param pitch   Strip pitch [cm]
+   ** @param stereoF Strip stereo angle front side [degrees]
+   ** @param stereoB Strip stereo angle back side [degrees]
+   **
+   ** These parameters correspond to the default sensor type DssdStereo.
+   ** They will be applied if no sensor parameter file is specified.
+   **/
+  void SetDefaultSensorParameters(Double_t dInact, Double_t pitch,
+                                  Double_t stereoF, Double_t stereoB);
+
+
   /** @brief Activate noise generation
    ** @param choice If kTRUE, noise will be generated (only in stream mode).
    **
@@ -112,8 +160,13 @@ class CbmStsDigitize : public FairTask
   void SetGenerateNoise(Bool_t choise = kTRUE);
 
 
-   /** Set the digitisation parameters in the modules **/
-  void SetModuleParameters();
+  /** @brief Set the file name with module parameters
+   ** @param fileName  File name with module parameters
+   **
+   ** The format of the file must comply with
+   ** CbmStsSetup::ReadModuleParameters(const char*)
+   **/
+  void SetModuleParameterFile(const char* fileName);
 
 
   /** Set the digitisation parameters (same for all modules)
@@ -149,12 +202,22 @@ class CbmStsDigitize : public FairTask
   		            Bool_t generateNoise = kFALSE);
 
 
-  /** Set the operating parameters in the sensors **/
-  void SetSensorConditions();
+  /** @brief Set the file name with sensor conditions
+   ** @param fileName  File name with sensor conditions
+   **
+   ** The format of the file must comply with
+   ** CbmStsSetup::ReadSensorConditions(const char*)
+   **/
+  void SetSensorConditionFile(const char* fileName);
 
 
-  /** Assign sensor types from file **/
-  void SetSensorTypes(const char* fileName);
+  /** @brief Set the file name with sensor parameters
+   ** @param fileName  File name with sensor parameters
+   **
+   ** The format of the file must comply with
+   ** CbmStsSetup::ReadSensorParameters(const char*)
+   **/
+  void SetSensorParameterFile(const char* fileName);
 
 
   /** Set the sensor strip pitch
@@ -191,7 +254,34 @@ class CbmStsDigitize : public FairTask
   TClonesArray*  fDigis;          ///< Output array of CbmStsDigi
   TClonesArray*  fMatches;        ///< Output array of CbmMatch
   TStopwatch     fTimer;          ///< ROOT timer
-  TString        fSensorTypeFile; ///< File name defining the sensor types
+
+  // --- Default sensor parameters (apply to SensorDssdStereo)
+  Double_t fSensorDinact;     ///< Size of inactive border [cm]
+  Double_t fSensorPitch;      ///< Strip pitch [cm]
+  Double_t fSensorStereoF;    ///< Stereo angle front side [degrees]
+  Double_t fSensorStereoB;    ///< Stereo angle back side [degrees]
+
+  // ---   Default sensor conditions
+  Double_t fSensorVdep;         ///< Full depletion voltage [V]
+  Double_t fSensorVbias;        ///< Bias voltage [V]
+  Double_t fSensorTemperature;  ///< Temperature [K]
+  Double_t fSensorCcoupling;    ///< Coupling capacitance [pF]
+  Double_t fSensorCinterstrip;  ///< Inter-strip capacitance [pF]
+
+  // ---   Default module parameters
+  Double_t fModuleDynRange;       ///< Dynamic range [e]
+  Double_t fModuleThreshold;      ///< Charge threshold [e]
+  Int_t    fModuleNofAdc;         ///< Number of ADC channels
+  Double_t fModuleTresol;         ///< Time resolution [ns]
+  Double_t fModuleTdead;          ///< Dead time [ns]
+  Double_t fModuleNoise;          ///< Noise RMS [e]
+  Double_t fModuleZeroNoiseRate;  ///< Zero-threshold noise rate [1/s]
+  Double_t fModuleFracDeadChan;   ///< Fraction of dead channels
+
+  // --- Input parameter files
+  TString fSensorParameterFile;  ///< File with sensor parameters
+  TString fSensorConditionFile; ///< File with sensor conditions
+  TString fModuleParameterFile;  ///< File with module parameters
 
   // --- Time of last processed StsPoint (for stream mode)
   Double_t fTimePointLast;

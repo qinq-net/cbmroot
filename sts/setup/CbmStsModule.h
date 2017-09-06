@@ -122,6 +122,13 @@ class CbmStsModule : public CbmStsElement
     Int_t FindHits(TClonesArray* hitArray, CbmEvent* event = NULL);
 
 
+    /** @brief Get the address from the module name (static)
+     ** @param name Name of module
+     ** @value Unique element address
+     **/
+    static Int_t GetAddressFromName(TString name);
+
+
     /** Dynamic range
      ** @value Dynamic range [e]
      **/
@@ -211,15 +218,6 @@ class CbmStsModule : public CbmStsElement
     Int_t ProcessAnalogBuffer(Double_t readoutTime);
 
 
-    /** Create list of inactive channels
-     ** @param percentOfDeadChannels  Percentage of dead channels
-     ** @value Number of dead channels in the sensor
-     **
-     ** The specified fraction of randomly chosen channels are set inactive.
-     **/
-    Int_t SetDeadChannels(Double_t percentOfDeadCh);
-
-
     /** Set the digitisation parameters
      ** @param dynRagne        Dynamic range [e]
      ** @param threshold       Threshold [e]
@@ -229,26 +227,10 @@ class CbmStsModule : public CbmStsElement
      ** @param noise           Equivalent noise charge [e]
      ** @param zeroNoiseRate   Zero threshold noise rate [1/ns]
      **/
-    void SetParameters(Int_t nChannels, Double_t dynRange,
-                       Double_t threshold, Int_t nAdc,
+    void SetParameters(Double_t dynRange, Double_t threshold, Int_t nAdc,
                        Double_t timeResolution, Double_t deadTime,
-                       Double_t noise, Double_t zeroNoiseRate) {
-      fNofChannels    = nChannels;
-      fDynRange       = dynRange;
-      fThreshold      = threshold;
-      fNofAdcChannels = nAdc;
-      fTimeResolution = timeResolution;
-      fDeadTime       = deadTime;
-      fNoise          = noise;
-      fZeroNoiseRate  = zeroNoiseRate;
-      fIsSet          = kTRUE;
-      fNoiseRate = 0.5 * fZeroNoiseRate
-          * TMath::Exp( -0.5 * fThreshold * fThreshold / (fNoise * fNoise) );
-      InitAnalogBuffer();
-      fNoiseCharge = new TF1("Noise Charge", "TMath::Gaus(x, [0], [1])",
-                             threshold, 10. * noise);
-      fNoiseCharge->SetParameters(0., noise);
-    }
+                       Double_t noise, Double_t zeroNoiseRate,
+                       Double_t fracDeadChannels = 0.);
 
 
     /** @brief Generate noise
@@ -272,6 +254,9 @@ class CbmStsModule : public CbmStsElement
      **/
     void SetDeadTime(Double_t dTime) { fDeadTime = dTime; }
 
+
+    /** String output **/
+    std::string ToString() const;
 
 
   private:
@@ -314,6 +299,14 @@ class CbmStsModule : public CbmStsElement
     /** Initialise daughters from geometry **/
     virtual void InitDaughters();
 
+
+    /** Create list of inactive channels
+     ** @param percentOfDeadChannels  Percentage of dead channels
+     ** @value Number of dead channels in the sensor
+     **
+     ** The specified fraction of randomly chosen channels are set inactive.
+     **/
+    Int_t SetDeadChannels(Double_t percentOfDeadCh);
 
 
     ClassDef(CbmStsModule, 2);
