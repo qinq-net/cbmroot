@@ -142,7 +142,8 @@ EndIf()
 Set(LINKDEF  CbmFlibReaderLinkDef.h )
 Set(LIBRARY_NAME CbmFlibReader)
 Set(DEPENDENCIES
-    CbmBase CbmBeamtimeBase CbmRich fles_ipc_legacy flib_dpb flib_dpb_20 spadicMessage trbnet ${FLES_TOF_BEAM_DEPEND} Eve Base
+  CbmBase CbmBeamtimeBase CbmRich fles_ipc_legacy flib_dpb #flib_dpb_20
+  spadicMessage trbnet ${FLES_TOF_BEAM_DEPEND} Eve Base
 )
 
 GENERATE_LIBRARY()
