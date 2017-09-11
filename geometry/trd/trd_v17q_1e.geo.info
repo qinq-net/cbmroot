@@ -2,7 +2,7 @@
 ##   trd_v17q_1e information file
 #
 
-# created 20170725
+# created 20170911
 
 # envelope
 0.000000 cm   start of TRD (z)
@@ -79,7 +79,7 @@ GBTX readout boards are : included
      3333       33        3        0   333333   333333       33       33            GBTX ROB types on module
         0        0        0        0        0        0        0        0        0   number of GBTX ROB7
         0        0        0        0        0        0        0        0        0   number of GBTX ROB5
-      200        0      120        0      200        0      120        0      640   number of GBTX ROB3
+      200        0      120        0      240        0      120        0      680   number of GBTX ROB3
 # e-links
       160       80       40       40      216      216       72       72    25760   e-links used
       168       84       42        0      252      252       84       84    28560   e-links available
