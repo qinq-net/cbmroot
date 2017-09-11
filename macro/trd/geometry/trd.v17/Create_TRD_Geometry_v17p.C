@@ -1214,6 +1214,8 @@ void dump_info_file()
       total_rob3[iModule]++;
     if ((RobTypeOnModule[iModule] / 10000 % 10) == 3)
       total_rob3[iModule]++;
+    if ((RobTypeOnModule[iModule] / 100000 % 10) == 3)
+      total_rob3[iModule]++;
   }
 
   for (Int_t iModule = 0; iModule < NofModuleTypes; iModule++)
