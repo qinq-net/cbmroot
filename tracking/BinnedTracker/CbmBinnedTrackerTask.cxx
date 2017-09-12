@@ -34,7 +34,7 @@ InitStatus CbmBinnedTrackerTask::Init()
    
    geoReader->Read();
    fTracker = CbmBinnedTracker::Instance();
-   fTracker->SetChiSqCut(192);
+   fTracker->SetChiSqCut(200);
    
    FairRootManager* ioman = FairRootManager::Instance();
     
@@ -114,6 +114,12 @@ void CbmBinnedTrackerTask::Exec(Option_t* opt)
 
 void CbmBinnedTrackerTask::Finish()
 {
+   double segTrue = 100 * fTracker->fNofTrueSegments;
+   segTrue /= fTracker->fNofTrueSegments + fTracker->fNofWrongSegments;
+   double segWrong = 100 * fTracker->fNofWrongSegments;
+   segWrong /= fTracker->fNofTrueSegments + fTracker->fNofWrongSegments;
+   cout << "True segments = " << segTrue << " [" << fTracker->fNofTrueSegments << "/" << fTracker->fNofTrueSegments + fTracker->fNofWrongSegments << "]" << endl;
+   cout << "Wrong segments = " << segWrong << " [" << fTracker->fNofWrongSegments << "/" << fTracker->fNofTrueSegments + fTracker->fNofWrongSegments << "]" << endl;
 }
 
 ClassImp(CbmBinnedTrackerTask)

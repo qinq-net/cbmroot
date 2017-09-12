@@ -81,7 +81,7 @@ void CbmBinnedGeoReader::ReadDetector(const char* name)
 static const int gNofZbins = 5;
 static const int gNofYbins = 20;
 static const int gNofXbins = 20;
-static const int gNofTbins = 5;
+static const int gNofTbins = 1;
 
 static Double_t gStationErrors[][3] =
 {
@@ -92,10 +92,6 @@ static Double_t gStationErrors[][3] =
    { 7.75, 0.359375, 4 },// Trd 1
    { 0.359375, 7.75, 4 },// Trd 2
    { 7.75, 0.359375, 4 },// Trd 3
-   /*{ 0.359375, 2.75, 4 },// Trd 0
-   { 2.75, 0.359375, 4 },// Trd 1
-   { 0.359375, 2.75, 4 },// Trd 2
-   { 2.75, 0.359375, 4 },// Trd 3*/
    
    /*{ 0.487468, 0.487468, 4 },// Much 0
    { 0.487468, 0.487468, 4 },// Much 1
@@ -104,6 +100,32 @@ static Double_t gStationErrors[][3] =
    { 0.288675, 0.72, 4 },// Tof
    
    { 0.175, 0.175, 4 }// Rich
+};
+
+static Double_t gStationScats[][2] =
+{
+   { 0, 0 },
+   { 0.1007, 0.1076 },
+   { 0.08159, 0.08765 },
+   { 0.0465, 0.0414 },
+   { 0.0417, 0.04789 },
+   { 0.03505, 0.04026 }
+   /*{ 0, 0 },
+   { 0.2007, 0.2076 },
+   { 10.28159, 10.28765 },
+   { 10.2465, 10.2414 },
+   { 10.2417, 10.24789 },
+   { 10.23505, 10.24026 }*/
+};
+
+static Double_t gStationNofSigmas[][2] =
+{
+   { 4, 4 },
+   { 4, 4 },
+   { 20, 4 },
+   { 4, 17 },
+   { 17, 4 },
+   { 4, 15 }
 };
 
 static Double_t gTofStationTxError = 0.001277;
@@ -153,6 +175,12 @@ void CbmBinnedGeoReader::SearchStation(TGeoNode* node, CbmBinnedHitReader* hitRe
       station->SetDx(gStationErrors[stationNumber][0]);
       station->SetDy(gStationErrors[stationNumber][1]);
       station->SetDt(gStationErrors[stationNumber][2]);
+      
+      station->SetScatX(gStationScats[stationNumber][0]);
+      station->SetScatY(gStationScats[stationNumber][1]);
+      
+      //station->SetNofSigmaX(gStationNofSigmas[stationNumber][0]);
+      //station->SetNofSigmaY(gStationNofSigmas[stationNumber][1]);
       
       station->Init();
       fTracker->AddStation(station);

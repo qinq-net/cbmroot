@@ -21,6 +21,8 @@
 #include "CbmMuchTrack.h"
 #include "CbmTrdTrack.h"
 #include "CbmTofHit.h"
+#include "CbmTrdHit.h"
+#include "CbmTrdPoint.h"
 
 class CbmBinnedTrackerQA : public FairTask
 {
@@ -37,6 +39,7 @@ private:
     //void HandleMuch(Int_t muchTrackIndex);
     void HandleTrd(Int_t trdTrackIndex);
     void HandleTof(Int_t tofHitIndex);
+    void IterateTrdHits(std::function<void(const CbmTrdHit*, const CbmTrdPoint*)> handleData);
     
 private:
     TClonesArray* fGlobalTracks;

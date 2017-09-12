@@ -4,6 +4,8 @@
  * and open the template in the editor.
  */
 
+#include <complex>
+
 #include "CbmBinnedTrackerQA.h"
 #include "global/CbmGlobalTrack.h"
 #include "CbmMCTrack.h"
@@ -11,7 +13,6 @@
 #include "setup/CbmStsSetup.h"
 #include "CbmMuchPoint.h"
 #include "geo/CbmMuchGeoScheme.h"
-#include "CbmTrdPoint.h"
 #include "trd/CbmTrdAddress.h"
 #include "CbmTofPoint.h"
 #include "CbmStsHit.h"
@@ -20,14 +21,16 @@
 #include "CbmMuchPixelHit.h"
 #include "CbmMuchCluster.h"
 #include "CbmMuchDigi.h"
-#include "CbmTrdHit.h"
 #include "CbmTrdCluster.h"
 #include "CbmTrdDigi.h"
 #include "CbmTofDigiExp.h"
 #include "CbmMCDataManager.h"
 #include "TH1.h"
+#include "GeoReader.h"
 
 using namespace std;
+
+#define TRD_IDEAL
 
 #define NOF_STS_STATIONS 2
 #define NOF_MUCH_STATIONS 1
@@ -37,17 +40,38 @@ using namespace std;
 
 struct TrackDesc
 {
+   // In the pairs below 
    pair<set<Int_t>, set<Int_t> > sts[NOF_STS_STATIONS];
    //pair<set<Int_t>, set<Int_t> > much[NOF_MUCH_STATIONS * NOF_MUCH_LAYERS];
    pair<set<Int_t>, set<Int_t> > trd[NOF_TRD_LAYERS];
    //pair<set<Int_t>, set<Int_t> > tof;
    set<const CbmStsPoint*> stsPoints[NOF_STS_STATIONS];
+   set<const CbmTrdPoint*> trdPoints[NOF_TRD_LAYERS];
    bool isPrimary;
+   const CbmMCTrack* ptr;
+   Double_t nearestHitDist[NOF_TRD_LAYERS];
+   Double_t nearestHitDistSts[NOF_STS_STATIONS];
+   const CbmTrdPoint* nearestPoints[NOF_TRD_LAYERS];
+   const CbmStsPoint* nearestPointsSts[NOF_STS_STATIONS];
+   Double_t pullX[NOF_TRD_LAYERS];
+   Double_t pullY[NOF_TRD_LAYERS];
+   Double_t pullXsts[NOF_STS_STATIONS];
+   Double_t pullYsts[NOF_STS_STATIONS];
    
-   TrackDesc() : /*tof(), */isPrimary(false) {}
+   TrackDesc() : /*tof(), */isPrimary(false), ptr(0), nearestHitDist{ -1, -1, -1, -1 }, nearestHitDistSts{ -1, -1 }, nearestPoints{ 0, 0, 0, 0 }, nearestPointsSts{ 0, 0 },
+   pullX{ 0, 0, 0, 0 }, pullY{ 0, 0, 0, 0 }, pullXsts{ 0, 0 }, pullYsts{ 0, 0 }
+   {
+   }
+   
+   TrackDesc(const TrackDesc&) = default;
+   TrackDesc& operator=(const TrackDesc&) = default;
 };
 
 static vector<vector<TrackDesc> > gTracks;
+
+CbmBinnedTracker* gTracker = 0;
+CbmBinnedStation* gTrdStation[NOF_TRD_LAYERS];
+
 static TH1F* stsXResHisto = 0;
 static TH1F* stsYResHisto = 0;
 static TH1F* stsTResHisto = 0;
@@ -61,6 +85,12 @@ static TH1F* tofXResHisto = 0;
 static TH1F* tofYResHisto = 0;
 static TH1F* tofTResHisto = 0;
 
+static TH1F* stsXPullHistos[] = { 0, 0 };
+static TH1F* stsYPullHistos[] = { 0, 0 };
+
+static TH1F* trdXPullHistos[] = { 0, 0, 0, 0 };
+static TH1F* trdYPullHistos[] = { 0, 0, 0, 0 };
+
 static TH1F* extrStsXHisto = 0;
 static TH1F* extrStsYHisto = 0;
 
@@ -68,6 +98,11 @@ static TH1F* vtxXHisto = 0;
 static TH1F* vtxYHisto = 0;
 static TH1F* vtxZHisto = 0;
 
+static TH1F* extrTrdXHistos[] = { 0, 0, 0, 0 };
+static TH1F* extrTrdYHistos[] = { 0, 0, 0, 0 };
+
+static TH1F* trdNearestHitDistHistos[] = { 0, 0, 0, 0 };
+static int trdNofStrangerHits[] = { 0, 0, 0, 0 };
 
 CbmBinnedTrackerQA::CbmBinnedTrackerQA() : fGlobalTracks(0), fStsTracks(0)/*, fMuchTracks(0)*/, fTrdTracks(0), fStsHits(0), fMuchHits(0), fTrdHits(0), fTofHits(0),
    fStsClusters(0), fMuchClusters(0), fTrdClusters(0), fTrdDigiMatches(0), fTofHitDigiMatches(0), fTofDigiPointMatches(0),
@@ -77,11 +112,30 @@ CbmBinnedTrackerQA::CbmBinnedTrackerQA() : fGlobalTracks(0), fStsTracks(0)/*, fM
 
 InitStatus CbmBinnedTrackerQA::Init()
 {
+   CbmBinnedGeoReader* geoReader = CbmBinnedGeoReader::Instance();
+   
+   if (0 == geoReader)
+      fLogger->Fatal(MESSAGE_ORIGIN, "Couldn't instantiate CbmBinnedGeoReader");
+   
+   geoReader->Read();
+   gTracker = CbmBinnedTracker::Instance();
+   
+   int nofStations = gTracker->fStations.size();
+   vector<CbmBinnedStation*>::iterator stIter = gTracker->fStations.begin();
+   ++stIter;
+   ++stIter;
+   
+   for (int i = 0; i < NOF_TRD_LAYERS; ++i)
+   {
+      gTrdStation[i] = *stIter++;
+      gTrdStation[i]->SetMinT(-100);
+   }
+   
    stsXResHisto = new TH1F("stsXResHisto", "stsXResHisto", 200, -0.1, 0.1);
    stsYResHisto = new TH1F("stsYResHisto", "stsYResHisto", 200, -0.1, 0.1);
    stsTResHisto = new TH1F("stsTResHisto", "stsTResHisto", 200, -10.0, 10.0);
-   trdXResHisto = new TH1F("trdXResHisto", "trdXResHisto", 200, -10.0, 10.0);
-   trdYResHisto = new TH1F("trdYResHisto", "trdYResHisto", 200, -10.0, 10.0);
+   trdXResHisto = new TH1F("trdXResHisto", "trdXResHisto", 600, -60.0, 60.0);
+   trdYResHisto = new TH1F("trdYResHisto", "trdYResHisto", 600, -60.0, 60.0);
    trdTResHisto = new TH1F("trdTResHisto", "trdTResHisto", 200, -10.0, 10.0);
    muchXResHisto = new TH1F("muchXResHisto", "muchXResHisto", 200, -3.0, 3.0);
    muchYResHisto = new TH1F("muchYResHisto", "muchYResHisto", 200, -3.0, 3.0);
@@ -96,6 +150,35 @@ InitStatus CbmBinnedTrackerQA::Init()
    vtxXHisto = new TH1F("vtxXHisto", "vtxXHisto", 100, -0.5, 0.5);
    vtxYHisto = new TH1F("vtxYHisto", "vtxYHisto", 100, -0.5, 0.5);
    vtxZHisto = new TH1F("vtxZHisto", "vtxZHisto", 100, -0.5, 0.5);
+   
+   for (int i = 0; i < 2; ++i)
+   {
+      char name[256];
+      sprintf(name, "stsXPullHistos_%d", i);
+      Double_t range = 5;
+      stsXPullHistos[i] = new TH1F(name, name, 200, -range, range);
+      sprintf(name, "stsYPullHistos_%d", i);
+      stsYPullHistos[i] = new TH1F(name, name, 200, -range, range);
+   }
+   
+   for (int i = 0; i < 4; ++i)
+   {
+      char name[256];
+      sprintf(name, "extrTrdXHisto_%d", i);
+      extrTrdXHistos[i] = new TH1F(name, name, 200, 0.5, 0.5);
+      sprintf(name, "extrTrdYHisto_%d", i);
+      extrTrdYHistos[i] = new TH1F(name, name, 200, 0.5, 0.5);
+      
+      sprintf(name, "trdNearestHitDistHistos_%d", i);
+      trdNearestHitDistHistos[i] = new TH1F(name, name, 200, -100, 100);
+      
+      sprintf(name, "trdXPullHistos_%d", i);
+      Double_t range = i % 2 ? 5 : 25;
+      trdXPullHistos[i] = new TH1F(name, name, 200, -range, range);
+      sprintf(name, "trdYPullHistos_%d", i);
+      range = i % 2 ? 25 : 5;
+      trdYPullHistos[i] = new TH1F(name, name, 200, -range, range);
+   }
    
    FairRootManager* ioman = FairRootManager::Instance();
     
@@ -127,10 +210,10 @@ InitStatus CbmBinnedTrackerQA::Init()
    if (0 == fStsHits)
       fLogger->Fatal(MESSAGE_ORIGIN, "No sts hits in the input file");
    
-   fMuchHits = static_cast<TClonesArray*> (ioman->GetObject("MuchPixelHit"));
+   /*fMuchHits = static_cast<TClonesArray*> (ioman->GetObject("MuchPixelHit"));
    
    if (0 == fMuchHits)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No much hits in the input file");
+      fLogger->Fatal(MESSAGE_ORIGIN, "No much hits in the input file");*/
    
    fTrdHits = static_cast<TClonesArray*> (ioman->GetObject("TrdHit"));
    
@@ -147,11 +230,12 @@ InitStatus CbmBinnedTrackerQA::Init()
    if (0 == fStsClusters)
       fLogger->Fatal(MESSAGE_ORIGIN, "No sts clusters in the input file");
    
-   fMuchClusters = static_cast<TClonesArray*> (ioman->GetObject("MuchCluster"));
+   /*fMuchClusters = static_cast<TClonesArray*> (ioman->GetObject("MuchCluster"));
    
    if (0 == fMuchClusters)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No much clusters in the input file");
+      fLogger->Fatal(MESSAGE_ORIGIN, "No much clusters in the input file");*/
    
+#ifndef TRD_IDEAL   
    fTrdClusters = static_cast<TClonesArray*> (ioman->GetObject("TrdCluster"));
    
    if (0 == fTrdClusters)
@@ -161,6 +245,7 @@ InitStatus CbmBinnedTrackerQA::Init()
    
    if (0 == fTrdDigiMatches)
       fLogger->Fatal(MESSAGE_ORIGIN, "No trd hit to digi matches in the input file");
+#endif//TRD_IDEAL
    
    fTofHitDigiMatches = static_cast<TClonesArray*> (ioman->GetObject("TofDigiMatch"));
    
@@ -177,15 +262,17 @@ InitStatus CbmBinnedTrackerQA::Init()
    if (0 == fStsDigis)
       fLogger->Fatal(MESSAGE_ORIGIN, "No sts digis in the input file");
    
-   fMuchDigis = static_cast<TClonesArray*> (ioman->GetObject("MuchDigi"));
+   /*fMuchDigis = static_cast<TClonesArray*> (ioman->GetObject("MuchDigi"));
    
    if (0 == fMuchDigis)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No much digis in the input file");
+      fLogger->Fatal(MESSAGE_ORIGIN, "No much digis in the input file");*/
    
+#ifndef TRD_IDEAL
    fTrdDigis = static_cast<TClonesArray*> (ioman->GetObject("TrdDigi"));
    
    if (0 == fTrdDigis)
       fLogger->Fatal(MESSAGE_ORIGIN, "No trd digis in the input file");
+#endif//TRD_IDEAL
    
    fTofDigis = static_cast<TClonesArray*> (ioman->GetObject("TofDigi"));
    
@@ -207,10 +294,10 @@ InitStatus CbmBinnedTrackerQA::Init()
    if (0 == fStsPoints)
       fLogger->Fatal(MESSAGE_ORIGIN, "No sts MC points in the input file");
    
-   fMuchPoints = mcManager->InitBranch("MuchPoint");
+   /*fMuchPoints = mcManager->InitBranch("MuchPoint");
    
    if (0 == fMuchPoints)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No much MC points in the input file");
+      fLogger->Fatal(MESSAGE_ORIGIN, "No much MC points in the input file");*/
    
    fTrdPoints = mcManager->InitBranch("TrdPoint");
    
@@ -233,6 +320,7 @@ InitStatus CbmBinnedTrackerQA::Init()
       {
          TrackDesc& track = eventTracks[j];
          const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*> (fMCTracks->Get(0, i, j));
+         track.ptr = mcTrack;
          
          if (mcTrack->GetMotherId() < 0)
          {
@@ -254,11 +342,13 @@ InitStatus CbmBinnedTrackerQA::Init()
          const CbmStsPoint* stsPoint = static_cast<const CbmStsPoint*> (fStsPoints->Get(0, i, j));
          Int_t trackId = stsPoint->GetTrackID();
          Int_t stationNumber = CbmStsSetup::Instance()->GetStationNumber(stsPoint->GetDetectorID());
-         tracks[trackId].sts[stationNumber].first.insert(j);
+         //tracks[trackId].sts[stationNumber].first.insert(j);
+         TrackDesc& trackDesk = tracks[trackId];
+         trackDesk.stsPoints[stationNumber].insert(stsPoint);
       }
    }
    
-   for (Int_t i = 0; fMuchPoints->Size(0, i) >= 0; ++i)
+   /*for (Int_t i = 0; fMuchPoints->Size(0, i) >= 0; ++i)
    {
       Int_t nofPoints = fMuchPoints->Size(0, i);
       vector<TrackDesc>& tracks = gTracks[i];
@@ -272,7 +362,7 @@ InitStatus CbmBinnedTrackerQA::Init()
          int stationNumber = muchStationNumber * NOF_MUCH_LAYERS + layerNumber;
          //tracks[trackId].much[stationNumber].first.insert(j);
       }
-   }
+   }*/
    
    for (Int_t i = 0; fTrdPoints->Size(0, i) >= 0; ++i)
    {
@@ -284,7 +374,9 @@ InitStatus CbmBinnedTrackerQA::Init()
          const CbmTrdPoint* trdPoint = static_cast<const CbmTrdPoint*> (fTrdPoints->Get(0, i, j));
          Int_t trackId = trdPoint->GetTrackID();
          int stationNumber = CbmTrdAddress::GetLayerId(trdPoint->GetModuleAddress());
-         tracks[trackId].trd[stationNumber].first.insert(j);
+         //tracks[trackId].trd[stationNumber].first.insert(j);
+         TrackDesc& trackDesk = tracks[trackId];
+         trackDesk.trdPoints[stationNumber].insert(trdPoint);
       }
    }
    
@@ -304,8 +396,43 @@ InitStatus CbmBinnedTrackerQA::Init()
    return kSUCCESS;
 }
 
+void CbmBinnedTrackerQA::IterateTrdHits(std::function<void(const CbmTrdHit*, const CbmTrdPoint*)> handleData)
+{
+   Int_t nofTrdHits = fTrdHits->GetEntriesFast();
+   
+   for (Int_t i = 0; i < nofTrdHits; ++i)
+   {
+      const CbmTrdHit* trdHit = static_cast<const CbmTrdHit*> (fTrdHits->At(i));
+      Int_t stationNumber = trdHit->GetPlaneId();      
+      Int_t clusterId = trdHit->GetRefId();
+      const CbmTrdCluster* cluster = static_cast<const CbmTrdCluster*> (fTrdClusters->At(clusterId));
+      Int_t nofDigis = cluster->GetNofDigis();
+      
+      for (Int_t j = 0; j < nofDigis; ++j)
+      {
+         Int_t digiId = cluster->GetDigi(j);
+         const CbmMatch* match = static_cast<const CbmMatch*> (fTrdDigiMatches->At(digiId));
+         Int_t nofLinks = match->GetNofLinks();
+
+         for (Int_t k = 0; k < nofLinks; ++k)
+         {
+            const CbmLink& link = match->GetLink(k);
+            Int_t eventId = link.GetEntry();
+            Int_t mcPointId = link.GetIndex();
+            const CbmTrdPoint* trdPoint = static_cast<const CbmTrdPoint*> (fTrdPoints->Get(0, eventId, mcPointId));
+            handleData(trdHit, trdPoint);
+         }
+      }
+   }// TRD hits
+}
+
+static Int_t gEventNumber = 0;
+
 void CbmBinnedTrackerQA::Exec(Option_t* opt)
 {
+   gTracker->Clear();        
+   CbmBinnedHitReader::Instance()->Read();
+        
    Int_t nofStsHits = fStsHits->GetEntriesFast();
    
    for (Int_t i = 0; i < nofStsHits; ++i)
@@ -332,8 +459,22 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
             const CbmStsPoint* stsPoint = static_cast<const CbmStsPoint*> (fStsPoints->Get(0, eventId, mcPointId));
             Int_t trackId = stsPoint->GetTrackID();
             TrackDesc& trackDesk = gTracks[eventId][trackId];
-            trackDesk.sts[stationNumber].first.insert(i);
-            trackDesk.stsPoints[stationNumber].insert(stsPoint);
+            trackDesk.sts[stationNumber].first.insert(mcPointId);
+            Double_t mcX = (stsPoint->GetXIn() + stsPoint->GetXOut()) / 2;
+            Double_t mcY = (stsPoint->GetYIn() + stsPoint->GetYOut()) / 2;
+            
+            if (trackDesk.isPrimary && !trackDesk.stsPoints[0].empty() && !trackDesk.stsPoints[1].empty())
+            {
+               Double_t dist = std::sqrt((stsHit->GetX() - mcX) * (stsHit->GetX() - mcX) + (stsHit->GetY() - mcY) * (stsHit->GetY() - mcY));
+               
+               if (trackDesk.nearestHitDistSts[stationNumber] < 0 || dist < trackDesk.nearestHitDistSts[stationNumber])
+               {
+                  trackDesk.nearestHitDistSts[stationNumber] = dist;
+                  trackDesk.nearestPointsSts[stationNumber] = stsPoint;
+                  trackDesk.pullXsts[stationNumber] = (stsHit->GetX() - mcX) / stsHit->GetDx();
+                  trackDesk.pullYsts[stationNumber] = (stsHit->GetY() - mcY) / stsHit->GetDy();
+               }
+            }
          }
       }
       
@@ -358,7 +499,22 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
             stsTResHisto->Fill(stsHit->GetTime() - stsPoint->GetTime());
             Int_t trackId = stsPoint->GetTrackID();
             TrackDesc& trackDesk = gTracks[eventId][trackId];
-            trackDesk.sts[stationNumber].first.insert(i);
+            trackDesk.sts[stationNumber].first.insert(mcPointId);
+            Double_t mcX = (stsPoint->GetXIn() + stsPoint->GetXOut()) / 2;
+            Double_t mcY = (stsPoint->GetYIn() + stsPoint->GetYOut()) / 2;
+            
+            if (trackDesk.isPrimary && !trackDesk.stsPoints[0].empty() && !trackDesk.stsPoints[1].empty())
+            {
+               Double_t dist = std::sqrt((stsHit->GetX() - mcX) * (stsHit->GetX() - mcX) + (stsHit->GetY() - mcY) * (stsHit->GetY() - mcY));
+               
+               if (trackDesk.nearestHitDistSts[stationNumber] < 0 || dist < trackDesk.nearestHitDistSts[stationNumber])
+               {
+                  trackDesk.nearestHitDistSts[stationNumber] = dist;
+                  trackDesk.nearestPointsSts[stationNumber] = stsPoint;
+                  trackDesk.pullXsts[stationNumber] = (stsHit->GetX() - mcX) / stsHit->GetDx();
+                  trackDesk.pullYsts[stationNumber] = (stsHit->GetY() - mcY) / stsHit->GetDy();
+               }
+            }
          }
       }
    }// STS hits
@@ -403,8 +559,9 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
    for (Int_t i = 0; i < nofTrdHits; ++i)
    {
       const CbmTrdHit* trdHit = static_cast<const CbmTrdHit*> (fTrdHits->At(i));
-      Int_t stationNumber = trdHit->GetPlaneId();
+      Int_t stationNumber = trdHit->GetPlaneId();      
       Int_t clusterId = trdHit->GetRefId();
+#ifndef TRD_IDEAL
       const CbmTrdCluster* cluster = static_cast<const CbmTrdCluster*> (fTrdClusters->At(clusterId));
       Int_t nofDigis = cluster->GetNofDigis();
       
@@ -420,15 +577,141 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
             Int_t eventId = link.GetEntry();
             Int_t mcPointId = link.GetIndex();
             const CbmTrdPoint* trdPoint = static_cast<const CbmTrdPoint*> (fTrdPoints->Get(0, eventId, mcPointId));
-            trdXResHisto->Fill(trdHit->GetX() - (trdPoint->GetXIn() + trdPoint->GetXOut()) / 2);
-            trdYResHisto->Fill(trdHit->GetY() - (trdPoint->GetYIn() + trdPoint->GetYOut()) / 2);
+            Double_t mcX = (trdPoint->GetXIn() + trdPoint->GetXOut()) / 2;
+            Double_t mcY = (trdPoint->GetYIn() + trdPoint->GetYOut()) / 2;
+            trdXResHisto->Fill(trdHit->GetX() - mcX);
+            trdYResHisto->Fill(trdHit->GetY() - mcY);
             trdTResHisto->Fill(trdHit->GetTime() - trdPoint->GetTime());
             Int_t trackId = trdPoint->GetTrackID();
             TrackDesc& trackDesk = gTracks[eventId][trackId];
             trackDesk.trd[stationNumber].first.insert(i);
+            
+            if (trackDesk.isPrimary && !trackDesk.trdPoints[0].empty() && !trackDesk.trdPoints[1].empty() && !trackDesk.trdPoints[2].empty() && !trackDesk.trdPoints[3].empty())
+            {
+               Double_t dist = std::sqrt((trdHit->GetX() - mcX) * (trdHit->GetX() - mcX) + (trdHit->GetY() - mcY) * (trdHit->GetY() - mcY));
+               
+               if (trackDesk.nearestHitDist[stationNumber] < 0 || dist < trackDesk.nearestHitDist[stationNumber])
+               {
+                  trackDesk.nearestHitDist[stationNumber] = dist;
+                  trackDesk.nearestPoints[stationNumber] = trdPoint;
+                  trackDesk.pullX[stationNumber] = (trdHit->GetX() - mcX) / trdHit->GetDx();
+                  trackDesk.pullY[stationNumber] = (trdHit->GetY() - mcY) / trdHit->GetDy();
+               }
+            }
          }
       }
+#else//TRD_IDEAL
+      const CbmTrdPoint* trdPoint = static_cast<const CbmTrdPoint*> (fTrdPoints->Get(0, gEventNumber, clusterId));
+      Double_t mcX = (trdPoint->GetXIn() + trdPoint->GetXOut()) / 2;
+      Double_t mcY = (trdPoint->GetYIn() + trdPoint->GetYOut()) / 2;
+      trdXResHisto->Fill(trdHit->GetX() - mcX);
+      trdYResHisto->Fill(trdHit->GetY() - mcY);
+      trdTResHisto->Fill(trdHit->GetTime() - trdPoint->GetTime());
+      Int_t trackId = trdPoint->GetTrackID();
+      TrackDesc& trackDesk = gTracks[gEventNumber][trackId];
+      trackDesk.trd[stationNumber].first.insert(i);
+
+      if (trackDesk.isPrimary && !trackDesk.trdPoints[0].empty() && !trackDesk.trdPoints[1].empty() && !trackDesk.trdPoints[2].empty() && !trackDesk.trdPoints[3].empty())
+      {
+         Double_t dist = std::sqrt((trdHit->GetX() - mcX) * (trdHit->GetX() - mcX) + (trdHit->GetY() - mcY) * (trdHit->GetY() - mcY));
+
+         if (trackDesk.nearestHitDist[stationNumber] < 0 || dist < trackDesk.nearestHitDist[stationNumber])
+         {
+            trackDesk.nearestHitDist[stationNumber] = dist;
+            trackDesk.nearestPoints[stationNumber] = trdPoint;
+            trackDesk.pullX[stationNumber] = (trdHit->GetX() - mcX) / trdHit->GetDx();
+            trackDesk.pullY[stationNumber] = (trdHit->GetY() - mcY) / trdHit->GetDy();
+         }
+      }
+#endif//TRD_IDEAL
    }// TRD hits
+   
+   /*IterateTrdHits(
+      [](const CbmTrdHit* trdHit, const CbmTrdPoint* trdPoint)->void
+      {
+         Double_t mcX = (trdPoint->GetXIn() + trdPoint->GetXOut()) / 2;
+         Double_t mcY = (trdPoint->GetYIn() + trdPoint->GetYOut()) / 2;
+      }
+   );*/
+   vector<TrackDesc>& evMCTracks = gTracks[gEventNumber];
+   int trackIndex = 0;
+   
+   for (vector<TrackDesc>::const_iterator i = evMCTracks.begin(); i != evMCTracks.end(); ++i)
+   {
+      const TrackDesc& trackDesc = *i;
+      int nofSt = -1;
+      
+      for (int j = 0; j < NOF_TRD_LAYERS; ++j)
+      {         
+         if (trackDesc.nearestHitDist[j] >= 0)
+         {
+            Double_t dist = trackDesc.nearestHitDist[j];
+            const CbmTrdPoint* trdPoint = trackDesc.nearestPoints[j];
+            Double_t mcX = (trdPoint->GetXIn() + trdPoint->GetXOut()) / 2;
+            Double_t mcY = (trdPoint->GetYIn() + trdPoint->GetYOut()) / 2;
+            bool sameTrack = false;
+            int nofHits = 0;
+            gTrdStation[j]->SearchHits(0, 0, mcY - dist, mcY + dist, mcX - dist, mcX + dist, -90, 290,
+               [&](CbmTBin::HitHolder& hitHolder)->void
+               {
+                  const CbmPixelHit* hit = hitHolder.hit;
+                  Double_t x = hit->GetX();
+                  Double_t y = hit->GetY();
+                  Double_t dist2 = std::sqrt((x - mcX) * (x - mcX) + (y - mcY) * (y - mcY));
+                  
+                  if (dist2 < dist)
+                  {
+                     ++nofHits;
+                     Int_t clusterId = hit->GetRefId();
+#ifndef TRD_IDEAL
+                     const CbmTrdCluster* cluster = static_cast<const CbmTrdCluster*> (fTrdClusters->At(clusterId));
+                     Int_t nofDigis = cluster->GetNofDigis();
+
+                     for (Int_t k = 0; k < nofDigis; ++k)
+                     {
+                        Int_t digiId = cluster->GetDigi(k);
+                        const CbmMatch* match = static_cast<const CbmMatch*> (fTrdDigiMatches->At(digiId));
+                        Int_t nofLinks = match->GetNofLinks();
+
+                        for (Int_t l = 0; l < nofLinks; ++l)
+                        {
+                           const CbmLink& link = match->GetLink(l);
+                           Int_t eventId = link.GetEntry();
+                           Int_t mcPointId = link.GetIndex();
+                           const CbmTrdPoint* trdPoint = static_cast<const CbmTrdPoint*> (fTrdPoints->Get(0, eventId, mcPointId));
+                           Int_t trackId = trdPoint->GetTrackID();
+                           
+                           if (trackId == trackIndex)
+                           {
+                              sameTrack = true;
+                              break;
+                           }
+                        }
+                        
+                        if (sameTrack)
+                           break;
+                     }
+#else//TRD_IDEAL
+                     const CbmTrdPoint* trdPoint = static_cast<const CbmTrdPoint*> (fTrdPoints->Get(0, gEventNumber, clusterId));
+                     Int_t trackId = trdPoint->GetTrackID();
+
+                     if (trackId == trackIndex)
+                        sameTrack = true;
+#endif//TRD_IDEAL
+                  }
+               }
+            );
+            
+            if (!sameTrack && nofHits > 0)
+               ++nofSt;
+         }
+      }
+      
+      if (nofSt >= 0)
+         ++trdNofStrangerHits[nofSt];
+      
+      ++trackIndex;
+   }
    
    Int_t nofTofHits = fTofHitDigiMatches->GetEntriesFast();
    
@@ -488,6 +771,8 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
       HandleTrd(trdIndex);
       //HandleTof(tofIndex);
    }
+   
+   ++gEventNumber;
 }
 
 void CbmBinnedTrackerQA::HandleSts(Int_t stsTrackIndex)
@@ -521,7 +806,7 @@ void CbmBinnedTrackerQA::HandleSts(Int_t stsTrackIndex)
             Int_t trackId = stsPoint->GetTrackID();
             TrackDesc& trackDesk = gTracks[eventId][trackId];
             
-            if (trackDesk.sts[stationNumber].first.find(stsHitInd) != trackDesk.sts[stationNumber].first.end())
+            if (trackDesk.sts[stationNumber].first.find(mcPointId) != trackDesk.sts[stationNumber].first.end())
                trackDesk.sts[stationNumber].second.insert(stsTrackIndex);
          }
       }
@@ -545,7 +830,7 @@ void CbmBinnedTrackerQA::HandleSts(Int_t stsTrackIndex)
             Int_t trackId = stsPoint->GetTrackID();
             TrackDesc& trackDesk = gTracks[eventId][trackId];
             
-            if (trackDesk.sts[stationNumber].first.find(stsHitInd) != trackDesk.sts[stationNumber].first.end())
+            if (trackDesk.sts[stationNumber].first.find(mcPointId) != trackDesk.sts[stationNumber].first.end())
                trackDesk.sts[stationNumber].second.insert(stsTrackIndex);
          }
       }
@@ -602,6 +887,7 @@ void CbmBinnedTrackerQA::HandleTrd(Int_t trdTrackIndex)
       const CbmTrdHit* trdHit = static_cast<const CbmTrdHit*> (fTrdHits->At(trdHitInd));
       Int_t stationNumber = trdHit->GetPlaneId();
       Int_t clusterId = trdHit->GetRefId();
+#ifndef TRD_IDEAL
       const CbmTrdCluster* cluster = static_cast<const CbmTrdCluster*> (fTrdClusters->At(clusterId));
       Int_t nofDigis = cluster->GetNofDigis();
       
@@ -624,6 +910,14 @@ void CbmBinnedTrackerQA::HandleTrd(Int_t trdTrackIndex)
                trackDesk.trd[stationNumber].second.insert(trdTrackIndex);
          }
       }
+#else//TRD_IDEAL
+      const CbmTrdPoint* trdPoint = static_cast<const CbmTrdPoint*> (fTrdPoints->Get(0, gEventNumber, clusterId));
+      Int_t trackId = trdPoint->GetTrackID();
+      TrackDesc& trackDesk = gTracks[gEventNumber][trackId];
+
+      if (trackDesk.trd[stationNumber].first.find(trdHitInd) != trackDesk.trd[stationNumber].first.end())
+         trackDesk.trd[stationNumber].second.insert(trdTrackIndex);
+#endif//TRD_IDEAL
    }
 }
 
@@ -708,8 +1002,8 @@ void CbmBinnedTrackerQA::Finish()
             Double_t x0 = (p0->GetXIn() + p0->GetXOut()) / 2;
             Double_t y0 = (p0->GetYIn() + p0->GetYOut()) / 2;
             Double_t z0 = (p0->GetZIn() + p0->GetZOut()) / 2;
-            Double_t tx =  x0 / z0;
-            Double_t ty =  y0 / z0;
+            Double_t tx =  (x0 - trackDesc.ptr->GetStartX()) / (z0 - trackDesc.ptr->GetStartZ());
+            Double_t ty =  (y0 - trackDesc.ptr->GetStartY()) / (z0 - trackDesc.ptr->GetStartZ());
             
             for(set<const CbmStsPoint*>::const_iterator l = trackDesc.stsPoints[1].begin(); l != trackDesc.stsPoints[1].end(); ++l)
             {
@@ -733,6 +1027,122 @@ void CbmBinnedTrackerQA::Finish()
          
          if (!isRef)
             continue;
+         
+         for (set<const CbmStsPoint*>::const_iterator k = trackDesc.stsPoints[0].begin(); k != trackDesc.stsPoints[0].end(); ++k)
+         {
+            const CbmStsPoint* p1 = *k;
+            Double_t x1 = (p1->GetXIn() + p1->GetXOut()) / 2;
+            Double_t y1 = (p1->GetYIn() + p1->GetYOut()) / 2;
+            Double_t z1 = (p1->GetZIn() + p1->GetZOut()) / 2;
+            
+            for (set<const CbmStsPoint*>::const_iterator l = trackDesc.stsPoints[1].begin(); l != trackDesc.stsPoints[1].end(); ++l)
+            {
+               const CbmStsPoint* p2 = *l;
+               Double_t x2 = (p2->GetXIn() + p2->GetXOut()) / 2;
+               Double_t y2 = (p2->GetYIn() + p2->GetYOut()) / 2;
+               Double_t z2 = (p2->GetZIn() + p2->GetZOut()) / 2;
+               Double_t tx = (x2 - x1) / (z2 - z1);
+               Double_t ty = (y2 - y1) / (z2 - z1);
+               
+               for (set<const CbmTrdPoint*>::const_iterator m = trackDesc.trdPoints[0].begin(); m != trackDesc.trdPoints[0].end(); ++m)
+               {
+                  const CbmTrdPoint* p = *m;
+                  Double_t x = (p->GetXIn() + p->GetXOut()) / 2;
+                  Double_t y = (p->GetYIn() + p->GetYOut()) / 2;
+                  Double_t z = (p->GetZIn() + p->GetZOut()) / 2;
+                  Double_t deltaZ = z - z2;
+                  extrTrdXHistos[0]->Fill(x - x2 - tx * deltaZ);
+                  extrTrdYHistos[0]->Fill(y - y2 - ty * deltaZ);
+               }
+            }
+         }
+         
+         for (set<const CbmStsPoint*>::const_iterator k = trackDesc.stsPoints[1].begin(); k != trackDesc.stsPoints[1].end(); ++k)
+         {
+            const CbmStsPoint* p1 = *k;
+            Double_t x1 = (p1->GetXIn() + p1->GetXOut()) / 2;
+            Double_t y1 = (p1->GetYIn() + p1->GetYOut()) / 2;
+            Double_t z1 = (p1->GetZIn() + p1->GetZOut()) / 2;
+            
+            for (set<const CbmTrdPoint*>::const_iterator l = trackDesc.trdPoints[0].begin(); l != trackDesc.trdPoints[0].end(); ++l)
+            {
+               const CbmTrdPoint* p2 = *l;
+               Double_t x2 = (p2->GetXIn() + p2->GetXOut()) / 2;
+               Double_t y2 = (p2->GetYIn() + p2->GetYOut()) / 2;
+               Double_t z2 = (p2->GetZIn() + p2->GetZOut()) / 2;
+               Double_t tx = (x2 - x1) / (z2 - z1);
+               Double_t ty = (y2 - y1) / (z2 - z1);
+               
+               for (set<const CbmTrdPoint*>::const_iterator m = trackDesc.trdPoints[1].begin(); m != trackDesc.trdPoints[1].end(); ++m)
+               {
+                  const CbmTrdPoint* p = *m;
+                  Double_t x = (p->GetXIn() + p->GetXOut()) / 2;
+                  Double_t y = (p->GetYIn() + p->GetYOut()) / 2;
+                  Double_t z = (p->GetZIn() + p->GetZOut()) / 2;
+                  Double_t deltaZ = z - z2;
+                  extrTrdXHistos[1]->Fill(x - x2 - tx * deltaZ);
+                  extrTrdYHistos[1]->Fill(y - y2 - ty * deltaZ);
+               }
+            }
+         }
+         
+         for (set<const CbmTrdPoint*>::const_iterator k = trackDesc.trdPoints[0].begin(); k != trackDesc.trdPoints[0].end(); ++k)
+         {
+            const CbmTrdPoint* p1 = *k;
+            Double_t x1 = (p1->GetXIn() + p1->GetXOut()) / 2;
+            Double_t y1 = (p1->GetYIn() + p1->GetYOut()) / 2;
+            Double_t z1 = (p1->GetZIn() + p1->GetZOut()) / 2;
+            
+            for (set<const CbmTrdPoint*>::const_iterator l = trackDesc.trdPoints[1].begin(); l != trackDesc.trdPoints[1].end(); ++l)
+            {
+               const CbmTrdPoint* p2 = *l;
+               Double_t x2 = (p2->GetXIn() + p2->GetXOut()) / 2;
+               Double_t y2 = (p2->GetYIn() + p2->GetYOut()) / 2;
+               Double_t z2 = (p2->GetZIn() + p2->GetZOut()) / 2;
+               Double_t tx = (x2 - x1) / (z2 - z1);
+               Double_t ty = (y2 - y1) / (z2 - z1);
+               
+               for (set<const CbmTrdPoint*>::const_iterator m = trackDesc.trdPoints[2].begin(); m != trackDesc.trdPoints[2].end(); ++m)
+               {
+                  const CbmTrdPoint* p = *m;
+                  Double_t x = (p->GetXIn() + p->GetXOut()) / 2;
+                  Double_t y = (p->GetYIn() + p->GetYOut()) / 2;
+                  Double_t z = (p->GetZIn() + p->GetZOut()) / 2;
+                  Double_t deltaZ = z - z2;
+                  extrTrdXHistos[2]->Fill(x - x2 - tx * deltaZ);
+                  extrTrdYHistos[2]->Fill(y - y2 - ty * deltaZ);
+               }
+            }
+         }
+         
+         for (set<const CbmTrdPoint*>::const_iterator k = trackDesc.trdPoints[1].begin(); k != trackDesc.trdPoints[1].end(); ++k)
+         {
+            const CbmTrdPoint* p1 = *k;
+            Double_t x1 = (p1->GetXIn() + p1->GetXOut()) / 2;
+            Double_t y1 = (p1->GetYIn() + p1->GetYOut()) / 2;
+            Double_t z1 = (p1->GetZIn() + p1->GetZOut()) / 2;
+            
+            for (set<const CbmTrdPoint*>::const_iterator l = trackDesc.trdPoints[2].begin(); l != trackDesc.trdPoints[2].end(); ++l)
+            {
+               const CbmTrdPoint* p2 = *l;
+               Double_t x2 = (p2->GetXIn() + p2->GetXOut()) / 2;
+               Double_t y2 = (p2->GetYIn() + p2->GetYOut()) / 2;
+               Double_t z2 = (p2->GetZIn() + p2->GetZOut()) / 2;
+               Double_t tx = (x2 - x1) / (z2 - z1);
+               Double_t ty = (y2 - y1) / (z2 - z1);
+               
+               for (set<const CbmTrdPoint*>::const_iterator m = trackDesc.trdPoints[3].begin(); m != trackDesc.trdPoints[3].end(); ++m)
+               {
+                  const CbmTrdPoint* p = *m;
+                  Double_t x = (p->GetXIn() + p->GetXOut()) / 2;
+                  Double_t y = (p->GetYIn() + p->GetYOut()) / 2;
+                  Double_t z = (p->GetZIn() + p->GetZOut()) / 2;
+                  Double_t deltaZ = z - z2;
+                  extrTrdXHistos[3]->Fill(x - x2 - tx * deltaZ);
+                  extrTrdYHistos[3]->Fill(y - y2 - ty * deltaZ);
+               }
+            }
+         }
          
          /*for (int k = 0; k < NOF_MUCH_STATIONS * NOF_MUCH_LAYERS; ++k)
          {
@@ -783,6 +1193,25 @@ void CbmBinnedTrackerQA::Finish()
             
             if (!trackDesc.trd[k].second.empty())
                ++nofTrd[k];
+         }
+         
+         for (int k = 0; k < NOF_STS_STATIONS; ++k)
+         {
+            if (trackDesc.nearestHitDistSts[k] >= 0)
+            {
+               stsXPullHistos[k]->Fill(trackDesc.pullXsts[k]);
+               stsYPullHistos[k]->Fill(trackDesc.pullYsts[k]);
+            }
+         }
+         
+         for (int k = 0; k < NOF_TRD_LAYERS; ++k)
+         {
+            if (trackDesc.nearestHitDist[k] >= 0)
+            {
+               trdNearestHitDistHistos[k]->Fill(trackDesc.nearestHitDist[k]);
+               trdXPullHistos[k]->Fill(trackDesc.pullX[k]);
+               trdYPullHistos[k]->Fill(trackDesc.pullY[k]);
+            }
          }
          
          /*for (int k = 0; k < NOF_MUCH_STATIONS * NOF_MUCH_LAYERS; ++k)
@@ -856,6 +1285,13 @@ void CbmBinnedTrackerQA::Finish()
    //cout << "Nof MUCH[2]: " << nofMuch[2] << endl;
    //cout << "Nof TOF: " << nofTof << endl;
    
+   cout << "Nof stranger hits on TRD stations: ";
+   
+   for (int i = 0; i < 4; ++i)
+      cout << "[" << trdNofStrangerHits[i] << "]";
+   
+   cout << endl;
+   
    SaveHisto(stsXResHisto);
    SaveHisto(stsYResHisto);
    SaveHisto(stsTResHisto);
@@ -875,6 +1311,23 @@ void CbmBinnedTrackerQA::Finish()
    SaveHisto(vtxXHisto);
    SaveHisto(vtxYHisto);
    SaveHisto(vtxZHisto);
+   
+   for (int i = 0; i < 2; ++i)
+   {      
+      SaveHisto(stsXPullHistos[i]);
+      SaveHisto(stsYPullHistos[i]);
+   }
+   
+   for (int i = 0; i < 4; ++i)
+   {
+      SaveHisto(extrTrdXHistos[i]);
+      SaveHisto(extrTrdYHistos[i]);
+      
+      SaveHisto(trdNearestHitDistHistos[i]);
+      
+      SaveHisto(trdXPullHistos[i]);
+      SaveHisto(trdYPullHistos[i]);
+   }
 }
 
 ClassImp(CbmBinnedTrackerQA)

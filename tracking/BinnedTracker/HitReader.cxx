@@ -125,6 +125,8 @@ public:
 #include "CbmLink.h"
 #include "rich/CbmRichPoint.h"
 #include "CbmMatch.h"
+#include "CbmMCDataArray.h"
+#include "CbmMCDataManager.h"
 
 class CbmBinnedRichHitReader : public CbmBinnedHitReader
 {
@@ -133,7 +135,8 @@ public:
    {
       FairRootManager* ioman = FairRootManager::Instance();
       fDigiArray = static_cast<TClonesArray*> (ioman->GetObject("RichDigi"));
-      fPointArray = static_cast<TClonesArray*> (ioman->GetObject("RichPoint"));
+      CbmMCDataManager* mcManager = static_cast<CbmMCDataManager*> (ioman->GetObject("MCDataManager"));
+      fPointArray = mcManager->InitBranch("RichPoint");
    }
    
    CbmBinnedRichHitReader(const CbmBinnedRichHitReader&) = delete;
@@ -156,13 +159,8 @@ public:
          int cnt = 0;
          
          for (int j = 0; j < links.size(); ++j)
-         {
-            int pointId = links[j].GetIndex();
-            
-            if (pointId < 0)
-               continue;
-            
-            const CbmRichPoint* point = static_cast<const CbmRichPoint*>(fPointArray->At(pointId));
+         {            
+            const CbmRichPoint* point = static_cast<const CbmRichPoint*> (fPointArray->Get(links[j]));
             t += point->GetTime();
             ++cnt;
          }
@@ -183,7 +181,7 @@ public:
    
 private:
    TClonesArray* fDigiArray;
-   TClonesArray* fPointArray;
+   CbmMCDataArray* fPointArray;
 };
 
 #include "CbmMuchCluster.h"
@@ -199,7 +197,8 @@ public:
       FairRootManager* ioman = FairRootManager::Instance();
       fMuchClusters = static_cast<TClonesArray*> (ioman->GetObject("MuchCluster"));
       fMuchDigis = static_cast<TClonesArray*> (ioman->GetObject("MuchDigi"));
-      fMuchPoints = static_cast<TClonesArray*> (ioman->GetObject("MuchPoint"));
+      CbmMCDataManager* mcManager = static_cast<CbmMCDataManager*> (ioman->GetObject("MCDataManager"));
+      fMuchPoints = mcManager->InitBranch("MuchPoint");
    }
    
    CbmBinnedMuchHitReader(const CbmBinnedMuchHitReader&) = delete;
@@ -232,9 +231,7 @@ public:
             for (Int_t k = 0; k < nofLinks; ++k)
             {
                const CbmLink& link = match->GetLink(k);
-               Int_t eventId = link.GetEntry();
-               Int_t mcPointId = link.GetIndex();
-               const CbmMuchPoint* muchPoint = static_cast<const CbmMuchPoint*> (fMuchPoints->At(mcPointId));
+               const CbmMuchPoint* muchPoint = static_cast<const CbmMuchPoint*> (fMuchPoints->Get(link));
                t += muchPoint->GetTime();
                ++cnt;
             }
@@ -255,7 +252,7 @@ public:
 private:
    TClonesArray* fMuchClusters;
    TClonesArray* fMuchDigis;
-   TClonesArray* fMuchPoints;
+   CbmMCDataArray* fMuchPoints;
 };
 
 class CbmBinnedTrdHitReader : public CbmBinnedHitReader
@@ -266,7 +263,8 @@ public:
       FairRootManager* ioman = FairRootManager::Instance();
       fClusterArray = static_cast<TClonesArray*> (ioman->GetObject("TrdCluster"));
       fDigiMatchArray = static_cast<TClonesArray*> (ioman->GetObject("TrdDigiMatch"));
-      fPointArray = static_cast<TClonesArray*> (ioman->GetObject("TrdPoint"));
+      CbmMCDataManager* mcManager = static_cast<CbmMCDataManager*> (ioman->GetObject("MCDataManager"));
+      fPointArray = mcManager->InitBranch("TrdPoint");
    }
    
    CbmBinnedTrdHitReader(const CbmBinnedTrdHitReader&) = delete;
@@ -280,13 +278,14 @@ public:
       {
          /*const */CbmTrdHit* hit = static_cast</*const */CbmTrdHit*> (fHitArray->At(i));
          int stationNumber = hit->GetPlaneId();         
-         Int_t clusterId = hit->GetRefId();
+         /*Int_t clusterId = hit->GetRefId();
          const CbmCluster* cluster = static_cast<const CbmCluster*> (fClusterArray->At(clusterId));
          Int_t nDigis = cluster->GetNofDigis();
          Double_t t = 0;
          Double_t x = 0;
          Double_t y = 0;
          int cnt = 0;
+         int nofNegs = 0;
          
          for (Int_t j = 0; j < nDigis; ++j)
          {
@@ -296,8 +295,7 @@ public:
             for (Int_t k = 0; k < nMCs; ++k)
             {
                const CbmLink& lnk = digiMatch->GetLink(k);
-               Int_t pointId = lnk.GetIndex();
-               const CbmTrdPoint* point = static_cast<const CbmTrdPoint*> (fPointArray->At(pointId));
+               const CbmTrdPoint* point = static_cast<const CbmTrdPoint*> (fPointArray->Get(lnk));
                t += point->GetTime();
                x += (point->GetXIn() + point->GetXOut()) / 2;
                y += (point->GetYIn() + point->GetYOut()) / 2;
@@ -313,9 +311,14 @@ public:
             y /= cnt;
             //hit->SetY(y);
          }
+         else
+            x = 1;*/
          
-         hit->SetTime(t);
+         //hit->SetTime(t);
+         hit->SetTime(0);
          hit->SetTimeError(4);
+         //hit->SetDx(hit->GetDx() * 4);
+         //hit->SetDy(hit->GetDy() * 4);
          fStations[stationNumber]->AddHit(hit, i);
 #ifdef DO_ERROR_STAT
          UpdateMax("Trd", stationNumber, hit);
@@ -326,7 +329,7 @@ public:
 private:
    TClonesArray* fClusterArray;
    TClonesArray* fDigiMatchArray;
-   TClonesArray* fPointArray;
+   CbmMCDataArray* fPointArray;
 };
 
 class CbmBinnedTofHitReader : public CbmBinnedHitReader

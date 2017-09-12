@@ -11,7 +11,12 @@ CbmBinnedTracker* CbmBinnedTracker::Instance()
    static CbmBinnedTracker* theInstance = 0;
       
    if (0 == theInstance)
-      theInstance = new CbmBinnedTracker(CbmBinnedTrackerTask::Instance()->GetBeamDx(), CbmBinnedTrackerTask::Instance()->GetBeamDy());
+   {
+      if (CbmBinnedTrackerTask::Instance())
+         theInstance = new CbmBinnedTracker(CbmBinnedTrackerTask::Instance()->GetBeamDx(), CbmBinnedTrackerTask::Instance()->GetBeamDy());
+      else
+         theInstance = new CbmBinnedTracker(0.1, 0.1);
+   }
         
    return theInstance;
 }

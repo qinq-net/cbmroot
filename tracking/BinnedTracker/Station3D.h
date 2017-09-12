@@ -66,12 +66,17 @@ public:
         
         Double_t t = hit->GetTime();
         
-        if (t < fMinT || t >= fMaxT)
-            return;
+        //if (t < fMinT || t >= fMaxT)
+            //return;
         
         int yInd = (y - fMinY) / fYBinSize;
         int xInd = (x - fMinX) / fXBinSize;
         int tInd = (t - fMinT) / fTBinSize;
+        
+        if (tInd < 0)
+            tInd = 0;
+        else if (tInd >= fNofTBins)
+            tInd = fNofTBins - 1;
         
         CbmYBin& yBin = fYBins[yInd];
         CbmXBin& xBin = yBin[xInd];
@@ -92,26 +97,26 @@ public:
         {
             CbmYBin& yBin = fYBins[i];
             
-            if (!yBin.Use())
-                continue;
+            //if (!yBin.Use())
+                //continue;
             
             for (int j = 0; j < fNofXBins; ++j)
             {
                 CbmXBin& xBin = yBin[j];
             
-                if (!xBin.Use())
-                    continue;
+                //if (!xBin.Use())
+                    //continue;
                 
                 for (int k = 0; k < fNofTBins; ++k)
                 {
                     CbmTBin& tBin = xBin[k];
             
-                    if (!tBin.Use())
-                        continue;
+                    //if (!tBin.Use())
+                        //continue;
                     
                     for (std::list<CbmTBin::HitHolder>::iterator hi = tBin.HitsBegin(); hi != tBin.HitsEnd(); ++hi)
                     {
-                        if (hi->use)
+                        //if (hi->use)
                             handleHit(*hi);
                     }
                 }
@@ -120,6 +125,8 @@ public:
     }
     
     void SearchHits(Segment& segment, std::function<void(CbmTBin::HitHolder&)> handleHit);
+    void SearchHits(Double_t minZ, Double_t maxZ, Double_t minY, Double_t maxY, Double_t minX, Double_t maxX, Double_t minT, Double_t maxT,
+            std::function<void(CbmTBin::HitHolder&)> handleHit);
     
 private:
     CbmBinned3DStation(const CbmBinned3DStation&) = delete;

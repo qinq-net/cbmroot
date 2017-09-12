@@ -36,6 +36,8 @@ public:
         Segment* bestBranch;
         
         Segment(CbmTBin::HitHolder& beginHit, CbmTBin::HitHolder& endHit) : begin(beginHit), end(endHit), chiSq(cbmBinnedCrazyChiSq), children(), bestBranch(0) {}
+        Segment(const Segment&) = default;
+        Segment& operator=(const Segment&) = default;
     };
     
     struct SegmentComp
@@ -107,6 +109,42 @@ public:
         }
     }
     
+    Double_t GetScatX() const { return fScatX; }
+    Double_t GetScatXSq() const { return fScatXSq; }
+    
+    void SetScatX(Double_t v)
+    {
+        fScatX = v;
+        fScatXSq = v * v;
+    }
+    
+    Double_t GetScatY() const { return fScatY; }
+    Double_t GetScatYSq() const { return fScatYSq; }
+    
+    void SetScatY(Double_t v)
+    {
+        fScatY = v;
+        fScatYSq = v * v;
+    }
+    
+    Double_t GetNofSigmaX() const { return fNofSigmasX; }
+    Double_t GetNofSigmaXSq() const { return fNofSigmasXSq; }
+    
+    void SetNofSigmaX(Double_t v)
+    {
+        fNofSigmasX = v;
+        fNofSigmasXSq = v * v;
+    }
+    
+    Double_t GetNofSigmaY() const { return fNofSigmasY; }
+    Double_t GetNofSigmaYSq() const { return fNofSigmasYSq; }
+    
+    void SetNofSigmaY(Double_t v)
+    {
+        fNofSigmasY = v;
+        fNofSigmasYSq = v * v;
+    }
+    
     int GetXInd(Double_t v) const
     {
         int ind = (v - fMinX) / fXBinSize;
@@ -157,6 +195,8 @@ public:
     virtual void AddHit(const CbmPixelHit* hit, Int_t index) = 0;
     virtual void IterateHits(std::function<void(CbmTBin::HitHolder&)> handleHit) = 0;
     virtual void SearchHits(Segment& segment, std::function<void(CbmTBin::HitHolder&)> handleHit) = 0;
+    virtual void SearchHits(Double_t minZ, Double_t maxZ, Double_t minY, Double_t maxY, Double_t minX, Double_t maxX, Double_t minT, Double_t maxT,
+        std::function<void(CbmTBin::HitHolder&)> handleHit) = 0;
     
     void IterateSegments(std::function<void(Segment&)> handleSegment)
     {
@@ -206,11 +246,21 @@ protected:
     Double_t fDt;
     Double_t fDtSq;
     bool fDefaultUse;
+    Double_t fScatX;
+    Double_t fScatXSq;
+    Double_t fScatY;
+    Double_t fScatYSq;
     
 public:
     std::set<Segment, SegmentComp> fSegments;
     CbmTBin fVertexBin;
     CbmTBin::HitHolder fVertexHolder;
+    
+protected:
+    Double_t fNofSigmasX;
+    Double_t fNofSigmasXSq;
+    Double_t fNofSigmasY;
+    Double_t fNofSigmasYSq;
 };
 
 #endif /* STATION_H */

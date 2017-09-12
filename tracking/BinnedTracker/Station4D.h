@@ -374,6 +374,9 @@ public:
         }
     }
     
+    void SearchHits(Double_t minZ, Double_t maxZ, Double_t minY, Double_t maxY, Double_t minX, Double_t maxX, Double_t minT, Double_t maxT,
+            std::function<void(CbmTBin::HitHolder&)> handleHit) {}
+    
 private:
     CbmBinned4DStation(const CbmBinned4DStation&) = delete;
     CbmBinned4DStation& operator=(const CbmBinned4DStation&) = delete;
