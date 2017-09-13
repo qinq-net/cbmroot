@@ -23,6 +23,7 @@
 #include "CbmTofHit.h"
 #include "CbmTrdHit.h"
 #include "CbmTrdPoint.h"
+#include <functional>
 
 class CbmBinnedTrackerQA : public FairTask
 {
