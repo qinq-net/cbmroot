@@ -42,6 +42,7 @@ CbmStripHit.cxx
 CbmTrack.cxx
 CbmTrackMatch.cxx
 CbmCluster.cxx
+CbmModuleList.cxx
 
 CbmMCEpoch.cxx
 CbmMCTrack.cxx

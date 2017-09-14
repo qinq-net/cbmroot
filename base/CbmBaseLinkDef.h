@@ -5,7 +5,6 @@
 #pragma link off all functions;
 
 #pragma link C++ class CbmAddress;
-#pragma link C++ class CbmModuleList;
 
 //#pragma link C++ class CbmDigiManager+;
 #pragma link C++ class CbmPropagator+;

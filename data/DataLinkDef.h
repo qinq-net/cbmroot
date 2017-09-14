@@ -18,6 +18,7 @@
 #pragma link C++ class CbmMatch+;
 #pragma link C++ class CbmTrackMatchNew+;
 #pragma link C++ class CbmLink+;
+#pragma link C++ class CbmModuleList;
 
 #pragma link C++ class CbmMCEpoch+;
 #pragma link C++ class CbmMCTrack+;
