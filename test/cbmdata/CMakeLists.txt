@@ -11,9 +11,9 @@ File(COPY ${CBMROOT_SOURCE_DIR}/macro/include/.rootrc DESTINATION ${CBMROOT_BINA
 Macro(CreateGTestExeAndAddTest _testname _includeDirs _linkDirs _sources _dependencies _testdepend)
 
   Include_Directories(SYSTEM "${_includeDirs}")
-  Link_Directories("${_linkDirs}")
+  Link_Directories(${_linkDirs})
 
-  Add_Executable(${_testname} "${_sources}")
+  Add_Executable(${_testname} ${_sources})
   Target_Link_Libraries(${_testname} "${_dependencies}")
   Add_Test(${_testname} ${PROJECT_BINARY_DIR}/bin/${_testname})
   If(NOT ${_testdepend} STREQUAL "")
@@ -28,6 +28,7 @@ Set(INCLUDE_DIRECTORIES
   ${BASE_INCLUDE_DIRECTORIES} 
 )
 
+MESSAGE("FAIRROOT_LIBRARY_DIR: ${FAIRROOT_LIBRARY_DIR}")
 Set(LINK_DIRECTORIES
   ${ROOT_LIBRARY_DIR}
   ${FAIRROOT_LIBRARY_DIR}
@@ -111,7 +112,7 @@ Set(CbmConstantsSources
 )  
 
 CreateGTestExeAndAddTest(_GTestCbmConstants "${INCLUDE_DIRECTORIES}" "${LINK_DIRECTORIES}"
-                         "${CbmConstantsSources}" "${GTEST_BOTH_LIBRARIES}" "_GTestCbmEvent")
+                         "${CbmConstantsSources}" "${GTEST_BOTH_LIBRARIES};-pthread" "_GTestCbmEvent")
 
 #Set(CbmTrackSources
 #  ${CMAKE_SOURCE_DIR}/data/CbmTrack.cxx
