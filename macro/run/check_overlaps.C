@@ -22,8 +22,8 @@ void check_overlaps(const char* setup = "sis100_electron")
   TFile* f = new TFile(geoFile);
 
   gGeoManager = (TGeoManager*) f->Get("FAIRGeom"); 
-  //  gGeoManager->CheckOverlaps(0.001);
   gGeoManager->CheckOverlaps(0.0001);
+  gGeoManager->CheckOverlaps(0.0001, "s");
 
   TObjArray *overlapArray = gGeoManager->GetListOfOverlaps();
   Int_t numOverlaps = overlapArray->GetEntries();
@@ -37,13 +37,6 @@ void check_overlaps(const char* setup = "sis100_electron")
     cout << " All ok " << endl;
   }
 
-//  gGeoManager->CheckOverlaps(0.0001, "s");
-
-//  overlapArray = gGeoManager->GetListOfOverlaps();
-//  numOverlaps = overlapArray->GetEntries();
-//  gGeoManager->PrintOverlaps();
 
   RemoveGeoManager();
-//  gGeoManager->CheckGeometry();
-//  gGeoManager->CheckGeometryFull();
 }
