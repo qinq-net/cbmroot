@@ -1,127 +1,27 @@
-/******************************************************************************
- ** Creation of STS geometry in ROOT format (TGeo).
- **
- ** @file create_stsgeo_v17a.C
+/** @file create_psdgeo.C
  ** @author Volker Friese <v.friese@gsi.de>
- ** @since 15 June 2012
- ** @date 09.05.2014
- ** @author Tomas Balog <T.Balog@gsi.de>
+ ** @date 16 September 2017
+ ** @version 1.0
  **
- ** v16c: like v16b, but senors of ladders beampipe next to beampipe
- **       shifted closer to the pipe, like in the CAD model
- ** v16b: like v16a, but yellow sensors removed
- ** v16a: derived from v15c (no cones), but with sensor types renamed:
- ** 2 -> 1, 3 -> 2, 4 -> 3, 5 -> 4, 1 -> 5
+ ** This macro creates a PSD geometry in ROOT format to be used as input
+ ** for the transport simulation. It allows to create module stacks of
+ ** varying sizes; the numbers of rows and columns must both be uneven.
+ ** The centre module as well as the edge modules are omitted.
+ ** The module definition is implemented in the function ConstructModule.
  **
- ** v15c: as v15b without cones
- ** v15b: introduce modified carbon ladders from v13z
- ** v15a: with flipped ladder orientation for stations 0,2,4,6 to match CAD design
- **
- ** TODO:
- **
- ** DONE:
- ** v15b - use carbon macaroni as ladder support
- ** v15b - introduce a small gap between lowest sensor and carbon ladder
- ** v15b - build small cones for the first 2 stations
- ** v15b - within a station the ladders of adjacent units should not touch eachother - set gkLadderGapZ to 10 mm
- ** v15b - for all ladders set an even number of ladder elements 
- ** v15b - z offset of cones to ladders should not be 0.3 by default, but 0.26
- ** v15b - within a station the ladders should be aligned in z, defined either by the unit or the ladder with most sensors
- ** v15b - get rid of cone overlap in stations 7 and 8 - done by adapting rHole size
- **
- ** The geometry hierarachy is:
- **
- ** 1. Sensors  (see function CreateSensors)
- **    The sensors are the active volumes and the lowest geometry level.
- **    They are built as TGeoVolumes, shape box, material silicon.
- **    x size is determined by strip pitch 58 mu and 1024 strips 
- **    plus guard ring of 1.3 mm at each border -> 6.1992 cm.
- **    Sensor type 1 is half of that (3.0792 cm).
- **    y size is determined by strip length (2.2 / 4.2 / 6.3 cm) plus
- **    guard ring of 1.3 mm at top and bottom -> 2.46 / 4.46 / 6.46 cm.
- **    z size is a parameter, to be set by gkSensorThickness.
- **
- ** 2. Sectors  (see function CreateSectors)
- **    Sectors consist of several chained sensors. These are arranged
- **    vertically on top of each other with a gap to be set by
- **    gkChainGapY. Sectors are constructed as TGeoVolumeAssembly.
- **    The sectors are auxiliary volumes used for proper placement
- **    of the sensor(s) in the module. They do not show up in the
- **    final geometry.
- **
- ** 3. Modules (see function ConstructModule)
- **    A module is a readout unit, consisting of one sensor or
- **    a chain of sensors (see sector) and a cable.
- **    The cable extends from the top of the sector vertically to the
- **    top of the halfladder the module is placed in. The cable and module
- **    volume thus depend on the vertical position of the sector in 
- **    the halfladder. The cables consist of silicon with a thickness to be
- **    set by gkCableThickness.
- **    Modules are constructed as TGeoVolume, shape box, medium gStsMedium.
- **    The module construction can be switched off (gkConstructCables)
- **    to reproduce older geometries.
- **
- ** 4. Halfladders (see function ConstructHalfLadder)
- **    A halfladder is a vertical assembly of several modules. The modules
- **    are placed vertically such that their sectors overlap by 
- **    gkSectorOverlapY. They are displaced in z direction to allow for the 
- **    overlap in y by gkSectorGapZ.
- **    The horizontal placement of modules in the halfladder can be choosen
- **    to left aligned or right aligned, which only matters if sensors of
- **    different x size are involved.
- **    Halfladders are constructed as TGeoVolumeAssembly.
- **
- ** 5. Ladders (see function CreateLadders and ConstructLadder)
- **    A ladder is a vertical assembly of two halfladders, and is such the
- **    vertical building block of a station. The second (bottom) half ladder
- **    is rotated upside down. The vertical arrangement is such that the
- **    inner sectors of the two halfladders have the overlap gkSectorOverlapY
- **    (function CreateLadder) or that there is a vertical gap for the beam
- **    hole (function CreateLadderWithGap).
- **    Ladders are constructed as TGeoVolumeAssembly.
- **   
- ** 6. Stations (see function ConstructStation)
- **    A station represents one layer of the STS geometry: one measurement
- **    at (approximately) a given z position. It consist of several ladders
- **    arranged horizontally to cover the acceptance.
- **    The ladders are arranged such that there is a horizontal overlap
- **    between neighbouring ladders (gkLadderOverLapX) and a vertical gap
- **    to allow for this overlap (gkLadderGapZ). Each second ladder is
- **    rotated around its y axis to face away from or into the beam.
- **    Stations are constructed as TGeoVolumes, shape box minus tube (for
- **    the beam hole), material gStsMedium.
- **
- ** 7. STS
- **    The STS is a volume hosting the entire detectors system. It consists
- **    of several stations located at different z positions.
- **    The STS is constructed as TGeoVolume, shape box minus cone (for the
- **    beam pipe), material gStsMedium. The size of the box is computed to
- **    enclose all stations.
- *****************************************************************************/
-
-
-// Remark: With the proper steering variables, this should exactly reproduce
-// the geometry version v11b of A. Kotynia's described in the ASCII format.
-// The only exception is a minimal difference in the z position of the 
-// sectors/sensors. This is because of ladder types 2 and 4 containing the half
-// sensors around the beam hole (stations 1,2 and 3). In v11b, the two ladders
-// covering the beam hole cannot be transformed into each other by rotations,
-// but only by a reflection. This means they are constructionally different.
-// To avoid introducing another two ladder types, the difference in z position
-// was accepted.
-
-
-
+ ** The user can adjust the steering variables to the specific needs.
+ **/
 
 
 using std::cout;
 using std::endl;
-using std::setw;
+using std::fstream;
 using std::right;
+using std::setw;
 
 // Forward declarations
 TGeoVolume* ConstructModule(const char* name, Double_t moduleSize,
-                            Int_t nLayers);
+                            Int_t nLayers, fstream* info = 0);
 
 
 // ============================================================================
@@ -151,6 +51,23 @@ void create_psdgeo()
         << nModulesX << " " << nModulesY << endl;
     return;
   }
+  // --------------------------------------------------------------------------
+
+
+  // -------   Open info file   -----------------------------------------------
+  TString infoFileName = "psd_";
+  infoFileName = infoFileName + geoTag + ".geo.info";
+  fstream infoFile;
+  infoFile.open(infoFileName.Data(), fstream::out);
+  infoFile << "PSD geometry " << geoTag << " created with create_psdgeo.C"
+           << endl << endl;
+  infoFile << "Number of modules: " << nModulesX << " x " << nModulesY << endl;
+  infoFile << "Module size: " << moduleSize << " cm x " << moduleSize << " cm"
+           << endl;
+  infoFile << "PSD translation in cave: (" << psdX << ", " << psdY << ", "
+           << psdZ << ") cm" << endl;
+  infoFile << "PSD rotation around y axis: " << psdRotY << " degrees"
+           << endl << endl;
   // --------------------------------------------------------------------------
 
 
@@ -232,7 +149,7 @@ void create_psdgeo()
   
   // -----   Create the PSD modules   -----------------------------------------
   cout << endl;
-  TGeoVolume* module2060 = ConstructModule("module2060", 20., 60);
+  TGeoVolume* module2060 = ConstructModule("module2060", 20., 60, &infoFile);
   // --------------------------------------------------------------------------
 
 
@@ -254,6 +171,8 @@ void create_psdgeo()
        << endl;
   cout << "PSD size is " << 2. * psdSizeX << " cm x " << 2. * psdSizeY
        << " cm x " << 2. * psdSizeZ << " cm" << endl;
+  infoFile << endl << "PSD size is " << 2. * psdSizeX << " cm x "
+           << 2. * psdSizeY << " cm x " << 2. * psdSizeZ << " cm" << endl;
   // --------------------------------------------------------------------------
 
 
@@ -290,6 +209,7 @@ void create_psdgeo()
     } //# modules in y direction
   } //# modules in x direction
   cout << "PSD contains " << nModules << " modules." << endl;
+  infoFile << "PSD contains " << nModules << " modules." << endl;
   // --------------------------------------------------------------------------
 
 
@@ -323,7 +243,9 @@ void create_psdgeo()
   cout << endl;
   cout << "==> Geometry " << psd->GetName() << " written to "
        << geoFileName << endl;
+  cout << "==> Info written to " << infoFileName << endl;
   geoFile->Close();
+  infoFile.close();
   // --------------------------------------------------------------------------
 
 
@@ -353,7 +275,8 @@ void create_psdgeo()
 
 
 /** ======================================================================= **/
-TGeoVolume* ConstructModule(const char* name, Double_t sizeXY, Int_t nLayers) {
+TGeoVolume* ConstructModule(const char* name, Double_t sizeXY,
+                            Int_t nLayers, fstream* info) {
 
   // The module consists of nLayers of scintillators covered with Tyvek.
   // Between each two scintillators, there is a lead layer (total nLayers -1).
@@ -379,6 +302,23 @@ TGeoVolume* ConstructModule(const char* name, Double_t sizeXY, Int_t nLayers) {
   // ------------------------------------------------------------------------
 
 
+  // -----   Info to file   -------------------------------------------------
+  if ( info ) {
+    (*info) << "Parameters of module " << name << ": " << endl;
+    (*info) << "Size: " << sizeXY << " cm x " << sizeXY << " cm" << endl;
+    (*info) << "Number of layers: " << nLayers << endl;
+    (*info) << "Thickness of lead layers: " << leadD << " cm" << endl;
+    (*info) << "Thickness of scintillators: " << scintD << " cm" << endl;
+    (*info) << "Thickness of Tyvek wrap: " << tyvekD << " cm" << endl;
+    (*info) << "Thickness of iron box: (" << boxDx << " / " << boxDy
+            << " / " << boxDz << ") cm" << endl;
+    (*info) << "Height of fibre channel: " << chanDy << " cm" << endl;
+    (*info) << "Distance of channel from edges: left " << chanDistL
+            << " cm, right " << chanDistR << " cm" << endl;
+  }
+  // ------------------------------------------------------------------------
+
+
   // -----   Get required media   -------------------------------------------
   TGeoMedium* medAir = gGeoManager->GetMedium("air");  // PSD
   if ( ! medAir ) Fatal("ConstructModule", "Medium air not found");
@@ -392,13 +332,7 @@ TGeoVolume* ConstructModule(const char* name, Double_t sizeXY, Int_t nLayers) {
   if ( ! medScint ) Fatal("ConstructModule", "Medium PsdScint not found");
   TGeoMedium* medFibre = gGeoManager->GetMedium("PsdFibre");  // Fibres
   if ( ! medFibre ) Fatal("ConstructModule", "Medium PsdFibre not found");
-  medAir->Print();
-  medIron->Print();
-  medLead->Print();
-  medTyvek->Print();
-  medScint->Print();
-  medFibre->Print();
- // ------------------------------------------------------------------------
+  // ------------------------------------------------------------------------
 
 
 
@@ -455,8 +389,8 @@ TGeoVolume* ConstructModule(const char* name, Double_t sizeXY, Int_t nLayers) {
 
 
   // ----   Positioning of the fibre channel   ------------------------------
-  // The channel extends from 0.5 cm from the left edge of the lead filler
-  // to 2 cm from its right edge (seen from the front). It is top-aligned
+  // The channel extends from chanDistL from the left edge of the lead filler
+  // to chanDistR from its right edge (seen from the front). It is top-aligned
   // with the lead filler.
   Double_t chanShiftX = 0.5 * ( chanDistL - chanDistR );
   Double_t chanShiftY = leadLy - 0.5 * chanDy;
