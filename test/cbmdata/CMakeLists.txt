@@ -34,6 +34,7 @@ Set(LINK_DIRECTORIES
   ${FAIRROOT_LIBRARY_DIR}
 )
 
+
 Set(DEPENDENCIES
   ${ROOT_LIBRARIES} 
   ${GTEST_BOTH_LIBRARIES}
@@ -43,8 +44,11 @@ Set(DEPENDENCIES
   ParBase
   GeoBase
   MbsAPI
-  rt
 )
+
+if (CMAKE_SYSTEM_NAME MATCHES Linux)
+  set(DEPENDENCIES ${DEPENDENCIES} rt)
+endif()
 
 Set(CbmLinkSources
   ${CMAKE_SOURCE_DIR}/data/CbmLink.cxx
