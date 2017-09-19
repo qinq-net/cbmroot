@@ -43,6 +43,7 @@ Set(DEPENDENCIES
   ParBase
   GeoBase
   MbsAPI
+  rt
 )
 
 Set(CbmLinkSources
