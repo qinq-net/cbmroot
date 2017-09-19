@@ -39,6 +39,10 @@ Set(DEPENDENCIES
   ${GTEST_BOTH_LIBRARIES}
   FairTools
   CbmData
+  Base
+  ParBase
+  GeoBase
+  MbsAPI
 )
 
 Set(CbmLinkSources
