@@ -3,6 +3,13 @@
 # This library provides the interface to the FLIB board or to files in tca
 # format written by the FLIB
 
+include(DownloadProject)
+download_project(PROJ            fles_ipc_legacy
+                 GIT_REPOSITORY  "https://github.com/cbm-fles/fles_ipc"
+                 GIT_TAG         "88dc25a4e0301b0ada25d9a22ca2541c1eb3590e"
+                 SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/ipc
+)
+
 Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/external/ipc_legacy/ipc/src
 )

@@ -2,6 +2,20 @@
 # the array .
 # The extension is already found.  Any number of sources could be listed here.
 
+# Download KFParticle and KFParticlePerformance subdirectories from external SVN repository when running cmake.
+# Allows to get rid of the svn externals. Must be done at configuration time since the code is 
+# needed when configuring the KF library target below.
+include(DownloadProject)
+download_project(PROJ            KFParticle
+                 SVN_REPOSITORY  "https://subversion.gsi.de/fairroot/cbmroot/development/mzyzak/KFParticle/KFParticle"
+                 SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/KFParticle
+)
+
+download_project(PROJ            KFParticlePerformance
+                 SVN_REPOSITORY  "https://subversion.gsi.de/fairroot/cbmroot/development/mzyzak/KFParticle/KFParticlePerformance"
+                 SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/KFParticlePerformance
+)
+
 Set(INCLUDE_DIRECTORIES
 ${CBMROOT_SOURCE_DIR}/base 
 ${CBMROOT_SOURCE_DIR}/data

@@ -2,9 +2,15 @@
 # The code is external in github as defined in the svn:extrenals.
 # Add some extra compile warnings 
 
+download_project(PROJ            spadic
+                 GIT_REPOSITORY  "https://github.com/spadic/spadic10-software"
+                 GIT_TAG         "286875d1f543a169e29388d9673d2738f337de18"
+                 SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/spadic
+)
+
 Set(INCLUDE_DIRECTORIES
-  ${CBMROOT_SOURCE_DIR}/external/spadic/spadic/message
-  ${CBMROOT_SOURCE_DIR}/external/spadic/spadic/message/wrap/cpp
+  ${CBMROOT_SOURCE_DIR}/external/spadic/spadic/lib/message
+  ${CBMROOT_SOURCE_DIR}/external/spadic/spadic/lib/message/wrap/cpp
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
@@ -22,12 +28,12 @@ ${Boost_LIBRARY_DIRS}
 Link_Directories( ${LINK_DIRECTORIES})
 
 Set(C_SRCS
-spadic/message/message.c
-spadic/message/message_reader.c
+spadic/lib/message/message.c
+spadic/lib/message/message_reader.c
 )
 
 Set(CXX_SRCS
-spadic/message/wrap/cpp/Message.cpp
+spadic/lib/message/wrap/cpp/Message.cpp
 )
 
 Set_Source_Files_Properties(${CXX_SRCS} COMPILE_FLAGS "-Wall -pedantic -Wextra -Winit-self -Wundef -Wold-style-cast -Woverloaded-virtual -Wwrite-strings -Wnon-virtual-dtor")
