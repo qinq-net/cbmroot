@@ -208,10 +208,10 @@ Int_t CbmTrdUtils::GetModuleType(Int_t moduleAddress, CbmTrdModule *fModuleInfo,
     else if (nRows == 24)   type = 2;  // v17a
     else if (nRows == 12)   type = 3;  // v17a
 
-    else if (nRows == 32)   type = 1;  // v17c
-    else if (nRows == 16)   type = 2;  // v17c
-    else if (nRows ==  8)   type = 3;  // v17c
-    else if (nRows ==  4)   type = 4;  // v17c - not used
+    else if (nRows == 32)   type = 1;  // v17n  // v17c
+    else if (nRows == 16)   type = 2;           // v17c
+    else if (nRows ==  8)   type = 3;  // v17n  // v17c
+    else if (nRows ==  4)   type = 4;           // v17c - not used
   } 
   else if (nCols == 112)   // FEB-7x1
   {
@@ -230,10 +230,10 @@ Int_t CbmTrdUtils::GetModuleType(Int_t moduleAddress, CbmTrdModule *fModuleInfo,
   }
   else if (nCols == 144)   // FEB-9x1
   {
-    if      (nRows == 24)   type = 5;  // v17l
-    else if (nRows == 16)   type = 6;  // v17l
-    else if (nRows ==  8)   type = 7;  // v17l
-    else if (nRows ==  4)   type = 8;  // v17l
+    if      (nRows == 24)   type = 5;  // v17n  // v17l
+    else if (nRows == 16)   type = 6;           // v17l
+    else if (nRows ==  8)   type = 7;  // v17n  // v17l
+    else if (nRows ==  4)   type = 8;           // v17l
   }
   else if (nCols == 160)   // FEB-10x1
   {
