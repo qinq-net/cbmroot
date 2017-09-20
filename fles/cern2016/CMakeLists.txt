@@ -22,7 +22,7 @@ Set(SYSTEM_INCLUDE_DIRECTORIES
   ${BASE_INCLUDE_DIRECTORIES} 
   ${Boost_INCLUDE_DIR} 
   ${ROOT_INCLUDE_DIR}  
-  ${CBMROOT_SOURCE_DIR}/external/ipc/ipc
+  ${IPC_INCLUDE_DIRECTORY}
   ${CBMROOT_SOURCE_DIR}/external/flib_dpb/flib_dpb
   ${CMAKE_SOURCE_DIR}/external/cppzmq
 )

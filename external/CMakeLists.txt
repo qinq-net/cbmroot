@@ -5,6 +5,8 @@ Add_Subdirectory(ipc_legacy)
 Add_Subdirectory(flib_dpb)
 Add_Subdirectory(spadic)
 
+Set(IPC_INCLUDE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ipc/ipc PARENT_SCOPE)
+
 Execute_Process(COMMAND ${ROOT_CONFIG_EXECUTABLE} --has-vc
                 OUTPUT_VARIABLE ROOT_HAS_VC
                )

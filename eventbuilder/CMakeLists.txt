@@ -1,4 +1,4 @@
-# Create a library called "libRun" which includes the source files given in
+## Create a library called "libRun" which includes the source files given in
 # the array .
 # The extension is already found.  Any number of sources could be listed here.
 
@@ -65,6 +65,7 @@ set(LINK_DIRECTORIES
 ${ROOT_LIBRARY_DIR}
 ${FAIRROOT_LIBRARY_DIR}
 ${Boost_LIBRARY_DIRS}
+${Vc_LIB_DIR}
 )
  
 link_directories( ${LINK_DIRECTORIES})
