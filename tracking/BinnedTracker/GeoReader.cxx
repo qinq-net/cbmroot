@@ -32,6 +32,15 @@ CbmBinnedGeoReader* CbmBinnedGeoReader::Instance()
 
 CbmBinnedGeoReader::CbmBinnedGeoReader(FairRootManager* ioman, CbmBinnedTracker* tracker) : fIoman(ioman), fNavigator(0), fDetectorReaders(), fTracker(tracker)
 {
+   Int_t nofChildren = gGeoManager->GetTopNode()->GetNdaughters();
+   
+   for (Int_t i = 0; i < nofChildren; ++i)
+   {
+      TGeoNode* child = gGeoManager->GetTopNode()->GetDaughter(i);
+      TString childName(child->GetName());
+      cout << "Have detecting system: " << childName.Data() << endl;
+   }
+   
    fNavigator = gGeoManager->GetCurrentNavigator();
    fDetectorReaders["sts"] = &CbmBinnedGeoReader::ReadSts;
    //fDetectorReaders["rich"] = &CbmBinnedGeoReader::ReadRich;
@@ -85,13 +94,33 @@ static const int gNofTbins = 1;
 
 static Double_t gStationErrors[][3] =
 {
-   { 0.014601, 0.156848, 3.535534 },// Sts 0
-   { 0.013942, 0.108157, 3.535534 },// Sts 1
+   //{ 0.014601, 0.156848, 3.535534 },// Sts 0
+   //{ 0.013942, 0.108157, 3.535534 },// Sts 1
    
-   { 0.359375, 7.75, 4 },// Trd 0
+   //{ 0.006435, 0.04970, 3.535534 },// Sts 0
+   //{ 0.001184, 0.03174, 3.535534 },// Sts 1
+   { 0.1, 0.1, 3.535534 },// Sts 0
+   { 0.5, 0.5, 3.535534 },// Sts 1
+   
+   /*{ 0.359375, 7.75, 4 },// Trd 0
    { 7.75, 0.359375, 4 },// Trd 1
    { 0.359375, 7.75, 4 },// Trd 2
-   { 7.75, 0.359375, 4 },// Trd 3
+   { 7.75, 0.359375, 4 },// Trd 3*/
+   
+   /*{ 15.561394, 13.351225, 4 },// Trd 0
+   { 19.133749, 13.522626, 4 },// Trd 1
+   { 13.901512, 17.753521, 4 },// Trd 2
+   { 16.093639, 13.522626, 4 },// Trd 3*/
+   
+   /*{ 13.561394, 13.351225, 4 },// Trd 0
+   { 13.133749, 13.522626, 4 },// Trd 1
+   { 13.901512, 13.753521, 4 },// Trd 2
+   { 13.093639, 13.522626, 4 },// Trd 3*/
+   
+   { 20, 20, 4 },// Trd 0
+   { 20, 20, 4 },// Trd 1
+   { 20, 20, 4 },// Trd 2
+   { 20, 20, 4 },// Trd 3
    
    /*{ 0.487468, 0.487468, 4 },// Much 0
    { 0.487468, 0.487468, 4 },// Much 1
@@ -105,11 +134,11 @@ static Double_t gStationErrors[][3] =
 static Double_t gStationScats[][2] =
 {
    { 0, 0 },
-   { 0.1007, 0.1076 },
-   { 0.08159, 0.08765 },
-   { 0.0465, 0.0414 },
-   { 0.0417, 0.04789 },
-   { 0.03505, 0.04026 }
+   { 0.1023, 0.1045 },
+   { 0.105, 0.1413 },
+   { 0.05997, 0.04868 },
+   { 0.1208, 0.1384 },
+   { 0.08453, 0.05496 }
    /*{ 0, 0 },
    { 0.2007, 0.2076 },
    { 10.28159, 10.28765 },
@@ -118,15 +147,15 @@ static Double_t gStationScats[][2] =
    { 10.23505, 10.24026 }*/
 };
 
-static Double_t gStationNofSigmas[][2] =
+/*static Double_t gStationNofSigmas[][2] =
 {
    { 4, 4 },
    { 4, 4 },
-   { 20, 4 },
-   { 4, 17 },
-   { 17, 4 },
-   { 4, 15 }
-};
+   { 41, 4 },
+   { 4, 36 },
+   { 33, 4 },
+   { 4, 25 }
+};*/
 
 static Double_t gTofStationTxError = 0.001277;
 static Double_t gTofStationTyError = 0.003186;
@@ -154,19 +183,17 @@ void CbmBinnedGeoReader::SearchStation(TGeoNode* node, CbmBinnedHitReader* hitRe
       
       if (is4d)
       {
-         CbmBinned4DStation* station4d = new CbmBinned4DStation(gNofZbins, gNofYbins, gNofXbins, gNofTbins);
+         CbmBinned4DStation* station4d = new CbmBinned4DStation(front, back, gNofZbins, gNofYbins, gNofXbins, gNofTbins);
          station4d->SetDtx(gTofStationTxError);
          station4d->SetDty(gTofStationTyError);
          station = station4d;
       }
       else
       {
-         CbmBinned3DStation* station3d = new CbmBinned3DStation(gNofYbins, gNofXbins, gNofTbins);
+         CbmBinned3DStation* station3d = new CbmBinned3DStation(front, back, gNofYbins, gNofXbins, gNofTbins);
          station = station3d;
       }
       
-      station->SetMinZ(front);
-      station->SetMaxZ(back);
       station->SetMinY(bottom);
       station->SetMaxY(top);
       station->SetMinX(left);
@@ -286,7 +313,7 @@ void CbmBinnedGeoReader::ReadMuch()
 void CbmBinnedGeoReader::ReadTrd()
 {
    list<const char*> stationPath = { "trd", "layer" };
-   list<const char*> geoPath = { "module", "padcopper" };
+   list<const char*> geoPath = { "module", "gas" };
    gGeoManager->cd("/cave_1");
    SearchStation(gGeoManager->GetCurrentNode(), CbmBinnedHitReader::Instance("trd"), stationPath.begin(), stationPath.end(), geoPath);
 }

@@ -17,6 +17,13 @@
 #include "Station.h"
 #include "Station3D.h"
 #include <iostream>
+
+#define CBM_BINNED_DEBUG
+
+#ifdef CBM_BINNED_DEBUG
+#include "Debug.h"
+#endif//CBM_BINNED_DEBUG
+
 using namespace std;
 
 class CbmBinnedTracker
@@ -50,6 +57,9 @@ public:
 public:
     CbmBinnedTracker(Double_t beamDx, Double_t beamDy) : fNofTrueSegments(0), fNofWrongSegments(0), fStations(), fNofStations(0), fBeforeLastLevel(0), fChiSqCut(0), fTracks(),
             fBeamDx(beamDx), fBeamDxSq(beamDx * beamDx), fBeamDy(beamDy), fBeamDySq(beamDy * beamDy), fVertex()
+#ifdef CBM_BINNED_DEBUG
+    , fDebug()
+#endif//CBM_BINNED_DEBUG
     {
         fVertex.SetX(0);
         fVertex.SetY(0);
@@ -74,7 +84,7 @@ public:
         if (fStations.empty())
             station->SetDefaultUse();
         
-        fStations.push_back(station);
+        fStations[station->GetMinZ()] = station;
         fNofStations = fStations.size();
         fBeforeLastLevel = fNofStations - 2;
     }
@@ -85,9 +95,9 @@ public:
     {
         Clear();
         
-        for (std::vector<CbmBinnedStation*>::iterator i = fStations.begin(); i != fStations.end(); ++i)
+        for (std::map<Double_t, CbmBinnedStation*>::iterator i = fStations.begin(); i != fStations.end(); ++i)
         {
-            CbmBinnedStation* aStation = *i;
+            CbmBinnedStation* aStation = i->second;
             aStation->SetMinT(startTime);
         }
         
@@ -97,9 +107,9 @@ public:
         
         std::cout << "Segments on stations: ";
         
-        for (std::vector<CbmBinnedStation*>::const_iterator i = fStations.begin(); i != fStations.end(); ++i)
+        for (std::map<Double_t, CbmBinnedStation*>::const_iterator i = fStations.begin(); i != fStations.end(); ++i)
         {
-            CbmBinnedStation* station = *i;
+            CbmBinnedStation* station = i->second;
             std::cout << "[" << station->fSegments.size() << "]";
         }
         
@@ -114,9 +124,9 @@ public:
 private:
     void Clear()
     {
-        for (std::vector<CbmBinnedStation*>::iterator i = fStations.begin(); i != fStations.end(); ++i)
+        for (std::map<Double_t, CbmBinnedStation*>::iterator i = fStations.begin(); i != fStations.end(); ++i)
         {
-            CbmBinnedStation* aStation = *i;
+            CbmBinnedStation* aStation = i->second;
             aStation->Clear();
         }
         
@@ -128,17 +138,17 @@ private:
     
     void ReconstructLocal()
     {        
-        fStations.front()->CreateSegmentsFromHits();
+        fStations.begin()->second->CreateSegmentsFromHits();
         
-        for (std::vector<CbmBinnedStation*>::iterator i = fStations.begin(); true;)
+        for (std::map<Double_t, CbmBinnedStation*>::iterator i = fStations.begin(); true;)
         {
-            CbmBinnedStation* curStation = *i;
+            CbmBinnedStation* curStation = i->second;
             ++i;
             
             if (i == fStations.end())
                 break;
             
-            CbmBinnedStation* nextStation = *i;
+            CbmBinnedStation* nextStation = i->second;
             curStation->IterateSegments(
                 [&](CbmBinnedStation::Segment& segment)->void
                 {
@@ -150,14 +160,79 @@ private:
                 }
             );
         }
+        
+#if 0//def CBM_BINNED_DEBUG
+        static int nofRefTracks = 0;
+        static int nofRecoRefHits[] = { 0, 0, 0, 0, 0, 0 };
+        fDebug.Exec();
+        int stNo = 0;
+        CbmBinnedStation* firstStation = fStations.begin()->second;
+        
+        for (int i = 0; i < fDebug.fMCTracks.size(); ++i)
+        {
+            const CbmBinnedDebug::MCTrack& mcTrack = fDebug.fMCTracks[i];
+            
+            if (!mcTrack.isRef)
+                continue;
+            
+            ++nofRefTracks;
+            bool found[] = { false, false, false, false, false, false };
+            firstStation->IterateSegments(
+                [&](CbmBinnedStation::Segment& segment)->void
+                {
+                    CbmTBin::HitHolder* hitHolder = segment.end;
+                    
+                    if (fDebug.TrackHasHit(stNo, i, hitHolder->index))
+                        found[stNo] = true;
+                    
+                    std::list<CbmBinnedStation::Segment*> tmp(segment.children);
+                    
+                    while(!tmp.empty())
+                    {
+                        ++stNo;
+                        std::list<CbmBinnedStation::Segment*> tmp2;
+                        
+                        for (std::list<CbmBinnedStation::Segment*>::const_iterator j = tmp.begin(); j != tmp.end(); ++j)
+                        {
+                            const CbmBinnedStation::Segment* s = *j;
+                            tmp2.insert(tmp2.end(), s->children.begin(), s->children.end());
+                            CbmTBin::HitHolder* hh = s->end;
+                            
+                            if (fDebug.TrackHasHit(stNo, i, hh->index))
+                                found[stNo] = true;
+                        }
+                        
+                        tmp.clear();
+                        tmp.splice(tmp.end(), tmp2);
+                    }
+                    
+                    stNo = 0;
+                }
+            );
+            
+            std::cout << "Reco hits: ";
+            
+            for (int j = 0; j < sizeof(nofRecoRefHits) / sizeof(int); ++j)
+            {
+                if (found[j])
+                    ++nofRecoRefHits[j];
+                
+                double proc = 100 * nofRecoRefHits[j];
+                proc /= nofRefTracks;
+                std::cout << "[" << proc << "%=" << nofRecoRefHits[j] << "/" << nofRefTracks << "]";
+            }
+            
+            std::cout << std::endl << std::endl << std::endl;
+        }
+#endif//CBM_BINNED_DEBUG
     }
     
-    Double_t GetChiSq(int stationNumber, Double_t scatXSq, Double_t scatYSq, CbmBinnedStation::Segment& segment1, CbmBinnedStation::Segment& segment2) const
+    Double_t GetChiSq(Double_t scatXSq, Double_t scatYSq, CbmBinnedStation::Segment& segment1, CbmBinnedStation::Segment& segment2) const
     {
-        const CbmPixelHit* hit1 = segment1.begin.hit;
-        const CbmPixelHit* hit2 = segment1.end.hit;
+        const CbmPixelHit* hit1 = segment1.begin->hit;
+        const CbmPixelHit* hit2 = segment1.end->hit;
         
-        if (hit2 != segment2.begin.hit)
+        if (hit2 != segment2.begin->hit)
             return cbmBinnedCrazyChiSq;
         
         /*Double_t chiSqCoeffX1 = stationNumber < 1 ? 1 : fStations[stationNumber - 1]->GetNofSigmaXSq() / cbmBinnedSigmaSq;
@@ -167,7 +242,7 @@ private:
         Double_t chiSqCoeffX = fStations[stationNumber + 1]->GetNofSigmaXSq() / cbmBinnedSigmaSq;
         Double_t chiSqCoeffY = fStations[stationNumber + 1]->GetNofSigmaYSq() / cbmBinnedSigmaSq;*/
         
-        const CbmPixelHit* hit = segment2.end.hit;
+        const CbmPixelHit* hit = segment2.end->hit;
         Double_t x1 = hit1->GetX();
         Double_t y1 = hit1->GetY();
         Double_t z1 = hit1->GetZ();
@@ -245,13 +320,13 @@ private:
     
     Double_t GetChiSqWithoutTime(CbmBinnedStation::Segment& segment1, CbmBinnedStation::Segment& segment2) const
     {
-        const CbmPixelHit* hit1 = segment1.begin.hit;
-        const CbmPixelHit* hit2 = segment1.end.hit;
+        const CbmPixelHit* hit1 = segment1.begin->hit;
+        const CbmPixelHit* hit2 = segment1.end->hit;
         
-        if (hit2 != segment2.begin.hit)
+        if (hit2 != segment2.begin->hit)
             return cbmBinnedCrazyChiSq;
         
-        const CbmPixelHit* hit = segment2.end.hit;
+        const CbmPixelHit* hit = segment2.end->hit;
         Double_t x1 = hit1->GetX();
         Double_t y1 = hit1->GetY();
         Double_t z1 = hit1->GetZ();
@@ -297,10 +372,10 @@ private:
         return (x - x12) * (x - x12) / (dx12Sq + dxSq) + (y - y12) * (y - y12) / (dy12Sq + dySq);
     }
     
-    void ReconstructGlobal()
+    /*void ReconstructGlobal()
     {
-        std::vector<CbmBinnedStation*>::reverse_iterator stationIter = fStations.rbegin();
-        CbmBinnedStation* lastStation = *stationIter++;
+        std::map<Double_t, CbmBinnedStation*>::reverse_iterator stationIter = fStations.rbegin();
+        CbmBinnedStation* lastStation = (stationIter++)->second;
         lastStation->NulifySegments();
         
         int stN = 4;
@@ -308,7 +383,7 @@ private:
         
         for (; stationIter != fStations.rend(); ++stationIter)
         {
-            CbmBinnedStation* station = *stationIter;
+            CbmBinnedStation* station = stationIter->second;
             station->IterateSegments(
             [&](CbmBinnedStation::Segment& segment)->void
             {
@@ -324,7 +399,7 @@ private:
                     if (child->chiSq > fChiSqCut)
                         continue;
                     
-                    Double_t chiSq = GetChiSq(stN, nextStation->GetScatXSq(), nextStation->GetScatYSq(), segment, *child) + child->chiSq;
+                    Double_t chiSq = GetChiSq(nextStation->GetScatXSq(), nextStation->GetScatYSq(), segment, *child) + child->chiSq;
                     
                     if (chiSq > fChiSqCut)
                         continue;
@@ -341,7 +416,7 @@ private:
             nextStation = station;
         }
         
-        fStations.front()->IterateSegments(
+        fStations.begin()->second->IterateSegments(
             [&](CbmBinnedStation::Segment& segment)->void
             {
                 if (segment.chiSq > fChiSqCut)
@@ -361,11 +436,219 @@ private:
                 fTracks.push_back(aCandidate);
             }
         );
+    }*/
+    /*void TraverseTrackCandidates(int level, CbmBinnedStation::Segment** trackStart, CbmTBin::HitHolder** hhs, Double_t chiSq, std::list<Track*>& candidates, Double_t scatXSqs[6], Double_t scatYSqs[6])
+    {              
+        CbmBinnedStation::Segment* segment = trackStart[level];
+
+        for (std::list<CbmBinnedStation::Segment*>::iterator i = segment->children.begin(); i != segment->children.end(); ++i)
+        {
+            CbmBinnedStation::Segment* childSegment = *i;
+            Double_t deltaChiSq = GetChiSq(scatXSqs[level + 1], scatYSqs[level + 1], *segment, *childSegment);
+            Double_t chiSq2 = chiSq + deltaChiSq;            
+            trackStart[level + 1] = childSegment;
+            hhs[level + 1] = childSegment->end;
+
+            if (level == 4)
+            {
+                Track* aCandidate = new Track(hhs, 6, chiSq2);                
+                candidates.push_back(aCandidate);
+            }
+            else
+                TraverseTrackCandidates(level + 1, trackStart, hhs, chiSq2, candidates, scatXSqs, scatYSqs);
+        }
+    }*/
+
+    struct KFParamsCoord
+    {
+        Double_t coord, tg, C11, C12, C21, C22;
+    };
+
+    struct KFParams
+    {
+        KFParamsCoord xParams;
+        KFParamsCoord yParams;
+        Double_t chi2;
+    };
+    
+    struct KFStation
+    {
+        struct Q
+        {
+            Double_t Q11, Q12, Q21, Q22;
+        };
+        
+        Q qs[2];
+    };
+    
+    //KFStation fKFStations[6];
+
+    void KFAddPointCoord(KFParamsCoord& param, const KFParamsCoord& prevParam, Double_t m, Double_t V, Double_t& chi2, Double_t z, Double_t prevZ, int coordNumber)
+    {
+        //const KFStation& station = fKFStations[stationNumber];
+        //const KFStation::Q& Q = station.qs[coordNumber];
+        Double_t deltaZ = z - prevZ;
+        Double_t deltaZSq = deltaZ * deltaZ;
+
+        // Extrapolate.
+        param.coord += prevParam.tg * deltaZ; // params[k].tg is unchanged.
+
+        // Filter.
+        param.C11 += prevParam.C12 * deltaZ + prevParam.C21 * deltaZ + prevParam.C22 * deltaZSq;// + Q.Q11;
+        param.C12 += prevParam.C22 * deltaZ;// + Q.Q12;
+        param.C21 += prevParam.C22 * deltaZ;// + Q.Q21;
+        //param.C22 += Q.Q22;
+
+        Double_t S = 1.0 / (V + param.C11);
+        Double_t Kcoord = param.C11 * S;
+        Double_t Ktg = param.C21 * S;
+        Double_t dzeta = m - param.coord;
+        param.coord += Kcoord * dzeta;
+        param.tg += Ktg * dzeta;
+        param.C21 -= param.C11 * Ktg;
+        param.C22 -= param.C12 * Ktg;
+        param.C11 *= 1.0 - Kcoord;
+        param.C12 *= 1.0 - Kcoord;
+        chi2 += dzeta * S * dzeta;
     }
+
+    void KFAddPoint(KFParams& param, const KFParams& prevParam, Double_t m[2], Double_t V[2], Double_t z, Double_t prevZ)
+    {
+        KFAddPointCoord(param.xParams, prevParam.xParams, m[0], V[0], param.chi2, z, prevZ, 0);
+        KFAddPointCoord(param.yParams, prevParam.yParams, m[1], V[1], param.chi2, z, prevZ, 1);
+    }
+    
+    void TraverseTrackCandidates(int level, CbmBinnedStation::Segment** trackStart, CbmTBin::HitHolder** hhs, std::list<Track*>& candidates,
+        Double_t scatXSqs[6], Double_t scatYSqs[6], KFParams kfParamsPrev)
+    {              
+        CbmBinnedStation::Segment* segment = trackStart[level];
+        const CbmPixelHit* hit = segment->end->hit;
+        KFParams kfParams = kfParamsPrev;
+        Double_t m[2] = { hit->GetX(), hit->GetY() };
+        Double_t V[2] = { hit->GetDx() * hit->GetDx(), hit->GetDy() * hit->GetDy() };
+        KFAddPoint(kfParams, kfParamsPrev, m, V, hit->GetZ(), 0 == level ? 0 : hhs[level - 1]->hit->GetZ());
+        
+        if (level == 5)
+        {
+            Track* aCandidate = new Track(hhs, 6, kfParams.chi2);
+            candidates.push_back(aCandidate);
+            return;
+        }
+
+        for (std::list<CbmBinnedStation::Segment*>::iterator i = segment->children.begin(); i != segment->children.end(); ++i)
+        {
+            CbmBinnedStation::Segment* childSegment = *i;         
+            trackStart[level + 1] = childSegment;
+            hhs[level + 1] = childSegment->end;
+            TraverseTrackCandidates(level + 1, trackStart, hhs, candidates, scatXSqs, scatYSqs, kfParams);
+        }
+    }
+
+    void ReconstructGlobal()
+    {
+        Double_t scatXSqs[6];
+        Double_t scatYSqs[6];
+        int stN = 0;
+                
+        for (std::map<Double_t, CbmBinnedStation*>::const_iterator i = fStations.begin(); i != fStations.end(); ++i)
+        {
+            scatXSqs[stN] = i->second->GetScatXSq();
+            scatYSqs[stN] = i->second->GetScatYSq();
+            ++stN;
+        }
+        
+        CbmBinnedStation* startStation = fStations.begin()->second;
+        startStation->IterateSegments(
+            [&](CbmBinnedStation::Segment& segment)->void
+            {
+                CbmBinnedStation::Segment* segments[fNofStations];
+                segments[0] = &segment;
+                CbmTBin::HitHolder* trackHolders[fNofStations];
+                trackHolders[0] = segment.end;
+                std::list<Track*> candidates;
+                
+                
+                //TraverseTrackCandidates(0, segments, trackHolders, 0, candidates, scatXSqs, scatYSqs);
+                const CbmPixelHit* p1 = segment.begin->hit;
+                const CbmPixelHit* p2 = segment.end->hit;
+                KFParams kfParams =
+                {
+                    { p1->GetX(), 0, p1->GetDx() * p1->GetDx(), 0, 0, 1.0 },
+                    { p1->GetY(), 0, p1->GetDy() * p1->GetDy(), 0, 0, 1.0 },
+                    0
+                };
+                TraverseTrackCandidates(0, segments, trackHolders, candidates, scatXSqs, scatYSqs, kfParams);
+                
+                Track* bestCandidate = 0;
+
+                for (std::list<Track*>::iterator i = candidates.begin(); i != candidates.end(); ++i)
+                {
+                    Track* aCandidate = *i;
+
+                    if (0 == bestCandidate || aCandidate->fChiSq < bestCandidate->fChiSq)
+                    {
+                        delete bestCandidate;
+                        bestCandidate = aCandidate;
+                    }
+                    else
+                        delete aCandidate;
+                }
+
+                if (0 != bestCandidate)
+                    fTracks.push_back(bestCandidate);
+            }
+        );
+        
+#ifdef CBM_BINNED_DEBUG
+        static int nofRefTracks = 0;
+        static int nofRecoRefHits[] = { 0, 0, 0, 0, 0, 0 };
+        fDebug.Exec();
+        CbmBinnedStation* firstStation = fStations.begin()->second;
+        
+        for (int i = 0; i < fDebug.fMCTracks.size(); ++i)
+        {
+            const CbmBinnedDebug::MCTrack& mcTrack = fDebug.fMCTracks[i];
+            
+            if (!mcTrack.isRef)
+                continue;
+            
+            for (std::list<Track*>::const_iterator j = fTracks.begin(); j != fTracks.end(); ++j)
+            {
+                const Track* recoTrack = *j;
+                const CbmTBin::HitHolder* firstHit = recoTrack->fHits[0];
+                
+                if (!fDebug.TrackHasHit(0, i, firstHit->index))
+                    continue;
+                
+                ++nofRecoRefHits[0];
+                ++nofRefTracks;
+                
+                for (int k = 1; k < 6; ++k)
+                {
+                    if (fDebug.TrackHasHit(k, i, recoTrack->fHits[k]->index))
+                        ++nofRecoRefHits[k];
+                }
+            }
+        }
+        
+        std::cout << "Reco hits: ";
+
+        for (int j = 0; j < sizeof (nofRecoRefHits) / sizeof (int); ++j)
+        {
+            double proc = 100 * nofRecoRefHits[j];
+            proc /= nofRefTracks;
+            std::cout << "[" << proc << "%=" << nofRecoRefHits[j] << "/" << nofRefTracks << "]";
+        }
+
+        std::cout << std::endl << std::endl << std::endl;
+#endif//CBM_BINNED_DEBUG
+    }
+
     
 private:
     //std::list<CbmBinnedStation*> fStations;
-    std::vector<CbmBinnedStation*> fStations;
+    //std::vector<CbmBinnedStation*> fStations;
+    std::map<Double_t, CbmBinnedStation*> fStations;
     int fNofStations;
     int fBeforeLastLevel;
     Double_t fChiSqCut;
@@ -375,6 +658,9 @@ private:
     Double_t fBeamDy;
     Double_t fBeamDySq;
     CbmPixelHit fVertex;
+#ifdef CBM_BINNED_DEBUG
+    CbmBinnedDebug fDebug;
+#endif
     
     friend class CbmBinnedTrackerQA;
 };

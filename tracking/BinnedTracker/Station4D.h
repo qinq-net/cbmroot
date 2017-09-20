@@ -19,7 +19,7 @@
 class CbmBinned4DStation : public CbmBinnedStation
 {
 public:
-    CbmBinned4DStation(int nofZBins, int nofYBins, int nofXBins, int nofTBins) : CbmBinnedStation(nofYBins, nofXBins, nofTBins),
+    CbmBinned4DStation(Double_t minZ, Double_t maxZ, int nofZBins, int nofYBins, int nofXBins, int nofTBins) : CbmBinnedStation(minZ, maxZ, nofYBins, nofXBins, nofTBins),
             fZBins(reinterpret_cast<CbmZBin*> (new unsigned char[nofZBins * sizeof(CbmZBin)])),
             fNofZBins(nofZBins), fZBinSize(0), fDtxSq(0), fDtySq(0)
     {
@@ -195,7 +195,7 @@ public:
     
     void SearchHits(Segment& segment, std::function<void(CbmTBin::HitHolder&)> handleHit)
     {
-        const CbmPixelHit* searchHit = segment.end.hit;
+        const CbmPixelHit* searchHit = segment.end->hit;
         Double_t searchX = searchHit->GetX();
         Double_t searchY = searchHit->GetY();
         Double_t searchZ = searchHit->GetZ();

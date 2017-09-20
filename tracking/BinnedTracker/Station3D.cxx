@@ -11,12 +11,12 @@
 
 void CbmBinned3DStation::SearchHits(Segment& segment, std::function<void(CbmTBin::HitHolder&)> handleHit)
 {
-   const CbmPixelHit* hit1 = segment.begin.hit;
+   const CbmPixelHit* hit1 = segment.begin->hit;
    Double_t x1 = hit1->GetX();
    Double_t y1 = hit1->GetY();
    Double_t dx1Sq = hit1->GetDx() * hit1->GetDx();
    Double_t dy1Sq = hit1->GetDy() * hit1->GetDy();
-   const CbmPixelHit* hit2 = segment.end.hit;
+   const CbmPixelHit* hit2 = segment.end->hit;
    Double_t x2 = hit2->GetX();
    Double_t y2 = hit2->GetY();
    Double_t dx2Sq = hit2->GetDx() * hit2->GetDx();
@@ -118,7 +118,7 @@ void CbmBinned3DStation::SearchHits(Segment& segment, std::function<void(CbmTBin
                if (deltaT * deltaT > cbmBinnedSigmaSq * (dtSq + hit->GetTimeError() * hit->GetTimeError()))
                   continue;*/
 
-               Segment newSegment(segment.end, *hitIter);
+               Segment newSegment(segment.end, &(*hitIter));
                pair<set<Segment, SegmentComp>::iterator, bool> ir = fSegments.insert(newSegment);
                segment.children.push_back(const_cast<Segment*> (&(*ir.first)));
                //handleHit(*hitIter);

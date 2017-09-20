@@ -18,6 +18,7 @@
 #include <functional>
 #include "HitReader.h"
 #include <set>
+#include <iostream>
 
 const Double_t cbmBinnedSigma = 4;
 const Double_t cbmBinnedSigmaSq = cbmBinnedSigma * cbmBinnedSigma;
@@ -29,13 +30,13 @@ class CbmBinnedStation
 public:
     struct Segment
     {
-        CbmTBin::HitHolder& begin;
-        CbmTBin::HitHolder& end;
+        CbmTBin::HitHolder* begin;
+        CbmTBin::HitHolder* end;
         Double_t chiSq;
         std::list<Segment*> children;
         Segment* bestBranch;
         
-        Segment(CbmTBin::HitHolder& beginHit, CbmTBin::HitHolder& endHit) : begin(beginHit), end(endHit), chiSq(cbmBinnedCrazyChiSq), children(), bestBranch(0) {}
+        Segment(CbmTBin::HitHolder* beginHit, CbmTBin::HitHolder* endHit) : begin(beginHit), end(endHit), chiSq(cbmBinnedCrazyChiSq), children(), bestBranch(0) {}
         Segment(const Segment&) = default;
         Segment& operator=(const Segment&) = default;
     };
@@ -54,11 +55,13 @@ public:
     };
     
 public:
-    CbmBinnedStation(int nofYBins, int nofXBins, int nofTBins);
+    CbmBinnedStation(Double_t minZ, Double_t maxZ, int nofYBins, int nofXBins, int nofTBins);
     CbmBinnedStation(const CbmBinnedStation&) = delete;
     CbmBinnedStation& operator=(const CbmBinnedStation&) = delete;
     
     virtual ~CbmBinnedStation() {}
+    Double_t GetMinZ() const { return fMinZ; }
+    Double_t GetMaxZ() const { return fMaxZ; }
     void SetMinZ(Double_t v) { fMinZ = v; }
     void SetMaxZ(Double_t v) { fMaxZ = v; }
     void SetMinY(Double_t v) { fMinY = v; }
@@ -209,7 +212,7 @@ public:
         IterateHits(
             [&](CbmTBin::HitHolder& hitHolder)->void
             {
-                Segment segment(fVertexHolder, hitHolder);
+                Segment segment(&fVertexHolder, &hitHolder);
                 fSegments.insert(segment);
             }
         );

@@ -21,7 +21,7 @@
 class CbmBinned3DStation : public CbmBinnedStation
 {
 public:
-    CbmBinned3DStation(int nofYBins, int nofXBins, int nofTBins) : CbmBinnedStation(nofYBins, nofXBins, nofTBins),
+    CbmBinned3DStation(Double_t minZ, Double_t maxZ, int nofYBins, int nofXBins, int nofTBins) : CbmBinnedStation(minZ, maxZ, nofYBins, nofXBins, nofTBins),
             fYBins(reinterpret_cast<CbmYBin*> (new unsigned char[nofYBins * sizeof(CbmYBin)]))
     {
         for (int i = 0; i < nofYBins; ++i)
