@@ -94,7 +94,8 @@ void run_reco_flow(Int_t nEvents = 2, Int_t En=10, const char* setup = "sis300_e
 
   // -----   Reconstruction run   -------------------------------------------
   FairRunAna *run = new FairRunAna();
-  run->SetInputFile(inFile);
+  FairFileSource* inputSource = new FairFileSource(inFile);
+  run->SetSource(inputSource);
   run->SetOutputFile(outFile);
   // ------------------------------------------------------------------------
 

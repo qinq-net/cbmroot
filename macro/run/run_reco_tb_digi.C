@@ -53,7 +53,8 @@ void run_reco_tb_digi()
 
   // -----   Reconstruction run   -------------------------------------------
   FairRunAna *run = new FairRunAna();
-  run->SetInputFile(inFile);
+  FairFileSource* inputSource = new FairFileSource(inFile);
+  run->SetSource(inputSource);
   run->SetOutputFile(outFile);
   run->SetGenerateRunInfo(kTRUE);
   Bool_t hasFairMonitor = Has_Fair_Monitor();

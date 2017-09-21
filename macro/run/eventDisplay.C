@@ -7,7 +7,8 @@ void eventDisplay(const char* setup = "sis100_electron")
   // -----   Reconstruction run   -------------------------------------------
   FairRunAna *fRun= new FairRunAna();
 
-  fRun->SetInputFile(InputFile.Data());
+  FairFileSource* inputSource = new FairFileSource(InputFile.Data());
+  fRun->SetSource(inputSource);
   fRun->SetOutputFile(dataDir + setup + "_test.root");
 
   FairRuntimeDb* rtdb = fRun->GetRuntimeDb();

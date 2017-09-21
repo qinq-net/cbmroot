@@ -121,7 +121,8 @@ void run_digi(Int_t nEvents = 2,
 
   // -----   FairRunAna   ---------------------------------------------------
   FairRunAna* run = new FairRunAna();
-  run->SetInputFile(inFile);
+  FairFileSource* inputSource = new FairFileSource(inFile);
+  run->SetSource(inputSource);
   run->SetOutputFile(outFile);
   run->SetGenerateRunInfo(kTRUE);
   Bool_t hasFairMonitor = Has_Fair_Monitor();

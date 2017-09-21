@@ -51,9 +51,11 @@ void run_qa(Int_t nEvents = 1, const char* setupName = "sis100_electron")
 
   // -----  Analysis run   --------------------------------------------------
   FairRunAna *fRun= new FairRunAna();
+  FairFileSource* inputSource = new FairFileSource(recFile);
+  fRun->SetSource(inputSource);
 //  fRun->SetInputFile(simFile);
 //  fRun->AddFriend(recFile);
-  fRun->SetInputFile(recFile);
+//  fRun->SetInputFile(recFile);
 //  fRun->AddFriend(simFile);
   fRun->SetOutputFile(outFile);
   Bool_t hasFairMonitor = Has_Fair_Monitor();

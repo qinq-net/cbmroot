@@ -125,9 +125,9 @@ void run_reco_new(Int_t nEvents = 2,
 
   // -----   FairRunAna   ---------------------------------------------------
   FairRunAna *run = new FairRunAna();
-  run->SetInputFile(inFile);
+  FairFileSource* inputSource = new FairFileSource(inFile);
+  run->SetSource(inputSource);
   run->SetOutputFile(outFile);
-  run->SetGenerateRunInfo(kTRUE);
   run->SetGenerateRunInfo(kTRUE);
   Bool_t hasFairMonitor = Has_Fair_Monitor();
   if (hasFairMonitor) FairMonitor::GetMonitor()->EnableMonitor(kTRUE);

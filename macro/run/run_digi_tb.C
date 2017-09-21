@@ -73,8 +73,9 @@ void run_digi_tb(Int_t nEvents = 2, const char* setupName = "sis100_electron")
 
   // -----   Reconstruction run   -------------------------------------------
   CbmRunAna *run = new CbmRunAna();
+  FairFileSource* inputSource = new FairFileSource(inFile);
+  run->SetSource(inputSource);
   run->SetAsync();                         // asynchroneous mode
-  run->SetInputFile(inFile);
   run->SetOutputFile(outFile);
   run->SetEventMeanTime(1.e9 / eventRate);
   FairRootManager::Instance()->SetUseFairLinks(kTRUE);
