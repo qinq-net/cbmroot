@@ -44,7 +44,7 @@ struct TrackDesc
    pair<set<Int_t>, set<Int_t> > sts[NOF_STS_STATIONS];
    //pair<set<Int_t>, set<Int_t> > much[NOF_MUCH_STATIONS * NOF_MUCH_LAYERS];
    pair<set<Int_t>, set<Int_t> > trd[NOF_TRD_LAYERS];
-   //pair<set<Int_t>, set<Int_t> > tof;
+   pair<set<Int_t>, set<Int_t> > tof;
    set<const CbmStsPoint*> stsPoints[NOF_STS_STATIONS];
    set<const CbmTrdPoint*> trdPoints[NOF_TRD_LAYERS];
    bool isPrimary;
@@ -58,7 +58,7 @@ struct TrackDesc
    Double_t pullXsts[NOF_STS_STATIONS];
    Double_t pullYsts[NOF_STS_STATIONS];
    
-   TrackDesc() : /*tof(), */isPrimary(false), ptr(0), nearestHitDist{ -1, -1, -1, -1 }, nearestHitDistSts{ -1, -1 }, nearestPoints{ 0, 0, 0, 0 }, nearestPointsSts{ 0, 0 },
+   TrackDesc() : tof(), isPrimary(false), ptr(0), nearestHitDist{ -1, -1, -1, -1 }, nearestHitDistSts{ -1, -1 }, nearestPoints{ 0, 0, 0, 0 }, nearestPointsSts{ 0, 0 },
    pullX{ 0, 0, 0, 0 }, pullY{ 0, 0, 0, 0 }, pullXsts{ 0, 0 }, pullYsts{ 0, 0 }
    {
    }
@@ -341,7 +341,8 @@ InitStatus CbmBinnedTrackerQA::Init()
       {
          const CbmStsPoint* stsPoint = static_cast<const CbmStsPoint*> (fStsPoints->Get(0, i, j));
          Int_t trackId = stsPoint->GetTrackID();
-         Int_t stationNumber = CbmStsSetup::Instance()->GetStationNumber(stsPoint->GetDetectorID());
+         //Int_t stationNumber = CbmStsSetup::Instance()->GetStationNumber(stsPoint->GetDetectorID());
+         Int_t stationNumber = CbmStsAddress::GetElementId(stsPoint->GetDetectorID(), kSts);
          //tracks[trackId].sts[stationNumber].first.insert(j);
          TrackDesc& trackDesk = tracks[trackId];
          trackDesk.stsPoints[stationNumber].insert(stsPoint);
@@ -389,7 +390,6 @@ InitStatus CbmBinnedTrackerQA::Init()
       {
          const CbmTofPoint* tofPoint = static_cast<const CbmTofPoint*> (fTofPoints->Get(0, i, j));
          Int_t trackId = tofPoint->GetTrackID();
-         //tracks[trackId].tof.first.insert(j);
       }
    }
    
@@ -438,7 +438,8 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
    for (Int_t i = 0; i < nofStsHits; ++i)
    {
       const CbmStsHit* stsHit = static_cast<const CbmStsHit*> (fStsHits->At(i));
-      Int_t stationNumber = CbmStsSetup::Instance()->GetStationNumber(stsHit->GetAddress());
+      //Int_t stationNumber = CbmStsSetup::Instance()->GetStationNumber(stsHit->GetAddress());
+      Int_t stationNumber = CbmStsAddress::GetElementId(stsHit->GetAddress(), kSts);
       Int_t frontClusterInd = stsHit->GetFrontClusterId();
       Int_t backClusterInd = stsHit->GetBackClusterId();
       const CbmStsCluster* frontCluster = static_cast<const CbmStsCluster*> (fStsClusters->At(frontClusterInd));
@@ -742,7 +743,7 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
             tofTResHisto->Fill(tofHit->GetTime() - tofPoint->GetTime());
             Int_t trackId = tofPoint->GetTrackID();
             TrackDesc& trackDesk = gTracks[eventId][trackId];
-            //trackDesk.tof.first.insert(i);
+            trackDesk.tof.first.insert(i);
          }
       }
    }// TOF hits
@@ -766,13 +767,13 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
       if (trdIndex < 0)
          continue;
       
-      //if (tofIndex < 0)
-         //continue;
+      if (tofIndex < 0)
+         continue;
       
       HandleSts(stsIndex);
       //HandleMuch(muchIndex);
       HandleTrd(trdIndex);
-      //HandleTof(tofIndex);
+      HandleTof(tofIndex);
    }
    
    ++gEventNumber;
@@ -787,7 +788,8 @@ void CbmBinnedTrackerQA::HandleSts(Int_t stsTrackIndex)
    {
       Int_t stsHitInd = stsTrack->GetStsHitIndex(i);
       const CbmStsHit* stsHit = static_cast<const CbmStsHit*> (fStsHits->At(stsHitInd));
-      Int_t stationNumber = CbmStsSetup::Instance()->GetStationNumber(stsHit->GetAddress());
+      //Int_t stationNumber = CbmStsSetup::Instance()->GetStationNumber(stsHit->GetAddress());
+      Int_t stationNumber = CbmStsAddress::GetElementId(stsHit->GetAddress(), kSts);
       Int_t frontClusterInd = stsHit->GetFrontClusterId();
       Int_t backClusterInd = stsHit->GetBackClusterId();
       const CbmStsCluster* frontCluster = static_cast<const CbmStsCluster*> (fStsClusters->At(frontClusterInd));
@@ -945,8 +947,8 @@ void CbmBinnedTrackerQA::HandleTof(Int_t tofHitIndex)
          Int_t trackId = tofPoint->GetTrackID();
          TrackDesc& trackDesk = gTracks[eventId][trackId];
             
-         //if (trackDesk.tof.first.find(tofHitIndex) != trackDesk.tof.first.end())
-            //trackDesk.tof.second.insert(tofHitIndex);
+         if (trackDesk.tof.first.find(tofHitIndex) != trackDesk.tof.first.end())
+            trackDesk.tof.second.insert(tofHitIndex);
       }
    }
 }
@@ -1159,8 +1161,8 @@ void CbmBinnedTrackerQA::Finish()
          if (!isRef)
             continue;*/
          
-         //if (trackDesc.tof.first.empty())
-            //continue;
+         if (trackDesc.tof.first.empty())
+            continue;
          
          ++nofRefTracks;
          
@@ -1266,7 +1268,7 @@ void CbmBinnedTrackerQA::Finish()
                maxMatch = k->second;
          }
          
-         if (maxMatch < 4)
+         if (maxMatch < 5)
             continue;
             
          ++nofMatchedRefTracks;

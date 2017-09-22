@@ -528,9 +528,9 @@ private:
         Double_t V[2] = { hit->GetDx() * hit->GetDx(), hit->GetDy() * hit->GetDy() };
         KFAddPoint(kfParams, kfParamsPrev, m, V, hit->GetZ(), 0 == level ? 0 : hhs[level - 1]->hit->GetZ());
         
-        if (level == 5)
+        if (level == 6)
         {
-            Track* aCandidate = new Track(hhs, 6, kfParams.chi2);
+            Track* aCandidate = new Track(hhs, 7, kfParams.chi2);
             candidates.push_back(aCandidate);
             return;
         }

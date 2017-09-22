@@ -22,8 +22,8 @@ void CbmBinned3DStation::SearchHits(Segment& segment, std::function<void(CbmTBin
    Double_t dx2Sq = hit2->GetDx() * hit2->GetDx();
    Double_t dy2Sq = hit2->GetDy() * hit2->GetDy();
    Double_t segDeltaZ = hit2->GetZ() - hit1->GetZ();
-   Double_t tx = (hit2->GetX() - hit1->GetX()) / segDeltaZ;
-   Double_t ty = (hit2->GetY() - hit1->GetY()) / segDeltaZ;
+   Double_t tx = (x2 - x1) / segDeltaZ;
+   Double_t ty = (y2 - y1) / segDeltaZ;
    Double_t middleZ = (hit1->GetZ() + hit2->GetZ()) / 2;
    Double_t deltaZmin = fMinZ - middleZ;
    Double_t deltaZmax = fMaxZ - middleZ;

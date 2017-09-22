@@ -108,7 +108,7 @@ void CbmBinnedTrackerTask::Exec(Option_t* opt)
          muchTrack->AddHit(hh->index, kMUCHPIXELHIT);
       }*/
       
-      //globalTrack->SetTofHitIndex(recoTrack->fHits[/*9*/6]->index);
+      globalTrack->SetTofHitIndex(recoTrack->fHits[/*9*/6]->index);
    }
 }
 

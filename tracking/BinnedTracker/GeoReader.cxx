@@ -46,13 +46,13 @@ CbmBinnedGeoReader::CbmBinnedGeoReader(FairRootManager* ioman, CbmBinnedTracker*
    //fDetectorReaders["rich"] = &CbmBinnedGeoReader::ReadRich;
    //fDetectorReaders["much"] = &CbmBinnedGeoReader::ReadMuch;
    fDetectorReaders["trd"] = &CbmBinnedGeoReader::ReadTrd;
-   //fDetectorReaders["tof"] = &CbmBinnedGeoReader::ReadTof;
+   fDetectorReaders["tof"] = &CbmBinnedGeoReader::ReadTof;
    
    CbmBinnedHitReader::AddReader("sts", static_cast<TClonesArray*> (fIoman->GetObject("StsHit")));
    //CbmBinnedHitReader::AddReader("rich", static_cast<TClonesArray*> (fIoman->GetObject("RichHit")));
    //CbmBinnedHitReader::AddReader("much", static_cast<TClonesArray*> (fIoman->GetObject("MuchPixelHit")));
    CbmBinnedHitReader::AddReader("trd", static_cast<TClonesArray*> (fIoman->GetObject("TrdHit")));
-   //CbmBinnedHitReader::AddReader("tof", static_cast<TClonesArray*> (fIoman->GetObject("TofHit")));
+   CbmBinnedHitReader::AddReader("tof", static_cast<TClonesArray*> (fIoman->GetObject("TofHit")));
 }
 
 void CbmBinnedGeoReader::FindGeoChild(TGeoNode* node, const char* name, list<TGeoNode*>& results)
@@ -76,7 +76,7 @@ void CbmBinnedGeoReader::Read()
    ReadDetector("sts");
    ReadDetector("trd");
    //ReadDetector("much");
-   //ReadDetector("tof");
+   ReadDetector("tof");
    //ReadDetector("rich");
    ReadTarget();
    cbmBinnedSOL = 1.e-7 * TMath::C();// Speed of light in cm/ns
@@ -138,13 +138,14 @@ static Double_t gStationScats[][2] =
    { 0.105, 0.1413 },
    { 0.05997, 0.04868 },
    { 0.1208, 0.1384 },
-   { 0.08453, 0.05496 }
+   { 0.08453, 0.05496 },
    /*{ 0, 0 },
    { 0.2007, 0.2076 },
    { 10.28159, 10.28765 },
    { 10.2465, 10.2414 },
    { 10.2417, 10.24789 },
    { 10.23505, 10.24026 }*/
+   { 0, 0 }
 };
 
 /*static Double_t gStationNofSigmas[][2] =

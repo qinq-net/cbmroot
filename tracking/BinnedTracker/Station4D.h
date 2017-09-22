@@ -195,40 +195,61 @@ public:
     
     void SearchHits(Segment& segment, std::function<void(CbmTBin::HitHolder&)> handleHit)
     {
-        const CbmPixelHit* searchHit = segment.end->hit;
-        Double_t searchX = searchHit->GetX();
-        Double_t searchY = searchHit->GetY();
-        Double_t searchZ = searchHit->GetZ();
-        Double_t searchT = searchHit->GetTime();
+        const CbmPixelHit* hit1 = segment.begin->hit;
+        Double_t x1 = hit1->GetX();
+        Double_t y1 = hit1->GetY();
+        Double_t dx1Sq = hit1->GetDx() * hit1->GetDx();
+        Double_t dy1Sq = hit1->GetDy() * hit1->GetDy();
         
-        Double_t searchDx = searchHit->GetDx();
-        Double_t searchDy = searchHit->GetDy();
-        Double_t dt = searchHit->GetTimeError();
-        Double_t dtSq = dt * dt;
+        const CbmPixelHit* hit2 = segment.end->hit;
+        Double_t x2 = hit2->GetX();
+        Double_t y2 = hit2->GetY();
+        Double_t dx2Sq = hit2->GetDx() * hit2->GetDx();
+        Double_t dy2Sq = hit2->GetDy() * hit2->GetDy();
+        
+        Double_t segDeltaZ = hit2->GetZ() - hit1->GetZ();
+        Double_t segDeltaZSq = segDeltaZ * segDeltaZ;
+        Double_t searchZ;
+        Double_t searchT;
+        Double_t dtSq;
+        
+        if (0 == hit1->GetTimeError())
+        {
+            searchZ = hit2->GetZ();
+            searchT = hit2->GetTime();
+            dtSq = hit2->GetTimeError() * hit2->GetTimeError();
+        }
+        else
+        {
+            searchZ = (hit1->GetZ() + hit2->GetZ()) / 2;
+            searchT = (hit1->GetTime() + hit2->GetTime()) / 2;
+            dtSq = (hit1->GetTimeError() * hit1->GetTimeError() + hit2->GetTimeError() * hit2->GetTimeError()) / 2;
+        }
+        
+        Double_t searchX = (x1 + x2) / 2;
+        Double_t searchY = (y1 + y2) / 2;
+        Double_t deltaZmin = searchZ - fMinZ;
         Double_t wT = cbmBinnedSigma * std::sqrt(dtSq + fDt * fDt);
-        
-        Double_t tx = searchX / searchZ;
-        Double_t ty = searchY / searchZ;
+        Double_t tx = (x2 - x1) / segDeltaZ;
+        Double_t ty = (y2 - y1) / segDeltaZ;
         Double_t timeCoeff = std::sqrt(1 + tx * tx + ty * ty) / cbmBinnedSOL;
-        Double_t dTx = searchDx / searchZ;
-        Double_t dTxSq = dTx * dTx;
+        Double_t dTxSq = (dx1Sq + dx2Sq) / segDeltaZSq;
         Double_t wTx = cbmBinnedSigma * std::sqrt(dTxSq + fDtxSq);
         Double_t minTx = tx - wTx;
         Double_t maxTx = tx + wTx;
-        Double_t dTy = searchDy / searchZ;
-        Double_t dTySq = dTy * dTy;
+        Double_t dTySq = (dy1Sq + dy2Sq) / segDeltaZSq;
         Double_t wTy = cbmBinnedSigma * std::sqrt(dTySq + fDtySq);
         Double_t minTy = ty - wTy;
         Double_t maxTy = ty + wTy;
         
-        if (minTy > 0 && minTy * fMinZ >= fMaxY)
+        if (minTy > 0 && searchY + minTy * deltaZmin >= fMaxY)
             return;
-        else if (maxTy < 0 && maxTy * fMinZ < fMinY)
+        else if (maxTy < 0 && searchY + maxTy * deltaZmin < fMinY)
             return;
         
-        if (minTx > 0 && minTx * fMinZ >= fMaxX)
+        if (minTx > 0 && searchX + minTx * deltaZmin >= fMaxX)
             return;
-        else if (maxTx < 0 && maxTx * fMinZ < fMinX)
+        else if (maxTx < 0 && searchX + minTx * deltaZmin < fMinX)
             return;
         
         Double_t minZ = fMinZ;
@@ -236,24 +257,24 @@ public:
         
         if (minTy > 0)
         {
-            if (fMaxY / minTy < maxZ)
-                maxZ = fMaxY / minTy;
+            if ((fMaxY - searchY) / minTy + searchZ < maxZ)
+                maxZ = (fMaxY - searchY) / minTy + searchZ;
         }
         else if (maxTy < 0)
         {
-            if (fMinY / maxTy < maxZ)
-                maxZ = fMinY / maxTy;
+            if ((fMinY - searchY) / maxTy + searchZ < maxZ)
+                maxZ = (fMinY - searchY) / maxTy + searchZ;
         }
         
         if (minTx > 0)
         {
-            if (fMaxX / minTx < maxZ)
-                maxZ = fMaxX / minTx;
+            if ((fMaxX - searchX) / minTx + searchZ < maxZ)
+                maxZ = (fMaxX - searchX) / minTx + searchZ;
         }
         else if (maxTx < 0)
         {
-            if (fMinX / maxTx < maxZ)
-                maxZ = fMinX / maxTx;
+            if ((fMinX - searchX) / maxTx + searchZ < maxZ)
+                maxZ = (fMinX - searchX) / maxTx + searchZ;
         }
         
         int maxZind = GetZInd(maxZ);
@@ -263,9 +284,9 @@ public:
             CbmZBin& zBin = fZBins[i];
             Double_t minZi = minZ + i * fZBinSize;
             Double_t maxZi = minZ + (i + 1) * fZBinSize;
-            Double_t minY = minTy > 0 ? minTy * minZi : minTy * maxZi;
+            Double_t minY = minTy > 0 ? minTy * (minZi - searchZ) + searchY : minTy * (maxZi - searchZ) + searchY;
             int minYind = GetYInd(minY);
-            Double_t maxY = maxTy > 0 ? maxTy * maxZi : maxTy * minZi;
+            Double_t maxY = maxTy > 0 ? maxTy * (maxZi - searchZ) + searchY : maxTy * (minZi - searchZ) + searchY;
             int maxYind = GetYInd(maxY);
             
             for (int j = minYind; j <= maxYind; ++j)
@@ -299,8 +320,8 @@ public:
                 if (maxZj == minZi)
                     maxZj = maxZi;
                 
-                Double_t minX = minTx > 0 ? minTx * minZj : minTx * maxZj;
-                Double_t maxX = maxTx > 0 ? maxTx * maxZj : maxTx * minZj;
+                Double_t minX = minTx > 0 ? minTx * (minZj - searchZ) + searchX : minTx * (maxZj - searchZ) + searchX;
+                Double_t maxX = maxTx > 0 ? maxTx * (maxZj - searchZ) + searchX : maxTx * (minZj - searchZ) + searchX;
                 int minXind = GetXInd(minX);
                 int maxXind = GetXInd(maxX);
                 
@@ -337,8 +358,8 @@ public:
 
                     Double_t minT = searchT + (minZk - searchZ) * timeCoeff - wT;
                     Double_t maxT = searchT + (maxZk - searchZ) * timeCoeff + wT;
-                    int minTind = GetTInd(minT);
-                    int maxTind = GetTInd(maxT);
+                    int minTind = 0;//GetTInd(minT);
+                    int maxTind = fNofTBins - 1;//GetTInd(maxT);
                     
                     for (int l = minTind; l <= maxTind; ++l)
                     {
@@ -361,12 +382,15 @@ public:
                             if (deltaX * deltaX > cbmBinnedSigmaSq * (dTxSq * zSq + hit->GetDx() * hit->GetDx()))
                                 continue;
 
-                            Double_t deltaT = hit->GetTime() - searchT - (z - searchZ) * timeCoeff;
+                            /*Double_t deltaT = hit->GetTime() - searchT - (z - searchZ) * timeCoeff;
 
                             if (deltaT * deltaT > cbmBinnedSigmaSq * (dtSq + hit->GetTimeError() * hit->GetTimeError()))
-                                continue;
+                                continue;*/
 
-                            handleHit(*hitIter);
+                            Segment newSegment(segment.end, &(*hitIter));
+                            std::pair<std::set<Segment, SegmentComp>::iterator, bool> ir = fSegments.insert(newSegment);
+                            segment.children.push_back(const_cast<Segment*> (&(*ir.first)));
+                            //handleHit(*hitIter);
                         }
                     }
                 }
