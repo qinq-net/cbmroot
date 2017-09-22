@@ -8,6 +8,7 @@
 #pragma link off all functions;
  
 #pragma link C++ class  CbmPsd+;
+#pragma link C++ class CbmPsdMC;
 #pragma link C++ class  CbmGeoPsd+;
 #pragma link C++ class  CbmGeoPsdPar+;
 #pragma link C++ class  CbmPsdv1+;

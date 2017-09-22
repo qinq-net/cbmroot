@@ -26,7 +26,8 @@ link_directories( ${LINK_DIRECTORIES})
 
 
 set(SRCS
-CbmPsd.cxx  
+CbmPsd.cxx
+CbmPsdMC.cxx  
 CbmGeoPsd.cxx  
 CbmGeoPsdPar.cxx  
 CbmPsdv1.cxx 
