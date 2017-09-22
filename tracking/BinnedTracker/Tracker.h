@@ -18,7 +18,7 @@
 #include "Station3D.h"
 #include <iostream>
 
-#define CBM_BINNED_DEBUG
+//#define CBM_BINNED_DEBUG
 
 #ifdef CBM_BINNED_DEBUG
 #include "Debug.h"

@@ -12,6 +12,26 @@
 #include "CbmTrdTrack.h"
 #include "CbmMuchTrack.h"
 
+#ifdef __MACH__
+#include <mach/mach_time.h>
+#include <sys/time.h>
+#define CLOCK_REALTIME 0
+#define CLOCK_MONOTONIC 0
+inline int clock_gettime(int /*clk_id*/, struct timespec *t){
+    mach_timebase_info_data_t timebase;
+    mach_timebase_info(&timebase);
+    uint64_t time;
+    time = mach_absolute_time();
+    double nseconds = ((double)time * (double)timebase.numer)/((double)timebase.denom);
+    double seconds = ((double)time * (double)timebase.numer)/((double)timebase.denom * 1e9);
+    t->tv_sec = seconds;
+    t->tv_nsec = nseconds;
+    return 0;
+}
+#else
+#include <time.h>
+#endif
+
 CbmBinnedTrackerTask* CbmBinnedTrackerTask::fInstance = 0;
    
 CbmBinnedTrackerTask::CbmBinnedTrackerTask(Double_t beamWidthX, Double_t beamWidthY) : fBeamDx(beamWidthX), fBeamDy(beamWidthY),
@@ -56,9 +76,17 @@ InitStatus CbmBinnedTrackerTask::Init()
    return kSUCCESS;
 }
 
+static long fullDuration = 0;
+
 void CbmBinnedTrackerTask::Exec(Option_t* opt)
 {
+   timespec ts;
+   clock_gettime(CLOCK_REALTIME, &ts);
+   long beginTime = ts.tv_sec * 1000000000 + ts.tv_nsec;
    fTracker->Reconstruct(-100);
+   clock_gettime(CLOCK_REALTIME, &ts);
+   long endTime = ts.tv_sec * 1000000000 + ts.tv_nsec;
+   fullDuration += endTime - beginTime;
    fStsTracks->Clear();
    fTrdTracks->Clear();
    //fMuchTracks->Clear();
@@ -120,6 +148,7 @@ void CbmBinnedTrackerTask::Finish()
    segWrong /= fTracker->fNofTrueSegments + fTracker->fNofWrongSegments;
    cout << "True segments = " << segTrue << " [" << fTracker->fNofTrueSegments << "/" << fTracker->fNofTrueSegments + fTracker->fNofWrongSegments << "]" << endl;
    cout << "Wrong segments = " << segWrong << " [" << fTracker->fNofWrongSegments << "/" << fTracker->fNofTrueSegments + fTracker->fNofWrongSegments << "]" << endl;
+   cout << "Full reconstruction duration: " << fullDuration << " nanoseconds" << endl;
 }
 
 ClassImp(CbmBinnedTrackerTask)
