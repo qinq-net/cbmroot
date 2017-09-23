@@ -122,6 +122,9 @@ void CbmPsdMC::ConstructGeometry() {
 // -----   Public method ProcessHits  --------------------------------------
 Bool_t CbmPsdMC::ProcessHits(FairVolume*) {
 
+  // No action for neutral particles
+  if (TMath::Abs(gMC->TrackCharge()) <= 0) return kFALSE;
+
   Int_t layer  = -1;
   Int_t module = -1;
 

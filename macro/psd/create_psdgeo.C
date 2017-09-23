@@ -36,7 +36,7 @@ void create_psdgeo()
 
   Double_t psdX       = 11.;    // x position of PSD in cave
   Double_t psdY       = 0.;     // y position of PSD in cave
-  Double_t psdZ       = 800.;   // z position of PSD in cave
+  Double_t psdZ       = 800.;   // z position of PSD in cave (back side)
   Double_t psdRotY    = 0.;     // Rotation of PSD around y axis [degrees]
   Double_t moduleSize = 20.;    // Module size [cm]
   Int_t    nModulesX  = 7;      // Number of modules in a row (x direction)
@@ -217,7 +217,8 @@ void create_psdgeo()
   // -----   Place PSD in top node (cave) -------------------------------------
   TGeoRotation* psdRot = new TGeoRotation();
   psdRot->RotateY(psdRotY);
-  TGeoCombiTrans* psdTrans = new TGeoCombiTrans(psdX, psdY, psdZ, psdRot);
+  TGeoCombiTrans* psdTrans = new TGeoCombiTrans(psdX, psdY, psdZ + psdSizeZ,
+                                                psdRot);
   top->AddNode(psd, 0, psdTrans);
   cout << endl << "==> PSD position in cave: " << endl;
   psdTrans->Print();
