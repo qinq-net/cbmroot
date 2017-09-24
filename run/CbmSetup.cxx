@@ -358,11 +358,6 @@ void CbmSetup::Print(Option_t*) {
     LOG(INFO) << " using " << fGeoFileNames[it->first];
     LOG(INFO) << FairLogger::endl;
   }
-  if ( fGeoFileNames.find(kPsd) != fGeoFileNames.end() ) {
-  	LOG(INFO) << "  PSD     :  " << fGeoFileNames[kPsd] << ", z = "
-  			      << fPsdPositionZ << " cm, x = " << fPsdPositionX << " cm"
-  			      << FairLogger::endl;
-  }
   LOG(INFO) << "  Field   :  " << fFieldTag << ", Position ( "
   		      << fFieldPosition.X() << ", " << fFieldPosition.Y()
   		      << ", " << fFieldPosition.Z() << " ), scaling "

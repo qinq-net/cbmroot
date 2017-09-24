@@ -1,0 +1,22 @@
+PSD geometry v17a created with create_psdgeo.C
+
+Author: Volker Friese
+This geometry corresponds to the one which was implemented in CbmPsdv1, with small exceptions: the channel for the fibres is at the top of the module.
+
+Number of modules: 7 x 7
+Module size: 20 cm x 20 cm
+PSD translation in cave: (11, 0, 800) cm
+PSD rotation around y axis: 0 degrees
+
+Parameters of module module2060: 
+Size: 20 cm x 20 cm
+Number of layers: 60
+Thickness of lead layers: 1.6 cm
+Thickness of scintillators: 0.4 cm
+Thickness of Tyvek wrap: 0.02 cm
+Thickness of iron box: (0.15 / 0.05 / 2) cm
+Height of fibre channel: 0.2 cm
+Distance of channel from edges: left 0.5 cm, right 2 cm
+
+PSD size is 140 cm x 140 cm x 124.8 cm
+PSD contains 44 modules.

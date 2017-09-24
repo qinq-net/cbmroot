@@ -81,7 +81,7 @@ void CbmPsdMC::ConstructGeometry() {
         << fgeoName << " is not a PSD volume!" << FairLogger::endl;
     return;
   }
-  LOG(INFO) << GetName() << ": Found PSD volume " << psd->GetName()
+  LOG(DEBUG) << GetName() << ": Found PSD volume " << psd->GetName()
       << FairLogger::endl;
 
   // Import the transformation matrix
@@ -114,6 +114,24 @@ void CbmPsdMC::ConstructGeometry() {
   LOG(DEBUG) << GetName() << ": " << fNbOfSensitiveVol
       << " sensitive volumes" << FairLogger::endl;
 
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   End of event action   -------------------------------------------
+void CbmPsdMC::EndOfEvent() {
+    Print();                 // Status output
+    fPsdPoints->Delete();
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Print   ---------------------------------------------------------
+void CbmPsdMC::Print(Option_t*) const {
+  LOG(INFO) << fName << ": " << fPsdPoints->GetEntriesFast()
+            << " points registered in this event." << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 

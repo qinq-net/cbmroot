@@ -65,6 +65,14 @@ class CbmPsdMC : public FairDetector
   virtual void ConstructGeometry();
 
 
+  /** @brief Action at end of event
+   **
+   ** Short status log and Reset().
+   ** Virtual from FairDetector.
+   **/
+  virtual void EndOfEvent();
+
+
   /** Accessor to the hit collection **/
   /** @brief Get output array of CbmPsdPoints
    ** @param iColl Number of collection. Must be zero, since there is only one.
@@ -73,6 +81,14 @@ class CbmPsdMC : public FairDetector
   virtual TClonesArray* GetCollection(Int_t iColl) const {
     return ( iColl ? nullptr : fPsdPoints );
   }
+
+
+  /** @brief Screen log
+   ** Prints current number of StsPoints in array.
+   ** Virtual from TObject.
+   **/
+  virtual void Print(Option_t* opt = "") const;
+
 
 
   /** @brief Stepping action

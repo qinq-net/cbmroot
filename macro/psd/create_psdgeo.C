@@ -32,7 +32,7 @@ void create_psdgeo()
 {
 
   // -----   Steering variables   ---------------------------------------------
-  const char* geoTag = "test";  // Geometry tag
+  const char* geoTag = "v17a";  // Geometry tag
 
   Double_t psdX       = 11.;    // x position of PSD in cave
   Double_t psdY       = 0.;     // y position of PSD in cave

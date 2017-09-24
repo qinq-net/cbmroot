@@ -45,7 +45,7 @@ void setup_sis100_electron()
   TString richGeoTag      = "v16a_1e";
   TString trdGeoTag       = "v17c_1e";
   TString tofGeoTag       = "v16a_1e";
-  TString psdGeoTag       = "psd_geo_xy.txt";
+  TString psdGeoTag       = "v17a";
   TString platGeoTag      = "v13a";
   // ------------------------------------------------------------------------
 
@@ -54,13 +54,6 @@ void setup_sis100_electron()
   TString fieldTag      = "v12b";
   Double_t fieldZ       = 40.;            // field centre z position
   Double_t fieldScale   =  1.;            // field scaling factor
-  // ------------------------------------------------------------------------
-
-
-  // -----  PSD  ------------------------------------------------------------
-  TString  psdGeoFile = "psd_geo_xy.txt";
-  Double_t psdZpos = 800.;
-  Double_t psdXpos = 11.;
   // ------------------------------------------------------------------------
 
 
@@ -79,8 +72,8 @@ void setup_sis100_electron()
   setup->SetModule(kRich, richGeoTag);
   setup->SetModule(kTrd, trdGeoTag);
   setup->SetModule(kTof, tofGeoTag);
+  setup->SetModule(kPsd, psdGeoTag);
   setup->SetModule(kPlatform, platGeoTag);
-  setup->SetPsd(psdGeoFile, psdZpos, psdXpos);
   setup->SetField(fieldTag, fieldScale, 0., 0., fieldZ);
   // ------------------------------------------------------------------------
 
