@@ -57,7 +57,12 @@ public:
         litHit->SetX(hit->GetX());
         litHit->SetY(hit->GetY());
         litHit->SetZ(hit->GetZ());
-        litHit->SetT(hit->GetTime());
+        
+        if (hit->GetType() == kMUCHPIXELHIT)
+            litHit->SetT(hit->GetTime() - 17.32);
+        else
+            litHit->SetT(hit->GetTime());
+        
         litHit->SetDx(hit->GetDx());
         litHit->SetDy(hit->GetDy());
         litHit->SetDz(hit->GetDz());

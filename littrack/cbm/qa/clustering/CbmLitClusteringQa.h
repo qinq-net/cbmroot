@@ -11,6 +11,8 @@
 #include "FairTask.h"
 #include "../cbm/base/CbmLitDetectorSetup.h"
 #include "CbmMuchGeoScheme.h"
+#include "CbmTimeSlice.h"
+#include "CbmMCEventList.h"
 #include <string>
 #include <vector>
 using std::string;
@@ -196,6 +198,9 @@ private:
     TClonesArray* fTofHits; // CbmTofHit array
 
     string fMuchDigiFileName;
+    
+    CbmTimeSlice* fTimeSlice;
+    CbmMCEventList* fEventList;
 
     CbmLitClusteringQa(const CbmLitClusteringQa&);
     CbmLitClusteringQa& operator=(const CbmLitClusteringQa&);

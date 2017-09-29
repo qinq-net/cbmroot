@@ -23,6 +23,7 @@
 #include "utils/CbmRichUtil.h"
 #include "CbmMCDataArray.h"
 #include "CbmMCDataManager.h"
+#include "CbmStsSetup.h"
 
 #include "TH1.h"
 #include "TH2F.h"
@@ -109,6 +110,12 @@ InitStatus CbmLitTrackingQa::Init()
    CreateHistograms();
 
    ReadDataBranches();
+   
+   // --- Get STS setup
+   CbmStsSetup* stsSetup = CbmStsSetup::Instance();
+   
+   if (!stsSetup->IsInit())
+      stsSetup->Init();
 
    fMCTrackCreator = CbmLitMCTrackCreator::Instance();
 

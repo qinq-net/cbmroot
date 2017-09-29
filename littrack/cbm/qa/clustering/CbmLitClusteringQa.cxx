@@ -92,7 +92,9 @@ CbmLitClusteringQa::CbmLitClusteringQa():
    fTrdHitMatches(NULL),
    fTofPoints(NULL),
    fTofHits(NULL),
-   fMuchDigiFileName("")
+   fMuchDigiFileName(""),
+   fTimeSlice(NULL),
+   fEventList(NULL)
 {
 
 }
@@ -224,6 +226,9 @@ void CbmLitClusteringQa::ReadDataBranches()
 
    fTofPoints = mcManager->InitBranch("TofPoint");
    fTofHits = (TClonesArray*) ioman->GetObject("TofHit");
+   
+   fTimeSlice = static_cast<CbmTimeSlice*> (ioman->GetObject("TimeSlice."));
+   fEventList = static_cast<CbmMCEventList*> (ioman->GetObject("MCEventList."));
 }
 
 Int_t CbmLitClusteringQa::GetStationId(
@@ -264,7 +269,13 @@ void CbmLitClusteringQa::ProcessDigis(
    if (NULL == digis || !fHM->Exists("hno_NofObjects_" + detName + "Digis_Station")) return;
    for (Int_t i = 0; i < digis->GetEntriesFast(); i++) {
       const CbmDigi* digi = static_cast<const CbmDigi*>(digis->At(i));
-      const CbmMatch* digiMatch = static_cast<const CbmMatch*>(digiMatches->At(i));
+      const CbmMatch* digiMatch;
+      
+      if (0 == digiMatches)
+         digiMatch = digi->GetMatch();
+      else
+         digiMatch = static_cast<const CbmMatch*>(digiMatches->At(i));
+      
       Int_t stationId = GetStationId(digi->GetAddress(), detId);
       fHM->H1("hno_NofObjects_" + detName + "Digis_Station")->Fill(stationId);
       fHM->H1("hpa_" + detName + "Digi_NofPointsInDigi_H1")->Fill(digiMatch->GetNofLinks());
@@ -361,10 +372,12 @@ void CbmLitClusteringQa::FillResidualAndPullHistograms(
    if (NULL == points || NULL == hits || NULL == hitMatches) return;
    string nameResidualX = "hrp_" + detName + "_ResidualX_H2";
    string nameResidualY = "hrp_" + detName + "_ResidualY_H2";
+   string nameResidualT = "hrp_" + detName + "_ResidualT_H2";
    string namePullX = "hrp_" + detName + "_PullX_H2";
    string namePullY = "hrp_" + detName + "_PullY_H2";
-   if (!fHM->Exists(nameResidualX) || !fHM->Exists(nameResidualY)
-         || !fHM->Exists(namePullX) || !fHM->Exists(namePullY)) return;
+   string namePullT = "hrp_" + detName + "_PullT_H2";
+   if (!fHM->Exists(nameResidualX) || !fHM->Exists(nameResidualY) || !fHM->Exists(nameResidualT)
+         || !fHM->Exists(namePullX) || !fHM->Exists(namePullY) || !fHM->Exists(namePullT)) return;
 
    Int_t nofHits = hits->GetEntriesFast();
 	for (Int_t iHit = 0; iHit < nofHits; iHit++) {
@@ -377,11 +390,20 @@ void CbmLitClusteringQa::FillResidualAndPullHistograms(
       //Float_t yPoint = (muchPoint->GetYIn() + muchPoint->GetYOut()) / 2;
       Float_t residualX =  point->GetX() - hit->GetX();
       Float_t residualY =  point->GetY() - hit->GetY();
+      Float_t residualT;
+      
+      if (0 == fTimeSlice || 0 == fEventList)   
+         residualT =  point->GetTime() - hit->GetTime();
+      else
+         residualT = fEventList->GetEventTime(match->GetMatchedLink().GetEntry() + 1) + point->GetTime() - hit->GetTime();
+      
       Int_t stationId = GetStationId(hit->GetAddress(), detId);
       fHM->H2(nameResidualX)->Fill(stationId, residualX);
       fHM->H2(nameResidualY)->Fill(stationId, residualY);
+      fHM->H2(nameResidualT)->Fill(stationId, residualT);
       fHM->H2(namePullX)->Fill(stationId, residualX / hit->GetDx());
       fHM->H2(namePullY)->Fill(stationId, residualY / hit->GetDy());
+      fHM->H2(namePullT)->Fill(stationId, residualT / hit->GetTimeError());
    }
 }
 
@@ -514,6 +536,8 @@ void CbmLitClusteringQa::CreateClusterParametersHistograms(
    Int_t nofBinsResidual = 200;
    Double_t minResidual = -10.0;
    Double_t maxResidual = 10.0;
+   Double_t minResidualT = -100.0;
+   Double_t maxResidualT = 100.0;
    Int_t nofBinsPull = 100;
    Double_t minPull = -5.0;
    Double_t maxPull = 5.0;
@@ -548,10 +572,14 @@ void CbmLitClusteringQa::CreateClusterParametersHistograms(
    fHM->Create2<TH2F>(nameH2, nameH2 + ";Station;Residual X [cm];Yield", nofBinsStation, minStation, maxStation, nofBinsResidual, minResidual, maxResidual);
    nameH2 = "hrp_" + detName + "_ResidualY_H2";
    fHM->Create2<TH2F>(nameH2, nameH2 + ";Station;Residual Y [cm];Yield", nofBinsStation, minStation, maxStation, nofBinsResidual, minResidual, maxResidual);
+   nameH2 = "hrp_" + detName + "_ResidualT_H2";
+   fHM->Create2<TH2F>(nameH2, nameH2 + ";Station;Residual T [ns];Yield", nofBinsStation, minStation, maxStation, nofBinsResidual, minResidualT, maxResidualT);
    nameH2 = "hrp_" + detName + "_PullX_H2";
    fHM->Create2<TH2F>(nameH2, nameH2 + ";Station;Pull X;Yield", nofBinsStation, minStation, maxStation, nofBinsPull, minPull, maxPull);
    nameH2 = "hrp_" + detName + "_PullY_H2";
    fHM->Create2<TH2F>(nameH2, nameH2 + ";Station;Pull Y;Yield", nofBinsStation, minStation, maxStation, nofBinsPull, minPull, maxPull);
+   nameH2 = "hrp_" + detName + "_PullT_H2";
+   fHM->Create2<TH2F>(nameH2, nameH2 + ";Station;Pull T;Yield", nofBinsStation, minStation, maxStation, nofBinsPull, minPull, maxPull);
 }
 
 void CbmLitClusteringQa::CreateHitEfficiencyHistograms(

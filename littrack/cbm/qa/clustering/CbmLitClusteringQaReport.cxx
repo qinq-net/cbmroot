@@ -141,9 +141,9 @@ void CbmLitClusteringQaReport::DrawNofObjectsHistograms(
 void CbmLitClusteringQaReport::DrawResidualsAndPulls(
       const string& detName)
 {
-   if (!(HM()->Exists("hrp_" + detName + "_ResidualX_H2") && HM()->Exists("hrp_" + detName + "_ResidualY_H2")
-         && HM()->Exists("hrp_" + detName + "_PullX_H2") && HM()->Exists("hrp_" + detName + "_ResidualX_H2"))) return;
-   vector<string> par = list_of("ResidualX")("ResidualY")("PullX")("PullY");
+   if (!(HM()->Exists("hrp_" + detName + "_ResidualX_H2") && HM()->Exists("hrp_" + detName + "_ResidualY_H2") && HM()->Exists("hrp_" + detName + "_ResidualT_H2")
+         && HM()->Exists("hrp_" + detName + "_PullX_H2") && HM()->Exists("hrp_" + detName + "_PullY_H2") && HM()->Exists("hrp_" + detName + "_PullT_H2"))) return;
+   vector<string> par = list_of("ResidualX")("ResidualY")("ResidualT")("PullX")("PullY")("PullT");
    Int_t nofCanvases = par.size();
    for (Int_t iCanvas = 0; iCanvas < nofCanvases; iCanvas++) {
       string histName = "hrp_" + detName + "_" + par[iCanvas] + "_H2";
