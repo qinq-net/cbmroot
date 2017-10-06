@@ -27,6 +27,8 @@
 #include "CbmMCDataManager.h"
 #include "TH1.h"
 #include "GeoReader.h"
+#include "FairRun.h"
+#include "FairRuntimeDb.h"
 
 using namespace std;
 
@@ -104,7 +106,7 @@ static TH1F* extrTrdYHistos[] = { 0, 0, 0, 0 };
 static TH1F* trdNearestHitDistHistos[] = { 0, 0, 0, 0 };
 static int trdNofStrangerHits[] = { 0, 0, 0, 0 };
 
-CbmBinnedTrackerQA::CbmBinnedTrackerQA() : fGlobalTracks(0), fStsTracks(0)/*, fMuchTracks(0)*/, fTrdTracks(0), fStsHits(0), fMuchHits(0), fTrdHits(0), fTofHits(0),
+CbmBinnedTrackerQA::CbmBinnedTrackerQA() : fSettings(0), fGlobalTracks(0), fStsTracks(0)/*, fMuchTracks(0)*/, fTrdTracks(0), fStsHits(0), fMuchHits(0), fTrdHits(0), fTofHits(0),
    fStsClusters(0), fMuchClusters(0), fTrdClusters(0), fTrdDigiMatches(0), fTofHitDigiMatches(0), fTofDigiPointMatches(0),
    fStsDigis(0), fMuchDigis(0), fTrdDigis(0), fTofDigis(0), fMCTracks(0), fStsPoints(0), fMuchPoints(0), fTrdPoints(0), fTofPoints(0)
 {
@@ -1333,6 +1335,11 @@ void CbmBinnedTrackerQA::Finish()
       SaveHisto(trdXPullHistos[i]);
       SaveHisto(trdYPullHistos[i]);
    }
+}
+
+void CbmBinnedTrackerQA::SetParContainers()
+{
+   fSettings = static_cast<CbmBinnedSettings*> (FairRun::Instance()->GetRuntimeDb()->getContainer("CbmBinnedSettings"));
 }
 
 ClassImp(CbmBinnedTrackerQA)

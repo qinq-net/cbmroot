@@ -56,6 +56,7 @@ private:
     TGeoNavigator* fNavigator;
     std::map<std::string, void (CbmBinnedGeoReader::*)()> fDetectorReaders;
     CbmBinnedTracker* fTracker;
+    int fLastStationNumber;
 };
 
 #endif /* GEOREADER_H */

@@ -546,8 +546,8 @@ private:
 
     void ReconstructGlobal()
     {
-        Double_t scatXSqs[6];
-        Double_t scatYSqs[6];
+        Double_t scatXSqs[7];
+        Double_t scatYSqs[7];
         int stN = 0;
                 
         for (std::map<Double_t, CbmBinnedStation*>::const_iterator i = fStations.begin(); i != fStations.end(); ++i)

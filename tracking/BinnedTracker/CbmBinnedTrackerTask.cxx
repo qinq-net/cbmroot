@@ -11,6 +11,8 @@
 #include "CbmStsTrack.h"
 #include "CbmTrdTrack.h"
 #include "CbmMuchTrack.h"
+#include "FairRunAna.h"
+#include "FairRuntimeDb.h"
 
 #ifdef __MACH__
 #include <mach/mach_time.h>
@@ -34,10 +36,12 @@ inline int clock_gettime(int /*clk_id*/, struct timespec *t){
 
 CbmBinnedTrackerTask* CbmBinnedTrackerTask::fInstance = 0;
    
-CbmBinnedTrackerTask::CbmBinnedTrackerTask(Double_t beamWidthX, Double_t beamWidthY) : fBeamDx(beamWidthX), fBeamDy(beamWidthY),
-   fTracker(0), fGlobalTracks(0), fStsTracks(0)/*, fMuchTracks(0)*/, fTrdTracks(0)
+CbmBinnedTrackerTask::CbmBinnedTrackerTask(bool useAllDetectors, Double_t beamWidthX, Double_t beamWidthY) : fUseAllDetectors(useAllDetectors),
+   fSettings(0), fBeamDx(beamWidthX), fBeamDy(beamWidthY), fTracker(0), fGlobalTracks(0), fStsTracks(0), fMuchTracks(0), fTrdTracks(0)
 {
    fInstance = this;
+   fSettings = CbmBinnedSettings::Instance();
+   fSettings->SetUse(useAllDetectors);
 }
 
 CbmBinnedTrackerTask::~CbmBinnedTrackerTask()
@@ -64,14 +68,26 @@ InitStatus CbmBinnedTrackerTask::Init()
    fGlobalTracks = new TClonesArray("CbmGlobalTrack", 100);
    ioman->Register("GlobalTrack", "Global", fGlobalTracks, IsOutputBranchPersistent("GlobalTrack"));
    
-   fStsTracks = new TClonesArray("CbmStsTrack", 100);
-   ioman->Register("StsTrack", "STS", fStsTracks, IsOutputBranchPersistent("StsTrack"));
+   if (fSettings->Use(kSts))
+   {
+      fStsTracks = new TClonesArray("CbmStsTrack", 100);
+      ioman->Register("StsTrack", "STS", fStsTracks, IsOutputBranchPersistent("StsTrack"));
+   }
    
-   //fMuchTracks = new TClonesArray("CbmMuchTrack", 100);
-   //ioman->Register("MuchTrack", "Much", fMuchTracks, IsOutputBranchPersistent("MuchTrack"));
+   if (fSettings->Use(kMuch))
+   {
+      fMuchTracks = new TClonesArray("CbmMuchTrack", 100);
+      ioman->Register("MuchTrack", "Much", fMuchTracks, IsOutputBranchPersistent("MuchTrack"));
+   }
    
-   fTrdTracks = new TClonesArray("CbmTrdTrack", 100);
-   ioman->Register("TrdTrack", "Trd", fTrdTracks, IsOutputBranchPersistent("TrdTrack"));
+   if (fSettings->Use(kTrd))
+   {
+      fTrdTracks = new TClonesArray("CbmTrdTrack", 100);
+      ioman->Register("TrdTrack", "Trd", fTrdTracks, IsOutputBranchPersistent("TrdTrack"));
+   }
+   
+   fSettings->setChanged();
+   fSettings->setInputVersion(-2,1);
    
    return kSUCCESS;
 }
@@ -87,56 +103,85 @@ void CbmBinnedTrackerTask::Exec(Option_t* opt)
    clock_gettime(CLOCK_REALTIME, &ts);
    long endTime = ts.tv_sec * 1000000000 + ts.tv_nsec;
    fullDuration += endTime - beginTime;
-   fStsTracks->Clear();
-   fTrdTracks->Clear();
-   //fMuchTracks->Clear();
+   
+   if (fSettings->Use(kSts))
+      fStsTracks->Clear();
+   
+   if (fSettings->Use(kMuch))
+      fMuchTracks->Clear();
+   
+   if (fSettings->Use(kTrd))
+      fTrdTracks->Clear();
+   
    fGlobalTracks->Clear();
    int trackNumber = 0;
    std::list<CbmBinnedTracker::Track*>::const_iterator tracksEnd = fTracker->GetTracksEnd();
    
    for (std::list<CbmBinnedTracker::Track*>::const_iterator trackIter = fTracker->GetTracksBegin(); trackIter != tracksEnd; ++trackIter)
    {
-      CbmStsTrack* stsTrack = new ((*fStsTracks)[trackNumber]) CbmStsTrack();
-      stsTrack->SetNDF(4);
-      stsTrack->SetChiSq(1);
-      stsTrack->SetPreviousTrackId(-1);
-      CbmTrdTrack* trdTrack = new ((*fTrdTracks)[trackNumber]) CbmTrdTrack();
-      trdTrack->SetNDF(8);
-      trdTrack->SetChiSq(1);
-      trdTrack->SetPreviousTrackId(trackNumber);
-      /*CbmMuchTrack* muchTrack = new ((*fMuchTracks)[trackNumber]) CbmMuchTrack();
-      muchTrack->SetNDF(6);
-      muchTrack->SetChiSq(1);
-      muchTrack->SetPreviousTrackId(trackNumber);*/
-      CbmGlobalTrack* globalTrack = new ((*fGlobalTracks)[trackNumber]) CbmGlobalTrack();
-      globalTrack->SetStsTrackIndex(trackNumber);
-      //globalTrack->SetMuchTrackIndex(trackNumber);
-      globalTrack->SetTrdTrackIndex(trackNumber);
-      globalTrack->SetNDF(20);
-      globalTrack->SetChi2(1);
-      ++trackNumber;
-      
       const CbmBinnedTracker::Track* recoTrack = *trackIter;
+      int previousTrackId = -1;
+      int stationNumber = 0;
+      int nofStations = 0;
+      CbmGlobalTrack* globalTrack = new ((*fGlobalTracks)[trackNumber]) CbmGlobalTrack();
       
-      for (Int_t i = 0; i < 2; ++i)
+      if (fSettings->Use(kSts))
       {
-         CbmTBin::HitHolder* hh = recoTrack->fHits[i];
-         stsTrack->AddStsHit(hh->index);
+         globalTrack->SetStsTrackIndex(trackNumber);
+         CbmStsTrack* stsTrack = new ((*fStsTracks)[trackNumber]) CbmStsTrack();
+         stsTrack->SetNDF(fSettings->GetNofStsStations() * 2);
+         stsTrack->SetChiSq(1);
+         stsTrack->SetPreviousTrackId(previousTrackId);
+         previousTrackId = trackNumber;
+         nofStations += fSettings->GetNofStsStations();
+         
+         for (; stationNumber < nofStations; ++stationNumber)
+         {
+            CbmTBin::HitHolder* hh = recoTrack->fHits[stationNumber];
+            stsTrack->AddStsHit(hh->index);
+         }
       }
       
-      for (Int_t i = 2; i < 6; ++i)
+      if (fSettings->Use(kMuch))
       {
-         CbmTBin::HitHolder* hh = recoTrack->fHits[i];
-         trdTrack->AddHit(hh->index, kTRDHIT);
+         globalTrack->SetMuchTrackIndex(trackNumber);
+         CbmMuchTrack* muchTrack = new ((*fMuchTracks)[trackNumber]) CbmMuchTrack();
+         muchTrack->SetNDF(fSettings->GetNofMuchStations() * 2);
+         muchTrack->SetChiSq(1);
+         muchTrack->SetPreviousTrackId(previousTrackId);
+         previousTrackId = trackNumber;
+         nofStations += fSettings->GetNofMuchStations();
+      
+         for (; stationNumber < nofStations; ++stationNumber)
+         {
+            CbmTBin::HitHolder* hh = recoTrack->fHits[stationNumber];
+            muchTrack->AddHit(hh->index, kMUCHPIXELHIT);
+         }
       }
       
-      /*for (Int_t i = 6; i < 9; ++i)
+      if (fSettings->Use(kTrd))
       {
-         CbmTBin::HitHolder* hh = recoTrack->fHits[i];
-         muchTrack->AddHit(hh->index, kMUCHPIXELHIT);
-      }*/
+         globalTrack->SetTrdTrackIndex(trackNumber);
+         CbmTrdTrack* trdTrack = new ((*fTrdTracks)[trackNumber]) CbmTrdTrack();
+         trdTrack->SetNDF(fSettings->GetNofTrdStations() * 2);
+         trdTrack->SetChiSq(1);
+         trdTrack->SetPreviousTrackId(previousTrackId);
+         previousTrackId = trackNumber;
+         nofStations += fSettings->GetNofTrdStations();
       
-      globalTrack->SetTofHitIndex(recoTrack->fHits[/*9*/6]->index);
+         for (; stationNumber < nofStations; ++stationNumber)
+         {
+            CbmTBin::HitHolder* hh = recoTrack->fHits[stationNumber];
+            trdTrack->AddHit(hh->index, kTRDHIT);
+         }
+      }
+      
+      if (fSettings->Use(kTof))
+         globalTrack->SetTofHitIndex(recoTrack->fHits[nofStations++]->index);
+      
+      globalTrack->SetNDF(nofStations * 2);
+      globalTrack->SetChi2(recoTrack->fChiSq);
+      ++trackNumber;
    }
 }
 
@@ -149,6 +194,11 @@ void CbmBinnedTrackerTask::Finish()
    cout << "True segments = " << segTrue << " [" << fTracker->fNofTrueSegments << "/" << fTracker->fNofTrueSegments + fTracker->fNofWrongSegments << "]" << endl;
    cout << "Wrong segments = " << segWrong << " [" << fTracker->fNofWrongSegments << "/" << fTracker->fNofTrueSegments + fTracker->fNofWrongSegments << "]" << endl;
    cout << "Full reconstruction duration: " << fullDuration << " nanoseconds" << endl;
+}
+
+void CbmBinnedTrackerTask::SetParContainers()
+{
+   fSettings = static_cast<CbmBinnedSettings*> (FairRunAna::Instance()->GetRuntimeDb()->getContainer("CbmBinnedSettings"));
 }
 
 ClassImp(CbmBinnedTrackerTask)

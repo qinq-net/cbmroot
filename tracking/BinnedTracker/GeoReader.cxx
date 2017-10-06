@@ -30,7 +30,8 @@ CbmBinnedGeoReader* CbmBinnedGeoReader::Instance()
    return theInstance;
 }
 
-CbmBinnedGeoReader::CbmBinnedGeoReader(FairRootManager* ioman, CbmBinnedTracker* tracker) : fIoman(ioman), fNavigator(0), fDetectorReaders(), fTracker(tracker)
+CbmBinnedGeoReader::CbmBinnedGeoReader(FairRootManager* ioman, CbmBinnedTracker* tracker) : fIoman(ioman), fNavigator(0), fDetectorReaders(), fTracker(tracker),
+   fLastStationNumber(0)
 {
    Int_t nofChildren = gGeoManager->GetTopNode()->GetNdaughters();
    
@@ -42,17 +43,37 @@ CbmBinnedGeoReader::CbmBinnedGeoReader(FairRootManager* ioman, CbmBinnedTracker*
    }
    
    fNavigator = gGeoManager->GetCurrentNavigator();
-   fDetectorReaders["sts"] = &CbmBinnedGeoReader::ReadSts;
-   //fDetectorReaders["rich"] = &CbmBinnedGeoReader::ReadRich;
-   //fDetectorReaders["much"] = &CbmBinnedGeoReader::ReadMuch;
-   fDetectorReaders["trd"] = &CbmBinnedGeoReader::ReadTrd;
-   fDetectorReaders["tof"] = &CbmBinnedGeoReader::ReadTof;
+   CbmBinnedSettings* settings = CbmBinnedSettings::Instance();
    
-   CbmBinnedHitReader::AddReader("sts", static_cast<TClonesArray*> (fIoman->GetObject("StsHit")));
-   //CbmBinnedHitReader::AddReader("rich", static_cast<TClonesArray*> (fIoman->GetObject("RichHit")));
-   //CbmBinnedHitReader::AddReader("much", static_cast<TClonesArray*> (fIoman->GetObject("MuchPixelHit")));
-   CbmBinnedHitReader::AddReader("trd", static_cast<TClonesArray*> (fIoman->GetObject("TrdHit")));
-   CbmBinnedHitReader::AddReader("tof", static_cast<TClonesArray*> (fIoman->GetObject("TofHit")));
+   if (settings->Use(kSts))
+   {
+      fDetectorReaders["sts"] = &CbmBinnedGeoReader::ReadSts;
+      CbmBinnedHitReader::AddReader("sts", static_cast<TClonesArray*> (fIoman->GetObject("StsHit")));
+   }
+   
+   if (settings->Use(kRich))
+   {
+      fDetectorReaders["rich"] = &CbmBinnedGeoReader::ReadRich;
+      CbmBinnedHitReader::AddReader("rich", static_cast<TClonesArray*> (fIoman->GetObject("RichHit")));
+   }
+   
+   if (settings->Use(kMuch))
+   {
+      fDetectorReaders["much"] = &CbmBinnedGeoReader::ReadMuch;
+      CbmBinnedHitReader::AddReader("much", static_cast<TClonesArray*> (fIoman->GetObject("MuchPixelHit")));
+   }
+   
+   if (settings->Use(kTrd))
+   {
+      fDetectorReaders["trd"] = &CbmBinnedGeoReader::ReadTrd;
+      CbmBinnedHitReader::AddReader("trd", static_cast<TClonesArray*> (fIoman->GetObject("TrdHit")));
+   }
+   
+   if (settings->Use(kTof))
+   {
+      fDetectorReaders["tof"] = &CbmBinnedGeoReader::ReadTof;   
+      CbmBinnedHitReader::AddReader("tof", static_cast<TClonesArray*> (fIoman->GetObject("TofHit")));
+   }
 }
 
 void CbmBinnedGeoReader::FindGeoChild(TGeoNode* node, const char* name, list<TGeoNode*>& results)
@@ -73,11 +94,23 @@ Double_t cbmBinnedSOL = 0;
 
 void CbmBinnedGeoReader::Read()
 {
-   ReadDetector("sts");
-   ReadDetector("trd");
-   //ReadDetector("much");
-   ReadDetector("tof");
-   //ReadDetector("rich");
+   CbmBinnedSettings* settings = CbmBinnedSettings::Instance();
+   
+   if (settings->Use(kSts))
+      ReadDetector("sts");
+   
+   if (settings->Use(kRich))
+      ReadDetector("rich");
+   
+   if (settings->Use(kMuch))
+      ReadDetector("much");
+      
+   if (settings->Use(kTrd))
+      ReadDetector("trd");
+   
+   if (settings->Use(kTof))
+      ReadDetector("tof");
+   
    ReadTarget();
    cbmBinnedSOL = 1.e-7 * TMath::C();// Speed of light in cm/ns
 }
@@ -172,7 +205,6 @@ void CbmBinnedGeoReader::SearchStation(TGeoNode* node, CbmBinnedHitReader* hitRe
       //Double_t z = globalCoords[2];
       //const char* name1 = node->GetName();
       //const char* name2 = gGeoManager->GetCurrentNode()->GetName();
-      static int stationNumber = 0;
       Double_t left = 10000;
       Double_t right = -10000;
       Double_t top = -10000;
@@ -200,12 +232,12 @@ void CbmBinnedGeoReader::SearchStation(TGeoNode* node, CbmBinnedHitReader* hitRe
       station->SetMinX(left);
       station->SetMaxX(right);
       
-      station->SetDx(gStationErrors[stationNumber][0]);
-      station->SetDy(gStationErrors[stationNumber][1]);
-      station->SetDt(gStationErrors[stationNumber][2]);
+      station->SetDx(gStationErrors[fLastStationNumber][0]);
+      station->SetDy(gStationErrors[fLastStationNumber][1]);
+      station->SetDt(gStationErrors[fLastStationNumber][2]);
       
-      station->SetScatX(gStationScats[stationNumber][0]);
-      station->SetScatY(gStationScats[stationNumber][1]);
+      station->SetScatX(gStationScats[fLastStationNumber][0]);
+      station->SetScatY(gStationScats[fLastStationNumber][1]);
       
       //station->SetNofSigmaX(gStationNofSigmas[stationNumber][0]);
       //station->SetNofSigmaY(gStationNofSigmas[stationNumber][1]);
@@ -213,7 +245,7 @@ void CbmBinnedGeoReader::SearchStation(TGeoNode* node, CbmBinnedHitReader* hitRe
       station->Init();
       fTracker->AddStation(station);
       hitReader->AddStation(station);
-      ++stationNumber;
+      ++fLastStationNumber;
    }
    else
    {
@@ -292,7 +324,9 @@ void CbmBinnedGeoReader::ReadSts()
    list<const char*> stationPath = { "sts", "Station" };
    list<const char*> geoPath = { "Ladder", "HalfLadder", "Module", "Sensor" };
    gGeoManager->cd("/cave_1");
+   int firstStationNumber = fLastStationNumber;
    SearchStation(gGeoManager->GetCurrentNode(), CbmBinnedHitReader::Instance("sts"), stationPath.begin(), stationPath.end(), geoPath);
+   CbmBinnedSettings::Instance()->SetNofStsStations(fLastStationNumber - firstStationNumber);
 }
 
 void CbmBinnedGeoReader::ReadRich()
@@ -308,7 +342,9 @@ void CbmBinnedGeoReader::ReadMuch()
    list<const char*> stationPath = { "much", "muchstation", "layer" };
    list<const char*> geoPath = { "active" };
    gGeoManager->cd("/cave_1");
+   int firstStationNumber = fLastStationNumber;
    SearchStation(gGeoManager->GetCurrentNode(), CbmBinnedHitReader::Instance("much"), stationPath.begin(), stationPath.end(), geoPath);
+   CbmBinnedSettings::Instance()->SetNofMuchStations(fLastStationNumber - firstStationNumber);
 }
 
 void CbmBinnedGeoReader::ReadTrd()
@@ -316,7 +352,9 @@ void CbmBinnedGeoReader::ReadTrd()
    list<const char*> stationPath = { "trd", "layer" };
    list<const char*> geoPath = { "module", "gas" };
    gGeoManager->cd("/cave_1");
+   int firstStationNumber = fLastStationNumber;
    SearchStation(gGeoManager->GetCurrentNode(), CbmBinnedHitReader::Instance("trd"), stationPath.begin(), stationPath.end(), geoPath);
+   CbmBinnedSettings::Instance()->SetNofTrdStations(fLastStationNumber - firstStationNumber);
 }
 
 void CbmBinnedGeoReader::ReadTof()

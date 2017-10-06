@@ -19,6 +19,7 @@
 #include <map>
 #include <string>
 #include "TClonesArray.h"
+#include "Settings.h"
 
 class CbmBinnedStation;
 

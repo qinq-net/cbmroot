@@ -23,6 +23,7 @@
 #include "CbmTofHit.h"
 #include "CbmTrdHit.h"
 #include "CbmTrdPoint.h"
+#include "Settings.h"
 #include <functional>
 
 class CbmBinnedTrackerQA : public FairTask
@@ -34,6 +35,7 @@ public:
     InitStatus Init();// Overridden from FairTask
     void Exec(Option_t* opt);// Overridden from FairTask
     void Finish();// Overridden from FairTask
+    void SetParContainers();
     
 private:
     void HandleSts(Int_t stsTrackIndex);
@@ -43,6 +45,7 @@ private:
     void IterateTrdHits(std::function<void(const CbmTrdHit*, const CbmTrdPoint*)> handleData);
     
 private:
+    CbmBinnedSettings* fSettings;
     TClonesArray* fGlobalTracks;
     TClonesArray* fStsTracks;
     //TClonesArray* fMuchTracks;
