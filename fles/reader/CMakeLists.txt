@@ -31,8 +31,8 @@ Set(SYSTEM_INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/beamtime/tof/tdc/get4
 
   # needed by rootcling
-  ${CBMROOT_SOURCE_DIR}/external/spadic/spadic/message/wrap/cpp
-  ${CBMROOT_SOURCE_DIR}/external/spadic/spadic/message
+  ${CBMROOT_SOURCE_DIR}/external/spadic/spadic/lib/message/wrap/cpp
+  ${CBMROOT_SOURCE_DIR}/external/spadic/spadic/lib/message
   ${CMAKE_SOURCE_DIR}/external/cppzmq
 )
 
@@ -69,10 +69,10 @@ Set(SRCS
   CbmFiberHodoMapping.cxx
 
   unpacker/CbmTSUnpackSpadic.cxx
-  unpacker/CbmTSUnpackSpadic20.cxx
+#  unpacker/CbmTSUnpackSpadic20.cxx
   unpacker/CbmTSUnpackSpadic11OnlineMonitor.cxx
-  unpacker/CbmTSUnpackSpadic20OnlineMonitor.cxx
-  unpacker/CbmTSUnpackSpadic20DesyOnlineMonitor.cxx
+#  unpacker/CbmTSUnpackSpadic20OnlineMonitor.cxx
+#  unpacker/CbmTSUnpackSpadic20DesyOnlineMonitor.cxx
   unpacker/CbmTSUnpackSpadicLegacy.cxx
   unpacker/CbmTSUnpackNxyter.cxx
   unpacker/CbmTSUnpackStsxyter.cxx
@@ -121,8 +121,8 @@ Set(SRCS
 
 Set(NO_DICT_SRCS
   unpacker/TimesliceReader.cpp
-  unpacker/TimesliceReader20.cpp
- unpacker/TimesliceReader20.cpp
+#  unpacker/TimesliceReader20.cpp
+# unpacker/TimesliceReader20.cpp
 )
 
 If(_UINT8_T_EXIST)

@@ -10,10 +10,10 @@
 
 //#pragma link C++ class CbmTSUnpack;
 #pragma link C++ class CbmTSUnpackSpadic;
-#pragma link C++ class CbmTSUnpackSpadic20;
+//#pragma link C++ class CbmTSUnpackSpadic20;
 #pragma link C++ class CbmTSUnpackSpadic11OnlineMonitor;
-#pragma link C++ class CbmTSUnpackSpadic20OnlineMonitor;
-#pragma link C++ class CbmTSUnpackSpadic20DesyOnlineMonitor;
+//#pragma link C++ class CbmTSUnpackSpadic20OnlineMonitor;
+//#pragma link C++ class CbmTSUnpackSpadic20DesyOnlineMonitor;
 #pragma link C++ class CbmTSUnpackSpadicLegacy;
 #pragma link C++ class CbmTSUnpackNxyter;
 #pragma link C++ class CbmTSUnpackStsxyter;
