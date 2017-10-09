@@ -39,7 +39,7 @@ public:
     
 private:
     void HandleSts(Int_t stsTrackIndex);
-    //void HandleMuch(Int_t muchTrackIndex);
+    void HandleMuch(Int_t muchTrackIndex);
     void HandleTrd(Int_t trdTrackIndex);
     void HandleTof(Int_t tofHitIndex);
     void IterateTrdHits(std::function<void(const CbmTrdHit*, const CbmTrdPoint*)> handleData);
@@ -48,7 +48,7 @@ private:
     CbmBinnedSettings* fSettings;
     TClonesArray* fGlobalTracks;
     TClonesArray* fStsTracks;
-    //TClonesArray* fMuchTracks;
+    TClonesArray* fMuchTracks;
     TClonesArray* fTrdTracks;
     TClonesArray* fStsHits;
     TClonesArray* fMuchHits;
