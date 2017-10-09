@@ -35,7 +35,7 @@ public:
     CbmBinnedSettings() : FairParGenericSet("CbmBinnedSettings", "Binned tracker reconstruction parameters", "Default"),
             fNofStsStations(0), fNofMuchStations(0), fNofTrdStations(0)
     {
-        std::fill_n(fUseModules, kLastModule, true);
+        std::fill_n(fUseModules, int(kLastModule), true);
     }
     
     CbmBinnedSettings(const CbmBinnedSettings&) = delete;
