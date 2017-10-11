@@ -29,6 +29,7 @@ public:
     static CbmBinnedHitReader* Instance();
     static CbmBinnedHitReader* Instance(const char* name);
     static void AddReader(const char* name, TClonesArray* hitArray);
+    static void SetSettings(CbmBinnedSettings* v) { fSettings = v; }
     
 public:
     explicit CbmBinnedHitReader(TClonesArray* hitArray);
@@ -44,6 +45,7 @@ protected:
     
 protected:
     static std::map<std::string, CbmBinnedHitReader*> fReaders;
+    static CbmBinnedSettings* fSettings;
 };
 
 #endif /* HITREADER_H */

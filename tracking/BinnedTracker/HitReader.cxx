@@ -91,6 +91,8 @@ static void DumpMax()
 
 #endif//DO_ERROR_STAT
 
+CbmBinnedSettings* CbmBinnedHitReader::fSettings = 0;
+
 CbmBinnedHitReader::CbmBinnedHitReader(TClonesArray* hitArray) : fStations(), fHitArray(hitArray)
 {
 }

@@ -192,6 +192,12 @@ public:
     
     virtual void Clear()
     {
+        fDx = 0;
+        fDxSq = 0;
+        fDy = 0;
+        fDySq = 0;
+        fDt = 0;
+        fDtSq = 0;
         fSegments.clear();
     }
     

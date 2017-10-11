@@ -528,9 +528,12 @@ private:
         Double_t V[2] = { hit->GetDx() * hit->GetDx(), hit->GetDy() * hit->GetDy() };
         KFAddPoint(kfParams, kfParamsPrev, m, V, hit->GetZ(), 0 == level ? 0 : hhs[level - 1]->hit->GetZ());
         
-        if (level == 6)
+        CbmBinnedSettings* settings = CbmBinnedSettings::Instance();
+        int nofStations = settings->GetNofStsStations() + settings->GetNofMuchStations() + settings->GetNofTrdStations() + (settings->Use(kTof) ? 1 : 0);
+        
+        if (level == nofStations - 1)
         {
-            Track* aCandidate = new Track(hhs, 7, kfParams.chi2);
+            Track* aCandidate = new Track(hhs, nofStations, kfParams.chi2);
             candidates.push_back(aCandidate);
             return;
         }

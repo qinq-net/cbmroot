@@ -82,6 +82,9 @@ public:
         CbmXBin& xBin = yBin[xInd];
         CbmTBin& tBin = xBin[tInd];
         tBin.AddHit(hit, index, fDefaultUse);
+        SetDx(hit->GetDx());
+        SetDy(hit->GetDy());
+        SetDt(hit->GetTimeError());
         
         if (fDefaultUse)
         {

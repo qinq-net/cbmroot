@@ -4,6 +4,8 @@
  * and open the template in the editor.
  */
 
+//#define CBM_BINNED_QA_FILL_HISTOS
+
 #include <complex>
 
 #include "CbmBinnedTrackerQA.h"
@@ -25,25 +27,23 @@
 #include "CbmTrdDigi.h"
 #include "CbmTofDigiExp.h"
 #include "CbmMCDataManager.h"
+#ifdef CBM_BINNED_QA_FILL_HISTOS
 #include "TH1.h"
+#endif//CBM_BINNED_QA_FILL_HISTOS
 #include "GeoReader.h"
 #include "FairRun.h"
 #include "FairRuntimeDb.h"
+#include "geo/CbmMuchStation.h"
 
 using namespace std;
 
 //#define TRD_IDEAL
 
-#define NOF_STS_STATIONS 2
-#define NOF_MUCH_STATIONS 1
-#define NOF_MUCH_LAYERS 3
-#define NOF_TRD_LAYERS 4
-#define NOF_TOF 1
-
 struct TrackDesc
 {
    static Int_t nofStsStations;
    static Int_t nofMuchStations;
+   static Int_t nofMuchLayers;
    static Int_t nofTrdStations;
    static bool hasTof;
    
@@ -133,14 +133,13 @@ struct TrackDesc
 
 Int_t TrackDesc::nofStsStations = 0;
 Int_t TrackDesc::nofMuchStations = 0;
+Int_t TrackDesc::nofMuchLayers = 0;
 Int_t TrackDesc::nofTrdStations = 0;
 bool TrackDesc::hasTof = false;
 
 static vector<vector<TrackDesc> > gTracks;
 
-//CbmBinnedTracker* gTracker = 0;
-//CbmBinnedStation* gTrdStation[NOF_TRD_LAYERS];
-
+#ifdef CBM_BINNED_QA_FILL_HISTOS
 static TH1F* stsXResHisto = 0;
 static TH1F* stsYResHisto = 0;
 static TH1F* stsTResHisto = 0;
@@ -171,7 +170,9 @@ static TH1F* extrTrdXHistos[] = { 0, 0, 0, 0 };
 static TH1F* extrTrdYHistos[] = { 0, 0, 0, 0 };
 
 static TH1F* trdNearestHitDistHistos[] = { 0, 0, 0, 0 };
-static int trdNofStrangerHits[] = { 0, 0, 0, 0 };
+#endif//CBM_BINNED_QA_FILL_HISTOS
+
+//static int trdNofStrangerHits[] = { 0, 0, 0, 0 };
 
 CbmBinnedTrackerQA::CbmBinnedTrackerQA() : fSettings(0), fGlobalTracks(0), fStsTracks(0), fMuchTracks(0), fTrdTracks(0),
    fStsHits(0), fMuchHits(0), fTrdHits(0), fTofHits(0),
@@ -193,6 +194,13 @@ InitStatus CbmBinnedTrackerQA::Init()
    TrackDesc::nofTrdStations = settings->Use(kTrd) ? settings->GetNofTrdStations() : 0;
    TrackDesc::hasTof = settings->Use(kTof);
    
+   if (TrackDesc::nofMuchStations > 0)
+   {
+      const CbmMuchStation* muchStation = CbmMuchGeoScheme::Instance()->GetStation(0);
+      TrackDesc::nofMuchLayers = muchStation->GetNLayers();
+   }
+   
+#ifdef CBM_BINNED_QA_FILL_HISTOS
    stsXResHisto = new TH1F("stsXResHisto", "stsXResHisto", 200, -0.1, 0.1);
    stsYResHisto = new TH1F("stsYResHisto", "stsYResHisto", 200, -0.1, 0.1);
    stsTResHisto = new TH1F("stsTResHisto", "stsTResHisto", 200, -10.0, 10.0);
@@ -241,6 +249,7 @@ InitStatus CbmBinnedTrackerQA::Init()
       range = i % 2 ? 25 : 5;
       trdYPullHistos[i] = new TH1F(name, name, 200, -range, range);
    }
+#endif//CBM_BINNED_QA_FILL_HISTOS
    
    FairRootManager* ioman = FairRootManager::Instance();
     
@@ -273,9 +282,11 @@ InitStatus CbmBinnedTrackerQA::Init()
          if (mcTrack->GetMotherId() < 0)
          {
             track.isPrimary = true;
+#ifdef CBM_BINNED_QA_FILL_HISTOS
             vtxXHisto->Fill(mcTrack->GetStartX());
             vtxYHisto->Fill(mcTrack->GetStartY());
             vtxZHisto->Fill(mcTrack->GetStartZ());
+#endif//CBM_BINNED_QA_FILL_HISTOS
          }
       }
    }
@@ -368,7 +379,7 @@ InitStatus CbmBinnedTrackerQA::Init()
             Int_t trackId = muchPoint->GetTrackID();
             int muchStationNumber = CbmMuchGeoScheme::GetStationIndex(muchPoint->GetDetectorID());
             int layerNumber = CbmMuchGeoScheme::GetLayerIndex(muchPoint->GetDetectorID());
-            int stationNumber = muchStationNumber * NOF_MUCH_LAYERS + layerNumber;
+            int stationNumber = muchStationNumber * TrackDesc::nofMuchLayers + layerNumber;
             //tracks[trackId].much[stationNumber].first.insert(j);
          }
       }
@@ -502,323 +513,258 @@ static Int_t gEventNumber = 0;
 
 void CbmBinnedTrackerQA::Exec(Option_t* opt)
 {
-   //gTracker->Clear();        
-   //CbmBinnedHitReader::Instance()->Read();
-        
-   Int_t nofStsHits = fStsHits->GetEntriesFast();
-   
-   for (Int_t i = 0; i < nofStsHits; ++i)
+   if (TrackDesc::nofStsStations > 0)
    {
-      const CbmStsHit* stsHit = static_cast<const CbmStsHit*> (fStsHits->At(i));
-      Int_t stationNumber = CbmStsSetup::Instance()->GetStationNumber(stsHit->GetAddress());
-      //Int_t stationNumber = CbmStsAddress::GetElementId(stsHit->GetAddress(), kSts);
-      Int_t frontClusterInd = stsHit->GetFrontClusterId();
-      Int_t backClusterInd = stsHit->GetBackClusterId();
-      const CbmStsCluster* frontCluster = static_cast<const CbmStsCluster*> (fStsClusters->At(frontClusterInd));
-      Int_t nofFrontDigis = frontCluster->GetNofDigis();
+      Int_t nofStsHits = fStsHits->GetEntriesFast();
 
-      for (Int_t j = 0; j < nofFrontDigis; ++j)
+      for (Int_t i = 0; i < nofStsHits; ++i)
       {
-         Int_t stsDigiInd = frontCluster->GetDigi(j);
-         const CbmStsDigi* stsDigi = static_cast<const CbmStsDigi*> (fStsDigis->At(stsDigiInd));
-         const CbmMatch* match = stsDigi->GetMatch();
-         Int_t nofLinks = match->GetNofLinks();
+         const CbmStsHit* stsHit = static_cast<const CbmStsHit*> (fStsHits->At(i));
+         Int_t stationNumber = CbmStsSetup::Instance()->GetStationNumber(stsHit->GetAddress());
+         //Int_t stationNumber = CbmStsAddress::GetElementId(stsHit->GetAddress(), kSts);
+         Int_t frontClusterInd = stsHit->GetFrontClusterId();
+         Int_t backClusterInd = stsHit->GetBackClusterId();
+         const CbmStsCluster* frontCluster = static_cast<const CbmStsCluster*> (fStsClusters->At(frontClusterInd));
+         Int_t nofFrontDigis = frontCluster->GetNofDigis();
 
-         for (Int_t k = 0; k < nofLinks; ++k)
+         for (Int_t j = 0; j < nofFrontDigis; ++j)
          {
-            const CbmLink& link = match->GetLink(k);
-            Int_t eventId = link.GetEntry();
-            Int_t mcPointId = link.GetIndex();
-            const CbmStsPoint* stsPoint = static_cast<const CbmStsPoint*> (fStsPoints->Get(0, eventId, mcPointId));
-            stsXResHisto->Fill(stsHit->GetX() - (stsPoint->GetXIn() + stsPoint->GetXOut()) / 2);
-            stsYResHisto->Fill(stsHit->GetY() - (stsPoint->GetYIn() + stsPoint->GetYOut()) / 2);
-            stsTResHisto->Fill(stsHit->GetTime() - stsPoint->GetTime());
-            Int_t trackId = stsPoint->GetTrackID();
-            TrackDesc& trackDesk = gTracks[eventId][trackId];
-            trackDesk.sts[stationNumber].first.insert(i);
-            Double_t mcX = (stsPoint->GetXIn() + stsPoint->GetXOut()) / 2;
-            Double_t mcY = (stsPoint->GetYIn() + stsPoint->GetYOut()) / 2;
-            
-            if (trackDesk.isPrimary && !trackDesk.stsPoints[0].empty() && !trackDesk.stsPoints[1].empty())
+            Int_t stsDigiInd = frontCluster->GetDigi(j);
+            const CbmStsDigi* stsDigi = static_cast<const CbmStsDigi*> (fStsDigis->At(stsDigiInd));
+            const CbmMatch* match = stsDigi->GetMatch();
+            Int_t nofLinks = match->GetNofLinks();
+
+            for (Int_t k = 0; k < nofLinks; ++k)
             {
-               Double_t dist = std::sqrt((stsHit->GetX() - mcX) * (stsHit->GetX() - mcX) + (stsHit->GetY() - mcY) * (stsHit->GetY() - mcY));
-               
-               if (trackDesk.nearestHitDistSts[stationNumber] < 0 || dist < trackDesk.nearestHitDistSts[stationNumber])
+               const CbmLink& link = match->GetLink(k);
+               Int_t eventId = link.GetEntry();
+               Int_t mcPointId = link.GetIndex();
+               const CbmStsPoint* stsPoint = static_cast<const CbmStsPoint*> (fStsPoints->Get(0, eventId, mcPointId));
+#ifdef CBM_BINNED_QA_FILL_HISTOS
+               stsXResHisto->Fill(stsHit->GetX() - (stsPoint->GetXIn() + stsPoint->GetXOut()) / 2);
+               stsYResHisto->Fill(stsHit->GetY() - (stsPoint->GetYIn() + stsPoint->GetYOut()) / 2);
+               stsTResHisto->Fill(stsHit->GetTime() - stsPoint->GetTime());
+#endif//CBM_BINNED_QA_FILL_HISTOS
+               Int_t trackId = stsPoint->GetTrackID();
+               TrackDesc& trackDesk = gTracks[eventId][trackId];
+               trackDesk.sts[stationNumber].first.insert(i);
+               Double_t mcX = (stsPoint->GetXIn() + stsPoint->GetXOut()) / 2;
+               Double_t mcY = (stsPoint->GetYIn() + stsPoint->GetYOut()) / 2;
+
+               if (trackDesk.isPrimary && !trackDesk.stsPoints[0].empty() && !trackDesk.stsPoints[1].empty())
                {
-                  trackDesk.nearestHitDistSts[stationNumber] = dist;
-                  trackDesk.nearestPointsSts[stationNumber] = stsPoint;
-                  trackDesk.pullXsts[stationNumber] = (stsHit->GetX() - mcX) / stsHit->GetDx();
-                  trackDesk.pullYsts[stationNumber] = (stsHit->GetY() - mcY) / stsHit->GetDy();
-               }
-            }
-         }
-      }
-      
-      const CbmStsCluster* backCluster = static_cast<const CbmStsCluster*> (fStsClusters->At(backClusterInd));
-      Int_t nofBackDigis = backCluster->GetNofDigis();
+                  Double_t dist = std::sqrt((stsHit->GetX() - mcX) * (stsHit->GetX() - mcX) + (stsHit->GetY() - mcY) * (stsHit->GetY() - mcY));
 
-      for (Int_t j = 0; j < nofBackDigis; ++j)
-      {
-         Int_t stsDigiInd = backCluster->GetDigi(j);
-         const CbmStsDigi* stsDigi = static_cast<const CbmStsDigi*> (fStsDigis->At(stsDigiInd));
-         const CbmMatch* match = stsDigi->GetMatch();
-         Int_t nofLinks = match->GetNofLinks();
-
-         for (Int_t k = 0; k < nofLinks; ++k)
-         {
-            const CbmLink& link = match->GetLink(k);
-            Int_t eventId = link.GetEntry();
-            Int_t mcPointId = link.GetIndex();
-            const CbmStsPoint* stsPoint = static_cast<const CbmStsPoint*> (fStsPoints->Get(0, eventId, mcPointId));
-            stsXResHisto->Fill(stsHit->GetX() - (stsPoint->GetXIn() + stsPoint->GetXOut()) / 2);
-            stsYResHisto->Fill(stsHit->GetY() - (stsPoint->GetYIn() + stsPoint->GetYOut()) / 2);
-            stsTResHisto->Fill(stsHit->GetTime() - stsPoint->GetTime());
-            Int_t trackId = stsPoint->GetTrackID();
-            TrackDesc& trackDesk = gTracks[eventId][trackId];
-            trackDesk.sts[stationNumber].first.insert(i);
-            Double_t mcX = (stsPoint->GetXIn() + stsPoint->GetXOut()) / 2;
-            Double_t mcY = (stsPoint->GetYIn() + stsPoint->GetYOut()) / 2;
-            
-            if (trackDesk.isPrimary && !trackDesk.stsPoints[0].empty() && !trackDesk.stsPoints[1].empty())
-            {
-               Double_t dist = std::sqrt((stsHit->GetX() - mcX) * (stsHit->GetX() - mcX) + (stsHit->GetY() - mcY) * (stsHit->GetY() - mcY));
-               
-               if (trackDesk.nearestHitDistSts[stationNumber] < 0 || dist < trackDesk.nearestHitDistSts[stationNumber])
-               {
-                  trackDesk.nearestHitDistSts[stationNumber] = dist;
-                  trackDesk.nearestPointsSts[stationNumber] = stsPoint;
-                  trackDesk.pullXsts[stationNumber] = (stsHit->GetX() - mcX) / stsHit->GetDx();
-                  trackDesk.pullYsts[stationNumber] = (stsHit->GetY() - mcY) / stsHit->GetDy();
-               }
-            }
-         }
-      }
-   }// STS hits
-   
-   /*Int_t nofMuchHits = fMuchHits->GetEntriesFast();
-   
-   for (Int_t i = 0; i < nofMuchHits; ++i)
-   {
-      const CbmMuchPixelHit* muchHit = static_cast<const CbmMuchPixelHit*> (fMuchHits->At(i));
-      Int_t muchStationNumber = CbmMuchGeoScheme::GetStationIndex(muchHit->GetAddress());
-      Int_t layerNumber = CbmMuchGeoScheme::GetLayerIndex(muchHit->GetAddress());
-      Int_t stationNumber = muchStationNumber * NOF_MUCH_LAYERS + layerNumber;
-      Int_t clusterId = muchHit->GetRefId();
-      const CbmMuchCluster* cluster = static_cast<const CbmMuchCluster*> (fMuchClusters->At(clusterId));
-      Int_t nofDigis = cluster->GetNofDigis();
-      
-      for (Int_t j = 0; j < nofDigis; ++j)
-      {
-         Int_t digiId = cluster->GetDigi(j);
-         const CbmMuchDigi* digi = static_cast<const CbmMuchDigi*> (fMuchDigis->At(digiId));
-         const CbmMatch* match = digi->GetMatch();
-         Int_t nofLinks = match->GetNofLinks();
-
-         for (Int_t k = 0; k < nofLinks; ++k)
-         {
-            const CbmLink& link = match->GetLink(k);
-            Int_t eventId = link.GetEntry();
-            Int_t mcPointId = link.GetIndex();
-            const CbmMuchPoint* muchPoint = static_cast<const CbmMuchPoint*> (fMuchPoints->Get(0, eventId, mcPointId));
-            muchXResHisto->Fill(muchHit->GetX() - (muchPoint->GetXIn() + muchPoint->GetXOut()) / 2);
-            muchYResHisto->Fill(muchHit->GetY() - (muchPoint->GetYIn() + muchPoint->GetYOut()) / 2);
-            muchTResHisto->Fill(muchHit->GetTime() - muchPoint->GetTime());
-            Int_t trackId = muchPoint->GetTrackID();
-            TrackDesc& trackDesk = gTracks[eventId][trackId];
-            trackDesk.much[stationNumber].first.insert(i);
-         }
-      }
-   }// MUCH hits*/
-   
-   Int_t nofTrdHits = fTrdHits->GetEntriesFast();
-   
-   for (Int_t i = 0; i < nofTrdHits; ++i)
-   {
-      const CbmTrdHit* trdHit = static_cast<const CbmTrdHit*> (fTrdHits->At(i));
-      Int_t stationNumber = trdHit->GetPlaneId();      
-      Int_t clusterId = trdHit->GetRefId();
-#ifndef TRD_IDEAL
-      const CbmTrdCluster* cluster = static_cast<const CbmTrdCluster*> (fTrdClusters->At(clusterId));
-      Int_t nofDigis = cluster->GetNofDigis();
-      
-      for (Int_t j = 0; j < nofDigis; ++j)
-      {
-         Int_t digiId = cluster->GetDigi(j);
-         const CbmMatch* match = static_cast<const CbmMatch*> (fTrdDigiMatches->At(digiId));
-         Int_t nofLinks = match->GetNofLinks();
-
-         for (Int_t k = 0; k < nofLinks; ++k)
-         {
-            const CbmLink& link = match->GetLink(k);
-            Int_t eventId = link.GetEntry();
-            Int_t mcPointId = link.GetIndex();
-            const CbmTrdPoint* trdPoint = static_cast<const CbmTrdPoint*> (fTrdPoints->Get(0, eventId, mcPointId));
-            Double_t mcX = (trdPoint->GetXIn() + trdPoint->GetXOut()) / 2;
-            Double_t mcY = (trdPoint->GetYIn() + trdPoint->GetYOut()) / 2;
-            trdXResHisto->Fill(trdHit->GetX() - mcX);
-            trdYResHisto->Fill(trdHit->GetY() - mcY);
-            trdTResHisto->Fill(trdHit->GetTime() - trdPoint->GetTime());
-            Int_t trackId = trdPoint->GetTrackID();
-            TrackDesc& trackDesk = gTracks[eventId][trackId];
-            trackDesk.trd[stationNumber].first.insert(i);
-            
-            if (trackDesk.isPrimary && !trackDesk.trdPoints[0].empty() && !trackDesk.trdPoints[1].empty() && !trackDesk.trdPoints[2].empty() && !trackDesk.trdPoints[3].empty())
-            {
-               Double_t dist = std::sqrt((trdHit->GetX() - mcX) * (trdHit->GetX() - mcX) + (trdHit->GetY() - mcY) * (trdHit->GetY() - mcY));
-               
-               if (trackDesk.nearestHitDistTrd[stationNumber] < 0 || dist < trackDesk.nearestHitDistTrd[stationNumber])
-               {
-                  trackDesk.nearestHitDistTrd[stationNumber] = dist;
-                  trackDesk.nearestPointsTrd[stationNumber] = trdPoint;
-                  trackDesk.pullXtrd[stationNumber] = (trdHit->GetX() - mcX) / trdHit->GetDx();
-                  trackDesk.pullYtrd[stationNumber] = (trdHit->GetY() - mcY) / trdHit->GetDy();
-               }
-            }
-         }
-      }
-#else//TRD_IDEAL
-      const CbmTrdPoint* trdPoint = static_cast<const CbmTrdPoint*> (fTrdPoints->Get(0, gEventNumber, clusterId));
-      Double_t mcX = (trdPoint->GetXIn() + trdPoint->GetXOut()) / 2;
-      Double_t mcY = (trdPoint->GetYIn() + trdPoint->GetYOut()) / 2;
-      trdXResHisto->Fill(trdHit->GetX() - mcX);
-      trdYResHisto->Fill(trdHit->GetY() - mcY);
-      trdTResHisto->Fill(trdHit->GetTime() - trdPoint->GetTime());
-      Int_t trackId = trdPoint->GetTrackID();
-      TrackDesc& trackDesk = gTracks[gEventNumber][trackId];
-      trackDesk.trd[stationNumber].first.insert(i);
-
-      if (trackDesk.isPrimary && !trackDesk.trdPoints[0].empty() && !trackDesk.trdPoints[1].empty() && !trackDesk.trdPoints[2].empty() && !trackDesk.trdPoints[3].empty())
-      {
-         Double_t dist = std::sqrt((trdHit->GetX() - mcX) * (trdHit->GetX() - mcX) + (trdHit->GetY() - mcY) * (trdHit->GetY() - mcY));
-
-         if (trackDesk.nearestHitDist[stationNumber] < 0 || dist < trackDesk.nearestHitDist[stationNumber])
-         {
-            trackDesk.nearestHitDist[stationNumber] = dist;
-            trackDesk.nearestPoints[stationNumber] = trdPoint;
-            trackDesk.pullX[stationNumber] = (trdHit->GetX() - mcX) / trdHit->GetDx();
-            trackDesk.pullY[stationNumber] = (trdHit->GetY() - mcY) / trdHit->GetDy();
-         }
-      }
-#endif//TRD_IDEAL
-   }// TRD hits
-   
-   /*IterateTrdHits(
-      [](const CbmTrdHit* trdHit, const CbmTrdPoint* trdPoint)->void
-      {
-         Double_t mcX = (trdPoint->GetXIn() + trdPoint->GetXOut()) / 2;
-         Double_t mcY = (trdPoint->GetYIn() + trdPoint->GetYOut()) / 2;
-      }
-   );*/
-   /*vector<TrackDesc>& evMCTracks = gTracks[gEventNumber];
-   int trackIndex = 0;
-   
-   for (vector<TrackDesc>::const_iterator i = evMCTracks.begin(); i != evMCTracks.end(); ++i)
-   {
-      const TrackDesc& trackDesc = *i;
-      int nofSt = -1;
-      
-      for (int j = 0; j < NOF_TRD_LAYERS; ++j)
-      {         
-         if (trackDesc.nearestHitDist[j] >= 0)
-         {
-            Double_t dist = trackDesc.nearestHitDist[j];
-            const CbmTrdPoint* trdPoint = trackDesc.nearestPoints[j];
-            Double_t mcX = (trdPoint->GetXIn() + trdPoint->GetXOut()) / 2;
-            Double_t mcY = (trdPoint->GetYIn() + trdPoint->GetYOut()) / 2;
-            bool sameTrack = false;
-            int nofHits = 0;
-            gTrdStation[j]->SearchHits(0, 0, mcY - dist, mcY + dist, mcX - dist, mcX + dist, -90, 290,
-               [&](CbmTBin::HitHolder& hitHolder)->void
-               {
-                  const CbmPixelHit* hit = hitHolder.hit;
-                  Double_t x = hit->GetX();
-                  Double_t y = hit->GetY();
-                  Double_t dist2 = std::sqrt((x - mcX) * (x - mcX) + (y - mcY) * (y - mcY));
-                  
-                  if (dist2 < dist)
+                  if (trackDesk.nearestHitDistSts[stationNumber] < 0 || dist < trackDesk.nearestHitDistSts[stationNumber])
                   {
-                     ++nofHits;
-                     Int_t clusterId = hit->GetRefId();
-#ifndef TRD_IDEAL
-                     const CbmTrdCluster* cluster = static_cast<const CbmTrdCluster*> (fTrdClusters->At(clusterId));
-                     Int_t nofDigis = cluster->GetNofDigis();
-
-                     for (Int_t k = 0; k < nofDigis; ++k)
-                     {
-                        Int_t digiId = cluster->GetDigi(k);
-                        const CbmMatch* match = static_cast<const CbmMatch*> (fTrdDigiMatches->At(digiId));
-                        Int_t nofLinks = match->GetNofLinks();
-
-                        for (Int_t l = 0; l < nofLinks; ++l)
-                        {
-                           const CbmLink& link = match->GetLink(l);
-                           Int_t eventId = link.GetEntry();
-                           Int_t mcPointId = link.GetIndex();
-                           const CbmTrdPoint* trdPoint2 = static_cast<const CbmTrdPoint*> (fTrdPoints->Get(0, eventId, mcPointId));
-                           Int_t trackId = trdPoint2->GetTrackID();
-                           
-                           if (trackId == trackIndex)
-                           {
-                              sameTrack = true;
-                              break;
-                           }
-                        }
-                        
-                        if (sameTrack)
-                           break;
-                     }
-#else//TRD_IDEAL
-                     const CbmTrdPoint* trdPoint = static_cast<const CbmTrdPoint*> (fTrdPoints->Get(0, gEventNumber, clusterId));
-                     Int_t trackId = trdPoint->GetTrackID();
-
-                     if (trackId == trackIndex)
-                        sameTrack = true;
-#endif//TRD_IDEAL
+                     trackDesk.nearestHitDistSts[stationNumber] = dist;
+                     trackDesk.nearestPointsSts[stationNumber] = stsPoint;
+                     trackDesk.pullXsts[stationNumber] = (stsHit->GetX() - mcX) / stsHit->GetDx();
+                     trackDesk.pullYsts[stationNumber] = (stsHit->GetY() - mcY) / stsHit->GetDy();
                   }
                }
-            );
-            
-            if (!sameTrack && nofHits > 0)
-               ++nofSt;
+            }
          }
-      }
-      
-      if (nofSt >= 0)
-         ++trdNofStrangerHits[nofSt];
-      
-      ++trackIndex;
-   }*/
-   
-   Int_t nofTofHits = fTofHitDigiMatches->GetEntriesFast();
-   
-   for (Int_t i = 0; i < nofTofHits; ++i)
-   {
-      const CbmTofHit* tofHit = static_cast<const CbmTofHit*> (fTofHits->At(i));
-      const CbmMatch* tofHitMatch = static_cast<const CbmMatch*> (fTofHitDigiMatches->At(i));
-      Int_t nofTofDigis = tofHitMatch->GetNofLinks();
-   
-      for (Int_t j = 0; j < nofTofDigis; ++j)
-      {
-         const CbmLink& digiLink = tofHitMatch->GetLink(j);
-         Int_t digiInd = digiLink.GetIndex();
-         const CbmMatch* pointMatch = static_cast<const CbmMatch*> (fTofDigiPointMatches->At(digiInd));
-         Int_t nofPoints = pointMatch->GetNofLinks();
 
-         for (Int_t k = 0; k < nofPoints; ++k)
+         const CbmStsCluster* backCluster = static_cast<const CbmStsCluster*> (fStsClusters->At(backClusterInd));
+         Int_t nofBackDigis = backCluster->GetNofDigis();
+
+         for (Int_t j = 0; j < nofBackDigis; ++j)
          {
-            const CbmLink& pointLink = pointMatch->GetLink(k);
-            Int_t eventId = pointLink.GetEntry();
-            Int_t pointId = pointLink.GetIndex();
-            const CbmTofPoint* tofPoint = static_cast<const CbmTofPoint*> (fTofPoints->Get(0, eventId, pointId));
-            tofXResHisto->Fill(tofHit->GetX() - tofPoint->GetX());
-            tofYResHisto->Fill(tofHit->GetY() - tofPoint->GetY());
-            tofTResHisto->Fill(tofHit->GetTime() - tofPoint->GetTime());
-            Int_t trackId = tofPoint->GetTrackID();
-            TrackDesc& trackDesk = gTracks[eventId][trackId];
-            trackDesk.tof.first.insert(i);
+            Int_t stsDigiInd = backCluster->GetDigi(j);
+            const CbmStsDigi* stsDigi = static_cast<const CbmStsDigi*> (fStsDigis->At(stsDigiInd));
+            const CbmMatch* match = stsDigi->GetMatch();
+            Int_t nofLinks = match->GetNofLinks();
+
+            for (Int_t k = 0; k < nofLinks; ++k)
+            {
+               const CbmLink& link = match->GetLink(k);
+               Int_t eventId = link.GetEntry();
+               Int_t mcPointId = link.GetIndex();
+               const CbmStsPoint* stsPoint = static_cast<const CbmStsPoint*> (fStsPoints->Get(0, eventId, mcPointId));
+#ifdef CBM_BINNED_QA_FILL_HISTOS
+               stsXResHisto->Fill(stsHit->GetX() - (stsPoint->GetXIn() + stsPoint->GetXOut()) / 2);
+               stsYResHisto->Fill(stsHit->GetY() - (stsPoint->GetYIn() + stsPoint->GetYOut()) / 2);
+               stsTResHisto->Fill(stsHit->GetTime() - stsPoint->GetTime());
+#endif//CBM_BINNED_QA_FILL_HISTOS
+               Int_t trackId = stsPoint->GetTrackID();
+               TrackDesc& trackDesk = gTracks[eventId][trackId];
+               trackDesk.sts[stationNumber].first.insert(i);
+               Double_t mcX = (stsPoint->GetXIn() + stsPoint->GetXOut()) / 2;
+               Double_t mcY = (stsPoint->GetYIn() + stsPoint->GetYOut()) / 2;
+
+               if (trackDesk.isPrimary && !trackDesk.stsPoints[0].empty() && !trackDesk.stsPoints[1].empty())
+               {
+                  Double_t dist = std::sqrt((stsHit->GetX() - mcX) * (stsHit->GetX() - mcX) + (stsHit->GetY() - mcY) * (stsHit->GetY() - mcY));
+
+                  if (trackDesk.nearestHitDistSts[stationNumber] < 0 || dist < trackDesk.nearestHitDistSts[stationNumber])
+                  {
+                     trackDesk.nearestHitDistSts[stationNumber] = dist;
+                     trackDesk.nearestPointsSts[stationNumber] = stsPoint;
+                     trackDesk.pullXsts[stationNumber] = (stsHit->GetX() - mcX) / stsHit->GetDx();
+                     trackDesk.pullYsts[stationNumber] = (stsHit->GetY() - mcY) / stsHit->GetDy();
+                  }
+               }
+            }
          }
-      }
-   }// TOF hits
+      }// STS hits
+   }
+   
+   if (TrackDesc::nofMuchStations > 0)
+   {
+      Int_t nofMuchHits = fMuchHits->GetEntriesFast();
+
+      for (Int_t i = 0; i < nofMuchHits; ++i)
+      {
+         const CbmMuchPixelHit* muchHit = static_cast<const CbmMuchPixelHit*> (fMuchHits->At(i));
+         Int_t muchStationNumber = CbmMuchGeoScheme::GetStationIndex(muchHit->GetAddress());
+         Int_t layerNumber = CbmMuchGeoScheme::GetLayerIndex(muchHit->GetAddress());
+         Int_t stationNumber = muchStationNumber * TrackDesc::nofMuchLayers + layerNumber;
+         Int_t clusterId = muchHit->GetRefId();
+         const CbmMuchCluster* cluster = static_cast<const CbmMuchCluster*> (fMuchClusters->At(clusterId));
+         Int_t nofDigis = cluster->GetNofDigis();
+
+         for (Int_t j = 0; j < nofDigis; ++j)
+         {
+            Int_t digiId = cluster->GetDigi(j);
+            const CbmMuchDigi* digi = static_cast<const CbmMuchDigi*> (fMuchDigis->At(digiId));
+            const CbmMatch* match = digi->GetMatch();
+            Int_t nofLinks = match->GetNofLinks();
+
+            for (Int_t k = 0; k < nofLinks; ++k)
+            {
+               const CbmLink& link = match->GetLink(k);
+               Int_t eventId = link.GetEntry();
+               Int_t mcPointId = link.GetIndex();
+               const CbmMuchPoint* muchPoint = static_cast<const CbmMuchPoint*> (fMuchPoints->Get(0, eventId, mcPointId));
+#ifdef CBM_BINNED_QA_FILL_HISTOS
+               muchXResHisto->Fill(muchHit->GetX() - (muchPoint->GetXIn() + muchPoint->GetXOut()) / 2);
+               muchYResHisto->Fill(muchHit->GetY() - (muchPoint->GetYIn() + muchPoint->GetYOut()) / 2);
+               muchTResHisto->Fill(muchHit->GetTime() - muchPoint->GetTime());
+#endif//CBM_BINNED_QA_FILL_HISTOS
+               Int_t trackId = muchPoint->GetTrackID();
+               TrackDesc& trackDesk = gTracks[eventId][trackId];
+               trackDesk.much[stationNumber].first.insert(i);
+            }
+         }
+      }// MUCH hits*/
+   }
+   
+   if (TrackDesc::nofTrdStations > 0)
+   {
+      Int_t nofTrdHits = fTrdHits->GetEntriesFast();
+
+      for (Int_t i = 0; i < nofTrdHits; ++i)
+      {
+         const CbmTrdHit* trdHit = static_cast<const CbmTrdHit*> (fTrdHits->At(i));
+         Int_t stationNumber = trdHit->GetPlaneId();
+         Int_t clusterId = trdHit->GetRefId();
+#ifndef TRD_IDEAL
+         const CbmTrdCluster* cluster = static_cast<const CbmTrdCluster*> (fTrdClusters->At(clusterId));
+         Int_t nofDigis = cluster->GetNofDigis();
+
+         for (Int_t j = 0; j < nofDigis; ++j)
+         {
+            Int_t digiId = cluster->GetDigi(j);
+            const CbmMatch* match = static_cast<const CbmMatch*> (fTrdDigiMatches->At(digiId));
+            Int_t nofLinks = match->GetNofLinks();
+
+            for (Int_t k = 0; k < nofLinks; ++k)
+            {
+               const CbmLink& link = match->GetLink(k);
+               Int_t eventId = link.GetEntry();
+               Int_t mcPointId = link.GetIndex();
+               const CbmTrdPoint* trdPoint = static_cast<const CbmTrdPoint*> (fTrdPoints->Get(0, eventId, mcPointId));
+               Double_t mcX = (trdPoint->GetXIn() + trdPoint->GetXOut()) / 2;
+               Double_t mcY = (trdPoint->GetYIn() + trdPoint->GetYOut()) / 2;
+#ifdef CBM_BINNED_QA_FILL_HISTOS
+               trdXResHisto->Fill(trdHit->GetX() - mcX);
+               trdYResHisto->Fill(trdHit->GetY() - mcY);
+               trdTResHisto->Fill(trdHit->GetTime() - trdPoint->GetTime());
+#endif//CBM_BINNED_QA_FILL_HISTOS
+               Int_t trackId = trdPoint->GetTrackID();
+               TrackDesc& trackDesk = gTracks[eventId][trackId];
+               trackDesk.trd[stationNumber].first.insert(i);
+
+#ifdef CBM_BINNED_QA_FILL_HISTOS
+               if (trackDesk.isPrimary && !trackDesk.trdPoints[0].empty() &&
+                  !trackDesk.trdPoints[1].empty() && !trackDesk.trdPoints[2].empty() && !trackDesk.trdPoints[3].empty())
+               {
+                  Double_t dist = std::sqrt((trdHit->GetX() - mcX) * (trdHit->GetX() - mcX) + (trdHit->GetY() - mcY) * (trdHit->GetY() - mcY));
+
+                  if (trackDesk.nearestHitDistTrd[stationNumber] < 0 || dist < trackDesk.nearestHitDistTrd[stationNumber]) {
+                     trackDesk.nearestHitDistTrd[stationNumber] = dist;
+                     trackDesk.nearestPointsTrd[stationNumber] = trdPoint;
+                     trackDesk.pullXtrd[stationNumber] = (trdHit->GetX() - mcX) / trdHit->GetDx();
+                     trackDesk.pullYtrd[stationNumber] = (trdHit->GetY() - mcY) / trdHit->GetDy();
+                  }
+               }
+#endif//CBM_BINNED_QA_FILL_HISTOS
+            }
+         }
+#else//TRD_IDEAL
+         const CbmTrdPoint* trdPoint = static_cast<const CbmTrdPoint*> (fTrdPoints->Get(0, gEventNumber, clusterId));
+         Double_t mcX = (trdPoint->GetXIn() + trdPoint->GetXOut()) / 2;
+         Double_t mcY = (trdPoint->GetYIn() + trdPoint->GetYOut()) / 2;
+         trdXResHisto->Fill(trdHit->GetX() - mcX);
+         trdYResHisto->Fill(trdHit->GetY() - mcY);
+         trdTResHisto->Fill(trdHit->GetTime() - trdPoint->GetTime());
+         Int_t trackId = trdPoint->GetTrackID();
+         TrackDesc& trackDesk = gTracks[gEventNumber][trackId];
+         trackDesk.trd[stationNumber].first.insert(i);
+
+         if (trackDesk.isPrimary && !trackDesk.trdPoints[0].empty() && !trackDesk.trdPoints[1].empty() &&
+            !trackDesk.trdPoints[2].empty() && !trackDesk.trdPoints[3].empty())
+         {
+            Double_t dist = std::sqrt((trdHit->GetX() - mcX) * (trdHit->GetX() - mcX) + (trdHit->GetY() - mcY) * (trdHit->GetY() - mcY));
+
+            if (trackDesk.nearestHitDist[stationNumber] < 0 || dist < trackDesk.nearestHitDist[stationNumber])
+            {
+               trackDesk.nearestHitDist[stationNumber] = dist;
+               trackDesk.nearestPoints[stationNumber] = trdPoint;
+               trackDesk.pullX[stationNumber] = (trdHit->GetX() - mcX) / trdHit->GetDx();
+               trackDesk.pullY[stationNumber] = (trdHit->GetY() - mcY) / trdHit->GetDy();
+            }
+         }
+#endif//TRD_IDEAL
+      }// TRD hits
+   }
+   
+   if (TrackDesc::hasTof)
+   {
+      Int_t nofTofHits = fTofHitDigiMatches->GetEntriesFast();
+
+      for (Int_t i = 0; i < nofTofHits; ++i)
+      {
+         const CbmTofHit* tofHit = static_cast<const CbmTofHit*> (fTofHits->At(i));
+         const CbmMatch* tofHitMatch = static_cast<const CbmMatch*> (fTofHitDigiMatches->At(i));
+         Int_t nofTofDigis = tofHitMatch->GetNofLinks();
+
+         for (Int_t j = 0; j < nofTofDigis; ++j)
+         {
+            const CbmLink& digiLink = tofHitMatch->GetLink(j);
+            Int_t digiInd = digiLink.GetIndex();
+            const CbmMatch* pointMatch = static_cast<const CbmMatch*> (fTofDigiPointMatches->At(digiInd));
+            Int_t nofPoints = pointMatch->GetNofLinks();
+
+            for (Int_t k = 0; k < nofPoints; ++k)
+            {
+               const CbmLink& pointLink = pointMatch->GetLink(k);
+               Int_t eventId = pointLink.GetEntry();
+               Int_t pointId = pointLink.GetIndex();
+               const CbmTofPoint* tofPoint = static_cast<const CbmTofPoint*> (fTofPoints->Get(0, eventId, pointId));
+#ifdef CBM_BINNED_QA_FILL_HISTOS
+               tofXResHisto->Fill(tofHit->GetX() - tofPoint->GetX());
+               tofYResHisto->Fill(tofHit->GetY() - tofPoint->GetY());
+               tofTResHisto->Fill(tofHit->GetTime() - tofPoint->GetTime());
+#endif//CBM_BINNED_QA_FILL_HISTOS
+               Int_t trackId = tofPoint->GetTrackID();
+               TrackDesc& trackDesk = gTracks[eventId][trackId];
+               trackDesk.tof.first.insert(i);
+            }
+         }
+      }// TOF hits
+   }
    
    Int_t nofGlobalTracks = fGlobalTracks->GetEntriesFast();
    
@@ -830,16 +776,16 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
       Int_t trdIndex = globalTrack->GetTrdTrackIndex();
       Int_t tofIndex = globalTrack->GetTofHitIndex();
       
-      if (stsIndex < 0)
+      if (TrackDesc::nofStsStations > 0 && stsIndex < 0)
          continue;
       
-      //if (muchIndex < 0)
-         //continue;
-      
-      if (trdIndex < 0)
+      if (TrackDesc::nofMuchStations > 0 && muchIndex < 0)
          continue;
       
-      if (tofIndex < 0)
+      if (TrackDesc::nofTrdStations > 0 && trdIndex < 0)
+         continue;
+      
+      if (TrackDesc::hasTof && tofIndex < 0)
          continue;
       
       if (TrackDesc::nofStsStations > 0)
@@ -932,7 +878,7 @@ void CbmBinnedTrackerQA::HandleMuch(Int_t muchTrackIndex)
       const CbmMuchPixelHit* muchHit = static_cast<const CbmMuchPixelHit*> (fMuchHits->At(muchHitInd));
       Int_t muchStationNumber = CbmMuchGeoScheme::GetStationIndex(muchHit->GetAddress());
       Int_t layerNumber = CbmMuchGeoScheme::GetLayerIndex(muchHit->GetAddress());
-      Int_t stationNumber = muchStationNumber * NOF_MUCH_LAYERS + layerNumber;
+      Int_t stationNumber = muchStationNumber * TrackDesc::nofMuchLayers + layerNumber;
       Int_t clusterId = muchHit->GetRefId();
       const CbmMuchCluster* cluster = static_cast<const CbmMuchCluster*> (fMuchClusters->At(clusterId));
       Int_t nofDigis = cluster->GetNofDigis();
@@ -1032,6 +978,7 @@ void CbmBinnedTrackerQA::HandleTof(Int_t tofHitIndex)
    }
 }
 
+#ifdef CBM_BINNED_QA_FILL_HISTOS
 static void SaveHisto(TH1* histo)
 {
    TFile* curFile = TFile::CurrentFile();
@@ -1043,14 +990,15 @@ static void SaveHisto(TH1* histo)
    delete histo;
    TFile::CurrentFile() = curFile;
 }
+#endif//CBM_BINNED_QA_FILL_HISTOS
 
 void CbmBinnedTrackerQA::Finish()
 {
    int nofAllTracks = 0;
    int nofRefTracks = 0;
    int nofMatchedRefTracks = 0;
-   int nofSts[2] = { 0, 0 };
-   int nofTrd[4] = { 0, 0, 0, 0 };
+   //int nofSts[2] = { 0, 0 };
+   //int nofTrd[4] = { 0, 0, 0, 0 };
    //int nofMuch[3] = { 0, 0, 0 };
    //int nofTof = 0;
    
@@ -1068,7 +1016,7 @@ void CbmBinnedTrackerQA::Finish()
          
          bool isRef = true;
 
-         for (int k = 0; k < NOF_STS_STATIONS; ++k)
+         for (int k = 0; k < TrackDesc::nofStsStations; ++k)
          {
             if (trackDesc.sts[k].first.empty())
             {
@@ -1080,6 +1028,7 @@ void CbmBinnedTrackerQA::Finish()
          if (!isRef)
             continue;
          
+#ifdef CBM_BINNED_QA_FILL_HISTOS
          for(set<const CbmStsPoint*>::const_iterator k = trackDesc.stsPoints[0].begin(); k != trackDesc.stsPoints[0].end(); ++k)
          {
             const CbmStsPoint* p0 = *k;
@@ -1095,12 +1044,14 @@ void CbmBinnedTrackerQA::Finish()
                Double_t x1 = (p1->GetXIn() + p1->GetXOut()) / 2;
                Double_t y1 = (p1->GetYIn() + p1->GetYOut()) / 2;
                Double_t z1 = (p1->GetZIn() + p1->GetZOut()) / 2;
+
                extrStsXHisto->Fill(x1 - tx * z1);
                extrStsYHisto->Fill(y1 - ty * z1);
             }
          }
+#endif//CBM_BINNED_QA_FILL_HISTOS
          
-         for (int k = 0; k < NOF_TRD_LAYERS; ++k)
+         for (int k = 0; k < TrackDesc::nofTrdStations; ++k)
          {
             if (trackDesc.trd[k].first.empty())
             {
@@ -1112,6 +1063,7 @@ void CbmBinnedTrackerQA::Finish()
          if (!isRef)
             continue;
          
+#ifdef CBM_BINNED_QA_FILL_HISTOS
          for (set<const CbmStsPoint*>::const_iterator k = trackDesc.stsPoints[0].begin(); k != trackDesc.stsPoints[0].end(); ++k)
          {
             const CbmStsPoint* p1 = *k;
@@ -1227,6 +1179,7 @@ void CbmBinnedTrackerQA::Finish()
                }
             }
          }
+#endif//CBM_BINNED_QA_FILL_HISTOS
          
          /*for (int k = 0; k < NOF_MUCH_STATIONS * NOF_MUCH_LAYERS; ++k)
          {
@@ -1240,14 +1193,14 @@ void CbmBinnedTrackerQA::Finish()
          if (!isRef)
             continue;*/
          
-         if (trackDesc.tof.first.empty())
+         if (TrackDesc::hasTof && trackDesc.tof.first.empty())
             continue;
          
          ++nofRefTracks;
          
          map<Int_t, Int_t> matchedReco;
          
-         for (int k = 0; k < NOF_STS_STATIONS; ++k)
+         for (int k = 0; k < TrackDesc::nofStsStations; ++k)
          {
             for (set<Int_t>::const_iterator l = trackDesc.sts[k].second.begin(); l != trackDesc.sts[k].second.end(); ++l)
             {
@@ -1258,12 +1211,9 @@ void CbmBinnedTrackerQA::Finish()
                else
                   matchedReco[*l] = 1;
             }
-            
-            if (!trackDesc.sts[k].second.empty())
-               ++nofSts[k];
          }
          
-         for (int k = 0; k < NOF_TRD_LAYERS; ++k)
+         for (int k = 0; k < TrackDesc::nofTrdStations; ++k)
          {
             for (set<Int_t>::const_iterator l = trackDesc.trd[k].second.begin(); l != trackDesc.trd[k].second.end(); ++l)
             {
@@ -1274,11 +1224,9 @@ void CbmBinnedTrackerQA::Finish()
                else
                   matchedReco[*l] = 1;
             }
-            
-            if (!trackDesc.trd[k].second.empty())
-               ++nofTrd[k];
          }
          
+#ifdef CBM_BINNED_QA_FILL_HISTOS
          for (int k = 0; k < NOF_STS_STATIONS; ++k)
          {
             if (trackDesc.nearestHitDistSts[k] >= 0)
@@ -1297,6 +1245,7 @@ void CbmBinnedTrackerQA::Finish()
                trdYPullHistos[k]->Fill(trackDesc.pullYtrd[k]);
             }
          }
+#endif//CBM_BINNED_QA_FILL_HISTOS
          
          /*for (int k = 0; k < NOF_MUCH_STATIONS * NOF_MUCH_LAYERS; ++k)
          {
@@ -1330,16 +1279,16 @@ void CbmBinnedTrackerQA::Finish()
          if (matchedReco.empty())
             continue;
          
-         /*map<Int_t, Int_t>::const_iterator maxIter = max_element(matchedReco.begin(), matchedReco.end(),
+         map<Int_t, Int_t>::const_iterator maxIter = max_element(matchedReco.begin(), matchedReco.end(),
             [](const pair<Int_t, Int_t>& p1, const pair<Int_t, Int_t>& p2)
             {
                return p1.second < p2.second;
             });
             
-         if (maxIter->second < 7)
-            continue;*/
+         if (maxIter->second < 0.7 * (fSettings->GetNofStsStations() + fSettings->GetNofTrdStations() + (TrackDesc::hasTof ? 1 : 0)))
+            continue;
          
-         int maxMatch = 0;
+         /*int maxMatch = 0;
          
          for (map<Int_t, Int_t>::const_iterator k = matchedReco.begin(); k != matchedReco.end(); ++k)
          {
@@ -1348,7 +1297,7 @@ void CbmBinnedTrackerQA::Finish()
          }
          
          if (maxMatch < 5)
-            continue;
+            continue;*/
             
          ++nofMatchedRefTracks;
       }
@@ -1358,24 +1307,25 @@ void CbmBinnedTrackerQA::Finish()
    eff /= nofRefTracks;
    cout << "The track reconstruction efficiency: " << eff << "%: " << nofMatchedRefTracks << "/" << nofRefTracks << endl;
    cout << "Total tracks: " << nofAllTracks << endl;
-   cout << "Nof STS[0]: " << nofSts[0] << endl;
-   cout << "Nof STS[1]: " << nofSts[1] << endl;
-   cout << "Nof TRD[0]: " << nofTrd[0] << endl;
-   cout << "Nof TRD[1]: " << nofTrd[1] << endl;
-   cout << "Nof TRD[2]: " << nofTrd[2] << endl;
-   cout << "Nof TRD[3]: " << nofTrd[3] << endl;
+   //cout << "Nof STS[0]: " << nofSts[0] << endl;
+   //cout << "Nof STS[1]: " << nofSts[1] << endl;
+   //cout << "Nof TRD[0]: " << nofTrd[0] << endl;
+   //cout << "Nof TRD[1]: " << nofTrd[1] << endl;
+   //cout << "Nof TRD[2]: " << nofTrd[2] << endl;
+   //cout << "Nof TRD[3]: " << nofTrd[3] << endl;
    //cout << "Nof MUCH[0]: " << nofMuch[0] << endl;
    //cout << "Nof MUCH[1]: " << nofMuch[1] << endl;
    //cout << "Nof MUCH[2]: " << nofMuch[2] << endl;
    //cout << "Nof TOF: " << nofTof << endl;
    
-   cout << "Nof stranger hits on TRD stations: ";
+   //cout << "Nof stranger hits on TRD stations: ";
    
-   for (int i = 0; i < 4; ++i)
-      cout << "[" << trdNofStrangerHits[i] << "]";
+   //for (int i = 0; i < 4; ++i)
+      //cout << "[" << trdNofStrangerHits[i] << "]";
    
-   cout << endl;
+   //cout << endl;
    
+#ifdef CBM_BINNED_QA_FILL_HISTOS
    SaveHisto(stsXResHisto);
    SaveHisto(stsYResHisto);
    SaveHisto(stsTResHisto);
@@ -1412,6 +1362,7 @@ void CbmBinnedTrackerQA::Finish()
       SaveHisto(trdXPullHistos[i]);
       SaveHisto(trdYPullHistos[i]);
    }
+#endif//CBM_BINNED_QA_FILL_HISTOS
 }
 
 void CbmBinnedTrackerQA::SetParContainers()

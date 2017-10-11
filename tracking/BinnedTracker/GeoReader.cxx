@@ -30,8 +30,8 @@ CbmBinnedGeoReader* CbmBinnedGeoReader::Instance()
    return theInstance;
 }
 
-CbmBinnedGeoReader::CbmBinnedGeoReader(FairRootManager* ioman, CbmBinnedTracker* tracker) : fIoman(ioman), fNavigator(0), fDetectorReaders(), fTracker(tracker),
-   fLastStationNumber(0)
+CbmBinnedGeoReader::CbmBinnedGeoReader(FairRootManager* ioman, CbmBinnedTracker* tracker) : fIoman(ioman), fNavigator(0),
+   fDetectorReaders(), fTracker(tracker), fLastStationNumber(0)
 {
    Int_t nofChildren = gGeoManager->GetTopNode()->GetNdaughters();
    
@@ -95,6 +95,7 @@ Double_t cbmBinnedSOL = 0;
 void CbmBinnedGeoReader::Read()
 {
    CbmBinnedSettings* settings = CbmBinnedSettings::Instance();
+   CbmBinnedHitReader::SetSettings(settings);
    
    if (settings->Use(kSts))
       ReadDetector("sts");
@@ -232,12 +233,15 @@ void CbmBinnedGeoReader::SearchStation(TGeoNode* node, CbmBinnedHitReader* hitRe
       station->SetMinX(left);
       station->SetMaxX(right);
       
-      station->SetDx(gStationErrors[fLastStationNumber][0]);
-      station->SetDy(gStationErrors[fLastStationNumber][1]);
-      station->SetDt(gStationErrors[fLastStationNumber][2]);
+      /*if (!CbmBinnedSettings::Instance()->IsConfiguring())
+      {
+         station->SetDx(CbmBinnedSettings::Instance()->GetXError(fLastStationNumber));
+         station->SetDy(CbmBinnedSettings::Instance()->GetYError(fLastStationNumber));
+         station->SetDt(CbmBinnedSettings::Instance()->GetTError(fLastStationNumber));
+      }*/
       
-      station->SetScatX(gStationScats[fLastStationNumber][0]);
-      station->SetScatY(gStationScats[fLastStationNumber][1]);
+      //station->SetScatX(gStationScats[fLastStationNumber][0]);
+      //station->SetScatY(gStationScats[fLastStationNumber][1]);
       
       //station->SetNofSigmaX(gStationNofSigmas[stationNumber][0]);
       //station->SetNofSigmaY(gStationNofSigmas[stationNumber][1]);

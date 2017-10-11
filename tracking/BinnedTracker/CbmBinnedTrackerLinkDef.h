@@ -6,6 +6,7 @@
 
 #pragma link C++ class CbmBinnedContFactory;
 #pragma link C++ class CbmBinnedSettings+;
+#pragma link C++ class CbmBinnedTrackerConfigurator+;
 #pragma link C++ class CbmBinnedTrackerTask+;
 #pragma link C++ class CbmBinnedTrackerQA+;
 
