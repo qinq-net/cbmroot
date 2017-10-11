@@ -18,6 +18,7 @@
 #include "FairParGenericSet.h"
 #include "FairParamList.h"
 #include "TArrayD.h"
+#include <tuple>
 
 class CbmBinnedSettings : public FairParGenericSet
 {
