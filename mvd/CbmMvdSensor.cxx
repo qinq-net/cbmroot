@@ -28,9 +28,12 @@
 
 /// includes from C
 #include <iostream>
+#include <vector>
 
 using std::cout;
 using std::endl;
+using std::map;
+using std::vector;
 
 // -----   Default constructor   -------------------------------------------
 CbmMvdSensor::CbmMvdSensor() 

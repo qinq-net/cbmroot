@@ -9,6 +9,8 @@
 #include "SensorDataSheets/CbmMvdMimosa26AHR.h"
 #include "tools/CbmMvdGeoHandler.h"
 #include "CbmMvdPileupManager.h"
+#include "CbmMvdDetector.h"
+
 
 // Includes from FAIR
 #include "FairRootManager.h"
@@ -17,14 +19,19 @@
 
 // Includes from ROOT
 #include "TClonesArray.h"
+#include "TStopwatch.h"
 
 
 // Includes from C++
 #include <iomanip>
 #include <iostream>
+#include <vector>
+
 
 using std::cout;
 using std::endl;
+using std::vector;
+
 // -----   Default constructor   ------------------------------------------
 CbmMvdDigitizer::CbmMvdDigitizer() 
   : FairTask("MVDDigitizer"),
@@ -32,6 +39,7 @@ CbmMvdDigitizer::CbmMvdDigitizer()
     fShowDebugHistos(kFALSE),
     fNoiseSensors(kFALSE),
     fDetector(NULL),
+    fSensorTyp(CbmMvdSensorTyp::MIMOSA26),
     fInputPoints(NULL),
     fDigis(NULL),
     fDigiMatch(NULL),
@@ -48,7 +56,6 @@ CbmMvdDigitizer::CbmMvdDigitizer()
     fBgFileName(""),
     fDeltaFileName(""),
     fTimer(),
-    fRandGen(),
     fPileupManager(NULL),
     fDeltaManager(NULL)
 {
@@ -63,6 +70,7 @@ CbmMvdDigitizer::CbmMvdDigitizer(const char* name, Int_t iMode, Int_t iVerbose)
     fShowDebugHistos(kFALSE),
     fNoiseSensors(kFALSE),
     fDetector(NULL),
+    fSensorTyp(CbmMvdSensorTyp::MIMOSA26),
     fInputPoints(NULL),
     fDigis(NULL),
     fDigiMatch(NULL),
@@ -79,7 +87,6 @@ CbmMvdDigitizer::CbmMvdDigitizer(const char* name, Int_t iMode, Int_t iVerbose)
     fBgFileName(""),
     fDeltaFileName(""),
     fTimer(),
-    fRandGen(),
     fPileupManager(NULL),
     fDeltaManager(NULL)
 {
@@ -167,18 +174,8 @@ InitStatus CbmMvdDigitizer::Init() {
     fMcPileUp = new TClonesArray("CbmMvdPoint", 10000);
     ioman->Register("MvdPileUpMC", "Mvd MC Points after Pile Up", fMcPileUp, IsOutputBranchPersistent("MvdPileUpMC"));
 
+    CbmMvdDetector::SetSensorTyp(fSensorTyp);
     fDetector = CbmMvdDetector::Instance();
-
-	if(fDetector->GetSensorArraySize() > 1)
-		{
-		 if(fVerbose) cout << endl << "-I- succesfully loaded Geometry from file -I-" << endl;
-		}
-	else
-		{
-		LOG(FATAL) <<  "Geometry couldn't be loaded from file. No MVD digitizer available."
-	        << FairLogger::endl;
-		}
-
 
        // **********  Create pileup manager if necessary
     if (fNPileup >= 1 && !(fPileupManager) && fMode == 0 ) {

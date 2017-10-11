@@ -18,7 +18,7 @@
 
 
 /// includes from c
-#include <vector>
+//#include <vector>
 
 /// includes from ROOT
 #include "TClonesArray.h"
@@ -26,7 +26,8 @@
 
 /// includes from CbmRoot
 #include "CbmMvdStationPar.h"
-#include "CbmMvdDigi.h"
+//#include "CbmMvdDigi.h"
+#include "tools/CbmMvdHelper.h"
 
 class CbmMvdPoint;
 class CbmMvdSensorDataSheet;
@@ -99,7 +100,11 @@ public:
 
   void SetProduceNoise();
 
+  static void SetSensorTyp(CbmMvdSensorTyp typ){fSensorTyp = typ;};
+
 private:
+  static CbmMvdSensorTyp fSensorTyp;
+
   TClonesArray* fSensorArray;
   TClonesArray* fSensorIDArray; //Array of Sensor ID
   UInt_t fPluginCount;
@@ -133,7 +138,5 @@ private:
   
  ClassDef(CbmMvdDetector,1);
 };
-
-
 
 #endif

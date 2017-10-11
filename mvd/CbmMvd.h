@@ -20,13 +20,8 @@
 #include "TLorentzVector.h"
 #include "TVector3.h"
 
-//#include "FairGeoMedia.h"
-//#include "FairGeoBuilder.h"
 #include "FairDetector.h"
-//#include "TKey.h"
-//#include "TGeoVoxelFinder.h"
 
-//#include "CbmMvdDetector.h"
 #include "SensorDataSheets/CbmMvdMimosa26AHR.h"
 
 

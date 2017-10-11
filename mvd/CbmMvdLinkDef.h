@@ -22,6 +22,7 @@
 #pragma link C++ class CbmMvdSensorDataSheet+;
 #pragma link C++ class CbmMvdMimosa26AHR+;
 #pragma link C++ class CbmMvdMimosa34+;
+#pragma link C++ class CbmMvdMimosis+;
 
 #pragma link C++ class CbmMvdSensor+;
 #pragma link C++ class CbmMvdDetector+;

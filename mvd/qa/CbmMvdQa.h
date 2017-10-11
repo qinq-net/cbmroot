@@ -16,29 +16,19 @@
 #define CBMMVDQA_H 1
 
 #include "FairTask.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TH3F.h"
-#include "TString.h"
-#include "TNtuple.h"
-#include <iostream>
-#include "TVector3.h"
-#include "TClonesArray.h"
-#include "CbmTrackMatchNew.h"
-
-
-class CbmStsTrack;
 
 
 class TClonesArray;
-class CbmStsTrack;
-class CbmVertex;
+class TH1F;
+class TH2F;
+
 class FairTrackParam;
+
 class CbmMvdDetector;
-
-class CbmLitTrackParam;
-
+//class CbmLitTrackParam;
+class CbmVertex;
 class CbmStsTrack;
+
 
 class CbmMvdQa : public FairTask
 {
@@ -79,6 +69,9 @@ private:
   Int_t fBadTrack;
   Int_t fUsedTracks;
   Int_t fnrOfMergedHits;
+
+  Int_t fFirstMvdPos;
+
 
 
   Int_t fnrTrackslowP;

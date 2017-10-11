@@ -9,14 +9,14 @@
 #define CBMMVDDIGITIZER_H 1
 
 #include "FairTask.h"
-#include "CbmMvdDetector.h"
-#include "TGeoManager.h"
+#include "tools/CbmMvdHelper.h"
 
-#include "TRandom3.h"
+
 #include "TString.h"
-#include "TMath.h"
 #include "TStopwatch.h"
 
+class FairTask;
+class CbmMvdDetector;
 class CbmMvdPileupManager;
 
 using std::pair;
@@ -51,14 +51,12 @@ class CbmMvdDigitizer : public FairTask
   void SetBgBufferSize(Int_t nBuffer)    { fBgBufferSize    = nBuffer;     }
   void SetDeltaBufferSize(Int_t nBuffer) { fDeltaBufferSize = nBuffer;     }
   void SetMisalignment(Float_t misalignment[3]){for(Int_t i = 0; i<3; i++) epsilon[i]=misalignment[i];} // set the misalignment in cm
+
   void BuildEvent();
   void ShowDebugHistograms() {fShowDebugHistos = kTRUE;}
+
   void SetProduceNoise(){fNoiseSensors = kTRUE;};
-
-protected:
- 
- 
-
+  void SetSensorTyp(CbmMvdSensorTyp typ){fSensorTyp = typ;};
 
 private:
 /** Hit producer mode (0 = MAPS, 1 = Ideal) **/
@@ -67,7 +65,8 @@ private:
   Bool_t fShowDebugHistos;
   Bool_t fNoiseSensors;
 
- CbmMvdDetector* fDetector;
+  CbmMvdDetector* fDetector;
+  CbmMvdSensorTyp fSensorTyp;
  
  TClonesArray* fInputPoints;
  TClonesArray* fDigis;
@@ -91,9 +90,7 @@ private:
   
 
   TStopwatch     fTimer;        ///< ROOT timer
-    /** Random generator and Stopwatch **/
-  TRandom3   fRandGen; 
-  
+
   /** Pileup manager **/
   CbmMvdPileupManager* fPileupManager;
   CbmMvdPileupManager* fDeltaManager;

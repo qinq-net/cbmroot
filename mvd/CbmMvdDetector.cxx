@@ -17,6 +17,7 @@
 #include "plugins/buffers/CbmMvdSensorFrameBuffer.h"
 #include "plugins/buffers/CbmMvdSensorTrackingBuffer.h"
 #include "CbmMvdSensor.h"
+#include "CbmMvdDigi.h"
 
 /// includes from FairRoot
 #include "FairLogger.h"
@@ -35,6 +36,9 @@ using std::endl;
 
 //_____________________________________________________________________________
 CbmMvdDetector* CbmMvdDetector::fInstance= 0;
+
+CbmMvdSensorTyp CbmMvdDetector::fSensorTyp = CbmMvdSensorTyp::MIMOSIS;
+
 //_____________________________________________________________________________
 CbmMvdDetector* CbmMvdDetector::Instance()
 {
@@ -42,8 +46,8 @@ CbmMvdDetector* CbmMvdDetector::Instance()
    return fInstance;
   else
 	{
-   	fInstance = new CbmMvdDetector("A");
-	CbmMvdGeoHandler* mvdHandler = new CbmMvdGeoHandler();
+        fInstance = new CbmMvdDetector("A");
+  	CbmMvdGeoHandler* mvdHandler = new CbmMvdGeoHandler();
 	mvdHandler->Init();
 	mvdHandler->Fill();
 	mvdHandler->PrintGeoParameter();
@@ -280,8 +284,7 @@ void CbmMvdDetector::Init(){
    * 
    * **/
   
-  Int_t nSensors=fSensorArray->GetEntriesFast();
-  CbmMvdSensor* sensor;
+
   
 if(!initialized)
   {
@@ -292,6 +295,11 @@ if(!initialized)
   foutputHits = new TClonesArray("CbmMvdHit",1000);
   foutputCluster = new TClonesArray("CbmMvdCluster", 1000);
   }
+
+    Int_t nSensors=fSensorArray->GetEntriesFast();
+    if (nSensors<=0) LOG(FATAL) << "CbmMvdDetector could not load Sensors from Geometry!" << FairLogger::endl;
+  CbmMvdSensor* sensor;
+
   for(Int_t j = 0; j < nSensors; j++)
     {
     
@@ -299,6 +307,7 @@ if(!initialized)
     LOG(DEBUG) << "Init Sensor " << sensor->GetName() << FairLogger::endl;
     sensor->Init();
     }
+
   initialized = kTRUE;
  
 }

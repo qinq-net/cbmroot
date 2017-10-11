@@ -10,7 +10,7 @@ ${CBMROOT_SOURCE_DIR}/mvd
 #${CBMROOT_SOURCE_DIR}/mvd/qa
 #${CBMROOT_SOURCE_DIR}/mvd/tools 
 ${CBMROOT_SOURCE_DIR}/mvd/tools/readout 
-#${CBMROOT_SOURCE_DIR}/mvd/plugins
+${CBMROOT_SOURCE_DIR}/mvd/plugins
 ${CBMROOT_SOURCE_DIR}/mvd/plugins/tasks
 ${CBMROOT_SOURCE_DIR}/mvd/plugins/buffers
 ${CBMROOT_SOURCE_DIR}/mvd/SensorDataSheets
@@ -53,7 +53,7 @@ ${CLHEP_LIBRARY_DIR}
 link_directories( ${LINK_DIRECTORIES})
 
 set(SRCS
-plugins/tasks/CbmMvdSensorTask.cxx
+plugins/tasks/CbmMvdSensorTask.cxx 
 plugins/tasks/CbmMvdSensorDigitizerTask.cxx
 #plugins/tasks/CbmMvdSensorDigiTBTask.cxx
 plugins/tasks/CbmMvdSensorFindHitTask.cxx
@@ -70,9 +70,11 @@ plugins/CbmMvdSensorPlugin.cxx
 
 SensorDataSheets/CbmMvdMimosa26AHR.cxx
 SensorDataSheets/CbmMvdMimosa34.cxx
+SensorDataSheets/CbmMvdMimosis.cxx
 SensorDataSheets/CbmMvdSensorDataSheet.cxx  
 
 tools/CbmMvdGeoHandler.cxx
+tools/CbmMvdHelper.h
 tools/readout/CbmMvdReadoutSimple.cxx
 
 qa/CbmMvdQa.cxx 

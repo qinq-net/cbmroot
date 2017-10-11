@@ -11,7 +11,7 @@
 
 
 #include "FairTask.h"
-#include "TRandom3.h"
+
 #include "TStopwatch.h"
 
 class CbmMvdDetector;
@@ -58,9 +58,6 @@ private:
   
 
   TStopwatch     fTimer;        ///< ROOT timer
-    /** Random generator and Stopwatch **/
-  TRandom3   fRandGen; 
-  
 
 
 // -----   Private methods   ---------------------------------------------

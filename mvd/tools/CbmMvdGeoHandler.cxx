@@ -17,19 +17,21 @@
 #include "TVirtualMC.h"
 #include "TString.h"
 
-#include <string>
+#include "CbmMvdDetector.h"
+#include "CbmMvdStationPar.h"
+
+#include "SensorDataSheets/CbmMvdMimosa26AHR.h"
+#include "SensorDataSheets/CbmMvdMimosa34.h"
+#include "SensorDataSheets/CbmMvdMimosis.h"
+
 #include <cstdlib>
-#include <iostream>
-#include <iomanip>   
-using std::cout;
-using std::endl;
-using std::string;
 using std::atoi;
 
 
 //--------------------------------------------------------------------------
 CbmMvdGeoHandler::CbmMvdGeoHandler() 
-  : TObject(),
+    : TObject(),
+  fSensorTyp(CbmMvdSensorTyp::MIMOSA26),
   fDetector(NULL),
   fStationPar(NULL),
   fStationMap(),
@@ -71,6 +73,7 @@ CbmMvdGeoHandler::~CbmMvdGeoHandler()
 {
 
 }
+
 //--------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------
@@ -315,8 +318,8 @@ if(fail)
 void CbmMvdGeoHandler::GetGeometryTyp()
 {
 if ( gGeoManager->CheckPath(fMother + "/Beamtimeosetupoobgnum_0"))
-	{
-	cout << endl << "Found Beamtimesetup" << endl;
+        {
+        LOG(INFO) << "Found Beamtimesetupy" << FairLogger::endl;
 	fGeoTyp = beamtest;
 	}
 else if (gGeoManager->CheckPath(fMother + "/MVDoMistraloquero012oStationo150umodigi_0"))
@@ -356,7 +359,7 @@ else if (gGeoManager->CheckPath(fMother + "/MVDscripted_0"))
         }
 else 
 	{
-	cout << endl << "Try standard Geometry" << endl;
+	    LOG(INFO) << "Try standard Geometry" << FairLogger::endl;
 	fGeoTyp = Default;
 	}
  
@@ -486,8 +489,12 @@ Int_t iStation = 0;
 		      if(nodeFound)
 		        {
 			gGeoManager->cd(fnodeName);
-		        fVolId = GetIDfromPath(fnodeName);
-		      	fDetector->AddSensor(fSensorName, fSensorName, fnodeName, new CbmMvdMimosa26AHR, iStation, fVolId, 0.0, StatNr);
+			fVolId = GetIDfromPath(fnodeName);
+
+			if(fSensorTyp == CbmMvdSensorTyp::MIMOSIS)
+			    fDetector->AddSensor(fSensorName, fSensorName, fnodeName, new CbmMvdMimosis, iStation, fVolId, 0.0, StatNr);
+			else
+			    fDetector->AddSensor(fSensorName, fSensorName, fnodeName, new CbmMvdMimosa26AHR, iStation, fVolId, 0.0, StatNr);
 		       	iStation++;
 			FillParameter();
                          LOG(DEBUG) << "found " << fSensorHolding + "/" + fSensorName <<  " number: " << fVolId << "  and added to MVD Detector" << FairLogger::endl;
@@ -529,7 +536,7 @@ Int_t iStation = 0;
 			        fnodeName = fMother + fDetectorName + fStationName + fQuadrantName + fSensorHolding + "/" + fSensorName + "_1";
 			        Bool_t nodeFound = gGeoManager->CheckPath(fnodeName.Data());
 			                if(nodeFound)
-			        	{
+					{
 				        fDetector->AddSensor(fSensorName, fSensorName, fnodeName, new CbmMvdMimosa26AHR, iStation, fVolId, 0.0, StatNr);
 			        	iStation++;
 			        	FillParameter();

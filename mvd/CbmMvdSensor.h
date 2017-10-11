@@ -30,9 +30,6 @@
 
 #include "TString.h"
 
-using std::vector;
-using std::map;
-
 // data classes
 class CbmMvdPoint;
 class CbmMvdDigi;
@@ -176,7 +173,7 @@ class CbmMvdSensor : public TNamed, CbmMvdDetectorId
   
   /** Technical data of the sensor */
   CbmMvdSensorDataSheet* fSensorData;
-  map<Int_t, Int_t> fSensorMap;
+  std::map<Int_t, Int_t> fSensorMap;
   
   /** Plugins */
   TObjArray* fPluginArray;

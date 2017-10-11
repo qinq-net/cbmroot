@@ -14,15 +14,16 @@ using std::map;
 
 #include "TObject.h"
 #include "CbmMvdDetector.h"
-#include "SensorDataSheets/CbmMvdMimosa26AHR.h"
-#include "SensorDataSheets/CbmMvdMimosa34.h"
 #include "CbmMvdStationPar.h"
+
+#include "tools/CbmMvdHelper.h"
 
 class TGeoBBox;
 class TGeoVolume;
 class TGeoHMatrix;
 
 enum CbmMvdGeoTyp {Default, beamtest, TwoStation, ThreeStation, FourStation, FourStationShift, MiniCbm, scripted};
+
 
 class CbmMvdGeoHandler : public TObject
 {
@@ -62,6 +63,8 @@ public:
    void PrintGeoParameter();
    Int_t GetIDfromPath(TString path);
 
+   void SetSensorTyp(CbmMvdSensorTyp typ){fSensorTyp = typ;};
+
 
 private:
 
@@ -73,7 +76,7 @@ private:
    void FillStationMap();
 
 
-
+   CbmMvdSensorTyp fSensorTyp;
 
    CbmMvdDetector* fDetector;
    CbmMvdStationPar* fStationPar;
