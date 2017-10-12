@@ -34,14 +34,17 @@ inline int clock_gettime(int /*clk_id*/, struct timespec *t){
 #include <time.h>
 #endif
 
+using std::fill_n;
+using std::copy;
+
 CbmBinnedTrackerTask* CbmBinnedTrackerTask::fInstance = 0;
    
 CbmBinnedTrackerTask::CbmBinnedTrackerTask(bool useAllDetectors, Double_t beamWidthX, Double_t beamWidthY) : fUseAllDetectors(useAllDetectors),
    fSettings(0), fBeamDx(beamWidthX), fBeamDy(beamWidthY), fTracker(0), fGlobalTracks(0), fStsTracks(0), fMuchTracks(0), fTrdTracks(0)
 {
    fInstance = this;
+   fill_n(fUseModules, int(kLastModule), fUseAllDetectors);
    fSettings = CbmBinnedSettings::Instance();
-   fSettings->SetUse(useAllDetectors);
 }
 
 CbmBinnedTrackerTask::~CbmBinnedTrackerTask()
@@ -51,6 +54,10 @@ CbmBinnedTrackerTask::~CbmBinnedTrackerTask()
 
 InitStatus CbmBinnedTrackerTask::Init()
 {
+   fSettings->SetUse(fUseModules);
+   fSettings->SetNofStsStations(0);
+   fSettings->SetNofMuchStations(0);
+   fSettings->SetNofTrdStations(0);
    CbmBinnedGeoReader* geoReader = CbmBinnedGeoReader::Instance();
    
    if (0 == geoReader)

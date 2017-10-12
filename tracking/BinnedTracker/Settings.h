@@ -129,6 +129,7 @@ public:
     bool Use(ECbmModuleId m) const { return fUseModules[m]; }
     void SetUse(ECbmModuleId m, bool v) { fUseModules[m] = v; }
     void SetUse(bool v) { std::fill_n(fUseModules, int(kLastModule), v); }
+    void SetUse(bool useModules[kLastModule]) { std::copy(useModules, useModules + kLastModule, fUseModules); }
     Int_t GetNofStsStations() const { return fNofStsStations; }
     void SetNofStsStations(Int_t v) { fNofStsStations = v; }
     Int_t GetNofMuchStations() const { return fNofMuchStations; }

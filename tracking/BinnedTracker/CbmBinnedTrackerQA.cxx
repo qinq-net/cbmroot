@@ -732,7 +732,7 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
    
    if (TrackDesc::hasTof)
    {
-      Int_t nofTofHits = fTofHitDigiMatches->GetEntriesFast();
+      Int_t nofTofHits = fTofHits->GetEntriesFast();
 
       for (Int_t i = 0; i < nofTofHits; ++i)
       {

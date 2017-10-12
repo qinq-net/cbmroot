@@ -36,13 +36,15 @@ public:
     
     Double_t GetBeamDx() const { return fBeamDx; }
     Double_t GetBeamDy() const { return fBeamDy; }
-    void SetUse(ECbmModuleId m, bool v) { CbmBinnedSettings::Instance()->SetUse(m, v); }
+    bool Use(ECbmModuleId m) const { return fUseModules[m]; }
+    void SetUse(ECbmModuleId m, bool v) { fUseModules[m] = v; }
     
 private:
     static CbmBinnedTrackerTask* fInstance;
     
 private:
     bool fUseAllDetectors;
+    bool fUseModules[kLastModule];
     CbmBinnedSettings* fSettings;
     Double_t fBeamDx;
     Double_t fBeamDy;
