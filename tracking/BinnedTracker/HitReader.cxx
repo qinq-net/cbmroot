@@ -127,18 +127,18 @@ public:
 #include "CbmLink.h"
 #include "rich/CbmRichPoint.h"
 #include "CbmMatch.h"
-#include "CbmMCDataArray.h"
-#include "CbmMCDataManager.h"
+//#include "CbmMCDataArray.h"
+//#include "CbmMCDataManager.h"
 
 class CbmBinnedRichHitReader : public CbmBinnedHitReader
 {
 public:
-   explicit CbmBinnedRichHitReader(TClonesArray* hitArray) : CbmBinnedHitReader(hitArray), fDigiArray(0), fPointArray(0)
+   explicit CbmBinnedRichHitReader(TClonesArray* hitArray) : CbmBinnedHitReader(hitArray), fDigiArray(0)//, fPointArray(0)
    {
       FairRootManager* ioman = FairRootManager::Instance();
       fDigiArray = static_cast<TClonesArray*> (ioman->GetObject("RichDigi"));
-      CbmMCDataManager* mcManager = static_cast<CbmMCDataManager*> (ioman->GetObject("MCDataManager"));
-      fPointArray = mcManager->InitBranch("RichPoint");
+      //CbmMCDataManager* mcManager = static_cast<CbmMCDataManager*> (ioman->GetObject("MCDataManager"));
+      //fPointArray = mcManager->InitBranch("RichPoint");
    }
    
    CbmBinnedRichHitReader(const CbmBinnedRichHitReader&) = delete;
@@ -152,7 +152,7 @@ public:
       {
          /*const */CbmPixelHit* hit = static_cast</*const */CbmPixelHit*> (fHitArray->At(i));
          
-         int digiIndex = hit->GetRefId();
+         /*int digiIndex = hit->GetRefId();
          const CbmRichDigi* digi = static_cast<const CbmRichDigi*>(fDigiArray->At(digiIndex));
          CbmMatch* digiMatch = digi->GetMatch();
 
@@ -168,9 +168,9 @@ public:
          }
          
          if (0 < cnt)
-            t /= cnt;
+            t /= cnt;*/
          
-         hit->SetTime(t);
+         hit->SetTime(0);
          hit->SetTimeError(4);
          hit->SetDx(0.175);
          hit->SetDy(0.175);
@@ -183,7 +183,7 @@ public:
    
 private:
    TClonesArray* fDigiArray;
-   CbmMCDataArray* fPointArray;
+   //CbmMCDataArray* fPointArray;
 };
 
 #include "CbmMuchCluster.h"
@@ -194,13 +194,13 @@ private:
 class CbmBinnedMuchHitReader : public CbmBinnedHitReader
 {
 public:
-   explicit CbmBinnedMuchHitReader(TClonesArray* hitArray) : CbmBinnedHitReader(hitArray), fMuchClusters(0), fMuchDigis(0), fMuchPoints(0)
+   explicit CbmBinnedMuchHitReader(TClonesArray* hitArray) : CbmBinnedHitReader(hitArray)//, fMuchClusters(0), fMuchDigis(0), fMuchPoints(0)
    {
       FairRootManager* ioman = FairRootManager::Instance();
-      fMuchClusters = static_cast<TClonesArray*> (ioman->GetObject("MuchCluster"));
-      fMuchDigis = static_cast<TClonesArray*> (ioman->GetObject("MuchDigi"));
-      CbmMCDataManager* mcManager = static_cast<CbmMCDataManager*> (ioman->GetObject("MCDataManager"));
-      fMuchPoints = mcManager->InitBranch("MuchPoint");
+      //fMuchClusters = static_cast<TClonesArray*> (ioman->GetObject("MuchCluster"));
+      //fMuchDigis = static_cast<TClonesArray*> (ioman->GetObject("MuchDigi"));
+      //CbmMCDataManager* mcManager = static_cast<CbmMCDataManager*> (ioman->GetObject("MCDataManager"));
+      //fMuchPoints = mcManager->InitBranch("MuchPoint");
    }
    
    CbmBinnedMuchHitReader(const CbmBinnedMuchHitReader&) = delete;
@@ -217,7 +217,7 @@ public:
          int layerNumber = CbmMuchGeoScheme::GetLayerIndex(hit->GetAddress());
          int stationNumber = muchStationNumber * 3 + layerNumber;
          
-         Double_t t = 0;
+         /*Double_t t = 0;
          int cnt = 0;
          Int_t clusterId = hit->GetRefId();
          const CbmMuchCluster* cluster = static_cast<const CbmMuchCluster*> (fMuchClusters->At(clusterId));
@@ -240,9 +240,9 @@ public:
          }
       
          if (0 < cnt)
-            t /= cnt;
+            t /= cnt;*/
          
-         hit->SetTime(t);
+         hit->SetTime(0);
          
          fStations[stationNumber]->AddHit(hit, i);
 #ifdef DO_ERROR_STAT
@@ -251,22 +251,22 @@ public:
       }
    }
    
-private:
-   TClonesArray* fMuchClusters;
-   TClonesArray* fMuchDigis;
-   CbmMCDataArray* fMuchPoints;
+//private:
+   //TClonesArray* fMuchClusters;
+   //TClonesArray* fMuchDigis;
+   //CbmMCDataArray* fMuchPoints;
 };
 
 class CbmBinnedTrdHitReader : public CbmBinnedHitReader
 {
 public:
-   explicit CbmBinnedTrdHitReader(TClonesArray* hitArray) : CbmBinnedHitReader(hitArray), fClusterArray(0), fDigiMatchArray(0), fPointArray(0)
+   explicit CbmBinnedTrdHitReader(TClonesArray* hitArray) : CbmBinnedHitReader(hitArray)//, fClusterArray(0), fDigiMatchArray(0), fPointArray(0)
    {
       FairRootManager* ioman = FairRootManager::Instance();
-      fClusterArray = static_cast<TClonesArray*> (ioman->GetObject("TrdCluster"));
-      fDigiMatchArray = static_cast<TClonesArray*> (ioman->GetObject("TrdDigiMatch"));
-      CbmMCDataManager* mcManager = static_cast<CbmMCDataManager*> (ioman->GetObject("MCDataManager"));
-      fPointArray = mcManager->InitBranch("TrdPoint");
+      //fClusterArray = static_cast<TClonesArray*> (ioman->GetObject("TrdCluster"));
+      //fDigiMatchArray = static_cast<TClonesArray*> (ioman->GetObject("TrdDigiMatch"));
+      //CbmMCDataManager* mcManager = static_cast<CbmMCDataManager*> (ioman->GetObject("MCDataManager"));
+      //fPointArray = mcManager->InitBranch("TrdPoint");
    }
    
    CbmBinnedTrdHitReader(const CbmBinnedTrdHitReader&) = delete;
@@ -328,10 +328,10 @@ public:
       }
    }
    
-private:
-   TClonesArray* fClusterArray;
-   TClonesArray* fDigiMatchArray;
-   CbmMCDataArray* fPointArray;
+//private:
+   //TClonesArray* fClusterArray;
+   //TClonesArray* fDigiMatchArray;
+   //CbmMCDataArray* fPointArray;
 };
 
 class CbmBinnedTofHitReader : public CbmBinnedHitReader

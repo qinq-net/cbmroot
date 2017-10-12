@@ -1285,7 +1285,7 @@ void CbmBinnedTrackerQA::Finish()
                return p1.second < p2.second;
             });
             
-         if (maxIter->second < 0.7 * (fSettings->GetNofStsStations() + fSettings->GetNofTrdStations() + (TrackDesc::hasTof ? 1 : 0)))
+         if (maxIter->second < int(0.7 * (fSettings->GetNofStsStations() + fSettings->GetNofTrdStations() + (TrackDesc::hasTof ? 1 : 0)) + 0.5))
             continue;
          
          /*int maxMatch = 0;
