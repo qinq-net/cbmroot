@@ -17,14 +17,13 @@
 #include "FairTask.h"
 #include "CbmPixelHit.h"
 #include "Settings.h"
-#include "CbmMCDataArray.h"
 #include "TClonesArray.h"
 #include "Tracker.h"
 
 class CbmBinnedTrackerConfigurator : public FairTask
 {    
 public:
-    CbmBinnedTrackerConfigurator();
+    explicit CbmBinnedTrackerConfigurator(bool useAllDetectors);
     CbmBinnedTrackerConfigurator(const CbmBinnedTrackerConfigurator&) = delete;
     CbmBinnedTrackerConfigurator& operator=(const CbmBinnedTrackerConfigurator&) = delete;
     ~CbmBinnedTrackerConfigurator();
@@ -33,33 +32,20 @@ public:
     void Exec(Option_t* opt);// Overridden from FairTask
     void Finish();// Overridden from FairTask
     void SetParContainers();
-    void SetUse(ECbmModuleId m, bool v) { CbmBinnedSettings::Instance()->SetUse(m, v); }
+    bool Use(ECbmModuleId m) const { return fUseModules[m]; }
+    void SetUse(ECbmModuleId m, bool v) { fUseModules[m] = v; }
     
 private:
+    bool fUseAllDetectors;
+    bool fUseModules[kLastModule];
     CbmBinnedTracker* fTracker;
     CbmBinnedSettings* fSettings;
-    TClonesArray* fStsHits;
-    TClonesArray* fMuchHits;
-    TClonesArray* fTrdHits;
-    TClonesArray* fTofHits;
-    TClonesArray* fStsClusters;
-    TClonesArray* fMuchClusters;
-    TClonesArray* fTrdClusters;
     
-    TClonesArray* fTrdDigiMatches;
-    TClonesArray* fTofHitDigiMatches;
-    TClonesArray* fTofDigiPointMatches;
-    
-    TClonesArray* fStsDigis;
-    TClonesArray* fMuchDigis;
-    TClonesArray* fTrdDigis;
-    TClonesArray* fTofDigis;
-    
-    CbmMCDataArray* fMCTracks;
-    CbmMCDataArray* fStsPoints;
-    CbmMCDataArray* fMuchPoints;
-    CbmMCDataArray* fTrdPoints;
-    CbmMCDataArray* fTofPoints;
+    TClonesArray* fMCTracks;
+    TClonesArray* fStsPoints;
+    TClonesArray* fMuchPoints;
+    TClonesArray* fTrdPoints;
+    TClonesArray* fTofPoints;
     ClassDef(CbmBinnedTrackerConfigurator, 1)
 };
 

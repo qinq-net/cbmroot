@@ -48,31 +48,31 @@ CbmBinnedGeoReader::CbmBinnedGeoReader(FairRootManager* ioman, CbmBinnedTracker*
    if (settings->Use(kSts))
    {
       fDetectorReaders["sts"] = &CbmBinnedGeoReader::ReadSts;
-      CbmBinnedHitReader::AddReader("sts", static_cast<TClonesArray*> (fIoman->GetObject("StsHit")));
+      CbmBinnedHitReader::AddReader("sts");
    }
    
    if (settings->Use(kRich))
    {
       fDetectorReaders["rich"] = &CbmBinnedGeoReader::ReadRich;
-      CbmBinnedHitReader::AddReader("rich", static_cast<TClonesArray*> (fIoman->GetObject("RichHit")));
+      CbmBinnedHitReader::AddReader("rich");
    }
    
    if (settings->Use(kMuch))
    {
       fDetectorReaders["much"] = &CbmBinnedGeoReader::ReadMuch;
-      CbmBinnedHitReader::AddReader("much", static_cast<TClonesArray*> (fIoman->GetObject("MuchPixelHit")));
+      CbmBinnedHitReader::AddReader("much");
    }
    
    if (settings->Use(kTrd))
    {
       fDetectorReaders["trd"] = &CbmBinnedGeoReader::ReadTrd;
-      CbmBinnedHitReader::AddReader("trd", static_cast<TClonesArray*> (fIoman->GetObject("TrdHit")));
+      CbmBinnedHitReader::AddReader("trd");
    }
    
    if (settings->Use(kTof))
    {
       fDetectorReaders["tof"] = &CbmBinnedGeoReader::ReadTof;   
-      CbmBinnedHitReader::AddReader("tof", static_cast<TClonesArray*> (fIoman->GetObject("TofHit")));
+      CbmBinnedHitReader::AddReader("tof");
    }
 }
 

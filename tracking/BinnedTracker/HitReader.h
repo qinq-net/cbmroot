@@ -28,11 +28,11 @@ class CbmBinnedHitReader
 public:
     static CbmBinnedHitReader* Instance();
     static CbmBinnedHitReader* Instance(const char* name);
-    static void AddReader(const char* name, TClonesArray* hitArray);
+    static void AddReader(const char* name);
     static void SetSettings(CbmBinnedSettings* v) { fSettings = v; }
     
 public:
-    explicit CbmBinnedHitReader(TClonesArray* hitArray);
+    CbmBinnedHitReader();
     CbmBinnedHitReader(const CbmBinnedHitReader&) = delete;
     CbmBinnedHitReader& operator=(const CbmBinnedHitReader&) = delete;
     virtual ~CbmBinnedHitReader();

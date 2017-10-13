@@ -11,6 +11,7 @@
 #include "geo/CbmMuchGeoScheme.h"
 #include "CbmTrdHit.h"
 #include "CbmMuchPixelHit.h"
+#include "FairRootManager.h"
 
 using namespace std;
 
@@ -93,7 +94,7 @@ static void DumpMax()
 
 CbmBinnedSettings* CbmBinnedHitReader::fSettings = 0;
 
-CbmBinnedHitReader::CbmBinnedHitReader(TClonesArray* hitArray) : fStations(), fHitArray(hitArray)
+CbmBinnedHitReader::CbmBinnedHitReader() : fStations(), fHitArray(0)
 {
 }
 
@@ -104,7 +105,11 @@ CbmBinnedHitReader::~CbmBinnedHitReader()
 class CbmBinnedStsHitReader : public CbmBinnedHitReader
 {
 public:
-   explicit CbmBinnedStsHitReader(TClonesArray* hitArray) : CbmBinnedHitReader(hitArray) {}
+   CbmBinnedStsHitReader() : CbmBinnedHitReader()
+   {
+      FairRootManager* ioman = FairRootManager::Instance();
+      fHitArray = static_cast<TClonesArray*> (ioman->GetObject("StsHit"));
+   }
    
    void Read()
    {
@@ -122,7 +127,73 @@ public:
    }
 };
 
-#include "FairRootManager.h"
+#include "CbmMCTrack.h"
+
+class CbmBinnedMCTrackReader : public CbmBinnedHitReader
+{
+public:
+   static CbmBinnedMCTrackReader* Instance()
+   {
+      static CbmBinnedMCTrackReader* instance = 0;
+      
+      if (0 == instance)
+         AddReader("mctrack");
+      
+      return instance;
+   }
+   
+public:
+   CbmBinnedMCTrackReader() : CbmBinnedHitReader()
+   {
+      FairRootManager* ioman = FairRootManager::Instance();
+      fHitArray = static_cast<TClonesArray*> (ioman->GetObject("MCTrack"));
+   }
+   
+   void Read()
+   {
+      Int_t nofTracks = fHitArray->GetEntriesFast();
+   
+      for (Int_t i = 0; i < nofTracks; ++i)
+      {
+         const CbmMCTrack* track = static_cast<const CbmMCTrack*> (fHitArray->At(i));
+         //fStations[stationNumber]->AddHit(hit, i);
+      }
+   }
+};
+
+class CbmBinnedMCPointReader : public CbmBinnedHitReader
+{
+protected:
+   CbmBinnedMCPointReader() : CbmBinnedHitReader(), fTrackReader(CbmBinnedMCTrackReader::Instance()) {}
+   
+protected:
+   CbmBinnedMCTrackReader* fTrackReader;
+};
+
+#include "CbmStsPoint.h"
+
+class CbmBinnedStsMCReader : public CbmBinnedMCPointReader
+{
+public:
+   CbmBinnedStsMCReader() : CbmBinnedMCPointReader()
+   {
+      FairRootManager* ioman = FairRootManager::Instance();
+      fHitArray = static_cast<TClonesArray*> (ioman->GetObject("StsPoint"));
+   }
+   
+   void Read()
+   {
+      Int_t nofPoints = fHitArray->GetEntriesFast();
+   
+      for (Int_t i = 0; i < nofPoints; ++i)
+      {
+         const CbmStsPoint* point = static_cast<const CbmStsPoint*> (fHitArray->At(i));
+         int stationNumber = CbmStsSetup::Instance()->GetStationNumber(point->GetDetectorID());
+         //fStations[stationNumber]->AddHit(hit, i);
+      }
+   }
+};
+
 #include "rich/CbmRichDigi.h"
 #include "CbmLink.h"
 #include "rich/CbmRichPoint.h"
@@ -133,12 +204,10 @@ public:
 class CbmBinnedRichHitReader : public CbmBinnedHitReader
 {
 public:
-   explicit CbmBinnedRichHitReader(TClonesArray* hitArray) : CbmBinnedHitReader(hitArray), fDigiArray(0)//, fPointArray(0)
+   CbmBinnedRichHitReader() : CbmBinnedHitReader()
    {
       FairRootManager* ioman = FairRootManager::Instance();
-      fDigiArray = static_cast<TClonesArray*> (ioman->GetObject("RichDigi"));
-      //CbmMCDataManager* mcManager = static_cast<CbmMCDataManager*> (ioman->GetObject("MCDataManager"));
-      //fPointArray = mcManager->InitBranch("RichPoint");
+      fHitArray = static_cast<TClonesArray*> (ioman->GetObject("RichHit"));
    }
    
    CbmBinnedRichHitReader(const CbmBinnedRichHitReader&) = delete;
@@ -182,7 +251,7 @@ public:
    }
    
 private:
-   TClonesArray* fDigiArray;
+   //TClonesArray* fDigiArray;
    //CbmMCDataArray* fPointArray;
 };
 
@@ -194,13 +263,10 @@ private:
 class CbmBinnedMuchHitReader : public CbmBinnedHitReader
 {
 public:
-   explicit CbmBinnedMuchHitReader(TClonesArray* hitArray) : CbmBinnedHitReader(hitArray)//, fMuchClusters(0), fMuchDigis(0), fMuchPoints(0)
+   CbmBinnedMuchHitReader() : CbmBinnedHitReader()
    {
       FairRootManager* ioman = FairRootManager::Instance();
-      //fMuchClusters = static_cast<TClonesArray*> (ioman->GetObject("MuchCluster"));
-      //fMuchDigis = static_cast<TClonesArray*> (ioman->GetObject("MuchDigi"));
-      //CbmMCDataManager* mcManager = static_cast<CbmMCDataManager*> (ioman->GetObject("MCDataManager"));
-      //fMuchPoints = mcManager->InitBranch("MuchPoint");
+      fHitArray = static_cast<TClonesArray*> (ioman->GetObject("MuchPixelHit"));
    }
    
    CbmBinnedMuchHitReader(const CbmBinnedMuchHitReader&) = delete;
@@ -260,13 +326,10 @@ public:
 class CbmBinnedTrdHitReader : public CbmBinnedHitReader
 {
 public:
-   explicit CbmBinnedTrdHitReader(TClonesArray* hitArray) : CbmBinnedHitReader(hitArray)//, fClusterArray(0), fDigiMatchArray(0), fPointArray(0)
+   CbmBinnedTrdHitReader() : CbmBinnedHitReader()
    {
       FairRootManager* ioman = FairRootManager::Instance();
-      //fClusterArray = static_cast<TClonesArray*> (ioman->GetObject("TrdCluster"));
-      //fDigiMatchArray = static_cast<TClonesArray*> (ioman->GetObject("TrdDigiMatch"));
-      //CbmMCDataManager* mcManager = static_cast<CbmMCDataManager*> (ioman->GetObject("MCDataManager"));
-      //fPointArray = mcManager->InitBranch("TrdPoint");
+      fHitArray = static_cast<TClonesArray*> (ioman->GetObject("TrdHit"));
    }
    
    CbmBinnedTrdHitReader(const CbmBinnedTrdHitReader&) = delete;
@@ -337,7 +400,11 @@ public:
 class CbmBinnedTofHitReader : public CbmBinnedHitReader
 {
 public:
-   explicit CbmBinnedTofHitReader(TClonesArray* hitArray) : CbmBinnedHitReader(hitArray) {}
+   CbmBinnedTofHitReader() : CbmBinnedHitReader()
+   {
+      FairRootManager* ioman = FairRootManager::Instance();
+      fHitArray = static_cast<TClonesArray*> (ioman->GetObject("TofHit"));
+   }
    
    void Read()
    {
@@ -358,7 +425,7 @@ public:
 class CbmBinnedAllHitReader : public CbmBinnedHitReader
 {
 public:
-   CbmBinnedAllHitReader() : CbmBinnedHitReader(0) {}
+   CbmBinnedAllHitReader() : CbmBinnedHitReader() {}
    
    void Read()
    {
@@ -392,7 +459,7 @@ CbmBinnedHitReader* CbmBinnedHitReader::Instance(const char* name)
       return 0;
 }
 
-void CbmBinnedHitReader::AddReader(const char* name, TClonesArray* hitArray)
+void CbmBinnedHitReader::AddReader(const char* name)
 {
    map<string, CbmBinnedHitReader*>::iterator i = fReaders.find(name);
    
@@ -403,15 +470,17 @@ void CbmBinnedHitReader::AddReader(const char* name, TClonesArray* hitArray)
    CbmBinnedHitReader* newReader = 0;
    
    if (nameStr == "sts")
-      newReader = new CbmBinnedStsHitReader(hitArray);
+      newReader = new CbmBinnedStsHitReader;
    else if (nameStr == "rich")
-      newReader = new CbmBinnedRichHitReader(hitArray);
+      newReader = new CbmBinnedRichHitReader;
    else if (nameStr == "much")
-      newReader = new CbmBinnedMuchHitReader(hitArray);
+      newReader = new CbmBinnedMuchHitReader;
    else if (nameStr == "trd")
-      newReader = new CbmBinnedTrdHitReader(hitArray);
+      newReader = new CbmBinnedTrdHitReader;
    else if (nameStr == "tof")
-      newReader = new CbmBinnedTofHitReader(hitArray);
+      newReader = new CbmBinnedTofHitReader;
+   else if (nameStr == "mctrack")
+      newReader = new CbmBinnedMCTrackReader;
    
    if (0 != newReader)
       fReaders[name] = newReader;

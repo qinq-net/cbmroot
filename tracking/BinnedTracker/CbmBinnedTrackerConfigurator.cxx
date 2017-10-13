@@ -11,12 +11,13 @@
 #include "FairRuntimeDb.h"
 #include "GeoReader.h"
 
-CbmBinnedTrackerConfigurator::CbmBinnedTrackerConfigurator() : fTracker(0), fSettings(0), fStsHits(0), fMuchHits(0), fTrdHits(0), fTofHits(0),
-   fStsClusters(0), fMuchClusters(0), fTrdClusters(0), fTrdDigiMatches(0), fTofHitDigiMatches(0), fTofDigiPointMatches(0),
-   fStsDigis(0), fMuchDigis(0), fTrdDigis(0), fTofDigis(0), fMCTracks(0), fStsPoints(0), fMuchPoints(0), fTrdPoints(0), fTofPoints(0)
+CbmBinnedTrackerConfigurator::CbmBinnedTrackerConfigurator(bool useAllDetectors) : fUseAllDetectors(useAllDetectors), fTracker(0), fSettings(0), fMCTracks(0),
+   fStsPoints(0), fMuchPoints(0), fTrdPoints(0), fTofPoints(0)
 {
+   fill_n(fUseModules, int(kLastModule), fUseAllDetectors);
+   fUseModules[kMuch] = false;// Temporary hack
+   fUseModules[kRich] = false;// Temporary hack
    fSettings = CbmBinnedSettings::Instance();
-   fSettings->SetUse(false);
    fSettings->SetConfiguring();
 }
 
@@ -27,6 +28,10 @@ CbmBinnedTrackerConfigurator::~CbmBinnedTrackerConfigurator()
 
 InitStatus CbmBinnedTrackerConfigurator::Init()
 {
+   fSettings->SetUse(fUseModules);
+   fSettings->SetNofStsStations(0);
+   fSettings->SetNofMuchStations(0);
+   fSettings->SetNofTrdStations(0);
    CbmBinnedGeoReader* geoReader = CbmBinnedGeoReader::Instance();
    
    if (0 == geoReader)
@@ -39,22 +44,41 @@ InitStatus CbmBinnedTrackerConfigurator::Init()
    if (0 == ioman)
       fLogger->Fatal(MESSAGE_ORIGIN, "No FairRootManager");
    
-   CbmMCDataManager* mcManager = static_cast<CbmMCDataManager*> (ioman->GetObject("MCDataManager"));
-   
-   if (0 == mcManager)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No MC data manager");
-   
-   fMCTracks = mcManager->InitBranch("MCTrack");
+   fMCTracks = static_cast<TClonesArray*> (ioman->GetObject("MCTrack"));
    
    if (0 == fMCTracks)
       fLogger->Fatal(MESSAGE_ORIGIN, "No MC tracks in the input file");
    
    if (fSettings->Use(kSts))
-   {
-      fStsHits = static_cast<TClonesArray*> (ioman->GetObject("StsHit"));
+   {      
+      fStsPoints = static_cast<TClonesArray*> (ioman->GetObject("StsPoint"));
    
-      if (0 == fStsHits)
-         fLogger->Fatal(MESSAGE_ORIGIN, "No sts hits in the input file");
+      if (0 == fStsPoints)
+         fLogger->Fatal(MESSAGE_ORIGIN, "No sts MC points in the input file");
+   }
+   
+   if (fSettings->Use(kMuch))
+   {
+      fMuchPoints = static_cast<TClonesArray*> (ioman->GetObject("MuchPoint"));
+   
+      if (0 == fMuchPoints)
+         fLogger->Fatal(MESSAGE_ORIGIN, "No much MC points in the input file");
+   }
+   
+   if (fSettings->Use(kTrd))
+   {
+      fTrdPoints = static_cast<TClonesArray*> (ioman->GetObject("TrdPoint"));
+      
+      if (0 == fTrdPoints)
+         fLogger->Fatal(MESSAGE_ORIGIN, "No trd MC points in the input file");
+   }
+   
+   if (fSettings->Use(kTof))
+   {
+      fTofPoints = static_cast<TClonesArray*> (ioman->GetObject("TofPoint"));
+      
+      if (0 == fTofPoints)
+         fLogger->Fatal(MESSAGE_ORIGIN, "No tof MC points in the input file");
    }
    
    return kSUCCESS;
