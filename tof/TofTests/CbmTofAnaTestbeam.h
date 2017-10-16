@@ -170,6 +170,11 @@ class CbmTofAnaTestbeam : public FairTask {
       inline Double_t GetSIGX () { return fSIGX; }
       inline Double_t GetSIGY () { return fSIGY; }
 
+      inline void SetDutX    ( Double_t val ) { fdDutX  = val; }
+      inline void SetDutDX   ( Double_t val ) { fdDutDX = val; }
+      inline void SetDutY    ( Double_t val ) { fdDutY  = val; }
+      inline void SetDutDY   ( Double_t val ) { fdDutDY = val; }
+
    private:
       Bool_t   LoadGeometry();
       Bool_t   CreateHistos();
@@ -410,6 +415,9 @@ class CbmTofAnaTestbeam : public FairTask {
       TH2 * fhDutDTLH_CluSize;     
       TH2 * fhDutDTLH_Tot;     
       TH2 * fhDutDTLH_Mul;     
+      TH2 * fhDutDTLH_TIS;     
+      TH2 * fhDutDTLH_Missed_TIS;     
+      TH2 * fhDutDTLH_DDH_Found;     
       TH2 * fhDutDTLH_DD_Found;     
       TH2 * fhDutDTLH_DD_Missed;     
       TH3 * fhDutXYDT;     
@@ -461,6 +469,11 @@ class CbmTofAnaTestbeam : public FairTask {
       Double_t        fdTShift;           // general time shift of all hits  
       Double_t        fdChi2Lim;          // Chi2 Limit to accept selector coincidence
       Double_t        fdChi2Lim2;         // Chi2 Limit for Mref - Sel2 to accept coincidence
+
+      Double_t        fdDutX;
+      Double_t        fdDutDX;
+      Double_t        fdDutY;
+      Double_t        fdDutDY;
 
       Int_t        fiCorMode; // Correction histogram generation mode
       Int_t        fiDutAddr; // Device under test Address
