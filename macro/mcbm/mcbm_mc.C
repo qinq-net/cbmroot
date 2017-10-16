@@ -17,7 +17,9 @@
 
 
 
-void mcbm_mc(Int_t nEvents = 2, const char* setupName = "sis18_mcbm",
+void mcbm_mc(Int_t nEvents = 2,
+	     const char* setupName = "sis18_mcbm_25deg",
+//             const char* setupName = "sis18_mcbm_20deg",
              const char* inputFile ="")
 {
 
