@@ -36,8 +36,10 @@ public:
     CbmBinnedHitReader(const CbmBinnedHitReader&) = delete;
     CbmBinnedHitReader& operator=(const CbmBinnedHitReader&) = delete;
     virtual ~CbmBinnedHitReader();
-    void AddStation(CbmBinnedStation* station) { fStations.push_back(station); }
+    virtual void AddStation(CbmBinnedStation* station) { fStations.push_back(station); }
     virtual void Read() = 0;
+    virtual void Handle() {}// Called optionally and is not implemented by the most of readers.
+    virtual void Finish() {}// Called optionally and is not implemented by the most of readers.
     
 protected:
     std::vector<CbmBinnedStation*> fStations;

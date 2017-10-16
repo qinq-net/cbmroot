@@ -129,45 +129,184 @@ public:
 
 #include "CbmMCTrack.h"
 
+class CbmBinnedMCPointReader;
+
 class CbmBinnedMCTrackReader : public CbmBinnedHitReader
 {
+private:
+   struct Point
+   {
+      Double_t x;
+      Double_t y;
+      Double_t z;
+   };
+   
+   struct Track
+   {
+      Int_t motherInd;
+      Double_t x;
+      Double_t y;
+      Double_t z;
+      map<Double_t, list<Point> > points;
+      
+      Track() : motherInd(-1), x(0), y(0), z(0), points() {}
+      
+      void Init(Int_t mi, Double_t vx, Double_t vy, Double_t vz, const set<Double_t>& stationZs)
+      {
+         motherInd = mi;
+         x = vx;
+         y = vy;
+         z = vz;
+         
+         for (set<Double_t>::const_iterator i = stationZs.begin(); i != stationZs.end(); ++i)
+            points[*i] = list<Point> ();
+      }
+   };
+   
 public:
    static CbmBinnedMCTrackReader* Instance()
    {
       static CbmBinnedMCTrackReader* instance = 0;
       
       if (0 == instance)
+      {
          AddReader("mctrack");
+         instance = static_cast<CbmBinnedMCTrackReader*> (CbmBinnedHitReader::Instance("mctrack"));
+      }
       
       return instance;
    }
    
 public:
-   CbmBinnedMCTrackReader() : CbmBinnedHitReader()
+   CbmBinnedMCTrackReader() : CbmBinnedHitReader(), fStationZs(), fTracks(), fXScats(), fYScats(), fNofEvents(0)
    {
       FairRootManager* ioman = FairRootManager::Instance();
       fHitArray = static_cast<TClonesArray*> (ioman->GetObject("MCTrack"));
    }
    
+   void AddStation(CbmBinnedStation* station)
+   {
+      fStationZs.insert(station->GetMinZ());
+      fXScats.push_back(0);
+      fYScats.push_back(0);
+   }
+   
    void Read()
    {
+      fTracks.clear();
       Int_t nofTracks = fHitArray->GetEntriesFast();
+      fTracks.resize(nofTracks);
    
       for (Int_t i = 0; i < nofTracks; ++i)
       {
-         const CbmMCTrack* track = static_cast<const CbmMCTrack*> (fHitArray->At(i));
-         //fStations[stationNumber]->AddHit(hit, i);
+         const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*> (fHitArray->At(i));
+         Int_t motherInd = mcTrack->GetMotherId();
+         Double_t x = mcTrack->GetStartX();
+         Double_t y = mcTrack->GetStartY();
+         Double_t z = mcTrack->GetStartZ();
+         fTracks[i].Init(motherInd, x, y, z, fStationZs);
       }
    }
+   
+   void Handle()
+   {
+      ++fNofEvents;
+      
+      for (vector<Track>::const_iterator i = fTracks.begin(); i != fTracks.end(); ++i)
+      {
+         const Track& track = *i;
+         
+         if (track.motherInd >= 0)
+            continue;
+         
+         bool isRef = true;
+         
+         for (map<Double_t, list<Point> >::const_iterator j = track.points.begin(); j != track.points.end(); ++j)
+         {
+            if (j->second.empty())
+            {
+               isRef = false;
+               break;
+            }
+         }
+         
+         if (!isRef)
+            continue;
+         
+         Point vertexPoint = { track.x, track.y, track.z };
+         list<Point> vertexList;
+         vertexList.push_back(vertexPoint);
+         map<Double_t, list<Point> >::const_iterator jPrev = track.points.end();
+         
+         for (map<Double_t, list<Point> >::const_iterator j = track.points.begin(); j != track.points.end(); ++j)
+         {
+            map<Double_t, list<Point> >::const_iterator jNext = j;
+            ++jNext;
+            
+            if (jNext == track.points.end())
+               break;
+            
+            const list<Point>& points0 = (j == track.points.begin()) ? vertexList : jPrev->second;
+            const list<Point>& points1 = j->second;
+            const list<Point>& points2 = jNext->second;
+            
+            for (list<Point>::const_iterator k = points0.begin(); k != points0.end(); ++k)
+            {
+               const Point& p0 = *k;
+               
+               for (list<Point>::const_iterator l = points1.begin(); l != points1.end(); ++l)
+               {
+                  const Point& p1 = *l;
+                  
+                  for (list<Point>::const_iterator m = points2.begin(); m != points2.end(); ++m)
+                  {
+                     const Point& p2 = *m;
+                  }
+               }
+            }
+            
+            jPrev = j;
+         }
+      }
+   }
+   
+   void Finish()
+   {
+      
+   }
+   
+   void AddPoint(Int_t trackInd, Double_t stationZ, Double_t x, Double_t y, Double_t z)
+   {
+      Track& track = fTracks[trackInd];
+      Point point = { x, y, z };
+      track.points[stationZ].push_back(point);
+   }
+   
+private:
+   set<Double_t> fStationZs;
+   vector<Track> fTracks;
+   vector<Double_t> fXScats;
+   vector<Double_t> fYScats;
+   int fNofEvents;
 };
 
 class CbmBinnedMCPointReader : public CbmBinnedHitReader
 {
 protected:
-   CbmBinnedMCPointReader() : CbmBinnedHitReader(), fTrackReader(CbmBinnedMCTrackReader::Instance()) {}
+   CbmBinnedMCPointReader() : CbmBinnedHitReader(), fTrackReader(CbmBinnedMCTrackReader::Instance()), fStationZs() {}
+   CbmBinnedMCPointReader(const CbmBinnedMCPointReader&) = delete;
+   CbmBinnedMCPointReader& operator=(const CbmBinnedMCPointReader&) = delete;
+   
+public:
+   void AddStation(CbmBinnedStation* station)
+   {
+      fTrackReader->AddStation(station);
+      fStationZs.push_back(station->GetMinZ());
+   }
    
 protected:
    CbmBinnedMCTrackReader* fTrackReader;
+   vector<Double_t> fStationZs;
 };
 
 #include "CbmStsPoint.h"
@@ -188,8 +327,15 @@ public:
       for (Int_t i = 0; i < nofPoints; ++i)
       {
          const CbmStsPoint* point = static_cast<const CbmStsPoint*> (fHitArray->At(i));
-         int stationNumber = CbmStsSetup::Instance()->GetStationNumber(point->GetDetectorID());
-         //fStations[stationNumber]->AddHit(hit, i);
+         Int_t trackInd = point->GetTrackID();
+         
+         if (trackInd < 0)
+            continue;
+         
+         Int_t stationNumber = CbmStsSetup::Instance()->GetStationNumber(point->GetDetectorID());
+         Double_t stationZ = fStationZs[stationNumber];
+         fTrackReader->AddPoint(trackInd, stationZ, (point->GetXIn() + point->GetXOut()) / 2, (point->GetYIn() + point->GetYOut()) / 2,
+            (point->GetZIn() + point->GetZOut()) / 2);
       }
    }
 };
@@ -198,8 +344,6 @@ public:
 #include "CbmLink.h"
 #include "rich/CbmRichPoint.h"
 #include "CbmMatch.h"
-//#include "CbmMCDataArray.h"
-//#include "CbmMCDataManager.h"
 
 class CbmBinnedRichHitReader : public CbmBinnedHitReader
 {
@@ -253,6 +397,33 @@ public:
 private:
    //TClonesArray* fDigiArray;
    //CbmMCDataArray* fPointArray;
+};
+
+class CbmBinnedRichMCReader : public CbmBinnedMCPointReader
+{
+public:
+   CbmBinnedRichMCReader() : CbmBinnedMCPointReader()
+   {
+      FairRootManager* ioman = FairRootManager::Instance();
+      fHitArray = static_cast<TClonesArray*> (ioman->GetObject("RichPoint"));
+   }
+   
+   void Read()
+   {
+      Int_t nofPoints = fHitArray->GetEntriesFast();
+   
+      for (Int_t i = 0; i < nofPoints; ++i)
+      {
+         const CbmRichPoint* point = static_cast<const CbmRichPoint*> (fHitArray->At(i));
+         Int_t trackInd = point->GetTrackID();
+         
+         if (trackInd < 0)
+            continue;
+         
+         Double_t stationZ = fStationZs[0];
+         fTrackReader->AddPoint(trackInd, stationZ, point->GetX(), point->GetY(), point->GetZ());
+      }
+   }
 };
 
 #include "CbmMuchCluster.h"
@@ -316,11 +487,37 @@ public:
 #endif//DO_ERROR_STAT
       }
    }
+};
+
+class CbmBinnedMuchMCReader : public CbmBinnedMCPointReader
+{
+public:
+   CbmBinnedMuchMCReader() : CbmBinnedMCPointReader()
+   {
+      FairRootManager* ioman = FairRootManager::Instance();
+      fHitArray = static_cast<TClonesArray*> (ioman->GetObject("MuchPoint"));
+   }
    
-//private:
-   //TClonesArray* fMuchClusters;
-   //TClonesArray* fMuchDigis;
-   //CbmMCDataArray* fMuchPoints;
+   void Read()
+   {
+      Int_t nofPoints = fHitArray->GetEntriesFast();
+   
+      for (Int_t i = 0; i < nofPoints; ++i)
+      {
+         const CbmMuchPoint* point = static_cast<const CbmMuchPoint*> (fHitArray->At(i));
+         Int_t trackInd = point->GetTrackID();
+         
+         if (trackInd < 0)
+            continue;
+         
+         Int_t muchStationNumber = CbmMuchGeoScheme::GetStationIndex(point->GetDetectorID());
+         Int_t layerNumber = CbmMuchGeoScheme::GetLayerIndex(point->GetDetectorID());
+         Int_t stationNumber = muchStationNumber * 3 + layerNumber;
+         Double_t stationZ = fStationZs[stationNumber];
+         fTrackReader->AddPoint(trackInd, stationZ, (point->GetXIn() + point->GetXOut()) / 2, (point->GetYIn() + point->GetYOut()) / 2,
+            (point->GetZIn() + point->GetZOut()) / 2);
+      }
+   }
 };
 
 class CbmBinnedTrdHitReader : public CbmBinnedHitReader
@@ -390,11 +587,35 @@ public:
 #endif//DO_ERROR_STAT
       }
    }
+};
+
+class CbmBinnedTrdMCReader : public CbmBinnedMCPointReader
+{
+public:
+   CbmBinnedTrdMCReader() : CbmBinnedMCPointReader()
+   {
+      FairRootManager* ioman = FairRootManager::Instance();
+      fHitArray = static_cast<TClonesArray*> (ioman->GetObject("TrdPoint"));
+   }
    
-//private:
-   //TClonesArray* fClusterArray;
-   //TClonesArray* fDigiMatchArray;
-   //CbmMCDataArray* fPointArray;
+   void Read()
+   {
+      Int_t nofPoints = fHitArray->GetEntriesFast();
+   
+      for (Int_t i = 0; i < nofPoints; ++i)
+      {
+         const CbmTrdPoint* point = static_cast<const CbmTrdPoint*> (fHitArray->At(i));
+         Int_t trackInd = point->GetTrackID();
+         
+         if (trackInd < 0)
+            continue;
+         
+         Int_t stationNumber = CbmTrdAddress::GetLayerId(point->GetDetectorID());
+         Double_t stationZ = fStationZs[stationNumber];
+         fTrackReader->AddPoint(trackInd, stationZ, (point->GetXIn() + point->GetXOut()) / 2, (point->GetYIn() + point->GetYOut()) / 2,
+            (point->GetZIn() + point->GetZOut()) / 2);
+      }
+   }
 };
 
 class CbmBinnedTofHitReader : public CbmBinnedHitReader
@@ -422,6 +643,35 @@ public:
    }
 };
 
+#include "CbmTofPoint.h"
+
+class CbmBinnedTofMCReader : public CbmBinnedMCPointReader
+{
+public:
+   CbmBinnedTofMCReader() : CbmBinnedMCPointReader()
+   {
+      FairRootManager* ioman = FairRootManager::Instance();
+      fHitArray = static_cast<TClonesArray*> (ioman->GetObject("TofPoint"));
+   }
+   
+   void Read()
+   {
+      Int_t nofPoints = fHitArray->GetEntriesFast();
+   
+      for (Int_t i = 0; i < nofPoints; ++i)
+      {
+         const CbmTofPoint* point = static_cast<const CbmTofPoint*> (fHitArray->At(i));
+         Int_t trackInd = point->GetTrackID();
+         
+         if (trackInd < 0)
+            continue;
+
+         Double_t stationZ = fStationZs[0];
+         fTrackReader->AddPoint(trackInd, stationZ, point->GetX(), point->GetY(), point->GetZ());
+      }
+   }
+};
+
 class CbmBinnedAllHitReader : public CbmBinnedHitReader
 {
 public:
@@ -434,6 +684,18 @@ public:
 #ifdef DO_ERROR_STAT
       DumpMax();
 #endif//DO_ERROR_STAT
+   }
+   
+   void Handle()
+   {
+      for (map<string, CbmBinnedHitReader*>::iterator i = fReaders.begin(); i != fReaders.end(); ++i)
+         i->second->Handle();
+   }
+   
+   void Finish()
+   {
+      for (map<string, CbmBinnedHitReader*>::iterator i = fReaders.begin(); i != fReaders.end(); ++i)
+         i->second->Finish();
    }
 };
 
@@ -481,6 +743,16 @@ void CbmBinnedHitReader::AddReader(const char* name)
       newReader = new CbmBinnedTofHitReader;
    else if (nameStr == "mctrack")
       newReader = new CbmBinnedMCTrackReader;
+   else if (nameStr == "stsmc")
+      newReader = new CbmBinnedStsMCReader;
+   else if (nameStr == "richmc")
+      newReader = new CbmBinnedRichMCReader;
+   else if (nameStr == "muchmc")
+      newReader = new CbmBinnedMuchMCReader;
+   else if (nameStr == "trdmc")
+      newReader = new CbmBinnedTrdMCReader;
+   else if (nameStr == "tofmc")
+      newReader = new CbmBinnedTofMCReader;
    
    if (0 != newReader)
       fReaders[name] = newReader;

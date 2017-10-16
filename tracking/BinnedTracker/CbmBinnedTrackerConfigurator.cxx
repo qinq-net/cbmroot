@@ -18,7 +18,6 @@ CbmBinnedTrackerConfigurator::CbmBinnedTrackerConfigurator(bool useAllDetectors)
    fUseModules[kMuch] = false;// Temporary hack
    fUseModules[kRich] = false;// Temporary hack
    fSettings = CbmBinnedSettings::Instance();
-   fSettings->SetConfiguring();
 }
 
 CbmBinnedTrackerConfigurator::~CbmBinnedTrackerConfigurator()
@@ -28,6 +27,7 @@ CbmBinnedTrackerConfigurator::~CbmBinnedTrackerConfigurator()
 
 InitStatus CbmBinnedTrackerConfigurator::Init()
 {
+   fSettings->SetConfiguring();
    fSettings->SetUse(fUseModules);
    fSettings->SetNofStsStations(0);
    fSettings->SetNofMuchStations(0);
@@ -86,12 +86,13 @@ InitStatus CbmBinnedTrackerConfigurator::Init()
 
 void CbmBinnedTrackerConfigurator::Exec(Option_t* opt)
 {
-   
+   CbmBinnedHitReader::Instance()->Read();
+   CbmBinnedHitReader::Instance()->Handle();
 }
 
 void CbmBinnedTrackerConfigurator::Finish()
 {
-   
+   CbmBinnedHitReader::Instance()->Finish();
 }
 
 void CbmBinnedTrackerConfigurator::SetParContainers()
