@@ -100,7 +100,7 @@ const TString tagVersion   = "v18h";
 
 const Int_t setupid = 1;  // 1e is the default
 //const Double_t zfront[5]  = { 260., 410., 360., 410., 550. };
-const Double_t zfront[5]  = { 260., 115., 360., 410., 550. };
+const Double_t zfront[5]  = { 260., 100., 360., 410., 550. };
 const TString setupVer[5] = { "_1h", "_1e", "_1m", "_3e", "_3m" };
 const TString subVersion = setupVer[setupid];
 
@@ -206,7 +206,7 @@ Double_t LayerPosition[MaxLayers] = { 0. }; // start position = 0 - 2016-07-12 -
 const Double_t LayerThickness = 25.0; // miniCBM - Thickness of one TRD layer in cm
 //const Double_t LayerThickness = 45.0; // Thickness of one TRD layer in cm
 
-const Double_t LayerOffset[MaxLayers] = {   0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,   5.,   0. };  // v13x[4,5] - z offset in addition to LayerThickness 
+const Double_t LayerOffset[MaxLayers] = {   0.,  -10.,   0.,   0.,   0.,   0.,   0.,   0.,   5.,   0. };  // v13x[4,5] - z offset in addition to LayerThickness 
 //const Double_t LayerOffset[MaxLayers] = {   0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,   0. };  // SIS100 - z offset in addition to LayerThickness 
 //const Double_t LayerOffset[MaxLayers] = {   0.,   0.,   0.,   0.,  95.,   0.,   0.,   0.,   5.,   0. };  // v13n       - z offset in addition to LayerThickness 
 
