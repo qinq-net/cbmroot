@@ -53,7 +53,7 @@ void setup_sis18_mcbm_20deg()
   setup->SetModule(kMuch, muchGeoTag);
   setup->SetModule(kTrd, trdGeoTag);
   setup->SetModule(kTof, tofGeoTag);
-  setup->SetModule(kRich, richGeoTag);
+  //  setup->SetModule(kRich, richGeoTag);
   setup->SetField(fieldTag, fieldScale, 0., 0., fieldZ);
   // ------------------------------------------------------------------------
 
