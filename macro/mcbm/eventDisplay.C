@@ -1,4 +1,5 @@
-void eventDisplay(const char* setup = "sis18_mcbm")
+//void eventDisplay(const char* setup = "sis18_mcbm_25deg")
+void eventDisplay(const char* setup = "sis18_mcbm_20deg")
 {
 
   TString dataDir   = "data/";

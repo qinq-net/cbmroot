@@ -18,8 +18,8 @@
 
 
 void mcbm_mc(Int_t nEvents = 2,
-	     const char* setupName = "sis18_mcbm_25deg",
-//             const char* setupName = "sis18_mcbm_20deg",
+//	     const char* setupName = "sis18_mcbm_25deg",
+             const char* setupName = "sis18_mcbm_20deg",
              const char* inputFile ="")
 {
 
@@ -71,8 +71,8 @@ void mcbm_mc(Int_t nEvents = 2,
   Double_t targetPosY      = 0.;     // target y position in global c.s. [cm]
   Double_t targetPosZ      = 0.;     // target z position in global c.s. [cm]
   Double_t targetRotY      = 0.;     // target rotation angle around the y axis [deg]
-  Double_t beamRotY        = 25.;    // with 8 degree wrt R3B beam - beam rotation angle around the y axis [deg]
-  //  Double_t beamRotY        = -20.;   // with 15 degree magnet - beam rotation angle around the y axis [deg]
+  //  Double_t beamRotY        = 25.;    // with 8 degree wrt R3B beam - beam rotation angle around the y axis [deg]
+  Double_t beamRotY        = -20.;   // with 15 degree magnet - beam rotation angle around the y axis [deg]
   // ------------------------------------------------------------------------
 
   // --- Define the creation of the primary vertex   ------------------------
