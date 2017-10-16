@@ -143,7 +143,8 @@ const Float_t Pole_Offset=90.0+Pole_Size_X/2.;
 // Position for module placement
 const Float_t Inner_Module_First_Y_Position=16.;
 const Float_t Inner_Module_Last_Y_Position=480.;
-const Float_t Inner_Module_X_Offset=18; // shift 16 cm to the left side // 2.;
+const Float_t Inner_Module_X_Offset=2.; // centered position in x/y
+//const Float_t Inner_Module_X_Offset=18; // shift by 16 cm in x
 const Int_t Inner_Module_NTypes = 3;
 const Float_t Inner_Module_Types[Inner_Module_NTypes]  = {4.,3.,0.};
 //const Float_t Inner_Module_Number[Inner_Module_NTypes] = {2.,2.,6.}; //V13_3a
