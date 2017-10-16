@@ -24,7 +24,7 @@ void setup_sis18_mcbm_25deg()
   TString mvdGeoTag       = "v18b_mcbm";    // "v18a_mcbm";						  
   TString stsGeoTag       = "v18f_mcbm";    // "v18e_mcbm"; // "v18d_mcbm";
   TString muchGeoTag      = "v18a_mcbm";
-  TString trdGeoTag       = "v18i_1e_mcbm"; // "v18e_1e_mcbm";
+  TString trdGeoTag       = "v18e_1e_mcbm"; // "v18i_1e_mcbm";
   TString tofGeoTag       = "v18f_mcbm";    // "v18g_mcbm";
   TString richGeoTag      = "v18b_mcbm";
   TString platGeoTag      = "v18a_mcbm";
@@ -53,7 +53,7 @@ void setup_sis18_mcbm_25deg()
   setup->SetModule(kMuch, muchGeoTag);
   setup->SetModule(kTrd, trdGeoTag);
   setup->SetModule(kTof, tofGeoTag);
-  setup->SetModule(kRich, richGeoTag);
+  //  setup->SetModule(kRich, richGeoTag);
   setup->SetField(fieldTag, fieldScale, 0., 0., fieldZ);
   // ------------------------------------------------------------------------
 
