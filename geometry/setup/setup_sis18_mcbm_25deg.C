@@ -6,6 +6,7 @@
  **
  **/
 
+// 2017-10-16 - DE - use 25 degree beampipe
 // 2017-06-03 - DE - add RICH v18a_mcbm
 // 2017-05-02 - DE - switch back to 5x5 RPC TOF
 // 2017-05-02 - DE - skip MVD in the initial setup
@@ -15,11 +16,11 @@
 
 
 
-void setup_sis18_mcbm()
+void setup_sis18_mcbm_25deg()
 {
   
   // -----  Geometry Tags  --------------------------------------------------
-  TString pipeGeoTag      = "v18d_mcbm";    // "v18c_mcbm";
+  TString pipeGeoTag      = "v18d_mcbm";    // 25 degreee beampipe 
   TString mvdGeoTag       = "v18b_mcbm";    // "v18a_mcbm";						  
   TString stsGeoTag       = "v18f_mcbm";    // "v18e_mcbm"; // "v18d_mcbm";
   TString muchGeoTag      = "v18a_mcbm";
