@@ -7,7 +7,7 @@
  ** @date 19.07.2016
  **
  ** mCBM
- ** pipe v18d    - allow to rotate cylindrical pipe around the vertical (y) axis
+ ** pipe v18d    - rotate cylindrical pipe around the vertical (y) axis by 25 degrees
  **
  ** SIS-100
  ** pipe v16c_1e - is a pipe for the STS up to the interface to RICH at z = 1700 mm
