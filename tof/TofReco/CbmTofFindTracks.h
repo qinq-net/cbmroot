@@ -131,13 +131,15 @@ class CbmTofFindTracks : public FairTask
   inline void SetSIGX     (Double_t dval){ fSIGX = dval;}
   inline void SetSIGY     (Double_t dval){ fSIGY = dval;}
   inline void SetSIGZ     (Double_t dval){ fSIGZ = dval;}
+  inline void SetUseSigCalib  (Bool_t bval){ fbUseSigCalib = bval;}
 
   inline void SetCorMode       (Int_t ival){ fiCorMode     = ival;}
   inline void SetCalParFileName(TString CalParFileName) { fCalParFileName = CalParFileName; }
   inline void SetTtTarg(Double_t val){ fTtTarg=val; }
   inline void SetT0MAX(Double_t val){ fT0MAX=val; }
 
-  inline void MarkStationFired (Int_t iSt) {fStationHMul[iSt]++;}
+  inline void SetStationMaxHMul (Int_t ival) { fiStationMaxHMul = ival; }
+  inline void MarkStationFired  (Int_t iSt)  { fStationHMul[iSt]++; }
   Int_t GetNStationsFired();
   void  ResetStationsFired();
 
@@ -185,9 +187,9 @@ class CbmTofFindTracks : public FairTask
   TH2* fhTrklT0Mul;
   TH2* fhTrklDT0SmMis;
   TH2* fhTrklDT0StMis2;
-  TH2* fhTrklXY0_3;
-  TH2* fhTrklXY0_4;
-  TH2* fhTrklXY0_5;
+  TH2* fhTrklXY0_0;
+  TH2* fhTrklXY0_1;
+  TH2* fhTrklXY0_2;
 
   std::vector<TH1 *> vhPullX;
   std::vector<TH1 *> vhPullY;
@@ -226,6 +228,7 @@ class CbmTofFindTracks : public FairTask
   TH2*          fhTOff_HMul2;              // Time calibration histo
   Int_t         fiCorMode;
   Int_t         fiBeamCounter;
+  Int_t         fiStationMaxHMul;
   Double_t      fTtTarg;                // expected average slope in ps/cm 
   Double_t      fVTXNorm;               // Number of Hits contributing to Vertex determination 
   Double_t      fVTX_T;                 // measured event wise t0 
@@ -245,6 +248,7 @@ class CbmTofFindTracks : public FairTask
   Double_t fSIGX;
   Double_t fSIGY;
   Double_t fSIGZ;
+  Bool_t   fbUseSigCalib;
 
   TTimeStamp fStart;
   TTimeStamp fStop;
